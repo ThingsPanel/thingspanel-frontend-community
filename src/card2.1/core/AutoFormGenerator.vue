@@ -2,11 +2,11 @@
   <div class="auto-form-generator">
     <!-- TS配置生成的表单 -->
     <div v-if="tsConfig" class="ts-config-section">
-      <n-form 
+      <n-form
         ref="formRef"
-        :model="formData" 
-        label-placement="left" 
-        label-width="auto" 
+        :model="formData"
+        label-placement="left"
+        label-width="auto"
         size="small"
         @update:model="handleTSChange"
       >
@@ -15,7 +15,7 @@
           <div v-if="groupedFields.length > 1" class="form-group">
             <h4 class="group-title">{{ group.label }}</h4>
           </div>
-          
+
           <!-- 字段渲染 -->
           <template v-for="field in group.fields" :key="field.key">
             <!-- Vue组件字段 -->
@@ -27,14 +27,9 @@
                 @update:model-value="handleFieldChange(field.key, $event)"
               />
             </div>
-            
+
             <!-- 普通字段 -->
-            <n-form-item 
-              v-else
-              :label="field.label"
-              :path="field.key"
-              :rule="getFieldRule(field)"
-            >
+            <n-form-item v-else :label="field.label" :path="field.key" :rule="getFieldRule(field)">
               <!-- 字符串输入 -->
               <n-input
                 v-if="field.type === 'string'"
@@ -43,7 +38,7 @@
                 :disabled="readonly"
                 @update:value="handleFieldChange(field.key, $event)"
               />
-              
+
               <!-- 文本域 -->
               <n-input
                 v-else-if="field.type === 'textarea'"
@@ -54,7 +49,7 @@
                 :disabled="readonly"
                 @update:value="handleFieldChange(field.key, $event)"
               />
-              
+
               <!-- 数字输入 -->
               <n-input-number
                 v-else-if="field.type === 'number'"
@@ -65,7 +60,7 @@
                 :disabled="readonly"
                 @update:value="handleFieldChange(field.key, $event)"
               />
-              
+
               <!-- 滑块 -->
               <n-slider
                 v-else-if="field.type === 'slider'"
@@ -76,7 +71,7 @@
                 :disabled="readonly"
                 @update:value="handleFieldChange(field.key, $event)"
               />
-              
+
               <!-- 布尔开关 -->
               <n-switch
                 v-else-if="field.type === 'boolean'"
@@ -84,7 +79,7 @@
                 :disabled="readonly"
                 @update:value="handleFieldChange(field.key, $event)"
               />
-              
+
               <!-- 选择器 -->
               <n-select
                 v-else-if="field.type === 'select'"
@@ -93,7 +88,7 @@
                 :disabled="readonly"
                 @update:value="handleFieldChange(field.key, $event)"
               />
-              
+
               <!-- 颜色选择器 -->
               <n-color-picker
                 v-else-if="field.type === 'color'"
@@ -107,28 +102,18 @@
         </template>
       </n-form>
     </div>
-    
+
     <!-- 纯Vue配置组件 -->
     <div v-if="mode === 'vue-only' && vueConfig" class="vue-config-section">
-      <component
-        :is="vueConfig"
-        v-model="formData"
-        :readonly="readonly"
-        @update:model-value="handleVueChange"
-      />
+      <component :is="vueConfig" v-model="formData" :readonly="readonly" @update:model-value="handleVueChange" />
     </div>
-    
+
     <!-- 混合模式：Vue组件补充 -->
     <div v-if="mode === 'hybrid' && vueConfig" class="hybrid-vue-section">
       <div class="section-divider">
         <n-divider>自定义配置</n-divider>
       </div>
-      <component
-        :is="vueConfig"
-        v-model="vueFormData"
-        :readonly="readonly"
-        @update:model-value="handleVueChange"
-      />
+      <component :is="vueConfig" v-model="vueFormData" :readonly="readonly" @update:model-value="handleVueChange" />
     </div>
   </div>
 </template>
@@ -155,13 +140,13 @@ interface Props {
   // 配置定义
   tsConfig?: TSConfig
   vueConfig?: Component
-  
+
   // 配置模式
   mode?: ConfigMode
-  
+
   // 当前值
   modelValue?: ConfigValues
-  
+
   // 是否只读
   readonly?: boolean
 }
@@ -198,13 +183,13 @@ const initFormData = () => {
   // 清空现有数据
   Object.keys(formData).forEach(key => delete formData[key])
   Object.keys(vueFormData).forEach(key => delete vueFormData[key])
-  
+
   // 设置默认值
   if (props.tsConfig) {
     const defaults = FlexibleConfigManager.getDefaultValues(props.tsConfig)
     Object.assign(formData, defaults)
   }
-  
+
   // 设置外部传入的值
   if (props.modelValue) {
     Object.assign(formData, props.modelValue)
@@ -213,22 +198,30 @@ const initFormData = () => {
 }
 
 // 监听外部值变化
-watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
-    Object.assign(formData, newValue)
-    Object.assign(vueFormData, newValue)
-  }
-}, { deep: true })
+watch(
+  () => props.modelValue,
+  newValue => {
+    if (newValue) {
+      Object.assign(formData, newValue)
+      Object.assign(vueFormData, newValue)
+    }
+  },
+  { deep: true }
+)
 
 // 监听配置变化
-watch([() => props.tsConfig, () => props.vueConfig], () => {
-  initFormData()
-}, { deep: true })
+watch(
+  [() => props.tsConfig, () => props.vueConfig],
+  () => {
+    initFormData()
+  },
+  { deep: true }
+)
 
 // 字段变化处理
 const handleFieldChange = (key: string, value: any) => {
   if (props.readonly) return
-  
+
   console.log('[AutoFormGenerator] 字段变化:', { key, value })
   emitChange()
 }
@@ -242,21 +235,19 @@ const handleTSChange = () => {
 // Vue组件变化处理
 const handleVueChange = (newValue: ConfigValues) => {
   if (props.readonly) return
-  
+
   Object.assign(vueFormData, newValue)
   emitChange()
 }
 
 // 发出变化事件
 const emitChange = () => {
-  const values = props.mode === 'hybrid' 
-    ? FlexibleConfigManager.mergeValues(formData, vueFormData)
-    : formData
-  
+  const values = props.mode === 'hybrid' ? FlexibleConfigManager.mergeValues(formData, vueFormData) : formData
+
   // 验证
   const validation = FlexibleConfigManager.validateValues(values, props.tsConfig)
   emit('validate', validation)
-  
+
   if (validation.valid) {
     emit('update:modelValue', { ...values })
     emit('change', { ...values })
@@ -276,7 +267,7 @@ const getVueComponent = (field: any): Component => {
 // 获取字段验证规则
 const getFieldRule = (field: any) => {
   const rules: any[] = []
-  
+
   if (field.required) {
     rules.push({
       required: true,
@@ -284,7 +275,7 @@ const getFieldRule = (field: any) => {
       trigger: ['blur', 'input']
     })
   }
-  
+
   return rules.length > 0 ? rules : undefined
 }
 

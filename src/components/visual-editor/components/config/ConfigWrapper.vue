@@ -21,8 +21,6 @@ interface Props {
   modelValue?: Record<string, any>
   // 是否为预览模式
   preview?: boolean
-  // 是否显示高级选项
-  showAdvanced?: boolean
   // 是否启用兼容模式
   legacyMode?: boolean
 }
@@ -30,7 +28,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   modelValue: () => ({}),
   preview: false,
-  showAdvanced: false,
   legacyMode: true
 })
 

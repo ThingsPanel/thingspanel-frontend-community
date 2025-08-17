@@ -137,7 +137,7 @@ const extractComponentConfig = () => {
 
   // 尝试多种路径提取配置
   let configData = null
-  
+
   // 1. 直接使用config
   if (props.config && typeof props.config === 'object') {
     // 检查是否直接包含配置属性
@@ -154,7 +154,7 @@ const extractComponentConfig = () => {
       }
     }
   }
-  
+
   // 2. 如果还没找到配置，返回默认配置
   if (!configData) {
     console.log('[Card2Wrapper] 使用默认配置')
@@ -172,7 +172,7 @@ const extractComponentConfig = () => {
       borderRadius: 8
     }
   }
-  
+
   console.log('[Card2Wrapper] 最终配置:', configData)
   return configData
 }
@@ -219,7 +219,7 @@ watch(() => props.componentType, loadComponent, { immediate: true })
 // 监听config变化，确保配置更新时组件重新渲染
 watch(
   () => props.config,
-  (newConfig) => {
+  newConfig => {
     console.log('[Card2Wrapper] 配置变化:', {
       nodeId: props.nodeId,
       newConfig

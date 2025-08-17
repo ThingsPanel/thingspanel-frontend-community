@@ -4,12 +4,12 @@
 import type { Component } from 'vue'
 
 // 支持的字段类型
-export type ConfigFieldType = 
-  | 'string' 
-  | 'number' 
-  | 'boolean' 
-  | 'color' 
-  | 'select' 
+export type ConfigFieldType =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'color'
+  | 'select'
   | 'slider'
   | 'textarea'
   | 'vue-component' // 使用Vue组件渲染
@@ -21,20 +21,20 @@ export interface TSConfigField {
   type: ConfigFieldType
   defaultValue?: any
   description?: string
-  
+
   // 验证规则
   required?: boolean
   min?: number
   max?: number
   step?: number
-  
+
   // 选择选项（select类型）
   options?: Array<{ label: string; value: any }>
-  
+
   // Vue组件相关（vue-component类型）
   component?: Component | string
   props?: Record<string, any>
-  
+
   // 分组
   group?: string
 }
@@ -58,10 +58,10 @@ export type ConfigMode = 'vue-only' | 'ts-only' | 'hybrid'
 export interface FlexibleConfigDefinition {
   // 纯Vue配置
   vueConfig?: Component
-  
+
   // 纯TS配置
   tsConfig?: TSConfig
-  
+
   // 配置模式（自动检测）
   mode?: ConfigMode
 }

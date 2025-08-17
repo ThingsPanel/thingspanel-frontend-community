@@ -6,13 +6,13 @@
         {{ getModeLabel() }}
       </n-tag>
     </div>
-    
+
     <!-- 自动表单生成器 -->
     <AutoFormGenerator
+      v-model="configValues"
       :ts-config="tsConfig"
       :vue-config="vueConfig"
       :mode="detectedMode"
-      v-model="configValues"
       :readonly="readonly"
       @change="handleConfigChange"
       @validate="handleValidate"
@@ -31,17 +31,17 @@ import { FlexibleConfigManager } from './config-manager'
 interface Props {
   // 组件类型（用于自动检测配置）
   componentType?: string
-  
+
   // 直接传入配置（可选）
   tsConfig?: TSConfig
   vueConfig?: Component
-  
+
   // 当前配置值
   modelValue?: ConfigValues
-  
+
   // 是否只读
   readonly?: boolean
-  
+
   // 是否显示模式指示器
   showModeIndicator?: boolean
 }
@@ -77,36 +77,44 @@ const detectedMode = computed<ConfigMode>(() => {
 // 模式标签类型
 const getModeTagType = () => {
   switch (detectedMode.value) {
-    case 'ts-only': return 'info'
-    case 'vue-only': return 'success'
-    case 'hybrid': return 'warning'
-    default: return 'default'
+    case 'ts-only':
+      return 'info'
+    case 'vue-only':
+      return 'success'
+    case 'hybrid':
+      return 'warning'
+    default:
+      return 'default'
   }
 }
 
 // 模式标签文本
 const getModeLabel = () => {
   switch (detectedMode.value) {
-    case 'ts-only': return 'TS配置'
-    case 'vue-only': return 'Vue配置'
-    case 'hybrid': return '混合配置'
-    default: return '未知模式'
+    case 'ts-only':
+      return 'TS配置'
+    case 'vue-only':
+      return 'Vue配置'
+    case 'hybrid':
+      return '混合配置'
+    default:
+      return '未知模式'
   }
 }
 
 // 自动检测组件配置
 const detectComponentConfig = async () => {
   if (!props.componentType) return
-  
+
   try {
     console.log('[FlexibleConfigForm] 开始检测配置:', props.componentType)
-    
+
     // 尝试动态导入TS配置
     try {
       // 使用动态导入，支持任意组件类型
       const tsConfigPath = `/src/card2.1/components/${props.componentType}/config.ts`
       const tsModule = await import(/* @vite-ignore */ tsConfigPath)
-      
+
       if (tsModule.testComponentTSConfig || tsModule.default) {
         tsConfig.value = tsModule.testComponentTSConfig || tsModule.default
         console.log('[FlexibleConfigForm] ✅ 检测到TS配置:', props.componentType)
@@ -114,12 +122,12 @@ const detectComponentConfig = async () => {
     } catch (e) {
       console.log('[FlexibleConfigForm] ❌ 未找到TS配置:', props.componentType, e)
     }
-    
+
     // 尝试动态导入Vue配置
     try {
       const vueConfigPath = `/src/card2.1/components/${props.componentType}/config.vue`
       const vueModule = await import(/* @vite-ignore */ vueConfigPath)
-      
+
       if (vueModule.default) {
         vueConfig.value = vueModule.default
         console.log('[FlexibleConfigForm] ✅ 检测到Vue配置:', props.componentType)
@@ -145,22 +153,34 @@ const handleValidate = (result: { valid: boolean; errors: string[] }) => {
 }
 
 // 监听外部值变化
-watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
-    configValues.value = { ...newValue }
-  }
-}, { immediate: true, deep: true })
+watch(
+  () => props.modelValue,
+  newValue => {
+    if (newValue) {
+      configValues.value = { ...newValue }
+    }
+  },
+  { immediate: true, deep: true }
+)
 
 // 监听组件类型变化
-watch(() => props.componentType, () => {
-  detectComponentConfig()
-}, { immediate: true })
+watch(
+  () => props.componentType,
+  () => {
+    detectComponentConfig()
+  },
+  { immediate: true }
+)
 
 // 监听直接传入的配置
-watch(() => [props.tsConfig, props.vueConfig], () => {
-  if (props.tsConfig) tsConfig.value = props.tsConfig
-  if (props.vueConfig) vueConfig.value = props.vueConfig
-}, { immediate: true })
+watch(
+  () => [props.tsConfig, props.vueConfig],
+  () => {
+    if (props.tsConfig) tsConfig.value = props.tsConfig
+    if (props.vueConfig) vueConfig.value = props.vueConfig
+  },
+  { immediate: true }
+)
 
 // 组件挂载
 onMounted(() => {

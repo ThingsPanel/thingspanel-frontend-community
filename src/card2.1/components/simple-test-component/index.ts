@@ -13,10 +13,10 @@ const simpleTestComponentDefinition: ComponentDefinition = {
   permission: '不限',
   icon: 'cube-outline',
   component: SimpleTestComponent,
-  
+
   // 🔥 新增：注册配置组件
   configComponent: SimpleTestConfig,
-  
+
   config: {
     style: {
       width: 300,

@@ -17,49 +17,52 @@ export class FlexibleConfigManager {
     } else if (vueConfig) {
       return 'vue-only'
     }
-    
+
     throw new Error('至少需要提供一种配置方式')
   }
-  
+
   /**
    * 获取默认配置值
    */
   static getDefaultValues(tsConfig?: TSConfig): ConfigValues {
     if (!tsConfig) return {}
-    
+
     const defaults: ConfigValues = {}
-    
+
     tsConfig.fields.forEach(field => {
       if (field.defaultValue !== undefined) {
         defaults[field.key] = field.defaultValue
       }
     })
-    
+
     return defaults
   }
-  
+
   /**
    * 验证配置值
    */
-  static validateValues(values: ConfigValues, tsConfig?: TSConfig): {
+  static validateValues(
+    values: ConfigValues,
+    tsConfig?: TSConfig
+  ): {
     valid: boolean
     errors: string[]
   } {
     const errors: string[] = []
-    
+
     if (!tsConfig) {
       return { valid: true, errors: [] }
     }
-    
+
     tsConfig.fields.forEach(field => {
       const value = values[field.key]
-      
+
       // 必填检查
       if (field.required && (value === undefined || value === null || value === '')) {
         errors.push(`${field.label} 是必填字段`)
         return
       }
-      
+
       // 类型检查
       if (value !== undefined) {
         switch (field.type) {
@@ -75,20 +78,20 @@ export class FlexibleConfigManager {
               }
             }
             break
-            
+
           case 'string':
           case 'textarea':
             if (typeof value !== 'string') {
               errors.push(`${field.label} 必须是文本`)
             }
             break
-            
+
           case 'boolean':
             if (typeof value !== 'boolean') {
               errors.push(`${field.label} 必须是布尔值`)
             }
             break
-            
+
           case 'select':
             if (field.options && !field.options.some(opt => opt.value === value)) {
               errors.push(`${field.label} 的值不在可选范围内`)
@@ -97,13 +100,13 @@ export class FlexibleConfigManager {
         }
       }
     })
-    
+
     return {
       valid: errors.length === 0,
       errors
     }
   }
-  
+
   /**
    * 合并配置值（用于混合模式）
    */
@@ -113,7 +116,7 @@ export class FlexibleConfigManager {
       ...vueValues
     }
   }
-  
+
   /**
    * 获取分组后的字段
    */
@@ -123,19 +126,19 @@ export class FlexibleConfigManager {
     fields: TSConfig['fields']
   }> {
     if (!tsConfig.groups || tsConfig.groups.length === 0) {
-      return [{
-        name: 'default',
-        label: '基本配置',
-        fields: tsConfig.fields
-      }]
+      return [
+        {
+          name: 'default',
+          label: '基本配置',
+          fields: tsConfig.fields
+        }
+      ]
     }
-    
+
     return tsConfig.groups.map(group => ({
       name: group.name,
       label: group.label,
-      fields: tsConfig.fields.filter(field => 
-        group.fields.includes(field.key) || field.group === group.name
-      )
+      fields: tsConfig.fields.filter(field => group.fields.includes(field.key) || field.group === group.name)
     }))
   }
 }

@@ -1,27 +1,23 @@
 <template>
   <div class="card2-config-test">
-    <n-card title="Card2.1 配置系统测试" style="margin: 20px;">
+    <n-card title="Card2.1 配置系统测试" style="margin: 20px">
       <!-- 初始化状态 -->
-      <n-alert v-if="isLoading" type="info" style="margin-bottom: 16px;">
-        正在初始化Card2.1系统...
-      </n-alert>
+      <n-alert v-if="isLoading" type="info" style="margin-bottom: 16px">正在初始化Card2.1系统...</n-alert>
 
       <!-- 错误状态 -->
-      <n-alert v-if="error" type="error" style="margin-bottom: 16px;">
-        初始化失败: {{ error }}
-      </n-alert>
+      <n-alert v-if="error" type="error" style="margin-bottom: 16px">初始化失败: {{ error }}</n-alert>
 
       <!-- 成功状态 -->
       <div v-if="!isLoading && !error">
         <!-- 组件统计信息 -->
-        <n-descriptions title="系统状态" bordered size="small" style="margin-bottom: 16px;">
+        <n-descriptions title="系统状态" bordered size="small" style="margin-bottom: 16px">
           <n-descriptions-item label="可用组件数量">{{ availableComponents.length }}</n-descriptions-item>
           <n-descriptions-item label="已注册Widget数量">{{ registeredWidgets.length }}</n-descriptions-item>
           <n-descriptions-item label="配置组件数量">{{ configComponentsCount }}</n-descriptions-item>
         </n-descriptions>
 
         <!-- 组件列表 -->
-        <n-card title="可用组件列表" style="margin-bottom: 16px;">
+        <n-card title="可用组件列表" style="margin-bottom: 16px">
           <n-space vertical>
             <div v-for="component in availableComponents" :key="component.type" class="component-item">
               <n-space align="center">
@@ -29,11 +25,7 @@
                 <span>{{ component.name }}</span>
                 <n-tag v-if="component.configComponent" type="success" size="small">有配置</n-tag>
                 <n-tag v-else type="warning" size="small">无配置</n-tag>
-                <n-button 
-                  v-if="component.configComponent" 
-                  size="small" 
-                  @click="testComponentConfig(component)"
-                >
+                <n-button v-if="component.configComponent" size="small" @click="testComponentConfig(component)">
                   测试配置
                 </n-button>
               </n-space>
@@ -42,7 +34,7 @@
         </n-card>
 
         <!-- 配置测试区域 -->
-        <n-card v-if="selectedComponent" title="配置测试" style="margin-bottom: 16px;">
+        <n-card v-if="selectedComponent" title="配置测试" style="margin-bottom: 16px">
           <n-space vertical>
             <n-descriptions bordered size="small">
               <n-descriptions-item label="组件类型">{{ selectedComponent.type }}</n-descriptions-item>
@@ -53,7 +45,7 @@
             <!-- 配置表单渲染 -->
             <div v-if="selectedComponent.configComponent" class="config-form-area">
               <n-divider title-placement="left">配置表单</n-divider>
-              <component 
+              <component
                 :is="selectedComponent.configComponent"
                 :widget="mockWidget"
                 :config="mockConfig"
@@ -70,13 +62,9 @@
         </n-card>
 
         <!-- 实时预览区域 -->
-        <n-card v-if="selectedComponent" title="组件预览" style="margin-bottom: 16px;">
+        <n-card v-if="selectedComponent" title="组件预览" style="margin-bottom: 16px">
           <div class="preview-area">
-            <component 
-              v-if="selectedComponent.component"
-              :is="selectedComponent.component"
-              :config="mockConfig"
-            />
+            <component :is="selectedComponent.component" v-if="selectedComponent.component" :config="mockConfig" />
           </div>
         </n-card>
       </div>
@@ -132,19 +120,19 @@ const configComponentsCount = computed(() => {
  */
 const testComponentConfig = (component: ComponentDefinition) => {
   console.log('[Card2ConfigTest] 测试组件配置:', component.type)
-  
+
   selectedComponent.value = component
-  
+
   // 重置配置为默认值
   Object.keys(mockConfig).forEach(key => {
     delete mockConfig[key]
   })
-  
+
   // 从组件定义中获取默认配置
   if (component.config) {
     Object.assign(mockConfig, component.config)
   }
-  
+
   console.log('[Card2ConfigTest] 初始配置:', mockConfig)
 }
 
@@ -153,7 +141,7 @@ const testComponentConfig = (component: ComponentDefinition) => {
  */
 const handleConfigUpdate = (newConfig: any) => {
   console.log('[Card2ConfigTest] 配置更新:', newConfig)
-  
+
   // 更新配置
   Object.keys(mockConfig).forEach(key => {
     delete mockConfig[key]
@@ -167,21 +155,20 @@ const handleConfigUpdate = (newConfig: any) => {
 const initialize = async () => {
   try {
     console.log('[Card2ConfigTest] 开始初始化...')
-    
+
     // 等待Card2集成初始化完成
     await card2Integration.initialize()
-    
+
     console.log('[Card2ConfigTest] 初始化完成')
     console.log('[Card2ConfigTest] 可用组件:', availableComponents.value)
-    
+
     isLoading.value = false
-    
+
     // 自动选择第一个有配置的组件进行测试
     const firstComponentWithConfig = availableComponents.value.find(comp => comp.configComponent)
     if (firstComponentWithConfig) {
       testComponentConfig(firstComponentWithConfig)
     }
-    
   } catch (err) {
     console.error('[Card2ConfigTest] 初始化失败:', err)
     error.value = err?.message || '未知错误'

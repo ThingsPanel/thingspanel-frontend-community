@@ -17,12 +17,7 @@
         </n-space>
         <n-space>
           <n-button size="small" @click="showRequirementDetail = true">查看配置详情</n-button>
-          <n-button 
-            size="small" 
-            type="primary" 
-            :disabled="!lastGeneratedConfig"
-            @click="showConfigResult = true"
-          >
+          <n-button size="small" type="primary" :disabled="!lastGeneratedConfig" @click="showConfigResult = true">
             查看生成的配置
           </n-button>
           <n-button size="small" @click="clearAll">清空所有</n-button>
@@ -58,12 +53,12 @@
                 <n-text depth="3" style="font-size: 12px">
                   {{ Object.keys(lastGeneratedConfig?.dataSourceBindings || {}).length || 0 }} 个数据源
                 </n-text>
-                <n-button 
-                  v-if="lastGeneratedConfig" 
-                  size="tiny" 
-                  type="info" 
-                  @click="showConfigResult = true"
+                <n-button
+                  v-if="lastGeneratedConfig"
+                  size="tiny"
+                  type="info"
                   style="margin-left: 8px"
+                  @click="showConfigResult = true"
                 >
                   查看详细配置
                 </n-button>
@@ -366,13 +361,13 @@ const clearAll = () => {
  */
 const onConfigUpdate = (config: any) => {
   console.log('🔧 [TestPage] 收到配置更新:', config)
-  
+
   lastGeneratedConfig.value = config
   lastConfigTime.value = new Date().toLocaleString()
 
   const dataSourceCount = config.dataSourceBindings ? Object.keys(config.dataSourceBindings).length : 0
   addLog(`配置已更新，包含 ${dataSourceCount} 个数据源绑定`, 'success')
-  
+
   // 🔥 新增：显示增强配置信息
   if (config.dataSourceBindings) {
     Object.keys(config.dataSourceBindings).forEach(key => {

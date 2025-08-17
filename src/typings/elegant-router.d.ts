@@ -115,7 +115,9 @@ declare module "@elegant-router/types" {
     "test_data-source-system-test": "/test/data-source-system-test";
     "test_editor-integration": "/test/editor-integration";
     "test_flexible-config-test": "/test/flexible-config-test";
+    "test_performance-test": "/test/performance-test";
     "test_script-engine-test": "/test/script-engine-test";
+    "test_simple-card2-test": "/test/simple-card2-test";
     "test_unifiedarchitecturetest": "/test/unifiedarchitecturetest";
     "ultra-kanban": "/ultra-kanban";
     "ultra-kanban_index": "/ultra-kanban/index";
@@ -281,7 +283,9 @@ declare module "@elegant-router/types" {
     | "test_editor-integration"
     | "test_flexible-config-test"
     | "test"
+    | "test_performance-test"
     | "test_script-engine-test"
+    | "test_simple-card2-test"
     | "ultra-kanban_index"
     | "ultra-kanban_kanban-details"
     | "ultra-kanban_panel-preview"

@@ -25,7 +25,8 @@
       "WebFetch(domain:localhost)",
       "Bash(taskkill:*)",
       "Bash(pnpm add:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(pnpm list:*)"
     ],
     "deny": [],
     "additionalDirectories": [

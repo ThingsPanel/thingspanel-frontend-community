@@ -163,6 +163,44 @@
   "config.base.borderStyles.groove": "凹槽",
   "config.base.borderStyles.ridge": "凸起",
 
+  "config.base.border.width.placeholder": "边框宽度(px)",
+  "config.base.border.radius.placeholder": "圆角大小(px)", 
+  "config.base.boxShadow.placeholder": "例如: 0 2px 8px rgba(0,0,0,0.1)",
+  
+  "config.base.shadow.small": "小阴影",
+  "config.base.shadow.medium": "中等阴影", 
+  "config.base.shadow.large": "大阴影",
+  
+  "config.base.padding.none": "无边距",
+  "config.base.padding.small": "小边距", 
+  "config.base.padding.medium": "中等边距",
+  "config.base.padding.large": "大边距",
+
+  "common.clear": "清除",
+  "common.preview": "预览",
+  
+  "config.base.untitledComponent": "未命名组件",
+  
+  "config.base.margin": "外边距",
+  "config.base.margin.none": "无外边距",
+  "config.base.margin.small": "小外边距", 
+  "config.base.margin.medium": "中等外边距",
+  "config.base.margin.large": "大外边距",
+  
+  "config.base.zIndex": "层级",
+  "config.base.zIndex.placeholder": "层级数值",
+  "config.base.position": "定位",
+  "config.base.position.static": "静态定位",
+  "config.base.position.relative": "相对定位",
+  "config.base.position.absolute": "绝对定位",
+  "config.base.position.fixed": "固定定位",
+  
+  "config.base.transform": "变换",
+  "config.base.transform.placeholder": "例如: scale(1.1) rotate(5deg)",
+  "config.base.transform.scale": "缩放",
+  "config.base.transform.rotate": "旋转",
+  "config.base.transform.translate": "平移",
+
   "config.component.properties": "属性",
   "config.component.styles": "样式",
   "config.component.behavior": "行为",

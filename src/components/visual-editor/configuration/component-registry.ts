@@ -5,7 +5,7 @@
 
 import type { Component } from 'vue'
 
-// 导入各层级配置组件  
+// 导入各层级配置组件
 // 现在从 renderers/base 目录导入，实现真正的分离架构
 import BaseConfigForm from '../renderers/base/BaseConfigForm.vue'
 import ComponentConfigForm from '../renderers/base/ComponentConfigForm.vue'

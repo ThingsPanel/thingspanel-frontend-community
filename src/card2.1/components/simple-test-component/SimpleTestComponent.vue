@@ -5,11 +5,7 @@
     </div>
     <div class="component-content">
       <p>{{ config.content || '这是一个简单的测试组件' }}</p>
-      <button 
-        v-if="config.showButton" 
-        :class="`btn-${config.buttonType || 'primary'}`"
-        class="test-button"
-      >
+      <button v-if="config.showButton" :class="`btn-${config.buttonType || 'primary'}`" class="test-button">
         {{ config.buttonText || '测试按钮' }}
       </button>
     </div>
@@ -60,7 +56,7 @@ const componentStyles = computed(() => ({
   borderRadius: `${props.config.borderRadius || 8}px`
 }))
 
-console.log('[SimpleTestComponent] 组件加载完成, config:', props.config)
+// 移除调试日志，提高性能
 </script>
 
 <style scoped>

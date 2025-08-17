@@ -69,6 +69,7 @@
 import { ref, computed, nextTick, watch, onMounted, onUnmounted, h } from 'vue'
 import { NInput, NModal, NSpace, NButton, NDropdown, NIcon } from 'naive-ui'
 import { SettingsOutline, CopyOutline, TrashOutline } from '@vicons/ionicons5'
+import { useI18n } from 'vue-i18n'
 import { configurationManager } from '../../configuration'
 import { useEditor } from '../../hooks/useEditor'
 import Card2Wrapper from '../canvas/Card2Wrapper.vue'
@@ -113,6 +114,7 @@ const multiDataSourceConfig = computed(() => props.multiDataSourceConfig || {})
 const emit = defineEmits<Emits>()
 
 const { updateNode } = useEditor()
+const { t } = useI18n()
 
 // 调试：监听node.metadata变化
 watch(
@@ -163,12 +165,13 @@ const baseConfig = computed((): BaseConfiguration => {
   try {
     const widgetConfig = configurationManager.getConfiguration(props.nodeId)
 
-    const defaultConfig = {
+    const defaultConfig: BaseConfiguration = {
       showTitle: false,
       title: '',
       opacity: 1,
       visible: true,
-      padding: { top: 0, right: 0, bottom: 0, left: 0 }
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      margin: { top: 0, right: 0, bottom: 0, left: 0 }
     }
 
     const finalConfig = widgetConfig?.base || defaultConfig
@@ -181,7 +184,8 @@ const baseConfig = computed((): BaseConfiguration => {
       title: '',
       opacity: 1,
       visible: true,
-      padding: { top: 0, right: 0, bottom: 0, left: 0 }
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      margin: { top: 0, right: 0, bottom: 0, left: 0 }
     }
   }
 })
@@ -203,7 +207,7 @@ const shouldShowTitle = computed(() => {
 })
 
 const displayTitle = computed(() => {
-  return baseConfig.value.title || props.node.label || props.node.type || '未命名组件'
+  return baseConfig.value.title || props.node.label || props.node.type || t('config.base.untitledComponent')
 })
 
 // 样式计算
@@ -238,7 +242,12 @@ const wrapperStyles = computed(() => {
     styles.boxShadow = config.boxShadow
   }
 
-  console.log('🔧 [NodeWrapper] 应用样式:', styles, '来源配置:', config)
+  // 🔧 外边距配置
+  if (config.margin) {
+    const { top = 0, right = 0, bottom = 0, left = 0 } = config.margin
+    styles.margin = `${top}px ${right}px ${bottom}px ${left}px`
+  }
+
   return styles
 })
 
@@ -348,10 +357,11 @@ onMounted(() => {
       const defaultConfig: WidgetConfiguration = {
         base: {
           showTitle: false,
-          title: props.node.label || props.node.type || '未命名组件',
+          title: props.node.label || props.node.type || t('config.base.untitledComponent'),
           opacity: 1,
           visible: true,
-          padding: { top: 0, right: 0, bottom: 0, left: 0 }
+          padding: { top: 0, right: 0, bottom: 0, left: 0 },
+          margin: { top: 0, right: 0, bottom: 0, left: 0 }
         },
         component: { properties: props.node.properties || {} },
         dataSource: null,

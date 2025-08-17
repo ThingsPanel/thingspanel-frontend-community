@@ -81,8 +81,11 @@ checkFileContent(registryFile, 'visible: true', '组件配置可见性')
 console.log('\n📋 检查SimpleTestConfig实现...')
 
 // 6. 检查SimpleTestConfig实现
-const configCompFile = path.join(projectRoot, 'src/card2.1/components/simple-test-component/config/SimpleTestConfig.vue')
-checkFileContent(configCompFile, 'emit(\'update\', config)', '配置更新事件')
+const configCompFile = path.join(
+  projectRoot,
+  'src/card2.1/components/simple-test-component/config/SimpleTestConfig.vue'
+)
+checkFileContent(configCompFile, "emit('update', config)", '配置更新事件')
 checkFileContent(configCompFile, 'handleUpdate', '配置更新处理')
 checkFileContent(configCompFile, 'formData', '表单数据')
 

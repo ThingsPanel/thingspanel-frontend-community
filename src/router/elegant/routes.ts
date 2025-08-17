@@ -890,12 +890,30 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'test_performance-test',
+        path: '/test/performance-test',
+        component: 'view.test_performance-test',
+        meta: {
+          title: 'test_performance-test',
+          i18nKey: 'route.test_performance-test'
+        }
+      },
+      {
         name: 'test_script-engine-test',
         path: '/test/script-engine-test',
         component: 'view.test_script-engine-test',
         meta: {
           title: 'test_script-engine-test',
           i18nKey: 'route.test_script-engine-test'
+        }
+      },
+      {
+        name: 'test_simple-card2-test',
+        path: '/test/simple-card2-test',
+        component: 'view.test_simple-card2-test',
+        meta: {
+          title: 'test_simple-card2-test',
+          i18nKey: 'route.test_simple-card2-test'
         }
       },
       {

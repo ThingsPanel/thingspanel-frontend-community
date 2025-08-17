@@ -6,11 +6,52 @@
 // 数据源相关的导入已移除
 
 /**
- * 🔧 Base配置接口 - 泛型化，由NodeWrapper层具体定义
- * 配置器层只定义结构，不定义具体字段
+ * 基础配置接口 - 定义NodeWrapper支持的所有基础配置项
+ * 包含显示、样式、布局等通用配置
  */
-export interface BaseConfiguration extends Record<string, any> {
-  // 🔧 保持泛型结构，具体字段由NodeWrapper层定义
+export interface BaseConfiguration {
+  // 显示配置
+  /** 是否显示标题 */
+  showTitle?: boolean
+  /** 组件标题 */
+  title?: string
+  /** 是否可见 */
+  visible?: boolean
+  /** 透明度 (0-1) */
+  opacity?: number
+
+  // 样式配置
+  /** 背景颜色 */
+  backgroundColor?: string
+  /** 边框宽度 */
+  borderWidth?: number
+  /** 边框颜色 */
+  borderColor?: string
+  /** 边框样式 */
+  borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double' | 'groove' | 'ridge'
+  /** 圆角大小 */
+  borderRadius?: number
+  /** 阴影效果 */
+  boxShadow?: string
+
+  // 布局配置
+  /** 内边距 */
+  padding?: {
+    top: number
+    right: number
+    bottom: number
+    left: number
+  }
+  /** 外边距 */
+  margin?: {
+    top: number
+    right: number
+    bottom: number
+    left: number
+  }
+
+  // 扩展字段支持
+  [key: string]: any
 }
 
 /**
@@ -85,8 +126,6 @@ export interface ConfigFormProps<T = any> {
   widget?: any
   /** 是否只读 */
   readonly?: boolean
-  /** 是否显示高级选项 */
-  showAdvanced?: boolean
 }
 
 /**
@@ -163,8 +202,6 @@ export interface ConfigFormRegistration {
   title?: string
   /** 配置表单描述 */
   description?: string
-  /** 是否支持高级选项 */
-  supportsAdvanced?: boolean
 }
 
 /**

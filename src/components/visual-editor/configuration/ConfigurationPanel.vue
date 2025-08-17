@@ -44,9 +44,6 @@
       <div class="config-header">
         <h3 class="panel-title">{{ widgetDisplayName }} {{ $t('config.widget.settings') }}</h3>
         <div class="header-actions">
-          <n-button size="tiny" quaternary :type="showAdvanced ? 'primary' : 'default'" @click="toggleAdvancedMode">
-            {{ showAdvanced ? $t('config.hideAdvanced') : $t('config.showAdvanced') }}
-          </n-button>
           <n-dropdown :options="configActionsOptions" trigger="click" @select="handleConfigAction">
             <n-button size="tiny" quaternary>
               <template #icon>
@@ -80,9 +77,8 @@
               v-model="componentConfig"
               :widget="selectedWidget"
               :readonly="readonly"
-              :show-advanced="showAdvanced"
               @validate="handleValidation"
-              @toggle-advanced="toggleAdvancedMode"
+              @update="handleComponentConfigUpdate"
             />
           </template>
 
@@ -122,9 +118,7 @@
               v-model="interactionConfig"
               :widget="selectedWidget"
               :readonly="readonly"
-              :show-advanced="showAdvanced"
               @validate="handleValidation"
-              @toggle-advanced="toggleAdvancedMode"
             />
           </template>
 
@@ -283,7 +277,6 @@ const configLayers = computed(() => getVisibleConfigLayers())
 
 // 响应式状态 - 默认显示第一个可见层级
 const activeTab = ref(configLayers.value[0]?.name || 'base')
-const showAdvanced = ref(false)
 const showImportExportDialog = ref(false)
 const importExportMode = ref<'import' | 'export'>('export')
 const exportedConfig = ref('')
@@ -791,6 +784,49 @@ const handleBaseConfigApply = (config: any) => {
 }
 
 /**
+ * 处理组件配置更新 - 性能优化：防抖批量更新 + 减少日志
+ */
+let componentConfigUpdateTimer: number | null = null
+let isConfigUpdating = false
+const handleComponentConfigUpdate = (config: any) => {
+  if (!props.selectedWidget?.id || isConfigUpdating) return
+
+  // 立即更新Widget properties以获得即时反馈
+  if (props.selectedWidget.metadata?.isCard2Component && props.selectedWidget.properties) {
+    Object.assign(props.selectedWidget.properties, config)
+  }
+
+  // 防抖保存到configurationManager
+  if (componentConfigUpdateTimer) {
+    clearTimeout(componentConfigUpdateTimer)
+  }
+
+  componentConfigUpdateTimer = window.setTimeout(() => {
+    isConfigUpdating = true
+
+    try {
+      if (props.selectedWidget.metadata?.isCard2Component) {
+        // 更新组件配置层级
+        configurationManager.updateConfiguration(props.selectedWidget.id, 'component', {
+          properties: config,
+          styles: {},
+          behavior: {},
+          validation: { required: [], rules: {} }
+        })
+      } else {
+        // 传统组件配置保存
+        configurationManager.updateConfiguration(props.selectedWidget.id, 'component', config)
+      }
+    } catch (error) {
+      console.error('❌ [ConfigurationPanel] 保存组件配置失败:', error)
+    } finally {
+      isConfigUpdating = false
+      componentConfigUpdateTimer = null
+    }
+  }, 300) // 增加到300ms防抖，与配置表单保持一致
+}
+
+/**
  * 处理Base配置重置
  */
 const handleBaseConfigReset = () => {
@@ -817,8 +853,7 @@ const getLayerProps = (layer: any) => {
       return {
         ...commonProps,
         modelValue: componentConfig.value,
-        widget: props.selectedWidget,
-        showAdvanced: showAdvanced.value
+        widget: props.selectedWidget
       }
     case 'dataSource':
       return {
@@ -829,19 +864,11 @@ const getLayerProps = (layer: any) => {
       return {
         ...commonProps,
         modelValue: interactionConfig.value,
-        widget: props.selectedWidget,
-        showAdvanced: showAdvanced.value
+        widget: props.selectedWidget
       }
     default:
       return commonProps
   }
-}
-
-/**
- * 切换高级模式
- */
-const toggleAdvancedMode = () => {
-  showAdvanced.value = !showAdvanced.value
 }
 
 /**
@@ -1053,8 +1080,26 @@ watch(
 
 .config-tabs :deep(.n-tabs-content) {
   height: calc(100% - 32px);
-  overflow-y: auto;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* 只对特定的配置类型添加padding */
+.config-tabs :deep(.n-tab-pane) {
+  height: 100%;
+}
+
+/* 基础配置和其他需要padding的配置 */
+.config-tabs :deep(.n-tab-pane:not([name='component'])) {
   padding: 8px;
+  overflow-y: auto;
+}
+
+/* 组件配置占满全部空间，不需要padding */
+.config-tabs :deep(.n-tab-pane[name='component']) {
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .config-status {

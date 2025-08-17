@@ -211,7 +211,7 @@
                 </n-tooltip>
               </n-space>
             </template>
-            <CodemirrorEditor
+            <Codemirror
               v-model:value="currentProcessScript"
               :options="{
                 mode: 'javascript',
@@ -358,7 +358,7 @@ import { InformationCircleOutline } from '@vicons/ionicons5'
 // import { configurationManager } from '../ConfigurationManager'
 
 // 🔥 使用项目已有的 CodeMirror 编辑器
-import { CodemirrorEditor } from 'codemirror-editor-vue3'
+import Codemirror from 'codemirror-editor-vue3'
 
 // 🔥 新增：导入脚本引擎
 import { defaultScriptEngine } from '@/core/script-engine'

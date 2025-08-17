@@ -4,7 +4,7 @@
 -->
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { 
+import {
   useMessage,
   NSpace,
   NButton,
@@ -88,7 +88,7 @@ function resetConfig() {
     padding: 20,
     borderRadius: 8
   }
-  
+
   Object.assign(testConfig, defaultConfig)
   configKey.value++
   addLog('🔄 配置已重置为默认值')
@@ -106,7 +106,7 @@ function testValidation() {
     padding: 100, // 过大的内边距
     backgroundColor: 'invalid-color' // 无效颜色
   }
-  
+
   try {
     // 这里可以添加配置验证逻辑
     addLog('✅ 配置验证测试通过')
@@ -121,16 +121,16 @@ function testValidation() {
  * 导出配置
  */
 function exportConfig() {
-  const configBlob = new Blob([JSON.stringify(testConfig, null, 2)], { 
-    type: 'application/json' 
+  const configBlob = new Blob([JSON.stringify(testConfig, null, 2)], {
+    type: 'application/json'
   })
   const url = URL.createObjectURL(configBlob)
-  
+
   const a = document.createElement('a')
   a.href = url
   a.download = `test-config-${Date.now()}.json`
   a.click()
-  
+
   URL.revokeObjectURL(url)
   addLog('📤 配置已导出')
   message.success('配置导出成功')
@@ -143,13 +143,13 @@ function importConfig() {
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = '.json'
-  
-  input.onchange = (event) => {
+
+  input.onchange = event => {
     const file = (event.target as HTMLInputElement).files?.[0]
     if (!file) return
-    
+
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = e => {
       try {
         const importedConfig = JSON.parse(e.target?.result as string)
         Object.assign(testConfig, importedConfig)
@@ -163,7 +163,7 @@ function importConfig() {
     }
     reader.readAsText(file)
   }
-  
+
   input.click()
 }
 
@@ -202,9 +202,7 @@ function formatConfig(config: any) {
       <n-space align="center" justify="space-between">
         <div>
           <h1>🧪 灵活配置系统测试</h1>
-          <p class="description">
-            测试新的灵活配置系统，支持三种配置模式：手写表单、TS自动生成、混合模式
-          </p>
+          <p class="description">测试新的灵活配置系统，支持三种配置模式：手写表单、TS自动生成、混合模式</p>
         </div>
 
         <n-space>
@@ -233,9 +231,7 @@ function formatConfig(config: any) {
       <!-- 配置面板 -->
       <n-grid-item>
         <n-card title="🛠️ 配置面板" class="config-panel-card">
-          <n-alert type="warning" title="组件加载问题">
-            ConfigComponent 暂时被注释，需要修复组件导入路径问题
-          </n-alert>
+          <n-alert type="warning" title="组件加载问题">ConfigComponent 暂时被注释，需要修复组件导入路径问题</n-alert>
           <!-- <ConfigComponent
             :key="configKey"
             :model-value="testConfig"
@@ -249,9 +245,7 @@ function formatConfig(config: any) {
       <n-grid-item>
         <n-card title="👁️ 组件预览" class="preview-panel-card">
           <div class="component-preview">
-            <n-alert type="warning" title="组件预览">
-              TestComponent 暂时被注释，需要修复组件导入路径问题
-            </n-alert>
+            <n-alert type="warning" title="组件预览">TestComponent 暂时被注释，需要修复组件导入路径问题</n-alert>
             <!-- <TestComponent :config="testConfig" /> -->
           </div>
 
@@ -269,11 +263,7 @@ function formatConfig(config: any) {
         <n-button size="small" @click="clearLog">🗑️ 清空日志</n-button>
       </n-space>
 
-      <n-code
-        :code="testLog.join('\n')"
-        language="log"
-        class="log-content"
-      />
+      <n-code :code="testLog.join('\n')" language="log" class="log-content" />
     </n-card>
 
     <!-- 配置结构分析 -->
@@ -284,10 +274,8 @@ function formatConfig(config: any) {
             <n-descriptions-item label="配置项数量">
               {{ Object.keys(testConfig).length }}
             </n-descriptions-item>
-            
-            <n-descriptions-item label="配置大小">
-              {{ JSON.stringify(testConfig).length }} 字符
-            </n-descriptions-item>
+
+            <n-descriptions-item label="配置大小">{{ JSON.stringify(testConfig).length }} 字符</n-descriptions-item>
 
             <n-descriptions-item label="显示标题">
               <n-tag :type="testConfig.showTitle ? 'success' : 'default'">
@@ -303,20 +291,14 @@ function formatConfig(config: any) {
 
             <n-descriptions-item label="背景颜色">
               <n-space align="center">
-                <div
-                  class="color-preview"
-                  :style="{ backgroundColor: testConfig.backgroundColor }"
-                ></div>
+                <div class="color-preview" :style="{ backgroundColor: testConfig.backgroundColor }"></div>
                 <span>{{ testConfig.backgroundColor }}</span>
               </n-space>
             </n-descriptions-item>
 
             <n-descriptions-item label="文字颜色">
               <n-space align="center">
-                <div
-                  class="color-preview"
-                  :style="{ backgroundColor: testConfig.textColor }"
-                ></div>
+                <div class="color-preview" :style="{ backgroundColor: testConfig.textColor }"></div>
                 <span>{{ testConfig.textColor }}</span>
               </n-space>
             </n-descriptions-item>
@@ -329,22 +311,16 @@ function formatConfig(config: any) {
 
         <n-tab-pane name="validation" tab="验证信息">
           <n-space vertical>
-            <n-alert type="info" title="配置验证">
-              当前配置通过所有验证规则
-            </n-alert>
+            <n-alert type="info" title="配置验证">当前配置通过所有验证规则</n-alert>
 
             <n-descriptions bordered>
               <n-descriptions-item label="字体大小范围">
                 10-24px (当前: {{ testConfig.fontSize }}px)
               </n-descriptions-item>
 
-              <n-descriptions-item label="内边距范围">
-                0-40px (当前: {{ testConfig.padding }}px)
-              </n-descriptions-item>
+              <n-descriptions-item label="内边距范围">0-40px (当前: {{ testConfig.padding }}px)</n-descriptions-item>
 
-              <n-descriptions-item label="圆角范围">
-                0-20px (当前: {{ testConfig.borderRadius }}px)
-              </n-descriptions-item>
+              <n-descriptions-item label="圆角范围">0-20px (当前: {{ testConfig.borderRadius }}px)</n-descriptions-item>
             </n-descriptions>
           </n-space>
         </n-tab-pane>
