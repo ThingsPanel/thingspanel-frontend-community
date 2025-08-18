@@ -9,6 +9,8 @@ import type { Component } from 'vue'
 // 现在从 renderers/base 目录导入，实现真正的分离架构
 import BaseConfigForm from '../renderers/base/BaseConfigForm.vue'
 import ComponentConfigForm from '../renderers/base/ComponentConfigForm.vue'
+// 导入交互配置组件
+import InteractionSettingsForm from '../settings/components/InteractionSettingsForm.vue'
 
 export interface ConfigLayerDefinition {
   /** 配置层级名称 */
@@ -45,6 +47,14 @@ export const configLayerRegistry: Record<string, ConfigLayerDefinition> = {
     visible: true, // 🔧 显示组件配置，测试简单测试组件
     order: 2,
     description: '组件特有配置（由各组件自定义）'
+  },
+  interaction: {
+    name: 'interaction',
+    label: 'config.tabs.interaction',
+    component: InteractionSettingsForm,
+    visible: true,
+    order: 3,
+    description: '组件交互配置（点击、悬停等交互效果）'
   }
 }
 

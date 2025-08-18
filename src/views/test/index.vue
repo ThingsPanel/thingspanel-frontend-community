@@ -162,6 +162,27 @@
                 <n-button size="small" @click="$router.push('/test/editor-integration')">进入测试</n-button>
               </template>
             </n-card>
+
+            <!-- 交互系统测试 -->
+            <n-card size="small" embedded hoverable class="test-item">
+              <template #header>
+                <n-space align="center">
+                  <n-icon size="18" color="var(--primary-color)">
+                    <Settings />
+                  </n-icon>
+                  <span>交互系统测试</span>
+                  <n-tag type="success" size="tiny">Phase 1</n-tag>
+                </n-space>
+              </template>
+
+              <div class="test-description">
+                <p>Card 2.1组件交互系统的完整测试，包括事件触发、状态管理和视觉反馈。</p>
+              </div>
+
+              <template #action>
+                <n-button size="small" @click="$router.push('/test/interaction-system-test')">进入测试</n-button>
+              </template>
+            </n-card>
           </n-space>
         </div>
       </n-card>

@@ -115,10 +115,12 @@
           <template v-else-if="layer.name === 'interaction'">
             <component
               :is="layer.component"
-              v-model="interactionConfig"
-              :widget="selectedWidget"
+              v-model="interactionConfigList"
+              :component-id="selectedWidget?.id"
+              :component-type="selectedWidget?.type"
               :readonly="readonly"
               @validate="handleValidation"
+              @change="handleInteractionConfigChange"
             />
           </template>
 
@@ -310,6 +312,24 @@ const interactionConfig = ref<InteractionConfiguration>({})
 const configurationStatus = ref<ValidationResult | null>(null)
 
 // 计算属性
+const interactionConfigList = computed({
+  get: () => {
+    // 从 interactionConfig 中提取 configs 数组，如果没有则返回空数组
+    return interactionConfig.value.configs || []
+  },
+  set: newConfigs => {
+    // 将配置数组存储到 interactionConfig 中
+    interactionConfig.value = {
+      ...interactionConfig.value,
+      configs: newConfigs,
+      enabled: true,
+      metadata: {
+        ...interactionConfig.value.metadata,
+        updatedAt: Date.now()
+      }
+    }
+  }
+})
 const widgetDisplayName = computed(() => {
   if (!props.selectedWidget) return ''
   return props.selectedWidget.metadata?.card2Definition?.name || props.selectedWidget.type || 'Unknown Component'
@@ -612,7 +632,7 @@ const resetLocalConfiguration = () => {
   }
 
   dataSourceConfig.value = null
-  interactionConfig.value = {}
+  interactionConfig.value = { configs: [], enabled: true }
   configurationStatus.value = null
 
   // V6: 重置数据映射配置为正确结构
@@ -824,6 +844,21 @@ const handleComponentConfigUpdate = (config: any) => {
       componentConfigUpdateTimer = null
     }
   }, 300) // 增加到300ms防抖，与配置表单保持一致
+}
+
+/**
+ * 处理交互配置更新
+ */
+const handleInteractionConfigChange = (configs: any[]) => {
+  if (!props.selectedWidget?.id) return
+
+  console.log('🔧 [ConfigurationPanel] 交互配置更新:', configs)
+
+  // 通过计算属性setter自动更新本地交互配置
+  interactionConfigList.value = configs
+
+  // 保存到配置管理器 - 现在传递完整的交互配置对象
+  configurationManager.updateConfiguration(props.selectedWidget.id, 'interaction', interactionConfig.value)
 }
 
 /**

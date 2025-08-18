@@ -233,8 +233,8 @@ class InteractionManager {
       listeners.forEach(callback => {
         try {
           callback({ event, data, componentId })
-        } catch (callback) {
-          console.error(`[InteractionManager] 事件监听器执行失败:`, callback)
+        } catch (error) {
+          console.error(`[InteractionManager] 事件监听器执行失败:`, error)
         }
       })
     }

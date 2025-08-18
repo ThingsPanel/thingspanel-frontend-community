@@ -28,9 +28,6 @@ export default defineConfig(configEnv => {
       }
     },
     plugins: [...setupVitePlugins(viteEnv), svgLoader()],
-    define: {
-      BUILD_TIME: JSON.stringify(buildTime)
-    },
     server: {
       host: '0.0.0.0',
       port: 5002,
@@ -66,10 +63,13 @@ export default defineConfig(configEnv => {
             'vendor-vue': ['vue', 'vue-router', 'pinia'],
             'vendor-ui': ['naive-ui'],
             'vendor-charts': ['@antv/g2', '@antv/data-set'],
-            'vendor-utils': ['dayjs', 'lodash-es']
+            'vendor-utils': ['dayjs', 'lodash-es'],
           }
         }
       }
+    },
+    define: {
+      BUILD_TIME: JSON.stringify(buildTime)
     },
     lintOnSave: false
   }

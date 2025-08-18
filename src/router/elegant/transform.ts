@@ -259,6 +259,7 @@ const routeMap: RouteMap = {
   "test_data-source-system-test": "/test/data-source-system-test",
   "test_editor-integration": "/test/editor-integration",
   "test_flexible-config-test": "/test/flexible-config-test",
+  "test_interaction-system-test": "/test/interaction-system-test",
   "test_performance-test": "/test/performance-test",
   "test_script-engine-test": "/test/script-engine-test",
   "test_simple-card2-test": "/test/simple-card2-test",

@@ -13,6 +13,8 @@
       v-else-if="componentToRender"
       :config="extractComponentConfig()"
       :raw-data-sources="JSON.parse(JSON.stringify(getDataSourcesForComponent()))"
+      :component-id="props.nodeId"
+      :show-interaction-indicator="true"
     />
   </div>
 </template>

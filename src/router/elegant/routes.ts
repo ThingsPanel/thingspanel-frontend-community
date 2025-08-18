@@ -890,6 +890,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'test_interaction-system-test',
+        path: '/test/interaction-system-test',
+        component: 'view.test_interaction-system-test',
+        meta: {
+          title: 'test_interaction-system-test',
+          i18nKey: 'route.test_interaction-system-test'
+        }
+      },
+      {
         name: 'test_performance-test',
         path: '/test/performance-test',
         component: 'view.test_performance-test',

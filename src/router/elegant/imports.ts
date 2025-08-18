@@ -91,6 +91,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "test_editor-integration": () => import("@/views/test/editor-integration/index.vue"),
   "test_flexible-config-test": () => import("@/views/test/flexible-config-test/index.vue"),
   test: () => import("@/views/test/index.vue"),
+  "test_interaction-system-test": () => import("@/views/test/interaction-system-test/index.vue"),
   "test_performance-test": () => import("@/views/test/performance-test/index.vue"),
   "test_script-engine-test": () => import("@/views/test/script-engine-test/index.vue"),
   "test_simple-card2-test": () => import("@/views/test/simple-card2-test/index.vue"),

@@ -1,6 +1,13 @@
 /**
  * 配置组件自动发现机制
  * 自动扫描和注册所有配置组件，支持多种配置组件格式
+ *
+ * 性能优化特性：
+ * - 缓存机制：避免重复扫描同一文件
+ * - 并行扫描：同时处理多个扫描任务
+ * - 懒加载：按需加载配置组件
+ * - 智能过滤：提前过滤无效路径
+ * - 性能监控：追踪扫描耗时和统计信息
  */
 
 import { defineAsyncComponent, type Component } from 'vue'
@@ -44,6 +51,30 @@ interface ConfigComponentMeta {
   format: 'vue-component' | 'async-component'
   componentId?: string
   priority: number // 优先级，数字越大优先级越高
+  // 性能优化字段
+  lastModified?: number // 文件最后修改时间
+  loadTime?: number // 组件加载耗时(ms)
+  cached?: boolean // 是否已缓存
+  loadCount?: number // 加载次数
+}
+
+// 缓存接口
+interface ScanCache {
+  timestamp: number
+  filePaths: Set<string>
+  componentMetas: Map<string, ConfigComponentMeta>
+  stats: PerformanceStats
+}
+
+// 性能统计接口
+interface PerformanceStats {
+  totalScanTime: number
+  fileCount: number
+  successCount: number
+  errorCount: number
+  cacheHitCount: number
+  avgLoadTime: number
+  lastScanTime?: number
 }
 
 // ====== 配置发现器类 ======
@@ -53,8 +84,22 @@ export class ConfigDiscovery {
   private isInitialized = false
   private isScanning = false
 
+  // 性能优化属性
+  private scanCache: ScanCache | null = null
+  private cacheExpireTime = 5 * 60 * 1000 // 5分钟缓存过期
+  private maxConcurrency = 4 // 最大并发扫描数
+  private performanceStats: PerformanceStats = {
+    totalScanTime: 0,
+    fileCount: 0,
+    successCount: 0,
+    errorCount: 0,
+    cacheHitCount: 0,
+    avgLoadTime: 0
+  }
+
   constructor() {
     this.setupGlobalErrorHandler()
+    this.loadCacheFromStorage()
   }
 
   // ====== 初始化和扫描 ======
@@ -73,21 +118,41 @@ export class ConfigDiscovery {
       return
     }
 
+    const startTime = performance.now()
+
     try {
       this.isScanning = true
       logger.info('开始初始化配置发现器...')
 
-      // 扫描各种类型的配置组件
-      await this.scanCard21Configs()
-      await this.scanLegacyConfigs()
-      await this.scanVisualEditorConfigs()
+      // 检查缓存是否可用
+      if (this.isCacheValid()) {
+        logger.info('使用缓存数据加载配置组件')
+        this.loadFromCache()
+        this.performanceStats.cacheHitCount++
+      } else {
+        logger.info('缓存过期或无效，重新扫描配置组件')
+
+        // 并行扫描各种类型的配置组件
+        await Promise.all([this.scanCard21Configs(), this.scanLegacyConfigs(), this.scanVisualEditorConfigs()])
+
+        // 保存到缓存
+        this.saveCacheToStorage()
+      }
 
       // 注册发现的配置组件
       await this.registerDiscoveredConfigs()
 
       this.isInitialized = true
-      logger.info(`配置发现器初始化完成，发现 ${this.discovered.size} 个配置组件`)
+
+      const endTime = performance.now()
+      this.performanceStats.totalScanTime = endTime - startTime
+      this.performanceStats.lastScanTime = Date.now()
+
+      logger.info(
+        `配置发现器初始化完成，发现 ${this.discovered.size} 个配置组件，耗时 ${Math.round(this.performanceStats.totalScanTime)}ms`
+      )
     } catch (error) {
+      this.performanceStats.errorCount++
       logger.error('配置发现器初始化失败:', error)
       throw error
     } finally {
@@ -99,6 +164,7 @@ export class ConfigDiscovery {
    * 扫描 Card 2.1 配置组件
    */
   private async scanCard21Configs(): Promise<void> {
+    const scanStart = performance.now()
     logger.info('扫描 Card 2.1 配置组件...')
 
     try {
@@ -110,7 +176,17 @@ export class ConfigDiscovery {
         '/src/card2.1/components/*/*/*Config.vue'
       ])
 
-      for (const [filePath, moduleLoader] of Object.entries(configModules)) {
+      const filePaths = Object.keys(configModules)
+      this.performanceStats.fileCount += filePaths.length
+
+      // 智能过滤：只处理有效的文件路径
+      const validPaths = this.filterValidPaths(filePaths, 'card21')
+
+      // 并发限制处理
+      await this.processBatch(validPaths, async filePath => {
+        const moduleLoader = configModules[filePath]
+        const componentLoadStart = performance.now()
+
         try {
           // 从文件路径推断组件ID
           const componentId = this.extractComponentIdFromPath(filePath, 'card21')
@@ -118,24 +194,31 @@ export class ConfigDiscovery {
           if (componentId) {
             const configMeta: ConfigComponentMeta = {
               id: `${componentId}-config`,
-              component: defineAsyncComponent(moduleLoader as any),
+              component: this.createOptimizedAsyncComponent(moduleLoader as any, componentId),
               filePath,
               type: 'card21',
               format: 'async-component',
               componentId,
-              priority: 100 // Card 2.1 配置优先级最高
+              priority: 100, // Card 2.1 配置优先级最高
+              loadTime: performance.now() - componentLoadStart,
+              cached: false,
+              loadCount: 0
             }
 
             this.discovered.set(configMeta.id, configMeta)
+            this.performanceStats.successCount++
             logger.debug(`发现 Card 2.1 配置组件: ${componentId}`)
           }
         } catch (error) {
+          this.performanceStats.errorCount++
           logger.warn(`扫描 Card 2.1 配置组件失败: ${filePath}`, error)
         }
-      }
+      })
 
-      logger.info(`扫描 Card 2.1 配置组件完成，发现 ${Object.keys(configModules).length} 个`)
+      const scanTime = performance.now() - scanStart
+      logger.info(`扫描 Card 2.1 配置组件完成，发现 ${validPaths.length} 个，耗时 ${Math.round(scanTime)}ms`)
     } catch (error) {
+      this.performanceStats.errorCount++
       logger.error('扫描 Card 2.1 配置组件失败:', error)
     }
   }
@@ -227,6 +310,167 @@ export class ConfigDiscovery {
       logger.info(`扫描 Visual Editor 配置组件完成，发现 ${Object.keys(visualEditorConfigModules).length} 个`)
     } catch (error) {
       logger.error('扫描 Visual Editor 配置组件失败:', error)
+    }
+  }
+
+  // ====== 性能优化工具方法 ======
+
+  /**
+   * 智能过滤有效文件路径
+   */
+  private filterValidPaths(filePaths: string[], type: string): string[] {
+    return filePaths.filter(path => {
+      // 基本路径验证
+      if (!path || path.includes('/node_modules/') || path.includes('/.git/')) {
+        return false
+      }
+
+      // 类型特定验证
+      switch (type) {
+        case 'card21':
+          return (
+            path.includes('/card2.1/components/') &&
+            (path.endsWith('-config.vue') || path.endsWith('Config.vue') || path.endsWith('config.vue'))
+          )
+        case 'legacy':
+          return path.includes('/card/') && path.endsWith('.vue')
+        case 'visual-editor':
+          return (
+            path.includes('/visual-editor/') && (path.endsWith('Config.vue') || path.endsWith('PropertyEditor.vue'))
+          )
+        default:
+          return true
+      }
+    })
+  }
+
+  /**
+   * 批量处理文件，支持并发控制
+   */
+  private async processBatch<T>(items: T[], processor: (item: T) => Promise<void>): Promise<void> {
+    const batches: T[][] = []
+    for (let i = 0; i < items.length; i += this.maxConcurrency) {
+      batches.push(items.slice(i, i + this.maxConcurrency))
+    }
+
+    for (const batch of batches) {
+      await Promise.all(batch.map(processor))
+    }
+  }
+
+  /**
+   * 创建优化的异步组件
+   */
+  private createOptimizedAsyncComponent(moduleLoader: any, componentId: string): Component {
+    return defineAsyncComponent({
+      loader: async () => {
+        const loadStart = performance.now()
+        try {
+          const module = await moduleLoader()
+          const loadTime = performance.now() - loadStart
+
+          // 更新统计信息
+          const meta = this.discovered.get(`${componentId}-config`)
+          if (meta) {
+            meta.loadCount = (meta.loadCount || 0) + 1
+            meta.loadTime = loadTime
+          }
+
+          return module
+        } catch (error) {
+          logger.error(`加载配置组件失败: ${componentId}`, error)
+          throw error
+        }
+      },
+      delay: 200,
+      timeout: 5000,
+      errorComponent: () => {
+        logger.warn(`配置组件加载超时: ${componentId}`)
+        return null
+      },
+      loadingComponent: () => null
+    })
+  }
+
+  /**
+   * 检查缓存是否有效
+   */
+  private isCacheValid(): boolean {
+    if (!this.scanCache) return false
+
+    const now = Date.now()
+    const expired = now - this.scanCache.timestamp > this.cacheExpireTime
+
+    return !expired && this.scanCache.componentMetas.size > 0
+  }
+
+  /**
+   * 从缓存加载数据
+   */
+  private loadFromCache(): void {
+    if (!this.scanCache) return
+
+    this.discovered.clear()
+    for (const [id, meta] of this.scanCache.componentMetas) {
+      meta.cached = true
+      this.discovered.set(id, meta)
+    }
+
+    // 恢复性能统计
+    Object.assign(this.performanceStats, this.scanCache.stats)
+  }
+
+  /**
+   * 从本地存储加载缓存
+   */
+  private loadCacheFromStorage(): void {
+    try {
+      const cacheKey = 'config-discovery-cache'
+      const cached = localStorage.getItem(cacheKey)
+
+      if (cached) {
+        const parsedCache = JSON.parse(cached)
+
+        // 重建 Map 和 Set 对象
+        this.scanCache = {
+          timestamp: parsedCache.timestamp,
+          filePaths: new Set(parsedCache.filePaths),
+          componentMetas: new Map(parsedCache.componentMetas),
+          stats: parsedCache.stats
+        }
+
+        logger.debug('从本地存储加载缓存成功')
+      }
+    } catch (error) {
+      logger.warn('从本地存储加载缓存失败:', error)
+      this.scanCache = null
+    }
+  }
+
+  /**
+   * 保存缓存到本地存储
+   */
+  private saveCacheToStorage(): void {
+    try {
+      const cacheKey = 'config-discovery-cache'
+      const cacheData = {
+        timestamp: Date.now(),
+        filePaths: Array.from(new Set(Array.from(this.discovered.values()).map(m => m.filePath))),
+        componentMetas: Array.from(this.discovered.entries()),
+        stats: { ...this.performanceStats }
+      }
+
+      this.scanCache = {
+        timestamp: cacheData.timestamp,
+        filePaths: new Set(cacheData.filePaths),
+        componentMetas: new Map(cacheData.componentMetas),
+        stats: cacheData.stats
+      }
+
+      localStorage.setItem(cacheKey, JSON.stringify(cacheData))
+      logger.debug('缓存已保存到本地存储')
+    } catch (error) {
+      logger.warn('保存缓存到本地存储失败:', error)
     }
   }
 
@@ -424,6 +668,11 @@ export class ConfigDiscovery {
    * 获取发现统计信息
    */
   getStats() {
+    const avgLoadTime =
+      this.performanceStats.successCount > 0
+        ? this.performanceStats.totalScanTime / this.performanceStats.successCount
+        : 0
+
     const stats = {
       total: this.discovered.size,
       byType: {
@@ -435,6 +684,24 @@ export class ConfigDiscovery {
         high: 0,
         medium: 0,
         low: 0
+      },
+      performance: {
+        ...this.performanceStats,
+        avgLoadTime: Math.round(avgLoadTime * 100) / 100,
+        cacheHitRate:
+          this.performanceStats.fileCount > 0
+            ? Math.round((this.performanceStats.cacheHitCount / this.performanceStats.fileCount) * 100)
+            : 0,
+        successRate:
+          this.performanceStats.fileCount > 0
+            ? Math.round((this.performanceStats.successCount / this.performanceStats.fileCount) * 100)
+            : 0
+      },
+      cache: {
+        enabled: !!this.scanCache,
+        valid: this.isCacheValid(),
+        expireTime: this.cacheExpireTime,
+        size: this.scanCache?.componentMetas.size || 0
       }
     }
 
@@ -450,6 +717,78 @@ export class ConfigDiscovery {
   }
 
   /**
+   * 获取详细的性能报告
+   */
+  getPerformanceReport() {
+    const loadTimes = Array.from(this.discovered.values())
+      .map(meta => meta.loadTime || 0)
+      .filter(time => time > 0)
+
+    const report = {
+      overview: {
+        totalComponents: this.discovered.size,
+        totalScanTime: Math.round(this.performanceStats.totalScanTime),
+        avgScanTime: Math.round(this.performanceStats.totalScanTime / Math.max(1, this.performanceStats.fileCount)),
+        successRate: Math.round(
+          (this.performanceStats.successCount / Math.max(1, this.performanceStats.fileCount)) * 100
+        ),
+        cacheHitRate: Math.round(
+          (this.performanceStats.cacheHitCount / Math.max(1, this.performanceStats.fileCount)) * 100
+        )
+      },
+      componentLoadTimes: {
+        min: loadTimes.length > 0 ? Math.min(...loadTimes) : 0,
+        max: loadTimes.length > 0 ? Math.max(...loadTimes) : 0,
+        avg: loadTimes.length > 0 ? loadTimes.reduce((a, b) => a + b, 0) / loadTimes.length : 0,
+        total: loadTimes.reduce((a, b) => a + b, 0)
+      },
+      errors: {
+        count: this.performanceStats.errorCount,
+        rate: Math.round((this.performanceStats.errorCount / Math.max(1, this.performanceStats.fileCount)) * 100)
+      },
+      cache: {
+        enabled: !!this.scanCache,
+        valid: this.isCacheValid(),
+        hitCount: this.performanceStats.cacheHitCount,
+        expireTime: this.cacheExpireTime
+      },
+      lastScanTime: this.performanceStats.lastScanTime
+        ? new Date(this.performanceStats.lastScanTime).toLocaleString()
+        : 'Never'
+    }
+
+    return report
+  }
+
+  /**
+   * 清除性能统计
+   */
+  clearStats(): void {
+    this.performanceStats = {
+      totalScanTime: 0,
+      fileCount: 0,
+      successCount: 0,
+      errorCount: 0,
+      cacheHitCount: 0,
+      avgLoadTime: 0
+    }
+    logger.info('性能统计已清除')
+  }
+
+  /**
+   * 清除缓存
+   */
+  clearCache(): void {
+    try {
+      localStorage.removeItem('config-discovery-cache')
+      this.scanCache = null
+      logger.info('缓存已清除')
+    } catch (error) {
+      logger.warn('清除缓存失败:', error)
+    }
+  }
+
+  /**
    * 导出配置发现信息
    */
   exportDiscoveryInfo() {
@@ -457,13 +796,23 @@ export class ConfigDiscovery {
       timestamp: new Date().toISOString(),
       isInitialized: this.isInitialized,
       stats: this.getStats(),
+      performanceReport: this.getPerformanceReport(),
       configs: Array.from(this.discovered.values()).map(config => ({
         id: config.id,
         componentId: config.componentId,
         type: config.type,
         filePath: config.filePath,
-        priority: config.priority
-      }))
+        priority: config.priority,
+        loadTime: config.loadTime,
+        loadCount: config.loadCount,
+        cached: config.cached
+      })),
+      cache: {
+        enabled: !!this.scanCache,
+        valid: this.isCacheValid(),
+        size: this.scanCache?.componentMetas.size || 0,
+        expireTime: this.cacheExpireTime
+      }
     }
   }
 
@@ -473,8 +822,27 @@ export class ConfigDiscovery {
    * 清理资源
    */
   dispose(): void {
+    // 清理发现的组件
     this.discovered.clear()
+
+    // 重置状态
     this.isInitialized = false
+    this.isScanning = false
+
+    // 清除缓存
+    this.scanCache = null
+
+    // 清除性能统计
+    this.clearStats()
+
+    // 清除本地存储缓存
+    try {
+      localStorage.removeItem('config-discovery-cache')
+    } catch (error) {
+      logger.warn('清除本地存储缓存失败:', error)
+    }
+
+    logger.info('ConfigDiscovery 资源已清理')
   }
 }
 

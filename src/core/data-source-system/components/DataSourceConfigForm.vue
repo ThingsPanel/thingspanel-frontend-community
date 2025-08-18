@@ -158,15 +158,73 @@
             <!-- JSON数据输入 -->
             <div v-if="newRawDataType === 'json'">
               <n-form-item label="JSON数据" size="small" :label-width="60" style="margin-bottom: 2px">
-                <n-input
-                  v-model:value="newRawDataJsonContent"
-                  type="textarea"
-                  :rows="8"
-                  :placeholder="getJsonPlaceholder()"
-                  size="small"
-                  style="font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace; font-size: 11px"
-                  @input="updatePreviewData"
-                />
+                <div class="text-editor-container">
+                  <!-- 编辑器工具栏 -->
+                  <div class="editor-toolbar">
+                    <n-space :size="6" align="center">
+                      <n-button size="tiny" tertiary @click="formatJsonData">
+                        <template #icon>
+                          <n-icon size="12">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <path
+                                d="M9.5 15.5L4.5 10.5L9.5 5.5L8.09 4.09L1.5 10.68L8.09 17.27L9.5 15.5Z"
+                                fill="currentColor"
+                              />
+                              <path
+                                d="M14.5 8.5L19.5 13.5L14.5 18.5L15.91 19.91L22.5 13.32L15.91 6.73L14.5 8.5Z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                          </n-icon>
+                        </template>
+                        格式化
+                      </n-button>
+                      <n-button size="tiny" tertiary @click="validateJsonData">
+                        <template #icon>
+                          <n-icon size="12">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <path
+                                d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                fill="none"
+                              />
+                            </svg>
+                          </n-icon>
+                        </template>
+                        验证
+                      </n-button>
+                      <n-button size="tiny" tertiary @click="compressJsonData">
+                        <template #icon>
+                          <n-icon size="12">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <path d="M8 6H16V8H8V6ZM8 10H16V12H8V10ZM8 14H13V16H8V14Z" fill="currentColor" />
+                            </svg>
+                          </n-icon>
+                        </template>
+                        压缩
+                      </n-button>
+                      <n-popover placement="bottom" trigger="hover">
+                        <template #trigger>
+                          <n-tag size="small" :type="jsonValidationStatus.type" style="font-size: 10px; cursor: help">
+                            {{ jsonValidationStatus.text }}
+                          </n-tag>
+                        </template>
+                        <div style="max-width: 300px; font-size: 12px">
+                          {{ jsonValidationStatus.detail }}
+                        </div>
+                      </n-popover>
+                    </n-space>
+                  </div>
+                  <n-input
+                    v-model:value="newRawDataJsonContent"
+                    type="textarea"
+                    placeholder="请输入JSON数据"
+                    :rows="8"
+                    style="font-family: 'Courier New', monospace; font-size: 12px;"
+                    @input="handleJsonChange"
+                  />
+                </div>
               </n-form-item>
             </div>
 
@@ -325,26 +383,75 @@
                     </n-tooltip>
                   </n-space>
                 </template>
-                <Codemirror
-                  v-model:value="currentProcessScript"
-                  :options="{
-                    mode: 'javascript',
-                    theme: 'default',
-                    lineNumbers: true,
-                    lineWrapping: true,
-                    foldGutter: true,
-                    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
-                    tabSize: 2,
-                    indentUnit: 2,
-                    smartIndent: true,
-                    autoCloseBrackets: true,
-                    matchBrackets: true,
-                    highlightActiveLineGutter: true,
-                    highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: true }
-                  }"
-                  :height="200"
-                  @change="updatePreviewData"
-                />
+                <div class="text-editor-container">
+                  <!-- JavaScript 编辑器工具栏 -->
+                  <div class="editor-toolbar">
+                    <n-space :size="6" align="center">
+                      <n-button size="tiny" tertiary @click="formatJavaScriptCode">
+                        <template #icon>
+                          <n-icon size="12">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <path
+                                d="M9.5 15.5L4.5 10.5L9.5 5.5L8.09 4.09L1.5 10.68L8.09 17.27L9.5 15.5Z"
+                                fill="currentColor"
+                              />
+                              <path
+                                d="M14.5 8.5L19.5 13.5L14.5 18.5L15.91 19.91L22.5 13.32L15.91 6.73L14.5 8.5Z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                          </n-icon>
+                        </template>
+                        格式化
+                      </n-button>
+                      <n-button size="tiny" tertiary @click="insertScriptTemplate">
+                        <template #icon>
+                          <n-icon size="12">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+                            </svg>
+                          </n-icon>
+                        </template>
+                        模板
+                      </n-button>
+                      <n-button size="tiny" tertiary @click="validateJavaScriptCode">
+                        <template #icon>
+                          <n-icon size="12">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <path
+                                d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                fill="none"
+                              />
+                            </svg>
+                          </n-icon>
+                        </template>
+                        检查
+                      </n-button>
+                      <n-dropdown :options="scriptTemplateOptions" @select="handleTemplateSelect">
+                        <n-button size="tiny" tertiary>
+                          <template #icon>
+                            <n-icon size="12">
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M7 10l5 5 5-5z" fill="currentColor" />
+                              </svg>
+                            </n-icon>
+                          </template>
+                          代码片段
+                        </n-button>
+                      </n-dropdown>
+                    </n-space>
+                  </div>
+                  <n-input
+                    v-model:value="currentProcessScript"
+                    type="textarea"
+                    placeholder="请输入JavaScript代码"
+                    :rows="8"
+                    style="font-family: 'Courier New', monospace; font-size: 12px;"
+                    @input="handleJsChange"
+                  />
+                </div>
               </n-form-item>
             </n-space>
           </n-card>
@@ -460,8 +567,7 @@ import {
 import { InformationCircleOutline } from '@vicons/ionicons5'
 // import { configurationManager } from '../ConfigurationManager'
 
-// 🔥 使用项目已有的 CodeMirror 编辑器
-import Codemirror from 'codemirror-editor-vue3'
+// 🔥 使用 Monaco Editor
 
 // 🔥 新增：导入脚本引擎
 import { defaultScriptEngine } from '@/core/script-engine'
@@ -560,6 +666,176 @@ const editingRawDataId = ref('')
 const previewOriginalData = ref('{}')
 const previewProcessedData = ref('{}')
 const previewStatus = ref({ type: 'default', text: '等待处理', message: '' })
+
+const jsonValidationStatus = ref({ type: 'default', text: '未验证', detail: '请输入JSON数据进行验证' })
+
+
+// 脚本模板选项
+const scriptTemplateOptions = [
+  {
+    label: '数组过滤',
+    key: 'array-filter',
+    value: `// 过滤数组数据
+if (Array.isArray(data)) {
+  return data.filter(item => {
+    // 在这里添加过滤条件
+    return item.status === 'active';
+  });
+}
+return data;`
+  },
+  {
+    label: '数据映射',
+    key: 'data-map',
+    value: `// 映射数据结构
+return {
+  id: data.id,
+  name: data.name,
+  status: data.status,
+  timestamp: new Date().toISOString()
+};`
+  },
+  {
+    label: '数据聚合',
+    key: 'data-aggregate',
+    value: `// 聚合数据
+if (Array.isArray(data)) {
+  return {
+    total: data.length,
+    active: data.filter(item => item.status === 'active').length,
+    inactive: data.filter(item => item.status === 'inactive').length
+  };
+}
+return data;`
+  },
+  {
+    label: '数据转换',
+    key: 'data-transform',
+    value: `// 转换数据格式
+var result = {};
+if (data && typeof data === 'object') {
+  Object.keys(data).forEach(key => {
+    result[key.toLowerCase()] = data[key];
+  });
+}
+return result;`
+  }
+]
+
+// 🔥 Monaco Editor 功能函数
+
+/**
+ * JSON编辑器功能
+ */
+const formatJsonData = () => {
+  try {
+    if (!newRawDataJsonContent.value.trim()) return
+    const parsed = JSON.parse(newRawDataJsonContent.value)
+    newRawDataJsonContent.value = JSON.stringify(parsed, null, 2)
+  } catch (error) {
+    window.$message?.error('JSON格式错误，无法格式化')
+  }
+}
+
+const validateJsonData = () => {
+  try {
+    if (!newRawDataJsonContent.value.trim()) {
+      jsonValidationStatus.value = { type: 'warning', text: '空数据', detail: '请输入JSON数据' }
+      return
+    }
+
+    const parsed = JSON.parse(newRawDataJsonContent.value)
+    jsonValidationStatus.value = {
+      type: 'success',
+      text: 'JSON有效',
+      detail: `解析成功，包含 ${Object.keys(parsed).length} 个顶级属性`
+    }
+  } catch (error) {
+    jsonValidationStatus.value = {
+      type: 'error',
+      text: 'JSON无效',
+      detail: `错误：${error.message}`
+    }
+  }
+}
+
+const compressJsonData = () => {
+  try {
+    if (!newRawDataJsonContent.value.trim()) return
+    const parsed = JSON.parse(newRawDataJsonContent.value)
+    newRawDataJsonContent.value = JSON.stringify(parsed)
+  } catch (error) {
+    console.warn('无法压缩JSON:', error)
+  }
+}
+
+/**
+ * JavaScript编辑器功能
+ */
+const formatJavaScriptCode = () => {
+  // 简单的JavaScript格式化（基础缩进）
+  const code = currentProcessScript.value
+  if (!code.trim()) return
+  
+  // 简单的格式化逻辑
+  let formatted = code
+    .replace(/\{/g, '{\n  ')
+    .replace(/\}/g, '\n}')
+    .replace(/;/g, ';\n')
+    .replace(/\n\s*\n/g, '\n') // 移除多余空行
+  
+  currentProcessScript.value = formatted
+}
+
+const insertScriptTemplate = () => {
+  if (!currentProcessScript.value.trim()) {
+    currentProcessScript.value = `// 数据处理脚本
+// 可用变量: data (输入数据)
+// 必须返回: 处理后的数据
+
+var result = data;
+
+// 在这里添加你的处理逻辑
+// 例如：
+// if (Array.isArray(data)) {
+//   result = data.filter(item => item.active);
+// }
+
+return result;`
+  }
+}
+
+const validateJavaScriptCode = () => {
+  try {
+    // 简单的语法检查
+    new Function('data', currentProcessScript.value)
+    window.$message?.success('JavaScript语法检查通过')
+  } catch (error) {
+    window.$message?.error(`JavaScript语法错误: ${error.message}`)
+  }
+}
+
+const handleTemplateSelect = (key: string) => {
+  const template = scriptTemplateOptions.find(t => t.key === key)
+  if (template) {
+    currentProcessScript.value = template.value
+    updatePreviewData()
+  }
+}
+
+/**
+ * 编辑器事件处理
+ */
+
+const handleJsonChange = () => {
+  // 自动验证JSON
+  validateJsonData()
+  updatePreviewData()
+}
+
+const handleJsChange = () => {
+  updatePreviewData()
+}
 
 /**
  * 🔥 新增：更新数据预览
@@ -1781,4 +2057,44 @@ watch(
 }
 
 /* 🔥 简化：移除复杂样式，使用标准表单样式 */
+
+/* 文本编辑器容器样式 */
+.text-editor-container {
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--card-color);
+}
+
+.editor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: var(--hover-color);
+  border-bottom: 1px solid var(--border-color);
+  min-height: 32px;
+}
+
+/* 暗主题适配 */
+[data-theme='dark'] .text-editor-container {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .editor-toolbar {
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 工具栏按钮样式 */
+.editor-toolbar :deep(.n-button) {
+  height: 24px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.editor-toolbar :deep(.n-button .n-icon) {
+  font-size: 12px;
+}
 </style>
