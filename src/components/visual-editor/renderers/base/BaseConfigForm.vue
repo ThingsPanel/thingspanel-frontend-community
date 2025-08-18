@@ -7,12 +7,7 @@
       </n-form-item>
 
       <n-form-item v-if="formData.showTitle" label="节点标题">
-        <n-input
-          v-model:value="formData.title"
-          placeholder="请输入节点标题"
-          clearable
-          @input="handleUpdate"
-        />
+        <n-input v-model:value="formData.title" placeholder="请输入节点标题" clearable @input="handleUpdate" />
       </n-form-item>
 
       <!-- 显示配置 -->
@@ -37,11 +32,7 @@
       <n-divider title-placement="left">样式配置</n-divider>
 
       <n-form-item label="背景颜色">
-        <n-color-picker
-          v-model:value="formData.backgroundColor"
-          :show-alpha="true"
-          @update:value="handleUpdate"
-        />
+        <n-color-picker v-model:value="formData.backgroundColor" :show-alpha="true" @update:value="handleUpdate" />
       </n-form-item>
 
       <n-form-item label="边框宽度">
@@ -56,18 +47,11 @@
       </n-form-item>
 
       <n-form-item v-if="formData.borderWidth > 0" label="边框颜色">
-        <n-color-picker
-          v-model:value="formData.borderColor"
-          @update:value="handleUpdate"
-        />
+        <n-color-picker v-model:value="formData.borderColor" @update:value="handleUpdate" />
       </n-form-item>
 
       <n-form-item v-if="formData.borderWidth > 0" label="边框样式">
-        <n-select
-          v-model:value="formData.borderStyle"
-          :options="borderStyleOptions"
-          @update:value="handleUpdate"
-        />
+        <n-select v-model:value="formData.borderStyle" :options="borderStyleOptions" @update:value="handleUpdate" />
       </n-form-item>
 
       <n-form-item label="圆角大小">
@@ -110,12 +94,8 @@
       <n-divider title-placement="left">快捷操作</n-divider>
 
       <n-space>
-        <n-button size="small" @click="resetToDefaults">
-          重置默认
-        </n-button>
-        <n-button size="small" type="primary" @click="applyConfig">
-          应用配置
-        </n-button>
+        <n-button size="small" @click="resetToDefaults">重置默认</n-button>
+        <n-button size="small" type="primary" @click="applyConfig">应用配置</n-button>
       </n-space>
     </n-form>
   </div>
@@ -170,7 +150,7 @@ const formData = shallowReactive({
   borderStyle: 'solid',
   borderRadius: 6,
   paddingValue: 0, // 统一的内边距值
-  marginValue: 0,  // 统一的外边距值
+  marginValue: 0, // 统一的外边距值
   // 实际的padding和margin对象（内部使用）
   padding: {
     top: 0,

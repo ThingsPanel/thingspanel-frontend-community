@@ -55,11 +55,7 @@
                         <n-space align="center" :size="8">
                           <span class="raw-data-name">{{ rawDataItem.name }}</span>
                           <!-- 🔥 新增：显示数据项类型 -->
-                          <n-tag 
-                            :type="getDataItemTypeColor(rawDataItem.type)"
-                            size="small"
-                            round
-                          >
+                          <n-tag :type="getDataItemTypeColor(rawDataItem.type)" size="small" round>
                             {{ rawDataItem.type?.toUpperCase() || 'JSON' }}
                           </n-tag>
                         </n-space>
@@ -113,36 +109,38 @@
   </div>
 
   <!-- 添加/编辑原始数据弹窗 - 左右分栏布局 -->
-  <n-modal v-model:show="showAddRawDataModal" preset="dialog" :title="isEditMode ? '编辑数据项' : '添加数据项'" style="width: 1200px">
+  <n-modal
+    v-model:show="showAddRawDataModal"
+    preset="dialog"
+    :title="isEditMode ? '编辑数据项' : '添加数据项'"
+    style="width: 1400px"
+  >
     <n-grid :cols="2" :x-gap="12">
-      <!-- 左侧：配置表单 -->
+      <!-- 左侧：数据获取区域 -->
       <n-grid-item>
-        <n-space vertical :size="6">
+        <n-space vertical :size="4">
+          <n-text strong style="font-size: 13px; color: var(--primary-color)">📥 数据获取</n-text>
+
           <!-- 基本信息 -->
-          <n-grid :cols="2" :x-gap="8">
+          <n-grid :cols="2" :x-gap="6">
             <n-grid-item>
-              <n-form-item label="名称" size="small" :label-width="40">
-                <n-input
-                  v-model:value="newRawDataName"
-                  placeholder="用户数据"
-                  clearable
-                  size="small"
-                />
+              <n-form-item label="名称" size="small" :label-width="50">
+                <n-input v-model:value="newRawDataName" placeholder="用户数据" clearable size="small" />
               </n-form-item>
             </n-grid-item>
             <n-grid-item>
-              <n-form-item label="类型" size="small" :label-width="40">
+              <n-form-item label="类型" size="small" :label-width="50">
                 <n-space :size="4">
-                  <n-tag 
-                    v-for="type in ['json', 'http', 'websocket']" 
+                  <n-tag
+                    v-for="type in ['json', 'http', 'websocket']"
                     :key="type"
                     :type="newRawDataType === type ? 'primary' : 'default'"
                     :bordered="newRawDataType !== type"
                     checkable
                     :checked="newRawDataType === type"
-                    @click="newRawDataType = type as RawDataItemType"
                     style="cursor: pointer; user-select: none"
                     size="small"
+                    @click="newRawDataType = type as RawDataItemType"
                   >
                     {{ type.toUpperCase() }}
                   </n-tag>
@@ -151,128 +149,233 @@
             </n-grid-item>
           </n-grid>
 
-          <!-- JSON数据输入 - 给更多空间 -->
-          <div v-if="newRawDataType === 'json'">
-            <n-form-item label="JSON数据" size="small" :label-width="70" style="margin-bottom: 6px;">
-              <n-input
-                v-model:value="newRawDataJsonContent"
-                type="textarea"
-                :rows="6"
-                :placeholder="getJsonPlaceholder()"
-                size="small"
-                @input="updatePreviewData"
-                style="font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace; font-size: 12px;"
-              />
-            </n-form-item>
-          </div>
-
-          <!-- 其他类型占位 -->
-          <div v-else style="min-height: 120px; display: flex; align-items: center; justify-content: center;">
-            <n-text depth="3" style="font-size: 12px">🚧 {{ newRawDataType.toUpperCase() }} 类型开发中</n-text>
-          </div>
-
-          <!-- 过滤路径 - 紧凑布局 -->
-          <n-form-item label="过滤路径" size="small" :label-width="70" style="margin-bottom: 6px;">
-            <n-input
-              v-model:value="currentFilterPath"
-              placeholder="$.data.list"
-              clearable
-              size="small"
-              @input="updatePreviewData"
-            />
-          </n-form-item>
-
-          <!-- 处理脚本 - 给更多空间 -->
-          <n-form-item size="small" :label-width="70" style="margin-bottom: 0;">
-            <template #label>
-              <n-space :size="4" align="center">
-                <span>处理脚本</span>
-                <n-tooltip placement="top" trigger="hover">
-                  <template #trigger>
-                    <n-icon size="12" style="color: var(--info-color); cursor: help;">
-                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </n-icon>
-                  </template>
-                  <div style="max-width: 280px;">
-                    <div style="font-weight: 600; margin-bottom: 6px;">📝 脚本编写指南</div>
-                    <div style="font-size: 11px; line-height: 1.3;">
-                      <p style="margin: 3px 0;"><strong>可用变量：</strong><br/>• data - 输入数据</p>
-                      <p style="margin: 3px 0;"><strong>常用操作：</strong><br/>
-                      • 修改字段：data.newField = data.oldField<br/>
-                      • 删除字段：delete data.fieldName<br/>
-                      • 返回结果：return data</p>
-                      <p style="margin: 3px 0;"><strong>注意：</strong>使用 var 定义变量</p>
-                    </div>
-                  </div>
-                </n-tooltip>
-              </n-space>
+          <!-- 数据录入区域 -->
+          <n-card size="small" :bordered="false" style="background: var(--hover-color); margin: 2px 0">
+            <template #header>
+              <n-text depth="2" style="font-size: 11px">数据录入</n-text>
             </template>
-            <Codemirror
-              v-model:value="currentProcessScript"
-              :options="{
-                mode: 'javascript',
-                theme: 'default',
-                lineNumbers: true,
-                lineWrapping: true,
-                foldGutter: true,
-                gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
-                tabSize: 2,
-                indentUnit: 2,
-                smartIndent: true,
-                autoCloseBrackets: true,
-                matchBrackets: true,
-                highlightActiveLineGutter: true,
-                highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: true }
-              }"
-              :height="220"
-              @change="updatePreviewData"
-            />
-          </n-form-item>
-        </n-space>
-      </n-grid-item>
 
-      <!-- 右侧：数据预览 -->
-      <n-grid-item>
-        <n-space vertical :size="6">
-          <n-space justify="space-between" align="center">
-            <n-text strong style="font-size: 14px;">📊 数据预览</n-text>
-            <n-tag :type="previewStatus.type" size="small">
-              {{ previewStatus.text }}
-            </n-tag>
-          </n-space>
-          
-          <!-- 原始数据 - 紧凑显示 -->
-          <div>
-            <n-text depth="2" style="font-size: 12px; margin-bottom: 2px; display: block;">原始数据：</n-text>
+            <!-- JSON数据输入 -->
+            <div v-if="newRawDataType === 'json'">
+              <n-form-item label="JSON数据" size="small" :label-width="60" style="margin-bottom: 2px">
+                <n-input
+                  v-model:value="newRawDataJsonContent"
+                  type="textarea"
+                  :rows="8"
+                  :placeholder="getJsonPlaceholder()"
+                  size="small"
+                  style="font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace; font-size: 11px"
+                  @input="updatePreviewData"
+                />
+              </n-form-item>
+            </div>
+
+            <!-- HTTP数据输入 -->
+            <div v-else-if="newRawDataType === 'http'">
+              <n-space vertical :size="3">
+                <n-form-item label="请求URL" size="small" :label-width="60" style="margin-bottom: 2px">
+                  <n-input
+                    v-model:value="newRawDataHttpUrl"
+                    placeholder="https://api.example.com/data"
+                    clearable
+                    size="small"
+                    @input="updatePreviewData"
+                  />
+                </n-form-item>
+                <n-form-item label="请求方法" size="small" :label-width="60" style="margin-bottom: 2px">
+                  <n-select
+                    v-model:value="newRawDataHttpMethod"
+                    :options="[
+                      { label: 'GET', value: 'GET' },
+                      { label: 'POST', value: 'POST' },
+                      { label: 'PUT', value: 'PUT' },
+                      { label: 'DELETE', value: 'DELETE' }
+                    ]"
+                    size="small"
+                    @update:value="updatePreviewData"
+                  />
+                </n-form-item>
+                <n-form-item label="请求头" size="small" :label-width="60" style="margin-bottom: 0">
+                  <n-input
+                    v-model:value="newRawDataHttpHeaders"
+                    type="textarea"
+                    :rows="3"
+                    placeholder='{"Content-Type": "application/json"}'
+                    size="small"
+                    style="font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace; font-size: 11px"
+                    @input="updatePreviewData"
+                  />
+                </n-form-item>
+              </n-space>
+            </div>
+
+            <!-- WebSocket数据输入 -->
+            <div v-else-if="newRawDataType === 'websocket'">
+              <n-space vertical :size="3">
+                <n-form-item label="WebSocket URL" size="small" :label-width="80" style="margin-bottom: 2px">
+                  <n-input
+                    v-model:value="newRawDataWebsocketUrl"
+                    placeholder="ws://localhost:8080/ws"
+                    clearable
+                    size="small"
+                    @input="updatePreviewData"
+                  />
+                </n-form-item>
+                <n-form-item label="协议" size="small" :label-width="80" style="margin-bottom: 0">
+                  <n-input
+                    v-model:value="newRawDataWebsocketProtocols"
+                    placeholder="protocol1,protocol2"
+                    clearable
+                    size="small"
+                    @input="updatePreviewData"
+                  />
+                </n-form-item>
+              </n-space>
+            </div>
+          </n-card>
+
+          <!-- 数据展示区域 -->
+          <n-card size="small" :bordered="false" style="background: var(--hover-color); margin: 2px 0">
+            <template #header>
+              <n-text depth="2" style="font-size: 11px">原始数据预览</n-text>
+            </template>
             <n-code
               :code="previewOriginalData"
               language="json"
-              style="max-height: 120px; overflow-y: auto; font-size: 11px;"
+              style="max-height: 220px; overflow-y: auto; font-size: 10px"
               :show-line-numbers="false"
             />
-          </div>
+          </n-card>
+        </n-space>
+      </n-grid-item>
 
-          <!-- 处理后数据 - 给更多空间 -->
-          <div>
-            <n-text depth="2" style="font-size: 12px; margin-bottom: 2px; display: block;">处理后数据：</n-text>
-            <n-code
-              :code="previewProcessedData"
-              language="json"
-              style="max-height: 280px; overflow-y: auto; font-size: 11px;"
-              :show-line-numbers="false"
-            />
-          </div>
+      <!-- 右侧：数据处理区域 -->
+      <n-grid-item>
+        <n-space vertical :size="4">
+          <n-text strong style="font-size: 13px; color: var(--success-color)">⚙️ 数据处理</n-text>
 
-          <!-- 处理状态消息 -->
-          <div v-if="previewStatus.message">
-            <n-text depth="3" style="font-size: 11px;">
-              {{ previewStatus.message }}
-            </n-text>
-          </div>
+          <!-- 处理配置区域 -->
+          <n-card size="small" :bordered="false" style="background: var(--hover-color); margin: 2px 0">
+            <template #header>
+              <n-text depth="2" style="font-size: 11px">处理配置</n-text>
+            </template>
+
+            <n-space vertical :size="3">
+              <!-- 过滤路径 -->
+              <n-form-item label="过滤路径" size="small" :label-width="60" style="margin-bottom: 2px">
+                <n-input
+                  v-model:value="currentFilterPath"
+                  placeholder="$.data.list"
+                  clearable
+                  size="small"
+                  @input="updatePreviewData"
+                />
+              </n-form-item>
+
+              <!-- 处理脚本 -->
+              <n-form-item size="small" :label-width="60" style="margin-bottom: 0">
+                <template #label>
+                  <n-space :size="2" align="center">
+                    <span style="font-size: 11px">处理脚本</span>
+                    <n-tooltip placement="top" trigger="hover">
+                      <template #trigger>
+                        <n-icon size="10" style="color: var(--info-color); cursor: help">
+                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                            <path
+                              d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M12 17h.01"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        </n-icon>
+                      </template>
+                      <div style="max-width: 260px">
+                        <div style="font-weight: 600; margin-bottom: 4px; font-size: 11px">📝 脚本编写指南</div>
+                        <div style="font-size: 10px; line-height: 1.2">
+                          <p style="margin: 2px 0">
+                            <strong>可用变量：</strong>
+                            <br />
+                            • data - 输入数据
+                          </p>
+                          <p style="margin: 2px 0">
+                            <strong>常用操作：</strong>
+                            <br />
+                            • 修改字段：data.newField = data.oldField
+                            <br />
+                            • 删除字段：delete data.fieldName
+                            <br />
+                            • 返回结果：return data
+                          </p>
+                          <p style="margin: 2px 0">
+                            <strong>注意：</strong>
+                            使用 var 定义变量
+                          </p>
+                        </div>
+                      </div>
+                    </n-tooltip>
+                  </n-space>
+                </template>
+                <Codemirror
+                  v-model:value="currentProcessScript"
+                  :options="{
+                    mode: 'javascript',
+                    theme: 'default',
+                    lineNumbers: true,
+                    lineWrapping: true,
+                    foldGutter: true,
+                    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+                    tabSize: 2,
+                    indentUnit: 2,
+                    smartIndent: true,
+                    autoCloseBrackets: true,
+                    matchBrackets: true,
+                    highlightActiveLineGutter: true,
+                    highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: true }
+                  }"
+                  :height="200"
+                  @change="updatePreviewData"
+                />
+              </n-form-item>
+            </n-space>
+          </n-card>
+
+          <!-- 处理结果区域 -->
+          <n-card size="small" :bordered="false" style="background: var(--hover-color); margin: 2px 0">
+            <template #header>
+              <n-space justify="space-between" align="center" style="margin: 0">
+                <n-text depth="2" style="font-size: 11px">处理结果</n-text>
+                <n-tag :type="previewStatus.type" size="small" style="font-size: 10px">
+                  {{ previewStatus.text }}
+                </n-tag>
+              </n-space>
+            </template>
+
+            <n-space vertical :size="2">
+              <n-code
+                :code="previewProcessedData"
+                language="json"
+                style="max-height: 250px; overflow-y: auto; font-size: 10px"
+                :show-line-numbers="false"
+              />
+
+              <!-- 处理状态消息 -->
+              <div v-if="previewStatus.message" style="margin-top: 2px">
+                <n-text depth="3" style="font-size: 10px">
+                  {{ previewStatus.message }}
+                </n-text>
+              </div>
+            </n-space>
+          </n-card>
         </n-space>
       </n-grid-item>
     </n-grid>
@@ -280,10 +383,10 @@
     <template #action>
       <n-space :size="12" justify="end">
         <n-button size="medium" @click="cancelEdit">取消</n-button>
-        <n-button 
-          size="medium" 
-          type="primary" 
-          :disabled="!newRawDataName || !newRawDataName.trim()" 
+        <n-button
+          size="medium"
+          type="primary"
+          :disabled="!newRawDataName || !newRawDataName.trim()"
           @click="handleConfirmClick"
         >
           {{ isEditMode ? '保存修改' : '确认添加' }}
@@ -391,16 +494,19 @@ type RawDataItemType = 'json' | 'http' | 'websocket'
 interface RawDataItem {
   id: string
   name: string
-  type: RawDataItemType  // 数据项类型
+  type: RawDataItemType // 数据项类型
   data: any
-  config?: {  // 根据类型存储不同的配置
-    jsonData?: string    // json类型的数据
-    httpConfig?: {       // http类型的配置
+  config?: {
+    // 根据类型存储不同的配置
+    jsonData?: string // json类型的数据
+    httpConfig?: {
+      // http类型的配置
       url: string
       method: string
       headers?: Record<string, string>
     }
-    websocketConfig?: {  // websocket类型的配置
+    websocketConfig?: {
+      // websocket类型的配置
       url: string
       protocols?: string[]
     }
@@ -427,7 +533,10 @@ const newRawDataName = ref('')
 const newRawDataType = ref<RawDataItemType>('json')
 const newRawDataJsonContent = ref('')
 const newRawDataHttpUrl = ref('')
+const newRawDataHttpMethod = ref('GET')
+const newRawDataHttpHeaders = ref('')
 const newRawDataWebsocketUrl = ref('')
+const newRawDataWebsocketProtocols = ref('')
 
 // 🔥 新增：查看最终数据相关状态
 const showFinalDataModal = ref(false)
@@ -469,12 +578,12 @@ const updatePreviewData = async () => {
         return
       }
     }
-    
+
     previewOriginalData.value = JSON.stringify(originalData, null, 2)
-    
+
     // 2. 应用数据处理
     let processedData = originalData
-    
+
     // 应用过滤路径
     if (currentFilterPath.value.trim()) {
       try {
@@ -483,7 +592,7 @@ const updatePreviewData = async () => {
         previewStatus.value = { type: 'warning', text: '过滤警告', message: '过滤路径可能有误' }
       }
     }
-    
+
     // 应用处理脚本
     if (currentProcessScript.value.trim()) {
       try {
@@ -495,9 +604,8 @@ const updatePreviewData = async () => {
     } else {
       previewStatus.value = { type: 'info', text: '无脚本', message: '未设置处理脚本' }
     }
-    
+
     previewProcessedData.value = JSON.stringify(processedData, null, 2)
-    
   } catch (error) {
     previewStatus.value = { type: 'error', text: '预览错误', message: '数据预览失败' }
     previewProcessedData.value = '{"error": "预览失败"}'
@@ -633,7 +741,7 @@ const sendUpdate = () => {
       dataSourceBindings[dataSource.key] = {
         // 保持原有的字段
         rawData: dataSourceValue.currentData ? JSON.stringify(dataSourceValue.currentData) : undefined,
-        
+
         // 🔥 新增：增强的数据源配置
         enhancedConfig: {
           // 原始数据项列表
@@ -659,7 +767,7 @@ const sendUpdate = () => {
   })
 
   // 🔥 保持兼容的配置结构，同时增强功能
-  const config = { 
+  const config = {
     dataSourceBindings,
     // 🔥 新增：系统级配置
     systemConfig: {
@@ -864,20 +972,20 @@ const getJsonDefaultValue = () => {
  */
 const applyDataFilter = (data: any, filterPath: string): any => {
   if (!filterPath || filterPath.trim() === '') return data
-  
+
   try {
     // 简单的JSONPath实现
     let current = data
     let cleanPath = filterPath.replace(/^\$\.?/, '').trim()
-    
+
     if (!cleanPath) return data
-    
+
     // 按点分割，但要处理数组索引
     const parts = cleanPath.split(/\.|\[|\]/).filter(part => part !== '')
-    
+
     for (const part of parts) {
       if (current === null || current === undefined) return null
-      
+
       // 处理数组索引
       if (/^\d+$/.test(part)) {
         const index = parseInt(part)
@@ -895,7 +1003,7 @@ const applyDataFilter = (data: any, filterPath: string): any => {
         }
       }
     }
-    
+
     return current
   } catch (error) {
     console.warn('🔧 [DataFilter] 过滤路径解析失败:', error)
@@ -908,16 +1016,16 @@ const applyDataFilter = (data: any, filterPath: string): any => {
  */
 const applyProcessScript = async (data: any, script: string): Promise<any> => {
   if (!script || script.trim() === '') return data
-  
+
   try {
     console.log('🔧 [ProcessScript] 执行脚本:', script.substring(0, 100))
-    
+
     // 🔥 修复：创建数据的深拷贝，避免修改原始数据
     const dataCopy = JSON.parse(JSON.stringify(data))
-    
+
     // 使用脚本引擎执行
     const result = await defaultScriptEngine.execute(script, { data: dataCopy })
-    
+
     if (result.success) {
       console.log('✅ [ProcessScript] 脚本执行成功')
       return result.data
@@ -938,26 +1046,28 @@ const applyProcessScript = async (data: any, script: string): Promise<any> => {
  */
 const processRawData = async (rawData: any, config: any): Promise<any> => {
   let processedData = rawData
-  
+
   // 1. 应用数据过滤
   if (config?.filterPath) {
     processedData = applyDataFilter(processedData, config.filterPath)
     console.log('🔧 [DataProcess] 过滤后数据:', processedData)
   }
-  
+
   // 2. 应用处理脚本
   if (config?.processScript) {
     processedData = await applyProcessScript(processedData, config.processScript)
     console.log('🔧 [DataProcess] 脚本处理后数据:', processedData)
   }
-  
+
   return processedData
 }
 
 /**
  * 🔥 新增：获取数据项类型对应的颜色
  */
-const getDataItemTypeColor = (type: RawDataItemType): 'default' | 'primary' | 'info' | 'success' | 'warning' | 'error' => {
+const getDataItemTypeColor = (
+  type: RawDataItemType
+): 'default' | 'primary' | 'info' | 'success' | 'warning' | 'error' => {
   switch (type) {
     case 'json':
       return 'success'
@@ -975,7 +1085,7 @@ const getDataItemTypeColor = (type: RawDataItemType): 'default' | 'primary' | 'i
  */
 const generateDataFromType = (type: RawDataItemType) => {
   console.log('🔧 [DEBUG-GenerateData] 生成数据，类型:', type, '内容:', newRawDataJsonContent.value.substring(0, 50))
-  
+
   switch (type) {
     case 'json':
       // JSON 类型：如果用户输入了内容，尝试解析，否则返回空对象
@@ -993,7 +1103,8 @@ const generateDataFromType = (type: RawDataItemType) => {
       // HTTP 类型：返回默认HTTP配置结构
       return {
         url: newRawDataHttpUrl.value || '',
-        method: 'GET',
+        method: newRawDataHttpMethod.value || 'GET',
+        headers: newRawDataHttpHeaders.value ? JSON.parse(newRawDataHttpHeaders.value || '{}') : {},
         status: 'ready',
         lastFetch: null
       }
@@ -1002,6 +1113,9 @@ const generateDataFromType = (type: RawDataItemType) => {
       // WebSocket 类型：返回默认WebSocket配置结构
       return {
         url: newRawDataWebsocketUrl.value || '',
+        protocols: newRawDataWebsocketProtocols.value
+          ? newRawDataWebsocketProtocols.value.split(',').map(p => p.trim())
+          : [],
         readyState: 'connecting',
         lastMessage: null
       }
@@ -1032,8 +1146,8 @@ const generateConfigFromType = (type: RawDataItemType) => {
         ...baseConfig,
         httpConfig: {
           url: newRawDataHttpUrl.value || '',
-          method: 'GET',
-          headers: {}
+          method: newRawDataHttpMethod.value || 'GET',
+          headers: newRawDataHttpHeaders.value ? JSON.parse(newRawDataHttpHeaders.value || '{}') : {}
         }
       }
 
@@ -1042,7 +1156,9 @@ const generateConfigFromType = (type: RawDataItemType) => {
         ...baseConfig,
         websocketConfig: {
           url: newRawDataWebsocketUrl.value || '',
-          protocols: []
+          protocols: newRawDataWebsocketProtocols.value
+            ? newRawDataWebsocketProtocols.value.split(',').map(p => p.trim())
+            : []
         }
       }
 
@@ -1057,16 +1173,19 @@ const generateConfigFromType = (type: RawDataItemType) => {
 const openAddRawDataModal = (dataSourceKey: string) => {
   // 🔥 新增：重置编辑模式状态（确保是添加模式）
   resetEditMode()
-  
+
   currentDataSourceKey.value = dataSourceKey
   newRawDataName.value = ''
-  
+
   // 🔥 修改：重置表单状态并设置JSON默认值
   newRawDataType.value = 'json'
-  newRawDataJsonContent.value = getJsonDefaultValue()  // 设置默认JSON内容
+  newRawDataJsonContent.value = getJsonDefaultValue() // 设置默认JSON内容
   newRawDataHttpUrl.value = ''
+  newRawDataHttpMethod.value = 'GET'
+  newRawDataHttpHeaders.value = ''
   newRawDataWebsocketUrl.value = ''
-  
+  newRawDataWebsocketProtocols.value = ''
+
   // 🔥 简化：重置过滤路径和添加示例处理脚本
   currentFilterPath.value = ''
   currentProcessScript.value = `// 示例：把第一个key变成username
@@ -1078,10 +1197,10 @@ if (keys.length > 0) {
   data.username = firstValue;
 }
 return data;`
-  
+
   // 🔥 新增：初始化数据预览
   updatePreviewData()
-  
+
   showAddRawDataModal.value = true
 }
 
@@ -1135,14 +1254,14 @@ const addRawData = () => {
     trimmed: newRawDataName.value.trim(),
     currentDataSourceKey: currentDataSourceKey.value
   })
-  
+
   if (!newRawDataName.value.trim()) {
     console.warn('🔧 [DEBUG-AddRawData] 原始数据名称不能为空')
     return
   }
 
   const dataSourceKey = currentDataSourceKey.value
-  
+
   console.log('🔧 [DEBUG-AddRawData] 检查数据源Key:', {
     dataSourceKey,
     hasDataSource: !!dataValues[dataSourceKey],
@@ -1169,9 +1288,9 @@ const addRawData = () => {
   const newRawDataItem: RawDataItem = {
     id: `raw-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     name: newRawDataName.value.trim(),
-    type: newRawDataType.value,  // 🔥 新增：保存类型
-    data: generatedData,         // 🔥 修改：根据类型生成数据
-    config: generatedConfig,     // 🔥 新增：保存配置
+    type: newRawDataType.value, // 🔥 新增：保存类型
+    data: generatedData, // 🔥 修改：根据类型生成数据
+    config: generatedConfig, // 🔥 新增：保存配置
     createdAt: new Date().toISOString(),
     isActive: false
   }
@@ -1193,12 +1312,15 @@ const addRawData = () => {
   // 关闭弹窗并重置表单
   showAddRawDataModal.value = false
   newRawDataName.value = ''
-  
+
   // 🔥 新增：重置类型选择相关状态
   newRawDataType.value = 'json'
   newRawDataJsonContent.value = ''
   newRawDataHttpUrl.value = ''
+  newRawDataHttpMethod.value = 'GET'
+  newRawDataHttpHeaders.value = ''
   newRawDataWebsocketUrl.value = ''
+  newRawDataWebsocketProtocols.value = ''
 
   console.log('🔧 [DEBUG-Config] 数据项已添加，已通知更新')
 }
@@ -1258,7 +1380,7 @@ const viewRawDataDetail = async (dataSourceKey: string, rawDataId: string) => {
   try {
     // 应用数据处理逻辑
     const processedData = await processRawData(targetItem.data, targetItem.config)
-    
+
     // 显示处理后的数据
     currentRawDataDetail.value = JSON.stringify(processedData, null, 2)
     console.log('🔧 [ViewData] 原始数据:', targetItem.data)
@@ -1275,19 +1397,19 @@ const viewRawDataDetail = async (dataSourceKey: string, rawDataId: string) => {
 const editRawData = (dataSourceKey: string, rawDataId: string) => {
   const dataSourceValue = dataValues[dataSourceKey]
   if (!dataSourceValue) return
-  
+
   const targetItem = dataSourceValue.rawDataList.find(item => item.id === rawDataId)
   if (!targetItem) return
-  
+
   // 进入编辑模式
   isEditMode.value = true
   editingDataSourceKey.value = dataSourceKey
   editingRawDataId.value = rawDataId
-  
+
   // 填充表单数据
   newRawDataName.value = targetItem.name
   newRawDataType.value = targetItem.type
-  
+
   // 根据类型填充对应的数据
   switch (targetItem.type) {
     case 'json':
@@ -1295,52 +1417,59 @@ const editRawData = (dataSourceKey: string, rawDataId: string) => {
       break
     case 'http':
       newRawDataHttpUrl.value = targetItem.config?.httpConfig?.url || ''
+      newRawDataHttpMethod.value = targetItem.config?.httpConfig?.method || 'GET'
+      newRawDataHttpHeaders.value = targetItem.config?.httpConfig?.headers
+        ? JSON.stringify(targetItem.config.httpConfig.headers)
+        : ''
       break
     case 'websocket':
       newRawDataWebsocketUrl.value = targetItem.config?.websocketConfig?.url || ''
+      newRawDataWebsocketProtocols.value = targetItem.config?.websocketConfig?.protocols
+        ? targetItem.config.websocketConfig.protocols.join(',')
+        : ''
       break
   }
-  
+
   // 填充过滤路径和处理脚本
   currentFilterPath.value = targetItem.config?.filterPath || ''
   currentProcessScript.value = targetItem.config?.processScript || ''
-  
+
   console.log('🔧 [EditData] 进入编辑模式:', {
     dataSourceKey,
     rawDataId,
     targetItem,
     editMode: true
   })
-  
+
   showAddRawDataModal.value = true
 }
 
 // 🔥 新增：保存编辑
 const saveEdit = () => {
   if (!isEditMode.value || !editingDataSourceKey.value || !editingRawDataId.value) return
-  
+
   const dataSourceValue = dataValues[editingDataSourceKey.value]
   if (!dataSourceValue) return
-  
+
   const targetItemIndex = dataSourceValue.rawDataList.findIndex(item => item.id === editingRawDataId.value)
   if (targetItemIndex === -1) return
-  
+
   const targetItem = dataSourceValue.rawDataList[targetItemIndex]
-  
+
   // 更新基本信息
   targetItem.name = newRawDataName.value.trim()
   targetItem.type = newRawDataType.value
-  
+
   // 根据类型生成新的数据和配置
   targetItem.data = generateDataFromType(newRawDataType.value)
   targetItem.config = generateConfigFromType(newRawDataType.value)
-  
+
   console.log('🔧 [SaveEdit] 保存编辑:', {
     dataSourceKey: editingDataSourceKey.value,
     rawDataId: editingRawDataId.value,
     updatedItem: targetItem
   })
-  
+
   // 退出编辑模式并关闭弹窗
   resetEditMode()
   showAddRawDataModal.value = false
@@ -1357,13 +1486,16 @@ const resetEditMode = () => {
   isEditMode.value = false
   editingDataSourceKey.value = ''
   editingRawDataId.value = ''
-  
+
   // 清空表单数据
   newRawDataName.value = ''
   newRawDataType.value = 'json'
   newRawDataJsonContent.value = ''
   newRawDataHttpUrl.value = ''
+  newRawDataHttpMethod.value = 'GET'
+  newRawDataHttpHeaders.value = ''
   newRawDataWebsocketUrl.value = ''
+  newRawDataWebsocketProtocols.value = ''
   currentFilterPath.value = ''
   currentProcessScript.value = ''
 }
@@ -1375,7 +1507,7 @@ const handleConfirmClick = () => {
     newRawDataName: newRawDataName.value,
     currentDataSourceKey: currentDataSourceKey.value
   })
-  
+
   if (isEditMode.value) {
     console.log('🔧 [DEBUG-Click] 执行编辑保存')
     saveEdit()
