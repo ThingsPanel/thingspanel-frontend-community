@@ -148,10 +148,6 @@ export class MultiDataSourceExecutor implements IMultiDataSourceExecutor {
       throw new Error('未加载配置，无法执行')
     }
 
-    console.log('🚀 [MultiExecutor] 开始执行所有数据源', {
-      totalCount: Object.keys(this.config.value.dataSources).length,
-      parallelExecution: this.state.parallelExecution
-    })
 
     this.state.isExecuting = true
     this.state.lastError = null
@@ -177,16 +173,7 @@ export class MultiDataSourceExecutor implements IMultiDataSourceExecutor {
       this.calculateOverallStats(Date.now() - startTime)
 
       this.state.lastExecuteTime = new Date().toISOString()
-      console.log('✅ [MultiExecutor] 所有数据源执行完成', {
-        successful: this.state.overallStats.successfulDataSources,
-        failed: this.state.overallStats.failedDataSources,
-        totalDuration: this.state.overallStats.totalDuration
-      })
 
-      console.log('🎯 [MultiExecutor] 最终合并结果:')
-      Object.entries(this.state.finalResults).forEach(([key, value]) => {
-        console.log(`  📦 ${key}: ${typeof value}`, value)
-      })
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
       this.state.lastError = errorMessage

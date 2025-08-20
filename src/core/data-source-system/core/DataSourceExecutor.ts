@@ -301,12 +301,10 @@ export class DataSourceExecutor implements IDataSourceExecutor {
         switch (dataItem.type) {
           case 'json':
             rawData = dataItem.data
-            console.log(`📄 [Executor] JSON数据源 ${dataItem.name} 原始数据:`, rawData)
             break
 
           case 'http':
             rawData = await this.executeHttpRequest(dataItem)
-            console.log(`🌐 [Executor] HTTP数据源 ${dataItem.name} 原始数据:`, rawData)
             break
 
           case 'websocket':
@@ -320,36 +318,21 @@ export class DataSourceExecutor implements IDataSourceExecutor {
         // 步骤2：应用数据过滤（如果配置了filterPath）
         let filteredData = rawData
         if (dataItem.config?.filterPath) {
-          console.log(`🔍 [Executor] 数据源 ${dataItem.name} 应用过滤器: ${dataItem.config.filterPath}`)
           filteredData = this.applyDataFilter(rawData, dataItem.config.filterPath)
-          console.log(`🔍 [Executor] 数据源 ${dataItem.name} 过滤后数据:`, filteredData)
 
-          // 🔥 关键检查：过滤后是否为null
+          // 关键检查：过滤后是否为null，尝试路径修复
           if (filteredData === null || filteredData === undefined) {
-            console.warn(`⚠️ [Executor] 数据源 ${dataItem.name} 过滤后结果为空，可能是路径不正确`)
-            console.warn(`⚠️ [Executor] 过滤路径: ${dataItem.config.filterPath}`)
-            console.warn(`⚠️ [Executor] 原始数据结构:`, JSON.stringify(rawData, null, 2))
-
-            // 🔥 简单直接的路径修复：针对最常见的 $.data.xxx 问题
-            console.warn(`🔧 [Executor] 开始路径修复`)
-            console.warn(`🔧 [Executor] 原始路径: ${dataItem.config.filterPath}`)
-            console.warn(`🔧 [Executor] 响应结构:`, Object.keys(rawData))
-
-            // 最直接的修复策略：移除无效的前缀部分
+            console.warn(`⚠️ [Executor] 数据源 ${dataItem.name} 过滤结果为空，尝试路径修复`)
+            
+            // 尝试修复路径
             const originalPath = dataItem.config.filterPath
             const fixedPath = this.fixInvalidPrefix(originalPath, rawData)
 
             if (fixedPath && fixedPath !== originalPath) {
-              console.warn(`🔧 [Executor] 尝试修复路径: "${originalPath}" -> "${fixedPath}"`)
               filteredData = this.applyDataFilter(rawData, fixedPath)
-
               if (filteredData !== null) {
-                console.warn(`✅ [Executor] 路径修复成功！`)
-              } else {
-                console.warn(`❌ [Executor] 路径修复失败，保持null结果`)
+                console.info(`✅ [Executor] 路径修复成功: "${originalPath}" -> "${fixedPath}"`)
               }
-            } else {
-              console.warn(`❌ [Executor] 无法修复路径，保持null结果`)
             }
           }
         }
@@ -357,27 +340,20 @@ export class DataSourceExecutor implements IDataSourceExecutor {
         // 步骤3：应用脚本处理（如果配置了processScript）
         let processedData = filteredData
         if (dataItem.config?.processScript) {
-          console.log(`📜 [Executor] 数据源 ${dataItem.name} 应用处理脚本`)
-
-          // 🔥 检查输入数据是否有效
+          // 检查输入数据是否有效
           if (filteredData === null || filteredData === undefined) {
-            console.warn(`⚠️ [Executor] 数据源 ${dataItem.name} 输入脚本的数据为空，跳过脚本处理`)
+            console.warn(`⚠️ [Executor] 数据源 ${dataItem.name} 输入数据为空，跳过脚本处理`)
             processedData = filteredData // 保持null/undefined
           } else {
             processedData = await this.applyProcessScript(filteredData, dataItem.config.processScript)
-            console.log(`📜 [Executor] 数据源 ${dataItem.name} 脚本处理后数据:`, processedData)
           }
         }
 
         // 步骤4：存储最终处理结果
         result.data = processedData
         result.success = true
-
-        console.log(`✅ [Executor] 数据源 ${dataItem.name} 完整处理链执行成功`)
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error)
-        result.error = errorMessage
-        console.error(`❌ [Executor] 数据源 ${dataItem.name} 执行失败:`, errorMessage)
+        result.error = this.handleExecutionError(error, `数据源 ${dataItem.name} 执行失败`)
 
         // 根据错误容忍配置决定是否继续
         if (!this.errorHandlingStrategy.value.tolerant) {
@@ -460,41 +436,16 @@ export class DataSourceExecutor implements IDataSourceExecutor {
         throw new Error(`不支持的HTTP方法: ${httpConfig.method}`)
       }
 
-      console.log(`✅ [Executor] HTTP请求成功，响应对象类型: ${typeof response}`, response)
-
-      // 🔥 修复：处理项目request拦截器包装和外部API的差异
-      if (response && typeof response === 'object') {
-        // 项目内部API格式：{code: 200, data: actualData}
-        if ('code' in response && 'data' in response) {
-          responseData = response.data
-          console.log(`📦 [Executor] 项目API格式，提取data字段:`, responseData)
-        }
-        // 外部API直接返回数据
-        else if ('data' in response) {
-          responseData = response.data
-          console.log(`🌐 [Executor] 外部API格式，使用response.data:`, responseData)
-        }
-        // 直接就是数据
-        else {
-          responseData = response
-          console.log(`📄 [Executor] 直接数据格式:`, responseData)
-        }
-      } else {
-        responseData = response
-        console.log(`📄 [Executor] 原始响应数据:`, responseData)
-      }
+      // 智能提取响应数据，支持多种格式
+      responseData = this.extractResponseData(response)
     } catch (error) {
-      console.error(`❌ [Executor] HTTP请求失败:`, error)
+      this.handleExecutionError(error, 'HTTP请求失败')
 
-      // 🔥 修复：处理请求失败但服务器有响应的情况
+      // 处理请求失败但服务器有响应的情况（可能是格式不匹配）
       if (error instanceof Error && 'response' in error) {
         const errorResponse = (error as any).response
-        console.log(`🔍 [Executor] 请求失败但有响应，状态:`, errorResponse?.status, '数据:', errorResponse?.data)
-
-        // 如果是外部API，可能不符合项目后端的响应格式，但数据是有效的
-        if (errorResponse?.status === 200 || (errorResponse?.status >= 200 && errorResponse?.status < 300)) {
-          console.log(`⚠️ [Executor] HTTP状态码正常，可能是响应格式问题，尝试提取数据`)
-          responseData = errorResponse.data
+        if (errorResponse?.status >= 200 && errorResponse?.status < 300) {
+          responseData = this.extractResponseData(errorResponse)
         } else {
           throw new Error(`HTTP请求失败: ${errorResponse?.status} ${errorResponse?.statusText || error.message}`)
         }
@@ -503,14 +454,56 @@ export class DataSourceExecutor implements IDataSourceExecutor {
       }
     }
 
-    console.log(`✅ [Executor] 最终提取的响应数据:`, responseData)
-    console.log(`✅ [Executor] 响应数据类型: ${typeof responseData}`)
 
     if (responseData && typeof responseData === 'object') {
-      console.log(`✅ [Executor] 响应数据结构键: [${Object.keys(responseData).join(', ')}]`)
     }
 
     return responseData
+  }
+
+  /**
+   * 智能提取响应数据，支持多种格式
+   */
+  private extractResponseData(response: any): any {
+    if (!response || typeof response !== 'object') {
+      return response
+    }
+
+    // 项目内部API格式：{code: 200, data: actualData}
+    if ('code' in response && 'data' in response) {
+      return response.data
+    }
+    
+    // 标准HTTP响应格式：{data: actualData}
+    if ('data' in response) {
+      return response.data
+    }
+    
+    // 直接就是数据
+    return response
+  }
+
+  /**
+   * 统一错误处理 - 提供用户友好的错误信息
+   */
+  private handleExecutionError(error: any, context: string): string {
+    let errorMessage = error instanceof Error ? error.message : String(error)
+    
+    // 转换技术错误为用户友好的提示
+    if (errorMessage.includes('network') || errorMessage.includes('ENOTFOUND')) {
+      errorMessage = '网络连接失败，请检查网络设置或URL是否正确'
+    } else if (errorMessage.includes('timeout')) {
+      errorMessage = '请求超时，请稍后重试或检查服务器状态'
+    } else if (errorMessage.includes('JSON')) {
+      errorMessage = 'JSON数据格式错误，请检查数据格式是否正确'
+    } else if (errorMessage.includes('script')) {
+      errorMessage = '脚本执行错误，请检查脚本语法和逻辑'
+    } else if (errorMessage.includes('path') || errorMessage.includes('filter')) {
+      errorMessage = '数据过滤路径错误，请检查JSONPath语法'
+    }
+    
+    console.error(`❌ [Executor] ${context}:`, errorMessage)
+    return errorMessage
   }
 
   /**
@@ -1302,28 +1295,19 @@ export class DataSourceExecutor implements IDataSourceExecutor {
    */
   private async applyProcessScript(data: any, script: string): Promise<any> {
     try {
-      console.log(`📜 [Executor] 执行处理脚本，输入数据:`, data)
-
-      // 准备脚本执行环境
+      // 准备脚本执行环境 - 对大数据进行只读保护
       const scriptContext = {
-        data: data, // 输入数据
+        data: Object.freeze(data), // 防止脚本意外修改原始数据
         console: console
       }
 
       const result = await defaultScriptEngine.execute(script, scriptContext)
 
-      console.log(`📜 [Executor] 脚本执行元数据:`, {
-        success: result.success,
-        executionTime: result.executionTime,
-        hasData: result.data !== undefined
-      })
-
       if (!result.success) {
         throw new Error(`脚本执行失败: ${result.error?.message || '未知错误'}`)
       }
 
-      console.log(`📜 [Executor] 脚本执行完成，实际输出数据:`, result.data)
-      return result.data // 🔥 关键修复：返回脚本的实际结果，而不是执行元数据
+      return result.data // 返回脚本的实际结果
     } catch (error) {
       console.error(`❌ [Executor] 脚本执行失败:`, error)
       throw error
