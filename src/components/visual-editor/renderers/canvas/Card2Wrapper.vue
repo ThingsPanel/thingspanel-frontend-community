@@ -1,5 +1,5 @@
 <template>
-  <div ref="containerRef" class="card2-wrapper">
+  <div ref="containerRef" class="card2-wrapper" :data-component-id="props.nodeId">
     <!-- 错误状态 -->
     <div v-if="hasError" class="error-overlay">
       <n-alert type="error" :title="'渲染失败'" size="small">
@@ -11,10 +11,16 @@
     <component
       :is="componentToRender"
       v-else-if="componentToRender"
+      ref="currentComponentRef"
+      :key="`${props.nodeId}-${forceUpdateKey}`"
       :config="extractComponentConfig()"
       :raw-data-sources="JSON.parse(JSON.stringify(getDataSourcesForComponent()))"
       :component-id="props.nodeId"
       :show-interaction-indicator="true"
+      :interaction-configs="props.interactionConfigs"
+      :allow-external-control="props.allowExternalControl"
+      :interaction-permissions="props.interactionPermissions"
+      :preview-mode="props.previewMode"
     />
   </div>
 </template>
@@ -26,6 +32,7 @@
  */
 
 import { ref, onMounted, watch, shallowRef, onBeforeUnmount, computed, type Component } from 'vue'
+import { interactionManager } from '@/card2.1/core/interaction-manager'
 import { NAlert } from 'naive-ui'
 import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import type { DataSourceValue } from '../../types/data-source'
@@ -39,6 +46,12 @@ interface Props {
   dataSources?: Record<string, any> // 多数据源数据
   dataSourcesConfig?: any // 多数据源配置（包含路径映射等）
   nodeId: string
+
+  // 🔥 交互系统相关props
+  interactionConfigs?: any[]
+  allowExternalControl?: boolean
+  interactionPermissions?: any
+  previewMode?: boolean
 }
 
 const props = defineProps<Props>()
@@ -52,6 +65,79 @@ const errorMessage = ref('')
 const componentToRender = shallowRef<Component | null>(null)
 const dataSourceValue = ref<DataSourceValue | null>(null)
 let currentSubscriberId: (() => void) | null = null
+
+// 🔥 组件实例引用，用于触发属性变化事件
+const currentComponentRef = ref<any>(null)
+// 🔥 强制重新渲染key
+const forceUpdateKey = ref(0)
+// 🔥 容器引用
+const containerRef = ref<HTMLElement | null>(null)
+
+/**
+ * 🔥 触发属性变化事件
+ * 当配置面板属性修改时，通知组件触发相应的交互事件
+ */
+const triggerPropertyChangeEvents = (newConfig: any, oldConfig: any) => {
+  console.log('[INTERACTION-DEBUG] 触发属性变化事件:', {
+    nodeId: props.nodeId,
+    newConfig,
+    oldConfig
+  })
+
+  // 从配置中提取实际属性值
+  const extractProperties = (config: any) => {
+    if (!config) return {}
+
+    // 尝试多种路径提取配置
+    if (config.properties) {
+      return config.properties
+    }
+    if (config.component && config.component.properties) {
+      return config.component.properties
+    }
+    return config
+  }
+
+  const newProps = extractProperties(newConfig)
+  const oldProps = extractProperties(oldConfig)
+
+  // 比较属性变化
+  const changedProperties: Array<{ property: string; oldValue: any; newValue: any }> = []
+
+  // 检查所有新属性
+  for (const [key, newValue] of Object.entries(newProps)) {
+    const oldValue = oldProps[key]
+    if (JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
+      changedProperties.push({
+        property: key,
+        oldValue,
+        newValue
+      })
+    }
+  }
+
+  // 为每个变化的属性触发 dataChange 事件
+  changedProperties.forEach(({ property, oldValue, newValue }) => {
+    console.log(`[INTERACTION-DEBUG] 属性 ${property} 从 ${oldValue} 变为 ${newValue}`)
+
+    // 使用 interactionManager 直接触发事件
+    if (currentComponentRef.value && typeof currentComponentRef.value.triggerInteractionEvent === 'function') {
+      try {
+        currentComponentRef.value.triggerInteractionEvent('dataChange', {
+          property,
+          oldValue,
+          newValue,
+          source: 'configuration-panel'
+        })
+        console.log(`[INTERACTION-DEBUG] 成功触发 ${property} 的 dataChange 事件`)
+      } catch (error) {
+        console.error(`[INTERACTION-DEBUG] 触发 ${property} dataChange 事件失败:`, error)
+      }
+    } else {
+      console.warn('[INTERACTION-DEBUG] 组件实例或 triggerInteractionEvent 方法不可用')
+    }
+  })
+}
 
 // 处理数据源订阅
 const handleDataSource = (dataSource: any) => {
@@ -70,7 +156,7 @@ const handleDataSource = (dataSource: any) => {
     // currentSubscriberId = dataSourceManager.subscribe(dataSource, value => {
     //   dataSourceValue.value = value
     // })
-    console.log('[Card2Wrapper] 数据源管理器尚未实现，跳过订阅', dataSource)
+    console.log('[INTERACTION-DEBUG] 数据源管理器尚未实现，跳过订阅', dataSource)
   }
 }
 
@@ -131,7 +217,7 @@ onBeforeUnmount(() => {
  * 将Visual Editor的配置格式转换为组件期望的格式
  */
 const extractComponentConfig = () => {
-  console.log('[Card2Wrapper] 提取组件配置:', {
+  console.log('[INTERACTION-DEBUG] 提取组件配置:', {
     nodeId: props.nodeId,
     componentType: props.componentType,
     originalConfig: props.config
@@ -145,21 +231,21 @@ const extractComponentConfig = () => {
     // 检查是否直接包含配置属性
     if (props.config.title || props.config.content || props.config.backgroundColor || props.config.showTitle) {
       configData = props.config
-      console.log('[Card2Wrapper] 使用直接配置:', configData)
+      console.log('[INTERACTION-DEBUG] 使用直接配置:', configData)
     }
     // 检查是否在properties中
     else if (props.config.properties && typeof props.config.properties === 'object') {
       const propsConfig = props.config.properties
       if (propsConfig.title || propsConfig.content || propsConfig.backgroundColor || propsConfig.showTitle) {
         configData = propsConfig
-        console.log('[Card2Wrapper] 使用properties配置:', configData)
+        console.log('[INTERACTION-DEBUG] 使用properties配置:', configData)
       }
     }
   }
 
   // 2. 如果还没找到配置，返回默认配置
   if (!configData) {
-    console.log('[Card2Wrapper] 使用默认配置')
+    console.log('[INTERACTION-DEBUG] 使用默认配置')
     configData = {
       title: '测试标题',
       showTitle: true,
@@ -175,7 +261,14 @@ const extractComponentConfig = () => {
     }
   }
 
-  console.log('[Card2Wrapper] 最终配置:', configData)
+  // 🔥 合并来自InteractionManager的状态更新
+  const interactionState = interactionManager.getComponentState(props.nodeId || '')
+  if (interactionState) {
+    console.log('[INTERACTION-DEBUG] 应用交互状态更新:', interactionState)
+    configData = { ...configData, ...interactionState }
+  }
+
+  console.log('[INTERACTION-DEBUG] 最终配置:', configData)
   return configData
 }
 
@@ -221,11 +314,18 @@ watch(() => props.componentType, loadComponent, { immediate: true })
 // 监听config变化，确保配置更新时组件重新渲染
 watch(
   () => props.config,
-  newConfig => {
+  (newConfig, oldConfig) => {
     console.log('[Card2Wrapper] 配置变化:', {
       nodeId: props.nodeId,
-      newConfig
+      newConfig,
+      oldConfig
     })
+
+    // 🔥 触发属性变化事件给组件
+    if (newConfig && oldConfig && currentComponentRef.value) {
+      triggerPropertyChangeEvents(newConfig, oldConfig)
+    }
+
     // 配置变化时强制重新渲染
     if (componentToRender.value) {
       // 通过key变化强制重新渲染组件
@@ -328,6 +428,35 @@ onMounted(() => {
   if (!componentToRender.value) {
     loadComponent()
   }
+
+  // 🔥 监听组件状态更新事件
+  const handleStateUpdate = (event: CustomEvent) => {
+    const { componentId, updates } = event.detail
+    console.log('[INTERACTION-DEBUG] 接收到状态更新事件:', {
+      componentId,
+      updates,
+      currentNodeId: props.nodeId
+    })
+
+    if (componentId === props.nodeId) {
+      console.log('[INTERACTION-DEBUG] 状态更新匹配，强制重新渲染组件')
+      // 强制重新渲染以应用状态更新
+      forceUpdateKey.value = Date.now()
+    }
+  }
+
+  // 监听DOM事件
+  const containerEl = containerRef.value
+  if (containerEl) {
+    containerEl.addEventListener('componentStateUpdate', handleStateUpdate as EventListener)
+  }
+
+  // 清理函数
+  onBeforeUnmount(() => {
+    if (containerEl) {
+      containerEl.removeEventListener('componentStateUpdate', handleStateUpdate as EventListener)
+    }
+  })
 })
 </script>
 

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试交互配置界面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-item {
+            background: #f5f5f5;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #18a058;
+        }
+        .status {
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .success { color: #18a058; }
+        .error { color: #d03050; }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 交互配置界面测试报告</h1>
+        
+        <div class="test-item">
+            <h3>✅ 成功完成的功能</h3>
+            <div class="status success">
+                ✓ 替换了复杂的InteractionSettingsForm为简洁的InteractionCardWizard<br>
+                ✓ 修复了Vue v-model编译错误<br>
+                ✓ 修复了@vicons/ionicons5图标导入错误<br>
+                ✓ 创建了简洁的列表+弹窗配置界面<br>
+                ✓ 支持两个核心动作：URL跳转和属性修改
+            </div>
+        </div>
+
+        <div class="test-item">
+            <h3>🎨 新界面特点</h3>
+            <ul>
+                <li><strong>简洁列表视图</strong>：已配置的交互以卡片形式展示</li>
+                <li><strong>弹窗配置</strong>：点击"添加交互"按钮打开模态框配置</li>
+                <li><strong>下拉选择器</strong>：触发条件和动作类型使用下拉框选择</li>
+                <li><strong>条件展示</strong>：根据选择的动作类型动态显示相关配置项</li>
+                <li><strong>编辑和删除</strong>：支持修改和删除现有交互配置</li>
+            </ul>
+        </div>
+
+        <div class="test-item">
+            <h3>📍 访问路径</h3>
+            <ul>
+                <li><strong>Visual Editor</strong>: <a href="http://localhost:5006/visualization/visual-editor-details" target="_blank">http://localhost:5006/visualization/visual-editor-details</a></li>
+                <li><strong>交互测试页面</strong>: <a href="http://localhost:5006/test/interaction-system-test" target="_blank">http://localhost:5006/test/interaction-system-test</a></li>
+            </ul>
+        </div>
+
+        <div class="test-item">
+            <h3>🔧 使用方法</h3>
+            <ol>
+                <li>打开Visual Editor页面</li>
+                <li>添加一个Card 2.1组件到画布</li>
+                <li>选中组件，点击右侧配置面板的"交互"标签</li>
+                <li>点击"添加交互"按钮打开配置弹窗</li>
+                <li>选择触发条件（点击、悬停、数据变化）</li>
+                <li>选择执行动作（页面跳转、修改组件属性）</li>
+                <li>根据动作类型填写相应配置</li>
+                <li>点击"确定"保存配置</li>
+            </ol>
+        </div>
+
+        <div class="test-item">
+            <h3>⚠️ 注意事项</h3>
+            <div class="status">
+                • 新界面已在Visual Editor中激活<br>
+                • 支持的事件类型：点击(click)、悬停(hover)、数据变化(dataChange)<br>
+                • 支持的动作类型：页面跳转(navigateToUrl)、修改组件属性(updateComponentData)<br>
+                • 测试页面仍使用旧的InteractionSettingsForm，可能需要更新
+            </div>
+        </div>
+
+        <h2>🖥️ 当前运行状态</h2>
+        <p>开发服务器: <strong>http://localhost:5006</strong></p>
+        <div id="server-status" class="status">正在检查服务器状态...</div>
+
+        <script>
+            // 检查开发服务器状态
+            fetch('http://localhost:5006')
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('server-status').innerHTML = 
+                            '<span class="success">✓ 开发服务器运行正常</span>';
+                    } else {
+                        document.getElementById('server-status').innerHTML = 
+                            '<span class="error">✗ 服务器响应异常</span>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('server-status').innerHTML = 
+                        '<span class="error">✗ 无法连接到开发服务器</span>';
+                });
+        </script>
+    </div>
+</body>
+</html>

@@ -19,8 +19,20 @@
           <template #prefix>
             <n-icon size="12" style="color: var(--text-color-3)">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="m14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path
+                  d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="m14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </n-icon>
           </template>
@@ -51,9 +63,21 @@
                   <template #trigger>
                     <n-icon size="10" style="color: var(--info-color); cursor: help">
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                        <path
+                          d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M12 17h.01"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
                       </svg>
                     </n-icon>
                   </template>
@@ -74,12 +98,7 @@
           </n-form-item>
 
           <!-- 请求体配置（仅POST/PUT/PATCH显示） -->
-          <n-form-item 
-            v-if="showRequestBody" 
-            label="请求体" 
-            size="small" 
-            style="margin-bottom: 4px"
-          >
+          <n-form-item v-if="showRequestBody" label="请求体" size="small" style="margin-bottom: 4px">
             <template #label>
               <n-space :size="2" align="center">
                 <span style="font-size: 11px">请求体 (JSON)</span>
@@ -87,15 +106,25 @@
                   <template #trigger>
                     <n-icon size="10" style="color: var(--info-color); cursor: help">
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                        <path
+                          d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M12 17h.01"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
                       </svg>
                     </n-icon>
                   </template>
-                  <div style="max-width: 200px; font-size: 10px">
-                    请求体数据，通常为JSON格式
-                  </div>
+                  <div style="max-width: 200px; font-size: 10px">请求体数据，通常为JSON格式</div>
                 </n-tooltip>
               </n-space>
             </template>
@@ -132,29 +161,23 @@
       <template #header>
         <n-space justify="space-between" align="center">
           <n-text depth="2" style="font-size: 11px">请求测试</n-text>
-          <n-button 
-            size="tiny" 
-            type="primary" 
-            :loading="testing" 
-            :disabled="!isConfigValid"
-            @click="testRequest"
-          >
+          <n-button size="tiny" type="primary" :loading="testing" :disabled="!isConfigValid" @click="testRequest">
             🧪 测试请求
           </n-button>
         </n-space>
       </template>
-      
+
       <n-space vertical :size="2">
         <!-- 测试状态 -->
         <n-tag :type="testResult.type" size="small" style="font-size: 10px">
           {{ testResult.text }}
         </n-tag>
-        
+
         <!-- 测试结果预览 -->
         <n-code
           :code="testResult.data"
           language="json"
-          style="max-height: 150px; overflow-y: auto; font-size: 10px"
+          style="max-height: 300px; overflow-y: auto; font-size: 10px"
           :show-line-numbers="false"
         />
       </n-space>
@@ -186,8 +209,8 @@ import {
   NCode
 } from 'naive-ui'
 
-// 导入请求服务
-import { request } from '@sa/axios'
+// 导入请求服务 - 🔥 修复：使用项目的统一request服务
+import { request } from '@/service/request'
 
 // HTTP配置接口
 interface HttpConfig {
@@ -260,7 +283,7 @@ const testResult = ref({
 /** 监听配置变化进行验证 */
 watch(
   localConfig,
-  (newConfig) => {
+  newConfig => {
     validateConfig(newConfig)
   },
   { immediate: true, deep: true }
@@ -326,7 +349,7 @@ async function testRequest(): Promise<void> {
   }
 
   testing.value = true
-  
+
   try {
     const config = localConfig.value
     const url = config.url.trim()
@@ -336,11 +359,13 @@ async function testRequest(): Promise<void> {
 
     console.log(`🧪 [HttpDataInput] 开始测试HTTP请求: ${config.method} ${url}`)
 
+    // 🔥 修复：统一使用项目request服务，确保代理配置生效
     if (isFullUrl(url)) {
       // 外部API请求，使用fetch
       result = await testExternalRequest(config, timeout)
     } else {
-      // 内部API请求，使用项目request服务
+      // 内部API请求，使用项目request服务（包含代理配置）
+      console.log('🚀 [HttpDataInput] 使用项目request服务，将自动处理代理配置')
       result = await testInternalRequest(config, timeout)
     }
 
@@ -410,7 +435,7 @@ async function testExternalRequest(config: HttpConfig, timeout: number): Promise
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
-    
+
     const contentType = response.headers.get('content-type')
     if (contentType && contentType.includes('application/json')) {
       return response.json()
@@ -446,7 +471,7 @@ async function testInternalRequest(config: HttpConfig, timeout: number): Promise
   }
 
   let requestData: any = undefined
-  
+
   // 处理请求体
   if (body && body.trim() && showRequestBody.value) {
     try {
@@ -549,23 +574,23 @@ nextTick(() => {
   .http-form :deep(.n-form-item) {
     margin-bottom: 8px;
   }
-  
+
   .http-form :deep(.n-form-item-label) {
     font-size: 12px;
   }
-  
+
   .config-input :deep(.n-input) {
     font-size: 12px;
   }
 }
 
 /* 明暗主题适配 */
-[data-theme="dark"] .test-area {
+[data-theme='dark'] .test-area {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="light"] .test-area {
+[data-theme='light'] .test-area {
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.08);
 }

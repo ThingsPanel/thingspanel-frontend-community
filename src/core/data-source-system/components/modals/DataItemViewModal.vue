@@ -86,10 +86,10 @@
                   </n-descriptions-item>
                   <n-descriptions-item v-if="dataItem.config?.websocketConfig?.protocols" label="协议">
                     <n-space :size="4">
-                      <n-tag 
-                        v-for="protocol in dataItem.config.websocketConfig.protocols" 
+                      <n-tag
+                        v-for="protocol in dataItem.config.websocketConfig.protocols"
                         :key="protocol"
-                        type="info" 
+                        type="info"
                         size="tiny"
                       >
                         {{ protocol }}
@@ -101,10 +101,10 @@
             </n-card>
 
             <!-- 处理配置卡片 -->
-            <n-card 
-              v-if="dataItem.config?.filterPath || dataItem.config?.processScript" 
-              size="small" 
-              title="数据处理配置" 
+            <n-card
+              v-if="dataItem.config?.filterPath || dataItem.config?.processScript"
+              size="small"
+              title="数据处理配置"
               :bordered="false"
             >
               <n-space vertical :size="8">
@@ -114,7 +114,7 @@
                     {{ dataItem.config.filterPath }}
                   </n-text>
                 </div>
-                
+
                 <div v-if="dataItem.config.processScript">
                   <n-text depth="2" style="font-size: 12px">处理脚本：</n-text>
                   <n-code
@@ -137,37 +137,31 @@
               <template #header>
                 <n-space justify="space-between" align="center">
                   <n-text strong style="font-size: 13px">原始数据预览</n-text>
-                  <n-button size="tiny" type="info" @click="refreshPreview">
-                    🔄 刷新
-                  </n-button>
+                  <n-button size="tiny" type="info" @click="refreshPreview">🔄 刷新</n-button>
                 </n-space>
               </template>
-              
+
               <n-code
                 :code="rawDataPreview"
                 language="json"
-                style="max-height: 300px; overflow-y: auto; font-size: 11px"
+                style="height: 200px; overflow-y: auto; font-size: 11px"
                 :show-line-numbers="false"
               />
             </n-card>
 
             <!-- 处理后数据预览 -->
-            <n-card 
-              v-if="dataItem.config?.filterPath || dataItem.config?.processScript"
-              size="small" 
-              :bordered="false"
-            >
+            <n-card v-if="dataItem.config?.filterPath || dataItem.config?.processScript" size="small" :bordered="false">
               <template #header>
                 <n-space justify="space-between" align="center">
                   <n-text strong style="font-size: 13px">处理后数据预览</n-text>
                   <n-tag type="success" size="tiny">已处理</n-tag>
                 </n-space>
               </template>
-              
+
               <n-code
                 :code="processedDataPreview"
                 language="json"
-                style="max-height: 300px; overflow-y: auto; font-size: 11px"
+                style="height: 200px; overflow-y: auto; font-size: 11px"
                 :show-line-numbers="false"
               />
             </n-card>
@@ -175,14 +169,14 @@
             <!-- 统计信息 -->
             <n-card size="small" title="统计信息" :bordered="false">
               <n-space vertical :size="6">
-                <n-progress 
-                  type="line" 
-                  :percentage="getDataHealthPercentage()" 
+                <n-progress
+                  type="line"
+                  :percentage="getDataHealthPercentage()"
                   :color="getDataHealthColor()"
                   :show-indicator="false"
                   style="margin-bottom: 8px"
                 />
-                
+
                 <n-descriptions :columns="2" size="small">
                   <n-descriptions-item label="数据完整性">
                     <n-text :type="getDataHealthColor() === '#18a058' ? 'success' : 'warning'">
@@ -275,7 +269,7 @@ const processedDataPreview = ref('{}')
 /** 监听数据项变化，更新预览 */
 watch(
   () => props.dataItem,
-  (newItem) => {
+  newItem => {
     if (newItem) {
       updateDataPreview(newItem)
     }
@@ -290,7 +284,7 @@ watch(
  */
 function getTypeColor(): string {
   if (!props.dataItem) return 'default'
-  
+
   switch (props.dataItem.type) {
     case 'json':
       return 'default'
@@ -329,7 +323,7 @@ function getJsonConfig(): string {
   if (!props.dataItem?.config?.jsonData) {
     return JSON.stringify(props.dataItem?.data || {}, null, 2)
   }
-  
+
   try {
     const parsed = JSON.parse(props.dataItem.config.jsonData)
     return JSON.stringify(parsed, null, 2)
@@ -345,22 +339,21 @@ function updateDataPreview(item: RawDataItem): void {
   try {
     // 更新原始数据预览
     rawDataPreview.value = JSON.stringify(item.data || {}, null, 2)
-    
+
     // 模拟处理后数据
     let processedData = item.data || {}
-    
+
     // 应用过滤路径
     if (item.config?.filterPath) {
       processedData = applyFilterPath(processedData, item.config.filterPath)
     }
-    
+
     // 应用处理脚本
     if (item.config?.processScript) {
       processedData = applyProcessScript(processedData, item.config.processScript)
     }
-    
+
     processedDataPreview.value = JSON.stringify(processedData, null, 2)
-    
   } catch (error) {
     console.error('❌ [DataItemViewModal] 数据预览更新失败:', error)
     rawDataPreview.value = '{"error": "数据预览失败"}'
@@ -376,14 +369,14 @@ function applyFilterPath(data: any, filterPath: string): any {
     // 简单的JSONPath实现
     let current = data
     const cleanPath = filterPath.replace(/^\$\.?/, '').trim()
-    
+
     if (!cleanPath) return data
-    
+
     const parts = cleanPath.split(/\.|\[|\]/).filter(part => part !== '')
-    
+
     for (const part of parts) {
       if (current === null || current === undefined) return null
-      
+
       if (/^\d+$/.test(part)) {
         const index = parseInt(part)
         if (Array.isArray(current) && index >= 0 && index < current.length) {
@@ -399,7 +392,7 @@ function applyFilterPath(data: any, filterPath: string): any {
         }
       }
     }
-    
+
     return current
   } catch {
     return data
@@ -413,13 +406,13 @@ function applyProcessScript(data: any, script: string): any {
   try {
     // 简单的脚本处理示例
     const processedData = JSON.parse(JSON.stringify(data))
-    
+
     // 这里只是模拟，实际应该使用脚本引擎
     if (script.includes('data.processed = true')) {
       processedData.processed = true
       processedData.processedAt = new Date().toISOString()
     }
-    
+
     return processedData
   } catch {
     return data
@@ -431,23 +424,23 @@ function applyProcessScript(data: any, script: string): any {
  */
 function getDataHealthPercentage(): number {
   if (!props.dataItem?.data) return 0
-  
+
   try {
     const data = props.dataItem.data
     let score = 0
-    
+
     // 检查数据是否存在
     if (data && typeof data === 'object') score += 30
-    
+
     // 检查字段数量
     const fieldCount = Object.keys(data).length
     if (fieldCount > 0) score += 30
     if (fieldCount > 3) score += 20
-    
+
     // 检查数据类型多样性
     const types = new Set(Object.values(data).map(v => typeof v))
     score += Math.min(types.size * 5, 20)
-    
+
     return Math.min(score, 100)
   } catch {
     return 0
@@ -482,7 +475,7 @@ function getDataSizeText(): string {
   try {
     const jsonString = JSON.stringify(props.dataItem?.data || {})
     const bytes = new Blob([jsonString]).size
-    
+
     if (bytes < 1024) return `${bytes} B`
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
@@ -509,16 +502,16 @@ function getFieldCount(): number {
  */
 function getLastUpdateText(): string {
   if (!props.dataItem?.createdAt) return '未知'
-  
+
   try {
     const date = new Date(props.dataItem.createdAt)
     const now = new Date()
     const diff = now.getTime() - date.getTime()
-    
+
     const minutes = Math.floor(diff / (1000 * 60))
     const hours = Math.floor(diff / (1000 * 60 * 60))
     const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-    
+
     if (days > 0) return `${days} 天前`
     if (hours > 0) return `${hours} 小时前`
     if (minutes > 0) return `${minutes} 分钟前`
@@ -642,24 +635,24 @@ function handleModalClose(): void {
   :deep(.n-modal) {
     width: 98vw !important;
   }
-  
+
   :deep(.n-grid) {
     display: flex;
     flex-direction: column;
   }
-  
+
   :deep(.n-grid-item) {
     width: 100% !important;
   }
 }
 
 /* 明暗主题适配 */
-[data-theme="dark"] .data-item-view :deep(.n-card) {
+[data-theme='dark'] .data-item-view :deep(.n-card) {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="light"] .data-item-view :deep(.n-card) {
+[data-theme='light'] .data-item-view :deep(.n-card) {
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.08);
 }

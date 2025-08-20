@@ -78,7 +78,7 @@
               </n-tooltip>
             </n-space>
           </template>
-          
+
           <!-- JavaScript编辑器组件 -->
           <div style="width: 100%">
             <JavaScriptEditor
@@ -129,17 +129,7 @@
  */
 
 import { ref, computed, watch, nextTick } from 'vue'
-import {
-  NSpace,
-  NText,
-  NCard,
-  NFormItem,
-  NInput,
-  NTooltip,
-  NIcon,
-  NCode,
-  NTag
-} from 'naive-ui'
+import { NSpace, NText, NCard, NFormItem, NInput, NTooltip, NIcon, NCode, NTag } from 'naive-ui'
 
 // 导入编辑器组件
 import JavaScriptEditor from '../editors/JavaScriptEditor.vue'
@@ -169,12 +159,12 @@ const emit = defineEmits<Emits>()
 /** 本地数据绑定 */
 const localFilterPath = computed({
   get: () => props.filterPath,
-  set: (value) => emit('update:filterPath', value)
+  set: value => emit('update:filterPath', value)
 })
 
 const localProcessScript = computed({
   get: () => props.processScript,
-  set: (value) => emit('update:processScript', value)
+  set: value => emit('update:processScript', value)
 })
 
 /** 处理后的数据预览 */
@@ -212,7 +202,7 @@ watch(
 async function processData(): Promise<void> {
   try {
     let processedData = props.originalData || {}
-    
+
     // 1. 应用数据过滤
     if (localFilterPath.value?.trim()) {
       try {
@@ -220,57 +210,56 @@ async function processData(): Promise<void> {
         console.log('🔍 [DataProcessingPanel] 过滤后数据:', processedData)
       } catch (error) {
         console.warn('⚠️ [DataProcessingPanel] 数据过滤失败:', error)
-        processingStatus.value = { 
-          type: 'warning', 
-          text: '过滤警告', 
-          message: '过滤路径可能有误，使用原始数据' 
+        processingStatus.value = {
+          type: 'warning',
+          text: '过滤警告',
+          message: '过滤路径可能有误，使用原始数据'
         }
       }
     }
-    
+
     // 2. 应用处理脚本
     if (localProcessScript.value?.trim() && scriptValidation.value.isValid) {
       try {
         processedData = await applyProcessScript(processedData, localProcessScript.value)
-        processingStatus.value = { 
-          type: 'success', 
-          text: '处理成功', 
-          message: '数据已处理完成' 
+        processingStatus.value = {
+          type: 'success',
+          text: '处理成功',
+          message: '数据已处理完成'
         }
         console.log('⚙️ [DataProcessingPanel] 脚本处理后数据:', processedData)
       } catch (error) {
         console.error('❌ [DataProcessingPanel] 脚本处理失败:', error)
-        processingStatus.value = { 
-          type: 'error', 
-          text: '脚本错误', 
+        processingStatus.value = {
+          type: 'error',
+          text: '脚本错误',
           message: '脚本执行失败：' + (error instanceof Error ? error.message : String(error))
         }
       }
     } else if (!localProcessScript.value?.trim()) {
-      processingStatus.value = { 
-        type: 'info', 
-        text: '无脚本', 
-        message: '未设置处理脚本，使用过滤后数据' 
+      processingStatus.value = {
+        type: 'info',
+        text: '无脚本',
+        message: '未设置处理脚本，使用过滤后数据'
       }
     } else if (!scriptValidation.value.isValid) {
-      processingStatus.value = { 
-        type: 'error', 
-        text: '脚本无效', 
-        message: scriptValidation.value.error 
+      processingStatus.value = {
+        type: 'error',
+        text: '脚本无效',
+        message: scriptValidation.value.error
       }
     }
-    
+
     processedDataPreview.value = JSON.stringify(processedData, null, 2)
-    
+
     // 发送处理后数据
     emit('processedDataUpdated', processedData)
-    
   } catch (error) {
     console.error('❌ [DataProcessingPanel] 数据处理失败:', error)
-    processingStatus.value = { 
-      type: 'error', 
-      text: '处理错误', 
-      message: '数据处理失败' 
+    processingStatus.value = {
+      type: 'error',
+      text: '处理错误',
+      message: '数据处理失败'
     }
     processedDataPreview.value = '{"error": "处理失败"}'
     emit('processedDataUpdated', null)
@@ -282,20 +271,20 @@ async function processData(): Promise<void> {
  */
 function applyDataFilter(data: any, filterPath: string): any {
   if (!filterPath || filterPath.trim() === '') return data
-  
+
   try {
     // 简单的JSONPath实现
     let current = data
     let cleanPath = filterPath.replace(/^\$\.?/, '').trim()
-    
+
     if (!cleanPath) return data
-    
+
     // 按点分割，但要处理数组索引
     const parts = cleanPath.split(/\.|\[|\]/).filter(part => part !== '')
-    
+
     for (const part of parts) {
       if (current === null || current === undefined) return null
-      
+
       // 处理数组索引
       if (/^\d+$/.test(part)) {
         const index = parseInt(part)
@@ -313,7 +302,7 @@ function applyDataFilter(data: any, filterPath: string): any {
         }
       }
     }
-    
+
     return current
   } catch (error) {
     console.warn('🔧 [DataProcessingPanel] 过滤路径解析失败:', error)
@@ -326,16 +315,16 @@ function applyDataFilter(data: any, filterPath: string): any {
  */
 async function applyProcessScript(data: any, script: string): Promise<any> {
   if (!script || script.trim() === '') return data
-  
+
   try {
     console.log('🔧 [DataProcessingPanel] 执行脚本:', script.substring(0, 100))
-    
+
     // 创建数据的深拷贝，避免修改原始数据
     const dataCopy = JSON.parse(JSON.stringify(data))
-    
+
     // 使用脚本引擎执行
     const result = await defaultScriptEngine.execute(script, { data: dataCopy })
-    
+
     if (result.success) {
       console.log('✅ [DataProcessingPanel] 脚本执行成功')
       return result.data
@@ -370,13 +359,13 @@ function handleScriptChange(): void {
  */
 function handleScriptValidationChanged(validation: { isValid: boolean; error: string }): void {
   scriptValidation.value = validation
-  
+
   // 如果脚本无效，立即更新状态
   if (!validation.isValid) {
-    processingStatus.value = { 
-      type: 'error', 
-      text: '脚本无效', 
-      message: validation.error 
+    processingStatus.value = {
+      type: 'error',
+      text: '脚本无效',
+      message: validation.error
     }
   } else {
     // 脚本有效，重新处理数据
@@ -446,23 +435,23 @@ nextTick(() => {
   .processing-form :deep(.n-form-item) {
     margin-bottom: 12px;
   }
-  
+
   .processing-form :deep(.n-form-item-label) {
     font-size: 12px;
   }
-  
+
   .script-tooltip {
     max-width: 250px;
   }
 }
 
 /* 明暗主题适配 */
-[data-theme="dark"] .result-preview {
+[data-theme='dark'] .result-preview {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="light"] .result-preview {
+[data-theme='light'] .result-preview {
   background: rgba(0, 0, 0, 0.02);
   border-color: rgba(0, 0, 0, 0.08);
 }

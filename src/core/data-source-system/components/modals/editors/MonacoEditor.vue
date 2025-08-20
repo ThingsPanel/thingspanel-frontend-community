@@ -83,18 +83,18 @@ const defaultOptions = {
   fontSize: 11,
   fontFamily: 'Menlo, Monaco, "Courier New", monospace',
   lineHeight: 18,
-  
+
   // 界面配置
   minimap: { enabled: false },
   lineNumbers: 'on',
   wordWrap: 'on',
   scrollBeyondLastLine: false,
-  
+
   // 缩进配置
   tabSize: 2,
   insertSpaces: true,
   detectIndentation: false,
-  
+
   // 滚动条配置
   scrollbar: {
     vertical: 'visible',
@@ -102,46 +102,46 @@ const defaultOptions = {
     verticalScrollbarSize: 8,
     horizontalScrollbarSize: 8
   },
-  
+
   // 编辑器边距
   padding: { top: 8, bottom: 8 },
-  
+
   // 光标配置
   cursorStyle: 'line',
   cursorWidth: 2,
   cursorBlinking: 'blink',
-  
+
   // 选择配置
   selectOnLineNumbers: true,
   roundedSelection: false,
-  
+
   // 代码提示
   suggestOnTriggerCharacters: true,
   acceptSuggestionOnCommitCharacter: true,
   acceptSuggestionOnEnter: 'on',
   quickSuggestions: true,
-  
+
   // 代码折叠
   folding: true,
   foldingStrategy: 'auto',
   showFoldingControls: 'mouseover',
-  
+
   // 括号匹配
   matchBrackets: 'always',
   autoClosingBrackets: 'always',
   autoClosingQuotes: 'always',
   autoSurround: 'languageDefined',
-  
+
   // 格式化
   formatOnPaste: true,
   formatOnType: false,
-  
+
   // 查找配置
   find: {
     seedSearchStringFromSelection: 'always',
     autoFindInSelection: 'never'
   },
-  
+
   // 主题
   theme: 'vs-light'
 }
@@ -158,7 +158,7 @@ const mergedOptions = computed(() => ({
 /** 监听值变化进行验证 */
 watch(
   localValue,
-  (newValue) => {
+  newValue => {
     validateContent(newValue)
   },
   { immediate: true }
@@ -213,7 +213,7 @@ function validateJavaScript(content: string): void {
         ${content}
       })
     `
-    
+
     // 尝试创建函数来检查语法
     new Function('return ' + wrappedCode)
     emit('validation-changed', { isValid: true, error: '' })
@@ -300,12 +300,12 @@ function handleChange(value: string): void {
 }
 
 /* 明暗主题适配 */
-[data-theme="dark"] .monaco-editor-container {
+[data-theme='dark'] .monaco-editor-container {
   border-color: rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
 }
 
-[data-theme="light"] .monaco-editor-container {
+[data-theme='light'] .monaco-editor-container {
   border-color: rgba(0, 0, 0, 0.08);
   background: rgba(0, 0, 0, 0.02);
 }

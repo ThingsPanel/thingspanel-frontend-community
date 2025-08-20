@@ -179,12 +179,8 @@ const validationState = ref({
 
 /** 表单是否有效 */
 const isFormValid = computed(() => {
-  return (
-    formData.name.trim() !== '' &&
-    validationState.value.nameValid &&
-    validationState.value.dataValid &&
-    validationState.value.configValid
-  )
+  // 🔥 修复：名字非必填，其他验证通过即可
+  return validationState.value.nameValid && validationState.value.dataValid && validationState.value.configValid
 })
 
 // ========== 监听器 ==========
@@ -215,6 +211,20 @@ watch(visible, show => {
     })
   }
 })
+
+// ========== 辅助函数 ==========
+
+/**
+ * 根据类型获取显示名称
+ */
+function getTypeDisplayName(type: string): string {
+  const typeNames: Record<string, string> = {
+    json: 'JSON',
+    http: 'HTTP',
+    websocket: 'WS'
+  }
+  return typeNames[type] || type.toUpperCase()
+}
 
 // ========== 方法 ==========
 
@@ -371,9 +381,12 @@ function generateNewDataItem(): RawDataItem {
       break
   }
 
+  // 🔥 修复：名字为空时自动生成
+  const finalName = formData.name.trim() || `${getTypeDisplayName(formData.type)}_${Date.now().toString().slice(-6)}`
+
   return {
     id,
-    name: formData.name.trim(),
+    name: finalName,
     type: formData.type,
     data,
     config,
@@ -389,7 +402,8 @@ function updateExistingDataItem(item: RawDataItem): RawDataItem {
   const updatedItem = { ...item }
 
   // 更新基本信息
-  updatedItem.name = formData.name.trim()
+  // 🔥 修复：名字为空时自动生成
+  updatedItem.name = formData.name.trim() || `${getTypeDisplayName(formData.type)}_${Date.now().toString().slice(-6)}`
   updatedItem.type = formData.type
 
   // 根据类型更新数据和配置

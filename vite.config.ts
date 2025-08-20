@@ -63,7 +63,7 @@ export default defineConfig(configEnv => {
             'vendor-vue': ['vue', 'vue-router', 'pinia'],
             'vendor-ui': ['naive-ui'],
             'vendor-charts': ['@antv/g2', '@antv/data-set'],
-            'vendor-utils': ['dayjs', 'lodash-es'],
+            'vendor-utils': ['dayjs', 'lodash-es']
           }
         }
       }

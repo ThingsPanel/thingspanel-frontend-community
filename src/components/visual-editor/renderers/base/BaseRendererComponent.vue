@@ -36,18 +36,30 @@ const emit = defineEmits<BaseRendererEmits>()
 const unifiedEditor = useVisualEditor()
 
 const addWidget = async (componentType: string, position?: { x: number; y: number }) => {
-  // 创建新节点
-  const newNode = {
-    id: `${componentType}_${Date.now()}`,
-    type: componentType,
-    position: position || { x: 100, y: 100 },
-    data: {
-      componentType,
-      title: componentType
-    }
-  }
+  console.log('🎯 [BaseRenderer] Adding widget:', componentType)
 
-  await unifiedEditor.addNode(newNode)
+  try {
+    // 🔥 确保系统已初始化
+    await unifiedEditor.initialize()
+
+    // 创建新节点
+    const newNode = {
+      id: `${componentType}_${Date.now()}`,
+      type: componentType,
+      position: position || { x: 100, y: 100 },
+      data: {
+        componentType,
+        title: componentType
+      }
+    }
+
+    await unifiedEditor.addNode(newNode)
+    console.log('✅ [BaseRenderer] Widget added successfully:', newNode.id)
+  } catch (error) {
+    console.error('❌ [BaseRenderer] Failed to add widget:', error)
+    // 重新抛出错误让上层处理
+    throw error
+  }
 }
 
 // 渲染器状态

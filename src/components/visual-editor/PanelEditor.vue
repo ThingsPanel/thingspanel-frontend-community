@@ -8,7 +8,7 @@ import { $t } from '@/locales'
 import { getBoard, PutBoard } from '@/service/api'
 import { VisualEditorToolbar } from './components/toolbar'
 import WidgetLibrary from './components/WidgetLibrary/WidgetLibrary.vue'
-import { initializeSettings } from './settings'
+import { initializeSettings } from '@/core/interaction-system'
 import ConfigurationPanel from './configuration/ConfigurationPanel.vue'
 import { configurationManager } from './configuration/ConfigurationManager'
 import { CanvasRenderer, GridstackRenderer } from './renderers'
@@ -1006,7 +1006,7 @@ onMounted(async () => {
   // 面板数据加载完成后，检查多数据源配置状态
   await nextTick() // 确保DOM更新完成
   restoreMultiDataSourceConfigs() // 现在只做状态检查
-  
+
   // 发出状态管理器就绪事件，供上层组件使用
   emit('state-manager-ready', stateManager)
 })
@@ -1211,12 +1211,10 @@ onUnmounted(() => {
             @gridstack-config-change="handleGridstackConfigChange"
             @canvas-config-change="handleCanvasConfigChange"
           />
-
         </div>
 
         <!-- 主内容区域 -->
         <div class="main-container flex-1 relative overflow-hidden" :class="{ dragging: isDragging }">
-
           <!-- 中央画布 -->
           <div class="canvas-container h-full w-full" @click="handleCanvasClick">
             <!-- 动态渲染器 -->
@@ -1386,5 +1384,4 @@ onUnmounted(() => {
     min-height: 400px;
   }
 }
-
 </style>

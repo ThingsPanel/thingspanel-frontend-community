@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>内部菜单功能恢复验证</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .success-banner {
+            background: linear-gradient(135deg, #18a058, #36ad6a);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(24, 160, 88, 0.3);
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #18a058;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .feature-card h3 {
+            margin-top: 0;
+            color: #18a058;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .feature-list li:before {
+            content: "✅ ";
+            margin-right: 8px;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        .test-steps {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-steps h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        .highlight {
+            background: #e7f3ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #0066cc;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-banner">
+        <h1>🎉 内部菜单功能已成功恢复！</h1>
+        <p>在新的简洁弹窗界面中完美集成了外部链接和内部菜单选择功能</p>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h3>🔗 恢复的核心功能</h3>
+            <ul class="feature-list">
+                <li>外部链接跳转支持</li>
+                <li>内部菜单下拉选择</li>
+                <li>动态菜单加载</li>
+                <li>链接类型自动识别</li>
+                <li>目标窗口选择</li>
+                <li>菜单路径过滤搜索</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h3>🎨 界面改进</h3>
+            <ul class="feature-list">
+                <li>简洁的单选按钮切换</li>
+                <li>条件性显示相关配置</li>
+                <li>加载状态指示器</li>
+                <li>智能摘要描述</li>
+                <li>用户友好的占位符</li>
+                <li>错误处理提示</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h3>⚡ 技术特性</h3>
+            <ul class="feature-list">
+                <li>异步菜单数据获取</li>
+                <li>路由数据扁平化处理</li>
+                <li>菜单缓存优化</li>
+                <li>TypeScript类型安全</li>
+                <li>Vue 3组合式API</li>
+                <li>响应式状态管理</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-steps">
+        <h3>🧪 测试步骤</h3>
+        
+        <div class="step">
+            <strong>步骤 1：</strong> 访问 Visual Editor
+            <div class="code-block">http://localhost:5006/visualization/visual-editor-details</div>
+        </div>
+
+        <div class="step">
+            <strong>步骤 2：</strong> 添加 Card 2.1 组件到画布
+        </div>
+
+        <div class="step">
+            <strong>步骤 3：</strong> 选中组件，点击右侧配置面板的 <span class="highlight">"交互"</span> 标签
+        </div>
+
+        <div class="step">
+            <strong>步骤 4：</strong> 点击 <span class="highlight">"添加交互"</span> 按钮
+        </div>
+
+        <div class="step">
+            <strong>步骤 5：</strong> 选择执行动作为 <span class="highlight">"页面跳转"</span>
+        </div>
+
+        <div class="step">
+            <strong>步骤 6：</strong> 测试链接类型切换：
+            <ul style="margin-top: 8px;">
+                <li><strong>外部链接：</strong> 输入 https://www.baidu.com</li>
+                <li><strong>内部菜单：</strong> 从下拉列表选择系统菜单项</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <strong>步骤 7：</strong> 验证摘要显示：
+            <ul style="margin-top: 8px;">
+                <li>外部链接显示：<span class="highlight">"点击时跳转到外部链接: https://..."</span></li>
+                <li>内部菜单显示：<span class="highlight">"点击时跳转到内部菜单: /..."</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="feature-card" style="margin-top: 30px;">
+        <h3>🔍 新增功能详解</h3>
+        
+        <h4>1. 链接类型智能切换</h4>
+        <div class="code-block">// 自动识别链接类型
+if (url.startsWith('http') || url.startsWith('https')) {
+  urlType.value = 'external'
+} else if (url) {
+  urlType.value = 'internal'
+  selectedMenuPath.value = url
+}</div>
+
+        <h4>2. 菜单数据异步加载</h4>
+        <div class="code-block">const loadMenuOptions = async () => {
+  const result = await fetchGetUserRoutes()
+  menuOptions.value = flattenRoutes(result.data.list)
+}</div>
+
+        <h4>3. 路由数据扁平化处理</h4>
+        <div class="code-block">const flattenRoutes = (routes, prefix = '') => {
+  // 递归处理层级菜单，生成扁平选项列表
+  // 支持菜单层级显示：父菜单 / 子菜单
+}</div>
+
+        <h4>4. 智能摘要描述</h4>
+        <div class="code-block">// 区分内部菜单和外部链接
+if (url.startsWith('http') || url.startsWith('https')) {
+  return `${event}时跳转到外部链接: ${url}`
+} else if (url.startsWith('/')) {
+  return `${event}时跳转到内部菜单: ${url}`
+}</div>
+    </div>
+
+    <div class="success-banner" style="margin-top: 40px;">
+        <h2>✨ 用户体验升级</h2>
+        <p><strong>从复杂表单到简洁弹窗 + 内部菜单选择，完美平衡了功能完整性和易用性！</strong></p>
+        <p>现在用户可以轻松选择跳转到系统中的任何菜单页面，而不用手动输入路径。</p>
+    </div>
+
+    <script>
+        // 检查开发服务器状态
+        fetch('http://localhost:5006')
+            .then(response => {
+                if (response.ok) {
+                    console.log('✅ 开发服务器运行正常');
+                } else {
+                    console.log('⚠️ 服务器响应异常');
+                }
+            })
+            .catch(error => {
+                console.log('❌ 无法连接到开发服务器');
+            });
+    </script>
+</body>
+</html>

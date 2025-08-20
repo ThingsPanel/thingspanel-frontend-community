@@ -11,30 +11,20 @@
         <n-space justify="space-between" align="center">
           <n-text strong>数据源配置管理</n-text>
           <n-space :size="8">
-            <n-tag type="info" size="small">
-              数据源: {{ dataSources.length }}
-            </n-tag>
-            <n-tag type="success" size="small">
-              数据项: {{ totalDataItems }}
-            </n-tag>
+            <n-tag type="info" size="small">数据源: {{ dataSources.length }}</n-tag>
+            <n-tag type="success" size="small">数据项: {{ totalDataItems }}</n-tag>
           </n-space>
         </n-space>
       </template>
-      
-      <n-text depth="2" style="font-size: 12px">
-        配置多个数据源，每个数据源可包含多个数据项执行器
-      </n-text>
+
+      <n-text depth="2" style="font-size: 12px">配置多个数据源，每个数据源可包含多个数据项执行器</n-text>
     </n-card>
 
     <!-- 数据源列表 -->
     <n-collapse v-model:expanded-names="expandedNames" accordion>
-      <n-collapse-item 
-        v-for="dataSource in dataSources" 
-        :key="dataSource.key" 
-        :name="dataSource.key"
-      >
+      <n-collapse-item v-for="dataSource in dataSources" :key="dataSource.key" :name="dataSource.key">
         <template #header>
-          <DataSourceHeader 
+          <DataSourceHeader
             :data-source="dataSource"
             :stats="getDataSourceStats(dataSource.key)"
             @create-data-source="handleCreateDataSource"
@@ -56,15 +46,9 @@
     </n-collapse>
 
     <!-- 空状态 -->
-    <n-empty 
-      v-if="dataSources.length === 0"
-      description="暂无数据源配置"
-      style="margin-top: 40px"
-    >
+    <n-empty v-if="dataSources.length === 0" description="暂无数据源配置" style="margin-top: 40px">
       <template #extra>
-        <n-button type="primary" @click="handleCreateDataSource">
-          创建第一个数据源
-        </n-button>
+        <n-button type="primary" @click="handleCreateDataSource">创建第一个数据源</n-button>
       </template>
     </n-empty>
 
@@ -77,11 +61,7 @@
     />
 
     <!-- 数据项查看弹窗 -->
-    <DataItemViewModal
-      v-model="viewModalVisible"
-      :data-item="viewingItem"
-      @close="handleViewModalClose"
-    />
+    <DataItemViewModal v-model="viewModalVisible" :data-item="viewingItem" @close="handleViewModalClose" />
   </div>
 </template>
 
@@ -92,16 +72,7 @@
  */
 
 import { ref, computed, reactive, onMounted, provide } from 'vue'
-import { 
-  NCard, 
-  NText, 
-  NSpace, 
-  NTag, 
-  NCollapse, 
-  NCollapseItem, 
-  NEmpty,
-  NButton
-} from 'naive-ui'
+import { NCard, NText, NSpace, NTag, NCollapse, NCollapseItem, NEmpty, NButton } from 'naive-ui'
 
 // 导入拆分后的组件
 import DataItemModal from './modals/DataItemModal.vue'
@@ -214,7 +185,7 @@ function generateDataItemId(): string {
  */
 function handleCreateDataSource(): void {
   const newKey = `data_source_${Date.now()}`
-  
+
   // 这里可以打开一个数据源配置弹窗
   // 临时实现：直接创建一个默认数据源
   const newDataSource = {
@@ -226,13 +197,13 @@ function handleCreateDataSource(): void {
 
   // 创建配置管理器中的数据源
   configurator.createDataSource(newKey, newDataSource.name, newDataSource.description)
-  
+
   // 初始化数据项数组
   dataItems.set(newKey, [])
-  
+
   // 展开新创建的数据源
   expandedNames.value = [newKey]
-  
+
   console.log('📊 [DataSourceConfigForm] 创建数据源:', newDataSource)
   window.$message?.success('数据源创建成功')
 }
@@ -243,14 +214,14 @@ function handleCreateDataSource(): void {
 function handleDeleteDataSource(dataSourceKey: string): void {
   // 删除配置管理器中的数据源
   configurator.deleteDataSource(dataSourceKey)
-  
+
   // 删除本地数据
   dataItems.delete(dataSourceKey)
   dataSourceConfigs.delete(dataSourceKey)
-  
+
   // 更新展开状态
   expandedNames.value = expandedNames.value.filter(name => name !== dataSourceKey)
-  
+
   console.log('🗑️ [DataSourceConfigForm] 删除数据源:', dataSourceKey)
   window.$message?.success('数据源删除成功')
 }
@@ -272,7 +243,7 @@ function handleAddDataItem(dataSourceKey: string): void {
 function handleEditDataItem(dataSourceKey: string, itemId: string): void {
   const items = dataItems.get(dataSourceKey) || []
   const item = items.find(item => item.id === itemId)
-  
+
   if (item) {
     currentDataSourceKey.value = dataSourceKey
     editingItem.value = item
@@ -287,10 +258,10 @@ function handleDeleteDataItem(dataSourceKey: string, itemId: string): void {
   const items = dataItems.get(dataSourceKey) || []
   const filteredItems = items.filter(item => item.id !== itemId)
   dataItems.set(dataSourceKey, filteredItems)
-  
+
   // 从配置管理器中删除
   configurator.removeExecutor(dataSourceKey, itemId)
-  
+
   console.log('🗑️ [DataSourceConfigForm] 删除数据项:', { dataSourceKey, itemId })
   window.$message?.success('数据项删除成功')
 }
@@ -301,7 +272,7 @@ function handleDeleteDataItem(dataSourceKey: string, itemId: string): void {
 function handleViewDataItem(dataSourceKey: string, itemId: string): void {
   const items = dataItems.get(dataSourceKey) || []
   const item = items.find(item => item.id === itemId)
-  
+
   if (item) {
     viewingItem.value = item
     viewModalVisible.value = true
@@ -331,7 +302,7 @@ async function handleTestDataItem(dataSourceKey: string, itemId: string): Promis
 function handleDataItemConfirm(item: RawDataItem): void {
   const dataSourceKey = currentDataSourceKey.value
   const items = dataItems.get(dataSourceKey) || []
-  
+
   if (editingItem.value) {
     // 编辑模式：更新现有数据项
     const index = items.findIndex(i => i.id === editingItem.value!.id)
@@ -352,7 +323,7 @@ function handleDataItemConfirm(item: RawDataItem): void {
     console.log('➕ [DataSourceConfigForm] 添加数据项:', newItem)
     window.$message?.success('数据项添加成功')
   }
-  
+
   dataItems.set(dataSourceKey, [...items])
   modalVisible.value = false
   editingItem.value = null
@@ -380,22 +351,22 @@ onMounted(async () => {
   try {
     // 初始化配置管理器
     await configurator.initialize()
-    
+
     // 初始化调度器
     await scheduler.initialize()
-    
+
     // 初始化数据源
     props.dataSources.forEach(dataSource => {
       if (!dataItems.has(dataSource.key)) {
         dataItems.set(dataSource.key, [])
       }
     })
-    
+
     // 展开第一个数据源
     if (props.dataSources.length > 0) {
       expandedNames.value = [props.dataSources[0].key]
     }
-    
+
     console.log('✅ [DataSourceConfigForm] 组件初始化完成')
   } catch (error) {
     console.error('❌ [DataSourceConfigForm] 初始化失败:', error)
@@ -468,30 +439,30 @@ provide('scheduler', scheduler)
   .data-source-config-form {
     padding: 0 8px;
   }
-  
+
   .data-source-config-form :deep(.n-collapse-item__header) {
     padding: 8px 12px;
   }
-  
+
   .data-source-config-form :deep(.n-collapse-item__content) {
     padding: 12px;
   }
 }
 
 /* 明暗主题适配 */
-[data-theme="dark"] .data-source-config-form :deep(.n-collapse-item) {
+[data-theme='dark'] .data-source-config-form :deep(.n-collapse-item) {
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .data-source-config-form :deep(.n-collapse-item__header) {
+[data-theme='dark'] .data-source-config-form :deep(.n-collapse-item__header) {
   background: rgba(255, 255, 255, 0.05);
 }
 
-[data-theme="light"] .data-source-config-form :deep(.n-collapse-item) {
+[data-theme='light'] .data-source-config-form :deep(.n-collapse-item) {
   border-color: rgba(0, 0, 0, 0.08);
 }
 
-[data-theme="light"] .data-source-config-form :deep(.n-collapse-item__header) {
+[data-theme='light'] .data-source-config-form :deep(.n-collapse-item__header) {
   background: rgba(0, 0, 0, 0.02);
 }
 

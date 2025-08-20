@@ -18,18 +18,10 @@
 
     <!-- 操作按钮 -->
     <n-space :size="4" align="center">
-      <n-button size="tiny" type="info" @click="formatJson">
-        🎨 格式化
-      </n-button>
-      <n-button size="tiny" type="warning" @click="correctJson">
-        🔧 纠错
-      </n-button>
-      <n-button size="tiny" type="success" @click="validateJson">
-        ✅ 验证
-      </n-button>
-      <n-button size="tiny" @click="clearJson">
-        🗑️ 清空
-      </n-button>
+      <n-button size="tiny" type="info" @click="formatJson">🎨 格式化</n-button>
+      <n-button size="tiny" type="warning" @click="correctJson">🔧 纠错</n-button>
+      <n-button size="tiny" type="success" @click="validateJson">✅ 验证</n-button>
+      <n-button size="tiny" @click="clearJson">🗑️ 清空</n-button>
     </n-space>
 
     <!-- 状态显示 -->
@@ -37,7 +29,7 @@
       <n-tag :type="validationState.type" size="small" style="font-size: 10px">
         {{ validationState.text }}
       </n-tag>
-      <n-text depth="3" style="font-size: 10px" v-if="validationState.message">
+      <n-text v-if="validationState.message" depth="3" style="font-size: 10px">
         {{ validationState.message }}
       </n-text>
     </n-space>
@@ -114,7 +106,7 @@ const editorOptions = {
 /** 监听值变化进行验证 */
 watch(
   localValue,
-  (newValue) => {
+  newValue => {
     if (newValue.trim()) {
       validateJsonInternal(newValue)
     } else {
@@ -179,13 +171,13 @@ function formatJson(): void {
     const parsed = JSON.parse(localValue.value)
     const formatted = JSON.stringify(parsed, null, 2)
     localValue.value = formatted
-    
+
     validationState.value = {
       type: 'success',
       text: '已格式化',
       message: 'JSON已格式化'
     }
-    
+
     console.log('🎨 [JsonDataInput] JSON已格式化')
     window.$message?.success('JSON已格式化')
   } catch (error) {
@@ -200,7 +192,7 @@ function formatJson(): void {
 function correctJson(): void {
   try {
     let corrected = localValue.value.trim()
-    
+
     if (!corrected) {
       window.$message?.warning('请先输入数据')
       return
@@ -214,19 +206,19 @@ function correctJson(): void {
       { pattern: /；/g, replacement: ';' },
       { pattern: /"/g, replacement: '"' },
       { pattern: /"/g, replacement: '"' },
-      { pattern: /'/g, replacement: '\'' },
-      { pattern: /'/g, replacement: '\'' },
-      
+      { pattern: /'/g, replacement: "'" },
+      { pattern: /'/g, replacement: "'" },
+
       // 移除末尾逗号
       { pattern: /,(\s*[}\]])/g, replacement: '$1' },
-      
+
       // 修复单引号
       { pattern: /'([^']*)':/g, replacement: '"$1":' },
       { pattern: /:\s*'([^']*)'/g, replacement: ': "$1"' },
-      
+
       // 修复未引用的键
       { pattern: /([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, replacement: '$1"$2":' },
-      
+
       // 处理多余的空白字符
       { pattern: /\s+/g, replacement: ' ' },
       { pattern: /{\s+/g, replacement: '{ ' },
@@ -242,18 +234,18 @@ function correctJson(): void {
 
     // 尝试解析纠正后的JSON
     JSON.parse(corrected)
-    
+
     localValue.value = corrected
-    
+
     validationState.value = {
       type: 'success',
       text: '已纠错',
       message: 'JSON错误已修复'
     }
-    
+
     console.log('🔧 [JsonDataInput] JSON已纠错')
     window.$message?.success('JSON错误已修复')
-    
+
     // 延迟格式化
     nextTick(() => {
       formatJson()
@@ -269,7 +261,7 @@ function correctJson(): void {
  */
 function validateJson(): void {
   const isValid = validateJsonInternal(localValue.value)
-  
+
   if (isValid) {
     window.$message?.success('JSON格式正确')
   } else {
@@ -287,7 +279,7 @@ function clearJson(): void {
     text: '已清空',
     message: '请输入新的JSON数据'
   }
-  
+
   console.log('🗑️ [JsonDataInput] JSON已清空')
   window.$message?.info('JSON已清空')
 }
@@ -313,7 +305,7 @@ function handleValidationChanged(validation: { isValid: boolean; error: string }
       message: validation.error
     }
   }
-  
+
   emit('validation-changed', validation)
 }
 
@@ -359,7 +351,7 @@ nextTick(() => {
   .editor-container {
     height: 250px;
   }
-  
+
   .action-buttons {
     flex-wrap: wrap;
     gap: 4px;
@@ -367,12 +359,12 @@ nextTick(() => {
 }
 
 /* 明暗主题适配 */
-[data-theme="dark"] .editor-container {
+[data-theme='dark'] .editor-container {
   border-color: rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
 }
 
-[data-theme="light"] .editor-container {
+[data-theme='light'] .editor-container {
   border-color: rgba(0, 0, 0, 0.08);
   background: rgba(0, 0, 0, 0.02);
 }

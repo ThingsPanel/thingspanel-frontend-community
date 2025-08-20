@@ -26,7 +26,12 @@
       "Bash(taskkill:*)",
       "Bash(pnpm add:*)",
       "Bash(curl:*)",
-      "Bash(pnpm list:*)"
+      "Bash(pnpm list:*)",
+      "Bash(cp:*)",
+      "Bash(npx eslint:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(npm run typecheck:*)"
     ],
     "deny": [],
     "additionalDirectories": [

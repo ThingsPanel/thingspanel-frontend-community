@@ -9,11 +9,7 @@
         <label>选择组件:</label>
         <select v-model="selectedTestComponent" class="test-select">
           <option value="">请选择要测试的组件</option>
-          <option 
-            v-for="node in availableComponents" 
-            :key="node.id" 
-            :value="node.id"
-          >
+          <option v-for="node in availableComponents" :key="node.id" :value="node.id">
             {{ node.name }} ({{ node.id }})
           </option>
         </select>
@@ -33,40 +29,38 @@
 
       <div class="test-control-group">
         <label>动作参数:</label>
-        <input 
-          v-model="testActionValue" 
-          :placeholder="getTestActionPlaceholder()" 
-          class="test-input" 
-        />
+        <input v-model="testActionValue" :placeholder="getTestActionPlaceholder()" class="test-input" />
       </div>
 
       <div class="test-actions">
-        <button 
-          class="test-btn test-btn-primary" 
-          :disabled="!selectedTestComponent"
-          @click="executeTestInteraction"
-        >
+        <button class="test-btn test-btn-primary" :disabled="!selectedTestComponent" @click="executeTestInteraction">
           执行交互
         </button>
-        <button 
-          class="test-btn test-btn-secondary" 
-          :disabled="!selectedTestComponent"
-          @click="resetTestComponent"
-        >
+        <button class="test-btn test-btn-secondary" :disabled="!selectedTestComponent" @click="resetTestComponent">
           重置组件
         </button>
-        <button class="test-btn test-btn-success" @click="$emit('run-system-test')">
-          系统测试
-        </button>
+        <button class="test-btn test-btn-success" @click="$emit('run-system-test')">系统测试</button>
       </div>
 
       <div class="test-help">
         <h4>参数示例:</h4>
         <ul>
-          <li><strong>颜色:</strong> #ff6b6b, #4ecdc4, #45b7d1</li>
-          <li><strong>尺寸:</strong> 300x200, 400x300</li>
-          <li><strong>透明度:</strong> 0.5, 0.8, 1.0</li>
-          <li><strong>动画时长:</strong> 1000, 2000 (毫秒)</li>
+          <li>
+            <strong>颜色:</strong>
+            #ff6b6b, #4ecdc4, #45b7d1
+          </li>
+          <li>
+            <strong>尺寸:</strong>
+            300x200, 400x300
+          </li>
+          <li>
+            <strong>透明度:</strong>
+            0.5, 0.8, 1.0
+          </li>
+          <li>
+            <strong>动画时长:</strong>
+            1000, 2000 (毫秒)
+          </li>
         </ul>
       </div>
     </div>
@@ -100,7 +94,7 @@ const availableComponents = computed(() => {
   if (!props.stateManager || !props.stateManager.nodes) {
     return []
   }
-  
+
   return props.stateManager.nodes.map((node: any) => ({
     id: node.id,
     type: node.type,

@@ -818,75 +818,39 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
-        name: 'test_card2-config-test',
-        path: '/test/card2-config-test',
-        component: 'view.test_card2-config-test',
+        name: 'test_datasource-integration',
+        path: '/test/datasource-integration',
+        component: 'view.test_datasource-integration',
         meta: {
-          title: 'test_card2-config-test',
-          i18nKey: 'route.test_card2-config-test'
+          title: 'test_datasource-integration',
+          i18nKey: 'route.test_datasource-integration'
         }
       },
       {
-        name: 'test_config-driven-data-source',
-        path: '/test/config-driven-data-source',
-        component: 'view.test_config-driven-data-source',
+        name: 'test_datasource-processor-test',
+        path: '/test/datasource-processor-test',
+        component: 'view.test_datasource-processor-test',
         meta: {
-          title: 'test_config-driven-data-source',
-          i18nKey: 'route.test_config-driven-data-source'
+          title: 'test_datasource-processor-test',
+          i18nKey: 'route.test_datasource-processor-test'
         }
       },
       {
-        name: 'test_data-filter-test',
-        path: '/test/data-filter-test',
-        component: 'view.test_data-filter-test',
+        name: 'test_executor-integration',
+        path: '/test/executor-integration',
+        component: 'view.test_executor-integration',
         meta: {
-          title: 'test_data-filter-test',
-          i18nKey: 'route.test_data-filter-test'
+          title: 'test_executor-integration',
+          i18nKey: 'route.test_executor-integration'
         }
       },
       {
-        name: 'test_data-mapping-test',
-        path: '/test/data-mapping-test',
-        component: 'view.test_data-mapping-test',
+        name: 'test_http-request-validation',
+        path: '/test/http-request-validation',
+        component: 'view.test_http-request-validation',
         meta: {
-          title: 'test_data-mapping-test',
-          i18nKey: 'route.test_data-mapping-test'
-        }
-      },
-      {
-        name: 'test_data-source-config-form-test',
-        path: '/test/data-source-config-form-test',
-        component: 'view.test_data-source-config-form-test',
-        meta: {
-          title: 'test_data-source-config-form-test',
-          i18nKey: 'route.test_data-source-config-form-test'
-        }
-      },
-      {
-        name: 'test_data-source-system-test',
-        path: '/test/data-source-system-test',
-        component: 'view.test_data-source-system-test',
-        meta: {
-          title: 'test_data-source-system-test',
-          i18nKey: 'route.test_data-source-system-test'
-        }
-      },
-      {
-        name: 'test_editor-integration',
-        path: '/test/editor-integration',
-        component: 'view.test_editor-integration',
-        meta: {
-          title: 'test_editor-integration',
-          i18nKey: 'route.test_editor-integration'
-        }
-      },
-      {
-        name: 'test_flexible-config-test',
-        path: '/test/flexible-config-test',
-        component: 'view.test_flexible-config-test',
-        meta: {
-          title: 'test_flexible-config-test',
-          i18nKey: 'route.test_flexible-config-test'
+          title: 'test_http-request-validation',
+          i18nKey: 'route.test_http-request-validation'
         }
       },
       {
@@ -899,39 +863,21 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
-        name: 'test_performance-test',
-        path: '/test/performance-test',
-        component: 'view.test_performance-test',
+        name: 'test_original-config-test',
+        path: '/test/original-config-test',
+        component: 'view.test_original-config-test',
         meta: {
-          title: 'test_performance-test',
-          i18nKey: 'route.test_performance-test'
+          title: 'test_original-config-test',
+          i18nKey: 'route.test_original-config-test'
         }
       },
       {
-        name: 'test_script-engine-test',
-        path: '/test/script-engine-test',
-        component: 'view.test_script-engine-test',
+        name: 'test_property-exposure-test',
+        path: '/test/property-exposure-test',
+        component: 'view.test_property-exposure-test',
         meta: {
-          title: 'test_script-engine-test',
-          i18nKey: 'route.test_script-engine-test'
-        }
-      },
-      {
-        name: 'test_simple-card2-test',
-        path: '/test/simple-card2-test',
-        component: 'view.test_simple-card2-test',
-        meta: {
-          title: 'test_simple-card2-test',
-          i18nKey: 'route.test_simple-card2-test'
-        }
-      },
-      {
-        name: 'test_unifiedarchitecturetest',
-        path: '/test/unifiedarchitecturetest',
-        component: 'view.test_unifiedarchitecturetest',
-        meta: {
-          title: 'test_unifiedarchitecturetest',
-          i18nKey: 'route.test_unifiedarchitecturetest'
+          title: 'test_property-exposure-test',
+          i18nKey: 'route.test_property-exposure-test'
         }
       }
     ]

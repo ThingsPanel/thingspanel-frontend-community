@@ -1,0 +1,962 @@
+<template>
+  <div class="interaction-simple">
+    <!-- 简洁列表 + 添加按钮 -->
+    <div class="interaction-header">
+      <h4 class="section-title">交互配置</h4>
+      <n-button size="small" type="primary" @click="showAddModal = true">
+        <template #icon>
+          <n-icon><FlashOutline /></n-icon>
+        </template>
+        添加交互
+      </n-button>
+    </div>
+
+    <!-- 交互列表 -->
+    <div class="interactions-list">
+      <div v-if="interactions.length === 0" class="empty-state">
+        <div class="empty-icon">🎯</div>
+        <div class="empty-text">暂无交互配置</div>
+        <div class="empty-desc">点击"添加交互"开始配置</div>
+      </div>
+
+      <div v-else>
+        <div v-for="(interaction, index) in interactions" :key="index" class="interaction-item">
+          <div class="interaction-summary">
+            <div class="summary-badge" :class="getEventType(interaction.event)">
+              {{ getEventLabel(interaction.event) }}
+            </div>
+            <div class="summary-text">
+              <div class="summary-title">{{ getSummaryTitle(interaction) }}</div>
+              <div class="summary-desc">{{ getSummaryDesc(interaction) }}</div>
+            </div>
+            <div class="summary-actions">
+              <n-switch v-model:value="interaction.enabled" size="small" />
+              <n-button size="tiny" quaternary @click="editInteraction(index)">编辑</n-button>
+              <n-button size="tiny" quaternary @click="deleteInteraction(index)">
+                <template #icon>
+                  <n-icon><TrashOutline /></n-icon>
+                </template>
+              </n-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 添加/编辑弹窗 -->
+    <n-modal v-model:show="showAddModal" :title="editingIndex >= 0 ? '编辑交互' : '添加交互'">
+      <n-card style="width: 600px" :bordered="false">
+        <n-form :model="currentInteraction" label-placement="left" label-width="auto">
+          <!-- 触发条件 -->
+          <n-form-item label="触发条件">
+            <n-select v-model:value="currentInteraction.event" :options="eventOptions" placeholder="选择触发条件" />
+          </n-form-item>
+
+          <!-- 动作类型 -->
+          <n-form-item label="执行动作">
+            <n-select
+              v-model:value="currentActionType"
+              :options="actionTypeOptions"
+              placeholder="选择要执行的动作"
+              @update:value="handleActionTypeChange"
+            />
+          </n-form-item>
+
+          <!-- URL跳转配置 -->
+          <template v-if="currentActionType === 'jump'">
+            <n-form-item label="链接类型">
+              <n-radio-group v-model:value="urlType" @update:value="handleUrlTypeChange">
+                <n-space>
+                  <n-radio value="external">外部链接</n-radio>
+                  <n-radio value="internal">内部菜单</n-radio>
+                </n-space>
+              </n-radio-group>
+            </n-form-item>
+
+            <n-form-item v-if="urlType === 'external'" label="跳转地址">
+              <n-input v-model:value="currentInteraction.url" placeholder="https://example.com 或 /relative-path" />
+            </n-form-item>
+
+            <n-form-item v-if="urlType === 'internal'" label="选择菜单">
+              <n-select
+                v-model:value="selectedMenuPath"
+                :options="menuOptions"
+                placeholder="选择要跳转的菜单项"
+                :loading="menuLoading"
+                filterable
+                @update:value="handleMenuPathChange"
+              />
+            </n-form-item>
+
+            <n-form-item label="打开方式">
+              <n-radio-group v-model:value="currentInteraction.target">
+                <n-radio value="_self">当前窗口</n-radio>
+                <n-radio value="_blank">新窗口</n-radio>
+              </n-radio-group>
+            </n-form-item>
+          </template>
+
+
+          <!-- 🔥 数据变化时的属性选择和条件配置 -->
+          <template v-if="currentInteraction.event === 'dataChange'">
+            <n-form-item label="监听属性">
+              <n-select
+                v-model:value="currentWatchedProperty"
+                :options="availablePropertyOptions"
+                placeholder="选择要监听的组件属性"
+                filterable
+                clearable
+                @update:value="handleWatchedPropertyChange"
+              >
+                <template #empty>
+                  <div style="padding: 12px; text-align: center; color: var(--text-color-3)">
+                    <div>暂无可监听属性</div>
+                    <div style="font-size: 12px; margin-top: 4px">组件开发者需要暴露可监听的属性</div>
+                  </div>
+                </template>
+              </n-select>
+            </n-form-item>
+
+            <n-form-item label="执行条件">
+              <n-space>
+                <n-select
+                  v-model:value="currentConditionType"
+                  :options="conditionTypeOptions"
+                  placeholder="条件类型"
+                  style="width: 120px"
+                  @update:value="handleConditionTypeChange"
+                />
+                <template v-if="currentConditionType === 'comparison'">
+                  <n-select
+                    v-model:value="currentConditionOperator"
+                    :options="comparisonOperatorOptions"
+                    placeholder="比较"
+                    style="width: 100px"
+                  />
+                  <n-input v-model:value="currentConditionValue" placeholder="值" style="width: 120px" />
+                </template>
+                <template v-else-if="currentConditionType === 'range'">
+                  <n-input v-model:value="currentConditionValue" placeholder="如: 0-100" style="width: 120px" />
+                </template>
+                <template v-else-if="currentConditionType === 'expression'">
+                  <n-input
+                    v-model:value="currentConditionValue"
+                    placeholder="如: x > 10 && x < 20"
+                    style="width: 200px"
+                  />
+                </template>
+              </n-space>
+            </n-form-item>
+          </template>
+
+
+          <!-- 属性修改配置 -->
+          <template v-if="currentActionType === 'modify'">
+            <n-form-item label="目标组件">
+              <n-select
+                v-model:value="currentInteraction.targetComponentId"
+                :options="componentOptions"
+                placeholder="选择要修改的组件"
+              />
+            </n-form-item>
+            <n-form-item label="修改属性">
+              <n-select
+                v-model:value="currentInteraction.targetProperty"
+                :options="targetPropertyOptions"
+                placeholder="选择要修改的属性"
+              />
+            </n-form-item>
+            <n-form-item label="新值">
+              <n-input v-model:value="currentInteraction.updateValue" placeholder="输入新的属性值" />
+            </n-form-item>
+          </template>
+        </n-form>
+
+        <template #footer>
+          <n-space justify="end">
+            <n-button @click="showAddModal = false">取消</n-button>
+            <n-button type="primary" @click="saveInteraction">确定</n-button>
+          </n-space>
+        </template>
+      </n-card>
+    </n-modal>
+  </div>
+</template>
+
+<script setup lang="ts">
+/**
+ * 交互配置组件 - 简洁弹窗版
+ * 特点：列表 + 弹窗，简单直接
+ */
+
+import { ref, computed, inject } from 'vue'
+import {
+  NSpace,
+  NButton,
+  NIcon,
+  NInput,
+  NSelect,
+  NSwitch,
+  NRadioGroup,
+  NRadio,
+  NModal,
+  NCard,
+  NForm,
+  NFormItem,
+  useMessage
+} from 'naive-ui'
+import { FlashOutline, TrashOutline } from '@vicons/ionicons5'
+import { fetchGetUserRoutes } from '@/service/api/route'
+import { propertyExposureRegistry } from '@/card2.1/core/property-exposure'
+
+interface Props {
+  modelValue?: any[]
+  componentId?: string
+  componentType?: string
+}
+
+interface Emits {
+  (e: 'update:modelValue', value: any[]): void
+}
+
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+// 🔥 注入Visual Editor状态获取当前画布组件
+const visualEditorState = inject<{ getAvailableComponents: () => any[] }>('visualEditorState', {
+  getAvailableComponents: () => {
+    console.log('[INTERACTION-DEBUG] Visual Editor状态未注入，返回空组件列表')
+    return []
+  }
+})
+
+// 状态
+const interactions = ref(props.modelValue || [])
+const showAddModal = ref(false)
+const editingIndex = ref(-1)
+const currentInteraction = ref({
+  event: 'click',
+  enabled: true,
+  priority: 1,
+  url: '',
+  target: '_blank',
+  targetComponentId: '',
+  targetProperty: '',
+  updateValue: ''
+})
+const currentActionType = ref('')
+
+// 🔥 恢复内部菜单选择功能
+const urlType = ref<'external' | 'internal'>('external')
+const selectedMenuPath = ref('')
+const menuOptions = ref<{ label: string; value: string }[]>([])
+const menuLoading = ref(false)
+const message = useMessage()
+
+// 🔥 恢复数据变化配置状态
+const currentWatchedProperty = ref('')
+const currentConditionType = ref('')
+const currentConditionOperator = ref('')
+const currentConditionValue = ref('')
+
+// ✅ 正确的3个事件选项
+const eventOptions = [
+  { label: '点击时', value: 'click' },
+  { label: '悬停时', value: 'hover' },
+  { label: '属性变化时', value: 'dataChange' }
+]
+
+// 🔥 恢复数据变化时的属性选择和条件配置
+// 条件类型选项
+const conditionTypeOptions = [
+  { label: '比较条件', value: 'comparison' },
+  { label: '范围条件', value: 'range' },
+  { label: '表达式', value: 'expression' }
+]
+
+// 比较运算符选项
+const comparisonOperatorOptions = [
+  { label: '等于', value: 'equals' },
+  { label: '不等于', value: 'notEquals' },
+  { label: '大于', value: 'greaterThan' },
+  { label: '大于等于', value: 'greaterThanOrEqual' },
+  { label: '小于', value: 'lessThan' },
+  { label: '小于等于', value: 'lessThanOrEqual' },
+  { label: '包含', value: 'contains' },
+  { label: '开头是', value: 'startsWith' },
+  { label: '结尾是', value: 'endsWith' }
+]
+
+// ✅ 正确的2个动作选项
+const actionTypeOptions = [
+  { label: '页面跳转', value: 'jump' },
+  { label: '修改目标组件属性', value: 'modify' }
+]
+
+// ✅ 动态获取当前画布上的组件（用于目标组件选择）
+const componentOptions = computed(() => {
+  const components = visualEditorState.getAvailableComponents()
+
+  console.log('[INTERACTION-DEBUG] 获取画布组件:', {
+    componentCount: components.length,
+    components: components
+  })
+
+  return components.map(comp => ({
+    // 优先使用标题，然后是名称，最后是ID的前8位
+    label: comp.title || comp.label || comp.name || `组件 (${comp.id.slice(0, 8)}...)`,
+    value: comp.id,
+    componentType: comp.type // 保存组件类型，用于获取可响应属性
+  }))
+})
+
+// ✅ 根据选择的目标组件动态获取可响应属性
+const targetPropertyOptions = computed(() => {
+  if (!currentInteraction.value.targetComponentId) {
+    console.log('[INTERACTION-DEBUG] 未选择目标组件')
+    return []
+  }
+
+  // 根据组件ID找到组件类型
+  const components = visualEditorState.getAvailableComponents()
+  const targetComponent = components.find(comp => comp.id === currentInteraction.value.targetComponentId)
+
+  if (!targetComponent) {
+    console.log('[INTERACTION-DEBUG] 未找到目标组件:', currentInteraction.value.targetComponentId)
+    return []
+  }
+
+  console.log('[INTERACTION-DEBUG] 目标组件:', {
+    id: targetComponent.id,
+    type: targetComponent.type,
+    title: targetComponent.title
+  })
+
+  // 获取该组件类型的可响应属性（通过属性暴露注册表）
+  const componentExposure = propertyExposureRegistry.getComponentExposure(targetComponent.type)
+
+  if (!componentExposure || !componentExposure.listenableProperties) {
+    console.log('[INTERACTION-DEBUG] 目标组件无可响应属性')
+    return []
+  }
+
+  // 转换为选择器选项格式，按分组组织
+  const groupedOptions: any[] = []
+  const groups: Record<string, any[]> = {}
+
+  componentExposure.listenableProperties.forEach(property => {
+    const group = property.group || '其他'
+    if (!groups[group]) {
+      groups[group] = []
+    }
+
+    groups[group].push({
+      label: `${property.label}${property.description ? ` (${property.description})` : ''}`,
+      value: property.name,
+      property // 保存完整属性信息
+    })
+  })
+
+  // 转换为分组选项格式
+  Object.entries(groups).forEach(([groupName, options]) => {
+    if (options.length > 0) {
+      groupedOptions.push({
+        type: 'group',
+        label: groupName,
+        key: groupName,
+        children: options
+      })
+    }
+  })
+
+  const options = groupedOptions.length > 0 ? groupedOptions : []
+
+  console.log('[INTERACTION-DEBUG] 目标组件可响应属性:', options)
+  return options
+})
+
+
+// 🔥 可用属性选项 - 基于组件类型动态获取
+const availablePropertyOptions = computed(() => {
+  console.log('[INTERACTION-DEBUG] availablePropertyOptions 计算:', {
+    componentType: props.componentType,
+    registryKeys: propertyExposureRegistry.getAllComponentTypes()
+  })
+
+  if (!props.componentType) {
+    console.log('[INTERACTION-DEBUG] ❌ componentType 为空')
+    return []
+  }
+
+  // 从属性暴露注册表获取当前组件类型的可监听属性
+  const componentExposure = propertyExposureRegistry.getComponentExposure(props.componentType)
+
+  if (!componentExposure || !componentExposure.listenableProperties) {
+    console.log('[INTERACTION-DEBUG] ❌ 未找到组件属性暴露配置:', props.componentType)
+    return []
+  }
+
+  // 按分组整理属性选项
+  const groupedOptions: any[] = []
+  const groups: Record<string, any[]> = {}
+
+  componentExposure.listenableProperties.forEach(property => {
+    const group = property.group || '其他'
+    if (!groups[group]) {
+      groups[group] = []
+    }
+
+    groups[group].push({
+      label: `${property.label}${property.description ? ` (${property.description})` : ''}`,
+      value: property.name,
+      property // 保存完整属性信息供后续使用
+    })
+  })
+
+  // 转换为分组选项格式
+  Object.entries(groups).forEach(([groupName, options]) => {
+    if (options.length > 0) {
+      groupedOptions.push({
+        type: 'group',
+        label: groupName,
+        key: groupName,
+        children: options
+      })
+    }
+  })
+
+  const options = groupedOptions.length > 0 ? groupedOptions : []
+  console.log('[INTERACTION-DEBUG] ✅ 生成的属性选项:', options)
+  return options
+})
+
+// ✅ 正确的事件类型样式 (3种)
+const getEventType = (event: string) => {
+  const typeMap = {
+    click: 'click',
+    hover: 'hover',
+    dataChange: 'condition'
+  }
+  return typeMap[event] || 'default'
+}
+
+// ✅ 正确的事件标签 (3种)
+const getEventLabel = (event: string) => {
+  const labelMap = {
+    click: '点击',
+    hover: '悬停',
+    dataChange: '属性变化'
+  }
+  return labelMap[event] || event
+}
+
+// 获取摘要标题
+const getSummaryTitle = (interaction: any) => {
+  const actionType = getActionType(interaction)
+  if (actionType === 'jump') {
+    return '页面跳转'
+  } else if (actionType === 'modify') {
+    return '修改属性'
+  }
+  return '自定义动作'
+}
+
+// 获取摘要描述
+const getSummaryDesc = (interaction: any) => {
+  const event = getEventLabel(interaction.event)
+  const actionType = getActionType(interaction)
+
+  // 🔥 数据变化事件需要显示监听属性和条件
+  if (interaction.event === 'dataChange') {
+    const watchedProperty = interaction.watchedProperty || '未指定属性'
+    let conditionDesc = '无条件'
+
+    if (interaction.condition) {
+      const conditionType = interaction.condition.type
+      const value = interaction.condition.value
+
+      if (conditionType === 'comparison') {
+        const operator = interaction.condition.operator
+        const operatorMap = {
+          equals: '等于',
+          notEquals: '不等于',
+          greaterThan: '大于',
+          greaterThanOrEqual: '大于等于',
+          lessThan: '小于',
+          lessThanOrEqual: '小于等于',
+          contains: '包含',
+          startsWith: '开头是',
+          endsWith: '结尾是'
+        }
+        conditionDesc = `${operatorMap[operator] || operator} ${value}`
+      } else if (conditionType === 'range') {
+        conditionDesc = `范围 ${value}`
+      } else if (conditionType === 'expression') {
+        conditionDesc = `表达式 ${value}`
+      }
+    }
+
+    let baseDesc = `监听 ${watchedProperty} (${conditionDesc})`
+
+    // 添加动作描述
+    if (actionType === 'jump') {
+      const url = interaction.responses?.[0]?.value || ''
+      if (url.startsWith('http') || url.startsWith('https')) {
+        baseDesc += ` → 跳转到外部链接`
+      } else if (url.startsWith('/')) {
+        baseDesc += ` → 跳转到内部菜单`
+      } else {
+        baseDesc += ` → 跳转到 ${url}`
+      }
+    } else if (actionType === 'modify') {
+      const target = interaction.responses?.[0]?.targetComponentId || '组件'
+      const property = interaction.responses?.[0]?.targetProperty || '属性'
+      baseDesc += ` → 修改${target}的${property}`
+    }
+
+    return baseDesc
+  }
+
+  if (actionType === 'jump') {
+    const url = interaction.responses?.[0]?.value || ''
+    // 🔥 区分内部菜单和外部链接
+    if (url.startsWith('http') || url.startsWith('https')) {
+      return `${event}时跳转到外部链接: ${url}`
+    } else if (url.startsWith('/')) {
+      return `${event}时跳转到内部菜单: ${url}`
+    }
+    return `${event}时跳转到 ${url}`
+  } else if (actionType === 'modify') {
+    const target = interaction.responses?.[0]?.targetComponentId || '组件'
+    const property = interaction.responses?.[0]?.targetProperty || '属性'
+    return `${event}时修改${target}的${property}`
+  }
+
+  return `${event}时执行自定义动作`
+}
+
+// 获取动作类型
+const getActionType = (interaction: any) => {
+  const firstResponse = interaction.responses?.[0]
+  if (!firstResponse) return 'none'
+
+  if (firstResponse.action === 'navigateToUrl') return 'jump'
+  if (firstResponse.action === 'updateComponentData') return 'modify'
+  return 'custom'
+}
+
+// 编辑交互
+const editInteraction = (index: number) => {
+  editingIndex.value = index
+  const interaction = interactions.value[index]
+
+  // 填充当前表单
+  currentInteraction.value = {
+    event: interaction.event,
+    enabled: interaction.enabled,
+    priority: interaction.priority,
+    url: '',
+    target: '_blank',
+    targetComponentId: '',
+    targetProperty: '',
+    updateValue: ''
+  }
+
+  // 🔥 重置数据变化相关状态
+  currentWatchedProperty.value = ''
+  currentConditionType.value = ''
+  currentConditionOperator.value = ''
+  currentConditionValue.value = ''
+
+  // 🔥 如果是数据变化事件，加载监听属性和条件配置
+  if (interaction.event === 'dataChange') {
+    currentWatchedProperty.value = interaction.watchedProperty || ''
+
+    if (interaction.condition) {
+      currentConditionType.value = interaction.condition.type || ''
+
+      if (interaction.condition.type === 'comparison') {
+        currentConditionOperator.value = interaction.condition.operator || ''
+        currentConditionValue.value = interaction.condition.value || ''
+      } else if (interaction.condition.type === 'range' || interaction.condition.type === 'expression') {
+        currentConditionValue.value = interaction.condition.value || ''
+      }
+    }
+  }
+
+
+  // 根据响应类型填充表单
+  const firstResponse = interaction.responses?.[0]
+  if (firstResponse) {
+    if (firstResponse.action === 'navigateToUrl') {
+      currentActionType.value = 'jump'
+      const url = firstResponse.value || ''
+      currentInteraction.value.url = url
+      currentInteraction.value.target = firstResponse.target || '_blank'
+
+      // 🔥 判断是外部链接还是内部路径
+      if (url && (url.startsWith('http') || url.startsWith('https'))) {
+        urlType.value = 'external'
+      } else if (url) {
+        urlType.value = 'internal'
+        selectedMenuPath.value = url
+        // 确保菜单选项已加载
+        loadMenuOptions()
+      }
+    } else if (firstResponse.action === 'updateComponentData') {
+      currentActionType.value = 'modify'
+      currentInteraction.value.targetComponentId = firstResponse.targetComponentId || ''
+      currentInteraction.value.targetProperty = firstResponse.targetProperty || ''
+      currentInteraction.value.updateValue = firstResponse.updateValue || ''
+    }
+  }
+
+  showAddModal.value = true
+}
+
+// 删除交互
+const deleteInteraction = (index: number) => {
+  interactions.value.splice(index, 1)
+  emit('update:modelValue', interactions.value)
+}
+
+// 🔥 数据变化相关处理函数
+const handleWatchedPropertyChange = (value: string) => {
+  currentWatchedProperty.value = value
+}
+
+const handleConditionTypeChange = (value: string) => {
+  currentConditionType.value = value
+  // 重置条件值
+  currentConditionOperator.value = ''
+  currentConditionValue.value = ''
+}
+
+// 🔥 内部菜单相关处理函数
+const handleUrlTypeChange = () => {
+  console.log('[URL-TYPE-DEBUG] URL类型变化为:', urlType.value)
+  if (urlType.value === 'internal') {
+    // 切换到内部菜单时，加载菜单选项
+    console.log('[URL-TYPE-DEBUG] 切换到内部菜单，开始加载菜单选项')
+    // 强制重新加载菜单（不检查缓存）
+    menuOptions.value = [] // 清空缓存
+    loadMenuOptions()
+    // 清空外部链接
+    currentInteraction.value.url = ''
+  } else {
+    // 切换到外部链接时，清空菜单选择
+    console.log('[URL-TYPE-DEBUG] 切换到外部链接，清空菜单选择')
+    selectedMenuPath.value = ''
+  }
+}
+
+const handleMenuPathChange = () => {
+  currentInteraction.value.url = selectedMenuPath.value
+}
+
+const loadMenuOptions = async () => {
+  console.log('[MENU-DEBUG] 开始加载菜单数据...')
+  menuLoading.value = true
+  try {
+    const result = await fetchGetUserRoutes()
+    console.log('[MENU-DEBUG] API完整响应结构:', JSON.stringify(result, null, 2))
+    console.log('[MENU-DEBUG] API响应类型检查:', {
+      hasResult: !!result,
+      hasData: !!(result && result.data),
+      hasList: !!(result && result.data && result.data.list),
+      dataType: typeof result?.data,
+      listType: typeof result?.data?.list,
+      listLength: result?.data?.list?.length
+    })
+    
+    if (result && result.data && result.data.list) {
+      console.log('[MENU-DEBUG] 🎯 路由数据数组:', result.data.list)
+      console.log('[MENU-DEBUG] 🎯 第一个路由示例:', result.data.list[0])
+      
+      // 将路由数据转换为选项格式
+      const flattened = flattenRoutes(result.data.list)
+      console.log('[MENU-DEBUG] 🎯 扁平化结果:', flattened)
+      menuOptions.value = flattened
+      console.log('[MENU-DEBUG] ✅ 菜单加载成功，共', flattened.length, '项')
+      
+      // 如果没有菜单项，说明扁平化函数有问题
+      if (flattened.length === 0) {
+        console.log('[MENU-DEBUG] ⚠️ 扁平化结果为空，但API有数据，检查扁平化函数')
+        message.error('菜单数据处理失败')
+      }
+    } else {
+      console.log('[MENU-DEBUG] ❌ API响应数据结构异常:', result)
+      message.error('菜单数据格式异常')
+    }
+  } catch (error) {
+    console.error('[MENU-DEBUG] ❌ 加载菜单失败:', error)
+    message.error('菜单加载失败: ' + error.message)
+  } finally {
+    menuLoading.value = false
+  }
+}
+
+// 扁平化路由数据，适配新的数据结构（path + meta.title）
+const flattenRoutes = (routes: any[]): { label: string; value: string }[] => {
+  console.log('[FLATTEN-DEBUG] 开始扁平化，总路由数:', routes.length)
+  const options: { label: string; value: string }[] = []
+
+  // 递归处理函数
+  const processRoute = (route: any, parentTitle = '') => {
+    console.log('[FLATTEN-DEBUG] 处理路由:', route.name || route.id)
+    
+    // 新数据结构：path 作为路径，meta.title 作为标题
+    const path = route.path
+    const title = route.meta?.title || route.meta?.i18nKey || route.name
+    
+    // 生成显示标签（如果有父级，用 / 分隔）
+    const displayLabel = parentTitle ? `${parentTitle} / ${title}` : title
+
+    console.log('[FLATTEN-DEBUG] 字段提取:', {
+      path: path,
+      metaTitle: route.meta?.title,
+      metaI18nKey: route.meta?.i18nKey,
+      name: route.name,
+      finalTitle: title,
+      displayLabel: displayLabel,
+      hideInMenu: route.meta?.hideInMenu
+    })
+
+    // 如果有路径和标题，并且不是隐藏菜单项，就添加到选项中
+    if (path && title && !route.meta?.hideInMenu) {
+      const option = { label: displayLabel, value: path }
+      options.push(option)
+      console.log('[FLATTEN-DEBUG] ✅ 添加选项:', option)
+    } else {
+      console.log('[FLATTEN-DEBUG] ❌ 跳过路由:', {
+        hasPath: !!path,
+        hasTitle: !!title,
+        hideInMenu: route.meta?.hideInMenu,
+        reason: !path ? '无路径' : !title ? '无标题' : route.meta?.hideInMenu ? '隐藏菜单项' : '其他'
+      })
+    }
+
+    // 递归处理所有子路由
+    if (route.children && Array.isArray(route.children) && route.children.length > 0) {
+      console.log('[FLATTEN-DEBUG] 发现子路由:', route.children.length, '个')
+      route.children.forEach(child => processRoute(child, displayLabel))
+    }
+  }
+
+  // 处理所有顶级路由
+  routes.forEach(route => processRoute(route))
+
+  console.log('[FLATTEN-DEBUG] 扁平化完成，总共生成:', options.length, '个选项')
+  console.log('[FLATTEN-DEBUG] 最终选项列表:', options)
+  return options
+}
+
+// 处理动作类型变化
+const handleActionTypeChange = (value: string) => {
+  currentActionType.value = value
+  // 重置相关字段
+  if (value === 'jump') {
+    urlType.value = 'external'
+    currentInteraction.value.url = 'https://example.com'
+    currentInteraction.value.target = '_blank'
+    selectedMenuPath.value = ''
+  } else if (value === 'modify') {
+    currentInteraction.value.targetComponentId = ''
+    currentInteraction.value.targetProperty = 'backgroundColor'
+    currentInteraction.value.updateValue = '#ff0000'
+  }
+}
+
+// 保存交互
+const saveInteraction = () => {
+  const interaction: any = {
+    event: currentInteraction.value.event,
+    enabled: currentInteraction.value.enabled,
+    priority: currentInteraction.value.priority,
+    responses: []
+  }
+
+  // 🔥 如果是数据变化事件，保存监听属性和条件配置
+  if (currentInteraction.value.event === 'dataChange') {
+    interaction.watchedProperty = currentWatchedProperty.value
+
+    // 构建条件配置
+    if (currentConditionType.value) {
+      interaction.condition = {
+        type: currentConditionType.value
+      }
+
+      if (currentConditionType.value === 'comparison') {
+        interaction.condition.operator = currentConditionOperator.value
+        interaction.condition.value = currentConditionValue.value
+      } else if (currentConditionType.value === 'range' || currentConditionType.value === 'expression') {
+        interaction.condition.value = currentConditionValue.value
+      }
+    }
+  }
+
+
+  // 根据动作类型构建响应
+  if (currentActionType.value === 'jump') {
+    interaction.responses = [
+      {
+        action: 'navigateToUrl',
+        value: currentInteraction.value.url,
+        target: currentInteraction.value.target
+      }
+    ]
+  } else if (currentActionType.value === 'modify') {
+    interaction.responses = [
+      {
+        action: 'updateComponentData',
+        targetComponentId: currentInteraction.value.targetComponentId,
+        targetProperty: currentInteraction.value.targetProperty,
+        updateValue: currentInteraction.value.updateValue
+      }
+    ]
+  }
+
+  if (editingIndex.value >= 0) {
+    // 编辑模式
+    interactions.value[editingIndex.value] = interaction
+    editingIndex.value = -1
+  } else {
+    // 添加模式
+    interactions.value.push(interaction)
+  }
+
+  emit('update:modelValue', interactions.value)
+  showAddModal.value = false
+
+  // 重置表单
+  currentInteraction.value = {
+    event: 'click',
+    enabled: true,
+    priority: 1,
+    url: '',
+    target: '_blank',
+    targetComponentId: '',
+    targetProperty: '',
+    updateValue: ''
+  }
+  currentActionType.value = ''
+  urlType.value = 'external'
+  selectedMenuPath.value = ''
+
+  // 🔥 重置数据变化相关状态
+  currentWatchedProperty.value = ''
+  currentConditionType.value = ''
+  currentConditionOperator.value = ''
+  currentConditionValue.value = ''
+}
+</script>
+
+<style scoped>
+.interaction-simple {
+  padding: 16px;
+  height: 100%;
+}
+
+.interaction-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-color-3);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.empty-text {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-color-2);
+}
+
+.empty-desc {
+  font-size: 12px;
+}
+
+/* 交互列表 */
+.interactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.interaction-item {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--card-color);
+}
+
+.interaction-summary {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.summary-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.summary-badge.click {
+  background: var(--success-color-suppl);
+  color: var(--success-color);
+}
+
+.summary-badge.hover {
+  background: var(--info-color-suppl);
+  color: var(--info-color);
+}
+
+.summary-badge.condition {
+  background: var(--warning-color-suppl);
+  color: var(--warning-color);
+}
+
+
+.summary-text {
+  flex: 1;
+}
+
+.summary-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 2px;
+}
+
+.summary-desc {
+  font-size: 12px;
+  color: var(--text-color-3);
+}
+
+.summary-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+</style>

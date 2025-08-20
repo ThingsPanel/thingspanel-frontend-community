@@ -13,8 +13,14 @@ const isPreviewMode = ref(false)
 export function usePreviewMode() {
   // 设置预览模式
   const setPreviewMode = (preview: boolean) => {
+    const oldValue = isPreviewMode.value
     isPreviewMode.value = preview
     console.log(`🎭 预览模式: ${preview ? '开启' : '关闭'}`)
+
+    // 🔥 如果从预览模式切换到编辑模式，可能需要重新初始化系统
+    if (oldValue === true && preview === false) {
+      console.log('🔧 从预览模式切换到编辑模式，可能需要重新初始化系统')
+    }
   }
 
   // 切换预览模式

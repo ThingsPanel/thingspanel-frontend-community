@@ -68,12 +68,12 @@ const editorOptions = computed(() => ({
   automaticLayout: true,
   fontSize: 11,
   fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-  
+
   // 缩进配置
   tabSize: 2,
   insertSpaces: true,
   detectIndentation: false,
-  
+
   // 滚动配置
   scrollBeyondLastLine: false,
   scrollbar: {
@@ -82,18 +82,18 @@ const editorOptions = computed(() => ({
     verticalScrollbarSize: 8,
     horizontalScrollbarSize: 8
   },
-  
+
   // 界面配置
   padding: { top: 12, bottom: 12 },
   lineHeight: 18,
-  
+
   // 编辑功能
   readOnly: props.readonly,
   selectOnLineNumbers: true,
   roundedSelection: false,
   cursorStyle: 'line',
   cursorWidth: 2,
-  
+
   // 代码提示和自动完成
   suggestOnTriggerCharacters: true,
   acceptSuggestionOnCommitCharacter: true,
@@ -103,28 +103,28 @@ const editorOptions = computed(() => ({
     comments: false,
     strings: false
   },
-  
+
   // 代码折叠
   folding: true,
   foldingStrategy: 'indentation',
   showFoldingControls: 'mouseover',
-  
+
   // 匹配括号
   matchBrackets: 'always',
   autoClosingBrackets: 'always',
   autoClosingQuotes: 'always',
   autoSurround: 'languageDefined',
-  
+
   // 语法检查
   validate: true,
-  
+
   // 格式化
   formatOnPaste: true,
   formatOnType: true,
-  
+
   // 主题适配
   theme: 'vs-light', // 会根据系统主题自动切换
-  
+
   // JavaScript特定配置
   suggest: {
     showWords: false,
@@ -159,7 +159,7 @@ const editorOptions = computed(() => ({
 /** 监听值变化进行JavaScript语法验证 */
 watch(
   localValue,
-  (newValue) => {
+  newValue => {
     if (newValue.trim()) {
       validateJavaScript(newValue)
     } else {
@@ -183,13 +183,12 @@ function validateJavaScript(code: string): void {
         ${code}
       })
     `
-    
+
     // 尝试创建函数来检查语法
     new Function('return ' + wrappedCode)
-    
+
     // 语法正确
     emit('validation-changed', { isValid: true, error: '' })
-    
   } catch (error) {
     // 语法错误
     const errorMessage = error instanceof Error ? error.message : 'JavaScript语法错误'
@@ -284,23 +283,23 @@ function handleValidationChanged(validation: { isValid: boolean; error: string }
   .javascript-editor {
     font-size: 12px;
   }
-  
+
   .javascript-editor :deep(.monaco-editor) {
     font-size: 12px;
   }
 }
 
 /* 明暗主题适配 */
-[data-theme="dark"] .javascript-editor {
+[data-theme='dark'] .javascript-editor {
   border-color: rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
 }
 
-[data-theme="dark"] .javascript-editor :deep(.monaco-editor) {
+[data-theme='dark'] .javascript-editor :deep(.monaco-editor) {
   /* Monaco 会自动处理暗色主题 */
 }
 
-[data-theme="light"] .javascript-editor {
+[data-theme='light'] .javascript-editor {
   border-color: rgba(0, 0, 0, 0.08);
   background: rgba(0, 0, 0, 0.02);
 }

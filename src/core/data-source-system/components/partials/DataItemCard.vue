@@ -8,11 +8,7 @@
       <!-- 左侧：数据项信息 -->
       <n-space align="center" :size="12">
         <!-- 状态开关 -->
-        <n-switch 
-          :value="dataItem.isActive" 
-          size="small"
-          @update:value="handleToggle"
-        />
+        <n-switch :value="dataItem.isActive" size="small" @update:value="handleToggle" />
 
         <!-- 数据项基本信息 -->
         <div class="item-info">
@@ -24,7 +20,7 @@
               {{ dataItem.type?.toUpperCase() || 'JSON' }}
             </n-tag>
           </n-space>
-          
+
           <n-text depth="3" style="font-size: 10px; margin-top: 2px; display: block">
             {{ getItemDescription() }}
           </n-text>
@@ -44,8 +40,8 @@
             <template #icon>
               <n-icon size="12">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
-                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
                 </svg>
               </n-icon>
             </template>
@@ -54,17 +50,15 @@
 
         <!-- 测试按钮 -->
         <n-tooltip content="测试数据项" placement="top">
-          <n-button 
-            size="tiny" 
-            quaternary 
-            type="warning" 
-            :loading="testing"
-            @click="handleTest"
-          >
+          <n-button size="tiny" quaternary type="warning" :loading="testing" @click="handleTest">
             <template #icon>
               <n-icon size="12">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M9 11H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2m4-9h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2m-4-9V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-6 0h6" stroke="currentColor" stroke-width="2"/>
+                  <path
+                    d="M9 11H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2m4-9h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2m-4-9V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-6 0h6"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
                 </svg>
               </n-icon>
             </template>
@@ -77,8 +71,16 @@
             <template #icon>
               <n-icon size="12">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2"/>
+                  <path
+                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                  <path
+                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
                 </svg>
               </n-icon>
             </template>
@@ -93,7 +95,11 @@
                 <template #icon>
                   <n-icon size="12">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" stroke="currentColor" stroke-width="2"/>
+                      <path
+                        d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      />
                     </svg>
                   </n-icon>
                 </template>
@@ -114,16 +120,7 @@
  */
 
 import { ref, computed } from 'vue'
-import { 
-  NSpace, 
-  NText, 
-  NTag, 
-  NButton, 
-  NIcon, 
-  NTooltip, 
-  NPopconfirm,
-  NSwitch
-} from 'naive-ui'
+import { NSpace, NText, NTag, NButton, NIcon, NTooltip, NPopconfirm, NSwitch } from 'naive-ui'
 
 // 导入类型
 import type { RawDataItem } from '../modals/DataItemModal.vue'
@@ -193,25 +190,25 @@ function getStatusText(): string {
  */
 function getItemDescription(): string {
   const item = props.dataItem
-  
+
   switch (item.type) {
     case 'json':
       return '静态JSON数据'
-      
+
     case 'http':
       const httpConfig = item.config?.httpConfig
       if (httpConfig) {
         return `${httpConfig.method} ${httpConfig.url || '未配置URL'}`
       }
       return 'HTTP请求'
-      
+
     case 'websocket':
       const wsConfig = item.config?.websocketConfig
       if (wsConfig) {
         return `WebSocket: ${wsConfig.url || '未配置URL'}`
       }
       return 'WebSocket连接'
-      
+
     default:
       return '未知类型'
   }
@@ -240,16 +237,15 @@ function handleView(): void {
  */
 async function handleTest(): Promise<void> {
   testing.value = true
-  
+
   try {
     console.log(`🧪 [DataItemCard] 开始测试: ${props.dataItem.name}`)
-    
+
     // 模拟测试过程
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     emit('test', props.dataItem.id)
     console.log(`✅ [DataItemCard] 测试完成: ${props.dataItem.name}`)
-    
   } catch (error) {
     console.error(`❌ [DataItemCard] 测试失败: ${props.dataItem.name}`, error)
   } finally {
@@ -350,15 +346,15 @@ function handleDelete(): void {
   .data-item-card {
     padding: 6px 8px;
   }
-  
+
   .item-info {
     min-width: 120px;
   }
-  
+
   .action-buttons {
     gap: 2px;
   }
-  
+
   .action-buttons :deep(.n-button) {
     min-width: 24px;
     padding: 2px;
@@ -366,34 +362,34 @@ function handleDelete(): void {
 }
 
 /* 明暗主题适配 */
-[data-theme="dark"] .data-item-card {
+[data-theme='dark'] .data-item-card {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .data-item-card:hover {
+[data-theme='dark'] .data-item-card:hover {
   background: rgba(255, 255, 255, 0.08);
   border-color: var(--primary-color-hover);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
-[data-theme="dark"] .data-item-card.active {
+[data-theme='dark'] .data-item-card.active {
   background: rgba(24, 160, 88, 0.2);
   border-color: var(--success-color);
 }
 
-[data-theme="light"] .data-item-card {
+[data-theme='light'] .data-item-card {
   background: rgba(0, 0, 0, 0.02);
   border-color: rgba(0, 0, 0, 0.08);
 }
 
-[data-theme="light"] .data-item-card:hover {
+[data-theme='light'] .data-item-card:hover {
   background: rgba(0, 0, 0, 0.04);
   border-color: var(--primary-color-hover);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-[data-theme="light"] .data-item-card.active {
+[data-theme='light'] .data-item-card.active {
   background: rgba(24, 160, 88, 0.1);
   border-color: var(--success-color);
 }

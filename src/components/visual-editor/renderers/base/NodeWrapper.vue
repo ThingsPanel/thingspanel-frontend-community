@@ -1,6 +1,5 @@
 <template>
   <div
-    v-show="baseConfig?.visible !== false"
     ref="nodeElement"
     class="node-wrapper"
     :class="wrapperClasses"
@@ -9,42 +8,49 @@
     @click.stop="$emit('node-click', nodeId, $event)"
     @contextmenu.stop.prevent="$emit('node-contextmenu', nodeId, $event)"
   >
-    <!-- 标题栏 -->
-    <div v-if="shouldShowTitle" class="node-title-bar" :style="titleBarStyles" @dblclick="startTitleEdit">
-      <!-- 编辑模式 -->
-      <n-input
-        v-if="isEditingTitle"
-        ref="titleInputRef"
-        v-model:value="editingTitleValue"
-        size="small"
-        :bordered="false"
-        class="title-input"
-        @blur="finishTitleEdit"
-        @keyup.enter="finishTitleEdit"
-        @keyup.escape="cancelTitleEdit"
-      />
-      <!-- 显示模式 -->
-      <span v-else class="title-text">{{ displayTitle }}</span>
+    <!-- 内容包装器 - 控制可见性但保持事件响应 -->
+    <div v-show="baseConfig?.visible !== false" class="node-content-wrapper">
+      <!-- 标题栏 -->
+      <div v-if="shouldShowTitle" class="node-title-bar" :style="titleBarStyles" @dblclick="startTitleEdit">
+        <!-- 编辑模式 -->
+        <n-input
+          v-if="isEditingTitle"
+          ref="titleInputRef"
+          v-model:value="editingTitleValue"
+          size="small"
+          :bordered="false"
+          class="title-input"
+          @blur="finishTitleEdit"
+          @keyup.enter="finishTitleEdit"
+          @keyup.escape="cancelTitleEdit"
+        />
+        <!-- 显示模式 -->
+        <span v-else class="title-text">{{ displayTitle }}</span>
+      </div>
+
+      <!-- 内容区域 -->
+      <div class="node-content" :style="contentStyles">
+        <Card2Wrapper
+          v-if="node.metadata?.isCard2Component"
+          :component-type="node.type"
+          :config="getNodeComponentConfig(nodeId) || node.properties"
+          :data="node.metadata?.card2Data"
+          :metadata="node.metadata"
+          :data-source="node.dataSource"
+          :data-sources="multiDataSourceData"
+          :data-sources-config="multiDataSourceConfig"
+          :node-id="nodeId"
+          :interaction-configs="getNodeInteractionConfigs(nodeId)"
+          :allow-external-control="getNodeInteractionPermissions(nodeId)?.allowExternalControl"
+          :interaction-permissions="getNodeInteractionPermissions(nodeId)"
+          :preview-mode="readonly"
+          @error="$emit('component-error', $event)"
+        />
+        <component :is="getWidgetComponent?.(node.type)" v-else v-bind="node.properties" />
+      </div>
     </div>
 
-    <!-- 内容区域 -->
-    <div class="node-content" :style="contentStyles">
-      <Card2Wrapper
-        v-if="node.metadata?.isCard2Component"
-        :component-type="node.type"
-        :config="getNodeComponentConfig(nodeId) || node.properties"
-        :data="node.metadata?.card2Data"
-        :metadata="node.metadata"
-        :data-source="node.dataSource"
-        :data-sources="multiDataSourceData"
-        :data-sources-config="multiDataSourceConfig"
-        :node-id="nodeId"
-        @error="$emit('component-error', $event)"
-      />
-      <component :is="getWidgetComponent?.(node.type)" v-else v-bind="node.properties" />
-    </div>
-
-    <!-- 调整大小控制句柄 -->
+    <!-- 调整大小控制句柄 - 始终响应事件，便于编辑隐藏组件 -->
     <div v-if="showResizeHandles" class="resize-handles">
       <div
         v-for="handle in resizeHandles"
@@ -54,7 +60,7 @@
       />
     </div>
 
-    <!-- 选中状态指示器 -->
+    <!-- 选中状态指示器 - 始终响应，便于编辑隐藏组件 -->
     <div v-if="isSelected && !readonly" class="selection-indicator" />
   </div>
 </template>
@@ -201,6 +207,36 @@ const getNodeComponentConfig = (nodeId: string): any => {
   }
 }
 
+// 🔥 获取节点交互配置
+const getNodeInteractionConfigs = (nodeId: string): any[] => {
+  try {
+    const widgetConfig = configurationManager.getConfiguration(nodeId)
+    return widgetConfig?.interaction?.configs || []
+  } catch (error) {
+    console.warn(`[NodeWrapper] 获取节点 ${nodeId} 交互配置失败:`, error)
+    return []
+  }
+}
+
+// 🔥 获取节点交互权限配置
+const getNodeInteractionPermissions = (nodeId: string): any => {
+  try {
+    const widgetConfig = configurationManager.getConfiguration(nodeId)
+    return (
+      widgetConfig?.interaction?.permissions || {
+        allowExternalControl: true,
+        allowedEvents: ['click', 'hover', 'focus', 'blur']
+      }
+    )
+  } catch (error) {
+    console.warn(`[NodeWrapper] 获取节点 ${nodeId} 交互权限失败:`, error)
+    return {
+      allowExternalControl: true,
+      allowedEvents: ['click', 'hover', 'focus', 'blur']
+    }
+  }
+}
+
 // 标题显示逻辑
 const shouldShowTitle = computed(() => {
   return props.forceShowTitle || baseConfig.value.showTitle
@@ -260,6 +296,11 @@ const wrapperClasses = computed(() => {
 
   if (props.readonly) {
     classes.push('readonly')
+  }
+
+  // 添加隐藏状态类，用于样式调整（但不影响事件）
+  if (baseConfig.value.visible === false) {
+    classes.push('content-hidden')
   }
 
   return classes
@@ -424,12 +465,6 @@ watch(
   display: flex;
   flex-direction: column;
 
-  /* 🔧 移除默认样式，由base配置控制 */
-  /* background-color: var(--card-color); */
-  /* border-radius: var(--border-radius, 6px); */
-  /* border: 2px solid transparent; */
-  /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); */
-
   /* 保留必要的交互样式 */
   transition:
     opacity 0.3s ease,
@@ -443,6 +478,36 @@ watch(
   background-color: var(--card-color);
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 🔧 内容包装器样式 */
+.node-content-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 🔧 隐藏内容时的视觉反馈（编辑模式） */
+.node-wrapper.content-hidden:not(.readonly) {
+  /* 为编辑模式下的隐藏组件提供视觉提示 */
+  background-color: rgba(128, 128, 128, 0.1);
+  border: 2px dashed rgba(128, 128, 128, 0.3);
+}
+
+.node-wrapper.content-hidden:not(.readonly)::before {
+  content: '隐藏';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 10;
+  pointer-events: none;
 }
 
 .node-wrapper:hover:not(.readonly) {

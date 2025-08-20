@@ -202,6 +202,20 @@ watch(
   { deep: true }
 )
 
+// 🔥 监听 staticGrid 变更 - 修复预览模式切换问题
+watch(
+  () => props.staticGrid,
+  (newStaticGrid, oldStaticGrid) => {
+    console.log('🎭 GridLayoutPlusWrapper - staticGrid 变更:', {
+      old: oldStaticGrid,
+      new: newStaticGrid,
+      isReadOnly: isReadOnly.value
+    })
+    // 重新计算布局以应用新的静态配置
+    layout.value = nodesToLayout(props.graphData.nodes || [])
+  }
+)
+
 const onLayoutChange = (newLayout: ExtendedGridLayoutPlusItem[]) => {
   // 更新所有节点的布局信息
   newLayout.forEach(item => {

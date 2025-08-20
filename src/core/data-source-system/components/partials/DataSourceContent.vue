@@ -9,15 +9,11 @@
       <div class="data-items-section">
         <n-space justify="space-between" align="center" style="margin-bottom: 12px">
           <n-text strong style="font-size: 13px">数据项管理</n-text>
-          <n-button 
-            type="dashed" 
-            size="small" 
-            @click="handleAddDataItem"
-          >
+          <n-button type="dashed" size="small" @click="handleAddDataItem">
             <template #icon>
               <n-icon size="14">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                 </svg>
               </n-icon>
             </template>
@@ -42,16 +38,9 @@
         </div>
 
         <!-- 空状态 -->
-        <n-empty 
-          v-else
-          description="暂无数据项"
-          size="small"
-          style="margin: 20px 0"
-        >
+        <n-empty v-else description="暂无数据项" size="small" style="margin: 20px 0">
           <template #extra>
-            <n-button size="small" type="primary" @click="handleAddDataItem">
-              添加第一个数据项
-            </n-button>
+            <n-button size="small" type="primary" @click="handleAddDataItem">添加第一个数据项</n-button>
           </template>
         </n-empty>
       </div>
@@ -61,17 +50,8 @@
         <n-space justify="space-between" align="center" style="margin-bottom: 8px">
           <n-text strong style="font-size: 13px">数据预览</n-text>
           <n-space :size="6">
-            <n-button 
-              size="tiny" 
-              type="info" 
-              :loading="refreshing"
-              @click="handleRefreshPreview"
-            >
-              🔄 刷新
-            </n-button>
-            <n-button size="tiny" @click="handleClearPreview">
-              🗑️ 清空
-            </n-button>
+            <n-button size="tiny" type="info" :loading="refreshing" @click="handleRefreshPreview">🔄 刷新</n-button>
+            <n-button size="tiny" @click="handleClearPreview">🗑️ 清空</n-button>
           </n-space>
         </n-space>
 
@@ -88,8 +68,8 @@
       <!-- 操作区域 -->
       <div v-if="dataItems.length > 0" class="actions-section">
         <n-space :size="8">
-          <n-button 
-            type="primary" 
+          <n-button
+            type="primary"
             size="small"
             :disabled="activeItems.length === 0"
             :loading="executing"
@@ -97,20 +77,8 @@
           >
             🚀 执行所有活跃项
           </n-button>
-          <n-button 
-            size="small"
-            :disabled="activeItems.length === 0"
-            @click="handleStopAll"
-          >
-            ⏹️ 停止所有
-          </n-button>
-          <n-button 
-            size="small" 
-            type="warning"
-            @click="handleTestAll"
-          >
-            🧪 测试所有
-          </n-button>
+          <n-button size="small" :disabled="activeItems.length === 0" @click="handleStopAll">⏹️ 停止所有</n-button>
+          <n-button size="small" type="warning" @click="handleTestAll">🧪 测试所有</n-button>
         </n-space>
       </div>
     </n-space>
@@ -124,15 +92,7 @@
  */
 
 import { ref, computed } from 'vue'
-import { 
-  NSpace, 
-  NText, 
-  NButton, 
-  NIcon, 
-  NEmpty, 
-  NCard, 
-  NCode 
-} from 'naive-ui'
+import { NSpace, NText, NButton, NIcon, NEmpty, NCard, NCode } from 'naive-ui'
 
 // 导入数据项卡片组件
 import DataItemCard from './DataItemCard.vue'
@@ -277,7 +237,7 @@ function handleToggleDataItem(itemId: string): void {
   if (item) {
     item.isActive = !item.isActive
     console.log(`🔄 [DataSourceContent] 切换数据项状态: ${itemId} -> ${item.isActive}`)
-    
+
     // 更新预览数据
     previewData.value = generatePreviewData()
   }
@@ -288,7 +248,7 @@ function handleToggleDataItem(itemId: string): void {
  */
 async function handleRefreshPreview(): Promise<void> {
   refreshing.value = true
-  
+
   try {
     // 模拟数据刷新
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -321,16 +281,16 @@ async function handleExecuteAll(): Promise<void> {
   }
 
   executing.value = true
-  
+
   try {
     console.log(`🚀 [DataSourceContent] 开始执行所有活跃项 (${activeItems.value.length}个)`)
-    
+
     // 模拟执行过程
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     // 更新预览数据
     previewData.value = generatePreviewData()
-    
+
     console.log('✅ [DataSourceContent] 所有活跃项执行完成')
     window.$message?.success(`已执行 ${activeItems.value.length} 个数据项`)
   } catch (error) {
@@ -346,17 +306,17 @@ async function handleExecuteAll(): Promise<void> {
  */
 function handleStopAll(): void {
   console.log('⏹️ [DataSourceContent] 停止所有数据项')
-  
+
   // 停止所有活跃项
   props.dataItems.forEach(item => {
     if (item.isActive) {
       item.isActive = false
     }
   })
-  
+
   // 更新预览数据
   previewData.value = generatePreviewData()
-  
+
   window.$message?.info('所有数据项已停止')
 }
 
@@ -365,14 +325,14 @@ function handleStopAll(): void {
  */
 async function handleTestAll(): Promise<void> {
   console.log(`🧪 [DataSourceContent] 开始测试所有数据项 (${props.dataItems.length}个)`)
-  
+
   try {
     // 模拟测试过程
     for (const item of props.dataItems) {
       await new Promise(resolve => setTimeout(resolve, 200))
       console.log(`🧪 测试数据项: ${item.name}`)
     }
-    
+
     window.$message?.success(`已测试 ${props.dataItems.length} 个数据项`)
   } catch (error) {
     console.error('❌ [DataSourceContent] 测试失败:', error)
@@ -456,40 +416,40 @@ previewData.value = generatePreviewData()
   .actions-section {
     padding: 8px;
   }
-  
+
   .data-items-list {
     max-height: 300px;
   }
-  
+
   .actions-section :deep(.n-space) {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .actions-section :deep(.n-button) {
     width: 100%;
   }
 }
 
 /* 明暗主题适配 */
-[data-theme="dark"] .data-items-section,
-[data-theme="dark"] .data-preview-section {
+[data-theme='dark'] .data-items-section,
+[data-theme='dark'] .data-preview-section {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .actions-section {
+[data-theme='dark'] .actions-section {
   background: rgba(255, 255, 255, 0.03);
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-[data-theme="light"] .data-items-section,
-[data-theme="light"] .data-preview-section {
+[data-theme='light'] .data-items-section,
+[data-theme='light'] .data-preview-section {
   background: rgba(0, 0, 0, 0.02);
   border-color: rgba(0, 0, 0, 0.08);
 }
 
-[data-theme="light"] .actions-section {
+[data-theme='light'] .actions-section {
   background: rgba(0, 0, 0, 0.01);
   border-color: rgba(0, 0, 0, 0.06);
 }

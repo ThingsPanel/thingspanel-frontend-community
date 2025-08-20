@@ -11,12 +11,17 @@
     @blur="handleBlur"
   >
     <div v-if="config.showTitle" class="component-title">
-      {{ interactionState.content || config.title || '简单测试组件' }}
+      {{ currentData.title || interactionState.content || config.title || '简单测试组件' }}
     </div>
     <div class="component-content">
-      <p>{{ config.content || '这是一个简单的测试组件' }}</p>
-      <button v-if="config.showButton" :class="`btn-${config.buttonType || 'primary'}`" class="test-button">
-        {{ config.buttonText || '测试按钮' }}
+      <p>{{ currentData.content || config.content || '这是一个简单的测试组件' }}</p>
+      <button
+        v-if="config.showButton"
+        :class="`btn-${config.buttonType || 'primary'}`"
+        class="test-button"
+        @click="handleClick"
+      >
+        {{ currentData.buttonText || config.buttonText || '测试按钮' }}
       </button>
 
       <!-- 交互状态指示器 -->
@@ -24,16 +29,34 @@
         <span class="indicator-label">交互状态:</span>
         <span class="indicator-value">{{ interactionStatusText }}</span>
       </div>
+
+      <!-- 🔥 测试按钮 - 用于测试属性变化触发交互 -->
+      <div v-if="showInteractionIndicator" class="test-buttons">
+        <div class="test-buttons-title">属性变化测试:</div>
+        <div class="test-buttons-group">
+          <n-button size="small" type="primary" @click="changeTitle('你好')">标题改为"你好"</n-button>
+          <n-button size="small" type="info" @click="changeTitle('你好吗')">标题改为"你好吗"</n-button>
+          <n-button size="small" type="warning" @click="resetTitle">重置标题</n-button>
+        </div>
+        <div class="current-title">当前标题: {{ currentData.title }}</div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
-import { interactionManager } from '@/card2.1/core/interaction-manager'
+import { useInteractionCapable } from '@/card2.1/core/mixins/InteractionCapable'
+import type { InteractionProps, InteractionEmits } from '@/card2.1/types/interaction-component'
 import type { ComponentInteractionState } from '@/card2.1/core/interaction-types'
+import {
+  propertyExposureRegistry,
+  createPropertyExposure,
+  createProperty,
+  CommonProperties
+} from '@/card2.1/core/property-exposure'
 
-interface Props {
+interface Props extends InteractionProps {
   config?: {
     title?: string
     showTitle?: boolean
@@ -47,10 +70,6 @@ interface Props {
     padding?: number
     borderRadius?: number
   }
-  // 新增：支持组件ID用于交互系统
-  componentId?: string
-  // 新增：是否显示交互状态指示器
-  showInteractionIndicator?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -68,12 +87,40 @@ const props = withDefaults(defineProps<Props>(), {
     borderRadius: 8
   }),
   componentId: '',
-  showInteractionIndicator: false
+  showInteractionIndicator: false,
+  allowExternalControl: true,
+  previewMode: true
 })
+
+const emit = defineEmits<InteractionEmits>()
 
 // 响应式引用
 const componentRef = ref<HTMLElement>()
-const interactionState = ref<ComponentInteractionState>({})
+
+// 🔥 使用交互能力混入
+const { currentInteractionState, createEventHandler, interactionStatusText, triggerInteractionEvent } =
+  useInteractionCapable(props, emit, {
+    enableDebug: true
+  })
+
+// 兼容性：保持原有的interactionState接口
+const interactionState = currentInteractionState
+
+// 🔥 数据模拟器 - 提供动态内容
+const simulatedData = ref({
+  clickCount: 0,
+  lastClickTime: null as Date | null,
+  status: '准备就绪',
+  messages: ['欢迎使用！', '点击按钮试试', '数据更新中...', '运行正常']
+})
+
+const currentData = ref({
+  title: props.config.title || '简单测试组件',
+  content: props.config.content || '这是一个简单的测试组件',
+  buttonText: props.config.buttonText || '测试按钮'
+})
+
+let dataSimulatorTimer: number | null = null
 
 // 计算基础组件样式
 const componentStyles = computed(() => ({
@@ -108,129 +155,161 @@ const finalComponentStyles = computed(() => {
   }
 })
 
-// 交互状态文本
-const interactionStatusText = computed(() => {
-  const state = interactionState.value
-  const statusParts = []
+// 交互状态文本计算（由混入提供，这里留作备用）
+// const interactionStatusText 已由 useInteractionCapable 提供
 
-  if (state.backgroundColor) statusParts.push('背景色已修改')
-  if (state.textColor) statusParts.push('文字色已修改')
-  if (state.borderColor) statusParts.push('边框色已修改')
-  if (state.opacity !== undefined && state.opacity !== 1) statusParts.push(`透明度${state.opacity}`)
-  if (state.isAnimating) statusParts.push('动画中')
+// 🔥 启动数据模拟器
+const startDataSimulator = () => {
+  // 每5秒更新一次内容
+  dataSimulatorTimer = window.setInterval(() => {
+    // 随机选择消息
+    const messageIndex = Math.floor(Math.random() * simulatedData.value.messages.length)
+    currentData.value.content = simulatedData.value.messages[messageIndex]
 
-  return statusParts.length > 0 ? statusParts.join(', ') : '默认状态'
-})
+    // 更新状态
+    const statuses = ['运行中', '数据更新', '监听中', '正常工作']
+    const statusIndex = Math.floor(Math.random() * statuses.length)
+    simulatedData.value.status = statuses[statusIndex]
 
-// 事件处理函数
+    console.log(`[SimpleTestComponent] 内容更新 - ${props.componentId}:`, {
+      content: currentData.value.content,
+      status: simulatedData.value.status,
+      timestamp: new Date().toLocaleTimeString()
+    })
+  }, 5000)
+
+  console.log(`[SimpleTestComponent] 数据模拟器已启动 - ${props.componentId}`)
+}
+
+// 🔥 停止数据模拟器
+const stopDataSimulator = () => {
+  if (dataSimulatorTimer) {
+    clearInterval(dataSimulatorTimer)
+    dataSimulatorTimer = null
+    console.log(`[SimpleTestComponent] 数据模拟器已停止 - ${props.componentId}`)
+  }
+}
+
+// 🔥 增强的事件处理函数
 const handleClick = () => {
-  if (props.componentId) {
-    console.log(`[SimpleTestComponent] 点击事件 - ${props.componentId}`)
-    interactionManager.triggerEvent(props.componentId, 'click')
+  // 更新点击计数
+  simulatedData.value.clickCount++
+  simulatedData.value.lastClickTime = new Date()
+
+  // 更新按钮文字
+  currentData.value.buttonText = `点击了${simulatedData.value.clickCount}次`
+
+  // 调用原有的事件处理器
+  createEventHandler('click')()
+
+  console.log(`[SimpleTestComponent] 按钮被点击 - ${props.componentId}`, {
+    clickCount: simulatedData.value.clickCount,
+    lastClickTime: simulatedData.value.lastClickTime?.toLocaleTimeString()
+  })
+}
+
+// 🔥 测试属性变化的方法
+const changeTitle = (newTitle: string) => {
+  const oldTitle = currentData.value.title
+  console.log(`[INTERACTION-DEBUG] 属性变化: ${oldTitle} -> ${newTitle}`)
+
+  // 更新当前数据中的标题
+  currentData.value.title = newTitle
+
+  // 🔥 检查交互配置
+  console.log(`[INTERACTION-DEBUG] 交互配置:`, props.interactionConfigs)
+
+  // 🔥 手动触发 dataChange 事件
+  if (typeof triggerInteractionEvent === 'function') {
+    const result = triggerInteractionEvent('dataChange', {
+      property: 'title',
+      oldValue: oldTitle,
+      newValue: newTitle,
+      source: 'component-internal-test'
+    })
+    console.log(`[INTERACTION-DEBUG] 触发结果:`, result)
+  } else {
+    console.warn('[INTERACTION-DEBUG] triggerInteractionEvent 不可用')
   }
 }
 
-const handleMouseEnter = () => {
-  if (props.componentId) {
-    console.log(`[SimpleTestComponent] 鼠标进入 - ${props.componentId}`)
-    interactionManager.triggerEvent(props.componentId, 'hover')
-  }
+const resetTitle = () => {
+  changeTitle(props.config.title || '简单测试组件')
 }
 
+const handleMouseEnter = createEventHandler('hover')
 const handleMouseLeave = () => {
-  if (props.componentId) {
-    console.log(`[SimpleTestComponent] 鼠标离开 - ${props.componentId}`)
-    // 可以触发自定义事件或重置某些状态
-  }
+  // 鼠标离开可以用于重置某些状态
+  console.log(`[SimpleTestComponent] 鼠标离开 - ${props.componentId}`)
 }
+const handleFocus = createEventHandler('focus')
+const handleBlur = createEventHandler('blur')
 
-const handleFocus = () => {
-  if (props.componentId) {
-    console.log(`[SimpleTestComponent] 获得焦点 - ${props.componentId}`)
-    interactionManager.triggerEvent(props.componentId, 'focus')
-  }
-}
-
-const handleBlur = () => {
-  if (props.componentId) {
-    console.log(`[SimpleTestComponent] 失去焦点 - ${props.componentId}`)
-    interactionManager.triggerEvent(props.componentId, 'blur')
-  }
-}
-
-// 监听交互状态变化
-const updateInteractionState = () => {
-  if (props.componentId) {
-    const state = interactionManager.getComponentState(props.componentId) || {}
-    interactionState.value = state
-  }
-}
-
-// 生命周期钩子
+// 🔥 生命周期钩子 - 混入已处理大部分交互管理
+// 这里只需要处理组件特定的初始化逻辑
 onMounted(() => {
-  if (props.componentId) {
-    // 注册默认交互配置（如果没有其他配置的话）
-    if (!interactionManager.hasComponent(props.componentId)) {
-      console.log(`[SimpleTestComponent] 注册默认交互配置 - ${props.componentId}`)
-      interactionManager.registerComponent(props.componentId, [
-        {
-          id: `${props.componentId}-click-demo`,
-          name: '点击演示',
-          event: 'click',
-          responses: [
-            {
-              action: 'changeBackgroundColor',
-              value: '#ffeb3b',
-              duration: 300
-            }
-          ],
-          enabled: true,
-          priority: 1
-        },
-        {
-          id: `${props.componentId}-hover-demo`,
-          name: '悬停演示',
-          event: 'hover',
-          responses: [
-            {
-              action: 'changeTextColor',
-              value: '#e91e63',
-              duration: 200
-            }
-          ],
-          enabled: true,
-          priority: 1
-        }
-      ])
-    }
+  console.log(`[SimpleTestComponent] 组件已挂载 - ${props.componentId}`)
 
-    // 添加事件监听器来更新本地状态
-    interactionManager.addEventListener(props.componentId, updateInteractionState)
+  // 启动数据模拟器
+  startDataSimulator()
 
-    // 初始化状态
-    updateInteractionState()
-  }
+  // 🔥 注册组件的可监听属性
+  const propertyExposure = createPropertyExposure('simple-test-component', '简单测试组件', [
+    // 内容相关属性
+    { ...CommonProperties.title, defaultValue: props.config.title },
+    { ...CommonProperties.content, defaultValue: props.config.content },
+
+    // 样式相关属性
+    { ...CommonProperties.backgroundColor, defaultValue: props.config.backgroundColor },
+    { ...CommonProperties.textColor, defaultValue: props.config.textColor },
+    { ...CommonProperties.visibility, defaultValue: 'visible' },
+
+    // 组件特有属性
+    createProperty('buttonText', '按钮文字', 'string', {
+      description: '按钮显示的文字',
+      group: '按钮',
+      defaultValue: props.config.buttonText,
+      example: '点击我'
+    }),
+
+    createProperty('buttonType', '按钮类型', 'string', {
+      description: '按钮的样式类型',
+      group: '按钮',
+      defaultValue: props.config.buttonType,
+      enum: [
+        { label: '主要', value: 'primary' },
+        { label: '次要', value: 'secondary' },
+        { label: '成功', value: 'success' },
+        { label: '警告', value: 'warning' },
+        { label: '危险', value: 'danger' }
+      ]
+    }),
+
+    createProperty('fontSize', '字体大小', 'number', {
+      description: '文字的字体大小（像素）',
+      group: '样式',
+      defaultValue: props.config.fontSize,
+      example: 16
+    }),
+
+    createProperty('showButton', '显示按钮', 'boolean', {
+      description: '是否显示按钮',
+      group: '按钮',
+      defaultValue: props.config.showButton
+    })
+  ])
+
+  propertyExposureRegistry.register(propertyExposure)
+
+  // 混入已自动处理交互管理器的注册和监听
 })
 
 onUnmounted(() => {
-  if (props.componentId) {
-    interactionManager.removeEventListener(props.componentId, updateInteractionState)
-  }
+  console.log(`[SimpleTestComponent] 组件已卸载 - ${props.componentId}`)
+  // 停止数据模拟器
+  stopDataSimulator()
+  // 混入已自动处理清理工作
 })
-
-// 监听组件ID变化
-watch(
-  () => props.componentId,
-  (newId, oldId) => {
-    if (oldId) {
-      interactionManager.removeEventListener(oldId, updateInteractionState)
-    }
-    if (newId) {
-      interactionManager.addEventListener(newId, updateInteractionState)
-      updateInteractionState()
-    }
-  }
-)
 </script>
 
 <style scoped>
@@ -322,5 +401,37 @@ watch(
 
 .simple-test-component:hover {
   cursor: pointer;
+}
+
+/* 🔥 测试按钮样式 */
+.test-buttons {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 6px;
+}
+
+.test-buttons-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: #856404;
+  margin-bottom: 8px;
+}
+
+.test-buttons-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.current-title {
+  font-size: 11px;
+  color: #6c757d;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+  font-family: monospace;
 }
 </style>

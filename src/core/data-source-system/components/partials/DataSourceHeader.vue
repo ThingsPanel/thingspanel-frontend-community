@@ -12,9 +12,7 @@
           <n-text strong style="font-size: 14px">
             {{ dataSource.name || dataSource.key }}
           </n-text>
-          <n-text depth="2" style="font-size: 11px; margin-left: 8px">
-            ({{ getDataTypeText() }})
-          </n-text>
+          <n-text depth="2" style="font-size: 11px; margin-left: 8px">({{ getDataTypeText() }})</n-text>
         </div>
 
         <!-- 状态指示器 -->
@@ -24,21 +22,11 @@
 
         <!-- 统计信息 -->
         <n-space :size="6" style="margin-left: 8px">
-          <n-tag v-if="stats.totalItems > 0" type="info" size="tiny">
-            总计: {{ stats.totalItems }}
-          </n-tag>
-          <n-tag v-if="stats.activeItems > 0" type="success" size="tiny">
-            活跃: {{ stats.activeItems }}
-          </n-tag>
-          <n-tag v-if="stats.jsonItems > 0" type="default" size="tiny">
-            JSON: {{ stats.jsonItems }}
-          </n-tag>
-          <n-tag v-if="stats.httpItems > 0" type="warning" size="tiny">
-            HTTP: {{ stats.httpItems }}
-          </n-tag>
-          <n-tag v-if="stats.websocketItems > 0" type="error" size="tiny">
-            WS: {{ stats.websocketItems }}
-          </n-tag>
+          <n-tag v-if="stats.totalItems > 0" type="info" size="tiny">总计: {{ stats.totalItems }}</n-tag>
+          <n-tag v-if="stats.activeItems > 0" type="success" size="tiny">活跃: {{ stats.activeItems }}</n-tag>
+          <n-tag v-if="stats.jsonItems > 0" type="default" size="tiny">JSON: {{ stats.jsonItems }}</n-tag>
+          <n-tag v-if="stats.httpItems > 0" type="warning" size="tiny">HTTP: {{ stats.httpItems }}</n-tag>
+          <n-tag v-if="stats.websocketItems > 0" type="error" size="tiny">WS: {{ stats.websocketItems }}</n-tag>
         </n-space>
       </n-space>
 
@@ -51,9 +39,21 @@
               <template #icon>
                 <n-icon size="14">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                    <path
+                      d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M12 17h.01"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </n-icon>
               </template>
@@ -61,9 +61,9 @@
           </template>
           <div class="example-tooltip">
             <div class="tooltip-title">示例数据格式:</div>
-            <n-code 
-              :code="getExampleDataCode()" 
-              language="json" 
+            <n-code
+              :code="getExampleDataCode()"
+              language="json"
               style="font-size: 10px; max-height: 200px; overflow-y: auto"
               :show-line-numbers="false"
             />
@@ -76,8 +76,8 @@
             <template #icon>
               <n-icon size="14">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                  <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" stroke="currentColor" stroke-width="2" />
                 </svg>
               </n-icon>
             </template>
@@ -92,7 +92,13 @@
                 <template #icon>
                   <n-icon size="14">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path
+                        d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
                     </svg>
                   </n-icon>
                 </template>
@@ -113,16 +119,7 @@
  */
 
 import { computed } from 'vue'
-import { 
-  NSpace, 
-  NText, 
-  NTag, 
-  NButton, 
-  NIcon, 
-  NTooltip, 
-  NPopconfirm,
-  NCode
-} from 'naive-ui'
+import { NSpace, NText, NTag, NButton, NIcon, NTooltip, NPopconfirm, NCode } from 'naive-ui'
 
 // Props 定义
 interface Props {
@@ -160,7 +157,7 @@ const getDataTypeText = () => {
   if (props.dataSource.type) {
     return props.dataSource.type.toUpperCase()
   }
-  
+
   // 根据统计信息推断主要类型
   const { jsonItems, httpItems, websocketItems } = props.stats
   if (httpItems > jsonItems && httpItems > websocketItems) return 'HTTP'
@@ -193,36 +190,36 @@ const getStatusText = () => {
 const getExampleDataCode = () => {
   const examples = {
     json: {
-      name: "张三",
+      name: '张三',
       age: 25,
-      email: "zhangsan@example.com",
-      hobbies: ["reading", "gaming"]
+      email: 'zhangsan@example.com',
+      hobbies: ['reading', 'gaming']
     },
     http: {
-      method: "GET",
-      url: "/api/users",
+      method: 'GET',
+      url: '/api/users',
       headers: {
-        "Content-Type": "application/json"
+        'Content-Type': 'application/json'
       }
     },
     websocket: {
-      url: "ws://localhost:8080/ws",
-      protocols: ["chat", "json-rpc"],
-      message: "Hello WebSocket"
+      url: 'ws://localhost:8080/ws',
+      protocols: ['chat', 'json-rpc'],
+      message: 'Hello WebSocket'
     }
   }
 
   // 根据主要数据类型返回示例
   const { jsonItems, httpItems, websocketItems } = props.stats
-  
+
   if (httpItems > jsonItems && httpItems > websocketItems) {
     return JSON.stringify(examples.http, null, 2)
   }
-  
+
   if (websocketItems > jsonItems && websocketItems > httpItems) {
     return JSON.stringify(examples.websocket, null, 2)
   }
-  
+
   return JSON.stringify(examples.json, null, 2)
 }
 
@@ -293,16 +290,16 @@ function handleDelete(): void {
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .source-info {
     width: 100%;
   }
-  
+
   .stats-tags {
     width: 100%;
     justify-content: flex-start;
   }
-  
+
   .action-buttons {
     width: 100%;
     justify-content: flex-end;
@@ -325,12 +322,12 @@ function handleDelete(): void {
 }
 
 /* 明暗主题适配 */
-[data-theme="dark"] .example-tooltip {
+[data-theme='dark'] .example-tooltip {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-[data-theme="light"] .example-tooltip {
+[data-theme='light'] .example-tooltip {
   background: rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(0, 0, 0, 0.1);
 }

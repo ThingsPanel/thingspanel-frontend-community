@@ -9,8 +9,8 @@ import type { Component } from 'vue'
 // 现在从 renderers/base 目录导入，实现真正的分离架构
 import BaseConfigForm from '../renderers/base/BaseConfigForm.vue'
 import ComponentConfigForm from '../renderers/base/ComponentConfigForm.vue'
-// 导入交互配置组件
-import InteractionSettingsForm from '../settings/components/InteractionSettingsForm.vue'
+// 导入新的卡片式交互配置组件（来自核心交互系统）
+import InteractionCardWizard from '@/core/interaction-system/components/InteractionCardWizard.vue'
 
 export interface ConfigLayerDefinition {
   /** 配置层级名称 */
@@ -51,10 +51,10 @@ export const configLayerRegistry: Record<string, ConfigLayerDefinition> = {
   interaction: {
     name: 'interaction',
     label: 'config.tabs.interaction',
-    component: InteractionSettingsForm,
+    component: InteractionCardWizard,
     visible: true,
     order: 3,
-    description: '组件交互配置（点击、悬停等交互效果）'
+    description: '组件交互配置（卡片式简洁界面，点击、悬停等交互效果）'
   }
 }
 

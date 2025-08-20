@@ -19,7 +19,13 @@
           <template #prefix>
             <n-icon size="12" style="color: var(--text-color-3)">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path
+                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </n-icon>
           </template>
@@ -35,14 +41,27 @@
               <template #trigger>
                 <n-icon size="10" style="color: var(--info-color); cursor: help">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                    <path
+                      d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M12 17h.01"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </n-icon>
               </template>
               <div style="max-width: 220px; font-size: 10px">
-                子协议列表，用逗号分隔<br>
+                子协议列表，用逗号分隔
+                <br />
                 例如：chat, echo, json-rpc
               </div>
             </n-tooltip>
@@ -79,20 +98,11 @@
 
           <!-- 重连配置 -->
           <n-form-item label="自动重连" size="small" style="margin-bottom: 4px">
-            <n-switch 
-              v-model:value="localConfig.autoReconnect" 
-              size="small"
-              @update:value="handleConfigChange"
-            />
+            <n-switch v-model:value="localConfig.autoReconnect" size="small" @update:value="handleConfigChange" />
           </n-form-item>
 
           <!-- 重连间隔 -->
-          <n-form-item 
-            v-if="localConfig.autoReconnect"
-            label="重连间隔" 
-            size="small" 
-            style="margin-bottom: 4px"
-          >
+          <n-form-item v-if="localConfig.autoReconnect" label="重连间隔" size="small" style="margin-bottom: 4px">
             <n-input-number
               v-model:value="localConfig.reconnectInterval"
               :min="1000"
@@ -107,12 +117,7 @@
           </n-form-item>
 
           <!-- 最大重连次数 -->
-          <n-form-item 
-            v-if="localConfig.autoReconnect"
-            label="最大重连次数" 
-            size="small" 
-            style="margin-bottom: 0"
-          >
+          <n-form-item v-if="localConfig.autoReconnect" label="最大重连次数" size="small" style="margin-bottom: 0">
             <n-input-number
               v-model:value="localConfig.maxReconnectAttempts"
               :min="0"
@@ -135,34 +140,27 @@
         <n-space justify="space-between" align="center">
           <n-text depth="2" style="font-size: 11px">连接测试</n-text>
           <n-space :size="4">
-            <n-button 
-              size="tiny" 
-              type="primary" 
-              :loading="connecting" 
+            <n-button
+              size="tiny"
+              type="primary"
+              :loading="connecting"
               :disabled="!isConfigValid || isConnected"
               @click="testConnection"
             >
               🔌 连接测试
             </n-button>
-            <n-button 
-              v-if="isConnected"
-              size="tiny" 
-              type="error" 
-              @click="disconnect"
-            >
-              ❌ 断开连接
-            </n-button>
+            <n-button v-if="isConnected" size="tiny" type="error" @click="disconnect">❌ 断开连接</n-button>
           </n-space>
         </n-space>
       </template>
-      
+
       <n-space vertical :size="2">
         <!-- 连接状态 -->
         <n-space :size="4" align="center">
           <n-tag :type="connectionStatus.type" size="small" style="font-size: 10px">
             {{ connectionStatus.text }}
           </n-tag>
-          <n-text depth="3" style="font-size: 10px" v-if="connectionStatus.message">
+          <n-text v-if="connectionStatus.message" depth="3" style="font-size: 10px">
             {{ connectionStatus.message }}
           </n-text>
         </n-space>
@@ -177,12 +175,12 @@
               style="flex: 1"
               @keyup.enter="sendTestMessage"
             />
-            <n-button size="tiny" type="info" @click="sendTestMessage" :disabled="!testMessage.trim()">
+            <n-button size="tiny" type="info" :disabled="!testMessage.trim()" @click="sendTestMessage">
               📤 发送
             </n-button>
           </n-space>
         </div>
-        
+
         <!-- 消息历史 -->
         <n-code
           :code="messageHistory"
@@ -295,7 +293,7 @@ const messages = ref<Array<{ type: string; message: any; timestamp: number }>>([
 /** 监听配置变化进行验证 */
 watch(
   localConfig,
-  (newConfig) => {
+  newConfig => {
     validateConfig(newConfig)
   },
   { immediate: true, deep: true }
@@ -357,16 +355,17 @@ async function testConnection(): Promise<void> {
   try {
     const config = localConfig.value
     const url = config.url.trim()
-    const protocols = config.protocols?.trim() 
-      ? config.protocols.split(',').map(p => p.trim()).filter(Boolean)
+    const protocols = config.protocols?.trim()
+      ? config.protocols
+          .split(',')
+          .map(p => p.trim())
+          .filter(Boolean)
       : undefined
 
     console.log(`🔌 [WebSocketDataInput] 开始测试WebSocket连接: ${url}`)
-    
+
     // 创建WebSocket连接
-    const ws = protocols && protocols.length > 0 
-      ? new WebSocket(url, protocols)
-      : new WebSocket(url)
+    const ws = protocols && protocols.length > 0 ? new WebSocket(url, protocols) : new WebSocket(url)
 
     // 设置连接超时
     const timeout = config.timeout || 10000
@@ -383,12 +382,12 @@ async function testConnection(): Promise<void> {
     }, timeout)
 
     // 监听连接打开
-    ws.onopen = (event) => {
+    ws.onopen = event => {
       clearTimeout(timeoutId)
       wsConnection.value = ws
       isConnected.value = true
       connecting.value = false
-      
+
       connectionStatus.value = {
         type: 'success',
         text: '已连接',
@@ -401,7 +400,7 @@ async function testConnection(): Promise<void> {
     }
 
     // 监听消息接收
-    ws.onmessage = (event) => {
+    ws.onmessage = event => {
       try {
         let messageData = event.data
         // 尝试解析JSON
@@ -410,7 +409,7 @@ async function testConnection(): Promise<void> {
         } catch {
           // 不是JSON，保持原始数据
         }
-        
+
         addMessage('received', messageData, event)
         console.log('📨 [WebSocketDataInput] 收到消息:', messageData)
       } catch (error) {
@@ -419,7 +418,7 @@ async function testConnection(): Promise<void> {
     }
 
     // 监听连接关闭
-    ws.onclose = (event) => {
+    ws.onclose = event => {
       clearTimeout(timeoutId)
       isConnected.value = false
       connecting.value = false
@@ -437,7 +436,7 @@ async function testConnection(): Promise<void> {
     }
 
     // 监听连接错误
-    ws.onerror = (event) => {
+    ws.onerror = event => {
       clearTimeout(timeoutId)
       isConnected.value = false
       connecting.value = false
@@ -453,7 +452,6 @@ async function testConnection(): Promise<void> {
       console.error('❌ [WebSocketDataInput] WebSocket连接错误:', event)
       window.$message?.error('WebSocket连接失败')
     }
-
   } catch (error) {
     connecting.value = false
     connectionStatus.value = {
@@ -475,10 +473,10 @@ function disconnect(): void {
     wsConnection.value.close(1000, '手动断开连接')
     wsConnection.value = null
   }
-  
+
   isConnected.value = false
   connecting.value = false
-  
+
   connectionStatus.value = {
     type: 'default',
     text: '已断开',
@@ -504,7 +502,7 @@ function sendTestMessage(): void {
 
   try {
     let messageToSend = testMessage.value.trim()
-    
+
     // 尝试作为JSON发送
     try {
       const jsonData = JSON.parse(messageToSend)
@@ -515,7 +513,7 @@ function sendTestMessage(): void {
 
     wsConnection.value.send(messageToSend)
     addMessage('sent', messageToSend)
-    
+
     console.log('📤 [WebSocketDataInput] 发送消息:', messageToSend)
     testMessage.value = ''
     window.$message?.success('消息已发送')
@@ -536,7 +534,7 @@ function addMessage(type: string, message: any, event?: any): void {
   }
 
   messages.value.unshift(messageItem)
-  
+
   // 保留最近20条消息
   if (messages.value.length > 20) {
     messages.value = messages.value.slice(0, 20)
@@ -561,10 +559,14 @@ function updateMessageHistory(): void {
     data: msg.message
   }))
 
-  messageHistory.value = JSON.stringify({
-    total: messages.value.length,
-    recent: recentMessages
-  }, null, 2)
+  messageHistory.value = JSON.stringify(
+    {
+      total: messages.value.length,
+      recent: recentMessages
+    },
+    null,
+    2
+  )
 }
 
 // ========== 事件处理器 ==========
@@ -665,23 +667,23 @@ nextTick(() => {
   .websocket-form :deep(.n-form-item) {
     margin-bottom: 8px;
   }
-  
+
   .websocket-form :deep(.n-form-item-label) {
     font-size: 12px;
   }
-  
+
   .config-input :deep(.n-input) {
     font-size: 12px;
   }
 }
 
 /* 明暗主题适配 */
-[data-theme="dark"] .connection-test {
+[data-theme='dark'] .connection-test {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="light"] .connection-test {
+[data-theme='light'] .connection-test {
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.08);
 }

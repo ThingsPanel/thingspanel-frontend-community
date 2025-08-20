@@ -11,7 +11,7 @@
  */
 
 import { defineAsyncComponent, type Component } from 'vue'
-import { configRegistry } from '../settings/ConfigRegistry'
+import { configRegistry } from '@/core/interaction-system'
 import componentRegistry from '@/card2.1'
 import type { IComponentDefinition, IConfigComponent } from '@/card2.1/core'
 import { createLogger } from '@/utils/logger'

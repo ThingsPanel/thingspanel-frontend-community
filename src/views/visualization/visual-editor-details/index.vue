@@ -16,10 +16,33 @@ const panel_id = (route.query.id as string) || '72da0887-52f9-b546-27ce-e4c06ea0
 const showInteractionTest = ref(false)
 const stateManager = ref<any>(null)
 
+// 🔥 获取当前画布组件列表的函数
+const getAvailableComponents = () => {
+  if (!stateManager.value || !stateManager.value.nodes) {
+    console.log('[INTERACTION-DEBUG] StateManager或nodes不可用')
+    return []
+  }
+
+  const components = stateManager.value.nodes.map((node: any) => ({
+    id: node.id,
+    type: node.type,
+    name: node.metadata?.name || node.type,
+    label: `${node.metadata?.name || node.type} (${node.id.slice(0, 8)}...)` // 显示名称和ID片段
+  }))
+
+  console.log('[INTERACTION-DEBUG] 获取可用组件列表:', components)
+  return components
+}
+
 // 提供给子组件的状态
 provide('interactionTestState', {
   showInteractionTest,
   stateManager
+})
+
+// 🔥 提供组件列表获取函数给交互配置使用
+provide('visualEditorState', {
+  getAvailableComponents
 })
 
 // 切换交互测试面板
@@ -47,13 +70,13 @@ const runSystemTest = async () => {
   try {
     message.info('正在运行系统测试...')
     const results = await manualTester.runAllTests()
-    
+
     if (results.success) {
       message.success(`系统测试通过！(${results.passed}/${results.total})`)
     } else {
       message.error(`系统测试失败！(${results.passed}/${results.total})`)
     }
-    
+
     console.log('🎯 [VisualEditorDetails] 系统测试完成:', results)
   } catch (error) {
     console.error('🎯 [VisualEditorDetails] 系统测试异常:', error)
@@ -71,11 +94,13 @@ const testComponentInteraction = (componentId: string, action: string, value: an
       id: `test-${Date.now()}`,
       name: '测试交互',
       event: 'click' as any,
-      responses: [{
-        action: action as any,
-        value: value,
-        duration: 500
-      }],
+      responses: [
+        {
+          action: action as any,
+          value: value,
+          duration: 500
+        }
+      ],
       enabled: true,
       priority: 999
     }
@@ -89,7 +114,10 @@ const testComponentInteraction = (componentId: string, action: string, value: an
 
     if (results.some(r => r.success)) {
       message.success(`交互执行成功: ${action}`)
-      console.log('🎯 交互效果详情:', results.find(r => r.success))
+      console.log(
+        '🎯 交互效果详情:',
+        results.find(r => r.success)
+      )
     } else {
       const errorResult = results.find(r => !r.success)
       message.error(`交互执行失败: ${errorResult?.error || '未知错误'}`)
@@ -100,7 +128,6 @@ const testComponentInteraction = (componentId: string, action: string, value: an
       interactionManager.updateComponentConfigs(componentId, existingConfigs)
       console.log('🧪 测试配置已清除')
     }, 3000)
-
   } catch (error) {
     console.error('🧪 交互测试失败:', error)
     message.error(`执行失败: ${error}`)
@@ -121,18 +148,11 @@ const resetComponentState = (componentId: string) => {
 <template>
   <div class="visual-editor-container">
     <!-- 主编辑器 -->
-    <PanelEditor 
-      :panel-id="panel_id" 
-      @state-manager-ready="handleStateManagerReady"
-    />
-    
+    <PanelEditor :panel-id="panel_id" @state-manager-ready="handleStateManagerReady" />
+
     <!-- 交互测试按钮 -->
     <div class="interaction-test-button-container">
-      <button
-        class="interaction-test-btn"
-        :class="{ active: showInteractionTest }"
-        @click="toggleInteractionTest"
-      >
+      <button class="interaction-test-btn" :class="{ active: showInteractionTest }" @click="toggleInteractionTest">
         🧪 交互测试
       </button>
     </div>

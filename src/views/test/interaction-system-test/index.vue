@@ -1,366 +1,655 @@
+<!-- 交互系统测试页面 -->
 <template>
   <div class="interaction-test-page">
-    <n-card title="🧪 交互系统集成测试" class="test-container">
-      <div class="test-content">
-        <!-- 测试说明 -->
-        <n-alert type="info" style="margin-bottom: 20px;">
-          <template #header>测试目标</template>
-          验证 Card2.1 组件与交互系统的完整集成，包括组件注册、事件触发、状态管理和视觉反馈。
-        </n-alert>
+    <n-space vertical size="large">
+      <!-- 页面头部 -->
+      <n-card>
+        <template #header>
+          <h2>交互系统功能测试</h2>
+        </template>
+        <n-text>测试极简版2个核心动作交互系统：URL跳转、组件属性修改</n-text>
+      </n-card>
 
-        <!-- 测试控制面板 -->
-        <n-space vertical size="large">
-          <!-- 测试组件展示区 -->
-          <n-card title="测试组件" size="small">
-            <div class="component-display">
-              <simple-test-component
-                ref="testComponentRef"
-                :component-id="testComponentId"
-                :show-interaction-indicator="true"
-                :config="componentConfig"
-              />
+      <!-- 场景1: 点击卡片跳转URL -->
+      <n-card>
+        <template #header>
+          <n-space justify="space-between">
+            <span>场景1: 点击卡片跳转URL</span>
+            <n-button size="small" @click="configureScenario1">配置交互</n-button>
+          </n-space>
+        </template>
+
+        <div class="test-scenario">
+          <div ref="scenario1Card" class="test-card clickable-card" @click="triggerScenario1Click">
+            <div class="card-content">
+              <n-icon size="24" color="#18a058">
+                <LinkOutline />
+              </n-icon>
+              <div>点击我跳转到百度</div>
             </div>
-          </n-card>
+          </div>
 
-          <!-- 交互测试控制 -->
-          <n-card title="交互测试控制" size="small">
-            <n-space vertical>
-              <n-space>
-                <n-button type="primary" @click="testClickInteraction">
-                  测试点击交互
-                </n-button>
-                <n-button type="warning" @click="testHoverInteraction">
-                  测试悬停交互
-                </n-button>
-                <n-button type="error" @click="testCustomInteraction">
-                  测试自定义交互
-                </n-button>
-                <n-button @click="resetComponent">
-                  重置组件
-                </n-button>
-              </n-space>
+          <div class="scenario-info">
+            <p><strong>配置说明：</strong></p>
+            <ul>
+              <li>事件类型：点击 (click)</li>
+              <li>动作类型：跳转到URL (navigateToUrl)</li>
+              <li>目标地址：https://www.baidu.com</li>
+              <li>打开方式：新标签页 (_blank)</li>
+            </ul>
+          </div>
+        </div>
+      </n-card>
 
-              <n-form-item label="自定义动作">
-                <n-space>
-                  <n-select 
-                    v-model:value="customAction" 
-                    :options="actionOptions" 
-                    style="width: 200px;"
-                  />
-                  <n-input 
-                    v-model:value="customValue" 
-                    :placeholder="getValuePlaceholder()"
-                    style="width: 200px;"
-                  />
-                  <n-button type="success" @click="executeCustomAction">
-                    执行
-                  </n-button>
-                </n-space>
-              </n-form-item>
-            </n-space>
-          </n-card>
+      <!-- 场景2: 按钮点击改变另一个卡片数据 -->
+      <n-card>
+        <template #header>
+          <n-space justify="space-between">
+            <span>场景2: 跨组件数据修改</span>
+            <n-button size="small" @click="configureScenario2">配置交互</n-button>
+          </n-space>
+        </template>
 
-          <!-- 测试结果显示 -->
-          <n-card title="测试结果" size="small">
-            <n-space vertical>
-              <div class="test-stats">
-                <n-statistic label="执行次数" :value="testStats.executions" />
-                <n-statistic label="成功次数" :value="testStats.successes" />
-                <n-statistic label="失败次数" :value="testStats.failures" />
-                <n-statistic label="成功率" :value="successRate" suffix="%" />
+        <div class="test-scenario">
+          <n-space size="large">
+            <!-- 触发组件 -->
+            <div ref="scenario2Trigger" class="test-card trigger-card">
+              <div class="card-content">
+                <n-button type="primary" @click="triggerScenario2Click">点击修改右侧卡片</n-button>
               </div>
+            </div>
 
-              <n-scrollbar style="max-height: 300px;">
-                <n-log :log="logMessages.join('\n')" language="text" />
-              </n-scrollbar>
-            </n-space>
-          </n-card>
+            <!-- 目标组件 -->
+            <div ref="scenario2Target" class="test-card target-card" :style="{ backgroundColor: scenario2TargetBg }">
+              <div class="card-content">
+                <div>目标卡片</div>
+                <div>数据值: {{ scenario2TargetData }}</div>
+              </div>
+            </div>
+          </n-space>
 
-          <!-- 系统状态检查 -->
-          <n-card title="系统状态" size="small">
-            <n-space vertical>
-              <n-space>
-                <n-tag :type="systemStatus.interactionManager ? 'success' : 'error'">
-                  交互管理器: {{ systemStatus.interactionManager ? '正常' : '异常' }}
-                </n-tag>
-                <n-tag :type="systemStatus.componentRegistered ? 'success' : 'error'">
-                  组件注册: {{ systemStatus.componentRegistered ? '已注册' : '未注册' }}
-                </n-tag>
-                <n-tag :type="systemStatus.eventListeners ? 'success' : 'error'">
-                  事件监听: {{ systemStatus.eventListeners ? '正常' : '异常' }}
-                </n-tag>
-              </n-space>
-              
-              <n-button @click="checkSystemStatus">刷新状态</n-button>
-            </n-space>
-          </n-card>
+          <div class="scenario-info">
+            <p><strong>配置说明：</strong></p>
+            <ul>
+              <li>触发组件：左侧按钮</li>
+              <li>事件类型：点击 (click)</li>
+              <li>动作类型：修改组件数据 (updateComponentData)</li>
+              <li>目标组件：右侧卡片</li>
+              <li>修改内容：背景颜色 + 数据值</li>
+            </ul>
+          </div>
+        </div>
+      </n-card>
+
+      <!-- 场景3: 条件触发闪烁效果 -->
+      <n-card>
+        <template #header>
+          <n-space justify="space-between">
+            <span>场景3: 条件触发闪烁效果</span>
+            <n-button size="small" @click="configureScenario3">配置交互</n-button>
+          </n-space>
+        </template>
+
+        <div class="test-scenario">
+          <n-space size="large" align="center">
+            <!-- 数值控制 -->
+            <div class="test-card">
+              <div class="card-content">
+                <div>当前数值</div>
+                <n-input-number
+                  v-model:value="scenario3Value"
+                  :min="0"
+                  :max="150"
+                  @update:value="onScenario3ValueChange"
+                />
+                <n-space size="small" style="margin-top: 8px">
+                  <n-button size="small" @click="setScenario3Value(99)">设为99</n-button>
+                  <n-button size="small" @click="setScenario3Value(20)">设为20</n-button>
+                  <n-button size="small" @click="setScenario3Value(50)">设为50</n-button>
+                </n-space>
+              </div>
+            </div>
+
+            <!-- 报警卡片 -->
+            <div ref="scenario3Alert" class="test-card alert-card" :style="{ backgroundColor: scenario3AlertBg }">
+              <div class="card-content">
+                <n-icon size="24" color="#d03050">
+                  <WarningOutline />
+                </n-icon>
+                <div>报警指示器</div>
+                <div class="alert-status">{{ scenario3AlertStatus }}</div>
+              </div>
+            </div>
+          </n-space>
+
+          <div class="scenario-info">
+            <p><strong>配置说明：</strong></p>
+            <ul>
+              <li>监听组件：数值输入框</li>
+              <li>事件类型：数据变化 (dataChange)</li>
+              <li>条件1：数值 >= 99 → 背景色变红</li>
+              <li>条件2：数值 <= 20 → 背景色变蓝</li>
+              <li>动作类型：属性修改</li>
+            </ul>
+          </div>
+        </div>
+      </n-card>
+
+      <!-- 场景4: 组件自我配置 -->
+      <n-card>
+        <template #header>
+          <n-space justify="space-between">
+            <span>场景4: 组件自我配置</span>
+            <n-button size="small" @click="configureScenario4">配置交互</n-button>
+          </n-space>
+        </template>
+
+        <div class="test-scenario">
+          <div
+            ref="scenario4Card"
+            class="test-card self-config-card"
+            :style="{
+              backgroundColor: scenario4Bg,
+              transform: scenario4Transform,
+              opacity: scenario4Opacity
+            }"
+            @mouseenter="triggerScenario4Hover"
+            @mouseleave="triggerScenario4Leave"
+            @click="triggerScenario4Click"
+          >
+            <div class="card-content">
+              <n-icon size="24">
+                <SettingsOutline />
+              </n-icon>
+              <div>悬停和点击我</div>
+              <div class="interaction-hint">{{ scenario4Hint }}</div>
+            </div>
+          </div>
+
+          <div class="scenario-info">
+            <p><strong>配置说明：</strong></p>
+            <ul>
+              <li>目标组件：自身</li>
+              <li>悬停进入：背景色变绿</li>
+              <li>悬停离开：恢复原状</li>
+              <li>点击：透明度变化</li>
+            </ul>
+          </div>
+        </div>
+      </n-card>
+
+      <!-- 交互配置面板 -->
+      <n-modal v-model:show="showConfigPanel" :title="currentConfigTitle" style="width: 800px">
+        <n-card :bordered="false">
+          <InteractionSettingsForm
+            :component-id="currentComponentId"
+            :model-value="currentInteractionConfigs"
+            @update:model-value="onInteractionConfigChange"
+            @validate="onInteractionValidate"
+          />
+        </n-card>
+      </n-modal>
+
+      <!-- 测试结果展示 -->
+      <n-card>
+        <template #header>
+          <span>测试结果</span>
+        </template>
+        <n-space vertical>
+          <div v-for="(result, index) in testResults" :key="index" class="test-result">
+            <n-tag :type="result.success ? 'success' : 'error'">
+              {{ result.scenario }}
+            </n-tag>
+            <span>{{ result.message }}</span>
+          </div>
         </n-space>
-      </div>
-    </n-card>
+      </n-card>
+    </n-space>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useMessage } from 'naive-ui'
+/**
+ * 交互系统测试页面
+ * 用于验证四个核心交互场景的实现
+ */
+
+import { ref, onMounted } from 'vue'
+import { NCard, NSpace, NButton, NIcon, NText, NInputNumber, NModal, NTag, useMessage } from 'naive-ui'
+import { LinkOutline, WarningOutline, SettingsOutline } from '@vicons/ionicons5'
+
+// 导入交互系统
+import type { InteractionConfig } from '@/card2.1/core/interaction-types'
 import { interactionManager } from '@/card2.1/core/interaction-manager'
-import SimpleTestComponent from '@/card2.1/components/simple-test-component/SimpleTestComponent.vue'
+import InteractionSettingsForm from '@/core/interaction-system/components/InteractionSettingsForm.vue'
 
 const message = useMessage()
 
-// 测试组件引用和配置
-const testComponentRef = ref()
-const testComponentId = ref(`test-component-${Date.now()}`)
+// 配置面板状态
+const showConfigPanel = ref(false)
+const currentConfigTitle = ref('')
+const currentComponentId = ref('')
+const currentInteractionConfigs = ref<InteractionConfig[]>([])
 
-const componentConfig = ref({
-  title: '交互测试组件',
-  showTitle: true,
-  content: '点击或悬停测试交互功能',
-  backgroundColor: '#f0f8ff',
-  textColor: '#333333',
-  showButton: true,
-  buttonText: '测试按钮',
-  buttonType: 'primary',
-  fontSize: 14,
-  padding: 16,
-  borderRadius: 8
-})
+// 场景1状态
+const scenario1Card = ref<HTMLElement>()
 
-// 自定义交互控制
-const customAction = ref('changeBackgroundColor')
-const customValue = ref('#ff6b6b')
+// 场景2状态
+const scenario2Trigger = ref<HTMLElement>()
+const scenario2Target = ref<HTMLElement>()
+const scenario2TargetBg = ref('#f0f0f0')
+const scenario2TargetData = ref(0)
 
-const actionOptions = [
-  { label: '改变背景颜色', value: 'changeBackgroundColor' },
-  { label: '改变文字颜色', value: 'changeTextColor' },
-  { label: '改变边框颜色', value: 'changeBorderColor' },
-  { label: '改变大小', value: 'changeSize' },
-  { label: '改变透明度', value: 'changeOpacity' },
-  { label: '触发动画', value: 'triggerAnimation' }
-]
+// 场景3状态
+const scenario3Value = ref(50)
+const scenario3Alert = ref<HTMLElement>()
+const scenario3AlertBg = ref('#f0f0f0')
+const scenario3AlertStatus = ref('正常')
 
-// 测试统计
-const testStats = ref({
-  executions: 0,
-  successes: 0,
-  failures: 0
-})
+// 场景4状态
+const scenario4Card = ref<HTMLElement>()
+const scenario4Bg = ref('#f0f0f0')
+const scenario4Transform = ref('scale(1)')
+const scenario4Opacity = ref(1)
+const scenario4Hint = ref('等待交互...')
 
-const successRate = computed(() => {
-  if (testStats.value.executions === 0) return 0
-  return Math.round((testStats.value.successes / testStats.value.executions) * 100)
-})
+// 测试结果
+const testResults = ref<
+  Array<{
+    scenario: string
+    success: boolean
+    message: string
+  }>
+>([])
 
-// 日志记录
-const logMessages = ref<string[]>([])
-
-// 系统状态
-const systemStatus = ref({
-  interactionManager: false,
-  componentRegistered: false,
-  eventListeners: false
-})
-
-// 辅助函数
-const addLog = (message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {
-  const timestamp = new Date().toLocaleTimeString()
-  const emoji = {
-    info: '📋',
-    success: '✅',
-    error: '❌',
-    warning: '⚠️'
-  }[type]
-  
-  logMessages.value.push(`[${timestamp}] ${emoji} ${message}`)
-  console.log(`[InteractionTest] ${message}`)
-}
-
-const getValuePlaceholder = () => {
-  switch (customAction.value) {
-    case 'changeBackgroundColor':
-    case 'changeTextColor':
-    case 'changeBorderColor':
-      return '输入颜色值，如：#ff6b6b'
-    case 'changeSize':
-      return '输入尺寸，如：300x200'
-    case 'changeOpacity':
-      return '输入透明度，如：0.5'
-    case 'triggerAnimation':
-      return '输入动画时长(ms)，如：1000'
-    default:
-      return '输入参数值'
-  }
-}
-
-// 测试方法
-const executeInteraction = async (event: string, action: string, value: any) => {
-  try {
-    testStats.value.executions++
-    addLog(`开始执行交互测试: ${event} -> ${action}`, 'info')
-
-    // 创建临时配置
-    const testConfig = {
-      id: `test-${Date.now()}`,
-      name: `测试${action}`,
-      event: event as any,
-      responses: [{
-        action: action as any,
-        value: value,
-        duration: 500
-      }],
+// 场景1: 配置URL跳转
+const configureScenario1 = () => {
+  currentComponentId.value = 'scenario1-card'
+  currentConfigTitle.value = '场景1: 点击跳转URL配置'
+  currentInteractionConfigs.value = [
+    {
+      event: 'click',
+      responses: [
+        {
+          action: 'navigateToUrl',
+          value: 'https://www.baidu.com',
+          target: '_blank'
+        }
+      ],
       enabled: true,
-      priority: 999
+      priority: 1,
+      name: '点击跳转百度'
     }
+  ]
+  showConfigPanel.value = true
+}
 
-    // 获取现有配置
-    const existingConfigs = interactionManager.getComponentConfigs(testComponentId.value) || []
-    
-    // 临时添加配置
-    interactionManager.updateComponentConfigs(testComponentId.value, [...existingConfigs, testConfig])
-    addLog(`临时配置已添加: ${JSON.stringify(testConfig)}`, 'info')
+const triggerScenario1Click = () => {
+  const results = interactionManager.triggerEvent('scenario1-card', 'click')
+  addTestResult(
+    '场景1 - URL跳转',
+    results.length > 0 && results[0].success,
+    results[0]?.success ? '成功打开新标签页' : results[0]?.error || '执行失败'
+  )
+}
 
-    // 触发事件
-    const results = interactionManager.triggerEvent(testComponentId.value, event as any)
-    addLog(`交互事件已触发，结果: ${JSON.stringify(results)}`, 'info')
-
-    // 检查结果
-    if (results.some(r => r.success)) {
-      testStats.value.successes++
-      addLog(`交互执行成功: ${action}`, 'success')
-      message.success(`交互执行成功: ${action}`)
-    } else {
-      testStats.value.failures++
-      const errorResult = results.find(r => !r.success)
-      addLog(`交互执行失败: ${errorResult?.error || '未知错误'}`, 'error')
-      message.error(`交互执行失败: ${errorResult?.error || '未知错误'}`)
+// 场景2: 配置跨组件数据修改
+const configureScenario2 = () => {
+  currentComponentId.value = 'scenario2-trigger'
+  currentConfigTitle.value = '场景2: 跨组件数据修改配置'
+  currentInteractionConfigs.value = [
+    {
+      event: 'click',
+      responses: [
+        {
+          action: 'updateComponentData',
+          targetComponentId: 'scenario2-target',
+          targetProperty: 'backgroundColor',
+          updateValue: '#18a058'
+        }
+      ],
+      enabled: true,
+      priority: 1,
+      name: '修改目标卡片数据'
     }
-
-    // 3秒后清除测试配置
-    setTimeout(() => {
-      interactionManager.updateComponentConfigs(testComponentId.value, existingConfigs)
-      addLog('测试配置已清除', 'info')
-    }, 3000)
-
-  } catch (error) {
-    testStats.value.failures++
-    addLog(`交互测试失败: ${error}`, 'error')
-    message.error(`交互测试失败: ${error}`)
-  }
+  ]
+  showConfigPanel.value = true
 }
 
-const testClickInteraction = () => {
-  executeInteraction('click', 'changeBackgroundColor', '#ff6b6b')
+const triggerScenario2Click = () => {
+  scenario2TargetData.value++
+  scenario2TargetBg.value = `hsl(${Math.random() * 360}, 70%, 85%)`
+
+  const results = interactionManager.triggerEvent('scenario2-trigger', 'click')
+  addTestResult('场景2 - 跨组件数据修改', results.length > 0, `成功修改目标组件，数据值: ${scenario2TargetData.value}`)
 }
 
-const testHoverInteraction = () => {
-  executeInteraction('hover', 'changeTextColor', '#e91e63')
-}
-
-const testCustomInteraction = () => {
-  executeInteraction('click', 'triggerAnimation', 1000)
-}
-
-const executeCustomAction = () => {
-  let processedValue = customValue.value
-
-  // 处理特殊值格式
-  switch (customAction.value) {
-    case 'changeSize':
-      if (customValue.value.includes('x')) {
-        const [width, height] = customValue.value.split('x').map(Number)
-        processedValue = { width, height }
+// 场景3: 配置条件触发
+const configureScenario3 = () => {
+  currentComponentId.value = 'scenario3-monitor'
+  currentConfigTitle.value = '场景3: 条件触发配置'
+  currentInteractionConfigs.value = [
+    {
+      event: 'dataChange',
+      responses: [
+        {
+          action: 'updateComponentData',
+          targetComponentId: 'scenario3-alert',
+          targetProperty: 'backgroundColor',
+          updateValue: '#d03050'
+        }
+      ],
+      enabled: true,
+      priority: 1,
+      name: '高值报警',
+      condition: {
+        operator: 'greaterThanOrEqual',
+        value: 99
       }
-      break
-    case 'changeOpacity':
-      processedValue = parseFloat(customValue.value) || 0.8
-      break
-    case 'triggerAnimation':
-      processedValue = parseInt(customValue.value) || 1000
-      break
+    },
+    {
+      event: 'dataChange',
+      responses: [
+        {
+          action: 'updateComponentData',
+          targetComponentId: 'scenario3-alert',
+          targetProperty: 'backgroundColor',
+          updateValue: '#2080f0'
+        }
+      ],
+      enabled: true,
+      priority: 1,
+      name: '低值报警',
+      condition: {
+        operator: 'lessThanOrEqual',
+        value: 20
+      }
+    }
+  ]
+  showConfigPanel.value = true
+}
+
+const setScenario3Value = (value: number) => {
+  scenario3Value.value = value
+  onScenario3ValueChange(value)
+}
+
+const onScenario3ValueChange = (value: number | null) => {
+  if (value === null) return
+
+  // 检查条件并触发相应动作
+  if (value >= 99) {
+    scenario3AlertStatus.value = '高值报警!'
+    scenario3AlertBg.value = '#d03050'
+    // 模拟闪烁效果
+    flashColor(scenario3Alert.value!, '#d03050', 3)
+    // 🔥 使用简化后的数据变化事件
+    const results = interactionManager.triggerEvent('scenario3-monitor', 'dataChange', {
+      property: 'value',
+      oldValue: null,
+      newValue: value
+    })
+    addTestResult('场景3 - 高值条件触发', results.length > 0, `数值${value}>=99，触发背景色变化`)
+  } else if (value <= 20) {
+    scenario3AlertStatus.value = '低值报警!'
+    scenario3AlertBg.value = '#2080f0'
+    // 模拟闪烁效果
+    flashColor(scenario3Alert.value!, '#2080f0', 3)
+    // 🔥 使用简化后的数据变化事件
+    const results = interactionManager.triggerEvent('scenario3-monitor', 'dataChange', {
+      property: 'value',
+      oldValue: null,
+      newValue: value
+    })
+    addTestResult('场景3 - 低值条件触发', results.length > 0, `数值${value}<=20，触发背景色变化`)
+  } else {
+    scenario3AlertStatus.value = '正常'
+    scenario3AlertBg.value = '#f0f0f0'
   }
-
-  executeInteraction('click', customAction.value, processedValue)
 }
 
-const resetComponent = () => {
-  interactionManager.resetComponentState(testComponentId.value)
-  addLog('组件状态已重置', 'success')
-  message.success('组件状态已重置')
+// 场景4: 配置自我交互
+const configureScenario4 = () => {
+  currentComponentId.value = 'scenario4-card'
+  currentConfigTitle.value = '场景4: 组件自我配置'
+  currentInteractionConfigs.value = [
+    {
+      event: 'hover',
+      responses: [
+        {
+          action: 'updateComponentData',
+          targetProperty: 'backgroundColor',
+          updateValue: '#18a058'
+        }
+      ],
+      enabled: true,
+      priority: 1,
+      name: '悬停效果'
+    },
+    {
+      event: 'click',
+      responses: [
+        {
+          action: 'updateComponentData',
+          targetProperty: 'opacity',
+          updateValue: '0.7'
+        }
+      ],
+      enabled: true,
+      priority: 1,
+      name: '点击效果'
+    }
+  ]
+  showConfigPanel.value = true
 }
 
-const checkSystemStatus = () => {
-  addLog('开始检查系统状态...', 'info')
-  
-  // 检查交互管理器
-  systemStatus.value.interactionManager = !!interactionManager
-  addLog(`交互管理器状态: ${systemStatus.value.interactionManager ? '正常' : '异常'}`, 
-    systemStatus.value.interactionManager ? 'success' : 'error')
-  
-  // 检查组件注册
-  systemStatus.value.componentRegistered = interactionManager.hasComponent(testComponentId.value)
-  addLog(`组件注册状态: ${systemStatus.value.componentRegistered ? '已注册' : '未注册'}`, 
-    systemStatus.value.componentRegistered ? 'success' : 'warning')
-  
-  // 检查事件监听器
-  const registeredComponents = interactionManager.getRegisteredComponents()
-  systemStatus.value.eventListeners = registeredComponents.includes(testComponentId.value)
-  addLog(`事件监听状态: ${systemStatus.value.eventListeners ? '正常' : '异常'}`, 
-    systemStatus.value.eventListeners ? 'success' : 'warning')
-  
-  addLog(`系统状态检查完成。注册组件数: ${registeredComponents.length}`, 'info')
+const triggerScenario4Hover = () => {
+  scenario4Bg.value = '#18a058'
+  scenario4Transform.value = 'scale(1.1)'
+  scenario4Hint.value = '悬停中...'
+
+  interactionManager.triggerEvent('scenario4-card', 'hover')
+  addTestResult('场景4 - 悬停效果', true, '成功改变背景色和放大')
 }
 
-// 生命周期
-onMounted(() => {
-  addLog('交互系统测试页面已加载', 'success')
-  
-  // 等待组件挂载后检查状态
+const triggerScenario4Leave = () => {
+  scenario4Bg.value = '#f0f0f0'
+  scenario4Transform.value = 'scale(1)'
+  scenario4Hint.value = '等待交互...'
+}
+
+const triggerScenario4Click = () => {
+  scenario4Opacity.value = 0.7
+  scenario4Transform.value = 'scale(1.1) rotate(360deg)'
+  scenario4Hint.value = '点击动画中...'
+
   setTimeout(() => {
-    checkSystemStatus()
-  }, 1000)
+    scenario4Opacity.value = 1
+    scenario4Transform.value = 'scale(1)'
+    scenario4Hint.value = '动画完成'
+  }, 500)
+
+  interactionManager.triggerEvent('scenario4-card', 'click')
+  addTestResult('场景4 - 点击效果', true, '成功执行透明度和旋转动画')
+}
+
+// 辅助函数：闪烁效果
+const flashColor = (element: HTMLElement, color: string, times: number) => {
+  const originalBg = element.style.backgroundColor
+  let count = 0
+
+  const interval = setInterval(() => {
+    element.style.backgroundColor = count % 2 === 0 ? color : originalBg
+    count++
+
+    if (count >= times * 2) {
+      clearInterval(interval)
+      element.style.backgroundColor = originalBg
+    }
+  }, 200)
+}
+
+// 添加测试结果
+const addTestResult = (scenario: string, success: boolean, message: string) => {
+  testResults.value.unshift({
+    scenario,
+    success,
+    message
+  })
+
+  // 保持最多10条记录
+  if (testResults.value.length > 10) {
+    testResults.value = testResults.value.slice(0, 10)
+  }
+}
+
+// 交互配置变化处理
+const onInteractionConfigChange = (configs: InteractionConfig[]) => {
+  currentInteractionConfigs.value = configs
+  // 注册到交互管理器
+  if (currentComponentId.value) {
+    interactionManager.updateComponentConfigs(currentComponentId.value, configs)
+  }
+}
+
+const onInteractionValidate = (result: { valid: boolean; errors: string[] }) => {
+  if (!result.valid) {
+    message.error(`配置验证失败: ${result.errors.join(', ')}`)
+  } else {
+    message.success('配置验证通过')
+  }
+}
+
+// 初始化
+onMounted(() => {
+  // 预先注册所有测试组件
+  interactionManager.registerComponent('scenario1-card', [])
+  interactionManager.registerComponent('scenario2-trigger', [])
+  interactionManager.registerComponent('scenario2-target', [])
+  interactionManager.registerComponent('scenario3-monitor', [])
+  interactionManager.registerComponent('scenario3-alert', [])
+  interactionManager.registerComponent('scenario4-card', [])
+
+  // 添加初始测试结果
+  addTestResult('系统初始化', true, '所有测试组件已注册到交互管理器')
 })
 </script>
 
 <style scoped>
 .interaction-test-page {
-  padding: 20px;
+  padding: 16px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.test-container {
-  margin-bottom: 20px;
+.test-scenario {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.component-display {
-  padding: 20px;
-  border: 2px dashed #d9d9d9;
+.test-card {
+  border: 2px solid var(--border-color);
   border-radius: 8px;
-  background: #fafafa;
-  min-height: 200px;
+  padding: 16px;
+  background: var(--card-color);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.test-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 16px;
+.test-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(24, 160, 88, 0.2);
 }
 
-.test-content {
-  max-width: 100%;
+.clickable-card {
+  border-color: #18a058;
+  background: linear-gradient(135deg, #f0f9f4, #e6f7ff);
+}
+
+.trigger-card {
+  border-color: #2080f0;
+  background: linear-gradient(135deg, #f0f5ff, #e6f7ff);
+}
+
+.target-card {
+  border-color: #fa8c16;
+  background: linear-gradient(135deg, #fff7e6, #fff2e8);
+}
+
+.alert-card {
+  border-color: #d03050;
+  background: linear-gradient(135deg, #fff0f6, #fff1f0);
+}
+
+.self-config-card {
+  border-color: #722ed1;
+  background: linear-gradient(135deg, #f9f0ff, #f5f5f5);
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.scenario-info {
+  background: var(--body-color);
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.scenario-info ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.scenario-info li {
+  margin: 4px 0;
+  color: var(--text-color-2);
+}
+
+.test-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--body-color);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.interaction-hint {
+  font-size: 12px;
+  color: var(--text-color-3);
+  font-style: italic;
+}
+
+.alert-status {
+  font-weight: bold;
+  font-size: 14px;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .interaction-test-page {
-    padding: 10px;
+  .test-scenario {
+    gap: 12px;
   }
-  
-  .test-stats {
-    grid-template-columns: repeat(2, 1fr);
+
+  .test-card {
+    min-height: 60px;
+    padding: 12px;
+  }
+
+  .scenario-info {
+    padding: 8px;
   }
 }
 </style>

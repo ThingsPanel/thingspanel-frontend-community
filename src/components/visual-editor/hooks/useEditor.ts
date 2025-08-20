@@ -9,7 +9,7 @@ import { inject, provide, watchEffect } from 'vue'
 import { useEditorStore } from '../store/editor'
 import { useWidgetStore, type WidgetDefinition } from '../store/widget'
 import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
-import { configRegistry } from '../settings/ConfigRegistry'
+import { configRegistry } from '@/core/interaction-system'
 // 数据源注册已移除
 import type { GraphData, WidgetType } from '../types'
 import type { ComponentDefinition } from '@/card2.1/core/types'
