@@ -439,17 +439,21 @@ export class DataSourceExecutor implements IDataSourceExecutor {
       // 智能提取响应数据，支持多种格式
       responseData = this.extractResponseData(response)
     } catch (error) {
-      this.handleExecutionError(error, 'HTTP请求失败')
-
       // 处理请求失败但服务器有响应的情况（可能是格式不匹配）
       if (error instanceof Error && 'response' in error) {
         const errorResponse = (error as any).response
         if (errorResponse?.status >= 200 && errorResponse?.status < 300) {
+          // 这是"假错误"（响应格式不匹配但数据有效），静默处理
+          console.info('ℹ️ [Executor] 外部API响应格式与项目标准不同，已自动适配')
           responseData = this.extractResponseData(errorResponse)
         } else {
+          // 真正的HTTP错误
+          this.handleExecutionError(error, 'HTTP请求失败')
           throw new Error(`HTTP请求失败: ${errorResponse?.status} ${errorResponse?.statusText || error.message}`)
         }
       } else {
+        // 其他类型的错误
+        this.handleExecutionError(error, 'HTTP请求失败')
         throw error
       }
     }
