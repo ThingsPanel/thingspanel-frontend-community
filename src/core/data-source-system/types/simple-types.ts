@@ -6,50 +6,126 @@
 // ========== 组件数据需求类型 ==========
 
 /**
- * 组件数据需求声明 - 简化版
- * 学习自 visual-editor 的组件需求声明机制
+ * 组件数据需求声明 - 与Card2.1完全兼容
+ * 支持Card2.1 ComponentDefinition中的 staticParams 和 dataSources
  */
 export interface ComponentDataRequirement {
   /** 组件ID */
   componentId: string
   /** 组件名称 */
   componentName: string
-  /** 数据源需求列表 */
+  /** 静态参数需求声明 - 与Card2.1 StaticParamRequirement对应 */
+  staticParams?: StaticParamRequirement[]
+  /** 数据源需求声明 - 与Card2.1 DataSourceRequirement对应 */
   dataSources: DataSourceRequirement[]
 }
 
 /**
- * 数据源需求声明
+ * 静态参数需求定义 - 与Card2.1完全一致
  */
-export interface DataSourceRequirement {
-  /** 数据源ID */
-  id: string
-  /** 数据源名称 */
+export interface StaticParamRequirement {
+  /** 参数唯一标识 */
+  key: string
+  /** 参数名称 */
   name: string
-  /** 数据结构类型 */
-  structureType: 'object' | 'array'
-  /** 字段需求 */
-  fields: FieldRequirement[]
+  /** 参数类型 */
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array'
+  /** 参数描述 */
+  description: string
+  /** 默认值 */
+  defaultValue?: any
   /** 是否必填 */
-  required: boolean
-  /** 描述 */
-  description?: string
+  required?: boolean
+  /** 参数验证规则 */
+  validation?: {
+    min?: number
+    max?: number
+    pattern?: string
+    options?: Array<{ label: string; value: any }>
+  }
+  /** UI 渲染提示 */
+  ui?: {
+    component?: 'input' | 'select' | 'number' | 'switch' | 'textarea' | 'color' | 'slider'
+    placeholder?: string
+    label?: string
+    group?: string
+  }
 }
 
 /**
- * 字段需求声明
+ * 数据源需求声明 - 与Card2.1完全兼容的版本
+ */
+export interface DataSourceRequirement {
+  /** 数据源唯一标识 - 与Card2.1 key对应 */
+  key: string
+  /** 数据源名称 */
+  name: string
+  /** 数据源描述 */
+  description: string
+  /** 支持的数据源类型 - 与Card2.1对齐 */
+  supportedTypes: Array<'static' | 'api' | 'websocket' | 'mqtt' | 'database'>
+  /** 字段映射规则 - 与Card2.1 fieldMappings兼容 */
+  fieldMappings: Record<
+    string,
+    {
+      /** 目标字段名 */
+      targetField: string
+      /** 字段类型 */
+      type: 'value' | 'object' | 'array'
+      /** 是否必填 */
+      required: boolean
+      /** 默认值 */
+      defaultValue?: any
+      /** 数据转换函数 */
+      transform?: string
+    }
+  >
+  /** 是否必填 */
+  required?: boolean
+
+  // ==== 向下兼容字段 - 支持原有简化格式 ====
+  /** 数据结构类型 - 向下兼容 */
+  structureType?: 'object' | 'array'
+  /** 字段需求 - 向下兼容 */
+  fields?: FieldRequirement[]
+  /** 数据源ID - 向下兼容 */
+  id?: string
+}
+
+/**
+ * 字段需求声明 - 与Card2.1兼容的扩展版本
  */
 export interface FieldRequirement {
   /** 字段名 */
   name: string
-  /** 字段类型 */
-  type: 'string' | 'number' | 'boolean' | 'any'
+  /** 字段类型 - 扩展支持Card2.1的类型系统 */
+  type: 'string' | 'number' | 'boolean' | 'any' | 'object' | 'array'
+  /** 值类型 - 用于进一步细分类型 */
+  valueType?: 'number' | 'string' | 'boolean' | 'any'
   /** 是否必填 */
   required: boolean
   /** 字段描述 */
   description: string
   /** 示例值 */
   example?: any
+  /** 默认值 - 与Card2.1 StaticParamRequirement兼容 */
+  defaultValue?: any
+  /** 嵌套结构定义 - 支持复杂对象和数组 */
+  structure?: DataSourceRequirement
+  /** 验证规则 - 与Card2.1兼容的验证配置 */
+  validation?: {
+    min?: number
+    max?: number
+    pattern?: string
+    options?: Array<{ label: string; value: any }>
+  }
+  /** UI渲染提示 - 支持Card2.1的UI配置 */
+  ui?: {
+    component?: 'input' | 'select' | 'number' | 'switch' | 'textarea' | 'color' | 'slider'
+    placeholder?: string
+    label?: string
+    group?: string
+  }
 }
 
 // ========== 数据源配置类型 ==========
@@ -297,9 +373,14 @@ export interface Card21CompatibleProps {
 export type DataSourceType = 'static' | 'api' | 'websocket' | 'script'
 
 /**
- * 字段类型联合类型
+ * 字段类型联合类型 - 扩展支持Card2.1兼容性
  */
-export type FieldType = 'string' | 'number' | 'boolean' | 'any'
+export type FieldType = 'string' | 'number' | 'boolean' | 'any' | 'object' | 'array'
+
+/**
+ * 字段值类型联合类型 - 用于细分基础类型
+ */
+export type FieldValueType = 'string' | 'number' | 'boolean' | 'any'
 
 /**
  * 触发器类型联合类型
@@ -310,6 +391,16 @@ export type TriggerType = 'timer' | 'websocket' | 'event' | 'manual'
  * 组件类型
  */
 export type ComponentType = 'visual-editor' | 'card2.1' | 'standard'
+
+/**
+ * Card2.1组件需求声明格式 - 直接引用Card2.1的类型
+ */
+export interface Card2ComponentRequirement {
+  /** 静态参数需求声明 */
+  staticParams?: any[]
+  /** 数据源需求声明 */
+  dataSources?: any[]
+}
 
 // ========== 常量定义 ==========
 
@@ -328,4 +419,78 @@ export const SIMPLE_DATA_SOURCE_CONSTANTS = {
 
   /** 配置版本 */
   CONFIG_VERSION: '2.0.0'
+} as const
+
+// ========== Card2.1兼容类型转换工具 ==========
+
+/**
+ * Card2.1 StaticParamRequirement转换工具
+ */
+export interface Card2StaticParamCompatibility {
+  /**
+   * 将Card2.1 StaticParamRequirement转换为数据源系统StaticParamRequirement
+   */
+  fromCard2StaticParam(card2Param: any): StaticParamRequirement
+
+  /**
+   * 将数据源系统StaticParamRequirement转换为Card2.1格式
+   */
+  toCard2StaticParam(staticParam: StaticParamRequirement): any
+}
+
+/**
+ * Card2.1 DataSourceRequirement转换工具
+ */
+export interface Card2DataSourceCompatibility {
+  /**
+   * 将Card2.1 DataSourceRequirement转换为数据源系统格式
+   */
+  fromCard2DataSource(card2DataSource: any): DataSourceRequirement
+
+  /**
+   * 将数据源系统格式转换为Card2.1 DataSourceRequirement
+   */
+  toCard2DataSource(dataSource: DataSourceRequirement): any
+}
+
+/**
+ * 组件数据需求转换工具
+ */
+export interface ComponentRequirementCompatibility {
+  /**
+   * 从Card2.1 ComponentDefinition提取数据需求
+   */
+  extractFromCard2Component(componentDef: any): ComponentDataRequirement
+
+  /**
+   * 将ComponentDataRequirement转换为Card2.1兼容格式
+   */
+  adaptToCard2Component(requirement: ComponentDataRequirement): {
+    staticParams?: any[]
+    dataSources?: any[]
+  }
+}
+
+/**
+ * 字段类型映射表 - Card2.1与数据源系统之间的类型映射
+ */
+export const FIELD_TYPE_MAPPING = {
+  // Card2.1 -> 数据源系统
+  card2ToDataSource: {
+    value: 'any' as FieldType,
+    object: 'object' as FieldType,
+    array: 'array' as FieldType,
+    string: 'string' as FieldType,
+    number: 'number' as FieldType,
+    boolean: 'boolean' as FieldType
+  },
+  // 数据源系统 -> Card2.1
+  dataSourceToCard2: {
+    string: 'value',
+    number: 'value',
+    boolean: 'value',
+    any: 'value',
+    object: 'object',
+    array: 'array'
+  }
 } as const

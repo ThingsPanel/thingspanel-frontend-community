@@ -1,7 +1,8 @@
 /**
- * 组件数据适配器
+ * 组件数据适配器 - 增强Card2.1兼容性
  * 将简化数据源系统的标准输出适配到现有组件格式
  * 支持 visual-editor 和 card2.1 组件的向后兼容
+ * 新增：支持Card2.1的复杂数据需求声明和统一字段映射
  */
 
 import type {
@@ -9,8 +10,14 @@ import type {
   VisualEditorCompatibleProps,
   Card21CompatibleProps,
   StandardComponentProps,
-  ComponentType
+  ComponentType,
+  ComponentDataRequirement,
+  DataSourceRequirement,
+  StaticParamRequirement
 } from '../types/simple-types'
+
+// 引入Card2.1兼容性工具
+import { card2CompatibilityManager } from '../utils/card2-compatibility'
 
 /**
  * Visual Editor 适配器
@@ -76,8 +83,9 @@ export class VisualEditorAdapter {
 }
 
 /**
- * Card2.1 适配器
+ * Card2.1 适配器 - 增强版
  * 将标准组件数据转换为 Card2.1 组件期望的格式
+ * 支持复杂数据需求声明和字段映射
  */
 export class Card21Adapter {
   /**
@@ -99,6 +107,128 @@ export class Card21Adapter {
         dataSourceBindings
       }
     }
+  }
+
+  /**
+   * 适配组件数据需求到Card2.1格式
+   * 支持复杂数据需求声明的转换
+   */
+  adaptDataRequirement(requirement: ComponentDataRequirement): {
+    staticParams?: any[]
+    dataSources?: any[]
+    supportedDataSources?: string[]
+  } {
+    console.log(`🔄 [Card21Adapter] 转换组件数据需求: ${requirement.componentId}`)
+
+    // 使用兼容性管理器转换
+    const converted = card2CompatibilityManager.convertDataSourceToCard2(requirement)
+
+    // 提取支持的数据源类型
+    const supportedDataSources = this.extractSupportedDataSources(requirement.dataSources)
+
+    return {
+      ...converted,
+      supportedDataSources
+    }
+  }
+
+  /**
+   * 从数据源需求中提取支持的数据源类型
+   */
+  private extractSupportedDataSources(dataSources: DataSourceRequirement[]): string[] {
+    const allTypes = new Set<string>()
+
+    dataSources.forEach(ds => {
+      if (ds.supportedTypes) {
+        ds.supportedTypes.forEach(type => allTypes.add(type))
+      }
+    })
+
+    return Array.from(allTypes)
+  }
+
+  /**
+   * 适配组件配置数据 - 支持复杂字段映射
+   */
+  adaptComponentConfig(componentData: ComponentData, requirements?: ComponentDataRequirement): any {
+    const adaptedData: any = {}
+
+    if (!requirements) {
+      // 简单模式：直接转换数据
+      Object.entries(componentData).forEach(([dataSourceId, sourceData]) => {
+        adaptedData[dataSourceId] = sourceData.data
+      })
+      return adaptedData
+    }
+
+    // 复杂模式：根据需求声明进行字段映射
+    requirements.dataSources?.forEach(dataSourceReq => {
+      const sourceData = componentData[dataSourceReq.key]
+      if (!sourceData) {
+        console.warn(`⚠️  [Card21Adapter] 未找到数据源: ${dataSourceReq.key}`)
+        return
+      }
+
+      // 按照fieldMappings进行字段映射
+      if (dataSourceReq.fieldMappings) {
+        const mappedData: any = {}
+
+        Object.entries(dataSourceReq.fieldMappings).forEach(([sourceField, mapping]) => {
+          const sourceValue = this.extractFieldValue(sourceData.data, sourceField)
+          const mappedValue = this.applyFieldMapping(sourceValue, mapping)
+          mappedData[mapping.targetField] = mappedValue
+        })
+
+        adaptedData[dataSourceReq.key] = mappedData
+      } else {
+        // 没有映射规则，直接使用原始数据
+        adaptedData[dataSourceReq.key] = sourceData.data
+      }
+    })
+
+    return adaptedData
+  }
+
+  /**
+   * 提取字段值，支持嵌套路径
+   */
+  private extractFieldValue(data: any, fieldPath: string): any {
+    const keys = fieldPath.split('.')
+    let value = data
+
+    for (const key of keys) {
+      if (value && typeof value === 'object' && key in value) {
+        value = value[key]
+      } else {
+        return undefined
+      }
+    }
+
+    return value
+  }
+
+  /**
+   * 应用字段映射规则
+   */
+  private applyFieldMapping(sourceValue: any, mapping: any): any {
+    // 处理默认值
+    if (sourceValue === undefined || sourceValue === null) {
+      return mapping.defaultValue
+    }
+
+    // 处理转换函数
+    if (mapping.transform && typeof mapping.transform === 'string') {
+      try {
+        // 简单的转换函数执行（生产环境中需要更安全的实现）
+        const transformFn = new Function('value', `return ${mapping.transform}`)
+        return transformFn(sourceValue)
+      } catch (error) {
+        console.warn(`⚠️  [Card21Adapter] 字段转换失败:`, error)
+        return sourceValue
+      }
+    }
+
+    return sourceValue
   }
 
   /**
@@ -131,6 +261,67 @@ export class Card21Adapter {
     }
 
     return componentData
+  }
+
+  /**
+   * 从 Card2.1 组件定义提取数据需求
+   * 支持复杂的staticParams和dataSources结构
+   */
+  extractRequirementFromCard2Definition(componentDef: any): ComponentDataRequirement | null {
+    try {
+      return card2CompatibilityManager.convertCard2ToDataSource(componentDef)
+    } catch (error) {
+      console.error(`❌ [Card21Adapter] 提取Card2.1组件需求失败:`, error)
+      return null
+    }
+  }
+
+  /**
+   * 验证Card2.1组件数据是否符合需求
+   */
+  validateCard2Data(
+    data: ComponentData,
+    requirement: ComponentDataRequirement
+  ): {
+    valid: boolean
+    errors: string[]
+    warnings: string[]
+  } {
+    const errors: string[] = []
+    const warnings: string[] = []
+
+    // 验证数据源需求
+    requirement.dataSources?.forEach(dsReq => {
+      if (dsReq.required && !data[dsReq.key]) {
+        errors.push(`缺少必需的数据源: ${dsReq.key}`)
+      }
+
+      const sourceData = data[dsReq.key]
+      if (sourceData && dsReq.fieldMappings) {
+        // 验证字段映射
+        Object.entries(dsReq.fieldMappings).forEach(([sourceField, mapping]) => {
+          if (mapping.required) {
+            const fieldValue = this.extractFieldValue(sourceData.data, sourceField)
+            if (fieldValue === undefined || fieldValue === null) {
+              errors.push(`数据源 ${dsReq.key} 缺少必需字段: ${sourceField}`)
+            }
+          }
+        })
+      }
+    })
+
+    // 验证静态参数
+    requirement.staticParams?.forEach(param => {
+      if (param.required && !data[param.key]) {
+        errors.push(`缺少必需的静态参数: ${param.key}`)
+      }
+    })
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings
+    }
   }
 }
 
@@ -240,7 +431,12 @@ export class UnifiedComponentDataAdapter {
       return 'card2.1'
     }
 
-    // 4. 默认为标准组件
+    // 4. 检查是否有Card2.1特有属性
+    if (componentId.includes('card2') || componentId.includes('dual-data') || componentId.includes('test-component')) {
+      return 'card2.1'
+    }
+
+    // 5. 默认为标准组件
     return 'standard'
   }
 
