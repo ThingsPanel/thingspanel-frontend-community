@@ -96,7 +96,6 @@
             </n-form-item>
           </template>
 
-
           <!-- 🔥 数据变化时的属性选择和条件配置 -->
           <template v-if="currentInteraction.event === 'dataChange'">
             <n-form-item label="监听属性">
@@ -148,7 +147,6 @@
               </n-space>
             </n-form-item>
           </template>
-
 
           <!-- 属性修改配置 -->
           <template v-if="currentActionType === 'modify'">
@@ -375,7 +373,6 @@ const targetPropertyOptions = computed(() => {
   return options
 })
 
-
 // 🔥 可用属性选项 - 基于组件类型动态获取
 const availablePropertyOptions = computed(() => {
   console.log('[INTERACTION-DEBUG] availablePropertyOptions 计算:', {
@@ -540,8 +537,14 @@ const getActionType = (interaction: any) => {
   const firstResponse = interaction.responses?.[0]
   if (!firstResponse) return 'none'
 
+  // 支持新的动作类型
+  if (firstResponse.action === 'jump') return 'jump'
+  if (firstResponse.action === 'modify') return 'modify'
+
+  // 向后兼容旧的动作类型
   if (firstResponse.action === 'navigateToUrl') return 'jump'
   if (firstResponse.action === 'updateComponentData') return 'modify'
+
   return 'custom'
 }
 
@@ -584,26 +587,75 @@ const editInteraction = (index: number) => {
     }
   }
 
-
   // 根据响应类型填充表单
   const firstResponse = interaction.responses?.[0]
   if (firstResponse) {
-    if (firstResponse.action === 'navigateToUrl') {
+    // 处理新的跳转格式
+    if (firstResponse.action === 'jump') {
+      currentActionType.value = 'jump'
+
+      if (firstResponse.jumpConfig) {
+        // 新格式：使用 jumpConfig
+        const jumpConfig = firstResponse.jumpConfig
+        urlType.value = jumpConfig.jumpType
+        currentInteraction.value.target = jumpConfig.target || '_self'
+
+        if (jumpConfig.jumpType === 'external') {
+          currentInteraction.value.url = jumpConfig.url || ''
+        } else {
+          selectedMenuPath.value = jumpConfig.internalPath || ''
+          currentInteraction.value.url = jumpConfig.internalPath || ''
+          loadMenuOptions()
+        }
+      } else {
+        // 向后兼容旧格式
+        const url = firstResponse.value || ''
+        currentInteraction.value.url = url
+        currentInteraction.value.target = firstResponse.target || '_blank'
+
+        if (url && (url.startsWith('http') || url.startsWith('https'))) {
+          urlType.value = 'external'
+        } else if (url) {
+          urlType.value = 'internal'
+          selectedMenuPath.value = url
+          loadMenuOptions()
+        }
+      }
+    }
+    // 处理旧的跳转格式
+    else if (firstResponse.action === 'navigateToUrl') {
       currentActionType.value = 'jump'
       const url = firstResponse.value || ''
       currentInteraction.value.url = url
       currentInteraction.value.target = firstResponse.target || '_blank'
 
-      // 🔥 判断是外部链接还是内部路径
       if (url && (url.startsWith('http') || url.startsWith('https'))) {
         urlType.value = 'external'
       } else if (url) {
         urlType.value = 'internal'
         selectedMenuPath.value = url
-        // 确保菜单选项已加载
         loadMenuOptions()
       }
-    } else if (firstResponse.action === 'updateComponentData') {
+    }
+    // 处理新的修改格式
+    else if (firstResponse.action === 'modify') {
+      currentActionType.value = 'modify'
+
+      if (firstResponse.modifyConfig) {
+        // 新格式：使用 modifyConfig
+        const modifyConfig = firstResponse.modifyConfig
+        currentInteraction.value.targetComponentId = modifyConfig.targetComponentId || ''
+        currentInteraction.value.targetProperty = modifyConfig.targetProperty || ''
+        currentInteraction.value.updateValue = modifyConfig.updateValue || ''
+      } else {
+        // 向后兼容旧格式
+        currentInteraction.value.targetComponentId = firstResponse.targetComponentId || ''
+        currentInteraction.value.targetProperty = firstResponse.targetProperty || ''
+        currentInteraction.value.updateValue = firstResponse.updateValue || ''
+      }
+    }
+    // 处理旧的修改格式
+    else if (firstResponse.action === 'updateComponentData') {
       currentActionType.value = 'modify'
       currentInteraction.value.targetComponentId = firstResponse.targetComponentId || ''
       currentInteraction.value.targetProperty = firstResponse.targetProperty || ''
@@ -668,17 +720,17 @@ const loadMenuOptions = async () => {
       listType: typeof result?.data?.list,
       listLength: result?.data?.list?.length
     })
-    
+
     if (result && result.data && result.data.list) {
       console.log('[MENU-DEBUG] 🎯 路由数据数组:', result.data.list)
       console.log('[MENU-DEBUG] 🎯 第一个路由示例:', result.data.list[0])
-      
+
       // 将路由数据转换为选项格式
       const flattened = flattenRoutes(result.data.list)
       console.log('[MENU-DEBUG] 🎯 扁平化结果:', flattened)
       menuOptions.value = flattened
       console.log('[MENU-DEBUG] ✅ 菜单加载成功，共', flattened.length, '项')
-      
+
       // 如果没有菜单项，说明扁平化函数有问题
       if (flattened.length === 0) {
         console.log('[MENU-DEBUG] ⚠️ 扁平化结果为空，但API有数据，检查扁平化函数')
@@ -704,11 +756,11 @@ const flattenRoutes = (routes: any[]): { label: string; value: string }[] => {
   // 递归处理函数
   const processRoute = (route: any, parentTitle = '') => {
     console.log('[FLATTEN-DEBUG] 处理路由:', route.name || route.id)
-    
+
     // 新数据结构：path 作为路径，meta.title 作为标题
     const path = route.path
     const title = route.meta?.title || route.meta?.i18nKey || route.name
-    
+
     // 生成显示标签（如果有父级，用 / 分隔）
     const displayLabel = parentTitle ? `${parentTitle} / ${title}` : title
 
@@ -795,20 +847,43 @@ const saveInteraction = () => {
     }
   }
 
-
   // 根据动作类型构建响应
   if (currentActionType.value === 'jump') {
+    // 生成新的跳转配置格式
+    const jumpConfig = {
+      jumpType: urlType.value === 'external' ? 'external' : 'internal',
+      target: currentInteraction.value.target || '_self'
+    }
+
+    if (urlType.value === 'external') {
+      jumpConfig.url = currentInteraction.value.url
+    } else {
+      jumpConfig.internalPath = selectedMenuPath.value || currentInteraction.value.url
+    }
+
     interaction.responses = [
       {
-        action: 'navigateToUrl',
+        action: 'jump',
+        jumpConfig: jumpConfig,
+        // 向后兼容旧格式
         value: currentInteraction.value.url,
         target: currentInteraction.value.target
       }
     ]
   } else if (currentActionType.value === 'modify') {
+    // 生成新的修改配置格式
+    const modifyConfig = {
+      targetComponentId: currentInteraction.value.targetComponentId,
+      targetProperty: currentInteraction.value.targetProperty,
+      updateValue: currentInteraction.value.updateValue,
+      updateMode: 'replace'
+    }
+
     interaction.responses = [
       {
-        action: 'updateComponentData',
+        action: 'modify',
+        modifyConfig: modifyConfig,
+        // 向后兼容旧格式
         targetComponentId: currentInteraction.value.targetComponentId,
         targetProperty: currentInteraction.value.targetProperty,
         updateValue: currentInteraction.value.updateValue
@@ -936,7 +1011,6 @@ const saveInteraction = () => {
   background: var(--warning-color-suppl);
   color: var(--warning-color);
 }
-
 
 .summary-text {
   flex: 1;

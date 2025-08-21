@@ -323,7 +323,7 @@ export class DataSourceExecutor implements IDataSourceExecutor {
           // 关键检查：过滤后是否为null，尝试路径修复
           if (filteredData === null || filteredData === undefined) {
             console.warn(`⚠️ [Executor] 数据源 ${dataItem.name} 过滤结果为空，尝试路径修复`)
-            
+
             // 尝试修复路径
             const originalPath = dataItem.config.filterPath
             const fixedPath = this.fixInvalidPrefix(originalPath, rawData)
@@ -458,7 +458,6 @@ export class DataSourceExecutor implements IDataSourceExecutor {
       }
     }
 
-
     if (responseData && typeof responseData === 'object') {
     }
 
@@ -477,12 +476,12 @@ export class DataSourceExecutor implements IDataSourceExecutor {
     if ('code' in response && 'data' in response) {
       return response.data
     }
-    
+
     // 标准HTTP响应格式：{data: actualData}
     if ('data' in response) {
       return response.data
     }
-    
+
     // 直接就是数据
     return response
   }
@@ -492,7 +491,7 @@ export class DataSourceExecutor implements IDataSourceExecutor {
    */
   private handleExecutionError(error: any, context: string): string {
     let errorMessage = error instanceof Error ? error.message : String(error)
-    
+
     // 转换技术错误为用户友好的提示
     if (errorMessage.includes('network') || errorMessage.includes('ENOTFOUND')) {
       errorMessage = '网络连接失败，请检查网络设置或URL是否正确'
@@ -505,7 +504,7 @@ export class DataSourceExecutor implements IDataSourceExecutor {
     } else if (errorMessage.includes('path') || errorMessage.includes('filter')) {
       errorMessage = '数据过滤路径错误，请检查JSONPath语法'
     }
-    
+
     console.error(`❌ [Executor] ${context}:`, errorMessage)
     return errorMessage
   }

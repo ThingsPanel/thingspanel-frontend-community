@@ -148,7 +148,6 @@ export class MultiDataSourceExecutor implements IMultiDataSourceExecutor {
       throw new Error('未加载配置，无法执行')
     }
 
-
     this.state.isExecuting = true
     this.state.lastError = null
     this.state.executionCount++
@@ -173,7 +172,6 @@ export class MultiDataSourceExecutor implements IMultiDataSourceExecutor {
       this.calculateOverallStats(Date.now() - startTime)
 
       this.state.lastExecuteTime = new Date().toISOString()
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
       this.state.lastError = errorMessage

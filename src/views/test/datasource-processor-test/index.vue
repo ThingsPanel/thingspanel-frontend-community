@@ -56,7 +56,7 @@
                 测试之前用户遇到的问题：数据源返回脚本执行元数据对象而不是实际处理后的数据
               </div>
             </n-alert>
-            
+
             <n-alert type="warning">
               <template #header>关于"backend requestTs error"提示</template>
               <div style="font-size: 12px">
@@ -351,7 +351,11 @@ const runFixValidation = async () => {
     // 总结修复效果
     if (!hasScriptMetadataIssue && !hasEmptyResultIssue) {
       addValidationResult('success', '修复验证结果', '✅ 所有问题已修复！脚本执行返回正确数据，无元数据对象问题')
-      addValidationResult('info', '关于错误提示', '注意：如果看到"backend requestTs error"是正常的，因为外部API格式与项目标准不同，但数据已成功获取')
+      addValidationResult(
+        'info',
+        '关于错误提示',
+        '注意：如果看到"backend requestTs error"是正常的，因为外部API格式与项目标准不同，但数据已成功获取'
+      )
     } else {
       if (hasScriptMetadataIssue) {
         addValidationResult('error', '修复验证结果', '❌ 脚本执行仍返回元数据对象，需进一步修复')

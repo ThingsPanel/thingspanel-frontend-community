@@ -14,8 +14,11 @@ import type {
   NavigationConfig,
   DataUpdateConfig,
   FlashConfig,
-  CrossComponentResponse
+  CrossComponentResponse,
+  JumpConfig,
+  ModifyConfig
 } from './interaction-types'
+import { InteractionAdapter } from './interaction-adapter'
 
 class InteractionManager {
   private componentConfigs = new Map<string, InteractionConfig[]>()
@@ -123,6 +126,12 @@ class InteractionManager {
     let oldValue: any
     let newValue: any
 
+    // 🔥 使用适配器统一处理新旧格式
+    const normalizedResponse = InteractionAdapter.normalizeToNewFormat(response as any)
+    const actionType = InteractionAdapter.getUnifiedActionType(response as any)
+
+    console.log(`[InteractionManager] 执行响应 - 原始动作: ${response.action}, 统一动作: ${actionType}`)
+
     switch (response.action) {
       case 'changeBackgroundColor':
         oldValue = currentState.backgroundColor
@@ -177,6 +186,41 @@ class InteractionManager {
 
       // 🔥 移除动画功能
 
+      // 🔥 新版本动作类型 - jump (URL跳转)
+      case 'jump':
+        oldValue = undefined
+        if (response.jumpConfig) {
+          // 使用新的 jumpConfig 结构
+          newValue = response.jumpConfig
+          this.handleJumpAction(response.jumpConfig)
+        } else {
+          // 向后兼容：从旧字段提取数据
+          const legacyUrl = response.value as string
+          const legacyTarget = response.target || '_self'
+          newValue = { jumpType: 'external', url: legacyUrl, target: legacyTarget }
+          this.handleNavigateToUrl(response)
+        }
+        break
+
+      // 🔥 新版本动作类型 - modify (修改组件属性)
+      case 'modify':
+        oldValue = currentState
+        if (response.modifyConfig) {
+          // 使用新的 modifyConfig 结构
+          newValue = response.modifyConfig
+          this.handleModifyAction(componentId, response.modifyConfig)
+        } else {
+          // 向后兼容：从旧字段提取数据
+          newValue = response.value
+          if (response.targetComponentId) {
+            this.updateTargetComponentData(response.targetComponentId, response)
+          } else {
+            this.updateComponentState(componentId, response.value)
+          }
+        }
+        break
+
+      // 🔥 保留旧版本动作类型以支持向后兼容
       case 'navigateToUrl':
         this.handleNavigateToUrl(response)
         oldValue = undefined
@@ -366,8 +410,118 @@ class InteractionManager {
 
   // ===== 新增的动作处理方法 =====
 
+  // ===== 新版本动作处理方法 =====
+
   /**
-   * 处理URL跳转
+   * 处理跳转动作 (新版本)
+   */
+  private handleJumpAction(jumpConfig: JumpConfig): void {
+    console.log(`[InteractionManager] 执行跳转动作:`, jumpConfig)
+
+    if (jumpConfig.jumpType === 'external') {
+      // 外部URL跳转
+      if (!jumpConfig.url) {
+        console.error('[InteractionManager] 外部跳转失败: 未提供URL')
+        return
+      }
+      this.navigateToUrl(jumpConfig.url, jumpConfig.target || '_self', jumpConfig.windowFeatures)
+    } else if (jumpConfig.jumpType === 'internal') {
+      // 内部菜单跳转
+      if (!jumpConfig.internalPath) {
+        console.error('[InteractionManager] 内部跳转失败: 未提供路径')
+        return
+      }
+      this.navigateToUrl(jumpConfig.internalPath, jumpConfig.target || '_self')
+    }
+  }
+
+  /**
+   * 处理修改动作 (新版本)
+   */
+  private handleModifyAction(sourceComponentId: string, modifyConfig: ModifyConfig): void {
+    console.log(`[InteractionManager] 执行修改动作:`, modifyConfig)
+
+    const { targetComponentId, targetProperty, updateValue, updateMode = 'replace' } = modifyConfig
+
+    if (!this.hasComponent(targetComponentId)) {
+      console.warn(`[InteractionManager] 目标组件 ${targetComponentId} 未注册`)
+      return
+    }
+
+    const currentState = this.getComponentState(targetComponentId) || {}
+    let finalValue = updateValue
+
+    // 根据更新模式处理值
+    const currentValue = currentState[targetProperty]
+    switch (updateMode) {
+      case 'append':
+        if (currentValue !== undefined) {
+          finalValue = String(currentValue) + String(updateValue)
+        }
+        break
+      case 'prepend':
+        if (currentValue !== undefined) {
+          finalValue = String(updateValue) + String(currentValue)
+        }
+        break
+      case 'replace':
+      default:
+        // 直接使用新值
+        break
+    }
+
+    // 更新目标组件状态
+    const updateData: Partial<ComponentInteractionState> = {
+      [targetProperty]: finalValue
+    }
+
+    this.updateComponentState(targetComponentId, updateData)
+
+    console.log(
+      `[InteractionManager] 修改组件属性: ${targetComponentId}.${targetProperty} = ${finalValue} (模式: ${updateMode})`
+    )
+  }
+
+  /**
+   * 通用URL导航方法
+   */
+  private navigateToUrl(url: string, target: string = '_self', windowFeatures?: string): void {
+    try {
+      console.log(`[InteractionManager] 准备跳转到: ${url}, 打开方式: ${target}`)
+
+      if (target === '_self') {
+        // 当前窗口跳转
+        window.location.href = url
+      } else if (target === '_blank') {
+        // 新窗口打开，支持窗口特性配置
+        if (windowFeatures) {
+          window.open(url, target, windowFeatures)
+          console.log(`[InteractionManager] 新窗口打开: ${url}, 窗口特性: ${windowFeatures}`)
+        } else {
+          window.open(url, target)
+          console.log(`[InteractionManager] 新窗口打开: ${url}`)
+        }
+      } else {
+        // 其他目标(_parent, _top等)
+        window.open(url, target)
+        console.log(`[InteractionManager] 跳转到: ${url}, 目标: ${target}`)
+      }
+    } catch (error) {
+      console.error('[InteractionManager] URL跳转失败:', error)
+      // 如果跳转失败，尝试简单的window.open
+      try {
+        window.open(url, '_blank')
+        console.log(`[InteractionManager] 降级跳转成功: ${url}`)
+      } catch (fallbackError) {
+        console.error('[InteractionManager] 降级跳转也失败:', fallbackError)
+      }
+    }
+  }
+
+  // ===== 旧版本动作处理方法 (保留兼容性) =====
+
+  /**
+   * 处理URL跳转 (旧版本)
    */
   private handleNavigateToUrl(response: InteractionResponse): void {
     const url = response.value as string

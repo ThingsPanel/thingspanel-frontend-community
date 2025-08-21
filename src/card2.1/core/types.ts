@@ -4,6 +4,7 @@
  */
 
 import type { Component } from 'vue'
+import type { ComponentInteractionDefinition } from './interaction-types'
 
 // 权限类型定义
 export type ComponentPermission = '不限' | 'TENANT_ADMIN' | 'TENANT_USER' | 'SYS_ADMIN'
@@ -53,6 +54,11 @@ export interface ComponentDefinition {
 
   /** 数据源需求声明 */
   dataSources?: DataSourceRequirement[]
+
+  // ============ 交互系统配置 ============
+
+  /** 交互能力定义 */
+  interaction?: ComponentInteractionDefinition
 }
 
 export interface IComponentRegistry {

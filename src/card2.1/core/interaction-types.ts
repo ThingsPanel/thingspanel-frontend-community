@@ -3,53 +3,61 @@
  * 定义组件如何响应外部交互的类型系统
  */
 
-// 交互事件类型
+// 交互事件类型 - 简化为3种核心事件
 export type InteractionEventType =
   | 'click' // 点击事件
   | 'hover' // 悬停事件
-  | 'focus' // 聚焦事件
-  | 'blur' // 失焦事件
-  | 'visibility' // 🔥 新增：显示时/隐藏时事件
   | 'dataChange' // 数据变化事件（属性改变时）
-  | 'conditional' // 条件触发事件
-  | 'crossComponent' // 跨组件事件
-  | 'custom' // 自定义事件
 
-// 交互响应动作类型
+// 交互响应动作类型 - 简化为2种核心动作
 export type InteractionActionType =
-  | 'changeBackgroundColor' // 改变背景颜色
-  | 'changeTextColor' // 改变文字颜色
-  | 'changeBorderColor' // 改变边框颜色
-  | 'changeSize' // 改变大小
-  | 'changeOpacity' // 改变透明度
-  | 'changeTransform' // 改变变换（旋转、缩放等）
-  | 'changeVisibility' // 改变可见性
-  | 'changeContent' // 改变内容
-  | 'triggerAnimation' // 触发动画
-  | 'navigateToUrl' // 跳转到指定URL
-  | 'updateComponentData' // 修改目标组件数据
-  | 'flashColor' // 闪烁颜色效果
-  | 'conditionalStyle' // 条件样式变化
-  | 'callFunction' // 调用函数
-  | 'custom' // 自定义动作
+  | 'jump' // URL跳转（包含外部URL和内部菜单）
+  | 'modify' // 修改目标组件属性
 
-// 交互响应配置
+// 🔥 为兼容性保留的映射类型（内部使用）
+export type LegacyInteractionActionType =
+  | 'navigateToUrl' // 映射到 jump
+  | 'updateComponentData' // 映射到 modify
+
+// 跳转类型枚举
+export type JumpType = 'external' | 'internal'
+
+// URL跳转配置
+export interface JumpConfig {
+  jumpType: JumpType // 跳转类型：external(外部URL) | internal(内部菜单)
+  url?: string // 外部URL地址
+  internalPath?: string // 内部菜单路径
+  target?: '_self' | '_blank' | '_parent' | '_top' // 跳转目标
+  windowFeatures?: string // 新窗口特性配置
+}
+
+// 属性修改配置
+export interface ModifyConfig {
+  targetComponentId: string // 目标组件ID
+  targetProperty: string // 目标属性名
+  updateValue: any // 更新值
+  updateMode?: 'replace' | 'append' | 'prepend' // 更新模式
+}
+
+// 交互响应配置 - 简化版
 export interface InteractionResponse {
   action: InteractionActionType
-  value: any
-  duration?: number // 动画持续时间（毫秒）
-  easing?: string // 缓动函数
+
+  // 根据动作类型的具体配置
+  jumpConfig?: JumpConfig // jump动作的配置
+  modifyConfig?: ModifyConfig // modify动作的配置
+
+  // 通用属性
   delay?: number // 延迟时间（毫秒）
 
-  // URL跳转相关属性
-  target?: string // 跳转目标 (_self, _blank, _parent, _top)
-  windowFeatures?: string // 新窗口特性配置
-
-  // 跨组件数据更新相关属性
-  targetComponentId?: string // 目标组件ID
-  targetProperty?: string // 目标属性名
-  updateValue?: any // 更新值
-  updateMode?: 'replace' | 'append' | 'prepend' // 更新模式
+  // 🔥 为兼容性保留的旧字段（已废弃，仅供内部映射使用）
+  value?: any
+  target?: string
+  windowFeatures?: string
+  targetComponentId?: string
+  targetProperty?: string
+  updateValue?: any
+  updateMode?: 'replace' | 'append' | 'prepend'
 }
 
 // 交互触发类型 - 区分是节点触发还是组件内部触发
@@ -57,22 +65,24 @@ export type InteractionTriggerType =
   | 'node' // 节点级别触发（整个节点响应事件）
   | 'component' // 组件内部触发（组件内部元素响应事件）
 
-// 交互配置
+// 简化的交互配置
 export interface InteractionConfig {
   event: InteractionEventType
   responses: InteractionResponse[]
-  triggerType?: InteractionTriggerType // 交互触发类型
   enabled?: boolean // 是否启用此交互
   priority?: number // 优先级，数字越大优先级越高
   name?: string // 交互配置名称
-  // 跨组件交互配置
-  targetComponentId?: string // 目标组件ID（跨组件交互时使用）
-  // 条件触发配置
-  condition?: ConditionConfig // 条件配置（条件触发时使用）
-  // 🔥 数据变化监听配置（增强版）
-  dataPath?: string // 监听的数据路径
-  watchedProperty?: string // 被监听的组件属性名
-  sourceComponentType?: string // 源组件类型（用于属性验证）
+
+  // dataChange事件专用配置
+  watchedProperty?: string // 被监听的组件属性名（仅dataChange事件使用）
+  condition?: DataChangeCondition // 条件配置（仅dataChange事件使用）
+}
+
+// 数据变化条件 - 简化版
+export interface DataChangeCondition {
+  property?: string // 属性名
+  operator: 'equals' | 'notEquals' | 'greaterThan' | 'lessThan' | 'contains'
+  value: any // 比较值
 }
 
 // 组件交互状态
@@ -175,4 +185,64 @@ export interface DataUpdateConfig {
   targetProperty: string // 目标属性
   updateValue: any // 更新值
   updateMode?: 'replace' | 'append' | 'prepend' // 更新模式
+}
+
+// ============ 组件交互配置类型接口 ============
+
+// 组件交互能力声明
+export interface ComponentInteractionCapability {
+  /** 组件支持的事件类型 */
+  supportedEvents: InteractionEventType[]
+
+  /** 组件支持的动作类型 */
+  supportedActions: InteractionActionType[]
+
+  /** 默认交互权限 */
+  defaultPermissions: {
+    allowExternalControl: boolean
+    requirePermissionCheck: boolean
+  }
+
+  /** 可被其他组件监听的属性列表 */
+  listenableProperties: string[]
+}
+
+// 交互配置示例
+export interface InteractionExample {
+  /** 示例名称 */
+  name: string
+
+  /** 示例描述 */
+  description: string
+
+  /** 示例场景 */
+  scenario: 'click-jump' | 'hover-modify' | 'data-change-action'
+
+  /** 示例配置 */
+  config: InteractionConfig
+
+  /** 适用组件类型 */
+  applicableComponents?: string[]
+}
+
+// 组件完整交互定义（用于组件index.ts）
+export interface ComponentInteractionDefinition {
+  /** 交互能力声明 */
+  capability: ComponentInteractionCapability
+
+  /** 交互配置示例 */
+  examples: InteractionExample[]
+
+  /** 属性暴露配置 */
+  propertyExposure: {
+    componentType: string
+    componentName: string
+    listenableProperties: Array<{
+      name: string
+      label: string
+      type: 'string' | 'number' | 'boolean' | 'object'
+      description?: string
+      group?: string
+    }>
+  }
 }

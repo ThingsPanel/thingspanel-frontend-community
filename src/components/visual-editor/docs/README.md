@@ -8,6 +8,9 @@
 
 | 文档 | 描述 | 状态 |
 |------|------|------|
+| [架构设计](./ARCHITECTURE.md) | 深入了解 Visual Editor 的核心架构、设计原则和模块划分 | ✅ 完整 |
+| [配置系统](./CONFIGURATION.md) | 探索组件如何通过声明式配置进行扩展 | ✅ 完整 |
+| [状态管理](./STATE_MANAGEMENT.md) | 了解编辑器如何使用 Pinia 管理其状态 | ✅ 完整 |
 | [组件注册机制指南](./WIDGET_REGISTRY_GUIDE.md) | 详细介绍组件注册系统、Card 2.1 集成 | ✅ 完整 |
 
 ### 🎨 渲染器系统
@@ -24,12 +27,6 @@
 | 文档 | 描述 | 状态 |
 |------|------|------|
 | [Layout 组件文档](./components/Layout.md) | Layout 组件使用说明 | ✅ 完整 |
-
-### 🔧 技术细节
-
-| 文档 | 描述 | 状态 |
-|------|------|------|
-| [ECharts 修复文档](./ECHARTS_FIX.md) | ECharts 相关问题修复 | ✅ 完整 |
 
 ## 🚀 快速开始
 
@@ -86,11 +83,6 @@ graph TD
 
 ### 按角色导航
 
-#### 🎯 **产品经理 / 架构师**
-- [架构设计备份](./architecture-design-backup.md)
-- [MVP 计划](./minimal-mvp-plan.md)
-- [目录结构备份](./directory-structure-backup.md)
-
 #### 👨‍💻 **前端开发者**
 - [组件注册机制指南](./WIDGET_REGISTRY_GUIDE.md) - **推荐起点**
 - [渲染器开发指南](./renderers/RENDERER_DEVELOPMENT_GUIDE.md)
@@ -100,10 +92,6 @@ graph TD
 - [渲染器系统概览](./renderers/README.md)
 - [开发模板说明](./renderers/TEMPLATES.md)
 - [Layout 组件文档](./components/Layout.md)
-
-#### 🔧 **运维 / 集成开发者**
-- [ECharts 修复文档](./ECHARTS_FIX.md)
-- [交互增强功能](./README.md#🎨-增强交互功能)
 
 ## 📖 文档规范
 
@@ -214,9 +202,8 @@ const example = 'value'
 
 ## 📊 文档统计
 
-- **总文档数**: 13 个
-- **完整文档**: 10 个
-- **备份文档**: 3 个
-- **最后更新**: 2024年
+| 总文档数 | 完整文档数 | 备份文档数 | 最后更新时间 |
+|------------|------------|------------|----------------|
+| 6          | 6          | 0          |
 
 **选择合适的文档开始您的 Visual Editor 之旅！** 🚀

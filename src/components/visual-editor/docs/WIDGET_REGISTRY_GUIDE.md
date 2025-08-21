@@ -14,9 +14,7 @@
 
 ## 🏗️ 系统概述
 
-Visual Editor 使用双重组件注册系统：
-
-1. **传统组件注册**: 基于 `widgetRegistry` 的单例模式管理
+Visual Editor 使用 Pinia store (`useWidgetStore`) 来管理组件注册。
 2. **Card 2.1 集成**: 通过 `useCard2Integration` 钩子动态加载
 
 ### 架构图
@@ -25,10 +23,10 @@ Visual Editor 使用双重组件注册系统：
 ┌─────────────────────────────────────────────────────────┐
 │                   WidgetLibrary                         │
 │  ┌─────────────────┐     ┌─────────────────────────────┐ │
-│  │ Legacy Widgets  │     │      Card 2.1 Widgets      │ │
+│  │  Editor Widgets │     │      Card 2.1 Widgets      │ │
 │  │                 │     │                             │ │
-│  │ WidgetRegistry  │────▶│  useCard2Integration Hook   │ │
-│  │   (单例模式)     │     │       (动态加载)             │ │
+│  │ useWidgetStore  │────▶│  useCard2Integration Hook   │ │
+│  │   (Pinia Store) │     │       (动态加载)             │ │
 │  └─────────────────┘     └─────────────────────────────┘ │
 │                 │                       │                │
 │                 ▼                       ▼                │
@@ -87,45 +85,49 @@ const card2CategoryMap: Record<string, string> = {
 
 ## 🔧 注册机制详解
 
-### 1. WidgetRegistry 单例
+### 1. `useWidgetStore` Store
 
 **核心功能**:
-- 组件注册和管理
-- 组件查询和检索
-- 树形结构生成
+- 通过 Pinia store 响应式地管理组件注册表。
+- 提供 actions 来注册/注销组件。
+- 提供 getters 来检索组件。
 
-**主要方法**:
+**主要属性和方法**:
 ```typescript
-class WidgetRegistry {
-  // 注册组件
-  register(...widgets: WidgetDefinition[]): void
-  
-  // 获取单个组件
-  getWidget(type: string): WidgetDefinition | undefined
-  
-  // 获取所有组件
-  getAllWidgets(): WidgetDefinition[]
-  
-  // 获取组件树
-  getWidgetTree(): WidgetTreeNode[]
-}
+// store/widget.ts
+const useWidgetStore = defineStore('widget', {
+  state: () => ({
+    widgetRegistry: new Map<WidgetType, WidgetDefinition>(),
+    selectedIds: []
+  }),
+  actions: {
+    register(widget: WidgetDefinition): void,
+    unregister(widgetType: WidgetType): void,
+    // ... selection actions
+  },
+  getters: {
+    getWidget: (state) => (type: WidgetType) => WidgetDefinition | undefined,
+    getAllWidgets: (state) => () => WidgetDefinition[],
+  }
+})
 ```
 
 **使用示例**:
 ```typescript
-import { widgetRegistry } from '@/components/visual-editor/core/widget-registry'
+import { useWidgetStore } from '@/components/visual-editor/store/widget'
 
-// 获取单例实例
-const registry = widgetRegistry
+// 在 Vue 组件或 setup 函数中
+const widgetStore = useWidgetStore()
 
 // 注册组件
-registry.register(textWidget, imageWidget)
+widgetStore.register(textWidget)
+widgetStore.register(imageWidget)
 
 // 查询组件
-const widget = registry.getWidget('text')
+const widget = widgetStore.getWidget('text')
 
-// 获取组件树
-const tree = registry.getWidgetTree()
+// 获取所有组件 (getter)
+const allWidgets = widgetStore.getAllWidgets()
 ```
 
 ### 2. 组件注册流程
@@ -135,7 +137,7 @@ const tree = registry.getWidgetTree()
 ```typescript
 // widgets/my-widgets.ts
 import { MyIconOutline } from '@vicons/ionicons5'
-import type { WidgetDefinition } from '../core/widget-registry'
+import type { WidgetDefinition } from '../store/widget'
 
 const myWidget: WidgetDefinition = {
   type: 'my-widget',
@@ -159,26 +161,25 @@ const myWidget: WidgetDefinition = {
 }
 ```
 
-#### 步骤 2: 注册函数
+#### 步骤 2: 在 Store 中注册
+
+不再需要单独的注册函数。通常在应用初始化或特定功能模块加载时，直接调用 `useWidgetStore` 的 action 来注册组件。
 
 ```typescript
-import { widgetRegistry } from '../core/widget-registry'
+// 在某个初始化脚本或 Vue 组件中
+import { useWidgetStore } from '@/components/visual-editor/store/widget'
+import { myWidget } from './widgets/my-widgets' // 假设定义已导出
 
-export function registerMyWidgets() {
-  widgetRegistry.register(myWidget)
-  console.log('✅ 自定义组件注册完成')
-}
+const widgetStore = useWidgetStore()
+
+// 注册组件
+widgetStore.register(myWidget)
+console.log('✅ 自定义组件注册完成')
 ```
 
 #### 步骤 3: 应用初始化
 
-```typescript
-// main.ts 或应用入口文件
-import { registerMyWidgets } from '@/components/visual-editor/widgets/my-widgets'
-
-// 在应用启动时注册
-registerMyWidgets()
-```
+确保在应用生命周期的早期阶段（例如在根组件的 `onMounted` 钩子中，或在特定的初始化插件中）执行注册逻辑。
 
 ### 3. 组件树结构
 
@@ -195,464 +196,63 @@ interface WidgetTreeNode {
 2. 使用 `categoryNameMap` 映射显示名称
 3. 未知分类自动生成格式化名称
 
-## 🎯 Card 2.1 集成
+## Card 2.1 集成
 
-### 集成架构
+Visual Editor 与 ThingsPanel 的 Card 2.1 规范深度集成，实现了组件的动态加载、配置和渲染。这种集成允许将为仪表板设计的卡片无缝地用作可视化编辑器中的小组件。
 
-Card 2.1 集成通过 `useCard2Integration` 钩子实现，提供与传统组件无缝融合的能力。
+### 1. 集成架构
 
-### 核心特性
+集成过程依赖于 `ConfigDiscovery` 服务和 `useWidgetStore` 状态管理。 `ConfigDiscovery` 负责扫描和发现在项目中定义的 Card 2.1 组件，而 `useWidgetStore` 则负责将这些组件注册到编辑器中，使其可用。
 
-1. **动态加载**: 运行时从 Card 2.1 系统加载组件
-2. **国际化支持**: 自动适配多语言显示
-3. **统一接口**: 与传统组件使用相同的接口
-4. **单例模式**: 全局共享状态，避免重复初始化
-
-### 使用方式
-
-```typescript
-// 在组件中使用
-import { useCard2Integration } from '../hooks/useCard2Integration'
-
-const card2Integration = useCard2Integration({
-  autoInit: true,  // 自动初始化
-  componentFilter: (definition) => {
-    // 可选：过滤特定组件
-    return definition.meta?.enabled !== false
-  }
-})
-
-// 获取可用组件
-const components = card2Integration.availableComponents.value
-
-// 检查是否为 Card 2.1 组件
-const isCard2 = card2Integration.isCard2Component('chart-bar')
-
-// 获取组件定义
-const definition = card2Integration.getComponentDefinition('chart-bar')
-```
-
-### 国际化映射
-
-Card 2.1 组件支持动态国际化：
-
-```typescript
-const COMPONENT_I18N_KEYS: Record<string, string> = {
-  'version-info': 'card.version',
-  'access-num': 'card.deviceTotal',
-  'alarm-count': 'card.alarmCount',
-  // ... 更多映射
-}
-```
-
-### 组件合并机制
-
-WidgetLibrary 组件负责合并两套组件系统：
-
-```typescript
-const combinedWidgetTree = computed(() => {
-  const allCategories: { [key: string]: WidgetTreeNode } = {}
-
-  // 添加传统组件
-  legacyWidgetTree.value.forEach(category => {
-    allCategories[category.name] = { 
-      name: category.name, 
-      children: [...category.children] 
-    }
-  })
-
-  // 添加 Card 2.1 组件
-  card2WidgetTree.value.forEach(category => {
-    if (allCategories[category.name]) {
-      // 合并到现有分类
-      allCategories[category.name].children.push(...category.children)
-    } else {
-      // 添加新分类
-      allCategories[category.name] = category
-    }
-  })
-
-  return Object.values(allCategories)
-})
-```
+- **自动发现**: `ConfigDiscovery` 扫描指定的目录，解析组件的元数据。
+- **动态注册**: 发现的组件通过 `useWidgetStore` 的 `register` action 动态添加到组件注册表中。
+- **配置转换**: Card 2.1 的配置结构被适配为 Visual Editor 内部的 `WidgetDefinition` 格式。
 
 ## 🚀 开发指南
 
 ### 创建新组件
 
-#### 1. 基础组件开发
+按照“组件注册流程”中的说明定义你的组件。确保 `type` 字段是唯一的，并且所有必需的属性都已提供。
 
-```typescript
-// 1. 创建组件文件
-// widgets/MyCustomWidget.vue
-<template>
-  <div class="my-custom-widget">
-    <h3>{{ title }}</h3>
-    <p>{{ content }}</p>
-  </div>
-</template>
+### 注册组件
 
-<script setup lang="ts">
-interface Props {
-  title?: string
-  content?: string
-}
+在适当的时候（例如，应用初始化或功能模块加载时），使用 `useWidgetStore().register()` 来添加你的组件。对于需要批量注册的场景，只需多次调用 `register` 方法即可。
 
-const props = withDefaults(defineProps<Props>(), {
-  title: '默认标题',
-  content: '默认内容'
-})
-</script>
-
-// 2. 注册组件定义
-// widgets/my-custom-widgets.ts
-const myCustomWidget: WidgetDefinition = {
-  type: 'my-custom-widget',
-  name: '自定义组件',
-  description: '演示自定义组件的创建',
-  icon: CustomIconOutline,
-  category: 'custom',
-  version: '1.0.0',
-  defaultProperties: {
-    title: '自定义标题',
-    content: '这是自定义内容'
-  },
-  defaultLayout: {
-    canvas: { width: 280, height: 160 },
-    gridstack: { w: 3, h: 2 }
-  }
-}
-
-export function registerMyCustomWidgets() {
-  widgetRegistry.register(myCustomWidget)
-}
-```
-
-#### 2. 组件映射配置
-
-在渲染器中配置组件映射：
-
-```typescript
-// renderers/canvas/CanvasRenderer.vue 或其他渲染器
-import MyCustomWidget from '../../widgets/MyCustomWidget.vue'
-
-const widgetComponents = {
-  text: TextWidget,
-  image: ImageWidget,
-  'my-custom-widget': MyCustomWidget  // 添加映射
-}
-
-const getWidgetComponent = (type: string) => {
-  return widgetComponents[type as keyof typeof widgetComponents]
-}
-```
-
-### 批量注册组件
-
-```typescript
-// widgets/index.ts
-import { widgetRegistry } from '../core/widget-registry'
-import { registerBaseWidgets } from './base-widgets'
-import { registerChartWidgets } from './chart-widgets'
-import { registerMyCustomWidgets } from './my-custom-widgets'
-
-export function registerAllWidgets() {
-  console.log('🚀 开始注册所有组件...')
-  
-  registerBaseWidgets()
-  registerChartWidgets()
-  registerMyCustomWidgets()
-  
-  console.log(`✅ 完成注册 ${widgetRegistry.getAllWidgets().length} 个组件`)
-}
-```
-
-### 动态组件注册
-
-```typescript
-// 支持运行时动态添加组件
-export async function loadAndRegisterPlugin(pluginUrl: string) {
-  try {
-    // 动态导入插件
-    const plugin = await import(pluginUrl)
-    
-    // 注册插件提供的组件
-    if (plugin.widgets && Array.isArray(plugin.widgets)) {
-      widgetRegistry.register(...plugin.widgets)
-      console.log(`✅ 成功加载插件: ${plugin.name}`)
-    }
-  } catch (error) {
-    console.error('❌ 加载插件失败:', error)
-  }
-}
-```
-
-## 🎯 最佳实践
+## 最佳实践
 
 ### 1. 组件设计原则
 
-**单一职责**: 每个组件专注于一个功能
-```typescript
-// ✅ 推荐：专注的组件
-const textWidget = { type: 'text', name: '文本', ... }
-const imageWidget = { type: 'image', name: '图片', ... }
+- **单一职责**: 每个组件应专注于一个功能。
+- **可复用性**: 设计通用组件，避免硬编码。
+- **可配置性**: 通过 `defaultProperties` 提供丰富的自定义选项。
 
-// ❌ 避免：功能过于复杂的组件
-const megaWidget = { type: 'mega', name: '超级组件', ... }
-```
+### 2. 性能优化
 
-**一致性命名**: 使用清晰的命名规范
-```typescript
-// ✅ 推荐：一致的命名
-const barChartWidget = { type: 'chart-bar', name: '柱状图', category: 'chart' }
-const lineChartWidget = { type: 'chart-line', name: '折线图', category: 'chart' }
+- **按需加载**: 结合 Vue 的异步组件特性，实现组件的按需加载。
+- **合理使用状态**: 仅在 `useWidgetStore` 中存放全局共享的组件定义，避免存储大量动态数据。
 
-// ❌ 避免：不一致的命名
-const widget1 = { type: 'bar_chart', name: 'Bar', category: 'charts' }
-const widget2 = { type: 'LineChart', name: '线图', category: 'chart' }
-```
+### 3. 错误处理
 
-### 2. 版本管理
-
-**语义化版本**: 遵循 semver 规范
-```typescript
-// 正确的版本号格式
-const widget = {
-  version: '1.2.3',  // MAJOR.MINOR.PATCH
-  // 1.x.x - 主要版本，破坏性变更
-  // x.2.x - 次要版本，新功能
-  // x.x.3 - 补丁版本，bug修复
-}
-```
-
-**向后兼容**: 保持 API 兼容性
-```typescript
-// ✅ 推荐：向后兼容的属性扩展
-const widgetV2 = {
-  defaultProperties: {
-    // 保留旧属性
-    content: '默认内容',
-    fontSize: 14,
-    // 添加新属性
-    fontWeight: 'normal',
-    lineHeight: 1.5
-  }
-}
-
-// ❌ 避免：破坏性变更
-const badWidgetV2 = {
-  defaultProperties: {
-    // 移除了原有属性
-    text: '内容',      // 原来是 content
-    size: 14          // 原来是 fontSize
-  }
-}
-```
-
-### 3. 性能优化
-
-**懒加载**: 大型组件按需加载
-```typescript
-// 使用动态导入
-const heavyWidget: WidgetDefinition = {
-  type: 'heavy-chart',
-  name: '复杂图表',
-  // ... 其他配置
-  metadata: {
-    lazyLoad: true,
-    component: () => import('./HeavyChartWidget.vue')
-  }
-}
-```
-
-**属性优化**: 避免复杂的默认属性
-```typescript
-// ✅ 推荐：简单的默认属性
-const goodWidget = {
-  defaultProperties: {
-    title: '标题',
-    visible: true,
-    theme: 'default'
-  }
-}
-
-// ❌ 避免：复杂的默认属性
-const badWidget = {
-  defaultProperties: {
-    config: {
-      chart: {
-        series: [{ data: [...hugeArray] }],
-        options: { /* 巨大的配置对象 */ }
-      }
-    }
-  }
-}
-```
-
-### 4. 错误处理
-
-**注册错误处理**:
-```typescript
-export function safeRegisterWidget(widget: WidgetDefinition) {
-  try {
-    // 验证组件定义
-    validateWidgetDefinition(widget)
-    
-    // 注册组件
-    widgetRegistry.register(widget)
-    
-    console.log(`✅ 成功注册组件: ${widget.name}`)
-  } catch (error) {
-    console.error(`❌ 注册组件失败: ${widget.type}`, error)
-    
-    // 可选：注册降级版本
-    registerFallbackWidget(widget.type)
-  }
-}
-
-function validateWidgetDefinition(widget: WidgetDefinition) {
-  if (!widget.type) throw new Error('组件类型不能为空')
-  if (!widget.name) throw new Error('组件名称不能为空')
-  if (!widget.icon) throw new Error('组件图标不能为空')
-  // ... 更多验证
-}
-```
-
-### 5. 测试策略
-
-**单元测试**:
-```typescript
-// tests/widget-registry.test.ts
-import { widgetRegistry } from '../core/widget-registry'
-
-describe('WidgetRegistry', () => {
-  beforeEach(() => {
-    // 清空注册表
-    widgetRegistry.clear()
-  })
-
-  it('should register widget correctly', () => {
-    const testWidget = { /* 测试组件定义 */ }
-    widgetRegistry.register(testWidget)
-    
-    const registered = widgetRegistry.getWidget('test-widget')
-    expect(registered).toBeDefined()
-    expect(registered.name).toBe('测试组件')
-  })
-
-  it('should handle duplicate registration', () => {
-    const widget1 = { type: 'test', name: 'v1' }
-    const widget2 = { type: 'test', name: 'v2' }
-    
-    widgetRegistry.register(widget1)
-    widgetRegistry.register(widget2)  // 应该覆盖
-    
-    const result = widgetRegistry.getWidget('test')
-    expect(result.name).toBe('v2')
-  })
-})
-```
+- **注册校验**: 在 `register` action 中可以添加校验逻辑，确保注册的组件定义符合规范。
+- **边界处理**: 在组件内部处理无效的 props 和异常情况。
 
 ## 🔍 故障排除
 
-### 常见问题
+### 1. 组件未显示在库中
 
-#### Q1: 组件注册后不显示在组件库中
+- **检查注册逻辑**: 确认 `useWidgetStore().register()` 是否在组件挂载或应用初始化时被调用。
+- **检查 Pinia Store**: 使用 Vue Devtools 检查 `widget` store 的状态，查看 `widgetRegistry` 是否包含你的组件。
+- **组件定义错误**: 检查浏览器控制台，看是否有组件定义不规范导致的错误。
 
-**可能原因**:
-1. 组件定义不完整
-2. 分类映射缺失
-3. 图标加载失败
+### 2. 组件无法渲染
 
-**解决方案**:
-```typescript
-// 检查组件定义完整性
-const validateWidget = (widget: WidgetDefinition) => {
-  const required = ['type', 'name', 'icon', 'category', 'version']
-  const missing = required.filter(field => !widget[field])
-  
-  if (missing.length > 0) {
-    console.error(`组件 ${widget.type} 缺少必要字段:`, missing)
-    return false
-  }
-  return true
-}
+- **检查渲染器映射**: 确保你的渲染器（如 `CanvasRenderer`）中包含了对新组件的映射。
+- **Props 错误**: 检查组件的 `defaultProperties` 是否正确，以及传递给组件的 props 是否符合预期。
 
-// 检查注册状态
-console.log('已注册组件:', widgetRegistry.getAllWidgets().map(w => w.type))
-console.log('组件树:', widgetRegistry.getWidgetTree())
-```
+### 3. 调试工具
 
-#### Q2: Card 2.1 组件加载失败
-
-**可能原因**:
-1. Card 2.1 系统未正确初始化
-2. 组件定义格式不兼容
-3. 国际化键值缺失
-
-**解决方案**:
-```typescript
-// 调试 Card 2.1 集成
-const debugCard2Integration = () => {
-  const integration = useCard2Integration()
-  
-  console.log('初始化状态:', integration.isInitialized.value)
-  console.log('加载状态:', integration.isLoading.value)
-  console.log('错误信息:', integration.error.value)
-  console.log('可用组件:', integration.availableComponents.value.length)
-}
-
-// 手动初始化
-const integration = useCard2Integration({ autoInit: false })
-await integration.initialize()
-```
-
-#### Q3: 组件拖拽数据异常
-
-**可能原因**:
-1. 拖拽数据格式错误
-2. source 字段缺失
-3. 事件处理器异常
-
-**解决方案**:
-```typescript
-// 验证拖拽数据
-const handleDragStart = (widget: WidgetDefinition, event: DragEvent) => {
-  const dragData = {
-    type: widget.type,
-    source: widget.source || 'legacy'
-  }
-  
-  // 验证数据完整性
-  if (!dragData.type) {
-    console.error('拖拽数据缺少 type 字段:', widget)
-    return
-  }
-  
-  console.log('设置拖拽数据:', dragData)
-  event.dataTransfer?.setData('application/json', JSON.stringify(dragData))
-}
-```
-
-### 调试工具
-
-```typescript
-// 开发环境调试工具
-if (import.meta.env.DEV) {
-  window.__debugWidgetRegistry = {
-    getAll: () => widgetRegistry.getAllWidgets(),
-    getTree: () => widgetRegistry.getWidgetTree(),
-    getWidget: (type: string) => widgetRegistry.getWidget(type),
-    register: (widget: WidgetDefinition) => widgetRegistry.register(widget),
-    
-    // Card 2.1 调试
-    card2: {
-      getComponents: () => useCard2Integration().availableComponents.value,
-      getDefinition: (type: string) => useCard2Integration().getComponentDefinition(type)
-    }
-  }
-}
-```
+- **Vue Devtools**: 检查 Pinia store 的状态和组件的 props。
+- **浏览器控制台**: 查看 `useWidgetStore` 实例和相关的日志输出。
 
 ---
 

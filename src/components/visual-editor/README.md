@@ -11,10 +11,12 @@ Visual Editor 是一个功能强大的可视化面板编辑器，支持拖拽式
 ```
 visual-editor/
 ├── core/                    # 核心逻辑层
-│   ├── state-manager.ts     # 状态管理
-│   ├── widget-registry.ts   # 组件注册表
-│   ├── data-source-manager.ts # 数据源管理
-│   └── component-api-config.ts # 组件API配置
+│   ├── ConfigDiscovery.ts     # 组件自动发现服务
+│   ├── component-api-config.ts # 组件API自动化配置
+│   └── component-data-requirements.ts # 组件数据需求声明
+├── store/                   # 状态管理 (Pinia)
+│   ├── editor.ts            # 编辑器核心状态
+│   └── widget.ts            # 组件注册与管理
 ├── components/              # UI组件层
 │   ├── PanelLayout.vue      # 主布局组件
 │   ├── EditorCanvas.vue     # 编辑器画布
@@ -29,7 +31,7 @@ visual-editor/
 ### 数据流
 
 ```
-用户操作 → UI组件 → Hooks → 核心模块 → 状态更新 → 视图渲染
+用户操作 → UI组件 → 调用 Pinia Store (useEditorStore, useWidgetStore) 的 Actions → 状态更新 → 视图根据状态自动渲染
 ```
 
 ## 主要组件
@@ -77,16 +79,16 @@ visual-editor/
 ## 核心功能
 
 ### 1. 组件管理
-- 组件注册和发现
-- 拖拽式组件添加
-- 组件属性编辑
-- 组件删除
+- 基于 Pinia store 的组件注册和管理
+- 自动发现和注册 Card 2.1 组件
+- 组件属性编辑和实时预览
+- 组件生命周期管理
 
 ### 2. 数据源管理
-- 支持多种数据源类型（设备、HTTP、静态等）
-- 数据映射配置
-- 实时数据订阅
-- 数据转换和过滤
+- 组件数据需求声明系统
+- 自动化 API 配置
+- 数据映射和转换
+- 实时数据订阅和更新
 
 ### 3. 渲染器系统
 - 多渲染器支持（Canvas、Gridstack、Vue等）
@@ -145,23 +147,46 @@ import { PanelEditor } from '@/components/visual-editor'
 
 ### 添加新组件
 1. 在 `card2.1/components/` 下创建组件
-2. 实现组件接口
-3. 注册到组件注册表
-4. 配置组件元信息
+2. 实现组件接口和数据需求声明
+3. 使用 `useWidgetStore().register()` 注册组件
+4. 配置组件 API 和数据映射
+
+```typescript
+// 1. 定义组件
+const myWidget: WidgetDefinition = {
+  type: 'my-widget',
+  name: '我的组件',
+  icon: MyIconOutline,
+  category: 'custom',
+  version: '1.0.0',
+  defaultProperties: {
+    title: '默认标题'
+  }
+}
+
+// 2. 声明数据需求
+const dataRequirements = new ComponentDataRequirementsBuilder()
+  .addTimeSeriesRequirement('data')
+  .build()
+
+// 3. 注册组件
+const widgetStore = useWidgetStore()
+widgetStore.register(myWidget)
+```
 
 ### 添加新数据源
 1. 实现数据源接口
-2. 注册到数据源管理器
-3. 配置数据源UI
+2. 在 `component-data-requirements.ts` 中添加数据源类型
+3. 配置数据源 API 映射
 
 ### 添加新渲染器
 1. 实现渲染器接口
-2. 注册到渲染器系统
-3. 配置渲染器选项
+2. 在 `renderers/` 目录下创建渲染器
+3. 配置渲染器选项和布局系统
 
 ## 注意事项
 
 1. **数据源订阅**: 组件销毁时需要取消数据源订阅
 2. **内存泄漏**: 及时清理事件监听器和定时器
 3. **性能监控**: 大量组件时注意性能影响
-4. **错误处理**: 数据源连接失败时的降级处理 
+4. **错误处理**: 数据源连接失败时的降级处理
