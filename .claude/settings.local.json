@@ -33,7 +33,10 @@
       "Bash(true)",
       "Bash(npm run typecheck:*)",
       "Bash(pnpm build:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(sed:*)",
+      "Bash(sed:*)",
+      "Bash(npx vue-tsc:*)"
     ],
     "deny": [],
     "additionalDirectories": [

@@ -5,6 +5,7 @@
 
 import type { ComponentDefinition } from '@/card2.1/core/types'
 import DualDataDisplay from './DualDataDisplay.vue'
+import DualDataDisplayConfig from './DualDataDisplayConfig.vue'
 
 const dualDataDisplayDefinition: ComponentDefinition = {
   // 基础信息
@@ -17,6 +18,9 @@ const dualDataDisplayDefinition: ComponentDefinition = {
 
   // 组件实现
   component: DualDataDisplay,
+
+  // 配置组件
+  configComponent: DualDataDisplayConfig,
 
   // 默认配置
   defaultConfig: {
@@ -193,7 +197,134 @@ const dualDataDisplayDefinition: ComponentDefinition = {
     dataBinding: true,
     themeable: true,
     responsive: true,
-    dualDataSource: true
+    dualDataSource: true,
+    configurable: true,
+    interactive: true
+  },
+
+  // 交互系统配置
+  interaction: {
+    capability: {
+      supportedEvents: ['click', 'hover', 'dataChange'],
+      supportedActions: ['jump', 'modify'],
+      defaultPermissions: {
+        allowExternalControl: true,
+        requirePermissionCheck: false
+      },
+      listenableProperties: ['dataSource1', 'dataSource2', 'config']
+    },
+
+    examples: [
+      {
+        name: '点击跳转到外部URL',
+        description: '点击组件时跳转到外部网站',
+        scenario: 'click-jump',
+        config: {
+          event: 'click',
+          responses: [
+            {
+              action: 'jump',
+              jumpConfig: {
+                jumpType: 'external',
+                url: 'https://example.com',
+                target: '_blank'
+              }
+            }
+          ],
+          enabled: true,
+          priority: 1,
+          name: '点击跳转示例'
+        }
+      },
+      {
+        name: '悬停时修改其他组件',
+        description: '悬停时修改目标组件的属性',
+        scenario: 'hover-modify',
+        config: {
+          event: 'hover',
+          responses: [
+            {
+              action: 'modify',
+              modifyConfig: {
+                targetComponentId: 'target-component-id',
+                targetProperty: 'config.title',
+                updateValue: '悬停时修改的标题',
+                updateMode: 'replace'
+              }
+            }
+          ],
+          enabled: false,
+          priority: 2,
+          name: '悬停修改示例'
+        }
+      },
+      {
+        name: '数据变化时跳转',
+        description: '当数据源1的值大于阈值时跳转到详情页',
+        scenario: 'data-change-action',
+        config: {
+          event: 'dataChange',
+          watchedProperty: 'dataSource1',
+          condition: {
+            type: 'comparison',
+            operator: 'greaterThan',
+            value: 100
+          },
+          responses: [
+            {
+              action: 'jump',
+              jumpConfig: {
+                jumpType: 'external',
+                url: '/details',
+                target: '_self'
+              }
+            }
+          ],
+          enabled: false,
+          priority: 3,
+          name: '数据变化跳转示例'
+        }
+      }
+    ],
+
+    propertyExposure: {
+      componentType: 'dual-data-display',
+      componentName: '双数据源显示组件',
+      listenableProperties: [
+        {
+          name: 'dataSource1',
+          label: '数据源1',
+          type: 'object',
+          description: '第一个数据源的数据',
+          group: '数据',
+          defaultValue: null
+        },
+        {
+          name: 'dataSource2',
+          label: '数据源2',
+          type: 'object',
+          description: '第二个数据源的数据',
+          group: '数据',
+          defaultValue: null
+        },
+        {
+          name: 'config.title',
+          label: '组件标题',
+          type: 'string',
+          description: '组件显示的标题',
+          group: '配置',
+          defaultValue: '双数据源测试'
+        },
+        {
+          name: 'config.themeColor',
+          label: '主题颜色',
+          type: 'string',
+          description: '组件的主题颜色',
+          group: '样式',
+          defaultValue: '#18a058'
+        }
+      ]
+    }
   }
 }
 

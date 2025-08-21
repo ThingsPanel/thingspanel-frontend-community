@@ -130,7 +130,7 @@ const setState = (config: any) => {
     hasComponentConfigurations: !!config.componentConfigurations,
     configsCount: config.componentConfigurations ? Object.keys(config.componentConfigurations).length : 0
   })
-  
+
   // 重置状态
   stateManager.reset()
 
@@ -281,13 +281,13 @@ const getState = () => {
     // 🔥 关键修复：包含所有组件的配置数据
     componentConfigurations: componentConfigurations
   }
-  
+
   console.log('💾 最终保存状态:', {
     nodesCount: finalState.nodes.length,
     configsCount: Object.keys(finalState.componentConfigurations).length,
     renderer: finalState.currentRenderer
   })
-  
+
   return finalState
 }
 

@@ -77,13 +77,14 @@
           <template v-else-if="layer.name === 'dataSource'">
             <div class="data-source-config">
               <!-- 使用现有的数据源配置组件 -->
+              <!-- 🔄 使用v-model双向绑定取代手动事件处理 -->
               <component
                 :is="layer.component"
                 ref="dataSourceConfigRef"
+                v-model="dataSourceConfig"
                 :data-sources="componentDataSources"
                 :selected-widget-id="selectedWidget?.id"
-                :initial-config="dataSourceConfig?.config"
-                @update="handleDataSourceConfigUpdate"
+                @request-current-data="handleCurrentDataRequest"
               />
             </div>
           </template>
@@ -132,7 +133,6 @@
         </n-alert>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -224,15 +224,13 @@ const message = useMessage()
 const configLayers = computed(() => getVisibleConfigLayers())
 
 // 响应式状态 - 默认显示第一个可见层级
-const activeTab = ref(configLayers.value[0]?.name || 'base')
+// 🚨 避免在初始化时依赖 computed 值，使用静态默认值
+const activeTab = ref('base')
 
 // 多数据源数据状态
 const multiDataSourceData = ref<Record<string, any>>({})
 
-// V6数据映射配置状态 - 初始化正确的结构
-const dataMappingConfig = ref<any>({
-  dataSourceBindings: {}
-})
+// 🔄 dataMappingConfig 已被 dataSourceConfig computed 取代
 
 // DataSourceConfigForm 组件引用
 const dataSourceFormRef = ref<any>(null)
@@ -249,7 +247,59 @@ const componentConfig = ref<ComponentConfiguration>({
   validation: { required: [], rules: {} }
 })
 
-const dataSourceConfig = ref<DataSourceConfiguration | null>(null)
+// 🔄 重构：dataSourceConfig为computed属性，与ConfigurationManager直接同步
+const dataSourceConfig = computed<DataSourceConfiguration | null>({
+  get: () => {
+    if (!props.selectedWidget) return null
+    const config = configurationManager.getConfiguration(props.selectedWidget.id)
+    return config?.dataSource || null
+  },
+  set: value => {
+    // 🚨 防止循环更新：如果正在从ConfigurationManager更新，不再同步回去
+    if (isUpdatingFromManager) {
+      console.log('⏸️ [ConfigurationPanel] 跳过循环更新 - 正在从Manager更新')
+      return
+    }
+
+    if (props.selectedWidget && value) {
+      // 🚨 设置标志防止监听器重复触发
+      isUpdatingFromManager = true
+
+      try {
+        // 确保类型和元数据正确
+        const enhancedValue = {
+          type: 'data-source-bindings',
+          enabled: true,
+          ...value,
+          metadata: {
+            componentType: props.selectedWidget.type,
+            updatedAt: Date.now(),
+            source: 'data-source-config-form',
+            ...value.metadata
+          }
+        }
+        console.log('🔄 [ConfigurationPanel] 更新数据源配置:', enhancedValue)
+        configurationManager.updateConfiguration(props.selectedWidget.id, 'dataSource', enhancedValue)
+
+        // 自动更新执行器
+        if (value.config) {
+          componentExecutorManager
+            .updateComponentExecutor(props.selectedWidget.id, props.selectedWidget.type, value.config)
+            .catch(error => {
+              console.error('❌ [ConfigurationPanel] 执行器更新失败:', error)
+            })
+        }
+      } finally {
+        // 🔥 修复：延迟重置标志，避免异步问题导致的递归更新
+        nextTick(() => {
+          setTimeout(() => {
+            isUpdatingFromManager = false
+          }, 50) // 50ms延迟确保所有响应式更新完成
+        })
+      }
+    }
+  }
+})
 
 const interactionConfig = ref<InteractionConfiguration>({})
 
@@ -279,7 +329,6 @@ const widgetDisplayName = computed(() => {
   if (!props.selectedWidget) return ''
   return props.selectedWidget.metadata?.card2Definition?.name || props.selectedWidget.type || 'Unknown Component'
 })
-
 
 // V6: 获取组件定义 - 直接从组件元数据获取
 const componentDefinition = computed(() => {
@@ -508,86 +557,53 @@ function extractExampleDataFromDefinition(dataSource: any) {
   return null // 返回 null，让 DataSourceConfigForm 使用自己的默认数据生成逻辑
 }
 
-
 // 配置变更监听器清理函数
 let configChangeCleanup: (() => void) | null = null
 
-// 防循环标记
+// 🔥 修复：增强防循环机制，使用多重保护
 let isUpdatingFromManager = false
+let lastSyncTime = 0
+let lastSyncConfig: string | null = null
 
 // 监听配置变化并同步到ConfigurationManager
+// 🚨 注意：dataSourceConfig 被排除，因为它有自己的 computed setter 处理机制
 watch(
-  [baseConfig, componentConfig, dataSourceConfig, interactionConfig, dataMappingConfig],
+  [baseConfig, componentConfig, interactionConfig],
   () => {
-    // 防止循环更新：如果是从ConfigurationManager更新的，不再同步回去
-    if (props.selectedWidget && !isUpdatingFromManager) {
-      console.log(`🔧 [ConfigurationPanel] 配置变化触发同步: ${props.selectedWidget.id}`)
-      syncConfigurationToManager()
-    }
-  },
-  { deep: true }
-)
-
-// V6: 监听数据映射配置变化，自动处理持久化和应用
-watch(
-  dataMappingConfig,
-  async newConfig => {
-    if (!props.selectedWidget) return
-
-    // 🔥 修复：防止配置加载时触发不必要的事件
-    if (isUpdatingFromManager) {
-      console.log('🔧 [V6ConfigPanel] 配置加载中，跳过自动应用:', newConfig)
+    // 防止循环更新的多重检查
+    if (!props.selectedWidget || isUpdatingFromManager) {
+      console.log('⏸️ [ConfigurationPanel] 跳过同步 - 防循环保护')
       return
     }
-
-    // 更新dataSourceConfig以保持持久化
-    if (newConfig && Object.keys(newConfig).length > 0) {
-      dataSourceConfig.value = {
-        type: 'data-source-bindings',  // 🔧 修复：使用正确的类型
-        enabled: true,
-        config: { ...newConfig },
-        metadata: {
-          componentType: props.selectedWidget.type,
-          mappingType: 'json-path',
-          updatedAt: Date.now()
-        }
-      }
-
-      console.log('🎯 [V6ConfigPanel] 数据映射配置变化，自动应用:', newConfig)
-
-      // 🔥 新增：通过执行器管理器执行数据获取
-      try {
-        console.log('🚀 [V6ConfigPanel] 调用执行器管理器执行数据获取:', props.selectedWidget.id)
-
-        const executionResult = await componentExecutorManager.updateComponentExecutor(
-          props.selectedWidget.id,
-          props.selectedWidget.type,
-          newConfig
-        )
-
-        if (executionResult?.success) {
-          console.log('✅ [V6ConfigPanel] 数据执行成功:', executionResult.data)
-        } else {
-          console.warn('⚠️ [V6ConfigPanel] 数据执行失败:', executionResult?.error)
-        }
-      } catch (error) {
-        console.error('❌ [V6ConfigPanel] 执行器调用异常:', error)
-      }
-
-      // 保持原有的事件发射（向后兼容）
-      emit('multi-data-source-config-update', props.selectedWidget.id, newConfig)
-    } else {
-      // 重置为空的正确结构，不是null
-      dataSourceConfig.value = null
-
-      // 🔥 新增：清理执行器
-      if (props.selectedWidget) {
-        componentExecutorManager.cleanupExecutor(props.selectedWidget.id)
-      }
+    
+    // 🔥 新增：防抖机制，避免短时间内重复同步
+    const now = Date.now()
+    if (now - lastSyncTime < 100) {
+      console.log('⏸️ [ConfigurationPanel] 跳过同步 - 防抖保护')
+      return
     }
+    
+    // 🔥 新增：内容去重，避免相同配置重复同步
+    const currentConfig = JSON.stringify({
+      base: baseConfig.value,
+      component: componentConfig.value,
+      interaction: interactionConfig.value
+    })
+    
+    if (currentConfig === lastSyncConfig) {
+      console.log('⏸️ [ConfigurationPanel] 跳过同步 - 配置未变化')
+      return
+    }
+    
+    console.log(`🔧 [ConfigurationPanel] 配置变化触发同步: ${props.selectedWidget.id}`)
+    lastSyncTime = now
+    lastSyncConfig = currentConfig
+    syncConfigurationToManager()
   },
   { deep: true }
 )
+
+// 🔄 V6监听器已被 dataSourceConfig computed 响应式系统取代
 
 // 🔥 新增：执行器数据更新回调清理函数
 let executorDataUpdateCleanup: (() => void) | null = null
@@ -644,7 +660,8 @@ const loadWidgetConfiguration = async (widgetId: string) => {
       // 🔧 现在加载所有层级的配置
       baseConfig.value = { ...config.base }
       componentConfig.value = { ...config.component }
-      dataSourceConfig.value = config.dataSource ? { ...config.dataSource } : null
+      // 🚨 不直接设置 dataSourceConfig，因为它是 computed 属性
+      // dataSourceConfig 会通过 getter 自动从 ConfigurationManager 获取最新值
       interactionConfig.value = { ...config.interaction }
 
       // 🔍 [DEBUG-配置面板] 标签页切换时的完整配置打印
@@ -652,30 +669,23 @@ const loadWidgetConfiguration = async (widgetId: string) => {
         widgetId,
         fullConfig: JSON.parse(JSON.stringify(config)),
         dataSourceConfig: config.dataSource ? JSON.parse(JSON.stringify(config.dataSource)) : null,
-        hasDataSourceBindings: !!(config.dataSource?.config?.dataSourceBindings)
+        hasDataSourceBindings: !!config.dataSource?.config?.dataSourceBindings
       })
 
-      // V6: 直接恢复数据映射配置
-      if (config.dataSource?.config) {
-        dataMappingConfig.value = { ...config.dataSource.config }
-        console.log('✅ [ConfigurationPanel] 恢复数据映射配置:', dataMappingConfig.value)
-        console.log('🔍 [ConfigurationPanel] 检查dataSourceBindings:', config.dataSource.config.dataSourceBindings)
-      } else {
-        dataMappingConfig.value = { dataSourceBindings: {} }
-        console.log('ℹ️ [ConfigurationPanel] 使用默认空配置')
-      }
+      // V6数据映射配置已由dataSourceConfig computed属性处理
+      console.log('✅ [ConfigurationPanel] 数据源配置已通过computed属性处理')
 
       // 🔥 新增：如果有保存的数据源配置，重新执行数据获取
       if (config.dataSource?.config && Object.keys(config.dataSource.config).length > 0) {
         console.log('🔄 [ConfigurationPanel] 恢复配置后重新执行数据获取')
-        
+
         try {
           const executionResult = await componentExecutorManager.updateComponentExecutor(
             widgetId,
             props.selectedWidget?.type || '',
             config.dataSource.config
           )
-          
+
           if (executionResult?.success) {
             console.log('✅ [ConfigurationPanel] 配置恢复后数据执行成功')
           }
@@ -690,10 +700,12 @@ const loadWidgetConfiguration = async (widgetId: string) => {
     console.error('加载组件配置失败:', error)
     message.error('配置加载失败')
   } finally {
-    // 重置防循环标记
-    setTimeout(() => {
-      isUpdatingFromManager = false
-    }, 0)
+    // 🔥 修复：延迟重置防循环标记，确保Vue响应式更新完成
+    nextTick(() => {
+      setTimeout(() => {
+        isUpdatingFromManager = false
+      }, 50) // 50ms延迟确保所有响应式更新完成
+    })
   }
 }
 
@@ -711,22 +723,21 @@ const handleConfigurationChange = (config: WidgetConfiguration) => {
     // 🔧 现在加载所有层级的配置
     baseConfig.value = { ...config.base }
     componentConfig.value = { ...config.component }
-    dataSourceConfig.value = config.dataSource ? { ...config.dataSource } : null
+    // dataSourceConfig 是 computed 属性，会自动通过 getter 从 ConfigurationManager 获取
+    // 不需要手动设置：dataSourceConfig.value = config.dataSource ? { ...config.dataSource } : null
     interactionConfig.value = { ...config.interaction }
 
-    // V6: 简化配置变化处理
-    if (config.dataSource?.config) {
-      dataMappingConfig.value = { ...config.dataSource.config }
-    } else {
-      dataMappingConfig.value = { dataSourceBindings: {} }
-    }
+    // V6: 数据源配置由dataSourceConfig computed属性管理
+    // dataMappingConfig已移除，配置通过dataSourceConfig.value处理
 
     console.log('ConfigurationPanel - 本地配置已更新')
   } finally {
-    // 重置防循环标记
-    setTimeout(() => {
-      isUpdatingFromManager = false
-    }, 0)
+    // 🔥 修复：延迟重置防循环标记，确保Vue响应式更新完成
+    nextTick(() => {
+      setTimeout(() => {
+        isUpdatingFromManager = false
+      }, 50) // 50ms延迟确保所有响应式更新完成
+    })
   }
 }
 
@@ -772,8 +783,8 @@ const resetLocalConfiguration = () => {
   interactionConfig.value = { configs: [], enabled: true }
   configurationStatus.value = null
 
-  // V6: 重置数据映射配置为正确结构
-  dataMappingConfig.value = { dataSourceBindings: {} }
+  // V6: 数据源配置重置由dataSourceConfig computed属性处理
+  // dataMappingConfig已移除
   console.log('🔧 [V6ConfigPanel] 本地配置已重置')
 }
 
@@ -871,81 +882,7 @@ const getInitialDataSourceValues = () => {
   return initialData
 }
 
-/**
- * 处理来自 DataSourceConfigForm 的配置更新
- */
-const handleDataSourceConfigUpdate = async (config: any) => {
-  console.log('🔧 [ConfigurationPanel] 处理数据源配置更新:', config)
-
-  if (props.selectedWidget) {
-    // 将现有数据源系统的配置格式适配到编辑器
-    const enhancedConfig = {
-      type: 'data-source-bindings',
-      enabled: true,
-      config: config,
-      metadata: {
-        componentType: props.selectedWidget.type,
-        updatedAt: Date.now(),
-        source: 'data-source-config-form'
-      }
-    }
-
-    // 更新到本地配置状态
-    dataSourceConfig.value = enhancedConfig
-
-    // 🔥 关键修复：保存配置到ConfigurationManager
-    try {
-      configurationManager.updateConfiguration(props.selectedWidget.id, 'dataSource', enhancedConfig)
-      console.log('✅ [ConfigurationPanel] 配置已保存到ConfigurationManager')
-    } catch (error) {
-      console.error('❌ [ConfigurationPanel] 保存配置失败:', error)
-    }
-
-    // 🔥 新增：直接调用ComponentExecutorManager执行数据获取
-    try {
-      console.log('🚀 [ConfigurationPanel] 调用执行器管理器执行数据获取:', props.selectedWidget.id)
-      
-      const executionResult = await componentExecutorManager.updateComponentExecutor(
-        props.selectedWidget.id,
-        props.selectedWidget.type,
-        config
-      )
-
-      if (executionResult?.success) {
-        console.log('✅ [ConfigurationPanel] 数据执行成功:', executionResult.data)
-      } else {
-        console.warn('⚠️ [ConfigurationPanel] 数据执行失败:', executionResult?.error)
-      }
-    } catch (error) {
-      console.error('❌ [ConfigurationPanel] 执行器调用异常:', error)
-    }
-
-    // 🔥 新增：同步到编辑器数据源管理器
-    try {
-      // 通过 emit 事件通知父组件（PanelEditor）更新数据源管理器
-      emit('data-source-manager-update', {
-        componentId: props.selectedWidget.id,
-        componentType: props.selectedWidget.type,
-        config: config,
-        action: 'update'
-      })
-
-      console.log('✅ [ConfigurationPanel] 已通知父组件更新数据源管理器')
-    } catch (error) {
-      console.error('❌ [ConfigurationPanel] 通知数据源管理器更新失败:', error)
-    }
-
-    // 发射配置更新事件 - 优先处理 dataSourceBindings
-    if (config.dataSourceBindings) {
-      emit('multi-data-source-config-update', props.selectedWidget.id, config)
-    } else {
-      // 兼容其他格式
-      emit('multi-data-source-config-update', props.selectedWidget.id, config)
-    }
-
-    console.log('🔧 [ConfigurationPanel] 数据源配置已更新:', enhancedConfig)
-  }
-}
+// 🔄 handleDataSourceConfigUpdate 已被 dataSourceConfig computed setter 取代
 
 /**
  * 处理来自 EditorDataSourceConfig 的配置更新（保持向后兼容）
@@ -966,37 +903,7 @@ const handleCurrentDataRequest = (widgetId: string) => {
   emit('request-current-data', widgetId)
 }
 
-/**
- * 获取动态数据源事件监听器
- */
-const getDataSourceEventListeners = () => {
-  const listeners: Record<string, Function> = {}
-
-  // 监听通用的 update 事件（来自新的 DataSourceConfigForm）
-  listeners['update'] = (config: any) => {
-    console.log('🔧 [ConfigurationPanel] 接收到数据源配置更新:', config)
-    handleDataSourceConfigUpdate(config)
-  }
-
-  // 🔥 新增：监听请求当前数据事件
-  listeners['request-current-data'] = (widgetId: string) => {
-    console.log('🔄 [ConfigurationPanel] 收到当前数据请求:', widgetId)
-    handleCurrentDataRequest(widgetId)
-  }
-
-  // 保持对原有动态事件的兼容
-  if (componentDefinition.value?.dataSources) {
-    componentDefinition.value.dataSources.forEach(dataSource => {
-      const eventName = `update:${dataSource.key}`
-      listeners[eventName] = (data: any) => {
-        handleDynamicDataSourceUpdate(dataSource.key, data)
-      }
-    })
-  }
-
-  console.log('🔧 [ConfigurationPanel] 生成动态事件监听器:', Object.keys(listeners))
-  return listeners
-}
+// 🔄 getDataSourceEventListeners 已被 v-model 和响应式系统取代
 
 // V6: 移除handleDataMappingConfigUpdate - 数据变化自动处理
 
@@ -1144,7 +1051,6 @@ const onToggleWidgetTitles = (value: boolean) => {
   }
 }
 
-
 // 监听选中组件变化 - 在所有函数定义后执行
 watch(
   () => props.selectedWidget,
@@ -1170,19 +1076,30 @@ watch(
   { immediate: true }
 )
 
-// 🔥 新增：监听标签页切换，重新加载配置
+// 🔥 监听 configLayers 变化，确保 activeTab 指向有效的标签页
 watch(
-  activeTab,
-  async (newTab, oldTab) => {
-    console.log('🔄 [ConfigurationPanel] 标签页切换:', { oldTab, newTab })
-    
-    // 如果有选中的组件且标签页确实发生了变化
-    if (props.selectedWidget && newTab !== oldTab && newTab) {
-      console.log('🔄 [ConfigurationPanel] 标签页切换触发配置重载:', props.selectedWidget.id)
-      await loadWidgetConfiguration(props.selectedWidget.id)
+  configLayers,
+  newLayers => {
+    if (newLayers.length > 0) {
+      // 如果当前 activeTab 不在新的层级列表中，切换到第一个可用的
+      const currentTabExists = newLayers.some(layer => layer.name === activeTab.value)
+      if (!currentTabExists) {
+        activeTab.value = newLayers[0].name
+      }
     }
-  }
+  },
+  { immediate: true }
 )
+
+// 🚨 移除标签页切换时的配置重载，避免循环依赖
+// 配置的加载应该由组件选择变化触发，而不是标签页切换
+// watch(activeTab, async (newTab, oldTab) => {
+//   console.log('🔄 [ConfigurationPanel] 标签页切换:', { oldTab, newTab })
+//   if (props.selectedWidget && newTab !== oldTab && newTab) {
+//     console.log('🔄 [ConfigurationPanel] 标签页切换触发配置重载:', props.selectedWidget.id)
+//     await loadWidgetConfiguration(props.selectedWidget.id)
+//   }
+// })
 </script>
 
 <style scoped>

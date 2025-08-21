@@ -37,8 +37,9 @@ import { interactionManager } from '@/card2.1/core/interaction-manager'
 import { NAlert } from 'naive-ui'
 import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import type { DataSourceValue } from '../../types/data-source'
-// 🔥 新增：导入组件执行器管理器
+// 🔥 新增：导入组件执行器管理器和配置管理器
 import { componentExecutorManager } from '@/core/data-source-system/managers/ComponentExecutorManager'
+import { configurationManager } from '@/components/visual-editor/configuration/ConfigurationManager'
 
 interface Props {
   componentType: string
@@ -459,7 +460,7 @@ watch(
   { deep: true, immediate: true }
 )
 
-onMounted(() => {
+onMounted(async () => {
   console.log('🔧 [Card2Wrapper] 组件挂载，当前props:', props)
   const dataSourcesForComponent = getDataSourcesForComponent()
   console.log('🔧 [Card2Wrapper] 传递给组件的数据源:', dataSourcesForComponent)
@@ -470,7 +471,13 @@ onMounted(() => {
     loadComponent()
   }
 
-  // 🔥 新增：监听ComponentExecutorManager的数据更新
+  // 🔥 新增：检查并恢复组件执行器
+  // 这解决了页面刷新后未打开配置面板时数据不执行的问题
+  const savedConfig = configurationManager.getConfiguration(props.nodeId)
+  console.log('🔍 [Card2Wrapper] 检查保存的配置:', props.nodeId, savedConfig)
+
+  // 🔥 修复时序问题：先注册回调，再执行更新
+  // 监听ComponentExecutorManager的数据更新
   executorDataCleanup = componentExecutorManager.onDataUpdate((componentId, data) => {
     if (componentId === props.nodeId) {
       console.log('🔥 [Card2Wrapper] 接收到执行器数据更新:', componentId, data)
@@ -480,6 +487,25 @@ onMounted(() => {
       forceUpdateKey.value = Date.now()
     }
   })
+
+  if (savedConfig?.dataSource?.config) {
+    console.log('🔥 [Card2Wrapper] 发现保存的数据源配置:', savedConfig.dataSource.config)
+    console.log('🔍 [Card2Wrapper] 配置详细信息:', JSON.stringify(savedConfig.dataSource.config, null, 2))
+
+    try {
+      const result = await componentExecutorManager.updateComponentExecutor(
+        props.nodeId,
+        props.componentType,
+        savedConfig.dataSource.config
+      )
+      console.log('✅ [Card2Wrapper] 执行器恢复成功，结果:', props.nodeId, result)
+    } catch (error) {
+      console.error('❌ [Card2Wrapper] 执行器恢复失败:', props.nodeId, error)
+    }
+  } else {
+    console.log('ℹ️ [Card2Wrapper] 无保存配置，完整配置:', savedConfig)
+    console.log('ℹ️ [Card2Wrapper] 数据源配置:', savedConfig?.dataSource)
+  }
 
   // 🔥 监听组件状态更新事件
   const handleStateUpdate = (event: CustomEvent) => {

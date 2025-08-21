@@ -38,7 +38,7 @@
                   <template #icon>
                     <n-icon size="14">
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2"></path>
                       </svg>
                     </n-icon>
                   </template>
@@ -167,8 +167,8 @@
                             <template #icon>
                               <n-icon size="12">
                                 <svg viewBox="0 0 24 24" fill="none">
-                                  <path d="M9.5 15.5L4.5 10.5L9.5 5.5L8.09 4.09L1.5 10.68L8.09 17.27L9.5 15.5Z" fill="currentColor"/>
-                                  <path d="M14.5 8.5L19.5 13.5L14.5 18.5L15.91 19.91L22.5 13.32L15.91 6.73L14.5 8.5Z" fill="currentColor"/>
+                                  <path d="M9.5 15.5L4.5 10.5L9.5 5.5L8.09 4.09L1.5 10.68L8.09 17.27L9.5 15.5Z" fill="currentColor"></path>
+                                  <path d="M14.5 8.5L19.5 13.5L14.5 18.5L15.91 19.91L22.5 13.32L15.91 6.73L14.5 8.5Z" fill="currentColor"></path>
                                 </svg>
                               </n-icon>
                             </template>
@@ -178,7 +178,7 @@
                             <template #icon>
                               <n-icon size="12">
                                 <svg viewBox="0 0 24 24" fill="none">
-                                  <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                                  <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" fill="none"></path>
                                 </svg>
                               </n-icon>
                             </template>
@@ -412,11 +412,11 @@
                               <path
                                 d="M9.5 15.5L4.5 10.5L9.5 5.5L8.09 4.09L1.5 10.68L8.09 17.27L9.5 15.5Z"
                                 fill="currentColor"
-                              />
+                              ></path>
                               <path
                                 d="M14.5 8.5L19.5 13.5L14.5 18.5L15.91 19.91L22.5 13.32L15.91 6.73L14.5 8.5Z"
                                 fill="currentColor"
-                              />
+                              ></path>
                             </svg>
                           </n-icon>
                         </template>
@@ -431,7 +431,7 @@
                                 stroke="currentColor"
                                 stroke-width="2"
                                 fill="none"
-                              />
+                              ></path>
                             </svg>
                           </n-icon>
                         </template>
@@ -441,7 +441,7 @@
                         <template #icon>
                           <n-icon size="12">
                             <svg viewBox="0 0 24 24" fill="none">
-                              <path d="M8 6H16V8H8V6ZM8 10H16V12H8V10ZM8 14H13V16H8V14Z" fill="currentColor" />
+                              <path d="M8 6H16V8H8V6ZM8 10H16V12H8V10ZM8 14H13V16H8V14Z" fill="currentColor"></path>
                             </svg>
                           </n-icon>
                         </template>
@@ -550,7 +550,7 @@
                           <template #icon>
                             <n-icon size="14">
                               <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M8 12L10.5 14.5L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M8 12L10.5 14.5L16 9" stroke="currentColor" stroke-width="2"></path>
                               </svg>
                             </n-icon>
                           </template>
@@ -1041,15 +1041,15 @@ return response.data; // 默认返回data字段"
                               d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
                               stroke="currentColor"
                               stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              
+                              
                             />
                             <path
                               d="M12 17h.01"
                               stroke="currentColor"
                               stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              
+                              
                             />
                           </svg>
                         </n-icon>
@@ -1091,11 +1091,11 @@ return response.data; // 默认返回data字段"
                               <path
                                 d="M9.5 15.5L4.5 10.5L9.5 5.5L8.09 4.09L1.5 10.68L8.09 17.27L9.5 15.5Z"
                                 fill="currentColor"
-                              />
+                              ></path>
                               <path
                                 d="M14.5 8.5L19.5 13.5L14.5 18.5L15.91 19.91L22.5 13.32L15.91 6.73L14.5 8.5Z"
                                 fill="currentColor"
-                              />
+                              ></path>
                             </svg>
                           </n-icon>
                         </template>
@@ -1434,16 +1434,19 @@ interface DataSource {
   fieldsToMap?: Array<{ key: string; targetProperty: string }>
 }
 
+// 🔄 重构：v-model标准接口
 interface Props {
-  selectedWidgetId?: string // 修改为匹配 ConfigurationPanel 传递的属性名
+  selectedWidgetId?: string
   dataSources: DataSource[]
-  /** 🔥 新增：用于回显的初始配置数据 */
-  initialConfig?: any
+  /** v-model绑定值：完整的数据源配置对象 */
+  modelValue?: any
 }
 
 interface Emits {
-  (e: 'update', config: any): void
-  (e: 'request-current-data', widgetId: string): void // 🔥 新增：请求当前数据
+  /** v-model更新事件 */
+  (e: 'update:modelValue', value: any): void
+  /** 请求当前运行时数据 */
+  (e: 'request-current-data', widgetId: string): void
 }
 
 const props = defineProps<Props>()
@@ -1506,6 +1509,141 @@ interface DataSourceValue {
 
 // 数据存储 - 🔥 修改：支持原始数据列表
 const dataValues = reactive<Record<string, DataSourceValue>>({})
+
+// 🔄 v-model重构：添加恢复状态标记
+let isRestoringFromInitialConfig = false
+// 🔥 修复：提前声明防止配置更新循环的标志，避免初始化前访问错误
+let isUpdatingConfig = false
+// 🔥 修复：提前声明初始化标志，避免在 restoreConfigurationFromModelValue 中使用前错误
+let isInitializing = false
+
+// 🔄 v-model响应式配置管理
+/**
+ * 内部配置状态，与外部v-model同步
+ */
+const internalConfig = computed({
+  get: () => {
+    // 从dataValues构建完整的配置对象
+    const dataSourceBindings: Record<string, any> = {}
+    
+    props.dataSources.forEach(dataSource => {
+      const dataSourceValue = dataValues[dataSource.key]
+      if (dataSourceValue) {
+        dataSourceBindings[dataSource.key] = {
+          rawData: dataSourceValue.currentData ? JSON.stringify(dataSourceValue.currentData) : '{}',
+          enhancedConfig: {
+            rawDataList: dataSourceValue.rawDataList || [],
+            metadata: {
+              hasRawDataList: (dataSourceValue.rawDataList?.length || 0) > 0,
+              rawDataCount: dataSourceValue.rawDataList?.length || 0,
+              lastUpdated: new Date().toISOString(),
+              version: '2.1'
+            },
+            dataSourceInfo: {
+              key: dataSource.key,
+              name: dataSource.name,
+              description: dataSource.description,
+              fieldMappings: dataSource.fieldMappings,
+              fieldsToMap: dataSource.fieldsToMap
+            }
+          }
+        }
+      }
+    })
+
+    return {
+      dataSourceBindings,
+      systemConfig: {
+        version: '2.1',
+        features: ['rawDataManagement', 'scriptProcessing', 'dataFiltering'],
+        lastConfigUpdate: new Date().toISOString(),
+        selectedWidgetId: props.selectedWidgetId
+      }
+    }
+  },
+  set: (value) => {
+    // 响应式更新到外部v-model
+    const enhancedConfig = {
+      type: 'data-source-bindings',
+      enabled: true,
+      config: value,
+      metadata: {
+        componentType: 'dual-data-display', // TODO: 从props获取
+        updatedAt: Date.now(),
+        source: 'data-source-config-form'
+      }
+    }
+    emit('update:modelValue', enhancedConfig)
+  }
+})
+
+/**
+ * 从modelValue恢复配置数据到dataValues
+ */
+const restoreConfigurationFromModelValue = (modelValue: any) => {
+  if (!modelValue?.config?.dataSourceBindings) return
+  
+  // 🚨 设置初始化标志，防止恢复过程中的响应式更新循环
+  const wasInitializing = isInitializing
+  isInitializing = true
+  
+  try {
+    console.log('🔄 [DataSourceConfigForm] 开始恢复配置:', modelValue)
+  
+  props.dataSources.forEach(dataSource => {
+    const savedConfig = modelValue.config.dataSourceBindings[dataSource.key]
+    if (savedConfig?.enhancedConfig) {
+      console.log(`🔄 [DataSourceConfigForm] 恢复数据源 ${dataSource.key}:`, savedConfig)
+      
+      // 确保dataValues中存在该数据源
+      if (!dataValues[dataSource.key]) {
+        dataValues[dataSource.key] = {
+          rawDataList: [],
+          currentData: null,
+          finalProcessingConfig: null,
+          status: { loading: false, error: null, success: false, lastUpdateTime: null }
+        }
+      }
+      
+      // 恢复rawDataList
+      if (savedConfig.enhancedConfig.rawDataList) {
+        dataValues[dataSource.key].rawDataList = savedConfig.enhancedConfig.rawDataList
+      }
+      
+      // 恢复currentData
+      if (savedConfig.rawData) {
+        try {
+          dataValues[dataSource.key].currentData = JSON.parse(savedConfig.rawData)
+          console.log(`✅ [DataSourceConfigForm] 恢复currentData ${dataSource.key}:`, dataValues[dataSource.key].currentData)
+        } catch (error) {
+          console.warn(`❌ [DataSourceConfigForm] 解析rawData失败 ${dataSource.key}:`, error)
+        }
+      }
+    }
+  })
+  } finally {
+    // 🚨 恢复之前的初始化状态
+    isInitializing = wasInitializing
+  }
+}
+
+// 🔄 监听外部modelValue变化，自动恢复配置
+watch(
+  () => props.modelValue,
+  (newModelValue) => {
+    // 🔥 修复：只检查是否是自己发出的更新，允许外部配置传入
+    if (isUpdatingConfig && newModelValue?.metadata?.source === 'data-source-config-form') {
+      console.log('⏸️ [ModelValueWatch] 跳过自己发出的更新，防止循环')
+      return
+    }
+    
+    if (newModelValue?.config?.dataSourceBindings) {
+      console.log('🔄 [DataSourceConfigForm] 检测到modelValue变化，恢复配置:', newModelValue)
+      restoreConfigurationFromModelValue(newModelValue)
+    }
+  },
+  { immediate: true, deep: true }
+)
 
 // 🔥 弹窗状态管理
 const showAddRawDataModal = ref(false)
@@ -2369,7 +2507,7 @@ const testHttpRequest = async () => {
       console.log('✅ [HTTP-Persistence] HTTP数据已保存:', dataValues[currentDataSourceKey.value].currentData)
       
       // 保存配置
-      sendUpdate()
+      triggerConfigUpdate()
     }
     
     window.$message?.success(`HTTP 请求成功 (${httpTestResult.responseTime}ms)`)
@@ -2625,87 +2763,18 @@ return processedDataList` // 简化的默认脚本
   }
 
   console.log('🔧 [DEBUG-Config] 重置数据:', { dataSourceKey, data: dataValues[dataSourceKey] })
-  sendUpdate()
+  triggerConfigUpdate()
 }
 
 // 上次发送的配置，用于防止重复发送
 let lastSentConfig: string | null = null
 
-/**
- * 发送配置更新 - 🔥 修改：原始数据项与最终数据完全分离
- */
-const sendUpdate = () => {
-  const dataSourceBindings: Record<string, any> = {}
-
-  // 🔥 修改：构建兼容原有格式的配置结构
-  props.dataSources.forEach(dataSource => {
-    const dataSourceValue = dataValues[dataSource.key]
-    if (dataSourceValue) {
-      // 🔥 保持原有的结构，但增强数据内容
-      dataSourceBindings[dataSource.key] = {
-        // 保持原有的字段
-        rawData: dataSourceValue.currentData ? JSON.stringify(dataSourceValue.currentData) : undefined,
-
-        // 🔥 新增：增强的数据源配置
-        enhancedConfig: {
-          // 原始数据项列表
-          rawDataList: dataSourceValue.rawDataList || [],
-          // 元数据
-          metadata: {
-            hasRawDataList: (dataSourceValue.rawDataList?.length || 0) > 0,
-            rawDataCount: dataSourceValue.rawDataList?.length || 0,
-            lastUpdated: new Date().toISOString(),
-            version: '2.1'
-          },
-          // 数据源类型信息
-          dataSourceInfo: {
-            key: dataSource.key,
-            name: dataSource.name,
-            description: dataSource.description,
-            fieldMappings: dataSource.fieldMappings,
-            fieldsToMap: dataSource.fieldsToMap
-          }
-        }
-      }
-    }
-  })
-
-  // 🔥 保持兼容的配置结构，同时增强功能
-  const config = {
-    dataSourceBindings,
-    // 🔥 新增：系统级配置
-    systemConfig: {
-      version: '2.1',
-      features: ['rawDataManagement', 'scriptProcessing', 'dataFiltering'],
-      lastConfigUpdate: new Date().toISOString(),
-      selectedWidgetId: props.selectedWidgetId
-    }
-  }
-  const configHash = JSON.stringify(config)
-
-  // 🔥 关键修复：只在配置真正变化时才发送
-  if (configHash !== lastSentConfig) {
-    console.log('🔧 [DEBUG-Config] 检测到配置变化，发送更新:', {
-      selectedWidgetId: props.selectedWidgetId,
-      bindingKeys: Object.keys(dataSourceBindings),
-      hasDataChanged: configHash !== lastSentConfig,
-      config
-    })
-
-    lastSentConfig = configHash
-    emit('update', config)
-  } else {
-    console.log('🔧 [DEBUG-Config] 配置未变化，跳过发送:', {
-      selectedWidgetId: props.selectedWidgetId,
-      bindingKeys: Object.keys(dataSourceBindings)
-    })
-  }
-}
+// 🔄 原sendUpdate函数已被triggerConfigUpdate和v-model机制取代
 
 /**
  * 初始化数据 - 🔥 修复：优先使用当前运行时数据
  */
-let isInitializing = false  // 防止重复初始化的标志
+// isInitializing 和 isUpdatingConfig 已在文件前面声明
 const initializeData = () => {
   if (isInitializing) {
     console.log('🚫 [DataSourceConfigForm] 正在初始化中，跳过重复调用')
@@ -2713,30 +2782,38 @@ const initializeData = () => {
   }
   isInitializing = true
 
-  console.log('🔧 [DEBUG-Config] 初始化数据源数据:', {
-    selectedWidgetId: props.selectedWidgetId,
-    dataSourcesCount: props.dataSources.length,
-    dataSourceKeys: props.dataSources.map(ds => ds.key)
-  })
+  try {
+    console.log('🔧 [DEBUG-Config] 初始化数据源数据:', {
+      selectedWidgetId: props.selectedWidgetId,
+      dataSourcesCount: props.dataSources.length,
+      dataSourceKeys: props.dataSources.map(ds => ds.key)
+    })
 
-  // 🔥 重置配置缓存，允许新的配置发送
-  lastSentConfig = null
+    // 🔥 重置配置缓存，允许新的配置发送
+    lastSentConfig = null
 
-  // 🔥 简化：仅在第一次真正需要时恢复配置
-  if (props.selectedWidgetId && Object.keys(dataValues).length === 0) {
-    // 只有在 dataValues 为空时才进行配置恢复，避免覆盖用户操作
-    console.log('🔄 [DataSourceConfigForm] 首次加载，尝试恢复配置:', props.selectedWidgetId)
-    emit('request-current-data', props.selectedWidgetId)
+    // 🔥 简化：仅在第一次真正需要时恢复配置
+    if (props.selectedWidgetId && Object.keys(dataValues).length === 0) {
+      // 只有在 dataValues 为空时才进行配置恢复，避免覆盖用户操作
+      console.log('🔄 [DataSourceConfigForm] 首次加载，尝试恢复配置:', props.selectedWidgetId)
+      emit('request-current-data', props.selectedWidgetId)
 
+      setTimeout(() => {
+        attemptDataRestore()
+      }, 50)
+    } else if (Object.keys(dataValues).length === 0) {
+      // 没有选中组件且没有数据，使用默认数据
+      console.log('🔧 [DataSourceConfigForm] 使用默认数据初始化')
+      useDefaultData()
+    } else {
+      console.log('🚫 [DataSourceConfigForm] 已有配置数据，跳过自动恢复')
+    }
+  } finally {
+    // 🔥 修复：确保初始化标志被重置，避免后续操作被阻塞
     setTimeout(() => {
-      attemptDataRestore()
-    }, 50)
-  } else if (Object.keys(dataValues).length === 0) {
-    // 没有选中组件且没有数据，使用默认数据
-    console.log('🔧 [DataSourceConfigForm] 使用默认数据初始化')
-    useDefaultData()
-  } else {
-    console.log('🚫 [DataSourceConfigForm] 已有配置数据，跳过自动恢复')
+      isInitializing = false
+      console.log('🔓 [DataSourceConfigForm] 初始化完成，重置标志')
+    }, 100) // 100ms延迟确保异步操作完成
   }
 }
 
@@ -2746,8 +2823,12 @@ const initializeData = () => {
 const attemptDataRestore = () => {
   let hasRestoredData = false
 
-  if (props.selectedWidgetId) {
-    try {
+  // 🚨 设置初始化标志，防止恢复过程中的响应式更新循环
+  const wasInitializing = isInitializing
+  isInitializing = true
+
+  try {
+    if (props.selectedWidgetId) {
       console.log('🔍 [DEBUG-Restore] 开始尝试恢复配置:', props.selectedWidgetId)
       
       // 🔥 新增：优先从 props.initialConfig 恢复
@@ -2830,44 +2911,42 @@ const attemptDataRestore = () => {
           }
         })
       }
-    } catch (error) {
-      console.warn('⚠️ [DEBUG-Config] 配置恢复失败:', error)
     }
-  }
+  
+    // 如果没有恢复到数据，使用默认数据
+    if (!hasRestoredData) {
+      useDefaultData()
+    }
 
-  // 如果没有恢复到数据，使用默认数据
-  if (!hasRestoredData) {
-    useDefaultData()
-  }
-
-  // 🔥 修复：只在没有恢复到数据且不是从initialConfig恢复时发送初始配置
-  if (!hasRestoredData && !isRestoringFromInitialConfig) {
-    console.log('🔧 [DEBUG-Config] 使用默认数据，发送初始配置')
-    sendUpdate()
-  } else if (!hasRestoredData && isRestoringFromInitialConfig) {
-    console.log('🔧 [DEBUG-Config] 从initialConfig恢复中，使用默认数据但不发送更新')
-  } else {
-    console.log('🔧 [DEBUG-Config] 数据已恢复，不发送重复配置')
-    // 🔥 修复：更新 lastSentConfig 以避免后续重复发送
-    const dataSourceBindings: Record<string, any> = {}
-    props.dataSources.forEach(dataSource => {
-      const dataSourceValue = dataValues[dataSource.key]
-      if (dataSourceValue?.currentData !== undefined) {
-        dataSourceBindings[dataSource.key] = {
-          rawData: JSON.stringify(dataSourceValue.currentData),
-          rawDataList: dataSourceValue.rawDataList || [],
-          metadata: {
-            hasRawDataList: dataSourceValue.rawDataList?.length > 0
-            // 移除 activeRawDataId，因为原始数据项不影响最终数据
+    // 🔥 修复：只在没有恢复到数据且不是从initialConfig恢复时发送初始配置
+    if (!hasRestoredData && !isRestoringFromInitialConfig) {
+      console.log('🔧 [DEBUG-Config] 使用默认数据，发送初始配置')
+      triggerConfigUpdate()
+    } else if (!hasRestoredData && isRestoringFromInitialConfig) {
+      console.log('🔧 [DEBUG-Config] 从initialConfig恢复中，使用默认数据但不发送更新')
+    } else {
+      console.log('🔧 [DEBUG-Config] 数据已恢复，不发送重复配置')
+      // 🔥 修复：更新 lastSentConfig 以避免后续重复发送
+      const dataSourceBindings: Record<string, any> = {}
+      props.dataSources.forEach(dataSource => {
+        const dataSourceValue = dataValues[dataSource.key]
+        if (dataSourceValue?.currentData !== undefined) {
+          dataSourceBindings[dataSource.key] = {
+            rawData: JSON.stringify(dataSourceValue.currentData),
+            rawDataList: dataSourceValue.rawDataList || [],
+            metadata: {
+              hasRawDataList: dataSourceValue.rawDataList?.length > 0
+              // 移除 activeRawDataId，因为原始数据项不影响最终数据
+            }
           }
         }
-      }
-    })
-    lastSentConfig = JSON.stringify({ dataSourceBindings })
+      })
+      lastSentConfig = JSON.stringify({ dataSourceBindings })
+    }
+  } finally {
+    // 🚨 确保在所有情况下都重置初始化标志
+    isInitializing = wasInitializing
   }
-  
-  // 重置初始化标志
-  isInitializing = false
 }
 
 /**
@@ -2875,19 +2954,29 @@ const attemptDataRestore = () => {
  */
 const useDefaultData = () => {
   console.log('🔥 [DEBUG-Config] 使用默认数据初始化 - 新数据结构')
-  props.dataSources.forEach(dataSource => {
-    const defaultData = getDefaultData(dataSource.key)
-    dataValues[dataSource.key] = {
-      currentData: defaultData,
-      rawDataList: [],
-      // 🆕 添加默认最终处理配置
-      finalProcessingType: 'custom-script',
-      finalProcessingScript: 'return processedDataList',
-      finalProcessingConfig: {},
-      selectedDataItemIndex: 0
-    }
-    console.log(`🔧 [DEBUG-Config] 初始化数据源: ${dataSource.key}`, dataValues[dataSource.key])
-  })
+  
+  // 🚨 设置初始化标志，防止响应式更新循环
+  const wasInitializing = isInitializing
+  isInitializing = true
+  
+  try {
+    props.dataSources.forEach(dataSource => {
+      const defaultData = getDefaultData(dataSource.key)
+      dataValues[dataSource.key] = {
+        currentData: defaultData,
+        rawDataList: [],
+        // 🆕 添加默认最终处理配置
+        finalProcessingType: 'custom-script',
+        finalProcessingScript: 'return processedDataList',
+        finalProcessingConfig: {},
+        selectedDataItemIndex: 0
+      }
+      console.log(`🔧 [DEBUG-Config] 初始化数据源: ${dataSource.key}`, dataValues[dataSource.key])
+    })
+  } finally {
+    // 🚨 恢复之前的初始化状态
+    isInitializing = wasInitializing
+  }
 }
 
 // 🔥 原始数据管理函数
@@ -3362,7 +3451,7 @@ const addRawData = () => {
   })
 
   // 🔥 修复：调用 sendUpdate 通知外部组件数据变化
-  sendUpdate()
+  triggerConfigUpdate()
 
   console.log('🔧 [DEBUG-AddRawData] 准备关闭弹窗并重置表单')
 
@@ -3591,7 +3680,7 @@ const saveEdit = () => {
   })
 
   // 🔥 新增：通知外部组件数据变化
-  sendUpdate()
+  triggerConfigUpdate()
   
   // 🔥 新增：更新最终数据
   updateFinalData(editingDataSourceKey.value).catch(error => {
@@ -3866,7 +3955,7 @@ const updateFinalDataProcessingOnly = async (dataSourceKey: string) => {
     console.log(`✅ [ProcessingOnly] 处理配置更新完成: ${dataSourceKey}`, finalResult)
 
     // 通知外部更新
-    sendUpdate()
+    triggerConfigUpdate()
 
   } catch (error) {
     console.error(`❌ [ProcessingOnly] 处理配置更新失败 ${dataSourceKey}:`, error)
@@ -3940,7 +4029,7 @@ const updateFinalData = async (dataSourceKey: string) => {
     console.log(`✅ [FinalProcessing] 最终数据更新完成:`, finalData)
     
     // 通知父组件
-    sendUpdate()
+    triggerConfigUpdate()
     
   } catch (error) {
     // 设置错误状态
@@ -4016,6 +4105,10 @@ watch(
   })),
   (newConfigs, oldConfigs) => {
     if (!oldConfigs) return // 初始化时跳过
+    if (isInitializing) {
+      console.log('⏸️ [Reactive] 初始化期间，跳过响应式更新')
+      return
+    }
     
     newConfigs.forEach((newConfig, index) => {
       const oldConfig = oldConfigs[index]
@@ -4089,8 +4182,39 @@ watch(
 // 🚫 彻底禁用 initialConfig 监听器 - 它总是干扰用户操作
 // 配置回显改为仅在组件初始挂载时执行一次，通过 onMounted 中的 attemptDataRestore() 实现
 
+// 🔄 配置恢复函数：从modelValue恢复到内部状态
+
+// 🔄 替换原有的sendUpdate逻辑：自动同步到v-model
+/**
+ * 触发配置更新（替换原sendUpdate）
+ */
+const triggerConfigUpdate = () => {
+  // 🚨 防止在初始化期间或配置更新期间触发循环
+  if (isInitializing || isUpdatingConfig) {
+    console.log('⏸️ [ConfigUpdate] 防止循环更新，跳过配置更新')
+    return
+  }
+  
+  // 设置配置更新标志
+  isUpdatingConfig = true
+  
+  try {
+    // 🔥 修复：通过computed setter触发v-model双向绑定
+    const currentConfig = internalConfig.value
+    console.log('🔄 [DataSourceConfigForm] 触发配置更新:', currentConfig)
+    
+    // 🔥 关键修复：通过setter触发，而不是直接emit
+    // 这样可以保持v-model的双向绑定机制
+    internalConfig.value = { ...currentConfig }
+    console.log('📤 [DataSourceConfigForm] 通过v-model setter发送配置更新')
+  } finally {
+    // 重置配置更新标志
+    isUpdatingConfig = false
+  }
+}
+
 // 🔥 禁用：自动数据监听器（造成无限循环）
-// sendUpdate() 改为仅在用户操作时手动调用
+// 改为使用v-model响应式同步
 
 </script>
 

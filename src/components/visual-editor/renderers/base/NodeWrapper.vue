@@ -33,16 +33,16 @@
         <Card2Wrapper
           v-if="node.metadata?.isCard2Component"
           :component-type="node.type"
-          :config="getNodeComponentConfig(nodeId) || node.properties"
+          :config="nodeComponentConfig || node.properties"
           :data="node.metadata?.card2Data"
           :metadata="node.metadata"
           :data-source="node.dataSource"
           :data-sources="multiDataSourceData"
           :data-sources-config="multiDataSourceConfig"
           :node-id="nodeId"
-          :interaction-configs="getNodeInteractionConfigs(nodeId)"
-          :allow-external-control="getNodeInteractionPermissions(nodeId)?.allowExternalControl"
-          :interaction-permissions="getNodeInteractionPermissions(nodeId)"
+          :interaction-configs="nodeInteractionConfigs"
+          :allow-external-control="nodeInteractionPermissions?.allowExternalControl"
+          :interaction-permissions="nodeInteractionPermissions"
           :preview-mode="readonly"
           @error="$emit('component-error', $event)"
         />
@@ -166,38 +166,52 @@ const resizeHandles = [
   { position: 'se' }
 ]
 
-// 获取基础配置
+// 🔥 修复：获取基础配置，使用静态默认值避免重复创建对象
+const defaultBaseConfig: BaseConfiguration = {
+  showTitle: false,
+  title: '',
+  opacity: 1,
+  visible: true,
+  padding: { top: 0, right: 0, bottom: 0, left: 0 },
+  margin: { top: 0, right: 0, bottom: 0, left: 0 }
+}
+
 const baseConfig = computed((): BaseConfiguration => {
   try {
     const widgetConfig = configurationManager.getConfiguration(props.nodeId)
-
-    const defaultConfig: BaseConfiguration = {
-      showTitle: false,
-      title: '',
-      opacity: 1,
-      visible: true,
-      padding: { top: 0, right: 0, bottom: 0, left: 0 },
-      margin: { top: 0, right: 0, bottom: 0, left: 0 }
+    
+    // 🔥 如果没有配置，直接返回默认配置，避免创建新对象
+    if (!widgetConfig?.base) {
+      return defaultBaseConfig
     }
-
-    const finalConfig = widgetConfig?.base || defaultConfig
-
-    return finalConfig
+    
+    // 🔥 使用展开运算符合并，确保返回稳定的对象
+    return {
+      ...defaultBaseConfig,
+      ...widgetConfig.base
+    }
   } catch (error) {
     console.warn(`[NodeWrapper] 获取节点 ${props.nodeId} 基础配置失败:`, error)
-    return {
-      showTitle: false,
-      title: '',
-      opacity: 1,
-      visible: true,
-      padding: { top: 0, right: 0, bottom: 0, left: 0 },
-      margin: { top: 0, right: 0, bottom: 0, left: 0 }
-    }
+    return defaultBaseConfig
   }
 })
 
-// 获取节点组件配置
+// 获取节点组件配置 - 🔥 修复：改为计算属性避免无限循环
+const nodeComponentConfig = computed(() => {
+  try {
+    const widgetConfig = configurationManager.getConfiguration(props.nodeId)
+    return widgetConfig?.component?.properties
+  } catch (error) {
+    console.warn(`[NodeWrapper] 获取节点 ${props.nodeId} 组件配置失败:`, error)
+    return undefined
+  }
+})
+
+// 保持向后兼容的函数版本
 const getNodeComponentConfig = (nodeId: string): any => {
+  if (nodeId === props.nodeId) {
+    return nodeComponentConfig.value
+  }
   try {
     const widgetConfig = configurationManager.getConfiguration(nodeId)
     return widgetConfig?.component?.properties
@@ -207,8 +221,22 @@ const getNodeComponentConfig = (nodeId: string): any => {
   }
 }
 
-// 🔥 获取节点交互配置
+// 🔥 获取节点交互配置 - 改为计算属性避免无限循环
+const nodeInteractionConfigs = computed(() => {
+  try {
+    const widgetConfig = configurationManager.getConfiguration(props.nodeId)
+    return widgetConfig?.interaction?.configs || []
+  } catch (error) {
+    console.warn(`[NodeWrapper] 获取节点 ${props.nodeId} 交互配置失败:`, error)
+    return []
+  }
+})
+
+// 保持向后兼容的函数版本
 const getNodeInteractionConfigs = (nodeId: string): any[] => {
+  if (nodeId === props.nodeId) {
+    return nodeInteractionConfigs.value
+  }
   try {
     const widgetConfig = configurationManager.getConfiguration(nodeId)
     return widgetConfig?.interaction?.configs || []
@@ -218,8 +246,30 @@ const getNodeInteractionConfigs = (nodeId: string): any[] => {
   }
 }
 
-// 🔥 获取节点交互权限配置
+// 🔥 获取节点交互权限配置 - 改为计算属性避免无限循环
+const nodeInteractionPermissions = computed(() => {
+  try {
+    const widgetConfig = configurationManager.getConfiguration(props.nodeId)
+    return (
+      widgetConfig?.interaction?.permissions || {
+        allowExternalControl: true,
+        allowedEvents: ['click', 'hover', 'focus', 'blur']
+      }
+    )
+  } catch (error) {
+    console.warn(`[NodeWrapper] 获取节点 ${props.nodeId} 交互权限失败:`, error)
+    return {
+      allowExternalControl: true,
+      allowedEvents: ['click', 'hover', 'focus', 'blur']
+    }
+  }
+})
+
+// 保持向后兼容的函数版本
 const getNodeInteractionPermissions = (nodeId: string): any => {
+  if (nodeId === props.nodeId) {
+    return nodeInteractionPermissions.value
+  }
   try {
     const widgetConfig = configurationManager.getConfiguration(nodeId)
     return (
@@ -416,22 +466,25 @@ onMounted(() => {
       configurationManager.setConfiguration(props.nodeId, defaultConfig)
     }
 
-    removeConfigListener = configurationManager.onConfigurationChange(props.nodeId, newConfig => {
-      // baseConfig是computed，会自动响应configurationManager的变化
-    })
+    // 🔥 修复：移除配置监听器，因为计算属性已经能够自动响应配置变化
+    // 避免重复监听导致的无限循环
+    // removeConfigListener = configurationManager.onConfigurationChange(props.nodeId, newConfig => {
+    //   // baseConfig是computed，会自动响应configurationManager的变化
+    // })
   } catch (error) {
     console.warn(`[NodeWrapper] 添加配置监听器失败:`, error)
   }
 })
 
 onUnmounted(() => {
-  if (removeConfigListener) {
-    try {
-      removeConfigListener()
-    } catch (error) {
-      console.warn(`[NodeWrapper] 移除配置监听器失败:`, error)
-    }
-  }
+  // 🔥 修复：不再需要手动清理配置监听器，因为我们移除了显式监听器
+  // if (removeConfigListener) {
+  //   try {
+  //     removeConfigListener()
+  //   } catch (error) {
+  //     console.warn(`[NodeWrapper] 移除配置监听器失败:`, error)
+  //   }
+  // }
 })
 
 // 监听节点变化，同步标题

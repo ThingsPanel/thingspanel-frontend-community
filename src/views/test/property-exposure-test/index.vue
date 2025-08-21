@@ -107,7 +107,7 @@
           </div>
 
           <!-- DataDisplayCard 测试 -->
-          <div class="component-test-section">
+          <!-- <div class="component-test-section">
             <h4>DataDisplayCard 测试</h4>
             <div class="component-container">
               <DataDisplayCard
@@ -125,7 +125,7 @@
                 :show-interaction-indicator="true"
               />
             </div>
-          </div>
+          </div> -->
         </n-space>
       </n-card>
 
@@ -213,8 +213,8 @@ import {
 // 导入组件和系统
 import { propertyExposureRegistry } from '@/card2.1/core/property-exposure'
 import type { ListenableProperty, InteractionConfig } from '@/card2.1/core/interaction-types'
-import SimpleTestComponent from '@/card2.1/components/simple-test-component/SimpleTestComponent.vue'
-import DataDisplayCard from '@/card2.1/components/data-display-card/DataDisplayCard.vue'
+// import SimpleTestComponent from '@/card2.1/components/simple-test-component/SimpleTestComponent.vue'
+// import DataDisplayCard from '@/card2.1/components/data-display-card/DataDisplayCard.vue'
 import InteractionSettingsForm from '@/core/interaction-system/components/InteractionSettingsForm.vue'
 
 // 响应式状态

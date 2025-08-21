@@ -166,6 +166,7 @@ export class ComponentExecutorManager {
    */
   private convertConfigToExecutorFormat(componentId: string, config: any): SimpleDataSourceConfig | null {
     console.log(`🔄 [ComponentExecutorManager] 转换配置格式: ${componentId}`, config)
+    console.log(`🔍 [ComponentExecutorManager] 原始配置详细信息:`, JSON.stringify(config, null, 2))
 
     if (!config) {
       console.warn(`⚠️ [ComponentExecutorManager] 配置为空: ${componentId}`)
@@ -175,6 +176,10 @@ export class ComponentExecutorManager {
     // 处理 dataSourceBindings 格式 (来自 ConfigurationPanel)
     if (config.dataSourceBindings) {
       console.log(`📋 [ComponentExecutorManager] 检测到 dataSourceBindings 格式`)
+      console.log(
+        `🔍 [ComponentExecutorManager] dataSourceBindings 详细信息:`,
+        JSON.stringify(config.dataSourceBindings, null, 2)
+      )
 
       const dataSources: any[] = []
 
@@ -253,8 +258,10 @@ export class ComponentExecutorManager {
    */
   private adaptDataForComponent(componentId: string, executionData: any): any {
     console.log(`🔄 [ComponentExecutorManager] 适配组件数据: ${componentId}`, executionData)
+    console.log(`🔍 [ComponentExecutorManager] 执行数据详细信息:`, JSON.stringify(executionData, null, 2))
 
     if (!executionData) {
+      console.warn(`⚠️ [ComponentExecutorManager] 执行数据为空: ${componentId}`)
       return {}
     }
 
@@ -265,10 +272,17 @@ export class ComponentExecutorManager {
       if (dataSourceResult && dataSourceResult.data !== undefined) {
         adaptedData[dataSourceId] = dataSourceResult.data
         console.log(`✅ [ComponentExecutorManager] 适配数据源 ${dataSourceId}:`, dataSourceResult.data)
+        console.log(
+          `🔍 [ComponentExecutorManager] 数据源 ${dataSourceId} 详细数据:`,
+          JSON.stringify(dataSourceResult.data, null, 2)
+        )
+      } else {
+        console.warn(`⚠️ [ComponentExecutorManager] 数据源 ${dataSourceId} 数据无效:`, dataSourceResult)
       }
     })
 
     console.log(`✅ [ComponentExecutorManager] 最终适配结果:`, adaptedData)
+    console.log(`🎯 [ComponentExecutorManager] 最终适配结果详细信息:`, JSON.stringify(adaptedData, null, 2))
     return adaptedData
   }
 
@@ -277,10 +291,14 @@ export class ComponentExecutorManager {
    */
   private notifyDataUpdate(componentId: string, data: any): void {
     console.log(`📡 [ComponentExecutorManager] 通知数据更新: ${componentId}`)
+    console.log(`📡 [ComponentExecutorManager] 通知数据详情:`, JSON.stringify(data, null, 2))
+    console.log(`📡 [ComponentExecutorManager] 当前回调数量: ${this.dataUpdateCallbacks.size}`)
 
-    this.dataUpdateCallbacks.forEach(callback => {
+    this.dataUpdateCallbacks.forEach((callback, index) => {
       try {
+        console.log(`📡 [ComponentExecutorManager] 执行回调 #${index}: ${componentId}`)
         callback(componentId, data)
+        console.log(`✅ [ComponentExecutorManager] 回调 #${index} 执行成功`)
       } catch (error) {
         console.error(`❌ [ComponentExecutorManager] 数据更新回调执行失败:`, error)
       }
@@ -291,11 +309,15 @@ export class ComponentExecutorManager {
    * 添加数据更新回调
    */
   onDataUpdate(callback: ComponentDataUpdateCallback): () => void {
+    console.log(`📝 [ComponentExecutorManager] 注册数据更新回调，当前回调数量: ${this.dataUpdateCallbacks.size}`)
     this.dataUpdateCallbacks.add(callback)
+    console.log(`📝 [ComponentExecutorManager] 回调注册完成，新的回调数量: ${this.dataUpdateCallbacks.size}`)
 
     // 返回取消监听的函数
     return () => {
+      console.log(`🗑️ [ComponentExecutorManager] 移除数据更新回调，当前回调数量: ${this.dataUpdateCallbacks.size}`)
       this.dataUpdateCallbacks.delete(callback)
+      console.log(`🗑️ [ComponentExecutorManager] 回调移除完成，新的回调数量: ${this.dataUpdateCallbacks.size}`)
     }
   }
 
