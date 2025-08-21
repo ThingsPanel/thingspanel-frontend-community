@@ -106,6 +106,11 @@ import {
   CommonProperties
 } from '@/card2.1/core/property-exposure'
 import {
+  componentDataRequirementsRegistry,
+  createDataRequirement,
+  createDataField
+} from '@/card2.1/core/component-data-requirements'
+import {
   TrendingUpOutline,
   TrendingDownOutline,
   RemoveOutline,
@@ -578,6 +583,224 @@ onMounted(() => {
   ])
 
   propertyExposureRegistry.register(propertyExposure)
+
+  // 🔥 注册组件数据需求声明
+  console.log(`[DataDisplayCard] 注册数据需求声明 - ${props.componentId}`)
+  const dataRequirement = createDataRequirement('data-display-card', '数据展示卡片', {
+    description: '用于展示关键数据指标、趋势分析和相关统计信息的数据卡片组件',
+    category: '数据展示',
+
+    // 🌟 主要数据需求
+    primaryData: {
+      name: 'mainValue',
+      label: '主要数值',
+      description: '卡片展示的核心数值，如温度、湿度、统计值等',
+      type: 'number',
+      required: true,
+      defaultValue: 0,
+      validation: {
+        min: -999999,
+        max: 999999
+      },
+      example: 25.6,
+      tags: ['primary', 'metric', 'display']
+    },
+
+    // 📊 数据字段声明
+    dataFields: [
+      createDataField('title', '卡片标题', 'string', {
+        description: '卡片的标题文字，描述数据的含义',
+        required: false,
+        defaultValue: '数据展示',
+        example: '温度传感器',
+        maxLength: 50,
+        tags: ['title', 'display']
+      }),
+
+      createDataField('subtitle', '副标题', 'string', {
+        description: '卡片的副标题或补充说明',
+        required: false,
+        defaultValue: '',
+        example: '实时监测',
+        maxLength: 100,
+        tags: ['subtitle', 'description']
+      }),
+
+      createDataField('unit', '数值单位', 'string', {
+        description: '主要数值的计量单位',
+        required: false,
+        defaultValue: '',
+        example: '°C',
+        maxLength: 10,
+        tags: ['unit', 'format']
+      }),
+
+      createDataField('trendValue', '趋势数值', 'number', {
+        description: '用于计算趋势变化的对比数值',
+        required: false,
+        defaultValue: 0,
+        example: 23.4,
+        tags: ['trend', 'comparison']
+      }),
+
+      createDataField('trendDirection', '趋势方向', 'string', {
+        description: '数据变化趋势：上升、下降或持平',
+        required: false,
+        defaultValue: 'neutral',
+        enum: [
+          { label: '上升', value: 'up' },
+          { label: '下降', value: 'down' },
+          { label: '持平', value: 'neutral' }
+        ],
+        example: 'up',
+        tags: ['trend', 'indicator']
+      }),
+
+      createDataField('trendText', '趋势描述', 'string', {
+        description: '趋势变化的文字描述',
+        required: false,
+        defaultValue: '',
+        example: '较昨日上升 2.3°C',
+        maxLength: 100,
+        tags: ['trend', 'description']
+      }),
+
+      createDataField('description', '描述信息', 'string', {
+        description: '数据的详细说明或状态描述',
+        required: false,
+        defaultValue: '',
+        example: '设备运行正常',
+        maxLength: 200,
+        tags: ['description', 'status']
+      }),
+
+      createDataField('timestamp', '数据时间戳', 'date', {
+        description: '数据的采集或更新时间',
+        required: false,
+        defaultValue: new Date(),
+        example: '2024-01-01T12:00:00Z',
+        tags: ['timestamp', 'metadata']
+      }),
+
+      createDataField('dataList', '扩展数据列表', 'array', {
+        description: '附加的数据项列表，用于显示更多详细信息',
+        required: false,
+        defaultValue: [],
+        itemSchema: {
+          type: 'object',
+          properties: {
+            label: { type: 'string', description: '数据项标签' },
+            value: { type: 'number', description: '数据项数值' },
+            unit: { type: 'string', description: '数据项单位' },
+            color: { type: 'string', description: '显示颜色' }
+          }
+        },
+        example: [
+          { label: '今日新增', value: 234, unit: '次', color: '#18a058' },
+          { label: '本周累计', value: 1567, unit: '次', color: '#2080f0' }
+        ],
+        tags: ['list', 'details']
+      }),
+
+      createDataField('status', '状态标识', 'string', {
+        description: '数据或设备的状态标识',
+        required: false,
+        defaultValue: 'normal',
+        enum: [
+          { label: '正常', value: 'normal' },
+          { label: '警告', value: 'warning' },
+          { label: '异常', value: 'error' },
+          { label: '离线', value: 'offline' }
+        ],
+        example: 'normal',
+        tags: ['status', 'indicator']
+      }),
+
+      createDataField('metadata', '元数据', 'object', {
+        description: '附加的元数据信息，如设备信息、位置等',
+        required: false,
+        defaultValue: {},
+        example: {
+          deviceId: 'sensor_001',
+          location: '机房A',
+          type: '温湿度传感器'
+        },
+        tags: ['metadata', 'context']
+      })
+    ],
+
+    // 🔄 数据更新配置
+    updateConfig: {
+      // 支持的触发方式
+      supportedTriggers: ['timer', 'websocket', 'manual', 'event'],
+
+      // 推荐的更新间隔（毫秒）
+      recommendedInterval: 5000,
+
+      // 最小更新间隔（毫秒）
+      minInterval: 1000,
+
+      // 数据验证规则
+      validation: {
+        requiredFields: ['mainValue'],
+        numericFields: ['mainValue', 'trendValue'],
+        stringFields: ['title', 'subtitle', 'unit', 'trendText', 'description'],
+        enumFields: [
+          { field: 'trendDirection', values: ['up', 'down', 'neutral'] },
+          { field: 'status', values: ['normal', 'warning', 'error', 'offline'] }
+        ]
+      }
+    },
+
+    // 🎯 使用场景和示例
+    useCases: [
+      {
+        name: 'IoT设备监控',
+        description: '显示IoT设备的实时监测数据',
+        exampleData: {
+          title: '温度传感器',
+          mainValue: 25.6,
+          unit: '°C',
+          trendDirection: 'up',
+          trendText: '较昨日上升 2.3°C',
+          status: 'normal',
+          timestamp: new Date()
+        }
+      },
+      {
+        name: '业务指标展示',
+        description: '展示关键业务指标和统计数据',
+        exampleData: {
+          title: '今日订单量',
+          mainValue: 1234,
+          unit: '单',
+          trendDirection: 'up',
+          trendText: '较昨日增长 15%',
+          dataList: [
+            { label: '待处理', value: 45, unit: '单', color: '#f39c12' },
+            { label: '已完成', value: 1189, unit: '单', color: '#27ae60' }
+          ],
+          status: 'normal'
+        }
+      },
+      {
+        name: '系统状态监控',
+        description: '监控系统性能和健康状态',
+        exampleData: {
+          title: 'CPU使用率',
+          mainValue: 68.5,
+          unit: '%',
+          trendDirection: 'up',
+          trendText: '过去1小时平均值',
+          description: '系统运行正常',
+          status: 'warning'
+        }
+      }
+    ]
+  })
+
+  componentDataRequirementsRegistry.register(dataRequirement)
+  console.log(`[DataDisplayCard] 数据需求声明注册完成 - ${props.componentId}`)
 })
 
 // 🔥 组件卸载时清理

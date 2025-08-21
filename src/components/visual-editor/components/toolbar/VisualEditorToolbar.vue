@@ -22,6 +22,7 @@ import {
 import CommonToolbar from './CommonToolbar.vue'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
+import DataSourceTriggerPanel from '../DataSourceTriggerPanel.vue'
 
 interface Props {
   mode: 'edit' | 'preview'
@@ -82,6 +83,8 @@ const emit = defineEmits<Emits>()
 
 // 配置面板显示状态
 const showConfigPanel = ref(false)
+// 数据源触发器面板显示状态
+const showDataSourcePanel = ref(false)
 
 // 主题支持 - 使用Naive UI主题系统
 const themeVars = useThemeVars()
@@ -170,6 +173,11 @@ const handleToggleRightDrawer = () => emit('toggle-right-drawer')
 // 切换配置面板显示状态
 const handleToggleRendererConfig = () => {
   showConfigPanel.value = !showConfigPanel.value
+}
+
+// 切换数据源触发器面板显示状态
+const handleToggleDataSourcePanel = () => {
+  showDataSourcePanel.value = !showDataSourcePanel.value
 }
 
 // 文件导入导出处理
@@ -368,6 +376,18 @@ const getConfigTitle = () => {
               <SvgIcon icon="material-symbols:settings-outline" />
             </template>
           </NButton>
+
+          <!-- 数据源触发器管理按钮 -->
+          <NTooltip trigger="hover">
+            <template #trigger>
+              <NButton size="small" type="info" @click="handleToggleDataSourcePanel">
+                <template #icon>
+                  <SvgIcon icon="material-symbols:data-usage-outline" />
+                </template>
+              </NButton>
+            </template>
+            <span>{{ $t('dataSource.trigger.management') }}</span>
+          </NTooltip>
         </template>
 
         <!-- 编辑/预览切换按钮 - 始终显示在最右侧 -->
@@ -549,6 +569,24 @@ const getConfigTitle = () => {
         </div>
       </div>
     </NModal>
+
+    <!-- 数据源触发器管理面板 - 模态弹窗 -->
+    <NModal
+      v-model:show="showDataSourcePanel"
+      :mask-closable="true"
+      :close-on-esc="true"
+      preset="card"
+      class="data-source-trigger-modal"
+      :style="{ width: '1000px', maxWidth: '95vw' }"
+      :title="$t('dataSource.trigger.title')"
+      :bordered="false"
+      size="huge"
+      role="dialog"
+      aria-labelledby="data-source-modal-title"
+      :auto-focus="false"
+    >
+      <DataSourceTriggerPanel />
+    </NModal>
   </div>
 </template>
 
@@ -622,6 +660,44 @@ const getConfigTitle = () => {
   background-color: rgba(0, 0, 0, 0.4) !important;
   backdrop-filter: blur(6px) !important;
   -webkit-backdrop-filter: blur(6px) !important;
+}
+
+/* 数据源触发器管理模态弹窗样式 */
+.data-source-trigger-modal {
+  --n-border-radius: 12px;
+}
+
+.data-source-trigger-modal :deep(.n-modal-mask) {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
+
+.data-source-trigger-modal :deep(.n-modal-container) {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.data-source-trigger-modal :deep(.n-card) {
+  background-color: var(--modal-bg) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 8px 32px var(--toolbar-shadow) !important;
+  border: 1px solid var(--modal-border) !important;
+}
+
+.data-source-trigger-modal :deep(.n-card-header) {
+  background-color: var(--modal-header-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid var(--modal-header-border) !important;
+}
+
+.data-source-trigger-modal :deep(.n-card-content) {
+  background-color: var(--modal-content-bg) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  padding: 16px !important;
 }
 
 .renderer-config-modal :deep(.n-modal-container) {

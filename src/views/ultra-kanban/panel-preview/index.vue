@@ -141,7 +141,7 @@ const goBack = () => {
           <NSpace align="center">
             <NButton quaternary circle @click="goBack">
               <template #icon>
-                <icon-material-symbols:arrow-back-outline class="text-20px" />
+                <icon-material-symbols:arrow-back class="text-20px" />
               </template>
             </NButton>
             <div class="panel-title">

@@ -84,30 +84,18 @@
 
           <!-- 数据源配置特殊处理 -->
           <template v-else-if="layer.name === 'dataSource'">
-            <div class="v6-data-config">
-              <!-- V6: 检查组件定义中的dataSources -->
-              <div v-if="componentDefinition?.dataSources?.length > 0" class="v6-data-mapping">
-                <!-- 新的DataSourceConfigForm组件 -->
-                <component
-                  :is="layer.component"
-                  ref="dataSourceFormRef"
-                  :data-sources="enrichedDataSources"
-                  :selected-widget-id="selectedWidget?.id"
-                  v-on="getDataSourceEventListeners()"
-                />
-              </div>
-
-              <!-- 无数据源需求时的提示 -->
-              <div v-else class="no-data-source-hint">
-                <n-empty description="当前组件无需配置数据源" size="small">
-                  <template #icon>
-                    <n-icon><DocumentOutline /></n-icon>
-                  </template>
-                  <template #extra>
-                    <n-text depth="3">组件使用静态配置或预设数据</n-text>
-                  </template>
-                </n-empty>
-              </div>
+            <div class="editor-data-source-config">
+              <!-- 新的编辑器数据源配置组件 -->
+              <component
+                :is="layer.component"
+                ref="editorDataSourceRef"
+                :selected-widget-id="selectedWidget?.id"
+                :component-type="selectedWidget?.type"
+                :data-sources="enrichedDataSources"
+                :readonly="readonly"
+                @update="handleEditorDataSourceUpdate"
+                @request-current-data="handleCurrentDataRequest"
+              />
             </div>
           </template>
 
@@ -294,6 +282,9 @@ const dataMappingConfig = ref<any>({
 
 // DataSourceConfigForm 组件引用
 const dataSourceFormRef = ref<any>(null)
+
+// EditorDataSourceConfig 组件引用
+const editorDataSourceRef = ref<any>(null)
 
 // 配置数据
 const baseConfig = ref({})
@@ -748,6 +739,35 @@ const handleDataSourceConfigUpdate = (config: any) => {
 }
 
 /**
+ * 处理来自 EditorDataSourceConfig 的配置更新
+ */
+const handleEditorDataSourceUpdate = (config: any) => {
+  console.log('🔧 [ConfigurationPanel] 处理编辑器数据源配置更新:', config)
+
+  if (props.selectedWidget) {
+    // 更新数据源配置到配置管理器
+    const enhancedConfig = {
+      type: 'editor-data-source',
+      enabled: true,
+      config: config,
+      metadata: {
+        componentType: props.selectedWidget.type,
+        updatedAt: Date.now(),
+        source: 'editor-data-source-config'
+      }
+    }
+
+    // 更新到本地配置状态
+    dataSourceConfig.value = enhancedConfig
+
+    // 发射配置更新事件
+    emit('multi-data-source-config-update', props.selectedWidget.id, config)
+
+    console.log('🔧 [ConfigurationPanel] 编辑器数据源配置已更新:', enhancedConfig)
+  }
+}
+
+/**
  * 处理当前数据请求 - 🔥 提供运行时数据给配置面板
  */
 const handleCurrentDataRequest = (widgetId: string) => {
@@ -893,6 +913,9 @@ const getLayerProps = (layer: any) => {
     case 'dataSource':
       return {
         ...commonProps,
+        selectedWidgetId: props.selectedWidget?.id || '',
+        componentType: props.selectedWidget?.type,
+        dataSources: enrichedDataSources.value,
         modelValue: dataSourceConfig.value
       }
     case 'interaction':
@@ -1199,5 +1222,22 @@ watch(
 
 .no-data-source-hint {
   padding: 8px;
+}
+
+/* 编辑器数据源配置样式 */
+.editor-data-source-config {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-data-source-config :deep(.n-scrollbar) {
+  flex: 1;
+}
+
+.editor-data-source-config :deep(.n-scrollbar-content) {
+  padding: 8px;
+  min-height: 100%;
 }
 </style>

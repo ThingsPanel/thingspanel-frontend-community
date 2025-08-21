@@ -55,6 +55,11 @@ import {
   createProperty,
   CommonProperties
 } from '@/card2.1/core/property-exposure'
+import {
+  componentDataRequirementsRegistry,
+  createDataRequirement,
+  createDataField
+} from '@/card2.1/core/component-data-requirements'
 
 interface Props extends InteractionProps {
   config?: {
@@ -300,6 +305,188 @@ onMounted(() => {
   ])
 
   propertyExposureRegistry.register(propertyExposure)
+
+  // 🔥 注册组件数据需求声明
+  console.log(`[SimpleTestComponent] 注册数据需求声明 - ${props.componentId}`)
+  const dataRequirement = createDataRequirement('simple-test-component', '简单测试组件', {
+    description: '用于测试和演示基础数据绑定功能的简单组件',
+    category: '测试组件',
+
+    // 🌟 主要数据需求
+    primaryData: {
+      name: 'content',
+      label: '内容文字',
+      description: '组件显示的主要文字内容',
+      type: 'string',
+      required: true,
+      defaultValue: '这是一个简单的测试组件',
+      validation: {
+        maxLength: 200
+      },
+      example: '欢迎使用测试组件',
+      tags: ['primary', 'text', 'display']
+    },
+
+    // 📊 数据字段声明
+    dataFields: [
+      createDataField('title', '组件标题', 'string', {
+        description: '组件的标题文字',
+        required: false,
+        defaultValue: '简单测试组件',
+        example: '数据展示',
+        maxLength: 50,
+        tags: ['title', 'header']
+      }),
+
+      createDataField('buttonText', '按钮文字', 'string', {
+        description: '按钮显示的文字内容',
+        required: false,
+        defaultValue: '测试按钮',
+        example: '点击我',
+        maxLength: 20,
+        tags: ['button', 'action']
+      }),
+
+      createDataField('status', '状态文字', 'string', {
+        description: '组件的状态描述',
+        required: false,
+        defaultValue: '准备就绪',
+        example: '运行中',
+        maxLength: 50,
+        tags: ['status', 'state']
+      }),
+
+      createDataField('clickCount', '点击次数', 'number', {
+        description: '记录按钮的点击次数',
+        required: false,
+        defaultValue: 0,
+        example: 5,
+        validation: {
+          min: 0,
+          max: 9999
+        },
+        tags: ['counter', 'interaction']
+      }),
+
+      createDataField('messages', '消息列表', 'array', {
+        description: '可显示的消息列表',
+        required: false,
+        defaultValue: ['欢迎使用！', '点击按钮试试', '数据更新中...', '运行正常'],
+        itemSchema: {
+          type: 'string',
+          maxLength: 100
+        },
+        example: ['消息1', '消息2', '消息3'],
+        tags: ['messages', 'content']
+      }),
+
+      createDataField('showButton', '显示按钮', 'boolean', {
+        description: '控制是否显示按钮',
+        required: false,
+        defaultValue: true,
+        example: true,
+        tags: ['display', 'control']
+      }),
+
+      createDataField('buttonType', '按钮类型', 'string', {
+        description: '按钮的样式类型',
+        required: false,
+        defaultValue: 'primary',
+        enum: [
+          { label: '主要', value: 'primary' },
+          { label: '次要', value: 'secondary' },
+          { label: '成功', value: 'success' },
+          { label: '警告', value: 'warning' },
+          { label: '危险', value: 'danger' }
+        ],
+        example: 'primary',
+        tags: ['style', 'button']
+      }),
+
+      createDataField('lastUpdate', '最后更新时间', 'date', {
+        description: '数据的最后更新时间',
+        required: false,
+        defaultValue: new Date(),
+        example: '2024-01-01T12:00:00Z',
+        tags: ['timestamp', 'metadata']
+      }),
+
+      createDataField('config', '配置对象', 'object', {
+        description: '组件的配置参数',
+        required: false,
+        defaultValue: {},
+        example: {
+          theme: 'light',
+          animation: true,
+          autoUpdate: false
+        },
+        tags: ['config', 'settings']
+      })
+    ],
+
+    // 🔄 数据更新配置
+    updateConfig: {
+      // 支持的触发方式
+      supportedTriggers: ['timer', 'websocket', 'manual', 'event'],
+
+      // 推荐的更新间隔（毫秒）
+      recommendedInterval: 3000,
+
+      // 最小更新间隔（毫秒）
+      minInterval: 1000,
+
+      // 数据验证规则
+      validation: {
+        requiredFields: ['content'],
+        stringFields: ['title', 'content', 'buttonText', 'status'],
+        numericFields: ['clickCount'],
+        booleanFields: ['showButton'],
+        enumFields: [{ field: 'buttonType', values: ['primary', 'secondary', 'success', 'warning', 'danger'] }]
+      }
+    },
+
+    // 🎯 使用场景和示例
+    useCases: [
+      {
+        name: '基础测试',
+        description: '测试基本的数据绑定和更新功能',
+        exampleData: {
+          title: '测试组件',
+          content: '这是测试内容',
+          buttonText: '点击测试',
+          status: '准备就绪',
+          showButton: true,
+          buttonType: 'primary'
+        }
+      },
+      {
+        name: '动态内容展示',
+        description: '展示动态变化的内容和状态',
+        exampleData: {
+          title: '动态内容',
+          content: '内容将定期更新',
+          status: '更新中',
+          messages: ['消息1', '消息2', '消息3'],
+          lastUpdate: new Date()
+        }
+      },
+      {
+        name: '交互测试',
+        description: '测试用户交互和事件处理',
+        exampleData: {
+          title: '交互测试',
+          content: '点击按钮进行测试',
+          buttonText: '开始测试',
+          clickCount: 0,
+          showButton: true,
+          buttonType: 'success'
+        }
+      }
+    ]
+  })
+
+  componentDataRequirementsRegistry.register(dataRequirement)
+  console.log(`[SimpleTestComponent] 数据需求声明注册完成 - ${props.componentId}`)
 
   // 混入已自动处理交互管理器的注册和监听
 })

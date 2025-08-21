@@ -8,6 +8,8 @@ import type { ComponentDefinition } from '../core/types'
 // 导入组件定义
 import simpleTestComponentDefinition from './simple-test-component'
 import dataDisplayCardDefinition from './data-display-card'
+import iotDeviceStatusCardDefinition from './iot-device-status-card'
+import realtimeChartCardDefinition from './realtime-chart-card'
 
 // ============ 组件注册表 ============
 
@@ -20,7 +22,13 @@ export const Card2Components: Record<string, ComponentDefinition[]> = {
   测试: [simpleTestComponentDefinition],
 
   // 数据展示分类
-  展示: [dataDisplayCardDefinition]
+  展示: [dataDisplayCardDefinition],
+
+  // IoT设备分类
+  IoT设备: [iotDeviceStatusCardDefinition],
+
+  // 图表可视化分类
+  图表可视化: [realtimeChartCardDefinition]
 }
 
 /**
@@ -29,7 +37,9 @@ export const Card2Components: Record<string, ComponentDefinition[]> = {
  */
 export const Card2ComponentMap: Record<string, ComponentDefinition> = {
   'simple-test-component': simpleTestComponentDefinition,
-  'data-display-card': dataDisplayCardDefinition
+  'data-display-card': dataDisplayCardDefinition,
+  'iot-device-status-card': iotDeviceStatusCardDefinition,
+  'realtime-chart-card': realtimeChartCardDefinition
 }
 
 /**
@@ -112,6 +122,8 @@ export const ComponentStats = {
 // 单独导出各组件定义（保持向后兼容）
 export { default as simpleTestComponentDefinition } from './simple-test-component'
 export { default as dataDisplayCardDefinition } from './data-display-card'
+export { default as iotDeviceStatusCardDefinition } from './iot-device-status-card'
+export { default as realtimeChartCardDefinition } from './realtime-chart-card'
 
 // 默认导出主要接口
 export default {

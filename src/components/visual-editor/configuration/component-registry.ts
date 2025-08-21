@@ -11,6 +11,8 @@ import BaseConfigForm from '../renderers/base/BaseConfigForm.vue'
 import ComponentConfigForm from '../renderers/base/ComponentConfigForm.vue'
 // 导入新的卡片式交互配置组件（来自核心交互系统）
 import InteractionCardWizard from '@/core/interaction-system/components/InteractionCardWizard.vue'
+// 导入编辑器数据源配置组件
+import EditorDataSourceConfig from './components/EditorDataSourceConfig.vue'
 
 export interface ConfigLayerDefinition {
   /** 配置层级名称 */
@@ -48,12 +50,20 @@ export const configLayerRegistry: Record<string, ConfigLayerDefinition> = {
     order: 2,
     description: '组件特有配置（由各组件自定义）'
   },
+  dataSource: {
+    name: 'dataSource',
+    label: 'config.tabs.dataSource',
+    component: EditorDataSourceConfig,
+    visible: true,
+    order: 3,
+    description: '数据源配置（API、WebSocket、静态数据等数据源管理）'
+  },
   interaction: {
     name: 'interaction',
     label: 'config.tabs.interaction',
     component: InteractionCardWizard,
     visible: true,
-    order: 3,
+    order: 4,
     description: '组件交互配置（卡片式简洁界面，点击、悬停等交互效果）'
   }
 }

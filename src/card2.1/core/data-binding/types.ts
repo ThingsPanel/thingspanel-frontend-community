@@ -7,14 +7,22 @@
 
 /**
  * 数据字段类型定义
+ * 扩展支持更多类型以兼容新的数据需求系统
  */
-export type DataFieldType = 'value' | 'object' | 'array'
-export type ValueDataType = 'number' | 'string' | 'boolean' | 'any'
+export type DataFieldType = 'value' | 'object' | 'array' | 'string' | 'number' | 'boolean' | 'date'
+export type ValueDataType = 'number' | 'string' | 'boolean' | 'date' | 'any'
 
 /**
  * 数据字段需求定义
+ * 扩展接口以支持更丰富的字段定义
  */
 export interface DataFieldRequirement {
+  /** 字段名称 */
+  name: string
+
+  /** 字段标签 */
+  label: string
+
   /** 数据字段类型 */
   type: DataFieldType
 
@@ -38,6 +46,21 @@ export interface DataFieldRequirement {
 
   /** 验证规则 */
   validation?: DataValidationRule
+
+  /** 枚举选项（用于下拉选择等） */
+  enum?: Array<{ label: string; value: any; description?: string }>
+
+  /** 数组项模式（当 type 为 'array' 时） */
+  itemSchema?: any
+
+  /** 字段标签 */
+  tags?: string[]
+
+  /** 字段分组 */
+  group?: string
+
+  /** 扩展元数据 */
+  metadata?: Record<string, any>
 }
 
 /**
@@ -83,19 +106,57 @@ export interface DataRelationship {
 
 /**
  * 组件数据需求完整定义
+ * 扩展以支持更丰富的组件定义
  */
 export interface ComponentDataRequirement {
-  /** 数据字段需求 */
-  fields: Record<string, DataFieldRequirement>
+  /** 组件类型 */
+  componentType: string
 
-  /** 数据关系定义 */
-  relationships?: Record<string, DataRelationship>
+  /** 组件显示名称 */
+  displayName: string
+
+  /** 组件描述 */
+  description: string
+
+  /** 组件分类 */
+  category?: string
 
   /** 需求版本（用于兼容性） */
   version?: string
 
-  /** 需求描述 */
-  description?: string
+  /** 主要数据字段 */
+  primaryData: DataFieldRequirement
+
+  /** 数据字段需求列表 */
+  dataFields: DataFieldRequirement[]
+
+  /** 数据关系定义 */
+  relationships?: DataRelationship[]
+
+  /** 数据更新配置 */
+  updateConfig?: {
+    supportedTriggers: string[]
+    recommendedInterval?: number
+    minInterval?: number
+    validation?: any
+  }
+
+  /** 使用场景 */
+  useCases?: Array<{
+    name: string
+    description: string
+    exampleData: Record<string, any>
+  }>
+
+  /** 组件标签 */
+  tags?: string[]
+
+  /** 扩展元数据 */
+  metadata?: Record<string, any>
+
+  // 保持向后兼容
+  /** @deprecated 使用 dataFields 替代 */
+  fields?: Record<string, DataFieldRequirement>
 }
 
 // ========== 数据源定义 ==========

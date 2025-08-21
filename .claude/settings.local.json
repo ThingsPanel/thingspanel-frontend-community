@@ -31,7 +31,8 @@
       "Bash(npx eslint:*)",
       "Bash(pkill:*)",
       "Bash(true)",
-      "Bash(npm run typecheck:*)"
+      "Bash(npm run typecheck:*)",
+      "Bash(pnpm build:*)"
     ],
     "deny": [],
     "additionalDirectories": [

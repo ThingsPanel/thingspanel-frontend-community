@@ -21,6 +21,7 @@ import type { RendererType, VisualEditorWidget, GraphData } from './types'
 
 import { useVisualEditorIntegration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import { interactionManager } from '@/card2.1/core/interaction-manager'
+import { editorDataSourceManager } from './core/EditorDataSourceManager'
 
 // 初始化 Card 2.1 集成
 useVisualEditorIntegration({
@@ -995,6 +996,83 @@ watch(
   { deep: true }
 )
 
+/**
+ * 监听组件节点变化，自动同步数据源管理器
+ */
+watch(
+  () => stateManager.nodes,
+  (newNodes, oldNodes) => {
+    if (!editorDataSourceManager.isInitialized()) return
+
+    // 处理新增的组件
+    const newNodeIds = newNodes.map(n => n.id)
+    const oldNodeIds = oldNodes?.map(n => n.id) || []
+
+    // 注册新增的组件
+    const addedNodeIds = newNodeIds.filter(id => !oldNodeIds.includes(id))
+    addedNodeIds.forEach(async nodeId => {
+      const node = newNodes.find(n => n.id === nodeId)
+      if (node) {
+        console.log(`🔧 [PanelEditor] 自动注册新组件到数据源管理器: ${nodeId}`)
+        try {
+          await editorDataSourceManager.registerComponent(nodeId, {
+            type: node.type || 'unknown',
+            name: node.title || node.id,
+            dataSources: multiDataSourceConfigStore.value[nodeId] || {},
+            dataRequirements: node.dataRequirements || {}
+          })
+        } catch (error) {
+          console.error(`❌ [PanelEditor] 注册组件 ${nodeId} 失败:`, error)
+        }
+      }
+    })
+
+    // 注销移除的组件
+    const removedNodeIds = oldNodeIds.filter(id => !newNodeIds.includes(id))
+    removedNodeIds.forEach(async nodeId => {
+      console.log(`🗑️ [PanelEditor] 从数据源管理器注销组件: ${nodeId}`)
+      try {
+        await editorDataSourceManager.unregisterComponent(nodeId)
+      } catch (error) {
+        console.error(`❌ [PanelEditor] 注销组件 ${nodeId} 失败:`, error)
+      }
+    })
+  },
+  { deep: true }
+)
+
+/**
+ * 同步现有组件的数据源配置到编辑器数据源管理器
+ */
+const syncDataSourceConfigs = async () => {
+  console.log('🔄 [PanelEditor] 同步组件数据源配置...')
+
+  try {
+    // 遍历所有节点，检查是否有数据源配置
+    for (const node of stateManager.nodes) {
+      if (node && node.id) {
+        // 检查是否存在多数据源配置
+        const multiConfig = multiDataSourceConfigStore.value[node.id]
+        if (multiConfig && Object.keys(multiConfig).length > 0) {
+          console.log(`🔧 [PanelEditor] 为组件 ${node.id} 注册数据源配置:`, multiConfig)
+
+          // 注册组件到数据源管理器
+          await editorDataSourceManager.registerComponent(node.id, {
+            type: node.type || 'unknown',
+            name: node.title || node.id,
+            dataSources: multiConfig,
+            dataRequirements: node.dataRequirements || {}
+          })
+        }
+      }
+    }
+
+    console.log('✅ [PanelEditor] 数据源配置同步完成')
+  } catch (error) {
+    console.error('❌ [PanelEditor] 数据源配置同步失败:', error)
+  }
+}
+
 // 学习 PanelManage 的 onMounted 写法
 onMounted(async () => {
   // 初始化时同步预览模式状态
@@ -1006,6 +1084,20 @@ onMounted(async () => {
   // 面板数据加载完成后，检查多数据源配置状态
   await nextTick() // 确保DOM更新完成
   restoreMultiDataSourceConfigs() // 现在只做状态检查
+
+  // 初始化编辑器数据源管理器
+  console.log('🔧 [PanelEditor] 初始化编辑器数据源管理器...')
+  try {
+    await editorDataSourceManager.initialize()
+    console.log('✅ [PanelEditor] 编辑器数据源管理器初始化成功')
+
+    // 为现有组件注册数据源配置（如果有的话）
+    if (stateManager?.nodes?.length > 0) {
+      await syncDataSourceConfigs()
+    }
+  } catch (error) {
+    console.error('❌ [PanelEditor] 编辑器数据源管理器初始化失败:', error)
+  }
 
   // 发出状态管理器就绪事件，供上层组件使用
   emit('state-manager-ready', stateManager)
@@ -1145,6 +1237,15 @@ onUnmounted(() => {
   // 清理定时器
   if (selectedWidgetTimer) {
     clearTimeout(selectedWidgetTimer)
+  }
+
+  // 清理编辑器数据源管理器
+  console.log('🧹 [PanelEditor] 清理编辑器数据源管理器...')
+  try {
+    editorDataSourceManager.cleanup()
+    console.log('✅ [PanelEditor] 编辑器数据源管理器清理完成')
+  } catch (error) {
+    console.error('❌ [PanelEditor] 编辑器数据源管理器清理失败:', error)
   }
 })
 </script>
