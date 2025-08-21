@@ -236,11 +236,24 @@
             </n-text>
             <n-text depth="3">{{ $t('dataSource.trigger.stats.active') }}: {{ activeDataSourcesCount }}</n-text>
             <n-text depth="3">{{ $t('dataSource.trigger.stats.errors') }}: {{ errorDataSourcesCount }}</n-text>
+            <n-divider vertical />
+            <n-text depth="3">全局轮询: {{ pollingStatistics.totalTasks }} 任务</n-text>
+            <n-text depth="3">总执行: {{ pollingStatistics.totalExecutions }} 次</n-text>
           </n-space>
-          <n-text depth="3">
-            {{ $t('dataSource.trigger.stats.lastUpdate') }}:
-            <n-time :time="lastUpdateTime" format="HH:mm:ss" />
-          </n-text>
+          <n-space align="center" :size="8">
+            <n-tag :type="pollingStatistics.globalTimerActive ? 'success' : 'default'" size="small" round>
+              <template #icon>
+                <n-icon>
+                  <component :is="pollingStatistics.globalTimerActive ? CheckmarkCircleOutline : TimeOutline" />
+                </n-icon>
+              </template>
+              {{ pollingStatistics.globalTimerActive ? '全局定时器运行中' : '全局定时器停止' }}
+            </n-tag>
+            <n-text depth="3">
+              {{ $t('dataSource.trigger.stats.lastUpdate') }}:
+              <n-time :time="lastUpdateTime" format="HH:mm:ss" />
+            </n-text>
+          </n-space>
         </n-space>
       </template>
     </n-card>
@@ -270,19 +283,26 @@ import {
   TimeOutline
 } from '@vicons/ionicons5'
 
-// 导入数据源管理器
+// 导入数据源管理器和全局轮询管理器
 import { editorDataSourceManager, DataSourceStatus } from '../core/EditorDataSourceManager'
 import type { ComponentDataSourceConfig } from '../core/EditorDataSourceManager'
+import { useGlobalPollingManager } from '../core/GlobalPollingManager'
 
 // 国际化和主题
 const { t } = useI18n()
 const themeStore = useThemeStore()
+
+// 全局轮询管理器
+const globalPollingManager = useGlobalPollingManager()
 
 // 响应式状态
 const componentsWithDataSources = ref<ComponentDataSourceConfig[]>([])
 const bulkOperationLoading = ref(false)
 const refreshLoading = ref(false)
 const lastUpdateTime = ref(Date.now())
+
+// 轮询任务统计
+const pollingStatistics = computed(() => globalPollingManager.getStatistics())
 
 // 定时刷新器
 let refreshTimer: NodeJS.Timeout | null = null

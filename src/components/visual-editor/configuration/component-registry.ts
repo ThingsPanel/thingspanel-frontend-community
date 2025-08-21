@@ -12,7 +12,7 @@ import ComponentConfigForm from '../renderers/base/ComponentConfigForm.vue'
 // 导入新的卡片式交互配置组件（来自核心交互系统）
 import InteractionCardWizard from '@/core/interaction-system/components/InteractionCardWizard.vue'
 // 导入编辑器数据源配置组件
-import EditorDataSourceConfig from './components/EditorDataSourceConfig.vue'
+import DataSourceConfigForm from '@/core/data-source-system/components/DataSourceConfigForm.vue'
 
 export interface ConfigLayerDefinition {
   /** 配置层级名称 */
@@ -53,7 +53,7 @@ export const configLayerRegistry: Record<string, ConfigLayerDefinition> = {
   dataSource: {
     name: 'dataSource',
     label: 'config.tabs.dataSource',
-    component: EditorDataSourceConfig,
+    component: DataSourceConfigForm,
     visible: true,
     order: 3,
     description: '数据源配置（API、WebSocket、静态数据等数据源管理）'

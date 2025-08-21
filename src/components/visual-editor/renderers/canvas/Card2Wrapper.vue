@@ -21,6 +21,7 @@
       :allow-external-control="props.allowExternalControl"
       :interaction-permissions="props.interactionPermissions"
       :preview-mode="props.previewMode"
+      v-bind="getComponentSpecificProps()"
     />
   </div>
 </template>
@@ -36,6 +37,8 @@ import { interactionManager } from '@/card2.1/core/interaction-manager'
 import { NAlert } from 'naive-ui'
 import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import type { DataSourceValue } from '../../types/data-source'
+// 🔥 新增：导入组件执行器管理器
+import { componentExecutorManager } from '@/core/data-source-system/managers/ComponentExecutorManager'
 
 interface Props {
   componentType: string
@@ -65,6 +68,10 @@ const errorMessage = ref('')
 const componentToRender = shallowRef<Component | null>(null)
 const dataSourceValue = ref<DataSourceValue | null>(null)
 let currentSubscriberId: (() => void) | null = null
+
+// 🔥 新增：从ComponentExecutorManager获取的执行数据
+const executorData = ref<Record<string, any>>({})
+let executorDataCleanup: (() => void) | null = null
 
 // 🔥 组件实例引用，用于触发属性变化事件
 const currentComponentRef = ref<any>(null)
@@ -210,6 +217,12 @@ onBeforeUnmount(() => {
     currentSubscriberId() // 调用取消订阅函数
     currentSubscriberId = null
   }
+
+  // 🔥 新增：清理执行器数据监听器
+  if (executorDataCleanup) {
+    executorDataCleanup()
+    executorDataCleanup = null
+  }
 })
 
 /**
@@ -266,6 +279,12 @@ const extractComponentConfig = () => {
   if (interactionState) {
     console.log('[INTERACTION-DEBUG] 应用交互状态更新:', interactionState)
     configData = { ...configData, ...interactionState }
+  }
+
+  // 🔥 修复：合并dataSourcesConfig中的dataSourceBindings
+  if (props.dataSourcesConfig && props.dataSourcesConfig.dataSourceBindings) {
+    console.log('[INTERACTION-DEBUG] 合并数据源绑定配置:', props.dataSourcesConfig.dataSourceBindings)
+    configData = { ...configData, dataSourceBindings: props.dataSourcesConfig.dataSourceBindings }
   }
 
   console.log('[INTERACTION-DEBUG] 最终配置:', configData)
@@ -388,6 +407,28 @@ const getDataSourcesForComponent = () => {
   return null
 }
 
+// 🔥 新增：获取组件特定的props
+const getComponentSpecificProps = () => {
+  const specificProps: Record<string, any> = {}
+
+  // 如果是dual-data-display组件，转换执行器数据为组件期望的props格式
+  if (props.componentType === 'dual-data-display') {
+    console.log('🔥 [Card2Wrapper] 为dual-data-display组件处理数据:', executorData.value)
+
+    // 从执行器数据中提取dataSource1和dataSource2
+    if (executorData.value.dataSource1) {
+      specificProps.dataSource1 = executorData.value.dataSource1
+    }
+    if (executorData.value.dataSource2) {
+      specificProps.dataSource2 = executorData.value.dataSource2
+    }
+
+    console.log('🔥 [Card2Wrapper] dual-data-display特定props:', specificProps)
+  }
+
+  return specificProps
+}
+
 // 辅助函数：设置嵌套属性
 function setNestedProperty(obj: any, path: string, value: any) {
   const keys = path.split('.')
@@ -428,6 +469,17 @@ onMounted(() => {
   if (!componentToRender.value) {
     loadComponent()
   }
+
+  // 🔥 新增：监听ComponentExecutorManager的数据更新
+  executorDataCleanup = componentExecutorManager.onDataUpdate((componentId, data) => {
+    if (componentId === props.nodeId) {
+      console.log('🔥 [Card2Wrapper] 接收到执行器数据更新:', componentId, data)
+      executorData.value = { ...data }
+
+      // 强制重新渲染组件以应用新数据
+      forceUpdateKey.value = Date.now()
+    }
+  })
 
   // 🔥 监听组件状态更新事件
   const handleStateUpdate = (event: CustomEvent) => {

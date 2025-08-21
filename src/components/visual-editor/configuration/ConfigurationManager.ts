@@ -68,6 +68,13 @@ export class ConfigurationManager implements IConfigurationManager {
       return null
     }
 
+    // 🔍 [DEBUG-配置仓库] 打印读取到的配置对象
+    console.log('🔍 [DEBUG-配置仓库] 读取配置:', {
+      widgetId,
+      hasConfig: !!config,
+      fullConfig: config ? JSON.parse(JSON.stringify(config)) : null
+    })
+
     // 返回配置的副本，避免外部直接修改
     return this.deepClone(config)
   }
@@ -135,6 +142,13 @@ export class ConfigurationManager implements IConfigurationManager {
     this.configurations.set(widgetId, updatedConfig)
 
     console.log(`[ConfigurationManager] 配置部分已更新: ${widgetId}.${section}`)
+    // 🔍 [DEBUG-配置仓库] 打印整个配置对象
+    console.log('🔍 [DEBUG-配置仓库] 配置保存后的完整对象:', {
+      widgetId,
+      section,
+      fullConfig: JSON.parse(JSON.stringify(updatedConfig)),
+      updatedSection: JSON.parse(JSON.stringify(config))
+    })
 
     // 触发监听器
     this.notifyListeners(widgetId, updatedConfig)

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { useDialog, useMessage, NDrawer, NDrawerContent } from 'naive-ui'
 import { useFullscreen } from '@vueuse/core'
 import { useAppStore } from '@/store/modules/app'
@@ -22,6 +22,16 @@ import type { RendererType, VisualEditorWidget, GraphData } from './types'
 import { useVisualEditorIntegration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import { interactionManager } from '@/card2.1/core/interaction-manager'
 import { editorDataSourceManager } from './core/EditorDataSourceManager'
+
+// 🔥 提供EditorDataSourceManager给子组件
+provide('editorDataSourceManager', editorDataSourceManager)
+
+// 🔥 组件执行器注册表
+const componentExecutorRegistry = ref(new Map<string, () => Promise<void>>())
+provide('componentExecutorRegistry', componentExecutorRegistry.value)
+
+// 🔥 将组件执行器注册表传递给EditorDataSourceManager
+editorDataSourceManager.setComponentExecutorRegistry(componentExecutorRegistry.value)
 
 // 初始化 Card 2.1 集成
 useVisualEditorIntegration({
@@ -79,7 +89,7 @@ const { isFullscreen, toggle } = useFullscreen(fullui)
 
 // 创建编辑器上下文
 const editorContext = createEditor()
-const { stateManager, addWidget, selectNode } = editorContext
+const { stateManager, addWidget, selectNode, updateNode } = editorContext
 const { setPreviewMode, isPreviewMode } = usePreviewMode()
 
 const selectedWidget = computed<VisualEditorWidget | null>(() => {
@@ -106,10 +116,6 @@ watch(
       // 只有当组件真正不同时才更新selectedNodeId
       if (newWidget?.id !== oldWidget?.id) {
         selectedNodeId.value = newWidget?.id || ''
-        console.log('🔧 PanelEditor - 选中组件变化:', {
-          oldId: oldWidget?.id,
-          newId: newWidget?.id
-        })
       }
     }, 100)
   },
@@ -118,16 +124,23 @@ watch(
 
 // 状态管理辅助方法
 const setState = (config: any) => {
-  console.log('🔄 设置编辑器状态:', config)
-
+  console.log('🔄 setState - 开始恢复状态:', {
+    hasNodes: !!config.nodes,
+    nodesCount: config.nodes?.length || 0,
+    hasComponentConfigurations: !!config.componentConfigurations,
+    configsCount: config.componentConfigurations ? Object.keys(config.componentConfigurations).length : 0
+  })
+  
   // 重置状态
   stateManager.reset()
 
   // 加载节点
   if (config.nodes && Array.isArray(config.nodes)) {
+    console.log('🔄 setState - 加载节点数量:', config.nodes.length)
     config.nodes.forEach((node: any) => {
       stateManager.addNode(node as GraphData)
     })
+    console.log('🔄 setState - 节点加载完成，当前节点数:', stateManager.nodes.length)
   }
 
   // 加载视口设置
@@ -151,11 +164,6 @@ const setState = (config: any) => {
 
   // 恢复编辑状态（可选，通常不保存编辑状态）
   if (config.isEditing !== undefined) {
-    console.log('🔄 setState - 设置编辑状态:', {
-      oldIsEditing: isEditing.value,
-      newIsEditing: config.isEditing,
-      willSetPreviewMode: !config.isEditing
-    })
     isEditing.value = config.isEditing
     // 同步全局预览模式状态
     setPreviewMode(!config.isEditing)
@@ -222,13 +230,6 @@ const getState = () => {
         const multiDataSourceConfig = multiDataSourceConfigStore.value[nodeId]
 
         if (multiDataSourceConfig) {
-          console.log(`🔍 getState - 检查multiDataSourceConfig: ${nodeId}`, {
-            configExists: !!multiDataSourceConfig,
-            configType: typeof multiDataSourceConfig,
-            configKeys: Object.keys(multiDataSourceConfig),
-            fullConfig: multiDataSourceConfig
-          })
-
           // 将多数据源配置合并到 dataSource 字段中
           const enhancedConfig = {
             ...config,
@@ -244,22 +245,21 @@ const getState = () => {
             }
           }
           componentConfigurations[nodeId] = enhancedConfig
-          console.log(`💾 getState - 集成多数据源配置: ${nodeId}`, multiDataSourceConfig)
         } else {
           componentConfigurations[nodeId] = config
         }
       }
     }
-    console.log('💾 getState - 收集到的组件配置:', Object.keys(componentConfigurations))
-    console.log('💾 getState - multiDataSourceConfigStore 状态:', {
-      storeKeys: Object.keys(multiDataSourceConfigStore.value),
-      totalConfigs: Object.keys(multiDataSourceConfigStore.value).length
-    })
+    console.log('💾 保存状态 - 节点数量:', stateManager.nodes.length)
+    console.log('💾 保存状态 - 组件配置数量:', Object.keys(componentConfigurations).length)
+    if (stateManager.nodes.length > 0) {
+      console.log('💾 保存状态 - 第一个组件:', stateManager.nodes[0])
+    }
   } catch (error) {
     console.error('💾 getState - 收集组件配置失败:', error)
   }
 
-  return {
+  const finalState = {
     nodes: stateManager.nodes,
     canvasConfig: editorConfig.value.canvasConfig || {},
     gridConfig: editorConfig.value.gridConfig || {},
@@ -281,6 +281,14 @@ const getState = () => {
     // 🔥 关键修复：包含所有组件的配置数据
     componentConfigurations: componentConfigurations
   }
+  
+  console.log('💾 最终保存状态:', {
+    nodesCount: finalState.nodes.length,
+    configsCount: Object.keys(finalState.componentConfigurations).length,
+    renderer: finalState.currentRenderer
+  })
+  
+  return finalState
 }
 
 // 获取面板数据 - 学习 fetchBroad 的写法
@@ -295,6 +303,7 @@ const fetchBoard = async () => {
     if (data) {
       panelData.value = data
       console.log('📊 获取面板数据成功:', data)
+      console.log('📊 配置原始数据:', data.config)
 
       if (data.config) {
         console.log('📝 解析现有配置:', data.config)
@@ -692,41 +701,18 @@ const handleToggleWidgetTitles = (value: boolean) => {
 }
 
 const handleGridConfigChange = (newGridConfig: any) => {
-  console.log('🔧 PanelEditor - 网格配置变更:', {
-    oldConfig: editorConfig.value.gridConfig,
-    newConfig: newGridConfig
-  })
-
   editorConfig.value.gridConfig = { ...editorConfig.value.gridConfig, ...newGridConfig }
   hasChanges.value = true
-
-  console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.gridConfig)
-  console.log('🔧 PanelEditor - 当前完整配置:', editorConfig.value)
 }
 
 const handleGridstackConfigChange = (newGridConfig: any) => {
-  console.log('🔧 PanelEditor - 工具栏网格配置变更:', {
-    oldConfig: editorConfig.value.gridConfig,
-    newConfig: newGridConfig
-  })
-
   editorConfig.value.gridConfig = { ...editorConfig.value.gridConfig, ...newGridConfig }
   hasChanges.value = true
-
-  console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.gridConfig)
-  console.log('🔧 PanelEditor - 当前完整配置:', editorConfig.value)
 }
 
 const handleCanvasConfigChange = (newCanvasConfig: any) => {
-  console.log('🔧 PanelEditor - 画布配置变更:', {
-    oldConfig: editorConfig.value.canvasConfig,
-    newConfig: newCanvasConfig
-  })
-
   editorConfig.value.canvasConfig = { ...editorConfig.value.canvasConfig, ...newCanvasConfig }
   hasChanges.value = true
-
-  console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.canvasConfig)
 }
 
 // 交互测试方法已迁移到上层组件 visual-editor-details/index.vue
@@ -735,53 +721,24 @@ const handleCanvasConfigChange = (newCanvasConfig: any) => {
  * 处理多数据源数据更新
  */
 const handleMultiDataSourceUpdate = (widgetId: string, dataSources: Record<string, any>) => {
-  console.log(`🔧 PanelEditor - 多数据源数据更新: ${widgetId}`, dataSources)
-
   // 存储数据源数据
   multiDataSourceStore.value[widgetId] = dataSources
 
   // 标记有变化
   hasChanges.value = true
-
-  console.log(`✅ PanelEditor - 多数据源数据已存储:`, multiDataSourceStore.value)
 }
 
 /**
  * 处理多数据源配置更新
  */
 const handleMultiDataSourceConfigUpdate = (widgetId: string, config: any) => {
-  console.log(`🔧 [DEBUG-Config] 多数据源配置更新:`, {
-    widgetId,
-    hasDataSourceBindings: !!config.dataSourceBindings,
-    bindingKeys: config.dataSourceBindings ? Object.keys(config.dataSourceBindings) : [],
-    config
-  })
-
   // 🔍 详细调试存储前后的数据
-  console.log(`🔍 [Store-Before] 存储前的 multiDataSourceConfigStore:`, {
-    beforeKeys: Object.keys(multiDataSourceConfigStore.value),
-    beforeData: multiDataSourceConfigStore.value[widgetId]
-  })
 
   // 存储配置信息
   multiDataSourceConfigStore.value[widgetId] = config
 
-  console.log(`🔍 [Store-After] 存储后的 multiDataSourceConfigStore:`, {
-    afterKeys: Object.keys(multiDataSourceConfigStore.value),
-    afterData: multiDataSourceConfigStore.value[widgetId],
-    isDataCorrect:
-      !!multiDataSourceConfigStore.value[widgetId]?.dataSourceBindings &&
-      Object.keys(multiDataSourceConfigStore.value[widgetId].dataSourceBindings).length > 0
-  })
-
   // 标记有变化
   hasChanges.value = true
-
-  console.log(`🔧 [DEBUG-Config] 配置存储完成:`, {
-    widgetId,
-    storeKeys: Object.keys(multiDataSourceConfigStore.value),
-    totalConfigs: Object.keys(multiDataSourceConfigStore.value).length
-  })
 }
 
 /**
@@ -789,14 +746,10 @@ const handleMultiDataSourceConfigUpdate = (widgetId: string, config: any) => {
  * 提供组件当前运行时数据给配置面板，实现内存数据优先原则
  */
 const handleRequestCurrentData = (widgetId: string) => {
-  console.log('🔄 [PanelEditor] 处理当前数据请求:', widgetId)
-
   // 获取当前运行时配置数据
   const currentConfig = multiDataSourceConfigStore.value[widgetId]
 
   if (currentConfig) {
-    console.log('✅ [PanelEditor] 提供当前运行时配置数据:', currentConfig)
-
     // 通过 ConfigurationManager 临时更新配置，让配置面板可以获取到
     const tempDataSourceConfig = {
       type: 'data-mapping',
@@ -812,10 +765,91 @@ const handleRequestCurrentData = (widgetId: string) => {
 
     // 临时更新 ConfigurationManager 中的数据源配置
     configurationManager.updateConfiguration(widgetId, 'dataSource', tempDataSourceConfig)
-
-    console.log('🔄 [PanelEditor] 已更新 ConfigurationManager 为当前运行时数据')
   } else {
-    console.log('ℹ️ [PanelEditor] 没有找到当前运行时配置数据，将使用默认数据')
+  }
+}
+
+/**
+ * 🔥 新增：处理数据源管理器更新事件
+ * 从配置面板接收数据源配置更新，并同步到编辑器数据源管理器
+ */
+const handleDataSourceManagerUpdate = (updateData: {
+  componentId: string
+  componentType: string
+  config: any
+  action: 'update' | 'delete'
+}) => {
+  try {
+    const { componentId, componentType, config, action } = updateData
+
+    // 🔥 防护：确保编辑器数据源管理器已初始化且组件存在
+    if (!editorDataSourceManager.isInitialized()) {
+      console.warn('⚠️ [PanelEditor] 编辑器数据源管理器未初始化，跳过更新')
+      return
+    }
+
+    // 🔥 防护：确保组件节点存在
+    const componentNode = stateManager.nodes.find(n => n.id === componentId)
+    if (!componentNode) {
+      console.warn(`⚠️ [PanelEditor] 组件节点不存在: ${componentId}，跳过数据源配置`)
+      return
+    }
+
+    // 🔥 防护：检查配置是否有效
+    if (
+      action === 'update' &&
+      (!config || !config.dataSourceBindings || Object.keys(config.dataSourceBindings).length === 0)
+    ) {
+      return
+    }
+
+    if (action === 'update') {
+      // 更新编辑器数据源管理器
+
+      // 先检查组件是否已注册
+      const existingConfig = editorDataSourceManager.getComponentConfig(componentId)
+
+      if (existingConfig) {
+        // 组件已存在，先删除再重新注册来实现更新
+        editorDataSourceManager.removeComponentDataSource(componentId)
+        editorDataSourceManager.registerComponentDataSource(
+          componentId,
+          componentType,
+          config,
+          { type: 'timer', interval: 30000 } // 默认30秒轮询
+        )
+      } else {
+        // 组件不存在，新注册
+        editorDataSourceManager.registerComponentDataSource(
+          componentId,
+          componentType,
+          config,
+          { type: 'timer', interval: 30000 } // 默认30秒轮询
+        )
+      }
+
+      // 同步到本地配置存储
+      if (config.dataSourceBindings && Object.keys(config.dataSourceBindings).length > 0) {
+        multiDataSourceConfigStore.value[componentId] = config
+      }
+    } else if (action === 'delete') {
+      // 删除数据源配置
+      editorDataSourceManager.removeComponentDataSource(componentId)
+
+      // 清理本地存储
+      delete multiDataSourceConfigStore.value[componentId]
+      delete multiDataSourceStore.value[componentId]
+    }
+
+    // 标记有变化
+    hasChanges.value = true
+  } catch (error) {
+    console.error('❌ [PanelEditor] 数据源管理器更新失败:', error)
+
+    // 🔥 防护：错误时不要影响整体流程，只记录错误
+    if (process.env.NODE_ENV === 'development') {
+      console.error('详细错误信息:', error)
+    }
   }
 }
 
@@ -1013,7 +1047,6 @@ watch(
     addedNodeIds.forEach(async nodeId => {
       const node = newNodes.find(n => n.id === nodeId)
       if (node) {
-        console.log(`🔧 [PanelEditor] 自动注册新组件到数据源管理器: ${nodeId}`)
         try {
           await editorDataSourceManager.registerComponent(nodeId, {
             type: node.type || 'unknown',
@@ -1030,9 +1063,8 @@ watch(
     // 注销移除的组件
     const removedNodeIds = oldNodeIds.filter(id => !newNodeIds.includes(id))
     removedNodeIds.forEach(async nodeId => {
-      console.log(`🗑️ [PanelEditor] 从数据源管理器注销组件: ${nodeId}`)
       try {
-        await editorDataSourceManager.unregisterComponent(nodeId)
+        await editorDataSourceManager.removeComponentDataSource(nodeId)
       } catch (error) {
         console.error(`❌ [PanelEditor] 注销组件 ${nodeId} 失败:`, error)
       }
@@ -1044,9 +1076,228 @@ watch(
 /**
  * 同步现有组件的数据源配置到编辑器数据源管理器
  */
-const syncDataSourceConfigs = async () => {
-  console.log('🔄 [PanelEditor] 同步组件数据源配置...')
+/**
+ * 设置数据源事件监听器
+ * 监听数据源管理器的事件，实现数据分发
+ */
+const setupDataSourceEventListeners = () => {
+  try {
+    // 创建监听器函数并保存引用
+    dataUpdateListener = (eventData: { componentId: string; result: any }) => {
+      const { componentId, result } = eventData
 
+      // 🔥 性能优化：减少非必要的控制台输出
+
+      if (result.success && result.data) {
+        try {
+          // 🔥 性能优化：检查数据是否实际发生变化，避免不必要的响应式更新
+          const existingData = multiDataSourceStore.value[componentId]
+          const hasDataChanged = !existingData || JSON.stringify(existingData) !== JSON.stringify(result.data)
+
+          if (hasDataChanged) {
+            // 🔥 关键：将数据分发到 multiDataSourceStore，供组件使用
+            multiDataSourceStore.value[componentId] = result.data
+          } else {
+            // 数据未变化，跳过更新
+          }
+
+          // 标记有变化（可选，取决于是否希望数据更新触发保存提示）
+          // hasChanges.value = true
+        } catch (error) {
+          console.error(`❌ [PanelEditor] 数据分发失败: ${componentId}`, error)
+        }
+      } else {
+        console.warn(`⚠️ [PanelEditor] 数据更新失败: ${componentId}`, result.error)
+      }
+    }
+
+    statusChangeListener = (eventData: { componentId: string; status: string; error?: string }) => {
+      const { componentId, status, error } = eventData
+
+      // 🔥 性能优化：只在开发环境输出状态变化日志
+
+      if (error) {
+        console.error(`❌ [PanelEditor] 组件 ${componentId} 出现错误:`, error)
+        // 🔥 TODO: 可以在这里添加用户友好的错误通知UI
+        // message.error(`组件 ${componentId} 数据获取失败: ${error}`)
+      }
+    }
+
+    pollingStatusListener = (eventData: { componentId: string; isPolling: boolean }) => {
+      const { componentId, isPolling } = eventData
+
+      // 🔥 性能优化：只在开发环境输出轮询状态日志
+    }
+
+    // 注册监听器
+    editorDataSourceManager.on('data-updated', dataUpdateListener)
+    editorDataSourceManager.on('component-status-changed', statusChangeListener)
+    editorDataSourceManager.on('polling-status-changed', pollingStatusListener)
+  } catch (error) {
+    console.error('❌ [PanelEditor] 数据源事件监听器设置失败:', error)
+  }
+}
+
+/**
+ * 设置组件生命周期监听器
+ * 监听组件的添加、删除、配置变更等事件
+ */
+const setupComponentLifecycleListeners = () => {
+  // 监听组件节点变化
+  watch(
+    () => stateManager.nodes,
+    async (newNodes, oldNodes) => {
+      if (!newNodes || !oldNodes) return
+
+      // 检测新增的组件
+      const oldNodeIds = new Set(oldNodes.map(node => node.id))
+      const newNodeIds = new Set(newNodes.map(node => node.id))
+
+      // 处理新增组件
+      for (const node of newNodes) {
+        if (!oldNodeIds.has(node.id)) {
+          await handleComponentAdded(node)
+        }
+      }
+
+      // 处理删除的组件
+      for (const oldNode of oldNodes) {
+        if (!newNodeIds.has(oldNode.id)) {
+          await handleComponentRemoved(oldNode.id)
+        }
+      }
+    },
+    { deep: true }
+  )
+
+  // 监听组件配置变化
+  watch(
+    () => multiDataSourceConfigStore.value,
+    (newConfigs, oldConfigs) => {
+      if (!newConfigs || !oldConfigs) return
+
+      // 🔥 性能优化：只检测配置变化的组件，避免深度对比
+      for (const [componentId, config] of Object.entries(newConfigs)) {
+        const oldConfig = oldConfigs[componentId]
+
+        // 简单检查：如果配置对象引用不同，说明可能有变化
+        if (!oldConfig || oldConfig !== config) {
+          try {
+            // 只有在引用不同时才进行深度对比
+            const configChanged = !oldConfig || JSON.stringify(config) !== JSON.stringify(oldConfig)
+            if (configChanged) {
+              handleComponentConfigChanged(componentId, config)
+            }
+          } catch (error) {
+            console.error(`❌ [PanelEditor] 配置变化检测失败: ${componentId}`, error)
+          }
+        }
+      }
+
+      // 检测删除的配置
+      for (const componentId of Object.keys(oldConfigs)) {
+        if (!newConfigs[componentId]) {
+          // 可以在这里处理配置删除的逻辑
+        }
+      }
+    },
+    { deep: true }
+  )
+}
+
+/**
+ * 处理组件添加事件
+ */
+const handleComponentAdded = async (node: GraphData) => {
+  try {
+    // 检查是否有数据源配置
+    const config = multiDataSourceConfigStore.value[node.id]
+    if (config && Object.keys(config).length > 0) {
+      // 注册到编辑器数据源管理器
+      editorDataSourceManager.registerComponentDataSource(
+        node.id,
+        node.type,
+        config,
+        { type: 'timer', interval: 30000 } // 默认30秒轮询
+      )
+    }
+  } catch (error) {
+    console.error(`❌ [PanelEditor] 处理组件添加失败: ${node.id}`, error)
+  }
+}
+
+/**
+ * 处理组件删除事件
+ */
+const handleComponentRemoved = async (componentId: string) => {
+  try {
+    // 从编辑器数据源管理器移除
+    editorDataSourceManager.removeComponentDataSource(componentId)
+
+    // 清理本地配置存储
+    delete multiDataSourceConfigStore.value[componentId]
+    delete multiDataSourceStore.value[componentId]
+  } catch (error) {
+    console.error(`❌ [PanelEditor] 处理组件删除失败: ${componentId}`, error)
+  }
+}
+
+/**
+ * 处理组件配置变更事件
+ */
+const handleComponentConfigChanged = async (componentId: string, config: any) => {
+  // 🔥 错误边界：确保数据源管理器已初始化
+  if (!editorDataSourceManager.isInitialized()) {
+    console.warn(`⚠️ [PanelEditor] 数据源管理器未初始化，跳过配置变更: ${componentId}`)
+    return
+  }
+
+  try {
+    // 如果组件已在数据源管理器中注册，更新配置
+    const existingConfig = editorDataSourceManager.getComponentConfig(componentId)
+    if (existingConfig) {
+      // 先移除旧配置
+      editorDataSourceManager.removeComponentDataSource(componentId)
+
+      // 重新注册新配置
+      const node = stateManager.nodes.find(n => n.id === componentId)
+      if (node) {
+        editorDataSourceManager.registerComponentDataSource(
+          componentId,
+          node.type,
+          config,
+          existingConfig.trigger // 保持原有的触发器配置
+        )
+      } else {
+        console.warn(`⚠️ [PanelEditor] 找不到组件节点: ${componentId}`)
+      }
+    } else if (config && Object.keys(config).length > 0) {
+      // 新增数据源配置
+      const node = stateManager.nodes.find(n => n.id === componentId)
+      if (node) {
+        editorDataSourceManager.registerComponentDataSource(
+          componentId,
+          node.type,
+          config,
+          { type: 'timer', interval: 30000 } // 默认30秒轮询
+        )
+      } else {
+        console.warn(`⚠️ [PanelEditor] 找不到组件节点: ${componentId}`)
+      }
+    }
+  } catch (error) {
+    console.error(`❌ [PanelEditor] 处理组件配置变更失败: ${componentId}`, error)
+
+    // 🔥 错误恢复：尝试清理可能的残留状态
+    try {
+      editorDataSourceManager.removeComponentDataSource(componentId)
+    } catch (cleanupError) {
+      console.error(`❌ [PanelEditor] 清理残留状态失败: ${componentId}`, cleanupError)
+    }
+  }
+}
+
+const syncDataSourceConfigs = async () => {
   try {
     // 遍历所有节点，检查是否有数据源配置
     for (const node of stateManager.nodes) {
@@ -1054,8 +1305,6 @@ const syncDataSourceConfigs = async () => {
         // 检查是否存在多数据源配置
         const multiConfig = multiDataSourceConfigStore.value[node.id]
         if (multiConfig && Object.keys(multiConfig).length > 0) {
-          console.log(`🔧 [PanelEditor] 为组件 ${node.id} 注册数据源配置:`, multiConfig)
-
           // 注册组件到数据源管理器
           await editorDataSourceManager.registerComponent(node.id, {
             type: node.type || 'unknown',
@@ -1066,10 +1315,102 @@ const syncDataSourceConfigs = async () => {
         }
       }
     }
-
-    console.log('✅ [PanelEditor] 数据源配置同步完成')
   } catch (error) {
     console.error('❌ [PanelEditor] 数据源配置同步失败:', error)
+  }
+}
+
+/**
+ * 🔥 添加按照新架构开发的双数据源测试组件
+ * 添加一个 dual-data-display 组件，配置两个数据源用于测试新架构
+ */
+const addNewArchitectureTestComponent = async () => {
+  try {
+    // 创建一个 dual-data-display 组件实例
+    const testComponentId = `dual-data-display-${Date.now()}`
+
+    const testComponent: VisualEditorWidget = {
+      id: testComponentId,
+      type: 'dual-data-display',
+      name: '双数据源显示组件',
+      layout: {
+        canvas: {
+          x: 50,
+          y: 50,
+          width: 500,
+          height: 350,
+          zIndex: 1
+        },
+        gridstack: {
+          x: 0,
+          y: 0,
+          w: 4,
+          h: 4
+        }
+      },
+      config: {
+        // 🔥 配置两个数据源用于测试新架构
+        dataSources: {
+          dataSource1: {
+            type: 'static',
+            enabled: true,
+            config: {
+              data: {
+                sensor: 'temperature',
+                value: 25.8,
+                unit: '°C',
+                status: 'normal',
+                location: '机房A-01',
+                timestamp: new Date().toISOString()
+              }
+            }
+          },
+          dataSource2: {
+            type: 'static',
+            enabled: true,
+            config: {
+              data: {
+                device: 'humidity_sensor',
+                reading: 62,
+                unit: '%',
+                status: 'active',
+                location: '机房A-02',
+                lastCheck: new Date().toISOString()
+              }
+            }
+          }
+        }
+      },
+      metadata: {
+        addedAt: Date.now(),
+        version: '2.0.0',
+        architecture: 'dual-data-source-flow'
+      }
+    }
+
+    // 添加组件到画布（只传类型字符串和位置）
+    await addWidget('dual-data-display', { x: 50, y: 50 })
+
+    // 获取刚添加的组件ID（从stateManager.nodes中找到最新的）
+    const addedComponent = stateManager.nodes[stateManager.nodes.length - 1]
+    const actualComponentId = addedComponent?.id || testComponentId
+
+    // 更新组件的数据源配置
+    updateNode(actualComponentId, {
+      config: testComponent.config,
+      metadata: {
+        ...addedComponent?.metadata,
+        ...testComponent.metadata
+      }
+    })
+
+    // 选中新添加的组件
+    selectNode(actualComponentId)
+
+    return actualComponentId
+  } catch (error) {
+    console.error('❌ [PanelEditor] 添加新架构测试组件失败:', error)
+    throw error
   }
 }
 
@@ -1078,7 +1419,7 @@ onMounted(async () => {
   // 初始化时同步预览模式状态
   setPreviewMode(!isEditing.value)
 
-  // 先加载面板数据
+  // 加载面板数据
   await fetchBoard()
 
   // 面板数据加载完成后，检查多数据源配置状态
@@ -1086,15 +1427,21 @@ onMounted(async () => {
   restoreMultiDataSourceConfigs() // 现在只做状态检查
 
   // 初始化编辑器数据源管理器
-  console.log('🔧 [PanelEditor] 初始化编辑器数据源管理器...')
   try {
     await editorDataSourceManager.initialize()
-    console.log('✅ [PanelEditor] 编辑器数据源管理器初始化成功')
+
+    // 设置数据更新监听器
+    setupDataSourceEventListeners()
 
     // 为现有组件注册数据源配置（如果有的话）
     if (stateManager?.nodes?.length > 0) {
       await syncDataSourceConfigs()
     }
+
+    // 设置组件生命周期监听
+    setupComponentLifecycleListeners()
+
+    // 注意：不再自动添加测试组件，让用户自己从组件库添加
   } catch (error) {
     console.error('❌ [PanelEditor] 编辑器数据源管理器初始化失败:', error)
   }
@@ -1109,21 +1456,11 @@ onMounted(async () => {
  * 这个函数保留用于调试和状态检查
  */
 const restoreMultiDataSourceConfigs = () => {
-  console.log('🔧 [PanelEditor] 检查多数据源配置状态（已集成到setState）...')
-  console.log('🔧 [PanelEditor] 当前状态检查:', {
-    hasStateManager: !!stateManager,
-    nodesCount: stateManager?.nodes?.length || 0,
-    dataFetched: dataFetched.value,
-    currentMultiDataSourceConfigStore: Object.keys(multiDataSourceConfigStore.value).length
-  })
-
   if (!stateManager?.nodes || stateManager.nodes.length === 0) {
-    console.log('🔧 [PanelEditor] 无图表节点，跳过检查')
     return
   }
 
   // 🔥 配置恢复现在在 setState 中完成，这里只做状态报告
-  console.log('✅ [PanelEditor] 配置恢复已通过 setState 完成')
   return
 
   const restored: Record<string, any> = {}
@@ -1133,11 +1470,9 @@ const restoreMultiDataSourceConfigs = () => {
   // 遍历所有节点，从ConfigurationManager恢复配置
   stateManager.nodes.forEach(node => {
     const widgetId = node.id
-    console.log(`🔍 [PanelEditor] 检查组件 ${widgetId} 的配置...`)
 
     try {
       const configuration = configurationManager.getConfiguration(widgetId)
-      console.log(`📋 [PanelEditor] 组件 ${widgetId} 的完整配置:`, configuration)
 
       // 检查是否有V6数据源配置
       if (
@@ -1147,20 +1482,7 @@ const restoreMultiDataSourceConfigs = () => {
       ) {
         restored[widgetId] = configuration.dataSource.config
         restoredCount++
-
-        console.log(`🔄 [PanelEditor] 恢复组件 ${widgetId} 的数据源配置:`, {
-          type: configuration.dataSource.type,
-          config: configuration.dataSource.config,
-          hasDataSourceBindings: !!configuration.dataSource.config.dataSourceBindings,
-          bindingsKeys: Object.keys(configuration.dataSource.config.dataSourceBindings || {})
-        })
       } else {
-        console.log(`⏭️ [PanelEditor] 跳过组件 ${widgetId}:`, {
-          hasConfiguration: !!configuration,
-          hasDataSource: !!configuration?.dataSource,
-          dataSourceType: configuration?.dataSource?.type,
-          hasConfig: !!configuration?.dataSource?.config
-        })
         skippedCount++
       }
     } catch (error) {
@@ -1174,23 +1496,11 @@ const restoreMultiDataSourceConfigs = () => {
     const oldStore = { ...multiDataSourceConfigStore.value }
     multiDataSourceConfigStore.value = { ...multiDataSourceConfigStore.value, ...restored }
 
-    console.log(`✅ [PanelEditor] 数据源配置恢复完成:`, {
-      restoredCount,
-      skippedCount,
-      totalNodes: stateManager.nodes.length,
-      oldStoreKeys: Object.keys(oldStore),
-      newStoreKeys: Object.keys(multiDataSourceConfigStore.value),
-      restoredData: restored
-    })
-
     // 🔥 关键修复：同时恢复数据源数据和配置
-    console.log('🔄 [PanelEditor] 恢复数据源数据和配置...')
 
     const restoredData: Record<string, any> = {}
 
     Object.entries(restored).forEach(([widgetId, config]) => {
-      console.log(`📤 [PanelEditor] 触发组件 ${widgetId} 的数据源配置更新:`, config)
-
       // 从配置中恢复数据源数据
       if (config.dataSourceBindings) {
         const widgetData: Record<string, any> = {}
@@ -1206,7 +1516,6 @@ const restoreMultiDataSourceConfigs = () => {
 
         if (Object.keys(widgetData).length > 0) {
           restoredData[widgetId] = widgetData
-          console.log(`📊 [PanelEditor] 恢复组件 ${widgetId} 的数据:`, widgetData)
         }
       }
 
@@ -1217,19 +1526,15 @@ const restoreMultiDataSourceConfigs = () => {
     // 批量更新 multiDataSourceStore
     if (Object.keys(restoredData).length > 0) {
       multiDataSourceStore.value = { ...multiDataSourceStore.value, ...restoredData }
-      console.log(`✅ [PanelEditor] 数据源数据恢复完成:`, restoredData)
     }
-
-    console.log('✅ [PanelEditor] 数据源配置更新事件已全部触发')
   } else {
-    console.log(`🔧 [PanelEditor] 数据源配置恢复结果:`, {
-      restoredCount: 0,
-      skippedCount,
-      totalNodes: stateManager.nodes.length,
-      reason: '无V6数据映射配置需要恢复'
-    })
   }
 }
+
+// 存储事件监听器引用，用于清理
+let dataUpdateListener: Function | null = null
+let statusChangeListener: Function | null = null
+let pollingStatusListener: Function | null = null
 
 // 组件卸载时的清理工作
 onUnmounted(() => {
@@ -1239,11 +1544,24 @@ onUnmounted(() => {
     clearTimeout(selectedWidgetTimer)
   }
 
+  // 清理事件监听器
+  try {
+    if (dataUpdateListener) {
+      editorDataSourceManager.off('data-updated', dataUpdateListener)
+    }
+    if (statusChangeListener) {
+      editorDataSourceManager.off('component-status-changed', statusChangeListener)
+    }
+    if (pollingStatusListener) {
+      editorDataSourceManager.off('polling-status-changed', pollingStatusListener)
+    }
+  } catch (error) {
+    console.error('❌ [PanelEditor] 数据源事件监听器清理失败:', error)
+  }
+
   // 清理编辑器数据源管理器
-  console.log('🧹 [PanelEditor] 清理编辑器数据源管理器...')
   try {
     editorDataSourceManager.cleanup()
-    console.log('✅ [PanelEditor] 编辑器数据源管理器清理完成')
   } catch (error) {
     console.error('❌ [PanelEditor] 编辑器数据源管理器清理失败:', error)
   }
@@ -1387,6 +1705,7 @@ onUnmounted(() => {
                 @multi-data-source-update="handleMultiDataSourceUpdate"
                 @multi-data-source-config-update="handleMultiDataSourceConfigUpdate"
                 @request-current-data="handleRequestCurrentData"
+                @data-source-manager-update="handleDataSourceManagerUpdate"
               />
             </NDrawerContent>
           </NDrawer>

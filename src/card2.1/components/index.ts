@@ -1,34 +1,23 @@
 /**
  * Card 2.1 组件统一导出
  * 为编辑器集成提供标准化组件接口
+ * 重构后只包含按照新数据源架构开发的组件
  */
 
 import type { ComponentDefinition } from '../core/types'
 
-// 导入组件定义
-import simpleTestComponentDefinition from './simple-test-component'
-import dataDisplayCardDefinition from './data-display-card'
-import iotDeviceStatusCardDefinition from './iot-device-status-card'
-import realtimeChartCardDefinition from './realtime-chart-card'
+// 导入新架构组件定义
+import dualDataDisplayDefinition from './dual-data-display'
 
 // ============ 组件注册表 ============
 
 /**
  * 所有可用的 Card 2.1 组件定义
- * 按分类组织，便于编辑器分组展示
+ * 重构后只包含按照新数据源架构开发的组件
  */
 export const Card2Components: Record<string, ComponentDefinition[]> = {
-  // 测试组件分类
-  测试: [simpleTestComponentDefinition],
-
-  // 数据展示分类
-  展示: [dataDisplayCardDefinition],
-
-  // IoT设备分类
-  IoT设备: [iotDeviceStatusCardDefinition],
-
-  // 图表可视化分类
-  图表可视化: [realtimeChartCardDefinition]
+  // 数据源测试分类
+  数据源测试: [dualDataDisplayDefinition]
 }
 
 /**
@@ -36,10 +25,7 @@ export const Card2Components: Record<string, ComponentDefinition[]> = {
  * 供编辑器快速查找组件定义
  */
 export const Card2ComponentMap: Record<string, ComponentDefinition> = {
-  'simple-test-component': simpleTestComponentDefinition,
-  'data-display-card': dataDisplayCardDefinition,
-  'iot-device-status-card': iotDeviceStatusCardDefinition,
-  'realtime-chart-card': realtimeChartCardDefinition
+  'dual-data-display': dualDataDisplayDefinition
 }
 
 /**
@@ -117,13 +103,10 @@ export const ComponentStats = {
   )
 }
 
-// ============ 向后兼容性导出 ============
+// ============ 单独导出组件定义 ============
 
-// 单独导出各组件定义（保持向后兼容）
-export { default as simpleTestComponentDefinition } from './simple-test-component'
-export { default as dataDisplayCardDefinition } from './data-display-card'
-export { default as iotDeviceStatusCardDefinition } from './iot-device-status-card'
-export { default as realtimeChartCardDefinition } from './realtime-chart-card'
+// 新架构组件导出
+export { default as dualDataDisplayDefinition } from './dual-data-display'
 
 // 默认导出主要接口
 export default {

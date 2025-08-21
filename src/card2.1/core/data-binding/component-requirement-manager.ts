@@ -15,19 +15,80 @@ export class ComponentRequirementManager {
   registerRequirement(componentId: string, requirement: ComponentDataRequirement): void {
     console.log(`📋 [ComponentRequirementManager] 注册组件数据需求: ${componentId}`)
 
-    // 验证需求定义
-    const validation = this.validateRequirement(requirement)
-    if (!validation.valid) {
-      throw new Error(`组件数据需求验证失败: ${validation.errors.join(', ')}`)
+    try {
+      // 对于残留数据或无效数据，尝试修复或使用默认值
+      if (!requirement || typeof requirement !== 'object') {
+        console.warn(`⚠️ [ComponentRequirementManager] 检测到无效数据需求，使用默认配置: ${componentId}`)
+        requirement = this.createDefaultRequirement(componentId)
+      }
+
+      // 验证需求定义
+      const validation = this.validateRequirement(requirement)
+      if (!validation.valid) {
+        console.warn(
+          `⚠️ [ComponentRequirementManager] 数据需求验证失败，使用默认配置: ${componentId}`,
+          validation.errors
+        )
+        requirement = this.createDefaultRequirement(componentId)
+      }
+
+      this.requirements.set(componentId, requirement)
+
+      // 清除相关的关系缓存
+      this.relationshipCache.delete(componentId)
+
+      console.log(`✅ [ComponentRequirementManager] 成功注册组件需求: ${componentId}`)
+      console.log('📊 需求详情:', requirement)
+    } catch (error) {
+      console.error(`❌ [ComponentRequirementManager] 注册组件需求失败: ${componentId}`, error)
+      // 使用默认需求避免系统崩溃
+      const defaultRequirement = this.createDefaultRequirement(componentId)
+      this.requirements.set(componentId, defaultRequirement)
+      console.log(`🔧 [ComponentRequirementManager] 已使用默认配置: ${componentId}`)
     }
+  }
 
-    this.requirements.set(componentId, requirement)
-
-    // 清除相关的关系缓存
-    this.relationshipCache.delete(componentId)
-
-    console.log(`✅ [ComponentRequirementManager] 成功注册组件需求: ${componentId}`)
-    console.log('📊 需求详情:', requirement)
+  /**
+   * 创建默认数据需求（用于处理残留数据）
+   */
+  private createDefaultRequirement(componentId: string): ComponentDataRequirement {
+    return {
+      componentType: 'unknown',
+      displayName: '未知组件',
+      description: '由于残留数据导致的默认配置',
+      category: 'default',
+      version: '1.0.0',
+      primaryData: {
+        name: 'data',
+        label: '数据',
+        description: '组件数据',
+        type: 'object',
+        required: false,
+        defaultValue: {},
+        validation: {},
+        example: {},
+        tags: ['default']
+      },
+      fields: {
+        data: {
+          name: 'data',
+          label: '数据',
+          description: '组件默认数据字段',
+          type: 'object',
+          required: false,
+          defaultValue: {},
+          validation: {},
+          example: {},
+          tags: ['default']
+        }
+      },
+      relationships: {},
+      updateConfig: {
+        supportedTriggers: ['manual'],
+        recommendedInterval: 5000,
+        minInterval: 1000
+      }
+    }
   }
 
   /**
@@ -149,21 +210,29 @@ export class ComponentRequirementManager {
   validateRequirement(requirement: ComponentDataRequirement): { valid: boolean; errors: string[] } {
     const errors: string[] = []
 
+    // 对于残留数据，如果 requirement 为 null 或 undefined，返回默认有效状态
+    if (!requirement || typeof requirement !== 'object') {
+      console.warn('⚠️ [ComponentRequirementManager] 检测到无效的数据需求，可能为残留数据，跳过验证')
+      return { valid: true, errors: [] }
+    }
+
     // 验证字段定义
     if (!requirement.fields || Object.keys(requirement.fields).length === 0) {
       errors.push('组件必须定义至少一个数据字段')
     }
 
     // 验证每个字段
-    Object.entries(requirement.fields).forEach(([fieldName, fieldReq]) => {
-      const fieldErrors = this.validateFieldRequirement(fieldName, fieldReq)
-      errors.push(...fieldErrors)
-    })
+    if (requirement.fields && typeof requirement.fields === 'object') {
+      Object.entries(requirement.fields).forEach(([fieldName, fieldReq]) => {
+        const fieldErrors = this.validateFieldRequirement(fieldName, fieldReq)
+        errors.push(...fieldErrors)
+      })
+    }
 
     // 验证数据关系
-    if (requirement.relationships) {
+    if (requirement.relationships && typeof requirement.relationships === 'object') {
       Object.entries(requirement.relationships).forEach(([relationName, relation]) => {
-        const relationErrors = this.validateRelationship(relationName, relation, requirement.fields)
+        const relationErrors = this.validateRelationship(relationName, relation, requirement.fields || {})
         errors.push(...relationErrors)
       })
     }

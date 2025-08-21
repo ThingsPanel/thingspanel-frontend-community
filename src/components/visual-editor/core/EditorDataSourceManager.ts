@@ -6,12 +6,15 @@
 import { ref, reactive, computed, nextTick } from 'vue'
 import { useMessage } from 'naive-ui'
 import { simpleDataExecutor, simpleConfigGenerator, dataSourceSystem } from '@/core/data-source-system'
+import { useGlobalPollingManager } from './GlobalPollingManager'
 import type {
   SimpleDataSourceConfig,
   ExecutionResult,
   ComponentData,
   TriggerConfig,
-  DataSourceDefinition
+  DataSourceDefinition,
+  ComponentDataRequirement,
+  UserDataSourceInput
 } from '@/core/data-source-system/types/simple-types'
 
 // 数据源状态枚举
@@ -50,16 +53,7 @@ export interface DataSourceStats {
   avgExecutionTime: number
 }
 
-// 调度器任务接口
-interface SchedulerTask {
-  id: string
-  componentId: string
-  interval: number
-  enabled: boolean
-  lastRun: number
-  nextRun: number
-  timerId?: number
-}
+// 注意: 调度器任务现在由 GlobalPollingManager 统一管理
 
 /**
  * 编辑器数据源管理器类
@@ -67,11 +61,17 @@ interface SchedulerTask {
 export class EditorDataSourceManager {
   private message = useMessage()
 
+  // 全局轮询管理器
+  private globalPollingManager = useGlobalPollingManager()
+
+  // 🔥 组件执行器注册表 (componentId -> executeDataSource函数)
+  private componentExecutorRegistry: Map<string, () => Promise<void>> | null = null
+
   // 组件数据源配置存储
   private componentConfigs = reactive<Map<string, ComponentDataSourceConfig>>(new Map())
 
-  // 调度器任务映射
-  private schedulerTasks = reactive<Map<string, SchedulerTask>>(new Map())
+  // 轮询任务ID映射 (componentId -> pollingTaskId)
+  private pollingTaskIds = reactive<Map<string, string>>(new Map())
 
   // 数据存储 - 每个组件的最新数据
   private dataStore = reactive<Map<string, ComponentData>>(new Map())
@@ -91,6 +91,15 @@ export class EditorDataSourceManager {
 
   // 是否已初始化
   private initialized = ref(false)
+
+  /**
+   * 设置组件执行器注册表
+   * 这是新架构的核心：管理器只负责调度，组件自己执行数据源
+   */
+  setComponentExecutorRegistry(registry: Map<string, () => Promise<void>>): void {
+    console.log('📝 [EditorDataSourceManager] 设置组件执行器注册表')
+    this.componentExecutorRegistry = registry
+  }
 
   /**
    * 初始化管理器
@@ -115,6 +124,13 @@ export class EditorDataSourceManager {
       console.error('❌ [EditorDataSourceManager] 初始化失败:', error)
       throw error
     }
+  }
+
+  /**
+   * 检查管理器是否已初始化
+   */
+  isInitialized(): boolean {
+    return this.initialized.value
   }
 
   /**
@@ -160,7 +176,8 @@ export class EditorDataSourceManager {
       this.emit('component-registered', { componentId, config: componentConfig })
     } catch (error) {
       console.error(`❌ [EditorDataSourceManager] 注册组件数据源失败: ${componentId}`, error)
-      this.message.error(`注册组件数据源失败: ${error.message}`)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      this.message.error(`注册组件数据源失败: ${errorMessage}`)
     }
   }
 
@@ -181,13 +198,13 @@ export class EditorDataSourceManager {
       config.status = DataSourceStatus.RUNNING
       config.trigger.enabled = true
 
-      // 如果是定时器触发，启动调度器
+      // 如果是定时器触发，使用全局轮询管理器启动调度器
       if (config.trigger.type === 'timer' && config.trigger.interval) {
-        this.scheduleComponent(componentId, config.trigger.interval)
+        this.scheduleComponentWithGlobalManager(componentId, config.trigger.interval)
       }
 
-      // 立即执行一次
-      await this.executeComponentDataSource(componentId)
+      // 🔥 立即触发一次组件执行器
+      await this.triggerComponentExecutor(componentId)
 
       console.log(`✅ [EditorDataSourceManager] 组件数据源启动成功: ${componentId}`)
       this.emit('component-started', { componentId })
@@ -219,8 +236,8 @@ export class EditorDataSourceManager {
       config.status = DataSourceStatus.STOPPED
       config.trigger.enabled = false
 
-      // 停止调度器
-      this.unscheduleComponent(componentId)
+      // 停止全局轮询管理器中的任务
+      this.unscheduleComponentFromGlobalManager(componentId)
 
       console.log(`✅ [EditorDataSourceManager] 组件数据源停止成功: ${componentId}`)
       this.emit('component-stopped', { componentId })
@@ -251,8 +268,8 @@ export class EditorDataSourceManager {
 
       // 如果数据源正在运行，重新调度
       if (config.status === DataSourceStatus.RUNNING && config.trigger.type === 'timer') {
-        this.unscheduleComponent(componentId)
-        this.scheduleComponent(componentId, interval)
+        this.unscheduleComponentFromGlobalManager(componentId)
+        this.scheduleComponentWithGlobalManager(componentId, interval)
       }
 
       console.log(`✅ [EditorDataSourceManager] 轮询间隔设置成功: ${componentId}`)
@@ -268,18 +285,19 @@ export class EditorDataSourceManager {
 
   /**
    * 手动触发数据更新
+   * 🔥 新架构：调用组件执行器而不是直接执行数据源
    */
-  async triggerDataUpdate(componentId: string): Promise<ExecutionResult | null> {
+  async triggerDataUpdate(componentId: string): Promise<boolean> {
     console.log(`🔄 [EditorDataSourceManager] 手动触发数据更新: ${componentId}`)
 
     try {
-      const result = await this.executeComponentDataSource(componentId)
-      this.emit('data-updated', { componentId, result })
-      return result
+      await this.triggerComponentExecutor(componentId)
+      this.emit('data-updated', { componentId })
+      return true
     } catch (error) {
       console.error(`❌ [EditorDataSourceManager] 手动触发失败: ${componentId}`, error)
       this.message.error(`手动触发失败: ${error.message}`)
-      return null
+      return false
     }
   }
 
@@ -312,6 +330,27 @@ export class EditorDataSourceManager {
   }
 
   /**
+   * 获取所有组件配置
+   */
+  getAllComponentConfigs(): Map<string, ComponentDataSourceConfig> {
+    return this.componentConfigs
+  }
+
+  /**
+   * 获取组件配置
+   */
+  getComponentConfig(componentId: string): ComponentDataSourceConfig | undefined {
+    return this.componentConfigs.get(componentId)
+  }
+
+  /**
+   * 获取全局轮询管理器统计信息
+   */
+  getGlobalPollingStats() {
+    return this.globalPollingManager.getStatistics()
+  }
+
+  /**
    * 批量启动数据源
    */
   async batchStart(componentIds: string[]): Promise<boolean[]> {
@@ -332,6 +371,20 @@ export class EditorDataSourceManager {
   }
 
   /**
+   * 批量启动组件的别名方法 (为DataSourceTriggerPanel提供兼容性)
+   */
+  async batchStartComponents(componentIds: string[]): Promise<boolean[]> {
+    return this.batchStart(componentIds)
+  }
+
+  /**
+   * 批量停止组件的别名方法 (为DataSourceTriggerPanel提供兼容性)
+   */
+  batchStopComponents(componentIds: string[]): boolean[] {
+    return this.batchStop(componentIds)
+  }
+
+  /**
    * 移除组件数据源
    */
   removeComponentDataSource(componentId: string): boolean {
@@ -340,6 +393,9 @@ export class EditorDataSourceManager {
     try {
       // 停止数据源
       this.stopComponentDataSource(componentId)
+
+      // 从全局轮询管理器移除任务
+      this.unscheduleComponentFromGlobalManager(componentId)
 
       // 移除配置和数据
       this.componentConfigs.delete(componentId)
@@ -370,15 +426,55 @@ export class EditorDataSourceManager {
 
     // 清空所有数据
     this.componentConfigs.clear()
-    this.schedulerTasks.clear()
+    this.pollingTaskIds.clear()
     this.dataStore.clear()
     this.listeners.clear()
+
+    // 清理全局轮询管理器中的所有任务
+    this.globalPollingManager.clearAllTasks()
 
     this.initialized.value = false
     console.log('✅ [EditorDataSourceManager] 管理器已销毁')
   }
 
   // ============ 私有方法 ============
+
+  /**
+   * 🔥 触发组件执行器 - 新架构的核心方法
+   * 通过组件执行器注册表调用组件的 executeDataSource 方法
+   */
+  private async triggerComponentExecutor(componentId: string): Promise<void> {
+    console.log(`🔥 [EditorDataSourceManager] 触发组件执行器: ${componentId}`)
+
+    if (!this.componentExecutorRegistry) {
+      console.warn(`⚠️ [EditorDataSourceManager] 组件执行器注册表未设置`)
+      return
+    }
+
+    const executor = this.componentExecutorRegistry.get(componentId)
+    if (!executor) {
+      console.warn(`⚠️ [EditorDataSourceManager] 组件执行器未找到: ${componentId}`)
+      return
+    }
+
+    const startTime = Date.now()
+    try {
+      await executor()
+      const executionTime = Date.now() - startTime
+
+      console.log(`✅ [EditorDataSourceManager] 组件执行器调用成功: ${componentId} (${executionTime}ms)`)
+
+      // 更新统计
+      this.updateExecutionStats(true, executionTime)
+    } catch (error) {
+      const executionTime = Date.now() - startTime
+      console.error(`❌ [EditorDataSourceManager] 组件执行器调用失败: ${componentId}`, error)
+
+      // 更新统计
+      this.updateExecutionStats(false, executionTime)
+      throw error
+    }
+  }
 
   /**
    * 初始化数据源系统
@@ -405,8 +501,52 @@ export class EditorDataSourceManager {
    */
   private generateStandardConfig(componentId: string, componentType: string, userConfig: any): SimpleDataSourceConfig {
     try {
+      // 🔥 修复：使用正确的方法名和参数
+      // 首先构建组件数据需求
+      const requirement: ComponentDataRequirement = {
+        componentId,
+        componentType,
+        dataSources: [
+          {
+            id: 'main',
+            name: '主数据源',
+            required: true,
+            structureType: 'object',
+            fields: []
+          }
+        ]
+      }
+
+      // 构建用户输入数组
+      const userInputs: UserDataSourceInput[] = []
+
+      // 🔥 处理 dataSourceBindings 格式的配置
+      if (userConfig.dataSourceBindings && typeof userConfig.dataSourceBindings === 'object') {
+        for (const [dataSourceKey, binding] of Object.entries(userConfig.dataSourceBindings)) {
+          const bindingData = binding as any
+          if (bindingData.dataSource) {
+            const userInput: UserDataSourceInput = {
+              dataSourceId: dataSourceKey,
+              type: bindingData.dataSource.type || 'static',
+              config: bindingData.dataSource.config || {}
+            }
+            userInputs.push(userInput)
+          }
+        }
+      }
+
+      // 如果没有找到 dataSourceBindings，尝试直接使用 userConfig
+      if (userInputs.length === 0) {
+        const userInput: UserDataSourceInput = {
+          dataSourceId: 'main',
+          type: 'static',
+          config: userConfig
+        }
+        userInputs.push(userInput)
+      }
+
       // 使用数据源系统的配置生成器
-      const standardConfig = simpleConfigGenerator.generateFromUserInput(componentId, componentType, userConfig)
+      const standardConfig = simpleConfigGenerator.generateConfig(requirement, userInputs)
 
       console.log(`📋 [EditorDataSourceManager] 生成标准配置: ${componentId}`, standardConfig)
       return standardConfig
@@ -475,50 +615,48 @@ export class EditorDataSourceManager {
   }
 
   /**
-   * 调度组件
+   * 使用全局轮询管理器调度组件
    */
-  private scheduleComponent(componentId: string, interval: number): void {
+  private scheduleComponentWithGlobalManager(componentId: string, interval: number): void {
     // 先停止现有调度
-    this.unscheduleComponent(componentId)
+    this.unscheduleComponentFromGlobalManager(componentId)
 
-    const task: SchedulerTask = {
-      id: `${componentId}_${Date.now()}`,
-      componentId,
-      interval,
-      enabled: true,
-      lastRun: 0,
-      nextRun: Date.now() + interval
+    const config = this.componentConfigs.get(componentId)
+    if (!config) {
+      console.warn(`⚠️ [EditorDataSourceManager] 组件配置不存在: ${componentId}`)
+      return
     }
 
-    // 设置定时器
-    task.timerId = window.setInterval(async () => {
-      if (!task.enabled) return
-
-      try {
-        task.lastRun = Date.now()
-        task.nextRun = task.lastRun + interval
-
-        await this.executeComponentDataSource(componentId)
-      } catch (error) {
-        console.error(`⏰ [EditorDataSourceManager] 定时执行失败: ${componentId}`, error)
+    // 添加到全局轮询管理器
+    const taskId = this.globalPollingManager.addTask({
+      componentId,
+      componentName: config.componentType,
+      interval,
+      autoStart: true,
+      callback: async () => {
+        try {
+          // 🔥 调用组件执行器而不是直接执行数据源
+          await this.triggerComponentExecutor(componentId)
+        } catch (error) {
+          console.error(`⏰ [EditorDataSourceManager] 全局轮询执行失败: ${componentId}`, error)
+        }
       }
-    }, interval)
+    })
 
-    this.schedulerTasks.set(componentId, task)
-    console.log(`⏰ [EditorDataSourceManager] 调度器启动: ${componentId} (${interval}ms)`)
+    // 保存任务ID映射
+    this.pollingTaskIds.set(componentId, taskId)
+    console.log(`⏰ [EditorDataSourceManager] 全局轮询调度器启动: ${componentId} (${interval}ms) -> 任务ID: ${taskId}`)
   }
 
   /**
-   * 取消调度组件
+   * 从全局轮询管理器取消调度组件
    */
-  private unscheduleComponent(componentId: string): void {
-    const task = this.schedulerTasks.get(componentId)
-    if (task) {
-      if (task.timerId) {
-        clearInterval(task.timerId)
-      }
-      this.schedulerTasks.delete(componentId)
-      console.log(`⏰ [EditorDataSourceManager] 调度器停止: ${componentId}`)
+  private unscheduleComponentFromGlobalManager(componentId: string): void {
+    const taskId = this.pollingTaskIds.get(componentId)
+    if (taskId) {
+      this.globalPollingManager.removeTask(taskId)
+      this.pollingTaskIds.delete(componentId)
+      console.log(`⏰ [EditorDataSourceManager] 全局轮询调度器停止: ${componentId} -> 任务ID: ${taskId}`)
     }
   }
 
@@ -631,8 +769,8 @@ export function useEditorDataSource() {
       return editorDataSourceManager.getComponentData(id)
     },
 
-    triggerUpdate(id: string) {
-      return editorDataSourceManager.triggerDataUpdate(id)
+    async triggerUpdate(id: string) {
+      return await editorDataSourceManager.triggerDataUpdate(id)
     },
 
     setInterval(id: string, interval: number) {

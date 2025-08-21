@@ -43,15 +43,6 @@
       <!-- 配置面板标题 -->
       <div class="config-header">
         <h3 class="panel-title">{{ widgetDisplayName }} {{ $t('config.widget.settings') }}</h3>
-        <div class="header-actions">
-          <n-dropdown :options="configActionsOptions" trigger="click" @select="handleConfigAction">
-            <n-button size="tiny" quaternary>
-              <template #icon>
-                <n-icon><SettingsIcon /></n-icon>
-              </template>
-            </n-button>
-          </n-dropdown>
-        </div>
       </div>
 
       <!-- 配置标签页 - 动态结构 -->
@@ -84,17 +75,15 @@
 
           <!-- 数据源配置特殊处理 -->
           <template v-else-if="layer.name === 'dataSource'">
-            <div class="editor-data-source-config">
-              <!-- 新的编辑器数据源配置组件 -->
+            <div class="data-source-config">
+              <!-- 使用现有的数据源配置组件 -->
               <component
                 :is="layer.component"
-                ref="editorDataSourceRef"
+                ref="dataSourceConfigRef"
+                :data-sources="componentDataSources"
                 :selected-widget-id="selectedWidget?.id"
-                :component-type="selectedWidget?.type"
-                :data-sources="enrichedDataSources"
-                :readonly="readonly"
-                @update="handleEditorDataSourceUpdate"
-                @request-current-data="handleCurrentDataRequest"
+                :initial-config="dataSourceConfig?.config"
+                @update="handleDataSourceConfigUpdate"
               />
             </div>
           </template>
@@ -144,44 +133,6 @@
       </div>
     </div>
 
-    <!-- 配置导入导出对话框 -->
-    <n-modal v-model:show="showImportExportDialog" :title="importExportTitle">
-      <n-card style="width: 600px" :bordered="false" size="huge">
-        <template v-if="importExportMode === 'export'">
-          <n-space vertical>
-            <n-input v-model:value="exportedConfig" type="textarea" :rows="12" readonly class="config-json" />
-            <n-space size="small">
-              <n-button type="primary" @click="copyToClipboard">
-                {{ $t('config.copy') }}
-              </n-button>
-              <n-button @click="showImportExportDialog = false">
-                {{ $t('common.close') }}
-              </n-button>
-            </n-space>
-          </n-space>
-        </template>
-
-        <template v-else>
-          <n-space vertical>
-            <n-input
-              v-model:value="importConfigText"
-              type="textarea"
-              :rows="12"
-              :placeholder="$t('config.import.placeholder')"
-              class="config-json"
-            />
-            <n-space size="small">
-              <n-button type="primary" @click="importConfiguration">
-                {{ $t('config.import.confirm') }}
-              </n-button>
-              <n-button @click="showImportExportDialog = false">
-                {{ $t('common.cancel') }}
-              </n-button>
-            </n-space>
-          </n-space>
-        </template>
-      </n-card>
-    </n-modal>
   </div>
 </template>
 
@@ -228,6 +179,9 @@ import type {
 } from './types'
 import type { VisualEditorWidget } from '../types'
 
+// 🔥 新增：导入执行器管理器
+import { componentExecutorManager } from '@/core/data-source-system/managers/ComponentExecutorManager'
+
 interface Props {
   /** 选中的组件 */
   selectedWidget: VisualEditorWidget | null
@@ -249,6 +203,10 @@ interface Emits {
   (e: 'multi-data-source-update', widgetId: string, dataSources: Record<string, any>): void
   (e: 'multi-data-source-config-update', widgetId: string, config: any): void
   (e: 'request-current-data', widgetId: string): void
+  (
+    e: 'data-source-manager-update',
+    payload: { componentId: string; componentType: string; config: any; action: string }
+  ): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -267,10 +225,6 @@ const configLayers = computed(() => getVisibleConfigLayers())
 
 // 响应式状态 - 默认显示第一个可见层级
 const activeTab = ref(configLayers.value[0]?.name || 'base')
-const showImportExportDialog = ref(false)
-const importExportMode = ref<'import' | 'export'>('export')
-const exportedConfig = ref('')
-const importConfigText = ref('')
 
 // 多数据源数据状态
 const multiDataSourceData = ref<Record<string, any>>({})
@@ -283,8 +237,8 @@ const dataMappingConfig = ref<any>({
 // DataSourceConfigForm 组件引用
 const dataSourceFormRef = ref<any>(null)
 
-// EditorDataSourceConfig 组件引用
-const editorDataSourceRef = ref<any>(null)
+// DataSourceConfigForm 组件引用（现有系统）
+const dataSourceConfigRef = ref<any>(null)
 
 // 配置数据
 const baseConfig = ref({})
@@ -326,9 +280,6 @@ const widgetDisplayName = computed(() => {
   return props.selectedWidget.metadata?.card2Definition?.name || props.selectedWidget.type || 'Unknown Component'
 })
 
-const importExportTitle = computed(() => {
-  return importExportMode.value === 'export' ? '导出配置' : '导入配置'
-})
 
 // V6: 获取组件定义 - 直接从组件元数据获取
 const componentDefinition = computed(() => {
@@ -344,11 +295,163 @@ const componentDefinition = computed(() => {
   return getComponentDataRequirements(props.selectedWidget.type)
 })
 
-// 增强的数据源信息 - 包含完整的组件定义信息
-const enrichedDataSources = computed(() => {
-  if (!componentDefinition.value?.dataSources) return []
+// 组件数据源信息 - 适配现有 DataSourceConfigForm 的数据格式
+const componentDataSources = computed(() => {
+  const definition = componentDefinition.value
 
-  return componentDefinition.value.dataSources.map(dataSource => ({
+  // 🔥 修复：处理 Card2.1 组件的 dataRequirements 格式
+  if (definition?.dataRequirements) {
+    console.log('🔧 [ConfigurationPanel] 从 dataRequirements 转换数据源配置:', definition.dataRequirements)
+
+    // 🔥 处理多数据源：为每个 dataFields 项创建独立的数据源配置
+    if (definition.dataRequirements.dataFields && Array.isArray(definition.dataRequirements.dataFields)) {
+      console.log('🔧 [ConfigurationPanel] 检测到多数据源配置:', definition.dataRequirements.dataFields)
+
+      return definition.dataRequirements.dataFields.map((field: any) => {
+        // 为每个数据字段创建字段映射
+        const fieldMappings: Record<string, any> = {
+          [field.name]: {
+            path: field.name,
+            type: field.type,
+            description: field.description || '',
+            required: field.required || false
+          }
+        }
+
+        // 如果有示例数据，添加到字段映射中
+        if (field.example) {
+          fieldMappings[field.name].example = field.example
+        }
+
+        return {
+          key: field.name, // 使用字段名作为key（如 dataSource1, dataSource2）
+          name: field.description || field.name, // 使用描述作为显示名称
+          type: field.type || 'object',
+          fieldsToMap: [
+            {
+              key: field.name,
+              targetProperty: field.type || 'object'
+            }
+          ],
+          fieldMappings,
+          expectedDataFormat: field.type || 'object',
+          validationRules: {},
+          description: field.description || `${field.name} 数据源`,
+          example: field.example // 传递示例数据
+        }
+      })
+    }
+
+    // 🔥 回退：处理单数据源格式（使用 primaryData）
+    if (definition.dataRequirements.primaryData) {
+      const primaryData = definition.dataRequirements.primaryData
+      const fieldMappings: Record<string, any> = {
+        [primaryData.name]: {
+          path: primaryData.name,
+          type: primaryData.type,
+          description: primaryData.description || '',
+          required: primaryData.required || false
+        }
+      }
+
+      return [
+        {
+          key: primaryData.name || 'main',
+          name: primaryData.description || primaryData.name || '主数据源',
+          type: primaryData.type || 'object',
+          fieldsToMap: [
+            {
+              key: primaryData.name,
+              targetProperty: primaryData.type || 'object'
+            }
+          ],
+          fieldMappings,
+          expectedDataFormat: primaryData.type || 'object',
+          validationRules: {},
+          description: primaryData.description || '组件的主要数据源'
+        }
+      ]
+    }
+
+    // 🔥 最后回退：兼容旧格式 (fields/primary)
+    const fieldsToMap = definition.dataRequirements.fields?.map((field: any) => ({
+      key: field.name,
+      targetProperty: field.type || 'string'
+    })) || [
+      { key: 'value', targetProperty: 'string' },
+      { key: 'label', targetProperty: 'string' },
+      { key: 'status', targetProperty: 'string' }
+    ]
+    const fieldMappings: Record<string, any> = {}
+
+    // 构建字段映射
+    definition.dataRequirements.fields?.forEach((field: any) => {
+      fieldMappings[field.name] = {
+        path: field.name,
+        type: field.type,
+        description: field.description || '',
+        required: field.required || false
+      }
+    })
+
+    return [
+      {
+        key: 'main',
+        name: definition.dataRequirements.primary?.name || '主数据源',
+        type: definition.dataRequirements.primary?.type || 'object',
+        fieldsToMap,
+        fieldMappings,
+        expectedDataFormat: definition.dataRequirements.primary?.type || 'object',
+        validationRules: {},
+        description: definition.dataRequirements.primary?.description || '组件的主要数据源'
+      }
+    ]
+  }
+
+  // 🔥 处理标准的 dataSources 格式
+  if (definition?.dataSources) {
+    return definition.dataSources.map((dataSource: any) => ({
+      key: dataSource.key || dataSource.name,
+      name: dataSource.name,
+      type: dataSource.type || 'unknown',
+      fieldsToMap: dataSource.fieldsToMap || [],
+      fieldMappings: dataSource.fieldMappings || {},
+      expectedDataFormat: dataSource.expectedDataFormat,
+      validationRules: dataSource.validationRules || {}
+    }))
+  }
+
+  // 🔥 如果都没有找到，提供默认配置
+  console.log('🔧 [ConfigurationPanel] 没有找到组件数据源定义，提供默认配置')
+  return [
+    {
+      key: 'main',
+      name: '主数据源',
+      type: 'object',
+      fieldsToMap: ['value', 'label', 'status', 'timestamp'],
+      fieldMappings: {
+        value: { path: 'value', type: 'number', description: '数值' },
+        label: { path: 'label', type: 'string', description: '标签' },
+        status: { path: 'status', type: 'string', description: '状态' },
+        timestamp: { path: 'timestamp', type: 'string', description: '时间戳' }
+      },
+      expectedDataFormat: 'object',
+      validationRules: {},
+      description: '组件的主要数据源，支持各种数据格式'
+    }
+  ]
+})
+
+// 增强的数据源信息 - 包含完整的组件定义信息（保持向后兼容）
+const enrichedDataSources = computed(() => {
+  // 🔥 修复：使用 componentDataSources 的结果，确保一致性
+  const basicDataSources = componentDataSources.value
+
+  if (!basicDataSources || basicDataSources.length === 0) {
+    return []
+  }
+
+  return basicDataSources.map(dataSource => ({
     ...dataSource,
     // 传递完整的字段映射规则
     fieldMappings: dataSource.fieldMappings || {},
@@ -405,34 +508,6 @@ function extractExampleDataFromDefinition(dataSource: any) {
   return null // 返回 null，让 DataSourceConfigForm 使用自己的默认数据生成逻辑
 }
 
-// 配置操作选项
-const configActionsOptions = [
-  {
-    label: '导出配置',
-    key: 'export',
-    icon: 'download'
-  },
-  {
-    label: '导入配置',
-    key: 'import',
-    icon: 'upload'
-  },
-  {
-    label: '重置配置',
-    key: 'reset',
-    icon: 'refresh'
-  },
-  {
-    label: '应用预设',
-    key: 'preset',
-    icon: 'template',
-    children: [
-      { label: '默认预设', key: 'preset-default' },
-      { label: '简洁预设', key: 'preset-minimal' },
-      { label: '完整预设', key: 'preset-full' }
-    ]
-  }
-]
 
 // 配置变更监听器清理函数
 let configChangeCleanup: (() => void) | null = null
@@ -456,7 +531,7 @@ watch(
 // V6: 监听数据映射配置变化，自动处理持久化和应用
 watch(
   dataMappingConfig,
-  newConfig => {
+  async newConfig => {
     if (!props.selectedWidget) return
 
     // 🔥 修复：防止配置加载时触发不必要的事件
@@ -468,7 +543,7 @@ watch(
     // 更新dataSourceConfig以保持持久化
     if (newConfig && Object.keys(newConfig).length > 0) {
       dataSourceConfig.value = {
-        type: 'data-mapping',
+        type: 'data-source-bindings',  // 🔧 修复：使用正确的类型
         enabled: true,
         config: { ...newConfig },
         metadata: {
@@ -479,23 +554,68 @@ watch(
       }
 
       console.log('🎯 [V6ConfigPanel] 数据映射配置变化，自动应用:', newConfig)
+
+      // 🔥 新增：通过执行器管理器执行数据获取
+      try {
+        console.log('🚀 [V6ConfigPanel] 调用执行器管理器执行数据获取:', props.selectedWidget.id)
+
+        const executionResult = await componentExecutorManager.updateComponentExecutor(
+          props.selectedWidget.id,
+          props.selectedWidget.type,
+          newConfig
+        )
+
+        if (executionResult?.success) {
+          console.log('✅ [V6ConfigPanel] 数据执行成功:', executionResult.data)
+        } else {
+          console.warn('⚠️ [V6ConfigPanel] 数据执行失败:', executionResult?.error)
+        }
+      } catch (error) {
+        console.error('❌ [V6ConfigPanel] 执行器调用异常:', error)
+      }
+
+      // 保持原有的事件发射（向后兼容）
       emit('multi-data-source-config-update', props.selectedWidget.id, newConfig)
     } else {
       // 重置为空的正确结构，不是null
       dataSourceConfig.value = null
+
+      // 🔥 新增：清理执行器
+      if (props.selectedWidget) {
+        componentExecutorManager.cleanupExecutor(props.selectedWidget.id)
+      }
     }
   },
   { deep: true }
 )
 
+// 🔥 新增：执行器数据更新回调清理函数
+let executorDataUpdateCleanup: (() => void) | null = null
+
 // 生命周期
 onMounted(() => {
   console.log('ConfigurationPanel 已挂载')
+
+  // 🔥 新增：注册执行器数据更新回调
+  executorDataUpdateCleanup = componentExecutorManager.onDataUpdate((componentId, data) => {
+    console.log('🔄 [ConfigurationPanel] 收到执行器数据更新:', componentId, data)
+
+    // 如果是当前选中的组件，发射数据更新事件
+    if (props.selectedWidget?.id === componentId) {
+      console.log('✅ [ConfigurationPanel] 发射组件数据更新事件:', componentId, data)
+      emit('multi-data-source-update', componentId, data)
+    }
+  })
 })
 
 onUnmounted(() => {
   if (configChangeCleanup) {
     configChangeCleanup()
+  }
+
+  // 🔥 新增：清理执行器数据更新回调
+  if (executorDataUpdateCleanup) {
+    executorDataUpdateCleanup()
   }
 })
 
@@ -527,16 +647,42 @@ const loadWidgetConfiguration = async (widgetId: string) => {
       dataSourceConfig.value = config.dataSource ? { ...config.dataSource } : null
       interactionConfig.value = { ...config.interaction }
 
+      // 🔍 [DEBUG-配置面板] 标签页切换时的完整配置打印
+      console.log('🔍 [DEBUG-配置面板] 加载配置时的完整对象:', {
+        widgetId,
+        fullConfig: JSON.parse(JSON.stringify(config)),
+        dataSourceConfig: config.dataSource ? JSON.parse(JSON.stringify(config.dataSource)) : null,
+        hasDataSourceBindings: !!(config.dataSource?.config?.dataSourceBindings)
+      })
+
       // V6: 直接恢复数据映射配置
       if (config.dataSource?.config) {
         dataMappingConfig.value = { ...config.dataSource.config }
-        console.log('V6ConfigPanel - 恢复数据映射配置:', dataMappingConfig.value)
+        console.log('✅ [ConfigurationPanel] 恢复数据映射配置:', dataMappingConfig.value)
+        console.log('🔍 [ConfigurationPanel] 检查dataSourceBindings:', config.dataSource.config.dataSourceBindings)
       } else {
         dataMappingConfig.value = { dataSourceBindings: {} }
+        console.log('ℹ️ [ConfigurationPanel] 使用默认空配置')
       }
 
-      // V6: DataSourceConfigForm 现在自己负责数据回显，不需要手动调用
-      // 只需要传递 selectedWidgetId，组件会自动从 ConfigurationManager 加载数据
+      // 🔥 新增：如果有保存的数据源配置，重新执行数据获取
+      if (config.dataSource?.config && Object.keys(config.dataSource.config).length > 0) {
+        console.log('🔄 [ConfigurationPanel] 恢复配置后重新执行数据获取')
+        
+        try {
+          const executionResult = await componentExecutorManager.updateComponentExecutor(
+            widgetId,
+            props.selectedWidget?.type || '',
+            config.dataSource.config
+          )
+          
+          if (executionResult?.success) {
+            console.log('✅ [ConfigurationPanel] 配置恢复后数据执行成功')
+          }
+        } catch (error) {
+          console.warn('⚠️ [ConfigurationPanel] 配置恢复后数据执行失败:', error)
+        }
+      }
 
       console.log('ConfigurationPanel - 配置加载完成:', config)
     }
@@ -728,43 +874,86 @@ const getInitialDataSourceValues = () => {
 /**
  * 处理来自 DataSourceConfigForm 的配置更新
  */
-const handleDataSourceConfigUpdate = (config: any) => {
+const handleDataSourceConfigUpdate = async (config: any) => {
   console.log('🔧 [ConfigurationPanel] 处理数据源配置更新:', config)
 
-  if (props.selectedWidget && config.dataSourceBindings) {
-    // 🔥 修复：发送正确的事件名
-    console.log('🔧 [ConfigurationPanel] 发送配置更新事件:', 'multi-data-source-config-update')
-    emit('multi-data-source-config-update', props.selectedWidget.id, config)
-  }
-}
-
-/**
- * 处理来自 EditorDataSourceConfig 的配置更新
- */
-const handleEditorDataSourceUpdate = (config: any) => {
-  console.log('🔧 [ConfigurationPanel] 处理编辑器数据源配置更新:', config)
-
   if (props.selectedWidget) {
-    // 更新数据源配置到配置管理器
+    // 将现有数据源系统的配置格式适配到编辑器
     const enhancedConfig = {
-      type: 'editor-data-source',
+      type: 'data-source-bindings',
       enabled: true,
       config: config,
       metadata: {
         componentType: props.selectedWidget.type,
         updatedAt: Date.now(),
-        source: 'editor-data-source-config'
+        source: 'data-source-config-form'
       }
     }
 
     // 更新到本地配置状态
     dataSourceConfig.value = enhancedConfig
 
-    // 发射配置更新事件
-    emit('multi-data-source-config-update', props.selectedWidget.id, config)
+    // 🔥 关键修复：保存配置到ConfigurationManager
+    try {
+      configurationManager.updateConfiguration(props.selectedWidget.id, 'dataSource', enhancedConfig)
+      console.log('✅ [ConfigurationPanel] 配置已保存到ConfigurationManager')
+    } catch (error) {
+      console.error('❌ [ConfigurationPanel] 保存配置失败:', error)
+    }
 
-    console.log('🔧 [ConfigurationPanel] 编辑器数据源配置已更新:', enhancedConfig)
+    // 🔥 新增：直接调用ComponentExecutorManager执行数据获取
+    try {
+      console.log('🚀 [ConfigurationPanel] 调用执行器管理器执行数据获取:', props.selectedWidget.id)
+      
+      const executionResult = await componentExecutorManager.updateComponentExecutor(
+        props.selectedWidget.id,
+        props.selectedWidget.type,
+        config
+      )
+
+      if (executionResult?.success) {
+        console.log('✅ [ConfigurationPanel] 数据执行成功:', executionResult.data)
+      } else {
+        console.warn('⚠️ [ConfigurationPanel] 数据执行失败:', executionResult?.error)
+      }
+    } catch (error) {
+      console.error('❌ [ConfigurationPanel] 执行器调用异常:', error)
+    }
+
+    // 🔥 新增：同步到编辑器数据源管理器
+    try {
+      // 通过 emit 事件通知父组件（PanelEditor）更新数据源管理器
+      emit('data-source-manager-update', {
+        componentId: props.selectedWidget.id,
+        componentType: props.selectedWidget.type,
+        config: config,
+        action: 'update'
+      })
+
+      console.log('✅ [ConfigurationPanel] 已通知父组件更新数据源管理器')
+    } catch (error) {
+      console.error('❌ [ConfigurationPanel] 通知数据源管理器更新失败:', error)
+    }
+
+    // 发射配置更新事件 - 优先处理 dataSourceBindings
+    if (config.dataSourceBindings) {
+      emit('multi-data-source-config-update', props.selectedWidget.id, config)
+    } else {
+      // 兼容其他格式
+      emit('multi-data-source-config-update', props.selectedWidget.id, config)
+    }
+
+    console.log('🔧 [ConfigurationPanel] 数据源配置已更新:', enhancedConfig)
   }
+}
+
+/**
+ * 处理来自 EditorDataSourceConfig 的配置更新（保持向后兼容）
+ */
+const handleEditorDataSourceUpdate = (config: any) => {
+  console.log('🔧 [ConfigurationPanel] 处理编辑器数据源配置更新（向后兼容）:', config)
+  // 重定向到新的处理方法
+  handleDataSourceConfigUpdate(config)
 }
 
 /**
@@ -955,108 +1144,6 @@ const onToggleWidgetTitles = (value: boolean) => {
   }
 }
 
-/**
- * 处理配置操作
- */
-const handleConfigAction = (key: string) => {
-  switch (key) {
-    case 'export':
-      exportConfiguration()
-      break
-    case 'import':
-      showImportDialog()
-      break
-    case 'reset':
-      resetConfiguration()
-      break
-    case 'preset-default':
-    case 'preset-minimal':
-    case 'preset-full':
-      applyPreset(key.replace('preset-', ''))
-      break
-  }
-}
-
-/**
- * 导出配置
- */
-const exportConfiguration = () => {
-  if (!props.selectedWidget) return
-
-  try {
-    exportedConfig.value = configurationManager.exportConfiguration(props.selectedWidget.id)
-    importExportMode.value = 'export'
-    showImportExportDialog.value = true
-  } catch (error) {
-    message.error('配置导出失败')
-  }
-}
-
-/**
- * 显示导入对话框
- */
-const showImportDialog = () => {
-  importConfigText.value = ''
-  importExportMode.value = 'import'
-  showImportExportDialog.value = true
-}
-
-/**
- * 导入配置
- */
-const importConfiguration = () => {
-  if (!props.selectedWidget) return
-
-  try {
-    const success = configurationManager.importConfiguration(props.selectedWidget.id, importConfigText.value)
-
-    if (success) {
-      message.success('配置导入成功')
-      showImportExportDialog.value = false
-      importConfigText.value = ''
-    } else {
-      message.error('配置导入失败，请检查配置格式')
-    }
-  } catch (error) {
-    message.error('配置导入失败')
-  }
-}
-
-/**
- * 复制到剪贴板
- */
-const copyToClipboard = async () => {
-  try {
-    await navigator.clipboard.writeText(exportedConfig.value)
-    message.success('配置已复制到剪贴板')
-  } catch (error) {
-    message.error('复制失败')
-  }
-}
-
-/**
- * 重置配置
- */
-const resetConfiguration = () => {
-  if (!props.selectedWidget) return
-
-  configurationManager.resetConfiguration(props.selectedWidget.id)
-  message.success('配置已重置')
-}
-
-/**
- * 应用预设
- */
-const applyPreset = (presetName: string) => {
-  if (!props.selectedWidget) return
-
-  const success = configurationManager.applyPreset(props.selectedWidget.id, presetName)
-  if (success) {
-    message.success(`已应用 ${presetName} 预设`)
-  } else {
-    message.error('预设应用失败')
-  }
-}
 
 // 监听选中组件变化 - 在所有函数定义后执行
 watch(
@@ -1081,6 +1168,20 @@ watch(
     }
   },
   { immediate: true }
+)
+
+// 🔥 新增：监听标签页切换，重新加载配置
+watch(
+  activeTab,
+  async (newTab, oldTab) => {
+    console.log('🔄 [ConfigurationPanel] 标签页切换:', { oldTab, newTab })
+    
+    // 如果有选中的组件且标签页确实发生了变化
+    if (props.selectedWidget && newTab !== oldTab && newTab) {
+      console.log('🔄 [ConfigurationPanel] 标签页切换触发配置重载:', props.selectedWidget.id)
+      await loadWidgetConfiguration(props.selectedWidget.id)
+    }
+  }
 )
 </script>
 
@@ -1224,19 +1325,19 @@ watch(
   padding: 8px;
 }
 
-/* 编辑器数据源配置样式 */
-.editor-data-source-config {
+/* 数据源配置样式 */
+.data-source-config {
   height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.editor-data-source-config :deep(.n-scrollbar) {
+.data-source-config :deep(.n-scrollbar) {
   flex: 1;
 }
 
-.editor-data-source-config :deep(.n-scrollbar-content) {
+.data-source-config :deep(.n-scrollbar-content) {
   padding: 8px;
   min-height: 100%;
 }

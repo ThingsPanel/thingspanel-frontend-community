@@ -1,34 +1,8 @@
 <template>
   <div class="data-source-config-form">
-    <!-- 🔥 新增：全局操作区域 -->
-    <div class="global-actions" style="margin-bottom: 16px">
-      <n-space justify="space-between" align="center">
-        <n-text strong style="font-size: 16px">数据源配置管理</n-text>
-        <n-space :size="12">
-          <n-button type="primary" @click="exportAllConfig">
-            <template #icon>
-              <n-icon>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L12 15M12 15L8 11M12 15L16 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M2 17L2 19C2 20.1046 2.89543 21 4 21L20 21C21.1046 21 22 20.1046 22 19L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </n-icon>
-            </template>
-            导出完整配置
-          </n-button>
-          <n-button type="success" @click="showImportModal = true">
-            <template #icon>
-              <n-icon>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 22L12 9M12 9L16 13M12 9L8 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M2 7L2 5C2 3.89543 2.89543 3 4 3L20 3C21.1046 3 22 3.89543 22 5L22 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </n-icon>
-            </template>
-            导入配置
-          </n-button>
-        </n-space>
-      </n-space>
+    <!-- 数据源配置管理标题 -->
+    <div class="header-section" style="margin-bottom: 16px">
+      <n-text strong style="font-size: 16px">数据源配置管理</n-text>
     </div>
     
     <n-collapse :default-expanded-names="[props.dataSources[0]?.key]" accordion>
@@ -656,10 +630,7 @@
                             size="small"
                             style="font-family: monospace; font-size: 11px"
                           />
-                          <n-space :size="4">
-                            <n-button size="tiny" @click="parseHeadersFromJson">解析并应用</n-button>
-                            <n-button size="tiny" @click="exportHeadersToJson">导出为JSON</n-button>
-                          </n-space>
+                          <n-button size="tiny" @click="parseHeadersFromJson">解析并应用</n-button>
                         </n-space>
                       </n-collapse-item>
                     </n-collapse>
@@ -1311,51 +1282,6 @@ return response.data; // 默认返回data字段"
     </template>
   </n-modal>
 
-  <!-- 🆕 导入配置弹窗 -->
-  <n-modal
-    v-model:show="showImportModal"
-    preset="dialog"
-    title="导入数据源配置"
-    style="width: 800px"
-  >
-    <n-space vertical :size="16">
-      <n-alert type="info">
-        <template #header>导入说明</template>
-        请粘贴之前导出的数据源配置JSON，系统将自动恢复所有配置项包括原始数据、处理脚本等。
-      </n-alert>
-      
-      <n-form-item label="配置内容">
-        <n-input
-          v-model:value="importConfigContent"
-          type="textarea"
-          :rows="12"
-          placeholder='请粘贴导出的配置JSON，格式如：
-{
-  "dataSourceKey": "example",
-  "configuration": { ... },
-  "exportTime": "2024-01-01T00:00:00.000Z"
-}'
-          style="font-family: monospace; font-size: 12px"
-        />
-      </n-form-item>
-      
-      <div v-if="importPreview" style="margin-top: 8px">
-        <n-text depth="2" style="font-size: 12px">配置预览:</n-text>
-        <n-card size="small" style="margin-top: 4px; background: var(--code-color)">
-          <pre style="margin: 0; font-size: 11px; color: var(--text-color-2)">{{ importPreview }}</pre>
-        </n-card>
-      </div>
-    </n-space>
-    
-    <template #action>
-      <n-space>
-        <n-button @click="cancelImport">取消</n-button>
-        <n-button type="primary" :disabled="!importConfigContent.trim()" @click="confirmImport">
-          确认导入
-        </n-button>
-      </n-space>
-    </template>
-  </n-modal>
 </template>
 
 <script setup lang="ts">
@@ -1511,6 +1437,8 @@ interface DataSource {
 interface Props {
   selectedWidgetId?: string // 修改为匹配 ConfigurationPanel 传递的属性名
   dataSources: DataSource[]
+  /** 🔥 新增：用于回显的初始配置数据 */
+  initialConfig?: any
 }
 
 interface Emits {
@@ -1520,6 +1448,8 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+// 🔥 紧急修复：核心数据状态（在下方1509行已声明）
 
 // 🔥 新增：原始数据项类型枚举
 type RawDataItemType = 'json' | 'http' | 'websocket'
@@ -1582,19 +1512,6 @@ const showAddRawDataModal = ref(false)
 const currentDataSourceKey = ref('')
 const newRawDataName = ref('')
 
-// 🆕 导入/导出配置相关状态
-const showImportModal = ref(false)
-const importConfigContent = ref('')
-const importPreview = computed(() => {
-  if (!importConfigContent.value.trim()) return ''
-  
-  try {
-    const config = JSON.parse(importConfigContent.value)
-    return `数据源: ${config.dataSourceKey || '未知'}\n配置项: ${Object.keys(config.configuration || {}).length} 个\n导出时间: ${config.exportTime || '未知'}`
-  } catch (error) {
-    return '配置格式错误，请检查JSON格式'
-  }
-})
 
 // 🔥 新增：数据项类型选择相关状态
 const newRawDataType = ref<RawDataItemType>('json')
@@ -2038,18 +1955,6 @@ const parseHeadersFromJson = () => {
   }
 }
 
-/**
- * 导出请求头为 JSON
- */
-const exportHeadersToJson = () => {
-  const headersObj: Record<string, string> = {}
-  httpConfig.headers.forEach(header => {
-    if (header.key && header.value) {
-      headersObj[header.key] = header.value
-    }
-  })
-  httpHeadersJson.value = JSON.stringify(headersObj, null, 2)
-}
 
 /**
  * 添加 URL 参数
@@ -2587,11 +2492,14 @@ const getDataTypeText = (dataSource: DataSource) => {
   // 根据 fieldsToMap 判断期望的数据类型
   if (dataSource.fieldsToMap && dataSource.fieldsToMap.length > 0) {
     const targetProperty = dataSource.fieldsToMap[0].targetProperty
-    if (targetProperty.includes('array') || targetProperty.includes('Array')) {
-      return '数组'
-    }
-    if (targetProperty.includes('object') || targetProperty.includes('Object')) {
-      return '对象'
+    // 🔥 防御性编程：确保 targetProperty 存在且为字符串
+    if (targetProperty && typeof targetProperty === 'string') {
+      if (targetProperty.includes('array') || targetProperty.includes('Array')) {
+        return '数组'
+      }
+      if (targetProperty.includes('object') || targetProperty.includes('Object')) {
+        return '对象'
+      }
     }
   }
 
@@ -2797,7 +2705,14 @@ const sendUpdate = () => {
 /**
  * 初始化数据 - 🔥 修复：优先使用当前运行时数据
  */
+let isInitializing = false  // 防止重复初始化的标志
 const initializeData = () => {
+  if (isInitializing) {
+    console.log('🚫 [DataSourceConfigForm] 正在初始化中，跳过重复调用')
+    return
+  }
+  isInitializing = true
+
   console.log('🔧 [DEBUG-Config] 初始化数据源数据:', {
     selectedWidgetId: props.selectedWidgetId,
     dataSourcesCount: props.dataSources.length,
@@ -2807,18 +2722,21 @@ const initializeData = () => {
   // 🔥 重置配置缓存，允许新的配置发送
   lastSentConfig = null
 
-  // 🔥 核心修复：先请求当前运行时数据
-  if (props.selectedWidgetId) {
-    console.log('🔄 [DataSourceConfigForm] 请求当前运行时数据:', props.selectedWidgetId)
+  // 🔥 简化：仅在第一次真正需要时恢复配置
+  if (props.selectedWidgetId && Object.keys(dataValues).length === 0) {
+    // 只有在 dataValues 为空时才进行配置恢复，避免覆盖用户操作
+    console.log('🔄 [DataSourceConfigForm] 首次加载，尝试恢复配置:', props.selectedWidgetId)
     emit('request-current-data', props.selectedWidgetId)
 
-    // 给父组件一点时间响应，然后再尝试恢复
     setTimeout(() => {
       attemptDataRestore()
     }, 50)
-  } else {
-    // 没有选中组件，使用默认数据
+  } else if (Object.keys(dataValues).length === 0) {
+    // 没有选中组件且没有数据，使用默认数据
+    console.log('🔧 [DataSourceConfigForm] 使用默认数据初始化')
     useDefaultData()
+  } else {
+    console.log('🚫 [DataSourceConfigForm] 已有配置数据，跳过自动恢复')
   }
 }
 
@@ -2831,19 +2749,26 @@ const attemptDataRestore = () => {
   if (props.selectedWidgetId) {
     try {
       console.log('🔍 [DEBUG-Restore] 开始尝试恢复配置:', props.selectedWidgetId)
-      const savedConfig = configurationManager.getConfiguration(props.selectedWidgetId)
-      console.log('🔍 [DEBUG-Restore] ConfigurationManager返回的完整配置:', savedConfig)
-
-      // 尝试从多种数据结构恢复
+      
+      // 🔥 新增：优先从 props.initialConfig 恢复
       let dataSourceBindings = null
 
-      // 🔥 修复：重新启用配置恢复逻辑
-      if (savedConfig?.dataSource?.config?.dataSourceBindings) {
-        dataSourceBindings = savedConfig.dataSource.config.dataSourceBindings
-        console.log('🔧 [DEBUG-Config] 从dataSource.config恢复数据:', dataSourceBindings)
-      } else if (savedConfig?.dataSourceBindings) {
-        dataSourceBindings = savedConfig.dataSourceBindings
-        console.log('🔧 [DEBUG-Config] 从dataSourceBindings直接恢复数据:', dataSourceBindings)
+      if (props.initialConfig?.dataSourceBindings) {
+        dataSourceBindings = props.initialConfig.dataSourceBindings
+        console.log('🔧 [DEBUG-Config] 从props.initialConfig恢复数据:', dataSourceBindings)
+      } else {
+        // 回退到从 ConfigurationManager 恢复
+        const savedConfig = configurationManager.getConfiguration(props.selectedWidgetId)
+        console.log('🔍 [DEBUG-Restore] ConfigurationManager返回的完整配置:', savedConfig)
+
+        // 🔥 修复：重新启用配置恢复逻辑
+        if (savedConfig?.dataSource?.config?.dataSourceBindings) {
+          dataSourceBindings = savedConfig.dataSource.config.dataSourceBindings
+          console.log('🔧 [DEBUG-Config] 从dataSource.config恢复数据:', dataSourceBindings)
+        } else if (savedConfig?.dataSourceBindings) {
+          dataSourceBindings = savedConfig.dataSourceBindings
+          console.log('🔧 [DEBUG-Config] 从dataSourceBindings直接恢复数据:', dataSourceBindings)
+        }
       }
 
       if (dataSourceBindings && Object.keys(dataSourceBindings).length > 0) {
@@ -2915,11 +2840,12 @@ const attemptDataRestore = () => {
     useDefaultData()
   }
 
-  // 🔥 修复：只在没有恢复到数据时发送初始配置
-  // 恢复数据时不发送，避免重复发送相同配置
-  if (!hasRestoredData) {
+  // 🔥 修复：只在没有恢复到数据且不是从initialConfig恢复时发送初始配置
+  if (!hasRestoredData && !isRestoringFromInitialConfig) {
     console.log('🔧 [DEBUG-Config] 使用默认数据，发送初始配置')
     sendUpdate()
+  } else if (!hasRestoredData && isRestoringFromInitialConfig) {
+    console.log('🔧 [DEBUG-Config] 从initialConfig恢复中，使用默认数据但不发送更新')
   } else {
     console.log('🔧 [DEBUG-Config] 数据已恢复，不发送重复配置')
     // 🔥 修复：更新 lastSentConfig 以避免后续重复发送
@@ -2939,6 +2865,9 @@ const attemptDataRestore = () => {
     })
     lastSentConfig = JSON.stringify({ dataSourceBindings })
   }
+  
+  // 重置初始化标志
+  isInitializing = false
 }
 
 /**
@@ -4036,6 +3965,8 @@ const updateFinalData = async (dataSourceKey: string) => {
   }
 }
 
+// 🔥 已删除重复的 sendUpdate 函数声明（使用上方2637行的版本）
+
 // 组件挂载时初始化
 onMounted(() => {
   initializeData()
@@ -4135,209 +4066,32 @@ watch(
   { immediate: false }
 )
 
-// 监听 props 变化，重新初始化
+// 🔥 修复：谨慎监听 props.dataSources 变化，避免无限循环
+let lastDataSourcesLength = 0
 watch(
   () => props.dataSources,
-  () => {
-    initializeData()
+  (newDataSources) => {
+    // 只有在数据源数量发生变化时才重新初始化，避免配置更新时的循环
+    if (newDataSources.length !== lastDataSourcesLength) {
+      console.log('🔄 [DataSourceConfigForm] 数据源数量变化，重新初始化:', { 
+        old: lastDataSourcesLength, 
+        new: newDataSources.length 
+      })
+      lastDataSourcesLength = newDataSources.length
+      initializeData()
+    } else {
+      console.log('🚫 [DataSourceConfigForm] 数据源数量未变化，跳过初始化')
+    }
   },
   { deep: true }
 )
 
-// 🔥 调试：监听dataValues变化
-watch(
-  () => dataValues,
-  newDataValues => {
-    console.log('🔧 [DEBUG-Config] dataValues变化:', {
-      keys: Object.keys(newDataValues),
-      values: newDataValues
-    })
-  },
-  { deep: true, immediate: true }
-)
+// 🚫 彻底禁用 initialConfig 监听器 - 它总是干扰用户操作
+// 配置回显改为仅在组件初始挂载时执行一次，通过 onMounted 中的 attemptDataRestore() 实现
 
-// 🆕 导出配置功能
-// 🔥 修复：导出所有数据源的完整配置
-const exportAllConfig = () => {
-  try {
-    // 构建所有数据源的配置
-    const allDataSourcesConfig: Record<string, any> = {}
-    
-    props.dataSources.forEach(dataSource => {
-      const dataSourceValue = dataValues[dataSource.key]
-      if (dataSourceValue) {
-        allDataSourcesConfig[dataSource.key] = {
-          name: dataSource.name,
-          fieldsToMap: dataSource.fieldsToMap,
-          configuration: {
-            rawDataList: dataSourceValue.rawDataList,
-            finalProcessingType: dataSourceValue.finalProcessingType,
-            finalProcessingScript: dataSourceValue.finalProcessingScript,
-            selectedDataItemIndex: dataSourceValue.selectedDataItemIndex,
-            finalProcessingConfig: dataSourceValue.finalProcessingConfig
-          },
-          currentData: dataSourceValue.currentData
-        }
-      }
-    })
-    
-    // 构建完整导出配置
-    const exportData = {
-      version: '2.0.0',
-      exportTime: new Date().toISOString(),
-      selectedWidgetId: props.selectedWidgetId,
-      dataSources: allDataSourcesConfig,
-      systemConfig: {
-        features: ['rawDataManagement', 'scriptProcessing', 'dataFiltering', 'httpRequests'],
-        configVersion: '2.1',
-        lastUpdateTime: new Date().toISOString()
-      }
-    }
-    
-    // 转换为JSON字符串
-    const configJson = JSON.stringify(exportData, null, 2)
-    
-    // 创建下载文件
-    const blob = new Blob([configJson], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `datasource_complete_config_${new Date().toISOString().slice(0, 10)}.json`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-    
-    console.log('📤 [Export] 导出完整配置:', {
-      dataSourceCount: Object.keys(allDataSourcesConfig).length,
-      totalRawDataItems: Object.values(allDataSourcesConfig).reduce((sum, ds: any) => sum + (ds.configuration.rawDataList?.length || 0), 0),
-      exportData
-    })
-    
-    window.$message?.success(`导出成功！包含 ${Object.keys(allDataSourcesConfig).length} 个数据源的完整配置`)
-    
-  } catch (error) {
-    console.error('❌ [Export] 导出失败:', error)
-    window.$message?.error('导出失败: ' + (error instanceof Error ? error.message : String(error)))
-  }
-}
+// 🔥 禁用：自动数据监听器（造成无限循环）
+// sendUpdate() 改为仅在用户操作时手动调用
 
-// 🔥 兼容性：保留单个数据源导出功能（现在调用完整导出）
-const exportConfig = (dataSourceKey: string) => {
-  console.warn('⚠️ [Export] 使用单个数据源导出，现在导出所有数据源')
-  exportAllConfig() // 直接调用完整导出
-}
-
-// 🆕 导入配置功能
-const confirmImport = () => {
-  try {
-    if (!importConfigContent.value.trim()) {
-      window.$message?.error('请输入配置内容')
-      return
-    }
-
-    // 解析配置
-    const importData = JSON.parse(importConfigContent.value)
-    
-    // 🔥 修复：支持新的完整配置格式（v2.0.0）和旧格式兼容性
-    let importedDataSources: Record<string, any> = {}
-    let importStats = { total: 0, success: 0, failed: 0 }
-    
-    if (importData.version === '2.0.0' && importData.dataSources) {
-      // 新格式：完整配置
-      console.log('📥 [Import] 检测到v2.0完整配置格式')
-      importedDataSources = importData.dataSources
-    } else if (importData.dataSourceKey && importData.configuration) {
-      // 旧格式：单个数据源
-      console.log('📥 [Import] 检测到旧版单数据源格式，转换为新格式')
-      importedDataSources = {
-        [importData.dataSourceKey]: {
-          configuration: importData.configuration
-        }
-      }
-    } else {
-      window.$message?.error('配置格式不正确，请检查JSON格式')
-      return
-    }
-
-    // 批量导入所有数据源
-    Object.entries(importedDataSources).forEach(([dataSourceKey, sourceConfig]) => {
-      importStats.total++
-      
-      try {
-        // 检查目标数据源是否存在
-        if (!dataValues[dataSourceKey]) {
-          console.warn(`⚠️ [Import] 数据源 "${dataSourceKey}" 不存在，跳过导入`)
-          importStats.failed++
-          return
-        }
-
-        // 导入配置到目标数据源
-        const targetDataSource = dataValues[dataSourceKey]
-        const configuration = sourceConfig.configuration
-        
-        if (configuration.rawDataList) {
-          targetDataSource.rawDataList = configuration.rawDataList
-        }
-        if (configuration.finalProcessingType) {
-          targetDataSource.finalProcessingType = configuration.finalProcessingType
-        }
-        if (configuration.finalProcessingScript) {
-          targetDataSource.finalProcessingScript = configuration.finalProcessingScript
-        }
-        if (configuration.selectedDataItemIndex !== undefined) {
-          targetDataSource.selectedDataItemIndex = configuration.selectedDataItemIndex
-        }
-        if (configuration.finalProcessingConfig) {
-          targetDataSource.finalProcessingConfig = configuration.finalProcessingConfig
-        }
-        
-        // 如果有当前数据，也恢复
-        if (sourceConfig.currentData) {
-          targetDataSource.currentData = sourceConfig.currentData
-        }
-
-        console.log(`📥 [Import] 数据源 "${dataSourceKey}" 导入成功`)
-        importStats.success++
-        
-        // 更新最终数据
-        updateFinalData(dataSourceKey).catch(error => {
-          console.error(`❌ [Import] 数据源 "${dataSourceKey}" 导入后数据更新失败:`, error)
-        })
-        
-      } catch (error) {
-        console.error(`❌ [Import] 数据源 "${dataSourceKey}" 导入失败:`, error)
-        importStats.failed++
-      }
-    })
-
-    console.log('📥 [Import] 批量导入完成:', importStats)
-
-    // 通知外部组件
-    sendUpdate()
-    
-    // 显示导入结果
-    if (importStats.success > 0) {
-      window.$message?.success(`导入完成！成功: ${importStats.success} 个数据源，失败: ${importStats.failed} 个`)
-    } else {
-      window.$message?.error('导入失败，没有数据源被成功导入')
-    }
-    
-    // 关闭弹窗并清空内容
-    showImportModal.value = false
-    importConfigContent.value = ''
-    
-  } catch (error) {
-    console.error('❌ [Import] 导入失败:', error)
-    window.$message?.error('导入失败: ' + (error instanceof Error ? error.message : String(error)))
-  }
-}
-
-// 🆕 取消导入
-const cancelImport = () => {
-  showImportModal.value = false
-  importConfigContent.value = ''
-}
 </script>
 
 <style scoped>

@@ -32,7 +32,8 @@
       "Bash(pkill:*)",
       "Bash(true)",
       "Bash(npm run typecheck:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "additionalDirectories": [

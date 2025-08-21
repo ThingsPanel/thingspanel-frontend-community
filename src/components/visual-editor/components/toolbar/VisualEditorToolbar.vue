@@ -17,12 +17,16 @@ import {
   NFormItem,
   NInputNumber,
   NSwitch,
-  NColorPicker
+  NColorPicker,
+  useMessage,
+  type FormInst
 } from 'naive-ui'
 import CommonToolbar from './CommonToolbar.vue'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
 import DataSourceTriggerPanel from '../DataSourceTriggerPanel.vue'
+import { useGlobalPollingManager, type PollingTask as GlobalPollingTask } from '../../core/GlobalPollingManager'
+import { editorDataSourceManager } from '../../core/EditorDataSourceManager'
 
 interface Props {
   mode: 'edit' | 'preview'
@@ -85,6 +89,101 @@ const emit = defineEmits<Emits>()
 const showConfigPanel = ref(false)
 // 数据源触发器面板显示状态
 const showDataSourcePanel = ref(false)
+// 添加轮询任务弹窗显示状态
+const showAddPollingDialog = ref(false)
+
+// 消息提示
+const message = useMessage()
+
+// 全局轮询管理器
+const globalPollingManager = useGlobalPollingManager()
+
+// 轮询任务相关状态
+interface PollingTask {
+  componentId: string
+  componentName: string
+  interval: number
+  active: boolean
+  taskId?: string // 全局管理器中的任务ID
+}
+
+interface NewPollingTask {
+  componentId: string
+  interval: number
+  autoStart: boolean
+}
+
+// 轮询任务列表（基于全局管理器的数据）
+const pollingTasks = computed<PollingTask[]>(() => {
+  return globalPollingManager.getAllTasks().map(task => ({
+    componentId: task.componentId,
+    componentName: task.componentName,
+    interval: task.interval,
+    active: task.active,
+    taskId: task.id
+  }))
+})
+
+// 新建轮询任务表单
+const newPollingTask = ref<NewPollingTask>({
+  componentId: '',
+  interval: 5000,
+  autoStart: true
+})
+
+// 表单引用
+const addPollingFormRef = ref<FormInst>()
+
+// 表单验证规则
+const pollingTaskRules = {
+  componentId: {
+    required: true,
+    message: '请选择要轮询的组件',
+    trigger: ['blur', 'change']
+  },
+  interval: {
+    type: 'number',
+    required: true,
+    min: 2000,
+    message: '轮询间隔不能低于2000ms',
+    trigger: ['blur', 'change']
+  }
+}
+
+// 从编辑器状态获取真实的组件列表（具有数据源配置的组件）
+const availableComponentsForPolling = computed(() => {
+  try {
+    // 获取编辑器数据源管理器中所有已注册的组件
+    const allDataSourceConfigs = globalPollingManager.getAllTasks()
+    const registeredComponents = new Set(allDataSourceConfigs.map(task => task.componentId))
+
+    // 获取编辑器数据源管理器中的组件配置
+    const editorConfigs = editorDataSourceManager?.getAllComponentConfigs?.()
+    if (!editorConfigs) {
+      console.warn('⚠️ [VisualEditorToolbar] 无法获取编辑器数据源配置')
+      return []
+    }
+
+    // 构建可用组件列表
+    const availableComponents = Array.from(editorConfigs.values())
+      .filter(config => {
+        // 只包含已启用且有有效数据源配置的组件
+        return config.enabled && config.config && !registeredComponents.has(config.componentId)
+      })
+      .map(config => ({
+        label: `${config.componentType} (${config.componentId.slice(0, 8)}...)`,
+        value: config.componentId,
+        componentType: config.componentType,
+        dataSourceType: config.config?.type || 'unknown'
+      }))
+
+    console.log('🔍 [VisualEditorToolbar] 可用于轮询的组件:', availableComponents)
+    return availableComponents
+  } catch (error) {
+    console.error('❌ [VisualEditorToolbar] 获取可用组件列表失败:', error)
+    return []
+  }
+})
 
 // 主题支持 - 使用Naive UI主题系统
 const themeVars = useThemeVars()
@@ -227,6 +326,140 @@ const getConfigTitle = () => {
     return $t('visualEditor.visualizationConfig')
   }
   return $t('visualEditor.rendererConfig')
+}
+
+// 轮询任务管理方法
+const handleComponentSelect = (componentId: string) => {
+  console.log('选择组件:', componentId)
+
+  try {
+    // 获取组件的数据源配置，根据数据源类型设置合适的默认间隔
+    const componentConfig = editorDataSourceManager.getComponentConfig(componentId)
+    if (componentConfig?.config) {
+      const dataSourceType = componentConfig.config.type
+
+      // 根据数据源类型设置推荐的轮询间隔
+      let recommendedInterval = 5000 // 默认5秒
+      switch (dataSourceType) {
+        case 'api':
+        case 'http':
+          recommendedInterval = 10000 // API请求建议10秒
+          break
+        case 'websocket':
+          recommendedInterval = 30000 // WebSocket连接建议30秒检查
+          break
+        case 'database':
+          recommendedInterval = 15000 // 数据库查询建议15秒
+          break
+        case 'mqtt':
+          recommendedInterval = 20000 // MQTT建议20秒
+          break
+        default:
+          recommendedInterval = 5000
+      }
+
+      // 更新表单的默认间隔
+      newPollingTask.value.interval = recommendedInterval
+
+      console.log(
+        `🎯 [VisualEditorToolbar] 为组件 ${componentId} (数据源: ${dataSourceType}) 设置推荐间隔: ${recommendedInterval}ms`
+      )
+    }
+  } catch (error) {
+    console.error('❌ [VisualEditorToolbar] 获取组件信息失败:', error)
+  }
+}
+
+const handleAddPollingTask = async () => {
+  if (!addPollingFormRef.value) return
+
+  try {
+    await addPollingFormRef.value.validate()
+
+    const selectedComponent = availableComponentsForPolling.value.find(
+      c => c.value === newPollingTask.value.componentId
+    )
+
+    if (!selectedComponent) {
+      message.error('请选择有效的组件')
+      return
+    }
+
+    // 使用全局轮询管理器添加任务
+    const taskId = globalPollingManager.addTask({
+      componentId: newPollingTask.value.componentId,
+      componentName: selectedComponent.label,
+      interval: newPollingTask.value.interval,
+      autoStart: newPollingTask.value.autoStart,
+      callback: () => {
+        // TODO: 这里应该调用实际的数据源更新逻辑
+        console.log(`🔄 执行组件数据更新: ${selectedComponent.label}`)
+        // editorDataSourceManager.triggerComponentUpdate(newPollingTask.value.componentId)
+      }
+    })
+
+    // 重置表单
+    newPollingTask.value = {
+      componentId: '',
+      interval: 5000,
+      autoStart: true
+    }
+
+    showAddPollingDialog.value = false
+    message.success(`轮询任务"${selectedComponent.label}"添加成功`)
+
+    console.log(`✅ 创建轮询任务: ${taskId}`)
+  } catch (error) {
+    console.error('添加轮询任务失败:', error)
+    message.error('添加轮询任务失败')
+  }
+}
+
+const togglePollingTask = (componentId: string) => {
+  const task = pollingTasks.value.find(t => t.componentId === componentId)
+  if (!task || !task.taskId) return
+
+  if (task.active) {
+    stopPollingTask(componentId)
+  } else {
+    startPollingTask(componentId)
+  }
+}
+
+const startPollingTask = (componentId: string) => {
+  const task = pollingTasks.value.find(t => t.componentId === componentId)
+  if (!task || !task.taskId) return
+
+  const success = globalPollingManager.startTask(task.taskId)
+  if (success) {
+    message.success(`轮询任务"${task.componentName}"已启动`)
+  } else {
+    message.error(`启动轮询任务"${task.componentName}"失败`)
+  }
+}
+
+const stopPollingTask = (componentId: string) => {
+  const task = pollingTasks.value.find(t => t.componentId === componentId)
+  if (!task || !task.taskId) return
+
+  const success = globalPollingManager.stopTask(task.taskId)
+  if (success) {
+    message.info(`轮询任务"${task.componentName}"已停止`)
+  } else {
+    message.error(`停止轮询任务"${task.componentName}"失败`)
+  }
+}
+
+const removePollingTask = (componentId: string) => {
+  const task = pollingTasks.value.find(t => t.componentId === componentId)
+  if (!task || !task.taskId) return
+
+  const success = globalPollingManager.removeTask(task.taskId)
+  if (success) {
+    message.success(`轮询任务"${task.componentName}"已删除`)
+  } else {
+    message.error(`删除轮询任务"${task.componentName}"失败`)
+  }
 }
 </script>
 
@@ -533,6 +766,52 @@ const getConfigTitle = () => {
                 @update:value="handleGridstackConfigChange({ ...gridstackConfig, staticGrid: $event })"
               />
             </NFormItem>
+
+            <!-- 轮询配置区域 -->
+            <NDivider title-placement="left">
+              <span class="text-14px font-medium">数据源轮询配置</span>
+            </NDivider>
+
+            <div class="polling-config-section">
+              <div class="mb-4 text-12px text-gray-500">管理面板中组件的数据源轮询任务，设置自动数据更新间隔</div>
+
+              <!-- 轮询任务列表 -->
+              <div v-if="pollingTasks.length > 0" class="polling-tasks mb-4">
+                <div v-for="task in pollingTasks" :key="task.componentId" class="polling-task-item">
+                  <div class="flex items-center justify-between p-3 border rounded">
+                    <div class="flex-1">
+                      <div class="font-medium text-14px">{{ task.componentName }}</div>
+                      <div class="text-12px text-gray-500">
+                        间隔：{{ task.interval }}ms | 状态：
+                        <span :class="task.active ? 'text-green-500' : 'text-gray-400'">
+                          {{ task.active ? '运行中' : '已停止' }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <NButton
+                        size="small"
+                        :type="task.active ? 'warning' : 'primary'"
+                        @click="togglePollingTask(task.componentId)"
+                      >
+                        {{ task.active ? '停止' : '启动' }}
+                      </NButton>
+                      <NButton size="small" type="error" @click="removePollingTask(task.componentId)">删除</NButton>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 添加新轮询任务 -->
+              <div class="add-polling-task">
+                <NButton type="dashed" block @click="showAddPollingDialog = true">
+                  <template #icon>
+                    <SvgIcon icon="material-symbols:add-circle-outline" />
+                  </template>
+                  添加轮询任务
+                </NButton>
+              </div>
+            </div>
           </NForm>
         </div>
 
@@ -586,6 +865,64 @@ const getConfigTitle = () => {
       :auto-focus="false"
     >
       <DataSourceTriggerPanel />
+    </NModal>
+
+    <!-- 添加轮询任务弹窗 -->
+    <NModal
+      v-model:show="showAddPollingDialog"
+      :mask-closable="true"
+      :close-on-esc="true"
+      preset="card"
+      class="add-polling-modal"
+      :style="{ width: '600px', maxWidth: '90vw' }"
+      title="添加轮询任务"
+      :bordered="false"
+      size="medium"
+      role="dialog"
+      :auto-focus="false"
+    >
+      <div class="add-polling-content">
+        <NForm
+          ref="addPollingFormRef"
+          :model="newPollingTask"
+          :rules="pollingTaskRules"
+          label-placement="left"
+          label-width="80"
+        >
+          <NFormItem label="选择组件" path="componentId">
+            <NSelect
+              v-model:value="newPollingTask.componentId"
+              :options="availableComponentsForPolling"
+              placeholder="选择一个具有数据源的组件"
+              clearable
+              @update:value="handleComponentSelect"
+            />
+          </NFormItem>
+
+          <NFormItem label="轮询间隔" path="interval">
+            <NInputNumber
+              v-model:value="newPollingTask.interval"
+              :min="2000"
+              :max="300000"
+              :step="1000"
+              placeholder="轮询间隔（毫秒）"
+              suffix="ms"
+              style="width: 100%"
+            />
+            <template #feedback>建议间隔时间不低于2000ms，避免过于频繁的请求</template>
+          </NFormItem>
+
+          <NFormItem label="自动启动" path="autoStart">
+            <NSwitch v-model:value="newPollingTask.autoStart" />
+            <template #feedback>创建任务后是否立即开始轮询</template>
+          </NFormItem>
+        </NForm>
+
+        <div class="dialog-actions mt-6 flex justify-end gap-3">
+          <NButton @click="showAddPollingDialog = false">取消</NButton>
+          <NButton type="primary" @click="handleAddPollingTask">添加任务</NButton>
+        </div>
+      </div>
     </NModal>
   </div>
 </template>
@@ -667,6 +1004,11 @@ const getConfigTitle = () => {
   --n-border-radius: 12px;
 }
 
+/* 添加轮询任务模态弹窗样式 */
+.add-polling-modal {
+  --n-border-radius: 12px;
+}
+
 .data-source-trigger-modal :deep(.n-modal-mask) {
   background-color: rgba(0, 0, 0, 0.4) !important;
   backdrop-filter: blur(6px) !important;
@@ -731,6 +1073,35 @@ const getConfigTitle = () => {
   max-height: 70vh;
   overflow-y: auto;
   background-color: transparent;
+}
+
+/* 轮询配置区域样式 */
+.polling-config-section {
+  margin-top: 16px;
+}
+
+.polling-task-item {
+  margin-bottom: 8px;
+}
+
+.polling-task-item .border {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.polling-task-item .border:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.add-polling-content {
+  padding: 0;
+}
+
+.dialog-actions {
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
 }
 
 /* 响应式调整 */
