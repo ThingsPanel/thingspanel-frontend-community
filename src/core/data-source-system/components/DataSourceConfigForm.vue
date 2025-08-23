@@ -1199,36 +1199,18 @@ return response.data; // 默认返回data字段"
   </n-modal>
 
   <!-- 查看最终数据弹窗 -->
-  <n-modal v-model:show="showFinalDataModal" preset="dialog" title="当前数据源最终数据" style="width: 600px">
-    <n-space vertical :size="12">
-      <n-text>数据源 "{{ currentDataSourceKey }}" 的当前最终数据：</n-text>
-      <n-code
-        :code="currentFinalData"
-        language="json"
-        :show-line-numbers="true"
-        style="max-height: 400px; overflow-y: auto"
-      />
-    </n-space>
-    <template #action>
-      <n-button @click="showFinalDataModal = false">关闭</n-button>
-    </template>
-  </n-modal>
+  <FinalDataModal
+    v-model="showFinalDataModal"
+    :data-source-key="currentFinalDataSourceKey"
+    :final-data="dataValues[currentFinalDataSourceKey]?.currentData"
+  />
 
   <!-- 查看原始数据详情弹窗 -->
-  <n-modal v-model:show="showRawDataDetailModal" preset="dialog" title="原始数据详情" style="width: 600px">
-    <n-space vertical :size="12">
-      <n-text>数据项 "{{ currentRawDataName }}" 的详细内容：</n-text>
-      <n-code
-        :code="currentRawDataDetail"
-        language="json"
-        :show-line-numbers="true"
-        style="max-height: 400px; overflow-y: auto"
-      />
-    </n-space>
-    <template #action>
-      <n-button @click="showRawDataDetailModal = false">关闭</n-button>
-    </template>
-  </n-modal>
+  <RawDataDetailModal
+    v-model="showRawDataDetailModal"
+    :raw-data-name="currentRawDataName"
+    :raw-data-content="currentRawDataContent"
+  />
 
   <!-- 🆕 系统 API 列表弹窗 -->
   <n-modal v-model:show="showApiListModal" preset="dialog" title="系统 API 列表" style="width: 800px">
@@ -1324,11 +1306,24 @@ import {
 import { InformationCircleOutline } from '@vicons/ionicons5'
 import { configurationManager } from '@/components/visual-editor/configuration/ConfigurationManager'
 
-// 🔥 使用 Monaco Editor
-
 // 🔥 新增：导入脚本引擎
 import { defaultScriptEngine } from '@/core/script-engine'
 import { request } from '@/service/request'
+
+// 🔥 导入类型定义
+import type {
+  DataSource,
+  DataSourceConfigFormProps,
+  DataSourceConfigFormEmits,
+  RawDataItemType,
+  RawDataItem,
+  FinalProcessingType,
+  DataSourceValue
+} from './types'
+
+// 🔥 导入弹窗组件
+import FinalDataModal from './modals/FinalDataModal.vue'
+import RawDataDetailModal from './modals/RawDataDetailModal.vue'
 
 // 🆕 核心数据处理函数
 /**
@@ -1426,86 +1421,11 @@ async function processFinalData(
   }
 }
 
-interface DataSource {
-  key: string
-  name?: string
-  description?: string
-  fieldMappings?: Record<string, any>
-  fieldsToMap?: Array<{ key: string; targetProperty: string }>
-}
-
-// 🔄 重构：v-model标准接口
-interface Props {
-  selectedWidgetId?: string
-  dataSources: DataSource[]
-  /** v-model绑定值：完整的数据源配置对象 */
-  modelValue?: any
-}
-
-interface Emits {
-  /** v-model更新事件 */
-  (e: 'update:modelValue', value: any): void
-  /** 请求当前运行时数据 */
-  (e: 'request-current-data', widgetId: string): void
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const props = defineProps<DataSourceConfigFormProps>()
+const emit = defineEmits<DataSourceConfigFormEmits>()
 
 // 🔥 紧急修复：核心数据状态（在下方1509行已声明）
 
-// 🔥 新增：原始数据项类型枚举
-type RawDataItemType = 'json' | 'http' | 'websocket'
-
-// 🔥 新增：原始数据项接口（增加类型字段）
-// 🔥 修复：使用与执行器一致的RawDataItem类型定义
-interface RawDataItem {
-  id: string
-  name: string
-  type: RawDataItemType // 数据项类型
-  data: any
-  config?: {
-    // 🆕 关键字段：数据过滤和处理配置
-    filterPath?: string      // 数据过滤路径（JSONPath格式）
-    processScript?: string   // 数据处理脚本
-    // 根据类型存储不同的配置
-    jsonData?: string // json类型的数据
-    httpConfig?: {
-      // http类型的配置
-      url: string
-      method: string
-      headers?: Record<string, string>
-    }
-    websocketConfig?: {
-      // websocket类型的配置
-      url: string
-      protocols?: string[]
-    }
-    // 支持扩展字段
-    [key: string]: any
-  }
-  createdAt: string
-  isActive: boolean
-}
-
-// 🔥 数据源最终处理类型
-type FinalProcessingType = 
-  | 'merge-object'      // 对象合并（多个对象合并成一个大对象）
-  | 'concat-array'      // 数组连接（多个数组连接起来）
-  | 'custom-script'     // 自定义脚本（完全自定义处理逻辑）
-  | 'select-specific'   // 选择特定数据项（预留，后续实现条件使用等）
-
-// 🔥 修改：数据结构接口 - 原始数据项完全独立，新增最终处理配置
-interface DataSourceValue {
-  currentData: any // 最终数据（完全独立）
-  rawDataList: RawDataItem[] // 原始数据列表（完全独立，不影响最终数据）
-  // 🆕 最终处理配置
-  finalProcessingType: FinalProcessingType // 最终处理类型
-  finalProcessingScript?: string // 自定义脚本内容
-  finalProcessingConfig?: any // 其他处理配置（预留）
-  // 🆕 选择特定数据项配置
-  selectedDataItemIndex?: number // 选中的数据项索引
-}
 
 // 数据存储 - 🔥 修改：支持原始数据列表
 const dataValues = reactive<Record<string, DataSourceValue>>({})
@@ -1778,14 +1698,14 @@ const systemApiOptions = [
   }
 ]
 
-// 🔥 新增：查看最终数据相关状态
+// 🔥 新增：查看最终数据相关状态  
 const showFinalDataModal = ref(false)
-const currentFinalData = ref('')
+const currentFinalDataSourceKey = ref('')
 
 // 🔥 新增：查看原始数据详情相关状态
 const showRawDataDetailModal = ref(false)
-const currentRawDataDetail = ref('')
 const currentRawDataName = ref('')
+const currentRawDataContent = ref<any>(null)
 
 // 🆕 最终处理状态和错误处理
 const finalProcessingStatus = reactive<Record<string, {
@@ -3538,18 +3458,7 @@ const deleteRawData = (dataSourceKey: string, rawDataId: string) => {
 
 // 🔥 新增：查看当前数据源最终数据
 const showCurrentFinalData = (dataSourceKey: string) => {
-  const dataSourceValue = dataValues[dataSourceKey]
-  if (dataSourceValue?.currentData) {
-    try {
-      currentFinalData.value = JSON.stringify(dataSourceValue.currentData, null, 2)
-    } catch {
-      currentFinalData.value = String(dataSourceValue.currentData)
-    }
-  } else {
-    currentFinalData.value = '暂无数据'
-  }
-
-  currentDataSourceKey.value = dataSourceKey
+  currentFinalDataSourceKey.value = dataSourceKey
   showFinalDataModal.value = true
 }
 
@@ -3564,13 +3473,15 @@ const viewRawDataDetail = async (dataSourceKey: string, rawDataId: string) => {
   try {
     // 应用数据处理逻辑
     const processedData = await processRawData(targetItem.data, targetItem.config)
-
-    // 显示处理后的数据
-    currentRawDataDetail.value = JSON.stringify(processedData, null, 2)
+    
     console.log('🔧 [ViewData] 原始数据:', targetItem.data)
     console.log('🔧 [ViewData] 处理后数据:', processedData)
+    
+    // 存储处理后的数据
+    currentRawDataContent.value = processedData
   } catch {
-    currentRawDataDetail.value = String(targetItem.data)
+    // 处理失败时显示原始数据
+    currentRawDataContent.value = targetItem.data
   }
 
   currentRawDataName.value = targetItem.name
