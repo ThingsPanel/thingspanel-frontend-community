@@ -179,12 +179,12 @@ const defaultBaseConfig: BaseConfiguration = {
 const baseConfig = computed((): BaseConfiguration => {
   try {
     const widgetConfig = configurationManager.getConfiguration(props.nodeId)
-    
+
     // 🔥 如果没有配置，直接返回默认配置，避免创建新对象
     if (!widgetConfig?.base) {
       return defaultBaseConfig
     }
-    
+
     // 🔥 使用展开运算符合并，确保返回稳定的对象
     return {
       ...defaultBaseConfig,

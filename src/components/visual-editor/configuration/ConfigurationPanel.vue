@@ -575,26 +575,26 @@ watch(
       console.log('⏸️ [ConfigurationPanel] 跳过同步 - 防循环保护')
       return
     }
-    
+
     // 🔥 新增：防抖机制，避免短时间内重复同步
     const now = Date.now()
     if (now - lastSyncTime < 100) {
       console.log('⏸️ [ConfigurationPanel] 跳过同步 - 防抖保护')
       return
     }
-    
+
     // 🔥 新增：内容去重，避免相同配置重复同步
     const currentConfig = JSON.stringify({
       base: baseConfig.value,
       component: componentConfig.value,
       interaction: interactionConfig.value
     })
-    
+
     if (currentConfig === lastSyncConfig) {
       console.log('⏸️ [ConfigurationPanel] 跳过同步 - 配置未变化')
       return
     }
-    
+
     console.log(`🔧 [ConfigurationPanel] 配置变化触发同步: ${props.selectedWidget.id}`)
     lastSyncTime = now
     lastSyncConfig = currentConfig
