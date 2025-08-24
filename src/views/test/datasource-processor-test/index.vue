@@ -204,11 +204,14 @@ const testDataSourcesArray = [
 
 // 将数组转换为 useDataSourceState 需要的 Record<string, DataSource> 格式
 const testDataSources = computed(() => {
-  return testDataSourcesArray.reduce((acc, item) => {
-    acc[item.key] = item as Omit<typeof item, 'key'> & DataSource;
-    return acc;
-  }, {} as Record<string, DataSource>);
-});
+  return testDataSourcesArray.reduce(
+    (acc, item) => {
+      acc[item.key] = item as Omit<typeof item, 'key'> & DataSource
+      return acc
+    },
+    {} as Record<string, DataSource>
+  )
+})
 
 // 页面状态
 const currentStep = ref(0)

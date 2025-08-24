@@ -1,15 +1,11 @@
 <template>
   <div class="data-source-test-page">
     <h1>数据源配置测试页面</h1>
-    
+
     <!-- 配置表单 -->
     <div class="config-section">
       <h2>配置表单</h2>
-      <DataSourceConfigForm
-        v-model="configData"
-        :data-sources="dataSources"
-        @update:model-value="onConfigUpdate"
-      />
+      <DataSourceConfigForm v-model="configData" :data-sources="dataSources" @update:model-value="onConfigUpdate" />
     </div>
 
     <!-- 当前配置显示 -->
@@ -20,12 +16,8 @@
 
     <!-- 测试按钮 -->
     <div class="test-buttons">
-      <n-button @click="resetConfig" type="default">
-        重置配置
-      </n-button>
-      <n-button @click="addRandomConfig" type="info">
-        添加随机配置
-      </n-button>
+      <n-button type="default" @click="resetConfig">重置配置</n-button>
+      <n-button type="info" @click="addRandomConfig">添加随机配置</n-button>
     </div>
 
     <!-- 日志显示 -->
@@ -59,7 +51,7 @@ const dataSources = reactive<Record<string, DataSource>>({
     }
   },
   apiData: {
-    key: 'apiData', 
+    key: 'apiData',
     name: 'API数据',
     description: 'HTTP API数据源',
     defaultConfig: {
@@ -135,14 +127,14 @@ function addRandomConfig() {
     timestamp: Date.now(),
     enabled: Math.random() > 0.5
   }
-  
+
   if (configData.value.dataSourceBindings && configData.value.activeDataSourceKey) {
     configData.value.dataSourceBindings[configData.value.activeDataSourceKey] = {
       ...configData.value.dataSourceBindings[configData.value.activeDataSourceKey],
       [randomKey]: randomConfig
     }
   }
-  
+
   addLog(`添加随机配置: ${randomKey}`)
 }
 </script>

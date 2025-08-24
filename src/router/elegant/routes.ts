@@ -908,6 +908,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'test_json-data-input-test',
+        path: '/test/json-data-input-test',
+        component: 'view.test_json-data-input-test',
+        meta: {
+          title: 'test_json-data-input-test',
+          i18nKey: 'route.test_json-data-input-test'
+        }
+      },
+      {
         name: 'test_minimal-test',
         path: '/test/minimal-test',
         component: 'view.test_minimal-test',

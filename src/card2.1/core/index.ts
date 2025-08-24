@@ -50,7 +50,7 @@ export function getCard2CoreStatus(): {
   registeredComponents: string[]
 } {
   const stats = ComponentRegistry.getStats()
-  
+
   return {
     isInitialized: stats.totalComponents > 0,
     componentCount: stats.totalComponents,
@@ -68,13 +68,13 @@ export function validateCard2Core(): {
 } {
   const errors: string[] = []
   const warnings: string[] = []
-  
+
   // 检查组件注册情况
   const stats = ComponentRegistry.getStats()
   if (stats.totalComponents === 0) {
     errors.push('没有注册任何组件')
   }
-  
+
   // 检查必要组件
   const requiredComponents = ['dual-data-display', 'triple-data-display']
   requiredComponents.forEach(componentType => {
@@ -82,12 +82,12 @@ export function validateCard2Core(): {
       errors.push(`缺少必要组件: ${componentType}`)
     }
   })
-  
+
   // 检查多数据源组件
   if (stats.multiDataSourceComponents === 0) {
     warnings.push('没有多数据源组件')
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors,

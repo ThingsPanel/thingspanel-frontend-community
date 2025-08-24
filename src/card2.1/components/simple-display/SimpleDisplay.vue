@@ -85,7 +85,7 @@ const hasActiveInteractions = computed(() => {
 const updateInteractionState = (eventType: string) => {
   interactionState.lastInteractionTime = new Date().toISOString()
   interactionState.interactionCount++
-  
+
   // 发送交互状态变化事件
   emit('interaction-state-change', {
     componentId: props.componentId || '',
@@ -127,7 +127,7 @@ const handleClick = () => {
 const handleMouseEnter = () => {
   console.log('🔍 [SimpleDisplay] 鼠标进入:', props.componentId)
   updateInteractionState('hover')
-  
+
   emit('hover', {
     componentId: props.componentId || '',
     type: 'enter'
@@ -144,7 +144,7 @@ const handleMouseEnter = () => {
 
 const handleMouseLeave = () => {
   console.log('🔍 [SimpleDisplay] 鼠标离开:', props.componentId)
-  
+
   emit('hover', {
     componentId: props.componentId || '',
     type: 'leave'
@@ -213,7 +213,7 @@ const handleMouseLeave = () => {
       <div class="basic-info">
         <small>组件ID: {{ props.componentId || '未设置' }}</small>
       </div>
-      
+
       <!-- 开发/调试模式下显示状态信息 -->
       <div v-if="previewMode" class="state-info">
         <div class="state-item">
@@ -283,13 +283,14 @@ const handleMouseLeave = () => {
 }
 
 @keyframes interaction-pulse {
-  0%, 100% { 
+  0%,
+  100% {
     border-color: var(--success-color);
-    opacity: 1; 
+    opacity: 1;
   }
-  50% { 
+  50% {
     border-color: var(--info-color);
-    opacity: 0.6; 
+    opacity: 0.6;
   }
 }
 
@@ -395,8 +396,14 @@ const handleMouseLeave = () => {
 }
 
 @keyframes indicator-blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0.3; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0.3;
+  }
 }
 
 .indicator-text {

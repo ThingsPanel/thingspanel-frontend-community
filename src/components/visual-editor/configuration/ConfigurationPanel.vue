@@ -257,8 +257,8 @@ const dataSourceConfig = computed<DataSourceConfiguration | null>({
     return config?.dataSource || null
   },
   set: value => {
-    console.log('🔄 [ConfigurationPanel] dataSourceConfig setter 被调用:', { value, isUpdatingFromManager });
-    
+    console.log('🔄 [ConfigurationPanel] dataSourceConfig setter 被调用:', { value, isUpdatingFromManager })
+
     // 🚨 防止循环更新：如果正在从ConfigurationManager更新，不再同步回去
     if (isUpdatingFromManager) {
       console.log('⏸️ [ConfigurationPanel] 跳过循环更新 - 正在从Manager更新')

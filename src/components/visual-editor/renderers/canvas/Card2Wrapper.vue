@@ -414,23 +414,20 @@ const getDataSourcesForComponent = () => {
 const getComponentSpecificProps = () => {
   console.log('🔥 [Card2Wrapper] 开始通用数据源映射，组件类型:', props.componentType)
   console.log('🔥 [Card2Wrapper] 执行器数据:', executorData.value)
-  
+
   // 🔥 使用通用数据源映射器
-  const specificProps = DataSourceMapper.mapDataSources(
-    props.componentType,
-    executorData.value
-  )
-  
+  const specificProps = DataSourceMapper.mapDataSources(props.componentType, executorData.value)
+
   // 🔥 验证映射结果
   const validation = DataSourceMapper.validateMapping(props.componentType, specificProps)
   if (!validation.isValid) {
     console.warn('⚠️ [Card2Wrapper] 数据源映射验证失败:', validation)
   }
-  
+
   // 🔥 获取映射统计信息
   const stats = DataSourceMapper.getMappingStats(props.componentType, executorData.value)
   console.log('📊 [Card2Wrapper] 映射统计:', stats)
-  
+
   console.log('✅ [Card2Wrapper] 通用映射结果:', specificProps)
   return specificProps
 }
@@ -487,18 +484,18 @@ onMounted(async () => {
     if (componentId === props.nodeId) {
       console.log('🔥 [Card2Wrapper] 接收到执行器数据更新:', componentId, data)
       console.log('🔥 [Card2Wrapper] 接收到的data完整结构:', JSON.stringify(data, null, 2))
-      
+
       // 🔥 调试：检查接收到的数据详情
       if (data.dataSource1) {
         console.log('🔥 [Card2Wrapper] 接收到的dataSource1:', JSON.stringify(data.dataSource1, null, 2))
         console.log('🔥 [Card2Wrapper] 接收到的dataSource1.age:', data.dataSource1.age)
       }
-      
+
       // 🔥 调试：更新前的executorData状态
       console.log('🔥 [Card2Wrapper] 更新前executorData.value:', JSON.stringify(executorData.value, null, 2))
-      
+
       executorData.value = { ...data }
-      
+
       // 🔥 调试：更新后的executorData状态
       console.log('🔥 [Card2Wrapper] 更新后executorData.value:', JSON.stringify(executorData.value, null, 2))
       if (executorData.value.dataSource1) {

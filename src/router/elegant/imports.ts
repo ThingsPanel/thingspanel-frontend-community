@@ -91,6 +91,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "test_executor-integration": () => import("@/views/test/executor-integration/index.vue"),
   "test_http-request-validation": () => import("@/views/test/http-request-validation/index.vue"),
   "test_interaction-system-test": () => import("@/views/test/interaction-system-test/index.vue"),
+  "test_json-data-input-test": () => import("@/views/test/json-data-input-test/index.vue"),
   "test_minimal-test": () => import("@/views/test/minimal-test/index.vue"),
   "test_original-config-test": () => import("@/views/test/original-config-test/index.vue"),
   "test_property-exposure-test": () => import("@/views/test/property-exposure-test/index.vue"),

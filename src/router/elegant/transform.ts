@@ -261,6 +261,7 @@ const routeMap: RouteMap = {
   "test_executor-integration": "/test/executor-integration",
   "test_http-request-validation": "/test/http-request-validation",
   "test_interaction-system-test": "/test/interaction-system-test",
+  "test_json-data-input-test": "/test/json-data-input-test",
   "test_minimal-test": "/test/minimal-test",
   "test_original-config-test": "/test/original-config-test",
   "test_property-exposure-test": "/test/property-exposure-test",

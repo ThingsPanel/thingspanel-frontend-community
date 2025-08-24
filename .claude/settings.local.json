@@ -37,7 +37,9 @@
       "Bash(sed:*)",
       "Bash(sed:*)",
       "Bash(npx vue-tsc:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(git grep:*)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "additionalDirectories": [

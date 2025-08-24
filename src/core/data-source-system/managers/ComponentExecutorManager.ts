@@ -64,11 +64,11 @@ export class ComponentExecutorManager {
       参数1_componentId: componentId,
       参数2_componentType: componentType,
       参数3_config: config,
-      'config详细结构': JSON.stringify(config, null, 2),
+      config详细结构: JSON.stringify(config, null, 2),
       'config.metadata': config?.metadata,
       'config.dataSourceBindings': config?.dataSourceBindings,
       hasForceUpdate: config?.metadata?.forceUpdate
-    });
+    })
 
     // 获取或创建组件状态
     let state = this.componentStates.get(componentId)
@@ -100,24 +100,24 @@ export class ComponentExecutorManager {
     // 🔥 修复：检查是否有强制更新标记
     const hasForceUpdate = config.metadata?.forceUpdate
     const lastChangedField = config.metadata?.lastChangedField
-    
+
     console.log(`🔍 [ComponentExecutorManager] 强制更新检查详情: ${componentId}`, {
       hasForceUpdate,
       lastChangedField,
       'config.metadata': config.metadata,
-      'metadata完整结构': JSON.stringify(config.metadata, null, 2)
+      metadata完整结构: JSON.stringify(config.metadata, null, 2)
     })
-    
+
     // 🔥 修复：检查配置是否真正发生变化，避免不必要的重复执行
     const configChanged = this.isConfigChanged(state.currentConfig, executorConfig)
-    
+
     console.log(`🔍 [ComponentExecutorManager] 配置变化检查结果: ${componentId}`, {
       configChanged,
       hasForceUpdate,
-      '旧配置存在': !!state.currentConfig,
-      '新配置存在': !!executorConfig
+      旧配置存在: !!state.currentConfig,
+      新配置存在: !!executorConfig
     })
-    
+
     // 更新配置
     state.currentConfig = executorConfig
 
@@ -129,18 +129,18 @@ export class ComponentExecutorManager {
         lastChangedField,
         reason: hasForceUpdate ? '强制更新' : '配置变更'
       })
-      
+
       // 🔥 修复：如果是强制更新，添加额外的日志信息
       if (hasForceUpdate) {
         console.log(`🔥 [ComponentExecutorManager] 强制更新模式，忽略配置比较结果，直接执行: ${componentId}`)
         console.log(`🔍 [ComponentExecutorManager] 变更字段: ${lastChangedField}`)
       }
-      
+
       // 清除强制更新标记
       if (config.metadata?.forceUpdate) {
         delete config.metadata.forceUpdate
       }
-      
+
       console.log(`🚀 [ComponentExecutorManager] 即将调用executeComponent: ${componentId}`)
       const result = await this.executeComponent(componentId)
       console.log(`✅ [ComponentExecutorManager] executeComponent执行完成: ${componentId}`, result)
@@ -150,7 +150,7 @@ export class ComponentExecutorManager {
       console.log(`⏸️ [ComponentExecutorManager] 跳过执行详情: ${componentId}`, {
         configChanged,
         hasForceUpdate,
-        '原因': '配置未变化且无强制更新标记'
+        原因: '配置未变化且无强制更新标记'
       })
       return state.lastResult
     }
@@ -233,16 +233,16 @@ export class ComponentExecutorManager {
       // 深度比较配置对象
       const oldConfigStr = JSON.stringify(oldConfig, null, 0)
       const newConfigStr = JSON.stringify(newConfig, null, 0)
-      
+
       const changed = oldConfigStr !== newConfigStr
-      
+
       if (changed) {
         console.log('🔍 [ComponentExecutorManager] 配置变化详情:', {
           oldConfig: oldConfigStr.substring(0, 200) + '...',
           newConfig: newConfigStr.substring(0, 200) + '...'
         })
       }
-      
+
       return changed
     } catch (error) {
       console.warn('⚠️ [ComponentExecutorManager] 配置比较失败，默认认为已变化:', error)
@@ -255,17 +255,17 @@ export class ComponentExecutorManager {
    */
   private convertConfigToExecutorFormat(componentId: string, config: any): SimpleDataSourceConfig | null {
     console.log('🔄 [ComponentExecutorManager] convertConfigToExecutorFormat 开始转换 - 详细分析:', {
-      '输入config': config,
-      'config完整结构': JSON.stringify(config, null, 2),
-      'config类型': typeof config,
-      'config是否为null': config === null,
-      'config是否为undefined': config === undefined,
+      输入config: config,
+      config完整结构: JSON.stringify(config, null, 2),
+      config类型: typeof config,
+      config是否为null: config === null,
+      config是否为undefined: config === undefined,
       'config.metadata': config?.metadata,
       'config.dataSourceBindings': config?.dataSourceBindings,
-      'dataSourceBindings类型': typeof config?.dataSourceBindings,
-      'dataSourceBindings是否存在': !!config?.dataSourceBindings,
+      dataSourceBindings类型: typeof config?.dataSourceBindings,
+      dataSourceBindings是否存在: !!config?.dataSourceBindings,
       hasForceUpdate: config?.metadata?.forceUpdate
-    });
+    })
     console.log(`🔄 [ComponentExecutorManager] 转换配置格式: ${componentId}`, config)
     console.log(`🔍 [ComponentExecutorManager] 原始配置详细信息:`, JSON.stringify(config, null, 2))
 
@@ -277,8 +277,8 @@ export class ComponentExecutorManager {
     // 处理 dataSourceBindings 格式 (来自 ConfigurationPanel)
     if (config.dataSourceBindings) {
       console.log(`📋 [ComponentExecutorManager] 检测到 dataSourceBindings 格式 - 开始处理:`, {
-        'dataSourceBindings': config.dataSourceBindings,
-        'dataSourceBindings完整结构': JSON.stringify(config.dataSourceBindings, null, 2)
+        dataSourceBindings: config.dataSourceBindings,
+        dataSourceBindings完整结构: JSON.stringify(config.dataSourceBindings, null, 2)
       })
       console.log(
         `🔍 [ComponentExecutorManager] dataSourceBindings 详细信息:`,
@@ -298,28 +298,28 @@ export class ComponentExecutorManager {
         console.log(`🔍 [ComponentExecutorManager] 处理数据源绑定 ${key} - 详细信息:`, {
           key,
           binding,
-          'binding完整结构': JSON.stringify(binding, null, 2),
+          binding完整结构: JSON.stringify(binding, null, 2),
           'binding.rawData': binding?.rawData,
-          'rawData类型': typeof binding?.rawData,
-          'rawData长度': typeof binding?.rawData === 'string' ? binding.rawData.length : 'N/A'
+          rawData类型: typeof binding?.rawData,
+          rawData长度: typeof binding?.rawData === 'string' ? binding.rawData.length : 'N/A'
         })
-        
+
         if (binding.rawData) {
           console.log(`📝 [ComponentExecutorManager] 开始解析 rawData for ${key}:`, {
-            'rawData原始值': binding.rawData,
-            'rawData类型': typeof binding.rawData,
+            rawData原始值: binding.rawData,
+            rawData类型: typeof binding.rawData,
             hasForceUpdate
           })
-          
+
           try {
             // 🔥 修复：确保获取最新的 rawData
             let rawDataToProcess = binding.rawData
-            
+
             // 如果是强制更新，确保使用最新数据
             if (hasForceUpdate) {
               console.log(`🔄 [ComponentExecutorManager] 强制更新模式，使用最新 rawData: ${key}`, rawDataToProcess)
             }
-            
+
             // 尝试解析 rawData
             const parsedData = JSON.parse(rawDataToProcess)
 
@@ -332,15 +332,15 @@ export class ComponentExecutorManager {
             })
 
             console.log(`✅ [ComponentExecutorManager] 转换数据源: ${key}`, {
-              '解析前': rawDataToProcess,
-              '解析后': parsedData,
-              '解析后完整结构': JSON.stringify(parsedData, null, 2)
+              解析前: rawDataToProcess,
+              解析后: parsedData,
+              解析后完整结构: JSON.stringify(parsedData, null, 2)
             })
             console.log(`🔍 [ComponentExecutorManager] 数据源 ${key} 详细数据:`, JSON.stringify(parsedData, null, 2))
           } catch (error) {
             console.error(`❌ [ComponentExecutorManager] 解析 rawData 失败: ${key}`, {
               error,
-              '原始rawData': binding.rawData
+              原始rawData: binding.rawData
             })
             console.error(`❌ [ComponentExecutorManager] 原始 rawData:`, binding.rawData)
           }
@@ -375,8 +375,14 @@ export class ComponentExecutorManager {
 
     // 处理简单的 JSON 数据格式 (兼容性)
     // 🔥 修复：排除配置对象格式，只处理真正的数据对象
-    if (typeof config === 'object' && !Array.isArray(config) && 
-        !config.type && !config.enabled && !config.metadata && !config.activeDataSourceKey) {
+    if (
+      typeof config === 'object' &&
+      !Array.isArray(config) &&
+      !config.type &&
+      !config.enabled &&
+      !config.metadata &&
+      !config.activeDataSourceKey
+    ) {
       console.log(`📋 [ComponentExecutorManager] 检测到简单对象格式，转换为静态数据源`)
 
       return {

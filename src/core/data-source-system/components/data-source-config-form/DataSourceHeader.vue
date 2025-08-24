@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { NSelect, NSpace, NTag, NTooltip, NIcon } from 'naive-ui';
-import { InformationCircleOutline } from '@vicons/ionicons5';
+import { computed } from 'vue'
+import { NSelect, NSpace, NTag, NTooltip, NIcon } from 'naive-ui'
+import { InformationCircleOutline } from '@vicons/ionicons5'
 
 const props = defineProps<{
-  dataSourceOptions: { label: string; value: string; type?: string; description?: string; example?: object }[];
-  activeDataSourceKey: string;
-}>();
+  dataSourceOptions: { label: string; value: string; type?: string; description?: string; example?: object }[]
+  activeDataSourceKey: string
+}>()
 
-const emit = defineEmits(['update:activeDataSourceKey']);
+const emit = defineEmits(['update:activeDataSourceKey'])
 
 const activeDataSource = computed(() => {
-  return props.dataSourceOptions.find(opt => opt.value === props.activeDataSourceKey);
-});
+  return props.dataSourceOptions.find(opt => opt.value === props.activeDataSourceKey)
+})
 
 function handleUpdate(value: string) {
-  emit('update:activeDataSourceKey', value);
+  emit('update:activeDataSourceKey', value)
 }
 </script>
 

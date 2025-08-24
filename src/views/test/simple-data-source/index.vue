@@ -1,7 +1,7 @@
 <template>
   <div class="simple-test-page">
     <h1>简单数据源测试</h1>
-    
+
     <div class="test-info">
       <h2>测试信息</h2>
       <p>页面已加载: {{ pageLoaded }}</p>
@@ -11,10 +11,7 @@
 
     <div class="form-container">
       <h2>数据源配置表单</h2>
-      <DataSourceConfigForm
-        v-model="configData"
-        :data-sources="dataSources"
-      />
+      <DataSourceConfigForm v-model="configData" :data-sources="dataSources" />
     </div>
   </div>
 </template>
@@ -79,7 +76,8 @@ onMounted(() => {
   border-radius: 8px;
 }
 
-h1, h2 {
+h1,
+h2 {
   color: #333;
 }
 

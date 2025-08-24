@@ -1,7 +1,7 @@
 <template>
   <div class="data-flow-test">
     <h2>🔄 数据源配置数据流测试</h2>
-    
+
     <!-- 模拟编辑器配置 -->
     <div class="editor-section">
       <h3>📝 编辑器配置</h3>
@@ -9,24 +9,18 @@
         <h4>当前编辑器配置:</h4>
         <pre>{{ JSON.stringify(editorConfig, null, 2) }}</pre>
       </div>
-      
+
       <div class="editor-actions">
-        <button @click="loadFromStorage" class="btn btn-info">
-          📂 从存储加载配置
-        </button>
-        <button @click="saveToStorage" class="btn btn-warning">
-          💾 保存配置到存储
-        </button>
-        <button @click="resetConfig" class="btn btn-danger">
-          🔄 重置配置
-        </button>
+        <button class="btn btn-info" @click="loadFromStorage">📂 从存储加载配置</button>
+        <button class="btn btn-warning" @click="saveToStorage">💾 保存配置到存储</button>
+        <button class="btn btn-danger" @click="resetConfig">🔄 重置配置</button>
       </div>
     </div>
 
     <!-- 数据源配置表单 -->
     <div class="form-section">
       <h3>⚙️ 数据源配置表单</h3>
-      <DataSourceConfigForm 
+      <DataSourceConfigForm
         v-model="editorConfig"
         :data-sources="availableDataSources"
         @update:modelValue="onConfigUpdate"
@@ -37,38 +31,31 @@
     <div class="log-section">
       <h3>📋 数据流日志</h3>
       <div class="log-container">
-        <div 
-          v-for="(log, index) in dataFlowLogs" 
-          :key="index"
-          class="log-entry"
-          :class="log.type"
-        >
+        <div v-for="(log, index) in dataFlowLogs" :key="index" class="log-entry" :class="log.type">
           <span class="log-time">{{ log.timestamp }}</span>
           <span class="log-type">{{ log.type.toUpperCase() }}</span>
           <span class="log-message">{{ log.message }}</span>
           <pre v-if="log.data" class="log-data">{{ JSON.stringify(log.data, null, 2) }}</pre>
         </div>
       </div>
-      <button @click="clearLogs" class="btn btn-secondary">
-        🗑️ 清空日志
-      </button>
+      <button class="btn btn-secondary" @click="clearLogs">🗑️ 清空日志</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue';
-import DataSourceConfigForm from '@/core/data-source-system/components/DataSourceConfigForm.vue';
+import { ref, reactive, onMounted, watch } from 'vue'
+import DataSourceConfigForm from '@/core/data-source-system/components/DataSourceConfigForm.vue'
 
 // 数据流日志
 interface DataFlowLog {
-  timestamp: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  message: string;
-  data?: any;
+  timestamp: string
+  type: 'info' | 'success' | 'warning' | 'error'
+  message: string
+  data?: any
 }
 
-const dataFlowLogs = ref<DataFlowLog[]>([]);
+const dataFlowLogs = ref<DataFlowLog[]>([])
 
 // 添加日志的辅助函数
 const addLog = (type: DataFlowLog['type'], message: string, data?: any) => {
@@ -77,10 +64,10 @@ const addLog = (type: DataFlowLog['type'], message: string, data?: any) => {
     type,
     message,
     data
-  };
-  dataFlowLogs.value.unshift(log);
-  console.log(`[${type.toUpperCase()}] ${message}`, data || '');
-};
+  }
+  dataFlowLogs.value.unshift(log)
+  console.log(`[${type.toUpperCase()}] ${message}`, data || '')
+}
 
 // 模拟可用的数据源
 const availableDataSources = reactive({
@@ -106,7 +93,7 @@ const availableDataSources = reactive({
     },
     description: '从数据库获取数据'
   }
-});
+})
 
 // 模拟编辑器配置（基于真实数据结构）
 const editorConfig = ref({
@@ -114,12 +101,16 @@ const editorConfig = ref({
   config: {
     dataSourceBindings: {
       dataSource1: {
-        rawData: JSON.stringify({
-          id: 1,
-          name: '初始数据',
-          value: 100,
-          timestamp: new Date().toISOString()
-        }, null, 2),
+        rawData: JSON.stringify(
+          {
+            id: 1,
+            name: '初始数据',
+            value: 100,
+            timestamp: new Date().toISOString()
+          },
+          null,
+          2
+        ),
         enhancedConfig: {
           finalProcessingType: 'transform',
           finalProcessingScript: '// 初始处理脚本\nfunction process(data) {\n  return data;\n}'
@@ -138,14 +129,19 @@ const editorConfig = ref({
         }
       },
       dataSource2: {
-        rawData: JSON.stringify({
-          db_id: 2,
-          db_name: '数据库数据',
-          db_value: 200
-        }, null, 2),
+        rawData: JSON.stringify(
+          {
+            db_id: 2,
+            db_name: '数据库数据',
+            db_value: 200
+          },
+          null,
+          2
+        ),
         enhancedConfig: {
           finalProcessingType: 'filter',
-          finalProcessingScript: '// 数据库处理脚本\nfunction process(data) {\n  return data.filter(item => item.db_value > 0);\n}'
+          finalProcessingScript:
+            '// 数据库处理脚本\nfunction process(data) {\n  return data.filter(item => item.db_value > 0);\n}'
         },
         metadata: {
           lastUpdated: new Date().toISOString(),
@@ -162,47 +158,51 @@ const editorConfig = ref({
       }
     }
   }
-});
+})
 
 // 监听配置变化
-watch(editorConfig, (newConfig, oldConfig) => {
-  addLog('info', '编辑器配置发生变化', {
-    old: oldConfig,
-    new: newConfig
-  });
-}, { deep: true });
+watch(
+  editorConfig,
+  (newConfig, oldConfig) => {
+    addLog('info', '编辑器配置发生变化', {
+      old: oldConfig,
+      new: newConfig
+    })
+  },
+  { deep: true }
+)
 
 // 配置更新处理
 const onConfigUpdate = (newConfig: any) => {
-  addLog('success', '数据源配置表单触发更新', newConfig);
-  editorConfig.value = { ...newConfig };
-};
+  addLog('success', '数据源配置表单触发更新', newConfig)
+  editorConfig.value = { ...newConfig }
+}
 
 // 存储相关操作
-const STORAGE_KEY = 'data-source-config-test';
+const STORAGE_KEY = 'data-source-config-test'
 
 const saveToStorage = () => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(editorConfig.value));
-    addLog('success', '配置已保存到本地存储');
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(editorConfig.value))
+    addLog('success', '配置已保存到本地存储')
   } catch (error) {
-    addLog('error', '保存配置失败', error);
+    addLog('error', '保存配置失败', error)
   }
-};
+}
 
 const loadFromStorage = () => {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
-      editorConfig.value = JSON.parse(stored);
-      addLog('success', '配置已从本地存储加载');
+      editorConfig.value = JSON.parse(stored)
+      addLog('success', '配置已从本地存储加载')
     } else {
-      addLog('warning', '本地存储中没有找到配置');
+      addLog('warning', '本地存储中没有找到配置')
     }
   } catch (error) {
-    addLog('error', '加载配置失败', error);
+    addLog('error', '加载配置失败', error)
   }
-};
+}
 
 const resetConfig = () => {
   editorConfig.value = {
@@ -210,20 +210,20 @@ const resetConfig = () => {
     config: {
       dataSourceBindings: {}
     }
-  };
-  addLog('warning', '配置已重置');
-};
+  }
+  addLog('warning', '配置已重置')
+}
 
 const clearLogs = () => {
-  dataFlowLogs.value = [];
-};
+  dataFlowLogs.value = []
+}
 
 // 组件挂载时的初始化
 onMounted(() => {
-  addLog('info', '数据流测试页面已加载');
-  addLog('info', '初始编辑器配置', editorConfig.value);
-  addLog('info', '可用数据源', availableDataSources);
-});
+  addLog('info', '数据流测试页面已加载')
+  addLog('info', '初始编辑器配置', editorConfig.value)
+  addLog('info', '可用数据源', availableDataSources)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -292,25 +292,33 @@ onMounted(() => {
     &.btn-info {
       background: #17a2b8;
       color: white;
-      &:hover { background: #138496; }
+      &:hover {
+        background: #138496;
+      }
     }
 
     &.btn-warning {
       background: #ffc107;
       color: #212529;
-      &:hover { background: #e0a800; }
+      &:hover {
+        background: #e0a800;
+      }
     }
 
     &.btn-danger {
       background: #dc3545;
       color: white;
-      &:hover { background: #c82333; }
+      &:hover {
+        background: #c82333;
+      }
     }
 
     &.btn-secondary {
       background: #6c757d;
       color: white;
-      &:hover { background: #5a6268; }
+      &:hover {
+        background: #5a6268;
+      }
     }
   }
 

@@ -1,7 +1,7 @@
 <template>
   <div class="enhanced-test-page">
     <h1>数据源配置增强测试页面</h1>
-    
+
     <!-- 状态指示器 -->
     <div class="status-bar">
       <div class="status-item">
@@ -16,24 +16,15 @@
       </div>
       <div class="status-item">
         <span class="status-label">更新间隔:</span>
-        <n-input-number 
-          v-model:value="updateInterval" 
-          :min="1000" 
-          :max="30000" 
-          :step="1000"
-          style="width: 120px"
-        /> ms
+        <n-input-number v-model:value="updateInterval" :min="1000" :max="30000" :step="1000" style="width: 120px" />
+        ms
       </div>
     </div>
 
     <!-- 配置表单 -->
     <div class="config-section">
       <h2>配置表单</h2>
-      <DataSourceConfigForm
-        v-model="configData"
-        :data-sources="dataSources"
-        @update:model-value="onConfigUpdate"
-      />
+      <DataSourceConfigForm v-model="configData" :data-sources="dataSources" @update:model-value="onConfigUpdate" />
     </div>
 
     <!-- 实时数据显示 -->
@@ -42,7 +33,8 @@
         <h2>当前配置数据</h2>
         <div class="config-preview">
           <div class="config-item">
-            <strong>激活数据源:</strong> {{ configData.activeDataSourceKey || '未选择' }}
+            <strong>激活数据源:</strong>
+            {{ configData.activeDataSourceKey || '未选择' }}
           </div>
           <div class="config-item">
             <strong>配置详情:</strong>
@@ -68,34 +60,24 @@
 
     <!-- 控制按钮 -->
     <div class="control-buttons">
-      <n-button @click="executeOnce" type="primary" :loading="executing">
-        立即执行
-      </n-button>
-      <n-button @click="startExecutor" type="success" :disabled="executorRunning">
-        启动执行器
-      </n-button>
-      <n-button @click="stopExecutor" type="warning" :disabled="!executorRunning">
-        停止执行器
-      </n-button>
-      <n-button @click="resetAll" type="error">
-        重置所有
-      </n-button>
-      <n-button @click="addTestData" type="info">
-        添加测试数据
-      </n-button>
+      <n-button type="primary" :loading="executing" @click="executeOnce">立即执行</n-button>
+      <n-button type="success" :disabled="executorRunning" @click="startExecutor">启动执行器</n-button>
+      <n-button type="warning" :disabled="!executorRunning" @click="stopExecutor">停止执行器</n-button>
+      <n-button type="error" @click="resetAll">重置所有</n-button>
+      <n-button type="info" @click="addTestData">添加测试数据</n-button>
     </div>
 
     <!-- 执行历史 -->
     <div class="execution-history">
       <h2>执行历史</h2>
       <div class="history-controls">
-        <n-button @click="clearHistory" size="small">清空历史</n-button>
+        <n-button size="small" @click="clearHistory">清空历史</n-button>
         <span class="history-count">共 {{ executionHistory.length }} 条记录</span>
       </div>
       <div class="history-list">
-        <div 
-          v-for="(record, index) in executionHistory.slice(0, 10)" 
-          :key="index" 
+        <div
+          v-for="(record, index) in executionHistory.slice(0, 10)"
+          :key="index"
           class="history-item"
           :class="{ success: record.success, error: !record.success }"
         >
@@ -144,9 +126,12 @@ const lastExecutionTime = ref<number>(0)
 // 计算属性
 const executorStatusText = computed(() => {
   switch (executorStatus.value) {
-    case 'running': return '运行中'
-    case 'error': return '错误'
-    default: return '空闲'
+    case 'running':
+      return '运行中'
+    case 'error':
+      return '错误'
+    default:
+      return '空闲'
   }
 })
 
@@ -157,8 +142,8 @@ const dataSources = reactive<Record<string, DataSource>>({
     name: '静态数据',
     description: '静态数据源，用于测试基本功能',
     defaultConfig: {
-      data: { 
-        message: 'Hello World', 
+      data: {
+        message: 'Hello World',
         count: 0,
         timestamp: Date.now()
       },
@@ -195,8 +180,8 @@ const configData = ref<ModelValue>({
   activeDataSourceKey: 'staticData',
   dataSourceBindings: {
     staticData: {
-      data: { 
-        message: 'Hello World', 
+      data: {
+        message: 'Hello World',
         count: 0,
         timestamp: Date.now()
       },
@@ -226,7 +211,7 @@ function addExecutionRecord(success: boolean, duration: number, message: string,
     message,
     data
   })
-  
+
   // 保持最多100条记录
   if (executionHistory.value.length > 100) {
     executionHistory.value = executionHistory.value.slice(0, 100)
@@ -236,7 +221,7 @@ function addExecutionRecord(success: boolean, duration: number, message: string,
 // 配置更新回调
 function onConfigUpdate(newConfig: ModelValue) {
   console.log('配置更新:', newConfig)
-  
+
   // 如果自动更新开启，立即执行一次
   if (autoUpdate.value) {
     executeOnce()
@@ -246,47 +231,47 @@ function onConfigUpdate(newConfig: ModelValue) {
 // 生成动态数据
 function generateDynamicData(config: any) {
   const activeKey = configData.value.activeDataSourceKey
-  
+
   switch (activeKey) {
     case 'staticData':
       return {
         ...config.data,
         lastUpdate: new Date().toISOString()
       }
-      
+
     case 'dynamicData':
       const fields = config.fields || ['value']
       const data: any = {}
-      
+
       fields.forEach((field: string) => {
         const min = config.min || 0
         const max = config.max || 100
         const precision = config.precision || 0
         data[field] = Number((Math.random() * (max - min) + min).toFixed(precision))
       })
-      
+
       return {
         ...data,
         timestamp: Date.now(),
         iteration: ++internalCounter
       }
-      
+
     case 'counterData':
       const start = config.start || 0
       const step = config.step || 1
       const max = config.max || 1000
-      
+
       internalCounter += step
       if (internalCounter > max && config.reset) {
         internalCounter = start
       }
-      
+
       return {
         count: internalCounter,
         timestamp: Date.now(),
         progress: Math.min((internalCounter / max) * 100, 100)
       }
-      
+
     default:
       return { message: 'Unknown data source', timestamp: Date.now() }
   }
@@ -295,24 +280,24 @@ function generateDynamicData(config: any) {
 // 执行数据源（单次）
 async function executeOnce() {
   if (executing.value) return
-  
+
   executing.value = true
   const startTime = Date.now()
-  
+
   try {
     executorStatus.value = 'running'
-    
+
     // 构建配置
     const activeKey = configData.value.activeDataSourceKey
     const activeConfig = configData.value.dataSourceBindings?.[activeKey || '']
-    
+
     if (!activeKey || !activeConfig) {
       throw new Error('没有激活的数据源配置')
     }
-    
+
     // 生成数据
     const generatedData = generateDynamicData(activeConfig)
-    
+
     // 模拟执行器返回格式
     const result = {
       success: true,
@@ -330,20 +315,19 @@ async function executeOnce() {
       executionTime: Date.now() - startTime,
       timestamp: Date.now()
     }
-    
+
     // 更新组件数据
     componentData.value = result.data
     lastUpdateTime.value = new Date().toLocaleTimeString()
     lastExecutionTime.value = result.executionTime
-    
+
     // 记录成功
     addExecutionRecord(true, result.executionTime, `成功执行 ${activeKey}`)
     executorStatus.value = 'idle'
-    
   } catch (error) {
     const duration = Date.now() - startTime
     const message = error instanceof Error ? error.message : '未知错误'
-    
+
     addExecutionRecord(false, duration, `执行失败: ${message}`)
     executorStatus.value = 'error'
     console.error('执行数据源出错:', error)
@@ -355,20 +339,20 @@ async function executeOnce() {
 // 启动执行器
 function startExecutor() {
   if (executorRunning.value) return
-  
+
   executorRunning.value = true
   executorStatus.value = 'running'
-  
+
   // 立即执行一次
   executeOnce()
-  
+
   // 设置定时器
   if (autoUpdate.value) {
     updateTimer = setInterval(() => {
       executeOnce()
     }, updateInterval.value)
   }
-  
+
   addExecutionRecord(true, 0, '执行器已启动')
 }
 
@@ -376,12 +360,12 @@ function startExecutor() {
 function stopExecutor() {
   executorRunning.value = false
   executorStatus.value = 'idle'
-  
+
   if (updateTimer) {
     clearInterval(updateTimer)
     updateTimer = null
   }
-  
+
   addExecutionRecord(true, 0, '执行器已停止')
 }
 
@@ -402,13 +386,13 @@ function toggleAutoUpdate(enabled: boolean) {
 // 重置所有
 function resetAll() {
   stopExecutor()
-  
+
   configData.value = {
     activeDataSourceKey: 'staticData',
     dataSourceBindings: {
       staticData: {
-        data: { 
-          message: 'Hello World', 
+        data: {
+          message: 'Hello World',
           count: 0,
           timestamp: Date.now()
         },
@@ -416,13 +400,13 @@ function resetAll() {
       }
     }
   }
-  
+
   componentData.value = null
   internalCounter = 0
   executionHistory.value = []
   lastUpdateTime.value = ''
   lastExecutionTime.value = 0
-  
+
   addExecutionRecord(true, 0, '已重置所有数据')
 }
 
@@ -431,7 +415,7 @@ function addTestData() {
   const activeKey = configData.value.activeDataSourceKey
   if (activeKey && configData.value.dataSourceBindings) {
     const currentConfig = configData.value.dataSourceBindings[activeKey] || {}
-    
+
     // 添加测试字段
     const testData = {
       ...currentConfig,
@@ -444,7 +428,7 @@ function addTestData() {
         }
       }
     }
-    
+
     configData.value.dataSourceBindings[activeKey] = testData
     addExecutionRecord(true, 0, `已添加测试数据到 ${activeKey}`)
   }
@@ -458,14 +442,14 @@ function clearHistory() {
 // 监听配置变化
 watch(
   () => configData.value,
-  (newConfig) => {
+  newConfig => {
     console.log('配置变化监听:', newConfig)
   },
   { deep: true }
 )
 
 // 监听更新间隔变化
-watch(updateInterval, (newInterval) => {
+watch(updateInterval, newInterval => {
   if (autoUpdate.value && updateTimer) {
     clearInterval(updateTimer)
     updateTimer = setInterval(() => {
@@ -550,9 +534,15 @@ h2 {
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .config-section,

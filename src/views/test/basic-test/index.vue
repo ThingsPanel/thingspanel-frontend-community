@@ -1,7 +1,7 @@
 <template>
   <div class="basic-test-page">
     <h1>基础测试页面</h1>
-    
+
     <div class="test-section">
       <h2>Vue 基础功能测试</h2>
       <p>计数器: {{ count }}</p>
@@ -12,14 +12,10 @@
     <div class="test-section">
       <h2>数据源配置组件测试</h2>
       <p>组件状态: {{ componentLoaded ? '✅ 已加载' : '❌ 未加载' }}</p>
-      
+
       <!-- 尝试加载数据源配置组件 -->
       <div class="component-test">
-        <DataSourceConfigForm
-          v-if="componentLoaded"
-          v-model="testConfig"
-          :data-sources="testDataSources"
-        />
+        <DataSourceConfigForm v-if="componentLoaded" v-model="testConfig" :data-sources="testDataSources" />
         <div v-else>
           <p>组件加载中...</p>
         </div>
@@ -75,12 +71,12 @@ const testConsole = () => {
 
 onMounted(async () => {
   console.log('🎯 基础测试页面已挂载')
-  
+
   try {
     // 动态导入组件
     const module = await import('@/core/data-source-system/components/DataSourceConfigForm.vue')
     DataSourceConfigForm = module.default
-    
+
     await nextTick()
     componentLoaded.value = true
     console.log('✅ DataSourceConfigForm 组件加载成功')
@@ -127,7 +123,8 @@ button:hover {
   background: #0056b3;
 }
 
-h1, h2 {
+h1,
+h2 {
   color: #333;
 }
 

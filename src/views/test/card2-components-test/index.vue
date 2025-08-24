@@ -1,6 +1,9 @@
 <template>
   <div class="card2-components-test">
-    <n-page-header title="Card2.1 组件集成测试" subtitle="测试新创建的三个组件：simple-display、dual-data-display、triple-data-display">
+    <n-page-header
+      title="Card2.1 组件集成测试"
+      subtitle="测试新创建的三个组件：simple-display、dual-data-display、triple-data-display"
+    >
       <template #extra>
         <n-space>
           <n-button size="small" @click="refreshComponents">
@@ -25,7 +28,7 @@
           <n-text>{{ availableWidgets.length }}</n-text>
         </n-descriptions-item>
         <n-descriptions-item label="初始化错误">
-          <n-text type="error" v-if="card2Integration.initializationError.value">
+          <n-text v-if="card2Integration.initializationError.value" type="error">
             {{ card2Integration.initializationError.value }}
           </n-text>
           <n-text v-else>无</n-text>
@@ -36,10 +39,10 @@
     <!-- 组件列表 -->
     <n-card title="可用组件列表" size="small" style="margin-bottom: 16px">
       <n-space v-if="availableWidgets.length > 0" :size="12" style="margin-bottom: 16px">
-        <n-card 
-          v-for="widget in availableWidgets" 
+        <n-card
+          v-for="widget in availableWidgets"
           :key="widget.type"
-          size="small" 
+          size="small"
           hoverable
           style="min-width: 200px"
           @click="testComponent(widget)"
@@ -54,7 +57,7 @@
           <template #footer>
             <n-space justify="space-between">
               <n-tag size="tiny">{{ widget.category }}</n-tag>
-              <n-tag size="tiny" type="success" v-if="widget.isCard2Component">Card2.1</n-tag>
+              <n-tag v-if="widget.isCard2Component" size="tiny" type="success">Card2.1</n-tag>
             </n-space>
           </template>
         </n-card>
@@ -68,31 +71,26 @@
         <div v-for="componentType in targetComponents" :key="componentType">
           <n-space align="center" style="margin-bottom: 8px">
             <n-text strong>{{ componentType }}</n-text>
-            <n-tag 
-              :type="getComponentStatus(componentType) === 'found' ? 'success' : 'error'"
-              size="small"
-            >
+            <n-tag :type="getComponentStatus(componentType) === 'found' ? 'success' : 'error'" size="small">
               {{ getComponentStatus(componentType) === 'found' ? '✅ 已注册' : '❌ 未找到' }}
             </n-tag>
           </n-space>
-          
+
           <!-- 如果找到组件，显示详细信息 -->
-          <n-card 
-            v-if="getComponentWidget(componentType)" 
-            size="tiny" 
-            style="margin-left: 20px"
-          >
-            <pre style="font-size: 12px; max-height: 200px; overflow-y: auto;">{{ JSON.stringify(getComponentWidget(componentType), null, 2) }}</pre>
+          <n-card v-if="getComponentWidget(componentType)" size="tiny" style="margin-left: 20px">
+            <pre style="font-size: 12px; max-height: 200px; overflow-y: auto">{{
+              JSON.stringify(getComponentWidget(componentType), null, 2)
+            }}</pre>
           </n-card>
         </div>
       </n-space>
     </n-card>
 
     <!-- 测试结果 -->
-    <n-card title="测试结果" size="small" v-if="testResults.length > 0">
+    <n-card v-if="testResults.length > 0" title="测试结果" size="small">
       <n-timeline>
-        <n-timeline-item 
-          v-for="result in testResults" 
+        <n-timeline-item
+          v-for="result in testResults"
           :key="result.timestamp"
           :type="result.success ? 'success' : 'error'"
         >
@@ -189,26 +187,25 @@ const addTestResult = (componentType: string, action: string, success: boolean, 
 // 组件挂载时初始化
 onMounted(async () => {
   console.log('🎯 [Card2ComponentsTest] 组件测试页面加载')
-  
+
   try {
     if (!card2Integration.isInitialized.value) {
       await card2Integration.initialize()
     }
-    
+
     // 记录初始状态
     addTestResult('system', '页面初始化', true, `找到 ${availableWidgets.value.length} 个组件`)
-    
+
     // 检查目标组件
     targetComponents.forEach(componentType => {
       const status = getComponentStatus(componentType)
       addTestResult(
-        componentType, 
-        '注册检查', 
+        componentType,
+        '注册检查',
         status === 'found',
         status === 'found' ? '组件已成功注册' : '组件未找到，可能注册失败'
       )
     })
-    
   } catch (error) {
     console.error('❌ [Card2ComponentsTest] 初始化失败:', error)
     addTestResult('system', '页面初始化', false, `初始化失败: ${error}`)

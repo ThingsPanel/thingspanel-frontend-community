@@ -1,7 +1,7 @@
 <template>
   <div class="minimal-test">
     <h1>最小化测试</h1>
-    
+
     <div class="test-info">
       <p>页面加载时间: {{ loadTime }}</p>
       <p>计数器: {{ counter }}</p>
@@ -12,11 +12,11 @@
     <div class="component-test">
       <h2>组件测试</h2>
       <p>组件状态: {{ componentStatus }}</p>
-      
+
       <div v-if="showComponent">
         <TestComponent :message="testMessage" @update="handleUpdate" />
       </div>
-      
+
       <button @click="toggleComponent">切换组件显示</button>
     </div>
   </div>
@@ -93,7 +93,8 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-.test-info, .component-test {
+.test-info,
+.component-test {
   margin: 20px 0;
   padding: 15px;
   border: 1px solid #ddd;
@@ -115,7 +116,8 @@ button:hover {
   background: #0056b3;
 }
 
-h1, h2 {
+h1,
+h2 {
   color: #333;
 }
 </style>

@@ -34,10 +34,7 @@ export class DataSourceMapper {
    * @param executorData 执行器数据
    * @returns 映射后的组件 props
    */
-  static mapDataSources(
-    componentType: string,
-    executorData: ExecutorData | null | undefined
-  ): DataSourceMappingResult {
+  static mapDataSources(componentType: string, executorData: ExecutorData | null | undefined): DataSourceMappingResult {
     console.log(`🔄 [DataSourceMapper] 开始映射组件数据源:`, {
       componentType,
       hasExecutorData: !!executorData,
@@ -66,7 +63,7 @@ export class DataSourceMapper {
 
     // 执行数据源映射
     const mappingResult = this.performMapping(dataSourceKeys, executorData)
-    
+
     console.log(`✅ [DataSourceMapper] 映射完成:`, {
       componentType,
       dataSourceKeys,
@@ -83,11 +80,11 @@ export class DataSourceMapper {
    */
   private static createNullMapping(dataSourceKeys: string[]): DataSourceMappingResult {
     const nullMapping: DataSourceMappingResult = {}
-    
+
     dataSourceKeys.forEach(key => {
       nullMapping[key] = null
     })
-    
+
     console.log(`🔄 [DataSourceMapper] 创建空值映射:`, nullMapping)
     return nullMapping
   }
@@ -98,16 +95,13 @@ export class DataSourceMapper {
    * @param executorData 执行器数据
    * @returns 映射结果
    */
-  private static performMapping(
-    dataSourceKeys: string[],
-    executorData: ExecutorData
-  ): DataSourceMappingResult {
+  private static performMapping(dataSourceKeys: string[], executorData: ExecutorData): DataSourceMappingResult {
     const result: DataSourceMappingResult = {}
 
     // 策略1: 优先从 main 字段中提取数据
     if (executorData.main && typeof executorData.main === 'object') {
       console.log(`🔍 [DataSourceMapper] 从 main 字段提取数据:`, executorData.main)
-      
+
       dataSourceKeys.forEach(key => {
         if (key in executorData.main!) {
           result[key] = executorData.main![key]
@@ -117,13 +111,13 @@ export class DataSourceMapper {
           console.log(`⚠️ [DataSourceMapper] main.${key} 不存在，设为 null`)
         }
       })
-      
+
       return result
     }
 
     // 策略2: 直接从 executorData 根级别提取数据
     console.log(`🔍 [DataSourceMapper] 从根级别提取数据`)
-    
+
     dataSourceKeys.forEach(key => {
       if (key in executorData) {
         result[key] = executorData[key]
@@ -202,11 +196,11 @@ export class DataSourceMapper {
     staticParamKeys: string[]
   ): Record<string, any> {
     const defaults: Record<string, any> = {}
-    
+
     staticParamKeys.forEach(key => {
       defaults[key] = this.getDefaultStaticParamValue(definition, key)
     })
-    
+
     return defaults
   }
 
@@ -216,20 +210,17 @@ export class DataSourceMapper {
    * @param key 参数键
    * @returns 默认值
    */
-  private static getDefaultStaticParamValue(
-    definition: ComponentDefinition,
-    key: string
-  ): any {
+  private static getDefaultStaticParamValue(definition: ComponentDefinition, key: string): any {
     // 从组件定义的默认配置中获取
     if (definition.defaultConfig?.staticParams?.[key] !== undefined) {
       return definition.defaultConfig.staticParams[key]
     }
-    
+
     // 从静态参数定义中获取默认值
     if (definition.staticParams?.[key]?.default !== undefined) {
       return definition.staticParams[key].default
     }
-    
+
     // 根据类型返回合适的默认值
     const paramType = definition.staticParams?.[key]?.type
     switch (paramType) {
@@ -264,12 +255,12 @@ export class DataSourceMapper {
   } {
     const expectedKeys = ComponentRegistry.getDataSourceKeys(componentType)
     const actualKeys = Object.keys(mappingResult)
-    
+
     const missingKeys = expectedKeys.filter(key => !(key in mappingResult))
     const extraKeys = actualKeys.filter(key => !expectedKeys.includes(key))
-    
+
     const isValid = missingKeys.length === 0
-    
+
     console.log(`🔍 [DataSourceMapper] 验证映射结果:`, {
       componentType,
       expectedKeys,
@@ -278,7 +269,7 @@ export class DataSourceMapper {
       extraKeys,
       isValid
     })
-    
+
     return { isValid, missingKeys, extraKeys }
   }
 
@@ -304,7 +295,7 @@ export class DataSourceMapper {
     const staticParamCount = ComponentRegistry.getStaticParamKeys(componentType).length
     const hasExecutorData = !!executorData
     const executorDataKeys = executorData ? Object.keys(executorData) : []
-    
+
     return {
       componentType,
       isRegistered,
@@ -322,7 +313,10 @@ export class DataSourceMapper {
 export interface IDataSourceMapper {
   mapDataSources(componentType: string, executorData: ExecutorData | null | undefined): DataSourceMappingResult
   mapStaticParams(componentType: string, staticParams: Record<string, any> | null | undefined): Record<string, any>
-  validateMapping(componentType: string, mappingResult: DataSourceMappingResult): {
+  validateMapping(
+    componentType: string,
+    mappingResult: DataSourceMappingResult
+  ): {
     isValid: boolean
     missingKeys: string[]
     extraKeys: string[]

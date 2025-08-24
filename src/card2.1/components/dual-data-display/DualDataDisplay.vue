@@ -53,13 +53,13 @@ const executionCount = ref(0)
 const formatData = (data: any): string => {
   // 处理null、undefined
   console.log('🔍 [DualDataDisplay] formatData 被调用 - 详细分析:', {
-    '输入data': data,
-    'data类型': typeof data,
-    'data为null': data === null,
-    'data为undefined': data === undefined,
-    'data完整结构': JSON.stringify(data, null, 2)
+    输入data: data,
+    data类型: typeof data,
+    data为null: data === null,
+    data为undefined: data === undefined,
+    data完整结构: JSON.stringify(data, null, 2)
   })
-  
+
   if (data === null || data === undefined) {
     console.log('⚠️ [DualDataDisplay] formatData 返回: 暂无数据')
     return '暂无数据'
@@ -77,18 +77,18 @@ watch(
   ([newDataSource1, newDataSource2], [oldDataSource1, oldDataSource2]) => {
     console.log('👁️ [DualDataDisplay] 数据变化监听器触发 - 详细分析:', {
       componentId: props.componentId,
-      '变化前dataSource1': oldDataSource1,
-      '变化后dataSource1': newDataSource1,
-      '变化前dataSource2': oldDataSource2,
-      '变化后dataSource2': newDataSource2,
-      'dataSource1是否变化': oldDataSource1 !== newDataSource1,
-      'dataSource2是否变化': oldDataSource2 !== newDataSource2,
-      'dataSource1类型': typeof newDataSource1,
-      'dataSource2类型': typeof newDataSource2,
-      'dataSource1为null': newDataSource1 === null,
-      'dataSource2为null': newDataSource2 === null,
-      'dataSource1为undefined': newDataSource1 === undefined,
-      'dataSource2为undefined': newDataSource2 === undefined
+      变化前dataSource1: oldDataSource1,
+      变化后dataSource1: newDataSource1,
+      变化前dataSource2: oldDataSource2,
+      变化后dataSource2: newDataSource2,
+      dataSource1是否变化: oldDataSource1 !== newDataSource1,
+      dataSource2是否变化: oldDataSource2 !== newDataSource2,
+      dataSource1类型: typeof newDataSource1,
+      dataSource2类型: typeof newDataSource2,
+      dataSource1为null: newDataSource1 === null,
+      dataSource2为null: newDataSource2 === null,
+      dataSource1为undefined: newDataSource1 === undefined,
+      dataSource2为undefined: newDataSource2 === undefined
     })
     console.log('🔍 [DualDataDisplay] 数据源1详细信息:', JSON.stringify(newDataSource1, null, 2))
     console.log('🔍 [DualDataDisplay] 数据源2详细信息:', JSON.stringify(newDataSource2, null, 2))
@@ -109,12 +109,14 @@ watch(
 // 🔥 计算属性：显示状态
 const displayStatus = computed(() => {
   // 更严格的数据检查：不仅检查null/undefined，还检查空对象
-  const hasData1 = props.dataSource1 !== null &&
-                   props.dataSource1 !== undefined &&
-                   (typeof props.dataSource1 !== 'object' || Object.keys(props.dataSource1).length > 0)
-  const hasData2 = props.dataSource2 !== null &&
-                   props.dataSource2 !== undefined &&
-                   (typeof props.dataSource2 !== 'object' || Object.keys(props.dataSource2).length > 0)
+  const hasData1 =
+    props.dataSource1 !== null &&
+    props.dataSource1 !== undefined &&
+    (typeof props.dataSource1 !== 'object' || Object.keys(props.dataSource1).length > 0)
+  const hasData2 =
+    props.dataSource2 !== null &&
+    props.dataSource2 !== undefined &&
+    (typeof props.dataSource2 !== 'object' || Object.keys(props.dataSource2).length > 0)
 
   console.log('🔍 [DualDataDisplay] 数据状态检查:', {
     dataSource1: props.dataSource1,

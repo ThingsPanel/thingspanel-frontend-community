@@ -1,15 +1,11 @@
 <template>
   <div class="test-page">
     <h1>数据源配置测试页面</h1>
-    
+
     <!-- 配置表单 -->
     <div class="config-section">
       <h2>配置表单</h2>
-      <DataSourceConfigForm
-        v-model="configData"
-        :data-sources="dataSources"
-        @update:model-value="onConfigUpdate"
-      />
+      <DataSourceConfigForm v-model="configData" :data-sources="dataSources" @update:model-value="onConfigUpdate" />
     </div>
 
     <!-- 当前配置显示 -->
@@ -31,15 +27,9 @@
 
     <!-- 测试按钮 -->
     <div class="test-buttons">
-      <n-button @click="executeDataSource" type="primary">
-        执行数据源
-      </n-button>
-      <n-button @click="resetConfig" type="default">
-        重置配置
-      </n-button>
-      <n-button @click="addRandomConfig" type="info">
-        添加随机配置
-      </n-button>
+      <n-button type="primary" @click="executeDataSource">执行数据源</n-button>
+      <n-button type="default" @click="resetConfig">重置配置</n-button>
+      <n-button type="info" @click="addRandomConfig">添加随机配置</n-button>
     </div>
 
     <!-- 日志显示 -->
@@ -74,7 +64,7 @@ const dataSources = reactive<Record<string, DataSource>>({
     }
   },
   apiData: {
-    key: 'apiData', 
+    key: 'apiData',
     name: 'API数据',
     description: 'HTTP API数据源',
     defaultConfig: {
@@ -135,7 +125,7 @@ function onConfigUpdate(newConfig: ModelValue) {
 async function executeDataSource() {
   try {
     addLog('开始执行数据源...')
-    
+
     // 构建简化的配置
     const simpleConfig = {
       id: 'test-component',
@@ -144,12 +134,12 @@ async function executeDataSource() {
       triggers: [],
       enabled: true
     }
-    
+
     // 如果有激活的数据源，添加到配置中
     if (configData.value.activeDataSourceKey && configData.value.dataSourceBindings) {
       const activeKey = configData.value.activeDataSourceKey
       const activeConfig = configData.value.dataSourceBindings[activeKey]
-      
+
       if (activeConfig) {
         simpleConfig.dataSources.push({
           id: activeKey,
@@ -158,10 +148,10 @@ async function executeDataSource() {
         })
       }
     }
-    
+
     // 执行数据源
     const result = await simpleDataExecutor.execute(simpleConfig)
-    
+
     if (result.success && result.data) {
       componentData.value = result.data
       addLog(`数据源执行成功，耗时: ${result.executionTime}ms`)
@@ -194,7 +184,7 @@ function addRandomConfig() {
   const activeKey = configData.value.activeDataSourceKey
   if (activeKey && configData.value.dataSourceBindings) {
     const currentConfig = configData.value.dataSourceBindings[activeKey] || {}
-    
+
     // 添加随机数据
     const randomData = {
       ...currentConfig,
@@ -202,7 +192,7 @@ function addRandomConfig() {
       timestamp: Date.now(),
       randomString: Math.random().toString(36).substring(7)
     }
-    
+
     configData.value.dataSourceBindings[activeKey] = randomData
     addLog(`已添加随机配置到 ${activeKey}`)
   }
@@ -211,7 +201,7 @@ function addRandomConfig() {
 // 监听配置变化
 watch(
   () => configData.value,
-  (newConfig) => {
+  newConfig => {
     console.log('配置变化监听:', newConfig)
   },
   { deep: true }

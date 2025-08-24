@@ -117,16 +117,16 @@ const simpleDisplayDefinition: ComponentDefinition = {
     capability: {
       // 支持的交互事件
       supportedEvents: ['click', 'hover', 'dataChange'],
-      
+
       // 支持的响应动作
       supportedActions: ['navigateToUrl', 'updateComponentData'],
-      
+
       // 默认权限配置
       defaultPermissions: {
         allowExternalControl: true,
         requirePermissionCheck: false
       },
-      
+
       // 可监听的属性列表
       listenableProperties: ['config', 'componentState', 'interactionState']
     },
@@ -212,7 +212,7 @@ const simpleDisplayDefinition: ComponentDefinition = {
       componentType: 'simple-display',
       componentName: '简单展示组件',
       description: '静态展示组件，支持标题、内容、样式等属性的动态修改',
-      
+
       // 可监听/修改的属性列表
       listenableProperties: [
         {
