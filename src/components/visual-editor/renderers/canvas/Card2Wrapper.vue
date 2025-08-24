@@ -40,6 +40,8 @@ import type { DataSourceValue } from '../../types/data-source'
 // 🔥 新增：导入组件执行器管理器和配置管理器
 import { componentExecutorManager } from '@/core/data-source-system/managers/ComponentExecutorManager'
 import { configurationManager } from '@/components/visual-editor/configuration/ConfigurationManager'
+// 🔥 导入通用数据源映射器
+import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
 
 interface Props {
   componentType: string
@@ -408,25 +410,28 @@ const getDataSourcesForComponent = () => {
   return null
 }
 
-// 🔥 新增：获取组件特定的props
+// 🔥 新增：获取组件特定的props（使用通用映射器）
 const getComponentSpecificProps = () => {
-  const specificProps: Record<string, any> = {}
-
-  // 如果是dual-data-display组件，转换执行器数据为组件期望的props格式
-  if (props.componentType === 'dual-data-display') {
-    console.log('🔥 [Card2Wrapper] 为dual-data-display组件处理数据:', executorData.value)
-
-    // 从执行器数据中提取dataSource1和dataSource2
-    if (executorData.value.dataSource1) {
-      specificProps.dataSource1 = executorData.value.dataSource1
-    }
-    if (executorData.value.dataSource2) {
-      specificProps.dataSource2 = executorData.value.dataSource2
-    }
-
-    console.log('🔥 [Card2Wrapper] dual-data-display特定props:', specificProps)
+  console.log('🔥 [Card2Wrapper] 开始通用数据源映射，组件类型:', props.componentType)
+  console.log('🔥 [Card2Wrapper] 执行器数据:', executorData.value)
+  
+  // 🔥 使用通用数据源映射器
+  const specificProps = DataSourceMapper.mapDataSources(
+    props.componentType,
+    executorData.value
+  )
+  
+  // 🔥 验证映射结果
+  const validation = DataSourceMapper.validateMapping(props.componentType, specificProps)
+  if (!validation.isValid) {
+    console.warn('⚠️ [Card2Wrapper] 数据源映射验证失败:', validation)
   }
-
+  
+  // 🔥 获取映射统计信息
+  const stats = DataSourceMapper.getMappingStats(props.componentType, executorData.value)
+  console.log('📊 [Card2Wrapper] 映射统计:', stats)
+  
+  console.log('✅ [Card2Wrapper] 通用映射结果:', specificProps)
   return specificProps
 }
 
@@ -481,10 +486,28 @@ onMounted(async () => {
   executorDataCleanup = componentExecutorManager.onDataUpdate((componentId, data) => {
     if (componentId === props.nodeId) {
       console.log('🔥 [Card2Wrapper] 接收到执行器数据更新:', componentId, data)
+      console.log('🔥 [Card2Wrapper] 接收到的data完整结构:', JSON.stringify(data, null, 2))
+      
+      // 🔥 调试：检查接收到的数据详情
+      if (data.dataSource1) {
+        console.log('🔥 [Card2Wrapper] 接收到的dataSource1:', JSON.stringify(data.dataSource1, null, 2))
+        console.log('🔥 [Card2Wrapper] 接收到的dataSource1.age:', data.dataSource1.age)
+      }
+      
+      // 🔥 调试：更新前的executorData状态
+      console.log('🔥 [Card2Wrapper] 更新前executorData.value:', JSON.stringify(executorData.value, null, 2))
+      
       executorData.value = { ...data }
+      
+      // 🔥 调试：更新后的executorData状态
+      console.log('🔥 [Card2Wrapper] 更新后executorData.value:', JSON.stringify(executorData.value, null, 2))
+      if (executorData.value.dataSource1) {
+        console.log('🔥 [Card2Wrapper] 更新后dataSource1.age:', executorData.value.dataSource1.age)
+      }
 
       // 强制重新渲染组件以应用新数据
       forceUpdateKey.value = Date.now()
+      console.log('🔥 [Card2Wrapper] 强制重新渲染，forceUpdateKey:', forceUpdateKey.value)
     }
   })
 

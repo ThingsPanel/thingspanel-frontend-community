@@ -177,14 +177,14 @@
  * 数据源系统完整流程测试页面
  * 测试配置导出→导入→数据处理的完整链路
  */
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import DataSourceConfigForm from '@/core/data-source-system/components/DataSourceConfigForm.vue'
 import DataSourceProcessor from '@/core/data-source-system/components/DataSourceProcessor.vue'
 import { createMultiDataSourceExecutor } from '@/core/data-source-system/core/MultiDataSourceExecutor'
-import type { MultiDataSourceConfig } from '@/core/data-source-system/types/execution'
+import type { MultiDataSourceConfig, DataSource } from '@/core/data-source-system/types'
 
 // 测试数据源定义 - 更改名称和数量以验证通用性
-const testDataSources = [
+const testDataSourcesArray = [
   {
     key: 'products',
     name: '产品信息',
@@ -201,6 +201,14 @@ const testDataSources = [
     fieldsToMap: [{ sourceProperty: 'orderData', targetProperty: 'orders', description: '订单记录数据' }]
   }
 ]
+
+// 将数组转换为 useDataSourceState 需要的 Record<string, DataSource> 格式
+const testDataSources = computed(() => {
+  return testDataSourcesArray.reduce((acc, item) => {
+    acc[item.key] = item as Omit<typeof item, 'key'> & DataSource;
+    return acc;
+  }, {} as Record<string, DataSource>);
+});
 
 // 页面状态
 const currentStep = ref(0)

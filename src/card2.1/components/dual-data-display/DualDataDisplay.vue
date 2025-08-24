@@ -17,30 +17,9 @@ interface Props {
   dataSource2?: any // 第二个数据源的数据
   config?: {
     title?: string
-    displayMode?: string
     themeColor?: string
-    dataSource1Config?: {
-      title?: string
-      unit?: string
-      precision?: number
-    }
-    dataSource2Config?: {
-      title?: string
-      unit?: string
-      precision?: number
-    }
-    interactions?: {
-      enableClick?: boolean
-      clickAction?: string
-      refreshInterval?: number
-      enableCache?: boolean
-    }
-    style?: {
-      showBorder?: boolean
-      backgroundOpacity?: number
-      fontSize?: number
-      padding?: number
-    }
+    fontSize?: number
+    showBorder?: boolean
   }
   // 标准交互配置
   interactionConfigs?: InteractionConfig[]
@@ -70,21 +49,46 @@ const registeredEvents = ref<Set<string>>(new Set())
 const lastUpdateTime = ref<Date | null>(null)
 const executionCount = ref(0)
 
-// 显示用的格式化数据
+// 简化的数据格式化函数 - 直接显示数据
 const formatData = (data: any): string => {
-  if (!data) return 'null'
-  if (typeof data === 'string') return data
-  return JSON.stringify(data, null, 2)
+  // 处理null、undefined
+  console.log('🔍 [DualDataDisplay] formatData 被调用 - 详细分析:', {
+    '输入data': data,
+    'data类型': typeof data,
+    'data为null': data === null,
+    'data为undefined': data === undefined,
+    'data完整结构': JSON.stringify(data, null, 2)
+  })
+  
+  if (data === null || data === undefined) {
+    console.log('⚠️ [DualDataDisplay] formatData 返回: 暂无数据')
+    return '暂无数据'
+  }
+
+  // 直接转换为字符串显示，保持简单
+  const result = JSON.stringify(data)
+  console.log('✅ [DualDataDisplay] formatData 返回结果:', result)
+  return result
 }
 
 // 🔥 监听props数据变化 - 纯数据展示逻辑
 watch(
   [() => props.dataSource1, () => props.dataSource2],
-  ([newDataSource1, newDataSource2]) => {
-    console.log('👁️ [DualDataDisplay] 接收到数据更新:', {
+  ([newDataSource1, newDataSource2], [oldDataSource1, oldDataSource2]) => {
+    console.log('👁️ [DualDataDisplay] 数据变化监听器触发 - 详细分析:', {
       componentId: props.componentId,
-      dataSource1: newDataSource1,
-      dataSource2: newDataSource2
+      '变化前dataSource1': oldDataSource1,
+      '变化后dataSource1': newDataSource1,
+      '变化前dataSource2': oldDataSource2,
+      '变化后dataSource2': newDataSource2,
+      'dataSource1是否变化': oldDataSource1 !== newDataSource1,
+      'dataSource2是否变化': oldDataSource2 !== newDataSource2,
+      'dataSource1类型': typeof newDataSource1,
+      'dataSource2类型': typeof newDataSource2,
+      'dataSource1为null': newDataSource1 === null,
+      'dataSource2为null': newDataSource2 === null,
+      'dataSource1为undefined': newDataSource1 === undefined,
+      'dataSource2为undefined': newDataSource2 === undefined
     })
     console.log('🔍 [DualDataDisplay] 数据源1详细信息:', JSON.stringify(newDataSource1, null, 2))
     console.log('🔍 [DualDataDisplay] 数据源2详细信息:', JSON.stringify(newDataSource2, null, 2))
@@ -104,8 +108,24 @@ watch(
 
 // 🔥 计算属性：显示状态
 const displayStatus = computed(() => {
-  const hasData1 = props.dataSource1 !== null && props.dataSource1 !== undefined
-  const hasData2 = props.dataSource2 !== null && props.dataSource2 !== undefined
+  // 更严格的数据检查：不仅检查null/undefined，还检查空对象
+  const hasData1 = props.dataSource1 !== null &&
+                   props.dataSource1 !== undefined &&
+                   (typeof props.dataSource1 !== 'object' || Object.keys(props.dataSource1).length > 0)
+  const hasData2 = props.dataSource2 !== null &&
+                   props.dataSource2 !== undefined &&
+                   (typeof props.dataSource2 !== 'object' || Object.keys(props.dataSource2).length > 0)
+
+  console.log('🔍 [DualDataDisplay] 数据状态检查:', {
+    dataSource1: props.dataSource1,
+    dataSource2: props.dataSource2,
+    hasData1,
+    hasData2,
+    dataSource1Type: typeof props.dataSource1,
+    dataSource2Type: typeof props.dataSource2,
+    dataSource1Keys: props.dataSource1 ? Object.keys(props.dataSource1) : [],
+    dataSource2Keys: props.dataSource2 ? Object.keys(props.dataSource2) : []
+  })
 
   if (hasData1 && hasData2) {
     return '双数据源已加载'
@@ -116,47 +136,18 @@ const displayStatus = computed(() => {
   }
 })
 
-// 计算属性：配置相关
+// 计算属性：配置相关 - 简化版
 const currentTitle = computed(() => props.config?.title || '双数据源显示测试组件')
-const dataSource1Title = computed(() => props.config?.dataSource1Config?.title || '数据源1')
-const dataSource2Title = computed(() => props.config?.dataSource2Config?.title || '数据源2')
 const themeColor = computed(() => props.config?.themeColor || '#18a058')
-const isClickEnabled = computed(() => props.config?.interactions?.enableClick || false)
+const fontSize = computed(() => props.config?.fontSize || 14)
+const showBorder = computed(() => props.config?.showBorder ?? true)
 
 // 交互方法
 const handleComponentClick = () => {
   // 同时支持旧版交互和标准交互系统
 
-  // 1. 旧版交互处理（向后兼容）
-  if (isClickEnabled.value) {
-    const clickAction = props.config?.interactions?.clickAction || 'none'
-
-    // 发送点击事件
-    emit('click', {
-      componentId: props.componentId || '',
-      action: clickAction,
-      data: {
-        dataSource1: props.dataSource1,
-        dataSource2: props.dataSource2,
-        timestamp: new Date().toISOString()
-      }
-    })
-
-    // 根据配置的行为执行相应动作
-    switch (clickAction) {
-      case 'refresh':
-        handleRefresh()
-        break
-      case 'details':
-        showDetails()
-        break
-      case 'toggle':
-        toggleDisplay()
-        break
-      default:
-        break
-    }
-  }
+  // 简化的点击处理
+  console.log('🔍 [DualDataDisplay] 组件被点击:', props.componentId)
 
   // 2. 标准交互系统处理
   if (props.componentId && isInteractionEnabled.value) {
@@ -171,14 +162,11 @@ const handleComponentClick = () => {
     })
   }
 
-  // 发送通用交互事件（向后兼容）
+  // 发送简化的交互事件
   emit('interaction', {
     type: 'click',
     componentId: props.componentId || '',
-    payload: {
-      action: props.config?.interactions?.clickAction || 'none',
-      timestamp: new Date().toISOString()
-    }
+    payload: { timestamp: new Date().toISOString() }
   })
 }
 
@@ -249,6 +237,15 @@ const extractDisplayValue = (data: any, config: any) => {
 
 // 标准交互系统初始化
 const initializeInteractionSystem = () => {
+  console.log('🔍 [DualDataDisplay] 检查交互系统初始化条件:', {
+    componentId: props.componentId,
+    componentIdType: typeof props.componentId,
+    componentIdLength: props.componentId?.length,
+    interactionConfigs: props.interactionConfigs,
+    interactionConfigsLength: props.interactionConfigs?.length,
+    hasInteractionConfigs: !!props.interactionConfigs?.length
+  })
+
   if (!props.componentId || !props.interactionConfigs?.length) {
     console.log('🔍 [DualDataDisplay] 跳过交互系统初始化：缺少componentId或配置')
     return
@@ -365,15 +362,12 @@ watch(
   <div
     class="dual-data-display"
     :class="{
-      clickable: isClickEnabled,
-      toggled: isToggled,
-      bordered: config?.style?.showBorder !== false
+      bordered: showBorder,
+      toggled: isToggled
     }"
     :style="{
       '--theme-color': themeColor,
-      '--font-size': `${config?.style?.fontSize || 14}px`,
-      '--padding': `${config?.style?.padding || 16}px`,
-      '--background-opacity': config?.style?.backgroundOpacity || 0.9
+      '--font-size': `${fontSize}px`
     }"
     @click="handleComponentClick"
     @mouseenter="handleComponentHover(true)"
@@ -387,38 +381,18 @@ watch(
         <span v-if="lastUpdateTime" class="last-update">最后更新: {{ lastUpdateTime.toLocaleTimeString() }}</span>
       </div>
 
-      <!-- 交互控制按钮 -->
-      <div v-if="isClickEnabled" class="interaction-controls">
+      <!-- 简化的控制按钮 -->
+      <div class="interaction-controls">
         <button class="refresh-btn" title="刷新数据" @click.stop="handleRefresh">🔄</button>
-        <button class="details-btn" title="显示详情" @click.stop="showDetails">📋</button>
-        <button class="toggle-btn" title="切换显示" @click.stop="toggleDisplay">🔄</button>
       </div>
     </div>
 
     <div class="data-sections" :class="{ compact: isToggled }">
       <!-- 数据源1 -->
       <div class="data-section">
-        <h4 :style="{ backgroundColor: themeColor }">
-          {{ dataSource1Title }}
-          <span v-if="config?.dataSource1Config?.unit" class="unit">({{ config.dataSource1Config.unit }})</span>
-        </h4>
+        <h4 :style="{ backgroundColor: themeColor }">数据源1</h4>
         <div class="data-content">
           <div v-if="props.dataSource1" class="data-display">
-            <!-- 数值显示 -->
-            <div v-if="extractDisplayValue(props.dataSource1, config?.dataSource1Config)" class="value-display">
-              <span class="value">
-                {{
-                  formatNumber(
-                    extractDisplayValue(props.dataSource1, config?.dataSource1Config),
-                    config?.dataSource1Config?.precision || 2
-                  )
-                }}
-              </span>
-              <span v-if="config?.dataSource1Config?.unit" class="unit">
-                {{ config.dataSource1Config.unit }}
-              </span>
-            </div>
-            <!-- 完整数据 -->
             <pre class="raw-data">{{ formatData(props.dataSource1) }}</pre>
           </div>
           <div v-else class="no-data">等待数据...</div>
@@ -427,27 +401,9 @@ watch(
 
       <!-- 数据源2 -->
       <div class="data-section">
-        <h4 :style="{ backgroundColor: themeColor }">
-          {{ dataSource2Title }}
-          <span v-if="config?.dataSource2Config?.unit" class="unit">({{ config.dataSource2Config.unit }})</span>
-        </h4>
+        <h4 :style="{ backgroundColor: themeColor }">数据源2</h4>
         <div class="data-content">
           <div v-if="props.dataSource2" class="data-display">
-            <!-- 数值显示 -->
-            <div v-if="extractDisplayValue(props.dataSource2, config?.dataSource2Config)" class="value-display">
-              <span class="value">
-                {{
-                  formatNumber(
-                    extractDisplayValue(props.dataSource2, config?.dataSource2Config),
-                    config?.dataSource2Config?.precision || 2
-                  )
-                }}
-              </span>
-              <span v-if="config?.dataSource2Config?.unit" class="unit">
-                {{ config.dataSource2Config.unit }}
-              </span>
-            </div>
-            <!-- 完整数据 -->
             <pre class="raw-data">{{ formatData(props.dataSource2) }}</pre>
           </div>
           <div v-else class="no-data">等待数据...</div>
@@ -458,15 +414,14 @@ watch(
     <!-- 组件信息 -->
     <div class="component-info">
       <small>组件ID: {{ props.componentId || '未设置' }}</small>
-      <small v-if="isClickEnabled">| 交互已启用</small>
     </div>
   </div>
 </template>
 
 <style scoped>
 .dual-data-display {
-  padding: var(--padding, 16px);
-  background: rgba(var(--card-color), var(--background-opacity, 0.9));
+  padding: 16px;
+  background: var(--card-color);
   border-radius: var(--border-radius);
   font-family: monospace;
   font-size: var(--font-size, 14px);
@@ -474,23 +429,16 @@ watch(
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .dual-data-display.bordered {
   border: 1px solid var(--border-color);
 }
 
-.dual-data-display.clickable {
-  cursor: pointer;
-}
-
-.dual-data-display.clickable:hover {
+.dual-data-display:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.dual-data-display.toggled {
-  background: rgba(var(--theme-color), 0.1);
 }
 
 .header {
@@ -599,25 +547,7 @@ watch(
   gap: 8px;
 }
 
-/* 数值显示 */
-.value-display {
-  background: var(--theme-color, var(--primary-color));
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  text-align: center;
-  font-weight: bold;
-}
-
-.value-display .value {
-  font-size: calc(var(--font-size, 14px) + 4px);
-  margin-right: 4px;
-}
-
-.value-display .unit {
-  font-size: calc(var(--font-size, 14px) - 2px);
-  opacity: 0.9;
-}
+/* 数值显示区域已简化 */
 
 /* 原始数据 */
 .raw-data {

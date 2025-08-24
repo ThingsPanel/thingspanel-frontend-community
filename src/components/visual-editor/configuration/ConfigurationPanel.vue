@@ -84,6 +84,8 @@
                 v-model="dataSourceConfig"
                 :data-sources="componentDataSources"
                 :selected-widget-id="selectedWidget?.id"
+                :component-id="selectedWidget?.id"
+                :component-type="selectedWidget?.type"
                 @request-current-data="handleCurrentDataRequest"
               />
             </div>
@@ -255,6 +257,8 @@ const dataSourceConfig = computed<DataSourceConfiguration | null>({
     return config?.dataSource || null
   },
   set: value => {
+    console.log('🔄 [ConfigurationPanel] dataSourceConfig setter 被调用:', { value, isUpdatingFromManager });
+    
     // 🚨 防止循环更新：如果正在从ConfigurationManager更新，不再同步回去
     if (isUpdatingFromManager) {
       console.log('⏸️ [ConfigurationPanel] 跳过循环更新 - 正在从Manager更新')
@@ -281,14 +285,12 @@ const dataSourceConfig = computed<DataSourceConfiguration | null>({
         console.log('🔄 [ConfigurationPanel] 更新数据源配置:', enhancedValue)
         configurationManager.updateConfiguration(props.selectedWidget.id, 'dataSource', enhancedValue)
 
-        // 自动更新执行器
-        if (value.config) {
-          componentExecutorManager
-            .updateComponentExecutor(props.selectedWidget.id, props.selectedWidget.type, value.config)
-            .catch(error => {
-              console.error('❌ [ConfigurationPanel] 执行器更新失败:', error)
-            })
-        }
+        // 🔥 修复：自动更新执行器，传递完整的增强配置
+        componentExecutorManager
+          .updateComponentExecutor(props.selectedWidget.id, props.selectedWidget.type, enhancedValue)
+          .catch(error => {
+            console.error('❌ [ConfigurationPanel] 执行器更新失败:', error)
+          })
       } finally {
         // 🔥 修复：延迟重置标志，避免异步问题导致的递归更新
         nextTick(() => {

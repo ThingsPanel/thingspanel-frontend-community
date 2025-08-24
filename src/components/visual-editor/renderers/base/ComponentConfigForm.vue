@@ -4,10 +4,12 @@
     <div v-if="isCard2Component && card2ConfigComponent">
       <component
         :is="card2ConfigComponent"
+        v-model="componentConfig"
         :widget="widget"
         :config="componentConfig"
         :readonly="readonly"
-        @update="handleCard2ConfigUpdate"
+        @update:modelValue="handleCard2ConfigUpdate"
+        @change="handleCard2ConfigUpdate"
       />
     </div>
 
@@ -56,7 +58,7 @@
  * 负责处理各个组件的特定配置，支持Card2.1组件的独立配置
  */
 
-import { computed, watch } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
 
 interface Props {
@@ -125,14 +127,53 @@ const card2ConfigComponent = computed(() => {
 })
 
 /**
- * 组件配置数据
+ * 组件配置数据 - 响应式引用，支持双向绑定
  */
-const componentConfig = computed(() => {
-  if (!props.widget) return null
+const componentConfig = ref<any>(props.widget?.properties || {})
 
-  // 从widget.properties中获取配置
-  return props.widget.properties || {}
-})
+// 防循环更新标志
+let isUpdatingConfig = false
+
+// 监听widget变化，同步配置数据
+watch(
+  () => props.widget?.properties,
+  newProperties => {
+    // 防止循环更新
+    if (isUpdatingConfig) {
+      console.log('[ComponentConfigForm] 跳过循环更新 - 正在更新配置中')
+      return
+    }
+
+    if (newProperties) {
+      // 使用 JSON 序列化比较，避免引用比较问题
+      const newPropsJson = JSON.stringify(newProperties)
+      const currentConfigJson = JSON.stringify(componentConfig.value)
+
+      if (newPropsJson !== currentConfigJson) {
+        console.log('[ComponentConfigForm] Widget配置属性变化:', {
+          componentType: props.widget?.type,
+          newProperties,
+          oldProperties: componentConfig.value
+        })
+
+        // 设置防循环标志
+        isUpdatingConfig = true
+
+        try {
+          componentConfig.value = { ...newProperties }
+        } finally {
+          // 使用 nextTick 确保所有响应式更新完成后再重置标志
+          nextTick(() => {
+            setTimeout(() => {
+              isUpdatingConfig = false
+            }, 10) // 短暂延迟确保更新完成
+          })
+        }
+      }
+    }
+  },
+  { deep: true, immediate: true }
+)
 
 /**
  * 处理Card2配置更新
@@ -140,11 +181,37 @@ const componentConfig = computed(() => {
 const handleCard2ConfigUpdate = (newConfig: any) => {
   console.log('[ComponentConfigForm] Card2配置更新:', {
     componentType: props.widget?.type,
-    newConfig
+    newConfig,
+    oldConfig: componentConfig.value
   })
 
-  // 发送配置更新事件
-  emit('update', newConfig)
+  // 防止循环更新
+  if (isUpdatingConfig) {
+    console.log('[ComponentConfigForm] 跳过配置更新 - 防循环保护')
+    return
+  }
+
+  isUpdatingConfig = true
+
+  try {
+    // 更新本地配置状态
+    componentConfig.value = { ...componentConfig.value, ...newConfig }
+
+    if (props.widget?.properties) {
+      Object.assign(props.widget.properties, newConfig)
+      console.log('[ComponentConfigForm] 已更新widget.properties:', props.widget.properties)
+    }
+
+    // 发送配置更新事件
+    emit('update', newConfig)
+  } finally {
+    // 延迟重置防循环标志
+    nextTick(() => {
+      setTimeout(() => {
+        isUpdatingConfig = false
+      }, 10)
+    })
+  }
 }
 
 /**

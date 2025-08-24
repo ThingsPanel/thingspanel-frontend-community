@@ -8,6 +8,8 @@ import type { ComponentDefinition } from '../core/types'
 
 // 导入新架构组件定义
 import dualDataDisplayDefinition from './dual-data-display'
+import tripleDataDisplayDefinition from './triple-data-display'
+import { ComponentRegistry } from '../core/component-registry'
 
 // ============ 组件注册表 ============
 
@@ -17,7 +19,7 @@ import dualDataDisplayDefinition from './dual-data-display'
  */
 export const Card2Components: Record<string, ComponentDefinition[]> = {
   // 数据源测试分类
-  数据源测试: [dualDataDisplayDefinition]
+  数据源测试: [dualDataDisplayDefinition, tripleDataDisplayDefinition]
 }
 
 /**
@@ -25,8 +27,16 @@ export const Card2Components: Record<string, ComponentDefinition[]> = {
  * 供编辑器快速查找组件定义
  */
 export const Card2ComponentMap: Record<string, ComponentDefinition> = {
-  'dual-data-display': dualDataDisplayDefinition
+  'dual-data-display': dualDataDisplayDefinition,
+  'triple-data-display': tripleDataDisplayDefinition
 }
+
+// 🔥 自动注册所有组件到新的组件注册表
+Object.values(Card2ComponentMap).forEach(definition => {
+  ComponentRegistry.register(definition)
+})
+
+console.log('✅ [Card2Components] 组件注册完成，统计信息:', ComponentRegistry.getStats())
 
 /**
  * 组件类型数组
@@ -107,6 +117,7 @@ export const ComponentStats = {
 
 // 新架构组件导出
 export { default as dualDataDisplayDefinition } from './dual-data-display'
+export { default as tripleDataDisplayDefinition } from './triple-data-display'
 
 // 默认导出主要接口
 export default {

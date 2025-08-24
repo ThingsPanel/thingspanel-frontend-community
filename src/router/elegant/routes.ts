@@ -818,6 +818,51 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
+        name: 'test_basic-test',
+        path: '/test/basic-test',
+        component: 'view.test_basic-test',
+        meta: {
+          title: 'test_basic-test',
+          i18nKey: 'route.test_basic-test'
+        }
+      },
+      {
+        name: 'test_card2-components-test',
+        path: '/test/card2-components-test',
+        component: 'view.test_card2-components-test',
+        meta: {
+          title: 'test_card2-components-test',
+          i18nKey: 'route.test_card2-components-test'
+        }
+      },
+      {
+        name: 'test_data-flow-test',
+        path: '/test/data-flow-test',
+        component: 'view.test_data-flow-test',
+        meta: {
+          title: 'test_data-flow-test',
+          i18nKey: 'route.test_data-flow-test'
+        }
+      },
+      {
+        name: 'test_data-source-config',
+        path: '/test/data-source-config',
+        component: 'view.test_data-source-config',
+        meta: {
+          title: 'test_data-source-config',
+          i18nKey: 'route.test_data-source-config'
+        }
+      },
+      {
+        name: 'test_data-update-fix-test',
+        path: '/test/data-update-fix-test',
+        component: 'view.test_data-update-fix-test',
+        meta: {
+          title: 'test_data-update-fix-test',
+          i18nKey: 'route.test_data-update-fix-test'
+        }
+      },
+      {
         name: 'test_datasource-integration',
         path: '/test/datasource-integration',
         component: 'view.test_datasource-integration',
@@ -863,6 +908,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'test_minimal-test',
+        path: '/test/minimal-test',
+        component: 'view.test_minimal-test',
+        meta: {
+          title: 'test_minimal-test',
+          i18nKey: 'route.test_minimal-test'
+        }
+      },
+      {
         name: 'test_original-config-test',
         path: '/test/original-config-test',
         component: 'view.test_original-config-test',
@@ -878,6 +932,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'test_property-exposure-test',
           i18nKey: 'route.test_property-exposure-test'
+        }
+      },
+      {
+        name: 'test_simple-data-source',
+        path: '/test/simple-data-source',
+        component: 'view.test_simple-data-source',
+        meta: {
+          title: 'test_simple-data-source',
+          i18nKey: 'route.test_simple-data-source'
         }
       }
     ]

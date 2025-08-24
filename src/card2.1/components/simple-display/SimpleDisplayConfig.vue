@@ -1,9 +1,19 @@
 <template>
-  <div class="dual-data-display-config">
-    <!-- 基础配置 - 简化版 -->
+  <div class="simple-display-config">
+    <!-- 简单配置表单 -->
     <n-form :model="localConfig" label-placement="left" :label-width="80">
       <n-form-item label="标题">
         <n-input v-model:value="localConfig.title" placeholder="组件标题" @update:value="handleConfigChange" />
+      </n-form-item>
+
+      <n-form-item label="内容">
+        <n-input
+          v-model:value="localConfig.content"
+          type="textarea"
+          placeholder="展示内容"
+          :rows="3"
+          @update:value="handleConfigChange"
+        />
       </n-form-item>
 
       <n-form-item label="主题色">
@@ -20,8 +30,16 @@
         />
       </n-form-item>
 
-      <n-form-item label="显示边框">
-        <n-switch v-model:value="localConfig.showBorder" @update:value="handleConfigChange" />
+      <n-form-item label="显示图标">
+        <n-switch v-model:value="localConfig.showIcon" @update:value="handleConfigChange" />
+      </n-form-item>
+
+      <n-form-item v-if="localConfig.showIcon" label="图标">
+        <n-input
+          v-model:value="localConfig.iconName"
+          placeholder="输入emoji或图标"
+          @update:value="handleConfigChange"
+        />
       </n-form-item>
     </n-form>
   </div>
@@ -29,35 +47,37 @@
 
 <script setup lang="ts">
 /**
- * 双数据源显示组件配置面板
- * 用于在可视化编辑器的属性面板中配置组件属性
+ * 简单展示组件配置面板
+ * 无数据源组件的配置示例
  */
 
 import { reactive, watch, nextTick } from 'vue'
 import { NForm, NFormItem, NInput, NInputNumber, NSwitch, NColorPicker } from 'naive-ui'
 
-// 简化的配置接口
-interface DualDataDisplayConfig {
+// 配置接口
+interface SimpleDisplayConfig {
   title: string
+  content: string
   themeColor: string
   fontSize: number
-  showBorder: boolean
+  showIcon: boolean
+  iconName: string
 }
 
-// Props定义 - 遵循配置系统标准接口
+// Props定义
 interface Props {
-  modelValue?: DualDataDisplayConfig // 支持可选的 modelValue (从 ConfigurationPanel 传递)
-  config?: DualDataDisplayConfig // 支持直接的 config 传递 (从 ComponentConfigForm 传递)
+  modelValue?: SimpleDisplayConfig
+  config?: SimpleDisplayConfig
   widget?: any
   readonly?: boolean
 }
 
-// Emits定义 - 遵循配置系统标准接口
+// Emits定义
 interface Emits {
-  (e: 'update:modelValue', config: DualDataDisplayConfig): void
-  (e: 'update:config', config: DualDataDisplayConfig): void // 支持 config 更新
-  (e: 'change', value: DualDataDisplayConfig, oldValue: DualDataDisplayConfig): void
-  (e: 'update', config: DualDataDisplayConfig): void // 支持通用更新事件
+  (e: 'update:modelValue', config: SimpleDisplayConfig): void
+  (e: 'update:config', config: SimpleDisplayConfig): void
+  (e: 'change', value: SimpleDisplayConfig, oldValue: SimpleDisplayConfig): void
+  (e: 'update', config: SimpleDisplayConfig): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -66,21 +86,23 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
-// 获取默认配置 - 简化版
-const getDefaultConfig = (): DualDataDisplayConfig => ({
-  title: '双数据源显示',
-  themeColor: '#18a058',
-  fontSize: 14,
-  showBorder: true
+// 获取默认配置
+const getDefaultConfig = (): SimpleDisplayConfig => ({
+  title: '简单展示组件',
+  content: '这是一个静态展示组件，不需要数据源',
+  themeColor: '#2080f0',
+  fontSize: 16,
+  showIcon: true,
+  iconName: '📊'
 })
 
-// 本地配置状态 - 简化版
-const localConfig = reactive<DualDataDisplayConfig>(props.modelValue || props.config || getDefaultConfig())
+// 本地配置状态
+const localConfig = reactive<SimpleDisplayConfig>(props.modelValue || props.config || getDefaultConfig())
 
 // 防循环更新标志
 let isUpdatingFromProps = false
 
-// 监听props配置变化 - 简化版
+// 监听props配置变化
 watch(
   [() => props.modelValue, () => props.config],
   ([newModelValue, newConfig]) => {
@@ -92,9 +114,11 @@ watch(
       try {
         Object.assign(localConfig, {
           title: sourceConfig.title || getDefaultConfig().title,
+          content: sourceConfig.content || getDefaultConfig().content,
           themeColor: sourceConfig.themeColor || getDefaultConfig().themeColor,
           fontSize: sourceConfig.fontSize || getDefaultConfig().fontSize,
-          showBorder: sourceConfig.showBorder ?? getDefaultConfig().showBorder
+          showIcon: sourceConfig.showIcon ?? getDefaultConfig().showIcon,
+          iconName: sourceConfig.iconName || getDefaultConfig().iconName
         })
       } finally {
         nextTick(() => {
@@ -108,7 +132,7 @@ watch(
   { deep: true, immediate: true }
 )
 
-// 配置变更处理 - 简化版
+// 配置变更处理
 const handleConfigChange = () => {
   if (isUpdatingFromProps) return
 
@@ -123,7 +147,7 @@ const handleConfigChange = () => {
 </script>
 
 <style scoped>
-.dual-data-display-config {
+.simple-display-config {
   padding: 16px;
 }
 

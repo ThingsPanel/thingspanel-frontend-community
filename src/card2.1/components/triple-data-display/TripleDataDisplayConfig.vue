@@ -1,6 +1,6 @@
 <template>
-  <div class="dual-data-display-config">
-    <!-- 基础配置 - 简化版 -->
+  <div class="triple-data-display-config">
+    <!-- 三数据源配置表单 -->
     <n-form :model="localConfig" label-placement="left" :label-width="80">
       <n-form-item label="标题">
         <n-input v-model:value="localConfig.title" placeholder="组件标题" @update:value="handleConfigChange" />
@@ -23,41 +23,46 @@
       <n-form-item label="显示边框">
         <n-switch v-model:value="localConfig.showBorder" @update:value="handleConfigChange" />
       </n-form-item>
+
+      <n-form-item label="布局模式">
+        <n-select v-model:value="localConfig.layout" :options="layoutOptions" @update:value="handleConfigChange" />
+      </n-form-item>
     </n-form>
   </div>
 </template>
 
 <script setup lang="ts">
 /**
- * 双数据源显示组件配置面板
- * 用于在可视化编辑器的属性面板中配置组件属性
+ * 三数据源显示组件配置面板
+ * 三个数据源组件的配置示例
  */
 
 import { reactive, watch, nextTick } from 'vue'
-import { NForm, NFormItem, NInput, NInputNumber, NSwitch, NColorPicker } from 'naive-ui'
+import { NForm, NFormItem, NInput, NInputNumber, NSwitch, NColorPicker, NSelect } from 'naive-ui'
 
-// 简化的配置接口
-interface DualDataDisplayConfig {
+// 配置接口
+interface TripleDataDisplayConfig {
   title: string
   themeColor: string
   fontSize: number
   showBorder: boolean
+  layout: 'grid' | 'horizontal' | 'vertical'
 }
 
-// Props定义 - 遵循配置系统标准接口
+// Props定义
 interface Props {
-  modelValue?: DualDataDisplayConfig // 支持可选的 modelValue (从 ConfigurationPanel 传递)
-  config?: DualDataDisplayConfig // 支持直接的 config 传递 (从 ComponentConfigForm 传递)
+  modelValue?: TripleDataDisplayConfig
+  config?: TripleDataDisplayConfig
   widget?: any
   readonly?: boolean
 }
 
-// Emits定义 - 遵循配置系统标准接口
+// Emits定义
 interface Emits {
-  (e: 'update:modelValue', config: DualDataDisplayConfig): void
-  (e: 'update:config', config: DualDataDisplayConfig): void // 支持 config 更新
-  (e: 'change', value: DualDataDisplayConfig, oldValue: DualDataDisplayConfig): void
-  (e: 'update', config: DualDataDisplayConfig): void // 支持通用更新事件
+  (e: 'update:modelValue', config: TripleDataDisplayConfig): void
+  (e: 'update:config', config: TripleDataDisplayConfig): void
+  (e: 'change', value: TripleDataDisplayConfig, oldValue: TripleDataDisplayConfig): void
+  (e: 'update', config: TripleDataDisplayConfig): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -66,21 +71,29 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
-// 获取默认配置 - 简化版
-const getDefaultConfig = (): DualDataDisplayConfig => ({
-  title: '双数据源显示',
-  themeColor: '#18a058',
+// 布局选项
+const layoutOptions = [
+  { label: '网格布局', value: 'grid' },
+  { label: '水平布局', value: 'horizontal' },
+  { label: '垂直布局', value: 'vertical' }
+]
+
+// 获取默认配置
+const getDefaultConfig = (): TripleDataDisplayConfig => ({
+  title: '三数据源综合显示',
+  themeColor: '#f0a020',
   fontSize: 14,
-  showBorder: true
+  showBorder: true,
+  layout: 'grid'
 })
 
-// 本地配置状态 - 简化版
-const localConfig = reactive<DualDataDisplayConfig>(props.modelValue || props.config || getDefaultConfig())
+// 本地配置状态
+const localConfig = reactive<TripleDataDisplayConfig>(props.modelValue || props.config || getDefaultConfig())
 
 // 防循环更新标志
 let isUpdatingFromProps = false
 
-// 监听props配置变化 - 简化版
+// 监听props配置变化
 watch(
   [() => props.modelValue, () => props.config],
   ([newModelValue, newConfig]) => {
@@ -94,7 +107,8 @@ watch(
           title: sourceConfig.title || getDefaultConfig().title,
           themeColor: sourceConfig.themeColor || getDefaultConfig().themeColor,
           fontSize: sourceConfig.fontSize || getDefaultConfig().fontSize,
-          showBorder: sourceConfig.showBorder ?? getDefaultConfig().showBorder
+          showBorder: sourceConfig.showBorder ?? getDefaultConfig().showBorder,
+          layout: sourceConfig.layout || getDefaultConfig().layout
         })
       } finally {
         nextTick(() => {
@@ -108,7 +122,7 @@ watch(
   { deep: true, immediate: true }
 )
 
-// 配置变更处理 - 简化版
+// 配置变更处理
 const handleConfigChange = () => {
   if (isUpdatingFromProps) return
 
@@ -123,7 +137,7 @@ const handleConfigChange = () => {
 </script>
 
 <style scoped>
-.dual-data-display-config {
+.triple-data-display-config {
   padding: 16px;
 }
 
