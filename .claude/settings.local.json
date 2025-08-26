@@ -48,7 +48,8 @@
       "Bash(timeout 10 pnpm dev)",
       "Bash(move:*)",
       "Bash(/bashes)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(start data-flow-test.html)"
     ],
     "deny": [],
     "additionalDirectories": [

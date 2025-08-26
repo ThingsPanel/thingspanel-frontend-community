@@ -796,11 +796,28 @@ const handleDataSourceManagerUpdate = (updateData: {
     }
 
     // 🔥 防护：检查配置是否有效
-    if (
-      action === 'update' &&
-      (!config || !config.dataSourceBindings || Object.keys(config.dataSourceBindings).length === 0)
-    ) {
+    if (action === 'update' && !config) {
+      console.warn(`⚠️ [PanelEditor] 配置为空，跳过更新: ${componentId}`)
       return
+    }
+    
+    // 🔥 修复：支持新的配置格式检查
+    if (action === 'update') {
+      const hasDataSourceBindings = config.dataSourceBindings && Object.keys(config.dataSourceBindings).length > 0
+      const hasDataSources = config.type === 'data-source-bindings' && (
+        config.dataSource1 || config.dataSource2 || config.dataSource3
+      )
+      
+      if (!hasDataSourceBindings && !hasDataSources) {
+        console.log(`ℹ️ [PanelEditor] 配置无有效数据源，跳过更新: ${componentId}`)
+        return
+      }
+      
+      console.log(`🔧 [PanelEditor] 配置有效，继续处理: ${componentId}`, {
+        hasDataSourceBindings,
+        hasDataSources,
+        configType: config.type
+      })
     }
 
     if (action === 'update' || action === 'config-updated' || action === 'config-restored') {
@@ -827,6 +844,12 @@ const handleDataSourceManagerUpdate = (updateData: {
           { type: 'timer', interval: 30000 } // 默认30秒轮询
         )
       }
+      
+      // 🔧 修复：注册后立即启动数据源，确保实时配置能立即生效
+      setTimeout(() => {
+        console.log(`🚀 [PanelEditor] 启动组件数据源: ${componentId}`)
+        editorDataSourceManager.startComponentDataSource(componentId)
+      }, 100) // 短暂延迟确保注册完成
 
       // 同步到本地配置存储
       if (config.dataSourceBindings && Object.keys(config.dataSourceBindings).length > 0) {

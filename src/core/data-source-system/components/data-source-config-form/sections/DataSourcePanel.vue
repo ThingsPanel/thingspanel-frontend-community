@@ -78,6 +78,7 @@
           :data-value="dataSourceConfig"
           @update:finalProcessingType="handleFinalProcessingTypeUpdate"
           @update:finalProcessingScript="handleFinalProcessingScriptUpdate"
+          @execution-result="handleExecutionResult"
         />
       </div>
     </n-space>
@@ -244,6 +245,32 @@ const handleFinalProcessingScriptUpdate = (script: string) => {
     finalProcessingScript: script
   }
   emit('update:config', props.dataSourceKey, updatedConfig)
+}
+
+/**
+ * 🆕 处理执行结果 - 将数据传递给组件显示
+ */
+const handleExecutionResult = (eventData: any) => {
+  console.log('🎯 [DataSourcePanel] 接收到执行结果事件:', eventData)
+  console.log('🎯 [DataSourcePanel] 结果数据:', eventData.result)
+  console.log('🎯 [DataSourcePanel] 配置信息:', eventData.config)
+  
+  // 🔥 关键：更新当前数据源配置，包含执行结果
+  const updatedConfig = {
+    ...props.dataSourceConfig,
+    ...eventData.config,
+    // 确保最终结果被正确保存
+    finalResult: eventData.result,
+    lastExecuted: eventData.config?.executedAt,
+    status: 'executed_successfully'
+  }
+  
+  console.log('🚀 [DataSourcePanel] 准备更新配置:', updatedConfig)
+  
+  // 发出配置更新事件，这将触发整个数据流链
+  emit('update:config', props.dataSourceKey, updatedConfig)
+  
+  console.log('✅ [DataSourcePanel] 配置更新事件已发出')
 }
 </script>
 

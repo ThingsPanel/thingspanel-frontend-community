@@ -154,12 +154,13 @@ export async function performanceComparison() {
   }
 }
 
-// 自动运行测试（仅在开发环境）
-if (import.meta.env.DEV) {
-  // 延迟执行，避免影响应用启动
-  setTimeout(() => {
-    testPhase2Integration().then(() => {
-      performanceComparison()
-    })
-  }, 3000)
-}
+// 自动运行测试已禁用，避免自动调用外部接口
+// 如需测试，请手动在控制台调用: await testPhase2Integration()
+// if (import.meta.env.DEV) {
+//   // 延迟执行，避免影响应用启动
+//   setTimeout(() => {
+//     testPhase2Integration().then(() => {
+//       performanceComparison()
+//     })
+//   }, 3000)
+// }

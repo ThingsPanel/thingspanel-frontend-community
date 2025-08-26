@@ -67,6 +67,48 @@ export class ConfigurationManager implements IConfigurationManager {
   // 配置迁移器
   private migrators: ConfigurationMigrator[] = []
 
+  // 🆕 持久化存储键名
+  private readonly STORAGE_KEY = 'visual-editor-configurations'
+
+  /**
+   * 构造函数 - 从 localStorage 恢复配置
+   */
+  constructor() {
+    this.loadFromStorage()
+    console.log('🚀 [ConfigurationManager] 配置管理器已初始化，已恢复持久化配置')
+  }
+
+  /**
+   * 从 localStorage 加载配置
+   */
+  private loadFromStorage(): void {
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY)
+      if (stored) {
+        const configurations = JSON.parse(stored)
+        Object.entries(configurations).forEach(([widgetId, config]) => {
+          this.configurations.set(widgetId, config as WidgetConfiguration)
+        })
+        console.log(`✅ [ConfigurationManager] 从本地存储恢复了 ${this.configurations.size} 个组件配置`)
+      }
+    } catch (error) {
+      console.error('❌ [ConfigurationManager] 从本地存储加载配置失败:', error)
+    }
+  }
+
+  /**
+   * 保存配置到 localStorage
+   */
+  private saveToStorage(): void {
+    try {
+      const configurationsObject = Object.fromEntries(this.configurations.entries())
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(configurationsObject))
+      console.log('💾 [ConfigurationManager] 配置已保存到本地存储')
+    } catch (error) {
+      console.error('❌ [ConfigurationManager] 保存配置到本地存储失败:', error)
+    }
+  }
+
   /**
    * 获取组件配置
    */
@@ -111,6 +153,9 @@ export class ConfigurationManager implements IConfigurationManager {
     // 保存配置
     this.configurations.set(widgetId, updatedConfig)
 
+    // 🆕 持久化到 localStorage
+    this.saveToStorage()
+
     console.log(`[ConfigurationManager] 配置已更新: ${widgetId}`)
 
     // 触发监听器
@@ -153,6 +198,9 @@ export class ConfigurationManager implements IConfigurationManager {
     }
 
     this.configurations.set(widgetId, updatedConfig)
+
+    // 🆕 持久化到 localStorage
+    this.saveToStorage()
 
     console.log(`[ConfigurationManager] 配置部分已更新: ${widgetId}.${section}`)
     // 🔍 [DEBUG-配置仓库] 打印整个配置对象

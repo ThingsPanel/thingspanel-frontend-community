@@ -102,32 +102,72 @@ export class VisualEditorBridge {
 
     // 处理配置中的数据源
     if (config && typeof config === 'object') {
-      // 处理多个数据源的情况（如 dataSource1, dataSource2, dataSource3）
-      for (const [key, value] of Object.entries(config)) {
-        if (key.startsWith('dataSource') && value && typeof value === 'object') {
-          const dataSourceConfig = value as any
-          
-          if (dataSourceConfig.type && dataSourceConfig.enabled !== false) {
+      // 🆕 处理 rawDataList 结构（来自数据源配置表单）
+      if (config.rawDataList && Array.isArray(config.rawDataList)) {
+        console.log(`[VisualEditorBridge] 处理 rawDataList 结构:`, config.rawDataList)
+        
+        config.rawDataList.forEach((item: any, index: number) => {
+          if (item && item.type && item.enabled !== false) {
+            console.log(`🔍 [VisualEditorBridge] 处理rawDataList项 ${index + 1}:`, item)
             dataSources.push({
-              id: key,
-              type: dataSourceConfig.type as any,
-              config: dataSourceConfig.config || {},
-              filterPath: dataSourceConfig.filterPath,
-              processScript: dataSourceConfig.processScript
+              id: `dataSource${index + 1}`,
+              type: item.type as any,
+              config: item.config || {},
+              filterPath: item.filterPath,
+              processScript: item.processScript
             })
+          }
+        })
+        
+        console.log(`[VisualEditorBridge] rawDataList 转换完成，共 ${dataSources.length} 个数据源`)
+      }
+      
+      // 处理多个数据源的情况（如 dataSource1, dataSource2, dataSource3）
+      if (dataSources.length === 0) {
+        for (const [key, value] of Object.entries(config)) {
+          if (key.startsWith('dataSource') && value && typeof value === 'object') {
+            const dataSourceConfig = value as any
+            
+            if (dataSourceConfig.type && dataSourceConfig.enabled !== false) {
+              dataSources.push({
+                id: key,
+                type: dataSourceConfig.type as any,
+                config: dataSourceConfig.config || {},
+                filterPath: dataSourceConfig.filterPath,
+                processScript: dataSourceConfig.processScript
+              })
+            }
           }
         }
       }
 
       // 处理单一数据源的情况
       if (dataSources.length === 0 && config.type && config.enabled !== false) {
-        dataSources.push({
-          id: 'dataSource1',
-          type: config.type as any,
-          config: config.config || config,
-          filterPath: config.filterPath,
-          processScript: config.processScript
-        })
+        // 🔥 特殊处理 data-source-bindings 类型
+        if (config.type === 'data-source-bindings') {
+          // 对于data-source-bindings，数据在config的各个dataSourceX字段中
+          for (const [key, value] of Object.entries(config)) {
+            if (key.startsWith('dataSource') && value && typeof value === 'object') {
+              console.log(`🔍 [VisualEditorBridge] 处理data-source-bindings中的${key}:`, value)
+              dataSources.push({
+                id: key,
+                type: config.type as any,
+                config: { dataSourceBindings: { [key]: value } }, // 🔥 关键：正确包装数据
+                filterPath: undefined,
+                processScript: undefined
+              })
+            }
+          }
+        } else {
+          // 其他类型使用原有逻辑
+          dataSources.push({
+            id: 'dataSource1',
+            type: config.type as any,
+            config: config.config || config,
+            filterPath: config.filterPath,
+            processScript: config.processScript
+          })
+        }
       }
     }
 

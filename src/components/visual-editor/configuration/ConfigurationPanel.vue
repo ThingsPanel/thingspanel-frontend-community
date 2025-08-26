@@ -282,7 +282,8 @@ const dataSourceConfig = computed<DataSourceConfiguration | null>({
       try {
         // 确保类型和元数据正确
         const enhancedValue = {
-          type: 'data-source-bindings',
+          // 保持原有类型，不硬编码为 'data-source-bindings'
+          type: value.type || 'data-source-bindings',
           enabled: true,
           ...value,
           metadata: {
@@ -296,12 +297,15 @@ const dataSourceConfig = computed<DataSourceConfiguration | null>({
         configurationManager.updateConfiguration(props.selectedWidget.id, 'dataSource', enhancedValue)
 
         // 🔄 重构：发出数据源配置更新事件，由外部系统负责数据执行
-        emit('data-source-manager-update', {
+        const eventData = {
           componentId: props.selectedWidget.id,
           componentType: props.selectedWidget.type,
           config: enhancedValue,
           action: 'config-updated'
-        })
+        }
+        console.log('🚀 [ConfigurationPanel] 准备发出data-source-manager-update事件:', eventData)
+        emit('data-source-manager-update', eventData)
+        console.log('✅ [ConfigurationPanel] data-source-manager-update事件已发出')
       } finally {
         // 🔥 修复：延迟重置标志，避免异步问题导致的递归更新
         nextTick(() => {

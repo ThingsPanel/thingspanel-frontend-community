@@ -171,19 +171,20 @@ export function validateArchitectureDifference() {
   }
 }
 
-// 自动运行快速验证 (开发环境)
-if (import.meta.env.DEV) {
-  // 延迟3秒执行，确保应用完全加载
-  setTimeout(() => {
-    quickValidation().then(success => {
-      if (success) {
-        console.log('🎉 自动验证通过！Phase 2 架构工作正常。')
-      } else {
-        console.warn('⚠️ 自动验证发现问题，请检查控制台日志。')
-      }
-    })
-  }, 3000)
-}
+// 自动运行快速验证已禁用，避免自动调用外部接口
+// 如需验证，请手动在控制台调用: await quickValidation()
+// if (import.meta.env.DEV) {
+//   // 延迟3秒执行，确保应用完全加载
+//   setTimeout(() => {
+//     quickValidation().then(success => {
+//       if (success) {
+//         console.log('🎉 自动验证通过！Phase 2 架构工作正常。')
+//       } else {
+//         console.warn('⚠️ 自动验证发现问题，请检查控制台日志。')
+//       }
+//     })
+//   }, 3000)
+// }
 
 // 全局暴露验证函数，可在控制台手动调用
 if (typeof window !== 'undefined') {

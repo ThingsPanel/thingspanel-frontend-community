@@ -20,7 +20,7 @@ export interface UnifiedDataConfig {
   /** 数据源唯一标识 */
   id: string
   /** 数据源类型 */
-  type: 'static' | 'http' | 'websocket' | 'json' | 'file'
+  type: 'static' | 'http' | 'websocket' | 'json' | 'file' | 'data-source-bindings'
   /** 数据源名称 */
   name?: string
   /** 是否启用 */
@@ -438,6 +438,7 @@ export class UnifiedDataExecutor {
     this.registerExecutor(new StaticExecutor())
     this.registerExecutor(new JsonExecutor())
     this.registerExecutor(new WebSocketExecutor())
+    this.registerExecutor(new DataSourceBindingsExecutor()) // 🆕 支持data-source-bindings类型
 
     console.log('[UnifiedDataExecutor] 统一数据执行器初始化完成')
   }
@@ -563,6 +564,97 @@ export class UnifiedDataExecutor {
         executor.cleanup()
       }
     })
+  }
+}
+
+/**
+ * 🆕 数据源绑定执行器 - 处理data-source-bindings类型
+ * 用于处理复杂的数据源绑定配置
+ */
+class DataSourceBindingsExecutor implements DataSourceExecutor {
+  type = 'data-source-bindings'
+
+  async execute(config: UnifiedDataConfig): Promise<UnifiedDataResult> {
+    const startTime = Date.now()
+    
+    try {
+      console.log(`📋 [DataSourceBindings] 处理数据源绑定配置: ${config.id}`)
+      
+      // 从config中提取dataSourceBindings配置
+      const bindings = config.config?.dataSourceBindings || config.config
+      
+      if (!bindings || typeof bindings !== 'object') {
+        return {
+          success: false,
+          error: 'dataSourceBindings配置缺失或格式错误',
+          errorCode: 'BINDINGS_CONFIG_ERROR',
+          timestamp: Date.now(),
+          sourceId: config.id,
+          metadata: {
+            responseTime: Date.now() - startTime
+          }
+        }
+      }
+      
+      // 🔥 关键：处理各种可能的数据格式
+      let resultData: any = null
+      
+      // 情况1：如果bindings包含rawData字段（来自FinalDataProcessing）
+      const bindingKeys = Object.keys(bindings)
+      if (bindingKeys.length > 0) {
+        const firstBinding = bindings[bindingKeys[0]]
+        
+        if (firstBinding?.rawData) {
+          // 尝试解析rawData（可能是JSON字符串）
+          try {
+            resultData = typeof firstBinding.rawData === 'string' 
+              ? JSON.parse(firstBinding.rawData)
+              : firstBinding.rawData
+            console.log(`✅ [DataSourceBindings] 从rawData提取数据:`, resultData)
+          } catch (error) {
+            // 如果解析失败，直接使用原始数据
+            resultData = firstBinding.rawData
+            console.log(`⚠️ [DataSourceBindings] rawData解析失败，使用原始数据:`, resultData)
+          }
+        } else if (firstBinding?.finalResult) {
+          // 使用finalResult
+          resultData = firstBinding.finalResult
+          console.log(`✅ [DataSourceBindings] 从finalResult提取数据:`, resultData)
+        } else {
+          // 直接使用整个binding作为数据
+          resultData = firstBinding
+          console.log(`✅ [DataSourceBindings] 使用完整binding数据:`, resultData)
+        }
+      } else {
+        // 情况2：直接使用config中的数据
+        resultData = bindings
+        console.log(`✅ [DataSourceBindings] 使用配置数据:`, resultData)
+      }
+
+      return {
+        success: true,
+        data: resultData,
+        timestamp: Date.now(),
+        sourceId: config.id,
+        metadata: {
+          responseTime: Date.now() - startTime,
+          bindingKeys: bindingKeys,
+          dataType: typeof resultData
+        }
+      }
+    } catch (error: any) {
+      console.error(`❌ [DataSourceBindings] 执行失败:`, error)
+      return {
+        success: false,
+        error: error.message || '数据源绑定处理失败',
+        errorCode: 'BINDINGS_EXECUTION_ERROR',
+        timestamp: Date.now(),
+        sourceId: config.id,
+        metadata: {
+          responseTime: Date.now() - startTime
+        }
+      }
+    }
   }
 }
 

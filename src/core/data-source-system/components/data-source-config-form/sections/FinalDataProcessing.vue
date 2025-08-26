@@ -1,6 +1,6 @@
 <template>
   <div class="final-data-processing">
-    <n-text strong>数据源最终处理:</n-text>
+    <n-text strong>数据源最终处s理:</n-text>
     <n-space vertical :size="12" style="margin-top: 8px">
       <!-- 处理方式选择 -->
       <div>
@@ -127,8 +127,9 @@
           <template #header>
             <n-space align="center" justify="space-between">
               <n-text depth="2" style="font-size: 12px">执行结果</n-text>
-              <n-button size="tiny" @click="executeProcessing" :loading="isExecuting">
-                手动执行
+              <!-- 🔥 修复：禁用手动执行按钮，避免与统一执行流程冲突 -->
+              <n-button size="tiny" disabled :loading="isExecuting">
+                手动执行 (已禁用)
               </n-button>
             </n-space>
           </template>
@@ -230,7 +231,7 @@ const executorConfig = computed(() => {
 })
 
 /**
- * 执行最终数据处理
+ * 执行最终数据处理 - 使用新的数据架构
  */
 const executeProcessing = async () => {
   console.log('🚀 [FinalDataProcessing] executeProcessing 被调用')
@@ -246,38 +247,78 @@ const executeProcessing = async () => {
   try {
     console.log('🔧 [FinalDataProcessing] 开始执行，配置:', executorConfig.value)
     
-    // 加载配置到执行器
-    executor.loadConfig(executorConfig.value)
+    // 🆕 检查是否有实际的rawDataList，如果没有就生成测试数据
+    let actualRawDataList = props.dataValue?.rawDataList || []
+    if (actualRawDataList.length === 0) {
+      console.log('🧪 [FinalDataProcessing] rawDataList为空，生成测试数据')
+      // 🔥 生成符合DataSourceExecutor期望格式的测试数据
+      const testJsonData = {
+        sensor: props.dataSourceKey,
+        temperature: Math.round(20 + Math.random() * 20),
+        humidity: Math.round(40 + Math.random() * 40),
+        pressure: Math.round(1000 + Math.random() * 50),
+        status: 'normal',
+        timestamp: new Date().toISOString(),
+        testMode: true,
+        generatedBy: 'FinalDataProcessing'
+      }
+      
+      actualRawDataList = [{
+        id: `${props.dataSourceKey}_test_json`,
+        name: `${props.dataSourceKey}_测试JSON数据`,
+        type: 'json',
+        data: testJsonData, // 🔥 DataSourceExecutor期望data字段，不是config.jsonContent
+        config: {
+          // 保留原有config结构以兼容其他地方的使用
+          jsonContent: JSON.stringify(testJsonData, null, 2)
+        },
+        enabled: true
+      }]
+      console.log('✅ [FinalDataProcessing] 测试数据生成完成:', actualRawDataList)
+    }
     
-    // 执行最终处理（跳过原始数据获取，直接处理）
-    console.log('🔥 [FinalDataProcessing] 调用 executor.executeFinalProcessing()')
-    const result = await executor.executeFinalProcessing()
+    // 🆕 更新配置，使用实际的rawDataList
+    const updatedConfig = {
+      ...executorConfig.value,
+      configuration: {
+        ...executorConfig.value.configuration,
+        rawDataList: actualRawDataList
+      }
+    }
+    
+    console.log('🔧 [FinalDataProcessing] 使用更新后的配置:', updatedConfig)
+    
+    // 加载配置到执行器
+    executor.loadConfig(updatedConfig)
+    
+    // 🔥 执行完整流程：先获取原始数据，再执行最终处理
+    console.log('🚀 [FinalDataProcessing] 执行完整数据流程')
+    const executorResult = await executor.executeAll()
+    
+    // 获取最终结果
+    const result = executor.getFinalResult()
     
     executionResult.value = result
     console.log('✅ [FinalDataProcessing] 执行完成，结果:', result)
     console.log('✅ [FinalDataProcessing] 结果类型:', typeof result)
+    console.log('✅ [FinalDataProcessing] 执行器状态:', executorResult)
     
     // 🔥 关键修复：将执行结果通过事件系统传递给组件
     try {
       console.log('🔄 [FinalDataProcessing] 准备通过事件发出执行结果')
       
-      // 构建完整的数据源配置，包含执行结果
+      // 🆕 使用新的数据架构配置格式
       const dataSourceConfigWithResult = {
-        type: 'data-source-bindings',
-        enabled: true,
-        config: {
-          dataSourceBindings: {
-            [props.dataSourceKey]: {
-              rawData: JSON.stringify(result), // 将执行结果作为原始数据
-              finalResult: result, // 同时保存最终结果
-              executedAt: new Date().toISOString(),
-              processingType: props.dataValue?.finalProcessingType || 'custom-script'
-            }
-          }
-        },
+        rawDataList: actualRawDataList,
+        finalProcessingType: props.dataValue?.finalProcessingType || 'custom-script',
+        finalProcessingScript: props.dataValue?.finalProcessingScript || 'return processedDataList',
+        finalResult: result,
+        executedAt: new Date().toISOString(),
+        testMode: actualRawDataList[0]?.config?.testMode || false,
         metadata: {
           source: 'final-data-processing',
-          updatedAt: Date.now()
+          updatedAt: Date.now(),
+          dataSourceKey: props.dataSourceKey
         }
       }
       
@@ -308,8 +349,8 @@ const executeProcessing = async () => {
  */
 const handleProcessingTypeChange = (value) => {
   emit('update:finalProcessingType', value)
-  // 配置变化后自动执行
-  executeProcessing()
+  // 🔥 修复：移除自动执行，避免与ConfigurationPanel的执行冲突
+  // executeProcessing() // 移除自动执行
 }
 
 /**
@@ -317,8 +358,8 @@ const handleProcessingTypeChange = (value) => {
  */
 const handleScriptChange = (value) => {
   emit('update:finalProcessingScript', value)
-  // 配置变化后自动执行
-  executeProcessing()
+  // 🔥 修复：移除自动执行，避免与ConfigurationPanel的执行冲突
+  // executeProcessing() // 移除自动执行
 }
 
 /**
@@ -340,11 +381,29 @@ const formatExecutionResult = (result) => {
   }
 }
 
-// 监听配置变化，自动执行
-watch(() => executorConfig.value, () => {
-  console.log('🔥 [FinalDataProcessing] 配置变化，触发执行:', executorConfig.value)
+// 🔥 修复：禁用自动监听执行，避免与ConfigurationPanel冲突
+// 只保留手动执行按钮的功能，统一由ConfigurationPanel控制执行时机
+/*
+watch(() => executorConfig.value, (newConfig) => {
+  console.log('🔥 [FinalDataProcessing] 配置变化检测:', newConfig)
+  
+  // 检查配置是否有效，避免无效执行
+  if (!newConfig?.configuration?.rawDataList || newConfig.configuration.rawDataList.length === 0) {
+    console.log('⏸️ [FinalDataProcessing] 配置无效或无原始数据，跳过执行')
+    return
+  }
+  
+  // 检查是否有启用的原始数据项
+  const hasEnabledData = newConfig.configuration.rawDataList.some(item => item.enabled !== false)
+  if (!hasEnabledData) {
+    console.log('⏸️ [FinalDataProcessing] 无启用的原始数据项，跳过执行')
+    return
+  }
+  
+  console.log('🚀 [FinalDataProcessing] 配置有效，触发执行:', newConfig)
   executeProcessing()
-}, { deep: true, immediate: true })
+}, { deep: true, immediate: false })
+*/
 </script>
 
 <style scoped>

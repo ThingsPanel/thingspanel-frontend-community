@@ -149,8 +149,10 @@ async function executeDataSource() {
       }
     }
 
-    // 执行数据源
-    const result = await simpleDataExecutor.execute(simpleConfig)
+    // 执行数据源 - 注意：simpleDataExecutor 已被移除，这里需要使用新的执行器
+    // const result = await simpleDataExecutor.execute(simpleConfig)
+    // 临时禁用，需要使用 unifiedDataExecutor
+    const result = { success: false, error: 'simpleDataExecutor已被移除，请使用UnifiedDataExecutor' }
 
     if (result.success && result.data) {
       componentData.value = result.data

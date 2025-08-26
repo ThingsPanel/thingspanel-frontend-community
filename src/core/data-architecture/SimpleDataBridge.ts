@@ -15,12 +15,13 @@
 // 🆕 Task 2.1: 导入统一数据执行器
 import { unifiedDataExecutor, type UnifiedDataConfig, type UnifiedDataResult } from './UnifiedDataExecutor'
 
-// 🧪 Task 2.1: 导入测试文件以确保测试函数在开发环境中可用
-if (process.env.NODE_ENV === 'development') {
-  import('./UnifiedDataExecutor.test').catch(() => {
-    // 忽略导入错误，测试文件是可选的
-  })
-}
+// 🧪 Task 2.1: 测试文件导入已移除，避免自动调用外部接口
+// 如需测试，请手动在控制台调用: await import('./UnifiedDataExecutor.test')
+// if (process.env.NODE_ENV === 'development') {
+//   import('./UnifiedDataExecutor.test').catch(() => {
+//     // 忽略导入错误，测试文件是可选的
+//   })
+// }
 
 /**
  * 简化的数据源配置
@@ -29,7 +30,7 @@ export interface SimpleDataSourceConfig {
   /** 数据源ID */
   id: string
   /** 数据源类型 */
-  type: 'static' | 'http'
+  type: 'static' | 'http' | 'json' | 'websocket' | 'file' | 'data-source-bindings'
   /** 配置选项 */
   config: {
     // 静态数据
@@ -159,6 +160,7 @@ export class SimpleDataBridge {
    * @returns UnifiedDataExecutor 的配置格式
    */
   private convertToUnifiedConfig(dataSource: SimpleDataSourceConfig): UnifiedDataConfig {
+    console.log(`🔍 [SimpleDataBridge] 开始转换配置:`, dataSource)
     const baseConfig: UnifiedDataConfig = {
       id: dataSource.id,
       type: dataSource.type as any, // 类型映射
@@ -177,6 +179,24 @@ export class SimpleDataBridge {
         if (dataSource.config.method) {
           baseConfig.config.method = dataSource.config.method.toUpperCase() as any
         }
+        break
+        
+      case 'json':
+        // JSON数据：确保 jsonContent 字段存在
+        console.log(`🔍 [SimpleDataBridge] 处理JSON类型配置:`, dataSource.config)
+        break
+        
+      case 'websocket':
+        // WebSocket数据：保持原有配置
+        break
+        
+      case 'file':
+        // 文件数据：保持原有配置
+        break
+        
+      case 'data-source-bindings':
+        // 数据源绑定：保持原有配置，UnifiedDataExecutor会处理复杂逻辑
+        console.log(`🔍 [SimpleDataBridge] 处理data-source-bindings类型配置:`, dataSource.config)
         break
         
       default:

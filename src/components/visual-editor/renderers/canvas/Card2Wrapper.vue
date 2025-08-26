@@ -79,10 +79,11 @@ let currentSubscriberId: (() => void) | null = null
 const executorData = ref<Record<string, any>>({})
 let executorDataCleanup: (() => void) | null = null
 
+// 强制更新键，用于触发组件重新渲染
+const forceUpdateKey = ref(0)
+
 // 🔥 组件实例引用，用于触发属性变化事件
 const currentComponentRef = ref<any>(null)
-// 🔥 强制重新渲染key
-const forceUpdateKey = ref(0)
 // 🔥 容器引用
 const containerRef = ref<HTMLElement | null>(null)
 
@@ -216,6 +217,20 @@ watch(
   },
   { immediate: true, deep: true }
 )
+
+// 🔥 修复：添加VisualEditorBridge数据更新监听，解决刷新后无数据问题
+// 设置VisualEditorBridge数据监听
+if (!executorDataCleanup) {
+  executorDataCleanup = visualEditorBridge.onDataUpdate((componentId: string, data: any) => {
+    if (componentId === props.nodeId) {
+      console.log(`🔄 [Card2Wrapper] 接收到VisualEditorBridge数据更新: ${componentId}`, data)
+      executorData.value = data || {}
+      // 触发组件强制更新，确保新数据生效
+      forceUpdateKey.value++
+    }
+  })
+  console.log(`✅ [Card2Wrapper] VisualEditorBridge数据监听已建立: ${props.nodeId}`)
+}
 
 // 组件卸载时清理
 onBeforeUnmount(() => {
@@ -395,7 +410,21 @@ const getDataSourcesForComponent = () => {
   const dataSourcesHasData =
     props.dataSources?.dataSourceBindings && Object.keys(props.dataSources.dataSourceBindings).length > 0
 
-  if (dataSourcesConfigHasData) {
+  // 🔥 修复：优先检查VisualEditorBridge的执行数据
+  const executorDataHasData = executorData.value && Object.keys(executorData.value).length > 0
+
+  if (executorDataHasData) {
+    console.log('🔥 [Card2Wrapper] 传递 VisualEditorBridge 执行数据到组件', {
+      executorData: executorData.value,
+      componentId: props.nodeId
+    })
+    // 返回executorData，格式化为组件期望的格式
+    return {
+      dataSourceBindings: {
+        dataSource1: executorData.value
+      }
+    }
+  } else if (dataSourcesConfigHasData) {
     console.log('🔧 [Card2Wrapper] 传递 dataSourcesConfig 到组件', {
       bindingKeys: Object.keys(props.dataSourcesConfig.dataSourceBindings),
       fullConfig: props.dataSourcesConfig
@@ -519,6 +548,7 @@ async function handleDataSourceChange(event: ConfigChangeEvent): Promise<void> {
     source: event.source,
     timestamp: new Date(event.timestamp).toISOString()
   })
+  console.log('🔍 [Card2Wrapper] 事件详细内容:', JSON.stringify(event, null, 2))
   
   // 条件性触发执行器
   if (!shouldTriggerExecutor(event)) {
@@ -528,6 +558,7 @@ async function handleDataSourceChange(event: ConfigChangeEvent): Promise<void> {
   const dataSourceConfig = extractDataSourceConfig(event.newConfig?.dataSource)
   
   console.log('🔥 [Card2Wrapper] 检测到数据源配置变化:', dataSourceConfig)
+  console.log('🔍 [Card2Wrapper] 配置详细信息:', JSON.stringify(dataSourceConfig, null, 2))
   console.log('🚀 [Card2Wrapper] 调用 VisualEditorBridge 更新执行器')
   
   try {
@@ -578,8 +609,9 @@ onMounted(async () => {
       const savedConfig = configurationManager.getConfiguration(props.nodeId)
       console.log(`🔍 [Card2Wrapper] 尝试获取配置 (${retryCount + 1}/${maxRetries}):`, props.nodeId, savedConfig)
 
-      if (savedConfig?.dataSource?.config) {
-        console.log('✅ [Card2Wrapper] 成功获取到保存的配置:', savedConfig.dataSource.config)
+      if (savedConfig?.dataSource) {
+        console.log('✅ [Card2Wrapper] 成功获取到保存的配置:', savedConfig)
+        console.log('🔍 [Card2Wrapper] dataSource 配置详情:', savedConfig.dataSource)
         return savedConfig
       }
 
@@ -627,15 +659,17 @@ onMounted(async () => {
     }
   })
 
-  if (savedConfig?.dataSource?.config) {
-    console.log('🔥 [Card2Wrapper] 发现保存的数据源配置:', savedConfig.dataSource.config)
-    console.log('🔍 [Card2Wrapper] 配置详细信息:', JSON.stringify(savedConfig.dataSource.config, null, 2))
+  if (savedConfig?.dataSource) {
+    console.log('🔥 [Card2Wrapper] 发现保存的数据源配置:', savedConfig.dataSource)
+    console.log('🔍 [Card2Wrapper] 配置详细信息:', JSON.stringify(savedConfig.dataSource, null, 2))
 
     try {
+      // 🔥 修复：使用整个dataSource配置而不是dataSource.config
+      const dataSourceConfig = savedConfig.dataSource.config || savedConfig.dataSource
       const result = await visualEditorBridge.updateComponentExecutor(
         props.nodeId,
         props.componentType,
-        savedConfig.dataSource.config
+        dataSourceConfig
       )
       console.log('✅ [Card2Wrapper] 执行器恢复成功，结果:', props.nodeId, result)
     } catch (error) {
