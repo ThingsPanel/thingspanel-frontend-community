@@ -14,6 +14,7 @@
 import { computed, h } from 'vue'
 import { NIcon } from 'naive-ui'
 import { CopyOutline, TrashOutline, LayersOutline, LockClosedOutline } from '@vicons/ionicons5'
+import { $t } from '@/locales'
 
 interface Props {
   show: boolean
@@ -38,13 +39,13 @@ const menuOptions = computed(() => {
 
   return [
     {
-      label: '复制',
+      label: $t('visualEditor.copy'),
       key: 'copy',
       icon: () => h(NIcon, null, { default: () => h(CopyOutline) }),
       disabled: !hasSelection
     },
     {
-      label: '删除',
+      label: $t('visualEditor.delete'),
       key: 'delete',
       icon: () => h(NIcon, null, { default: () => h(TrashOutline) }),
       disabled: !hasSelection
@@ -54,13 +55,13 @@ const menuOptions = computed(() => {
       key: 'divider1'
     },
     {
-      label: multipleSelection ? '成组' : '图层',
+      label: multipleSelection ? $t('visualEditor.groupComponents') : $t('visualEditor.layerManagement'),
       key: 'layer',
       icon: () => h(NIcon, null, { default: () => h(LayersOutline) }),
       disabled: !hasSelection
     },
     {
-      label: '锁定',
+      label: $t('visualEditor.lockComponent'),
       key: 'lock',
       icon: () => h(NIcon, null, { default: () => h(LockClosedOutline) }),
       disabled: !hasSelection

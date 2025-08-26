@@ -4,8 +4,10 @@
     <div class="preview-controls">
       <n-space justify="space-between" align="center">
         <div class="preview-info">
-          <n-text strong>交互预览</n-text>
-          <n-text depth="3" style="margin-left: 8px">{{ interactions.length }} 个交互配置</n-text>
+          <n-text strong>{{ t('interaction.preview.title') }}</n-text>
+          <n-text depth="3" style="margin-left: 8px">
+            {{ interactions.length }} {{ t('interaction.preview.interactionCount') }}
+          </n-text>
         </div>
 
         <n-space size="small">
@@ -13,14 +15,14 @@
             <template #icon>
               <n-icon><RefreshOutline /></n-icon>
             </template>
-            重置
+            {{ t('interaction.reset') }}
           </n-button>
 
           <n-button size="small" type="primary" :disabled="!hasActiveInteractions" @click="runAllInteractions">
             <template #icon>
               <n-icon><PlayOutline /></n-icon>
             </template>
-            全部运行
+            {{ t('interaction.preview.runAll') }}
           </n-button>
         </n-space>
       </n-space>
@@ -44,14 +46,14 @@
             <FlashOutline />
           </n-icon>
           <div class="element-text">{{ currentContent }}</div>
-          <div class="element-subtitle">点击这里测试交互效果</div>
+          <div class="element-subtitle">{{ t('interaction.preview.testClickHere') }}</div>
         </div>
       </div>
     </div>
 
     <!-- 交互列表 -->
     <div class="interactions-list">
-      <h4 class="list-title">交互配置列表</h4>
+      <h4 class="list-title">{{ t('interaction.preview.configList') }}</h4>
 
       <div class="interactions-grid">
         <n-card
@@ -71,7 +73,7 @@
                   {{ getEventDisplayName(interaction.event) }}
                 </n-tag>
                 <span class="interaction-name">
-                  {{ interaction.name || `交互 ${index + 1}` }}
+                  {{ interaction.name || t('interaction.template.configIndex', { index: index + 1 }) }}
                 </span>
               </n-space>
 
@@ -90,7 +92,7 @@
                   <template #icon>
                     <n-icon><PlayCircleOutline /></n-icon>
                   </template>
-                  测试
+                  {{ t('interaction.preview.test') }}
                 </n-button>
               </n-space>
             </div>
@@ -114,9 +116,13 @@
 
               <div v-if="response.duration || response.delay" class="response-timing">
                 <n-text depth="3" style="font-size: 11px">
-                  <span v-if="response.delay">延迟{{ response.delay }}ms</span>
+                  <span v-if="response.delay">
+                    {{ t('interaction.template.delayLabel', { delay: response.delay }) }}
+                  </span>
                   <span v-if="response.delay && response.duration">·</span>
-                  <span v-if="response.duration">持续{{ response.duration }}ms</span>
+                  <span v-if="response.duration">
+                    {{ t('interaction.template.durationLabel', { duration: response.duration }) }}
+                  </span>
                 </n-text>
               </div>
             </div>
@@ -128,8 +134,10 @@
     <!-- 执行日志 -->
     <div class="execution-log">
       <div class="log-header">
-        <span class="log-title">执行日志</span>
-        <n-button size="tiny" quaternary :disabled="executionLog.length === 0" @click="clearLog">清空</n-button>
+        <span class="log-title">{{ t('interaction.preview.executionLog') }}</span>
+        <n-button size="tiny" quaternary :disabled="executionLog.length === 0" @click="clearLog">
+          {{ t('interaction.clear') }}
+        </n-button>
       </div>
 
       <div class="log-content">
@@ -139,7 +147,7 @@
         </div>
 
         <div v-if="executionLog.length === 0" class="log-empty">
-          <n-text depth="3">暂无执行记录</n-text>
+          <n-text depth="3">{{ t('interaction.preview.noExecutionRecords') }}</n-text>
         </div>
       </div>
     </div>
@@ -153,6 +161,7 @@
  */
 
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { NSpace, NText, NButton, NIcon, NCard, NTag, NSwitch, useMessage } from 'naive-ui'
 import { PlayOutline, RefreshOutline, FlashOutline, PlayCircleOutline } from '@vicons/ionicons5'
 
@@ -182,10 +191,16 @@ interface LogEntry {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const message = useMessage()
+const { t } = useI18n()
 
 // 响应式状态
 const previewElement = ref<HTMLElement>()
-const currentContent = ref('预览元素')
+const currentContent = ref('')
+
+// 初始化内容
+onMounted(() => {
+  currentContent.value = t('interaction.editor.previewElement')
+})
 const originalStyles = ref<any>({})
 const activeInteractions = ref<Set<number>>(new Set())
 const executionLog = ref<LogEntry[]>([])
@@ -220,27 +235,27 @@ const getEventTagType = (event: InteractionEventType) => {
 
 const getEventDisplayName = (event: InteractionEventType) => {
   const nameMap = {
-    click: '点击',
-    hover: '悬停',
-    focus: '聚焦',
-    blur: '失焦',
-    custom: '自定义'
+    click: t('interaction.events.click'),
+    hover: t('interaction.events.hover'),
+    focus: t('interaction.events.focus'),
+    blur: t('interaction.events.blur'),
+    custom: t('interaction.events.custom')
   }
   return nameMap[event] || event
 }
 
 const getActionDisplayName = (action: InteractionActionType) => {
   const nameMap = {
-    changeBackgroundColor: '背景色',
-    changeTextColor: '文字色',
-    changeBorderColor: '边框色',
-    changeSize: '尺寸',
-    changeOpacity: '透明度',
-    changeTransform: '变换',
-    changeVisibility: '可见性',
-    changeContent: '内容',
-    triggerAnimation: '动画',
-    custom: '自定义'
+    changeBackgroundColor: t('interaction.actions.changeBackgroundColor'),
+    changeTextColor: t('interaction.actions.changeTextColor'),
+    changeBorderColor: t('interaction.actions.changeBorderColor'),
+    changeSize: t('interaction.actions.changeSize'),
+    changeOpacity: t('interaction.actions.changeOpacity'),
+    changeTransform: t('interaction.actions.changeTransform'),
+    changeVisibility: t('interaction.actions.changeVisibility'),
+    changeContent: t('interaction.actions.changeContent'),
+    triggerAnimation: t('interaction.actions.triggerAnimation'),
+    custom: t('interaction.actions.custom')
   }
   return nameMap[action] || action
 }
@@ -263,7 +278,7 @@ const formatResponseValue = (response: InteractionResponse) => {
     case 'changeTransform':
       return String(value)
     case 'changeVisibility':
-      return value === 'visible' ? '显示' : '隐藏'
+      return value === 'visible' ? t('interaction.visibility.visible') : t('interaction.visibility.hidden')
     case 'changeContent':
       return String(value).substring(0, 20) + (String(value).length > 20 ? '...' : '')
     case 'triggerAnimation':
@@ -301,7 +316,7 @@ const handleEvent = (eventType: InteractionEventType, isActive = true) => {
       executeInteractionsByEvent('hover')
     } else {
       // 悬停结束，可以添加恢复逻辑
-      addLog('info', '悬停结束')
+      addLog('info', t('interaction.preview.hoverEnd'))
     }
   } else {
     executeInteractionsByEvent(eventType)
@@ -315,11 +330,17 @@ const executeInteractionsByEvent = (eventType: InteractionEventType) => {
     .sort((a, b) => (b.interaction.priority || 0) - (a.interaction.priority || 0))
 
   if (matchingInteractions.length === 0) {
-    addLog('warning', `没有启用的 ${getEventDisplayName(eventType)} 交互`)
+    addLog('warning', t('interaction.preview.noEnabledInteractions', { eventType: getEventDisplayName(eventType) }))
     return
   }
 
-  addLog('info', `触发 ${getEventDisplayName(eventType)} 事件，执行 ${matchingInteractions.length} 个交互`)
+  addLog(
+    'info',
+    t('interaction.preview.triggerEvent', {
+      eventType: getEventDisplayName(eventType),
+      count: matchingInteractions.length
+    })
+  )
 
   matchingInteractions.forEach(({ interaction, index }) => {
     executeInteraction(interaction, index)
@@ -329,7 +350,12 @@ const executeInteractionsByEvent = (eventType: InteractionEventType) => {
 const executeInteraction = (interaction: InteractionConfig, index: number) => {
   activeInteractions.value.add(index)
 
-  addLog('success', `开始执行: ${interaction.name || `交互 ${index + 1}`}`)
+  addLog(
+    'success',
+    t('interaction.preview.startExecution', {
+      name: interaction.name || t('interaction.template.configIndex', { index: index + 1 })
+    })
+  )
 
   interaction.responses.forEach((response, responseIndex) => {
     const delay = response.delay || 0
@@ -337,9 +363,15 @@ const executeInteraction = (interaction: InteractionConfig, index: number) => {
     setTimeout(() => {
       try {
         executeResponse(response)
-        addLog('success', `执行动作: ${getActionDisplayName(response.action)} = ${formatResponseValue(response)}`)
+        addLog(
+          'success',
+          t('interaction.preview.executeAction', {
+            action: getActionDisplayName(response.action),
+            value: formatResponseValue(response)
+          })
+        )
       } catch (error) {
-        addLog('error', `动作执行失败: ${getActionDisplayName(response.action)} - ${error}`)
+        addLog('error', t('interaction.preview.actionFailed', { action: getActionDisplayName(response.action), error }))
       }
     }, delay)
   })
@@ -413,7 +445,7 @@ const testSingleInteraction = (interaction: InteractionConfig) => {
 }
 
 const runAllInteractions = () => {
-  addLog('info', '开始执行所有启用的交互配置')
+  addLog('info', t('interaction.preview.startExecutingAll'))
 
   // 模拟触发所有事件类型
   const eventTypes: InteractionEventType[] = ['click', 'hover', 'focus', 'blur', 'custom']
@@ -434,18 +466,20 @@ const resetPreview = () => {
   // 重置所有样式
   element.style.cssText = ''
   element.className = 'preview-element'
-  currentContent.value = '预览元素'
+  currentContent.value = t('interaction.editor.previewElement')
 
   // 清空活动状态
   activeInteractions.value.clear()
 
-  addLog('info', '预览状态已重置')
-  message.success('预览已重置')
+  addLog('info', t('interaction.messages.previewReset'))
+  message.success(t('interaction.messages.previewReset'))
 }
 
 const toggleInteraction = (index: number, enabled: boolean) => {
   props.interactions[index].enabled = enabled
-  addLog('info', `${enabled ? '启用' : '禁用'}了交互: ${props.interactions[index].name || `交互 ${index + 1}`}`)
+  const status = enabled ? t('interaction.events.enabled') : t('interaction.events.disabled')
+  const name = props.interactions[index].name || t('interaction.template.configIndex', { index: index + 1 })
+  addLog('info', t('interaction.preview.interactionToggled', { status, name }))
 }
 
 const addLog = (type: LogEntry['type'], message: string) => {
@@ -463,7 +497,7 @@ const addLog = (type: LogEntry['type'], message: string) => {
 
 const clearLog = () => {
   executionLog.value = []
-  addLog('info', '日志已清空')
+  addLog('info', t('interaction.messages.logCleared'))
 }
 
 // 生命周期
@@ -481,7 +515,7 @@ onMounted(() => {
     }
   }
 
-  addLog('info', '交互预览已启动')
+  addLog('info', t('interaction.preview.previewStarted'))
 })
 
 onUnmounted(() => {

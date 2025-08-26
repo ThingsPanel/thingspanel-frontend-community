@@ -2,7 +2,7 @@
   <div ref="containerRef" class="card2-wrapper" :data-component-id="props.nodeId">
     <!-- 错误状态 -->
     <div v-if="hasError" class="error-overlay">
-      <n-alert type="error" :title="'渲染失败'" size="small">
+      <n-alert type="error" :title="$t('visualEditor.renderFailed')" size="small">
         {{ errorMessage }}
       </n-alert>
     </div>
@@ -35,6 +35,7 @@
 import { ref, onMounted, watch, shallowRef, onBeforeUnmount, computed, type Component } from 'vue'
 import { interactionManager } from '@/card2.1/core/interaction-manager'
 import { NAlert } from 'naive-ui'
+import { $t } from '@/locales'
 import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import type { DataSourceValue } from '../../types/data-source'
 // 🔥 新增：导入组件执行器管理器和配置管理器
@@ -263,13 +264,13 @@ const extractComponentConfig = () => {
   if (!configData) {
     console.log('[INTERACTION-DEBUG] 使用默认配置')
     configData = {
-      title: '测试标题',
+      title: $t('visualEditor.testTitle'),
       showTitle: true,
-      content: '这是测试内容',
+      content: $t('visualEditor.testContent'),
       backgroundColor: '#f0f8ff',
       textColor: '#333333',
       showButton: true,
-      buttonText: '按钮',
+      buttonText: $t('visualEditor.buttonText'),
       buttonType: 'primary',
       fontSize: 14,
       padding: 16,
@@ -325,7 +326,7 @@ const loadComponent = async () => {
   } catch (error: any) {
     console.error(`[Card2Wrapper] [${props.nodeId}] ❌ Card 2.1 组件加载失败 [${props.componentType}]:`, error)
     hasError.value = true
-    errorMessage.value = error.message || '未知错误'
+    errorMessage.value = error.message || $t('visualEditor.unknownError')
     componentToRender.value = null
   }
 }
@@ -473,10 +474,35 @@ onMounted(async () => {
     loadComponent()
   }
 
-  // 🔥 新增：检查并恢复组件执行器
-  // 这解决了页面刷新后未打开配置面板时数据不执行的问题
-  const savedConfig = configurationManager.getConfiguration(props.nodeId)
-  console.log('🔍 [Card2Wrapper] 检查保存的配置:', props.nodeId, savedConfig)
+  // 🔥 修复：等待配置恢复完成后再尝试获取配置
+  // 这解决了页面刷新后ConfigurationManager内存状态丢失的问题
+  const waitForConfigurationRestore = async () => {
+    let retryCount = 0
+    const maxRetries = 10 // 最多重试10次
+    const retryDelay = 100 // 每次重试间隔100ms
+
+    while (retryCount < maxRetries) {
+      const savedConfig = configurationManager.getConfiguration(props.nodeId)
+      console.log(`🔍 [Card2Wrapper] 尝试获取配置 (${retryCount + 1}/${maxRetries}):`, props.nodeId, savedConfig)
+
+      if (savedConfig?.dataSource?.config) {
+        console.log('✅ [Card2Wrapper] 成功获取到保存的配置:', savedConfig.dataSource.config)
+        return savedConfig
+      }
+
+      retryCount++
+      if (retryCount < maxRetries) {
+        console.log(`⏳ [Card2Wrapper] 配置未就绪，${retryDelay}ms后重试...`)
+        await new Promise(resolve => setTimeout(resolve, retryDelay))
+      }
+    }
+
+    console.log('⚠️ [Card2Wrapper] 达到最大重试次数，未找到配置')
+    return null
+  }
+
+  const savedConfig = await waitForConfigurationRestore()
+  console.log('🔍 [Card2Wrapper] 最终获取的配置:', props.nodeId, savedConfig)
 
   // 🔥 修复时序问题：先注册回调，再执行更新
   // 监听ComponentExecutorManager的数据更新
@@ -525,6 +551,32 @@ onMounted(async () => {
   } else {
     console.log('ℹ️ [Card2Wrapper] 无保存配置，完整配置:', savedConfig)
     console.log('ℹ️ [Card2Wrapper] 数据源配置:', savedConfig?.dataSource)
+
+    // 🔥 新增：即使没有保存配置，也要监听配置变化
+    // 这确保在配置恢复后能立即响应
+    const configChangeCleanup = configurationManager.onConfigurationChange(props.nodeId, newConfig => {
+      console.log('🔄 [Card2Wrapper] 检测到配置变化:', props.nodeId, newConfig)
+
+      if (newConfig?.dataSource?.config) {
+        console.log('🔥 [Card2Wrapper] 配置变化包含数据源配置，立即更新执行器')
+
+        componentExecutorManager
+          .updateComponentExecutor(props.nodeId, props.componentType, newConfig.dataSource.config)
+          .then(result => {
+            console.log('✅ [Card2Wrapper] 配置变化后执行器更新成功:', result)
+          })
+          .catch(error => {
+            console.error('❌ [Card2Wrapper] 配置变化后执行器更新失败:', error)
+          })
+      }
+    })
+
+    // 在组件卸载时清理配置监听器
+    onBeforeUnmount(() => {
+      if (configChangeCleanup) {
+        configChangeCleanup()
+      }
+    })
   }
 
   // 🔥 监听组件状态更新事件

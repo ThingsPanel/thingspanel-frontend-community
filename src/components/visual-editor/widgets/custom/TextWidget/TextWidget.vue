@@ -6,6 +6,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { $t } from '@/locales'
 
 interface Props {
   content?: string
@@ -15,7 +16,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  content: '文本内容',
+  content: $t('visualEditor.textContent'),
   fontSize: 14,
   color: '#333333',
   textAlign: 'left'

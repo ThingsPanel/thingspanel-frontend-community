@@ -15,19 +15,21 @@ import {
   componentRequirementCompatibility
 } from './utils/card2-compatibility'
 import { configMigrationManager, migrationUtils } from './utils/config-migration'
+import { systemErrorManager } from './utils/SystemErrorManager'
+import { enhancedConfigManager } from './config/EnhancedConfigManager'
 
 // 🎯 核心组件导出（简化的两个核心组件）
 export { SimpleConfigGenerator, simpleConfigGenerator } from './core/simple-config-generator'
 
 export { SimpleDataExecutor, simpleDataExecutor } from './core/simple-data-executor'
 
-// 🏗️ 简化类型定义导出
-export type * from './types/simple-types'
+// 🏗️ 统一类型定义导出
+export * from './types'
 
 // 🔄 注意：移除了对 card2.1 的直接依赖，通过适配器实现集成
 
 // 🎨 配置表单组件导出
-export { default as DataSourceConfigForm } from './components/DataSourceConfigForm.vue'
+export { default as DataSourceConfigForm } from './components/data-source-config-form/forms/DataSourceConfigForm.vue'
 
 // 🤝 Card2.1兼容性工具导出
 export {
@@ -56,6 +58,15 @@ export {
 // 🌐 集成服务导出
 export { DataSourceIntegrationService, dataSourceIntegration, dataSourceAPI } from './adapters/integration-service'
 
+// 🚨 错误处理系统导出
+export { SystemErrorManager, systemErrorManager, createSystemError } from './utils/SystemErrorManager'
+export { DataSourceErrorHandler, dataSourceErrorHandler } from './utils/DataSourceErrorHandler'
+
+// 🔧 配置管理系统导出
+export { DataSourceConfigManager, LocalConfigStorage } from './config/config-manager'
+export { EnhancedConfigManager, enhancedConfigManager } from './config/EnhancedConfigManager'
+export * from './config/types'
+
 // 📋 便捷使用的默认实例（现在可以安全引用）
 export const dataSourceSystem = {
   // 核心组件
@@ -70,6 +81,14 @@ export const dataSourceSystem = {
 
   // 便捷API
   api: dataSourceAPI,
+
+  // === 系统管理增强 ===
+
+  // 错误管理系统
+  errorManager: systemErrorManager,
+
+  // 配置管理系统
+  configManager: enhancedConfigManager,
 
   // === Card2.1兼容性增强 ===
 

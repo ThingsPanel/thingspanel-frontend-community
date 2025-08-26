@@ -818,138 +818,21 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
-        name: 'test_basic-test',
-        path: '/test/basic-test',
-        component: 'view.test_basic-test',
+        name: 'test_http-config-test',
+        path: '/test/http-config-test',
+        component: 'view.test_http-config-test',
         meta: {
-          title: 'test_basic-test',
-          i18nKey: 'route.test_basic-test'
+          title: 'test_http-config-test',
+          i18nKey: 'route.test_http-config-test'
         }
       },
       {
-        name: 'test_card2-components-test',
-        path: '/test/card2-components-test',
-        component: 'view.test_card2-components-test',
+        name: 'test_websocket-data-input-test',
+        path: '/test/websocket-data-input-test',
+        component: 'view.test_websocket-data-input-test',
         meta: {
-          title: 'test_card2-components-test',
-          i18nKey: 'route.test_card2-components-test'
-        }
-      },
-      {
-        name: 'test_data-flow-test',
-        path: '/test/data-flow-test',
-        component: 'view.test_data-flow-test',
-        meta: {
-          title: 'test_data-flow-test',
-          i18nKey: 'route.test_data-flow-test'
-        }
-      },
-      {
-        name: 'test_data-source-config',
-        path: '/test/data-source-config',
-        component: 'view.test_data-source-config',
-        meta: {
-          title: 'test_data-source-config',
-          i18nKey: 'route.test_data-source-config'
-        }
-      },
-      {
-        name: 'test_data-update-fix-test',
-        path: '/test/data-update-fix-test',
-        component: 'view.test_data-update-fix-test',
-        meta: {
-          title: 'test_data-update-fix-test',
-          i18nKey: 'route.test_data-update-fix-test'
-        }
-      },
-      {
-        name: 'test_datasource-integration',
-        path: '/test/datasource-integration',
-        component: 'view.test_datasource-integration',
-        meta: {
-          title: 'test_datasource-integration',
-          i18nKey: 'route.test_datasource-integration'
-        }
-      },
-      {
-        name: 'test_datasource-processor-test',
-        path: '/test/datasource-processor-test',
-        component: 'view.test_datasource-processor-test',
-        meta: {
-          title: 'test_datasource-processor-test',
-          i18nKey: 'route.test_datasource-processor-test'
-        }
-      },
-      {
-        name: 'test_executor-integration',
-        path: '/test/executor-integration',
-        component: 'view.test_executor-integration',
-        meta: {
-          title: 'test_executor-integration',
-          i18nKey: 'route.test_executor-integration'
-        }
-      },
-      {
-        name: 'test_http-request-validation',
-        path: '/test/http-request-validation',
-        component: 'view.test_http-request-validation',
-        meta: {
-          title: 'test_http-request-validation',
-          i18nKey: 'route.test_http-request-validation'
-        }
-      },
-      {
-        name: 'test_interaction-system-test',
-        path: '/test/interaction-system-test',
-        component: 'view.test_interaction-system-test',
-        meta: {
-          title: 'test_interaction-system-test',
-          i18nKey: 'route.test_interaction-system-test'
-        }
-      },
-      {
-        name: 'test_json-data-input-test',
-        path: '/test/json-data-input-test',
-        component: 'view.test_json-data-input-test',
-        meta: {
-          title: 'test_json-data-input-test',
-          i18nKey: 'route.test_json-data-input-test'
-        }
-      },
-      {
-        name: 'test_minimal-test',
-        path: '/test/minimal-test',
-        component: 'view.test_minimal-test',
-        meta: {
-          title: 'test_minimal-test',
-          i18nKey: 'route.test_minimal-test'
-        }
-      },
-      {
-        name: 'test_original-config-test',
-        path: '/test/original-config-test',
-        component: 'view.test_original-config-test',
-        meta: {
-          title: 'test_original-config-test',
-          i18nKey: 'route.test_original-config-test'
-        }
-      },
-      {
-        name: 'test_property-exposure-test',
-        path: '/test/property-exposure-test',
-        component: 'view.test_property-exposure-test',
-        meta: {
-          title: 'test_property-exposure-test',
-          i18nKey: 'route.test_property-exposure-test'
-        }
-      },
-      {
-        name: 'test_simple-data-source',
-        path: '/test/simple-data-source',
-        component: 'view.test_simple-data-source',
-        meta: {
-          title: 'test_simple-data-source',
-          i18nKey: 'route.test_simple-data-source'
+          title: 'test_websocket-data-input-test',
+          i18nKey: 'route.test_websocket-data-input-test'
         }
       }
     ]

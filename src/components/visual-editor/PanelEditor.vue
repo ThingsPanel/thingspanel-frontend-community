@@ -637,7 +637,7 @@ const handleImportConfig = (config: Record<string, any>) => {
       hasChanges.value = true
       message.success($t('visualEditor.configImportSuccess'))
     } else {
-      throw new Error('无效的配置格式')
+      throw new Error('Invalid config format')
     }
   } catch (error: any) {
     console.error('导入配置失败:', error)
@@ -777,7 +777,7 @@ const handleDataSourceManagerUpdate = (updateData: {
   componentId: string
   componentType: string
   config: any
-  action: 'update' | 'delete'
+  action: 'update' | 'delete' | 'config-updated' | 'config-restored'
 }) => {
   try {
     const { componentId, componentType, config, action } = updateData
@@ -803,7 +803,7 @@ const handleDataSourceManagerUpdate = (updateData: {
       return
     }
 
-    if (action === 'update') {
+    if (action === 'update' || action === 'config-updated' || action === 'config-restored') {
       // 更新编辑器数据源管理器
 
       // 先检查组件是否已注册
@@ -914,7 +914,7 @@ const handleCanvasClick = () => {
 const handleSave = async () => {
   // 检查是否为Canvas渲染器，如果是则显示开发中提示
   if (currentRenderer.value === 'canvas') {
-    message.warning('Canvas渲染器功能正在开发中，暂不支持保存')
+    message.warning($t('visualEditor.canvasNotSupported'))
     console.warn('Canvas功能尚未完成，无法保存')
     return
   }
@@ -1000,10 +1000,10 @@ const handleSave = async () => {
       hasChanges.value = false
       message.success($t('page.dataForward.saveSuccess'))
     } else {
-      message.error($t('page.dataForward.saveFailed') || '保存失败')
+      message.error($t('page.dataForward.saveFailed'))
     }
   } catch (err: any) {
-    message.error($t('page.dataForward.saveFailed') || '保存失败')
+    message.error($t('page.dataForward.saveFailed'))
     console.error('保存失败:', err)
   } finally {
     isSaving.value = false
@@ -1414,10 +1414,9 @@ const addNewArchitectureTestComponent = async () => {
   }
 }
 
-// 学习 PanelManage 的 onMounted 写法
-onMounted(async () => {
-  // 初始化时同步预览模式状态
-  setPreviewMode(!isEditing.value)
+// 初始化面板数据和配置的核心逻辑
+const initializePanelData = async () => {
+  console.log('🔄 [PanelEditor] 开始初始化面板数据')
 
   // 加载面板数据
   await fetchBoard()
@@ -1441,14 +1440,41 @@ onMounted(async () => {
     // 设置组件生命周期监听
     setupComponentLifecycleListeners()
 
-    // 注意：不再自动添加测试组件，让用户自己从组件库添加
+    console.log('✅ [PanelEditor] 面板数据初始化完成')
   } catch (error) {
     console.error('❌ [PanelEditor] 编辑器数据源管理器初始化失败:', error)
   }
+}
+
+// 学习 PanelManage 的 onMounted 写法
+onMounted(async () => {
+  // 初始化时同步预览模式状态
+  setPreviewMode(!isEditing.value)
+
+  // 执行初始化
+  await initializePanelData()
 
   // 发出状态管理器就绪事件，供上层组件使用
   emit('state-manager-ready', stateManager)
 })
+
+// 🔥 关键修复：监听页签刷新标志，确保页签刷新时重新加载配置
+watch(
+  () => appStore.reloadFlag,
+  async (newFlag, oldFlag) => {
+    // 当 reloadFlag 从 false 变为 true 时，说明页签刷新完成，需要重新初始化
+    if (newFlag && !oldFlag && dataFetched.value) {
+      console.log('🔄 [PanelEditor] 检测到页签刷新，重新初始化面板数据')
+      try {
+        // 重新初始化面板数据和配置
+        await initializePanelData()
+      } catch (error) {
+        console.error('❌ [PanelEditor] 页签刷新后重新初始化失败:', error)
+      }
+    }
+  },
+  { immediate: false }
+)
 
 /**
  * V6: 恢复多数据源配置（已弃用）
@@ -1561,7 +1587,7 @@ onUnmounted(() => {
 
   // 清理编辑器数据源管理器
   try {
-    editorDataSourceManager.cleanup()
+    editorDataSourceManager.destroy()
   } catch (error) {
     console.error('❌ [PanelEditor] 编辑器数据源管理器清理失败:', error)
   }

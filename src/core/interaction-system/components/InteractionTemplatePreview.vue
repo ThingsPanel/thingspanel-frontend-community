@@ -17,15 +17,15 @@
         <n-space size="large">
           <div class="stat-item">
             <n-text strong>{{ template.config.length }}</n-text>
-            <n-text depth="3" style="font-size: 12px">交互配置</n-text>
+            <n-text depth="3" style="font-size: 12px">{{ t('interaction.template.interactionCount') }}</n-text>
           </div>
           <div class="stat-item">
             <n-text strong>{{ getTotalActionsCount() }}</n-text>
-            <n-text depth="3" style="font-size: 12px">响应动作</n-text>
+            <n-text depth="3" style="font-size: 12px">{{ t('interaction.template.actionCount') }}</n-text>
           </div>
           <div class="stat-item">
             <n-text strong>{{ getUniqueEventsCount() }}</n-text>
-            <n-text depth="3" style="font-size: 12px">事件类型</n-text>
+            <n-text depth="3" style="font-size: 12px">{{ t('interaction.template.eventTypeCount') }}</n-text>
           </div>
         </n-space>
       </div>
@@ -33,7 +33,7 @@
 
     <!-- 配置详情 -->
     <div class="config-details">
-      <h4 class="section-title">配置详情</h4>
+      <h4 class="section-title">{{ t('interaction.template.configDetails') }}</h4>
 
       <div class="config-list">
         <n-card v-for="(config, index) in template.config" :key="`config-${index}`" size="small" class="config-card">
@@ -43,8 +43,12 @@
                 <n-tag :type="getEventTagType(config.event)" size="small" round>
                   {{ getEventDisplayName(config.event) }}
                 </n-tag>
-                <span class="config-name">{{ config.name || `配置 ${index + 1}` }}</span>
-                <n-tag v-if="config.priority" size="tiny" type="info">优先级 {{ config.priority }}</n-tag>
+                <span class="config-name">
+                  {{ config.name || t('interaction.template.configIndex', { index: index + 1 }) }}
+                </span>
+                <n-tag v-if="config.priority" size="tiny" type="info">
+                  {{ t('interaction.template.priorityLabel', { priority: config.priority }) }}
+                </n-tag>
               </n-space>
 
               <n-switch :value="config.enabled" size="small" disabled />
@@ -67,9 +71,13 @@
 
               <div v-if="response.duration || response.delay || response.easing" class="response-meta">
                 <n-text depth="3" style="font-size: 11px">
-                  <span v-if="response.delay">延迟 {{ response.delay }}ms</span>
+                  <span v-if="response.delay">
+                    {{ t('interaction.template.delayLabel', { delay: response.delay }) }}
+                  </span>
                   <span v-if="response.delay && (response.duration || response.easing)">·</span>
-                  <span v-if="response.duration">持续 {{ response.duration }}ms</span>
+                  <span v-if="response.duration">
+                    {{ t('interaction.template.durationLabel', { duration: response.duration }) }}
+                  </span>
                   <span v-if="response.duration && response.easing">·</span>
                   <span v-if="response.easing">{{ response.easing }}</span>
                 </n-text>
@@ -82,7 +90,7 @@
 
     <!-- 预览演示 -->
     <div class="preview-demo">
-      <h4 class="section-title">效果预览</h4>
+      <h4 class="section-title">{{ t('interaction.template.effectPreview') }}</h4>
 
       <div class="demo-canvas">
         <div
@@ -108,14 +116,14 @@
             <template #icon>
               <n-icon><RefreshOutline /></n-icon>
             </template>
-            重置
+            {{ t('interaction.reset') }}
           </n-button>
 
           <n-button size="small" type="primary" @click="runAllDemoInteractions">
             <template #icon>
               <n-icon><PlayOutline /></n-icon>
             </template>
-            演示全部
+            {{ t('interaction.template.demoAll') }}
           </n-button>
         </n-space>
       </div>
@@ -124,21 +132,21 @@
     <!-- 操作按钮 -->
     <div class="template-actions">
       <n-space justify="space-between">
-        <n-button @click="$emit('close')">取消</n-button>
+        <n-button @click="$emit('close')">{{ t('interaction.cancel') }}</n-button>
 
         <n-space size="small">
           <n-button @click="exportTemplate">
             <template #icon>
               <n-icon><DownloadOutline /></n-icon>
             </template>
-            导出
+            {{ t('interaction.template.export') }}
           </n-button>
 
           <n-button type="primary" @click="selectTemplate">
             <template #icon>
               <n-icon><CheckmarkOutline /></n-icon>
             </template>
-            选择此模板
+            {{ t('interaction.template.selectTemplate') }}
           </n-button>
         </n-space>
       </n-space>
@@ -153,6 +161,7 @@
  */
 
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { NIcon, NText, NSpace, NCard, NTag, NSwitch, NButton, useMessage } from 'naive-ui'
 import { FlashOutline, RefreshOutline, PlayOutline, DownloadOutline, CheckmarkOutline } from '@vicons/ionicons5'
 
@@ -186,10 +195,16 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const message = useMessage()
+const { t } = useI18n()
 
 // 响应式状态
 const demoElement = ref<HTMLElement>()
-const demoElementText = ref('点击测试')
+const demoElementText = ref('')
+
+// 初始化文本
+onMounted(() => {
+  demoElementText.value = t('interaction.template.clickTest')
+})
 const originalDemoStyles = ref<any>({})
 
 // 计算属性
@@ -216,27 +231,27 @@ const getEventTagType = (event: InteractionEventType) => {
 
 const getEventDisplayName = (event: InteractionEventType) => {
   const nameMap = {
-    click: '点击',
-    hover: '悬停',
-    focus: '聚焦',
-    blur: '失焦',
-    custom: '自定义'
+    click: t('interaction.events.click'),
+    hover: t('interaction.events.hover'),
+    focus: t('interaction.events.focus'),
+    blur: t('interaction.events.blur'),
+    custom: t('interaction.events.custom')
   }
   return nameMap[event] || event
 }
 
 const getActionDisplayName = (action: InteractionActionType) => {
   const nameMap = {
-    changeBackgroundColor: '背景色',
-    changeTextColor: '文字色',
-    changeBorderColor: '边框色',
-    changeSize: '尺寸',
-    changeOpacity: '透明度',
-    changeTransform: '变换',
-    changeVisibility: '可见性',
-    changeContent: '内容',
-    triggerAnimation: '动画',
-    custom: '自定义'
+    changeBackgroundColor: t('interaction.actions.changeBackgroundColor'),
+    changeTextColor: t('interaction.actions.changeTextColor'),
+    changeBorderColor: t('interaction.actions.changeBorderColor'),
+    changeSize: t('interaction.actions.changeSize'),
+    changeOpacity: t('interaction.actions.changeOpacity'),
+    changeTransform: t('interaction.actions.changeTransform'),
+    changeVisibility: t('interaction.actions.changeVisibility'),
+    changeContent: t('interaction.actions.changeContent'),
+    triggerAnimation: t('interaction.actions.triggerAnimation'),
+    custom: t('interaction.actions.custom')
   }
   return nameMap[action] || action
 }
@@ -259,7 +274,7 @@ const formatResponseValue = (response: InteractionResponse) => {
     case 'changeTransform':
       return String(value)
     case 'changeVisibility':
-      return value === 'visible' ? '显示' : '隐藏'
+      return value === 'visible' ? t('interaction.visibility.visible') : t('interaction.visibility.hidden')
     case 'changeContent':
       return String(value).substring(0, 20) + (String(value).length > 20 ? '...' : '')
     case 'triggerAnimation':
@@ -356,7 +371,7 @@ const resetDemoElement = () => {
   // 重置所有样式
   element.style.cssText = ''
   element.className = 'demo-element'
-  demoElementText.value = '点击测试'
+  demoElementText.value = t('interaction.template.clickTest')
 
   // 恢复原始样式
   Object.assign(element.style, originalDemoStyles.value)
@@ -386,7 +401,7 @@ const runAllDemoInteractions = () => {
 // 操作方法
 const selectTemplate = () => {
   emit('select', props.template)
-  message.success(`已选择模板: ${props.template.name}`)
+  message.success(t('interaction.messages.templateApplied'))
 }
 
 const exportTemplate = () => {
@@ -412,9 +427,9 @@ const exportTemplate = () => {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
 
-    message.success('模板已导出')
+    message.success(t('interaction.messages.templateExported'))
   } catch (error) {
-    message.error('导出失败')
+    message.error(t('interaction.messages.exportFailed'))
     console.error('模板导出错误:', error)
   }
 }

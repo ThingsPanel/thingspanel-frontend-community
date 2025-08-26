@@ -3,7 +3,7 @@
  * 提供配置的CRUD操作、验证、导入导出等功能
  */
 
-import type { DataSourceSystemConfig } from '../executor/types'
+import type { ComponentDataSourceConfig as DataSourceSystemConfig } from '../types'
 import type {
   ConfigValidationResult,
   ConfigValidationError,

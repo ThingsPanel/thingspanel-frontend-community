@@ -1,0 +1,8 @@
+{
+  "test": {
+    "httpConfigTest": {
+      "title": "HTTP配置测试",
+      "description": "用于测试和验证HTTP配置的正确性，以及执行器的功能"
+    }
+  }
+}

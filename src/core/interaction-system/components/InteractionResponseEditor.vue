@@ -2,7 +2,7 @@
   <div class="interaction-response-editor">
     <n-form label-placement="left" label-width="80" size="small">
       <!-- 动作类型选择 -->
-      <n-form-item label="动作类型">
+      <n-form-item :label="t('interaction.editor.actionType')">
         <n-select
           v-model:value="localResponse.action"
           :options="actionTypeOptions"
@@ -13,29 +13,29 @@
 
       <!-- 🔥 核心动作配置项（简化为2个） -->
       <template v-if="localResponse.action === 'navigateToUrl'">
-        <n-form-item label="链接类型">
+        <n-form-item :label="t('interaction.editor.linkType')">
           <n-radio-group v-model:value="urlType" :disabled="readonly" @update:value="handleUrlTypeChange">
             <n-space>
-              <n-radio value="external">外部链接</n-radio>
-              <n-radio value="internal">内部菜单</n-radio>
+              <n-radio value="external">{{ t('interaction.linkTypes.external') }}</n-radio>
+              <n-radio value="internal">{{ t('interaction.linkTypes.internal') }}</n-radio>
             </n-space>
           </n-radio-group>
         </n-form-item>
 
-        <n-form-item v-if="urlType === 'external'" label="跳转地址">
+        <n-form-item v-if="urlType === 'external'" :label="t('interaction.editor.jumpAddress')">
           <n-input
             v-model:value="localResponse.value"
-            placeholder="https://example.com 或 /relative-path"
+            :placeholder="t('interaction.placeholders.enterUrl')"
             :disabled="readonly"
             @update:value="handleValueChange"
           />
         </n-form-item>
 
-        <n-form-item v-if="urlType === 'internal'" label="选择菜单">
+        <n-form-item v-if="urlType === 'internal'" :label="t('interaction.editor.selectMenu')">
           <n-select
             v-model:value="selectedMenuPath"
             :options="menuOptions"
-            placeholder="选择要跳转的菜单项"
+            :placeholder="t('interaction.placeholders.selectMenuToJump')"
             :disabled="readonly"
             :loading="menuLoading"
             filterable
@@ -43,7 +43,7 @@
           />
         </n-form-item>
 
-        <n-form-item label="打开方式">
+        <n-form-item :label="t('interaction.editor.openMethod')">
           <n-select
             v-model:value="navigationTarget"
             :options="navigationTargetOptions"
@@ -52,43 +52,43 @@
           />
         </n-form-item>
 
-        <n-form-item v-if="navigationTarget === '_blank'" label="窗口特性">
+        <n-form-item v-if="navigationTarget === '_blank'" :label="t('interaction.editor.windowFeatures')">
           <n-input
             v-model:value="windowFeatures"
-            placeholder="width=800,height=600,scrollbars=yes"
+            :placeholder="t('interaction.placeholders.windowFeatures')"
             :disabled="readonly"
             @update:value="handleWindowFeaturesChange"
           />
         </n-form-item>
 
         <n-form-item>
-          <n-alert title="使用说明" type="info" size="small">
+          <n-alert :title="t('interaction.editor.usage')" type="info" size="small">
             <ul style="margin: 0; padding-left: 20px; font-size: 12px">
-              <li v-if="urlType === 'external'">外部链接：支持完整URL和相对路径</li>
-              <li v-if="urlType === 'external'">支持查询参数: /page?id=123&name=test</li>
-              <li v-if="urlType === 'internal'">内部菜单：从系统菜单中选择跳转目标</li>
-              <li>新窗口打开可配置窗口大小和特性</li>
+              <li v-if="urlType === 'external'">{{ t('interaction.editor.usageExternal') }}</li>
+              <li v-if="urlType === 'external'">{{ t('interaction.editor.usageQuery') }}</li>
+              <li v-if="urlType === 'internal'">{{ t('interaction.editor.usageInternal') }}</li>
+              <li>{{ t('interaction.editor.usageNewWindow') }}</li>
             </ul>
           </n-alert>
         </n-form-item>
       </template>
 
       <template v-else-if="localResponse.action === 'updateComponentData'">
-        <n-form-item label="目标组件">
+        <n-form-item :label="t('interaction.editor.targetComponent')">
           <n-select
             v-model:value="targetComponentId"
             :options="availableComponentOptions"
-            placeholder="选择要更新数据的目标组件"
+            :placeholder="t('interaction.placeholders.selectComponentToModify')"
             :disabled="readonly"
             @update:value="handleTargetComponentChange"
           />
         </n-form-item>
 
-        <n-form-item label="更新属性">
+        <n-form-item :label="t('interaction.editor.updateProperty')">
           <n-select
             v-model:value="targetProperty"
             :options="targetComponentPropertyOptions"
-            placeholder="请先选择目标组件，然后选择要更新的属性"
+            :placeholder="t('interaction.messages.selectComponentFirst')"
             :disabled="readonly || !targetComponentId"
             filterable
             clearable
@@ -96,26 +96,28 @@
           >
             <template #empty>
               <div style="padding: 12px; text-align: center; color: var(--text-color-3)">
-                <div v-if="!targetComponentId">请先选择目标组件</div>
+                <div v-if="!targetComponentId">{{ t('interaction.messages.selectTargetComponentFirst') }}</div>
                 <div v-else>
-                  <div>目标组件暂无可更新属性</div>
-                  <div style="font-size: 12px; margin-top: 4px">组件开发者需要暴露可更新的属性</div>
+                  <div>{{ t('interaction.messages.noUpdatableProperties') }}</div>
+                  <div style="font-size: 12px; margin-top: 4px">
+                    {{ t('interaction.messages.noUpdatablePropertiesDesc') }}
+                  </div>
                 </div>
               </div>
             </template>
           </n-select>
         </n-form-item>
 
-        <n-form-item label="更新值">
+        <n-form-item :label="t('interaction.editor.updateValue')">
           <n-input
             v-model:value="updateValue"
-            placeholder="新的属性值"
+            :placeholder="t('interaction.placeholders.enterNewPropertyValue')"
             :disabled="readonly"
             @update:value="handleUpdateValueChange"
           />
         </n-form-item>
 
-        <n-form-item label="更新模式">
+        <n-form-item :label="t('interaction.editor.updateMode')">
           <n-select
             v-model:value="updateMode"
             :options="updateModeOptions"
@@ -125,12 +127,12 @@
         </n-form-item>
 
         <n-form-item>
-          <n-alert title="使用说明" type="info" size="small">
+          <n-alert :title="t('interaction.editor.usage')" type="info" size="small">
             <ul style="margin: 0; padding-left: 20px; font-size: 12px">
-              <li>目标组件：选择要更新数据的组件</li>
-              <li>更新属性：组件的属性名，如title、content等</li>
-              <li>更新值：要设置的新值</li>
-              <li>覆盖：直接替换原值；追加：添加到原值后面；前置：添加到原值前面</li>
+              <li>{{ t('interaction.editor.usageTargetComponent') }}</li>
+              <li>{{ t('interaction.editor.usageUpdateProperty') }}</li>
+              <li>{{ t('interaction.editor.usageUpdateValue') }}</li>
+              <li>{{ t('interaction.editor.usageUpdateModes') }}</li>
             </ul>
           </n-alert>
         </n-form-item>
@@ -139,14 +141,14 @@
       <!-- 🔥 已移除其他动作配置项，保持简洁 -->
 
       <!-- 通用配置项 -->
-      <n-form-item v-if="showAdvancedOptions" label="延迟时间">
+      <n-form-item v-if="showAdvancedOptions" :label="t('interaction.editor.delayTime')">
         <n-input-number
           v-model:value="localResponse.delay"
           :min="0"
           :max="10000"
           :step="100"
           suffix="ms"
-          placeholder="无延迟"
+          :placeholder="t('interaction.placeholders.noDelay')"
           :disabled="readonly"
           @update:value="handleDelayChange"
         />
@@ -162,24 +164,27 @@
             <ChevronUpOutline v-else />
           </n-icon>
         </template>
-        {{ showAdvancedOptions ? '隐藏' : '显示' }}高级选项
+        {{ showAdvancedOptions ? t('interaction.editor.hideAdvanced') : t('interaction.editor.showAdvanced')
+        }}{{ t('interaction.editor.advancedOptions') }}
       </n-button>
     </div>
 
     <!-- 预览区域 -->
     <div v-if="!readonly" class="preview-section">
       <div class="preview-header">
-        <span class="preview-title">效果预览</span>
+        <span class="preview-title">{{ t('interaction.editor.effectPreview') }}</span>
         <n-button size="tiny" type="primary" :disabled="!canPreview" @click="previewEffect">
           <template #icon>
             <n-icon><PlayOutline /></n-icon>
           </template>
-          预览
+          {{ t('interaction.template.preview') }}
         </n-button>
       </div>
 
       <div class="preview-content">
-        <div ref="previewElement" class="preview-element" :style="previewStyles">预览元素</div>
+        <div ref="previewElement" class="preview-element" :style="previewStyles">
+          {{ t('interaction.editor.previewElement') }}
+        </div>
       </div>
     </div>
   </div>
@@ -192,6 +197,7 @@
  */
 
 import { ref, computed, watch, onMounted, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   NForm,
   NFormItem,
@@ -230,6 +236,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 const message = useMessage()
+const { t } = useI18n()
 
 // 🔥 注入Visual Editor状态获取组件列表
 const visualEditorState = inject<{ getAvailableComponents: () => any[] }>('visualEditorState', {
@@ -268,20 +275,20 @@ const menuOptions = ref<{ label: string; value: string }[]>([])
 const menuLoading = ref(false)
 
 // 🔥 2个核心动作选项（极简版：去掉动效，只保留最核心功能）
-const actionTypeOptions = [
-  { label: '跳转到URL', value: 'navigateToUrl', category: 'navigation' },
-  { label: '修改组件属性', value: 'updateComponentData', category: 'property' }
-]
+const actionTypeOptions = computed(() => [
+  { label: t('interaction.actions.navigateToUrl'), value: 'navigateToUrl', category: 'navigation' },
+  { label: t('interaction.actions.updateComponentData'), value: 'updateComponentData', category: 'property' }
+])
 
 // 🔥 极简版：仅保留最核心的URL跳转和属性修改功能
 
 // 🔥 导航目标选项
-const navigationTargetOptions = [
-  { label: '当前窗口', value: '_self' },
-  { label: '新窗口', value: '_blank' },
-  { label: '父窗口', value: '_parent' },
-  { label: '顶级窗口', value: '_top' }
-]
+const navigationTargetOptions = computed(() => [
+  { label: t('interaction.openMethods.currentWindow'), value: '_self' },
+  { label: t('interaction.openMethods.newWindow'), value: '_blank' },
+  { label: t('interaction.openMethods.parentWindow'), value: '_parent' },
+  { label: t('interaction.openMethods.topWindow'), value: '_top' }
+])
 
 // 🔥 动态获取可用组件选项
 const availableComponentOptions = computed(() => {
@@ -333,7 +340,7 @@ const targetComponentPropertyOptions = computed(() => {
   const groups: Record<string, any[]> = {}
 
   componentExposure.listenableProperties.forEach(property => {
-    const group = property.group || '其他'
+    const group = property.group || t('interaction.empty.otherGroup')
     if (!groups[group]) {
       groups[group] = []
     }
@@ -364,11 +371,11 @@ const targetComponentPropertyOptions = computed(() => {
 })
 
 // 🔥 更新模式选项
-const updateModeOptions = [
-  { label: '覆盖', value: 'replace' },
-  { label: '追加', value: 'append' },
-  { label: '前置', value: 'prepend' }
-]
+const updateModeOptions = computed(() => [
+  { label: t('interaction.updateModes.replace'), value: 'replace' },
+  { label: t('interaction.updateModes.append'), value: 'append' },
+  { label: t('interaction.updateModes.prepend'), value: 'prepend' }
+])
 
 // 计算属性
 const canPreview = computed(() => {
@@ -585,7 +592,7 @@ const loadMenuOptions = async () => {
     }
   } catch (error) {
     console.error('加载菜单失败:', error)
-    message.error('加载菜单失败')
+    message.error(t('interaction.messages.menuLoadFailed'))
   } finally {
     menuLoading.value = false
   }
@@ -651,14 +658,16 @@ const previewEffect = () => {
       // 🔥 移除动画预览功能
       case 'navigateToUrl':
         // URL跳转预览提示
-        message.success(`将跳转到: ${localResponse.value.value}`)
+        message.success(t('interaction.preview.jumpTo', { url: localResponse.value.value }))
         return
       case 'updateComponentData':
         // 跨组件数据更新预览提示
-        const targetComp = targetComponentId.value || '目标组件'
-        const targetProp = targetProperty.value || '属性'
-        const updateVal = updateValue.value || '值'
-        message.info(`将更新 ${targetComp} 的 ${targetProp} 为: ${updateVal}`)
+        const targetComp = targetComponentId.value || t('interaction.empty.component')
+        const targetProp = targetProperty.value || t('interaction.empty.property')
+        const updateVal = updateValue.value || t('interaction.placeholders.value')
+        message.info(
+          t('interaction.preview.willUpdate', { component: targetComp, property: targetProp, value: updateVal })
+        )
         return
       case 'flashColor':
         // 闪烁颜色预览效果
@@ -682,7 +691,7 @@ const previewEffect = () => {
           }
         }, flashInterval)
 
-        message.success(`闪烁预览: ${color}, ${times}次, ${duration}ms`)
+        message.success(t('interaction.preview.flashPreview', { color, times, duration }))
         return
     }
 
@@ -690,13 +699,13 @@ const previewEffect = () => {
     setTimeout(() => {
       element.style.cssText = originalStyle
       if (localResponse.value.action === 'changeContent') {
-        element.textContent = '预览元素'
+        element.textContent = t('interaction.editor.previewElement')
       }
     }, localResponse.value.duration || 1000)
 
-    message.success('预览效果已应用')
+    message.success(t('interaction.messages.previewEffectApplied'))
   } catch (error) {
-    message.error('预览失败')
+    message.error(t('interaction.messages.previewFailed'))
     console.error('预览错误:', error)
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="property-panel">
     <template v-if="selectedNode">
-      <n-card title="基础属性" size="small" :bordered="false">
+      <n-card :title="$t('visualEditor.basicProperties')" size="small" :bordered="false">
         <n-form size="small" label-placement="left" label-width="50">
           <n-form-item label="X">
             <n-input-number :value="selectedNode.x" @update:value="updateNodePosition('x', $event)" />
@@ -9,17 +9,17 @@
           <n-form-item label="Y">
             <n-input-number :value="selectedNode.y" @update:value="updateNodePosition('y', $event)" />
           </n-form-item>
-          <n-form-item label="宽度">
+          <n-form-item :label="$t('visualEditor.width')">
             <n-input-number :value="selectedNode.width" @update:value="updateNodeSize('width', $event)" />
           </n-form-item>
-          <n-form-item label="高度">
+          <n-form-item :label="$t('visualEditor.height')">
             <n-input-number :value="selectedNode.height" @update:value="updateNodeSize('height', $event)" />
           </n-form-item>
         </n-form>
       </n-card>
 
       <!-- 组件特定属性 -->
-      <n-card title="组件属性" size="small" :bordered="false" class="mt-2">
+      <n-card :title="$t('visualEditor.componentProperties')" size="small" :bordered="false" class="mt-2">
         <component
           :is="getPropertyEditor(selectedNode.type)"
           :properties="selectedNode.properties"
@@ -28,12 +28,13 @@
       </n-card>
     </template>
 
-    <n-empty v-else description="请选择一个组件" />
+    <n-empty v-else :description="$t('visualEditor.selectComponent')" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { $t } from '@/locales'
 import { useVisualEditor } from '@/store/modules/visual-editor'
 import TextPropertyEditor from './components/TextPropertyEditor.vue'
 import ImagePropertyEditor from './components/ImagePropertyEditor.vue'

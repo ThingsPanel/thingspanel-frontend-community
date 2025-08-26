@@ -75,7 +75,16 @@
 
           <!-- 数据源配置特殊处理 -->
           <template v-else-if="layer.name === 'dataSource'">
-            <div class="data-source-config">
+            <div class="data-source-config" @click="console.log('🎯 数据源配置区域被点击!', { layer, activeTab: activeTab, selectedWidget: selectedWidget?.id })">
+              <!-- 调试信息 -->
+              <div style="color: red; font-size: 12px; margin-bottom: 10px;">
+                🔍 DEBUG: 数据源配置渲染中<br>
+                - activeTab: {{ activeTab }}<br>
+                - layer.name: {{ layer.name }}<br>
+                - selectedWidget: {{ selectedWidget?.id }}<br>
+                - componentDataSources: {{ componentDataSources ? Object.keys(componentDataSources) : 'null' }}<br>
+                - dataSourceConfig: {{ Object.keys(dataSourceConfig || {}) }}
+              </div>
               <!-- 使用现有的数据源配置组件 -->
               <!-- 🔄 使用v-model双向绑定取代手动事件处理 -->
               <component
@@ -87,6 +96,7 @@
                 :component-id="selectedWidget?.id"
                 :component-type="selectedWidget?.type"
                 @request-current-data="handleCurrentDataRequest"
+                @click="console.log('🎯 DataSourceConfigForm组件被点击!')"
               />
             </div>
           </template>
@@ -165,6 +175,7 @@ import {
   useMessage
 } from 'naive-ui'
 import { Settings as SettingsIcon, DocumentOutline } from '@vicons/ionicons5'
+import { $t } from '@/locales'
 
 // 导入配置组件注册中心
 import { getVisibleConfigLayers, getConfigLayer } from './component-registry'
@@ -181,8 +192,7 @@ import type {
 } from './types'
 import type { VisualEditorWidget } from '../types'
 
-// 🔥 新增：导入执行器管理器
-import { componentExecutorManager } from '@/core/data-source-system/managers/ComponentExecutorManager'
+// 🔄 重构：移除直接导入执行器管理器，改为事件通信
 
 interface Props {
   /** 选中的组件 */
@@ -285,12 +295,13 @@ const dataSourceConfig = computed<DataSourceConfiguration | null>({
         console.log('🔄 [ConfigurationPanel] 更新数据源配置:', enhancedValue)
         configurationManager.updateConfiguration(props.selectedWidget.id, 'dataSource', enhancedValue)
 
-        // 🔥 修复：自动更新执行器，传递完整的增强配置
-        componentExecutorManager
-          .updateComponentExecutor(props.selectedWidget.id, props.selectedWidget.type, enhancedValue)
-          .catch(error => {
-            console.error('❌ [ConfigurationPanel] 执行器更新失败:', error)
-          })
+        // 🔄 重构：发出数据源配置更新事件，由外部系统负责数据执行
+        emit('data-source-manager-update', {
+          componentId: props.selectedWidget.id,
+          componentType: props.selectedWidget.type,
+          config: enhancedValue,
+          action: 'config-updated'
+        })
       } finally {
         // 🔥 修复：延迟重置标志，避免异步问题导致的递归更新
         nextTick(() => {
@@ -387,7 +398,7 @@ const componentDataSources = computed(() => {
           fieldMappings,
           expectedDataFormat: field.type || 'object',
           validationRules: {},
-          description: field.description || `${field.name} 数据源`,
+          description: field.description || `${field.name} ${$t('visualEditor.dataSource')}`,
           example: field.example // 传递示例数据
         }
       })
@@ -473,22 +484,22 @@ const componentDataSources = computed(() => {
   }
 
   // 🔥 如果都没有找到，提供默认配置
-  console.log('🔧 [ConfigurationPanel] 没有找到组件数据源定义，提供默认配置')
+  console.log(`🔧 [ConfigurationPanel] ${$t('visualEditor.dataSourceNotFound')}`)
   return [
     {
       key: 'main',
-      name: '主数据源',
+      name: $t('visualEditor.primaryDataSource'),
       type: 'object',
       fieldsToMap: ['value', 'label', 'status', 'timestamp'],
       fieldMappings: {
-        value: { path: 'value', type: 'number', description: '数值' },
-        label: { path: 'label', type: 'string', description: '标签' },
-        status: { path: 'status', type: 'string', description: '状态' },
-        timestamp: { path: 'timestamp', type: 'string', description: '时间戳' }
+        value: { path: 'value', type: 'number', description: $t('visualEditor.dataValue') },
+        label: { path: 'label', type: 'string', description: $t('visualEditor.dataLabel') },
+        status: { path: 'status', type: 'string', description: $t('visualEditor.dataStatus') },
+        timestamp: { path: 'timestamp', type: 'string', description: $t('visualEditor.dataTimestamp') }
       },
       expectedDataFormat: 'object',
       validationRules: {},
-      description: '组件的主要数据源，支持各种数据格式'
+      description: $t('visualEditor.componentDataSource') + '，' + $t('visualEditor.supportVariousFormats')
     }
   ]
 })
@@ -612,18 +623,10 @@ let executorDataUpdateCleanup: (() => void) | null = null
 
 // 生命周期
 onMounted(() => {
-  console.log('ConfigurationPanel 已挂载')
+  console.log($t('visualEditor.configurationMounted'))
 
-  // 🔥 新增：注册执行器数据更新回调
-  executorDataUpdateCleanup = componentExecutorManager.onDataUpdate((componentId, data) => {
-    console.log('🔄 [ConfigurationPanel] 收到执行器数据更新:', componentId, data)
-
-    // 如果是当前选中的组件，发射数据更新事件
-    if (props.selectedWidget?.id === componentId) {
-      console.log('✅ [ConfigurationPanel] 发射组件数据更新事件:', componentId, data)
-      emit('multi-data-source-update', componentId, data)
-    }
-  })
+  // 🔄 重构：移除直接的执行器监听器，数据更新通过事件机制处理
+  // 数据更新将通过PanelEditor的事件系统传递，不在此处直接监听
 })
 
 onUnmounted(() => {
@@ -643,7 +646,7 @@ onUnmounted(() => {
  * 加载组件配置
  */
 const loadWidgetConfiguration = async (widgetId: string) => {
-  console.log('ConfigurationPanel - 加载组件配置:', widgetId)
+  console.log(`ConfigurationPanel - ${$t('visualEditor.configLoaded')}:`, widgetId)
 
   // 设置防循环标记
   isUpdatingFromManager = true
@@ -655,7 +658,7 @@ const loadWidgetConfiguration = async (widgetId: string) => {
       // 初始化默认配置
       configurationManager.initializeConfiguration(widgetId)
       config = configurationManager.getConfiguration(widgetId)
-      console.log('ConfigurationPanel - 已初始化默认配置')
+      console.log($t('visualEditor.configInitialized'))
     }
 
     if (config) {
@@ -677,30 +680,24 @@ const loadWidgetConfiguration = async (widgetId: string) => {
       // V6数据映射配置已由dataSourceConfig computed属性处理
       console.log('✅ [ConfigurationPanel] 数据源配置已通过computed属性处理')
 
-      // 🔥 新增：如果有保存的数据源配置，重新执行数据获取
+      // 🔄 重构：如果有保存的数据源配置，通过事件通知执行数据获取
       if (config.dataSource?.config && Object.keys(config.dataSource.config).length > 0) {
-        console.log('🔄 [ConfigurationPanel] 恢复配置后重新执行数据获取')
+        console.log('🔄 [ConfigurationPanel] 恢复配置后通过事件触发数据获取')
 
-        try {
-          const executionResult = await componentExecutorManager.updateComponentExecutor(
-            widgetId,
-            props.selectedWidget?.type || '',
-            config.dataSource.config
-          )
-
-          if (executionResult?.success) {
-            console.log('✅ [ConfigurationPanel] 配置恢复后数据执行成功')
-          }
-        } catch (error) {
-          console.warn('⚠️ [ConfigurationPanel] 配置恢复后数据执行失败:', error)
-        }
+        // 发出事件让PanelEditor处理数据执行
+        emit('data-source-manager-update', {
+          componentId: widgetId,
+          componentType: props.selectedWidget?.type || '',
+          config: config.dataSource.config,
+          action: 'config-restored'
+        })
       }
 
-      console.log('ConfigurationPanel - 配置加载完成:', config)
+      console.log($t('visualEditor.configLoaded'), config)
     }
   } catch (error) {
     console.error('加载组件配置失败:', error)
-    message.error('配置加载失败')
+    message.error($t('visualEditor.configLoadFailed'))
   } finally {
     // 🔥 修复：延迟重置防循环标记，确保Vue响应式更新完成
     nextTick(() => {
@@ -715,7 +712,7 @@ const loadWidgetConfiguration = async (widgetId: string) => {
  * 处理来自ConfigurationManager的配置变化
  */
 const handleConfigurationChange = (config: WidgetConfiguration) => {
-  console.log('ConfigurationPanel - 接收到配置变化:', config)
+  console.log(`ConfigurationPanel - ${$t('visualEditor.configUpdated')}:`, config)
 
   // 设置防循环标记
   isUpdatingFromManager = true
@@ -732,7 +729,7 @@ const handleConfigurationChange = (config: WidgetConfiguration) => {
     // V6: 数据源配置由dataSourceConfig computed属性管理
     // dataMappingConfig已移除，配置通过dataSourceConfig.value处理
 
-    console.log('ConfigurationPanel - 本地配置已更新')
+    console.log($t('visualEditor.configUpdated'))
   } finally {
     // 🔥 修复：延迟重置防循环标记，确保Vue响应式更新完成
     nextTick(() => {
@@ -764,7 +761,7 @@ const syncConfigurationToManager = async () => {
 
     configurationManager.setConfiguration(props.selectedWidget.id, config)
   } catch (error) {
-    console.error('配置同步失败:', error)
+    console.error($t('visualEditor.configSyncFailed'), error)
   }
 }
 
@@ -787,7 +784,7 @@ const resetLocalConfiguration = () => {
 
   // V6: 数据源配置重置由dataSourceConfig computed属性处理
   // dataMappingConfig已移除
-  console.log('🔧 [V6ConfigPanel] 本地配置已重置')
+  console.log(`🔧 [V6ConfigPanel] ${$t('visualEditor.configReset')}`)
 }
 
 /**

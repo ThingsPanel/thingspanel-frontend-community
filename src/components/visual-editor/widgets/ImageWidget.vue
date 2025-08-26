@@ -18,7 +18,7 @@
           />
         </svg>
       </n-icon>
-      <span class="placeholder-text">{{ alt || '图片' }}</span>
+      <span class="placeholder-text">{{ alt || $t('visualEditor.imagePlaceholderText') }}</span>
     </div>
   </div>
 </template>
@@ -26,6 +26,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useThemeVars } from 'naive-ui'
+import { $t } from '@/locales'
 import type { ImageWidgetConfig } from '../types'
 
 interface Props extends ImageWidgetConfig {
@@ -36,7 +37,7 @@ interface Props extends ImageWidgetConfig {
 
 const props = withDefaults(defineProps<Props>(), {
   src: '',
-  alt: '图片',
+  alt: $t('visualEditor.imagePlaceholderText'),
   objectFit: 'cover'
 })
 

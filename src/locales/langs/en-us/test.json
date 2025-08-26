@@ -1,0 +1,8 @@
+{
+  "test": {
+    "httpConfigTest": {
+      "title": "HTTP Config Test",
+      "description": "Used to test and validate the correctness of HTTP configuration and executor functionality"
+    }
+  }
+}

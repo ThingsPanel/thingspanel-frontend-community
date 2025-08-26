@@ -7,7 +7,7 @@
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS'
 
 // 请求体类型
-export type HttpBodyType = 'none' | 'json' | 'form' | 'raw'
+export type HttpBodyType = 'none' | 'json' | 'form' | 'text' | 'raw'
 
 // 键值对接口（用于头部、参数、表单数据）
 export interface KeyValuePair {
@@ -188,6 +188,85 @@ export interface HttpConfigValidationResult {
     field: string
     message: string
   }>
+}
+
+// HttpDataInput组件配置接口
+export interface HttpConfigData {
+  /** HTTP方法 */
+  method: HttpMethod
+  /** 请求URL */
+  url: string
+  /** 请求头 */
+  headers: KeyValuePair[]
+  /** URL参数 */
+  params: KeyValuePair[]
+  /** 请求体数据 */
+  body: {
+    json: string
+    form: KeyValuePair[]
+    text: string
+    raw: string
+  }
+  /** 请求体类型 */
+  bodyType: HttpBodyType
+  /** 超时时间（毫秒） */
+  timeout: number
+  /** 重试次数 */
+  retryCount: number
+  /** 重试延迟（毫秒） */
+  retryDelay: number
+  /** 是否跟随重定向 */
+  followRedirect: boolean
+  /** 是否验证SSL */
+  sslVerify: boolean
+}
+
+// 系统API项接口
+export interface SystemApiItem {
+  /** API唯一标识 */
+  id: string
+  /** API名称 */
+  name: string
+  /** API描述 */
+  description: string
+  /** HTTP方法 */
+  method: HttpMethod
+  /** API URL */
+  url: string
+  /** 默认请求头 */
+  defaultHeaders?: KeyValuePair[]
+  /** 默认参数 */
+  defaultParams?: KeyValuePair[]
+  /** API分类 */
+  category?: string
+}
+
+// 测试连接响应接口
+export interface TestConnectionResponse {
+  /** 是否成功 */
+  success: boolean
+  /** 响应状态码 */
+  status: number
+  /** 响应状态文本 */
+  statusText: string
+  /** 响应头 */
+  headers: Record<string, string>
+  /** 响应数据 */
+  data: any
+  /** 响应时间（毫秒） */
+  responseTime: number
+  /** 错误信息 */
+  error?: string
+}
+
+// 验证结果接口
+export interface ValidationResult {
+  /** 验证类型 */
+  type: 'default' | 'success' | 'info' | 'warning' | 'error'
+  /** 验证文本 */
+  text: string
+  /** 详细信息 */
+  detail: string
 }
 
 // HTTP工具方法相关类型

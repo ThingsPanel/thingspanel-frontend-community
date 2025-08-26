@@ -27,32 +27,32 @@
           />
         </svg>
       </div>
-      <h2 class="coming-soon-title">敬请期待</h2>
-      <p class="coming-soon-description">Canvas渲染器功能正在开发中，即将上线</p>
+      <h2 class="coming-soon-title">{{ $t('visualEditor.comingSoon') }}</h2>
+      <p class="coming-soon-description">{{ $t('visualEditor.canvasUnderDevelopment') }}</p>
       <div class="coming-soon-features">
         <div class="feature-item">
           <span class="feature-icon">🎨</span>
-          <span>拖拽式组件编辑</span>
+          <span>{{ $t('visualEditor.dragDropEditing') }}</span>
         </div>
         <div class="feature-item">
           <span class="feature-icon">📐</span>
-          <span>网格对齐系统</span>
+          <span>{{ $t('visualEditor.gridAlignment') }}</span>
         </div>
         <div class="feature-item">
           <span class="feature-icon">🔧</span>
-          <span>实时属性配置</span>
+          <span>{{ $t('visualEditor.realtimeConfig') }}</span>
         </div>
         <div class="feature-item">
           <span class="feature-icon">📱</span>
-          <span>响应式布局</span>
+          <span>{{ $t('visualEditor.responsiveLayout') }}</span>
         </div>
       </div>
       <div class="coming-soon-note">
         <n-alert type="info" size="small">
           <template #header>
-            <span>开发进度</span>
+            <span>{{ $t('visualEditor.developmentProgress') }}</span>
           </template>
-          当前功能已完成基础架构，正在完善交互体验和性能优化
+          {{ $t('visualEditor.architectureComplete') }}
         </n-alert>
       </div>
     </div>
@@ -114,6 +114,7 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { nanoid } from 'nanoid'
 import { NAlert } from 'naive-ui'
+import { $t } from '@/locales'
 // 注意：useEditor已迁移到新的统一架构，请使用useVisualEditor
 import { globalPreviewMode } from '../../hooks/usePreviewMode'
 import BaseRendererComponent from '../base/BaseRendererComponent.vue'
@@ -166,7 +167,7 @@ onMounted(() => {
 // 添加保存时的提示
 const showSaveWarning = () => {
   // 这里可以触发一个全局的提示，告知用户功能尚未完成
-  console.warn('Canvas功能尚未完成，无法保存')
+  console.warn($t('visualEditor.canvasNotComplete'))
   // 可以在这里添加一个全局的提示组件
 }
 

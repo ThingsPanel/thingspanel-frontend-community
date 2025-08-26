@@ -46,7 +46,9 @@
 
                 <!-- 动作数量显示 -->
                 <div class="template-stats">
-                  <n-text depth="3" style="font-size: 12px">{{ getTotalActionsCount(template.config) }} 个动作</n-text>
+                  <n-text depth="3" style="font-size: 12px">
+                    {{ getTotalActionsCount(template.config) }} {{ t('interaction.template.actions') }}
+                  </n-text>
                 </div>
               </div>
 
@@ -56,10 +58,12 @@
                     <template #icon>
                       <n-icon><EyeOutline /></n-icon>
                     </template>
-                    预览
+                    {{ t('interaction.template.preview') }}
                   </n-button>
 
-                  <n-button size="tiny" type="primary" @click.stop="selectTemplate(template)">选择</n-button>
+                  <n-button size="tiny" type="primary" @click.stop="selectTemplate(template)">
+                    {{ t('interaction.template.select') }}
+                  </n-button>
                 </n-space>
               </template>
             </n-card>
@@ -71,7 +75,7 @@
     <!-- 自定义模板上传 -->
     <div class="custom-template-section">
       <n-divider dashed>
-        <n-text depth="3">自定义模板</n-text>
+        <n-text depth="3">{{ t('interaction.template.customTemplate') }}</n-text>
       </n-divider>
 
       <n-space vertical size="small">
@@ -80,7 +84,7 @@
             <template #icon>
               <n-icon><CloudUploadOutline /></n-icon>
             </template>
-            导入模板文件
+            {{ t('interaction.template.importTemplateFile') }}
           </n-button>
         </n-upload>
 
@@ -88,21 +92,24 @@
           v-model:value="customTemplateJson"
           type="textarea"
           :rows="4"
-          placeholder="粘贴JSON格式的模板配置"
+          :placeholder="t('interaction.placeholders.customTemplateJson')"
           size="small"
         />
 
         <n-space size="small">
           <n-button size="small" type="primary" :disabled="!customTemplateJson.trim()" @click="importCustomTemplate">
-            导入配置
+            {{ t('interaction.template.importConfig') }}
           </n-button>
-          <n-button size="small" @click="customTemplateJson = ''">清空</n-button>
+          <n-button size="small" @click="customTemplateJson = ''">{{ t('interaction.template.clearInput') }}</n-button>
         </n-space>
       </n-space>
     </div>
 
     <!-- 模板预览对话框 -->
-    <n-modal v-model:show="showPreviewDialog" :title="`模板预览: ${previewTemplate?.name}`">
+    <n-modal
+      v-model:show="showPreviewDialog"
+      :title="t('interaction.template.templatePreview') + ': ' + (previewTemplate?.name || '')"
+    >
       <n-card style="width: 600px" :bordered="false" size="huge">
         <InteractionTemplatePreview
           v-if="previewTemplate"
@@ -121,6 +128,7 @@
  */
 
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   NTabs,
   NTabPane,
@@ -168,6 +176,7 @@ interface Emits {
 
 const emit = defineEmits<Emits>()
 const message = useMessage()
+const { t } = useI18n()
 
 // 响应式状态
 const activeCategory = ref('basic')
@@ -176,21 +185,21 @@ const showPreviewDialog = ref(false)
 const previewTemplate = ref<InteractionTemplate | null>(null)
 
 // 模板分类
-const templateCategories = [
-  { key: 'basic', label: '基础交互' },
-  { key: 'visual', label: '视觉效果' },
-  { key: 'animation', label: '动画效果' },
-  { key: 'complex', label: '复合交互' },
-  { key: 'user', label: '用户自定义' }
-]
+const templateCategories = computed(() => [
+  { key: 'basic', label: t('interaction.template.basic') },
+  { key: 'visual', label: t('interaction.template.visual') },
+  { key: 'animation', label: t('interaction.template.animation') },
+  { key: 'complex', label: t('interaction.template.complex') },
+  { key: 'user', label: t('interaction.template.user') }
+])
 
 // 预设模板
-const predefinedTemplates: InteractionTemplate[] = [
+const predefinedTemplates = computed((): InteractionTemplate[] => [
   // 基础交互模板
   {
     id: 'click-highlight',
-    name: '点击高亮',
-    description: '点击时改变背景颜色高亮显示',
+    name: t('interaction.template.predefined.clickHighlight'),
+    description: t('interaction.template.predefined.clickHighlightDesc'),
     category: 'basic',
     icon: FlashOutline,
     color: '#18a058',
@@ -206,14 +215,14 @@ const predefinedTemplates: InteractionTemplate[] = [
         ],
         enabled: true,
         priority: 1,
-        name: '点击高亮效果'
+        name: t('interaction.template.predefined.clickHighlightEffect')
       }
     ]
   },
   {
     id: 'hover-scale',
-    name: '悬停缩放',
-    description: '鼠标悬停时轻微放大元素',
+    name: t('interaction.template.predefined.hoverScale'),
+    description: t('interaction.template.predefined.hoverScaleDesc'),
     category: 'basic',
     icon: SettingsOutline,
     color: '#2080f0',
@@ -230,7 +239,7 @@ const predefinedTemplates: InteractionTemplate[] = [
         ],
         enabled: true,
         priority: 1,
-        name: '悬停缩放效果'
+        name: t('interaction.template.predefined.hoverScaleEffect')
       }
     ]
   },
@@ -238,8 +247,8 @@ const predefinedTemplates: InteractionTemplate[] = [
   // 视觉效果模板
   {
     id: 'rainbow-border',
-    name: '彩虹边框',
-    description: '点击时边框颜色循环变化',
+    name: t('interaction.template.predefined.rainbowBorder'),
+    description: t('interaction.template.predefined.rainbowBorderDesc'),
     category: 'visual',
     icon: ColorPaletteOutline,
     color: '#f0a020',
@@ -267,14 +276,14 @@ const predefinedTemplates: InteractionTemplate[] = [
         ],
         enabled: true,
         priority: 1,
-        name: '彩虹边框效果'
+        name: t('interaction.template.predefined.rainbowBorderEffect')
       }
     ]
   },
   {
     id: 'fade-toggle',
-    name: '淡入淡出',
-    description: '点击切换元素的透明度',
+    name: t('interaction.template.predefined.fadeToggle'),
+    description: t('interaction.template.predefined.fadeToggleDesc'),
     category: 'visual',
     icon: EyeOutline,
     color: '#7c3aed',
@@ -291,7 +300,7 @@ const predefinedTemplates: InteractionTemplate[] = [
         ],
         enabled: true,
         priority: 1,
-        name: '透明度切换'
+        name: t('interaction.template.predefined.transparencyToggle')
       }
     ]
   },
@@ -299,8 +308,8 @@ const predefinedTemplates: InteractionTemplate[] = [
   // 动画效果模板
   {
     id: 'pulse-animation',
-    name: '脉冲动画',
-    description: '点击触发脉冲动画效果',
+    name: t('interaction.template.predefined.pulseAnimation'),
+    description: t('interaction.template.predefined.pulseAnimationDesc'),
     category: 'animation',
     icon: HeartOutline,
     color: '#e74c3c',
@@ -317,14 +326,14 @@ const predefinedTemplates: InteractionTemplate[] = [
         ],
         enabled: true,
         priority: 1,
-        name: '脉冲动画'
+        name: t('interaction.template.predefined.pulseAnimationName')
       }
     ]
   },
   {
     id: 'shake-animation',
-    name: '摇摆动画',
-    description: '失焦时触发摇摆动画',
+    name: t('interaction.template.predefined.shakeAnimation'),
+    description: t('interaction.template.predefined.shakeAnimationDesc'),
     category: 'animation',
     icon: PlayOutline,
     color: '#f39c12',
@@ -341,7 +350,7 @@ const predefinedTemplates: InteractionTemplate[] = [
         ],
         enabled: true,
         priority: 1,
-        name: '摇摆提示'
+        name: t('interaction.template.predefined.shakeTip')
       }
     ]
   },
@@ -349,8 +358,8 @@ const predefinedTemplates: InteractionTemplate[] = [
   // 复合交互模板
   {
     id: 'complete-feedback',
-    name: '完整反馈',
-    description: '包含悬停、点击、聚焦的完整交互反馈',
+    name: t('interaction.template.predefined.completeFeedback'),
+    description: t('interaction.template.predefined.completeFeedbackDesc'),
     category: 'complex',
     icon: StarOutline,
     color: '#9b59b6',
@@ -366,7 +375,7 @@ const predefinedTemplates: InteractionTemplate[] = [
         ],
         enabled: true,
         priority: 3,
-        name: '悬停反馈'
+        name: t('interaction.template.predefined.hoverFeedback')
       },
       {
         event: 'click',
@@ -384,7 +393,7 @@ const predefinedTemplates: InteractionTemplate[] = [
         ],
         enabled: true,
         priority: 2,
-        name: '点击反馈'
+        name: t('interaction.template.predefined.clickFeedback')
       },
       {
         event: 'focus',
@@ -397,17 +406,17 @@ const predefinedTemplates: InteractionTemplate[] = [
         ],
         enabled: true,
         priority: 1,
-        name: '聚焦反馈'
+        name: t('interaction.template.predefined.focusFeedback')
       }
     ]
   }
-]
+])
 
 // 用户自定义模板（从localStorage加载）
 const userTemplates = ref<InteractionTemplate[]>([])
 
 // 所有模板
-const allTemplates = computed(() => [...predefinedTemplates, ...userTemplates.value])
+const allTemplates = computed(() => [...predefinedTemplates.value, ...userTemplates.value])
 
 // 根据分类获取模板
 const getTemplatesByCategory = (category: string) => {
@@ -429,11 +438,11 @@ const getEventTagType = (event: InteractionEventType) => {
 // 获取事件显示名称
 const getEventDisplayName = (event: InteractionEventType) => {
   const nameMap = {
-    click: '点击',
-    hover: '悬停',
-    focus: '聚焦',
-    blur: '失焦',
-    custom: '自定义'
+    click: t('interaction.events.click'),
+    hover: t('interaction.events.hover'),
+    focus: t('interaction.events.focus'),
+    blur: t('interaction.events.blur'),
+    custom: t('interaction.events.custom')
   }
   return nameMap[event] || event
 }
@@ -467,9 +476,9 @@ const handleCustomTemplateUpload = (data: { file: { file?: File } }) => {
     try {
       const content = e.target?.result as string
       customTemplateJson.value = content
-      message.success('模板文件已加载')
+      message.success(t('interaction.messages.templateFileLoaded'))
     } catch (error) {
-      message.error('文件读取失败')
+      message.error(t('interaction.messages.fileReadFailed'))
     }
   }
   reader.readAsText(file)
@@ -484,14 +493,14 @@ const importCustomTemplate = () => {
 
     // 验证模板格式
     if (!templateData.name || !templateData.config || !Array.isArray(templateData.config)) {
-      throw new Error('无效的模板格式')
+      throw new Error(t('interaction.messages.invalidTemplateFormat'))
     }
 
     // 创建新的用户模板
     const newTemplate: InteractionTemplate = {
       id: `user-${Date.now()}`,
       name: templateData.name,
-      description: templateData.description || '用户自定义模板',
+      description: templateData.description || t('interaction.template.predefined.userCustomTemplate'),
       category: 'user',
       icon: SettingsOutline,
       color: '#6c757d',
@@ -511,9 +520,9 @@ const importCustomTemplate = () => {
     // 清空输入
     customTemplateJson.value = ''
 
-    message.success(`模板 "${newTemplate.name}" 导入成功`)
+    message.success(t('interaction.messages.templateImported'))
   } catch (error) {
-    message.error('模板格式错误，请检查JSON格式')
+    message.error(t('interaction.messages.templateFormatError'))
     console.error('模板导入错误:', error)
   }
 }

@@ -12,7 +12,7 @@
     <!-- 加载状态 -->
     <div v-if="!isInitialized && !initializationError" class="loading-state">
       <n-spin size="large" />
-      <div class="loading-text">正在加载组件库...</div>
+      <div class="loading-text">{{ $t('visualEditor.loadingComponents') }}</div>
     </div>
 
     <!-- 错误状态 -->
@@ -20,9 +20,9 @@
       <n-icon size="48" color="#ff4d4f">
         <component :is="AlertCircleOutline" />
       </n-icon>
-      <div class="error-text">组件库加载失败</div>
+      <div class="error-text">{{ $t('visualEditor.loadingFailed') }}</div>
       <div class="error-detail">{{ initializationError }}</div>
-      <n-button type="primary" size="small" @click="initializeWidgets">重试</n-button>
+      <n-button type="primary" size="small" @click="initializeWidgets">{{ $t('visualEditor.retry') }}</n-button>
     </div>
 
     <!-- 两级分类 Tabs -->
@@ -73,6 +73,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { SearchOutline, AlertCircleOutline } from '@vicons/ionicons5'
+import { useI18n } from 'vue-i18n'
 import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import type { WidgetDefinition, WidgetTreeNode } from '../../types/widget'
 import { registerAllWidgets } from '../../widgets'
@@ -140,8 +141,8 @@ const twoLevelWidgetTree = computed(() => {
   const topCategoriesData: Record<string, { [subCategoryName: string]: WidgetDefinition[] }> = {}
 
   allWidgets.value.forEach(widget => {
-    const topLevelName = widget.definition?.mainCategory || '系统组件'
-    const subLevelName = widget.definition?.subCategory || '其他'
+    const topLevelName = widget.definition?.mainCategory || $t('visualEditor.systemComponents')
+    const subLevelName = widget.definition?.subCategory || $t('visualEditor.otherComponents')
 
     if (!topCategoriesData[topLevelName]) {
       topCategoriesData[topLevelName] = {}

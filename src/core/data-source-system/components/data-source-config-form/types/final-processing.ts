@@ -287,6 +287,55 @@ export interface ProcessorPerformanceMetrics {
   errorStats: Record<string, number>
 }
 
+// ProcessingPreview组件配置接口
+export interface ProcessingPreviewData {
+  /** 是否启用预览 */
+  enabled: boolean
+  /** 预览模式 */
+  mode: 'realtime' | 'manual' | 'scheduled'
+  /** 刷新间隔（毫秒） */
+  refreshInterval: number
+  /** 最大预览数据条数 */
+  maxItems: number
+  /** 显示配置 */
+  display: {
+    showRaw: boolean
+    showProcessed: boolean
+    showErrors: boolean
+    showPerformance: boolean
+  }
+}
+
+// 处理错误接口
+export interface ProcessingError {
+  /** 错误类型 */
+  type: string
+  /** 错误消息 */
+  message: string
+  /** 时间戳 */
+  timestamp: number
+  /** 错误堆栈 */
+  stack?: string
+  /** 错误数据 */
+  data?: any
+}
+
+// 处理统计接口
+export interface ProcessingStats {
+  /** 平均处理时间 */
+  avgProcessingTime: number
+  /** 最大处理时间 */
+  maxProcessingTime: number
+  /** 吞吐量（每秒） */
+  throughput: number
+  /** 错误率（百分比） */
+  errorRate: number
+  /** 总处理数量 */
+  totalProcessed: number
+  /** 总错误数量 */
+  totalErrors: number
+}
+
 // 最终处理器接口
 export interface FinalProcessor {
   /** 处理器ID */

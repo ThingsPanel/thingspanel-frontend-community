@@ -48,7 +48,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { NButton } from 'naive-ui'
-import DataSourceConfigForm from './components/data-source-config-form/DataSourceConfigForm.vue'
+import DataSourceConfigForm from './components/data-source-config-form/forms/DataSourceConfigForm.vue'
 import { simpleDataExecutor } from './core/simple-data-executor'
 import type { ModelValue, DataSource, ComponentData } from './types'
 

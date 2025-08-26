@@ -2,12 +2,12 @@
   <div class="interaction-simple">
     <!-- 简洁列表 + 添加按钮 -->
     <div class="interaction-header">
-      <h4 class="section-title">交互配置</h4>
+      <h4 class="section-title">{{ t('interaction.wizard.title') }}</h4>
       <n-button size="small" type="primary" @click="showAddModal = true">
         <template #icon>
           <n-icon><FlashOutline /></n-icon>
         </template>
-        添加交互
+        {{ t('interaction.wizard.addInteraction') }}
       </n-button>
     </div>
 
@@ -15,8 +15,8 @@
     <div class="interactions-list">
       <div v-if="interactions.length === 0" class="empty-state">
         <div class="empty-icon">🎯</div>
-        <div class="empty-text">暂无交互配置</div>
-        <div class="empty-desc">点击"添加交互"开始配置</div>
+        <div class="empty-text">{{ t('interaction.wizard.noInteractions') }}</div>
+        <div class="empty-desc">{{ t('interaction.wizard.noInteractionsDesc') }}</div>
       </div>
 
       <div v-else>
@@ -31,7 +31,7 @@
             </div>
             <div class="summary-actions">
               <n-switch v-model:value="interaction.enabled" size="small" />
-              <n-button size="tiny" quaternary @click="editInteraction(index)">编辑</n-button>
+              <n-button size="tiny" quaternary @click="editInteraction(index)">{{ t('interaction.edit') }}</n-button>
               <n-button size="tiny" quaternary @click="deleteInteraction(index)">
                 <template #icon>
                   <n-icon><TrashOutline /></n-icon>
@@ -44,84 +44,93 @@
     </div>
 
     <!-- 添加/编辑弹窗 -->
-    <n-modal v-model:show="showAddModal" :title="editingIndex >= 0 ? '编辑交互' : '添加交互'">
+    <n-modal
+      v-model:show="showAddModal"
+      :title="editingIndex >= 0 ? t('interaction.wizard.editInteraction') : t('interaction.wizard.addInteraction')"
+    >
       <n-card style="width: 600px" :bordered="false">
         <n-form :model="currentInteraction" label-placement="left" label-width="auto">
           <!-- 触发条件 -->
-          <n-form-item label="触发条件">
-            <n-select v-model:value="currentInteraction.event" :options="eventOptions" placeholder="选择触发条件" />
+          <n-form-item :label="t('interaction.events.title')">
+            <n-select
+              v-model:value="currentInteraction.event"
+              :options="eventOptions"
+              :placeholder="t('interaction.placeholders.selectTriggerCondition')"
+            />
           </n-form-item>
 
           <!-- 动作类型 -->
-          <n-form-item label="执行动作">
+          <n-form-item :label="t('interaction.actions.title')">
             <n-select
               v-model:value="currentActionType"
               :options="actionTypeOptions"
-              placeholder="选择要执行的动作"
+              :placeholder="t('interaction.placeholders.selectAction')"
               @update:value="handleActionTypeChange"
             />
           </n-form-item>
 
           <!-- URL跳转配置 -->
           <template v-if="currentActionType === 'jump'">
-            <n-form-item label="链接类型">
+            <n-form-item :label="t('interaction.properties.linkType')">
               <n-radio-group v-model:value="urlType" @update:value="handleUrlTypeChange">
                 <n-space>
-                  <n-radio value="external">外部链接</n-radio>
-                  <n-radio value="internal">内部菜单</n-radio>
+                  <n-radio value="external">{{ t('interaction.linkTypes.external') }}</n-radio>
+                  <n-radio value="internal">{{ t('interaction.linkTypes.internal') }}</n-radio>
                 </n-space>
               </n-radio-group>
             </n-form-item>
 
-            <n-form-item v-if="urlType === 'external'" label="跳转地址">
-              <n-input v-model:value="currentInteraction.url" placeholder="https://example.com 或 /relative-path" />
+            <n-form-item v-if="urlType === 'external'" :label="t('interaction.properties.jumpAddress')">
+              <n-input v-model:value="currentInteraction.url" :placeholder="t('interaction.placeholders.enterUrl')" />
             </n-form-item>
 
-            <n-form-item v-if="urlType === 'internal'" label="选择菜单">
+            <n-form-item v-if="urlType === 'internal'" :label="t('interaction.properties.selectMenu')">
               <n-select
                 v-model:value="selectedMenuPath"
                 :options="menuOptions"
-                placeholder="选择要跳转的菜单项"
+                :placeholder="t('interaction.placeholders.selectMenuToJump')"
                 :loading="menuLoading"
                 filterable
                 @update:value="handleMenuPathChange"
               />
             </n-form-item>
 
-            <n-form-item label="打开方式">
+            <n-form-item :label="t('interaction.properties.openMethod')">
               <n-radio-group v-model:value="currentInteraction.target">
-                <n-radio value="_self">当前窗口</n-radio>
-                <n-radio value="_blank">新窗口</n-radio>
+                <n-radio value="_self">{{ t('interaction.openMethods.currentWindow') }}</n-radio>
+                <n-radio value="_blank">{{ t('interaction.openMethods.newWindow') }}</n-radio>
               </n-radio-group>
             </n-form-item>
           </template>
 
           <!-- 🔥 数据变化时的属性选择和条件配置 -->
           <template v-if="currentInteraction.event === 'dataChange'">
-            <n-form-item label="监听属性">
+            <n-form-item :label="t('interaction.properties.watchedProperty')">
               <n-select
                 v-model:value="currentWatchedProperty"
                 :options="availablePropertyOptions"
-                placeholder="选择要监听的组件属性"
+                :placeholder="t('interaction.placeholders.selectWatchedProperty')"
                 filterable
                 clearable
                 @update:value="handleWatchedPropertyChange"
               >
                 <template #empty>
                   <div style="padding: 12px; text-align: center; color: var(--text-color-3)">
-                    <div>暂无可监听属性</div>
-                    <div style="font-size: 12px; margin-top: 4px">组件开发者需要暴露可监听的属性</div>
+                    <div>{{ t('interaction.messages.noWatchableProperties') }}</div>
+                    <div style="font-size: 12px; margin-top: 4px">
+                      {{ t('interaction.messages.noWatchablePropertiesDesc') }}
+                    </div>
                   </div>
                 </template>
               </n-select>
             </n-form-item>
 
-            <n-form-item label="执行条件">
+            <n-form-item :label="t('interaction.properties.executionCondition')">
               <n-space>
                 <n-select
                   v-model:value="currentConditionType"
                   :options="conditionTypeOptions"
-                  placeholder="条件类型"
+                  :placeholder="t('interaction.placeholders.conditionType')"
                   style="width: 120px"
                   @update:value="handleConditionTypeChange"
                 />
@@ -129,18 +138,26 @@
                   <n-select
                     v-model:value="currentConditionOperator"
                     :options="comparisonOperatorOptions"
-                    placeholder="比较"
+                    :placeholder="t('interaction.placeholders.comparison')"
                     style="width: 100px"
                   />
-                  <n-input v-model:value="currentConditionValue" placeholder="值" style="width: 120px" />
+                  <n-input
+                    v-model:value="currentConditionValue"
+                    :placeholder="t('interaction.placeholders.value')"
+                    style="width: 120px"
+                  />
                 </template>
                 <template v-else-if="currentConditionType === 'range'">
-                  <n-input v-model:value="currentConditionValue" placeholder="如: 0-100" style="width: 120px" />
+                  <n-input
+                    v-model:value="currentConditionValue"
+                    :placeholder="t('interaction.placeholders.rangeValue')"
+                    style="width: 120px"
+                  />
                 </template>
                 <template v-else-if="currentConditionType === 'expression'">
                   <n-input
                     v-model:value="currentConditionValue"
-                    placeholder="如: x > 10 && x < 20"
+                    :placeholder="t('interaction.placeholders.expressionValue')"
                     style="width: 200px"
                   />
                 </template>
@@ -150,30 +167,33 @@
 
           <!-- 属性修改配置 -->
           <template v-if="currentActionType === 'modify'">
-            <n-form-item label="目标组件">
+            <n-form-item :label="t('interaction.properties.targetComponent')">
               <n-select
                 v-model:value="currentInteraction.targetComponentId"
                 :options="componentOptions"
-                placeholder="选择要修改的组件"
+                :placeholder="t('interaction.placeholders.selectComponentToModify')"
               />
             </n-form-item>
-            <n-form-item label="修改属性">
+            <n-form-item :label="t('interaction.properties.modifyProperty')">
               <n-select
                 v-model:value="currentInteraction.targetProperty"
                 :options="targetPropertyOptions"
-                placeholder="选择要修改的属性"
+                :placeholder="t('interaction.placeholders.selectPropertyToModify')"
               />
             </n-form-item>
-            <n-form-item label="新值">
-              <n-input v-model:value="currentInteraction.updateValue" placeholder="输入新的属性值" />
+            <n-form-item :label="t('interaction.properties.newValue')">
+              <n-input
+                v-model:value="currentInteraction.updateValue"
+                :placeholder="t('interaction.placeholders.enterNewPropertyValue')"
+              />
             </n-form-item>
           </template>
         </n-form>
 
         <template #footer>
           <n-space justify="end">
-            <n-button @click="showAddModal = false">取消</n-button>
-            <n-button type="primary" @click="saveInteraction">确定</n-button>
+            <n-button @click="showAddModal = false">{{ t('interaction.cancel') }}</n-button>
+            <n-button type="primary" @click="saveInteraction">{{ t('interaction.confirm') }}</n-button>
           </n-space>
         </template>
       </n-card>
@@ -188,6 +208,7 @@
  */
 
 import { ref, computed, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   NSpace,
   NButton,
@@ -250,6 +271,7 @@ const selectedMenuPath = ref('')
 const menuOptions = ref<{ label: string; value: string }[]>([])
 const menuLoading = ref(false)
 const message = useMessage()
+const { t } = useI18n()
 
 // 🔥 恢复数据变化配置状态
 const currentWatchedProperty = ref('')
@@ -258,38 +280,38 @@ const currentConditionOperator = ref('')
 const currentConditionValue = ref('')
 
 // ✅ 正确的3个事件选项
-const eventOptions = [
-  { label: '点击时', value: 'click' },
-  { label: '悬停时', value: 'hover' },
-  { label: '属性变化时', value: 'dataChange' }
-]
+const eventOptions = computed(() => [
+  { label: t('interaction.events.click'), value: 'click' },
+  { label: t('interaction.events.hover'), value: 'hover' },
+  { label: t('interaction.events.dataChange'), value: 'dataChange' }
+])
 
 // 🔥 恢复数据变化时的属性选择和条件配置
 // 条件类型选项
-const conditionTypeOptions = [
-  { label: '比较条件', value: 'comparison' },
-  { label: '范围条件', value: 'range' },
-  { label: '表达式', value: 'expression' }
-]
+const conditionTypeOptions = computed(() => [
+  { label: t('interaction.conditions.comparison'), value: 'comparison' },
+  { label: t('interaction.conditions.range'), value: 'range' },
+  { label: t('interaction.conditions.expression'), value: 'expression' }
+])
 
 // 比较运算符选项
-const comparisonOperatorOptions = [
-  { label: '等于', value: 'equals' },
-  { label: '不等于', value: 'notEquals' },
-  { label: '大于', value: 'greaterThan' },
-  { label: '大于等于', value: 'greaterThanOrEqual' },
-  { label: '小于', value: 'lessThan' },
-  { label: '小于等于', value: 'lessThanOrEqual' },
-  { label: '包含', value: 'contains' },
-  { label: '开头是', value: 'startsWith' },
-  { label: '结尾是', value: 'endsWith' }
-]
+const comparisonOperatorOptions = computed(() => [
+  { label: t('interaction.operators.equals'), value: 'equals' },
+  { label: t('interaction.operators.notEquals'), value: 'notEquals' },
+  { label: t('interaction.operators.greaterThan'), value: 'greaterThan' },
+  { label: t('interaction.operators.greaterThanOrEqual'), value: 'greaterThanOrEqual' },
+  { label: t('interaction.operators.lessThan'), value: 'lessThan' },
+  { label: t('interaction.operators.lessThanOrEqual'), value: 'lessThanOrEqual' },
+  { label: t('interaction.operators.contains'), value: 'contains' },
+  { label: t('interaction.operators.startsWith'), value: 'startsWith' },
+  { label: t('interaction.operators.endsWith'), value: 'endsWith' }
+])
 
 // ✅ 正确的2个动作选项
-const actionTypeOptions = [
-  { label: '页面跳转', value: 'jump' },
-  { label: '修改目标组件属性', value: 'modify' }
-]
+const actionTypeOptions = computed(() => [
+  { label: t('interaction.summary.pageJump'), value: 'jump' },
+  { label: t('interaction.summary.modifyProperty'), value: 'modify' }
+])
 
 // ✅ 动态获取当前画布上的组件（用于目标组件选择）
 const componentOptions = computed(() => {
@@ -440,9 +462,9 @@ const getEventType = (event: string) => {
 // ✅ 正确的事件标签 (3种)
 const getEventLabel = (event: string) => {
   const labelMap = {
-    click: '点击',
-    hover: '悬停',
-    dataChange: '属性变化'
+    click: t('interaction.events.click'),
+    hover: t('interaction.events.hover'),
+    dataChange: t('interaction.events.dataChange')
   }
   return labelMap[event] || event
 }
@@ -451,11 +473,11 @@ const getEventLabel = (event: string) => {
 const getSummaryTitle = (interaction: any) => {
   const actionType = getActionType(interaction)
   if (actionType === 'jump') {
-    return '页面跳转'
+    return t('interaction.summary.pageJump')
   } else if (actionType === 'modify') {
-    return '修改属性'
+    return t('interaction.summary.modifyProperty')
   }
-  return '自定义动作'
+  return t('interaction.summary.customAction')
 }
 
 // 获取摘要描述
@@ -465,8 +487,8 @@ const getSummaryDesc = (interaction: any) => {
 
   // 🔥 数据变化事件需要显示监听属性和条件
   if (interaction.event === 'dataChange') {
-    const watchedProperty = interaction.watchedProperty || '未指定属性'
-    let conditionDesc = '无条件'
+    const watchedProperty = interaction.watchedProperty || t('interaction.empty.notSpecified')
+    let conditionDesc = t('interaction.empty.noCondition')
 
     if (interaction.condition) {
       const conditionType = interaction.condition.type
@@ -475,40 +497,40 @@ const getSummaryDesc = (interaction: any) => {
       if (conditionType === 'comparison') {
         const operator = interaction.condition.operator
         const operatorMap = {
-          equals: '等于',
-          notEquals: '不等于',
-          greaterThan: '大于',
-          greaterThanOrEqual: '大于等于',
-          lessThan: '小于',
-          lessThanOrEqual: '小于等于',
-          contains: '包含',
-          startsWith: '开头是',
-          endsWith: '结尾是'
+          equals: t('interaction.operators.equals'),
+          notEquals: t('interaction.operators.notEquals'),
+          greaterThan: t('interaction.operators.greaterThan'),
+          greaterThanOrEqual: t('interaction.operators.greaterThanOrEqual'),
+          lessThan: t('interaction.operators.lessThan'),
+          lessThanOrEqual: t('interaction.operators.lessThanOrEqual'),
+          contains: t('interaction.operators.contains'),
+          startsWith: t('interaction.operators.startsWith'),
+          endsWith: t('interaction.operators.endsWith')
         }
         conditionDesc = `${operatorMap[operator] || operator} ${value}`
       } else if (conditionType === 'range') {
-        conditionDesc = `范围 ${value}`
+        conditionDesc = `${t('interaction.summary.range')} ${value}`
       } else if (conditionType === 'expression') {
-        conditionDesc = `表达式 ${value}`
+        conditionDesc = `${t('interaction.summary.expression')} ${value}`
       }
     }
 
-    let baseDesc = `监听 ${watchedProperty} (${conditionDesc})`
+    let baseDesc = `${t('interaction.summary.listening')} ${watchedProperty} (${conditionDesc})`
 
     // 添加动作描述
     if (actionType === 'jump') {
       const url = interaction.responses?.[0]?.value || ''
       if (url.startsWith('http') || url.startsWith('https')) {
-        baseDesc += ` → 跳转到外部链接`
+        baseDesc += ` → ${t('interaction.summary.jumpToExternal')}`
       } else if (url.startsWith('/')) {
-        baseDesc += ` → 跳转到内部菜单`
+        baseDesc += ` → ${t('interaction.summary.jumpToInternal')}`
       } else {
-        baseDesc += ` → 跳转到 ${url}`
+        baseDesc += ` → ${t('interaction.summary.jumpTo')} ${url}`
       }
     } else if (actionType === 'modify') {
-      const target = interaction.responses?.[0]?.targetComponentId || '组件'
-      const property = interaction.responses?.[0]?.targetProperty || '属性'
-      baseDesc += ` → 修改${target}的${property}`
+      const target = interaction.responses?.[0]?.targetComponentId || t('interaction.empty.component')
+      const property = interaction.responses?.[0]?.targetProperty || t('interaction.empty.property')
+      baseDesc += ` → ${t('interaction.summary.modify')}${target}的${property}`
     }
 
     return baseDesc
@@ -518,18 +540,18 @@ const getSummaryDesc = (interaction: any) => {
     const url = interaction.responses?.[0]?.value || ''
     // 🔥 区分内部菜单和外部链接
     if (url.startsWith('http') || url.startsWith('https')) {
-      return `${event}时跳转到外部链接: ${url}`
+      return `${event}${t('interaction.summary.whenClick')}: ${url}`
     } else if (url.startsWith('/')) {
-      return `${event}时跳转到内部菜单: ${url}`
+      return `${event}${t('interaction.summary.whenHover')}: ${url}`
     }
-    return `${event}时跳转到 ${url}`
+    return `${event}${t('interaction.summary.whenEvent')} ${url}`
   } else if (actionType === 'modify') {
-    const target = interaction.responses?.[0]?.targetComponentId || '组件'
-    const property = interaction.responses?.[0]?.targetProperty || '属性'
-    return `${event}时修改${target}的${property}`
+    const target = interaction.responses?.[0]?.targetComponentId || t('interaction.empty.component')
+    const property = interaction.responses?.[0]?.targetProperty || t('interaction.empty.property')
+    return `${event}${t('interaction.summary.whenEventModify')}${target}的${property}`
   }
 
-  return `${event}时执行自定义动作`
+  return `${event}${t('interaction.summary.whenEventCustom')}`
 }
 
 // 获取动作类型
@@ -734,15 +756,15 @@ const loadMenuOptions = async () => {
       // 如果没有菜单项，说明扁平化函数有问题
       if (flattened.length === 0) {
         console.log('[MENU-DEBUG] ⚠️ 扁平化结果为空，但API有数据，检查扁平化函数')
-        message.error('菜单数据处理失败')
+        message.error(t('interaction.messages.menuDataProcessFailed'))
       }
     } else {
       console.log('[MENU-DEBUG] ❌ API响应数据结构异常:', result)
-      message.error('菜单数据格式异常')
+      message.error(t('interaction.messages.menuDataAbnormal'))
     }
   } catch (error) {
     console.error('[MENU-DEBUG] ❌ 加载菜单失败:', error)
-    message.error('菜单加载失败: ' + error.message)
+    message.error(t('interaction.messages.menuLoadFailed') + ': ' + error.message)
   } finally {
     menuLoading.value = false
   }

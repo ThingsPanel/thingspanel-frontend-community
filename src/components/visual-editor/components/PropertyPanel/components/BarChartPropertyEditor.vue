@@ -1,12 +1,12 @@
 <template>
   <n-form size="small" label-placement="left" label-width="60">
-    <n-form-item label="标题">
+    <n-form-item :label="$t('visualEditor.titleProperty')">
       <n-input :value="properties.title" @update:value="updateProperty('title', $event)" />
     </n-form-item>
-    <n-form-item label="颜色">
+    <n-form-item :label="$t('visualEditor.colorProperty')">
       <n-color-picker :value="properties.color" @update:value="updateProperty('color', $event)" />
     </n-form-item>
-    <n-form-item label="数据">
+    <n-form-item :label="$t('visualEditor.dataProperty')">
       <n-dynamic-input
         :value="properties.data"
         :on-create="createDataItem"
@@ -14,10 +14,14 @@
       >
         <template #default="{ value, index }">
           <n-space size="small">
-            <n-input :value="value.name" placeholder="名称" @update:value="updateDataItem(index, 'name', $event)" />
+            <n-input
+              :value="value.name"
+              :placeholder="$t('visualEditor.namePlaceholder')"
+              @update:value="updateDataItem(index, 'name', $event)"
+            />
             <n-input-number
               :value="value.value"
-              placeholder="数值"
+              :placeholder="$t('visualEditor.valuePlaceholder')"
               @update:value="updateDataItem(index, 'value', $event)"
             />
           </n-space>
@@ -28,6 +32,8 @@
 </template>
 
 <script setup lang="ts">
+import { $t } from '@/locales'
+
 interface DataItem {
   name: string
   value: number
@@ -52,7 +58,7 @@ const updateProperty = (key: string, value: any) => {
 }
 
 const createDataItem = () => ({
-  name: '新数据',
+  name: $t('visualEditor.newData'),
   value: 0
 })
 

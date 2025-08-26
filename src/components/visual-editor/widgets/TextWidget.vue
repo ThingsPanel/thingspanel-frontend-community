@@ -6,6 +6,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { $t } from '@/locales'
 import type { TextWidgetConfig } from '@/components/visual-editor/types'
 
 interface Props extends TextWidgetConfig {
@@ -17,7 +18,7 @@ interface Props extends TextWidgetConfig {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  content: '文本内容',
+  content: $t('visualEditor.textContent'),
   fontSize: 14,
   color: 'var(--n-text-color)',
   textAlign: 'left',

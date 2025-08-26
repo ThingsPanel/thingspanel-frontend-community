@@ -1,42 +1,48 @@
 <template>
   <n-form size="small" label-placement="left" label-width="70">
-    <n-form-item label="标题">
+    <n-form-item :label="$t('visualEditor.titleProperty')">
       <n-input :value="properties.title" @update:value="updateProperty('title', $event)" />
     </n-form-item>
-    <n-form-item label="设备ID">
+    <n-form-item :label="$t('visualEditor.deviceIdProperty')">
       <n-input
         :value="properties.deviceId"
-        placeholder="请输入设备ID"
+        :placeholder="$t('visualEditor.deviceIdPlaceholder')"
         @update:value="updateProperty('deviceId', $event)"
       />
     </n-form-item>
-    <n-form-item label="指标ID">
+    <n-form-item :label="$t('visualEditor.metricsIdProperty')">
       <n-input
         :value="properties.metricsId"
-        placeholder="请输入指标ID"
+        :placeholder="$t('visualEditor.metricsIdPlaceholder')"
         @update:value="updateProperty('metricsId', $event)"
       />
     </n-form-item>
-    <n-form-item label="指标类型">
+    <n-form-item :label="$t('visualEditor.metricsTypeProperty')">
       <n-select
         :value="properties.metricsType"
         :options="metricsTypeOptions"
         @update:value="updateProperty('metricsType', $event)"
       />
     </n-form-item>
-    <n-form-item label="图标">
-      <n-input :value="properties.icon" placeholder="图标名称" @update:value="updateProperty('icon', $event)" />
+    <n-form-item :label="$t('visualEditor.iconProperty')">
+      <n-input
+        :value="properties.icon"
+        :placeholder="$t('visualEditor.iconPlaceholder')"
+        @update:value="updateProperty('icon', $event)"
+      />
     </n-form-item>
-    <n-form-item label="颜色">
+    <n-form-item :label="$t('visualEditor.colorProperty')">
       <n-color-picker :value="properties.color" @update:value="updateProperty('color', $event)" />
     </n-form-item>
-    <n-form-item label="背景颜色">
+    <n-form-item :label="$t('visualEditor.backgroundColorProperty2')">
       <n-color-picker :value="properties.backgroundColor" @update:value="updateProperty('backgroundColor', $event)" />
     </n-form-item>
   </n-form>
 </template>
 
 <script setup lang="ts">
+import { $t } from '@/locales'
+
 interface Props {
   properties: {
     title: string
@@ -56,8 +62,8 @@ const emit = defineEmits<{
 }>()
 
 const metricsTypeOptions = [
-  { label: '遥测数据', value: 'telemetry' },
-  { label: '属性数据', value: 'attributes' }
+  { label: $t('visualEditor.telemetryData'), value: 'telemetry' },
+  { label: $t('visualEditor.attributesData'), value: 'attributes' }
 ]
 
 const updateProperty = (key: string, value: any) => {

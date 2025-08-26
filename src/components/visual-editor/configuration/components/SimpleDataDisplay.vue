@@ -1,11 +1,13 @@
 <template>
   <div class="simple-data-display">
     <n-space vertical size="small">
-      <n-text strong style="font-size: 12px; color: var(--text-color-2)">数据展示测试</n-text>
+      <n-text strong style="font-size: 12px; color: var(--text-color-2)">
+        {{ $t('visualEditor.dataDisplayTest') }}
+      </n-text>
 
       <!-- 当前数据源数据 -->
       <div class="data-section">
-        <n-text depth="2" style="font-size: 11px">当前数据源数据:</n-text>
+        <n-text depth="2" style="font-size: 11px">{{ $t('visualEditor.currentDataSourceData') }}:</n-text>
         <n-code
           :code="objectDataDisplay"
           language="json"
@@ -25,6 +27,7 @@
 
 import { computed } from 'vue'
 import { NSpace, NText, NCode } from 'naive-ui'
+import { $t } from '@/locales'
 
 interface Props {
   objectData?: any // 对象类型数据源

@@ -12,7 +12,11 @@ import ComponentConfigForm from '../renderers/base/ComponentConfigForm.vue'
 // 导入新的卡片式交互配置组件（来自核心交互系统）
 import InteractionCardWizard from '@/core/interaction-system/components/InteractionCardWizard.vue'
 // 导入编辑器数据源配置组件
-import DataSourceConfigForm from '@/core/data-source-system/components/DataSourceConfigForm.vue'
+// import DataSourceConfigForm from '@/core/data-source-system/components/DataSourceConfigForm.vue' // 旧版本 - 文件已删除
+import DataSourceConfigForm from '@/core/data-source-system/components/data-source-config-form/forms/DataSourceConfigForm.vue' // 完整重构版本 - 使用重构后的版本
+// import DataSourceConfigForm from '@/core/data-source-system/components/data-source-config-form/forms/DataSourceConfigFormSimple.vue' // 简化重构版本
+
+console.log('🔍 [component-registry] 导入DataSourceConfigForm:', DataSourceConfigForm)
 
 export interface ConfigLayerDefinition {
   /** 配置层级名称 */
@@ -67,6 +71,8 @@ export const configLayerRegistry: Record<string, ConfigLayerDefinition> = {
     description: '组件交互配置（卡片式简洁界面，点击、悬停等交互效果）'
   }
 }
+
+console.log('📋 [component-registry] 注册表创建完成，dataSource配置:', configLayerRegistry.dataSource)
 
 /**
  * 获取所有可见的配置层级（按order排序）

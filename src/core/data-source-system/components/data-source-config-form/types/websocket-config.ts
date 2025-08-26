@@ -239,6 +239,48 @@ export interface WebSocketConfigValidationResult {
   }>
 }
 
+// WebSocketDataInput组件配置接口
+export interface WebSocketConfigData {
+  /** WebSocket URL */
+  url: string
+  /** 协议列表 */
+  protocols: Array<{
+    key: string
+    value: string
+    enabled: boolean
+  }>
+  /** 请求头 */
+  headers: Array<{
+    key: string
+    value: string
+    enabled: boolean
+  }>
+  /** 心跳配置 */
+  heartbeat: {
+    enabled: boolean
+    interval: number
+    messageType: 'ping' | 'json' | 'text' | 'custom'
+    customMessage: string
+    jsonMessage: string
+  }
+  /** 重连配置 */
+  reconnect: {
+    enabled: boolean
+    maxAttempts: number
+    delay: number
+    exponentialBackoff: boolean
+    maxDelay: number
+  }
+  /** 连接超时时间（毫秒） */
+  connectionTimeout: number
+  /** 消息缓冲区大小 */
+  bufferSize: number
+  /** 二进制数据类型 */
+  binaryType: 'arraybuffer' | 'blob'
+  /** 是否启用压缩 */
+  compression: boolean
+}
+
 // WebSocket工具方法相关类型
 export interface WebSocketUtilities {
   /** 验证WebSocket URL */

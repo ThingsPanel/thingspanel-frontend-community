@@ -113,6 +113,7 @@
   "route.automation_scene-edit": "场景编辑",
   "route.test_kan-ban-details-test": "看板详情测试",
   "route.test_kan-ban-test": "看板测试",
+  "route.test_http-config-test": "HTTP配置测试",
   "route.data-services": "数据服务",
   "route.data-services_data-forward": "数据转发",
   "route.data-services_forward-config": "转发配置",

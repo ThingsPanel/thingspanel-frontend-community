@@ -3,19 +3,19 @@
   <div class="interaction-settings-form">
     <!-- 表单标题 -->
     <div class="form-header">
-      <h3 class="form-title">{{ $t('interaction.settings.title') || '交互配置' }}</h3>
+      <h3 class="form-title">{{ $t('interaction.settings.title') }}</h3>
       <n-space size="small">
         <n-button size="tiny" type="primary" :disabled="readonly" @click="addInteractionConfig">
           <template #icon>
             <n-icon><AddOutline /></n-icon>
           </template>
-          {{ $t('interaction.add') || '添加交互' }}
+          {{ $t('interaction.add') }}
         </n-button>
         <n-button size="tiny" quaternary :disabled="!hasInteractions" @click="previewInteractions">
           <template #icon>
             <n-icon><PlayOutline /></n-icon>
           </template>
-          {{ $t('interaction.preview') || '预览' }}
+          {{ $t('interaction.preview') }}
         </n-button>
       </n-space>
     </div>
@@ -37,7 +37,7 @@
                 {{ getEventDisplayName(config.event) }}
               </n-tag>
               <span class="interaction-title">
-                {{ config.name || `${getEventDisplayName(config.event)}交互` }}
+                {{ config.name || `${getEventDisplayName(config.event)}${$t('interaction.title')}` }}
               </span>
             </div>
             <div class="interaction-actions">
@@ -67,7 +67,7 @@
           <!-- 事件配置 -->
           <n-form label-placement="left" label-width="80" size="small">
             <!-- 🔥 精简触发事件选择（添加事件处理） -->
-            <n-form-item label="触发事件">
+            <n-form-item :label="$t('interaction.properties.triggerEvent')">
               <n-select
                 v-model:value="config.event"
                 :options="coreEventOptions"
@@ -85,13 +85,17 @@
                     <ChevronUpOutline v-else />
                   </n-icon>
                 </template>
-                {{ showAdvancedOptions ? '收起' : '展开' }}高级选项
+                {{
+                  showAdvancedOptions
+                    ? $t('interaction.settings.hideAdvanced')
+                    : $t('interaction.settings.showAdvanced')
+                }}{{ $t('interaction.settings.advancedOptions') }}
               </n-button>
             </div>
 
             <!-- 简化后的高级选项 - 条件渲染 -->
             <template v-if="showAdvancedOptions">
-              <n-form-item label="优先级">
+              <n-form-item :label="$t('interaction.properties.priority')">
                 <n-input-number
                   v-model:value="config.priority"
                   :min="0"
@@ -101,10 +105,10 @@
                 />
               </n-form-item>
 
-              <n-form-item label="配置名称">
+              <n-form-item :label="$t('interaction.properties.configName')">
                 <n-input
                   v-model:value="config.name"
-                  placeholder="自定义交互名称"
+                  :placeholder="$t('interaction.placeholders.customInteractionName')"
                   :disabled="readonly"
                   @update:value="handleInteractionChange"
                 />
@@ -112,11 +116,14 @@
             </template>
 
             <!-- 跨组件目标选择 -->
-            <n-form-item v-if="isInterComponentEvent(config.event)" label="目标组件">
+            <n-form-item
+              v-if="isInterComponentEvent(config.event)"
+              :label="$t('interaction.properties.targetComponent')"
+            >
               <n-select
                 v-model:value="config.targetComponentId"
                 :options="availableComponentOptions"
-                placeholder="选择目标组件"
+                :placeholder="$t('interaction.placeholders.selectComponentToModify')"
                 :disabled="readonly"
                 clearable
                 @update:value="handleInteractionChange"
@@ -124,11 +131,11 @@
             </n-form-item>
 
             <!-- 🔥 数据变化监听配置（增强版） -->
-            <n-form-item v-if="config.event === 'dataChange'" label="监听属性">
+            <n-form-item v-if="config.event === 'dataChange'" :label="$t('interaction.properties.watchedProperty')">
               <n-select
                 :value="config.watchedProperty"
                 :options="availablePropertyOptions"
-                placeholder="选择要监听的组件属性"
+                :placeholder="$t('interaction.placeholders.selectWatchedProperty')"
                 :disabled="readonly"
                 filterable
                 clearable
@@ -136,15 +143,20 @@
               >
                 <template #empty>
                   <div style="padding: 12px; text-align: center; color: var(--text-color-3)">
-                    <div>暂无可监听属性</div>
-                    <div style="font-size: 12px; margin-top: 4px">组件开发者需要暴露可监听的属性</div>
+                    <div>{{ $t('interaction.messages.noWatchableProperties') }}</div>
+                    <div style="font-size: 12px; margin-top: 4px">
+                      {{ $t('interaction.messages.noWatchablePropertiesDesc') }}
+                    </div>
                   </div>
                 </template>
               </n-select>
             </n-form-item>
 
             <!-- 传统数据路径输入（作为备选） -->
-            <n-form-item v-if="config.event === 'dataChange' && showAdvancedOptions" label="自定义路径">
+            <n-form-item
+              v-if="config.event === 'dataChange' && showAdvancedOptions"
+              :label="$t('interaction.properties.dataPath')"
+            >
               <n-input
                 v-model:value="config.dataPath"
                 placeholder="如: data.temperature 或 properties.value"
@@ -154,12 +166,12 @@
             </n-form-item>
 
             <!-- 🔥 只有「属性改变时」才显示执行条件 -->
-            <n-form-item v-if="config.event === 'dataChange'" label="执行条件">
+            <n-form-item v-if="config.event === 'dataChange'" :label="$t('interaction.properties.executionCondition')">
               <div class="condition-config">
                 <n-select
                   :value="config.condition?.type"
                   :options="conditionTypeOptions"
-                  placeholder="条件类型"
+                  :placeholder="$t('interaction.placeholders.conditionType')"
                   :disabled="readonly"
                   style="width: 120px"
                   @update:value="value => handleConditionTypeChange(value, index)"
@@ -168,14 +180,14 @@
                   <n-select
                     v-model:value="config.condition.operator"
                     :options="comparisonOperatorOptions"
-                    placeholder="比较"
+                    :placeholder="$t('interaction.placeholders.comparison')"
                     :disabled="readonly"
                     style="width: 80px"
                     @update:value="handleInteractionChange"
                   />
                   <n-input
                     v-model:value="config.condition.value"
-                    placeholder="值"
+                    :placeholder="$t('interaction.placeholders.value')"
                     :disabled="readonly"
                     style="flex: 1"
                     @update:value="handleInteractionChange"
@@ -184,7 +196,7 @@
                 <template v-else-if="config.condition?.type === 'range'">
                   <n-input
                     v-model:value="config.condition.minValue"
-                    placeholder="最小值"
+                    :placeholder="$t('interaction.placeholders.minValue')"
                     :disabled="readonly"
                     style="width: 80px"
                     @update:value="handleInteractionChange"
@@ -192,7 +204,7 @@
                   <span>~</span>
                   <n-input
                     v-model:value="config.condition.maxValue"
-                    placeholder="最大值"
+                    :placeholder="$t('interaction.placeholders.maxValue')"
                     :disabled="readonly"
                     style="width: 80px"
                     @update:value="handleInteractionChange"
@@ -201,7 +213,7 @@
                 <template v-else-if="config.condition?.type === 'expression'">
                   <n-input
                     v-model:value="config.condition.expression"
-                    placeholder="如: value > 99 && value < 200"
+                    :placeholder="$t('interaction.placeholders.expressionValue')"
                     :disabled="readonly"
                     style="flex: 1"
                     @update:value="handleInteractionChange"
@@ -214,7 +226,7 @@
           <!-- 响应动作列表 -->
           <div class="responses-section">
             <div class="section-header">
-              <span class="section-title">响应动作</span>
+              <span class="section-title">{{ $t('interaction.settings.responseActions') }}</span>
               <n-button
                 size="tiny"
                 type="primary"
@@ -230,12 +242,12 @@
                 <template #icon>
                   <n-icon><AddOutline /></n-icon>
                 </template>
-                添加动作
+                {{ $t('interaction.settings.addAction') }}
               </n-button>
             </div>
 
             <div v-if="config.responses.length === 0" class="no-responses">
-              <n-empty description="暂无响应动作" size="small">
+              <n-empty :description="$t('interaction.settings.noResponseActions')" size="small">
                 <template #extra>
                   <n-button
                     size="small"
@@ -247,7 +259,7 @@
                       }
                     "
                   >
-                    添加第一个动作
+                    {{ $t('interaction.settings.addFirstAction') }}
                   </n-button>
                 </template>
               </n-empty>
@@ -295,25 +307,27 @@
 
     <!-- 空状态 -->
     <div v-else class="empty-state">
-      <n-empty description="暂无交互配置" size="medium">
+      <n-empty :description="$t('interaction.settings.noConfigs')" size="medium">
         <template #icon>
           <n-icon><FlashOutline /></n-icon>
         </template>
         <template #extra>
-          <n-button type="primary" :disabled="readonly" @click="addInteractionConfig">创建第一个交互</n-button>
+          <n-button type="primary" :disabled="readonly" @click="addInteractionConfig">
+            {{ $t('interaction.settings.addConfig') }}
+          </n-button>
         </template>
       </n-empty>
     </div>
 
     <!-- 模板选择对话框 -->
-    <n-modal v-model:show="showTemplateDialog" :title="$t('interaction.template.title') || '选择交互模板'">
+    <n-modal v-model:show="showTemplateDialog" :title="$t('interaction.template.title')">
       <n-card style="width: 600px" :bordered="false" size="huge">
         <InteractionTemplateSelector @select="applyTemplate" @cancel="showTemplateDialog = false" />
       </n-card>
     </n-modal>
 
     <!-- 预览对话框 -->
-    <n-modal v-model:show="showPreviewDialog" :title="$t('interaction.preview.title') || '交互预览'">
+    <n-modal v-model:show="showPreviewDialog" :title="$t('interaction.preview.title')">
       <n-card style="width: 800px" :bordered="false" size="huge">
         <InteractionPreview
           :interactions="localInteractionConfigs"
@@ -433,70 +447,70 @@ const showAdvancedOptions = ref(false) // 控制高级选项显示
 const hasInteractions = computed(() => localInteractionConfigs.value.length > 0)
 
 // 🔥 4个核心触发事件（简化后）
-const coreEventOptions = ref([
-  { label: '点击', value: 'click' },
-  { label: '悬停', value: 'hover' },
-  { label: '显示时/隐藏时', value: 'visibility' },
-  { label: '属性改变时', value: 'dataChange' }
+const coreEventOptions = computed(() => [
+  { label: t('interaction.events.click'), value: 'click' },
+  { label: t('interaction.events.hover'), value: 'hover' },
+  { label: t('interaction.events.visibility'), value: 'visibility' },
+  { label: t('interaction.events.dataChange'), value: 'dataChange' }
 ])
 
 // 保留原有选项用于向后兼容
-const eventTypeOptions = ref([
-  { label: '点击', value: 'click' },
-  { label: '悬停', value: 'hover' },
-  { label: '聚焦', value: 'focus' },
-  { label: '失焦', value: 'blur' },
-  { label: '数据变化', value: 'dataChange' },
-  { label: '条件触发', value: 'conditional' },
-  { label: '跨组件', value: 'crossComponent' },
-  { label: '自定义', value: 'custom' }
+const eventTypeOptions = computed(() => [
+  { label: t('interaction.events.click'), value: 'click' },
+  { label: t('interaction.events.hover'), value: 'hover' },
+  { label: t('interaction.events.focus'), value: 'focus' },
+  { label: t('interaction.events.blur'), value: 'blur' },
+  { label: t('interaction.events.dataChange'), value: 'dataChange' },
+  { label: t('interaction.events.conditional'), value: 'conditional' },
+  { label: t('interaction.events.crossComponent'), value: 'crossComponent' },
+  { label: t('interaction.events.custom'), value: 'custom' }
 ])
 
 // 🔥 4个核心动作（用户要求简化）
-const coreActionOptions = ref([
-  { label: '跳转到URL', value: 'navigateToUrl', category: 'navigation' },
-  { label: '修改可见性', value: 'changeVisibility', category: 'visibility' },
-  { label: '修改组件属性', value: 'updateComponentData', category: 'property' },
-  { label: '目标组件动效', value: 'triggerAnimation', category: 'animation' }
+const coreActionOptions = computed(() => [
+  { label: t('interaction.actions.navigateToUrl'), value: 'navigateToUrl', category: 'navigation' },
+  { label: t('interaction.actions.changeVisibility'), value: 'changeVisibility', category: 'visibility' },
+  { label: t('interaction.actions.updateComponentData'), value: 'updateComponentData', category: 'property' },
+  { label: t('interaction.actions.triggerAnimation'), value: 'triggerAnimation', category: 'animation' }
 ])
 
 // 保留完整选项用于向后兼容
-const actionTypeOptions = ref([
-  { label: '改变背景颜色', value: 'changeBackgroundColor' },
-  { label: '改变文字颜色', value: 'changeTextColor' },
-  { label: '改变边框颜色', value: 'changeBorderColor' },
-  { label: '改变大小', value: 'changeSize' },
-  { label: '改变透明度', value: 'changeOpacity' },
-  { label: '改变变换', value: 'changeTransform' },
-  { label: '改变可见性', value: 'changeVisibility' },
-  { label: '改变内容', value: 'changeContent' },
-  { label: '触发动画', value: 'triggerAnimation' },
-  { label: '跳转到URL', value: 'navigateToUrl' },
-  { label: '修改组件数据', value: 'updateComponentData' },
-  { label: '闪烁颜色', value: 'flashColor' },
-  { label: '条件样式', value: 'conditionalStyle' },
-  { label: '调用函数', value: 'callFunction' },
-  { label: '自定义动作', value: 'custom' }
+const actionTypeOptions = computed(() => [
+  { label: t('interaction.actions.changeBackgroundColor'), value: 'changeBackgroundColor' },
+  { label: t('interaction.actions.changeTextColor'), value: 'changeTextColor' },
+  { label: t('interaction.actions.changeBorderColor'), value: 'changeBorderColor' },
+  { label: t('interaction.actions.changeSize'), value: 'changeSize' },
+  { label: t('interaction.actions.changeOpacity'), value: 'changeOpacity' },
+  { label: t('interaction.actions.changeTransform'), value: 'changeTransform' },
+  { label: t('interaction.actions.changeVisibility'), value: 'changeVisibility' },
+  { label: t('interaction.actions.changeContent'), value: 'changeContent' },
+  { label: t('interaction.actions.triggerAnimation'), value: 'triggerAnimation' },
+  { label: t('interaction.actions.navigateToUrl'), value: 'navigateToUrl' },
+  { label: t('interaction.actions.updateComponentData'), value: 'updateComponentData' },
+  { label: t('interaction.actions.flashColor'), value: 'flashColor' },
+  { label: t('interaction.actions.conditionalStyle'), value: 'conditionalStyle' },
+  { label: t('interaction.actions.callFunction'), value: 'callFunction' },
+  { label: t('interaction.actions.custom'), value: 'custom' }
 ])
 
 // 条件类型选项
-const conditionTypeOptions = ref([
-  { label: '比较条件', value: 'comparison' },
-  { label: '范围条件', value: 'range' },
-  { label: '表达式', value: 'expression' }
+const conditionTypeOptions = computed(() => [
+  { label: t('interaction.conditions.comparison'), value: 'comparison' },
+  { label: t('interaction.conditions.range'), value: 'range' },
+  { label: t('interaction.conditions.expression'), value: 'expression' }
 ])
 
 // 比较运算符选项
-const comparisonOperatorOptions = ref([
-  { label: '等于', value: 'equals' },
-  { label: '不等于', value: 'notEquals' },
-  { label: '大于', value: 'greaterThan' },
-  { label: '大于等于', value: 'greaterThanOrEqual' },
-  { label: '小于', value: 'lessThan' },
-  { label: '小于等于', value: 'lessThanOrEqual' },
-  { label: '包含', value: 'contains' },
-  { label: '开头是', value: 'startsWith' },
-  { label: '结尾是', value: 'endsWith' }
+const comparisonOperatorOptions = computed(() => [
+  { label: t('interaction.operators.equals'), value: 'equals' },
+  { label: t('interaction.operators.notEquals'), value: 'notEquals' },
+  { label: t('interaction.operators.greaterThan'), value: 'greaterThan' },
+  { label: t('interaction.operators.greaterThanOrEqual'), value: 'greaterThanOrEqual' },
+  { label: t('interaction.operators.lessThan'), value: 'lessThan' },
+  { label: t('interaction.operators.lessThanOrEqual'), value: 'lessThanOrEqual' },
+  { label: t('interaction.operators.contains'), value: 'contains' },
+  { label: t('interaction.operators.startsWith'), value: 'startsWith' },
+  { label: t('interaction.operators.endsWith'), value: 'endsWith' }
 ])
 
 // 🔥 动态获取可用组件选项
@@ -592,15 +606,15 @@ const getEventTagType = (event: InteractionEventType) => {
 // 获取事件显示名称（支持新的核心事件）
 const getEventDisplayName = (event: InteractionEventType) => {
   const nameMap = {
-    click: '点击',
-    hover: '悬停',
-    focus: '聚焦',
-    blur: '失焦',
-    visibility: '显示时/隐藏时', // 新增
-    dataChange: '属性改变时', // 更新显示名称
-    conditional: '条件触发',
-    crossComponent: '跨组件',
-    custom: '自定义'
+    click: t('interaction.events.click'),
+    hover: t('interaction.events.hover'),
+    focus: t('interaction.events.focus'),
+    blur: t('interaction.events.blur'),
+    visibility: t('interaction.events.visibility'), // 新增
+    dataChange: t('interaction.events.dataChange'), // 更新显示名称
+    conditional: t('interaction.events.conditional'),
+    crossComponent: t('interaction.events.crossComponent'),
+    custom: t('interaction.events.custom')
   }
   return nameMap[event] || event
 }
@@ -608,21 +622,21 @@ const getEventDisplayName = (event: InteractionEventType) => {
 // 获取动作显示名称
 const getActionDisplayName = (action: InteractionActionType) => {
   const nameMap = {
-    changeBackgroundColor: '背景颜色',
-    changeTextColor: '文字颜色',
-    changeBorderColor: '边框颜色',
-    changeSize: '尺寸',
-    changeOpacity: '透明度',
-    changeTransform: '变换',
-    changeVisibility: '可见性',
-    changeContent: '内容',
-    triggerAnimation: '动画',
-    navigateToUrl: '跳转URL',
-    updateComponentData: '更新数据',
-    flashColor: '闪烁颜色',
-    conditionalStyle: '条件样式',
-    callFunction: '调用函数',
-    custom: '自定义'
+    changeBackgroundColor: t('interaction.actions.changeBackgroundColor'),
+    changeTextColor: t('interaction.actions.changeTextColor'),
+    changeBorderColor: t('interaction.actions.changeBorderColor'),
+    changeSize: t('interaction.actions.changeSize'),
+    changeOpacity: t('interaction.actions.changeOpacity'),
+    changeTransform: t('interaction.actions.changeTransform'),
+    changeVisibility: t('interaction.actions.changeVisibility'),
+    changeContent: t('interaction.actions.changeContent'),
+    triggerAnimation: t('interaction.actions.triggerAnimation'),
+    navigateToUrl: t('interaction.actions.navigateToUrl'),
+    updateComponentData: t('interaction.actions.updateComponentData'),
+    flashColor: t('interaction.actions.flashColor'),
+    conditionalStyle: t('interaction.actions.conditionalStyle'),
+    callFunction: t('interaction.actions.callFunction'),
+    custom: t('interaction.actions.custom')
   }
   return nameMap[action] || action
 }
@@ -630,12 +644,12 @@ const getActionDisplayName = (action: InteractionActionType) => {
 // 获取交互动作选项
 const getInteractionActionOptions = (index: number) => [
   {
-    label: '复制配置',
+    label: t('interaction.settings.copyConfig'),
     key: 'copy',
     icon: CopyOutline
   },
   {
-    label: '复制为模板',
+    label: t('interaction.settings.copyAsTemplate'),
     key: 'duplicate',
     icon: DocumentOutline
   },
@@ -643,7 +657,7 @@ const getInteractionActionOptions = (index: number) => [
     type: 'divider'
   },
   {
-    label: '高级设置',
+    label: t('interaction.settings.advancedSettings'),
     key: 'advanced',
     icon: SettingsOutline
   },
@@ -651,7 +665,7 @@ const getInteractionActionOptions = (index: number) => [
     type: 'divider'
   },
   {
-    label: '删除配置',
+    label: t('interaction.settings.deleteConfig'),
     key: 'delete',
     icon: TrashOutline
   }
@@ -792,7 +806,7 @@ const addInteractionConfig = () => {
     responses: [],
     enabled: true,
     priority: 1,
-    name: `交互配置 ${localInteractionConfigs.value.length + 1}`
+    name: `${t('interaction.title')} ${localInteractionConfigs.value.length + 1}`
   }
 
   // 只有 dataChange 事件才初始化条件
@@ -877,43 +891,43 @@ const copyInteractionConfig = (index: number) => {
   const config = localInteractionConfigs.value[index]
   const copiedConfig: InteractionConfig = {
     ...config,
-    name: `${config.name} (副本)`,
+    name: `${config.name} (${t('interaction.settings.configCopy')})`,
     responses: config.responses.map(r => ({ ...r }))
   }
 
   localInteractionConfigs.value.splice(index + 1, 0, copiedConfig)
   handleInteractionChange()
-  message.success('交互配置已复制')
+  message.success(t('interaction.messages.configCopied'))
 }
 
 // 复制为模板
 const duplicateInteractionConfig = (index: number) => {
   // TODO: 实现保存为模板功能
-  message.info('模板功能开发中...')
+  message.info(t('interaction.settings.templateDevelopment'))
 }
 
 // 打开高级设置
 const openAdvancedSettings = (index: number) => {
   // TODO: 实现高级设置对话框
-  message.info('高级设置功能开发中...')
+  message.info(t('interaction.settings.advancedDevelopment'))
 }
 
 // 删除交互配置
 const deleteInteractionConfig = (index: number) => {
   localInteractionConfigs.value.splice(index, 1)
   handleInteractionChange()
-  message.success('交互配置已删除')
+  message.success(t('interaction.messages.configDeleted'))
 }
 
 // 应用模板
 const applyTemplate = (template: InteractionConfig) => {
   localInteractionConfigs.value.push({
     ...template,
-    name: `${template.name} (来自模板)`
+    name: `${template.name} (${t('interaction.settings.templateFromTemplate')})`
   })
   handleInteractionChange()
   showTemplateDialog.value = false
-  message.success('模板已应用')
+  message.success(t('interaction.messages.templateApplied'))
 }
 
 // 预览交互
@@ -927,20 +941,46 @@ const validateInteractions = () => {
 
   localInteractionConfigs.value.forEach((config, index) => {
     if (!config.event) {
-      errors.push(`交互配置 ${index + 1}: 缺少事件类型`)
+      errors.push(
+        t('interaction.settings.validationError', {
+          index: index + 1,
+          error: t('interaction.settings.validationMissingEvent')
+        })
+      )
     }
 
     if (config.responses.length === 0) {
-      errors.push(`交互配置 ${index + 1}: 缺少响应动作`)
+      errors.push(
+        t('interaction.settings.validationError', {
+          index: index + 1,
+          error: t('interaction.settings.validationMissingResponse')
+        })
+      )
     }
 
     config.responses.forEach((response, responseIndex) => {
       if (!response.action) {
-        errors.push(`交互配置 ${index + 1} 动作 ${responseIndex + 1}: 缺少动作类型`)
+        errors.push(
+          t('interaction.settings.validationError', {
+            index: index + 1,
+            error:
+              t('interaction.settings.actionCount', { index: responseIndex + 1 }) +
+              ': ' +
+              t('interaction.settings.validationMissingAction')
+          })
+        )
       }
 
       if (response.value === undefined || response.value === null) {
-        errors.push(`交互配置 ${index + 1} 动作 ${responseIndex + 1}: 缺少动作值`)
+        errors.push(
+          t('interaction.settings.validationError', {
+            index: index + 1,
+            error:
+              t('interaction.settings.actionCount', { index: responseIndex + 1 }) +
+              ': ' +
+              t('interaction.settings.validationMissingValue')
+          })
+        )
       }
     })
   })

@@ -1,15 +1,15 @@
 <template>
   <n-form size="small" label-placement="left" label-width="60">
-    <n-form-item label="内容">
+    <n-form-item :label="$t('visualEditor.content')">
       <n-input :value="properties.content" @update:value="updateProperty('content', $event)" />
     </n-form-item>
-    <n-form-item label="字号">
+    <n-form-item :label="$t('visualEditor.fontSizeProperty')">
       <n-input-number :value="properties.fontSize" @update:value="updateProperty('fontSize', $event)" />
     </n-form-item>
-    <n-form-item label="颜色">
+    <n-form-item :label="$t('visualEditor.colorProperty')">
       <n-input :value="properties.color" @update:value="updateProperty('color', $event)" />
     </n-form-item>
-    <n-form-item label="对齐">
+    <n-form-item :label="$t('visualEditor.alignProperty')">
       <n-select
         :value="properties.textAlign"
         :options="alignOptions"
@@ -20,6 +20,8 @@
 </template>
 
 <script setup lang="ts">
+import { $t } from '@/locales'
+
 interface Props {
   properties: {
     content: string
@@ -36,9 +38,9 @@ const emit = defineEmits<{
 }>()
 
 const alignOptions = [
-  { label: '左对齐', value: 'left' },
-  { label: '居中', value: 'center' },
-  { label: '右对齐', value: 'right' }
+  { label: $t('visualEditor.leftAlign'), value: 'left' },
+  { label: $t('visualEditor.centerAlign'), value: 'center' },
+  { label: $t('visualEditor.rightAlign'), value: 'right' }
 ]
 
 const updateProperty = (key: string, value: any) => {

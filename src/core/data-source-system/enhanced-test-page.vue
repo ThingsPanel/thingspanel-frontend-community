@@ -96,7 +96,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted, onUnmounted, computed } from 'vue'
 import { NButton, NSwitch, NInputNumber } from 'naive-ui'
-import DataSourceConfigForm from './components/data-source-config-form/DataSourceConfigForm.vue'
+import DataSourceConfigForm from './components/data-source-config-form/forms/DataSourceConfigForm.vue'
 import { simpleDataExecutor } from './core/simple-data-executor'
 import type { ModelValue, DataSource, ComponentData, SimpleDataSourceConfig } from './types'
 

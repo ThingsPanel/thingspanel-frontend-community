@@ -39,7 +39,15 @@
       "Bash(npx vue-tsc:*)",
       "Bash(git restore:*)",
       "Bash(git grep:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Read(/e:\\wbh\\things2\\thingspanel-frontend-community\\src\\core\\data-source-system\\types/**)",
+      "Bash(timeout 15 pnpm dev)",
+      "Bash(for:*)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)",
+      "Bash(timeout 10 pnpm dev)",
+      "Bash(move:*)",
+      "Bash(/bashes)"
     ],
     "deny": [],
     "additionalDirectories": [

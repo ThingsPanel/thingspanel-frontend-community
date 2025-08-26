@@ -42,7 +42,7 @@ const emit = defineEmits<Emits>()
 
 // 计算属性
 const saveButtonType = computed(() => (props.hasChanges ? 'primary' : 'default'))
-const saveButtonText = computed(() => (props.isSaving ? '保存中...' : $t('common.save')))
+const saveButtonText = computed(() => (props.isSaving ? $t('visualEditor.saving') : $t('common.save')))
 
 // 检查是否为Canvas渲染器
 const isCanvasRenderer = computed(() => props.currentRenderer === 'canvas')
@@ -81,7 +81,7 @@ const handleCenterView = () => emit('center-view')
             {{ saveButtonText }}
           </NButton>
         </template>
-        <span v-if="isCanvasRenderer">Canvas功能开发中，暂不支持保存</span>
+        <span v-if="isCanvasRenderer">{{ $t('visualEditor.canvasNotReady') }}</span>
         <span v-else>{{ $t('common.save') }} (Ctrl+S)</span>
       </NTooltip>
 
@@ -121,7 +121,7 @@ const handleCenterView = () => emit('center-view')
             </template>
           </NButton>
         </template>
-        <span>缩小 (Ctrl+-)</span>
+        <span>{{ $t('visualEditor.zoomOut') }} (Ctrl+-)</span>
       </NTooltip>
 
       <NTooltip trigger="hover">
@@ -132,7 +132,7 @@ const handleCenterView = () => emit('center-view')
             </template>
           </NButton>
         </template>
-        <span>重置缩放 (Ctrl+0)</span>
+        <span>{{ $t('visualEditor.resetZoom') }} (Ctrl+0)</span>
       </NTooltip>
 
       <NTooltip trigger="hover">
@@ -143,7 +143,7 @@ const handleCenterView = () => emit('center-view')
             </template>
           </NButton>
         </template>
-        <span>放大 (Ctrl++)</span>
+        <span>{{ $t('visualEditor.zoomIn') }} (Ctrl++)</span>
       </NTooltip>
 
       <NDivider vertical />
@@ -157,7 +157,7 @@ const handleCenterView = () => emit('center-view')
             </template>
           </NButton>
         </template>
-        <span>适应内容</span>
+        <span>{{ $t('visualEditor.fitContent') }}</span>
       </NTooltip>
 
       <NTooltip trigger="hover">
@@ -168,7 +168,7 @@ const handleCenterView = () => emit('center-view')
             </template>
           </NButton>
         </template>
-        <span>居中显示</span>
+        <span>{{ $t('visualEditor.centerDisplay') }}</span>
       </NTooltip>
 
       <NDivider vertical />
@@ -180,10 +180,10 @@ const handleCenterView = () => emit('center-view')
             <template #icon>
               <SvgIcon icon="material-symbols:refresh" />
             </template>
-            重置
+            {{ $t('visualEditor.reset') }}
           </NButton>
         </template>
-        <span>重置到初始状态</span>
+        <span>{{ $t('visualEditor.resetToInitial') }}</span>
       </NTooltip>
     </NSpace>
   </div>

@@ -2,7 +2,7 @@
  * 数据源配置系统类型定义
  */
 
-import type { DataSourceSystemConfig, TriggerConfig, ProcessorConfig, MappingConfig } from '../executor/types'
+import type { ComponentDataSourceConfig as DataSourceSystemConfig, TriggerConfiguration, DataProcessor } from '../types'
 
 /**
  * 配置验证结果
