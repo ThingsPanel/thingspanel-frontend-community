@@ -56,6 +56,9 @@ export {
   batchConvertConfigs
 } from '../ConfigToSimpleDataAdapter'
 
+// Visual Editor 桥接器
+export { visualEditorBridge, VisualEditorBridge } from '../VisualEditorBridge'
+
 /**
  * 数据架构设计原则：
  * 

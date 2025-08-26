@@ -257,7 +257,7 @@ const executeProcessing = async () => {
     console.log('✅ [FinalDataProcessing] 执行完成，结果:', result)
     console.log('✅ [FinalDataProcessing] 结果类型:', typeof result)
     
-    // 🔥 关键修复：将执行结果通过 ComponentExecutorManager 传递给组件
+    // 🔥 关键修复：将执行结果通过事件系统传递给组件
     try {
       console.log('🔄 [FinalDataProcessing] 准备通过事件发出执行结果')
       

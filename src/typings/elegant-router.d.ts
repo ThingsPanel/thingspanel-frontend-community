@@ -108,6 +108,7 @@ declare module "@elegant-router/types" {
     "system-management-user_system-log": "/system-management-user/system-log";
     "test": "/test";
     "test_http-config-test": "/test/http-config-test";
+    "test_phase2-validation": "/test/phase2-validation";
     "test_websocket-data-input-test": "/test/websocket-data-input-test";
     "ultra-kanban": "/ultra-kanban";
     "ultra-kanban_index": "/ultra-kanban/index";
@@ -264,6 +265,7 @@ declare module "@elegant-router/types" {
     | "rule-engine"
     | "system-management-user_system-log"
     | "test_http-config-test"
+    | "test_phase2-validation"
     | "test_websocket-data-input-test"
     | "ultra-kanban_index"
     | "ultra-kanban_kanban-details"

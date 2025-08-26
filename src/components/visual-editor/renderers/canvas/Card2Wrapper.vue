@@ -38,8 +38,8 @@ import { NAlert } from 'naive-ui'
 import { $t } from '@/locales'
 import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import type { DataSourceValue } from '../../types/data-source'
-// 🔥 新增：导入组件执行器管理器和配置管理器
-import { componentExecutorManager } from '@/core/data-source-system/managers/ComponentExecutorManager'
+// 🔥 新增：导入新架构的数据桥接器和配置管理器
+import { visualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
 import { configurationManager } from '@/components/visual-editor/configuration/ConfigurationManager'
 // 🔥 导入通用数据源映射器
 import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
@@ -73,7 +73,7 @@ const componentToRender = shallowRef<Component | null>(null)
 const dataSourceValue = ref<DataSourceValue | null>(null)
 let currentSubscriberId: (() => void) | null = null
 
-// 🔥 新增：从ComponentExecutorManager获取的执行数据
+// 🔥 新增：从VisualEditorBridge获取的执行数据
 const executorData = ref<Record<string, any>>({})
 let executorDataCleanup: (() => void) | null = null
 
@@ -505,8 +505,8 @@ onMounted(async () => {
   console.log('🔍 [Card2Wrapper] 最终获取的配置:', props.nodeId, savedConfig)
 
   // 🔥 修复时序问题：先注册回调，再执行更新
-  // 监听ComponentExecutorManager的数据更新
-  executorDataCleanup = componentExecutorManager.onDataUpdate((componentId, data) => {
+  // 监听VisualEditorBridge的数据更新
+  executorDataCleanup = visualEditorBridge.onDataUpdate((componentId, data) => {
     if (componentId === props.nodeId) {
       console.log('🔥 [Card2Wrapper] 接收到执行器数据更新:', componentId, data)
       console.log('🔥 [Card2Wrapper] 接收到的data完整结构:', JSON.stringify(data, null, 2))
@@ -539,7 +539,7 @@ onMounted(async () => {
     console.log('🔍 [Card2Wrapper] 配置详细信息:', JSON.stringify(savedConfig.dataSource.config, null, 2))
 
     try {
-      const result = await componentExecutorManager.updateComponentExecutor(
+      const result = await visualEditorBridge.updateComponentExecutor(
         props.nodeId,
         props.componentType,
         savedConfig.dataSource.config
@@ -560,7 +560,7 @@ onMounted(async () => {
       if (newConfig?.dataSource?.config) {
         console.log('🔥 [Card2Wrapper] 配置变化包含数据源配置，立即更新执行器')
 
-        componentExecutorManager
+        visualEditorBridge
           .updateComponentExecutor(props.nodeId, props.componentType, newConfig.dataSource.config)
           .then(result => {
             console.log('✅ [Card2Wrapper] 配置变化后执行器更新成功:', result)

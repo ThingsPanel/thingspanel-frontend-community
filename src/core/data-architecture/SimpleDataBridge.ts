@@ -264,3 +264,15 @@ export const simpleDataBridge = new SimpleDataBridge()
 export function createSimpleDataBridge(): SimpleDataBridge {
   return new SimpleDataBridge()
 }
+
+/**
+ * 开发环境自动验证
+ * 在控制台输出 Phase 2 架构状态信息
+ */
+if (import.meta.env.DEV) {
+  setTimeout(() => {
+    console.log('🚀 [Phase2] SimpleDataBridge 已加载')
+    console.log('📊 [Phase2] 架构统计:', simpleDataBridge.getStats())
+    console.log('💡 [Phase2] 验证方法: 访问菜单 → 测试 → 编辑器集成测试')
+  }, 2000)
+}

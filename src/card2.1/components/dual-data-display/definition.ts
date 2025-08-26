@@ -78,7 +78,7 @@ const dualDataDisplayDefinition: ComponentDefinition = {
   // 支持的数据源类型
   supportedDataSources: ['static', 'api', 'websocket'],
 
-  // 🔥 数据源需求声明 - 与ComponentExecutorManager兼容的格式
+  // 🔥 数据源需求声明 - 与新数据架构兼容的格式
   dataSources: {
     dataSource1: {
       type: 'object',

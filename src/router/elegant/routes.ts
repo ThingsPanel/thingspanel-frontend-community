@@ -827,6 +827,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'test_phase2-validation',
+        path: '/test/phase2-validation',
+        component: 'view.test_phase2-validation',
+        meta: {
+          title: 'test_phase2-validation',
+          i18nKey: 'route.test_phase2-validation'
+        }
+      },
+      {
         name: 'test_websocket-data-input-test',
         path: '/test/websocket-data-input-test',
         component: 'view.test_websocket-data-input-test',

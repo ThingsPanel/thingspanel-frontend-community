@@ -82,6 +82,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "rule-engine": () => import("@/views/rule-engine/index.vue"),
   "system-management-user_system-log": () => import("@/views/system-management-user/system-log/index.vue"),
   "test_http-config-test": () => import("@/views/test/http-config-test/index.vue"),
+  "test_phase2-validation": () => import("@/views/test/phase2-validation/index.vue"),
   "test_websocket-data-input-test": () => import("@/views/test/websocket-data-input-test/index.vue"),
   "ultra-kanban_index": () => import("@/views/ultra-kanban/index/index.vue"),
   "ultra-kanban_kanban-details": () => import("@/views/ultra-kanban/kanban-details/index.vue"),
