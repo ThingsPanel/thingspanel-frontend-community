@@ -5,7 +5,7 @@
 
 // 🎯 首先导入单例实例（避免引用错误）
 import { simpleConfigGenerator } from './core/simple-config-generator'
-import { simpleDataExecutor } from './core/simple-data-executor'
+// 注意：simple-data-executor 已被 UnifiedDataExecutor 替代
 import { componentDataAdapter } from './adapters/component-data-adapter'
 import { dataSourceIntegration, dataSourceAPI } from './adapters/integration-service'
 import {
@@ -21,7 +21,8 @@ import { enhancedConfigManager } from './config/EnhancedConfigManager'
 // 🎯 核心组件导出（简化的两个核心组件）
 export { SimpleConfigGenerator, simpleConfigGenerator } from './core/simple-config-generator'
 
-export { SimpleDataExecutor, simpleDataExecutor } from './core/simple-data-executor'
+// 注意：SimpleDataExecutor 已被 UnifiedDataExecutor 替代，请使用新的统一执行器
+// export { SimpleDataExecutor, simpleDataExecutor } from './core/simple-data-executor'
 
 // 🏗️ 统一类型定义导出
 export * from './types'
@@ -71,7 +72,7 @@ export * from './config/types'
 export const dataSourceSystem = {
   // 核心组件
   configGenerator: simpleConfigGenerator,
-  dataExecutor: simpleDataExecutor,
+  // 注意：dataExecutor 已被 UnifiedDataExecutor 替代
 
   // 适配器
   adapter: componentDataAdapter,

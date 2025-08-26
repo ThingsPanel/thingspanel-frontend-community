@@ -47,7 +47,8 @@
       "Bash(done)",
       "Bash(timeout 10 pnpm dev)",
       "Bash(move:*)",
-      "Bash(/bashes)"
+      "Bash(/bashes)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "additionalDirectories": [

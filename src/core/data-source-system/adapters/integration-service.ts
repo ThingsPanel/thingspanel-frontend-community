@@ -13,7 +13,8 @@ import type {
 } from '../types/simple-types'
 
 import { SimpleConfigGenerator } from '../core/simple-config-generator'
-import { SimpleDataExecutor } from '../core/simple-data-executor'
+// 注意：SimpleDataExecutor 已被 UnifiedDataExecutor 替代
+// import { SimpleDataExecutor } from '../core/simple-data-executor'
 import { componentDataAdapter } from './component-data-adapter'
 
 /**
@@ -47,13 +48,13 @@ interface IntegrationServiceConfig {
  */
 export class DataSourceIntegrationService {
   private configGenerator: SimpleConfigGenerator
-  private dataExecutor: SimpleDataExecutor
+  // private dataExecutor: SimpleDataExecutor - 已被 UnifiedDataExecutor 替代
   private componentBindings = new Map<string, ComponentBinding>()
   private config: IntegrationServiceConfig
 
   constructor(config: Partial<IntegrationServiceConfig> = {}) {
     this.configGenerator = new SimpleConfigGenerator()
-    this.dataExecutor = new SimpleDataExecutor()
+    // this.dataExecutor = new SimpleDataExecutor() - 已被 UnifiedDataExecutor 替代
 
     this.config = {
       enableAutoCleanup: true,

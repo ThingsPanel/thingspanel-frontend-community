@@ -1,8 +1,6 @@
 /**
  * 配置管理器
  * 负责管理所有组件的配置数据，提供配置的CRUD操作和事件监听
- * 
- * Task 1.2 重构：集成配置事件总线，实现解耦架构
  */
 import { reactive, ref, computed } from 'vue'
 
@@ -17,9 +15,6 @@ import type {
   DataSourceConfiguration,
   InteractionConfiguration
 } from './types'
-
-// 🆕 Task 1.2: 导入配置事件总线
-import { configEventBus, type ConfigChangeEvent } from '@/core/data-architecture/ConfigEventBus'
 
 /**
  * 默认配置工厂
@@ -56,10 +51,6 @@ export class ConfigurationManager implements IConfigurationManager {
 
   // 配置变化监听器
   private listeners = new Map<string, Set<(config: WidgetConfiguration) => void>>()
-
-  // 🆕 Task 1.2: 配置变更上下文跟踪
-  private lastUpdatedSection: keyof WidgetConfiguration = 'component'
-  private previousConfigs = new Map<string, WidgetConfiguration>()
 
   // 配置预设
   private presets = ref<ConfigurationPreset[]>([])
@@ -131,10 +122,6 @@ export class ConfigurationManager implements IConfigurationManager {
       this.initializeConfiguration(widgetId)
       return this.updateConfiguration(widgetId, section, config)
     }
-
-    // 🆕 Task 1.2: 保存变更前的配置状态
-    this.previousConfigs.set(widgetId, this.deepClone(currentConfig))
-    this.lastUpdatedSection = section
 
     // 深度合并配置
     const currentSectionValue = currentConfig[section]
@@ -451,10 +438,8 @@ export class ConfigurationManager implements IConfigurationManager {
 
   /**
    * 通知监听器
-   * Task 1.2 重构：集成事件总线，实现新旧架构并存
    */
   private notifyListeners(widgetId: string, config: WidgetConfiguration): void {
-    // 1. 原有监听器通知（向后兼容）
     const listeners = this.listeners.get(widgetId)
     if (listeners) {
       listeners.forEach(callback => {
@@ -465,71 +450,6 @@ export class ConfigurationManager implements IConfigurationManager {
         }
       })
     }
-
-    // 2. 🆕 Task 1.2: 发送到事件总线（新架构）
-    this.emitToEventBus(widgetId, config)
-  }
-
-  /**
-   * 🆕 Task 1.2: 向事件总线发送配置变更事件
-   */
-  private emitToEventBus(widgetId: string, config: WidgetConfiguration): void {
-    try {
-      const previousConfig = this.previousConfigs.get(widgetId)
-      
-      const event: ConfigChangeEvent = {
-        componentId: widgetId,
-        componentType: '', // 这里无法获取组件类型，由监听器负责过滤
-        section: this.lastUpdatedSection,
-        oldConfig: previousConfig,
-        newConfig: config,
-        timestamp: Date.now(),
-        source: 'user', // 默认为用户触发
-        context: {
-          triggerComponent: 'ConfigurationManager',
-          shouldTriggerExecution: true,
-          changedFields: this.getChangedFields(previousConfig, config)
-        }
-      }
-
-      console.log('[ConfigurationManager] 向事件总线发送配置变更事件:', {
-        componentId: widgetId,
-        section: this.lastUpdatedSection,
-        timestamp: new Date(event.timestamp).toISOString()
-      })
-
-      // 异步发送事件，避免阻塞当前流程
-      configEventBus.emitConfigChange(event).catch(error => {
-        console.error('[ConfigurationManager] 事件总线发送失败:', error)
-      })
-    } catch (error) {
-      console.error('[ConfigurationManager] 事件总线集成失败:', error)
-    }
-  }
-
-  /**
-   * 🆕 Task 1.2: 获取变更的字段列表
-   */
-  private getChangedFields(oldConfig: WidgetConfiguration | undefined, newConfig: WidgetConfiguration): string[] {
-    if (!oldConfig) return []
-    
-    const changedFields: string[] = []
-    
-    // 检查各个配置层级的变更
-    if (JSON.stringify(oldConfig.base) !== JSON.stringify(newConfig.base)) {
-      changedFields.push('base')
-    }
-    if (JSON.stringify(oldConfig.component) !== JSON.stringify(newConfig.component)) {
-      changedFields.push('component')
-    }
-    if (JSON.stringify(oldConfig.dataSource) !== JSON.stringify(newConfig.dataSource)) {
-      changedFields.push('dataSource')
-    }
-    if (JSON.stringify(oldConfig.interaction) !== JSON.stringify(newConfig.interaction)) {
-      changedFields.push('interaction')
-    }
-    
-    return changedFields
   }
 
   /**

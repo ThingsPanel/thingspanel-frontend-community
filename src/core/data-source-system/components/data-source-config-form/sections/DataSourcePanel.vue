@@ -22,12 +22,20 @@
               <n-icon class="section-icon"><ServerOutline /></n-icon>
               数据项管理
             </h4>
-            <n-button type="primary" size="small" @click="openAddDataModal">
-              <template #icon>
-                <n-icon><AddOutline /></n-icon>
-              </template>
-              添加数据项
-            </n-button>
+            <n-space>
+              <n-button type="success" size="small" @click="generateTestData">
+                <template #icon>
+                  <n-icon><CodeOutline /></n-icon>
+                </template>
+                生成测试数据
+              </n-button>
+              <n-button type="primary" size="small" @click="openAddDataModal">
+                <template #icon>
+                  <n-icon><AddOutline /></n-icon>
+                </template>
+                添加数据项
+              </n-button>
+            </n-space>
           </n-space>
         </div>
         
@@ -155,6 +163,50 @@ const viewDataItem = (index: number) => {
 const editDataItem = (index: number) => {
   // TODO: 实现编辑功能  
   console.log('编辑数据项:', index)
+}
+
+/**
+ * 生成测试数据 - 创建静态测试数据
+ */
+const generateTestData = () => {
+  console.log('🧪 [DataSourcePanel] 生成静态测试数据 for:', props.dataSourceKey)
+  
+  // 生成JSON类型测试数据项
+  const testDataItem = {
+    name: `${props.dataSourceKey}_JSON测试数据`,
+    type: 'json',
+    config: {
+      jsonContent: JSON.stringify({
+        sensor: props.dataSourceKey,
+        temperature: Math.round(20 + Math.random() * 20),
+        humidity: Math.round(40 + Math.random() * 40),
+        pressure: Math.round(1000 + Math.random() * 50),
+        status: 'normal',
+        timestamp: new Date().toISOString(),
+        location: `测试区域-${props.dataSourceKey.slice(-1)}`,
+        phase2Test: true,
+        randomId: Math.random().toString(36).substring(2, 10)
+      }, null, 2)
+    },
+    enabled: true
+  }
+
+  // 更新配置，添加测试数据项
+  const currentRawDataList = props.dataSourceConfig.rawDataList || []
+  const updatedConfig = {
+    ...props.dataSourceConfig,
+    rawDataList: [...currentRawDataList, testDataItem],
+    // 使用简单的数组合并处理
+    finalProcessingType: 'concat-array'
+  }
+  
+  console.log('🚀 [DataSourcePanel] 静态测试配置已生成:', {
+    dataSourceKey: props.dataSourceKey,
+    testData: testDataItem.config.data,
+    rawDataListLength: updatedConfig.rawDataList.length
+  })
+  
+  emit('update:config', props.dataSourceKey, updatedConfig)
 }
 
 // ========== 数据更新方法 ==========

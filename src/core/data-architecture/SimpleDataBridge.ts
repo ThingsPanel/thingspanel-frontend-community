@@ -2,12 +2,25 @@
  * 简化数据桥接器 (SimpleDataBridge)
  * 替代复杂的ComponentExecutorManager，提供轻量级的配置→数据转换
  * 
+ * Task 2.1 重构：集成 UnifiedDataExecutor，移除重复的执行逻辑
+ * 
  * 设计原则：
  * 1. 职责单一：只做配置到数据的转换
  * 2. 无状态管理：不跟踪执行历史、统计信息
  * 3. 简单直接：移除企业级功能（轮询、连接池等）
  * 4. 事件驱动：通过回调函数与外部系统通信
+ * 5. 执行器委托：使用UnifiedDataExecutor进行实际数据获取
  */
+
+// 🆕 Task 2.1: 导入统一数据执行器
+import { unifiedDataExecutor, type UnifiedDataConfig, type UnifiedDataResult } from './UnifiedDataExecutor'
+
+// 🧪 Task 2.1: 导入测试文件以确保测试函数在开发环境中可用
+if (process.env.NODE_ENV === 'development') {
+  import('./UnifiedDataExecutor.test').catch(() => {
+    // 忽略导入错误，测试文件是可选的
+  })
+}
 
 /**
  * 简化的数据源配置
@@ -118,89 +131,63 @@ export class SimpleDataBridge {
 
   /**
    * 执行单个数据源
+   * Task 2.1 重构：使用 UnifiedDataExecutor 替代重复的执行逻辑
    * @param dataSource 数据源配置
    * @returns 数据结果
    */
   private async executeDataSource(dataSource: SimpleDataSourceConfig): Promise<any> {
+    // 转换配置格式到统一执行器格式
+    const unifiedConfig: UnifiedDataConfig = this.convertToUnifiedConfig(dataSource)
+    
+    console.log(`🔄 [SimpleDataBridge] 委托给统一执行器: ${dataSource.id} (${dataSource.type})`)
+    
+    // 使用统一执行器执行
+    const result: UnifiedDataResult = await unifiedDataExecutor.execute(unifiedConfig)
+    
+    if (result.success) {
+      console.log(`✅ [SimpleDataBridge] 统一执行器执行成功: ${dataSource.id}`)
+      return result.data
+    } else {
+      console.error(`❌ [SimpleDataBridge] 统一执行器执行失败: ${dataSource.id} - ${result.error}`)
+      throw new Error(result.error || '数据源执行失败')
+    }
+  }
+
+  /**
+   * 🆕 Task 2.1: 转换配置格式到统一执行器格式
+   * @param dataSource SimpleDataBridge 的数据源配置
+   * @returns UnifiedDataExecutor 的配置格式
+   */
+  private convertToUnifiedConfig(dataSource: SimpleDataSourceConfig): UnifiedDataConfig {
+    const baseConfig: UnifiedDataConfig = {
+      id: dataSource.id,
+      type: dataSource.type as any, // 类型映射
+      enabled: true,
+      config: { ...dataSource.config }
+    }
+
+    // 根据类型进行特殊处理
     switch (dataSource.type) {
       case 'static':
-        return this.executeStaticDataSource(dataSource)
-      
+        // 静态数据：直接使用 data 字段
+        break
+        
       case 'http':
-        return this.executeHttpDataSource(dataSource)
-      
+        // HTTP数据：确保有正确的字段映射
+        if (dataSource.config.method) {
+          baseConfig.config.method = dataSource.config.method.toUpperCase() as any
+        }
+        break
+        
       default:
-        throw new Error(`不支持的数据源类型: ${dataSource.type}`)
+        console.warn(`[SimpleDataBridge] 未知数据源类型: ${dataSource.type}，使用默认配置`)
     }
+
+    return baseConfig
   }
 
-  /**
-   * 执行静态数据源
-   * @param dataSource 数据源配置
-   * @returns 静态数据
-   */
-  private async executeStaticDataSource(dataSource: SimpleDataSourceConfig): Promise<any> {
-    let data = dataSource.config.data
-
-    // 如果是字符串，尝试解析为JSON
-    if (typeof data === 'string') {
-      try {
-        data = JSON.parse(data)
-      } catch {
-        // 解析失败，保持原字符串
-      }
-    }
-
-    return data
-  }
-
-  /**
-   * 执行HTTP数据源
-   * @param dataSource 数据源配置
-   * @returns HTTP响应数据
-   */
-  private async executeHttpDataSource(dataSource: SimpleDataSourceConfig): Promise<any> {
-    const config = dataSource.config
-    const url = config.url
-    const method = config.method || 'GET'
-    const headers = config.headers || {}
-    const timeout = config.timeout || 10000
-
-    if (!url) {
-      throw new Error('HTTP数据源缺少URL配置')
-    }
-
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
-
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...headers
-        },
-        signal: controller.signal
-      })
-
-      clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        throw new Error(`HTTP请求失败: ${response.status} ${response.statusText}`)
-      }
-
-      // 尝试解析JSON，失败则返回文本
-      try {
-        return await response.json()
-      } catch {
-        return await response.text()
-      }
-
-    } catch (error) {
-      clearTimeout(timeoutId)
-      throw error
-    }
-  }
+  // 🗑️ Task 2.1: 移除重复的执行器实现
+  // executeStaticDataSource 和 executeHttpDataSource 已由 UnifiedDataExecutor 统一处理
 
   /**
    * 通知数据更新

@@ -97,7 +97,7 @@
 import { ref, reactive, watch, onMounted, onUnmounted, computed } from 'vue'
 import { NButton, NSwitch, NInputNumber } from 'naive-ui'
 import DataSourceConfigForm from './components/data-source-config-form/forms/DataSourceConfigForm.vue'
-import { simpleDataExecutor } from './core/simple-data-executor'
+// import { simpleDataExecutor } from './core/simple-data-executor' - 已被 UnifiedDataExecutor 替代
 import type { ModelValue, DataSource, ComponentData, SimpleDataSourceConfig } from './types'
 
 // 执行器状态

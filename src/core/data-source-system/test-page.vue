@@ -49,7 +49,7 @@
 import { ref, reactive, watch } from 'vue'
 import { NButton } from 'naive-ui'
 import DataSourceConfigForm from './components/data-source-config-form/forms/DataSourceConfigForm.vue'
-import { simpleDataExecutor } from './core/simple-data-executor'
+// import { simpleDataExecutor } from './core/simple-data-executor' - 已被 UnifiedDataExecutor 替代
 import type { ModelValue, DataSource, ComponentData } from './types'
 
 // 测试用的数据源定义
