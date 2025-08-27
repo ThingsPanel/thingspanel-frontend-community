@@ -22,18 +22,18 @@ export interface DataSourceDefinition {
     params?: Record<string, any>
     body?: any
     timeout?: number
-    
+
     // 静态数据配置
     data?: any
-    
+
     // WebSocket配置
     wsUrl?: string
     reconnect?: boolean
-    
+
     // 脚本配置
     script?: string
     context?: Record<string, any>
-    
+
     [key: string]: any
   }
   // 数据过滤路径（如JSONPath）
@@ -89,11 +89,14 @@ export interface ComponentDataState {
   /** 错误信息 */
   error?: string
   /** 数据源状态 */
-  dataSourceStates: Record<string, {
-    lastExecuted: number
-    success: boolean
-    error?: string
-  }>
+  dataSourceStates: Record<
+    string,
+    {
+      lastExecuted: number
+      success: boolean
+      error?: string
+    }
+  >
 }
 
 /**
@@ -114,7 +117,7 @@ export interface DataUpdateEvent {
  * 2. 管理数据缓存和更新策略
  * 3. 提供简单的数据转换功能
  * 4. 通知组件数据变更
- * 
+ *
  * 设计原则：
  * - 简单直接，不做复杂的状态管理
  * - 无轮询、无WebSocket连接池等重型功能

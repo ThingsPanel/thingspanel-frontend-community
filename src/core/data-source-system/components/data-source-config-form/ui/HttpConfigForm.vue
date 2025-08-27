@@ -349,7 +349,14 @@ import { InformationCircleOutline, TrashOutline, AddOutline } from '@vicons/ioni
 import type { FormInst, TagType } from 'naive-ui'
 
 // 导入数据源系统的类型
-import type { HttpConfiguration, HttpMethod, KeyValuePair, SystemApiItem, TestConnectionResponse, ValidationResult } from '../types'
+import type {
+  HttpConfiguration,
+  HttpMethod,
+  KeyValuePair,
+  SystemApiItem,
+  TestConnectionResponse,
+  ValidationResult
+} from '../types'
 import type { DynamicParam } from '@/core/data-source-system/types/dynamic-params'
 
 // 组件接口定义

@@ -1,0 +1,255 @@
+{
+  "componentId": "dashboard_weather_panel_001",
+  "version": "2.0.0",
+  "dataSources": [
+    {
+      "sourceId": "local_sensor_data",
+      "dataItems": [
+        {
+          "item": {
+            "type": "json",
+            "id": "sensor_data_json_001",
+            "config": {
+              "jsonData": "{\n  \"temperature\": 25.6,\n  \"humidity\": 68.3,\n  \"pressure\": 1013.25,\n  \"location\": {\n    \"building\": \"A座\",\n    \"floor\": 3,\n    \"room\": \"301\"\n  },\n  \"sensors\": [\n    {\n      \"id\": \"temp_001\",\n      \"status\": \"online\",\n      \"lastUpdate\": \"2024-01-15T10:30:00Z\"\n    },\n    {\n      \"id\": \"humi_001\",\n      \"status\": \"online\",\n      \"lastUpdate\": \"2024-01-15T10:30:00Z\"\n    }\n  ]\n}",
+              "validation": {
+                "enableFormat": true,
+                "enableStructure": true,
+                "schema": {
+                  "type": "object",
+                  "required": ["temperature", "humidity"],
+                  "properties": {
+                    "temperature": {
+                      "type": "number",
+                      "minimum": -50,
+                      "maximum": 100
+                    },
+                    "humidity": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  }
+                }
+              },
+              "preprocessing": {
+                "removeComments": true,
+                "formatOutput": false
+              }
+            },
+            "processing": {
+              "filterPath": "$.temperature",
+              "defaultValue": 0,
+              "transform": "number"
+            },
+            "metadata": {
+              "displayName": "传感器数据源",
+              "description": "办公楼A座3楼温湿度传感器数据",
+              "createdAt": 1705312200000,
+              "lastUpdated": 1705312200000,
+              "enabled": true,
+              "tags": ["温度", "湿度", "传感器", "A座"]
+            }
+          },
+          "processing": {
+            "filterPath": "$.temperature",
+            "defaultValue": 0,
+            "transform": "number"
+          }
+        }
+      ],
+      "mergeStrategy": {
+        "type": "object"
+      }
+    },
+    {
+      "sourceId": "external_weather_api",
+      "dataItems": [
+        {
+          "item": {
+            "type": "http",
+            "id": "weather_api_http_001",
+            "config": {
+              "url": "https://api.weather.com/v1/current?location={{location}}&units={{units}}",
+              "method": "GET",
+              "headers": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{apiToken}}",
+                  "enabled": true,
+                  "isDynamic": true,
+                  "dynamicName": "apiToken",
+                  "exampleValue": "Bearer your-api-token-here"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "enabled": true,
+                  "isDynamic": false
+                },
+                {
+                  "key": "User-Agent",
+                  "value": "ThingsPanel/1.0",
+                  "enabled": true,
+                  "isDynamic": false
+                },
+                {
+                  "key": "X-Debug-Mode",
+                  "value": "true",
+                  "enabled": false,
+                  "isDynamic": false
+                }
+              ],
+              "params": [
+                {
+                  "key": "location",
+                  "value": "Beijing",
+                  "enabled": true,
+                  "isDynamic": true,
+                  "dynamicName": "location",
+                  "exampleValue": "Shanghai"
+                },
+                {
+                  "key": "units",
+                  "value": "metric",
+                  "enabled": true,
+                  "isDynamic": true,
+                  "dynamicName": "units",
+                  "exampleValue": "imperial"
+                },
+                {
+                  "key": "lang",
+                  "value": "zh-CN",
+                  "enabled": true,
+                  "isDynamic": false
+                }
+              ],
+              "body": {
+                "type": "json",
+                "content": {
+                  "requestId": "{{requestId}}",
+                  "timestamp": "{{timestamp}}",
+                  "client": "thingspanel-frontend"
+                },
+                "contentType": "application/json"
+              },
+              "timeout": 10000,
+              "preRequestScript": "\n      // 预请求脚本示例\n      const timestamp = Date.now();\n      const requestId = 'req_' + timestamp + '_' + Math.random().toString(36).substr(2, 9);\n      \n      // 设置动态参数\n      setDynamicParam('timestamp', timestamp);\n      setDynamicParam('requestId', requestId);\n      \n      console.log('预请求脚本执行完成', { timestamp, requestId });\n    ",
+              "responseScript": "\n      // 响应后脚本示例\n      if (response.status === 200) {\n        const data = response.data;\n        console.log('API调用成功', data);\n        \n        // 提取关键数据\n        const weather = {\n          temperature: data.current?.temperature,\n          condition: data.current?.condition,\n          humidity: data.current?.humidity\n        };\n        \n        return weather;\n      } else {\n        console.error('API调用失败', response.status, response.statusText);\n        return null;\n      }\n    ",
+              "retry": {
+                "maxRetries": 3,
+                "retryDelay": 2000
+              }
+            },
+            "processing": {
+              "filterPath": "$.current",
+              "defaultValue": {},
+              "transform": "object"
+            },
+            "metadata": {
+              "displayName": "天气API数据源",
+              "description": "获取实时天气数据的HTTP接口",
+              "createdAt": 1705312200000,
+              "lastUpdated": 1705312800000,
+              "enabled": true,
+              "tags": ["天气", "API", "HTTP", "实时数据"]
+            }
+          },
+          "processing": {
+            "filterPath": "$.current.temperature",
+            "defaultValue": null,
+            "transform": "number"
+          }
+        }
+      ],
+      "mergeStrategy": {
+        "type": "object"
+      }
+    }
+  ],
+  "dynamicParams": [
+    {
+      "name": "apiToken",
+      "type": "string",
+      "currentValue": "your-api-token-here",
+      "exampleValue": "sk-1234567890abcdef",
+      "description": "天气API访问令牌",
+      "required": true,
+      "validation": {
+        "pattern": "^[a-zA-Z0-9\\-_]+$",
+        "min": 10,
+        "max": 100
+      }
+    },
+    {
+      "name": "location",
+      "type": "string",
+      "currentValue": "Beijing",
+      "exampleValue": "Shanghai",
+      "description": "查询天气的城市名称",
+      "required": true,
+      "validation": {
+        "enum": ["Beijing", "Shanghai", "Guangzhou", "Shenzhen", "Hangzhou"]
+      }
+    },
+    {
+      "name": "units",
+      "type": "string",
+      "currentValue": "metric",
+      "exampleValue": "imperial",
+      "description": "温度单位（摄氏度/华氏度）",
+      "required": false,
+      "validation": {
+        "enum": ["metric", "imperial", "kelvin"]
+      }
+    },
+    {
+      "name": "refreshInterval",
+      "type": "number",
+      "currentValue": 300000,
+      "exampleValue": 600000,
+      "description": "数据刷新间隔（毫秒）",
+      "required": false,
+      "validation": {
+        "min": 60000,
+        "max": 3600000
+      }
+    },
+    {
+      "name": "enableCache",
+      "type": "boolean",
+      "currentValue": true,
+      "exampleValue": false,
+      "description": "是否启用数据缓存",
+      "required": false
+    }
+  ],
+  "enhancedFeatures": {
+    "httpArrayFormat": true,
+    "dynamicParameterSupport": true,
+    "secureScriptExecution": true,
+    "configurationValidation": true,
+    "performanceMonitoring": true
+  },
+  "metadata": {
+    "name": "天气监控面板配置",
+    "description": "结合本地传感器和外部天气API的综合监控面板",
+    "author": "system-admin",
+    "versionHistory": [
+      {
+        "version": "1.0.0",
+        "timestamp": 1705225800000,
+        "changelog": "初始配置创建",
+        "author": "system-admin"
+      },
+      {
+        "version": "2.0.0",
+        "timestamp": 1705312200000,
+        "changelog": "升级到增强版配置格式，添加动态参数支持",
+        "author": "ConfigurationAdapter"
+      }
+    ],
+    "tags": ["天气", "传感器", "监控面板", "实时数据"]
+  },
+  "createdAt": 1705225800000,
+  "updatedAt": 1705312200000
+}

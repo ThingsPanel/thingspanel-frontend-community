@@ -128,9 +128,7 @@
             <n-space align="center" justify="space-between">
               <n-text depth="2" style="font-size: 12px">执行结果</n-text>
               <!-- 🔥 修复：禁用手动执行按钮，避免与统一执行流程冲突 -->
-              <n-button size="tiny" disabled :loading="isExecuting">
-                手动执行 (已禁用)
-              </n-button>
+              <n-button size="tiny" disabled :loading="isExecuting">手动执行 (已禁用)</n-button>
             </n-space>
           </template>
 
@@ -152,7 +150,7 @@
 
           <!-- 执行结果 -->
           <div v-else-if="executionResult !== null">
-            <n-alert type="success" :show-icon="false" style="margin-bottom: 8px;">
+            <n-alert type="success" :show-icon="false" style="margin-bottom: 8px">
               <template #icon><span>✅</span></template>
               执行成功，结果类型: {{ typeof executionResult }}
             </n-alert>
@@ -235,18 +233,18 @@ const executorConfig = computed(() => {
  */
 const executeProcessing = async () => {
   console.log('🚀 [FinalDataProcessing] executeProcessing 被调用')
-  
+
   if (isExecuting.value) {
     console.log('⏸️ [FinalDataProcessing] 已在执行中，跳过')
     return
   }
-  
+
   isExecuting.value = true
   executionError.value = ''
-  
+
   try {
     console.log('🔧 [FinalDataProcessing] 开始执行，配置:', executorConfig.value)
-    
+
     // 🆕 检查是否有实际的rawDataList，如果没有就生成测试数据
     let actualRawDataList = props.dataValue?.rawDataList || []
     if (actualRawDataList.length === 0) {
@@ -262,21 +260,23 @@ const executeProcessing = async () => {
         testMode: true,
         generatedBy: 'FinalDataProcessing'
       }
-      
-      actualRawDataList = [{
-        id: `${props.dataSourceKey}_test_json`,
-        name: `${props.dataSourceKey}_测试JSON数据`,
-        type: 'json',
-        data: testJsonData, // 🔥 DataSourceExecutor期望data字段，不是config.jsonContent
-        config: {
-          // 保留原有config结构以兼容其他地方的使用
-          jsonContent: JSON.stringify(testJsonData, null, 2)
-        },
-        enabled: true
-      }]
+
+      actualRawDataList = [
+        {
+          id: `${props.dataSourceKey}_test_json`,
+          name: `${props.dataSourceKey}_测试JSON数据`,
+          type: 'json',
+          data: testJsonData, // 🔥 DataSourceExecutor期望data字段，不是config.jsonContent
+          config: {
+            // 保留原有config结构以兼容其他地方的使用
+            jsonContent: JSON.stringify(testJsonData, null, 2)
+          },
+          enabled: true
+        }
+      ]
       console.log('✅ [FinalDataProcessing] 测试数据生成完成:', actualRawDataList)
     }
-    
+
     // 🆕 更新配置，使用实际的rawDataList
     const updatedConfig = {
       ...executorConfig.value,
@@ -285,28 +285,28 @@ const executeProcessing = async () => {
         rawDataList: actualRawDataList
       }
     }
-    
+
     console.log('🔧 [FinalDataProcessing] 使用更新后的配置:', updatedConfig)
-    
+
     // 加载配置到执行器
     executor.loadConfig(updatedConfig)
-    
+
     // 🔥 执行完整流程：先获取原始数据，再执行最终处理
     console.log('🚀 [FinalDataProcessing] 执行完整数据流程')
     const executorResult = await executor.executeAll()
-    
+
     // 获取最终结果
     const result = executor.getFinalResult()
-    
+
     executionResult.value = result
     console.log('✅ [FinalDataProcessing] 执行完成，结果:', result)
     console.log('✅ [FinalDataProcessing] 结果类型:', typeof result)
     console.log('✅ [FinalDataProcessing] 执行器状态:', executorResult)
-    
+
     // 🔥 关键修复：将执行结果通过事件系统传递给组件
     try {
       console.log('🔄 [FinalDataProcessing] 准备通过事件发出执行结果')
-      
+
       // 🆕 使用新的数据架构配置格式
       const dataSourceConfigWithResult = {
         rawDataList: actualRawDataList,
@@ -321,7 +321,7 @@ const executeProcessing = async () => {
           dataSourceKey: props.dataSourceKey
         }
       }
-      
+
       // 🔄 重构：发出执行结果事件，由父组件处理数据更新
       emit('execution-result', {
         dataSourceKey: props.dataSourceKey,
@@ -330,7 +330,7 @@ const executeProcessing = async () => {
         config: dataSourceConfigWithResult,
         action: 'final-processing-completed'
       })
-      
+
       console.log('✅ [FinalDataProcessing] 执行结果已通过事件发出')
     } catch (updateError) {
       console.warn('⚠️ [FinalDataProcessing] 组件数据更新失败:', updateError)
@@ -347,16 +347,16 @@ const executeProcessing = async () => {
 /**
  * 处理处理类型变化
  */
-const handleProcessingTypeChange = (value) => {
+const handleProcessingTypeChange = value => {
   emit('update:finalProcessingType', value)
   // 🔥 修复：移除自动执行，避免与ConfigurationPanel的执行冲突
   // executeProcessing() // 移除自动执行
 }
 
 /**
- * 处理脚本变化  
+ * 处理脚本变化
  */
-const handleScriptChange = (value) => {
+const handleScriptChange = value => {
   emit('update:finalProcessingScript', value)
   // 🔥 修复：移除自动执行，避免与ConfigurationPanel的执行冲突
   // executeProcessing() // 移除自动执行
@@ -365,15 +365,15 @@ const handleScriptChange = (value) => {
 /**
  * 格式化执行结果用于显示
  */
-const formatExecutionResult = (result) => {
+const formatExecutionResult = result => {
   if (result === null || result === undefined) {
     return 'null'
   }
-  
+
   if (typeof result === 'string') {
     return result
   }
-  
+
   try {
     return JSON.stringify(result, null, 2)
   } catch (error) {

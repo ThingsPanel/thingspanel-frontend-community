@@ -11,11 +11,7 @@ import type { ComponentDataRequirement, SimpleDataSourceConfig } from './SimpleD
  * @param config 原始配置对象
  * @returns 简化的组件数据需求
  */
-export function convertToSimpleDataRequirement(
-  componentId: string, 
-  config: any
-): ComponentDataRequirement | null {
-  
+export function convertToSimpleDataRequirement(componentId: string, config: any): ComponentDataRequirement | null {
   console.log(`🔄 [ConfigAdapter] 开始转换配置: ${componentId}`)
   console.log(`🔄 [ConfigAdapter] 原始配置:`, config)
 
@@ -35,7 +31,7 @@ export function convertToSimpleDataRequirement(
         try {
           // 解析rawData
           const parsedData = JSON.parse(binding.rawData)
-          
+
           dataSources.push({
             id: key,
             type: 'static',
@@ -60,7 +56,7 @@ export function convertToSimpleDataRequirement(
       if (binding && binding.rawData) {
         try {
           const parsedData = JSON.parse(binding.rawData)
-          
+
           dataSources.push({
             id: key,
             type: 'static',
@@ -79,14 +75,14 @@ export function convertToSimpleDataRequirement(
 
   // 处理简单对象格式
   if (
-    typeof config === 'object' && 
-    !Array.isArray(config) && 
-    !config.type && 
+    typeof config === 'object' &&
+    !Array.isArray(config) &&
+    !config.type &&
     !config.dataSourceBindings &&
     !config.config
   ) {
     console.log(`📋 [ConfigAdapter] 处理简单对象格式`)
-    
+
     dataSources.push({
       id: 'main',
       type: 'static',
@@ -126,12 +122,7 @@ export function shouldConvertConfig(config: any): boolean {
   }
 
   // 简单对象也可以转换
-  if (
-    !Array.isArray(config) && 
-    !config.type && 
-    !config.enabled &&
-    !config.metadata
-  ) {
+  if (!Array.isArray(config) && !config.type && !config.enabled && !config.metadata) {
     return true
   }
 
@@ -152,12 +143,9 @@ export function extractComponentType(config: any): string {
  * @param configs 配置映射 {componentId: config}
  * @returns 转换结果映射
  */
-export function batchConvertConfigs(
-  configs: Record<string, any>
-): Record<string, ComponentDataRequirement> {
-  
+export function batchConvertConfigs(configs: Record<string, any>): Record<string, ComponentDataRequirement> {
   const results: Record<string, ComponentDataRequirement> = {}
-  
+
   Object.entries(configs).forEach(([componentId, config]) => {
     if (shouldConvertConfig(config)) {
       const requirement = convertToSimpleDataRequirement(componentId, config)
@@ -166,7 +154,7 @@ export function batchConvertConfigs(
       }
     }
   })
-  
+
   console.log(`🎯 [ConfigAdapter] 批量转换完成，共 ${Object.keys(results).length} 个组件`)
   return results
 }

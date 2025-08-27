@@ -16,12 +16,9 @@
     </n-alert>
 
     <!-- 数据源折叠面板 -->
-    <n-collapse 
-      :default-expanded-names="defaultExpandedNames" 
-      class="data-source-collapse"
-    >
-      <n-collapse-item 
-        v-for="dataSourceOption in dataSourceOptions" 
+    <n-collapse :default-expanded-names="defaultExpandedNames" class="data-source-collapse">
+      <n-collapse-item
+        v-for="dataSourceOption in dataSourceOptions"
         :key="dataSourceOption.value"
         :title="dataSourceOption.label"
         :name="dataSourceOption.value"
@@ -132,11 +129,13 @@ const defaultExpandedNames = computed(() => {
  * 获取指定数据源的当前配置
  */
 const getCurrentDataSourceConfig = (dataSourceKey: string) => {
-  return props.modelValue?.[dataSourceKey] || {
-    rawDataList: [],
-    finalProcessingType: 'custom-script',
-    finalProcessingScript: ''
-  }
+  return (
+    props.modelValue?.[dataSourceKey] || {
+      rawDataList: [],
+      finalProcessingType: 'custom-script',
+      finalProcessingScript: ''
+    }
+  )
 }
 
 /**
@@ -145,10 +144,10 @@ const getCurrentDataSourceConfig = (dataSourceKey: string) => {
 const getDataSourceStatus = (dataSourceKey: string): 'success' | 'warning' | 'error' => {
   const config = props.modelValue?.[dataSourceKey]
   if (!config) return 'error'
-  
+
   const hasData = config.rawDataList && config.rawDataList.length > 0
   const hasProcessing = config.finalProcessingType && config.finalProcessingScript
-  
+
   if (hasData && hasProcessing) return 'success'
   if (hasData || hasProcessing) return 'warning'
   return 'error'
@@ -160,10 +159,14 @@ const getDataSourceStatus = (dataSourceKey: string): 'success' | 'warning' | 'er
 const getDataSourceStatusText = (dataSourceKey: string): string => {
   const status = getDataSourceStatus(dataSourceKey)
   switch (status) {
-    case 'success': return '已配置'
-    case 'warning': return '部分配置'
-    case 'error': return '未配置'
-    default: return '未知'
+    case 'success':
+      return '已配置'
+    case 'warning':
+      return '部分配置'
+    case 'error':
+      return '未配置'
+    default:
+      return '未知'
   }
 }
 

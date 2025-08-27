@@ -1,9 +1,9 @@
 /**
  * 简化数据桥接器 (SimpleDataBridge)
  * 替代复杂的ComponentExecutorManager，提供轻量级的配置→数据转换
- * 
+ *
  * Task 2.1 重构：集成 UnifiedDataExecutor，移除重复的执行逻辑
- * 
+ *
  * 设计原则：
  * 1. 职责单一：只做配置到数据的转换
  * 2. 无状态管理：不跟踪执行历史、统计信息
@@ -14,6 +14,9 @@
 
 // 🆕 Task 2.1: 导入统一数据执行器
 import { unifiedDataExecutor, type UnifiedDataConfig, type UnifiedDataResult } from './UnifiedDataExecutor'
+
+// 🆕 SUBTASK-003: 导入增强数据仓库
+import { dataWarehouse, type EnhancedDataWarehouse } from './DataWarehouse'
 
 // 🧪 Task 2.1: 测试文件导入已移除，避免自动调用外部接口
 // 如需测试，请手动在控制台调用: await import('./UnifiedDataExecutor.test')
@@ -35,7 +38,7 @@ export interface SimpleDataSourceConfig {
   config: {
     // 静态数据
     data?: any
-    // HTTP配置  
+    // HTTP配置
     url?: string
     method?: 'GET' | 'POST'
     headers?: Record<string, string>
@@ -81,8 +84,12 @@ export class SimpleDataBridge {
   /** 数据更新回调列表 */
   private callbacks = new Set<DataUpdateCallback>()
 
+  /** 数据仓库实例 */
+  private warehouse: EnhancedDataWarehouse = dataWarehouse
+
   /**
    * 执行组件数据获取
+   * 🆕 SUBTASK-003: 集成数据仓库缓存机制
    * @param requirement 组件数据需求
    * @returns 执行结果
    */
@@ -92,6 +99,18 @@ export class SimpleDataBridge {
     try {
       console.log(`🚀 [SimpleDataBridge] 开始执行组件数据获取: ${requirement.componentId}`)
 
+      // 🆕 先尝试从缓存获取数据
+      const cachedData = this.warehouse.getComponentData(requirement.componentId)
+      if (cachedData) {
+        console.log(`🎯 [SimpleDataBridge] 使用缓存数据: ${requirement.componentId}`)
+        this.notifyDataUpdate(requirement.componentId, cachedData)
+        return {
+          success: true,
+          data: cachedData,
+          timestamp: Date.now()
+        }
+      }
+
       const componentData: Record<string, any> = {}
 
       // 并行执行所有数据源
@@ -99,6 +118,10 @@ export class SimpleDataBridge {
         try {
           const result = await this.executeDataSource(dataSource)
           componentData[dataSource.id] = result
+
+          // 🆕 存储到数据仓库
+          this.warehouse.storeComponentData(requirement.componentId, dataSource.id, result, dataSource.type)
+
           console.log(`✅ [SimpleDataBridge] 数据源执行成功: ${dataSource.id}`)
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : String(error)
@@ -117,7 +140,6 @@ export class SimpleDataBridge {
         data: componentData,
         timestamp: Date.now()
       }
-
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error)
       console.error(`❌ [SimpleDataBridge] 组件执行失败: ${requirement.componentId} - ${errorMsg}`)
@@ -139,12 +161,12 @@ export class SimpleDataBridge {
   private async executeDataSource(dataSource: SimpleDataSourceConfig): Promise<any> {
     // 转换配置格式到统一执行器格式
     const unifiedConfig: UnifiedDataConfig = this.convertToUnifiedConfig(dataSource)
-    
+
     console.log(`🔄 [SimpleDataBridge] 委托给统一执行器: ${dataSource.id} (${dataSource.type})`)
-    
+
     // 使用统一执行器执行
     const result: UnifiedDataResult = await unifiedDataExecutor.execute(unifiedConfig)
-    
+
     if (result.success) {
       console.log(`✅ [SimpleDataBridge] 统一执行器执行成功: ${dataSource.id}`)
       return result.data
@@ -173,32 +195,32 @@ export class SimpleDataBridge {
       case 'static':
         // 静态数据：直接使用 data 字段
         break
-        
+
       case 'http':
         // HTTP数据：确保有正确的字段映射
         if (dataSource.config.method) {
           baseConfig.config.method = dataSource.config.method.toUpperCase() as any
         }
         break
-        
+
       case 'json':
         // JSON数据：确保 jsonContent 字段存在
         console.log(`🔍 [SimpleDataBridge] 处理JSON类型配置:`, dataSource.config)
         break
-        
+
       case 'websocket':
         // WebSocket数据：保持原有配置
         break
-        
+
       case 'file':
         // 文件数据：保持原有配置
         break
-        
+
       case 'data-source-bindings':
         // 数据源绑定：保持原有配置，UnifiedDataExecutor会处理复杂逻辑
         console.log(`🔍 [SimpleDataBridge] 处理data-source-bindings类型配置:`, dataSource.config)
         break
-        
+
       default:
         console.warn(`[SimpleDataBridge] 未知数据源类型: ${dataSource.type}，使用默认配置`)
     }
@@ -216,7 +238,7 @@ export class SimpleDataBridge {
    */
   private notifyDataUpdate(componentId: string, data: Record<string, any>): void {
     console.log(`📡 [SimpleDataBridge] 通知数据更新: ${componentId}`)
-    
+
     this.callbacks.forEach(callback => {
       try {
         callback(componentId, data)
@@ -242,20 +264,75 @@ export class SimpleDataBridge {
   }
 
   /**
+   * 🆕 SUBTASK-003: 获取组件数据（缓存接口）
+   * @param componentId 组件ID
+   * @returns 组件数据或null
+   */
+  getComponentData(componentId: string): Record<string, any> | null {
+    return this.warehouse.getComponentData(componentId)
+  }
+
+  /**
+   * 🆕 SUBTASK-003: 清除组件缓存
+   * @param componentId 组件ID
+   */
+  clearComponentCache(componentId: string): void {
+    this.warehouse.clearComponentCache(componentId)
+  }
+
+  /**
+   * 🆕 SUBTASK-003: 清除所有缓存
+   */
+  clearAllCache(): void {
+    this.warehouse.clearAllCache()
+  }
+
+  /**
+   * 🆕 SUBTASK-003: 设置缓存过期时间
+   * @param milliseconds 过期时间（毫秒）
+   */
+  setCacheExpiry(milliseconds: number): void {
+    this.warehouse.setCacheExpiry(milliseconds)
+  }
+
+  /**
+   * 🆕 SUBTASK-003: 获取数据仓库性能指标
+   */
+  getWarehouseMetrics() {
+    return this.warehouse.getPerformanceMetrics()
+  }
+
+  /**
+   * 🆕 SUBTASK-003: 获取存储统计信息
+   */
+  getStorageStats() {
+    return this.warehouse.getStorageStats()
+  }
+
+  /**
    * 获取简单统计信息
+   * 🆕 SUBTASK-003: 增强统计信息，包含数据仓库数据
    */
   getStats() {
+    const warehouseStats = this.warehouse.getStorageStats()
     return {
       activeCallbacks: this.callbacks.size,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      warehouse: {
+        totalComponents: warehouseStats.totalComponents,
+        totalDataSources: warehouseStats.totalDataSources,
+        memoryUsageMB: warehouseStats.memoryUsageMB
+      }
     }
   }
 
   /**
    * 清理资源
+   * 🆕 SUBTASK-003: 同时销毁数据仓库
    */
   destroy(): void {
     this.callbacks.clear()
+    this.warehouse.destroy()
     console.log('🧹 [SimpleDataBridge] 数据桥接器已销毁')
   }
 }

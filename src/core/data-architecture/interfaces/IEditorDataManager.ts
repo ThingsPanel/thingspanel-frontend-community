@@ -70,7 +70,7 @@ export interface IEditorDataManager {
   saveData(): Promise<EditorData>
 
   // --- 组件树管理 ---
-  
+
   /**
    * 添加组件
    */

@@ -5,18 +5,18 @@
 
 import type { Component } from 'vue'
 
-// 导入各层级配置组件
-// 现在从 renderers/base 目录导入，实现真正的分离架构
-import BaseConfigForm from '../renderers/base/BaseConfigForm.vue'
-import ComponentConfigForm from '../renderers/base/ComponentConfigForm.vue'
-// 导入新的卡片式交互配置组件（来自核心交互系统）
-import InteractionCardWizard from '@/core/interaction-system/components/InteractionCardWizard.vue'
-// 导入编辑器数据源配置组件
-// import DataSourceConfigForm from '@/core/data-source-system/components/DataSourceConfigForm.vue' // 旧版本 - 文件已删除
-import DataSourceConfigForm from '@/core/data-source-system/components/data-source-config-form/forms/DataSourceConfigForm.vue' // 完整重构版本 - 使用重构后的版本
-// import DataSourceConfigForm from '@/core/data-source-system/components/data-source-config-form/forms/DataSourceConfigFormSimple.vue' // 简化重构版本
+// 导入各层级配置组件 - 使用动态导入避免循环依赖
+import { defineAsyncComponent } from 'vue'
 
-console.log('🔍 [component-registry] 导入DataSourceConfigForm:', DataSourceConfigForm)
+// 动态导入组件避免循环依赖问题
+const BaseConfigForm = defineAsyncComponent(() => import('../renderers/base/BaseConfigForm.vue'))
+const ComponentConfigForm = defineAsyncComponent(() => import('../renderers/base/ComponentConfigForm.vue'))
+// 导入新的卡片式交互配置组件（来自核心交互系统）
+const InteractionCardWizard = defineAsyncComponent(() => import('@/core/interaction-system/components/InteractionCardWizard.vue'))
+// 导入简易配置编辑器 (SUBTASK-010)
+const SimpleConfigurationEditor = defineAsyncComponent(() => import('@/core/data-architecture/components/SimpleConfigurationEditor.vue'))
+
+console.log('🔍 [component-registry] 导入SimpleConfigurationEditor:', SimpleConfigurationEditor)
 
 export interface ConfigLayerDefinition {
   /** 配置层级名称 */
@@ -57,10 +57,10 @@ export const configLayerRegistry: Record<string, ConfigLayerDefinition> = {
   dataSource: {
     name: 'dataSource',
     label: 'config.tabs.dataSource',
-    component: DataSourceConfigForm,
+    component: SimpleConfigurationEditor,
     visible: true,
     order: 3,
-    description: '数据源配置（API、WebSocket、静态数据等数据源管理）'
+    description: '数据源配置（简易配置系统，支持JSON、HTTP、Script等数据源）'
   },
   interaction: {
     name: 'interaction',

@@ -75,14 +75,28 @@
 
           <!-- 数据源配置特殊处理 -->
           <template v-else-if="layer.name === 'dataSource'">
-            <div class="data-source-config" @click="console.log('🎯 数据源配置区域被点击!', { layer, activeTab: activeTab, selectedWidget: selectedWidget?.id })">
+            <div
+              class="data-source-config"
+              @click="
+                console.log('🎯 数据源配置区域被点击!', {
+                  layer,
+                  activeTab: activeTab,
+                  selectedWidget: selectedWidget?.id
+                })
+              "
+            >
               <!-- 调试信息 -->
-              <div style="color: red; font-size: 12px; margin-bottom: 10px;">
-                🔍 DEBUG: 数据源配置渲染中<br>
-                - activeTab: {{ activeTab }}<br>
-                - layer.name: {{ layer.name }}<br>
-                - selectedWidget: {{ selectedWidget?.id }}<br>
-                - componentDataSources: {{ componentDataSources ? Object.keys(componentDataSources) : 'null' }}<br>
+              <div style="color: red; font-size: 12px; margin-bottom: 10px">
+                🔍 DEBUG: 数据源配置渲染中
+                <br />
+                - activeTab: {{ activeTab }}
+                <br />
+                - layer.name: {{ layer.name }}
+                <br />
+                - selectedWidget: {{ selectedWidget?.id }}
+                <br />
+                - componentDataSources: {{ componentDataSources ? Object.keys(componentDataSources) : 'null' }}
+                <br />
                 - dataSourceConfig: {{ Object.keys(dataSourceConfig || {}) }}
               </div>
               <!-- 使用现有的数据源配置组件 -->

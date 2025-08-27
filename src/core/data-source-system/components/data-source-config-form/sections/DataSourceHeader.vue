@@ -23,16 +23,8 @@ function handleUpdate(value: string[]) {
 
 <template>
   <div class="data-source-header">
-    <NCollapse 
-      :default-expanded-names="[activeDataSourceKey]"
-      @update:expanded-names="handleUpdate"
-    >
-      <NCollapseItem 
-        v-for="option in dataSourceOptions" 
-        :key="option.value"
-        :name="option.value"
-        :title="option.label"
-      >
+    <NCollapse :default-expanded-names="[activeDataSourceKey]" @update:expanded-names="handleUpdate">
+      <NCollapseItem v-for="option in dataSourceOptions" :key="option.value" :name="option.value" :title="option.label">
         <template #header-extra>
           <NSpace align="center">
             <NTag v-if="option.type" type="success">
@@ -48,7 +40,7 @@ function handleUpdate(value: string[]) {
             </NTooltip>
           </NSpace>
         </template>
-        
+
         <div v-if="option.description">
           {{ option.description }}
         </div>

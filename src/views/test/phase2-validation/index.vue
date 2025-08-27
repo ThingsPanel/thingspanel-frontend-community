@@ -5,13 +5,10 @@
         <!-- 架构状态检查 -->
         <n-card title="1. 架构状态检查" embedded>
           <n-space vertical size="small">
-            <n-alert 
-              :type="architectureStatus.type" 
-              :title="architectureStatus.title"
-            >
+            <n-alert :type="architectureStatus.type" :title="architectureStatus.title">
               {{ architectureStatus.message }}
             </n-alert>
-            
+
             <n-descriptions :column="2" size="small">
               <n-descriptions-item label="VisualEditorBridge">
                 <n-tag :type="bridgeLoaded ? 'success' : 'error'">
@@ -31,27 +28,11 @@
         <n-card title="2. 数据执行测试" embedded>
           <n-space vertical>
             <n-space>
-              <n-button 
-                type="primary" 
-                @click="testStaticDataSource"
-                :loading="testing.static"
-              >
-                测试静态数据源
-              </n-button>
-              
-              <n-button 
-                type="info" 
-                @click="testHttpDataSource"
-                :loading="testing.http"
-              >
-                测试HTTP数据源
-              </n-button>
-              
-              <n-button 
-                type="warning" 
-                @click="testMultipleDataSources"
-                :loading="testing.multiple"
-              >
+              <n-button type="primary" :loading="testing.static" @click="testStaticDataSource">测试静态数据源</n-button>
+
+              <n-button type="info" :loading="testing.http" @click="testHttpDataSource">测试HTTP数据源</n-button>
+
+              <n-button type="warning" :loading="testing.multiple" @click="testMultipleDataSources">
                 测试多数据源
               </n-button>
             </n-space>
@@ -59,11 +40,7 @@
             <!-- 测试结果展示 -->
             <n-collapse>
               <n-collapse-item title="测试结果日志" name="logs">
-                <n-code 
-                  :code="testLogs" 
-                  language="json"
-                  style="max-height: 300px; overflow-y: auto;"
-                />
+                <n-code :code="testLogs" language="json" style="max-height: 300px; overflow-y: auto" />
               </n-collapse-item>
             </n-collapse>
           </n-space>
@@ -72,28 +49,12 @@
         <!-- 性能对比 -->
         <n-card title="3. 性能对比" embedded>
           <n-space vertical>
-            <n-button 
-              type="success" 
-              @click="runPerformanceTest"
-              :loading="performanceTesting"
-            >
-              运行性能测试
-            </n-button>
-            
-            <n-descriptions 
-              v-if="performanceResults"
-              :column="3" 
-              size="small"
-            >
-              <n-descriptions-item label="执行时间">
-                {{ performanceResults.executionTime }}ms
-              </n-descriptions-item>
-              <n-descriptions-item label="成功率">
-                {{ performanceResults.successRate }}%
-              </n-descriptions-item>
-              <n-descriptions-item label="平均延迟">
-                {{ performanceResults.averageLatency }}ms
-              </n-descriptions-item>
+            <n-button type="success" :loading="performanceTesting" @click="runPerformanceTest">运行性能测试</n-button>
+
+            <n-descriptions v-if="performanceResults" :column="3" size="small">
+              <n-descriptions-item label="执行时间">{{ performanceResults.executionTime }}ms</n-descriptions-item>
+              <n-descriptions-item label="成功率">{{ performanceResults.successRate }}%</n-descriptions-item>
+              <n-descriptions-item label="平均延迟">{{ performanceResults.averageLatency }}ms</n-descriptions-item>
             </n-descriptions>
           </n-space>
         </n-card>
@@ -113,10 +74,8 @@
                 </n-tag>
               </n-descriptions-item>
             </n-descriptions>
-            
-            <n-button @click="checkIntegrationStatus">
-              检查集成状态
-            </n-button>
+
+            <n-button @click="checkIntegrationStatus">检查集成状态</n-button>
           </n-space>
         </n-card>
       </n-space>
@@ -131,7 +90,18 @@
  */
 
 import { ref, reactive, onMounted, computed } from 'vue'
-import { NCard, NSpace, NAlert, NDescriptions, NDescriptionsItem, NTag, NButton, NCollapse, NCollapseItem, NCode } from 'naive-ui'
+import {
+  NCard,
+  NSpace,
+  NAlert,
+  NDescriptions,
+  NDescriptionsItem,
+  NTag,
+  NButton,
+  NCollapse,
+  NCollapseItem,
+  NCode
+} from 'naive-ui'
 
 // 数据状态
 const dataContext = reactive({
@@ -195,30 +165,26 @@ const addLog = (message: string, data?: any) => {
 const testStaticDataSource = async () => {
   testing.static = true
   addLog('🧪 开始测试静态数据源')
-  
+
   try {
     // 动态导入新架构
     const { visualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
-    
-    const result = await visualEditorBridge.updateComponentExecutor(
-      'test-static-component',
-      'dual-data-display',
-      {
-        dataSource1: {
-          type: 'static',
-          enabled: true,
-          config: {
-            data: {
-              temperature: 25.6,
-              humidity: 60,
-              location: 'Test Room',
-              timestamp: new Date().toISOString()
-            }
+
+    const result = await visualEditorBridge.updateComponentExecutor('test-static-component', 'dual-data-display', {
+      dataSource1: {
+        type: 'static',
+        enabled: true,
+        config: {
+          data: {
+            temperature: 25.6,
+            humidity: 60,
+            location: 'Test Room',
+            timestamp: new Date().toISOString()
           }
         }
       }
-    )
-    
+    })
+
     addLog('✅ 静态数据源测试成功', result)
     dataContext.testResults.push({ type: 'static', success: true, result })
   } catch (error) {
@@ -233,25 +199,21 @@ const testStaticDataSource = async () => {
 const testHttpDataSource = async () => {
   testing.http = true
   addLog('🌐 开始测试HTTP数据源')
-  
+
   try {
     const { visualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
-    
-    const result = await visualEditorBridge.updateComponentExecutor(
-      'test-http-component',
-      'dual-data-display',
-      {
-        dataSource1: {
-          type: 'http',
-          enabled: true,
-          config: {
-            url: 'https://jsonplaceholder.typicode.com/posts/1',
-            method: 'GET'
-          }
+
+    const result = await visualEditorBridge.updateComponentExecutor('test-http-component', 'dual-data-display', {
+      dataSource1: {
+        type: 'http',
+        enabled: true,
+        config: {
+          url: 'https://jsonplaceholder.typicode.com/posts/1',
+          method: 'GET'
         }
       }
-    )
-    
+    })
+
     addLog('✅ HTTP数据源测试成功', result)
     dataContext.testResults.push({ type: 'http', success: true, result })
   } catch (error) {
@@ -266,34 +228,30 @@ const testHttpDataSource = async () => {
 const testMultipleDataSources = async () => {
   testing.multiple = true
   addLog('🔗 开始测试多数据源')
-  
+
   try {
     const { visualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
-    
-    const result = await visualEditorBridge.updateComponentExecutor(
-      'test-multiple-component',
-      'triple-data-display',
-      {
-        dataSource1: {
-          type: 'static',
-          enabled: true,
-          config: { data: { sensor: 'A', value: 100 } }
-        },
-        dataSource2: {
-          type: 'static',
-          enabled: true,
-          config: { data: { sensor: 'B', value: 200 } }
-        },
-        dataSource3: {
-          type: 'script',
-          enabled: true,
-          config: {
-            script: 'return { computed: Math.random() * 1000, timestamp: Date.now() }'
-          }
+
+    const result = await visualEditorBridge.updateComponentExecutor('test-multiple-component', 'triple-data-display', {
+      dataSource1: {
+        type: 'static',
+        enabled: true,
+        config: { data: { sensor: 'A', value: 100 } }
+      },
+      dataSource2: {
+        type: 'static',
+        enabled: true,
+        config: { data: { sensor: 'B', value: 200 } }
+      },
+      dataSource3: {
+        type: 'script',
+        enabled: true,
+        config: {
+          script: 'return { computed: Math.random() * 1000, timestamp: Date.now() }'
         }
       }
-    )
-    
+    })
+
     addLog('✅ 多数据源测试成功', result)
     dataContext.testResults.push({ type: 'multiple', success: true, result })
   } catch (error) {
@@ -308,40 +266,36 @@ const testMultipleDataSources = async () => {
 const runPerformanceTest = async () => {
   performanceTesting.value = true
   addLog('⚡ 开始性能测试')
-  
+
   try {
     const { visualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
-    
+
     const testCases = [
       { id: 'perf-1', type: 'dual-data-display' },
       { id: 'perf-2', type: 'triple-data-display' },
       { id: 'perf-3', type: 'dual-data-display' }
     ]
-    
+
     const startTime = performance.now()
-    
-    const promises = testCases.map(testCase => 
-      visualEditorBridge.updateComponentExecutor(
-        testCase.id,
-        testCase.type,
-        {
-          dataSource1: {
-            type: 'static',
-            enabled: true,
-            config: { data: { test: Math.random() } }
-          }
+
+    const promises = testCases.map(testCase =>
+      visualEditorBridge.updateComponentExecutor(testCase.id, testCase.type, {
+        dataSource1: {
+          type: 'static',
+          enabled: true,
+          config: { data: { test: Math.random() } }
         }
-      )
+      })
     )
-    
+
     const results = await Promise.all(promises)
     const endTime = performance.now()
     const executionTime = Number((endTime - startTime).toFixed(2))
-    
+
     const successCount = results.filter(r => r.success).length
     const successRate = Number(((successCount / results.length) * 100).toFixed(1))
     const averageLatency = Number((executionTime / results.length).toFixed(2))
-    
+
     performanceResults.value = {
       executionTime,
       successRate,
@@ -349,7 +303,7 @@ const runPerformanceTest = async () => {
       totalTests: results.length,
       successCount
     }
-    
+
     addLog('⚡ 性能测试完成', performanceResults.value)
   } catch (error) {
     addLog('❌ 性能测试失败', error)
@@ -361,31 +315,31 @@ const runPerformanceTest = async () => {
 // 检查集成状态
 const checkIntegrationStatus = () => {
   addLog('🔍 检查集成状态')
-  
+
   // 检查 Card2Wrapper 是否使用新架构
   integrationStatus.card2Wrapper = true // 已经在修改中确认
-  
+
   // 检查配置面板状态
   integrationStatus.configPanel = true // Phase 1 中已处理
-  
+
   addLog('✅ 集成状态检查完成', integrationStatus)
 }
 
 // 初始化
 onMounted(async () => {
   addLog('🚀 初始化 Phase 2 验证页面')
-  
+
   try {
     // 检查新架构是否可用
     const { visualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
     const { simpleDataBridge } = await import('@/core/data-architecture/SimpleDataBridge')
-    
+
     bridgeLoaded.value = !!visualEditorBridge
     dataContext.simpleDataBridgeLoaded = !!simpleDataBridge
     dataContext.visualEditorBridgeLoaded = !!visualEditorBridge
-    
+
     addLog('✅ 新架构组件加载完成')
-    
+
     // 自动检查集成状态
     checkIntegrationStatus()
   } catch (error) {

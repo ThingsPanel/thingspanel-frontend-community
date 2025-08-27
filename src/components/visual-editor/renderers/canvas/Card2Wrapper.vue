@@ -490,31 +490,31 @@ function shouldTriggerExecutor(event: ConfigChangeEvent): boolean {
   if (event.componentId !== props.nodeId) {
     return false
   }
-  
+
   // 只处理数据源配置变更
   if (event.section !== 'dataSource') {
     return false
   }
-  
+
   // 检查是否有有效的数据源配置
   const dataSourceConfig = extractDataSourceConfig(event.newConfig?.dataSource)
   if (!dataSourceConfig) {
     console.log('⏸️ [Card2Wrapper] 无有效数据源配置，跳过执行器调用')
     return false
   }
-  
+
   // 检查上下文中的执行标志
   if (event.context?.shouldTriggerExecution === false) {
     console.log('⏸️ [Card2Wrapper] 上下文标记不需要执行，跳过执行器调用')
     return false
   }
-  
+
   // 避免无意义的重复执行
   if (event.source === 'system') {
     console.log('⏸️ [Card2Wrapper] 系统级别变更，跳过执行器调用')
     return false
   }
-  
+
   return true
 }
 
@@ -523,7 +523,7 @@ function shouldTriggerExecutor(event: ConfigChangeEvent): boolean {
  */
 function extractDataSourceConfig(dataSource: any): any {
   if (!dataSource) return null
-  
+
   if (dataSource.config) {
     // 旧格式：config 字段
     console.log('🔍 [Card2Wrapper] 使用 config 格式')
@@ -549,24 +549,20 @@ async function handleDataSourceChange(event: ConfigChangeEvent): Promise<void> {
     timestamp: new Date(event.timestamp).toISOString()
   })
   console.log('🔍 [Card2Wrapper] 事件详细内容:', JSON.stringify(event, null, 2))
-  
+
   // 条件性触发执行器
   if (!shouldTriggerExecutor(event)) {
     return
   }
-  
+
   const dataSourceConfig = extractDataSourceConfig(event.newConfig?.dataSource)
-  
+
   console.log('🔥 [Card2Wrapper] 检测到数据源配置变化:', dataSourceConfig)
   console.log('🔍 [Card2Wrapper] 配置详细信息:', JSON.stringify(dataSourceConfig, null, 2))
   console.log('🚀 [Card2Wrapper] 调用 VisualEditorBridge 更新执行器')
-  
+
   try {
-    const result = await visualEditorBridge.updateComponentExecutor(
-      props.nodeId, 
-      props.componentType, 
-      dataSourceConfig
-    )
+    const result = await visualEditorBridge.updateComponentExecutor(props.nodeId, props.componentType, dataSourceConfig)
     console.log('✅ [Card2Wrapper] VisualEditorBridge 更新成功:', result)
   } catch (error) {
     console.error('❌ [Card2Wrapper] VisualEditorBridge 更新失败:', error)

@@ -1,13 +1,13 @@
 /**
  * 配置事件总线
  * 用于解耦配置变更与执行器调用，实现松散耦合的事件驱动架构
- * 
+ *
  * 核心功能：
  * 1. 配置变更事件的统一分发
  * 2. 条件性事件过滤和处理
  * 3. 事件优先级和执行顺序控制
  * 4. 执行器调用的解耦和可控性
- * 
+ *
  * Created for Task 1.2: 解耦配置事件与执行器调用
  */
 
@@ -37,14 +37,14 @@ export interface ConfigChangeEvent {
   }
 }
 
-export type ConfigEventType = 
-  | 'config-changed'           // 任意配置变更
-  | 'data-source-changed'      // 数据源配置变更
-  | 'component-props-changed'  // 组件属性变更
-  | 'base-config-changed'      // 基础配置变更
-  | 'interaction-changed'      // 交互配置变更
-  | 'before-config-change'     // 配置变更前（可用于验证）
-  | 'after-config-change'      // 配置变更后（用于清理工作）
+export type ConfigEventType =
+  | 'config-changed' // 任意配置变更
+  | 'data-source-changed' // 数据源配置变更
+  | 'component-props-changed' // 组件属性变更
+  | 'base-config-changed' // 基础配置变更
+  | 'interaction-changed' // 交互配置变更
+  | 'before-config-change' // 配置变更前（可用于验证）
+  | 'after-config-change' // 配置变更后（用于清理工作）
 
 export type ConfigEventHandler = (event: ConfigChangeEvent) => void | Promise<void>
 
@@ -64,10 +64,10 @@ export interface ConfigEventFilter {
 export class ConfigEventBus {
   /** 事件处理器映射 */
   private eventHandlers = new Map<ConfigEventType, Set<ConfigEventHandler>>()
-  
+
   /** 全局事件过滤器列表 */
   private globalFilters: ConfigEventFilter[] = []
-  
+
   /** 事件处理统计（用于调试和性能分析） */
   private statistics = {
     eventsEmitted: 0,
@@ -86,12 +86,12 @@ export class ConfigEventBus {
     if (!this.eventHandlers.has(eventType)) {
       this.eventHandlers.set(eventType, new Set())
     }
-    
+
     const handlers = this.eventHandlers.get(eventType)!
     handlers.add(handler)
-    
+
     console.log(`[ConfigEventBus] 注册事件处理器: ${eventType}, 当前处理器数量: ${handlers.size}`)
-    
+
     // 返回取消注册的函数
     return () => {
       handlers.delete(handler)
@@ -108,7 +108,7 @@ export class ConfigEventBus {
    */
   async emitConfigChange(event: ConfigChangeEvent): Promise<void> {
     this.statistics.eventsEmitted++
-    
+
     console.log(`[ConfigEventBus] 发出配置变更事件:`, {
       componentId: event.componentId,
       section: event.section,
@@ -125,10 +125,10 @@ export class ConfigEventBus {
 
     // 确定要触发的事件类型
     const eventTypesToTrigger = this.determineEventTypes(event)
-    
+
     // 并行执行所有相关事件类型的处理器
     const handlerPromises: Promise<void>[] = []
-    
+
     for (const eventType of eventTypesToTrigger) {
       const handlers = this.eventHandlers.get(eventType)
       if (handlers) {
@@ -137,7 +137,7 @@ export class ConfigEventBus {
         }
       }
     }
-    
+
     // 等待所有处理器执行完成
     if (handlerPromises.length > 0) {
       try {
@@ -161,7 +161,7 @@ export class ConfigEventBus {
     } else {
       this.globalFilters.splice(insertIndex, 0, filter)
     }
-    
+
     console.log(`[ConfigEventBus] 添加全局过滤器: ${filter.name}, 优先级: ${filter.priority || 0}`)
   }
 
@@ -224,7 +224,7 @@ export class ConfigEventBus {
    */
   private determineEventTypes(event: ConfigChangeEvent): ConfigEventType[] {
     const eventTypes: ConfigEventType[] = ['config-changed'] // 总是触发通用事件
-    
+
     // 根据配置层级添加特定事件类型
     switch (event.section) {
       case 'dataSource':
@@ -240,7 +240,7 @@ export class ConfigEventBus {
         eventTypes.push('interaction-changed')
         break
     }
-    
+
     return eventTypes
   }
 
@@ -248,25 +248,25 @@ export class ConfigEventBus {
    * 安全地执行事件处理器
    */
   private async executeHandler(
-    handler: ConfigEventHandler, 
-    event: ConfigChangeEvent, 
+    handler: ConfigEventHandler,
+    event: ConfigChangeEvent,
     eventType: ConfigEventType
   ): Promise<void> {
     try {
       this.statistics.handlersExecuted++
-      
+
       const result = handler(event)
-      
+
       // 如果处理器返回Promise，等待执行完成
       if (result instanceof Promise) {
         await result
       }
-      
+
       console.log(`[ConfigEventBus] 处理器执行成功: ${eventType}`)
     } catch (error) {
       this.statistics.errors++
       console.error(`[ConfigEventBus] 处理器执行失败 (${eventType}):`, error)
-      
+
       // 不重新抛出错误，避免影响其他处理器的执行
     }
   }
@@ -278,7 +278,7 @@ export const configEventBus = new ConfigEventBus()
 // 添加一些默认的过滤器
 configEventBus.addEventFilter({
   name: 'ignore-system-updates',
-  condition: (event) => {
+  condition: event => {
     // 忽略某些系统级别的配置更新，避免无限循环
     return event.source !== 'system' || event.context?.shouldTriggerExecution !== false
   },
@@ -287,7 +287,7 @@ configEventBus.addEventFilter({
 
 // 🔧 调试支持：将事件总线暴露到全局作用域，便于控制台调试
 if (typeof window !== 'undefined') {
-  (window as any).configEventBus = configEventBus
+  ;(window as any).configEventBus = configEventBus
   console.log('[ConfigEventBus] 事件总线已暴露到 window.configEventBus')
 }
 

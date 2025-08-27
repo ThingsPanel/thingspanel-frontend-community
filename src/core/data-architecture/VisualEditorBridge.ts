@@ -20,24 +20,20 @@ export class VisualEditorBridge {
    * @param componentType 组件类型
    * @param config 数据源配置
    */
-  async updateComponentExecutor(
-    componentId: string, 
-    componentType: string, 
-    config: any
-  ): Promise<DataResult> {
+  async updateComponentExecutor(componentId: string, componentType: string, config: any): Promise<DataResult> {
     console.log(`[VisualEditorBridge] 更新组件执行器: ${componentId}`, config)
 
     // 将旧配置格式转换为新的数据需求格式
     const requirement = this.convertConfigToRequirement(componentId, componentType, config)
-    
+
     // 使用 SimpleDataBridge 执行数据获取
     const result = await simpleDataBridge.executeComponent(requirement)
-    
+
     console.log(`[VisualEditorBridge] 执行结果:`, result)
-    
+
     // 通知数据更新回调
     this.notifyDataUpdate(componentId, result.data)
-    
+
     return result
   }
 
@@ -48,7 +44,7 @@ export class VisualEditorBridge {
   onDataUpdate(callback: (componentId: string, data: any) => void): () => void {
     const callbackId = Math.random().toString(36).substring(2, 15)
     this.dataUpdateCallbacks.set(callbackId, callback)
-    
+
     return () => {
       this.dataUpdateCallbacks.delete(callbackId)
     }
@@ -92,8 +88,8 @@ export class VisualEditorBridge {
    * @param config 配置对象
    */
   private convertConfigToRequirement(
-    componentId: string, 
-    componentType: string, 
+    componentId: string,
+    componentType: string,
     config: any
   ): ComponentDataRequirement {
     console.log(`[VisualEditorBridge] 配置转换:`, { componentId, componentType, config })
@@ -105,7 +101,7 @@ export class VisualEditorBridge {
       // 🆕 处理 rawDataList 结构（来自数据源配置表单）
       if (config.rawDataList && Array.isArray(config.rawDataList)) {
         console.log(`[VisualEditorBridge] 处理 rawDataList 结构:`, config.rawDataList)
-        
+
         config.rawDataList.forEach((item: any, index: number) => {
           if (item && item.type && item.enabled !== false) {
             console.log(`🔍 [VisualEditorBridge] 处理rawDataList项 ${index + 1}:`, item)
@@ -118,16 +114,16 @@ export class VisualEditorBridge {
             })
           }
         })
-        
+
         console.log(`[VisualEditorBridge] rawDataList 转换完成，共 ${dataSources.length} 个数据源`)
       }
-      
+
       // 处理多个数据源的情况（如 dataSource1, dataSource2, dataSource3）
       if (dataSources.length === 0) {
         for (const [key, value] of Object.entries(config)) {
           if (key.startsWith('dataSource') && value && typeof value === 'object') {
             const dataSourceConfig = value as any
-            
+
             if (dataSourceConfig.type && dataSourceConfig.enabled !== false) {
               dataSources.push({
                 id: key,

@@ -4,36 +4,31 @@
     <n-space align="center" justify="space-between" class="header-section">
       <n-space align="center" :size="8">
         <n-text strong>{{ $t('dataSource.rawData.title') }}</n-text>
-        <n-badge 
+        <n-badge
           v-if="dataValue?.rawDataList?.length > 0"
-          :value="dataValue.rawDataList.length" 
+          :value="dataValue.rawDataList.length"
           type="info"
           :max="99"
         />
       </n-space>
-      
+
       <!-- 批量操作区 -->
-      <n-space :size="8" v-if="dataValue?.rawDataList?.length > 0">
-        <n-button 
-          size="small" 
-          quaternary 
-          type="info"
-          @click="handleSelectAll"
-        >
+      <n-space v-if="dataValue?.rawDataList?.length > 0" :size="8">
+        <n-button size="small" quaternary type="info" @click="handleSelectAll">
           {{ isAllSelected ? '取消全选' : '全选' }}
         </n-button>
-        <n-button 
-          size="small" 
-          quaternary 
+        <n-button
+          size="small"
+          quaternary
           type="warning"
           :disabled="selectedItems.length === 0"
           @click="handleBatchEdit"
         >
           批量编辑 ({{ selectedItems.length }})
         </n-button>
-        <n-button 
-          size="small" 
-          quaternary 
+        <n-button
+          size="small"
+          quaternary
           type="error"
           :disabled="selectedItems.length === 0"
           @click="handleBatchDelete"
@@ -45,9 +40,9 @@
 
     <n-space vertical :size="12" style="margin-top: 12px">
       <!-- 主要添加按钮 - 显著提升 -->
-      <n-button 
-        type="primary" 
-        size="medium" 
+      <n-button
+        type="primary"
+        size="medium"
         class="add-data-btn primary-add-btn"
         @click="emit('openAddRawDataModal', dataSourceKey)"
       >
@@ -63,28 +58,19 @@
       <n-space :size="8" class="quick-add-section">
         <n-text depth="3" style="font-size: 12px">快速添加:</n-text>
         <n-button-group size="small">
-          <n-button 
-            quaternary
-            @click="handleQuickAdd('json')"
-          >
+          <n-button quaternary @click="handleQuickAdd('json')">
             <template #icon>
               <n-icon><CodeOutline /></n-icon>
             </template>
             JSON数据
           </n-button>
-          <n-button 
-            quaternary
-            @click="handleQuickAdd('text')"
-          >
+          <n-button quaternary @click="handleQuickAdd('text')">
             <template #icon>
               <n-icon><DocumentTextOutline /></n-icon>
             </template>
             文本数据
           </n-button>
-          <n-button 
-            quaternary
-            @click="handleQuickAdd('number')"
-          >
+          <n-button quaternary @click="handleQuickAdd('number')">
             <template #icon>
               <n-icon><Calculator /></n-icon>
             </template>
@@ -97,20 +83,20 @@
       <div v-if="dataValue?.rawDataList?.length > 0" class="raw-data-list">
         <n-space vertical :size="8" style="margin-top: 8px">
           <n-card
-            v-for="rawDataItem in dataValue.rawDataList" 
-            :key="rawDataItem.id" 
+            v-for="rawDataItem in dataValue.rawDataList"
+            :key="rawDataItem.id"
             class="raw-data-item-card"
-            :class="{ 'selected': selectedItems.includes(rawDataItem.id) }"
+            :class="{ selected: selectedItems.includes(rawDataItem.id) }"
             size="small"
           >
             <n-space align="center" justify="space-between">
               <!-- 左侧：选择框和信息 -->
               <n-space align="center" :size="12">
-                <n-checkbox 
+                <n-checkbox
                   :checked="selectedItems.includes(rawDataItem.id)"
                   @update:checked="handleItemSelect(rawDataItem.id, $event)"
                 />
-                
+
                 <div class="item-info">
                   <n-space align="center" :size="8">
                     <span class="raw-data-name">{{ rawDataItem.name }}</span>
@@ -118,17 +104,17 @@
                       {{ rawDataItem.type?.toUpperCase() || 'JSON' }}
                     </n-tag>
                   </n-space>
-                  
+
                   <!-- 数据预览 -->
-                  <n-text depth="3" style="font-size: 11px; margin-top: 2px" v-if="rawDataItem.description">
+                  <n-text v-if="rawDataItem.description" depth="3" style="font-size: 11px; margin-top: 2px">
                     {{ rawDataItem.description }}
                   </n-text>
-                  <n-text depth="3" style="font-size: 11px; margin-top: 2px" v-else-if="rawDataItem.value">
+                  <n-text v-else-if="rawDataItem.value" depth="3" style="font-size: 11px; margin-top: 2px">
                     {{ truncateText(String(rawDataItem.value), 50) }}
                   </n-text>
                 </div>
               </n-space>
-              
+
               <!-- 右侧：操作按钮 -->
               <n-space :size="6">
                 <n-button
@@ -169,20 +155,11 @@
           </n-card>
         </n-space>
       </div>
-      
+
       <!-- 空状态提示 -->
-      <n-empty 
-        v-else
-        size="small" 
-        :description="$t('dataSource.rawData.emptyState')"
-        style="margin: 24px 0;"
-      >
+      <n-empty v-else size="small" :description="$t('dataSource.rawData.emptyState')" style="margin: 24px 0">
         <template #extra>
-          <n-button 
-            size="small"
-            type="primary"
-            @click="emit('openAddRawDataModal', dataSourceKey)"
-          >
+          <n-button size="small" type="primary" @click="emit('openAddRawDataModal', dataSourceKey)">
             立即添加数据项
           </n-button>
         </template>
@@ -195,19 +172,8 @@
 import { defineProps, defineEmits, ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
-import { 
-  NText, 
-  NSpace, 
-  NButton, 
-  NIcon, 
-  NTag, 
-  NCard, 
-  NCheckbox, 
-  NBadge, 
-  NButtonGroup,
-  NEmpty
-} from 'naive-ui'
-import { 
+import { NText, NSpace, NButton, NIcon, NTag, NCard, NCheckbox, NBadge, NButtonGroup, NEmpty } from 'naive-ui'
+import {
   AddOutline,
   CodeOutline,
   DocumentTextOutline,
@@ -233,9 +199,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits([
-  'openAddRawDataModal', 
-  'viewRawDataDetail', 
-  'editRawData', 
+  'openAddRawDataModal',
+  'viewRawDataDetail',
+  'editRawData',
   'deleteRawData',
   'quickAddDataItem',
   'batchEditItems',
@@ -379,17 +345,17 @@ const handleBatchDelete = () => {
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .quick-add-section {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .raw-data-item-card {
     margin: 4px 0;
   }
-  
+
   .item-info {
     min-width: 0;
     overflow: hidden;
@@ -397,11 +363,11 @@ const handleBatchDelete = () => {
 }
 
 /* 主题适配 */
-[data-theme="dark"] .raw-data-item-card {
+[data-theme='dark'] .raw-data-item-card {
   background-color: var(--n-color-base-card);
 }
 
-[data-theme="dark"] .primary-add-btn {
+[data-theme='dark'] .primary-add-btn {
   box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
 }
 

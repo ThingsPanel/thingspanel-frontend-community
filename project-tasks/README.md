@@ -4,11 +4,29 @@
 
 确保开发任务规范化、防止跑偏、保证任务完成度，建立可追踪的任务执行机制。
 
+## 🚨 系统核心原则
+
+### 用户完全控制原则
+- **大任务制定**：用户制定大任务内容和目标
+- **拆解确认**：用户必须确认任务拆解方案才能执行
+- **执行授权**：每个小任务必须获得用户明确授权
+- **调整决策**：任务调整必须由用户决定和确认
+- **进度控制**：用户控制任务的暂停、继续和终止
+
+### Claude严格约束原则
+- **禁止自主执行**：未获用户授权不得执行任何任务
+- **禁止跳过确认**：不得跳过任何用户确认环节
+- **禁止范围扩展**：严格按小任务边界执行
+- **强制状态检查**：每次执行前必须检查授权状态
+- **必须等待指令**：完成任务后必须等待用户下一步指令
+
 ## 📁 目录结构
 
 ```
 project-tasks/
 ├── README.md                           # 本文件 - 任务管理规则和使用说明
+├── CLAUDE_EXECUTION_RULES.md           # ⭐️ Claude每次对话必读执行规则
+├── user-confirmation-templates.md     # 用户确认指令模板
 ├── 01-task-pool/                      # 任务池管理
 │   ├── pending-tasks.md               # 待处理任务列表
 │   ├── in-progress-tasks.md          # 进行中任务（同时只能有1个）
@@ -22,6 +40,7 @@ project-tasks/
 │   └── objective-switch-log.md       # 主线任务切换记录
 ├── 03-execution-control/             # 执行控制
 │   ├── current-subtask.md           # 当前正在执行的小任务
+│   ├── user-approval-status.md      # ⭐️ 用户授权状态管理
 │   ├── subtask-completion-log.md    # 小任务完成记录
 │   └── execution-rules.md           # 执行规则说明
 ├── 04-completed-tasks/               # 已完成任务归档
@@ -35,7 +54,7 @@ project-tasks/
 │   └── interruption-log.md          # 中断记录（防止忘记主线）
 └── 06-workflow-rules/                # 工作流程规则
     ├── task-entry-rules.md          # 任务准入规则
-    ├── task-breakdown-rules.md      # 任务拆解规则
+    ├── task-breakdown-rules.md      # 任务拆解规则（已更新用户确认机制）
     ├── single-task-execution.md     # 单任务执行原则
     ├── priority-guidelines.md       # 优先级指导
     ├── completion-criteria.md       # 完成标准
@@ -63,16 +82,32 @@ project-tasks/
 - **严格按规则执行**：不得偏离规则文档要求
 - **规则优先级最高**：规则文档 > 个人判断
 
-## 🔄 标准执行流程
+## 🔄 新的标准执行流程（用户控制）
 
 ```
-1. 确定大任务 → current-main-objective.md
-2. 拆解小任务 → active-breakdown.md
-3. 选择1个小任务 → current-subtask.md
-4. 执行完成 → subtask-completion-log.md
-5. 停止，等待下一个小任务指令
-6. 所有小任务完成 → 归档到completed-tasks/
+1. 用户制定大任务 → current-main-objective.md
+2. Claude拆解小任务 → active-breakdown.md
+3. 等待用户确认拆解方案 ⏸️
+4. 用户授权后开始第一个小任务 → current-subtask.md  
+5. Claude执行完成 → 创建详细完成记录
+6. Claude更新状态 → subtask-completion-log.md
+7. 等待用户确认继续下一个 ⏸️
+8. 重复步骤4-7直到所有小任务完成
+9. 大任务完成 → 归档到completed-tasks/
 ```
+
+### ⚠️ 关键控制节点
+- **节点1**：拆解完成后，Claude必须停止等待用户确认
+- **节点2**：每个小任务完成后，Claude必须创建详细完成记录
+- **节点3**：完成记录创建后，Claude必须停止等待用户指令  
+- **节点4**：发现需要调整大任务时，Claude必须停止等待用户决策
+
+### 📝 完成记录要求（新增）
+- **强制创建**：每个小任务完成后必须创建详细完成记录
+- **内容完整**：包含产出物清单、技术实现、问题记录、影响分析
+- **路径准确**：所有产出物路径必须准确可访问
+- **问题跟踪**：记录执行过程中遇到的所有问题和解决方案
+- **经验总结**：提供对后续任务有价值的经验和建议
 
 ## 🚨 重要约束
 

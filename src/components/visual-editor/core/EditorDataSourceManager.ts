@@ -496,12 +496,12 @@ export class EditorDataSourceManager {
     if (!dataSourceSystem.configGenerator) {
       throw new Error('数据源系统未正确初始化：configGenerator缺失')
     }
-    
+
     // 验证UnifiedDataExecutor是否可用
     if (!unifiedDataExecutor) {
       throw new Error('数据源系统未正确初始化：UnifiedDataExecutor缺失')
     }
-    
+
     console.log('✅ [EditorDataSourceManager] 数据源系统初始化验证通过')
   }
 
@@ -538,19 +538,23 @@ export class EditorDataSourceManager {
           }
         }
       }
-      
+
       // 🆕 处理新格式配置 (data-source-bindings)
       if (userConfig.type === 'data-source-bindings' && userInputs.length === 0) {
         console.log(`🔧 [EditorDataSourceManager] 处理新格式配置 (data-source-bindings):`, userConfig)
-        
+
         // 遍历 dataSource1, dataSource2, dataSource3 等字段
         for (const [key, value] of Object.entries(userConfig)) {
           if (key.startsWith('dataSource') && value && typeof value === 'object') {
             console.log(`🔍 [EditorDataSourceManager] 找到数据源: ${key}`, value)
             const dataSourceConfig = value as any
-            
+
             // 检查是否有有效的配置数据
-            if (dataSourceConfig.rawDataList && Array.isArray(dataSourceConfig.rawDataList) && dataSourceConfig.rawDataList.length > 0) {
+            if (
+              dataSourceConfig.rawDataList &&
+              Array.isArray(dataSourceConfig.rawDataList) &&
+              dataSourceConfig.rawDataList.length > 0
+            ) {
               const userInput: UserDataSourceInput = {
                 dataSourceId: key,
                 type: 'data-source-bindings',
@@ -744,7 +748,7 @@ export class EditorDataSourceManager {
    */
   private async fallbackToVisualEditorBridge(componentId: string): Promise<void> {
     console.log(`🔄 [EditorDataSourceManager] 使用 VisualEditorBridge 备用方案: ${componentId}`)
-    
+
     const config = this.componentConfigs.get(componentId)
     if (!config) {
       console.warn(`⚠️ [EditorDataSourceManager] 组件配置不存在: ${componentId}`)
@@ -754,7 +758,7 @@ export class EditorDataSourceManager {
     try {
       // 需要导入 VisualEditorBridge
       const { visualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
-      
+
       // 🔥 修复：使用原始配置而不是转换后的标准配置
       const componentType = config.componentType
       const dataSourceConfig = config.originalConfig || config.config // 优先使用原始配置
@@ -767,23 +771,18 @@ export class EditorDataSourceManager {
       })
 
       // 调用 VisualEditorBridge 更新组件执行器
-      const result = await visualEditorBridge.updateComponentExecutor(
-        componentId,
-        componentType,
-        dataSourceConfig
-      )
+      const result = await visualEditorBridge.updateComponentExecutor(componentId, componentType, dataSourceConfig)
 
       console.log(`✅ [EditorDataSourceManager] VisualEditorBridge 备用方案执行成功: ${componentId}`, result)
-      
+
       // 更新统计
       this.updateExecutionStats(true, 0)
-
     } catch (error) {
       console.error(`❌ [EditorDataSourceManager] VisualEditorBridge 备用方案执行失败: ${componentId}`, error)
-      
+
       // 更新统计
       this.updateExecutionStats(false, 0)
-      
+
       throw error
     }
   }

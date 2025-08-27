@@ -2,13 +2,7 @@
   添加数据项弹窗 - 只保留简单UI
 -->
 <template>
-  <n-modal
-    v-model:show="visible"
-    title="添加数据项"
-    preset="card"
-    :closable="true"
-    style="width: 600px;"
-  >
+  <n-modal v-model:show="visible" title="添加数据项" preset="card" :closable="true" style="width: 600px">
     <!-- 简单表单UI -->
     <n-space vertical :size="16">
       <n-form-item label="数据项名称">
@@ -16,7 +10,7 @@
       </n-form-item>
 
       <n-form-item label="数据类型">
-        <n-select 
+        <n-select
           :options="[
             { label: '字符串', value: 'string' },
             { label: '数字', value: 'number' },
@@ -27,19 +21,11 @@
       </n-form-item>
 
       <n-form-item label="数据值">
-        <n-input 
-          type="textarea" 
-          :rows="4" 
-          placeholder="请输入数据值" 
-        />
+        <n-input type="textarea" :rows="4" placeholder="请输入数据值" />
       </n-form-item>
 
       <n-form-item label="描述">
-        <n-input 
-          type="textarea" 
-          :rows="2" 
-          placeholder="请输入描述（可选）" 
-        />
+        <n-input type="textarea" :rows="2" placeholder="请输入描述（可选）" />
       </n-form-item>
     </n-space>
 

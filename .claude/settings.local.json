@@ -49,7 +49,9 @@
       "Bash(move:*)",
       "Bash(/bashes)",
       "Bash(git mv:*)",
-      "Bash(start data-flow-test.html)"
+      "Bash(start data-flow-test.html)",
+      "Bash(npx tsx:*)",
+      "Bash(npm run lint)"
     ],
     "deny": [],
     "additionalDirectories": [

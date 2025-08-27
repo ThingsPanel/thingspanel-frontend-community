@@ -1,9 +1,9 @@
 /**
  * 数据源配置表单系统 - 统一导出文件
- * 
+ *
  * 重构后的目录结构：
  * ├── forms/        - 表单组件
- * ├── modals/       - 弹窗组件  
+ * ├── modals/       - 弹窗组件
  * ├── sections/     - 业务区块组件
  * ├── ui/           - 基础UI组件
  * ├── composables/  - 业务逻辑
@@ -54,27 +54,27 @@ export type {
   // HTTP配置相关
   HttpConfiguration,
   HttpMethod,
-  
+
   // WebSocket配置相关
   WebSocketConfigData,
-  
+
   // 原始数据相关
   RawDataItem,
   RawDataType,
-  
+
   // 弹窗相关
   ModalType,
   ModalConfig,
-  
+
   // 表单接口
   DataSourceFormData,
   ValidationResult,
-  
+
   // 事件类型
   ConfigChangeEvent,
   TestConnectionEvent,
   RawDataEvent,
-  
+
   // 通用类型
   KeyValuePair,
   TestConnectionResponse,
@@ -98,7 +98,7 @@ export const DataSourceConfigFormInfo = {
   ],
   components: {
     forms: 2,
-    modals: 3, 
+    modals: 3,
     sections: 3,
     ui: 8,
     composables: 5,

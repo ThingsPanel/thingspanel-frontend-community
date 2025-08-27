@@ -1,7 +1,7 @@
 /**
  * 配置管理器
  * 负责管理所有组件的配置数据，提供配置的CRUD操作和事件监听
- * 
+ *
  * Task 1.2 重构：集成配置事件总线，实现解耦架构
  */
 import { reactive, ref, computed } from 'vue'
@@ -524,7 +524,7 @@ export class ConfigurationManager implements IConfigurationManager {
   private emitToEventBus(widgetId: string, config: WidgetConfiguration): void {
     try {
       const previousConfig = this.previousConfigs.get(widgetId)
-      
+
       const event: ConfigChangeEvent = {
         componentId: widgetId,
         componentType: '', // 这里无法获取组件类型，由监听器负责过滤
@@ -560,9 +560,9 @@ export class ConfigurationManager implements IConfigurationManager {
    */
   private getChangedFields(oldConfig: WidgetConfiguration | undefined, newConfig: WidgetConfiguration): string[] {
     if (!oldConfig) return []
-    
+
     const changedFields: string[] = []
-    
+
     // 检查各个配置层级的变更
     if (JSON.stringify(oldConfig.base) !== JSON.stringify(newConfig.base)) {
       changedFields.push('base')
@@ -576,7 +576,7 @@ export class ConfigurationManager implements IConfigurationManager {
     if (JSON.stringify(oldConfig.interaction) !== JSON.stringify(newConfig.interaction)) {
       changedFields.push('interaction')
     }
-    
+
     return changedFields
   }
 

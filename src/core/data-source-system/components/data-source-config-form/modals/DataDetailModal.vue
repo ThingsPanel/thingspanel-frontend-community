@@ -637,7 +637,7 @@ const visible = computed({
 })
 
 const modalTitle = computed(() => {
-  return props.dataItem?.name 
+  return props.dataItem?.name
     ? `${t('dataSource.detail.title')} - ${props.dataItem.name}`
     : t('dataSource.detail.title')
 })
