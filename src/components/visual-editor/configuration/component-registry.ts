@@ -12,9 +12,13 @@ import { defineAsyncComponent } from 'vue'
 const BaseConfigForm = defineAsyncComponent(() => import('../renderers/base/BaseConfigForm.vue'))
 const ComponentConfigForm = defineAsyncComponent(() => import('../renderers/base/ComponentConfigForm.vue'))
 // 导入新的卡片式交互配置组件（来自核心交互系统）
-const InteractionCardWizard = defineAsyncComponent(() => import('@/core/interaction-system/components/InteractionCardWizard.vue'))
+const InteractionCardWizard = defineAsyncComponent(
+  () => import('@/core/interaction-system/components/InteractionCardWizard.vue')
+)
 // 导入简易配置编辑器 (SUBTASK-010)
-const SimpleConfigurationEditor = defineAsyncComponent(() => import('@/core/data-architecture/components/SimpleConfigurationEditor.vue'))
+const SimpleConfigurationEditor = defineAsyncComponent(
+  () => import('@/core/data-architecture/components/SimpleConfigurationEditor.vue')
+)
 
 console.log('🔍 [component-registry] 导入SimpleConfigurationEditor:', SimpleConfigurationEditor)
 
