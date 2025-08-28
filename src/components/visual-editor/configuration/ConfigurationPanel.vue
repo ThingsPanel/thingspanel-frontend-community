@@ -195,7 +195,7 @@ import { $t } from '@/locales'
 import { getVisibleConfigLayers, getConfigLayer } from './component-registry'
 
 // 导入配置管理器和类型
-import { configurationManager } from './ConfigurationManager'
+import { configurationIntegrationBridge as configurationManager } from './ConfigurationIntegrationBridge'
 import { getComponentDataRequirements } from '../core/component-data-requirements'
 import type {
   WidgetConfiguration,

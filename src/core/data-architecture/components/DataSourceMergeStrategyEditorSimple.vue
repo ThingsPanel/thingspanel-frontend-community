@@ -38,7 +38,8 @@ const { t } = useI18n()
 
 // 响应式数据
 const currentStrategy = ref<MergeStrategy>({ ...props.modelValue })
-// 🔥 防止循环更新的标志
+// 🔥 全新方案：基于内容哈希的去重机制
+const lastEmittedHash = ref('')
 const isUpdatingFromProps = ref(false)
 
 // 预制合并策略选项
@@ -92,30 +93,46 @@ const previewText = computed(() => {
   }
 })
 
-// 🔥 修复：只有非props更新时才emit，防止循环
+// 🔥 全新方案：基于内容哈希的智能去重
 watch(
   currentStrategy,
   newValue => {
     if (!isUpdatingFromProps.value) {
-      console.log('🔄 [DataSourceMergeStrategyEditor] 本地变化，emit更新:', newValue)
-      emit('update:modelValue', { ...newValue })
+      // 计算内容哈希，避免相同内容的重复emit
+      const contentHash = JSON.stringify(newValue)
+      if (contentHash !== lastEmittedHash.value) {
+        console.log('🔄 [DataSourceMergeStrategyEditor] 内容变化，emit更新:', newValue)
+        lastEmittedHash.value = contentHash
+        emit('update:modelValue', { ...newValue })
+      } else {
+        console.log('⏭️ [DataSourceMergeStrategyEditor] 内容未变化，跳过emit:', newValue)
+      }
     }
   },
   { deep: true }
 )
 
-// 🔥 修复：监听 props.modelValue 变化时设置标志，避免循环
+// 🔥 全新方案：智能props同步，基于内容哈希判断
 watch(
   () => props.modelValue,
   newValue => {
-    if (newValue && JSON.stringify(newValue) !== JSON.stringify(currentStrategy.value)) {
-      console.log('🔄 [DataSourceMergeStrategyEditor] props更新:', newValue)
-      isUpdatingFromProps.value = true
-      currentStrategy.value = { ...newValue }
-      // 在下一个tick清除标志
-      nextTick(() => {
-        isUpdatingFromProps.value = false
-      })
+    if (newValue) {
+      const newContentHash = JSON.stringify(newValue)
+      const currentContentHash = JSON.stringify(currentStrategy.value)
+      
+      if (newContentHash !== currentContentHash) {
+        console.log('🔄 [DataSourceMergeStrategyEditor] props内容变化，同步本地状态:', newValue)
+        isUpdatingFromProps.value = true
+        currentStrategy.value = { ...newValue }
+        lastEmittedHash.value = newContentHash // 更新哈希，防止回环
+        
+        // 在下一个tick清除标志
+        nextTick(() => {
+          isUpdatingFromProps.value = false
+        })
+      } else {
+        console.log('⏭️ [DataSourceMergeStrategyEditor] props内容未变化，跳过同步')
+      }
     }
   },
   { deep: true }

@@ -8,8 +8,9 @@
  * 基于SUBTASK-010要求，实现轻量级可视化配置界面
  */
 
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, h } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useDialog } from 'naive-ui'
 import {
   createExecutorChain,
   type DataSourceConfiguration,
@@ -19,9 +20,10 @@ import {
 } from '../index'
 import { type MergeStrategy } from '../executors/DataSourceMerger'
 import RawDataConfigModal from './modals/RawDataConfigModal.vue'
-import DataSourceMergeStrategyEditor from './DataSourceMergeStrategyEditorSimple.vue'
-import { configurationManager } from '@/components/visual-editor/configuration/ConfigurationManager'
+// 🔥 新配置管理系统
+import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
+import { MultiLayerExecutorChain } from '@/core/data-architecture/executors/MultiLayerExecutorChain'
 
 // Props接口 - 匹配现有系统
 interface Props {
@@ -52,16 +54,26 @@ const emit = defineEmits<Emits>()
 // 国际化
 const { t } = useI18n()
 
+// 弹窗
+const dialog = useDialog()
+
 /**
  * 处理数据源选项 - 兼容数组和对象格式
  */
 const dataSourceOptions = computed(() => {
   if (!props.dataSources) return []
 
+  console.log('🔍 [SimpleConfigurationEditor] 原始dataSources数据:', props.dataSources)
+
   // 处理数组格式
   if (Array.isArray(props.dataSources)) {
-    return props.dataSources.map((dataSource, index) => {
+    const result = props.dataSources.map((dataSource, index) => {
       const key = dataSource.key || `dataSource${index + 1}`
+      console.log(`🔍 [SimpleConfigurationEditor] 数组格式数据源${index + 1}:`, {
+        key,
+        dataSource,
+        exampleData: dataSource?.config?.exampleData
+      })
       return {
         label: dataSource.name || dataSource.title || `数据源${index + 1}`,
         value: key,
@@ -70,16 +82,27 @@ const dataSourceOptions = computed(() => {
         originalData: dataSource
       }
     })
+    console.log('🔍 [SimpleConfigurationEditor] 处理后的数组格式结果:', result)
+    return result
   }
 
   // 处理对象格式
-  return Object.entries(props.dataSources).map(([key, dataSource]) => ({
-    label: dataSource.name || dataSource.title || key,
-    value: key,
-    description: dataSource.description || '',
-    type: dataSource.type || dataSource.expectedDataFormat || 'object',
-    originalData: dataSource
-  }))
+  const result = Object.entries(props.dataSources).map(([key, dataSource]) => {
+    console.log(`🔍 [SimpleConfigurationEditor] 对象格式数据源${key}:`, {
+      key,
+      dataSource,
+      exampleData: dataSource?.config?.exampleData
+    })
+    return {
+      label: dataSource.name || dataSource.title || key,
+      value: key,
+      description: dataSource.description || '',
+      type: dataSource.type || dataSource.expectedDataFormat || 'object',
+      originalData: dataSource
+    }
+  })
+  console.log('🔍 [SimpleConfigurationEditor] 处理后的对象格式结果:', result)
+  return result
 })
 
 /**
@@ -140,14 +163,17 @@ const handleMergeStrategyUpdate = (dataSourceKey: string, strategy: any) => {
   mergeStrategies[dataSourceKey] = strategy
   console.log(`📝 [SimpleConfigurationEditor] 合并策略已更新: ${dataSourceKey}`, strategy)
 
-  // 🔥 关键修复：合并策略更新后重建完整配置
+  console.log(`🔄 [SimpleConfigurationEditor] 合并策略更新，使用新配置管理系统: ${dataSourceKey}`, strategy)
+  
+  // 🔥 使用新配置管理系统：内容哈希去重和版本控制
+  // 重建完整配置并提交
   const rebuiltConfig = rebuildCompleteDataSourceConfiguration()
-
+  
   // 清除组件缓存，确保新策略生效
   simpleDataBridge.clearComponentCache(props.componentId)
   console.log(`🧹 [SimpleConfigurationEditor] 已清除组件缓存: ${props.componentId}`)
-
-  // 提交重建的配置
+  
+  // 使用新配置管理系统更新配置（内置循环检测和去重）
   configurationManager.updateConfiguration(props.componentId, 'dataSource', rebuiltConfig)
 }
 
@@ -239,7 +265,8 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
     // 🔥 核心：根据当前所有数据项重新构建完整的 DataSourceConfiguration
     const dataSourceConfig = rebuildCompleteDataSourceConfiguration()
 
-    // 调用 configurationManager 更新配置 - 触发配置驱动链路
+    // 🔥 新配置管理系统：内容哈希去重，避免无限循环
+    console.log(`🔄 [SimpleConfigurationEditor] 数据项${isEditMode.value ? '编辑' : '新增'}完成，提交配置更新`)
     configurationManager.updateConfiguration(props.componentId, 'dataSource', dataSourceConfig)
 
     // 关闭弹窗并重置状态
@@ -470,7 +497,7 @@ const handleDeleteDataItem = (dataSourceKey: string, itemId: string) => {
           // 更新时间戳
           currentDataSourceConfig.updatedAt = Date.now()
 
-          // 🔥 关键修复：删除后重建完整配置确保同步
+          // 🔥 新配置管理系统：删除后重建完整配置
           const rebuiltConfig = rebuildCompleteDataSourceConfiguration()
 
           // 清除组件缓存，确保删除后数据更新
@@ -480,7 +507,7 @@ const handleDeleteDataItem = (dataSourceKey: string, itemId: string) => {
           // 📝 调试：打印删除后的完整配置
           console.log('🔍 [DEBUG] 删除操作完成后重建的配置:', JSON.stringify(rebuiltConfig, null, 2))
 
-          // 提交配置更新
+          // 🔥 使用新配置管理系统提交更新（内置去重和循环检测）
           configurationManager.updateConfiguration(props.componentId, 'dataSource', rebuiltConfig)
 
           console.log('✅ 数据项删除已提交到配置管理器:', {
@@ -541,9 +568,26 @@ const restoreDataItemsFromConfig = () => {
       })
 
       console.log('✅ 数据项显示状态恢复完成:', dataSourceItems)
+    } else {
+      console.log('⚠️ [SimpleConfigurationEditor] 未找到数据源配置，初始化空状态')
+      console.log('   - existingConfig:', !!existingConfig)
+      console.log('   - dataSourceConfig:', !!dataSourceConfig)
+      console.log('   - dataSources:', dataSourceConfig?.dataSources)
+      
+      // 如果没有配置，但有数据源选项，初始化空的数据项列表
+      dataSourceOptions.value.forEach(option => {
+        if (!dataSourceItems[option.value]) {
+          dataSourceItems[option.value] = []
+        }
+        if (!mergeStrategies[option.value]) {
+          mergeStrategies[option.value] = { type: 'object' }
+        }
+      })
+      console.log('🆕 [SimpleConfigurationEditor] 已初始化空的数据项状态')
     }
   } catch (error) {
-    console.error('❌ 数据项显示状态恢复失败:', error)
+    console.error('❌ [SimpleConfigurationEditor] 数据项显示状态恢复失败:', error)
+    console.error('   - 错误详情:', error.stack)
   }
 }
 
@@ -590,9 +634,44 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
   return displayConfig
 }
 
-// 组件挂载时恢复显示状态
-onMounted(() => {
-  restoreDataItemsFromConfig()
+// 组件挂载时恢复显示状态并设置集成
+onMounted(async () => {
+  console.log('🚀 [SimpleConfigurationEditor] 组件初始化开始...')
+  
+  try {
+    // 🔥 新架构：初始化配置集成桥接器
+    console.log('🔧 [SimpleConfigurationEditor] 初始化配置管理器...')
+    await configurationManager.initialize()
+    
+    // 为当前组件设置数据源执行集成
+    if ('setupComponentDataSourceIntegration' in configurationManager) {
+      (configurationManager as any).setupComponentDataSourceIntegration(props.componentId)
+      console.log('✅ [SimpleConfigurationEditor] 数据源执行集成已设置')
+    }
+    
+    // 🔥 修复：确保组件配置存在，如果不存在则初始化
+    const existingConfig = configurationManager.getConfiguration(props.componentId)
+    if (!existingConfig) {
+      console.log('🆕 [SimpleConfigurationEditor] 配置不存在，进行初始化...')
+      configurationManager.initializeConfiguration(props.componentId)
+    } else {
+      console.log('📖 [SimpleConfigurationEditor] 找到现有配置，开始恢复显示状态...')
+    }
+    
+    // 恢复显示状态
+    restoreDataItemsFromConfig()
+    
+    console.log('✅ [SimpleConfigurationEditor] 组件初始化完成')
+  } catch (error) {
+    console.error('❌ [SimpleConfigurationEditor] 组件初始化失败:', error)
+    // 降级处理：即使配置管理器初始化失败，也尝试恢复显示状态
+    try {
+      restoreDataItemsFromConfig()
+      console.log('⚡ [SimpleConfigurationEditor] 降级恢复显示状态完成')
+    } catch (fallbackError) {
+      console.error('❌ [SimpleConfigurationEditor] 降级恢复也失败:', fallbackError)
+    }
+  }
 })
 
 /**
@@ -610,6 +689,251 @@ const getEditData = () => {
   console.log('🔍 [SimpleConfigurationEditor] 获取编辑数据:', editItem)
   return editItem
 }
+
+/**
+ * 获取当前数据源的示例数据
+ */
+const getCurrentDataSourceExampleData = () => {
+  if (!currentDataSourceKey.value) return undefined
+  
+  const currentDataSource = dataSourceOptions.value.find(opt => opt.value === currentDataSourceKey.value)
+  // 🔥 修复：支持两种示例数据格式
+  const exampleData = currentDataSource?.originalData?.config?.exampleData || currentDataSource?.originalData?.example
+  
+  console.log('🔍 [SimpleConfigurationEditor] 获取示例数据:', {
+    dataSourceKey: currentDataSourceKey.value,
+    originalData: currentDataSource?.originalData,
+    exampleDataFromConfig: currentDataSource?.originalData?.config?.exampleData,
+    exampleDataFromRoot: currentDataSource?.originalData?.example,
+    finalExampleData: exampleData
+  })
+  
+  return exampleData
+}
+
+// 🔥 新UI辅助方法
+
+/**
+ * 获取数据项类型的颜色
+ */
+const getItemTypeColor = (type: string) => {
+  const colorMap = {
+    'json': 'info',
+    'script': 'warning', 
+    'http': 'success'
+  }
+  return colorMap[type] || 'default'
+}
+
+/**
+ * 获取数据项类型的图标
+ */
+const getItemTypeIcon = (type: string) => {
+  const iconMap = {
+    'json': '📄',
+    'script': '⚡',
+    'http': '🌐'
+  }
+  return iconMap[type] || '📋'
+}
+
+/**
+ * 获取数据项摘要信息
+ */
+const getItemSummary = (item: any) => {
+  switch (item.type) {
+    case 'json':
+      return item.jsonData ? 'JSON数据已配置' : '空JSON数据'
+    case 'script':
+      return item.scriptCode ? 'JavaScript脚本已配置' : '空脚本'
+    case 'http':
+      return item.url || 'HTTP接口未配置'
+    default:
+      return '未知类型'
+  }
+}
+
+/**
+ * 检查是否有处理配置
+ */
+const hasProcessingConfig = (item: any) => {
+  const config = item.processingConfig
+  return config && (config.jsonPath || config.scriptCode || config.defaultValue)
+}
+
+/**
+ * 获取处理配置摘要
+ */
+const getProcessingSummary = (item: any) => {
+  const config = item.processingConfig
+  if (!config) return ''
+  
+  const parts = []
+  if (config.jsonPath) parts.push(`路径: ${config.jsonPath}`)
+  if (config.scriptCode) parts.push('自定义脚本')
+  if (config.defaultValue) parts.push(`默认: ${config.defaultValue}`)
+  
+  return parts.join(', ')
+}
+
+/**
+ * 获取合并策略显示文本
+ */
+const getMergeStrategyDisplay = (dataSourceKey: string) => {
+  const strategy = mergeStrategies[dataSourceKey] || { type: 'object' }
+  
+  const displayMap = {
+    'object': '对象合并',
+    'array': '数组组成',
+    'select': `选择第${(strategy.selectedIndex || 0) + 1}项`,
+    'script': '自定义脚本'
+  }
+  
+  return displayMap[strategy.type] || '未知策略'
+}
+
+/**
+ * 获取合并策略选项
+ */
+const getMergeStrategyOptions = () => [
+  { label: '🔗 对象合并', value: 'object' },
+  { label: '📋 数组组成', value: 'array' },
+  { label: '🎯 选择其中一个', value: 'select' },
+  { label: '⚙️ 自定义脚本', value: 'script' }
+]
+
+/**
+ * 更新合并策略类型
+ */
+const updateMergeStrategyType = (dataSourceKey: string, newType: string) => {
+  const currentStrategy = mergeStrategies[dataSourceKey] || { type: 'object' }
+  const newStrategy = { ...currentStrategy, type: newType }
+  
+  // 如果切换到select类型，确保有selectedIndex
+  if (newType === 'select' && !('selectedIndex' in newStrategy)) {
+    newStrategy.selectedIndex = 0
+  }
+  
+  console.log('🔄 [SimpleConfigurationEditor] 新UI合并策略类型更新:', {
+    dataSourceKey,
+    oldType: currentStrategy.type,
+    newType,
+    newStrategy
+  })
+  
+  handleMergeStrategyUpdate(dataSourceKey, newStrategy)
+}
+
+/**
+ * 更新合并策略选中索引
+ */
+const updateMergeStrategyIndex = (dataSourceKey: string, newIndex: number) => {
+  const currentStrategy = mergeStrategies[dataSourceKey] || { type: 'select' }
+  const newStrategy = { ...currentStrategy, selectedIndex: newIndex }
+  
+  handleMergeStrategyUpdate(dataSourceKey, newStrategy)
+}
+
+/**
+ * 更新合并策略脚本（针对script类型）
+ */
+const updateMergeStrategyScript = (dataSourceKey: string, newScript: string) => {
+  const currentStrategy = mergeStrategies[dataSourceKey] || { type: 'script' }
+  const newStrategy = { ...currentStrategy, script: newScript }
+  
+  handleMergeStrategyUpdate(dataSourceKey, newStrategy)
+}
+
+// 🔥 查看真实数据结果
+
+/**
+ * 查看最终数据
+ */
+const viewFinalData = async (dataSourceKey: string) => {
+  try {
+    console.log('🔍 [SimpleConfigurationEditor] 查看最终数据:', dataSourceKey)
+    
+    // 获取当前数据源的配置项
+    const currentDataSourceItems = dataSourceItems[dataSourceKey]
+    if (!currentDataSourceItems || currentDataSourceItems.length === 0) {
+      dialog.warning({
+        title: '无数据项',
+        content: `数据源 ${dataSourceKey} 暂无配置项`,
+        positiveText: '关闭'
+      })
+      return
+    }
+    
+    // 构建 DataSourceConfiguration 格式
+    const dataSourceConfig: DataSourceConfiguration = {
+      componentId: props.componentId,
+      dataSources: [{
+        sourceId: dataSourceKey,
+        dataItems: currentDataSourceItems.map(item => ({
+          item: convertToStandardDataItem(item),
+          processing: {
+            filterPath: item.filterPath || '$',
+            customScript: item.processScript,
+            defaultValue: {}
+          }
+        })),
+        mergeStrategy: mergeStrategies[dataSourceKey]?.type || 'object'
+      }],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    }
+    
+    console.log('🚀 [SimpleConfigurationEditor] 执行配置:', dataSourceConfig)
+    console.log('🔍 [SimpleConfigurationEditor] 原始数据项:', currentDataSourceItems)
+    console.log('🔄 [SimpleConfigurationEditor] 转换后的数据项:', dataSourceConfig.dataSources[0].dataItems)
+    
+    // 使用执行器链直接执行配置
+    const executorChain = new MultiLayerExecutorChain()
+    const executionResult = await executorChain.executeDataProcessingChain(dataSourceConfig, true)
+    
+    console.log('📊 [SimpleConfigurationEditor] 执行结果:', executionResult)
+    
+    if (executionResult.success && executionResult.componentData) {
+      // 提取指定数据源的数据
+      const dataSourceData = executionResult.componentData[dataSourceKey]
+      
+      // 显示结果弹窗
+      dialog.info({
+        title: `${dataSourceKey} - 实时数据执行结果`,
+        content: () => h('pre', { 
+          style: { 
+            maxHeight: '400px', 
+            overflow: 'auto', 
+            background: 'var(--code-color)', 
+            padding: '12px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            lineHeight: '1.4'
+          } 
+        }, JSON.stringify(dataSourceData || { message: '执行成功但数据为空' }, null, 2)),
+        positiveText: '关闭'
+      })
+    } else {
+      // 显示执行失败信息
+      dialog.error({
+        title: '数据执行失败',
+        content: `数据源 ${dataSourceKey} 执行失败: ${executionResult.error || '未知错误'}`,
+        positiveText: '关闭'
+      })
+    }
+    
+  } catch (error) {
+    console.error('❌ [SimpleConfigurationEditor] 获取数据失败:', error)
+    
+    // 显示错误信息
+    dialog.error({
+      title: '获取数据失败',
+      content: `无法获取 ${dataSourceKey} 的数据: ${error.message}`,
+      positiveText: '关闭'
+    })
+  }
+}
+
 
 // 暴露方法给父组件
 defineExpose({
@@ -639,107 +963,183 @@ defineExpose({
       <n-collapse-item
         v-for="dataSourceOption in dataSourceOptions"
         :key="dataSourceOption.value"
-        :title="dataSourceOption.label"
         :name="dataSourceOption.value"
       >
-        <!-- 数据源配置内容 -->
-        <div class="simple-data-source-panel">
-          <!-- 添加数据项按钮 - 置顶 -->
-          <div class="add-data-item-section-top">
-            <n-button
-              type="primary"
-              size="small"
-              secondary
-              @click="handleAddDataItem(dataSourceOption.value)"
+        <template #header>
+          <div class="collapse-header">
+            <span class="header-title">{{ dataSourceOption.label }}</span>
+            <n-tooltip 
+              v-if="dataSourceOption.originalData?.config?.exampleData || dataSourceOption.originalData?.example"
+              trigger="hover"
+              placement="left"
+              :style="{ maxWidth: '400px' }"
             >
-              <template #icon>
-                <span>➕</span>
+              <template #trigger>
+                <n-icon 
+                  size="14" 
+                  class="example-data-icon"
+                  :style="{ color: 'var(--info-color)', cursor: 'pointer' }"
+                >
+                  <span>📋</span>
+                </n-icon>
               </template>
-              添加数据项
-            </n-button>
-            <n-text 
-              v-if="dataSourceItems[dataSourceOption.value]?.length === 0" 
-              style="font-size: 11px; color: var(--text-color-3); margin-left: 8px"
-            >
-              为此数据源添加第一个数据项
-            </n-text>
+              <div class="example-data-tooltip">
+                <div class="tooltip-title">📋 示例数据</div>
+                <pre class="example-data-content">{{ JSON.stringify(dataSourceOption.originalData.config?.exampleData || dataSourceOption.originalData.example, null, 2) }}</pre>
+              </div>
+            </n-tooltip>
+          </div>
+        </template>
+        <!-- 🔥 一体化数据源配置卡片 -->
+        <div class="data-source-unified-card">
+          <!-- 卡片头部 - 集成所有核心信息 -->
+          <div class="unified-card-header">
+            <div class="header-left">
+              <n-space align="center" size="small" class="header-info">
+                <n-tag size="tiny" type="info">
+                  {{ dataSourceItems[dataSourceOption.value]?.length || 0 }}项
+                </n-tag>
+                <n-tag 
+                  v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) > 0" 
+                  size="tiny" 
+                  type="default"
+                >
+                  {{ getMergeStrategyDisplay(dataSourceOption.value) }}
+                </n-tag>
+              </n-space>
+            </div>
+            
+            <div class="header-right">
+              <n-space size="small" align="center">
+                <!-- 添加数据项按钮 - 集成到header -->
+                <n-button 
+                  size="small" 
+                  type="primary" 
+                  ghost
+                  @click="handleAddDataItem(dataSourceOption.value)"
+                >
+                  <template #icon>
+                    <span style="font-size: 12px;">➕</span>
+                  </template>
+                  添加数据项
+                </n-button>
+              </n-space>
+            </div>
           </div>
 
-          <!-- 已配置的数据项列表 -->
-          <div v-if="dataSourceItems[dataSourceOption.value]?.length > 0" class="data-items-list">
-            <div class="data-items-header">
-              <span class="items-title">已配置数据项 ({{ dataSourceItems[dataSourceOption.value].length }})</span>
+          <!-- 卡片内容 - 紧凑的数据项展示 -->
+          <div class="unified-card-content">
+            <!-- 空状态 -->
+            <div v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) === 0" class="empty-state">
+              <n-empty size="small" description="点击上方按钮添加第一个数据项">
+                <template #icon>
+                  <span style="font-size: 24px;">📊</span>
+                </template>
+              </n-empty>
             </div>
 
-            <div class="data-items-content">
-              <div v-for="item in dataSourceItems[dataSourceOption.value]" :key="item.id" class="data-item-card">
-                <div class="item-info">
-                  <div class="item-type-badge">
-                    <n-tag
-                      :type="item.type === 'json' ? 'info' : item.type === 'script' ? 'warning' : 'success'"
-                      size="small"
-                    >
-                      {{ item.type === 'json' ? 'JSON数据' : item.type === 'script' ? 'JavaScript脚本' : 'HTTP接口' }}
-                    </n-tag>
-                  </div>
-                  <div class="item-summary">
-                    <span v-if="item.type === 'json'" class="summary-text">
-                      {{ item.jsonData ? 'JSON数据已配置' : '空数据' }}
-                    </span>
-                    <span v-else-if="item.type === 'script'" class="summary-text">
-                      {{ item.scriptCode ? 'JavaScript脚本已配置' : '空脚本' }}
-                    </span>
-                    <span v-else-if="item.type === 'http'" class="summary-text">
-                      {{ item.url || 'HTTP接口配置' }}
-                    </span>
-                  </div>
+            <!-- 数据项紧凑列表 -->
+            <div v-else class="compact-items-list">
+              <div v-for="item in dataSourceItems[dataSourceOption.value]" :key="item.id" class="compact-item">
+                <div class="item-indicator">
+                  <n-tag 
+                    size="tiny" 
+                    :type="getItemTypeColor(item.type)"
+                  >
+                    {{ getItemTypeIcon(item.type) }}
+                  </n-tag>
                 </div>
-
-                <div class="item-processing">
-                  <span v-if="item.processingConfig?.jsonPath" class="processing-info">
-                    过滤: {{ item.processingConfig.jsonPath }}
+                
+                <div class="item-content">
+                  <span class="item-summary">{{ getItemSummary(item) }}</span>
+                  <span v-if="hasProcessingConfig(item)" class="item-processing">
+                    <n-icon size="12" style="margin-right: 2px;">⚙️</n-icon>
+                    {{ getProcessingSummary(item) }}
                   </span>
-                  <span v-if="item.processingConfig?.scriptCode" class="processing-info">脚本处理</span>
                 </div>
-
+                
                 <div class="item-actions">
-                  <n-space size="small">
-                    <n-button
-                      size="tiny"
-                      type="primary"
-                      secondary
+                  <n-button-group size="tiny">
+                    <n-button 
+                      type="primary" 
+                      ghost 
                       @click="handleEditDataItem(dataSourceOption.value, item.id)"
                     >
                       编辑
                     </n-button>
-                    <n-button
-                      size="tiny"
-                      type="error"
-                      secondary
+                    <n-button 
+                      type="error" 
+                      ghost 
                       @click="handleDeleteDataItem(dataSourceOption.value, item.id)"
                     >
                       删除
                     </n-button>
-                  </n-space>
+                  </n-button-group>
+                </div>
+              </div>
+            </div>
+
+            <!-- 合并策略 - 分层布局优化 -->
+            <div v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) >= 1" class="inline-merge-strategy">
+              <!-- 第一行：策略选择和查看按钮 -->
+              <div class="strategy-main-row">
+                <span class="strategy-label">合并方式:</span>
+                <n-select 
+                  :value="(mergeStrategies[dataSourceOption.value] || { type: 'object' }).type"
+                  size="small" 
+                  class="strategy-selector"
+                  :options="getMergeStrategyOptions()"
+                  @update:value="updateMergeStrategyType(dataSourceOption.value, $event)"
+                />
+                <n-button
+                  size="small"
+                  type="primary"
+                  ghost
+                  class="view-result-btn"
+                  @click="viewFinalData(dataSourceOption.value)"
+                >
+                  查看结果
+                </n-button>
+              </div>
+              
+              <!-- 第二行：条件显示的额外控件 -->
+              <div v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'select'" class="strategy-extra-row">
+                <div class="extra-control-container">
+                  <span class="extra-label">选择项:</span>
+                  <n-input-number 
+                    :value="(mergeStrategies[dataSourceOption.value] || {}).selectedIndex || 0"
+                    size="small" 
+                    :min="0" 
+                    :max="Math.max(0, (dataSourceItems[dataSourceOption.value]?.length || 1) - 1)"
+                    class="index-selector"
+                    @update:value="updateMergeStrategyIndex(dataSourceOption.value, $event)"
+                  >
+                    <template #prefix>第</template>
+                    <template #suffix>项</template>
+                  </n-input-number>
+                  <n-text depth="3" style="font-size: 11px; margin-left: 8px;">
+                    共 {{ dataSourceItems[dataSourceOption.value]?.length || 0 }} 项可选
+                  </n-text>
+                </div>
+              </div>
+              
+              <div v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'script'" class="strategy-extra-row">
+                <div class="extra-control-container">
+                  <span class="extra-label">脚本代码:</span>
+                  <n-input
+                    :value="(mergeStrategies[dataSourceOption.value] || {}).script || ''"
+                    type="textarea"
+                    size="small"
+                    :rows="4"
+                    placeholder="// 编写合并脚本，data 参数为数组&#10;// return data.map(item => item.value).join(',')"
+                    :input-props="{ style: 'font-family: Monaco, Consolas, monospace; font-size: 12px;' }"
+                    class="script-editor"
+                    @update:value="updateMergeStrategyScript(dataSourceOption.value, $event)"
+                  />
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- 🆕 合并策略配置 - 有数据项时就显示（包含单个数据项） -->
-          <div
-            v-if="dataSourceItems[dataSourceOption.value]?.length >= 1"
-            class="merge-strategy-section"
-            style="margin-top: 16px"
-          >
-            <DataSourceMergeStrategyEditor
-              :data-source-id="dataSourceOption.label"
-              :data-item-count="dataSourceItems[dataSourceOption.value]?.length || 0"
-              :model-value="mergeStrategies[dataSourceOption.value] || { type: 'object' }"
-              @update:model-value="handleMergeStrategyUpdate(dataSourceOption.value, $event)"
-            />
-          </div>
-
         </div>
       </n-collapse-item>
     </n-collapse>
@@ -758,6 +1158,7 @@ defineExpose({
       :data-source-key="currentDataSourceKey"
       :is-edit-mode="isEditMode"
       :edit-data="getEditData()"
+      :example-data="getCurrentDataSourceExampleData()"
       @confirm="handleDataItemConfirm"
     />
   </div>
@@ -768,116 +1169,192 @@ defineExpose({
   width: 100%;
 }
 
-/* 数据项列表样式 */
-.data-items-list {
-  margin-bottom: 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.data-items-header {
+/* 🔥 一体化数据源配置卡片样式 */
+.data-source-unified-card {
   background: var(--card-color);
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
 }
 
-.items-title {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-color);
+.data-source-unified-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.data-items-content {
-  padding: 8px;
-  background: var(--body-color);
-}
-
-/* 数据项卡片样式 */
-.data-item-card {
+/* 统一卡片头部样式 */
+.unified-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  margin-bottom: 6px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background: var(--card-color);
-  transition: all 0.2s;
+  padding: 12px 16px;
+  background: var(--body-color);
+  border-bottom: 1px solid var(--border-color);
+  min-height: 48px;
 }
 
-.data-item-card:hover {
+.header-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* 统一卡片内容样式 */
+.unified-card-content {
+  padding: 16px;
+  background: var(--card-color);
+}
+
+/* 空状态样式 */
+.empty-state {
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--text-color-3);
+}
+
+/* 紧凑数据项列表样式 */
+.compact-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* 紧凑数据项样式 */
+.compact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--body-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.compact-item:hover {
   border-color: var(--primary-color);
+  background: var(--primary-color-suppl);
   transform: translateY(-1px);
 }
 
-.data-item-card:last-child {
-  margin-bottom: 0;
+.item-indicator {
+  flex-shrink: 0;
 }
 
-.item-info {
+.item-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0; /* 允许内容压缩 */
 }
 
-.item-type-badge {
-  flex-shrink: 0;
-}
-
-.summary-text {
-  font-size: 12px;
-  color: var(--text-color-2);
-}
-
-.item-processing {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  margin: 0 12px;
-}
-
-.processing-info {
-  font-size: 11px;
-  color: var(--success-color);
-  background: var(--success-color-suppl);
-  padding: 2px 6px;
-  border-radius: 2px;
+.item-summary {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 120px;
+}
+
+.item-processing {
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: var(--success-color);
+  opacity: 0.8;
 }
 
 .item-actions {
   flex-shrink: 0;
 }
 
-/* 添加按钮区域样式 - 置顶版本 */
-.add-data-item-section-top {
+/* 内联合并策略样式 - 分层布局优化 */
+.inline-merge-strategy {
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 第一行：主要策略选择 */
+.strategy-main-row {
   display: flex;
   align-items: center;
-  padding: 8px 0 12px 0;
-  border-bottom: 1px solid var(--divider-color);
-  margin-bottom: 12px;
+  gap: 12px;
 }
 
-/* 🆕 合并策略编辑器样式 */
-.merge-strategy-section {
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  background: var(--body-color);
-  padding: 0;
-  overflow: hidden;
+.strategy-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-color);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.merge-strategy-section:hover {
-  border-color: var(--primary-color-hover);
-  background: var(--primary-color-suppl);
+.strategy-selector {
+  flex: 1;
+  min-width: 160px;
+  max-width: 300px;
 }
+
+.view-result-btn {
+  flex-shrink: 0;
+}
+
+/* 第二行：条件显示的额外控件 */
+.strategy-extra-row {
+  padding-left: 16px;
+  border-left: 3px solid var(--primary-color-hover);
+  background: var(--code-color);
+  border-radius: 6px;
+  padding: 12px 16px;
+}
+
+.extra-control-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.extra-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-color-2);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 6px; /* 与输入控件对齐 */
+}
+
+.index-selector {
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.script-editor {
+  flex: 1;
+  min-width: 0;
+}
+
 
 /* 空状态样式 */
 .info-alert .alert-description {
@@ -896,6 +1373,57 @@ defineExpose({
   border: 1px solid var(--border-color);
   border-radius: 6px;
   overflow: hidden;
+}
+
+/* 折叠面板头部布局 */
+.collapse-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.header-title {
+  flex: 1;
+}
+
+.example-data-icon {
+  flex-shrink: 0;
+  margin-left: 8px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.example-data-icon:hover {
+  opacity: 1;
+}
+
+/* 示例数据提示框样式 */
+.example-data-tooltip {
+  max-width: 350px;
+}
+
+.tooltip-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--info-color);
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 4px;
+}
+
+.example-data-content {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-color);
+  background: var(--code-color);
+  padding: 8px;
+  border-radius: 4px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .data-source-collapse :deep(.n-collapse-item) {
@@ -917,26 +1445,67 @@ defineExpose({
 }
 
 .data-source-collapse :deep(.n-collapse-item__content-inner) {
-  padding: 16px;
+  padding: 0; /* 🔥 重置内边距，由unified-card控制 */
 }
 
-.info-alert .alert-description {
-  margin: 8px 0 0 0;
-  font-size: 13px;
-  opacity: 0.8;
-}
+/* 🔥 响应式设计 */
+@media (max-width: 768px) {
+  .unified-card-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    min-height: auto;
+    padding: 12px;
+  }
 
-.data-source-collapse {
-  border-radius: 6px;
-}
+  .header-left,
+  .header-right {
+    justify-content: space-between;
+  }
 
-.simple-data-source-panel {
-  padding: 4px 0;
-}
+  /* 合并策略响应式 */
+  .strategy-main-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
 
-.add-data-item-section {
-  display: flex;
-  justify-content: center;
-  padding: 12px 0;
+  .strategy-selector {
+    max-width: none;
+    min-width: auto;
+  }
+  
+  .view-result-btn {
+    align-self: center;
+  }
+  
+  .extra-control-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .extra-label {
+    margin-top: 0;
+  }
+  
+  .index-selector {
+    width: 100%;
+  }
+
+  .compact-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .item-content {
+    align-items: center;
+    text-align: center;
+  }
+
+  .item-actions {
+    align-self: center;
+  }
 }
 </style>

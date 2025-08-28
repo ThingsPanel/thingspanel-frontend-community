@@ -40,7 +40,7 @@ import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hoo
 import type { DataSourceValue } from '../../types/data-source'
 // 🔥 新增：导入新架构的数据桥接器和配置管理器
 import { visualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
-import { configurationManager } from '@/components/visual-editor/configuration/ConfigurationManager'
+import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 // 🔥 导入通用数据源映射器
 import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
 
@@ -498,9 +498,15 @@ onMounted(async () => {
       console.log(`🚀 [Card2Wrapper] 统一执行器被调用: ${props.nodeId}`)
 
       // 获取最新配置
-      const config = configurationManager.getConfiguration(props.nodeId)
+      const config = configurationIntegrationBridge.getConfiguration(props.nodeId)
+      console.log(`🔍 [Card2Wrapper] 获取到的配置:`, config)
+      console.log(`🔍 [Card2Wrapper] dataSource配置:`, config?.dataSource)
+      
       if (config?.dataSource) {
-        const dataSourceConfig = config.dataSource.config || config.dataSource
+        // 🔥 修复：直接使用dataSource配置，无需再访问config属性
+        const dataSourceConfig = config.dataSource
+        console.log(`🔄 [Card2Wrapper] 执行数据源配置:`, dataSourceConfig)
+        
         const result = await visualEditorBridge.updateComponentExecutor(
           props.nodeId,
           props.componentType,
@@ -509,6 +515,7 @@ onMounted(async () => {
         console.log(`✅ [Card2Wrapper] 统一执行器完成: ${props.nodeId}`, result)
       } else {
         console.log(`ℹ️ [Card2Wrapper] 无数据源配置，跳过执行: ${props.nodeId}`)
+        console.log(`🔍 [Card2Wrapper] 完整配置对象:`, JSON.stringify(config, null, 2))
       }
     }
 
@@ -530,7 +537,7 @@ onMounted(async () => {
     const retryDelay = 100 // 每次重试间隔100ms
 
     while (retryCount < maxRetries) {
-      const savedConfig = configurationManager.getConfiguration(props.nodeId)
+      const savedConfig = configurationIntegrationBridge.getConfiguration(props.nodeId)
       console.log(`🔍 [Card2Wrapper] 尝试获取配置 (${retryCount + 1}/${maxRetries}):`, props.nodeId, savedConfig)
 
       if (savedConfig?.dataSource) {
@@ -590,8 +597,10 @@ onMounted(async () => {
     console.log('🔍 [Card2Wrapper] 配置详细信息:', JSON.stringify(savedConfig.dataSource, null, 2))
 
     try {
-      // 🔥 修复：使用整个dataSource配置而不是dataSource.config
-      const dataSourceConfig = savedConfig.dataSource.config || savedConfig.dataSource
+      // 🔥 修复：直接使用整个dataSource配置
+      const dataSourceConfig = savedConfig.dataSource
+      console.log(`🔄 [Card2Wrapper] 初始化执行数据源配置:`, dataSourceConfig)
+      
       const result = await visualEditorBridge.updateComponentExecutor(
         props.nodeId,
         props.componentType,

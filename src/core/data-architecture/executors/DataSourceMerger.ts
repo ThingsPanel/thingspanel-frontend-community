@@ -54,17 +54,27 @@ export class DataSourceMerger implements IDataSourceMerger {
       // 智能默认策略选择
       const finalStrategy = this.selectDefaultStrategy(items, strategy)
 
+      console.log(`🚀 [DataSourceMerger] 开始执行合并策略: ${finalStrategy.type}`)
+      
       switch (finalStrategy.type) {
         case 'object':
-          return await this.mergeAsObject(items)
+          const objectResult = await this.mergeAsObject(items)
+          console.log('📦 [DataSourceMerger] object 策略执行结果:', objectResult)
+          return objectResult
         case 'array':
-          return await this.mergeAsArray(items)
+          const arrayResult = await this.mergeAsArray(items)
+          console.log('📊 [DataSourceMerger] array 策略执行结果:', arrayResult)
+          return arrayResult
         case 'select':
-          return await this.selectOne(items, (finalStrategy as any).selectedIndex)
+          const selectResult = await this.selectOne(items, (finalStrategy as any).selectedIndex)
+          console.log('🎯 [DataSourceMerger] select 策略执行结果:', selectResult)
+          return selectResult
         case 'script':
-          return await this.mergeByScript(items, finalStrategy.script)
+          const scriptResult = await this.mergeByScript(items, finalStrategy.script)
+          console.log('📜 [DataSourceMerger] script 策略执行结果:', scriptResult)
+          return scriptResult
         default:
-          console.warn('DataSourceMerger: 未知的合并策略', finalStrategy)
+          console.warn('❌ [DataSourceMerger] 未知的合并策略:', finalStrategy)
           return {}
       }
     } catch (error) {
@@ -78,12 +88,14 @@ export class DataSourceMerger implements IDataSourceMerger {
    * 单项时使用默认策略，多项时使用指定策略
    */
   private selectDefaultStrategy(items: any[], strategy: MergeStrategy): MergeStrategy {
-    // 如果只有一个数据项，直接返回该项
-    if (items.length === 1) {
-      return { type: 'object' } // 单项默认为object策略
+    // 🔥 修复：无论单项还是多项，都使用用户指定的策略
+    // 如果没有指定策略，则使用默认的 object 策略
+    if (!strategy || !strategy.type) {
+      console.log('📦 [DataSourceMerger] 未指定合并策略，使用默认 object 策略')
+      return { type: 'object' }
     }
-
-    // 多项时使用指定策略
+    
+    console.log(`📋 [DataSourceMerger] 使用指定合并策略: ${strategy.type} (数据项数量: ${items.length})`)
     return strategy
   }
 

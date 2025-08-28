@@ -4,7 +4,7 @@
  */
 
 import { ref, computed, watch, onUnmounted } from 'vue'
-import { configurationManager } from '../ConfigurationManager'
+import { configurationIntegrationBridge as configurationManager } from '../ConfigurationIntegrationBridge'
 import type { WidgetConfiguration, ValidationResult } from '../types'
 
 export interface UseConfigurationOptions {

@@ -304,11 +304,33 @@ export class EditorDataSourceManager {
 
     try {
       await this.triggerComponentExecutor(componentId)
-      this.emit('data-updated', { componentId })
+      
+      // 🔥 修复：获取组件数据并发送正确格式的事件数据
+      const componentData = this.getComponentData(componentId)
+      this.emit('data-updated', { 
+        componentId, 
+        result: {
+          success: true,
+          data: componentData?.data || null,
+          timestamp: Date.now()
+        }
+      })
       return true
     } catch (error) {
       console.error(`❌ [EditorDataSourceManager] 手动触发失败: ${componentId}`, error)
       const errorMessage = error instanceof Error ? error.message : String(error)
+      
+      // 🔥 修复：错误时也发送正确格式的事件数据
+      this.emit('data-updated', { 
+        componentId, 
+        result: {
+          success: false,
+          error: errorMessage,
+          data: null,
+          timestamp: Date.now()
+        }
+      })
+      
       this.message.error(`手动触发失败: ${errorMessage}`)
       return false
     }
@@ -511,30 +533,32 @@ export class EditorDataSourceManager {
   }
 
   /**
-   * 🔥 关键修复：设置配置事件监听器
-   * 监听 ConfigurationManager 发出的配置变更事件，触发对应组件的数据执行
+   * 🔥 修复：设置配置事件监听，确保配置变更时自动触发数据更新
+   * 通过 ConfigurationIntegrationBridge 的缓存清理机制实现自动更新
    */
   private setupConfigurationEventListener(): void {
-    console.log('🎧 [EditorDataSourceManager] 设置配置事件监听器...')
-
-    // 🔥 修复无限循环：只监听一个事件类型，避免重复执行
-    // 只监听数据源特定变更事件，避免与config-changed重复
-    configEventBus.onConfigChange('data-source-changed', (event: ConfigChangeEvent) => {
-      console.log('🔥 [EditorDataSourceManager] 接收到数据源变更事件:', {
-        componentId: event.componentId,
-        section: event.section,
-        triggerExecution: event.context?.shouldTriggerExecution
-      })
-
-      if (event.context?.shouldTriggerExecution !== false) {
-        console.log(`⚡ [EditorDataSourceManager] 触发数据源执行: ${event.componentId}`)
-        this.triggerComponentExecution(event.componentId, event.newConfig.dataSource)
-      } else {
-        console.log(`⏸️ [EditorDataSourceManager] 跳过执行: ${event.componentId}`)
+    console.log('🔗 [EditorDataSourceManager] 设置配置事件监听...')
+    
+    // 🔥 修复：监听配置事件怽线，使用正确的 API 和事件格式
+    configEventBus.onConfigChange('config-changed', async (event: ConfigChangeEvent) => {
+      console.log(`🔄 [EditorDataSourceManager] 检测到配置变更: ${event.componentId}`, event)
+      
+      // 只处理数据源相关的配置变更
+      if (event.section === 'dataSource' || event.section === 'component') {
+        console.log(`🚀 [EditorDataSourceManager] 数据源配置变更，自动触发数据更新: ${event.componentId}`)
+        
+        try {
+          // 通过组件执行器触发数据更新
+          await this.triggerComponentExecutor(event.componentId)
+          console.log(`✅ [EditorDataSourceManager] 自动数据更新成功: ${event.componentId}`)
+        } catch (error) {
+          console.error(`❌ [EditorDataSourceManager] 自动数据更新失败: ${event.componentId}`, error)
+        }
       }
     })
-
-    console.log('✅ [EditorDataSourceManager] 配置事件监听器设置完成')
+    
+    console.log('✅ [EditorDataSourceManager] 配置事件监听已设置')
+    console.log('💡 [EditorDataSourceManager] 配置变更时将自动触发数据更新')
   }
 
   /**

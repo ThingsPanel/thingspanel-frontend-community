@@ -818,30 +818,12 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
-        name: 'test_http-config-test',
-        path: '/test/http-config-test',
-        component: 'view.test_http-config-test',
+        name: 'test_new-config-system',
+        path: '/test/new-config-system',
+        component: 'view.test_new-config-system',
         meta: {
-          title: 'test_http-config-test',
-          i18nKey: 'route.test_http-config-test'
-        }
-      },
-      {
-        name: 'test_phase2-validation',
-        path: '/test/phase2-validation',
-        component: 'view.test_phase2-validation',
-        meta: {
-          title: 'test_phase2-validation',
-          i18nKey: 'route.test_phase2-validation'
-        }
-      },
-      {
-        name: 'test_websocket-data-input-test',
-        path: '/test/websocket-data-input-test',
-        component: 'view.test_websocket-data-input-test',
-        meta: {
-          title: 'test_websocket-data-input-test',
-          i18nKey: 'route.test_websocket-data-input-test'
+          title: 'test_new-config-system',
+          i18nKey: 'route.test_new-config-system'
         }
       }
     ]

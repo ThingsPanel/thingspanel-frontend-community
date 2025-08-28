@@ -3,8 +3,9 @@
  * 导出所有配置相关的组件、类型和工具
  */
 
-// 核心管理器
-import { configurationManager, ConfigurationManager } from './ConfigurationManager'
+// 🔄 核心管理器 - 统一使用桥接系统确保数据一致性
+import { configurationIntegrationBridge as configurationManager } from './ConfigurationIntegrationBridge'
+import { ConfigurationManager } from './ConfigurationManager'
 export { configurationManager, ConfigurationManager }
 
 // 类型定义
@@ -37,7 +38,8 @@ export { default as ComponentConfigForm } from '../renderers/base/ComponentConfi
 export { useConfiguration, type UseConfigurationOptions } from './hooks/useConfiguration'
 
 // 工具函数
-import { createDefaultConfiguration } from './ConfigurationManager'
+// 🔄 工具函数 - 通过桥接系统导出，确保一致性
+const createDefaultConfiguration = () => configurationManager.createDefaultConfiguration()
 export { createDefaultConfiguration }
 
 /**

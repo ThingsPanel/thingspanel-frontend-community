@@ -110,15 +110,33 @@ export class SimpleDataBridge {
     try {
       console.log(`🚀 [SimpleDataBridge] 开始执行组件数据获取: ${requirement.componentId}`)
 
-      // 🆕 先尝试从缓存获取数据
+      // 🆕 检查缓存数据，但需要验证配置是否已更新
       const cachedData = this.warehouse.getComponentData(requirement.componentId)
       if (cachedData) {
-        console.log(`🎯 [SimpleDataBridge] 使用缓存数据: ${requirement.componentId}`)
-        this.notifyDataUpdate(requirement.componentId, cachedData)
-        return {
-          success: true,
-          data: cachedData,
-          timestamp: Date.now()
+        // 🔥 修复：检查是否有数据项配置，如果没有则不使用缓存
+        const hasDataItems = this.hasValidDataItems(requirement)
+        console.log(`🔍 [SimpleDataBridge] 缓存检查: ${requirement.componentId}, hasDataItems: ${hasDataItems}`)
+        console.log(`🔍 [SimpleDataBridge] 传入的requirement结构:`, JSON.stringify(requirement, null, 2))
+        
+        if (hasDataItems) {
+          console.log(`🎯 [SimpleDataBridge] 使用缓存数据: ${requirement.componentId}`)
+          
+          // 🔥 修复：如果缓存数据被 'complete' 包装，需要解包
+          let finalData = cachedData
+          if (cachedData && typeof cachedData === 'object' && 'complete' in cachedData) {
+            console.log(`🔧 [SimpleDataBridge] 检测到嵌套格式，解包 'complete' 数据`)
+            finalData = cachedData.complete
+          }
+          
+          this.notifyDataUpdate(requirement.componentId, finalData)
+          return {
+            success: true,
+            data: finalData,
+            timestamp: Date.now()
+          }
+        } else {
+          console.log(`🧹 [SimpleDataBridge] 配置已清空，清除缓存重新执行: ${requirement.componentId}`)
+          this.warehouse.clearComponentCache(requirement.componentId)
         }
       }
 
@@ -236,6 +254,34 @@ export class SimpleDataBridge {
 
   // 🗑️ Task 2.1: 移除重复的执行器实现
   // executeStaticDataSource 和 executeHttpDataSource 已由 UnifiedDataExecutor 统一处理
+
+  /**
+   * 检查配置是否包含有效的数据项
+   * @param requirement 数据需求配置
+   * @returns 是否有有效数据项
+   */
+  private hasValidDataItems(requirement: ComponentDataRequirement): boolean {
+    try {
+      // 如果是 DataSourceConfiguration 格式
+      if (this.isDataSourceConfiguration(requirement)) {
+        const config = requirement as any as DataSourceConfiguration
+        return config.dataSources?.some(dataSource => 
+          dataSource.dataItems && dataSource.dataItems.length > 0
+        ) || false
+      }
+
+      // 如果是其他格式，检查是否有数据源配置
+      const hasDataSources = requirement.dataSources && 
+        Object.values(requirement.dataSources).some(dataSource => 
+          dataSource && Array.isArray(dataSource.dataItems) && dataSource.dataItems.length > 0
+        )
+
+      return hasDataSources || false
+    } catch (error) {
+      console.warn(`⚠️ [SimpleDataBridge] 检查数据项失败:`, error)
+      return true // 发生错误时保守地返回 true，避免误删缓存
+    }
+  }
 
   /**
    * 通知数据更新
