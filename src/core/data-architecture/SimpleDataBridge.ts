@@ -2,18 +2,22 @@
  * 简化数据桥接器 (SimpleDataBridge)
  * 替代复杂的ComponentExecutorManager，提供轻量级的配置→数据转换
  *
- * Task 2.1 重构：集成 UnifiedDataExecutor，移除重复的执行逻辑
+ * 🔥 Task 2.1 修正：集成 MultiLayerExecutorChain，符合需求文档的三层架构
  *
  * 设计原则：
- * 1. 职责单一：只做配置到数据的转换
+ * 1. 职责单一：只做配置格式转换和执行协调
  * 2. 无状态管理：不跟踪执行历史、统计信息
- * 3. 简单直接：移除企业级功能（轮询、连接池等）
+ * 3. 架构合规：使用符合需求文档的多层执行器链
  * 4. 事件驱动：通过回调函数与外部系统通信
- * 5. 执行器委托：使用UnifiedDataExecutor进行实际数据获取
+ * 5. 执行器委托：使用MultiLayerExecutorChain进行完整的数据处理管道
  */
 
-// 🆕 Task 2.1: 导入统一数据执行器
-import { unifiedDataExecutor, type UnifiedDataConfig, type UnifiedDataResult } from './UnifiedDataExecutor'
+// 🔥 Task 2.1 修正: 导入多层执行器链（符合需求文档的三层架构）
+import {
+  MultiLayerExecutorChain,
+  type DataSourceConfiguration,
+  type ExecutionResult
+} from './executors/MultiLayerExecutorChain'
 
 // 🆕 SUBTASK-003: 导入增强数据仓库
 import { dataWarehouse, type EnhancedDataWarehouse } from './DataWarehouse'
@@ -45,6 +49,10 @@ export interface SimpleDataSourceConfig {
     timeout?: number
     [key: string]: any
   }
+  /** 🔥 新增：过滤路径（JSONPath 语法） */
+  filterPath?: string
+  /** 🔥 新增：自定义处理脚本 */
+  processScript?: string
 }
 
 /**
@@ -87,9 +95,12 @@ export class SimpleDataBridge {
   /** 数据仓库实例 */
   private warehouse: EnhancedDataWarehouse = dataWarehouse
 
+  /** 🔥 多层执行器链实例（符合需求文档架构） */
+  private executorChain = new MultiLayerExecutorChain()
+
   /**
    * 执行组件数据获取
-   * 🆕 SUBTASK-003: 集成数据仓库缓存机制
+   * 🔥 重构: 使用 MultiLayerExecutorChain 替代分散的执行逻辑
    * @param requirement 组件数据需求
    * @returns 执行结果
    */
@@ -111,34 +122,51 @@ export class SimpleDataBridge {
         }
       }
 
-      const componentData: Record<string, any> = {}
+      // 🔥 检查数据格式：如果已经是 DataSourceConfiguration 格式，直接使用
+      let dataSourceConfig: DataSourceConfiguration
 
-      // 并行执行所有数据源
-      const promises = requirement.dataSources.map(async dataSource => {
-        try {
-          const result = await this.executeDataSource(dataSource)
-          componentData[dataSource.id] = result
+      if (this.isDataSourceConfiguration(requirement)) {
+        console.log(`🔄 [SimpleDataBridge] 直接使用 DataSourceConfiguration 格式`)
+        dataSourceConfig = requirement as any
+      } else {
+        console.log(`🔄 [SimpleDataBridge] 转换为 DataSourceConfiguration 格式`)
+        dataSourceConfig = this.convertToDataSourceConfiguration(requirement)
+      }
 
-          // 🆕 存储到数据仓库
-          this.warehouse.storeComponentData(requirement.componentId, dataSource.id, result, dataSource.type)
+      console.log(`🔄 [SimpleDataBridge] 委托给多层执行器链执行:`, dataSourceConfig)
 
-          console.log(`✅ [SimpleDataBridge] 数据源执行成功: ${dataSource.id}`)
-        } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error)
-          componentData[dataSource.id] = null
-          console.warn(`⚠️ [SimpleDataBridge] 数据源执行失败: ${dataSource.id} - ${errorMsg}`)
+      // 🔥 使用多层执行器链执行完整的数据处理管道
+      const executionResult: ExecutionResult = await this.executorChain.executeDataProcessingChain(
+        dataSourceConfig,
+        true
+      )
+
+      if (executionResult.success && executionResult.componentData) {
+        console.log(`✅ [SimpleDataBridge] 多层执行器链执行成功:`, executionResult.componentData)
+
+        // 🆕 存储到数据仓库
+        this.warehouse.storeComponentData(
+          requirement.componentId,
+          'complete',
+          executionResult.componentData,
+          'multi-source'
+        )
+
+        // 通知数据更新
+        this.notifyDataUpdate(requirement.componentId, executionResult.componentData)
+
+        return {
+          success: true,
+          data: executionResult.componentData,
+          timestamp: Date.now()
         }
-      })
-
-      await Promise.allSettled(promises)
-
-      // 通知数据更新
-      this.notifyDataUpdate(requirement.componentId, componentData)
-
-      return {
-        success: true,
-        data: componentData,
-        timestamp: Date.now()
+      } else {
+        console.error(`❌ [SimpleDataBridge] 多层执行器链执行失败:`, executionResult.error)
+        return {
+          success: false,
+          error: executionResult.error || '执行失败',
+          timestamp: Date.now()
+        }
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error)
@@ -153,79 +181,57 @@ export class SimpleDataBridge {
   }
 
   /**
-   * 执行单个数据源
-   * Task 2.1 重构：使用 UnifiedDataExecutor 替代重复的执行逻辑
-   * @param dataSource 数据源配置
-   * @returns 数据结果
+   * 🔥 检查是否为 DataSourceConfiguration 格式
+   * @param data 待检查的数据
+   * @returns 是否为 DataSourceConfiguration 格式
    */
-  private async executeDataSource(dataSource: SimpleDataSourceConfig): Promise<any> {
-    // 转换配置格式到统一执行器格式
-    const unifiedConfig: UnifiedDataConfig = this.convertToUnifiedConfig(dataSource)
-
-    console.log(`🔄 [SimpleDataBridge] 委托给统一执行器: ${dataSource.id} (${dataSource.type})`)
-
-    // 使用统一执行器执行
-    const result: UnifiedDataResult = await unifiedDataExecutor.execute(unifiedConfig)
-
-    if (result.success) {
-      console.log(`✅ [SimpleDataBridge] 统一执行器执行成功: ${dataSource.id}`)
-      return result.data
-    } else {
-      console.error(`❌ [SimpleDataBridge] 统一执行器执行失败: ${dataSource.id} - ${result.error}`)
-      throw new Error(result.error || '数据源执行失败')
-    }
+  private isDataSourceConfiguration(data: any): boolean {
+    return (
+      data &&
+      typeof data === 'object' &&
+      'componentId' in data &&
+      'dataSources' in data &&
+      Array.isArray(data.dataSources) &&
+      data.dataSources.length > 0 &&
+      'sourceId' in data.dataSources[0] &&
+      'dataItems' in data.dataSources[0] &&
+      'mergeStrategy' in data.dataSources[0]
+    )
   }
 
   /**
-   * 🆕 Task 2.1: 转换配置格式到统一执行器格式
-   * @param dataSource SimpleDataBridge 的数据源配置
-   * @returns UnifiedDataExecutor 的配置格式
+   * 🔥 新增：转换为 DataSourceConfiguration 格式
+   * 将 SimpleDataBridge 的配置格式转换为 MultiLayerExecutorChain 所需的格式
+   * @param requirement 组件数据需求
+   * @returns DataSourceConfiguration 格式的配置
    */
-  private convertToUnifiedConfig(dataSource: SimpleDataSourceConfig): UnifiedDataConfig {
-    console.log(`🔍 [SimpleDataBridge] 开始转换配置:`, dataSource)
-    const baseConfig: UnifiedDataConfig = {
-      id: dataSource.id,
-      type: dataSource.type as any, // 类型映射
-      enabled: true,
-      config: { ...dataSource.config }
-    }
+  private convertToDataSourceConfiguration(requirement: ComponentDataRequirement): DataSourceConfiguration {
+    console.log(`🔄 [SimpleDataBridge] 转换配置格式到 DataSourceConfiguration:`, requirement)
 
-    // 根据类型进行特殊处理
-    switch (dataSource.type) {
-      case 'static':
-        // 静态数据：直接使用 data 字段
-        break
-
-      case 'http':
-        // HTTP数据：确保有正确的字段映射
-        if (dataSource.config.method) {
-          baseConfig.config.method = dataSource.config.method.toUpperCase() as any
+    const dataSources = requirement.dataSources.map(dataSource => ({
+      sourceId: dataSource.id,
+      dataItems: [
+        {
+          item: {
+            type: dataSource.type,
+            config: dataSource.config
+          },
+          processing: {
+            filterPath: dataSource.filterPath || '$',
+            customScript: dataSource.processScript,
+            defaultValue: {}
+          }
         }
-        break
+      ],
+      mergeStrategy: 'object' as const // 默认使用对象合并策略
+    }))
 
-      case 'json':
-        // JSON数据：确保 jsonContent 字段存在
-        console.log(`🔍 [SimpleDataBridge] 处理JSON类型配置:`, dataSource.config)
-        break
-
-      case 'websocket':
-        // WebSocket数据：保持原有配置
-        break
-
-      case 'file':
-        // 文件数据：保持原有配置
-        break
-
-      case 'data-source-bindings':
-        // 数据源绑定：保持原有配置，UnifiedDataExecutor会处理复杂逻辑
-        console.log(`🔍 [SimpleDataBridge] 处理data-source-bindings类型配置:`, dataSource.config)
-        break
-
-      default:
-        console.warn(`[SimpleDataBridge] 未知数据源类型: ${dataSource.type}，使用默认配置`)
+    return {
+      componentId: requirement.componentId,
+      dataSources,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
     }
-
-    return baseConfig
   }
 
   // 🗑️ Task 2.1: 移除重复的执行器实现

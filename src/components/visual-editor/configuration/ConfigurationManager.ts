@@ -18,6 +18,9 @@ import type {
   InteractionConfiguration
 } from './types'
 
+// 🔥 导入 SimpleDataBridge 用于清除缓存
+import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
+
 // 🆕 Task 1.2: 导入配置事件总线
 import { configEventBus, type ConfigChangeEvent } from '@/core/data-architecture/ConfigEventBus'
 
@@ -164,6 +167,10 @@ export class ConfigurationManager implements IConfigurationManager {
 
   /**
    * 更新配置的某个部分
+   *
+   * 🔥 重要注意：
+   * - 数据源配置使用直接替换，避免 deepMerge 导致的无限循环
+   * - 其他配置使用深度合并，保持向后兼容性
    */
   updateConfiguration<K extends keyof WidgetConfiguration>(
     widgetId: string,
@@ -181,12 +188,17 @@ export class ConfigurationManager implements IConfigurationManager {
     this.previousConfigs.set(widgetId, this.deepClone(currentConfig))
     this.lastUpdatedSection = section
 
-    // 深度合并配置
+    // 🔥 关键修复：数据源配置使用替换而不是合并，避免无限循环
     const currentSectionValue = currentConfig[section]
     const mergedSectionValue =
-      currentSectionValue !== null && currentSectionValue !== undefined
-        ? this.deepMerge(currentSectionValue, config)
-        : config // 如果当前值是 null 或 undefined，直接使用新配置
+      section === 'dataSource'
+        ? (() => {
+            console.log(`🔄 [ConfigurationManager] 数据源配置直接替换 (避免deepMerge循环): ${widgetId}`)
+            return config // 数据源配置直接替换，避免deepMerge导致的循环问题
+          })()
+        : currentSectionValue !== null && currentSectionValue !== undefined
+          ? this.deepMerge(currentSectionValue, config)
+          : config // 如果当前值是 null 或 undefined，直接使用新配置
 
     const updatedConfig = {
       ...currentConfig,
@@ -201,6 +213,12 @@ export class ConfigurationManager implements IConfigurationManager {
 
     // 🆕 持久化到 localStorage
     this.saveToStorage()
+
+    // 🔥 重要修复：清除组件缓存，确保新配置能被执行
+    if (section === 'dataSource') {
+      console.log(`🧹 [ConfigurationManager] 清除组件缓存以执行新配置: ${widgetId}`)
+      simpleDataBridge.clearComponentCache(widgetId)
+    }
 
     console.log(`[ConfigurationManager] 配置部分已更新: ${widgetId}.${section}`)
     // 🔍 [DEBUG-配置仓库] 打印整个配置对象

@@ -32,7 +32,7 @@
  * 🔥 已迁移到新的统一架构
  */
 
-import { ref, onMounted, watch, shallowRef, onBeforeUnmount, computed, type Component } from 'vue'
+import { ref, onMounted, watch, shallowRef, onBeforeUnmount, computed, inject, type Component } from 'vue'
 import { interactionManager } from '@/card2.1/core/interaction-manager'
 import { NAlert } from 'naive-ui'
 import { $t } from '@/locales'
@@ -43,8 +43,6 @@ import { visualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
 import { configurationManager } from '@/components/visual-editor/configuration/ConfigurationManager'
 // 🔥 导入通用数据源映射器
 import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
-// 🆕 Task 1.2: 导入配置事件总线，实现解耦架构
-import { configEventBus, type ConfigChangeEvent } from '@/core/data-architecture/ConfigEventBus'
 
 interface Props {
   componentType: string
@@ -243,6 +241,13 @@ onBeforeUnmount(() => {
   if (executorDataCleanup) {
     executorDataCleanup()
     executorDataCleanup = null
+  }
+
+  // 🔥 架构修复：清理执行器注册
+  const componentExecutorRegistry = inject<Map<string, () => Promise<void>>>('componentExecutorRegistry')
+  if (componentExecutorRegistry) {
+    componentExecutorRegistry.delete(props.nodeId)
+    console.log(`🗑️ [Card2Wrapper] 已清理执行器注册: ${props.nodeId}`)
   }
 })
 
@@ -464,111 +469,6 @@ const getComponentSpecificProps = () => {
   return specificProps
 }
 
-// 辅助函数：设置嵌套属性
-function setNestedProperty(obj: any, path: string, value: any) {
-  const keys = path.split('.')
-  let current = obj
-
-  for (let i = 0; i < keys.length - 1; i++) {
-    const key = keys[i]
-    if (!(key in current)) {
-      current[key] = {}
-    }
-    current = current[key]
-  }
-
-  current[keys[keys.length - 1]] = value
-}
-
-// 🆕 Task 1.2: 配置事件总线处理函数
-/**
- * 判断是否应该触发执行器
- * 添加条件判断逻辑，提高执行器调用的精确性
- */
-function shouldTriggerExecutor(event: ConfigChangeEvent): boolean {
-  // 只处理当前组件的事件
-  if (event.componentId !== props.nodeId) {
-    return false
-  }
-
-  // 只处理数据源配置变更
-  if (event.section !== 'dataSource') {
-    return false
-  }
-
-  // 检查是否有有效的数据源配置
-  const dataSourceConfig = extractDataSourceConfig(event.newConfig?.dataSource)
-  if (!dataSourceConfig) {
-    console.log('⏸️ [Card2Wrapper] 无有效数据源配置，跳过执行器调用')
-    return false
-  }
-
-  // 检查上下文中的执行标志
-  if (event.context?.shouldTriggerExecution === false) {
-    console.log('⏸️ [Card2Wrapper] 上下文标记不需要执行，跳过执行器调用')
-    return false
-  }
-
-  // 避免无意义的重复执行
-  if (event.source === 'system') {
-    console.log('⏸️ [Card2Wrapper] 系统级别变更，跳过执行器调用')
-    return false
-  }
-
-  return true
-}
-
-/**
- * 提取数据源配置，支持多种格式
- */
-function extractDataSourceConfig(dataSource: any): any {
-  if (!dataSource) return null
-
-  if (dataSource.config) {
-    // 旧格式：config 字段
-    console.log('🔍 [Card2Wrapper] 使用 config 格式')
-    return dataSource.config
-  } else if (dataSource.dataSource1 || dataSource.dataSource2 || dataSource.dataSource3) {
-    // 新格式：直接包含 dataSource1、dataSource2 等
-    console.log('🔍 [Card2Wrapper] 使用 dataSourceX 格式')
-    return dataSource
-  } else {
-    console.log('⚠️ [Card2Wrapper] 未识别的数据源格式，尝试直接使用:', dataSource)
-    return dataSource
-  }
-}
-
-/**
- * 数据源配置变更事件处理器
- * 通过事件总线接收配置变更，解耦执行器调用逻辑
- */
-async function handleDataSourceChange(event: ConfigChangeEvent): Promise<void> {
-  console.log('🔄 [Card2Wrapper] 接收到数据源配置变更事件:', {
-    componentId: event.componentId,
-    source: event.source,
-    timestamp: new Date(event.timestamp).toISOString()
-  })
-  console.log('🔍 [Card2Wrapper] 事件详细内容:', JSON.stringify(event, null, 2))
-
-  // 条件性触发执行器
-  if (!shouldTriggerExecutor(event)) {
-    return
-  }
-
-  const dataSourceConfig = extractDataSourceConfig(event.newConfig?.dataSource)
-
-  console.log('🔥 [Card2Wrapper] 检测到数据源配置变化:', dataSourceConfig)
-  console.log('🔍 [Card2Wrapper] 配置详细信息:', JSON.stringify(dataSourceConfig, null, 2))
-  console.log('🚀 [Card2Wrapper] 调用 VisualEditorBridge 更新执行器')
-
-  try {
-    const result = await visualEditorBridge.updateComponentExecutor(props.nodeId, props.componentType, dataSourceConfig)
-    console.log('✅ [Card2Wrapper] VisualEditorBridge 更新成功:', result)
-  } catch (error) {
-    console.error('❌ [Card2Wrapper] VisualEditorBridge 更新失败:', error)
-  }
-}
-
 // 架构简化：直接使用config，不做复杂合并
 
 // 监听metadata变化，用于调试
@@ -589,6 +489,34 @@ onMounted(async () => {
   console.log('🔧 [Card2Wrapper] 传递给组件的数据源:', dataSourcesForComponent)
   console.log('🔧 [Card2Wrapper] 组件类型:', props.componentType)
   console.log('🔧 [Card2Wrapper] 组件实例:', componentToRender.value)
+
+  // 🔥 架构修复：注册组件执行器到EditorDataSourceManager
+  const componentExecutorRegistry = inject<Map<string, () => Promise<void>>>('componentExecutorRegistry')
+  if (componentExecutorRegistry) {
+    // 创建统一的执行器函数
+    const unifiedExecutor = async () => {
+      console.log(`🚀 [Card2Wrapper] 统一执行器被调用: ${props.nodeId}`)
+
+      // 获取最新配置
+      const config = configurationManager.getConfiguration(props.nodeId)
+      if (config?.dataSource) {
+        const dataSourceConfig = config.dataSource.config || config.dataSource
+        const result = await visualEditorBridge.updateComponentExecutor(
+          props.nodeId,
+          props.componentType,
+          dataSourceConfig
+        )
+        console.log(`✅ [Card2Wrapper] 统一执行器完成: ${props.nodeId}`, result)
+      } else {
+        console.log(`ℹ️ [Card2Wrapper] 无数据源配置，跳过执行: ${props.nodeId}`)
+      }
+    }
+
+    componentExecutorRegistry.set(props.nodeId, unifiedExecutor)
+    console.log(`📝 [Card2Wrapper] 执行器已注册到EditorDataSourceManager: ${props.nodeId}`)
+  } else {
+    console.warn('❌ [Card2Wrapper] 未找到componentExecutorRegistry，无法注册执行器')
+  }
 
   if (!componentToRender.value) {
     loadComponent()
@@ -632,10 +560,12 @@ onMounted(async () => {
       console.log('🔥 [Card2Wrapper] 接收到执行器数据更新:', componentId, data)
       console.log('🔥 [Card2Wrapper] 接收到的data完整结构:', JSON.stringify(data, null, 2))
 
-      // 🔥 调试：检查接收到的数据详情
-      if (data.dataSource1) {
+      // 🔥 修复：安全地检查接收到的数据详情
+      if (data && data.dataSource1) {
         console.log('🔥 [Card2Wrapper] 接收到的dataSource1:', JSON.stringify(data.dataSource1, null, 2))
         console.log('🔥 [Card2Wrapper] 接收到的dataSource1.age:', data.dataSource1.age)
+      } else {
+        console.log('🔥 [Card2Wrapper] 接收到空数据或无dataSource1:', data)
       }
 
       // 🔥 调试：更新前的executorData状态
@@ -675,16 +605,9 @@ onMounted(async () => {
     console.log('ℹ️ [Card2Wrapper] 无保存配置，完整配置:', savedConfig)
     console.log('ℹ️ [Card2Wrapper] 数据源配置:', savedConfig?.dataSource)
 
-    // 🆕 Task 1.2: 使用配置事件总线替代直接监听ConfigurationManager
-    // 实现配置变更与执行器调用的解耦
-    const configChangeCleanup = configEventBus.onConfigChange('data-source-changed', handleDataSourceChange)
-
-    // 在组件卸载时清理配置监听器
-    onBeforeUnmount(() => {
-      if (configChangeCleanup) {
-        configChangeCleanup()
-      }
-    })
+    // 🔥 架构修复：完全移除直接配置监听
+    // EditorDataSourceManager 现在通过componentExecutorRegistry调用我们注册的统一执行器
+    console.log(`📋 [Card2Wrapper] 组件 ${props.nodeId} 完全依赖EditorDataSourceManager统一调度`)
   }
 
   // 🔥 监听组件状态更新事件

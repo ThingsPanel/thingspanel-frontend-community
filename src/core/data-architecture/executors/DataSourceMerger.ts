@@ -13,6 +13,11 @@ export type MergeStrategy =
       /** 拼接成大数组 */
     }
   | {
+      type: 'select'
+      /** 选择其中一个数据项 */
+      selectedIndex?: number
+    }
+  | {
       type: 'script'
       /** 自定义脚本处理list */
       script: string
@@ -54,6 +59,8 @@ export class DataSourceMerger implements IDataSourceMerger {
           return await this.mergeAsObject(items)
         case 'array':
           return await this.mergeAsArray(items)
+        case 'select':
+          return await this.selectOne(items, (finalStrategy as any).selectedIndex)
         case 'script':
           return await this.mergeByScript(items, finalStrategy.script)
         default:
@@ -103,6 +110,31 @@ export class DataSourceMerger implements IDataSourceMerger {
       return result
     } catch (error) {
       console.error('DataSourceMerger: 对象合并失败', error)
+      return {}
+    }
+  }
+
+  /**
+   * 🔥 新增：选择其中一个数据项
+   * 根据用户指定的索引返回特定的数据项
+   */
+  private async selectOne(items: any[], selectedIndex?: number): Promise<any> {
+    try {
+      // 默认选择第一个数据项（索引0）
+      const index = selectedIndex ?? 0
+      
+      // 边界检查
+      if (index < 0 || index >= items.length) {
+        console.warn(`DataSourceMerger: 选择索引 ${index} 超出范围 (0-${items.length-1})，返回第一个数据项`)
+        return items[0] ?? {}
+      }
+
+      const selectedItem = items[index]
+      console.log(`✅ DataSourceMerger: 选择第${index + 1}个数据项 (共${items.length}个)`, selectedItem)
+      
+      return selectedItem ?? {}
+    } catch (error) {
+      console.error('DataSourceMerger: 选择数据项失败', error)
       return {}
     }
   }
@@ -182,6 +214,7 @@ export class DataSourceMerger implements IDataSourceMerger {
     switch (strategy.type) {
       case 'object':
       case 'array':
+      case 'select':
         return true
       case 'script':
         return !!(strategy as any).script

@@ -98,8 +98,56 @@ export class VisualEditorBridge {
 
     // 处理配置中的数据源
     if (config && typeof config === 'object') {
+      // 🆕 处理新的 DataSourceConfiguration 格式
+      if (config.dataSources && Array.isArray(config.dataSources)) {
+        console.log(`[VisualEditorBridge] 处理新 DataSourceConfiguration 格式:`, config.dataSources)
+
+        config.dataSources.forEach((dataSource: any) => {
+          if (dataSource.sourceId && dataSource.dataItems && Array.isArray(dataSource.dataItems)) {
+            // 🔥 关键修复：保持数据源的完整性，不要拆分成独立数据源
+            console.log(
+              `🔍 [VisualEditorBridge] 处理数据源 ${dataSource.sourceId}，包含 ${dataSource.dataItems.length} 个数据项`
+            )
+
+            // 保持原有的数据源结构，让 MultiLayerExecutorChain 处理多数据项合并
+            const processedDataItems = dataSource.dataItems
+              .map((dataItem: any, itemIndex: number) => {
+                if (dataItem && dataItem.item) {
+                  console.log(
+                    `🔍 [VisualEditorBridge] 转换数据源 ${dataSource.sourceId} 的第 ${itemIndex + 1} 个数据项:`,
+                    dataItem
+                  )
+
+                  return {
+                    item: {
+                      type: dataItem.item.type,
+                      config: this.convertItemConfig(dataItem.item)
+                    },
+                    processing: {
+                      filterPath: dataItem.processing?.filterPath || '$',
+                      customScript: dataItem.processing?.customScript,
+                      defaultValue: {}
+                    }
+                  }
+                }
+                return null
+              })
+              .filter(Boolean)
+
+            // 创建单一数据源配置，包含所有数据项和合并策略
+            dataSources.push({
+              sourceId: dataSource.sourceId,
+              dataItems: processedDataItems,
+              mergeStrategy: dataSource.mergeStrategy || { type: 'object' }
+            })
+          }
+        })
+
+        console.log(`[VisualEditorBridge] DataSourceConfiguration 转换完成，共 ${dataSources.length} 个数据源`)
+      }
+
       // 🆕 处理 rawDataList 结构（来自数据源配置表单）
-      if (config.rawDataList && Array.isArray(config.rawDataList)) {
+      else if (config.rawDataList && Array.isArray(config.rawDataList)) {
         console.log(`[VisualEditorBridge] 处理 rawDataList 结构:`, config.rawDataList)
 
         config.rawDataList.forEach((item: any, index: number) => {
@@ -174,6 +222,36 @@ export class VisualEditorBridge {
       componentType,
       dataSources,
       enabled: true
+    }
+  }
+
+  /**
+   * 转换数据项配置，处理字段映射
+   */
+  private convertItemConfig(item: any): any {
+    const { type, config } = item
+
+    switch (type) {
+      case 'json':
+        // JSON类型：jsonString → jsonContent
+        return {
+          ...config,
+          jsonContent: config.jsonString || config.jsonContent
+        }
+
+      case 'http':
+        // HTTP类型：保持原有字段
+        return config
+
+      case 'script':
+        // Script类型：script → scriptContent
+        return {
+          ...config,
+          scriptContent: config.script || config.scriptContent
+        }
+
+      default:
+        return config
     }
   }
 }

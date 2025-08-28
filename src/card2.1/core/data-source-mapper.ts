@@ -128,6 +128,15 @@ export class DataSourceMapper {
       }
     })
 
+    // 🔥 策略3: 处理多数据项合并场景（已被执行器合并后的数据）
+    // 现在执行器应该已经完成了合并，检查是否有合并后的数据
+    const hasAnyValidData = dataSourceKeys.some(key => key in executorData && executorData[key] !== null)
+
+    if (hasAnyValidData) {
+      console.log(`🔍 [DataSourceMapper] 检测到已合并的数据源`)
+      return result // 使用策略2的结果
+    }
+
     return result
   }
 

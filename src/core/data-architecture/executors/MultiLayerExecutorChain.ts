@@ -112,8 +112,16 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
 
       // 处理每个数据源
       for (const dataSourceConfig of config.dataSources) {
+        console.log(
+          `🔍 [DEBUG] [MultiLayerExecutorChain] 处理数据源: ${dataSourceConfig.sourceId}, 数据项数量: ${dataSourceConfig.dataItems.length}`
+        )
         try {
           const sourceResult = await this.processDataSource(dataSourceConfig, executionState)
+          console.log(`📊 [DEBUG] [MultiLayerExecutorChain] 数据源 ${dataSourceConfig.sourceId} 处理结果:`, {
+            success: sourceResult.success,
+            hasData: Object.keys(sourceResult.data || {}).length > 0,
+            dataPreview: JSON.stringify(sourceResult.data).substring(0, 100) + '...'
+          })
           dataSourceResults.push(sourceResult)
         } catch (error) {
           console.error('MultiLayerExecutorChain: 数据源处理失败', error)
@@ -142,12 +150,15 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
 
       const executionTime = Date.now() - startTime
 
+      // 🔥 修复：执行成功就是成功，无论数据是否为空
       return {
-        success: Object.keys(componentData).length > 0,
+        success: true, // 只要没有异常就是成功
         componentData,
         executionTime,
         timestamp: Date.now(),
-        executionState
+        executionState,
+        // 添加辅助信息
+        isEmpty: Object.keys(componentData).length === 0
       }
     } catch (error) {
       const executionTime = Date.now() - startTime
@@ -269,7 +280,8 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
       return false
     }
 
-    return config.dataSources.every(ds => ds.sourceId && ds.dataItems && ds.dataItems.length > 0 && ds.mergeStrategy)
+    // 允许数据项数组为空，这样可以返回 null 数据
+    return config.dataSources.every(ds => ds.sourceId && Array.isArray(ds.dataItems) && ds.mergeStrategy)
   }
 
   /**

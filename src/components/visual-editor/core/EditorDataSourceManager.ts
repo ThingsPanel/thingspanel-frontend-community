@@ -9,6 +9,8 @@ import { simpleConfigGenerator, dataSourceSystem } from '@/core/data-source-syst
 // 注意：simpleDataExecutor 已被 UnifiedDataExecutor 替代
 import { unifiedDataExecutor } from '@/core/data-architecture/UnifiedDataExecutor'
 import { useGlobalPollingManager } from './GlobalPollingManager'
+// 🔥 关键导入：配置事件总线
+import { configEventBus, type ConfigChangeEvent } from '@/core/data-architecture/ConfigEventBus'
 import type {
   SimpleDataSourceConfig,
   ExecutionResult,
@@ -115,6 +117,9 @@ export class EditorDataSourceManager {
     try {
       // 初始化数据源系统
       await this.initializeDataSourceSystem()
+
+      // 🔥 关键修复：设置配置事件监听 - 这是整个链路的关键环节！
+      this.setupConfigurationEventListener()
 
       // 设置全局错误处理
       this.setupErrorHandling()
@@ -503,6 +508,60 @@ export class EditorDataSourceManager {
     }
 
     console.log('✅ [EditorDataSourceManager] 数据源系统初始化验证通过')
+  }
+
+  /**
+   * 🔥 关键修复：设置配置事件监听器
+   * 监听 ConfigurationManager 发出的配置变更事件，触发对应组件的数据执行
+   */
+  private setupConfigurationEventListener(): void {
+    console.log('🎧 [EditorDataSourceManager] 设置配置事件监听器...')
+
+    // 🔥 修复无限循环：只监听一个事件类型，避免重复执行
+    // 只监听数据源特定变更事件，避免与config-changed重复
+    configEventBus.onConfigChange('data-source-changed', (event: ConfigChangeEvent) => {
+      console.log('🔥 [EditorDataSourceManager] 接收到数据源变更事件:', {
+        componentId: event.componentId,
+        section: event.section,
+        triggerExecution: event.context?.shouldTriggerExecution
+      })
+
+      if (event.context?.shouldTriggerExecution !== false) {
+        console.log(`⚡ [EditorDataSourceManager] 触发数据源执行: ${event.componentId}`)
+        this.triggerComponentExecution(event.componentId, event.newConfig.dataSource)
+      } else {
+        console.log(`⏸️ [EditorDataSourceManager] 跳过执行: ${event.componentId}`)
+      }
+    })
+
+    console.log('✅ [EditorDataSourceManager] 配置事件监听器设置完成')
+  }
+
+  /**
+   * 触发组件执行
+   */
+  private async triggerComponentExecution(componentId: string, dataSourceConfig: any): Promise<void> {
+    try {
+      console.log(`🚀 [EditorDataSourceManager] 开始执行组件数据源: ${componentId}`)
+
+      // 检查组件执行器是否注册
+      if (!this.componentExecutorRegistry) {
+        console.warn('❌ [EditorDataSourceManager] 组件执行器注册表未设置，无法触发执行')
+        return
+      }
+
+      const componentExecutor = this.componentExecutorRegistry.get(componentId)
+      if (!componentExecutor) {
+        console.warn(`❌ [EditorDataSourceManager] 未找到组件执行器: ${componentId}`)
+        return
+      }
+
+      // 执行组件数据源
+      await componentExecutor()
+      console.log(`✅ [EditorDataSourceManager] 组件数据源执行完成: ${componentId}`)
+    } catch (error) {
+      console.error(`❌ [EditorDataSourceManager] 组件数据源执行失败: ${componentId}`, error)
+    }
   }
 
   /**
