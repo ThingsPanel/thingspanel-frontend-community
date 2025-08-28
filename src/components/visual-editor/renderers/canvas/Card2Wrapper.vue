@@ -501,12 +501,12 @@ onMounted(async () => {
       const config = configurationIntegrationBridge.getConfiguration(props.nodeId)
       console.log(`🔍 [Card2Wrapper] 获取到的配置:`, config)
       console.log(`🔍 [Card2Wrapper] dataSource配置:`, config?.dataSource)
-      
+
       if (config?.dataSource) {
         // 🔥 修复：直接使用dataSource配置，无需再访问config属性
         const dataSourceConfig = config.dataSource
         console.log(`🔄 [Card2Wrapper] 执行数据源配置:`, dataSourceConfig)
-        
+
         const result = await visualEditorBridge.updateComponentExecutor(
           props.nodeId,
           props.componentType,
@@ -600,7 +600,7 @@ onMounted(async () => {
       // 🔥 修复：直接使用整个dataSource配置
       const dataSourceConfig = savedConfig.dataSource
       console.log(`🔄 [Card2Wrapper] 初始化执行数据源配置:`, dataSourceConfig)
-      
+
       const result = await visualEditorBridge.updateComponentExecutor(
         props.nodeId,
         props.componentType,

@@ -119,13 +119,13 @@ watch(
     if (newValue) {
       const newContentHash = JSON.stringify(newValue)
       const currentContentHash = JSON.stringify(currentStrategy.value)
-      
+
       if (newContentHash !== currentContentHash) {
         console.log('🔄 [DataSourceMergeStrategyEditor] props内容变化，同步本地状态:', newValue)
         isUpdatingFromProps.value = true
         currentStrategy.value = { ...newValue }
         lastEmittedHash.value = newContentHash // 更新哈希，防止回环
-        
+
         // 在下一个tick清除标志
         nextTick(() => {
           isUpdatingFromProps.value = false

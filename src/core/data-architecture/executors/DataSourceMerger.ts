@@ -55,7 +55,7 @@ export class DataSourceMerger implements IDataSourceMerger {
       const finalStrategy = this.selectDefaultStrategy(items, strategy)
 
       console.log(`🚀 [DataSourceMerger] 开始执行合并策略: ${finalStrategy.type}`)
-      
+
       switch (finalStrategy.type) {
         case 'object':
           const objectResult = await this.mergeAsObject(items)
@@ -94,7 +94,7 @@ export class DataSourceMerger implements IDataSourceMerger {
       console.log('📦 [DataSourceMerger] 未指定合并策略，使用默认 object 策略')
       return { type: 'object' }
     }
-    
+
     console.log(`📋 [DataSourceMerger] 使用指定合并策略: ${strategy.type} (数据项数量: ${items.length})`)
     return strategy
   }
@@ -134,16 +134,16 @@ export class DataSourceMerger implements IDataSourceMerger {
     try {
       // 默认选择第一个数据项（索引0）
       const index = selectedIndex ?? 0
-      
+
       // 边界检查
       if (index < 0 || index >= items.length) {
-        console.warn(`DataSourceMerger: 选择索引 ${index} 超出范围 (0-${items.length-1})，返回第一个数据项`)
+        console.warn(`DataSourceMerger: 选择索引 ${index} 超出范围 (0-${items.length - 1})，返回第一个数据项`)
         return items[0] ?? {}
       }
 
       const selectedItem = items[index]
       console.log(`✅ DataSourceMerger: 选择第${index + 1}个数据项 (共${items.length}个)`, selectedItem)
-      
+
       return selectedItem ?? {}
     } catch (error) {
       console.error('DataSourceMerger: 选择数据项失败', error)

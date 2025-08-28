@@ -84,21 +84,7 @@
                   selectedWidget: selectedWidget?.id
                 })
               "
-            >
-              <!-- 调试信息 -->
-              <div style="color: red; font-size: 12px; margin-bottom: 10px">
-                🔍 DEBUG: 数据源配置渲染中
-                <br />
-                - activeTab: {{ activeTab }}
-                <br />
-                - layer.name: {{ layer.name }}
-                <br />
-                - selectedWidget: {{ selectedWidget?.id }}
-                <br />
-                - componentDataSources: {{ componentDataSources ? Object.keys(componentDataSources) : 'null' }}
-                <br />
-                - dataSourceConfig: {{ Object.keys(dataSourceConfig || {}) }}
-              </div>
+            >   
               <!-- 使用现有的数据源配置组件 -->
               <!-- 🔄 使用v-model双向绑定取代手动事件处理 -->
               <component

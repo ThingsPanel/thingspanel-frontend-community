@@ -33,25 +33,24 @@ const runFullTests = async () => {
   testStatus.running = true
   testStatus.completed = false
   testStatus.results = []
-  
+
   try {
     console.log('🚀 开始新配置管理系统测试...')
-    
+
     // 重定向console.log到UI
     const originalLog = console.log
     console.log = (...args: any[]) => {
       testStatus.results.push(args.join(' '))
       originalLog.apply(console, args)
     }
-    
+
     await runNewConfigSystemTests()
-    
+
     // 恢复console.log
     console.log = originalLog
-    
+
     testStatus.completed = true
     testStatus.results.push('✅ 所有测试完成！')
-    
   } catch (error) {
     console.error('❌ 测试失败:', error)
     testStatus.results.push(`❌ 测试失败: ${error}`)
@@ -66,66 +65,73 @@ const runFullTests = async () => {
 const testBasicOperations = async () => {
   testStatus.results = []
   testStatus.results.push('🧪 开始基本操作测试...')
-  
+
   const testComponentId = 'ui-test-component'
-  
+
   try {
     // 初始化配置
     configurationStateManager.initializeConfiguration(testComponentId)
     testStatus.results.push('✅ 配置初始化成功')
-    
+
     // 获取配置
     const config = configurationStateManager.getConfiguration(testComponentId)
     testStatus.results.push(`✅ 获取配置成功: ${config ? 'YES' : 'NO'}`)
-    
+
     // 获取版本信息
     const version = configurationStateManager.getConfigurationVersion(testComponentId)
     testStatus.results.push(`✅ 版本信息: v${version?.version} (${version?.contentHash})`)
-    
+
     // 更新配置
     const updateResult = configurationStateManager.updateConfigurationSection(
-      testComponentId, 
-      'dataSource', 
+      testComponentId,
+      'dataSource',
       {
         componentId: testComponentId,
-        dataSources: [{
-          sourceId: 'test-source',
-          dataItems: [{
-            item: { type: 'json', config: { jsonString: '{"ui": "test"}' } },
-            processing: { filterPath: '$' }
-          }],
-          mergeStrategy: { type: 'object' }
-        }],
+        dataSources: [
+          {
+            sourceId: 'test-source',
+            dataItems: [
+              {
+                item: { type: 'json', config: { jsonString: '{"ui": "test"}' } },
+                processing: { filterPath: '$' }
+              }
+            ],
+            mergeStrategy: { type: 'object' }
+          }
+        ],
         createdAt: Date.now(),
         updatedAt: Date.now()
-      }, 
+      },
       'user'
     )
     testStatus.results.push(`✅ 配置更新结果: ${updateResult}`)
-    
+
     // 重复更新相同内容（应该被去重）
     const duplicateResult = configurationStateManager.updateConfigurationSection(
-      testComponentId, 
-      'dataSource', 
+      testComponentId,
+      'dataSource',
       {
         componentId: testComponentId,
-        dataSources: [{
-          sourceId: 'test-source',
-          dataItems: [{
-            item: { type: 'json', config: { jsonString: '{"ui": "test"}' } },
-            processing: { filterPath: '$' }
-          }],
-          mergeStrategy: { type: 'object' }
-        }],
+        dataSources: [
+          {
+            sourceId: 'test-source',
+            dataItems: [
+              {
+                item: { type: 'json', config: { jsonString: '{"ui": "test"}' } },
+                processing: { filterPath: '$' }
+              }
+            ],
+            mergeStrategy: { type: 'object' }
+          }
+        ],
         createdAt: Date.now(),
         updatedAt: Date.now()
-      }, 
+      },
       'user'
     )
     testStatus.results.push(`✅ 重复更新去重结果: ${duplicateResult} (应该为false)`)
-    
+
     testStatus.results.push('🎉 基本操作测试完成！')
-    
   } catch (error) {
     testStatus.results.push(`❌ 基本操作测试失败: ${error}`)
   }
@@ -137,14 +143,17 @@ const testBasicOperations = async () => {
 const checkSystemStatus = () => {
   systemStatus.stateManagerLoaded = !!configurationStateManager
   systemStatus.bridgeLoaded = !!configurationIntegrationBridge
-  
+
   // 检查桥接器是否已初始化
-  configurationIntegrationBridge.initialize().then(() => {
-    systemStatus.bridgeInitialized = true
-  }).catch(error => {
-    console.error('桥接器初始化失败:', error)
-    systemStatus.bridgeInitialized = false
-  })
+  configurationIntegrationBridge
+    .initialize()
+    .then(() => {
+      systemStatus.bridgeInitialized = true
+    })
+    .catch(error => {
+      console.error('桥接器初始化失败:', error)
+      systemStatus.bridgeInitialized = false
+    })
 }
 
 /**
@@ -184,15 +193,28 @@ onMounted(() => {
       <!-- 系统概述 -->
       <n-card title="🚀 新配置管理系统概述">
         <n-space vertical>
-          <n-text>
-            新配置管理系统彻底解决了原本添加第二个数据项时的无限循环问题，主要特性：
-          </n-text>
+          <n-text>新配置管理系统彻底解决了原本添加第二个数据项时的无限循环问题，主要特性：</n-text>
           <n-ul>
-            <n-li><strong>内容哈希去重</strong> - 相同内容不会重复处理，即使对象引用不同</n-li>
-            <n-li><strong>循环检测机制</strong> - 防止同一组件同时进行多个配置更新</n-li>
-            <n-li><strong>配置版本控制</strong> - 每个配置都有版本号和时间戳</n-li>
-            <n-li><strong>防抖处理</strong> - 避免频繁的配置更新事件</n-li>
-            <n-li><strong>向后兼容</strong> - 通过集成桥接器保持与现有代码的兼容性</n-li>
+            <n-li>
+              <strong>内容哈希去重</strong>
+              - 相同内容不会重复处理，即使对象引用不同
+            </n-li>
+            <n-li>
+              <strong>循环检测机制</strong>
+              - 防止同一组件同时进行多个配置更新
+            </n-li>
+            <n-li>
+              <strong>配置版本控制</strong>
+              - 每个配置都有版本号和时间戳
+            </n-li>
+            <n-li>
+              <strong>防抖处理</strong>
+              - 避免频繁的配置更新事件
+            </n-li>
+            <n-li>
+              <strong>向后兼容</strong>
+              - 通过集成桥接器保持与现有代码的兼容性
+            </n-li>
           </n-ul>
         </n-space>
       </n-card>
@@ -200,8 +222,8 @@ onMounted(() => {
       <!-- 测试控制面板 -->
       <n-card title="🧪 测试控制面板">
         <n-space :size="16">
-          <n-button 
-            type="primary" 
+          <n-button
+            type="primary"
             :loading="testStatus.running"
             :disabled="!systemStatus.stateManagerLoaded"
             @click="runFullTests"
@@ -212,31 +234,21 @@ onMounted(() => {
             运行完整测试套件
           </n-button>
 
-          <n-button 
-            type="info" 
-            :disabled="!systemStatus.stateManagerLoaded"
-            @click="testBasicOperations"
-          >
+          <n-button type="info" :disabled="!systemStatus.stateManagerLoaded" @click="testBasicOperations">
             <template #icon>
               <span>🔧</span>
             </template>
             测试基本操作
           </n-button>
 
-          <n-button 
-            secondary 
-            @click="clearResults"
-          >
+          <n-button secondary @click="clearResults">
             <template #icon>
               <span>🧹</span>
             </template>
             清空结果
           </n-button>
 
-          <n-button 
-            secondary 
-            @click="checkSystemStatus"
-          >
+          <n-button secondary @click="checkSystemStatus">
             <template #icon>
               <span>🔄</span>
             </template>
@@ -262,22 +274,28 @@ onMounted(() => {
 
           <n-scrollbar v-else style="max-height: 500px">
             <n-space vertical :size="8">
-              <div 
-                v-for="(result, index) in testStatus.results" 
+              <div
+                v-for="(result, index) in testStatus.results"
                 :key="index"
                 class="test-result-item"
                 :class="{
-                  'success': result.includes('✅'),
-                  'error': result.includes('❌'),
-                  'info': result.includes('🔍') || result.includes('📝'),
-                  'warning': result.includes('⚠️')
+                  success: result.includes('✅'),
+                  error: result.includes('❌'),
+                  info: result.includes('🔍') || result.includes('📝'),
+                  warning: result.includes('⚠️')
                 }"
               >
-                <n-text 
-                  :type="result.includes('❌') ? 'error' : 
-                       result.includes('✅') ? 'success' :
-                       result.includes('⚠️') ? 'warning' : 'default'"
-                  style="font-family: monospace; font-size: 12px; white-space: pre-wrap;"
+                <n-text
+                  :type="
+                    result.includes('❌')
+                      ? 'error'
+                      : result.includes('✅')
+                        ? 'success'
+                        : result.includes('⚠️')
+                          ? 'warning'
+                          : 'default'
+                  "
+                  style="font-family: monospace; font-size: 12px; white-space: pre-wrap"
                 >
                   {{ result }}
                 </n-text>
@@ -299,11 +317,13 @@ onMounted(() => {
             <n-li>观察测试结果，确认没有无限循环或错误</n-li>
             <n-li>也可以运行"测试基本操作"进行简单验证</n-li>
           </n-ol>
-          
+
           <n-alert type="info" style="margin-top: 16px">
             <template #icon><span>💡</span></template>
             <strong>控制台调试：</strong>
-            你也可以在浏览器控制台运行 <n-text code>window.testNewConfigSystem()</n-text> 来执行测试
+            你也可以在浏览器控制台运行
+            <n-text code>window.testNewConfigSystem()</n-text>
+            来执行测试
           </n-alert>
         </n-space>
       </n-card>
@@ -350,7 +370,7 @@ onMounted(() => {
 }
 
 /* 深色主题适配 */
-[data-theme="dark"] .test-result-item {
+[data-theme='dark'] .test-result-item {
   border-color: var(--border-color);
   background: var(--body-color);
 }

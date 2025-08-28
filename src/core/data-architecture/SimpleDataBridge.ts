@@ -117,17 +117,17 @@ export class SimpleDataBridge {
         const hasDataItems = this.hasValidDataItems(requirement)
         console.log(`🔍 [SimpleDataBridge] 缓存检查: ${requirement.componentId}, hasDataItems: ${hasDataItems}`)
         console.log(`🔍 [SimpleDataBridge] 传入的requirement结构:`, JSON.stringify(requirement, null, 2))
-        
+
         if (hasDataItems) {
           console.log(`🎯 [SimpleDataBridge] 使用缓存数据: ${requirement.componentId}`)
-          
+
           // 🔥 修复：如果缓存数据被 'complete' 包装，需要解包
           let finalData = cachedData
           if (cachedData && typeof cachedData === 'object' && 'complete' in cachedData) {
             console.log(`🔧 [SimpleDataBridge] 检测到嵌套格式，解包 'complete' 数据`)
             finalData = cachedData.complete
           }
-          
+
           this.notifyDataUpdate(requirement.componentId, finalData)
           return {
             success: true,
@@ -265,15 +265,14 @@ export class SimpleDataBridge {
       // 如果是 DataSourceConfiguration 格式
       if (this.isDataSourceConfiguration(requirement)) {
         const config = requirement as any as DataSourceConfiguration
-        return config.dataSources?.some(dataSource => 
-          dataSource.dataItems && dataSource.dataItems.length > 0
-        ) || false
+        return config.dataSources?.some(dataSource => dataSource.dataItems && dataSource.dataItems.length > 0) || false
       }
 
       // 如果是其他格式，检查是否有数据源配置
-      const hasDataSources = requirement.dataSources && 
-        Object.values(requirement.dataSources).some(dataSource => 
-          dataSource && Array.isArray(dataSource.dataItems) && dataSource.dataItems.length > 0
+      const hasDataSources =
+        requirement.dataSources &&
+        Object.values(requirement.dataSources).some(
+          dataSource => dataSource && Array.isArray(dataSource.dataItems) && dataSource.dataItems.length > 0
         )
 
       return hasDataSources || false

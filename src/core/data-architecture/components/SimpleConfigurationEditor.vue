@@ -164,15 +164,15 @@ const handleMergeStrategyUpdate = (dataSourceKey: string, strategy: any) => {
   console.log(`📝 [SimpleConfigurationEditor] 合并策略已更新: ${dataSourceKey}`, strategy)
 
   console.log(`🔄 [SimpleConfigurationEditor] 合并策略更新，使用新配置管理系统: ${dataSourceKey}`, strategy)
-  
+
   // 🔥 使用新配置管理系统：内容哈希去重和版本控制
   // 重建完整配置并提交
   const rebuiltConfig = rebuildCompleteDataSourceConfiguration()
-  
+
   // 清除组件缓存，确保新策略生效
   simpleDataBridge.clearComponentCache(props.componentId)
   console.log(`🧹 [SimpleConfigurationEditor] 已清除组件缓存: ${props.componentId}`)
-  
+
   // 使用新配置管理系统更新配置（内置循环检测和去重）
   configurationManager.updateConfiguration(props.componentId, 'dataSource', rebuiltConfig)
 }
@@ -369,12 +369,14 @@ const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
     // 获取合并策略
     const strategy = mergeStrategies[sourceId] || { type: 'object' }
     let mergeStrategy: MergeStrategy
-    
+
     if (strategy.type === 'script') {
       mergeStrategy = { type: 'script', script: strategy.script }
     } else if (strategy.type === 'select') {
       mergeStrategy = { type: 'select', selectedIndex: strategy.selectedIndex }
-      console.log(`🔍 [SimpleConfigurationEditor] 构建select策略: sourceId=${sourceId}, selectedIndex=${strategy.selectedIndex}`)
+      console.log(
+        `🔍 [SimpleConfigurationEditor] 构建select策略: sourceId=${sourceId}, selectedIndex=${strategy.selectedIndex}`
+      )
     } else {
       mergeStrategy = { type: strategy.type }
     }
@@ -573,7 +575,7 @@ const restoreDataItemsFromConfig = () => {
       console.log('   - existingConfig:', !!existingConfig)
       console.log('   - dataSourceConfig:', !!dataSourceConfig)
       console.log('   - dataSources:', dataSourceConfig?.dataSources)
-      
+
       // 如果没有配置，但有数据源选项，初始化空的数据项列表
       dataSourceOptions.value.forEach(option => {
         if (!dataSourceItems[option.value]) {
@@ -637,18 +639,18 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
 // 组件挂载时恢复显示状态并设置集成
 onMounted(async () => {
   console.log('🚀 [SimpleConfigurationEditor] 组件初始化开始...')
-  
+
   try {
     // 🔥 新架构：初始化配置集成桥接器
     console.log('🔧 [SimpleConfigurationEditor] 初始化配置管理器...')
     await configurationManager.initialize()
-    
+
     // 为当前组件设置数据源执行集成
     if ('setupComponentDataSourceIntegration' in configurationManager) {
-      (configurationManager as any).setupComponentDataSourceIntegration(props.componentId)
+      ;(configurationManager as any).setupComponentDataSourceIntegration(props.componentId)
       console.log('✅ [SimpleConfigurationEditor] 数据源执行集成已设置')
     }
-    
+
     // 🔥 修复：确保组件配置存在，如果不存在则初始化
     const existingConfig = configurationManager.getConfiguration(props.componentId)
     if (!existingConfig) {
@@ -657,10 +659,10 @@ onMounted(async () => {
     } else {
       console.log('📖 [SimpleConfigurationEditor] 找到现有配置，开始恢复显示状态...')
     }
-    
+
     // 恢复显示状态
     restoreDataItemsFromConfig()
-    
+
     console.log('✅ [SimpleConfigurationEditor] 组件初始化完成')
   } catch (error) {
     console.error('❌ [SimpleConfigurationEditor] 组件初始化失败:', error)
@@ -695,11 +697,11 @@ const getEditData = () => {
  */
 const getCurrentDataSourceExampleData = () => {
   if (!currentDataSourceKey.value) return undefined
-  
+
   const currentDataSource = dataSourceOptions.value.find(opt => opt.value === currentDataSourceKey.value)
   // 🔥 修复：支持两种示例数据格式
   const exampleData = currentDataSource?.originalData?.config?.exampleData || currentDataSource?.originalData?.example
-  
+
   console.log('🔍 [SimpleConfigurationEditor] 获取示例数据:', {
     dataSourceKey: currentDataSourceKey.value,
     originalData: currentDataSource?.originalData,
@@ -707,7 +709,7 @@ const getCurrentDataSourceExampleData = () => {
     exampleDataFromRoot: currentDataSource?.originalData?.example,
     finalExampleData: exampleData
   })
-  
+
   return exampleData
 }
 
@@ -718,9 +720,9 @@ const getCurrentDataSourceExampleData = () => {
  */
 const getItemTypeColor = (type: string) => {
   const colorMap = {
-    'json': 'info',
-    'script': 'warning', 
-    'http': 'success'
+    json: 'info',
+    script: 'warning',
+    http: 'success'
   }
   return colorMap[type] || 'default'
 }
@@ -730,9 +732,9 @@ const getItemTypeColor = (type: string) => {
  */
 const getItemTypeIcon = (type: string) => {
   const iconMap = {
-    'json': '📄',
-    'script': '⚡',
-    'http': '🌐'
+    json: '📄',
+    script: '⚡',
+    http: '🌐'
   }
   return iconMap[type] || '📋'
 }
@@ -767,12 +769,12 @@ const hasProcessingConfig = (item: any) => {
 const getProcessingSummary = (item: any) => {
   const config = item.processingConfig
   if (!config) return ''
-  
+
   const parts = []
   if (config.jsonPath) parts.push(`路径: ${config.jsonPath}`)
   if (config.scriptCode) parts.push('自定义脚本')
   if (config.defaultValue) parts.push(`默认: ${config.defaultValue}`)
-  
+
   return parts.join(', ')
 }
 
@@ -781,14 +783,14 @@ const getProcessingSummary = (item: any) => {
  */
 const getMergeStrategyDisplay = (dataSourceKey: string) => {
   const strategy = mergeStrategies[dataSourceKey] || { type: 'object' }
-  
+
   const displayMap = {
-    'object': '对象合并',
-    'array': '数组组成',
-    'select': `选择第${(strategy.selectedIndex || 0) + 1}项`,
-    'script': '自定义脚本'
+    object: '对象合并',
+    array: '数组组成',
+    select: `选择第${(strategy.selectedIndex || 0) + 1}项`,
+    script: '自定义脚本'
   }
-  
+
   return displayMap[strategy.type] || '未知策略'
 }
 
@@ -808,19 +810,19 @@ const getMergeStrategyOptions = () => [
 const updateMergeStrategyType = (dataSourceKey: string, newType: string) => {
   const currentStrategy = mergeStrategies[dataSourceKey] || { type: 'object' }
   const newStrategy = { ...currentStrategy, type: newType }
-  
+
   // 如果切换到select类型，确保有selectedIndex
   if (newType === 'select' && !('selectedIndex' in newStrategy)) {
     newStrategy.selectedIndex = 0
   }
-  
+
   console.log('🔄 [SimpleConfigurationEditor] 新UI合并策略类型更新:', {
     dataSourceKey,
     oldType: currentStrategy.type,
     newType,
     newStrategy
   })
-  
+
   handleMergeStrategyUpdate(dataSourceKey, newStrategy)
 }
 
@@ -830,7 +832,7 @@ const updateMergeStrategyType = (dataSourceKey: string, newType: string) => {
 const updateMergeStrategyIndex = (dataSourceKey: string, newIndex: number) => {
   const currentStrategy = mergeStrategies[dataSourceKey] || { type: 'select' }
   const newStrategy = { ...currentStrategy, selectedIndex: newIndex }
-  
+
   handleMergeStrategyUpdate(dataSourceKey, newStrategy)
 }
 
@@ -840,7 +842,7 @@ const updateMergeStrategyIndex = (dataSourceKey: string, newIndex: number) => {
 const updateMergeStrategyScript = (dataSourceKey: string, newScript: string) => {
   const currentStrategy = mergeStrategies[dataSourceKey] || { type: 'script' }
   const newStrategy = { ...currentStrategy, script: newScript }
-  
+
   handleMergeStrategyUpdate(dataSourceKey, newStrategy)
 }
 
@@ -852,7 +854,7 @@ const updateMergeStrategyScript = (dataSourceKey: string, newScript: string) => 
 const viewFinalData = async (dataSourceKey: string) => {
   try {
     console.log('🔍 [SimpleConfigurationEditor] 查看最终数据:', dataSourceKey)
-    
+
     // 获取当前数据源的配置项
     const currentDataSourceItems = dataSourceItems[dataSourceKey]
     if (!currentDataSourceItems || currentDataSourceItems.length === 0) {
@@ -863,54 +865,61 @@ const viewFinalData = async (dataSourceKey: string) => {
       })
       return
     }
-    
+
     // 构建 DataSourceConfiguration 格式
     const dataSourceConfig: DataSourceConfiguration = {
       componentId: props.componentId,
-      dataSources: [{
-        sourceId: dataSourceKey,
-        dataItems: currentDataSourceItems.map(item => ({
-          item: convertToStandardDataItem(item),
-          processing: {
-            filterPath: item.filterPath || '$',
-            customScript: item.processScript,
-            defaultValue: {}
-          }
-        })),
-        mergeStrategy: mergeStrategies[dataSourceKey]?.type || 'object'
-      }],
+      dataSources: [
+        {
+          sourceId: dataSourceKey,
+          dataItems: currentDataSourceItems.map(item => ({
+            item: convertToStandardDataItem(item),
+            processing: {
+              filterPath: item.filterPath || '$',
+              customScript: item.processScript,
+              defaultValue: {}
+            }
+          })),
+          mergeStrategy: mergeStrategies[dataSourceKey]?.type || 'object'
+        }
+      ],
       createdAt: Date.now(),
       updatedAt: Date.now()
     }
-    
+
     console.log('🚀 [SimpleConfigurationEditor] 执行配置:', dataSourceConfig)
     console.log('🔍 [SimpleConfigurationEditor] 原始数据项:', currentDataSourceItems)
     console.log('🔄 [SimpleConfigurationEditor] 转换后的数据项:', dataSourceConfig.dataSources[0].dataItems)
-    
+
     // 使用执行器链直接执行配置
     const executorChain = new MultiLayerExecutorChain()
     const executionResult = await executorChain.executeDataProcessingChain(dataSourceConfig, true)
-    
+
     console.log('📊 [SimpleConfigurationEditor] 执行结果:', executionResult)
-    
+
     if (executionResult.success && executionResult.componentData) {
       // 提取指定数据源的数据
       const dataSourceData = executionResult.componentData[dataSourceKey]
-      
+
       // 显示结果弹窗
       dialog.info({
         title: `${dataSourceKey} - 实时数据执行结果`,
-        content: () => h('pre', { 
-          style: { 
-            maxHeight: '400px', 
-            overflow: 'auto', 
-            background: 'var(--code-color)', 
-            padding: '12px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            lineHeight: '1.4'
-          } 
-        }, JSON.stringify(dataSourceData || { message: '执行成功但数据为空' }, null, 2)),
+        content: () =>
+          h(
+            'pre',
+            {
+              style: {
+                maxHeight: '400px',
+                overflow: 'auto',
+                background: 'var(--code-color)',
+                padding: '12px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                lineHeight: '1.4'
+              }
+            },
+            JSON.stringify(dataSourceData || { message: '执行成功但数据为空' }, null, 2)
+          ),
         positiveText: '关闭'
       })
     } else {
@@ -921,10 +930,9 @@ const viewFinalData = async (dataSourceKey: string) => {
         positiveText: '关闭'
       })
     }
-    
   } catch (error) {
     console.error('❌ [SimpleConfigurationEditor] 获取数据失败:', error)
-    
+
     // 显示错误信息
     dialog.error({
       title: '获取数据失败',
@@ -933,7 +941,6 @@ const viewFinalData = async (dataSourceKey: string) => {
     })
   }
 }
-
 
 // 暴露方法给父组件
 defineExpose({
@@ -944,16 +951,6 @@ defineExpose({
 
 <template>
   <div class="simple-configuration-editor">
-    <!-- 数据源信息提示 -->
-    <n-alert type="info" :show-icon="false" class="info-alert" style="margin-bottom: 16px">
-      <template #icon><span>💾</span></template>
-      <div>
-        <strong>简易数据源配置</strong>
-        <p class="alert-description">
-          为每个数据源配置数据项和处理方式。当前有 {{ dataSourceOptions.length }} 个数据源需要配置。
-        </p>
-      </div>
-    </n-alert>
 
     <!-- 数据源折叠面板 -->
     <n-collapse
@@ -968,24 +965,26 @@ defineExpose({
         <template #header>
           <div class="collapse-header">
             <span class="header-title">{{ dataSourceOption.label }}</span>
-            <n-tooltip 
+            <n-tooltip
               v-if="dataSourceOption.originalData?.config?.exampleData || dataSourceOption.originalData?.example"
               trigger="hover"
               placement="left"
               :style="{ maxWidth: '400px' }"
             >
               <template #trigger>
-                <n-icon 
-                  size="14" 
-                  class="example-data-icon"
-                  :style="{ color: 'var(--info-color)', cursor: 'pointer' }"
-                >
+                <n-icon size="14" class="example-data-icon" :style="{ color: 'var(--info-color)', cursor: 'pointer' }">
                   <span>📋</span>
                 </n-icon>
               </template>
               <div class="example-data-tooltip">
                 <div class="tooltip-title">📋 示例数据</div>
-                <pre class="example-data-content">{{ JSON.stringify(dataSourceOption.originalData.config?.exampleData || dataSourceOption.originalData.example, null, 2) }}</pre>
+                <pre class="example-data-content">{{
+                  JSON.stringify(
+                    dataSourceOption.originalData.config?.exampleData || dataSourceOption.originalData.example,
+                    null,
+                    2
+                  )
+                }}</pre>
               </div>
             </n-tooltip>
           </div>
@@ -996,30 +995,19 @@ defineExpose({
           <div class="unified-card-header">
             <div class="header-left">
               <n-space align="center" size="small" class="header-info">
-                <n-tag size="tiny" type="info">
-                  {{ dataSourceItems[dataSourceOption.value]?.length || 0 }}项
-                </n-tag>
-                <n-tag 
-                  v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) > 0" 
-                  size="tiny" 
-                  type="default"
-                >
+                <n-tag size="tiny" type="info">{{ dataSourceItems[dataSourceOption.value]?.length || 0 }}项</n-tag>
+                <n-tag v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) > 0" size="tiny" type="default">
                   {{ getMergeStrategyDisplay(dataSourceOption.value) }}
                 </n-tag>
               </n-space>
             </div>
-            
+
             <div class="header-right">
               <n-space size="small" align="center">
                 <!-- 添加数据项按钮 - 集成到header -->
-                <n-button 
-                  size="small" 
-                  type="primary" 
-                  ghost
-                  @click="handleAddDataItem(dataSourceOption.value)"
-                >
+                <n-button size="small" type="primary" ghost @click="handleAddDataItem(dataSourceOption.value)">
                   <template #icon>
-                    <span style="font-size: 12px;">➕</span>
+                    <span style="font-size: 12px">➕</span>
                   </template>
                   添加数据项
                 </n-button>
@@ -1033,7 +1021,7 @@ defineExpose({
             <div v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) === 0" class="empty-state">
               <n-empty size="small" description="点击上方按钮添加第一个数据项">
                 <template #icon>
-                  <span style="font-size: 24px;">📊</span>
+                  <span style="font-size: 24px">📊</span>
                 </template>
               </n-empty>
             </div>
@@ -1042,36 +1030,25 @@ defineExpose({
             <div v-else class="compact-items-list">
               <div v-for="item in dataSourceItems[dataSourceOption.value]" :key="item.id" class="compact-item">
                 <div class="item-indicator">
-                  <n-tag 
-                    size="tiny" 
-                    :type="getItemTypeColor(item.type)"
-                  >
+                  <n-tag size="tiny" :type="getItemTypeColor(item.type)">
                     {{ getItemTypeIcon(item.type) }}
                   </n-tag>
                 </div>
-                
+
                 <div class="item-content">
                   <span class="item-summary">{{ getItemSummary(item) }}</span>
                   <span v-if="hasProcessingConfig(item)" class="item-processing">
-                    <n-icon size="12" style="margin-right: 2px;">⚙️</n-icon>
+                    <n-icon size="12" style="margin-right: 2px">⚙️</n-icon>
                     {{ getProcessingSummary(item) }}
                   </span>
                 </div>
-                
+
                 <div class="item-actions">
                   <n-button-group size="tiny">
-                    <n-button 
-                      type="primary" 
-                      ghost 
-                      @click="handleEditDataItem(dataSourceOption.value, item.id)"
-                    >
+                    <n-button type="primary" ghost @click="handleEditDataItem(dataSourceOption.value, item.id)">
                       编辑
                     </n-button>
-                    <n-button 
-                      type="error" 
-                      ghost 
-                      @click="handleDeleteDataItem(dataSourceOption.value, item.id)"
-                    >
+                    <n-button type="error" ghost @click="handleDeleteDataItem(dataSourceOption.value, item.id)">
                       删除
                     </n-button>
                   </n-button-group>
@@ -1084,9 +1061,9 @@ defineExpose({
               <!-- 第一行：策略选择和查看按钮 -->
               <div class="strategy-main-row">
                 <span class="strategy-label">合并方式:</span>
-                <n-select 
+                <n-select
                   :value="(mergeStrategies[dataSourceOption.value] || { type: 'object' }).type"
-                  size="small" 
+                  size="small"
                   class="strategy-selector"
                   :options="getMergeStrategyOptions()"
                   @update:value="updateMergeStrategyType(dataSourceOption.value, $event)"
@@ -1101,15 +1078,15 @@ defineExpose({
                   查看结果
                 </n-button>
               </div>
-              
+
               <!-- 第二行：条件显示的额外控件 -->
               <div v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'select'" class="strategy-extra-row">
                 <div class="extra-control-container">
                   <span class="extra-label">选择项:</span>
-                  <n-input-number 
+                  <n-input-number
                     :value="(mergeStrategies[dataSourceOption.value] || {}).selectedIndex || 0"
-                    size="small" 
-                    :min="0" 
+                    size="small"
+                    :min="0"
                     :max="Math.max(0, (dataSourceItems[dataSourceOption.value]?.length || 1) - 1)"
                     class="index-selector"
                     @update:value="updateMergeStrategyIndex(dataSourceOption.value, $event)"
@@ -1117,12 +1094,12 @@ defineExpose({
                     <template #prefix>第</template>
                     <template #suffix>项</template>
                   </n-input-number>
-                  <n-text depth="3" style="font-size: 11px; margin-left: 8px;">
+                  <n-text depth="3" style="font-size: 11px; margin-left: 8px">
                     共 {{ dataSourceItems[dataSourceOption.value]?.length || 0 }} 项可选
                   </n-text>
                 </div>
               </div>
-              
+
               <div v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'script'" class="strategy-extra-row">
                 <div class="extra-control-container">
                   <span class="extra-label">脚本代码:</span>
@@ -1355,7 +1332,6 @@ defineExpose({
   min-width: 0;
 }
 
-
 /* 空状态样式 */
 .info-alert .alert-description {
   margin: 4px 0 0 0;
@@ -1474,21 +1450,21 @@ defineExpose({
     max-width: none;
     min-width: auto;
   }
-  
+
   .view-result-btn {
     align-self: center;
   }
-  
+
   .extra-control-container {
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
   }
-  
+
   .extra-label {
     margin-top: 0;
   }
-  
+
   .index-selector {
     width: 100%;
   }

@@ -709,13 +709,7 @@ defineExpose({
       <div class="right-panel">
         <div class="panel-header">原始数据处理</div>
         <div class="processing-area">
-          <!-- 处理说明 -->
-          <div class="processing-description">
-            <n-alert type="info" size="small" :show-icon="false">
-              第二层处理：对原始数据进行过滤和转换，与数据类型无关
-            </n-alert>
-          </div>
-
+        
           <!-- JSONPath过滤 -->
           <div class="processing-section">
             <div class="processing-section-header">

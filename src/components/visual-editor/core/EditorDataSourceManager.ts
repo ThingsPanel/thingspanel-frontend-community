@@ -304,11 +304,11 @@ export class EditorDataSourceManager {
 
     try {
       await this.triggerComponentExecutor(componentId)
-      
+
       // 🔥 修复：获取组件数据并发送正确格式的事件数据
       const componentData = this.getComponentData(componentId)
-      this.emit('data-updated', { 
-        componentId, 
+      this.emit('data-updated', {
+        componentId,
         result: {
           success: true,
           data: componentData?.data || null,
@@ -319,10 +319,10 @@ export class EditorDataSourceManager {
     } catch (error) {
       console.error(`❌ [EditorDataSourceManager] 手动触发失败: ${componentId}`, error)
       const errorMessage = error instanceof Error ? error.message : String(error)
-      
+
       // 🔥 修复：错误时也发送正确格式的事件数据
-      this.emit('data-updated', { 
-        componentId, 
+      this.emit('data-updated', {
+        componentId,
         result: {
           success: false,
           error: errorMessage,
@@ -330,7 +330,7 @@ export class EditorDataSourceManager {
           timestamp: Date.now()
         }
       })
-      
+
       this.message.error(`手动触发失败: ${errorMessage}`)
       return false
     }
@@ -538,15 +538,15 @@ export class EditorDataSourceManager {
    */
   private setupConfigurationEventListener(): void {
     console.log('🔗 [EditorDataSourceManager] 设置配置事件监听...')
-    
+
     // 🔥 修复：监听配置事件怽线，使用正确的 API 和事件格式
     configEventBus.onConfigChange('config-changed', async (event: ConfigChangeEvent) => {
       console.log(`🔄 [EditorDataSourceManager] 检测到配置变更: ${event.componentId}`, event)
-      
+
       // 只处理数据源相关的配置变更
       if (event.section === 'dataSource' || event.section === 'component') {
         console.log(`🚀 [EditorDataSourceManager] 数据源配置变更，自动触发数据更新: ${event.componentId}`)
-        
+
         try {
           // 通过组件执行器触发数据更新
           await this.triggerComponentExecutor(event.componentId)
@@ -556,7 +556,7 @@ export class EditorDataSourceManager {
         }
       }
     })
-    
+
     console.log('✅ [EditorDataSourceManager] 配置事件监听已设置')
     console.log('💡 [EditorDataSourceManager] 配置变更时将自动触发数据更新')
   }
