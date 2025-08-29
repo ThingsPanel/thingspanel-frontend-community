@@ -143,48 +143,56 @@ export interface EnhancedHttpDataItemConfig {
 
 /**
  * HTTP头部配置
+ * 支持静态值和动态参数两种模式
  */
 export interface HttpHeader {
   /** 头部字段名 */
   key: string
 
-  /** 头部字段值 */
+  /** 头部字段值（静态时为实际值，动态时为示例值） */
   value: string
 
   /** 是否启用此头部 */
   enabled: boolean
 
-  /** 是否为动态参数（预留） */
-  isDynamic?: boolean
+  /** 是否为动态参数 */
+  isDynamic: boolean
 
-  /** 动态参数名称（预留） */
-  dynamicName?: string
+  /** 数据类型，用于类型转换和验证 */
+  dataType: 'string' | 'number' | 'boolean' | 'json'
 
-  /** 示例值（用于测试和文档） */
-  exampleValue?: string
+  /** 自动生成的变量名（格式：http_${key}） */
+  variableName: string
+
+  /** 参数说明（动态参数必填，静态参数可选） */
+  description?: string
 }
 
 /**
  * HTTP参数配置
+ * 支持静态值和动态参数两种模式
  */
 export interface HttpParam {
   /** 参数名 */
   key: string
 
-  /** 参数值 */
+  /** 参数值（静态时为实际值，动态时为示例值） */
   value: string
 
   /** 是否启用此参数 */
   enabled: boolean
 
-  /** 是否为动态参数（预留） */
-  isDynamic?: boolean
+  /** 是否为动态参数 */
+  isDynamic: boolean
 
-  /** 动态参数名称（预留） */
-  dynamicName?: string
+  /** 数据类型，用于类型转换和验证 */
+  dataType: 'string' | 'number' | 'boolean' | 'json'
 
-  /** 示例值（用于测试和文档） */
-  exampleValue?: string
+  /** 自动生成的变量名（格式：http_${key}） */
+  variableName: string
+
+  /** 参数说明（动态参数必填，静态参数可选） */
+  description?: string
 }
 
 /**

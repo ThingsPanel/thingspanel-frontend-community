@@ -1,7 +1,10 @@
 /**
  * 第三层：数据源合并器 (DataSourceMerger)
  * 职责：将多个数据项合并成数据源最终数据
+ * 已集成 script-engine 安全脚本执行系统
  */
+
+import { defaultScriptEngine } from '../../script-engine'
 
 export type MergeStrategy =
   | {
@@ -179,38 +182,31 @@ export class DataSourceMerger implements IDataSourceMerger {
   }
 
   /**
-   * 通过自定义脚本合并
+   * 通过自定义脚本合并 (使用 script-engine 安全执行)
    * 传入数据项列表，让用户脚本处理
    */
   private async mergeByScript(items: any[], script: string): Promise<any> {
     try {
+      console.log('🔧 [DataSourceMerger] 使用 script-engine 执行数据合并脚本')
+
       // 创建脚本执行上下文
       const scriptContext = {
-        items,
-        JSON,
-        console,
-        Math,
-        Date,
-        Array,
-        Object
+        items
+        // script-engine 已内置 JSON, console, Math, Date, Array, Object 等
       }
 
-      // 脚本执行
-      const func = new Function(
-        'context',
-        `
-        with(context) {
-          return (function(list) {
-            ${script}
-          })(items);
-        }
-      `
-      )
+      // 使用 script-engine 安全执行脚本
+      const result = await defaultScriptEngine.execute(script, scriptContext)
 
-      const result = await func(scriptContext)
-      return result !== undefined ? result : {}
+      if (result.success) {
+        console.log('✅ [DataSourceMerger] 脚本合并成功:', result.executionTime + 'ms')
+        return result.data !== undefined ? result.data : {}
+      } else {
+        console.error('❌ [DataSourceMerger] 脚本合并失败:', result.error?.message)
+        return {} // 脚本失败时返回空对象
+      }
     } catch (error) {
-      console.error('DataSourceMerger: 自定义脚本合并失败', error)
+      console.error('DataSourceMerger: 脚本合并异常', error)
       return {} // 脚本失败时返回空对象
     }
   }

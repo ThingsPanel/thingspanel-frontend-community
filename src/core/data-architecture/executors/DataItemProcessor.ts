@@ -1,7 +1,10 @@
 /**
  * 第二层：数据项处理器 (DataItemProcessor)
  * 职责：对原始数据进行过滤和脚本处理
+ * 已集成 script-engine 安全脚本执行系统
  */
+
+import { defaultScriptEngine } from '../../script-engine'
 
 export interface ProcessingConfig {
   /** JSONPath语法过滤路径，如: $.abc.bcd[0] */
@@ -114,35 +117,30 @@ export class DataItemProcessor implements IDataItemProcessor {
   }
 
   /**
-   * 应用自定义脚本处理
+   * 应用自定义脚本处理 (使用 script-engine 安全执行)
    */
   private async applyCustomScript(data: any, script: string): Promise<any> {
     try {
+      console.log('🔧 [DataItemProcessor] 使用 script-engine 执行数据处理脚本')
+
       // 创建脚本执行上下文
       const scriptContext = {
-        data,
-        JSON,
-        console,
-        Math,
-        Date
+        data
+        // script-engine 已内置 JSON, console, Math, Date 等
       }
 
-      // 简单的脚本执行，实际项目中需要更安全的沙箱环境
-      const func = new Function(
-        'context',
-        `
-        with(context) {
-          return (function() {
-            ${script}
-          })();
-        }
-      `
-      )
+      // 使用 script-engine 安全执行脚本
+      const result = await defaultScriptEngine.execute(script, scriptContext)
 
-      const result = await func(scriptContext)
-      return result !== undefined ? result : data
+      if (result.success) {
+        console.log('✅ [DataItemProcessor] 脚本处理成功:', result.executionTime + 'ms')
+        return result.data !== undefined ? result.data : data
+      } else {
+        console.error('❌ [DataItemProcessor] 脚本处理失败:', result.error?.message)
+        return data // 脚本失败时返回原数据
+      }
     } catch (error) {
-      console.error('DataItemProcessor: 自定义脚本执行失败', error)
+      console.error('DataItemProcessor: 脚本处理异常', error)
       return data // 脚本失败时返回原数据
     }
   }

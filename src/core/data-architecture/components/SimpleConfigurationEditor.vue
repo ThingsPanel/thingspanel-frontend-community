@@ -20,6 +20,8 @@ import {
 } from '../index'
 import { type MergeStrategy } from '../executors/DataSourceMerger'
 import RawDataConfigModal from './modals/RawDataConfigModal.vue'
+// 🔥 简洁脚本编辑器
+import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
 // 🔥 新配置管理系统
 import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
@@ -866,30 +868,19 @@ const viewFinalData = async (dataSourceKey: string) => {
       return
     }
 
-    // 构建 DataSourceConfiguration 格式
-    const dataSourceConfig: DataSourceConfiguration = {
-      componentId: props.componentId,
-      dataSources: [
-        {
-          sourceId: dataSourceKey,
-          dataItems: currentDataSourceItems.map(item => ({
-            item: convertToStandardDataItem(item),
-            processing: {
-              filterPath: item.filterPath || '$',
-              customScript: item.processScript,
-              defaultValue: {}
-            }
-          })),
-          mergeStrategy: mergeStrategies[dataSourceKey]?.type || 'object'
-        }
-      ],
-      createdAt: Date.now(),
-      updatedAt: Date.now()
+    // 🔥 修复：使用配置管理系统获取最新配置，确保数据一致性
+    const existingConfig = configurationManager.getConfiguration(props.componentId)
+    let dataSourceConfig = existingConfig?.dataSource as DataSourceConfiguration | undefined
+
+    if (!dataSourceConfig) {
+      // 如果配置不存在，使用当前显示状态重建
+      console.log('⚠️ [SimpleConfigurationEditor] 配置管理器中无数据源配置，使用当前状态重建')
+      dataSourceConfig = rebuildCompleteDataSourceConfiguration()
     }
 
+    console.log('🔍 [SimpleConfigurationEditor] 使用的完整数据源配置:', dataSourceConfig)
+
     console.log('🚀 [SimpleConfigurationEditor] 执行配置:', dataSourceConfig)
-    console.log('🔍 [SimpleConfigurationEditor] 原始数据项:', currentDataSourceItems)
-    console.log('🔄 [SimpleConfigurationEditor] 转换后的数据项:', dataSourceConfig.dataSources[0].dataItems)
 
     // 使用执行器链直接执行配置
     const executorChain = new MultiLayerExecutorChain()
@@ -951,7 +942,6 @@ defineExpose({
 
 <template>
   <div class="simple-configuration-editor">
-
     <!-- 数据源折叠面板 -->
     <n-collapse
       :default-expanded-names="dataSourceOptions.length > 0 ? [dataSourceOptions[0].value] : []"
@@ -1103,16 +1093,15 @@ defineExpose({
               <div v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'script'" class="strategy-extra-row">
                 <div class="extra-control-container">
                   <span class="extra-label">脚本代码:</span>
-                  <n-input
-                    :value="(mergeStrategies[dataSourceOption.value] || {}).script || ''"
-                    type="textarea"
-                    size="small"
-                    :rows="4"
-                    placeholder="// 编写合并脚本，data 参数为数组&#10;// return data.map(item => item.value).join(',')"
-                    :input-props="{ style: 'font-family: Monaco, Consolas, monospace; font-size: 12px;' }"
-                    class="script-editor"
-                    @update:value="updateMergeStrategyScript(dataSourceOption.value, $event)"
-                  />
+                  <div class="script-editor-wrapper">
+                    <SimpleScriptEditor
+                      :model-value="(mergeStrategies[dataSourceOption.value] || {}).script || ''"
+                      template-category="data-merger"
+                      placeholder="请输入数据合并脚本，可通过 items 参数访问数据项列表..."
+                      height="120px"
+                      @update:model-value="updateMergeStrategyScript(dataSourceOption.value, $event)"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1327,7 +1316,7 @@ defineExpose({
   flex-shrink: 0;
 }
 
-.script-editor {
+.script-editor-wrapper {
   flex: 1;
   min-width: 0;
 }

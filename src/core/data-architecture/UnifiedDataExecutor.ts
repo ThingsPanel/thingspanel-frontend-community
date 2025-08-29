@@ -11,6 +11,7 @@
  */
 
 import { request } from '@/service/request'
+import type { HttpParam, HttpHeader } from './types/enhanced-types'
 
 /**
  * 统一数据源配置
@@ -31,12 +32,16 @@ export interface UnifiedDataConfig {
     data?: any
 
     // === HTTP配置 ===
+    /** 请求URL (必填) */
     url?: string
+    /** HTTP请求方法 (必填) */
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
-    headers?: Record<string, string>
-    params?: Record<string, any>
-    body?: any
+    /** 请求超时时间 */
     timeout?: number
+    /** HTTP请求头配置 */
+    headers?: HttpHeader[]
+    /** HTTP请求参数配置 */
+    params?: HttpParam[]
 
     // === WebSocket配置 ===
     wsUrl?: string

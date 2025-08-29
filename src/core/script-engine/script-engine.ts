@@ -17,6 +17,7 @@ import { ScriptExecutor, defaultScriptConfig } from './executor'
 import { ScriptSandbox, defaultSandboxConfig } from './sandbox'
 import { ScriptTemplateManager } from './template-manager'
 import { ScriptContextManager } from './context-manager'
+import { initializeBuiltInTemplates } from './templates/built-in-templates'
 
 /**
  * 主脚本引擎实现类
@@ -46,6 +47,10 @@ export class ScriptEngine implements IScriptEngine {
     this.templateManager = new ScriptTemplateManager()
     this.contextManager = new ScriptContextManager()
 
+    // 初始化内置模板库
+    const templateStats = initializeBuiltInTemplates(this.templateManager)
+    console.log('📚 [ScriptEngine] 内置模板库加载完成:', templateStats)
+
     console.log('🚀 [ScriptEngine] 脚本引擎初始化完成')
   }
 
@@ -53,7 +58,8 @@ export class ScriptEngine implements IScriptEngine {
    * 快速执行脚本
    */
   async execute<T = any>(code: string, context?: Record<string, any>): Promise<ScriptExecutionResult<T>> {
-    console.log('🔧 [ScriptEngine] 执行脚本:', code.substring(0, 100) + (code.length > 100 ? '...' : ''))
+    const displayCode = code ? code.substring(0, 100) + (code.length > 100 ? '...' : '') : '[空脚本]'
+    console.log('🔧 [ScriptEngine] 执行脚本:', displayCode)
 
     // 创建脚本配置
     const scriptConfig: ScriptConfig = {

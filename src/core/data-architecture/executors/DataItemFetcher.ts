@@ -1,7 +1,10 @@
 /**
  * 第一层：数据项获取器 (DataItemFetcher)
  * 职责：根据配置类型获取原始数据
+ * 已集成 script-engine 安全脚本执行系统
  */
+
+import { defaultScriptEngine } from '../../script-engine'
 
 // 类型安全的数据项配置
 export type DataItem =
@@ -139,16 +142,24 @@ export class DataItemFetcher implements IDataItemFetcher {
   }
 
   /**
-   * 执行脚本获取数据 (暂时实现为占位符)
+   * 执行脚本获取数据 (使用 script-engine 安全执行)
    */
   private async fetchScriptData(config: ScriptDataItemConfig): Promise<any> {
     try {
-      // 简单的脚本执行，实际项目中需要更安全的沙箱环境
-      const func = new Function('context', config.script)
-      const result = await func(config.context || {})
-      return result || {}
+      console.log('🔧 [DataItemFetcher] 使用 script-engine 执行脚本')
+
+      // 使用 script-engine 安全执行脚本
+      const result = await defaultScriptEngine.execute(config.script, config.context || {})
+
+      if (result.success) {
+        console.log('✅ [DataItemFetcher] 脚本执行成功:', result.executionTime + 'ms')
+        return result.data || {}
+      } else {
+        console.error('❌ [DataItemFetcher] 脚本执行失败:', result.error?.message)
+        return {}
+      }
     } catch (error) {
-      console.error('DataItemFetcher: 脚本执行失败', error)
+      console.error('DataItemFetcher: 脚本执行异常', error)
       return {}
     }
   }

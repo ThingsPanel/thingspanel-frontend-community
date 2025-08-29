@@ -12,6 +12,8 @@ import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { useMessage } from 'naive-ui'
 import { DataItemFetcher, type DataItem } from '../../executors'
 import HttpConfigForm from './HttpConfigForm.vue'
+// 🔥 简洁脚本编辑器
+import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
 
 // Props接口
 interface Props {
@@ -654,7 +656,7 @@ defineExpose({
                 <n-input
                   v-model:value="formState.jsonData"
                   type="textarea"
-                  :rows="12"
+                  :rows="8"
                   placeholder="请输入JSON格式数据"
                   show-count
                   :input-props="{ style: 'font-family: Monaco, Consolas, monospace; font-size: 12px;' }"
@@ -663,12 +665,11 @@ defineExpose({
 
               <!-- 脚本录入 -->
               <div v-if="formState.selectedMethod === 'script'" class="editor-container">
-                <n-input
-                  v-model:value="formState.scriptCode"
-                  type="textarea"
-                  :rows="12"
-                  placeholder="return { /* 你的数据 */ }"
-                  :input-props="{ style: 'font-family: Monaco, Consolas, monospace; font-size: 12px;' }"
+                <SimpleScriptEditor
+                  v-model:model-value="formState.scriptCode"
+                  template-category="data-generation"
+                  placeholder="请输入数据生成脚本，可通过 context 参数访问上下文..."
+                  height="240px"
                 />
               </div>
             </div>
@@ -709,7 +710,6 @@ defineExpose({
       <div class="right-panel">
         <div class="panel-header">原始数据处理</div>
         <div class="processing-area">
-        
           <!-- JSONPath过滤 -->
           <div class="processing-section">
             <div class="processing-section-header">
@@ -799,13 +799,11 @@ defineExpose({
             </div>
 
             <div class="processing-content">
-              <n-input
-                v-model:value="processingState.scriptCode"
-                type="textarea"
-                :rows="8"
-                placeholder="// 留空不处理，或编写脚本转换数据&#10;return {&#10;  value: data.temperature,&#10;  unit: '°C'&#10;}"
-                :input-props="{ style: 'font-family: Monaco, Consolas, monospace; font-size: 12px;' }"
-                size="small"
+              <SimpleScriptEditor
+                v-model:model-value="processingState.scriptCode"
+                template-category="data-processing"
+                placeholder="请输入数据处理脚本，可通过 data 参数访问原始数据..."
+                height="160px"
               />
             </div>
           </div>

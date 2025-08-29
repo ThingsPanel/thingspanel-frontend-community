@@ -37,23 +37,23 @@
 
 ## 🎯 HTTP动态参数系统实现 (第1-4周)
 
-### SUBTASK-008: HTTP动态参数核心引擎
+### SUBTASK-008: HTTP配置需求沟通和设计
 - **任务ID**: SUBTASK-008
-- **预估时间**: 1周 (35小时)
-- **依赖关系**: 基于已完成的HttpConfigForm和执行器架构
+- **预估时间**: 4小时
+- **依赖关系**: 基于现有基础HttpConfigForm.vue和数据架构
 - **任务描述**:
-  - 实现动态参数解析引擎 (`DynamicParameterEngine`)
-  - 建立参数数据源系统 (`ParameterDataSource`)
-  - 实现参数依赖分析器 (`DependencyAnalyzer`)
-  - 集成运行时参数替换机制
-  - 建立参数缓存和性能优化
+  - 与用户深入沟通HTTP配置的具体需求
+  - 分析现有HttpConfigForm.vue的能力和不足
+  - 设计HTTP配置的完整功能规格
+  - 规划HTTP配置在整个数据架构中的集成方案
+  - 制定HTTP配置开发的详细计划
 - **验收标准**:
-  - [x] HttpConfigForm基础组件已存在
-  - [ ] 完成动态参数占位符识别 (`{{paramName}}`)
-  - [ ] 实现运行时参数值解析和替换
-  - [ ] 建立多种参数数据源支持
-  - [ ] 完成参数依赖关系分析和循环检测
-  - [ ] 集成参数缓存优化机制
+  - [x] 现有HttpConfigForm.vue基础组件已存在
+  - [ ] 完成HTTP配置需求详细调研
+  - [ ] 明确HTTP配置功能边界和规格
+  - [ ] 设计HTTP配置与数据执行器的集成方案
+  - [ ] 制定HTTP配置开发的分步计划
+  - [ ] 用户确认HTTP配置需求和设计方案
 
 ### SUBTASK-009: 参数依赖图管理系统
 - **任务ID**: SUBTASK-009
