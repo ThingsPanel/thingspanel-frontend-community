@@ -484,5 +484,14 @@
   "dataSource.messages.applyFailed": "应用配置失败",
   "dataSource.messages.refreshFailed": "刷新失败",
   "dataSource.messages.previewHasErrors": "预览结果中存在错误，无法应用",
-  "dataSource.messages.applyPreviewSuccess": "预览结果已应用到组件"
+  "dataSource.messages.applyPreviewSuccess": "预览结果已应用到组件",
+  "dataSource.trigger.management": "数据源管理",
+
+  "config.dataSource.http.tabs.basic": "基础",
+  "config.dataSource.http.tabs.headers": "请求头",
+  "config.dataSource.http.tabs.params": "参数",
+  "config.dataSource.http.tabs.requestScript": "请求脚本",
+  "config.dataSource.http.tabs.responseScript": "响应脚本",
+  "config.dataSource.http.preRequestScript.placeholder": "// 修改请求配置的脚本\n// 可用变量: config (包含url, method, headers, params等)\n// 必须返回修改后的config对象\nconfig.headers = config.headers || {}\nconfig.headers['X-Timestamp'] = Date.now()\nreturn config",
+  "config.dataSource.http.postResponseScript.placeholder": "// 处理响应数据的脚本\n// 可用变量: response (HTTP响应数据)\n// 必须返回处理后的数据\nif (response.data) {\n  return response.data\n}\nreturn response"
 }

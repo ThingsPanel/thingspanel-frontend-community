@@ -9,7 +9,42 @@ function getLangMessages(modules: Record<string, any>, lang: 'zh-cn' | 'en-us') 
   for (const path in modules) {
     if (path.startsWith(prefix)) {
       const content = modules[path].default
-      Object.assign(messages, content)
+
+      // 提取文件名作为命名空间
+      const fileName = path.replace(prefix, '').replace('.json', '')
+
+      // 特殊处理：某些文件保持扁平化结构以兼容现有代码
+      const flatFiles = [
+        'common',
+        'card',
+        'page',
+        'device_template',
+        'basic',
+        'buttons',
+        'custom',
+        'dashboard_panel',
+        'dropdown',
+        'form',
+        'generate',
+        'grouping_details',
+        'icon',
+        'interaction',
+        'kanban',
+        'others',
+        'route',
+        'test',
+        'theme',
+        'time',
+        'visual-editor'
+      ]
+
+      if (flatFiles.includes(fileName)) {
+        // 扁平化合并（保持现有行为）
+        Object.assign(messages, content)
+      } else {
+        // 使用文件名作为命名空间
+        messages[fileName] = content
+      }
     }
   }
   return messages

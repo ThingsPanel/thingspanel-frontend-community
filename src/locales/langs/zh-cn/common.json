@@ -297,5 +297,18 @@
   "json.compress.emptyWarning": "请输入JSON数据再进行压缩",
   "json.compress.success": "JSON压缩成功",
   "json.compress.error": "JSON格式错误，无法压缩",
-  "json.clear.success": "JSON内容已清空"
+  "json.clear.success": "JSON内容已清空",
+  
+  "common.loading": "加载中...",
+  "common.never": "从未",
+  "common.stop": "停止",
+  "common.start": "开始",
+  "common.hideDetails": "隐藏详情",
+  "common.showDetails": "显示详情",
+  "common.validationErrors": "验证错误",
+  "common.undo": "撤销",
+  "common.redo": "重做",
+  "common.preview": "预览",
+  "common.clear": "清除",
+  "common.updateFailed": "更新失败"
 }

@@ -51,7 +51,9 @@
       "Bash(git mv:*)",
       "Bash(start data-flow-test.html)",
       "Bash(npx tsx:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(timeout 5 pnpm:*)",
+      "Bash(timeout 8 pnpm dev)"
     ],
     "deny": [],
     "additionalDirectories": [

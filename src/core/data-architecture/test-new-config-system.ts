@@ -9,9 +9,9 @@
  * 4. 验证配置版本控制
  */
 
-import { configurationStateManager } from '../components/visual-editor/configuration/ConfigurationStateManager'
-import { configurationIntegrationBridge } from '../components/visual-editor/configuration/ConfigurationIntegrationBridge'
-import type { WidgetConfiguration } from '../components/visual-editor/configuration/types'
+import { configurationStateManager } from '@/components/visual-editor/configuration/ConfigurationStateManager'
+import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
+import type { WidgetConfiguration } from '@/components/visual-editor/configuration/types'
 
 /**
  * 测试配置内容哈希去重机制

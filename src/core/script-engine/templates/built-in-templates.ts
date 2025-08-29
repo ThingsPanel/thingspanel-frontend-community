@@ -45,7 +45,7 @@ return {
     example: '// context = { deviceId: "sensor_001" }',
     isSystem: true
   },
-  
+
   {
     name: '随机时序数据',
     description: '生成时序数据数组，适用于图表展示',
@@ -85,7 +85,7 @@ return data`,
       },
       {
         name: 'baseValue',
-        type: 'number', 
+        type: 'number',
         description: '基础数值',
         required: false,
         defaultValue: 20
@@ -101,7 +101,7 @@ return data`,
     example: '// context = { points: 48, baseValue: 25, variation: 8 }',
     isSystem: true
   },
-  
+
   {
     name: 'HTTP API 数据获取',
     description: '从HTTP API获取数据的模板',
@@ -204,7 +204,7 @@ return result`,
     example: '// data = { temperature: 25.5, humidity: 60, pressure: 1013.2 }',
     isSystem: true
   },
-  
+
   {
     name: '数组数据过滤',
     description: '对数组数据进行过滤、排序和分组处理',
@@ -285,7 +285,7 @@ return {
     example: '// data = [{ value: 10, type: "A" }, { value: 25, type: "B" }]',
     isSystem: true
   },
-  
+
   {
     name: '时间数据格式化',
     description: '对包含时间戳的数据进行格式化和时间计算',
@@ -444,7 +444,7 @@ return {
     example: '// items = [{ name: "A", value: 10 }, { name: "B", value: 20 }]',
     isSystem: true
   },
-  
+
   {
     name: '时序数据合并',
     description: '按时间戳合并多个时序数据数组',
@@ -559,7 +559,7 @@ return merged`,
     example: '// items = [array1, array2] where arrays contain {timestamp, value}',
     isSystem: true
   },
-  
+
   {
     name: '条件选择合并',
     description: '根据条件选择最佳数据项进行合并',
@@ -754,7 +754,7 @@ return result`,
     example: '// rules = { type: "object", required: ["id", "name"] }',
     isSystem: true
   },
-  
+
   {
     name: '性能监控',
     description: '监控脚本执行性能和资源使用',
@@ -834,10 +834,10 @@ export const ALL_BUILT_IN_TEMPLATES = [
  */
 export function initializeBuiltInTemplates(templateManager: any) {
   console.log('🚀 [BuiltInTemplates] 开始初始化内置模板库...')
-  
+
   let successCount = 0
   let errorCount = 0
-  
+
   ALL_BUILT_IN_TEMPLATES.forEach(template => {
     try {
       templateManager.createTemplate(template)
@@ -847,9 +847,9 @@ export function initializeBuiltInTemplates(templateManager: any) {
       errorCount++
     }
   })
-  
+
   console.log(`✅ [BuiltInTemplates] 模板库初始化完成: 成功 ${successCount} 个, 失败 ${errorCount} 个`)
-  
+
   // 返回统计信息
   return {
     total: ALL_BUILT_IN_TEMPLATES.length,
@@ -857,12 +857,14 @@ export function initializeBuiltInTemplates(templateManager: any) {
     error: errorCount,
     categories: {
       'data-generation': DATA_FETCHER_TEMPLATES.filter(t => t.category === 'data-generation').length,
-      'data-processing': [...DATA_PROCESSOR_TEMPLATES, ...DATA_MERGER_TEMPLATES].filter(t => t.category === 'data-processing').length,
+      'data-processing': [...DATA_PROCESSOR_TEMPLATES, ...DATA_MERGER_TEMPLATES].filter(
+        t => t.category === 'data-processing'
+      ).length,
       'api-integration': DATA_FETCHER_TEMPLATES.filter(t => t.category === 'api-integration').length,
       'time-series': DATA_MERGER_TEMPLATES.filter(t => t.category === 'time-series').length,
-      'transformation': DATA_PROCESSOR_TEMPLATES.filter(t => t.category === 'transformation').length,
-      'validation': UTILITY_TEMPLATES.filter(t => t.category === 'validation').length,
-      'utility': UTILITY_TEMPLATES.filter(t => t.category === 'utility').length
+      transformation: DATA_PROCESSOR_TEMPLATES.filter(t => t.category === 'transformation').length,
+      validation: UTILITY_TEMPLATES.filter(t => t.category === 'validation').length,
+      utility: UTILITY_TEMPLATES.filter(t => t.category === 'utility').length
     }
   }
 }

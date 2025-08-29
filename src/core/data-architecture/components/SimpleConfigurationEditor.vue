@@ -942,9 +942,10 @@ defineExpose({
 
 <template>
   <div class="simple-configuration-editor">
-    <!-- 数据源折叠面板 -->
+    <!-- 数据源折叠面板 - accordion模式，每次只能展开一个 -->
     <n-collapse
       :default-expanded-names="dataSourceOptions.length > 0 ? [dataSourceOptions[0].value] : []"
+      accordion
       class="data-source-collapse"
     >
       <n-collapse-item
@@ -979,6 +980,19 @@ defineExpose({
             </n-tooltip>
           </div>
         </template>
+
+        <template #header-extra>
+          <!-- 查看结果按钮移到header-extra，折叠时也可见 -->
+          <n-button
+            v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) > 0"
+            size="tiny"
+            text
+            type="info"
+            @click.stop="viewFinalData(dataSourceOption.value)"
+          >
+            查看结果
+          </n-button>
+        </template>
         <!-- 🔥 一体化数据源配置卡片 -->
         <div class="data-source-unified-card">
           <!-- 卡片头部 - 集成所有核心信息 -->
@@ -995,7 +1009,7 @@ defineExpose({
             <div class="header-right">
               <n-space size="small" align="center">
                 <!-- 添加数据项按钮 - 集成到header -->
-                <n-button size="small" type="primary" ghost @click="handleAddDataItem(dataSourceOption.value)">
+                <n-button size="tiny" text type="success" @click="handleAddDataItem(dataSourceOption.value)">
                   <template #icon>
                     <span style="font-size: 12px">➕</span>
                   </template>
@@ -1034,14 +1048,24 @@ defineExpose({
                 </div>
 
                 <div class="item-actions">
-                  <n-button-group size="tiny">
-                    <n-button type="primary" ghost @click="handleEditDataItem(dataSourceOption.value, item.id)">
+                  <n-space size="small">
+                    <n-button
+                      size="tiny"
+                      text
+                      type="primary"
+                      @click="handleEditDataItem(dataSourceOption.value, item.id)"
+                    >
                       编辑
                     </n-button>
-                    <n-button type="error" ghost @click="handleDeleteDataItem(dataSourceOption.value, item.id)">
+                    <n-button
+                      size="tiny"
+                      text
+                      type="error"
+                      @click="handleDeleteDataItem(dataSourceOption.value, item.id)"
+                    >
                       删除
                     </n-button>
-                  </n-button-group>
+                  </n-space>
                 </div>
               </div>
             </div>
@@ -1058,15 +1082,6 @@ defineExpose({
                   :options="getMergeStrategyOptions()"
                   @update:value="updateMergeStrategyType(dataSourceOption.value, $event)"
                 />
-                <n-button
-                  size="small"
-                  type="primary"
-                  ghost
-                  class="view-result-btn"
-                  @click="viewFinalData(dataSourceOption.value)"
-                >
-                  查看结果
-                </n-button>
               </div>
 
               <!-- 第二行：条件显示的额外控件 -->

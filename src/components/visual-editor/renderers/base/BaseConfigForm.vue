@@ -2,22 +2,27 @@
   <div class="base-config-form">
     <n-form :model="formData" label-placement="left" label-width="80" size="small">
       <!-- 标题配置 -->
-      <n-form-item label="显示标题">
+      <n-form-item :label="t('config.base.showTitle')">
         <n-switch v-model:value="formData.showTitle" @update:value="handleUpdate" />
       </n-form-item>
 
-      <n-form-item v-if="formData.showTitle" label="节点标题">
-        <n-input v-model:value="formData.title" placeholder="请输入节点标题" clearable @input="handleUpdate" />
+      <n-form-item v-if="formData.showTitle" :label="t('config.base.title')">
+        <n-input
+          v-model:value="formData.title"
+          :placeholder="t('config.base.titlePlaceholder')"
+          clearable
+          @input="handleUpdate"
+        />
       </n-form-item>
 
       <!-- 显示配置 -->
-      <n-divider title-placement="left">显示配置</n-divider>
+      <n-divider title-placement="left">{{ t('config.base.display.section') }}</n-divider>
 
-      <n-form-item label="可见性">
+      <n-form-item :label="t('config.base.visible')">
         <n-switch v-model:value="formData.visible" @update:value="handleUpdate" />
       </n-form-item>
 
-      <n-form-item label="透明度">
+      <n-form-item :label="t('config.base.opacity')">
         <n-slider
           v-model:value="formData.opacity"
           :min="0"
@@ -29,13 +34,13 @@
       </n-form-item>
 
       <!-- 样式配置 -->
-      <n-divider title-placement="left">样式配置</n-divider>
+      <n-divider title-placement="left">{{ t('config.base.style.section') }}</n-divider>
 
-      <n-form-item label="背景颜色">
+      <n-form-item :label="t('config.base.backgroundColor')">
         <n-color-picker v-model:value="formData.backgroundColor" :show-alpha="true" @update:value="handleUpdate" />
       </n-form-item>
 
-      <n-form-item label="边框宽度">
+      <n-form-item :label="t('config.base.borderWidth')">
         <n-slider
           v-model:value="formData.borderWidth"
           :min="0"
@@ -46,15 +51,15 @@
         />
       </n-form-item>
 
-      <n-form-item v-if="formData.borderWidth > 0" label="边框颜色">
+      <n-form-item v-if="formData.borderWidth > 0" :label="t('config.base.borderColor')">
         <n-color-picker v-model:value="formData.borderColor" @update:value="handleUpdate" />
       </n-form-item>
 
-      <n-form-item v-if="formData.borderWidth > 0" label="边框样式">
+      <n-form-item v-if="formData.borderWidth > 0" :label="t('config.base.borderStyle')">
         <n-select v-model:value="formData.borderStyle" :options="borderStyleOptions" @update:value="handleUpdate" />
       </n-form-item>
 
-      <n-form-item label="圆角大小">
+      <n-form-item :label="t('config.base.borderRadius')">
         <n-slider
           v-model:value="formData.borderRadius"
           :min="0"
@@ -66,9 +71,9 @@
       </n-form-item>
 
       <!-- 间距配置 -->
-      <n-divider title-placement="left">间距配置</n-divider>
+      <n-divider title-placement="left">{{ t('config.base.layout.section') }}</n-divider>
 
-      <n-form-item label="内边距">
+      <n-form-item :label="t('config.base.padding')">
         <n-slider
           v-model:value="formData.paddingValue"
           :min="0"
@@ -79,7 +84,7 @@
         />
       </n-form-item>
 
-      <n-form-item label="外边距">
+      <n-form-item :label="t('config.base.margin')">
         <n-slider
           v-model:value="formData.marginValue"
           :min="0"
@@ -91,11 +96,11 @@
       </n-form-item>
 
       <!-- 快捷操作 -->
-      <n-divider title-placement="left">快捷操作</n-divider>
+      <n-divider title-placement="left">{{ t('config.base.advanced.section') }}</n-divider>
 
       <n-space>
-        <n-button size="small" @click="resetToDefaults">重置默认</n-button>
-        <n-button size="small" type="primary" @click="applyConfig">应用配置</n-button>
+        <n-button size="small" @click="resetToDefaults">{{ t('config.base.resetDefault') }}</n-button>
+        <n-button size="small" type="primary" @click="applyConfig">{{ t('config.base.apply') }}</n-button>
       </n-space>
     </n-form>
   </div>
@@ -170,10 +175,10 @@ const formData = shallowReactive({
  * 边框样式选项
  */
 const borderStyleOptions = [
-  { label: '实线', value: 'solid' },
-  { label: '虚线', value: 'dashed' },
-  { label: '点线', value: 'dotted' },
-  { label: '双线', value: 'double' }
+  { label: t('config.base.borderStyles.solid'), value: 'solid' },
+  { label: t('config.base.borderStyles.dashed'), value: 'dashed' },
+  { label: t('config.base.borderStyles.dotted'), value: 'dotted' },
+  { label: t('config.base.borderStyles.double'), value: 'double' }
 ]
 
 // 当前选中的节点ID
@@ -249,7 +254,7 @@ const handleUpdate = () => {
       configurationManager.updateConfiguration(nodeId, 'base', baseConfig)
     } catch (error) {
       console.error('[BaseConfigForm] 更新配置失败:', error)
-      message.error('配置更新失败')
+      message.error(t('common.updateFailed'))
     }
   }, 300)
 }
@@ -378,7 +383,7 @@ onMounted(() => {
  */
 const applyConfig = () => {
   handleUpdate()
-  message.success('配置已应用')
+  message.success(t('config.base.applySuccess'))
   emit('apply', {
     showTitle: formData.showTitle,
     title: formData.title,

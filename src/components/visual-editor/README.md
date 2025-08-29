@@ -303,14 +303,87 @@ pnpm quality-check
 - **编辑器集成测试**: `/test/editor-integration`
 - **配置系统测试**: `/test/new-config-system`
 
+## 🧹 清理记录 (v2.0.0)
+
+### 已清理的文件和目录
+
+#### 1. 测试和示例文件
+- ✅ `components/config/ConfigWrapperTest.vue` - 配置包装器测试组件
+- ✅ `components/Layout/example.vue` - 布局示例文件
+- ✅ `core/ConfigDiscoveryTest.ts` - 配置发现测试文件
+
+#### 2. 完全删除的文档目录
+- ✅ `docs/` 整个目录及其所有子文件
+  - `docs/ARCHITECTURE.md` - 旧架构文档
+  - `docs/CONFIGURATION.md` - 配置系统文档
+  - `docs/STATE_MANAGEMENT.md` - 状态管理文档
+  - `docs/WIDGET_REGISTRY_GUIDE.md` - Widget 注册指南
+  - `docs/components/Layout.md` - 布局组件文档
+  - `docs/renderers/` - 渲染器开发文档目录
+  - `docs/review/` - 代码审查文档目录
+  - `docs/xiugaidfangan/` - 修改方案文档目录
+
+#### 3. 根目录文档文件
+- ✅ `ARCHITECTURE_GUIDE.md` - 架构指南
+- ✅ `COMPONENT_ANALYSIS.md` - 组件分析报告
+- ✅ `COMPONENT_SUMMARY.md` - 组件总结文档
+- ✅ `CLEANUP_SUMMARY.md` - 清理总结报告
+- ✅ `COMPONENT_API_CONFIG_IMPLEMENTATION.md` - API配置实现文档
+- ✅ `README.md` - 旧版主文档 (已重写)
+
+#### 4. 子模块文档文件
+- ✅ `configuration/README.md` - 配置系统文档
+- ✅ `configuration/CONFIGURATION_ARCHITECTURE.md` - 配置架构文档
+- ✅ `configuration/test-integration.html` - 配置测试HTML
+- ✅ `renderers/RENDERER_SYSTEM_GUIDE.md` - 渲染器系统指南
+- ✅ `renderers/canvas/README.md` - Canvas渲染器文档
+- ✅ `core/component-api-config.test.md` - API配置测试文档
+
+### 待进一步评估的文件
+
+#### 1. 重复的属性编辑器 (暂保留)
+- `components/property-editors/ImagePropertyEditor.vue`
+- `components/property-editors/TextPropertyEditor.vue`
+- **说明**: 与 `PropertyPanel/components/` 中文件重复，需确认使用情况后清理
+
+#### 2. 重复的 Widget 文件 (暂保留)
+- `widgets/ImageWidget.vue` 
+- `widgets/TextWidget.vue`
+- **说明**: 与 `widgets/custom/` 目录下同名文件重复，需确认功能差异
+
+#### 3. 疑似未使用的组件 (暂保留)
+- `components/EditorCanvas.vue` - 仅在已删除文档中提及
+- `components/PanelLayout.vue` - 仅在类型定义中引用
+- `components/DataSourceTriggerPanel.vue` - 已导入但未实际使用
+
+### 清理效果
+
+#### 数量统计
+- **删除文档文件**: 约 20+ 个 `.md` 文件
+- **删除测试文件**: 3 个测试相关文件
+- **删除HTML文件**: 1 个集成测试页面
+- **保留核心文件**: ~100 个核心功能文件
+
+#### 目录结构优化
+- 移除了 `docs/` 冗余文档目录
+- 清理了根目录的临时分析文档
+- 统一为单一 `README.md` 架构文档
+- 保持了完整的功能模块结构
+
+#### 维护效益
+- 🎯 **简化维护**: 减少文档维护负担，统一信息源
+- 🚀 **提升性能**: 减少不必要的文件扫描和构建时间  
+- 📖 **改善体验**: 统一、清晰的架构文档替代分散的文件
+- 🔍 **便于导航**: 清晰的目录结构，便于开发者定位功能
+
 ## 📝 更新日志
 
 ### v2.0.0 (2025-08-29)
-- 🧹 大幅清理冗余文档和测试文件
-- 🏗️ 重新整理架构文档
-- ✨ 优化目录结构，提高可维护性
-- 🔧 统一配置系统管理
-- 🎨 完善 Widget 组件库分类
+- 🧹 **重大清理**: 删除 20+ 冗余文档文件和测试文件
+- 📋 **文档重构**: 创建统一的架构文档，替代分散的文档系统
+- 🏗️ **结构优化**: 简化目录结构，提高项目可维护性
+- ✨ **功能保持**: 保留所有核心功能模块，仅清理文档和测试文件
+- 🎯 **开发体验**: 提供清晰的使用指南和开发规范
 
 ### 历史版本
 - v1.x: 初始多渲染器架构实现

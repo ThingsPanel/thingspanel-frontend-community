@@ -43,7 +43,7 @@ const message = useMessage()
  */
 const inputMethods = [
   { label: 'JSON数据', value: 'json', available: true },
-  { label: 'HTTP接口', value: 'http', available: false },
+  { label: 'HTTP接口', value: 'http', available: true },
   { label: 'JavaScript脚本', value: 'script', available: true }
 ]
 
@@ -79,6 +79,50 @@ const formState = reactive({
   scriptCode:
     'return {\n  timestamp: new Date().toISOString(),\n  randomValue: Math.random(),\n  message: "Hello from script"\n}'
 })
+
+/**
+ * HTTP配置状态 - 新版HttpConfigForm集成
+ */
+const httpConfig = ref({
+  url: 'https://api.example.com/data',
+  method: 'GET' as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+  timeout: 10000,
+  headers: [] as Array<{
+    key: string
+    value: string
+    enabled: boolean
+    isDynamic: boolean
+    dataType: string
+    variableName: string
+    description: string
+  }>,
+  params: [] as Array<{
+    key: string
+    value: string
+    enabled: boolean
+    isDynamic: boolean
+    dataType: string
+    variableName: string
+    description: string
+  }>,
+  body: '{}',
+  preRequestScript: '',
+  postResponseScript: ''
+})
+
+/**
+ * HTTP配置更新处理
+ */
+const onHttpConfigUpdate = (newConfig: typeof httpConfig.value) => {
+  httpConfig.value = { ...newConfig }
+  // 同步更新到旧版formState（兼容现有代码）
+  formState.httpUrl = newConfig.url || ''
+  formState.httpMethod = newConfig.method || 'GET'
+  formState.httpHeaders = JSON.stringify(
+    newConfig.headers?.filter(h => h.enabled).reduce((acc, h) => ({ ...acc, [h.key]: h.value }), {}) || {}
+  )
+  formState.httpBody = newConfig.body || '{}'
+}
 
 /**
  * 预览数据状态
@@ -129,6 +173,32 @@ const processingPreviewLoading = ref(false)
 const fetcher = new DataItemFetcher()
 
 /**
+ * 辅助函数：将 HttpParameter[] 转换为 Record<string, string>
+ * 兼容旧的 headers 格式要求
+ */
+const convertHttpParametersToRecord = (
+  params: Array<{
+    key: string
+    value: string | number | boolean
+    enabled: boolean
+    dataType: string
+  }>
+): Record<string, string> | undefined => {
+  if (!params || !Array.isArray(params)) return undefined
+
+  const enabledParams = params.filter(p => p.enabled)
+  if (enabledParams.length === 0) return undefined
+
+  return enabledParams.reduce(
+    (acc, param) => {
+      acc[param.key] = String(param.value)
+      return acc
+    },
+    {} as Record<string, string>
+  )
+}
+
+/**
  * 处理弹窗关闭
  */
 const handleClose = () => {
@@ -146,13 +216,17 @@ const getCurrentDataItem = (): DataItem => {
         config: { jsonString: formState.jsonData }
       }
     case 'http':
+      // 修复：使用新的 HttpConfig 格式，兼容 HttpConfigForm
       return {
         type: 'http',
         config: {
-          url: formState.httpUrl,
-          method: formState.httpMethod,
-          headers: formState.httpHeaders ? JSON.parse(formState.httpHeaders) : undefined,
-          body: formState.httpBody ? JSON.parse(formState.httpBody) : undefined
+          url: httpConfig.value.url,
+          method: httpConfig.value.method,
+          timeout: httpConfig.value.timeout,
+          headers: convertHttpParametersToRecord(httpConfig.value.headers),
+          body: httpConfig.value.body ? JSON.parse(httpConfig.value.body) : undefined,
+          // 扩展：支持新的 params 数组格式
+          params: httpConfig.value.params
         }
       }
     case 'script':
@@ -176,11 +250,6 @@ const executePreview = async () => {
     const dataItem = getCurrentDataItem()
     const result = await fetcher.fetchData(dataItem)
     previewData.value = result
-
-    // 清除HTTP变更标记
-    if (formState.selectedMethod === 'http') {
-      httpConfigChanged.value = false
-    }
 
     message.success('数据预览成功')
   } catch (error) {
@@ -334,11 +403,6 @@ const executeProcessingPreview = async () => {
 }
 
 /**
- * HTTP配置变更标记
- */
-const httpConfigChanged = ref(false)
-
-/**
  * 自动预览开关
  */
 const autoPreviewEnabled = ref(true)
@@ -366,7 +430,6 @@ watch(
   () => {
     previewData.value = null
     processingPreviewData.value = null
-    httpConfigChanged.value = false // 重置HTTP变更标记
   },
   { immediate: true }
 )
@@ -395,13 +458,12 @@ watch(
   }
 )
 
-// HTTP配置变化 - 智能提示（网络开销大）
+// HTTP配置变化监听
 watch(
   [() => formState.httpUrl, () => formState.httpMethod, () => formState.httpHeaders, () => formState.httpBody],
   () => {
     if (formState.selectedMethod === 'http') {
-      httpConfigChanged.value = true
-      console.log('🔄 [RawDataConfigModal] HTTP配置已变更，需要手动更新预览')
+      console.log('🔄 [RawDataConfigModal] HTTP配置已变更')
     }
   }
 )
@@ -561,18 +623,15 @@ defineExpose({
     preset="card"
     title="原始数据配置"
     class="raw-data-config-modal"
-    style="width: 1000px"
+    style="width: 70vw"
     @close="handleClose"
   >
     <!-- 左右分割布局 -->
     <div class="modal-content">
       <!-- 左侧区域 - 原始数据获取 -->
       <div class="left-panel">
-        <div class="panel-header">原始数据获取</div>
-
         <!-- 上部分 - 录入表单 (2/3高度) -->
         <div class="input-form-section">
-          <div class="section-header">数据录入</div>
           <div class="form-content">
             <!-- Tag选择器录入方式 -->
             <div class="method-selector">
@@ -599,28 +658,21 @@ defineExpose({
                   JavaScript脚本
                 </n-tag>
 
-                <n-tag type="warning" bordered disabled class="method-tag">
+                <n-tag
+                  :type="formState.selectedMethod === 'http' ? 'primary' : 'default'"
+                  :bordered="formState.selectedMethod !== 'http'"
+                  checkable
+                  :checked="formState.selectedMethod === 'http'"
+                  class="method-tag"
+                  @click="formState.selectedMethod = 'http'"
+                >
                   HTTP接口
-                  <span style="margin-left: 4px; font-size: 10px">待开发</span>
                 </n-tag>
               </n-space>
             </div>
 
             <!-- 内容区域 -->
             <div class="content-area">
-              <!-- HTTP配置变更提示 -->
-              <n-alert
-                v-if="formState.selectedMethod === 'http' && httpConfigChanged"
-                type="info"
-                size="small"
-                style="margin-bottom: 8px"
-                closable
-                @close="httpConfigChanged = false"
-              >
-                <template #icon>🔄</template>
-                配置已修改，点击预览按钮查看最新数据
-              </n-alert>
-
               <!-- 自动预览开关 -->
               <n-space align="center" justify="space-between" style="margin-bottom: 8px">
                 <n-space align="center" size="small">
@@ -637,17 +689,9 @@ defineExpose({
                   </n-popover>
                 </n-space>
 
-                <!-- 增强的预览按钮 -->
-                <n-button
-                  :type="httpConfigChanged ? 'warning' : 'primary'"
-                  size="small"
-                  :loading="previewLoading"
-                  @click="executePreview"
-                >
-                  <template #icon>
-                    <span>{{ httpConfigChanged ? '🔄' : '🔍' }}</span>
-                  </template>
-                  {{ httpConfigChanged ? '更新数据' : '预览数据' }}
+                <!-- 预览按钮 -->
+                <n-button type="primary" size="small" :loading="previewLoading" @click="executePreview">
+                  预览数据
                 </n-button>
               </n-space>
 
@@ -661,6 +705,11 @@ defineExpose({
                   show-count
                   :input-props="{ style: 'font-family: Monaco, Consolas, monospace; font-size: 12px;' }"
                 />
+              </div>
+
+              <!-- HTTP接口配置 -->
+              <div v-if="formState.selectedMethod === 'http'" class="editor-container">
+                <HttpConfigForm v-model:model-value="httpConfig" @update:model-value="onHttpConfigUpdate" />
               </div>
 
               <!-- 脚本录入 -->
@@ -678,9 +727,9 @@ defineExpose({
 
         <!-- 下部分 - 获取数据预览 (1/3高度) -->
         <div class="data-preview-section">
-          <div class="section-header">
-            数据预览
-            <n-tag v-if="previewData" size="tiny" type="success" style="margin-left: 8px">第一阶段执行结果</n-tag>
+          <div class="compact-header">
+            <span>预览</span>
+            <n-tag v-if="previewData" size="tiny" type="success">结果</n-tag>
           </div>
           <div class="data-preview-content">
             <!-- 加载状态 -->
@@ -708,12 +757,11 @@ defineExpose({
 
       <!-- 右侧区域 - 原始数据处理 -->
       <div class="right-panel">
-        <div class="panel-header">原始数据处理</div>
         <div class="processing-area">
           <!-- JSONPath过滤 -->
           <div class="processing-section">
-            <div class="processing-section-header">
-              <span class="section-title">JSONPath过滤</span>
+            <div class="compact-header">
+              <span>JSONPath</span>
               <n-popover trigger="hover" placement="top">
                 <template #trigger>
                   <span class="help-icon">❓</span>
@@ -761,41 +809,27 @@ defineExpose({
 
           <!-- 脚本处理 -->
           <div class="processing-section">
-            <div class="processing-section-header">
-              <span class="section-title">脚本处理</span>
-              <div class="script-actions">
-                <n-dropdown
-                  :options="scriptTemplates.map(t => ({ label: t.name, key: t.name, code: t.code }))"
-                  placement="bottom-end"
-                  @select="(key, option) => (processingState.scriptCode = option.code)"
-                >
-                  <n-button size="tiny" secondary>
-                    <template #icon>
-                      <span>📝</span>
-                    </template>
-                    模板
-                  </n-button>
-                </n-dropdown>
-                <n-popover trigger="hover" placement="top">
-                  <template #trigger>
-                    <span class="help-icon">❓</span>
-                  </template>
-                  <div>
-                    <p>对数据进行自定义转换</p>
-                    <p>
-                      可用变量:
-                      <code>data</code>
-                      (输入数据)
-                    </p>
-                    <p>
-                      必须:
-                      <code>return</code>
-                      返回处理后的数据
-                    </p>
-                    <p>留空表示不处理</p>
-                  </div>
-                </n-popover>
-              </div>
+            <div class="compact-header">
+              <span>脚本处理</span>
+              <n-popover trigger="hover" placement="top">
+                <template #trigger>
+                  <span class="help-icon">❓</span>
+                </template>
+                <div>
+                  <p>对数据进行自定义转换</p>
+                  <p>
+                    可用变量:
+                    <code>data</code>
+                    (输入数据)
+                  </p>
+                  <p>
+                    必须:
+                    <code>return</code>
+                    返回处理后的数据
+                  </p>
+                  <p>留空表示不处理</p>
+                </div>
+              </n-popover>
             </div>
 
             <div class="processing-content">
@@ -810,8 +844,8 @@ defineExpose({
 
           <!-- 处理预览 -->
           <div class="processing-section">
-            <div class="processing-section-header">
-              <span class="section-title">处理预览</span>
+            <div class="compact-header">
+              <span>处理预览</span>
               <span class="realtime-indicator">
                 <span class="indicator-dot"></span>
                 实时处理
@@ -866,7 +900,7 @@ defineExpose({
 
 .left-panel,
 .right-panel {
-  flex: 1;
+  flex: 4;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -874,17 +908,10 @@ defineExpose({
   border-radius: 6px;
   overflow: hidden;
 }
-
-/* 面板标题 */
-.panel-header {
-  background: var(--card-color);
-  border-bottom: 1px solid var(--border-color);
-  padding: 8px 12px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-color);
-  flex-shrink: 0;
+.right-panel {
+  flex: 3;
 }
+/* 面板标题 */
 
 /* 左侧面板内部布局 */
 .left-panel {
@@ -907,13 +934,16 @@ defineExpose({
 }
 
 /* 子区域标题 */
-.section-header {
-  background: var(--body-color);
-  border-bottom: 1px solid var(--divider-color);
-  padding: 6px 12px;
-  font-size: 12px;
+.compact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 11px;
   font-weight: 500;
-  color: var(--text-color-2);
+  color: var(--text-color);
+  background: var(--card-color);
+  border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
 
@@ -946,20 +976,6 @@ defineExpose({
 
 .processing-section {
   flex-shrink: 0;
-}
-
-.processing-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  gap: 8px;
-}
-
-.section-title {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-color);
 }
 
 .help-icon {

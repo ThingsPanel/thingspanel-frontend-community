@@ -2,9 +2,12 @@
  * 第一层：数据项获取器 (DataItemFetcher)
  * 职责：根据配置类型获取原始数据
  * 已集成 script-engine 安全脚本执行系统
+ * 支持新的 HttpConfig 类型和正确的 HTTP 方法处理
  */
 
 import { defaultScriptEngine } from '../../script-engine'
+import type { HttpConfig, HttpParameter } from '../types/http-config'
+import { convertValue } from '../types/http-config'
 
 // 类型安全的数据项配置
 export type DataItem =
@@ -29,13 +32,19 @@ export interface JsonDataItemConfig {
   jsonString: string
 }
 
+// 兼容原有接口，同时支持新的 HttpConfig
 export interface HttpDataItemConfig {
   url: string
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
   headers?: Record<string, string>
   body?: any
   timeout?: number
+  // 扩展支持新的 HttpConfig 格式
+  params?: HttpParameter[]
 }
+
+// 或者直接使用 HttpConfig 类型
+export type HttpDataItemConfigV2 = HttpConfig
 
 export interface WebSocketDataItemConfig {
   url: string
@@ -102,23 +111,69 @@ export class DataItemFetcher implements IDataItemFetcher {
   }
 
   /**
-   * 获取HTTP数据
+   * 获取HTTP数据 - 修复版本，支持正确的HTTP方法处理
+   * 修复问题：GET/HEAD方法不能包含body，参数应转为URL query string
    */
   private async fetchHttpData(config: HttpDataItemConfig): Promise<any> {
     try {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), config.timeout || 10000)
 
-      const response = await fetch(config.url, {
+      // 构建基础请求配置
+      const requestConfig: RequestInit = {
         method: config.method,
         headers: {
           'Content-Type': 'application/json',
           ...config.headers
         },
-        body: config.body ? JSON.stringify(config.body) : undefined,
         signal: controller.signal
-      })
+      }
 
+      // 修复核心逻辑：区分不同HTTP方法的参数处理
+      let finalUrl = config.url
+
+      // GET/HEAD方法：不能包含body，参数转为URL查询字符串
+      if (config.method === 'GET' || config.method === 'HEAD') {
+        // 1. 处理 params 数组（新格式）
+        if (config.params && Array.isArray(config.params)) {
+          const urlParams = new URLSearchParams()
+          config.params
+            .filter(param => param.enabled) // 只处理启用的参数
+            .forEach(param => {
+              const convertedValue = convertValue(param.value, param.dataType)
+              urlParams.append(param.key, String(convertedValue))
+            })
+
+          if (urlParams.toString()) {
+            finalUrl += (finalUrl.includes('?') ? '&' : '?') + urlParams.toString()
+          }
+        }
+
+        // 2. 处理 body 作为查询参数（兼容旧格式）
+        if (config.body && typeof config.body === 'object') {
+          const urlParams = new URLSearchParams()
+          Object.entries(config.body).forEach(([key, value]) => {
+            urlParams.append(key, String(value))
+          })
+
+          if (urlParams.toString()) {
+            finalUrl += (finalUrl.includes('?') ? '&' : '?') + urlParams.toString()
+          }
+        }
+
+        // GET/HEAD请求不设置body
+        // requestConfig.body 保持 undefined
+      }
+      // POST/PUT/PATCH/DELETE方法：可以包含body
+      else {
+        if (config.body) {
+          requestConfig.body = typeof config.body === 'string' ? config.body : JSON.stringify(config.body)
+        }
+      }
+
+      console.log(`🌐 [DataItemFetcher] ${config.method} ${finalUrl}`)
+
+      const response = await fetch(finalUrl, requestConfig)
       clearTimeout(timeoutId)
 
       if (!response.ok) {

@@ -1,232 +1,314 @@
-# HTTP动态参数与高级配置系统 - 任务拆分
+# DataItemFetcher HTTP实现修复与完善 - 任务拆解
 
-**大任务ID**: TASK-2025-08-28-HTTP-DYNAMIC-SYSTEM-V1  
-**拆解日期**: 2025-08-28  
-**拆解版本**: v1.0 (基于已完成基础架构的HTTP高级功能实现)
-
----
-
-## 📋 任务拆解总览
-
-**总任务数**: 6个核心子任务  
-**实现策略**: 基于70%已完成基础，专注HTTP动态参数高级功能  
-**预计总时间**: 3-4周
-**前置完成**: Phase 1+2 完整UI组件生态系统和优化执行器架构
+**大任务ID**: TASK-2025-08-29-HTTP-FETCHER-FIX  
+**拆解日期**: 2025-08-29  
+**拆解版本**: v1.0 (基于实际需求的聚焦版本)
+**当前状态**: execution_approved ✅
 
 ---
 
-## ✅ 已完成基础架构回顾 (Phase 1+2)
+## ✅ 任务背景：继承优秀成果，修复核心bug
 
-### 完整UI组件生态系统 ✅ **已完成**
-- **JsonDataInput.vue**: 完整JSON编辑器，支持验证、格式化、压缩等
-- **HttpConfigForm.vue**: HTTP接口配置表单，支持URL、方法、Headers、Body配置
-- **DataSourcePanel.vue**: 数据源配置面板，支持多种数据源类型
-- **SimpleConfigurationEditor.vue**: 配置驱动架构集成成功
+### 已完成的优秀成果 
+通过深度代码分析，发现之前的工作成果非常丰富且质量优秀：
 
-### 优化执行器架构 ✅ **已完成**  
-- **UnifiedDataExecutor**: 统一数据执行器，三层架构优化完成
-- **SimpleDataBridge**: 简化数据桥接器，提供统一数据接口
-- **VisualEditorBridge**: Visual Editor集成桥接器，兼容旧API
+1. **完整的类型系统** - `src/core/data-architecture/types/http-config.ts`
+   - ✅ HttpParameter、HttpHeader、HttpParam 接口完整定义
+   - ✅ generateVariableName、convertValue 等工具函数完备
+   - ✅ HTTP_CONFIG_TEMPLATES 模板系统完整
 
-### 配置响应式系统 ✅ **已完成**
-- **ConfigEventBus**: 配置事件总线，支持配置变更监听
-- **EditorDataSourceManager**: 编辑器数据源管理器，响应配置变更
-- **ConfigurationIntegrationBridge**: 配置集成桥接器，提供向后兼容
+2. **完整的UI组件** - `src/core/data-architecture/components/modals/HttpConfigForm.vue`
+   - ✅ 5页签完整实现（基础/请求头/参数/请求脚本/响应脚本）
+   - ✅ 动态参数配置、脚本编辑器、国际化全部完成
+   - ✅ 模板系统集成，用户体验优秀
 
----
+3. **正确的系统集成** - `src/core/data-architecture/components/modals/RawDataConfigModal.vue`
+   - ✅ 已正确集成为第三种数据获取方式
+   - ✅ JSON → 脚本 → **HTTP接口** 的完整选择体系
+   - ✅ 数据流连接正确
 
-## 🎯 HTTP动态参数系统实现 (第1-4周)
-
-### SUBTASK-008: HTTP配置需求沟通和设计
-- **任务ID**: SUBTASK-008
-- **预估时间**: 4小时
-- **依赖关系**: 基于现有基础HttpConfigForm.vue和数据架构
-- **任务描述**:
-  - 与用户深入沟通HTTP配置的具体需求
-  - 分析现有HttpConfigForm.vue的能力和不足
-  - 设计HTTP配置的完整功能规格
-  - 规划HTTP配置在整个数据架构中的集成方案
-  - 制定HTTP配置开发的详细计划
-- **验收标准**:
-  - [x] 现有HttpConfigForm.vue基础组件已存在
-  - [ ] 完成HTTP配置需求详细调研
-  - [ ] 明确HTTP配置功能边界和规格
-  - [ ] 设计HTTP配置与数据执行器的集成方案
-  - [ ] 制定HTTP配置开发的分步计划
-  - [ ] 用户确认HTTP配置需求和设计方案
-
-### SUBTASK-009: 参数依赖图管理系统
-- **任务ID**: SUBTASK-009
-- **预估时间**: 1周 (35小时)
-- **依赖关系**: SUBTASK-008
-- **任务描述**:
-  - 实现参数依赖图结构 (`ParameterDependencyGraph`)
-  - 建立智能依赖解析器 (`SmartDependencyResolver`)
-  - 开发依赖图可视化组件 (`DependencyGraphViewer`)
-  - 集成依赖变更影响分析
-  - 建立依赖性能优化机制
-- **验收标准**:
-  - [ ] 完成依赖图节点和边管理
-  - [ ] 实现最优解析路径计算
-  - [ ] 建立基于D3.js的图表展示
-  - [ ] 完成交互式依赖关系编辑
-  - [ ] 集成循环依赖警告标识
-  - [ ] 实现依赖变更影响分析
-
-### SUBTASK-010: 可视化参数配置界面
-- **任务ID**: SUBTASK-010  
-- **预估时间**: 1周 (35小时)
-- **依赖关系**: SUBTASK-008, SUBTASK-009
-- **任务描述**:
-  - 开发参数配置主界面 (`ParameterConfigurationPanel`)
-  - 实现参数源选择器 (`ParameterSourceSelector`)
-  - 建立参数映射编辑器 (`ParameterMappingEditor`)
-  - 集成参数测试工具 (`ParameterTestTool`)
-  - 优化参数配置用户体验
-- **验收标准**:
-  - [ ] 完成参数列表管理界面
-  - [ ] 实现多种参数类型选择器  
-  - [ ] 建立数据源类型选择和路径配置
-  - [ ] 完成可视化参数映射界面
-  - [ ] 集成参数值模拟和HTTP请求预览
-  - [ ] 实现拖拽式参数绑定功能
-
-### SUBTASK-011: HttpConfigForm高级功能扩展
-- **任务ID**: SUBTASK-011
-- **预估时间**: 1周 (35小时)
-- **依赖关系**: SUBTASK-008, SUBTASK-010
-- **任务描述**:
-  - 扩展HttpConfigForm支持动态参数字段识别
-  - 实现参数标记和预览系统
-  - 建立HTTP请求模板管理
-  - 集成高级HTTP功能配置
-  - 优化HTTP配置用户体验
-- **验收标准**:
-  - [x] 基础HttpConfigForm组件已存在
-  - [ ] 完成URL、Headers、Body动态参数支持
-  - [ ] 实现动态参数高亮显示和自动完成
-  - [ ] 建立参数值实时预览功能
-  - [ ] 集成HTTP配置模板管理
-  - [ ] 完成高级HTTP功能（重试、超时、缓存等）
-  - [ ] 实现HTTP请求调试和监控
-
-### SUBTASK-012: 动态参数数据仓库扩展
-- **任务ID**: SUBTASK-012
-- **预估时间**: 4天 (28小时)
-- **依赖关系**: SUBTASK-008, SUBTASK-009
-- **任务描述**:
-  - 实现动态参数专用存储 (`DynamicParameterStore`)
-  - 建立参数变更监听系统
-  - 集成参数缓存优化机制
-  - 完善参数数据持久化
-  - 建立参数使用统计分析
-- **验收标准**:
-  - [ ] 完成参数定义存储结构
-  - [ ] 实现参数值缓存和变更历史
-  - [ ] 建立参数变化监听器和事件广播
-  - [ ] 完成智能缓存策略和失效机制
-  - [ ] 集成参数使用统计和性能监控
-  - [ ] 实现内存使用优化
-
-### SUBTASK-013: 完整系统集成测试和优化
-- **任务ID**: SUBTASK-013
-- **预估时间**: 4天 (28小时)
-- **依赖关系**: SUBTASK-010, SUBTASK-011, SUBTASK-012
-- **任务描述**:
-  - 进行系统集成验证和完整流程测试
-  - 实施性能监控和优化
-  - 完善错误处理和容错机制
-  - 建立测试页面和技术文档
-  - 集成调试工具和监控界面
-- **验收标准**:
-  - [ ] 完成HTTP动态参数完整流程测试
-  - [ ] 验证与现有数据架构集成
-  - [ ] 完成Visual Editor集成测试
-  - [ ] 实现参数解析和依赖图性能优化
-  - [ ] 建立完善的错误处理机制
-  - [ ] 完成HTTP动态参数测试页面
-  - [ ] 集成性能监控和故障诊断工具
-
----
-
-## 📊 任务依赖关系图
-
-```
-已完成基础架构 ✅:
-Phase 1: UI组件生态系统 (JsonDataInput, HttpConfigForm, DataSourcePanel等)
-Phase 2: 执行器架构 (UnifiedDataExecutor, SimpleDataBridge, VisualEditorBridge等)
-
-HTTP动态参数系统实现:
-SUBTASK-008 (动态参数核心引擎)
-    ↓
-SUBTASK-009 (参数依赖图管理) ← SUBTASK-008
-    ↓ ↘
-SUBTASK-010 (参数配置界面) ← SUBTASK-008, SUBTASK-009
-    ↓
-SUBTASK-011 (HttpConfigForm扩展) ← SUBTASK-008, SUBTASK-010
-    ↓ ↘
-SUBTASK-012 (参数数据仓库扩展) ← SUBTASK-008, SUBTASK-009
-    ↓
-SUBTASK-013 (系统集成测试) ← SUBTASK-010, SUBTASK-011, SUBTASK-012
+### ❌ 发现的唯一问题
+**DataItemFetcher.ts:112** 中的HTTP实现bug：
+```javascript
+// 错误：GET请求包含body导致浏览器报错
+TypeError: Failed to execute 'fetch' on 'Window': Request with GET/HEAD method cannot have body.
 ```
 
 ---
 
-## 🎯 关键里程碑
+## 🎯 子任务列表
 
-- **里程碑1**: 动态参数核心引擎完成 (SUBTASK-008) - 第1周末
-- **里程碑2**: 参数依赖图管理系统实现 (SUBTASK-009) - 第2周末  
-- **里程碑3**: 可视化参数配置界面完成 (SUBTASK-010) - 第3周末
-- **里程碑4**: HttpConfigForm高级功能集成 (SUBTASK-011) - 第3周末
-- **里程碑5**: 完整系统集成测试和优化 (SUBTASK-012, 013) - 第4周末
+基于对实际需求的准确理解，拆解为 **4个聚焦的子任务**：
+
+### SUBTASK-011: HTTP请求方法逻辑修复
+- **任务ID**: SUBTASK-011-HTTP-METHOD-FIX
+- **预估工时**: 1小时
+- **优先级**: 高 🔥
+- **状态**: pending
+
+**核心工作**:
+- [ ] 修复GET/HEAD请求不能包含body的问题
+- [ ] 实现GET请求参数的URL query string处理  
+- [ ] 完善POST/PUT/PATCH请求的body数据处理
+- [ ] 添加适当的错误处理和类型检查
+
+### SUBTASK-012: 与HttpConfigForm数据结构兼容性验证
+- **任务ID**: SUBTASK-012-COMPATIBILITY-CHECK
+- **预估工时**: 1小时  
+- **优先级**: 中
+- **状态**: pending
+
+**核心工作**:
+- [ ] 验证与http-config.ts类型系统的兼容性
+- [ ] 确保与HttpConfigForm生成的配置数据结构匹配
+- [ ] 测试动态参数处理机制
+- [ ] 验证类型转换和验证功能
+
+### SUBTASK-013: 端到端功能测试与验证  
+- **任务ID**: SUBTASK-013-E2E-TESTING
+- **预估工时**: 1.5小时
+- **优先级**: 中
+- **状态**: pending
+
+**核心工作**:
+- [ ] 在RawDataConfigModal中测试完整的HTTP数据流
+- [ ] 测试所有HTTP方法（GET/POST/PUT/DELETE/PATCH）
+- [ ] 验证请求头、参数、body的正确处理
+- [ ] 测试错误处理和异常情况
+
+### SUBTASK-014: 代码质量检查与文档更新
+- **任务ID**: SUBTASK-014-QUALITY-CHECK  
+- **预估工时**: 0.5小时
+- **优先级**: 低
+- **状态**: pending
+
+**核心工作**:
+- [ ] 运行TypeScript检查和ESLint规范检查
+- [ ] 添加必要的中文注释
+- [ ] 更新相关技术文档  
+- [ ] 创建任务完成总结
 
 ---
 
-## 🚨 风险控制
+## 📊 任务依赖关系与执行策略
 
-### 技术风险
-- **风险1**: 参数依赖复杂度可能导致性能问题 → **缓解**: 智能缓存和增量更新
-- **风险2**: UI复杂度可能影响用户体验 → **缓解**: 渐进式界面设计，基于Naive UI
-- **风险3**: 参数替换可能引起安全问题 → **缓解**: 严格的参数验证和沙盒机制
-- **风险4**: 与现有系统集成可能有兼容性问题 → **缓解**: 向后兼容的接口设计
+### 执行顺序
+```
+SUBTASK-011 (HTTP请求方法逻辑修复) 🔥
+    ↓
+SUBTASK-012 (数据结构兼容性验证)
+    ↓  
+SUBTASK-013 (端到端功能测试)
+    ↓
+SUBTASK-014 (代码质量检查)
+```
 
-### 进度风险  
-- **风险5**: 依赖图可视化技术复杂度高 → **缓解**: 使用成熟的D3.js库，简化实现
-- **风险6**: 多个子任务并行可能导致冲突 → **缓解**: 明确接口边界，模块化设计
+### 当前系统完成度评估
+```
+DataItemFetcher HTTP修复任务完成度:
+├─ 类型系统        ████████████████████████████████ 100% ✅
+├─ UI表单组件      ████████████████████████████████ 100% ✅  
+├─ 系统集成        ████████████████████████████████ 100% ✅
+├─ HTTP执行器修复   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0%  🚧
+├─ 兼容性验证      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0%  🚧
+├─ 端到端测试      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0%  🚧
+└─ 质量检查        ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0%  🚧
+
+实际完成度: 95% (继承了优秀的前期成果)
+剩余工作量: 4小时 (聚焦核心问题修复)
+```
 
 ---
 
-## 💡 基于已完成基础的优势
+## 🔧 核心修复实施计划
 
-### 强大的已有基础 (70%完成度)
-1. **完整执行器系统**: UnifiedDataExecutor、SimpleDataBridge、VisualEditorBridge完整且稳定
-2. **响应式配置架构**: ConfigEventBus、EditorDataSourceManager、ConfigurationIntegrationBridge调试完成  
-3. **UI组件生态**: JsonDataInput、HttpConfigForm、DataSourcePanel等组件高质量
-4. **项目规范遵循**: 完全符合Naive UI、国际化、主题系统要求
+### 阶段1: HTTP请求逻辑修复 (1小时)
+**核心修复**:
+- 分析DataItemFetcher.ts当前HTTP实现
+- 修复GET/HEAD请求包含body的错误  
+- 实现正确的参数处理逻辑（GET用Query，POST用Body）
+- 添加HTTP方法的类型安全检查
 
-### HTTP动态参数系统策略 (30%新功能)
-- **聚焦HTTP高级功能**: 专注动态参数引擎、依赖图管理、参数配置界面
-- **企业级特性**: 参数依赖分析、运行时替换、可视化配置
-- **性能优化**: 智能缓存、增量更新、性能监控
-- **用户体验**: 直观的参数映射、实时预览、调试工具
+### 阶段2: 兼容性验证 (1小时)  
+**集成验证**:
+- 验证与http-config.ts类型系统兼容性
+- 测试HttpConfigForm数据结构匹配
+- 确保动态参数处理机制正常工作
+- 验证类型转换和工具函数集成
 
-### 技术架构设计
+### 阶段3: 功能测试 (1.5小时)
+**端到端测试**:
+- 在RawDataConfigModal中测试HTTP数据源配置
+- 验证所有HTTP方法的正确执行
+- 测试各种参数组合和边界情况
+- 确认错误处理机制完善
+
+### 阶段4: 质量保证 (0.5小时)
+**代码质量**:
+- TypeScript类型检查和ESLint规范检查
+- 添加中文注释说明修复逻辑
+- 更新相关文档
+- 创建完成总结报告
+
+---
+
+## 💡 关键技术实现策略
+
+### 1. DataItemFetcher HTTP修复策略
 ```typescript
-动态参数引擎架构:
-ParameterConfigUI → ParameterManager → DynamicParameterEngine → HttpExecutor
-     ↓                    ↓                     ↓                  ↓
-参数配置界面 → 参数依赖管理 → 运行时参数替换 → HTTP请求执行
+// 修复核心逻辑：区分GET和POST请求的参数处理
+async fetchHttpData(config: any): Promise<any> {
+  const requestConfig: RequestInit = {
+    method: config.method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...config.headers
+    }
+  }
+
+  // 修复：GET/HEAD不能有body，POST/PUT/PATCH才能有body
+  if (!['GET', 'HEAD'].includes(config.method) && config.body) {
+    requestConfig.body = JSON.stringify(config.body)
+  }
+
+  // 修复：GET请求用URL参数  
+  let finalUrl = config.url
+  if (['GET', 'HEAD'].includes(config.method) && config.params) {
+    const urlParams = new URLSearchParams(config.params)
+    finalUrl += `?${urlParams.toString()}`
+  }
+
+  const response = await fetch(finalUrl, requestConfig)
+  // ... 其余处理逻辑
+}
+```
+
+### 2. 类型系统集成策略
+```typescript
+// 使用已有的http-config.ts类型定义
+import type { HttpParameter, HttpConfig } from '@/core/data-architecture/types/http-config'
+import { generateVariableName, convertValue } from '@/core/data-architecture/types/http-config'
+
+// 确保与HttpConfigForm生成的数据结构完全兼容
+const processHttpConfig = (config: HttpConfig) => {
+  // 处理动态参数替换
+  // 使用现有的工具函数
+  // 保持数据结构一致性
+}
+```
+
+### 3. 端到端测试策略
+```typescript
+// 在RawDataConfigModal中验证完整数据流
+// 测试路径：用户配置 → HttpConfigForm → DataItemFetcher → 数据返回
+// 验证所有HTTP方法的正确性
+// 确保错误处理机制完善
 ```
 
 ---
 
-## 🎨 UI集成要求
+## 📋 详细任务验收标准
 
-- **强制使用 Naive UI 组件** - 所有界面组件必须基于 Naive UI
-- **主题系统集成** - 支持明暗主题切换，使用 `useThemeStore()`
-- **国际化支持** - 所有用户界面文本使用 `$t()` 或 `useI18n()`
-- **响应式设计** - 支持不同屏幕尺寸的界面适配
+### SUBTASK-011: HTTP请求方法逻辑修复
+**验收标准**:
+- [ ] GET/HEAD请求不再包含body参数，避免浏览器报错
+- [ ] POST/PUT/PATCH请求正确处理body数据
+- [ ] GET请求参数正确转换为URL查询字符串
+- [ ] 请求头处理逻辑正确，支持自定义headers
+- [ ] 与http-config.ts类型系统完全兼容
+
+### SUBTASK-012: 数据结构兼容性验证  
+**验收标准**:
+- [ ] 能正确处理HttpConfigForm生成的配置数据
+- [ ] 动态参数机制正常工作，支持变量替换
+- [ ] 类型转换功能正确（string/number/boolean/json）
+- [ ] generateVariableName等工具函数正确集成
+- [ ] 所有数据字段映射正确
+
+### SUBTASK-013: 端到端功能测试  
+**验收标准**:
+- [ ] 在RawDataConfigModal中能正常选择和配置HTTP数据源
+- [ ] 所有HTTP方法（GET/POST/PUT/DELETE/PATCH）都能成功执行
+- [ ] 各种参数组合（headers/params/body）都能正确处理
+- [ ] 错误情况有明确的提示信息
+- [ ] 数据返回和处理流程完整
+
+### SUBTASK-014: 代码质量检查
+**验收标准**:
+- [ ] TypeScript编译无错误，类型检查通过
+- [ ] ESLint检查无违规，代码规范符合项目标准
+- [ ] 关键逻辑有中文注释说明
+- [ ] 修复逻辑的技术文档已更新
+- [ ] 任务完成总结报告已创建
 
 ---
 
-**📋 HTTP动态参数系统任务拆分完成，基于70%已完成基础专注实现剩余30%高级功能**
+## 🎯 整体成功标准
+
+### 技术实现标准
+- [ ] DataItemFetcher HTTP实现完全修复，无浏览器错误
+- [ ] 与现有HttpConfigForm组件完美兼容
+- [ ] 支持所有HTTP方法的正确处理
+- [ ] 代码通过TypeScript检查和ESLint规范
+
+### 功能完整性标准  
+- [ ] 用户在RawDataConfigModal中可正常使用HTTP数据源
+- [ ] 所有HTTP请求都能成功执行并返回数据
+- [ ] 错误处理机制完善，异常情况有明确提示
+- [ ] 不影响现有的JSON和脚本数据源功能
+
+### 系统集成标准
+- [ ] 激活所有已完成的HTTP配置功能
+- [ ] JSON、脚本、HTTP三种数据源体系完整可用
+- [ ] 符合项目架构设计和代码规范
+- [ ] 支持明暗主题切换（如有UI变更）
+
+### 任务价值实现
+- [ ] 通过最小工作量实现最大用户价值
+- [ ] 让所有已完成的优秀HTTP组件真正可用
+- [ ] 为用户提供完整的HTTP数据源配置能力
+
+---
+
+## 📈 风险评估与应对
+
+### 技术风险（极低）
+- **问题明确具体**: HTTP实现bug位置和原因都很清楚
+- **修复方案成熟**: 标准的HTTP客户端实现模式
+- **影响范围小**: 只涉及DataItemFetcher的HTTP方法处理
+
+### 时间风险（极低）  
+- **工作量准确**: 基于具体问题分析，4小时工作量评估可靠
+- **无复杂依赖**: 不需要等待其他组件或系统的修改
+- **有现成参考**: 可参考标准HTTP客户端库的实现
+
+### 集成风险（极低）
+- **向后兼容**: 修复不会影响现有JSON和脚本数据源功能
+- **接口稳定**: 不改变对外接口，只修复内部HTTP实现逻辑
+- **充分测试**: 已有完整的HttpConfigForm可用于测试验证
+
+---
+
+---
+
+**✅ DataItemFetcher HTTP修复任务拆解完成**  
+**🎯 4个聚焦子任务，总计4小时工作量**  
+**📋 准备开始执行SUBTASK-011: HTTP请求方法逻辑修复**
+
+---
+
+## 🚀 执行准备就绪
+
+### 当前状态
+- **任务拆解**: ✅ 完成
+- **用户授权**: ✅ execution_approved
+- **准备执行**: 🎯 SUBTASK-011
+
+### 下一步行动
+**立即开始执行第一个子任务：HTTP请求方法逻辑修复**
+1. 分析DataItemFetcher.ts的当前HTTP实现
+2. 定位GET请求body问题的具体代码位置  
+3. 实现修复方案
+4. 测试修复结果
+
+**预计完成时间**: 1小时内
