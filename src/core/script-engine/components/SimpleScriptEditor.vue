@@ -1,13 +1,12 @@
 <!--
-简洁的脚本编辑器 - 专注于实用性，摒弃复杂功能
-只保留基本的编辑和模板选择功能
+轻量级脚本编辑器 - 使用CodeMirror提供良好的代码编辑体验
+参考data-handle.vue的成功实现，性能优秀且功能完整
 -->
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useThemeStore } from '@/store/modules/theme'
-import type { SelectOption } from 'naive-ui'
-// Monaco Editor
-import MonacoEditor from 'monaco-editor-vue3'
+import Codemirror from 'codemirror-editor-vue3'
+import 'codemirror/mode/javascript/javascript.js'
 
 interface Props {
   /** 脚本内容 */
@@ -35,162 +34,149 @@ const emit = defineEmits<{
 
 // 主题系统集成
 const themeStore = useThemeStore()
-const editorRef = ref<any>(null)
+const cmRef = ref()
 
-// 简单的内置模板
-const templates: Record<string, SelectOption[]> = {
+// CodeMirror 配置
+const cmOptions = {
+  mode: 'text/javascript',
+  indentUnit: 2,
+  lineWrapping: true,
+  lineNumbers: true,
+  theme: 'default'
+}
+
+// 代码示例
+const codeExamples = {
   'data-generation': [
     {
-      label: '生成随机数据',
-      value: 'return { value: Math.floor(Math.random() * 100), timestamp: Date.now() }'
+      name: '生成随机数据',
+      code: `return {
+  value: Math.floor(Math.random() * 100),
+  timestamp: Date.now(),
+  id: Math.random().toString(36).substr(2, 9)
+}`
     },
     {
-      label: '生成时间序列',
-      value: 'return Array.from({length: 10}, (_, i) => ({ time: Date.now() + i * 1000, value: Math.random() * 100 }))'
+      name: '生成时间序列',
+      code: `return Array.from({ length: 10 }, (_, i) => ({
+  time: Date.now() + i * 1000,
+  value: Math.random() * 100
+}))`
     }
   ],
   'data-processing': [
     {
-      label: '数据过滤',
-      value: 'return data.filter(item => item.value > 50)'
+      name: '数据过滤',
+      code: `return data.filter(item => item.value > 50)`
     },
     {
-      label: '数据转换',
-      value: 'return data.map(item => ({ ...item, value: item.value * 2 }))'
+      name: '数据转换',
+      code: `return data.map(item => ({
+  ...item,
+  value: item.value * 2,
+  processed: true
+}))`
     }
   ],
   'data-merger': [
     {
-      label: '合并为对象',
-      value: 'return items.reduce((acc, item, index) => ({ ...acc, [`data_${index}`]: item }), {})'
+      name: '合并为对象',
+      code: `return items.reduce((acc, item, index) => {
+  acc[\`data_\${index}\`] = item
+  return acc
+}, {})`
     },
     {
-      label: '合并为数组',
-      value: 'return items.flat()'
+      name: '合并为数组',
+      code: `return items.flat()`
     }
   ]
 }
 
-// 获取当前类别的模板选项
-const templateOptions = computed(() => {
-  if (props.templateCategory && templates[props.templateCategory]) {
-    return templates[props.templateCategory]
+// 获取当前类别的示例
+const availableExamples = computed(() => {
+  if (props.templateCategory && codeExamples[props.templateCategory]) {
+    return codeExamples[props.templateCategory]
   }
-  // 如果没有指定类别，返回所有模板
-  return Object.values(templates).flat()
+  return Object.values(codeExamples).flat()
 })
 
-// 脚本内容的双向绑定
-const scriptContent = computed({
-  get: () => props.modelValue,
-  set: (value: string) => emit('update:modelValue', value)
-})
-
-// Monaco Editor 配置
-const editorOptions = computed(() => ({
-  language: 'javascript',
-  theme: themeStore.darkMode ? 'vs-dark' : 'vs',
-  fontSize: 13,
-  lineHeight: 20,
-  tabSize: 2,
-  insertSpaces: true,
-  automaticLayout: true,
-  minimap: { enabled: false },
-  scrollBeyondLastLine: false,
-  wordWrap: 'on',
-  lineNumbers: 'on',
-  glyphMargin: false,
-  folding: true,
-  lineDecorationsWidth: 10,
-  lineNumbersMinChars: 3,
-  renderLineHighlight: 'line',
-  contextmenu: true,
-  selectOnLineNumbers: true,
-  roundedSelection: false,
-  readOnly: false,
-  cursorStyle: 'line',
-  automaticLayout: true,
-  formatOnPaste: true,
-  formatOnType: true,
-  suggestOnTriggerCharacters: true,
-  acceptSuggestionOnEnter: 'on',
-  quickSuggestions: true,
-  snippetSuggestions: 'inline'
-}))
+// 示例选择器选项
+const exampleOptions = computed(() => 
+  availableExamples.value.map((example, index) => ({
+    label: example.name,
+    value: example.code
+  }))
+)
 
 /**
- * 应用选中的模板到编辑器
+ * 应用选中的模板
  */
 const applyTemplate = (templateCode: string) => {
   if (templateCode) {
-    scriptContent.value = templateCode
-    // 焦点到编辑器并选中所有内容
+    emit('update:modelValue', templateCode)
+    // 等待DOM更新后聚焦
     nextTick(() => {
-      if (editorRef.value?.editor) {
-        editorRef.value.editor.focus()
-        editorRef.value.editor.setSelection(editorRef.value.editor.getModel().getFullModelRange())
+      if (cmRef.value) {
+        const cm = cmRef.value.getCodeMirror?.()
+        if (cm) {
+          const lastLine = cm.lineCount() - 1
+          const lastCh = cm.getLine(lastLine).length
+          cm.focus()
+          cm.setCursor({ line: lastLine, ch: lastCh })
+        }
       }
     })
   }
 }
 
 /**
- * 处理编辑器内容变化
+ * CodeMirror 内容变化事件
  */
-const handleEditorChange = (value: string) => {
-  emit('update:modelValue', value)
+const onChange = (val: string, cm: any) => {
+  emit('update:modelValue', val)
 }
 
 /**
- * 监听主题变化，更新编辑器主题
+ * CodeMirror 就绪事件
  */
-watch(
-  () => themeStore.darkMode,
-  () => {
-    if (editorRef.value?.editor) {
-      const newTheme = themeStore.darkMode ? 'vs-dark' : 'vs'
-      editorRef.value.editor.updateOptions({ theme: newTheme })
-    }
-  }
-)
+const onReady = (cm: any) => {
+  // 设置焦点到编辑器末尾
+  const lastLine = cm.lineCount() - 1
+  const lastCh = cm.getLine(lastLine).length
+  cm.focus()
+  cm.setCursor({ line: lastLine, ch: lastCh })
+}
 </script>
 
 <template>
   <div class="simple-script-editor">
-    <!-- Monaco Editor 容器 -->
-    <div class="monaco-editor-container">
-      <!-- 模板选择器 - 集成在编辑器上方 -->
-      <div v-if="showTemplates && templateOptions.length > 0" class="editor-toolbar">
-        <div class="toolbar-left">
-          <span class="toolbar-label">模板:</span>
-          <n-select
-            :options="templateOptions"
-            placeholder="选择代码模板..."
-            size="small"
-            class="template-select"
-            clearable
-            @update:value="applyTemplate"
-          />
-        </div>
-        <div class="toolbar-right">
-          <n-tag size="tiny" type="info" class="js-tag">JavaScript</n-tag>
-        </div>
-      </div>
+    <!-- 模板选择器 -->
+    <div v-if="showTemplates && exampleOptions.length > 0" class="template-selector">
+      <n-select 
+        :options="exampleOptions" 
+        placeholder="选择代码模板..." 
+        size="small"
+        style="width: 240px"
+        clearable 
+        @update:value="applyTemplate" 
+      />
+    </div>
 
-      <!-- Monaco Editor -->
-      <div class="editor-wrapper" :style="{ height: props.height }">
-        <MonacoEditor
-          ref="editorRef"
-          :model-value="scriptContent"
-          :options="editorOptions"
-          @update:model-value="handleEditorChange"
-        />
-      </div>
+    <!-- CodeMirror编辑器 -->
+    <Codemirror
+      ref="cmRef"
+      v-model:value="props.modelValue"
+      :options="cmOptions"
+      :height="props.height"
+      border
+      @change="onChange"
+      @ready="onReady"
+    />
 
-      <!-- 底部提示 -->
-      <div class="editor-footer">
-        <n-text depth="3" class="footer-hint">💡 支持 JavaScript 语法高亮、自动补全和错误检测</n-text>
-      </div>
+    <!-- 简单提示 -->
+    <div class="editor-hint">
+      <n-text depth="3">💡 JavaScript 代码编辑器</n-text>
     </div>
   </div>
 </template>
@@ -200,145 +186,30 @@ watch(
   width: 100%;
   display: flex;
   flex-direction: column;
-}
-
-/* Monaco Editor 容器 */
-.monaco-editor-container {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  overflow: hidden;
-  background: var(--card-color);
-  transition: border-color 0.2s ease;
-}
-
-.monaco-editor-container:hover {
-  border-color: var(--primary-color-hover);
-}
-
-/* 编辑器工具栏 */
-.editor-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: var(--body-color);
-  border-bottom: 1px solid var(--border-color);
-  min-height: 40px;
-}
-
-.toolbar-left {
-  display: flex;
-  align-items: center;
   gap: 8px;
-  flex: 1;
 }
 
-.toolbar-label {
+.template-selector {
+  display: flex;
+  align-items: center;
+}
+
+.code-textarea {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.code-textarea :deep(textarea) {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  tab-size: 2;
+}
+
+.editor-hint {
   font-size: 12px;
-  color: var(--text-color-2);
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.template-select {
-  min-width: 200px;
-  max-width: 300px;
-}
-
-.toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.js-tag {
-  font-weight: 500;
-  border: none;
-  background: var(--info-color-suppl);
-  color: var(--info-color);
-}
-
-/* Monaco Editor 包装器 */
-.editor-wrapper {
-  position: relative;
-  flex: 1;
-  overflow: hidden;
-}
-
-/* 编辑器底部 */
-.editor-footer {
-  padding: 6px 12px;
-  background: var(--body-color);
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.footer-hint {
-  font-size: 11px;
   color: var(--text-color-3);
   text-align: center;
-}
-
-/* 模板选择器样式优化 */
-.template-select :deep(.n-base-selection) {
-  border: 1px solid var(--border-color);
-  background: var(--card-color);
-  transition: all 0.2s ease;
-  font-size: 12px;
-}
-
-.template-select :deep(.n-base-selection:hover) {
-  border-color: var(--primary-color-hover);
-  background: var(--primary-color-suppl);
-}
-
-.template-select :deep(.n-base-selection-placeholder) {
-  color: var(--text-color-3);
-  font-size: 12px;
-}
-
-.template-select :deep(.n-base-selection-tags) {
-  padding: 4px 8px;
-}
-
-/* Monaco Editor 主题适配 */
-.editor-wrapper :deep(.monaco-editor) {
-  background: transparent !important;
-}
-
-.editor-wrapper :deep(.monaco-editor .margin) {
-  background: var(--body-color) !important;
-}
-
-.editor-wrapper :deep(.monaco-editor .monaco-editor-background) {
-  background: var(--card-color) !important;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .editor-toolbar {
-    flex-direction: column;
-    gap: 8px;
-    align-items: stretch;
-    padding: 8px;
-  }
-
-  .toolbar-left {
-    justify-content: space-between;
-  }
-
-  .template-select {
-    min-width: auto;
-    max-width: none;
-    flex: 1;
-  }
-
-  .toolbar-right {
-    justify-content: center;
-  }
 }
 </style>

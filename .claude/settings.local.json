@@ -53,7 +53,9 @@
       "Bash(npx tsx:*)",
       "Bash(npm run lint)",
       "Bash(timeout 5 pnpm:*)",
-      "Bash(timeout 8 pnpm dev)"
+      "Bash(timeout 8 pnpm dev)",
+      "WebSearch",
+      "WebFetch(domain:microsoft.github.io)"
     ],
     "deny": [],
     "additionalDirectories": [

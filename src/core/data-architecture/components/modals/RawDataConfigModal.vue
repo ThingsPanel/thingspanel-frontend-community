@@ -174,7 +174,12 @@ const fetcher = new DataItemFetcher()
 
 /**
  * 辅助函数：将 HttpParameter[] 转换为 Record<string, string>
- * 兼容旧的 headers 格式要求
+ * 
+ * 用途：兼容旧的 headers 格式要求，将新的HttpParameter数组格式
+ * 转换为旧的Record对象格式，确保数据流兼容性
+ * 
+ * @param params HttpParameter数组，包含key、value、enabled等属性
+ * @returns Record<string, string> 转换后的键值对对象，如果没有启用的参数则返回undefined
  */
 const convertHttpParametersToRecord = (
   params: Array<{

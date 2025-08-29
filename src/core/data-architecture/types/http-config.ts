@@ -210,7 +210,7 @@ export const HTTP_CONFIG_TEMPLATES: Array<{
   {
     name: '设备遥测数据',
     config: {
-      url: '/api/telemetry/data/history/list',
+      url: '/telemetry/datas/statistic',
       method: 'GET',
       timeout: 15000,
       headers: [
@@ -269,6 +269,24 @@ export const HTTP_CONFIG_TEMPLATES: Array<{
           dataType: 'string',
           variableName: '',
           description: '聚合窗口'
+        },
+        {
+          key: 'time_range',
+          value: 'custom',
+          enabled: true,
+          isDynamic: false,
+          dataType: 'string',
+          variableName: '',
+          description: '时间范围类型'
+        },
+        {
+          key: 'TimeRange',
+          value: 'custom',
+          enabled: true,
+          isDynamic: false,
+          dataType: 'string',
+          variableName: '',
+          description: '时间范围类型(大写版本)'
         }
       ],
       preRequestScript: `// 动态计算时间范围

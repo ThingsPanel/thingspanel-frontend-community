@@ -8,6 +8,7 @@
 import { defaultScriptEngine } from '../../script-engine'
 import type { HttpConfig, HttpParameter } from '../types/http-config'
 import { convertValue } from '../types/http-config'
+import { request } from '@/service/request'
 
 // 类型安全的数据项配置
 export type DataItem =
@@ -111,80 +112,117 @@ export class DataItemFetcher implements IDataItemFetcher {
   }
 
   /**
-   * 获取HTTP数据 - 修复版本，支持正确的HTTP方法处理
-   * 修复问题：GET/HEAD方法不能包含body，参数应转为URL query string
+   * 获取HTTP数据 - 使用项目封装的request库
+   * 
+   * 重要修复：
+   * 1. 使用项目统一的request库，而不是原生fetch
+   * 2. 支持项目的认证、拦截器、错误处理机制
+   * 3. 区分GET/HEAD和POST/PUT/PATCH/DELETE方法的参数处理
+   * 4. GET/HEAD请求：参数作为query参数，不设置body
+   * 5. 其他方法：可以包含body数据
+   * 6. 支持新的HttpConfig格式和旧格式的兼容
+   * 7. 集成convertValue进行正确的类型转换
+   * 
+   * @param config HTTP配置，支持HttpDataItemConfig格式
+   * @returns Promise<any> HTTP响应数据，失败时返回空对象
    */
   private async fetchHttpData(config: HttpDataItemConfig): Promise<any> {
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), config.timeout || 10000)
+      // 准备查询参数
+      let queryParams: Record<string, any> = {}
 
-      // 构建基础请求配置
-      const requestConfig: RequestInit = {
-        method: config.method,
+      // 处理新格式的params数组
+      if (config.params && Array.isArray(config.params)) {
+        config.params
+          .filter(param => param.enabled) // 只处理启用的参数
+          .forEach(param => {
+            // 使用convertValue进行类型转换，确保数据类型正确
+            const convertedValue = convertValue(param.value, param.dataType)
+            queryParams[param.key] = convertedValue
+          })
+      }
+
+      // 处理旧格式的body作为参数（兼容性）
+      if (config.method === 'GET' || config.method === 'HEAD') {
+        if (config.body && typeof config.body === 'object') {
+          queryParams = { ...queryParams, ...config.body }
+        }
+      }
+
+      // 构建请求配置
+      const requestOptions: any = {
         headers: {
           'Content-Type': 'application/json',
           ...config.headers
-        },
-        signal: controller.signal
+        }
       }
 
-      // 修复核心逻辑：区分不同HTTP方法的参数处理
-      let finalUrl = config.url
+      // 设置超时
+      if (config.timeout) {
+        requestOptions.timeout = config.timeout
+      }
 
-      // GET/HEAD方法：不能包含body，参数转为URL查询字符串
-      if (config.method === 'GET' || config.method === 'HEAD') {
-        // 1. 处理 params 数组（新格式）
-        if (config.params && Array.isArray(config.params)) {
-          const urlParams = new URLSearchParams()
-          config.params
-            .filter(param => param.enabled) // 只处理启用的参数
-            .forEach(param => {
-              const convertedValue = convertValue(param.value, param.dataType)
-              urlParams.append(param.key, String(convertedValue))
-            })
+      console.log(`🌐 [DataItemFetcher] ${config.method} ${config.url}`, {
+        params: queryParams,
+        body: config.method !== 'GET' && config.method !== 'HEAD' ? config.body : undefined
+      })
 
-          if (urlParams.toString()) {
-            finalUrl += (finalUrl.includes('?') ? '&' : '?') + urlParams.toString()
-          }
-        }
+      let response: any
 
-        // 2. 处理 body 作为查询参数（兼容旧格式）
-        if (config.body && typeof config.body === 'object') {
-          const urlParams = new URLSearchParams()
-          Object.entries(config.body).forEach(([key, value]) => {
-            urlParams.append(key, String(value))
+      // 使用项目的request库根据HTTP方法发送请求
+      switch (config.method) {
+        case 'GET':
+          response = await request.get(config.url, { 
+            params: queryParams,
+            ...requestOptions
           })
-
-          if (urlParams.toString()) {
-            finalUrl += (finalUrl.includes('?') ? '&' : '?') + urlParams.toString()
-          }
-        }
-
-        // GET/HEAD请求不设置body
-        // requestConfig.body 保持 undefined
+          break
+        case 'POST':
+          response = await request.post(config.url, config.body, {
+            params: queryParams,
+            ...requestOptions
+          })
+          break
+        case 'PUT':
+          response = await request.put(config.url, config.body, {
+            params: queryParams,
+            ...requestOptions
+          })
+          break
+        case 'DELETE':
+          response = await request.delete(config.url, {
+            params: queryParams,
+            data: config.body, // DELETE可能需要body
+            ...requestOptions
+          })
+          break
+        case 'PATCH':
+          response = await request.patch(config.url, config.body, {
+            params: queryParams,
+            ...requestOptions
+          })
+          break
+        default:
+          throw new Error(`不支持的HTTP方法: ${config.method}`)
       }
-      // POST/PUT/PATCH/DELETE方法：可以包含body
-      else {
-        if (config.body) {
-          requestConfig.body = typeof config.body === 'string' ? config.body : JSON.stringify(config.body)
-        }
-      }
 
-      console.log(`🌐 [DataItemFetcher] ${config.method} ${finalUrl}`)
-
-      const response = await fetch(finalUrl, requestConfig)
-      clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const data = await response.json()
-      return data
+      // 返回响应数据
+      return response || {}
     } catch (error) {
       console.error('DataItemFetcher: HTTP请求失败', error)
-      return {}
+      
+      // 如果是后端返回的业务错误（如参数缺失、验证失败等），直接返回后端的响应
+      if (error?.response?.data && typeof error.response.data === 'object') {
+        // 直接返回后端的响应，让用户看到清晰的错误信息
+        return error.response.data
+      }
+      
+      // 如果是网络错误或其他异常，返回简化的错误信息
+      return {
+        error: true,
+        message: error.message || '请求失败',
+        type: 'network_error'
+      }
     }
   }
 
