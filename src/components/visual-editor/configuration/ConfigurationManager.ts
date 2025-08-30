@@ -23,6 +23,7 @@ import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
 
 // 🆕 Task 1.2: 导入配置事件总线
 import { configEventBus, type ConfigChangeEvent } from '@/core/data-architecture/ConfigEventBus'
+import { smartDeepClone } from '@/utils/deep-clone'
 
 /**
  * 默认配置工厂
@@ -126,7 +127,7 @@ export class ConfigurationManager implements IConfigurationManager {
     console.log('🔍 [DEBUG-配置仓库] 读取配置:', {
       widgetId,
       hasConfig: !!config,
-      fullConfig: config ? JSON.parse(JSON.stringify(config)) : null
+      fullConfig: config ? smartDeepClone(config) : null
     })
 
     // 返回配置的副本，避免外部直接修改
@@ -225,8 +226,8 @@ export class ConfigurationManager implements IConfigurationManager {
     console.log('🔍 [DEBUG-配置仓库] 配置保存后的完整对象:', {
       widgetId,
       section,
-      fullConfig: JSON.parse(JSON.stringify(updatedConfig)),
-      updatedSection: JSON.parse(JSON.stringify(config))
+      fullConfig: smartDeepClone(updatedConfig),
+      updatedSection: smartDeepClone(config)
     })
 
     // 触发监听器

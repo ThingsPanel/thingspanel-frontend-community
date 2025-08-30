@@ -120,7 +120,10 @@ export class GlobalPollingManager {
     task.active = true
     task.nextExecuteAt = Date.now() + task.interval
 
-    console.log(`▶️ [GlobalPollingManager] 启动任务: ${task.componentName}`)
+    // 🔥 性能优化：仅在开发环境输出任务启动日志
+    if (import.meta.env.DEV) {
+      console.log(`▶️ [GlobalPollingManager] 启动任务: ${task.componentName}`)
+    }
 
     // 启动全局定时器（如果还没启动）
     this.startGlobalTimer()
@@ -253,7 +256,10 @@ export class GlobalPollingManager {
       return // 已经启动
     }
 
-    console.log('⏰ [GlobalPollingManager] 启动全局定时器')
+    // 🔥 性能优化：仅在开发环境输出定时器启动日志
+    if (import.meta.env.DEV) {
+      console.log('⏰ [GlobalPollingManager] 启动全局定时器')
+    }
 
     this.globalTimerId = window.setInterval(() => {
       this.executeScheduledTasks()
@@ -279,15 +285,31 @@ export class GlobalPollingManager {
   }
 
   /**
-   * 执行计划中的任务
+   * 执行计划中的任务 - 🔥 优化版本：批量处理和智能调度
    */
   private executeScheduledTasks(): void {
     const now = Date.now()
+    const readyTasks: PollingTask[] = []
 
+    // 🔥 性能优化：收集所有准备执行的任务
     for (const task of this.getActiveTasks()) {
       if (task.nextExecuteAt && now >= task.nextExecuteAt) {
-        this.executeTask(task, now)
+        readyTasks.push(task)
       }
+    }
+
+    // 🔥 性能优化：批量执行，避免单个任务堵塞
+    if (readyTasks.length > 0) {
+      // 按优先级排序：间隔时间短的任务优先执行
+      readyTasks.sort((a, b) => a.interval - b.interval)
+
+      // 并行执行任务（但限制并发数避免过载）
+      const batchSize = Math.min(readyTasks.length, 5) // 最多同时执行5个任务
+      const batch = readyTasks.slice(0, batchSize)
+
+      Promise.allSettled(batch.map(task => this.executeTask(task, now))).catch(error =>
+        console.error('❌ [GlobalPollingManager] 批量任务执行失败:', error)
+      )
     }
   }
 
@@ -298,7 +320,10 @@ export class GlobalPollingManager {
    */
   private async executeTask(task: PollingTask, now: number): Promise<void> {
     try {
-      console.log(`🔄 [GlobalPollingManager] 执行轮询任务: ${task.componentName}`)
+      // 🔥 性能优化：减少日志输出，仅在开发环境输出详细日志
+      if (import.meta.env.DEV && this.statistics.totalExecutions % 10 === 0) {
+        console.log(`🔄 [GlobalPollingManager] 执行轮询任务: ${task.componentName}`)
+      }
 
       // 更新执行时间
       task.lastExecutedAt = now

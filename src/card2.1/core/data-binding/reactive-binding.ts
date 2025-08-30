@@ -32,7 +32,10 @@ export class TimerTrigger implements UpdateTrigger {
   }
 
   start(callback: () => void): void {
-    console.log(`⏰ [TimerTrigger] 启动定时器: ${this.config.interval}ms`)
+    // 🔥 性能优化：仅在开发环境输出定时器日志
+    if (import.meta.env.DEV) {
+      console.log(`⏰ [TimerTrigger] 启动定时器: ${this.config.interval}ms`)
+    }
 
     this.callback = callback
 
@@ -46,7 +49,10 @@ export class TimerTrigger implements UpdateTrigger {
   }
 
   stop(): void {
-    console.log(`⏰ [TimerTrigger] 停止定时器`)
+    // 🔥 性能优化：仅在开发环境输出定时器日志
+    if (import.meta.env.DEV) {
+      console.log(`⏰ [TimerTrigger] 停止定时器`)
+    }
 
     if (this.timer) {
       clearInterval(this.timer)
@@ -201,13 +207,19 @@ export class ManualTrigger implements UpdateTrigger {
   private active = false
 
   start(callback: () => void): void {
-    console.log(`👆 [ManualTrigger] 启动手动触发器`)
+    // 🔥 性能优化：仅在开发环境输出手动触发器日志
+    if (import.meta.env.DEV) {
+      console.log(`👆 [ManualTrigger] 启动手动触发器`)
+    }
     this.callback = callback
     this.active = true
   }
 
   stop(): void {
-    console.log(`👆 [ManualTrigger] 停止手动触发器`)
+    // 🔥 性能优化：仅在开发环境输出手动触发器日志
+    if (import.meta.env.DEV) {
+      console.log(`👆 [ManualTrigger] 停止手动触发器`)
+    }
     this.callback = null
     this.active = false
   }
@@ -221,7 +233,10 @@ export class ManualTrigger implements UpdateTrigger {
    */
   trigger(): void {
     if (this.callback && this.active) {
-      console.log(`👆 [ManualTrigger] 手动触发数据更新`)
+      // 🔥 性能优化：仅在开发环境输出手动触发日志
+      if (import.meta.env.DEV) {
+        console.log(`👆 [ManualTrigger] 手动触发数据更新`)
+      }
       this.callback()
     }
   }

@@ -55,7 +55,9 @@
       "Bash(timeout 5 pnpm:*)",
       "Bash(timeout 8 pnpm dev)",
       "WebSearch",
-      "WebFetch(domain:microsoft.github.io)"
+      "WebFetch(domain:microsoft.github.io)",
+      "WebFetch(domain:github.com)",
+      "Bash(timeout 60 pnpm:*)"
     ],
     "deny": [],
     "additionalDirectories": [

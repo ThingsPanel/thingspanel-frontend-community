@@ -176,6 +176,7 @@ import {
 } from 'naive-ui'
 import { Settings as SettingsIcon, DocumentOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
+import { smartDeepClone } from '@/utils/deep-clone'
 
 // 导入配置组件注册中心
 import { getVisibleConfigLayers, getConfigLayer } from './component-registry'
@@ -676,8 +677,8 @@ const loadWidgetConfiguration = async (widgetId: string) => {
       // 🔍 [DEBUG-配置面板] 标签页切换时的完整配置打印
       console.log('🔍 [DEBUG-配置面板] 加载配置时的完整对象:', {
         widgetId,
-        fullConfig: JSON.parse(JSON.stringify(config)),
-        dataSourceConfig: config.dataSource ? JSON.parse(JSON.stringify(config.dataSource)) : null,
+        fullConfig: smartDeepClone(config),
+        dataSourceConfig: config.dataSource ? smartDeepClone(config.dataSource) : null,
         hasDataSourceBindings: !!config.dataSource?.config?.dataSourceBindings
       })
 

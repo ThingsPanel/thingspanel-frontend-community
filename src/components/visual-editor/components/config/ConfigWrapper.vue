@@ -8,6 +8,7 @@ import { ref, reactive, provide, watch, onMounted, onUnmounted, computed, nextTi
 import type { IConfigCtx } from '@/card2.1/core/types/legacy'
 import type { IComponentDefinition } from '@/card2.1/core/types'
 import { createLogger } from '@/utils/logger'
+import { smartDeepClone } from '@/utils/deep-clone'
 
 const logger = createLogger('ConfigWrapper')
 
@@ -138,8 +139,8 @@ watch(
     const propsStr = JSON.stringify(props.modelValue)
     if (currentStr !== propsStr) {
       logger.debug('内部配置更新，向外传递:', newValue)
-      // 创建深拷贝避免引用问题
-      const clonedValue = JSON.parse(JSON.stringify(newValue))
+      // 🔥 使用智能深拷贝，自动处理Vue响应式对象
+      const clonedValue = smartDeepClone(newValue)
       emit('update:modelValue', clonedValue)
       emit('config-change', clonedValue)
     }

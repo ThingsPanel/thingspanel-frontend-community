@@ -14,7 +14,7 @@
       ref="currentComponentRef"
       :key="`${props.nodeId}-${forceUpdateKey}`"
       :config="extractComponentConfig()"
-      :raw-data-sources="JSON.parse(JSON.stringify(getDataSourcesForComponent()))"
+      :raw-data-sources="safeDeepClone(getDataSourcesForComponent())"
       :component-id="props.nodeId"
       :show-interaction-indicator="true"
       :interaction-configs="props.interactionConfigs"
@@ -43,6 +43,10 @@ import { visualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
 import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 // 🔥 导入通用数据源映射器
 import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
+import { smartDeepClone } from '@/utils/deep-clone'
+
+// 🔥 使用统一的智能深拷贝工具，自动处理Vue响应式对象
+const safeDeepClone = smartDeepClone
 
 interface Props {
   componentType: string

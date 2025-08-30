@@ -4,6 +4,7 @@
  */
 
 import type { DataSourceConfiguration, ValidationResult } from '../types'
+import { smartDeepClone } from '@/utils/deep-clone'
 
 export interface ConfigurationTemplate {
   id: string
@@ -412,7 +413,7 @@ return {
    * 克隆配置
    */
   cloneConfiguration(config: DataSourceConfiguration, newComponentId?: string): DataSourceConfiguration {
-    const cloned = JSON.parse(JSON.stringify(config)) as DataSourceConfiguration
+    const cloned = smartDeepClone(config) as DataSourceConfiguration
 
     if (newComponentId) {
       cloned.componentId = newComponentId

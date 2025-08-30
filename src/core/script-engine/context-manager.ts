@@ -5,6 +5,7 @@
 
 import type { IScriptContextManager, ScriptExecutionContext } from './types'
 import { nanoid } from 'nanoid'
+import { smartDeepClone } from '@/utils/deep-clone'
 
 /**
  * 脚本上下文管理器实现类
@@ -101,7 +102,7 @@ export class ScriptContextManager implements IScriptContextManager {
     const clonedContext: ScriptExecutionContext = {
       id: nanoid(),
       name: newName,
-      variables: JSON.parse(JSON.stringify(sourceContext.variables)), // 深拷贝
+      variables: smartDeepClone(sourceContext.variables), // 使用智能深拷贝
       functions: { ...sourceContext.functions }, // 函数浅拷贝即可
       createdAt: now,
       updatedAt: now

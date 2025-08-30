@@ -26,6 +26,7 @@ import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEdit
 import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
 import { MultiLayerExecutorChain } from '@/core/data-architecture/executors/MultiLayerExecutorChain'
+import { smartDeepClone } from '@/utils/deep-clone'
 
 // Props接口 - 匹配现有系统
 interface Props {
@@ -65,17 +66,10 @@ const dialog = useDialog()
 const dataSourceOptions = computed(() => {
   if (!props.dataSources) return []
 
-  console.log('🔍 [SimpleConfigurationEditor] 原始dataSources数据:', props.dataSources)
-
   // 处理数组格式
   if (Array.isArray(props.dataSources)) {
     const result = props.dataSources.map((dataSource, index) => {
       const key = dataSource.key || `dataSource${index + 1}`
-      console.log(`🔍 [SimpleConfigurationEditor] 数组格式数据源${index + 1}:`, {
-        key,
-        dataSource,
-        exampleData: dataSource?.config?.exampleData
-      })
       return {
         label: dataSource.name || dataSource.title || `数据源${index + 1}`,
         value: key,
@@ -84,7 +78,6 @@ const dataSourceOptions = computed(() => {
         originalData: dataSource
       }
     })
-    console.log('🔍 [SimpleConfigurationEditor] 处理后的数组格式结果:', result)
     return result
   }
 
@@ -103,7 +96,6 @@ const dataSourceOptions = computed(() => {
       originalData: dataSource
     }
   })
-  console.log('🔍 [SimpleConfigurationEditor] 处理后的对象格式结果:', result)
   return result
 })
 
@@ -144,13 +136,11 @@ const handleAddDataItem = (dataSourceKey: string) => {
  * 处理编辑数据项
  */
 const handleEditDataItem = (dataSourceKey: string, itemId: string) => {
-  console.log('点击编辑数据项:', dataSourceKey, itemId)
   currentDataSourceKey.value = dataSourceKey
 
   // 找到要编辑的数据项
   const item = dataSourceItems[dataSourceKey]?.find(item => item.id === itemId)
   if (item) {
-    console.log('找到要编辑的数据项:', item)
     // 🔥 修复：设置为编辑模式
     isEditMode.value = true
     editingItemId.value = itemId
@@ -163,9 +153,6 @@ const handleEditDataItem = (dataSourceKey: string, itemId: string) => {
  */
 const handleMergeStrategyUpdate = (dataSourceKey: string, strategy: any) => {
   mergeStrategies[dataSourceKey] = strategy
-  console.log(`📝 [SimpleConfigurationEditor] 合并策略已更新: ${dataSourceKey}`, strategy)
-
-  console.log(`🔄 [SimpleConfigurationEditor] 合并策略更新，使用新配置管理系统: ${dataSourceKey}`, strategy)
 
   // 🔥 使用新配置管理系统：内容哈希去重和版本控制
   // 重建完整配置并提交
@@ -243,7 +230,7 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
         // 🔥 性能优化：使用结构化克隆或浅拷贝代替JSON深拷贝
         displayItem = {
           id: editingItemId.value,
-          ...(structuredClone ? structuredClone(dataItemConfig) : { ...dataItemConfig }), // 更高效的克隆
+          ...smartDeepClone(dataItemConfig), // 使用智能深拷贝
           createdAt: dataSourceItems[dataSourceKey][existingIndex].createdAt, // 保持原创建时间
           updatedAt: new Date().toISOString() // 添加更新时间
         }
@@ -257,7 +244,7 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
       // 新增模式：添加新项
       displayItem = {
         id: Date.now().toString(),
-        ...JSON.parse(JSON.stringify(dataItemConfig)), // 深度克隆避免引用共享
+        ...smartDeepClone(dataItemConfig), // 使用智能深拷贝避免引用共享
         createdAt: new Date().toISOString()
       }
       dataSourceItems[dataSourceKey].push(displayItem)
@@ -315,15 +302,9 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
 
     case 'http':
       // 🔥 关键修复：优先使用完整的 httpConfigData，回退到基础配置
-      console.log('🔍 [convertToStandardDataItem] HTTP配置转换开始')
-      console.log('  - dataItemConfig keys:', Object.keys(dataItemConfig))
-      console.log('  - httpConfigData存在吗?:', !!dataItemConfig.httpConfigData)
-      if (dataItemConfig.httpConfigData) {
-        console.log('  - httpConfigData内容:', JSON.stringify(dataItemConfig.httpConfigData, null, 2))
-      }
+      // HTTP配置转换
 
       if (dataItemConfig.httpConfigData) {
-        console.log('💾 [convertToStandardDataItem] 使用完整的httpConfigData保存')
         const httpConfigData = dataItemConfig.httpConfigData
 
         // 将HttpConfigData转换为标准DataItem格式，同时保留完整信息
@@ -350,7 +331,6 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
         if (httpConfigData.params && httpConfigData.params.length > 0) {
           // 直接保存数组格式，不转换为对象
           config.params = httpConfigData.params.filter(p => p.enabled && p.key) // 只保存启用且有key的param
-          console.log('💾 [convertToStandardDataItem] 保存params数组:', config.params)
         }
 
         // 保存请求体
@@ -366,19 +346,11 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
             httpConfigData.preRequestScript.substring(0, 100) + '...'
           )
         } else {
-          console.log('⚠️ [convertToStandardDataItem] preRequestScript为空或不存在')
         }
         if (httpConfigData.postResponseScript) {
           config.postResponseScript = httpConfigData.postResponseScript
-          console.log(
-            '💾 [convertToStandardDataItem] 保存了postResponseScript:',
-            httpConfigData.postResponseScript.substring(0, 100) + '...'
-          )
         } else {
-          console.log('⚠️ [convertToStandardDataItem] postResponseScript为空或不存在')
         }
-
-        console.log('💾 [convertToStandardDataItem] 转换后的config:', JSON.stringify(config, null, 2))
 
         return {
           type: 'http',

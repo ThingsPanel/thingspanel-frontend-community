@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, provide, ref, toRaw, watch } from 'vue'
+import { smartDeepClone } from '@/utils/deep-clone'
 import { useDialog, useMessage, NDrawer, NDrawerContent } from 'naive-ui'
 import { useFullscreen } from '@vueuse/core'
 import { useAppStore } from '@/store/modules/app'
@@ -318,7 +319,8 @@ const fetchBoard = async () => {
         console.log('📝 解析现有配置:', data.config)
         const config = parseConfig(data.config)
         editorConfig.value = config.visualEditor || getDefaultConfig()
-        preEditorConfig.value = JSON.parse(JSON.stringify(editorConfig.value))
+        // 🔥 智能深拷贝：使用优化的smartDeepClone
+        preEditorConfig.value = smartDeepClone(editorConfig.value)
 
         // 恢复渲染器类型和编辑器状态
         if (editorConfig.value.currentRenderer) {
@@ -340,7 +342,7 @@ const fetchBoard = async () => {
       } else {
         console.log('📝 配置为空，使用默认配置')
         editorConfig.value = getDefaultConfig()
-        preEditorConfig.value = JSON.parse(JSON.stringify(editorConfig.value))
+        preEditorConfig.value = smartDeepClone(editorConfig.value)
         setState(editorConfig.value)
       }
       if (!isUnmounted.value) {
@@ -355,7 +357,7 @@ const fetchBoard = async () => {
 
       // 即使没有数据也要初始化默认配置
       editorConfig.value = getDefaultConfig()
-      preEditorConfig.value = JSON.parse(JSON.stringify(editorConfig.value))
+      preEditorConfig.value = smartDeepClone(editorConfig.value)
       setState(editorConfig.value)
       if (!isUnmounted.value) {
         dataFetched.value = true
@@ -369,7 +371,8 @@ const fetchBoard = async () => {
 
     // 出错时也要初始化默认配置，让编辑器能正常工作
     editorConfig.value = getDefaultConfig()
-    preEditorConfig.value = JSON.parse(JSON.stringify(editorConfig.value))
+    // 🔥 智能深拷贝：使用优化的smartDeepClone
+    preEditorConfig.value = smartDeepClone(editorConfig.value)
     setState(editorConfig.value)
     if (!isUnmounted.value) {
       dataFetched.value = true
@@ -473,35 +476,84 @@ const migrateConfig = (config: any) => {
   return config
 }
 
+// 已迁移到 /utils/deep-clone.ts
+
+// 🔥 调试：分析structuredClone失败的具体原因
+const analyzeCloneability = (obj: any, path = 'root'): string[] => {
+  const issues: string[] = []
+
+  if (obj === null || obj === undefined) return issues
+
+  if (typeof obj === 'function') {
+    issues.push(`${path}: function`)
+    return issues
+  }
+
+  if (obj instanceof Error) {
+    issues.push(`${path}: Error object`)
+    return issues
+  }
+
+  if (typeof obj === 'object') {
+    // 检查是否是Vue响应式对象
+    if (obj.__v_isReactive || obj.__v_isReadonly || obj.__v_isRef) {
+      issues.push(`${path}: Vue reactive object`)
+      return issues
+    }
+
+    // 检查原型链
+    if (obj.constructor !== Object && obj.constructor !== Array) {
+      issues.push(`${path}: Custom class instance (${obj.constructor.name})`)
+    }
+
+    // 递归检查属性
+    for (const [key, value] of Object.entries(obj)) {
+      issues.push(...analyzeCloneability(value, `${path}.${key}`))
+    }
+  }
+
+  return issues
+}
+
 // 默认配置
-const getDefaultConfig = () => ({
-  nodes: [],
-  canvasConfig: {
-    width: 1200,
-    height: 800,
-    showGrid: true,
-    backgroundColor: '#f5f5f5'
-  },
-  gridConfig: {
-    colNum: 24,
-    rowHeight: 80,
-    margin: [10, 10],
-    isDraggable: true,
-    isResizable: true,
-    staticGrid: false
-  },
-  viewport: {},
-  // 默认渲染器类型和编辑器状态
-  currentRenderer: 'gridstack' as RendererType,
-  showWidgetTitles: true,
-  showLeftDrawer: false,
-  showRightDrawer: false,
-  // 新增：默认编辑状态
-  isEditing: false,
-  selectedNodeId: '',
-  isDragging: false,
-  draggedComponent: null
-})
+const getDefaultConfig = () => {
+  const config = {
+    nodes: [],
+    canvasConfig: {
+      width: 1200,
+      height: 800,
+      showGrid: true,
+      backgroundColor: '#f5f5f5'
+    },
+    gridConfig: {
+      colNum: 24,
+      rowHeight: 80,
+      margin: [10, 10],
+      isDraggable: true,
+      isResizable: true,
+      staticGrid: false
+    },
+    viewport: {},
+    // 默认渲染器类型和编辑器状态
+    currentRenderer: 'gridstack' as RendererType,
+    showWidgetTitles: true,
+    showLeftDrawer: false,
+    showRightDrawer: false,
+    // 新增：默认编辑状态
+    isEditing: false,
+    selectedNodeId: '',
+    isDragging: false,
+    draggedComponent: null
+  }
+
+  // 🔥 调试：分析配置对象的可克隆性
+  const cloneabilityIssues = analyzeCloneability(config)
+  if (cloneabilityIssues.length > 0) {
+    console.warn('🔍 Default config cloneability issues:', cloneabilityIssues)
+  }
+
+  return config
+}
 
 // 渲染器选项
 const rendererOptions = computed(() => [
@@ -1027,7 +1079,8 @@ const handleSave = async () => {
     })
 
     if (!error) {
-      preEditorConfig.value = JSON.parse(JSON.stringify(currentState))
+      // 🔥 智能深拷贝：使用优化的smartDeepClone
+      preEditorConfig.value = smartDeepClone(currentState)
       hasChanges.value = false
       message.success($t('page.dataForward.saveSuccess'))
     } else {

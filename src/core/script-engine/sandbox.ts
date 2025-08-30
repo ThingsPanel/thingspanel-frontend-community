@@ -4,6 +4,7 @@
  */
 
 import type { IScriptSandbox, SandboxConfig } from './types'
+import { smartDeepClone } from '@/utils/deep-clone'
 
 /**
  * 脚本沙箱实现类
@@ -298,7 +299,7 @@ export class ScriptSandbox implements IScriptSandbox {
 
       // 数据处理工具
       dataUtils: {
-        deepClone: <T>(obj: T): T => JSON.parse(JSON.stringify(obj)),
+        deepClone: <T>(obj: T): T => smartDeepClone(obj),
         merge: (...objects: any[]) => Object.assign({}, ...objects),
         pick: <T extends Record<string, any>>(obj: T, keys: (keyof T)[]): Partial<T> => {
           const result: Partial<T> = {}

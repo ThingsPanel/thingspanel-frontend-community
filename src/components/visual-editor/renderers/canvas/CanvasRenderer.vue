@@ -123,6 +123,7 @@ import TextWidget from '../../widgets/custom/TextWidget/TextWidget.vue'
 import ImageWidget from '../../widgets/custom/ImageWidget/ImageWidget.vue'
 import ContextMenu from './ContextMenu.vue'
 import type { GraphData } from '../../types'
+import { smartDeepClone } from '@/utils/deep-clone'
 
 // Props, Emits, Configs
 interface CanvasConfig {
@@ -343,7 +344,8 @@ const handleContextMenuAction = (action: string) => {
   selectedNodes.value.forEach(node => {
     switch (action) {
       case 'copy': {
-        const newNode = JSON.parse(JSON.stringify(node))
+        // 🔥 使用智能深拷贝，自动处理Vue响应式对象
+        const newNode = smartDeepClone(node)
         newNode.id = `${newNode.type}_${nanoid()}`
         newNode.x += 20
         newNode.y += 20

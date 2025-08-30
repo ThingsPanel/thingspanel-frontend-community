@@ -48,6 +48,7 @@ import { useWidgetStore } from '@/store/modules/widget'
 import NodeWrapper from '../base/NodeWrapper.vue'
 import ContextMenu from '../canvas/ContextMenu.vue'
 import type { VisualEditorWidget, GraphData } from '@/components/visual-editor/types'
+import { smartDeepClone } from '@/utils/deep-clone'
 
 const props = defineProps<{
   graphData: GraphData
@@ -292,7 +293,8 @@ const handleContextMenuSelect = (action: string) => {
 
   switch (action) {
     case 'copy': {
-      const newNode = JSON.parse(JSON.stringify(widget))
+      // 🔥 使用智能深拷贝，自动处理Vue响应式对象
+      const newNode = smartDeepClone(widget)
       newNode.id = `${newNode.type}_${nanoid()}`
       if (newNode.layout?.gridstack) {
         newNode.layout.gridstack.y += 1

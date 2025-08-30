@@ -3,6 +3,8 @@
  * 支持JSON数据的解析和字段映射
  */
 
+import { smartDeepClone } from '@/utils/deep-clone'
+
 export interface StaticDataSourceConfig {
   id: string
   type: 'static'
@@ -184,7 +186,7 @@ export class StaticDataSource {
   clone(): StaticDataSource {
     return new StaticDataSource({
       ...this.config,
-      data: JSON.parse(JSON.stringify(this.config.data)) // 深拷贝数据
+      data: smartDeepClone(this.config.data) // 使用智能深拷贝
     })
   }
 
