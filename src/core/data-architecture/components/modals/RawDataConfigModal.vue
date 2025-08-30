@@ -132,12 +132,12 @@ const onHttpConfigUpdate = (newConfig: typeof httpConfig.value) => {
 const applyTelemetryTemplate = () => {
   // 从 http-config.ts 获取遥测模板配置
   const telemetryTemplate = HTTP_CONFIG_TEMPLATES.find(template => template.name === '设备遥测数据')
-  
+
   if (telemetryTemplate) {
     console.log('📊 应用遥测数据模板:', telemetryTemplate.config)
     console.log('📊 模板中的params:', telemetryTemplate.config.params)
     console.log('📊 应用前httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
-    
+
     // 直接应用模板配置到 httpConfig
     httpConfig.value = {
       ...httpConfig.value,
@@ -146,24 +146,27 @@ const applyTelemetryTemplate = () => {
       headers: [...(telemetryTemplate.config.headers || [])],
       params: [...(telemetryTemplate.config.params || [])]
     }
-    
+
     console.log('📊 应用后httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
     console.log('📊 应用后params数量:', httpConfig.value.params?.length || 0)
     console.log('📊 应用后preRequestScript存在吗?:', !!httpConfig.value.preRequestScript)
-    
+
     // 触发 onHttpConfigUpdate 确保所有状态同步
     onHttpConfigUpdate(httpConfig.value)
     console.log('📊 onHttpConfigUpdate调用完成')
-    
+
     // 🔍 验证调用后httpConfig是否仍然完整
     setTimeout(() => {
       console.log('📊 [验证] 500ms后httpConfig.value params数量:', httpConfig.value.params?.length || 0)
       console.log('📊 [验证] 500ms后preRequestScript存在吗?:', !!httpConfig.value.preRequestScript)
     }, 500)
-    
+
     message.success('遥测数据模板已应用')
   } else {
-    console.error('❌ 未找到遥测数据模板，可用模板:', HTTP_CONFIG_TEMPLATES.map(t => t.name))
+    console.error(
+      '❌ 未找到遥测数据模板，可用模板:',
+      HTTP_CONFIG_TEMPLATES.map(t => t.name)
+    )
     message.error('未找到遥测数据模板')
   }
 }
@@ -218,10 +221,10 @@ const fetcher = new DataItemFetcher()
 
 /**
  * 辅助函数：将 HttpParameter[] 转换为 Record<string, string>
- * 
+ *
  * 用途：兼容旧的 headers 格式要求，将新的HttpParameter数组格式
  * 转换为旧的Record对象格式，确保数据流兼容性
- * 
+ *
  * @param params HttpParameter数组，包含key、value、enabled等属性
  * @returns Record<string, string> 转换后的键值对对象，如果没有启用的参数则返回undefined
  */
@@ -613,7 +616,10 @@ const loadEditData = (editData: any) => {
   console.log('📝 [RawDataConfigModal] editData.httpConfigData存在吗?', !!editData.httpConfigData)
   if (editData.httpConfigData) {
     console.log('📝 [RawDataConfigModal] httpConfigData.params长度:', editData.httpConfigData.params?.length || 0)
-    console.log('📝 [RawDataConfigModal] httpConfigData.preRequestScript存在吗?', !!editData.httpConfigData.preRequestScript)
+    console.log(
+      '📝 [RawDataConfigModal] httpConfigData.preRequestScript存在吗?',
+      !!editData.httpConfigData.preRequestScript
+    )
   }
 
   // 加载基本配置
@@ -637,18 +643,18 @@ const loadEditData = (editData: any) => {
       if (editData.method) formState.httpMethod = editData.method
       if (editData.headers) formState.httpHeaders = editData.headers
       if (editData.body) formState.httpBody = editData.body
-      
+
       // 🔥 关键修复：同时更新新的 httpConfig 状态
       if (editData.url) httpConfig.value.url = editData.url
       if (editData.method) httpConfig.value.method = editData.method
       if (editData.timeout) httpConfig.value.timeout = editData.timeout
-      
+
       // 如果有已保存的复杂配置，完整加载它们
       if (editData.httpConfigData) {
         console.log('🔄 恢复完整httpConfig配置:', editData.httpConfigData)
         console.log('🔄 恢复的params:', editData.httpConfigData.params)
-        httpConfig.value = { 
-          ...httpConfig.value, 
+        httpConfig.value = {
+          ...httpConfig.value,
           ...editData.httpConfigData,
           // 确保数组字段不为空
           headers: editData.httpConfigData.headers || [],
@@ -823,11 +829,9 @@ defineExpose({
                   <n-button type="primary" ghost size="small" @click="applyTelemetryTemplate">
                     📊 应用遥测数据模板
                   </n-button>
-                  <n-text depth="3" style="margin-left: 8px; font-size: 12px;">
-                    快速配置遥测数据接口参数
-                  </n-text>
+                  <n-text depth="3" style="margin-left: 8px; font-size: 12px">快速配置遥测数据接口参数</n-text>
                 </div>
-                
+
                 <HttpConfigForm v-model:model-value="httpConfig" @update:model-value="onHttpConfigUpdate" />
               </div>
 

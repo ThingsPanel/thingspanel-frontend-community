@@ -34,8 +34,14 @@ export class ComponentRequirementManager {
 
       this.requirements.set(componentId, requirement)
 
-      // 清除相关的关系缓存
-      this.relationshipCache.delete(componentId)
+      // 🔥 性能优化：只在需求真正改变时清除缓存
+      const existingRequirement = this.requirements.get(componentId)
+      const requirementChanged =
+        !existingRequirement || JSON.stringify(existingRequirement) !== JSON.stringify(requirement)
+
+      if (requirementChanged) {
+        this.relationshipCache.delete(componentId)
+      }
 
       console.log(`✅ [ComponentRequirementManager] 成功注册组件需求: ${componentId}`)
       console.log('📊 需求详情:', requirement)

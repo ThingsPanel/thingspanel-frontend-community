@@ -57,11 +57,57 @@ export type {
   ConfigurationAdapter
 } from './enhanced-types'
 
+// ==================== 简化数据源系统类型导出 ====================
+export type {
+  // 组件数据需求
+  ComponentDataRequirement,
+  StaticParamRequirement,
+  DataSourceRequirement,
+  FieldRequirement,
+
+  // 数据源配置
+  SimpleDataSourceConfig,
+  DataSourceDefinition,
+  TriggerConfig,
+  TriggerConfigData,
+
+  // 用户输入类型
+  UserDataSourceInput,
+  DataSourceUserConfig,
+  StaticDataSourceConfig,
+  ApiDataSourceConfig,
+  WebSocketDataSourceConfig,
+  ScriptDataSourceConfig,
+
+  // 执行结果
+  ExecutionResult as SimpleExecutionResult,
+  MappingPreviewResult,
+  ValidationResult,
+
+  // 组件数据
+  ComponentData as SimpleComponentData,
+  StandardComponentProps,
+
+  // 兼容性类型
+  VisualEditorCompatibleProps,
+  Card21CompatibleProps,
+
+  // 工具类型
+  DataSourceType,
+  FieldType,
+  FieldValueType,
+  TriggerType,
+  ComponentType
+} from './simple-types'
+
 // ==================== 类型守卫和工具导出 ====================
 export { isEnhancedConfiguration, isGenericDataItemConfig, isEnhancedHttpConfig } from './enhanced-types'
 
 // ==================== 默认配置导出 ====================
 export { DEFAULT_ENHANCED_FEATURES, ConfigurationVersionEnum } from './enhanced-types'
+
+// 简化数据源系统常量
+export { SIMPLE_DATA_SOURCE_CONSTANTS, FIELD_TYPE_MAPPING } from './simple-types'
 
 // ==================== 类型系统版本信息 ====================
 export const TYPE_SYSTEM_VERSION = {

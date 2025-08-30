@@ -51,7 +51,7 @@ export class GlobalPollingManager {
   private globalTimerId: number | null = null
 
   /** 全局定时器间隔（毫秒），设置为最小公约数 */
-  private readonly GLOBAL_TIMER_INTERVAL = 1000 // 1秒
+  private readonly GLOBAL_TIMER_INTERVAL = 5000 // 🔥 性能优化：改为5秒，减少CPU占用
 
   /** 管理器是否已启动 */
   private isRunning = ref(false)

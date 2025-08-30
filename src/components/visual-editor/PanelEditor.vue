@@ -58,6 +58,15 @@ const fullui = ref()
 const isEditing = ref(false) // 默认预览模式
 const isSaving = ref(false)
 const dataFetched = ref(false)
+
+// 🔥 性能优化：状态缓存
+const stateCache = ref<{
+  lastGetState?: any
+  lastSetState?: any
+  lastStateHash?: string
+  cacheTime?: number
+}>({})
+const STATE_CACHE_DURATION = 5000 // 5秒缓存
 const hasChanges = ref(false)
 const isUnmounted = ref(false)
 

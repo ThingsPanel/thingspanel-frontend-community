@@ -225,13 +225,16 @@ export function createFlatRequest<ResponseData = any>(
       if (error?.response?.data && typeof error.response.data === 'object') {
         return { data: error.response.data, error: null }
       }
-      
+
       // 其他错误返回简化的错误信息
-      return { data: null, error: {
-        message: error?.message || '请求失败',
-        status: error?.response?.status,
-        code: error?.code
-      }}
+      return {
+        data: null,
+        error: {
+          message: error?.message || '请求失败',
+          status: error?.response?.status,
+          code: error?.code
+        }
+      }
     }
   } as FlatRequestInstance
   const requestMethods = {

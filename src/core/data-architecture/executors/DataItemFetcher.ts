@@ -116,7 +116,7 @@ export class DataItemFetcher implements IDataItemFetcher {
 
   /**
    * 获取HTTP数据 - 使用项目封装的request库，支持脚本处理
-   * 
+   *
    * 重要修复：
    * 1. 使用项目统一的request库，而不是原生fetch
    * 2. 支持项目的认证、拦截器、错误处理机制
@@ -126,7 +126,7 @@ export class DataItemFetcher implements IDataItemFetcher {
    * 6. 支持新的HttpConfig格式和旧格式的兼容
    * 7. 集成convertValue进行正确的类型转换
    * 8. 🔥 新增：支持请求前脚本和响应后脚本处理
-   * 
+   *
    * @param config HTTP配置，支持HttpDataItemConfig格式
    * @returns Promise<any> HTTP响应数据，失败时返回空对象
    */
@@ -136,7 +136,7 @@ export class DataItemFetcher implements IDataItemFetcher {
       console.log('🔍 [HTTP请求器] 接收到的配置:', JSON.stringify(config, null, 2))
       console.log('🔧 [HTTP请求器] 请求前脚本:', !!config.preRequestScript)
       console.log('🔧 [HTTP请求器] 响应后脚本:', !!config.postResponseScript)
-      
+
       // 第一步：处理请求前脚本
       if (config.preRequestScript) {
         console.log('🔧 [HTTP请求器] 执行请求前脚本')
@@ -151,7 +151,7 @@ export class DataItemFetcher implements IDataItemFetcher {
           console.error('❌ [HTTP请求器] 请求前脚本执行失败:', error)
         }
       }
-      
+
       // 第二步：发起HTTP请求（使用配置中的完整参数）
       console.log('📡 [HTTP请求器] 准备发起请求:', {
         url: config.url,
@@ -159,17 +159,17 @@ export class DataItemFetcher implements IDataItemFetcher {
         headers: config.headers,
         paramsCount: config.params?.length || 0
       })
-      
+
       // 构建请求参数
       const requestConfig: any = {
         timeout: config.timeout || 10000
       }
-      
+
       // 添加headers
       if (config.headers && Object.keys(config.headers).length > 0) {
         requestConfig.headers = config.headers
       }
-      
+
       // 处理params参数（转换为query参数）
       if (config.params && config.params.length > 0) {
         const queryParams: Record<string, any> = {}
@@ -178,13 +178,13 @@ export class DataItemFetcher implements IDataItemFetcher {
           .forEach(p => {
             queryParams[p.key] = convertValue(p.value, p.dataType)
           })
-        
+
         if (Object.keys(queryParams).length > 0) {
           requestConfig.params = queryParams
           console.log('🔍 [HTTP请求器] 查询参数:', queryParams)
         }
       }
-      
+
       // 处理请求体（POST/PUT/PATCH等方法）
       let requestBody = undefined
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method) && config.body) {
@@ -196,7 +196,7 @@ export class DataItemFetcher implements IDataItemFetcher {
           requestBody = config.body
         }
       }
-      
+
       // 根据方法发起请求
       let response
       switch (config.method.toUpperCase()) {
@@ -218,10 +218,10 @@ export class DataItemFetcher implements IDataItemFetcher {
         default:
           throw new Error(`不支持的HTTP方法: ${config.method}`)
       }
-      
+
       console.log('📨 [HTTP请求器] 原始响应状态: 成功')
       console.log('📨 [HTTP请求器] 原始响应数据:', JSON.stringify(response).substring(0, 200) + '...')
-      
+
       // 第三步：处理响应后脚本
       let finalResponse = response
       if (config.postResponseScript) {
@@ -237,7 +237,7 @@ export class DataItemFetcher implements IDataItemFetcher {
           console.error('❌ [HTTP请求器] 响应后脚本执行失败:', error)
         }
       }
-      
+
       return finalResponse
     } catch (error) {
       console.error('DataItemFetcher: HTTP数据获取失败', error)

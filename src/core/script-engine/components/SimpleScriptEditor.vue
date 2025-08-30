@@ -102,7 +102,7 @@ const availableExamples = computed(() => {
 })
 
 // 示例选择器选项
-const exampleOptions = computed(() => 
+const exampleOptions = computed(() =>
   availableExamples.value.map((example, index) => ({
     label: example.name,
     value: example.code
@@ -153,13 +153,13 @@ const onReady = (cm: any) => {
   <div class="simple-script-editor">
     <!-- 模板选择器 -->
     <div v-if="showTemplates && exampleOptions.length > 0" class="template-selector">
-      <n-select 
-        :options="exampleOptions" 
-        placeholder="选择代码模板..." 
+      <n-select
+        :options="exampleOptions"
+        placeholder="选择代码模板..."
         size="small"
         style="width: 240px"
-        clearable 
-        @update:value="applyTemplate" 
+        clearable
+        @update:value="applyTemplate"
       />
     </div>
 

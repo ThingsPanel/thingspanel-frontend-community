@@ -22,11 +22,16 @@ class ComponentRegistry implements IComponentRegistry {
 
   getAll(): ComponentDefinition[] {
     const components = Array.from(this.components.values())
-    console.log('🔍 [ComponentRegistry] getAll() 被调用:', {
-      componentsCount: components.length,
-      componentTypes: components.map(c => c.type),
-      componentNames: components.map(c => c.name)
-    })
+
+    // 🔥 性能优化：仅在开发环境输出详细日志
+    if (import.meta.env.DEV) {
+      console.log('🔍 [ComponentRegistry] getAll() 被调用:', {
+        componentsCount: components.length,
+        componentTypes: components.map(c => c.type),
+        componentNames: components.map(c => c.name)
+      })
+    }
+
     return components
   }
 

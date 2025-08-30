@@ -72,10 +72,8 @@ export class DataItemProcessor implements IDataItemProcessor {
       }
 
       // 🔥 修复：允许falsy但有意义的值（如 0、false、[]、""）
-      const finalResult = filteredData !== null && filteredData !== undefined 
-        ? filteredData 
-        : (config.defaultValue || {})
-      
+      const finalResult = filteredData !== null && filteredData !== undefined ? filteredData : config.defaultValue || {}
+
       console.log('✅ [DataItemProcessor] 数据处理完成，最终结果:', JSON.stringify(finalResult, null, 2))
       return finalResult
     } catch (error) {

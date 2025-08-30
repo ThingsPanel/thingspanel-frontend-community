@@ -36,9 +36,9 @@ export class TimerTrigger implements UpdateTrigger {
 
     this.callback = callback
 
-    // 立即执行一次（如果配置了）
+    // 🔥 性能优化：立即执行一次（如果配置了），避免不必要的setTimeout
     if (this.config.immediate) {
-      setTimeout(callback, 0)
+      callback()
     }
 
     // 启动定时器

@@ -5,7 +5,7 @@
 
 import { ref, reactive, computed, nextTick } from 'vue'
 import { useMessage } from 'naive-ui'
-import { simpleConfigGenerator, dataSourceSystem } from '@/core/data-source-system'
+import { simpleConfigGenerator, dataSourceSystem } from '@/core/data-architecture'
 // 注意：simpleDataExecutor 已被 UnifiedDataExecutor 替代
 import { unifiedDataExecutor } from '@/core/data-architecture/UnifiedDataExecutor'
 import { useGlobalPollingManager } from './GlobalPollingManager'
@@ -19,7 +19,7 @@ import type {
   DataSourceDefinition,
   ComponentDataRequirement,
   UserDataSourceInput
-} from '@/core/data-source-system/types/simple-types'
+} from '@/core/data-architecture/types/simple-types'
 
 // 数据源状态枚举
 export enum DataSourceStatus {

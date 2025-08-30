@@ -16,6 +16,9 @@ export * from './types'
 // 配置适配器系统
 export * from './adapters'
 
+// 配置生成模块
+export * from './config-generation'
+
 // 便捷功能导出
 export {
   ExampleConfigGenerator,
