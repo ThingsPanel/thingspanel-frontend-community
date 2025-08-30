@@ -32,6 +32,7 @@ function getLangMessages(modules: Record<string, any>, lang: 'zh-cn' | 'en-us') 
         'kanban',
         'others',
         'route',
+        'script',
         'test',
         'theme',
         'time',

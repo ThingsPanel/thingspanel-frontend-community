@@ -1,0 +1,18 @@
+{
+  "script.selectTemplate": "Select code template...",
+  "script.editorHint": "JavaScript Code Editor",
+  "script.editorTitle": "Script Editor",
+  "script.readonly": "Read-only Mode",
+  "script.stats.lines": "Lines",
+  "script.stats.chars": "Characters",
+  "script.actions.copy": "Copy Code",
+  "script.actions.clear": "Clear Code",
+  "script.actions.copySuccess": "Code copied to clipboard",
+  "script.actions.clearConfirm": "Are you sure you want to clear the editor content?",
+  "script.template.generateRandomData": "Generate Random Data",
+  "script.template.generateTimeSeries": "Generate Time Series",
+  "script.template.dataFiltering": "Data Filtering",
+  "script.template.dataTransformation": "Data Transformation",
+  "script.template.mergeAsObject": "Merge as Object",
+  "script.template.mergeAsArray": "Merge as Array"
+}

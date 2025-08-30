@@ -22,6 +22,19 @@ import { type MergeStrategy } from '../executors/DataSourceMerger'
 import RawDataConfigModal from './modals/RawDataConfigModal.vue'
 // 🔥 简洁脚本编辑器
 import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
+// 导入@vicons图标组件
+import {
+  PlusOutlined,
+  SearchOutlined,
+  LinkOutlined,
+  DotChartOutlined,
+  SettingOutlined
+} from '@vicons/antd'
+import {
+  DocumentTextOutline,
+  BarChartOutline,
+  GlobeOutline
+} from '@vicons/ionicons5'
 // 🔥 新配置管理系统
 import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
@@ -891,15 +904,15 @@ const getItemTypeColor = (type: string) => {
 }
 
 /**
- * 获取数据项类型的图标
+ * 获取数据项类型的图标组件
  */
 const getItemTypeIcon = (type: string) => {
   const iconMap = {
-    json: '📄',
-    script: '⚡',
-    http: '🌐'
+    json: DocumentTextOutline,
+    script: SettingOutlined,
+    http: GlobeOutline
   }
-  return iconMap[type] || '📋'
+  return iconMap[type] || DocumentTextOutline
 }
 
 /**
@@ -961,10 +974,10 @@ const getMergeStrategyDisplay = (dataSourceKey: string) => {
  * 获取合并策略选项
  */
 const getMergeStrategyOptions = () => [
-  { label: '🔗 对象合并', value: 'object' },
-  { label: '📋 数组组成', value: 'array' },
-  { label: '🎯 选择其中一个', value: 'select' },
-  { label: '⚙️ 自定义脚本', value: 'script' }
+  { label: '对象合并', value: 'object' },
+  { label: '数组组成', value: 'array' },
+  { label: '选择其中一个', value: 'select' },
+  { label: '自定义脚本', value: 'script' }
 ]
 
 /**
@@ -1125,11 +1138,16 @@ defineExpose({
             >
               <template #trigger>
                 <n-icon size="14" class="example-data-icon" :style="{ color: 'var(--info-color)', cursor: 'pointer' }">
-                  <span>📋</span>
+                  <DocumentTextOutline />
                 </n-icon>
               </template>
               <div class="example-data-tooltip">
-                <div class="tooltip-title">📋 示例数据</div>
+                <div class="tooltip-title">
+                  <n-icon size="14" style="margin-right: 4px">
+                    <DocumentTextOutline />
+                  </n-icon>
+                  示例数据
+                </div>
                 <pre class="example-data-content">{{
                   JSON.stringify(
                     dataSourceOption.originalData.config?.exampleData || dataSourceOption.originalData.example,
@@ -1143,144 +1161,108 @@ defineExpose({
         </template>
 
         <template #header-extra>
-          <!-- 查看结果按钮移到header-extra，折叠时也可见 -->
-          <n-button
-            v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) > 0"
-            size="tiny"
-            text
-            type="info"
-            @click.stop="viewFinalData(dataSourceOption.value)"
-          >
-            查看结果
-          </n-button>
+          <span style="font-size: 12px; color: var(--text-color-2)">{{ dataSourceItems[dataSourceOption.value]?.length || 0 }}项</span>
         </template>
-        <!-- 🔥 一体化数据源配置卡片 -->
-        <div class="data-source-unified-card">
-          <!-- 卡片头部 - 集成所有核心信息 -->
-          <div class="unified-card-header">
-            <div class="header-left">
-              <n-space align="center" size="small" class="header-info">
-                <n-tag size="tiny" type="info">{{ dataSourceItems[dataSourceOption.value]?.length || 0 }}项</n-tag>
-                <n-tag v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) > 0" size="tiny" type="default">
-                  {{ getMergeStrategyDisplay(dataSourceOption.value) }}
-                </n-tag>
-              </n-space>
-            </div>
 
-            <div class="header-right">
-              <n-space size="small" align="center">
-                <!-- 添加数据项按钮 - 集成到header -->
-                <n-button size="tiny" text type="success" @click="handleAddDataItem(dataSourceOption.value)">
-                  <template #icon>
-                    <span style="font-size: 12px">➕</span>
-                  </template>
-                  添加数据项
-                </n-button>
-              </n-space>
+        <div class="simple-content">
+          <!-- 添加按钮 -->
+          <n-button size="small" dashed @click="handleAddDataItem(dataSourceOption.value)">
+            <template #icon>
+              <n-icon size="14">
+                <PlusOutlined />
+              </n-icon>
+            </template>
+            添加数据项
+          </n-button>
+
+          <!-- 数据项列表 -->
+          <div v-if="dataSourceItems[dataSourceOption.value]?.length" class="items-list">
+            <div v-for="item in dataSourceItems[dataSourceOption.value]" :key="item.id" class="item-row">
+              <div class="item-type-with-icon">
+                <n-icon size="14" :color="`var(--${getItemTypeColor(item.type)}-color)`">
+                  <component :is="getItemTypeIcon(item.type)" />
+                </n-icon>
+                <span class="item-type">{{ item.type.toUpperCase() }}</span>
+              </div>
+              <span class="item-desc">{{ getItemSummary(item) }}</span>
+              <div class="item-actions">
+                <n-button size="small" text @click="handleEditDataItem(dataSourceOption.value, item.id)">编辑</n-button>
+                <n-button size="small" text type="error" @click="handleDeleteDataItem(dataSourceOption.value, item.id)">删除</n-button>
+              </div>
             </div>
           </div>
 
-          <!-- 卡片内容 - 紧凑的数据项展示 -->
-          <div class="unified-card-content">
-            <!-- 空状态 -->
-            <div v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) === 0" class="empty-state">
-              <n-empty size="small" description="点击上方按钮添加第一个数据项">
-                <template #icon>
-                  <span style="font-size: 24px">📊</span>
-                </template>
-              </n-empty>
+          <!-- 合并策略（多项时显示） -->
+          <div v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) >= 2" class="merge-section">
+            <div class="merge-strategy-selector">
+              <span class="strategy-label">合并方式:</span>
+              <n-tag
+                v-for="option in getMergeStrategyOptions()"
+                :key="option.value"
+                :type="(mergeStrategies[dataSourceOption.value] || { type: 'object' }).type === option.value ? 'primary' : 'default'"
+                :checkable="true"
+                :checked="(mergeStrategies[dataSourceOption.value] || { type: 'object' }).type === option.value"
+                :bordered="true"
+                size="small"
+                @click="updateMergeStrategyType(dataSourceOption.value, option.value)"
+              >
+                {{ option.label }}
+              </n-tag>
             </div>
 
-            <!-- 数据项紧凑列表 -->
-            <div v-else class="compact-items-list">
-              <div v-for="item in dataSourceItems[dataSourceOption.value]" :key="item.id" class="compact-item">
-                <div class="item-indicator">
-                  <n-tag size="tiny" :type="getItemTypeColor(item.type)">
-                    {{ getItemTypeIcon(item.type) }}
-                  </n-tag>
-                </div>
+            <!-- 选择项配置 -->
+            <n-form-item 
+              style="margin-top: 18px;"
+              v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'select'" 
+              label-placement="left"
+              label="请选择：" 
+              size="small"
+            >
+              <n-input-number
+                :value="((mergeStrategies[dataSourceOption.value] || {}).selectedIndex || 0) + 1"
+                :min="1"
+                :max="dataSourceItems[dataSourceOption.value]?.length || 1"
+                size="small"
+                @update:value="updateMergeStrategyIndex(dataSourceOption.value, $event - 1)"
+              >
+                <template #prefix>第</template>
+                <template #suffix>项</template>
+              </n-input-number>
+            </n-form-item>
 
-                <div class="item-content">
-                  <span class="item-summary">{{ getItemSummary(item) }}</span>
-                  <span v-if="hasProcessingConfig(item)" class="item-processing">
-                    <n-icon size="12" style="margin-right: 2px">⚙️</n-icon>
-                    {{ getProcessingSummary(item) }}
-                  </span>
-                </div>
+            <!-- 脚本配置 -->
+            <n-form-item 
+              v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'script'" 
+            
+              size="small"
+            >
+              <SimpleScriptEditor
+                :model-value="(mergeStrategies[dataSourceOption.value] || {}).script || ''"
+                template-category="data-merger"
+                :show-templates="true"
+                :show-toolbar="false"
+                placeholder="请输入数据合并脚本..."
+                height="120px"
+                @update:model-value="updateMergeStrategyScript(dataSourceOption.value, $event)"
+              />
+            </n-form-item>
+          </div>
 
-                <div class="item-actions">
-                  <n-space size="small">
-                    <n-button
-                      size="tiny"
-                      text
-                      type="primary"
-                      @click="handleEditDataItem(dataSourceOption.value, item.id)"
-                    >
-                      编辑
-                    </n-button>
-                    <n-button
-                      size="tiny"
-                      text
-                      type="error"
-                      @click="handleDeleteDataItem(dataSourceOption.value, item.id)"
-                    >
-                      删除
-                    </n-button>
-                  </n-space>
-                </div>
-              </div>
-            </div>
-
-            <!-- 合并策略 - 分层布局优化 -->
-            <div v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) >= 1" class="inline-merge-strategy">
-              <!-- 第一行：策略选择和查看按钮 -->
-              <div class="strategy-main-row">
-                <span class="strategy-label">合并方式:</span>
-                <n-select
-                  :value="(mergeStrategies[dataSourceOption.value] || { type: 'object' }).type"
-                  size="small"
-                  class="strategy-selector"
-                  :options="getMergeStrategyOptions()"
-                  @update:value="updateMergeStrategyType(dataSourceOption.value, $event)"
-                />
-              </div>
-
-              <!-- 第二行：条件显示的额外控件 -->
-              <div v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'select'" class="strategy-extra-row">
-                <div class="extra-control-container">
-                  <span class="extra-label">选择项:</span>
-                  <n-input-number
-                    :value="(mergeStrategies[dataSourceOption.value] || {}).selectedIndex || 0"
-                    size="small"
-                    :min="0"
-                    :max="Math.max(0, (dataSourceItems[dataSourceOption.value]?.length || 1) - 1)"
-                    class="index-selector"
-                    @update:value="updateMergeStrategyIndex(dataSourceOption.value, $event)"
-                  >
-                    <template #prefix>第</template>
-                    <template #suffix>项</template>
-                  </n-input-number>
-                  <n-text depth="3" style="font-size: 11px; margin-left: 8px">
-                    共 {{ dataSourceItems[dataSourceOption.value]?.length || 0 }} 项可选
-                  </n-text>
-                </div>
-              </div>
-
-              <div v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'script'" class="strategy-extra-row">
-                <div class="extra-control-container">
-                  <span class="extra-label">脚本代码:</span>
-                  <div class="script-editor-wrapper">
-                    <SimpleScriptEditor
-                      :model-value="(mergeStrategies[dataSourceOption.value] || {}).script || ''"
-                      template-category="data-merger"
-                      placeholder="请输入数据合并脚本，可通过 items 参数访问数据项列表..."
-                      height="120px"
-                      @update:model-value="updateMergeStrategyScript(dataSourceOption.value, $event)"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+          <!-- 查看结果按钮（底部） -->
+          <div v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) > 0" class="result-section">
+            <n-button
+              size="small"
+              text
+              type="info"
+              @click="viewFinalData(dataSourceOption.value)"
+            >
+              <template #icon>
+                <n-icon size="14">
+                  <SearchOutlined />
+                </n-icon>
+              </template>
+              查看最终结果
+            </n-button>
           </div>
         </div>
       </n-collapse-item>
@@ -1311,208 +1293,99 @@ defineExpose({
   width: 100%;
 }
 
-/* 🔥 一体化数据源配置卡片样式 */
-.data-source-unified-card {
-  background: var(--card-color);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
-}
-
-.data-source-unified-card:hover {
-  border-color: var(--primary-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* 统一卡片头部样式 */
-.unified-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--body-color);
-  border-bottom: 1px solid var(--border-color);
-  min-height: 48px;
-}
-
-.header-left {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.header-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.header-right {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-}
-
-/* 统一卡片内容样式 */
-.unified-card-content {
-  padding: 16px;
-  background: var(--card-color);
-}
-
-/* 空状态样式 */
-.empty-state {
-  text-align: center;
-  padding: 24px 16px;
-  color: var(--text-color-3);
-}
-
-/* 紧凑数据项列表样式 */
-.compact-items-list {
+/* 简化后的内容区域 */
+.simple-content {
+  margin-top: -8px;
+  padding: 0 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 16px;
 }
 
-/* 紧凑数据项样式 */
-.compact-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  background: var(--body-color);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  transition: all 0.2s ease;
+.simple-content > *:first-child + .items-list {
+  margin-top: 4px;
 }
 
-.compact-item:hover {
-  border-color: var(--primary-color);
-  background: var(--primary-color-suppl);
-  transform: translateY(-1px);
-}
-
-.item-indicator {
-  flex-shrink: 0;
-}
-
-.item-content {
-  flex: 1;
+/* 数据项列表 */
+.items-list {
   display: flex;
   flex-direction: column;
+  max-height: 150px;
+  overflow-y: auto;
   gap: 4px;
-  min-width: 0; /* 允许内容压缩 */
 }
 
-.item-summary {
-  font-size: 13px;
+/* 数据项行 */
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--card-color);
+  font-size: 12px;
+}
+
+/* 数据项类型图标和文本容器 */
+.item-type-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 80px;
+}
+
+.item-type {
+  font-size: 11px;
   font-weight: 500;
   color: var(--text-color);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.item-processing {
-  display: flex;
-  align-items: center;
-  font-size: 11px;
-  color: var(--success-color);
-  opacity: 0.8;
+.item-desc {
+  flex: 1;
+  color: var(--text-color);
+  font-size: 12px;
 }
 
 .item-actions {
-  flex-shrink: 0;
-}
-
-/* 内联合并策略样式 - 分层布局优化 */
-.inline-merge-strategy {
-  padding-top: 16px;
-  border-top: 1px solid var(--border-color);
-  margin-top: 16px;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  gap: 4px;
 }
 
-/* 第一行：主要策略选择 */
-.strategy-main-row {
+/* 合并策略区域 */
+.merge-section {
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* 合并策略选择器 */
+.merge-strategy-selector {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .strategy-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-color);
   white-space: nowrap;
-  flex-shrink: 0;
+  margin-right: 2px;
 }
 
-.strategy-selector {
-  flex: 1;
-  min-width: 160px;
-  max-width: 300px;
-}
-
-.view-result-btn {
-  flex-shrink: 0;
-}
-
-/* 第二行：条件显示的额外控件 */
-.strategy-extra-row {
-  padding-left: 16px;
-  border-left: 3px solid var(--primary-color-hover);
-  background: var(--code-color);
-  border-radius: 6px;
-  padding: 12px 16px;
-}
-
-.extra-control-container {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.extra-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-color-2);
-  white-space: nowrap;
-  flex-shrink: 0;
-  margin-top: 6px; /* 与输入控件对齐 */
-}
-
-.index-selector {
-  width: 120px;
-  flex-shrink: 0;
-}
-
-.script-editor-wrapper {
-  flex: 1;
-  min-width: 0;
-}
-
-/* 空状态样式 */
-.info-alert .alert-description {
-  margin: 4px 0 0 0;
-  font-size: 13px;
-  color: var(--text-color-2);
-}
-
-/* 数据源面板样式 */
-.simple-data-source-panel {
-  padding: 12px 0;
+/* 查看结果按钮区域 */
+.result-section {
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
 }
 
 /* 折叠面板自定义 */
 .data-source-collapse {
+  margin-top: 16px;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -1526,6 +1399,7 @@ defineExpose({
 
 .header-title {
   flex: 1;
+  font-weight: 500;
 }
 
 .example-data-icon {
@@ -1541,7 +1415,7 @@ defineExpose({
 
 /* 示例数据提示框样式 */
 .example-data-tooltip {
-  max-width: 350px;
+  max-width: 400px;
 }
 
 .tooltip-title {
@@ -1554,19 +1428,20 @@ defineExpose({
 }
 
 .example-data-content {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.4;
   color: var(--text-color);
   background: var(--code-color);
-  padding: 8px;
-  border-radius: 4px;
+  padding: 12px;
+  border-radius: 6px;
   margin: 0;
   white-space: pre-wrap;
   word-wrap: break-word;
-  max-height: 200px;
+  max-height: 250px;
   overflow-y: auto;
 }
 
+/* 深度选择器：折叠面板样式定制 */
 .data-source-collapse :deep(.n-collapse-item) {
   border: none;
 }
@@ -1577,7 +1452,7 @@ defineExpose({
 
 .data-source-collapse :deep(.n-collapse-item__header) {
   background: var(--card-color);
-  padding: 12px 16px;
+  padding: 16px;
   font-weight: 500;
 }
 
@@ -1586,67 +1461,24 @@ defineExpose({
 }
 
 .data-source-collapse :deep(.n-collapse-item__content-inner) {
-  padding: 0; /* 🔥 重置内边距，由unified-card控制 */
+  padding: 0;
 }
 
-/* 🔥 响应式设计 */
+/* 响应式设计 */
 @media (max-width: 768px) {
-  .unified-card-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: stretch;
-    min-height: auto;
-    padding: 12px;
+  .simple-content {
+    padding: 8px;
   }
 
-  .header-left,
-  .header-right {
-    justify-content: space-between;
-  }
-
-  /* 合并策略响应式 */
-  .strategy-main-row {
+  .item-row {
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
+    gap: 4px;
   }
 
-  .strategy-selector {
-    max-width: none;
+  .item-type-with-icon {
     min-width: auto;
-  }
-
-  .view-result-btn {
-    align-self: center;
-  }
-
-  .extra-control-container {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .extra-label {
-    margin-top: 0;
-  }
-
-  .index-selector {
-    width: 100%;
-  }
-
-  .compact-item {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .item-content {
-    align-items: center;
-    text-align: center;
-  }
-
-  .item-actions {
-    align-self: center;
+    justify-content: center;
   }
 }
 </style>

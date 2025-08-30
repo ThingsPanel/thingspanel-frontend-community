@@ -58,7 +58,10 @@
       "WebFetch(domain:microsoft.github.io)",
       "WebFetch(domain:github.com)",
       "Bash(timeout 60 pnpm:*)",
-      "Bash(pnpm start:*)"
+      "Bash(pnpm start:*)",
+      "WebFetch(domain:codemirror.net)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:www.naiveui.com)"
     ],
     "deny": [],
     "additionalDirectories": [

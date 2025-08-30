@@ -825,6 +825,15 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'test_new-config-system',
           i18nKey: 'route.test_new-config-system'
         }
+      },
+      {
+        name: 'test_script-editor-fix-test',
+        path: '/test/script-editor-fix-test',
+        component: 'view.test_script-editor-fix-test',
+        meta: {
+          title: 'test_script-editor-fix-test',
+          i18nKey: 'route.test_script-editor-fix-test'
+        }
       }
     ]
   },

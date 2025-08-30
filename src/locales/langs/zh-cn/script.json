@@ -1,0 +1,18 @@
+{
+  "script.selectTemplate": "选择代码模板...",
+  "script.editorHint": "JavaScript 代码编辑器",
+  "script.editorTitle": "脚本编辑器",
+  "script.readonly": "只读模式",
+  "script.stats.lines": "行数",
+  "script.stats.chars": "字符",
+  "script.actions.copy": "复制代码",
+  "script.actions.clear": "清空代码",
+  "script.actions.copySuccess": "代码已复制到剪贴板",
+  "script.actions.clearConfirm": "确定要清空编辑器内容吗？",
+  "script.template.generateRandomData": "生成随机数据",
+  "script.template.generateTimeSeries": "生成时间序列",
+  "script.template.dataFiltering": "数据过滤",
+  "script.template.dataTransformation": "数据转换",
+  "script.template.mergeAsObject": "合并为对象",
+  "script.template.mergeAsArray": "合并为数组"
+}

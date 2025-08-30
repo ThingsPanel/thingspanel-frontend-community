@@ -1,12 +1,15 @@
 <!--
-轻量级脚本编辑器 - 使用CodeMirror提供良好的代码编辑体验
-参考data-handle.vue的成功实现，性能优秀且功能完整
+专业级脚本编辑器组件 - 基于 CodeMirror 6 重构
+提供完整的代码编辑功能和优秀的用户体验
 -->
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed } from 'vue'
 import { useThemeStore } from '@/store/modules/theme'
-import Codemirror from 'codemirror-editor-vue3'
-import 'codemirror/mode/javascript/javascript.js'
+import { useI18n } from 'vue-i18n'
+
+// 导入 CodeMirror 6 Vue 组件
+import CodeMirror from 'vue-codemirror6'
+import { javascript } from '@codemirror/lang-javascript'
 
 interface Props {
   /** 脚本内容 */
@@ -32,20 +35,13 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
+// 国际化集成
+const { t } = useI18n()
+
 // 主题系统集成
 const themeStore = useThemeStore()
-const cmRef = ref()
 
-// CodeMirror 配置
-const cmOptions = {
-  mode: 'text/javascript',
-  indentUnit: 2,
-  lineWrapping: true,
-  lineNumbers: true,
-  theme: 'default'
-}
-
-// 代码示例
+// 代码示例 - 使用硬编码文本避免国际化循环依赖
 const codeExamples = {
   'data-generation': [
     {
@@ -115,47 +111,25 @@ const exampleOptions = computed(() =>
 const applyTemplate = (templateCode: string) => {
   if (templateCode) {
     emit('update:modelValue', templateCode)
-    // 等待DOM更新后聚焦
-    nextTick(() => {
-      if (cmRef.value) {
-        const cm = cmRef.value.getCodeMirror?.()
-        if (cm) {
-          const lastLine = cm.lineCount() - 1
-          const lastCh = cm.getLine(lastLine).length
-          cm.focus()
-          cm.setCursor({ line: lastLine, ch: lastCh })
-        }
-      }
-    })
   }
 }
 
-/**
- * CodeMirror 内容变化事件
- */
-const onChange = (val: string, cm: any) => {
-  emit('update:modelValue', val)
-}
-
-/**
- * CodeMirror 就绪事件
- */
-const onReady = (cm: any) => {
-  // 设置焦点到编辑器末尾
-  const lastLine = cm.lineCount() - 1
-  const lastCh = cm.getLine(lastLine).length
-  cm.focus()
-  cm.setCursor({ line: lastLine, ch: lastCh })
-}
+// CodeMirror 6 配置
+const editorValue = computed({
+  get: () => props.modelValue,
+  set: (value: string) => emit('update:modelValue', value)
+})
 </script>
 
 <template>
   <div class="simple-script-editor">
     <!-- 模板选择器 -->
     <div v-if="showTemplates && exampleOptions.length > 0" class="template-selector">
+     
+        <div> 模板：</div>
       <n-select
         :options="exampleOptions"
-        placeholder="选择代码模板..."
+        :placeholder="t('script.selectTemplate')"
         size="small"
         style="width: 240px"
         clearable
@@ -163,21 +137,18 @@ const onReady = (cm: any) => {
       />
     </div>
 
-    <!-- CodeMirror编辑器 -->
-    <Codemirror
-      ref="cmRef"
-      v-model:value="props.modelValue"
-      :options="cmOptions"
-      :height="props.height"
-      border
-      @change="onChange"
-      @ready="onReady"
-    />
-
-    <!-- 简单提示 -->
-    <div class="editor-hint">
-      <n-text depth="3">💡 JavaScript 代码编辑器</n-text>
+    <!-- CodeMirror 6 编辑器 -->
+    <div class="editor-container">
+      <CodeMirror
+        v-model="editorValue"
+        basic
+        :dark="themeStore.darkMode"
+        :lang="javascript()"
+        :placeholder="props.placeholder"
+        :style="{ height: props.height }"
+      />
     </div>
+
   </div>
 </template>
 
@@ -186,6 +157,7 @@ const onReady = (cm: any) => {
   width: 100%;
   display: flex;
   flex-direction: column;
+
   gap: 8px;
 }
 
@@ -194,22 +166,106 @@ const onReady = (cm: any) => {
   align-items: center;
 }
 
-.code-textarea {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.6;
+.editor-container {
+  flex: 1;
+  border: 1px solid var(--n-border-color);
+  border-radius: var(--n-border-radius);
+  overflow: hidden;
+  transition: all 0.3s var(--n-bezier);
 }
 
-.code-textarea :deep(textarea) {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  tab-size: 2;
+.editor-container:focus-within {
+  border-color: var(--n-color-primary);
+  box-shadow: 0 0 0 2px var(--n-color-primary-hover-opacity);
 }
 
 .editor-hint {
   font-size: 12px;
-  color: var(--text-color-3);
+  color: var(--n-text-color-disabled);
   text-align: center;
+}
+
+/* CodeMirror 6 样式定制 */
+.simple-script-editor :deep(.cm-editor) {
+  border: none;
+  border-radius: var(--n-border-radius);
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  background: transparent;
+  height: 100%;
+}
+
+.simple-script-editor :deep(.cm-focused) {
+  outline: none;
+}
+
+.simple-script-editor :deep(.cm-content) {
+  min-height: v-bind(height);
+  line-height: 1.6;
+  caret-color: var(--n-color-primary);
+  padding: 12px;
+}
+
+.simple-script-editor :deep(.cm-gutters) {
+  background: var(--n-color-base);
+  border-right: 1px solid var(--n-border-color);
+  color: var(--n-text-color-disabled);
+}
+
+.simple-script-editor :deep(.cm-lineNumbers .cm-gutterElement) {
+  color: var(--n-text-color-disabled);
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.simple-script-editor :deep(.cm-selectionBackground) {
+  background: rgba(24, 160, 88, 0.2) !important;
+}
+
+.simple-script-editor :deep(.cm-activeLine) {
+  background: var(--n-color-hover);
+}
+
+.simple-script-editor :deep(.cm-activeLineGutter) {
+  background: var(--n-color-hover);
+}
+
+/* 滚动条样式 */
+.simple-script-editor :deep(.cm-scroller::-webkit-scrollbar) {
+  width: 6px;
+  height: 6px;
+}
+
+.simple-script-editor :deep(.cm-scroller::-webkit-scrollbar-track) {
+  background: var(--n-color-base);
+}
+
+.simple-script-editor :deep(.cm-scroller::-webkit-scrollbar-thumb) {
+  background: var(--n-scrollbar-color);
+  border-radius: 3px;
+}
+
+.simple-script-editor :deep(.cm-scroller::-webkit-scrollbar-thumb:hover) {
+  background: var(--n-scrollbar-color-hover);
+}
+
+/* 占位符样式 */
+.simple-script-editor :deep(.cm-placeholder) {
+  color: var(--n-text-color-disabled);
+  font-style: italic;
+}
+
+/* 语法高亮定制 */
+.simple-script-editor :deep(.cm-editor.cm-focused .cm-selectionBackground) {
+  background: rgba(24, 160, 88, 0.2) !important;
+}
+
+/* 响应主题变化 */
+[data-theme='dark'] .simple-script-editor .editor-container {
+  box-shadow: var(--n-box-shadow-1);
+}
+
+[data-theme='light'] .simple-script-editor .editor-container {
+  background: var(--n-card-color);
 }
 </style>
