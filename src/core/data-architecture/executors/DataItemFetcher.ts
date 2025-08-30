@@ -42,6 +42,9 @@ export interface HttpDataItemConfig {
   timeout?: number
   // 扩展支持新的 HttpConfig 格式
   params?: HttpParameter[]
+  // 🔥 新增：脚本支持
+  preRequestScript?: string
+  postResponseScript?: string
 }
 
 // 或者直接使用 HttpConfig 类型
@@ -112,7 +115,7 @@ export class DataItemFetcher implements IDataItemFetcher {
   }
 
   /**
-   * 获取HTTP数据 - 使用项目封装的request库
+   * 获取HTTP数据 - 使用项目封装的request库，支持脚本处理
    * 
    * 重要修复：
    * 1. 使用项目统一的request库，而不是原生fetch
@@ -122,107 +125,123 @@ export class DataItemFetcher implements IDataItemFetcher {
    * 5. 其他方法：可以包含body数据
    * 6. 支持新的HttpConfig格式和旧格式的兼容
    * 7. 集成convertValue进行正确的类型转换
+   * 8. 🔥 新增：支持请求前脚本和响应后脚本处理
    * 
    * @param config HTTP配置，支持HttpDataItemConfig格式
    * @returns Promise<any> HTTP响应数据，失败时返回空对象
    */
   private async fetchHttpData(config: HttpDataItemConfig): Promise<any> {
     try {
-      // 准备查询参数
-      let queryParams: Record<string, any> = {}
-
-      // 处理新格式的params数组
-      if (config.params && Array.isArray(config.params)) {
-        config.params
-          .filter(param => param.enabled) // 只处理启用的参数
-          .forEach(param => {
-            // 使用convertValue进行类型转换，确保数据类型正确
-            const convertedValue = convertValue(param.value, param.dataType)
-            queryParams[param.key] = convertedValue
-          })
-      }
-
-      // 处理旧格式的body作为参数（兼容性）
-      if (config.method === 'GET' || config.method === 'HEAD') {
-        if (config.body && typeof config.body === 'object') {
-          queryParams = { ...queryParams, ...config.body }
+      // 打印传给HTTP请求器的配置
+      console.log('🔍 [HTTP请求器] 接收到的配置:', JSON.stringify(config, null, 2))
+      console.log('🔧 [HTTP请求器] 请求前脚本:', !!config.preRequestScript)
+      console.log('🔧 [HTTP请求器] 响应后脚本:', !!config.postResponseScript)
+      
+      // 第一步：处理请求前脚本
+      if (config.preRequestScript) {
+        console.log('🔧 [HTTP请求器] 执行请求前脚本')
+        try {
+          const scriptResult = await defaultScriptEngine.execute(config.preRequestScript, { config })
+          if (scriptResult.success && scriptResult.data) {
+            // 更新配置
+            Object.assign(config, scriptResult.data)
+            console.log('✅ [HTTP请求器] 请求前脚本执行成功，更新后配置:', JSON.stringify(config, null, 2))
+          }
+        } catch (error) {
+          console.error('❌ [HTTP请求器] 请求前脚本执行失败:', error)
         }
       }
-
-      // 构建请求配置
-      const requestOptions: any = {
-        headers: {
-          'Content-Type': 'application/json',
-          ...config.headers
-        }
-      }
-
-      // 设置超时
-      if (config.timeout) {
-        requestOptions.timeout = config.timeout
-      }
-
-      console.log(`🌐 [DataItemFetcher] ${config.method} ${config.url}`, {
-        params: queryParams,
-        body: config.method !== 'GET' && config.method !== 'HEAD' ? config.body : undefined
+      
+      // 第二步：发起HTTP请求（使用配置中的完整参数）
+      console.log('📡 [HTTP请求器] 准备发起请求:', {
+        url: config.url,
+        method: config.method,
+        headers: config.headers,
+        paramsCount: config.params?.length || 0
       })
-
-      let response: any
-
-      // 使用项目的request库根据HTTP方法发送请求
-      switch (config.method) {
-        case 'GET':
-          response = await request.get(config.url, { 
-            params: queryParams,
-            ...requestOptions
+      
+      // 构建请求参数
+      const requestConfig: any = {
+        timeout: config.timeout || 10000
+      }
+      
+      // 添加headers
+      if (config.headers && Object.keys(config.headers).length > 0) {
+        requestConfig.headers = config.headers
+      }
+      
+      // 处理params参数（转换为query参数）
+      if (config.params && config.params.length > 0) {
+        const queryParams: Record<string, any> = {}
+        config.params
+          .filter(p => p.enabled && p.key && p.value !== undefined && p.value !== null && p.value !== '')
+          .forEach(p => {
+            queryParams[p.key] = convertValue(p.value, p.dataType)
           })
+        
+        if (Object.keys(queryParams).length > 0) {
+          requestConfig.params = queryParams
+          console.log('🔍 [HTTP请求器] 查询参数:', queryParams)
+        }
+      }
+      
+      // 处理请求体（POST/PUT/PATCH等方法）
+      let requestBody = undefined
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method) && config.body) {
+        try {
+          requestBody = typeof config.body === 'string' ? JSON.parse(config.body) : config.body
+          console.log('📝 [HTTP请求器] 请求体:', requestBody)
+        } catch (error) {
+          console.warn('⚠️ [HTTP请求器] 请求体解析失败，使用原始字符串:', config.body)
+          requestBody = config.body
+        }
+      }
+      
+      // 根据方法发起请求
+      let response
+      switch (config.method.toUpperCase()) {
+        case 'GET':
+          response = await request.get(config.url, requestConfig)
           break
         case 'POST':
-          response = await request.post(config.url, config.body, {
-            params: queryParams,
-            ...requestOptions
-          })
+          response = await request.post(config.url, requestBody, requestConfig)
           break
         case 'PUT':
-          response = await request.put(config.url, config.body, {
-            params: queryParams,
-            ...requestOptions
-          })
-          break
-        case 'DELETE':
-          response = await request.delete(config.url, {
-            params: queryParams,
-            data: config.body, // DELETE可能需要body
-            ...requestOptions
-          })
+          response = await request.put(config.url, requestBody, requestConfig)
           break
         case 'PATCH':
-          response = await request.patch(config.url, config.body, {
-            params: queryParams,
-            ...requestOptions
-          })
+          response = await request.patch(config.url, requestBody, requestConfig)
+          break
+        case 'DELETE':
+          response = await request.delete(config.url, requestConfig)
           break
         default:
           throw new Error(`不支持的HTTP方法: ${config.method}`)
       }
-
-      // 返回响应数据
-      return response || {}
+      
+      console.log('📨 [HTTP请求器] 原始响应状态: 成功')
+      console.log('📨 [HTTP请求器] 原始响应数据:', JSON.stringify(response).substring(0, 200) + '...')
+      
+      // 第三步：处理响应后脚本
+      let finalResponse = response
+      if (config.postResponseScript) {
+        console.log('🔧 [HTTP请求器] 执行响应后脚本')
+        try {
+          const scriptResult = await defaultScriptEngine.execute(config.postResponseScript, { response })
+          if (scriptResult.success) {
+            finalResponse = scriptResult.data !== undefined ? scriptResult.data : response
+            console.log('✅ [HTTP请求器] 响应后脚本执行成功')
+            console.log('🔍 [HTTP请求器] 脚本处理后数据:', JSON.stringify(finalResponse).substring(0, 200) + '...')
+          }
+        } catch (error) {
+          console.error('❌ [HTTP请求器] 响应后脚本执行失败:', error)
+        }
+      }
+      
+      return finalResponse
     } catch (error) {
-      console.error('DataItemFetcher: HTTP请求失败', error)
-      
-      // 如果是后端返回的业务错误（如参数缺失、验证失败等），直接返回后端的响应
-      if (error?.response?.data && typeof error.response.data === 'object') {
-        // 直接返回后端的响应，让用户看到清晰的错误信息
-        return error.response.data
-      }
-      
-      // 如果是网络错误或其他异常，返回简化的错误信息
-      return {
-        error: true,
-        message: error.message || '请求失败',
-        type: 'network_error'
-      }
+      console.error('DataItemFetcher: HTTP数据获取失败', error)
+      return {}
     }
   }
 

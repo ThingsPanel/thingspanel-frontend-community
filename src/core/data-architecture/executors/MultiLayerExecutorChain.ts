@@ -193,6 +193,9 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
         const itemId = `${dataSourceConfig.sourceId}_item_${i}`
 
         try {
+          // 🔍 调试：检查传递给fetchData的item对象
+          console.log(`🔍 [MultiLayerExecutorChain] 传递给fetchData的item对象 ${itemId}:`, JSON.stringify(item, null, 2))
+          
           // 第一层：数据项获取
           const rawData = await this.dataItemFetcher.fetchData(item)
 

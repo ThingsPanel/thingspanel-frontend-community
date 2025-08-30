@@ -391,6 +391,6 @@
   "config.dataSource.http.tabs.params": "Parameters",
   "config.dataSource.http.tabs.requestScript": "Request Script",
   "config.dataSource.http.tabs.responseScript": "Response Script",
-  "config.dataSource.http.preRequestScript.placeholder": "// Script to modify request configuration\n// Available variables: config (contains url, method, headers, params, etc.)\n// Must return the modified config object\nconfig.headers = config.headers || {}\nconfig.headers['X-Timestamp'] = Date.now()\nreturn config",
-  "config.dataSource.http.postResponseScript.placeholder": "// Script to process response data\n// Available variables: response (HTTP response data)\n// Must return the processed data\nif (response.data) {\n  return response.data\n}\nreturn response"
+  "config.dataSource.http.preRequestScript.placeholder": "// Script to modify request configuration\\n// Available variables: config\\n// Must return the modified config object\\nconfig.headers = config.headers || {}\\nconfig.headers['X-Timestamp'] = Date.now()\\nreturn config",
+  "config.dataSource.http.postResponseScript.placeholder": "// Script to process response data\\n// Available variables: response\\n// Must return the processed data\\nif (response.data) {\\n  return response.data\\n}\\nreturn response"
 }

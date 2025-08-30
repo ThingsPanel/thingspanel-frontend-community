@@ -289,19 +289,64 @@ export const HTTP_CONFIG_TEMPLATES: Array<{
           description: '时间范围类型(大写版本)'
         }
       ],
-      preRequestScript: `// 动态计算时间范围
-if (!dynamicValues.var_start_time) {
-  config.params.start_time = Date.now() - 3600000
+      preRequestScript: `// 请求前处理 - 确保参数完整性
+// 注意：所有参数值在此时已经确定，无需检查dynamicValues
+// 可以对参数进行验证、转换或添加额外的请求配置
+
+// 示例：添加请求时间戳到headers
+config.headers = config.headers || {}
+config.headers['X-Request-Time'] = Date.now().toString()
+
+// 示例：验证必要参数是否存在
+const requiredParams = ['device_id', 'key']
+const missingParams = []
+if (config.params) {
+  for (const required of requiredParams) {
+    const param = config.params.find(p => p.key === required)
+    if (!param || !param.value) {
+      missingParams.push(required)
+    }
+  }
 }
-if (!dynamicValues.var_end_time) {
-  config.params.end_time = Date.now()
+if (missingParams.length > 0) {
+  console.warn('缺少必要参数:', missingParams)
 }
+
 return config`,
-      postResponseScript: `// 转换为图表数据格式
-if (response.data && Array.isArray(response.data)) {
-  return response.data.map(item => [item.x || item.timestamp, item.y || item.value])
+      postResponseScript: `// 转换为图表数据格式 - 兼容多种响应格式
+console.log('🔍 [响应脚本] 原始响应:', response)
+
+// 尝试多种可能的数据路径
+let data = null
+if (response && typeof response === 'object') {
+  // 尝试 response.data
+  if (Array.isArray(response.data)) {
+    data = response.data
+  }
+  // 尝试 response.result  
+  else if (Array.isArray(response.result)) {
+    data = response.result
+  }
+  // 尝试 response 本身就是数组
+  else if (Array.isArray(response)) {
+    data = response
+  }
+  // 尝试其他可能的字段
+  else if (response.list && Array.isArray(response.list)) {
+    data = response.list
+  }
 }
-return response.data || response`
+
+console.log('🔍 [响应脚本] 提取的数据:', data)
+
+if (data && Array.isArray(data)) {
+  const result = data.map(item => [item.x || item.timestamp || item.time, item.y || item.value || item.val])
+  console.log('🔍 [响应脚本] 转换后数据:', result)
+  return result
+}
+
+console.log('🔍 [响应脚本] 无法转换，返回原始响应')
+return response`
     }
   }
 ]

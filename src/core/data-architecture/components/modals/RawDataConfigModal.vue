@@ -14,6 +14,8 @@ import { DataItemFetcher, type DataItem } from '../../executors'
 import HttpConfigForm from './HttpConfigForm.vue'
 // 🔥 简洁脚本编辑器
 import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
+// 🔥 导入HTTP配置模板
+import { HTTP_CONFIG_TEMPLATES } from '../../types/http-config'
 
 // Props接口
 interface Props {
@@ -125,6 +127,48 @@ const onHttpConfigUpdate = (newConfig: typeof httpConfig.value) => {
 }
 
 /**
+ * 🔥 应用遥测数据模板配置
+ */
+const applyTelemetryTemplate = () => {
+  // 从 http-config.ts 获取遥测模板配置
+  const telemetryTemplate = HTTP_CONFIG_TEMPLATES.find(template => template.name === '设备遥测数据')
+  
+  if (telemetryTemplate) {
+    console.log('📊 应用遥测数据模板:', telemetryTemplate.config)
+    console.log('📊 模板中的params:', telemetryTemplate.config.params)
+    console.log('📊 应用前httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
+    
+    // 直接应用模板配置到 httpConfig
+    httpConfig.value = {
+      ...httpConfig.value,
+      ...telemetryTemplate.config,
+      // 确保数组字段被正确复制
+      headers: [...(telemetryTemplate.config.headers || [])],
+      params: [...(telemetryTemplate.config.params || [])]
+    }
+    
+    console.log('📊 应用后httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
+    console.log('📊 应用后params数量:', httpConfig.value.params?.length || 0)
+    console.log('📊 应用后preRequestScript存在吗?:', !!httpConfig.value.preRequestScript)
+    
+    // 触发 onHttpConfigUpdate 确保所有状态同步
+    onHttpConfigUpdate(httpConfig.value)
+    console.log('📊 onHttpConfigUpdate调用完成')
+    
+    // 🔍 验证调用后httpConfig是否仍然完整
+    setTimeout(() => {
+      console.log('📊 [验证] 500ms后httpConfig.value params数量:', httpConfig.value.params?.length || 0)
+      console.log('📊 [验证] 500ms后preRequestScript存在吗?:', !!httpConfig.value.preRequestScript)
+    }, 500)
+    
+    message.success('遥测数据模板已应用')
+  } else {
+    console.error('❌ 未找到遥测数据模板，可用模板:', HTTP_CONFIG_TEMPLATES.map(t => t.name))
+    message.error('未找到遥测数据模板')
+  }
+}
+
+/**
  * 预览数据状态
  */
 const previewData = ref<any>(null)
@@ -221,7 +265,7 @@ const getCurrentDataItem = (): DataItem => {
         config: { jsonString: formState.jsonData }
       }
     case 'http':
-      // 修复：使用新的 HttpConfig 格式，兼容 HttpConfigForm
+      // 修复：使用新的 HttpConfig 格式，兼容 HttpConfigForm，包含脚本字段
       return {
         type: 'http',
         config: {
@@ -231,7 +275,10 @@ const getCurrentDataItem = (): DataItem => {
           headers: convertHttpParametersToRecord(httpConfig.value.headers),
           body: httpConfig.value.body ? JSON.parse(httpConfig.value.body) : undefined,
           // 扩展：支持新的 params 数组格式
-          params: httpConfig.value.params
+          params: httpConfig.value.params,
+          // 🔥 关键修复：包含脚本字段
+          preRequestScript: httpConfig.value.preRequestScript,
+          postResponseScript: httpConfig.value.postResponseScript
         }
       }
     case 'script':
@@ -284,12 +331,21 @@ const handleConfirm = async () => {
       method: formState.selectedMethod === 'http' ? formState.httpMethod : undefined,
       headers: formState.selectedMethod === 'http' ? formState.httpHeaders : undefined,
       body: formState.selectedMethod === 'http' ? formState.httpBody : undefined,
+      // 🔥 关键修复：保存新的 httpConfig 完整状态
+      httpConfigData: formState.selectedMethod === 'http' ? httpConfig.value : undefined,
       // 处理配置
       processingConfig: {
         jsonPath: processingState.jsonPath.trim() || undefined,
         defaultValue: processingState.defaultValue.trim() || undefined,
         scriptCode: processingState.scriptCode.trim() || undefined
       }
+    }
+
+    console.log('💾 保存配置类型:', fullConfig.type)
+    console.log('💾 httpConfigData存在吗?', !!fullConfig.httpConfigData)
+    if (fullConfig.httpConfigData) {
+      console.log('💾 httpConfigData.params长度:', fullConfig.httpConfigData.params?.length || 0)
+      console.log('💾 httpConfigData.preRequestScript存在吗?', !!fullConfig.httpConfigData.preRequestScript)
     }
 
     emit('confirm', fullConfig)
@@ -552,7 +608,13 @@ const loadEditData = (editData: any) => {
     return
   }
 
-  console.log('📝 [RawDataConfigModal] 加载编辑数据:', editData)
+  console.log('📝 [RawDataConfigModal] 加载编辑数据 - type:', editData.type)
+  console.log('📝 [RawDataConfigModal] editData keys:', Object.keys(editData))
+  console.log('📝 [RawDataConfigModal] editData.httpConfigData存在吗?', !!editData.httpConfigData)
+  if (editData.httpConfigData) {
+    console.log('📝 [RawDataConfigModal] httpConfigData.params长度:', editData.httpConfigData.params?.length || 0)
+    console.log('📝 [RawDataConfigModal] httpConfigData.preRequestScript存在吗?', !!editData.httpConfigData.preRequestScript)
+  }
 
   // 加载基本配置
   formState.selectedMethod = editData.type || 'json'
@@ -570,10 +632,52 @@ const loadEditData = (editData: any) => {
       }
       break
     case 'http':
+      // 更新旧格式字段（保持兼容）
       if (editData.url) formState.httpUrl = editData.url
       if (editData.method) formState.httpMethod = editData.method
       if (editData.headers) formState.httpHeaders = editData.headers
       if (editData.body) formState.httpBody = editData.body
+      
+      // 🔥 关键修复：同时更新新的 httpConfig 状态
+      if (editData.url) httpConfig.value.url = editData.url
+      if (editData.method) httpConfig.value.method = editData.method
+      if (editData.timeout) httpConfig.value.timeout = editData.timeout
+      
+      // 如果有已保存的复杂配置，完整加载它们
+      if (editData.httpConfigData) {
+        console.log('🔄 恢复完整httpConfig配置:', editData.httpConfigData)
+        console.log('🔄 恢复的params:', editData.httpConfigData.params)
+        httpConfig.value = { 
+          ...httpConfig.value, 
+          ...editData.httpConfigData,
+          // 确保数组字段不为空
+          headers: editData.httpConfigData.headers || [],
+          params: editData.httpConfigData.params || []
+        }
+        console.log('🔄 恢复后httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
+      } else {
+        console.log('⚠️ 没有找到httpConfigData，尝试从旧格式恢复')
+        // 从旧格式恢复基础配置
+        try {
+          if (editData.headers && typeof editData.headers === 'string') {
+            const headersObj = JSON.parse(editData.headers)
+            httpConfig.value.headers = Object.entries(headersObj).map(([key, value]) => ({
+              key,
+              value: String(value),
+              enabled: true,
+              isDynamic: false,
+              dataType: 'string',
+              variableName: '',
+              description: ''
+            }))
+          }
+          if (editData.body) {
+            httpConfig.value.body = typeof editData.body === 'string' ? editData.body : JSON.stringify(editData.body)
+          }
+        } catch (error) {
+          console.warn('旧格式配置转换失败:', error)
+        }
+      }
       break
   }
 
@@ -714,6 +818,16 @@ defineExpose({
 
               <!-- HTTP接口配置 -->
               <div v-if="formState.selectedMethod === 'http'" class="editor-container">
+                <!-- 🔥 新增：遥测模板快速应用 -->
+                <div class="template-actions mb-4">
+                  <n-button type="primary" ghost size="small" @click="applyTelemetryTemplate">
+                    📊 应用遥测数据模板
+                  </n-button>
+                  <n-text depth="3" style="margin-left: 8px; font-size: 12px;">
+                    快速配置遥测数据接口参数
+                  </n-text>
+                </div>
+                
                 <HttpConfigForm v-model:model-value="httpConfig" @update:model-value="onHttpConfigUpdate" />
               </div>
 

@@ -492,6 +492,6 @@
   "config.dataSource.http.tabs.params": "参数",
   "config.dataSource.http.tabs.requestScript": "请求脚本",
   "config.dataSource.http.tabs.responseScript": "响应脚本",
-  "config.dataSource.http.preRequestScript.placeholder": "// 修改请求配置的脚本\n// 可用变量: config (包含url, method, headers, params等)\n// 必须返回修改后的config对象\nconfig.headers = config.headers || {}\nconfig.headers['X-Timestamp'] = Date.now()\nreturn config",
-  "config.dataSource.http.postResponseScript.placeholder": "// 处理响应数据的脚本\n// 可用变量: response (HTTP响应数据)\n// 必须返回处理后的数据\nif (response.data) {\n  return response.data\n}\nreturn response"
+  "config.dataSource.http.preRequestScript.placeholder": "// 修改请求配置的脚本\\n// 可用变量: config\\n// 必须返回修改后的config对象\\nconfig.headers = config.headers || {}\\nconfig.headers['X-Timestamp'] = Date.now()\\nreturn config",
+  "config.dataSource.http.postResponseScript.placeholder": "// 处理响应数据的脚本\\n// 可用变量: response\\n// 必须返回处理后的数据\\nif (response.data) {\\n  return response.data\\n}\\nreturn response"
 }

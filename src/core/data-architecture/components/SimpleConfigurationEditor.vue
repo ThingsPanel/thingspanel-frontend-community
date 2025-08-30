@@ -314,14 +314,82 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
       }
 
     case 'http':
-      return {
-        type: 'http',
-        config: {
-          url: dataItemConfig.url || '',
-          method: dataItemConfig.method || 'GET',
-          headers: dataItemConfig.headers ? JSON.parse(dataItemConfig.headers) : undefined,
-          body: dataItemConfig.body ? JSON.parse(dataItemConfig.body) : undefined,
-          timeout: 10000
+      // 🔥 关键修复：优先使用完整的 httpConfigData，回退到基础配置
+      console.log('🔍 [convertToStandardDataItem] HTTP配置转换开始')
+      console.log('  - dataItemConfig keys:', Object.keys(dataItemConfig))
+      console.log('  - httpConfigData存在吗?:', !!dataItemConfig.httpConfigData)
+      if (dataItemConfig.httpConfigData) {
+        console.log('  - httpConfigData内容:', JSON.stringify(dataItemConfig.httpConfigData, null, 2))
+      }
+      
+      if (dataItemConfig.httpConfigData) {
+        console.log('💾 [convertToStandardDataItem] 使用完整的httpConfigData保存')
+        const httpConfigData = dataItemConfig.httpConfigData
+        
+        // 将HttpConfigData转换为标准DataItem格式，同时保留完整信息
+        const config: any = {
+          url: httpConfigData.url || '',
+          method: httpConfigData.method || 'GET',
+          timeout: httpConfigData.timeout || 10000
+        }
+        
+        // 转换headers数组为对象格式
+        if (httpConfigData.headers && httpConfigData.headers.length > 0) {
+          const headersObj = {}
+          httpConfigData.headers
+            .filter(h => h.enabled && h.key) // 只包含启用且有key的header
+            .forEach(h => {
+              headersObj[h.key] = h.value
+            })
+          if (Object.keys(headersObj).length > 0) {
+            config.headers = headersObj
+          }
+        }
+        
+        // 🔥 关键修复：保持params数组格式，因为DataItemFetcher期望数组格式
+        if (httpConfigData.params && httpConfigData.params.length > 0) {
+          // 直接保存数组格式，不转换为对象
+          config.params = httpConfigData.params.filter(p => p.enabled && p.key) // 只保存启用且有key的param
+          console.log('💾 [convertToStandardDataItem] 保存params数组:', config.params)
+        }
+        
+        // 保存请求体
+        if (httpConfigData.body) {
+          config.body = httpConfigData.body
+        }
+        
+        // 🔥 关键：保存脚本配置
+        if (httpConfigData.preRequestScript) {
+          config.preRequestScript = httpConfigData.preRequestScript
+          console.log('💾 [convertToStandardDataItem] 保存了preRequestScript:', httpConfigData.preRequestScript.substring(0, 100) + '...')
+        } else {
+          console.log('⚠️ [convertToStandardDataItem] preRequestScript为空或不存在')
+        }
+        if (httpConfigData.postResponseScript) {
+          config.postResponseScript = httpConfigData.postResponseScript
+          console.log('💾 [convertToStandardDataItem] 保存了postResponseScript:', httpConfigData.postResponseScript.substring(0, 100) + '...')
+        } else {
+          console.log('⚠️ [convertToStandardDataItem] postResponseScript为空或不存在')
+        }
+        
+        console.log('💾 [convertToStandardDataItem] 转换后的config:', JSON.stringify(config, null, 2))
+        
+        return {
+          type: 'http',
+          config
+        }
+      } else {
+        // 回退到旧的基础配置格式
+        console.log('⚠️ [convertToStandardDataItem] httpConfigData不存在，使用基础配置')
+        return {
+          type: 'http',
+          config: {
+            url: dataItemConfig.url || '',
+            method: dataItemConfig.method || 'GET',
+            headers: dataItemConfig.headers ? JSON.parse(dataItemConfig.headers) : undefined,
+            body: dataItemConfig.body ? JSON.parse(dataItemConfig.body) : undefined,
+            timeout: 10000
+          }
         }
       }
 
@@ -362,10 +430,31 @@ const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
     // 转换数据项（如果有的话）
     const standardDataItems =
       items && items.length > 0
-        ? items.map(item => ({
-            item: convertToStandardDataItem(item),
-            processing: convertToProcessingConfig(item)
-          }))
+        ? items.map((item, index) => {
+            const convertedItem = convertToStandardDataItem(item)
+            const convertedProcessing = convertToProcessingConfig(item)
+            
+            // 🔍 调试：检查转换结果
+            console.log(`🔧 [rebuildCompleteDataSourceConfiguration] 数据源${sourceId}项目${index}转换结果:`)
+            console.log('  - 原始item type:', item.type)
+            console.log('  - 转换后config keys:', Object.keys(convertedItem.config))
+            if (convertedItem.type === 'http') {
+              console.log('  - HTTP params数量:', convertedItem.config.params?.length || 0)
+              console.log('  - 有preRequestScript吗?:', !!convertedItem.config.preRequestScript)
+              console.log('  - 有postResponseScript吗?:', !!convertedItem.config.postResponseScript)
+              if (convertedItem.config.preRequestScript) {
+                console.log('  - preRequestScript内容:', convertedItem.config.preRequestScript.substring(0, 50) + '...')
+              }
+              if (convertedItem.config.postResponseScript) {
+                console.log('  - postResponseScript内容:', convertedItem.config.postResponseScript.substring(0, 50) + '...')
+              }
+            }
+            
+            return {
+              item: convertedItem,
+              processing: convertedProcessing
+            }
+          })
         : [] // 🔥 关键：空数据源也要保留，传空数组
 
     // 获取合并策略
@@ -399,12 +488,17 @@ const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
     totalItems: dataSources.reduce((sum, ds) => sum + ds.dataItems.length, 0)
   })
 
-  return {
+  // 🔍 最终调试：输出完整的配置以确认内容
+  const finalConfig = {
     componentId: props.componentId,
     dataSources,
     createdAt: timestamp,
     updatedAt: timestamp
   }
+  
+  console.log('🎯 [rebuildCompleteDataSourceConfiguration] 最终配置:', JSON.stringify(finalConfig, null, 2))
+  
+  return finalConfig
 }
 
 /**
@@ -625,6 +719,60 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
       if (item.config.body) {
         displayConfig.body = JSON.stringify(item.config.body)
       }
+      
+      // 🔥 关键修复：从原始配置中恢复httpConfigData
+      // 由于这是从配置管理器恢复，需要重构HttpConfig格式
+      console.log('🔍 [convertConfigItemToDisplay] 恢复HTTP配置，原始item.config:', JSON.stringify(item.config, null, 2))
+      
+      // 如果原始配置包含了完整的HttpConfig信息，恢复它
+      if (item.config.url) {
+        displayConfig.httpConfigData = {
+          url: item.config.url || '',
+          method: item.config.method || 'GET',
+          timeout: item.config.timeout || 10000,
+          
+          // 恢复headers数组格式
+          headers: item.config.headers ? Object.entries(item.config.headers).map(([key, value]) => ({
+            key,
+            value: String(value),
+            enabled: true,
+            isDynamic: false,
+            dataType: 'string',
+            variableName: '',
+            description: ''
+          })) : [],
+          
+          // 🔥 关键：恢复params数组格式
+          params: item.config.params ? (
+            // 如果是数组格式（新格式），直接使用
+            Array.isArray(item.config.params) ? item.config.params : 
+            // 如果是对象格式（旧格式），转换为数组
+            Object.entries(item.config.params).map(([key, value]) => ({
+              key,
+              value: String(value),
+              enabled: true,
+              isDynamic: false,
+              dataType: 'string',
+              variableName: '',
+              description: ''
+            }))
+          ) : [],
+          
+          body: item.config.body ? (typeof item.config.body === 'string' ? item.config.body : JSON.stringify(item.config.body)) : '',
+          
+          // 🔥 关键：恢复脚本配置
+          preRequestScript: item.config.preRequestScript || '',
+          postResponseScript: item.config.postResponseScript || ''
+        }
+        
+        console.log('🔄 [convertConfigItemToDisplay] 恢复的httpConfigData:', {
+          url: displayConfig.httpConfigData.url,
+          headersCount: displayConfig.httpConfigData.headers?.length || 0,
+          paramsCount: displayConfig.httpConfigData.params?.length || 0,
+          hasPreRequestScript: !!displayConfig.httpConfigData.preRequestScript,
+          hasPostResponseScript: !!displayConfig.httpConfigData.postResponseScript
+        })
+      }
       break
   }
 
@@ -634,6 +782,12 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
     scriptCode: processing.customScript || '',
     defaultValue: processing.defaultValue || ''
   }
+
+  console.log('🔄 [convertConfigItemToDisplay] 转换结果:', {
+    type: displayConfig.type,
+    hasHttpConfigData: !!displayConfig.httpConfigData,
+    httpConfigDataParams: displayConfig.httpConfigData?.params?.length || 0
+  })
 
   return displayConfig
 }
@@ -690,7 +844,18 @@ const getEditData = () => {
   if (!items) return null
 
   const editItem = items.find(item => item.id === editingItemId.value)
-  console.log('🔍 [SimpleConfigurationEditor] 获取编辑数据:', editItem)
+  
+  // 🔥 详细调试编辑数据
+  console.log('🔍 [SimpleConfigurationEditor] 获取编辑数据:')
+  console.log('  - type:', editItem?.type)
+  console.log('  - 基础字段keys:', Object.keys(editItem || {}))
+  console.log('  - httpConfigData存在吗?:', !!editItem?.httpConfigData)
+  if (editItem?.httpConfigData) {
+    console.log('  - httpConfigData.params长度:', editItem.httpConfigData.params?.length || 0)
+    console.log('  - httpConfigData.preRequestScript存在吗?:', !!editItem.httpConfigData.preRequestScript)
+    console.log('  - httpConfigData完整内容:', JSON.stringify(editItem.httpConfigData, null, 2))
+  }
+  
   return editItem
 }
 
