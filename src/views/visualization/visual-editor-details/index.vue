@@ -1,171 +1,70 @@
 <script setup lang="ts">
-import { ref, computed, provide } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useMessage } from 'naive-ui'
 import PanelEditor from '@/components/visual-editor/PanelEditor.vue'
-import InteractionTestPanel from './components/InteractionTestPanel.vue'
-import { interactionManager } from '@/card2.1/core/interaction-manager'
-import { manualTester } from '@/manual-interaction-test'
+import { useGlobalPollingManager } from '@/components/visual-editor/core/GlobalPollingManager'
 
 const route = useRoute()
 const message = useMessage()
 
 const panel_id = (route.query.id as string) || '72da0887-52f9-b546-27ce-e4c06ea07ca7'
 
-// 交互测试状态
-const showInteractionTest = ref(false)
-const stateManager = ref<any>(null)
+// 全局轮询管理器
+const pollingManager = useGlobalPollingManager()
+const panelEditor = ref<InstanceType<typeof PanelEditor> | null>(null)
 
-// 🔥 获取当前画布组件列表的函数
-const getAvailableComponents = () => {
-  if (!stateManager.value || !stateManager.value.nodes) {
-    console.log('[INTERACTION-DEBUG] StateManager或nodes不可用')
-    return []
-  }
+// 全局轮询开关状态
+const globalPollingEnabled = computed(() => pollingManager.isGlobalPollingEnabled())
+const pollingStats = computed(() => pollingManager.getStatistics())
 
-  const components = stateManager.value.nodes.map((node: any) => ({
-    id: node.id,
-    type: node.type,
-    name: node.metadata?.name || node.type,
-    label: `${node.metadata?.name || node.type} (${node.id.slice(0, 8)}...)` // 显示名称和ID片段
-  }))
-
-  console.log('[INTERACTION-DEBUG] 获取可用组件列表:', components)
-  return components
-}
-
-// 提供给子组件的状态
-provide('interactionTestState', {
-  showInteractionTest,
-  stateManager
-})
-
-// 🔥 提供组件列表获取函数给交互配置使用
-provide('visualEditorState', {
-  getAvailableComponents
-})
-
-// 切换交互测试面板
-const toggleInteractionTest = () => {
-  showInteractionTest.value = !showInteractionTest.value
-  if (showInteractionTest.value && stateManager.value) {
-    // 获取当前画布上的组件列表
-    const components = stateManager.value.nodes.map((node: any) => ({
-      id: node.id,
-      type: node.type,
-      name: node.metadata?.name || node.type
-    }))
-    console.log('🧪 可测试的组件:', components)
-  }
-}
-
-// 接收 PanelEditor 的状态管理器
-const handleStateManagerReady = (sm: any) => {
-  stateManager.value = sm
-  console.log('📋 [VisualEditorDetails] StateManager 已就绪:', sm)
-}
-
-// 执行系统测试
-const runSystemTest = async () => {
-  try {
-    message.info('正在运行系统测试...')
-    const results = await manualTester.runAllTests()
-
-    if (results.success) {
-      message.success(`系统测试通过！(${results.passed}/${results.total})`)
+// 切换全局轮询开关
+const toggleGlobalPolling = () => {
+  if (!globalPollingEnabled.value) {
+    console.log(`🔄 [VisualEditorDetails] 启用全局轮询`)
+    // 通过 PanelEditor 的方法初始化轮询任务
+    if (panelEditor.value && typeof panelEditor.value.initializePollingTasksAndEnable === 'function') {
+      panelEditor.value.initializePollingTasksAndEnable()
     } else {
-      message.error(`系统测试失败！(${results.passed}/${results.total})`)
+      // 备用方案：直接启用
+      pollingManager.enableGlobalPolling()
     }
-
-    console.log('🎯 [VisualEditorDetails] 系统测试完成:', results)
-  } catch (error) {
-    console.error('🎯 [VisualEditorDetails] 系统测试异常:', error)
-    message.error('系统测试执行失败')
-  }
-}
-
-// 测试组件交互
-const testComponentInteraction = (componentId: string, action: string, value: any) => {
-  try {
-    console.log('🧪 执行组件交互测试:', { componentId, action, value })
-
-    // 创建临时配置
-    const testConfig = {
-      id: `test-${Date.now()}`,
-      name: '测试交互',
-      event: 'click' as any,
-      responses: [
-        {
-          action: action as any,
-          value: value,
-          duration: 500
-        }
-      ],
-      enabled: true,
-      priority: 999
-    }
-
-    // 临时注册测试配置
-    const existingConfigs = interactionManager.getComponentConfigs(componentId) || []
-    interactionManager.updateComponentConfigs(componentId, [...existingConfigs, testConfig])
-
-    // 触发交互事件
-    const results = interactionManager.triggerEvent(componentId, 'click')
-
-    if (results.some(r => r.success)) {
-      message.success(`交互执行成功: ${action}`)
-      console.log(
-        '🎯 交互效果详情:',
-        results.find(r => r.success)
-      )
-    } else {
-      const errorResult = results.find(r => !r.success)
-      message.error(`交互执行失败: ${errorResult?.error || '未知错误'}`)
-    }
-
-    // 3秒后移除测试配置
-    setTimeout(() => {
-      interactionManager.updateComponentConfigs(componentId, existingConfigs)
-      console.log('🧪 测试配置已清除')
-    }, 3000)
-  } catch (error) {
-    console.error('🧪 交互测试失败:', error)
-    message.error(`执行失败: ${error}`)
-  }
-}
-
-// 重置组件状态
-const resetComponentState = (componentId: string) => {
-  if (componentId) {
-    interactionManager.resetComponentState(componentId)
-    message.success('组件状态已重置')
+    message.success('全局轮询已启用')
   } else {
-    message.warning('请先选择组件')
+    console.log(`🔄 [VisualEditorDetails] 关闭全局轮询`)
+    pollingManager.disableGlobalPolling()
+    message.info('全局轮询已关闭')
   }
+}
+
+// 接收 PanelEditor 引用
+const handleStateManagerReady = (sm: any) => {
+  console.log('📋 [VisualEditorDetails] StateManager 已就绪:', sm)
 }
 </script>
 
 <template>
   <div class="visual-editor-container">
     <!-- 主编辑器 -->
-    <PanelEditor :panel-id="panel_id" @state-manager-ready="handleStateManagerReady" />
+    <PanelEditor 
+      ref="panelEditor"
+      :panel-id="panel_id" 
+      @state-manager-ready="handleStateManagerReady" 
+    />
 
-    <!-- 交互测试按钮 -->
-    <div class="interaction-test-button-container">
-      <button class="interaction-test-btn" :class="{ active: showInteractionTest }" @click="toggleInteractionTest">
-        🧪 交互测试
+    <!-- 全局轮询总开关按钮 -->
+    <div class="polling-control-button-container">
+      <button 
+        class="polling-control-btn" 
+        :class="{ active: globalPollingEnabled }" 
+        @click="toggleGlobalPolling"
+      >
+        {{ globalPollingEnabled ? '⏸️ 轮询中' : '▶️ 启动轮询' }}
+        <div class="polling-stats">
+          {{ pollingStats.activeTasks }}/{{ pollingStats.totalTasks }}
+        </div>
       </button>
     </div>
-
-    <!-- 交互测试面板 -->
-    <InteractionTestPanel
-      v-if="showInteractionTest"
-      :state-manager="stateManager"
-      @close="toggleInteractionTest"
-      @test-interaction="testComponentInteraction"
-      @reset-component="resetComponentState"
-      @run-system-test="runSystemTest"
-    />
   </div>
 </template>
 
@@ -176,38 +75,60 @@ const resetComponentState = (componentId: string) => {
   height: 100%;
 }
 
-/* 交互测试按钮 */
-.interaction-test-button-container {
+/* 全局轮询控制按钮 */
+.polling-control-button-container {
   position: absolute;
   top: 20px;
   right: 20px;
   z-index: 1001;
 }
 
-.interaction-test-btn {
-  padding: 8px 16px;
-  background: #4a90e2;
+.polling-control-btn {
+  padding: 12px 16px;
+  background: #6b7280;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
 }
 
-.interaction-test-btn:hover {
-  background: #357abd;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+.polling-control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(107, 114, 128, 0.4);
 }
 
-.interaction-test-btn.active {
-  background: #e74c3c;
-  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+.polling-control-btn.active {
+  background: #10b981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  animation: pulse 2s infinite;
 }
 
-.interaction-test-btn.active:hover {
-  background: #c0392b;
+.polling-control-btn.active:hover {
+  background: #059669;
+}
+
+.polling-stats {
+  font-size: 10px;
+  opacity: 0.8;
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+/* 轮询中的脉冲动画 */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.6), 0 0 20px rgba(16, 185, 129, 0.3);
+  }
 }
 </style>

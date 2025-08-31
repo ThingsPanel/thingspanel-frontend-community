@@ -22,8 +22,8 @@ import { type MergeStrategy } from '../executors/DataSourceMerger'
 import RawDataConfigModal from './modals/RawDataConfigModal.vue'
 // 🔥 简洁脚本编辑器
 import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
-// 🔥 导入数据源轮询配置组件
-import DataSourcePollingConfig from './DataSourcePollingConfig.vue'
+// 🔥 导入组件级别轮询配置组件
+import ComponentPollingConfig from './ComponentPollingConfig.vue'
 // 导入@vicons图标组件
 import { PlusOutlined, SearchOutlined, LinkOutlined, DotChartOutlined, SettingOutlined } from '@vicons/antd'
 import { DocumentTextOutline, BarChartOutline, GlobeOutline } from '@vicons/ionicons5'
@@ -47,8 +47,6 @@ interface Props {
   selectedWidgetId?: string
   /** 是否为预览模式 - 轮询功能仅在预览模式下生效 */
   previewMode?: boolean
-  /** 全局轮询开关 - 用于性能控制 */
-  globalPollingEnabled?: boolean
 }
 
 // Emits接口
@@ -59,8 +57,7 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   modelValue: () => ({}),
   dataSources: () => [],
-  previewMode: false,
-  globalPollingEnabled: true
+  previewMode: false
 })
 
 const emit = defineEmits<Emits>()
@@ -499,59 +496,44 @@ const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
 }
 
 /**
- * 获取数据源的轮询配置
+ * 获取组件的轮询配置
+ * @returns 组件轮询配置或null
  */
-const getPollingConfigForDataSource = (dataSourceKey: string) => {
+const getComponentPollingConfig = () => {
   const config = configurationManager.getConfiguration(props.componentId)
-  if (!config?.dataSource?.polling) {
-    return null
-  }
-  return config.dataSource.polling[dataSourceKey] || null
+  return config?.component?.polling || null
 }
 
 /**
- * 处理轮询配置变化
- * 将轮询配置集成到 dataSource 配置中并保存
+ * 处理组件轮询配置变化
+ * 将轮询配置保存到 component 配置中
  */
-const handlePollingConfigChange = (dataSourceKey: string, pollingConfig: any) => {
-  console.log('🔄 [SimpleConfigurationEditor] 处理轮询配置变化:', { dataSourceKey, pollingConfig })
-  
+const handleComponentPollingConfigChange = (pollingConfig: any) => {
+  console.log('🔄 [SimpleConfigurationEditor] 处理组件轮询配置变化:', { componentId: props.componentId, pollingConfig })
+
   try {
-    // 获取当前完整的数据源配置
-    const dataSourceConfig = rebuildCompleteDataSourceConfiguration()
-    
-    // 为配置添加轮询信息（如果不存在的话）
-    if (!dataSourceConfig.polling) {
-      dataSourceConfig.polling = {}
-    }
-    
-    // 更新特定数据源的轮询配置
-    dataSourceConfig.polling[dataSourceKey] = {
+    // 获取当前组件配置
+    const config = configurationManager.getConfiguration(props.componentId)
+    const componentConfig = config?.component || {}
+
+    // 更新组件轮询配置
+    componentConfig.polling = {
       enabled: pollingConfig.enabled || false,
-      interval: pollingConfig.interval || 5000,
-      immediate: pollingConfig.immediate || false,
-      updatedAt: Date.now()
+      interval: pollingConfig.interval || 30000,
+      immediate: pollingConfig.immediate || true,
+      lastUpdated: Date.now()
     }
-    
-    // 保存到 ConfigurationManager
-    configurationManager.updateConfiguration(props.componentId, 'dataSource', dataSourceConfig)
-    
-    console.log('✅ [SimpleConfigurationEditor] 轮询配置已保存:', {
+
+    // 保存到配置管理器
+    configurationManager.updateConfiguration(props.componentId, 'component', componentConfig)
+
+    console.log('✅ [SimpleConfigurationEditor] 组件轮询配置已保存:', {
       componentId: props.componentId,
-      dataSourceKey,
-      config: dataSourceConfig.polling[dataSourceKey]
+      config: componentConfig.polling
     })
   } catch (error) {
-    console.error('❌ [SimpleConfigurationEditor] 保存轮询配置失败:', error)
+    console.error('❌ [SimpleConfigurationEditor] 保存组件轮询配置失败:', error)
   }
-}
-
-/**
- * 处理轮询状态变化
- */
-const handlePollingStatusChange = (dataSourceKey: string, status: any) => {
-  console.log('🔄 [SimpleConfigurationEditor] 轮询状态变化:', { dataSourceKey, status })
-  // 状态变化只需要记录，不需要保存到配置
 }
 
 /**
@@ -1170,6 +1152,15 @@ defineExpose({
 
 <template>
   <div class="simple-configuration-editor">
+    <!-- 组件级别轮询配置 -->
+    <ComponentPollingConfig
+      :component-id="props.componentId"
+      :component-name="props.componentType"
+      :preview-mode="props.previewMode"
+      :initial-config="getComponentPollingConfig()"
+      @config-change="handleComponentPollingConfigChange"
+    />
+
     <!-- 数据源折叠面板 - accordion模式，每次只能展开一个 -->
     <n-collapse
       :default-expanded-names="dataSourceOptions.length > 0 ? [dataSourceOptions[0].value] : []"
@@ -1318,28 +1309,6 @@ defineExpose({
             </n-button>
           </div>
 
-          <!-- 🔥 数据源轮询配置组件 - 安全集成 -->
-          <!-- 🐛 调试信息 -->
-          <div v-show="false">
-            {{ console.log(`🔍 [SimpleConfigurationEditor] 轮询组件渲染条件检查:`, {
-              dataSourceKey: dataSourceOption.value,
-              dataSourceItems: dataSourceItems[dataSourceOption.value],
-              itemsLength: dataSourceItems[dataSourceOption.value]?.length || 0,
-              shouldRender: (dataSourceItems[dataSourceOption.value]?.length || 0) > 0
-            }) }}
-          </div>
-          
-          <DataSourcePollingConfig
-            v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) > 0"
-            :data-source-key="dataSourceOption.value"
-            :data-source-name="dataSourceOption.label"
-            :component-id="props.componentId"
-            :preview-mode="props.previewMode"
-            :global-polling-enabled="props.globalPollingEnabled"
-            :initial-config="getPollingConfigForDataSource(dataSourceOption.value)"
-            @config-change="config => handlePollingConfigChange(dataSourceOption.value, config)"
-            @polling-status-change="status => handlePollingStatusChange(dataSourceOption.value, status)"
-          />
         </div>
       </n-collapse-item>
     </n-collapse>

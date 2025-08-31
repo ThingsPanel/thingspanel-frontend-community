@@ -50,6 +50,9 @@ export class GlobalPollingManager {
   /** 全局定时器ID */
   private globalTimerId: number | null = null
 
+  /** 全局轮询总开关 - 控制是否执行任何轮询任务 */
+  private globalEnabled = ref<boolean>(false)
+
   /** 全局定时器间隔（毫秒），设置为最小公约数 */
   private readonly GLOBAL_TIMER_INTERVAL = 5000 // 🔥 性能优化：改为5秒，减少CPU占用
 
@@ -96,11 +99,15 @@ export class GlobalPollingManager {
     this.tasks.set(taskId, task)
     this.updateStatistics()
 
-    console.log(`➕ [GlobalPollingManager] 添加轮询任务: ${task.componentName} (间隔: ${task.interval}ms)`)
+    console.log(`➕ [GlobalPollingManager] 添加轮询任务: ${task.componentName} (间隔: ${task.interval}ms), autoStart: ${taskConfig.autoStart}`)
+    console.log(`📊 [GlobalPollingManager] 当前任务总数: ${this.tasks.size}`)
 
     // 如果设置了自动启动
     if (taskConfig.autoStart) {
+      console.log(`🚀 [GlobalPollingManager] 自动启动任务: ${taskId}`)
       this.startTask(taskId)
+    } else {
+      console.log(`⏸️ [GlobalPollingManager] 任务创建但未自动启动: ${taskId}`)
     }
 
     return taskId
@@ -120,14 +127,23 @@ export class GlobalPollingManager {
     task.active = true
     task.nextExecuteAt = Date.now() + task.interval
 
-    // 🔥 性能优化：仅在开发环境输出任务启动日志
-    if (import.meta.env.DEV) {
-      console.log(`▶️ [GlobalPollingManager] 启动任务: ${task.componentName}`)
-    }
+    console.log(`▶️ [GlobalPollingManager] 启动任务: ${task.componentName}, taskId: ${taskId}`)
+    console.log(`📊 [GlobalPollingManager] 任务详情:`, { 
+      componentId: task.componentId,
+      interval: task.interval,
+      nextExecuteAt: new Date(task.nextExecuteAt).toLocaleTimeString(),
+      active: task.active
+    })
 
     // 启动全局定时器（如果还没启动）
     this.startGlobalTimer()
     this.updateStatistics()
+
+    console.log(`📊 [GlobalPollingManager] 全局定时器状态:`, {
+      timerActive: !!this.globalTimerId,
+      activeTasks: Array.from(this.tasks.values()).filter(t => t.active).length,
+      totalTasks: this.tasks.size
+    })
 
     return true
   }
@@ -239,12 +255,80 @@ export class GlobalPollingManager {
   }
 
   /**
+   * 启用全局轮询
+   */
+  enableGlobalPolling(): void {
+    console.log('🔛 [GlobalPollingManager] 启用全局轮询')
+    this.globalEnabled.value = true
+    
+    // 详细状态报告
+    const allTasks = this.getAllTasks()
+    const activeTasks = this.getActiveTasks()
+    console.log(`📊 [GlobalPollingManager] 轮询状态报告:`, {
+      totalTasks: allTasks.length,
+      activeTasks: activeTasks.length,
+      globalEnabled: this.globalEnabled.value,
+      allTasksDetails: allTasks.map(t => ({
+        id: t.id,
+        componentId: t.componentId,
+        componentName: t.componentName,
+        active: t.active,
+        interval: t.interval,
+        nextExecuteAt: t.nextExecuteAt ? new Date(t.nextExecuteAt).toLocaleTimeString() : 'not set'
+      }))
+    })
+    
+    // 如果有活跃任务，启动全局定时器
+    if (this.getActiveTasks().length > 0) {
+      this.startGlobalTimer()
+    } else {
+      console.log('⚠️ [GlobalPollingManager] 没有活跃的轮询任务，定时器不会启动')
+    }
+  }
+
+  /**
+   * 禁用全局轮询
+   */
+  disableGlobalPolling(): void {
+    console.log('🔴 [GlobalPollingManager] 禁用全局轮询')
+    this.globalEnabled.value = false
+    
+    // 停止全局定时器但不清除任务
+    if (this.globalTimerId !== null) {
+      clearInterval(this.globalTimerId)
+      this.globalTimerId = null
+      this.isRunning.value = false
+      this.statistics.globalTimerActive = false
+    }
+  }
+
+  /**
+   * 获取全局轮询开关状态
+   */
+  isGlobalPollingEnabled(): boolean {
+    return this.globalEnabled.value
+  }
+
+  /**
+   * 切换全局轮询开关状态
+   */
+  toggleGlobalPolling(): boolean {
+    if (this.globalEnabled.value) {
+      this.disableGlobalPolling()
+    } else {
+      this.enableGlobalPolling()
+    }
+    return this.globalEnabled.value
+  }
+
+  /**
    * 销毁管理器
    */
   destroy(): void {
     console.log('💥 [GlobalPollingManager] 销毁管理器')
 
     this.clearAllTasks()
+    this.globalEnabled.value = false
     this.isRunning.value = false
   }
 
@@ -256,10 +340,7 @@ export class GlobalPollingManager {
       return // 已经启动
     }
 
-    // 🔥 性能优化：仅在开发环境输出定时器启动日志
-    if (import.meta.env.DEV) {
-      console.log('⏰ [GlobalPollingManager] 启动全局定时器')
-    }
+    console.log('⏰ [GlobalPollingManager] 启动全局定时器')
 
     this.globalTimerId = window.setInterval(() => {
       this.executeScheduledTasks()
@@ -288,6 +369,12 @@ export class GlobalPollingManager {
    * 执行计划中的任务 - 🔥 优化版本：批量处理和智能调度
    */
   private executeScheduledTasks(): void {
+    // 🔴 检查全局轮询开关
+    if (!this.globalEnabled.value) {
+      // 全局轮询关闭时，不执行任何任务，但保持定时器运行以便随时恢复
+      return
+    }
+
     const now = Date.now()
     const readyTasks: PollingTask[] = []
 
@@ -300,16 +387,32 @@ export class GlobalPollingManager {
 
     // 🔥 性能优化：批量执行，避免单个任务堵塞
     if (readyTasks.length > 0) {
+      console.log(`🔄 [GlobalPollingManager] 发现 ${readyTasks.length} 个准备执行的任务`)
+      
       // 按优先级排序：间隔时间短的任务优先执行
       readyTasks.sort((a, b) => a.interval - b.interval)
 
       // 并行执行任务（但限制并发数避免过载）
       const batchSize = Math.min(readyTasks.length, 5) // 最多同时执行5个任务
       const batch = readyTasks.slice(0, batchSize)
+      
+      console.log(`⚡ [GlobalPollingManager] 执行批次任务 ${batch.length} 个:`, batch.map(t => t.componentName))
 
       Promise.allSettled(batch.map(task => this.executeTask(task, now))).catch(error =>
         console.error('❌ [GlobalPollingManager] 批量任务执行失败:', error)
       )
+    } else {
+      // 当前时间检查
+      const activeTasks = this.getActiveTasks()
+      if (activeTasks.length > 0) {
+        console.log(`⏱️ [GlobalPollingManager] 当前时间: ${new Date(now).toLocaleTimeString()}, 等待中的任务:`, 
+          activeTasks.map(t => ({ 
+            name: t.componentName, 
+            nextExec: t.nextExecuteAt ? new Date(t.nextExecuteAt).toLocaleTimeString() : 'never',
+            remaining: t.nextExecuteAt ? Math.round((t.nextExecuteAt - now) / 1000) : 'never'
+          }))
+        )
+      }
     }
   }
 
@@ -320,10 +423,8 @@ export class GlobalPollingManager {
    */
   private async executeTask(task: PollingTask, now: number): Promise<void> {
     try {
-      // 🔥 性能优化：减少日志输出，仅在开发环境输出详细日志
-      if (import.meta.env.DEV && this.statistics.totalExecutions % 10 === 0) {
-        console.log(`🔄 [GlobalPollingManager] 执行轮询任务: ${task.componentName}`)
-      }
+      // 🔍 调试：总是输出执行日志
+      console.log(`🔄 [GlobalPollingManager] 执行轮询任务: ${task.componentName}, 执行次数: ${this.statistics.totalExecutions + 1}`)
 
       // 更新执行时间
       task.lastExecutedAt = now

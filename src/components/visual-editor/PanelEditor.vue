@@ -21,8 +21,10 @@ import type { RendererType, VisualEditorWidget, GraphData } from './types'
 // import './data-sources' // 临时注释，文件不存在
 
 import { useVisualEditorIntegration } from '@/card2.1/hooks/useVisualEditorIntegration'
-import { interactionManager } from '@/card2.1/core/interaction-manager'
+// 🔥 轮询系统导入
+import { useGlobalPollingManager } from './core/GlobalPollingManager'
 import { editorDataSourceManager } from './core/EditorDataSourceManager'
+import { interactionManager } from '@/card2.1/core/interaction-manager'
 
 // 🔥 提供EditorDataSourceManager给子组件
 provide('editorDataSourceManager', editorDataSourceManager)
@@ -94,8 +96,25 @@ const multiDataSourceStore = ref<Record<string, Record<string, any>>>({})
 // 多数据源配置存储 - 以组件ID为键，存储完整配置信息
 const multiDataSourceConfigStore = ref<Record<string, any>>({})
 
+// 轮询管理器实例
+const pollingManager = useGlobalPollingManager()
+
 // 全局轮询开关状态
-const globalPollingEnabled = ref(true)
+const globalPollingEnabled = computed(() => pollingManager.isGlobalPollingEnabled())
+const pollingStats = computed(() => pollingManager.getStatistics())
+
+// 手动切换全局轮询开关
+const handleToggleGlobalPolling = () => {
+  if (!globalPollingEnabled.value) {
+    // 启用前先初始化轮询任务
+    console.log(`🔄 [PanelEditor] 启用全局轮询前先初始化任务`)
+    initializePollingTasksAndEnable()
+  } else {
+    // 直接关闭
+    console.log(`🔄 [PanelEditor] 手动关闭全局轮询`)
+    pollingManager.disableGlobalPolling()
+  }
+}
 
 // 全屏功能
 const { isFullscreen, toggle } = useFullscreen(fullui)
@@ -570,6 +589,10 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
 
   if (mode === 'edit') {
     console.log('📝 切换到编辑模式')
+    
+    // 🔴 关闭全局轮询（编辑模式）
+    pollingManager.disableGlobalPolling()
+    
     isEditing.value = true
     setPreviewMode(false) // 同步全局预览模式
 
@@ -592,6 +615,10 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
           console.log('✅ 用户确认退出，重置配置')
           isEditing.value = false
           setPreviewMode(true) // 同步全局预览模式
+          
+          // 🔛 启动全局轮询（预览模式）
+          initializePollingTasksAndEnable()
+          
           // 退出编辑模式时关闭所有抽屉
           showLeftDrawer.value = false
           showRightDrawer.value = false
@@ -613,6 +640,10 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
       console.log('✅ 没有未保存的更改，直接退出编辑模式')
       isEditing.value = false
       setPreviewMode(true) // 同步全局预览模式
+      
+      // 🔛 启动全局轮询（预览模式）
+      initializePollingTasksAndEnable()
+      
       // 退出编辑模式时关闭所有抽屉
       showLeftDrawer.value = false
       showRightDrawer.value = false
@@ -623,6 +654,143 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
 
   console.log('🎯 模式切换完成:', { isEditing: isEditing.value, isPreviewMode: isPreviewMode, mode })
 }
+
+// 🔥 轮询管理功能
+
+/**
+ * 初始化轮询任务并启用全局轮询
+ * 扫描所有组件的轮询配置，创建轮询任务，然后启用全局轮询开关
+ */
+const initializePollingTasksAndEnable = () => {
+  console.log('🚀 [PanelEditor] 启动预览模式轮询')
+  
+  try {
+    // 🔥 修复重复定时器漏洞：先清除所有现有任务
+    console.log('🧹 [PanelEditor] 清除所有现有轮询任务，避免重复定时器')
+    pollingManager.clearAllTasks()
+    
+    // 获取所有组件的轮询配置
+    const allComponents = stateManager.nodes
+    console.log(`🔍 [PanelEditor] 扫描 ${allComponents.length} 个组件的轮询配置`)
+    console.log(`🔍 [PanelEditor] 所有组件:`, allComponents.map(c => ({ id: c.id, type: c.type })))
+    
+    allComponents.forEach(component => {
+      const componentId = component.id
+      console.log(`🔍 [PanelEditor] 开始检查组件: ${componentId} (${component.type})`)
+      
+      // 从 ConfigurationManager 读取组件级别的轮询配置
+      const config = configurationManager.getConfiguration(componentId)
+      console.log(`🔍 [PanelEditor] 组件 ${componentId} 完整配置:`, config)
+      
+      // 检查配置结构
+      console.log(`🔍 [PanelEditor] 组件 ${componentId} 配置结构检查:`, {
+        hasConfig: !!config,
+        hasComponent: !!config?.component,
+        componentKeys: config?.component ? Object.keys(config.component) : [],
+        fullConfig: config
+      })
+      
+      const pollingConfig = config?.component?.polling
+      console.log(`🔍 [PanelEditor] 组件 ${componentId} 轮询配置:`, pollingConfig)
+      console.log(`🔍 [PanelEditor] 组件 ${componentId} 轮询判断:`, {
+        hasPollingConfig: !!pollingConfig,
+        isEnabled: pollingConfig?.enabled,
+        willCreateTask: !!(pollingConfig && pollingConfig.enabled)
+      })
+      
+      if (pollingConfig && pollingConfig.enabled) {
+        console.log(`✅ [PanelEditor] 组件 ${componentId} 启用轮询:`, pollingConfig)
+        
+        const interval = pollingConfig.interval || 30000
+          
+        console.log(`▶️ [PanelEditor] 启动组件轮询: ${componentId}, 间隔: ${interval}ms`)
+        
+        // 创建轮询任务（但不自动启动）
+        const taskId = pollingManager.addTask({
+          componentId: componentId,
+          componentName: `组件-${component.type}`,
+          interval: interval,
+          callback: async () => {
+            console.log(`🔄 [PanelEditor] 轮询触发组件执行: ${componentId}`)
+            console.log(`🔄 [PanelEditor] 执行时间: ${new Date().toLocaleTimeString()}`)
+            try {
+              console.log(`🔍 [PanelEditor] 开始调用执行器: ${componentId}`)
+              console.log(`🔍 [PanelEditor] EditorDataSourceManager 状态:`, {
+                isInitialized: editorDataSourceManager.isInitialized(),
+                hasManager: !!editorDataSourceManager
+              })
+              
+              // 🔥 直接调用组件执行器，这个应该是正确的方式
+              console.log(`🔍 [PanelEditor] 尝试直接触发组件执行器`)
+              
+              // 🔥 直接使用 VisualEditorBridge 调用，这个是确定有效的方法
+              console.log(`🔍 [PanelEditor] 使用 VisualEditorBridge 直接调用组件执行器`)
+              
+              try {
+                // 导入 VisualEditorBridge 并调用
+                const { visualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
+                
+                // 获取组件配置
+                const config = configurationManager.getConfiguration(componentId)
+                if (!config || !config.dataSource) {
+                  console.warn(`⚠️ [PanelEditor] 组件数据源配置不存在: ${componentId}`)
+                  return
+                }
+                
+                console.log(`🔍 [PanelEditor] 找到组件配置，开始执行`)
+                
+                // 获取组件类型
+                const component = stateManager.nodes.find(n => n.id === componentId)
+                const componentType = component?.type || 'unknown'
+                
+                console.log(`🔍 [PanelEditor] 调用参数:`, {
+                  componentId,
+                  componentType,
+                  hasDataSourceConfig: !!config.dataSource,
+                  dataSourceConfig: config.dataSource
+                })
+                
+                console.log(`🔍 [PanelEditor] 轮询调用前清除缓存: ${componentId}`)
+                
+                // 🔥 关键修复：轮询执行前先清除组件缓存，强制重新获取数据
+                const { simpleDataBridge } = await import('@/core/data-architecture/SimpleDataBridge')
+                simpleDataBridge.clearComponentCache(componentId)
+                
+                const result = await visualEditorBridge.updateComponentExecutor(componentId, componentType, config.dataSource)
+                console.log(`✅ [PanelEditor] VisualEditorBridge 调用成功，执行结果:`, result)
+                console.log(`✅ [PanelEditor] 轮询执行完成: ${componentId}`)
+                
+              } catch (bridgeError) {
+                console.error(`❌ [PanelEditor] VisualEditorBridge 调用失败: ${componentId}`, bridgeError)
+                console.warn(`⚠️ [PanelEditor] 轮询执行失败: ${componentId}`)
+              }
+            } catch (error) {
+              console.error(`❌ [PanelEditor] 轮询执行错误: ${componentId}`, error)
+            }
+          },
+          autoStart: false // 统一不自动启动，由全局开关控制
+        })
+        
+        console.log(`✅ [PanelEditor] 轮询任务已创建: ${componentId} -> ${taskId}`)
+        
+        // 启动这个任务
+        pollingManager.startTask(taskId)
+      }
+    })
+    
+    // 最终轮询任务统计
+    const finalStats = pollingManager.getStatistics()
+    console.log(`📊 [PanelEditor] 轮询任务创建完成，统计信息:`, finalStats)
+    
+    // 🔛 启用全局轮询开关
+    console.log('🔛 [PanelEditor] 启用全局轮询开关')
+    pollingManager.enableGlobalPolling()
+    
+  } catch (error) {
+    console.error('❌ [PanelEditor] 初始化轮询任务失败:', error)
+  }
+}
+
 
 // 抽屉控制事件处理
 const handleToggleLeftDrawer = () => {
@@ -1543,6 +1711,11 @@ onMounted(async () => {
 
   // 发出状态管理器就绪事件，供上层组件使用
   emit('state-manager-ready', stateManager)
+})
+
+// 暴露方法给父组件使用
+defineExpose({
+  initializePollingTasksAndEnable
 })
 
 // 🔥 关键修复：监听页签刷新标志，确保页签刷新时重新加载配置

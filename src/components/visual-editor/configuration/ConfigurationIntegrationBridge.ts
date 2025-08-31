@@ -54,7 +54,15 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
    * 获取组件配置
    */
   getConfiguration(widgetId: string): WidgetConfiguration | null {
-    return configurationStateManager.getConfiguration(widgetId)
+    const config = configurationStateManager.getConfiguration(widgetId)
+    console.log(`🔍 [ConfigIntegrationBridge] 获取配置: ${widgetId}`, {
+      hasConfig: !!config,
+      hasComponent: !!config?.component,
+      hasPolling: !!config?.component?.polling,
+      pollingEnabled: config?.component?.polling?.enabled,
+      config: config
+    })
+    return config
   }
 
   /**
@@ -93,7 +101,12 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     section: K,
     config: WidgetConfiguration[K]
   ): void {
-    console.log(`🔄 [ConfigIntegrationBridge] 更新配置部分: ${widgetId}.${section}`)
+    console.log(`🔄 [ConfigIntegrationBridge] 更新配置部分: ${widgetId}.${section}`, {
+      section,
+      config,
+      isComponentSection: section === 'component',
+      hasPollingConfig: section === 'component' && (config as any)?.polling
+    })
 
     const updated = configurationStateManager.updateConfigurationSection(widgetId, section, config, 'user')
 

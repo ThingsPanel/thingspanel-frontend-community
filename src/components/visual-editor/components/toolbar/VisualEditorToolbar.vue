@@ -98,6 +98,18 @@ const message = useMessage()
 // 全局轮询管理器
 const globalPollingManager = useGlobalPollingManager()
 
+// 全局轮询开关状态
+const globalPollingEnabled = computed(() => globalPollingManager.isGlobalPollingEnabled())
+
+// 轮询统计信息
+const pollingStats = computed(() => globalPollingManager.getStatistics())
+
+// 切换全局轮询开关
+const handleToggleGlobalPolling = () => {
+  const newState = globalPollingManager.toggleGlobalPolling()
+  message.success(newState ? '全局轮询已启用' : '全局轮询已关闭')
+}
+
 // 轮询任务相关状态
 interface PollingTask {
   componentId: string
@@ -621,6 +633,7 @@ const removePollingTask = (componentId: string) => {
             </template>
             <span>{{ $t('dataSource.trigger.management') }}</span>
           </NTooltip>
+
         </template>
 
         <!-- 编辑/预览切换按钮 - 始终显示在最右侧 -->
