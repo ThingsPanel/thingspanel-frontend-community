@@ -125,8 +125,7 @@ const editorValue = computed({
   <div class="simple-script-editor">
     <!-- 模板选择器 -->
     <div v-if="showTemplates && exampleOptions.length > 0" class="template-selector">
-     
-        <div> 模板：</div>
+      <div>模板：</div>
       <n-select
         :options="exampleOptions"
         :placeholder="t('script.selectTemplate')"
@@ -148,7 +147,6 @@ const editorValue = computed({
         :style="{ height: props.height }"
       />
     </div>
-
   </div>
 </template>
 

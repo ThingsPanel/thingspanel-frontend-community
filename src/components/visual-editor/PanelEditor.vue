@@ -94,6 +94,9 @@ const multiDataSourceStore = ref<Record<string, Record<string, any>>>({})
 // 多数据源配置存储 - 以组件ID为键，存储完整配置信息
 const multiDataSourceConfigStore = ref<Record<string, any>>({})
 
+// 全局轮询开关状态
+const globalPollingEnabled = ref(true)
+
 // 全屏功能
 const { isFullscreen, toggle } = useFullscreen(fullui)
 
@@ -1810,6 +1813,8 @@ onUnmounted(() => {
                 :selected-widget="selectedWidget"
                 :show-widget-titles="showWidgetTitles"
                 :grid-config="editorConfig.gridConfig"
+                :preview-mode="isPreviewMode"
+                :global-polling-enabled="globalPollingEnabled"
                 @toggle-widget-titles="handleToggleWidgetTitles"
                 @grid-config-change="handleGridConfigChange"
                 @multi-data-source-update="handleMultiDataSourceUpdate"

@@ -95,6 +95,8 @@
                 :selected-widget-id="selectedWidget?.id"
                 :component-id="selectedWidget?.id"
                 :component-type="selectedWidget?.type"
+                :preview-mode="props.previewMode"
+                :global-polling-enabled="props.globalPollingEnabled"
                 @request-current-data="handleCurrentDataRequest"
                 @click="console.log('🎯 DataSourceConfigForm组件被点击!')"
               />
@@ -208,6 +210,10 @@ interface Props {
   onToggleWidgetTitles?: (value: boolean) => void
   /** 是否只读模式 */
   readonly?: boolean
+  /** 是否为预览模式 - 轮询功能仅在预览模式下生效 */
+  previewMode?: boolean
+  /** 全局轮询开关 - 用于性能控制 */
+  globalPollingEnabled?: boolean
 }
 
 interface Emits {
@@ -225,6 +231,8 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   selectedWidget: null,
   readonly: false,
+  previewMode: false,
+  globalPollingEnabled: true,
   showWidgetTitles: false
 })
 

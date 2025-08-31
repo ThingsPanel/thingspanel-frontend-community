@@ -60,13 +60,13 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
         window.$message?.destroyAll()
         window.$message?.error('无法验证身份或获取权限，请重新登录。')
 
-        // setTimeout(() => {
-        //   localStg.remove('token');
-        //   localStg.remove('refreshToken');
-        //   localStg.remove('userInfo');
+        setTimeout(() => {
+          localStg.remove('token');
+          localStg.remove('refreshToken');
+          localStg.remove('userInfo');
 
-        //   window.location.reload();
-        // }, 200);
+          window.location.reload();
+        }, 500);
 
         return
       }

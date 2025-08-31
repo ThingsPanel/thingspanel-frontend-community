@@ -22,19 +22,11 @@ import { type MergeStrategy } from '../executors/DataSourceMerger'
 import RawDataConfigModal from './modals/RawDataConfigModal.vue'
 // 🔥 简洁脚本编辑器
 import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
+// 🔥 导入数据源轮询配置组件
+import DataSourcePollingConfig from './DataSourcePollingConfig.vue'
 // 导入@vicons图标组件
-import {
-  PlusOutlined,
-  SearchOutlined,
-  LinkOutlined,
-  DotChartOutlined,
-  SettingOutlined
-} from '@vicons/antd'
-import {
-  DocumentTextOutline,
-  BarChartOutline,
-  GlobeOutline
-} from '@vicons/ionicons5'
+import { PlusOutlined, SearchOutlined, LinkOutlined, DotChartOutlined, SettingOutlined } from '@vicons/antd'
+import { DocumentTextOutline, BarChartOutline, GlobeOutline } from '@vicons/ionicons5'
 // 🔥 新配置管理系统
 import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
@@ -53,6 +45,10 @@ interface Props {
   componentType: string
   /** 选中的组件ID */
   selectedWidgetId?: string
+  /** 是否为预览模式 - 轮询功能仅在预览模式下生效 */
+  previewMode?: boolean
+  /** 全局轮询开关 - 用于性能控制 */
+  globalPollingEnabled?: boolean
 }
 
 // Emits接口
@@ -62,7 +58,9 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: () => ({}),
-  dataSources: () => []
+  dataSources: () => [],
+  previewMode: false,
+  globalPollingEnabled: true
 })
 
 const emit = defineEmits<Emits>()
@@ -498,6 +496,62 @@ const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
   console.log('🎯 [rebuildCompleteDataSourceConfiguration] 最终配置:', JSON.stringify(finalConfig, null, 2))
 
   return finalConfig
+}
+
+/**
+ * 获取数据源的轮询配置
+ */
+const getPollingConfigForDataSource = (dataSourceKey: string) => {
+  const config = configurationManager.getConfiguration(props.componentId)
+  if (!config?.dataSource?.polling) {
+    return null
+  }
+  return config.dataSource.polling[dataSourceKey] || null
+}
+
+/**
+ * 处理轮询配置变化
+ * 将轮询配置集成到 dataSource 配置中并保存
+ */
+const handlePollingConfigChange = (dataSourceKey: string, pollingConfig: any) => {
+  console.log('🔄 [SimpleConfigurationEditor] 处理轮询配置变化:', { dataSourceKey, pollingConfig })
+  
+  try {
+    // 获取当前完整的数据源配置
+    const dataSourceConfig = rebuildCompleteDataSourceConfiguration()
+    
+    // 为配置添加轮询信息（如果不存在的话）
+    if (!dataSourceConfig.polling) {
+      dataSourceConfig.polling = {}
+    }
+    
+    // 更新特定数据源的轮询配置
+    dataSourceConfig.polling[dataSourceKey] = {
+      enabled: pollingConfig.enabled || false,
+      interval: pollingConfig.interval || 5000,
+      immediate: pollingConfig.immediate || false,
+      updatedAt: Date.now()
+    }
+    
+    // 保存到 ConfigurationManager
+    configurationManager.updateConfiguration(props.componentId, 'dataSource', dataSourceConfig)
+    
+    console.log('✅ [SimpleConfigurationEditor] 轮询配置已保存:', {
+      componentId: props.componentId,
+      dataSourceKey,
+      config: dataSourceConfig.polling[dataSourceKey]
+    })
+  } catch (error) {
+    console.error('❌ [SimpleConfigurationEditor] 保存轮询配置失败:', error)
+  }
+}
+
+/**
+ * 处理轮询状态变化
+ */
+const handlePollingStatusChange = (dataSourceKey: string, status: any) => {
+  console.log('🔄 [SimpleConfigurationEditor] 轮询状态变化:', { dataSourceKey, status })
+  // 状态变化只需要记录，不需要保存到配置
 }
 
 /**
@@ -1161,7 +1215,9 @@ defineExpose({
         </template>
 
         <template #header-extra>
-          <span style="font-size: 12px; color: var(--text-color-2)">{{ dataSourceItems[dataSourceOption.value]?.length || 0 }}项</span>
+          <span style="font-size: 12px; color: var(--text-color-2)">
+            {{ dataSourceItems[dataSourceOption.value]?.length || 0 }}项
+          </span>
         </template>
 
         <div class="simple-content">
@@ -1187,7 +1243,9 @@ defineExpose({
               <span class="item-desc">{{ getItemSummary(item) }}</span>
               <div class="item-actions">
                 <n-button size="small" text @click="handleEditDataItem(dataSourceOption.value, item.id)">编辑</n-button>
-                <n-button size="small" text type="error" @click="handleDeleteDataItem(dataSourceOption.value, item.id)">删除</n-button>
+                <n-button size="small" text type="error" @click="handleDeleteDataItem(dataSourceOption.value, item.id)">
+                  删除
+                </n-button>
               </div>
             </div>
           </div>
@@ -1199,7 +1257,11 @@ defineExpose({
               <n-tag
                 v-for="option in getMergeStrategyOptions()"
                 :key="option.value"
-                :type="(mergeStrategies[dataSourceOption.value] || { type: 'object' }).type === option.value ? 'primary' : 'default'"
+                :type="
+                  (mergeStrategies[dataSourceOption.value] || { type: 'object' }).type === option.value
+                    ? 'primary'
+                    : 'default'
+                "
                 :checkable="true"
                 :checked="(mergeStrategies[dataSourceOption.value] || { type: 'object' }).type === option.value"
                 :bordered="true"
@@ -1211,11 +1273,11 @@ defineExpose({
             </div>
 
             <!-- 选择项配置 -->
-            <n-form-item 
-              style="margin-top: 18px;"
-              v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'select'" 
+            <n-form-item
+              v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'select'"
+              style="margin-top: 18px"
               label-placement="left"
-              label="请选择：" 
+              label="请选择："
               size="small"
             >
               <n-input-number
@@ -1231,11 +1293,7 @@ defineExpose({
             </n-form-item>
 
             <!-- 脚本配置 -->
-            <n-form-item 
-              v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'script'" 
-            
-              size="small"
-            >
+            <n-form-item v-if="(mergeStrategies[dataSourceOption.value] || {}).type === 'script'" size="small">
               <SimpleScriptEditor
                 :model-value="(mergeStrategies[dataSourceOption.value] || {}).script || ''"
                 template-category="data-merger"
@@ -1250,12 +1308,7 @@ defineExpose({
 
           <!-- 查看结果按钮（底部） -->
           <div v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) > 0" class="result-section">
-            <n-button
-              size="small"
-              text
-              type="info"
-              @click="viewFinalData(dataSourceOption.value)"
-            >
+            <n-button size="small" text type="info" @click="viewFinalData(dataSourceOption.value)">
               <template #icon>
                 <n-icon size="14">
                   <SearchOutlined />
@@ -1264,6 +1317,29 @@ defineExpose({
               查看最终结果
             </n-button>
           </div>
+
+          <!-- 🔥 数据源轮询配置组件 - 安全集成 -->
+          <!-- 🐛 调试信息 -->
+          <div v-show="false">
+            {{ console.log(`🔍 [SimpleConfigurationEditor] 轮询组件渲染条件检查:`, {
+              dataSourceKey: dataSourceOption.value,
+              dataSourceItems: dataSourceItems[dataSourceOption.value],
+              itemsLength: dataSourceItems[dataSourceOption.value]?.length || 0,
+              shouldRender: (dataSourceItems[dataSourceOption.value]?.length || 0) > 0
+            }) }}
+          </div>
+          
+          <DataSourcePollingConfig
+            v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) > 0"
+            :data-source-key="dataSourceOption.value"
+            :data-source-name="dataSourceOption.label"
+            :component-id="props.componentId"
+            :preview-mode="props.previewMode"
+            :global-polling-enabled="props.globalPollingEnabled"
+            :initial-config="getPollingConfigForDataSource(dataSourceOption.value)"
+            @config-change="config => handlePollingConfigChange(dataSourceOption.value, config)"
+            @polling-status-change="status => handlePollingStatusChange(dataSourceOption.value, status)"
+          />
         </div>
       </n-collapse-item>
     </n-collapse>
