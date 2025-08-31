@@ -1,11 +1,12 @@
 <script setup lang="tsx">
-import { onBeforeMount, ref, watch } from 'vue'
+import { onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { DrawerPlacement, StepsProps } from 'naive-ui'
 import { NSpace, NTag,NButton } from 'naive-ui'
 import _ from 'lodash'
 import type { TreeSelectOption } from 'naive-ui/es/tree-select/src/interface'
+import { EventSourcePolyfill } from 'event-source-polyfill'
 import { localStg } from '@/utils/storage'
 import {
   checkDevice,
@@ -51,6 +52,78 @@ const serviceIds = ref<ServiceIds[]>([])
 const queryOfServiceIdentifier = ref(route.query.service_identifier)
 const queryOfServiceAccessId = ref(route.query.service_access_id)
 const { cache: query, setCache } = usePageCache()
+
+// EventSource 相关变量
+let eventSource: EventSourcePolyfill | null = null
+
+// 更新表格中设备状态的函数
+const updateDeviceStatusInTable = (deviceNumber: string, isOnline: boolean) => {
+  // 通过 tablePageRef 获取数据表格组件的数据
+  if (tablePageRef.value && tablePageRef.value.dataList) {
+    const deviceIndex = tablePageRef.value.dataList.findIndex(
+      device => device.device_number === deviceNumber
+    )
+    if (deviceIndex !== -1) {
+      tablePageRef.value.dataList[deviceIndex].is_online = isOnline ? 1 : 0
+    }
+  }
+}
+
+// 创建 EventSource 连接
+const createEventSourceConnection = () => {
+  try {
+    const token = localStg.get('token')
+    if (!token) {
+      console.warn('Token not found, cannot establish EventSource connection')
+      return
+    }
+
+    eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/events`, {
+      heartbeatTimeout: 3 * 60 * 1000,
+      headers: {
+        'x-token': token
+      }
+    })
+
+    eventSource.onopen = () => {
+      console.log('Device management EventSource connected')
+    }
+
+    eventSource.addEventListener('device_online', (event: any) => {
+      try {
+        const data = event.data ? JSON.parse(event.data) : {}
+        console.log('Device status update received:', data)
+        
+        if (data.device_id && typeof data.is_online === 'boolean') {
+          updateDeviceStatusInTable(data.device_id, data.is_online)
+        }
+      } catch (error) {
+        console.error('Error parsing device status event:', error)
+      }
+    })
+
+    eventSource.onerror = (error) => {
+      console.error('EventSource error in device management:', error)
+      // 连接错误时关闭连接，避免无限重试
+      if (eventSource) {
+        eventSource.close()
+        eventSource = null
+      }
+    }
+  } catch (error) {
+    console.error('Failed to create EventSource connection:', error)
+  }
+}
+
+// 清理 EventSource 连接
+const cleanupEventSource = () => {
+  if (eventSource) {
+    eventSource.close()
+    eventSource = null
+    console.log('Device management EventSource connection closed')
+  }
+}
+
 const getFormJson = async id => {
   const res = await devicCeonnectForm({ device_id: id })
 
@@ -434,6 +507,16 @@ const setServiceParams = () => {
 onBeforeMount(async () => {
   await fetchFirstLevelOptions()
   setServiceParams()
+})
+
+// 组件挂载后建立 EventSource 连接
+onMounted(() => {
+  createEventSourceConnection()
+})
+
+// 组件卸载前清理 EventSource 连接
+onUnmounted(() => {
+  cleanupEventSource()
 })
 
 const topActions = [
