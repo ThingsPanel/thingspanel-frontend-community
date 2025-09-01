@@ -6,7 +6,7 @@
  */
 
 import { defaultScriptEngine } from '../../script-engine'
-import type { HttpConfig, HttpParameter } from '../types/http-config'
+import type { HttpConfig, HttpParameter, PathParameter } from '../types/http-config'
 import { convertValue } from '../types/http-config'
 import { request } from '@/service/request'
 
@@ -40,8 +40,12 @@ export interface HttpDataItemConfig {
   headers?: Record<string, string>
   body?: any
   timeout?: number
+  // 简化的路径参数
+  pathParameter?: PathParameter
   // 扩展支持新的 HttpConfig 格式
   params?: HttpParameter[]
+  // 向后兼容：统一参数系统
+  parameters?: HttpParameter[]
   // 🔥 新增：脚本支持
   preRequestScript?: string
   postResponseScript?: string
@@ -170,19 +174,96 @@ export class DataItemFetcher implements IDataItemFetcher {
         requestConfig.headers = config.headers
       }
 
-      // 处理params参数（转换为query参数）
+      // 简化的参数处理逻辑
+      let finalUrl = config.url
+      const queryParams: Record<string, any> = {}
+
+      // 1. 处理简化的路径参数
+      console.log('🔧 [HTTP请求器] 检查路径参数:', {
+        hasPathParameter: !!config.pathParameter,
+        pathParameter: config.pathParameter
+      })
+
+      if (config.pathParameter) {
+        const pathParam = config.pathParameter
+        console.log('🔧 [HTTP请求器] 路径参数详情:', {
+          value: pathParam.value,
+          valueType: typeof pathParam.value,
+          isDynamic: pathParam.isDynamic,
+          dataType: pathParam.dataType,
+          variableName: pathParam.variableName,
+          description: pathParam.description
+        })
+
+        if (pathParam.value !== undefined && pathParam.value !== null && pathParam.value !== '') {
+          const convertedValue = convertValue(pathParam.value, pathParam.dataType)
+          console.log('🔄 [HTTP请求器] 值转换:', {
+            原始值: pathParam.value,
+            转换后: convertedValue,
+            转换类型: typeof convertedValue
+          })
+
+          finalUrl = finalUrl + convertedValue
+          console.log('✅ [HTTP请求器] 路径参数拼接成功:', {
+            原始URL: config.url,
+            最终URL: finalUrl,
+            拼接的值: convertedValue
+          })
+        } else {
+          console.log('⚠️ [HTTP请求器] 路径参数值为空，跳过拼接:', {
+            value: pathParam.value,
+            原因:
+              pathParam.value === undefined
+                ? '未定义'
+                : pathParam.value === null
+                  ? '为null'
+                  : pathParam.value === ''
+                    ? '为空字符串'
+                    : '未知'
+          })
+        }
+      } else {
+        console.log('ℹ️ [HTTP请求器] 无路径参数配置')
+      }
+
+      // 2. 处理查询参数
       if (config.params && config.params.length > 0) {
-        const queryParams: Record<string, any> = {}
         config.params
           .filter(p => p.enabled && p.key && p.value !== undefined && p.value !== null && p.value !== '')
           .forEach(p => {
             queryParams[p.key] = convertValue(p.value, p.dataType)
           })
+      }
 
-        if (Object.keys(queryParams).length > 0) {
-          requestConfig.params = queryParams
-          console.log('🔍 [HTTP请求器] 查询参数:', queryParams)
-        }
+      // 3. 向后兼容：统一参数系统
+      else if (config.parameters && config.parameters.length > 0) {
+        config.parameters
+          .filter(p => p.enabled && p.key && p.value !== undefined && p.value !== null && p.value !== '')
+          .forEach(p => {
+            const convertedValue = convertValue(p.value, p.dataType)
+
+            switch (p.paramType) {
+              case 'path':
+                // 统一参数中的路径参数：拼接到URL后面
+                finalUrl = finalUrl + convertedValue
+                console.log('🔍 [HTTP请求器] 统一参数路径拼接:', finalUrl)
+                break
+              case 'query':
+                // 查询参数：添加到params对象
+                queryParams[p.key] = convertedValue
+                break
+              case 'header':
+                // 请求头参数：添加到headers对象
+                requestConfig.headers = requestConfig.headers || {}
+                requestConfig.headers[p.key] = String(convertedValue)
+                break
+            }
+          })
+      }
+
+      if (Object.keys(queryParams).length > 0) {
+        requestConfig.params = queryParams
+        console.log('🔍 [HTTP请求器] 查询参数:', queryParams)
       }
 
       // 处理请求体（POST/PUT/PATCH等方法）
@@ -197,23 +278,23 @@ export class DataItemFetcher implements IDataItemFetcher {
         }
       }
 
-      // 根据方法发起请求
+      // 根据方法发起请求（使用拼接后的finalUrl）
       let response
       switch (config.method.toUpperCase()) {
         case 'GET':
-          response = await request.get(config.url, requestConfig)
+          response = await request.get(finalUrl, requestConfig)
           break
         case 'POST':
-          response = await request.post(config.url, requestBody, requestConfig)
+          response = await request.post(finalUrl, requestBody, requestConfig)
           break
         case 'PUT':
-          response = await request.put(config.url, requestBody, requestConfig)
+          response = await request.put(finalUrl, requestBody, requestConfig)
           break
         case 'PATCH':
-          response = await request.patch(config.url, requestBody, requestConfig)
+          response = await request.patch(finalUrl, requestBody, requestConfig)
           break
         case 'DELETE':
-          response = await request.delete(config.url, requestConfig)
+          response = await request.delete(finalUrl, requestConfig)
           break
         default:
           throw new Error(`不支持的HTTP方法: ${config.method}`)

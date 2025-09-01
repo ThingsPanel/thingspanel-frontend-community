@@ -62,7 +62,9 @@
       "WebFetch(domain:codemirror.net)",
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:www.naiveui.com)",
-      "Bash(start test-polling-config.html)"
+      "Bash(start test-polling-config.html)",
+      "Bash(tree:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "additionalDirectories": [

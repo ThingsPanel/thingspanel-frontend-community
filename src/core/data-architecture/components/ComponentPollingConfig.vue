@@ -8,7 +8,7 @@
  * 统一管理组件的轮询配置，执行时会触发组件的所有数据源
  */
 
-import { reactive, computed, watch, onMounted } from 'vue'
+import { reactive, computed, watch, onMounted, ref, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useThemeStore } from '@/store/modules/theme'
 
@@ -50,12 +50,18 @@ const { t } = useI18n()
 const themeStore = useThemeStore()
 
 /**
+ * 防止配置循环更新的标志
+ */
+const isInternalUpdate = ref(false)
+
+/**
  * 本地轮询配置状态
  */
 const pollingConfig = reactive<PollingConfig>({
   enabled: props.initialConfig?.enabled || false,
   interval: props.initialConfig?.interval || 30000,
-  immediate: props.initialConfig?.immediate || true
+  // 🔥 修复：正确处理 immediate 属性的默认值
+  immediate: props.initialConfig?.immediate !== undefined ? props.initialConfig.immediate : true
 })
 
 /**
@@ -99,18 +105,24 @@ const statusType = computed(() => {
  * 处理配置变化
  */
 const handleConfigChange = () => {
-  console.log(`🔄 [ComponentPollingConfig] 配置变化触发:`, { 
-    componentId: props.componentId, 
+  // 🔥 防止内部更新时触发事件
+  if (isInternalUpdate.value) {
+    console.log(`⏸️ [ComponentPollingConfig] 跳过内部更新触发的配置变化`)
+    return
+  }
+
+  console.log(`🔄 [ComponentPollingConfig] 配置变化触发:`, {
+    componentId: props.componentId,
     pollingConfig: { ...pollingConfig },
     enabled: pollingConfig.enabled,
     interval: pollingConfig.interval,
     immediate: pollingConfig.immediate
   })
-  
+
   // 发射配置变化事件，由父组件处理保存
   emit('configChange', { ...pollingConfig })
-  console.log(`💾 [ComponentPollingConfig] 组件轮询配置已变化并发射事件:`, { 
-    componentId: props.componentId, 
+  console.log(`💾 [ComponentPollingConfig] 组件轮询配置已变化并发射事件:`, {
+    componentId: props.componentId,
     config: { ...pollingConfig }
   })
 }
@@ -127,12 +139,22 @@ watch(() => pollingConfig.immediate, handleConfigChange)
  */
 watch(
   () => props.initialConfig,
-  (newConfig) => {
+  newConfig => {
     if (newConfig) {
       console.log('🔄 [ComponentPollingConfig] 恢复组件轮询配置:', newConfig)
+
+      // 🔥 设置内部更新标志，防止触发配置变化事件
+      isInternalUpdate.value = true
+
       pollingConfig.enabled = newConfig.enabled || false
       pollingConfig.interval = newConfig.interval || 30000
-      pollingConfig.immediate = newConfig.immediate || true
+      // 🔥 修复：正确处理 immediate 属性，允许为 false
+      pollingConfig.immediate = newConfig.immediate !== undefined ? newConfig.immediate : true
+
+      // 🔥 延迟重置标志，确保所有响应式更新完成
+      nextTick(() => {
+        isInternalUpdate.value = false
+      })
     }
   },
   { deep: true, immediate: true }
@@ -154,81 +176,35 @@ onMounted(() => {
 
 <template>
   <div class="component-polling-config">
-    <!-- 轮询配置标题 -->
-    <div class="config-header">
-      <n-space align="center" justify="space-between">
-        <n-text strong>组件轮询配置</n-text>
+    <!-- 紧凑的轮询配置行 -->
+    <div class="polling-row">
+      <div class="polling-left">
+        <n-text class="polling-title">组件轮询配置</n-text>
         <n-tag :type="statusType" size="small">
           {{ statusText }}
         </n-tag>
-      </n-space>
+      </div>
+
+      <div class="polling-right">
+        <n-switch v-model:value="pollingConfig.enabled" size="small" />
+      </div>
     </div>
 
-    <!-- 轮询配置表单 -->
-    <div class="config-form">
-      <n-form size="small" :show-feedback="false">
-        <!-- 启用轮询开关 -->
-        <n-form-item>
-          <template #label>
-            <n-space align="center" size="small">
-              <span>启用组件轮询</span>
-              <n-tooltip v-if="!props.previewMode">
-                <template #trigger>
-                  <n-icon size="14" color="#1890ff">
-                    <svg viewBox="0 0 24 24">
-                      <path
-                        fill="currentColor"
-                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-                      />
-                    </svg>
-                  </n-icon>
-                </template>
-                轮询将在预览模式下自动执行，定时刷新组件的所有数据源
-              </n-tooltip>
-            </n-space>
-          </template>
-          <n-switch v-model:value="pollingConfig.enabled" />
-        </n-form-item>
+    <!-- 轮询详细配置（折叠显示） -->
+    <div v-if="pollingConfig.enabled" class="polling-details">
+      <div class="detail-item">
+        <span class="detail-label">轮询间隔</span>
+        <n-select v-model:value="pollingConfig.interval" :options="intervalOptions" size="small" style="width: 80px" />
+      </div>
 
-        <!-- 轮询间隔配置 -->
-        <n-form-item v-if="pollingConfig.enabled" label="轮询间隔">
-          <n-select
-            v-model:value="pollingConfig.interval"
-            :options="intervalOptions"
-            size="small"
-          />
-        </n-form-item>
+      <div class="detail-item">
+        <span class="detail-label">立即执行</span>
+        <n-switch v-model:value="pollingConfig.immediate" size="small" />
+      </div>
 
-        <!-- 立即执行选项 -->
-        <n-form-item v-if="pollingConfig.enabled">
-          <template #label>
-            <n-space align="center" size="small">
-              <span>立即执行</span>
-              <n-tooltip>
-                <template #trigger>
-                  <n-icon size="14" color="#1890ff">
-                    <svg viewBox="0 0 24 24">
-                      <path
-                        fill="currentColor"
-                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-                      />
-                    </svg>
-                  </n-icon>
-                </template>
-                启动轮询时是否立即执行一次，否则等待第一个间隔
-              </n-tooltip>
-            </n-space>
-          </template>
-          <n-switch v-model:value="pollingConfig.immediate" />
-        </n-form-item>
-      </n-form>
-    </div>
-
-    <!-- 轮询说明信息 -->
-    <div v-if="pollingConfig.enabled" class="polling-info">
-      <n-text depth="3" size="small">
-        {{ props.previewMode ? '轮询将自动执行，刷新组件的所有数据源' : '轮询仅在预览模式下执行，将刷新组件的所有数据源' }}
-      </n-text>
+      <div class="detail-note">
+        <n-text depth="3" size="small">轮询仅在预览模式下执行，将刷新组件的所有数据源</n-text>
+      </div>
     </div>
   </div>
 </template>
@@ -236,41 +212,75 @@ onMounted(() => {
 <style scoped>
 .component-polling-config {
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  padding: 16px;
+  border-radius: 6px;
   background: var(--card-color);
-  margin-bottom: 16px;
-}
-
-.config-header {
   margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
 }
 
-.config-form {
-  margin-bottom: 12px;
+/* 主要配置行 - 水平布局 */
+.polling-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  gap: 12px;
 }
 
-.polling-info {
-  margin-top: 8px;
-  padding: 8px;
+.polling-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.polling-title {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.polling-right {
+  flex-shrink: 0;
+}
+
+/* 详细配置区域 */
+.polling-details {
+  border-top: 1px solid var(--border-color);
+  padding: 8px 12px 10px;
   background: var(--body-color);
-  border-radius: 4px;
-  border: 1px dashed var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: var(--text-color-2);
+  white-space: nowrap;
+}
+
+.detail-note {
+  padding-top: 6px;
+  border-top: 1px dashed var(--divider-color);
+  margin-top: 2px;
 }
 
 /* 响应主题变化 */
 [data-theme='dark'] .component-polling-config {
-  background: var(--card-color-dark);
-  border-color: var(--border-color-dark);
+  background: var(--card-color);
+  border-color: var(--border-color);
 }
 
-[data-theme='dark'] .config-header {
-  border-color: var(--border-color-dark);
-}
-
-[data-theme='dark'] .polling-info {
-  background: var(--body-color-dark);
+[data-theme='dark'] .polling-details {
+  background: var(--body-color);
+  border-top-color: var(--border-color);
 }
 </style>

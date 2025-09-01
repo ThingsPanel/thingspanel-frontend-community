@@ -611,5 +611,9 @@
   "visualEditor.mobileLayout": "移动端布局",
   "visualEditor.tabletLayout": "平板布局",
   "visualEditor.desktopLayout": "桌面布局",
-  "visualEditor.printLayout": "打印布局"
+  "visualEditor.printLayout": "打印布局",
+  "visualEditor.pollingStart": "启动轮询",
+  "visualEditor.pollingPause": "暂停轮询",
+  "visualEditor.pollingEnabled": "全局轮询已启用",
+  "visualEditor.pollingDisabled": "全局轮询已关闭"
 }

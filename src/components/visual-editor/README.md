@@ -8,6 +8,8 @@
 
 ThingsPanel Visual Editor 是一个基于 Vue 3 的可视化编辑器系统，支持多种渲染器架构，为物联网仪表板提供拖拽式可视化组件编辑功能。
 
+> 📖 **详细开发文档**: 查看 [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) 获取完整的API参考、开发指南和最佳实践。
+
 ### 核心特性
 
 - **多渲染器架构**: 支持 Canvas、Gridstack、GridLayoutPlus 等多种布局引擎

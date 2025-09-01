@@ -4,8 +4,8 @@
  */
 
 /**
- * HTTP参数基础接口
- * 统一HttpHeader和HttpParam的共同属性
+ * HTTP参数统一接口
+ * 支持路径参数、查询参数、请求头参数的统一管理
  */
 export interface HttpParameter {
   /** 参数键名 */
@@ -28,23 +28,60 @@ export interface HttpParameter {
 
   /** 参数说明，必填 */
   description: string
+
+  /** 参数类型：路径参数直接拼接到URL后，查询参数作为query，请求头参数作为header */
+  paramType: 'path' | 'query' | 'header'
 }
 
 /**
- * HTTP请求头配置
+ * HTTP请求头配置 - 为了向后兼容保留
+ * @deprecated 建议使用统一的HttpParameter with paramType: 'header'
  */
 export interface HttpHeader extends HttpParameter {}
 
 /**
- * HTTP查询参数配置
+ * HTTP查询参数配置 - 为了向后兼容保留
+ * @deprecated 建议使用统一的HttpParameter with paramType: 'query'
  */
 export interface HttpParam extends HttpParameter {}
 
 /**
- * HTTP配置接口
+ * HTTP路径参数配置 - 为了向后兼容保留
+ * @deprecated 建议使用统一的HttpParameter with paramType: 'path'
+ */
+export interface HttpPathParam extends HttpParameter {
+  /** 路径参数名（不带大括号），如 'device_id' */
+  key: string
+  /** 在URL中的占位符格式，如 '{device_id}' */
+  placeholder: string
+}
+
+/**
+ * 路径参数简化配置
+ * 只支持单个路径参数，直接拼接到URL后
+ */
+export interface PathParameter {
+  /** 参数值 - 示例值，类型与dataType匹配 */
+  value: string | number | boolean
+
+  /** 是否为动态参数 */
+  isDynamic: boolean
+
+  /** 数据类型，用于类型转换和验证 */
+  dataType: 'string' | 'number' | 'boolean' | 'json'
+
+  /** 动态时自动生成：var_path_param */
+  variableName: string
+
+  /** 参数说明 */
+  description: string
+}
+
+/**
+ * HTTP配置接口（简化路径参数版本）
  */
 export interface HttpConfig {
-  /** 请求URL */
+  /** 基础请求URL（路径参数会拼接到此URL后） */
   url: string
 
   /** HTTP方法 */
@@ -53,11 +90,14 @@ export interface HttpConfig {
   /** 超时时间（毫秒） */
   timeout: number
 
-  /** 请求头配置 */
-  headers: HttpHeader[]
+  /** 路径参数（可选，单个参数直接拼接到URL后） */
+  pathParameter?: PathParameter
 
   /** 查询参数配置 */
   params: HttpParam[]
+
+  /** 请求头配置 */
+  headers: HttpHeader[]
 
   /** 请求体（可选） */
   body?: string
@@ -67,6 +107,12 @@ export interface HttpConfig {
 
   /** 响应后处理脚本（可选） */
   postResponseScript?: string
+
+  // 向后兼容字段（已弃用）
+  /** @deprecated 使用简化的 pathParameter 字段替代 */
+  pathParams?: HttpPathParam[]
+  /** @deprecated 使用新的统一 parameters 字段替代 */
+  parameters?: HttpParameter[]
 }
 
 /**
@@ -115,238 +161,106 @@ export function convertValue(value: any, dataType: string): any {
 }
 
 /**
- * 创建默认HttpHeader
+ * 创建默认路径参数
+ */
+export function createDefaultPathParameter(): PathParameter {
+  return {
+    value: '',
+    isDynamic: false, // 默认为静态
+    dataType: 'string',
+    variableName: 'var_path_param',
+    description: '路径参数'
+  }
+}
+
+/**
+ * 创建默认HTTP参数 (向后兼容)
+ * @deprecated 建议使用具体的创建函数
+ */
+export function createDefaultHttpParameter(paramType: 'path' | 'query' | 'header' = 'query'): HttpParameter {
+  return {
+    key: '',
+    value: '',
+    enabled: true,
+    isDynamic: paramType === 'path', // 路径参数默认为动态
+    dataType: 'string',
+    variableName: '',
+    description: '',
+    paramType
+  }
+}
+
+/**
+ * 创建默认HttpHeader - 向后兼容
+ * @deprecated 使用 createDefaultHttpParameter('header') 替代
  */
 export function createDefaultHttpHeader(): HttpHeader {
-  return {
-    key: '',
-    value: '',
-    enabled: true,
-    isDynamic: false,
-    dataType: 'string',
-    variableName: '',
-    description: ''
-  }
+  return createDefaultHttpParameter('header') as HttpHeader
 }
 
 /**
- * 创建默认HttpParam
+ * 创建默认HttpParam - 向后兼容
+ * @deprecated 使用 createDefaultHttpParameter('query') 替代
  */
 export function createDefaultHttpParam(): HttpParam {
-  return {
-    key: '',
-    value: '',
-    enabled: true,
-    isDynamic: false,
-    dataType: 'string',
-    variableName: '',
-    description: ''
-  }
+  return createDefaultHttpParameter('query') as HttpParam
 }
 
 /**
- * HTTP配置模板
+ * 创建默认HttpPathParam - 向后兼容
+ * @deprecated 使用 createDefaultHttpParameter('path') 替代
  */
-export const HTTP_CONFIG_TEMPLATES: Array<{
-  name: string
-  config: HttpConfig
-}> = [
-  {
-    name: 'GET接口',
-    config: {
-      url: 'https://api.example.com/data',
-      method: 'GET',
-      timeout: 5000,
-      headers: [
-        {
-          key: 'Accept',
-          value: 'application/json',
-          enabled: true,
-          isDynamic: false,
-          dataType: 'string',
-          variableName: '',
-          description: 'HTTP Accept头'
-        }
-      ],
-      params: [],
-      body: '',
-      preRequestScript: '',
-      postResponseScript: 'return response.data || response'
-    }
-  },
-  {
-    name: 'POST接口',
-    config: {
-      url: 'https://api.example.com/submit',
-      method: 'POST',
-      timeout: 10000,
-      headers: [
-        {
-          key: 'Content-Type',
-          value: 'application/json',
-          enabled: true,
-          isDynamic: false,
-          dataType: 'string',
-          variableName: '',
-          description: '内容类型'
-        },
-        {
-          key: 'Authorization',
-          value: 'Bearer demo-token-12345',
-          enabled: true,
-          isDynamic: true,
-          dataType: 'string',
-          variableName: 'var_authorization',
-          description: '认证令牌'
-        }
-      ],
-      params: [],
-      body: '{"data": "value"}',
-      preRequestScript:
-        'config.headers = config.headers || {}\nconfig.headers["X-Timestamp"] = Date.now()\nreturn config',
-      postResponseScript: 'return response.data || response'
-    }
-  },
-  {
-    name: '设备遥测数据',
-    config: {
-      url: '/telemetry/datas/statistic',
-      method: 'GET',
-      timeout: 15000,
-      headers: [
-        {
-          key: 'Accept',
-          value: 'application/json',
-          enabled: true,
-          isDynamic: false,
-          dataType: 'string',
-          variableName: '',
-          description: 'HTTP Accept头'
-        }
-      ],
-      params: [
-        {
-          key: 'device_id',
-          value: 'device_001',
-          enabled: true,
-          isDynamic: true,
-          dataType: 'string',
-          variableName: 'var_device_id',
-          description: '设备ID'
-        },
-        {
-          key: 'key',
-          value: 'temperature',
-          enabled: true,
-          isDynamic: true,
-          dataType: 'string',
-          variableName: 'var_key',
-          description: '指标键名'
-        },
-        {
-          key: 'start_time',
-          value: Date.now() - 3600000,
-          enabled: true,
-          isDynamic: true,
-          dataType: 'number',
-          variableName: 'var_start_time',
-          description: '开始时间戳'
-        },
-        {
-          key: 'end_time',
-          value: Date.now(),
-          enabled: true,
-          isDynamic: true,
-          dataType: 'number',
-          variableName: 'var_end_time',
-          description: '结束时间戳'
-        },
-        {
-          key: 'aggregate_window',
-          value: 'no_aggregate',
-          enabled: true,
-          isDynamic: false,
-          dataType: 'string',
-          variableName: '',
-          description: '聚合窗口'
-        },
-        {
-          key: 'time_range',
-          value: 'custom',
-          enabled: true,
-          isDynamic: false,
-          dataType: 'string',
-          variableName: '',
-          description: '时间范围类型'
-        },
-        {
-          key: 'TimeRange',
-          value: 'custom',
-          enabled: true,
-          isDynamic: false,
-          dataType: 'string',
-          variableName: '',
-          description: '时间范围类型(大写版本)'
-        }
-      ],
-      preRequestScript: `// 请求前处理 - 确保参数完整性
-// 注意：所有参数值在此时已经确定，无需检查dynamicValues
-// 可以对参数进行验证、转换或添加额外的请求配置
-
-// 示例：添加请求时间戳到headers
-config.headers = config.headers || {}
-config.headers['X-Request-Time'] = Date.now().toString()
-
-// 示例：验证必要参数是否存在
-const requiredParams = ['device_id', 'key']
-const missingParams = []
-if (config.params) {
-  for (const required of requiredParams) {
-    const param = config.params.find(p => p.key === required)
-    if (!param || !param.value) {
-      missingParams.push(required)
-    }
-  }
-}
-if (missingParams.length > 0) {
-  console.warn('缺少必要参数:', missingParams)
+export function createDefaultHttpPathParam(): HttpPathParam {
+  const baseParam = createDefaultHttpParameter('path')
+  return {
+    ...baseParam,
+    placeholder: `{${baseParam.key}}`
+  } as HttpPathParam
 }
 
-return config`,
-      postResponseScript: `// 转换为图表数据格式 - 兼容多种响应格式
-console.log('🔍 [响应脚本] 原始响应:', response)
+/**
+ * 从URL自动提取路径参数
+ * @param url - 包含路径参数的URL，如 '/api/device/{device_id}/data/{metric_id}'
+ * @returns 路径参数配置数组
+ */
+export function extractPathParamsFromUrl(url: string): HttpPathParam[] {
+  const pathParamRegex = /\{([^}]+)\}/g
+  const params: HttpPathParam[] = []
+  let match
 
-// 尝试多种可能的数据路径
-let data = null
-if (response && typeof response === 'object') {
-  // 尝试 response.data
-  if (Array.isArray(response.data)) {
-    data = response.data
+  while ((match = pathParamRegex.exec(url)) !== null) {
+    const key = match[1]
+    const placeholder = match[0] // 完整的 {parameter}
+
+    params.push({
+      key,
+      placeholder,
+      value: `example_${key}`,
+      enabled: true,
+      isDynamic: true,
+      dataType: 'string',
+      variableName: generateVariableName(key),
+      description: `路径参数：${key}`
+    })
   }
-  // 尝试 response.result  
-  else if (Array.isArray(response.result)) {
-    data = response.result
-  }
-  // 尝试 response 本身就是数组
-  else if (Array.isArray(response)) {
-    data = response
-  }
-  // 尝试其他可能的字段
-  else if (response.list && Array.isArray(response.list)) {
-    data = response.list
-  }
+
+  return params
 }
 
-console.log('🔍 [响应脚本] 提取的数据:', data)
+/**
+ * 替换URL中的路径参数
+ * @param url - 原始URL
+ * @param pathParams - 路径参数配置
+ * @returns 替换后的URL
+ */
+export function replaceUrlPathParams(url: string, pathParams: HttpPathParam[]): string {
+  let resultUrl = url
 
-if (data && Array.isArray(data)) {
-  const result = data.map(item => [item.x || item.timestamp || item.time, item.y || item.value || item.val])
-  console.log('🔍 [响应脚本] 转换后数据:', result)
-  return result
-}
-
-console.log('🔍 [响应脚本] 无法转换，返回原始响应')
-return response`
+  for (const param of pathParams) {
+    if (param.enabled && param.value) {
+      resultUrl = resultUrl.replace(param.placeholder, String(param.value))
     }
   }
-]
+
+  return resultUrl
+}

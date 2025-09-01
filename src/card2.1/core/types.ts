@@ -9,6 +9,25 @@ import type { ComponentInteractionDefinition } from './interaction-types'
 // 权限类型定义
 export type ComponentPermission = '不限' | 'TENANT_ADMIN' | 'TENANT_USER' | 'SYS_ADMIN'
 
+/**
+ * 指标项类型定义
+ * 用于存储从设备模板配置的指标信息
+ */
+export interface MetricItem {
+  /** 指标唯一ID */
+  id: string
+  /** 指标名称 */
+  name: string
+  /** 指标字段键 */
+  key: string
+  /** 指标单位 */
+  unit?: string
+  /** 指标描述 */
+  description?: string
+  /** 数据类型 */
+  dataType?: 'number' | 'string' | 'boolean' | 'object'
+}
+
 export interface ComponentDefinition {
   type: string
   name: string
@@ -46,6 +65,14 @@ export interface ComponentDefinition {
       options?: Array<{ label: string; value: any }>
     }
   >
+
+  // ============ 通用属性 - 所有新组件必须包含 ============
+
+  /** 设备ID - 用于设备关联和模板配置 (新组件必填，现有组件兼容) */
+  deviceId?: string
+
+  /** 指标列表 - 存储从模板配置的指标信息 (新组件必填，现有组件兼容) */
+  metricsList?: MetricItem[]
 
   // ============ 配置驱动的动态数据源重构新增字段 ============
 

@@ -520,7 +520,8 @@ const handleComponentPollingConfigChange = (pollingConfig: any) => {
     componentConfig.polling = {
       enabled: pollingConfig.enabled || false,
       interval: pollingConfig.interval || 30000,
-      immediate: pollingConfig.immediate || true,
+      // 🔥 修复：正确保存 immediate 属性，允许为 false
+      immediate: pollingConfig.immediate !== undefined ? pollingConfig.immediate : true,
       lastUpdated: Date.now()
     }
 
@@ -1308,7 +1309,6 @@ defineExpose({
               查看最终结果
             </n-button>
           </div>
-
         </div>
       </n-collapse-item>
     </n-collapse>

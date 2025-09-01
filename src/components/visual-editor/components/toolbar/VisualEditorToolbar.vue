@@ -633,7 +633,6 @@ const removePollingTask = (componentId: string) => {
             </template>
             <span>{{ $t('dataSource.trigger.management') }}</span>
           </NTooltip>
-
         </template>
 
         <!-- 编辑/预览切换按钮 - 始终显示在最右侧 -->

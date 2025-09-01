@@ -15,7 +15,7 @@ import HttpConfigForm from './HttpConfigForm.vue'
 // 🔥 简洁脚本编辑器
 import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
 // 🔥 导入HTTP配置模板
-import { HTTP_CONFIG_TEMPLATES } from '../../types/http-config'
+import { HTTP_CONFIG_TEMPLATES } from '../../templates/http-templates'
 
 // Props接口
 interface Props {
@@ -144,7 +144,9 @@ const applyTelemetryTemplate = () => {
       ...telemetryTemplate.config,
       // 确保数组字段被正确复制
       headers: [...(telemetryTemplate.config.headers || [])],
-      params: [...(telemetryTemplate.config.params || [])]
+      params: [...(telemetryTemplate.config.params || [])],
+      // 🔥 新增：确保 pathParameter 字段被正确复制
+      pathParameter: telemetryTemplate.config.pathParameter ? { ...telemetryTemplate.config.pathParameter } : undefined
     }
 
     console.log('📊 应用后httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
@@ -279,6 +281,8 @@ const getCurrentDataItem = (): DataItem => {
           body: httpConfig.value.body ? JSON.parse(httpConfig.value.body) : undefined,
           // 扩展：支持新的 params 数组格式
           params: httpConfig.value.params,
+          // 🔥 关键修复：包含路径参数字段
+          pathParameter: httpConfig.value.pathParameter,
           // 🔥 关键修复：包含脚本字段
           preRequestScript: httpConfig.value.preRequestScript,
           postResponseScript: httpConfig.value.postResponseScript
@@ -658,7 +662,9 @@ const loadEditData = (editData: any) => {
           ...editData.httpConfigData,
           // 确保数组字段不为空
           headers: editData.httpConfigData.headers || [],
-          params: editData.httpConfigData.params || []
+          params: editData.httpConfigData.params || [],
+          // 🔥 关键修复：确保路径参数字段正确加载
+          pathParameter: editData.httpConfigData.pathParameter
         }
         console.log('🔄 恢复后httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
       } else {
