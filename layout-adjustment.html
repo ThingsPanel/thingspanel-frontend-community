@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>布局调整说明</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .layout-demo {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            height: 400px;
+        }
+        
+        .left-panel {
+            flex: 4;
+            border: 2px solid #1890ff;
+            border-radius: 6px;
+            padding: 12px;
+            background: #e6f7ff;
+        }
+        
+        .right-panel {
+            flex: 3;
+            border: 2px solid #52c41a;
+            border-radius: 6px;
+            padding: 12px;
+            background: #f6ffed;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .right-section {
+            flex: 1;
+            border: 1px dashed #52c41a;
+            border-radius: 4px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .left-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            height: 100%;
+        }
+        
+        .config-item {
+            flex: 1;
+            border: 1px dashed #1890ff;
+            border-radius: 4px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        
+        .description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .changes-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .changes-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .changes-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .checkmark {
+            color: #52c41a;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">🎯 RawDataConfigModal 布局调整完成</div>
+        
+        <div class="description">
+            已成功将数据预览从左侧下方移至右侧最上方，形成清晰的三段式布局结构：
+        </div>
+        
+        <div class="layout-demo">
+            <div class="left-panel">
+                <div class="left-content">
+                    <div class="config-item">JSON 数据配置</div>
+                    <div class="config-item">HTTP 接口配置</div>
+                    <div class="config-item">JavaScript 脚本配置</div>
+                </div>
+            </div>
+            <div class="right-panel">
+                <div class="right-section" style="background: #fff2e8; border-color: #fa8c16;">
+                    📊 原始数据预览
+                </div>
+                <div class="right-section" style="background: #f9f0ff; border-color: #722ed1;">
+                    ⚙️ 数据处理配置
+                </div>
+                <div class="right-section" style="background: #fff1f0; border-color: #f5222d;">
+                    ✨ 处理结果展示
+                </div>
+            </div>
+        </div>
+        
+        <div class="changes-list">
+            <h3>✅ 完成的布局调整：</h3>
+            <ul style="list-style: none; padding: 0;">
+                <li><span class="checkmark">✓</span><strong>左侧简化</strong>：移除原有的数据预览部分，只保留三种数据类型的配置</li>
+                <li><span class="checkmark">✓</span><strong>右侧重构</strong>：调整为三段式布局结构</li>
+                <li><span class="checkmark">✓</span><strong>第一段 - 原始数据</strong>：显示从左侧配置获取的原始数据</li>
+                <li><span class="checkmark">✓</span><strong>第二段 - 数据处理</strong>：JSONPath 过滤和 JavaScript 脚本处理配置</li>
+                <li><span class="checkmark">✓</span><strong>第三段 - 处理结果</strong>：实时显示处理后的最终数据</li>
+                <li><span class="checkmark">✓</span><strong>响应式优化</strong>：调整各区域高度分配和滚动行为</li>
+                <li><span class="checkmark">✓</span><strong>图标增强</strong>：为每个区域添加直观的图标标识</li>
+            </ul>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 16px; background: #e6f7ff; border-radius: 6px; border-left: 4px solid #1890ff;">
+            <h4>🚀 使用方式</h4>
+            <p>1. <strong>左侧配置</strong>：选择数据类型（JSON/HTTP/JavaScript）并完成相应配置</p>
+            <p>2. <strong>数据获取</strong>：点击"预览数据"按钮，右侧第一段将显示获取的原始数据</p>
+            <p>3. <strong>数据处理</strong>：在右侧第二段配置 JSONPath 过滤或 JavaScript 处理脚本</p>
+            <p>4. <strong>实时预览</strong>：右侧第三段会实时显示经过处理的最终数据结果</p>
+            <p>5. <strong>确认保存</strong>：满意后点击"确定"按钮保存配置</p>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 16px; background: #fff2e8; border-radius: 6px; border-left: 4px solid #fa8c16;">
+            <h4>💡 优化亮点</h4>
+            <p>• <strong>空间利用</strong>：数据预览移至右侧，充分利用抽屉的宽屏空间</p>
+            <p>• <strong>工作流清晰</strong>：左→右的数据流向更符合用户操作习惯</p>
+            <p>• <strong>三段分离</strong>：原始数据、处理配置、处理结果清晰分段</p>
+            <p>• <strong>实时反馈</strong>：处理结果实时更新，提供即时的配置反馈</p>
+            <p>• <strong>视觉优化</strong>：每个区域都有明确的图标和状态标识</p>
+        </div>
+    </div>
+</body>
+</html>

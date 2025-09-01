@@ -13,19 +13,13 @@ import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
 import type { HttpHeader, HttpParam, HttpPathParam, HttpConfig, PathParameter } from '../../types/http-config'
 import {
-  generateVariableName,
-  createDefaultHttpHeader,
-  createDefaultHttpParam,
-  createDefaultHttpPathParam,
-  createDefaultPathParameter,
-  extractPathParamsFromUrl,
-  replaceUrlPathParams
+  extractPathParamsFromUrl
 } from '../../types/http-config'
-import { HTTP_CONFIG_TEMPLATES } from '../../templates/http-templates'
-// 导入脚本编辑器
-import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
-// 导入通用动态参数编辑器
-import DynamicParameterEditor from '../common/DynamicParameterEditor.vue'
+// 导入分步配置组件
+import HttpConfigStep1 from '../common/HttpConfigStep1.vue'
+import HttpConfigStep2 from '../common/HttpConfigStep2.vue'
+import HttpConfigStep3 from '../common/HttpConfigStep3.vue'
+import HttpConfigStep4 from '../common/HttpConfigStep4.vue'
 
 // Props接口 - 支持v-model模式
 interface Props {
@@ -57,9 +51,11 @@ const { t } = useI18n()
 const message = useMessage()
 
 /**
- * 当前活跃的标签页 - 默认显示基础配置
+ * 当前步骤 - 分步配置向导
+ * 1: 配置地址, 2: 配置头部, 3: 配置参数, 4: 请求前脚本
  */
-const activeTab = ref('basic')
+const currentStep = ref(1)
+const totalSteps = 4
 
 /**
  * 数据转换帮助函数
@@ -89,8 +85,7 @@ const localConfig = reactive<HttpConfig>({
   params: [],
   pathParams: [],
   body: '',
-  preRequestScript: '',
-  postResponseScript: ''
+  preRequestScript: ''
 })
 
 /**
@@ -141,96 +136,7 @@ function initializeParameters(config?: HttpConfig): HttpParameter[] {
   return parameters
 }
 
-/**
- * HTTP方法选项
- */
-const httpMethods = [
-  { label: 'GET', value: 'GET' },
-  { label: 'POST', value: 'POST' },
-  { label: 'PUT', value: 'PUT' },
-  { label: 'DELETE', value: 'DELETE' },
-  { label: 'PATCH', value: 'PATCH' }
-]
 
-/**
- * 数据类型选项 - 保留一份供本组件内部使用
- */
-const dataTypeOptions = [
-  { label: '字符串', value: 'string' },
-  { label: '数字', value: 'number' },
-  { label: '布尔值', value: 'boolean' },
-  { label: 'JSON', value: 'json' }
-]
-
-/**
- * 是否显示请求体
- */
-const showBody = computed(() => {
-  return ['POST', 'PUT', 'PATCH'].includes(localConfig.method)
-})
-
-/**
- * 统一参数管理 - 添加参数
- */
-const addParameter = (paramType: 'path' | 'query' | 'header') => {
-  const newParam = createDefaultHttpParameter(paramType)
-  localConfig.parameters.push(newParam)
-  updateConfig()
-}
-
-/**
- * 统一参数管理 - 删除参数
- */
-const removeParameter = (index: number) => {
-  localConfig.parameters.splice(index, 1)
-  updateConfig()
-}
-
-/**
- * 统一参数管理 - 处理参数key变化
- */
-const onParameterKeyChange = (param: HttpParameter) => {
-  if (param.isDynamic && param.key) {
-    param.variableName = generateVariableName(param.key)
-    if (!param.description) {
-      const typeNames = { path: '路径', query: '查询', header: '请求头' }
-      param.description = `${typeNames[param.paramType]}参数：${param.key}`
-    }
-  }
-  updateConfig()
-}
-
-/**
- * 统一参数管理 - 切换动态状态
- */
-const toggleParameterDynamic = (param: HttpParameter) => {
-  param.isDynamic = !param.isDynamic
-  if (param.isDynamic) {
-    param.variableName = generateVariableName(param.key)
-    if (!param.description) {
-      const typeNames = { path: '路径', query: '查询', header: '请求头' }
-      param.description = `${typeNames[param.paramType]}参数：${param.key}`
-    }
-  } else {
-    param.variableName = ''
-  }
-  updateConfig()
-}
-
-/**
- * 统一参数管理 - 计算属性
- */
-const pathParameters = computed(() => localConfig.parameters.filter(p => p.paramType === 'path'))
-const queryParameters = computed(() => localConfig.parameters.filter(p => p.paramType === 'query'))
-const headerParameters = computed(() => localConfig.parameters.filter(p => p.paramType === 'header'))
-
-// Headers 和 Params 相关函数已移至 DynamicParameterEditor 组件中
-
-// 路径参数管理函数已移至 DynamicParameterEditor 组件中
-
-// Params 相关函数已移至 DynamicParameterEditor 组件中
-
-// 旧的路径参数函数已移至 DynamicParameterEditor 组件中
 
 /**
  * URL变化时自动检测路径参数
@@ -253,22 +159,49 @@ const onUrlChange = () => {
   updateConfig()
 }
 
-/**
- * HTTP配置模板（使用统一模板）
- */
-const httpTemplates = HTTP_CONFIG_TEMPLATES
-
-/**
- * 应用整体配置模板
- */
-const applyTemplate = (template: (typeof httpTemplates)[0]) => {
-  Object.assign(localConfig, template.config)
-  updateConfig()
-}
 
 /**
  * 更新配置并发射事件
  */
+/**
+ * 步骤导航函数
+ */
+const nextStep = () => {
+  if (currentStep.value < totalSteps) {
+    currentStep.value++
+  }
+}
+
+const prevStep = () => {
+  if (currentStep.value > 1) {
+    currentStep.value--
+  }
+}
+
+const goToStep = (step: number) => {
+  if (step >= 1 && step <= totalSteps) {
+    currentStep.value = step
+  }
+}
+
+/**
+ * 步骤验证
+ */
+const canNextStep = computed(() => {
+  switch (currentStep.value) {
+    case 1: // 基础配置验证
+      return localConfig.url && localConfig.method
+    case 2: // 请求头配置（可选）
+      return true
+    case 3: // 参数配置（可选）
+      return true
+    case 4: // 脚本配置（可选）
+      return true
+    default:
+      return false
+  }
+})
+
 const updateConfig = () => {
   if (isInternalUpdate) return // 防止内部更新时触发循环
 
@@ -369,7 +302,6 @@ const syncPropsToLocal = (newValue: any) => {
     localConfig.pathParameter = newValue.pathParameter || undefined
     localConfig.body = newValue.body || ''
     localConfig.preRequestScript = newValue.preRequestScript || ''
-    localConfig.postResponseScript = newValue.postResponseScript || ''
 
     // 安全地转换数组数据，使用帮助函数
     localConfig.headers = newValue.headers ? newValue.headers.map(convertHttpToEnhanced) : []
@@ -407,134 +339,61 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
 
 <template>
   <div class="http-config-form">
-    <!-- HTTP配置模板 -->
-    <div class="template-section">
-      <n-dropdown
-        :options="httpTemplates.map(t => ({ label: t.name, key: t.name, template: t }))"
-        @select="(key, option) => applyTemplate(option.template)"
-      >
-        <n-button size="small" secondary>模板</n-button>
-      </n-dropdown>
+    <!-- 步骤导航 -->
+    <div class="steps-section">
+      <n-steps :current="currentStep" size="small" class="compact-steps">
+        <n-step title="基础配置" />
+        <n-step title="请求头" />
+        <n-step title="参数配置" />
+        <n-step title="请求脚本" />
+      </n-steps>
     </div>
 
-    <n-tabs v-model:value="activeTab" type="line" size="small">
-      <!-- 基础配置 -->
-      <n-tab-pane name="basic" :tab="t('config.dataSource.http.tabs.basic')">
-        <div class="config-section">
-          <n-form size="small" :show-feedback="false">
-            <n-form-item label="请求URL">
-              <n-input
-                v-model:value="localConfig.url"
-                placeholder="https://api.example.com/data"
-                @update:value="onUrlChange"
-              />
-            </n-form-item>
+    <!-- 步骤内容 -->
+    <div class="step-content">
+      <!-- 第1步：基础配置 -->
+      <HttpConfigStep1
+        v-if="currentStep === 1"
+        v-model="localConfig"
+        @url-change="onUrlChange"
+      />
 
-            <n-form-item label="请求方法">
-              <n-select v-model:value="localConfig.method" :options="httpMethods" @update:value="updateConfig" />
-            </n-form-item>
+      <!-- 第2步：请求头配置 -->
+      <HttpConfigStep2
+        v-if="currentStep === 2"
+        v-model="localConfig"
+      />
 
-            <n-form-item label="超时时间 (ms)">
-              <n-input-number
-                v-model:value="localConfig.timeout"
-                :min="1000"
-                :max="60000"
-                :step="1000"
-                @update:value="updateConfig"
-              />
-            </n-form-item>
+      <!-- 第3步：参数配置 -->
+      <HttpConfigStep3
+        v-if="currentStep === 3"
+        v-model="localConfig"
+      />
 
-            <!-- 路径参数使用通用编辑器 -->
-            <n-form-item label="路径参数">
-              <n-space vertical size="small">
-                <DynamicParameterEditor
-                  v-model="localConfig.pathParams"
-                  parameter-type="path"
-                  title=""
-                  add-button-text="添加路径参数"
-                  key-placeholder="参数名"
-                  value-placeholder="参数值"
-                  custom-class="path-params-editor"
-                  @update:model-value="updateConfig"
-                />
+      <!-- 第4步：请求前脚本 -->
+      <HttpConfigStep4
+        v-if="currentStep === 4"
+        v-model="localConfig"
+      />
+    </div>
 
-                <!-- 路径参数使用说明 -->
-                <n-alert v-if="localConfig.pathParams.length > 0" type="info" size="small">
-                  路径参数会直接拼接到URL后面，例如：URL为 "/api/device/" + 参数值 "DEV001" = "/api/device/DEV001"
-                </n-alert>
-              </n-space>
-            </n-form-item>
+    <!-- 步骤导航按钮 -->
+    <div class="step-navigation">
+      <n-space justify="space-between">
+        <n-button v-if="currentStep > 1" secondary @click="prevStep">上一步</n-button>
+        <div v-else></div>
 
-            <n-form-item v-if="showBody" label="请求体">
-              <n-input
-                v-model:value="localConfig.body"
-                type="textarea"
-                :rows="3"
-                placeholder='{"key": "value"}'
-                :input-props="{ style: 'font-family: monospace; font-size: 12px;' }"
-                @update:value="updateConfig"
-              />
-            </n-form-item>
-          </n-form>
-        </div>
-      </n-tab-pane>
-
-      <!-- 请求头配置 -->
-      <n-tab-pane name="headers" :tab="t('config.dataSource.http.tabs.headers')">
-        <div class="config-section">
-          <DynamicParameterEditor
-            v-model="localConfig.headers"
-            parameter-type="header"
-            title="请求头配置"
-            add-button-text="添加请求头"
-            key-placeholder="头部名称"
-            value-placeholder="头部值"
-            @update:model-value="updateConfig"
-          />
-        </div>
-      </n-tab-pane>
-
-      <!-- 参数配置 -->
-      <n-tab-pane name="params" :tab="t('config.dataSource.http.tabs.params')">
-        <div class="config-section">
-          <DynamicParameterEditor
-            v-model="localConfig.params"
-            parameter-type="query"
-            title="查询参数配置"
-            add-button-text="添加参数"
-            key-placeholder="参数名"
-            value-placeholder="参数值"
-            @update:model-value="updateConfig"
-          />
-        </div>
-      </n-tab-pane>
-
-      <!-- 请求脚本 -->
-      <n-tab-pane name="request-script" :tab="t('config.dataSource.http.tabs.requestScript')">
-        <div class="config-section">
-          <SimpleScriptEditor
-            v-model:model-value="localConfig.preRequestScript"
-            template-category="http-pre-request"
-            :placeholder="t('config.dataSource.http.preRequestScript.placeholder')"
-            height="200px"
-            @update:model-value="updateConfig"
-          />
-        </div>
-      </n-tab-pane>
-
-      <!-- 响应脚本 -->
-      <n-tab-pane name="response-script" :tab="t('config.dataSource.http.tabs.responseScript')">
-        <div class="config-section">
-          <SimpleScriptEditor
-            v-model:model-value="localConfig.postResponseScript"
-            template-category="http-post-response"
-            :placeholder="t('config.dataSource.http.postResponseScript.placeholder')"
-            height="200px"
-            @update:model-value="updateConfig"
-          />
-        </div>
-      </n-tab-pane>
-    </n-tabs>
+        <n-button
+          v-if="currentStep < totalSteps"
+          type="primary"
+          :disabled="!canNextStep"
+          @click="nextStep"
+        >
+          下一步
+        </n-button>
+        <div v-else></div>
+      </n-space>
+    </div>
   </div>
 </template>
 
@@ -542,17 +401,49 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
 .http-config-form {
   width: 100%;
   height: 100%;
-}
-
-.config-section {
-  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
-/* 路径参数编辑器的自定义样式 */
-.path-params-editor {
-  /* 可以在这里添加特殊的路径参数样式 */
+
+.steps-section {
+  padding: 8px 0;
 }
+
+.compact-steps {
+  margin: 0;
+}
+
+.compact-steps :deep(.n-step) {
+  margin-bottom: 0;
+}
+
+.compact-steps :deep(.n-step-splitor) {
+  margin: 0 8px;
+}
+
+.compact-steps :deep(.n-step-header) {
+  font-size: 12px;
+}
+
+.step-content {
+  flex: 1;
+  min-height: 450px;
+  max-height: 600px;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+}
+
+.step-navigation {
+  padding: 20px 0 8px 0;
+  border-top: 1px solid var(--border-color);
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  background: var(--body-color);
+  z-index: 10;
+}
+
 </style>

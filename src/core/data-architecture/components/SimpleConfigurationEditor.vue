@@ -1321,15 +1321,27 @@ defineExpose({
       style="margin: 40px 0"
     />
 
-    <!-- 原始数据配置弹窗 -->
-    <RawDataConfigModal
+    <!-- 原始数据配置抽屉 - 更大空间展示复杂配置 -->
+    <n-drawer
       v-model:show="showRawDataModal"
-      :data-source-key="currentDataSourceKey"
-      :is-edit-mode="isEditMode"
-      :edit-data="getEditData()"
-      :example-data="getCurrentDataSourceExampleData()"
-      @confirm="handleDataItemConfirm"
-    />
+      :width="'85vw'"
+      :height="'85vh'"
+      placement="right"
+      class="raw-data-config-drawer"
+    >
+      <n-drawer-content title="数据项配置" closable>
+        <RawDataConfigModal
+          :show="true"
+          :data-source-key="currentDataSourceKey"
+          :is-edit-mode="isEditMode"
+          :edit-data="getEditData()"
+          :example-data="getCurrentDataSourceExampleData()"
+          :use-drawer-mode="true"
+          @confirm="handleDataItemConfirm"
+          @update:show="() => {}"
+        />
+      </n-drawer-content>
+    </n-drawer>
   </div>
 </template>
 

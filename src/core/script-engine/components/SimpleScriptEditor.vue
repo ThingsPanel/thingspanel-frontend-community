@@ -125,7 +125,8 @@ const editorValue = computed({
   <div class="simple-script-editor">
     <!-- 模板选择器 -->
     <div v-if="showTemplates && exampleOptions.length > 0" class="template-selector">
-      <div>模板：</div>
+      <span class="mr-4">JavaScript 处理:</span>
+
       <n-select
         :options="exampleOptions"
         :placeholder="t('script.selectTemplate')"
@@ -134,6 +135,25 @@ const editorValue = computed({
         clearable
         @update:value="applyTemplate"
       />
+      <n-popover trigger="hover" placement="top">
+        <template #trigger>
+          <span class="help-icon">❓</span>
+        </template>
+        <div>
+          <p>对数据进行自定义转换</p>
+          <p>
+            可用变量:
+            <code>data</code>
+            (输入数据)
+          </p>
+          <p>
+            必须:
+            <code>return</code>
+            返回处理后的数据
+          </p>
+          <p>留空表示不处理</p>
+        </div>
+      </n-popover>
     </div>
 
     <!-- CodeMirror 6 编辑器 -->

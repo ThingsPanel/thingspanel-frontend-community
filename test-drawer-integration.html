@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽屉模式集成测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        
+        .test-description {
+            color: #666;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .checkmark {
+            color: #52c41a;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .access-info {
+            background: #e6f7ff;
+            padding: 16px;
+            border-radius: 6px;
+            border-left: 4px solid #1890ff;
+        }
+        
+        .path {
+            font-family: 'Monaco', 'Consolas', monospace;
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-title">🔥 RawDataConfigModal 抽屉模式适配完成</div>
+        
+        <div class="test-description">
+            RawDataConfigModal 组件已成功适配为支持抽屉模式，可以无缝集成到 SimpleConfigurationEditor 的抽屉布局中。
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">✅ 完成的适配功能</div>
+            <ul class="feature-list">
+                <li><span class="checkmark">✓</span>新增 <code>useDrawerMode</code> 属性支持抽屉模式</li>
+                <li><span class="checkmark">✓</span>新增 <code>exampleData</code> 属性支持示例数据初始化</li>
+                <li><span class="checkmark">✓</span>抽屉模式下移除模态框包装，直接渲染内容</li>
+                <li><span class="checkmark">✓</span>抽屉模式下添加独立的底部操作区</li>
+                <li><span class="checkmark">✓</span>保持原有弹窗模式的兼容性</li>
+                <li><span class="checkmark">✓</span>响应式布局优化，适配抽屉空间</li>
+                <li><span class="checkmark">✓</span>示例数据自动填充（JSON模式下）</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🔧 集成方式</div>
+            <p>SimpleConfigurationEditor 中的集成代码：</p>
+            <pre style="background: #f5f5f5; padding: 12px; border-radius: 4px; font-size: 12px;"><code>&lt;n-drawer
+  v-model:show="showRawDataModal"
+  :width="'85vw'"
+  :height="'85vh'"
+  placement="right"
+  class="raw-data-config-drawer"
+&gt;
+  &lt;n-drawer-content title="数据项配置" closable&gt;
+    &lt;RawDataConfigModal
+      :show="true"
+      :data-source-key="currentDataSourceKey"
+      :is-edit-mode="isEditMode"
+      :edit-data="getEditData()"
+      :example-data="getCurrentDataSourceExampleData()"
+      :use-drawer-mode="true"
+      @confirm="handleDataItemConfirm"
+      @update:show="() => {}"
+    /&gt;
+  &lt;/n-drawer-content&gt;
+&lt;/n-drawer&gt;</code></pre>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">📝 主要改动</div>
+            <ul class="feature-list">
+                <li><span class="checkmark">✓</span>Props 接口新增 <code>exampleData</code> 和 <code>useDrawerMode</code> 属性</li>
+                <li><span class="checkmark">✓</span>模板中添加条件渲染：抽屉模式时不渲染 n-modal 包装</li>
+                <li><span class="checkmark">✓</span>新增 <code>loadExampleData()</code> 方法处理示例数据初始化</li>
+                <li><span class="checkmark">✓</span>CSS 样式新增抽屉模式专用类和响应式布局</li>
+                <li><span class="checkmark">✓</span>弹窗打开监听器中集成示例数据加载逻辑</li>
+            </ul>
+        </div>
+        
+        <div class="access-info">
+            <div class="section-title">🚀 如何测试</div>
+            <p>1. 访问开发服务器：<strong>http://localhost:5002</strong></p>
+            <p>2. 导航到：<span class="path">菜单 → 测试 → 数据绑定系统集成</span></p>
+            <p>3. 或直接访问：<span class="path">/test/data-binding-system-integration</span></p>
+            <p>4. 在页面中找到数据源配置区域，点击"添加数据项"按钮</p>
+            <p>5. 现在将打开抽屉模式的配置界面，而不是弹窗模式</p>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🎯 技术亮点</div>
+            <ul class="feature-list">
+                <li><span class="checkmark">✓</span><strong>向后兼容</strong>：原有弹窗模式完全保留，不影响其他使用场景</li>
+                <li><span class="checkmark">✓</span><strong>智能适配</strong>：根据 <code>useDrawerMode</code> 属性自动切换渲染模式</li>
+                <li><span class="checkmark">✓</span><strong>示例数据集成</strong>：抽屉模式下可以从父组件传递示例数据用于初始化</li>
+                <li><span class="checkmark">✓</span><strong>响应式布局</strong>：抽屉模式下的布局经过优化，适配更大的显示空间</li>
+                <li><span class="checkmark">✓</span><strong>用户体验提升</strong>：85vw 的抽屉宽度提供更好的配置体验</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

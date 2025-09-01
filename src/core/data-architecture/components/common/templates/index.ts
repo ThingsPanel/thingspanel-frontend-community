@@ -7,10 +7,10 @@ import type { Component, AsyncComponentLoader } from 'vue'
 
 // 模板类型枚举
 export enum ParameterTemplateType {
-  MANUAL = 'manual',        // 手动输入
-  DROPDOWN = 'dropdown',    // 下拉选择
-  PROPERTY = 'property',    // 属性绑定（动态）
-  COMPONENT = 'component'   // 复杂组件模板
+  MANUAL = 'manual', // 手动输入
+  DROPDOWN = 'dropdown', // 下拉选择
+  PROPERTY = 'property', // 属性绑定（动态）
+  COMPONENT = 'component' // 复杂组件模板
 }
 
 // 模板选项接口
@@ -224,16 +224,9 @@ export function getRecommendedTemplates(parameterType: 'header' | 'query' | 'pat
         ...componentTemplates
       ]
     case 'query':
-      return [
-        ...baseTemplates, 
-        PARAMETER_TEMPLATES.find(t => t.id === 'boolean-values')!,
-        ...componentTemplates
-      ]
+      return [...baseTemplates, PARAMETER_TEMPLATES.find(t => t.id === 'boolean-values')!, ...componentTemplates]
     case 'path':
-      return [
-        ...baseTemplates,
-        ...componentTemplates
-      ]
+      return [...baseTemplates, ...componentTemplates]
     default:
       return [...baseTemplates, ...componentTemplates]
   }

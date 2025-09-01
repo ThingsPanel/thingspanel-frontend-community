@@ -8,30 +8,27 @@
  * 实现JSON/HTTP/脚本数据录入和预览
  */
 
-import { ref, reactive, computed, watch, nextTick } from 'vue'
+import { ref, reactive, computed, watch, nextTick, onMounted } from 'vue'
 import { useMessage } from 'naive-ui'
 import { DataItemFetcher, type DataItem } from '../../executors'
 import HttpConfigForm from './HttpConfigForm.vue'
 // 🔥 简洁脚本编辑器
 import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
-// 🔥 导入HTTP配置模板
-import { HTTP_CONFIG_TEMPLATES } from '../../templates/http-templates'
 
 // Props接口
 interface Props {
-  /** 弹窗显示状态 */
-  show: boolean
   /** 数据源Key */
   dataSourceKey?: string
-  /** 🔥 新增：编辑数据 */
+  /** 编辑数据 */
   editData?: any
-  /** 🔥 新增：是否为编辑模式 */
+  /** 是否为编辑模式 */
   isEditMode?: boolean
+  /** 示例数据 */
+  exampleData?: any
 }
 
 // Emits接口
 interface Emits {
-  (e: 'update:show', value: boolean): void
   (e: 'confirm', data: DataItem): void
 }
 
@@ -53,7 +50,7 @@ const inputMethods = [
  * 表单状态
  */
 const formState = reactive({
-  selectedMethod: 'json' as 'json' | 'http' | 'script' | 'websocket',
+  selectedMethod: 'http' as 'json' | 'http' | 'script' | 'websocket',
   jsonData: JSON.stringify(
     {
       temperature: 25.6,
@@ -126,52 +123,6 @@ const onHttpConfigUpdate = (newConfig: typeof httpConfig.value) => {
   formState.httpBody = newConfig.body || '{}'
 }
 
-/**
- * 🔥 应用遥测数据模板配置
- */
-const applyTelemetryTemplate = () => {
-  // 从 http-config.ts 获取遥测模板配置
-  const telemetryTemplate = HTTP_CONFIG_TEMPLATES.find(template => template.name === '设备遥测数据')
-
-  if (telemetryTemplate) {
-    console.log('📊 应用遥测数据模板:', telemetryTemplate.config)
-    console.log('📊 模板中的params:', telemetryTemplate.config.params)
-    console.log('📊 应用前httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
-
-    // 直接应用模板配置到 httpConfig
-    httpConfig.value = {
-      ...httpConfig.value,
-      ...telemetryTemplate.config,
-      // 确保数组字段被正确复制
-      headers: [...(telemetryTemplate.config.headers || [])],
-      params: [...(telemetryTemplate.config.params || [])],
-      // 🔥 新增：确保 pathParameter 字段被正确复制
-      pathParameter: telemetryTemplate.config.pathParameter ? { ...telemetryTemplate.config.pathParameter } : undefined
-    }
-
-    console.log('📊 应用后httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
-    console.log('📊 应用后params数量:', httpConfig.value.params?.length || 0)
-    console.log('📊 应用后preRequestScript存在吗?:', !!httpConfig.value.preRequestScript)
-
-    // 触发 onHttpConfigUpdate 确保所有状态同步
-    onHttpConfigUpdate(httpConfig.value)
-    console.log('📊 onHttpConfigUpdate调用完成')
-
-    // 🔍 验证调用后httpConfig是否仍然完整
-    setTimeout(() => {
-      console.log('📊 [验证] 500ms后httpConfig.value params数量:', httpConfig.value.params?.length || 0)
-      console.log('📊 [验证] 500ms后preRequestScript存在吗?:', !!httpConfig.value.preRequestScript)
-    }, 500)
-
-    message.success('遥测数据模板已应用')
-  } else {
-    console.error(
-      '❌ 未找到遥测数据模板，可用模板:',
-      HTTP_CONFIG_TEMPLATES.map(t => t.name)
-    )
-    message.error('未找到遥测数据模板')
-  }
-}
 
 /**
  * 预览数据状态
@@ -253,10 +204,11 @@ const convertHttpParametersToRecord = (
 }
 
 /**
- * 处理弹窗关闭
+ * 处理关闭
  */
 const handleClose = () => {
-  emit('update:show', false)
+  // 抽屉模式下由父组件控制关闭
+  // emit('close') // 可以根据需要添加close事件
 }
 
 /**
@@ -356,7 +308,6 @@ const handleConfirm = async () => {
     }
 
     emit('confirm', fullConfig)
-    handleClose()
     message.success('原始数据配置已保存')
   } catch (error) {
     message.error('配置保存失败: ' + error.message)
@@ -606,6 +557,17 @@ const resetFormState = () => {
 }
 
 /**
+ * 🔥 新增：初始化示例数据
+ * 如果传入了示例数据且当前为JSON模式，使用示例数据
+ */
+const loadExampleData = () => {
+  if (props.exampleData && formState.selectedMethod === 'json') {
+    console.log('📊 [RawDataConfigModal] 加载示例数据:', props.exampleData)
+    formState.jsonData = JSON.stringify(props.exampleData, null, 2)
+  }
+}
+
+/**
  * 🔥 修复：根据编辑数据加载状态
  * 接收来自父组件的编辑数据并填充表单
  */
@@ -704,29 +666,26 @@ const loadEditData = (editData: any) => {
 }
 
 /**
- * 🔥 修复：监听弹窗显示状态，处理状态重置和数据加载
+ * 组件挂载时初始化
  */
-watch(
-  () => props.show,
-  newShow => {
-    if (newShow) {
-      console.log('👁️ [RawDataConfigModal] 弹窗打开，编辑模式:', props.isEditMode)
+onMounted(() => {
+  console.log('👁️ [RawDataConfigModal] 组件挂载，编辑模式:', props.isEditMode)
 
-      // 先重置状态
-      resetFormState()
+  // 先重置状态
+  resetFormState()
 
-      // 如果是编辑模式且有编辑数据，则加载编辑数据
-      if (props.isEditMode && props.editData) {
-        nextTick(() => {
-          loadEditData(props.editData)
-        })
-      }
-    } else {
-      console.log('👁️ [RawDataConfigModal] 弹窗关闭')
-    }
-  },
-  { immediate: false }
-)
+  // 如果是编辑模式且有编辑数据，则加载编辑数据
+  if (props.isEditMode && props.editData) {
+    nextTick(() => {
+      loadEditData(props.editData)
+    })
+  } else {
+    // 如果不是编辑模式但有示例数据，加载示例数据
+    nextTick(() => {
+      loadExampleData()
+    })
+  }
+})
 
 /**
  * 暴露方法给父组件使用
@@ -738,18 +697,11 @@ defineExpose({
 </script>
 
 <template>
-  <n-modal
-    :show="props.show"
-    :mask-closable="false"
-    preset="card"
-    title="原始数据配置"
-    class="raw-data-config-modal"
-    style="width: 70vw"
-    @close="handleClose"
-  >
+  <!-- 🔥 抽屉模式：直接渲染内容区域 -->
+  <div class="drawer-content-wrapper">
     <!-- 左右分割布局 -->
-    <div class="modal-content">
-      <!-- 左侧区域 - 原始数据获取 -->
+    <div class="modal-content drawer-mode">
+      <!-- 左侧区域 - 数据配置 -->
       <div class="left-panel">
         <!-- 上部分 - 录入表单 (2/3高度) -->
         <div class="input-form-section">
@@ -757,6 +709,16 @@ defineExpose({
             <!-- Tag选择器录入方式 -->
             <div class="method-selector">
               <n-space>
+                <n-tag
+                  :type="formState.selectedMethod === 'http' ? 'primary' : 'default'"
+                  :bordered="formState.selectedMethod !== 'http'"
+                  checkable
+                  :checked="formState.selectedMethod === 'http'"
+                  class="method-tag"
+                  @click="formState.selectedMethod = 'http'"
+                >
+                  HTTP接口
+                </n-tag>
                 <n-tag
                   :type="formState.selectedMethod === 'json' ? 'primary' : 'default'"
                   :bordered="formState.selectedMethod !== 'json'"
@@ -777,17 +739,6 @@ defineExpose({
                   @click="formState.selectedMethod = 'script'"
                 >
                   JavaScript脚本
-                </n-tag>
-
-                <n-tag
-                  :type="formState.selectedMethod === 'http' ? 'primary' : 'default'"
-                  :bordered="formState.selectedMethod !== 'http'"
-                  checkable
-                  :checked="formState.selectedMethod === 'http'"
-                  class="method-tag"
-                  @click="formState.selectedMethod = 'http'"
-                >
-                  HTTP接口
                 </n-tag>
               </n-space>
             </div>
@@ -821,7 +772,7 @@ defineExpose({
                 <n-input
                   v-model:value="formState.jsonData"
                   type="textarea"
-                  :rows="8"
+                  :rows="12"
                   placeholder="请输入JSON格式数据"
                   show-count
                   :input-props="{ style: 'font-family: Monaco, Consolas, monospace; font-size: 12px;' }"
@@ -830,13 +781,6 @@ defineExpose({
 
               <!-- HTTP接口配置 -->
               <div v-if="formState.selectedMethod === 'http'" class="editor-container">
-                <!-- 🔥 新增：遥测模板快速应用 -->
-                <div class="template-actions mb-4">
-                  <n-button type="primary" ghost size="small" @click="applyTelemetryTemplate">
-                    📊 应用遥测数据模板
-                  </n-button>
-                  <n-text depth="3" style="margin-left: 8px; font-size: 12px">快速配置遥测数据接口参数</n-text>
-                </div>
 
                 <HttpConfigForm v-model:model-value="httpConfig" @update:model-value="onHttpConfigUpdate" />
               </div>
@@ -847,177 +791,140 @@ defineExpose({
                   v-model:model-value="formState.scriptCode"
                   template-category="data-generation"
                   placeholder="请输入数据生成脚本，可通过 context 参数访问上下文..."
-                  height="240px"
+                  height="320px"
                 />
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- 下部分 - 获取数据预览 (1/3高度) -->
-        <div class="data-preview-section">
+      <!-- 右侧区域 - 三段式布局 -->
+      <div class="right-panel">
+        <!-- 第一段 - 原始数据预览 -->
+        <div class="right-section raw-data-section">
           <div class="compact-header">
-            <span>预览</span>
-            <n-tag v-if="previewData" size="tiny" type="success">结果</n-tag>
+            <span class="section-icon">📊</span>
+            <span>原始数据预览</span>
           </div>
-          <div class="data-preview-content">
+          <div class="section-content">
             <!-- 加载状态 -->
             <div v-if="previewLoading" class="preview-loading">
               <n-spin size="small" />
               <span>正在执行数据获取...</span>
             </div>
-
             <!-- 预览结果 -->
             <div v-else-if="previewData" class="preview-result">
               <n-code :code="JSON.stringify(previewData, null, 2)" language="json" :hljs="false" word-wrap />
             </div>
-
             <!-- 空状态 -->
             <div v-else class="preview-empty">
-              <n-empty description="点击预览按钮查看数据执行结果" size="small">
+              <n-empty description="请完成左侧配置并点击预览数据获取原始数据" size="small">
                 <template #icon>
-                  <span style="font-size: 24px">📊</span>
+                  <span style="font-size: 18px">📭</span>
+                </template>
+              </n-empty>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第二段 - 数据处理配置 -->
+        <div class="right-section processing-config-section">
+          <div class="compact-header">
+            <span class="section-icon">⚙️</span>
+            <span>数据处理配置</span>
+          </div>
+          <div class="section-content">
+            <!-- JSONPath过滤 -->
+            <div class="processing-item">
+              <div class="flex">
+                <span class="mr-4">JSONPath 过滤:</span>
+                <div class="w-[240px]">
+                  <n-input
+                    v-model:value="processingState.jsonPath"
+                    placeholder="例如: $.temperature 或 $.sensors[0] (留空不过滤)"
+                    size="small"
+                  />
+                </div>
+                <n-popover trigger="hover" placement="top">
+                  <template #trigger>
+                    <span class="help-icon">❓</span>
+                  </template>
+                  <div>
+                    <p>使用JSONPath语法提取数据片段</p>
+                    <p>
+                      例如:
+                      <code>$.temperature</code>
+                      提取温度
+                    </p>
+                    <p>
+                      或:
+                      <code>$.sensors[0]</code>
+                      提取第一个传感器
+                    </p>
+                    <p>留空表示不过滤，使用原始数据</p>
+                  </div>
+                </n-popover>
+              </div>
+            </div>
+
+            <!-- 脚本处理 -->
+            <div class="processing-item">
+              <SimpleScriptEditor
+                v-model:model-value="processingState.scriptCode"
+                template-category="data-processing"
+                placeholder="请输入数据处理脚本，可通过 data 参数访问原始数据..."
+                height="140px"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- 第三段 - 处理结果展示 -->
+        <div class="right-section processing-result-section">
+          <div class="compact-header">
+            <span class="section-icon">✨</span>
+            <span>处理结果展示</span>
+            <span class="realtime-indicator">
+              <span class="indicator-dot"></span>
+              实时处理
+            </span>
+          </div>
+          <div class="section-content">
+            <!-- 处理结果 -->
+            <div v-if="processingPreviewData" class="processing-result">
+              <n-code :code="JSON.stringify(processingPreviewData, null, 2)" language="json" :hljs="false" word-wrap />
+            </div>
+            <!-- 空状态 -->
+            <div v-else class="processing-empty">
+              <n-empty description="配置处理规则后自动显示结果" size="small">
+                <template #icon>
+                  <span style="font-size: 18px">⚙️</span>
                 </template>
               </n-empty>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- 右侧区域 - 原始数据处理 -->
-      <div class="right-panel">
-        <div class="processing-area">
-          <!-- JSONPath过滤 -->
-          <div class="processing-section">
-            <div class="compact-header">
-              <span>JSONPath</span>
-              <n-popover trigger="hover" placement="top">
-                <template #trigger>
-                  <span class="help-icon">❓</span>
-                </template>
-                <div>
-                  <p>使用JSONPath语法提取数据片段</p>
-                  <p>
-                    例如:
-                    <code>$.temperature</code>
-                    提取温度
-                  </p>
-                  <p>
-                    或:
-                    <code>$.sensors[0]</code>
-                    提取第一个传感器
-                  </p>
-                  <p>留空表示不过滤，使用原始数据</p>
-                </div>
-              </n-popover>
-            </div>
-
-            <div class="processing-content">
-              <n-input
-                v-model:value="processingState.jsonPath"
-                placeholder="例如: $.temperature 或 $.sensors[0] (留空不过滤)"
-                size="small"
-              >
-                <template #prefix>
-                  <span class="input-prefix">路径:</span>
-                </template>
-              </n-input>
-
-              <n-input
-                v-model:value="processingState.defaultValue"
-                placeholder="过滤失败时的默认值 (可选)"
-                size="small"
-                class="default-value-input"
-              >
-                <template #prefix>
-                  <span class="input-prefix">默认:</span>
-                </template>
-              </n-input>
-            </div>
-          </div>
-
-          <!-- 脚本处理 -->
-          <div class="processing-section">
-            <div class="compact-header">
-              <span>脚本处理</span>
-              <n-popover trigger="hover" placement="top">
-                <template #trigger>
-                  <span class="help-icon">❓</span>
-                </template>
-                <div>
-                  <p>对数据进行自定义转换</p>
-                  <p>
-                    可用变量:
-                    <code>data</code>
-                    (输入数据)
-                  </p>
-                  <p>
-                    必须:
-                    <code>return</code>
-                    返回处理后的数据
-                  </p>
-                  <p>留空表示不处理</p>
-                </div>
-              </n-popover>
-            </div>
-
-            <div class="processing-content">
-              <SimpleScriptEditor
-                v-model:model-value="processingState.scriptCode"
-                template-category="data-processing"
-                placeholder="请输入数据处理脚本，可通过 data 参数访问原始数据..."
-                height="160px"
-              />
-            </div>
-          </div>
-
-          <!-- 处理预览 -->
-          <div class="processing-section">
-            <div class="compact-header">
-              <span>处理预览</span>
-              <span class="realtime-indicator">
-                <span class="indicator-dot"></span>
-                实时处理
-              </span>
-            </div>
-
-            <div class="processing-preview">
-              <!-- 处理结果 -->
-              <div v-if="processingPreviewData" class="processing-result">
-                <n-code
-                  :code="JSON.stringify(processingPreviewData, null, 2)"
-                  language="json"
-                  :hljs="false"
-                  word-wrap
-                />
-              </div>
-              <!-- 空状态 -->
-              <div v-else class="processing-empty">
-                <n-empty description="配置处理规则后自动显示结果" size="small">
-                  <template #icon>
-                    <span style="font-size: 18px">⚙️</span>
-                  </template>
-                </n-empty>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <template #footer>
+    <!-- 抽屉模式底部操作区 -->
+    <div class="drawer-footer">
       <n-space justify="end">
         <n-button @click="handleClose">取消</n-button>
         <n-button type="primary" :disabled="!previewData" @click="handleConfirm">确定</n-button>
       </n-space>
-    </template>
-  </n-modal>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.raw-data-config-modal {
-  max-width: 95vw;
-  max-height: 90vh;
+/* 🔥 抽屉模式专用包装器 */
+.drawer-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 75vh;
 }
 
 .modal-content {
@@ -1025,6 +932,21 @@ defineExpose({
   gap: 12px;
   height: 600px;
   padding: 0;
+}
+
+/* 🔥 抽屉模式下的布局调整 */
+.modal-content.drawer-mode {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+
+/* 🔥 抽屉底部操作区 */
+.drawer-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+  background: var(--card-color);
+  flex-shrink: 0;
 }
 
 .left-panel,
@@ -1323,5 +1245,111 @@ defineExpose({
 .data-preview-content::-webkit-scrollbar-thumb:hover,
 .processing-area::-webkit-scrollbar-thumb:hover {
   background: var(--text-color-3);
+}
+
+/* 🔥 三段式布局增强样式 */
+/* 子处理区域样式 */
+.sub-processing-section {
+  margin-bottom: 16px;
+}
+
+.sub-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-color-2);
+  margin-bottom: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--divider-color);
+}
+
+/* 抽屉模式下隐藏左侧的数据预览，移动到右侧 */
+.drawer-mode .left-panel .data-preview-section {
+  display: none;
+}
+
+/* 🔥 右侧三段式布局样式 */
+.drawer-mode .right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.right-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* 三个区域的高度分配 */
+.raw-data-section {
+  flex: 1.2;
+  min-height: 180px;
+}
+
+.processing-config-section {
+  flex: 1.8;
+  min-height: 280px;
+}
+
+.processing-result-section {
+  flex: 1;
+  min-height: 160px;
+}
+
+.section-content {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-icon {
+  font-size: 14px;
+  margin-right: 6px;
+}
+
+/* 处理配置项样式 */
+.processing-item {
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.processing-item:last-child {
+  margin-bottom: 0;
+}
+
+.processing-item-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-color-2);
+  margin-bottom: 8px;
+}
+
+.mt-2 {
+  margin-top: 8px;
+}
+
+/* 数据预览内容区域优化 */
+.drawer-mode .data-preview-content {
+  height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 8px;
+  background: var(--code-color);
 }
 </style>

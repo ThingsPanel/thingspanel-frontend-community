@@ -64,7 +64,10 @@
       "WebFetch(domain:www.naiveui.com)",
       "Bash(start test-polling-config.html)",
       "Bash(tree:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(timeout:*)",
+      "Bash(start test-drawer-integration.html)",
+      "Bash(start layout-adjustment.html)"
     ],
     "deny": [],
     "additionalDirectories": [

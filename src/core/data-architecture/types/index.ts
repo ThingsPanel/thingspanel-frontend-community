@@ -33,6 +33,7 @@ export type {
 } from '../executors'
 
 // ==================== 增强版类型系统导出 ====================
+export type { EnhancedParameter } from './parameter-editor'
 export type {
   // 泛型配置类型
   DataItemConfig,
@@ -131,3 +132,6 @@ export const TYPE_SYSTEM_FEATURES = {
   VERSION_MANAGEMENT: true,
   BACKWARD_COMPATIBILITY: true
 } as const
+
+export * from './enhanced-types'
+export * from './parameter-editor'

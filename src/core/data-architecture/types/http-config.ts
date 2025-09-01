@@ -116,20 +116,6 @@ export interface HttpConfig {
 }
 
 /**
- * 变量名生成器 - 将key转换为snake_case格式的变量名
- */
-export function generateVariableName(key: string): string {
-  return `var_${
-    key
-      .replace(/([a-z])([A-Z])/g, '$1_$2') // 驼峰转下划线（只在小写字母后跟大写字母时）
-      .toLowerCase() // 转小写
-      .replace(/[^a-z0-9_]/g, '_') // 非法字符转下划线
-      .replace(/_+/g, '_') // 多个下划线合并
-      .replace(/^_|_$/g, '') // 去掉首尾下划线
-  }`
-}
-
-/**
  * 类型转换器 - 将值转换为指定数据类型
  */
 export function convertValue(value: any, dataType: string): any {
@@ -263,4 +249,18 @@ export function replaceUrlPathParams(url: string, pathParams: HttpPathParam[]): 
   }
 
   return resultUrl
+}
+
+/**
+ * 变量名生成器 - 将key转换为snake_case格式的变量名
+ */
+export function generateVariableName(key: string): string {
+  return `var_${
+    key
+      .replace(/([a-z])([A-Z])/g, '$1_$2') // 驼峰转下划线（只在小写字母后跟大写字母时）
+      .toLowerCase() // 转小写
+      .replace(/[^a-z0-9_]/g, '_') // 非法字符转下划线
+      .replace(/_+/g, '_') // 多个下划线合并
+      .replace(/^_|_$/, '') // 去掉首尾下划线
+  }`
 }
