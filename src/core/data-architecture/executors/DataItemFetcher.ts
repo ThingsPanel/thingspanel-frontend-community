@@ -9,6 +9,8 @@ import { defaultScriptEngine } from '../../script-engine'
 import type { HttpConfig, HttpParameter, PathParameter } from '../types/http-config'
 import { convertValue } from '../types/http-config'
 import { request } from '@/service/request'
+// 导入Visual Editor store以获取组件实例
+import { useEditorStore } from '@/components/visual-editor/store/editor'
 
 // 类型安全的数据项配置
 export type DataItem =
@@ -81,6 +83,157 @@ export interface IDataItemFetcher {
  * 数据项获取器实现类
  */
 export class DataItemFetcher implements IDataItemFetcher {
+  /**
+   * 从组件实例中获取属性值
+   * @param bindingPath 绑定路径，格式：组件实例ID.属性路径
+   * @returns 组件属性的实际值
+   */
+  private getComponentPropertyValue(bindingPath: string): any {
+    try {
+      console.log('🔍 [组件属性获取] 解析绑定路径:', bindingPath)
+      
+      if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
+        console.warn('⚠️ [组件属性获取] 无效的绑定路径格式:', bindingPath)
+        return undefined
+      }
+
+      const parts = bindingPath.split('.')
+      const componentId = parts[0]
+      const propertyPath = parts.slice(1).join('.')
+      
+      console.log('🔍 [组件属性获取] 解析结果:', { componentId, propertyPath })
+
+      // 1. 获取编辑器store实例
+      const editorStore = useEditorStore()
+      
+      console.log('🔍 [组件属性获取] 编辑器状态:', {
+        nodesCount: editorStore.nodes?.length || 0,
+        nodes: editorStore.nodes?.map(n => ({ id: n.id, type: n.type }))
+      })
+
+      // 2. 查找目标组件实例
+      const targetComponent = editorStore.nodes?.find(node => node.id === componentId)
+      if (!targetComponent) {
+        console.warn('⚠️ [组件属性获取] 未找到组件实例:', componentId)
+        return undefined
+      }
+
+      console.log('✅ [组件属性获取] 找到目标组件:', {
+        id: targetComponent.id,
+        type: targetComponent.type,
+        properties: Object.keys(targetComponent.properties || {})
+      })
+
+      // 3. 从组件properties中获取属性值
+      const propertyValue = this.getNestedProperty(targetComponent.properties, propertyPath)
+      
+      console.log('🔍 [组件属性获取] 属性值获取结果:', {
+        propertyPath,
+        propertyValue,
+        properties: targetComponent.properties
+      })
+
+      return propertyValue
+    } catch (error) {
+      console.error('❌ [组件属性获取] 获取组件属性值时出错:', error)
+      return undefined
+    }
+  }
+
+  /**
+   * 获取嵌套对象属性
+   * @param obj 目标对象
+   * @param path 属性路径，如 'customize.title'
+   * @returns 属性值
+   */
+  private getNestedProperty(obj: any, path: string): any {
+    if (!obj || !path) return undefined
+    
+    const keys = path.split('.')
+    let current = obj
+    
+    for (const key of keys) {
+      if (current && typeof current === 'object' && key in current) {
+        current = current[key]
+      } else {
+        console.log('🔍 [嵌套属性获取] 属性路径不存在:', { currentKeys: Object.keys(current || {}), missingKey: key })
+        return undefined
+      }
+    }
+    
+    return current
+  }
+
+  /**
+   * 解析参数值，支持默认值回退机制和组件属性绑定
+   * @param param HTTP参数
+   * @returns 解析后的参数值
+   */
+  private resolveParameterValue(param: HttpParameter): any {
+    console.log('🔍 [参数解析] 开始解析参数:', {
+      key: param.key,
+      value: param.value,
+      defaultValue: param.defaultValue,
+      valueMode: param.valueMode,
+      variableName: param.variableName,
+      selectedTemplate: param.selectedTemplate
+    })
+
+    let resolvedValue = param.value
+
+    // 🔥 新增：如果是组件属性绑定，需要从组件实例中获取实际值
+    if (param.selectedTemplate === 'component-property-binding' && typeof param.value === 'string') {
+      console.log('🔗 [参数解析] 检测到组件属性绑定，尝试获取实际值:', param.value)
+      
+      const actualValue = this.getComponentPropertyValue(param.value)
+      if (actualValue !== undefined && actualValue !== null && actualValue !== '') {
+        resolvedValue = actualValue
+        console.log('✅ [参数解析] 成功获取组件属性值:', { bindingPath: param.value, actualValue })
+      } else {
+        // 🔥 修复：当组件属性值为空时，设置 resolvedValue 为 undefined，触发默认值机制
+        resolvedValue = undefined
+        console.log('⚠️ [参数解析] 组件属性值为空或未找到，将使用默认值:', { bindingPath: param.value })
+      }
+    }
+
+    // 检查值是否为"空"（需要使用默认值的情况）
+    const isEmpty = resolvedValue === null || 
+                   resolvedValue === undefined || 
+                   resolvedValue === '' ||
+                   (typeof resolvedValue === 'string' && resolvedValue.trim() === '')
+
+    if (isEmpty) {
+      console.log('🔄 [参数解析] 检测到空值，尝试使用默认值:', {
+        originalValue: param.value,
+        hasDefaultValue: param.defaultValue !== undefined && param.defaultValue !== null,
+        defaultValue: param.defaultValue
+      })
+
+      // 如果有默认值，使用默认值
+      if (param.defaultValue !== undefined && param.defaultValue !== null) {
+        resolvedValue = param.defaultValue
+        console.log('✅ [参数解析] 使用默认值:', resolvedValue)
+      } else {
+        console.log('⚠️ [参数解析] 无默认值可用，将跳过此参数')
+        return null // 返回null表示跳过此参数
+      }
+    }
+
+    // 转换数据类型
+    const convertedValue = convertValue(resolvedValue, param.dataType)
+    
+    console.log('🔧 [参数解析] 参数值解析完成:', {
+      key: param.key,
+      originalValue: param.value,
+      resolvedValue,
+      convertedValue,
+      wasEmpty: isEmpty,
+      usedDefaultValue: isEmpty && param.defaultValue !== undefined
+    })
+
+    return convertedValue
+  }
+
   /**
    * 根据类型分支处理数据获取
    */
@@ -192,71 +345,63 @@ export class DataItemFetcher implements IDataItemFetcher {
           isDynamic: pathParam.isDynamic,
           dataType: pathParam.dataType,
           variableName: pathParam.variableName,
-          description: pathParam.description
+          description: pathParam.description,
+          defaultValue: pathParam.defaultValue
         })
 
-        if (pathParam.value !== undefined && pathParam.value !== null && pathParam.value !== '') {
-          const convertedValue = convertValue(pathParam.value, pathParam.dataType)
-          console.log('🔄 [HTTP请求器] 值转换:', {
-            原始值: pathParam.value,
-            转换后: convertedValue,
-            转换类型: typeof convertedValue
-          })
-
-          finalUrl = finalUrl + convertedValue
+        // 使用resolveParameterValue处理路径参数，支持默认值回退
+        const resolvedValue = this.resolveParameterValue(pathParam as HttpParameter)
+        
+        if (resolvedValue !== null) {
+          finalUrl = finalUrl + resolvedValue
           console.log('✅ [HTTP请求器] 路径参数拼接成功:', {
             原始URL: config.url,
             最终URL: finalUrl,
-            拼接的值: convertedValue
+            拼接的值: resolvedValue
           })
         } else {
-          console.log('⚠️ [HTTP请求器] 路径参数值为空，跳过拼接:', {
-            value: pathParam.value,
-            原因:
-              pathParam.value === undefined
-                ? '未定义'
-                : pathParam.value === null
-                  ? '为null'
-                  : pathParam.value === ''
-                    ? '为空字符串'
-                    : '未知'
-          })
+          console.log('⚠️ [HTTP请求器] 路径参数无有效值（包括默认值），跳过拼接')
         }
       } else {
         console.log('ℹ️ [HTTP请求器] 无路径参数配置')
       }
 
-      // 2. 处理查询参数
+      // 2. 处理查询参数（支持默认值回退）
       if (config.params && config.params.length > 0) {
         config.params
-          .filter(p => p.enabled && p.key && p.value !== undefined && p.value !== null && p.value !== '')
+          .filter(p => p.enabled && p.key) // 只检查enabled和key，允许空值进入处理
           .forEach(p => {
-            queryParams[p.key] = convertValue(p.value, p.dataType)
+            const resolvedValue = this.resolveParameterValue(p)
+            if (resolvedValue !== null) { // 只有resolveParameterValue返回null时才跳过
+              queryParams[p.key] = resolvedValue
+            }
           })
       }
 
-      // 3. 向后兼容：统一参数系统
+      // 3. 向后兼容：统一参数系统（支持默认值回退）
       else if (config.parameters && config.parameters.length > 0) {
         config.parameters
-          .filter(p => p.enabled && p.key && p.value !== undefined && p.value !== null && p.value !== '')
+          .filter(p => p.enabled && p.key) // 只检查enabled和key，允许空值进入处理
           .forEach(p => {
-            const convertedValue = convertValue(p.value, p.dataType)
+            const resolvedValue = this.resolveParameterValue(p)
+            if (resolvedValue !== null) { // 只有resolveParameterValue返回null时才跳过
 
-            switch (p.paramType) {
-              case 'path':
-                // 统一参数中的路径参数：拼接到URL后面
-                finalUrl = finalUrl + convertedValue
-                console.log('🔍 [HTTP请求器] 统一参数路径拼接:', finalUrl)
-                break
-              case 'query':
-                // 查询参数：添加到params对象
-                queryParams[p.key] = convertedValue
-                break
-              case 'header':
-                // 请求头参数：添加到headers对象
-                requestConfig.headers = requestConfig.headers || {}
-                requestConfig.headers[p.key] = String(convertedValue)
-                break
+              switch (p.paramType) {
+                case 'path':
+                  // 统一参数中的路径参数：拼接到URL后面
+                  finalUrl = finalUrl + resolvedValue
+                  console.log('🔍 [HTTP请求器] 统一参数路径拼接:', finalUrl)
+                  break
+                case 'query':
+                  // 查询参数：添加到params对象
+                  queryParams[p.key] = resolvedValue
+                  break
+                case 'header':
+                  // 请求头参数：添加到headers对象
+                  requestConfig.headers = requestConfig.headers || {}
+                  requestConfig.headers[p.key] = String(resolvedValue)
+                  break
+              }
             }
           })
       }

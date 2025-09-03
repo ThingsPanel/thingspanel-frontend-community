@@ -1,9 +1,12 @@
 /**
  * Card2.1 组件注册表
  * 提供组件定义的统一管理和查询服务
+ * 支持 settingConfig 的自动属性暴露注册
  */
 
 import type { ComponentDefinition } from './types'
+import type { ComponentSettingConfig } from '../types/setting-config'
+import { autoRegisterFromSettingConfig } from './property-exposure'
 
 /**
  * 组件注册表类
@@ -19,7 +22,11 @@ export class ComponentRegistry {
   static register(definition: ComponentDefinition): void {
     console.log(`📝 [ComponentRegistry] 注册组件: ${definition.type}`, {
       name: definition.name,
-      dataSources: definition.dataSources ? Object.keys(definition.dataSources) : [],
+      dataSources: definition.dataSources
+        ? Array.isArray(definition.dataSources)
+          ? definition.dataSources.map(ds => ds.key)
+          : Object.keys(definition.dataSources)
+        : [],
       staticParams: definition.staticParams ? Object.keys(definition.staticParams) : []
     })
 
@@ -66,7 +73,18 @@ export class ComponentRegistry {
    */
   static getDataSourceKeys(componentType: string): string[] {
     const definition = this.get(componentType)
-    const keys = definition?.dataSources ? Object.keys(definition.dataSources) : []
+    let keys: string[] = []
+
+    if (definition?.dataSources) {
+      // 处理数组格式的 dataSources (新的三文件架构)
+      if (Array.isArray(definition.dataSources)) {
+        keys = definition.dataSources.map(ds => ds.key)
+      }
+      // 处理对象格式的 dataSources (旧的架构兼容)
+      else if (typeof definition.dataSources === 'object') {
+        keys = Object.keys(definition.dataSources)
+      }
+    }
 
     console.log(`🔍 [ComponentRegistry] 组件 ${componentType} 的数据源键:`, keys)
     return keys
@@ -150,6 +168,77 @@ export class ComponentRegistry {
 
     console.log(`✅ [ComponentRegistry] 批量注册完成，当前统计:`, this.getStats())
   }
+
+  /**
+   * 🔥 新增：从 settingConfig 注册组件的属性暴露配置
+   * @param settingConfig 组件设置配置
+   */
+  static registerSettingConfig<T extends Record<string, any>>(settingConfig: ComponentSettingConfig<T>): void {
+    console.log(`🎛️ [ComponentRegistry] 注册 settingConfig 属性暴露: ${settingConfig.componentType}`)
+
+    try {
+      // 自动注册到属性暴露系统
+      autoRegisterFromSettingConfig(settingConfig)
+
+      console.log(`✅ [ComponentRegistry] settingConfig 注册成功: ${settingConfig.componentType}`, {
+        settingsCount: settingConfig.settings.length,
+        groups: [...new Set(settingConfig.settings.map(s => s.options?.group || 'default'))]
+      })
+    } catch (error) {
+      console.error(`❌ [ComponentRegistry] settingConfig 注册失败: ${settingConfig.componentType}`, error)
+    }
+  }
+
+  /**
+   * 🔥 新增：批量注册 settingConfig
+   * @param settingConfigs settingConfig 数组
+   */
+  static registerSettingConfigs(settingConfigs: ComponentSettingConfig<any>[]): void {
+    console.log(`🎛️ [ComponentRegistry] 批量注册 ${settingConfigs.length} 个 settingConfig`)
+
+    settingConfigs.forEach(config => {
+      this.registerSettingConfig(config)
+    })
+
+    console.log(`✅ [ComponentRegistry] settingConfig 批量注册完成`)
+  }
+
+  /**
+   * 🔥 新增：注册完整的组件（包括定义和 settingConfig）
+   * @param definition 组件定义
+   * @param settingConfig 设置配置（可选）
+   */
+  static registerComponent<T extends Record<string, any>>(
+    definition: ComponentDefinition,
+    settingConfig?: ComponentSettingConfig<T>
+  ): void {
+    console.log(`📦 [ComponentRegistry] 注册完整组件: ${definition.type}`, {
+      hasSettingConfig: !!settingConfig,
+      dataSources: definition.dataSources
+        ? Array.isArray(definition.dataSources)
+          ? definition.dataSources.map(ds => ds.key)
+          : Object.keys(definition.dataSources)
+        : [],
+      staticParams: definition.staticParams ? Object.keys(definition.staticParams) : []
+    })
+
+    // 注册组件定义
+    this.register(definition)
+
+    // 如果有 settingConfig，同时注册属性暴露
+    if (settingConfig) {
+      // 验证组件类型一致性
+      if (settingConfig.componentType !== definition.type) {
+        console.warn(
+          `⚠️ [ComponentRegistry] 组件类型不匹配: definition.type="${definition.type}" vs settingConfig.componentType="${settingConfig.componentType}"`
+        )
+      }
+
+      this.registerSettingConfig(settingConfig)
+    }
+
+    console.log(`✅ [ComponentRegistry] 完整组件注册成功: ${definition.type}`)
+  }
 }
 
 /**
@@ -163,6 +252,12 @@ export interface IComponentRegistry {
   getDataSourceKeys(componentType: string): string[]
   getStaticParamKeys(componentType: string): string[]
   isMultiDataSource(componentType: string): boolean
+  registerSettingConfig<T extends Record<string, any>>(settingConfig: ComponentSettingConfig<T>): void
+  registerSettingConfigs(settingConfigs: ComponentSettingConfig<any>[]): void
+  registerComponent<T extends Record<string, any>>(
+    definition: ComponentDefinition,
+    settingConfig?: ComponentSettingConfig<T>
+  ): void
 }
 
 /**

@@ -1,305 +1,443 @@
 <template>
   <div class="auto-form-generator">
-    <!-- TS配置生成的表单 -->
-    <div v-if="tsConfig" class="ts-config-section">
-      <n-form
-        ref="formRef"
-        :model="formData"
-        label-placement="left"
-        label-width="auto"
-        size="small"
-        @update:model="handleTSChange"
-      >
-        <!-- 分组显示 -->
-        <template v-for="group in groupedFields" :key="group.name">
-          <div v-if="groupedFields.length > 1" class="form-group">
-            <h4 class="group-title">{{ group.label }}</h4>
-          </div>
+    <n-form
+      ref="formRef"
+      :model="localValue"
+      :label-placement="labelPlacement"
+      :label-width="labelWidth"
+      :disabled="disabled"
+    >
+      <!-- 按组分组显示设置项 -->
+      <div v-for="groupName in groupNames" :key="groupName" class="form-group">
+        <!-- 组标题 -->
+        <div v-if="groupName !== 'default'" class="form-group-title">
+          {{ groupName }}
+        </div>
 
-          <!-- 字段渲染 -->
-          <template v-for="field in group.fields" :key="field.key">
-            <!-- Vue组件字段 -->
-            <div v-if="field.type === 'vue-component'" class="vue-component-field">
-              <component
-                :is="getVueComponent(field)"
-                v-model="formData[field.key]"
-                v-bind="field.props || {}"
-                @update:model-value="handleFieldChange(field.key, $event)"
+        <!-- 组内的表单项 -->
+        <n-form-item
+          v-for="setting in getSettingsByGroup(groupName)"
+          :key="setting.path"
+          :label="setting.label"
+          :path="setting.path"
+          :rule="getValidationRules(setting)"
+        >
+          <!-- 输入框 -->
+          <n-input
+            v-if="setting.controlType === 'INPUT' || setting.controlType === 'input'"
+            :value="getNestedValue(localValue, setting.path)"
+            :placeholder="setting.options?.placeholder"
+            :disabled="setting.options?.disabled"
+            :clearable="setting.options?.clearable ?? true"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          />
+
+          <!-- 文本域 -->
+          <n-input
+            v-else-if="setting.controlType === 'TEXTAREA' || setting.controlType === 'textarea'"
+            type="textarea"
+            :value="getNestedValue(localValue, setting.path)"
+            :placeholder="setting.options?.placeholder"
+            :rows="setting.options?.rows || 3"
+            :disabled="setting.options?.disabled"
+            :clearable="setting.options?.clearable ?? true"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          />
+
+          <!-- 数字输入 -->
+          <n-input-number
+            v-else-if="setting.controlType === 'INPUT_NUMBER' || setting.controlType === 'input-number'"
+            :value="getNestedValue(localValue, setting.path)"
+            :min="setting.options?.min"
+            :max="setting.options?.max"
+            :step="setting.options?.step"
+            :precision="setting.options?.precision"
+            :disabled="setting.options?.disabled"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          />
+
+          <!-- 开关 -->
+          <n-switch
+            v-else-if="setting.controlType === 'SWITCH' || setting.controlType === 'switch'"
+            :value="getNestedValue(localValue, setting.path)"
+            :disabled="setting.options?.disabled"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          />
+
+          <!-- 选择器 -->
+          <n-select
+            v-else-if="setting.controlType === 'SELECT' || setting.controlType === 'select'"
+            :value="getNestedValue(localValue, setting.path)"
+            :options="setting.options?.options || []"
+            :placeholder="setting.options?.placeholder"
+            :disabled="setting.options?.disabled"
+            :clearable="setting.options?.clearable ?? true"
+            :multiple="setting.options?.multiple"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          />
+
+          <!-- 颜色选择器 -->
+          <n-color-picker
+            v-else-if="setting.controlType === 'COLOR_PICKER' || setting.controlType === 'color-picker'"
+            :value="getNestedValue(localValue, setting.path)"
+            :disabled="setting.options?.disabled"
+            :show-alpha="setting.options?.showAlpha"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          />
+
+          <!-- 滑块 -->
+          <n-slider
+            v-else-if="setting.controlType === 'SLIDER' || setting.controlType === 'slider'"
+            :value="getNestedValue(localValue, setting.path)"
+            :min="setting.options?.min || 0"
+            :max="setting.options?.max || 100"
+            :step="setting.options?.step || 1"
+            :disabled="setting.options?.disabled"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          />
+
+          <!-- 日期选择器 -->
+          <n-date-picker
+            v-else-if="setting.controlType === 'DATE_PICKER' || setting.controlType === 'date-picker'"
+            :value="getNestedValue(localValue, setting.path)"
+            :type="setting.options?.type || 'date'"
+            :placeholder="setting.options?.placeholder"
+            :disabled="setting.options?.disabled"
+            :clearable="setting.options?.clearable ?? true"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          />
+
+          <!-- 时间选择器 -->
+          <n-time-picker
+            v-else-if="setting.controlType === 'TIME_PICKER' || setting.controlType === 'time-picker'"
+            :value="getNestedValue(localValue, setting.path)"
+            :placeholder="setting.options?.placeholder"
+            :disabled="setting.options?.disabled"
+            :clearable="setting.options?.clearable ?? true"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          />
+
+          <!-- 评分 -->
+          <n-rate
+            v-else-if="setting.controlType === 'RATE' || setting.controlType === 'rate'"
+            :value="getNestedValue(localValue, setting.path)"
+            :count="setting.options?.count || 5"
+            :disabled="setting.options?.disabled"
+            :allow-half="setting.options?.allowHalf"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          />
+
+          <!-- 复选框组 -->
+          <n-checkbox-group
+            v-else-if="setting.controlType === 'CHECKBOX_GROUP' || setting.controlType === 'checkbox-group'"
+            :value="getNestedValue(localValue, setting.path)"
+            :disabled="setting.options?.disabled"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          >
+            <n-space>
+              <n-checkbox
+                v-for="option in setting.options?.options || []"
+                :key="option.value"
+                :value="option.value"
+                :label="option.label"
               />
-            </div>
+            </n-space>
+          </n-checkbox-group>
 
-            <!-- 普通字段 -->
-            <n-form-item v-else :label="field.label" :path="field.key" :rule="getFieldRule(field)">
-              <!-- 字符串输入 -->
-              <n-input
-                v-if="field.type === 'string'"
-                v-model:value="formData[field.key]"
-                :placeholder="field.description"
-                :disabled="readonly"
-                @update:value="handleFieldChange(field.key, $event)"
-              />
+          <!-- 单选框组 -->
+          <n-radio-group
+            v-else-if="setting.controlType === 'RADIO_GROUP' || setting.controlType === 'radio-group'"
+            :value="getNestedValue(localValue, setting.path)"
+            :disabled="setting.options?.disabled"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          >
+            <n-space>
+              <n-radio v-for="option in setting.options?.options || []" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </n-radio>
+            </n-space>
+          </n-radio-group>
 
-              <!-- 文本域 -->
-              <n-input
-                v-else-if="field.type === 'textarea'"
-                v-model:value="formData[field.key]"
-                type="textarea"
-                :rows="3"
-                :placeholder="field.description"
-                :disabled="readonly"
-                @update:value="handleFieldChange(field.key, $event)"
-              />
-
-              <!-- 数字输入 -->
-              <n-input-number
-                v-else-if="field.type === 'number'"
-                v-model:value="formData[field.key]"
-                :min="field.min"
-                :max="field.max"
-                :step="field.step || 1"
-                :disabled="readonly"
-                @update:value="handleFieldChange(field.key, $event)"
-              />
-
-              <!-- 滑块 -->
-              <n-slider
-                v-else-if="field.type === 'slider'"
-                v-model:value="formData[field.key]"
-                :min="field.min || 0"
-                :max="field.max || 100"
-                :step="field.step || 1"
-                :disabled="readonly"
-                @update:value="handleFieldChange(field.key, $event)"
-              />
-
-              <!-- 布尔开关 -->
-              <n-switch
-                v-else-if="field.type === 'boolean'"
-                v-model:value="formData[field.key]"
-                :disabled="readonly"
-                @update:value="handleFieldChange(field.key, $event)"
-              />
-
-              <!-- 选择器 -->
-              <n-select
-                v-else-if="field.type === 'select'"
-                v-model:value="formData[field.key]"
-                :options="field.options || []"
-                :disabled="readonly"
-                @update:value="handleFieldChange(field.key, $event)"
-              />
-
-              <!-- 颜色选择器 -->
-              <n-color-picker
-                v-else-if="field.type === 'color'"
-                v-model:value="formData[field.key]"
-                :disabled="readonly"
-                show-alpha
-                @update:value="handleFieldChange(field.key, $event)"
-              />
-            </n-form-item>
-          </template>
-        </template>
-      </n-form>
-    </div>
-
-    <!-- 纯Vue配置组件 -->
-    <div v-if="mode === 'vue-only' && vueConfig" class="vue-config-section">
-      <component :is="vueConfig" v-model="formData" :readonly="readonly" @update:model-value="handleVueChange" />
-    </div>
-
-    <!-- 混合模式：Vue组件补充 -->
-    <div v-if="mode === 'hybrid' && vueConfig" class="hybrid-vue-section">
-      <div class="section-divider">
-        <n-divider>自定义配置</n-divider>
+          <!-- 未知控件类型提示 -->
+          <n-text v-else type="warning">未支持的控件类型: {{ setting.controlType }}</n-text>
+        </n-form-item>
       </div>
-      <component :is="vueConfig" v-model="vueFormData" :readonly="readonly" @update:model-value="handleVueChange" />
-    </div>
+    </n-form>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+<script setup lang="ts" generic="T extends Record<string, any>">
+/**
+ * 自动表单生成器
+ * 根据 ComponentSettingConfig 自动生成配置表单
+ */
+
+import { computed, reactive, watch, nextTick, ref } from 'vue'
 import {
   NForm,
   NFormItem,
   NInput,
   NInputNumber,
-  NSlider,
   NSwitch,
   NSelect,
   NColorPicker,
-  NDivider,
-  FormInst
+  NSlider,
+  NDatePicker,
+  NTimePicker,
+  NRate,
+  NCheckboxGroup,
+  NCheckbox,
+  NRadioGroup,
+  NRadio,
+  NSpace,
+  NText,
+  type FormInst,
+  type FormValidationError,
+  type FormItemRule
 } from 'naive-ui'
-import type { Component } from 'vue'
-import type { TSConfig, ConfigMode, ConfigValues } from './config-types'
-import { FlexibleConfigManager } from './config-manager'
+import type { ComponentSettingConfig, Setting } from '@/card2.1/types/setting-config'
 
-interface Props {
-  // 配置定义
-  tsConfig?: TSConfig
-  vueConfig?: Component
-
-  // 配置模式
-  mode?: ConfigMode
-
-  // 当前值
-  modelValue?: ConfigValues
-
-  // 是否只读
-  readonly?: boolean
+// Props接口
+interface Props<T extends Record<string, any> = Record<string, any>> {
+  /** 设置配置 */
+  settingConfig: ComponentSettingConfig<T>
+  /** 当前值 */
+  modelValue?: T
+  /** 表单标签位置 */
+  labelPlacement?: 'left' | 'top'
+  /** 标签宽度 */
+  labelWidth?: number | string
+  /** 是否禁用 */
+  disabled?: boolean
 }
 
-interface Emits {
-  (event: 'update:modelValue', value: ConfigValues): void
-  (event: 'change', value: ConfigValues): void
-  (event: 'validate', result: { valid: boolean; errors: string[] }): void
+// Emits接口
+interface Emits<T extends Record<string, any> = Record<string, any>> {
+  (e: 'update:modelValue', value: T): void
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  mode: 'vue-only',
-  modelValue: () => ({}),
-  readonly: false
+const props = withDefaults(defineProps<Props<T>>(), {
+  labelPlacement: 'left',
+  labelWidth: 120,
+  disabled: false
 })
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits<Emits<T>>()
 
 // 表单引用
 const formRef = ref<FormInst>()
 
-// 表单数据
-const formData = reactive<ConfigValues>({})
-const vueFormData = reactive<ConfigValues>({})
+// 本地值管理
+const localValue = reactive<T>(
+  (props.modelValue ? { ...props.modelValue } : { ...props.settingConfig.customConfig }) as T
+)
 
-// 计算属性
-const groupedFields = computed(() => {
-  if (!props.tsConfig) return []
-  return FlexibleConfigManager.getGroupedFields(props.tsConfig)
+// 防循环更新标志
+let isUpdatingFromProps = false
+
+/**
+ * 获取设置项分组
+ */
+const settingGroups = computed(() => {
+  const groups: Record<string, Setting[]> = {}
+
+  for (const setting of props.settingConfig.settings) {
+    const groupName = setting.options?.group || 'default'
+    if (!groups[groupName]) {
+      groups[groupName] = []
+    }
+
+    // 转换设置项，将 type 映射为 controlType，path 映射为 field
+    const transformedSetting = {
+      ...setting,
+      controlType: setting.type, // 映射字段名
+      path: setting.field, // 映射字段名
+      label: setting.label,
+      options: setting.options
+    }
+
+    groups[groupName].push(transformedSetting as Setting)
+  }
+
+  return groups
 })
 
-// 初始化表单数据
-const initFormData = () => {
-  // 清空现有数据
-  Object.keys(formData).forEach(key => delete formData[key])
-  Object.keys(vueFormData).forEach(key => delete vueFormData[key])
+/**
+ * 获取所有分组名称
+ */
+const groupNames = computed(() => {
+  const names = Object.keys(settingGroups.value)
+  // 将 'default' 组放在最前面，其他按字母顺序排序
+  return names.sort((a, b) => {
+    if (a === 'default') return -1
+    if (b === 'default') return 1
+    return a.localeCompare(b)
+  })
+})
 
-  // 设置默认值
-  if (props.tsConfig) {
-    const defaults = FlexibleConfigManager.getDefaultValues(props.tsConfig)
-    Object.assign(formData, defaults)
-  }
-
-  // 设置外部传入的值
-  if (props.modelValue) {
-    Object.assign(formData, props.modelValue)
-    Object.assign(vueFormData, props.modelValue)
-  }
+/**
+ * 根据分组获取设置项
+ */
+const getSettingsByGroup = (groupName: string): Setting[] => {
+  return settingGroups.value[groupName] || []
 }
 
-// 监听外部值变化
-watch(
-  () => props.modelValue,
-  newValue => {
-    if (newValue) {
-      Object.assign(formData, newValue)
-      Object.assign(vueFormData, newValue)
+/**
+ * 获取嵌套对象的值
+ */
+const getNestedValue = <V = any,>(obj: Record<string, any>, path: string): V => {
+  return path.split('.').reduce((current, key) => {
+    return current && typeof current === 'object' ? current[key] : undefined
+  }, obj)
+}
+
+/**
+ * 设置嵌套对象的值
+ */
+const setNestedValue = (obj: Record<string, any>, path: string, value: any) => {
+  const keys = path.split('.')
+  const lastKey = keys.pop()!
+
+  const target = keys.reduce((current, key) => {
+    if (!current[key] || typeof current[key] !== 'object') {
+      current[key] = {}
     }
-  },
-  { deep: true }
-)
+    return current[key]
+  }, obj)
 
-// 监听配置变化
-watch(
-  [() => props.tsConfig, () => props.vueConfig],
-  () => {
-    initFormData()
-  },
-  { deep: true }
-)
-
-// 字段变化处理
-const handleFieldChange = (key: string, value: any) => {
-  if (props.readonly) return
-
-  console.log('[AutoFormGenerator] 字段变化:', { key, value })
-  emitChange()
+  target[lastKey] = value
 }
 
-// TS表单变化处理
-const handleTSChange = () => {
-  if (props.readonly) return
-  emitChange()
+/**
+ * 更新嵌套值并触发事件
+ */
+const updateNestedValue = (path: string, value: any) => {
+  if (isUpdatingFromProps) return
+
+  console.log('🔄 [AutoFormGenerator] 更新值:', { path, value })
+
+  setNestedValue(localValue, path, value)
+
+  // 发送更新事件
+  emit('update:modelValue', { ...localValue } as T)
 }
 
-// Vue组件变化处理
-const handleVueChange = (newValue: ConfigValues) => {
-  if (props.readonly) return
+/**
+ * 获取表单验证规则
+ */
+const getValidationRules = (setting: Setting): FormItemRule[] => {
+  const rules: FormItemRule[] = []
 
-  Object.assign(vueFormData, newValue)
-  emitChange()
-}
-
-// 发出变化事件
-const emitChange = () => {
-  const values = props.mode === 'hybrid' ? FlexibleConfigManager.mergeValues(formData, vueFormData) : formData
-
-  // 验证
-  const validation = FlexibleConfigManager.validateValues(values, props.tsConfig)
-  emit('validate', validation)
-
-  if (validation.valid) {
-    emit('update:modelValue', { ...values })
-    emit('change', { ...values })
-  }
-}
-
-// 获取Vue组件
-const getVueComponent = (field: any): Component => {
-  if (typeof field.component === 'string') {
-    // 这里可以实现组件名称到实际组件的映射
-    // 现在简单返回null，实际使用时需要组件注册机制
-    return null as any
-  }
-  return field.component
-}
-
-// 获取字段验证规则
-const getFieldRule = (field: any) => {
-  const rules: any[] = []
-
-  if (field.required) {
+  // 必填验证
+  if (setting.options?.required) {
     rules.push({
       required: true,
-      message: `${field.label} 是必填字段`,
-      trigger: ['blur', 'input']
+      message: `请${setting.controlType === 'SELECT' ? '选择' : '输入'}${setting.label}`,
+      trigger: ['blur', 'change']
     })
   }
 
-  return rules.length > 0 ? rules : undefined
-}
+  // 长度验证
+  if (setting.options?.minLength !== undefined || setting.options?.maxLength !== undefined) {
+    rules.push({
+      validator: (rule, value: string) => {
+        if (!value && !setting.options?.required) return true
 
-// 初始化
-onMounted(() => {
-  initFormData()
-})
+        const len = value?.length || 0
+        const min = setting.options?.minLength
+        const max = setting.options?.maxLength
 
-// 暴露验证方法
-const validate = async () => {
-  if (formRef.value) {
-    try {
-      await formRef.value.validate()
-      const validation = FlexibleConfigManager.validateValues(formData, props.tsConfig)
-      return validation
-    } catch (error) {
-      return { valid: false, errors: ['表单验证失败'] }
-    }
+        if (min !== undefined && len < min) {
+          return new Error(`${setting.label}长度不能少于${min}个字符`)
+        }
+        if (max !== undefined && len > max) {
+          return new Error(`${setting.label}长度不能超过${max}个字符`)
+        }
+
+        return true
+      },
+      trigger: ['blur', 'change']
+    })
   }
-  return { valid: true, errors: [] }
+
+  // 数值范围验证
+  if (
+    setting.controlType === 'INPUT_NUMBER' &&
+    (setting.options?.min !== undefined || setting.options?.max !== undefined)
+  ) {
+    rules.push({
+      validator: (rule, value: number) => {
+        if (value == null && !setting.options?.required) return true
+
+        const min = setting.options?.min
+        const max = setting.options?.max
+
+        if (min !== undefined && value < min) {
+          return new Error(`${setting.label}不能小于${min}`)
+        }
+        if (max !== undefined && value > max) {
+          return new Error(`${setting.label}不能大于${max}`)
+        }
+
+        return true
+      },
+      trigger: ['blur', 'change']
+    })
+  }
+
+  return rules
 }
 
+/**
+ * 表单验证
+ */
+const validate = async (): Promise<boolean> => {
+  try {
+    await formRef.value?.validate()
+    return true
+  } catch (validationErrors: any) {
+    console.warn('🚨 [AutoFormGenerator] 表单验证失败:', validationErrors)
+    return false
+  }
+}
+
+/**
+ * 重置表单
+ */
+const resetForm = () => {
+  // 重置为默认配置
+  Object.assign(localValue, props.settingConfig.customConfig)
+  emit('update:modelValue', { ...localValue } as T)
+}
+
+/**
+ * 监听props变化
+ */
+watch(
+  () => props.modelValue,
+  newValue => {
+    if (isUpdatingFromProps || !newValue) return
+
+    isUpdatingFromProps = true
+    try {
+      Object.assign(localValue, newValue)
+      console.log('📥 [AutoFormGenerator] 同步props:', localValue)
+    } finally {
+      nextTick(() => {
+        setTimeout(() => {
+          isUpdatingFromProps = false
+        }, 10)
+      })
+    }
+  },
+  { deep: true, immediate: true }
+)
+
+// 暴露方法给父组件
 defineExpose({
-  validate
+  validate,
+  resetForm,
+  formRef
 })
 </script>
 
@@ -309,28 +447,47 @@ defineExpose({
 }
 
 .form-group {
-  margin: 16px 0 8px 0;
+  margin-bottom: 20px;
 }
 
-.group-title {
-  font-size: 13px;
-  font-weight: 500;
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group-title {
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text-color);
-  margin: 0 0 12px 0;
-  padding-bottom: 6px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
   border-bottom: 1px solid var(--border-color);
 }
 
-.vue-component-field {
+:deep(.n-form-item) {
   margin-bottom: 16px;
 }
 
-.section-divider {
-  margin: 20px 0 16px 0;
+:deep(.n-form-item:last-child) {
+  margin-bottom: 0;
 }
 
-.hybrid-vue-section {
-  border-top: 1px dashed var(--border-color);
-  padding-top: 16px;
+:deep(.n-form-item-label) {
+  font-weight: 500;
+  color: var(--text-color-2);
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+  .auto-form-generator {
+    padding: 0 8px;
+  }
+
+  .form-group-title {
+    font-size: 13px;
+  }
+
+  :deep(.n-form-item) {
+    margin-bottom: 12px;
+  }
 }
 </style>

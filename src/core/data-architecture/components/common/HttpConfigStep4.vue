@@ -42,12 +42,11 @@ const updatePreRequestScript = (script: string) => {
       <SimpleScriptEditor
         :model-value="modelValue.preRequestScript || ''"
         template-category="http-pre-request"
-        :placeholder="t('config.dataSource.http.preRequestScript.placeholder')"
+        placeholder="请求前处理脚本"
         height="300px"
         @update:model-value="updatePreRequestScript"
       />
     </div>
-    
   </div>
 </template>
 

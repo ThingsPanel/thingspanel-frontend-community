@@ -131,6 +131,28 @@ export const PARAMETER_TEMPLATES: ParameterTemplate[] = [
     description: '绑定到动态属性（运行时获取值）',
     defaultValue: ''
   },
+  // 🔥 新增：组件属性绑定模板
+  {
+    id: 'component-property-binding',
+    name: '组件属性绑定',
+    type: ParameterTemplateType.COMPONENT,
+    description: '绑定到编辑器中已加载组件的属性',
+    defaultValue: '',
+    componentConfig: {
+      component: 'ComponentPropertySelector',
+      props: {
+        placeholder: '选择要绑定的组件属性'
+      },
+      events: {
+        'update:selectedValue': 'handleComponentPropertyChange'
+      },
+      renderConfig: {
+        wrapped: true,
+        containerClass: 'component-property-container',
+        minHeight: '400px'
+      }
+    }
+  },
   // 🔥 新增：组件模板
   {
     id: 'device-metrics-selector',
@@ -196,11 +218,29 @@ export const PARAMETER_TEMPLATES: ParameterTemplate[] = [
         minHeight: '100px'
       }
     }
+  },
+  {
+    id: 'interface-template',
+    name: '接口模板',
+    type: ParameterTemplateType.DROPDOWN,
+    description: '使用内部接口的常用参数模板',
+    options: [
+      { label: '设备ID', value: '{device_id}', description: '设备标识符' },
+      { label: '用户ID', value: '{user_id}', description: '用户标识符' },
+      { label: '租户ID', value: '{tenant_id}', description: '租户标识符' },
+      { label: '面板ID', value: '{board_id}', description: '面板标识符' },
+      { label: '分组ID', value: '{group_id}', description: '分组标识符' },
+      { label: '时间戳', value: '{timestamp}', description: '当前时间戳' },
+      { label: '页码', value: '1', description: '分页页码' },
+      { label: '页大小', value: '10', description: '分页大小' }
+    ],
+    defaultValue: '{device_id}',
+    allowCustom: true
   }
 ]
 
 /**
- * 根据参数类型获取推荐模板
+ * 根据参数类型获取推荐模板（简化版）
  */
 export function getRecommendedTemplates(parameterType: 'header' | 'query' | 'path'): ParameterTemplate[] {
   const baseTemplates = [
@@ -208,11 +248,14 @@ export function getRecommendedTemplates(parameterType: 'header' | 'query' | 'pat
     PARAMETER_TEMPLATES.find(t => t.id === 'property-binding')!
   ]
 
-  // 组件模板（所有类型都可使用）
+  // 接口模板
+  const interfaceTemplate = PARAMETER_TEMPLATES.find(t => t.id === 'interface-template')!
+
+  // 简化的组件模板（包含组件属性绑定和设备相关的）
   const componentTemplates = [
+    PARAMETER_TEMPLATES.find(t => t.id === 'component-property-binding')!,
     PARAMETER_TEMPLATES.find(t => t.id === 'device-metrics-selector')!,
-    PARAMETER_TEMPLATES.find(t => t.id === 'device-dispatch-selector')!,
-    PARAMETER_TEMPLATES.find(t => t.id === 'icon-selector')!
+    PARAMETER_TEMPLATES.find(t => t.id === 'device-dispatch-selector')!
   ]
 
   switch (parameterType) {
@@ -221,14 +264,19 @@ export function getRecommendedTemplates(parameterType: 'header' | 'query' | 'pat
         ...baseTemplates,
         PARAMETER_TEMPLATES.find(t => t.id === 'content-types')!,
         PARAMETER_TEMPLATES.find(t => t.id === 'auth-types')!,
-        ...componentTemplates
+        interfaceTemplate
       ]
     case 'query':
-      return [...baseTemplates, PARAMETER_TEMPLATES.find(t => t.id === 'boolean-values')!, ...componentTemplates]
+      return [
+        ...baseTemplates,
+        PARAMETER_TEMPLATES.find(t => t.id === 'boolean-values')!,
+        interfaceTemplate,
+        ...componentTemplates
+      ]
     case 'path':
-      return [...baseTemplates, ...componentTemplates]
+      return [...baseTemplates, interfaceTemplate, ...componentTemplates]
     default:
-      return [...baseTemplates, ...componentTemplates]
+      return [...baseTemplates, interfaceTemplate]
   }
 }
 

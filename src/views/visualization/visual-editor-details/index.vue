@@ -18,7 +18,13 @@ const handleStateManagerReady = (sm: any) => {
 <template>
   <div class="visual-editor-container">
     <!-- 主编辑器 -->
-    <PanelEditor ref="panelEditor" :panel-id="panel_id" @state-manager-ready="handleStateManagerReady" />
+    <PanelEditor 
+      ref="panelEditor" 
+      :panel-id="panel_id" 
+      :show-toolbar="true"
+      :show-page-header="true"
+      @state-manager-ready="handleStateManagerReady" 
+    />
   </div>
 </template>
 

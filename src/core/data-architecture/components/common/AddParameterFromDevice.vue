@@ -1,7 +1,10 @@
 <script setup lang="ts">
+/**
+ * 简化版设备参数添加组件
+ * 使用最简单的表单而不是复杂的设备选择器
+ */
 import { ref } from 'vue'
-import { NButton, NSpace } from 'naive-ui'
-import DeviceDispatchSelector from '@/components/device-selectors/DeviceDispatchSelector.vue'
+import { NButton, NSpace, NInput, NFormItem, NForm, NText } from 'naive-ui'
 import { $t } from '@/locales'
 
 // Emits 接口
@@ -12,40 +15,32 @@ interface Emits {
 
 const emit = defineEmits<Emits>()
 
-// 用于存储 DeviceDispatchSelector 的选择结果
-const selection = ref({
-  deviceId: '',
-  deviceName: '',
-  dataType: '',
-  metricsId: '',
-  metricsName: ''
+// 简化的表单数据
+const formData = ref({
+  paramKey: '',
+  paramValue: '',
+  deviceName: ''
 })
 
 // 添加按钮处理函数
 const handleAdd = () => {
-  // 校验是否已选择完整的设备和指标信息
-  if (!selection.value.deviceId || !selection.value.dataType || !selection.value.metricsId) {
-    window.$message.warning($t('generate.pleaseSelectDeviceAndMetrics'))
+  // 简单校验
+  if (!formData.value.paramKey.trim()) {
+    window.$message?.warning('请输入参数名')
     return
   }
 
-  // 将选择结果转换为 DynamicParameterEditor 所需的参数格式
+  // 创建简单的参数对象
   const newParam = {
-    id: `device:${selection.value.deviceId}:${selection.value.metricsId}`, // 使用唯一标识符
-    key: selection.value.metricsId,
-    value: '', // 初始值可以为空
-    type: 'device', // 标记参数类型为设备
+    key: formData.value.paramKey.trim(),
+    value: formData.value.paramValue.trim() || `{${formData.value.paramKey.trim()}}`,
+    type: 'device',
     source: {
-      deviceId: selection.value.deviceId,
-      deviceName: selection.value.deviceName,
-      dataType: selection.value.dataType,
-      metricsId: selection.value.metricsId,
-      metricsName: selection.value.metricsName
-    },
-    isEditing: false // 默认非编辑状态
+      deviceName: formData.value.deviceName.trim() || '设备',
+      paramKey: formData.value.paramKey.trim()
+    }
   }
 
-  // 通过 emit 事件将新参数传递给父组件
   emit('add', [newParam])
 }
 
@@ -58,8 +53,23 @@ const handleCancel = () => {
 <template>
   <div class="add-parameter-from-device">
     <div class="p-4">
-      <DeviceDispatchSelector v-model:value="selection" />
+      <n-text depth="3" style="margin-bottom: 16px; display: block">简化版设备参数添加 - 直接输入参数信息</n-text>
+
+      <n-form size="small" label-placement="left" label-width="80">
+        <n-form-item label="参数名" required>
+          <n-input v-model:value="formData.paramKey" placeholder="如: deviceId, temperature 等" clearable />
+        </n-form-item>
+
+        <n-form-item label="参数值">
+          <n-input v-model:value="formData.paramValue" placeholder="留空将自动生成 {参数名} 格式" clearable />
+        </n-form-item>
+
+        <n-form-item label="设备名">
+          <n-input v-model:value="formData.deviceName" placeholder="可选，用于描述" clearable />
+        </n-form-item>
+      </n-form>
     </div>
+
     <n-space justify="end" class="p-4 border-t">
       <n-button @click="handleCancel">{{ $t('common.cancel') }}</n-button>
       <n-button type="primary" @click="handleAdd">{{ $t('common.add') }}</n-button>

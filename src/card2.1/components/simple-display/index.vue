@@ -1,21 +1,12 @@
 <script setup lang="ts">
 /**
- * 简单展示组件
- * 无数据源，纯静态配置组件，支持完整的交互系统
+ * simple-display 主组件
+ * 基于新的三文件结构标准，支持 CustomConfig 类型配置和属性绑定
  */
 
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, getCurrentInstance, onMounted, onUnmounted } from 'vue'
 import type { InteractionProps, InteractionEmits } from '@/card2.1/types/interaction-component'
-
-// 组件配置接口
-interface ComponentConfig {
-  title?: string
-  content?: string
-  themeColor?: string
-  fontSize?: number
-  showIcon?: boolean
-  iconName?: string
-}
+import type { SimpleDisplayConfig, SimpleDisplayCustomize } from './settingConfig'
 
 // 组件状态接口
 interface ComponentState {
@@ -29,13 +20,17 @@ interface InteractionState {
   interactionCount: number
 }
 
-// 组件props - 继承交互系统标准props
+// 组件props - 支持新的CustomConfig结构
 interface Props extends InteractionProps {
-  config?: ComponentConfig
+  /** 新的CustomConfig结构配置 */
+  customConfig?: SimpleDisplayConfig
+  /** 向后兼容：旧的config结构 */
+  config?: Partial<SimpleDisplayCustomize>
 }
 
 const props = withDefaults(defineProps<Props>(), {
   componentId: '',
+  customConfig: undefined,
   config: () => ({}),
   allowExternalControl: true,
   showInteractionIndicator: false,
@@ -62,13 +57,41 @@ const interactionState = reactive<InteractionState>({
   interactionCount: 0
 })
 
-// 计算属性：配置相关
-const currentTitle = computed(() => props.config?.title || '简单展示组件')
-const currentContent = computed(() => props.config?.content || '这是一个静态展示组件，不需要数据源')
-const themeColor = computed(() => props.config?.themeColor || '#2080f0')
-const fontSize = computed(() => props.config?.fontSize || 16)
-const showIcon = computed(() => props.config?.showIcon ?? true)
-const iconName = computed(() => props.config?.iconName || '📊')
+/**
+ * 获取组件配置 - 支持新旧格式
+ * 优先使用 customConfig.customize，回退到 config
+ */
+const currentCustomize = computed((): SimpleDisplayCustomize => {
+  // 优先使用新的customConfig结构
+  if (props.customConfig?.customize) {
+    return props.customConfig.customize
+  }
+
+  // 回退到旧的config结构（向后兼容）
+  return {
+    title: props.config?.title || '简单展示组件',
+    content: props.config?.content || '这是一个静态展示组件，不需要数据源',
+    themeColor: props.config?.themeColor || '#2080f0',
+    fontSize: props.config?.fontSize || 16,
+    showIcon: props.config?.showIcon ?? true,
+    iconName: props.config?.iconName || '📊'
+  }
+})
+
+/**
+ * 获取变换配置
+ */
+const currentTransform = computed(() => {
+  return props.customConfig?.root?.transform || { rotate: 0, scale: 1 }
+})
+
+// 计算属性：从customize中提取各个属性
+const currentTitle = computed(() => currentCustomize.value.title)
+const currentContent = computed(() => currentCustomize.value.content)
+const themeColor = computed(() => currentCustomize.value.themeColor)
+const fontSize = computed(() => currentCustomize.value.fontSize)
+const showIcon = computed(() => currentCustomize.value.showIcon)
+const iconName = computed(() => currentCustomize.value.iconName)
 
 // 计算属性：交互指示器
 const showInteractionIndicator = computed(() => {
@@ -158,6 +181,45 @@ const handleMouseLeave = () => {
     })
   }
 }
+
+/**
+ * 🔥 新增：监听组件属性更新事件
+ * 支持跨组件属性绑定
+ */
+const handlePropertyUpdate = (event: CustomEvent) => {
+  const { propertyPath, value } = event.detail
+
+  console.log('🔄 [SimpleDisplay] 收到属性更新:', { propertyPath, value })
+
+  // 根据属性路径更新本地状态
+  if (propertyPath.startsWith('customize.')) {
+    // 这里可以添加响应式更新逻辑
+    // 由于我们使用的是computed，prop变化会自动触发重新渲染
+    console.log('✅ [SimpleDisplay] 属性更新已应用')
+  }
+}
+
+/**
+ * 组件挂载时监听属性更新事件
+ */
+onMounted(() => {
+  const element = getCurrentInstance()?.proxy?.$el
+  if (element) {
+    element.addEventListener('componentPropertyUpdate', handlePropertyUpdate)
+    console.log('🎧 [SimpleDisplay] 已注册属性更新监听器')
+  }
+})
+
+/**
+ * 组件卸载时移除事件监听
+ */
+onUnmounted(() => {
+  const element = getCurrentInstance()?.proxy?.$el
+  if (element) {
+    element.removeEventListener('componentPropertyUpdate', handlePropertyUpdate)
+    console.log('🎧 [SimpleDisplay] 已移除属性更新监听器')
+  }
+})
 </script>
 
 <template>
@@ -170,8 +232,10 @@ const handleMouseLeave = () => {
     }"
     :style="{
       '--theme-color': themeColor,
-      '--font-size': `${fontSize}px`
+      '--font-size': `${fontSize}px`,
+      transform: `rotate(${currentTransform.rotate}deg) scale(${currentTransform.scale})`
     }"
+    :data-component-id="componentId"
     @click="handleClick"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
@@ -226,6 +290,11 @@ const handleMouseLeave = () => {
           <small>最后交互: {{ new Date(interactionState.lastInteractionTime).toLocaleTimeString() }}</small>
         </div>
       </div>
+
+      <!-- 🔥 新增：配置结构信息（调试用） -->
+      <div v-if="previewMode" class="config-debug">
+        <small>配置类型: {{ customConfig ? 'CustomConfig' : 'Legacy Config' }}</small>
+      </div>
     </div>
   </div>
 </template>
@@ -242,6 +311,7 @@ const handleMouseLeave = () => {
   flex-direction: column;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative; /* 为属性绑定事件定位 */
 }
 
 .simple-display:hover {
@@ -435,6 +505,7 @@ const handleMouseLeave = () => {
   background: var(--body-color);
   border-radius: 4px;
   border: 1px solid var(--border-color);
+  margin-bottom: 8px;
 }
 
 .state-item {
@@ -446,6 +517,17 @@ const handleMouseLeave = () => {
 }
 
 .state-item small {
+  font-weight: 500;
+}
+
+/* 配置调试信息 */
+.config-debug {
+  text-align: center;
+  padding: 4px 8px;
+  background: var(--info-color-suppl);
+  border-radius: 4px;
+  font-size: 10px;
+  color: var(--info-color);
   font-weight: 500;
 }
 

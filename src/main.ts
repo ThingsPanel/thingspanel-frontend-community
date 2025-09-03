@@ -8,6 +8,8 @@ import { setupStore } from './store'
 import { router, setupRouter } from './router'
 import { i18n, setupI18n } from './locales'
 import { initEChartsComponents } from '@/utils/echarts/echarts-manager'
+// 导入 Card2.1 组件注册文件以启动组件注册和属性暴露系统
+import '@/card2.1/components'
 import App from './App.vue'
 // 定义 localStorage 的 key
 const RECENTLY_VISITED_ROUTES_KEY = 'RECENTLY_VISITED_ROUTES'

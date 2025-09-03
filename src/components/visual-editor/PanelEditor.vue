@@ -55,7 +55,19 @@ const dialog = useDialog()
 const message = useMessage()
 const appStore = useAppStore()
 
-const props = defineProps<{ panelId: string }>()
+const props = defineProps<{
+  panelId: string
+  /**
+   * 是否显示工具栏
+   * 默认为 true，保持向后兼容
+   */
+  showToolbar?: boolean
+  /**
+   * 是否显示页面标题栏
+   * 默认为 true，保持向后兼容
+   */
+  showPageHeader?: boolean
+}>()
 
 const emit = defineEmits<{
   'state-manager-ready': [stateManager: any]
@@ -518,20 +530,56 @@ const handleDataSourceManagerUpdate = (updateData: {
     }
 
     // 🔥 修复：支持新的配置格式检查
-    if (action === 'update') {
+    if (action === 'update' || action === 'config-updated') {
+      // 检查多种配置格式
       const hasDataSourceBindings = config.dataSourceBindings && Object.keys(config.dataSourceBindings).length > 0
       const hasDataSources =
         config.type === 'data-source-bindings' && (config.dataSource1 || config.dataSource2 || config.dataSource3)
 
-      if (!hasDataSourceBindings && !hasDataSources) {
+      // 🔥 新增：支持新三文件架构的配置格式检查
+      const hasNewArchitectureConfig =
+        config.config &&
+        ((config.config.dataSource1 && config.config.dataSource1.type) ||
+          (config.config.dataSource2 && config.config.dataSource2.type) ||
+          (config.config.dataSource3 && config.config.dataSource3.type) ||
+          (config.config.data && config.config.data.type))
+
+      // 🔥 新增：检查任何配置字段中是否包含数据源配置
+      const hasAnyDataSourceConfig = config.dataSource1 || config.dataSource2 || config.dataSource3 || config.data
+
+      // 🔥 新增：检查配置是否包含有效的数据源类型
+      const hasValidDataSourceType =
+        config.type && ['static', 'api', 'websocket', 'data-source-bindings'].includes(config.type)
+
+      if (
+        !hasDataSourceBindings &&
+        !hasDataSources &&
+        !hasNewArchitectureConfig &&
+        !hasAnyDataSourceConfig &&
+        !hasValidDataSourceType
+      ) {
         console.log(`ℹ️ [PanelEditor] 配置无有效数据源，跳过更新: ${componentId}`)
+        console.log('🔍 [PanelEditor] 检查的配置格式:', {
+          hasDataSourceBindings,
+          hasDataSources,
+          hasNewArchitectureConfig,
+          hasAnyDataSourceConfig,
+          hasValidDataSourceType,
+          configKeys: Object.keys(config),
+          configType: config.type,
+          fullConfig: config
+        })
         return
       }
 
       console.log(`🔧 [PanelEditor] 配置有效，继续处理: ${componentId}`, {
         hasDataSourceBindings,
         hasDataSources,
-        configType: config.type
+        hasNewArchitectureConfig,
+        hasAnyDataSourceConfig,
+        hasValidDataSourceType,
+        configType: config.type,
+        configKeys: Object.keys(config)
       })
     }
 
@@ -961,10 +1009,10 @@ defineExpose({
 </script>
 
 <template>
-  <div class="w-full px-5 py-5">
-    <!-- 页面标题栏 -->
+  <div class="w-full" :class="{ 'px-5 py-5': props.showPageHeader !== false || props.showToolbar !== false }">
+    <!-- 页面标题栏 - 根据 showPageHeader prop 控制显示 -->
     <div
-      v-show="!appStore.fullContent"
+      v-show="!appStore.fullContent && props.showPageHeader !== false"
       class="flex items-center justify-between border-b border-gray-200 px-10px pb-3 dark:border-gray-200/10"
     >
       <div>
@@ -990,8 +1038,8 @@ defineExpose({
       </div>
 
       <div v-else class="panel-editor w-full h-full flex flex-col">
-        <!-- 工具栏 -->
-        <div class="toolbar-container flex-shrink-0">
+        <!-- 工具栏 - 根据 showToolbar prop 控制显示 -->
+        <div v-if="props.showToolbar !== false" class="toolbar-container flex-shrink-0">
           <VisualEditorToolbar
             v-if="dataFetched && !isUnmounted"
             :key="`toolbar-${currentRenderer}-${isPreviewMode ? 'preview' : 'edit'}`"

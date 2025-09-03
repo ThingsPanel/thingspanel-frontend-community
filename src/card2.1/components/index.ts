@@ -7,6 +7,7 @@
 import type { ComponentDefinition } from '../core/types'
 
 // 导入新架构组件定义
+import simpleDisplayDefinition from './simple-display'
 import dualDataDisplayDefinition from './dual-data-display'
 import tripleDataDisplayDefinition from './triple-data-display'
 import { ComponentRegistry } from '../core/component-registry'
@@ -18,8 +19,8 @@ import { ComponentRegistry } from '../core/component-registry'
  * 重构后只包含按照新数据源架构开发的组件
  */
 export const Card2Components: Record<string, ComponentDefinition[]> = {
-  // 数据源测试分类
-  数据源测试: [dualDataDisplayDefinition, tripleDataDisplayDefinition]
+  // 数据展示分类
+  数据展示: [simpleDisplayDefinition, dualDataDisplayDefinition, tripleDataDisplayDefinition]
 }
 
 /**
@@ -27,6 +28,7 @@ export const Card2Components: Record<string, ComponentDefinition[]> = {
  * 供编辑器快速查找组件定义
  */
 export const Card2ComponentMap: Record<string, ComponentDefinition> = {
+  'simple-display': simpleDisplayDefinition,
   'dual-data-display': dualDataDisplayDefinition,
   'triple-data-display': tripleDataDisplayDefinition
 }
@@ -116,6 +118,7 @@ export const ComponentStats = {
 // ============ 单独导出组件定义 ============
 
 // 新架构组件导出
+export { default as simpleDisplayDefinition } from './simple-display'
 export { default as dualDataDisplayDefinition } from './dual-data-display'
 export { default as tripleDataDisplayDefinition } from './triple-data-display'
 

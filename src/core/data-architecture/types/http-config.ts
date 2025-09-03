@@ -14,6 +14,9 @@ export interface HttpParameter {
   /** 参数值 - 示例值，类型与dataType匹配 */
   value: string | number | boolean
 
+  /** 默认值 - 当value为空时使用的回退值 */
+  defaultValue?: string | number | boolean
+
   /** 是否启用此参数 */
   enabled: boolean
 
@@ -31,6 +34,12 @@ export interface HttpParameter {
 
   /** 参数类型：路径参数直接拼接到URL后，查询参数作为query，请求头参数作为header */
   paramType: 'path' | 'query' | 'header'
+
+  /** 参数值模式：手动输入、下拉选择、属性绑定等 */
+  valueMode?: string
+
+  /** 选中的模板ID */
+  selectedTemplate?: string
 }
 
 /**
@@ -64,6 +73,9 @@ export interface PathParameter {
   /** 参数值 - 示例值，类型与dataType匹配 */
   value: string | number | boolean
 
+  /** 默认值 - 当value为空时使用的回退值 */
+  defaultValue?: string | number | boolean
+
   /** 是否为动态参数 */
   isDynamic: boolean
 
@@ -75,6 +87,12 @@ export interface PathParameter {
 
   /** 参数说明 */
   description: string
+
+  /** 参数值模式：手动输入、下拉选择、属性绑定等 */
+  valueMode?: string
+
+  /** 选中的模板ID */
+  selectedTemplate?: string
 }
 
 /**
@@ -89,6 +107,12 @@ export interface HttpConfig {
 
   /** 超时时间（毫秒） */
   timeout: number
+
+  /** 地址类型：内部地址还是外部地址 */
+  addressType?: 'internal' | 'external'
+
+  /** 选中的内部地址值（当addressType为internal时使用） */
+  selectedInternalAddress?: string
 
   /** 路径参数（可选，单个参数直接拼接到URL后） */
   pathParameter?: PathParameter

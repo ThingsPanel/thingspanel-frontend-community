@@ -241,8 +241,8 @@ const emit = defineEmits<Emits>()
 // 消息提示
 const message = useMessage()
 
-// 获取配置层级定义
-const configLayers = computed(() => getVisibleConfigLayers())
+// 获取配置层级定义 - 传入组件ID和widget实例以检查数据源需求
+const configLayers = computed(() => getVisibleConfigLayers(props.selectedWidget?.id, props.selectedWidget))
 
 // 响应式状态 - 默认显示第一个可见层级
 // 🚨 避免在初始化时依赖 computed 值，使用静态默认值

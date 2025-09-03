@@ -19,11 +19,16 @@ import type {
   ModifyConfig
 } from './interaction-types'
 import { InteractionAdapter } from './interaction-adapter'
+import { VisualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
 
 class InteractionManager {
   private componentConfigs = new Map<string, InteractionConfig[]>()
   private componentStates = new Map<string, ComponentInteractionState>()
   private eventListeners = new Map<string, Set<(data: any) => void>>()
+  private visualEditorBridge = new VisualEditorBridge()
+  
+  // 🔥 新增：存储需要响应属性变化的HTTP数据源映射
+  private httpDataSourceMappings = new Map<string, { componentId: string, componentType: string, config: any }>()
 
   /**
    * 注册组件的交互配置
@@ -325,6 +330,98 @@ class InteractionManager {
       targetElement.dispatchEvent(customEvent)
     } else {
       console.warn(`[INTERACTION-DEBUG] 未找到目标组件DOM元素: ${componentId}`)
+    }
+  }
+
+  /**
+   * 🔥 新增：通知组件属性更新 - 支持 settingConfig 属性绑定
+   * 用于跨组件属性绑定，将一个组件的属性变更传递给另一个组件
+   */
+  notifyPropertyUpdate(componentId: string, propertyPath: string, newValue: any, oldValue?: any): void {
+    console.log(`🔄 [InteractionManager] 属性更新通知:`, {
+      componentId,
+      propertyPath,
+      newValue,
+      oldValue
+    })
+
+    // 🔥 新增：触发HTTP数据源刷新
+    this.triggerHttpRefreshForPropertyChange(componentId, propertyPath, newValue, oldValue)
+
+    // 通过 DOM 事件通知组件属性更新
+    const targetElement = document.querySelector(`[data-component-id="${componentId}"]`)
+
+    if (targetElement) {
+      const propertyUpdateEvent = new CustomEvent('componentPropertyUpdate', {
+        detail: {
+          componentId,
+          propertyPath,
+          value: newValue,
+          oldValue,
+          timestamp: Date.now()
+        },
+        bubbles: true
+      })
+
+      console.log(`🔄 [InteractionManager] 向组件发送属性更新事件:`, {
+        componentId,
+        propertyPath,
+        newValue
+      })
+
+      targetElement.dispatchEvent(propertyUpdateEvent)
+    } else {
+      console.warn(`⚠️ [InteractionManager] 未找到目标组件DOM元素: ${componentId}`)
+    }
+
+    // 同时触发交互系统的 dataChange 事件
+    this.triggerEvent(componentId, 'dataChange', {
+      property: propertyPath,
+      newValue,
+      oldValue,
+      timestamp: Date.now()
+    })
+  }
+
+  /**
+   * 🔥 新增：批量属性更新
+   * 一次性更新组件的多个属性
+   */
+  batchPropertyUpdate(
+    componentId: string,
+    propertyUpdates: Array<{
+      propertyPath: string
+      newValue: any
+      oldValue?: any
+    }>
+  ): void {
+    console.log(`🔄 [InteractionManager] 批量属性更新:`, {
+      componentId,
+      updateCount: propertyUpdates.length,
+      updates: propertyUpdates
+    })
+
+    const targetElement = document.querySelector(`[data-component-id="${componentId}"]`)
+
+    if (targetElement) {
+      // 发送批量更新事件
+      const batchUpdateEvent = new CustomEvent('componentBatchPropertyUpdate', {
+        detail: {
+          componentId,
+          updates: propertyUpdates,
+          timestamp: Date.now()
+        },
+        bubbles: true
+      })
+
+      targetElement.dispatchEvent(batchUpdateEvent)
+
+      // 同时发送单个更新事件（向后兼容）
+      propertyUpdates.forEach(update => {
+        this.notifyPropertyUpdate(componentId, update.propertyPath, update.newValue, update.oldValue)
+      })
+    } else {
+      console.warn(`⚠️ [InteractionManager] 未找到目标组件DOM元素: ${componentId}`)
     }
   }
 
@@ -902,6 +999,321 @@ class InteractionManager {
       } catch (error) {
         console.error('[InteractionManager] 响应执行失败:', error)
       }
+    }
+  }
+
+  // ===== 🔥 新增：属性绑定和参数解析支持 =====
+
+  /**
+   * 解析属性绑定表达式
+   * 支持格式：componentId.customize.title 或 componentId.data.value
+   */
+  resolvePropertyBinding(bindingExpression: string): any {
+    console.log(`🔍 [InteractionManager] 解析属性绑定:`, bindingExpression)
+
+    if (!bindingExpression || typeof bindingExpression !== 'string') {
+      console.warn(`⚠️ [InteractionManager] 无效的绑定表达式:`, bindingExpression)
+      return undefined
+    }
+
+    // 解析绑定表达式格式：componentId.propertyPath
+    const parts = bindingExpression.split('.')
+    if (parts.length < 2) {
+      console.warn(`⚠️ [InteractionManager] 绑定表达式格式错误，应为 "componentId.propertyPath":`, bindingExpression)
+      return undefined
+    }
+
+    const componentId = parts[0]
+    const propertyPath = parts.slice(1).join('.')
+
+    // 获取组件状态
+    const componentState = this.getComponentState(componentId)
+    if (!componentState) {
+      console.warn(`⚠️ [InteractionManager] 组件未找到:`, componentId)
+      return undefined
+    }
+
+    // 解析嵌套属性路径
+    const value = this.getNestedProperty(componentState, propertyPath)
+
+    console.log(`✅ [InteractionManager] 属性绑定解析结果:`, {
+      expression: bindingExpression,
+      componentId,
+      propertyPath,
+      value
+    })
+
+    return value
+  }
+
+  /**
+   * 批量解析属性绑定
+   * 用于 HTTP 参数中包含多个绑定表达式的情况
+   */
+  resolveMultipleBindings(bindingMap: Record<string, string>): Record<string, any> {
+    console.log(`🔍 [InteractionManager] 批量解析属性绑定:`, bindingMap)
+
+    const resolvedValues: Record<string, any> = {}
+
+    for (const [key, bindingExpression] of Object.entries(bindingMap)) {
+      resolvedValues[key] = this.resolvePropertyBinding(bindingExpression)
+    }
+
+    console.log(`✅ [InteractionManager] 批量解析结果:`, resolvedValues)
+    return resolvedValues
+  }
+
+  /**
+   * 处理动态参数解析
+   * 用于 HttpConfigForm 中的参数绑定
+   */
+  resolveDynamicParameter(parameterConfig: any): any {
+    console.log(`🔍 [InteractionManager] 解析动态参数:`, parameterConfig)
+
+    if (!parameterConfig) return undefined
+
+    // 如果是简单的字符串绑定表达式
+    if (typeof parameterConfig === 'string') {
+      return this.resolvePropertyBinding(parameterConfig)
+    }
+
+    // 如果是复杂的参数配置对象
+    if (
+      parameterConfig.type === 'component-property-binding' &&
+      parameterConfig.componentId &&
+      parameterConfig.propertyPath
+    ) {
+      const bindingExpression = `${parameterConfig.componentId}.${parameterConfig.propertyPath}`
+      return this.resolvePropertyBinding(bindingExpression)
+    }
+
+    // 如果是静态值
+    if (parameterConfig.type === 'static' || parameterConfig.value !== undefined) {
+      return parameterConfig.value
+    }
+
+    console.warn(`⚠️ [InteractionManager] 未知参数配置格式:`, parameterConfig)
+    return undefined
+  }
+
+  /**
+   * 🔥 新增：设置组件属性值
+   * 用于从外部（如 HTTP 响应）更新组件属性
+   */
+  setComponentProperty(componentId: string, propertyPath: string, newValue: any): boolean {
+    console.log(`🔧 [InteractionManager] 设置组件属性:`, {
+      componentId,
+      propertyPath,
+      newValue
+    })
+
+    const currentState = this.getComponentState(componentId) || {}
+    const oldValue = this.getNestedProperty(currentState, propertyPath)
+
+    // 更新组件状态
+    const updatedState = this.setNestedProperty(currentState, propertyPath, newValue)
+    this.componentStates.set(componentId, updatedState)
+
+    // 通知组件属性更新
+    this.notifyPropertyUpdate(componentId, propertyPath, newValue, oldValue)
+
+    console.log(`✅ [InteractionManager] 组件属性更新完成:`, {
+      componentId,
+      propertyPath,
+      oldValue,
+      newValue
+    })
+
+    return true
+  }
+
+  /**
+   * 获取嵌套对象属性
+   */
+  private getNestedProperty(obj: any, path: string): any {
+    return path.split('.').reduce((current, key) => {
+      return current && typeof current === 'object' ? current[key] : undefined
+    }, obj)
+  }
+
+  /**
+   * 设置嵌套对象属性
+   */
+  private setNestedProperty(obj: any, path: string, value: any): any {
+    const result = { ...obj }
+    const keys = path.split('.')
+    let current = result
+
+    for (let i = 0; i < keys.length - 1; i++) {
+      const key = keys[i]
+      if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
+        current[key] = {}
+      } else {
+        current[key] = { ...current[key] }
+      }
+      current = current[key]
+    }
+
+    current[keys[keys.length - 1]] = value
+    return result
+  }
+
+  /**
+   * 🔥 新增：获取所有组件的当前属性状态
+   * 用于调试和监控
+   */
+  getAllComponentProperties(): Record<string, ComponentInteractionState> {
+    const allProperties: Record<string, ComponentInteractionState> = {}
+
+    for (const [componentId, state] of this.componentStates.entries()) {
+      allProperties[componentId] = { ...state }
+    }
+
+    return allProperties
+  }
+
+  /**
+   * 🔥 新增：注册HTTP数据源映射
+   * 用于追踪哪些组件有HTTP数据源需要响应属性变化
+   */
+  registerHttpDataSource(componentId: string, componentType: string, config: any): void {
+    const mappingKey = `http-${componentId}`
+    this.httpDataSourceMappings.set(mappingKey, { componentId, componentType, config })
+    console.log(`📡 [InteractionManager] 注册HTTP数据源映射:`, { componentId, componentType, mappingKey })
+  }
+
+  /**
+   * 🔥 新增：移除HTTP数据源映射
+   */
+  unregisterHttpDataSource(componentId: string): void {
+    const mappingKey = `http-${componentId}`
+    this.httpDataSourceMappings.delete(mappingKey)
+    console.log(`🗑️ [InteractionManager] 移除HTTP数据源映射:`, { componentId, mappingKey })
+  }
+
+  /**
+   * 🔥 新增：触发HTTP数据源刷新（属性变化时）
+   * 这是解决组件属性绑定后HTTP不更新的核心方法
+   */
+  private async triggerHttpRefreshForPropertyChange(
+    componentId: string, 
+    propertyPath: string, 
+    newValue: any, 
+    oldValue?: any
+  ): Promise<void> {
+    try {
+      console.log(`🔄 [InteractionManager] HTTP刷新触发:`, { componentId, propertyPath, newValue, oldValue })
+
+      // 🔥 关键修复：查找所有可能受到这个属性变化影响的HTTP数据源
+      const affectedDataSources: string[] = []
+
+      // 1. 检查是否有直接使用这个组件属性的HTTP配置
+      for (const [mappingKey, mapping] of this.httpDataSourceMappings.entries()) {
+        // 检查HTTP配置中是否包含对这个组件属性的绑定引用
+        if (this.configContainsPropertyBinding(mapping.config, componentId, propertyPath)) {
+          affectedDataSources.push(mapping.componentId)
+          console.log(`🎯 [HTTP触发] 发现受影响的数据源:`, {
+            sourceComponent: componentId,
+            propertyPath,
+            targetComponent: mapping.componentId,
+            mappingKey
+          })
+        }
+      }
+
+      // 2. 如果没有发现直接绑定，尝试刷新所有HTTP数据源（作为后备方案）
+      if (affectedDataSources.length === 0) {
+        console.log(`🔍 [HTTP触发] 未找到直接绑定，尝试刷新所有HTTP数据源`)
+        for (const [mappingKey, mapping] of this.httpDataSourceMappings.entries()) {
+          affectedDataSources.push(mapping.componentId)
+        }
+      }
+
+      // 3. 刷新所有受影响的HTTP数据源
+      for (const targetComponentId of affectedDataSources) {
+        const mapping = this.httpDataSourceMappings.get(`http-${targetComponentId}`)
+        if (mapping) {
+          console.log(`🚀 [HTTP触发] 开始刷新组件数据:`, targetComponentId)
+          
+          try {
+            // 使用VisualEditorBridge刷新数据源
+            const result = await this.visualEditorBridge.updateComponentExecutor(
+              mapping.componentId,
+              mapping.componentType,
+              mapping.config
+            )
+            
+            console.log(`✅ [HTTP触发] 数据刷新成功:`, {
+              componentId: targetComponentId,
+              result: result?.success ? '成功' : '失败',
+              data: result?.data
+            })
+          } catch (error) {
+            console.error(`❌ [HTTP触发] 数据刷新失败:`, { targetComponentId, error })
+          }
+        }
+      }
+
+      if (affectedDataSources.length > 0) {
+        console.log(`🎉 [HTTP触发] 完成HTTP数据源刷新:`, {
+          triggerComponent: componentId,
+          propertyPath,
+          affectedComponents: affectedDataSources
+        })
+      } else {
+        console.log(`ℹ️ [HTTP触发] 属性变化未影响任何HTTP数据源:`, { componentId, propertyPath })
+      }
+    } catch (error) {
+      console.error(`❌ [InteractionManager] HTTP刷新触发失败:`, error)
+    }
+  }
+
+  /**
+   * 🔥 新增：检查配置是否包含特定的属性绑定
+   * 用于判断HTTP配置是否依赖某个组件的属性
+   */
+  private configContainsPropertyBinding(config: any, componentId: string, propertyPath: string): boolean {
+    if (!config) return false
+
+    const bindingPath = `${componentId}.${propertyPath}`
+    const configStr = JSON.stringify(config)
+    
+    // 检查配置中是否包含绑定路径
+    const hasBinding = configStr.includes(bindingPath)
+    
+    if (hasBinding) {
+      console.log(`🔍 [绑定检查] 发现属性绑定引用:`, { bindingPath, configStr: configStr.substring(0, 200) + '...' })
+    }
+    
+    return hasBinding
+  }
+
+  /**
+   * 🔥 新增：监听组件属性变化
+   * 用于实现属性绑定的响应式更新
+   */
+  watchComponentProperty(
+    componentId: string,
+    propertyPath: string,
+    callback: (newValue: any, oldValue: any) => void
+  ): () => void {
+    const watchKey = `${componentId}.${propertyPath}`
+
+    console.log(`👀 [InteractionManager] 开始监听属性:`, watchKey)
+
+    // 创建属性变化监听器
+    const propertyWatcher = (data: any) => {
+      if (data.event === 'dataChange' && data.data?.property === propertyPath) {
+        callback(data.data.newValue, data.data.oldValue)
+      }
+    }
+
+    this.addEventListener(componentId, propertyWatcher)
+
+    // 返回取消监听的函数
+    return () => {
+      console.log(`🛑 [InteractionManager] 停止监听属性:`, watchKey)
+      this.removeEventListener(componentId, propertyWatcher)
     }
   }
 }

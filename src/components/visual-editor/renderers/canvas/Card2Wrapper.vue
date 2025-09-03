@@ -247,6 +247,9 @@ onBeforeUnmount(() => {
     executorDataCleanup = null
   }
 
+  // 🔥 新增：清理HTTP数据源映射
+  interactionManager.unregisterHttpDataSource(props.nodeId)
+
   // 🔥 架构修复：清理执行器注册
   const componentExecutorRegistry = inject<Map<string, () => Promise<void>>>('componentExecutorRegistry')
   if (componentExecutorRegistry) {
@@ -263,7 +266,10 @@ const extractComponentConfig = () => {
   console.log('[INTERACTION-DEBUG] 提取组件配置:', {
     nodeId: props.nodeId,
     componentType: props.componentType,
-    originalConfig: props.config
+    originalConfig: props.config,
+    configKeys: props.config ? Object.keys(props.config) : [],
+    hasCustomize: props.config?.customize ? 'yes' : 'no',
+    customizeKeys: props.config?.customize ? Object.keys(props.config.customize) : []
   })
 
   // 尝试多种路径提取配置
@@ -271,17 +277,74 @@ const extractComponentConfig = () => {
 
   // 1. 直接使用config
   if (props.config && typeof props.config === 'object') {
-    // 检查是否直接包含配置属性
-    if (props.config.title || props.config.content || props.config.backgroundColor || props.config.showTitle) {
+    // 🔥 修复：检查配置是否包含任何非系统属性（更通用的判断）
+    const configKeys = Object.keys(props.config)
+    const validConfigKeys = configKeys.filter(
+      key =>
+        // 排除系统属性，包含任何可能的组件配置属性
+        !['type', 'version', 'metadata', 'id'].includes(key) &&
+        props.config[key] !== undefined &&
+        props.config[key] !== null
+    )
+    const hasConfigurationData = validConfigKeys.length > 0
+
+    console.log('[INTERACTION-DEBUG] 配置检查:', {
+      allKeys: configKeys,
+      validKeys: validConfigKeys,
+      hasConfigurationData,
+      configType: props.componentType
+    })
+
+    if (hasConfigurationData) {
       configData = props.config
       console.log('[INTERACTION-DEBUG] 使用直接配置:', configData)
     }
     // 检查是否在properties中
     else if (props.config.properties && typeof props.config.properties === 'object') {
       const propsConfig = props.config.properties
-      if (propsConfig.title || propsConfig.content || propsConfig.backgroundColor || propsConfig.showTitle) {
+      const hasPropsConfigurationData = Object.keys(propsConfig).some(
+        key =>
+          !['type', 'version', 'metadata', 'id'].includes(key) &&
+          propsConfig[key] !== undefined &&
+          propsConfig[key] !== null
+      )
+
+      if (hasPropsConfigurationData) {
         configData = propsConfig
         console.log('[INTERACTION-DEBUG] 使用properties配置:', configData)
+      }
+    }
+
+    // 🔥 修复：优先检查新三文件架构的customize配置结构
+    if (!configData && props.config.customize && typeof props.config.customize === 'object') {
+      const customizeConfig = props.config.customize
+      const hasCustomizeConfigData = Object.keys(customizeConfig).some(
+        key => customizeConfig[key] !== undefined && customizeConfig[key] !== null
+      )
+
+      if (hasCustomizeConfigData) {
+        configData = customizeConfig
+        console.log('[INTERACTION-DEBUG] 使用customize配置:', configData)
+      }
+    }
+
+    // 🔥 修复：如果直接配置包含嵌套结构，提取customize部分
+    else if (configData && configData.customize && typeof configData.customize === 'object') {
+      console.log('[INTERACTION-DEBUG] 检测到嵌套配置结构，提取customize部分')
+      const customizeConfig = configData.customize
+      const hasCustomizeConfigData = Object.keys(customizeConfig).some(
+        key => customizeConfig[key] !== undefined && customizeConfig[key] !== null
+      )
+
+      if (hasCustomizeConfigData) {
+        // 🔥 关键修复：合并root和customize配置，确保组件接收扁平化配置
+        const rootConfig = configData.root || {}
+        const mergedConfig = {
+          ...rootConfig,
+          ...customizeConfig
+        }
+        configData = mergedConfig
+        console.log('[INTERACTION-DEBUG] 使用合并的扁平化配置:', configData)
       }
     }
   }
@@ -517,6 +580,9 @@ onMounted(async () => {
           dataSourceConfig
         )
         console.log(`✅ [Card2Wrapper] 统一执行器完成: ${props.nodeId}`, result)
+        
+        // 🔥 新增：注册HTTP数据源映射，用于属性变化时的响应式更新
+        interactionManager.registerHttpDataSource(props.nodeId, props.componentType, dataSourceConfig)
       } else {
         console.log(`ℹ️ [Card2Wrapper] 无数据源配置，跳过执行: ${props.nodeId}`)
         console.log(`🔍 [Card2Wrapper] 完整配置对象:`, JSON.stringify(config, null, 2))
@@ -611,6 +677,9 @@ onMounted(async () => {
         dataSourceConfig
       )
       console.log('✅ [Card2Wrapper] 执行器恢复成功，结果:', props.nodeId, result)
+      
+      // 🔥 新增：注册HTTP数据源映射，用于属性变化时的响应式更新
+      interactionManager.registerHttpDataSource(props.nodeId, props.componentType, dataSourceConfig)
     } catch (error) {
       console.error('❌ [Card2Wrapper] 执行器恢复失败:', props.nodeId, error)
     }

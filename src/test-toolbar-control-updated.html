@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PanelEditor 显示控制功能完整指南</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+        .demo-header {
+            margin-bottom: 30px;
+        }
+        .demo-code {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #42b883;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .example-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .example-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .props-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+        .props-table th,
+        .props-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .props-table th {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+        .note {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #1890ff;
+            margin: 15px 0;
+        }
+        .warning {
+            background: #fff7e6;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #faad14;
+            margin: 15px 0;
+        }
+        .success {
+            background: #f6ffed;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #52c41a;
+            margin: 15px 0;
+        }
+        .combo-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .combo-table th,
+        .combo-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .combo-table th {
+            background-color: #f0f0f0;
+        }
+        .combo-table .yes { color: #52c41a; font-weight: bold; }
+        .combo-table .no { color: #ff4d4f; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🎛️ PanelEditor 显示控制功能完整指南</h1>
+            <p>现在可以通过 <code>showToolbar</code> 和 <code>showPageHeader</code> props 来精确控制 PanelEditor 组件的显示元素。</p>
+        </div>
+
+        <div class="success">
+            <strong>✅ 问题已解决：</strong>
+            <ul>
+                <li>修复了 <code>/visualization/visual-editor-details</code> 页面工具栏显示问题</li>
+                <li>新增 <code>showPageHeader</code> prop，可以隐藏页面标题栏</li>
+                <li>保持完全向后兼容，默认全部显示</li>
+            </ul>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">📋 Props 参数</div>
+            <table class="props-table">
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>类型</th>
+                        <th>默认值</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>panelId</td>
+                        <td>string</td>
+                        <td>-</td>
+                        <td>面板ID（必需）</td>
+                    </tr>
+                    <tr>
+                        <td>showToolbar</td>
+                        <td>boolean</td>
+                        <td>true</td>
+                        <td>是否显示编辑器工具栏（包含模式切换、保存等功能）</td>
+                    </tr>
+                    <tr>
+                        <td>showPageHeader</td>
+                        <td>boolean</td>
+                        <td>true</td>
+                        <td>是否显示页面标题栏（包含面板名称和全屏按钮）</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">🔀 显示模式组合</div>
+            <p>两个 props 可以组合使用，实现不同的显示模式：</p>
+            <table class="combo-table">
+                <thead>
+                    <tr>
+                        <th>showPageHeader</th>
+                        <th>showToolbar</th>
+                        <th>页面标题栏</th>
+                        <th>编辑器工具栏</th>
+                        <th>适用场景</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>true (默认)</td>
+                        <td>true (默认)</td>
+                        <td class="yes">显示</td>
+                        <td class="yes">显示</td>
+                        <td>完整编辑模式</td>
+                    </tr>
+                    <tr>
+                        <td>true</td>
+                        <td>false</td>
+                        <td class="yes">显示</td>
+                        <td class="no">隐藏</td>
+                        <td>只读显示，保留标题</td>
+                    </tr>
+                    <tr>
+                        <td>false</td>
+                        <td>true</td>
+                        <td class="no">隐藏</td>
+                        <td class="yes">显示</td>
+                        <td>紧凑编辑模式</td>
+                    </tr>
+                    <tr>
+                        <td>false</td>
+                        <td>false</td>
+                        <td class="no">隐藏</td>
+                        <td class="no">隐藏</td>
+                        <td>完全嵌入式显示</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">✅ 默认显示（完整编辑模式）</div>
+            <div class="demo-code">
+&lt;!-- 默认显示所有元素 --&gt;
+&lt;PanelEditor :panelId="'panel-001'" /&gt;
+
+&lt;!-- 或者明确设置 --&gt;
+&lt;PanelEditor 
+  :panelId="'panel-001'" 
+  :showToolbar="true" 
+  :showPageHeader="true" 
+/&gt;
+            </div>
+            <p>这是默认行为，显示页面标题栏和工具栏，包含完整编辑功能。</p>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">📺 只读显示（保留标题）</div>
+            <div class="demo-code">
+&lt;!-- 隐藏工具栏，保留页面标题 --&gt;
+&lt;PanelEditor 
+  :panelId="'panel-001'" 
+  :showToolbar="false" 
+  :showPageHeader="true" 
+/&gt;
+            </div>
+            <p>适合需要显示面板名称但不允许编辑的场景。</p>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">🎯 紧凑编辑模式</div>
+            <div class="demo-code">
+&lt;!-- 隐藏页面标题栏，保留工具栏 --&gt;
+&lt;PanelEditor 
+  :panelId="'panel-001'" 
+  :showToolbar="true" 
+  :showPageHeader="false" 
+/&gt;
+            </div>
+            <p>节省页面空间，保留编辑功能，适合空间有限的场景。</p>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">📱 完全嵌入式显示</div>
+            <div class="demo-code">
+&lt;!-- 隐藏所有非内容元素 --&gt;
+&lt;PanelEditor 
+  :panelId="'panel-001'" 
+  :showToolbar="false" 
+  :showPageHeader="false" 
+/&gt;
+            </div>
+            <p>最适合嵌入到其他页面中的纯内容显示。</p>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">🛠️ 实际修复示例</div>
+            <h4>visual-editor-details 页面修复</h4>
+            <div class="demo-code">
+&lt;!-- 修复前：没有明确传递 showToolbar --&gt;
+&lt;PanelEditor 
+  :panelId="panel_id" 
+  @state-manager-ready="handleStateManagerReady" 
+/&gt;
+
+&lt;!-- 修复后：明确传递 showToolbar="true" --&gt;
+&lt;PanelEditor 
+  ref="panelEditor" 
+  :panel-id="panel_id" 
+  :show-toolbar="true"
+  @state-manager-ready="handleStateManagerReady" 
+/&gt;
+            </div>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">📱 实际应用场景</div>
+            
+            <h4>1. 权限控制</h4>
+            <div class="demo-code">
+&lt;template&gt;
+  &lt;PanelEditor 
+    :panelId="dashboardId" 
+    :showToolbar="canEdit" 
+    :showPageHeader="showTitle"
+  /&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { computed } from 'vue'
+import { useAuthStore } from '@/store/modules/auth'
+
+const authStore = useAuthStore()
+const dashboardId = 'dashboard-001'
+
+// 根据用户权限控制功能显示
+const canEdit = computed(() => 
+  authStore.user?.permissions?.includes('dashboard:edit')
+)
+
+const showTitle = computed(() => 
+  authStore.user?.permissions?.includes('dashboard:view_title')
+)
+&lt;/script&gt;
+            </div>
+
+            <h4>2. 响应式适配</h4>
+            <div class="demo-code">
+&lt;template&gt;
+  &lt;PanelEditor 
+    :panelId="panelId" 
+    :showToolbar="!isMobile || isTablet"
+    :showPageHeader="!isMobile"
+  /&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { useBreakpoints } from '@vueuse/core'
+
+const breakpoints = useBreakpoints({
+  mobile: 768,
+  tablet: 1024
+})
+
+const isMobile = breakpoints.smaller('mobile')
+const isTablet = breakpoints.between('mobile', 'tablet')
+&lt;/script&gt;
+            </div>
+
+            <h4>3. 模式切换</h4>
+            <div class="demo-code">
+&lt;template&gt;
+  &lt;div class="dashboard-container"&gt;
+    &lt;!-- 模式切换按钮 --&gt;
+    &lt;n-space class="mb-4"&gt;
+      &lt;n-button @click="mode = 'full'"&gt;完整模式&lt;/n-button&gt;
+      &lt;n-button @click="mode = 'compact'"&gt;紧凑模式&lt;/n-button&gt;
+      &lt;n-button @click="mode = 'embedded'"&gt;嵌入模式&lt;/n-button&gt;
+    &lt;/n-space&gt;
+
+    &lt;!-- 动态控制显示 --&gt;
+    &lt;PanelEditor 
+      :panelId="panelId" 
+      :showToolbar="mode !== 'embedded'"
+      :showPageHeader="mode === 'full'"
+    /&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref } from 'vue'
+
+const mode = ref('full') // 'full' | 'compact' | 'embedded'
+const panelId = 'dynamic-dashboard-001'
+&lt;/script&gt;
+            </div>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ 注意事项：</strong>
+            <ul>
+                <li>隐藏工具栏时，所有编辑功能（模式切换、保存、导入导出等）将不可用</li>
+                <li>隐藏页面标题栏时，全屏按钮也会隐藏</li>
+                <li>左右抽屉（组件库和属性面板）的显示不受这些 props 影响</li>
+                <li>这两个功能主要适用于嵌入式或只读显示场景</li>
+            </ul>
+        </div>
+
+        <div class="note">
+            <strong>🎉 向后兼容：</strong>
+            <ul>
+                <li>不传递任何新 props 时，组件行为与之前完全一致</li>
+                <li>所有现有页面无需修改即可正常使用</li>
+                <li>新功能完全可选，按需使用</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

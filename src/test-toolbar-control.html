@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PanelEditor 工具栏控制测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+        .demo-header {
+            margin-bottom: 30px;
+        }
+        .demo-code {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #42b883;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .example-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .example-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .props-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+        .props-table th,
+        .props-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .props-table th {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+        .note {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #1890ff;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>PanelEditor 工具栏控制功能</h1>
+            <p>现在可以通过 <code>showToolbar</code> prop 来控制 PanelEditor 组件的工具栏是否显示。</p>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">📋 Props 参数</div>
+            <table class="props-table">
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>类型</th>
+                        <th>默认值</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>panelId</td>
+                        <td>string</td>
+                        <td>-</td>
+                        <td>面板ID（必需）</td>
+                    </tr>
+                    <tr>
+                        <td>showToolbar</td>
+                        <td>boolean</td>
+                        <td>true</td>
+                        <td>是否显示工具栏</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">✅ 显示工具栏（默认行为）</div>
+            <div class="demo-code">
+&lt;!-- 默认显示工具栏 --&gt;
+&lt;PanelEditor :panelId="'panel-001'" /&gt;
+
+&lt;!-- 或者明确设置为 true --&gt;
+&lt;PanelEditor :panelId="'panel-001'" :showToolbar="true" /&gt;
+            </div>
+            <p>这是默认行为，保持向后兼容。工具栏将正常显示，包含所有编辑功能。</p>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">❌ 隐藏工具栏</div>
+            <div class="demo-code">
+&lt;!-- 隐藏工具栏 --&gt;
+&lt;PanelEditor :panelId="'panel-001'" :showToolbar="false" /&gt;
+            </div>
+            <p>工具栏将完全隐藏，适用于只需要显示内容而不需要编辑功能的场景。</p>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">📱 使用场景示例</div>
+            
+            <h4>1. 嵌入式显示</h4>
+            <div class="demo-code">
+&lt;template&gt;
+  &lt;div class="embedded-dashboard"&gt;
+    &lt;!-- 嵌入式仪表板，不显示工具栏 --&gt;
+    &lt;PanelEditor 
+      :panelId="dashboardId" 
+      :showToolbar="false" 
+    /&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+            </div>
+
+            <h4>2. 条件性显示</h4>
+            <div class="demo-code">
+&lt;template&gt;
+  &lt;div class="dashboard-container"&gt;
+    &lt;!-- 根据用户权限控制工具栏显示 --&gt;
+    &lt;PanelEditor 
+      :panelId="panelId" 
+      :showToolbar="hasEditPermission" 
+    /&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { computed } from 'vue'
+import { useAuthStore } from '@/store/modules/auth'
+
+const authStore = useAuthStore()
+const panelId = 'dashboard-001'
+
+// 根据用户权限决定是否显示工具栏
+const hasEditPermission = computed(() => {
+  return authStore.user?.permissions?.includes('dashboard:edit')
+})
+&lt;/script&gt;
+            </div>
+
+            <h4>3. 响应式布局</h4>
+            <div class="demo-code">
+&lt;template&gt;
+  &lt;div class="responsive-dashboard"&gt;
+    &lt;!-- 在小屏幕上隐藏工具栏以节省空间 --&gt;
+    &lt;PanelEditor 
+      :panelId="panelId" 
+      :showToolbar="!isMobile" 
+    /&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { useBreakpoints } from '@vueuse/core'
+
+const breakpoints = useBreakpoints({
+  mobile: 768
+})
+
+const isMobile = breakpoints.smaller('mobile')
+const panelId = 'mobile-dashboard-001'
+&lt;/script&gt;
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>📝 注意事项：</strong>
+            <ul>
+                <li>隐藏工具栏时，所有编辑功能（模式切换、保存、导入导出等）将不可用</li>
+                <li>左右抽屉（组件库和属性面板）仍然可以通过编程方式控制</li>
+                <li>该功能主要适用于只读显示或嵌入式场景</li>
+                <li>保持了完全的向后兼容性，不传 showToolbar 参数时默认显示工具栏</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

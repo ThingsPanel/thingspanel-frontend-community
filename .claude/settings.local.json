@@ -67,7 +67,16 @@
       "Bash(dir:*)",
       "Bash(timeout:*)",
       "Bash(start test-drawer-integration.html)",
-      "Bash(start layout-adjustment.html)"
+      "Bash(start layout-adjustment.html)",
+      "Bash(start http://localhost:5003/test/data-source-system)",
+      "Bash(echo:*)",
+      "Bash(start test-data-sources-fix.html)",
+      "Bash(start http://localhost:5002/visualization/visual-editor-details)",
+      "Read(\\e\\wbh\\things2\\thingspanel-frontend-community\\src/**)",
+      "Read(\\e\\wbh\\things2\\thingspanel-frontend-community\\src/**)",
+      "Bash(start src/test-triple-data-display.html)",
+      "Bash(start src/test-toolbar-control-updated.html)",
+      "Bash(start http://localhost:5003/visualization/visual-editor-details)"
     ],
     "deny": [],
     "additionalDirectories": [
@@ -75,5 +84,6 @@
       "E:\\e\\wbh\\things2",
       "E:\\"
     ]
-  }
+  },
+  "outputStyle": "Explanatory"
 }

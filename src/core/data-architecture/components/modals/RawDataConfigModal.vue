@@ -110,10 +110,21 @@ const httpConfig = ref({
 })
 
 /**
- * HTTP配置更新处理
+ * HTTP配置更新处理 - 添加完整调试
  */
 const onHttpConfigUpdate = (newConfig: typeof httpConfig.value) => {
+  console.log('🚀 [爷爷组件] RawDataConfigModal onHttpConfigUpdate 接收到更新:')
+  console.log('🚀 [爷爷组件] 新配置 headers:', newConfig.headers)
+  console.log('🚀 [爷爷组件] 新配置 params:', newConfig.params)
+  console.log('🚀 [爷爷组件] 完整新配置:', JSON.stringify(newConfig, null, 2))
+
+  console.log('🚀 [爷爷组件] 更新前 httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
+
+  // 🔥 关键修复：确保响应式更新
   httpConfig.value = { ...newConfig }
+
+  console.log('🚀 [爷爷组件] 更新后 httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
+
   // 同步更新到旧版formState（兼容现有代码）
   formState.httpUrl = newConfig.url || ''
   formState.httpMethod = newConfig.method || 'GET'
@@ -121,8 +132,9 @@ const onHttpConfigUpdate = (newConfig: typeof httpConfig.value) => {
     newConfig.headers?.filter(h => h.enabled).reduce((acc, h) => ({ ...acc, [h.key]: h.value }), {}) || {}
   )
   formState.httpBody = newConfig.body || '{}'
-}
 
+  console.log('🚀 [爷爷组件] 同步更新完成，formState.httpHeaders:', formState.httpHeaders)
+}
 
 /**
  * 预览数据状态
@@ -781,7 +793,6 @@ defineExpose({
 
               <!-- HTTP接口配置 -->
               <div v-if="formState.selectedMethod === 'http'" class="editor-container">
-
                 <HttpConfigForm v-model:model-value="httpConfig" @update:model-value="onHttpConfigUpdate" />
               </div>
 

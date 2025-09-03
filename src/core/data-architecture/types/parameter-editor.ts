@@ -29,6 +29,23 @@ export interface EnhancedParameter {
   /** The variable name for property binding, automatically generated in most cases. */
   variableName?: string
 
+  /** Unique identifier for Vue tracking (internal use) */
+  _id?: string
+
   /** A user-provided description for the parameter. */
   description?: string
+
+  /** Device selection context (for device-generated parameters) */
+  deviceContext?: {
+    sourceType: 'device-selection' | 'manual' | 'template'
+    selectionConfig?: any
+    timestamp: number
+  }
+
+  /** Parameter group information (for grouped parameters) */
+  parameterGroup?: {
+    groupId: string
+    role: 'primary' | 'secondary' | 'derived' | 'optional'
+    isDerived: boolean
+  }
 }

@@ -1,7 +1,11 @@
 /**
  * 组件属性暴露系统
  * 让组件开发者可以声明哪些属性可以被监听，供交互配置使用
+ * 支持从 settingConfig 自动注册可绑定属性
  */
+
+import type { ComponentSettingConfig } from '../types/setting-config'
+import { inferPropertyDataType } from '../types/setting-config'
 
 // 属性数据类型
 export type PropertyDataType =
@@ -172,6 +176,116 @@ export function createProperty(
     group: '基础属性',
     ...options
   }
+}
+
+/**
+ * 从 ComponentSettingConfig 自动注册可绑定属性
+ * 核心功能：将 setting.vue 中的配置项自动转换为可绑定属性
+ */
+export function autoRegisterFromSettingConfig(settingConfig: ComponentSettingConfig): void {
+  console.log(`🔌 [PropertyExposure] 自动注册设置配置属性: ${settingConfig.componentType}`)
+  console.log(`🔌 [PropertyExposure] settingConfig 详情:`, {
+    componentType: settingConfig.componentType,
+    settingsCount: settingConfig.settings?.length || 0,
+    settings: settingConfig.settings?.map(s => ({ field: s.field, label: s.label, type: s.type }))
+  })
+
+  // 将每个 setting 转换为可监听属性
+  const listenableProperties: ListenableProperty[] = settingConfig.settings.map(setting => {
+    // 推断属性数据类型
+    const propertyType = inferPropertyDataType(setting)
+
+    return {
+      name: setting.field,
+      label: setting.label,
+      type: propertyType,
+      description: `通过设置面板配置的 ${setting.label} 属性`,
+      group: setting.group || '设置属性',
+      defaultValue: setting.defaultValue,
+      isCore: true, // 设置项都是核心属性
+      example: setting.defaultValue,
+      // 如果是下拉选择，添加枚举值
+      enum: setting.options?.map(opt => ({
+        label: opt.label,
+        value: opt.value
+      }))
+    }
+  })
+
+  // 注册到属性暴露注册表
+  propertyExposureRegistry.register({
+    componentType: settingConfig.componentType,
+    componentName: `${settingConfig.componentType} 组件`,
+    listenableProperties,
+    version: '1.0.0'
+  })
+
+  console.log(
+    `✅ [PropertyExposure] 成功注册 ${listenableProperties.length} 个属性:`,
+    listenableProperties.map(prop => `${prop.name} (${prop.type})`)
+  )
+  
+  // 验证注册表状态
+  console.log(`🔍 [PropertyExposure] 当前注册表状态:`, {
+    totalComponents: Array.from(propertyExposureRegistry.registrations.keys()),
+    componentDetails: Object.fromEntries(
+      Array.from(propertyExposureRegistry.registrations.entries()).map(([key, config]) => [
+        key, 
+        { 
+          name: config.componentName, 
+          propertiesCount: config.listenableProperties.length,
+          properties: config.listenableProperties.map(p => p.name)
+        }
+      ])
+    )
+  })
+}
+
+/**
+ * 获取已注册组件的属性树结构
+ * 用于在 HttpConfigForm 中显示可绑定的组件属性
+ */
+export function getComponentPropertyTree(): ComponentPropertyTreeNode[] {
+  const componentTypes = propertyExposureRegistry.getAllComponentTypes()
+
+  return componentTypes
+    .map(componentType => {
+      const exposure = propertyExposureRegistry.getComponentExposure(componentType)
+      if (!exposure) return null
+
+      const properties = exposure.listenableProperties.map(prop => ({
+        key: `${componentType}.${prop.name}`,
+        label: `${prop.label} (${prop.type})`,
+        type: 'property' as const,
+        componentId: componentType,
+        propertyName: prop.name,
+        propertyConfig: prop,
+        isLeaf: true
+      }))
+
+      return {
+        key: componentType,
+        label: exposure.componentName,
+        type: 'component' as const,
+        children: properties,
+        isLeaf: false
+      }
+    })
+    .filter(Boolean) as ComponentPropertyTreeNode[]
+}
+
+/**
+ * 组件属性树节点
+ */
+export interface ComponentPropertyTreeNode {
+  key: string
+  label: string
+  type: 'component' | 'property'
+  componentId?: string
+  propertyName?: string
+  propertyConfig?: ListenableProperty
+  children?: ComponentPropertyTreeNode[]
+  isLeaf: boolean
 }
 
 // 常用属性模板

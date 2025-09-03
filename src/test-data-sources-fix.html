@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据源修复测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .test-section {
+      margin-bottom: 30px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .test-section h3 {
+      color: #333;
+      margin-top: 0;
+    }
+    .data-source-info {
+      background-color: #f8f9fa;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .success {
+      color: #28a745;
+      font-weight: bold;
+    }
+    .error {
+      color: #dc3545;
+      font-weight: bold;
+    }
+    .info {
+      color: #17a2b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 数据源修复测试页面</h1>
+    <p>此页面用于测试组件 dataSources 字段修复后的效果</p>
+    
+    <div class="test-section">
+      <h3>📊 测试数据</h3>
+      <div class="data-source-info">
+        <strong>测试 JSON 数据:</strong><br>
+        [{"value":78.5},{"value":85.2},{"value":92.1}]
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🧪 测试步骤</h3>
+      <ol>
+        <li>在控制台中观察 ComponentRegistry 输出的数据源键</li>
+        <li>检查 DataSourceMapper 是否能找到组件配置</li>
+        <li>验证组件是否能接收到正确的数据</li>
+      </ol>
+    </div>
+
+    <div class="test-section">
+      <h3>📋 预期结果</h3>
+      <ul>
+        <li><span class="success">✅</span> triple-data-display 数据源键: ["dataSource1", "dataSource2", "dataSource3"]</li>
+        <li><span class="success">✅</span> dual-data-display 数据源键: ["dataSource1", "dataSource2"]</li>
+        <li><span class="success">✅</span> simple-display 数据源键: ["data"]</li>
+        <li><span class="success">✅</span> 组件能正常显示数据而不是 null</li>
+      </ul>
+    </div>
+
+    <div class="test-section">
+      <h3>🚀 开始测试</h3>
+      <p class="info">
+        请访问: <br>
+        <a href="http://localhost:5003/test/data-binding-system-integration" target="_blank">
+          http://localhost:5003/test/data-binding-system-integration
+        </a>
+      </p>
+      <p>
+        然后按照以下步骤进行测试：<br>
+        1. 添加一个 triple-data-display 组件<br>
+        2. 配置静态 JSON 数据源: <code>[{"value":78.5},{"value":85.2},{"value":92.1}]</code><br>
+        3. 观察控制台日志和组件显示效果
+      </p>
+    </div>
+
+    <div class="test-section">
+      <h3>🔍 控制台输出检查</h3>
+      <p>打开浏览器开发者工具的控制台，查找以下关键日志：</p>
+      <div class="data-source-info">
+        🔍 [ComponentRegistry] 组件 triple-data-display 的数据源键: ["dataSource1", "dataSource2", "dataSource3"]<br>
+        🗺️ [DataSourceMapper] 组件 triple-data-display 找到数据源配置<br>
+        📊 [Card2Wrapper] 组件收到数据: { dataSource1: 78.5, dataSource2: 85.2, dataSource3: 92.1 }
+      </div>
+    </div>
+
+    <script>
+      // 简单的测试脚本
+      console.log('🧪 [测试页面] 数据源修复测试页面已加载');
+      console.log('🎯 [测试页面] 请访问数据绑定系统集成测试页面进行完整测试');
+    </script>
+  </div>
+</body>
+</html>
