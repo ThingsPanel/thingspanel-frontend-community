@@ -177,5 +177,6 @@
   "custom.management.lastAccessTime": "Last Access Time",
   "custom.personalCenter.modifyBasicInfo": "Modify Basic Information",
   "custom.personalCenter.changePassword": "Change Password",
-  "custom.personalCenter.nameFieldNotEmpty": "Name field cannot be empty"
+  "custom.personalCenter.nameFieldNotEmpty": "Name field cannot be empty",
+  "custom.auth.authFailedPleaseLogin": "Authentication failed or insufficient permissions. Please login again."
 }

@@ -177,5 +177,6 @@
   "custom.management.lastAccessTime": "最后访问时间",
   "custom.personalCenter.modifyBasicInfo": "修改基本信息",
   "custom.personalCenter.changePassword": "修改密码",
-  "custom.personalCenter.nameFieldNotEmpty": "姓名字段不能为空"
+  "custom.personalCenter.nameFieldNotEmpty": "姓名字段不能为空",
+  "custom.auth.authFailedPleaseLogin": "无法验证身份或获取权限，请重新登录。"
 }

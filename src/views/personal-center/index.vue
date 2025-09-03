@@ -22,11 +22,15 @@ import {
   validName,
   validPasswordByExp
 } from '@/utils/common/tool'
+import { createProxyPattern } from '~/env.config'
 import CameraBg from '@/assets/imgs/camera-bg.png'
 import Camera from '@/assets/imgs/camera.png'
 import ProvinceCityDistrictSelector from '@/components/common/ProvinceCityDistrictSelector.vue'
 
-const url = ref(new URL(getDemoServerUrl()))
+// 开发环境使用代理路径，生产环境使用完整URL
+const isHttpProxy = import.meta.env.VITE_HTTP_PROXY === 'Y'
+const uploadUrl = isHttpProxy ? createProxyPattern() : getDemoServerUrl()
+const url = ref(uploadUrl)
 const { formRef, validate } = useNaiveForm()
 const editType = ref(false)
 const header = ref(false)
@@ -217,14 +221,17 @@ const submitPass = async () => {
 
 async function handleFinish({ event }: { event?: ProgressEvent }) {
   const response = JSON.parse((event?.target as XMLHttpRequest).response)
-  // 字符串转成对象
-  const obj = JSON.parse(userInfoData.value.additional_info)
+  // 字符串转成对象，兼容两种字段名
+  const additionalInfoStr = userInfoData.value.additional_info || '{}'
+  const obj = JSON.parse(additionalInfoStr)
   obj.user_icon = response.data.path
   const info = JSON.stringify(obj)
   userInfoData.value.additional_info = info
   const { error } = await changeInformation(userInfoData.value)
   if (!error) {
-    headUrl.value = String(url.value.origin) + response.data.path.substring(1, obj.user_icon.length)
+    // 显示头像时使用服务器域名，去掉 /api/v1 路径
+    const serverUrl = getDemoServerUrl().replace('/api/v1', '')
+    headUrl.value = serverUrl + response.data.path.substring(1)
     window.$message?.success($t('custom.grouping_details.operationSuccess'))
   }
 }
@@ -234,6 +241,8 @@ onMounted(async () => {
     ...data,
     // 将 phone_num 映射为 phone_number
     phone_number: data.phone_num || data.phone_number || '',
+    // 兼容 additional_info 和 additionalInfo 字段
+    additional_info: data.additional_info || data.additionalInfo || '{}',
     // 确保新字段有默认值
     organization: data.organization || '',
     timezone: data.timezone || '',
@@ -246,12 +255,23 @@ onMounted(async () => {
     }
   }
   
-  if (userInfoData.value.additional_info === '{}') {
+  // 兼容两种字段名的头像显示逻辑
+  const additionalInfoStr = userInfoData.value.additional_info || '{}'
+  if (additionalInfoStr === '{}' || !additionalInfoStr) {
     header.value = false
   } else {
     header.value = true
-    const obj = JSON.parse(userInfoData.value.additional_info)
-    headUrl.value = String(url.value.origin) + obj.user_icon.substring(1, obj.user_icon.length)
+    try {
+      const obj = JSON.parse(additionalInfoStr)
+      if (obj.user_icon) {
+        // 显示头像时使用服务器域名，去掉 /api/v1 路径
+        const serverUrl = getDemoServerUrl().replace('/api/v1', '')
+        headUrl.value = serverUrl + obj.user_icon.substring(1)
+      }
+    } catch (error) {
+      console.warn('解析用户头像信息失败:', error)
+      header.value = false
+    }
   }
 })
 </script>

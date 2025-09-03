@@ -14,6 +14,7 @@ import CommandDelivery from '@/views/device/details/modules/command-delivery.vue
 import ExpectMessage from '@/views/device/details/modules/expect-message.vue'
 import Automate from '@/views/device/details/modules/automate.vue'
 import GiveAnAlarm from '@/views/device/details/modules/give-an-alarm.vue'
+import AiAlgorithm from '@/views/device/details/modules/ai-algorithm.vue'
 import User from '@/views/device/details/modules/user.vue'
 import Settings from '@/views/device/details/modules/settings.vue'
 import { $t } from '@/locales'
@@ -95,6 +96,12 @@ let components = [
     key: 'give-an-alarm',
     name: () => $t('custom.device_details.giveAnAlarm'),
     component: GiveAnAlarm,
+    refreshKey: 0
+  },
+  {
+    key: 'ai-algorithm',
+    name: () => $t('custom.device_details.aiAlgorithm'),
+    component: AiAlgorithm,
     refreshKey: 0
   },
   {

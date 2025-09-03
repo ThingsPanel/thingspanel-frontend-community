@@ -1,6 +1,8 @@
 import { BACKEND_ERROR_CODE, createFlatRequest } from '@sa/axios'
 import { localStg } from '@/utils/storage'
 import { createProxyPattern, createServiceConfig } from '~/env.config'
+import { $t } from '@/locales'
+import { useAuthStore } from '@/store/modules/auth'
 
 const { otherBaseURL } = createServiceConfig(import.meta.env)
 const isHttpProxy = import.meta.env.VITE_HTTP_PROXY === 'Y'
@@ -58,15 +60,13 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
 
       if (error?.response?.status === 401) {
         window.$message?.destroyAll()
-        window.$message?.error('无法验证身份或获取权限，请重新登录。')
+        window.$message?.error($t('custom.auth.authFailedPleaseLogin'))
 
-        // setTimeout(() => {
-        //   localStg.remove('token');
-        //   localStg.remove('refreshToken');
-        //   localStg.remove('userInfo');
-
-        //   window.location.reload();
-        // }, 200);
+        // 使用 authStore.resetStore() 来清除认证信息并跳转到登录页
+        setTimeout(async () => {
+          const authStore = useAuthStore()
+          await authStore.resetStore()
+        }, 1000)
 
         return
       }
