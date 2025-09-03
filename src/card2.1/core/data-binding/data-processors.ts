@@ -319,7 +319,6 @@ export class PathDataMapper implements DataMapper {
         }
 
         result[rule.targetField] = value
-
       } catch (error) {
         result[rule.targetField] = rule.defaultValue
       }

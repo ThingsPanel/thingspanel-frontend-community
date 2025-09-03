@@ -211,7 +211,6 @@ const routeMap: RouteMap = {
   "function_hide-child_two": "/function/hide-child/two",
   "function_multi-tab": "/function/multi-tab",
   "function_tab": "/function/tab",
-  "grid-pluss-test": "/grid-pluss-test",
   "home": "/home",
   "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?",
   "manage": "/manage",

@@ -61,9 +61,8 @@ export class AutoRegistry {
             // 记录被权限过滤的组件
             this.allComponents.push(definition)
           }
-        } 
-      } catch (error) {
-      }
+        }
+      } catch (error) {}
     }
     return registeredComponents
   }

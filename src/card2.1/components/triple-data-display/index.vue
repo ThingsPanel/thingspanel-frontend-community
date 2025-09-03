@@ -266,7 +266,6 @@ const registeredEvents = ref<Set<string>>(new Set())
  * 点击事件处理
  */
 const handleClick = () => {
-
   // 发送点击事件
   emit('click', {
     componentId: props.componentId,
@@ -283,7 +282,6 @@ const handleClick = () => {
  * 监听属性更新事件（用于跨组件属性绑定）
  */
 const handlePropertyUpdate = (data: any) => {
-
   if (data && typeof data === 'object') {
     // 更新配置并触发事件
     const newConfig = { ...currentConfig.value, ...data }
@@ -295,7 +293,6 @@ const handlePropertyUpdate = (data: any) => {
  * 组件挂载时的初始化
  */
 onMounted(() => {
-
   // 注册属性更新监听器（用于跨组件属性绑定）
   if (props.componentId) {
     interactionManager.watchComponentProperty(props.componentId, handlePropertyUpdate)
@@ -305,8 +302,7 @@ onMounted(() => {
   if (props.interactionConfigs && props.interactionConfigs.length > 0) {
     try {
       isInteractionEnabled.value = true
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 })
 
@@ -318,8 +314,7 @@ onUnmounted(() => {
   if (props.componentId && registeredEvents.value.size > 0) {
     try {
       // 这里可以添加清理逻辑
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 })
 
@@ -328,8 +323,7 @@ onUnmounted(() => {
  */
 watch(
   () => currentConfig.value,
-  newConfig => {
-  },
+  newConfig => {},
   { deep: true }
 )
 </script>

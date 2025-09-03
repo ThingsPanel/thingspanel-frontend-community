@@ -37,13 +37,12 @@ export async function initializeCard2System() {
 
   initializationPromise = (async () => {
     try {
-
       // 1. 加载组件模块
       const componentModules = await componentLoader.loadComponents()
 
       // 2. 获取组件统计信息
       const stats = componentLoader.getComponentStats(componentModules)
-     
+
       // 3. 自动注册组件（包含权限过滤）
       const registeredComponents = await autoRegistry.autoRegister(componentModules)
 

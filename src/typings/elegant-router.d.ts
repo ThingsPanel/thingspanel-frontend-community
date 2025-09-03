@@ -67,7 +67,6 @@ declare module "@elegant-router/types" {
     "function_hide-child_two": "/function/hide-child/two";
     "function_multi-tab": "/function/multi-tab";
     "function_tab": "/function/tab";
-    "grid-pluss-test": "/grid-pluss-test";
     "home": "/home";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
     "manage": "/manage";
@@ -166,7 +165,6 @@ declare module "@elegant-router/types" {
     | "data-service"
     | "device"
     | "function"
-    | "grid-pluss-test"
     | "home"
     | "login"
     | "manage"
@@ -235,7 +233,6 @@ declare module "@elegant-router/types" {
     | "function_hide-child_two"
     | "function_multi-tab"
     | "function_tab"
-    | "grid-pluss-test"
     | "home"
     | "manage_menu"
     | "manage_role"

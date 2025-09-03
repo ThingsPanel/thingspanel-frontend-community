@@ -14,7 +14,6 @@ export class InteractionCompatibilityTest {
    * 测试旧格式跳转配置转换
    */
   static testLegacyJumpConversion() {
-
     // 测试外部链接
     const legacyExternalJump = {
       action: 'navigateToUrl' as const,
@@ -57,7 +56,6 @@ export class InteractionCompatibilityTest {
    * 测试旧格式修改配置转换
    */
   static testLegacyModifyConversion() {
-
     const legacyModify = {
       action: 'updateComponentData' as const,
       targetComponentId: 'test-component-123',
@@ -89,7 +87,6 @@ export class InteractionCompatibilityTest {
    * 测试新格式到旧格式的反向转换
    */
   static testNewToLegacyConversion() {
-
     // 测试跳转配置反向转换
     const newJump = {
       action: 'jump' as const,
@@ -126,7 +123,6 @@ export class InteractionCompatibilityTest {
    * 测试格式检测功能
    */
   static testFormatDetection() {
-
     const legacyResponse = { action: 'navigateToUrl', value: '/test' }
     const newResponse = { action: 'jump', jumpConfig: { jumpType: 'internal', internalPath: '/test' } }
 
@@ -143,7 +139,6 @@ export class InteractionCompatibilityTest {
    * 测试批量交互配置标准化
    */
   static testBatchNormalization() {
-
     const mixedInteraction = {
       event: 'click',
       enabled: true,

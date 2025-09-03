@@ -323,8 +323,7 @@ export class ComponentRequirementManager {
         try {
           const calculatedValue = this.calculateRelationshipValue(componentId, relationName, sampleData)
           sampleData[relationName] = calculatedValue
-        } catch (error) {
-        }
+        } catch (error) {}
       })
     }
 
@@ -428,8 +427,7 @@ export class ComponentRequirementManager {
     Object.entries(requirements).forEach(([componentId, requirement]) => {
       try {
         this.registerRequirement(componentId, requirement)
-      } catch (error) {
-      }
+      } catch (error) {}
     })
   }
 }

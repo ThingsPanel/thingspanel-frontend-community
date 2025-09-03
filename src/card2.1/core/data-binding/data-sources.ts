@@ -220,8 +220,7 @@ export class WebSocketDataSource implements DataSource {
             const data = JSON.parse(event.data)
             this.lastData = data
             this.dataListeners.forEach(listener => listener(data))
-          } catch (error) {
-          }
+          } catch (error) {}
         }
 
         this.ws.onerror = error => {
@@ -242,8 +241,7 @@ export class WebSocketDataSource implements DataSource {
     if (this.reconnectAttempts < this.config.maxReconnectAttempts!) {
       this.reconnectAttempts++
       setTimeout(() => {
-        this.connect().catch(error => {
-        })
+        this.connect().catch(error => {})
       }, this.config.reconnectInterval)
     } else {
     }

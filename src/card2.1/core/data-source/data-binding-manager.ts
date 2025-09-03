@@ -248,12 +248,10 @@ export class DataBindingManager {
         callbacks.forEach(callback => {
           try {
             callback(componentData)
-          } catch (error) {
-          }
+          } catch (error) {}
         })
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   /**

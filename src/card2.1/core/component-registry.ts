@@ -20,7 +20,6 @@ export class ComponentRegistry {
    * @param definition 组件定义
    */
   static register(definition: ComponentDefinition): void {
-
     this.definitions.set(definition.type, definition)
   }
 
@@ -151,13 +150,10 @@ export class ComponentRegistry {
    * @param settingConfig 组件设置配置
    */
   static registerSettingConfig<T extends Record<string, any>>(settingConfig: ComponentSettingConfig<T>): void {
-
     try {
       // 自动注册到属性暴露系统
       autoRegisterFromSettingConfig(settingConfig)
-    
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   /**
@@ -165,11 +161,9 @@ export class ComponentRegistry {
    * @param settingConfigs settingConfig 数组
    */
   static registerSettingConfigs(settingConfigs: ComponentSettingConfig<any>[]): void {
-
     settingConfigs.forEach(config => {
       this.registerSettingConfig(config)
     })
-
   }
 
   /**

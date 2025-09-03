@@ -441,15 +441,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
-    name: 'grid-pluss-test',
-    path: '/grid-pluss-test',
-    component: 'layout.base$view.grid-pluss-test',
-    meta: {
-      title: 'grid-pluss-test',
-      i18nKey: 'route.grid-pluss-test'
-    }
-  },
-  {
     name: 'home',
     path: '/home',
     component: 'layout.base$view.home',

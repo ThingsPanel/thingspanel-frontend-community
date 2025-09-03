@@ -4,7 +4,7 @@
  * 连接"配置"和"组件渲染"的唯一桥梁
  */
 
-import { ref, onUnmounted, watch, reactive } from 'vue'
+import { ref, onUnmounted, watch } from 'vue'
 import type { Ref } from 'vue'
 import type { ComponentDefinition, WidgetConfiguration } from '../core/types'
 import { dataSourceCenter } from '../core/data-sources'
@@ -54,8 +54,7 @@ export function useWidgetProps(
       subscriptions.forEach(subscription => {
         try {
           subscription.unsubscribe()
-        } catch (err) {
-        }
+        } catch (err) {}
       })
       subscriptions.length = 0 // 清空数组
 
@@ -178,8 +177,7 @@ export function useWidgetProps(
     subscriptions.forEach(subscription => {
       try {
         subscription.unsubscribe()
-      } catch (err) {
-      }
+      } catch (err) {}
     })
     subscriptions.length = 0
   })

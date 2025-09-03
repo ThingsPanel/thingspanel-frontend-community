@@ -98,8 +98,7 @@ export class WebSocketTrigger implements UpdateTrigger {
         this.scheduleReconnect()
       }
 
-      this.ws.onerror = error => {
-      }
+      this.ws.onerror = error => {}
     } catch (error) {
       this.scheduleReconnect()
     }
@@ -306,7 +305,7 @@ export class ReactiveDataBindingImpl implements ReactiveDataBinding {
       if (dataChanged) {
         this.currentData = newData
         this.onDataChange(newData, oldData)
-      } 
+      }
     } catch (error) {
       if (this.onError) {
         this.onError(error as Error)

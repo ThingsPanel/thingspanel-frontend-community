@@ -58,8 +58,7 @@ export function getUserAuthorityFromStorage(): string {
       const parsed = JSON.parse(userInfo)
       return parsed.authority || 'TENANT_USER' // 默认返回租户用户权限
     }
-  } catch (error) {
-  }
+  } catch (error) {}
 
   return 'TENANT_USER' // 默认返回租户用户权限
 }

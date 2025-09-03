@@ -109,8 +109,7 @@ export class StaticDataSourceService implements DataSourceService {
       for (const [id, callback] of this.subscribers.entries()) {
         try {
           callback(data)
-        } catch (error) {
-        }
+        } catch (error) {}
       }
     }
   }

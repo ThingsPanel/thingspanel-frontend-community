@@ -314,7 +314,6 @@ const setNestedValue = (obj: Record<string, any>, path: string, value: any) => {
 const updateNestedValue = (path: string, value: any) => {
   if (isUpdatingFromProps) return
 
-
   setNestedValue(localValue, path, value)
 
   // 发送更新事件

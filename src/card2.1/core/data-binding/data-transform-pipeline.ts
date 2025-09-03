@@ -327,7 +327,6 @@ export class DataTransformPipelineImpl implements DataTransformPipeline {
    * 预览管道执行结果（不更新统计信息）
    */
   async preview(): Promise<Record<string, any>> {
-
     try {
       // 获取数据源数据
       let currentData = await this.source.fetchData()

@@ -27,9 +27,9 @@ class InteractionManager {
   private componentStates = new Map<string, ComponentInteractionState>()
   private eventListeners = new Map<string, Set<(data: any) => void>>()
   private visualEditorBridge = new VisualEditorBridge()
-  
+
   // 🔥 新增：存储需要响应属性变化的HTTP数据源映射
-  private httpDataSourceMappings = new Map<string, { componentId: string, componentType: string, config: any }>()
+  private httpDataSourceMappings = new Map<string, { componentId: string; componentType: string; config: any }>()
 
   /**
    * 注册组件的交互配置
@@ -273,7 +273,6 @@ class InteractionManager {
     const newState = { ...currentState, ...updates }
     this.componentStates.set(componentId, newState)
 
-
     // 🔥 通知目标组件状态变化
     this.notifyComponentStateChange(componentId, updates, newState)
   }
@@ -308,8 +307,6 @@ class InteractionManager {
    * 用于跨组件属性绑定，将一个组件的属性变更传递给另一个组件
    */
   notifyPropertyUpdate(componentId: string, propertyPath: string, newValue: any, oldValue?: any): void {
-  
-
     // 🔥 新增：触发HTTP数据源刷新
     this.triggerHttpRefreshForPropertyChange(componentId, propertyPath, newValue, oldValue)
 
@@ -329,7 +326,7 @@ class InteractionManager {
       })
 
       targetElement.dispatchEvent(propertyUpdateEvent)
-    } 
+    }
     // 同时触发交互系统的 dataChange 事件
     this.triggerEvent(componentId, 'dataChange', {
       property: propertyPath,
@@ -351,7 +348,6 @@ class InteractionManager {
       oldValue?: any
     }>
   ): void {
-
     const targetElement = document.querySelector(`[data-component-id="${componentId}"]`)
 
     if (targetElement) {
@@ -371,7 +367,7 @@ class InteractionManager {
       propertyUpdates.forEach(update => {
         this.notifyPropertyUpdate(componentId, update.propertyPath, update.newValue, update.oldValue)
       })
-    } 
+    }
   }
 
   /**
@@ -424,8 +420,7 @@ class InteractionManager {
       listeners.forEach(callback => {
         try {
           callback({ event, data, componentId })
-        } catch (error) {
-        }
+        } catch (error) {}
       })
     }
   }
@@ -537,8 +532,7 @@ class InteractionManager {
       // 如果跳转失败，尝试简单的window.open
       try {
         window.open(url, '_blank')
-      } catch (fallbackError) {
-      }
+      } catch (fallbackError) {}
     }
   }
 
@@ -575,8 +569,7 @@ class InteractionManager {
       // 如果跳转失败，尝试简单的window.open
       try {
         window.open(url, '_blank')
-      } catch (fallbackError) {
-      }
+      } catch (fallbackError) {}
     }
   }
 
@@ -704,8 +697,7 @@ class InteractionManager {
           window[funcName](componentId, ...args)
         }
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   // ===== 条件判断方法 =====
@@ -859,8 +851,7 @@ class InteractionManager {
         for (const response of config.responses) {
           try {
             this.executeResponse(componentId, response)
-          } catch (error) {
-          }
+          } catch (error) {}
         }
       }
     }
@@ -898,8 +889,7 @@ class InteractionManager {
     for (const response of config.responses) {
       try {
         this.executeResponse(componentId, response)
-      } catch (error) {
-      }
+      } catch (error) {}
     }
   }
 
@@ -910,7 +900,6 @@ class InteractionManager {
    * 支持格式：componentId.customize.title 或 componentId.data.value
    */
   resolvePropertyBinding(bindingExpression: string): any {
-
     if (!bindingExpression || typeof bindingExpression !== 'string') {
       return undefined
     }
@@ -933,8 +922,6 @@ class InteractionManager {
     // 解析嵌套属性路径
     const value = this.getNestedProperty(componentState, propertyPath)
 
-   
-
     return value
   }
 
@@ -943,7 +930,6 @@ class InteractionManager {
    * 用于 HTTP 参数中包含多个绑定表达式的情况
    */
   resolveMultipleBindings(bindingMap: Record<string, string>): Record<string, any> {
-
     const resolvedValues: Record<string, any> = {}
 
     for (const [key, bindingExpression] of Object.entries(bindingMap)) {
@@ -986,7 +972,6 @@ class InteractionManager {
    * 用于从外部（如 HTTP 响应）更新组件属性
    */
   setComponentProperty(componentId: string, propertyPath: string, newValue: any): boolean {
-
     const currentState = this.getComponentState(componentId) || {}
     const oldValue = this.getNestedProperty(currentState, propertyPath)
 
@@ -1067,13 +1052,12 @@ class InteractionManager {
    * 这是解决组件属性绑定后HTTP不更新的核心方法
    */
   private async triggerHttpRefreshForPropertyChange(
-    componentId: string, 
-    propertyPath: string, 
-    newValue: any, 
+    componentId: string,
+    propertyPath: string,
+    newValue: any,
     oldValue?: any
   ): Promise<void> {
     try {
-
       // 🔥 关键修复：查找所有可能受到这个属性变化影响的HTTP数据源
       const affectedDataSources: string[] = []
 
@@ -1082,7 +1066,6 @@ class InteractionManager {
         // 检查HTTP配置中是否包含对这个组件属性的绑定引用
         if (this.configContainsPropertyBinding(mapping.config, componentId, propertyPath)) {
           affectedDataSources.push(mapping.componentId)
-       
         }
       }
 
@@ -1104,15 +1087,10 @@ class InteractionManager {
               mapping.componentType,
               mapping.config
             )
-        
-          } catch (error) {
-          }
+          } catch (error) {}
         }
       }
-
-    
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   /**
@@ -1124,10 +1102,10 @@ class InteractionManager {
 
     const bindingPath = `${componentId}.${propertyPath}`
     const configStr = JSON.stringify(config)
-    
+
     // 检查配置中是否包含绑定路径
     const hasBinding = configStr.includes(bindingPath)
-    
+
     return hasBinding
   }
 

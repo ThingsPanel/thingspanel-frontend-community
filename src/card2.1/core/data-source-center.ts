@@ -88,8 +88,7 @@ export class DataSourceCenter {
     if (service) {
       try {
         service.destroy()
-      } catch (error) {
-      }
+      } catch (error) {}
       this.dataSources.delete(id)
     }
   }
@@ -103,8 +102,7 @@ export class DataSourceCenter {
     for (const [id, service] of this.dataSources.entries()) {
       try {
         result.push(service.getInfo())
-      } catch (error) {
-      }
+      } catch (error) {}
     }
 
     return result
@@ -142,8 +140,7 @@ export class DataSourceCenter {
     for (const [id, service] of this.dataSources.entries()) {
       try {
         service.destroy()
-      } catch (error) {
-      }
+      } catch (error) {}
     }
 
     this.dataSources.clear()

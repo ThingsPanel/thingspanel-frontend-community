@@ -670,13 +670,9 @@ export class DataBindingIntegrationTester {
 
       const passRate = ((suite.passedTests / suite.totalTests) * 100).toFixed(1)
       // 显示失败的测试
-      suite.tests
-        .filter(t => !t.success)
-        .forEach(test => {
-        })
+      suite.tests.filter(t => !t.success).forEach(test => {})
     })
     const overallPassRate = ((totalPassed / totalTests) * 100).toFixed(1)
-  
   }
 
   /**

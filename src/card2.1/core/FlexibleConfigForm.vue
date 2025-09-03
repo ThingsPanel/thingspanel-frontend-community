@@ -116,8 +116,7 @@ const detectComponentConfig = async () => {
       if (tsModule.testComponentTSConfig || tsModule.default) {
         tsConfig.value = tsModule.testComponentTSConfig || tsModule.default
       }
-    } catch (e) {
-    }
+    } catch (e) {}
 
     // 尝试动态导入Vue配置
     try {
@@ -127,10 +126,8 @@ const detectComponentConfig = async () => {
       if (vueModule.default) {
         vueConfig.value = vueModule.default
       }
-    } catch (e) {
-    }
-  } catch (error) {
-  }
+    } catch (e) {}
+  } catch (error) {}
 }
 
 // 处理配置变化

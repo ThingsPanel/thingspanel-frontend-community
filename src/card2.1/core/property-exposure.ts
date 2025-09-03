@@ -61,8 +61,7 @@ class PropertyExposureRegistry {
   /**
    * 注册组件的属性暴露配置
    */
-  register(config: ComponentPropertyExposure) {
-  }
+  register(config: ComponentPropertyExposure) {}
 
   /**
    * 获取组件的可监听属性
@@ -207,8 +206,6 @@ export function autoRegisterFromSettingConfig(settingConfig: ComponentSettingCon
     listenableProperties,
     version: '1.0.0'
   })
-
-
 }
 
 /**

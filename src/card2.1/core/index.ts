@@ -19,6 +19,8 @@ export * from './data-sources'
 import { initializeDataSources } from './data-sources'
 // 🔥 新增：导入组件注册表初始化
 import { ComponentRegistry } from './component-registry'
+// 导入数据源映射器用于调试
+import { DataSourceMapper } from './data-source-mapper'
 
 // 自动初始化数据源
 initializeDataSources()
@@ -29,10 +31,10 @@ initializeDataSources()
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   window.__CARD2_DEBUG__ = {
     ComponentRegistry,
-    DataSourceMapper: require('./data-source-mapper').DataSourceMapper,
+    DataSourceMapper,
     getCard2CoreStatus,
     validateCard2Core,
-    triggerDataUpdate: (data: any) => {
+    triggerDataUpdate: () => {
       // 这里可以添加实际的数据更新逻辑
     }
   }
