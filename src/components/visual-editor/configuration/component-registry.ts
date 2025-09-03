@@ -24,8 +24,6 @@ const SimpleConfigurationEditor = defineAsyncComponent(
   () => import('@/core/data-architecture/components/SimpleConfigurationEditor.vue')
 )
 
-console.log('🔍 [component-registry] 导入SimpleConfigurationEditor:', SimpleConfigurationEditor)
-
 export interface ConfigLayerDefinition {
   /** 配置层级名称 */
   name: string
@@ -80,8 +78,6 @@ export const configLayerRegistry: Record<string, ConfigLayerDefinition> = {
   }
 }
 
-console.log('📋 [component-registry] 注册表创建完成，dataSource配置:', configLayerRegistry.dataSource)
-
 /**
  * 检查组件是否应该显示数据源配置
  * 如果组件没有定义数据需求，则不显示数据源配置
@@ -96,16 +92,6 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
         card2Definition.dataRequirements?.primaryData ||
         card2Definition.dataSources?.length > 0
       )
-
-      console.log('🔍 [component-registry] 从widget检查Card2.1组件数据需求:', {
-        componentId,
-        widgetType: widget.type,
-        hasDataFields: !!card2Definition.dataRequirements?.dataFields?.length,
-        primaryData: !!card2Definition.dataRequirements?.primaryData,
-        hasDataSources: !!card2Definition.dataSources?.length,
-        结果: hasDataNeeds
-      })
-
       return hasDataNeeds
     }
 
@@ -114,14 +100,12 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
       // 已知不需要数据源的组件类型
       const noDataSourceComponents = ['simple-display']
       if (noDataSourceComponents.includes(widget.type)) {
-        console.log('🔍 [component-registry] 静态组件不需要数据源:', widget.type)
         return false
       }
 
       // 已知需要数据源的组件类型
       const dataSourceComponents = ['dual-data-display', 'triple-data-display']
       if (dataSourceComponents.includes(widget.type)) {
-        console.log('🔍 [component-registry] 数据组件需要数据源:', widget.type)
         return true
       }
     }
@@ -140,15 +124,6 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
           dataRequirements.primaryData ||
           card2Definition.dataSources?.length > 0
         )
-
-        console.log('🔍 [component-registry] 检查Card2.1组件数据需求:', {
-          componentId,
-          hasDataFields: !!dataRequirements.dataFields?.length,
-          primaryData: !!dataRequirements.primaryData,
-          hasDataSources: !!card2Definition.dataSources?.length,
-          结果: hasDataNeeds
-        })
-
         return hasDataNeeds
       }
 
@@ -158,14 +133,12 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
         // 已知不需要数据源的组件类型
         const noDataSourceComponents = ['simple-display']
         if (noDataSourceComponents.includes(componentType)) {
-          console.log('🔍 [component-registry] 静态组件不需要数据源:', componentType)
           return false
         }
 
         // 已知需要数据源的组件类型
         const dataSourceComponents = ['dual-data-display', 'triple-data-display']
         if (dataSourceComponents.includes(componentType)) {
-          console.log('🔍 [component-registry] 数据组件需要数据源:', componentType)
           return true
         }
       }
@@ -187,12 +160,6 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
 
     if (traditionalDataRequirements) {
       const hasDataSources = !!(traditionalDataRequirements.dataSources?.length > 0)
-      console.log('🔍 [component-registry] 检查传统组件数据需求:', {
-        componentId,
-        componentType,
-        hasDataSources,
-        dataSources: traditionalDataRequirements.dataSources
-      })
       return hasDataSources
     }
 
@@ -200,17 +167,10 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
     const hasExistingDataSourceConfig = !!(config?.dataSource?.dataSources?.length > 0 || config?.dataSource?.config)
 
     if (hasExistingDataSourceConfig) {
-      console.log('🔍 [component-registry] 发现已有数据源配置，显示配置面板:', componentId)
       return true
     }
-
-    console.log('⚠️ [component-registry] 无法确定数据需求，默认不显示数据源配置:', {
-      componentId,
-      componentType: config?.metadata?.componentType
-    })
     return false
   } catch (error) {
-    console.error('❌ [component-registry] 检查数据源配置失败:', error)
     // 出错时默认不显示，避免不必要的配置面板
     return false
   }

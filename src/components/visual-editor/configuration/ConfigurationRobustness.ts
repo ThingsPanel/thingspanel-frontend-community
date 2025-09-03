@@ -153,7 +153,6 @@ export class ConfigurationRobustnessManager {
         cacheDataMismatches
       }
     } catch (error) {
-      console.error('❌ [ConfigRobustness] 一致性检查失败:', error)
       return {
         isConsistent: false,
         inconsistentComponents: ['__check_failed__'],
@@ -351,32 +350,16 @@ export const configurationRobustnessManager = new ConfigurationRobustnessManager
 if (import.meta.env.DEV) {
   // 延迟执行，避免影响初始化
   setTimeout(async () => {
-    console.log('🔍 [ConfigRobustness] 执行系统健康检查...')
-
     try {
       const healthReport = await configurationRobustnessManager.getSystemHealthReport()
 
-      if (healthReport.overallHealth === 'critical') {
-        console.error('🚨 [ConfigRobustness] 系统状态: 严重问题')
-      } else if (healthReport.overallHealth === 'warning') {
-        console.warn('⚠️ [ConfigRobustness] 系统状态: 需要注意')
-      } else {
-        console.log('✅ [ConfigRobustness] 系统状态: 健康')
-      }
-
       if (healthReport.recommendations.length > 0) {
-        console.log('📋 [ConfigRobustness] 改进建议:')
-        healthReport.recommendations.forEach(rec => console.log(`  ${rec}`))
+        healthReport.recommendations.forEach(rec => {})
       }
 
       // 如果有不一致问题，提供修复选项
-      if (!healthReport.consistency.isConsistent) {
-        console.log(
-          '💡 [ConfigRobustness] 可执行自动修复: configurationRobustnessManager.repairConfigurationInconsistencies()'
-        )
-      }
+   
     } catch (error) {
-      console.error('❌ [ConfigRobustness] 健康检查失败:', error)
     }
   }, 3000)
 }

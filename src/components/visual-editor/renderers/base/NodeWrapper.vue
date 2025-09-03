@@ -127,8 +127,6 @@ watch(
   () => props.node.metadata,
   newMetadata => {
     if (props.node.type === 'datasource-test') {
-      console.log('🔧 [NodeWrapper] metadata变化:', newMetadata)
-      console.log('🔧 [NodeWrapper] card2Data:', newMetadata?.card2Data)
     }
   },
   { deep: true, immediate: true }

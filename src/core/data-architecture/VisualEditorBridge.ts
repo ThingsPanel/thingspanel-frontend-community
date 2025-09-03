@@ -21,16 +21,11 @@ export class VisualEditorBridge {
    * @param config 数据源配置
    */
   async updateComponentExecutor(componentId: string, componentType: string, config: any): Promise<DataResult> {
-    console.log(`[VisualEditorBridge] 更新组件执行器: ${componentId}`, config)
-
     // 将旧配置格式转换为新的数据需求格式
     const requirement = this.convertConfigToRequirement(componentId, componentType, config)
 
     // 使用 SimpleDataBridge 执行数据获取
     const result = await simpleDataBridge.executeComponent(requirement)
-
-    console.log(`[VisualEditorBridge] 执行结果:`, result)
-
     // 通知数据更新回调
     this.notifyDataUpdate(componentId, result.data)
 
@@ -76,7 +71,6 @@ export class VisualEditorBridge {
       try {
         callback(componentId, data)
       } catch (error) {
-        console.error('[VisualEditorBridge] 数据更新回调执行失败:', error)
       }
     })
   }
@@ -92,7 +86,6 @@ export class VisualEditorBridge {
     componentType: string,
     config: any
   ): ComponentDataRequirement {
-    console.log(`[VisualEditorBridge] 配置转换:`, { componentId, componentType, config })
 
     const dataSources: DataSourceDefinition[] = []
 
@@ -100,24 +93,14 @@ export class VisualEditorBridge {
     if (config && typeof config === 'object') {
       // 🆕 处理新的 DataSourceConfiguration 格式
       if (config.dataSources && Array.isArray(config.dataSources)) {
-        console.log(`[VisualEditorBridge] 处理新 DataSourceConfiguration 格式:`, config.dataSources)
 
         config.dataSources.forEach((dataSource: any) => {
           if (dataSource.sourceId && dataSource.dataItems && Array.isArray(dataSource.dataItems)) {
             // 🔥 关键修复：保持数据源的完整性，不要拆分成独立数据源
-            console.log(
-              `🔍 [VisualEditorBridge] 处理数据源 ${dataSource.sourceId}，包含 ${dataSource.dataItems.length} 个数据项`
-            )
-
             // 保持原有的数据源结构，让 MultiLayerExecutorChain 处理多数据项合并
             const processedDataItems = dataSource.dataItems
               .map((dataItem: any, itemIndex: number) => {
                 if (dataItem && dataItem.item) {
-                  console.log(
-                    `🔍 [VisualEditorBridge] 转换数据源 ${dataSource.sourceId} 的第 ${itemIndex + 1} 个数据项:`,
-                    dataItem
-                  )
-
                   return {
                     item: {
                       type: dataItem.item.type,
@@ -142,17 +125,12 @@ export class VisualEditorBridge {
             })
           }
         })
-
-        console.log(`[VisualEditorBridge] DataSourceConfiguration 转换完成，共 ${dataSources.length} 个数据源`)
       }
 
       // 🆕 处理 rawDataList 结构（来自数据源配置表单）
       else if (config.rawDataList && Array.isArray(config.rawDataList)) {
-        console.log(`[VisualEditorBridge] 处理 rawDataList 结构:`, config.rawDataList)
-
         config.rawDataList.forEach((item: any, index: number) => {
           if (item && item.type && item.enabled !== false) {
-            console.log(`🔍 [VisualEditorBridge] 处理rawDataList项 ${index + 1}:`, item)
             dataSources.push({
               id: `dataSource${index + 1}`,
               type: item.type as any,
@@ -162,8 +140,6 @@ export class VisualEditorBridge {
             })
           }
         })
-
-        console.log(`[VisualEditorBridge] rawDataList 转换完成，共 ${dataSources.length} 个数据源`)
       }
 
       // 处理多个数据源的情况（如 dataSource1, dataSource2, dataSource3）
@@ -192,7 +168,6 @@ export class VisualEditorBridge {
           // 对于data-source-bindings，数据在config的各个dataSourceX字段中
           for (const [key, value] of Object.entries(config)) {
             if (key.startsWith('dataSource') && value && typeof value === 'object') {
-              console.log(`🔍 [VisualEditorBridge] 处理data-source-bindings中的${key}:`, value)
               dataSources.push({
                 id: key,
                 type: config.type as any,
@@ -214,8 +189,6 @@ export class VisualEditorBridge {
         }
       }
     }
-
-    console.log(`[VisualEditorBridge] 转换后的数据源:`, dataSources)
 
     return {
       componentId,

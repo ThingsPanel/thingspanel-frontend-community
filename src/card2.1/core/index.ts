@@ -24,7 +24,6 @@ import { ComponentRegistry } from './component-registry'
 initializeDataSources()
 
 // 🔥 新增：初始化组件注册表
-console.log('🚀 [Card2Core] 初始化组件注册表系统')
 
 // 🔥 新增：调试接口（仅在开发环境中启用）
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
@@ -34,11 +33,9 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     getCard2CoreStatus,
     validateCard2Core,
     triggerDataUpdate: (data: any) => {
-      console.log('🔧 [调试] 触发数据更新:', data)
       // 这里可以添加实际的数据更新逻辑
     }
   }
-  console.log('🔧 [Card2Core] 调试接口已启用，可通过 window.__CARD2_DEBUG__ 访问')
 }
 
 /**

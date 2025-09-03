@@ -172,7 +172,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      * 添加节点到画布
      */
     addNode(node: GraphData): void {
-      console.log('🔧 [UnifiedEditor] 添加节点:', node)
 
       this.nodes.push(node)
       this.markDirty()
@@ -192,7 +191,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
         this.nodes[nodeIndex] = { ...this.nodes[nodeIndex], ...updates }
         this.markDirty()
 
-        console.log('🔧 [UnifiedEditor] 更新节点:', { id, updates })
       }
     },
 
@@ -200,7 +198,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      * 删除节点及其所有配置
      */
     removeNode(id: string): void {
-      console.log('🔧 [UnifiedEditor] 删除节点:', id)
 
       // 移除节点
       this.nodes = this.nodes.filter(node => node.id !== id)
@@ -223,7 +220,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      */
     selectNodes(ids: string[]): void {
       this.selectedIds = [...ids]
-      console.log('🔧 [UnifiedEditor] 选中节点:', ids)
     },
 
     // ==================== 配置操作 ====================
@@ -235,7 +231,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
       this.baseConfigs.set(widgetId, { ...config })
       this.markDirty()
 
-      console.log('🔧 [UnifiedEditor] 设置基础配置:', { widgetId, config })
     },
 
     /**
@@ -244,8 +239,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
     setComponentConfiguration(widgetId: string, config: ComponentConfiguration): void {
       this.componentConfigs.set(widgetId, { ...config })
       this.markDirty()
-
-      console.log('🔧 [UnifiedEditor] 设置组件配置:', { widgetId, config })
     },
 
     /**
@@ -255,8 +248,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
     setDataSourceConfiguration(widgetId: string, config: DataSourceConfiguration): void {
       this.dataSourceConfigs.set(widgetId, { ...config })
       this.markDirty()
-
-      console.log('🔧 [UnifiedEditor] 设置数据源配置:', { widgetId, config })
 
       // 触发数据绑定更新
       this.updateDataBinding(widgetId)
@@ -268,8 +259,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
     setInteractionConfiguration(widgetId: string, config: InteractionConfiguration): void {
       this.interactionConfigs.set(widgetId, { ...config })
       this.markDirty()
-
-      console.log('🔧 [UnifiedEditor] 设置交互配置:', { widgetId, config })
     },
 
     /**
@@ -277,8 +266,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      */
     setRuntimeData(widgetId: string, data: any): void {
       this.runtimeData.set(widgetId, data)
-
-      console.log('🔧 [UnifiedEditor] 更新运行时数据:', { widgetId, data })
     },
 
     // ==================== 组件注册 ====================
@@ -288,8 +275,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      */
     registerWidget(definition: WidgetDefinition): void {
       this.widgets.set(definition.type, definition)
-
-      console.log('🔧 [UnifiedEditor] 注册组件:', definition.type)
     },
 
     /**
@@ -297,8 +282,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      */
     registerWidgets(definitions: WidgetDefinition[]): void {
       definitions.forEach(def => this.registerWidget(def))
-
-      console.log('🔧 [UnifiedEditor] 批量注册组件:', definitions.length, '个')
     },
 
     // ==================== Card 2.1 集成 ====================
@@ -308,8 +291,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      */
     registerCard2Component(definition: ComponentDefinition): void {
       this.card2Components.set(definition.type, definition)
-
-      console.log('🔧 [UnifiedEditor] 注册Card2.1组件:', definition.type)
     },
 
     /**
@@ -317,8 +298,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      */
     createDataBinding(widgetId: string, binding: ReactiveDataBinding): void {
       this.dataBindings.set(widgetId, binding)
-
-      console.log('🔧 [UnifiedEditor] 创建数据绑定:', { widgetId, binding })
     },
 
     /**
@@ -327,9 +306,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
     updateDataBinding(widgetId: string): void {
       const dataSourceConfig = this.dataSourceConfigs.get(widgetId)
       if (!dataSourceConfig) return
-
-      console.log('🔧 [UnifiedEditor] 更新数据绑定:', { widgetId, dataSourceConfig })
-
       // TODO: 集成Card2.1数据绑定系统
       // 这里将与Card2.1的数据绑定系统集成
     },
@@ -365,7 +341,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      */
     updateViewport(viewport: { x?: number; y?: number; zoom?: number }): void {
       this.viewport = { ...this.viewport, ...viewport }
-      console.log('🔧 [UnifiedEditor] 更新视图端口:', this.viewport)
     },
 
     /**
@@ -373,7 +348,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      */
     setMode(mode: EditorMode): void {
       this.mode = mode
-      console.log('🔧 [UnifiedEditor] 设置编辑器模式:', mode)
     },
 
     /**
@@ -381,14 +355,12 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      */
     resetViewport(): void {
       this.viewport = { x: 0, y: 0, zoom: 1 }
-      console.log('🔧 [UnifiedEditor] 重置视图端口')
     },
 
     /**
      * 清理所有状态
      */
     clearAll(): void {
-      console.log('🔧 [UnifiedEditor] 清理所有状态')
 
       this.nodes = []
       this.selectedIds = []

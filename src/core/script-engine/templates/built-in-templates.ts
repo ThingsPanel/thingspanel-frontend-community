@@ -833,8 +833,6 @@ export const ALL_BUILT_IN_TEMPLATES = [
  * 初始化内置模板到模板管理器
  */
 export function initializeBuiltInTemplates(templateManager: any) {
-  console.log('🚀 [BuiltInTemplates] 开始初始化内置模板库...')
-
   let successCount = 0
   let errorCount = 0
 
@@ -843,12 +841,9 @@ export function initializeBuiltInTemplates(templateManager: any) {
       templateManager.createTemplate(template)
       successCount++
     } catch (error) {
-      console.error('❌ [BuiltInTemplates] 模板创建失败:', template.name, error)
       errorCount++
     }
   })
-
-  console.log(`✅ [BuiltInTemplates] 模板库初始化完成: 成功 ${successCount} 个, 失败 ${errorCount} 个`)
 
   // 返回统计信息
   return {

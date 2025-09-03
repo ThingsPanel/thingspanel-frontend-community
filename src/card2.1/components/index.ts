@@ -38,8 +38,6 @@ Object.values(Card2ComponentMap).forEach(definition => {
   ComponentRegistry.register(definition)
 })
 
-console.log('✅ [Card2Components] 组件注册完成，统计信息:', ComponentRegistry.getStats())
-
 /**
  * 组件类型数组
  * 供编辑器枚举所有可用组件

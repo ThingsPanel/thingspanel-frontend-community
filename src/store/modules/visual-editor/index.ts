@@ -105,7 +105,6 @@ export class UnifiedVisualEditorSystem {
   private servicesInitialized = false
 
   constructor() {
-    console.log('🔧 [UnifiedEditor] 创建统一Visual Editor系统')
   }
 
   /**
@@ -114,15 +113,12 @@ export class UnifiedVisualEditorSystem {
   private initializeServices(): void {
     if (this.servicesInitialized) return
 
-    console.log('🔧 [UnifiedEditor] 初始化各个服务')
-
     this.store = useUnifiedEditorStore()
     this.configService = useConfigurationService()
     this.dataFlowManager = useDataFlowManager()
     this.card2Adapter = useCard2Adapter()
 
     this.servicesInitialized = true
-    console.log('✅ [UnifiedEditor] 服务初始化完成')
   }
 
   /**
@@ -130,17 +126,12 @@ export class UnifiedVisualEditorSystem {
    */
   async initialize(): Promise<void> {
     if (this.initialized && this.store && this.configService && this.dataFlowManager && this.card2Adapter) {
-      console.log('ℹ️ [UnifiedEditor] 系统已初始化')
       return
     }
 
     if (this.initialized && !this.store) {
-      console.warn('⚠️ [UnifiedEditor] 系统标记为已初始化，但服务缺失，重新初始化...')
       this.initialized = false
     }
-
-    console.log('🔧 [UnifiedEditor] 开始初始化系统...')
-
     try {
       // 0. 先初始化各个服务
       this.initializeServices()
@@ -163,15 +154,7 @@ export class UnifiedVisualEditorSystem {
       }
 
       this.initialized = true
-      console.log('✅ [UnifiedEditor] 系统初始化完成')
-      console.log('🔍 [UnifiedEditor] 服务状态:', {
-        store: !!this.store,
-        configService: !!this.configService,
-        dataFlowManager: !!this.dataFlowManager,
-        card2Adapter: !!this.card2Adapter
-      })
     } catch (error) {
-      console.error('❌ [UnifiedEditor] 系统初始化失败:', error)
       throw error
     }
   }
@@ -180,7 +163,6 @@ export class UnifiedVisualEditorSystem {
    * 初始化配置服务
    */
   private async initializeConfigurationService(): Promise<void> {
-    console.log('🔧 [UnifiedEditor] 初始化配置服务')
 
     if (!this.configService) {
       throw new Error('配置服务未初始化')
@@ -202,14 +184,12 @@ export class UnifiedVisualEditorSystem {
       }
     })
 
-    console.log('✅ [UnifiedEditor] 配置服务初始化完成')
   }
 
   /**
    * 初始化数据流管理
    */
   private initializeDataFlowManager(): void {
-    console.log('🔧 [UnifiedEditor] 初始化数据流管理')
 
     if (!this.dataFlowManager) {
       throw new Error('数据流管理器未初始化')
@@ -221,30 +201,24 @@ export class UnifiedVisualEditorSystem {
       condition: () => true, // 监听所有操作
       execute: action => {
         // 系统状态同步逻辑
-        console.log('🔧 [UnifiedEditor] 系统状态同步:', action.type)
       }
     })
 
-    console.log('✅ [UnifiedEditor] 数据流管理初始化完成')
   }
 
   /**
    * 初始化Card2.1适配器
    */
   private async initializeCard2Adapter(): Promise<void> {
-    console.log('🔧 [UnifiedEditor] 初始化Card2.1适配器')
 
     // Card2.1适配器会自动初始化
     // 这里可以添加额外的初始化逻辑
-
-    console.log('✅ [UnifiedEditor] Card2.1适配器初始化完成')
   }
 
   /**
    * 设置系统事件监听
    */
   private setupSystemEventListeners(): void {
-    console.log('🔧 [UnifiedEditor] 设置系统事件监听')
 
     if (!this.configService || !this.dataFlowManager) {
       throw new Error('服务未初始化，无法设置事件监听')
@@ -252,20 +226,15 @@ export class UnifiedVisualEditorSystem {
 
     // 监听配置变更
     this.configService.onConfigurationChange(event => {
-      console.log('📡 [UnifiedEditor] 配置变更事件:', event)
     })
 
     // 监听数据流更新
     this.dataFlowManager.onDataFlowUpdate(action => {
-      console.log('📡 [UnifiedEditor] 数据流更新事件:', action)
     })
 
     // 监听错误事件
     this.dataFlowManager.onError((action, error) => {
-      console.error('📡 [UnifiedEditor] 数据流错误事件:', { action, error })
     })
-
-    console.log('✅ [UnifiedEditor] 系统事件监听设置完成')
   }
 
   /**
@@ -301,21 +270,18 @@ export class UnifiedVisualEditorSystem {
    * 保存所有配置
    */
   async saveAll(): Promise<void> {
-    console.log('🔧 [UnifiedEditor] 保存所有配置')
 
     if (!this.configService) {
       throw new Error('配置服务未初始化')
     }
 
     await this.configService.saveAllConfigurations()
-    console.log('✅ [UnifiedEditor] 所有配置保存完成')
   }
 
   /**
    * 清理系统资源
    */
   cleanup(): void {
-    console.log('🔧 [UnifiedEditor] 清理系统资源')
 
     if (this.store) {
       this.store.clearAll()
@@ -323,7 +289,6 @@ export class UnifiedVisualEditorSystem {
 
     this.initialized = false
     this.servicesInitialized = false
-    console.log('✅ [UnifiedEditor] 系统资源清理完成')
   }
 }
 
@@ -338,7 +303,6 @@ let unifiedEditorSystemInstance: UnifiedVisualEditorSystem | null = null
 export function useUnifiedVisualEditorSystem(): UnifiedVisualEditorSystem {
   if (!unifiedEditorSystemInstance) {
     unifiedEditorSystemInstance = new UnifiedVisualEditorSystem()
-    console.log('🔧 [UnifiedEditor] 创建统一Visual Editor系统实例')
   }
 
   return unifiedEditorSystemInstance
@@ -352,7 +316,6 @@ export function resetUnifiedVisualEditorSystem(): void {
     unifiedEditorSystemInstance.cleanup()
   }
   unifiedEditorSystemInstance = null
-  console.log('🔧 [UnifiedEditor] 重置统一Visual Editor系统实例')
 }
 
 // ==================== 便捷 Hook ====================
@@ -469,7 +432,6 @@ export const MigrationHelper = {
    * 从旧的编辑器存储迁移数据
    */
   migrateFromOldStore(oldStoreData: any): void {
-    console.log('🔧 [Migration] 开始从旧存储迁移数据')
 
     const system = useUnifiedVisualEditorSystem()
 
@@ -491,8 +453,6 @@ export const MigrationHelper = {
         system.configService.setConfiguration(widgetId, config)
       })
     }
-
-    console.log('✅ [Migration] 数据迁移完成')
   },
 
   /**

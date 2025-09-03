@@ -55,10 +55,8 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
       await initializeCard2System()
       const tree = getComponentTree()
       componentTree.value = tree
-      console.log('🌳 [useComponentTree] 组件树初始化完成:', tree)
     } catch (err) {
       error.value = err instanceof Error ? err.message : '初始化失败'
-      console.error('❌ [useComponentTree] 初始化失败:', err)
     } finally {
       isLoading.value = false
     }

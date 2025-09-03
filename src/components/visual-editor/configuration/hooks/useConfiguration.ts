@@ -76,11 +76,8 @@ export function useConfiguration(options: UseConfigurationOptions = {}) {
 
       // 初始验证
       validateConfiguration()
-
-      console.log(`[useConfiguration] 配置初始化完成: ${id}`)
     } catch (err) {
       error.value = err instanceof Error ? err.message : '初始化失败'
-      console.error('[useConfiguration] 初始化失败:', err)
     } finally {
       isLoading.value = false
     }
@@ -89,7 +86,6 @@ export function useConfiguration(options: UseConfigurationOptions = {}) {
   // 更新配置
   const updateConfiguration = <K extends keyof WidgetConfiguration>(section: K, config: WidgetConfiguration[K]) => {
     if (!currentWidgetId.value) {
-      console.warn('[useConfiguration] 无法更新配置：未设置 widgetId')
       return
     }
 
@@ -101,14 +97,12 @@ export function useConfiguration(options: UseConfigurationOptions = {}) {
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : '更新失败'
-      console.error('[useConfiguration] 配置更新失败:', err)
     }
   }
 
   // 设置完整配置
   const setConfiguration = (config: WidgetConfiguration) => {
     if (!currentWidgetId.value) {
-      console.warn('[useConfiguration] 无法设置配置：未设置 widgetId')
       return
     }
 
@@ -120,7 +114,6 @@ export function useConfiguration(options: UseConfigurationOptions = {}) {
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : '设置失败'
-      console.error('[useConfiguration] 配置设置失败:', err)
     }
   }
 
@@ -132,7 +125,6 @@ export function useConfiguration(options: UseConfigurationOptions = {}) {
       configurationManager.resetConfiguration(currentWidgetId.value)
     } catch (err) {
       error.value = err instanceof Error ? err.message : '重置失败'
-      console.error('[useConfiguration] 配置重置失败:', err)
     }
   }
 
@@ -145,7 +137,6 @@ export function useConfiguration(options: UseConfigurationOptions = {}) {
       validationResult.value = result
       return result
     } catch (err) {
-      console.error('[useConfiguration] 配置验证失败:', err)
       return { valid: false, errors: [{ field: 'global', message: '验证失败' }] }
     }
   }
@@ -158,7 +149,6 @@ export function useConfiguration(options: UseConfigurationOptions = {}) {
       return configurationManager.exportConfiguration(currentWidgetId.value)
     } catch (err) {
       error.value = err instanceof Error ? err.message : '导出失败'
-      console.error('[useConfiguration] 配置导出失败:', err)
       return null
     }
   }
@@ -175,7 +165,6 @@ export function useConfiguration(options: UseConfigurationOptions = {}) {
       return success
     } catch (err) {
       error.value = err instanceof Error ? err.message : '导入失败'
-      console.error('[useConfiguration] 配置导入失败:', err)
       return false
     }
   }
@@ -192,7 +181,6 @@ export function useConfiguration(options: UseConfigurationOptions = {}) {
       return success
     } catch (err) {
       error.value = err instanceof Error ? err.message : '应用预设失败'
-      console.error('[useConfiguration] 应用预设失败:', err)
       return false
     }
   }
@@ -211,7 +199,6 @@ export function useConfiguration(options: UseConfigurationOptions = {}) {
     autoSaveTimer = setTimeout(() => {
       if (currentWidgetId.value && configuration.value) {
         // 这里可以添加实际的保存逻辑，比如保存到服务器
-        console.log(`[useConfiguration] 自动保存配置: ${currentWidgetId.value}`)
       }
     }, autoSaveDelay)
   }

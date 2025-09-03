@@ -187,53 +187,31 @@ const createScriptMergeExampleConfig = (): DataSourceConfiguration => {
  * 测试执行器链功能
  */
 async function testExecutorChain() {
-  console.log('=== 多层级执行器链测试开始 ===\n')
-
   const executorChain = new MultiLayerExecutorChain()
 
   // 测试1: JSON数据处理
-  console.log('📋 测试1: JSON数据处理和对象合并')
   try {
     const config1 = createJsonExampleConfig()
     const result1 = await executorChain.executeDataProcessingChain(config1, true)
-
-    console.log('配置:', JSON.stringify(config1, null, 2))
-    console.log('执行结果:', JSON.stringify(result1, null, 2))
-    console.log('✅ JSON测试完成\n')
   } catch (error) {
-    console.error('❌ JSON测试失败:', error)
   }
 
   // 测试2: HTTP数据处理 (可能网络失败)
-  console.log('📋 测试2: HTTP数据处理')
   try {
     const config2 = createHttpExampleConfig()
     const result2 = await executorChain.executeDataProcessingChain(config2, true)
-
-    console.log('执行结果:', JSON.stringify(result2, null, 2))
-    console.log('✅ HTTP测试完成\n')
   } catch (error) {
-    console.error('❌ HTTP测试失败:', error)
   }
 
   // 测试3: 自定义脚本处理
-  console.log('📋 测试3: 自定义脚本处理和合并')
   try {
     const config3 = createScriptMergeExampleConfig()
     const result3 = await executorChain.executeDataProcessingChain(config3, true)
-
-    console.log('执行结果:', JSON.stringify(result3, null, 2))
-    console.log('✅ 脚本测试完成\n')
   } catch (error) {
-    console.error('❌ 脚本测试失败:', error)
   }
 
   // 测试4: 执行器链统计信息
-  console.log('📋 测试4: 执行器链统计信息')
   const statistics = executorChain.getChainStatistics()
-  console.log('统计信息:', JSON.stringify(statistics, null, 2))
-
-  console.log('\n=== 多层级执行器链测试完成 ===')
 }
 
 // 如果直接运行此文件，执行测试

@@ -14,7 +14,6 @@ export class InteractionCompatibilityTest {
    * 测试旧格式跳转配置转换
    */
   static testLegacyJumpConversion() {
-    console.log('🧪 [兼容性测试] 测试旧格式跳转配置转换')
 
     // 测试外部链接
     const legacyExternalJump = {
@@ -24,7 +23,6 @@ export class InteractionCompatibilityTest {
     }
 
     const convertedExternal = InteractionAdapter.convertLegacyJumpToNew(legacyExternalJump)
-    console.log('外部链接转换结果:', convertedExternal)
 
     // 验证转换结果
     const expectedExternal = {
@@ -46,7 +44,6 @@ export class InteractionCompatibilityTest {
     }
 
     const convertedInternal = InteractionAdapter.convertLegacyJumpToNew(legacyInternalJump)
-    console.log('内部路径转换结果:', convertedInternal)
 
     return {
       externalSuccess: JSON.stringify(convertedExternal) === JSON.stringify(expectedExternal),
@@ -60,7 +57,6 @@ export class InteractionCompatibilityTest {
    * 测试旧格式修改配置转换
    */
   static testLegacyModifyConversion() {
-    console.log('🧪 [兼容性测试] 测试旧格式修改配置转换')
 
     const legacyModify = {
       action: 'updateComponentData' as const,
@@ -70,7 +66,6 @@ export class InteractionCompatibilityTest {
     }
 
     const converted = InteractionAdapter.convertLegacyModifyToNew(legacyModify)
-    console.log('修改配置转换结果:', converted)
 
     const expected = {
       action: 'modify',
@@ -94,7 +89,6 @@ export class InteractionCompatibilityTest {
    * 测试新格式到旧格式的反向转换
    */
   static testNewToLegacyConversion() {
-    console.log('🧪 [兼容性测试] 测试新格式到旧格式的反向转换')
 
     // 测试跳转配置反向转换
     const newJump = {
@@ -107,7 +101,6 @@ export class InteractionCompatibilityTest {
     }
 
     const legacyJump = InteractionAdapter.convertNewJumpToLegacy(newJump)
-    console.log('跳转配置反向转换结果:', legacyJump)
 
     // 测试修改配置反向转换
     const newModify = {
@@ -121,7 +114,6 @@ export class InteractionCompatibilityTest {
     }
 
     const legacyModify = InteractionAdapter.convertNewModifyToLegacy(newModify)
-    console.log('修改配置反向转换结果:', legacyModify)
 
     return {
       jumpSuccess: legacyJump.action === 'navigateToUrl' && legacyJump.value === 'https://example.com',
@@ -134,15 +126,12 @@ export class InteractionCompatibilityTest {
    * 测试格式检测功能
    */
   static testFormatDetection() {
-    console.log('🧪 [兼容性测试] 测试格式检测功能')
 
     const legacyResponse = { action: 'navigateToUrl', value: '/test' }
     const newResponse = { action: 'jump', jumpConfig: { jumpType: 'internal', internalPath: '/test' } }
 
     const legacyDetected = InteractionAdapter.detectResponseFormat(legacyResponse as any)
     const newDetected = InteractionAdapter.detectResponseFormat(newResponse as any)
-
-    console.log('格式检测结果:', { legacyDetected, newDetected })
 
     return {
       legacyDetected: legacyDetected === 'legacy',
@@ -154,7 +143,6 @@ export class InteractionCompatibilityTest {
    * 测试批量交互配置标准化
    */
   static testBatchNormalization() {
-    console.log('🧪 [兼容性测试] 测试批量交互配置标准化')
 
     const mixedInteraction = {
       event: 'click',
@@ -176,10 +164,6 @@ export class InteractionCompatibilityTest {
 
     const normalizedToNew = InteractionAdapter.normalizeInteractionResponses(mixedInteraction, 'new')
     const normalizedToLegacy = InteractionAdapter.normalizeInteractionResponses(mixedInteraction, 'legacy')
-
-    console.log('标准化到新格式:', normalizedToNew)
-    console.log('标准化到旧格式:', normalizedToLegacy)
-
     return {
       newFormatValid: normalizedToNew.responses.every((r: any) => r.action === 'jump' || r.action === 'modify'),
       legacyFormatValid: normalizedToLegacy.responses.every(
@@ -192,8 +176,6 @@ export class InteractionCompatibilityTest {
    * 运行完整的兼容性测试套件
    */
   static runFullCompatibilityTest() {
-    console.log('🚀 [兼容性测试] 开始运行完整的兼容性测试套件')
-
     const results = {
       legacyJumpConversion: this.testLegacyJumpConversion(),
       legacyModifyConversion: this.testLegacyModifyConversion(),
@@ -207,19 +189,6 @@ export class InteractionCompatibilityTest {
     const successCount = allTests.filter(Boolean).length
     const totalCount = allTests.length
     const successRate = (successCount / totalCount) * 100
-
-    console.log('🎯 [兼容性测试] 测试结果摘要:')
-    console.log(`总测试项目: ${totalCount}`)
-    console.log(`成功项目: ${successCount}`)
-    console.log(`成功率: ${successRate.toFixed(1)}%`)
-    console.log('详细结果:', results)
-
-    if (successRate === 100) {
-      console.log('✅ [兼容性测试] 所有测试通过！交互系统新旧格式完全兼容')
-    } else {
-      console.warn('⚠️ [兼容性测试] 部分测试失败，需要进一步检查兼容性问题')
-    }
-
     return {
       success: successRate === 100,
       successRate,

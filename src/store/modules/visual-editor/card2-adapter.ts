@@ -72,7 +72,6 @@ export class Card2VisualEditorAdapter {
 
   constructor() {
     this.initializeCard2Integration()
-    console.log('🔧 [Card2Adapter] Card2.1 适配器初始化完成')
   }
 
   // ==================== Card 2.1 系统集成 ====================
@@ -88,10 +87,7 @@ export class Card2VisualEditorAdapter {
 
       // 立即初始化
       await this.card2System.initialize()
-
-      console.log('✅ [Card2Adapter] Card2.1系统集成成功')
     } catch (error) {
-      console.error('❌ [Card2Adapter] Card2.1系统集成失败:', error)
     }
   }
 
@@ -99,27 +95,19 @@ export class Card2VisualEditorAdapter {
    * 注册Card2.1组件到Visual Editor
    */
   registerCard2Component(definition: ComponentDefinition): void {
-    console.log('🔧 [Card2Adapter] 注册Card2.1组件:', definition.type)
-
     // 1. 转换为Visual Editor格式
     const widgetDefinition = this.adaptComponentDefinition(definition)
 
     // 2. 注册到统一存储
     this.editorStore.registerWidget(widgetDefinition)
     this.editorStore.registerCard2Component(definition)
-
-    console.log('✅ [Card2Adapter] Card2.1组件注册完成:', definition.type)
   }
 
   /**
    * 批量注册Card2.1组件
    */
   registerCard2Components(definitions: ComponentDefinition[]): void {
-    console.log('🔧 [Card2Adapter] 批量注册Card2.1组件:', definitions.length, '个')
-
     definitions.forEach(def => this.registerCard2Component(def))
-
-    console.log('✅ [Card2Adapter] 批量注册完成')
   }
 
   // ==================== 组件定义转换 ====================
@@ -129,8 +117,6 @@ export class Card2VisualEditorAdapter {
    * 🔥 统一的组件定义转换逻辑
    */
   private adaptComponentDefinition(card2Def: ComponentDefinition): WidgetDefinition {
-    console.log('🔧 [Card2Adapter] 转换组件定义:', card2Def.type)
-
     return {
       type: card2Def.type,
       name: card2Def.name,
@@ -242,10 +228,7 @@ export class Card2VisualEditorAdapter {
     widgetId: string,
     dataSourceConfig: DataSourceConfiguration
   ): Promise<ReactiveDataBinding | null> {
-    console.log('🔧 [Card2Adapter] 创建数据绑定:', { widgetId, dataSourceConfig })
-
     if (!this.card2System) {
-      console.warn('⚠️ [Card2Adapter] Card2.1系统未初始化，无法创建数据绑定')
       return null
     }
 
@@ -253,7 +236,6 @@ export class Card2VisualEditorAdapter {
       // 1. 获取组件定义
       const card2Definition = this.editorStore.card2Components.get(widgetId)
       if (!card2Definition) {
-        console.warn('⚠️ [Card2Adapter] 未找到Card2.1组件定义:', widgetId)
         return null
       }
 
@@ -262,8 +244,6 @@ export class Card2VisualEditorAdapter {
 
       // 3. 注册到需求管理器（如果可用）
       // 注意：使用实际可用的API
-      console.log('🔧 [Card2Adapter] 组件需求创建:', { widgetId, requirement })
-
       // 4. 创建数据绑定
       const binding: ReactiveDataBinding = {
         id: `${widgetId}_binding`,
@@ -275,11 +255,8 @@ export class Card2VisualEditorAdapter {
 
       // 5. 存储到统一状态
       this.editorStore.createDataBinding(widgetId, binding)
-
-      console.log('✅ [Card2Adapter] 数据绑定创建成功:', binding.id)
       return binding
     } catch (error) {
-      console.error('❌ [Card2Adapter] 数据绑定创建失败:', error)
       return null
     }
   }
@@ -288,8 +265,6 @@ export class Card2VisualEditorAdapter {
    * 更新Card2.1数据绑定
    */
   async updateDataBinding(widgetId: string, dataSourceConfig: DataSourceConfiguration): Promise<void> {
-    console.log('🔧 [Card2Adapter] 更新数据绑定:', widgetId)
-
     // 删除旧的绑定
     this.destroyDataBinding(widgetId)
 
@@ -301,12 +276,8 @@ export class Card2VisualEditorAdapter {
    * 销毁Card2.1数据绑定
    */
   destroyDataBinding(widgetId: string): void {
-    console.log('🔧 [Card2Adapter] 销毁数据绑定:', widgetId)
-
     // 从统一状态删除
     this.editorStore.dataBindings.delete(widgetId)
-
-    console.log('✅ [Card2Adapter] 数据绑定销毁完成:', widgetId)
   }
 
   /**
@@ -356,8 +327,6 @@ export class Card2VisualEditorAdapter {
    * 处理Card2.1组件的运行时数据更新
    */
   handleRuntimeDataUpdate(widgetId: string, data: any): void {
-    console.log('🔧 [Card2Adapter] 处理运行时数据更新:', { widgetId, data })
-
     // 通过数据流管理器更新运行时数据
     this.dataFlowManager.handleUserAction({
       type: 'SET_RUNTIME_DATA',
@@ -372,8 +341,6 @@ export class Card2VisualEditorAdapter {
   getComponentCurrentData(widgetId: string): any {
     const runtimeData = this.editorStore.getRuntimeData(widgetId)
 
-    console.log('🔧 [Card2Adapter] 获取组件当前数据:', { widgetId, runtimeData })
-
     return runtimeData
   }
 
@@ -383,8 +350,6 @@ export class Card2VisualEditorAdapter {
    * 组件添加到画布时的处理
    */
   onComponentAdded(widgetId: string, componentType: string): void {
-    console.log('🔧 [Card2Adapter] 组件添加到画布:', { widgetId, componentType })
-
     // 检查是否是Card2.1组件
     const card2Definition = this.editorStore.card2Components.get(componentType)
     if (card2Definition) {
@@ -397,8 +362,6 @@ export class Card2VisualEditorAdapter {
    * 组件从画布移除时的处理
    */
   onComponentRemoved(widgetId: string): void {
-    console.log('🔧 [Card2Adapter] 组件从画布移除:', widgetId)
-
     // 清理Card2.1相关资源
     this.destroyDataBinding(widgetId)
   }
@@ -407,8 +370,6 @@ export class Card2VisualEditorAdapter {
    * 初始化Card2.1组件配置
    */
   private initializeCard2ComponentConfig(widgetId: string, card2Definition: ComponentDefinition): void {
-    console.log('🔧 [Card2Adapter] 初始化Card2.1组件配置:', widgetId)
-
     // 设置默认的组件配置
     const defaultConfig = this.extractDefaultProperties(card2Definition)
     this.editorStore.setComponentConfiguration(widgetId, defaultConfig)
@@ -475,9 +436,6 @@ export class Card2VisualEditorAdapter {
     if (this.card2System) {
       return // 已经初始化
     }
-
-    console.log('🔄 [Card2Adapter] 等待Card2.1系统初始化...')
-
     // 等待一段时间让异步初始化完成
     let retries = 0
     const maxRetries = 50 // 最多等待5秒
@@ -488,7 +446,6 @@ export class Card2VisualEditorAdapter {
     }
 
     if (!this.card2System) {
-      console.warn('⚠️ [Card2Adapter] Card2.1系统初始化超时')
       // 尝试重新初始化
       await this.initializeCard2Integration()
     }
@@ -503,14 +460,12 @@ export class Card2VisualEditorAdapter {
     await this.ensureInitialized()
 
     if (!this.card2System) {
-      console.warn('⚠️ [Card2Adapter] Card2.1系统初始化失败，无法获取组件')
       return null
     }
 
     try {
       return this.card2System.getComponent(componentType)
     } catch (error) {
-      console.error('❌ [Card2Adapter] 获取组件失败:', { componentType, error })
       return null
     }
   }
@@ -521,14 +476,12 @@ export class Card2VisualEditorAdapter {
    */
   getComponentDefinition(componentType: string): any {
     if (!this.card2System) {
-      console.warn('⚠️ [Card2Adapter] Card2.1系统未初始化，无法获取组件定义')
       return null
     }
 
     try {
       return this.card2System.getComponentDefinition(componentType)
     } catch (error) {
-      console.error('❌ [Card2Adapter] 获取组件定义失败:', { componentType, error })
       return null
     }
   }
@@ -551,7 +504,6 @@ let card2AdapterInstance: Card2VisualEditorAdapter | null = null
 export function useCard2Adapter(): Card2VisualEditorAdapter {
   if (!card2AdapterInstance) {
     card2AdapterInstance = new Card2VisualEditorAdapter()
-    console.log('🔧 [Card2Adapter] 创建Card2.1适配器实例')
   }
 
   return card2AdapterInstance
@@ -562,5 +514,4 @@ export function useCard2Adapter(): Card2VisualEditorAdapter {
  */
 export function resetCard2Adapter(): void {
   card2AdapterInstance = null
-  console.log('🔧 [Card2Adapter] 重置Card2.1适配器实例')
 }

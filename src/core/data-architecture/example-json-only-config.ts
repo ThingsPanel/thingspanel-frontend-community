@@ -405,25 +405,13 @@ export const pureJsonConfigExample: EnhancedDataSourceConfiguration = {
  * 展示纯JSON配置的使用
  */
 export function demonstratePureJsonConfig() {
-  console.log('=== 纯JSON数据源配置示例 ===')
-
   // 1. 基础配置信息
-  console.log('配置ID:', pureJsonConfigExample.componentId)
-  console.log('配置版本:', pureJsonConfigExample.version)
-  console.log('数据源数量:', pureJsonConfigExample.dataSources.length)
 
   // 2. 数据源详情
   pureJsonConfigExample.dataSources.forEach((source, index) => {
-    console.log(`\n数据源 ${index + 1}:`)
-    console.log('- sourceId:', source.sourceId)
-    console.log('- 数据项数量:', source.dataItems.length)
 
     source.dataItems.forEach((dataItem, itemIndex) => {
       const item = dataItem.item
-      console.log(`  数据项 ${itemIndex + 1}:`)
-      console.log('  - ID:', item.id)
-      console.log('  - 类型:', item.type)
-      console.log('  - 显示名称:', item.metadata?.displayName)
 
       // 解析JSON数据预览
       const jsonConfig = item.config as EnhancedJsonDataItemConfig
@@ -440,13 +428,6 @@ export function demonstratePureJsonConfig() {
   // 3. 增强功能状态
   console.log('\n增强功能状态:')
   const features = pureJsonConfigExample.enhancedFeatures
-  if (features) {
-    console.log('- HTTP数组格式:', features.httpArrayFormat ? '启用' : '禁用')
-    console.log('- 动态参数支持:', features.dynamicParameterSupport ? '启用' : '禁用')
-    console.log('- 安全脚本执行:', features.secureScriptExecution ? '启用' : '禁用')
-    console.log('- 配置验证:', features.configurationValidation ? '启用' : '禁用')
-    console.log('- 性能监控:', features.performanceMonitoring ? '启用' : '禁用')
-  }
 }
 
 export default {

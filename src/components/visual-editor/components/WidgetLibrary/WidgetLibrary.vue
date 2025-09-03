@@ -100,7 +100,6 @@ const initializeWidgets = async () => {
     await testPermissionSystem()
     await card2Integration.initialize()
   } catch (error) {
-    console.error('❌ [WidgetLibrary] 组件初始化失败:', error)
   }
 }
 
@@ -116,7 +115,6 @@ const allWidgets = computed(() => {
   // ✅ 修复：正确访问 ComputedRef 的 .value 属性
   const widgets = card2Integration.availableWidgets.value
   if (!Array.isArray(widgets)) {
-    console.warn('⚠️ [WidgetLibrary] availableWidgets.value 不是数组，返回空数组:', widgets)
     return []
   }
 
@@ -198,35 +196,23 @@ const filteredWidgetTree = computed(() => {
 
 // --- Event Handlers ---
 const handleAddWidget = (widget: any) => {
-  // console.log('🎯 [WidgetLibrary] handleAddWidget 被调用:', {
-  //   widget,
-  //   type: widget.type,
-  //   source: widget.source,
-  //   hasType: !!widget.type
-  // })
+  
 
   if (!widget.type) {
-    console.error('❌ handleAddWidget called with undefined type.', widget)
     return
   }
 
   const payload = { type: widget.type, source: widget.source || 'legacy' }
-  // console.log('📤 [WidgetLibrary] 发送 add-widget 事件:', payload)
   emit('add-widget', payload)
 }
 
 const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
-  // console.log('🎯 [WidgetLibrary] handleDragStart 被调用:', {
-  //   widget,
-  //   type: widget.type,
-  //   source: widget.source
-  // })
+ 
 
   if (event.dataTransfer) {
     const dragData = { type: widget.type, source: widget.source || 'legacy' }
     event.dataTransfer.setData('application/json', JSON.stringify(dragData))
     event.dataTransfer.effectAllowed = 'copy'
-    // console.log('📤 [WidgetLibrary] 设置拖拽数据:', dragData)
   }
 }
 </script>

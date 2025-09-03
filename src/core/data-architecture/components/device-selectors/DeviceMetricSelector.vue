@@ -177,7 +177,6 @@ watch(selectedDeviceId, (newDeviceId, oldDeviceId) => {
  */
 const handleDeviceChange = (deviceId: string) => {
   selectedDeviceId.value = deviceId
-  console.log('📱 [DeviceMetricSelector] 选择设备:', selectedDevice.value)
 }
 
 /**
@@ -185,7 +184,6 @@ const handleDeviceChange = (deviceId: string) => {
  */
 const handleMetricChange = (metricKey: string) => {
   selectedMetricKey.value = metricKey
-  console.log('📊 [DeviceMetricSelector] 选择指标:', selectedMetric.value)
 }
 
 /**
@@ -193,12 +191,6 @@ const handleMetricChange = (metricKey: string) => {
  */
 const confirmSelection = () => {
   if (!selectedDevice.value || !selectedMetric.value) return
-
-  console.log('✅ [DeviceMetricSelector] 确认选择:', {
-    device: selectedDevice.value,
-    metric: selectedMetric.value
-  })
-
   emit('selectionCompleted', {
     device: selectedDevice.value,
     metric: selectedMetric.value

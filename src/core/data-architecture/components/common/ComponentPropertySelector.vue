@@ -185,26 +185,11 @@ const selectedProperty = ref<SelectedPropertyInfo | null>(null)
  * 获取组件属性树数据 - 基于画布组件实例
  */
 const fetchTreeData = () => {
-  console.log('🔍 [ComponentPropertySelector] 获取画布组件实例属性树数据')
-  console.log('🔍 [ComponentPropertySelector] EditorStore 状态检查:', {
-    storeExists: !!editorStore,
-    nodes: editorStore.nodes,
-    nodesLength: editorStore.nodes?.length || 0,
-    storeType: typeof editorStore,
-    storeKeys: Object.keys(editorStore)
-  })
 
   // 获取画布中的组件实例
   const canvasNodes = editorStore.nodes
-  console.log('🔍 [ComponentPropertySelector] 画布节点详情:', {
-    nodes: canvasNodes,
-    nodeCount: canvasNodes?.length || 0,
-    firstNode: canvasNodes?.[0],
-    allNodeTypes: canvasNodes?.map(n => ({ id: n.id, type: n.type || n.widget_type }))
-  })
 
   if (!canvasNodes || canvasNodes.length === 0) {
-    console.warn('🔍 [ComponentPropertySelector] 画布中没有组件实例')
     rawTreeData.value = []
     return
   }
@@ -217,7 +202,6 @@ const fetchTreeData = () => {
       const exposure = propertyExposureRegistry.getComponentExposure(componentType)
       
       if (!exposure || !exposure.listenableProperties || exposure.listenableProperties.length === 0) {
-        console.warn(`🔍 [ComponentPropertySelector] 组件类型 ${componentType} 没有可用的属性暴露配置`)
         return null
       }
 
@@ -245,9 +229,6 @@ const fetchTreeData = () => {
       }
     })
     .filter(Boolean) as ComponentPropertyTreeNode[]
-
-  console.log('🔍 [ComponentPropertySelector] 生成的实例属性树:', treeData)
-  console.log(`🔍 [ComponentPropertySelector] 共 ${treeData.length} 个组件实例，${treeData.reduce((sum, comp) => sum + (comp.children?.length || 0), 0)} 个可绑定属性`)
   
   rawTreeData.value = treeData
 }
@@ -325,8 +306,6 @@ const defaultExpandedKeys = computed(() => {
  * 选择变化处理
  */
 const onSelectionChange = (selectedKeysValue: string[]) => {
-  console.log('🔍 [ComponentPropertySelector] 选择变化:', selectedKeysValue)
-
   selectedKeys.value = selectedKeysValue
   const selectedKey = selectedKeysValue[0]
 
@@ -358,8 +337,6 @@ const onSelectionChange = (selectedKeysValue: string[]) => {
       emit('update:modelValue', selectedKey)
       emit('update:selectedValue', selectedKey)
       emit('change', selectedKey, propertyInfo)
-
-      console.log('✅ [ComponentPropertySelector] 选中属性:', propertyInfo)
     }
   } else {
     selectedProperty.value = null
@@ -430,10 +407,7 @@ const getEmptyStateDescription = () => {
  * 组件挂载时获取数据
  */
 onMounted(() => {
-  console.log('🔍 [ComponentPropertySelector] 组件挂载，开始调试')
-  console.log('🔍 [ComponentPropertySelector] EditorStore 实例:', editorStore)
-  console.log('🔍 [ComponentPropertySelector] EditorStore.nodes 初始值:', editorStore.nodes)
-  console.log('🔍 [ComponentPropertySelector] propertyExposureRegistry 状态:', {
+  console.log('🔍 [ComponentPropertySelector] 属性暴露注册表状态:', {
     registrations: Array.from((propertyExposureRegistry as any).registrations.keys())
   })
   
@@ -442,9 +416,7 @@ onMounted(() => {
   // 定时检查 store 状态变化
   const checkInterval = setInterval(() => {
     const currentNodes = editorStore.nodes
-    console.log('🔍 [ComponentPropertySelector] 定时检查 - 当前画布节点数量:', currentNodes?.length || 0)
     if (currentNodes && currentNodes.length > 0) {
-      console.log('🔍 [ComponentPropertySelector] 发现画布节点，重新获取树数据')
       fetchTreeData()
       clearInterval(checkInterval)
     }

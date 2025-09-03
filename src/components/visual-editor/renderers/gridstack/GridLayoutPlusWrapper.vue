@@ -22,7 +22,6 @@
           @node-click="() => handleNodeSelect(item.i)"
           @node-contextmenu="(nodeId, event) => handleContextMenu(event, nodeId)"
           @title-update="handleTitleUpdate"
-          @component-error="error => console.error('Grid Component Error:', error)"
         />
       </template>
     </GridLayoutPlus>
@@ -143,13 +142,6 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => {
   }
 
   // 调试日志
-  console.log('🔧 GridLayoutPlusWrapper - 当前配置:', {
-    propsGridConfig: props.gridConfig,
-    finalConfig: config,
-    isReadOnly: isReadOnly.value,
-    staticGrid: props.staticGrid
-  })
-
   return config
 })
 
@@ -175,12 +167,9 @@ const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[
 watch(
   () => props.graphData.nodes,
   newNodes => {
-    console.log('[GridLayoutPlusWrapper] Graph data updated:', newNodes)
     if (newNodes) {
       newNodes.forEach(node => {
-        console.log(
-          `[GridLayoutPlusWrapper] Node ${node.id} (${node.type}): isCard2Component=${isCard2Component(node.type)}`
-        )
+       
       })
     }
     layout.value = nodesToLayout(newNodes || [])
@@ -192,11 +181,6 @@ watch(
 watch(
   () => props.gridConfig,
   newConfig => {
-    console.log('🔧 GridLayoutPlusWrapper - 配置变更:', {
-      newConfig,
-      isReadOnly: isReadOnly.value,
-      staticGrid: props.staticGrid
-    })
     // 重新计算布局以应用新配置
     layout.value = nodesToLayout(props.graphData.nodes || [])
   },
@@ -207,11 +191,6 @@ watch(
 watch(
   () => props.staticGrid,
   (newStaticGrid, oldStaticGrid) => {
-    console.log('🎭 GridLayoutPlusWrapper - staticGrid 变更:', {
-      old: oldStaticGrid,
-      new: newStaticGrid,
-      isReadOnly: isReadOnly.value
-    })
     // 重新计算布局以应用新的静态配置
     layout.value = nodesToLayout(props.graphData.nodes || [])
   }
@@ -321,7 +300,6 @@ const closeContextMenu = () => {
  * 当NodeWrapper中的标题被编辑时调用
  */
 const handleTitleUpdate = (nodeId: string, newTitle: string) => {
-  console.log(`[GridLayoutPlusWrapper] 标题更新: ${nodeId} -> "${newTitle}"`)
   // NodeWrapper已经处理了配置更新，这里只需要记录日志
 }
 </script>

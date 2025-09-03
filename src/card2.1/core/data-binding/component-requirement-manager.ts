@@ -13,22 +13,15 @@ export class ComponentRequirementManager {
    * 注册组件的数据需求
    */
   registerRequirement(componentId: string, requirement: ComponentDataRequirement): void {
-    console.log(`📋 [ComponentRequirementManager] 注册组件数据需求: ${componentId}`)
-
     try {
       // 对于残留数据或无效数据，尝试修复或使用默认值
       if (!requirement || typeof requirement !== 'object') {
-        console.warn(`⚠️ [ComponentRequirementManager] 检测到无效数据需求，使用默认配置: ${componentId}`)
         requirement = this.createDefaultRequirement(componentId)
       }
 
       // 验证需求定义
       const validation = this.validateRequirement(requirement)
       if (!validation.valid) {
-        console.warn(
-          `⚠️ [ComponentRequirementManager] 数据需求验证失败，使用默认配置: ${componentId}`,
-          validation.errors
-        )
         requirement = this.createDefaultRequirement(componentId)
       }
 
@@ -42,15 +35,10 @@ export class ComponentRequirementManager {
       if (requirementChanged) {
         this.relationshipCache.delete(componentId)
       }
-
-      console.log(`✅ [ComponentRequirementManager] 成功注册组件需求: ${componentId}`)
-      console.log('📊 需求详情:', requirement)
     } catch (error) {
-      console.error(`❌ [ComponentRequirementManager] 注册组件需求失败: ${componentId}`, error)
       // 使用默认需求避免系统崩溃
       const defaultRequirement = this.createDefaultRequirement(componentId)
       this.requirements.set(componentId, defaultRequirement)
-      console.log(`🔧 [ComponentRequirementManager] 已使用默认配置: ${componentId}`)
     }
   }
 
@@ -196,7 +184,6 @@ export class ComponentRequirementManager {
       try {
         return relationship.calculator(inputs)
       } catch (error) {
-        console.error(`计算关系值失败: ${relationshipName}`, error)
         return undefined
       }
     }
@@ -218,7 +205,6 @@ export class ComponentRequirementManager {
 
     // 对于残留数据，如果 requirement 为 null 或 undefined，返回默认有效状态
     if (!requirement || typeof requirement !== 'object') {
-      console.warn('⚠️ [ComponentRequirementManager] 检测到无效的数据需求，可能为残留数据，跳过验证')
       return { valid: true, errors: [] }
     }
 
@@ -338,7 +324,6 @@ export class ComponentRequirementManager {
           const calculatedValue = this.calculateRelationshipValue(componentId, relationName, sampleData)
           sampleData[relationName] = calculatedValue
         } catch (error) {
-          console.warn(`生成关系字段示例数据失败: ${relationName}`, error)
         }
       })
     }
@@ -423,7 +408,6 @@ export class ComponentRequirementManager {
   clear(): void {
     this.requirements.clear()
     this.relationshipCache.clear()
-    console.log('🧹 [ComponentRequirementManager] 已清空所有组件数据需求')
   }
 
   /**
@@ -445,7 +429,6 @@ export class ComponentRequirementManager {
       try {
         this.registerRequirement(componentId, requirement)
       } catch (error) {
-        console.error(`导入组件需求失败: ${componentId}`, error)
       }
     })
   }

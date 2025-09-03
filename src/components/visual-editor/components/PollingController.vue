@@ -86,12 +86,10 @@ const handleGlobalPollingToggle = () => {
   const wasEnabled = globalPollingEnabled.value
 
   if (!wasEnabled) {
-    console.log('🔄 [PollingController] 启用全局轮询')
     pollingManager.enableGlobalPolling()
     message.success($t('visualEditor.pollingEnabled'))
     emit('polling-enabled')
   } else {
-    console.log('🔄 [PollingController] 关闭全局轮询')
     pollingManager.disableGlobalPolling()
     message.info($t('visualEditor.pollingDisabled'))
     emit('polling-disabled')

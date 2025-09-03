@@ -28,51 +28,33 @@ let initializationPromise: Promise<void> | null = null
  */
 export async function initializeCard2System() {
   if (isInitialized) {
-    console.log('🔄 [Card2.1] 系统已初始化，跳过重复初始化')
     return
   }
 
   if (initializationPromise) {
-    console.log('🔄 [Card2.1] 系统正在初始化中，等待完成...')
     return initializationPromise
   }
 
   initializationPromise = (async () => {
     try {
-      console.log('🚀 [Card2.1] 开始初始化系统...')
 
       // 1. 加载组件模块
       const componentModules = await componentLoader.loadComponents()
 
       // 2. 获取组件统计信息
       const stats = componentLoader.getComponentStats(componentModules)
-      console.log('📊 [Card2.1] 组件统计:', stats)
-
+     
       // 3. 自动注册组件（包含权限过滤）
       const registeredComponents = await autoRegistry.autoRegister(componentModules)
 
       // 4. 注册预设的数据需求
       componentDataRequirementsRegistry.registerPresets()
-      console.log('📋 [Card2.1] 数据需求预设注册完成')
-
-      // 5. 记录已注册的组件
-      console.log('📦 [Card2.1] 已注册组件列表:')
-      for (const component of registeredComponents) {
-        console.log(`  - ${component.type}: ${component.name}`)
-      }
 
       // 6. 获取组件树形结构
       const componentTree = autoRegistry.getComponentTree()
 
-      console.log('🎉 [Card2.1] 系统初始化完成!', {
-        注册组件数: registeredComponents.length,
-        分类数: componentTree.categories.length,
-        总组件数: componentTree.totalCount
-      })
-
       isInitialized = true
     } catch (error) {
-      console.error('❌ [Card2.1] 系统初始化失败:', error)
       throw error
     } finally {
       initializationPromise = null
@@ -86,9 +68,6 @@ export async function initializeCard2System() {
  * 获取组件注册表
  */
 export function getComponentRegistry() {
-  if (!isInitialized) {
-    console.warn('⚠️ [Card2.1] 系统未初始化，请先调用 initializeCard2System()')
-  }
   return componentRegistry
 }
 
@@ -97,7 +76,6 @@ export function getComponentRegistry() {
  */
 export function getComponentTree() {
   if (!isInitialized) {
-    console.warn('⚠️ [Card2.1] 系统未初始化，请先调用 initializeCard2System()')
     return { categories: [], components: [], totalCount: 0 }
   }
   return autoRegistry.getComponentTree()
@@ -108,7 +86,6 @@ export function getComponentTree() {
  */
 export function getComponentsByCategory(mainCategory?: string, subCategory?: string) {
   if (!isInitialized) {
-    console.warn('⚠️ [Card2.1] 系统未初始化，请先调用 initializeCard2System()')
     return []
   }
   return autoRegistry.getComponentsByCategory(mainCategory, subCategory)
@@ -119,7 +96,6 @@ export function getComponentsByCategory(mainCategory?: string, subCategory?: str
  */
 export function getCategories() {
   if (!isInitialized) {
-    console.warn('⚠️ [Card2.1] 系统未初始化，请先调用 initializeCard2System()')
     return []
   }
   return autoRegistry.getCategories()
@@ -131,7 +107,6 @@ export function getCategories() {
  */
 export function reapplyPermissionFilter() {
   if (!isInitialized) {
-    console.warn('⚠️ [Card2.1] 系统未初始化，请先调用 initializeCard2System()')
     return
   }
   autoRegistry.reapplyPermissionFilter()
@@ -142,7 +117,6 @@ export function reapplyPermissionFilter() {
  */
 export function getAllComponents() {
   if (!isInitialized) {
-    console.warn('⚠️ [Card2.1] 系统未初始化，请先调用 initializeCard2System()')
     return []
   }
   return autoRegistry.getAllComponents()

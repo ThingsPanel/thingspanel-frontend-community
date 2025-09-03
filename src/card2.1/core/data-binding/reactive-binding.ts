@@ -33,9 +33,6 @@ export class TimerTrigger implements UpdateTrigger {
 
   start(callback: () => void): void {
     // 🔥 性能优化：仅在开发环境输出定时器日志
-    if (import.meta.env.DEV) {
-      console.log(`⏰ [TimerTrigger] 启动定时器: ${this.config.interval}ms`)
-    }
 
     this.callback = callback
 
@@ -50,9 +47,6 @@ export class TimerTrigger implements UpdateTrigger {
 
   stop(): void {
     // 🔥 性能优化：仅在开发环境输出定时器日志
-    if (import.meta.env.DEV) {
-      console.log(`⏰ [TimerTrigger] 停止定时器`)
-    }
 
     if (this.timer) {
       clearInterval(this.timer)
@@ -86,8 +80,6 @@ export class WebSocketTrigger implements UpdateTrigger {
   }
 
   start(callback: () => void): void {
-    console.log(`🔌 [WebSocketTrigger] 启动WebSocket触发器: ${this.config.url}`)
-
     this.callback = callback
     this.connect()
   }
@@ -96,27 +88,19 @@ export class WebSocketTrigger implements UpdateTrigger {
     try {
       this.ws = new WebSocket(this.config.url, this.config.protocols)
 
-      this.ws.onopen = () => {
-        console.log(`✅ [WebSocketTrigger] WebSocket连接成功`)
-      }
-
       this.ws.onmessage = () => {
-        console.log(`📨 [WebSocketTrigger] 收到WebSocket消息，触发数据更新`)
         if (this.callback) {
           this.callback()
         }
       }
 
       this.ws.onclose = () => {
-        console.warn(`🔌 [WebSocketTrigger] WebSocket连接关闭，尝试重连`)
         this.scheduleReconnect()
       }
 
       this.ws.onerror = error => {
-        console.error(`❌ [WebSocketTrigger] WebSocket错误:`, error)
       }
     } catch (error) {
-      console.error(`❌ [WebSocketTrigger] WebSocket连接失败:`, error)
       this.scheduleReconnect()
     }
   }
@@ -131,8 +115,6 @@ export class WebSocketTrigger implements UpdateTrigger {
   }
 
   stop(): void {
-    console.log(`🔌 [WebSocketTrigger] 停止WebSocket触发器`)
-
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer)
       this.reconnectTimer = null
@@ -169,11 +151,8 @@ export class EventTrigger implements UpdateTrigger {
   }
 
   start(callback: () => void): void {
-    console.log(`📡 [EventTrigger] 启动事件触发器: ${this.config.eventName}`)
-
     this.callback = callback
     this.eventHandler = () => {
-      console.log(`📡 [EventTrigger] 收到事件 ${this.config.eventName}，触发数据更新`)
       callback()
     }
 
@@ -181,8 +160,6 @@ export class EventTrigger implements UpdateTrigger {
   }
 
   stop(): void {
-    console.log(`📡 [EventTrigger] 停止事件触发器: ${this.config.eventName}`)
-
     if (this.eventHandler) {
       this.config.target?.removeEventListener(this.config.eventName, this.eventHandler)
       this.eventHandler = null
@@ -208,18 +185,12 @@ export class ManualTrigger implements UpdateTrigger {
 
   start(callback: () => void): void {
     // 🔥 性能优化：仅在开发环境输出手动触发器日志
-    if (import.meta.env.DEV) {
-      console.log(`👆 [ManualTrigger] 启动手动触发器`)
-    }
     this.callback = callback
     this.active = true
   }
 
   stop(): void {
     // 🔥 性能优化：仅在开发环境输出手动触发器日志
-    if (import.meta.env.DEV) {
-      console.log(`👆 [ManualTrigger] 停止手动触发器`)
-    }
     this.callback = null
     this.active = false
   }
@@ -234,9 +205,6 @@ export class ManualTrigger implements UpdateTrigger {
   trigger(): void {
     if (this.callback && this.active) {
       // 🔥 性能优化：仅在开发环境输出手动触发日志
-      if (import.meta.env.DEV) {
-        console.log(`👆 [ManualTrigger] 手动触发数据更新`)
-      }
       this.callback()
     }
   }
@@ -275,51 +243,33 @@ export class ReactiveDataBindingImpl implements ReactiveDataBinding {
 
   start(): void {
     if (this.active) {
-      console.warn(`⚠️ [ReactiveDataBinding] 绑定已经启动: ${this.id}`)
       return
     }
-
-    console.log(`🚀 [ReactiveDataBinding] 启动数据绑定: ${this.id}`)
-    console.log(`📊 组件ID: ${this.componentId}`)
-    console.log(`🔧 触发器数量: ${this.triggers.length}`)
-
     this.active = true
 
     // 启动所有触发器
     this.triggers.forEach((trigger, index) => {
-      console.log(`🔧 启动触发器 ${index + 1}: ${trigger.type}`)
       trigger.start(() => this.handleTrigger(trigger))
     })
-
-    console.log(`✅ [ReactiveDataBinding] 数据绑定启动成功: ${this.id}`)
   }
 
   stop(): void {
     if (!this.active) {
-      console.warn(`⚠️ [ReactiveDataBinding] 绑定已经停止: ${this.id}`)
       return
     }
-
-    console.log(`🛑 [ReactiveDataBinding] 停止数据绑定: ${this.id}`)
 
     this.active = false
 
     // 停止所有触发器
     this.triggers.forEach((trigger, index) => {
-      console.log(`🛑 停止触发器 ${index + 1}: ${trigger.type}`)
       trigger.stop()
     })
-
-    console.log(`✅ [ReactiveDataBinding] 数据绑定停止成功: ${this.id}`)
   }
 
   async refresh(): Promise<void> {
     if (!this.active) {
-      console.warn(`⚠️ [ReactiveDataBinding] 绑定未启动，无法刷新: ${this.id}`)
       return
     }
-
-    console.log(`🔄 [ReactiveDataBinding] 手动刷新数据: ${this.id}`)
     await this.updateData('manual')
   }
 
@@ -336,8 +286,6 @@ export class ReactiveDataBindingImpl implements ReactiveDataBinding {
    */
   private async handleTrigger(trigger: UpdateTrigger): Promise<void> {
     if (!this.active) return
-
-    console.log(`📡 [ReactiveDataBinding] 触发器激活: ${this.id} (${trigger.type})`)
     await this.updateData(trigger.type)
   }
 
@@ -346,8 +294,6 @@ export class ReactiveDataBindingImpl implements ReactiveDataBinding {
    */
   private async updateData(triggerType: string): Promise<void> {
     try {
-      console.log(`📊 [ReactiveDataBinding] 开始更新数据: ${this.id} (触发类型: ${triggerType})`)
-
       const oldData = this.currentData
       const newData = await this.pipeline.execute()
 
@@ -358,20 +304,10 @@ export class ReactiveDataBindingImpl implements ReactiveDataBinding {
       const dataChanged = JSON.stringify(oldData) !== JSON.stringify(newData)
 
       if (dataChanged) {
-        console.log(`🔄 [ReactiveDataBinding] 数据发生变化: ${this.id}`)
-        console.log(`📊 旧数据:`, oldData)
-        console.log(`📊 新数据:`, newData)
-
         this.currentData = newData
         this.onDataChange(newData, oldData)
-      } else {
-        console.log(`📊 [ReactiveDataBinding] 数据未发生变化: ${this.id}`)
-      }
-
-      console.log(`✅ [ReactiveDataBinding] 数据更新完成: ${this.id} (第${this.updateCount}次更新)`)
+      } 
     } catch (error) {
-      console.error(`❌ [ReactiveDataBinding] 数据更新失败: ${this.id}`, error)
-
       if (this.onError) {
         this.onError(error as Error)
       }
@@ -409,9 +345,6 @@ export class DataBindingManagerImpl implements DataBindingManager {
   private componentBindings = new Map<string, Set<string>>()
 
   createBinding(config: DataBindingConfig): ReactiveDataBinding {
-    console.log(`📋 [DataBindingManager] 创建数据绑定: ${config.id}`)
-    console.log(`🎯 组件ID: ${config.componentId}`)
-
     // 这里需要根据配置创建完整的管道和触发器
     // 在实际实现中，这会是一个复杂的工厂方法
     // 为了简化，我们先返回一个基础的绑定
@@ -426,8 +359,6 @@ export class DataBindingManagerImpl implements DataBindingManager {
   removeBinding(id: string): void {
     const binding = this.bindings.get(id)
     if (binding) {
-      console.log(`🗑️ [DataBindingManager] 移除数据绑定: ${id}`)
-
       // 停止绑定
       if (binding.isActive()) {
         binding.stop()
@@ -444,8 +375,6 @@ export class DataBindingManagerImpl implements DataBindingManager {
           this.componentBindings.delete(binding.componentId)
         }
       }
-
-      console.log(`✅ [DataBindingManager] 数据绑定移除成功: ${id}`)
     }
   }
 
@@ -475,8 +404,6 @@ export class DataBindingManagerImpl implements DataBindingManager {
   }
 
   cleanup(): void {
-    console.log(`🧹 [DataBindingManager] 清理所有数据绑定`)
-
     // 停止所有活跃的绑定
     this.bindings.forEach(binding => {
       if (binding.isActive()) {
@@ -487,16 +414,12 @@ export class DataBindingManagerImpl implements DataBindingManager {
     // 清空所有映射
     this.bindings.clear()
     this.componentBindings.clear()
-
-    console.log(`✅ [DataBindingManager] 数据绑定清理完成`)
   }
 
   /**
    * 注册数据绑定（用于手动创建的绑定）
    */
   registerBinding(binding: ReactiveDataBinding): void {
-    console.log(`📝 [DataBindingManager] 注册数据绑定: ${binding.id}`)
-
     this.bindings.set(binding.id, binding)
 
     // 更新组件绑定映射
@@ -504,8 +427,6 @@ export class DataBindingManagerImpl implements DataBindingManager {
       this.componentBindings.set(binding.componentId, new Set())
     }
     this.componentBindings.get(binding.componentId)!.add(binding.id)
-
-    console.log(`✅ [DataBindingManager] 数据绑定注册成功: ${binding.id}`)
   }
 
   /**

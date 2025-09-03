@@ -50,38 +50,28 @@ export class DataSourceMerger implements IDataSourceMerger {
     try {
       // 前置依赖检查：必须有数据项才能合并
       if (!items || items.length === 0) {
-        console.warn('DataSourceMerger: 数据项列表为空，返回空对象')
         return {}
       }
 
       // 智能默认策略选择
       const finalStrategy = this.selectDefaultStrategy(items, strategy)
-
-      console.log(`🚀 [DataSourceMerger] 开始执行合并策略: ${finalStrategy.type}`)
-
       switch (finalStrategy.type) {
         case 'object':
           const objectResult = await this.mergeAsObject(items)
-          console.log('📦 [DataSourceMerger] object 策略执行结果:', objectResult)
           return objectResult
         case 'array':
           const arrayResult = await this.mergeAsArray(items)
-          console.log('📊 [DataSourceMerger] array 策略执行结果:', arrayResult)
           return arrayResult
         case 'select':
           const selectResult = await this.selectOne(items, (finalStrategy as any).selectedIndex)
-          console.log('🎯 [DataSourceMerger] select 策略执行结果:', selectResult)
           return selectResult
         case 'script':
           const scriptResult = await this.mergeByScript(items, finalStrategy.script)
-          console.log('📜 [DataSourceMerger] script 策略执行结果:', scriptResult)
           return scriptResult
         default:
-          console.warn('❌ [DataSourceMerger] 未知的合并策略:', finalStrategy)
           return {}
       }
     } catch (error) {
-      console.error('DataSourceMerger: 数据合并失败', error)
       return {} // 统一错误处理：返回空对象
     }
   }
@@ -94,11 +84,8 @@ export class DataSourceMerger implements IDataSourceMerger {
     // 🔥 修复：无论单项还是多项，都使用用户指定的策略
     // 如果没有指定策略，则使用默认的 object 策略
     if (!strategy || !strategy.type) {
-      console.log('📦 [DataSourceMerger] 未指定合并策略，使用默认 object 策略')
       return { type: 'object' }
     }
-
-    console.log(`📋 [DataSourceMerger] 使用指定合并策略: ${strategy.type} (数据项数量: ${items.length})`)
     return strategy
   }
 
@@ -124,7 +111,6 @@ export class DataSourceMerger implements IDataSourceMerger {
 
       return result
     } catch (error) {
-      console.error('DataSourceMerger: 对象合并失败', error)
       return {}
     }
   }
@@ -140,16 +126,12 @@ export class DataSourceMerger implements IDataSourceMerger {
 
       // 边界检查
       if (index < 0 || index >= items.length) {
-        console.warn(`DataSourceMerger: 选择索引 ${index} 超出范围 (0-${items.length - 1})，返回第一个数据项`)
         return items[0] ?? {}
       }
 
       const selectedItem = items[index]
-      console.log(`✅ DataSourceMerger: 选择第${index + 1}个数据项 (共${items.length}个)`, selectedItem)
-
       return selectedItem ?? {}
     } catch (error) {
-      console.error('DataSourceMerger: 选择数据项失败', error)
       return {}
     }
   }
@@ -176,7 +158,6 @@ export class DataSourceMerger implements IDataSourceMerger {
 
       return result
     } catch (error) {
-      console.error('DataSourceMerger: 数组合并失败', error)
       return []
     }
   }
@@ -187,8 +168,6 @@ export class DataSourceMerger implements IDataSourceMerger {
    */
   private async mergeByScript(items: any[], script: string): Promise<any> {
     try {
-      console.log('🔧 [DataSourceMerger] 使用 script-engine 执行数据合并脚本')
-
       // 创建脚本执行上下文
       const scriptContext = {
         items
@@ -199,14 +178,11 @@ export class DataSourceMerger implements IDataSourceMerger {
       const result = await defaultScriptEngine.execute(script, scriptContext)
 
       if (result.success) {
-        console.log('✅ [DataSourceMerger] 脚本合并成功:', result.executionTime + 'ms')
         return result.data !== undefined ? result.data : {}
       } else {
-        console.error('❌ [DataSourceMerger] 脚本合并失败:', result.error?.message)
         return {} // 脚本失败时返回空对象
       }
     } catch (error) {
-      console.error('DataSourceMerger: 脚本合并异常', error)
       return {} // 脚本失败时返回空对象
     }
   }

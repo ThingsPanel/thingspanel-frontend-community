@@ -93,7 +93,6 @@ const canConfirm = computed(() => {
  */
 const handleDeviceChange = (deviceId: string) => {
   selectedDeviceId.value = deviceId
-  console.log('📱 [DeviceIdSelector] 选择设备:', selectedDevice.value)
 }
 
 /**
@@ -101,8 +100,6 @@ const handleDeviceChange = (deviceId: string) => {
  */
 const confirmSelection = () => {
   if (!selectedDevice.value) return
-
-  console.log('📱 [DeviceIdSelector] 确认选择设备:', selectedDevice.value)
   emit('deviceSelected', selectedDevice.value)
 }
 

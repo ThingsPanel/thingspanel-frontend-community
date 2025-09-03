@@ -181,7 +181,6 @@ const {
   enableHistory: true,
   autoSave: true,
   onSave: layout => {
-    console.log('自动保存布局:', layout)
   }
 })
 
@@ -277,34 +276,27 @@ const importLayout = (options: any) => {
 
 // 事件处理
 const handleLayoutChange = (newLayout: GridLayoutPlusItem[]) => {
-  console.log('布局变化:', newLayout)
 }
 
 const handleItemAdd = (item: GridLayoutPlusItem) => {
-  console.log('项目添加:', item)
   message.success(`添加了项目: ${item.title || item.i}`)
 }
 
 const handleItemDelete = (itemId: string) => {
-  console.log('项目删除:', itemId)
   message.warning(`删除了项目: ${itemId}`)
 }
 
 const handleItemEdit = (item: GridLayoutPlusItem) => {
-  console.log('项目编辑:', item)
   message.info(`编辑项目: ${item.title || item.i}`)
 }
 
 const handleItemMove = (itemId: string, x: number, y: number) => {
-  console.log('项目移动:', itemId, '到', x, y)
 }
 
 const handleItemResize = (itemId: string, w: number, h: number) => {
-  console.log('项目调整大小:', itemId, '尺寸', w, h)
 }
 
 const handleBreakpointChange = (breakpoint: string) => {
-  console.log('断点变化:', breakpoint)
   message.info(`断点切换到: ${breakpoint}`)
 }
 </script>

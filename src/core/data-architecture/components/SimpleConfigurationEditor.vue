@@ -91,11 +91,6 @@ const dataSourceOptions = computed(() => {
 
   // 处理对象格式
   const result = Object.entries(props.dataSources).map(([key, dataSource]) => {
-    console.log(`🔍 [SimpleConfigurationEditor] 对象格式数据源${key}:`, {
-      key,
-      dataSource,
-      exampleData: dataSource?.config?.exampleData
-    })
     return {
       label: dataSource.name || dataSource.title || key,
       value: key,
@@ -137,7 +132,6 @@ const handleAddDataItem = (dataSourceKey: string) => {
   isEditMode.value = false
   editingItemId.value = ''
   showRawDataModal.value = true
-  console.log('点击添加数据项:', dataSourceKey)
 }
 
 /**
@@ -168,8 +162,6 @@ const handleMergeStrategyUpdate = (dataSourceKey: string, strategy: any) => {
 
   // 清除组件缓存，确保新策略生效
   simpleDataBridge.clearComponentCache(props.componentId)
-  console.log(`🧹 [SimpleConfigurationEditor] 已清除组件缓存: ${props.componentId}`)
-
   // 使用新配置管理系统更新配置（内置循环检测和去重）
   configurationManager.updateConfiguration(props.componentId, 'dataSource', rebuiltConfig)
 }
@@ -197,16 +189,9 @@ const updateDataSourceConfiguration = (dataSourceKey: string) => {
 
         // 提交配置更新
         configurationManager.updateConfiguration(props.componentId, 'dataSource', currentDataSourceConfig)
-
-        console.log('✅ 合并策略配置已提交到配置管理器:', {
-          componentId: props.componentId,
-          dataSourceKey,
-          strategy: mergeStrategies[dataSourceKey]
-        })
       }
     }
   } catch (error) {
-    console.error('❌ 更新合并策略配置失败:', error)
   }
 }
 
@@ -243,9 +228,7 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
           updatedAt: new Date().toISOString() // 添加更新时间
         }
         dataSourceItems[dataSourceKey][existingIndex] = displayItem
-        console.log('✏️ [SimpleConfigurationEditor] 编辑模式：更新现有数据项', displayItem)
       } else {
-        console.error('❌ 编辑模式下未找到对应数据项:', editingItemId.value)
         return
       }
     } else {
@@ -256,14 +239,12 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
         createdAt: new Date().toISOString()
       }
       dataSourceItems[dataSourceKey].push(displayItem)
-      console.log('➕ [SimpleConfigurationEditor] 新增模式：添加新数据项', displayItem)
     }
 
     // 🔥 核心：根据当前所有数据项重新构建完整的 DataSourceConfiguration
     const dataSourceConfig = rebuildCompleteDataSourceConfiguration()
 
     // 🔥 新配置管理系统：内容哈希去重，避免无限循环
-    console.log(`🔄 [SimpleConfigurationEditor] 数据项${isEditMode.value ? '编辑' : '新增'}完成，提交配置更新`)
     configurationManager.updateConfiguration(props.componentId, 'dataSource', dataSourceConfig)
 
     // 关闭弹窗并重置状态
@@ -272,14 +253,7 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
     // 🔥 修复：重置编辑状态
     isEditMode.value = false
     editingItemId.value = ''
-
-    console.log('✅ 数据项配置已提交到配置管理器:', {
-      componentId: props.componentId,
-      dataSourceKey,
-      dataSourceConfig
-    })
   } catch (error) {
-    console.error('❌ 数据项配置提交失败:', error)
     // 可以在这里添加用户友好的错误提示
   }
 }
@@ -349,10 +323,6 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
         // 🔥 关键：保存脚本配置
         if (httpConfigData.preRequestScript) {
           config.preRequestScript = httpConfigData.preRequestScript
-          console.log(
-            '💾 [convertToStandardDataItem] 保存了preRequestScript:',
-            httpConfigData.preRequestScript.substring(0, 100) + '...'
-          )
         } else {
         }
         if (httpConfigData.postResponseScript) {
@@ -366,7 +336,6 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
         }
       } else {
         // 回退到旧的基础配置格式
-        console.log('⚠️ [convertToStandardDataItem] httpConfigData不存在，使用基础配置')
         return {
           type: 'http',
           config: {
@@ -419,30 +388,7 @@ const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
         ? items.map((item, index) => {
             const convertedItem = convertToStandardDataItem(item)
             const convertedProcessing = convertToProcessingConfig(item)
-
             // 🔥 性能优化：仅在开发环境输出详细调试信息
-            if (import.meta.env.DEV) {
-              console.log(`🔧 [rebuildCompleteDataSourceConfiguration] 数据源${sourceId}项目${index}转换结果:`)
-              console.log('  - 原始item type:', item.type)
-              console.log('  - 转换后config keys:', Object.keys(convertedItem.config))
-              if (convertedItem.type === 'http') {
-                console.log('  - HTTP params数量:', convertedItem.config.params?.length || 0)
-                console.log('  - 有preRequestScript吗?:', !!convertedItem.config.preRequestScript)
-                console.log('  - 有postResponseScript吗?:', !!convertedItem.config.postResponseScript)
-                if (convertedItem.config.preRequestScript) {
-                  console.log(
-                    '  - preRequestScript内容:',
-                    convertedItem.config.preRequestScript.substring(0, 50) + '...'
-                  )
-                }
-                if (convertedItem.config.postResponseScript) {
-                  console.log(
-                    '  - postResponseScript内容:',
-                    convertedItem.config.postResponseScript.substring(0, 50) + '...'
-                  )
-                }
-              }
-            }
 
             return {
               item: convertedItem,
@@ -459,9 +405,6 @@ const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
       mergeStrategy = { type: 'script', script: strategy.script }
     } else if (strategy.type === 'select') {
       mergeStrategy = { type: 'select', selectedIndex: strategy.selectedIndex }
-      console.log(
-        `🔍 [SimpleConfigurationEditor] 构建select策略: sourceId=${sourceId}, selectedIndex=${strategy.selectedIndex}`
-      )
     } else {
       mergeStrategy = { type: strategy.type }
     }
@@ -472,16 +415,7 @@ const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
       dataItems: standardDataItems,
       mergeStrategy
     })
-
-    console.log(`📝 [rebuildConfig] 数据源 ${sourceId}: ${standardDataItems.length} 个数据项`)
   }
-
-  console.log('🔄 [SimpleConfigurationEditor] 重建完整配置:', {
-    componentId: props.componentId,
-    dataSourcesCount: dataSources.length,
-    totalItems: dataSources.reduce((sum, ds) => sum + ds.dataItems.length, 0)
-  })
-
   // 🔍 最终调试：输出完整的配置以确认内容
   const finalConfig = {
     componentId: props.componentId,
@@ -489,9 +423,6 @@ const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
     createdAt: timestamp,
     updatedAt: timestamp
   }
-
-  console.log('🎯 [rebuildCompleteDataSourceConfiguration] 最终配置:', JSON.stringify(finalConfig, null, 2))
-
   return finalConfig
 }
 
@@ -509,13 +440,10 @@ const getComponentPollingConfig = () => {
  * 将轮询配置保存到 component 配置中
  */
 const handleComponentPollingConfigChange = (pollingConfig: any) => {
-  console.log('🔄 [SimpleConfigurationEditor] 处理组件轮询配置变化:', { componentId: props.componentId, pollingConfig })
-
   try {
     // 获取当前组件配置
     const config = configurationManager.getConfiguration(props.componentId)
     const componentConfig = config?.component || {}
-
     // 更新组件轮询配置
     componentConfig.polling = {
       enabled: pollingConfig.enabled || false,
@@ -527,13 +455,7 @@ const handleComponentPollingConfigChange = (pollingConfig: any) => {
 
     // 保存到配置管理器
     configurationManager.updateConfiguration(props.componentId, 'component', componentConfig)
-
-    console.log('✅ [SimpleConfigurationEditor] 组件轮询配置已保存:', {
-      componentId: props.componentId,
-      config: componentConfig.polling
-    })
   } catch (error) {
-    console.error('❌ [SimpleConfigurationEditor] 保存组件轮询配置失败:', error)
   }
 }
 
@@ -625,7 +547,6 @@ const handleDeleteDataItem = (dataSourceKey: string, itemId: string) => {
           if (dataSource.dataItems.length === 0) {
             // 保留数据源结构但清空数据项，这样执行器会返回null
             dataSource.mergeStrategy = { type: 'object' } // 重置为默认合并策略
-            console.log(`📝 [SimpleConfigurationEditor] 数据源 ${dataSourceKey} 的所有数据项已删除，保留空数据源配置`)
           }
 
           // 更新时间戳
@@ -636,29 +557,11 @@ const handleDeleteDataItem = (dataSourceKey: string, itemId: string) => {
 
           // 清除组件缓存，确保删除后数据更新
           simpleDataBridge.clearComponentCache(props.componentId)
-          console.log(`🧹 [SimpleConfigurationEditor] 删除数据项后已清除组件缓存: ${props.componentId}`)
-
-          // 📝 调试：打印删除后的完整配置
-          console.log('🔍 [DEBUG] 删除操作完成后重建的配置:', JSON.stringify(rebuiltConfig, null, 2))
-
           // 🔥 使用新配置管理系统提交更新（内置去重和循环检测）
           configurationManager.updateConfiguration(props.componentId, 'dataSource', rebuiltConfig)
-
-          console.log('✅ 数据项删除已提交到配置管理器:', {
-            componentId: props.componentId,
-            dataSourceKey,
-            itemId,
-            remainingDataSources: currentDataSourceConfig.dataSources.map(ds => ({
-              sourceId: ds.sourceId,
-              dataItemsCount: ds.dataItems.length
-            }))
-          })
         }
       }
     } catch (error) {
-      console.error('❌ 数据项删除失败:', error)
-      // 错误回滚：恢复本地显示状态
-      // 这里可以添加回滚逻辑
     }
   }
 }
@@ -692,22 +595,13 @@ const restoreDataItemsFromConfig = () => {
 
         // 🔥 修复：恢复合并策略，避免无限循环
         mergeStrategies[sourceId] = mergeStrategy || { type: 'object' }
-        console.log(`✅ [SimpleConfigurationEditor] 恢复合并策略: ${sourceId}`, mergeStrategies[sourceId])
-
         // 将标准格式转换回显示格式
         configDataItems.forEach((configItem, index) => {
           const displayItem = convertConfigItemToDisplay(configItem, index)
           dataSourceItems[sourceId].push(displayItem)
         })
       })
-
-      console.log('✅ 数据项显示状态恢复完成:', dataSourceItems)
     } else {
-      console.log('⚠️ [SimpleConfigurationEditor] 未找到数据源配置，初始化空状态')
-      console.log('   - existingConfig:', !!existingConfig)
-      console.log('   - dataSourceConfig:', !!dataSourceConfig)
-      console.log('   - dataSources:', dataSourceConfig?.dataSources)
-
       // 如果没有配置，但有数据源选项，初始化空的数据项列表
       dataSourceOptions.value.forEach(option => {
         if (!dataSourceItems[option.value]) {
@@ -717,11 +611,8 @@ const restoreDataItemsFromConfig = () => {
           mergeStrategies[option.value] = { type: 'object' }
         }
       })
-      console.log('🆕 [SimpleConfigurationEditor] 已初始化空的数据项状态')
     }
   } catch (error) {
-    console.error('❌ [SimpleConfigurationEditor] 数据项显示状态恢复失败:', error)
-    console.error('   - 错误详情:', error.stack)
   }
 }
 
@@ -758,11 +649,6 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
 
       // 🔥 关键修复：从原始配置中恢复httpConfigData
       // 由于这是从配置管理器恢复，需要重构HttpConfig格式
-      console.log(
-        '🔍 [convertConfigItemToDisplay] 恢复HTTP配置，原始item.config:',
-        JSON.stringify(item.config, null, 2)
-      )
-
       // 如果原始配置包含了完整的HttpConfig信息，恢复它
       if (item.config.url) {
         displayConfig.httpConfigData = {
@@ -810,14 +696,6 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
           preRequestScript: item.config.preRequestScript || '',
           postResponseScript: item.config.postResponseScript || ''
         }
-
-        console.log('🔄 [convertConfigItemToDisplay] 恢复的httpConfigData:', {
-          url: displayConfig.httpConfigData.url,
-          headersCount: displayConfig.httpConfigData.headers?.length || 0,
-          paramsCount: displayConfig.httpConfigData.params?.length || 0,
-          hasPreRequestScript: !!displayConfig.httpConfigData.preRequestScript,
-          hasPostResponseScript: !!displayConfig.httpConfigData.postResponseScript
-        })
       }
       break
   }
@@ -828,52 +706,36 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
     scriptCode: processing.customScript || '',
     defaultValue: processing.defaultValue || ''
   }
-
-  console.log('🔄 [convertConfigItemToDisplay] 转换结果:', {
-    type: displayConfig.type,
-    hasHttpConfigData: !!displayConfig.httpConfigData,
-    httpConfigDataParams: displayConfig.httpConfigData?.params?.length || 0
-  })
-
   return displayConfig
 }
 
 // 组件挂载时恢复显示状态并设置集成
 onMounted(async () => {
-  console.log('🚀 [SimpleConfigurationEditor] 组件初始化开始...')
 
   try {
     // 🔥 新架构：初始化配置集成桥接器
-    console.log('🔧 [SimpleConfigurationEditor] 初始化配置管理器...')
     await configurationManager.initialize()
 
     // 为当前组件设置数据源执行集成
     if ('setupComponentDataSourceIntegration' in configurationManager) {
       ;(configurationManager as any).setupComponentDataSourceIntegration(props.componentId)
-      console.log('✅ [SimpleConfigurationEditor] 数据源执行集成已设置')
     }
 
     // 🔥 修复：确保组件配置存在，如果不存在则初始化
     const existingConfig = configurationManager.getConfiguration(props.componentId)
     if (!existingConfig) {
-      console.log('🆕 [SimpleConfigurationEditor] 配置不存在，进行初始化...')
       configurationManager.initializeConfiguration(props.componentId)
     } else {
-      console.log('📖 [SimpleConfigurationEditor] 找到现有配置，开始恢复显示状态...')
     }
 
     // 恢复显示状态
     restoreDataItemsFromConfig()
 
-    console.log('✅ [SimpleConfigurationEditor] 组件初始化完成')
   } catch (error) {
-    console.error('❌ [SimpleConfigurationEditor] 组件初始化失败:', error)
     // 降级处理：即使配置管理器初始化失败，也尝试恢复显示状态
     try {
       restoreDataItemsFromConfig()
-      console.log('⚡ [SimpleConfigurationEditor] 降级恢复显示状态完成')
     } catch (fallbackError) {
-      console.error('❌ [SimpleConfigurationEditor] 降级恢复也失败:', fallbackError)
     }
   }
 })
@@ -890,18 +752,6 @@ const getEditData = () => {
   if (!items) return null
 
   const editItem = items.find(item => item.id === editingItemId.value)
-
-  // 🔥 详细调试编辑数据
-  console.log('🔍 [SimpleConfigurationEditor] 获取编辑数据:')
-  console.log('  - type:', editItem?.type)
-  console.log('  - 基础字段keys:', Object.keys(editItem || {}))
-  console.log('  - httpConfigData存在吗?:', !!editItem?.httpConfigData)
-  if (editItem?.httpConfigData) {
-    console.log('  - httpConfigData.params长度:', editItem.httpConfigData.params?.length || 0)
-    console.log('  - httpConfigData.preRequestScript存在吗?:', !!editItem.httpConfigData.preRequestScript)
-    console.log('  - httpConfigData完整内容:', JSON.stringify(editItem.httpConfigData, null, 2))
-  }
-
   return editItem
 }
 
@@ -914,15 +764,6 @@ const getCurrentDataSourceExampleData = () => {
   const currentDataSource = dataSourceOptions.value.find(opt => opt.value === currentDataSourceKey.value)
   // 🔥 修复：支持两种示例数据格式
   const exampleData = currentDataSource?.originalData?.config?.exampleData || currentDataSource?.originalData?.example
-
-  console.log('🔍 [SimpleConfigurationEditor] 获取示例数据:', {
-    dataSourceKey: currentDataSourceKey.value,
-    originalData: currentDataSource?.originalData,
-    exampleDataFromConfig: currentDataSource?.originalData?.config?.exampleData,
-    exampleDataFromRoot: currentDataSource?.originalData?.example,
-    finalExampleData: exampleData
-  })
-
   return exampleData
 }
 
@@ -1028,14 +869,6 @@ const updateMergeStrategyType = (dataSourceKey: string, newType: string) => {
   if (newType === 'select' && !('selectedIndex' in newStrategy)) {
     newStrategy.selectedIndex = 0
   }
-
-  console.log('🔄 [SimpleConfigurationEditor] 新UI合并策略类型更新:', {
-    dataSourceKey,
-    oldType: currentStrategy.type,
-    newType,
-    newStrategy
-  })
-
   handleMergeStrategyUpdate(dataSourceKey, newStrategy)
 }
 
@@ -1066,8 +899,6 @@ const updateMergeStrategyScript = (dataSourceKey: string, newScript: string) => 
  */
 const viewFinalData = async (dataSourceKey: string) => {
   try {
-    console.log('🔍 [SimpleConfigurationEditor] 查看最终数据:', dataSourceKey)
-
     // 获取当前数据源的配置项
     const currentDataSourceItems = dataSourceItems[dataSourceKey]
     if (!currentDataSourceItems || currentDataSourceItems.length === 0) {
@@ -1085,20 +916,12 @@ const viewFinalData = async (dataSourceKey: string) => {
 
     if (!dataSourceConfig) {
       // 如果配置不存在，使用当前显示状态重建
-      console.log('⚠️ [SimpleConfigurationEditor] 配置管理器中无数据源配置，使用当前状态重建')
       dataSourceConfig = rebuildCompleteDataSourceConfiguration()
     }
-
-    console.log('🔍 [SimpleConfigurationEditor] 使用的完整数据源配置:', dataSourceConfig)
-
-    console.log('🚀 [SimpleConfigurationEditor] 执行配置:', dataSourceConfig)
 
     // 使用执行器链直接执行配置
     const executorChain = new MultiLayerExecutorChain()
     const executionResult = await executorChain.executeDataProcessingChain(dataSourceConfig, true)
-
-    console.log('📊 [SimpleConfigurationEditor] 执行结果:', executionResult)
-
     if (executionResult.success && executionResult.componentData) {
       // 提取指定数据源的数据
       const dataSourceData = executionResult.componentData[dataSourceKey]
@@ -1133,8 +956,6 @@ const viewFinalData = async (dataSourceKey: string) => {
       })
     }
   } catch (error) {
-    console.error('❌ [SimpleConfigurationEditor] 获取数据失败:', error)
-
     // 显示错误信息
     dialog.error({
       title: '获取数据失败',

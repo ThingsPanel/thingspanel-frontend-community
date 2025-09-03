@@ -116,12 +116,10 @@ const isCard2Component = (type: string) => {
 
 // 事件处理器
 const onRendererReady = () => {
-  console.log('[BasicRenderer] Renderer is ready')
   emit('ready')
 }
 
 const onRendererError = (error: Error) => {
-  console.error('[BasicRenderer] Renderer error:', error)
   emit('error', error)
 }
 

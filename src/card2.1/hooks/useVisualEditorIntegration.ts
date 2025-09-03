@@ -91,10 +91,8 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
       // registerUniversalDataVizConfig() - 已移至 Card2.1 系统初始化中
 
       isInitialized.value = true
-      console.log('🎯 [VisualEditorIntegration] 集成初始化完成')
     } catch (error) {
       initializationError.value = error instanceof Error ? error.message : '初始化失败'
-      console.error('❌ [VisualEditorIntegration] 集成初始化失败:', error)
       throw error
     }
   }
@@ -103,38 +101,17 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
    * 将 Card 2.1 组件转换为 Visual Editor Widget
    */
   const availableWidgets = computed(() => {
-    console.log('🔍 [VisualEditorIntegration] availableWidgets 计算:', {
-      isInitialized: isInitialized.value,
-      componentTreeFilteredComponents: componentTree.filteredComponents.value,
-      componentTreeFilteredComponentsIsArray: Array.isArray(componentTree.filteredComponents.value),
-      componentTreeFilteredComponentsLength: Array.isArray(componentTree.filteredComponents.value)
-        ? componentTree.filteredComponents.value.length
-        : 'N/A'
-    })
-
     if (!isInitialized.value) {
-      console.log('❌ [VisualEditorIntegration] 未初始化，返回空数组')
       return []
     }
 
     const components = componentTree.filteredComponents.value
     if (!Array.isArray(components)) {
-      console.log('❌ [VisualEditorIntegration] filteredComponents 不是数组，返回空数组，当前值:', components)
       return []
     }
 
     // 特别检查是否包含 universal-data-viz
     const hasUniversalDataViz = components.some(comp => comp.type === 'universal-data-viz')
-    console.log(`🎯 [VisualEditorIntegration] filteredComponents 中是否包含 universal-data-viz: ${hasUniversalDataViz}`)
-
-    if (!hasUniversalDataViz) {
-      console.log('⚠️ [VisualEditorIntegration] 警告：filteredComponents 中未找到 universal-data-viz 组件')
-      console.log(
-        '🔍 [VisualEditorIntegration] 当前组件列表:',
-        components.map(c => c.type)
-      )
-    }
-
     return components.map(definition => {
       // 获取显示名称（支持国际化）
       let displayName = definition.name
@@ -210,24 +187,8 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
   }
 
   const getComponentDefinition = (type: string): Card2Widget | undefined => {
-    console.log('🔍 [VisualEditorIntegration] getComponentDefinition 被调用:', {
-      type,
-      isInitialized: isInitialized.value,
-      availableWidgetsCount: availableWidgets.value?.length || 0
-    })
-
     // ✅ 修复：从转换后的 availableWidgets 中查找，而不是原始的 componentTree
-    const result = availableWidgets.value.find(widget => widget.type === type)
-
-    console.log('🔍 [VisualEditorIntegration] getComponentDefinition 结果:', {
-      type,
-      found: !!result,
-      hasDefaultLayout: !!result?.defaultLayout,
-      hasCanvas: !!result?.defaultLayout?.canvas,
-      result: result
-    })
-
-    return result
+    return availableWidgets.value.find(widget => widget.type === type)
   }
 
   /**

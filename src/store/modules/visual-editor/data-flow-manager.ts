@@ -67,7 +67,6 @@ export class DataFlowManager {
 
   constructor() {
     this.registerDefaultSideEffects()
-    console.log('🔧 [DataFlow] 数据流管理器初始化完成')
   }
 
   // ==================== 核心数据流处理 ====================
@@ -78,14 +77,12 @@ export class DataFlowManager {
    */
   async handleUserAction(action: UserAction): Promise<void> {
     if (this.isProcessing) {
-      console.warn('⚠️ [DataFlow] 数据流正在处理中，跳过重复操作')
       return
     }
 
     this.isProcessing = true
 
     try {
-      console.log('🔧 [DataFlow] 开始处理用户操作:', action)
 
       // 1. 验证操作
       const validationResult = this.validateAction(action)
@@ -101,10 +98,7 @@ export class DataFlowManager {
 
       // 4. 通知视图更新
       this.notifyViewUpdate(action)
-
-      console.log('✅ [DataFlow] 用户操作处理完成:', action.type)
     } catch (error) {
-      console.error('❌ [DataFlow] 用户操作处理失败:', error)
 
       // 触发错误恢复
       await this.handleError(action, error as Error)
@@ -119,7 +113,6 @@ export class DataFlowManager {
    * 批量处理用户操作
    */
   async handleBatchActions(actions: UserAction[]): Promise<void> {
-    console.log('🔧 [DataFlow] 开始批量处理操作:', actions.length, '个')
 
     // 批量操作使用事务模式
     this.store.setLoading(true)
@@ -128,10 +121,7 @@ export class DataFlowManager {
       for (const action of actions) {
         await this.handleUserAction(action)
       }
-
-      console.log('✅ [DataFlow] 批量操作处理完成')
     } catch (error) {
-      console.error('❌ [DataFlow] 批量操作处理失败:', error)
       throw error
     } finally {
       this.store.setLoading(false)
@@ -144,8 +134,6 @@ export class DataFlowManager {
    * 根据操作类型更新状态
    */
   private async updateState(action: UserAction): Promise<void> {
-    console.log('🔧 [DataFlow] 更新状态:', action.type)
-
     switch (action.type) {
       case 'ADD_NODE':
         this.handleAddNode(action)
@@ -176,7 +164,6 @@ export class DataFlowManager {
         break
 
       default:
-        console.warn('⚠️ [DataFlow] 未知的操作类型:', action.type)
     }
   }
 
@@ -186,8 +173,6 @@ export class DataFlowManager {
   private handleAddNode(action: UserAction): void {
     const node = action.data as GraphData
     this.store.addNode(node)
-
-    console.log('🔧 [DataFlow] 添加节点:', node.id)
   }
 
   /**
@@ -199,8 +184,6 @@ export class DataFlowManager {
     }
 
     this.store.updateNode(action.targetId, action.data)
-
-    console.log('🔧 [DataFlow] 更新节点:', action.targetId)
   }
 
   /**
@@ -212,8 +195,6 @@ export class DataFlowManager {
     }
 
     this.store.removeNode(action.targetId)
-
-    console.log('🔧 [DataFlow] 删除节点:', action.targetId)
   }
 
   /**
@@ -222,8 +203,6 @@ export class DataFlowManager {
   private handleSelectNodes(action: UserAction): void {
     const nodeIds = action.data as string[]
     this.store.selectNodes(nodeIds)
-
-    console.log('🔧 [DataFlow] 选择节点:', nodeIds)
   }
 
   /**
@@ -241,8 +220,6 @@ export class DataFlowManager {
 
     // 使用配置服务更新配置
     this.configService.updateConfigurationSection(action.targetId, section, config)
-
-    console.log('🔧 [DataFlow] 更新配置:', { targetId: action.targetId, section })
   }
 
   /**
@@ -254,8 +231,6 @@ export class DataFlowManager {
     }
 
     this.configService.setRuntimeData(action.targetId, action.data)
-
-    console.log('🔧 [DataFlow] 设置运行时数据:', action.targetId)
   }
 
   /**
@@ -269,8 +244,6 @@ export class DataFlowManager {
     }>
 
     this.configService.batchUpdateConfiguration(updates)
-
-    console.log('🔧 [DataFlow] 批量更新配置:', updates.length, '项')
   }
 
   // ==================== 操作验证 ====================
@@ -380,8 +353,6 @@ export class DataFlowManager {
    * 触发副作用处理
    */
   private async triggerSideEffects(action: UserAction): Promise<void> {
-    console.log('🔧 [DataFlow] 触发副作用处理')
-
     const context: DataFlowContext = {
       store: this.store,
       configService: this.configService,
@@ -395,10 +366,8 @@ export class DataFlowManager {
     await Promise.all(
       matchingHandlers.map(async handler => {
         try {
-          console.log('🔧 [DataFlow] 执行副作用:', handler.name)
           await handler.execute(action, context)
         } catch (error) {
-          console.error(`❌ [DataFlow] 副作用执行失败 (${handler.name}):`, error)
         }
       })
     )
@@ -409,7 +378,6 @@ export class DataFlowManager {
    */
   registerSideEffect(handler: SideEffectHandler): void {
     this.sideEffectHandlers.push(handler)
-    console.log('🔧 [DataFlow] 注册副作用处理器:', handler.name)
   }
 
   /**
@@ -432,8 +400,6 @@ export class DataFlowManager {
       name: 'DataSourceChangeHandler',
       condition: action => action.type === 'UPDATE_CONFIGURATION' && action.data?.section === 'dataSource',
       execute: async (action, context) => {
-        console.log('🔧 [DataFlow] 处理数据源变更副作用')
-
         // 清理旧的运行时数据
         if (action.targetId) {
           context.configService.setRuntimeData(action.targetId, null)
@@ -452,8 +418,6 @@ export class DataFlowManager {
         return context.store.card2Components.has(action.targetId)
       },
       execute: async (action, context) => {
-        console.log('🔧 [DataFlow] 处理Card2.1组件副作用')
-
         // Card2.1特殊的数据绑定处理
         if (action.type === 'UPDATE_CONFIGURATION' && action.data?.section === 'dataSource') {
           context.store.updateDataBinding(action.targetId!)
@@ -476,8 +440,6 @@ export class DataFlowManager {
     })
 
     this.eventBus.dispatchEvent(event)
-
-    console.log('📡 [DataFlow] 通知视图更新:', action.type)
   }
 
   /**
@@ -501,8 +463,6 @@ export class DataFlowManager {
    * 处理错误和恢复
    */
   private async handleError(action: UserAction, error: Error): Promise<void> {
-    console.error('❌ [DataFlow] 处理操作错误:', { action, error })
-
     // 触发错误事件
     const errorEvent = new CustomEvent('data-flow-error', {
       detail: {
@@ -544,7 +504,6 @@ let dataFlowManagerInstance: DataFlowManager | null = null
 export function useDataFlowManager(): DataFlowManager {
   if (!dataFlowManagerInstance) {
     dataFlowManagerInstance = new DataFlowManager()
-    console.log('🔧 [DataFlow] 创建数据流管理器实例')
   }
 
   return dataFlowManagerInstance
@@ -555,7 +514,6 @@ export function useDataFlowManager(): DataFlowManager {
  */
 export function resetDataFlowManager(): void {
   dataFlowManagerInstance = null
-  console.log('🔧 [DataFlow] 重置数据流管理器实例')
 }
 
 // ==================== 便捷操作函数 ====================

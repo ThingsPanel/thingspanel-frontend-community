@@ -37,23 +37,14 @@ export function usePanelDataManager(
    * 从配置对象中恢复编辑器的完整状态
    */
   const setState = (config: any) => {
-    console.log('🔄 setState - 开始恢复状态:', {
-      hasNodes: !!config.nodes,
-      nodesCount: config.nodes?.length || 0,
-      hasComponentConfigurations: !!config.componentConfigurations,
-      configsCount: config.componentConfigurations ? Object.keys(config.componentConfigurations).length : 0
-    })
-
     // 重置状态
     dependencies.stateManager.reset()
 
     // 加载节点
     if (config.nodes && Array.isArray(config.nodes)) {
-      console.log('🔄 setState - 加载节点数量:', config.nodes.length)
       config.nodes.forEach((node: any) => {
         dependencies.stateManager.addNode(node)
       })
-      console.log('🔄 setState - 节点加载完成，当前节点数:', dependencies.stateManager.nodes.length)
     }
 
     // 加载视口设置
@@ -64,8 +55,6 @@ export function usePanelDataManager(
     // 🔥 关键修复：恢复所有组件的配置数据
     if (config.componentConfigurations) {
       try {
-        console.log('🔄 setState - 恢复组件配置:', Object.keys(config.componentConfigurations))
-
         // 恢复每个组件的配置
         for (const [nodeId, nodeConfig] of Object.entries(config.componentConfigurations)) {
           if (nodeConfig && typeof nodeConfig === 'object') {
@@ -77,26 +66,18 @@ export function usePanelDataManager(
               if (typedConfig.dataSource?.type === 'data-mapping' && typedConfig.dataSource?.config) {
                 // 恢复到 multiDataSourceConfigStore
                 dependencies.multiDataSourceConfigStore.value[nodeId] = typedConfig.dataSource.config
-                console.log(`🔄 setState - 恢复多数据源配置: ${nodeId}`, typedConfig.dataSource.config)
               }
 
               // 🔥 修复：保留完整配置，不删除 dataSource 字段
               dependencies.configurationManager.setConfiguration(nodeId, typedConfig)
-
-              console.log(`✅ setState - 恢复组件配置成功: ${nodeId}`)
             } catch (configError) {
-              console.error(`❌ setState - 恢复组件配置失败: ${nodeId}`, configError)
               // 配置恢复失败不应阻止整个状态恢复过程
             }
           }
         }
-
-        console.log('🎉 setState - 所有组件配置恢复完成')
       } catch (error) {
-        console.error('💥 setState - 配置恢复过程失败:', error)
       }
     } else {
-      console.log('ℹ️ setState - 没有组件配置需要恢复')
     }
   }
 
@@ -137,13 +118,8 @@ export function usePanelDataManager(
           }
         }
       }
-      console.log('💾 保存状态 - 节点数量:', dependencies.stateManager.nodes.length)
-      console.log('💾 保存状态 - 组件配置数量:', Object.keys(componentConfigurations).length)
-      if (dependencies.stateManager.nodes.length > 0) {
-        console.log('💾 保存状态 - 第一个组件:', dependencies.stateManager.nodes[0])
-      }
+     
     } catch (error) {
-      console.error('💾 getState - 收集组件配置失败:', error)
     }
 
     const finalState = {
@@ -155,12 +131,6 @@ export function usePanelDataManager(
       // 🔥 关键修复：包含所有组件的配置数据
       componentConfigurations: componentConfigurations
     }
-
-    console.log('💾 最终保存状态:', {
-      nodesCount: finalState.nodes.length,
-      configsCount: Object.keys(finalState.componentConfigurations).length
-    })
-
     return finalState
   }
 
@@ -173,16 +143,12 @@ export function usePanelDataManager(
       const { data } = await getBoard(props.panelId)
       // 检查组件是否已经卸载
       if (dependencies.isUnmounted.value) {
-        console.log('组件已卸载，取消数据处理')
         return
       }
       if (data) {
         panelData.value = data
-        console.log('📊 获取面板数据成功:', data)
-        console.log('📊 配置原始数据:', data.config)
 
         if (data.config) {
-          console.log('📝 解析现有配置:', data.config)
           const config = parseConfig(data.config)
           editorConfig.value = config.visualEditor || getDefaultConfig()
           // 🔥 智能深拷贝：使用优化的smartDeepClone
@@ -190,9 +156,7 @@ export function usePanelDataManager(
 
           // 加载到编辑器
           setState(editorConfig.value)
-          console.log('🎯 加载编辑器配置:', editorConfig.value)
         } else {
-          console.log('📝 配置为空，使用默认配置')
           editorConfig.value = getDefaultConfig()
           preEditorConfig.value = smartDeepClone(editorConfig.value)
           setState(editorConfig.value)
@@ -202,7 +166,6 @@ export function usePanelDataManager(
           message.success($t('visualEditor.success'))
         }
       } else {
-        console.warn('⚠️ 未获取到面板数据')
         if (!dependencies.isUnmounted.value) {
           message.warning($t('visualEditor.warning'))
         }
@@ -216,7 +179,6 @@ export function usePanelDataManager(
         }
       }
     } catch (error: any) {
-      console.error('获取面板数据失败:', error)
       if (!dependencies.isUnmounted.value) {
         message.warning($t('visualEditor.warning'))
       }
@@ -237,12 +199,8 @@ export function usePanelDataManager(
    * 加载面板数据并完成基本初始化
    */
   const initializePanelData = async () => {
-    console.log('🔄 [PanelEditor] 开始初始化面板数据')
-
     // 加载面板数据
     await fetchBoard()
-
-    console.log('✅ [PanelEditor] 面板数据初始化完成')
   }
 
   return {

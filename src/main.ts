@@ -63,7 +63,6 @@ async function setupApp() {
       )
     })
     .catch(error => {
-      console.warn('系统设置加载失败，将使用默认配置:', error)
     })
 
   // 3. 非关键初始化 - 使用 requestIdleCallback 延迟执行
@@ -95,7 +94,6 @@ async function setupApp() {
       localStorage.setItem(RECENTLY_VISITED_ROUTES_KEY, JSON.stringify(routes))
       recentRoutesCache = routes
     } catch (error) {
-      console.error('保存最近访问路由失败:', error)
     }
   }, 1000)
 
@@ -104,7 +102,6 @@ async function setupApp() {
     const routesRaw = localStorage.getItem(RECENTLY_VISITED_ROUTES_KEY)
     recentRoutesCache = routesRaw ? JSON.parse(routesRaw) : []
   } catch (error) {
-    console.warn('读取最近访问路由失败，使用空数组:', error)
     recentRoutesCache = []
   }
 
@@ -173,7 +170,6 @@ async function setupApp() {
       // 使用防抖保存，减少 localStorage 写入频率
       debouncedSaveRoutes(recentRoutes)
     } catch (error) {
-      console.error('处理最近访问路由时出错:', error)
     }
   })
 

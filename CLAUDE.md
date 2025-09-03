@@ -273,10 +273,71 @@ export function fetchMyData(params: MyApiRequest): Promise<MyApiResponse> {
 
 ## 路由系统
 
-使用 `@elegant-router/vue` 与基于文件的路由：
-- `src/views/` 中的页面组件自动生成路由
+### 🚨 Views目录路由机制（重要！）
+
+**基于文件的路由系统使用 `@elegant-router/vue`，必须严格遵循以下规则：**
+
+#### 文件结构到路由映射规律
+```
+src/views 文件结构                    对应生成的路由
+├── about/index.vue                →  /about
+├── dashboard/
+│   ├── panel/index.vue            →  /dashboard/panel  
+│   └── workbench/index.vue        →  /dashboard/workbench
+└── test/
+    ├── data-binding-system-integration/
+    │   └── index.vue              →  /test/data-binding-system-integration
+    └── editor-integration/
+        └── index.vue              →  /test/editor-integration
+```
+
+#### 🚨 关键规则（违反将导致路由无法访问）
+
+1. **文件命名强制要求**：
+   - ✅ 正确：`src/views/test/my-feature/index.vue`
+   - ❌ 错误：`src/views/test/my-feature.vue`
+   - ❌ 错误：`src/views/test/MyFeature.vue`
+
+2. **路由生成机制**：
+   - 文件结构会自动映射到 `src/router/elegant/routes.ts`
+   - 路由名使用下划线连接：`test_data-binding-system-integration`
+   - 组件引用格式：`view.test_data-binding-system-integration`
+
+3. **国际化配置**（可选但推荐）：
+   ```json
+   // src/locales/langs/zh-cn/route.json
+   {
+     "route.test_data-binding-system-integration": "数据绑定系统集成",
+     "route.test_editor-integration": "编辑器集成测试"
+   }
+   ```
+
+#### 开发流程规范
+
+**🚨 创建新测试页面前必须遵循的步骤：**
+
+1. **研究现有结构**：`find src/views -name "*.vue" | head -20` 了解目录规律
+2. **创建正确目录**：`mkdir -p src/views/test/my-feature`
+3. **创建index.vue**：在目录内创建 `index.vue`（不是任意文件名）
+4. **验证路由生成**：检查 `src/router/elegant/routes.ts` 是否自动生成路由
+5. **添加国际化**：在 `src/locales/langs/zh-cn/route.json` 添加对应翻译
+6. **测试访问**：通过 `http://localhost:5002/test/my-feature` 访问
+
+#### 常见错误及解决方案
+
+```bash
+# ❌ 错误做法 - 直接创建vue文件
+touch src/views/test/my-test-page.vue
+
+# ✅ 正确做法 - 创建目录和index.vue
+mkdir -p src/views/test/my-test-page
+touch src/views/test/my-test-page/index.vue
+```
+
+#### 路由元数据和懒加载
 - 路由元数据可以在组件注释中定义
-- 所有路由组件的懒加载：`component: () => import('@/views/MyPage.vue')`
+- 所有路由组件自动懒加载：`component: () => import('@/views/path/index.vue')`
+- 支持多级嵌套路由结构
 
 ## 构建配置
 

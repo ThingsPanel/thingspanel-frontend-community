@@ -59,7 +59,6 @@ export function getUserAuthorityFromStorage(): string {
       return parsed.authority || 'TENANT_USER' // 默认返回租户用户权限
     }
   } catch (error) {
-    console.warn('[PermissionUtils] 解析用户信息失败:', error)
   }
 
   return 'TENANT_USER' // 默认返回租户用户权限

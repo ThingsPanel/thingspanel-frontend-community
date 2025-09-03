@@ -123,23 +123,17 @@ const formatData = (data: any): string => {
   // 🔥 修复：处理对象类型的数据源
   let actualValue = data
   if (typeof data === 'object' && data !== null) {
-    console.log('🔧 [dual-data-display] 检测到对象数据，尝试提取值:', data)
-
     // 🔥 新增：处理 Card2Wrapper 传递的嵌套数据结构 {type: 'json', data: {...}}
     if (data.type && data.data && typeof data.data === 'object') {
-      console.log('🔧 [dual-data-display] 检测到Card2Wrapper数据结构，从data字段提取:', data.data)
-
       // 尝试从data对象中提取第一个数值字段
       const dataObj = data.data
       for (const [key, val] of Object.entries(dataObj)) {
         if (typeof val === 'number') {
           actualValue = val
-          console.log(`✅ [dual-data-display] 从data.${key}提取数值:`, val)
           break
         }
         if (typeof val === 'string' && !isNaN(parseFloat(val as string))) {
           actualValue = parseFloat(val as string)
-          console.log(`✅ [dual-data-display] 从data.${key}提取数值字符串:`, val)
           break
         }
       }
@@ -148,7 +142,6 @@ const formatData = (data: any): string => {
       if (actualValue === data && Object.keys(dataObj).length > 0) {
         const firstValue = Object.values(dataObj)[0]
         actualValue = String(firstValue)
-        console.log('✅ [dual-data-display] 使用data对象的第一个值:', firstValue)
       }
     }
     // 🔥 保持原有逻辑：处理简单的数据字段
@@ -162,11 +155,8 @@ const formatData = (data: any): string => {
       actualValue = data.number
     } else {
       // 如果是纯对象，显示友好的提示
-      console.warn('⚠️ [dual-data-display] 无法从对象中提取数值:', data)
       return '[需要配置数据字段]'
     }
-
-    console.log('✅ [dual-data-display] 最终提取的数值:', actualValue)
   }
 
   if (typeof actualValue === 'number') {
@@ -206,8 +196,6 @@ const updateInteractionState = (eventType: string) => {
  * 点击处理 - 支持交互系统
  */
 const handleClick = () => {
-  console.log('🔍 [DualDataDisplay] 组件被点击:', props.componentId)
-
   // 更新组件状态
   componentState.clickCount++
   updateInteractionState('click')
@@ -232,7 +220,6 @@ const handleClick = () => {
  * 悬停处理 - 支持交互系统
  */
 const handleMouseEnter = () => {
-  console.log('🔍 [DualDataDisplay] 鼠标进入:', props.componentId)
   updateInteractionState('hover')
 
   emit('hover', {
@@ -250,8 +237,6 @@ const handleMouseEnter = () => {
 }
 
 const handleMouseLeave = () => {
-  console.log('🔍 [DualDataDisplay] 鼠标离开:', props.componentId)
-
   emit('hover', {
     componentId: props.componentId || '',
     type: 'leave'
@@ -273,13 +258,10 @@ const handleMouseLeave = () => {
 const handlePropertyUpdate = (event: CustomEvent) => {
   const { propertyPath, value } = event.detail
 
-  console.log('🔄 [DualDataDisplay] 收到属性更新:', { propertyPath, value })
-
   // 根据属性路径更新本地状态
   if (propertyPath.startsWith('customize.')) {
     // 这里可以添加响应式更新逻辑
     // 由于我们使用的是computed，prop变化会自动触发重新渲染
-    console.log('✅ [DualDataDisplay] 属性更新已应用')
   }
 }
 
@@ -290,7 +272,6 @@ onMounted(() => {
   const element = getCurrentInstance()?.proxy?.$el
   if (element) {
     element.addEventListener('componentPropertyUpdate', handlePropertyUpdate)
-    console.log('🎧 [DualDataDisplay] 已注册属性更新监听器')
   }
 })
 
@@ -301,7 +282,6 @@ onUnmounted(() => {
   const element = getCurrentInstance()?.proxy?.$el
   if (element) {
     element.removeEventListener('componentPropertyUpdate', handlePropertyUpdate)
-    console.log('🎧 [DualDataDisplay] 已移除属性更新监听器')
   }
 })
 </script>

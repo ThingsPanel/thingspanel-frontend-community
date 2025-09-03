@@ -93,7 +93,6 @@ const fetchBoards = async () => {
       total.value = data.total
     }
   } catch (error) {
-    console.error('获取看板列表失败:', error)
     message.error($t('common.error'))
   }
 }
@@ -120,7 +119,6 @@ const submitForm = async () => {
     clearFormData()
     await fetchBoards()
   } catch (error) {
-    console.error('保存看板失败:', error)
     message.error($t('common.saveError'))
   }
 }
@@ -145,7 +143,6 @@ const deleteBoard = async (id: string) => {
     message.success($t('common.deleteSuccess'))
     await fetchBoards()
   } catch (error) {
-    console.error('删除看板失败:', error)
     message.error($t('common.deleteError'))
   }
 }

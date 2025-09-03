@@ -102,7 +102,6 @@ export class EditorDataSourceManager {
    * 这是新架构的核心：管理器只负责调度，组件自己执行数据源
    */
   setComponentExecutorRegistry(registry: Map<string, () => Promise<void>>): void {
-    console.log('📝 [EditorDataSourceManager] 设置组件执行器注册表')
     this.componentExecutorRegistry = registry
   }
 
@@ -111,9 +110,6 @@ export class EditorDataSourceManager {
    */
   async initialize(): Promise<void> {
     if (this.initialized.value) return
-
-    console.log('🚀 [EditorDataSourceManager] 初始化管理器...')
-
     try {
       // 初始化数据源系统
       await this.initializeDataSourceSystem()
@@ -125,11 +121,8 @@ export class EditorDataSourceManager {
       this.setupErrorHandling()
 
       this.initialized.value = true
-      console.log('✅ [EditorDataSourceManager] 管理器初始化完成')
-
       this.emit('initialized')
     } catch (error) {
-      console.error('❌ [EditorDataSourceManager] 初始化失败:', error)
       throw error
     }
   }
@@ -150,12 +143,7 @@ export class EditorDataSourceManager {
     config: any,
     triggerConfig?: { type: 'timer' | 'manual' | 'event'; interval?: number }
   ): void {
-    console.log(`📝 [EditorDataSourceManager] 注册组件数据源: ${componentId}`, {
-      componentType,
-      config,
-      triggerConfig
-    })
-
+ 
     try {
       // 生成标准化配置
       const standardConfig = this.generateStandardConfig(componentId, componentType, config)
@@ -180,11 +168,8 @@ export class EditorDataSourceManager {
 
       // 更新统计
       this.updateStats()
-
-      console.log(`✅ [EditorDataSourceManager] 组件数据源注册成功: ${componentId}`)
       this.emit('component-registered', { componentId, config: componentConfig })
     } catch (error) {
-      console.error(`❌ [EditorDataSourceManager] 注册组件数据源失败: ${componentId}`, error)
       const errorMessage = error instanceof Error ? error.message : String(error)
       this.message.error(`注册组件数据源失败: ${errorMessage}`)
     }
@@ -196,12 +181,8 @@ export class EditorDataSourceManager {
   async startComponentDataSource(componentId: string): Promise<boolean> {
     const config = this.componentConfigs.get(componentId)
     if (!config) {
-      console.warn(`⚠️ [EditorDataSourceManager] 组件配置不存在: ${componentId}`)
       return false
     }
-
-    console.log(`▶️ [EditorDataSourceManager] 启动组件数据源: ${componentId}`)
-
     try {
       // 更新状态
       config.status = DataSourceStatus.RUNNING
@@ -214,13 +195,10 @@ export class EditorDataSourceManager {
 
       // 🔥 立即触发一次组件执行器
       await this.triggerComponentExecutor(componentId)
-
-      console.log(`✅ [EditorDataSourceManager] 组件数据源启动成功: ${componentId}`)
       this.emit('component-started', { componentId })
 
       return true
     } catch (error) {
-      console.error(`❌ [EditorDataSourceManager] 启动组件数据源失败: ${componentId}`, error)
       const errorMessage = error instanceof Error ? error.message : String(error)
       config.status = DataSourceStatus.ERROR
       config.error = errorMessage
@@ -235,12 +213,8 @@ export class EditorDataSourceManager {
   stopComponentDataSource(componentId: string): boolean {
     const config = this.componentConfigs.get(componentId)
     if (!config) {
-      console.warn(`⚠️ [EditorDataSourceManager] 组件配置不存在: ${componentId}`)
       return false
     }
-
-    console.log(`⏹️ [EditorDataSourceManager] 停止组件数据源: ${componentId}`)
-
     try {
       // 更新状态
       config.status = DataSourceStatus.STOPPED
@@ -248,13 +222,10 @@ export class EditorDataSourceManager {
 
       // 停止全局轮询管理器中的任务
       this.unscheduleComponentFromGlobalManager(componentId)
-
-      console.log(`✅ [EditorDataSourceManager] 组件数据源停止成功: ${componentId}`)
       this.emit('component-stopped', { componentId })
 
       return true
     } catch (error) {
-      console.error(`❌ [EditorDataSourceManager] 停止组件数据源失败: ${componentId}`, error)
       const errorMessage = error instanceof Error ? error.message : String(error)
       this.message.error(`停止数据源失败: ${errorMessage}`)
       return false
@@ -267,11 +238,8 @@ export class EditorDataSourceManager {
   setPollingInterval(componentId: string, interval: number): boolean {
     const config = this.componentConfigs.get(componentId)
     if (!config) {
-      console.warn(`⚠️ [EditorDataSourceManager] 组件配置不存在: ${componentId}`)
       return false
     }
-
-    console.log(`⏰ [EditorDataSourceManager] 设置轮询间隔: ${componentId} -> ${interval}ms`)
 
     try {
       // 更新配置
@@ -282,13 +250,10 @@ export class EditorDataSourceManager {
         this.unscheduleComponentFromGlobalManager(componentId)
         this.scheduleComponentWithGlobalManager(componentId, interval)
       }
-
-      console.log(`✅ [EditorDataSourceManager] 轮询间隔设置成功: ${componentId}`)
       this.emit('interval-changed', { componentId, interval })
 
       return true
     } catch (error) {
-      console.error(`❌ [EditorDataSourceManager] 设置轮询间隔失败: ${componentId}`, error)
       const errorMessage = error instanceof Error ? error.message : String(error)
       this.message.error(`设置轮询间隔失败: ${errorMessage}`)
       return false
@@ -300,8 +265,6 @@ export class EditorDataSourceManager {
    * 🔥 新架构：调用组件执行器而不是直接执行数据源
    */
   async triggerDataUpdate(componentId: string): Promise<boolean> {
-    console.log(`🔄 [EditorDataSourceManager] 手动触发数据更新: ${componentId}`)
-
     try {
       await this.triggerComponentExecutor(componentId)
 
@@ -317,7 +280,6 @@ export class EditorDataSourceManager {
       })
       return true
     } catch (error) {
-      console.error(`❌ [EditorDataSourceManager] 手动触发失败: ${componentId}`, error)
       const errorMessage = error instanceof Error ? error.message : String(error)
 
       // 🔥 修复：错误时也发送正确格式的事件数据
@@ -389,8 +351,6 @@ export class EditorDataSourceManager {
    * 批量启动数据源
    */
   async batchStart(componentIds: string[]): Promise<boolean[]> {
-    console.log(`🚀 [EditorDataSourceManager] 批量启动数据源:`, componentIds)
-
     const results = await Promise.allSettled(componentIds.map(id => this.startComponentDataSource(id)))
 
     return results.map(result => (result.status === 'fulfilled' ? result.value : false))
@@ -400,8 +360,6 @@ export class EditorDataSourceManager {
    * 批量停止数据源
    */
   batchStop(componentIds: string[]): boolean[] {
-    console.log(`⏹️ [EditorDataSourceManager] 批量停止数据源:`, componentIds)
-
     return componentIds.map(id => this.stopComponentDataSource(id))
   }
 
@@ -423,8 +381,6 @@ export class EditorDataSourceManager {
    * 移除组件数据源
    */
   removeComponentDataSource(componentId: string): boolean {
-    console.log(`🗑️ [EditorDataSourceManager] 移除组件数据源: ${componentId}`)
-
     try {
       // 停止数据源
       this.stopComponentDataSource(componentId)
@@ -438,13 +394,10 @@ export class EditorDataSourceManager {
 
       // 更新统计
       this.updateStats()
-
-      console.log(`✅ [EditorDataSourceManager] 组件数据源移除成功: ${componentId}`)
       this.emit('component-removed', { componentId })
 
       return true
     } catch (error) {
-      console.error(`❌ [EditorDataSourceManager] 移除组件数据源失败: ${componentId}`, error)
       return false
     }
   }
@@ -453,8 +406,6 @@ export class EditorDataSourceManager {
    * 销毁管理器
    */
   destroy(): void {
-    console.log('🔥 [EditorDataSourceManager] 销毁管理器...')
-
     // 停止所有数据源
     const allIds = Array.from(this.componentConfigs.keys())
     this.batchStop(allIds)
@@ -469,7 +420,6 @@ export class EditorDataSourceManager {
     this.globalPollingManager.clearAllTasks()
 
     this.initialized.value = false
-    console.log('✅ [EditorDataSourceManager] 管理器已销毁')
   }
 
   // ============ 私有方法 ============
@@ -479,18 +429,14 @@ export class EditorDataSourceManager {
    * 通过组件执行器注册表调用组件的 executeDataSource 方法
    */
   private async triggerComponentExecutor(componentId: string): Promise<void> {
-    console.log(`🔥 [EditorDataSourceManager] 触发组件执行器: ${componentId}`)
-
     // 🆕 备用方案：如果注册表不可用，直接使用 VisualEditorBridge
     if (!this.componentExecutorRegistry) {
-      console.warn(`⚠️ [EditorDataSourceManager] 组件执行器注册表未设置，使用 VisualEditorBridge 备用方案`)
       await this.fallbackToVisualEditorBridge(componentId)
       return
     }
 
     const executor = this.componentExecutorRegistry.get(componentId)
     if (!executor) {
-      console.warn(`⚠️ [EditorDataSourceManager] 组件执行器未找到: ${componentId}，使用 VisualEditorBridge 备用方案`)
       await this.fallbackToVisualEditorBridge(componentId)
       return
     }
@@ -499,15 +445,10 @@ export class EditorDataSourceManager {
     try {
       await executor()
       const executionTime = Date.now() - startTime
-
-      console.log(`✅ [EditorDataSourceManager] 组件执行器调用成功: ${componentId} (${executionTime}ms)`)
-
       // 更新统计
       this.updateExecutionStats(true, executionTime)
     } catch (error) {
       const executionTime = Date.now() - startTime
-      console.error(`❌ [EditorDataSourceManager] 组件执行器调用失败: ${componentId}`, error)
-
       // 更新统计
       this.updateExecutionStats(false, executionTime)
       throw error
@@ -528,8 +469,6 @@ export class EditorDataSourceManager {
     if (!unifiedDataExecutor) {
       throw new Error('数据源系统未正确初始化：UnifiedDataExecutor缺失')
     }
-
-    console.log('✅ [EditorDataSourceManager] 数据源系统初始化验证通过')
   }
 
   /**
@@ -537,28 +476,17 @@ export class EditorDataSourceManager {
    * 通过 ConfigurationIntegrationBridge 的缓存清理机制实现自动更新
    */
   private setupConfigurationEventListener(): void {
-    console.log('🔗 [EditorDataSourceManager] 设置配置事件监听...')
-
     // 🔥 修复：监听配置事件怽线，使用正确的 API 和事件格式
     configEventBus.onConfigChange('config-changed', async (event: ConfigChangeEvent) => {
-      console.log(`🔄 [EditorDataSourceManager] 检测到配置变更: ${event.componentId}`, event)
-
       // 只处理数据源相关的配置变更
       if (event.section === 'dataSource' || event.section === 'component') {
-        console.log(`🚀 [EditorDataSourceManager] 数据源配置变更，自动触发数据更新: ${event.componentId}`)
-
         try {
           // 通过组件执行器触发数据更新
           await this.triggerComponentExecutor(event.componentId)
-          console.log(`✅ [EditorDataSourceManager] 自动数据更新成功: ${event.componentId}`)
         } catch (error) {
-          console.error(`❌ [EditorDataSourceManager] 自动数据更新失败: ${event.componentId}`, error)
         }
       }
     })
-
-    console.log('✅ [EditorDataSourceManager] 配置事件监听已设置')
-    console.log('💡 [EditorDataSourceManager] 配置变更时将自动触发数据更新')
   }
 
   /**
@@ -566,25 +494,19 @@ export class EditorDataSourceManager {
    */
   private async triggerComponentExecution(componentId: string, dataSourceConfig: any): Promise<void> {
     try {
-      console.log(`🚀 [EditorDataSourceManager] 开始执行组件数据源: ${componentId}`)
-
       // 检查组件执行器是否注册
       if (!this.componentExecutorRegistry) {
-        console.warn('❌ [EditorDataSourceManager] 组件执行器注册表未设置，无法触发执行')
         return
       }
 
       const componentExecutor = this.componentExecutorRegistry.get(componentId)
       if (!componentExecutor) {
-        console.warn(`❌ [EditorDataSourceManager] 未找到组件执行器: ${componentId}`)
         return
       }
 
       // 执行组件数据源
       await componentExecutor()
-      console.log(`✅ [EditorDataSourceManager] 组件数据源执行完成: ${componentId}`)
     } catch (error) {
-      console.error(`❌ [EditorDataSourceManager] 组件数据源执行失败: ${componentId}`, error)
     }
   }
 
@@ -594,7 +516,6 @@ export class EditorDataSourceManager {
   private setupErrorHandling(): void {
     // 全局错误处理
     window.addEventListener('unhandledrejection', event => {
-      console.error('🚨 [EditorDataSourceManager] 未处理的Promise拒绝:', event.reason)
     })
   }
 
@@ -608,7 +529,6 @@ export class EditorDataSourceManager {
 
       // 🔥 处理 dataSourceBindings 格式的配置 (旧格式)
       if (userConfig.dataSourceBindings && typeof userConfig.dataSourceBindings === 'object') {
-        console.log(`🔧 [EditorDataSourceManager] 处理旧格式配置 (dataSourceBindings):`, userConfig.dataSourceBindings)
         for (const [dataSourceKey, binding] of Object.entries(userConfig.dataSourceBindings)) {
           const bindingData = binding as any
           if (bindingData.dataSource) {
@@ -624,12 +544,10 @@ export class EditorDataSourceManager {
 
       // 🆕 处理新格式配置 (data-source-bindings)
       if (userConfig.type === 'data-source-bindings' && userInputs.length === 0) {
-        console.log(`🔧 [EditorDataSourceManager] 处理新格式配置 (data-source-bindings):`, userConfig)
 
         // 遍历 dataSource1, dataSource2, dataSource3 等字段
         for (const [key, value] of Object.entries(userConfig)) {
           if (key.startsWith('dataSource') && value && typeof value === 'object') {
-            console.log(`🔍 [EditorDataSourceManager] 找到数据源: ${key}`, value)
             const dataSourceConfig = value as any
 
             // 检查是否有有效的配置数据
@@ -644,7 +562,6 @@ export class EditorDataSourceManager {
                 config: dataSourceConfig
               }
               userInputs.push(userInput)
-              console.log(`✅ [EditorDataSourceManager] 添加数据源输入: ${key}`)
             }
           }
         }
@@ -672,16 +589,10 @@ export class EditorDataSourceManager {
           fields: []
         }))
       }
-
-      console.log(`🔧 [EditorDataSourceManager] 动态生成的数据需求:`, requirement)
-
       // 使用数据源系统的配置生成器
       const standardConfig = simpleConfigGenerator.generateConfig(requirement, userInputs)
-
-      console.log(`📋 [EditorDataSourceManager] 生成标准配置: ${componentId}`, standardConfig)
       return standardConfig
     } catch (error) {
-      console.error(`❌ [EditorDataSourceManager] 生成配置失败: ${componentId}`, error)
       const errorMessage = error instanceof Error ? error.message : String(error)
       throw new Error(`配置生成失败: ${errorMessage}`)
     }
@@ -697,7 +608,6 @@ export class EditorDataSourceManager {
     }
 
     const startTime = Date.now()
-    console.log(`⚡ [EditorDataSourceManager] 执行数据源: ${componentId}`)
 
     try {
       // 执行数据源 - 转换为UnifiedDataExecutor格式
@@ -710,8 +620,6 @@ export class EditorDataSourceManager {
       const result = await unifiedDataExecutor.execute(unifiedConfig)
 
       const executionTime = Date.now() - startTime
-      console.log(`✅ [EditorDataSourceManager] 执行成功: ${componentId} (${executionTime}ms)`, result)
-
       // 更新组件状态
       config.lastResult = result
       config.status = result.success ? DataSourceStatus.RUNNING : DataSourceStatus.ERROR
@@ -729,8 +637,6 @@ export class EditorDataSourceManager {
       return result
     } catch (error) {
       const executionTime = Date.now() - startTime
-      console.error(`❌ [EditorDataSourceManager] 执行失败: ${componentId}`, error)
-
       // 创建错误结果
       const errorMessage = error instanceof Error ? error.message : String(error)
       const errorResult: ExecutionResult = {
@@ -761,7 +667,6 @@ export class EditorDataSourceManager {
 
     const config = this.componentConfigs.get(componentId)
     if (!config) {
-      console.warn(`⚠️ [EditorDataSourceManager] 组件配置不存在: ${componentId}`)
       return
     }
 
@@ -776,14 +681,12 @@ export class EditorDataSourceManager {
           // 🔥 调用组件执行器而不是直接执行数据源
           await this.triggerComponentExecutor(componentId)
         } catch (error) {
-          console.error(`⏰ [EditorDataSourceManager] 全局轮询执行失败: ${componentId}`, error)
         }
       }
     })
 
     // 保存任务ID映射
     this.pollingTaskIds.set(componentId, taskId)
-    console.log(`⏰ [EditorDataSourceManager] 全局轮询调度器启动: ${componentId} (${interval}ms) -> 任务ID: ${taskId}`)
   }
 
   /**
@@ -794,7 +697,6 @@ export class EditorDataSourceManager {
     if (taskId) {
       this.globalPollingManager.removeTask(taskId)
       this.pollingTaskIds.delete(componentId)
-      console.log(`⏰ [EditorDataSourceManager] 全局轮询调度器停止: ${componentId} -> 任务ID: ${taskId}`)
     }
   }
 
@@ -830,11 +732,8 @@ export class EditorDataSourceManager {
    * 用于组件执行器注册表不可用的情况（如页面刷新后）
    */
   private async fallbackToVisualEditorBridge(componentId: string): Promise<void> {
-    console.log(`🔄 [EditorDataSourceManager] 使用 VisualEditorBridge 备用方案: ${componentId}`)
-
     const config = this.componentConfigs.get(componentId)
     if (!config) {
-      console.warn(`⚠️ [EditorDataSourceManager] 组件配置不存在: ${componentId}`)
       return
     }
 
@@ -845,24 +744,11 @@ export class EditorDataSourceManager {
       // 🔥 修复：使用原始配置而不是转换后的标准配置
       const componentType = config.componentType
       const dataSourceConfig = config.originalConfig || config.config // 优先使用原始配置
-
-      console.log(`🔧 [EditorDataSourceManager] 备用方案配置:`, {
-        componentId,
-        componentType,
-        dataSourceConfig,
-        usingOriginalConfig: !!config.originalConfig
-      })
-
       // 调用 VisualEditorBridge 更新组件执行器
       const result = await visualEditorBridge.updateComponentExecutor(componentId, componentType, dataSourceConfig)
-
-      console.log(`✅ [EditorDataSourceManager] VisualEditorBridge 备用方案执行成功: ${componentId}`, result)
-
       // 更新统计
       this.updateExecutionStats(true, 0)
     } catch (error) {
-      console.error(`❌ [EditorDataSourceManager] VisualEditorBridge 备用方案执行失败: ${componentId}`, error)
-
       // 更新统计
       this.updateExecutionStats(false, 0)
 
@@ -902,7 +788,6 @@ export class EditorDataSourceManager {
         try {
           listener(data)
         } catch (error) {
-          console.error(`🚨 [EditorDataSourceManager] 事件监听器错误: ${event}`, error)
         }
       })
     }

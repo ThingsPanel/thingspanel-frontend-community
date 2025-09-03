@@ -144,12 +144,10 @@ const layoutNodes = computed(() => {
 
 // 事件处理器
 const onRendererReady = () => {
-  console.log('[FlowRenderer] Renderer is ready')
   emit('ready')
 }
 
 const onRendererError = (error: Error) => {
-  console.error('[FlowRenderer] Renderer error:', error)
   emit('error', error)
 }
 

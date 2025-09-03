@@ -49,9 +49,6 @@ export class ScriptEngine implements IScriptEngine {
 
     // 初始化内置模板库
     const templateStats = initializeBuiltInTemplates(this.templateManager)
-    console.log('📚 [ScriptEngine] 内置模板库加载完成:', templateStats)
-
-    console.log('🚀 [ScriptEngine] 脚本引擎初始化完成')
   }
 
   /**
@@ -59,8 +56,6 @@ export class ScriptEngine implements IScriptEngine {
    */
   async execute<T = any>(code: string, context?: Record<string, any>): Promise<ScriptExecutionResult<T>> {
     const displayCode = code ? code.substring(0, 100) + (code.length > 100 ? '...' : '') : '[空脚本]'
-    console.log('🔧 [ScriptEngine] 执行脚本:', displayCode)
-
     // 创建脚本配置
     const scriptConfig: ScriptConfig = {
       ...this.config.defaultScriptConfig,
@@ -80,16 +75,12 @@ export class ScriptEngine implements IScriptEngine {
       if (executionContext) {
         this.contextManager.deleteContext(executionContext.id)
       }
-
-      console.log('✅ [ScriptEngine] 脚本执行完成:', result.success ? '成功' : '失败')
       return result
     } catch (error) {
       // 清理临时上下文
       if (executionContext) {
         this.contextManager.deleteContext(executionContext.id)
       }
-
-      console.error('❌ [ScriptEngine] 脚本执行异常:', error)
       throw error
     }
   }
@@ -101,8 +92,6 @@ export class ScriptEngine implements IScriptEngine {
     templateId: string,
     parameters: Record<string, any>
   ): Promise<ScriptExecutionResult<T>> {
-    console.log('📋 [ScriptEngine] 使用模板执行:', templateId, parameters)
-
     try {
       // 根据模板生成代码
       const code = this.templateManager.generateCode(templateId, parameters)
@@ -110,7 +99,6 @@ export class ScriptEngine implements IScriptEngine {
       // 执行生成的代码
       return await this.execute<T>(code)
     } catch (error) {
-      console.error('❌ [ScriptEngine] 模板执行失败:', error)
       throw error
     }
   }
@@ -121,8 +109,6 @@ export class ScriptEngine implements IScriptEngine {
   async executeBatch<T = any>(
     scripts: Array<{ code: string; context?: Record<string, any> }>
   ): Promise<ScriptExecutionResult<T>[]> {
-    console.log('📦 [ScriptEngine] 批量执行脚本:', scripts.length, '个')
-
     const promises = scripts.map(script => this.execute<T>(script.code, script.context))
     return await Promise.all(promises)
   }
@@ -135,8 +121,6 @@ export class ScriptEngine implements IScriptEngine {
     context?: Record<string, any>,
     onUpdate?: (result: Partial<ScriptExecutionResult<T>>) => void
   ): Promise<ScriptExecutionResult<T>> {
-    console.log('🌊 [ScriptEngine] 流式执行脚本')
-
     // 创建脚本配置
     const scriptConfig: ScriptConfig = {
       ...this.config.defaultScriptConfig,
@@ -247,14 +231,12 @@ export class ScriptEngine implements IScriptEngine {
    */
   updateConfig(config: Partial<ScriptEngineConfig>): void {
     this.config = { ...this.config, ...config }
-    console.log('🔧 [ScriptEngine] 配置已更新')
   }
 
   /**
    * 预热引擎（执行一些初始化脚本以提高后续性能）
    */
   async warmup(): Promise<void> {
-    console.log('🔥 [ScriptEngine] 引擎预热中...')
 
     const warmupScripts = [
       'return "Hello World"',
@@ -267,26 +249,19 @@ export class ScriptEngine implements IScriptEngine {
       try {
         await this.execute(script)
       } catch (error) {
-        console.warn('⚠️ [ScriptEngine] 预热脚本执行失败:', error)
       }
     }
-
-    console.log('✅ [ScriptEngine] 引擎预热完成')
   }
 
   /**
    * 清理资源
    */
   cleanup(): void {
-    console.log('🧹 [ScriptEngine] 清理引擎资源...')
-
     // 清理所有上下文
     const contexts = this.contextManager.getAllContexts()
     contexts.forEach(context => {
       this.contextManager.deleteContext(context.id)
     })
-
-    console.log('✅ [ScriptEngine] 引擎资源清理完成')
   }
 
   /**
@@ -328,11 +303,8 @@ export class ScriptEngine implements IScriptEngine {
           this.contextManager.createContext(context.name, context.variables)
         })
       }
-
-      console.log('✅ [ScriptEngine] 状态导入完成')
       return true
     } catch (error) {
-      console.error('❌ [ScriptEngine] 状态导入失败:', error)
       return false
     }
   }

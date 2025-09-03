@@ -72,7 +72,6 @@ const { isPreviewMode } = globalPreviewMode
 // --- Event Handlers to emit upwards to PanelEditor ---
 
 const onRendererReady = () => {
-  console.log('🔧 GridstackRenderer - 渲染器准备就绪，配置:', props.gridConfig)
   emit('ready')
 }
 

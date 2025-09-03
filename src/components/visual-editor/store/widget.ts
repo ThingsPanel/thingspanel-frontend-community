@@ -42,7 +42,6 @@ export const useWidgetStore = defineStore('widget', {
   actions: {
     register(widget: WidgetDefinition) {
       if (this.widgetRegistry.has(widget.type)) {
-        console.warn(`组件 [${widget.type}] 已被注册，将进行覆盖。`)
       }
       this.widgetRegistry.set(widget.type, widget)
     },

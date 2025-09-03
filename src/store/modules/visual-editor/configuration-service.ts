@@ -57,7 +57,6 @@ export class ConfigurationService {
    * 🔥 唯一的配置获取入口
    */
   getConfiguration(widgetId: string): WidgetConfiguration {
-    console.log('🔧 [ConfigService] 获取配置:', widgetId)
     return this.store.getFullConfiguration(widgetId)
   }
 
@@ -73,8 +72,6 @@ export class ConfigurationService {
    * 设置完整的组件配置
    */
   setConfiguration(widgetId: string, configuration: WidgetConfiguration): void {
-    console.log('🔧 [ConfigService] 设置完整配置:', { widgetId, configuration })
-
     // 验证配置
     const validation = this.validateConfiguration(configuration)
     if (!validation.valid) {
@@ -111,8 +108,6 @@ export class ConfigurationService {
     section: T,
     data: WidgetConfiguration[T]
   ): void {
-    console.log('🔧 [ConfigService] 更新配置部分:', { widgetId, section, data })
-
     // 获取旧值用于事件
     const oldValue = this.getConfigurationSection(widgetId, section)
 
@@ -131,7 +126,6 @@ export class ConfigurationService {
         this.store.setInteractionConfiguration(widgetId, data as InteractionConfiguration)
         break
       default:
-        console.warn('未知的配置部分:', section)
         return
     }
 
@@ -149,8 +143,6 @@ export class ConfigurationService {
       data: any
     }>
   ): void {
-    console.log('🔧 [ConfigService] 批量更新配置:', updates.length, '项')
-
     updates.forEach(update => {
       this.updateConfigurationSection(update.widgetId, update.section, update.data)
     })
@@ -163,8 +155,6 @@ export class ConfigurationService {
    * 🔥 解决数据源配置混乱问题
    */
   setDataSourceConfig(widgetId: string, config: DataSourceConfiguration): void {
-    console.log('🔧 [ConfigService] 设置数据源配置:', { widgetId, config })
-
     // 验证数据源配置
     const validation = this.validateDataSourceConfig(config)
     if (!validation.valid) {
@@ -199,7 +189,6 @@ export class ConfigurationService {
    * 设置运行时数据
    */
   setRuntimeData(widgetId: string, data: any): void {
-    console.log('🔧 [ConfigService] 设置运行时数据:', { widgetId, data })
 
     this.store.setRuntimeData(widgetId, data)
 
@@ -220,18 +209,13 @@ export class ConfigurationService {
    * 保存配置到本地存储
    */
   async saveConfiguration(widgetId: string): Promise<void> {
-    console.log('🔧 [ConfigService] 保存配置:', widgetId)
-
     const config = this.getConfiguration(widgetId)
 
     try {
       // 保存到localStorage（后续可以扩展到服务器）
       const storageKey = `widget_config_${widgetId}`
       localStorage.setItem(storageKey, JSON.stringify(config))
-
-      console.log('✅ [ConfigService] 配置保存成功:', widgetId)
     } catch (error) {
-      console.error('❌ [ConfigService] 配置保存失败:', error)
       throw error
     }
   }
@@ -240,14 +224,11 @@ export class ConfigurationService {
    * 从本地存储加载配置
    */
   async loadConfiguration(widgetId: string): Promise<WidgetConfiguration | null> {
-    console.log('🔧 [ConfigService] 加载配置:', widgetId)
-
     try {
       const storageKey = `widget_config_${widgetId}`
       const savedData = localStorage.getItem(storageKey)
 
       if (!savedData) {
-        console.log('ℹ️ [ConfigService] 没有找到保存的配置:', widgetId)
         return null
       }
 
@@ -259,14 +240,10 @@ export class ConfigurationService {
       // 验证加载的配置
       const validation = this.validateConfiguration(migratedConfig)
       if (!validation.valid) {
-        console.warn('⚠️ [ConfigService] 加载的配置验证失败:', validation.errors)
         return null
       }
-
-      console.log('✅ [ConfigService] 配置加载成功:', widgetId)
       return migratedConfig
     } catch (error) {
-      console.error('❌ [ConfigService] 配置加载失败:', error)
       return null
     }
   }
@@ -275,14 +252,11 @@ export class ConfigurationService {
    * 批量保存所有配置
    */
   async saveAllConfigurations(): Promise<void> {
-    console.log('🔧 [ConfigService] 批量保存所有配置')
-
     const nodeIds = this.store.nodes.map(node => node.id)
 
     await Promise.all(nodeIds.map(id => this.saveConfiguration(id)))
 
     this.store.markSaved()
-    console.log('✅ [ConfigService] 所有配置保存完成')
   }
 
   // ==================== 配置验证 ====================
@@ -357,7 +331,6 @@ export class ConfigurationService {
    */
   registerMigration(migration: ConfigurationMigration): void {
     this.migrations.push(migration)
-    console.log('🔧 [ConfigService] 注册配置迁移:', migration.fromVersion, '->', migration.toVersion)
   }
 
   /**
@@ -368,7 +341,6 @@ export class ConfigurationService {
 
     for (const migration of this.migrations) {
       if (config.metadata?.version === migration.fromVersion) {
-        console.log('🔧 [ConfigService] 执行配置迁移:', migration.fromVersion, '->', migration.toVersion)
         migratedConfig = migration.migrate(migratedConfig)
       }
     }
@@ -412,8 +384,6 @@ export class ConfigurationService {
     }
 
     this.eventBus.dispatchEvent(new CustomEvent('configuration-change', { detail: event }))
-
-    console.log('📡 [ConfigService] 配置变更事件:', event)
   }
 
   /**
@@ -433,7 +403,6 @@ export class ConfigurationService {
    * 处理数据源配置的副作用
    */
   private handleDataSourceSideEffects(widgetId: string, config: DataSourceConfiguration): void {
-    console.log('🔧 [ConfigService] 处理数据源副作用:', { widgetId, config })
 
     // 如果是Card2.1组件，触发数据绑定更新
     if (this.store.card2Components.has(widgetId)) {
@@ -469,7 +438,6 @@ export class ConfigurationService {
    */
   private handleApiDataSource(widgetId: string, config: DataSourceConfiguration): void {
     // TODO: 实现API数据获取逻辑
-    console.log('🔧 [ConfigService] 处理API数据源:', { widgetId, config })
   }
 }
 
@@ -483,7 +451,6 @@ let configurationServiceInstance: ConfigurationService | null = null
 export function useConfigurationService(): ConfigurationService {
   if (!configurationServiceInstance) {
     configurationServiceInstance = new ConfigurationService()
-    console.log('🔧 [ConfigService] 创建配置服务实例')
   }
 
   return configurationServiceInstance
@@ -494,5 +461,4 @@ export function useConfigurationService(): ConfigurationService {
  */
 export function resetConfigurationService(): void {
   configurationServiceInstance = null
-  console.log('🔧 [ConfigService] 重置配置服务实例')
 }

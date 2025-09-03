@@ -108,7 +108,6 @@ const initEditMode = () => {
  * 处理模式选择
  */
 const handleModeSelected = (mode: DeviceParameterSourceType) => {
-  console.log('🎯 [DeviceParameterSelector] 选择模式:', mode)
   selectedMode.value = mode
   currentStep.value = 'selector'
 }
@@ -117,8 +116,6 @@ const handleModeSelected = (mode: DeviceParameterSourceType) => {
  * 处理设备ID选择完成
  */
 const handleDeviceIdSelected = (device: DeviceInfo) => {
-  console.log('📱 [DeviceParameterSelector] 设备ID选择完成:', device)
-
   // 生成参数
   const result = generateDeviceIdParameters(device)
   const parameters = convertToEnhancedParameters(result)
@@ -144,8 +141,6 @@ const handleDeviceIdSelected = (device: DeviceInfo) => {
  * 处理设备指标选择完成
  */
 const handleDeviceMetricSelected = (data: { device: DeviceInfo; metric: DeviceMetric }) => {
-  console.log('📊 [DeviceParameterSelector] 设备指标选择完成:', data)
-
   // 生成参数
   const result = generateDeviceMetricParameters(data.device, data.metric)
   const parameters = convertToEnhancedParameters(result)

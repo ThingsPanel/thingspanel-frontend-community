@@ -125,24 +125,19 @@ const registeredExtensions = new Set<string>()
  */
 export function initEChartsComponents() {
   if (isEChartsRegistered) {
-    console.log('🎯 ECharts 基础组件已注册，跳过重复注册')
     return
   }
 
   try {
-    console.log('🚀 开始注册 ECharts 基础组件...')
 
     echarts.use(BASIC_COMPONENTS)
 
     isEChartsRegistered = true
-    console.log('✅ ECharts 基础组件注册完成 (按需加载模式)')
   } catch (error) {
     // 捕获重复注册错误，但不影响程序执行
     if (error instanceof Error && error.message.includes('exists')) {
-      console.warn('⚠️ 检测到 ECharts 组件重复注册，已跳过:', error.message)
       isEChartsRegistered = true
     } else {
-      console.error('❌ ECharts 基础组件注册失败:', error)
       throw error
     }
   }

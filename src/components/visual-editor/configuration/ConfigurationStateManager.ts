@@ -74,7 +74,6 @@ export class ConfigurationStateManager {
   private readonly STORAGE_KEY = 'visual-editor-config-state-v2'
 
   constructor() {
-    console.log('🚀 [ConfigStateManager] 配置状态管理器已初始化')
     this.loadFromStorage()
   }
 
@@ -86,8 +85,6 @@ export class ConfigurationStateManager {
       const stored = localStorage.getItem(this.STORAGE_KEY)
       if (stored) {
         const data = JSON.parse(stored)
-        console.log(`📥 [ConfigStateManager] 从存储恢复 ${Object.keys(data.states || {}).length} 个配置`)
-
         // 恢复配置状态
         if (data.states) {
           Object.entries(data.states).forEach(([componentId, state]) => {
@@ -101,7 +98,6 @@ export class ConfigurationStateManager {
         }
       }
     } catch (error) {
-      console.error('❌ [ConfigStateManager] 配置恢复失败:', error)
     }
   }
 
@@ -123,7 +119,6 @@ export class ConfigurationStateManager {
 
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data))
     } catch (error) {
-      console.error('❌ [ConfigStateManager] 配置保存失败:', error)
     }
   }
 
@@ -133,14 +128,8 @@ export class ConfigurationStateManager {
   getConfiguration(componentId: string): WidgetConfiguration | null {
     const state = this.configStates.get(componentId)
     if (!state) {
-      console.warn(`[ConfigStateManager] 配置不存在: ${componentId}`)
       return null
     }
-
-    console.log(
-      `🔍 [ConfigStateManager] 读取配置: ${componentId} v${state.version.version} (${state.version.contentHash})`
-    )
-
     // 返回配置的深拷贝，避免外部修改
     return this.deepClone(state.configuration)
   }
@@ -158,13 +147,11 @@ export class ConfigurationStateManager {
 
     // 🔥 内容去重检查：如果内容哈希相同，直接返回不处理
     if (currentState && currentState.version.contentHash === contentHash) {
-      console.log(`⏭️ [ConfigStateManager] 配置内容未变化，跳过更新: ${componentId} (${contentHash})`)
       return false
     }
 
     // 🔒 循环检测：如果组件正在更新中，直接返回避免循环
     if (this.UPDATE_LOCKS.has(componentId)) {
-      console.warn(`🔒 [ConfigStateManager] 检测到循环更新，跳过: ${componentId}`)
       return false
     }
 
@@ -187,9 +174,6 @@ export class ConfigurationStateManager {
 
     const oldVersion = currentState?.version
     this.configStates.set(componentId, newState)
-
-    console.log(`📝 [ConfigStateManager] 配置已更新: ${componentId} v${newVersion.version} (${contentHash})`)
-
     // 🆕 持久化到 localStorage
     this.saveToStorage()
 
@@ -210,7 +194,6 @@ export class ConfigurationStateManager {
   ): boolean {
     // 🔒 循环检测：防止同组件同时更新
     if (this.UPDATE_LOCKS.has(componentId)) {
-      console.warn(`🔒 [ConfigStateManager] 循环更新检测，跳过: ${componentId}.${section}`)
       return false
     }
 
@@ -218,7 +201,6 @@ export class ConfigurationStateManager {
 
     // 如果配置不存在，创建默认配置
     if (!currentState) {
-      console.log(`🆕 [ConfigStateManager] 创建默认配置: ${componentId}`)
       this.initializeConfiguration(componentId)
       currentState = this.configStates.get(componentId)!
     }
@@ -236,7 +218,6 @@ export class ConfigurationStateManager {
     // 🔥 内容哈希去重检查
     const newContentHash = this.calculateContentHash(updatedConfiguration)
     if (currentState.version.contentHash === newContentHash) {
-      console.log(`⏭️ [ConfigStateManager] 配置部分内容未变化，跳过: ${componentId}.${section} (${newContentHash})`)
       return false
     }
 
@@ -260,11 +241,6 @@ export class ConfigurationStateManager {
     }
 
     this.configStates.set(componentId, newState)
-
-    console.log(
-      `🔄 [ConfigStateManager] 配置部分已更新: ${componentId}.${section} v${newVersion.version} (${newContentHash})`
-    )
-
     // 🆕 持久化到 localStorage
     this.saveToStorage()
 
@@ -284,7 +260,6 @@ export class ConfigurationStateManager {
    */
   initializeConfiguration(componentId: string): void {
     if (this.configStates.has(componentId)) {
-      console.warn(`[ConfigStateManager] 配置已存在，跳过初始化: ${componentId}`)
       return
     }
 
@@ -323,8 +298,6 @@ export class ConfigurationStateManager {
 
     // 🆕 持久化到 localStorage
     this.saveToStorage()
-
-    console.log(`🆕 [ConfigStateManager] 配置已初始化: ${componentId} v${version.version} (${contentHash})`)
   }
 
   /**
@@ -372,8 +345,6 @@ export class ConfigurationStateManager {
         clearTimeout(timeout)
         this.updateQueue.delete(componentId)
       }
-
-      console.log(`🗑️ [ConfigStateManager] 配置已清理: ${componentId}`)
     }
     return exists
   }
@@ -519,13 +490,8 @@ export class ConfigurationStateManager {
    * 发射配置更新事件
    */
   private async emitConfigurationUpdate(event: ConfigurationUpdateEvent): Promise<void> {
-    console.log(
-      `📡 [ConfigStateManager] 发射配置更新事件: ${event.componentId}.${event.section} v${event.newVersion.version}`
-    )
-
     const listeners = this.eventListeners.get(event.componentId)
     if (!listeners || listeners.size === 0) {
-      console.log(`📡 [ConfigStateManager] 无监听器: ${event.componentId}`)
       return
     }
 
@@ -534,12 +500,10 @@ export class ConfigurationStateManager {
       try {
         await listener(event)
       } catch (error) {
-        console.error(`❌ [ConfigStateManager] 监听器执行失败:`, error)
       }
     })
 
     await Promise.allSettled(promises)
-    console.log(`✅ [ConfigStateManager] 事件处理完成: ${event.componentId}.${event.section}`)
   }
 }
 
@@ -570,4 +534,3 @@ export function useConfigurationState() {
   }
 }
 
-console.log('🚀 [ConfigStateManager] 全新配置状态管理器已加载')

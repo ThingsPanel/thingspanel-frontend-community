@@ -9,7 +9,6 @@
 
 <script setup lang="ts">
 // 简单的测试组件
-console.log('TestMergeComponent 已加载')
 </script>
 
 <style scoped>

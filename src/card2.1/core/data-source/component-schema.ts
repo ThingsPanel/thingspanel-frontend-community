@@ -54,7 +54,6 @@ export class ComponentSchemaManager {
    */
   registerSchema(componentId: string, schema: ComponentDataSchema) {
     this.schemas.set(componentId, schema)
-    console.log(`📋 [ComponentSchemaManager] 注册组件数据需求: ${componentId}`, schema)
   }
 
   /**

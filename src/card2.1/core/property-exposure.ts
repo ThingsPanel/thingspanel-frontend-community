@@ -62,11 +62,6 @@ class PropertyExposureRegistry {
    * 注册组件的属性暴露配置
    */
   register(config: ComponentPropertyExposure) {
-    console.log(`🔌 [PropertyExposure] 注册组件属性: ${config.componentType}`, config)
-    this.registrations.set(config.componentType, {
-      ...config,
-      lastUpdated: new Date()
-    })
   }
 
   /**
@@ -183,13 +178,6 @@ export function createProperty(
  * 核心功能：将 setting.vue 中的配置项自动转换为可绑定属性
  */
 export function autoRegisterFromSettingConfig(settingConfig: ComponentSettingConfig): void {
-  console.log(`🔌 [PropertyExposure] 自动注册设置配置属性: ${settingConfig.componentType}`)
-  console.log(`🔌 [PropertyExposure] settingConfig 详情:`, {
-    componentType: settingConfig.componentType,
-    settingsCount: settingConfig.settings?.length || 0,
-    settings: settingConfig.settings?.map(s => ({ field: s.field, label: s.label, type: s.type }))
-  })
-
   // 将每个 setting 转换为可监听属性
   const listenableProperties: ListenableProperty[] = settingConfig.settings.map(setting => {
     // 推断属性数据类型
@@ -220,25 +208,7 @@ export function autoRegisterFromSettingConfig(settingConfig: ComponentSettingCon
     version: '1.0.0'
   })
 
-  console.log(
-    `✅ [PropertyExposure] 成功注册 ${listenableProperties.length} 个属性:`,
-    listenableProperties.map(prop => `${prop.name} (${prop.type})`)
-  )
-  
-  // 验证注册表状态
-  console.log(`🔍 [PropertyExposure] 当前注册表状态:`, {
-    totalComponents: Array.from(propertyExposureRegistry.registrations.keys()),
-    componentDetails: Object.fromEntries(
-      Array.from(propertyExposureRegistry.registrations.entries()).map(([key, config]) => [
-        key, 
-        { 
-          name: config.componentName, 
-          propertiesCount: config.listenableProperties.length,
-          properties: config.listenableProperties.map(p => p.name)
-        }
-      ])
-    )
-  })
+
 }
 
 /**

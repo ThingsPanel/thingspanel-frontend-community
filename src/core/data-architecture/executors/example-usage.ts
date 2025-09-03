@@ -215,15 +215,9 @@ export class ExecutorChainUsageExample {
    * 运行JSON数据处理示例
    */
   async runJsonExample(): Promise<ExecutionResult> {
-    console.log('🔄 执行JSON数据处理示例...')
 
     const config = this.configGenerator.generateJsonExample()
     const result = await this.executorChain.executeDataProcessingChain(config, true)
-
-    console.log('✅ JSON示例完成')
-    console.log('组件数据:', JSON.stringify(result.componentData, null, 2))
-    console.log('执行时间:', result.executionTime + 'ms')
-
     return result
   }
 
@@ -231,15 +225,9 @@ export class ExecutorChainUsageExample {
    * 运行HTTP数据处理示例
    */
   async runHttpExample(): Promise<ExecutionResult> {
-    console.log('🔄 执行HTTP数据处理示例...')
 
     const config = this.configGenerator.generateHttpExample()
     const result = await this.executorChain.executeDataProcessingChain(config, true)
-
-    console.log('✅ HTTP示例完成')
-    console.log('组件数据:', JSON.stringify(result.componentData, null, 2))
-    console.log('执行时间:', result.executionTime + 'ms')
-
     return result
   }
 
@@ -247,14 +235,9 @@ export class ExecutorChainUsageExample {
    * 运行混合数据源处理示例
    */
   async runMixedExample(): Promise<ExecutionResult> {
-    console.log('🔄 执行混合数据源处理示例...')
 
     const config = this.configGenerator.generateMixedExample()
     const result = await this.executorChain.executeDataProcessingChain(config, true)
-
-    console.log('✅ 混合示例完成')
-    console.log('组件数据:', JSON.stringify(result.componentData, null, 2))
-    console.log('执行时间:', result.executionTime + 'ms')
 
     return result
   }
@@ -263,27 +246,19 @@ export class ExecutorChainUsageExample {
    * 运行所有示例
    */
   async runAllExamples(): Promise<void> {
-    console.log('=== 多层级执行器链使用示例 ===\n')
 
     try {
       await this.runJsonExample()
-      console.log('')
 
       await this.runHttpExample()
-      console.log('')
 
       await this.runMixedExample()
-      console.log('')
 
       // 显示执行器链统计信息
       const stats = this.executorChain.getChainStatistics()
-      console.log('📊 执行器链统计信息:')
-      console.log(JSON.stringify(stats, null, 2))
     } catch (error) {
-      console.error('❌ 示例执行失败:', error)
     }
 
-    console.log('\n=== 示例执行完成 ===')
   }
 }
 

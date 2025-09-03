@@ -39,7 +39,6 @@ export class ReactiveDataManager {
    */
   registerDataSource(dataSource: DataSource) {
     this.dataSources.set(dataSource.getId(), dataSource)
-    console.log(`📡 [ReactiveDataManager] 注册数据源: ${dataSource.getId()}`)
   }
 
   /**
@@ -59,7 +58,6 @@ export class ReactiveDataManager {
     })
 
     this.dataSources.delete(dataSourceId)
-    console.log(`🗑️ [ReactiveDataManager] 移除数据源: ${dataSourceId}`)
   }
 
   /**
@@ -83,8 +81,6 @@ export class ReactiveDataManager {
 
     this.subscriptions.set(subscriptionId, subscription)
 
-    console.log(`📺 [ReactiveDataManager] 创建订阅: ${subscriptionId}`, config)
-
     // 如果配置为自动启动，立即开始
     if (config.autoStart !== false) {
       this.startSubscription(subscriptionId)
@@ -102,8 +98,6 @@ export class ReactiveDataManager {
 
     this.stopSubscription(subscriptionId)
     this.subscriptions.delete(subscriptionId)
-
-    console.log(`🚫 [ReactiveDataManager] 取消订阅: ${subscriptionId}`)
   }
 
   /**
@@ -115,12 +109,10 @@ export class ReactiveDataManager {
 
     const dataSource = this.dataSources.get(subscription.dataSourceId)
     if (!dataSource) {
-      console.warn(`⚠️ [ReactiveDataManager] 数据源不存在: ${subscription.dataSourceId}`)
       return
     }
 
     subscription.isActive = true
-    console.log(`▶️ [ReactiveDataManager] 启动订阅: ${subscriptionId}`)
 
     switch (subscription.config.updateStrategy) {
       case 'static':
@@ -135,12 +127,10 @@ export class ReactiveDataManager {
 
       case 'realtime':
         // 实时更新：WebSocket等（暂未实现）
-        console.warn(`⚠️ [ReactiveDataManager] 实时更新暂未实现: ${subscriptionId}`)
         this.fetchDataOnce(subscriptionId)
         break
 
       default:
-        console.warn(`⚠️ [ReactiveDataManager] 不支持的更新策略: ${subscription.config.updateStrategy}`)
     }
   }
 
@@ -159,8 +149,6 @@ export class ReactiveDataManager {
       clearInterval(timer)
       this.pollingTimers.delete(subscriptionId)
     }
-
-    console.log(`⏸️ [ReactiveDataManager] 停止订阅: ${subscriptionId}`)
   }
 
   /**
@@ -174,23 +162,16 @@ export class ReactiveDataManager {
     if (!dataSource) return
 
     try {
-      console.log(`🔄 [ReactiveDataManager] 获取数据: ${subscriptionId}`)
-
       const data = await dataSource.getValue()
       subscription.lastUpdate = new Date()
       subscription.errorCount = 0
 
       // 触发回调
       subscription.callback(data)
-
-      console.log(`✅ [ReactiveDataManager] 数据获取成功: ${subscriptionId}`, data)
     } catch (error) {
       subscription.errorCount++
-      console.error(`❌ [ReactiveDataManager] 数据获取失败: ${subscriptionId}`, error)
-
       // 如果错误次数过多，暂停订阅
       if (subscription.errorCount >= 3) {
-        console.warn(`⚠️ [ReactiveDataManager] 错误次数过多，暂停订阅: ${subscriptionId}`)
         this.stopSubscription(subscriptionId)
       }
 
@@ -219,8 +200,6 @@ export class ReactiveDataManager {
     }, interval)
 
     this.pollingTimers.set(subscriptionId, timer)
-
-    console.log(`🔄 [ReactiveDataManager] 开始轮询: ${subscriptionId}, 间隔: ${interval}ms`)
   }
 
   /**
@@ -244,8 +223,6 @@ export class ReactiveDataManager {
     if (wasActive) {
       this.startSubscription(subscriptionId)
     }
-
-    console.log(`🔄 [ReactiveDataManager] 更新订阅配置: ${subscriptionId}`, newConfig)
   }
 
   /**
@@ -279,7 +256,6 @@ export class ReactiveDataManager {
     for (const subscriptionId of this.subscriptions.keys()) {
       this.stopSubscription(subscriptionId)
     }
-    console.log(`⏸️ [ReactiveDataManager] 暂停所有订阅`)
   }
 
   /**
@@ -289,7 +265,6 @@ export class ReactiveDataManager {
     for (const subscriptionId of this.subscriptions.keys()) {
       this.startSubscription(subscriptionId)
     }
-    console.log(`▶️ [ReactiveDataManager] 恢复所有订阅`)
   }
 
   /**
@@ -303,8 +278,6 @@ export class ReactiveDataManager {
 
     // 清理数据源
     this.dataSources.clear()
-
-    console.log(`🧹 [ReactiveDataManager] 清理完成`)
   }
 }
 

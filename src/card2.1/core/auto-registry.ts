@@ -35,13 +35,8 @@ export class AutoRegistry {
    * @param componentModules 组件模块映射
    */
   async autoRegister(componentModules: Record<string, any>) {
-    console.log('🔄 [AutoRegistry] 开始自动注册组件...')
-
     const registeredComponents: ComponentDefinition[] = []
     const userAuthority = getUserAuthorityFromStorage()
-
-    console.log(`🔐 [AutoRegistry] 当前用户权限: ${userAuthority}`)
-
     for (const [componentId, module] of Object.entries(componentModules)) {
       try {
         // 获取默认导出（组件定义）
@@ -61,27 +56,15 @@ export class AutoRegistry {
               this.registry.register(componentId, definition)
               registeredComponents.push(definition)
               this.allComponents.push(definition)
-
-              console.log(
-                `✅ [AutoRegistry] 注册组件: ${componentId} (${definition.name}) - 权限: ${definition.permission || '不限'}`
-              )
             }
           } else {
             // 记录被权限过滤的组件
             this.allComponents.push(definition)
-            console.log(
-              `🚫 [AutoRegistry] 权限不足，跳过组件: ${componentId} (${definition.name}) - 需要权限: ${definition.permission || '不限'}`
-            )
           }
-        } else {
-          console.warn(`⚠️ [AutoRegistry] 跳过无效组件: ${componentId}`)
-        }
+        } 
       } catch (error) {
-        console.error(`❌ [AutoRegistry] 注册组件失败: ${componentId}`, error)
       }
     }
-
-    console.log(`🎉 [AutoRegistry] 自动注册完成，共注册 ${registeredComponents.length} 个组件（权限过滤后）`)
     return registeredComponents
   }
 
@@ -91,20 +74,8 @@ export class AutoRegistry {
   private checkComponentPermission(definition: ComponentDefinition, userAuthority: string): boolean {
     const permission = definition.permission || '不限'
 
-    // 特别记录 universal-data-viz 的权限检查
-    if (definition.type === 'universal-data-viz') {
-      console.log(`🎯 [AutoRegistry] universal-data-viz 权限检查:`, {
-        组件权限: permission,
-        用户权限: userAuthority,
-        组件类型: definition.type
-      })
-    }
-
     // 如果组件权限是"不限"，则所有用户都可以访问
     if (permission === '不限') {
-      if (definition.type === 'universal-data-viz') {
-        console.log(`✅ [AutoRegistry] universal-data-viz 权限检查通过: 组件权限为"不限"`)
-      }
       return true
     }
 
@@ -123,17 +94,7 @@ export class AutoRegistry {
 
     const componentLevel = permissionLevels[permission]
     const userLevel = permissionLevels[userAuthority as keyof typeof permissionLevels] || 0
-
     const hasPermission = userLevel >= componentLevel
-
-    if (definition.type === 'universal-data-viz') {
-      console.log(`🎯 [AutoRegistry] universal-data-viz 权限等级检查:`, {
-        组件等级: componentLevel,
-        用户等级: userLevel,
-        检查结果: hasPermission
-      })
-    }
-
     return hasPermission
   }
 
@@ -145,23 +106,9 @@ export class AutoRegistry {
     const isRegistered = definition.isRegistered !== false // 只有明确设置为false才不注册
 
     // 特别记录 universal-data-viz 的注册检查
-    if (definition.type === 'universal-data-viz') {
-      console.log(`🎯 [AutoRegistry] universal-data-viz 注册检查:`, {
-        isRegistered: definition.isRegistered,
-        计算结果: isRegistered,
-        组件名称: definition.name
-      })
-    }
-
     if (!isRegistered) {
-      console.log(`🚫 [AutoRegistry] 组件设置为不注册: ${definition.type} (${definition.name})`)
       return false
     }
-
-    if (definition.type === 'universal-data-viz') {
-      console.log(`✅ [AutoRegistry] universal-data-viz 注册检查通过`)
-    }
-
     return true
   }
 
@@ -241,14 +188,6 @@ export class AutoRegistry {
    */
   getComponentTree(): ComponentTree {
     const components = this.registry.getAll()
-
-    console.log('🔍 [AutoRegistry] getComponentTree() 被调用:', {
-      componentsCount: components.length,
-      componentTypes: components.map(c => c.type),
-      categoryTreeLength: this.categoryTree.length,
-      categoryTree: this.categoryTree
-    })
-
     return {
       categories: this.categoryTree,
       components,
@@ -294,8 +233,6 @@ export class AutoRegistry {
    */
   reapplyPermissionFilter(): void {
     const userAuthority = getUserAuthorityFromStorage()
-    console.log(`🔄 [AutoRegistry] 重新应用权限过滤，用户权限: ${userAuthority}`)
-
     // 清空注册表
     this.registry = new (this.registry.constructor as any)()
 

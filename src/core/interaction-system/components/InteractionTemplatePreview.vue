@@ -430,7 +430,6 @@ const exportTemplate = () => {
     message.success(t('interaction.messages.templateExported'))
   } catch (error) {
     message.error(t('interaction.messages.exportFailed'))
-    console.error('模板导出错误:', error)
   }
 }
 

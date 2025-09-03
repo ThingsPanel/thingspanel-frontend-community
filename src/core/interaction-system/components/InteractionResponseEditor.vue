@@ -241,7 +241,6 @@ const { t } = useI18n()
 // 🔥 注入Visual Editor状态获取组件列表
 const visualEditorState = inject<{ getAvailableComponents: () => any[] }>('visualEditorState', {
   getAvailableComponents: () => {
-    console.log('[INTERACTION-DEBUG] [ResponseEditor] Visual Editor状态未注入，返回空组件列表')
     return []
   }
 })
@@ -294,11 +293,6 @@ const navigationTargetOptions = computed(() => [
 const availableComponentOptions = computed(() => {
   const components = visualEditorState.getAvailableComponents()
 
-  console.log('[INTERACTION-DEBUG] [ResponseEditor] 计算可用组件选项:', {
-    componentCount: components.length,
-    components: components
-  })
-
   return components.map(comp => ({
     label: comp.label || `${comp.name} (${comp.id.slice(0, 8)}...)`,
     value: comp.id,
@@ -309,7 +303,6 @@ const availableComponentOptions = computed(() => {
 // 🔥 根据目标组件获取可更新属性选项
 const targetComponentPropertyOptions = computed(() => {
   if (!targetComponentId.value) {
-    console.log('[INTERACTION-DEBUG] [ResponseEditor] 未选择目标组件')
     return []
   }
 
@@ -318,20 +311,14 @@ const targetComponentPropertyOptions = computed(() => {
   const targetComponent = components.find(comp => comp.id === targetComponentId.value)
 
   if (!targetComponent) {
-    console.log('[INTERACTION-DEBUG] [ResponseEditor] 未找到目标组件:', targetComponentId.value)
     return []
   }
 
-  console.log('[INTERACTION-DEBUG] [ResponseEditor] 目标组件:', {
-    id: targetComponent.id,
-    type: targetComponent.type
-  })
 
   // 获取该组件类型的可监听属性（作为可更新属性使用）
   const componentExposure = propertyExposureRegistry.getComponentExposure(targetComponent.type)
 
   if (!componentExposure || !componentExposure.listenableProperties) {
-    console.log('[INTERACTION-DEBUG] [ResponseEditor] 目标组件无可更新属性')
     return []
   }
 
@@ -365,8 +352,6 @@ const targetComponentPropertyOptions = computed(() => {
   })
 
   const options = groupedOptions.length > 0 ? groupedOptions : []
-
-  console.log('[INTERACTION-DEBUG] [ResponseEditor] 目标组件可更新属性:', options)
   return options
 })
 
@@ -460,10 +445,7 @@ const initializeComplexValues = () => {
 
 // 事件处理函数
 const handleActionChange = () => {
-  console.log('[INTERACTION-DEBUG] ResponseEditor动作类型变化:', {
-    oldAction: localResponse.value.action,
-    newAction: localResponse.value.action
-  })
+
 
   // 🔥 2个核心动作的默认值
   const defaultValues: Record<string, any> = {
@@ -473,10 +455,6 @@ const handleActionChange = () => {
 
   localResponse.value.value = defaultValues[localResponse.value.action]
 
-  console.log('[INTERACTION-DEBUG] 应用默认值:', {
-    action: localResponse.value.action,
-    defaultValue: localResponse.value.value
-  })
 
   // 🔥 简化版：重新初始化复合值
   initializeComplexValues()
@@ -513,10 +491,7 @@ const handleWindowFeaturesChange = () => {
 
 // 🔥 跨组件数据更新相关处理函数
 const handleTargetComponentChange = () => {
-  console.log('[INTERACTION-DEBUG] [ResponseEditor] 目标组件变化:', {
-    oldComponent: localResponse.value.targetComponentId,
-    newComponent: targetComponentId.value
-  })
+
 
   localResponse.value.targetComponentId = targetComponentId.value
 
@@ -591,7 +566,6 @@ const loadMenuOptions = async () => {
       menuOptions.value = flattenRoutes(result.data.list)
     }
   } catch (error) {
-    console.error('加载菜单失败:', error)
     message.error(t('interaction.messages.menuLoadFailed'))
   } finally {
     menuLoading.value = false
@@ -706,17 +680,12 @@ const previewEffect = () => {
     message.success(t('interaction.messages.previewEffectApplied'))
   } catch (error) {
     message.error(t('interaction.messages.previewFailed'))
-    console.error('预览错误:', error)
   }
 }
 
 // 发出更新事件
 const emitUpdate = () => {
-  console.log('[INTERACTION-DEBUG] ResponseEditor发出更新事件:', {
-    action: localResponse.value.action,
-    value: localResponse.value.value,
-    fullResponse: localResponse.value
-  })
+
 
   emit('update:modelValue', { ...localResponse.value })
   emit('update', { ...localResponse.value })

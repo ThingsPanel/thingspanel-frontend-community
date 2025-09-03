@@ -97,7 +97,6 @@ export abstract class BaseRenderer {
 
   // 状态变化钩子
   protected onStateChange(oldState: RendererState, newState: RendererState) {
-    console.log(`[${this.constructor.name}] State changed: ${oldState} -> ${newState}`)
   }
 
   // 事件监听

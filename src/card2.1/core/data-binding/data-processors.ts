@@ -26,8 +26,6 @@ export class ScriptProcessor implements DataProcessor {
 
   async process(input: any): Promise<any> {
     try {
-      console.log(`🔧 [ScriptProcessor] 执行脚本处理: ${this.id}`)
-
       // 创建安全的执行环境
       const context = {
         data: input,
@@ -61,11 +59,8 @@ export class ScriptProcessor implements DataProcessor {
         Promise.resolve(processFunction(context)),
         new Promise((_, reject) => setTimeout(() => reject(new Error('脚本执行超时')), this.config.timeout))
       ])
-
-      console.log(`✅ [ScriptProcessor] 脚本处理完成: ${this.id}`)
       return result
     } catch (error) {
-      console.error(`❌ [ScriptProcessor] 脚本处理失败: ${this.id}`, error)
       throw error
     }
   }
@@ -94,8 +89,6 @@ export class FormatProcessor implements DataProcessor {
 
   async process(input: any): Promise<any> {
     try {
-      console.log(`🎨 [FormatProcessor] 执行格式化处理: ${this.id}`)
-
       if (input === null || input === undefined) {
         return input
       }
@@ -124,7 +117,6 @@ export class FormatProcessor implements DataProcessor {
           return input
       }
     } catch (error) {
-      console.error(`❌ [FormatProcessor] 格式化处理失败: ${this.id}`, error)
       return input // 格式化失败时返回原值
     }
   }
@@ -153,8 +145,6 @@ export class FilterProcessor implements DataProcessor {
 
   async process(input: any): Promise<any> {
     try {
-      console.log(`🔍 [FilterProcessor] 执行过滤处理: ${this.id}`)
-
       if (!Array.isArray(input)) {
         return input
       }
@@ -178,7 +168,6 @@ export class FilterProcessor implements DataProcessor {
           return input
       }
     } catch (error) {
-      console.error(`❌ [FilterProcessor] 过滤处理失败: ${this.id}`, error)
       return input
     }
   }
@@ -216,8 +205,6 @@ export class TransformProcessor implements DataProcessor {
 
   async process(input: any): Promise<any> {
     try {
-      console.log(`🔄 [TransformProcessor] 执行转换处理: ${this.id}`)
-
       switch (this.config.transformType) {
         case 'flatten':
           return this.flatten(input)
@@ -239,7 +226,6 @@ export class TransformProcessor implements DataProcessor {
           return input
       }
     } catch (error) {
-      console.error(`❌ [TransformProcessor] 转换处理失败: ${this.id}`, error)
       return input
     }
   }
@@ -312,10 +298,6 @@ export class PathDataMapper implements DataMapper {
   }
 
   map(sourceData: any): Record<string, any> {
-    console.log('🗺️ [PathDataMapper] 执行数据映射')
-    console.log('📄 映射规则:', this.rules)
-    console.log('📊 源数据:', sourceData)
-
     const result: Record<string, any> = {}
 
     this.rules.forEach(rule => {
@@ -338,14 +320,10 @@ export class PathDataMapper implements DataMapper {
 
         result[rule.targetField] = value
 
-        console.log(`✅ 映射字段 ${rule.targetField}: ${rule.sourcePath} → ${JSON.stringify(value)}`)
       } catch (error) {
-        console.warn(`⚠️ 映射字段失败 ${rule.targetField}:`, error)
         result[rule.targetField] = rule.defaultValue
       }
     })
-
-    console.log('🎯 [PathDataMapper] 映射结果:', result)
     return result
   }
 
@@ -384,7 +362,6 @@ export class PathDataMapper implements DataMapper {
 
       return current
     } catch (error) {
-      console.error(`路径解析失败: ${path}`, error)
       return undefined
     }
   }
@@ -451,7 +428,6 @@ export class PathDataMapper implements DataMapper {
     try {
       return this.map(sourceData)
     } catch (error) {
-      console.error('映射预览失败:', error)
       return {}
     }
   }

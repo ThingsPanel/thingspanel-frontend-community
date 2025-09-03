@@ -107,24 +107,11 @@ const statusType = computed(() => {
 const handleConfigChange = () => {
   // 🔥 防止内部更新时触发事件
   if (isInternalUpdate.value) {
-    console.log(`⏸️ [ComponentPollingConfig] 跳过内部更新触发的配置变化`)
     return
   }
 
-  console.log(`🔄 [ComponentPollingConfig] 配置变化触发:`, {
-    componentId: props.componentId,
-    pollingConfig: { ...pollingConfig },
-    enabled: pollingConfig.enabled,
-    interval: pollingConfig.interval,
-    immediate: pollingConfig.immediate
-  })
-
   // 发射配置变化事件，由父组件处理保存
   emit('configChange', { ...pollingConfig })
-  console.log(`💾 [ComponentPollingConfig] 组件轮询配置已变化并发射事件:`, {
-    componentId: props.componentId,
-    config: { ...pollingConfig }
-  })
 }
 
 /**
@@ -141,8 +128,6 @@ watch(
   () => props.initialConfig,
   newConfig => {
     if (newConfig) {
-      console.log('🔄 [ComponentPollingConfig] 恢复组件轮询配置:', newConfig)
-
       // 🔥 设置内部更新标志，防止触发配置变化事件
       isInternalUpdate.value = true
 
@@ -164,13 +149,6 @@ watch(
  * 组件挂载时初始化调试
  */
 onMounted(() => {
-  console.log(`🚀 [ComponentPollingConfig] 组件轮询配置已挂载:`, {
-    componentId: props.componentId,
-    componentName: props.componentName,
-    previewMode: props.previewMode,
-    pollingEnabled: pollingConfig.enabled,
-    interval: pollingConfig.interval
-  })
 })
 </script>
 

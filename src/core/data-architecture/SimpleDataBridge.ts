@@ -108,23 +108,17 @@ export class SimpleDataBridge {
     const startTime = Date.now()
 
     try {
-      console.log(`🚀 [SimpleDataBridge] 开始执行组件数据获取: ${requirement.componentId}`)
-
       // 🆕 检查缓存数据，但需要验证配置是否已更新
       const cachedData = this.warehouse.getComponentData(requirement.componentId)
       if (cachedData) {
         // 🔥 修复：检查是否有数据项配置，如果没有则不使用缓存
         const hasDataItems = this.hasValidDataItems(requirement)
-        console.log(`🔍 [SimpleDataBridge] 缓存检查: ${requirement.componentId}, hasDataItems: ${hasDataItems}`)
-        console.log(`🔍 [SimpleDataBridge] 传入的requirement结构:`, JSON.stringify(requirement, null, 2))
 
         if (hasDataItems) {
-          console.log(`🎯 [SimpleDataBridge] 使用缓存数据: ${requirement.componentId}`)
 
           // 🔥 修复：如果缓存数据被 'complete' 包装，需要解包
           let finalData = cachedData
           if (cachedData && typeof cachedData === 'object' && 'complete' in cachedData) {
-            console.log(`🔧 [SimpleDataBridge] 检测到嵌套格式，解包 'complete' 数据`)
             finalData = cachedData.complete
           }
 
@@ -135,7 +129,6 @@ export class SimpleDataBridge {
             timestamp: Date.now()
           }
         } else {
-          console.log(`🧹 [SimpleDataBridge] 配置已清空，清除缓存重新执行: ${requirement.componentId}`)
           this.warehouse.clearComponentCache(requirement.componentId)
         }
       }
@@ -144,14 +137,10 @@ export class SimpleDataBridge {
       let dataSourceConfig: DataSourceConfiguration
 
       if (this.isDataSourceConfiguration(requirement)) {
-        console.log(`🔄 [SimpleDataBridge] 直接使用 DataSourceConfiguration 格式`)
         dataSourceConfig = requirement as any
       } else {
-        console.log(`🔄 [SimpleDataBridge] 转换为 DataSourceConfiguration 格式`)
         dataSourceConfig = this.convertToDataSourceConfiguration(requirement)
       }
-
-      console.log(`🔄 [SimpleDataBridge] 委托给多层执行器链执行:`, dataSourceConfig)
 
       // 🔥 使用多层执行器链执行完整的数据处理管道
       const executionResult: ExecutionResult = await this.executorChain.executeDataProcessingChain(
@@ -160,7 +149,6 @@ export class SimpleDataBridge {
       )
 
       if (executionResult.success && executionResult.componentData) {
-        console.log(`✅ [SimpleDataBridge] 多层执行器链执行成功:`, executionResult.componentData)
 
         // 🆕 存储到数据仓库
         this.warehouse.storeComponentData(
@@ -179,7 +167,6 @@ export class SimpleDataBridge {
           timestamp: Date.now()
         }
       } else {
-        console.error(`❌ [SimpleDataBridge] 多层执行器链执行失败:`, executionResult.error)
         return {
           success: false,
           error: executionResult.error || '执行失败',
@@ -188,7 +175,6 @@ export class SimpleDataBridge {
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error)
-      console.error(`❌ [SimpleDataBridge] 组件执行失败: ${requirement.componentId} - ${errorMsg}`)
 
       return {
         success: false,
@@ -224,8 +210,6 @@ export class SimpleDataBridge {
    * @returns DataSourceConfiguration 格式的配置
    */
   private convertToDataSourceConfiguration(requirement: ComponentDataRequirement): DataSourceConfiguration {
-    console.log(`🔄 [SimpleDataBridge] 转换配置格式到 DataSourceConfiguration:`, requirement)
-
     const dataSources = requirement.dataSources.map(dataSource => ({
       sourceId: dataSource.id,
       dataItems: [
@@ -277,7 +261,6 @@ export class SimpleDataBridge {
 
       return hasDataSources || false
     } catch (error) {
-      console.warn(`⚠️ [SimpleDataBridge] 检查数据项失败:`, error)
       return true // 发生错误时保守地返回 true，避免误删缓存
     }
   }
@@ -288,13 +271,11 @@ export class SimpleDataBridge {
    * @param data 数据
    */
   private notifyDataUpdate(componentId: string, data: Record<string, any>): void {
-    console.log(`📡 [SimpleDataBridge] 通知数据更新: ${componentId}`)
 
     this.callbacks.forEach(callback => {
       try {
         callback(componentId, data)
       } catch (error) {
-        console.error(`❌ [SimpleDataBridge] 数据更新回调执行失败:`, error)
       }
     })
   }
@@ -306,11 +287,9 @@ export class SimpleDataBridge {
    */
   onDataUpdate(callback: DataUpdateCallback): () => void {
     this.callbacks.add(callback)
-    console.log(`📝 [SimpleDataBridge] 注册数据更新回调，当前回调数量: ${this.callbacks.size}`)
 
     return () => {
       this.callbacks.delete(callback)
-      console.log(`🗑️ [SimpleDataBridge] 移除数据更新回调，当前回调数量: ${this.callbacks.size}`)
     }
   }
 
@@ -384,7 +363,6 @@ export class SimpleDataBridge {
   destroy(): void {
     this.callbacks.clear()
     this.warehouse.destroy()
-    console.log('🧹 [SimpleDataBridge] 数据桥接器已销毁')
   }
 }
 
@@ -404,10 +382,3 @@ export function createSimpleDataBridge(): SimpleDataBridge {
  * 开发环境自动验证
  * 在控制台输出 Phase 2 架构状态信息
  */
-if (import.meta.env.DEV) {
-  setTimeout(() => {
-    console.log('🚀 [Phase2] SimpleDataBridge 已加载')
-    console.log('📊 [Phase2] 架构统计:', simpleDataBridge.getStats())
-    console.log('💡 [Phase2] 验证方法: 访问菜单 → 测试 → 编辑器集成测试')
-  }, 2000)
-}

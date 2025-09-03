@@ -91,24 +91,17 @@ const showBody = computed(() => {
  * 更新配置数据
  */
 const updateConfig = (field: keyof HttpConfig, value: any) => {
-  console.log(`🔄 [HttpConfigStep1] 更新HTTP配置 ${field}:`, JSON.stringify(value))
-  console.log(`🔄 [HttpConfigStep1] 当前modelValue:`, props.modelValue)
   const newConfig = {
     ...props.modelValue,
     [field]: value
   }
-  console.log('🔄 [HttpConfigStep1] 新配置对象:', newConfig)
-  console.log('🔄 [HttpConfigStep1] 准备发射update:modelValue事件')
   emit('update:modelValue', newConfig)
-  console.log('🔄 [HttpConfigStep1] update:modelValue事件已发射')
 }
 
 /**
  * 地址类型变化处理
  */
 const onAddressTypeChange = (type: 'internal' | 'external') => {
-  console.log('🔄 [HttpConfigStep1] 地址类型变化:', addressType.value, '->', type)
-
   addressType.value = type
 
   if (type === 'external') {
@@ -129,14 +122,11 @@ const onAddressTypeChange = (type: 'internal' | 'external') => {
  * 内部地址选择处理
  */
 const onInternalAddressSelect = (value: string, option: any) => {
-  console.log('📊 选中内部地址:', value, option)
   selectedInternalAddress.value = value
 
   // 获取API详情信息
   const apiInfo = getApiByValue(value)
   if (apiInfo) {
-    console.log('📊 找到API信息:', apiInfo)
-
     // 同时设置请求方法
     updateConfig('method', apiInfo.method)
 
@@ -148,7 +138,6 @@ const onInternalAddressSelect = (value: string, option: any) => {
 
     // 🔥 修复：选择内部地址时不自动填充参数，只记录是否有参数
     if (apiInfo.hasPathParams && apiInfo.pathParamNames) {
-      console.log('📊 检测到路径参数，但不自动填充:', apiInfo.pathParamNames)
       // 只清空现有参数，不自动生成新的
       urlParams.value = []
       enableParams.value = false
@@ -158,7 +147,6 @@ const onInternalAddressSelect = (value: string, option: any) => {
       enableParams.value = false
     }
   } else {
-    console.warn('⚠️ 未找到API信息，直接使用选择的值')
     // 如果没有找到API信息，直接使用选择的值
     updateConfig('url', value)
   }
@@ -183,24 +171,20 @@ const onEnableParamsChange = (enabled: boolean) => {
  * 传参配置更新
  */
 const onUrlParamsUpdate = (params: EnhancedParameter[]) => {
-  console.log('📊 参数配置更新:', params)
   urlParams.value = params
 
   // 实时更新最终URL到HTTP配置中
   const apiInfo = selectedApiInfo.value
   if (apiInfo && enableParams.value) {
     let url = apiInfo.url
-    console.log('📊 原始URL:', url)
 
     // 替换路径参数
     params.forEach(param => {
       if (param.enabled && param.key && param.value) {
-        console.log(`📊 替换参数 {${param.key}} -> ${param.value}`)
         url = url.replace(`{${param.key}}`, param.value)
       }
     })
 
-    console.log('📊 最终URL:', url)
     updateConfig('url', url)
   }
 }
@@ -209,8 +193,6 @@ const onUrlParamsUpdate = (params: EnhancedParameter[]) => {
  * URL变化时触发事件
  */
 const onUrlChange = (value: string) => {
-  console.log('🔄 [HttpConfigStep1] URL变化:', value)
-  console.log('🔄 [HttpConfigStep1] 当前地址类型:', addressType.value)
   updateConfig('url', value)
   emit('urlChange')
 }

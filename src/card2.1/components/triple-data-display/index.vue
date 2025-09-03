@@ -120,7 +120,6 @@ const currentConfig = computed<TripleDataDisplayConfig>(() => {
     )
 
     if (hasExpectedFlatKeys) {
-      console.log('🔧 [triple-data-display] 检测到扁平化配置，转换为嵌套格式:', props.config)
       // 扁平化配置转换为嵌套格式
       const flatConfig = props.config as any
       return {
@@ -199,15 +198,8 @@ const formatNumber = (value: any, dataSourceIndex: number = 0): string => {
   // 🔥 修复：处理对象类型的数据源
   let actualValue = value
   if (typeof value === 'object' && value !== null) {
-    console.log(`🔧 [triple-data-display] 数据源${dataSourceIndex + 1}检测到对象数据，尝试提取值:`, value)
-
     // 🔥 新增：处理 Card2Wrapper 传递的嵌套数据结构 {type: 'json', data: {...}}
     if (value.type && value.data && typeof value.data === 'object') {
-      console.log(
-        `🔧 [triple-data-display] 数据源${dataSourceIndex + 1}检测到Card2Wrapper数据结构，从data字段提取:`,
-        value.data
-      )
-
       const dataObj = value.data
       const numericEntries = Object.entries(dataObj).filter(
         ([key, val]) => typeof val === 'number' || (typeof val === 'string' && !isNaN(parseFloat(val as string)))
@@ -217,23 +209,19 @@ const formatNumber = (value: any, dataSourceIndex: number = 0): string => {
       if (numericEntries.length > dataSourceIndex) {
         const [key, val] = numericEntries[dataSourceIndex]
         actualValue = typeof val === 'number' ? val : parseFloat(val as string)
-        console.log(`✅ [triple-data-display] 数据源${dataSourceIndex + 1}从data.${key}提取数值:`, actualValue)
       } else if (numericEntries.length > 0) {
         // 如果没有足够的数字字段，使用第一个
         const [key, val] = numericEntries[0]
         actualValue = typeof val === 'number' ? val : parseFloat(val as string)
-        console.log(`✅ [triple-data-display] 数据源${dataSourceIndex + 1}使用第一个数值字段data.${key}:`, actualValue)
       } else {
         // 如果没有数字字段，使用所有字段中的某个
         const allEntries = Object.entries(dataObj)
         if (allEntries.length > dataSourceIndex) {
           const [key, val] = allEntries[dataSourceIndex]
           actualValue = String(val)
-          console.log(`✅ [triple-data-display] 数据源${dataSourceIndex + 1}使用data.${key}字符串值:`, actualValue)
         } else if (allEntries.length > 0) {
           const [key, val] = allEntries[0]
           actualValue = String(val)
-          console.log(`✅ [triple-data-display] 数据源${dataSourceIndex + 1}使用第一个字段data.${key}:`, actualValue)
         }
       }
     }
@@ -247,17 +235,12 @@ const formatNumber = (value: any, dataSourceIndex: number = 0): string => {
     } else if (typeof value.number === 'number' || typeof value.number === 'string') {
       actualValue = value.number
     } else {
-      // 如果是纯对象，显示友好的提示
-      console.warn(`⚠️ [triple-data-display] 数据源${dataSourceIndex + 1}无法从对象中提取数值:`, value)
       return '[需要配置数据字段]'
     }
-
-    console.log(`✅ [triple-data-display] 数据源${dataSourceIndex + 1}最终提取的数值:`, actualValue)
   }
 
   const numValue = typeof actualValue === 'number' ? actualValue : parseFloat(String(actualValue))
   if (isNaN(numValue)) {
-    // 如果不是数字，直接显示字符串值
     return String(actualValue)
   }
 
@@ -283,7 +266,6 @@ const registeredEvents = ref<Set<string>>(new Set())
  * 点击事件处理
  */
 const handleClick = () => {
-  console.log('🖱️ [triple-data-display] 组件点击')
 
   // 发送点击事件
   emit('click', {
@@ -301,7 +283,6 @@ const handleClick = () => {
  * 监听属性更新事件（用于跨组件属性绑定）
  */
 const handlePropertyUpdate = (data: any) => {
-  console.log('📡 [triple-data-display] 收到属性更新:', data)
 
   if (data && typeof data === 'object') {
     // 更新配置并触发事件
@@ -314,13 +295,6 @@ const handlePropertyUpdate = (data: any) => {
  * 组件挂载时的初始化
  */
 onMounted(() => {
-  console.log('🚀 [triple-data-display] 组件已挂载:', {
-    componentId: props.componentId,
-    config: currentConfig.value,
-    dataSource1: props.dataSource1,
-    dataSource2: props.dataSource2,
-    dataSource3: props.dataSource3
-  })
 
   // 注册属性更新监听器（用于跨组件属性绑定）
   if (props.componentId) {
@@ -331,9 +305,7 @@ onMounted(() => {
   if (props.interactionConfigs && props.interactionConfigs.length > 0) {
     try {
       isInteractionEnabled.value = true
-      console.log('🔗 [triple-data-display] 交互系统已启用:', props.interactionConfigs.length)
     } catch (error) {
-      console.warn('⚠️ [triple-data-display] 交互系统初始化失败:', error)
     }
   }
 })
@@ -346,9 +318,7 @@ onUnmounted(() => {
   if (props.componentId && registeredEvents.value.size > 0) {
     try {
       // 这里可以添加清理逻辑
-      console.log('🧹 [triple-data-display] 清理交互监听器')
     } catch (error) {
-      console.warn('⚠️ [triple-data-display] 清理交互监听器失败:', error)
     }
   }
 })
@@ -359,7 +329,6 @@ onUnmounted(() => {
 watch(
   () => currentConfig.value,
   newConfig => {
-    console.log('🔄 [triple-data-display] 配置更新:', newConfig)
   },
   { deep: true }
 )

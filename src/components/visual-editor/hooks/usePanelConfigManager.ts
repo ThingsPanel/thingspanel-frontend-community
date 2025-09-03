@@ -30,7 +30,6 @@ export function usePanelConfigManager() {
         visualEditor: getDefaultConfig()
       }
     } catch (error: any) {
-      console.warn('配置解析失败:', error)
       return {
         legacyComponents: [],
         visualEditor: getDefaultConfig()
@@ -87,8 +86,6 @@ export function usePanelConfigManager() {
 
     // 从 v0.x 迁移到 v1.0
     if (version.startsWith('0.')) {
-      console.log('🔄 执行配置迁移: v0.x -> v1.0')
-
       // 添加缺失的配置项
       if (!visualEditor.currentRenderer) {
         visualEditor.currentRenderer = 'gridstack'
@@ -151,7 +148,6 @@ export function usePanelConfigManager() {
     // 🔥 调试：分析配置对象的可克隆性
     const cloneabilityIssues = analyzeCloneability(config)
     if (cloneabilityIssues.length > 0) {
-      console.warn('🔍 Default config cloneability issues:', cloneabilityIssues)
     }
 
     return config

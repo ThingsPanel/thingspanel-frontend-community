@@ -113,25 +113,13 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
       // 处理每个数据源
       for (const dataSourceConfig of config.dataSources) {
         // 🔥 性能优化：仅在调试模式输出详细日志
-        if (debugMode) {
-          console.log(
-            `🔍 [DEBUG] [MultiLayerExecutorChain] 处理数据源: ${dataSourceConfig.sourceId}, 数据项数量: ${dataSourceConfig.dataItems.length}`
-          )
-        }
+    
         try {
           const sourceResult = await this.processDataSource(dataSourceConfig, executionState)
           // 🔥 性能优化：避免每次都进行JSON序列化
-          if (debugMode) {
-            console.log(`📊 [DEBUG] [MultiLayerExecutorChain] 数据源 ${dataSourceConfig.sourceId} 处理结果:`, {
-              success: sourceResult.success,
-              hasData: Object.keys(sourceResult.data || {}).length > 0,
-              dataPreview:
-                typeof sourceResult.data === 'object' ? '[Object]' : String(sourceResult.data).substring(0, 100) + '...'
-            })
-          }
+      
           dataSourceResults.push(sourceResult)
         } catch (error) {
-          console.error('MultiLayerExecutorChain: 数据源处理失败', error)
           dataSourceResults.push({
             sourceId: dataSourceConfig.sourceId,
             type: 'unknown',
@@ -169,7 +157,6 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
       }
     } catch (error) {
       const executionTime = Date.now() - startTime
-      console.error('MultiLayerExecutorChain: 执行器链失败', error)
 
       return {
         success: false,
@@ -201,11 +188,6 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
 
         try {
           // 🔍 调试：检查传递给fetchData的item对象
-          console.log(
-            `🔍 [MultiLayerExecutorChain] 传递给fetchData的item对象 ${itemId}:`,
-            JSON.stringify(item, null, 2)
-          )
-
           // 第一层：数据项获取
           const rawData = await this.dataItemFetcher.fetchData(item)
 
@@ -232,7 +214,6 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
 
           processedItems.push(processedData)
         } catch (error) {
-          console.error(`数据项处理失败 ${itemId}:`, error)
           processedItems.push({}) // 失败时添加空对象
         }
       }
@@ -256,7 +237,6 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
         success: true
       }
     } catch (error) {
-      console.error('数据源处理失败:', error)
       return {
         sourceId: dataSourceConfig.sourceId,
         type: 'unknown',

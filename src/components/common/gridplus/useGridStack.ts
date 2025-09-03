@@ -59,7 +59,6 @@ const patchGridStackEngine = () => {
       })
 
       engine._superPatchedForVue = true
-      console.log('GridStack SUPER patched - all collision detection disabled')
     }
 
     // 全局禁用Utils排序
@@ -71,7 +70,6 @@ const patchGridStackEngine = () => {
       utilsObj._superPatched = true
     }
   } catch (error) {
-    console.error('Failed to super-patch GridStack:', error)
   }
 }
 
@@ -127,7 +125,6 @@ export function useGridStack(
     if (!gridStack.value || isUpdatingFromProps) return
 
     // 安全模式：暂时不处理change事件，避免卡死
-    console.log('GridStack change event (safe mode - disabled)')
     return
 
     // TODO: 待GridStack稳定后重新启用
@@ -136,7 +133,6 @@ export function useGridStack(
       const serializedData = gridStack.value.save(false)
       emit('change', serializedData || [])
     } catch (error) {
-      console.warn('GridStack change processing disabled due to instability')
     }
     */
   }
@@ -348,7 +344,6 @@ export function useGridStack(
    * 暂时禁用，因为可能触发碰撞检测死循环
    */
   const compact = () => {
-    console.warn('Compact layout is disabled to prevent infinite recursion')
     // gridStack.value?.compact()
   }
 

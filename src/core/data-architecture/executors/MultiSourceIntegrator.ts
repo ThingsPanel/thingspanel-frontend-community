@@ -57,7 +57,6 @@ export class MultiSourceIntegrator implements IMultiSourceIntegrator {
       // 处理每个数据源结果
       for (const source of sources) {
         if (!source.sourceId) {
-          console.warn('MultiSourceIntegrator: 数据源ID不能为空，跳过该数据源')
           continue
         }
 
@@ -77,13 +76,11 @@ export class MultiSourceIntegrator implements IMultiSourceIntegrator {
 
       // 如果没有任何有效数据源，返回空的ComponentData
       if (Object.keys(result).length === 0) {
-        console.warn('MultiSourceIntegrator: 没有有效的数据源，返回空数据')
         return {}
       }
 
       return result
     } catch (error) {
-      console.error('MultiSourceIntegrator: 多源整合失败', error)
       return {} // 统一错误处理：返回空ComponentData
     }
   }

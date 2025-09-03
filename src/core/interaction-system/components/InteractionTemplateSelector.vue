@@ -523,7 +523,6 @@ const importCustomTemplate = () => {
     message.success(t('interaction.messages.templateImported'))
   } catch (error) {
     message.error(t('interaction.messages.templateFormatError'))
-    console.error('模板导入错误:', error)
   }
 }
 
@@ -532,7 +531,6 @@ const saveUserTemplates = () => {
   try {
     localStorage.setItem('interaction-user-templates', JSON.stringify(userTemplates.value))
   } catch (error) {
-    console.error('保存用户模板失败:', error)
   }
 }
 
@@ -544,7 +542,6 @@ const loadUserTemplates = () => {
       userTemplates.value = JSON.parse(saved)
     }
   } catch (error) {
-    console.error('加载用户模板失败:', error)
   }
 }
 

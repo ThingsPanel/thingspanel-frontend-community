@@ -253,7 +253,6 @@ const handleUpdate = () => {
       // 通过configurationManager更新base配置
       configurationManager.updateConfiguration(nodeId, 'base', baseConfig)
     } catch (error) {
-      console.error('[BaseConfigForm] 更新配置失败:', error)
       message.error(t('common.updateFailed'))
     }
   }, 300)
@@ -311,7 +310,6 @@ const loadConfigurationFromManager = async () => {
       resetToDefaults()
     }
   } catch (error) {
-    console.error('[BaseConfigForm] 加载配置失败:', error)
     resetToDefaults()
   } finally {
     // 延迟重置标记
@@ -366,7 +364,6 @@ watch(
           loadConfigurationFromManager()
         })
       } catch (error) {
-        console.warn('[BaseConfigForm] 添加配置监听器失败:', error)
       }
     }
   },
@@ -405,7 +402,6 @@ onUnmounted(() => {
     try {
       removeConfigListener()
     } catch (error) {
-      console.warn('[BaseConfigForm] 移除配置监听器失败:', error)
     }
   }
 

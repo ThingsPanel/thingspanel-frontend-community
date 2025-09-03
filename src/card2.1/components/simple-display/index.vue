@@ -122,8 +122,6 @@ const updateInteractionState = (eventType: string) => {
  * 点击处理 - 支持交互系统
  */
 const handleClick = () => {
-  console.log('🔍 [SimpleDisplay] 组件被点击:', props.componentId)
-
   // 更新组件状态
   componentState.clickCount++
   updateInteractionState('click')
@@ -148,7 +146,6 @@ const handleClick = () => {
  * 悬停处理 - 支持交互系统
  */
 const handleMouseEnter = () => {
-  console.log('🔍 [SimpleDisplay] 鼠标进入:', props.componentId)
   updateInteractionState('hover')
 
   emit('hover', {
@@ -166,8 +163,6 @@ const handleMouseEnter = () => {
 }
 
 const handleMouseLeave = () => {
-  console.log('🔍 [SimpleDisplay] 鼠标离开:', props.componentId)
-
   emit('hover', {
     componentId: props.componentId || '',
     type: 'leave'
@@ -189,13 +184,10 @@ const handleMouseLeave = () => {
 const handlePropertyUpdate = (event: CustomEvent) => {
   const { propertyPath, value } = event.detail
 
-  console.log('🔄 [SimpleDisplay] 收到属性更新:', { propertyPath, value })
-
   // 根据属性路径更新本地状态
   if (propertyPath.startsWith('customize.')) {
     // 这里可以添加响应式更新逻辑
     // 由于我们使用的是computed，prop变化会自动触发重新渲染
-    console.log('✅ [SimpleDisplay] 属性更新已应用')
   }
 }
 
@@ -206,7 +198,6 @@ onMounted(() => {
   const element = getCurrentInstance()?.proxy?.$el
   if (element) {
     element.addEventListener('componentPropertyUpdate', handlePropertyUpdate)
-    console.log('🎧 [SimpleDisplay] 已注册属性更新监听器')
   }
 })
 
@@ -217,7 +208,6 @@ onUnmounted(() => {
   const element = getCurrentInstance()?.proxy?.$el
   if (element) {
     element.removeEventListener('componentPropertyUpdate', handlePropertyUpdate)
-    console.log('🎧 [SimpleDisplay] 已移除属性更新监听器')
   }
 })
 </script>

@@ -34,10 +34,7 @@ export class DataBindingIntegrationTester {
    * 运行完整的集成测试套件
    */
   async runFullTestSuite(): Promise<TestSuite[]> {
-    console.log('🚀 [DataBindingIntegrationTester] 开始运行完整测试套件')
-
     this.testResults = []
-
     // 测试套件1: 基础功能测试
     await this.runBasicFunctionalityTests()
 
@@ -63,8 +60,6 @@ export class DataBindingIntegrationTester {
    * 基础功能测试套件
    */
   private async runBasicFunctionalityTests(): Promise<void> {
-    console.log('📋 [IntegrationTester] 运行基础功能测试套件')
-
     const testSuite: TestSuite = {
       name: '基础功能测试',
       tests: [],
@@ -180,8 +175,6 @@ export class DataBindingIntegrationTester {
    * 数据类型测试套件
    */
   private async runDataTypeTests(): Promise<void> {
-    console.log('🔢 [IntegrationTester] 运行数据类型测试套件')
-
     const testSuite: TestSuite = {
       name: '数据类型测试',
       tests: [],
@@ -313,8 +306,6 @@ export class DataBindingIntegrationTester {
    * 数据关系测试套件
    */
   private async runDataRelationshipTests(): Promise<void> {
-    console.log('🔗 [IntegrationTester] 运行数据关系测试套件')
-
     const testSuite: TestSuite = {
       name: '数据关系测试',
       tests: [],
@@ -437,8 +428,6 @@ export class DataBindingIntegrationTester {
    * 响应式更新测试套件
    */
   private async runReactiveUpdateTests(): Promise<void> {
-    console.log('⚡ [IntegrationTester] 运行响应式更新测试套件')
-
     const testSuite: TestSuite = {
       name: '响应式更新测试',
       tests: [],
@@ -548,8 +537,6 @@ export class DataBindingIntegrationTester {
    * 错误处理测试套件
    */
   private async runErrorHandlingTests(): Promise<void> {
-    console.log('❌ [IntegrationTester] 运行错误处理测试套件')
-
     const testSuite: TestSuite = {
       name: '错误处理测试',
       tests: [],
@@ -633,12 +620,8 @@ export class DataBindingIntegrationTester {
     const startTime = Date.now()
 
     try {
-      console.log(`  🧪 运行测试: ${testName}`)
-
       const data = await testFn()
       const duration = Date.now() - startTime
-
-      console.log(`  ✅ 测试通过: ${testName} (${duration}ms)`)
 
       return {
         testName,
@@ -649,8 +632,6 @@ export class DataBindingIntegrationTester {
       }
     } catch (error) {
       const duration = Date.now() - startTime
-
-      console.error(`  ❌ 测试失败: ${testName} (${duration}ms)`, error)
 
       return {
         testName,
@@ -676,9 +657,6 @@ export class DataBindingIntegrationTester {
    * 打印测试总结
    */
   private printTestSummary(): void {
-    console.log('\n📊 [DataBindingIntegrationTester] 测试总结:')
-    console.log('='.repeat(50))
-
     let totalTests = 0
     let totalPassed = 0
     let totalFailed = 0
@@ -691,27 +669,14 @@ export class DataBindingIntegrationTester {
       totalDuration += suite.totalDuration
 
       const passRate = ((suite.passedTests / suite.totalTests) * 100).toFixed(1)
-      console.log(
-        `📋 ${suite.name}: ${suite.passedTests}/${suite.totalTests} 通过 (${passRate}%) - ${suite.totalDuration}ms`
-      )
-
       // 显示失败的测试
       suite.tests
         .filter(t => !t.success)
         .forEach(test => {
-          console.log(`  ❌ ${test.testName}: ${test.message}`)
         })
     })
-
-    console.log('='.repeat(50))
     const overallPassRate = ((totalPassed / totalTests) * 100).toFixed(1)
-    console.log(`🎯 总体: ${totalPassed}/${totalTests} 通过 (${overallPassRate}%) - ${totalDuration}ms`)
-
-    if (totalFailed === 0) {
-      console.log('🎉 所有测试都通过了！数据绑定系统运行正常。')
-    } else {
-      console.log(`⚠️ 有 ${totalFailed} 个测试失败，需要检查系统实现。`)
-    }
+  
   }
 
   /**

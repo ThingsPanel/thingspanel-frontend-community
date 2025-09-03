@@ -44,6 +44,7 @@ import { configurationIntegrationBridge } from '@/components/visual-editor/confi
 // 🔥 导入通用数据源映射器
 import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
 import { smartDeepClone } from '@/utils/deep-clone'
+import { visualEditorLogger } from '@/utils/logger'
 
 // 🔥 使用统一的智能深拷贝工具，自动处理Vue响应式对象
 const safeDeepClone = smartDeepClone
@@ -94,11 +95,7 @@ const containerRef = ref<HTMLElement | null>(null)
  * 当配置面板属性修改时，通知组件触发相应的交互事件
  */
 const triggerPropertyChangeEvents = (newConfig: any, oldConfig: any) => {
-  console.log('[INTERACTION-DEBUG] 触发属性变化事件:', {
-    nodeId: props.nodeId,
-    newConfig,
-    oldConfig
-  })
+
 
   // 从配置中提取实际属性值
   const extractProperties = (config: any) => {
@@ -134,7 +131,6 @@ const triggerPropertyChangeEvents = (newConfig: any, oldConfig: any) => {
 
   // 为每个变化的属性触发 dataChange 事件
   changedProperties.forEach(({ property, oldValue, newValue }) => {
-    console.log(`[INTERACTION-DEBUG] 属性 ${property} 从 ${oldValue} 变为 ${newValue}`)
 
     // 使用 interactionManager 直接触发事件
     if (currentComponentRef.value && typeof currentComponentRef.value.triggerInteractionEvent === 'function') {
@@ -145,13 +141,9 @@ const triggerPropertyChangeEvents = (newConfig: any, oldConfig: any) => {
           newValue,
           source: 'configuration-panel'
         })
-        console.log(`[INTERACTION-DEBUG] 成功触发 ${property} 的 dataChange 事件`)
       } catch (error) {
-        console.error(`[INTERACTION-DEBUG] 触发 ${property} dataChange 事件失败:`, error)
       }
-    } else {
-      console.warn('[INTERACTION-DEBUG] 组件实例或 triggerInteractionEvent 方法不可用')
-    }
+    } 
   })
 }
 
@@ -172,7 +164,6 @@ const handleDataSource = (dataSource: any) => {
     // currentSubscriberId = dataSourceManager.subscribe(dataSource, value => {
     //   dataSourceValue.value = value
     // })
-    console.log('[INTERACTION-DEBUG] 数据源管理器尚未实现，跳过订阅', dataSource)
   }
 }
 
@@ -225,13 +216,11 @@ watch(
 if (!executorDataCleanup) {
   executorDataCleanup = visualEditorBridge.onDataUpdate((componentId: string, data: any) => {
     if (componentId === props.nodeId) {
-      console.log(`🔄 [Card2Wrapper] 接收到VisualEditorBridge数据更新: ${componentId}`, data)
       executorData.value = data || {}
       // 触发组件强制更新，确保新数据生效
       forceUpdateKey.value++
     }
   })
-  console.log(`✅ [Card2Wrapper] VisualEditorBridge数据监听已建立: ${props.nodeId}`)
 }
 
 // 组件卸载时清理
@@ -254,7 +243,6 @@ onBeforeUnmount(() => {
   const componentExecutorRegistry = inject<Map<string, () => Promise<void>>>('componentExecutorRegistry')
   if (componentExecutorRegistry) {
     componentExecutorRegistry.delete(props.nodeId)
-    console.log(`🗑️ [Card2Wrapper] 已清理执行器注册: ${props.nodeId}`)
   }
 })
 
@@ -263,14 +251,7 @@ onBeforeUnmount(() => {
  * 将Visual Editor的配置格式转换为组件期望的格式
  */
 const extractComponentConfig = () => {
-  console.log('[INTERACTION-DEBUG] 提取组件配置:', {
-    nodeId: props.nodeId,
-    componentType: props.componentType,
-    originalConfig: props.config,
-    configKeys: props.config ? Object.keys(props.config) : [],
-    hasCustomize: props.config?.customize ? 'yes' : 'no',
-    customizeKeys: props.config?.customize ? Object.keys(props.config.customize) : []
-  })
+ 
 
   // 尝试多种路径提取配置
   let configData = null
@@ -288,16 +269,10 @@ const extractComponentConfig = () => {
     )
     const hasConfigurationData = validConfigKeys.length > 0
 
-    console.log('[INTERACTION-DEBUG] 配置检查:', {
-      allKeys: configKeys,
-      validKeys: validConfigKeys,
-      hasConfigurationData,
-      configType: props.componentType
-    })
+ 
 
     if (hasConfigurationData) {
       configData = props.config
-      console.log('[INTERACTION-DEBUG] 使用直接配置:', configData)
     }
     // 检查是否在properties中
     else if (props.config.properties && typeof props.config.properties === 'object') {
@@ -311,7 +286,6 @@ const extractComponentConfig = () => {
 
       if (hasPropsConfigurationData) {
         configData = propsConfig
-        console.log('[INTERACTION-DEBUG] 使用properties配置:', configData)
       }
     }
 
@@ -324,13 +298,11 @@ const extractComponentConfig = () => {
 
       if (hasCustomizeConfigData) {
         configData = customizeConfig
-        console.log('[INTERACTION-DEBUG] 使用customize配置:', configData)
       }
     }
 
     // 🔥 修复：如果直接配置包含嵌套结构，提取customize部分
     else if (configData && configData.customize && typeof configData.customize === 'object') {
-      console.log('[INTERACTION-DEBUG] 检测到嵌套配置结构，提取customize部分')
       const customizeConfig = configData.customize
       const hasCustomizeConfigData = Object.keys(customizeConfig).some(
         key => customizeConfig[key] !== undefined && customizeConfig[key] !== null
@@ -344,14 +316,12 @@ const extractComponentConfig = () => {
           ...customizeConfig
         }
         configData = mergedConfig
-        console.log('[INTERACTION-DEBUG] 使用合并的扁平化配置:', configData)
       }
     }
   }
 
   // 2. 如果还没找到配置，返回默认配置
   if (!configData) {
-    console.log('[INTERACTION-DEBUG] 使用默认配置')
     configData = {
       title: $t('visualEditor.testTitle'),
       showTitle: true,
@@ -370,17 +340,13 @@ const extractComponentConfig = () => {
   // 🔥 合并来自InteractionManager的状态更新
   const interactionState = interactionManager.getComponentState(props.nodeId || '')
   if (interactionState) {
-    console.log('[INTERACTION-DEBUG] 应用交互状态更新:', interactionState)
     configData = { ...configData, ...interactionState }
   }
 
   // 🔥 修复：合并dataSourcesConfig中的dataSourceBindings
   if (props.dataSourcesConfig && props.dataSourcesConfig.dataSourceBindings) {
-    console.log('[INTERACTION-DEBUG] 合并数据源绑定配置:', props.dataSourcesConfig.dataSourceBindings)
     configData = { ...configData, dataSourceBindings: props.dataSourcesConfig.dataSourceBindings }
   }
-
-  console.log('[INTERACTION-DEBUG] 最终配置:', configData)
   return configData
 }
 
@@ -388,11 +354,9 @@ const loadComponent = async () => {
   try {
     hasError.value = false
     errorMessage.value = ''
-    console.log(`[Card2Wrapper] [${props.nodeId}] 开始加载组件: ${props.componentType}`)
 
     // 🔥 修复：确保Card2集成已初始化
     if (!card2Integration.isInitialized.value) {
-      console.log(`[Card2Wrapper] [${props.nodeId}] 等待Card2集成初始化...`)
       await card2Integration.initialize()
     }
 
@@ -405,15 +369,10 @@ const loadComponent = async () => {
     const component = await card2Integration.getComponent(props.componentType)
 
     if (!component) {
-      console.error(`[Card2Wrapper] [${props.nodeId}] 错误：组件 [${props.componentType}] 的实现不存在。`)
       throw new Error(`组件 [${props.componentType}] 的组件实现不存在。`)
     }
-
-    console.log(`[Card2Wrapper] [${props.nodeId}] 准备渲染组件...`, component)
     componentToRender.value = component
-    console.log(`[Card2Wrapper] [${props.nodeId}] ✅ 组件加载成功: ${props.componentType}`)
   } catch (error: any) {
-    console.error(`[Card2Wrapper] [${props.nodeId}] ❌ Card 2.1 组件加载失败 [${props.componentType}]:`, error)
     hasError.value = true
     errorMessage.value = error.message || $t('visualEditor.unknownError')
     componentToRender.value = null
@@ -427,11 +386,7 @@ watch(() => props.componentType, loadComponent, { immediate: true })
 watch(
   () => props.config,
   (newConfig, oldConfig) => {
-    console.log('[Card2Wrapper] 配置变化:', {
-      nodeId: props.nodeId,
-      newConfig,
-      oldConfig
-    })
+
 
     // 🔥 触发属性变化事件给组件
     if (newConfig && oldConfig && currentComponentRef.value) {
@@ -451,7 +406,6 @@ watch(
 watch(
   () => props.data,
   newData => {
-    console.log('🔧 [Card2Wrapper] 接收到新的data prop:', newData)
   },
   { deep: true, immediate: true }
 )
@@ -460,7 +414,6 @@ watch(
 watch(
   () => props.dataSources,
   newDataSources => {
-    console.log('🔧 [Card2Wrapper] 接收到新的dataSources prop:', newDataSources)
   },
   { deep: true, immediate: true }
 )
@@ -469,7 +422,6 @@ watch(
 watch(
   () => props.dataSourcesConfig,
   newDataSourcesConfig => {
-    console.log('🔧 [Card2Wrapper] 接收到新的dataSourcesConfig prop:', newDataSourcesConfig)
   },
   { deep: true, immediate: true }
 )
@@ -486,10 +438,6 @@ const getDataSourcesForComponent = () => {
   const executorDataHasData = executorData.value && Object.keys(executorData.value).length > 0
 
   if (executorDataHasData) {
-    console.log('🔥 [Card2Wrapper] 传递 VisualEditorBridge 执行数据到组件', {
-      executorData: executorData.value,
-      componentId: props.nodeId
-    })
     // 返回executorData，格式化为组件期望的格式
     return {
       dataSourceBindings: {
@@ -497,42 +445,24 @@ const getDataSourcesForComponent = () => {
       }
     }
   } else if (dataSourcesConfigHasData) {
-    console.log('🔧 [Card2Wrapper] 传递 dataSourcesConfig 到组件', {
-      bindingKeys: Object.keys(props.dataSourcesConfig.dataSourceBindings),
-      fullConfig: props.dataSourcesConfig
-    })
     return props.dataSourcesConfig
   } else if (dataSourcesHasData) {
-    console.log('🔧 [Card2Wrapper] 传递 dataSources 到组件', {
-      bindingKeys: Object.keys(props.dataSources.dataSourceBindings),
-      fullData: props.dataSources
-    })
+  
     return props.dataSources
   }
-
-  console.log('🔧 [Card2Wrapper] 无有效数据源配置')
   return null
 }
 
 // 🔥 新增：获取组件特定的props（使用通用映射器）
 const getComponentSpecificProps = () => {
-  console.log('🔥 [Card2Wrapper] 开始通用数据源映射，组件类型:', props.componentType)
-  console.log('🔥 [Card2Wrapper] 执行器数据:', executorData.value)
 
   // 🔥 使用通用数据源映射器
   const specificProps = DataSourceMapper.mapDataSources(props.componentType, executorData.value)
 
   // 🔥 验证映射结果
   const validation = DataSourceMapper.validateMapping(props.componentType, specificProps)
-  if (!validation.isValid) {
-    console.warn('⚠️ [Card2Wrapper] 数据源映射验证失败:', validation)
-  }
-
   // 🔥 获取映射统计信息
   const stats = DataSourceMapper.getMappingStats(props.componentType, executorData.value)
-  console.log('📊 [Card2Wrapper] 映射统计:', stats)
-
-  console.log('✅ [Card2Wrapper] 通用映射结果:', specificProps)
   return specificProps
 }
 
@@ -542,57 +472,38 @@ const getComponentSpecificProps = () => {
 watch(
   () => props.metadata,
   newMetadata => {
-    console.log('🔧 [Card2Wrapper] 接收到新的metadata prop:', newMetadata)
-    if (newMetadata?.dataConfig) {
-      console.log('🎯 [Card2Wrapper] 检测到dataConfig配置:', newMetadata.dataConfig)
-    }
+    
   },
   { deep: true, immediate: true }
 )
 
 onMounted(async () => {
-  console.log('🔧 [Card2Wrapper] 组件挂载，当前props:', props)
   const dataSourcesForComponent = getDataSourcesForComponent()
-  console.log('🔧 [Card2Wrapper] 传递给组件的数据源:', dataSourcesForComponent)
-  console.log('🔧 [Card2Wrapper] 组件类型:', props.componentType)
-  console.log('🔧 [Card2Wrapper] 组件实例:', componentToRender.value)
 
   // 🔥 架构修复：注册组件执行器到EditorDataSourceManager
   const componentExecutorRegistry = inject<Map<string, () => Promise<void>>>('componentExecutorRegistry')
   if (componentExecutorRegistry) {
     // 创建统一的执行器函数
     const unifiedExecutor = async () => {
-      console.log(`🚀 [Card2Wrapper] 统一执行器被调用: ${props.nodeId}`)
 
       // 获取最新配置
       const config = configurationIntegrationBridge.getConfiguration(props.nodeId)
-      console.log(`🔍 [Card2Wrapper] 获取到的配置:`, config)
-      console.log(`🔍 [Card2Wrapper] dataSource配置:`, config?.dataSource)
 
       if (config?.dataSource) {
         // 🔥 修复：直接使用dataSource配置，无需再访问config属性
         const dataSourceConfig = config.dataSource
-        console.log(`🔄 [Card2Wrapper] 执行数据源配置:`, dataSourceConfig)
-
         const result = await visualEditorBridge.updateComponentExecutor(
           props.nodeId,
           props.componentType,
           dataSourceConfig
         )
-        console.log(`✅ [Card2Wrapper] 统一执行器完成: ${props.nodeId}`, result)
         
         // 🔥 新增：注册HTTP数据源映射，用于属性变化时的响应式更新
         interactionManager.registerHttpDataSource(props.nodeId, props.componentType, dataSourceConfig)
-      } else {
-        console.log(`ℹ️ [Card2Wrapper] 无数据源配置，跳过执行: ${props.nodeId}`)
-        console.log(`🔍 [Card2Wrapper] 完整配置对象:`, JSON.stringify(config, null, 2))
-      }
+      } 
     }
 
     componentExecutorRegistry.set(props.nodeId, unifiedExecutor)
-    console.log(`📝 [Card2Wrapper] 执行器已注册到EditorDataSourceManager: ${props.nodeId}`)
-  } else {
-    console.warn('❌ [Card2Wrapper] 未找到componentExecutorRegistry，无法注册执行器')
   }
 
   if (!componentToRender.value) {
@@ -608,101 +519,69 @@ onMounted(async () => {
 
     while (retryCount < maxRetries) {
       const savedConfig = configurationIntegrationBridge.getConfiguration(props.nodeId)
-      console.log(`🔍 [Card2Wrapper] 尝试获取配置 (${retryCount + 1}/${maxRetries}):`, props.nodeId, savedConfig)
 
       if (savedConfig?.dataSource) {
-        console.log('✅ [Card2Wrapper] 成功获取到保存的配置:', savedConfig)
-        console.log('🔍 [Card2Wrapper] dataSource 配置详情:', savedConfig.dataSource)
         return savedConfig
       }
 
       retryCount++
       if (retryCount < maxRetries) {
-        console.log(`⏳ [Card2Wrapper] 配置未就绪，${retryDelay}ms后重试...`)
         await new Promise(resolve => setTimeout(resolve, retryDelay))
       }
     }
-
-    console.log('⚠️ [Card2Wrapper] 达到最大重试次数，未找到配置')
     return null
   }
 
   const savedConfig = await waitForConfigurationRestore()
-  console.log('🔍 [Card2Wrapper] 最终获取的配置:', props.nodeId, savedConfig)
 
   // 🔥 修复时序问题：先注册回调，再执行更新
   // 监听VisualEditorBridge的数据更新
   executorDataCleanup = visualEditorBridge.onDataUpdate((componentId, data) => {
     if (componentId === props.nodeId) {
-      console.log('🔥 [Card2Wrapper] 接收到执行器数据更新:', componentId, data)
-      console.log('🔥 [Card2Wrapper] 接收到的data完整结构:', JSON.stringify(data, null, 2))
 
       // 🔥 修复：安全地检查接收到的数据详情
-      if (data && data.dataSource1) {
-        console.log('🔥 [Card2Wrapper] 接收到的dataSource1:', JSON.stringify(data.dataSource1, null, 2))
-        console.log('🔥 [Card2Wrapper] 接收到的dataSource1.age:', data.dataSource1.age)
-      } else {
-        console.log('🔥 [Card2Wrapper] 接收到空数据或无dataSource1:', data)
-      }
+      
 
       // 🔥 调试：更新前的executorData状态
-      console.log('🔥 [Card2Wrapper] 更新前executorData.value:', JSON.stringify(executorData.value, null, 2))
 
       executorData.value = { ...data }
 
       // 🔥 调试：更新后的executorData状态
-      console.log('🔥 [Card2Wrapper] 更新后executorData.value:', JSON.stringify(executorData.value, null, 2))
-      if (executorData.value.dataSource1) {
-        console.log('🔥 [Card2Wrapper] 更新后dataSource1.age:', executorData.value.dataSource1.age)
-      }
+     
 
       // 强制重新渲染组件以应用新数据
       forceUpdateKey.value = Date.now()
-      console.log('🔥 [Card2Wrapper] 强制重新渲染，forceUpdateKey:', forceUpdateKey.value)
     }
   })
 
   if (savedConfig?.dataSource) {
-    console.log('🔥 [Card2Wrapper] 发现保存的数据源配置:', savedConfig.dataSource)
-    console.log('🔍 [Card2Wrapper] 配置详细信息:', JSON.stringify(savedConfig.dataSource, null, 2))
 
     try {
       // 🔥 修复：直接使用整个dataSource配置
       const dataSourceConfig = savedConfig.dataSource
-      console.log(`🔄 [Card2Wrapper] 初始化执行数据源配置:`, dataSourceConfig)
 
       const result = await visualEditorBridge.updateComponentExecutor(
         props.nodeId,
         props.componentType,
         dataSourceConfig
       )
-      console.log('✅ [Card2Wrapper] 执行器恢复成功，结果:', props.nodeId, result)
       
       // 🔥 新增：注册HTTP数据源映射，用于属性变化时的响应式更新
       interactionManager.registerHttpDataSource(props.nodeId, props.componentType, dataSourceConfig)
     } catch (error) {
-      console.error('❌ [Card2Wrapper] 执行器恢复失败:', props.nodeId, error)
     }
   } else {
-    console.log('ℹ️ [Card2Wrapper] 无保存配置，完整配置:', savedConfig)
-    console.log('ℹ️ [Card2Wrapper] 数据源配置:', savedConfig?.dataSource)
 
     // 🔥 架构修复：完全移除直接配置监听
     // EditorDataSourceManager 现在通过componentExecutorRegistry调用我们注册的统一执行器
-    console.log(`📋 [Card2Wrapper] 组件 ${props.nodeId} 完全依赖EditorDataSourceManager统一调度`)
   }
 
   // 🔥 监听组件状态更新事件
   const handleStateUpdate = (event: CustomEvent) => {
     const { componentId, updates } = event.detail
-    console.log('[INTERACTION-DEBUG] 接收到状态更新事件:', {
-      componentId,
-      updates,
-      currentNodeId: props.nodeId
-    })
+   
 
     if (componentId === props.nodeId) {
-      console.log('[INTERACTION-DEBUG] 状态更新匹配，强制重新渲染组件')
       // 强制重新渲染以应用状态更新
       forceUpdateKey.value = Date.now()
     }

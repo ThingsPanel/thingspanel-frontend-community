@@ -28,8 +28,6 @@ export class StaticDataSource implements DataSource {
   }
 
   async fetchData(): Promise<any> {
-    console.log(`📊 [StaticDataSource] 获取静态数据: ${this.id}`)
-
     // 模拟异步操作
     await new Promise(resolve => setTimeout(resolve, 10))
 
@@ -37,15 +35,11 @@ export class StaticDataSource implements DataSource {
     if (typeof this.config.data === 'function') {
       try {
         const result = await this.config.data()
-        console.log(`✅ [StaticDataSource] 动态数据获取成功: ${this.id}`)
         return result
       } catch (error) {
-        console.error(`❌ [StaticDataSource] 动态数据获取失败: ${this.id}`, error)
         return null
       }
     }
-
-    console.log(`✅ [StaticDataSource] 静态数据获取成功: ${this.id}`)
     return this.config.data
   }
 
@@ -59,7 +53,6 @@ export class StaticDataSource implements DataSource {
 
   updateConfig(config: Partial<StaticDataSourceConfig>): void {
     this.config = { ...this.config, ...config }
-    console.log(`🔄 [StaticDataSource] 配置已更新: ${this.id}`)
   }
 }
 
@@ -97,8 +90,6 @@ export class ApiDataSource implements DataSource {
   }
 
   async fetchData(): Promise<any> {
-    console.log(`🌐 [ApiDataSource] 调用API: ${this.id} - ${this.config.url}`)
-
     let lastError: Error | null = null
 
     for (let attempt = 0; attempt <= this.config.retryCount!; attempt++) {
@@ -142,23 +133,14 @@ export class ApiDataSource implements DataSource {
         } else {
           data = await response.text()
         }
-
-        console.log(`✅ [ApiDataSource] API调用成功: ${this.id}`)
         return data
       } catch (error) {
         lastError = error as Error
-        console.warn(
-          `⚠️ [ApiDataSource] API调用失败 (尝试 ${attempt + 1}/${this.config.retryCount! + 1}): ${this.id}`,
-          error
-        )
-
         if (attempt < this.config.retryCount!) {
           await new Promise(resolve => setTimeout(resolve, this.config.retryDelay))
         }
       }
     }
-
-    console.error(`❌ [ApiDataSource] API调用最终失败: ${this.id}`, lastError)
     throw lastError || new Error('API调用失败')
   }
 
@@ -177,7 +159,6 @@ export class ApiDataSource implements DataSource {
 
   updateConfig(config: Partial<ApiDataSourceConfig>): void {
     this.config = { ...this.config, ...config }
-    console.log(`🔄 [ApiDataSource] 配置已更新: ${this.id}`)
   }
 }
 
@@ -216,8 +197,6 @@ export class WebSocketDataSource implements DataSource {
   }
 
   async fetchData(): Promise<any> {
-    console.log(`🔌 [WebSocketDataSource] 获取WebSocket数据: ${this.id}`)
-
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       await this.connect()
     }
@@ -228,12 +207,9 @@ export class WebSocketDataSource implements DataSource {
   private async connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        console.log(`🔗 [WebSocketDataSource] 连接WebSocket: ${this.id} - ${this.config.url}`)
-
         this.ws = new WebSocket(this.config.url, this.config.protocols)
 
         this.ws.onopen = () => {
-          console.log(`✅ [WebSocketDataSource] WebSocket连接成功: ${this.id}`)
           this.reconnectAttempts = 0
           this.startHeartbeat()
           resolve()
@@ -244,24 +220,19 @@ export class WebSocketDataSource implements DataSource {
             const data = JSON.parse(event.data)
             this.lastData = data
             this.dataListeners.forEach(listener => listener(data))
-            console.log(`📨 [WebSocketDataSource] 收到数据: ${this.id}`)
           } catch (error) {
-            console.warn(`⚠️ [WebSocketDataSource] 数据解析失败: ${this.id}`, error)
           }
         }
 
         this.ws.onerror = error => {
-          console.error(`❌ [WebSocketDataSource] WebSocket错误: ${this.id}`, error)
           reject(error)
         }
 
         this.ws.onclose = () => {
-          console.warn(`🔌 [WebSocketDataSource] WebSocket连接关闭: ${this.id}`)
           this.stopHeartbeat()
           this.attemptReconnect()
         }
       } catch (error) {
-        console.error(`❌ [WebSocketDataSource] WebSocket连接失败: ${this.id}`, error)
         reject(error)
       }
     })
@@ -270,17 +241,11 @@ export class WebSocketDataSource implements DataSource {
   private attemptReconnect(): void {
     if (this.reconnectAttempts < this.config.maxReconnectAttempts!) {
       this.reconnectAttempts++
-      console.log(
-        `🔄 [WebSocketDataSource] 尝试重连 (${this.reconnectAttempts}/${this.config.maxReconnectAttempts}): ${this.id}`
-      )
-
       setTimeout(() => {
         this.connect().catch(error => {
-          console.error(`❌ [WebSocketDataSource] 重连失败: ${this.id}`, error)
         })
       }, this.config.reconnectInterval)
     } else {
-      console.error(`❌ [WebSocketDataSource] 超过最大重连次数: ${this.id}`)
     }
   }
 
@@ -330,7 +295,6 @@ export class WebSocketDataSource implements DataSource {
 
   updateConfig(config: Partial<WebSocketDataSourceConfig>): void {
     this.config = { ...this.config, ...config }
-    console.log(`🔄 [WebSocketDataSource] 配置已更新: ${this.id}`)
   }
 }
 
@@ -360,21 +324,16 @@ export class ScriptDataSource implements DataSource {
   }
 
   async fetchData(): Promise<any> {
-    console.log(`📜 [ScriptDataSource] 执行脚本: ${this.id}`)
-
     try {
       // 使用全局脚本引擎执行脚本
       const result = await defaultScriptEngine.execute(this.config.script, this.config.context)
 
       if (result.success) {
-        console.log(`✅ [ScriptDataSource] 脚本执行成功: ${this.id} (${result.executionTime}ms)`)
         return result.data
       } else {
-        console.error(`❌ [ScriptDataSource] 脚本执行失败: ${this.id}`, result.error)
         throw result.error || new Error('脚本执行失败')
       }
     } catch (error) {
-      console.error(`❌ [ScriptDataSource] 脚本执行异常: ${this.id}`, error)
       throw error
     }
   }
@@ -389,7 +348,6 @@ export class ScriptDataSource implements DataSource {
 
   updateConfig(config: Partial<ScriptDataSourceConfig>): void {
     this.config = { ...this.config, ...config }
-    console.log(`🔄 [ScriptDataSource] 配置已更新: ${this.id}`)
   }
 }
 

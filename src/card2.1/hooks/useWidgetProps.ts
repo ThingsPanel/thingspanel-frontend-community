@@ -55,7 +55,6 @@ export function useWidgetProps(
         try {
           subscription.unsubscribe()
         } catch (err) {
-          console.warn('⚠️ [useWidgetProps] 取消订阅时出错:', err)
         }
       })
       subscriptions.length = 0 // 清空数组
@@ -69,8 +68,6 @@ export function useWidgetProps(
         newProps[param.key] = configValue !== undefined ? configValue : param.defaultValue
       }
 
-      console.log(`📊 [useWidgetProps] 处理静态参数完成:`, newProps)
-
       // 2. 处理动态数据源（异步）
       const dataSources = definition.value.dataSources || []
       const dataSourcePromises: Promise<void>[] = []
@@ -83,7 +80,6 @@ export function useWidgetProps(
             const dataSource = dataSourceCenter.getDataSource(bindingConfig.dataSourceId)
 
             if (!dataSource) {
-              console.warn(`⚠️ [useWidgetProps] 数据源不存在: ${bindingConfig.dataSourceId}`)
               // 使用默认值而不是报错
               for (const [sourceField, mapping] of Object.entries(dataSourceDef.fieldMappings)) {
                 const targetField = bindingConfig.fieldMappings[sourceField] || mapping.targetField
@@ -108,7 +104,6 @@ export function useWidgetProps(
                       const transformFunc = new Function('value', `return ${mapping.transform}`)
                       value = transformFunc(value)
                     } catch (transformError) {
-                      console.warn(`⚠️ [useWidgetProps] 数据转换失败:`, transformError)
                       value = mapping.defaultValue
                     }
                   }
@@ -123,16 +118,13 @@ export function useWidgetProps(
 
                 // 更新props（触发响应式更新）
                 props.value = { ...newProps }
-                console.log(`📊 [useWidgetProps] 数据源更新:`, bindingConfig.dataSourceId, newProps)
               } catch (mappingError) {
-                console.error(`❌ [useWidgetProps] 字段映射失败:`, mappingError)
                 error.value = mappingError as Error
               }
             })
 
             if (subscription) {
               subscriptions.push(subscription)
-              console.log(`📺 [useWidgetProps] 订阅数据源成功: ${bindingConfig.dataSourceId}`)
               resolve()
             } else {
               reject(new Error(`数据源订阅失败: ${bindingConfig.dataSourceId}`))
@@ -156,10 +148,7 @@ export function useWidgetProps(
 
       // 加载完成
       isLoading.value = false
-
-      console.log(`✅ [useWidgetProps] 数据解析完成，${dataSources.length} 个数据源，${staticParams.length} 个静态参数`)
     } catch (err) {
-      console.error(`❌ [useWidgetProps] 数据解析失败:`, err)
       error.value = err as Error
       isLoading.value = false
     }
@@ -176,7 +165,6 @@ export function useWidgetProps(
   watch(
     [definition, configuration],
     () => {
-      console.log(`🔄 [useWidgetProps] 配置变化，重新解析数据`)
       resolveProps()
     },
     {
@@ -187,12 +175,10 @@ export function useWidgetProps(
 
   // 清理副作用
   onUnmounted(() => {
-    console.log(`🧹 [useWidgetProps] 组件卸载，清理 ${subscriptions.length} 个订阅`)
     subscriptions.forEach(subscription => {
       try {
         subscription.unsubscribe()
       } catch (err) {
-        console.warn('⚠️ [useWidgetProps] 清理订阅时出错:', err)
       }
     })
     subscriptions.length = 0

@@ -22,11 +22,6 @@ export class ComponentDataValidator implements DataValidator {
     const errors: string[] = []
     const warnings: string[] = []
     const details: Record<string, any> = {}
-
-    console.log('🔍 [ComponentDataValidator] 开始验证数据')
-    console.log('📊 验证数据:', data)
-    console.log('📋 数据需求:', requirement)
-
     // 验证每个字段
     Object.entries(requirement.fields).forEach(([fieldName, fieldReq]) => {
       const fieldValue = data?.[fieldName]
@@ -71,8 +66,6 @@ export class ComponentDataValidator implements DataValidator {
       warnings,
       details
     }
-
-    console.log('✅ [ComponentDataValidator] 验证完成:', result)
     return result
   }
 
@@ -241,60 +234,31 @@ export class DataTransformPipelineImpl implements DataTransformPipeline {
     const startTime = Date.now()
     this.executionCount++
 
-    console.log(`🚀 [DataTransformPipeline] 开始执行管道: ${this.id} (第${this.executionCount}次)`)
-
     try {
       // 步骤1: 从数据源获取原始数据
-      console.log(`📊 [步骤1/4] 获取数据源数据...`)
       let currentData = await this.source.fetchData()
-      console.log(`✅ 数据源数据获取成功:`, currentData)
 
       // 步骤2: 通过处理器链处理数据
-      console.log(`🔧 [步骤2/4] 执行数据处理器链 (${this.processors.length}个处理器)...`)
       for (let i = 0; i < this.processors.length; i++) {
         const processor = this.processors[i]
-        console.log(`  🔧 执行处理器 ${i + 1}/${this.processors.length}: ${processor.name} (${processor.type})`)
 
         const beforeProcessing = JSON.stringify(currentData)
         currentData = await processor.process(currentData)
         const afterProcessing = JSON.stringify(currentData)
-
-        console.log(`  ✅ 处理器 ${processor.name} 执行完成`)
-
-        if (beforeProcessing !== afterProcessing) {
-          console.log(`  📝 数据已被处理器修改`)
-        }
       }
 
       // 步骤3: 执行字段映射
-      console.log(`🗺️ [步骤3/4] 执行字段映射 (${this.mapper.rules.length}个映射规则)...`)
       const mappedData = this.mapper.map(currentData)
-      console.log(`✅ 字段映射完成:`, mappedData)
-
-      // 步骤4: 数据验证（如果有验证器）
-      if (this.validator) {
-        console.log(`🔍 [步骤4/4] 执行数据验证...`)
-        // 注意：这里需要组件需求定义，暂时跳过验证
-        console.log(`⚠️ 数据验证跳过（需要组件需求定义）`)
-      } else {
-        console.log(`⏭️ [步骤4/4] 跳过数据验证（未配置验证器）`)
-      }
 
       // 记录执行结果
       this.lastExecutionTime = new Date()
       this.lastResult = mappedData
 
       const executionTime = Date.now() - startTime
-      console.log(`🎉 [DataTransformPipeline] 管道执行成功: ${this.id}`)
-      console.log(`⏱️ 执行时间: ${executionTime}ms`)
-      console.log(`📊 最终结果:`, mappedData)
 
       return mappedData
     } catch (error) {
       const executionTime = Date.now() - startTime
-      console.error(`❌ [DataTransformPipeline] 管道执行失败: ${this.id}`)
-      console.error(`⏱️ 失败时间: ${executionTime}ms`)
-      console.error(`💥 错误详情:`, error)
       throw error
     }
   }
@@ -320,11 +284,8 @@ export class DataTransformPipelineImpl implements DataTransformPipeline {
     }
 
     if (errors.length > 0) {
-      console.error(`❌ [DataTransformPipeline] 管道验证失败: ${this.id}`, errors)
       return false
     }
-
-    console.log(`✅ [DataTransformPipeline] 管道验证通过: ${this.id}`)
     return true
   }
 
@@ -360,14 +321,12 @@ export class DataTransformPipelineImpl implements DataTransformPipeline {
     this.executionCount = 0
     this.lastExecutionTime = null
     this.lastResult = null
-    console.log(`🔄 [DataTransformPipeline] 统计信息已重置: ${this.id}`)
   }
 
   /**
    * 预览管道执行结果（不更新统计信息）
    */
   async preview(): Promise<Record<string, any>> {
-    console.log(`👀 [DataTransformPipeline] 预览管道执行: ${this.id}`)
 
     try {
       // 获取数据源数据
@@ -381,10 +340,8 @@ export class DataTransformPipelineImpl implements DataTransformPipeline {
       // 字段映射
       const mappedData = this.mapper.map(currentData)
 
-      console.log(`✅ [DataTransformPipeline] 预览完成: ${this.id}`, mappedData)
       return mappedData
     } catch (error) {
-      console.error(`❌ [DataTransformPipeline] 预览失败: ${this.id}`, error)
       throw error
     }
   }

@@ -111,7 +111,6 @@ export function useInteractionCapable(
 
     // 检查事件类型支持
     if (!supportedEvents.value.includes(eventType)) {
-      console.warn(`[INTERACTION-DEBUG] 事件不支持: ${eventType}, 支持的事件:`, supportedEvents.value)
       return {
         allowed: false,
         reason: `组件不支持 ${eventType} 事件`,
@@ -154,7 +153,6 @@ export function useInteractionCapable(
     }
 
     if (finalConfig.enableDebug) {
-      console.log(`[InteractionCapable] ${componentId.value}:`, context)
     }
   }
 
@@ -177,7 +175,6 @@ export function useInteractionCapable(
 
     // 权限检查
     const permissionCheck = checkInteractionPermission(sourceComponentId, eventType)
-    console.log(`[INTERACTION-DEBUG] 权限检查: ${permissionCheck.allowed ? '通过' : '失败'}`)
 
     if (!permissionCheck.allowed) {
       const rejectionInfo = {
@@ -186,8 +183,6 @@ export function useInteractionCapable(
         reason: permissionCheck.code as any,
         message: permissionCheck.reason || '权限检查失败'
       }
-
-      console.error(`[INTERACTION-DEBUG] 权限失败:`, rejectionInfo.message)
       recordInteraction({ ...context, eventData: { ...eventData, rejected: true, reason: rejectionInfo } })
       emit('interaction-rejected', rejectionInfo)
 
@@ -208,9 +203,7 @@ export function useInteractionCapable(
     emit('interaction-event', eventType, eventData)
 
     // 执行交互
-    console.log(`[INTERACTION-DEBUG] 调用InteractionManager.triggerEvent(${eventType})`)
     const results = interactionManager.triggerEvent(componentId.value, eventType, eventData)
-    console.log(`[INTERACTION-DEBUG] InteractionManager返回结果数量: ${results.length}`)
 
     // 发出交互结果
     results.forEach(result => {
@@ -288,10 +281,6 @@ export function useInteractionCapable(
       // 这样后续添加配置时可以正常工作
       const configs = interactionConfigs.value || []
       interactionManager.registerComponent(componentId.value, configs)
-
-      if (finalConfig.enableDebug) {
-        console.log(`[InteractionCapable] 注册组件到交互管理器: ${componentId.value}, 配置数量: ${configs.length}`)
-      }
     }
   }
 
@@ -301,10 +290,6 @@ export function useInteractionCapable(
   const unregisterFromInteractionManager = () => {
     if (componentId.value) {
       interactionManager.unregisterComponent(componentId.value, [])
-
-      if (finalConfig.enableDebug) {
-        console.log(`[InteractionCapable] 从交互管理器注销组件:`, componentId.value)
-      }
     }
   }
 
@@ -316,10 +301,6 @@ export function useInteractionCapable(
       // 🔥 修复：始终更新配置，即使配置数组为空
       const configs = interactionConfigs.value || []
       interactionManager.updateComponentConfigs(componentId.value, configs)
-
-      if (finalConfig.enableDebug) {
-        console.log(`[InteractionCapable] 更新交互配置: ${componentId.value}, 配置数量: ${configs.length}`)
-      }
     }
   }
 
@@ -359,9 +340,6 @@ export function useInteractionCapable(
 
       // 检查并发限制
       if (activeInteractions.value.size >= finalConfig.performance.maxConcurrentInteractions) {
-        if (finalConfig.enableDebug) {
-          console.warn(`[InteractionCapable] 达到最大并发交互限制:`, finalConfig.performance.maxConcurrentInteractions)
-        }
         return
       }
 

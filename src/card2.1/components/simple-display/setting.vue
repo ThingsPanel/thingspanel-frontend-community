@@ -61,8 +61,6 @@ let isUpdatingFromProps = false
 const handleConfigChange = (newConfig: SimpleDisplayConfig) => {
   if (isUpdatingFromProps) return
 
-  console.log('🔄 [simple-display setting] 配置变更:', newConfig)
-
   // 更新本地配置
   Object.assign(localConfig, newConfig)
 
@@ -96,7 +94,6 @@ watch(
         }
 
         Object.assign(localConfig, mergedConfig)
-        console.log('📥 [simple-display setting] 同步props配置:', localConfig)
       } finally {
         nextTick(() => {
           setTimeout(() => {

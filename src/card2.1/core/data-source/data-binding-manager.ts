@@ -46,7 +46,6 @@ export class DataBindingManager {
    */
   registerDataSource(dataSource: DataSource) {
     this.dataSources.set(dataSource.getId(), dataSource)
-    console.log(`📊 [DataBindingManager] 注册数据源: ${dataSource.getId()} (${dataSource.getType()})`)
   }
 
   /**
@@ -66,8 +65,6 @@ export class DataBindingManager {
     bindingsToRemove.forEach(bindingId => {
       this.removeBinding(bindingId)
     })
-
-    console.log(`🗑️ [DataBindingManager] 移除数据源: ${dataSourceId}`)
   }
 
   /**
@@ -78,8 +75,6 @@ export class DataBindingManager {
 
     this.bindings.set(bindingId, binding)
     this.bindingStatuses.set(bindingId, {})
-
-    console.log(`🔗 [DataBindingManager] 创建绑定: ${bindingId}`, binding)
 
     // 立即更新绑定状态
     this.updateBinding(bindingId)
@@ -94,8 +89,6 @@ export class DataBindingManager {
     this.bindings.delete(bindingId)
     this.bindingStatuses.delete(bindingId)
     this.updateCallbacks.delete(bindingId)
-
-    console.log(`🗑️ [DataBindingManager] 移除绑定: ${bindingId}`)
   }
 
   /**
@@ -104,15 +97,11 @@ export class DataBindingManager {
   updateBindingConfig(bindingId: string, newConfig: Partial<ComponentDataBinding>) {
     const existingBinding = this.bindings.get(bindingId)
     if (!existingBinding) {
-      console.warn(`⚠️ [DataBindingManager] 绑定不存在: ${bindingId}`)
       return
     }
 
     const updatedBinding = { ...existingBinding, ...newConfig }
     this.bindings.set(bindingId, updatedBinding)
-
-    console.log(`🔄 [DataBindingManager] 更新绑定配置: ${bindingId}`)
-
     // 立即更新绑定状态
     this.updateBinding(bindingId)
   }
@@ -132,8 +121,6 @@ export class DataBindingManager {
     if (currentData) {
       callback(currentData)
     }
-
-    console.log(`📺 [DataBindingManager] 订阅绑定更新: ${bindingId}`)
   }
 
   /**
@@ -189,7 +176,6 @@ export class DataBindingManager {
 
     const dataSource = this.dataSources.get(binding.dataSourceId)
     if (!dataSource) {
-      console.warn(`⚠️ [DataBindingManager] 数据源不存在: ${binding.dataSourceId}`)
       return
     }
 
@@ -197,7 +183,6 @@ export class DataBindingManager {
       // 获取组件数据需求
       const componentSchema = componentSchemaManager.getSchema(binding.componentId)
       if (!componentSchema) {
-        console.warn(`⚠️ [DataBindingManager] 组件数据需求未注册: ${binding.componentId}`)
         return
       }
 
@@ -220,7 +205,6 @@ export class DataBindingManager {
             try {
               finalValue = bindingConfig.transform(rawValue)
             } catch (error) {
-              console.warn(`⚠️ [DataBindingManager] 数据转换失败:`, error)
               finalValue = bindingConfig.fallbackValue ?? fieldDef.defaultValue
             }
           }
@@ -258,10 +242,6 @@ export class DataBindingManager {
 
       // 验证数据
       const validation = componentSchemaManager.validateComponentData(binding.componentId, componentData)
-      if (!validation.isValid) {
-        console.warn(`⚠️ [DataBindingManager] 数据验证失败:`, validation.errors)
-      }
-
       // 通知订阅者
       const callbacks = this.updateCallbacks.get(bindingId)
       if (callbacks) {
@@ -269,14 +249,10 @@ export class DataBindingManager {
           try {
             callback(componentData)
           } catch (error) {
-            console.error(`❌ [DataBindingManager] 回调执行失败:`, error)
           }
         })
       }
-
-      console.log(`✅ [DataBindingManager] 绑定更新成功: ${bindingId}`, componentData)
     } catch (error) {
-      console.error(`❌ [DataBindingManager] 绑定更新失败: ${bindingId}`, error)
     }
   }
 

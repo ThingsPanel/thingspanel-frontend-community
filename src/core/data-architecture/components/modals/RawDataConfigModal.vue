@@ -113,17 +113,8 @@ const httpConfig = ref({
  * HTTP配置更新处理 - 添加完整调试
  */
 const onHttpConfigUpdate = (newConfig: typeof httpConfig.value) => {
-  console.log('🚀 [爷爷组件] RawDataConfigModal onHttpConfigUpdate 接收到更新:')
-  console.log('🚀 [爷爷组件] 新配置 headers:', newConfig.headers)
-  console.log('🚀 [爷爷组件] 新配置 params:', newConfig.params)
-  console.log('🚀 [爷爷组件] 完整新配置:', JSON.stringify(newConfig, null, 2))
-
-  console.log('🚀 [爷爷组件] 更新前 httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
-
   // 🔥 关键修复：确保响应式更新
   httpConfig.value = { ...newConfig }
-
-  console.log('🚀 [爷爷组件] 更新后 httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
 
   // 同步更新到旧版formState（兼容现有代码）
   formState.httpUrl = newConfig.url || ''
@@ -132,8 +123,6 @@ const onHttpConfigUpdate = (newConfig: typeof httpConfig.value) => {
     newConfig.headers?.filter(h => h.enabled).reduce((acc, h) => ({ ...acc, [h.key]: h.value }), {}) || {}
   )
   formState.httpBody = newConfig.body || '{}'
-
-  console.log('🚀 [爷爷组件] 同步更新完成，formState.httpHeaders:', formState.httpHeaders)
 }
 
 /**
@@ -276,7 +265,6 @@ const executePreview = async () => {
 
     message.success('数据预览成功')
   } catch (error) {
-    console.error('数据预览失败:', error)
     message.error('数据预览失败: ' + error.message)
     previewData.value = null
   } finally {
@@ -310,13 +298,6 @@ const handleConfirm = async () => {
         defaultValue: processingState.defaultValue.trim() || undefined,
         scriptCode: processingState.scriptCode.trim() || undefined
       }
-    }
-
-    console.log('💾 保存配置类型:', fullConfig.type)
-    console.log('💾 httpConfigData存在吗?', !!fullConfig.httpConfigData)
-    if (fullConfig.httpConfigData) {
-      console.log('💾 httpConfigData.params长度:', fullConfig.httpConfigData.params?.length || 0)
-      console.log('💾 httpConfigData.preRequestScript存在吗?', !!fullConfig.httpConfigData.preRequestScript)
     }
 
     emit('confirm', fullConfig)
@@ -361,7 +342,6 @@ const executeJsonPath = (data: any, path: string, defaultValue: any = null): any
 
     return result
   } catch (error) {
-    console.warn('JSONPath执行失败:', error)
     return defaultValue
   }
 }
@@ -392,7 +372,6 @@ const executeDataProcessing = (inputData: any): any => {
 
     return processedData
   } catch (error) {
-    console.error('数据处理失败:', error)
     return {
       _error: '处理失败: ' + error.message,
       _originalData: inputData
@@ -425,7 +404,6 @@ const executeProcessingPreview = async () => {
     processingPreviewData.value = result
     message.success('数据处理预览成功')
   } catch (error) {
-    console.error('处理预览失败:', error)
     message.error('处理预览失败: ' + error.message)
     processingPreviewData.value = null
   } finally {
@@ -494,7 +472,6 @@ watch(
   [() => formState.httpUrl, () => formState.httpMethod, () => formState.httpHeaders, () => formState.httpBody],
   () => {
     if (formState.selectedMethod === 'http') {
-      console.log('🔄 [RawDataConfigModal] HTTP配置已变更')
     }
   }
 )
@@ -525,8 +502,6 @@ watch(
  * 弹窗打开时调用，确保每次都是新的干净状态
  */
 const resetFormState = () => {
-  console.log('🔄 [RawDataConfigModal] 重置表单状态')
-
   // 重置表单数据
   formState.selectedMethod = 'json'
   formState.jsonData = JSON.stringify(
@@ -574,7 +549,6 @@ const resetFormState = () => {
  */
 const loadExampleData = () => {
   if (props.exampleData && formState.selectedMethod === 'json') {
-    console.log('📊 [RawDataConfigModal] 加载示例数据:', props.exampleData)
     formState.jsonData = JSON.stringify(props.exampleData, null, 2)
   }
 }
@@ -585,20 +559,9 @@ const loadExampleData = () => {
  */
 const loadEditData = (editData: any) => {
   if (!editData) {
-    console.log('🔄 [RawDataConfigModal] 无编辑数据，保持默认状态')
     return
   }
 
-  console.log('📝 [RawDataConfigModal] 加载编辑数据 - type:', editData.type)
-  console.log('📝 [RawDataConfigModal] editData keys:', Object.keys(editData))
-  console.log('📝 [RawDataConfigModal] editData.httpConfigData存在吗?', !!editData.httpConfigData)
-  if (editData.httpConfigData) {
-    console.log('📝 [RawDataConfigModal] httpConfigData.params长度:', editData.httpConfigData.params?.length || 0)
-    console.log(
-      '📝 [RawDataConfigModal] httpConfigData.preRequestScript存在吗?',
-      !!editData.httpConfigData.preRequestScript
-    )
-  }
 
   // 加载基本配置
   formState.selectedMethod = editData.type || 'json'
@@ -629,8 +592,6 @@ const loadEditData = (editData: any) => {
 
       // 如果有已保存的复杂配置，完整加载它们
       if (editData.httpConfigData) {
-        console.log('🔄 恢复完整httpConfig配置:', editData.httpConfigData)
-        console.log('🔄 恢复的params:', editData.httpConfigData.params)
         httpConfig.value = {
           ...httpConfig.value,
           ...editData.httpConfigData,
@@ -640,9 +601,7 @@ const loadEditData = (editData: any) => {
           // 🔥 关键修复：确保路径参数字段正确加载
           pathParameter: editData.httpConfigData.pathParameter
         }
-        console.log('🔄 恢复后httpConfig.value:', JSON.stringify(httpConfig.value, null, 2))
       } else {
-        console.log('⚠️ 没有找到httpConfigData，尝试从旧格式恢复')
         // 从旧格式恢复基础配置
         try {
           if (editData.headers && typeof editData.headers === 'string') {
@@ -661,7 +620,6 @@ const loadEditData = (editData: any) => {
             httpConfig.value.body = typeof editData.body === 'string' ? editData.body : JSON.stringify(editData.body)
           }
         } catch (error) {
-          console.warn('旧格式配置转换失败:', error)
         }
       }
       break
@@ -673,16 +631,12 @@ const loadEditData = (editData: any) => {
     processingState.defaultValue = editData.processingConfig.defaultValue || ''
     processingState.scriptCode = editData.processingConfig.scriptCode || ''
   }
-
-  console.log('✅ [RawDataConfigModal] 编辑数据加载完成')
 }
 
 /**
  * 组件挂载时初始化
  */
 onMounted(() => {
-  console.log('👁️ [RawDataConfigModal] 组件挂载，编辑模式:', props.isEditMode)
-
   // 先重置状态
   resetFormState()
 

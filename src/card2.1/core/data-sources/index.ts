@@ -12,8 +12,6 @@ import { StaticDataSourceService } from './static-data-source-service'
 export function initializeDataSources() {
   // 注册静态数据源
   dataSourceCenter.registerDataSourceType('static', StaticDataSourceService)
-
-  console.log('📊 [DataSources] 数据源类型注册完成')
 }
 
 // 导出数据源服务类

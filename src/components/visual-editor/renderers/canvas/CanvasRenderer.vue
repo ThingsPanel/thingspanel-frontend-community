@@ -168,7 +168,6 @@ onMounted(() => {
 // 添加保存时的提示
 const showSaveWarning = () => {
   // 这里可以触发一个全局的提示，告知用户功能尚未完成
-  console.warn($t('visualEditor.canvasNotComplete'))
   // 可以在这里添加一个全局的提示组件
 }
 

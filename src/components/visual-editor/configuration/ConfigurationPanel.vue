@@ -77,13 +77,6 @@
           <template v-else-if="layer.name === 'dataSource'">
             <div
               class="data-source-config"
-              @click="
-                console.log('🎯 数据源配置区域被点击!', {
-                  layer,
-                  activeTab: activeTab,
-                  selectedWidget: selectedWidget?.id
-                })
-              "
             >
               <!-- 使用现有的数据源配置组件 -->
               <!-- 🔄 使用v-model双向绑定取代手动事件处理 -->
@@ -98,7 +91,6 @@
                 :preview-mode="props.previewMode"
                 :global-polling-enabled="props.globalPollingEnabled"
                 @request-current-data="handleCurrentDataRequest"
-                @click="console.log('🎯 DataSourceConfigForm组件被点击!')"
               />
             </div>
           </template>
@@ -276,11 +268,9 @@ const dataSourceConfig = computed<DataSourceConfiguration | null>({
     return config?.dataSource || null
   },
   set: value => {
-    console.log('🔄 [ConfigurationPanel] dataSourceConfig setter 被调用:', { value, isUpdatingFromManager })
 
     // 🚨 防止循环更新：如果正在从ConfigurationManager更新，不再同步回去
     if (isUpdatingFromManager) {
-      console.log('⏸️ [ConfigurationPanel] 跳过循环更新 - 正在从Manager更新')
       return
     }
 
@@ -302,7 +292,6 @@ const dataSourceConfig = computed<DataSourceConfiguration | null>({
             ...value.metadata
           }
         }
-        console.log('🔄 [ConfigurationPanel] 更新数据源配置:', enhancedValue)
         configurationManager.updateConfiguration(props.selectedWidget.id, 'dataSource', enhancedValue)
 
         // 🔄 重构：发出数据源配置更新事件，由外部系统负责数据执行
@@ -312,9 +301,7 @@ const dataSourceConfig = computed<DataSourceConfiguration | null>({
           config: enhancedValue,
           action: 'config-updated'
         }
-        console.log('🚀 [ConfigurationPanel] 准备发出data-source-manager-update事件:', eventData)
         emit('data-source-manager-update', eventData)
-        console.log('✅ [ConfigurationPanel] data-source-manager-update事件已发出')
       } finally {
         // 🔥 修复：延迟重置标志，避免异步问题导致的递归更新
         nextTick(() => {
@@ -376,12 +363,8 @@ const componentDataSources = computed(() => {
 
   // 🔥 修复：处理 Card2.1 组件的 dataRequirements 格式
   if (definition?.dataRequirements) {
-    console.log('🔧 [ConfigurationPanel] 从 dataRequirements 转换数据源配置:', definition.dataRequirements)
-
     // 🔥 处理多数据源：为每个 dataFields 项创建独立的数据源配置
     if (definition.dataRequirements.dataFields && Array.isArray(definition.dataRequirements.dataFields)) {
-      console.log('🔧 [ConfigurationPanel] 检测到多数据源配置:', definition.dataRequirements.dataFields)
-
       return definition.dataRequirements.dataFields.map((field: any) => {
         // 为每个数据字段创建字段映射
         const fieldMappings: Record<string, any> = {
@@ -497,7 +480,6 @@ const componentDataSources = computed(() => {
   }
 
   // 🔥 如果都没有找到，提供默认配置
-  console.log(`🔧 [ConfigurationPanel] ${$t('visualEditor.dataSourceNotFound')}`)
   return [
     {
       key: 'main',
@@ -544,12 +526,6 @@ const enrichedDataSources = computed(() => {
  * 优先级：fieldMappings.defaultValue > 组件config中的默认数据 > 通用示例
  */
 function extractExampleDataFromDefinition(dataSource: any) {
-  console.log('🔧 [DEBUG-DataSource] 解析数据源定义:', {
-    key: dataSource.key,
-    hasFieldMappings: !!dataSource.fieldMappings,
-    fieldMappingsKeys: dataSource.fieldMappings ? Object.keys(dataSource.fieldMappings) : [],
-    hasFieldsToMap: !!dataSource.fieldsToMap
-  })
 
   // 1. 从 fieldMappings 的 defaultValue 构建示例数据
   if (dataSource.fieldMappings) {
@@ -564,7 +540,6 @@ function extractExampleDataFromDefinition(dataSource: any) {
     })
 
     if (hasDefaults) {
-      console.log('🔧 [DEBUG-DataSource] 使用 fieldMappings 默认值构建示例数据:', exampleFromMappings)
       return exampleFromMappings
     }
   }
@@ -573,13 +548,11 @@ function extractExampleDataFromDefinition(dataSource: any) {
   if (componentDefinition.value?.metadata?.testData) {
     const testData = componentDefinition.value.metadata.testData[dataSource.key]
     if (testData) {
-      console.log('✅ 使用组件元数据测试数据:', testData)
       return testData
     }
   }
 
   // 3. 使用通用默认数据
-  console.log('ℹ️ 使用通用默认示例数据')
   return null // 返回 null，让 DataSourceConfigForm 使用自己的默认数据生成逻辑
 }
 
@@ -598,14 +571,12 @@ watch(
   () => {
     // 防止循环更新的多重检查
     if (!props.selectedWidget || isUpdatingFromManager) {
-      console.log('⏸️ [ConfigurationPanel] 跳过同步 - 防循环保护')
       return
     }
 
     // 🔥 新增：防抖机制，避免短时间内重复同步
     const now = Date.now()
     if (now - lastSyncTime < 100) {
-      console.log('⏸️ [ConfigurationPanel] 跳过同步 - 防抖保护')
       return
     }
 
@@ -617,11 +588,8 @@ watch(
     })
 
     if (currentConfig === lastSyncConfig) {
-      console.log('⏸️ [ConfigurationPanel] 跳过同步 - 配置未变化')
       return
     }
-
-    console.log(`🔧 [ConfigurationPanel] 配置变化触发同步: ${props.selectedWidget.id}`)
     lastSyncTime = now
     lastSyncConfig = currentConfig
     syncConfigurationToManager()
@@ -636,8 +604,6 @@ let executorDataUpdateCleanup: (() => void) | null = null
 
 // 生命周期
 onMounted(() => {
-  console.log($t('visualEditor.configurationMounted'))
-
   // 🔄 重构：移除直接的执行器监听器，数据更新通过事件机制处理
   // 数据更新将通过PanelEditor的事件系统传递，不在此处直接监听
 })
@@ -659,8 +625,6 @@ onUnmounted(() => {
  * 加载组件配置
  */
 const loadWidgetConfiguration = async (widgetId: string) => {
-  console.log(`ConfigurationPanel - ${$t('visualEditor.configLoaded')}:`, widgetId)
-
   // 设置防循环标记
   isUpdatingFromManager = true
 
@@ -671,7 +635,6 @@ const loadWidgetConfiguration = async (widgetId: string) => {
       // 初始化默认配置
       configurationManager.initializeConfiguration(widgetId)
       config = configurationManager.getConfiguration(widgetId)
-      console.log($t('visualEditor.configInitialized'))
     }
 
     if (config) {
@@ -681,22 +644,8 @@ const loadWidgetConfiguration = async (widgetId: string) => {
       // 🚨 不直接设置 dataSourceConfig，因为它是 computed 属性
       // dataSourceConfig 会通过 getter 自动从 ConfigurationManager 获取最新值
       interactionConfig.value = { ...config.interaction }
-
-      // 🔍 [DEBUG-配置面板] 标签页切换时的完整配置打印
-      console.log('🔍 [DEBUG-配置面板] 加载配置时的完整对象:', {
-        widgetId,
-        fullConfig: smartDeepClone(config),
-        dataSourceConfig: config.dataSource ? smartDeepClone(config.dataSource) : null,
-        hasDataSourceBindings: !!config.dataSource?.config?.dataSourceBindings
-      })
-
-      // V6数据映射配置已由dataSourceConfig computed属性处理
-      console.log('✅ [ConfigurationPanel] 数据源配置已通过computed属性处理')
-
       // 🔄 重构：如果有保存的数据源配置，通过事件通知执行数据获取
       if (config.dataSource?.config && Object.keys(config.dataSource.config).length > 0) {
-        console.log('🔄 [ConfigurationPanel] 恢复配置后通过事件触发数据获取')
-
         // 发出事件让PanelEditor处理数据执行
         emit('data-source-manager-update', {
           componentId: widgetId,
@@ -705,11 +654,8 @@ const loadWidgetConfiguration = async (widgetId: string) => {
           action: 'config-restored'
         })
       }
-
-      console.log($t('visualEditor.configLoaded'), config)
     }
   } catch (error) {
-    console.error('加载组件配置失败:', error)
     message.error($t('visualEditor.configLoadFailed'))
   } finally {
     // 🔥 修复：延迟重置防循环标记，确保Vue响应式更新完成
@@ -725,8 +671,6 @@ const loadWidgetConfiguration = async (widgetId: string) => {
  * 处理来自ConfigurationManager的配置变化
  */
 const handleConfigurationChange = (config: WidgetConfiguration) => {
-  console.log(`ConfigurationPanel - ${$t('visualEditor.configUpdated')}:`, config)
-
   // 设置防循环标记
   isUpdatingFromManager = true
 
@@ -741,8 +685,6 @@ const handleConfigurationChange = (config: WidgetConfiguration) => {
 
     // V6: 数据源配置由dataSourceConfig computed属性管理
     // dataMappingConfig已移除，配置通过dataSourceConfig.value处理
-
-    console.log($t('visualEditor.configUpdated'))
   } finally {
     // 🔥 修复：延迟重置防循环标记，确保Vue响应式更新完成
     nextTick(() => {
@@ -774,7 +716,6 @@ const syncConfigurationToManager = async () => {
 
     configurationManager.setConfiguration(props.selectedWidget.id, config)
   } catch (error) {
-    console.error($t('visualEditor.configSyncFailed'), error)
   }
 }
 
@@ -797,7 +738,6 @@ const resetLocalConfiguration = () => {
 
   // V6: 数据源配置重置由dataSourceConfig computed属性处理
   // dataMappingConfig已移除
-  console.log(`🔧 [V6ConfigPanel] ${$t('visualEditor.configReset')}`)
 }
 
 /**
@@ -811,15 +751,12 @@ const handleValidation = (result: ValidationResult) => {
  * 处理多数据源数据更新
  */
 const handleDataSourceUpdate = (data: Record<string, any>) => {
-  console.log(`🔧 [ConfigurationPanel] 多数据源数据更新:`, data)
-
   // 更新本地数据状态
   multiDataSourceData.value = { ...data }
 
   // 发射事件给父组件，传递给实际的组件
   if (props.selectedWidget) {
     emit('multi-data-source-update', props.selectedWidget.id, data)
-    console.log(`🔧 [ConfigurationPanel] 发射多数据源更新事件: ${props.selectedWidget.id}`, data)
   }
 }
 
@@ -827,8 +764,6 @@ const handleDataSourceUpdate = (data: Record<string, any>) => {
  * 处理动态数据源更新
  */
 const handleDynamicDataSourceUpdate = (key: string, data: any) => {
-  console.log(`🔧 [ConfigurationPanel] 动态数据源更新 ${key}:`, data)
-
   // 更新本地数据状态
   multiDataSourceData.value = {
     ...multiDataSourceData.value,
@@ -866,8 +801,6 @@ const handleDynamicDataSourceUpdate = (key: string, data: any) => {
 
     // 发射事件给父组件
     emit('multi-data-source-update', props.selectedWidget.id, multiDataSourceData.value)
-    console.log(`🔧 [ConfigurationPanel] 发射动态数据源更新事件: ${props.selectedWidget.id}`, { [key]: data })
-    console.log(`🔧 [ConfigurationPanel] 已更新 ConfigurationManager 数据源配置`)
   }
 }
 
@@ -889,8 +822,6 @@ const getInitialDataSourceValues = () => {
       }
     })
   }
-
-  console.log('🔍 [ConfigurationPanel] 获取初始数据源值:', initialData)
   return initialData
 }
 
@@ -900,7 +831,6 @@ const getInitialDataSourceValues = () => {
  * 处理来自 EditorDataSourceConfig 的配置更新（保持向后兼容）
  */
 const handleEditorDataSourceUpdate = (config: any) => {
-  console.log('🔧 [ConfigurationPanel] 处理编辑器数据源配置更新（向后兼容）:', config)
   // 重定向到新的处理方法
   handleDataSourceConfigUpdate(config)
 }
@@ -909,8 +839,6 @@ const handleEditorDataSourceUpdate = (config: any) => {
  * 处理当前数据请求 - 🔥 提供运行时数据给配置面板
  */
 const handleCurrentDataRequest = (widgetId: string) => {
-  console.log('🔄 [ConfigurationPanel] 处理当前数据请求:', widgetId)
-
   // 请求父组件（PanelEditor）提供当前运行时数据
   emit('request-current-data', widgetId)
 }
@@ -925,7 +853,6 @@ const handleCurrentDataRequest = (widgetId: string) => {
  * 处理Base配置应用
  */
 const handleBaseConfigApply = (config: any) => {
-  console.log('🔧 [ConfigurationPanel] Base配置应用:', config)
   if (props.selectedWidget) {
     configurationManager.updateConfiguration(props.selectedWidget.id, 'base', config)
   }
@@ -966,7 +893,6 @@ const handleComponentConfigUpdate = (config: any) => {
         configurationManager.updateConfiguration(props.selectedWidget.id, 'component', config)
       }
     } catch (error) {
-      console.error('❌ [ConfigurationPanel] 保存组件配置失败:', error)
     } finally {
       isConfigUpdating = false
       componentConfigUpdateTimer = null
@@ -980,8 +906,6 @@ const handleComponentConfigUpdate = (config: any) => {
 const handleInteractionConfigChange = (configs: any[]) => {
   if (!props.selectedWidget?.id) return
 
-  console.log('🔧 [ConfigurationPanel] 交互配置更新:', configs)
-
   // 通过计算属性setter自动更新本地交互配置
   interactionConfigList.value = configs
 
@@ -993,7 +917,6 @@ const handleInteractionConfigChange = (configs: any[]) => {
  * 处理Base配置重置
  */
 const handleBaseConfigReset = () => {
-  console.log('🔧 [ConfigurationPanel] Base配置重置')
   baseConfig.value = {}
 }
 
@@ -1105,13 +1028,7 @@ watch(
 
 // 🚨 移除标签页切换时的配置重载，避免循环依赖
 // 配置的加载应该由组件选择变化触发，而不是标签页切换
-// watch(activeTab, async (newTab, oldTab) => {
-//   console.log('🔄 [ConfigurationPanel] 标签页切换:', { oldTab, newTab })
-//   if (props.selectedWidget && newTab !== oldTab && newTab) {
-//     console.log('🔄 [ConfigurationPanel] 标签页切换触发配置重载:', props.selectedWidget.id)
-//     await loadWidgetConfiguration(props.selectedWidget.id)
-//   }
-// })
+
 </script>
 
 <style scoped>

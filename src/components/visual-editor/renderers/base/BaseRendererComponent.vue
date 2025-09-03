@@ -36,8 +36,6 @@ const emit = defineEmits<BaseRendererEmits>()
 const unifiedEditor = useVisualEditor()
 
 const addWidget = async (componentType: string, position?: { x: number; y: number }) => {
-  console.log('🎯 [BaseRenderer] Adding widget:', componentType)
-
   try {
     // 🔥 确保系统已初始化
     await unifiedEditor.initialize()
@@ -54,9 +52,7 @@ const addWidget = async (componentType: string, position?: { x: number; y: numbe
     }
 
     await unifiedEditor.addNode(newNode)
-    console.log('✅ [BaseRenderer] Widget added successfully:', newNode.id)
   } catch (error) {
-    console.error('❌ [BaseRenderer] Failed to add widget:', error)
     // 重新抛出错误让上层处理
     throw error
   }
@@ -85,7 +81,6 @@ const setState = (newState: typeof rendererState.value) => {
     const oldState = rendererState.value
     rendererState.value = newState
     emit('state-change', newState)
-    console.log(`[BaseRenderer] State changed: ${oldState} -> ${newState}`)
   }
 }
 
@@ -94,7 +89,6 @@ const handleError = (error: Error) => {
   rendererError.value = error
   setState('error')
   emit('error', error)
-  console.error('[BaseRenderer] Error:', error)
 }
 
 // 3. 实现统一的 handleDrop 逻辑
@@ -185,7 +179,6 @@ const destroy = async () => {
     setState('destroyed')
     isInitialized.value = false
   } catch (error) {
-    console.error('[BaseRenderer] Destroy error:', error)
   }
 }
 

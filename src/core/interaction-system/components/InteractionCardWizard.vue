@@ -244,7 +244,6 @@ const emit = defineEmits<Emits>()
 // 🔥 注入Visual Editor状态获取当前画布组件
 const visualEditorState = inject<{ getAvailableComponents: () => any[] }>('visualEditorState', {
   getAvailableComponents: () => {
-    console.log('[INTERACTION-DEBUG] Visual Editor状态未注入，返回空组件列表')
     return []
   }
 })
@@ -316,12 +315,6 @@ const actionTypeOptions = computed(() => [
 // ✅ 动态获取当前画布上的组件（用于目标组件选择）
 const componentOptions = computed(() => {
   const components = visualEditorState.getAvailableComponents()
-
-  console.log('[INTERACTION-DEBUG] 获取画布组件:', {
-    componentCount: components.length,
-    components: components
-  })
-
   return components.map(comp => ({
     // 优先使用标题，然后是名称，最后是ID的前8位
     label: comp.title || comp.label || comp.name || `组件 (${comp.id.slice(0, 8)}...)`,
@@ -333,7 +326,6 @@ const componentOptions = computed(() => {
 // ✅ 根据选择的目标组件动态获取可响应属性
 const targetPropertyOptions = computed(() => {
   if (!currentInteraction.value.targetComponentId) {
-    console.log('[INTERACTION-DEBUG] 未选择目标组件')
     return []
   }
 
@@ -342,21 +334,12 @@ const targetPropertyOptions = computed(() => {
   const targetComponent = components.find(comp => comp.id === currentInteraction.value.targetComponentId)
 
   if (!targetComponent) {
-    console.log('[INTERACTION-DEBUG] 未找到目标组件:', currentInteraction.value.targetComponentId)
     return []
   }
-
-  console.log('[INTERACTION-DEBUG] 目标组件:', {
-    id: targetComponent.id,
-    type: targetComponent.type,
-    title: targetComponent.title
-  })
-
   // 获取该组件类型的可响应属性（通过属性暴露注册表）
   const componentExposure = propertyExposureRegistry.getComponentExposure(targetComponent.type)
 
   if (!componentExposure || !componentExposure.listenableProperties) {
-    console.log('[INTERACTION-DEBUG] 目标组件无可响应属性')
     return []
   }
 
@@ -390,20 +373,12 @@ const targetPropertyOptions = computed(() => {
   })
 
   const options = groupedOptions.length > 0 ? groupedOptions : []
-
-  console.log('[INTERACTION-DEBUG] 目标组件可响应属性:', options)
   return options
 })
 
 // 🔥 可用属性选项 - 基于组件类型动态获取
 const availablePropertyOptions = computed(() => {
-  console.log('[INTERACTION-DEBUG] availablePropertyOptions 计算:', {
-    componentType: props.componentType,
-    registryKeys: propertyExposureRegistry.getAllComponentTypes()
-  })
-
   if (!props.componentType) {
-    console.log('[INTERACTION-DEBUG] ❌ componentType 为空')
     return []
   }
 
@@ -411,7 +386,6 @@ const availablePropertyOptions = computed(() => {
   const componentExposure = propertyExposureRegistry.getComponentExposure(props.componentType)
 
   if (!componentExposure || !componentExposure.listenableProperties) {
-    console.log('[INTERACTION-DEBUG] ❌ 未找到组件属性暴露配置:', props.componentType)
     return []
   }
 
@@ -445,7 +419,6 @@ const availablePropertyOptions = computed(() => {
   })
 
   const options = groupedOptions.length > 0 ? groupedOptions : []
-  console.log('[INTERACTION-DEBUG] ✅ 生成的属性选项:', options)
   return options
 })
 
@@ -708,10 +681,8 @@ const handleConditionTypeChange = (value: string) => {
 
 // 🔥 内部菜单相关处理函数
 const handleUrlTypeChange = () => {
-  console.log('[URL-TYPE-DEBUG] URL类型变化为:', urlType.value)
   if (urlType.value === 'internal') {
     // 切换到内部菜单时，加载菜单选项
-    console.log('[URL-TYPE-DEBUG] 切换到内部菜单，开始加载菜单选项')
     // 强制重新加载菜单（不检查缓存）
     menuOptions.value = [] // 清空缓存
     loadMenuOptions()
@@ -719,7 +690,6 @@ const handleUrlTypeChange = () => {
     currentInteraction.value.url = ''
   } else {
     // 切换到外部链接时，清空菜单选择
-    console.log('[URL-TYPE-DEBUG] 切换到外部链接，清空菜单选择')
     selectedMenuPath.value = ''
   }
 }
@@ -729,41 +699,23 @@ const handleMenuPathChange = () => {
 }
 
 const loadMenuOptions = async () => {
-  console.log('[MENU-DEBUG] 开始加载菜单数据...')
   menuLoading.value = true
   try {
     const result = await fetchGetUserRoutes()
-    console.log('[MENU-DEBUG] API完整响应结构:', JSON.stringify(result, null, 2))
-    console.log('[MENU-DEBUG] API响应类型检查:', {
-      hasResult: !!result,
-      hasData: !!(result && result.data),
-      hasList: !!(result && result.data && result.data.list),
-      dataType: typeof result?.data,
-      listType: typeof result?.data?.list,
-      listLength: result?.data?.list?.length
-    })
-
     if (result && result.data && result.data.list) {
-      console.log('[MENU-DEBUG] 🎯 路由数据数组:', result.data.list)
-      console.log('[MENU-DEBUG] 🎯 第一个路由示例:', result.data.list[0])
 
       // 将路由数据转换为选项格式
       const flattened = flattenRoutes(result.data.list)
-      console.log('[MENU-DEBUG] 🎯 扁平化结果:', flattened)
       menuOptions.value = flattened
-      console.log('[MENU-DEBUG] ✅ 菜单加载成功，共', flattened.length, '项')
 
       // 如果没有菜单项，说明扁平化函数有问题
       if (flattened.length === 0) {
-        console.log('[MENU-DEBUG] ⚠️ 扁平化结果为空，但API有数据，检查扁平化函数')
         message.error(t('interaction.messages.menuDataProcessFailed'))
       }
     } else {
-      console.log('[MENU-DEBUG] ❌ API响应数据结构异常:', result)
       message.error(t('interaction.messages.menuDataAbnormal'))
     }
   } catch (error) {
-    console.error('[MENU-DEBUG] ❌ 加载菜单失败:', error)
     message.error(t('interaction.messages.menuLoadFailed') + ': ' + error.message)
   } finally {
     menuLoading.value = false
@@ -772,12 +724,10 @@ const loadMenuOptions = async () => {
 
 // 扁平化路由数据，适配新的数据结构（path + meta.title）
 const flattenRoutes = (routes: any[]): { label: string; value: string }[] => {
-  console.log('[FLATTEN-DEBUG] 开始扁平化，总路由数:', routes.length)
   const options: { label: string; value: string }[] = []
 
   // 递归处理函数
   const processRoute = (route: any, parentTitle = '') => {
-    console.log('[FLATTEN-DEBUG] 处理路由:', route.name || route.id)
 
     // 新数据结构：path 作为路径，meta.title 作为标题
     const path = route.path
@@ -785,43 +735,19 @@ const flattenRoutes = (routes: any[]): { label: string; value: string }[] => {
 
     // 生成显示标签（如果有父级，用 / 分隔）
     const displayLabel = parentTitle ? `${parentTitle} / ${title}` : title
-
-    console.log('[FLATTEN-DEBUG] 字段提取:', {
-      path: path,
-      metaTitle: route.meta?.title,
-      metaI18nKey: route.meta?.i18nKey,
-      name: route.name,
-      finalTitle: title,
-      displayLabel: displayLabel,
-      hideInMenu: route.meta?.hideInMenu
-    })
-
     // 如果有路径和标题，并且不是隐藏菜单项，就添加到选项中
     if (path && title && !route.meta?.hideInMenu) {
       const option = { label: displayLabel, value: path }
       options.push(option)
-      console.log('[FLATTEN-DEBUG] ✅ 添加选项:', option)
-    } else {
-      console.log('[FLATTEN-DEBUG] ❌ 跳过路由:', {
-        hasPath: !!path,
-        hasTitle: !!title,
-        hideInMenu: route.meta?.hideInMenu,
-        reason: !path ? '无路径' : !title ? '无标题' : route.meta?.hideInMenu ? '隐藏菜单项' : '其他'
-      })
-    }
-
+    } 
     // 递归处理所有子路由
     if (route.children && Array.isArray(route.children) && route.children.length > 0) {
-      console.log('[FLATTEN-DEBUG] 发现子路由:', route.children.length, '个')
       route.children.forEach(child => processRoute(child, displayLabel))
     }
   }
 
   // 处理所有顶级路由
   routes.forEach(route => processRoute(route))
-
-  console.log('[FLATTEN-DEBUG] 扁平化完成，总共生成:', options.length, '个选项')
-  console.log('[FLATTEN-DEBUG] 最终选项列表:', options)
   return options
 }
 

@@ -314,7 +314,6 @@ const setNestedValue = (obj: Record<string, any>, path: string, value: any) => {
 const updateNestedValue = (path: string, value: any) => {
   if (isUpdatingFromProps) return
 
-  console.log('🔄 [AutoFormGenerator] 更新值:', { path, value })
 
   setNestedValue(localValue, path, value)
 
@@ -396,7 +395,6 @@ const validate = async (): Promise<boolean> => {
     await formRef.value?.validate()
     return true
   } catch (validationErrors: any) {
-    console.warn('🚨 [AutoFormGenerator] 表单验证失败:', validationErrors)
     return false
   }
 }
@@ -421,7 +419,6 @@ watch(
     isUpdatingFromProps = true
     try {
       Object.assign(localValue, newValue)
-      console.log('📥 [AutoFormGenerator] 同步props:', localValue)
     } finally {
       nextTick(() => {
         setTimeout(() => {

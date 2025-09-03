@@ -17,7 +17,6 @@ import type { WidgetConfiguration } from '@/components/visual-editor/configurati
  * 测试配置内容哈希去重机制
  */
 async function testContentHashDeduplication() {
-  console.log('\n🔍 ===== 测试1：内容哈希去重机制 =====')
 
   const testComponentId = 'test-component-hash'
 
@@ -53,35 +52,26 @@ async function testContentHashDeduplication() {
   }
 
   // 第一次设置配置
-  console.log('📝 第一次设置配置...')
   const result1 = configurationStateManager.setConfiguration(testComponentId, testConfig, 'user')
-  console.log('✅ 第一次设置结果:', result1)
 
   // 第二次设置相同配置（应该被去重）
-  console.log('📝 第二次设置相同配置...')
   const result2 = configurationStateManager.setConfiguration(testComponentId, testConfig, 'user')
-  console.log('✅ 第二次设置结果（应该为false）:', result2)
 
   // 第三次设置稍微不同的配置
   const modifiedConfig = {
     ...testConfig,
     base: { ...testConfig.base, title: 'Modified Test Component' }
   }
-  console.log('📝 第三次设置修改后的配置...')
   const result3 = configurationStateManager.setConfiguration(testComponentId, modifiedConfig, 'user')
-  console.log('✅ 第三次设置结果（应该为true）:', result3)
 
   // 获取配置版本信息
   const version = configurationStateManager.getConfigurationVersion(testComponentId)
-  console.log('📊 配置版本信息:', version)
 }
 
 /**
  * 测试配置分节更新的循环检测
  */
 async function testSectionUpdateCircularDetection() {
-  console.log('\n🔍 ===== 测试2：分节更新循环检测 =====')
-
   const testComponentId = 'test-component-circular'
 
   // 初始化组件配置
@@ -104,27 +94,20 @@ async function testSectionUpdateCircularDetection() {
     createdAt: Date.now(),
     updatedAt: Date.now()
   }
-
-  console.log('📝 第一次更新数据源配置...')
   const result1 = configurationStateManager.updateConfigurationSection(
     testComponentId,
     'dataSource',
     dataSourceConfig,
     'user'
   )
-  console.log('✅ 第一次更新结果:', result1)
-
-  console.log('📝 第二次更新相同数据源配置（应该被去重）...')
   const result2 = configurationStateManager.updateConfigurationSection(
     testComponentId,
     'dataSource',
     dataSourceConfig,
     'user'
   )
-  console.log('✅ 第二次更新结果（应该为false）:', result2)
 
   // 模拟快速连续更新（测试循环检测）
-  console.log('📝 测试快速连续更新...')
   setTimeout(() => {
     const result3 = configurationStateManager.updateConfigurationSection(
       testComponentId,
@@ -132,7 +115,6 @@ async function testSectionUpdateCircularDetection() {
       dataSourceConfig,
       'user'
     )
-    console.log('✅ 快速更新结果1:', result3)
   }, 0)
 
   setTimeout(() => {
@@ -142,7 +124,6 @@ async function testSectionUpdateCircularDetection() {
       dataSourceConfig,
       'user'
     )
-    console.log('✅ 快速更新结果2:', result4)
   }, 0)
 }
 
@@ -150,8 +131,6 @@ async function testSectionUpdateCircularDetection() {
  * 测试添加第二个数据项的场景（原始问题场景）
  */
 async function testAddSecondDataItemScenario() {
-  console.log('\n🔍 ===== 测试3：添加第二个数据项场景 =====')
-
   const testComponentId = 'test-component-second-item'
 
   // 初始化组件配置

@@ -167,7 +167,6 @@ const onUrlChange = () => {
  * 处理接口信息更新（从Step1传递过来）
  */
 const onApiInfoUpdate = (apiInfo: any) => {
-  console.log('🔥 [父组件] 接收到接口信息更新:', apiInfo)
   currentApiInfo.value = apiInfo
 }
 
@@ -175,7 +174,6 @@ const onApiInfoUpdate = (apiInfo: any) => {
  * Tab切换函数
  */
 const switchToTab = (tab: 'basic' | 'headers' | 'params' | 'scripts') => {
-  console.log('🔄 切换到Tab:', tab)
   currentTab.value = tab
 }
 
@@ -191,10 +189,6 @@ const isBasicConfigValid = computed(() => {
  */
 const updateConfig = () => {
   // 🔥 关键修复：直接发射当前localConfig，让响应式系统正常工作
-  console.log('🔥 [父组件] HttpConfigForm updateConfig 被调用!')
-  console.log('🔥 [父组件] localConfig.headers 当前值:', JSON.stringify(localConfig.headers, null, 2))
-  console.log('🔥 [父组件] localConfig.params 当前值:', JSON.stringify(localConfig.params, null, 2))
-  console.log('🔥 [父组件] 完整 localConfig:', JSON.stringify(localConfig, null, 2))
 
   const config = { ...localConfig }
 
@@ -237,9 +231,7 @@ const updateConfig = () => {
     config.pathParams = []
   }
 
-  console.log('🔥 [父组件] HttpConfigForm 准备emit事件，最终config:', JSON.stringify(config, null, 2))
   emit('update:modelValue', config)
-  console.log('🔥 [父组件] HttpConfigForm emit事件已发射!')
 }
 
 /**
@@ -252,17 +244,11 @@ let isUpdatingToParent = false
  * 安全的配置更新 - 防止循环更新
  */
 const safeUpdateConfig = () => {
-  console.log('🔥 [父组件] safeUpdateConfig 被调用!')
-  console.log('🔥 [父组件] isUpdatingFromProps:', isUpdatingFromProps)
-  console.log('🔥 [父组件] isUpdatingToParent:', isUpdatingToParent)
-
   if (isUpdatingFromProps || isUpdatingToParent) {
-    console.log('⏸️ [父组件] HttpConfigForm 跳过更新 - 防止循环:', { isUpdatingFromProps, isUpdatingToParent })
     return
   }
 
   isUpdatingToParent = true
-  console.log('🔄 [父组件] HttpConfigForm 开始安全更新配置')
 
   try {
     updateConfig()
@@ -270,7 +256,6 @@ const safeUpdateConfig = () => {
     // 延迟重置，确保更新完成
     nextTick(() => {
       isUpdatingToParent = false
-      console.log('🔄 [父组件] HttpConfigForm 安全更新完成，标志重置')
     })
   }
 }
@@ -283,7 +268,6 @@ watch(
   () => {
     // 🔥 强制重置标志，确保参数更新不被阻止
     if (isUpdatingFromProps) {
-      console.log('🔧 [父组件] 检测到从Props更新，延迟触发safeUpdateConfig')
       nextTick(() => {
         isUpdatingFromProps = false
         safeUpdateConfig()
@@ -305,7 +289,6 @@ const syncPropsToLocal = (newValue: any) => {
   if (!newValue || isUpdatingToParent) return
 
   isUpdatingFromProps = true
-  console.log('📥 HttpConfigForm syncPropsToLocal:', newValue)
 
   try {
     // 基础配置同步
@@ -362,7 +345,6 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
             :model-value="localConfig"
             @update:model-value="
               value => {
-                console.log('🔥 [父组件] 接收到Step1更新:', value)
                 Object.assign(localConfig, value)
               }
             "
@@ -377,7 +359,6 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
             :current-api-info="currentApiInfo"
             @update:model-value="
               value => {
-                console.log('🔥 [父组件] 接收到Step2更新:', value)
                 Object.assign(localConfig, value)
               }
             "
@@ -390,25 +371,16 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
             :current-api-info="currentApiInfo"
             @update:model-value="
               value => {
-                console.log('🔥 [父组件] 接收到Step3更新:', value)
-                console.log('🔄 [父组件] 更新前localConfig.params:', localConfig.params)
-                console.log('🔄 [父组件] 当前状态标志:', { isUpdatingFromProps, isUpdatingToParent })
-
                 // 🔧 强制重置循环保护标志，确保参数更新能通过
                 if (isUpdatingFromProps) {
-                  console.log('🔧 [父组件] 强制重置isUpdatingFromProps，允许参数更新')
                   isUpdatingFromProps = false
                 }
 
                 // 🔥 强制响应式更新 - 使用直接赋值替代Object.assign
                 localConfig.params = value.params || []
 
-                console.log('🔄 [父组件] 更新后localConfig.params:', localConfig.params)
-
                 // 🔥 强制刷新组件状态
-                nextTick(() => {
-                  console.log('🔄 [父组件] nextTick - Step3参数更新完成')
-                })
+                nextTick(() => {})
               }
             "
           />
@@ -419,7 +391,6 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
             :model-value="localConfig"
             @update:model-value="
               value => {
-                console.log('🔥 [父组件] 接收到Step4更新:', value)
                 Object.assign(localConfig, value)
               }
             "

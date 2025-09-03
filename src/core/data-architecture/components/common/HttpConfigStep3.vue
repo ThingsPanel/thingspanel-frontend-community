@@ -30,13 +30,7 @@ const emit = defineEmits<Emits>()
 /**
  * 更新查询参数
  */
-const updateParams = (params: EnhancedParameter[]) => {
-  console.log('📊 更新查询参数:', params)
-  emit('update:modelValue', {
-    ...props.modelValue,
-    params
-  })
-}
+
 </script>
 
 <template>
@@ -50,7 +44,6 @@ const updateParams = (params: EnhancedParameter[]) => {
       key-placeholder="参数名（如：deviceId）"
       value-placeholder="参数值（如：DEV001）"
       :current-api-info="currentApiInfo"
-      @update:model-value="updateParams"
     />
 
     <div style="margin-top: 16px; padding: 12px; background: var(--info-color-suppl); border-radius: 6px">

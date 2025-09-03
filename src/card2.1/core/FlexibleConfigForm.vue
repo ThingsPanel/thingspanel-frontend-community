@@ -107,8 +107,6 @@ const detectComponentConfig = async () => {
   if (!props.componentType) return
 
   try {
-    console.log('[FlexibleConfigForm] 开始检测配置:', props.componentType)
-
     // 尝试动态导入TS配置
     try {
       // 使用动态导入，支持任意组件类型
@@ -117,10 +115,8 @@ const detectComponentConfig = async () => {
 
       if (tsModule.testComponentTSConfig || tsModule.default) {
         tsConfig.value = tsModule.testComponentTSConfig || tsModule.default
-        console.log('[FlexibleConfigForm] ✅ 检测到TS配置:', props.componentType)
       }
     } catch (e) {
-      console.log('[FlexibleConfigForm] ❌ 未找到TS配置:', props.componentType, e)
     }
 
     // 尝试动态导入Vue配置
@@ -130,13 +126,10 @@ const detectComponentConfig = async () => {
 
       if (vueModule.default) {
         vueConfig.value = vueModule.default
-        console.log('[FlexibleConfigForm] ✅ 检测到Vue配置:', props.componentType)
       }
     } catch (e) {
-      console.log('[FlexibleConfigForm] ❌ 未找到Vue配置:', props.componentType, e)
     }
   } catch (error) {
-    console.error('[FlexibleConfigForm] 配置检测失败:', error)
   }
 }
 

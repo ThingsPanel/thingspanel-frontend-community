@@ -35,41 +35,25 @@ export class DataSourceMapper {
    * @returns 映射后的组件 props
    */
   static mapDataSources(componentType: string, executorData: ExecutorData | null | undefined): DataSourceMappingResult {
-    console.log(`🔄 [DataSourceMapper] 开始映射组件数据源:`, {
-      componentType,
-      hasExecutorData: !!executorData,
-      executorDataKeys: executorData ? Object.keys(executorData) : []
-    })
-
     // 获取组件定义
     const definition = ComponentRegistry.get(componentType)
     if (!definition) {
-      console.warn(`⚠️ [DataSourceMapper] 组件 ${componentType} 未注册，返回空映射`)
       return {}
     }
 
     // 获取组件的数据源配置
     const dataSourceKeys = ComponentRegistry.getDataSourceKeys(componentType)
     if (dataSourceKeys.length === 0) {
-      console.log(`ℹ️ [DataSourceMapper] 组件 ${componentType} 无数据源配置`)
       return {}
     }
 
     // 如果没有执行器数据，返回空值映射
     if (!executorData) {
-      console.log(`ℹ️ [DataSourceMapper] 执行器数据为空，返回 null 映射`)
       return this.createNullMapping(dataSourceKeys)
     }
 
     // 执行数据源映射
     const mappingResult = this.performMapping(dataSourceKeys, executorData)
-
-    console.log(`✅ [DataSourceMapper] 映射完成:`, {
-      componentType,
-      dataSourceKeys,
-      mappingResult
-    })
-
     return mappingResult
   }
 
@@ -84,8 +68,6 @@ export class DataSourceMapper {
     dataSourceKeys.forEach(key => {
       nullMapping[key] = null
     })
-
-    console.log(`🔄 [DataSourceMapper] 创建空值映射:`, nullMapping)
     return nullMapping
   }
 
@@ -100,15 +82,11 @@ export class DataSourceMapper {
 
     // 策略1: 优先从 main 字段中提取数据
     if (executorData.main && typeof executorData.main === 'object') {
-      console.log(`🔍 [DataSourceMapper] 从 main 字段提取数据:`, executorData.main)
-
       dataSourceKeys.forEach(key => {
         if (key in executorData.main!) {
           result[key] = executorData.main![key]
-          console.log(`✓ [DataSourceMapper] 从 main.${key} 映射数据:`, result[key])
         } else {
           result[key] = null
-          console.log(`⚠️ [DataSourceMapper] main.${key} 不存在，设为 null`)
         }
       })
 
@@ -116,15 +94,11 @@ export class DataSourceMapper {
     }
 
     // 策略2: 直接从 executorData 根级别提取数据
-    console.log(`🔍 [DataSourceMapper] 从根级别提取数据`)
-
     dataSourceKeys.forEach(key => {
       if (key in executorData) {
         result[key] = executorData[key]
-        console.log(`✓ [DataSourceMapper] 从根级别 ${key} 映射数据:`, result[key])
       } else {
         result[key] = null
-        console.log(`⚠️ [DataSourceMapper] 根级别 ${key} 不存在，设为 null`)
       }
     })
 
@@ -133,7 +107,6 @@ export class DataSourceMapper {
     const hasAnyValidData = dataSourceKeys.some(key => key in executorData && executorData[key] !== null)
 
     if (hasAnyValidData) {
-      console.log(`🔍 [DataSourceMapper] 检测到已合并的数据源`)
       return result // 使用策略2的结果
     }
 
@@ -150,29 +123,20 @@ export class DataSourceMapper {
     componentType: string,
     staticParams: Record<string, any> | null | undefined
   ): Record<string, any> {
-    console.log(`🔄 [DataSourceMapper] 映射静态参数:`, {
-      componentType,
-      hasStaticParams: !!staticParams,
-      staticParamsKeys: staticParams ? Object.keys(staticParams) : []
-    })
-
     // 获取组件定义
     const definition = ComponentRegistry.get(componentType)
     if (!definition) {
-      console.warn(`⚠️ [DataSourceMapper] 组件 ${componentType} 未注册，返回空静态参数`)
       return {}
     }
 
     // 获取组件的静态参数配置
     const staticParamKeys = ComponentRegistry.getStaticParamKeys(componentType)
     if (staticParamKeys.length === 0) {
-      console.log(`ℹ️ [DataSourceMapper] 组件 ${componentType} 无静态参数配置`)
       return {}
     }
 
     // 如果没有静态参数，返回默认值
     if (!staticParams) {
-      console.log(`ℹ️ [DataSourceMapper] 静态参数为空，返回默认值`)
       return this.getDefaultStaticParams(definition, staticParamKeys)
     }
 
@@ -181,16 +145,12 @@ export class DataSourceMapper {
     staticParamKeys.forEach(key => {
       if (key in staticParams) {
         result[key] = staticParams[key]
-        console.log(`✓ [DataSourceMapper] 映射静态参数 ${key}:`, result[key])
       } else {
         // 使用默认值
         const defaultValue = this.getDefaultStaticParamValue(definition, key)
         result[key] = defaultValue
-        console.log(`🔧 [DataSourceMapper] 使用默认静态参数 ${key}:`, defaultValue)
       }
     })
-
-    console.log(`✅ [DataSourceMapper] 静态参数映射完成:`, result)
     return result
   }
 
@@ -221,7 +181,7 @@ export class DataSourceMapper {
    */
   private static getDefaultStaticParamValue(definition: ComponentDefinition, key: string): any {
     // 从组件定义的默认配置中获取
-    if (definition.defaultConfig?.staticParams?.[key] !== undefined) {
+    if (definition?.defaultConfig?.staticParams?.[key] !== undefined) {
       return definition.defaultConfig.staticParams[key]
     }
 
@@ -269,16 +229,6 @@ export class DataSourceMapper {
     const extraKeys = actualKeys.filter(key => !expectedKeys.includes(key))
 
     const isValid = missingKeys.length === 0
-
-    console.log(`🔍 [DataSourceMapper] 验证映射结果:`, {
-      componentType,
-      expectedKeys,
-      actualKeys,
-      missingKeys,
-      extraKeys,
-      isValid
-    })
-
     return { isValid, missingKeys, extraKeys }
   }
 

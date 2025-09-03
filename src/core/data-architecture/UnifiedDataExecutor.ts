@@ -132,9 +132,6 @@ class HttpExecutor implements DataSourceExecutor {
       if (!url) {
         return this.createErrorResult(config.id, 'HTTP_NO_URL', 'URL未配置', startTime)
       }
-
-      console.log(`🌐 [UnifiedExecutor] HTTP请求: ${method} ${url}`)
-
       const response = await request({
         url,
         method: method.toLowerCase() as any,
@@ -162,8 +159,6 @@ class HttpExecutor implements DataSourceExecutor {
       }
     } catch (error: any) {
       const responseTime = Date.now() - startTime
-      console.error(`❌ [UnifiedExecutor] HTTP请求失败:`, error)
-
       return this.createErrorResult(config.id, 'HTTP_REQUEST_FAILED', error.message || '请求失败', startTime, {
         responseTime
       })
@@ -266,9 +261,6 @@ class StaticExecutor implements DataSourceExecutor {
 
     try {
       const { data } = config.config
-
-      console.log(`📄 [UnifiedExecutor] 静态数据: ${config.id}`)
-
       // 应用数据转换
       const transformedData = this.applyTransform(data, config.config.transform)
 
@@ -328,8 +320,6 @@ class JsonExecutor implements DataSourceExecutor {
           }
         }
       }
-
-      console.log(`📋 [UnifiedExecutor] JSON数据: ${config.id}`)
 
       // 解析JSON
       const parsedData = JSON.parse(jsonContent)
@@ -393,8 +383,6 @@ class WebSocketExecutor implements DataSourceExecutor {
         }
       }
 
-      console.log(`🔌 [UnifiedExecutor] WebSocket连接: ${wsUrl}`)
-
       // 简单实现：WebSocket需要异步处理，这里返回连接状态
       return {
         success: true,
@@ -440,8 +428,6 @@ export class UnifiedDataExecutor {
     this.registerExecutor(new JsonExecutor())
     this.registerExecutor(new WebSocketExecutor())
     this.registerExecutor(new DataSourceBindingsExecutor()) // 🆕 支持data-source-bindings类型
-
-    console.log('[UnifiedDataExecutor] 统一数据执行器初始化完成')
   }
 
   /**
@@ -449,7 +435,6 @@ export class UnifiedDataExecutor {
    */
   registerExecutor(executor: DataSourceExecutor): void {
     this.executors.set(executor.type, executor)
-    console.log(`[UnifiedDataExecutor] 注册执行器: ${executor.type}`)
   }
 
   /**
@@ -482,21 +467,11 @@ export class UnifiedDataExecutor {
       }
     }
 
-    console.log(`🚀 [UnifiedDataExecutor] 执行数据源: ${config.id} (${type})`)
-
     try {
       const result = await executor.execute(config)
 
-      if (result.success) {
-        console.log(`✅ [UnifiedDataExecutor] 执行成功: ${config.id}`)
-      } else {
-        console.warn(`⚠️ [UnifiedDataExecutor] 执行失败: ${config.id} - ${result.error}`)
-      }
-
       return result
     } catch (error: any) {
-      console.error(`❌ [UnifiedDataExecutor] 执行异常: ${config.id}`, error)
-
       return {
         success: false,
         error: error.message || '执行器异常',
@@ -511,8 +486,6 @@ export class UnifiedDataExecutor {
    * 批量执行多个数据源
    */
   async executeMultiple(configs: UnifiedDataConfig[]): Promise<UnifiedDataResult[]> {
-    console.log(`🔄 [UnifiedDataExecutor] 批量执行 ${configs.length} 个数据源`)
-
     const results = await Promise.allSettled(configs.map(config => this.execute(config)))
 
     return results.map((result, index) => {
@@ -557,7 +530,6 @@ export class UnifiedDataExecutor {
    * 清理资源
    */
   cleanup(): void {
-    console.log('[UnifiedDataExecutor] 清理所有执行器资源')
     this.executors.forEach(executor => {
       if (executor.cleanup) {
         executor.cleanup()
@@ -577,7 +549,6 @@ class DataSourceBindingsExecutor implements DataSourceExecutor {
     const startTime = Date.now()
 
     try {
-      console.log(`📋 [DataSourceBindings] 处理数据源绑定配置: ${config.id}`)
 
       // 从config中提取dataSourceBindings配置
       const bindings = config.config?.dataSourceBindings || config.config
@@ -608,25 +579,20 @@ class DataSourceBindingsExecutor implements DataSourceExecutor {
           try {
             resultData =
               typeof firstBinding.rawData === 'string' ? JSON.parse(firstBinding.rawData) : firstBinding.rawData
-            console.log(`✅ [DataSourceBindings] 从rawData提取数据:`, resultData)
           } catch (error) {
             // 如果解析失败，直接使用原始数据
             resultData = firstBinding.rawData
-            console.log(`⚠️ [DataSourceBindings] rawData解析失败，使用原始数据:`, resultData)
           }
         } else if (firstBinding?.finalResult) {
           // 使用finalResult
           resultData = firstBinding.finalResult
-          console.log(`✅ [DataSourceBindings] 从finalResult提取数据:`, resultData)
         } else {
           // 直接使用整个binding作为数据
           resultData = firstBinding
-          console.log(`✅ [DataSourceBindings] 使用完整binding数据:`, resultData)
         }
       } else {
         // 情况2：直接使用config中的数据
         resultData = bindings
-        console.log(`✅ [DataSourceBindings] 使用配置数据:`, resultData)
       }
 
       return {
@@ -641,7 +607,6 @@ class DataSourceBindingsExecutor implements DataSourceExecutor {
         }
       }
     } catch (error: any) {
-      console.error(`❌ [DataSourceBindings] 执行失败:`, error)
       return {
         success: false,
         error: error.message || '数据源绑定处理失败',
@@ -662,5 +627,4 @@ export const unifiedDataExecutor = new UnifiedDataExecutor()
 // 开发环境下暴露到全局作用域，便于调试
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   ;(window as any).unifiedDataExecutor = unifiedDataExecutor
-  console.log('[UnifiedDataExecutor] 执行器已暴露到 window.unifiedDataExecutor')
 }

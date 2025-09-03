@@ -33,9 +33,7 @@ import { generateVariableName } from '@/core/data-architecture/types/http-config
 import {
   getRecommendedTemplates,
   getTemplateById,
-  ParameterTemplateType,
-  isComponentTemplate,
-  type ParameterTemplate
+  ParameterTemplateType
 } from './templates/index'
 
 // 导入组件模板使用的组件（简化版）
@@ -49,7 +47,6 @@ import UnifiedDeviceConfigSelector from '../device-selectors/UnifiedDeviceConfig
 import { globalParameterGroupManager } from '../../utils/device-parameter-generator'
 import {
   Sparkles as SparkleIcon,
-  InformationCircleOutline as InfoIcon,
   AddCircleOutline as AddIcon,
   PhonePortraitOutline,
   PhonePortraitOutline as DeviceIcon,
@@ -185,19 +182,14 @@ const createDefaultParameter = (): EnhancedParameter => ({
  * 添加新参数 - 强制响应式更新
  */
 const addParameter = () => {
-  console.log('🔄 DynamicParameterEditor addParameter - 当前参数:', props.modelValue)
   const newParam = createDefaultParameter()
-  console.log('🔄 DynamicParameterEditor 新参数:', newParam)
-
   const updatedParams = [...props.modelValue, newParam]
-  console.log('🔄 DynamicParameterEditor 更新后参数列表:', updatedParams)
 
-  // 🔥 立即发射更新事件
+  // 立即发射更新事件
   emit('update:modelValue', updatedParams)
 
   // 强制刷新组件状态
   nextTick(() => {
-    console.log('🔄 DynamicParameterEditor nextTick - 自动展开编辑:', updatedParams.length - 1)
     // 自动展开新添加的参数进行编辑
     editingIndex.value = updatedParams.length - 1
   })
@@ -209,7 +201,6 @@ const addParameter = () => {
 const handleSelectAddOption = (key: string) => {
   // 检查参数数量限制
   if (!canAddMoreParameters.value) {
-    console.warn(`已达到参数数量限制: ${props.maxParameters}`)
     return
   }
 
@@ -257,11 +248,7 @@ const handleSelectAddOption = (key: string) => {
  * 处理接口模板导入 - 根据当前选择的接口生成参数 - 强制响应式更新
  */
 const handleTemplateImport = () => {
-  console.log('🔄 [DynamicParameterEditor] 处理接口模板导入，当前接口信息:', props.currentApiInfo)
-  console.log('🔄 [DynamicParameterEditor] 当前参数列表:', props.modelValue)
-
   if (!props.currentApiInfo) {
-    console.warn('⚠️ 没有当前接口信息，无法导入模板')
     // 提供默认的deviceId参数作为占位
     const defaultParam = createDefaultParameter()
     defaultParam.key = 'deviceId'
@@ -270,14 +257,12 @@ const handleTemplateImport = () => {
     defaultParam.valueMode = ParameterTemplateType.MANUAL
 
     const updatedParams = [...props.modelValue, defaultParam]
-    console.log('🔄 [DynamicParameterEditor] 生成默认参数后的参数列表:', updatedParams)
 
     // 🔥 立即发射更新事件
     emit('update:modelValue', updatedParams)
 
     // 🔥 强制刷新组件状态
     nextTick(() => {
-      console.log('🔄 [DynamicParameterEditor] nextTick - 默认参数已更新')
       editingIndex.value = updatedParams.length - 1
     })
 
@@ -290,7 +275,6 @@ const handleTemplateImport = () => {
 
   // 从commonParams生成参数
   if (apiInfo.commonParams && apiInfo.commonParams.length > 0) {
-    console.log('📊 发现接口参数模板:', apiInfo.commonParams)
     templateParams = apiInfo.commonParams.map(param => {
       const enhancedParam = createDefaultParameter()
       enhancedParam.key = param.name
@@ -309,7 +293,6 @@ const handleTemplateImport = () => {
       return enhancedParam
     })
   } else {
-    console.log('📊 没有找到commonParams，提供默认参数')
     // 根据接口类型提供合理的默认参数
     const defaultParam = createDefaultParameter()
 
@@ -332,22 +315,17 @@ const handleTemplateImport = () => {
     templateParams = [defaultParam]
   }
 
-  console.log('🔄 [DynamicParameterEditor] 生成的模板参数:', templateParams)
-
   // 合并到现有参数列表
   const updatedParams = [...props.modelValue, ...templateParams]
-  console.log('🔄 [DynamicParameterEditor] 合并后的参数列表:', updatedParams)
 
   // 🔥 立即发射更新事件
   emit('update:modelValue', updatedParams)
 
   // 🔥 强制刷新组件状态
   nextTick(() => {
-    console.log('🔄 [DynamicParameterEditor] nextTick - 模板参数已更新')
     // 自动展开最新添加的参数进行编辑
     if (templateParams.length > 0) {
       editingIndex.value = updatedParams.length - templateParams.length
-      console.log('🔄 [DynamicParameterEditor] 自动展开编辑索引:', editingIndex.value)
     }
   })
 }
@@ -356,22 +334,16 @@ const handleTemplateImport = () => {
  * 删除参数 - 强制响应式更新
  */
 const removeParameter = (index: number) => {
-  console.log('🔄 [DynamicParameterEditor] 删除参数，索引:', index)
-  console.log('🔄 [DynamicParameterEditor] 删除前参数列表:', props.modelValue)
-
   const updatedParams = props.modelValue.filter((_, i) => i !== index)
-  console.log('🔄 [DynamicParameterEditor] 删除后参数列表:', updatedParams)
 
   // 🔥 立即发射更新事件
   emit('update:modelValue', updatedParams)
 
   // 🔥 强制刷新组件状态
   nextTick(() => {
-    console.log('🔄 [DynamicParameterEditor] nextTick - 参数删除已更新')
     // 如果删除的是正在编辑的项，则关闭编辑状态
     if (editingIndex.value === index) {
       editingIndex.value = -1
-      console.log('🔄 [DynamicParameterEditor] 关闭编辑状态')
     }
   })
 }
@@ -386,7 +358,6 @@ const handleAddFromDevice = (params: any[]) => {
     const availableSlots = props.maxParameters ? props.maxParameters - currentCount : Infinity
 
     if (availableSlots <= 0) {
-      console.warn(`已达到参数数量限制: ${props.maxParameters}`)
       return
     }
 
@@ -421,8 +392,6 @@ const handleAddFromDevice = (params: any[]) => {
  * 🔥 新增：处理新的设备参数选择器完成事件
  */
 const handleDeviceParametersSelected = (parameters: EnhancedParameter[]) => {
-  console.log('🔥 [DynamicParameterEditor] 设备参数选择完成:', parameters)
-
   // 合并到现有参数列表
   const updatedParams = [...props.modelValue, ...parameters]
   emit('update:modelValue', updatedParams)
@@ -442,35 +411,25 @@ const handleDeviceParametersSelected = (parameters: EnhancedParameter[]) => {
  * 🔥 新增：处理统一设备配置生成的参数 - 强制响应式更新
  */
 const handleUnifiedDeviceConfigGenerated = (parameters: EnhancedParameter[]) => {
-  console.log('🔄 [DynamicParameterEditor] 统一设备配置生成参数:', parameters)
-  console.log('🔄 [DynamicParameterEditor] 当前参数列表:', props.modelValue)
-  console.log('🔄 [DynamicParameterEditor] 编辑模式:', isEditingDeviceConfig.value)
-
   let finalParams: EnhancedParameter[]
 
   if (isEditingDeviceConfig.value) {
     // 编辑模式：先移除现有的设备相关参数，再添加新的参数
     const updatedParams = removeDeviceRelatedParameters()
-    console.log('🔄 [DynamicParameterEditor] 编辑模式 - 移除设备参数后:', updatedParams)
     finalParams = [...updatedParams, ...parameters]
   } else {
     // 新建模式：合并参数，自动去重
     finalParams = mergeParametersWithDeduplication(parameters)
-    console.log('🔄 [DynamicParameterEditor] 新建模式 - 去重后参数:', finalParams)
   }
-
-  console.log('🔄 [DynamicParameterEditor] 最终参数列表:', finalParams)
 
   // 🔥 立即发射更新事件
   emit('update:modelValue', finalParams)
 
   // 🔥 强制刷新组件状态
   nextTick(() => {
-    console.log('🔄 [DynamicParameterEditor] nextTick - 参数已更新')
     // 自动展开第一个新添加的参数进行编辑
     if (parameters.length > 0) {
       editingIndex.value = finalParams.length - parameters.length
-      console.log('🔄 [DynamicParameterEditor] 自动展开编辑索引:', editingIndex.value)
     }
   })
 
@@ -491,20 +450,13 @@ const removeDeviceRelatedParameters = () => {
  * 🔥 合并参数并去重（同键参数只保留新的） - 强制响应式更新
  */
 const mergeParametersWithDeduplication = (newParameters: EnhancedParameter[]) => {
-  console.log('🔄 [mergeParametersWithDeduplication] 开始合并参数')
-  console.log('🔄 [mergeParametersWithDeduplication] 新参数:', newParameters)
-  console.log('🔄 [mergeParametersWithDeduplication] 现有参数:', props.modelValue)
-
   const newParamKeys = new Set(newParameters.map(p => p.key))
-  console.log('🔄 [mergeParametersWithDeduplication] 新参数键集合:', Array.from(newParamKeys))
 
   // 移除现有参数中与新参数同键的参数
   const filteredExisting = props.modelValue.filter(param => !newParamKeys.has(param.key))
-  console.log('🔄 [mergeParametersWithDeduplication] 过滤后的现有参数:', filteredExisting)
 
   // 合并
   const mergedParams = [...filteredExisting, ...newParameters]
-  console.log('🔄 [mergeParametersWithDeduplication] 合并后的参数:', mergedParams)
 
   return mergedParams
 }
@@ -523,10 +475,8 @@ const getExistingDeviceParameters = () => {
 const editDeviceConfig = () => {
   const existingParams = getExistingDeviceParameters()
   if (existingParams.length > 0) {
-    console.log('🔥 [DynamicParameterEditor] 编辑现有设备配置')
     isEditingDeviceConfig.value = true
   } else {
-    console.log('🔥 [DynamicParameterEditor] 新建设备配置')
     isEditingDeviceConfig.value = false
   }
   isUnifiedDeviceConfigVisible.value = true
@@ -536,8 +486,6 @@ const editDeviceConfig = () => {
  * 🔥 新增：处理参数组更新事件（编辑模式）
  */
 const handleParametersUpdated = (data: { groupId: string; parameters: EnhancedParameter[] }) => {
-  console.log('🔥 [DynamicParameterEditor] 参数组更新:', data)
-
   // 找到原参数组的参数并替换
   const groupParams = globalParameterGroupManager.getGroupParameters(data.groupId, props.modelValue)
   const groupParamIds = groupParams.map(p => p._id)
@@ -606,11 +554,8 @@ const editParameterGroup = (param: EnhancedParameter) => {
   const groupInfo = globalParameterGroupManager.getGroup(groupId)
 
   if (!groupInfo) {
-    console.warn('参数组信息不存在:', groupId)
     return
   }
-
-  console.log('🔥 [DynamicParameterEditor] 编辑参数组:', groupId, groupInfo)
 
   // 准备编辑信息
   editingGroupInfo.value = {
@@ -633,8 +578,6 @@ const deleteParameterGroup = (param: EnhancedParameter) => {
   const groupId = param.parameterGroup!.groupId
   const groupParams = globalParameterGroupManager.getGroupParameters(groupId, props.modelValue)
   const groupParamIds = groupParams.map(p => p._id)
-
-  console.log('🔥 [DynamicParameterEditor] 删除参数组:', groupId, groupParamIds)
 
   // 移除所有相关参数
   const updatedParams = props.modelValue.filter(param => !groupParamIds.includes(param._id))
@@ -667,8 +610,6 @@ const onTemplateChange = (param: EnhancedParameter, index: number, templateId: s
   const template = getTemplateById(templateId)
   if (!template) return
 
-  console.log('🔄 [DynamicParameterEditor] 模板变化:', { templateId, templateType: template.type, index })
-
   const updatedParam = { ...param }
   updatedParam.selectedTemplate = templateId
   updatedParam.valueMode = template.type
@@ -685,14 +626,12 @@ const onTemplateChange = (param: EnhancedParameter, index: number, templateId: s
   } else if (template.type === ParameterTemplateType.COMPONENT) {
     // 确保编辑索引正确设置
     editingIndex.value = index
-    console.log('🔄 [DynamicParameterEditor] 设置编辑索引:', editingIndex.value)
-    
+
     // 对于组件模板，先更新参数再打开抽屉进行编辑
     updateParameter(updatedParam, index)
-    
+
     // 使用 nextTick 确保参数更新后再打开抽屉
     nextTick(() => {
-      console.log('🔄 [DynamicParameterEditor] 准备打开组件抽屉')
       openComponentDrawer(updatedParam)
     })
     return // 提前返回，避免重复调用 updateParameter
@@ -717,22 +656,18 @@ const openComponentDrawer = (param: EnhancedParameter) => {
  * 当用户在组件属性选择器中选择了属性时调用
  */
 const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) => {
-  console.log('🔍 [DynamicParameterEditor] 组件属性变更:', { bindingPath, propertyInfo })
-  
   if (drawerParam.value) {
     // 更新抽屉中参数的绑定值
     drawerParam.value.value = bindingPath
-    
+
     // 🔥 移除自动设置默认值 - 默认值应该由用户手动输入
     // 保持已有的默认值不变，让用户自己设置
-    
+
     // 更新参数描述，包含属性信息
     if (propertyInfo) {
       drawerParam.value.description = `绑定到组件属性: ${propertyInfo.componentName} -> ${propertyInfo.propertyLabel}`
       drawerParam.value.variableName = `${propertyInfo.componentId}_${propertyInfo.propertyName}`
     }
-    
-    console.log('🔄 [DynamicParameterEditor] 抽屉参数更新完成:', drawerParam.value)
   }
 }
 
@@ -1040,25 +975,19 @@ watch(
             v-model:value="drawerParam.value"
             v-bind="getComponentTemplate(drawerParam)?.props || {}"
             @change="handleComponentPropertyChange"
-            @update:selectedValue="(value) => handleComponentPropertyChange(value)"
+            @update:selectedValue="value => handleComponentPropertyChange(value)"
           />
           <div v-else>组件加载失败</div>
 
           <!-- 默认值输入框 -->
-          <div v-if="drawerParam.selectedTemplate === 'component-property-binding'" style="margin-top: 16px;">
+          <div v-if="drawerParam.selectedTemplate === 'component-property-binding'" style="margin-top: 16px">
             <n-divider />
-            <div style="margin-bottom: 8px;">
+            <div style="margin-bottom: 8px">
               <n-text strong>默认值设置</n-text>
-              <n-text depth="3" style="font-size: 12px; margin-left: 8px;">
-                当绑定的组件属性为空时使用
-              </n-text>
+              <n-text depth="3" style="font-size: 12px; margin-left: 8px">当绑定的组件属性为空时使用</n-text>
             </div>
-            <n-input
-              v-model:value="drawerParam.defaultValue"
-              placeholder="请输入默认值（可选）"
-              clearable
-            />
-            <n-text depth="3" style="font-size: 12px; margin-top: 4px; display: block;">
+            <n-input v-model:value="drawerParam.defaultValue" placeholder="请输入默认值（可选）" clearable />
+            <n-text depth="3" style="font-size: 12px; margin-top: 4px; display: block">
               💡 提示：如果组件属性值为空（null、undefined或空字符串），将使用此默认值
             </n-text>
           </div>

@@ -399,7 +399,6 @@ async function handleTemplateSelect(templateId: string | null) {
       await nextTick()
       performValidation()
     } catch (error) {
-      console.error('模板代码生成失败:', error)
     }
   }
 }
@@ -438,7 +437,6 @@ async function handleExecute() {
     lastExecutionResult.value = result
     emit('execute', result)
   } catch (error) {
-    console.error('脚本执行失败:', error)
     lastExecutionResult.value = {
       success: false,
       error: error as Error,
@@ -467,7 +465,6 @@ function handleFormat() {
     localCode.value = formatted
     emit('update:code', formatted)
   } catch (error) {
-    console.error('代码格式化失败:', error)
   }
 }
 

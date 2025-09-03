@@ -74,7 +74,4 @@ const simpleDisplayDefinition: ComponentDefinition = {
 // 注册组件到组件注册中心（包含自动属性暴露）
 componentRegistry.registerComponent(simpleDisplayDefinition)
 componentRegistry.registerSettingConfig(simpleDisplaySettingConfig)
-
-console.log('🎯 [simple-display] 组件已注册，属性暴露配置已自动生成')
-
 export default simpleDisplayDefinition

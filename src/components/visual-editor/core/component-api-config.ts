@@ -61,7 +61,6 @@ const componentApiRegistry: Record<string, ComponentApiConfig> = {
 export function getComponentApiConfig(componentType: string): ComponentApiConfig | null {
   const config = componentApiRegistry[componentType]
   if (!config) {
-    console.warn(`[ComponentApiConfig] 未找到组件类型 '${componentType}' 的API配置。`)
     return null
   }
   return config
@@ -84,7 +83,6 @@ export function selectApiForComponent(
   }
 
   if (!config.supportedMetricsTypes.includes(metricsType)) {
-    console.warn(`[ComponentApiConfig] 组件 '${componentType}' 不支持 '${metricsType}' 类型的指标。`)
     return null
   }
 

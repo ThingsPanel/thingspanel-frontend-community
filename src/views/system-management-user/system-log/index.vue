@@ -154,7 +154,7 @@ function pickerChange(value: [number, number] | null) {
   if (value && value.length === 2) {
     const startDate = moment(value[0])
     const endDateMoment = moment(value[1])
-    // console.log('Original end timestamp:', value[1], 'Moment object:', endDateMoment.toISOString());
+    console.log('Original end timestamp:', value[1], 'Moment object:', endDateMoment.toISOString());
 
     // 检查用户是否可能只选了日期（时间部分为 00:00:00）
     // 如果是，则将结束时间调整到 23:59:59.999
@@ -167,15 +167,15 @@ function pickerChange(value: [number, number] | null) {
       endDateMoment.millisecond() === 0
     ) {
       adjustedEndDateMoment = endDateMoment.endOf('day')
-      // console.log('Adjusted end moment object (end of day):', adjustedEndDateMoment.toISOString());
+      console.log('Adjusted end moment object (end of day):', adjustedEndDateMoment.toISOString());
     } else {
       adjustedEndDateMoment = endDateMoment // 用户选择了具体时间，保持不变
-      // console.log('End moment object (user selected time):', adjustedEndDateMoment.toISOString());
+      console.log('End moment object (user selected time):', adjustedEndDateMoment.toISOString());
     }
 
     queryParams.start_time = startDate.format('YYYY-MM-DDTHH:mm:ssZ')
     queryParams.end_time = adjustedEndDateMoment.format('YYYY-MM-DDTHH:mm:ssZ')
-    // console.log('Assigned queryParams.end_time:', queryParams.end_time);
+    console.log('Assigned queryParams.end_time:', queryParams.end_time);
 
     // 尝试更新 range ref 本身以改变输入框显示
     // 注意：这可能会触发组件更新，需要测试
@@ -184,7 +184,7 @@ function pickerChange(value: [number, number] | null) {
   } else {
     queryParams.start_time = ''
     queryParams.end_time = ''
-    // console.log('Date range cleared');
+    console.log('Date range cleared');
   }
 }
 const getPlatform = computed(() => {

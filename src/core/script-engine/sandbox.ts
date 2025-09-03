@@ -235,23 +235,18 @@ export class ScriptSandbox implements IScriptSandbox {
     return {
       log: (...args: any[]) => {
         logs.push({ level: 'log', args, timestamp: Date.now() })
-        console.log('[Sandbox]', ...args)
       },
       warn: (...args: any[]) => {
         logs.push({ level: 'warn', args, timestamp: Date.now() })
-        console.warn('[Sandbox]', ...args)
       },
       error: (...args: any[]) => {
         logs.push({ level: 'error', args, timestamp: Date.now() })
-        console.error('[Sandbox]', ...args)
       },
       info: (...args: any[]) => {
         logs.push({ level: 'info', args, timestamp: Date.now() })
-        console.info('[Sandbox]', ...args)
       },
       debug: (...args: any[]) => {
         logs.push({ level: 'debug', args, timestamp: Date.now() })
-        console.debug('[Sandbox]', ...args)
       },
       _getLogs: () => logs
     }

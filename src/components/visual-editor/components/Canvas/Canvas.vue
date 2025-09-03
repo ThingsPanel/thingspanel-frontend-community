@@ -319,7 +319,6 @@ const handleContextMenuAction = (action: string) => {
   switch (action) {
     case 'copy':
       // TODO: 实现复制功能
-      console.log('复制选中的组件')
       break
     case 'delete':
       // 删除选中的组件
@@ -329,11 +328,9 @@ const handleContextMenuAction = (action: string) => {
       break
     case 'layer':
       // TODO: 实现图层管理
-      console.log('图层管理')
       break
     case 'lock':
       // TODO: 实现锁定功能
-      console.log('锁定组件')
       break
   }
 }

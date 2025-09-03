@@ -66,7 +66,6 @@ export function usePanelEventHandler(
    * @param componentType 组件类型
    */
   const handleDragStart = (componentType: string) => {
-    console.log('🎯 开始拖拽组件:', componentType)
     dependencies.isDragging.value = true
     dependencies.draggedComponent.value = componentType
   }
@@ -75,7 +74,6 @@ export function usePanelEventHandler(
    * 结束拖拽
    */
   const handleDragEnd = () => {
-    console.log('🎯 结束拖拽')
     dependencies.isDragging.value = false
     dependencies.draggedComponent.value = null
   }
@@ -330,7 +328,6 @@ export function usePanelEventHandler(
    * 渲染器准备就绪
    */
   const handleRendererReady = () => {
-    console.log('✅ 渲染器已准备就绪')
   }
 
   /**

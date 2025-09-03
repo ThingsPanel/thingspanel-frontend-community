@@ -161,7 +161,4 @@ const tripleDataDisplayDefinition: ComponentDefinition = {
 // 注册组件到组件注册中心（包含自动属性暴露）
 componentRegistry.registerComponent(tripleDataDisplayDefinition)
 componentRegistry.registerSettingConfig(tripleDataDisplaySettingConfig)
-
-console.log('🎯 [triple-data-display] 组件已注册，属性暴露配置已自动生成')
-
 export default tripleDataDisplayDefinition

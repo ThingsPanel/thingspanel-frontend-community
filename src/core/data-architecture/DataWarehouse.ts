@@ -10,6 +10,7 @@
  */
 
 import type { ComponentDataRequirement } from './SimpleDataBridge'
+import { dataSourceLogger } from '@/utils/logger'
 
 /**
  * 数据存储项接口
@@ -157,8 +158,6 @@ export class EnhancedDataWarehouse {
     if (this.config.enablePerformanceMonitoring) {
       this.startMetricsCollection()
     }
-
-    console.log('📦 [DataWarehouse] 增强数据仓库已初始化', this.config)
   }
 
   /**
@@ -184,7 +183,6 @@ export class EnhancedDataWarehouse {
 
     // 检查内存限制
     if (this.shouldRejectStorage(dataSize)) {
-      console.warn(`⚠️ [DataWarehouse] 内存不足，拒绝存储数据: ${componentId}/${sourceId}`)
       return
     }
 
@@ -227,8 +225,6 @@ export class EnhancedDataWarehouse {
     // 更新性能监控
     const responseTime = Date.now() - startTime
     this.updateMetrics(responseTime, 'store')
-
-    console.log(`💾 [DataWarehouse] 存储数据: ${componentId}/${sourceId} (${dataSize}字节)`)
   }
 
   /**
@@ -250,7 +246,6 @@ export class EnhancedDataWarehouse {
       componentStorage.mergedData.accessCount++
       componentStorage.mergedData.lastAccessed = Date.now()
       this.updateMetrics(Date.now() - startTime, 'get', true)
-      console.log(`🎯 [DataWarehouse] 命中合并数据缓存: ${componentId}`)
       return componentStorage.mergedData.data
     }
 
@@ -265,7 +260,6 @@ export class EnhancedDataWarehouse {
         item.lastAccessed = Date.now()
         hasValidData = true
       } else {
-        console.log(`⏰ [DataWarehouse] 数据过期，移除: ${componentId}/${sourceId}`)
         componentStorage.dataSources.delete(sourceId)
       }
     }
@@ -291,8 +285,6 @@ export class EnhancedDataWarehouse {
     }
 
     this.updateMetrics(Date.now() - startTime, 'get', true)
-    console.log(`📊 [DataWarehouse] 构建组件数据: ${componentId} (${Object.keys(componentData).length}个数据源)`)
-
     return componentData
   }
 
@@ -311,7 +303,6 @@ export class EnhancedDataWarehouse {
     const item = componentStorage.dataSources.get(sourceId)
     if (!item || this.isExpired(item)) {
       if (item) {
-        console.log(`⏰ [DataWarehouse] 数据过期，移除: ${componentId}/${sourceId}`)
         componentStorage.dataSources.delete(sourceId)
       }
       return null
@@ -319,8 +310,6 @@ export class EnhancedDataWarehouse {
 
     item.accessCount++
     item.lastAccessed = Date.now()
-
-    console.log(`📄 [DataWarehouse] 获取数据源数据: ${componentId}/${sourceId}`)
     return item.data
   }
 
@@ -333,7 +322,6 @@ export class EnhancedDataWarehouse {
     if (componentStorage) {
       const dataSourceCount = componentStorage.dataSources.size
       this.componentStorage.delete(componentId)
-      console.log(`🧹 [DataWarehouse] 清除组件缓存: ${componentId} (${dataSourceCount}个数据源)`)
     }
   }
 
@@ -349,7 +337,6 @@ export class EnhancedDataWarehouse {
       if (removed) {
         // 清除合并数据缓存
         componentStorage.mergedData = undefined
-        console.log(`🧹 [DataWarehouse] 清除数据源缓存: ${componentId}/${sourceId}`)
       }
     }
   }
@@ -361,7 +348,6 @@ export class EnhancedDataWarehouse {
     const componentCount = this.componentStorage.size
     this.componentStorage.clear()
     this.parameterStorage.clear()
-    console.log(`🧹 [DataWarehouse] 清除所有缓存 (${componentCount}个组件)`)
   }
 
   /**
@@ -370,7 +356,6 @@ export class EnhancedDataWarehouse {
    */
   setCacheExpiry(milliseconds: number): void {
     this.config.defaultCacheExpiry = milliseconds
-    console.log(`⏰ [DataWarehouse] 设置缓存过期时间: ${milliseconds}ms`)
   }
 
   /**
@@ -418,7 +403,6 @@ export class EnhancedDataWarehouse {
    */
   storeDynamicParameter(name: string, parameter: DynamicParameterStorage): void {
     this.parameterStorage.set(name, parameter)
-    console.log(`🔧 [DataWarehouse] 存储动态参数: ${name}`)
   }
 
   /**
@@ -450,8 +434,6 @@ export class EnhancedDataWarehouse {
 
     // 清除所有数据
     this.clearAllCache()
-
-    console.log('💥 [DataWarehouse] 数据仓库已销毁')
   }
 
   // ==================== 私有方法 ====================
@@ -569,12 +551,6 @@ export class EnhancedDataWarehouse {
     }
 
     this.metrics.lastCleanupTime = Date.now()
-
-    if (removedItems > 0 || removedComponents > 0) {
-      console.log(
-        `🧹 [DataWarehouse] 清理完成: 移除${removedItems}个数据项, ${removedComponents}个组件 (${Date.now() - startTime}ms)`
-      )
-    }
   }
 
   /**

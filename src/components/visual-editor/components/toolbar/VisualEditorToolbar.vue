@@ -172,7 +172,6 @@ const availableComponentsForPolling = computed(() => {
     // 获取编辑器数据源管理器中的组件配置
     const editorConfigs = editorDataSourceManager?.getAllComponentConfigs?.()
     if (!editorConfigs) {
-      console.warn('⚠️ [VisualEditorToolbar] 无法获取编辑器数据源配置')
       return []
     }
 
@@ -188,11 +187,8 @@ const availableComponentsForPolling = computed(() => {
         componentType: config.componentType,
         dataSourceType: config.config?.type || 'unknown'
       }))
-
-    console.log('🔍 [VisualEditorToolbar] 可用于轮询的组件:', availableComponents)
     return availableComponents
   } catch (error) {
-    console.error('❌ [VisualEditorToolbar] 获取可用组件列表失败:', error)
     return []
   }
 })
@@ -244,7 +240,6 @@ const visualizationConfig = computed(() => ({
 
 // 编辑状态控制
 const handleModeChange = (mode: 'edit' | 'preview') => {
-  console.log('🎛️ 工具栏模式切换:', { currentMode: props.mode, newMode: mode })
   emit('mode-change', mode)
 }
 const handleRendererChange = (rendererId: string) => emit('renderer-change', rendererId)
@@ -308,10 +303,8 @@ const handleImport = () => {
         reader.onload = event => {
           try {
             const config = JSON.parse(event.target?.result as string)
-            console.log('导入配置:', config)
             emit('import-config', config)
           } catch (error) {
-            console.error('导入配置失败:', error)
           }
         }
         reader.readAsText(file)
@@ -342,8 +335,6 @@ const getConfigTitle = () => {
 
 // 轮询任务管理方法
 const handleComponentSelect = (componentId: string) => {
-  console.log('选择组件:', componentId)
-
   try {
     // 获取组件的数据源配置，根据数据源类型设置合适的默认间隔
     const componentConfig = editorDataSourceManager.getComponentConfig(componentId)
@@ -372,13 +363,8 @@ const handleComponentSelect = (componentId: string) => {
 
       // 更新表单的默认间隔
       newPollingTask.value.interval = recommendedInterval
-
-      console.log(
-        `🎯 [VisualEditorToolbar] 为组件 ${componentId} (数据源: ${dataSourceType}) 设置推荐间隔: ${recommendedInterval}ms`
-      )
     }
   } catch (error) {
-    console.error('❌ [VisualEditorToolbar] 获取组件信息失败:', error)
   }
 }
 
@@ -405,7 +391,6 @@ const handleAddPollingTask = async () => {
       autoStart: newPollingTask.value.autoStart,
       callback: () => {
         // TODO: 这里应该调用实际的数据源更新逻辑
-        console.log(`🔄 执行组件数据更新: ${selectedComponent.label}`)
         // editorDataSourceManager.triggerComponentUpdate(newPollingTask.value.componentId)
       }
     })
@@ -419,10 +404,7 @@ const handleAddPollingTask = async () => {
 
     showAddPollingDialog.value = false
     message.success(`轮询任务"${selectedComponent.label}"添加成功`)
-
-    console.log(`✅ 创建轮询任务: ${taskId}`)
   } catch (error) {
-    console.error('添加轮询任务失败:', error)
     message.error('添加轮询任务失败')
   }
 }

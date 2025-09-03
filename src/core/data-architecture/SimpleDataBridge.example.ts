@@ -9,11 +9,9 @@ import { simpleDataBridge, convertToSimpleDataRequirement } from './interfaces'
  * 示例1：基本使用
  */
 export function basicUsageExample() {
-  console.log('=== SimpleDataBridge 基本使用示例 ===')
 
   // 1. 注册数据更新回调
   const cleanup = simpleDataBridge.onDataUpdate((componentId, data) => {
-    console.log(`📡 组件 ${componentId} 数据更新:`, data)
   })
 
   // 2. 执行组件数据获取
@@ -57,8 +55,6 @@ export function basicUsageExample() {
  * 示例2：配置转换
  */
 export function configConversionExample() {
-  console.log('=== 配置转换示例 ===')
-
   // 模拟来自ConfigurationPanel的复杂配置
   const complexConfig = {
     type: 'data-source-bindings',
@@ -96,42 +92,14 @@ export function configConversionExample() {
  * 示例3：对比SimpleDataBridge vs ComponentExecutorManager
  */
 export function comparisonExample() {
-  console.log('=== 功能对比示例 ===')
-
-  // ComponentExecutorManager (复杂方式)
-  console.log('❌ 复杂的ComponentExecutorManager方式:')
-  console.log('- 580行代码')
-  console.log('- 复杂的状态管理 (totalComponents, activeComponents, executionCount)')
-  console.log('- 深度配置比较 (JSON.stringify)')
-  console.log('- 轮询、WebSocket连接池')
-  console.log('- 依赖检查和阻塞逻辑')
-  console.log('- 执行统计和错误历史')
-
-  // SimpleDataBridge (简化方式)
-  console.log('✅ 简化的SimpleDataBridge方式:')
-  console.log('- ~200行代码')
-  console.log('- 无状态管理，只做数据转换')
-  console.log('- 简单直接的数据获取')
-  console.log('- 错误容忍，不阻塞界面')
-  console.log('- 事件驱动通信')
-  console.log('- 性能提升80%+')
-
   // 统计信息对比
   const stats = simpleDataBridge.getStats()
-  console.log('📊 SimpleDataBridge统计:', stats)
 }
 
 /**
  * 示例4：实际替换ComponentExecutorManager的步骤
  */
 export function migrationExample() {
-  console.log('=== 迁移步骤示例 ===')
-
-  console.log('🔄 第1步：用ConfigAdapter转换现有配置')
-  console.log('🔄 第2步：用SimpleDataBridge执行数据获取')
-  console.log('🔄 第3步：通过回调更新组件数据')
-  console.log('🔄 第4步：移除ComponentExecutorManager依赖')
-
   // 模拟迁移过程
   const legacyConfig = {
     config: {
@@ -147,7 +115,6 @@ export function migrationExample() {
   const requirement = convertToSimpleDataRequirement('migrated-component', legacyConfig)
   if (requirement) {
     simpleDataBridge.executeComponent(requirement).then(result => {
-      console.log('✅ 迁移成功，数据获取正常:', result.success)
     })
   }
 }

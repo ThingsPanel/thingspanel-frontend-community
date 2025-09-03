@@ -76,7 +76,11 @@
       "Read(\\e\\wbh\\things2\\thingspanel-frontend-community\\src/**)",
       "Bash(start src/test-triple-data-display.html)",
       "Bash(start src/test-toolbar-control-updated.html)",
-      "Bash(start http://localhost:5003/visualization/visual-editor-details)"
+      "Bash(start http://localhost:5003/visualization/visual-editor-details)",
+      "Bash(bash:*)",
+      "Bash(start http://localhost:5002/test/data-binding-system-integration)",
+      "Read(\\e\\wbh\\things2\\thingspanel-frontend-community\\src\\core\\data-architecture\\components\\common/**)",
+      "Read(\\e\\wbh\\things2\\thingspanel-frontend-community\\src\\core\\data-architecture\\components\\common/**)"
     ],
     "deny": [],
     "additionalDirectories": [

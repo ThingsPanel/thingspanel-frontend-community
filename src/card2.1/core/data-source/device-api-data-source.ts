@@ -80,8 +80,6 @@ export class DeviceApiDataSource {
    */
   async fetchData(): Promise<DeviceApiResponse> {
     try {
-      console.log(`🔌 [DeviceApiDataSource] 调用API: ${this.config.apiType}`, this.config.parameters)
-
       let response: any
 
       switch (this.config.apiType) {
@@ -97,11 +95,8 @@ export class DeviceApiDataSource {
 
       this.lastResponse = response
       this.lastFetchTime = new Date()
-
-      console.log(`✅ [DeviceApiDataSource] API调用成功:`, response)
       return response
     } catch (error) {
-      console.error(`❌ [DeviceApiDataSource] API调用失败:`, error)
       throw error
     }
   }
@@ -118,10 +113,7 @@ export class DeviceApiDataSource {
       try {
         const value = this.extractValueByPath(response, dataPath)
         result[componentField] = value
-
-        console.log(`📊 [DeviceApiDataSource] 提取字段 ${componentField}: ${dataPath} → ${JSON.stringify(value)}`)
       } catch (error) {
-        console.warn(`⚠️ [DeviceApiDataSource] 提取字段失败 ${componentField}:`, error)
         result[componentField] = undefined
       }
     }
@@ -244,7 +236,6 @@ export class DeviceApiDataSource {
 
       return paths
     } catch (error) {
-      console.error('获取可用路径失败:', error)
       return []
     }
   }
@@ -312,7 +303,6 @@ export class DeviceApiDataSource {
 
       return preview
     } catch (error) {
-      console.error('预览映射失败:', error)
       return {}
     }
   }
@@ -325,7 +315,6 @@ export class DeviceApiDataSource {
     // 清除缓存，强制重新获取数据
     this.lastResponse = null
     this.lastFetchTime = null
-    console.log(`🔄 [DeviceApiDataSource] 配置已更新:`, this.config)
   }
 
   /**

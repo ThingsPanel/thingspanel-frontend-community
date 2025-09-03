@@ -101,11 +101,9 @@ watch(
       // 计算内容哈希，避免相同内容的重复emit
       const contentHash = JSON.stringify(newValue)
       if (contentHash !== lastEmittedHash.value) {
-        console.log('🔄 [DataSourceMergeStrategyEditor] 内容变化，emit更新:', newValue)
         lastEmittedHash.value = contentHash
         emit('update:modelValue', { ...newValue })
       } else {
-        console.log('⏭️ [DataSourceMergeStrategyEditor] 内容未变化，跳过emit:', newValue)
       }
     }
   },
@@ -121,7 +119,6 @@ watch(
       const currentContentHash = JSON.stringify(currentStrategy.value)
 
       if (newContentHash !== currentContentHash) {
-        console.log('🔄 [DataSourceMergeStrategyEditor] props内容变化，同步本地状态:', newValue)
         isUpdatingFromProps.value = true
         currentStrategy.value = { ...newValue }
         lastEmittedHash.value = newContentHash // 更新哈希，防止回环
@@ -151,8 +148,6 @@ const selectMergeStrategy = (strategyType: string) => {
     // 默认选择第1项（索引0）
     currentStrategy.value.selectedIndex = currentStrategy.value.selectedIndex ?? 0
   }
-
-  console.log('📝 [DataSourceMergeStrategyEditor] 策略已选择:', strategyType)
 }
 </script>
 

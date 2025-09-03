@@ -87,7 +87,6 @@ export function usePanelLifecycleManager(dependencies: {
                 dependencies.handleComponentConfigChanged(componentId, config)
               }
             } catch (error) {
-              console.error(`❌ [PanelEditor] 配置变化检测失败: ${componentId}`, error)
             }
           }
         }

@@ -67,10 +67,7 @@ export class StaticDataSource {
       try {
         const value = this.extractValueByPath(this.config.data, dataPath)
         result[componentField] = value
-
-        console.log(`📊 [StaticDataSource] 提取字段 ${componentField}: ${dataPath} → ${JSON.stringify(value)}`)
       } catch (error) {
-        console.warn(`⚠️ [StaticDataSource] 提取字段失败 ${componentField}:`, error)
         result[componentField] = undefined
       }
     }
@@ -110,7 +107,6 @@ export class StaticDataSource {
    */
   updateConfig(newConfig: Partial<StaticDataSourceConfig>) {
     this.config = { ...this.config, ...newConfig }
-    console.log(`🔄 [StaticDataSource] 配置已更新:`, this.config)
   }
 
   /**

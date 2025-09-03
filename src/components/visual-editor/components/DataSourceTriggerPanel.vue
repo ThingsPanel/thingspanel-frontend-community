@@ -385,7 +385,6 @@ const updatePollingInterval = async (componentId: string, interval: number | nul
       component.trigger.interval = interval
     }
   } catch (error) {
-    console.error('Failed to update polling interval:', error)
     window.$message?.error(t('dataSource.trigger.updateIntervalError'))
   }
 }
@@ -405,7 +404,6 @@ const manualTrigger = async (componentId: string) => {
     // 刷新组件状态
     await refreshComponentStatus()
   } catch (error) {
-    console.error('Manual trigger failed:', error)
     window.$message?.error(t('dataSource.trigger.manualTriggerError'))
   } finally {
     component.manualTriggerLoading = false
@@ -432,7 +430,6 @@ const toggleDataSource = async (componentId: string) => {
     // 刷新状态
     await refreshComponentStatus()
   } catch (error) {
-    console.error('Toggle data source failed:', error)
     window.$message?.error(t('dataSource.trigger.toggleError'))
   } finally {
     component.operationLoading = false
@@ -454,7 +451,6 @@ const startAllDataSources = async () => {
 
     await refreshComponentStatus()
   } catch (error) {
-    console.error('Start all data sources failed:', error)
     window.$message?.error(t('dataSource.trigger.startAllError'))
   } finally {
     bulkOperationLoading.value = false
@@ -476,7 +472,6 @@ const stopAllDataSources = async () => {
 
     await refreshComponentStatus()
   } catch (error) {
-    console.error('Stop all data sources failed:', error)
     window.$message?.error(t('dataSource.trigger.stopAllError'))
   } finally {
     bulkOperationLoading.value = false
@@ -503,7 +498,6 @@ const refreshComponentStatus = async () => {
 
     lastUpdateTime.value = Date.now()
   } catch (error) {
-    console.error('Refresh component status failed:', error)
     window.$message?.error(t('dataSource.trigger.refreshError'))
   } finally {
     refreshLoading.value = false

@@ -333,7 +333,6 @@ const mappedResult = computed(() => {
   try {
     return applyFieldMapping(props.previewData, currentMappings.value)
   } catch (error) {
-    console.error('映射处理错误:', error)
     return { error: '映射处理失败' }
   }
 })

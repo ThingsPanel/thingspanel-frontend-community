@@ -48,20 +48,16 @@ const updateData = async () => {
   }
 
   isLoading.value = false
-  console.log(`📊 [CardWithPollingControl] 数据已更新: ${props.componentId}`, data.value)
 }
 
 // 处理轮询控制器事件
 const handlePollingToggle = (enabled: boolean) => {
-  console.log(`🔄 [CardWithPollingControl] 组件 ${props.componentId} 轮询状态: ${enabled ? '启用' : '暂停'}`)
 }
 
 const handlePollingEnabled = () => {
-  console.log(`✅ [CardWithPollingControl] 组件 ${props.componentId} 轮询已启用`)
 }
 
 const handlePollingDisabled = () => {
-  console.log(`⏸️ [CardWithPollingControl] 组件 ${props.componentId} 轮询已暂停`)
 }
 
 // 数据状态指示器
@@ -82,11 +78,9 @@ const statusIndicator = computed(() => {
 })
 
 onMounted(() => {
-  console.log(`🎯 [CardWithPollingControl] 组件挂载: ${props.componentId}`)
 })
 
 onUnmounted(() => {
-  console.log(`🎯 [CardWithPollingControl] 组件卸载: ${props.componentId}`)
 })
 </script>
 

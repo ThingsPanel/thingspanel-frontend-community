@@ -48,7 +48,6 @@ export class DataSourceCenter {
    */
   registerDataSourceType(type: string, serviceClass: new (...args: any[]) => DataSourceService) {
     this.dataSourceTypes.set(type, serviceClass)
-    console.log(`📊 [DataSourceCenter] 注册数据源类型: ${type}`)
   }
 
   /**
@@ -60,17 +59,14 @@ export class DataSourceCenter {
   createDataSource(id: string, type: string, config: any): DataSourceService | null {
     const ServiceClass = this.dataSourceTypes.get(type)
     if (!ServiceClass) {
-      console.error(`❌ [DataSourceCenter] 未知的数据源类型: ${type}`)
       return null
     }
 
     try {
       const service = new ServiceClass(id, config)
       this.dataSources.set(id, service)
-      console.log(`✅ [DataSourceCenter] 创建数据源实例: ${id} (${type})`)
       return service
     } catch (error) {
-      console.error(`❌ [DataSourceCenter] 创建数据源失败: ${id}`, error)
       return null
     }
   }
@@ -93,10 +89,8 @@ export class DataSourceCenter {
       try {
         service.destroy()
       } catch (error) {
-        console.warn(`⚠️ [DataSourceCenter] 销毁数据源时出错: ${id}`, error)
       }
       this.dataSources.delete(id)
-      console.log(`🗑️ [DataSourceCenter] 移除数据源: ${id}`)
     }
   }
 
@@ -110,7 +104,6 @@ export class DataSourceCenter {
       try {
         result.push(service.getInfo())
       } catch (error) {
-        console.warn(`⚠️ [DataSourceCenter] 获取数据源信息失败: ${id}`, error)
       }
     }
 
@@ -132,14 +125,12 @@ export class DataSourceCenter {
   subscribeToDataSource(dataSourceId: string, callback: (data: any) => void): DataSourceSubscription | null {
     const service = this.getDataSource(dataSourceId)
     if (!service) {
-      console.error(`❌ [DataSourceCenter] 数据源不存在: ${dataSourceId}`)
       return null
     }
 
     try {
       return service.subscribe(callback)
     } catch (error) {
-      console.error(`❌ [DataSourceCenter] 订阅数据源失败: ${dataSourceId}`, error)
       return null
     }
   }
@@ -148,18 +139,14 @@ export class DataSourceCenter {
    * 清理所有数据源
    */
   cleanup(): void {
-    console.log(`🧹 [DataSourceCenter] 开始清理 ${this.dataSources.size} 个数据源`)
-
     for (const [id, service] of this.dataSources.entries()) {
       try {
         service.destroy()
       } catch (error) {
-        console.warn(`⚠️ [DataSourceCenter] 清理数据源时出错: ${id}`, error)
       }
     }
 
     this.dataSources.clear()
-    console.log(`✅ [DataSourceCenter] 数据源清理完成`)
   }
 
   /**

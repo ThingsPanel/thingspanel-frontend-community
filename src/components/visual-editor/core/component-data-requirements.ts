@@ -442,7 +442,6 @@ export class ComponentDataRequirementsRegistry {
    */
   register(componentId: string, requirements: ComponentDataRequirements): void {
     this.requirements.set(componentId, requirements)
-    console.log(`📋 [ComponentDataRequirements] 注册组件数据需求: ${componentId}`)
   }
 
   /**

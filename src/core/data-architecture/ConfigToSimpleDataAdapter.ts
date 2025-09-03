@@ -12,11 +12,8 @@ import type { ComponentDataRequirement, SimpleDataSourceConfig } from './SimpleD
  * @returns 简化的组件数据需求
  */
 export function convertToSimpleDataRequirement(componentId: string, config: any): ComponentDataRequirement | null {
-  console.log(`🔄 [ConfigAdapter] 开始转换配置: ${componentId}`)
-  console.log(`🔄 [ConfigAdapter] 原始配置:`, config)
 
   if (!config) {
-    console.warn(`⚠️ [ConfigAdapter] 配置为空: ${componentId}`)
     return null
   }
 

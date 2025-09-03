@@ -23,45 +23,17 @@ export function usePanelPollingManager(dependencies: {
    * 扫描所有组件，为启用轮询的组件创建轮询任务
    */
   const initializePollingTasksAndEnable = () => {
-    console.log('🚀 [PanelEditor] 启动预览模式轮询')
-
     try {
       // 🔥 修复重复定时器漏洞：先清除所有现有任务
-      console.log('🧹 [PanelEditor] 清除所有现有轮询任务，避免重复定时器')
       dependencies.pollingManager.clearAllTasks()
 
       // 获取所有组件的轮询配置
       const allComponents = dependencies.stateManager.nodes
-      console.log(`🔍 [PanelEditor] 扫描 ${allComponents.length} 个组件的轮询配置`)
-      console.log(
-        `🔍 [PanelEditor] 所有组件:`,
-        allComponents.map(c => ({ id: c.id, type: c.type }))
-      )
-
       allComponents.forEach(component => {
         const componentId = component.id
-        console.log(`🔍 [PanelEditor] 开始检查组件: ${componentId} (${component.type})`)
-
         // 从 ConfigurationManager 读取组件级别的轮询配置
         const config = dependencies.configurationManager.getConfiguration(componentId)
-        console.log(`🔍 [PanelEditor] 组件 ${componentId} 完整配置:`, config)
-
-        // 检查配置结构
-        console.log(`🔍 [PanelEditor] 组件 ${componentId} 配置结构检查:`, {
-          hasConfig: !!config,
-          hasComponent: !!config?.component,
-          componentKeys: config?.component ? Object.keys(config.component) : [],
-          fullConfig: config
-        })
-
         const pollingConfig = config?.component?.polling
-        console.log(`🔍 [PanelEditor] 组件 ${componentId} 轮询配置:`, pollingConfig)
-        console.log(`🔍 [PanelEditor] 组件 ${componentId} 轮询判断:`, {
-          hasPollingConfig: !!pollingConfig,
-          isEnabled: pollingConfig?.enabled,
-          willCreateTask: !!(pollingConfig && pollingConfig.enabled)
-        })
-
         if (pollingConfig && pollingConfig.enabled) {
           console.log(`✅ [PanelEditor] 组件 ${componentId} 启用轮询:`, pollingConfig)
 
@@ -75,21 +47,10 @@ export function usePanelPollingManager(dependencies: {
             componentName: `组件-${component.type}`,
             interval: interval,
             callback: async () => {
-              console.log(`🔄 [PanelEditor] 轮询触发组件执行: ${componentId}`)
-              console.log(`🔄 [PanelEditor] 执行时间: ${new Date().toLocaleTimeString()}`)
               try {
-                console.log(`🔍 [PanelEditor] 开始调用执行器: ${componentId}`)
-                console.log(`🔍 [PanelEditor] EditorDataSourceManager 状态:`, {
-                  isInitialized: dependencies.editorDataSourceManager.isInitialized(),
-                  hasManager: !!dependencies.editorDataSourceManager
-                })
 
                 // 🔥 直接调用组件执行器，这个应该是正确的方式
-                console.log(`🔍 [PanelEditor] 尝试直接触发组件执行器`)
-
                 // 🔥 直接使用 VisualEditorBridge 调用，这个是确定有效的方法
-                console.log(`🔍 [PanelEditor] 使用 VisualEditorBridge 直接调用组件执行器`)
-
                 try {
                   // 导入 VisualEditorBridge 并调用
                   const { visualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
@@ -106,13 +67,6 @@ export function usePanelPollingManager(dependencies: {
                   // 获取组件类型
                   const component = dependencies.stateManager.nodes.find(n => n.id === componentId)
                   const componentType = component?.type || 'unknown'
-
-                  console.log(`🔍 [PanelEditor] 调用参数:`, {
-                    componentId,
-                    componentType,
-                    hasDataSourceConfig: !!config.dataSource,
-                    dataSourceConfig: config.dataSource
-                  })
 
                   console.log(`🔍 [PanelEditor] 轮询调用前清除缓存: ${componentId}`)
 

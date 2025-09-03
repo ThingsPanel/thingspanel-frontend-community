@@ -25,7 +25,6 @@ export class StaticDataSourceService implements DataSourceService {
   constructor(id: string, config: StaticDataSourceConfig) {
     this.id = id
     this.config = config
-    console.log(`📊 [StaticDataSourceService] 创建静态数据源: ${id}`)
   }
 
   getInfo(): DataSourceInfo {
@@ -49,8 +48,6 @@ export class StaticDataSourceService implements DataSourceService {
     const subscriptionId = `static_${this.id}_${++this.subscriptionCounter}`
     this.subscribers.set(subscriptionId, callback)
 
-    console.log(`📺 [StaticDataSourceService] 新增订阅: ${subscriptionId}`)
-
     // 立即发送当前数据
     setTimeout(() => {
       callback(this.config.data)
@@ -60,7 +57,6 @@ export class StaticDataSourceService implements DataSourceService {
       id: subscriptionId,
       unsubscribe: () => {
         this.subscribers.delete(subscriptionId)
-        console.log(`🔌 [StaticDataSourceService] 取消订阅: ${subscriptionId}`)
       }
     }
   }
@@ -88,9 +84,6 @@ export class StaticDataSourceService implements DataSourceService {
   updateConfig(config: StaticDataSourceConfig): void {
     const oldData = this.config.data
     this.config = config
-
-    console.log(`🔄 [StaticDataSourceService] 更新配置: ${this.id}`)
-
     // 如果数据发生变化，通知所有订阅者
     if (JSON.stringify(oldData) !== JSON.stringify(config.data)) {
       this.notifySubscribers(config.data)
@@ -104,23 +97,19 @@ export class StaticDataSourceService implements DataSourceService {
   updateData(newData: any): void {
     this.config.data = newData
     this.notifySubscribers(newData)
-    console.log(`📊 [StaticDataSourceService] 手动更新数据: ${this.id}`)
   }
 
   destroy(): void {
-    console.log(`🗑️ [StaticDataSourceService] 销毁数据源: ${this.id}`)
     this.subscribers.clear()
   }
 
   private notifySubscribers(data: any): void {
     const subscriberCount = this.subscribers.size
     if (subscriberCount > 0) {
-      console.log(`📢 [StaticDataSourceService] 通知 ${subscriberCount} 个订阅者`)
       for (const [id, callback] of this.subscribers.entries()) {
         try {
           callback(data)
         } catch (error) {
-          console.error(`❌ [StaticDataSourceService] 回调执行失败 ${id}:`, error)
         }
       }
     }

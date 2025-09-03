@@ -90,52 +90,28 @@ export class DataItemFetcher implements IDataItemFetcher {
    */
   private getComponentPropertyValue(bindingPath: string): any {
     try {
-      console.log('🔍 [组件属性获取] 解析绑定路径:', bindingPath)
-      
       if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
-        console.warn('⚠️ [组件属性获取] 无效的绑定路径格式:', bindingPath)
         return undefined
       }
 
       const parts = bindingPath.split('.')
       const componentId = parts[0]
       const propertyPath = parts.slice(1).join('.')
-      
-      console.log('🔍 [组件属性获取] 解析结果:', { componentId, propertyPath })
 
-      // 1. 获取编辑器store实例
+      // 获取编辑器store实例
       const editorStore = useEditorStore()
-      
-      console.log('🔍 [组件属性获取] 编辑器状态:', {
-        nodesCount: editorStore.nodes?.length || 0,
-        nodes: editorStore.nodes?.map(n => ({ id: n.id, type: n.type }))
-      })
 
-      // 2. 查找目标组件实例
+      // 查找目标组件实例
       const targetComponent = editorStore.nodes?.find(node => node.id === componentId)
       if (!targetComponent) {
-        console.warn('⚠️ [组件属性获取] 未找到组件实例:', componentId)
         return undefined
       }
 
-      console.log('✅ [组件属性获取] 找到目标组件:', {
-        id: targetComponent.id,
-        type: targetComponent.type,
-        properties: Object.keys(targetComponent.properties || {})
-      })
-
-      // 3. 从组件properties中获取属性值
+      // 从组件properties中获取属性值
       const propertyValue = this.getNestedProperty(targetComponent.properties, propertyPath)
-      
-      console.log('🔍 [组件属性获取] 属性值获取结果:', {
-        propertyPath,
-        propertyValue,
-        properties: targetComponent.properties
-      })
 
       return propertyValue
     } catch (error) {
-      console.error('❌ [组件属性获取] 获取组件属性值时出错:', error)
       return undefined
     }
   }
@@ -148,19 +124,18 @@ export class DataItemFetcher implements IDataItemFetcher {
    */
   private getNestedProperty(obj: any, path: string): any {
     if (!obj || !path) return undefined
-    
+
     const keys = path.split('.')
     let current = obj
-    
+
     for (const key of keys) {
       if (current && typeof current === 'object' && key in current) {
         current = current[key]
       } else {
-        console.log('🔍 [嵌套属性获取] 属性路径不存在:', { currentKeys: Object.keys(current || {}), missingKey: key })
         return undefined
       }
     }
-    
+
     return current
   }
 
@@ -170,66 +145,37 @@ export class DataItemFetcher implements IDataItemFetcher {
    * @returns 解析后的参数值
    */
   private resolveParameterValue(param: HttpParameter): any {
-    console.log('🔍 [参数解析] 开始解析参数:', {
-      key: param.key,
-      value: param.value,
-      defaultValue: param.defaultValue,
-      valueMode: param.valueMode,
-      variableName: param.variableName,
-      selectedTemplate: param.selectedTemplate
-    })
-
     let resolvedValue = param.value
 
-    // 🔥 新增：如果是组件属性绑定，需要从组件实例中获取实际值
+    // 如果是组件属性绑定，需要从组件实例中获取实际值
     if (param.selectedTemplate === 'component-property-binding' && typeof param.value === 'string') {
-      console.log('🔗 [参数解析] 检测到组件属性绑定，尝试获取实际值:', param.value)
-      
       const actualValue = this.getComponentPropertyValue(param.value)
       if (actualValue !== undefined && actualValue !== null && actualValue !== '') {
         resolvedValue = actualValue
-        console.log('✅ [参数解析] 成功获取组件属性值:', { bindingPath: param.value, actualValue })
       } else {
-        // 🔥 修复：当组件属性值为空时，设置 resolvedValue 为 undefined，触发默认值机制
+        // 当组件属性值为空时，设置 resolvedValue 为 undefined，触发默认值机制
         resolvedValue = undefined
-        console.log('⚠️ [参数解析] 组件属性值为空或未找到，将使用默认值:', { bindingPath: param.value })
       }
     }
 
     // 检查值是否为"空"（需要使用默认值的情况）
-    const isEmpty = resolvedValue === null || 
-                   resolvedValue === undefined || 
-                   resolvedValue === '' ||
-                   (typeof resolvedValue === 'string' && resolvedValue.trim() === '')
+    const isEmpty =
+      resolvedValue === null ||
+      resolvedValue === undefined ||
+      resolvedValue === '' ||
+      (typeof resolvedValue === 'string' && resolvedValue.trim() === '')
 
     if (isEmpty) {
-      console.log('🔄 [参数解析] 检测到空值，尝试使用默认值:', {
-        originalValue: param.value,
-        hasDefaultValue: param.defaultValue !== undefined && param.defaultValue !== null,
-        defaultValue: param.defaultValue
-      })
-
       // 如果有默认值，使用默认值
       if (param.defaultValue !== undefined && param.defaultValue !== null) {
         resolvedValue = param.defaultValue
-        console.log('✅ [参数解析] 使用默认值:', resolvedValue)
       } else {
-        console.log('⚠️ [参数解析] 无默认值可用，将跳过此参数')
         return null // 返回null表示跳过此参数
       }
     }
 
     // 转换数据类型
     const convertedValue = convertValue(resolvedValue, param.dataType)
-    
-    console.log('🔧 [参数解析] 参数值解析完成:', {
-      key: param.key,
-      originalValue: param.value,
-      resolvedValue,
-      convertedValue,
-      wasEmpty: isEmpty,
-      usedDefaultValue: isEmpty && param.defaultValue !== undefined
-    })
 
     return convertedValue
   }
@@ -249,11 +195,9 @@ export class DataItemFetcher implements IDataItemFetcher {
         case 'script':
           return await this.fetchScriptData(item.config)
         default:
-          console.warn('DataItemFetcher: 未支持的数据源类型', (item as any).type)
           return {}
       }
     } catch (error) {
-      console.error('DataItemFetcher: 数据获取失败', error)
       return {} // 统一错误处理：返回空对象
     }
   }
@@ -266,7 +210,6 @@ export class DataItemFetcher implements IDataItemFetcher {
       const data = JSON.parse(config.jsonString)
       return data
     } catch (error) {
-      console.error('DataItemFetcher: JSON解析失败', error)
       return {}
     }
   }
@@ -289,33 +232,16 @@ export class DataItemFetcher implements IDataItemFetcher {
    */
   private async fetchHttpData(config: HttpDataItemConfig): Promise<any> {
     try {
-      // 打印传给HTTP请求器的配置
-      console.log('🔍 [HTTP请求器] 接收到的配置:', JSON.stringify(config, null, 2))
-      console.log('🔧 [HTTP请求器] 请求前脚本:', !!config.preRequestScript)
-      console.log('🔧 [HTTP请求器] 响应后脚本:', !!config.postResponseScript)
-
       // 第一步：处理请求前脚本
       if (config.preRequestScript) {
-        console.log('🔧 [HTTP请求器] 执行请求前脚本')
         try {
           const scriptResult = await defaultScriptEngine.execute(config.preRequestScript, { config })
           if (scriptResult.success && scriptResult.data) {
-            // 更新配置
             Object.assign(config, scriptResult.data)
-            console.log('✅ [HTTP请求器] 请求前脚本执行成功，更新后配置:', JSON.stringify(config, null, 2))
           }
         } catch (error) {
-          console.error('❌ [HTTP请求器] 请求前脚本执行失败:', error)
         }
       }
-
-      // 第二步：发起HTTP请求（使用配置中的完整参数）
-      console.log('📡 [HTTP请求器] 准备发起请求:', {
-        url: config.url,
-        method: config.method,
-        headers: config.headers,
-        paramsCount: config.params?.length || 0
-      })
 
       // 构建请求参数
       const requestConfig: any = {
@@ -327,77 +253,45 @@ export class DataItemFetcher implements IDataItemFetcher {
         requestConfig.headers = config.headers
       }
 
-      // 简化的参数处理逻辑
+      // 处理参数
       let finalUrl = config.url
       const queryParams: Record<string, any> = {}
 
-      // 1. 处理简化的路径参数
-      console.log('🔧 [HTTP请求器] 检查路径参数:', {
-        hasPathParameter: !!config.pathParameter,
-        pathParameter: config.pathParameter
-      })
-
+      // 处理路径参数
       if (config.pathParameter) {
-        const pathParam = config.pathParameter
-        console.log('🔧 [HTTP请求器] 路径参数详情:', {
-          value: pathParam.value,
-          valueType: typeof pathParam.value,
-          isDynamic: pathParam.isDynamic,
-          dataType: pathParam.dataType,
-          variableName: pathParam.variableName,
-          description: pathParam.description,
-          defaultValue: pathParam.defaultValue
-        })
-
-        // 使用resolveParameterValue处理路径参数，支持默认值回退
-        const resolvedValue = this.resolveParameterValue(pathParam as HttpParameter)
-        
+        const resolvedValue = this.resolveParameterValue(config.pathParameter as HttpParameter)
         if (resolvedValue !== null) {
           finalUrl = finalUrl + resolvedValue
-          console.log('✅ [HTTP请求器] 路径参数拼接成功:', {
-            原始URL: config.url,
-            最终URL: finalUrl,
-            拼接的值: resolvedValue
-          })
-        } else {
-          console.log('⚠️ [HTTP请求器] 路径参数无有效值（包括默认值），跳过拼接')
         }
-      } else {
-        console.log('ℹ️ [HTTP请求器] 无路径参数配置')
       }
 
-      // 2. 处理查询参数（支持默认值回退）
+      // 处理查询参数
       if (config.params && config.params.length > 0) {
         config.params
-          .filter(p => p.enabled && p.key) // 只检查enabled和key，允许空值进入处理
+          .filter(p => p.enabled && p.key)
           .forEach(p => {
             const resolvedValue = this.resolveParameterValue(p)
-            if (resolvedValue !== null) { // 只有resolveParameterValue返回null时才跳过
+            if (resolvedValue !== null) {
               queryParams[p.key] = resolvedValue
             }
           })
       }
 
-      // 3. 向后兼容：统一参数系统（支持默认值回退）
+      // 向后兼容：统一参数系统
       else if (config.parameters && config.parameters.length > 0) {
         config.parameters
-          .filter(p => p.enabled && p.key) // 只检查enabled和key，允许空值进入处理
+          .filter(p => p.enabled && p.key)
           .forEach(p => {
             const resolvedValue = this.resolveParameterValue(p)
-            if (resolvedValue !== null) { // 只有resolveParameterValue返回null时才跳过
-
+            if (resolvedValue !== null) {
               switch (p.paramType) {
                 case 'path':
-                  // 统一参数中的路径参数：拼接到URL后面
                   finalUrl = finalUrl + resolvedValue
-                  console.log('🔍 [HTTP请求器] 统一参数路径拼接:', finalUrl)
                   break
                 case 'query':
-                  // 查询参数：添加到params对象
                   queryParams[p.key] = resolvedValue
                   break
                 case 'header':
-                  // 请求头参数：添加到headers对象
                   requestConfig.headers = requestConfig.headers || {}
                   requestConfig.headers[p.key] = String(resolvedValue)
                   break
@@ -408,22 +302,19 @@ export class DataItemFetcher implements IDataItemFetcher {
 
       if (Object.keys(queryParams).length > 0) {
         requestConfig.params = queryParams
-        console.log('🔍 [HTTP请求器] 查询参数:', queryParams)
       }
 
-      // 处理请求体（POST/PUT/PATCH等方法）
+      // 处理请求体
       let requestBody = undefined
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method) && config.body) {
         try {
           requestBody = typeof config.body === 'string' ? JSON.parse(config.body) : config.body
-          console.log('📝 [HTTP请求器] 请求体:', requestBody)
-        } catch (error) {
-          console.warn('⚠️ [HTTP请求器] 请求体解析失败，使用原始字符串:', config.body)
+        } catch {
           requestBody = config.body
         }
       }
 
-      // 根据方法发起请求（使用拼接后的finalUrl）
+      // 发起HTTP请求
       let response
       switch (config.method.toUpperCase()) {
         case 'GET':
@@ -445,28 +336,20 @@ export class DataItemFetcher implements IDataItemFetcher {
           throw new Error(`不支持的HTTP方法: ${config.method}`)
       }
 
-      console.log('📨 [HTTP请求器] 原始响应状态: 成功')
-      console.log('📨 [HTTP请求器] 原始响应数据:', JSON.stringify(response).substring(0, 200) + '...')
-
       // 第三步：处理响应后脚本
       let finalResponse = response
       if (config.postResponseScript) {
-        console.log('🔧 [HTTP请求器] 执行响应后脚本')
         try {
           const scriptResult = await defaultScriptEngine.execute(config.postResponseScript, { response })
           if (scriptResult.success) {
             finalResponse = scriptResult.data !== undefined ? scriptResult.data : response
-            console.log('✅ [HTTP请求器] 响应后脚本执行成功')
-            console.log('🔍 [HTTP请求器] 脚本处理后数据:', JSON.stringify(finalResponse).substring(0, 200) + '...')
           }
         } catch (error) {
-          console.error('❌ [HTTP请求器] 响应后脚本执行失败:', error)
         }
       }
 
       return finalResponse
     } catch (error) {
-      console.error('DataItemFetcher: HTTP数据获取失败', error)
       return {}
     }
   }
@@ -474,8 +357,7 @@ export class DataItemFetcher implements IDataItemFetcher {
   /**
    * 获取WebSocket数据 (暂时实现为占位符)
    */
-  private async fetchWebSocketData(config: WebSocketDataItemConfig): Promise<any> {
-    console.warn('DataItemFetcher: WebSocket数据源暂未实现')
+  private async fetchWebSocketData(_config: WebSocketDataItemConfig): Promise<any> {
     return {}
   }
 
@@ -484,20 +366,15 @@ export class DataItemFetcher implements IDataItemFetcher {
    */
   private async fetchScriptData(config: ScriptDataItemConfig): Promise<any> {
     try {
-      console.log('🔧 [DataItemFetcher] 使用 script-engine 执行脚本')
-
       // 使用 script-engine 安全执行脚本
       const result = await defaultScriptEngine.execute(config.script, config.context || {})
 
       if (result.success) {
-        console.log('✅ [DataItemFetcher] 脚本执行成功:', result.executionTime + 'ms')
         return result.data || {}
       } else {
-        console.error('❌ [DataItemFetcher] 脚本执行失败:', result.error?.message)
         return {}
       }
     } catch (error) {
-      console.error('DataItemFetcher: 脚本执行异常', error)
       return {}
     }
   }

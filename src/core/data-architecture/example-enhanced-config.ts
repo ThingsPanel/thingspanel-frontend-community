@@ -153,8 +153,6 @@ export const httpDataItemExample: DataItemConfig<EnhancedHttpDataItemConfig> = {
       // 设置动态参数
       setDynamicParam('timestamp', timestamp);
       setDynamicParam('requestId', requestId);
-      
-      console.log('预请求脚本执行完成', { timestamp, requestId });
     `,
     responseScript: `
       // 响应后脚本示例

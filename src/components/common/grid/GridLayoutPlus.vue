@@ -171,13 +171,6 @@ const config = computed<GridLayoutPlusConfig>(() => {
     ...props.config
   }
 
-  // 调试日志
-  console.log('🔧 GridLayoutPlus - 配置计算:', {
-    propsConfig: props.config,
-    finalConfig: baseConfig,
-    readonly: props.readonly
-  })
-
   return baseConfig
 })
 

@@ -138,7 +138,4 @@ const dualDataDisplayDefinition: ComponentDefinition = {
 // 注册组件到组件注册中心（包含自动属性暴露）
 componentRegistry.registerComponent(dualDataDisplayDefinition)
 componentRegistry.registerSettingConfig(dualDataDisplaySettingConfig)
-
-console.log('🎯 [dual-data-display] 组件已注册，属性暴露配置已自动生成')
-
 export default dualDataDisplayDefinition

@@ -37,32 +37,18 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
    */
   async initialize(): Promise<void> {
     if (this.initialized) return
-
-    console.log('🌉 [ConfigIntegrationBridge] 初始化配置集成桥接器...')
-
     // 初始化配置状态管理器
-    console.log('🔍 [ConfigIntegrationBridge] 初始化ConfigurationStateManager...')
-
     // 设置与EditorDataSourceManager的集成
     await this.setupEditorDataSourceIntegration()
 
     this.initialized = true
-    console.log('✅ [ConfigIntegrationBridge] 桥接器初始化完成')
   }
 
   /**
    * 获取组件配置
    */
   getConfiguration(widgetId: string): WidgetConfiguration | null {
-    const config = configurationStateManager.getConfiguration(widgetId)
-    console.log(`🔍 [ConfigIntegrationBridge] 获取配置: ${widgetId}`, {
-      hasConfig: !!config,
-      hasComponent: !!config?.component,
-      hasPolling: !!config?.component?.polling,
-      pollingEnabled: config?.component?.polling?.enabled,
-      config: config
-    })
-    return config
+    return configurationStateManager.getConfiguration(widgetId)
   }
 
   /**
@@ -86,11 +72,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         source: 'user'
       }
       configEventBus.emitConfigChange(changeEvent)
-
-      console.log(`✅ [ConfigIntegrationBridge] 配置已设置且缓存已清理: ${widgetId}`)
-    } else {
-      console.log(`⏭️ [ConfigIntegrationBridge] 配置内容未变化，跳过: ${widgetId}`)
-    }
+    } 
   }
 
   /**
@@ -101,20 +83,12 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     section: K,
     config: WidgetConfiguration[K]
   ): void {
-    console.log(`🔄 [ConfigIntegrationBridge] 更新配置部分: ${widgetId}.${section}`, {
-      section,
-      config,
-      isComponentSection: section === 'component',
-      hasPollingConfig: section === 'component' && (config as any)?.polling
-    })
-
     const updated = configurationStateManager.updateConfigurationSection(widgetId, section, config, 'user')
 
     if (updated) {
       // 🔥 关键修复：配置部分更新时清理缓存，特别是 dataSource 更新
       if (section === 'dataSource' || section === 'component') {
         simpleDataBridge.clearComponentCache(widgetId)
-        console.log(`🧡 [ConfigIntegrationBridge] ${section} 更新，缓存已清理: ${widgetId}`)
       }
 
       // 🔥 修复：发出配置部分更新事件，使用正确的 API
@@ -128,11 +102,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         source: 'user'
       }
       configEventBus.emitConfigChange(changeEvent)
-
-      console.log(`✅ [ConfigIntegrationBridge] 配置部分已更新: ${widgetId}.${section}`)
-    } else {
-      console.log(`⏭️ [ConfigIntegrationBridge] 配置部分内容未变化或被锁定，跳过: ${widgetId}.${section}`)
-    }
+    } 
   }
 
   /**
@@ -156,15 +126,12 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     configurationStateManager.setConfiguration(widgetId, defaultConfig, 'system')
     // 🔥 重置时也需要清理缓存
     simpleDataBridge.clearComponentCache(widgetId)
-    console.log(`🔄 [ConfigIntegrationBridge] 配置已重置且缓存已清理: ${widgetId}`)
   }
 
   /**
    * 初始化组件配置
    */
   initializeConfiguration(widgetId: string, customDefaults?: Partial<WidgetConfiguration>): void {
-    console.log(`🆕 [ConfigIntegrationBridge] 初始化配置: ${widgetId}`)
-
     // 先初始化默认配置
     configurationStateManager.initializeConfiguration(widgetId)
 
@@ -187,7 +154,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     if (result) {
       // 🔥 删除配置时清理相关缓存
       simpleDataBridge.clearComponentCache(widgetId)
-      console.log(`🗑️ [ConfigIntegrationBridge] 配置和缓存已删除: ${widgetId}`)
     }
 
     return result
@@ -231,15 +197,12 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       // 简单验证
       const validationResult = this.validateConfiguration(config)
       if (!validationResult.valid) {
-        console.error(`[ConfigIntegrationBridge] 导入的配置无效:`, validationResult.errors)
         return false
       }
 
       configurationStateManager.setConfiguration(widgetId, config, 'import')
-      console.log(`[ConfigIntegrationBridge] 配置导入成功: ${widgetId}`)
       return true
     } catch (error) {
-      console.error(`[ConfigIntegrationBridge] 配置导入失败:`, error)
       return false
     }
   }
@@ -277,8 +240,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
   batchUpdateConfigurations(updates: Array<{ widgetId: string; config: Partial<WidgetConfiguration> }>): void {
     const timestamp = Date.now()
 
-    console.log(`🔄 [ConfigIntegrationBridge] 批量更新开始，共 ${updates.length} 项配置`)
-
     for (const { widgetId, config } of updates) {
       const currentConfig = configurationStateManager.getConfiguration(widgetId)
       if (currentConfig) {
@@ -292,8 +253,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         configurationStateManager.setConfiguration(widgetId, updatedConfig, 'system')
       }
     }
-
-    console.log(`✅ [ConfigIntegrationBridge] 批量更新完成`)
   }
 
   // ========== 私有方法 ==========
@@ -302,18 +261,12 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
    * 设置与EditorDataSourceManager的集成
    */
   private async setupEditorDataSourceIntegration(): Promise<void> {
-    console.log('🔗 [ConfigIntegrationBridge] 设置与EditorDataSourceManager的集成...')
-
     try {
       // 确保EditorDataSourceManager已初始化
       if (!editorDataSourceManager.isInitialized()) {
-        console.log('🚀 [ConfigIntegrationBridge] 初始化EditorDataSourceManager...')
         await editorDataSourceManager.initialize()
       }
-
-      console.log('✅ [ConfigIntegrationBridge] EditorDataSourceManager集成完成')
     } catch (error) {
-      console.error('❌ [ConfigIntegrationBridge] EditorDataSourceManager集成失败:', error)
     }
   }
 
@@ -321,38 +274,21 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
    * 为特定组件设置数据源执行集成
    */
   setupComponentDataSourceIntegration(componentId: string): void {
-    console.log(`🔗 [ConfigIntegrationBridge] 设置组件数据源集成: ${componentId}`)
-
     // 订阅该组件的配置更新 - 新的无循环架构
     configurationStateManager.onConfigurationUpdate(componentId, async (event: ConfigurationUpdateEvent) => {
-      console.log(
-        `🔗 [ConfigIntegrationBridge] 新配置系统事件: ${event.componentId}.${event.section} v${event.newVersion.version}`
-      )
-
       // 只有数据源配置变更且shouldExecute为true时才触发执行
       if (event.section === 'dataSource' && event.shouldExecute) {
-        console.log(`⚡ [ConfigIntegrationBridge] 新系统触发数据源执行: ${componentId} (v${event.newVersion.version})`)
-
         try {
           // 确保EditorDataSourceManager已初始化
           if (!editorDataSourceManager.isInitialized()) {
-            console.log('🚀 [ConfigIntegrationBridge] 初始化EditorDataSourceManager...')
             await editorDataSourceManager.initialize()
           }
 
           // 触发数据更新 - 新的无循环架构
           await editorDataSourceManager.triggerDataUpdate(componentId)
-          console.log(
-            `✅ [ConfigIntegrationBridge] 新系统数据源执行完成: ${componentId} (v${event.newVersion.version})`
-          )
         } catch (error) {
-          console.error(`❌ [ConfigIntegrationBridge] 新系统数据源执行失败: ${componentId}`, error)
         }
-      } else {
-        console.log(
-          `⏸️ [ConfigIntegrationBridge] 新系统跳过数据源执行: ${componentId} (section: ${event.section}, shouldExecute: ${event.shouldExecute})`
-        )
-      }
+      } 
     })
   }
 
@@ -410,5 +346,3 @@ export const configurationIntegrationBridge = new ConfigurationIntegrationBridge
 
 // 向后兼容的导出
 export const configurationManager = configurationIntegrationBridge
-
-console.log('🌉 [ConfigIntegrationBridge] 配置集成桥接器已加载')

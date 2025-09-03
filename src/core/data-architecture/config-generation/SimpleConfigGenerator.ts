@@ -42,8 +42,6 @@ export class SimpleConfigGenerator {
       triggers,
       enabled: true
     }
-
-    console.log('🔧 [ConfigGenerator] 生成配置完成:', config)
     return config
   }
 
@@ -86,7 +84,6 @@ export class SimpleConfigGenerator {
       const sourceRequirement = requirement.dataSources.find(ds => ds.id === userInput.dataSourceId)
 
       if (!sourceRequirement) {
-        console.warn(`未找到数据源需求定义: ${userInput.dataSourceId}`)
         continue
       }
 

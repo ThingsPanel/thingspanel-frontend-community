@@ -98,30 +98,12 @@ const card2ConfigComponent = computed(() => {
     // 通过Card2集成hook获取组件定义
     const componentWidget = card2Integration.getComponentDefinition(props.widget.type)
 
-    console.log('[ComponentConfigForm] 获取组件定义结果:', {
-      componentType: props.widget.type,
-      hasWidget: !!componentWidget,
-      hasDefinition: !!componentWidget?.definition,
-      hasConfigComponent: !!componentWidget?.definition?.configComponent,
-      configComponent: componentWidget?.definition?.configComponent
-    })
-
     if (componentWidget?.definition?.configComponent) {
-      console.log('[ComponentConfigForm] 找到Card2配置组件:', {
-        componentType: props.widget.type,
-        configComponent: componentWidget.definition.configComponent
-      })
       return componentWidget.definition.configComponent
     } else {
-      console.warn('[ComponentConfigForm] Card2组件没有配置组件:', {
-        componentType: props.widget.type,
-        widget: componentWidget,
-        definition: componentWidget?.definition
-      })
       return null
     }
   } catch (error) {
-    console.error('[ComponentConfigForm] 获取Card2配置组件失败:', error)
     return null
   }
 })
@@ -140,7 +122,6 @@ watch(
   newProperties => {
     // 防止循环更新
     if (isUpdatingConfig) {
-      console.log('[ComponentConfigForm] 跳过循环更新 - 正在更新配置中')
       return
     }
 
@@ -150,11 +131,6 @@ watch(
       const currentConfigJson = JSON.stringify(componentConfig.value)
 
       if (newPropsJson !== currentConfigJson) {
-        console.log('[ComponentConfigForm] Widget配置属性变化:', {
-          componentType: props.widget?.type,
-          newProperties,
-          oldProperties: componentConfig.value
-        })
 
         // 设置防循环标志
         isUpdatingConfig = true
@@ -179,15 +155,9 @@ watch(
  * 处理Card2配置更新
  */
 const handleCard2ConfigUpdate = (newConfig: any) => {
-  console.log('[ComponentConfigForm] Card2配置更新:', {
-    componentType: props.widget?.type,
-    newConfig,
-    oldConfig: componentConfig.value
-  })
 
   // 防止循环更新
   if (isUpdatingConfig) {
-    console.log('[ComponentConfigForm] 跳过配置更新 - 防循环保护')
     return
   }
 
@@ -199,7 +169,6 @@ const handleCard2ConfigUpdate = (newConfig: any) => {
 
     if (props.widget?.properties) {
       Object.assign(props.widget.properties, newConfig)
-      console.log('[ComponentConfigForm] 已更新widget.properties:', props.widget.properties)
     }
 
     // 发送配置更新事件
@@ -220,16 +189,9 @@ const handleCard2ConfigUpdate = (newConfig: any) => {
 watch(
   () => props.widget,
   newWidget => {
-    console.log('[ComponentConfigForm] Widget变化:', {
-      type: newWidget?.type,
-      isCard2: newWidget?.metadata?.isCard2Component,
-      hasProperties: !!newWidget?.properties
-    })
   },
   { deep: true, immediate: true }
 )
-
-console.log('[ComponentConfigForm] 🎯 组件配置表单加载完成')
 </script>
 
 <style scoped>

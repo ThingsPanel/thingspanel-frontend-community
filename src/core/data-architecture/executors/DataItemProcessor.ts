@@ -37,47 +37,30 @@ export class DataItemProcessor implements IDataItemProcessor {
    */
   async processData(rawData: any, config: ProcessingConfig): Promise<any> {
     try {
-      console.log('🔧 [DataItemProcessor] 开始数据处理')
-      console.log('🔍 [DataItemProcessor] 原始数据:', JSON.stringify(rawData, null, 2))
-      console.log('🔍 [DataItemProcessor] 处理配置:', {
-        filterPath: config.filterPath,
-        hasCustomScript: !!config.customScript,
-        defaultValue: config.defaultValue
-      })
-
+    
       // 🔥 修复：改进空数据检查逻辑
       if (rawData === null || rawData === undefined) {
-        console.warn('🚨 [DataItemProcessor] 原始数据为null/undefined，返回默认值')
         return config.defaultValue || {}
       }
 
       // 允许空数组、空字符串等"falsy but valid"的值
       if (typeof rawData === 'object' && Object.keys(rawData).length === 0 && !Array.isArray(rawData)) {
-        console.warn('🚨 [DataItemProcessor] 原始数据为空对象，返回默认值')
         return config.defaultValue || {}
       }
 
       // 第一步：JSONPath路径过滤
-      console.log('🔧 [DataItemProcessor] 开始路径过滤，路径:', config.filterPath)
       let filteredData = await this.applyPathFilter(rawData, config.filterPath)
-      console.log('🔧 [DataItemProcessor] 路径过滤结果:', JSON.stringify(filteredData, null, 2))
 
       // 第二步：自定义脚本处理
       if (config.customScript) {
-        console.log('🔧 [DataItemProcessor] 开始自定义脚本处理')
         filteredData = await this.applyCustomScript(filteredData, config.customScript)
-        console.log('🔧 [DataItemProcessor] 脚本处理结果:', JSON.stringify(filteredData, null, 2))
       } else {
-        console.log('ℹ️ [DataItemProcessor] 无自定义脚本，跳过脚本处理')
       }
 
       // 🔥 修复：允许falsy但有意义的值（如 0、false、[]、""）
       const finalResult = filteredData !== null && filteredData !== undefined ? filteredData : config.defaultValue || {}
-
-      console.log('✅ [DataItemProcessor] 数据处理完成，最终结果:', JSON.stringify(finalResult, null, 2))
       return finalResult
     } catch (error) {
-      console.error('❌ [DataItemProcessor] 数据处理失败:', error)
       return config.defaultValue || {} // 统一错误处理：返回默认值或空对象
     }
   }
@@ -110,7 +93,6 @@ export class DataItemProcessor implements IDataItemProcessor {
 
       for (const part of pathParts) {
         if (current == null) {
-          console.log('🚨 [applyPathFilter] 路径访问中断，当前值为null/undefined')
           return null // 🔥 修复：返回null而不是{}，表示路径不存在
         }
 
@@ -126,7 +108,6 @@ export class DataItemProcessor implements IDataItemProcessor {
           if (Array.isArray(current) && !isNaN(index)) {
             current = current[index]
           } else {
-            console.log('🚨 [applyPathFilter] 数组索引访问失败')
             return null // 🔥 修复：返回null而不是{}
           }
         } else {
@@ -136,10 +117,8 @@ export class DataItemProcessor implements IDataItemProcessor {
       }
 
       // 🔥 修复：允许所有类型的值，包括false、0、""、[]等
-      console.log('✅ [applyPathFilter] 路径过滤完成，结果:', current)
       return current // 直接返回结果，不判断undefined
     } catch (error) {
-      console.error('DataItemProcessor: JSONPath过滤失败', error)
       return {}
     }
   }
@@ -149,8 +128,6 @@ export class DataItemProcessor implements IDataItemProcessor {
    */
   private async applyCustomScript(data: any, script: string): Promise<any> {
     try {
-      console.log('🔧 [DataItemProcessor] 使用 script-engine 执行数据处理脚本')
-
       // 创建脚本执行上下文
       const scriptContext = {
         data
@@ -161,14 +138,11 @@ export class DataItemProcessor implements IDataItemProcessor {
       const result = await defaultScriptEngine.execute(script, scriptContext)
 
       if (result.success) {
-        console.log('✅ [DataItemProcessor] 脚本处理成功:', result.executionTime + 'ms')
         return result.data !== undefined ? result.data : data
       } else {
-        console.error('❌ [DataItemProcessor] 脚本处理失败:', result.error?.message)
         return data // 脚本失败时返回原数据
       }
     } catch (error) {
-      console.error('DataItemProcessor: 脚本处理异常', error)
       return data // 脚本失败时返回原数据
     }
   }

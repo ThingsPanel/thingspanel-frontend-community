@@ -37,6 +37,8 @@
   "route.apply_service": "协议插件管理",
   "route.apply_in": "插件管理",
   "route.test": "页面测试用",
+  "route.test_data-binding-system-integration": "数据绑定系统集成测试",
+  "route.test_editor-integration": "编辑器集成测试",
   "route.rule-engine": "规则引擎",
   "route.data-service_rule-engine": "规则引擎",
   "route.data-service": "数据服务",

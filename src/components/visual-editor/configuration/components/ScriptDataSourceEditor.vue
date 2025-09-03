@@ -196,8 +196,6 @@ const data = {
   status: _utils.mockData.randomBoolean() ? 'active' : 'inactive',
   message: '数据更新成功'
 };
-
-console.log('生成基础数据:', data);
 return data;`,
 
   random: `// 随机数据集生成
@@ -214,8 +212,6 @@ for (let i = 0; i < count; i++) {
     createdAt: _utils.mockData.randomDate()
   });
 }
-
-console.log('生成', count, '条随机数据');
 return {
   total: count,
   items: items,
@@ -242,8 +238,6 @@ for (let i = count - 1; i >= 0; i--) {
     formatted: _utils.timeUtils.format(new Date(timestamp))
   });
 }
-
-console.log('生成时间序列数据:', series.length, '个数据点');
 return {
   type: 'time-series',
   interval: '5min',
@@ -269,8 +263,6 @@ const deviceData = devices.map(device => ({
     uptime: _utils.mockData.randomNumber(0, 86400)
   }
 }));
-
-console.log('模拟API响应数据');
 return {
   success: true,
   timestamp: new Date().toISOString(),
@@ -359,8 +351,6 @@ const testScript = async () => {
   testing.value = true
 
   try {
-    console.log('🧪 [ScriptDataSourceEditor] 测试执行脚本')
-
     const result = await defaultScriptEngine.execute(scriptCode.value)
     testResult.value = result
 
@@ -370,7 +360,6 @@ const testScript = async () => {
       message.error(`脚本执行失败: ${result.error?.message}`)
     }
   } catch (error) {
-    console.error('❌ [ScriptDataSourceEditor] 脚本测试失败:', error)
     message.error(`脚本测试失败: ${(error as Error).message}`)
   } finally {
     testing.value = false

@@ -18,7 +18,6 @@ class ConfigRegistry {
    */
   register(componentId: string, configComponent: IConfigComponent) {
     this.registry.set(componentId, configComponent)
-    console.log(`🔧 [ConfigRegistry] 注册配置组件: ${componentId}`)
   }
 
   /**

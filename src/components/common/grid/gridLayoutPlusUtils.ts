@@ -393,7 +393,6 @@ export function optimizeLayoutPerformance(
   // 如果项目数量超过虚拟化阈值，启用虚拟化优化
   if (config.enableVirtualization && layout.length > config.virtualizationThreshold) {
     // 虚拟化逻辑
-    console.log('启用虚拟化优化，项目数量:', layout.length)
   }
 
   return optimizedLayout
@@ -473,7 +472,6 @@ export function importLayout(data: string, format: 'json' | 'csv' = 'json'): Gri
         return JSON.parse(data)
     }
   } catch (error) {
-    console.error('布局导入失败:', error)
     return []
   }
 }

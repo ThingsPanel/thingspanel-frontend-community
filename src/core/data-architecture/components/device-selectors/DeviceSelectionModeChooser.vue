@@ -91,7 +91,6 @@ const getModeColor = (mode: DeviceParameterSourceType) => {
  * 确认选择模式
  */
 const confirmMode = () => {
-  console.log('🎯 [DeviceSelectionModeChooser] 选择模式:', selectedMode.value)
   emit('modeSelected', selectedMode.value)
 }
 

@@ -42,7 +42,6 @@ export class RendererManager {
     }
   ): void {
     if (this.registrations.has(type)) {
-      console.warn(`[RendererManager] Renderer type '${type}' already registered, overriding...`)
     }
 
     const registration: RendererRegistration = {
@@ -55,15 +54,11 @@ export class RendererManager {
     }
 
     this.registrations.set(type, registration)
-    console.log(`[RendererManager] Registered renderer: ${type}`)
   }
 
   // 取消注册渲染器
   unregister(type: string): boolean {
     const removed = this.registrations.delete(type)
-    if (removed) {
-      console.log(`[RendererManager] Unregistered renderer: ${type}`)
-    }
     return removed
   }
 

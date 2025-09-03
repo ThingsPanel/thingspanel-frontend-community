@@ -14,14 +14,8 @@ import { registerBaseWidgets } from './base-widgets'
  * @param includeBaseWidgets 是否包含基础组件，默认为false
  */
 export function registerAllWidgets(includeBaseWidgets: boolean = false) {
-  console.log('🚀 开始注册传统组件...')
 
   if (includeBaseWidgets) {
     registerBaseWidgets()
-    console.log('✅ 基础组件注册完成')
-  } else {
-    console.log('⏭️ 跳过基础组件注册')
-  }
-
-  console.log('✅ 传统组件注册完成')
+  } 
 }

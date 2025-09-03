@@ -52,12 +52,10 @@ const fetchBoardData = async () => {
 
     if (data) {
       panelData.value = data
-      console.log('🚀 Ultra看板预览数据加载完成:', data)
     } else {
       error.value = $t('common.dataNotFound')
     }
   } catch (err) {
-    console.error('获取看板数据失败:', err)
     error.value = $t('common.loadError')
     message.error($t('common.loadError'))
   } finally {
@@ -69,7 +67,6 @@ const fetchBoardData = async () => {
  * 页面初始化
  */
 onMounted(async () => {
-  console.log('🎯 Ultra看板预览页面初始化, ID:', panelId.value)
   await fetchBoardData()
 })
 
@@ -78,7 +75,6 @@ onMounted(async () => {
  */
 onUnmounted(() => {
   isUnmounted.value = true
-  console.log('🧹 Ultra看板预览页面已销毁')
 })
 
 /**

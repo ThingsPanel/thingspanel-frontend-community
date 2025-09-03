@@ -27,6 +27,7 @@ import type { RendererType, VisualEditorWidget, GraphData } from './types'
 // import './data-sources' // 临时注释，文件不存在
 
 import { useVisualEditorIntegration } from '@/card2.1/hooks/useVisualEditorIntegration'
+import { visualEditorLogger } from '@/utils/logger'
 // 🔥 轮询系统导入
 import { useGlobalPollingManager } from './core/GlobalPollingManager'
 import { editorDataSourceManager } from './core/EditorDataSourceManager'
@@ -385,11 +386,8 @@ const rendererOptions = computed(() => [
 
 // 工具栏事件处理
 const handleModeChange = (mode: 'edit' | 'preview') => {
-  console.log('🔄 模式切换请求:', { from: isPreviewMode ? 'preview' : 'edit', to: mode })
 
   if (mode === 'edit') {
-    console.log('📝 切换到编辑模式')
-
     // 🔴 关闭全局轮询（编辑模式）
     pollingManager.disableGlobalPolling()
 
@@ -398,26 +396,21 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
 
     // 🎯 改进用户体验：进入编辑模式时自动打开左侧组件库抽屉
     if (!showLeftDrawer.value) {
-      console.log('🔧 自动打开左侧组件库抽屉')
       showLeftDrawer.value = true
     }
   } else {
-    console.log('👁️ 切换到预览模式')
     const currentState = getState()
     if (JSON.stringify(currentState) !== JSON.stringify(preEditorConfig.value)) {
-      console.log('⚠️ 有未保存的更改，显示确认对话框')
       dialog.warning({
         title: $t('card.quitWithoutSave'),
         positiveText: $t('device_template.confirm'),
         negativeText: $t('common.cancel'),
         onPositiveClick: () => {
           // 用户确认退出，重置配置
-          console.log('✅ 用户确认退出，重置配置')
           isEditing.value = false
           setPreviewMode(true) // 同步全局预览模式
 
           // 🔛 自动启动全局轮询（预览模式默认开启）
-          console.log('🚀 [PanelEditor] 预览模式：自动启动全局轮询')
           initializePollingTasksAndEnable()
 
           // 退出编辑模式时关闭所有抽屉
@@ -433,17 +426,14 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
         },
         onNegativeClick: () => {
           // 用户取消退出，保持当前状态，不做任何操作
-          console.log('❌ 用户取消退出编辑模式，保持当前配置')
         }
       })
     } else {
       // 没有未保存的更改，直接退出编辑模式
-      console.log('✅ 没有未保存的更改，直接退出编辑模式')
       isEditing.value = false
       setPreviewMode(true) // 同步全局预览模式
 
       // 🔛 自动启动全局轮询（预览模式默认开启）
-      console.log('🚀 [PanelEditor] 预览模式：自动启动全局轮询')
       initializePollingTasksAndEnable()
 
       // 退出编辑模式时关闭所有抽屉
@@ -453,8 +443,6 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
       selectedNodeId.value = ''
     }
   }
-
-  console.log('🎯 模式切换完成:', { isEditing: isEditing.value, isPreviewMode: isPreviewMode, mode })
 }
 
 // 🔥 轮询管理功能
@@ -512,20 +500,17 @@ const handleDataSourceManagerUpdate = (updateData: {
 
     // 🔥 防护：确保编辑器数据源管理器已初始化且组件存在
     if (!editorDataSourceManager.isInitialized()) {
-      console.warn('⚠️ [PanelEditor] 编辑器数据源管理器未初始化，跳过更新')
       return
     }
 
     // 🔥 防护：确保组件节点存在
     const componentNode = stateManager.nodes.find(n => n.id === componentId)
     if (!componentNode) {
-      console.warn(`⚠️ [PanelEditor] 组件节点不存在: ${componentId}，跳过数据源配置`)
       return
     }
 
     // 🔥 防护：检查配置是否有效
     if (action === 'update' && !config) {
-      console.warn(`⚠️ [PanelEditor] 配置为空，跳过更新: ${componentId}`)
       return
     }
 
@@ -558,29 +543,11 @@ const handleDataSourceManagerUpdate = (updateData: {
         !hasAnyDataSourceConfig &&
         !hasValidDataSourceType
       ) {
-        console.log(`ℹ️ [PanelEditor] 配置无有效数据源，跳过更新: ${componentId}`)
-        console.log('🔍 [PanelEditor] 检查的配置格式:', {
-          hasDataSourceBindings,
-          hasDataSources,
-          hasNewArchitectureConfig,
-          hasAnyDataSourceConfig,
-          hasValidDataSourceType,
-          configKeys: Object.keys(config),
-          configType: config.type,
-          fullConfig: config
-        })
+      
         return
       }
 
-      console.log(`🔧 [PanelEditor] 配置有效，继续处理: ${componentId}`, {
-        hasDataSourceBindings,
-        hasDataSources,
-        hasNewArchitectureConfig,
-        hasAnyDataSourceConfig,
-        hasValidDataSourceType,
-        configType: config.type,
-        configKeys: Object.keys(config)
-      })
+  
     }
 
     if (action === 'update' || action === 'config-updated' || action === 'config-restored') {
@@ -610,7 +577,6 @@ const handleDataSourceManagerUpdate = (updateData: {
 
       // 🔧 修复：注册后立即启动数据源，确保实时配置能立即生效
       setTimeout(() => {
-        console.log(`🚀 [PanelEditor] 启动组件数据源: ${componentId}`)
         editorDataSourceManager.startComponentDataSource(componentId)
       }, 100) // 短暂延迟确保注册完成
 
@@ -630,12 +596,8 @@ const handleDataSourceManagerUpdate = (updateData: {
     // 标记有变化
     hasChanges.value = true
   } catch (error) {
-    console.error('❌ [PanelEditor] 数据源管理器更新失败:', error)
 
     // 🔥 防护：错误时不要影响整体流程，只记录错误
-    if (process.env.NODE_ENV === 'development') {
-      console.error('详细错误信息:', error)
-    }
   }
 }
 
@@ -646,7 +608,6 @@ const handleSave = async () => {
   // 检查是否为Canvas渲染器，如果是则显示开发中提示
   if (currentRenderer.value === 'canvas') {
     message.warning($t('visualEditor.canvasNotSupported'))
-    console.warn('Canvas功能尚未完成，无法保存')
     return
   }
 
@@ -655,15 +616,6 @@ const handleSave = async () => {
     const currentState = getState()
 
     // 🔍 保存过程调试
-    console.log('💾 [SAVE] 开始保存，getState返回:', {
-      nodesCount: currentState.nodes?.length || 0,
-      hasComponentConfigurations: !!currentState.componentConfigurations,
-      componentConfigurationKeys: currentState.componentConfigurations
-        ? Object.keys(currentState.componentConfigurations)
-        : [],
-      multiDataSourceConfigStoreKeys: Object.keys(multiDataSourceConfigStore.value),
-      fullState: currentState
-    })
 
     // 解析现有配置
     let existingConfig: any = {}
@@ -671,7 +623,6 @@ const handleSave = async () => {
       try {
         existingConfig = parseConfig(panelData.value.config)
       } catch (error: any) {
-        console.warn('解析现有配置失败:', error)
       }
     }
 
@@ -716,9 +667,6 @@ const handleSave = async () => {
     // 现在可以安全地计算配置大小
     const configSize = JSON.stringify(baseConfig).length
     baseConfig.visualEditor.metadata.stats.configSize = configSize
-
-    console.log('💾 保存配置统计:', baseConfig.visualEditor.metadata.stats)
-
     const { error } = await PutBoard({
       id: props.panelId,
       config: JSON.stringify(baseConfig),
@@ -736,7 +684,6 @@ const handleSave = async () => {
     }
   } catch (err: any) {
     message.error($t('page.dataForward.saveFailed'))
-    console.error('保存失败:', err)
   } finally {
     isSaving.value = false
   }
@@ -787,7 +734,6 @@ watch(
             dataRequirements: node.dataRequirements || {}
           })
         } catch (error) {
-          console.error(`❌ [PanelEditor] 注册组件 ${nodeId} 失败:`, error)
         }
       }
     })
@@ -798,7 +744,6 @@ watch(
       try {
         await editorDataSourceManager.removeComponentDataSource(nodeId)
       } catch (error) {
-        console.error(`❌ [PanelEditor] 注销组件 ${nodeId} 失败:`, error)
       }
     })
   },
@@ -836,10 +781,8 @@ const setupDataSourceEventListeners = () => {
           // 标记有变化（可选，取决于是否希望数据更新触发保存提示）
           // hasChanges.value = true
         } catch (error) {
-          console.error(`❌ [PanelEditor] 数据分发失败: ${componentId}`, error)
         }
       } else {
-        console.warn(`⚠️ [PanelEditor] 数据更新失败: ${componentId}`, result.error)
       }
     }
 
@@ -849,7 +792,6 @@ const setupDataSourceEventListeners = () => {
       // 🔥 性能优化：只在开发环境输出状态变化日志
 
       if (error) {
-        console.error(`❌ [PanelEditor] 组件 ${componentId} 出现错误:`, error)
         // 🔥 TODO: 可以在这里添加用户友好的错误通知UI
         // message.error(`组件 ${componentId} 数据获取失败: ${error}`)
       }
@@ -866,7 +808,6 @@ const setupDataSourceEventListeners = () => {
     editorDataSourceManager.on('component-status-changed', statusChangeListener)
     editorDataSourceManager.on('polling-status-changed', pollingStatusListener)
   } catch (error) {
-    console.error('❌ [PanelEditor] 数据源事件监听器设置失败:', error)
   }
 }
 
@@ -897,7 +838,6 @@ const syncDataSourceConfigs = async () => {
       }
     }
   } catch (error) {
-    console.error('❌ [PanelEditor] 数据源配置同步失败:', error)
   }
 }
 
@@ -990,7 +930,6 @@ const addNewArchitectureTestComponent = async () => {
 
     return actualComponentId
   } catch (error) {
-    console.error('❌ [PanelEditor] 添加新架构测试组件失败:', error)
     throw error
   }
 }

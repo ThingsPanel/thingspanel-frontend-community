@@ -208,7 +208,6 @@ const handleMouseUp = () => {
 
 const handleResizeStart = (id: string, handle: string, event: MouseEvent) => {
   event.stopPropagation()
-  console.log('开始调整大小:', id, handle)
   // TODO: 实现尺寸调整逻辑
 }
 </script>

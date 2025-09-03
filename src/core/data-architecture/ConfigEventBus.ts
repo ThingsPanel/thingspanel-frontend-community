@@ -89,16 +89,12 @@ export class ConfigEventBus {
 
     const handlers = this.eventHandlers.get(eventType)!
     handlers.add(handler)
-
-    console.log(`[ConfigEventBus] 注册事件处理器: ${eventType}, 当前处理器数量: ${handlers.size}`)
-
     // 返回取消注册的函数
     return () => {
       handlers.delete(handler)
       if (handlers.size === 0) {
         this.eventHandlers.delete(eventType)
       }
-      console.log(`[ConfigEventBus] 取消注册事件处理器: ${eventType}`)
     }
   }
 
@@ -109,17 +105,9 @@ export class ConfigEventBus {
   async emitConfigChange(event: ConfigChangeEvent): Promise<void> {
     this.statistics.eventsEmitted++
 
-    console.log(`[ConfigEventBus] 发出配置变更事件:`, {
-      componentId: event.componentId,
-      section: event.section,
-      source: event.source,
-      timestamp: new Date(event.timestamp).toISOString()
-    })
-
     // 应用全局过滤器
     if (!this.passesGlobalFilters(event)) {
       this.statistics.eventsFiltered++
-      console.log(`[ConfigEventBus] 事件被全局过滤器拦截:`, event.componentId)
       return
     }
 
@@ -142,9 +130,7 @@ export class ConfigEventBus {
     if (handlerPromises.length > 0) {
       try {
         await Promise.allSettled(handlerPromises)
-        console.log(`[ConfigEventBus] 事件处理完成，执行了 ${handlerPromises.length} 个处理器`)
       } catch (error) {
-        console.error(`[ConfigEventBus] 事件处理过程中发生错误:`, error)
       }
     }
   }
@@ -162,7 +148,6 @@ export class ConfigEventBus {
       this.globalFilters.splice(insertIndex, 0, filter)
     }
 
-    console.log(`[ConfigEventBus] 添加全局过滤器: ${filter.name}, 优先级: ${filter.priority || 0}`)
   }
 
   /**
@@ -173,7 +158,6 @@ export class ConfigEventBus {
     const index = this.globalFilters.findIndex(f => f.name === filterName)
     if (index !== -1) {
       this.globalFilters.splice(index, 1)
-      console.log(`[ConfigEventBus] 移除全局过滤器: ${filterName}`)
     }
   }
 
@@ -196,7 +180,6 @@ export class ConfigEventBus {
       handlersExecuted: 0,
       errors: 0
     }
-    console.log(`[ConfigEventBus] 清除所有事件处理器和过滤器`)
   }
 
   // ===== 私有方法 =====
@@ -208,11 +191,9 @@ export class ConfigEventBus {
     for (const filter of this.globalFilters) {
       try {
         if (!filter.condition(event)) {
-          console.log(`[ConfigEventBus] 事件被过滤器 ${filter.name} 拦截`)
           return false
         }
       } catch (error) {
-        console.error(`[ConfigEventBus] 过滤器 ${filter.name} 执行失败:`, error)
         // 过滤器执行失败时，默认让事件通过
       }
     }
@@ -262,10 +243,8 @@ export class ConfigEventBus {
         await result
       }
 
-      console.log(`[ConfigEventBus] 处理器执行成功: ${eventType}`)
     } catch (error) {
       this.statistics.errors++
-      console.error(`[ConfigEventBus] 处理器执行失败 (${eventType}):`, error)
 
       // 不重新抛出错误，避免影响其他处理器的执行
     }
@@ -288,7 +267,5 @@ configEventBus.addEventFilter({
 // 🔧 调试支持：将事件总线暴露到全局作用域，便于控制台调试
 if (typeof window !== 'undefined') {
   ;(window as any).configEventBus = configEventBus
-  console.log('[ConfigEventBus] 事件总线已暴露到 window.configEventBus')
 }
 
-console.log('[ConfigEventBus] 配置事件总线初始化完成')

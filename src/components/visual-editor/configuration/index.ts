@@ -47,8 +47,6 @@ export { createDefaultConfiguration }
  * 注册默认预设和迁移器
  */
 export const initializeConfigurationSystem = () => {
-  console.log('🔧 [ConfigurationSystem] 初始化配置系统')
-
   // 注册默认预设
   configurationManager.addPreset({
     name: 'default',
@@ -163,8 +161,6 @@ export const initializeConfigurationSystem = () => {
       }
     }
   })
-
-  console.log('✅ [ConfigurationSystem] 配置系统初始化完成')
 }
 
 /**
@@ -179,7 +175,6 @@ export const validateConfigurationSystem = (): boolean => {
     const validationResult = configurationManager.validateConfiguration(testConfig)
 
     if (!validationResult.valid) {
-      console.error('❌ [ConfigurationSystem] 配置系统验证失败:', validationResult.errors)
       return false
     }
 
@@ -195,14 +190,10 @@ export const validateConfigurationSystem = (): boolean => {
     configurationManager.removeConfiguration(testId + '-copy')
 
     if (!imported) {
-      console.error('❌ [ConfigurationSystem] 导入导出测试失败')
       return false
     }
-
-    console.log('✅ [ConfigurationSystem] 配置系统验证通过')
     return true
   } catch (error) {
-    console.error('❌ [ConfigurationSystem] 配置系统验证异常:', error)
     return false
   }
 }

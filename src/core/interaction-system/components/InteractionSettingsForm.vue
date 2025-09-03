@@ -234,7 +234,6 @@
                 :disabled="readonly"
                 @click="
                   () => {
-                    console.log('[INTERACTION-DEBUG] 点击添加动作按钮(头部)')
                     addResponse(index)
                   }
                 "
@@ -254,7 +253,6 @@
                     :disabled="readonly"
                     @click="
                       () => {
-                        console.log('[INTERACTION-DEBUG] 点击添加动作按钮(空状态)')
                         addResponse(index)
                       }
                     "
@@ -432,7 +430,6 @@ const message = useMessage()
 // 🔥 注入Visual Editor状态获取组件列表
 const visualEditorState = inject<{ getAvailableComponents: () => any[] }>('visualEditorState', {
   getAvailableComponents: () => {
-    console.log('[INTERACTION-DEBUG] Visual Editor状态未注入，返回空组件列表')
     return []
   }
 })
@@ -516,12 +513,6 @@ const comparisonOperatorOptions = computed(() => [
 // 🔥 动态获取可用组件选项
 const availableComponentOptions = computed(() => {
   const components = visualEditorState.getAvailableComponents()
-
-  console.log('[INTERACTION-DEBUG] 计算可用组件选项:', {
-    componentCount: components.length,
-    components: components
-  })
-
   return components.map(comp => ({
     label: comp.label || `${comp.name} (${comp.id.slice(0, 8)}...)`,
     value: comp.id
@@ -530,28 +521,12 @@ const availableComponentOptions = computed(() => {
 
 // 🔥 可用属性选项 - 基于组件类型动态获取
 const availablePropertyOptions = computed(() => {
-  console.log('[INTERACTION-DEBUG] availablePropertyOptions 计算:', {
-    componentType: props.componentType,
-    registryKeys: propertyExposureRegistry.getAllComponentTypes()
-  })
-
   if (!props.componentType) {
-    console.log('[INTERACTION-DEBUG] ❌ componentType 为空')
     return []
   }
-
   // 从属性暴露注册表获取当前组件类型的可监听属性
   const componentExposure = propertyExposureRegistry.getComponentExposure(props.componentType)
-
-  console.log('[INTERACTION-DEBUG] 属性暴露查询结果:', {
-    componentType: props.componentType,
-    componentExposure: componentExposure,
-    hasListenableProperties: !!componentExposure?.listenableProperties,
-    listenablePropertiesLength: componentExposure?.listenableProperties?.length
-  })
-
   if (!componentExposure || !componentExposure.listenableProperties) {
-    console.log('[INTERACTION-DEBUG] ❌ 未找到可监听属性')
     return []
   }
 
@@ -754,12 +729,6 @@ const handleWatchedPropertyChange = (propertyName: string | null, configIndex: n
       }
 
       if (config.condition) {
-        console.log('[INTERACTION-DEBUG] 设置条件前:', {
-          currentConditionValue: config.condition.value,
-          propertyDefaultValue: property.defaultValue,
-          propertyType: property.type
-        })
-
         // 根据属性类型设置默认的比较条件
         switch (property.type) {
           case 'number':
@@ -781,18 +750,7 @@ const handleWatchedPropertyChange = (propertyName: string | null, configIndex: n
             // 保持当前配置
             break
         }
-
-        console.log('[INTERACTION-DEBUG] 设置条件后:', {
-          finalConditionValue: config.condition.value,
-          conditionOperator: config.condition.operator
-        })
       }
-
-      console.log(`[INTERACTION-DEBUG] 设置监听属性: ${propertyName}`, {
-        propertyType: property.type,
-        defaultValue: property.defaultValue,
-        condition: config.condition
-      })
     }
   }
 
@@ -820,23 +778,11 @@ const addInteractionConfig = () => {
 
 // 添加响应动作（使用核心动作）
 const addResponse = (configIndex: number) => {
-  console.log('[INTERACTION-DEBUG] 添加响应动作开始:', {
-    configIndex,
-    当前配置: localInteractionConfigs.value[configIndex],
-    现有响应数量: localInteractionConfigs.value[configIndex]?.responses?.length || 0
-  })
-
   const newResponse: InteractionResponse = {
     action: 'navigateToUrl', // 默认为页面跳转
     value: 'https://example.com'
   }
-
-  console.log('[INTERACTION-DEBUG] 新建响应动作:', newResponse)
-
   localInteractionConfigs.value[configIndex].responses.push(newResponse)
-
-  console.log('[INTERACTION-DEBUG] 添加后响应数量:', localInteractionConfigs.value[configIndex].responses.length)
-  console.log('[INTERACTION-DEBUG] 完整配置:', localInteractionConfigs.value[configIndex])
 
   handleInteractionChange()
 }
@@ -851,15 +797,6 @@ const removeResponse = (configIndex: number, responseIndex: number) => {
 const handleInteractionChange = () => {
   // 防抖处理，避免过频繁的更新
   nextTick(() => {
-    console.log('[INTERACTION-DEBUG] 配置变化:', {
-      configCount: localInteractionConfigs.value.length,
-      configs: localInteractionConfigs.value.map(c => ({
-        event: c.event,
-        responsesCount: c.responses?.length || 0,
-        responses: c.responses
-      }))
-    })
-
     emit('update:modelValue', [...localInteractionConfigs.value])
     emit('change', [...localInteractionConfigs.value])
 
@@ -1004,12 +941,6 @@ watch(
 
 // 组件挂载时注册到交互管理器
 onMounted(() => {
-  console.log('[INTERACTION-DEBUG] InteractionSettingsForm挂载:', {
-    componentId: props.componentId,
-    readonly: props.readonly,
-    configsLength: localInteractionConfigs.value.length
-  })
-
   if (props.componentId && localInteractionConfigs.value.length > 0) {
     interactionManager.registerComponent(props.componentId, localInteractionConfigs.value)
   }
@@ -1019,16 +950,6 @@ onMounted(() => {
 watch(
   localInteractionConfigs,
   newConfigs => {
-    console.log('[INTERACTION-DEBUG] 同步配置到InteractionManager:', {
-      componentId: props.componentId,
-      configCount: newConfigs.length,
-      configs: newConfigs.map(c => ({
-        event: c.event,
-        responsesCount: c.responses?.length || 0,
-        hasResponses: c.responses && c.responses.length > 0
-      }))
-    })
-
     if (props.componentId) {
       if (newConfigs.length > 0) {
         interactionManager.updateComponentConfigs(props.componentId, newConfigs)

@@ -18,6 +18,5 @@ export { configRegistry, default as ConfigRegistry } from './managers/ConfigRegi
 
 // 向后兼容的导出（为了保持现有代码正常工作）
 export const initializeSettings = () => {
-  console.log('📋 [Core Interaction System] 交互系统已初始化')
   // TODO: 在这里可以添加交互系统的初始化逻辑
 }

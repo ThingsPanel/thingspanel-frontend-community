@@ -79,7 +79,6 @@ export class ConfigurationManager implements IConfigurationManager {
    */
   constructor() {
     this.loadFromStorage()
-    console.log('🚀 [ConfigurationManager] 配置管理器已初始化，已恢复持久化配置')
   }
 
   /**
@@ -93,10 +92,8 @@ export class ConfigurationManager implements IConfigurationManager {
         Object.entries(configurations).forEach(([widgetId, config]) => {
           this.configurations.set(widgetId, config as WidgetConfiguration)
         })
-        console.log(`✅ [ConfigurationManager] 从本地存储恢复了 ${this.configurations.size} 个组件配置`)
       }
     } catch (error) {
-      console.error('❌ [ConfigurationManager] 从本地存储加载配置失败:', error)
     }
   }
 
@@ -107,9 +104,7 @@ export class ConfigurationManager implements IConfigurationManager {
     try {
       const configurationsObject = Object.fromEntries(this.configurations.entries())
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(configurationsObject))
-      console.log('💾 [ConfigurationManager] 配置已保存到本地存储')
     } catch (error) {
-      console.error('❌ [ConfigurationManager] 保存配置到本地存储失败:', error)
     }
   }
 
@@ -119,17 +114,10 @@ export class ConfigurationManager implements IConfigurationManager {
   getConfiguration(widgetId: string): WidgetConfiguration | null {
     const config = this.configurations.get(widgetId)
     if (!config) {
-      console.warn(`[ConfigurationManager] 配置不存在: ${widgetId}`)
       return null
     }
 
     // 🔍 [DEBUG-配置仓库] 打印读取到的配置对象
-    console.log('🔍 [DEBUG-配置仓库] 读取配置:', {
-      widgetId,
-      hasConfig: !!config,
-      fullConfig: config ? smartDeepClone(config) : null
-    })
-
     // 返回配置的副本，避免外部直接修改
     return this.deepClone(config)
   }
@@ -141,7 +129,6 @@ export class ConfigurationManager implements IConfigurationManager {
     // 验证配置
     const validationResult = this.validateConfiguration(config)
     if (!validationResult.valid) {
-      console.error(`[ConfigurationManager] 配置验证失败: ${widgetId}`, validationResult.errors)
       throw new Error(`配置验证失败: ${validationResult.errors?.[0]?.message || '未知错误'}`)
     }
 
@@ -153,14 +140,10 @@ export class ConfigurationManager implements IConfigurationManager {
         updatedAt: Date.now()
       }
     }
-
     // 保存配置
     this.configurations.set(widgetId, updatedConfig)
-
     // 🆕 持久化到 localStorage
     this.saveToStorage()
-
-    console.log(`[ConfigurationManager] 配置已更新: ${widgetId}`)
 
     // 触发监听器
     this.notifyListeners(widgetId, updatedConfig)
@@ -180,7 +163,6 @@ export class ConfigurationManager implements IConfigurationManager {
   ): void {
     const currentConfig = this.configurations.get(widgetId)
     if (!currentConfig) {
-      console.warn(`[ConfigurationManager] 组件配置不存在，创建默认配置: ${widgetId}`)
       this.initializeConfiguration(widgetId)
       return this.updateConfiguration(widgetId, section, config)
     }
@@ -194,7 +176,6 @@ export class ConfigurationManager implements IConfigurationManager {
     const mergedSectionValue =
       section === 'dataSource'
         ? (() => {
-            console.log(`🔄 [ConfigurationManager] 数据源配置直接替换 (避免deepMerge循环): ${widgetId}`)
             return config // 数据源配置直接替换，避免deepMerge导致的循环问题
           })()
         : currentSectionValue !== null && currentSectionValue !== undefined
@@ -217,19 +198,9 @@ export class ConfigurationManager implements IConfigurationManager {
 
     // 🔥 重要修复：清除组件缓存，确保新配置能被执行
     if (section === 'dataSource') {
-      console.log(`🧹 [ConfigurationManager] 清除组件缓存以执行新配置: ${widgetId}`)
       simpleDataBridge.clearComponentCache(widgetId)
     }
-
-    console.log(`[ConfigurationManager] 配置部分已更新: ${widgetId}.${section}`)
     // 🔍 [DEBUG-配置仓库] 打印整个配置对象
-    console.log('🔍 [DEBUG-配置仓库] 配置保存后的完整对象:', {
-      widgetId,
-      section,
-      fullConfig: smartDeepClone(updatedConfig),
-      updatedSection: smartDeepClone(config)
-    })
-
     // 触发监听器
     this.notifyListeners(widgetId, updatedConfig)
   }
@@ -240,9 +211,6 @@ export class ConfigurationManager implements IConfigurationManager {
   resetConfiguration(widgetId: string): void {
     const defaultConfig = createDefaultConfiguration()
     this.configurations.set(widgetId, defaultConfig)
-
-    console.log(`[ConfigurationManager] 配置已重置: ${widgetId}`)
-
     // 触发监听器
     this.notifyListeners(widgetId, defaultConfig)
   }
@@ -252,7 +220,6 @@ export class ConfigurationManager implements IConfigurationManager {
    */
   initializeConfiguration(widgetId: string, customDefaults?: Partial<WidgetConfiguration>): void {
     if (this.configurations.has(widgetId)) {
-      console.warn(`[ConfigurationManager] 配置已存在，跳过初始化: ${widgetId}`)
       return
     }
 
@@ -260,7 +227,6 @@ export class ConfigurationManager implements IConfigurationManager {
     const initialConfig = customDefaults ? this.deepMerge(defaultConfig, customDefaults) : defaultConfig
 
     this.configurations.set(widgetId, initialConfig)
-    console.log(`[ConfigurationManager] 配置已初始化: ${widgetId}`)
 
     // 触发监听器，通知配置已初始化
     this.notifyListeners(widgetId, initialConfig)
@@ -276,8 +242,6 @@ export class ConfigurationManager implements IConfigurationManager {
 
       // 清理监听器
       this.listeners.delete(widgetId)
-
-      console.log(`[ConfigurationManager] 配置已删除: ${widgetId}`)
     }
     return exists
   }
@@ -446,7 +410,6 @@ export class ConfigurationManager implements IConfigurationManager {
       // 验证导入的配置
       const validationResult = this.validateConfiguration(config)
       if (!validationResult.valid) {
-        console.error(`[ConfigurationManager] 导入的配置无效:`, validationResult.errors)
         return false
       }
 
@@ -454,10 +417,8 @@ export class ConfigurationManager implements IConfigurationManager {
       const migratedConfig = this.migrateConfiguration(config)
 
       this.setConfiguration(widgetId, migratedConfig)
-      console.log(`[ConfigurationManager] 配置导入成功: ${widgetId}`)
       return true
     } catch (error) {
-      console.error(`[ConfigurationManager] 配置导入失败:`, error)
       return false
     }
   }
@@ -510,8 +471,6 @@ export class ConfigurationManager implements IConfigurationManager {
         this.configurations.set(widgetId, updatedConfig)
       }
     }
-
-    console.log(`[ConfigurationManager] 批量更新完成，共 ${updates.length} 项配置`)
   }
 
   // 私有方法
@@ -528,7 +487,6 @@ export class ConfigurationManager implements IConfigurationManager {
         try {
           callback(this.deepClone(config))
         } catch (error) {
-          console.error(`[ConfigurationManager] 监听器回调执行失败:`, error)
         }
       })
     }
@@ -558,19 +516,10 @@ export class ConfigurationManager implements IConfigurationManager {
           changedFields: this.getChangedFields(previousConfig, config)
         }
       }
-
-      console.log('[ConfigurationManager] 向事件总线发送配置变更事件:', {
-        componentId: widgetId,
-        section: this.lastUpdatedSection,
-        timestamp: new Date(event.timestamp).toISOString()
-      })
-
       // 异步发送事件，避免阻塞当前流程
       configEventBus.emitConfigChange(event).catch(error => {
-        console.error('[ConfigurationManager] 事件总线发送失败:', error)
       })
     } catch (error) {
-      console.error('[ConfigurationManager] 事件总线集成失败:', error)
     }
   }
 
@@ -655,7 +604,6 @@ export class ConfigurationManager implements IConfigurationManager {
 
     for (const migrator of this.migrators) {
       if (config.metadata?.version === migrator.fromVersion) {
-        console.log(`[ConfigurationManager] 迁移配置从 ${migrator.fromVersion} 到 ${migrator.toVersion}`)
         result = migrator.migrate(result)
       }
     }
@@ -668,7 +616,6 @@ export class ConfigurationManager implements IConfigurationManager {
    */
   registerMigrator(migrator: ConfigurationMigrator): void {
     this.migrators.push(migrator)
-    console.log(`[ConfigurationManager] 注册配置迁移器: ${migrator.fromVersion} -> ${migrator.toVersion}`)
   }
 
   /**
@@ -676,7 +623,6 @@ export class ConfigurationManager implements IConfigurationManager {
    */
   addPreset(preset: ConfigurationPreset): void {
     this.presets.value.push(preset)
-    console.log(`[ConfigurationManager] 添加配置预设: ${preset.name}`)
   }
 
   /**
@@ -697,20 +643,16 @@ export class ConfigurationManager implements IConfigurationManager {
   applyPreset(widgetId: string, presetName: string): boolean {
     const preset = this.presets.value.find(p => p.name === presetName)
     if (!preset) {
-      console.error(`[ConfigurationManager] 预设不存在: ${presetName}`)
       return false
     }
 
     const currentConfig = this.configurations.get(widgetId)
     if (!currentConfig) {
-      console.error(`[ConfigurationManager] 组件配置不存在: ${widgetId}`)
       return false
     }
 
     const updatedConfig = this.deepMerge(currentConfig, preset.config)
     this.setConfiguration(widgetId, updatedConfig)
-
-    console.log(`[ConfigurationManager] 应用配置预设: ${presetName} -> ${widgetId}`)
     return true
   }
 }

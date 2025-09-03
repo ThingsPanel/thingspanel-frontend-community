@@ -20,6 +20,7 @@ import type {
 } from './interaction-types'
 import { InteractionAdapter } from './interaction-adapter'
 import { VisualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
+import { propertyBindingLogger } from '@/utils/logger'
 
 class InteractionManager {
   private componentConfigs = new Map<string, InteractionConfig[]>()
@@ -37,7 +38,6 @@ class InteractionManager {
     this.componentConfigs.set(componentId, configs)
     // 初始化组件状态
     this.componentStates.set(componentId, {})
-    console.log(`[InteractionManager] 注册组件 ${componentId}，配置数量: ${configs.length}`)
   }
 
   /**
@@ -47,7 +47,6 @@ class InteractionManager {
     this.componentConfigs.delete(componentId)
     this.componentStates.delete(componentId)
     this.eventListeners.delete(componentId)
-    console.log(`[InteractionManager] 移除组件 ${componentId}`)
   }
 
   /**
@@ -56,7 +55,6 @@ class InteractionManager {
   triggerEvent(componentId: string, event: InteractionEventType, data?: any): InteractionResponseResult[] {
     const configs = this.componentConfigs.get(componentId)
     if (!configs) {
-      console.warn(`[InteractionManager] 组件 ${componentId} 未注册`)
       return [
         {
           success: false,
@@ -69,43 +67,31 @@ class InteractionManager {
 
     const results: InteractionResponseResult[] = []
     const eventConfigs = configs.filter(config => config.event === event && config.enabled !== false)
-
-    console.log(`[INTERACTION-DEBUG] ${event}事件 -> 找到${eventConfigs.length}个配置`)
-
     // 按优先级排序
     eventConfigs.sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
     for (const config of eventConfigs) {
-      console.log(`[INTERACTION-DEBUG] 配置详情: responses=${config.responses?.length || 0}, 条件:`, config.condition)
-
       // 🔥 修复：对于 dataChange 事件，需要检查条件
       if (event === 'dataChange' && config.condition) {
         // 检查属性变化条件
         const shouldExecute = this.checkDataChangeCondition(config, data)
-        console.log(`[INTERACTION-DEBUG] 条件检查结果: ${shouldExecute}`)
 
         if (!shouldExecute) {
-          console.log(`[INTERACTION-DEBUG] 条件不满足，跳过执行`)
           continue
         }
       }
 
       // 🔥 重点：检查是否有响应动作
       if (!config.responses || config.responses.length === 0) {
-        console.error(`[INTERACTION-DEBUG] ❌ 配置中没有响应动作！`)
         continue
       }
 
       // 执行响应动作
-      console.log(`[INTERACTION-DEBUG] 开始执行${config.responses.length}个响应动作`)
       for (const response of config.responses) {
         try {
-          console.log(`[INTERACTION-DEBUG] 执行动作: ${response.action}, 参数:`, response)
           const result = this.executeResponse(componentId, response)
           results.push(result)
-          console.log(`[INTERACTION-DEBUG] ✅ 动作执行成功`)
         } catch (error) {
-          console.error(`[INTERACTION-DEBUG] ❌ 动作执行失败:`, error)
           results.push({
             success: false,
             componentId,
@@ -118,8 +104,6 @@ class InteractionManager {
 
     // 触发事件监听器
     this.triggerEventListeners(componentId, event, data)
-
-    console.log(`[InteractionManager] 事件处理完成，结果数量: ${results.length}`)
     return results
   }
 
@@ -134,8 +118,6 @@ class InteractionManager {
     // 🔥 使用适配器统一处理新旧格式
     const normalizedResponse = InteractionAdapter.normalizeToNewFormat(response as any)
     const actionType = InteractionAdapter.getUnifiedActionType(response as any)
-
-    console.log(`[InteractionManager] 执行响应 - 原始动作: ${response.action}, 统一动作: ${actionType}`)
 
     switch (response.action) {
       case 'changeBackgroundColor':
@@ -291,11 +273,6 @@ class InteractionManager {
     const newState = { ...currentState, ...updates }
     this.componentStates.set(componentId, newState)
 
-    console.log(`[INTERACTION-DEBUG] 更新组件状态:`, {
-      componentId,
-      updates,
-      newState
-    })
 
     // 🔥 通知目标组件状态变化
     this.notifyComponentStateChange(componentId, updates, newState)
@@ -322,14 +299,7 @@ class InteractionManager {
         bubbles: true
       })
 
-      console.log(`[INTERACTION-DEBUG] 向组件发送状态更新事件:`, {
-        componentId,
-        updates
-      })
-
       targetElement.dispatchEvent(customEvent)
-    } else {
-      console.warn(`[INTERACTION-DEBUG] 未找到目标组件DOM元素: ${componentId}`)
     }
   }
 
@@ -338,12 +308,7 @@ class InteractionManager {
    * 用于跨组件属性绑定，将一个组件的属性变更传递给另一个组件
    */
   notifyPropertyUpdate(componentId: string, propertyPath: string, newValue: any, oldValue?: any): void {
-    console.log(`🔄 [InteractionManager] 属性更新通知:`, {
-      componentId,
-      propertyPath,
-      newValue,
-      oldValue
-    })
+  
 
     // 🔥 新增：触发HTTP数据源刷新
     this.triggerHttpRefreshForPropertyChange(componentId, propertyPath, newValue, oldValue)
@@ -363,17 +328,8 @@ class InteractionManager {
         bubbles: true
       })
 
-      console.log(`🔄 [InteractionManager] 向组件发送属性更新事件:`, {
-        componentId,
-        propertyPath,
-        newValue
-      })
-
       targetElement.dispatchEvent(propertyUpdateEvent)
-    } else {
-      console.warn(`⚠️ [InteractionManager] 未找到目标组件DOM元素: ${componentId}`)
-    }
-
+    } 
     // 同时触发交互系统的 dataChange 事件
     this.triggerEvent(componentId, 'dataChange', {
       property: propertyPath,
@@ -395,11 +351,6 @@ class InteractionManager {
       oldValue?: any
     }>
   ): void {
-    console.log(`🔄 [InteractionManager] 批量属性更新:`, {
-      componentId,
-      updateCount: propertyUpdates.length,
-      updates: propertyUpdates
-    })
 
     const targetElement = document.querySelector(`[data-component-id="${componentId}"]`)
 
@@ -420,9 +371,7 @@ class InteractionManager {
       propertyUpdates.forEach(update => {
         this.notifyPropertyUpdate(componentId, update.propertyPath, update.newValue, update.oldValue)
       })
-    } else {
-      console.warn(`⚠️ [InteractionManager] 未找到目标组件DOM元素: ${componentId}`)
-    }
+    } 
   }
 
   /**
@@ -437,7 +386,6 @@ class InteractionManager {
    */
   resetComponentState(componentId: string): void {
     this.componentStates.set(componentId, {})
-    console.log(`[InteractionManager] 重置组件 ${componentId} 的交互状态`)
   }
 
   /**
@@ -445,7 +393,6 @@ class InteractionManager {
    */
   updateComponentConfigs(componentId: string, configs: InteractionConfig[]): void {
     this.componentConfigs.set(componentId, configs)
-    console.log(`[InteractionManager] 更新组件 ${componentId} 的交互配置，数量: ${configs.length}`)
   }
 
   /**
@@ -478,7 +425,6 @@ class InteractionManager {
         try {
           callback({ event, data, componentId })
         } catch (error) {
-          console.error(`[InteractionManager] 事件监听器执行失败:`, error)
         }
       })
     }
@@ -513,19 +459,15 @@ class InteractionManager {
    * 处理跳转动作 (新版本)
    */
   private handleJumpAction(jumpConfig: JumpConfig): void {
-    console.log(`[InteractionManager] 执行跳转动作:`, jumpConfig)
-
     if (jumpConfig.jumpType === 'external') {
       // 外部URL跳转
       if (!jumpConfig.url) {
-        console.error('[InteractionManager] 外部跳转失败: 未提供URL')
         return
       }
       this.navigateToUrl(jumpConfig.url, jumpConfig.target || '_self', jumpConfig.windowFeatures)
     } else if (jumpConfig.jumpType === 'internal') {
       // 内部菜单跳转
       if (!jumpConfig.internalPath) {
-        console.error('[InteractionManager] 内部跳转失败: 未提供路径')
         return
       }
       this.navigateToUrl(jumpConfig.internalPath, jumpConfig.target || '_self')
@@ -536,12 +478,9 @@ class InteractionManager {
    * 处理修改动作 (新版本)
    */
   private handleModifyAction(sourceComponentId: string, modifyConfig: ModifyConfig): void {
-    console.log(`[InteractionManager] 执行修改动作:`, modifyConfig)
-
     const { targetComponentId, targetProperty, updateValue, updateMode = 'replace' } = modifyConfig
 
     if (!this.hasComponent(targetComponentId)) {
-      console.warn(`[InteractionManager] 目标组件 ${targetComponentId} 未注册`)
       return
     }
 
@@ -573,10 +512,6 @@ class InteractionManager {
     }
 
     this.updateComponentState(targetComponentId, updateData)
-
-    console.log(
-      `[InteractionManager] 修改组件属性: ${targetComponentId}.${targetProperty} = ${finalValue} (模式: ${updateMode})`
-    )
   }
 
   /**
@@ -584,8 +519,6 @@ class InteractionManager {
    */
   private navigateToUrl(url: string, target: string = '_self', windowFeatures?: string): void {
     try {
-      console.log(`[InteractionManager] 准备跳转到: ${url}, 打开方式: ${target}`)
-
       if (target === '_self') {
         // 当前窗口跳转
         window.location.href = url
@@ -593,24 +526,18 @@ class InteractionManager {
         // 新窗口打开，支持窗口特性配置
         if (windowFeatures) {
           window.open(url, target, windowFeatures)
-          console.log(`[InteractionManager] 新窗口打开: ${url}, 窗口特性: ${windowFeatures}`)
         } else {
           window.open(url, target)
-          console.log(`[InteractionManager] 新窗口打开: ${url}`)
         }
       } else {
         // 其他目标(_parent, _top等)
         window.open(url, target)
-        console.log(`[InteractionManager] 跳转到: ${url}, 目标: ${target}`)
       }
     } catch (error) {
-      console.error('[InteractionManager] URL跳转失败:', error)
       // 如果跳转失败，尝试简单的window.open
       try {
         window.open(url, '_blank')
-        console.log(`[InteractionManager] 降级跳转成功: ${url}`)
       } catch (fallbackError) {
-        console.error('[InteractionManager] 降级跳转也失败:', fallbackError)
       }
     }
   }
@@ -626,13 +553,10 @@ class InteractionManager {
     const windowFeatures = (response.windowFeatures as string) || ''
 
     if (!url) {
-      console.error('[InteractionManager] URL跳转失败: 未提供URL')
       return
     }
 
     try {
-      console.log(`[InteractionManager] 准备跳转到: ${url}, 打开方式: ${target}`)
-
       if (target === '_self') {
         // 当前窗口跳转
         window.location.href = url
@@ -640,24 +564,18 @@ class InteractionManager {
         // 新窗口打开，支持窗口特性配置
         if (windowFeatures) {
           window.open(url, target, windowFeatures)
-          console.log(`[InteractionManager] 新窗口打开: ${url}, 窗口特性: ${windowFeatures}`)
         } else {
           window.open(url, target)
-          console.log(`[InteractionManager] 新窗口打开: ${url}`)
         }
       } else {
         // 其他目标(_parent, _top等)
         window.open(url, target)
-        console.log(`[InteractionManager] 跳转到: ${url}, 目标: ${target}`)
       }
     } catch (error) {
-      console.error('[InteractionManager] URL跳转失败:', error)
       // 如果跳转失败，尝试简单的window.open
       try {
         window.open(url, '_blank')
-        console.log(`[InteractionManager] 降级跳转成功: ${url}`)
       } catch (fallbackError) {
-        console.error('[InteractionManager] 降级跳转也失败:', fallbackError)
       }
     }
   }
@@ -701,8 +619,6 @@ class InteractionManager {
       },
       flashConfig.duration / (flashConfig.times * 2)
     )
-
-    console.log(`[InteractionManager] 执行闪烁效果: ${componentId}`)
   }
 
   /**
@@ -710,7 +626,6 @@ class InteractionManager {
    */
   private updateTargetComponentData(targetComponentId: string, response: InteractionResponse): void {
     if (!this.hasComponent(targetComponentId)) {
-      console.warn(`[InteractionManager] 目标组件 ${targetComponentId} 未注册`)
       return
     }
 
@@ -749,19 +664,13 @@ class InteractionManager {
       // 如果是可见性属性，确保直接应用到CSS样式
       if (targetProperty === 'visibility') {
         updateData.visibility = newValue as string
-        console.log(`[INTERACTION-DEBUG] 特殊处理可见性属性: ${targetProperty} = ${newValue}`)
       }
 
       // 更新目标组件状态
       this.updateComponentState(targetComponentId, updateData)
-
-      console.log(
-        `[InteractionManager] 更新目标组件数据: ${targetComponentId}.${targetProperty} = ${newValue} (模式: ${updateMode})`
-      )
     } else {
       // 如果没有指定targetProperty，直接更新整个状态
       this.updateComponentState(targetComponentId, response.value)
-      console.log(`[InteractionManager] 直接更新目标组件状态: ${targetComponentId}`)
     }
   }
 
@@ -771,7 +680,6 @@ class InteractionManager {
   private applyConditionalStyle(componentId: string, styleConfig: any): void {
     if (typeof styleConfig === 'object') {
       this.updateComponentState(componentId, styleConfig)
-      console.log(`[InteractionManager] 应用条件样式: ${componentId}`)
     }
   }
 
@@ -796,9 +704,7 @@ class InteractionManager {
           window[funcName](componentId, ...args)
         }
       }
-      console.log(`[InteractionManager] 调用函数: ${componentId}`)
     } catch (error) {
-      console.error('[InteractionManager] 函数调用失败:', error)
     }
   }
 
@@ -824,7 +730,6 @@ class InteractionManager {
     switch (condition.operator) {
       case 'equals':
         const result = String(valueToCheck) === String(condition.value)
-        console.log(`[INTERACTION-DEBUG] 条件判断: "${valueToCheck}" === "${condition.value}" => ${result}`)
         return result
 
       case 'notEquals':
@@ -852,7 +757,6 @@ class InteractionManager {
         return String(valueToCheck).endsWith(String(condition.value))
 
       default:
-        console.warn(`[INTERACTION-DEBUG] 不支持操作符: ${condition.operator}`)
         return false
     }
   }
@@ -930,7 +834,6 @@ class InteractionManager {
       // 简单的表达式评估，实际项目中可能需要更安全的方式
       return new Function('data', `return ${expression}`)(data)
     } catch (error) {
-      console.error('[InteractionManager] 表达式评估失败:', error)
       return false
     }
   }
@@ -957,7 +860,6 @@ class InteractionManager {
           try {
             this.executeResponse(componentId, response)
           } catch (error) {
-            console.error('[InteractionManager] 条件触发执行失败:', error)
           }
         }
       }
@@ -997,7 +899,6 @@ class InteractionManager {
       try {
         this.executeResponse(componentId, response)
       } catch (error) {
-        console.error('[InteractionManager] 响应执行失败:', error)
       }
     }
   }
@@ -1009,17 +910,14 @@ class InteractionManager {
    * 支持格式：componentId.customize.title 或 componentId.data.value
    */
   resolvePropertyBinding(bindingExpression: string): any {
-    console.log(`🔍 [InteractionManager] 解析属性绑定:`, bindingExpression)
 
     if (!bindingExpression || typeof bindingExpression !== 'string') {
-      console.warn(`⚠️ [InteractionManager] 无效的绑定表达式:`, bindingExpression)
       return undefined
     }
 
     // 解析绑定表达式格式：componentId.propertyPath
     const parts = bindingExpression.split('.')
     if (parts.length < 2) {
-      console.warn(`⚠️ [InteractionManager] 绑定表达式格式错误，应为 "componentId.propertyPath":`, bindingExpression)
       return undefined
     }
 
@@ -1029,19 +927,13 @@ class InteractionManager {
     // 获取组件状态
     const componentState = this.getComponentState(componentId)
     if (!componentState) {
-      console.warn(`⚠️ [InteractionManager] 组件未找到:`, componentId)
       return undefined
     }
 
     // 解析嵌套属性路径
     const value = this.getNestedProperty(componentState, propertyPath)
 
-    console.log(`✅ [InteractionManager] 属性绑定解析结果:`, {
-      expression: bindingExpression,
-      componentId,
-      propertyPath,
-      value
-    })
+   
 
     return value
   }
@@ -1051,15 +943,12 @@ class InteractionManager {
    * 用于 HTTP 参数中包含多个绑定表达式的情况
    */
   resolveMultipleBindings(bindingMap: Record<string, string>): Record<string, any> {
-    console.log(`🔍 [InteractionManager] 批量解析属性绑定:`, bindingMap)
 
     const resolvedValues: Record<string, any> = {}
 
     for (const [key, bindingExpression] of Object.entries(bindingMap)) {
       resolvedValues[key] = this.resolvePropertyBinding(bindingExpression)
     }
-
-    console.log(`✅ [InteractionManager] 批量解析结果:`, resolvedValues)
     return resolvedValues
   }
 
@@ -1068,8 +957,6 @@ class InteractionManager {
    * 用于 HttpConfigForm 中的参数绑定
    */
   resolveDynamicParameter(parameterConfig: any): any {
-    console.log(`🔍 [InteractionManager] 解析动态参数:`, parameterConfig)
-
     if (!parameterConfig) return undefined
 
     // 如果是简单的字符串绑定表达式
@@ -1091,8 +978,6 @@ class InteractionManager {
     if (parameterConfig.type === 'static' || parameterConfig.value !== undefined) {
       return parameterConfig.value
     }
-
-    console.warn(`⚠️ [InteractionManager] 未知参数配置格式:`, parameterConfig)
     return undefined
   }
 
@@ -1101,11 +986,6 @@ class InteractionManager {
    * 用于从外部（如 HTTP 响应）更新组件属性
    */
   setComponentProperty(componentId: string, propertyPath: string, newValue: any): boolean {
-    console.log(`🔧 [InteractionManager] 设置组件属性:`, {
-      componentId,
-      propertyPath,
-      newValue
-    })
 
     const currentState = this.getComponentState(componentId) || {}
     const oldValue = this.getNestedProperty(currentState, propertyPath)
@@ -1116,13 +996,6 @@ class InteractionManager {
 
     // 通知组件属性更新
     this.notifyPropertyUpdate(componentId, propertyPath, newValue, oldValue)
-
-    console.log(`✅ [InteractionManager] 组件属性更新完成:`, {
-      componentId,
-      propertyPath,
-      oldValue,
-      newValue
-    })
 
     return true
   }
@@ -1179,7 +1052,6 @@ class InteractionManager {
   registerHttpDataSource(componentId: string, componentType: string, config: any): void {
     const mappingKey = `http-${componentId}`
     this.httpDataSourceMappings.set(mappingKey, { componentId, componentType, config })
-    console.log(`📡 [InteractionManager] 注册HTTP数据源映射:`, { componentId, componentType, mappingKey })
   }
 
   /**
@@ -1188,7 +1060,6 @@ class InteractionManager {
   unregisterHttpDataSource(componentId: string): void {
     const mappingKey = `http-${componentId}`
     this.httpDataSourceMappings.delete(mappingKey)
-    console.log(`🗑️ [InteractionManager] 移除HTTP数据源映射:`, { componentId, mappingKey })
   }
 
   /**
@@ -1202,7 +1073,6 @@ class InteractionManager {
     oldValue?: any
   ): Promise<void> {
     try {
-      console.log(`🔄 [InteractionManager] HTTP刷新触发:`, { componentId, propertyPath, newValue, oldValue })
 
       // 🔥 关键修复：查找所有可能受到这个属性变化影响的HTTP数据源
       const affectedDataSources: string[] = []
@@ -1212,18 +1082,12 @@ class InteractionManager {
         // 检查HTTP配置中是否包含对这个组件属性的绑定引用
         if (this.configContainsPropertyBinding(mapping.config, componentId, propertyPath)) {
           affectedDataSources.push(mapping.componentId)
-          console.log(`🎯 [HTTP触发] 发现受影响的数据源:`, {
-            sourceComponent: componentId,
-            propertyPath,
-            targetComponent: mapping.componentId,
-            mappingKey
-          })
+       
         }
       }
 
       // 2. 如果没有发现直接绑定，尝试刷新所有HTTP数据源（作为后备方案）
       if (affectedDataSources.length === 0) {
-        console.log(`🔍 [HTTP触发] 未找到直接绑定，尝试刷新所有HTTP数据源`)
         for (const [mappingKey, mapping] of this.httpDataSourceMappings.entries()) {
           affectedDataSources.push(mapping.componentId)
         }
@@ -1233,8 +1097,6 @@ class InteractionManager {
       for (const targetComponentId of affectedDataSources) {
         const mapping = this.httpDataSourceMappings.get(`http-${targetComponentId}`)
         if (mapping) {
-          console.log(`🚀 [HTTP触发] 开始刷新组件数据:`, targetComponentId)
-          
           try {
             // 使用VisualEditorBridge刷新数据源
             const result = await this.visualEditorBridge.updateComponentExecutor(
@@ -1242,29 +1104,14 @@ class InteractionManager {
               mapping.componentType,
               mapping.config
             )
-            
-            console.log(`✅ [HTTP触发] 数据刷新成功:`, {
-              componentId: targetComponentId,
-              result: result?.success ? '成功' : '失败',
-              data: result?.data
-            })
+        
           } catch (error) {
-            console.error(`❌ [HTTP触发] 数据刷新失败:`, { targetComponentId, error })
           }
         }
       }
 
-      if (affectedDataSources.length > 0) {
-        console.log(`🎉 [HTTP触发] 完成HTTP数据源刷新:`, {
-          triggerComponent: componentId,
-          propertyPath,
-          affectedComponents: affectedDataSources
-        })
-      } else {
-        console.log(`ℹ️ [HTTP触发] 属性变化未影响任何HTTP数据源:`, { componentId, propertyPath })
-      }
+    
     } catch (error) {
-      console.error(`❌ [InteractionManager] HTTP刷新触发失败:`, error)
     }
   }
 
@@ -1281,10 +1128,6 @@ class InteractionManager {
     // 检查配置中是否包含绑定路径
     const hasBinding = configStr.includes(bindingPath)
     
-    if (hasBinding) {
-      console.log(`🔍 [绑定检查] 发现属性绑定引用:`, { bindingPath, configStr: configStr.substring(0, 200) + '...' })
-    }
-    
     return hasBinding
   }
 
@@ -1299,8 +1142,6 @@ class InteractionManager {
   ): () => void {
     const watchKey = `${componentId}.${propertyPath}`
 
-    console.log(`👀 [InteractionManager] 开始监听属性:`, watchKey)
-
     // 创建属性变化监听器
     const propertyWatcher = (data: any) => {
       if (data.event === 'dataChange' && data.data?.property === propertyPath) {
@@ -1312,7 +1153,6 @@ class InteractionManager {
 
     // 返回取消监听的函数
     return () => {
-      console.log(`🛑 [InteractionManager] 停止监听属性:`, watchKey)
       this.removeEventListener(componentId, propertyWatcher)
     }
   }
