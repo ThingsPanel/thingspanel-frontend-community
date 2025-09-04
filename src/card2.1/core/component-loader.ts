@@ -49,8 +49,10 @@ export class ComponentLoader {
           if (definition && definition.type) {
             componentModules[componentId] = { default: definition }
           } else {
+            // 组件定义格式不正确，跳过
           }
         } else {
+          // 模块未找到，跳过
         }
       }
       return componentModules
@@ -86,6 +88,7 @@ export class ComponentLoader {
     return requiredFields.every(field => {
       const hasField = definition && definition[field] !== undefined
       if (!hasField) {
+        // 缺少必要字段，验证失败
       }
       return hasField
     })

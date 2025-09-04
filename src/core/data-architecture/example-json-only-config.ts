@@ -409,7 +409,6 @@ export function demonstratePureJsonConfig() {
 
   // 2. 数据源详情
   pureJsonConfigExample.dataSources.forEach((source, index) => {
-
     source.dataItems.forEach((dataItem, itemIndex) => {
       const item = dataItem.item
 

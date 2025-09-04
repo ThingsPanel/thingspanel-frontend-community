@@ -69,8 +69,7 @@ export class GlobalPollingManager {
     totalExecutions: 0
   })
 
-  constructor() {
-  }
+  constructor() {}
 
   /**
    * 添加轮询任务
@@ -336,7 +335,7 @@ export class GlobalPollingManager {
 
     if (this.getActiveTasks().length > 0) {
       this.startGlobalTimer()
-    } 
+    }
   }
 
   /**
@@ -438,11 +437,10 @@ export class GlobalPollingManager {
       // 并行执行任务（但限制并发数避免过载）
       const batchSize = Math.min(readyTasks.length, 5) // 最多同时执行5个任务
       const batch = readyTasks.slice(0, batchSize)
-      Promise.allSettled(batch.map(task => this.executeTask(task, now))).catch(error =>{})
+      Promise.allSettled(batch.map(task => this.executeTask(task, now))).catch(error => {})
     } else {
       // 当前时间检查
-     this.getActiveTasks()
- 
+      this.getActiveTasks()
     }
   }
 

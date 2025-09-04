@@ -83,7 +83,6 @@ export class DataFlowManager {
     this.isProcessing = true
 
     try {
-
       // 1. 验证操作
       const validationResult = this.validateAction(action)
       if (!validationResult.valid) {
@@ -99,7 +98,6 @@ export class DataFlowManager {
       // 4. 通知视图更新
       this.notifyViewUpdate(action)
     } catch (error) {
-
       // 触发错误恢复
       await this.handleError(action, error as Error)
 
@@ -113,7 +111,6 @@ export class DataFlowManager {
    * 批量处理用户操作
    */
   async handleBatchActions(actions: UserAction[]): Promise<void> {
-
     // 批量操作使用事务模式
     this.store.setLoading(true)
 
@@ -367,8 +364,7 @@ export class DataFlowManager {
       matchingHandlers.map(async handler => {
         try {
           await handler.execute(action, context)
-        } catch (error) {
-        }
+        } catch (error) {}
       })
     )
   }

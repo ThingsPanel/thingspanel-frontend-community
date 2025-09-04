@@ -185,7 +185,6 @@ const selectedProperty = ref<SelectedPropertyInfo | null>(null)
  * 获取组件属性树数据 - 基于画布组件实例
  */
 const fetchTreeData = () => {
-
   // 获取画布中的组件实例
   const canvasNodes = editorStore.nodes
 
@@ -200,7 +199,7 @@ const fetchTreeData = () => {
       // 根据组件类型获取属性暴露配置
       const componentType = node.type || node.widget_type
       const exposure = propertyExposureRegistry.getComponentExposure(componentType)
-      
+
       if (!exposure || !exposure.listenableProperties || exposure.listenableProperties.length === 0) {
         return null
       }
@@ -229,7 +228,7 @@ const fetchTreeData = () => {
       }
     })
     .filter(Boolean) as ComponentPropertyTreeNode[]
-  
+
   rawTreeData.value = treeData
 }
 
@@ -395,11 +394,11 @@ const getEmptyStateDescription = () => {
   if (!canvasNodes || canvasNodes.length === 0) {
     return '画布中暂无组件实例'
   }
-  
+
   if (searchKeyword.value.trim()) {
     return `没有找到匹配 "${searchKeyword.value}" 的组件属性`
   }
-  
+
   return '当前组件没有可绑定的属性'
 }
 
@@ -410,9 +409,9 @@ onMounted(() => {
   console.log('🔍 [ComponentPropertySelector] 属性暴露注册表状态:', {
     registrations: Array.from((propertyExposureRegistry as any).registrations.keys())
   })
-  
+
   fetchTreeData()
-  
+
   // 定时检查 store 状态变化
   const checkInterval = setInterval(() => {
     const currentNodes = editorStore.nodes
@@ -421,7 +420,7 @@ onMounted(() => {
       clearInterval(checkInterval)
     }
   }, 2000)
-  
+
   // 10秒后清理定时器
   setTimeout(() => {
     clearInterval(checkInterval)

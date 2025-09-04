@@ -549,7 +549,6 @@ class DataSourceBindingsExecutor implements DataSourceExecutor {
     const startTime = Date.now()
 
     try {
-
       // 从config中提取dataSourceBindings配置
       const bindings = config.config?.dataSourceBindings || config.config
 

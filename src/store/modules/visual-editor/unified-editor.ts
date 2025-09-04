@@ -172,7 +172,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      * 添加节点到画布
      */
     addNode(node: GraphData): void {
-
       this.nodes.push(node)
       this.markDirty()
 
@@ -190,7 +189,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
       if (nodeIndex !== -1) {
         this.nodes[nodeIndex] = { ...this.nodes[nodeIndex], ...updates }
         this.markDirty()
-
       }
     },
 
@@ -198,7 +196,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      * 删除节点及其所有配置
      */
     removeNode(id: string): void {
-
       // 移除节点
       this.nodes = this.nodes.filter(node => node.id !== id)
 
@@ -230,7 +227,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
     setBaseConfiguration(widgetId: string, config: BaseConfiguration): void {
       this.baseConfigs.set(widgetId, { ...config })
       this.markDirty()
-
     },
 
     /**
@@ -361,7 +357,6 @@ export const useUnifiedEditorStore = defineStore('unified-visual-editor', {
      * 清理所有状态
      */
     clearAll(): void {
-
       this.nodes = []
       this.selectedIds = []
       this.viewport = { x: 0, y: 0, zoom: 1 }

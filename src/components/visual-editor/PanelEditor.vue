@@ -386,7 +386,6 @@ const rendererOptions = computed(() => [
 
 // 工具栏事件处理
 const handleModeChange = (mode: 'edit' | 'preview') => {
-
   if (mode === 'edit') {
     // 🔴 关闭全局轮询（编辑模式）
     pollingManager.disableGlobalPolling()
@@ -543,11 +542,8 @@ const handleDataSourceManagerUpdate = (updateData: {
         !hasAnyDataSourceConfig &&
         !hasValidDataSourceType
       ) {
-      
         return
       }
-
-  
     }
 
     if (action === 'update' || action === 'config-updated' || action === 'config-restored') {
@@ -596,7 +592,6 @@ const handleDataSourceManagerUpdate = (updateData: {
     // 标记有变化
     hasChanges.value = true
   } catch (error) {
-
     // 🔥 防护：错误时不要影响整体流程，只记录错误
   }
 }
@@ -622,8 +617,7 @@ const handleSave = async () => {
     if (panelData.value?.config) {
       try {
         existingConfig = parseConfig(panelData.value.config)
-      } catch (error: any) {
-      }
+      } catch (error: any) {}
     }
 
     // 先构建基础配置（不包含 configSize）
@@ -733,8 +727,7 @@ watch(
             dataSources: multiDataSourceConfigStore.value[nodeId] || {},
             dataRequirements: node.dataRequirements || {}
           })
-        } catch (error) {
-        }
+        } catch (error) {}
       }
     })
 
@@ -743,8 +736,7 @@ watch(
     removedNodeIds.forEach(async nodeId => {
       try {
         await editorDataSourceManager.removeComponentDataSource(nodeId)
-      } catch (error) {
-      }
+      } catch (error) {}
     })
   },
   { deep: true }
@@ -780,8 +772,7 @@ const setupDataSourceEventListeners = () => {
 
           // 标记有变化（可选，取决于是否希望数据更新触发保存提示）
           // hasChanges.value = true
-        } catch (error) {
-        }
+        } catch (error) {}
       } else {
       }
     }
@@ -807,8 +798,7 @@ const setupDataSourceEventListeners = () => {
     editorDataSourceManager.on('data-updated', dataUpdateListener)
     editorDataSourceManager.on('component-status-changed', statusChangeListener)
     editorDataSourceManager.on('polling-status-changed', pollingStatusListener)
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 /**
@@ -837,8 +827,7 @@ const syncDataSourceConfigs = async () => {
         }
       }
     }
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 /**
@@ -948,7 +937,10 @@ defineExpose({
 </script>
 
 <template>
-  <div class="w-full" :class="{ 'px-5 py-5': props.showPageHeader !== false || props.showToolbar !== false }">
+  <div
+    class="panel-editor-root"
+    :class="{ 'px-5 py-5': props.showPageHeader !== false || props.showToolbar !== false }"
+  >
     <!-- 页面标题栏 - 根据 showPageHeader prop 控制显示 -->
     <div
       v-show="!appStore.fullContent && props.showPageHeader !== false"
@@ -1109,12 +1101,23 @@ defineExpose({
 </template>
 
 <style scoped>
+/* 🔥 核心修复：PanelEditor 根容器高度设置 */
+.panel-editor-root {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh; /* 确保至少有视口高度 */
+}
+
 .panel-editor {
   min-height: 600px;
+  /* 🔥 强化：确保编辑器在任何情况下都有足够高度 */
+  height: 100%;
 }
 
 .h-edit-area {
   height: calc(100% - 30px);
+  /* 🔥 关键修复：当父容器高度不明确时，使用视口高度作为基准 */
+  min-height: calc(100vh - 160px); /* 减去头部、导航等固定高度 */
 }
 
 /* 画布容器 */
@@ -1122,6 +1125,8 @@ defineExpose({
   position: relative;
   width: 100%;
   height: 100%;
+  /* 🔥 关键修复：画布容器设置最小高度，确保网格区域可见 */
+  min-height: 600px;
   overflow: hidden;
   background-color: var(--n-body-color);
 }
@@ -1129,6 +1134,8 @@ defineExpose({
 .renderer-container {
   width: 100%;
   height: 100%;
+  /* 🔥 优化：为渲染器提供额外的高度保障 */
+  min-height: 500px;
 }
 
 /* 拖拽状态样式 */

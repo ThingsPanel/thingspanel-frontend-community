@@ -95,8 +95,6 @@ const containerRef = ref<HTMLElement | null>(null)
  * 当配置面板属性修改时，通知组件触发相应的交互事件
  */
 const triggerPropertyChangeEvents = (newConfig: any, oldConfig: any) => {
-
-
   // 从配置中提取实际属性值
   const extractProperties = (config: any) => {
     if (!config) return {}
@@ -131,7 +129,6 @@ const triggerPropertyChangeEvents = (newConfig: any, oldConfig: any) => {
 
   // 为每个变化的属性触发 dataChange 事件
   changedProperties.forEach(({ property, oldValue, newValue }) => {
-
     // 使用 interactionManager 直接触发事件
     if (currentComponentRef.value && typeof currentComponentRef.value.triggerInteractionEvent === 'function') {
       try {
@@ -141,9 +138,8 @@ const triggerPropertyChangeEvents = (newConfig: any, oldConfig: any) => {
           newValue,
           source: 'configuration-panel'
         })
-      } catch (error) {
-      }
-    } 
+      } catch (error) {}
+    }
   })
 }
 
@@ -251,8 +247,6 @@ onBeforeUnmount(() => {
  * 将Visual Editor的配置格式转换为组件期望的格式
  */
 const extractComponentConfig = () => {
- 
-
   // 尝试多种路径提取配置
   let configData = null
 
@@ -268,8 +262,6 @@ const extractComponentConfig = () => {
         props.config[key] !== null
     )
     const hasConfigurationData = validConfigKeys.length > 0
-
- 
 
     if (hasConfigurationData) {
       configData = props.config
@@ -386,8 +378,6 @@ watch(() => props.componentType, loadComponent, { immediate: true })
 watch(
   () => props.config,
   (newConfig, oldConfig) => {
-
-
     // 🔥 触发属性变化事件给组件
     if (newConfig && oldConfig && currentComponentRef.value) {
       triggerPropertyChangeEvents(newConfig, oldConfig)
@@ -405,24 +395,21 @@ watch(
 // 监听data变化，用于调试
 watch(
   () => props.data,
-  newData => {
-  },
+  newData => {},
   { deep: true, immediate: true }
 )
 
 // 监听dataSources变化，用于调试
 watch(
   () => props.dataSources,
-  newDataSources => {
-  },
+  newDataSources => {},
   { deep: true, immediate: true }
 )
 
 // 监听dataSourcesConfig变化，用于调试
 watch(
   () => props.dataSourcesConfig,
-  newDataSourcesConfig => {
-  },
+  newDataSourcesConfig => {},
   { deep: true, immediate: true }
 )
 
@@ -447,7 +434,6 @@ const getDataSourcesForComponent = () => {
   } else if (dataSourcesConfigHasData) {
     return props.dataSourcesConfig
   } else if (dataSourcesHasData) {
-  
     return props.dataSources
   }
   return null
@@ -455,7 +441,6 @@ const getDataSourcesForComponent = () => {
 
 // 🔥 新增：获取组件特定的props（使用通用映射器）
 const getComponentSpecificProps = () => {
-
   // 🔥 使用通用数据源映射器
   const specificProps = DataSourceMapper.mapDataSources(props.componentType, executorData.value)
 
@@ -471,9 +456,7 @@ const getComponentSpecificProps = () => {
 // 监听metadata变化，用于调试
 watch(
   () => props.metadata,
-  newMetadata => {
-    
-  },
+  newMetadata => {},
   { deep: true, immediate: true }
 )
 
@@ -485,7 +468,6 @@ onMounted(async () => {
   if (componentExecutorRegistry) {
     // 创建统一的执行器函数
     const unifiedExecutor = async () => {
-
       // 获取最新配置
       const config = configurationIntegrationBridge.getConfiguration(props.nodeId)
 
@@ -497,10 +479,10 @@ onMounted(async () => {
           props.componentType,
           dataSourceConfig
         )
-        
+
         // 🔥 新增：注册HTTP数据源映射，用于属性变化时的响应式更新
         interactionManager.registerHttpDataSource(props.nodeId, props.componentType, dataSourceConfig)
-      } 
+      }
     }
 
     componentExecutorRegistry.set(props.nodeId, unifiedExecutor)
@@ -538,16 +520,13 @@ onMounted(async () => {
   // 监听VisualEditorBridge的数据更新
   executorDataCleanup = visualEditorBridge.onDataUpdate((componentId, data) => {
     if (componentId === props.nodeId) {
-
       // 🔥 修复：安全地检查接收到的数据详情
-      
 
       // 🔥 调试：更新前的executorData状态
 
       executorData.value = { ...data }
 
       // 🔥 调试：更新后的executorData状态
-     
 
       // 强制重新渲染组件以应用新数据
       forceUpdateKey.value = Date.now()
@@ -555,7 +534,6 @@ onMounted(async () => {
   })
 
   if (savedConfig?.dataSource) {
-
     try {
       // 🔥 修复：直接使用整个dataSource配置
       const dataSourceConfig = savedConfig.dataSource
@@ -565,13 +543,11 @@ onMounted(async () => {
         props.componentType,
         dataSourceConfig
       )
-      
+
       // 🔥 新增：注册HTTP数据源映射，用于属性变化时的响应式更新
       interactionManager.registerHttpDataSource(props.nodeId, props.componentType, dataSourceConfig)
-    } catch (error) {
-    }
+    } catch (error) {}
   } else {
-
     // 🔥 架构修复：完全移除直接配置监听
     // EditorDataSourceManager 现在通过componentExecutorRegistry调用我们注册的统一执行器
   }
@@ -579,7 +555,6 @@ onMounted(async () => {
   // 🔥 监听组件状态更新事件
   const handleStateUpdate = (event: CustomEvent) => {
     const { componentId, updates } = event.detail
-   
 
     if (componentId === props.nodeId) {
       // 强制重新渲染以应用状态更新

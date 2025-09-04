@@ -237,7 +237,6 @@ export class ScriptEngine implements IScriptEngine {
    * 预热引擎（执行一些初始化脚本以提高后续性能）
    */
   async warmup(): Promise<void> {
-
     const warmupScripts = [
       'return "Hello World"',
       'return Math.random()',
@@ -248,8 +247,7 @@ export class ScriptEngine implements IScriptEngine {
     for (const script of warmupScripts) {
       try {
         await this.execute(script)
-      } catch (error) {
-      }
+      } catch (error) {}
     }
   }
 

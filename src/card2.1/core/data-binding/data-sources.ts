@@ -36,7 +36,7 @@ export class StaticDataSource implements DataSource {
       try {
         const result = await this.config.data()
         return result
-      } catch (error) {
+      } catch {
         return null
       }
     }
@@ -220,7 +220,9 @@ export class WebSocketDataSource implements DataSource {
             const data = JSON.parse(event.data)
             this.lastData = data
             this.dataListeners.forEach(listener => listener(data))
-          } catch (error) {}
+          } catch {
+            // 忽略JSON解析错误
+          }
         }
 
         this.ws.onerror = error => {
@@ -241,9 +243,12 @@ export class WebSocketDataSource implements DataSource {
     if (this.reconnectAttempts < this.config.maxReconnectAttempts!) {
       this.reconnectAttempts++
       setTimeout(() => {
-        this.connect().catch(error => {})
+        this.connect().catch(() => {
+          // 重连失败时静默处理
+        })
       }, this.config.reconnectInterval)
     } else {
+      // 达到最大重连次数，停止重连
     }
   }
 
@@ -322,17 +327,13 @@ export class ScriptDataSource implements DataSource {
   }
 
   async fetchData(): Promise<any> {
-    try {
-      // 使用全局脚本引擎执行脚本
-      const result = await defaultScriptEngine.execute(this.config.script, this.config.context)
+    // 使用全局脚本引擎执行脚本
+    const result = await defaultScriptEngine.execute(this.config.script, this.config.context)
 
-      if (result.success) {
-        return result.data
-      } else {
-        throw result.error || new Error('脚本执行失败')
-      }
-    } catch (error) {
-      throw error
+    if (result.success) {
+      return result.data
+    } else {
+      throw result.error || new Error('脚本执行失败')
     }
   }
 

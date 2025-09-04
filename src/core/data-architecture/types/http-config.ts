@@ -95,6 +95,9 @@ export interface PathParameter {
   selectedTemplate?: string
 }
 
+// 导入EnhancedParameter类型
+import type { EnhancedParameter } from './parameter-editor'
+
 /**
  * HTTP配置接口（简化路径参数版本）
  */
@@ -113,6 +116,12 @@ export interface HttpConfig {
 
   /** 选中的内部地址值（当addressType为internal时使用） */
   selectedInternalAddress?: string
+
+  /** 是否启用传参（用于内部地址的路径参数配置） */
+  enableParams?: boolean
+
+  /** 路径参数配置数组（新格式，支持多个参数） */
+  pathParams?: EnhancedParameter[]
 
   /** 路径参数（可选，单个参数直接拼接到URL后） */
   pathParameter?: PathParameter

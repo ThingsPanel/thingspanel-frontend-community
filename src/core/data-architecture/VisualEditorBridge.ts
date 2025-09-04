@@ -70,8 +70,7 @@ export class VisualEditorBridge {
     this.dataUpdateCallbacks.forEach(callback => {
       try {
         callback(componentId, data)
-      } catch (error) {
-      }
+      } catch (error) {}
     })
   }
 
@@ -86,14 +85,12 @@ export class VisualEditorBridge {
     componentType: string,
     config: any
   ): ComponentDataRequirement {
-
     const dataSources: DataSourceDefinition[] = []
 
     // 处理配置中的数据源
     if (config && typeof config === 'object') {
       // 🆕 处理新的 DataSourceConfiguration 格式
       if (config.dataSources && Array.isArray(config.dataSources)) {
-
         config.dataSources.forEach((dataSource: any) => {
           if (dataSource.sourceId && dataSource.dataItems && Array.isArray(dataSource.dataItems)) {
             // 🔥 关键修复：保持数据源的完整性，不要拆分成独立数据源

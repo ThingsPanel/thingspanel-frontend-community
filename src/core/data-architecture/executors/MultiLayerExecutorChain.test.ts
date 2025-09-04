@@ -193,22 +193,19 @@ async function testExecutorChain() {
   try {
     const config1 = createJsonExampleConfig()
     const result1 = await executorChain.executeDataProcessingChain(config1, true)
-  } catch (error) {
-  }
+  } catch (error) {}
 
   // 测试2: HTTP数据处理 (可能网络失败)
   try {
     const config2 = createHttpExampleConfig()
     const result2 = await executorChain.executeDataProcessingChain(config2, true)
-  } catch (error) {
-  }
+  } catch (error) {}
 
   // 测试3: 自定义脚本处理
   try {
     const config3 = createScriptMergeExampleConfig()
     const result3 = await executorChain.executeDataProcessingChain(config3, true)
-  } catch (error) {
-  }
+  } catch (error) {}
 
   // 测试4: 执行器链统计信息
   const statistics = executorChain.getChainStatistics()

@@ -143,7 +143,6 @@ export class EditorDataSourceManager {
     config: any,
     triggerConfig?: { type: 'timer' | 'manual' | 'event'; interval?: number }
   ): void {
- 
     try {
       // 生成标准化配置
       const standardConfig = this.generateStandardConfig(componentId, componentType, config)
@@ -483,8 +482,7 @@ export class EditorDataSourceManager {
         try {
           // 通过组件执行器触发数据更新
           await this.triggerComponentExecutor(event.componentId)
-        } catch (error) {
-        }
+        } catch (error) {}
       }
     })
   }
@@ -506,8 +504,7 @@ export class EditorDataSourceManager {
 
       // 执行组件数据源
       await componentExecutor()
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   /**
@@ -515,8 +512,7 @@ export class EditorDataSourceManager {
    */
   private setupErrorHandling(): void {
     // 全局错误处理
-    window.addEventListener('unhandledrejection', event => {
-    })
+    window.addEventListener('unhandledrejection', event => {})
   }
 
   /**
@@ -544,7 +540,6 @@ export class EditorDataSourceManager {
 
       // 🆕 处理新格式配置 (data-source-bindings)
       if (userConfig.type === 'data-source-bindings' && userInputs.length === 0) {
-
         // 遍历 dataSource1, dataSource2, dataSource3 等字段
         for (const [key, value] of Object.entries(userConfig)) {
           if (key.startsWith('dataSource') && value && typeof value === 'object') {
@@ -680,8 +675,7 @@ export class EditorDataSourceManager {
         try {
           // 🔥 调用组件执行器而不是直接执行数据源
           await this.triggerComponentExecutor(componentId)
-        } catch (error) {
-        }
+        } catch (error) {}
       }
     })
 
@@ -787,8 +781,7 @@ export class EditorDataSourceManager {
       eventListeners.forEach(listener => {
         try {
           listener(data)
-        } catch (error) {
-        }
+        } catch (error) {}
       })
     }
   }

@@ -215,7 +215,6 @@ export class ExecutorChainUsageExample {
    * 运行JSON数据处理示例
    */
   async runJsonExample(): Promise<ExecutionResult> {
-
     const config = this.configGenerator.generateJsonExample()
     const result = await this.executorChain.executeDataProcessingChain(config, true)
     return result
@@ -225,7 +224,6 @@ export class ExecutorChainUsageExample {
    * 运行HTTP数据处理示例
    */
   async runHttpExample(): Promise<ExecutionResult> {
-
     const config = this.configGenerator.generateHttpExample()
     const result = await this.executorChain.executeDataProcessingChain(config, true)
     return result
@@ -235,7 +233,6 @@ export class ExecutorChainUsageExample {
    * 运行混合数据源处理示例
    */
   async runMixedExample(): Promise<ExecutionResult> {
-
     const config = this.configGenerator.generateMixedExample()
     const result = await this.executorChain.executeDataProcessingChain(config, true)
 
@@ -246,7 +243,6 @@ export class ExecutorChainUsageExample {
    * 运行所有示例
    */
   async runAllExamples(): Promise<void> {
-
     try {
       await this.runJsonExample()
 
@@ -256,9 +252,7 @@ export class ExecutorChainUsageExample {
 
       // 显示执行器链统计信息
       const stats = this.executorChain.getChainStatistics()
-    } catch (error) {
-    }
-
+    } catch (error) {}
   }
 }
 

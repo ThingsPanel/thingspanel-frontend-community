@@ -72,7 +72,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         source: 'user'
       }
       configEventBus.emitConfigChange(changeEvent)
-    } 
+    }
   }
 
   /**
@@ -102,7 +102,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         source: 'user'
       }
       configEventBus.emitConfigChange(changeEvent)
-    } 
+    }
   }
 
   /**
@@ -266,8 +266,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       if (!editorDataSourceManager.isInitialized()) {
         await editorDataSourceManager.initialize()
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   /**
@@ -286,9 +285,8 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
 
           // 触发数据更新 - 新的无循环架构
           await editorDataSourceManager.triggerDataUpdate(componentId)
-        } catch (error) {
-        }
-      } 
+        } catch (error) {}
+      }
     })
   }
 

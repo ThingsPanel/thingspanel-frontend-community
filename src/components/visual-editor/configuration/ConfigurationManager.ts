@@ -93,8 +93,7 @@ export class ConfigurationManager implements IConfigurationManager {
           this.configurations.set(widgetId, config as WidgetConfiguration)
         })
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   /**
@@ -104,8 +103,7 @@ export class ConfigurationManager implements IConfigurationManager {
     try {
       const configurationsObject = Object.fromEntries(this.configurations.entries())
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(configurationsObject))
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   /**
@@ -486,8 +484,7 @@ export class ConfigurationManager implements IConfigurationManager {
       listeners.forEach(callback => {
         try {
           callback(this.deepClone(config))
-        } catch (error) {
-        }
+        } catch (error) {}
       })
     }
 
@@ -517,10 +514,8 @@ export class ConfigurationManager implements IConfigurationManager {
         }
       }
       // 异步发送事件，避免阻塞当前流程
-      configEventBus.emitConfigChange(event).catch(error => {
-      })
-    } catch (error) {
-    }
+      configEventBus.emitConfigChange(event).catch(error => {})
+    } catch (error) {}
   }
 
   /**

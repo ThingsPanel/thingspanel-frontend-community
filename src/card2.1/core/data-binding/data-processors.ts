@@ -25,44 +25,40 @@ export class ScriptProcessor implements DataProcessor {
   }
 
   async process(input: any): Promise<any> {
-    try {
-      // 创建安全的执行环境
-      const context = {
-        data: input,
-        console: {
-          log: console.log,
-          warn: console.warn,
-          error: console.error
-        },
-        Math,
-        Date,
-        JSON,
-        // 常用的数据处理函数
-        utils: {
-          round: (num: number, digits = 2) => Math.round(num * Math.pow(10, digits)) / Math.pow(10, digits),
-          formatNumber: (num: number) => new Intl.NumberFormat().format(num),
-          formatDate: (date: Date | string) => new Date(date).toLocaleString()
-        }
+    // 创建安全的执行环境
+    const context = {
+      data: input,
+      console: {
+        log: console.log,
+        warn: console.warn,
+        error: console.error
+      },
+      Math,
+      Date,
+      JSON,
+      // 常用的数据处理函数
+      utils: {
+        round: (num: number, digits = 2) => Math.round(num * Math.pow(10, digits)) / Math.pow(10, digits),
+        formatNumber: (num: number) => new Intl.NumberFormat().format(num),
+        formatDate: (date: Date | string) => new Date(date).toLocaleString()
       }
-
-      // 创建函数并执行
-      const processFunction = new Function(
-        'context',
-        `
-        with(context) {
-          ${this.config.script}
-        }
-      `
-      )
-
-      const result = await Promise.race([
-        Promise.resolve(processFunction(context)),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('脚本执行超时')), this.config.timeout))
-      ])
-      return result
-    } catch (error) {
-      throw error
     }
+
+    // 创建函数并执行
+    const processFunction = new Function(
+      'context',
+      `
+      with(context) {
+        ${this.config.script}
+      }
+    `
+    )
+
+    const result = await Promise.race([
+      Promise.resolve(processFunction(context)),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('脚本执行超时')), this.config.timeout))
+    ])
+    return result
   }
 
   validateConfig(): boolean {
@@ -116,7 +112,7 @@ export class FormatProcessor implements DataProcessor {
         default:
           return input
       }
-    } catch (error) {
+    } catch {
       return input // 格式化失败时返回原值
     }
   }
@@ -167,7 +163,7 @@ export class FilterProcessor implements DataProcessor {
         default:
           return input
       }
-    } catch (error) {
+    } catch {
       return input
     }
   }
@@ -225,7 +221,7 @@ export class TransformProcessor implements DataProcessor {
         default:
           return input
       }
-    } catch (error) {
+    } catch {
       return input
     }
   }
@@ -319,7 +315,7 @@ export class PathDataMapper implements DataMapper {
         }
 
         result[rule.targetField] = value
-      } catch (error) {
+      } catch {
         result[rule.targetField] = rule.defaultValue
       }
     })
@@ -360,7 +356,7 @@ export class PathDataMapper implements DataMapper {
       }
 
       return current
-    } catch (error) {
+    } catch {
       return undefined
     }
   }
@@ -426,7 +422,7 @@ export class PathDataMapper implements DataMapper {
     // 预览功能与实际映射相同，但不会抛出错误
     try {
       return this.map(sourceData)
-    } catch (error) {
+    } catch {
       return {}
     }
   }

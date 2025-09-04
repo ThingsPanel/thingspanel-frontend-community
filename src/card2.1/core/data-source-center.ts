@@ -88,7 +88,9 @@ export class DataSourceCenter {
     if (service) {
       try {
         service.destroy()
-      } catch (error) {}
+      } catch {
+        // 忽略数据源销毁过程中的错误
+      }
       this.dataSources.delete(id)
     }
   }
@@ -102,7 +104,9 @@ export class DataSourceCenter {
     for (const [id, service] of this.dataSources.entries()) {
       try {
         result.push(service.getInfo())
-      } catch (error) {}
+      } catch {
+        // 忽略数据源销毁过程中的错误
+      }
     }
 
     return result
@@ -140,7 +144,9 @@ export class DataSourceCenter {
     for (const [id, service] of this.dataSources.entries()) {
       try {
         service.destroy()
-      } catch (error) {}
+      } catch {
+        // 忽略数据源销毁过程中的错误
+      }
     }
 
     this.dataSources.clear()

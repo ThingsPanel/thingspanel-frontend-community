@@ -363,8 +363,7 @@ watch(
           // 重新加载配置（防止外部修改配置时表单不同步）
           loadConfigurationFromManager()
         })
-      } catch (error) {
-      }
+      } catch (error) {}
     }
   },
   { immediate: true }
@@ -401,8 +400,7 @@ onUnmounted(() => {
   if (removeConfigListener) {
     try {
       removeConfigListener()
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   if (updateTimer) {

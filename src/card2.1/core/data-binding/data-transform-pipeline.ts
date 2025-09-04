@@ -327,22 +327,18 @@ export class DataTransformPipelineImpl implements DataTransformPipeline {
    * 预览管道执行结果（不更新统计信息）
    */
   async preview(): Promise<Record<string, any>> {
-    try {
-      // 获取数据源数据
-      let currentData = await this.source.fetchData()
+    // 获取数据源数据
+    let currentData = await this.source.fetchData()
 
-      // 处理器链处理
-      for (const processor of this.processors) {
-        currentData = await processor.process(currentData)
-      }
-
-      // 字段映射
-      const mappedData = this.mapper.map(currentData)
-
-      return mappedData
-    } catch (error) {
-      throw error
+    // 处理器链处理
+    for (const processor of this.processors) {
+      currentData = await processor.process(currentData)
     }
+
+    // 字段映射
+    const mappedData = this.mapper.map(currentData)
+
+    return mappedData
   }
 }
 

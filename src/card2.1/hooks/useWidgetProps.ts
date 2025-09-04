@@ -54,7 +54,9 @@ export function useWidgetProps(
       subscriptions.forEach(subscription => {
         try {
           subscription.unsubscribe()
-        } catch (err) {}
+        } catch {
+          // 忽略取消订阅时的错误，确保清理过程不会中断
+        }
       })
       subscriptions.length = 0 // 清空数组
 
@@ -102,7 +104,7 @@ export function useWidgetProps(
                       // 简单的函数字符串执行（生产环境中应该使用更安全的方式）
                       const transformFunc = new Function('value', `return ${mapping.transform}`)
                       value = transformFunc(value)
-                    } catch (transformError) {
+                    } catch {
                       value = mapping.defaultValue
                     }
                   }
@@ -133,7 +135,7 @@ export function useWidgetProps(
           dataSourcePromises.push(promise)
         } else {
           // 没有绑定配置，使用默认值
-          for (const [sourceField, mapping] of Object.entries(dataSourceDef.fieldMappings)) {
+          for (const [, mapping] of Object.entries(dataSourceDef.fieldMappings)) {
             newProps[mapping.targetField] = mapping.defaultValue
           }
         }
@@ -177,7 +179,9 @@ export function useWidgetProps(
     subscriptions.forEach(subscription => {
       try {
         subscription.unsubscribe()
-      } catch (err) {}
+      } catch {
+        // 忽略组件卸载时的订阅取消错误
+      }
     })
     subscriptions.length = 0
   })

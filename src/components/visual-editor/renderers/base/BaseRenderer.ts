@@ -96,8 +96,7 @@ export abstract class BaseRenderer {
   }
 
   // 状态变化钩子
-  protected onStateChange(oldState: RendererState, newState: RendererState) {
-  }
+  protected onStateChange(oldState: RendererState, newState: RendererState) {}
 
   // 事件监听
   on<K extends keyof RendererEvents>(event: K, listener: (...args: RendererEvents[K]) => void): void {

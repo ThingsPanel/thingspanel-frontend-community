@@ -123,5 +123,6 @@ export async function testSimpleDataBridgeIntegration(): Promise<void> {
 
 // 将测试函数暴露到全局作用域，便于控制台调试
 if (typeof window !== 'undefined') {
-  (window as any).testUnifiedDataExecutor = testUnifiedDataExecutor(window as any).testSimpleDataBridgeIntegration =testSimpleDataBridgeIntegration
+  ;(window as any).testUnifiedDataExecutor = testUnifiedDataExecutor(window as any).testSimpleDataBridgeIntegration =
+    testSimpleDataBridgeIntegration
 }

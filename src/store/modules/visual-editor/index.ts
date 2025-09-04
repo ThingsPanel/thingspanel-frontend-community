@@ -104,8 +104,7 @@ export class UnifiedVisualEditorSystem {
   private initialized = false
   private servicesInitialized = false
 
-  constructor() {
-  }
+  constructor() {}
 
   /**
    * 延迟初始化各个服务
@@ -163,7 +162,6 @@ export class UnifiedVisualEditorSystem {
    * 初始化配置服务
    */
   private async initializeConfigurationService(): Promise<void> {
-
     if (!this.configService) {
       throw new Error('配置服务未初始化')
     }
@@ -183,14 +181,12 @@ export class UnifiedVisualEditorSystem {
         }
       }
     })
-
   }
 
   /**
    * 初始化数据流管理
    */
   private initializeDataFlowManager(): void {
-
     if (!this.dataFlowManager) {
       throw new Error('数据流管理器未初始化')
     }
@@ -203,14 +199,12 @@ export class UnifiedVisualEditorSystem {
         // 系统状态同步逻辑
       }
     })
-
   }
 
   /**
    * 初始化Card2.1适配器
    */
   private async initializeCard2Adapter(): Promise<void> {
-
     // Card2.1适配器会自动初始化
     // 这里可以添加额外的初始化逻辑
   }
@@ -219,22 +213,18 @@ export class UnifiedVisualEditorSystem {
    * 设置系统事件监听
    */
   private setupSystemEventListeners(): void {
-
     if (!this.configService || !this.dataFlowManager) {
       throw new Error('服务未初始化，无法设置事件监听')
     }
 
     // 监听配置变更
-    this.configService.onConfigurationChange(event => {
-    })
+    this.configService.onConfigurationChange(event => {})
 
     // 监听数据流更新
-    this.dataFlowManager.onDataFlowUpdate(action => {
-    })
+    this.dataFlowManager.onDataFlowUpdate(action => {})
 
     // 监听错误事件
-    this.dataFlowManager.onError((action, error) => {
-    })
+    this.dataFlowManager.onError((action, error) => {})
   }
 
   /**
@@ -270,7 +260,6 @@ export class UnifiedVisualEditorSystem {
    * 保存所有配置
    */
   async saveAll(): Promise<void> {
-
     if (!this.configService) {
       throw new Error('配置服务未初始化')
     }
@@ -282,7 +271,6 @@ export class UnifiedVisualEditorSystem {
    * 清理系统资源
    */
   cleanup(): void {
-
     if (this.store) {
       this.store.clearAll()
     }
@@ -432,7 +420,6 @@ export const MigrationHelper = {
    * 从旧的编辑器存储迁移数据
    */
   migrateFromOldStore(oldStoreData: any): void {
-
     const system = useUnifiedVisualEditorSystem()
 
     // 迁移节点数据

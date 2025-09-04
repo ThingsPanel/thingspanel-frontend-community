@@ -809,6 +809,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
+        name: 'test_extended-grid-system',
+        path: '/test/extended-grid-system',
+        component: 'view.test_extended-grid-system',
+        meta: {
+          title: 'test_extended-grid-system',
+          i18nKey: 'route.test_extended-grid-system'
+        }
+      },
+      {
         name: 'test_new-config-system',
         path: '/test/new-config-system',
         component: 'view.test_new-config-system',

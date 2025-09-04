@@ -79,26 +79,22 @@ export class DeviceApiDataSource {
    * 调用设备API获取数据
    */
   async fetchData(): Promise<DeviceApiResponse> {
-    try {
-      let response: any
+    let response: any
 
-      switch (this.config.apiType) {
-        case 'telemetryDataCurrentKeys':
-          response = await telemetryDataCurrentKeys({
-            device_id: this.config.parameters.device_id,
-            keys: this.config.parameters.keys
-          })
-          break
-        default:
-          throw new Error(`不支持的API类型: ${this.config.apiType}`)
-      }
-
-      this.lastResponse = response
-      this.lastFetchTime = new Date()
-      return response
-    } catch (error) {
-      throw error
+    switch (this.config.apiType) {
+      case 'telemetryDataCurrentKeys':
+        response = await telemetryDataCurrentKeys({
+          device_id: this.config.parameters.device_id,
+          keys: this.config.parameters.keys
+        })
+        break
+      default:
+        throw new Error(`不支持的API类型: ${this.config.apiType}`)
     }
+
+    this.lastResponse = response
+    this.lastFetchTime = new Date()
+    return response
   }
 
   /**

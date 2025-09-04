@@ -129,7 +129,6 @@ export function initEChartsComponents() {
   }
 
   try {
-
     echarts.use(BASIC_COMPONENTS)
 
     isEChartsRegistered = true

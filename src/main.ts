@@ -62,8 +62,7 @@ async function setupApp() {
         { immediate: true }
       )
     })
-    .catch(error => {
-    })
+    .catch(error => {})
 
   // 3. 非关键初始化 - 使用 requestIdleCallback 延迟执行
   if (typeof requestIdleCallback !== 'undefined') {
@@ -93,8 +92,7 @@ async function setupApp() {
     try {
       localStorage.setItem(RECENTLY_VISITED_ROUTES_KEY, JSON.stringify(routes))
       recentRoutesCache = routes
-    } catch (error) {
-    }
+    } catch (error) {}
   }, 1000)
 
   // 初始化缓存
@@ -169,8 +167,7 @@ async function setupApp() {
 
       // 使用防抖保存，减少 localStorage 写入频率
       debouncedSaveRoutes(recentRoutes)
-    } catch (error) {
-    }
+    } catch (error) {}
   })
 
   app.config.globalProperties.getPlatform = () => {

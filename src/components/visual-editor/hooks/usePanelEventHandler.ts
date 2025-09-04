@@ -327,8 +327,7 @@ export function usePanelEventHandler(
   /**
    * 渲染器准备就绪
    */
-  const handleRendererReady = () => {
-  }
+  const handleRendererReady = () => {}
 
   /**
    * 渲染器错误处理

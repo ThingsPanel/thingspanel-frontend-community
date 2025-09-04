@@ -30,6 +30,8 @@ interface Props {
 // Emits接口
 interface Emits {
   (e: 'confirm', data: DataItem): void
+  (e: 'close'): void
+  (e: 'cancel'): void
 }
 
 const props = defineProps<Props>()
@@ -208,8 +210,12 @@ const convertHttpParametersToRecord = (
  * 处理关闭
  */
 const handleClose = () => {
-  // 抽屉模式下由父组件控制关闭
-  // emit('close') // 可以根据需要添加close事件
+  // 重置表单状态
+  resetFormState()
+  
+  // 发送取消和关闭事件
+  emit('cancel')
+  emit('close')
 }
 
 /**
@@ -290,8 +296,16 @@ const handleConfirm = async () => {
       method: formState.selectedMethod === 'http' ? formState.httpMethod : undefined,
       headers: formState.selectedMethod === 'http' ? formState.httpHeaders : undefined,
       body: formState.selectedMethod === 'http' ? formState.httpBody : undefined,
-      // 🔥 关键修复：保存新的 httpConfig 完整状态
-      httpConfigData: formState.selectedMethod === 'http' ? httpConfig.value : undefined,
+      // 🔥 关键修复：保存新的 httpConfig 完整状态，包含所有地址类型和参数信息
+      httpConfigData: formState.selectedMethod === 'http' ? {
+        ...httpConfig.value,
+        // 确保保存地址类型相关的关键信息
+        addressType: httpConfig.value.addressType,
+        selectedInternalAddress: httpConfig.value.selectedInternalAddress,
+        enableParams: httpConfig.value.enableParams,
+        pathParams: httpConfig.value.pathParams,
+        pathParameter: httpConfig.value.pathParameter
+      } : undefined,
       // 处理配置
       processingConfig: {
         jsonPath: processingState.jsonPath.trim() || undefined,
@@ -562,7 +576,6 @@ const loadEditData = (editData: any) => {
     return
   }
 
-
   // 加载基本配置
   formState.selectedMethod = editData.type || 'json'
 
@@ -585,23 +598,34 @@ const loadEditData = (editData: any) => {
       if (editData.headers) formState.httpHeaders = editData.headers
       if (editData.body) formState.httpBody = editData.body
 
-      // 🔥 关键修复：同时更新新的 httpConfig 状态
-      if (editData.url) httpConfig.value.url = editData.url
-      if (editData.method) httpConfig.value.method = editData.method
-      if (editData.timeout) httpConfig.value.timeout = editData.timeout
-
-      // 如果有已保存的复杂配置，完整加载它们
+      // 🔥 关键修复：优先从 httpConfigData 完整加载，回退到基本字段
       if (editData.httpConfigData) {
+        // 完整的HTTP配置数据存在，直接加载
         httpConfig.value = {
           ...httpConfig.value,
           ...editData.httpConfigData,
+          // 确保关键字段有默认值
+          url: editData.httpConfigData.url || editData.url || '',
+          method: editData.httpConfigData.method || editData.method || 'GET',
+          timeout: editData.httpConfigData.timeout || editData.timeout || 10000,
+          addressType: editData.httpConfigData.addressType || 'external',
+          selectedInternalAddress: editData.httpConfigData.selectedInternalAddress || '',
+          enableParams: editData.httpConfigData.enableParams || false,
+          pathParameter: editData.httpConfigData.pathParameter,
           // 确保数组字段不为空
           headers: editData.httpConfigData.headers || [],
           params: editData.httpConfigData.params || [],
-          // 🔥 关键修复：确保路径参数字段正确加载
-          pathParameter: editData.httpConfigData.pathParameter
+          pathParams: editData.httpConfigData.pathParams || []
         }
       } else {
+        // 没有复杂配置数据，从基本字段恢复
+        httpConfig.value.url = editData.url || ''
+        httpConfig.value.method = editData.method || 'GET'
+        httpConfig.value.timeout = editData.timeout || 10000
+        httpConfig.value.addressType = 'external' // 默认外部地址
+        httpConfig.value.selectedInternalAddress = ''
+        httpConfig.value.enableParams = false
+        
         // 从旧格式恢复基础配置
         try {
           if (editData.headers && typeof editData.headers === 'string') {
@@ -619,8 +643,7 @@ const loadEditData = (editData: any) => {
           if (editData.body) {
             httpConfig.value.body = typeof editData.body === 'string' ? editData.body : JSON.stringify(editData.body)
           }
-        } catch (error) {
-        }
+        } catch (error) {}
       }
       break
   }

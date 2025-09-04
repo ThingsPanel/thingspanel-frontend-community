@@ -97,8 +97,7 @@ export class ConfigurationStateManager {
           this.versionCounter.value = data.versionCounter
         }
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   /**
@@ -118,8 +117,7 @@ export class ConfigurationStateManager {
       }
 
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data))
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   /**
@@ -499,8 +497,7 @@ export class ConfigurationStateManager {
     const promises = Array.from(listeners).map(async listener => {
       try {
         await listener(event)
-      } catch (error) {
-      }
+      } catch (error) {}
     })
 
     await Promise.allSettled(promises)
@@ -533,4 +530,3 @@ export function useConfigurationState() {
       configurationStateManager.onConfigurationUpdate(componentId, listener)
   }
 }
-

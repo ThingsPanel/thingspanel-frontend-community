@@ -107,7 +107,7 @@ const handlePopoverUpdateShow = (show: boolean) => {
   showPopover.value = show
   if (show && (!props.options || props.options.length === 0)) {
     // 当首次展开且没有选项时，触发初始加载
-    console.log('Popover opened, emitting initialLoad'); // 调试日志
+    console.log('Popover opened, emitting initialLoad') // 调试日志
     emit('initialLoad')
   }
 }

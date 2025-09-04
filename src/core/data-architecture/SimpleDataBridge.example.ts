@@ -9,10 +9,8 @@ import { simpleDataBridge, convertToSimpleDataRequirement } from './interfaces'
  * 示例1：基本使用
  */
 export function basicUsageExample() {
-
   // 1. 注册数据更新回调
-  const cleanup = simpleDataBridge.onDataUpdate((componentId, data) => {
-  })
+  const cleanup = simpleDataBridge.onDataUpdate((componentId, data) => {})
 
   // 2. 执行组件数据获取
   simpleDataBridge
@@ -114,7 +112,6 @@ export function migrationExample() {
   // 转换并执行
   const requirement = convertToSimpleDataRequirement('migrated-component', legacyConfig)
   if (requirement) {
-    simpleDataBridge.executeComponent(requirement).then(result => {
-    })
+    simpleDataBridge.executeComponent(requirement).then(result => {})
   }
 }

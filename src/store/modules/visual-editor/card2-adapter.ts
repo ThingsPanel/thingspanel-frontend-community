@@ -87,8 +87,7 @@ export class Card2VisualEditorAdapter {
 
       // 立即初始化
       await this.card2System.initialize()
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   /**

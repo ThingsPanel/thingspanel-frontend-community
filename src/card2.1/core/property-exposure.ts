@@ -61,7 +61,13 @@ class PropertyExposureRegistry {
   /**
    * 注册组件的属性暴露配置
    */
-  register(config: ComponentPropertyExposure) {}
+  register(config: ComponentPropertyExposure) {
+    const finalConfig = {
+      ...config,
+      lastUpdated: new Date()
+    }
+    this.registrations.set(config.componentType, finalConfig)
+  }
 
   /**
    * 获取组件的可监听属性

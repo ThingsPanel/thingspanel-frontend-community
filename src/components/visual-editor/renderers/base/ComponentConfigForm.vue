@@ -131,7 +131,6 @@ watch(
       const currentConfigJson = JSON.stringify(componentConfig.value)
 
       if (newPropsJson !== currentConfigJson) {
-
         // 设置防循环标志
         isUpdatingConfig = true
 
@@ -155,7 +154,6 @@ watch(
  * 处理Card2配置更新
  */
 const handleCard2ConfigUpdate = (newConfig: any) => {
-
   // 防止循环更新
   if (isUpdatingConfig) {
     return
@@ -188,8 +186,7 @@ const handleCard2ConfigUpdate = (newConfig: any) => {
  */
 watch(
   () => props.widget,
-  newWidget => {
-  },
+  newWidget => {},
   { deep: true, immediate: true }
 )
 </script>

@@ -35,6 +35,9 @@ export interface EnhancedParameter {
   /** A user-provided description for the parameter. */
   description?: string
 
+  /** Default value to use when the main value is empty (for property binding) */
+  defaultValue?: any
+
   /** Device selection context (for device-generated parameters) */
   deviceContext?: {
     sourceType: 'device-selection' | 'manual' | 'template'

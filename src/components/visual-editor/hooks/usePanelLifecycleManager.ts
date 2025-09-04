@@ -86,8 +86,7 @@ export function usePanelLifecycleManager(dependencies: {
               if (configChanged) {
                 dependencies.handleComponentConfigChanged(componentId, config)
               }
-            } catch (error) {
-            }
+            } catch (error) {}
           }
         }
 

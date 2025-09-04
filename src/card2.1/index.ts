@@ -53,8 +53,6 @@ export async function initializeCard2System() {
       const componentTree = autoRegistry.getComponentTree()
 
       isInitialized = true
-    } catch (error) {
-      throw error
     } finally {
       initializationPromise = null
     }

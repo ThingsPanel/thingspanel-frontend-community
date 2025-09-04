@@ -11,8 +11,7 @@
       <div class="data-source-item">
         <div class="data-label">{{ currentConfig.customize.dataSource1Label }}</div>
         <div class="data-value">
-          {{ formatNumber(dataSource1, 0) }}
-          <span v-if="currentConfig.customize.unit" class="data-unit">{{ currentConfig.customize.unit }}</span>
+          {{ JSON.stringify(dataSource1, null, 2) }}
         </div>
       </div>
 
@@ -20,8 +19,7 @@
       <div class="data-source-item">
         <div class="data-label">{{ currentConfig.customize.dataSource2Label }}</div>
         <div class="data-value">
-          {{ formatNumber(dataSource2, 1) }}
-          <span v-if="currentConfig.customize.unit" class="data-unit">{{ currentConfig.customize.unit }}</span>
+          {{ JSON.stringify(dataSource2, null, 2) }}
         </div>
       </div>
 
@@ -29,15 +27,9 @@
       <div class="data-source-item">
         <div class="data-label">{{ currentConfig.customize.dataSource3Label }}</div>
         <div class="data-value">
-          {{ formatNumber(dataSource3, 2) }}
-          <span v-if="currentConfig.customize.unit" class="data-unit">{{ currentConfig.customize.unit }}</span>
+          {{ JSON.stringify(dataSource3, null, 2) }}
         </div>
       </div>
-    </div>
-
-    <!-- JSON数据显示 -->
-    <div v-if="dataSource1" class="json-display">
-      <pre>{{ JSON.stringify(dataSource1, null, 2) }}</pre>
     </div>
   </div>
 </template>

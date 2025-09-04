@@ -48,7 +48,6 @@ export function usePanelPollingManager(dependencies: {
             interval: interval,
             callback: async () => {
               try {
-
                 // 🔥 直接调用组件执行器，这个应该是正确的方式
                 // 🔥 直接使用 VisualEditorBridge 调用，这个是确定有效的方法
                 try {

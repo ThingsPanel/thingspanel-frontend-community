@@ -37,7 +37,6 @@ export class DataItemProcessor implements IDataItemProcessor {
    */
   async processData(rawData: any, config: ProcessingConfig): Promise<any> {
     try {
-    
       // 🔥 修复：改进空数据检查逻辑
       if (rawData === null || rawData === undefined) {
         return config.defaultValue || {}

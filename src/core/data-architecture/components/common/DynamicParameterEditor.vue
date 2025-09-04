@@ -30,11 +30,7 @@ import {
 } from 'naive-ui'
 import { type EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
 import { generateVariableName } from '@/core/data-architecture/types/http-config'
-import {
-  getRecommendedTemplates,
-  getTemplateById,
-  ParameterTemplateType
-} from './templates/index'
+import { getRecommendedTemplates, getTemplateById, ParameterTemplateType } from './templates/index'
 
 // 导入组件模板使用的组件（简化版）
 import DeviceMetricsSelector from '@/components/device-selectors/DeviceMetricsSelector.vue'
@@ -43,6 +39,8 @@ import ComponentPropertySelector from './ComponentPropertySelector.vue'
 import AddParameterFromDevice from './AddParameterFromDevice.vue'
 // 导入新的统一设备配置选择器
 import UnifiedDeviceConfigSelector from '../device-selectors/UnifiedDeviceConfigSelector.vue'
+// 导入设备参数选择器
+import DeviceParameterSelector from '../device-selectors/DeviceParameterSelector.vue'
 // 导入参数组管理工具
 import { globalParameterGroupManager } from '../../utils/device-parameter-generator'
 import {
@@ -600,6 +598,10 @@ const toggleEditMode = (index: number) => {
 const updateParameter = (param: EnhancedParameter, index: number) => {
   const updatedParams = [...props.modelValue]
   updatedParams[index] = { ...param }
+  
+  // 🔥 调试：监听参数更新
+  console.log(`🔧 [DynamicParameterEditor] 参数更新 [${index}]:`, JSON.stringify(param, null, 2))
+  
   emit('update:modelValue', updatedParams)
 }
 
@@ -614,8 +616,22 @@ const onTemplateChange = (param: EnhancedParameter, index: number, templateId: s
   updatedParam.selectedTemplate = templateId
   updatedParam.valueMode = template.type
 
-  if (template.defaultValue !== undefined) {
-    updatedParam.value = template.defaultValue
+  // 🔥 修复：区分value和defaultValue，避免错误赋值导致字符串拼接问题
+  if (template.type === ParameterTemplateType.COMPONENT) {
+    // 组件属性绑定：不修改现有的value（用户输入的绑定路径）
+    // 只有在value为空时才使用模板默认值作为初始值
+    if (!updatedParam.value && template.defaultValue !== undefined) {
+      updatedParam.value = template.defaultValue
+    }
+    // 确保defaultValue字段正确设置
+    if (template.defaultValue !== undefined && !updatedParam.defaultValue) {
+      updatedParam.defaultValue = template.defaultValue
+    }
+  } else {
+    // 其他模板类型：直接使用模板默认值
+    if (template.defaultValue !== undefined) {
+      updatedParam.value = template.defaultValue
+    }
   }
 
   if (template.type === ParameterTemplateType.PROPERTY) {

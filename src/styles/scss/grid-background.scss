@@ -18,7 +18,8 @@
 
 /* 栅格背景基础类 */
 .grid-background-base {
-  background-color: var(--grid-bg-color);
+  /* 移除背景色以提高透明度 */
+  /* background-color: var(--grid-bg-color); */
   transition: background-color 0.3s ease;
 }
 
@@ -34,7 +35,8 @@
 /* 深色主题适配 */
 [data-theme="dark"] .grid-background-base,
 .dark-theme .grid-background-base {
-  background-color: var(--grid-bg-color-dark);
+  /* 移除深色主题背景色以提高透明度 */
+  /* background-color: var(--grid-bg-color-dark); */
 }
 
 [data-theme="dark"] .show-grid,

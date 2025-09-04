@@ -8,7 +8,7 @@
  * 包含URL、请求方法、超时时间、请求体配置
  */
 
-import { computed, ref } from 'vue'
+import { computed, ref, watch, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { HttpConfig } from '../../types/http-config'
 import DynamicParameterEditor from './DynamicParameterEditor.vue'
@@ -35,7 +35,7 @@ const { t } = useI18n()
  * 地址类型选择：直接从modelValue获取和设置
  */
 const addressType = computed({
-  get: () => props.modelValue.addressType || 'external',
+  get: () => (props.modelValue.addressType !== undefined ? props.modelValue.addressType : 'external'),
   set: (value: 'internal' | 'external') => {
     updateConfig('addressType', value)
   }
@@ -53,7 +53,7 @@ const selectedApiInfo = computed(() => {
  * 选中的内部地址：直接从modelValue获取和设置
  */
 const selectedInternalAddress = computed({
-  get: () => props.modelValue.selectedInternalAddress || '',
+  get: () => (props.modelValue.selectedInternalAddress !== undefined ? props.modelValue.selectedInternalAddress : ''),
   set: (value: string) => {
     updateConfig('selectedInternalAddress', value)
   }
@@ -95,6 +95,13 @@ const updateConfig = (field: keyof HttpConfig, value: any) => {
     ...props.modelValue,
     [field]: value
   }
+  
+  // 🔥 调试：监听所有配置更新
+  console.log(`🔄 [HttpConfigStep1] 配置更新 - ${String(field)}:`, value)
+  if (field === 'pathParameter') {
+    console.log('🔍 [HttpConfigStep1] pathParameter详细:', JSON.stringify(value, null, 2))
+  }
+  
   emit('update:modelValue', newConfig)
 }
 
@@ -130,6 +137,9 @@ const onInternalAddressSelect = (value: string, option: any) => {
     // 同时设置请求方法
     updateConfig('method', apiInfo.method)
 
+    // 🔥 关键修复：保存选择的内部地址到父组件
+    updateConfig('selectedInternalAddress', value)
+
     // 立即设置初始URL（无参数替换的版本）
     updateConfig('url', apiInfo.url)
 
@@ -141,10 +151,14 @@ const onInternalAddressSelect = (value: string, option: any) => {
       // 只清空现有参数，不自动生成新的
       urlParams.value = []
       enableParams.value = false
+      updateConfig('pathParams', [])
+      updateConfig('enableParams', false)
     } else {
       // 没有路径参数时，清空参数配置
       urlParams.value = []
       enableParams.value = false
+      updateConfig('pathParams', [])
+      updateConfig('enableParams', false)
     }
   } else {
     // 如果没有找到API信息，直接使用选择的值
@@ -157,6 +171,16 @@ const onInternalAddressSelect = (value: string, option: any) => {
  */
 const onEnableParamsChange = (enabled: boolean) => {
   enableParams.value = enabled
+
+  // 🔥 关键修复：同步启用状态到父组件
+  updateConfig('enableParams', enabled)
+
+  if (!enabled) {
+    // 禁用传参时，清空参数配置
+    urlParams.value = []
+    updateConfig('pathParams', [])
+    updateConfig('pathParameter', undefined)
+  }
   if (!enabled) {
     urlParams.value = []
     // 禁用参数时，恢复到原始URL（不进行参数替换）
@@ -173,19 +197,36 @@ const onEnableParamsChange = (enabled: boolean) => {
 const onUrlParamsUpdate = (params: EnhancedParameter[]) => {
   urlParams.value = params
 
-  // 实时更新最终URL到HTTP配置中
-  const apiInfo = selectedApiInfo.value
-  if (apiInfo && enableParams.value) {
-    let url = apiInfo.url
+  // 🔥 关键修复：将参数配置保存到父组件的modelValue中
+  updateConfig('pathParams', params)
 
-    // 替换路径参数
-    params.forEach(param => {
-      if (param.enabled && param.key && param.value) {
-        url = url.replace(`{${param.key}}`, param.value)
-      }
+  // 如果还有旧格式的pathParameter，也要更新（兼容性）
+  if (params.length > 0) {
+    const firstParam = params[0]
+    updateConfig('pathParameter', {
+      value: firstParam.value,
+      isDynamic: firstParam.selectedTemplate === 'component-property-binding',
+      variableName: firstParam.variableName || '',
+      description: firstParam.description || '',
+      dataType: firstParam.dataType || 'string',
+      defaultValue: firstParam.defaultValue,
+      // 🔥 关键修复：保存selectedTemplate字段，确保DataItemFetcher能正确识别属性绑定
+      selectedTemplate: firstParam.selectedTemplate,
+      key: firstParam.key,
+      enabled: firstParam.enabled
     })
+  }
 
-    updateConfig('url', url)
+  // 🔥 修复架构设计：配置层不进行URL替换，只保存原始模板和参数
+  // 保持原始URL模板不变，参数替换留给HTTP执行器处理
+  console.log('📝 [HttpConfigStep1] 参数配置更新，但不修改URL模板')
+  
+  // 如果有API信息，确保URL保持原始模板格式
+  const apiInfo = selectedApiInfo.value
+  if (apiInfo) {
+    // 🔥 关键修复：始终保持原始URL模板，不进行参数替换
+    updateConfig('url', apiInfo.url) // 保持原始模板如 /device/detail/{id}
+    console.log('✅ [HttpConfigStep1] 保持原始URL模板:', apiInfo.url)
   }
 }
 
@@ -216,11 +257,31 @@ const currentAddressDisplay = computed(() => {
   if (apiInfo) {
     let url = apiInfo.url
 
-    // 如果启用了参数配置，用实际参数值替换URL中的占位符
+    // 如果启用了参数配置，用实际参数值替换URL中的占位符 - 正确解析属性绑定和默认值
     if (enableParams.value && urlParams.value.length > 0) {
       urlParams.value.forEach(param => {
-        if (param.enabled && param.key && param.value) {
-          url = url.replace(`{${param.key}}`, param.value)
+        if (param.enabled && param.key) {
+          let resolvedValue = param.value
+
+          // 如果是属性绑定，显示默认值用于预览（实际请求时会解析属性值）
+          if (param.selectedTemplate === 'component-property-binding' && typeof param.value === 'string') {
+            // URL预览时：如果是属性绑定，优先显示默认值，否则显示绑定路径
+            resolvedValue = param.defaultValue || `[${param.value}]`
+          }
+
+          // 检查值是否为"空"
+          const isEmpty =
+            resolvedValue === null ||
+            resolvedValue === undefined ||
+            resolvedValue === '' ||
+            (typeof resolvedValue === 'string' && resolvedValue.trim() === '')
+
+          if (!isEmpty) {
+            url = url.replace(`{${param.key}}`, resolvedValue)
+          } else if (param.defaultValue) {
+            // 使用默认值
+            url = url.replace(`{${param.key}}`, param.defaultValue)
+          }
         }
       })
     }
@@ -243,11 +304,31 @@ const getFinalUrl = computed(() => {
   if (apiInfo) {
     let url = apiInfo.url
 
-    // 替换路径参数
+    // 替换路径参数 - 正确解析属性绑定和默认值
     if (enableParams.value && urlParams.value.length > 0) {
       urlParams.value.forEach(param => {
-        if (param.enabled && param.key && param.value) {
-          url = url.replace(`{${param.key}}`, param.value)
+        if (param.enabled && param.key) {
+          let resolvedValue = param.value
+
+          // 如果是属性绑定，显示默认值用于预览（实际请求时会解析属性值）
+          if (param.selectedTemplate === 'component-property-binding' && typeof param.value === 'string') {
+            // URL预览时：如果是属性绑定，优先显示默认值，否则显示绑定路径
+            resolvedValue = param.defaultValue || `[${param.value}]`
+          }
+
+          // 检查值是否为"空"
+          const isEmpty =
+            resolvedValue === null ||
+            resolvedValue === undefined ||
+            resolvedValue === '' ||
+            (typeof resolvedValue === 'string' && resolvedValue.trim() === '')
+
+          if (!isEmpty) {
+            url = url.replace(`{${param.key}}`, resolvedValue)
+          } else if (param.defaultValue) {
+            // 使用默认值
+            url = url.replace(`{${param.key}}`, param.defaultValue)
+          }
         }
       })
     }
@@ -256,6 +337,104 @@ const getFinalUrl = computed(() => {
   }
 
   return props.modelValue.url || ''
+})
+
+/**
+ * 初始化URL参数状态 - 从props中恢复配置
+ */
+const initializeUrlParamsState = () => {
+  // 如果当前是内部地址模式且有选中的内部地址
+  if (addressType.value === 'internal' && selectedInternalAddress.value) {
+    const apiInfo = getApiByValue(selectedInternalAddress.value)
+
+    if (apiInfo && apiInfo.hasPathParams) {
+      // 检查是否有已保存的路径参数配置
+      if (props.modelValue.pathParams && props.modelValue.pathParams.length > 0) {
+        // 从保存的路径参数恢复状态
+        urlParams.value = props.modelValue.pathParams.map(param => ({
+          key: param.key || 'pathParam',
+          value: param.value || '',
+          enabled: param.enabled !== false,
+          valueMode: param.valueMode || (param.isDynamic ? 'property' : 'manual'),
+          selectedTemplate: param.selectedTemplate || (param.isDynamic ? 'property-binding' : 'manual'),
+          variableName: param.variableName || '',
+          description: param.description || '',
+          dataType: param.dataType || 'string',
+          defaultValue: param.defaultValue,
+          _id: `param_${Date.now()}_${Math.random()}`
+        }))
+        enableParams.value = true
+      } else if (props.modelValue.pathParameter) {
+        // 兼容旧格式的路径参数
+        urlParams.value = [
+          {
+            key: 'pathParam',
+            value: props.modelValue.pathParameter.value || '',
+            enabled: true,
+            valueMode: props.modelValue.pathParameter.isDynamic ? 'property' : 'manual',
+            selectedTemplate: props.modelValue.pathParameter.isDynamic ? 'property-binding' : 'manual',
+            variableName: props.modelValue.pathParameter.variableName || '',
+            description: props.modelValue.pathParameter.description || '',
+            dataType: props.modelValue.pathParameter.dataType || 'string',
+            defaultValue: props.modelValue.pathParameter.defaultValue,
+            _id: `param_${Date.now()}`
+          }
+        ]
+        enableParams.value = true
+      }
+    }
+  }
+}
+
+/**
+ * 监听 props 变化，同步URL参数状态 - 改进触发条件
+ */
+watch(
+  () => [
+    props.modelValue.addressType || 'external',
+    props.modelValue.selectedInternalAddress || '',
+    props.modelValue.pathParams || [],
+    props.modelValue.pathParameter || null,
+    props.modelValue.enableParams || false
+  ],
+  () => {
+    // 🔥 关键修复：延迟初始化，确保所有数据完全加载后再同步状态
+    nextTick(() => {
+      initializeUrlParamsState()
+    })
+  },
+  { deep: true, immediate: true }
+)
+
+/**
+ * 🔥 新增：监听关键字段变化，强制重新初始化
+ */
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    // 当modelValue完全变化时（比如从编辑数据加载），重新初始化
+    if (newValue && (newValue.addressType === 'internal' || newValue.selectedInternalAddress)) {
+      nextTick(() => {
+        // 如果是内部地址且有选中地址，确保状态正确同步
+        if (newValue.addressType === 'internal' && newValue.selectedInternalAddress) {
+          const apiInfo = getApiByValue(newValue.selectedInternalAddress)
+          if (apiInfo) {
+            // 🔥 强制发射接口信息更新事件
+            emit('apiInfoUpdate', apiInfo)
+          }
+        }
+        initializeUrlParamsState()
+      })
+    }
+  },
+  { deep: true }
+)
+
+/**
+ * 组件挂载时初始化状态
+ */
+onMounted(() => {
+  initializeUrlParamsState()
 })
 </script>
 

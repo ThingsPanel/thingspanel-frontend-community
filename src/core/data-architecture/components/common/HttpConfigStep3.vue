@@ -30,7 +30,6 @@ const emit = defineEmits<Emits>()
 /**
  * 更新查询参数
  */
-
 </script>
 
 <template>
@@ -44,6 +43,11 @@ const emit = defineEmits<Emits>()
       key-placeholder="参数名（如：deviceId）"
       value-placeholder="参数值（如：DEV001）"
       :current-api-info="currentApiInfo"
+      @update:model-value="
+        updatedParams => {
+          emit('update:modelValue', { ...modelValue, params: updatedParams })
+        }
+      "
     />
 
     <div style="margin-top: 16px; padding: 12px; background: var(--info-color-suppl); border-radius: 6px">

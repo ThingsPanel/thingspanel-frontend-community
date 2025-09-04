@@ -92,7 +92,7 @@ const getDeviceGroupOptions = async () => {
 }
 
 const getDeviceConfigOptions = async () => {
-  console.log(pattern, '我请求了筛选');
+  console.log(pattern, '我请求了筛选')
 
   const res = await getDeviceConfigList({
     page: 1,

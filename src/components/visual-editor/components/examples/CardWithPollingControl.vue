@@ -51,14 +51,11 @@ const updateData = async () => {
 }
 
 // 处理轮询控制器事件
-const handlePollingToggle = (enabled: boolean) => {
-}
+const handlePollingToggle = (enabled: boolean) => {}
 
-const handlePollingEnabled = () => {
-}
+const handlePollingEnabled = () => {}
 
-const handlePollingDisabled = () => {
-}
+const handlePollingDisabled = () => {}
 
 // 数据状态指示器
 const statusIndicator = computed(() => {
@@ -77,11 +74,9 @@ const statusIndicator = computed(() => {
   }
 })
 
-onMounted(() => {
-})
+onMounted(() => {})
 
-onUnmounted(() => {
-})
+onUnmounted(() => {})
 </script>
 
 <template>

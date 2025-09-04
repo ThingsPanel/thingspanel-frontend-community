@@ -104,7 +104,6 @@ export function createEditor() {
   stopWatch = watchEffect(() => {
     // 修改条件：只要不在加载中就可以继续
     if (!card2Integration.isLoading.value) {
-
       // 清理注册表，只保留Card2.1组件
       const allWidgets = widgetStore.getAllWidgets()
 
@@ -117,7 +116,6 @@ export function createEditor() {
       // 安全检查：确保 availableComponents 存在且有 value 属性
       const availableComponents = card2Integration.availableComponents?.value || []
       availableComponents.forEach(componentDef => {
-
         if (!widgetStore.getWidget(componentDef.type)) {
           // 从 properties 中提取默认属性值
           const defaultProperties: Record<string, any> = {}
@@ -157,9 +155,9 @@ export function createEditor() {
           if (componentDef.definition.configComponent) {
             if (!configRegistry.has(componentDef.type)) {
               configRegistry.register(componentDef.type, componentDef.definition.configComponent)
-            } 
-          } 
-        } 
+            }
+          }
+        }
       })
       resolveInitialization()
       if (stopWatch) {
@@ -173,7 +171,6 @@ export function createEditor() {
   }
 
   const addWidget = async (type: string, position?: { x: number; y: number }) => {
-
     // 强制触发 availableWidgets 计算
     // 如果初始化 Promise 还没有被解析，手动触发
     if (card2Integration.isLoading.value) {

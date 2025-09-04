@@ -191,8 +191,17 @@ const updateDataSourceConfiguration = (dataSourceKey: string) => {
         configurationManager.updateConfiguration(props.componentId, 'dataSource', currentDataSourceConfig)
       }
     }
-  } catch (error) {
-  }
+  } catch (error) {}
+}
+
+/**
+ * 处理抽屉关闭事件
+ */
+const handleRawDataModalClose = () => {
+  showRawDataModal.value = false
+  currentDataSourceKey.value = ''
+  isEditMode.value = false
+  editingItemId.value = ''
 }
 
 /**
@@ -285,8 +294,10 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
     case 'http':
       // 🔥 关键修复：优先使用完整的 httpConfigData，回退到基础配置
       // HTTP配置转换
+      console.log('🔍 [convertToStandardDataItem] 处理HTTP配置:', JSON.stringify(dataItemConfig, null, 2))
 
       if (dataItemConfig.httpConfigData) {
+        console.log('✅ [convertToStandardDataItem] 使用完整的httpConfigData分支')
         const httpConfigData = dataItemConfig.httpConfigData
 
         // 将HttpConfigData转换为标准DataItem格式，同时保留完整信息
@@ -315,6 +326,25 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
           config.params = httpConfigData.params.filter(p => p.enabled && p.key) // 只保存启用且有key的param
         }
 
+        // 🔥 关键修复：保存新增的HTTP配置字段
+        if (httpConfigData.addressType) {
+          config.addressType = httpConfigData.addressType
+        }
+        if (httpConfigData.selectedInternalAddress) {
+          config.selectedInternalAddress = httpConfigData.selectedInternalAddress
+        }
+        if (httpConfigData.enableParams !== undefined) {
+          config.enableParams = httpConfigData.enableParams
+        }
+        if (httpConfigData.pathParams && httpConfigData.pathParams.length > 0) {
+          config.pathParams = httpConfigData.pathParams
+        }
+        if (httpConfigData.pathParameter) {
+          // 🔥 调试：监听pathParameter传递
+          console.log('🔍 [SimpleConfigurationEditor] pathParameter传递:', JSON.stringify(httpConfigData.pathParameter, null, 2))
+          config.pathParameter = httpConfigData.pathParameter
+        }
+
         // 保存请求体
         if (httpConfigData.body) {
           config.body = httpConfigData.body
@@ -323,11 +353,9 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
         // 🔥 关键：保存脚本配置
         if (httpConfigData.preRequestScript) {
           config.preRequestScript = httpConfigData.preRequestScript
-        } else {
         }
         if (httpConfigData.postResponseScript) {
           config.postResponseScript = httpConfigData.postResponseScript
-        } else {
         }
 
         return {
@@ -335,6 +363,7 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
           config
         }
       } else {
+        console.log('❌ [convertToStandardDataItem] 使用旧的基础配置格式分支（数据可能丢失）')
         // 回退到旧的基础配置格式
         return {
           type: 'http',
@@ -455,8 +484,7 @@ const handleComponentPollingConfigChange = (pollingConfig: any) => {
 
     // 保存到配置管理器
     configurationManager.updateConfiguration(props.componentId, 'component', componentConfig)
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 /**
@@ -561,8 +589,7 @@ const handleDeleteDataItem = (dataSourceKey: string, itemId: string) => {
           configurationManager.updateConfiguration(props.componentId, 'dataSource', rebuiltConfig)
         }
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 }
 
@@ -612,8 +639,7 @@ const restoreDataItemsFromConfig = () => {
         }
       })
     }
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 /**
@@ -694,7 +720,14 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
 
           // 🔥 关键：恢复脚本配置
           preRequestScript: item.config.preRequestScript || '',
-          postResponseScript: item.config.postResponseScript || ''
+          postResponseScript: item.config.postResponseScript || '',
+          
+          // 🔥 重大修复：恢复地址类型相关字段（这是数据不一致的根本原因）
+          addressType: item.config.addressType || 'external',
+          selectedInternalAddress: item.config.selectedInternalAddress || '',
+          enableParams: item.config.enableParams || false,
+          pathParams: item.config.pathParams || [],
+          pathParameter: item.config.pathParameter
         }
       }
       break
@@ -711,7 +744,6 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
 
 // 组件挂载时恢复显示状态并设置集成
 onMounted(async () => {
-
   try {
     // 🔥 新架构：初始化配置集成桥接器
     await configurationManager.initialize()
@@ -730,13 +762,11 @@ onMounted(async () => {
 
     // 恢复显示状态
     restoreDataItemsFromConfig()
-
   } catch (error) {
     // 降级处理：即使配置管理器初始化失败，也尝试恢复显示状态
     try {
       restoreDataItemsFromConfig()
-    } catch (fallbackError) {
-    }
+    } catch (fallbackError) {}
   }
 })
 
@@ -1159,6 +1189,8 @@ defineExpose({
           :example-data="getCurrentDataSourceExampleData()"
           :use-drawer-mode="true"
           @confirm="handleDataItemConfirm"
+          @close="handleRawDataModalClose"
+          @cancel="handleRawDataModalClose"
           @update:show="() => {}"
         />
       </n-drawer-content>

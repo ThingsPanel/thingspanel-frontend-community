@@ -314,7 +314,6 @@ const targetComponentPropertyOptions = computed(() => {
     return []
   }
 
-
   // 获取该组件类型的可监听属性（作为可更新属性使用）
   const componentExposure = propertyExposureRegistry.getComponentExposure(targetComponent.type)
 
@@ -445,8 +444,6 @@ const initializeComplexValues = () => {
 
 // 事件处理函数
 const handleActionChange = () => {
-
-
   // 🔥 2个核心动作的默认值
   const defaultValues: Record<string, any> = {
     navigateToUrl: 'https://example.com',
@@ -454,7 +451,6 @@ const handleActionChange = () => {
   }
 
   localResponse.value.value = defaultValues[localResponse.value.action]
-
 
   // 🔥 简化版：重新初始化复合值
   initializeComplexValues()
@@ -491,8 +487,6 @@ const handleWindowFeaturesChange = () => {
 
 // 🔥 跨组件数据更新相关处理函数
 const handleTargetComponentChange = () => {
-
-
   localResponse.value.targetComponentId = targetComponentId.value
 
   // 清空之前选择的属性，因为不同组件的属性不同
@@ -685,8 +679,6 @@ const previewEffect = () => {
 
 // 发出更新事件
 const emitUpdate = () => {
-
-
   emit('update:modelValue', { ...localResponse.value })
   emit('update', { ...localResponse.value })
 }

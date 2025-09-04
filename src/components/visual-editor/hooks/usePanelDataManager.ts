@@ -75,8 +75,7 @@ export function usePanelDataManager(
             }
           }
         }
-      } catch (error) {
-      }
+      } catch (error) {}
     } else {
     }
   }
@@ -118,9 +117,7 @@ export function usePanelDataManager(
           }
         }
       }
-     
-    } catch (error) {
-    }
+    } catch (error) {}
 
     const finalState = {
       nodes: dependencies.stateManager.nodes,

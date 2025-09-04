@@ -703,7 +703,6 @@ const loadMenuOptions = async () => {
   try {
     const result = await fetchGetUserRoutes()
     if (result && result.data && result.data.list) {
-
       // 将路由数据转换为选项格式
       const flattened = flattenRoutes(result.data.list)
       menuOptions.value = flattened
@@ -728,7 +727,6 @@ const flattenRoutes = (routes: any[]): { label: string; value: string }[] => {
 
   // 递归处理函数
   const processRoute = (route: any, parentTitle = '') => {
-
     // 新数据结构：path 作为路径，meta.title 作为标题
     const path = route.path
     const title = route.meta?.title || route.meta?.i18nKey || route.name
@@ -739,7 +737,7 @@ const flattenRoutes = (routes: any[]): { label: string; value: string }[] => {
     if (path && title && !route.meta?.hideInMenu) {
       const option = { label: displayLabel, value: path }
       options.push(option)
-    } 
+    }
     // 递归处理所有子路由
     if (route.children && Array.isArray(route.children) && route.children.length > 0) {
       route.children.forEach(child => processRoute(child, displayLabel))

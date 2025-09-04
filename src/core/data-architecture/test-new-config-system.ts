@@ -17,7 +17,6 @@ import type { WidgetConfiguration } from '@/components/visual-editor/configurati
  * 测试配置内容哈希去重机制
  */
 async function testContentHashDeduplication() {
-
   const testComponentId = 'test-component-hash'
 
   // 初始化组件配置

@@ -720,9 +720,10 @@ class InteractionManager {
 
     // 根据条件类型进行判断
     switch (condition.operator) {
-      case 'equals':
+      case 'equals': {
         const result = String(valueToCheck) === String(condition.value)
         return result
+      }
 
       case 'notEquals':
         return String(valueToCheck) !== String(condition.value)

@@ -398,8 +398,7 @@ async function handleTemplateSelect(templateId: string | null) {
 
       await nextTick()
       performValidation()
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 }
 
@@ -464,8 +463,7 @@ function handleFormat() {
 
     localCode.value = formatted
     emit('update:code', formatted)
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 /**

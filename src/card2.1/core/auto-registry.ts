@@ -62,7 +62,9 @@ export class AutoRegistry {
             this.allComponents.push(definition)
           }
         }
-      } catch (error) {}
+      } catch {
+        // 忽略组件注册过程中的错误，继续处理其他组件
+      }
     }
     return registeredComponents
   }

@@ -99,8 +99,7 @@ const initializeWidgets = async () => {
   try {
     await testPermissionSystem()
     await card2Integration.initialize()
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 // 组件挂载时的初始化检查
@@ -196,8 +195,6 @@ const filteredWidgetTree = computed(() => {
 
 // --- Event Handlers ---
 const handleAddWidget = (widget: any) => {
-  
-
   if (!widget.type) {
     return
   }
@@ -207,8 +204,6 @@ const handleAddWidget = (widget: any) => {
 }
 
 const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
- 
-
   if (event.dataTransfer) {
     const dragData = { type: widget.type, source: widget.source || 'legacy' }
     event.dataTransfer.setData('application/json', JSON.stringify(dragData))

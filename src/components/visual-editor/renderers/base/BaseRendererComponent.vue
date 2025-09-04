@@ -178,8 +178,7 @@ const destroy = async () => {
     await onRendererDestroy()
     setState('destroyed')
     isInitialized.value = false
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 // 事件处理方法
@@ -301,6 +300,8 @@ defineExpose({
   position: relative;
   width: 100%;
   height: 100%;
+  /* 🔥 核心修复：基础渲染器容器设置最小高度 */
+  min-height: 600px;
   overflow: hidden;
   background-color: var(--n-body-color);
   transition: background-color 0.3s var(--n-bezier);

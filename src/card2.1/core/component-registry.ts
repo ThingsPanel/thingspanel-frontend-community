@@ -32,6 +32,7 @@ export class ComponentRegistry {
     const definition = this.definitions.get(componentType)
 
     if (!definition) {
+      // 未找到组件定义
     }
 
     return definition
@@ -153,7 +154,9 @@ export class ComponentRegistry {
     try {
       // 自动注册到属性暴露系统
       autoRegisterFromSettingConfig(settingConfig)
-    } catch (error) {}
+    } catch {
+      // 忽略设置配置注册错误
+    }
   }
 
   /**

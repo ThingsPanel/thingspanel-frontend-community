@@ -130,8 +130,7 @@ export class ConfigEventBus {
     if (handlerPromises.length > 0) {
       try {
         await Promise.allSettled(handlerPromises)
-      } catch (error) {
-      }
+      } catch (error) {}
     }
   }
 
@@ -147,7 +146,6 @@ export class ConfigEventBus {
     } else {
       this.globalFilters.splice(insertIndex, 0, filter)
     }
-
   }
 
   /**
@@ -242,7 +240,6 @@ export class ConfigEventBus {
       if (result instanceof Promise) {
         await result
       }
-
     } catch (error) {
       this.statistics.errors++
 
@@ -268,4 +265,3 @@ configEventBus.addEventFilter({
 if (typeof window !== 'undefined') {
   ;(window as any).configEventBus = configEventBus
 }
-

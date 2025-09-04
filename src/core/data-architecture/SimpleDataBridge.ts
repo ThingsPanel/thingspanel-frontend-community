@@ -115,7 +115,6 @@ export class SimpleDataBridge {
         const hasDataItems = this.hasValidDataItems(requirement)
 
         if (hasDataItems) {
-
           // 🔥 修复：如果缓存数据被 'complete' 包装，需要解包
           let finalData = cachedData
           if (cachedData && typeof cachedData === 'object' && 'complete' in cachedData) {
@@ -149,7 +148,6 @@ export class SimpleDataBridge {
       )
 
       if (executionResult.success && executionResult.componentData) {
-
         // 🆕 存储到数据仓库
         this.warehouse.storeComponentData(
           requirement.componentId,
@@ -271,12 +269,10 @@ export class SimpleDataBridge {
    * @param data 数据
    */
   private notifyDataUpdate(componentId: string, data: Record<string, any>): void {
-
     this.callbacks.forEach(callback => {
       try {
         callback(componentId, data)
-      } catch (error) {
-      }
+      } catch (error) {}
     })
   }
 

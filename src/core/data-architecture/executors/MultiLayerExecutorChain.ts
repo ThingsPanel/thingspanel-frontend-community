@@ -113,11 +113,11 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
       // 处理每个数据源
       for (const dataSourceConfig of config.dataSources) {
         // 🔥 性能优化：仅在调试模式输出详细日志
-    
+
         try {
           const sourceResult = await this.processDataSource(dataSourceConfig, executionState)
           // 🔥 性能优化：避免每次都进行JSON序列化
-      
+
           dataSourceResults.push(sourceResult)
         } catch (error) {
           dataSourceResults.push({

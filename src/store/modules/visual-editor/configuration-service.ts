@@ -189,7 +189,6 @@ export class ConfigurationService {
    * 设置运行时数据
    */
   setRuntimeData(widgetId: string, data: any): void {
-
     this.store.setRuntimeData(widgetId, data)
 
     // 触发运行时数据变更事件
@@ -403,7 +402,6 @@ export class ConfigurationService {
    * 处理数据源配置的副作用
    */
   private handleDataSourceSideEffects(widgetId: string, config: DataSourceConfiguration): void {
-
     // 如果是Card2.1组件，触发数据绑定更新
     if (this.store.card2Components.has(widgetId)) {
       this.store.updateDataBinding(widgetId)

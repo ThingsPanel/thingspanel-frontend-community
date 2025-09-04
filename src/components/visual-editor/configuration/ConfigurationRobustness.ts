@@ -358,8 +358,6 @@ if (import.meta.env.DEV) {
       }
 
       // 如果有不一致问题，提供修复选项
-   
-    } catch (error) {
-    }
+    } catch (error) {}
   }, 3000)
 }

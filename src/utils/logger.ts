@@ -55,9 +55,7 @@ export default class Logger {
    */
   private formatPrefix(level: string): string {
     const prefix = this.config.prefix || '[App]'
-    const timestamp = this.config.timestamp 
-      ? new Date().toLocaleTimeString() + ' -' 
-      : ''
+    const timestamp = this.config.timestamp ? new Date().toLocaleTimeString() + ' -' : ''
     const moduleInfo = this.moduleName ? `[${this.moduleName}]` : ''
     return `${prefix}${moduleInfo}[${level}] ${timestamp}`
   }
@@ -125,15 +123,14 @@ export default class Logger {
 }
 
 // 创建日志器工厂函数
-export const createLogger = (moduleName: string, config?: Partial<LoggerConfig>) => 
-  new Logger(moduleName, config)
+export const createLogger = (moduleName: string, config?: Partial<LoggerConfig>) => new Logger(moduleName, config)
 
 // 创建全局默认日志器
 export const logger = new Logger()
 
 // 为常用模块创建专用日志器
 export const dataSourceLogger = createLogger('DataSource')
-export const httpLogger = createLogger('HTTP') 
+export const httpLogger = createLogger('HTTP')
 export const componentLogger = createLogger('Component')
 export const visualEditorLogger = createLogger('VisualEditor')
 export const propertyBindingLogger = createLogger('PropertyBinding')

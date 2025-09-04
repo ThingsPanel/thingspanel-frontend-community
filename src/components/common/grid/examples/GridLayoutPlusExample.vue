@@ -180,8 +180,7 @@ const {
   config: gridConfig,
   enableHistory: true,
   autoSave: true,
-  onSave: layout => {
-  }
+  onSave: layout => {}
 })
 
 // 组件状态
@@ -275,8 +274,7 @@ const importLayout = (options: any) => {
 }
 
 // 事件处理
-const handleLayoutChange = (newLayout: GridLayoutPlusItem[]) => {
-}
+const handleLayoutChange = (newLayout: GridLayoutPlusItem[]) => {}
 
 const handleItemAdd = (item: GridLayoutPlusItem) => {
   message.success(`添加了项目: ${item.title || item.i}`)
@@ -290,11 +288,9 @@ const handleItemEdit = (item: GridLayoutPlusItem) => {
   message.info(`编辑项目: ${item.title || item.i}`)
 }
 
-const handleItemMove = (itemId: string, x: number, y: number) => {
-}
+const handleItemMove = (itemId: string, x: number, y: number) => {}
 
-const handleItemResize = (itemId: string, w: number, h: number) => {
-}
+const handleItemResize = (itemId: string, w: number, h: number) => {}
 
 const handleBreakpointChange = (breakpoint: string) => {
   message.info(`断点切换到: ${breakpoint}`)

@@ -168,9 +168,7 @@ watch(
   () => props.graphData.nodes,
   newNodes => {
     if (newNodes) {
-      newNodes.forEach(node => {
-       
-      })
+      newNodes.forEach(node => {})
     }
     layout.value = nodesToLayout(newNodes || [])
   },
@@ -308,6 +306,8 @@ const handleTitleUpdate = (nodeId: string, newTitle: string) => {
 .grid-layout-plus-wrapper-editor {
   width: 100%;
   height: 100%;
+  /* 🔥 核心修复：为网格区域设置最小高度，避免被压缩 */
+  min-height: 600px;
 }
 
 .grid-node-wrapper {

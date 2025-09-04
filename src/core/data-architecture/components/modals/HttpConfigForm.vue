@@ -219,13 +219,22 @@ const updateConfig = () => {
 
     // 保持向后兼容：设置pathParameter
     const firstParam = config.pathParams[0]
+    console.log('🔧 [HttpConfigForm] 转换pathParameter前:', JSON.stringify(firstParam, null, 2))
+    
     config.pathParameter = {
       value: firstParam.value,
-      isDynamic: firstParam.valueMode === 'property',
+      isDynamic: firstParam.valueMode === 'component' || firstParam.selectedTemplate === 'component-property-binding',
       dataType: firstParam.dataType,
       variableName: firstParam.variableName || '',
-      description: firstParam.description || ''
+      description: firstParam.description || '',
+      // 🔥 关键修复：保存完整的字段，确保DataItemFetcher能正确识别
+      selectedTemplate: firstParam.selectedTemplate,
+      defaultValue: firstParam.defaultValue,
+      key: firstParam.key,
+      enabled: firstParam.enabled
     }
+    
+    console.log('✅ [HttpConfigForm] 转换pathParameter后:', JSON.stringify(config.pathParameter, null, 2))
   } else {
     config.pathParameter = undefined
     config.pathParams = []
@@ -283,24 +292,35 @@ watch(
 )
 
 /**
- * 监听props变化同步到本地状态 - 添加防护机制
+ * 监听props变化同步到本地状态 - 改进防护机制
  */
 const syncPropsToLocal = (newValue: any) => {
-  if (!newValue || isUpdatingToParent) return
+  if (!newValue) return
+
+  // 🔥 改进：只在必要时阻止同步，允许正常的数据回显
+  if (isUpdatingToParent && !isUpdatingFromProps) {
+    return
+  }
 
   isUpdatingFromProps = true
 
   try {
-    // 基础配置同步
-    localConfig.url = newValue.url !== undefined ? newValue.url : localConfig.url
-    localConfig.method = newValue.method || 'GET'
-    localConfig.timeout = newValue.timeout || 10000
-    localConfig.addressType = newValue.addressType || 'external'
-    localConfig.selectedInternalAddress = newValue.selectedInternalAddress || ''
-    localConfig.pathParameter = newValue.pathParameter || undefined
-    localConfig.body = newValue.body !== undefined ? newValue.body : localConfig.body
-    localConfig.preRequestScript =
-      newValue.preRequestScript !== undefined ? newValue.preRequestScript : localConfig.preRequestScript
+    // 🔥 关键修复：优先保留现有值，只在新值明确提供时覆盖
+    if (newValue.url !== undefined) localConfig.url = newValue.url
+    if (newValue.method !== undefined) localConfig.method = newValue.method
+    if (newValue.timeout !== undefined) localConfig.timeout = newValue.timeout
+    
+    // 🔥 地址类型相关字段的完整同步，确保回显正确
+    if (newValue.addressType !== undefined) localConfig.addressType = newValue.addressType
+    if (newValue.selectedInternalAddress !== undefined) {
+      localConfig.selectedInternalAddress = newValue.selectedInternalAddress
+    }
+    if (newValue.enableParams !== undefined) localConfig.enableParams = newValue.enableParams
+    if (newValue.pathParameter !== undefined) localConfig.pathParameter = newValue.pathParameter
+    if (newValue.body !== undefined) localConfig.body = newValue.body
+    if (newValue.preRequestScript !== undefined) {
+      localConfig.preRequestScript = newValue.preRequestScript
+    }
 
     // 数组数据转换
     localConfig.headers = newValue.headers ? newValue.headers.map(convertHttpToEnhanced) : []
@@ -418,14 +438,18 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
 .tabs-section {
   flex: 1;
   min-height: 500px;
+  overflow: visible; /* 🔥 修复：确保下拉菜单不被外层容器裁剪 */
+  position: relative;
 }
 
 /* Tab内容样式调整 */
 .tabs-section :deep(.n-tab-pane) {
   min-height: 450px;
   max-height: 600px;
-  overflow-y: auto;
+  overflow-y: visible; /* 🔥 修复：改为visible避免下拉菜单被裁剪 */
   padding: 16px 0;
+  position: relative;
+  z-index: 1;
 }
 
 /* Tab标签样式 */

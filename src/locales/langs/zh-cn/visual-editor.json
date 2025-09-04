@@ -41,6 +41,8 @@
   "visualEditor.columns": "列数",
   "visualEditor.rowHeight": "行高",
   "visualEditor.margin": "间距",
+  "visualEditor.horizontalMargin": "水平间距",
+  "visualEditor.verticalMargin": "垂直间距",
   "visualEditor.draggable": "可拖拽",
   "visualEditor.resizable": "可调整大小",
   "visualEditor.staticGrid": "静态网格",
@@ -95,6 +97,7 @@
   "visualEditor.tooltips.zoomOutCanvas": "缩小画布",
   "visualEditor.tooltips.resetZoomLevel": "重置缩放级别",
   "visualEditor.tooltips.openSettings": "打开渲染器设置",
+  "visualEditor.configTip": "配置实时生效，无需手动保存",
 
   "config.global.title": "全局设置",
   "config.global.showWidgetTitles": "显示组件标题",

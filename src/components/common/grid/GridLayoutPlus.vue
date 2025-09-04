@@ -1,6 +1,7 @@
 <!--
   Grid Layout Plus 包装组件
   基于 grid-layout-plus 的企业级网格布局组件
+  重构版本：模块化架构，提升可维护性和性能
 -->
 <template>
   <div
@@ -11,119 +12,71 @@
       'show-grid': showGrid && !readonly
     }"
   >
-    <GridLayout
-      v-model:layout="internalLayout"
-      :col-num="config.colNum"
-      :row-height="config.rowHeight"
-      :is-draggable="!readonly && config.isDraggable && !config.staticGrid"
-      :is-resizable="!readonly && config.isResizable && !config.staticGrid"
-      :is-mirrored="config.isMirrored"
-      :auto-size="config.autoSize"
-      :vertical-compact="config.verticalCompact"
-      :margin="config.margin"
-      :use-css-transforms="config.useCssTransforms"
-      :responsive="config.responsive"
-      :breakpoints="config.breakpoints"
-      :cols="config.cols"
-      :prevent-collision="config.preventCollision"
-      :use-style-cursor="config.useStyleCursor"
-      :restore-on-drag="config.restoreOnDrag"
+    <!-- 网格核心组件 -->
+    <GridCore
+      ref="gridCoreRef"
+      :layout="layout"
+      :config="config"
+      :readonly="readonly"
+      :show-title="showTitle"
       @layout-created="handleLayoutCreated"
       @layout-before-mount="handleLayoutBeforeMount"
       @layout-mounted="handleLayoutMounted"
       @layout-updated="handleLayoutUpdated"
       @layout-ready="handleLayoutReady"
-      @update:layout="handleLayoutChange"
+      @layout-change="handleLayoutChange"
       @breakpoint-changed="handleBreakpointChanged"
       @container-resized="handleContainerResized"
       @item-resize="handleItemResize"
       @item-resized="handleItemResized"
       @item-move="handleItemMove"
       @item-moved="handleItemMoved"
+      @item-container-resized="handleItemContainerResized"
     >
-      <GridItem
-        v-for="item in internalLayout"
-        :key="item.i"
-        :x="item.x"
-        :y="item.y"
-        :w="item.w"
-        :h="item.h"
-        :i="item.i"
-        :min-w="item.minW"
-        :min-h="item.minH"
-        :max-w="item.maxW"
-        :max-h="item.maxH"
-        :is-draggable="!readonly && item.isDraggable !== false && !item.static"
-        :is-resizable="!readonly && item.isResizable !== false && !item.static"
-        :static="item.static"
-        :drag-ignore-from="item.dragIgnoreFrom"
-        :drag-allow-from="item.dragAllowFrom"
-        :resize-ignore-from="item.resizeIgnoreFrom"
-        :preserve-aspect-ratio="item.preserveAspectRatio"
-        :drag-option="item.dragOption"
-        :resize-option="item.resizeOption"
-        @resize="(i, newH, newW, newHPx, newWPx) => handleItemResize(i, newH, newW, newHPx, newWPx)"
-        @resized="(i, newH, newW, newHPx, newWPx) => handleItemResized(i, newH, newW, newHPx, newWPx)"
-        @move="(i, newX, newY) => handleItemMove(i, newX, newY)"
-        @moved="(i, newX, newY) => handleItemMoved(i, newX, newY)"
-        @container-resized="
-          (i, newH, newW, newHPx, newWPx) => handleItemContainerResized(i, newH, newW, newHPx, newWPx)
-        "
-      >
-        <!-- 渲染自定义组件 -->
-        <div class="grid-item-content" :class="item.className" :style="item.style">
-          <div v-if="!readonly && showTitle" class="grid-item-header">
-            <span class="grid-item-title">{{ getItemTitle(item) }}</span>
-          </div>
+      <template #default="{ item }">
+        <slot :item="item">
+          <!-- 默认内容会由 GridItemContent 处理 -->
+        </slot>
+      </template>
+    </GridCore>
 
-          <div class="grid-item-body">
-            <slot :item="item">
-              <!-- Default content if no slot is provided -->
-              <div class="default-item-content">
-                <div class="item-type">{{ item.type || '组件' }}</div>
-                <div class="item-id">{{ item.i }}</div>
-              </div>
-            </slot>
-          </div>
-        </div>
-      </GridItem>
-    </GridLayout>
-
-    <!-- 添加新项目的拖拽区域 -->
-    <div
-      v-if="!readonly && showDropZone"
-      class="drop-zone"
-      :class="{ dragging: isDragging }"
-      @dragenter="handleDragEnter"
-      @dragover="handleDragOver"
-      @dragleave="handleDragLeave"
+    <!-- 拖拽区域组件 -->
+    <GridDropZone
+      :readonly="readonly"
+      :show-drop-zone="showDropZone"
+      @drag-enter="handleDragEnter"
+      @drag-over="handleDragOver"
+      @drag-leave="handleDragLeave"
       @drop="handleDrop"
-    >
-      <div class="drop-hint">
-        <n-icon :size="24">
-          <AddOutline />
-        </n-icon>
-        <span>拖拽组件到此处添加</span>
-      </div>
-    </div>
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, shallowRef } from 'vue'
-import { GridLayout, GridItem } from 'grid-layout-plus'
-import { NIcon } from 'naive-ui'
-import { CreateOutline, TrashOutline, AddOutline } from '@vicons/ionicons5'
+/**
+ * Grid Layout Plus 主组件 - 重构版本
+ * 采用模块化架构，提升可维护性和性能
+ */
+
+import { ref, computed } from 'vue'
 import { useThemeStore } from '@/store/modules/theme'
+import { GridCore, GridDropZone } from './components'
 import type {
   GridLayoutPlusConfig,
   GridLayoutPlusItem,
   GridLayoutPlusEmits,
   GridLayoutPlusProps
 } from './gridLayoutPlusTypes'
+import { EXTENDED_GRID_LAYOUT_CONFIG, GridSizePresets, DEFAULT_GRID_LAYOUT_PLUS_CONFIG } from './gridLayoutPlusTypes'
+import { validateExtendedGridConfig, validateLargeGridPerformance, optimizeItemForLargeGrid } from './utils/validation'
 
 // Props
-interface Props extends GridLayoutPlusProps {}
+interface Props extends GridLayoutPlusProps {
+  /** 网格尺寸预设 */
+  gridSize?: 'mini' | 'standard' | 'large' | 'mega' | 'extended' | 'custom'
+  /** 自定义列数（当 gridSize 为 'custom' 时使用） */
+  customColumns?: number
+}
 
 const props = withDefaults(defineProps<Props>(), {
   layout: () => [],
@@ -131,7 +84,9 @@ const props = withDefaults(defineProps<Props>(), {
   showGrid: true,
   showDropZone: false,
   showTitle: false, // 默认不显示标题
-  config: () => ({})
+  config: () => ({}),
+  gridSize: 'standard', // 默认使用标准网格 (24列)
+  customColumns: 50
 })
 
 // Emits
@@ -142,60 +97,111 @@ const emit = defineEmits<Emits>()
 // Store
 const themeStore = useThemeStore()
 
-// State
-const internalLayout = shallowRef<GridLayoutPlusItem[]>([...props.layout])
-const isDragging = ref(false)
-const dragCounter = ref(0)
+// 组件引用
+const gridCoreRef = ref<InstanceType<typeof GridCore> | null>(null)
 
 // Computed
 const isDarkTheme = computed(() => themeStore.darkMode)
 
 const config = computed<GridLayoutPlusConfig>(() => {
-  const baseConfig = {
-    colNum: 12,
-    rowHeight: 100,
-    isDraggable: true,
-    isResizable: true,
-    isMirrored: false,
-    autoSize: true,
-    verticalCompact: true,
-    margin: [10, 10],
-    useCssTransforms: true,
-    responsive: false,
-    breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
-    cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
-    preventCollision: false,
-    useStyleCursor: true,
-    restoreOnDrag: false,
-    staticGrid: false,
-    ...props.config
+  // 根据 gridSize 选择基础配置
+  let baseConfig: GridLayoutPlusConfig
+
+  switch (props.gridSize) {
+    case 'mini':
+      baseConfig = {
+        ...DEFAULT_GRID_LAYOUT_PLUS_CONFIG,
+        ...GridSizePresets.MINI
+      }
+      break
+    case 'standard':
+      baseConfig = {
+        ...DEFAULT_GRID_LAYOUT_PLUS_CONFIG,
+        ...GridSizePresets.STANDARD
+      }
+      break
+    case 'large':
+      baseConfig = {
+        ...DEFAULT_GRID_LAYOUT_PLUS_CONFIG,
+        ...GridSizePresets.LARGE
+      }
+      break
+    case 'mega':
+      baseConfig = {
+        ...EXTENDED_GRID_LAYOUT_CONFIG,
+        ...GridSizePresets.MEGA
+      }
+      break
+    case 'extended':
+      baseConfig = { ...EXTENDED_GRID_LAYOUT_CONFIG }
+      break
+    case 'custom':
+      baseConfig = {
+        ...EXTENDED_GRID_LAYOUT_CONFIG,
+        ...GridSizePresets.CUSTOM(props.customColumns || 50)
+      }
+      break
+    default:
+      baseConfig = { ...DEFAULT_GRID_LAYOUT_PLUS_CONFIG }
   }
 
-  return baseConfig
+  // 合并用户自定义配置
+  return {
+    ...baseConfig,
+    ...props.config
+  }
 })
 
-// Methods
-const getItemTitle = (item: GridLayoutPlusItem): string => {
-  return item.title || item.type || `项目 ${item.i}`
-}
+// 网格验证和性能监控
+const gridValidation = computed(() => {
+  const colNum = config.value.colNum
 
+  // 验证扩展网格配置
+  const configValidation = validateExtendedGridConfig(colNum)
+  if (!configValidation.success) {
+    console.warn('Grid configuration validation failed:', configValidation.message)
+  }
+
+  // 大网格性能验证
+  const performanceCheck = validateLargeGridPerformance(props.layout, colNum)
+  if (performanceCheck.success && (performanceCheck.data?.warning || performanceCheck.data?.recommendation)) {
+    console.warn('Grid performance warning:', performanceCheck.data.warning)
+    console.info('Grid performance recommendation:', performanceCheck.data.recommendation)
+  }
+
+  return {
+    isValid: configValidation.success,
+    colNum,
+    performance: performanceCheck.data
+  }
+})
+
+// 业务方法
 const handleItemEdit = (item: GridLayoutPlusItem) => {
   emit('item-edit', item)
 }
 
 const handleItemDelete = (item: GridLayoutPlusItem) => {
-  const index = internalLayout.value.findIndex(i => i.i === item.i)
-  if (index > -1) {
-    internalLayout.value.splice(index, 1)
-    emit('item-delete', item.i)
+  // 通过 GridCore 组件处理删除逻辑
+  const coreLayout = gridCoreRef.value?.internalLayout
+  if (coreLayout) {
+    const index = coreLayout.findIndex(i => i.i === item.i)
+    if (index > -1) {
+      coreLayout.splice(index, 1)
+      emit('item-delete', item.i)
+    }
   }
 }
 
 const handleItemDataUpdate = (itemId: string, data: any) => {
-  const item = internalLayout.value.find(i => i.i === itemId)
-  if (item) {
-    item.data = { ...item.data, ...data }
-    emit('item-data-update', itemId, data)
+  // 通过 GridCore 组件处理数据更新
+  const coreLayout = gridCoreRef.value?.internalLayout
+  if (coreLayout) {
+    const item = coreLayout.find(i => i.i === itemId)
+    if (item) {
+      item.data = { ...item.data, ...data }
+      emit('item-data-update', itemId, data)
+    }
   }
 }
 
@@ -221,22 +227,17 @@ const handleLayoutReady = (newLayout: GridLayoutPlusItem[]) => {
 }
 
 const handleLayoutChange = (newLayout: GridLayoutPlusItem[]) => {
-  // 避免循环更新：仅当布局实际发生变化时才更新
-  // 使用JSON.stringify进行深比较，确保内容变更也能被检测到
-  const hasChanged = JSON.stringify(internalLayout.value) !== JSON.stringify(newLayout)
-  if (hasChanged) {
-    internalLayout.value = [...newLayout] // 创建新数组以触发shallowRef更新
-    emit('layout-change', newLayout)
-    emit('update:layout', newLayout)
-  }
+  // 由 GridCore 组件处理布局变化，主组件只负责转发事件
+  emit('layout-change', newLayout)
+  emit('update:layout', newLayout)
 }
 
 const handleBreakpointChanged = (newBreakpoint: string, newLayout: GridLayoutPlusItem[]) => {
   emit('breakpoint-changed', newBreakpoint, newLayout)
 }
 
-const handleContainerResized = (i: string, newH: number, newW: number, newHPx: number, newWPx: number) => {
-  emit('container-resized', i, newH, newW, newHPx, newWPx)
+const handleContainerResized = (width: number, height: number, cols: number) => {
+  emit('container-resized', width, height, cols)
 }
 
 const handleItemResize = (i: string, newH: number, newW: number, newHPx: number, newWPx: number) => {
@@ -259,38 +260,32 @@ const handleItemContainerResized = (i: string, newH: number, newW: number, newHP
   emit('item-container-resized', i, newH, newW, newHPx, newWPx)
 }
 
-// 拖拽事件处理
+// 拖拽事件处理 - 委托给 GridDropZone 组件
 const handleDragEnter = (e: DragEvent) => {
-  e.preventDefault()
-  dragCounter.value++
-  isDragging.value = true
+  emit('drag-enter', e)
 }
 
 const handleDragOver = (e: DragEvent) => {
-  e.preventDefault()
+  emit('drag-over', e)
 }
 
 const handleDragLeave = (e: DragEvent) => {
-  e.preventDefault()
-  dragCounter.value--
-  if (dragCounter.value === 0) {
-    isDragging.value = false
-  }
+  emit('drag-leave', e)
 }
 
 const handleDrop = (e: DragEvent) => {
-  e.preventDefault()
-  isDragging.value = false
-  dragCounter.value = 0
-
   const componentType = e.dataTransfer?.getData('text/plain')
   if (componentType) {
     addItem(componentType)
   }
+  emit('drop', e)
 }
 
-// API Methods
+// API 方法 - 通过 GridCore 组件实现
 const addItem = (type: string, options?: Partial<GridLayoutPlusItem>) => {
+  const coreLayout = gridCoreRef.value?.internalLayout
+  if (!coreLayout) return null
+
   const newItem: GridLayoutPlusItem = {
     i: generateId(),
     x: 0,
@@ -306,16 +301,18 @@ const addItem = (type: string, options?: Partial<GridLayoutPlusItem>) => {
   newItem.x = position.x
   newItem.y = position.y
 
-  internalLayout.value.push(newItem)
+  coreLayout.push(newItem)
   emit('item-add', newItem)
-
   return newItem
 }
 
 const removeItem = (itemId: string) => {
-  const index = internalLayout.value.findIndex(item => item.i === itemId)
+  const coreLayout = gridCoreRef.value?.internalLayout
+  if (!coreLayout) return null
+
+  const index = coreLayout.findIndex(item => item.i === itemId)
   if (index > -1) {
-    const removedItem = internalLayout.value.splice(index, 1)[0]
+    const removedItem = coreLayout.splice(index, 1)[0]
     emit('item-delete', itemId)
     return removedItem
   }
@@ -323,7 +320,10 @@ const removeItem = (itemId: string) => {
 }
 
 const updateItem = (itemId: string, updates: Partial<GridLayoutPlusItem>) => {
-  const item = internalLayout.value.find(i => i.i === itemId)
+  const coreLayout = gridCoreRef.value?.internalLayout
+  if (!coreLayout) return null
+
+  const item = coreLayout.find(i => i.i === itemId)
   if (item) {
     Object.assign(item, updates)
     emit('item-update', itemId, updates)
@@ -333,17 +333,20 @@ const updateItem = (itemId: string, updates: Partial<GridLayoutPlusItem>) => {
 }
 
 const clearLayout = () => {
-  internalLayout.value = []
-  emit('layout-change', [])
-  emit('update:layout', [])
+  const coreLayout = gridCoreRef.value?.internalLayout
+  if (coreLayout) {
+    coreLayout.splice(0)
+    emit('layout-change', [])
+    emit('update:layout', [])
+  }
 }
 
 const getItem = (itemId: string) => {
-  return internalLayout.value.find(item => item.i === itemId)
+  return gridCoreRef.value?.internalLayout?.find(item => item.i === itemId) || null
 }
 
 const getAllItems = () => {
-  return [...internalLayout.value]
+  return gridCoreRef.value?.internalLayout ? [...gridCoreRef.value.internalLayout] : []
 }
 
 // 工具函数
@@ -353,9 +356,9 @@ const generateId = (): string => {
 
 const findAvailablePosition = (w: number, h: number): { x: number; y: number } => {
   const colNum = config.value.colNum
-  const layout = internalLayout.value
+  const layout = gridCoreRef.value?.internalLayout || []
 
-  // 简单的位置查找算法
+  // 简化的位置查找算法
   for (let y = 0; y < 100; y++) {
     for (let x = 0; x <= colNum - w; x++) {
       const proposed = { x, y, w, h }
@@ -379,20 +382,27 @@ const findAvailablePosition = (w: number, h: number): { x: number; y: number } =
   return { x: 0, y: 0 }
 }
 
-// Watchers
-watch(
-  () => props.layout,
-  newLayout => {
-    // 避免重复更新：只有当外部layout与内部layout不同时才更新
-    const hasChanged = JSON.stringify(internalLayout.value) !== JSON.stringify(newLayout)
-    if (hasChanged) {
-      internalLayout.value = [...newLayout]
-    }
-  },
-  { deep: true }
-)
+// 🔥 新增：网格优化方法
+const optimizeLayoutForGridSize = (targetCols?: number, sourceCols?: number) => {
+  const coreLayout = gridCoreRef.value?.internalLayout
+  if (!coreLayout) return
 
-// 暴露方法
+  const targetColumns = targetCols || config.value.colNum
+  const sourceColumns = sourceCols || 12 // 默认从12列优化
+
+  // 优化每个网格项
+  coreLayout.forEach(item => {
+    const optimized = optimizeItemForLargeGrid(item, targetColumns, sourceColumns)
+    Object.assign(item, optimized)
+  })
+
+  emit('layout-change', [...coreLayout])
+  emit('update:layout', [...coreLayout])
+}
+
+// 布局数据监听已移至 GridCore 组件处理
+
+// 暴露 API 方法给父组件
 defineExpose({
   addItem,
   removeItem,
@@ -400,7 +410,17 @@ defineExpose({
   clearLayout,
   getItem,
   getAllItems,
-  getLayout: () => internalLayout.value
+  getLayout: () => gridCoreRef.value?.internalLayout || [],
+  // 🔥 新增：网格扩展相关API
+  getGridInfo: () => ({
+    colNum: config.value.colNum,
+    gridSize: props.gridSize,
+    validation: gridValidation.value
+  }),
+  optimizeLayoutForGridSize,
+  getGridValidation: () => gridValidation.value,
+  // 暴露子组件引用以便高级操作
+  gridCore: gridCoreRef
 })
 </script>
 

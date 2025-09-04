@@ -530,8 +530,7 @@ const importCustomTemplate = () => {
 const saveUserTemplates = () => {
   try {
     localStorage.setItem('interaction-user-templates', JSON.stringify(userTemplates.value))
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 // 加载用户模板从localStorage
@@ -541,8 +540,7 @@ const loadUserTemplates = () => {
     if (saved) {
       userTemplates.value = JSON.parse(saved)
     }
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 // 组件挂载时加载用户模板

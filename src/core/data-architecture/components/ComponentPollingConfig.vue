@@ -148,8 +148,7 @@ watch(
 /**
  * 组件挂载时初始化调试
  */
-onMounted(() => {
-})
+onMounted(() => {})
 </script>
 
 <template>

@@ -176,6 +176,55 @@ export const DEFAULT_GRID_LAYOUT_PLUS_CONFIG: GridLayoutPlusConfig = {
   restoreOnDrag: false
 }
 
+// 🔥 新增：超大网格配置（支持0-99列）
+export const EXTENDED_GRID_LAYOUT_CONFIG: GridLayoutPlusConfig = {
+  colNum: 50, // 默认50列，平衡性能和灵活性
+  rowHeight: 40, // 减少行高以适应更多内容
+  isDraggable: true,
+  isResizable: true,
+  isMirrored: false,
+  autoSize: true,
+  verticalCompact: true,
+  margin: [5, 5], // 减少边距以节省空间
+  useCssTransforms: true,
+  responsive: true, // 启用响应式以适应不同屏幕
+  breakpoints: {
+    xxl: 2560, // 4K显示器
+    xl: 1920, // 大屏显示器
+    lg: 1200, // 桌面
+    md: 996, // 小桌面
+    sm: 768, // 平板
+    xs: 480, // 手机横屏
+    xxs: 0 // 手机竖屏
+  },
+  cols: {
+    xxl: 99, // 4K下支持最大99列
+    xl: 80, // 大屏80列
+    lg: 50, // 桌面50列
+    md: 30, // 小桌面30列
+    sm: 20, // 平板20列
+    xs: 10, // 手机横屏10列
+    xxs: 5 // 手机竖屏5列
+  },
+  preventCollision: false,
+  useStyleCursor: true,
+  restoreOnDrag: false
+}
+
+// 🔥 超大网格工具函数
+export const GridSizePresets = {
+  MINI: { colNum: 12, rowHeight: 100, margin: [10, 10] }, // 12列 - 标准小网格
+  STANDARD: { colNum: 24, rowHeight: 60, margin: [8, 8] }, // 24列 - 标准网格
+  LARGE: { colNum: 50, rowHeight: 40, margin: [5, 5] }, // 50列 - 大网格
+  MEGA: { colNum: 99, rowHeight: 20, margin: [2, 2] }, // 99列 - 超大网格
+  CUSTOM: (cols: number) => ({
+    // 自定义列数
+    colNum: Math.max(1, Math.min(99, cols)), // 限制1-99列
+    rowHeight: Math.max(20, 100 - cols), // 动态调整行高
+    margin: [Math.max(2, 10 - Math.floor(cols / 10)), Math.max(2, 10 - Math.floor(cols / 10))] // 动态调整边距
+  })
+}
+
 // 组件Props
 export interface GridLayoutPlusProps {
   /** 布局数据 */

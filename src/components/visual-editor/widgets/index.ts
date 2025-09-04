@@ -14,8 +14,7 @@ import { registerBaseWidgets } from './base-widgets'
  * @param includeBaseWidgets 是否包含基础组件，默认为false
  */
 export function registerAllWidgets(includeBaseWidgets: boolean = false) {
-
   if (includeBaseWidgets) {
     registerBaseWidgets()
-  } 
+  }
 }

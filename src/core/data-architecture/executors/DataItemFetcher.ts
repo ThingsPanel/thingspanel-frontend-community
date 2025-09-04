@@ -42,12 +42,21 @@ export interface HttpDataItemConfig {
   headers?: Record<string, string>
   body?: any
   timeout?: number
-  // 简化的路径参数
+  
+  // 🔥 新增：地址类型支持
+  addressType?: 'internal' | 'external'
+  selectedInternalAddress?: string
+  enableParams?: boolean
+  
+  // 路径参数支持
   pathParameter?: PathParameter
+  pathParams?: HttpParameter[]
+  
   // 扩展支持新的 HttpConfig 格式
   params?: HttpParameter[]
   // 向后兼容：统一参数系统
   parameters?: HttpParameter[]
+  
   // 🔥 新增：脚本支持
   preRequestScript?: string
   postResponseScript?: string
@@ -90,28 +99,44 @@ export class DataItemFetcher implements IDataItemFetcher {
    */
   private getComponentPropertyValue(bindingPath: string): any {
     try {
+      console.log('🔥 [DataItemFetcher] 解析属性绑定路径:', bindingPath)
+      
       if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
+        console.log('❌ [属性绑定] 非法绑定路径:', bindingPath)
         return undefined
       }
 
       const parts = bindingPath.split('.')
       const componentId = parts[0]
       const propertyPath = parts.slice(1).join('.')
+      
+      console.log('🕵️ [属性绑定] 组件ID:', componentId, '属性路径:', propertyPath)
 
       // 获取编辑器store实例
       const editorStore = useEditorStore()
+      console.log('🏨 [编辑器Store] 组件节点数量:', editorStore.nodes?.length || 0)
+      
+      if (editorStore.nodes?.length) {
+        console.log('📌 [编辑器Store] 组件ID列表:', editorStore.nodes.map(n => n.id))
+      }
 
       // 查找目标组件实例
       const targetComponent = editorStore.nodes?.find(node => node.id === componentId)
       if (!targetComponent) {
+        console.log('❌ [属性绑定] 未找到组件:', componentId)
         return undefined
       }
+      
+      console.log('✅ [属性绑定] 找到目标组件:', targetComponent.id, '属性结构:', targetComponent.properties)
 
       // 从组件properties中获取属性值
       const propertyValue = this.getNestedProperty(targetComponent.properties, propertyPath)
+      
+      console.log('🎯 [属性绑定] 解析结果:', propertyValue)
 
       return propertyValue
     } catch (error) {
+      console.error('❌ [属性绑定] 解析错误:', error)
       return undefined
     }
   }
@@ -145,16 +170,30 @@ export class DataItemFetcher implements IDataItemFetcher {
    * @returns 解析后的参数值
    */
   private resolveParameterValue(param: HttpParameter): any {
+    console.log('🔧 [参数解析] 开始解析参数:', {
+      key: param.key,
+      value: param.value,
+      selectedTemplate: param.selectedTemplate,
+      defaultValue: param.defaultValue,
+      dataType: param.dataType
+    })
+    
     let resolvedValue = param.value
 
     // 如果是组件属性绑定，需要从组件实例中获取实际值
     if (param.selectedTemplate === 'component-property-binding' && typeof param.value === 'string') {
+      console.log('🔗 [参数解析] 检测到属性绑定，将解析绑定路径:', param.value)
+      
       const actualValue = this.getComponentPropertyValue(param.value)
+      console.log('📝 [参数解析] 绑定解析结果:', actualValue)
+      
       if (actualValue !== undefined && actualValue !== null && actualValue !== '') {
         resolvedValue = actualValue
+        console.log('✅ [参数解析] 使用绑定值:', resolvedValue)
       } else {
         // 当组件属性值为空时，设置 resolvedValue 为 undefined，触发默认值机制
         resolvedValue = undefined
+        console.log('⚠️ [参数解析] 绑定值为空，将使用默认值机制')
       }
     }
 
@@ -165,17 +204,22 @@ export class DataItemFetcher implements IDataItemFetcher {
       resolvedValue === '' ||
       (typeof resolvedValue === 'string' && resolvedValue.trim() === '')
 
+    console.log('🚨 [参数解析] isEmpty检查:', isEmpty, '当前值:', resolvedValue)
+
     if (isEmpty) {
       // 如果有默认值，使用默认值
       if (param.defaultValue !== undefined && param.defaultValue !== null) {
         resolvedValue = param.defaultValue
+        console.log('🔄 [参数解析] 使用默认值:', resolvedValue)
       } else {
+        console.log('❌ [参数解析] 无默认值，跳过此参数')
         return null // 返回null表示跳过此参数
       }
     }
 
     // 转换数据类型
     const convertedValue = convertValue(resolvedValue, param.dataType)
+    console.log('🎯 [参数解析] 最终结果:', convertedValue)
 
     return convertedValue
   }
@@ -231,6 +275,8 @@ export class DataItemFetcher implements IDataItemFetcher {
    * @returns Promise<any> HTTP响应数据，失败时返回空对象
    */
   private async fetchHttpData(config: HttpDataItemConfig): Promise<any> {
+    // 🔥 调试：完整打印配置对象
+    console.log('🔍 [HTTP请求] 完整配置对象:', JSON.stringify(config, null, 2))
     try {
       // 第一步：处理请求前脚本
       if (config.preRequestScript) {
@@ -239,8 +285,7 @@ export class DataItemFetcher implements IDataItemFetcher {
           if (scriptResult.success && scriptResult.data) {
             Object.assign(config, scriptResult.data)
           }
-        } catch (error) {
-        }
+        } catch (error) {}
       }
 
       // 构建请求参数
@@ -257,13 +302,54 @@ export class DataItemFetcher implements IDataItemFetcher {
       let finalUrl = config.url
       const queryParams: Record<string, any> = {}
 
-      // 处理路径参数
-      if (config.pathParameter) {
+      // 🔥 修复重复处理问题：统一处理路径参数
+      console.log('🔗 [HTTP请求] 开始处理路径参数...', {
+        pathParameter: config.pathParameter,
+        pathParams: config.pathParams,
+        pathParamsLength: config.pathParams?.length || 0
+      })
+      
+      // 优先使用新格式 pathParams，如果不存在则回退到旧格式 pathParameter
+      if (config.pathParams && config.pathParams.length > 0) {
+        console.log('🆕 [HTTP请求] 使用新格式 pathParams 数组')
+        config.pathParams
+          .filter(p => p.enabled && p.key)
+          .forEach(p => {
+            const resolvedValue = this.resolveParameterValue(p)
+            if (resolvedValue !== null) {
+              // 对于路径参数，优先替换URL中的占位符
+              const placeholder = `{${p.key}}`
+              if (finalUrl.includes(placeholder)) {
+                finalUrl = finalUrl.replace(placeholder, String(resolvedValue))
+                console.log(`✅ [HTTP请求] 替换占位符 ${placeholder} -> ${resolvedValue}`)
+              } else {
+                // 如果没有找到对应占位符，说明可能是配置问题，记录日志但不强制替换
+                console.log(`⚠️ [HTTP请求] pathParams未找到占位符 {${p.key}}，URL保持不变: ${finalUrl}`)
+              }
+            }
+          })
+      } else if (config.pathParameter) {
+        console.log('🔄 [HTTP请求] 使用旧格式 pathParameter')
         const resolvedValue = this.resolveParameterValue(config.pathParameter as HttpParameter)
-        if (resolvedValue !== null) {
-          finalUrl = finalUrl + resolvedValue
+        if (resolvedValue !== null && resolvedValue && String(resolvedValue).trim() !== '') {
+          // 🔥 修复占位符替换逻辑：标准的占位符替换
+          const pathParam = config.pathParameter as HttpParameter
+          const placeholder = pathParam.key ? `{${pathParam.key}}` : '{id}'
+          
+          console.log(`🔍 [HTTP请求] 查找占位符: ${placeholder}, URL: ${finalUrl}`)
+          
+          if (finalUrl.includes(placeholder)) {
+            // 找到占位符，进行替换
+            finalUrl = finalUrl.replace(placeholder, String(resolvedValue))
+            console.log(`✅ [HTTP请求] 占位符替换成功: ${placeholder} -> ${resolvedValue}`)
+          } else {
+            // 如果没找到占位符，说明配置可能有问题，记录警告
+            console.log(`⚠️ [HTTP请求] pathParameter未找到占位符 ${placeholder}，URL保持不变: ${finalUrl}`)
+          }
         }
       }
+      
+      console.log('🎯 [HTTP请求] 路径参数处理后的URL:', finalUrl)
 
       // 处理查询参数
       if (config.params && config.params.length > 0) {
@@ -286,7 +372,12 @@ export class DataItemFetcher implements IDataItemFetcher {
             if (resolvedValue !== null) {
               switch (p.paramType) {
                 case 'path':
-                  finalUrl = finalUrl + resolvedValue
+                  // 🔥 修复：路径参数的拼接逻辑，避免直接字符串拼接
+                  if (resolvedValue && String(resolvedValue).trim() !== '') {
+                    const separator = finalUrl.endsWith('/') ? '' : '/'
+                    finalUrl = finalUrl + separator + String(resolvedValue)
+                    console.log(`🔗 [统一参数] 拼接路径参数: ${separator}${resolvedValue}`)
+                  }
                   break
                 case 'query':
                   queryParams[p.key] = resolvedValue
@@ -344,8 +435,7 @@ export class DataItemFetcher implements IDataItemFetcher {
           if (scriptResult.success) {
             finalResponse = scriptResult.data !== undefined ? scriptResult.data : response
           }
-        } catch (error) {
-        }
+        } catch (error) {}
       }
 
       return finalResponse

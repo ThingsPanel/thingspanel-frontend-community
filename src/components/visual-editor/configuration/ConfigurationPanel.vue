@@ -75,9 +75,7 @@
 
           <!-- 数据源配置特殊处理 -->
           <template v-else-if="layer.name === 'dataSource'">
-            <div
-              class="data-source-config"
-            >
+            <div class="data-source-config">
               <!-- 使用现有的数据源配置组件 -->
               <!-- 🔄 使用v-model双向绑定取代手动事件处理 -->
               <component
@@ -268,7 +266,6 @@ const dataSourceConfig = computed<DataSourceConfiguration | null>({
     return config?.dataSource || null
   },
   set: value => {
-
     // 🚨 防止循环更新：如果正在从ConfigurationManager更新，不再同步回去
     if (isUpdatingFromManager) {
       return
@@ -526,7 +523,6 @@ const enrichedDataSources = computed(() => {
  * 优先级：fieldMappings.defaultValue > 组件config中的默认数据 > 通用示例
  */
 function extractExampleDataFromDefinition(dataSource: any) {
-
   // 1. 从 fieldMappings 的 defaultValue 构建示例数据
   if (dataSource.fieldMappings) {
     const exampleFromMappings: Record<string, any> = {}
@@ -715,8 +711,7 @@ const syncConfigurationToManager = async () => {
     }
 
     configurationManager.setConfiguration(props.selectedWidget.id, config)
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 /**
@@ -1028,7 +1023,6 @@ watch(
 
 // 🚨 移除标签页切换时的配置重载，避免循环依赖
 // 配置的加载应该由组件选择变化触发，而不是标签页切换
-
 </script>
 
 <style scoped>
