@@ -136,7 +136,7 @@ const toServiceClick = () => {
       </n-descriptions-item>
     </n-descriptions>
 
-    <NCard v-if="deviceDataStore?.deviceData?.access_way !== 'B'" :title="$t('generate.credential')" class="mb-6 mt-6">
+    <NCard v-if="deviceDataStore?.deviceData?.access_way !== 'B'"  class="mb-6 mt-6">
       <NForm ref="formRef" :rules="formRules" :model="formData">
         <template v-for="element in formElements" :key="element.dataKey">
           <div v-if="element.type === 'input'" class="form-item">
@@ -173,7 +173,7 @@ const toServiceClick = () => {
       </NForm>
     </NCard>
     <n-scrollbar v-if="deviceDataStore?.deviceData?.access_way !== 'B'" class="h-400px">
-      <NCard :title="$t('custom.devicePage.connectInfo')">
+      <NCard>
         <NDescriptions :column="1">
           <NDescriptionsItem v-for="(value, key, index) in connectInfo" :key="key" :index="index" :label="key">
             <span :id="index.toString()" class="font-600" @click="copy(index)">{{ value }}</span>
