@@ -34,7 +34,7 @@ interface Props {
 }
 
 /**
- * 组件事件接口  
+ * 组件事件接口
  */
 interface Emits {
   // 配置变更事件
@@ -123,16 +123,8 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
 
 <template>
   <Transition name="dropdown-fade">
-    <div 
-      v-if="show" 
-      class="config-dropdown"
-      @click.stop
-    >
-      <NCard 
-        class="config-panel"
-        :bordered="true"
-        size="small"
-      >
+    <div v-if="show" class="config-dropdown" @click.stop>
+      <NCard class="config-panel" :bordered="true" size="small">
         <!-- Canvas 配置 -->
         <div v-if="isCanvasRenderer" class="config-section">
           <h4 class="section-title">{{ $t('visualEditor.canvasConfig') }}</h4>
@@ -148,7 +140,7 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
                 @update:value="value => handleCanvasConfigChange({ ...canvasConfig, width: value })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.canvasHeight')">
               <NInputNumber
                 :value="canvasConfig.height"
@@ -160,7 +152,7 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
                 @update:value="value => handleCanvasConfigChange({ ...canvasConfig, height: value })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.showGrid')">
               <NSwitch
                 :value="canvasConfig.showGrid"
@@ -168,7 +160,7 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
                 @update:value="value => handleCanvasConfigChange({ ...canvasConfig, showGrid: value })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.backgroundColor')">
               <NColorPicker
                 :value="canvasConfig.backgroundColor"
@@ -192,7 +184,7 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
                 @update:value="value => handleGridstackConfigChange({ ...gridstackConfig, colNum: value })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="`${$t('visualEditor.rowHeight')} ${gridstackConfig.rowHeight}px`">
               <NSlider
                 :value="gridstackConfig.rowHeight"
@@ -211,10 +203,13 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
                 :max="50"
                 :step="2"
                 style="width: 120px"
-                @update:value="value => handleGridstackConfigChange({ ...gridstackConfig, margin: [value, gridstackConfig.margin[1]] })"
+                @update:value="
+                  value =>
+                    handleGridstackConfigChange({ ...gridstackConfig, margin: [value, gridstackConfig.margin[1]] })
+                "
               />
             </NFormItem>
-            
+
             <NFormItem :label="`${$t('visualEditor.verticalMargin')} ${gridstackConfig.margin[1]}px`">
               <NSlider
                 :value="gridstackConfig.margin[1]"
@@ -222,7 +217,10 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
                 :max="50"
                 :step="2"
                 style="width: 120px"
-                @update:value="value => handleGridstackConfigChange({ ...gridstackConfig, margin: [gridstackConfig.margin[0], value] })"
+                @update:value="
+                  value =>
+                    handleGridstackConfigChange({ ...gridstackConfig, margin: [gridstackConfig.margin[0], value] })
+                "
               />
             </NFormItem>
 
@@ -233,7 +231,7 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
                 @update:value="value => handleGridstackConfigChange({ ...gridstackConfig, isDraggable: value })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.resizable')">
               <NSwitch
                 :value="gridstackConfig.isResizable"
@@ -257,7 +255,7 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
                 @update:value="value => handleVisualizationConfigChange({ ...visualizationConfig, theme: value })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.animation')">
               <NSwitch
                 :value="visualizationConfig.animation"
@@ -288,7 +286,7 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
 .config-panel {
   /* 78%透明背景 */
   background: rgba(255, 255, 255, 0.78) !important;
-  
+
   /* 阴影和边框 */
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
   border: 1px solid var(--border-color) !important;
@@ -310,7 +308,7 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
   opacity: 0.9;
 }
 
-[data-theme="dark"] .section-title {
+[data-theme='dark'] .section-title {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -349,19 +347,19 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
     min-width: auto;
     max-width: none;
   }
-  
+
   .form-row {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .form-row .n-form-item {
     width: 100%;
   }
 }
 
 /* 🌙 深色主题适配 - 78%透明 */
-[data-theme="dark"] .config-panel {
+[data-theme='dark'] .config-panel {
   background: rgba(42, 42, 45, 0.78) !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
 }

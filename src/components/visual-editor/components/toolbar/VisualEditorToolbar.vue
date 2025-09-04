@@ -4,17 +4,7 @@
 -->
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
-import {
-  NModal,
-  useThemeVars,
-  NSpace,
-  NButton,
-  NSelect,
-  NDivider,
-  NPopconfirm,
-  NTooltip,
-  useMessage
-} from 'naive-ui'
+import { NModal, useThemeVars, NSpace, NButton, NSelect, NDivider, NPopconfirm, NTooltip, useMessage } from 'naive-ui'
 import CommonToolbar from './CommonToolbar.vue'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
@@ -184,15 +174,14 @@ const handleClickOutside = (event: Event) => {
     const target = event.target as HTMLElement
     const dropdown = document.querySelector('.config-dropdown')
     const button = document.querySelector('[data-config-button]')
-    
+
     // 检查点击是否在下拉菜单内（Naive UI的下拉菜单通常有n-select-menu类）
-    const isInDropdownMenu = target.closest('.n-select-menu, .n-color-picker-panel, .n-popover, .v-binder-follower-container')
-    
+    const isInDropdownMenu = target.closest(
+      '.n-select-menu, .n-color-picker-panel, .n-popover, .v-binder-follower-container'
+    )
+
     // 只有当点击真正在外部时才关闭
-    if (dropdown && button && 
-        !dropdown.contains(target) && 
-        !button.contains(target) &&
-        !isInDropdownMenu) {
+    if (dropdown && button && !dropdown.contains(target) && !button.contains(target) && !isInDropdownMenu) {
       showConfigPanel.value = false
     }
   }
@@ -390,12 +379,7 @@ const handleExport = () => {
           </div>
 
           <!-- 配置按钮 -->
-          <NButton 
-            size="small" 
-            type="tertiary"
-            data-config-button
-            @click="handleToggleRendererConfig"
-          >
+          <NButton size="small" type="tertiary" data-config-button @click="handleToggleRendererConfig">
             <template #icon>
               <SvgIcon icon="material-symbols:settings-outline" />
             </template>
@@ -565,8 +549,6 @@ const handleExport = () => {
   -webkit-backdrop-filter: blur(8px) !important;
   padding: 16px !important;
 }
-
-
 
 .dialog-actions {
   border-top: 1px solid var(--border-color);

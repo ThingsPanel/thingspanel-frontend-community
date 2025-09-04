@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组件导入测试</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        .success { border-left-color: #28a745; background-color: #d4edda; }
+        .error { border-left-color: #dc3545; background-color: #f8d7da; }
+        .warning { border-left-color: #ffc107; background-color: #fff3cd; }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-card">
+        <h1>🧪 Card 2.1 组件导入测试</h1>
+        <p>测试problematic组件的导入和注册状态</p>
+
+        <div>
+            <button onclick="testViteGlobImport()">📦 测试Vite Glob导入</button>
+            <button onclick="testDirectImport()">🎯 测试直接导入</button>
+            <button onclick="testRegistration()">📝 测试组件注册</button>
+            <button onclick="clearResults()">🗑️ 清空结果</button>
+        </div>
+
+        <div id="test-results"></div>
+    </div>
+
+    <script type="module">
+        function addResult(title, content, type = 'info') {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result-item ${type}`;
+            resultDiv.innerHTML = `<strong>${title}</strong><br>${content}`;
+            document.getElementById('test-results').appendChild(resultDiv);
+        }
+
+        window.testViteGlobImport = async function() {
+            addResult('📦 Vite Glob导入测试', '开始测试import.meta.glob模式...');
+            
+            try {
+                // 模拟Card2.1组件加载器的glob模式
+                const modulePattern = '../src/card2.1/components/**/index.{ts,js}';
+                addResult('🔍 扫描模式', `使用模式: ${modulePattern}`, 'info');
+                
+                // 注意：在实际环境中，这需要在Vite构建环境下运行
+                addResult('ℹ️ 环境说明', '由于这是静态HTML文件，无法直接使用import.meta.glob，需要在Vue开发环境中测试', 'warning');
+                
+                // 模拟扫描结果
+                const mockModules = [
+                    '../src/card2.1/components/triple-data-display/index.ts',
+                    '../src/card2.1/components/simple-display/index.ts', 
+                    '../src/card2.1/components/dual-data-display/index.ts'
+                ];
+                
+                addResult('📋 模拟扫描结果', `
+                    找到组件模块: <br>
+                    <pre>${mockModules.join('\\n')}</pre>
+                `, 'success');
+                
+            } catch (error) {
+                addResult('❌ Glob导入失败', `错误: ${error.message}`, 'error');
+            }
+        };
+
+        window.testDirectImport = async function() {
+            addResult('🎯 直接导入测试', '测试组件模块的直接导入...');
+            
+            const targetComponents = [
+                'triple-data-display',
+                'simple-display', 
+                'dual-data-display'
+            ];
+            
+            for (const componentType of targetComponents) {
+                try {
+                    addResult(`🔍 ${componentType}`, '尝试导入组件定义...', 'info');
+                    
+                    // 在实际环境中，这里应该能够动态导入
+                    // const module = await import(\`/src/card2.1/components/\${componentType}/index.ts\`);
+                    
+                    addResult(`ℹ️ ${componentType}`, '在静态HTML中无法执行真实导入，需要在开发环境中测试', 'warning');
+                    
+                    // 模拟导入成功的情况
+                    const mockModule = {
+                        default: {
+                            type: componentType,
+                            name: `${componentType}组件`,
+                            component: { render: () => `<div>${componentType}</div>` }
+                        }
+                    };
+                    
+                    addResult(`✅ ${componentType}`, `
+                        模拟导入成功:<br>
+                        <pre>${JSON.stringify(mockModule.default, null, 2)}</pre>
+                    `, 'success');
+                    
+                } catch (error) {
+                    addResult(`❌ ${componentType}`, `导入失败: ${error.message}`, 'error');
+                }
+            }
+        };
+
+        window.testRegistration = function() {
+            addResult('📝 组件注册测试', '测试组件注册流程...');
+            
+            // 模拟组件注册中心
+            const mockRegistry = {
+                definitions: new Map(),
+                register(definition) {
+                    if (!definition || !definition.type) {
+                        throw new Error('无效的组件定义');
+                    }
+                    this.definitions.set(definition.type, definition);
+                },
+                get(type) {
+                    return this.definitions.get(type);
+                },
+                has(type) {
+                    return this.definitions.has(type);
+                }
+            };
+            
+            const targetComponents = ['triple-data-display', 'simple-display', 'dual-data-display'];
+            
+            // 模拟注册过程
+            targetComponents.forEach(type => {
+                try {
+                    const mockDefinition = {
+                        type: type,
+                        name: `${type}组件`,
+                        description: `${type}组件描述`,
+                        category: '数据展示',
+                        component: {
+                            // 模拟Vue组件
+                            render: () => `<div>${type}</div>`,
+                            __vccOpts: { name: type }
+                        }
+                    };
+                    
+                    mockRegistry.register(mockDefinition);
+                    addResult(`✅ ${type}`, '注册成功', 'success');
+                    
+                } catch (error) {
+                    addResult(`❌ ${type}`, `注册失败: ${error.message}`, 'error');
+                }
+            });
+            
+            // 验证注册结果
+            addResult('🔍 注册验证', '检查组件是否能从注册表正确获取...', 'info');
+            
+            targetComponents.forEach(type => {
+                const definition = mockRegistry.get(type);
+                const hasComponent = definition && definition.component;
+                const componentValid = hasComponent && 
+                    (typeof definition.component.render === 'function' || 
+                     definition.component.__vccOpts);
+                
+                if (componentValid) {
+                    addResult(`✅ ${type}验证`, '组件定义和Vue组件都有效', 'success');
+                } else if (definition) {
+                    addResult(`⚠️ ${type}验证`, '组件定义存在但component字段无效', 'warning');
+                } else {
+                    addResult(`❌ ${type}验证`, '组件未在注册表中找到', 'error');
+                }
+            });
+            
+            addResult('💡 实际环境调试建议', `
+                <strong>在真实开发环境中，请检查：</strong><br><br>
+                1. 🔧 在浏览器开发者工具Console中执行：<br>
+                   <pre>// 检查组件注册状态
+console.log('Card2.1注册表:', window.__CARD2_DEBUG__);
+// 或者检查全局对象
+console.log('所有注册组件:', Object.keys(window));</pre><br>
+                
+                2. 📋 在Vue DevTools中查看组件树<br>
+                
+                3. 🔍 检查网络面板，看是否有组件文件加载失败<br>
+                
+                4. ⏰ 确认初始化时机：组件注册必须在渲染之前完成<br>
+                
+                5. 🎯 在Card2Wrapper.vue中添加调试日志：<br>
+                <pre>console.log('获取组件定义:', componentType);
+console.log('组件定义:', definition);
+console.log('组件实例:', component);</pre>
+            `, 'info');
+        };
+
+        window.clearResults = function() {
+            document.getElementById('test-results').innerHTML = '';
+        };
+
+        // 页面加载提示
+        window.onload = function() {
+            addResult('🚀 测试工具就绪', `
+                这个工具模拟了Card 2.1组件的导入和注册流程。<br>
+                由于环境限制，大部分是模拟测试，真实测试需要在开发环境中进行。<br><br>
+                <strong>推荐的调试步骤：</strong><br>
+                1. 在浏览器中打开 http://localhost:5003<br>
+                2. 打开开发者工具Console<br>  
+                3. 尝试手动执行组件导入和注册逻辑<br>
+                4. 检查实际的错误堆栈和变量值
+            `);
+        };
+    </script>
+</body>
+</html>

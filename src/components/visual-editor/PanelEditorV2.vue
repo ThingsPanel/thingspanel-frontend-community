@@ -1,0 +1,345 @@
+<script setup lang="ts">
+/**
+ * PanelEditor V2 - 基于 PanelLayout 的新一代可视化编辑器
+ * 
+ * 实现真实的工具栏和渲染器切换功能
+ */
+
+import { ref, computed } from 'vue'
+import { $t } from '@/locales'
+import PanelLayout from './components/PanelLayout.vue'
+import { VisualEditorToolbar } from './components/toolbar'
+import WidgetLibrary from './components/WidgetLibrary/WidgetLibrary.vue'
+import { CanvasRenderer, GridstackRenderer } from './renderers'
+import { createEditor } from './hooks'
+import { usePreviewMode } from './hooks/usePreviewMode'
+import type { RendererType } from './types'
+
+// 🔥 接收测试页面的配置props
+interface Props {
+  panelId: string
+  showToolbar?: boolean
+  showPageHeader?: boolean
+  enableHeaderArea?: boolean
+  enableToolbarArea?: boolean  
+  enableFooterArea?: boolean
+  customLayoutClass?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  showToolbar: true,
+  showPageHeader: true,
+  enableHeaderArea: true,
+  enableToolbarArea: true,
+  enableFooterArea: false,
+  customLayoutClass: ''
+})
+
+// 基础状态
+const isEditing = ref(true)
+const leftCollapsed = ref(false)
+const rightCollapsed = ref(true) // 🔥 右侧默认关闭
+
+// 🔥 编辑器核心功能
+const currentRenderer = ref<RendererType>('gridstack')
+const showWidgetTitles = ref(true)
+const isSaving = ref(false)
+const hasChanges = ref(false)
+const dataFetched = ref(true) // 简化版，直接设为true
+const isUnmounted = ref(false)
+
+// 🔥 拖拽状态管理
+const isDragging = ref(false)
+const draggedComponent = ref<string | null>(null)
+const selectedNodeId = ref<string>('')
+
+// 创建编辑器上下文
+const editorContext = createEditor()
+const { stateManager, addWidget, updateNode, selectNode } = editorContext
+const { setPreviewMode, isPreviewMode } = usePreviewMode()
+
+// 编辑器配置
+const editorConfig = ref({
+  gridConfig: {},
+  canvasConfig: {}
+})
+
+// 渲染器选项
+const rendererOptions = computed(() => [
+  { label: $t('visualEditor.canvas'), value: 'canvas' as RendererType },
+  { label: $t('visualEditor.gridstack'), value: 'gridstack' as RendererType }
+])
+
+// 🔥 工具栏事件处理
+const handleModeChange = (mode: 'edit' | 'preview') => {
+  const editMode = mode === 'edit'
+  isEditing.value = editMode
+  setPreviewMode(!editMode)
+  
+  if (!editMode) {
+    leftCollapsed.value = true
+    rightCollapsed.value = true
+  }
+}
+
+const handleRendererChange = (renderer: RendererType) => {
+  currentRenderer.value = renderer
+}
+
+const handleSave = () => {
+  console.log('保存功能')
+}
+
+// 🔥 拖拽事件处理
+const handleDragStart = (componentType: string) => {
+  isDragging.value = true
+  draggedComponent.value = componentType
+  console.log('开始拖拽:', componentType)
+}
+
+const handleDragEnd = () => {
+  isDragging.value = false
+  draggedComponent.value = null
+  console.log('结束拖拽')
+}
+
+// 🔥 组件操作处理
+const handleAddWidget = async (widget: { type: string }) => {
+  try {
+    console.log('添加组件:', widget.type)
+    await addWidget(widget.type)
+    hasChanges.value = true
+    console.log('✅ 组件添加成功:', widget.type)
+  } catch (error: any) {
+    console.error('❌ 添加组件失败:', widget.type, error)
+  }
+}
+
+// 其他占位事件处理
+const handleImportConfig = () => console.log('导入配置')
+const handleExportConfig = () => console.log('导出配置')
+const handleUndo = () => console.log('撤销')
+const handleRedo = () => console.log('重做')
+const handleClearAll = () => console.log('清空')
+const handleZoomIn = () => console.log('放大')
+const handleZoomOut = () => console.log('缩小')
+const handleResetZoom = () => console.log('重置缩放')
+const handleToggleLeftDrawer = () => {
+  leftCollapsed.value = !leftCollapsed.value
+}
+const handleToggleRightDrawer = () => {
+  rightCollapsed.value = !rightCollapsed.value
+}
+const handleGridstackConfigChange = () => console.log('GridStack配置变更')
+const handleCanvasConfigChange = () => console.log('Canvas配置变更')
+
+// 🔥 渲染器事件处理
+const handleRendererReady = () => console.log('渲染器就绪')
+const handleRendererError = () => console.log('渲染器错误')
+const handleNodeSelect = (nodeId: string) => {
+  selectedNodeId.value = nodeId
+  selectNode(nodeId) // 🔥 调用真实的selectNode方法
+  rightCollapsed.value = false // 选中节点时打开右侧面板
+  console.log('节点选择:', nodeId)
+}
+const handleCanvasClick = () => {
+  selectedNodeId.value = ''
+  selectNode('') // 🔥 清除选择
+  console.log('画布点击')
+}
+const handleRequestSettings = (nodeId: string) => {
+  selectedNodeId.value = nodeId
+  selectNode(nodeId) // 🔥 调用真实的selectNode方法
+  rightCollapsed.value = false // 请求设置时打开右侧面板
+  console.log('请求设置:', nodeId)
+}
+</script>
+
+<template>
+  <PanelLayout
+    :mode="isEditing ? 'edit' : 'preview'"
+    :left-collapsed="leftCollapsed"
+    :right-collapsed="rightCollapsed"
+    :show-header="props.enableHeaderArea && props.showPageHeader"
+    :show-toolbar="props.enableToolbarArea && props.showToolbar" 
+    :show-footer="props.enableFooterArea"
+    :custom-class="props.customLayoutClass"
+    @update:left-collapsed="leftCollapsed = $event"
+    @update:right-collapsed="rightCollapsed = $event"
+  >
+    <!-- 标题区域占位 -->
+    <template #header>
+      <div class="flex items-center justify-between w-full p-2 bg-blue-50">
+        <span>📋 标题区域占位 (enableHeaderArea: {{ props.enableHeaderArea }}, showPageHeader: {{ props.showPageHeader }})</span>
+      </div>
+    </template>
+
+    <!-- 🔥 真实工具栏 -->
+    <template #toolbar>
+      <VisualEditorToolbar
+        v-if="dataFetched && !isUnmounted"
+        :key="`toolbar-v2-${currentRenderer}-${isEditing ? 'edit' : 'preview'}`"
+        :mode="isEditing ? 'edit' : 'preview'"
+        :current-renderer="currentRenderer"
+        :available-renderers="rendererOptions"
+        :is-saving="isSaving"
+        :has-changes="hasChanges"
+        :show-left-drawer="!leftCollapsed"
+        :show-right-drawer="!rightCollapsed"
+        :gridstack-config="editorConfig.gridConfig"
+        :canvas-config="editorConfig.canvasConfig"
+        @mode-change="handleModeChange"
+        @renderer-change="handleRendererChange"
+        @save="handleSave"
+        @import="handleImportConfig"
+        @export="handleExportConfig"
+        @import-config="handleImportConfig"
+        @export-config="handleExportConfig"
+        @undo="handleUndo"
+        @redo="handleRedo"
+        @clear-all="handleClearAll"
+        @zoom-in="handleZoomIn"
+        @zoom-out="handleZoomOut"
+        @reset-zoom="handleResetZoom"
+        @toggle-left-drawer="handleToggleLeftDrawer"
+        @toggle-right-drawer="handleToggleRightDrawer"
+        @gridstack-config-change="handleGridstackConfigChange"
+        @canvas-config-change="handleCanvasConfigChange"
+      />
+    </template>
+
+    <!-- 🔥 真实的左侧组件库 -->
+    <template #left>
+      <WidgetLibrary 
+        @add-widget="handleAddWidget" 
+        @drag-start="handleDragStart" 
+        @drag-end="handleDragEnd" 
+      />
+    </template>
+
+    <!-- 🔥 主内容区域 - 真实渲染器实现 -->
+    <template #main>
+      <!-- 加载状态 -->
+      <div v-if="!dataFetched" class="h-full flex items-center justify-center w-full">
+        <n-spin size="large">
+          <template #description>
+            {{ $t('visualEditor.loading') }}
+          </template>
+        </n-spin>
+      </div>
+      
+      <!-- 渲染器区域 -->
+      <div 
+        v-else 
+        class="renderer-main-area h-full w-full relative" 
+        :class="{ dragging: isDragging }"
+        @click="handleCanvasClick"
+      >
+        <!-- Canvas 渲染器 -->
+        <CanvasRenderer
+          v-if="currentRenderer === 'canvas' && dataFetched && !isUnmounted"
+          key="canvas-renderer-v2"
+          :readonly="!isEditing"
+          :show-widget-titles="showWidgetTitles"
+          class="renderer-container"
+          @ready="handleRendererReady"
+          @error="handleRendererError"
+          @node-select="handleNodeSelect"
+          @canvas-click="handleCanvasClick"
+          @request-settings="handleRequestSettings"
+        />
+        
+        <!-- Gridstack 渲染器 -->
+        <GridstackRenderer
+          v-else-if="currentRenderer === 'gridstack' && dataFetched && !isUnmounted"
+          key="gridstack-renderer-v2"
+          :readonly="!isEditing"
+          :show-widget-titles="showWidgetTitles"
+          :grid-config="editorConfig.gridConfig"
+          class="renderer-container"
+          @ready="handleRendererReady"
+          @error="handleRendererError"
+          @node-select="handleNodeSelect"
+          @canvas-click="handleCanvasClick"
+          @request-settings="handleRequestSettings"
+        />
+      </div>
+    </template>
+
+    <!-- 右侧配置面板占位 -->
+    <template #right>
+      <div class="p-4 bg-gray-50 h-full">
+        <h3>右侧配置面板占位</h3>
+        <div class="mt-4">
+          <div class="p-2 bg-white border rounded mb-2">属性配置1</div>
+          <div class="p-2 bg-white border rounded mb-2">属性配置2</div>
+          <div class="p-2 bg-white border rounded mb-2">属性配置3</div>
+        </div>
+      </div>
+    </template>
+
+    <!-- 🔥 新增：底部状态栏占位 -->
+    <template #footer>
+      <div class="flex items-center justify-between w-full p-2 bg-yellow-50 border-t">
+        <div class="flex items-center space-x-4">
+          <span class="text-sm">📊 底部状态栏 (enableFooterArea: {{ props.enableFooterArea }})</span>
+          <span class="text-xs text-gray-600">组件数：0</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-xs text-green-600">● 配置开关正常</span>
+        </div>
+      </div>
+    </template>
+  </PanelLayout>
+</template>
+
+<style scoped>
+/* 🔥 渲染器容器样式 */
+.renderer-main-area {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--body-color, #f8fafc);
+  transition: all 0.2s ease;
+}
+
+.renderer-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* 🔥 拖拽状态样式 */
+.renderer-main-area.dragging {
+  border: 2px dashed var(--primary-color, #1890ff);
+  background-color: var(--primary-color-hover, rgba(24, 144, 255, 0.1));
+}
+
+.renderer-main-area.dragging::before {
+  content: '拖拽组件到此处';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+  color: var(--primary-color, #1890ff);
+  font-weight: 500;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* 🔥 主题适配 */
+[data-theme="dark"] .renderer-main-area {
+  background-color: var(--body-color, #1f1f1f);
+}
+
+[data-theme="dark"] .renderer-main-area.dragging {
+  border-color: var(--primary-color, #3b82f6);
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+[data-theme="dark"] .renderer-main-area.dragging::before {
+  color: var(--primary-color, #3b82f6);
+}
+</style>

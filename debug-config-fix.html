@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>配置传递修复调试</title>
+    <meta charset="utf-8">
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            margin: 20px; 
+            background: #2c3e50;
+            color: white;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .status { 
+            padding: 20px; 
+            margin: 15px 0; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3); 
+        }
+        .success { background: rgba(39, 174, 96, 0.2); border-left: 4px solid #27ae60; }
+        .error { background: rgba(231, 76, 60, 0.2); border-left: 4px solid #e74c3c; }
+        .info { background: rgba(52, 152, 219, 0.2); border-left: 4px solid #3498db; }
+        .warning { background: rgba(241, 196, 15, 0.2); border-left: 4px solid #f1c40f; }
+        
+        .code { 
+            background: rgba(0,0,0,0.3); 
+            padding: 12px; 
+            border-radius: 6px; 
+            font-family: 'Consolas', monospace; 
+            font-size: 13px;
+            color: #2ecc71;
+            margin: 10px 0;
+        }
+        h1 { 
+            text-align: center; 
+            color: #ecf0f1;
+            font-size: 2.2em;
+        }
+        h3 { 
+            color: #3498db; 
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 配置传递修复调试</h1>
+        
+        <div class="error status">
+            <h3>❌ 发现的问题</h3>
+            <p><strong>根本问题</strong>：我在 extractComponentConfig 中错误地替换了整个配置对象，导致丢失了其他配置属性。</p>
+            
+            <div class="code">
+// ❌ 错误做法（导致配置丢失）
+if (hasCustomizeConfigData) {
+  configData = customizeConfig  // 只保留了customize部分！
+}
+
+// ❌ 错误做法（同样有问题）
+configData = mergedConfig  // 只包含root+customize，丢失其他配置
+            </div>
+        </div>
+
+        <div class="success status">
+            <h3>✅ 修复方案</h3>
+            <p><strong>正确做法</strong>：保留所有配置属性，同时将customize部分扁平化到根级别。</p>
+            
+            <div class="code">
+// ✅ 正确做法（保留所有配置）
+if (hasCustomizeConfigData) {
+  configData = {
+    ...props.config,        // 保留所有原始配置
+    ...customizeConfig      // customize属性扁平化到根级别
+  }
+}
+
+// ✅ 正确做法（扁平化现有配置中的customize）
+if (hasCustomizeConfigData) {
+  configData = {
+    ...configData,          // 保留所有现有配置
+    ...customizeConfig      // customize属性扁平化到根级别
+  }
+}
+            </div>
+        </div>
+
+        <div class="info status">
+            <h3>🔍 问题原因分析</h3>
+            
+            <div class="code">
+原始配置可能包含：
+{
+  title: "组件标题",
+  content: "组件内容", 
+  fontSize: 14,
+  customize: {
+    themeColor: "#ff0000"
+  }
+}
+
+❌ 之前的错误处理：
+configData = customizeConfig
+// 结果：{ themeColor: "#ff0000" }  ← 丢失了title、content、fontSize！
+
+✅ 现在的正确处理：
+configData = { ...props.config, ...customizeConfig }
+// 结果：{ title: "组件标题", content: "组件内容", fontSize: 14, themeColor: "#ff0000" }
+            </div>
+        </div>
+
+        <div class="warning status">
+            <h3>🧪 测试要点</h3>
+            <p>现在两种配置修改都应该正常工作：</p>
+            <ul>
+                <li><strong>组件配置面板修改</strong>：修改title、fontSize等基础属性应该生效</li>
+                <li><strong>交互系统修改</strong>：点击触发的customize.themeColor修改应该生效</li>
+                <li><strong>配置完整性</strong>：所有配置属性都应该正确传递给组件</li>
+                <li><strong>扁平化效果</strong>：customize中的属性应该可以直接访问</li>
+            </ul>
+            
+            <div class="code">
+预期的组件接收配置：
+{
+  title: "正确的标题",           // ✅ 基础配置保留
+  content: "正确的内容",         // ✅ 基础配置保留  
+  fontSize: 16,                // ✅ 基础配置保留
+  themeColor: "#new-color",    // ✅ 来自customize的扁平化属性
+  customize: {                 // ✅ 保留嵌套结构（供其他用途）
+    themeColor: "#new-color"
+  }
+}
+            </div>
+        </div>
+
+        <div class="success status">
+            <h3>🚀 立即验证</h3>
+            <p>请测试以下场景：</p>
+            <ol>
+                <li><strong>基础配置修改</strong>：在组件配置面板中修改标题或字体大小，应该立即生效</li>
+                <li><strong>交互配置修改</strong>：点击组件触发颜色修改，应该立即生效</li>
+                <li><strong>混合修改</strong>：先修改基础配置，再触发交互，两者都应该正常工作</li>
+            </ol>
+            
+            <div style="text-align: center; font-size: 1.1em; font-weight: bold; margin-top: 20px;">
+                🎯 现在配置传递应该完全正常了！
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.group('🔧 配置传递修复调试');
+        console.log('修复时间:', new Date().toLocaleString());
+        console.log('问题: 配置对象替换导致属性丢失');
+        
+        console.group('修复内容:');
+        console.log('✅ 1. 保留所有原始配置属性');
+        console.log('✅ 2. customize属性正确扁平化');
+        console.log('✅ 3. 避免配置对象替换');
+        console.log('✅ 4. 确保配置完整性');
+        console.groupEnd();
+
+        console.group('预期效果:');
+        console.log('🎯 基础配置修改正常');
+        console.log('🎯 交互配置修改正常');
+        console.log('🎯 配置结构完整');
+        console.log('🎯 属性扁平化正确');
+        console.groupEnd();
+
+        console.groupEnd();
+        
+        console.log('%c🎉 配置传递修复完成！', 'color: #2ecc71; font-size: 16px; font-weight: bold;');
+    </script>
+</body>
+</html>

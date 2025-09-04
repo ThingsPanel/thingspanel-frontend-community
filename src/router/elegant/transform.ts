@@ -252,6 +252,7 @@ const routeMap: RouteMap = {
   "test": "/test",
   "test_extended-grid-system": "/test/extended-grid-system",
   "test_new-config-system": "/test/new-config-system",
+  "test_panel-editor-v2": "/test/panel-editor-v2",
   "test_script-editor-fix-test": "/test/script-editor-fix-test",
   "ultra-kanban": "/ultra-kanban",
   "ultra-kanban_index": "/ultra-kanban/index",

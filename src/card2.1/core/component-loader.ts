@@ -37,24 +37,39 @@ export class ComponentLoader {
       // 使用 Vite 的动态导入功能 - 支持递归扫描
       const allModules = import.meta.glob('../components/**/index.{ts,js}', { eager: true })
 
+      console.log('🔧 [ComponentLoader] Glob扫描结果:', Object.keys(allModules))
+
       const componentModules: Record<string, ComponentModule> = {}
 
       for (const [path, module] of Object.entries(allModules)) {
         // 从路径中提取组件ID
         const componentId = this.extractComponentId(path)
 
+        console.log(`🔧 [ComponentLoader] 处理路径: ${path} -> 组件ID: ${componentId}`)
+
         if (componentId && this.shouldIncludeComponent(componentId)) {
           // 获取默认导出或整个模块
           const definition = module.default || module
+          console.log(`🔧 [ComponentLoader] 组件定义:`, {
+            componentId,
+            hasDefault: !!module.default,
+            definitionType: definition?.type,
+            hasComponent: !!definition?.component
+          })
+
           if (definition && definition.type) {
             componentModules[componentId] = { default: definition }
+            console.log(`✅ [ComponentLoader] 成功加载组件: ${componentId} (${definition.type})`)
           } else {
-            // 组件定义格式不正确，跳过
+            console.warn(`⚠️ [ComponentLoader] 组件定义格式不正确，跳过: ${path}`)
+            console.warn(`⚠️ [ComponentLoader] 定义内容:`, definition)
           }
         } else {
-          // 模块未找到，跳过
+          console.warn(`⚠️ [ComponentLoader] 组件被排除或ID无效，跳过: ${path} (ID: ${componentId})`)
         }
       }
+
+      console.log('🔧 [ComponentLoader] 最终加载的组件:', Object.keys(componentModules))
       return componentModules
     } catch (error) {
       return {}

@@ -9,7 +9,6 @@ import { $t } from '@/locales'
 import { getBoard, PutBoard } from '@/service/api'
 import { VisualEditorToolbar } from './components/toolbar'
 import WidgetLibrary from './components/WidgetLibrary/WidgetLibrary.vue'
-import PanelLayout from './components/PanelLayout.vue'
 import { initializeSettings } from '@/core/interaction-system'
 import ConfigurationPanel from './configuration/ConfigurationPanel.vue'
 import { configurationIntegrationBridge as configurationManager } from './configuration/ConfigurationIntegrationBridge'
@@ -124,27 +123,6 @@ const { isFullscreen, toggle } = useFullscreen(fullui)
 const editorContext = createEditor()
 const { stateManager, addWidget, selectNode, updateNode } = editorContext
 const { setPreviewMode, isPreviewMode } = usePreviewMode()
-
-// 🔥 提供visualEditorState给交互系统组件
-provide('visualEditorState', {
-  /**
-   * 获取当前编辑器中的所有组件
-   * 返回格式化后的组件列表，供交互系统使用
-   */
-  getAvailableComponents: () => {
-    // 从editorStore获取当前所有节点
-    const nodes = stateManager.nodes || []
-    return nodes.map(node => ({
-      id: node.id,
-      type: node.type,
-      title: node.label || node.metadata?.title || `组件 (${node.id.slice(0, 8)})`,
-      label: node.label || node.metadata?.title || node.type,
-      name: node.label || node.metadata?.title || node.type,
-      properties: node.properties || {},
-      metadata: node.metadata || {}
-    }))
-  }
-})
 
 // 🔥 配置管理组合式函数
 const { parseConfig, validateConfig, migrateConfig, getDefaultConfig, analyzeCloneability } = usePanelConfigManager()

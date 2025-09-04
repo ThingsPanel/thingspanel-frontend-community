@@ -13,7 +13,7 @@
       v-else-if="componentToRender"
       ref="currentComponentRef"
       :key="`${props.nodeId}-${forceUpdateKey}`"
-      :config="extractComponentConfig()"
+      :config="extractComponentConfig"
       :raw-data-sources="safeDeepClone(getDataSourcesForComponent())"
       :component-id="props.nodeId"
       :show-interaction-indicator="true"
@@ -22,6 +22,7 @@
       :interaction-permissions="props.interactionPermissions"
       :preview-mode="props.previewMode"
       v-bind="getComponentSpecificProps()"
+      @interaction-event="handleInteractionEvent"
     />
   </div>
 </template>
@@ -89,6 +90,42 @@ const forceUpdateKey = ref(0)
 const currentComponentRef = ref<any>(null)
 // 🔥 容器引用
 const containerRef = ref<HTMLElement | null>(null)
+
+// 🔥 关键修复：响应式的配置覆盖，用于交互状态更新
+const interactionConfigOverride = ref<Record<string, any>>({})
+
+/**
+ * 🔥 处理组件交互事件
+ * 接收组件触发的交互事件并转发给interactionManager执行
+ */
+const handleInteractionEvent = (eventType: string, eventData?: any) => {
+  try {
+    // 确保有组件ID
+    const componentId = props.nodeId
+    if (!componentId) {
+      console.warn('[Card2Wrapper] 缺少组件ID，无法处理交互事件')
+      return
+    }
+
+    // 🔥 关键修复：直接调用interactionManager.triggerEvent
+    const results = interactionManager.triggerEvent(componentId, eventType as any, eventData)
+
+    // 记录执行结果（用于调试）
+    if (results && results.length > 0) {
+      visualEditorLogger.info(`[Card2Wrapper] 交互事件执行完成：${eventType}`, {
+        componentId,
+        results: results.map(r => ({
+          success: r.success,
+          action: r.action,
+          error: r.error
+        }))
+      })
+    }
+  } catch (error) {
+    console.error('[Card2Wrapper] 交互事件处理失败:', error)
+    visualEditorLogger.error('[Card2Wrapper] 交互事件处理失败', { eventType, eventData, error })
+  }
+}
 
 /**
  * 🔥 触发属性变化事件
@@ -235,6 +272,17 @@ onBeforeUnmount(() => {
   // 🔥 新增：清理HTTP数据源映射
   interactionManager.unregisterHttpDataSource(props.nodeId)
 
+  // 🔥 关键修复：清理交互配置注册
+  try {
+    const configs = props.interactionConfigs || []
+    interactionManager.unregisterComponent(props.nodeId, configs)
+    visualEditorLogger.info('[Card2Wrapper] 交互配置清理成功', {
+      componentId: props.nodeId
+    })
+  } catch (error) {
+    console.error('[Card2Wrapper] 交互配置清理失败:', error)
+  }
+
   // 🔥 架构修复：清理执行器注册
   const componentExecutorRegistry = inject<Map<string, () => Promise<void>>>('componentExecutorRegistry')
   if (componentExecutorRegistry) {
@@ -242,11 +290,27 @@ onBeforeUnmount(() => {
   }
 })
 
+// 默认配置常量，避免在计算属性中调用$t函数
+const defaultConfig = {
+  title: '测试标题',
+  showTitle: true,
+  content: '测试内容',
+  backgroundColor: '#f0f8ff',
+  textColor: '#333333',
+  showButton: true,
+  buttonText: '按钮文本',
+  buttonType: 'primary',
+  fontSize: 14,
+  padding: 16,
+  borderRadius: 8
+}
+
 /**
  * 提取组件配置数据
  * 将Visual Editor的配置格式转换为组件期望的格式
+ * 🔥 关键修复：改为计算属性，响应interactionConfigOverride变化
  */
-const extractComponentConfig = () => {
+const extractComponentConfig = computed(() => {
   // 尝试多种路径提取配置
   let configData = null
 
@@ -289,44 +353,34 @@ const extractComponentConfig = () => {
       )
 
       if (hasCustomizeConfigData) {
-        configData = customizeConfig
+        // 🔥 重要修复：不能只返回customize，要合并整个config
+        configData = {
+          ...props.config,
+          ...customizeConfig  // customize属性扁平化到根级别
+        }
       }
     }
 
-    // 🔥 修复：如果直接配置包含嵌套结构，提取customize部分
-    else if (configData && configData.customize && typeof configData.customize === 'object') {
+    // 🔥 修复：如果配置包含嵌套结构，扁平化customize部分
+    if (configData && configData.customize && typeof configData.customize === 'object') {
       const customizeConfig = configData.customize
       const hasCustomizeConfigData = Object.keys(customizeConfig).some(
         key => customizeConfig[key] !== undefined && customizeConfig[key] !== null
       )
 
       if (hasCustomizeConfigData) {
-        // 🔥 关键修复：合并root和customize配置，确保组件接收扁平化配置
-        const rootConfig = configData.root || {}
-        const mergedConfig = {
-          ...rootConfig,
-          ...customizeConfig
+        // 🔥 关键修复：保留所有配置，同时扁平化customize（customize优先级更高）
+        configData = {
+          ...configData,
+          ...customizeConfig  // customize属性扁平化到根级别，覆盖同名属性
         }
-        configData = mergedConfig
       }
     }
   }
 
   // 2. 如果还没找到配置，返回默认配置
   if (!configData) {
-    configData = {
-      title: $t('visualEditor.testTitle'),
-      showTitle: true,
-      content: $t('visualEditor.testContent'),
-      backgroundColor: '#f0f8ff',
-      textColor: '#333333',
-      showButton: true,
-      buttonText: $t('visualEditor.buttonText'),
-      buttonType: 'primary',
-      fontSize: 14,
-      padding: 16,
-      borderRadius: 8
-    }
+    configData = { ...defaultConfig }
   }
 
   // 🔥 合并来自InteractionManager的状态更新
@@ -335,12 +389,51 @@ const extractComponentConfig = () => {
     configData = { ...configData, ...interactionState }
   }
 
+  // 🔥 关键修复：合并响应式的交互配置覆盖
+  if (Object.keys(interactionConfigOverride.value).length > 0) {
+    // 深度合并嵌套对象，特别是customize属性
+    const mergeDeep = (target: any, source: any): any => {
+      const result = { ...target }
+      for (const key in source) {
+        if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+          result[key] = mergeDeep(result[key] || {}, source[key])
+        } else {
+          result[key] = source[key]
+        }
+      }
+      return result
+    }
+    
+    configData = mergeDeep(configData, interactionConfigOverride.value)
+    
+    // 🔥 关键修复：交互配置合并后，再次扁平化customize属性
+    if (configData.customize && typeof configData.customize === 'object') {
+      configData = {
+        ...configData,
+        ...configData.customize  // 确保customize中的属性覆盖根级别同名属性
+      }
+      
+      visualEditorLogger.info('[Card2Wrapper] 交互配置合并后扁平化', {
+        componentId: props.nodeId,
+        customizeProps: configData.customize,
+        finalThemeColor: configData.themeColor
+      })
+    }
+    
+    visualEditorLogger.info('[Card2Wrapper] 配置合并完成', {
+      componentId: props.nodeId,
+      originalConfig: configData,
+      override: interactionConfigOverride.value,
+      finalConfig: configData
+    })
+  }
+
   // 🔥 修复：合并dataSourcesConfig中的dataSourceBindings
   if (props.dataSourcesConfig && props.dataSourcesConfig.dataSourceBindings) {
     configData = { ...configData, dataSourceBindings: props.dataSourcesConfig.dataSourceBindings }
   }
   return configData
-}
+})
 
 const loadComponent = async () => {
   try {
@@ -552,13 +645,128 @@ onMounted(async () => {
     // EditorDataSourceManager 现在通过componentExecutorRegistry调用我们注册的统一执行器
   }
 
+  // 🔥 关键修复：注册组件的交互配置
+  const registerInteractionConfigs = () => {
+    // 🔥 更强健的注册逻辑：即使没有配置也注册组件，支持后续动态添加配置
+    const configs = props.interactionConfigs || []
+
+    try {
+      interactionManager.registerComponent(props.nodeId, configs)
+      visualEditorLogger.info('[Card2Wrapper] 交互配置注册成功', {
+        componentId: props.nodeId,
+        configCount: configs.length,
+        hasConfigs: configs.length > 0
+      })
+    } catch (error) {
+      console.error('[Card2Wrapper] 交互配置注册失败:', error)
+      visualEditorLogger.error('[Card2Wrapper] 交互配置注册失败', {
+        componentId: props.nodeId,
+        error,
+        configs
+      })
+    }
+  }
+
+  registerInteractionConfigs()
+
+  // 🔥 新增：监听交互配置变化并重新注册
+  watch(
+    () => props.interactionConfigs,
+    newConfigs => {
+      if (newConfigs) {
+        try {
+          interactionManager.updateComponentConfigs(props.nodeId, newConfigs)
+          visualEditorLogger.info('[Card2Wrapper] 交互配置更新', {
+            componentId: props.nodeId,
+            configCount: newConfigs.length
+          })
+        } catch (error) {
+          console.error('[Card2Wrapper] 交互配置更新失败:', error)
+        }
+      }
+    },
+    { deep: true, immediate: false }
+  )
+
   // 🔥 监听组件状态更新事件
   const handleStateUpdate = (event: CustomEvent) => {
-    const { componentId, updates } = event.detail
+    const { componentId, updates, fullState } = event.detail
 
     if (componentId === props.nodeId) {
+      // 🔥 关键修复：将状态更新应用到组件配置中
+      if (updates && Object.keys(updates).length > 0) {
+        // 获取当前配置
+        const currentConfig = extractComponentConfig.value || {}
+
+        // 🔥 关键修复：将状态更新保存到响应式覆盖变量
+        const newOverride = { ...interactionConfigOverride.value }
+        
+        for (const [key, value] of Object.entries(updates)) {
+          if (key.includes('.')) {
+            // 处理嵌套属性路径（如 customize.themeColor）
+            const keys = key.split('.')
+            let target = newOverride
+            
+            // 确保路径存在
+            for (let i = 0; i < keys.length - 1; i++) {
+              if (!target[keys[i]] || typeof target[keys[i]] !== 'object') {
+                target[keys[i]] = {}
+              }
+              target = target[keys[i]]
+            }
+            
+            // 设置最终值
+            target[keys[keys.length - 1]] = value
+            
+            visualEditorLogger.info('[Card2Wrapper] 嵌套属性更新', {
+              componentId: props.nodeId,
+              propertyPath: key,
+              newValue: value,
+              updatedOverride: newOverride
+            })
+          } else {
+            // 处理顶级属性
+            newOverride[key] = value
+          }
+        }
+        
+        // 🔥 更新响应式覆盖配置，这将触发组件重新计算配置
+        interactionConfigOverride.value = newOverride
+
+        // 🔥 同时更新ConfigurationManager以确保持久化
+        try {
+          // 🔥 修复：使用深度合并，避免嵌套属性结构冲突
+          const mergeDeep = (target: any, source: any): any => {
+            const result = { ...target }
+            for (const key in source) {
+              if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+                result[key] = mergeDeep(result[key] || {}, source[key])
+              } else {
+                result[key] = source[key]
+              }
+            }
+            return result
+          }
+          
+          const mergedConfig = mergeDeep(currentConfig, newOverride)
+          configurationIntegrationBridge.updateConfiguration(props.nodeId, 'properties', mergedConfig)
+          visualEditorLogger.info('[Card2Wrapper] 配置管理器更新成功', {
+            componentId: props.nodeId,
+            mergedConfig
+          })
+        } catch (error) {
+          console.warn('[Card2Wrapper] 配置更新失败，继续使用强制重新渲染:', error)
+        }
+      }
+
       // 强制重新渲染以应用状态更新
       forceUpdateKey.value = Date.now()
+
+      visualEditorLogger.info('[Card2Wrapper] 组件状态更新', {
+        componentId: props.nodeId,
+        updates,
+        forceUpdateKey: forceUpdateKey.value
+      })
     }
   }
 

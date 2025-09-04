@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>点击交互修复测试</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 6px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .code { background-color: #f8f9fa; padding: 3px 8px; border-radius: 3px; font-family: monospace; }
+        .step { margin: 8px 0; padding: 8px 12px; background: #f8f9fa; border-left: 4px solid #007bff; }
+    </style>
+</head>
+<body>
+    <h1>🔧 点击交互修复测试</h1>
+    
+    <div class="success status">
+        <h3>✅ 修复完成</h3>
+        <p><strong>已修复问题</strong>：交互配置中点击改变属性不生效的问题</p>
+        <ul>
+            <li>在Card2Wrapper.vue中添加了@interaction-event监听器</li>
+            <li>实现了handleInteractionEvent函数，转发交互事件到interactionManager</li>
+            <li>添加了交互配置的注册和清理逻辑</li>
+            <li>确保组件点击事件正确触发交互系统响应</li>
+        </ul>
+    </div>
+
+    <div class="info status">
+        <h3>🛠️ 修复的技术细节</h3>
+        <p><strong>根本原因</strong>：Card2Wrapper.vue作为组件包装器负责渲染Card2.1组件，但缺少交互事件处理机制</p>
+        
+        <p><strong>修复方案</strong>：</p>
+        <ol>
+            <li><strong>添加事件监听</strong>：在组件模板中添加 <span class="code">@interaction-event="handleInteractionEvent"</span></li>
+            <li><strong>事件处理函数</strong>：实现handleInteractionEvent，调用interactionManager.triggerEvent</li>
+            <li><strong>配置注册</strong>：在组件挂载时注册interactionConfigs到interactionManager</li>
+            <li><strong>清理逻辑</strong>：在组件卸载时清理交互配置注册</li>
+        </ol>
+    </div>
+
+    <div class="warning status">
+        <h3>🧪 测试流程</h3>
+        <div class="step">
+            <strong>步骤1：启动项目</strong><br>
+            <span class="code">pnpm dev</span> 启动开发服务器
+        </div>
+        <div class="step">
+            <strong>步骤2：打开编辑器</strong><br>
+            访问 <span class="code">http://localhost:5002/visualization/visual-editor-details</span>
+        </div>
+        <div class="step">
+            <strong>步骤3：添加组件</strong><br>
+            进入编辑模式，添加几个Card2.1组件（如"双数据展示"、"三数据展示"等）
+        </div>
+        <div class="step">
+            <strong>步骤4：配置交互</strong><br>
+            选择一个组件，在右侧配置面板的"交互"选项卡中：
+            <ul style="margin: 5px 0; padding-left: 20px;">
+                <li>点击"添加交互"</li>
+                <li>触发条件选择"点击"</li>
+                <li>响应动作选择"修改属性"</li>
+                <li>选择目标组件和要修改的属性</li>
+                <li>设置新的属性值</li>
+            </ul>
+        </div>
+        <div class="step">
+            <strong>步骤5：测试交互</strong><br>
+            切换到预览模式，点击配置了交互的组件，观察目标组件的属性是否发生改变
+        </div>
+    </div>
+
+    <div class="success status">
+        <h3>🎯 预期效果</h3>
+        <ul>
+            <li><strong>事件触发</strong>：点击组件时能正确触发交互事件</li>
+            <li><strong>属性修改</strong>：目标组件的属性能正确更新</li>
+            <li><strong>视觉反馈</strong>：组件外观立即反映属性变化</li>
+            <li><strong>控制台日志</strong>：在浏览器开发者工具中能看到交互执行日志</li>
+        </ul>
+    </div>
+
+    <div class="info status">
+        <h3>🐛 调试信息</h3>
+        <p>如果交互仍不生效，检查以下项目：</p>
+        <ol>
+            <li><strong>浏览器控制台</strong>：查看是否有错误消息或警告</li>
+            <li><strong>网络面板</strong>：确认交互配置保存成功</li>
+            <li><strong>Vue Devtools</strong>：检查组件接收到的props是否包含interactionConfigs</li>
+            <li><strong>控制台日志</strong>：寻找"[Card2Wrapper] 交互配置注册成功"等关键日志</li>
+        </ol>
+    </div>
+
+    <div class="warning status">
+        <h3>📝 注意事项</h3>
+        <ul>
+            <li>确保组件处于预览模式（previewMode=true）才能触发交互</li>
+            <li>交互配置需要正确保存到组件的metadata中</li>
+            <li>目标组件必须存在于当前编辑器画布中</li>
+            <li>某些属性修改可能需要强制重新渲染才能看到效果</li>
+        </ul>
+    </div>
+
+    <script>
+        console.log('点击交互修复测试页面加载完成');
+        console.log('修复时间:', new Date().toLocaleString());
+        console.log('修复内容: Card2Wrapper.vue 添加交互事件处理机制');
+        
+        // 显示修复详情
+        console.group('修复详情');
+        console.log('1. 添加 @interaction-event="handleInteractionEvent" 监听器');
+        console.log('2. 实现 handleInteractionEvent 函数');
+        console.log('3. 注册交互配置到 interactionManager');
+        console.log('4. 添加组件卸载时的清理逻辑');
+        console.groupEnd();
+    </script>
+</body>
+</html>

@@ -53,8 +53,11 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
 
   /**
    * 设置组件配置
+   * @param widgetId 组件ID
+   * @param config 配置对象
+   * @param componentType 组件类型，用于更精确的事件追踪
    */
-  setConfiguration(widgetId: string, config: WidgetConfiguration): void {
+  setConfiguration(widgetId: string, config: WidgetConfiguration, componentType?: string): void {
     const updated = configurationStateManager.setConfiguration(widgetId, config, 'user')
 
     if (updated) {
@@ -64,7 +67,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       // 🔥 修复：发出配置变更事件，使用正确的事件格式
       const changeEvent: ConfigChangeEvent = {
         componentId: widgetId,
-        componentType: 'unknown', // TODO: 可以传入组件类型
+        componentType: componentType || 'widget', // 使用传入的组件类型或默认为 'widget'
         section: 'dataSource', // 配置全量更新时使用 dataSource
         oldConfig: null, // 可以改进为保存之前的配置
         newConfig: config,
@@ -77,11 +80,16 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
 
   /**
    * 更新配置的某个部分 - 关键方法
+   * @param widgetId 组件ID
+   * @param section 配置节
+   * @param config 配置数据
+   * @param componentType 组件类型，用于更精确的事件追踪
    */
   updateConfiguration<K extends keyof WidgetConfiguration>(
     widgetId: string,
     section: K,
-    config: WidgetConfiguration[K]
+    config: WidgetConfiguration[K],
+    componentType?: string
   ): void {
     const updated = configurationStateManager.updateConfigurationSection(widgetId, section, config, 'user')
 
@@ -94,7 +102,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       // 🔥 修复：发出配置部分更新事件，使用正确的 API
       const changeEvent: ConfigChangeEvent = {
         componentId: widgetId,
-        componentType: 'unknown', // TODO: 可以传入组件类型
+        componentType: componentType || 'widget', // 使用传入的组件类型或默认为 'widget'
         section: section as 'base' | 'component' | 'dataSource' | 'interaction',
         oldConfig: null,
         newConfig: config,

@@ -108,6 +108,7 @@ declare module "@elegant-router/types" {
     "test": "/test";
     "test_extended-grid-system": "/test/extended-grid-system";
     "test_new-config-system": "/test/new-config-system";
+    "test_panel-editor-v2": "/test/panel-editor-v2";
     "test_script-editor-fix-test": "/test/script-editor-fix-test";
     "ultra-kanban": "/ultra-kanban";
     "ultra-kanban_index": "/ultra-kanban/index";
@@ -263,6 +264,7 @@ declare module "@elegant-router/types" {
     | "system-management-user_system-log"
     | "test_extended-grid-system"
     | "test_new-config-system"
+    | "test_panel-editor-v2"
     | "test_script-editor-fix-test"
     | "ultra-kanban_index"
     | "ultra-kanban_kanban-details"

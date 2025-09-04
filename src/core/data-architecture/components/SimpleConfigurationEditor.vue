@@ -341,7 +341,10 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
         }
         if (httpConfigData.pathParameter) {
           // 🔥 调试：监听pathParameter传递
-          console.log('🔍 [SimpleConfigurationEditor] pathParameter传递:', JSON.stringify(httpConfigData.pathParameter, null, 2))
+          console.log(
+            '🔍 [SimpleConfigurationEditor] pathParameter传递:',
+            JSON.stringify(httpConfigData.pathParameter, null, 2)
+          )
           config.pathParameter = httpConfigData.pathParameter
         }
 
@@ -721,7 +724,7 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
           // 🔥 关键：恢复脚本配置
           preRequestScript: item.config.preRequestScript || '',
           postResponseScript: item.config.postResponseScript || '',
-          
+
           // 🔥 重大修复：恢复地址类型相关字段（这是数据不一致的根本原因）
           addressType: item.config.addressType || 'external',
           selectedInternalAddress: item.config.selectedInternalAddress || '',

@@ -1,13 +1,34 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
+import { NDrawer, NDrawerContent } from 'naive-ui'
 import { useThemeStore } from '@/store/modules/theme'
 
 interface Props {
+  // 基础模式
   mode?: 'edit' | 'preview'
+
+  // 侧边栏控制
   leftCollapsed?: boolean
   rightCollapsed?: boolean
   leftWidth?: number
   rightWidth?: number
+
+  // 🔥 新增：显示控制选项
+  showHeader?: boolean // 控制标题区域显示
+  showToolbar?: boolean // 控制工具栏显示
+  showFooter?: boolean // 控制底部区域显示（新增）
+
+  // 🔥 新增：高度控制选项
+  headerHeight?: number // 标题栏高度
+  toolbarHeight?: number // 工具栏高度
+  footerHeight?: number // 底部栏高度
+
+  // 🔥 新增：动画和交互选项
+  enableAnimations?: boolean // 启用过渡动画
+  enableResize?: boolean // 启用侧边栏拖拽调整
+
+  // 🔥 新增：自定义样式类
+  customClass?: string // 自定义CSS类
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -15,13 +36,42 @@ const props = withDefaults(defineProps<Props>(), {
   leftCollapsed: false,
   rightCollapsed: false,
   leftWidth: 280,
-  rightWidth: 320
+  rightWidth: 320,
+
+  // 🔥 新增默认值
+  showHeader: true,
+  showToolbar: true,
+  showFooter: false,
+
+  headerHeight: 60,
+  toolbarHeight: 48,
+  footerHeight: 40,
+
+  enableAnimations: true,
+  enableResize: false,
+
+  customClass: ''
 })
 
 const emit = defineEmits<{
   'update:leftCollapsed': [value: boolean]
   'update:rightCollapsed': [value: boolean]
 }>()
+
+// 🔥 抽屉关闭事件处理
+const handleLeftDrawerClose = (show: boolean) => {
+  if (!show) {
+    // 当抽屉关闭时，设置leftCollapsed为true
+    emit('update:leftCollapsed', true)
+  }
+}
+
+const handleRightDrawerClose = (show: boolean) => {
+  if (!show) {
+    // 当抽屉关闭时，设置rightCollapsed为true  
+    emit('update:rightCollapsed', true)
+  }
+}
 
 const slots = useSlots()
 const themeStore = useThemeStore()
@@ -39,15 +89,36 @@ const themeColors = computed(() => {
   }
 })
 
-// 插槽存在性检查
+// 🔥 优化：插槽存在性检查
+const hasHeader = computed(() => !!slots.header)
 const hasToolbar = computed(() => !!slots.toolbar)
 const hasLeft = computed(() => !!slots.left)
 const hasRight = computed(() => !!slots.right)
+const hasFooter = computed(() => !!slots.footer)
 
-// 显示条件
-const showToolbar = computed(() => isEditMode.value && hasToolbar.value)
-const showLeft = computed(() => isEditMode.value && hasLeft.value && !props.leftCollapsed)
-const showRight = computed(() => isEditMode.value && hasRight.value && !props.rightCollapsed)
+// 🔥 优化：显示条件 - 适配抽屉模式
+const displayHeader = computed(() => props.showHeader && hasHeader.value)
+const displayToolbar = computed(() => props.showToolbar && hasToolbar.value && isEditMode.value)
+const displayLeft = computed(() => isEditMode.value && hasLeft.value && !props.leftCollapsed)
+const displayRight = computed(() => isEditMode.value && hasRight.value && !props.rightCollapsed)
+const displayFooter = computed(() => props.showFooter && hasFooter.value)
+
+// 🔥 新增：动态高度计算
+const dynamicHeights = computed(() => {
+  let totalFixedHeight = 0
+
+  if (displayHeader.value) totalFixedHeight += props.headerHeight
+  if (displayToolbar.value) totalFixedHeight += props.toolbarHeight
+  if (displayFooter.value) totalFixedHeight += props.footerHeight
+
+  return {
+    fixedHeight: totalFixedHeight,
+    mainHeight: `calc(100vh - ${totalFixedHeight}px)`,
+    headerHeight: `${props.headerHeight}px`,
+    toolbarHeight: `${props.toolbarHeight}px`,
+    footerHeight: `${props.footerHeight}px`
+  }
+})
 
 // API方法
 const toggleLeft = () => {
@@ -70,61 +141,129 @@ defineExpose({
 </script>
 
 <template>
-  <div class="panel-layout h-full w-full flex flex-col" :style="themeColors">
-    <!-- 工具栏区域 - 仅当编辑模式且有插槽内容时显示 -->
+  <div
+    class="panel-layout h-full w-full flex flex-col"
+    :class="[props.customClass, { 'no-animations': !props.enableAnimations }]"
+    :style="themeColors"
+  >
+    <!-- 🔥 新增：页面标题区域 -->
     <div
-      v-if="showToolbar"
-      class="toolbar-area flex-shrink-0 h-12 px-4 flex items-center justify-between transition-all duration-300"
-      style="background-color: var(--toolbar-bg); border-bottom: 1px solid var(--panel-border)"
+      v-if="displayHeader"
+      class="header-area flex-shrink-0 px-4 flex items-center justify-between"
+      :class="{ 'transition-all duration-300': props.enableAnimations }"
+      :style="{
+        height: dynamicHeights.headerHeight,
+        backgroundColor: 'var(--panel-bg)',
+        borderBottom: '1px solid var(--panel-border)'
+      }"
+    >
+      <slot name="header" :mode="props.mode" :isEditMode="isEditMode" />
+    </div>
+
+    <!-- 🔥 优化：工具栏区域 -->
+    <div
+      v-if="displayToolbar"
+      class="toolbar-area flex-shrink-0 px-4 flex items-center justify-between"
+      :class="{ 'transition-all duration-300': props.enableAnimations }"
+      :style="{
+        height: dynamicHeights.toolbarHeight,
+        backgroundColor: 'var(--toolbar-bg)',
+        borderBottom: '1px solid var(--panel-border)'
+      }"
     >
       <slot name="toolbar" :mode="props.mode" :isEditMode="isEditMode" />
     </div>
 
-    <!-- 主内容区域 -->
-    <div class="main-content flex-1 flex overflow-hidden" style="background-color: var(--panel-bg)">
-      <!-- 左侧区域 - 仅当编辑模式、有插槽内容且未收起时显示 -->
+    <!-- 🔥 新改进：主内容区域 - 全屏显示，左右为抽屉 -->
+    <div
+      class="main-content flex-1 overflow-hidden relative"
+      :style="{
+        backgroundColor: 'var(--panel-bg)'
+      }"
+    >
+      <!-- 🔥 中央主区域 - 占满整个空间 -->
       <div
-        v-if="showLeft"
-        class="left-area flex-shrink-0 overflow-auto transition-all duration-300"
-        :style="{
-          width: `${leftWidth}px`,
-          backgroundColor: 'var(--sidebar-bg)',
-          borderRight: '1px solid var(--panel-border)'
-        }"
+        class="main-area w-full h-full overflow-auto"
+        :class="{ 'transition-all duration-300': props.enableAnimations }"
+        style="background-color: var(--panel-bg)"
       >
-        <slot name="left" :mode="props.mode" :isEditMode="isEditMode" />
-      </div>
-
-      <!-- 中央看板区域 - 始终显示 -->
-      <div class="main-area flex-1 overflow-auto transition-all duration-300" style="background-color: var(--panel-bg)">
         <slot name="main" :mode="props.mode" :isEditMode="isEditMode" />
       </div>
 
-      <!-- 右侧区域 - 仅当编辑模式、有插槽内容且未收起时显示 -->
-      <div
-        v-if="showRight"
-        class="right-area flex-shrink-0 overflow-auto transition-all duration-300"
-        :style="{
-          width: `${rightWidth}px`,
-          backgroundColor: 'var(--sidebar-bg)',
-          borderLeft: '1px solid var(--panel-border)'
-        }"
+      <!-- 🔥 左侧抽屉 -->
+      <NDrawer
+        v-model:show="displayLeft"
+        :width="props.leftWidth"
+        placement="left"
+        :auto-focus="false"
+        :trap-focus="false"
+        :block-scroll="false"
+        :mask-closable="true"
+        @update:show="handleLeftDrawerClose"
       >
-        <slot name="right" :mode="props.mode" :isEditMode="isEditMode" />
-      </div>
+        <NDrawerContent title="组件库" closable @close="() => handleLeftDrawerClose(false)">
+          <slot name="left" :mode="props.mode" :isEditMode="isEditMode" />
+        </NDrawerContent>
+      </NDrawer>
+
+      <!-- 🔥 右侧抽屉 -->
+      <NDrawer
+        v-model:show="displayRight"
+        :width="props.rightWidth"
+        placement="right"
+        :auto-focus="false"
+        :trap-focus="false"
+        :block-scroll="false"
+        :mask-closable="true"
+        @update:show="handleRightDrawerClose"
+      >
+        <NDrawerContent title="属性配置" closable @close="() => handleRightDrawerClose(false)">
+          <slot name="right" :mode="props.mode" :isEditMode="isEditMode" />
+        </NDrawerContent>
+      </NDrawer>
+    </div>
+
+    <!-- 🔥 新增：底部区域 -->
+    <div
+      v-if="displayFooter"
+      class="footer-area flex-shrink-0 px-4 flex items-center justify-between"
+      :class="{ 'transition-all duration-300': props.enableAnimations }"
+      :style="{
+        height: dynamicHeights.footerHeight,
+        backgroundColor: 'var(--toolbar-bg)',
+        borderTop: '1px solid var(--panel-border)'
+      }"
+    >
+      <slot name="footer" :mode="props.mode" :isEditMode="isEditMode" />
     </div>
   </div>
 </template>
 
 <style scoped>
+/* 🔥 优化：基础布局样式 */
 .panel-layout {
   /* 确保布局占满全部空间 */
   min-height: 0;
+  position: relative;
+}
+
+/* 🔥 新增：禁用动画模式 */
+.panel-layout.no-animations * {
+  transition: none !important;
+}
+
+/* 🔥 优化：各区域基础样式 */
+.header-area,
+.toolbar-area,
+.footer-area {
+  flex-shrink: 0;
+  z-index: 10; /* 确保固定区域在上层 */
 }
 
 .main-content {
   /* 确保主内容区域能够正确处理 overflow */
   min-height: 0;
+  flex: 1;
 }
 
 .left-area,
@@ -133,6 +272,42 @@ defineExpose({
   /* 防止子元素溢出 */
   min-width: 0;
   min-height: 0;
+}
+
+/* 🔥 新增：侧边栏调整功能样式 */
+.left-area.resizable,
+.right-area.resizable {
+  position: relative;
+}
+
+.left-area.resizable::after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 10;
+}
+
+.right-area.resizable::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 10;
+}
+
+.left-area.resizable::after:hover,
+.right-area.resizable::before:hover {
+  background: var(--primary-color, #1890ff);
+  opacity: 0.3;
 }
 
 /* 自定义滚动条样式 */

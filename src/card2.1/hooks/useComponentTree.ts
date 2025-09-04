@@ -78,9 +78,9 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
       const query = searchQuery.value.toLowerCase()
       components = components.filter(
         comp =>
-          comp.name.toLowerCase().includes(query) ||
-          comp.description.toLowerCase().includes(query) ||
-          comp.type.toLowerCase().includes(query)
+          (comp.name || '').toLowerCase().includes(query) ||
+          (comp.description || '').toLowerCase().includes(query) ||
+          (comp.type || '').toLowerCase().includes(query)
       )
     }
 
@@ -100,23 +100,27 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
 
       switch (sortBy) {
         case 'name':
-          aValue = a.name
-          bValue = b.name
+          aValue = a.name || ''
+          bValue = b.name || ''
           break
         case 'type':
-          aValue = a.type
-          bValue = b.type
+          aValue = a.type || ''
+          bValue = b.type || ''
           break
         case 'category':
           aValue = a.mainCategory || ''
           bValue = b.mainCategory || ''
           break
         default:
-          aValue = a.name
-          bValue = b.name
+          aValue = a.name || ''
+          bValue = b.name || ''
       }
 
-      const comparison = aValue.localeCompare(bValue)
+      // 确保值不为undefined，防止localeCompare报错
+      const safeAValue = String(aValue || '')
+      const safeBValue = String(bValue || '')
+
+      const comparison = safeAValue.localeCompare(safeBValue)
       return sortOrder === 'asc' ? comparison : -comparison
     })
 

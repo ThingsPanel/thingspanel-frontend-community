@@ -102,13 +102,17 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
    */
   const availableWidgets = computed(() => {
     if (!isInitialized.value) {
+      console.log('🔧 [useVisualEditorIntegration] 未初始化，返回空数组')
       return []
     }
 
     const components = componentTree.filteredComponents.value
     if (!Array.isArray(components)) {
+      console.warn('🔧 [useVisualEditorIntegration] filteredComponents不是数组:', typeof components)
       return []
     }
+
+    console.log('🔧 [useVisualEditorIntegration] 获取组件列表:', components.length)
 
     // 特别检查是否包含 universal-data-viz
     const hasUniversalDataViz = components.some(comp => comp.type === 'universal-data-viz')
@@ -178,12 +182,43 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
    * 获取组件定义 - 返回转换后的 WidgetDefinition
    */
   /**
-   * 获取组件实例
+   * 获取组件实例 - 增强错误处理和调试信息
    */
   const getComponent = (type: string) => {
+    console.log(`🔧 [getComponent] 尝试获取组件: ${type}`)
+
     const registry = getComponentRegistry()
+    console.log(`🔧 [getComponent] 注册表状态:`, {
+      totalComponents: registry.getAll().length,
+      allTypes: registry.getAll().map(c => c.type)
+    })
+
     const componentDef = registry.get(type)
-    return componentDef ? componentDef.component : null
+
+    if (!componentDef) {
+      console.error(`❌ [getComponent] 组件定义不存在: ${type}`)
+      console.error(
+        `❌ [getComponent] 可用组件类型:`,
+        registry.getAll().map(c => c.type)
+      )
+      return null
+    }
+
+    console.log(`🔧 [getComponent] 找到组件定义:`, {
+      type: componentDef.type,
+      name: componentDef.name,
+      hasComponent: !!componentDef.component,
+      componentType: typeof componentDef.component
+    })
+
+    if (!componentDef.component) {
+      console.error(`❌ [getComponent] 组件 [${type}] 的component字段为空`)
+      console.error(`❌ [getComponent] 组件定义结构:`, Object.keys(componentDef))
+      return null
+    }
+
+    console.log(`✅ [getComponent] 成功获取组件 [${type}]`)
+    return componentDef.component
   }
 
   const getComponentDefinition = (type: string): Card2Widget | undefined => {

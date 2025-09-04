@@ -212,7 +212,7 @@ const convertHttpParametersToRecord = (
 const handleClose = () => {
   // 重置表单状态
   resetFormState()
-  
+
   // 发送取消和关闭事件
   emit('cancel')
   emit('close')
@@ -297,15 +297,18 @@ const handleConfirm = async () => {
       headers: formState.selectedMethod === 'http' ? formState.httpHeaders : undefined,
       body: formState.selectedMethod === 'http' ? formState.httpBody : undefined,
       // 🔥 关键修复：保存新的 httpConfig 完整状态，包含所有地址类型和参数信息
-      httpConfigData: formState.selectedMethod === 'http' ? {
-        ...httpConfig.value,
-        // 确保保存地址类型相关的关键信息
-        addressType: httpConfig.value.addressType,
-        selectedInternalAddress: httpConfig.value.selectedInternalAddress,
-        enableParams: httpConfig.value.enableParams,
-        pathParams: httpConfig.value.pathParams,
-        pathParameter: httpConfig.value.pathParameter
-      } : undefined,
+      httpConfigData:
+        formState.selectedMethod === 'http'
+          ? {
+              ...httpConfig.value,
+              // 确保保存地址类型相关的关键信息
+              addressType: httpConfig.value.addressType,
+              selectedInternalAddress: httpConfig.value.selectedInternalAddress,
+              enableParams: httpConfig.value.enableParams,
+              pathParams: httpConfig.value.pathParams,
+              pathParameter: httpConfig.value.pathParameter
+            }
+          : undefined,
       // 处理配置
       processingConfig: {
         jsonPath: processingState.jsonPath.trim() || undefined,
@@ -625,7 +628,7 @@ const loadEditData = (editData: any) => {
         httpConfig.value.addressType = 'external' // 默认外部地址
         httpConfig.value.selectedInternalAddress = ''
         httpConfig.value.enableParams = false
-        
+
         // 从旧格式恢复基础配置
         try {
           if (editData.headers && typeof editData.headers === 'string') {

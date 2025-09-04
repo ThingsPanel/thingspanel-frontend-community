@@ -598,10 +598,10 @@ const toggleEditMode = (index: number) => {
 const updateParameter = (param: EnhancedParameter, index: number) => {
   const updatedParams = [...props.modelValue]
   updatedParams[index] = { ...param }
-  
+
   // 🔥 调试：监听参数更新
   console.log(`🔧 [DynamicParameterEditor] 参数更新 [${index}]:`, JSON.stringify(param, null, 2))
-  
+
   emit('update:modelValue', updatedParams)
 }
 

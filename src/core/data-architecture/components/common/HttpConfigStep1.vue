@@ -95,13 +95,13 @@ const updateConfig = (field: keyof HttpConfig, value: any) => {
     ...props.modelValue,
     [field]: value
   }
-  
+
   // 🔥 调试：监听所有配置更新
   console.log(`🔄 [HttpConfigStep1] 配置更新 - ${String(field)}:`, value)
   if (field === 'pathParameter') {
     console.log('🔍 [HttpConfigStep1] pathParameter详细:', JSON.stringify(value, null, 2))
   }
-  
+
   emit('update:modelValue', newConfig)
 }
 
@@ -220,7 +220,7 @@ const onUrlParamsUpdate = (params: EnhancedParameter[]) => {
   // 🔥 修复架构设计：配置层不进行URL替换，只保存原始模板和参数
   // 保持原始URL模板不变，参数替换留给HTTP执行器处理
   console.log('📝 [HttpConfigStep1] 参数配置更新，但不修改URL模板')
-  
+
   // 如果有API信息，确保URL保持原始模板格式
   const apiInfo = selectedApiInfo.value
   if (apiInfo) {
@@ -411,7 +411,7 @@ watch(
  */
 watch(
   () => props.modelValue,
-  (newValue) => {
+  newValue => {
     // 当modelValue完全变化时（比如从编辑数据加载），重新初始化
     if (newValue && (newValue.addressType === 'internal' || newValue.selectedInternalAddress)) {
       nextTick(() => {

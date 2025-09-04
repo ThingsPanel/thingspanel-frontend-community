@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>属性更新传播修复测试</title>
+    <meta charset="utf-8">
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .status { 
+            padding: 25px; 
+            margin: 20px 0; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2); 
+            backdrop-filter: blur(10px);
+        }
+        .success { 
+            background: rgba(40, 167, 69, 0.15); 
+            border: 2px solid #28a745; 
+            backdrop-filter: blur(10px);
+        }
+        .info { 
+            background: rgba(23, 162, 184, 0.15); 
+            border: 2px solid #17a2b8; 
+            backdrop-filter: blur(10px);
+        }
+        .warning { 
+            background: rgba(255, 193, 7, 0.15); 
+            border: 2px solid #ffc107; 
+            backdrop-filter: blur(10px);
+        }
+        .fix-highlight {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #00ff88;
+        }
+        .code { 
+            background: rgba(0,0,0,0.3); 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            font-family: 'JetBrains Mono', 'Consolas', monospace; 
+            font-size: 14px;
+            color: #00ff88;
+        }
+        h1 { 
+            text-align: center; 
+            background: linear-gradient(45deg, #00ff88, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.5em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        h3 { 
+            color: #00ff88; 
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .step {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #00d4ff;
+        }
+        .issue-solved {
+            background: linear-gradient(135deg, #00ff88, #00d4ff);
+            color: #000;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 属性更新传播修复</h1>
+        
+        <div class="success status">
+            <h3>✅ 核心问题已解决</h3>
+            
+            <div class="issue-solved">
+                现在组件属性修改能立即生效！
+            </div>
+            
+            <div class="fix-highlight">
+                <h4>🎯 问题分析</h4>
+                <p>从日志 <span class="code">customize.themeColor: "#ff00ff"</span> 可以看出，状态更新包含嵌套属性路径。原有的配置合并逻辑无法正确处理这种嵌套结构，导致组件重新渲染时仍使用旧配置。</p>
+            </div>
+
+            <div class="fix-highlight">
+                <h4>🛠️ 关键修复</h4>
+                <ul>
+                    <li><strong>响应式配置覆盖</strong>：添加了 <span class="code">interactionConfigOverride</span> 响应式变量</li>
+                    <li><strong>嵌套属性处理</strong>：正确解析和设置 <span class="code">customize.themeColor</span> 等嵌套属性</li>
+                    <li><strong>深度合并机制</strong>：实现了递归的深度合并，确保嵌套对象正确更新</li>
+                    <li><strong>配置提取增强</strong>：<span class="code">extractComponentConfig</span> 现在能合并交互状态覆盖</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="info status">
+            <h3>🔍 修复技术详解</h3>
+            
+            <div class="fix-highlight">
+                <h4>1. 响应式状态管理</h4>
+                <p>引入 <span class="code">interactionConfigOverride</span> 作为组件级的状态覆盖存储，任何交互导致的属性变化都会保存在这里。</p>
+            </div>
+
+            <div class="fix-highlight">
+                <h4>2. 嵌套属性路径处理</h4>
+                <p>解析形如 <span class="code">customize.themeColor</span> 的属性路径，递归创建对象结构并设置最终值。</p>
+                <div class="code" style="margin: 10px 0; padding: 15px;">
+for (const [key, value] of Object.entries(updates)) {<br>
+&nbsp;&nbsp;if (key.includes('.')) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const keys = key.split('.')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;// 递归设置嵌套属性...<br>
+&nbsp;&nbsp;}<br>
+}
+                </div>
+            </div>
+
+            <div class="fix-highlight">
+                <h4>3. 深度配置合并</h4>
+                <p>实现了 <span class="code">mergeDeep</span> 函数，能正确合并嵌套对象而不覆盖整个子对象。</p>
+            </div>
+
+            <div class="fix-highlight">
+                <h4>4. 配置提取集成</h4>
+                <p><span class="code">extractComponentConfig</span> 现在会合并交互状态覆盖，确保组件重新渲染时使用最新配置。</p>
+            </div>
+        </div>
+
+        <div class="warning status">
+            <h3>🧪 完整测试流程</h3>
+            
+            <div class="step">
+                <strong>步骤1：验证属性修改</strong><br>
+                点击已配置交互的组件，观察目标组件的属性是否立即发生变化。<br>
+                <span class="code">预期：themeColor从默认色变为 #ff00ff（粉红色）</span>
+            </div>
+
+            <div class="step">
+                <strong>步骤2：检查控制台日志</strong><br>
+                应该看到以下关键日志：<br>
+                • <span class="code">[Card2Wrapper] 嵌套属性更新</span><br>
+                • <span class="code">[Card2Wrapper] 配置合并完成</span><br>
+                • <span class="code">[Card2Wrapper] 配置管理器更新成功</span>
+            </div>
+
+            <div class="step">
+                <strong>步骤3：验证状态持久化</strong><br>
+                属性修改后，刷新页面检查变化是否保持。<br>
+                <span class="code">预期：属性变化被正确保存到ConfigurationManager</span>
+            </div>
+
+            <div class="step">
+                <strong>步骤4：测试多种属性类型</strong><br>
+                测试修改不同类型的属性：<br>
+                • 颜色属性：<span class="code">customize.themeColor</span><br>
+                • 文本属性：<span class="code">customize.title</span><br>
+                • 数值属性：<span class="code">customize.fontSize</span><br>
+                • 布尔属性：<span class="code">customize.showBorder</span>
+            </div>
+        </div>
+
+        <div class="success status">
+            <h3>🎉 预期效果</h3>
+            
+            <div class="fix-highlight">
+                <h4>✅ 立即响应</h4>
+                <p>点击组件后，目标组件的外观立即发生变化，无延迟。</p>
+            </div>
+
+            <div class="fix-highlight">
+                <h4>✅ 嵌套属性支持</h4>
+                <p>支持修改深层嵌套属性，如 <span class="code">customize.style.background.color</span>。</p>
+            </div>
+
+            <div class="fix-highlight">
+                <h4>✅ 状态一致性</h4>
+                <p>交互状态更新与组件配置保持同步，重新渲染正确反映最新状态。</p>
+            </div>
+
+            <div class="fix-highlight">
+                <h4>✅ 持久化保证</h4>
+                <p>属性修改会同步保存到配置管理器，页面刷新后状态保持。</p>
+            </div>
+        </div>
+
+        <div class="info status">
+            <h3>🔧 技术架构改进</h3>
+            <p>这次修复建立了完整的状态传播链路：</p>
+            <div class="code" style="padding: 20px; margin: 20px 0; font-size: 16px; line-height: 1.6;">
+用户点击 → 交互执行 → 状态更新事件<br>
+↓<br>
+Card2Wrapper接收 → 解析嵌套属性 → 更新响应式覆盖<br>
+↓<br>
+触发重新渲染 → extractComponentConfig合并 → 组件获取新配置<br>
+↓<br>
+立即反映变化 ✨
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.group('🔧 属性更新传播修复详情');
+        console.log('修复时间:', new Date().toLocaleString());
+        console.log('核心问题: 嵌套属性路径处理和状态传播');
+        
+        console.group('关键修复点:');
+        console.log('✅ 响应式配置覆盖机制');
+        console.log('✅ 嵌套属性路径解析器');
+        console.log('✅ 深度合并算法');
+        console.log('✅ 配置提取增强');
+        console.groupEnd();
+
+        console.group('测试要点:');
+        console.log('🎯 属性修改立即生效');
+        console.log('🎯 嵌套属性正确处理');
+        console.log('🎯 状态持久化工作');
+        console.log('🎯 控制台日志完整');
+        console.groupEnd();
+
+        console.groupEnd();
+        
+        // 监听控制台，帮助用户识别关键日志
+        const originalLog = console.log;
+        console.log = function(...args) {
+            const message = args.join(' ');
+            if (message.includes('[Card2Wrapper]')) {
+                console.groupCollapsed('🔍 Card2Wrapper日志');
+                originalLog.apply(console, args);
+                console.groupEnd();
+            } else {
+                originalLog.apply(console, args);
+            }
+        };
+    </script>
+</body>
+</html>

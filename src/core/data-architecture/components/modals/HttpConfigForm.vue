@@ -220,7 +220,7 @@ const updateConfig = () => {
     // 保持向后兼容：设置pathParameter
     const firstParam = config.pathParams[0]
     console.log('🔧 [HttpConfigForm] 转换pathParameter前:', JSON.stringify(firstParam, null, 2))
-    
+
     config.pathParameter = {
       value: firstParam.value,
       isDynamic: firstParam.valueMode === 'component' || firstParam.selectedTemplate === 'component-property-binding',
@@ -233,7 +233,7 @@ const updateConfig = () => {
       key: firstParam.key,
       enabled: firstParam.enabled
     }
-    
+
     console.log('✅ [HttpConfigForm] 转换pathParameter后:', JSON.stringify(config.pathParameter, null, 2))
   } else {
     config.pathParameter = undefined
@@ -309,7 +309,7 @@ const syncPropsToLocal = (newValue: any) => {
     if (newValue.url !== undefined) localConfig.url = newValue.url
     if (newValue.method !== undefined) localConfig.method = newValue.method
     if (newValue.timeout !== undefined) localConfig.timeout = newValue.timeout
-    
+
     // 🔥 地址类型相关字段的完整同步，确保回显正确
     if (newValue.addressType !== undefined) localConfig.addressType = newValue.addressType
     if (newValue.selectedInternalAddress !== undefined) {

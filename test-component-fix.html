@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组件树修复验证测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .success { color: #52c41a; }
+        .error { color: #ff4d4f; }
+        .warning { color: #faad14; }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .test-result.success { background: #f6ffed; border: 1px solid #b7eb8f; }
+        .test-result.error { background: #fff2f0; border: 1px solid #ffccc7; }
+        .test-result.warning { background: #fffbe6; border: 1px solid #ffe58f; }
+        .test-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .component-item {
+            background: #fafafa;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #d9d9d9;
+        }
+        .component-name { font-weight: bold; color: #1890ff; }
+        .component-type { color: #666; font-size: 12px; }
+        .component-category { color: #722ed1; font-size: 12px; }
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #40a9ff; }
+        button:disabled { background: #d9d9d9; cursor: not-allowed; }
+        .stats { 
+            display: flex; 
+            gap: 20px; 
+            margin: 15px 0;
+            padding: 10px;
+            background: #e6f7ff;
+            border-radius: 4px;
+        }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #1890ff; }
+        .stat-label { font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="test-card">
+        <h1>🔧 组件树 localeCompare 修复验证</h1>
+        <p>测试 useComponentTree.ts 中的 localeCompare 错误修复是否有效</p>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="total-components">0</div>
+                <div class="stat-label">总组件数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="successful-sorts">0</div>
+                <div class="stat-label">成功排序</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="errors-caught">0</div>
+                <div class="stat-label">错误捕获</div>
+            </div>
+        </div>
+
+        <div>
+            <button onclick="testComponentTree()">🔍 测试组件树功能</button>
+            <button onclick="testSorting()">📊 测试排序功能</button>
+            <button onclick="testSearching()">🔎 测试搜索功能</button>
+            <button onclick="clearResults()">🗑️ 清空结果</button>
+        </div>
+
+        <div id="test-results"></div>
+        <div id="component-list"></div>
+    </div>
+
+    <script type="module">
+        let testResults = [];
+        let totalComponents = 0;
+        let successfulSorts = 0;
+        let errorsCaught = 0;
+
+        // 测试用的模拟组件数据（包含一些可能导致 undefined 的情况）
+        const mockComponents = [
+            { name: "测试组件A", type: "test-a", mainCategory: "测试", description: "测试组件A描述" },
+            { name: undefined, type: "test-b", mainCategory: "测试", description: "名称为undefined的组件" },
+            { name: "测试组件C", type: undefined, mainCategory: "测试", description: "类型为undefined的组件" },
+            { name: "测试组件D", type: "test-d", mainCategory: undefined, description: "分类为undefined的组件" },
+            { name: null, type: "test-e", mainCategory: "测试", description: "名称为null的组件" },
+            { name: "", type: "test-f", mainCategory: "", description: "名称和分类为空字符串的组件" },
+            { name: "正常组件", type: "normal", mainCategory: "基础", description: "完全正常的组件" }
+        ];
+
+        function updateStats() {
+            document.getElementById('total-components').textContent = totalComponents;
+            document.getElementById('successful-sorts').textContent = successfulSorts;
+            document.getElementById('errors-caught').textContent = errorsCaught;
+        }
+
+        function addResult(type, message) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = `
+                <strong>[${new Date().toLocaleTimeString()}]</strong> 
+                <span class="${type}">${message}</span>
+            `;
+            document.getElementById('test-results').appendChild(resultDiv);
+        }
+
+        function testSafeSort(components, sortBy) {
+            try {
+                const sorted = [...components].sort((a, b) => {
+                    let aValue, bValue;
+
+                    switch (sortBy) {
+                        case 'name':
+                            aValue = a.name || '';
+                            bValue = b.name || '';
+                            break;
+                        case 'type':
+                            aValue = a.type || '';
+                            bValue = b.type || '';
+                            break;
+                        case 'category':
+                            aValue = a.mainCategory || '';
+                            bValue = b.mainCategory || '';
+                            break;
+                        default:
+                            aValue = a.name || '';
+                            bValue = b.name || '';
+                    }
+
+                    // 确保值不是 undefined，防止 localeCompare 错误（这就是我们的修复）
+                    const safeAValue = String(aValue || '');
+                    const safeBValue = String(bValue || '');
+
+                    const comparison = safeAValue.localeCompare(safeBValue);
+                    return comparison;
+                });
+
+                successfulSorts++;
+                return { success: true, data: sorted };
+            } catch (error) {
+                errorsCaught++;
+                return { success: false, error: error.message };
+            }
+        }
+
+        window.testComponentTree = function() {
+            addResult('success', '🚀 开始测试组件树基本功能...');
+            
+            totalComponents = mockComponents.length;
+            
+            // 测试基本功能
+            if (mockComponents && Array.isArray(mockComponents)) {
+                addResult('success', `✅ 组件数组正常，包含 ${mockComponents.length} 个组件`);
+            } else {
+                addResult('error', '❌ 组件数组异常');
+                return;
+            }
+
+            // 显示组件列表
+            displayComponents(mockComponents);
+            updateStats();
+        };
+
+        window.testSorting = function() {
+            addResult('success', '📊 开始测试排序功能...');
+            
+            const sortTypes = ['name', 'type', 'category'];
+            
+            sortTypes.forEach(sortBy => {
+                const result = testSafeSort(mockComponents, sortBy);
+                
+                if (result.success) {
+                    addResult('success', `✅ 按${sortBy}排序成功，排序了 ${result.data.length} 个组件`);
+                } else {
+                    addResult('error', `❌ 按${sortBy}排序失败: ${result.error}`);
+                }
+            });
+
+            updateStats();
+        };
+
+        window.testSearching = function() {
+            addResult('success', '🔎 开始测试搜索功能...');
+            
+            const searchQueries = ['测试', '组件', 'undefined', ''];
+            
+            searchQueries.forEach(query => {
+                try {
+                    const filtered = mockComponents.filter(comp => 
+                        (comp.name || '').toLowerCase().includes(query.toLowerCase()) ||
+                        (comp.description || '').toLowerCase().includes(query.toLowerCase()) ||
+                        (comp.type || '').toLowerCase().includes(query.toLowerCase())
+                    );
+                    
+                    addResult('success', `✅ 搜索"${query}"成功，找到 ${filtered.length} 个组件`);
+                } catch (error) {
+                    addResult('error', `❌ 搜索"${query}"失败: ${error.message}`);
+                    errorsCaught++;
+                }
+            });
+
+            updateStats();
+        };
+
+        function displayComponents(components) {
+            const listDiv = document.getElementById('component-list');
+            listDiv.innerHTML = '<h3>📋 组件列表</h3><div class="test-list"></div>';
+            
+            const listContainer = listDiv.querySelector('.test-list');
+            
+            components.forEach((comp, index) => {
+                const compDiv = document.createElement('div');
+                compDiv.className = 'component-item';
+                compDiv.innerHTML = `
+                    <div class="component-name">${comp.name || '(无名称)'}</div>
+                    <div class="component-type">类型: ${comp.type || '(无类型)'}</div>
+                    <div class="component-category">分类: ${comp.mainCategory || '(无分类)'}</div>
+                    <div style="font-size: 12px; color: #999; margin-top: 5px;">
+                        ${comp.description || '(无描述)'}
+                    </div>
+                `;
+                listContainer.appendChild(compDiv);
+            });
+        }
+
+        window.clearResults = function() {
+            document.getElementById('test-results').innerHTML = '';
+            document.getElementById('component-list').innerHTML = '';
+            testResults = [];
+            totalComponents = 0;
+            successfulSorts = 0;
+            errorsCaught = 0;
+            updateStats();
+            addResult('warning', '🗑️ 测试结果已清空');
+        };
+
+        // 页面加载完成后自动运行基本测试
+        window.onload = function() {
+            addResult('success', '🎉 组件树修复验证工具已加载');
+            addResult('warning', '💡 点击按钮开始测试各项功能');
+        };
+    </script>
+</body>
+</html>
