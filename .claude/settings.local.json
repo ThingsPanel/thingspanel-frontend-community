@@ -585,7 +585,9 @@
       "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\components\\visual-editor\\renderers\\gridstack/**)",
       "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\components\\visual-editor\\renderers\\gridstack/**)",
       "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\components\\visual-editor\\renderers\\gridstack/**)",
-      "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\card2.1\\types/**)"
+      "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\card2.1\\types/**)",
+      "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\components\\visual-editor\\renderers\\canvas/**)",
+      "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\components\\visual-editor\\renderers\\canvas/**)"
     ],
     "deny": [],
     "additionalDirectories": [

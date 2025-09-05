@@ -326,6 +326,7 @@ const handleTitleUpdate = (nodeId: string, newTitle: string) => {
   width: 100%;
   /* 🔥 高度由JavaScript动态计算和设置 */
   /* height 和 min-height 通过内联样式设置 */
+  overflow: auto; /* 🔥 防止内部内容超出时被隐藏 */
 }
 
 .grid-node-wrapper {
