@@ -212,6 +212,209 @@ export function autoRegisterFromSettingConfig(settingConfig: ComponentSettingCon
     listenableProperties,
     version: '1.0.0'
   })
+
+  console.log(`🎯 [PropertyExposure] 自动注册属性暴露配置`, {
+    componentType: settingConfig.componentType,
+    propertiesCount: listenableProperties.length,
+    properties: listenableProperties.map(p => p.name)
+  })
+}
+
+/**
+ * 🚀 优化1：自动属性检测和注册
+ * 智能检测组件的可暴露属性，无需手动配置
+ */
+export function autoDetectComponentProperties(componentType: string, componentDefinition: any): ListenableProperty[] {
+  const detectedProperties: ListenableProperty[] = []
+
+  // 1. 从 componentDefinition.config 中检测属性
+  if (componentDefinition.config) {
+    Object.entries(componentDefinition.config).forEach(([key, value]) => {
+      // 跳过内部属性和函数
+      if (key.startsWith('_') || typeof value === 'function') return
+
+      // 推断属性类型
+      const propertyType = inferPropertyTypeFromValue(value)
+      
+      detectedProperties.push({
+        name: key,
+        label: generatePropertyLabel(key),
+        type: propertyType,
+        description: `自动检测的 ${generatePropertyLabel(key)} 属性`,
+        group: '组件属性',
+        defaultValue: value,
+        isCore: isCoreProp(key),
+        example: value
+      })
+    })
+  }
+
+  // 2. 从组件的 props 中检测属性（如果可用）
+  if (componentDefinition.component?.props) {
+    Object.entries(componentDefinition.component.props).forEach(([key, propDef]: [string, any]) => {
+      // 避免重复添加
+      if (detectedProperties.find(p => p.name === key)) return
+
+      const propertyType = inferPropertyTypeFromVueProp(propDef)
+      
+      detectedProperties.push({
+        name: key,
+        label: generatePropertyLabel(key),
+        type: propertyType,
+        description: `从组件 props 检测的 ${generatePropertyLabel(key)} 属性`,
+        group: 'Props',
+        defaultValue: propDef.default,
+        isCore: isCoreProp(key),
+        example: propDef.default
+      })
+    })
+  }
+
+  // 3. 添加通用属性
+  const commonProps = ['title', 'visibility', 'backgroundColor', 'textColor']
+  commonProps.forEach(propName => {
+    if (!detectedProperties.find(p => p.name === propName)) {
+      const commonProp = CommonProperties[propName as keyof typeof CommonProperties]
+      if (commonProp) {
+        detectedProperties.push(commonProp)
+      }
+    }
+  })
+
+  return detectedProperties
+}
+
+/**
+ * 从值推断属性类型
+ */
+function inferPropertyTypeFromValue(value: any): PropertyDataType {
+  if (typeof value === 'string') {
+    // 检测特殊字符串类型
+    if (value.startsWith('#') || value.startsWith('rgb') || value.startsWith('hsl')) {
+      return 'color'
+    }
+    if (value.startsWith('http') || value.startsWith('https')) {
+      return 'url'
+    }
+    return 'string'
+  }
+  if (typeof value === 'number') return 'number'
+  if (typeof value === 'boolean') return 'boolean'
+  if (Array.isArray(value)) return 'array'
+  if (value instanceof Date) return 'date'
+  if (typeof value === 'object') return 'object'
+  return 'string'
+}
+
+/**
+ * 从 Vue prop 定义推断属性类型
+ */
+function inferPropertyTypeFromVueProp(propDef: any): PropertyDataType {
+  if (!propDef) return 'string'
+  
+  if (propDef.type === String) return 'string'
+  if (propDef.type === Number) return 'number'
+  if (propDef.type === Boolean) return 'boolean'
+  if (propDef.type === Array) return 'array'
+  if (propDef.type === Object) return 'object'
+  if (propDef.type === Date) return 'date'
+  
+  return 'string'
+}
+
+/**
+ * 生成友好的属性标签
+ */
+function generatePropertyLabel(key: string): string {
+  const labelMap: Record<string, string> = {
+    title: '标题',
+    content: '内容',
+    value: '数值',
+    status: '状态',
+    color: '颜色',
+    backgroundColor: '背景色',
+    textColor: '文字颜色',
+    fontSize: '字体大小',
+    fontWeight: '字体粗细',
+    visibility: '可见性',
+    width: '宽度',
+    height: '高度',
+    themeColor: '主题色',
+    borderRadius: '圆角',
+    padding: '内边距',
+    margin: '外边距'
+  }
+  
+  return labelMap[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+}
+
+/**
+ * 判断是否为核心属性
+ */
+function isCoreProp(key: string): boolean {
+  const coreProps = ['title', 'content', 'value', 'status', 'visibility', 'themeColor']
+  return coreProps.includes(key)
+}
+
+/**
+ * 🚀 增强的自动注册函数
+ * 结合 settingConfig 和自动检测的双重注册
+ */
+export function enhancedAutoRegister(
+  componentType: string, 
+  componentDefinition: any, 
+  settingConfig?: ComponentSettingConfig
+): void {
+  let allProperties: ListenableProperty[] = []
+
+  // 1. 如果有 settingConfig，从中提取属性
+  if (settingConfig) {
+    const settingProperties = settingConfig.settings.map(setting => {
+      const propertyType = inferPropertyDataType(setting)
+      return {
+        name: setting.field,
+        label: setting.label,
+        type: propertyType,
+        description: `通过设置面板配置的 ${setting.label} 属性`,
+        group: setting.group || '设置属性',
+        defaultValue: setting.defaultValue,
+        isCore: true,
+        example: setting.defaultValue,
+        enum: setting.options?.map(opt => ({
+          label: opt.label,
+          value: opt.value
+        }))
+      }
+    })
+    allProperties.push(...settingProperties)
+  }
+
+  // 2. 自动检测其他属性
+  const detectedProperties = autoDetectComponentProperties(componentType, componentDefinition)
+  
+  // 3. 合并属性（settingConfig 优先级更高）
+  detectedProperties.forEach(detected => {
+    const existing = allProperties.find(p => p.name === detected.name)
+    if (!existing) {
+      allProperties.push(detected)
+    }
+  })
+
+  // 4. 注册到属性暴露注册表
+  propertyExposureRegistry.register({
+    componentType,
+    componentName: componentDefinition.name || `${componentType} 组件`,
+    listenableProperties: allProperties,
+    version: '1.0.0'
+  })
+
+  console.log(`🎯 [EnhancedAutoRegister] 增强属性注册完成`, {
+    componentType,
+    totalProperties: allProperties.length,
+    settingProperties: settingConfig ? settingConfig.settings.length : 0,
+    detectedProperties: detectedProperties.length,
+    properties: allProperties.map(p => ({ name: p.name, group: p.group }))
+  })
 }
 
 /**

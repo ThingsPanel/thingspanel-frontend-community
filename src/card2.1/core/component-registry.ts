@@ -6,7 +6,7 @@
 
 import type { ComponentDefinition } from './types'
 import type { ComponentSettingConfig } from '../types/setting-config'
-import { autoRegisterFromSettingConfig } from './property-exposure'
+import { autoRegisterFromSettingConfig, enhancedAutoRegister } from './property-exposure'
 
 /**
  * 组件注册表类
@@ -20,7 +20,24 @@ export class ComponentRegistry {
    * @param definition 组件定义
    */
   static register(definition: ComponentDefinition): void {
-    this.definitions.set(definition.type, definition)
+    // 🔥 强制补充必要字段：自动为每个组件添加 deviceId 和 metricsList
+    const enhancedDefinition: ComponentDefinition = {
+      ...definition,
+      // 自动补充 deviceId（如果未提供）
+      deviceId: definition.deviceId || '',
+      // 自动补充 metricsList（如果未提供）
+      metricsList: definition.metricsList || []
+    }
+
+    console.log(`🔧 [ComponentRegistry] 注册组件 ${definition.type}`, {
+      originalHasDeviceId: !!definition.deviceId,
+      originalHasMetricsList: !!definition.metricsList,
+      enhancedHasDeviceId: !!enhancedDefinition.deviceId,
+      enhancedHasMetricsList: !!enhancedDefinition.metricsList,
+      autoSupplemented: !definition.deviceId || !definition.metricsList
+    })
+
+    this.definitions.set(definition.type, enhancedDefinition)
   }
 
   /**
@@ -171,6 +188,7 @@ export class ComponentRegistry {
 
   /**
    * 🔥 新增：注册完整的组件（包括定义和 settingConfig）
+   * 🚀 优化1：自动使用增强的属性注册机制
    * @param definition 组件定义
    * @param settingConfig 设置配置（可选）
    */
@@ -181,11 +199,9 @@ export class ComponentRegistry {
     // 注册组件定义
     this.register(definition)
 
-    // 如果有 settingConfig，同时注册属性暴露
-    if (settingConfig) {
-      // 验证组件类型一致性
-
-      this.registerSettingConfig(settingConfig)
+    // 🚀 使用增强的自动注册替代传统方式
+    if (enhancedAutoRegister) {
+      enhancedAutoRegister(definition.type, definition, settingConfig)
     }
   }
 }

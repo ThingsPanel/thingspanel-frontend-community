@@ -19,6 +19,9 @@ const simpleDisplayDefinition: ComponentDefinition = {
   name: '简单展示',
   description: '静态内容展示组件，支持自定义文字、图标和样式，无需数据源',
   category: '数据展示',
+  mainCategory: '测试',  // 对应test分类
+  subCategory: '数据展示',  // 子分类
+  icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h7v2H7v-2zm0 4h10v2H7v-2z"/></svg>`,
   version: '2.1.0',
   author: 'ThingsPanel',
 

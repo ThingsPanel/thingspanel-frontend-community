@@ -42,16 +42,18 @@ export class ComponentLoader {
       const componentModules: Record<string, ComponentModule> = {}
 
       for (const [path, module] of Object.entries(allModules)) {
-        // 从路径中提取组件ID
+        // 从路径中提取组件ID和分类信息
         const componentId = this.extractComponentId(path)
+        const category = this.extractComponentCategory(path)
 
-        console.log(`🔧 [ComponentLoader] 处理路径: ${path} -> 组件ID: ${componentId}`)
+        console.log(`🔧 [ComponentLoader] 处理路径: ${path} -> 组件ID: ${componentId}, 分类: ${category}`)
 
-        if (componentId && this.shouldIncludeComponent(componentId)) {
+        if (componentId && category && this.shouldIncludeComponent(componentId, category)) {
           // 获取默认导出或整个模块
           const definition = module.default || module
           console.log(`🔧 [ComponentLoader] 组件定义:`, {
             componentId,
+            category,
             hasDefault: !!module.default,
             definitionType: definition?.type,
             hasComponent: !!definition?.component
@@ -59,13 +61,13 @@ export class ComponentLoader {
 
           if (definition && definition.type) {
             componentModules[componentId] = { default: definition }
-            console.log(`✅ [ComponentLoader] 成功加载组件: ${componentId} (${definition.type})`)
+            console.log(`✅ [ComponentLoader] 成功加载组件: ${componentId} (${definition.type}) [分类: ${category}]`)
           } else {
             console.warn(`⚠️ [ComponentLoader] 组件定义格式不正确，跳过: ${path}`)
             console.warn(`⚠️ [ComponentLoader] 定义内容:`, definition)
           }
         } else {
-          console.warn(`⚠️ [ComponentLoader] 组件被排除或ID无效，跳过: ${path} (ID: ${componentId})`)
+          console.warn(`⚠️ [ComponentLoader] 组件被排除或ID无效，跳过: ${path} (ID: ${componentId}, 分类: ${category})`)
         }
       }
 
@@ -77,21 +79,44 @@ export class ComponentLoader {
   }
 
   /**
-   * 从路径中提取组件ID
+   * 从路径中提取组件ID和分类信息
    */
   private extractComponentId(path: string): string | null {
-    // 匹配更灵活的路径格式，支持连字符和下划线
-    // 优先匹配: ../components/universal-data-viz/index.ts
-    const match = path.match(/\.\.\/components\/(?:.*\/)?([^/]+)\/index\.(ts|js)$/)
-    const componentId = match ? match[1] : null
+    // 匹配分类文件夹结构: ../components/category/component-name/index.ts
+    const match = path.match(/\.\.\/components\/([^/]+)\/([^/]+)\/index\.(ts|js)$/)
+    const componentId = match ? match[2] : null
     return componentId
   }
 
   /**
-   * 判断是否应该包含该组件
+   * 从路径中提取组件分类
    */
-  private shouldIncludeComponent(componentId: string): boolean {
-    return !this.exclude.some(pattern => componentId.includes(pattern) || pattern.includes(componentId))
+  private extractComponentCategory(path: string): string | null {
+    // 提取分类文件夹名称
+    const match = path.match(/\.\.\/components\/([^/]+)\/([^/]+)\/index\.(ts|js)$/)
+    const category = match ? match[1] : null
+    return category
+  }
+
+  /**
+   * 判断是否应该包含该组件（包含环境过滤）
+   */
+  private shouldIncludeComponent(componentId: string, category: string): boolean {
+    // 基础排除规则
+    const isExcluded = this.exclude.some(pattern => componentId.includes(pattern) || pattern.includes(componentId))
+    if (isExcluded) return false
+
+    // 🔥 环境过滤：生产环境下排除测试组件
+    const isProduction = process.env.NODE_ENV === 'production'
+    const isTestComponent = category === 'test'
+
+    if (isProduction && isTestComponent) {
+      console.log(`🚫 [ComponentLoader] 生产环境跳过测试组件: ${componentId}`)
+      return false
+    }
+
+    console.log(`✅ [ComponentLoader] 包含组件: ${componentId} (分类: ${category})`)
+    return true
   }
 
   /**

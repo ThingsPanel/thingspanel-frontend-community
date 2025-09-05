@@ -1,53 +1,56 @@
 /**
- * triple-data-display 组件导出
+ * dual-data-display 组件导出
  * 新三文件结构 - 标准组件模板
  */
 
 import type { ComponentDefinition } from '@/card2.1/core/types'
-import TripleDataDisplayComponent from './index.vue'
-import TripleDataDisplaySetting from './setting.vue'
-import { tripleDataDisplaySettingConfig } from './settingConfig'
+import DualDataDisplayComponent from './index.vue'
+import DualDataDisplaySetting from './setting.vue'
+import { dualDataDisplaySettingConfig } from './settingConfig'
 import { componentRegistry } from '@/card2.1/core/component-registry'
 
 /**
- * triple-data-display 组件定义
+ * dual-data-display 组件定义
  * 基于新三文件架构的标准定义
  */
-const tripleDataDisplayDefinition: ComponentDefinition = {
+const dualDataDisplayDefinition: ComponentDefinition = {
   // 基础信息
-  type: 'triple-data-display',
-  name: '三数据展示',
-  description: '展示三个数据源的数据对比，支持多种布局模式和主题定制',
+  type: 'dual-data-display',
+  name: '双数据展示',
+  description: '展示两个数据源的数据对比，支持多种数字格式和主题定制',
   category: '数据展示',
+  mainCategory: '测试',  // 对应test分类
+  subCategory: '数据展示',  // 子分类
+  icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>`,
   version: '2.1.0',
   author: 'ThingsPanel',
 
   // 组件实现
-  component: TripleDataDisplayComponent,
+  component: DualDataDisplayComponent,
 
   // 配置组件
-  configComponent: TripleDataDisplaySetting,
+  configComponent: DualDataDisplaySetting,
 
   // 默认配置 - 使用新的 CustomConfig 结构
-  defaultConfig: tripleDataDisplaySettingConfig.customConfig,
+  defaultConfig: dualDataDisplaySettingConfig.customConfig,
 
   // 默认布局
   defaultLayout: {
     canvas: {
-      width: 500,
-      height: 350,
+      width: 400,
+      height: 280,
       x: 0,
       y: 0
     },
     gridstack: {
-      w: 4,
-      h: 4,
+      w: 3,
+      h: 3,
       x: 0,
       y: 0,
-      minW: 3,
-      minH: 3,
-      maxW: 8,
-      maxH: 6
+      minW: 2,
+      minH: 2,
+      maxW: 6,
+      maxH: 4
     }
   },
 
@@ -85,29 +88,14 @@ const tripleDataDisplayDefinition: ComponentDefinition = {
         }
       },
       required: false
-    },
-    {
-      key: 'dataSource3',
-      name: '第三个数据源',
-      description: '第三个数据源数值',
-      supportedTypes: ['static', 'api', 'websocket'],
-      fieldMappings: {
-        value: {
-          targetField: 'dataSource3',
-          type: 'value',
-          required: false,
-          defaultValue: 0
-        }
-      },
-      required: false
     }
   ],
 
   // 数据需求声明 (保持向后兼容)
   dataRequirements: {
-    componentType: 'triple-data-display',
-    displayName: '三数据展示组件',
-    description: '需要三个数据源进行对比展示',
+    componentType: 'dual-data-display',
+    displayName: '双数据展示组件',
+    description: '需要两个数据源进行对比显示',
     primaryData: {
       name: 'dataSource1',
       type: 'number',
@@ -126,24 +114,17 @@ const tripleDataDisplayDefinition: ComponentDefinition = {
         type: 'number',
         required: false,
         description: '第二个数据源数值'
-      },
-      {
-        name: 'dataSource3',
-        type: 'number',
-        required: false,
-        description: '第三个数据源数值'
       }
     ]
   },
 
   // 标签
-  tags: ['data-display', 'comparison', 'triple-source', 'layout'],
+  tags: ['data-display', 'comparison', 'dual-source'],
 
   // 示例数据
   sampleData: {
-    dataSource1: 78.5,
-    dataSource2: 85.2,
-    dataSource3: 92.1
+    dataSource1: 85.6,
+    dataSource2: 92.3
   },
 
   // 特性标记
@@ -153,12 +134,11 @@ const tripleDataDisplayDefinition: ComponentDefinition = {
     themeable: true,
     responsive: true,
     configurable: true,
-    tripleDataSource: true,
-    multiLayout: true
+    dualDataSource: true
   }
 }
 
 // 注册组件到组件注册中心（包含自动属性暴露）
-componentRegistry.registerComponent(tripleDataDisplayDefinition)
-componentRegistry.registerSettingConfig(tripleDataDisplaySettingConfig)
-export default tripleDataDisplayDefinition
+componentRegistry.registerComponent(dualDataDisplayDefinition)
+componentRegistry.registerSettingConfig(dualDataDisplaySettingConfig)
+export default dualDataDisplayDefinition

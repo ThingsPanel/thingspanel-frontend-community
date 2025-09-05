@@ -16,6 +16,8 @@
         :grid-config="gridConfig"
         :multi-data-source-store="multiDataSourceStore"
         :multi-data-source-config-store="multiDataSourceConfigStore"
+        :available-height="availableHeight"
+        :dynamic-heights="dynamicHeights"
         @node-select="onNodeSelect"
         @request-settings="onRequestSettings"
       />
@@ -42,6 +44,9 @@ const props = defineProps<{
   gridConfig?: any
   multiDataSourceStore?: Record<string, Record<string, any>>
   multiDataSourceConfigStore?: Record<string, any>
+  // 🔥 新增：高度相关props
+  availableHeight?: number
+  dynamicHeights?: any
 }>()
 
 const emit = defineEmits(['ready', 'error', 'node-select', 'canvas-click', 'request-settings'])
@@ -96,8 +101,10 @@ const onCanvasClick = () => {
 <style scoped>
 .gridstack-renderer {
   width: 100%;
-  height: 100%;
+  height: auto; /* 🔥 改为auto，让内容决定高度，不强制撑开父容器 */
   position: relative;
-  min-height: 600px;
+  min-height: calc(100vh - 150px); /* 🔥 考虑头部和工具栏的高度 */
+  overflow: visible; /* 🔥 让PanelLayout的main-area处理滚动 */
+  padding-bottom: 40px; /* 🔥 底部额外的安全边距 */
 }
 </style>

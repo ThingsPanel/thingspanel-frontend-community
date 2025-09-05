@@ -138,8 +138,30 @@ const twoLevelWidgetTree = computed(() => {
   const topCategoriesData: Record<string, { [subCategoryName: string]: WidgetDefinition[] }> = {}
 
   allWidgets.value.forEach(widget => {
-    const topLevelName = widget.definition?.mainCategory || $t('visualEditor.systemComponents')
-    const subLevelName = widget.definition?.subCategory || $t('visualEditor.otherComponents')
+    // 🔥 修复：跳过没有正确分类的组件，避免显示空白分类
+    if (!widget.definition?.mainCategory || !widget.definition?.subCategory) {
+      console.warn('⚠️ [WidgetLibrary] 跳过未分类组件 - 避免显示空白分类:', {
+        type: widget.type,
+        name: widget.name,
+        mainCategory: widget.definition?.mainCategory,
+        subCategory: widget.definition?.subCategory,
+        source: widget.source,
+        definitionKeys: widget.definition ? Object.keys(widget.definition) : 'no definition'
+      })
+      return // 跳过此组件
+    }
+
+    const topLevelName = widget.definition.mainCategory
+    const subLevelName = widget.definition.subCategory
+
+    // 调试：记录正确分类的组件
+    console.log('✅ [WidgetLibrary] 正确分类组件:', {
+      type: widget.type,
+      name: widget.name,
+      mainCategory: topLevelName,
+      subCategory: subLevelName,
+      source: widget.source
+    })
 
     if (!topCategoriesData[topLevelName]) {
       topCategoriesData[topLevelName] = {}

@@ -68,7 +68,7 @@ const handleLeftDrawerClose = (show: boolean) => {
 
 const handleRightDrawerClose = (show: boolean) => {
   if (!show) {
-    // 当抽屉关闭时，设置rightCollapsed为true  
+    // 当抽屉关闭时，设置rightCollapsed为true
     emit('update:rightCollapsed', true)
   }
 }
@@ -98,7 +98,7 @@ const hasFooter = computed(() => !!slots.footer)
 
 // 🔥 优化：显示条件 - 适配抽屉模式
 const displayHeader = computed(() => props.showHeader && hasHeader.value)
-const displayToolbar = computed(() => props.showToolbar && hasToolbar.value && isEditMode.value)
+const displayToolbar = computed(() => props.showToolbar && hasToolbar.value) // 🔥 移除 isEditMode 限制，预览模式也显示工具栏
 const displayLeft = computed(() => isEditMode.value && hasLeft.value && !props.leftCollapsed)
 const displayRight = computed(() => isEditMode.value && hasRight.value && !props.rightCollapsed)
 const displayFooter = computed(() => props.showFooter && hasFooter.value)
@@ -111,14 +111,31 @@ const dynamicHeights = computed(() => {
   if (displayToolbar.value) totalFixedHeight += props.toolbarHeight
   if (displayFooter.value) totalFixedHeight += props.footerHeight
 
+  // 🔥 添加安全边距，解决滚动区域被遮挡问题
+  const safetyMargin = 20 // 额外的安全边距
+  const availableHeight = Math.max(400, window.innerHeight - totalFixedHeight - safetyMargin)
+
   return {
     fixedHeight: totalFixedHeight,
-    mainHeight: `calc(100vh - ${totalFixedHeight}px)`,
+    availableHeight,
+    mainHeight: `${availableHeight}px`,
+    mainHeightCss: `calc(100vh - ${totalFixedHeight + safetyMargin}px)`,
     headerHeight: `${props.headerHeight}px`,
     toolbarHeight: `${props.toolbarHeight}px`,
-    footerHeight: `${props.footerHeight}px`
+    footerHeight: `${props.footerHeight}px`,
+    safetyMargin
   }
 })
+
+// 🔥 CSS Variables 用于向子组件传递高度信息
+const cssVariables = computed(() => ({
+  ...themeColors.value,
+  '--available-height': `${dynamicHeights.value.availableHeight}px`,
+  '--main-height': dynamicHeights.value.mainHeightCss,
+  '--header-height': dynamicHeights.value.headerHeight,
+  '--toolbar-height': dynamicHeights.value.toolbarHeight,
+  '--footer-height': dynamicHeights.value.footerHeight
+}))
 
 // API方法
 const toggleLeft = () => {
@@ -136,7 +153,10 @@ defineExpose({
   isEditMode: isEditMode.value,
   hasToolbar: hasToolbar.value,
   hasLeft: hasLeft.value,
-  hasRight: hasRight.value
+  hasRight: hasRight.value,
+  // 🔥 新增：高度信息暴露给父组件
+  dynamicHeights: dynamicHeights.value,
+  availableHeight: dynamicHeights.value.availableHeight
 })
 </script>
 
@@ -144,7 +164,7 @@ defineExpose({
   <div
     class="panel-layout h-full w-full flex flex-col"
     :class="[props.customClass, { 'no-animations': !props.enableAnimations }]"
-    :style="themeColors"
+    :style="cssVariables"
   >
     <!-- 🔥 新增：页面标题区域 -->
     <div
@@ -181,13 +201,22 @@ defineExpose({
         backgroundColor: 'var(--panel-bg)'
       }"
     >
-      <!-- 🔥 中央主区域 - 占满整个空间 -->
+      <!-- 🔥 中央主区域 - 使用动态高度 -->
       <div
-        class="main-area w-full h-full overflow-auto"
+        class="main-area w-full overflow-auto"
         :class="{ 'transition-all duration-300': props.enableAnimations }"
-        style="background-color: var(--panel-bg)"
+        :style="{
+          height: dynamicHeights.mainHeightCss,
+          backgroundColor: 'var(--panel-bg)'
+        }"
       >
-        <slot name="main" :mode="props.mode" :isEditMode="isEditMode" />
+        <slot
+          name="main"
+          :mode="props.mode"
+          :isEditMode="isEditMode"
+          :availableHeight="dynamicHeights.availableHeight"
+          :dynamicHeights="dynamicHeights"
+        />
       </div>
 
       <!-- 🔥 左侧抽屉 -->

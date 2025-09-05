@@ -21,6 +21,8 @@ import type {
 import { InteractionAdapter } from './interaction-adapter'
 import { VisualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
 import { propertyBindingLogger } from '@/utils/logger'
+// 🚀 导入统一的路径管理器
+import { PropertyPath, PropertyPathManager } from './property-path-manager'
 
 class InteractionManager {
   private componentConfigs = new Map<string, InteractionConfig[]>()
@@ -897,31 +899,40 @@ class InteractionManager {
   // ===== 🔥 新增：属性绑定和参数解析支持 =====
 
   /**
-   * 解析属性绑定表达式
-   * 支持格式：componentId.customize.title 或 componentId.data.value
+   * 🚀 解析属性绑定表达式（使用统一路径格式）
+   * 支持格式：componentInstanceId.propertyPath (如 comp-123.customize.title)
    */
   resolvePropertyBinding(bindingExpression: string): any {
     if (!bindingExpression || typeof bindingExpression !== 'string') {
       return undefined
     }
 
-    // 解析绑定表达式格式：componentId.propertyPath
-    const parts = bindingExpression.split('.')
-    if (parts.length < 2) {
+    // 🚀 使用统一路径管理器解析
+    const parseResult = PropertyPath.parse(bindingExpression)
+    if (!parseResult.isValid) {
+      console.warn(`[InteractionManager] 无效的属性绑定表达式: ${bindingExpression}`, parseResult.error)
       return undefined
     }
 
-    const componentId = parts[0]
-    const propertyPath = parts.slice(1).join('.')
+    const { componentInstanceId, propertyPath } = parseResult.pathInfo!
 
     // 获取组件状态
-    const componentState = this.getComponentState(componentId)
+    const componentState = this.getComponentState(componentInstanceId)
     if (!componentState) {
+      console.warn(`[InteractionManager] 组件状态不存在: ${componentInstanceId}`)
       return undefined
     }
 
     // 解析嵌套属性路径
     const value = this.getNestedProperty(componentState, propertyPath)
+
+    console.log(`🎯 [InteractionManager] 属性绑定解析`, {
+      bindingExpression,
+      componentInstanceId,
+      propertyPath,
+      value,
+      pathInfo: parseResult.pathInfo
+    })
 
     return value
   }

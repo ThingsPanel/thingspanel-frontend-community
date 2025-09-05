@@ -82,6 +82,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "system-management-user_system-log": () => import("@/views/system-management-user/system-log/index.vue"),
   "test_extended-grid-system": () => import("@/views/test/extended-grid-system/index.vue"),
   "test_new-config-system": () => import("@/views/test/new-config-system/index.vue"),
+  "test_optimization-system-demo": () => import("@/views/test/optimization-system-demo/index.vue"),
   "test_panel-editor-v2": () => import("@/views/test/panel-editor-v2/index.vue"),
   "test_script-editor-fix-test": () => import("@/views/test/script-editor-fix-test/index.vue"),
   "ultra-kanban_index": () => import("@/views/ultra-kanban/index/index.vue"),

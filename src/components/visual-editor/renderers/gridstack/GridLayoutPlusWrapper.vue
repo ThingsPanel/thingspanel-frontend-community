@@ -1,5 +1,5 @@
 <template>
-  <div ref="gridWrapperEl" class="grid-layout-plus-wrapper-editor">
+  <div ref="gridWrapperEl" class="grid-layout-plus-wrapper-editor" :style="{ height: gridHeight }">
     <GridLayoutPlus
       v-model:layout="layout"
       :config="gridConfig"
@@ -56,6 +56,9 @@ const props = defineProps<{
   gridConfig?: Partial<GridLayoutPlusConfig>
   multiDataSourceStore?: Record<string, Record<string, any>>
   multiDataSourceConfigStore?: Record<string, any>
+  // 🔥 新增：动态高度相关props
+  availableHeight?: number
+  dynamicHeights?: any
 }>()
 const emit = defineEmits(['node-select', 'request-settings'])
 
@@ -99,6 +102,20 @@ const removeNode = async (nodeId: string) => {
 const gridWrapperEl = ref<HTMLElement | null>(null)
 const layout = shallowRef<ExtendedGridLayoutPlusItem[]>([])
 const isReadOnly = computed(() => props.readonly)
+
+// 🔥 修复：让网格容器完全自然扩展，不限制高度
+const gridHeight = computed(() => {
+  // 🔥 简化逻辑：只为空状态提供最小高度，有内容时完全自然扩展
+  const hasNodes = layout.value.length > 0
+  
+  if (hasNodes) {
+    // 有组件时：完全自然扩展，让PanelLayout的main-area处理滚动
+    return 'auto'
+  } else {
+    // 空状态时：使用可用高度保证有足够空间显示空状态
+    return props.availableHeight ? `${props.availableHeight}px` : '100vh'
+  }
+})
 
 const contextMenu = ref<{
   show: boolean
@@ -189,12 +206,22 @@ watch(
 watch(
   () => props.staticGrid,
   (newStaticGrid, oldStaticGrid) => {
-    // 重新计算布局以应用新的静态配置
-    layout.value = nodesToLayout(props.graphData.nodes || [])
+    // 只更新布局项的static属性，不重新计算位置，避免预览模式位置偏移
+    layout.value = layout.value.map(item => ({
+      ...item,
+      static: newStaticGrid || (props.gridConfig?.staticGrid ?? false),
+      isDraggable: !props.readonly && !newStaticGrid && (props.gridConfig?.isDraggable ?? true),
+      isResizable: !props.readonly && !newStaticGrid && (props.gridConfig?.isResizable ?? true)
+    }))
   }
 )
 
 const onLayoutChange = (newLayout: ExtendedGridLayoutPlusItem[]) => {
+  // 🔥 在预览模式下不更新布局信息，避免意外的位置变化
+  if (props.readonly || props.staticGrid) {
+    return
+  }
+
   // 更新所有节点的布局信息
   newLayout.forEach(item => {
     updateNodeLayout(item)
@@ -305,9 +332,8 @@ const handleTitleUpdate = (nodeId: string, newTitle: string) => {
 <style scoped>
 .grid-layout-plus-wrapper-editor {
   width: 100%;
-  height: 100%;
-  /* 🔥 核心修复：为网格区域设置最小高度，避免被压缩 */
-  min-height: 600px;
+  /* 🔥 高度由JavaScript动态计算和设置 */
+  /* height 和 min-height 通过内联样式设置 */
 }
 
 .grid-node-wrapper {

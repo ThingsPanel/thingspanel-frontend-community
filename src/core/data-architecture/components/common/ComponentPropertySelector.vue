@@ -127,6 +127,8 @@ import {
 import { interactionManager } from '@/card2.1/core/interaction-manager'
 import { propertyExposureRegistry } from '@/card2.1/core/property-exposure'
 import type { ComponentPropertyTreeNode, ListenableProperty } from '@/card2.1/core/property-exposure'
+// 🚀 导入统一的路径管理器
+import { PropertyPath, PropertyPathManager } from '@/card2.1/core/property-path-manager'
 // 导入Visual Editor状态管理 - 使用正确的editor store
 import { useEditorStore } from '@/components/visual-editor/store/editor'
 
@@ -204,20 +206,25 @@ const fetchTreeData = () => {
         return null
       }
 
-      // 为每个属性生成子节点，使用实例ID作为前缀
-      const properties: ComponentPropertyTreeNode[] = exposure.listenableProperties.map(prop => ({
-        key: `${node.id}.${prop.name}`,
-        label: `${prop.label} (${prop.type})`,
-        type: 'property' as const,
-        componentId: node.id, // 使用实例ID而不是组件类型
-        propertyName: prop.name,
-        propertyConfig: {
-          ...prop,
-          // 确保每个属性都有默认值
-          defaultValue: prop.defaultValue !== undefined ? prop.defaultValue : getDefaultValueByType(prop.type)
-        },
-        isLeaf: true
-      }))
+      // 🚀 使用统一的路径管理器生成标准化的属性节点
+      const properties: ComponentPropertyTreeNode[] = exposure.listenableProperties.map(prop => {
+        // 使用 PropertyPath 创建标准化的绑定路径
+        const bindingPath = PropertyPath.create(node.id, prop.name)
+        
+        return {
+          key: bindingPath,
+          label: `${prop.label} (${prop.type})`,
+          type: 'property' as const,
+          componentId: node.id, // 使用实例ID而不是组件类型
+          propertyName: prop.name,
+          propertyConfig: {
+            ...prop,
+            // 确保每个属性都有默认值
+            defaultValue: prop.defaultValue !== undefined ? prop.defaultValue : getDefaultValueByType(prop.type)
+          },
+          isLeaf: true
+        }
+      })
 
       return {
         key: node.id,
@@ -308,34 +315,36 @@ const onSelectionChange = (selectedKeysValue: string[]) => {
   selectedKeys.value = selectedKeysValue
   const selectedKey = selectedKeysValue[0]
 
-  if (selectedKey && selectedKey.includes('.')) {
-    // 解析选中的属性 - 现在selectedKey格式为：实例ID.属性名
-    const parts = selectedKey.split('.')
-    const componentInstanceId = parts[0] // 这是组件实例的唯一ID
-    const propertyPath = parts.slice(1).join('.')
+  if (selectedKey) {
+    // 🚀 使用统一路径管理器解析选中的属性
+    const parseResult = PropertyPath.parse(selectedKey)
 
-    // 查找对应的树节点
-    const componentNode = rawTreeData.value.find(node => node.key === componentInstanceId)
-    const propertyNode = componentNode?.children?.find(prop => prop.key === selectedKey)
+    if (parseResult.isValid && parseResult.pathInfo) {
+      const { componentInstanceId, propertyPath, propertyName } = parseResult.pathInfo
 
-    if (propertyNode && propertyNode.propertyConfig) {
-      const propertyInfo: SelectedPropertyInfo = {
-        bindingPath: selectedKey, // 格式：实例ID.属性名
-        componentId: componentInstanceId, // 组件实例ID
-        componentName: componentNode?.label || componentInstanceId,
-        propertyName: propertyPath,
-        propertyLabel: propertyNode.propertyConfig.label,
-        type: propertyNode.propertyConfig.type,
-        description: propertyNode.propertyConfig.description,
-        defaultValue: propertyNode.propertyConfig.defaultValue
+      // 查找对应的树节点
+      const componentNode = rawTreeData.value.find(node => node.key === componentInstanceId)
+      const propertyNode = componentNode?.children?.find(prop => prop.key === selectedKey)
+
+      if (propertyNode && propertyNode.propertyConfig) {
+        const propertyInfo: SelectedPropertyInfo = {
+          bindingPath: selectedKey, // 使用标准化的绑定路径
+          componentId: componentInstanceId, // 组件实例ID
+          componentName: componentNode?.label || componentInstanceId,
+          propertyName,
+          propertyLabel: propertyNode.propertyConfig.label,
+          type: propertyNode.propertyConfig.type,
+          description: propertyNode.propertyConfig.description,
+          defaultValue: propertyNode.propertyConfig.defaultValue
+        }
+
+        selectedProperty.value = propertyInfo
+
+        // 发送事件
+        emit('update:modelValue', selectedKey)
+        emit('update:selectedValue', selectedKey)
+        emit('change', selectedKey, propertyInfo)
       }
-
-      selectedProperty.value = propertyInfo
-
-      // 发送事件
-      emit('update:modelValue', selectedKey)
-      emit('update:selectedValue', selectedKey)
-      emit('change', selectedKey, propertyInfo)
     }
   } else {
     selectedProperty.value = null

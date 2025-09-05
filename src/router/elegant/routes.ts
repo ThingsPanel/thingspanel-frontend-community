@@ -827,6 +827,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'test_optimization-system-demo',
+        path: '/test/optimization-system-demo',
+        component: 'view.test_optimization-system-demo',
+        meta: {
+          title: 'test_optimization-system-demo',
+          i18nKey: 'route.test_optimization-system-demo'
+        }
+      },
+      {
         name: 'test_panel-editor-v2',
         path: '/test/panel-editor-v2',
         component: 'view.test_panel-editor-v2',

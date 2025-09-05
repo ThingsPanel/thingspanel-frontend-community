@@ -6,10 +6,10 @@
 
 import type { ComponentDefinition } from '../core/types'
 
-// 导入新架构组件定义
-import simpleDisplayDefinition from './simple-display'
-import dualDataDisplayDefinition from './dual-data-display'
-import tripleDataDisplayDefinition from './triple-data-display'
+// 导入新架构组件定义（从test分类文件夹）
+import simpleDisplayDefinition from './test/simple-display'
+import dualDataDisplayDefinition from './test/dual-data-display'
+import tripleDataDisplayDefinition from './test/triple-data-display'
 import { ComponentRegistry } from '../core/component-registry'
 
 // ============ 组件注册表 ============
@@ -115,10 +115,10 @@ export const ComponentStats = {
 
 // ============ 单独导出组件定义 ============
 
-// 新架构组件导出
-export { default as simpleDisplayDefinition } from './simple-display'
-export { default as dualDataDisplayDefinition } from './dual-data-display'
-export { default as tripleDataDisplayDefinition } from './triple-data-display'
+// 新架构组件导出（从test分类文件夹）
+export { default as simpleDisplayDefinition } from './test/simple-display'
+export { default as dualDataDisplayDefinition } from './test/dual-data-display'
+export { default as tripleDataDisplayDefinition } from './test/triple-data-display'
 
 // 默认导出主要接口
 export default {

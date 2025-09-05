@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * PanelEditor V2 - 基于 PanelLayout 的新一代可视化编辑器
- * 
+ *
  * 实现真实的工具栏和渲染器切换功能
  */
 
@@ -21,7 +21,7 @@ interface Props {
   showToolbar?: boolean
   showPageHeader?: boolean
   enableHeaderArea?: boolean
-  enableToolbarArea?: boolean  
+  enableToolbarArea?: boolean
   enableFooterArea?: boolean
   customLayoutClass?: string
 }
@@ -75,7 +75,7 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
   const editMode = mode === 'edit'
   isEditing.value = editMode
   setPreviewMode(!editMode)
-  
+
   if (!editMode) {
     leftCollapsed.value = true
     rightCollapsed.value = true
@@ -161,7 +161,7 @@ const handleRequestSettings = (nodeId: string) => {
     :left-collapsed="leftCollapsed"
     :right-collapsed="rightCollapsed"
     :show-header="props.enableHeaderArea && props.showPageHeader"
-    :show-toolbar="props.enableToolbarArea && props.showToolbar" 
+    :show-toolbar="props.enableToolbarArea && props.showToolbar"
     :show-footer="props.enableFooterArea"
     :custom-class="props.customLayoutClass"
     @update:left-collapsed="leftCollapsed = $event"
@@ -170,7 +170,9 @@ const handleRequestSettings = (nodeId: string) => {
     <!-- 标题区域占位 -->
     <template #header>
       <div class="flex items-center justify-between w-full p-2 bg-blue-50">
-        <span>📋 标题区域占位 (enableHeaderArea: {{ props.enableHeaderArea }}, showPageHeader: {{ props.showPageHeader }})</span>
+        <span>
+          📋 标题区域占位 (enableHeaderArea: {{ props.enableHeaderArea }}, showPageHeader: {{ props.showPageHeader }})
+        </span>
       </div>
     </template>
 
@@ -210,15 +212,11 @@ const handleRequestSettings = (nodeId: string) => {
 
     <!-- 🔥 真实的左侧组件库 -->
     <template #left>
-      <WidgetLibrary 
-        @add-widget="handleAddWidget" 
-        @drag-start="handleDragStart" 
-        @drag-end="handleDragEnd" 
-      />
+      <WidgetLibrary @add-widget="handleAddWidget" @drag-start="handleDragStart" @drag-end="handleDragEnd" />
     </template>
 
     <!-- 🔥 主内容区域 - 真实渲染器实现 -->
-    <template #main>
+    <template #main="{ availableHeight, dynamicHeights }">
       <!-- 加载状态 -->
       <div v-if="!dataFetched" class="h-full flex items-center justify-center w-full">
         <n-spin size="large">
@@ -227,11 +225,11 @@ const handleRequestSettings = (nodeId: string) => {
           </template>
         </n-spin>
       </div>
-      
+
       <!-- 渲染器区域 -->
-      <div 
-        v-else 
-        class="renderer-main-area h-full w-full relative" 
+      <div
+        v-else
+        class="renderer-main-area h-full w-full relative"
         :class="{ dragging: isDragging }"
         @click="handleCanvasClick"
       >
@@ -248,7 +246,7 @@ const handleRequestSettings = (nodeId: string) => {
           @canvas-click="handleCanvasClick"
           @request-settings="handleRequestSettings"
         />
-        
+
         <!-- Gridstack 渲染器 -->
         <GridstackRenderer
           v-else-if="currentRenderer === 'gridstack' && dataFetched && !isUnmounted"
@@ -256,6 +254,8 @@ const handleRequestSettings = (nodeId: string) => {
           :readonly="!isEditing"
           :show-widget-titles="showWidgetTitles"
           :grid-config="editorConfig.gridConfig"
+          :available-height="availableHeight"
+          :dynamic-heights="dynamicHeights"
           class="renderer-container"
           @ready="handleRendererReady"
           @error="handleRendererError"
@@ -294,20 +294,21 @@ const handleRequestSettings = (nodeId: string) => {
 </template>
 
 <style scoped>
-/* 🔥 渲染器容器样式 */
+/* 🔥 渲染器容器样式 - 避免双滚动条但保持功能 */
 .renderer-main-area {
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* 🔥 让PanelLayout的main-area处理滚动 */
   background-color: var(--body-color, #f8fafc);
   transition: all 0.2s ease;
+  height: auto; /* 🔥 让内容决定高度 */
+  min-height: 100%; /* 🔥 至少占满父容器 */
 }
 
 .renderer-container {
   width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
+  height: auto; /* 🔥 改为auto，允许内容撑开高度 */
+  min-height: 100%; /* 至少占满父容器高度 */
+  position: relative; /* 🔥 改为relative，避免绝对定位限制 */
 }
 
 /* 🔥 拖拽状态样式 */
@@ -330,16 +331,16 @@ const handleRequestSettings = (nodeId: string) => {
 }
 
 /* 🔥 主题适配 */
-[data-theme="dark"] .renderer-main-area {
+[data-theme='dark'] .renderer-main-area {
   background-color: var(--body-color, #1f1f1f);
 }
 
-[data-theme="dark"] .renderer-main-area.dragging {
+[data-theme='dark'] .renderer-main-area.dragging {
   border-color: var(--primary-color, #3b82f6);
   background-color: rgba(59, 130, 246, 0.1);
 }
 
-[data-theme="dark"] .renderer-main-area.dragging::before {
+[data-theme='dark'] .renderer-main-area.dragging::before {
   color: var(--primary-color, #3b82f6);
 }
 </style>

@@ -1,53 +1,56 @@
 /**
- * dual-data-display 组件导出
+ * triple-data-display 组件导出
  * 新三文件结构 - 标准组件模板
  */
 
 import type { ComponentDefinition } from '@/card2.1/core/types'
-import DualDataDisplayComponent from './index.vue'
-import DualDataDisplaySetting from './setting.vue'
-import { dualDataDisplaySettingConfig } from './settingConfig'
+import TripleDataDisplayComponent from './index.vue'
+import TripleDataDisplaySetting from './setting.vue'
+import { tripleDataDisplaySettingConfig } from './settingConfig'
 import { componentRegistry } from '@/card2.1/core/component-registry'
 
 /**
- * dual-data-display 组件定义
+ * triple-data-display 组件定义
  * 基于新三文件架构的标准定义
  */
-const dualDataDisplayDefinition: ComponentDefinition = {
+const tripleDataDisplayDefinition: ComponentDefinition = {
   // 基础信息
-  type: 'dual-data-display',
-  name: '双数据展示',
-  description: '展示两个数据源的数据对比，支持多种数字格式和主题定制',
+  type: 'triple-data-display',
+  name: '三数据展示',
+  description: '展示三个数据源的数据对比，支持多种布局模式和主题定制',
   category: '数据展示',
+  mainCategory: '测试',  // 对应test分类
+  subCategory: '数据展示',  // 子分类
+  icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zm8 0h6v6h-6V3zM3 11h6v6H3v-6zm8 0h6v6h-6v-6zm8 0h6v6h-6v-6zm-16 8h6v6H3v-6zm8 0h6v6h-6v-6zm8 0h6v6h-6v-6z"/></svg>`,
   version: '2.1.0',
   author: 'ThingsPanel',
 
   // 组件实现
-  component: DualDataDisplayComponent,
+  component: TripleDataDisplayComponent,
 
   // 配置组件
-  configComponent: DualDataDisplaySetting,
+  configComponent: TripleDataDisplaySetting,
 
   // 默认配置 - 使用新的 CustomConfig 结构
-  defaultConfig: dualDataDisplaySettingConfig.customConfig,
+  defaultConfig: tripleDataDisplaySettingConfig.customConfig,
 
   // 默认布局
   defaultLayout: {
     canvas: {
-      width: 400,
-      height: 280,
+      width: 500,
+      height: 350,
       x: 0,
       y: 0
     },
     gridstack: {
-      w: 3,
-      h: 3,
+      w: 4,
+      h: 4,
       x: 0,
       y: 0,
-      minW: 2,
-      minH: 2,
-      maxW: 6,
-      maxH: 4
+      minW: 3,
+      minH: 3,
+      maxW: 8,
+      maxH: 6
     }
   },
 
@@ -85,14 +88,29 @@ const dualDataDisplayDefinition: ComponentDefinition = {
         }
       },
       required: false
+    },
+    {
+      key: 'dataSource3',
+      name: '第三个数据源',
+      description: '第三个数据源数值',
+      supportedTypes: ['static', 'api', 'websocket'],
+      fieldMappings: {
+        value: {
+          targetField: 'dataSource3',
+          type: 'value',
+          required: false,
+          defaultValue: 0
+        }
+      },
+      required: false
     }
   ],
 
   // 数据需求声明 (保持向后兼容)
   dataRequirements: {
-    componentType: 'dual-data-display',
-    displayName: '双数据展示组件',
-    description: '需要两个数据源进行对比显示',
+    componentType: 'triple-data-display',
+    displayName: '三数据展示组件',
+    description: '需要三个数据源进行对比展示',
     primaryData: {
       name: 'dataSource1',
       type: 'number',
@@ -111,17 +129,24 @@ const dualDataDisplayDefinition: ComponentDefinition = {
         type: 'number',
         required: false,
         description: '第二个数据源数值'
+      },
+      {
+        name: 'dataSource3',
+        type: 'number',
+        required: false,
+        description: '第三个数据源数值'
       }
     ]
   },
 
   // 标签
-  tags: ['data-display', 'comparison', 'dual-source'],
+  tags: ['data-display', 'comparison', 'triple-source', 'layout'],
 
   // 示例数据
   sampleData: {
-    dataSource1: 85.6,
-    dataSource2: 92.3
+    dataSource1: 78.5,
+    dataSource2: 85.2,
+    dataSource3: 92.1
   },
 
   // 特性标记
@@ -131,11 +156,12 @@ const dualDataDisplayDefinition: ComponentDefinition = {
     themeable: true,
     responsive: true,
     configurable: true,
-    dualDataSource: true
+    tripleDataSource: true,
+    multiLayout: true
   }
 }
 
 // 注册组件到组件注册中心（包含自动属性暴露）
-componentRegistry.registerComponent(dualDataDisplayDefinition)
-componentRegistry.registerSettingConfig(dualDataDisplaySettingConfig)
-export default dualDataDisplayDefinition
+componentRegistry.registerComponent(tripleDataDisplayDefinition)
+componentRegistry.registerSettingConfig(tripleDataDisplaySettingConfig)
+export default tripleDataDisplayDefinition
