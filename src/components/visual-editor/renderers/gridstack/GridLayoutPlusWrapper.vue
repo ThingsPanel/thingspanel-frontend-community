@@ -103,18 +103,10 @@ const gridWrapperEl = ref<HTMLElement | null>(null)
 const layout = shallowRef<ExtendedGridLayoutPlusItem[]>([])
 const isReadOnly = computed(() => props.readonly)
 
-// 🔥 修复：让网格容器完全自然扩展，不限制高度
+// 🔥 最简单的逻辑：让网格容器始终与外层高度一致
 const gridHeight = computed(() => {
-  // 🔥 简化逻辑：只为空状态提供最小高度，有内容时完全自然扩展
-  const hasNodes = layout.value.length > 0
-  
-  if (hasNodes) {
-    // 有组件时：完全自然扩展，让PanelLayout的main-area处理滚动
-    return 'auto'
-  } else {
-    // 空状态时：使用可用高度保证有足够空间显示空状态
-    return props.availableHeight ? `${props.availableHeight}px` : '100vh'
-  }
+  // 所有情况下都使用相同高度，让GridLayoutPlus组件内部处理内容超出
+  return props.availableHeight ? `${props.availableHeight}px` : '100%'
 })
 
 const contextMenu = ref<{
@@ -135,7 +127,7 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => {
     preventCollision: false, // 改为 false，允许碰撞和替换
     verticalCompact: true,
     isMirrored: false,
-    autoSize: true,
+    autoSize: false, // 🔥 禁用自动调整大小，让父容器处理滚动
     useCssTransforms: true,
     breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
     cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },

@@ -101,10 +101,12 @@ const onCanvasClick = () => {
 <style scoped>
 .gridstack-renderer {
   width: 100%;
-  height: auto; /* 🔥 改为auto，让内容决定高度，不强制撑开父容器 */
+  height: auto; /* 🔥 让内容决定高度，不强制撑开父容器 */
   position: relative;
-  min-height: calc(100vh - 150px); /* 🔥 考虑头部和工具栏的高度 */
-  overflow: visible; /* 🔥 让PanelLayout的main-area处理滚动 */
+  /* 🔥🔥🔥 移除硬编码的min-height！这就是问题根源！ */
+  /* min-height: calc(100vh - 150px); */
+  min-height: 100%; /* 🔥 改为相对父容器的最小高度 */
+  overflow: auto; /* 🔥 必须让这一层也处理滚动，防止内容被隐藏 */
   padding-bottom: 40px; /* 🔥 底部额外的安全边距 */
 }
 </style>

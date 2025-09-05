@@ -105,25 +105,78 @@ const displayFooter = computed(() => props.showFooter && hasFooter.value)
 
 // 🔥 新增：动态高度计算
 const dynamicHeights = computed(() => {
+  // 🔥 强制修复：确保正确的高度计算逻辑  
   let totalFixedHeight = 0
+  
+  // 🔥 直接计算固定区域高度，不依赖任何条件判断
+  if (props.showHeader && slots.header) {
+    totalFixedHeight += props.headerHeight
+    console.log('✅ 添加 header 高度:', props.headerHeight)
+  }
+  if (props.showToolbar && slots.toolbar) {
+    totalFixedHeight += props.toolbarHeight
+    console.log('✅ 添加 toolbar 高度:', props.toolbarHeight)
+  }
+  if (props.showFooter && slots.footer) {
+    totalFixedHeight += props.footerHeight  
+    console.log('✅ 添加 footer 高度:', props.footerHeight)
+  }
 
-  if (displayHeader.value) totalFixedHeight += props.headerHeight
-  if (displayToolbar.value) totalFixedHeight += props.toolbarHeight
-  if (displayFooter.value) totalFixedHeight += props.footerHeight
+  const safetyMargin = 10
+  const actualTotal = Math.max(118, totalFixedHeight + safetyMargin) // 🔥 确保最小值118px
+  const availableHeight = Math.max(300, window.innerHeight - actualTotal)
+  
+  // 🔥🔥🔥 强制确保正确的CSS格式！永远是正数！
+  const correctMainHeightCss = `calc(100vh - ${actualTotal}px)`
+  
+  // 🔥 调试：输出所有相关值
+  console.log('🔥🔥🔥 CRITICAL 高度计算调试:', {
+    'header显示': props.showHeader,
+    'header插槽': !!slots.header,
+    'header高度': props.headerHeight,
+    'toolbar显示': props.showToolbar, 
+    'toolbar插槽': !!slots.toolbar,
+    'toolbar高度': props.toolbarHeight,
+    'footer显示': props.showFooter,
+    'footer插槽': !!slots.footer,
+    'footer高度': props.footerHeight,
+    totalFixedHeight,
+    safetyMargin,
+    actualTotal,
+    '绝对值actualTotal': Math.abs(actualTotal),
+    availableHeight,
+    windowHeight: window.innerHeight,
+    '最终CSS应该是': correctMainHeightCss,
+    '检查actualTotal是否负数': actualTotal < 0 ? '⚠️ 负数!' : '✅ 正数'
+  })
 
-  // 🔥 添加安全边距，解决滚动区域被遮挡问题
-  const safetyMargin = 20 // 额外的安全边距
-  const availableHeight = Math.max(400, window.innerHeight - totalFixedHeight - safetyMargin)
+  // 🔥 如果actualTotal是负数，强制设为合理值
+  if (actualTotal < 0) {
+    console.error('❌ actualTotal 是负数！强制修正为118')
+    const forcedTotal = 118 // 强制使用一个合理的固定值
+    return {
+      fixedHeight: totalFixedHeight,
+      availableHeight: Math.max(300, window.innerHeight - forcedTotal),
+      mainHeight: `${Math.max(300, window.innerHeight - forcedTotal)}px`,
+      mainHeightCss: `calc(100vh - ${forcedTotal}px)`, // 🔥 强制正值
+      headerHeight: `${props.headerHeight}px`,
+      toolbarHeight: `${props.toolbarHeight}px`,
+      footerHeight: `${props.footerHeight}px`,
+      safetyMargin,
+      actualTotal: forcedTotal
+    }
+  }
 
   return {
     fixedHeight: totalFixedHeight,
     availableHeight,
     mainHeight: `${availableHeight}px`,
-    mainHeightCss: `calc(100vh - ${totalFixedHeight + safetyMargin}px)`,
+    mainHeightCss: correctMainHeightCss, // 🔥 使用正确变量
     headerHeight: `${props.headerHeight}px`,
     toolbarHeight: `${props.toolbarHeight}px`,
     footerHeight: `${props.footerHeight}px`,
-    safetyMargin
+    safetyMargin,
+    actualTotal
   }
 })
 
@@ -194,19 +247,21 @@ defineExpose({
       <slot name="toolbar" :mode="props.mode" :isEditMode="isEditMode" />
     </div>
 
-    <!-- 🔥 新改进：主内容区域 - 全屏显示，左右为抽屉 -->
+    <!-- 🔥 新改进：主内容区域 - 修复高度计算 -->
     <div
       class="main-content flex-1 overflow-hidden relative"
       :style="{
+        height: dynamicHeights.mainHeightCss,
         backgroundColor: 'var(--panel-bg)'
       }"
     >
-      <!-- 🔥 中央主区域 - 使用动态高度 -->
+      <!-- 🔥 中央主区域 - 修复高度层级问题 -->
       <div
         class="main-area w-full overflow-auto"
         :class="{ 'transition-all duration-300': props.enableAnimations }"
         :style="{
-          height: dynamicHeights.mainHeightCss,
+          height: '100%',
+          minHeight: '100%',
           backgroundColor: 'var(--panel-bg)'
         }"
       >

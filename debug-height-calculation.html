@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高度计算修复验证测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            padding: 20px;
+            background: #1890ff;
+            color: white;
+        }
+        .content {
+            padding: 20px;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .status-card {
+            padding: 16px;
+            border: 1px solid #e1e1e1;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+        .status-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .status-value {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            color: #666;
+            word-break: break-all;
+        }
+        .success {
+            border-left: 4px solid #52c41a;
+            background: #f6ffed;
+        }
+        .error {
+            border-left: 4px solid #ff4d4f;
+            background: #fff2f0;
+        }
+        .warning {
+            border-left: 4px solid #faad14;
+            background: #fffbe6;
+        }
+        .test-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #1890ff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 16px;
+            transition: background 0.2s;
+        }
+        .test-link:hover {
+            background: #40a9ff;
+        }
+        .analysis-section {
+            margin-top: 24px;
+            padding: 16px;
+            background: #e6f7ff;
+            border-radius: 6px;
+        }
+        .fix-summary {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f0f9ff;
+            border: 1px solid #91d5ff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h1>🔧 高度计算修复验证测试</h1>
+            <p>验证 PanelLayout 高度计算逻辑修复是否解决了滚动问题</p>
+        </div>
+        
+        <div class="content">
+            <div class="analysis-section">
+                <h3>🔍 问题分析</h3>
+                <p>根据用户提供的 DOM 结构分析，发现高度计算产生了错误的负值：</p>
+                <div class="status-card error">
+                    <div class="status-title">❌ 错误的高度计算</div>
+                    <div class="status-value">height: calc(-128px + 100vh)</div>
+                </div>
+                <p>这导致了嵌套层级的高度继承问题，滚动容器无法正确显示滚动条。</p>
+            </div>
+
+            <div class="fix-summary">
+                <h3>✅ 修复方案</h3>
+                <ol>
+                    <li><strong>修复高度计算逻辑</strong>：直接检查 props 和 slots 而不依赖 computed 条件判断</li>
+                    <li><strong>添加安全检查</strong>：确保 totalFixedHeight 和 actualTotal 不为负数</li>
+                    <li><strong>简化条件逻辑</strong>：避免复杂的显示条件计算导致的错误</li>
+                    <li><strong>增加调试日志</strong>：输出关键计算值便于问题排查</li>
+                </ol>
+            </div>
+
+            <div class="status-grid">
+                <div class="status-card success">
+                    <div class="status-title">✅ PanelLayout.vue 修复</div>
+                    <div class="status-value">
+                        - dynamicHeights 计算逻辑修复<br>
+                        - 使用 Math.max(0, totalFixedHeight) 防止负值<br>
+                        - 直接检查 props.showXX && slots.xx
+                    </div>
+                </div>
+
+                <div class="status-card success">
+                    <div class="status-title">✅ 高度传递链修复</div>
+                    <div class="status-value">
+                        PanelLayout → PanelEditorV2 → GridLayoutPlusWrapper<br>
+                        正确的 availableHeight 属性传递
+                    </div>
+                </div>
+
+                <div class="status-card success">
+                    <div class="status-title">✅ CSS 样式优化</div>
+                    <div class="status-value">
+                        - .renderer-main-area: overflow: visible<br>
+                        - .renderer-container: height: auto<br>
+                        - .main-area: overflow: auto (唯一滚动容器)
+                    </div>
+                </div>
+
+                <div class="status-card warning">
+                    <div class="status-title">⚠️ 需要验证</div>
+                    <div class="status-value">
+                        1. 空状态不显示滚动条<br>
+                        2. 添加组件后正确显示滚动条<br>
+                        3. 拖拽调整大小后滚动正常<br>
+                        4. DOM 显示正确的 calc(100vh - XXXpx)
+                    </div>
+                </div>
+            </div>
+
+            <h3>🧪 测试步骤</h3>
+            <ol>
+                <li>打开面板编辑器 V2 测试页面</li>
+                <li>检查控制台高度计算日志输出</li>
+                <li>检查 DOM 结构中的 height 计算值</li>
+                <li>验证空状态无滚动条</li>
+                <li>添加组件并拖拽调整大小</li>
+                <li>验证滚动条正确出现和功能</li>
+            </ol>
+
+            <a href="http://localhost:5004/test/panel-editor-v2" class="test-link" target="_blank">
+                🚀 打开测试页面
+            </a>
+
+            <div class="analysis-section" style="margin-top: 20px;">
+                <h3>🎯 预期结果</h3>
+                <ul>
+                    <li>控制台输出正确的高度计算值（totalFixedHeight, actualTotal, availableHeight）</li>
+                    <li>DOM 中显示 <code>height: calc(100vh - [正数]px)</code> 而不是负值</li>
+                    <li>空状态时主区域高度与容器一致，无滚动条</li>
+                    <li>组件内容超出时自动显示滚动条</li>
+                    <li>只有 .main-area 有滚动条，避免多重滚动条</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🔧 高度计算修复验证测试页面已加载');
+        console.log('📝 检查要点：');
+        console.log('1. DOM 中的 height 计算是否为正值');
+        console.log('2. 空状态是否无滚动条');
+        console.log('3. 内容超出时是否正确显示滚动条');
+        
+        // 检查当前窗口高度，帮助理解计算
+        console.log(`当前窗口高度: ${window.innerHeight}px`);
+        
+        // 模拟不同的固定区域高度配置
+        const testConfigs = [
+            { header: 60, toolbar: 48, footer: 0, name: '标准配置' },
+            { header: 60, toolbar: 48, footer: 40, name: '包含底部栏' },
+            { header: 0, toolbar: 48, footer: 0, name: '仅工具栏' }
+        ];
+        
+        console.log('🧮 不同配置的高度计算预期:');
+        testConfigs.forEach(config => {
+            const totalFixed = config.header + config.toolbar + config.footer;
+            const safetyMargin = 10;
+            const actualTotal = Math.max(0, totalFixed + safetyMargin);
+            const available = Math.max(300, window.innerHeight - actualTotal);
+            
+            console.log(`${config.name}: 固定${totalFixed}px + 边距${safetyMargin}px = 总计${actualTotal}px, 可用高度${available}px`);
+        });
+    </script>
+</body>
+</html>

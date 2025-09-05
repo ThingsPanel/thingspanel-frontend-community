@@ -128,13 +128,14 @@ export class ConfigMergeManager {
   ): ConfigMergeResult<T> {
     const startTime = performance.now()
     
-    // 🚀 尝试从缓存获取结果
-    const cacheKey = ConfigMergeManager.generateCacheKey(configs, options)
-    const cachedResult = performanceOptimizer.getCachedConfigMergeResult(cacheKey)
-    if (cachedResult) {
-      performanceOptimizer.incrementCounter('configMerges')
-      return cachedResult
-    }
+    // 🔥 暂时禁用缓存以修复交互配置更新问题
+    // TODO: 修复缓存键生成逻辑后重新启用
+    // const cacheKey = ConfigMergeManager.generateCacheKey(configs, options)
+    // const cachedResult = performanceOptimizer.getCachedConfigMergeResult(cacheKey)
+    // if (cachedResult) {
+    //   performanceOptimizer.incrementCounter('configMerges')
+    //   return cachedResult
+    // }
     
     // 应用默认选项
     const mergeOptions: Required<ConfigMergeOptions> = {
@@ -145,6 +146,12 @@ export class ConfigMergeManager {
       enableChangeTracking: true,
       ...options
     }
+
+    console.log(`🔄 [ConfigMergeManager] 开始配置合并`, {
+      配置源: Object.keys(configs),
+      各源内容: configs,
+      合并选项: mergeOptions
+    })
 
     let merged: T = {} as T
     const changes: ConfigChangeInfo[] = []
@@ -212,8 +219,8 @@ export class ConfigMergeManager {
       stats
     }
 
-    // 🚀 缓存结果和记录性能
-    performanceOptimizer.cacheConfigMergeResult(cacheKey, result)
+    // 🔥 暂时禁用结果缓存
+    // performanceOptimizer.cacheConfigMergeResult(cacheKey, result)
     performanceOptimizer.recordMetric('configMergeTime', mergeTime)
     performanceOptimizer.incrementCounter('configMerges')
 

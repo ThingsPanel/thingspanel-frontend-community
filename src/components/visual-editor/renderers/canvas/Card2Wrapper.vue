@@ -294,7 +294,7 @@ onBeforeUnmount(() => {
   }
 })
 
-// 默认配置常量，避免在计算属性中调用$t函数
+// 🔥 临时简化修复：使用基础默认配置避免复杂性
 const defaultConfig = {
   title: '测试标题',
   showTitle: true,
@@ -306,7 +306,11 @@ const defaultConfig = {
   buttonType: 'primary',
   fontSize: 14,
   padding: 16,
-  borderRadius: 8
+  borderRadius: 8,
+  // 🔥 手动添加常见的数据源属性，确保交互系统能正常工作
+  dataSource1Label: '数据源1',
+  dataSource2Label: '数据源2', 
+  dataSource3Label: '数据源3'
 }
 
 /**
@@ -362,6 +366,16 @@ const extractComponentConfig = computed(() => {
 
   // 4. 交互覆盖配置
   const interactionState = interactionManager.getComponentState(props.nodeId || '')
+  
+  // 🔥 详细调试交互状态获取
+  console.log(`🔍 [Card2Wrapper] 交互状态调试`, {
+    componentId: props.nodeId,
+    interactionState,
+    interactionStateKeys: interactionState ? Object.keys(interactionState) : [],
+    interactionStateLength: interactionState ? Object.keys(interactionState).length : 0,
+    interactionManager: !!interactionManager
+  })
+  
   if (interactionState && Object.keys(interactionState).length > 0) {
     // 🔥 彻底修复：直接将所有交互属性扁平化处理，统一与用户配置的处理方式
     const processedInteractionState: any = {}
