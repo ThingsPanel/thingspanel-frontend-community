@@ -595,7 +595,14 @@
       "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\components\\visual-editor\\renderers\\canvas/**)",
       "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\components\\visual-editor\\renderers\\canvas/**)",
       "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\components\\visual-editor\\renderers\\canvas/**)",
-      "Bash(start http://localhost:5002/test/editor-integration)"
+      "Bash(start http://localhost:5002/test/editor-integration)",
+      "Read(/\\E\\wbh\\things2\\thingspanel-frontend-community\\src\\core\\data-architecture/**)",
+      "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\core\\data-architecture\\components/**)",
+      "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\core\\interaction-system\\components/**)",
+      "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\core\\data-architecture\\components\\modals/**)",
+      "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\core\\data-architecture\\types/**)",
+      "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\core/**)",
+      "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\core\\data-architecture\\types/**)"
     ],
     "deny": [],
     "additionalDirectories": [

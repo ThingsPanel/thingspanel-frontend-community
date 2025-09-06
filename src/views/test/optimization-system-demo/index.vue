@@ -12,13 +12,13 @@
             <n-icon size="24" color="#52c41a">
               <rocket-icon />
             </n-icon>
-            <n-text strong style="font-size: 20px;">
+            <n-text strong style="font-size: 20px">
               {{ $t('optimization.title') }}
             </n-text>
             <n-tag type="success" size="small">v2.1 Enhanced</n-tag>
           </n-space>
         </template>
-        
+
         <n-text depth="2">
           {{ $t('optimization.description') }}
         </n-text>
@@ -30,13 +30,11 @@
         <n-grid-item>
           <n-card title="🎯 自动化属性注册" size="small">
             <n-space vertical size="small">
-              <n-button type="primary" @click="demonstrateAutoRegistration" :loading="isDemo1Running">
+              <n-button type="primary" :loading="isDemo1Running" @click="demonstrateAutoRegistration">
                 演示自动属性注册
               </n-button>
-              <n-text depth="3" style="font-size: 12px;">
-                智能检测组件配置并自动注册可监听属性
-              </n-text>
-              
+              <n-text depth="3" style="font-size: 12px">智能检测组件配置并自动注册可监听属性</n-text>
+
               <!-- 演示结果 -->
               <n-alert v-if="demo1Result" type="success" size="small" :show-icon="false">
                 {{ demo1Result }}
@@ -49,13 +47,11 @@
         <n-grid-item>
           <n-card title="🔗 统一路径管理" size="small">
             <n-space vertical size="small">
-              <n-button type="info" @click="demonstratePathManagement" :loading="isDemo2Running">
+              <n-button type="info" :loading="isDemo2Running" @click="demonstratePathManagement">
                 演示路径解析优化
               </n-button>
-              <n-text depth="3" style="font-size: 12px;">
-                标准化属性路径格式和缓存机制
-              </n-text>
-              
+              <n-text depth="3" style="font-size: 12px">标准化属性路径格式和缓存机制</n-text>
+
               <!-- 演示结果 -->
               <n-alert v-if="demo2Result" type="info" size="small" :show-icon="false">
                 {{ demo2Result }}
@@ -68,13 +64,11 @@
         <n-grid-item>
           <n-card title="⚙️ 智能配置合并" size="small">
             <n-space vertical size="small">
-              <n-button type="success" @click="demonstrateConfigMerging" :loading="isDemo3Running">
+              <n-button type="success" :loading="isDemo3Running" @click="demonstrateConfigMerging">
                 演示配置合并策略
               </n-button>
-              <n-text depth="3" style="font-size: 12px;">
-                多源配置优先级合并和变更追踪
-              </n-text>
-              
+              <n-text depth="3" style="font-size: 12px">多源配置优先级合并和变更追踪</n-text>
+
               <!-- 演示结果 -->
               <n-alert v-if="demo3Result" type="success" size="small" :show-icon="false">
                 {{ demo3Result }}
@@ -87,13 +81,11 @@
         <n-grid-item>
           <n-card title="📊 性能监控" size="small">
             <n-space vertical size="small">
-              <n-button type="warning" @click="demonstratePerformanceMonitoring" :loading="isDemo4Running">
+              <n-button type="warning" :loading="isDemo4Running" @click="demonstratePerformanceMonitoring">
                 演示性能监控
               </n-button>
-              <n-text depth="3" style="font-size: 12px;">
-                实时性能指标和缓存优化
-              </n-text>
-              
+              <n-text depth="3" style="font-size: 12px">实时性能指标和缓存优化</n-text>
+
               <!-- 演示结果 -->
               <n-alert v-if="demo4Result" type="warning" size="small" :show-icon="false">
                 {{ demo4Result }}
@@ -121,8 +113,8 @@
             :time="log.time"
           />
         </n-timeline>
-        
-        <n-space justify="end" style="margin-top: 12px;">
+
+        <n-space justify="end" style="margin-top: 12px">
           <n-button size="small" @click="clearLogs">清空日志</n-button>
         </n-space>
       </n-card>
@@ -138,14 +130,14 @@
 
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { 
-  NSpace, 
-  NCard, 
-  NGrid, 
-  NGridItem, 
-  NIcon, 
-  NText, 
-  NTag, 
+import {
+  NSpace,
+  NCard,
+  NGrid,
+  NGridItem,
+  NIcon,
+  NText,
+  NTag,
   NButton,
   NAlert,
   NTimeline,
@@ -177,13 +169,15 @@ const demo3Result = ref('')
 const demo4Result = ref('')
 
 // 演示日志
-const demoLogs = ref<Array<{
-  id: number
-  type: 'success' | 'info' | 'warning' | 'error'
-  title: string
-  content: string
-  time: string
-}>>([])
+const demoLogs = ref<
+  Array<{
+    id: number
+    type: 'success' | 'info' | 'warning' | 'error'
+    title: string
+    content: string
+    time: string
+  }>
+>([])
 
 let logId = 1
 
@@ -194,11 +188,7 @@ const recentLogs = computed(() => {
 /**
  * 添加演示日志
  */
-const addDemoLog = (
-  type: 'success' | 'info' | 'warning' | 'error',
-  title: string,
-  content: string
-) => {
+const addDemoLog = (type: 'success' | 'info' | 'warning' | 'error', title: string, content: string) => {
   demoLogs.value.unshift({
     id: logId++,
     type,
@@ -214,9 +204,9 @@ const addDemoLog = (
 const demonstrateAutoRegistration = async () => {
   isDemo1Running.value = true
   demo1Result.value = ''
-  
+
   console.log('🎯 开始演示自动化属性注册...')
-  
+
   try {
     // 模拟组件定义
     const mockComponentDefinition = {
@@ -252,18 +242,14 @@ const demonstrateAutoRegistration = async () => {
     }
 
     // 使用增强的自动注册
-    enhancedAutoRegister(
-      mockComponentDefinition.type,
-      mockComponentDefinition,
-      mockSettingConfig
-    )
+    enhancedAutoRegister(mockComponentDefinition.type, mockComponentDefinition, mockSettingConfig)
 
     // 获取注册结果
     const exposure = propertyExposureRegistry.getComponentExposure('demo-widget-enhanced')
     const propertiesCount = exposure?.listenableProperties.length || 0
 
     demo1Result.value = `成功注册了 ${propertiesCount} 个属性，包括自动检测和手动配置的属性`
-    
+
     addDemoLog(
       'success',
       '自动属性注册演示完成',
@@ -293,9 +279,9 @@ const demonstrateAutoRegistration = async () => {
 const demonstratePathManagement = async () => {
   isDemo2Running.value = true
   demo2Result.value = ''
-  
+
   console.log('🎯 开始演示统一路径管理...')
-  
+
   try {
     const testPaths = [
       'component-123.title',
@@ -307,10 +293,10 @@ const demonstratePathManagement = async () => {
 
     let successCount = 0
     let cacheHits = 0
-    
+
     // 第一轮解析（无缓存）
     const startTime = performance.now()
-    
+
     for (const path of testPaths) {
       const result = PropertyPath.parse(path)
       if (result.isValid) {
@@ -333,12 +319,8 @@ const demonstratePathManagement = async () => {
     const parseTime = endTime - startTime
 
     demo2Result.value = `解析了 ${testPaths.length} 个路径，成功 ${successCount} 个，缓存命中 ${cacheHits} 次，耗时 ${parseTime.toFixed(2)}ms`
-    
-    addDemoLog(
-      'info',
-      '路径管理演示完成',
-      `总路径：${testPaths.length}，成功：${successCount}，缓存命中：${cacheHits}`
-    )
+
+    addDemoLog('info', '路径管理演示完成', `总路径：${testPaths.length}，成功：${successCount}，缓存命中：${cacheHits}`)
 
     console.log('✅ 统一路径管理演示完成', {
       totalPaths: testPaths.length,
@@ -363,9 +345,9 @@ const demonstratePathManagement = async () => {
 const demonstrateConfigMerging = async () => {
   isDemo3Running.value = true
   demo3Result.value = ''
-  
+
   console.log('🎯 开始演示智能配置合并...')
-  
+
   try {
     // 准备多个配置源
     const configSources = {
@@ -402,7 +384,7 @@ const demonstrateConfigMerging = async () => {
     const mergeTime = endTime - startTime
 
     demo3Result.value = `合并了 ${Object.keys(configSources).length} 个配置源，变更字段 ${mergeResult.stats?.changedFields || 0} 个，耗时 ${mergeTime.toFixed(2)}ms`
-    
+
     addDemoLog(
       'success',
       '配置合并演示完成',
@@ -445,9 +427,9 @@ const demonstrateConfigMerging = async () => {
 const demonstratePerformanceMonitoring = async () => {
   isDemo4Running.value = true
   demo4Result.value = ''
-  
+
   console.log('🎯 开始演示性能监控...')
-  
+
   try {
     // 模拟一些性能操作
     performanceOptimizer.recordMetric('propertyParsingTime', Math.random() * 50)
@@ -461,13 +443,14 @@ const demonstratePerformanceMonitoring = async () => {
 
     // 获取性能报告
     const report = performanceOptimizer.getPerformanceReport()
-    
-    const totalOperations = (report.metrics.operationStats?.propertyLookups || 0) +
-                           (report.metrics.operationStats?.configMerges || 0) +
-                           (report.metrics.operationStats?.pathParses || 0)
+
+    const totalOperations =
+      (report.metrics.operationStats?.propertyLookups || 0) +
+      (report.metrics.operationStats?.configMerges || 0) +
+      (report.metrics.operationStats?.pathParses || 0)
 
     demo4Result.value = `记录了性能指标，总操作数：${totalOperations}，缓存项：${Object.values(report.cacheStats).reduce((a, b) => a + b, 0)}，警报数：${report.alerts.length}`
-    
+
     addDemoLog(
       'warning',
       '性能监控演示完成',

@@ -1,9 +1,6 @@
 <script setup lang="ts">
 // 导入Vue核心功能、Naive UI组件和状态管理
-import {
-  computed,
-  useSlots,
-} from 'vue'
+import { computed, useSlots } from 'vue'
 import { NDrawer, NDrawerContent } from 'naive-ui'
 import { useThemeStore } from '@/store/modules/theme'
 
@@ -101,7 +98,7 @@ defineExpose({
   isEditMode,
   hasToolbar,
   hasLeft,
-  hasRight,
+  hasRight
 })
 </script>
 
@@ -112,20 +109,12 @@ defineExpose({
     :style="cssVariables"
   >
     <!-- 页面标题区域 -->
-    <div
-      v-if="displayHeader"
-      class="header-area"
-      :style="{ height: 'var(--header-height)' }"
-    >
+    <div v-if="displayHeader" class="header-area" :style="{ height: 'var(--header-height)' }">
       <slot name="header" :mode="props.mode" :isEditMode="isEditMode" />
     </div>
 
     <!-- 工具栏区域 -->
-    <div
-      v-if="displayToolbar"
-      class="toolbar-area"
-      :style="{ height: 'var(--toolbar-height)' }"
-    >
+    <div v-if="displayToolbar" class="toolbar-area" :style="{ height: 'var(--toolbar-height)' }">
       <slot name="toolbar" :mode="props.mode" :isEditMode="isEditMode" />
     </div>
 
@@ -133,11 +122,7 @@ defineExpose({
     <div class="main-content">
       <!-- 中央主区域 -->
       <div ref="mainAreaRef" class="main-area">
-        <slot
-          name="main"
-          :mode="props.mode"
-          :isEditMode="isEditMode"
-        />
+        <slot name="main" :mode="props.mode" :isEditMode="isEditMode" />
       </div>
 
       <!-- 左侧抽屉 -->
@@ -151,11 +136,7 @@ defineExpose({
         :mask-closable="true"
         @update:show="handleLeftDrawerClose"
       >
-        <NDrawerContent
-          title="组件库"
-          closable
-          @close="() => handleLeftDrawerClose(false)"
-        >
+        <NDrawerContent title="组件库" closable @close="() => handleLeftDrawerClose(false)">
           <slot name="left" :mode="props.mode" :isEditMode="isEditMode" />
         </NDrawerContent>
       </NDrawer>
@@ -171,22 +152,14 @@ defineExpose({
         :mask-closable="true"
         @update:show="handleRightDrawerClose"
       >
-        <NDrawerContent
-          title="属性配置"
-          closable
-          @close="() => handleRightDrawerClose(false)"
-        >
+        <NDrawerContent title="属性配置" closable @close="() => handleRightDrawerClose(false)">
           <slot name="right" :mode="props.mode" :isEditMode="isEditMode" />
         </NDrawerContent>
       </NDrawer>
     </div>
 
     <!-- 底部区域 -->
-    <div
-      v-if="displayFooter"
-      class="footer-area"
-      :style="{ height: 'var(--footer-height)' }"
-    >
+    <div v-if="displayFooter" class="footer-area" :style="{ height: 'var(--footer-height)' }">
       <slot name="footer" :mode="props.mode" :isEditMode="isEditMode" />
     </div>
   </div>
@@ -260,4 +233,3 @@ defineExpose({
   background: rgba(156, 163, 175, 0.6);
 }
 </style>
-

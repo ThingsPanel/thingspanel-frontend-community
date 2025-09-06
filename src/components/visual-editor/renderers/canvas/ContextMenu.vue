@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { computed, h } from 'vue'
 import { NIcon } from 'naive-ui'
-import { CopyOutline, TrashOutline, SettingsOutline } from '@vicons/ionicons5'
+import { CopyOutline, TrashOutline, SettingsOutline, LockClosedOutline, LockOpenOutline } from '@vicons/ionicons5'
 import type { VisualEditorWidget } from '../../types'
 
 interface Props {
@@ -21,6 +21,7 @@ interface Props {
   x: number
   y: number
   selectedWidgets?: VisualEditorWidget[]
+  onSelect: (action: string) => void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -28,7 +29,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  select: [action: string]
   close: []
 }>()
 
@@ -37,6 +37,21 @@ const menuOptions = computed(() => {
   const hasSelection = selection.length > 0
   const isSingleSelection = selection.length === 1
 
+  let isLocked = false
+  if (isSingleSelection) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const widget = selection[0] as any // Use any to access temporary property
+    // A component is locked if it's not draggable and not resizable.
+    isLocked = widget._isLocked === true
+  }
+
+  const lockOption = {
+    label: isLocked ? '解锁' : '锁定',
+    key: isLocked ? 'unlock' : 'lock',
+    icon: () => h(NIcon, null, { default: () => h(isLocked ? LockOpenOutline : LockClosedOutline) }),
+    disabled: !isSingleSelection
+  }
+
   return [
     {
       label: '属性',
@@ -44,6 +59,7 @@ const menuOptions = computed(() => {
       icon: () => h(NIcon, null, { default: () => h(SettingsOutline) }),
       disabled: !isSingleSelection
     },
+    lockOption,
     {
       type: 'divider',
       key: 'd1'
@@ -64,8 +80,7 @@ const menuOptions = computed(() => {
 })
 
 const handleSelect = (action: string) => {
-  emit('select', action)
-  emit('close')
+  props.onSelect(action)
 }
 
 const handleClickOutside = () => {

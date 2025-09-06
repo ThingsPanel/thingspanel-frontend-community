@@ -60,7 +60,7 @@ export interface CacheEntry<T = any> {
  */
 export class PerformanceOptimizer {
   private static instance: PerformanceOptimizer
-  
+
   // 性能指标
   private metrics: PerformanceMetrics = {
     propertyRegistrationTime: 0,
@@ -81,12 +81,12 @@ export class PerformanceOptimizer {
 
   // 性能警报
   private alerts: PerformanceAlert[] = []
-  
+
   // 缓存系统
   private configCache = new Map<string, CacheEntry>()
   private propertyCache = new Map<string, CacheEntry>()
   private pathCache = new Map<string, CacheEntry>()
-  
+
   // 性能阈值
   private readonly THRESHOLDS = {
     SLOW_PROPERTY_PARSING: 50, // 50ms
@@ -123,9 +123,9 @@ export class PerformanceOptimizer {
    */
   recordMetric(type: keyof PerformanceMetrics, value: number): void {
     if (typeof this.metrics[type] === 'number') {
-      (this.metrics as any)[type] = value
+      ;(this.metrics as any)[type] = value
     }
-    
+
     // 检查性能警报
     this.checkPerformanceThresholds(type, value)
   }
@@ -219,7 +219,7 @@ export class PerformanceOptimizer {
     this.configCache.clear()
     this.propertyCache.clear()
     this.pathCache.clear()
-    
+
     // 重置指标
     this.metrics = {
       propertyRegistrationTime: 0,
@@ -275,7 +275,7 @@ export class PerformanceOptimizer {
    */
   private evictLRUCache<T>(cache: Map<string, CacheEntry<T>>): void {
     let oldestEntry: { key: string; lastAccessed: number } | null = null
-    
+
     for (const [key, entry] of cache.entries()) {
       if (!oldestEntry || entry.lastAccessed < oldestEntry.lastAccessed) {
         oldestEntry = { key, lastAccessed: entry.lastAccessed }
@@ -301,11 +301,7 @@ export class PerformanceOptimizer {
             type: 'slowPropertyParsing',
             message: `属性解析耗时过长: ${value}ms`,
             data: { parseTime: value },
-            suggestions: [
-              '考虑缓存属性解析结果',
-              '优化属性路径格式',
-              '减少嵌套层级'
-            ],
+            suggestions: ['考虑缓存属性解析结果', '优化属性路径格式', '减少嵌套层级'],
             timestamp: now
           })
         }
@@ -318,11 +314,7 @@ export class PerformanceOptimizer {
             type: 'excessiveConfigMerges',
             message: `配置合并次数过多: ${this.counters.configMergesPerMinute}次/分钟`,
             data: { mergesPerMinute: this.counters.configMergesPerMinute },
-            suggestions: [
-              '启用配置缓存',
-              '减少配置更新频率',
-              '批量处理配置变更'
-            ],
+            suggestions: ['启用配置缓存', '减少配置更新频率', '批量处理配置变更'],
             timestamp: now
           })
         }
@@ -335,7 +327,7 @@ export class PerformanceOptimizer {
    */
   private addAlert(alert: PerformanceAlert): void {
     this.alerts.push(alert)
-    
+
     // 限制警报数量
     if (this.alerts.length > 50) {
       this.alerts = this.alerts.slice(-25) // 保留最新25条
@@ -406,10 +398,10 @@ export function measurePerformance(metricType: keyof PerformanceMetrics) {
       const startTime = performance.now()
       const result = originalMethod.apply(this, args)
       const endTime = performance.now()
-      
+
       const optimizer = PerformanceOptimizer.getInstance()
       optimizer.recordMetric(metricType, endTime - startTime)
-      
+
       return result
     }
 

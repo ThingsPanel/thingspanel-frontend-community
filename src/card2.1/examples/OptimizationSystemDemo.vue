@@ -6,7 +6,6 @@
   <div class="optimization-demo">
     <n-card title="🚀 属性系统优化演示" :bordered="false">
       <n-space vertical size="large">
-        
         <!-- 功能开关 -->
         <n-card size="small" title="演示控制">
           <n-space>
@@ -14,7 +13,7 @@
               <template #checked>显示性能监控</template>
               <template #unchecked>隐藏性能监控</template>
             </n-switch>
-            
+
             <n-switch v-model:value="showPropertyVisualizer" size="small">
               <template #checked>显示属性可视化</template>
               <template #unchecked>隐藏属性可视化</template>
@@ -25,21 +24,13 @@
         <!-- 演示操作 -->
         <n-card size="small" title="演示操作">
           <n-space>
-            <n-button type="primary" @click="demonstrateAutoRegistration">
-              演示自动属性注册
-            </n-button>
-            
-            <n-button type="info" @click="demonstratePathParsing">
-              演示路径解析优化
-            </n-button>
-            
-            <n-button type="success" @click="demonstrateConfigMerging">
-              演示配置合并策略
-            </n-button>
-            
-            <n-button type="warning" @click="clearPerformanceData">
-              清理性能数据
-            </n-button>
+            <n-button type="primary" @click="demonstrateAutoRegistration">演示自动属性注册</n-button>
+
+            <n-button type="info" @click="demonstratePathParsing">演示路径解析优化</n-button>
+
+            <n-button type="success" @click="demonstrateConfigMerging">演示配置合并策略</n-button>
+
+            <n-button type="warning" @click="clearPerformanceData">清理性能数据</n-button>
           </n-space>
         </n-card>
 
@@ -62,7 +53,6 @@
 
         <!-- 属性绑定可视化器 -->
         <property-binding-visualizer v-if="showPropertyVisualizer" />
-
       </n-space>
     </n-card>
   </div>
@@ -90,24 +80,22 @@ import PropertyBindingVisualizer from '@/card2.1/components/property-binding-vis
 // 响应式状态
 const showPerformanceMonitor = ref(true)
 const showPropertyVisualizer = ref(true)
-const demoResults = ref<Array<{
-  id: number
-  type: 'success' | 'info' | 'warning' | 'error'
-  title: string
-  content: string
-  time: string
-}>>([])
+const demoResults = ref<
+  Array<{
+    id: number
+    type: 'success' | 'info' | 'warning' | 'error'
+    title: string
+    content: string
+    time: string
+  }>
+>([])
 
 let resultId = 1
 
 /**
  * 添加演示结果
  */
-const addDemoResult = (
-  type: 'success' | 'info' | 'warning' | 'error',
-  title: string,
-  content: string
-) => {
+const addDemoResult = (type: 'success' | 'info' | 'warning' | 'error', title: string, content: string) => {
   demoResults.value.unshift({
     id: resultId++,
     type,
@@ -159,21 +147,13 @@ const demonstrateAutoRegistration = () => {
 
   try {
     // 使用增强的自动注册
-    enhancedAutoRegister(
-      mockComponentDefinition.type,
-      mockComponentDefinition,
-      mockSettingConfig
-    )
+    enhancedAutoRegister(mockComponentDefinition.type, mockComponentDefinition, mockSettingConfig)
 
     // 获取注册结果
     const exposure = propertyExposureRegistry.getComponentExposure('demo-widget')
     const propertiesCount = exposure?.listenableProperties.length || 0
 
-    addDemoResult(
-      'success',
-      '自动属性注册成功',
-      `成功注册了 ${propertiesCount} 个属性，包括自动检测和手动配置的属性`
-    )
+    addDemoResult('success', '自动属性注册成功', `成功注册了 ${propertiesCount} 个属性，包括自动检测和手动配置的属性`)
 
     console.log('✅ 自动属性注册演示完成', {
       componentType: mockComponentDefinition.type,
@@ -206,7 +186,7 @@ const demonstratePathParsing = () => {
   try {
     // 第一轮解析（无缓存）
     const startTime = performance.now()
-    
+
     for (const path of testPaths) {
       const result = PropertyPath.parse(path)
       if (result.isValid) {
@@ -291,8 +271,8 @@ const demonstrateConfigMerging = () => {
       'success',
       '配置合并策略演示',
       `合并了 ${Object.keys(configSources).length} 个配置源，` +
-      `变更字段 ${mergeResult.stats?.changedFields || 0} 个，` +
-      `耗时 ${mergeTime.toFixed(2)}ms`
+        `变更字段 ${mergeResult.stats?.changedFields || 0} 个，` +
+        `耗时 ${mergeTime.toFixed(2)}ms`
     )
 
     console.log('✅ 配置合并策略演示完成', {

@@ -309,7 +309,7 @@ const defaultConfig = {
   borderRadius: 8,
   // 🔥 手动添加常见的数据源属性，确保交互系统能正常工作
   dataSource1Label: '数据源1',
-  dataSource2Label: '数据源2', 
+  dataSource2Label: '数据源2',
   dataSource3Label: '数据源3'
 }
 
@@ -366,7 +366,7 @@ const extractComponentConfig = computed(() => {
 
   // 4. 交互覆盖配置
   const interactionState = interactionManager.getComponentState(props.nodeId || '')
-  
+
   // 🔥 详细调试交互状态获取
   console.log(`🔍 [Card2Wrapper] 交互状态调试`, {
     componentId: props.nodeId,
@@ -375,11 +375,11 @@ const extractComponentConfig = computed(() => {
     interactionStateLength: interactionState ? Object.keys(interactionState).length : 0,
     interactionManager: !!interactionManager
   })
-  
+
   if (interactionState && Object.keys(interactionState).length > 0) {
     // 🔥 彻底修复：直接将所有交互属性扁平化处理，统一与用户配置的处理方式
     const processedInteractionState: any = {}
-    
+
     for (const [key, value] of Object.entries(interactionState)) {
       if (key.startsWith('customize.')) {
         // customize.xxx -> xxx (直接扁平化，不创建嵌套结构)
@@ -390,9 +390,9 @@ const extractComponentConfig = computed(() => {
         processedInteractionState[key] = value
       }
     }
-    
+
     configSources.interaction = processedInteractionState
-    
+
     console.log(`🔥 [Card2Wrapper] 交互状态扁平化处理完成`, {
       componentId: props.nodeId,
       原始交互状态: interactionState,
@@ -504,7 +504,7 @@ watch(
               delete currentInteractionConfig.customize[prop]
               needUpdate = true
             }
-            
+
             // 清理源映射
             Object.keys(configSourceMap.value).forEach(key => {
               if (key === prop || key.includes(`${prop}.`)) {
@@ -769,7 +769,7 @@ onMounted(async () => {
         if (updateResult.merged && Object.keys(updateResult.merged).length > 0) {
           // 更新交互配置源
           configSources.value.interaction = updateResult.merged
-          
+
           // 更新源映射
           if (updateResult.sourceMap) {
             Object.assign(configSourceMap.value, updateResult.sourceMap)
@@ -789,23 +789,26 @@ onMounted(async () => {
             componentId: props.nodeId,
             updatesKeys: Object.keys(updates),
             currentComponentRef: !!currentComponentRef.value,
-            triggerMethod: currentComponentRef.value ? typeof currentComponentRef.value.triggerInteractionEvent : 'undefined'
+            triggerMethod: currentComponentRef.value
+              ? typeof currentComponentRef.value.triggerInteractionEvent
+              : 'undefined'
           })
-          
+
           // 为每个变化的属性触发 dataChange 事件
           Object.entries(updates).forEach(([property, newValue]) => {
             // 获取旧值用于比较
             const oldValue = configSources.value.interaction?.[property] || extractComponentConfig.value[property]
-            
+
             console.log(`🔍 [Card2Wrapper] 处理属性变化`, {
               componentId: props.nodeId,
               property,
               oldValue,
               newValue,
               hasComponentRef: !!currentComponentRef.value,
-              hasTriggerMethod: currentComponentRef.value && typeof currentComponentRef.value.triggerInteractionEvent === 'function'
+              hasTriggerMethod:
+                currentComponentRef.value && typeof currentComponentRef.value.triggerInteractionEvent === 'function'
             })
-            
+
             if (currentComponentRef.value && typeof currentComponentRef.value.triggerInteractionEvent === 'function') {
               try {
                 console.log(`🔔 [Card2Wrapper] 跨组件更新触发dataChange事件`, {
@@ -815,14 +818,14 @@ onMounted(async () => {
                   newValue,
                   source: 'cross-component-interaction'
                 })
-                
+
                 currentComponentRef.value.triggerInteractionEvent('dataChange', {
                   property,
                   oldValue,
                   newValue,
                   source: 'cross-component-interaction'
                 })
-                
+
                 console.log(`✅ [Card2Wrapper] dataChange事件触发成功`, {
                   componentId: props.nodeId,
                   property
@@ -835,7 +838,9 @@ onMounted(async () => {
                 componentId: props.nodeId,
                 property,
                 hasComponentRef: !!currentComponentRef.value,
-                triggerMethodType: currentComponentRef.value ? typeof currentComponentRef.value.triggerInteractionEvent : 'undefined'
+                triggerMethodType: currentComponentRef.value
+                  ? typeof currentComponentRef.value.triggerInteractionEvent
+                  : 'undefined'
               })
             }
           })
@@ -845,7 +850,7 @@ onMounted(async () => {
             // 获取完整的合并配置
             const fullConfig = extractComponentConfig.value
             configurationIntegrationBridge.updateConfiguration(props.nodeId, 'properties', fullConfig)
-            
+
             visualEditorLogger.info('[Card2Wrapper] 配置管理器同步成功', {
               componentId: props.nodeId,
               fullConfig,

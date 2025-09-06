@@ -19,8 +19,8 @@ const dualDataDisplayDefinition: ComponentDefinition = {
   name: '双数据展示',
   description: '展示两个数据源的数据对比，支持多种数字格式和主题定制',
   category: '数据展示',
-  mainCategory: '测试',  // 对应test分类
-  subCategory: '数据展示',  // 子分类
+  mainCategory: '测试', // 对应test分类
+  subCategory: '数据展示', // 子分类
   icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>`,
   version: '2.1.0',
   author: 'ThingsPanel',

@@ -92,7 +92,7 @@ export class PropertyPathManager {
     }
 
     const parts = bindingPath.split(this.PATH_SEPARATOR)
-    
+
     if (parts.length < 2) {
       return {
         isValid: false,
@@ -134,7 +134,7 @@ export class PropertyPathManager {
     // 🚀 缓存解析结果和记录性能
     const endTime = performance.now()
     const parseTime = endTime - startTime
-    
+
     performanceOptimizer.cachePathParseResult(bindingPath, result)
     performanceOptimizer.recordMetric('propertyParsingTime', parseTime)
     performanceOptimizer.incrementCounter('pathParses')
@@ -190,7 +190,7 @@ export class PropertyPathManager {
    */
   static getPropertyName(propertyHierarchy: (string | number)[]): string {
     if (propertyHierarchy.length === 0) return ''
-    
+
     const lastLevel = propertyHierarchy[propertyHierarchy.length - 1]
     return String(lastLevel)
   }
@@ -237,7 +237,7 @@ export class PropertyPathManager {
    */
   static generateDisplayLabel(bindingPath: string): string {
     const result = this.parseBindingPath(bindingPath)
-    
+
     if (!result.isValid) {
       return bindingPath
     }
@@ -245,9 +245,8 @@ export class PropertyPathManager {
     const { componentInstanceId, propertyHierarchy } = result.pathInfo!
 
     // 生成友好的组件名（取ID的前8位）
-    const shortComponentId = componentInstanceId.length > 8 
-      ? `${componentInstanceId.substring(0, 8)}...` 
-      : componentInstanceId
+    const shortComponentId =
+      componentInstanceId.length > 8 ? `${componentInstanceId.substring(0, 8)}...` : componentInstanceId
 
     // 生成友好的属性路径
     const friendlyPath = propertyHierarchy
@@ -269,7 +268,7 @@ export class PropertyPathManager {
    */
   static isArrayElementPath(bindingPath: string): boolean {
     const result = this.parseBindingPath(bindingPath)
-    
+
     if (!result.isValid) return false
 
     return result.pathInfo!.propertyHierarchy.some(part => typeof part === 'number')
@@ -282,7 +281,7 @@ export class PropertyPathManager {
    */
   static getParentPath(bindingPath: string): string | null {
     const result = this.parseBindingPath(bindingPath)
-    
+
     if (!result.isValid || result.pathInfo!.propertyHierarchy.length <= 1) {
       return null
     }
@@ -301,11 +300,11 @@ export class PropertyPathManager {
    * @returns 验证结果
    */
   static validatePath(
-    bindingPath: string, 
+    bindingPath: string,
     componentRegistry?: { has: (id: string) => boolean }
   ): PropertyPathValidationResult {
     const parseResult = this.parseBindingPath(bindingPath)
-    
+
     if (!parseResult.isValid) {
       return parseResult
     }
@@ -313,7 +312,7 @@ export class PropertyPathManager {
     // 如果提供了组件注册表，检查组件是否存在
     if (componentRegistry) {
       const { componentInstanceId } = parseResult.pathInfo!
-      
+
       if (!componentRegistry.has(componentInstanceId)) {
         return {
           isValid: false,
@@ -331,15 +330,14 @@ export class PropertyPathManager {
    * @returns 规范化后的路径数组
    */
   static normalizePaths(paths: string[]): string[] {
-    return paths
-      .map(path => {
-        try {
-          const result = this.parseBindingPath(path)
-          return result.isValid ? result.pathInfo!.fullPath : path
-        } catch {
-          return path
-        }
-      })
+    return paths.map(path => {
+      try {
+        const result = this.parseBindingPath(path)
+        return result.isValid ? result.pathInfo!.fullPath : path
+      } catch {
+        return path
+      }
+    })
   }
 }
 

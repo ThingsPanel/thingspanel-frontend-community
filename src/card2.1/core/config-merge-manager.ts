@@ -74,11 +74,11 @@ export interface ConfigMergeStats {
 export class ConfigMergeManager {
   // 默认优先级策略
   static readonly DEFAULT_PRIORITY_ORDER: ConfigSource[] = [
-    'default',    // 默认配置（优先级最低）
-    'user',       // 用户配置
+    'default', // 默认配置（优先级最低）
+    'user', // 用户配置
     'dataSource', // 数据源绑定
-    'interaction',// 交互覆盖
-    'runtime'     // 运行时动态配置（优先级最高）
+    'interaction', // 交互覆盖
+    'runtime' // 运行时动态配置（优先级最高）
   ]
 
   // 策略配置
@@ -127,7 +127,7 @@ export class ConfigMergeManager {
     options: ConfigMergeOptions = {}
   ): ConfigMergeResult<T> {
     const startTime = performance.now()
-    
+
     // 🔥 暂时禁用缓存以修复交互配置更新问题
     // TODO: 修复缓存键生成逻辑后重新启用
     // const cacheKey = ConfigMergeManager.generateCacheKey(configs, options)
@@ -136,7 +136,7 @@ export class ConfigMergeManager {
     //   performanceOptimizer.incrementCounter('configMerges')
     //   return cachedResult
     // }
-    
+
     // 应用默认选项
     const mergeOptions: Required<ConfigMergeOptions> = {
       priorityOrder: ConfigMergeManager.DEFAULT_PRIORITY_ORDER,
@@ -166,7 +166,7 @@ export class ConfigMergeManager {
       if (!config || typeof config !== 'object') continue
 
       const strategy = ConfigMergeManager.MERGE_STRATEGIES[source]
-      
+
       // 统计字段贡献
       sourceContributions[source] = 0
 
@@ -180,7 +180,7 @@ export class ConfigMergeManager {
           mergeOptions.preserveSource ? sourceMap : undefined,
           mergeOptions.customMerger
         )
-        
+
         merged = result.merged
         sourceContributions[source] = result.changedCount
         totalFields = Math.max(totalFields, result.totalCount)
@@ -193,7 +193,7 @@ export class ConfigMergeManager {
           mergeOptions.enableChangeTracking ? changes : undefined,
           mergeOptions.preserveSource ? sourceMap : undefined
         )
-        
+
         merged = result.merged
         sourceContributions[source] = result.changedCount
         totalFields = Math.max(totalFields, result.totalCount)
@@ -275,7 +275,7 @@ export class ConfigMergeManager {
 
       // 检查是否有变更
       if (!ConfigMergeManager.isEqual(oldValue, newValue)) {
-        (result as any)[key] = newValue
+        ;(result as any)[key] = newValue
         changedCount++
 
         // 记录变更
@@ -321,7 +321,7 @@ export class ConfigMergeManager {
       const oldValue = (result as any)[key]
 
       if (!ConfigMergeManager.isEqual(oldValue, value)) {
-        (result as any)[key] = value
+        ;(result as any)[key] = value
         changedCount++
 
         // 记录变更
@@ -392,7 +392,7 @@ export class ConfigMergeManager {
 
       const oldValue = (result as any)[key]
       if (!ConfigMergeManager.isEqual(oldValue, value)) {
-        (result as any)[key] = value
+        ;(result as any)[key] = value
         newSourceMap[key] = source
 
         changes.push({
@@ -464,7 +464,7 @@ export class ConfigMergeManager {
     if (obj === null || typeof obj !== 'object') return obj
     if (obj instanceof Date) return new Date(obj.getTime()) as unknown as T
     if (Array.isArray(obj)) return obj.map(item => ConfigMergeManager.clone(item)) as unknown as T
-    
+
     if (typeof obj === 'object') {
       const cloned = {} as T
       for (const key in obj) {
@@ -474,7 +474,7 @@ export class ConfigMergeManager {
       }
       return cloned
     }
-    
+
     return obj
   }
 
@@ -488,14 +488,11 @@ export class ConfigMergeManager {
   /**
    * 🚀 生成配置缓存键
    */
-  private static generateCacheKey<T>(
-    configs: Partial<Record<ConfigSource, T>>,
-    options: ConfigMergeOptions
-  ): string {
+  private static generateCacheKey<T>(configs: Partial<Record<ConfigSource, T>>, options: ConfigMergeOptions): string {
     // 创建配置内容的哈希
     const configHash = ConfigMergeManager.hashObject(configs)
     const optionsHash = ConfigMergeManager.hashObject(options)
-    
+
     return `merge_${configHash}_${optionsHash}`
   }
 
@@ -507,7 +504,7 @@ export class ConfigMergeManager {
     let hash = 0
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
     return Math.abs(hash).toString(36)
@@ -520,23 +517,23 @@ export class ConfigMergeManager {
     if (a === b) return true
     if (a === null || b === null) return false
     if (typeof a !== typeof b) return false
-    
+
     if (typeof a === 'object') {
       if (Array.isArray(a) !== Array.isArray(b)) return false
-      
+
       const keysA = Object.keys(a)
       const keysB = Object.keys(b)
-      
+
       if (keysA.length !== keysB.length) return false
-      
+
       for (const key of keysA) {
         if (!keysB.includes(key)) return false
         if (!ConfigMergeManager.isEqual(a[key], b[key])) return false
       }
-      
+
       return true
     }
-    
+
     return false
   }
 }

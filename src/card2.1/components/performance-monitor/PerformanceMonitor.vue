@@ -18,20 +18,11 @@
 
     <template #header-extra>
       <n-space>
-        <n-button 
-          size="small" 
-          @click="refreshData"
-          :loading="isRefreshing"
-        >
+        <n-button size="small" :loading="isRefreshing" @click="refreshData">
           {{ $t('common.refresh') }}
         </n-button>
-        
-        <n-button 
-          size="small" 
-          type="warning"
-          @click="clearData"
-          :disabled="!hasData"
-        >
+
+        <n-button size="small" type="warning" :disabled="!hasData" @click="clearData">
           {{ $t('performance.monitor.clearData') }}
         </n-button>
       </n-space>
@@ -85,10 +76,7 @@
       </n-grid-item>
 
       <n-grid-item>
-        <n-statistic
-          :label="$t('performance.metrics.totalOperations')"
-          :value="totalOperations"
-        >
+        <n-statistic :label="$t('performance.metrics.totalOperations')" :value="totalOperations">
           <template #prefix>
             <n-icon color="#18a058">
               <stats-icon />
@@ -104,43 +92,28 @@
       <n-text strong>{{ $t('performance.cache.title') }}</n-text>
       <n-grid :cols="3" :x-gap="16">
         <n-grid-item>
-          <n-progress
-            type="circle"
-            :percentage="getCacheUsagePercentage('configCache')"
-            :stroke-width="6"
-            :size="80"
-          >
+          <n-progress type="circle" :percentage="getCacheUsagePercentage('configCache')" :stroke-width="6" :size="80">
             <span class="cache-label">配置缓存</span>
           </n-progress>
-          <n-text depth="3" style="display: block; text-align: center; margin-top: 8px;">
+          <n-text depth="3" style="display: block; text-align: center; margin-top: 8px">
             {{ performanceData.cacheStats.configCache }} / 1000
           </n-text>
         </n-grid-item>
 
         <n-grid-item>
-          <n-progress
-            type="circle"
-            :percentage="getCacheUsagePercentage('propertyCache')"
-            :stroke-width="6"
-            :size="80"
-          >
+          <n-progress type="circle" :percentage="getCacheUsagePercentage('propertyCache')" :stroke-width="6" :size="80">
             <span class="cache-label">属性缓存</span>
           </n-progress>
-          <n-text depth="3" style="display: block; text-align: center; margin-top: 8px;">
+          <n-text depth="3" style="display: block; text-align: center; margin-top: 8px">
             {{ performanceData.cacheStats.propertyCache }} / 1000
           </n-text>
         </n-grid-item>
 
         <n-grid-item>
-          <n-progress
-            type="circle"
-            :percentage="getCacheUsagePercentage('pathCache')"
-            :stroke-width="6"
-            :size="80"
-          >
+          <n-progress type="circle" :percentage="getCacheUsagePercentage('pathCache')" :stroke-width="6" :size="80">
             <span class="cache-label">路径缓存</span>
           </n-progress>
-          <n-text depth="3" style="display: block; text-align: center; margin-top: 8px;">
+          <n-text depth="3" style="display: block; text-align: center; margin-top: 8px">
             {{ performanceData.cacheStats.pathCache }} / 1000
           </n-text>
         </n-grid-item>
@@ -269,15 +242,15 @@ const totalOperations = computed(() => {
 })
 
 const hasData = computed(() => {
-  return totalOperations.value > 0 || 
-         performanceData.value.alerts.length > 0 ||
-         Object.values(performanceData.value.cacheStats).some(v => v > 0)
+  return (
+    totalOperations.value > 0 ||
+    performanceData.value.alerts.length > 0 ||
+    Object.values(performanceData.value.cacheStats).some(v => v > 0)
+  )
 })
 
 const recentAlerts = computed(() => {
-  return performanceData.value.alerts
-    .filter(alert => !dismissedAlerts.value.has(alert.timestamp))
-    .slice(-5) // 只显示最近5条
+  return performanceData.value.alerts.filter(alert => !dismissedAlerts.value.has(alert.timestamp)).slice(-5) // 只显示最近5条
 })
 
 /**
@@ -311,12 +284,12 @@ const getOverallStatusText = (): string => {
  */
 const getMetricColor = (metricType: string): string => {
   const value = performanceData.value.metrics[metricType as keyof typeof performanceData.value.metrics] as number
-  
+
   // 根据不同指标设置不同的阈值
   let threshold = 50 // 默认阈值 50ms
   if (metricType === 'configMergeTime') threshold = 30
   if (metricType === 'componentRenderTime') threshold = 100
-  
+
   if (value > threshold * 2) return '#d03050' // 红色
   if (value > threshold) return '#f0a020' // 橙色
   return '#18a058' // 绿色
@@ -342,7 +315,7 @@ const formatTimestamp = (timestamp: number): string => {
  */
 const refreshData = async (): Promise<void> => {
   isRefreshing.value = true
-  
+
   try {
     // 获取最新的性能报告
     const report = performanceOptimizer.getPerformanceReport()
@@ -352,7 +325,7 @@ const refreshData = async (): Promise<void> => {
       recommendations: report.recommendations,
       cacheStats: report.cacheStats
     }
-    
+
     console.log('🎯 [PerformanceMonitor] 性能数据已刷新', report)
   } catch (error) {
     console.error('🚨 [PerformanceMonitor] 刷新性能数据失败:', error)
@@ -383,10 +356,10 @@ let refreshTimer: NodeJS.Timeout | null = null
 onMounted(() => {
   // 初始化数据
   refreshData()
-  
+
   // 每5秒自动刷新
   refreshTimer = setInterval(refreshData, 5000)
-  
+
   console.log('🎯 [PerformanceMonitor] 性能监控面板已初始化')
 })
 

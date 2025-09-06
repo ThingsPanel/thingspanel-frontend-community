@@ -19,8 +19,8 @@ const tripleDataDisplayDefinition: ComponentDefinition = {
   name: '三数据展示',
   description: '展示三个数据源的数据对比，支持多种布局模式和主题定制',
   category: '数据展示',
-  mainCategory: '测试',  // 对应test分类
-  subCategory: '数据展示',  // 子分类
+  mainCategory: '测试', // 对应test分类
+  subCategory: '数据展示', // 子分类
   icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zm8 0h6v6h-6V3zM3 11h6v6H3v-6zm8 0h6v6h-6v-6zm8 0h6v6h-6v-6zm-16 8h6v6H3v-6zm8 0h6v6h-6v-6zm8 0h6v6h-6v-6z"/></svg>`,
   version: '2.1.0',
   author: 'ThingsPanel',

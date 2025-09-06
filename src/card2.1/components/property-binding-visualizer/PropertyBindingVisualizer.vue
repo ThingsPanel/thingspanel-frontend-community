@@ -10,7 +10,7 @@
           <flow-chart-icon />
         </n-icon>
         <span>{{ $t('propertyBinding.visualizer.title') }}</span>
-        
+
         <n-tag v-if="totalBindings > 0" type="info" size="small">
           {{ totalBindings }} {{ $t('propertyBinding.visualizer.bindingsCount') }}
         </n-tag>
@@ -19,19 +19,11 @@
 
     <template #header-extra>
       <n-space>
-        <n-button 
-          size="small"
-          :type="showDetails ? 'primary' : 'default'"
-          @click="showDetails = !showDetails"
-        >
+        <n-button size="small" :type="showDetails ? 'primary' : 'default'" @click="showDetails = !showDetails">
           {{ showDetails ? $t('common.hideDetails') : $t('common.showDetails') }}
         </n-button>
 
-        <n-button 
-          size="small"
-          @click="refreshBindings"
-          :loading="isRefreshing"
-        >
+        <n-button size="small" :loading="isRefreshing" @click="refreshBindings">
           {{ $t('common.refresh') }}
         </n-button>
       </n-space>
@@ -41,17 +33,9 @@
     <div v-if="bindingGroups.length > 0" class="binding-visualization">
       <n-space vertical size="large">
         <!-- 按组件分组显示绑定关系 -->
-        <div 
-          v-for="group in bindingGroups" 
-          :key="group.componentId"
-          class="component-group"
-        >
+        <div v-for="group in bindingGroups" :key="group.componentId" class="component-group">
           <!-- 组件头部 -->
-          <n-card 
-            size="small" 
-            :bordered="true"
-            class="component-header"
-          >
+          <n-card size="small" :bordered="true" class="component-header">
             <template #header>
               <n-space align="center">
                 <n-avatar size="small" :style="{ backgroundColor: group.color }">
@@ -59,14 +43,14 @@
                     <component-icon />
                   </n-icon>
                 </n-avatar>
-                
+
                 <div>
                   <n-text strong>{{ group.componentName }}</n-text>
-                  <n-text depth="3" style="display: block; font-size: 12px;">
+                  <n-text depth="3" style="display: block; font-size: 12px">
                     ID: {{ group.componentId.substring(0, 8) }}...
                   </n-text>
                 </div>
-                
+
                 <n-tag size="small" :type="getComponentStatusType(group)">
                   {{ group.bindings.length }} {{ $t('propertyBinding.visualizer.properties') }}
                 </n-tag>
@@ -75,8 +59,8 @@
 
             <!-- 属性绑定列表 -->
             <n-space vertical size="small">
-              <div 
-                v-for="binding in group.bindings" 
+              <div
+                v-for="binding in group.bindings"
                 :key="binding.path"
                 class="property-binding"
                 :class="{ 'binding-active': isBindingActive(binding) }"
@@ -84,16 +68,13 @@
                 <n-space justify="space-between" align="center">
                   <!-- 属性信息 -->
                   <n-space align="center">
-                    <n-icon 
-                      size="16" 
-                      :color="getPropertyTypeColor(binding.property.type)"
-                    >
+                    <n-icon size="16" :color="getPropertyTypeColor(binding.property.type)">
                       <property-icon />
                     </n-icon>
-                    
+
                     <div>
                       <n-text>{{ binding.property.label }}</n-text>
-                      <n-text depth="3" style="display: block; font-size: 11px;">
+                      <n-text depth="3" style="display: block; font-size: 11px">
                         {{ binding.property.name }} ({{ binding.property.type }})
                       </n-text>
                     </div>
@@ -101,32 +82,17 @@
 
                   <!-- 绑定状态 -->
                   <n-space align="center" size="small">
-                    <n-tag 
-                      size="tiny"
-                      :type="getBindingStatusType(binding)"
-                    >
+                    <n-tag size="tiny" :type="getBindingStatusType(binding)">
                       {{ getBindingStatusText(binding) }}
                     </n-tag>
 
                     <!-- 数据流向箭头 -->
-                    <n-icon 
-                      v-if="hasDataFlow(binding)"
-                      size="14"
-                      color="#18a058"
-                      class="flow-icon"
-                    >
+                    <n-icon v-if="hasDataFlow(binding)" size="14" color="#18a058" class="flow-icon">
                       <arrow-forward-icon />
                     </n-icon>
 
                     <!-- 详细信息按钮 -->
-                    <n-button 
-                      v-if="showDetails"
-                      text
-                      size="tiny"
-                      @click="showBindingDetails(binding)"
-                    >
-                      详情
-                    </n-button>
+                    <n-button v-if="showDetails" text size="tiny" @click="showBindingDetails(binding)">详情</n-button>
                   </n-space>
                 </n-space>
 
@@ -137,13 +103,13 @@
                       <n-descriptions-item label="绑定路径">
                         <n-text code>{{ binding.path }}</n-text>
                       </n-descriptions-item>
-                      
+
                       <n-descriptions-item label="当前值">
                         <n-text code>
                           {{ formatValue(binding.currentValue) }}
                         </n-text>
                       </n-descriptions-item>
-                      
+
                       <n-descriptions-item v-if="binding.property.defaultValue !== undefined" label="默认值">
                         <n-text code>
                           {{ formatValue(binding.property.defaultValue) }}
@@ -161,11 +127,11 @@
 
                     <!-- 枚举值显示 -->
                     <template v-if="binding.property.enum && binding.property.enum.length > 0">
-                      <n-divider style="margin: 12px 0;" />
+                      <n-divider style="margin: 12px 0" />
                       <n-space size="small">
-                        <n-text depth="2" style="font-size: 12px;">可选值：</n-text>
-                        <n-tag 
-                          v-for="option in binding.property.enum" 
+                        <n-text depth="2" style="font-size: 12px">可选值：</n-text>
+                        <n-tag
+                          v-for="option in binding.property.enum"
                           :key="option.value"
                           size="small"
                           :type="option.value === binding.currentValue ? 'primary' : 'default'"
@@ -184,19 +150,15 @@
     </div>
 
     <!-- 空状态 -->
-    <n-empty 
-      v-else
-      :description="$t('propertyBinding.visualizer.noBindings')" 
-      size="large"
-    >
+    <n-empty v-else :description="$t('propertyBinding.visualizer.noBindings')" size="large">
       <template #icon>
         <n-icon size="48" depth="3">
           <flow-chart-icon />
         </n-icon>
       </template>
-      
+
       <template #extra>
-        <n-text depth="3" style="font-size: 14px;">
+        <n-text depth="3" style="font-size: 14px">
           {{ $t('propertyBinding.visualizer.noBindingsHint') }}
         </n-text>
       </template>
@@ -279,7 +241,7 @@ const totalBindings = computed(() => bindingData.value.length)
 
 const bindingGroups = computed((): ComponentBindingGroup[] => {
   const groups = new Map<string, ComponentBindingGroup>()
-  
+
   bindingData.value.forEach(binding => {
     if (!groups.has(binding.componentId)) {
       groups.set(binding.componentId, {
@@ -290,13 +252,11 @@ const bindingGroups = computed((): ComponentBindingGroup[] => {
         bindings: []
       })
     }
-    
+
     groups.get(binding.componentId)!.bindings.push(binding)
   })
-  
-  return Array.from(groups.values()).sort((a, b) => 
-    b.bindings.length - a.bindings.length
-  )
+
+  return Array.from(groups.values()).sort((a, b) => b.bindings.length - a.bindings.length)
 })
 
 /**
@@ -304,21 +264,21 @@ const bindingGroups = computed((): ComponentBindingGroup[] => {
  */
 const refreshBindings = async (): Promise<void> => {
   isRefreshing.value = true
-  
+
   try {
     const newBindings: PropertyBinding[] = []
-    
+
     // 从编辑器获取组件实例
     const canvasNodes = editorStore.nodes || []
-    
+
     for (const node of canvasNodes) {
       const componentType = node.type || node.widget_type
       const exposure = propertyExposureRegistry.getComponentExposure(componentType)
-      
+
       if (exposure && exposure.listenableProperties) {
         for (const property of exposure.listenableProperties) {
           const bindingPath = PropertyPath.create(node.id, property.name)
-          
+
           newBindings.push({
             path: bindingPath,
             componentId: node.id,
@@ -338,12 +298,12 @@ const refreshBindings = async (): Promise<void> => {
         }
       }
     }
-    
+
     bindingData.value = newBindings
-    
+
     // 记录性能
     performanceOptimizer.incrementCounter('propertyLookups')
-    
+
     console.log('🎯 [PropertyBindingVisualizer] 绑定数据已刷新', {
       totalBindings: newBindings.length,
       components: bindingGroups.value.length
@@ -368,7 +328,7 @@ const showBindingDetails = (binding: PropertyBinding): void => {
 const getComponentStatusType = (group: ComponentBindingGroup): 'info' | 'success' | 'warning' => {
   const activeBindings = group.bindings.filter(b => b.isActive).length
   const ratio = activeBindings / group.bindings.length
-  
+
   if (ratio >= 0.7) return 'success'
   if (ratio >= 0.3) return 'info'
   return 'warning'
@@ -444,16 +404,13 @@ const formatTimestamp = (timestamp: number): string => {
  * 生成组件颜色
  */
 const generateComponentColor = (componentId: string): string => {
-  const colors = [
-    '#18a058', '#2080f0', '#f0a020', '#d03050', 
-    '#722ed1', '#fa541c', '#13c2c2', '#52c41a'
-  ]
-  
+  const colors = ['#18a058', '#2080f0', '#f0a020', '#d03050', '#722ed1', '#fa541c', '#13c2c2', '#52c41a']
+
   let hash = 0
   for (let i = 0; i < componentId.length; i++) {
     hash = componentId.charCodeAt(i) + ((hash << 5) - hash)
   }
-  
+
   return colors[Math.abs(hash) % colors.length]
 }
 
@@ -489,10 +446,10 @@ let refreshTimer: NodeJS.Timeout | null = null
 
 onMounted(() => {
   refreshBindings()
-  
+
   // 每10秒自动刷新
   refreshTimer = setInterval(refreshBindings, 10000)
-  
+
   console.log('🎯 [PropertyBindingVisualizer] 属性绑定可视化器已初始化')
 })
 
@@ -552,7 +509,8 @@ onBeforeUnmount(() => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -565,7 +523,7 @@ onBeforeUnmount(() => {
   .property-binding {
     padding: 6px 8px;
   }
-  
+
   .binding-details {
     padding: 8px;
   }

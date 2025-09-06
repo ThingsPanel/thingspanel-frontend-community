@@ -235,7 +235,7 @@ export function autoDetectComponentProperties(componentType: string, componentDe
 
       // 推断属性类型
       const propertyType = inferPropertyTypeFromValue(value)
-      
+
       detectedProperties.push({
         name: key,
         label: generatePropertyLabel(key),
@@ -256,7 +256,7 @@ export function autoDetectComponentProperties(componentType: string, componentDe
       if (detectedProperties.find(p => p.name === key)) return
 
       const propertyType = inferPropertyTypeFromVueProp(propDef)
-      
+
       detectedProperties.push({
         name: key,
         label: generatePropertyLabel(key),
@@ -311,14 +311,14 @@ function inferPropertyTypeFromValue(value: any): PropertyDataType {
  */
 function inferPropertyTypeFromVueProp(propDef: any): PropertyDataType {
   if (!propDef) return 'string'
-  
+
   if (propDef.type === String) return 'string'
   if (propDef.type === Number) return 'number'
   if (propDef.type === Boolean) return 'boolean'
   if (propDef.type === Array) return 'array'
   if (propDef.type === Object) return 'object'
   if (propDef.type === Date) return 'date'
-  
+
   return 'string'
 }
 
@@ -344,7 +344,7 @@ function generatePropertyLabel(key: string): string {
     padding: '内边距',
     margin: '外边距'
   }
-  
+
   return labelMap[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
 }
 
@@ -361,8 +361,8 @@ function isCoreProp(key: string): boolean {
  * 结合 settingConfig 和自动检测的双重注册
  */
 export function enhancedAutoRegister(
-  componentType: string, 
-  componentDefinition: any, 
+  componentType: string,
+  componentDefinition: any,
   settingConfig?: ComponentSettingConfig
 ): void {
   let allProperties: ListenableProperty[] = []
@@ -391,7 +391,7 @@ export function enhancedAutoRegister(
 
   // 2. 自动检测其他属性
   const detectedProperties = autoDetectComponentProperties(componentType, componentDefinition)
-  
+
   // 3. 合并属性（settingConfig 优先级更高）
   detectedProperties.forEach(detected => {
     const existing = allProperties.find(p => p.name === detected.name)

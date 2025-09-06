@@ -210,7 +210,7 @@ const fetchTreeData = () => {
       const properties: ComponentPropertyTreeNode[] = exposure.listenableProperties.map(prop => {
         // 使用 PropertyPath 创建标准化的绑定路径
         const bindingPath = PropertyPath.create(node.id, prop.name)
-        
+
         return {
           key: bindingPath,
           label: `${prop.label} (${prop.type})`,
