@@ -1079,7 +1079,7 @@ defineExpose({
       <n-space>
         <!-- 配置导入导出面板 -->
         <ConfigurationImportExportPanel
-          :configuration="currentConfiguration"
+          :configuration="props.modelValue"
           :component-id="props.componentId"
           :component-type="props.componentType"
           :configuration-manager="configurationManager"
