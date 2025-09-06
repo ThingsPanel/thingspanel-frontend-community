@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Configuration Editor</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+        }
+        .error {
+            background: #ffebee;
+            border-color: #f44336;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e8;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Configuration Editor Debug</h1>
+        
+        <div class="status" id="status">
+            正在检查配置编辑器状态...
+        </div>
+
+        <div id="debug-info">
+            <h3>检查项目：</h3>
+            <ul>
+                <li>✅ 开发服务器运行状态</li>
+                <li>⏳ SimpleConfigurationEditor 组件加载</li>
+                <li>⏳ ConfigurationImportExportPanel 组件加载</li>
+                <li>⏳ 数据源配置功能</li>
+                <li>⏳ 组件ID映射功能</li>
+            </ul>
+        </div>
+
+        <div id="actions">
+            <h3>快速测试：</h3>
+            <button onclick="testDataSourceSystem()">测试数据源系统</button>
+            <button onclick="testVisualEditor()">测试可视化编辑器</button>
+            <button onclick="checkConsoleErrors()">检查控制台错误</button>
+        </div>
+
+        <div id="results">
+            <h3>测试结果：</h3>
+            <div id="test-output"></div>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        function addResult(message) {
+            const output = document.getElementById('test-output');
+            const div = document.createElement('div');
+            div.style.padding = '5px';
+            div.style.margin = '5px 0';
+            div.style.background = '#f9f9f9';
+            div.style.borderRadius = '4px';
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            output.appendChild(div);
+        }
+
+        function testDataSourceSystem() {
+            addResult('🔍 测试数据源系统...');
+            window.open('http://localhost:5003/test/data-source-system', '_blank');
+        }
+
+        function testVisualEditor() {
+            addResult('🔍 测试可视化编辑器...');
+            window.open('http://localhost:5003/visualization/visual-editor-details', '_blank');
+        }
+
+        function checkConsoleErrors() {
+            addResult('🔍 检查控制台错误 - 请打开浏览器开发者工具查看Console面板');
+            console.log('🔍 Configuration Editor Debug - 检查是否有错误');
+            console.log('如果看到这个消息，说明JavaScript运行正常');
+            
+            // 尝试检查一些常见错误
+            try {
+                if (typeof Vue !== 'undefined') {
+                    addResult('✅ Vue.js 已加载');
+                } else {
+                    addResult('⚠️ Vue.js 未检测到');
+                }
+            } catch (error) {
+                addResult('❌ Vue.js 检查失败: ' + error.message);
+            }
+        }
+
+        // 页面加载完成后的检查
+        window.addEventListener('DOMContentLoaded', function() {
+            updateStatus('🔍 Debug页面加载完成 - 可以开始测试', 'success');
+            addResult('Debug页面初始化完成');
+        });
+
+        // 检查是否有JavaScript错误
+        window.addEventListener('error', function(error) {
+            updateStatus('❌ 检测到JavaScript错误: ' + error.message, 'error');
+            addResult('❌ 错误: ' + error.filename + ':' + error.lineno + ' - ' + error.message);
+        });
+    </script>
+</body>
+</html>

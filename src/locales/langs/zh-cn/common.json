@@ -336,5 +336,25 @@
   "configuration.export.noManagerError": "配置管理器未初始化",
   "configuration.export.success": "导出成功",
   "configuration.export.error": "导出失败",
+  "configuration.export.fullConfiguration": "导出完整配置",
+  "configuration.export.singleDataSource": "导出单数据源",
+  "configuration.export.selectDataSource": "选择数据源",
+  "configuration.export.dataSource": "数据源",
+  "configuration.export.hasData": "有数据",
+  "configuration.export.noData": "无数据",
+  "configuration.export.dataItems": "数据项",
+  "configuration.export.selectDataSourceHint": "请选择要导出的数据源",
+  
+  "configuration.import.singleDataSource": "单数据源导入",
+  "configuration.import.selectTargetSlot": "选择目标槽位",
+  "configuration.import.sourceDataSource": "源数据源",
+  "configuration.import.targetSlot": "目标槽位",
+  "configuration.import.slotOccupied": "槽位已占用",
+  "configuration.import.slotEmpty": "槽位空闲",
+  "configuration.import.importToSlot": "导入到槽位",
+  "configuration.import.singleDataSourcePreview": "单数据源导入预览",
+  "configuration.import.sourceInfo": "源信息",
+  "configuration.import.targetInfo": "目标信息",
+  
   "configuration.import.managerInvalid": "配置管理器无效或未提供，无法应用配置"
 }

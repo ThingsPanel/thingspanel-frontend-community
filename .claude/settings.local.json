@@ -603,7 +603,11 @@
       "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\core\\data-architecture\\types/**)",
       "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\core/**)",
       "Read(/E:\\wbh\\things2\\thingspanel-frontend-community\\src\\core\\data-architecture\\types/**)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(start debug-configuration-editor.html)",
+      "Bash(start src/debug-configuration-editor.html)",
+      "Bash(start test-import-export-fix.html)",
+      "Bash(start src/test-import-export-fix.html)"
     ],
     "deny": [],
     "additionalDirectories": [

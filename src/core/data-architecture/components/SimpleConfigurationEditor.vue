@@ -10,7 +10,7 @@
 
 import { ref, reactive, computed, watch, onMounted, h } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useDialog } from 'naive-ui'
+import { useDialog, useMessage } from 'naive-ui'
 import {
   createExecutorChain,
   type DataSourceConfiguration,
@@ -25,7 +25,15 @@ import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEdit
 // 🔥 导入组件级别轮询配置组件
 import ComponentPollingConfig from './ComponentPollingConfig.vue'
 // 导入@vicons图标组件
-import { PlusOutlined, SearchOutlined, LinkOutlined, DotChartOutlined, SettingOutlined, DownloadOutlined, UploadOutlined } from '@vicons/antd'
+import {
+  PlusOutlined,
+  SearchOutlined,
+  LinkOutlined,
+  DotChartOutlined,
+  SettingOutlined,
+  DownloadOutlined,
+  UploadOutlined
+} from '@vicons/antd'
 import { DocumentTextOutline, BarChartOutline, GlobeOutline } from '@vicons/ionicons5'
 // 🔥 新配置管理系统
 import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
@@ -34,6 +42,9 @@ import { MultiLayerExecutorChain } from '@/core/data-architecture/executors/Mult
 import { smartDeepClone } from '@/utils/deep-clone'
 // 🔥 导入导出面板组件
 import ConfigurationImportExportPanel from './common/ConfigurationImportExportPanel.vue'
+// 🔥 单数据源导入导出功能
+import { singleDataSourceExporter, singleDataSourceImporter } from '../utils/ConfigurationImportExport'
+import type { SingleDataSourceImportPreview } from '../utils/ConfigurationImportExport'
 
 // Props接口 - 匹配现有系统
 interface Props {
@@ -67,8 +78,17 @@ const emit = defineEmits<Emits>()
 // 国际化
 const { t } = useI18n()
 
-// 弹窗
+// 弹窗和消息提示
 const dialog = useDialog()
+const message = useMessage()
+
+// 导入导出相关状态
+const exportLoading = ref<Record<string, boolean>>({})
+const importFileRef = ref<HTMLInputElement>()
+const singleDataSourceImportPreview = ref<SingleDataSourceImportPreview | null>(null)
+const originalImportData = ref<any>(null) // 保存原始导入数据
+const showSingleDataSourceImportModal = ref(false)
+const targetDataSourceId = ref<string>('')
 
 /**
  * 处理数据源选项 - 兼容数组和对象格式
@@ -1012,12 +1032,12 @@ const viewFinalData = async (dataSourceKey: string) => {
  */
 const handleExportSuccess = (exportData: any) => {
   console.log('✅ [SimpleConfigurationEditor] 配置导出成功:', exportData)
-  
+
   // 显示成功消息
   const stats = exportData.metadata?.statistics
   if (stats) {
     const message = `配置导出成功！包含 ${stats.dataSourceCount} 个数据源、${stats.httpConfigCount} 个HTTP配置、${stats.interactionCount} 个交互配置`
-    
+
     dialog.success({
       title: '导出成功',
       content: message,
@@ -1031,10 +1051,10 @@ const handleExportSuccess = (exportData: any) => {
  */
 const handleImportSuccess = (importData: any) => {
   console.log('✅ [SimpleConfigurationEditor] 配置导入成功:', importData)
-  
+
   // 刷新显示状态
   restoreDataItemsFromConfig()
-  
+
   dialog.success({
     title: '导入成功',
     content: '配置导入成功！',
@@ -1047,12 +1067,202 @@ const handleImportSuccess = (importData: any) => {
  */
 const handleImportExportError = (error: Error) => {
   console.error('❌ [SimpleConfigurationEditor] 导入导出失败:', error)
-  
+
   dialog.error({
     title: '操作失败',
     content: `操作失败: ${error.message}`,
     positiveText: '确定'
   })
+}
+
+/**
+ * 导出单个数据源配置
+ */
+const exportSingleDataSource = async (dataSourceId: string): Promise<void> => {
+  if (!dataSourceId || exportLoading.value[dataSourceId]) return
+
+  try {
+    exportLoading.value[dataSourceId] = true
+
+    console.log('🔄 [SimpleConfigurationEditor] 开始导出单数据源', {
+      componentId: props.componentId,
+      dataSourceId
+    })
+
+    // 执行单数据源导出
+    const exportResult = await singleDataSourceExporter.exportSingleDataSource(
+      props.componentId,
+      dataSourceId,
+      configurationManager,
+      props.componentType
+    )
+
+    // 生成文件名
+    const timestamp = new Date().toISOString().slice(0, 16).replace(/[:-]/g, '')
+    const fileName = `datasource_${dataSourceId}_${timestamp}.json`
+
+    // 下载文件
+    const blob = new Blob([JSON.stringify(exportResult, null, 2)], {
+      type: 'application/json'
+    })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    link.click()
+    URL.revokeObjectURL(url)
+
+    message.success(`数据源 ${dataSourceId} 配置导出成功`)
+
+    console.log('✅ [SimpleConfigurationEditor] 单数据源导出成功', {
+      dataSourceId,
+      fileName,
+      dataSize: JSON.stringify(exportResult).length
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('❌ [SimpleConfigurationEditor] 单数据源导出失败:', error)
+    message.error(`导出失败: ${errorMessage}`)
+    handleImportExportError(error instanceof Error ? error : new Error(errorMessage))
+  } finally {
+    exportLoading.value[dataSourceId] = false
+  }
+}
+
+/**
+ * 触发单数据源导入文件选择
+ */
+const triggerImportForDataSource = (dataSourceId: string): void => {
+  targetDataSourceId.value = dataSourceId
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  input.onchange = handleImportFileSelect
+  input.click()
+}
+
+/**
+ * 处理导入文件选择
+ */
+const handleImportFileSelect = (event: Event): void => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+
+  if (!file) return
+
+  if (!file.name.endsWith('.json')) {
+    message.error('文件格式不正确，请选择JSON文件')
+    return
+  }
+
+  handleImportPreview(file)
+}
+
+/**
+ * 处理导入预览
+ */
+const handleImportPreview = async (file: File): Promise<void> => {
+  try {
+    const fileContent = await readFileAsText(file)
+    const importData = JSON.parse(fileContent)
+
+    console.log('🔄 [SimpleConfigurationEditor] 生成导入预览', {
+      fileName: file.name,
+      fileSize: file.size,
+      exportType: importData.exportType,
+      type: importData.type
+    })
+
+    // 判断是否为单数据源文件 - 支持两种格式标识
+    if (importData.exportType === 'single-datasource' || importData.type === 'singleDataSource') {
+      // 保存原始导入数据
+      originalImportData.value = importData
+
+      // 生成单数据源导入预览
+      singleDataSourceImportPreview.value = singleDataSourceImporter.generateImportPreview(
+        importData,
+        props.componentId,
+        configurationManager
+      )
+
+      showSingleDataSourceImportModal.value = true
+    } else {
+      message.error('请选择单数据源格式的配置文件')
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('❌ [SimpleConfigurationEditor] 导入预览失败:', error)
+    message.error(`预览失败: ${errorMessage}`)
+  }
+}
+
+/**
+ * 执行单数据源导入
+ */
+const handleSingleDataSourceImport = async (): Promise<void> => {
+  if (!singleDataSourceImportPreview.value || !targetDataSourceId.value || !originalImportData.value) {
+    return
+  }
+
+  try {
+    console.log('🔄 [SimpleConfigurationEditor] 开始单数据源导入', {
+      componentId: props.componentId,
+      targetDataSourceId: targetDataSourceId.value
+    })
+
+    // 使用原始导入数据执行导入
+    await singleDataSourceImporter.importSingleDataSource(
+      originalImportData.value,
+      props.componentId,
+      targetDataSourceId.value,
+      configurationManager
+    )
+
+    message.success(`数据源 ${targetDataSourceId.value} 配置导入成功`)
+
+    console.log('✅ [SimpleConfigurationEditor] 单数据源导入成功', {
+      targetDataSourceId: targetDataSourceId.value
+    })
+
+    // 关闭模态框并重置状态
+    showSingleDataSourceImportModal.value = false
+    singleDataSourceImportPreview.value = null
+    originalImportData.value = null
+    targetDataSourceId.value = ''
+
+    // 刷新配置数据
+    await refreshConfigurationData()
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('❌ [SimpleConfigurationEditor] 单数据源导入失败:', error)
+    message.error(`导入失败: ${errorMessage}`)
+    handleImportExportError(error instanceof Error ? error : new Error(errorMessage))
+  }
+}
+
+/**
+ * 读取文件为文本
+ */
+const readFileAsText = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = e => resolve(e.target?.result as string)
+    reader.onerror = e => reject(new Error('文件读取失败'))
+    reader.readAsText(file)
+  })
+}
+
+/**
+ * 刷新配置数据
+ */
+const refreshConfigurationData = async (): Promise<void> => {
+  try {
+    // 触发重新获取配置数据
+    await restoreDataItemsFromConfig()
+    console.log('✅ [SimpleConfigurationEditor] 配置数据刷新成功')
+  } catch (error) {
+    console.error('❌ [SimpleConfigurationEditor] 配置数据刷新失败:', error)
+  }
 }
 
 // 所有导入导出方法已迁移到独立组件ConfigurationImportExportPanel
@@ -1071,22 +1281,11 @@ defineExpose({
     <div class="config-toolbar">
       <div class="toolbar-title">
         <span>{{ props.componentType || '组件' }}配置</span>
-        <n-tag v-if="props.componentId" size="small" type="info">
-          {{ props.componentId.slice(0, 8) }}...
-        </n-tag>
+        <n-tag v-if="props.componentId" size="small" type="info">{{ props.componentId.slice(0, 8) }}...</n-tag>
       </div>
-      
+
       <n-space>
-        <!-- 配置导入导出面板 -->
-        <ConfigurationImportExportPanel
-          :configuration="props.modelValue"
-          :component-id="props.componentId"
-          :component-type="props.componentType"
-          :configuration-manager="configurationManager"
-          @export-success="handleExportSuccess"
-          @import-success="handleImportSuccess"
-          @operation-error="handleImportExportError"
-        />
+        <!-- 原配置导入导出面板已移除，功能集成到各数据源按钮 -->
       </n-space>
     </div>
 
@@ -1235,7 +1434,7 @@ defineExpose({
             </n-form-item>
           </div>
 
-          <!-- 查看结果按钮（底部） -->
+          <!-- 查看结果按钮（仅在有数据时显示） -->
           <div v-if="(dataSourceItems[dataSourceOption.value]?.length || 0) > 0" class="result-section">
             <n-button size="small" text type="info" @click="viewFinalData(dataSourceOption.value)">
               <template #icon>
@@ -1245,6 +1444,40 @@ defineExpose({
               </template>
               查看最终结果
             </n-button>
+          </div>
+
+          <!-- 导入导出按钮（始终显示） -->
+          <div class="import-export-section">
+            <n-space :size="8" align="center" justify="center">
+              <!-- 导出单数据源按钮（仅在有数据项时可用） -->
+              <n-button
+                size="small"
+                text
+                type="success"
+                :disabled="
+                  !dataSourceItems[dataSourceOption.value] || dataSourceItems[dataSourceOption.value].length === 0
+                "
+                :loading="exportLoading[dataSourceOption.value]"
+                @click="exportSingleDataSource(dataSourceOption.value)"
+              >
+                <template #icon>
+                  <n-icon size="14">
+                    <DownloadOutlined />
+                  </n-icon>
+                </template>
+                导出配置
+              </n-button>
+
+              <!-- 导入单数据源按钮（始终可用） -->
+              <n-button size="small" text type="warning" @click="triggerImportForDataSource(dataSourceOption.value)">
+                <template #icon>
+                  <n-icon size="14">
+                    <UploadOutlined />
+                  </n-icon>
+                </template>
+                导入配置
+              </n-button>
+            </n-space>
           </div>
         </div>
       </n-collapse-item>
@@ -1282,7 +1515,56 @@ defineExpose({
       </n-drawer-content>
     </n-drawer>
 
-    <!-- 导入预览弹窗已迁移到ConfigurationImportExportPanel组件中 -->
+    <!-- 单数据源导入预览模态框 -->
+    <n-modal
+      v-model:show="showSingleDataSourceImportModal"
+      preset="dialog"
+      title="单数据源导入预览"
+      style="width: 500px"
+      :show-icon="false"
+    >
+      <div v-if="singleDataSourceImportPreview">
+        <n-space vertical>
+          <!-- 源信息 -->
+          <n-card title="源信息" size="small">
+            <n-descriptions :column="2" size="small">
+              <n-descriptions-item label="数据源">
+                {{ singleDataSourceImportPreview.sourceDataSourceId }}
+              </n-descriptions-item>
+              <n-descriptions-item label="版本">
+                {{ singleDataSourceImportPreview.version }}
+              </n-descriptions-item>
+              <n-descriptions-item label="导出时间">
+                {{ new Date(singleDataSourceImportPreview.exportTime).toLocaleString() }}
+              </n-descriptions-item>
+              <n-descriptions-item label="配置项数">
+                {{ singleDataSourceImportPreview.configurationCount }}
+              </n-descriptions-item>
+            </n-descriptions>
+          </n-card>
+
+          <!-- 目标信息 -->
+          <n-card title="目标信息" size="small">
+            <n-descriptions :column="1" size="small">
+              <n-descriptions-item label="目标数据源">
+                {{ targetDataSourceId }}
+              </n-descriptions-item>
+            </n-descriptions>
+
+            <n-alert type="info" title="导入说明" style="margin-top: 8px">
+              此配置将导入到数据源 "{{ targetDataSourceId }}"，原有配置将被覆盖
+            </n-alert>
+          </n-card>
+        </n-space>
+      </div>
+
+      <template #action>
+        <n-space>
+          <n-button @click="showSingleDataSourceImportModal = false">取消</n-button>
+          <n-button type="primary" @click="handleSingleDataSourceImport">确认导入</n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
@@ -1400,6 +1682,14 @@ defineExpose({
   padding-top: 8px;
   border-top: 1px solid var(--border-color);
   text-align: center;
+}
+
+/* 导入导出按钮区域 */
+.import-export-section {
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+  margin-top: 8px;
 }
 
 /* 折叠面板自定义 */

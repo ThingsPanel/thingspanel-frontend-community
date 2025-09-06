@@ -52,12 +52,12 @@ export class PropertyPathManager {
     }
 
     // 确保组件ID有效
-    this.validateComponentInstanceId(componentInstanceId)
+    PropertyPathManager.validateComponentInstanceId(componentInstanceId)
 
     // 清理和标准化属性路径
-    const cleanPath = this.normalizePropertyPath(propertyPath)
+    const cleanPath = PropertyPathManager.normalizePropertyPath(propertyPath)
 
-    return `${componentInstanceId}${this.PATH_SEPARATOR}${cleanPath}`
+    return `${componentInstanceId}${PropertyPathManager.PATH_SEPARATOR}${cleanPath}`
   }
 
   /**
@@ -84,14 +84,14 @@ export class PropertyPathManager {
     const startTime = performance.now()
 
     // 检查路径格式
-    if (!bindingPath.includes(this.PATH_SEPARATOR)) {
+    if (!bindingPath.includes(PropertyPathManager.PATH_SEPARATOR)) {
       return {
         isValid: false,
         error: '绑定路径格式无效，应为 componentInstanceId.propertyPath'
       }
     }
 
-    const parts = bindingPath.split(this.PATH_SEPARATOR)
+    const parts = bindingPath.split(PropertyPathManager.PATH_SEPARATOR)
 
     if (parts.length < 2) {
       return {
@@ -101,11 +101,11 @@ export class PropertyPathManager {
     }
 
     const componentInstanceId = parts[0]
-    const propertyPath = parts.slice(1).join(this.PATH_SEPARATOR)
+    const propertyPath = parts.slice(1).join(PropertyPathManager.PATH_SEPARATOR)
 
     // 验证组件ID
     try {
-      this.validateComponentInstanceId(componentInstanceId)
+      PropertyPathManager.validateComponentInstanceId(componentInstanceId)
     } catch (error) {
       return {
         isValid: false,
@@ -114,8 +114,8 @@ export class PropertyPathManager {
     }
 
     // 解析属性层级
-    const propertyHierarchy = this.parsePropertyHierarchy(propertyPath)
-    const propertyName = this.getPropertyName(propertyHierarchy)
+    const propertyHierarchy = PropertyPathManager.parsePropertyHierarchy(propertyPath)
+    const propertyName = PropertyPathManager.getPropertyName(propertyHierarchy)
 
     const pathInfo: PropertyPathInfo = {
       fullPath: bindingPath,
@@ -151,7 +151,7 @@ export class PropertyPathManager {
     if (!propertyPath) return ''
 
     // 处理数组索引 [0] -> .0
-    let normalized = propertyPath.replace(this.ARRAY_INDEX_REGEX, '.$1')
+    let normalized = propertyPath.replace(PropertyPathManager.ARRAY_INDEX_REGEX, '.$1')
 
     // 移除开头的点
     normalized = normalized.replace(/^\./, '')
@@ -173,8 +173,8 @@ export class PropertyPathManager {
   static parsePropertyHierarchy(propertyPath: string): (string | number)[] {
     if (!propertyPath) return []
 
-    const normalized = this.normalizePropertyPath(propertyPath)
-    const parts = normalized.split(this.PATH_SEPARATOR)
+    const normalized = PropertyPathManager.normalizePropertyPath(propertyPath)
+    const parts = normalized.split(PropertyPathManager.PATH_SEPARATOR)
 
     return parts.map(part => {
       // 尝试将字符串转换为数字（处理数组索引）
@@ -204,8 +204,8 @@ export class PropertyPathManager {
       throw new Error('组件实例ID必须是非空字符串')
     }
 
-    if (componentInstanceId.includes(this.PATH_SEPARATOR)) {
-      throw new Error(`组件实例ID不能包含路径分隔符 "${this.PATH_SEPARATOR}"`)
+    if (componentInstanceId.includes(PropertyPathManager.PATH_SEPARATOR)) {
+      throw new Error(`组件实例ID不能包含路径分隔符 "${PropertyPathManager.PATH_SEPARATOR}"`)
     }
 
     if (componentInstanceId.trim() !== componentInstanceId) {
@@ -220,8 +220,8 @@ export class PropertyPathManager {
    * @returns 是否相同
    */
   static isSamePath(path1: string, path2: string): boolean {
-    const result1 = this.parseBindingPath(path1)
-    const result2 = this.parseBindingPath(path2)
+    const result1 = PropertyPathManager.parseBindingPath(path1)
+    const result2 = PropertyPathManager.parseBindingPath(path2)
 
     if (!result1.isValid || !result2.isValid) {
       return false
@@ -236,7 +236,7 @@ export class PropertyPathManager {
    * @returns 友好的显示标签
    */
   static generateDisplayLabel(bindingPath: string): string {
-    const result = this.parseBindingPath(bindingPath)
+    const result = PropertyPathManager.parseBindingPath(bindingPath)
 
     if (!result.isValid) {
       return bindingPath
@@ -267,7 +267,7 @@ export class PropertyPathManager {
    * @returns 是否为数组元素路径
    */
   static isArrayElementPath(bindingPath: string): boolean {
-    const result = this.parseBindingPath(bindingPath)
+    const result = PropertyPathManager.parseBindingPath(bindingPath)
 
     if (!result.isValid) return false
 
@@ -280,7 +280,7 @@ export class PropertyPathManager {
    * @returns 父级路径，如果没有则返回null
    */
   static getParentPath(bindingPath: string): string | null {
-    const result = this.parseBindingPath(bindingPath)
+    const result = PropertyPathManager.parseBindingPath(bindingPath)
 
     if (!result.isValid || result.pathInfo!.propertyHierarchy.length <= 1) {
       return null
@@ -288,9 +288,9 @@ export class PropertyPathManager {
 
     const { componentInstanceId, propertyHierarchy } = result.pathInfo!
     const parentHierarchy = propertyHierarchy.slice(0, -1)
-    const parentPath = parentHierarchy.join(this.PATH_SEPARATOR)
+    const parentPath = parentHierarchy.join(PropertyPathManager.PATH_SEPARATOR)
 
-    return this.createBindingPath(componentInstanceId, parentPath)
+    return PropertyPathManager.createBindingPath(componentInstanceId, parentPath)
   }
 
   /**
@@ -303,7 +303,7 @@ export class PropertyPathManager {
     bindingPath: string,
     componentRegistry?: { has: (id: string) => boolean }
   ): PropertyPathValidationResult {
-    const parseResult = this.parseBindingPath(bindingPath)
+    const parseResult = PropertyPathManager.parseBindingPath(bindingPath)
 
     if (!parseResult.isValid) {
       return parseResult
@@ -332,7 +332,7 @@ export class PropertyPathManager {
   static normalizePaths(paths: string[]): string[] {
     return paths.map(path => {
       try {
-        const result = this.parseBindingPath(path)
+        const result = PropertyPathManager.parseBindingPath(path)
         return result.isValid ? result.pathInfo!.fullPath : path
       } catch {
         return path
