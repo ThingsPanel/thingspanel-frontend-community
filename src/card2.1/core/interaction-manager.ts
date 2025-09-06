@@ -290,6 +290,15 @@ class InteractionManager {
     // 尝试通过DOM事件通知组件
     const targetElement = document.querySelector(`[data-component-id="${componentId}"]`)
 
+    // 🔥 跨组件交互调试日志
+    console.log(`🔔 [InteractionManager] 通知组件状态变化`, {
+      目标组件ID: componentId,
+      找到DOM元素: !!targetElement,
+      DOM查询: `[data-component-id="${componentId}"]`,
+      更新内容: updates,
+      完整状态: fullState
+    })
+
     if (targetElement) {
       const customEvent = new CustomEvent('componentStateUpdate', {
         detail: {

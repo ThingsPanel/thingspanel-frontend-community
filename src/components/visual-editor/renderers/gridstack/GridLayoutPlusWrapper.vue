@@ -1,5 +1,5 @@
 <template>
-  <div ref="gridWrapperEl" class="grid-layout-plus-wrapper-editor" :style="{ height: gridHeight }">
+  <div ref="gridWrapperEl" class="grid-layout-plus-wrapper-editor">
     <GridLayoutPlus
       v-model:layout="layout"
       :config="gridConfig"
@@ -56,9 +56,6 @@ const props = defineProps<{
   gridConfig?: Partial<GridLayoutPlusConfig>
   multiDataSourceStore?: Record<string, Record<string, any>>
   multiDataSourceConfigStore?: Record<string, any>
-  // 🔥 新增：动态高度相关props
-  availableHeight?: number
-  dynamicHeights?: any
 }>()
 const emit = defineEmits(['node-select', 'request-settings'])
 
@@ -102,12 +99,6 @@ const removeNode = async (nodeId: string) => {
 const gridWrapperEl = ref<HTMLElement | null>(null)
 const layout = shallowRef<ExtendedGridLayoutPlusItem[]>([])
 const isReadOnly = computed(() => props.readonly)
-
-// 🔥 最简单的逻辑：让网格容器始终与外层高度一致
-const gridHeight = computed(() => {
-  // 所有情况下都使用相同高度，让GridLayoutPlus组件内部处理内容超出
-  return props.availableHeight ? `${props.availableHeight}px` : '100%'
-})
 
 const contextMenu = ref<{
   show: boolean
@@ -324,13 +315,9 @@ const handleTitleUpdate = (nodeId: string, newTitle: string) => {
 <style scoped>
 .grid-layout-plus-wrapper-editor {
   width: 100%;
-  /* 🔥 高度由JavaScript动态计算和设置 */
-  /* height 和 min-height 通过内联样式设置 */
-  overflow: auto; /* 🔥 防止内部内容超出时被隐藏 */
 }
 
 .grid-node-wrapper {
-  /* NodeWrapper现在处理所有节点样式 */
   width: 100%;
   height: 100%;
 }

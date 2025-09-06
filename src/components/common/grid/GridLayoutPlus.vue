@@ -428,7 +428,7 @@ defineExpose({
 .grid-layout-plus-wrapper {
   position: relative;
   width: 100%;
-  height: 100%;
+  /* 移除 height: 100% 以允许内容撑开高度 */
 }
 
 /* 网格项内容 */
@@ -520,7 +520,7 @@ defineExpose({
 .grid-item-body {
   flex: 1;
   padding: 0; /* 🔧 移除默认内边距，由内部组件控制 */
-  overflow: auto;
+  overflow: visible; /* 移除 overflow: auto，让内容自然溢出 */
   /* 🔧 移除默认背景，避免与NodeWrapper配置冲突 */
   background: transparent;
   /* 🔧 确保内部组件样式能够正常显示 */

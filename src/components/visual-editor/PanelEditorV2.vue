@@ -216,7 +216,7 @@ const handleRequestSettings = (nodeId: string) => {
     </template>
 
     <!-- 🔥 主内容区域 - 真实渲染器实现 -->
-    <template #main="{ availableHeight, dynamicHeights }">
+    <template #main>
       <!-- 加载状态 -->
       <div v-if="!dataFetched" class="h-full flex items-center justify-center w-full">
         <n-spin size="large">
@@ -229,7 +229,7 @@ const handleRequestSettings = (nodeId: string) => {
       <!-- 渲染器区域 -->
       <div
         v-else
-        class="renderer-main-area h-full w-full relative"
+        class="renderer-main-area w-full relative"
         :class="{ dragging: isDragging }"
         @click="handleCanvasClick"
       >
@@ -254,8 +254,6 @@ const handleRequestSettings = (nodeId: string) => {
           :readonly="!isEditing"
           :show-widget-titles="showWidgetTitles"
           :grid-config="editorConfig.gridConfig"
-          :available-height="availableHeight"
-          :dynamic-heights="dynamicHeights"
           class="renderer-container"
           @ready="handleRendererReady"
           @error="handleRendererError"
@@ -297,17 +295,12 @@ const handleRequestSettings = (nodeId: string) => {
 /* 🔥 渲染器容器样式 - 避免双滚动条但保持功能 */
 .renderer-main-area {
   position: relative;
-  overflow: visible; /* 🔥 让PanelLayout的main-area处理滚动 */
   background-color: var(--body-color, #f8fafc);
   transition: all 0.2s ease;
-  height: auto; /* 🔥 让内容决定高度 */
-  min-height: 100%; /* 🔥 至少占满父容器 */
 }
 
 .renderer-container {
   width: 100%;
-  height: auto; /* 🔥 改为auto，允许内容撑开高度 */
-  min-height: 100%; /* 至少占满父容器高度 */
   position: relative; /* 🔥 改为relative，避免绝对定位限制 */
 }
 

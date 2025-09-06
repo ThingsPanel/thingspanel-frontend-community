@@ -3,11 +3,21 @@
  * PanelEditorV2 测试页面
  * 用于验证基于 PanelLayout 的新编辑器功能
  */
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { NCard, NSpace, NButton, NSwitch, NSelect, NInputNumber, NDivider } from 'naive-ui'
 import PanelEditorV2 from '@/components/visual-editor/PanelEditorV2.vue'
 import { $t } from '@/locales'
+import { useAppStore } from '@/store/modules/app'
 
+const appStore = useAppStore()
+
+onMounted(() => {
+  // appStore.setFullContent(true)
+})
+
+onUnmounted(() => {
+  // appStore.setFullContent(false)
+})
 // 测试配置状态
 const testConfig = ref({
   panelId: 'test-panel-v2-001',

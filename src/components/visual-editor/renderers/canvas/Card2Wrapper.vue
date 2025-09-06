@@ -746,6 +746,15 @@ onMounted(async () => {
   const handleStateUpdate = (event: CustomEvent) => {
     const { componentId, updates, fullState } = event.detail
 
+    // 🔥 跨组件交互调试日志
+    console.log(`🔔 [Card2Wrapper] 收到状态更新事件`, {
+      事件目标组件: componentId,
+      当前组件: props.nodeId,
+      是否匹配: componentId === props.nodeId,
+      更新内容: updates,
+      完整状态: fullState
+    })
+
     if (componentId === props.nodeId) {
       // 🚀 使用统一的配置合并系统处理状态更新
       if (updates && Object.keys(updates).length > 0) {
@@ -773,6 +782,62 @@ onMounted(async () => {
             changes: updateResult.changes?.length || 0,
             stats: updateResult.stats,
             mergedInteractionConfig: updateResult.merged
+          })
+
+          // 🔥 关键修复：触发 dataChange 事件，支持链式交互
+          console.log(`🔍 [Card2Wrapper] 准备触发dataChange事件`, {
+            componentId: props.nodeId,
+            updatesKeys: Object.keys(updates),
+            currentComponentRef: !!currentComponentRef.value,
+            triggerMethod: currentComponentRef.value ? typeof currentComponentRef.value.triggerInteractionEvent : 'undefined'
+          })
+          
+          // 为每个变化的属性触发 dataChange 事件
+          Object.entries(updates).forEach(([property, newValue]) => {
+            // 获取旧值用于比较
+            const oldValue = configSources.value.interaction?.[property] || extractComponentConfig.value[property]
+            
+            console.log(`🔍 [Card2Wrapper] 处理属性变化`, {
+              componentId: props.nodeId,
+              property,
+              oldValue,
+              newValue,
+              hasComponentRef: !!currentComponentRef.value,
+              hasTriggerMethod: currentComponentRef.value && typeof currentComponentRef.value.triggerInteractionEvent === 'function'
+            })
+            
+            if (currentComponentRef.value && typeof currentComponentRef.value.triggerInteractionEvent === 'function') {
+              try {
+                console.log(`🔔 [Card2Wrapper] 跨组件更新触发dataChange事件`, {
+                  componentId: props.nodeId,
+                  property,
+                  oldValue,
+                  newValue,
+                  source: 'cross-component-interaction'
+                })
+                
+                currentComponentRef.value.triggerInteractionEvent('dataChange', {
+                  property,
+                  oldValue,
+                  newValue,
+                  source: 'cross-component-interaction'
+                })
+                
+                console.log(`✅ [Card2Wrapper] dataChange事件触发成功`, {
+                  componentId: props.nodeId,
+                  property
+                })
+              } catch (error) {
+                console.warn(`❌ [Card2Wrapper] 触发dataChange事件失败:`, error)
+              }
+            } else {
+              console.warn(`⚠️ [Card2Wrapper] 无法触发dataChange事件`, {
+                componentId: props.nodeId,
+                property,
+                hasComponentRef: !!currentComponentRef.value,
+                triggerMethodType: currentComponentRef.value ? typeof currentComponentRef.value.triggerInteractionEvent : 'undefined'
+              })
+            }
           })
 
           // 🔥 同时更新ConfigurationManager以确保持久化

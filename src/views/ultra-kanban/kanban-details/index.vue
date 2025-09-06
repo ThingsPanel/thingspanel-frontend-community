@@ -158,8 +158,8 @@ const retryLoad = async () => {
 /* 主内容区域 */
 .main-content {
   width: 100%;
-  height: 100%;
-  overflow: hidden;
+  /* height: 100%; */
+  /* overflow: hidden; */
 }
 
 /* Visual Editor容器 */
