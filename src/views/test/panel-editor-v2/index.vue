@@ -4,6 +4,7 @@
  * 用于验证基于 PanelLayout 的新编辑器功能
  */
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { NCard, NSpace, NButton, NSwitch, NSelect, NInputNumber, NDivider } from 'naive-ui'
 import PanelEditorV2 from '@/components/visual-editor/PanelEditorV2.vue'
 import { $t } from '@/locales'
@@ -18,9 +19,13 @@ onMounted(() => {
 onUnmounted(() => {
   // appStore.setFullContent(false)
 })
+
+const route = useRoute()
+const panel_id = (route.query.id as string) || '72da0887-52f9-b546-27ce-e4c06ea07ca7'
+
 // 测试配置状态
 const testConfig = ref({
-  panelId: 'test-panel-v2-001',
+  panelId: panel_id,
   showToolbar: true,
   showPageHeader: true,
   enableHeaderArea: true,

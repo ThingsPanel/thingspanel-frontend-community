@@ -607,7 +607,10 @@
       "Bash(start debug-configuration-editor.html)",
       "Bash(start src/debug-configuration-editor.html)",
       "Bash(start test-import-export-fix.html)",
-      "Bash(start src/test-import-export-fix.html)"
+      "Bash(start src/test-import-export-fix.html)",
+      "Bash(start test-single-datasource-final.html)",
+      "Bash(start src/test-single-datasource-final.html)",
+      "Read(//d/Users/kingB/Downloads/**)"
     ],
     "deny": [],
     "additionalDirectories": [

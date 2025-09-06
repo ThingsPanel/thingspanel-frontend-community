@@ -5,7 +5,7 @@
  * 实现真实的工具栏和渲染器切换功能
  */
 
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch, toRaw } from 'vue'
 import { $t } from '@/locales'
 import PanelLayout from './components/PanelLayout.vue'
 import { VisualEditorToolbar } from './components/toolbar'
@@ -14,6 +14,9 @@ import { CanvasRenderer, GridstackRenderer } from './renderers'
 import { createEditor } from './hooks'
 import { usePreviewMode } from './hooks/usePreviewMode'
 import type { RendererType } from './types'
+import { useMessage, useDialog } from 'naive-ui'
+import { getBoard, PutBoard } from '@/service/api'
+import { smartDeepClone } from '@/utils/deep-clone'
 
 // 🔥 接收测试页面的配置props
 interface Props {
@@ -35,6 +38,12 @@ const props = withDefaults(defineProps<Props>(), {
   customLayoutClass: ''
 })
 
+const message = useMessage()
+const dialog = useDialog()
+
+const panelData = ref<any>({})
+const preEditorConfig = ref<any>(null)
+
 // 基础状态
 const isEditing = ref(true)
 const leftCollapsed = ref(false)
@@ -45,7 +54,7 @@ const currentRenderer = ref<RendererType>('gridstack')
 const showWidgetTitles = ref(true)
 const isSaving = ref(false)
 const hasChanges = ref(false)
-const dataFetched = ref(true) // 简化版，直接设为true
+const dataFetched = ref(false) // 简化版，直接设为true
 const isUnmounted = ref(false)
 
 // 🔥 拖拽状态管理
@@ -63,6 +72,81 @@ const editorConfig = ref({
   gridConfig: {},
   canvasConfig: {}
 })
+
+// This is from PanelEditor.vue's usePanelDataManager
+const getState = () => {
+  const widgets = toRaw(stateManager.nodes)
+  const config = toRaw(editorConfig.value)
+  return {
+    widgets,
+    config
+  }
+}
+
+// This is also from PanelEditor.vue's usePanelDataManager, simplified
+const setState = (state: any) => {
+  if (!state) return
+
+  const clonedState = smartDeepClone(state)
+  const { widgets, config } = clonedState
+
+  if (widgets) {
+    stateManager.setNodes(widgets)
+  }
+
+  if (config) {
+    editorConfig.value = config
+  }
+}
+
+const fetchBoard = async () => {
+  try {
+    dataFetched.value = false
+    const { data } = await getBoard(props.panelId)
+    panelData.value = data
+
+    if (data.configuration) {
+      const configuration = JSON.parse(data.configuration)
+      setState(configuration)
+      preEditorConfig.value = smartDeepClone(configuration)
+    } else {
+      // set with default/empty state
+      const emptyState = { widgets: [], config: { gridConfig: {}, canvasConfig: {} } }
+      setState(emptyState)
+      preEditorConfig.value = emptyState
+    }
+  } catch (error) {
+    message.error('Failed to fetch board data')
+    console.error(error)
+  } finally {
+    dataFetched.value = true
+  }
+}
+
+onMounted(() => {
+  fetchBoard()
+})
+
+// Watch for changes to set hasChanges flag
+watch(
+  () => stateManager.nodes,
+  (newValue, oldValue) => {
+    if (dataFetched.value && JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
+      hasChanges.value = true
+    }
+  },
+  { deep: true }
+)
+
+watch(
+  () => editorConfig.value,
+  (newValue, oldValue) => {
+    if (dataFetched.value && JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
+      hasChanges.value = true
+    }
+  },
+  { deep: true }
+)
 
 // 渲染器选项
 const rendererOptions = computed(() => [
@@ -86,8 +170,28 @@ const handleRendererChange = (renderer: RendererType) => {
   currentRenderer.value = renderer
 }
 
-const handleSave = () => {
-  console.log('保存功能')
+const handleSave = async () => {
+  isSaving.value = true
+  try {
+    const currentState = getState()
+    await PutBoard(props.panelId, {
+      id: props.panelId,
+      name: panelData.value.name,
+      description: panelData.value.description,
+      configuration: JSON.stringify(currentState),
+      image: panelData.value.image || '',
+      is_publish: panelData.value.is_publish,
+      project_id: panelData.value.project_id
+    })
+    message.success($t('common.saveSuccess'))
+    hasChanges.value = false
+    preEditorConfig.value = smartDeepClone(currentState)
+  } catch (error) {
+    message.error($t('common.saveFailed'))
+    console.error('Save failed:', error)
+  } finally {
+    isSaving.value = false
+  }
 }
 
 // 🔥 拖拽事件处理
@@ -116,14 +220,87 @@ const handleAddWidget = async (widget: { type: string }) => {
 }
 
 // 其他占位事件处理
-const handleImportConfig = () => console.log('导入配置')
-const handleExportConfig = () => console.log('导出配置')
-const handleUndo = () => console.log('撤销')
-const handleRedo = () => console.log('重做')
-const handleClearAll = () => console.log('清空')
-const handleZoomIn = () => console.log('放大')
-const handleZoomOut = () => console.log('缩小')
-const handleResetZoom = () => console.log('重置缩放')
+const handleImportConfig = () => {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  input.onchange = async e => {
+    const file = (e.target as HTMLInputElement).files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = event => {
+      try {
+        const configStr = event.target?.result as string
+        const newConfig = JSON.parse(configStr)
+        setState(newConfig)
+        hasChanges.value = true
+        message.success($t('visualEditor.importSuccess', '配置导入成功'))
+      } catch (error) {
+        message.error($t('visualEditor.importFailed', '配置文件解析失败'))
+        console.error('Import failed:', error)
+      }
+    }
+    reader.readAsText(file)
+  }
+  input.click()
+}
+const handleExportConfig = () => {
+  const state = getState()
+  const dataStr = JSON.stringify(state, null, 2)
+  const blob = new Blob([dataStr], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${panelData.value.name || 'dashboard'}-config.json`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+const handleUndo = () => {
+  stateManager.undo()
+  hasChanges.value = true
+}
+const handleRedo = () => {
+  stateManager.redo()
+  hasChanges.value = true
+}
+const handleClearAll = () => {
+  dialog.warning({
+    title: $t('visualEditor.confirmClearAll', '确认清空'),
+    content: $t('visualEditor.confirmClearAllContent', '此操作将清空所有组件且无法恢复，确定要继续吗？'),
+    positiveText: $t('common.confirm'),
+    negativeText: $t('common.cancel'),
+    onPositiveClick: () => {
+      stateManager.clear()
+      editorConfig.value = { gridConfig: {}, canvasConfig: {} }
+      hasChanges.value = true
+      message.success($t('visualEditor.clearedSuccess', '已清空'))
+    }
+  })
+}
+const handleZoomIn = () => {
+  const currentZoom = editorConfig.value.canvasConfig?.transform?.s || 1
+  const newZoom = currentZoom + 0.1
+  editorConfig.value.canvasConfig = {
+    ...editorConfig.value.canvasConfig,
+    transform: { ...editorConfig.value.canvasConfig.transform, s: newZoom }
+  }
+}
+const handleZoomOut = () => {
+  const currentZoom = editorConfig.value.canvasConfig?.transform?.s || 1
+  const newZoom = Math.max(0.1, currentZoom - 0.1)
+  editorConfig.value.canvasConfig = {
+    ...editorConfig.value.canvasConfig,
+    transform: { ...editorConfig.value.canvasConfig.transform, s: newZoom }
+  }
+}
+const handleResetZoom = () => {
+  editorConfig.value.canvasConfig = {
+    ...editorConfig.value.canvasConfig,
+    transform: { x: 0, y: 0, s: 1 }
+  }
+}
 const handleToggleLeftDrawer = () => {
   leftCollapsed.value = !leftCollapsed.value
 }
