@@ -32,9 +32,8 @@ import { configurationIntegrationBridge as configurationManager } from '@/compon
 import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
 import { MultiLayerExecutorChain } from '@/core/data-architecture/executors/MultiLayerExecutorChain'
 import { smartDeepClone } from '@/utils/deep-clone'
-// 🔥 导入导出工具类
-import { configurationExporter, configurationImporter } from '../utils/ConfigurationImportExport'
-import type { ImportPreview } from '../utils/ConfigurationImportExport'
+// 🔥 导入导出面板组件
+import ConfigurationImportExportPanel from './common/ConfigurationImportExportPanel.vue'
 
 // Props接口 - 匹配现有系统
 interface Props {
@@ -115,12 +114,8 @@ const isEditMode = ref(false)
 const editingItemId = ref('')
 
 /**
- * 导入导出状态管理
+ * 移除导入导出状态管理 - 已迁移到独立组件
  */
-const showImportModal = ref(false)
-const importFile = ref<File | null>(null)
-const importPreview = ref<ImportPreview | null>(null)
-const isProcessingImportExport = ref(false)
 
 /**
  * 数据项配置存储
@@ -1012,30 +1007,15 @@ const viewFinalData = async (dataSourceKey: string) => {
 /**
  * 🔥 导出配置为 JSON 文件
  */
-const handleExportConfiguration = async () => {
-  if (isProcessingImportExport.value) return
-
-  try {
-    isProcessingImportExport.value = true
-    
-    console.log(`📤 [SimpleConfigurationEditor] 开始导出组件配置: ${props.componentId}`)
-    
-    // 使用导出工具类导出配置
-    const exportedConfig = await configurationExporter.exportConfiguration(
-      props.componentId,
-      configurationManager,
-      props.componentType
-    )
-    
-    // 生成文件名
-    const timestamp = new Date().toISOString().slice(0, 10)
-    const filename = `${props.componentType || 'component'}-config-${timestamp}.json`
-    
-    // 下载文件
-    configurationExporter.downloadConfigurationAsJson(exportedConfig, filename)
-    
-    // 显示成功消息
-    const stats = exportedConfig.metadata.statistics
+/**
+ * 🔥 处理导出成功事件
+ */
+const handleExportSuccess = (exportData: any) => {
+  console.log('✅ [SimpleConfigurationEditor] 配置导出成功:', exportData)
+  
+  // 显示成功消息
+  const stats = exportData.metadata?.statistics
+  if (stats) {
     const message = `配置导出成功！包含 ${stats.dataSourceCount} 个数据源、${stats.httpConfigCount} 个HTTP配置、${stats.interactionCount} 个交互配置`
     
     dialog.success({
@@ -1043,204 +1023,45 @@ const handleExportConfiguration = async () => {
       content: message,
       positiveText: '确定'
     })
-    
-    console.log(`✅ [SimpleConfigurationEditor] 配置导出完成: ${filename}`)
-    
-  } catch (error) {
-    console.error(`❌ [SimpleConfigurationEditor] 配置导出失败:`, error)
-    
-    dialog.error({
-      title: '导出失败',
-      content: `配置导出失败: ${error.message}`,
-      positiveText: '确定'
-    })
-  } finally {
-    isProcessingImportExport.value = false
   }
 }
 
 /**
- * 🔥 处理文件选择（导入）
+ * 🔥 处理导入成功事件
  */
-const handleImportFileSelect = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
+const handleImportSuccess = (importData: any) => {
+  console.log('✅ [SimpleConfigurationEditor] 配置导入成功:', importData)
   
-  if (!file) return
+  // 刷新显示状态
+  restoreDataItemsFromConfig()
   
-  if (!file.name.endsWith('.json')) {
-    dialog.error({
-      title: '文件格式错误',
-      content: '请选择 JSON 格式的配置文件',
-      positiveText: '确定'
-    })
-    return
-  }
-  
-  importFile.value = file
-  showImportModal.value = true
-  
-  // 自动预览导入内容
-  handlePreviewImport()
-}
-
-/**
- * 🔥 预览导入配置
- */
-const handlePreviewImport = async () => {
-  if (!importFile.value) return
-  
-  try {
-    isProcessingImportExport.value = true
-    
-    console.log(`🔍 [SimpleConfigurationEditor] 开始预览导入文件: ${importFile.value.name}`)
-    
-    // 读取文件内容
-    const fileContent = await readFileAsText(importFile.value)
-    
-    // 预览导入配置
-    const preview = await configurationImporter.previewImport(
-      fileContent,
-      props.componentId,
-      configurationManager,
-      getAvailableComponents()
-    )
-    
-    importPreview.value = preview
-    
-    console.log(`✅ [SimpleConfigurationEditor] 导入预览完成，可导入: ${preview.canImport}`)
-    
-  } catch (error) {
-    console.error(`❌ [SimpleConfigurationEditor] 导入预览失败:`, error)
-    
-    dialog.error({
-      title: '预览失败',
-      content: `无法预览配置文件: ${error.message}`,
-      positiveText: '确定'
-    })
-    
-    importPreview.value = null
-  } finally {
-    isProcessingImportExport.value = false
-  }
-}
-
-/**
- * 🔥 执行配置导入
- */
-const handleConfirmImport = async () => {
-  if (!importFile.value || !importPreview.value) return
-  
-  try {
-    isProcessingImportExport.value = true
-    
-    console.log(`📥 [SimpleConfigurationEditor] 开始导入配置到组件: ${props.componentId}`)
-    
-    // 读取文件内容
-    const fileContent = await readFileAsText(importFile.value)
-    
-    // 执行导入
-    const result = await configurationImporter.importConfiguration(
-      fileContent,
-      props.componentId,
-      configurationManager,
-      {
-        overwriteExisting: true,
-        skipMissingDependencies: true
-      }
-    )
-    
-    if (result.success) {
-      // 导入成功，刷新显示状态
-      restoreDataItemsFromConfig()
-      
-      // 显示成功消息
-      let successMessage = '配置导入成功！'
-      if (result.warnings.length > 0) {
-        successMessage += `\n注意事项：${result.warnings.join(', ')}`
-      }
-      
-      dialog.success({
-        title: '导入成功',
-        content: successMessage,
-        positiveText: '确定'
-      })
-      
-      // 关闭导入弹窗
-      showImportModal.value = false
-      importFile.value = null
-      importPreview.value = null
-      
-      console.log(`✅ [SimpleConfigurationEditor] 配置导入完成`)
-    } else {
-      // 导入失败
-      dialog.error({
-        title: '导入失败',
-        content: `配置导入失败：${result.errors.join(', ')}`,
-        positiveText: '确定'
-      })
-    }
-    
-  } catch (error) {
-    console.error(`❌ [SimpleConfigurationEditor] 配置导入失败:`, error)
-    
-    dialog.error({
-      title: '导入失败',
-      content: `配置导入失败: ${error.message}`,
-      positiveText: '确定'
-    })
-  } finally {
-    isProcessingImportExport.value = false
-  }
-}
-
-/**
- * 🔥 关闭导入弹窗
- */
-const handleCancelImport = () => {
-  showImportModal.value = false
-  importFile.value = null
-  importPreview.value = null
-}
-
-/**
- * 🔥 工具函数：读取文件为文本
- */
-const readFileAsText = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = (e) => resolve(e.target?.result as string)
-    reader.onerror = (e) => reject(new Error('文件读取失败'))
-    reader.readAsText(file)
+  dialog.success({
+    title: '导入成功',
+    content: '配置导入成功！',
+    positiveText: '确定'
   })
 }
 
 /**
- * 🔥 获取可用组件列表（用于依赖验证）
+ * 🔥 处理导入导出错误事件
  */
-const getAvailableComponents = () => {
-  // TODO: 从 Visual Editor 或其他组件管理器获取可用组件列表
-  // 这里先返回空数组，后续可以集成实际的组件列表
-  return []
+const handleImportExportError = (error: Error) => {
+  console.error('❌ [SimpleConfigurationEditor] 导入导出失败:', error)
+  
+  dialog.error({
+    title: '操作失败',
+    content: `操作失败: ${error.message}`,
+    positiveText: '确定'
+  })
 }
 
-/**
- * 🔥 触发文件选择
- */
-const triggerFileInput = () => {
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = '.json'
-  input.onchange = handleImportFileSelect
-  input.click()
-}
+// 所有导入导出方法已迁移到独立组件ConfigurationImportExportPanel
 
 // 暴露方法给父组件
 defineExpose({
   getCurrentConfig: () => props.modelValue,
-  restoreDataItemsFromConfig,
-  exportConfiguration: handleExportConfiguration,
-  importConfiguration: triggerFileInput
+  restoreDataItemsFromConfig
+  // 导入导出功能已迁移到独立组件，不再需要暴露相关方法
 })
 </script>
 
@@ -1256,37 +1077,16 @@ defineExpose({
       </div>
       
       <n-space>
-        <!-- 导出配置按钮 -->
-        <n-button
-          size="small"
-          type="primary"
-          ghost
-          :loading="isProcessingImportExport"
-          @click="handleExportConfiguration"
-        >
-          <template #icon>
-            <n-icon size="14">
-              <DownloadOutlined />
-            </n-icon>
-          </template>
-          导出配置
-        </n-button>
-        
-        <!-- 导入配置按钮 -->
-        <n-button
-          size="small"
-          type="success"
-          ghost
-          :loading="isProcessingImportExport"
-          @click="triggerFileInput"
-        >
-          <template #icon>
-            <n-icon size="14">
-              <UploadOutlined />
-            </n-icon>
-          </template>
-          导入配置
-        </n-button>
+        <!-- 配置导入导出面板 -->
+        <ConfigurationImportExportPanel
+          :configuration="currentConfiguration"
+          :component-id="props.componentId"
+          :component-type="props.componentType"
+          :configuration-manager="configurationManager"
+          @export-success="handleExportSuccess"
+          @import-success="handleImportSuccess"
+          @operation-error="handleImportExportError"
+        />
       </n-space>
     </div>
 
@@ -1482,174 +1282,7 @@ defineExpose({
       </n-drawer-content>
     </n-drawer>
 
-    <!-- 🔥 导入预览弹窗 -->
-    <n-modal
-      v-model:show="showImportModal"
-      preset="card"
-      title="配置导入预览"
-      style="width: 80vw; max-width: 800px;"
-      :bordered="false"
-      :closable="true"
-      @close="handleCancelImport"
-    >
-      <div v-if="importPreview" class="import-preview">
-        <!-- 配置概要信息 -->
-        <n-card title="配置概要" size="small" class="preview-section">
-          <n-descriptions :column="2" size="small">
-            <n-descriptions-item label="导出版本">
-              {{ importPreview.summary.version }}
-            </n-descriptions-item>
-            <n-descriptions-item label="导出时间">
-              {{ new Date(importPreview.summary.exportTime).toLocaleString() }}
-            </n-descriptions-item>
-            <n-descriptions-item label="原组件ID">
-              <n-tag size="small">{{ importPreview.summary.originalComponentId }}</n-tag>
-            </n-descriptions-item>
-            <n-descriptions-item label="目标组件ID">
-              <n-tag size="small" type="success">{{ props.componentId }}</n-tag>
-            </n-descriptions-item>
-          </n-descriptions>
-          
-          <div class="statistics">
-            <n-space>
-              <n-tag type="info">
-                {{ importPreview.summary.statistics?.dataSourceCount || 0 }} 个数据源
-              </n-tag>
-              <n-tag type="success">
-                {{ importPreview.summary.statistics?.httpConfigCount || 0 }} 个HTTP配置
-              </n-tag>
-              <n-tag type="warning">
-                {{ importPreview.summary.statistics?.interactionCount || 0 }} 个交互配置
-              </n-tag>
-            </n-space>
-          </div>
-        </n-card>
-
-        <!-- 依赖检查结果 -->
-        <n-card title="依赖检查" size="small" class="preview-section">
-          <div v-if="importPreview.dependencies.external.length === 0" class="no-dependencies">
-            <n-tag type="success">✓ 无外部组件依赖</n-tag>
-          </div>
-          
-          <div v-else>
-            <div v-if="importPreview.dependencies.missing.length > 0" class="missing-dependencies">
-              <n-alert type="error" title="缺失依赖组件" style="margin-bottom: 8px">
-                以下组件在当前环境中不存在，可能导致部分功能无法正常工作：
-              </n-alert>
-              <n-space>
-                <n-tag 
-                  v-for="missing in importPreview.dependencies.missing" 
-                  :key="missing" 
-                  type="error"
-                  size="small"
-                >
-                  {{ missing }}
-                </n-tag>
-              </n-space>
-            </div>
-            
-            <div v-if="importPreview.dependencies.external.length > 0" class="external-dependencies">
-              <div style="margin: 8px 0; font-size: 12px; color: var(--text-color-2)">外部组件依赖:</div>
-              <n-space>
-                <n-tag 
-                  v-for="external in importPreview.dependencies.external" 
-                  :key="external" 
-                  type="info"
-                  size="small"
-                >
-                  {{ external }}
-                </n-tag>
-              </n-space>
-            </div>
-          </div>
-        </n-card>
-
-        <!-- 冲突检查结果 -->
-        <n-card title="配置冲突检查" size="small" class="preview-section">
-          <div class="conflicts">
-            <div class="conflict-item">
-              <n-tag :type="importPreview.conflicts.dataSource ? 'warning' : 'success'" size="small">
-                {{ importPreview.conflicts.dataSource ? '⚠️ 数据源配置存在冲突' : '✓ 数据源配置无冲突' }}
-              </n-tag>
-            </div>
-            <div class="conflict-item">
-              <n-tag :type="importPreview.conflicts.component ? 'warning' : 'success'" size="small">
-                {{ importPreview.conflicts.component ? '⚠️ 组件配置存在冲突' : '✓ 组件配置无冲突' }}
-              </n-tag>
-            </div>
-            <div class="conflict-item">
-              <n-tag :type="importPreview.conflicts.interaction ? 'warning' : 'success'" size="small">
-                {{ importPreview.conflicts.interaction ? '⚠️ 交互配置存在冲突' : '✓ 交互配置无冲突' }}
-              </n-tag>
-            </div>
-          </div>
-          
-          <n-alert 
-            v-if="importPreview.conflicts.dataSource || importPreview.conflicts.component || importPreview.conflicts.interaction" 
-            type="warning" 
-            style="margin-top: 8px"
-          >
-            检测到配置冲突，导入将覆盖现有配置。建议先导出当前配置作为备份。
-          </n-alert>
-        </n-card>
-
-        <!-- 导入状态提示 -->
-        <n-alert 
-          v-if="!importPreview.canImport" 
-          type="error" 
-          title="无法导入"
-          style="margin-top: 16px"
-        >
-          由于存在缺失的依赖组件或其他严重问题，当前配置无法安全导入。请检查并解决上述问题后重试。
-        </n-alert>
-
-        <n-alert 
-          v-else-if="importPreview.dependencies.missing.length > 0"
-          type="warning" 
-          title="可以导入但有警告"
-          style="margin-top: 16px"
-        >
-          配置可以导入，但部分依赖组件缺失。导入后涉及这些组件的功能可能无法正常工作。
-        </n-alert>
-
-        <n-alert 
-          v-else
-          type="success" 
-          title="可以安全导入"
-          style="margin-top: 16px"
-        >
-          所有检查通过，配置可以安全导入到当前组件。
-        </n-alert>
-      </div>
-
-      <!-- 加载状态 -->
-      <div v-else-if="isProcessingImportExport" class="loading-preview">
-        <n-spin size="large">
-          <div style="text-align: center; padding: 40px;">
-            <div>正在分析配置文件...</div>
-          </div>
-        </n-spin>
-      </div>
-
-      <!-- 错误状态 -->
-      <div v-else class="error-preview">
-        <n-empty description="无法预览配置文件，请检查文件格式是否正确" />
-      </div>
-
-      <template #footer>
-        <n-space justify="end">
-          <n-button @click="handleCancelImport">取消</n-button>
-          <n-button
-            v-if="importPreview?.canImport || (importPreview && importPreview.dependencies.missing.length > 0)"
-            type="warning" 
-            :loading="isProcessingImportExport"
-            @click="handleConfirmImport"
-          >
-            {{ importPreview?.dependencies.missing.length > 0 ? '强制导入' : '确认导入' }}
-          </n-button>
-        </n-space>
-      </template>
-    </n-modal>
+    <!-- 导入预览弹窗已迁移到ConfigurationImportExportPanel组件中 -->
   </div>
 </template>
 
@@ -1679,55 +1312,7 @@ defineExpose({
   color: var(--text-color);
 }
 
-/* 🔥 导入预览弹窗样式 */
-.import-preview {
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.preview-section {
-  margin-bottom: 16px;
-}
-
-.preview-section:last-child {
-  margin-bottom: 0;
-}
-
-.statistics {
-  margin-top: 12px;
-}
-
-.conflicts {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.conflict-item {
-  display: flex;
-  align-items: center;
-}
-
-.no-dependencies {
-  text-align: center;
-  padding: 8px;
-}
-
-.missing-dependencies {
-  margin-bottom: 12px;
-}
-
-.external-dependencies {
-  margin-top: 8px;
-}
-
-.loading-preview,
-.error-preview {
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+/* 导入预览弹窗样式已迁移到ConfigurationImportExportPanel组件 */
 
 /* 简化后的内容区域 */
 .simple-content {
