@@ -335,5 +335,6 @@
   "configuration.import.success": "导入成功",
   "configuration.export.noManagerError": "配置管理器未初始化",
   "configuration.export.success": "导出成功",
-  "configuration.export.error": "导出失败"
+  "configuration.export.error": "导出失败",
+  "configuration.import.managerInvalid": "配置管理器无效或未提供，无法应用配置"
 }

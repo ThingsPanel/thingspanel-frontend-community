@@ -347,7 +347,7 @@ const handleConfirmImport = async (): Promise<void> => {
     const importResult = configurationImporter.importConfiguration(
       importData,
       props.componentId,
-      props.configuration
+      props.configurationManager
     )
 
     message.success(t('configuration.import.success'))

@@ -630,6 +630,13 @@ export class ConfigurationImporter {
     configurationManager: any,
     options: any
   ): Promise<void> {
+    // 检查配置管理器是否有效
+    if (!configurationManager || typeof configurationManager.updateConfiguration !== 'function') {
+      const error = '配置管理器无效或未提供，无法应用配置'
+      console.error(`❌ [ConfigurationImporter] ${error}`)
+      throw new Error(error)
+    }
+
     // 应用数据源配置
     if (processedConfig.dataSource) {
       console.log(`📊 [ConfigurationImporter] 应用数据源配置`)
