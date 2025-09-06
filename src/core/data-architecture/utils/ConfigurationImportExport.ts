@@ -521,12 +521,40 @@ export class ConfigurationImporter {
     targetComponentId: string,
     configurationManager: any
   ): { dataSource: boolean; component: boolean; interaction: boolean } {
-    const existingConfig = configurationManager.getConfiguration(targetComponentId)
+    try {
+      const existingConfig = configurationManager?.getConfiguration?.(targetComponentId)
+      
+      // 如果没有现有配置或配置管理器无效，则没有冲突
+      if (!existingConfig || !configurationManager) {
+        return {
+          dataSource: false,
+          component: false,
+          interaction: false
+        }
+      }
 
-    return {
-      dataSource: !!(existingConfig?.dataSource && config.data.dataSourceConfiguration),
-      component: !!(existingConfig?.component && config.data.componentConfiguration),
-      interaction: !!(existingConfig?.interaction && config.data.interactionConfiguration)
+      // 检查是否存在会被覆盖的重要配置
+      // 只有在现有配置非空且导入配置也非空时才认为是冲突
+      return {
+        dataSource: !!(existingConfig?.dataSource?.dataSources?.length && 
+                      config.data.dataSourceConfiguration?.dataSources?.length),
+        component: !!(existingConfig?.component?.properties && 
+                     Object.keys(existingConfig.component.properties).length && 
+                     config.data.componentConfiguration?.properties &&
+                     Object.keys(config.data.componentConfiguration.properties).length),
+        interaction: !!(existingConfig?.interaction && 
+                       Object.keys(existingConfig.interaction).length && 
+                       config.data.interactionConfiguration &&
+                       Object.keys(config.data.interactionConfiguration).length)
+      }
+    } catch (error) {
+      console.warn('❌ [ConfigurationImporter] 冲突检测失败:', error)
+      // 检测失败时认为没有冲突，允许导入
+      return {
+        dataSource: false,
+        component: false,
+        interaction: false
+      }
     }
   }
 
