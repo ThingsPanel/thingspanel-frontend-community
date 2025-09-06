@@ -80,27 +80,23 @@ export interface ImportResult {
  * 导入预览结果
  */
 export interface ImportPreview {
-  /** 配置概要 */
-  summary: {
+  /** 基本信息 */
+  basicInfo: {
     version: string
     exportTime: number
-    originalComponentId: string
-    statistics: any
+    componentType: string
+    exportSource: string
   }
-  /** 依赖检查结果 */
-  dependencies: {
-    external: string[]
-    missing: string[]
-    conflicts: string[]
+  /** 配置统计 */
+  statistics: {
+    dataSourceCount: number
+    interactionCount: number
+    httpConfigCount: number
   }
-  /** 配置冲突检查 */
-  conflicts: {
-    dataSource: boolean
-    component: boolean
-    interaction: boolean
-  }
-  /** 是否可以安全导入 */
-  canImport: boolean
+  /** 外部依赖组件ID列表 */
+  dependencies: string[]
+  /** 冲突描述列表 */
+  conflicts: string[]
 }
 
 /**
@@ -360,18 +356,18 @@ export class ConfigurationImporter {
   private readonly CURRENT_COMPONENT_PLACEHOLDER = '__CURRENT_COMPONENT__'
 
   /**
-   * 预览导入配置，不实际应用
+   * 生成导入预览，不实际应用
    * @param configJson 导入的 JSON 配置
    * @param targetComponentId 目标组件 ID
    * @param configurationManager 配置管理器实例
    * @returns 导入预览结果
    */
-  async previewImport(
+  generateImportPreview(
     configJson: string | ExportedConfiguration,
     targetComponentId: string,
     configurationManager: any,
     availableComponents?: any[]
-  ): Promise<ImportPreview> {
+  ): ImportPreview {
     console.log(`🔍 [ConfigurationImporter] 开始预览导入到组件: ${targetComponentId}`)
 
     try {
@@ -389,20 +385,26 @@ export class ConfigurationImporter {
 
       const canImport = dependencies.missing.length === 0 && !conflicts.dataSource && !conflicts.component
 
+      // 格式化为模板期望的结构
+      const conflictList: string[] = []
+      if (conflicts.dataSource) conflictList.push('数据源配置冲突')
+      if (conflicts.component) conflictList.push('组件配置冲突')
+      if (conflicts.interaction) conflictList.push('交互配置冲突')
+
       const preview: ImportPreview = {
-        summary: {
+        basicInfo: {
           version: config.version,
           exportTime: config.exportTime,
-          originalComponentId: config.metadata.originalComponentId,
-          statistics: config.metadata.statistics
+          componentType: config.metadata?.componentType || '',
+          exportSource: config.metadata?.exportSource || 'ThingsPanel'
         },
-        dependencies: {
-          external: dependencies.found,
-          missing: dependencies.missing,
-          conflicts: dependencies.conflicts
+        statistics: {
+          dataSourceCount: config.metadata?.statistics?.dataSourceCount || 0,
+          interactionCount: config.metadata?.statistics?.interactionCount || 0,
+          httpConfigCount: config.metadata?.statistics?.httpConfigCount || 0
         },
-        conflicts,
-        canImport
+        dependencies: dependencies.external,
+        conflicts: conflictList
       }
 
       console.log(`✅ [ConfigurationImporter] 预览完成，可导入: ${canImport}`)

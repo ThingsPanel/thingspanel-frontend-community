@@ -308,6 +308,7 @@ const handlePreviewImport = async (): Promise<void> => {
     importPreview.value = configurationImporter.generateImportPreview(
       importData,
       props.componentId,
+      props.configurationManager || {},
       props.configuration
     )
 
