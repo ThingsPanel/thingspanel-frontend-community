@@ -403,7 +403,7 @@ export class ConfigurationImporter {
           interactionCount: config.metadata?.statistics?.interactionCount || 0,
           httpConfigCount: config.metadata?.statistics?.httpConfigCount || 0
         },
-        dependencies: dependencies.external,
+        dependencies: dependencies.found,
         conflicts: conflictList
       }
 

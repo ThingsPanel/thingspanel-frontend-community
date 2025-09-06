@@ -84,7 +84,7 @@
         </n-card>
 
         <!-- 依赖分析 -->
-        <n-card v-if="importPreview.dependencies.length > 0" size="small" :title="$t('configuration.import.dependencies')">
+        <n-card v-if="importPreview.dependencies && importPreview.dependencies.length > 0" size="small" :title="$t('configuration.import.dependencies')">
           <n-space vertical size="small">
             <n-text depth="3">{{ $t('configuration.import.dependenciesHint') }}</n-text>
             <div class="dependency-list">
@@ -102,7 +102,7 @@
 
         <!-- 冲突检测 -->
         <n-alert 
-          v-if="importPreview.conflicts.length > 0"
+          v-if="importPreview.conflicts && importPreview.conflicts.length > 0"
           type="warning"
           :title="$t('configuration.import.conflictsFound')"
           style="margin: 16px 0"
