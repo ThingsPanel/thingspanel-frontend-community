@@ -156,7 +156,7 @@ export const PARAMETER_TEMPLATES: ParameterTemplate[] = [
   // 🔥 新增：组件模板
   {
     id: 'device-metrics-selector',
-    name: '设备指标选择器',
+    name: '设备配置',
     type: ParameterTemplateType.COMPONENT,
     description: '选择设备和对应的指标数据',
     defaultValue: '',
@@ -240,44 +240,21 @@ export const PARAMETER_TEMPLATES: ParameterTemplate[] = [
 ]
 
 /**
- * 根据参数类型获取推荐模板（简化版）
+ * 🔥 修改：根据参数类型获取推荐模板（3个选项）
+ * 返回：手动输入、组件属性绑定、设备配置
+ * 注意：外面有统一设备配置选择器（批量），里面有单个参数的设备配置选择
  */
 export function getRecommendedTemplates(parameterType: 'header' | 'query' | 'path'): ParameterTemplate[] {
-  const baseTemplates = [
+  return [
+    // 1. 手动输入
     PARAMETER_TEMPLATES.find(t => t.id === 'manual')!,
-    PARAMETER_TEMPLATES.find(t => t.id === 'property-binding')!
-  ]
-
-  // 接口模板
-  const interfaceTemplate = PARAMETER_TEMPLATES.find(t => t.id === 'interface-template')!
-
-  // 简化的组件模板（包含组件属性绑定和设备相关的）
-  const componentTemplates = [
+    
+    // 2. 组件属性绑定
     PARAMETER_TEMPLATES.find(t => t.id === 'component-property-binding')!,
-    PARAMETER_TEMPLATES.find(t => t.id === 'device-metrics-selector')!,
-    PARAMETER_TEMPLATES.find(t => t.id === 'device-dispatch-selector')!
+    
+    // 3. 设备配置（单个参数的设备配置）
+    PARAMETER_TEMPLATES.find(t => t.id === 'device-metrics-selector')!
   ]
-
-  switch (parameterType) {
-    case 'header':
-      return [
-        ...baseTemplates,
-        PARAMETER_TEMPLATES.find(t => t.id === 'content-types')!,
-        PARAMETER_TEMPLATES.find(t => t.id === 'auth-types')!,
-        interfaceTemplate
-      ]
-    case 'query':
-      return [
-        ...baseTemplates,
-        PARAMETER_TEMPLATES.find(t => t.id === 'boolean-values')!,
-        interfaceTemplate,
-        ...componentTemplates
-      ]
-    case 'path':
-      return [...baseTemplates, interfaceTemplate, ...componentTemplates]
-    default:
-      return [...baseTemplates, interfaceTemplate]
-  }
 }
 
 /**

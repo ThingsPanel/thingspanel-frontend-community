@@ -8,8 +8,7 @@
  */
 
 // 导出交互配置组件
-export { default as InteractionSettingsForm } from './components/InteractionSettingsForm.vue'
-export { default as InteractionResponseEditor } from './components/InteractionResponseEditor.vue'
+export { default as InteractionCardWizard } from './components/InteractionCardWizard.vue'
 export { default as InteractionTemplateSelector } from './components/InteractionTemplateSelector.vue'
 export { default as InteractionPreview } from './components/InteractionPreview.vue'
 

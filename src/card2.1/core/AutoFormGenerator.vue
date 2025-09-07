@@ -158,6 +158,16 @@
             </n-space>
           </n-radio-group>
 
+          <!-- 动态标签 -->
+          <n-dynamic-tags
+            v-else-if="setting.controlType === 'DYNAMIC_TAGS' || setting.controlType === 'dynamic-tags'"
+            :value="getNestedValue(localValue, setting.path)"
+            :placeholder="setting.options?.placeholder"
+            :disabled="setting.options?.disabled"
+            :add-button-text="setting.options?.addButtonText || '添加'"
+            @update:value="val => updateNestedValue(setting.path, val)"
+          />
+
           <!-- 未知控件类型提示 -->
           <n-text v-else type="warning">未支持的控件类型: {{ setting.controlType }}</n-text>
         </n-form-item>
@@ -189,6 +199,7 @@ import {
   NCheckbox,
   NRadioGroup,
   NRadio,
+  NDynamicTags,
   NSpace,
   NText,
   type FormInst,

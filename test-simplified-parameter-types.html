@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>简化参数类型选择验证测试</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f0f2f5;
+    }
+    .test-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .test-header {
+      background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+    .test-section {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .test-step {
+      margin-bottom: 16px;
+      padding: 16px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #52c41a;
+    }
+    .test-step h4 {
+      margin: 0 0 8px 0;
+      color: #52c41a;
+      font-weight: 600;
+    }
+    .test-step p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+    }
+    .option-item {
+      background: #f6ffed;
+      border: 1px solid #b7eb8f;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .option-number {
+      background: #52c41a;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .nav-link {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #52c41a;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-right: 12px;
+      margin-bottom: 12px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .nav-link:hover {
+      background: #73d13d;
+      transform: translateY(-2px);
+    }
+    .code-block {
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #333;
+      margin: 12px 0;
+    }
+    .success-indicator {
+      color: #52c41a;
+      font-weight: bold;
+    }
+    .warning-indicator {
+      color: #faad14;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="test-header">
+      <h1>✅ 简化参数类型选择验证测试</h1>
+      <p>验证参数类型现在只显示3个选项：手动输入、组件属性绑定、设备配置</p>
+    </div>
+
+    <div class="test-section">
+      <h3>📋 修改概要</h3>
+      <div class="code-block">
+// templates/index.ts - getRecommendedTemplates() 函数修改
+export function getRecommendedTemplates(parameterType: 'header' | 'query' | 'path'): ParameterTemplate[] {
+  return [
+    // 1. 手动输入
+    PARAMETER_TEMPLATES.find(t => t.id === 'manual')!,
+    
+    // 2. 组件属性绑定  
+    PARAMETER_TEMPLATES.find(t => t.id === 'component-property-binding')!,
+    
+    // 3. 设备配置（使用设备指标选择器）
+    PARAMETER_TEMPLATES.find(t => t.id === 'device-metrics-selector')!
+  ]
+}
+      </div>
+
+      <p><strong>关键改动</strong>：</p>
+      <ul>
+        <li>✅ 移除了所有其他模板选项（HTTP方法、内容类型、认证类型等）</li>
+        <li>✅ 保留核心的3个选项</li>
+        <li>✅ 设备配置使用 device-metrics-selector 模板，显示名称改为"设备配置"</li>
+        <li>✅ DynamicParameterEditor 的 addParameterOptions 也相应简化</li>
+      </ul>
+    </div>
+
+    <div class="test-section">
+      <h3>🎯 测试验证步骤</h3>
+      
+      <div class="test-step">
+        <h4>步骤1：HTTP配置页面访问</h4>
+        <p>打开数据源系统测试页面，进入HTTP配置表单</p>
+        <a href="http://localhost:5002/test/data-source-system" class="nav-link" target="_blank">
+          📍 数据源系统测试页面
+        </a>
+      </div>
+
+      <div class="test-step">
+        <h4>步骤2：Headers参数配置测试</h4>
+        <p>1. 在HTTP配置的"Headers"区域点击"添加Header"<br>
+           2. 点击新增参数的"详情"按钮<br>
+           3. <strong>验证"参数类型"下拉框只显示3个选项</strong></p>
+        
+        <div class="option-item">
+          <div class="option-number">1</div>
+          <div>手动输入 - 直接输入固定值</div>
+        </div>
+        <div class="option-item">
+          <div class="option-number">2</div>
+          <div>组件属性绑定 - 绑定到编辑器中已加载组件的属性</div>
+        </div>
+        <div class="option-item">
+          <div class="option-number">3</div>
+          <div>设备配置 - 选择设备和对应的指标数据</div>
+        </div>
+      </div>
+
+      <div class="test-step">
+        <h4>步骤3：Query参数配置测试</h4>
+        <p>1. 在HTTP配置的"Query参数"区域点击"添加Query参数"<br>
+           2. 点击新增参数的"详情"按钮<br>
+           3. <strong>验证参数类型下拉框同样只显示3个选项</strong></p>
+      </div>
+
+      <div class="test-step">
+        <h4>步骤4：PathParam配置测试</h4>
+        <p>1. 选择"内部地址"类型，选择带路径参数的接口<br>
+           2. 启用"URL传参"开关<br>
+           3. 在参数配置区域点击参数的"详情"按钮<br>
+           4. <strong>验证参数类型下拉框同样只显示3个选项</strong></p>
+      </div>
+
+      <div class="test-step">
+        <h4>步骤5：设备配置功能测试</h4>
+        <p>1. 在任何参数详情中，选择"设备配置"类型<br>
+           2. <strong>验证：应该打开设备指标选择器界面</strong><br>
+           3. <strong>验证：可以选择设备和对应的指标数据</strong><br>
+           4. <strong>验证：选择后能正确保存配置</strong></p>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🔍 预期测试结果</h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div style="background: #fff2f0; padding: 16px; border-radius: 8px;">
+          <h4 style="color: #ff4d4f; margin: 0 0 12px 0;">修改前 ❌</h4>
+          <ul style="margin: 0; font-size: 14px;">
+            <li>参数类型下拉框显示8-9个选项</li>
+            <li>包含HTTP方法、内容类型、认证类型等</li>
+            <li>选项过多，用户选择困难</li>
+            <li>不符合简化需求</li>
+          </ul>
+        </div>
+        
+        <div style="background: #f6ffed; padding: 16px; border-radius: 8px;">
+          <h4 style="color: #52c41a; margin: 0 0 12px 0;">修改后 ✅</h4>
+          <ul style="margin: 0; font-size: 14px;">
+            <li><span class="success-indicator">只显示3个核心选项</span></li>
+            <li><span class="success-indicator">手动输入、组件属性绑定、设备配置</span></li>
+            <li><span class="success-indicator">界面简洁，选择明确</span></li>
+            <li><span class="success-indicator">设备配置功能正常</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>⚠️ 特别验证点</h3>
+      
+      <div style="background: #fff7e6; border: 1px solid #ffd591; border-radius: 8px; padding: 16px;">
+        <h4 style="color: #d48806; margin: 0 0 12px 0;">设备配置选项重点测试</h4>
+        <p>由于用户提到"设备配置比较特殊"，需要特别验证：</p>
+        <ol>
+          <li><strong>选择"设备配置"后是否打开正确的界面？</strong></li>
+          <li><strong>设备选择器是否能正常显示设备列表？</strong></li>
+          <li><strong>指标数据选择是否正常工作？</strong></li>
+          <li><strong>选择结果是否能正确保存到参数配置中？</strong></li>
+        </ol>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 32px; padding: 20px; background: #e6f7ff; border-radius: 8px;">
+      <h3>🚀 开始验证简化的参数类型选择！</h3>
+      <p>按照上述步骤验证3个选项是否正确显示并正常工作</p>
+      <a href="http://localhost:5002/test/data-source-system" class="nav-link" target="_blank" style="font-size: 16px;">
+        🔗 立即开始测试验证
+      </a>
+    </div>
+  </div>
+</body>
+</html>

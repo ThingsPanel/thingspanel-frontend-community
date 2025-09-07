@@ -6,6 +6,7 @@
 
 import { computed, reactive } from 'vue'
 import type { SimpleDisplayConfig, SimpleDisplayCustomize } from './settingConfig'
+import { interactionManager } from '@/card2.1/core/interaction-manager'
 
 // 组件状态接口
 interface ComponentState {
@@ -112,6 +113,40 @@ const handleMouseLeave = () => {
     type: 'leave'
   })
 }
+
+/**
+ * 交互事件触发方法
+ * 用于支持 dataChange 类型的交互触发
+ */
+const triggerInteractionEvent = (eventType: string, data: any) => {
+  console.log(`🔔 [SimpleDisplay] 触发交互事件`, {
+    componentId: props.componentId,
+    eventType,
+    data,
+    currentConfig: currentCustomize.value
+  })
+
+  if (eventType === 'dataChange') {
+    // 🔥 直接使用导入的交互管理器
+    console.log(`🎯 [SimpleDisplay] 调用交互管理器处理事件`, {
+      componentId: props.componentId,
+      eventType,
+      data,
+      hasInteractionManager: !!interactionManager,
+      hasTriggerEvent: typeof interactionManager.triggerEvent === 'function'
+    })
+    
+    const results = interactionManager.triggerEvent(props.componentId, eventType, data)
+    console.log(`🎯 [SimpleDisplay] 交互处理结果`, { results })
+  }
+}
+
+// 暴露方法给父组件
+defineExpose({
+  triggerInteractionEvent,
+  componentState,
+  currentCustomize
+})
 </script>
 
 <template>

@@ -31,6 +31,9 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const { t } = useI18n()
 
+// 🔥 新增：防止循环更新的标记
+const isUpdatingFromChild = ref(false)
+
 /**
  * 地址类型选择：直接从modelValue获取和设置
  */
@@ -192,42 +195,54 @@ const onEnableParamsChange = (enabled: boolean) => {
 }
 
 /**
- * 传参配置更新
+ * 🔥 修复：传参配置更新 - 批量更新避免频繁重渲染
  */
 const onUrlParamsUpdate = (params: EnhancedParameter[]) => {
+  // 🔥 设置标记，避免watch监听器再次触发初始化
+  isUpdatingFromChild.value = true
+  
   urlParams.value = params
 
-  // 🔥 关键修复：将参数配置保存到父组件的modelValue中
-  updateConfig('pathParams', params)
+  // 🔥 关键修复：批量更新配置，避免多次emit导致的重渲染
+  const batchUpdates: Partial<HttpConfig> = {
+    pathParams: params
+  }
 
   // 如果还有旧格式的pathParameter，也要更新（兼容性）
   if (params.length > 0) {
     const firstParam = params[0]
-    updateConfig('pathParameter', {
+    batchUpdates.pathParameter = {
       value: firstParam.value,
       isDynamic: firstParam.selectedTemplate === 'component-property-binding',
       variableName: firstParam.variableName || '',
       description: firstParam.description || '',
       dataType: firstParam.dataType || 'string',
       defaultValue: firstParam.defaultValue,
-      // 🔥 关键修复：保存selectedTemplate字段，确保DataItemFetcher能正确识别属性绑定
       selectedTemplate: firstParam.selectedTemplate,
       key: firstParam.key,
       enabled: firstParam.enabled
-    })
+    }
   }
-
-  // 🔥 修复架构设计：配置层不进行URL替换，只保存原始模板和参数
-  // 保持原始URL模板不变，参数替换留给HTTP执行器处理
-  console.log('📝 [HttpConfigStep1] 参数配置更新，但不修改URL模板')
 
   // 如果有API信息，确保URL保持原始模板格式
   const apiInfo = selectedApiInfo.value
   if (apiInfo) {
-    // 🔥 关键修复：始终保持原始URL模板，不进行参数替换
-    updateConfig('url', apiInfo.url) // 保持原始模板如 /device/detail/{id}
-    console.log('✅ [HttpConfigStep1] 保持原始URL模板:', apiInfo.url)
+    batchUpdates.url = apiInfo.url // 保持原始模板如 /device/detail/{id}
   }
+
+  // 🔥 一次性批量更新，避免多次emit
+  const newConfig = {
+    ...props.modelValue,
+    ...batchUpdates
+  }
+
+  console.log('📝 [HttpConfigStep1] 批量参数配置更新:', Object.keys(batchUpdates))
+  emit('update:modelValue', newConfig)
+  
+  // 🔥 重置标记，延迟执行避免立即触发watch
+  nextTick(() => {
+    isUpdatingFromChild.value = false
+  })
 }
 
 /**
@@ -387,7 +402,7 @@ const initializeUrlParamsState = () => {
 }
 
 /**
- * 监听 props 变化，同步URL参数状态 - 改进触发条件
+ * 🔥 修复：监听 props 变化，同步URL参数状态 - 避免循环更新
  */
 watch(
   () => [
@@ -398,7 +413,13 @@ watch(
     props.modelValue.enableParams || false
   ],
   () => {
-    // 🔥 关键修复：延迟初始化，确保所有数据完全加载后再同步状态
+    // 🔥 如果正在从子组件更新，跳过此次同步，避免循环
+    if (isUpdatingFromChild.value) {
+      console.log('🔄 [HttpConfigStep1] 跳过循环更新，来自子组件')
+      return
+    }
+    
+    // 🔥 延迟初始化，确保所有数据完全加载后再同步状态
     nextTick(() => {
       initializeUrlParamsState()
     })
@@ -407,11 +428,16 @@ watch(
 )
 
 /**
- * 🔥 新增：监听关键字段变化，强制重新初始化
+ * 🔥 修复：监听关键字段变化，强制重新初始化 - 避免循环更新
  */
 watch(
   () => props.modelValue,
   newValue => {
+    // 🔥 如果正在从子组件更新，跳过此次同步
+    if (isUpdatingFromChild.value) {
+      return
+    }
+    
     // 当modelValue完全变化时（比如从编辑数据加载），重新初始化
     if (newValue && (newValue.addressType === 'internal' || newValue.selectedInternalAddress)) {
       nextTick(() => {

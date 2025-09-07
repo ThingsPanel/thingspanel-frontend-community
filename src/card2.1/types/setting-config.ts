@@ -116,7 +116,9 @@ export enum SettingControlType {
   /** 单选框组 */
   RADIO_GROUP = 'radio-group',
   /** 日期选择器 */
-  DATE_PICKER = 'date-picker'
+  DATE_PICKER = 'date-picker',
+  /** 动态标签 */
+  DYNAMIC_TAGS = 'dynamic-tags'
 }
 
 /**
@@ -128,6 +130,7 @@ export type PropertyDataTypeFromSetting =
   | 'boolean' // switch, checkbox
   | 'color' // color-picker
   | 'date' // date-picker
+  | 'array' // dynamic-tags
 
 /**
  * 根据设置项类型推断属性数据类型
@@ -155,6 +158,9 @@ export function inferPropertyDataType(setting: Setting): PropertyDataTypeFromSet
 
     case SettingControlType.DATE_PICKER:
       return 'date'
+
+    case SettingControlType.DYNAMIC_TAGS:
+      return 'array'
 
     default:
       return 'string'

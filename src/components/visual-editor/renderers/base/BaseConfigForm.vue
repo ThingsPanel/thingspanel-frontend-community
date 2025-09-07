@@ -95,6 +95,26 @@
         />
       </n-form-item>
 
+      <!-- 设备配置 -->
+      <n-divider title-placement="left">{{ t('config.base.device.section') }}</n-divider>
+
+      <n-form-item :label="t('config.base.deviceId')">
+        <n-input
+          v-model:value="formData.deviceId"
+          :placeholder="t('config.base.deviceIdPlaceholder')"
+          clearable
+          @input="handleUpdate"
+        />
+      </n-form-item>
+
+      <n-form-item :label="t('config.base.metricsList')">
+        <n-dynamic-tags
+          v-model:value="formData.metricsListTags"
+          :placeholder="t('config.base.metricsListPlaceholder')"
+          @update:value="handleMetricsListUpdate"
+        />
+      </n-form-item>
+
       <!-- 快捷操作 -->
       <n-divider title-placement="left">{{ t('config.base.advanced.section') }}</n-divider>
 
@@ -117,6 +137,7 @@ import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
 import { configurationManager } from '../../configuration'
 import type { BaseConfiguration } from '../../configuration/types'
+import type { MetricItem } from '@/card2.1/core/types'
 
 // 接收props
 interface Props {
@@ -142,7 +163,7 @@ const message = useMessage()
 let isUpdating = false
 
 /**
- * 表单数据结构 - 简化版本，使用单一数值控制间距
+ * 表单数据结构 - 简化版本，使用单一数值控制间距，包含设备字段
  */
 const formData = shallowReactive({
   showTitle: false,
@@ -156,6 +177,10 @@ const formData = shallowReactive({
   borderRadius: 6,
   paddingValue: 0, // 统一的内边距值
   marginValue: 0, // 统一的外边距值
+  // 🔥 新增：设备相关字段
+  deviceId: '', // 设备ID
+  metricsListTags: [] as string[], // 指标列表（标签形式）
+  metricsList: [] as MetricItem[], // 实际的指标列表对象
   // 实际的padding和margin对象（内部使用）
   padding: {
     top: 0,
@@ -220,6 +245,25 @@ const handleMarginUpdate = () => {
 }
 
 /**
+ * 处理指标列表更新
+ * 将标签形式转换为 MetricItem 对象数组
+ */
+const handleMetricsListUpdate = (tags: string[]) => {
+  // 将字符串标签转换为 MetricItem 对象
+  formData.metricsList = tags.map(tag => ({
+    id: tag.toLowerCase().replace(/\s+/g, '_'), // 生成简单的ID
+    name: tag,
+    unit: '',
+    description: `指标: ${tag}`,
+    dataType: 'number' as const,
+    aggregation: 'last' as const
+  }))
+  
+  // 更新配置
+  handleUpdate()
+}
+
+/**
  * 处理配置更新 - 防抖处理
  */
 const handleUpdate = () => {
@@ -235,8 +279,8 @@ const handleUpdate = () => {
 
   updateTimer = window.setTimeout(() => {
     try {
-      // 构建base配置对象
-      const baseConfig: BaseConfiguration = {
+      // 构建base配置对象，包含设备字段
+      const baseConfig: BaseConfiguration & { deviceId?: string; metricsList?: MetricItem[] } = {
         showTitle: formData.showTitle,
         title: formData.title,
         opacity: formData.opacity,
@@ -247,7 +291,10 @@ const handleUpdate = () => {
         borderStyle: formData.borderWidth > 0 ? formData.borderStyle : undefined,
         borderRadius: formData.borderRadius > 0 ? formData.borderRadius : undefined,
         padding: { ...formData.padding },
-        margin: { ...formData.margin }
+        margin: { ...formData.margin },
+        // 🔥 新增：设备字段
+        deviceId: formData.deviceId || '',
+        metricsList: formData.metricsList
       }
 
       // 通过configurationManager更新base配置
@@ -286,6 +333,14 @@ const loadConfigurationFromManager = async () => {
       formData.borderColor = baseConfig.borderColor || '#d9d9d9'
       formData.borderStyle = baseConfig.borderStyle || 'solid'
       formData.borderRadius = baseConfig.borderRadius ?? 6
+
+      // 🔥 新增：加载设备字段
+      const extendedConfig = baseConfig as BaseConfiguration & { deviceId?: string; metricsList?: MetricItem[] }
+      formData.deviceId = extendedConfig.deviceId || ''
+      formData.metricsList = extendedConfig.metricsList || []
+      
+      // 将 MetricItem 对象转换为标签形式显示
+      formData.metricsListTags = formData.metricsList.map(metric => metric.name)
 
       // 处理padding - 取最大值作为统一值
       if (baseConfig.padding) {
@@ -336,6 +391,10 @@ const resetToDefaults = () => {
   formData.marginValue = 0
   formData.padding = { top: 0, right: 0, bottom: 0, left: 0 }
   formData.margin = { top: 0, right: 0, bottom: 0, left: 0 }
+  // 🔥 新增：重置设备字段
+  formData.deviceId = ''
+  formData.metricsListTags = []
+  formData.metricsList = []
 }
 
 // 配置变化监听器

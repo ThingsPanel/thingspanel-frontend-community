@@ -620,7 +620,16 @@
       "Bash(start src/test-final-v2-fixes.html)",
       "Bash(start http://localhost:5004/test/editor-integration)",
       "Bash(start test-height-grid-fix.html)",
-      "Bash(start test-grid-height-verification.html)"
+      "Bash(start test-grid-height-verification.html)",
+      "Bash(start test-property-binding-fix.html)",
+      "Bash(start test-input-focus-fix.html)",
+      "Bash(start debug-pathparam-input-fix.html)",
+      "Bash(start pathparam-focus-fix-final.html)",
+      "Bash(start http://localhost:5002/test/data-source-system)",
+      "Bash(start test-simplified-parameter-types.html)",
+      "Bash(start test-unified-device-config.html)",
+      "Bash(start test-both-device-configs.html)",
+      "Bash(start test-unified-device-interface.html)"
     ],
     "deny": [],
     "additionalDirectories": [

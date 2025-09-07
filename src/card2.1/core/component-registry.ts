@@ -199,12 +199,13 @@ export class ComponentRegistry {
    */
   static registerSettingConfig<T extends Record<string, any>>(settingConfig: ComponentSettingConfig<T>): void {
     try {
-      // 自动注册到属性暴露系统
+      // 直接注册到属性暴露系统（设备字段现在直接在 settingConfig 中定义）
       autoRegisterFromSettingConfig(settingConfig)
-    } catch {
-      // 忽略设置配置注册错误
+    } catch (error) {
+      console.error(`❌ [ComponentRegistry] settingConfig 注册失败:`, error)
     }
   }
+
 
   /**
    * 🔥 新增：批量注册 settingConfig

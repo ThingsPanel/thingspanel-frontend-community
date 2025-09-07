@@ -115,7 +115,7 @@ const editingGroupInfo = ref<{
 } | null>(null)
 
 /**
- * 参数添加选项 - 4种方式
+ * 🔥 修改：参数添加选项 - 简化为3种方式
  */
 const addParameterOptions = [
   {
@@ -124,14 +124,14 @@ const addParameterOptions = [
     description: '直接输入固定参数值'
   },
   {
-    label: '卡片属性绑定',
+    label: '组件属性绑定',
     key: 'property',
-    description: '绑定到动态属性（运行时获取值）'
+    description: '绑定到组件属性（运行时获取值）'
   },
   {
-    label: '接口模板',
-    key: 'template',
-    description: '使用内部接口的常用参数模板'
+    label: '设备配置',
+    key: 'device',
+    description: '选择设备和对应的指标数据'
   }
 ]
 
@@ -158,6 +158,14 @@ const recommendedTemplates = computed(() => {
 const canAddMoreParameters = computed(() => {
   if (props.maxParameters === undefined) return true
   return props.modelValue.length < props.maxParameters
+})
+
+/**
+ * 🔥 新增：确保所有参数都有稳定ID的计算属性
+ * 用于修复历史参数的兼容性问题并防止焦点丢失
+ */
+const parametersWithStableIds = computed(() => {
+  return props.modelValue.map((param, index) => ensureParameterHasId(param, index))
 })
 
 /**
@@ -212,19 +220,29 @@ const handleSelectAddOption = (key: string) => {
       break
 
     case 'property':
-      // 卡片属性绑定：使用组件属性绑定模板
+      // 🔥 修复：属性绑定 - 立即显示面板
       newParam.selectedTemplate = 'component-property-binding'
       newParam.valueMode = ParameterTemplateType.COMPONENT
-      break
+      
+      // 添加参数
+      const updatedParams = [...props.modelValue, newParam]
+      emit('update:modelValue', updatedParams)
+      
+      // 立即设置编辑状态并打开抽屉
+      const newParamIndex = updatedParams.length - 1
+      editingIndex.value = newParamIndex
+      
+      nextTick(() => {
+        // 直接打开组件属性选择抽屉
+        openComponentDrawer(newParam)
+      })
+      return // 提前返回，避免重复处理
 
     case 'device':
-      // 旧的设备选择：打开设备选择抽屉（保持兼容）
-      isAddFromDeviceDrawerVisible.value = true
-      return // 不添加参数，等待从抽屉中选择
-
-    case 'template':
-      // 🔥 修复：从当前接口模板导入参数
-      return handleTemplateImport()
+      // 🔥 修复：设备配置 - 打开统一设备配置选择器
+      isUnifiedDeviceConfigVisible.value = true
+      isEditingDeviceConfig.value = false // 新建模式
+      return // 提前返回，避免重复处理
 
     default:
       // 默认使用手动输入
@@ -592,6 +610,9 @@ const toggleEditMode = (index: number) => {
   editingIndex.value = editingIndex.value === index ? -1 : index
 }
 
+// 🔥 新增：防抖定时器用于延迟更新参数key
+const updateKeyTimers = new Map<string, NodeJS.Timeout>()
+
 /**
  * 更新指定索引的参数
  */
@@ -606,11 +627,78 @@ const updateParameter = (param: EnhancedParameter, index: number) => {
 }
 
 /**
+ * 🔥 新增：更新参数key的防抖处理
+ * 避免每次输入都触发重新渲染导致焦点丢失
+ */
+const updateParameterKey = (param: EnhancedParameter, index: number, newKey: string) => {
+  // 立即更新本地显示，避免输入延迟
+  const updatedParams = [...props.modelValue]
+  updatedParams[index] = { ...param, key: newKey }
+  emit('update:modelValue', updatedParams)
+
+  // 清除之前的定时器
+  const timerId = param._id || `param-${index}`
+  if (updateKeyTimers.has(timerId)) {
+    clearTimeout(updateKeyTimers.get(timerId)!)
+    updateKeyTimers.delete(timerId)
+  }
+}
+
+/**
+ * 🔥 新增：确保参数key不为空，失去焦点时检查
+ * 如果为空则恢复到合理的默认值，而不是覆盖用户输入
+ */
+const ensureParameterKeyNotEmpty = (param: EnhancedParameter, index: number) => {
+  // 只有当key完全为空时才设置默认值，避免覆盖用户的输入
+  if (!param.key || param.key.trim() === '') {
+    const defaultKey = `param${index + 1}`
+    updateParameter({ ...param, key: defaultKey }, index)
+  }
+}
+
+/**
+ * 🔥 新增：更新参数value的防抖处理
+ * 立即更新显示，避免输入延迟
+ */
+const updateParameterValue = (param: EnhancedParameter, index: number, newValue: string) => {
+  // 立即更新显示，保持输入的流畅性
+  const updatedParams = [...props.modelValue]
+  updatedParams[index] = { ...param, value: newValue }
+  emit('update:modelValue', updatedParams)
+}
+
+/**
+ * 🔥 新增：确保所有参数都有稳定的_id
+ * 用于兼容没有_id的历史参数
+ */
+const ensureParameterHasId = (param: EnhancedParameter, index: number): EnhancedParameter => {
+  if (!param._id) {
+    return {
+      ...param,
+      _id: `param_legacy_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 6)}`
+    }
+  }
+  return param
+}
+
+/**
  * 处理模板变化
  */
 const onTemplateChange = (param: EnhancedParameter, index: number, templateId: string) => {
   const template = getTemplateById(templateId)
   if (!template) return
+
+  // 🔥 修复：如果选择的是设备配置模板，打开统一设备配置选择器
+  if (templateId === 'device-metrics-selector') {
+    // 关闭当前参数编辑
+    editingIndex.value = -1
+    
+    // 打开统一设备配置选择器，设置为编辑模式
+    isUnifiedDeviceConfigVisible.value = true
+    isEditingDeviceConfig.value = true
+    
+    return // 不继续普通的模板切换逻辑
+  }
 
   const updatedParam = { ...param }
   updatedParam.selectedTemplate = templateId
@@ -640,13 +728,13 @@ const onTemplateChange = (param: EnhancedParameter, index: number, templateId: s
       updatedParam.description = updatedParam.description || `${getTypeDisplayName()}参数：${param.key}`
     }
   } else if (template.type === ParameterTemplateType.COMPONENT) {
-    // 确保编辑索引正确设置
+    // 🔥 修复：属性绑定模板 - 确保编辑状态和抽屉立即显示
     editingIndex.value = index
 
-    // 对于组件模板，先更新参数再打开抽屉进行编辑
+    // 先更新参数
     updateParameter(updatedParam, index)
 
-    // 使用 nextTick 确保参数更新后再打开抽屉
+    // 立即打开抽屉，不依赖 nextTick
     nextTick(() => {
       openComponentDrawer(updatedParam)
     })
@@ -813,10 +901,10 @@ watch(
     </div>
 
     <!-- 参数列表 -->
-    <div v-if="modelValue.length > 0" class="parameter-list">
+    <div v-if="parametersWithStableIds.length > 0" class="parameter-list">
       <div
-        v-for="(param, index) in modelValue"
-        :key="param._id || `param-${index}-${param.key || 'empty'}`"
+        v-for="(param, index) in parametersWithStableIds"
+        :key="param._id"
         class="parameter-item"
         :class="{
           'is-editing': editingIndex === index,
@@ -845,7 +933,8 @@ watch(
             :placeholder="keyPlaceholder"
             size="small"
             class="param-key-input"
-            @update:value="value => updateParameter({ ...param, key: value }, index)"
+            @input="value => updateParameterKey(param, index, value)"
+            @blur="() => ensureParameterKeyNotEmpty(param, index)"
           />
 
           <!-- 参数值显示（增强版，包含参数组信息） -->
@@ -925,7 +1014,7 @@ watch(
               :value="param.value"
               :placeholder="valuePlaceholder"
               size="small"
-              @update:value="value => updateParameter({ ...param, value: value }, index)"
+              @input="value => updateParameterValue(param, index, value)"
             />
             <!-- 下拉选择 -->
             <n-select
@@ -944,13 +1033,19 @@ watch(
                 :value="param.value"
                 placeholder="示例值 (运行时替换)"
                 size="small"
-                @update:value="value => updateParameter({ ...param, value: value }, index)"
+                @input="value => updateParameterValue(param, index, value)"
               />
             </div>
-            <!-- 设备选择（简化显示） -->
+            <!-- 组件属性绑定（简化显示） -->
             <div v-else-if="param.valueMode === 'component'" class="component-simple">
-              <n-tag size="small" type="success">设备参数</n-tag>
-              <n-text depth="3" style="margin-left: 8px">{{ param.value || '未设置' }}</n-text>
+              <n-space>
+                <n-tag size="small" type="success">{{ param.selectedTemplate === 'component-property-binding' ? '属性绑定' : '设备参数' }}</n-tag>
+                <n-text depth="3">{{ param.value || '未设置' }}</n-text>
+                <!-- 🔥 添加重新配置按钮 -->
+                <n-button size="tiny" type="primary" text @click="openComponentDrawer(param)">
+                  重新配置
+                </n-button>
+              </n-space>
             </div>
           </div>
 

@@ -156,6 +156,11 @@
   "config.base.title.placeholder": "Enter component title",
   "config.base.display.section": "Display Configuration",
   "config.base.advanced.section": "Advanced Configuration",
+  "config.base.device.section": "Device Configuration",
+  "config.base.deviceId": "Device ID",
+  "config.base.deviceIdPlaceholder": "Enter device ID",
+  "config.base.metricsList": "Metrics List",
+  "config.base.metricsListPlaceholder": "Enter metric name",
   "config.base.customClassName.placeholder": "Enter custom CSS class name",
   
   "config.dataSource.type.section": "Data Source Type",

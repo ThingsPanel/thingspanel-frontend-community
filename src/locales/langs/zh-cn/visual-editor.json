@@ -254,6 +254,11 @@
   "config.base.style.section": "样式配置",
   "config.base.layout.section": "布局配置",
   "config.base.advanced.section": "高级配置",
+  "config.base.device.section": "设备配置",
+  "config.base.deviceId": "设备ID",
+  "config.base.deviceIdPlaceholder": "请输入设备ID",
+  "config.base.metricsList": "指标列表",
+  "config.base.metricsListPlaceholder": "请输入指标名称",
   "config.base.customClassName.placeholder": "请输入自定义CSS类名",
 
   "config.dataSource.type.section": "数据源类型",

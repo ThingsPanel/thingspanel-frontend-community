@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>属性绑定面板修复测试</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .test-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+    .test-section {
+      margin-bottom: 32px;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    .step {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: white;
+      border-radius: 6px;
+      border-left: 4px solid #2080f0;
+    }
+    .step h4 {
+      margin: 0 0 8px 0;
+      color: #333;
+    }
+    .step p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+    }
+    .issue-fixed {
+      background: #f6ffed;
+      border-left-color: #52c41a;
+    }
+    .issue-fixed h4 {
+      color: #52c41a;
+    }
+    .nav-link {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #2080f0;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      margin-right: 12px;
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+    }
+    .nav-link:hover {
+      background: #40a9ff;
+      transform: translateY(-1px);
+    }
+    .code-block {
+      background: #f8f8f8;
+      padding: 16px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #333;
+      margin: 12px 0;
+      border: 1px solid #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="test-header">
+      <h1>🔧 属性绑定面板修复测试</h1>
+      <p>修复选择"属性绑定"方式时面板不立即打开的问题</p>
+    </div>
+
+    <div class="test-section">
+      <h3>🎯 修复的问题</h3>
+      
+      <div class="step">
+        <h4>问题描述</h4>
+        <p>当用户在参数编辑器中选择"添加参数" → "卡片属性绑定"时，属性选择面板没有立即打开，需要用户额外点击下拉选项才会出现</p>
+      </div>
+
+      <div class="step issue-fixed">
+        <h4>✅ 已修复：新增参数时立即显示面板</h4>
+        <p>修改了 handleSelectAddOption 函数，选择属性绑定时立即添加参数并打开属性选择抽屉</p>
+      </div>
+
+      <div class="step issue-fixed">
+        <h4>✅ 已修复：切换模板时立即显示面板</h4>
+        <p>修改了 onTemplateChange 函数，切换到属性绑定模板时立即打开抽屉</p>
+      </div>
+
+      <div class="step issue-fixed">
+        <h4>✅ 已修复：添加重新配置按钮</h4>
+        <p>在属性绑定参数的详情面板中添加"重新配置"按钮，用户可以随时重新打开属性选择器</p>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🚀 测试步骤</h3>
+      
+      <div class="step">
+        <h4>步骤 1：访问数据源系统测试页面</h4>
+        <p>打开数据绑定系统集成测试页面</p>
+        <a href="http://localhost:5002/test/data-source-system" class="nav-link" target="_blank">
+          打开数据源系统测试
+        </a>
+      </div>
+
+      <div class="step">
+        <h4>步骤 2：测试新增属性绑定参数</h4>
+        <p>1. 找到任何HTTP配置表单（查询参数、请求头等）<br>
+           2. 点击"添加参数"下拉按钮<br>
+           3. 选择"卡片属性绑定"<br>
+           4. <strong>验证：属性选择面板应立即打开</strong></p>
+      </div>
+
+      <div class="step">
+        <h4>步骤 3：测试模板切换</h4>
+        <p>1. 为已有参数点击"配置"按钮<br>
+           2. 在类型下拉中选择含有"属性绑定"的选项<br>
+           3. <strong>验证：属性选择面板应立即打开</strong></p>
+      </div>
+
+      <div class="step">
+        <h4>步骤 4：测试重新配置功能</h4>
+        <p>1. 对于已配置的属性绑定参数<br>
+           2. 在详情面板中应看到"重新配置"按钮<br>
+           3. 点击按钮，<strong>验证：属性选择面板重新打开</strong></p>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🔍 修复的代码改动</h3>
+      
+      <div class="step">
+        <h4>修改点 1：handleSelectAddOption 函数</h4>
+        <div class="code-block">
+case 'property':
+  // 🔥 修复：属性绑定 - 立即显示面板
+  newParam.selectedTemplate = 'component-property-binding'
+  newParam.valueMode = ParameterTemplateType.COMPONENT
+  
+  // 添加参数
+  const updatedParams = [...props.modelValue, newParam]
+  emit('update:modelValue', updatedParams)
+  
+  // 立即设置编辑状态并打开抽屉
+  const newParamIndex = updatedParams.length - 1
+  editingIndex.value = newParamIndex
+  
+  nextTick(() => {
+    // 直接打开组件属性选择抽屉
+    openComponentDrawer(newParam)
+  })
+  return // 提前返回，避免重复处理
+        </div>
+      </div>
+
+      <div class="step">
+        <h4>修改点 2：组件模式显示增强</h4>
+        <div class="code-block">
+&lt;div v-else-if="param.valueMode === 'component'" class="component-simple"&gt;
+  &lt;n-space&gt;
+    &lt;n-tag size="small" type="success"&gt;
+      {{ param.selectedTemplate === 'component-property-binding' ? '属性绑定' : '设备参数' }}
+    &lt;/n-tag&gt;
+    &lt;n-text depth="3"&gt;{{ param.value || '未设置' }}&lt;/n-text&gt;
+    &lt;!-- 🔥 添加重新配置按钮 --&gt;
+    &lt;n-button size="tiny" type="primary" text @click="openComponentDrawer(param)"&gt;
+      重新配置
+    &lt;/n-button&gt;
+  &lt;/n-space&gt;
+&lt;/div&gt;
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>📋 预期结果</h3>
+      
+      <div class="step issue-fixed">
+        <h4>✅ 立即响应</h4>
+        <p>选择属性绑定方式时，属性选择面板立即打开，无需额外操作</p>
+      </div>
+
+      <div class="step issue-fixed">
+        <h4>✅ 用户体验提升</h4>
+        <p>用户操作流程更顺畅，减少了困惑和额外点击</p>
+      </div>
+
+      <div class="step issue-fixed">
+        <h4>✅ 一致性改进</h4>
+        <p>所有组件类型的配置方式保持一致的交互体验</p>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🔗 相关测试链接</h3>
+      <a href="http://localhost:5002/test/data-source-system" class="nav-link" target="_blank">
+        数据源系统测试
+      </a>
+      <a href="http://localhost:5002/test/data-binding-system-integration" class="nav-link" target="_blank">
+        数据绑定系统集成测试
+      </a>
+      <a href="http://localhost:5002/test/editor-integration" class="nav-link" target="_blank">
+        编辑器集成测试
+      </a>
+    </div>
+  </div>
+</body>
+</html>

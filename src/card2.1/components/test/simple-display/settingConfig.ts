@@ -32,6 +32,19 @@ export const simpleDisplaySettingConfig: ComponentSettingConfig<SimpleDisplayCus
 
   // 设置项定义
   settings: [
+    // 🔥 设备字段配置 - 放在最前面
+    createSetting(SettingControlType.INPUT, '设备ID', 'deviceId', {
+      group: '设备配置',
+      placeholder: '请输入设备ID',
+      defaultValue: ''
+    }),
+
+    createSetting(SettingControlType.DYNAMIC_TAGS, '指标列表', 'metricsList', {
+      group: '设备配置',
+      placeholder: '请输入指标名称',
+      defaultValue: []
+    }),
+
     createSetting(SettingControlType.INPUT, '组件标题', 'customize.title', {
       group: '内容设置',
       placeholder: '请输入组件标题',

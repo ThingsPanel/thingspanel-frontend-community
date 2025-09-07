@@ -172,7 +172,13 @@
                 v-model:value="currentInteraction.targetComponentId"
                 :options="componentOptions"
                 :placeholder="t('interaction.placeholders.selectComponentToModify')"
+                @focus="() => console.log('🔥 [InteractionCardWizard] 目标组件选择器获得焦点, componentOptions:', componentOptions)"
+                @click="() => console.log('🔥 [InteractionCardWizard] 点击目标组件选择器, componentOptions:', componentOptions)"
               />
+              <!-- DEBUG信息 -->
+              <div style="font-size: 12px; color: #999; margin-top: 4px;">
+                DEBUG: 组件选项数量: {{ componentOptions.length }}
+              </div>
             </n-form-item>
             <n-form-item :label="t('interaction.properties.modifyProperty')">
               <n-select
@@ -227,6 +233,7 @@ import {
 import { FlashOutline, TrashOutline } from '@vicons/ionicons5'
 import { fetchGetUserRoutes } from '@/service/api/route'
 import { propertyExposureRegistry } from '@/card2.1/core/property-exposure'
+import { useEditorStore } from '@/store/modules/editor'
 
 interface Props {
   modelValue?: any[]
@@ -241,12 +248,16 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-// 🔥 注入Visual Editor状态获取当前画布组件
-const visualEditorState = inject<{ getAvailableComponents: () => any[] }>('visualEditorState', {
+// 🔥 直接使用 useEditorStore 获取当前画布组件（修复空数组问题）
+const editorStore = useEditorStore()
+
+// 保持向后兼容
+const visualEditorState = {
   getAvailableComponents: () => {
-    return []
+    console.log('🔥 [InteractionCardWizard] editorStore.nodes:', editorStore.nodes)
+    return editorStore.nodes || []
   }
-})
+}
 
 // 状态
 const interactions = ref(props.modelValue || [])
@@ -314,13 +325,20 @@ const actionTypeOptions = computed(() => [
 
 // ✅ 动态获取当前画布上的组件（用于目标组件选择）
 const componentOptions = computed(() => {
+  console.log('🔥 [InteractionCardWizard] 计算 componentOptions')
   const components = visualEditorState.getAvailableComponents()
-  return components.map(comp => ({
+  console.log('🔥 [InteractionCardWizard] 获取到的组件列表:', components)
+  console.log('🔥 [InteractionCardWizard] visualEditorState:', visualEditorState)
+  
+  const options = components.map(comp => ({
     // 优先使用标题，然后是名称，最后是ID的前8位
     label: comp.title || comp.label || comp.name || `组件 (${comp.id.slice(0, 8)}...)`,
     value: comp.id,
     componentType: comp.type // 保存组件类型，用于获取可响应属性
   }))
+  
+  console.log('🔥 [InteractionCardWizard] 转换后的选项:', options)
+  return options
 })
 
 // ✅ 根据选择的目标组件动态获取可响应属性

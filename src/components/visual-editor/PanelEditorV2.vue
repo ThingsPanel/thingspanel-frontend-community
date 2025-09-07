@@ -5,7 +5,7 @@
  * 实现真实的工具栏和渲染器切换功能
  */
 
-import { ref, computed, onMounted, watch, toRaw } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, toRaw } from 'vue'
 import { $t } from '@/locales'
 import PanelLayout from './components/PanelLayout.vue'
 import { VisualEditorToolbar } from './components/toolbar'
@@ -18,6 +18,10 @@ import type { RendererType } from './types'
 import { useMessage, useDialog } from 'naive-ui'
 import { getBoard, PutBoard } from '@/service/api'
 import { smartDeepClone } from '@/utils/deep-clone'
+
+// 🔥 轮询系统导入
+import { useGlobalPollingManager } from './core/GlobalPollingManager'
+import PollingController from './components/PollingController.vue'
 
 // 🔥 接收测试页面的配置props
 interface Props {
@@ -86,10 +90,20 @@ const isDragOver = ref(false)
 const draggedComponent = ref<string | null>(null)
 const selectedNodeId = ref<string>('')
 
+// 🔥 底部悬浮状态管理
+const showFooter = ref(false)
+
 // 创建编辑器上下文
 const editorContext = createEditor()
 const { stateManager, addWidget, updateNode, selectNode } = editorContext
 const { setPreviewMode, isPreviewMode } = usePreviewMode()
+
+// 🔥 轮询管理器实例
+const pollingManager = useGlobalPollingManager()
+
+// 🔥 全局轮询状态
+const globalPollingEnabled = computed(() => pollingManager.isGlobalPollingEnabled())
+const pollingStats = computed(() => pollingManager.getStatistics())
 
 // 🔥 计算选中的组件对象 - 从老版本移植
 const selectedWidget = computed(() => {
@@ -187,9 +201,22 @@ const fetchBoard = async () => {
 
 onMounted(async () => {
   await fetchBoard()
+  
+  // 🔥 初始化轮询系统（仅在预览模式下）
+  if (!isEditing.value && isPreviewMode.value) {
+    initializePollingTasksAndEnable()
+  }
+  
+  // 初始化完成，无需全局监听
+  
   // 🔥 触发state-manager-ready事件，让测试页面知道编辑器已准备好
   emit('state-manager-ready', stateManager)
   emit('editor-ready', editorContext)
+})
+
+// 🔥 组件卸载时清理
+onUnmounted(() => {
+  // 无需清理
 })
 
 // Watch for changes to set hasChanges flag
@@ -219,13 +246,72 @@ const rendererOptions = computed(() => [
   { label: $t('visualEditor.gridstack'), value: 'gridstack' as RendererType }
 ])
 
+// 🔥 轮询事件处理函数
+const handlePollingToggle = (enabled: boolean) => {
+  // 轮询状态切换处理
+  console.log('🔄 轮询状态切换:', enabled)
+}
+
+const handlePollingEnabled = () => {
+  console.log('▶️ 轮询已启动')
+}
+
+const handlePollingDisabled = () => {
+  console.log('⏸️ 轮询已暂停')
+}
+
+// 🔥 初始化轮询任务并启用（仅在预览模式下）
+const initializePollingTasksAndEnable = () => {
+  if (!isPreviewMode.value) return
+  
+  try {
+    pollingManager.enableGlobalPolling()
+    console.log('🔛 全局轮询已启动（预览模式）')
+  } catch (error) {
+    console.error('❌ 启动全局轮询失败:', error)
+  }
+}
+
+// 🔥 Footer 轮询切换函数
+const toggleFooterPolling = () => {
+  const wasEnabled = globalPollingEnabled.value
+
+  if (!wasEnabled) {
+    pollingManager.enableGlobalPolling()
+    message.success($t('visualEditor.pollingEnabled'))
+    handlePollingEnabled()
+  } else {
+    pollingManager.disableGlobalPolling()
+    message.info($t('visualEditor.pollingDisabled'))
+    handlePollingDisabled()
+  }
+
+  handlePollingToggle(!wasEnabled)
+}
+
+// 🔥 右下角触发器交互
+const handleTriggerHover = () => {
+  showFooter.value = true
+}
+
+const handleFooterMouseLeave = () => {
+  showFooter.value = false
+}
+
 // 🔥 工具栏事件处理
 const handleModeChange = (mode: 'edit' | 'preview') => {
   const editMode = mode === 'edit'
   isEditing.value = editMode
   setPreviewMode(!editMode)
 
-  if (!editMode) {
+  if (editMode) {
+    // 🔴 关闭全局轮询（编辑模式）
+    pollingManager.disableGlobalPolling()
+    console.log('🔴 全局轮询已关闭（编辑模式）')
+  } else {
+    // 🔛 自动启动全局轮询（预览模式默认开启）
+    initializePollingTasksAndEnable()
+    
     leftCollapsed.value = true
     rightCollapsed.value = true
   }
@@ -484,17 +570,18 @@ const handleRequestCurrentData = (componentId: string) => {
 </script>
 
 <template>
-  <PanelLayout
-    :mode="isEditing ? 'edit' : 'preview'"
-    :left-collapsed="leftCollapsed"
-    :right-collapsed="rightCollapsed"
-    :show-header="props.enableHeaderArea && props.showPageHeader"
-    :show-toolbar="props.enableToolbarArea && props.showToolbar"
-    :show-footer="props.enableFooterArea"
-    :custom-class="props.customLayoutClass"
-    @update:left-collapsed="leftCollapsed = $event"
-    @update:right-collapsed="rightCollapsed = $event"
-  >
+  <div class="panel-editor-wrapper">
+    <PanelLayout
+      :mode="isEditing ? 'edit' : 'preview'"
+      :left-collapsed="leftCollapsed"
+      :right-collapsed="rightCollapsed"
+      :show-header="props.enableHeaderArea && props.showPageHeader"
+      :show-toolbar="props.enableToolbarArea && props.showToolbar"
+      :show-footer="props.enableFooterArea && showFooter"
+      :custom-class="props.customLayoutClass"
+      @update:left-collapsed="leftCollapsed = $event"
+      @update:right-collapsed="rightCollapsed = $event"
+    >
     <!-- 标题区域 -->
     <template #header>
       <div class="panel-header">
@@ -602,21 +689,61 @@ const handleRequestCurrentData = (componentId: string) => {
 
     <!-- 底部状态栏 -->
     <template #footer>
-      <div class="panel-footer">
+      <div 
+        class="panel-footer auto-hide-footer" 
+        @mouseleave="handleFooterMouseLeave"
+      >
         <div class="status-section">
           <span class="status-text">渲染器: {{ currentRenderer }}</span>
           <span class="status-text">组件数: {{ stateManager.nodes.length }}</span>
           <span class="status-text" v-if="hasChanges">有未保存更改</span>
+          
+          <!-- 🔥 轮询状态显示 -->
+          <span v-if="!isEditing" class="status-text polling-status">
+            轮询: {{ globalPollingEnabled ? '运行中' : '已暂停' }}
+            <span class="polling-stats">({{ pollingStats.activeTasks }}/{{ pollingStats.totalTasks }})</span>
+          </span>
         </div>
         <div class="info-section">
           <span class="info-text">{{ $t('visualEditor.ready', 'V2 编辑器已就绪') }}</span>
+          
+          <!-- 🔥 内置轮询控制器 - 仅在预览模式下显示 -->
+          <div v-if="!isEditing && dataFetched" class="footer-polling-controller">
+            <n-button
+              :type="globalPollingEnabled ? 'success' : 'default'"
+              :ghost="!globalPollingEnabled"
+              size="small"
+              class="footer-polling-btn"
+              @click="toggleFooterPolling"
+            >
+              <template #icon>
+                <span class="polling-icon">{{ globalPollingEnabled ? '⏸️' : '▶️' }}</span>
+              </template>
+              {{ globalPollingEnabled ? $t('visualEditor.pollingPause') : $t('visualEditor.pollingStart') }}
+            </n-button>
+          </div>
         </div>
       </div>
     </template>
-  </PanelLayout>
+    </PanelLayout>
+
+    <!-- 🔥 右下角触发器 - 放在wrapper内 -->
+    <div 
+      v-if="props.enableFooterArea"
+      class="footer-trigger"
+      @mouseenter="handleTriggerHover"
+    ></div>
+  </div>
 </template>
 
 <style scoped>
+/* 🔥 编辑器包装器 */
+.panel-editor-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 /* 🔥 头部和底部样式 */
 .panel-header {
   display: flex;
@@ -663,6 +790,76 @@ const handleRequestCurrentData = (componentId: string) => {
   border-top: 1px solid var(--border-color);
 }
 
+/* 🔥 自动隐藏 Footer 动画样式 */
+.auto-hide-footer {
+  transform: translateY(0);
+  opacity: 1;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 🔥 Footer 隐藏状态 - 通过 PanelLayout 的 v-show 控制 */
+.panel-layout[data-footer-hidden="true"] .auto-hide-footer {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+/* 🔥 Footer 悬浮时的增强样式 */
+.auto-hide-footer:hover {
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+  background: var(--card-color);
+}
+
+/* 🔥 暗色主题适配 */
+[data-theme='dark'] .auto-hide-footer {
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] .auto-hide-footer:hover {
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* 🔥 右下角触发器样式 */
+.footer-trigger {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  z-index: 1000;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* 🔥 触发器悬浮提示（可选） */
+.footer-trigger::before {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: rgba(24, 160, 88, 0.6);
+  border-radius: 50%;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+.footer-trigger:hover::before {
+  opacity: 1;
+  background: rgba(24, 160, 88, 0.8);
+  transform: scale(1.2);
+}
+
+/* 暗色主题适配 */
+[data-theme='dark'] .footer-trigger::before {
+  background: rgba(16, 185, 129, 0.6);
+}
+
+[data-theme='dark'] .footer-trigger:hover::before {
+  background: rgba(16, 185, 129, 0.8);
+}
+
 .status-section {
   display: flex;
   align-items: center;
@@ -674,15 +871,53 @@ const handleRequestCurrentData = (componentId: string) => {
   color: var(--text-color-2);
 }
 
+/* 🔥 轮询状态特殊样式 */
+.status-text.polling-status {
+  color: var(--success-color);
+  font-weight: 500;
+}
+
+.polling-stats {
+  font-size: 11px;
+  opacity: 0.8;
+  color: inherit;
+  margin-left: 4px;
+}
+
 .info-section {
   display: flex;
   align-items: center;
+  gap: 12px;
 }
 
 .info-text {
   font-size: 12px;
   color: var(--success-color);
   font-weight: 500;
+}
+
+/* 🔥 Footer 轮询控制器样式 */
+.footer-polling-controller {
+  display: flex;
+  align-items: center;
+}
+
+.footer-polling-btn {
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  height: 28px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.footer-polling-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.footer-polling-btn .polling-icon {
+  font-size: 12px;
+  line-height: 1;
 }
 
 /* 🔥 渲染器容器样式 - 避免双滚动条但保持功能 */

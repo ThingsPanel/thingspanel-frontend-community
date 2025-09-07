@@ -441,8 +441,11 @@ const extractComponentConfig = computed(() => {
     }
   }
 
-  // 4. 交互覆盖配置
+  // 4. 交互覆盖配置 - 添加响应式依赖
   const interactionState = interactionManager.getComponentState(props.nodeId || '')
+  
+  // 🔥 强制响应式依赖：确保在交互状态变化时重新计算
+  const _ = forceUpdateKey.value // 添加响应式依赖
 
   // 🔥 详细调试交互状态获取
   console.log(`🔍 [Card2Wrapper] 交互状态调试`, {
@@ -481,9 +484,9 @@ const extractComponentConfig = computed(() => {
   // 5. 运行时配置（来自其他动态来源）
   // 预留接口，目前暂无
 
-  // 🚀 使用统一的配置合并管理器
+  // 🚀 使用统一的配置合并管理器 - 修复交互配置优先级
   const mergeResult = ConfigMerge.merge(configSources, {
-    priorityOrder: ['default', 'user', 'dataSource', 'interaction', 'runtime'],
+    priorityOrder: ['default', 'user', 'dataSource', 'runtime', 'interaction'], // 交互配置最高优先级
     enableDeepMerge: true,
     preserveSource: true,
     enableChangeTracking: true
@@ -494,15 +497,19 @@ const extractComponentConfig = computed(() => {
   lastConfigMergeTime.value = Date.now()
 
   // 📊 输出合并统计信息
-  if (mergeResult.stats && mergeResult.stats.changedFields > 0) {
-    console.log(`🎯 [Card2Wrapper] 配置合并完成`, {
-      componentId: props.nodeId,
-      stats: mergeResult.stats,
-      changes: mergeResult.changes?.length || 0,
-      sources: Object.keys(configSources),
-      finalConfig: mergeResult.merged
-    })
-  }
+  console.log(`🎯 [Card2Wrapper] 配置合并调试`, {
+    componentId: props.nodeId,
+    configSources: {
+      user: configSources.user,
+      interaction: configSources.interaction,
+      userContent: configSources.user?.content,
+      interactionContent: configSources.interaction?.content
+    },
+    priorityOrder: ['default', 'user', 'dataSource', 'runtime', 'interaction'],
+    finalConfig: mergeResult.merged,
+    finalContent: mergeResult.merged?.content,
+    stats: mergeResult.stats
+  })
 
   return mergeResult.merged
 })
@@ -873,14 +880,22 @@ onMounted(async () => {
 
           // 为每个变化的属性触发 dataChange 事件
           Object.entries(updates).forEach(([property, newValue]) => {
-            // 获取旧值用于比较
-            const oldValue = configSources.value.interaction?.[property] || extractComponentConfig.value[property]
+            // 🔥 修复：获取正确的旧值 - 应该从原始用户配置获取，而不是已经合并的配置
+            let oldValue = extractComponentConfig.value[property]
+            
+            // 如果是customize.xxx属性，需要从扁平化的字段获取
+            if (property.startsWith('customize.')) {
+              const flattenedProperty = property.substring('customize.'.length)
+              oldValue = configSources.value.user?.[flattenedProperty] || extractComponentConfig.value[flattenedProperty]
+            }
 
             console.log(`🔍 [Card2Wrapper] 处理属性变化`, {
               componentId: props.nodeId,
               property,
               oldValue,
               newValue,
+              flattenedProperty: property.startsWith('customize.') ? property.substring('customize.'.length) : property,
+              userConfigValue: property.startsWith('customize.') ? configSources.value.user?.[property.substring('customize.'.length)] : configSources.value.user?.[property],
               hasComponentRef: !!currentComponentRef.value,
               hasTriggerMethod:
                 currentComponentRef.value && typeof currentComponentRef.value.triggerInteractionEvent === 'function'
