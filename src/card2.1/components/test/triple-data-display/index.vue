@@ -1,5 +1,10 @@
 <template>
-  <div :class="['triple-data-display-component', layoutClass]" :style="componentStyle" @click="handleClick">
+  <div 
+    :class="['triple-data-display-component', layoutClass, { 'interaction-registered': isRegistered }]" 
+    :style="{ ...componentStyle, ...interactionStyles }" 
+    :data-component-id="componentId"
+    @click="handleClick"
+  >
     <!-- 组件标题 -->
     <div v-if="currentConfig.customize.title" class="component-title">
       {{ currentConfig.customize.title }}
@@ -31,6 +36,19 @@
         </div>
       </div>
     </div>
+
+    <!-- 🔥 交互系统调试信息（预览模式） -->
+    <div v-if="debugMode" class="debug-panel">
+      <div class="debug-item">
+        <small>交互注册: {{ isRegistered ? '已注册' : '未注册' }}</small>
+      </div>
+      <div class="debug-item" v-if="interactionConfigs && interactionConfigs.length > 0">
+        <small>交互配置: {{ interactionConfigs.length }} 项</small>
+      </div>
+      <div class="debug-item">
+        <small>组件ID: {{ componentId || '未设置' }}</small>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -45,6 +63,7 @@ import { interactionManager } from '@/card2.1/core/interaction-manager'
 import type { InteractionConfig } from '@/card2.1/core/interaction-types'
 import type { TripleDataDisplayConfig } from './settingConfig'
 import { tripleDataDisplaySettingConfig } from './settingConfig'
+import { useInteraction } from '@/card2.1/hooks/use-interaction'
 
 // 组件属性接口 - 支持新的 CustomConfig 结构
 interface Props {
@@ -254,8 +273,25 @@ const formatNumber = (value: any, dataSourceIndex: number = 0): string => {
 const isInteractionEnabled = ref(false)
 const registeredEvents = ref<Set<string>>(new Set())
 
+// 🔥 集成交互系统 - 初始化交互管理器
+const {
+  interactionStyles,
+  isRegistered,
+  register,
+  unregister,
+  updateConfigs,
+  triggerEvent,
+  resetState,
+  getState
+} = useInteraction({
+  componentId: props.componentId || '',
+  configs: props.interactionConfigs || [],
+  autoRegister: true,
+  autoWatch: true
+})
+
 /**
- * 点击事件处理
+ * 点击事件处理 - 集成交互系统
  */
 const handleClick = () => {
   // 发送点击事件
@@ -268,6 +304,19 @@ const handleClick = () => {
       dataSource3: props.dataSource3
     }
   })
+
+  // 🔥 触发交互系统事件处理
+  if (props.componentId) {
+    triggerEvent('click', {
+      componentId: props.componentId,
+      timestamp: new Date().toISOString(),
+      data: {
+        dataSource1: props.dataSource1,
+        dataSource2: props.dataSource2,
+        dataSource3: props.dataSource3
+      }
+    })
+  }
 }
 
 /**
@@ -451,5 +500,44 @@ watch(
 
 [data-theme='dark'] .data-source-item {
   background: var(--modal-color);
+}
+
+/* 🔥 新增：交互系统样式 */
+.triple-data-display-component.interaction-registered {
+  border-left: 3px solid var(--success-color);
+  position: relative;
+}
+
+.triple-data-display-component.interaction-registered::after {
+  content: '⚡';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-size: 12px;
+  color: var(--success-color);
+  opacity: 0.7;
+}
+
+/* 调试面板样式 */
+.debug-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.debug-item {
+  padding: 2px 6px;
+  background: var(--success-color-suppl, var(--card-color));
+  border-radius: 3px;
+  font-size: 10px;
+  color: var(--success-color);
+}
+
+.debug-item small {
+  font-weight: 500;
 }
 </style>

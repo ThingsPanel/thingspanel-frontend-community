@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置事件监听测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .log-area {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 配置事件监听测试页面</h1>
+    <p>此页面用于测试V2版本的配置事件监听功能是否正常工作</p>
+
+    <div class="test-section">
+        <h2>测试步骤</h2>
+        <ol>
+            <li>确保开发服务器运行在 localhost:5002</li>
+            <li>在新标签页打开: <a href="http://localhost:5002/test/panel-editor-v2" target="_blank">http://localhost:5002/test/panel-editor-v2</a></li>
+            <li>在V2测试页面中：
+                <ul>
+                    <li>点击左侧组件库中的任意组件，添加到画布</li>
+                    <li>选中画布上的组件</li>
+                    <li>在右侧配置面板中修改配置项</li>
+                </ul>
+            </li>
+            <li>打开浏览器开发者控制台，查看是否有配置变更日志输出</li>
+            <li>应该看到类似这样的日志：<br>
+                <code>🔄 GridstackRenderer 收到配置变更: {componentId: "xxx", section: "component", ...}</code>
+            </li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>期望的控制台输出</h2>
+        <div class="log-area" id="expectedLogs">
+✅ 正常情况下应该看到：
+🔄 GridstackRenderer 收到配置变更: {
+  componentId: "widget_123",
+  componentType: "widget", 
+  section: "component",
+  newConfig: {...},
+  timestamp: 1757230000000,
+  source: "user"
+}
+组件 widget_123 的 component 配置已更新
+
+🔄 GridstackRenderer 收到配置变更: {
+  componentId: "widget_123",
+  componentType: "widget",
+  section: "dataSource", 
+  newConfig: {...},
+  timestamp: 1757230001000,
+  source: "user"
+}
+组件 widget_123 的数据源配置已更新
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>问题排查</h2>
+        <div>
+            <h3>如果没有看到配置变更日志：</h3>
+            <ul>
+                <li>检查 ConfigEventBus 是否正常初始化</li>
+                <li>检查 GridstackRenderer 是否正确注册了事件监听器</li>
+                <li>检查 ConfigurationPanel 是否正确发出了配置变更事件</li>
+                <li>检查控制台是否有任何错误信息</li>
+            </ul>
+
+            <h3>调试工具：</h3>
+            <p>在浏览器控制台中执行以下命令进行调试：</p>
+            <div class="log-area">
+// 检查全局配置事件总线
+console.log('ConfigEventBus:', window.configEventBus)
+
+// 查看事件总线统计信息
+console.log('事件统计:', window.configEventBus?.getStatistics())
+
+// 手动触发一个测试事件
+window.configEventBus?.emitConfigChange({
+  componentId: 'test_widget',
+  componentType: 'widget',
+  section: 'component',
+  oldConfig: null,
+  newConfig: { test: true },
+  timestamp: Date.now(),
+  source: 'user'
+})
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>测试结果记录</h2>
+        <div>
+            <button onclick="recordSuccess()">✅ 配置事件监听正常</button>
+            <button onclick="recordFailure()">❌ 配置事件监听异常</button>
+            <button onclick="clearLogs()">🧹 清除记录</button>
+        </div>
+        <div class="log-area" id="testResults">
+点击上面的按钮记录测试结果...
+        </div>
+    </div>
+
+    <script>
+        const testResults = document.getElementById('testResults')
+        
+        function recordSuccess() {
+            const timestamp = new Date().toLocaleString()
+            testResults.textContent += `[${timestamp}] ✅ 测试通过：配置事件监听功能正常工作\n`
+        }
+        
+        function recordFailure() {
+            const timestamp = new Date().toLocaleString()
+            testResults.textContent += `[${timestamp}] ❌ 测试失败：配置事件监听功能异常\n`
+        }
+        
+        function clearLogs() {
+            testResults.textContent = '点击上面的按钮记录测试结果...\n'
+        }
+        
+        // 页面加载时的基本信息
+        window.addEventListener('load', () => {
+            const timestamp = new Date().toLocaleString()
+            testResults.textContent = `[${timestamp}] 📋 测试页面已加载，准备进行配置事件监听测试\n`
+        })
+    </script>
+</body>
+</html>

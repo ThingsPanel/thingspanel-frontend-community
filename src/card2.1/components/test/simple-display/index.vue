@@ -4,9 +4,10 @@
  * 基于新的三文件结构标准，支持 CustomConfig 类型配置和属性绑定
  */
 
-import { computed, reactive, getCurrentInstance, onMounted, onUnmounted } from 'vue'
+import { computed, reactive, getCurrentInstance, onMounted, onUnmounted, watch } from 'vue'
 import type { InteractionProps, InteractionEmits } from '@/card2.1/types/interaction-component'
 import type { SimpleDisplayConfig, SimpleDisplayCustomize } from './settingConfig'
+import { useInteraction } from '@/card2.1/hooks/use-interaction'
 
 // 组件状态接口
 interface ComponentState {
@@ -55,6 +56,23 @@ const componentState = reactive<ComponentState>({
 const interactionState = reactive<InteractionState>({
   lastInteractionTime: null,
   interactionCount: 0
+})
+
+// 🔥 集成交互系统 - 初始化交互管理器
+const {
+  interactionStyles,
+  isRegistered,
+  register,
+  unregister,
+  updateConfigs,
+  triggerEvent,
+  resetState,
+  getState
+} = useInteraction({
+  componentId: props.componentId || '',
+  configs: props.interactionConfigs || [],
+  autoRegister: true,
+  autoWatch: true
 })
 
 /**
@@ -132,6 +150,15 @@ const handleClick = () => {
     timestamp: new Date().toISOString()
   })
 
+  // 🔥 触发交互系统事件处理
+  if (props.componentId) {
+    triggerEvent('click', {
+      componentId: props.componentId,
+      clickCount: componentState.clickCount,
+      timestamp: new Date().toISOString()
+    })
+  }
+
   // 发送交互事件（用于交互系统处理）
   if (props.previewMode) {
     emit('interaction-event', 'click', {
@@ -152,6 +179,15 @@ const handleMouseEnter = () => {
     componentId: props.componentId || '',
     type: 'enter'
   })
+
+  // 🔥 触发交互系统悬停事件
+  if (props.componentId) {
+    triggerEvent('hover', {
+      componentId: props.componentId,
+      hoverType: 'enter',
+      timestamp: new Date().toISOString()
+    })
+  }
 
   if (props.previewMode) {
     emit('interaction-event', 'hover', {
@@ -182,14 +218,57 @@ const handleMouseLeave = () => {
  * 支持跨组件属性绑定
  */
 const handlePropertyUpdate = (event: CustomEvent) => {
-  const { propertyPath, value } = event.detail
+  const { propertyPath, value, oldValue } = event.detail
 
   // 根据属性路径更新本地状态
   if (propertyPath.startsWith('customize.')) {
     // 这里可以添加响应式更新逻辑
     // 由于我们使用的是computed，prop变化会自动触发重新渲染
   }
+  
+  // 🔥 触发数据变化事件到交互系统
+  if (props.componentId) {
+    triggerEvent('dataChange', {
+      property: propertyPath,
+      newValue: value,
+      oldValue,
+      timestamp: Date.now()
+    })
+  }
 }
+
+/**
+ * 🔥 新增：监听组件状态更新事件
+ * 处理来自InteractionManager的状态变化
+ */
+const handleComponentStateUpdate = (event: CustomEvent) => {
+  const { componentId, updates, fullState } = event.detail
+  
+  if (componentId === props.componentId) {
+    // 应用交互系统的状态更新
+    Object.assign(interactionState, {
+      ...interactionState,
+      lastInteractionTime: new Date().toISOString(),
+      interactionCount: interactionState.interactionCount + 1
+    })
+    
+    // 应用样式更新（如背景色、透明度等）
+    // interactionStyles 会自动通过 useInteraction 更新
+  }
+}
+
+/**
+ * 🔥 监听交互配置变化，重新注册配置
+ */
+watch(
+  () => props.interactionConfigs,
+  (newConfigs) => {
+    if (newConfigs && props.componentId) {
+      updateConfigs(newConfigs)
+    }
+  },
+  { deep: true, immediate: true }
+)
 
 /**
  * 组件挂载时监听属性更新事件
@@ -198,6 +277,7 @@ onMounted(() => {
   const element = getCurrentInstance()?.proxy?.$el
   if (element) {
     element.addEventListener('componentPropertyUpdate', handlePropertyUpdate)
+    element.addEventListener('componentStateUpdate', handleComponentStateUpdate)
   }
 })
 
@@ -208,6 +288,7 @@ onUnmounted(() => {
   const element = getCurrentInstance()?.proxy?.$el
   if (element) {
     element.removeEventListener('componentPropertyUpdate', handlePropertyUpdate)
+    element.removeEventListener('componentStateUpdate', handleComponentStateUpdate)
   }
 })
 </script>
@@ -218,12 +299,14 @@ onUnmounted(() => {
     :class="{
       'interaction-active': hasActiveInteractions,
       'preview-mode': previewMode,
-      'show-indicator': showInteractionIndicator
+      'show-indicator': showInteractionIndicator,
+      'interaction-registered': isRegistered
     }"
     :style="{
       '--theme-color': themeColor,
       '--font-size': `${fontSize}px`,
-      transform: `rotate(${currentTransform.rotate}deg) scale(${currentTransform.scale})`
+      transform: `rotate(${currentTransform.rotate}deg) scale(${currentTransform.scale})`,
+      ...interactionStyles
     }"
     :data-component-id="componentId"
     @click="handleClick"
@@ -284,6 +367,16 @@ onUnmounted(() => {
       <!-- 🔥 新增：配置结构信息（调试用） -->
       <div v-if="previewMode" class="config-debug">
         <small>配置类型: {{ customConfig ? 'CustomConfig' : 'Legacy Config' }}</small>
+      </div>
+
+      <!-- 🔥 新增：交互系统状态（调试用） -->
+      <div v-if="previewMode" class="interaction-debug">
+        <div class="debug-item">
+          <small>交互注册: {{ isRegistered ? '已注册' : '未注册' }}</small>
+        </div>
+        <div class="debug-item" v-if="interactionConfigs && interactionConfigs.length > 0">
+          <small>交互配置: {{ interactionConfigs.length }} 项</small>
+        </div>
       </div>
     </div>
   </div>
@@ -519,6 +612,42 @@ onUnmounted(() => {
   font-size: 10px;
   color: var(--info-color);
   font-weight: 500;
+}
+
+/* 🔥 新增：交互系统调试信息 */
+.interaction-debug {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.debug-item {
+  padding: 2px 6px;
+  background: var(--success-color-suppl, var(--card-color));
+  border-radius: 3px;
+  font-size: 10px;
+  color: var(--success-color);
+}
+
+.debug-item small {
+  font-weight: 500;
+}
+
+/* 🔥 新增：交互注册状态样式 */
+.simple-display.interaction-registered {
+  border-left: 3px solid var(--success-color);
+}
+
+.simple-display.interaction-registered::after {
+  content: '⚡';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-size: 12px;
+  color: var(--success-color);
+  opacity: 0.7;
 }
 
 /* 响应式设计 */

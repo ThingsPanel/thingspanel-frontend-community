@@ -7,6 +7,7 @@
 import { computed, reactive, getCurrentInstance, onMounted, onUnmounted } from 'vue'
 import type { InteractionProps, InteractionEmits } from '@/card2.1/types/interaction-component'
 import type { DualDataDisplayConfig, DualDataDisplayCustomize } from './settingConfig'
+import { useInteraction } from '@/card2.1/hooks/use-interaction'
 
 // 组件状态接口
 interface ComponentState {
@@ -61,6 +62,23 @@ const componentState = reactive<ComponentState>({
 const interactionState = reactive<InteractionState>({
   lastInteractionTime: null,
   interactionCount: 0
+})
+
+// 🔥 集成交互系统 - 初始化交互管理器
+const {
+  interactionStyles,
+  isRegistered,
+  register,
+  unregister,
+  updateConfigs,
+  triggerEvent,
+  resetState,
+  getState
+} = useInteraction({
+  componentId: props.componentId || '',
+  configs: props.interactionConfigs || [],
+  autoRegister: true,
+  autoWatch: true
 })
 
 /**
@@ -205,6 +223,19 @@ const handleClick = () => {
     componentId: props.componentId || '',
     timestamp: new Date().toISOString()
   })
+
+  // 🔥 触发交互系统事件处理
+  if (props.componentId) {
+    triggerEvent('click', {
+      componentId: props.componentId,
+      clickCount: componentState.clickCount,
+      timestamp: new Date().toISOString(),
+      data: {
+        dataSource1: props.dataSource1,
+        dataSource2: props.dataSource2
+      }
+    })
+  }
 
   // 发送交互事件（用于交互系统处理）
   if (props.previewMode) {

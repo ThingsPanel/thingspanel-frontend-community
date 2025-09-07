@@ -613,7 +613,11 @@
       "Read(//d/Users/kingB/Downloads/**)",
       "Bash(start http://localhost:5003/test/panel-editor-v2)",
       "Bash(fc:*)",
-      "Bash(del temp_data1.json temp_data2.json)"
+      "Bash(del temp_data1.json temp_data2.json)",
+      "Bash(start test-config-events.html)",
+      "Bash(start architecture-integration-test.html)",
+      "Bash(start test-interaction-config-fix.html)",
+      "Bash(start src/test-final-v2-fixes.html)"
     ],
     "deny": [],
     "additionalDirectories": [

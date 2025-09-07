@@ -1,5 +1,12 @@
 <template>
-  <div ref="containerRef" class="card2-wrapper" :data-component-id="props.nodeId">
+  <div 
+    ref="containerRef" 
+    class="card2-wrapper" 
+    :data-component-id="props.nodeId"
+    @click="handleWrapperClick"
+    @mouseenter="handleWrapperMouseEnter"
+    @mouseleave="handleWrapperMouseLeave"
+  >
     <!-- 错误状态 -->
     <div v-if="hasError" class="error-overlay">
       <n-alert type="error" :title="$t('visualEditor.renderFailed')" size="small">
@@ -17,12 +24,8 @@
       :raw-data-sources="safeDeepClone(getDataSourcesForComponent())"
       :component-id="props.nodeId"
       :show-interaction-indicator="true"
-      :interaction-configs="props.interactionConfigs"
-      :allow-external-control="props.allowExternalControl"
-      :interaction-permissions="props.interactionPermissions"
       :preview-mode="props.previewMode"
       v-bind="getComponentSpecificProps()"
-      @interaction-event="handleInteractionEvent"
     />
   </div>
 </template>

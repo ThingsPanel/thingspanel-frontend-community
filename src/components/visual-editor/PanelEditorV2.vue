@@ -42,6 +42,14 @@ const props = withDefaults(defineProps<Props>(), {
 const message = useMessage()
 const dialog = useDialog()
 
+// 🔥 定义emit事件 - 测试页面需要监听这些事件
+const emit = defineEmits<{
+  'state-manager-ready': [stateManager: any]
+  'widget-added': [widget: any]
+  'node-select': [nodeId: string]
+  'editor-ready': [editor: any]
+}>()
+
 const panelData = ref<any>({})
 const preEditorConfig = ref<any>(null)
 
@@ -68,6 +76,13 @@ const selectedNodeId = ref<string>('')
 const editorContext = createEditor()
 const { stateManager, addWidget, updateNode, selectNode } = editorContext
 const { setPreviewMode, isPreviewMode } = usePreviewMode()
+
+// 🔥 计算选中的组件对象 - 从老版本移植
+const selectedWidget = computed(() => {
+  if (!selectedNodeId.value) return null
+  const node = stateManager.nodes.find(n => n.id === selectedNodeId.value)
+  return node || null
+})
 
 // 编辑器配置
 const editorConfig = ref({
@@ -156,8 +171,11 @@ const fetchBoard = async () => {
   }
 }
 
-onMounted(() => {
-  fetchBoard()
+onMounted(async () => {
+  await fetchBoard()
+  // 🔥 触发state-manager-ready事件，让测试页面知道编辑器已准备好
+  emit('state-manager-ready', stateManager)
+  emit('editor-ready', editorContext)
 })
 
 // Watch for changes to set hasChanges flag
@@ -235,13 +253,11 @@ const handleSave = async () => {
 const handleDragStart = (widget: any, event: DragEvent) => {
   isDragging.value = true
   draggedComponent.value = widget.type
-  console.log('🎯 从WidgetLibrary开始拖拽:', widget.type, 'isDragging:', isDragging.value)
 }
 
 const handleDragEnd = (widget: any, event: DragEvent) => {
   isDragging.value = false
   draggedComponent.value = null
-  console.log('🎯 从WidgetLibrary结束拖拽:', widget.type, 'isDragging:', isDragging.value)
 }
 
 // 🔥 拖放事件处理 - 支持从左侧面板拖拽添加组件
@@ -251,7 +267,6 @@ const handleDragOver = (event: DragEvent) => {
   if (event.dataTransfer) {
     event.dataTransfer.dropEffect = 'copy'
   }
-  console.log('🎯 dragover 事件', event.type, 'dropEffect:', event.dataTransfer?.dropEffect)
 }
 
 const handleDragLeave = (event: DragEvent) => {
@@ -283,7 +298,6 @@ const handleDrop = async (event: DragEvent) => {
     }
 
     const dragData = JSON.parse(dragDataStr)
-    console.log('🎯 拖放组件:', dragData)
 
     if (!dragData.type) {
       console.warn('拖拽数据缺少组件类型')
@@ -302,7 +316,6 @@ const handleDrop = async (event: DragEvent) => {
 // 🔥 组件操作处理
 const handleAddWidget = async (widget: { type: string }) => {
   try {
-    console.log('添加组件:', widget.type)
     await addWidget(widget.type)
     hasChanges.value = true
     console.log('✅ 组件添加成功:', widget.type)
@@ -401,35 +414,52 @@ const handleToggleRightDrawer = () => {
 }
 // 🔥 网格配置变更处理 - 按照老版实现
 const handleGridstackConfigChange = (config: Record<string, any>) => {
-  console.log('GridStack配置变更:', config)
   editorConfig.value.gridConfig = { ...editorConfig.value.gridConfig, ...config }
   hasChanges.value = true
 }
+
 const handleCanvasConfigChange = (config: Record<string, any>) => {
-  console.log('Canvas配置变更:', config)
   editorConfig.value.canvasConfig = { ...editorConfig.value.canvasConfig, ...config }
   hasChanges.value = true
 }
 
-// 🔥 渲染器事件处理
-const handleRendererReady = () => console.log('渲染器就绪')
-const handleRendererError = () => console.log('渲染器错误')
+// 🔥 渲染器事件处理 - 简化版，移除不必要的中转
 const handleNodeSelect = (nodeId: string) => {
   selectedNodeId.value = nodeId
-  selectNode(nodeId) // 🔥 调用真实的selectNode方法
-  // 移除自动打开右侧面板，只有右键菜单配置才能打开
-  console.log('节点选择:', nodeId)
+  selectNode(nodeId)
 }
+
 const handleCanvasClick = () => {
   selectedNodeId.value = ''
-  selectNode('') // 🔥 清除选择
-  console.log('画布点击')
+  selectNode('')
 }
+
 const handleRequestSettings = (nodeId: string) => {
   selectedNodeId.value = nodeId
-  selectNode(nodeId) // 🔥 调用真实的selectNode方法
-  rightCollapsed.value = false // 🔥 只有右键菜单的"配置"才打开右侧面板
-  console.log('请求设置:', nodeId)
+  selectNode(nodeId)
+  rightCollapsed.value = false // 只有右键菜单的"配置"才打开右侧面板
+}
+
+// 🔥 数据源相关事件处理 - 简化版，主要用于ConfigurationPanel正常工作
+const handleDataSourceManagerUpdate = (updateData: any) => {
+  // 在新架构中，数据源更新直接通过ConfigEventBus处理
+  // 这里主要是为了让ConfigurationPanel正常工作，不做具体处理
+  console.log('📊 数据源管理更新:', updateData)
+}
+
+const handleMultiDataSourceUpdate = (componentId: string, data: any) => {
+  // 新架构中数据源直接通过GridstackRenderer管理
+  console.log('📊 多数据源更新:', componentId, data)
+}
+
+const handleMultiDataSourceConfigUpdate = (componentId: string, config: any) => {
+  // 新架构中配置更新通过ConfigEventBus处理
+  console.log('📊 多数据源配置更新:', componentId, config)
+}
+
+const handleRequestCurrentData = (componentId: string) => {
+  // 新架构中数据请求直接通过simpleDataBridge处理
+  console.log('📊 请求当前数据:', componentId)
 }
 </script>
 
@@ -513,8 +543,6 @@ const handleRequestSettings = (nodeId: string) => {
           :readonly="!isEditing"
           :show-widget-titles="showWidgetTitles"
           class="renderer-container"
-          @ready="handleRendererReady"
-          @error="handleRendererError"
           @node-select="handleNodeSelect"
           @canvas-click="handleCanvasClick"
           @request-settings="handleRequestSettings"
@@ -528,8 +556,6 @@ const handleRequestSettings = (nodeId: string) => {
           :show-widget-titles="showWidgetTitles"
           :grid-config="editorConfig.gridConfig"
           class="renderer-container"
-          @ready="handleRendererReady"
-          @error="handleRendererError"
           @node-select="handleNodeSelect"
           @canvas-click="handleCanvasClick"
           @request-settings="handleRequestSettings"
@@ -540,11 +566,15 @@ const handleRequestSettings = (nodeId: string) => {
     <!-- 🔥 右侧配置面板 -->
     <template #right>
       <ConfigurationPanel
-        :selected-widget="selectedNodeId"
+        :selected-widget="selectedWidget"
         :show-widget-titles="showWidgetTitles"
         :grid-config="editorConfig.gridConfig"
         @toggle-widget-titles="showWidgetTitles = $event"
         @grid-config-change="handleGridstackConfigChange"
+        @data-source-manager-update="handleDataSourceManagerUpdate"
+        @multi-data-source-update="handleMultiDataSourceUpdate"
+        @multi-data-source-config-update="handleMultiDataSourceConfigUpdate"
+        @request-current-data="handleRequestCurrentData"
       />
     </template>
 
