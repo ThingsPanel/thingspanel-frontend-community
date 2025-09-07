@@ -24,9 +24,29 @@ export function usePanelConfigManager() {
         return validatedConfig
       }
 
-      // 兼容旧格式
+      // 🔥 修复：兼容直接格式 {widgets: [...], config: {...}}
+      if (config.widgets !== undefined || config.config !== undefined) {
+        // 直接格式，直接返回
+        return {
+          legacyComponents: [],
+          visualEditor: config // 直接使用，不包装
+        }
+      }
+
+      // 🔥 兼容更老的数组格式
+      if (Array.isArray(config)) {
+        return {
+          legacyComponents: [],
+          visualEditor: {
+            widgets: config,
+            config: { gridConfig: {}, canvasConfig: {} }
+          }
+        }
+      }
+
+      // 未知格式，使用默认配置
       return {
-        legacyComponents: Array.isArray(config) ? config : [],
+        legacyComponents: [],
         visualEditor: getDefaultConfig()
       }
     } catch (error: any) {

@@ -40,9 +40,9 @@ export function usePanelDataManager(
     // 重置状态
     dependencies.stateManager.reset()
 
-    // 加载节点
-    if (config.nodes && Array.isArray(config.nodes)) {
-      config.nodes.forEach((node: any) => {
+    // 🔥 统一字段名：处理 widgets 而不是 nodes
+    if (config.widgets && Array.isArray(config.widgets)) {
+      config.widgets.forEach((node: any) => {
         dependencies.stateManager.addNode(node)
       })
     }
@@ -120,9 +120,11 @@ export function usePanelDataManager(
     } catch (error) {}
 
     const finalState = {
-      nodes: dependencies.stateManager.nodes,
-      canvasConfig: editorConfig.value.canvasConfig || {},
-      gridConfig: editorConfig.value.gridConfig || {},
+      widgets: dependencies.stateManager.nodes, // 🔥 统一字段名：使用 widgets
+      config: {
+        canvasConfig: editorConfig.value.canvasConfig || {},
+        gridConfig: editorConfig.value.gridConfig || {}
+      },
       viewport: dependencies.stateManager.viewport,
       mode: dependencies.stateManager.mode,
       // 🔥 关键修复：包含所有组件的配置数据

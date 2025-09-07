@@ -642,50 +642,10 @@ const handleSave = async () => {
       } catch (error: any) {}
     }
 
-    // 先构建基础配置（不包含 configSize）
-    const baseConfig = {
-      legacyComponents: existingConfig.legacyComponents || [],
-      visualEditor: {
-        ...currentState,
-        metadata: {
-          version: '1.0.0',
-          updatedAt: Date.now(),
-          editorType: 'visual-editor',
-          // 面板基本信息
-          panelInfo: {
-            id: props.panelId,
-            name: panelData.value?.name || '',
-            homeFlag: panelData.value?.home_flag || false,
-            createdAt: panelData.value?.created_at || Date.now(),
-            updatedAt: Date.now()
-          },
-          // 编辑器版本信息
-          editorVersion: '1.0.0',
-          // 渲染器信息
-          rendererInfo: {
-            type: currentRenderer.value,
-            version: '1.0.0',
-            features: ['drag', 'resize', 'grid', 'canvas']
-          },
-          // 配置统计信息
-          stats: {
-            totalNodes: currentState.nodes.length,
-            card2Nodes: currentState.nodes.filter((node: any) => node.metadata?.isCard2Component).length,
-            legacyNodes: currentState.nodes.filter((node: any) => !node.metadata?.isCard2Component).length,
-            hasGridConfig: !!currentState.gridConfig,
-            hasCanvasConfig: !!currentState.canvasConfig,
-            configSize: 0 // 初始值，稍后会被更新
-          }
-        }
-      }
-    }
-
-    // 现在可以安全地计算配置大小
-    const configSize = JSON.stringify(baseConfig).length
-    baseConfig.visualEditor.metadata.stats.configSize = configSize
+    // 🔥 统一格式：直接保存简单格式，新老版本都能读取
     const { error } = await PutBoard({
       id: props.panelId,
-      config: JSON.stringify(baseConfig),
+      config: JSON.stringify(currentState), // 直接保存 {widgets: [], config: {}}
       name: panelData.value?.name,
       home_flag: panelData.value?.home_flag
     })

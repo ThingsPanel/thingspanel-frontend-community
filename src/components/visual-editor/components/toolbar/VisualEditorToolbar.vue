@@ -8,7 +8,6 @@ import { NModal, useThemeVars, NSpace, NButton, NSelect, NDivider, NPopconfirm, 
 import CommonToolbar from './CommonToolbar.vue'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
-import DataSourceTriggerPanel from '../DataSourceTriggerPanel.vue'
 import RendererConfigDropdown from './RendererConfigDropdown.vue'
 
 interface Props {
@@ -70,8 +69,6 @@ const emit = defineEmits<Emits>()
 
 // 配置面板显示状态
 const showConfigPanel = ref(false)
-// 数据源触发器面板显示状态
-const showDataSourcePanel = ref(false)
 
 // 消息提示
 const message = useMessage()
@@ -196,10 +193,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-// 切换数据源触发器面板显示状态
-const handleToggleDataSourcePanel = () => {
-  showDataSourcePanel.value = !showDataSourcePanel.value
-}
 
 // 文件导入导出处理
 const fileInputRef = ref<HTMLInputElement>()
@@ -291,13 +284,13 @@ const handleExport = () => {
 
             <NButton size="small" type="tertiary" :disabled="readonly" @click="handleImport">
               <template #icon>
-                <SvgIcon icon="material-symbols:upload" />
+                <SvgIcon icon="material-symbols:download" />
               </template>
             </NButton>
 
             <NButton size="small" type="tertiary" @click="handleExport">
               <template #icon>
-                <SvgIcon icon="material-symbols:download" />
+                <SvgIcon icon="material-symbols:upload" />
               </template>
             </NButton>
           </div>
@@ -385,17 +378,6 @@ const handleExport = () => {
             </template>
           </NButton>
 
-          <!-- 数据源触发器管理按钮 -->
-          <NTooltip trigger="hover">
-            <template #trigger>
-              <NButton size="small" type="info" @click="handleToggleDataSourcePanel">
-                <template #icon>
-                  <SvgIcon icon="material-symbols:data-usage-outline" />
-                </template>
-              </NButton>
-            </template>
-            <span>{{ $t('dataSource.trigger.management') }}</span>
-          </NTooltip>
         </template>
 
         <!-- 编辑/预览切换按钮 - 始终显示在最右侧 -->
@@ -429,23 +411,6 @@ const handleExport = () => {
       @visualization-config-change="handleVisualizationConfigChange"
     />
 
-    <!-- 数据源触发器管理面板 - 模态弹窗 -->
-    <NModal
-      v-model:show="showDataSourcePanel"
-      :mask-closable="true"
-      :close-on-esc="true"
-      preset="card"
-      class="data-source-trigger-modal"
-      :style="{ width: '1000px', maxWidth: '95vw' }"
-      :title="$t('dataSource.trigger.title')"
-      :bordered="false"
-      size="huge"
-      role="dialog"
-      aria-labelledby="data-source-modal-title"
-      :auto-focus="false"
-    >
-      <DataSourceTriggerPanel />
-    </NModal>
   </div>
 </template>
 
@@ -512,43 +477,6 @@ const handleExport = () => {
 
 /* 移除弹窗相关样式，由独立组件处理 */
 
-/* 数据源触发器管理模态弹窗样式 */
-.data-source-trigger-modal {
-  --n-border-radius: 12px;
-}
-
-.data-source-trigger-modal :deep(.n-modal-mask) {
-  background-color: rgba(0, 0, 0, 0.4) !important;
-  backdrop-filter: blur(6px) !important;
-  -webkit-backdrop-filter: blur(6px) !important;
-}
-
-.data-source-trigger-modal :deep(.n-modal-container) {
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-}
-
-.data-source-trigger-modal :deep(.n-card) {
-  background-color: var(--modal-bg) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  box-shadow: 0 8px 32px var(--toolbar-shadow) !important;
-  border: 1px solid var(--modal-border) !important;
-}
-
-.data-source-trigger-modal :deep(.n-card-header) {
-  background-color: var(--modal-header-bg) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border-bottom: 1px solid var(--modal-header-border) !important;
-}
-
-.data-source-trigger-modal :deep(.n-card-content) {
-  background-color: var(--modal-content-bg) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  padding: 16px !important;
-}
 
 .dialog-actions {
   border-top: 1px solid var(--border-color);

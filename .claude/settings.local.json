@@ -610,7 +610,8 @@
       "Bash(start src/test-import-export-fix.html)",
       "Bash(start test-single-datasource-final.html)",
       "Bash(start src/test-single-datasource-final.html)",
-      "Read(//d/Users/kingB/Downloads/**)"
+      "Read(//d/Users/kingB/Downloads/**)",
+      "Bash(start http://localhost:5003/test/panel-editor-v2)"
     ],
     "deny": [],
     "additionalDirectories": [

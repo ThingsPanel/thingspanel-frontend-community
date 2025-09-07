@@ -30,7 +30,7 @@ const testConfig = ref({
   showPageHeader: true,
   enableHeaderArea: true,
   enableToolbarArea: true,
-  enableFooterArea: false,
+  enableFooterArea: true, // 🔥 默认打开底部状态栏
   customLayoutClass: ''
 })
 

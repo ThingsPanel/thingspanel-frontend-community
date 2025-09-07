@@ -41,10 +41,8 @@
                 v-for="widget in subCategory.children"
                 :key="widget.type"
                 class="widget-card"
-                draggable="true"
-                :title="widget.description"
+                :title="`点击添加到编辑器\n${widget.description}`"
                 @click="handleAddWidget(widget)"
-                @dragstart="handleDragStart(widget, $event)"
               >
                 <div class="widget-icon">
                   <n-icon v-if="typeof widget.icon !== 'string' && widget.icon" size="20">
@@ -87,7 +85,6 @@ const card2Integration = useCard2Integration({ autoInit: true })
 const searchTerm = ref('')
 const emit = defineEmits<{
   'add-widget': [payload: { type: string; source: 'card2' | 'legacy' }]
-  'drag-start': [widget: any, event: DragEvent]
 }>()
 
 // --- Widget Initialization ---
@@ -225,13 +222,6 @@ const handleAddWidget = (widget: any) => {
   emit('add-widget', payload)
 }
 
-const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
-  if (event.dataTransfer) {
-    const dragData = { type: widget.type, source: widget.source || 'legacy' }
-    event.dataTransfer.setData('application/json', JSON.stringify(dragData))
-    event.dataTransfer.effectAllowed = 'copy'
-  }
-}
 </script>
 
 <style scoped>
@@ -368,6 +358,11 @@ const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
 .widget-card:active {
   cursor: grabbing;
   transform: scale(0.98);
+}
+
+/* 🔥 确保拖拽事件不被子元素阻断 */
+.widget-card * {
+  pointer-events: none;
 }
 
 .widget-icon {
