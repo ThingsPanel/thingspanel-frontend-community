@@ -226,8 +226,36 @@ export class VisualEditorBridge {
   }
 }
 
+// 端口隔离的VisualEditorBridge实例管理
+const bridgeInstances = new Map<string, VisualEditorBridge>()
+
+/**
+ * 获取端口ID（用于多端口开发环境的实例隔离）
+ */
+function getPortId(): string {
+  if (typeof window !== 'undefined') {
+    return window.location.port || 'default'
+  }
+  return 'default'
+}
+
+/**
+ * 获取当前端口的VisualEditorBridge实例
+ * 确保不同端口使用独立的桥接器实例，避免数据回调干扰
+ */
+export function getVisualEditorBridge(): VisualEditorBridge {
+  const portId = getPortId()
+  
+  if (!bridgeInstances.has(portId)) {
+    bridgeInstances.set(portId, new VisualEditorBridge())
+  }
+  
+  return bridgeInstances.get(portId)!
+}
+
 /**
  * Visual Editor 桥接器单例实例
  * 用于替代原有的 componentExecutorManager
+ * @deprecated 使用 getVisualEditorBridge() 替代，以支持端口隔离
  */
-export const visualEditorBridge = new VisualEditorBridge()
+export const visualEditorBridge = getVisualEditorBridge()

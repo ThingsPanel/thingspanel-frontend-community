@@ -49,7 +49,7 @@ export {
 } from '../ConfigToSimpleDataAdapter'
 
 // Visual Editor 桥接器
-export { visualEditorBridge, VisualEditorBridge } from '../VisualEditorBridge'
+export { visualEditorBridge, VisualEditorBridge, getVisualEditorBridge } from '../VisualEditorBridge'
 
 /**
  * 数据架构设计原则：

@@ -40,7 +40,7 @@ import { $t } from '@/locales'
 import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import type { DataSourceValue } from '../../types/data-source'
 // 🔥 新增：导入新架构的数据桥接器和配置管理器
-import { visualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
+import { getVisualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
 import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 // 🔥 导入通用数据源映射器
 import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
@@ -84,6 +84,9 @@ let currentSubscriberId: (() => void) | null = null
 // 🔥 新增：从VisualEditorBridge获取的执行数据
 const executorData = ref<Record<string, any>>({})
 let executorDataCleanup: (() => void) | null = null
+
+// 🔥 修复：获取当前端口的VisualEditorBridge实例，避免跨端口数据干扰
+const visualEditorBridge = getVisualEditorBridge()
 
 // 强制更新键，用于触发组件重新渲染
 const forceUpdateKey = ref(0)

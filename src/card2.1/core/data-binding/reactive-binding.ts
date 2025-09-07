@@ -506,8 +506,36 @@ export class UpdateTriggerFactory {
   }
 }
 
-// 创建全局实例
-export const dataBindingManager = new DataBindingManagerImpl()
+// 🔧 修复：端口隔离的状态管理
+const getPortId = (): string => {
+  try {
+    return `${window.location.protocol}//${window.location.host}`
+  } catch {
+    // 在SSR或测试环境中的fallback
+    return 'default'
+  }
+}
+
+// 存储每个端口的管理器实例
+const bindingManagerInstances = new Map<string, DataBindingManagerImpl>()
+
+/**
+ * 获取当前端口隔离的数据绑定管理器实例
+ */
+export function getDataBindingManager(): DataBindingManagerImpl {
+  const portId = getPortId()
+
+  if (!bindingManagerInstances.has(portId)) {
+    const manager = new DataBindingManagerImpl()
+    bindingManagerInstances.set(portId, manager)
+    console.log(`🔧 [DataBindingManager] 为端口 ${portId} 创建新实例`)
+  }
+
+  return bindingManagerInstances.get(portId)!
+}
+
+// 兼容性：保持原有的导出，但现在返回端口隔离的实例
+export const dataBindingManager = getDataBindingManager()
 
 export default {
   ReactiveDataBindingImpl,

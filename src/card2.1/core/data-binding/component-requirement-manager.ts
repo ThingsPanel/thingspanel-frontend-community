@@ -432,7 +432,35 @@ export class ComponentRequirementManager {
   }
 }
 
-// 创建全局实例
-export const componentRequirementManager = new ComponentRequirementManager()
+// 🔧 修复：端口隔离的状态管理
+const getPortId = (): string => {
+  try {
+    return `${window.location.protocol}//${window.location.host}`
+  } catch {
+    // 在SSR或测试环境中的fallback
+    return 'default'
+  }
+}
+
+// 存储每个端口的管理器实例
+const managerInstances = new Map<string, ComponentRequirementManager>()
+
+/**
+ * 获取当前端口隔离的组件需求管理器实例
+ */
+export function getComponentRequirementManager(): ComponentRequirementManager {
+  const portId = getPortId()
+
+  if (!managerInstances.has(portId)) {
+    const manager = new ComponentRequirementManager()
+    managerInstances.set(portId, manager)
+    console.log(`🔧 [ComponentRequirementManager] 为端口 ${portId} 创建新实例`)
+  }
+
+  return managerInstances.get(portId)!
+}
+
+// 兼容性：保持原有的导出，但现在返回端口隔离的实例
+export const componentRequirementManager = getComponentRequirementManager()
 
 export default componentRequirementManager

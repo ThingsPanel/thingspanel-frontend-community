@@ -52,7 +52,8 @@ export function usePanelPollingManager(dependencies: {
                 // 🔥 直接使用 VisualEditorBridge 调用，这个是确定有效的方法
                 try {
                   // 导入 VisualEditorBridge 并调用
-                  const { visualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
+                  const { getVisualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
+                  const visualEditorBridge = getVisualEditorBridge()
 
                   // 获取组件配置
                   const config = dependencies.configurationManager.getConfiguration(componentId)

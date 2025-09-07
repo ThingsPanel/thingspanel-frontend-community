@@ -733,7 +733,8 @@ export class EditorDataSourceManager {
 
     try {
       // 需要导入 VisualEditorBridge
-      const { visualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
+      const { getVisualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
+      const visualEditorBridge = getVisualEditorBridge()
 
       // 🔥 修复：使用原始配置而不是转换后的标准配置
       const componentType = config.componentType

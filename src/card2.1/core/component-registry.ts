@@ -12,8 +12,38 @@ import { autoRegisterFromSettingConfig, enhancedAutoRegister } from './property-
  * 组件注册表类
  * 负责管理所有 Card2.1 组件的定义信息
  */
+// 🔧 修复：端口隔离的状态管理
+const getPortId = (): string => {
+  try {
+    return `${window.location.protocol}//${window.location.host}`
+  } catch {
+    // 在SSR或测试环境中的fallback
+    return 'default'
+  }
+}
+
+// 存储每个端口的组件定义
+const portDefinitions = new Map<string, Map<string, ComponentDefinition>>()
+
+/**
+ * 获取当前端口的组件定义Map
+ */
+function getPortDefinitions(): Map<string, ComponentDefinition> {
+  const portId = getPortId()
+
+  if (!portDefinitions.has(portId)) {
+    const definitions = new Map<string, ComponentDefinition>()
+    portDefinitions.set(portId, definitions)
+    console.log(`🔧 [ComponentRegistry] 为端口 ${portId} 创建新的组件注册表`)
+  }
+
+  return portDefinitions.get(portId)!
+}
+
 export class ComponentRegistry {
-  private static definitions = new Map<string, ComponentDefinition>()
+  private static get definitions(): Map<string, ComponentDefinition> {
+    return getPortDefinitions()
+  }
 
   /**
    * 注册组件定义

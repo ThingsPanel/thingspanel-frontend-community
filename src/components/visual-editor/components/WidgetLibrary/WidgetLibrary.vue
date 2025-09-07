@@ -221,7 +221,6 @@ const handleAddWidget = (widget: any) => {
   const payload = { type: widget.type, source: widget.source || 'legacy' }
   emit('add-widget', payload)
 }
-
 </script>
 
 <style scoped>

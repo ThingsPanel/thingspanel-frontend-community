@@ -193,7 +193,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-
 // 文件导入导出处理
 const fileInputRef = ref<HTMLInputElement>()
 
@@ -377,7 +376,6 @@ const handleExport = () => {
               <SvgIcon icon="material-symbols:settings-outline" />
             </template>
           </NButton>
-
         </template>
 
         <!-- 编辑/预览切换按钮 - 始终显示在最右侧 -->
@@ -410,7 +408,6 @@ const handleExport = () => {
       @gridstack-config-change="handleGridstackConfigChange"
       @visualization-config-change="handleVisualizationConfigChange"
     />
-
   </div>
 </template>
 
@@ -476,7 +473,6 @@ const handleExport = () => {
 }
 
 /* 移除弹窗相关样式，由独立组件处理 */
-
 
 .dialog-actions {
   border-top: 1px solid var(--border-color);
