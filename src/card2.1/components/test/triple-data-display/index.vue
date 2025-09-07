@@ -1,52 +1,65 @@
 <template>
   <div 
-    :class="['triple-data-display-component', layoutClass, { 'interaction-registered': isRegistered }]" 
-    :style="{ ...componentStyle, ...interactionStyles }" 
+    class="triple-data-display"
+    :class="{
+      'preview-mode': previewMode
+    }"
+    :style="{
+      '--theme-color': themeColor,
+      '--font-size': `${fontSize}px`
+    }"
     :data-component-id="componentId"
     @click="handleClick"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
     <!-- 组件标题 -->
-    <div v-if="currentConfig.customize.title" class="component-title">
-      {{ currentConfig.customize.title }}
+    <div class="header">
+      <h3>{{ currentTitle }}</h3>
     </div>
 
     <!-- 三个数据源展示区域 -->
-    <div class="data-sources-container">
-      <!-- 数据源1 -->
-      <div class="data-source-item">
-        <div class="data-label">{{ currentConfig.customize.dataSource1Label }}</div>
-        <div class="data-value">
-          {{ JSON.stringify(dataSource1, null, 2) }}
+    <div class="content-section">
+      <div class="data-grid">
+        <!-- 数据源1 -->
+        <div class="data-item">
+          <div class="data-label">{{ dataSource1Label }}</div>
+          <div class="data-value">
+            {{ formatData(dataSource1) }}
+          </div>
         </div>
-      </div>
 
-      <!-- 数据源2 -->
-      <div class="data-source-item">
-        <div class="data-label">{{ currentConfig.customize.dataSource2Label }}</div>
-        <div class="data-value">
-          {{ JSON.stringify(dataSource2, null, 2) }}
+        <!-- 数据源2 -->
+        <div class="data-item">
+          <div class="data-label">{{ dataSource2Label }}</div>
+          <div class="data-value">
+            {{ formatData(dataSource2) }}
+          </div>
         </div>
-      </div>
 
-      <!-- 数据源3 -->
-      <div class="data-source-item">
-        <div class="data-label">{{ currentConfig.customize.dataSource3Label }}</div>
-        <div class="data-value">
-          {{ JSON.stringify(dataSource3, null, 2) }}
+        <!-- 数据源3 -->
+        <div class="data-item">
+          <div class="data-label">{{ dataSource3Label }}</div>
+          <div class="data-value">
+            {{ formatData(dataSource3) }}
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 🔥 交互系统调试信息（预览模式） -->
-    <div v-if="debugMode" class="debug-panel">
-      <div class="debug-item">
-        <small>交互注册: {{ isRegistered ? '已注册' : '未注册' }}</small>
-      </div>
-      <div class="debug-item" v-if="interactionConfigs && interactionConfigs.length > 0">
-        <small>交互配置: {{ interactionConfigs.length }} 项</small>
-      </div>
-      <div class="debug-item">
+    <!-- 组件信息和状态 -->
+    <div class="component-info">
+      <div class="basic-info">
         <small>组件ID: {{ componentId || '未设置' }}</small>
+      </div>
+
+      <div v-if="previewMode" class="state-info">
+        <div class="state-item">
+          <small>点击次数: {{ componentState.clickCount }}</small>
+        </div>
+        <div class="state-item">
+          <small>组件类型: 三数据展示</small>
+        </div>
       </div>
     </div>
   </div>
@@ -54,490 +67,318 @@
 
 <script setup lang="ts">
 /**
- * triple-data-display 组件
- * 展示三个数据源的数据对比，支持多种布局模式和主题定制
+ * triple-data-display 主组件
+ * 简化后专注于业务展示逻辑，交互由 Card2Wrapper 统一处理
  */
 
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { interactionManager } from '@/card2.1/core/interaction-manager'
-import type { InteractionConfig } from '@/card2.1/core/interaction-types'
-import type { TripleDataDisplayConfig } from './settingConfig'
-import { tripleDataDisplaySettingConfig } from './settingConfig'
-import { useInteraction } from '@/card2.1/hooks/use-interaction'
+import { computed, reactive } from 'vue'
+import type { TripleDataDisplayConfig, TripleDataDisplayCustomize } from './settingConfig'
 
-// 组件属性接口 - 支持新的 CustomConfig 结构
+// 组件状态接口
+interface ComponentState {
+  isActive: boolean
+  clickCount: number
+}
+
+// 简化的组件props
 interface Props {
+  /** 新的CustomConfig结构配置 */
+  customConfig?: TripleDataDisplayConfig
+  /** 向后兼容：旧的config结构 */
+  config?: Partial<TripleDataDisplayCustomize>
+  /** 组件ID */
   componentId?: string
-  // 数据源
+  /** 预览模式 */
+  previewMode?: boolean
+  /** 数据源1的数据 */
   dataSource1?: any
+  /** 数据源2的数据 */
   dataSource2?: any
+  /** 数据源3的数据 */
   dataSource3?: any
-  // 新的配置结构（优先）
-  modelValue?: TripleDataDisplayConfig
-  // 向后兼容的配置结构
-  config?:
-    | TripleDataDisplayConfig
-    | {
-        title?: string
-        themeColor?: string
-        fontSize?: number
-        showBorder?: boolean
-        layout?: 'grid' | 'horizontal' | 'vertical'
-      }
-  // 交互配置
-  interactionConfigs?: InteractionConfig[]
-  // 调试模式
-  debugMode?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   componentId: '',
+  customConfig: undefined,
+  config: () => ({}),
+  previewMode: false,
   dataSource1: null,
   dataSource2: null,
-  dataSource3: null,
-  debugMode: false
+  dataSource3: null
 })
 
-// 事件定义
+// 简化的事件定义
 interface Emits {
-  (e: 'update:modelValue', config: TripleDataDisplayConfig): void
-  (e: 'click', data: { componentId: string; dataSource: string; data: any }): void
-  (e: 'refresh', componentId: string): void
-  (e: 'interaction', data: { type: string; componentId: string; payload: any }): void
+  (e: 'click', data: { componentId: string; timestamp: string }): void
+  (e: 'hover', data: { componentId: string; type: 'enter' | 'leave' }): void
 }
 
 const emit = defineEmits<Emits>()
 
-/**
- * 配置计算 - 支持新旧配置格式
- */
-const currentConfig = computed<TripleDataDisplayConfig>(() => {
-  // 优先使用 modelValue（新格式）
-  if (props.modelValue) {
-    return props.modelValue
-  }
-
-  // 其次使用 config
-  if (props.config) {
-    // 检查是否是新的 CustomConfig 格式
-    if ('customize' in props.config) {
-      return props.config as TripleDataDisplayConfig
-    }
-
-    // 🔥 修复：检查是否是扁平化配置（从Card2Wrapper传来的）
-    const configKeys = Object.keys(props.config)
-    const hasExpectedFlatKeys = ['title', 'dataSource1Label', 'dataSource2Label', 'dataSource3Label'].some(key =>
-      configKeys.includes(key)
-    )
-
-    if (hasExpectedFlatKeys) {
-      // 扁平化配置转换为嵌套格式
-      const flatConfig = props.config as any
-      return {
-        ...tripleDataDisplaySettingConfig.customConfig,
-        customize: {
-          ...tripleDataDisplaySettingConfig.customConfig.customize,
-          // 从扁平化配置中提取值
-          title: flatConfig.title || tripleDataDisplaySettingConfig.customConfig.customize.title,
-          themeColor: flatConfig.themeColor || tripleDataDisplaySettingConfig.customConfig.customize.themeColor,
-          fontSize: flatConfig.fontSize || tripleDataDisplaySettingConfig.customConfig.customize.fontSize,
-          showBorder:
-            flatConfig.showBorder !== undefined
-              ? flatConfig.showBorder
-              : tripleDataDisplaySettingConfig.customConfig.customize.showBorder,
-          layout: flatConfig.layout || tripleDataDisplaySettingConfig.customConfig.customize.layout,
-          dataSource1Label:
-            flatConfig.dataSource1Label || tripleDataDisplaySettingConfig.customConfig.customize.dataSource1Label,
-          dataSource2Label:
-            flatConfig.dataSource2Label || tripleDataDisplaySettingConfig.customConfig.customize.dataSource2Label,
-          dataSource3Label:
-            flatConfig.dataSource3Label || tripleDataDisplaySettingConfig.customConfig.customize.dataSource3Label,
-          numberFormat: flatConfig.numberFormat || tripleDataDisplaySettingConfig.customConfig.customize.numberFormat,
-          unit: flatConfig.unit || tripleDataDisplaySettingConfig.customConfig.customize.unit
-        }
-      }
-    }
-
-    // 转换旧格式到新格式（保持向后兼容）
-    const legacyConfig = props.config as any
-    return {
-      ...tripleDataDisplaySettingConfig.customConfig,
-      customize: {
-        ...tripleDataDisplaySettingConfig.customConfig.customize,
-        title: legacyConfig.title || tripleDataDisplaySettingConfig.customConfig.customize.title,
-        themeColor: legacyConfig.themeColor || tripleDataDisplaySettingConfig.customConfig.customize.themeColor,
-        fontSize: legacyConfig.fontSize || tripleDataDisplaySettingConfig.customConfig.customize.fontSize,
-        showBorder:
-          legacyConfig.showBorder !== undefined
-            ? legacyConfig.showBorder
-            : tripleDataDisplaySettingConfig.customConfig.customize.showBorder,
-        layout: legacyConfig.layout || tripleDataDisplaySettingConfig.customConfig.customize.layout
-      }
-    }
-  }
-
-  // 使用默认配置
-  return tripleDataDisplaySettingConfig.customConfig
+// 组件状态管理
+const componentState = reactive<ComponentState>({
+  isActive: true,
+  clickCount: 0
 })
 
 /**
- * 布局样式类名
+ * 获取组件配置 - 支持新旧格式
  */
-const layoutClass = computed(() => {
-  const layout = currentConfig.value.customize.layout
-  return `layout-${layout}`
-})
+const currentCustomize = computed((): TripleDataDisplayCustomize => {
+  // 优先使用新的customConfig结构
+  if (props.customConfig?.customize) {
+    return props.customConfig.customize
+  }
 
-/**
- * 组件样式计算
- */
-const componentStyle = computed(() => {
-  const customize = currentConfig.value.customize
+  // 回退到旧的config结构（向后兼容）
   return {
-    '--theme-color': customize.themeColor,
-    '--font-size': `${customize.fontSize}px`,
-    border: customize.showBorder ? '1px solid var(--border-color)' : 'none'
+    title: props.config?.title || '三数据展示',
+    themeColor: props.config?.themeColor || '#2080f0',
+    fontSize: props.config?.fontSize || 16,
+    showBorder: props.config?.showBorder ?? true,
+    dataSource1Label: props.config?.dataSource1Label || '数据源A',
+    dataSource2Label: props.config?.dataSource2Label || '数据源B',
+    dataSource3Label: props.config?.dataSource3Label || '数据源C',
+    numberFormat: props.config?.numberFormat || 'raw',
+    unit: props.config?.unit || ''
   }
 })
 
+// 计算属性：从customize中提取各个属性
+const currentTitle = computed(() => currentCustomize.value.title)
+const themeColor = computed(() => currentCustomize.value.themeColor)
+const fontSize = computed(() => currentCustomize.value.fontSize)
+const dataSource1Label = computed(() => currentCustomize.value.dataSource1Label)
+const dataSource2Label = computed(() => currentCustomize.value.dataSource2Label)
+const dataSource3Label = computed(() => currentCustomize.value.dataSource3Label)
+
 /**
- * 数字格式化工具 - 支持对象数据提取和多字段智能分配
+ * 数据格式化 - 简化版
  */
-const formatNumber = (value: any, dataSourceIndex: number = 0): string => {
-  if (value === null || value === undefined || value === '') return '--'
+const formatData = (data: any): string => {
+  if (data === null || data === undefined) {
+    return '暂无数据'
+  }
 
-  // 🔥 修复：处理对象类型的数据源
-  let actualValue = value
-  if (typeof value === 'object' && value !== null) {
-    // 🔥 新增：处理 Card2Wrapper 传递的嵌套数据结构 {type: 'json', data: {...}}
-    if (value.type && value.data && typeof value.data === 'object') {
-      const dataObj = value.data
-      const numericEntries = Object.entries(dataObj).filter(
-        ([key, val]) => typeof val === 'number' || (typeof val === 'string' && !isNaN(parseFloat(val as string)))
-      )
-
-      // 🎯 智能字段分配：根据数据源索引分配不同字段
-      if (numericEntries.length > dataSourceIndex) {
-        const [key, val] = numericEntries[dataSourceIndex]
-        actualValue = typeof val === 'number' ? val : parseFloat(val as string)
-      } else if (numericEntries.length > 0) {
-        // 如果没有足够的数字字段，使用第一个
-        const [key, val] = numericEntries[0]
-        actualValue = typeof val === 'number' ? val : parseFloat(val as string)
-      } else {
-        // 如果没有数字字段，使用所有字段中的某个
-        const allEntries = Object.entries(dataObj)
-        if (allEntries.length > dataSourceIndex) {
-          const [key, val] = allEntries[dataSourceIndex]
-          actualValue = String(val)
-        } else if (allEntries.length > 0) {
-          const [key, val] = allEntries[0]
-          actualValue = String(val)
+  // 处理对象类型的数据源
+  let actualValue = data
+  if (typeof data === 'object' && data !== null) {
+    if (data.type && data.data && typeof data.data === 'object') {
+      // 尝试从data对象中提取第一个数值字段
+      const dataObj = data.data
+      for (const [key, val] of Object.entries(dataObj)) {
+        if (typeof val === 'number') {
+          actualValue = val
+          break
+        }
+        if (typeof val === 'string' && !isNaN(parseFloat(val as string))) {
+          actualValue = parseFloat(val as string)
+          break
         }
       }
-    }
-    // 🔥 保持原有逻辑：处理简单的数据字段
-    else if (typeof value.value === 'number' || typeof value.value === 'string') {
-      actualValue = value.value
-    } else if (typeof value.data === 'number' || typeof value.data === 'string') {
-      actualValue = value.data
-    } else if (typeof value.val === 'number' || typeof value.val === 'string') {
-      actualValue = value.val
-    } else if (typeof value.number === 'number' || typeof value.number === 'string') {
-      actualValue = value.number
+
+      // 如果没有找到数值，显示第一个字符串值
+      if (actualValue === data && Object.keys(dataObj).length > 0) {
+        const firstValue = Object.values(dataObj)[0]
+        actualValue = String(firstValue)
+      }
+    } else if (typeof data.value === 'number' || typeof data.value === 'string') {
+      actualValue = data.value
+    } else if (typeof data.data === 'number' || typeof data.data === 'string') {
+      actualValue = data.data
     } else {
       return '[需要配置数据字段]'
     }
   }
 
-  const numValue = typeof actualValue === 'number' ? actualValue : parseFloat(String(actualValue))
-  if (isNaN(numValue)) {
-    return String(actualValue)
+  if (typeof actualValue === 'number') {
+    return actualValue.toString()
   }
 
-  const format = currentConfig.value.customize.numberFormat
-
-  switch (format) {
-    case 'thousands':
-      return numValue.toLocaleString()
-    case 'decimal2':
-      return numValue.toFixed(2)
-    case 'percentage':
-      return `${(numValue * 100).toFixed(1)}%`
-    default:
-      return String(numValue)
-  }
+  return String(actualValue)
 }
 
-// 交互系统状态
-const isInteractionEnabled = ref(false)
-const registeredEvents = ref<Set<string>>(new Set())
-
-// 🔥 集成交互系统 - 初始化交互管理器
-const {
-  interactionStyles,
-  isRegistered,
-  register,
-  unregister,
-  updateConfigs,
-  triggerEvent,
-  resetState,
-  getState
-} = useInteraction({
-  componentId: props.componentId || '',
-  configs: props.interactionConfigs || [],
-  autoRegister: true,
-  autoWatch: true
-})
-
 /**
- * 点击事件处理 - 集成交互系统
+ * 简化的点击处理 - 只处理组件业务逻辑
  */
 const handleClick = () => {
-  // 发送点击事件
+  // 更新组件状态  
+  componentState.clickCount++
+
+  // 发送标准点击事件 - Card2Wrapper会拦截处理交互
   emit('click', {
-    componentId: props.componentId,
-    dataSource: 'triple-data-display',
-    data: {
-      dataSource1: props.dataSource1,
-      dataSource2: props.dataSource2,
-      dataSource3: props.dataSource3
-    }
+    componentId: props.componentId || '',
+    timestamp: new Date().toISOString()
   })
-
-  // 🔥 触发交互系统事件处理
-  if (props.componentId) {
-    triggerEvent('click', {
-      componentId: props.componentId,
-      timestamp: new Date().toISOString(),
-      data: {
-        dataSource1: props.dataSource1,
-        dataSource2: props.dataSource2,
-        dataSource3: props.dataSource3
-      }
-    })
-  }
 }
 
 /**
- * 监听属性更新事件（用于跨组件属性绑定）
+ * 简化的悬停处理 - 只处理组件业务逻辑
  */
-const handlePropertyUpdate = (data: any) => {
-  if (data && typeof data === 'object') {
-    // 更新配置并触发事件
-    const newConfig = { ...currentConfig.value, ...data }
-    emit('update:modelValue', newConfig)
-  }
+const handleMouseEnter = () => {
+  emit('hover', {
+    componentId: props.componentId || '',
+    type: 'enter'
+  })
 }
 
-/**
- * 组件挂载时的初始化
- */
-onMounted(() => {
-  // 注册属性更新监听器（用于跨组件属性绑定）
-  if (props.componentId) {
-    interactionManager.watchComponentProperty(props.componentId, handlePropertyUpdate)
-  }
-
-  // 初始化交互配置
-  if (props.interactionConfigs && props.interactionConfigs.length > 0) {
-    try {
-      isInteractionEnabled.value = true
-    } catch (error) {}
-  }
-})
-
-/**
- * 组件卸载时清理
- */
-onUnmounted(() => {
-  // 清理交互系统监听器
-  if (props.componentId && registeredEvents.value.size > 0) {
-    try {
-      // 这里可以添加清理逻辑
-    } catch (error) {}
-  }
-})
-
-/**
- * 监听配置变化
- */
-watch(
-  () => currentConfig.value,
-  newConfig => {},
-  { deep: true }
-)
+const handleMouseLeave = () => {
+  emit('hover', {
+    componentId: props.componentId || '',
+    type: 'leave'
+  })
+}
 </script>
 
 <style scoped>
-.triple-data-display-component {
-  width: 100%;
-  height: 100%;
-  padding: 16px;
+.triple-data-display {
+  padding: 20px;
   background: var(--card-color);
+  border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
+  font-size: var(--font-size, 16px);
+  height: 100%;
   display: flex;
   flex-direction: column;
-  font-size: var(--font-size, 16px);
-  color: var(--text-color);
-  position: relative;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
+  container-type: size; /* 启用容器查询 */
 }
 
-.triple-data-display-component:hover {
-  box-shadow: var(--box-shadow);
+.triple-data-display:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--theme-color);
 }
 
-.component-title {
-  font-size: calc(var(--font-size, 16px) + 2px);
-  font-weight: 600;
-  color: var(--theme-color);
-  margin-bottom: 16px;
-  text-align: center;
+.triple-data-display.preview-mode {
+  cursor: pointer;
 }
 
-.data-sources-container {
+.header {
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--theme-color);
+}
+
+.header h3 {
+  margin: 0;
+  color: var(--text-color);
+  font-size: calc(var(--font-size, 16px) + 4px);
+  font-weight: bold;
+}
+
+.content-section {
   flex: 1;
   display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 20px;
 }
 
-/* 网格布局 */
-.layout-grid .data-sources-container {
+.data-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  align-items: stretch;
 }
 
-/* 水平布局 */
-.layout-horizontal .data-sources-container {
-  flex-direction: row;
-}
-
-/* 垂直布局 */
-.layout-vertical .data-sources-container {
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.data-source-item {
-  flex: 1;
-  padding: 12px;
+.data-item {
+  padding: 16px;
   background: var(--body-color);
-  border-radius: calc(var(--border-radius) * 0.5);
-  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  border-left: 4px solid var(--theme-color);
   text-align: center;
-  transition: all 0.2s ease;
-}
-
-.data-source-item:hover {
-  border-color: var(--theme-color);
-  transform: translateY(-1px);
 }
 
 .data-label {
   font-size: calc(var(--font-size, 16px) - 2px);
   color: var(--text-color-2);
   margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .data-value {
-  font-size: calc(var(--font-size, 16px) + 6px);
-  font-weight: 600;
-  color: var(--theme-color);
-}
-
-.data-unit {
-  font-size: calc(var(--font-size, 16px) - 2px);
-  font-weight: 400;
-  color: var(--text-color-3);
-  margin-left: 4px;
-}
-
-.json-display {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
-  background: var(--body-color);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 12px;
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.json-display pre {
-  font-size: 10px;
-  margin: 0;
-  color: var(--text-color-2);
-  overflow: auto;
-  white-space: pre-wrap;
+  font-size: calc(var(--font-size, 16px) + 4px);
+  color: var(--text-color);
+  font-weight: bold;
   word-break: break-all;
 }
 
-/* 响应式调整 */
-@media (max-width: 600px) {
-  .layout-grid .data-sources-container,
-  .layout-horizontal .data-sources-container {
-    flex-direction: column;
-    align-items: stretch;
+/* 组件信息区域 - 优化高度自适应 */
+.component-info {
+  margin-top: auto; /* 自动推到底部 */
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-color-3);
+  font-size: calc(var(--font-size, 16px) - 4px);
+  flex-shrink: 0; /* 防止被压缩 */
+}
+
+/* 在小高度容器中隐藏组件信息 */
+@media (max-height: 280px) {
+  .triple-data-display .component-info {
+    display: none;
   }
-
-  .data-source-item {
-    margin-bottom: 8px;
+  .triple-data-display {
+    padding: 12px;
   }
 }
 
-/* 暗色主题适配 */
-[data-theme='dark'] .triple-data-display-component {
-  border-color: var(--border-color);
+/* 容器查询支持的浏览器使用更精确的容器查询 */
+@container (height < 250px) {
+  .component-info {
+    display: none;
+  }
 }
 
-[data-theme='dark'] .data-source-item {
-  background: var(--modal-color);
+@container (height < 200px) {
+  .triple-data-display {
+    padding: 12px;
+  }
+  .data-grid {
+    gap: 12px;
+  }
 }
 
-/* 🔥 新增：交互系统样式 */
-.triple-data-display-component.interaction-registered {
-  border-left: 3px solid var(--success-color);
-  position: relative;
+.basic-info {
+  text-align: center;
+  margin-bottom: 8px;
 }
 
-.triple-data-display-component.interaction-registered::after {
-  content: '⚡';
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  font-size: 12px;
-  color: var(--success-color);
-  opacity: 0.7;
-}
-
-/* 调试面板样式 */
-.debug-panel {
+/* 状态信息 */
+.state-info {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
-  margin-top: 12px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border-color);
+  padding: 8px;
+  background: var(--body-color);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
 }
 
-.debug-item {
+.state-item {
   padding: 2px 6px;
-  background: var(--success-color-suppl, var(--card-color));
+  background: var(--tag-color, var(--card-color));
   border-radius: 3px;
   font-size: 10px;
-  color: var(--success-color);
+  color: var(--text-color-2);
 }
 
-.debug-item small {
+.state-item small {
   font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .triple-data-display {
+    padding: 16px;
+  }
+
+  .data-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 </style>

@@ -4,10 +4,8 @@
  * 基于新的三文件结构标准，支持 CustomConfig 类型配置和属性绑定
  */
 
-import { computed, reactive, getCurrentInstance, onMounted, onUnmounted } from 'vue'
-import type { InteractionProps, InteractionEmits } from '@/card2.1/types/interaction-component'
+import { computed, reactive } from 'vue'
 import type { DualDataDisplayConfig, DualDataDisplayCustomize } from './settingConfig'
-import { useInteraction } from '@/card2.1/hooks/use-interaction'
 
 // 组件状态接口
 interface ComponentState {
@@ -15,18 +13,16 @@ interface ComponentState {
   clickCount: number
 }
 
-// 交互状态接口
-interface InteractionState {
-  lastInteractionTime: string | null
-  interactionCount: number
-}
-
-// 组件props - 支持新的CustomConfig结构
-interface Props extends InteractionProps {
+// 简化的组件props
+interface Props {
   /** 新的CustomConfig结构配置 */
   customConfig?: DualDataDisplayConfig
   /** 向后兼容：旧的config结构 */
   config?: Partial<DualDataDisplayCustomize>
+  /** 组件ID */
+  componentId?: string
+  /** 预览模式 */
+  previewMode?: boolean
   /** 数据源1的数据 */
   dataSource1?: any
   /** 数据源2的数据 */
@@ -37,15 +33,13 @@ const props = withDefaults(defineProps<Props>(), {
   componentId: '',
   customConfig: undefined,
   config: () => ({}),
-  allowExternalControl: true,
-  showInteractionIndicator: false,
   previewMode: false,
   dataSource1: null,
   dataSource2: null
 })
 
-// 组件事件定义 - 继承交互系统标准事件
-interface Emits extends InteractionEmits {
+// 简化的事件定义
+interface Emits {
   (e: 'click', data: { componentId: string; timestamp: string }): void
   (e: 'hover', data: { componentId: string; type: 'enter' | 'leave' }): void
 }
@@ -56,29 +50,6 @@ const emit = defineEmits<Emits>()
 const componentState = reactive<ComponentState>({
   isActive: true,
   clickCount: 0
-})
-
-// 交互状态管理
-const interactionState = reactive<InteractionState>({
-  lastInteractionTime: null,
-  interactionCount: 0
-})
-
-// 🔥 集成交互系统 - 初始化交互管理器
-const {
-  interactionStyles,
-  isRegistered,
-  register,
-  unregister,
-  updateConfigs,
-  triggerEvent,
-  resetState,
-  getState
-} = useInteraction({
-  componentId: props.componentId || '',
-  configs: props.interactionConfigs || [],
-  autoRegister: true,
-  autoWatch: true
 })
 
 /**
@@ -121,27 +92,17 @@ const dataSource2Label = computed(() => currentCustomize.value.dataSource2Label)
 const numberFormat = computed(() => currentCustomize.value.numberFormat)
 const unit = computed(() => currentCustomize.value.unit)
 
-// 计算属性：交互指示器
-const showInteractionIndicator = computed(() => {
-  return props.showInteractionIndicator && props.previewMode && hasActiveInteractions.value
-})
-
-const hasActiveInteractions = computed(() => {
-  return props.interactionConfigs?.some(config => config.enabled) || false
-})
-
 /**
- * 数据格式化 - 支持对象数据提取
+ * 数据格式化 - 简化版
  */
 const formatData = (data: any): string => {
   if (data === null || data === undefined) {
     return '暂无数据'
   }
 
-  // 🔥 修复：处理对象类型的数据源
+  // 处理对象类型的数据源
   let actualValue = data
   if (typeof data === 'object' && data !== null) {
-    // 🔥 新增：处理 Card2Wrapper 传递的嵌套数据结构 {type: 'json', data: {...}}
     if (data.type && data.data && typeof data.data === 'object') {
       // 尝试从data对象中提取第一个数值字段
       const dataObj = data.data
@@ -156,23 +117,16 @@ const formatData = (data: any): string => {
         }
       }
 
-      // 如果data对象中没有找到数值，显示第一个字符串值
+      // 如果没有找到数值，显示第一个字符串值
       if (actualValue === data && Object.keys(dataObj).length > 0) {
         const firstValue = Object.values(dataObj)[0]
         actualValue = String(firstValue)
       }
-    }
-    // 🔥 保持原有逻辑：处理简单的数据字段
-    else if (typeof data.value === 'number' || typeof data.value === 'string') {
+    } else if (typeof data.value === 'number' || typeof data.value === 'string') {
       actualValue = data.value
     } else if (typeof data.data === 'number' || typeof data.data === 'string') {
       actualValue = data.data
-    } else if (typeof data.val === 'number' || typeof data.val === 'string') {
-      actualValue = data.val
-    } else if (typeof data.number === 'number' || typeof data.number === 'string') {
-      actualValue = data.number
     } else {
-      // 如果是纯对象，显示友好的提示
       return '[需要配置数据字段]'
     }
   }
@@ -422,6 +376,7 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+  container-type: size; /* 启用容器查询 */
 }
 
 .dual-data-display.show-border {
@@ -574,13 +529,40 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
-/* 组件信息区域 */
+/* 组件信息区域 - 优化高度自适应 */
 .component-info {
-  margin-top: 16px;
-  padding-top: 12px;
+  margin-top: auto; /* 自动推到底部 */
+  padding-top: 8px;
   border-top: 1px solid var(--border-color);
   color: var(--text-color-3);
   font-size: calc(var(--font-size, 16px) - 4px);
+  flex-shrink: 0; /* 防止被压缩 */
+}
+
+/* 在小高度容器中隐藏组件信息 */
+@media (max-height: 280px) {
+  .dual-data-display .component-info {
+    display: none;
+  }
+  .dual-data-display {
+    padding: 12px;
+  }
+}
+
+/* 容器查询支持的浏览器使用更精确的容器查询 */
+@container (height < 250px) {
+  .component-info {
+    display: none;
+  }
+}
+
+@container (height < 200px) {
+  .dual-data-display {
+    padding: 12px;
+  }
+  .data-grid {
+    gap: 16px;
+  }
 }
 
 .basic-info {
@@ -613,16 +595,6 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-/* 配置调试信息 */
-.config-debug {
-  text-align: center;
-  padding: 4px 8px;
-  background: var(--info-color-suppl);
-  border-radius: 4px;
-  font-size: 10px;
-  color: var(--info-color);
-  font-weight: 500;
-}
 
 /* 响应式设计 */
 @media (max-width: 600px) {

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高度修复验证测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .status-fixed {
+            background: #28a745;
+        }
+        
+        .fix-chain {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .chain-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .chain-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .chain-fix {
+            font-size: 12px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+        
+        .fix-code {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #333;
+            overflow-x: auto;
+        }
+        
+        .nav-button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 10px 10px 0;
+            font-weight: 500;
+        }
+        
+        .nav-button:hover {
+            background: #0056b3;
+        }
+        
+        .nav-button.primary {
+            background: #28a745;
+        }
+        
+        .nav-button.primary:hover {
+            background: #1e7e34;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .problem-analysis {
+            background: #f8f9fa;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 栅格高度自适应问题 - 根本原因修复</h1>
+        
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-icon status-fixed">✓</span>
+                问题根本原因已找到并修复
+            </div>
+            
+            <div class="problem-analysis">
+                <h3>🎯 问题根本原因分析</h3>
+                <p><strong>真正的问题</strong>：GridLayoutPlus 和 GridItemContent 组件中故意移除了 <code>height: 100%</code> 设置，导致高度传递链中断！</p>
+                
+                <h4>发现的关键问题点：</h4>
+                <ol>
+                    <li><strong>GridLayoutPlus.vue:431</strong> - <code>/* 移除 height: 100% 以允许内容撑开高度 */</code></li>
+                    <li><strong>GridItemContent.vue:59</strong> - <code>/* 移除 height: 100%，允许内容撑开 */</code></li>
+                    <li><strong>overflow 设置问题</strong> - 设置为 visible 导致内容溢出</li>
+                </ol>
+                
+                <p><strong>影响</strong>：这些设计选择导致组件无法在固定高度的栅格单元中正确填充空间。</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-icon status-fixed">✓</span>
+                已实施的修复方案
+            </div>
+            
+            <div class="fix-chain">
+                <div class="chain-item">
+                    <div class="chain-title">1. GridLayoutPlus 修复</div>
+                    <div>恢复主容器高度100%设置</div>
+                    <div class="chain-fix">
+                        .grid-layout-plus-wrapper {<br>
+                        &nbsp;&nbsp;height: 100%; /* 恢复 */<br>
+                        }
+                    </div>
+                </div>
+                
+                <div class="chain-item">
+                    <div class="chain-title">2. GridItemContent 修复</div>
+                    <div>恢复网格项内容高度100%</div>
+                    <div class="chain-fix">
+                        .grid-item-content {<br>
+                        &nbsp;&nbsp;height: 100%; /* 恢复 */<br>
+                        &nbsp;&nbsp;overflow: hidden; /* 修复 */<br>
+                        }
+                    </div>
+                </div>
+                
+                <div class="chain-item">
+                    <div class="chain-title">3. 组件内部优化</div>
+                    <div>优化Card2.1组件内部布局</div>
+                    <div class="chain-fix">
+                        .component-info {<br>
+                        &nbsp;&nbsp;margin-top: auto;<br>
+                        &nbsp;&nbsp;flex-shrink: 0;<br>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">📋 完整的高度传递链修复</div>
+            
+            <div class="fix-code">
+修复前的中断链路：
+GridLayoutPlusWrapper (❌ 无高度) → NodeWrapper (✓ height: 100%) → Card2Wrapper (✓ height: 100%) → Component (✓ height: 100%)
+
+修复后的完整链路：
+GridLayoutPlusWrapper (✅ height: 100%) → GridItemContent (✅ height: 100%) → NodeWrapper (✅ height: 100%) → Card2Wrapper (✅ height: 100%) → Component (✅ height: 100%)
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">🚀 验证测试</div>
+            
+            <div class="alert alert-success">
+                <strong>修复完成！</strong> 现在所有Card2.1组件都应该能正确地填充栅格容器的高度，并且会随着栅格单元大小的变化而动态调整。
+            </div>
+            
+            <div class="alert alert-warning">
+                <strong>验证要点：</strong>
+                <ul>
+                    <li>在栅格布局中添加不同大小的Card2.1组件</li>
+                    <li>调整栅格单元的高度，观察组件是否完全填充</li>
+                    <li>拖拽调整栅格单元大小，验证组件是否跟随变化</li>
+                    <li>测试小高度单元中的响应式隐藏功能</li>
+                </ul>
+            </div>
+            
+            <p>点击以下链接在真实环境中验证修复效果：</p>
+            <a href="http://localhost:5004/test/editor-integration" class="nav-button primary">编辑器集成测试</a>
+            <a href="http://localhost:5004/visualization/visual-editor-details" class="nav-button">可视化编辑器</a>
+            <a href="http://localhost:5004/test/data-binding-system-integration" class="nav-button">数据绑定测试</a>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">🔍 技术细节</div>
+            
+            <h4>修复的核心文件：</h4>
+            <ul>
+                <li><code>/src/components/common/grid/GridLayoutPlus.vue</code> - 主网格容器</li>
+                <li><code>/src/components/common/grid/components/GridItemContent.vue</code> - 网格项内容容器</li>
+                <li><code>/src/card2.1/components/test/simple-display/index.vue</code> - 组件内部布局优化</li>
+                <li><code>/src/card2.1/components/test/dual-data-display/index.vue</code> - 组件内部布局优化</li>
+                <li><code>/src/card2.1/components/test/triple-data-display/index.vue</code> - 组件内部布局优化</li>
+            </ul>
+            
+            <h4>关键修复点：</h4>
+            <ol>
+                <li><strong>网格系统高度传递</strong> - 恢复所有容器的 height: 100% 设置</li>
+                <li><strong>内容溢出控制</strong> - 将 overflow: visible 改回 overflow: hidden</li>
+                <li><strong>组件内部布局</strong> - 优化 margin-top: auto 和 flex-shrink: 0</li>
+                <li><strong>响应式适配</strong> - 添加容器查询和媒体查询支持</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>

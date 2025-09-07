@@ -28,6 +28,7 @@ interface Props {
   enableToolbarArea?: boolean
   enableFooterArea?: boolean
   customLayoutClass?: string
+  defaultRenderer?: RendererType // 🔥 新增：默认渲染器类型
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -36,7 +37,8 @@ const props = withDefaults(defineProps<Props>(), {
   enableHeaderArea: true,
   enableToolbarArea: true,
   enableFooterArea: false,
-  customLayoutClass: ''
+  customLayoutClass: '',
+  defaultRenderer: 'gridstack' // 🔥 默认使用GridStack渲染器
 })
 
 const message = useMessage()
@@ -59,7 +61,19 @@ const leftCollapsed = ref(true) // 🔥 左侧默认关闭，只有点击添加�
 const rightCollapsed = ref(true) // 🔥 右侧默认关闭
 
 // 🔥 编辑器核心功能
-const currentRenderer = ref<RendererType>('gridstack')
+const currentRenderer = ref<RendererType>(props.defaultRenderer)
+
+// 🔥 监听props.defaultRenderer的变化，实现响应式渲染器切换
+watch(
+  () => props.defaultRenderer,
+  (newRenderer) => {
+    if (newRenderer && newRenderer !== currentRenderer.value) {
+      currentRenderer.value = newRenderer
+      console.log('🔄 渲染器已切换为:', newRenderer)
+    }
+  },
+  { immediate: true }
+)
 const showWidgetTitles = ref(true)
 const isSaving = ref(false)
 const hasChanges = ref(false)
@@ -319,6 +333,9 @@ const handleAddWidget = async (widget: { type: string }) => {
     await addWidget(widget.type)
     hasChanges.value = true
     console.log('✅ 组件添加成功:', widget.type)
+    
+    // 🔥 发射widget-added事件，通知测试页面
+    emit('widget-added', { type: widget.type })
   } catch (error: any) {
     console.error('❌ 添加组件失败:', widget.type, error)
   }
@@ -339,9 +356,9 @@ const handleImportConfig = () => {
         const newConfig = JSON.parse(configStr)
         setState(newConfig)
         hasChanges.value = true
-        message.success($t('visualEditor.importSuccess', '配置导入成功'))
+        message.success($t('visualEditor.configImportSuccess', '配置导入成功'))
       } catch (error) {
-        message.error($t('visualEditor.importFailed', '配置文件解析失败'))
+        message.error($t('visualEditor.configImportFailed', '配置文件解析失败'))
         console.error('Import failed:', error)
       }
     }
@@ -427,6 +444,9 @@ const handleCanvasConfigChange = (config: Record<string, any>) => {
 const handleNodeSelect = (nodeId: string) => {
   selectedNodeId.value = nodeId
   selectNode(nodeId)
+  
+  // 🔥 发射node-select事件，通知测试页面
+  emit('node-select', nodeId)
 }
 
 const handleCanvasClick = () => {
@@ -444,22 +464,22 @@ const handleRequestSettings = (nodeId: string) => {
 const handleDataSourceManagerUpdate = (updateData: any) => {
   // 在新架构中，数据源更新直接通过ConfigEventBus处理
   // 这里主要是为了让ConfigurationPanel正常工作，不做具体处理
-  console.log('📊 数据源管理更新:', updateData)
+  // 数据源管理更新处理
 }
 
 const handleMultiDataSourceUpdate = (componentId: string, data: any) => {
   // 新架构中数据源直接通过GridstackRenderer管理
-  console.log('📊 多数据源更新:', componentId, data)
+  // 多数据源更新处理
 }
 
 const handleMultiDataSourceConfigUpdate = (componentId: string, config: any) => {
   // 新架构中配置更新通过ConfigEventBus处理
-  console.log('📊 多数据源配置更新:', componentId, config)
+  // 数据源配置更新处理
 }
 
 const handleRequestCurrentData = (componentId: string) => {
   // 新架构中数据请求直接通过simpleDataBridge处理
-  console.log('📊 请求当前数据:', componentId)
+  // 请求当前数据处理
 }
 </script>
 
@@ -475,12 +495,14 @@ const handleRequestCurrentData = (componentId: string) => {
     @update:left-collapsed="leftCollapsed = $event"
     @update:right-collapsed="rightCollapsed = $event"
   >
-    <!-- 标题区域占位 -->
+    <!-- 标题区域 -->
     <template #header>
-      <div class="flex items-center justify-between w-full p-2 bg-blue-50">
-        <span>
-          📋 标题区域占位 (enableHeaderArea: {{ props.enableHeaderArea }}, showPageHeader: {{ props.showPageHeader }})
-        </span>
+      <div class="panel-header">
+        <h1 class="panel-title">可视化面板编辑器 V2</h1>
+        <div class="panel-meta">
+          <span class="panel-id">{{ props.panelId.slice(0, 8) }}...</span>
+          <span class="panel-version">基于多渲染器架构</span>
+        </div>
       </div>
     </template>
 
@@ -578,15 +600,16 @@ const handleRequestCurrentData = (componentId: string) => {
       />
     </template>
 
-    <!-- 🔥 新增：底部状态栏占位 -->
+    <!-- 底部状态栏 -->
     <template #footer>
-      <div class="flex items-center justify-between w-full p-2 bg-yellow-50 border-t">
-        <div class="flex items-center space-x-4">
-          <span class="text-sm">📊 底部状态栏 (enableFooterArea: {{ props.enableFooterArea }})</span>
-          <span class="text-xs text-gray-600">组件数：0</span>
+      <div class="panel-footer">
+        <div class="status-section">
+          <span class="status-text">渲染器: {{ currentRenderer }}</span>
+          <span class="status-text">组件数: {{ stateManager.nodes.length }}</span>
+          <span class="status-text" v-if="hasChanges">有未保存更改</span>
         </div>
-        <div class="flex items-center space-x-2">
-          <span class="text-xs text-green-600">● 配置开关正常</span>
+        <div class="info-section">
+          <span class="info-text">{{ $t('visualEditor.ready', 'V2 编辑器已就绪') }}</span>
         </div>
       </div>
     </template>
@@ -594,6 +617,74 @@ const handleRequestCurrentData = (componentId: string) => {
 </template>
 
 <style scoped>
+/* 🔥 头部和底部样式 */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--card-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.panel-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-id {
+  font-size: 12px;
+  color: var(--text-color-2);
+  font-family: monospace;
+}
+
+.panel-version {
+  font-size: 12px;
+  color: var(--info-color);
+  font-weight: 500;
+}
+
+.panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 16px;
+  background: var(--card-color);
+  border-top: 1px solid var(--border-color);
+}
+
+.status-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-text {
+  font-size: 12px;
+  color: var(--text-color-2);
+}
+
+.info-section {
+  display: flex;
+  align-items: center;
+}
+
+.info-text {
+  font-size: 12px;
+  color: var(--success-color);
+  font-weight: 500;
+}
+
 /* 🔥 渲染器容器样式 - 避免双滚动条但保持功能 */
 .renderer-main-area {
   position: relative;

@@ -617,7 +617,10 @@
       "Bash(start test-config-events.html)",
       "Bash(start architecture-integration-test.html)",
       "Bash(start test-interaction-config-fix.html)",
-      "Bash(start src/test-final-v2-fixes.html)"
+      "Bash(start src/test-final-v2-fixes.html)",
+      "Bash(start http://localhost:5004/test/editor-integration)",
+      "Bash(start test-height-grid-fix.html)",
+      "Bash(start test-grid-height-verification.html)"
     ],
     "deny": [],
     "additionalDirectories": [

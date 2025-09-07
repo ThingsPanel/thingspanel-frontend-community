@@ -105,24 +105,37 @@ const configSourceMap = ref<Record<string, ConfigSource>>({})
 const lastConfigMergeTime = ref(0)
 
 /**
- * 🔥 处理组件交互事件
- * 接收组件触发的交互事件并转发给interactionManager执行
+ * 🔥 统一的交互事件处理 - 在Wrapper层拦截和处理所有交互
+ * 子组件无需了解交互系统，只需要发送标准DOM事件
  */
-const handleInteractionEvent = (eventType: string, eventData?: any) => {
+const handleWrapperClick = (event: MouseEvent) => {
+  // 只在预览模式下处理交互
+  if (!props.previewMode) return
+  
   try {
-    // 确保有组件ID
     const componentId = props.nodeId
     if (!componentId) {
-      console.warn('[Card2Wrapper] 缺少组件ID，无法处理交互事件')
+      console.warn('[Card2Wrapper] 缺少组件ID，无法处理点击交互')
       return
     }
 
-    // 🔥 关键修复：直接调用interactionManager.triggerEvent
-    const results = interactionManager.triggerEvent(componentId, eventType as any, eventData)
+    // 构建事件数据
+    const eventData = {
+      componentId,
+      timestamp: new Date().toISOString(),
+      mouseEvent: {
+        x: event.clientX,
+        y: event.clientY,
+        button: event.button
+      }
+    }
 
-    // 记录执行结果（用于调试）
+    // 直接调用interactionManager处理点击事件
+    const results = interactionManager.triggerEvent(componentId, 'click', eventData)
+
+    // 记录执行结果
     if (results && results.length > 0) {
-      visualEditorLogger.info(`[Card2Wrapper] 交互事件执行完成：${eventType}`, {
+      visualEditorLogger.info(`[Card2Wrapper] 点击交互执行完成`, {
         componentId,
         results: results.map(r => ({
           success: r.success,
@@ -132,8 +145,66 @@ const handleInteractionEvent = (eventType: string, eventData?: any) => {
       })
     }
   } catch (error) {
-    console.error('[Card2Wrapper] 交互事件处理失败:', error)
-    visualEditorLogger.error('[Card2Wrapper] 交互事件处理失败', { eventType, eventData, error })
+    console.error('[Card2Wrapper] 点击交互处理失败:', error)
+    visualEditorLogger.error('[Card2Wrapper] 点击交互处理失败', { error })
+  }
+}
+
+/**
+ * 🔥 处理鼠标进入事件
+ */
+const handleWrapperMouseEnter = (event: MouseEvent) => {
+  if (!props.previewMode) return
+  
+  try {
+    const componentId = props.nodeId
+    if (!componentId) return
+
+    const eventData = {
+      componentId,
+      timestamp: new Date().toISOString(),
+      hoverType: 'enter' as const
+    }
+
+    const results = interactionManager.triggerEvent(componentId, 'hover', eventData)
+    
+    if (results && results.length > 0) {
+      visualEditorLogger.info(`[Card2Wrapper] 悬停进入交互执行完成`, {
+        componentId,
+        resultsCount: results.length
+      })
+    }
+  } catch (error) {
+    console.error('[Card2Wrapper] 悬停进入交互处理失败:', error)
+  }
+}
+
+/**
+ * 🔥 处理鼠标离开事件
+ */
+const handleWrapperMouseLeave = (event: MouseEvent) => {
+  if (!props.previewMode) return
+  
+  try {
+    const componentId = props.nodeId
+    if (!componentId) return
+
+    const eventData = {
+      componentId,
+      timestamp: new Date().toISOString(),
+      hoverType: 'leave' as const
+    }
+
+    const results = interactionManager.triggerEvent(componentId, 'hover', eventData)
+    
+    if (results && results.length > 0) {
+      visualEditorLogger.info(`[Card2Wrapper] 悬停离开交互执行完成`, {
+        componentId,
+        resultsCount: results.length
+      })
+    }
+  } catch (error) {
+    console.error('[Card2Wrapper] 悬停离开交互处理失败:', error)
   }
 }
 

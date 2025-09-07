@@ -56,10 +56,10 @@ const getItemTitle = (item: GridLayoutPlusItem): string => {
 <style scoped>
 .grid-item-content {
   width: 100%;
-  /* 移除 height: 100%，允许内容撑开 */
+  height: 100%; /* 🔧 恢复高度100%以支持栅格容器中的高度自适应 */
   display: flex;
   flex-direction: column;
-  overflow: visible; /* 允许内容溢出 */
+  overflow: hidden; /* 🔧 恢复overflow hidden确保内容不超出容器 */
 }
 
 .grid-item-header {
@@ -79,7 +79,7 @@ const getItemTitle = (item: GridLayoutPlusItem): string => {
 .grid-item-body {
   flex: 1;
   padding: 12px;
-  overflow: visible; /* 允许内容溢出，不再内部滚动 */
+  overflow: hidden; /* 🔧 恢复overflow hidden确保内容不超出容器 */
 }
 
 .default-item-content {
