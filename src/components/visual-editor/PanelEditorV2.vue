@@ -90,8 +90,19 @@ const isDragOver = ref(false)
 const draggedComponent = ref<string | null>(null)
 const selectedNodeId = ref<string>('')
 
-// 🔥 底部悬浮状态管理
-const showFooter = ref(false)
+// 🔥 底部显示状态管理
+const showFooter = ref(false) // 预览模式的触发状态
+
+// 🔥 计算实际的footer显示状态
+const actualFooterShow = computed(() => {
+  if (isEditing.value) {
+    // 编辑模式：按外部传入的enableFooterArea决定
+    return props.enableFooterArea
+  } else {
+    // 预览模式：通过触发器控制，且必须enableFooterArea为true
+    return props.enableFooterArea && showFooter.value
+  }
+})
 
 // 创建编辑器上下文
 const editorContext = createEditor()
@@ -308,9 +319,14 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
     // 🔴 关闭全局轮询（编辑模式）
     pollingManager.disableGlobalPolling()
     console.log('🔴 全局轮询已关闭（编辑模式）')
+    
+    // 编辑模式不需要控制showFooter，由actualFooterShow自动处理
   } else {
     // 🔛 自动启动全局轮询（预览模式默认开启）
     initializePollingTasksAndEnable()
+    
+    // 🔥 预览模式：重置footer状态为隐藏
+    showFooter.value = false
     
     leftCollapsed.value = true
     rightCollapsed.value = true
@@ -577,7 +593,7 @@ const handleRequestCurrentData = (componentId: string) => {
       :right-collapsed="rightCollapsed"
       :show-header="props.enableHeaderArea && props.showPageHeader"
       :show-toolbar="props.enableToolbarArea && props.showToolbar"
-      :show-footer="props.enableFooterArea && showFooter"
+      :show-footer="actualFooterShow"
       :custom-class="props.customLayoutClass"
       @update:left-collapsed="leftCollapsed = $event"
       @update:right-collapsed="rightCollapsed = $event"
@@ -727,9 +743,9 @@ const handleRequestCurrentData = (componentId: string) => {
     </template>
     </PanelLayout>
 
-    <!-- 🔥 右下角触发器 - 放在wrapper内 -->
+    <!-- 🔥 右下角触发器 - 仅在预览模式显示 -->
     <div 
-      v-if="props.enableFooterArea"
+      v-if="props.enableFooterArea && !isEditing"
       class="footer-trigger"
       @mouseenter="handleTriggerHover"
     ></div>
