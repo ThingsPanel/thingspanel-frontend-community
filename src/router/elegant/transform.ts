@@ -250,6 +250,7 @@ const routeMap: RouteMap = {
   "system-management-user": "/system-management-user",
   "system-management-user_system-log": "/system-management-user/system-log",
   "test": "/test",
+  "test_auto-registry-test": "/test/auto-registry-test",
   "test_extended-grid-system": "/test/extended-grid-system",
   "test_new-config-system": "/test/new-config-system",
   "test_optimization-system-demo": "/test/optimization-system-demo",

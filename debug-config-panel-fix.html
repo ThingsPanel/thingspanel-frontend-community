@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置面板修复测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status-section {
+            background: #e8f4ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2080f0;
+        }
+        .test-result {
+            background: #f0f9f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #52c41a;
+        }
+        .error-result {
+            background: #fff2f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #ff4d4f;
+        }
+        .code {
+            background: #f6f8fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+        .btn {
+            background: #2080f0;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #1c7cd6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 配置面板显示问题修复测试</h1>
+        
+        <div class="status-section">
+            <h3>问题诊断</h3>
+            <p><strong>问题描述：</strong>Visual Editor中选中组件后，右侧配置表单完全不显示</p>
+            <p><strong>根本原因：</strong>配置层级检查逻辑过于严格，导致组件配置面板被隐藏</p>
+        </div>
+
+        <h3>🔍 修复方案</h3>
+        
+        <div class="test-result">
+            <h4>1. 组件配置检查逻辑修复</h4>
+            <p><strong>问题：</strong><code>shouldShowComponentConfig()</code> 对simple-display等组件返回false</p>
+            <p><strong>修复：</strong>采用更宽松的策略，默认显示配置面板</p>
+            <div class="code">
+// 修复前：严格检查，simple-display被排除
+const nonConfigurableComponents = ['simple-display']
+if (nonConfigurableComponents.includes(widget.type)) {
+    return false  // ❌ 导致配置面板不显示
+}
+
+// 修复后：宽松策略，优先显示
+console.log(`✅ 所有组件都显示配置面板: ${widget.type}`)
+return true  // ✅ 确保配置面板显示
+            </div>
+        </div>
+
+        <div class="test-result">
+            <h4>2. 数据源配置检查优化</h4>
+            <p><strong>改进：</strong>增加详细的调试日志，便于问题排查</p>
+            <div class="code">
+console.log(`🔍 检查数据源配置显示条件`, {
+    componentId,
+    widgetType: widget?.type,
+    hasCard2Definition: !!widget?.metadata?.card2Definition
+})
+            </div>
+        </div>
+
+        <div class="test-result">
+            <h4>3. 配置面板导入修复</h4>
+            <p><strong>修改：</strong>ConfigurationPanel.vue现在使用修复后的配置检查逻辑</p>
+            <div class="code">
+// 修改导入路径
+import { getVisibleConfigLayers, getConfigLayer } from './component-registry-fix'
+            </div>
+        </div>
+
+        <h3>📋 测试步骤</h3>
+        
+        <ol>
+            <li>
+                <button class="btn" onclick="window.open('http://localhost:5002/test/panel-editor-v2', '_blank')">
+                    🚀 打开 PanelEditor V2 测试页面
+                </button>
+            </li>
+            <li>从左侧组件库拖拽一个 <strong>simple-display</strong> 组件到画布</li>
+            <li>点击选中该组件</li>
+            <li>检查右侧是否显示配置面板（应该显示base、component、interaction标签页）</li>
+            <li>测试其他组件（dual-data-display、triple-data-display）的配置面板显示</li>
+        </ol>
+
+        <h3>🎯 预期结果</h3>
+        
+        <div class="test-result">
+            <h4>✅ 修复成功标志</h4>
+            <ul>
+                <li>选中任何组件后，右侧配置面板都应该显示</li>
+                <li>至少显示"基础配置"和"组件配置"标签页</li>
+                <li>simple-display组件应该显示其customize配置选项</li>
+                <li>控制台应该输出详细的配置检查日志</li>
+            </ul>
+        </div>
+
+        <div class="error-result">
+            <h4>❌ 如果仍然不显示</h4>
+            <p>请检查浏览器控制台的错误信息和调试日志，特别是：</p>
+            <ul>
+                <li><code>[ComponentRegistry-Fix]</code> 开头的日志信息</li>
+                <li>是否有组件导入错误</li>
+                <li>ConfigurationPanel组件是否正确挂载</li>
+            </ul>
+        </div>
+
+        <h3>🔧 额外调试工具</h3>
+        
+        <button class="btn" onclick="showDebugInfo()">📊 显示当前配置状态</button>
+        <button class="btn" onclick="testConfigLayers()">🧪 测试配置层级检查</button>
+        
+        <div id="debugOutput" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        function showDebugInfo() {
+            const output = document.getElementById('debugOutput');
+            output.innerHTML = `
+                <div class="code">
+                    <h4>🔍 调试信息</h4>
+                    <p><strong>当前时间：</strong>${new Date().toLocaleString()}</p>
+                    <p><strong>浏览器：</strong>${navigator.userAgent}</p>
+                    <p><strong>页面URL：</strong>${window.location.href}</p>
+                    <p><strong>修复文件状态：</strong>component-registry-fix.ts 已创建</p>
+                    <p><strong>ConfigurationPanel修改：</strong>导入路径已更新</p>
+                </div>
+            `;
+        }
+
+        function testConfigLayers() {
+            const output = document.getElementById('debugOutput');
+            output.innerHTML = `
+                <div class="test-result">
+                    <h4>🧪 配置层级测试</h4>
+                    <p>测试组件配置检查函数的行为：</p>
+                    <div class="code">
+// 模拟simple-display组件检查
+const testWidget = {
+    type: 'simple-display',
+    id: 'test-component-1',
+    metadata: {
+        isCard2Component: true
+    }
+};
+
+// 修复后的检查逻辑应该返回true
+console.log('组件配置检查结果:', shouldShowComponentConfig('test-component-1', testWidget));
+// 预期输出: ✅ 所有组件都显示配置面板: simple-display
+                    </div>
+                    <p><strong>💡 提示：</strong>打开浏览器控制台查看实际的检查日志</p>
+                </div>
+            `;
+        }
+
+        // 页面加载完成时显示状态
+        window.onload = function() {
+            console.log('🔧 配置面板修复测试页面已加载');
+            console.log('📋 修复文件: component-registry-fix.ts');
+            console.log('🎯 目标: 解决配置表单完全不显示的问题');
+        };
+    </script>
+</body>
+</html>

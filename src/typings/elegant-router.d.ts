@@ -106,6 +106,7 @@ declare module "@elegant-router/types" {
     "system-management-user": "/system-management-user";
     "system-management-user_system-log": "/system-management-user/system-log";
     "test": "/test";
+    "test_auto-registry-test": "/test/auto-registry-test";
     "test_extended-grid-system": "/test/extended-grid-system";
     "test_new-config-system": "/test/new-config-system";
     "test_optimization-system-demo": "/test/optimization-system-demo";
@@ -263,6 +264,7 @@ declare module "@elegant-router/types" {
     | "plugin_video"
     | "rule-engine"
     | "system-management-user_system-log"
+    | "test_auto-registry-test"
     | "test_extended-grid-system"
     | "test_new-config-system"
     | "test_optimization-system-demo"

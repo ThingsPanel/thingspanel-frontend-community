@@ -261,7 +261,127 @@ configEventBus.addEventFilter({
   priority: 100
 })
 
+// 🔥 关键新增：增强基础配置变更的事件处理
+configEventBus.addEventFilter({
+  name: 'enhance-base-config-events',
+  condition: event => {
+    // 特别关注基础配置中的 deviceId 和 metricsList 变更
+    if (event.section === 'base' && event.context) {
+      const changedFields = event.context.changedFields || []
+      const criticalFields = ['deviceId', 'metricsList']
+      const hasCriticalChange = changedFields.some(field => criticalFields.includes(field))
+      
+      if (hasCriticalChange) {
+        // 确保关键基础配置变更一定会触发数据执行
+        event.context.shouldTriggerExecution = true
+        
+        console.log(`🔥 [ConfigEventBus] 检测到关键基础配置变更`, {
+          componentId: event.componentId,
+          changedFields,
+          shouldTriggerExecution: true
+        })
+      }
+    }
+    
+    return true // 不过滤，只是增强事件信息
+  },
+  priority: 200 // 高优先级，在其他过滤器之前执行
+})
+
+// 🔥 新增：监听基础配置变更事件，自动触发数据源重新执行
+let dataExecutionTriggerCallback: ((event: ConfigChangeEvent) => void) | null = null
+
+/**
+ * 🔥 注册数据执行触发器
+ * 允许外部系统注册一个回调函数，在配置变更时触发数据重新执行
+ */
+export function registerDataExecutionTrigger(callback: (event: ConfigChangeEvent) => void): () => void {
+  dataExecutionTriggerCallback = callback
+  
+  console.log(`🔧 [ConfigEventBus] 数据执行触发器已注册`)
+  
+  return () => {
+    dataExecutionTriggerCallback = null
+    console.log(`🔧 [ConfigEventBus] 数据执行触发器已取消注册`)
+  }
+}
+
+// 🔥 监听所有配置变更事件，特别关注基础配置和数据源配置变更
+configEventBus.onConfigChange('config-changed', async (event) => {
+  // 对于需要触发数据执行的事件，调用注册的触发器
+  if (event.context?.shouldTriggerExecution && dataExecutionTriggerCallback) {
+    try {
+      console.log(`🚀 [ConfigEventBus] 触发数据重新执行`, {
+        componentId: event.componentId,
+        section: event.section,
+        changedFields: event.context.changedFields
+      })
+      
+      dataExecutionTriggerCallback(event)
+    } catch (error) {
+      console.error(`❌ [ConfigEventBus] 数据执行触发失败`, {
+        componentId: event.componentId,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+})
+
+// 🔥 专门监听基础配置变更事件
+configEventBus.onConfigChange('base-config-changed', async (event) => {
+  console.log(`🔧 [ConfigEventBus] 基础配置变更事件`, {
+    componentId: event.componentId,
+    changedFields: event.context?.changedFields,
+    shouldTriggerExecution: event.context?.shouldTriggerExecution
+  })
+  
+  // 基础配置变更通常都需要触发数据重新执行
+  if (!event.context) {
+    event.context = {}
+  }
+  event.context.shouldTriggerExecution = true
+  
+  // 调用数据执行触发器
+  if (dataExecutionTriggerCallback) {
+    try {
+      dataExecutionTriggerCallback(event)
+    } catch (error) {
+      console.error(`❌ [ConfigEventBus] 基础配置数据执行触发失败`, {
+        componentId: event.componentId,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+})
+
+// 🔥 专门监听数据源配置变更事件
+configEventBus.onConfigChange('data-source-changed', async (event) => {
+  console.log(`🔧 [ConfigEventBus] 数据源配置变更事件`, {
+    componentId: event.componentId,
+    changedFields: event.context?.changedFields
+  })
+  
+  // 数据源配置变更通常都需要触发数据重新执行
+  if (!event.context) {
+    event.context = {}
+  }
+  event.context.shouldTriggerExecution = true
+  
+  // 调用数据执行触发器
+  if (dataExecutionTriggerCallback) {
+    try {
+      dataExecutionTriggerCallback(event)
+    } catch (error) {
+      console.error(`❌ [ConfigEventBus] 数据源配置数据执行触发失败`, {
+        componentId: event.componentId,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+})
+
 // 🔧 调试支持：将事件总线暴露到全局作用域，便于控制台调试
 if (typeof window !== 'undefined') {
   ;(window as any).configEventBus = configEventBus
+  ;(window as any).registerDataExecutionTrigger = registerDataExecutionTrigger
 }

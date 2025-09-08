@@ -80,6 +80,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   plugin_video: () => import("@/views/plugin/video/index.vue"),
   "rule-engine": () => import("@/views/rule-engine/index.vue"),
   "system-management-user_system-log": () => import("@/views/system-management-user/system-log/index.vue"),
+  "test_auto-registry-test": () => import("@/views/test/auto-registry-test/index.vue"),
   "test_extended-grid-system": () => import("@/views/test/extended-grid-system/index.vue"),
   "test_new-config-system": () => import("@/views/test/new-config-system/index.vue"),
   "test_optimization-system-demo": () => import("@/views/test/optimization-system-demo/index.vue"),

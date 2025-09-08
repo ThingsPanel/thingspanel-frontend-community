@@ -72,14 +72,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { SearchOutline, AlertCircleOutline } from '@vicons/ionicons5'
 import { useI18n } from 'vue-i18n'
-import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
+import { useComponentTree } from '@/card2.1/hooks/useComponentTree'
+import { getCategoryDisplayName } from '@/card2.1/components/category-mapping'
 import type { WidgetDefinition, WidgetTreeNode } from '../../types/widget'
 import { registerAllWidgets } from '../../widgets'
 import { testPermissionSystem } from '@/card2.1/debug'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
 
-const card2Integration = useCard2Integration({ autoInit: true })
+const componentTree = useComponentTree({ autoInit: true })
 
 // --- State and Emits ---
 const searchTerm = ref('')
@@ -88,14 +89,14 @@ const emit = defineEmits<{
 }>()
 
 // --- Widget Initialization ---
-// 直接使用 card2Integration 的初始化状态，而不是单独维护
-const isInitialized = computed(() => card2Integration.isInitialized.value)
-const initializationError = computed(() => card2Integration.error.value)
+// 使用 componentTree 的初始化状态
+const isInitialized = computed(() => !componentTree.isLoading.value && componentTree.componentTree.value.totalCount > 0)
+const initializationError = computed(() => componentTree.error.value)
 
 const initializeWidgets = async () => {
   try {
     await testPermissionSystem()
-    await card2Integration.initialize()
+    await componentTree.initialize()
   } catch (error) {}
 }
 
@@ -108,13 +109,23 @@ onMounted(() => {
 const allWidgets = computed(() => {
   if (!isInitialized.value) return []
 
-  // ✅ 修复：正确访问 ComputedRef 的 .value 属性
-  const widgets = card2Integration.availableWidgets.value
-  if (!Array.isArray(widgets)) {
+  // 从 componentTree 获取组件数据并转换为 WidgetDefinition 格式
+  const components = componentTree.filteredComponents.value
+  if (!Array.isArray(components)) {
     return []
   }
 
-  return widgets
+  return components.map(component => ({
+    type: component.type,
+    name: component.name || component.type,
+    description: component.description || '',
+    icon: component.icon,
+    source: 'card2' as const,
+    definition: {
+      mainCategory: getCategoryDisplayName(component.category || ''),
+      subCategory: component.subCategory || '默认'
+    }
+  }))
 })
 
 // --- Combined & Re-grouped Logic ---
@@ -130,65 +141,60 @@ interface TopCategory {
   subCategories: SubCategory[]
 }
 
-const twoLevelWidgetTree = computed(() => {
-  // 动态构建顶级分类数据
-  const topCategoriesData: Record<string, { [subCategoryName: string]: WidgetDefinition[] }> = {}
+// ✅ 修改为单级分类结构，忽略subCategory
+const simplifiedWidgetTree = computed(() => {
+  // 按mainCategory分组组件
+  const categoriesData: Record<string, WidgetDefinition[]> = {}
 
   allWidgets.value.forEach(widget => {
-    // 🔥 修复：跳过没有正确分类的组件，避免显示空白分类
-    if (!widget.definition?.mainCategory || !widget.definition?.subCategory) {
-      console.warn('⚠️ [WidgetLibrary] 跳过未分类组件 - 避免显示空白分类:', {
+    // 只检查mainCategory，忽略subCategory
+    if (!widget.definition?.mainCategory) {
+      console.warn('⚠️ [WidgetLibrary] 跳过未分类组件:', {
         type: widget.type,
         name: widget.name,
         mainCategory: widget.definition?.mainCategory,
-        subCategory: widget.definition?.subCategory,
         source: widget.source,
-        definitionKeys: widget.definition ? Object.keys(widget.definition) : 'no definition'
+        definition: widget.definition
       })
       return // 跳过此组件
     }
 
-    const topLevelName = widget.definition.mainCategory
-    const subLevelName = widget.definition.subCategory
+    const categoryName = widget.definition.mainCategory
 
     // 调试：记录正确分类的组件
     console.log('✅ [WidgetLibrary] 正确分类组件:', {
       type: widget.type,
       name: widget.name,
-      mainCategory: topLevelName,
-      subCategory: subLevelName,
+      mainCategory: categoryName,
       source: widget.source
     })
 
-    if (!topCategoriesData[topLevelName]) {
-      topCategoriesData[topLevelName] = {}
+    if (!categoriesData[categoryName]) {
+      categoriesData[categoryName] = []
     }
-
-    if (!topCategoriesData[topLevelName][subLevelName]) {
-      topCategoriesData[topLevelName][subLevelName] = []
-    }
-    topCategoriesData[topLevelName][subLevelName].push(widget)
+    categoriesData[categoryName].push(widget)
   })
 
-  // 3. Convert map to final array structure for rendering
-  const result: TopCategory[] = Object.entries(topCategoriesData).map(([topLevelName, subCategories]) => ({
-    name: topLevelName,
-    subCategories: Object.entries(subCategories).map(([name, children]) => ({ name, children }))
+  // 转换为单级分类结构 
+  const result: TopCategory[] = Object.entries(categoriesData).map(([categoryName, widgets]) => ({
+    name: categoryName,
+    subCategories: [{
+      name: '默认', // 统一的子分类名，在UI中不显示
+      children: widgets
+    }]
   }))
 
-  return result.filter(
-    topCat => topCat.subCategories.length > 0 && topCat.subCategories.some(subCat => subCat.children.length > 0)
-  )
+  return result.filter(cat => cat.subCategories[0]?.children.length > 0)
 })
 
 const filteredWidgetTree = computed(() => {
   const result = !searchTerm.value
-    ? twoLevelWidgetTree.value
+    ? simplifiedWidgetTree.value
     : (() => {
         const lowerCaseSearch = searchTerm.value.toLowerCase()
         const filteredTopCategories: TopCategory[] = []
 
-        twoLevelWidgetTree.value.forEach(topCategory => {
+        simplifiedWidgetTree.value.forEach(topCategory => {
           const filteredSubCategories: SubCategory[] = []
           topCategory.subCategories.forEach(subCategory => {
             const filteredChildren = subCategory.children.filter(

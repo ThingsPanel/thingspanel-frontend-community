@@ -1,7 +1,7 @@
 <template>
-  <div 
-    ref="containerRef" 
-    class="card2-wrapper" 
+  <div
+    ref="containerRef"
+    class="card2-wrapper"
     :data-component-id="props.nodeId"
     @click="handleWrapperClick"
     @mouseenter="handleWrapperMouseEnter"
@@ -91,6 +91,9 @@ let executorDataCleanup: (() => void) | null = null
 // 🔥 修复：获取当前端口的VisualEditorBridge实例，避免跨端口数据干扰
 const visualEditorBridge = getVisualEditorBridge()
 
+// 🔥 关键修复：注入 editor context 用于真正的配置同步
+const editorContext = inject('editorContext', null) as any
+
 // 强制更新键，用于触发组件重新渲染
 const forceUpdateKey = ref(0)
 
@@ -111,7 +114,7 @@ const lastConfigMergeTime = ref(0)
 const handleWrapperClick = (event: MouseEvent) => {
   // 只在预览模式下处理交互
   if (!props.previewMode) return
-  
+
   try {
     const componentId = props.nodeId
     if (!componentId) {
@@ -155,7 +158,7 @@ const handleWrapperClick = (event: MouseEvent) => {
  */
 const handleWrapperMouseEnter = (event: MouseEvent) => {
   if (!props.previewMode) return
-  
+
   try {
     const componentId = props.nodeId
     if (!componentId) return
@@ -167,7 +170,7 @@ const handleWrapperMouseEnter = (event: MouseEvent) => {
     }
 
     const results = interactionManager.triggerEvent(componentId, 'hover', eventData)
-    
+
     if (results && results.length > 0) {
       visualEditorLogger.info(`[Card2Wrapper] 悬停进入交互执行完成`, {
         componentId,
@@ -184,7 +187,7 @@ const handleWrapperMouseEnter = (event: MouseEvent) => {
  */
 const handleWrapperMouseLeave = (event: MouseEvent) => {
   if (!props.previewMode) return
-  
+
   try {
     const componentId = props.nodeId
     if (!componentId) return
@@ -196,7 +199,7 @@ const handleWrapperMouseLeave = (event: MouseEvent) => {
     }
 
     const results = interactionManager.triggerEvent(componentId, 'hover', eventData)
-    
+
     if (results && results.length > 0) {
       visualEditorLogger.info(`[Card2Wrapper] 悬停离开交互执行完成`, {
         componentId,
@@ -443,7 +446,7 @@ const extractComponentConfig = computed(() => {
 
   // 4. 交互覆盖配置 - 添加响应式依赖
   const interactionState = interactionManager.getComponentState(props.nodeId || '')
-  
+
   // 🔥 强制响应式依赖：确保在交互状态变化时重新计算
   const _ = forceUpdateKey.value // 添加响应式依赖
 
@@ -882,11 +885,12 @@ onMounted(async () => {
           Object.entries(updates).forEach(([property, newValue]) => {
             // 🔥 修复：获取正确的旧值 - 应该从原始用户配置获取，而不是已经合并的配置
             let oldValue = extractComponentConfig.value[property]
-            
+
             // 如果是customize.xxx属性，需要从扁平化的字段获取
             if (property.startsWith('customize.')) {
               const flattenedProperty = property.substring('customize.'.length)
-              oldValue = configSources.value.user?.[flattenedProperty] || extractComponentConfig.value[flattenedProperty]
+              oldValue =
+                configSources.value.user?.[flattenedProperty] || extractComponentConfig.value[flattenedProperty]
             }
 
             console.log(`🔍 [Card2Wrapper] 处理属性变化`, {
@@ -895,7 +899,9 @@ onMounted(async () => {
               oldValue,
               newValue,
               flattenedProperty: property.startsWith('customize.') ? property.substring('customize.'.length) : property,
-              userConfigValue: property.startsWith('customize.') ? configSources.value.user?.[property.substring('customize.'.length)] : configSources.value.user?.[property],
+              userConfigValue: property.startsWith('customize.')
+                ? configSources.value.user?.[property.substring('customize.'.length)]
+                : configSources.value.user?.[property],
               hasComponentRef: !!currentComponentRef.value,
               hasTriggerMethod:
                 currentComponentRef.value && typeof currentComponentRef.value.triggerInteractionEvent === 'function'
@@ -937,16 +943,65 @@ onMounted(async () => {
             }
           })
 
-          // 🔥 同时更新ConfigurationManager以确保持久化
+          // 🔥 关键修复：真正同步到 editorStore.nodes 中的配置
           try {
-            // 获取完整的合并配置
             const fullConfig = extractComponentConfig.value
-            configurationIntegrationBridge.updateConfiguration(props.nodeId, 'properties', fullConfig)
 
-            visualEditorLogger.info('[Card2Wrapper] 配置管理器同步成功', {
+            // 🔥 第一步：更新 ConfigurationManager（旧的配置系统）
+            configurationIntegrationBridge.updateConfiguration(
+              props.nodeId,
+              'component',
+              { properties: fullConfig },
+              props.componentType
+            )
+
+            if (updates && Object.keys(updates).length > 0) {
+              configurationIntegrationBridge.updateConfiguration(
+                props.nodeId,
+                'interaction',
+                updates,
+                props.componentType
+              )
+            }
+
+            // 🔥 第二步：关键修复！同步到 editorStore.nodes[].properties
+            // 这是配置面板真正读取的地方
+            if (editorContext && editorContext.updateNode) {
+              console.log(`🎯 [Card2Wrapper] 同步配置到 editorStore`, {
+                componentId: props.nodeId,
+                fullConfig,
+                updates,
+                hasEditorContext: !!editorContext
+              })
+
+              // 更新 editorStore 中的节点配置
+              editorContext.updateNode(props.nodeId, {
+                properties: fullConfig,
+                metadata: {
+                  ...editorContext.getNodeById(props.nodeId)?.metadata,
+                  updatedAt: Date.now(),
+                  lastInteractionUpdate: updates
+                }
+              })
+
+              console.log(`✅ [Card2Wrapper] editorStore 同步完成`, {
+                componentId: props.nodeId,
+                nodeExists: !!editorContext.getNodeById(props.nodeId)
+              })
+            } else {
+              console.warn(`⚠️ [Card2Wrapper] 无法访问 editorContext，配置不会持久化`, {
+                componentId: props.nodeId,
+                hasEditorContext: !!editorContext,
+                hasUpdateNode: editorContext?.updateNode
+              })
+            }
+
+            visualEditorLogger.info('[Card2Wrapper] 完整配置同步成功', {
               componentId: props.nodeId,
               fullConfig,
-              interactionUpdates: updateResult.merged
+              interactionUpdates: updateResult.merged,
+              updatesApplied: updates,
+              editorStoreSynced: !!editorContext
             })
           } catch (error) {
             console.warn('[Card2Wrapper] 配置同步失败，继续使用强制重新渲染:', error)

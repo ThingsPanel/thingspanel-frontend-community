@@ -1,447 +1,278 @@
-# CPU Usage 组件迁移指南
+# CPU Usage 组件迁移指南 (Card 2.1)
 
-## 📋 组件概述
+## 1. 迁移概述
 
-### 基本信息
-- **组件ID**: `cpu-usage`
-- **组件名称**: CPU使用率卡片
-- **文件路径**: `src/card/builtin-card/cpu-usage/`
-- **组件类型**: 系统监控统计卡片
-- **当前状态**: ✅ 功能正常，需要优化合并
+### 1.1. 问题分析
 
-### 功能描述
-展示系统CPU使用率的实时监控卡片，使用渐变背景和动画数字显示CPU使用百分比。支持30秒自动刷新，为系统管理员提供实时的CPU负载监控。
+当前代码库中的 `cpu-usage`, `memory-usage`, 和 `disk-usage` 三个组件存在以下核心问题：
 
-## 🔧 技术分析
+- **高度代码重复**: 三个组件的逻辑、结构和样式几乎完全相同，只有数据字段、图标和颜色等少量差异。
+- **维护成本高**: 任何一个组件的逻辑变更（如修复 Bug 或增加功能）都需要在其他两个组件中同步修改，费时且容易出错。
+- **功能扩展性差**: 现有架构难以统一添加新功能，如阈值告警、趋势图等。
+- **不符合 Card 2.1 规范**: 未遵循最新的“三文件结构”（`definition.ts`, `settingConfig.ts`, `index.vue`），导致与新版卡片系统集成困难。
 
-### 使用的API接口
+### 1.2. 迁移目标
+
+本次迁移旨在解决上述问题，实现以下目标：
+
+- **组件合并**: 将三个独立的组件重构为一个统一、通用的 `SystemMonitor` 组件。
+- **配置驱动**: 通过 `props` 和配置项来区分不同的监控指标（CPU、内存、磁盘）。
+- **符合 Card 2.1 规范**: 完全遵循“三文件结构”，实现标准化和模块化。
+- **增强功能**: 在新组件中统一实现阈值告警、动态颜色、加载/错误状态等高级功能。
+- **提升可维护性**: 大幅减少重复代码，简化未来的功能迭代和维护工作。
+
+## 2. 迁移策略：重构为 `SystemMonitor` 组件
+
+我们将创建一个全新的、符合 Card 2.1 规范的 `SystemMonitor` 组件，该组件将作为承载所有系统指标（CPU、内存、磁盘）的通用容器。旧的 `cpu-usage` 组件将被废弃，其功能由 `SystemMonitor` 组件通过特定配置实现。
+
+## 3. 新组件设计 (`SystemMonitor`)
+
+新的 `SystemMonitor` 组件将遵循 Card 2.1 的“三文件结构”标准。
+
+### 3.1. `settingConfig.ts` - 配置定义
+
+此文件定义了组件的可配置项，允许用户在仪表盘编辑时自定义卡片行为。
+
 ```typescript
-// 主要API
-getSystemMetricsCurrent(): Promise<{
-  data: {
-    cpu_usage: number     // CPU使用率百分比 (0-100)
-    memory_usage: number  // 内存使用率百分比
-    disk_usage: number    // 磁盘使用率百分比
-  }
-}>
-```
+// src/card2.1/components/system-monitor/settingConfig.ts
 
-### 技术依赖
-- **Vue 3**: Composition API, `<script setup>`
-- **组件库**: 自定义 `GradientBg` 组件
-- **动画**: `CountTo` 数字动画组件
-- **图标**: `SvgIcon` 支持 (`fa-microchip`)
-- **Hook**: `useLoading` 加载状态管理
-- **国际化**: `$t()` 翻译函数
-- **日志**: `createLogger` 错误记录
+import type { CardSettingConfig } from '@/card2.1/core/types/config';
 
-### 组件结构
-```vue
-<template>
-  <GradientBg> <!-- 绿色渐变背景 -->
-    <h3>{{ $t('card.cpuUsage') }}</h3>
-    <div class="flex justify-between items-center">
-      <SvgIcon icon="fa-microchip" /> <!-- CPU图标 -->
-      <CountTo :end-value="value" suffix="%" /> <!-- 百分比动画 -->
-    </div>
-  </GradientBg>
-</template>
-```
-
-### 核心功能特性
-1. **实时监控**: 30秒定时刷新CPU使用率数据
-2. **百分比显示**: 显示0-100%的CPU使用率
-3. **动画效果**: CountTo组件提供数字动画
-4. **加载状态**: 完整的loading/error状态管理
-5. **生命周期管理**: 正确清理定时器防止内存泄漏
-
-## ❌ 存在问题
-
-### 代码重复问题
-1. **与memory-usage/disk-usage高度重复**:
-   ```typescript
-   // ❌ 问题: 三个组件使用完全相同的结构和逻辑
-   // cpu-usage/component.vue
-   // memory-usage/component.vue  
-   // disk-usage/component.vue
-   // 唯一差异: 数据字段、颜色、图标
-   
-   // ✅ 建议: 合并为通用SystemMetricCard组件
-   ```
-
-2. **重复的定时器逻辑**:
-   ```typescript
-   // ❌ 问题: 每个组件都有相同的30秒定时器代码
-   intervalId = window.setInterval(fetchData, 30000)
-   
-   // ✅ 建议: 统一的数据刷新机制
-   ```
-
-### 代码质量问题
-1. **国际化使用方式**:
-   ```typescript
-   // ❌ 问题: 直接导入$t而非使用hook
-   import { $t } from '@/locales'
-   
-   // ✅ 建议: 使用Vue 3推荐的hook方式
-   import { useI18n } from 'vue-i18n'
-   const { t } = useI18n()
-   ```
-
-2. **错误处理不够完善**:
-   ```typescript
-   // ❌ 问题: 错误时只是设置为null，没有用户提示
-   } catch (error) {
-     value.value = null
-   }
-   
-   // ✅ 建议: 更好的错误处理和用户反馈
-   } catch (error) {
-     value.value = 0
-     showError(t('systemMonitor.loadError'))
-   }
-   ```
-
-3. **缺少阈值警告**:
-   ```typescript
-   // ❌ 问题: 没有CPU高使用率的视觉警告
-   // 当CPU > 80%时应该有视觉提示
-   
-   // ✅ 建议: 添加阈值警告功能
-   const isHighUsage = computed(() => value.value > 80)
-   ```
-
-## 🔄 迁移建议
-
-### 迁移策略: 合并到系统监控组件
-**强烈建议与memory-usage、disk-usage合并为统一的SystemMetricCard组件**
-
-#### 原因分析
-1. **代码重复率99%**: 三个组件除了数据字段、颜色、图标外完全相同
-2. **API统一**: 都调用同一个`getSystemMetricsCurrent()`接口
-3. **功能相关**: 都是系统资源监控，经常一起使用
-4. **维护困难**: 三个组件的任何修改都需要同步
-
-#### 合并优势
-1. **代码减少67%**: 3个组件 → 1个组件 + 3个配置
-2. **功能增强**: 统一添加阈值警告、趋势显示等功能
-3. **性能优化**: 一次API调用获取所有系统指标
-4. **一致性保证**: 确保三个指标的显示和交互完全一致
-
-## 🚀 具体迁移步骤
-
-### Phase 1: 合并到SystemMetricCard
-
-#### 1.1 CPU使用率预设配置
-```typescript
-// src/card2.1/components/system-metric-card/presets/cpu-usage.ts
-import type { ComponentPreset } from '@/card2.1/core/types'
-import { systemMetricsDataSource } from '../data-sources/system-metrics'
-
-export const cpuUsagePreset: ComponentPreset = {
-  id: 'cpu-usage-monitor',
-  name: 'CPU使用率',
-  description: '实时显示系统CPU使用率',
-  
-  config: {
-    metricType: 'cpu',
-    title: 'card.cpuUsage',
-    icon: 'fa-microchip',
-    gradientColors: ['#4ade80', '#22c55e'], // 绿色渐变
-    refreshInterval: 30,
-    
-    // CPU特有配置
-    warningThreshold: 75,   // CPU使用率超过75%显示警告
-    criticalThreshold: 90,  // CPU使用率超过90%显示严重警告
-    
-    // 显示配置
-    showTrend: false,       // 暂不显示趋势
-    precision: 1            // 保留1位小数
-  },
-  
-  // 数据绑定配置
-  dataBinding: {
-    dataSources: [systemMetricsDataSource],
-    updateTriggers: ['mount', 'timer'],
-    timerConfig: {
-      interval: 30000  // 30秒刷新
-    }
-  },
-  
-  // 布局配置
-  defaultLayout: {
-    canvas: { width: 300, height: 180 },
-    gridstack: { w: 3, h: 2, minH: 2, minW: 2 }
-  }
+/**
+ * @description 定义了 SystemMonitor 组件的自定义配置项
+ * @property {string} metricType - 监控指标类型 ('cpu', 'memory', 'disk')
+ * @property {string} title - 卡片标题
+ * @property {string} icon - 显示的图标
+ * @property {number} precision - 数值精度（保留小数位数）
+ * @property {object} colors - 颜色配置
+ * @property {string[]} colors.gradient - 正常状态下的渐变色
+ * @property {object} warningThreshold - 告警阈值
+ * @property {number} warningThreshold.warning - 警告阈值
+ * @property {number} warningThreshold.critical - 严重告警阈值
+ */
+export interface SystemMonitorCustomize {
+  metricType: 'cpu' | 'memory' | 'disk';
+  title: string;
+  icon: string;
+  precision: number;
+  colors: {
+    gradient: [string, string];
+  };
+  warningThreshold: {
+    warning: number;
+    critical: number;
+  };
 }
+
+/**
+ * @description SystemMonitor 组件的设置配置
+ * - 用于在仪表盘编辑界面生成配置表单
+ */
+export const systemMonitorSettingConfig: CardSettingConfig<SystemMonitorCustomize> = {
+  // 配置项定义
+  items: [
+    {
+      prop: 'metricType',
+      label: '监控指标',
+      type: 'select',
+      options: [
+        { label: 'CPU使用率', value: 'cpu' },
+        { label: '内存使用率', value: 'memory' },
+        { label: '磁盘使用率', value: 'disk' },
+      ],
+    },
+    {
+      prop: 'title',
+      label: '卡片标题',
+      type: 'text',
+    },
+    {
+      prop: 'icon',
+      label: '显示图标',
+      type: 'icon-select',
+    },
+    // ... 其他配置项，如颜色、阈值等
+  ],
+  // 默认值
+  defaultValue: {
+    metricType: 'cpu',
+    title: 'CPU使用率',
+    icon: 'fa-microchip',
+    precision: 1,
+    colors: {
+      gradient: ['#4ade80', '#22c55e'], // 默认绿色
+    },
+    warningThreshold: {
+      warning: 75,
+      critical: 90,
+    },
+  },
+};
 ```
 
-### Phase 2: 增强功能实现
+### 3.2. `definition.ts` - 组件定义
 
-#### 2.1 智能阈值警告
+此文件定义了组件的元数据、数据源、默认配置等，用于系统集成。
+
+```typescript
+// src/card2.1/components/system-monitor/definition.ts
+
+import type { CardDefinition } from '@/card2.1/core/types/card';
+import { systemMonitorSettingConfig } from './settingConfig';
+import { getSystemMetricsCurrent } from '@/service/api/system-data';
+
+/**
+ * @description SystemMonitor 组件的定义
+ * - 包含了组件的元数据、数据源、默认配置等
+ */
+export const systemMonitorDefinition: CardDefinition = {
+  // 组件唯一标识
+  id: 'SystemMonitor',
+  // 组件名称
+  name: '系统性能监控',
+  // 组件描述
+  description: '用于显示CPU、内存、磁盘等系统性能指标',
+  // 关联的设置配置
+  settingConfig: systemMonitorSettingConfig,
+  // 数据源配置
+  dataSource: {
+    // 定义数据获取函数
+    request: async () => {
+      const res = await getSystemMetricsCurrent();
+      return res.data;
+    },
+    // 自动刷新配置
+    autoRefresh: {
+      interval: 30 * 1000, // 30秒刷新一次
+    },
+  },
+  // 默认布局
+  defaultLayout: {
+    w: 3,
+    h: 2,
+  },
+};
+```
+
+### 3.3. `index.vue` - UI 渲染
+
+此文件负责组件的 UI 渲染和交互逻辑。
+
 ```vue
-<!-- SystemMetricCard中的CPU特殊处理 -->
+// src/card2.1/components/system-monitor/index.vue
+
 <script setup lang="ts">
-// CPU使用率状态计算
-const cpuStatus = computed(() => {
-  if (props.config.metricType !== 'cpu') return 'normal'
-  
-  const usage = displayValue.value
-  const { criticalThreshold = 90, warningThreshold = 75 } = props.config
-  
-  if (usage >= criticalThreshold) {
-    return 'critical'  // 严重: 深红色
-  } else if (usage >= warningThreshold) {
-    return 'warning'   // 警告: 橙色
-  } else if (usage >= 50) {
-    return 'moderate'  // 中等: 黄色
-  } else {
-    return 'normal'    // 正常: 绿色
-  }
-})
+import { computed } from 'vue';
+import { GradientBg } from './components'; // 渐变背景组件
+import type { SystemMonitorCustomize } from './settingConfig';
 
-// CPU状态对应的颜色
-const cpuStatusColors = computed(() => {
-  switch (cpuStatus.value) {
-    case 'critical':
-      return ['#dc2626', '#991b1b'] // 深红色渐变
-    case 'warning':
-      return ['#f97316', '#ea580c'] // 橙色渐变
-    case 'moderate':
-      return ['#f59e0b', '#d97706'] // 黄色渐变
+// 定义 props
+const props = defineProps<{
+  // 自定义配置
+  customize: SystemMonitorCustomize;
+  // 从数据源获取的数据
+  dataSource: {
+    cpu_usage?: number;
+    memory_usage?: number;
+    disk_usage?: number;
+  };
+  // 加载和错误状态
+  loading: boolean;
+  error: Error | null;
+}>();
+
+// 根据指标类型获取对应的数值
+const metricValue = computed(() => {
+  const data = props.dataSource || {};
+  switch (props.customize.metricType) {
+    case 'cpu':
+      return data.cpu_usage;
+    case 'memory':
+      return data.memory_usage;
+    case 'disk':
+      return data.disk_usage;
     default:
-      return ['#4ade80', '#22c55e'] // 绿色渐变
+      return null;
   }
-})
+});
 
-// CPU图标动画
-const showCPUAnimation = computed(() => {
-  return props.config.metricType === 'cpu' && displayValue.value > 80
-})
+// 根据阈值计算当前状态（normal, warning, critical）
+const status = computed(() => {
+  if (metricValue.value === null || metricValue.value === undefined) return 'normal';
+  const { warning, critical } = props.customize.warningThreshold;
+  if (metricValue.value >= critical) return 'critical';
+  if (metricValue.value >= warning) return 'warning';
+  return 'normal';
+});
+
+// 根据状态动态计算渐变颜色
+const gradientColors = computed(() => {
+  const colorMap = {
+    critical: ['#dc2626', '#991b1b'], // 红色
+    warning: ['#f97316', '#ea580c'],  // 橙色
+    normal: props.customize.colors.gradient, // 默认色
+  };
+  return colorMap[status.value];
+});
 </script>
 
 <template>
-  <GradientBg 
-    :start-color="statusColors[0]"
-    :end-color="statusColors[1]"
-    class="system-metric-card"
-  >
-    <!-- 标题和状态 -->
-    <div class="header">
-      <h3 class="title">{{ displayTitle }}</h3>
-      
-      <!-- CPU状态标签 -->
-      <n-tag 
-        v-if="config.metricType === 'cpu'"
-        :type="cpuStatus === 'critical' ? 'error' : 
-              cpuStatus === 'warning' ? 'warning' : 
-              cpuStatus === 'moderate' ? 'info' : 'success'"
-        size="small"
-        round
-      >
-        {{ getCPUStatusText(cpuStatus) }}
-      </n-tag>
-    </div>
-    
-    <!-- 内容区域 -->
-    <div class="content">
-      <!-- CPU图标 -->
-      <div class="icon-container">
-        <SvgIcon 
-          :icon="displayIcon"
-          class="metric-icon"
-          :class="{ 
-            'cpu-high-usage': showCPUAnimation,
-            'cpu-normal': config.metricType === 'cpu' && !showCPUAnimation
-          }"
-        />
-        
-        <!-- 性能等级指示器 -->
-        <div 
-          v-if="config.metricType === 'cpu'" 
-          class="performance-indicator"
-        >
-          <div 
-            class="indicator-bar"
-            :class="`level-${cpuStatus}`"
-            :style="{ width: `${Math.min(displayValue, 100)}%` }"
-          ></div>
-        </div>
-      </div>
-      
-      <!-- 数值显示 -->
-      <div class="value-section">
-        <CountTo
-          v-if="!loading && !error"
-          :start-value="0"
-          :end-value="displayValue"
-          suffix="%"
-          :precision="config.precision || 1"
-          :duration="1500"
-          class="metric-value"
-        />
-        
-        <!-- CPU负载描述 -->
-        <div v-if="config.metricType === 'cpu'" class="cpu-load-desc">
-          {{ getCPULoadDescription(displayValue) }}
-        </div>
+  <GradientBg :start-color="gradientColors[0]" :end-color="gradientColors[1]">
+    <h3 class="text-16px">{{ $t(props.customize.title) }}</h3>
+    <div class="flex justify-between items-center pt-30px">
+      <SvgIcon :icon="props.customize.icon" class="text-32px" />
+      <div class="flex flex-col items-end">
+        <template v-if="props.loading">
+          <span>{{ $t('card.loading') }}</span>
+        </template>
+        <template v-else-if="props.error || metricValue === null">
+          <span>{{ $t('card.noData') }}</span>
+        </template>
+        <template v-else>
+          <CountTo
+            :start-value="0"
+            :end-value="metricValue"
+            :suffix="'%'"
+            :precision="props.customize.precision"
+            class="text-30px"
+          />
+        </template>
       </div>
     </div>
   </GradientBg>
 </template>
-
-<style scoped>
-/* CPU特殊动画效果 */
-.cpu-high-usage {
-  animation: cpuPulse 2s infinite;
-}
-
-@keyframes cpuPulse {
-  0%, 100% { 
-    transform: scale(1);
-    opacity: 0.9;
-  }
-  50% { 
-    transform: scale(1.05);
-    opacity: 1;
-  }
-}
-
-.cpu-normal {
-  transition: all 0.3s ease;
-}
-
-/* 性能指示器 */
-.performance-indicator {
-  width: 60px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: 8px;
-}
-
-.indicator-bar {
-  height: 100%;
-  border-radius: 2px;
-  transition: all 0.5s ease;
-}
-
-.level-normal { background: #10b981; }
-.level-moderate { background: #f59e0b; }
-.level-warning { background: #f97316; }
-.level-critical { background: #dc2626; }
-
-.cpu-load-desc {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  margin-top: 4px;
-}
-</style>
 ```
 
-#### 2.2 辅助函数
-```typescript
-// CPU状态文本
-const getCPUStatusText = (status: string) => {
-  const statusMap = {
-    'normal': t('cpu.status.normal'),      // '正常'
-    'moderate': t('cpu.status.moderate'),  // '中等'
-    'warning': t('cpu.status.warning'),    // '繁忙'
-    'critical': t('cpu.status.critical')   // '过载'
-  }
-  return statusMap[status] || status
-}
+## 4. 迁移步骤
 
-// CPU负载描述
-const getCPULoadDescription = (usage: number) => {
-  if (usage >= 90) return t('cpu.load.critical')     // '系统过载'
-  if (usage >= 75) return t('cpu.load.high')         // '负载较高'
-  if (usage >= 50) return t('cpu.load.moderate')     // '正常工作'
-  if (usage >= 25) return t('cpu.load.low')          // '轻度负载'
-  return t('cpu.load.idle')                          // '空闲状态'
-}
-```
+1.  **创建新组件**: 在 `src/card2.1/components/` 目录下创建 `system-monitor` 文件夹。
+2.  **实现三文件**: 在 `system-monitor` 文件夹中，分别创建并实现 `settingConfig.ts`, `definition.ts`, 和 `index.vue`，代码如上所示。
+3.  **注册组件**: 在 Card 2.1 的组件注册入口（通常是 `src/card2.1/index.ts` 或类似文件）中，导入并注册 `systemMonitorDefinition`。
+4.  **更新仪表盘**:
+    - 进入仪表盘编辑模式。
+    - 删除旧的 `cpu-usage`, `memory-usage`, `disk-usage` 卡片。
+    - 添加新的 `SystemMonitor` 卡片。
+    - 在卡片设置中，通过 `metricType` 配置项分别选择“CPU使用率”、“内存使用率”和“磁盘使用率”，以创建三个不同的监控实例。
+5.  **删除旧代码**: 在确认新组件工作正常后，安全地删除 `src/card/builtin-card/` 目录下的 `cpu-usage`, `memory-usage`, 和 `disk-usage` 三个组件的全部文件。
 
-## ✅ 迁移验证清单
+## 5. 迁移验证清单
 
-### 功能对等验证
-- [ ] **数据获取**: CPU使用率数据正确获取和显示
-- [ ] **30秒刷新**: 定时器正常工作，数据定期更新
-- [ ] **百分比显示**: 数值显示格式与原组件一致
-- [ ] **绿色渐变**: 默认渐变颜色与原组件相同
-- [ ] **CPU图标**: fa-microchip图标正常显示
-- [ ] **动画效果**: CountTo动画与原组件一致
-- [ ] **加载状态**: loading状态正确显示
-- [ ] **错误处理**: 错误时有适当的降级显示
-- [ ] **生命周期**: 组件销毁时定时器正确清理
+- [ ] **功能验证**:
+    - [ ] 新的 `SystemMonitor` 卡片能够正确获取并显示 CPU、内存、磁盘的使用率。
+    - [ ] 数据能够按照 30 秒的间隔自动刷新。
+    - [ ] 加载中（Loading）和无数据（No Data）状态能够正确显示。
+- [ ] **配置验证**:
+    - [ ] 在仪表盘编辑模式下，可以成功修改卡片标题、图标等配置。
+    - [ ] `metricType` 切换后，卡片能正确显示对应的数据。
+- [ ] **告警验证**:
+    - [ ] 当数值超过 `warning` 阈值时，卡片背景色变为橙色。
+    - [ ] 当数值超过 `critical` 阈值时，卡片背景色变为红色。
+- [ ] **代码清理**:
+    - [ ] 旧的三个组件目录已完全删除。
 
-### 增强功能验证
-- [ ] **智能配色**: 根据CPU使用率自动调整卡片颜色
-- [ ] **阈值警告**: 超过75%/90%时显示警告/严重状态
-- [ ] **状态标签**: 显示CPU负载状态标签
-- [ ] **图标动画**: 高负载时CPU图标脉冲动画
-- [ ] **性能指示器**: 显示CPU使用率进度条
-- [ ] **负载描述**: 显示CPU负载的文字描述
-- [ ] **响应式**: 不同屏幕尺寸下显示正常
-- [ ] **主题适配**: 明暗主题切换正常
+## 6. 预期收益
 
-## 📚 相关资源
-
-### 同步迁移组件
-以下组件将使用相同的SystemMetricCard架构:
-- `memory-usage` - 内存使用率 (橙色渐变)
-- `disk-usage` - 磁盘使用率 (蓝色渐变)
-
-### API数据格式
-```typescript
-// 系统指标API响应格式
-interface SystemMetricsResponse {
-  code: 200,
-  data: {
-    cpu_usage: 45.2,      // CPU使用率 (百分比)
-    memory_usage: 68.7,   // 内存使用率 (百分比)
-    disk_usage: 23.4,     // 磁盘使用率 (百分比)
-    timestamp: "2024-01-15T10:30:00Z"
-  }
-}
-```
-
-### 国际化配置
-```typescript
-// 需要添加的CPU相关翻译
-const translations = {
-  'card.cpuUsage': 'CPU使用率',
-  'cpu.status.normal': '正常',
-  'cpu.status.moderate': '中等',
-  'cpu.status.warning': '繁忙', 
-  'cpu.status.critical': '过载',
-  'cpu.load.idle': '空闲状态',
-  'cpu.load.low': '轻度负载',
-  'cpu.load.moderate': '正常工作',
-  'cpu.load.high': '负载较高',
-  'cpu.load.critical': '系统过载'
-}
-```
-
-## 🎯 预期收益
-
-### 合并收益
-- **代码减少**: 从3个重复组件减少到1个通用组件
-- **功能统一**: CPU/内存/磁盘监控功能完全一致
-- **维护简化**: 修改一处影响所有系统监控组件
-
-### 功能增强
-- **智能预警**: 根据使用率自动调整视觉提示
-- **状态感知**: 直观显示系统性能状态
-- **视觉效果**: 高负载时的动画提醒用户注意
-- **详细信息**: 提供更丰富的CPU状态描述
-
-### 技术提升
-- **类型安全**: 完整的TypeScript类型定义
-- **性能优化**: 统一的数据获取和缓存策略
-- **主题集成**: 完全支持明暗主题切换
-- **响应式**: 优化的移动端显示效果
-
-该组件的迁移将作为系统监控组件合并的典型案例，为内存和磁盘使用率组件的迁移提供参考模板。
+- **代码复用**: 代码量大幅减少，逻辑高度集中，移除了近乎 90% 的重复代码。
+- **维护高效**: 未来的任何修改只需在 `SystemMonitor` 一个组件中进行，即可同步应用到所有系统监控卡片。
+- **功能强大**: 统一实现了动态颜色告警，为未来增加趋势图、点击交互等功能打下了坚实基础。
+- **架构统一**: 完全融入 Card 2.1 体系，享受新架构带来的开发便利和性能优势。

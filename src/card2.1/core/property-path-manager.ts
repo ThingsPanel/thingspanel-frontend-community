@@ -11,6 +11,8 @@ export interface PropertyPathInfo {
   fullPath: string
   /** 组件实例ID */
   componentInstanceId: string
+  /** 🚀 新增：配置段（base、component、dataSource、interaction） */
+  configSection?: string
   /** 属性路径（支持嵌套，如 customize.title 或 data.value） */
   propertyPath: string
   /** 属性名（最后一级） */
@@ -19,6 +21,8 @@ export interface PropertyPathInfo {
   isNested: boolean
   /** 属性层级数组（如 ['customize', 'title'] 或 ['data', 'metrics', 0, 'value']） */
   propertyHierarchy: (string | number)[]
+  /** 🚀 新增：是否使用完整的配置段格式 */
+  hasConfigSection: boolean
 }
 
 export interface PropertyPathValidationResult {
@@ -44,9 +48,10 @@ export class PropertyPathManager {
    * 🎯 创建标准化的属性绑定路径
    * @param componentInstanceId 组件实例ID
    * @param propertyPath 属性路径（支持嵌套，如 'title' 或 'customize.title'）
+   * @param configSection 配置段（可选，如 'base'、'component'、'dataSource'、'interaction'）
    * @returns 标准化的绑定路径
    */
-  static createBindingPath(componentInstanceId: string, propertyPath: string): string {
+  static createBindingPath(componentInstanceId: string, propertyPath: string, configSection?: string): string {
     if (!componentInstanceId || !propertyPath) {
       throw new Error('组件实例ID和属性路径都是必需的')
     }
@@ -57,7 +62,30 @@ export class PropertyPathManager {
     // 清理和标准化属性路径
     const cleanPath = PropertyPathManager.normalizePropertyPath(propertyPath)
 
-    return `${componentInstanceId}${PropertyPathManager.PATH_SEPARATOR}${cleanPath}`
+    // 🚀 关键修复：支持配置层级的完整路径格式
+    if (configSection) {
+      // 完整格式：componentId.configSection.propertyPath
+      return `${componentInstanceId}${PropertyPathManager.PATH_SEPARATOR}${configSection}${PropertyPathManager.PATH_SEPARATOR}${cleanPath}`
+    } else {
+      // 兼容旧格式：componentId.propertyPath
+      return `${componentInstanceId}${PropertyPathManager.PATH_SEPARATOR}${cleanPath}`
+    }
+  }
+
+  /**
+   * 🚀 新增：创建基础配置属性绑定路径
+   * 专门用于基础配置属性，确保路径格式正确
+   */
+  static createBaseConfigBindingPath(componentInstanceId: string, propertyPath: string): string {
+    return PropertyPathManager.createBindingPath(componentInstanceId, propertyPath, 'base')
+  }
+
+  /**
+   * 🚀 新增：创建组件配置属性绑定路径
+   * 专门用于组件配置属性
+   */
+  static createComponentConfigBindingPath(componentInstanceId: string, propertyPath: string): string {
+    return PropertyPathManager.createBindingPath(componentInstanceId, propertyPath, 'component')
   }
 
   /**
@@ -87,7 +115,8 @@ export class PropertyPathManager {
     if (!bindingPath.includes(PropertyPathManager.PATH_SEPARATOR)) {
       return {
         isValid: false,
-        error: '绑定路径格式无效，应为 componentInstanceId.propertyPath'
+        error:
+          '绑定路径格式无效，应为 componentInstanceId.propertyPath 或 componentInstanceId.configSection.propertyPath'
       }
     }
 
@@ -101,7 +130,24 @@ export class PropertyPathManager {
     }
 
     const componentInstanceId = parts[0]
-    const propertyPath = parts.slice(1).join(PropertyPathManager.PATH_SEPARATOR)
+
+    // 🚀 关键修复：支持配置段的路径解析
+    let configSection: string | undefined
+    let propertyPath: string
+    let hasConfigSection = false
+
+    // 检查是否为完整格式（包含配置段）
+    const validConfigSections = ['base', 'component', 'dataSource', 'interaction']
+    if (parts.length >= 3 && validConfigSections.includes(parts[1])) {
+      // 完整格式：componentId.configSection.propertyPath
+      configSection = parts[1]
+      propertyPath = parts.slice(2).join(PropertyPathManager.PATH_SEPARATOR)
+      hasConfigSection = true
+    } else {
+      // 兼容旧格式：componentId.propertyPath
+      propertyPath = parts.slice(1).join(PropertyPathManager.PATH_SEPARATOR)
+      hasConfigSection = false
+    }
 
     // 验证组件ID
     try {
@@ -120,10 +166,12 @@ export class PropertyPathManager {
     const pathInfo: PropertyPathInfo = {
       fullPath: bindingPath,
       componentInstanceId,
+      configSection,
       propertyPath,
       propertyName,
       isNested: propertyHierarchy.length > 1,
-      propertyHierarchy
+      propertyHierarchy,
+      hasConfigSection
     }
 
     const result: PropertyPathValidationResult = {
@@ -339,6 +387,239 @@ export class PropertyPathManager {
       }
     })
   }
+
+  /**
+   * 🔥 关键新增：解析属性路径的值
+   * 从配置对象中获取指定路径的值，支持基础配置路径
+   * @param config 配置对象（支持分层格式）
+   * @param propertyPath 属性路径（如 'base.deviceId' 或 'component.customize.title'）
+   * @returns 解析后的值
+   */
+  static resolvePropertyValue(config: any, propertyPath: string): any {
+    if (!config || !propertyPath) {
+      return undefined
+    }
+
+    console.log(`🔍 [PropertyPathManager] 解析属性路径值`, {
+      propertyPath,
+      configKeys: Object.keys(config || {})
+    })
+
+    // 检查是否为基础配置路径格式 (base.xxx)
+    if (propertyPath.startsWith('base.')) {
+      const basePropertyPath = propertyPath.substring(5) // 移除 'base.' 前缀
+      
+      // 优先从 base 配置段获取
+      if (config.base) {
+        const value = PropertyPathManager.getNestedValue(config.base, basePropertyPath)
+        if (value !== undefined) {
+          console.log(`✅ [PropertyPathManager] 从base配置段获取值`, {
+            路径: propertyPath,
+            值: value
+          })
+          return value
+        }
+      }
+
+      // 兼容：从根配置获取（向后兼容）
+      const rootValue = PropertyPathManager.getNestedValue(config, basePropertyPath)
+      if (rootValue !== undefined) {
+        console.log(`✅ [PropertyPathManager] 从根配置获取值（兼容模式）`, {
+          路径: propertyPath,
+          值: rootValue
+        })
+        return rootValue
+      }
+    }
+    // 检查是否为组件配置路径格式 (component.xxx)
+    else if (propertyPath.startsWith('component.')) {
+      const componentPropertyPath = propertyPath.substring(10) // 移除 'component.' 前缀
+      
+      // 从 component 配置段获取
+      if (config.component && config.component.properties) {
+        const value = PropertyPathManager.getNestedValue(config.component.properties, componentPropertyPath)
+        if (value !== undefined) {
+          console.log(`✅ [PropertyPathManager] 从component配置段获取值`, {
+            路径: propertyPath,
+            值: value
+          })
+          return value
+        }
+      }
+    }
+    // 检查是否为数据源配置路径格式 (dataSource.xxx)
+    else if (propertyPath.startsWith('dataSource.')) {
+      const dataSourcePropertyPath = propertyPath.substring(11) // 移除 'dataSource.' 前缀
+      
+      // 从 dataSource 配置段获取
+      if (config.dataSource) {
+        const value = PropertyPathManager.getNestedValue(config.dataSource, dataSourcePropertyPath)
+        if (value !== undefined) {
+          console.log(`✅ [PropertyPathManager] 从dataSource配置段获取值`, {
+            路径: propertyPath,
+            值: value
+          })
+          return value
+        }
+      }
+    }
+    // 默认：直接从根配置获取
+    else {
+      const value = PropertyPathManager.getNestedValue(config, propertyPath)
+      if (value !== undefined) {
+        console.log(`✅ [PropertyPathManager] 从根配置获取值`, {
+          路径: propertyPath,
+          值: value
+        })
+        return value
+      }
+    }
+
+    console.log(`⚠️ [PropertyPathManager] 未找到属性路径值`, {
+      路径: propertyPath,
+      配置结构: {
+        hasBase: !!config.base,
+        hasComponent: !!config.component,
+        hasDataSource: !!config.dataSource,
+        rootKeys: Object.keys(config || {})
+      }
+    })
+
+    return undefined
+  }
+
+  /**
+   * 🔧 辅助方法：获取嵌套对象的值
+   * 支持点分隔的路径（如 'customize.title' 或 'data.metrics.0.value'）
+   */
+  static getNestedValue(obj: any, path: string): any {
+    if (!obj || !path) {
+      return undefined
+    }
+
+    const hierarchy = PropertyPathManager.parsePropertyHierarchy(path)
+    let current = obj
+
+    for (const key of hierarchy) {
+      if (current == null) {
+        return undefined
+      }
+      
+      if (typeof current === 'object') {
+        current = current[key]
+      } else {
+        return undefined
+      }
+    }
+
+    return current
+  }
+
+  /**
+   * 🔥 关键新增：设置属性路径的值
+   * 在配置对象中设置指定路径的值，支持创建嵌套结构
+   * @param config 配置对象
+   * @param propertyPath 属性路径
+   * @param value 要设置的值
+   */
+  static setPropertyValue(config: any, propertyPath: string, value: any): void {
+    if (!config || !propertyPath) {
+      return
+    }
+
+    console.log(`🔧 [PropertyPathManager] 设置属性路径值`, {
+      propertyPath,
+      value
+    })
+
+    // 检查是否为基础配置路径格式 (base.xxx)
+    if (propertyPath.startsWith('base.')) {
+      const basePropertyPath = propertyPath.substring(5) // 移除 'base.' 前缀
+      
+      // 确保 base 配置段存在
+      if (!config.base) {
+        config.base = {}
+      }
+      
+      PropertyPathManager.setNestedValue(config.base, basePropertyPath, value)
+      console.log(`✅ [PropertyPathManager] 已设置base配置值`, {
+        路径: propertyPath,
+        值: value
+      })
+    }
+    // 检查是否为组件配置路径格式 (component.xxx)
+    else if (propertyPath.startsWith('component.')) {
+      const componentPropertyPath = propertyPath.substring(10) // 移除 'component.' 前缀
+      
+      // 确保 component 配置段存在
+      if (!config.component) {
+        config.component = { properties: {}, styles: {}, behavior: {} }
+      }
+      if (!config.component.properties) {
+        config.component.properties = {}
+      }
+      
+      PropertyPathManager.setNestedValue(config.component.properties, componentPropertyPath, value)
+      console.log(`✅ [PropertyPathManager] 已设置component配置值`, {
+        路径: propertyPath,
+        值: value
+      })
+    }
+    // 检查是否为数据源配置路径格式 (dataSource.xxx)
+    else if (propertyPath.startsWith('dataSource.')) {
+      const dataSourcePropertyPath = propertyPath.substring(11) // 移除 'dataSource.' 前缀
+      
+      // 确保 dataSource 配置段存在
+      if (!config.dataSource) {
+        config.dataSource = {}
+      }
+      
+      PropertyPathManager.setNestedValue(config.dataSource, dataSourcePropertyPath, value)
+      console.log(`✅ [PropertyPathManager] 已设置dataSource配置值`, {
+        路径: propertyPath,
+        值: value
+      })
+    }
+    // 默认：直接在根配置设置
+    else {
+      PropertyPathManager.setNestedValue(config, propertyPath, value)
+      console.log(`✅ [PropertyPathManager] 已设置根配置值`, {
+        路径: propertyPath,
+        值: value
+      })
+    }
+  }
+
+  /**
+   * 🔧 辅助方法：设置嵌套对象的值
+   * 支持创建中间路径（如果不存在的话）
+   */
+  static setNestedValue(obj: any, path: string, value: any): void {
+    if (!obj || !path) {
+      return
+    }
+
+    const hierarchy = PropertyPathManager.parsePropertyHierarchy(path)
+    let current = obj
+
+    // 遍历到最后一级之前的所有层级
+    for (let i = 0; i < hierarchy.length - 1; i++) {
+      const key = hierarchy[i]
+      
+      // 如果当前层级不存在或不是对象，创建新对象
+      if (!current[key] || typeof current[key] !== 'object') {
+        // 如果下一级是数字，创建数组；否则创建对象
+        const nextKey = hierarchy[i + 1]
+        current[key] = typeof nextKey === 'number' ? [] : {}
+      }
+      
+      current = current[key]
+    }
+
+    // 设置最后一级的值
+    const finalKey = hierarchy[hierarchy.length - 1]
+    current[finalKey] = value
+  }
 }
 
 /**
@@ -376,7 +657,17 @@ export const PropertyPath = {
   normalize: (path: string): string => {
     const result = PropertyPathManager.parseBindingPath(path)
     return result.isValid ? result.pathInfo!.fullPath : path
-  }
+  },
+
+  /**
+   * 🔥 解析属性值
+   */
+  resolve: PropertyPathManager.resolvePropertyValue,
+
+  /**
+   * 🔥 设置属性值
+   */
+  set: PropertyPathManager.setPropertyValue
 }
 
 console.log('🎯 [PropertyPathManager] 统一属性路径格式管理器已初始化')

@@ -79,6 +79,55 @@ export const configLayerRegistry: Record<string, ConfigLayerDefinition> = {
 }
 
 /**
+ * 检查组件是否应该显示组件配置
+ * 如果组件没有可配置的属性，则不显示组件配置
+ */
+const shouldShowComponentConfig = (componentId: string, widget?: any): boolean => {
+  try {
+    // 🔥 检查方法1：从widget实例直接获取配置信息
+    if (widget?.metadata?.card2Definition) {
+      const card2Definition = widget.metadata.card2Definition
+      const hasConfigProps = !!(
+        card2Definition.config?.properties && 
+        Object.keys(card2Definition.config.properties).length > 0
+      )
+      return hasConfigProps
+    }
+
+    // 🔥 检查方法2：从widget类型直接判断
+    if (widget?.type) {
+      // 已知有配置的组件类型
+      const configurableComponents = ['access-num', 'alarm-info', 'dual-data-display', 'triple-data-display']
+      if (configurableComponents.includes(widget.type)) {
+        return true
+      }
+
+      // 已知无配置的组件类型  
+      const nonConfigurableComponents = ['simple-display', 'app-download']
+      if (nonConfigurableComponents.includes(widget.type)) {
+        return false
+      }
+    }
+
+    // 🔥 默认策略：如果无法确定，检查是否有自定义配置组件
+    try {
+      const config = configurationManager.getConfiguration(componentId)
+      if (config?.metadata?.card2Definition?.configComponent) {
+        return true
+      }
+    } catch (error) {
+      // 忽略错误
+    }
+
+    // 默认显示组件配置
+    return true
+  } catch (error) {
+    // 出错时默认显示，保持兼容性
+    return true
+  }
+}
+
+/**
  * 检查组件是否应该显示数据源配置
  * 如果组件没有定义数据需求，则不显示数据源配置
  */
@@ -98,7 +147,7 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
     // 🔥 检查方法0.5：从widget类型直接判断
     if (widget?.type) {
       // 已知不需要数据源的组件类型
-      const noDataSourceComponents = ['simple-display']
+      const noDataSourceComponents = ['simple-display', 'access-num', 'alarm-info', 'app-download']
       if (noDataSourceComponents.includes(widget.type)) {
         return false
       }
@@ -131,7 +180,7 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
       const componentType = config.metadata.componentType
       if (componentType) {
         // 已知不需要数据源的组件类型
-        const noDataSourceComponents = ['simple-display']
+        const noDataSourceComponents = ['simple-display', 'access-num', 'alarm-info', 'app-download']
         if (noDataSourceComponents.includes(componentType)) {
           return false
         }
@@ -184,11 +233,14 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
 export const getVisibleConfigLayers = (componentId?: string, widget?: any): ConfigLayerDefinition[] => {
   let layers = Object.values(configLayerRegistry).filter(layer => layer.visible)
 
-  // 如果传入了组件ID，检查数据源配置的可见性
+  // 如果传入了组件ID，检查各配置层的可见性
   if (componentId) {
     layers = layers.filter(layer => {
       if (layer.name === 'dataSource') {
         return shouldShowDataSourceConfig(componentId, widget)
+      }
+      if (layer.name === 'component') {
+        return shouldShowComponentConfig(componentId, widget)
       }
       return true
     })

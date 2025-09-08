@@ -200,7 +200,7 @@ const onEnableParamsChange = (enabled: boolean) => {
 const onUrlParamsUpdate = (params: EnhancedParameter[]) => {
   // 🔥 设置标记，避免watch监听器再次触发初始化
   isUpdatingFromChild.value = true
-  
+
   urlParams.value = params
 
   // 🔥 关键修复：批量更新配置，避免多次emit导致的重渲染
@@ -238,7 +238,7 @@ const onUrlParamsUpdate = (params: EnhancedParameter[]) => {
 
   console.log('📝 [HttpConfigStep1] 批量参数配置更新:', Object.keys(batchUpdates))
   emit('update:modelValue', newConfig)
-  
+
   // 🔥 重置标记，延迟执行避免立即触发watch
   nextTick(() => {
     isUpdatingFromChild.value = false
@@ -418,7 +418,7 @@ watch(
       console.log('🔄 [HttpConfigStep1] 跳过循环更新，来自子组件')
       return
     }
-    
+
     // 🔥 延迟初始化，确保所有数据完全加载后再同步状态
     nextTick(() => {
       initializeUrlParamsState()
@@ -437,7 +437,7 @@ watch(
     if (isUpdatingFromChild.value) {
       return
     }
-    
+
     // 当modelValue完全变化时（比如从编辑数据加载），重新初始化
     if (newValue && (newValue.addressType === 'internal' || newValue.selectedInternalAddress)) {
       nextTick(() => {

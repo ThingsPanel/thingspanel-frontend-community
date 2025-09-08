@@ -359,6 +359,7 @@ function isCoreProp(key: string): boolean {
 /**
  * 🚀 增强的自动注册函数
  * 结合 settingConfig 和自动检测的双重注册
+ * 新增：支持基础配置字段的自动注册
  */
 export function enhancedAutoRegister(
   componentType: string,
@@ -400,7 +401,16 @@ export function enhancedAutoRegister(
     }
   })
 
-  // 4. 注册到属性暴露注册表
+  // 🔥 新增：4. 添加基础配置字段（设备字段）
+  const baseConfigProperties = getBaseConfigurationProperties()
+  baseConfigProperties.forEach(baseProp => {
+    const existing = allProperties.find(p => p.name === baseProp.name)
+    if (!existing) {
+      allProperties.push(baseProp)
+    }
+  })
+
+  // 5. 注册到属性暴露注册表
   propertyExposureRegistry.register({
     componentType,
     componentName: componentDefinition.name || `${componentType} 组件`,
@@ -413,6 +423,7 @@ export function enhancedAutoRegister(
     totalProperties: allProperties.length,
     settingProperties: settingConfig ? settingConfig.settings.length : 0,
     detectedProperties: detectedProperties.length,
+    baseConfigProperties: baseConfigProperties.length,
     properties: allProperties.map(p => ({ name: p.name, group: p.group }))
   })
 }
@@ -462,6 +473,162 @@ export interface ComponentPropertyTreeNode {
   propertyConfig?: ListenableProperty
   children?: ComponentPropertyTreeNode[]
   isLeaf: boolean
+}
+
+/**
+ * 🔥 获取基础配置字段的可监听属性定义
+ * 这些字段来自 BaseConfiguration，通过 Visual Editor 的基础配置面板设置
+ */
+export function getBaseConfigurationProperties(): ListenableProperty[] {
+  return [
+    // 🔥 设备字段 - 来自基础配置
+    createProperty('deviceId', '设备ID', 'string', {
+      description: '关联的设备ID，用于数据源自动配置和设备模板',
+      isCore: true,
+      group: '设备配置',
+      example: 'device-001',
+      defaultValue: ''
+    }),
+
+    createProperty('metricsList', '指标列表', 'array', {
+      description: '监控的指标列表，定义组件关注的设备指标',
+      isCore: true,
+      group: '设备配置',
+      example: [
+        { id: 'temperature', name: '温度', unit: '°C' },
+        { id: 'humidity', name: '湿度', unit: '%' }
+      ],
+      defaultValue: []
+    }),
+
+    // 🔥 显示配置字段
+    createProperty('showTitle', '显示标题', 'boolean', {
+      description: '是否显示组件标题',
+      group: '显示配置',
+      example: true,
+      defaultValue: false
+    }),
+
+    createProperty('title', '组件标题', 'string', {
+      description: '组件的标题文字',
+      group: '显示配置',
+      example: '温度监控',
+      defaultValue: ''
+    }),
+
+    createProperty('visible', '可见性', 'boolean', {
+      description: '组件是否可见',
+      isCore: true,
+      group: '显示配置',
+      example: true,
+      defaultValue: true
+    }),
+
+    createProperty('opacity', '透明度', 'number', {
+      description: '组件透明度 (0-1)',
+      group: '显示配置',
+      example: 1,
+      defaultValue: 1
+    }),
+
+    // 🔥 样式配置字段
+    createProperty('backgroundColor', '背景色', 'color', {
+      description: '组件背景颜色',
+      group: '样式配置',
+      example: '#ffffff',
+      defaultValue: undefined
+    }),
+
+    createProperty('borderWidth', '边框宽度', 'number', {
+      description: '边框宽度（像素）',
+      group: '样式配置',
+      example: 1,
+      defaultValue: 0
+    }),
+
+    createProperty('borderColor', '边框颜色', 'color', {
+      description: '边框颜色',
+      group: '样式配置',
+      example: '#d9d9d9',
+      defaultValue: '#d9d9d9'
+    }),
+
+    createProperty('borderRadius', '圆角大小', 'number', {
+      description: '边框圆角大小（像素）',
+      group: '样式配置',
+      example: 6,
+      defaultValue: 6
+    }),
+
+    // 🔥 布局配置字段
+    createProperty('padding', '内边距', 'object', {
+      description: '组件内边距配置',
+      group: '布局配置',
+      example: { top: 10, right: 10, bottom: 10, left: 10 },
+      defaultValue: { top: 0, right: 0, bottom: 0, left: 0 }
+    }),
+
+    createProperty('margin', '外边距', 'object', {
+      description: '组件外边距配置',
+      group: '布局配置',
+      example: { top: 5, right: 5, bottom: 5, left: 5 },
+      defaultValue: { top: 0, right: 0, bottom: 0, left: 0 }
+    })
+  ]
+}
+
+/**
+ * 🔥 为特定组件实例注册基础配置属性
+ * 这个函数用于确保每个组件实例都能暴露其基础配置字段
+ */
+export function registerInstanceBaseProperties(
+  componentInstanceId: string,
+  componentType: string,
+  componentName?: string
+): void {
+  // 获取组件类型的现有属性注册
+  const existingExposure = propertyExposureRegistry.getComponentExposure(componentType)
+  const existingProperties = existingExposure?.listenableProperties || []
+
+  // 获取基础配置属性
+  const baseConfigProperties = getBaseConfigurationProperties()
+
+  // 合并属性，确保基础配置属性存在
+  const allProperties: ListenableProperty[] = [...existingProperties]
+
+  baseConfigProperties.forEach(baseProp => {
+    const existing = allProperties.find(p => p.name === baseProp.name)
+    if (!existing) {
+      allProperties.push(baseProp)
+    }
+  })
+
+  // 重新注册组件的属性暴露配置
+  propertyExposureRegistry.register({
+    componentType,
+    componentName: componentName || existingExposure?.componentName || `${componentType} 组件`,
+    listenableProperties: allProperties,
+    version: '1.0.0'
+  })
+
+  console.log(`🎯 [RegisterInstanceBaseProperties] 为组件实例注册基础配置属性`, {
+    componentInstanceId,
+    componentType,
+    basePropertiesCount: baseConfigProperties.length,
+    totalPropertiesCount: allProperties.length,
+    baseProperties: baseConfigProperties.map(p => p.name)
+  })
+}
+
+/**
+ * 🔥 监听配置管理器的基础配置变化
+ * 当基础配置发生变化时，自动更新属性绑定值
+ */
+export function setupBaseConfigurationWatcher(configurationManager: any): void {
+  // 这个函数将在后续任务中实现
+  // 用于监听 configurationManager 的 base 配置变化
+  // 并触发相应的属性更新事件
+  console.log(`🔧 [BaseConfigurationWatcher] 基础配置监听器设置完成`)
 }
 
 // 常用属性模板

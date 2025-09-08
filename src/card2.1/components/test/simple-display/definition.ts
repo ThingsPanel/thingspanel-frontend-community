@@ -3,25 +3,24 @@
  * 新三文件结构 - 标准组件模板
  */
 
-import type { ComponentDefinition } from '@/card2.1/core/types'
+
+import type { ComponentDefinition } from '../../../core/types'
 import SimpleDisplayComponent from './index.vue'
 import SimpleDisplaySetting from './setting.vue'
-import { simpleDisplaySettingConfig } from './settingConfig'
-import { componentRegistry } from '@/card2.1/core/component-registry'
+import { simpleDisplaySettingConfig, customConfig, type SimpleDisplayConfig } from './settingConfig'
 
 /**
  * simple-display 组件定义
- * 基于新三文件架构的标准定义
  */
-const simpleDisplayDefinition: ComponentDefinition = {
+const simpleDisplayDefinition: ComponentDefinition<SimpleDisplayConfig> = {
   // 基础信息
   type: 'simple-display',
   name: '简单展示',
   description: '静态内容展示组件，支持自定义文字、图标和样式，无需数据源',
   category: '数据展示',
-  mainCategory: '测试', // 对应test分类
-  subCategory: '数据展示', // 子分类
-  icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h7v2H7v-2zm0 4h10v2H7v-2z"/></svg>`,
+  mainCategory: '测试',
+  subCategory: '展示组件',
+  icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"/></svg>`,
   version: '2.1.0',
   author: 'ThingsPanel',
 
@@ -31,8 +30,20 @@ const simpleDisplayDefinition: ComponentDefinition = {
   // 配置组件
   configComponent: SimpleDisplaySetting,
 
-  // 默认配置 - 使用新的 CustomConfig 结构
-  defaultConfig: simpleDisplaySettingConfig.customConfig,
+  // 默认配置
+  defaultConfig: customConfig,
+
+  // 默认配置
+  config: {
+    type: 'simple-display',
+    root: {
+      transform: {
+        rotate: 0,
+        scale: 1
+      }
+    },
+    customize: customConfig
+  },
 
   // 默认布局
   defaultLayout: {
@@ -54,27 +65,90 @@ const simpleDisplayDefinition: ComponentDefinition = {
     }
   },
 
-  // 🔥 移除数据源配置 - simple-display 是纯静态展示组件
-  // 不需要任何数据源，所有内容通过组件配置的 customize 属性设置
+  // 布局配置
+  layout: {
+    defaultSize: {
+      width: 2,
+      height: 2
+    },
+    minSize: {
+      width: 2,
+      height: 1
+    },
+    maxSize: {
+      width: 4,
+      height: 3
+    },
+    resizable: true
+  },
+
+  // 权限配置 - 谁可以使用这个组件
+  permission: '不限', // '不限' | 'TENANT_ADMIN' | 'TENANT_USER' | 'SYS_ADMIN'
 
   // 标签
   tags: ['static', 'display', 'simple', 'basic', 'text'],
 
-  // 🔥 静态组件无需示例数据 - 所有内容通过组件配置设置
-
-  // 特性标记 - 静态组件特性
+  // 特性标记
   features: {
-    realtime: false, // 🔥 修改：静态组件无需实时数据
-    dataBinding: false, // 🔥 修改：静态组件无需数据绑定
-    themeable: true, // 保持：支持主题定制
-    responsive: true, // 保持：支持响应式
-    configurable: true, // 保持：支持配置定制
-    simple: true, // 保持：简单组件标识
-    static: true // 🔥 新增：明确标识为静态组件
+    realtime: false,      // 静态组件无需实时数据
+    dataBinding: false,   // 静态组件无需数据绑定
+    themeable: true,     // 支持主题定制
+    responsive: true,    // 支持响应式
+    configurable: true   // 支持配置定制
+  },
+
+  // 交互能力定义
+  interaction: {
+    capability: {
+      supportedEvents: ['click', 'hover'],
+      supportedActions: ['jump', 'modify'],
+      defaultPermissions: {
+        allowExternalControl: true,
+        requirePermissionCheck: false
+      },
+      listenableProperties: ['title', 'content', 'themeColor', 'fontSize', 'showIcon', 'iconName']
+    },
+
+    examples: [
+      {
+        name: '点击跳转示例',
+        description: '点击组件时跳转到外部URL',
+        scenario: 'click-jump',
+        config: {
+          event: 'click',
+          responses: [{
+            action: 'jump',
+            jumpConfig: {
+              jumpType: 'external',
+              url: 'https://example.com',
+              target: '_blank'
+            }
+          }],
+          enabled: true,
+          priority: 1
+        }
+      },
+
+      {
+        name: '悬停修改属性',
+        description: '悬停时修改其他组件的背景色',
+        scenario: 'hover-modify',
+        config: {
+          event: 'hover',
+          responses: [{
+            action: 'modify',
+            modifyConfig: {
+              targetComponentId: 'comp-456',
+              targetProperty: 'themeColor',
+              updateValue: '#ff6b6b',
+              updateMode: 'replace'
+            }
+          }],
+          enabled: true
+        }
+      }
+    ]
   }
 }
 
-// 注册组件到组件注册中心（包含自动属性暴露）
-componentRegistry.registerComponent(simpleDisplayDefinition)
-componentRegistry.registerSettingConfig(simpleDisplaySettingConfig)
 export default simpleDisplayDefinition

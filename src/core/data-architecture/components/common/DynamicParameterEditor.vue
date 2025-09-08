@@ -223,15 +223,15 @@ const handleSelectAddOption = (key: string) => {
       // 🔥 修复：属性绑定 - 立即显示面板
       newParam.selectedTemplate = 'component-property-binding'
       newParam.valueMode = ParameterTemplateType.COMPONENT
-      
+
       // 添加参数
       const updatedParams = [...props.modelValue, newParam]
       emit('update:modelValue', updatedParams)
-      
+
       // 立即设置编辑状态并打开抽屉
       const newParamIndex = updatedParams.length - 1
       editingIndex.value = newParamIndex
-      
+
       nextTick(() => {
         // 直接打开组件属性选择抽屉
         openComponentDrawer(newParam)
@@ -692,11 +692,11 @@ const onTemplateChange = (param: EnhancedParameter, index: number, templateId: s
   if (templateId === 'device-metrics-selector') {
     // 关闭当前参数编辑
     editingIndex.value = -1
-    
+
     // 打开统一设备配置选择器，设置为编辑模式
     isUnifiedDeviceConfigVisible.value = true
     isEditingDeviceConfig.value = true
-    
+
     return // 不继续普通的模板切换逻辑
   }
 
@@ -1039,12 +1039,12 @@ watch(
             <!-- 组件属性绑定（简化显示） -->
             <div v-else-if="param.valueMode === 'component'" class="component-simple">
               <n-space>
-                <n-tag size="small" type="success">{{ param.selectedTemplate === 'component-property-binding' ? '属性绑定' : '设备参数' }}</n-tag>
+                <n-tag size="small" type="success">
+                  {{ param.selectedTemplate === 'component-property-binding' ? '属性绑定' : '设备参数' }}
+                </n-tag>
                 <n-text depth="3">{{ param.value || '未设置' }}</n-text>
                 <!-- 🔥 添加重新配置按钮 -->
-                <n-button size="tiny" type="primary" text @click="openComponentDrawer(param)">
-                  重新配置
-                </n-button>
+                <n-button size="tiny" type="primary" text @click="openComponentDrawer(param)">重新配置</n-button>
               </n-space>
             </div>
           </div>

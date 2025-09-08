@@ -87,11 +87,39 @@ export class VisualEditorBridge {
   ): ComponentDataRequirement {
     const dataSources: DataSourceDefinition[] = []
 
-    // 处理配置中的数据源
+    // 🔥 关键修复：提取基础配置属性
+    let resolvedConfig = config
+    let baseConfig: any = null
+    
+    // 如果配置是 WidgetConfiguration 格式，提取相关部分
     if (config && typeof config === 'object') {
+      // 检查是否是新的分层配置格式
+      if (config.base || config.dataSource) {
+        baseConfig = config.base || {}
+        resolvedConfig = {
+          // 合并基础配置中的设备属性到主配置中，用于数据源解析
+          ...config.dataSource,
+          // 将基础配置中的设备属性暴露给数据源使用
+          deviceId: baseConfig.deviceId,
+          metricsList: baseConfig.metricsList,
+          // 保持原有的数据源配置
+          ...(config.dataSource || {})
+        }
+        
+        console.log(`🔧 [VisualEditorBridge] 检测到分层配置，提取基础配置`, {
+          componentId,
+          baseConfig,
+          resolvedConfig,
+          originalConfig: config
+        })
+      }
+    }
+
+    // 处理配置中的数据源
+    if (resolvedConfig && typeof resolvedConfig === 'object') {
       // 🆕 处理新的 DataSourceConfiguration 格式
-      if (config.dataSources && Array.isArray(config.dataSources)) {
-        config.dataSources.forEach((dataSource: any) => {
+      if (resolvedConfig.dataSources && Array.isArray(resolvedConfig.dataSources)) {
+        resolvedConfig.dataSources.forEach((dataSource: any) => {
           if (dataSource.sourceId && dataSource.dataItems && Array.isArray(dataSource.dataItems)) {
             // 🔥 关键修复：保持数据源的完整性，不要拆分成独立数据源
             // 保持原有的数据源结构，让 MultiLayerExecutorChain 处理多数据项合并
@@ -125,8 +153,8 @@ export class VisualEditorBridge {
       }
 
       // 🆕 处理 rawDataList 结构（来自数据源配置表单）
-      else if (config.rawDataList && Array.isArray(config.rawDataList)) {
-        config.rawDataList.forEach((item: any, index: number) => {
+      else if (resolvedConfig.rawDataList && Array.isArray(resolvedConfig.rawDataList)) {
+        resolvedConfig.rawDataList.forEach((item: any, index: number) => {
           if (item && item.type && item.enabled !== false) {
             dataSources.push({
               id: `dataSource${index + 1}`,
@@ -141,17 +169,19 @@ export class VisualEditorBridge {
 
       // 处理多个数据源的情况（如 dataSource1, dataSource2, dataSource3）
       if (dataSources.length === 0) {
-        for (const [key, value] of Object.entries(config)) {
+        for (const [key, value] of Object.entries(resolvedConfig)) {
           if (key.startsWith('dataSource') && value && typeof value === 'object') {
+            // 🔥 关键修复：在数据源配置中注入基础配置属性
+            const enhancedDataSourceConfig = this.injectBaseConfigToDataSource(value as any, baseConfig)
             const dataSourceConfig = value as any
 
-            if (dataSourceConfig.type && dataSourceConfig.enabled !== false) {
+            if (enhancedDataSourceConfig.type && enhancedDataSourceConfig.enabled !== false) {
               dataSources.push({
                 id: key,
-                type: dataSourceConfig.type as any,
-                config: dataSourceConfig.config || {},
-                filterPath: dataSourceConfig.filterPath,
-                processScript: dataSourceConfig.processScript
+                type: enhancedDataSourceConfig.type as any,
+                config: enhancedDataSourceConfig.config || {},
+                filterPath: enhancedDataSourceConfig.filterPath,
+                processScript: enhancedDataSourceConfig.processScript
               })
             }
           }
@@ -159,15 +189,15 @@ export class VisualEditorBridge {
       }
 
       // 处理单一数据源的情况
-      if (dataSources.length === 0 && config.type && config.enabled !== false) {
+      if (dataSources.length === 0 && resolvedConfig.type && resolvedConfig.enabled !== false) {
         // 🔥 特殊处理 data-source-bindings 类型
-        if (config.type === 'data-source-bindings') {
+        if (resolvedConfig.type === 'data-source-bindings') {
           // 对于data-source-bindings，数据在config的各个dataSourceX字段中
-          for (const [key, value] of Object.entries(config)) {
+          for (const [key, value] of Object.entries(resolvedConfig)) {
             if (key.startsWith('dataSource') && value && typeof value === 'object') {
               dataSources.push({
                 id: key,
-                type: config.type as any,
+                type: resolvedConfig.type as any,
                 config: { dataSourceBindings: { [key]: value } }, // 🔥 关键：正确包装数据
                 filterPath: undefined,
                 processScript: undefined
@@ -175,13 +205,14 @@ export class VisualEditorBridge {
             }
           }
         } else {
-          // 其他类型使用原有逻辑
+          // 🔥 关键修复：注入基础配置到单一数据源
+          const enhancedConfig = this.injectBaseConfigToDataSource(resolvedConfig, baseConfig)
           dataSources.push({
             id: 'dataSource1',
-            type: config.type as any,
-            config: config.config || config,
-            filterPath: config.filterPath,
-            processScript: config.processScript
+            type: enhancedConfig.type as any,
+            config: enhancedConfig.config || enhancedConfig,
+            filterPath: enhancedConfig.filterPath,
+            processScript: enhancedConfig.processScript
           })
         }
       }
@@ -193,6 +224,43 @@ export class VisualEditorBridge {
       dataSources,
       enabled: true
     }
+  }
+
+  /**
+   * 🔥 关键新增：将基础配置属性注入到数据源配置中
+   * 确保 deviceId 和 metricsList 等基础配置能被数据源正确使用
+   * @param dataSourceConfig 数据源配置
+   * @param baseConfig 基础配置
+   */
+  private injectBaseConfigToDataSource(dataSourceConfig: any, baseConfig: any): any {
+    if (!baseConfig) {
+      return dataSourceConfig
+    }
+
+    // 创建增强的配置对象
+    const enhanced = { ...dataSourceConfig }
+    
+    // 如果数据源配置中有 config 对象，则注入到 config 中
+    if (enhanced.config && typeof enhanced.config === 'object') {
+      enhanced.config = {
+        ...enhanced.config,
+        // 注入基础配置中的设备属性
+        ...(baseConfig.deviceId && { deviceId: baseConfig.deviceId }),
+        ...(baseConfig.metricsList && { metricsList: baseConfig.metricsList })
+      }
+    } else {
+      // 如果没有 config 对象，直接在顶层注入
+      enhanced.deviceId = enhanced.deviceId || baseConfig.deviceId
+      enhanced.metricsList = enhanced.metricsList || baseConfig.metricsList
+    }
+
+    console.log(`🔧 [VisualEditorBridge] 注入基础配置到数据源`, {
+      原始配置: dataSourceConfig,
+      基础配置: baseConfig,
+      增强配置: enhanced
+    })
+
+    return enhanced
   }
 
   /**
@@ -245,11 +313,11 @@ function getPortId(): string {
  */
 export function getVisualEditorBridge(): VisualEditorBridge {
   const portId = getPortId()
-  
+
   if (!bridgeInstances.has(portId)) {
     bridgeInstances.set(portId, new VisualEditorBridge())
   }
-  
+
   return bridgeInstances.get(portId)!
 }
 

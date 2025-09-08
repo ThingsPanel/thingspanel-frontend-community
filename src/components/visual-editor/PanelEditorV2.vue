@@ -5,7 +5,7 @@
  * 实现真实的工具栏和渲染器切换功能
  */
 
-import { ref, computed, onMounted, onUnmounted, watch, toRaw } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, toRaw, provide } from 'vue'
 import { $t } from '@/locales'
 import PanelLayout from './components/PanelLayout.vue'
 import { VisualEditorToolbar } from './components/toolbar'
@@ -21,6 +21,9 @@ import { smartDeepClone } from '@/utils/deep-clone'
 
 // 🔥 轮询系统导入
 import { useGlobalPollingManager } from './core/GlobalPollingManager'
+import { usePanelPollingManager } from './hooks/usePanelPollingManager'
+import { editorDataSourceManager } from './core/EditorDataSourceManager'
+import { configurationIntegrationBridge as configurationManager } from './configuration/ConfigurationIntegrationBridge'
 import PollingController from './components/PollingController.vue'
 
 // 🔥 接收测试页面的配置props
@@ -70,7 +73,7 @@ const currentRenderer = ref<RendererType>(props.defaultRenderer)
 // 🔥 监听props.defaultRenderer的变化，实现响应式渲染器切换
 watch(
   () => props.defaultRenderer,
-  (newRenderer) => {
+  newRenderer => {
     if (newRenderer && newRenderer !== currentRenderer.value) {
       currentRenderer.value = newRenderer
       console.log('🔄 渲染器已切换为:', newRenderer)
@@ -111,6 +114,29 @@ const { setPreviewMode, isPreviewMode } = usePreviewMode()
 
 // 🔥 轮询管理器实例
 const pollingManager = useGlobalPollingManager()
+
+// 🔥 组件执行器注册表
+const componentExecutorRegistry = ref(new Map<string, () => Promise<void>>())
+
+// 🔥 提供管理器给子组件使用
+provide('editorDataSourceManager', editorDataSourceManager)
+// 🔥 关键修复：提供 editorContext 给所有子组件，确保配置能真正同步
+provide('editorContext', editorContext)
+provide('componentExecutorRegistry', componentExecutorRegistry.value)
+
+// 🔥 轮询管理组合式函数
+const pollingManagerDependencies = {
+  pollingManager,
+  stateManager,
+  configurationManager,
+  editorDataSourceManager
+}
+const {
+  initializePollingTasksAndEnable: initializePollingTasksAndEnableFromManager,
+  handlePollingToggle: handlePollingToggleFromManager,
+  handlePollingEnabled: handlePollingEnabledFromManager,
+  handlePollingDisabled: handlePollingDisabledFromManager
+} = usePanelPollingManager(pollingManagerDependencies)
 
 // 🔥 全局轮询状态
 const globalPollingEnabled = computed(() => pollingManager.isGlobalPollingEnabled())
@@ -212,14 +238,27 @@ const fetchBoard = async () => {
 
 onMounted(async () => {
   await fetchBoard()
-  
+
+  // 🔥 初始化数据源管理器和配置管理器
+  try {
+    await configurationManager.initialize()
+    if (!editorDataSourceManager.isInitialized()) {
+      await editorDataSourceManager.initialize()
+    }
+
+    // 🔥 设置组件执行器注册表
+    editorDataSourceManager.setComponentExecutorRegistry(componentExecutorRegistry.value)
+  } catch (error) {
+    console.error('初始化管理器失败:', error)
+  }
+
   // 🔥 初始化轮询系统（仅在预览模式下）
   if (!isEditing.value && isPreviewMode.value) {
     initializePollingTasksAndEnable()
   }
-  
+
   // 初始化完成，无需全局监听
-  
+
   // 🔥 触发state-manager-ready事件，让测试页面知道编辑器已准备好
   emit('state-manager-ready', stateManager)
   emit('editor-ready', editorContext)
@@ -257,30 +296,15 @@ const rendererOptions = computed(() => [
   { label: $t('visualEditor.gridstack'), value: 'gridstack' as RendererType }
 ])
 
-// 🔥 轮询事件处理函数
-const handlePollingToggle = (enabled: boolean) => {
-  // 轮询状态切换处理
-  console.log('🔄 轮询状态切换:', enabled)
-}
+// 🔥 轮询事件处理函数（使用真正的处理逻辑）
+const handlePollingToggle = handlePollingToggleFromManager
+const handlePollingEnabled = handlePollingEnabledFromManager
+const handlePollingDisabled = handlePollingDisabledFromManager
 
-const handlePollingEnabled = () => {
-  console.log('▶️ 轮询已启动')
-}
-
-const handlePollingDisabled = () => {
-  console.log('⏸️ 轮询已暂停')
-}
-
-// 🔥 初始化轮询任务并启用（仅在预览模式下）
+// 🔥 初始化轮询任务并启用（使用真正的轮询逻辑）
 const initializePollingTasksAndEnable = () => {
-  if (!isPreviewMode.value) return
-  
-  try {
-    pollingManager.enableGlobalPolling()
-    console.log('🔛 全局轮询已启动（预览模式）')
-  } catch (error) {
-    console.error('❌ 启动全局轮询失败:', error)
-  }
+  console.log('🔛 初始化轮询任务并启用')
+  initializePollingTasksAndEnableFromManager()
 }
 
 // 🔥 Footer 轮询切换函数
@@ -319,15 +343,15 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
     // 🔴 关闭全局轮询（编辑模式）
     pollingManager.disableGlobalPolling()
     console.log('🔴 全局轮询已关闭（编辑模式）')
-    
+
     // 编辑模式不需要控制showFooter，由actualFooterShow自动处理
   } else {
     // 🔛 自动启动全局轮询（预览模式默认开启）
     initializePollingTasksAndEnable()
-    
+
     // 🔥 预览模式：重置footer状态为隐藏
     showFooter.value = false
-    
+
     leftCollapsed.value = true
     rightCollapsed.value = true
   }
@@ -435,7 +459,7 @@ const handleAddWidget = async (widget: { type: string }) => {
     await addWidget(widget.type)
     hasChanges.value = true
     console.log('✅ 组件添加成功:', widget.type)
-    
+
     // 🔥 发射widget-added事件，通知测试页面
     emit('widget-added', { type: widget.type })
   } catch (error: any) {
@@ -546,7 +570,7 @@ const handleCanvasConfigChange = (config: Record<string, any>) => {
 const handleNodeSelect = (nodeId: string) => {
   selectedNodeId.value = nodeId
   selectNode(nodeId)
-  
+
   // 🔥 发射node-select事件，通知测试页面
   emit('node-select', nodeId)
 }
@@ -598,157 +622,150 @@ const handleRequestCurrentData = (componentId: string) => {
       @update:left-collapsed="leftCollapsed = $event"
       @update:right-collapsed="rightCollapsed = $event"
     >
-    <!-- 标题区域 -->
-    <template #header>
-      <div class="panel-header">
-        <h1 class="panel-title">可视化面板编辑器 V2</h1>
-        <div class="panel-meta">
-          <span class="panel-id">{{ props.panelId.slice(0, 8) }}...</span>
-          <span class="panel-version">基于多渲染器架构</span>
-        </div>
-      </div>
-    </template>
-
-    <!-- 🔥 真实工具栏 -->
-    <template #toolbar>
-      <VisualEditorToolbar
-        v-if="dataFetched && !isUnmounted"
-        :key="`toolbar-v2-${currentRenderer}-${isEditing ? 'edit' : 'preview'}`"
-        :mode="isEditing ? 'edit' : 'preview'"
-        :current-renderer="currentRenderer"
-        :available-renderers="rendererOptions"
-        :is-saving="isSaving"
-        :has-changes="hasChanges"
-        :show-left-drawer="!leftCollapsed"
-        :show-right-drawer="!rightCollapsed"
-        :gridstack-config="editorConfig.gridConfig"
-        :canvas-config="editorConfig.canvasConfig"
-        @mode-change="handleModeChange"
-        @renderer-change="handleRendererChange"
-        @save="handleSave"
-        @import="handleImportConfig"
-        @export="handleExportConfig"
-        @import-config="handleImportConfig"
-        @export-config="handleExportConfig"
-        @undo="handleUndo"
-        @redo="handleRedo"
-        @clear-all="handleClearAll"
-        @zoom-in="handleZoomIn"
-        @zoom-out="handleZoomOut"
-        @reset-zoom="handleResetZoom"
-        @toggle-left-drawer="handleToggleLeftDrawer"
-        @toggle-right-drawer="handleToggleRightDrawer"
-        @gridstack-config-change="handleGridstackConfigChange"
-        @canvas-config-change="handleCanvasConfigChange"
-      />
-    </template>
-
-    <!-- 🔥 真实的左侧组件库 -->
-    <template #left>
-      <WidgetLibrary @add-widget="handleAddWidget" />
-    </template>
-
-    <!-- 🔥 主内容区域 - 真实渲染器实现 -->
-    <template #main>
-      <!-- 加载状态 -->
-      <div v-if="!dataFetched" class="h-full flex items-center justify-center w-full">
-        <n-spin size="large">
-          <template #description>
-            {{ $t('visualEditor.loading') }}
-          </template>
-        </n-spin>
-      </div>
-
-      <!-- 渲染器区域 -->
-      <div v-else class="renderer-main-area w-full relative" @click="handleCanvasClick">
-        <!-- Canvas 渲染器 -->
-        <CanvasRenderer
-          v-if="currentRenderer === 'canvas' && dataFetched && !isUnmounted"
-          key="canvas-renderer-v2"
-          :readonly="!isEditing"
-          :show-widget-titles="showWidgetTitles"
-          class="renderer-container"
-          @node-select="handleNodeSelect"
-          @canvas-click="handleCanvasClick"
-          @request-settings="handleRequestSettings"
-        />
-
-        <!-- Gridstack 渲染器 -->
-        <GridstackRenderer
-          v-else-if="currentRenderer === 'gridstack' && dataFetched && !isUnmounted"
-          key="gridstack-renderer-v2"
-          :readonly="!isEditing"
-          :show-widget-titles="showWidgetTitles"
-          :grid-config="editorConfig.gridConfig"
-          class="renderer-container"
-          @node-select="handleNodeSelect"
-          @canvas-click="handleCanvasClick"
-          @request-settings="handleRequestSettings"
-        />
-      </div>
-    </template>
-
-    <!-- 🔥 右侧配置面板 -->
-    <template #right>
-      <ConfigurationPanel
-        :selected-widget="selectedWidget"
-        :show-widget-titles="showWidgetTitles"
-        :grid-config="editorConfig.gridConfig"
-        @toggle-widget-titles="showWidgetTitles = $event"
-        @grid-config-change="handleGridstackConfigChange"
-        @data-source-manager-update="handleDataSourceManagerUpdate"
-        @multi-data-source-update="handleMultiDataSourceUpdate"
-        @multi-data-source-config-update="handleMultiDataSourceConfigUpdate"
-        @request-current-data="handleRequestCurrentData"
-      />
-    </template>
-
-    <!-- 底部状态栏 -->
-    <template #footer>
-      <div 
-        class="panel-footer auto-hide-footer" 
-        @mouseleave="handleFooterMouseLeave"
-      >
-        <div class="status-section">
-          <span class="status-text">渲染器: {{ currentRenderer }}</span>
-          <span class="status-text">组件数: {{ stateManager.nodes.length }}</span>
-          <span class="status-text" v-if="hasChanges">有未保存更改</span>
-          
-          <!-- 🔥 轮询状态显示 -->
-          <span v-if="!isEditing" class="status-text polling-status">
-            轮询: {{ globalPollingEnabled ? '运行中' : '已暂停' }}
-            <span class="polling-stats">({{ pollingStats.activeTasks }}/{{ pollingStats.totalTasks }})</span>
-          </span>
-        </div>
-        <div class="info-section">
-          <span class="info-text">{{ $t('visualEditor.ready', 'V2 编辑器已就绪') }}</span>
-          
-          <!-- 🔥 内置轮询控制器 - 仅在预览模式下显示 -->
-          <div v-if="!isEditing && dataFetched" class="footer-polling-controller">
-            <n-button
-              :type="globalPollingEnabled ? 'success' : 'default'"
-              :ghost="!globalPollingEnabled"
-              size="small"
-              class="footer-polling-btn"
-              @click="toggleFooterPolling"
-            >
-              <template #icon>
-                <span class="polling-icon">{{ globalPollingEnabled ? '⏸️' : '▶️' }}</span>
-              </template>
-              {{ globalPollingEnabled ? $t('visualEditor.pollingPause') : $t('visualEditor.pollingStart') }}
-            </n-button>
+      <!-- 标题区域 -->
+      <template #header>
+        <div class="panel-header">
+          <h1 class="panel-title">可视化面板编辑器 V2</h1>
+          <div class="panel-meta">
+            <span class="panel-id">{{ props.panelId.slice(0, 8) }}...</span>
+            <span class="panel-version">基于多渲染器架构</span>
           </div>
         </div>
-      </div>
-    </template>
+      </template>
+
+      <!-- 🔥 真实工具栏 -->
+      <template #toolbar>
+        <VisualEditorToolbar
+          v-if="dataFetched && !isUnmounted"
+          :key="`toolbar-v2-${currentRenderer}-${isEditing ? 'edit' : 'preview'}`"
+          :mode="isEditing ? 'edit' : 'preview'"
+          :current-renderer="currentRenderer"
+          :available-renderers="rendererOptions"
+          :is-saving="isSaving"
+          :has-changes="hasChanges"
+          :show-left-drawer="!leftCollapsed"
+          :show-right-drawer="!rightCollapsed"
+          :gridstack-config="editorConfig.gridConfig"
+          :canvas-config="editorConfig.canvasConfig"
+          @mode-change="handleModeChange"
+          @renderer-change="handleRendererChange"
+          @save="handleSave"
+          @import="handleImportConfig"
+          @export="handleExportConfig"
+          @import-config="handleImportConfig"
+          @export-config="handleExportConfig"
+          @undo="handleUndo"
+          @redo="handleRedo"
+          @clear-all="handleClearAll"
+          @zoom-in="handleZoomIn"
+          @zoom-out="handleZoomOut"
+          @reset-zoom="handleResetZoom"
+          @toggle-left-drawer="handleToggleLeftDrawer"
+          @toggle-right-drawer="handleToggleRightDrawer"
+          @gridstack-config-change="handleGridstackConfigChange"
+          @canvas-config-change="handleCanvasConfigChange"
+        />
+      </template>
+
+      <!-- 🔥 真实的左侧组件库 -->
+      <template #left>
+        <WidgetLibrary @add-widget="handleAddWidget" />
+      </template>
+
+      <!-- 🔥 主内容区域 - 真实渲染器实现 -->
+      <template #main>
+        <!-- 加载状态 -->
+        <div v-if="!dataFetched" class="h-full flex items-center justify-center w-full">
+          <n-spin size="large">
+            <template #description>
+              {{ $t('visualEditor.loading') }}
+            </template>
+          </n-spin>
+        </div>
+
+        <!-- 渲染器区域 -->
+        <div v-else class="renderer-main-area w-full relative" @click="handleCanvasClick">
+          <!-- Canvas 渲染器 -->
+          <CanvasRenderer
+            v-if="currentRenderer === 'canvas' && dataFetched && !isUnmounted"
+            key="canvas-renderer-v2"
+            :readonly="!isEditing"
+            :show-widget-titles="showWidgetTitles"
+            class="renderer-container"
+            @node-select="handleNodeSelect"
+            @canvas-click="handleCanvasClick"
+            @request-settings="handleRequestSettings"
+          />
+
+          <!-- Gridstack 渲染器 -->
+          <GridstackRenderer
+            v-else-if="currentRenderer === 'gridstack' && dataFetched && !isUnmounted"
+            key="gridstack-renderer-v2"
+            :readonly="!isEditing"
+            :show-widget-titles="showWidgetTitles"
+            :grid-config="editorConfig.gridConfig"
+            class="renderer-container"
+            @node-select="handleNodeSelect"
+            @canvas-click="handleCanvasClick"
+            @request-settings="handleRequestSettings"
+          />
+        </div>
+      </template>
+
+      <!-- 🔥 右侧配置面板 -->
+      <template #right>
+        <ConfigurationPanel
+          :selected-widget="selectedWidget"
+          :show-widget-titles="showWidgetTitles"
+          :grid-config="editorConfig.gridConfig"
+          @toggle-widget-titles="showWidgetTitles = $event"
+          @grid-config-change="handleGridstackConfigChange"
+          @data-source-manager-update="handleDataSourceManagerUpdate"
+          @multi-data-source-update="handleMultiDataSourceUpdate"
+          @multi-data-source-config-update="handleMultiDataSourceConfigUpdate"
+          @request-current-data="handleRequestCurrentData"
+        />
+      </template>
+
+      <!-- 底部状态栏 -->
+      <template #footer>
+        <div class="panel-footer auto-hide-footer" @mouseleave="handleFooterMouseLeave">
+          <div class="status-section">
+            <span class="status-text">渲染器: {{ currentRenderer }}</span>
+            <span class="status-text">组件数: {{ stateManager.nodes.length }}</span>
+            <span v-if="hasChanges" class="status-text">有未保存更改</span>
+
+            <!-- 🔥 轮询状态显示 -->
+            <span v-if="!isEditing" class="status-text polling-status">
+              轮询: {{ globalPollingEnabled ? '运行中' : '已暂停' }}
+              <span class="polling-stats">({{ pollingStats.activeTasks }}/{{ pollingStats.totalTasks }})</span>
+            </span>
+          </div>
+          <div class="info-section">
+            <span class="info-text">{{ $t('visualEditor.ready', 'V2 编辑器已就绪') }}</span>
+
+            <!-- 🔥 内置轮询控制器 - 仅在预览模式下显示 -->
+            <div v-if="!isEditing && dataFetched" class="footer-polling-controller">
+              <n-button
+                :type="globalPollingEnabled ? 'success' : 'default'"
+                :ghost="!globalPollingEnabled"
+                size="small"
+                class="footer-polling-btn"
+                @click="toggleFooterPolling"
+              >
+                <template #icon>
+                  <span class="polling-icon">{{ globalPollingEnabled ? '⏸️' : '▶️' }}</span>
+                </template>
+                {{ globalPollingEnabled ? $t('visualEditor.pollingPause') : $t('visualEditor.pollingStart') }}
+              </n-button>
+            </div>
+          </div>
+        </div>
+      </template>
     </PanelLayout>
 
     <!-- 🔥 右下角触发器 - 仅在预览模式显示 -->
-    <div 
-      v-if="props.enableFooterArea && !isEditing"
-      class="footer-trigger"
-      @mouseenter="handleTriggerHover"
-    ></div>
+    <div v-if="props.enableFooterArea && !isEditing" class="footer-trigger" @mouseenter="handleTriggerHover"></div>
   </div>
 </template>
 
@@ -815,7 +832,7 @@ const handleRequestCurrentData = (componentId: string) => {
 }
 
 /* 🔥 Footer 隐藏状态 - 通过 PanelLayout 的 v-show 控制 */
-.panel-layout[data-footer-hidden="true"] .auto-hide-footer {
+.panel-layout[data-footer-hidden='true'] .auto-hide-footer {
   transform: translateY(100%);
   opacity: 0;
 }

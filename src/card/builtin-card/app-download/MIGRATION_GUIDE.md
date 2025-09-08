@@ -106,240 +106,259 @@ import google_pla from './placeholder-google-play.png' // Google Play图标
 ## 🔄 迁移建议
 
 ### 迁移策略: 独立组件增强
-**建议保留为独立组件，但进行功能增强和用户体验优化**
+**建议将 `app-download` 重构为符合 Card 2.1 "三文件架构" 的 `AppPromotion` 独立组件，进行功能增强和用户体验优化。**
 
 #### 原因分析
-1. **功能独特**: 应用下载功能具有特定的业务场景
-2. **可配置需求**: 不同项目的下载链接和二维码不同
-3. **扩展空间**: 可以发展为完整的应用推广组件
+1. **功能独特**: 应用下载功能具有特定的业务场景，适合作为独立组件。
+2. **可配置需求**: 不同项目的下载链接和二维码不同，需要高度可配置。
+3. **扩展空间**: 可以发展为完整的应用推广组件，集成统计、平台检测等高级功能。
+4. **架构统一**: 遵循 Card 2.1 规范，便于维护和系统集成。
 
 #### 优化方向
-1. **动态配置**: 支持配置下载链接、二维码、图标等
-2. **平台检测**: 根据用户设备智能显示下载选项
-3. **统计功能**: 添加下载点击统计
-4. **二维码生成**: 支持动态生成二维码
+1. **动态配置**: 支持配置下载链接、二维码、图标、布局等。
+2. **平台检测**: 根据用户设备智能显示下载选项。
+3. **统计功能**: 添加下载点击统计。
+4. **二维码生成**: 支持动态生成二维码。
+5. **三文件架构**: 严格遵循 Card 2.1 的 `index.vue`, `definition.ts`, `settingConfig.ts` 结构。
 
 ## 🚀 具体迁移步骤
 
-### Phase 1: 创建Card 2.1应用推广组件
+### Phase 1: 创建 Card 2.1 `AppPromotion` 组件
 
-#### 1.1 组件定义
+#### 1.1 创建文件结构
+在 `src/card2.1/components/` 目录下创建 `app-promotion` 文件夹，并包含以下文件：
+```
+app-promotion/
+├── index.vue              # 主组件 (UI和交互)
+├── definition.ts          # 组件定义 (元数据和注册)
+├── settingConfig.ts       # 配置定义 (类型和设置UI)
+├── setting.vue            # 设置界面 (使用AutoFormGenerator)
+└── index.ts               # 统一导出
+```
+
+#### 1.2 `settingConfig.ts` - 配置定义
+此文件负责定义组件的所有可配置项及其在设置面板中的展现方式。
+
 ```typescript
-// src/card2.1/components/app-promotion/component-definition.ts
-import type { ComponentDefinition } from '@/card2.1/core/types'
+// src/card2.1/components/app-promotion/settingConfig.ts
+import type { ComponentSettingConfig, CustomConfig } from '@/card2.1/types/setting-config'
+import { createSetting, createCustomConfig, SettingControlType } from '@/card2.1/types/setting-config'
 
-export const appPromotionDefinition: ComponentDefinition = {
-  type: 'AppPromotion',
-  name: '应用推广',
-  description: '展示应用下载信息和二维码的推广组件',
-  category: 'marketing',
-  
-  // 数据需求
-  dataRequirement: {
-    fields: {
-      appInfo: {
-        type: 'object',
-        required: false,
-        description: '应用信息',
-        properties: {
-          name: { type: 'string', description: '应用名称' },
-          version: { type: 'string', description: '应用版本' },
-          downloadCount: { type: 'number', description: '下载次数' }
-        }
-      }
-    }
-  },
-  
-  // 配置选项
-  config: {
-    title: {
-      type: 'string',
-      default: '应用下载',
-      label: '标题'
-    },
-    description: {
-      type: 'string', 
-      default: '扫码下载或点击商店链接',
-      label: '描述文本'
-    },
-    qrCode: {
-      type: 'object',
-      label: '二维码配置',
-      properties: {
-        url: { type: 'string', label: '下载链接' },
-        size: { type: 'number', default: 120, label: '尺寸(px)' },
-        autoGenerate: { type: 'boolean', default: true, label: '自动生成' }
-      }
-    },
-    platforms: {
-      type: 'array',
-      label: '支持平台',
-      itemType: 'object',
-      default: [
-        {
-          name: 'iOS',
-          icon: 'logo-apple',
-          url: 'https://apps.apple.com/app/yourapp',
-          enabled: true
+// 1. 定义平台对象的接口
+export interface PlatformLink {
+  name: string
+  icon: string
+  url: string
+  enabled: boolean
+}
+
+// 2. 定义组件特有的 customize 接口
+export interface AppPromotionCustomize {
+  title: string
+  description: string
+  qrCode: {
+    url: string
+    size: number
+    autoGenerate: boolean
+  }
+  platforms: PlatformLink[]
+  layout: 'vertical' | 'horizontal' | 'compact'
+  enableAnalytics: boolean
+  autoDetectPlatform: boolean
+}
+
+// 3. 定义完整的设置配置
+export const appPromotionSettingConfig: ComponentSettingConfig<AppPromotionCustomize> = {
+  componentType: 'AppPromotion',
+  settings: [
+    // ... 内容设置 ...
+    createSetting(SettingControlType.INPUT, '标题', 'customize.title', {
+      group: '内容设置',
+      defaultValue: '应用下载',
+    }),
+    createSetting(SettingControlType.TEXTAREA, '描述文本', 'customize.description', {
+      group: '内容设置',
+      defaultValue: '扫码下载或点击商店链接',
+    }),
+    // ... 二维码设置 ...
+    createSetting(SettingControlType.INPUT, '下载链接', 'customize.qrCode.url', {
+      group: '二维码设置',
+      defaultValue: 'https://thingspanel.io/app/download',
+    }),
+    createSetting(SettingControlType.INPUT_NUMBER, '二维码尺寸', 'customize.qrCode.size', {
+      group: '二维码设置',
+      defaultValue: 120,
+      min: 50,
+      max: 300,
+    }),
+    createSetting(SettingControlType.SWITCH, '自动生成二维码', 'customize.qrCode.autoGenerate', {
+      group: '二维码设置',
+      defaultValue: true,
+    }),
+    // ... 平台设置 ...
+    createSetting(SettingControlType.ARRAY, '支持平台', 'customize.platforms', {
+        group: '平台设置',
+        itemPrototype: {
+            name: 'new platform',
+            icon: 'logo-google-playstore',
+            url: '',
+            enabled: true,
         },
-        {
-          name: 'Android',
-          icon: 'logo-google-playstore',
-          url: 'https://play.google.com/store/apps/details?id=yourapp',
-          enabled: true
-        }
-      ]
-    },
-    layout: {
-      type: 'select',
+        columns: [
+            { type: 'input', key: 'name', label: '平台名称' },
+            { type: 'input', key: 'icon', label: '图标(Ionicon)' },
+            { type: 'input', key: 'url', label: '下载链接' },
+            { type: 'switch', key: 'enabled', label: '启用' },
+        ]
+    }),
+    // ... 样式和行为设置 ...
+    createSetting(SettingControlType.SELECT, '布局模式', 'customize.layout', {
+      group: '样式和行为',
       options: [
         { label: '垂直布局', value: 'vertical' },
         { label: '水平布局', value: 'horizontal' },
         { label: '紧凑布局', value: 'compact' }
       ],
-      default: 'vertical',
-      label: '布局模式'
-    },
-    enableAnalytics: {
-      type: 'boolean',
-      default: false,
-      label: '启用下载统计'
-    },
-    autoDetectPlatform: {
-      type: 'boolean',
-      default: true,
-      label: '自动检测设备平台'
-    }
-  }
-}
-```
-
-#### 1.2 组件实现
-```vue
-<!-- src/card2.1/components/app-promotion/AppPromotion.vue -->
-<script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useCard2DataBinding } from '@/card2.1/hooks/useCard2DataBinding'
-import QRCode from 'qrcode'
-
-interface Props {
-  config: {
-    title: string
-    description: string
-    qrCode: {
-      url: string
-      size: number
-      autoGenerate: boolean
-    }
-    platforms: Array<{
-      name: string
-      icon: string
-      url: string
-      enabled: boolean
-    }>
-    layout: 'vertical' | 'horizontal' | 'compact'
-    enableAnalytics: boolean
-    autoDetectPlatform: boolean
-  }
-  dataBinding?: any
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  config: () => ({
+      defaultValue: 'vertical',
+    }),
+    createSetting(SettingControlType.SWITCH, '启用下载统计', 'customize.enableAnalytics', {
+      group: '样式和行为',
+      defaultValue: false,
+    }),
+    createSetting(SettingControlType.SWITCH, '自动检测设备平台', 'customize.autoDetectPlatform', {
+      group: '样式和行为',
+      defaultValue: true,
+    }),
+  ],
+  // 4. 定义默认的 customConfig
+  customConfig: createCustomConfig<AppPromotionCustomize>('AppPromotion', {
     title: '应用下载',
     description: '扫码下载或点击商店链接',
     qrCode: {
-      url: '',
+      url: 'https://thingspanel.io/app/download',
       size: 120,
       autoGenerate: true
     },
-    platforms: [],
+    platforms: [
+      { name: 'iOS', icon: 'logo-apple', url: 'https://apps.apple.com/app/yourapp', enabled: true },
+      { name: 'Android', icon: 'logo-google-playstore', url: 'https://play.google.com/store/apps/details?id=yourapp', enabled: true }
+    ],
     layout: 'vertical',
     enableAnalytics: false,
     autoDetectPlatform: true
   })
+}
+
+// 5. 导出类型
+export type AppPromotionConfig = CustomConfig<AppPromotionCustomize>
+```
+
+#### 1.3 `definition.ts` - 组件定义
+此文件负责定义组件的元数据，并将其注册到系统中。
+
+```typescript
+// src/card2.1/components/app-promotion/definition.ts
+import type { ComponentDefinition } from '@/card2.1/core/types'
+import { componentRegistry } from '@/card2.1/core/component-registry'
+import AppPromotionVue from './index.vue'
+import AppPromotionSetting from './setting.vue'
+import { appPromotionSettingConfig } from './settingConfig'
+
+const definition: ComponentDefinition = {
+  type: 'AppPromotion',
+  name: '应用推广',
+  description: '展示应用下载信息和二维码的推广组件。',
+  category: 'marketing',
+  component: AppPromotionVue,
+  configComponent: AppPromotionSetting,
+  defaultConfig: appPromotionSettingConfig.customConfig,
+  defaultLayout: {
+    gridstack: { w: 3, h: 4, minW: 2, minH: 3 },
+  },
+  features: {
+    configurable: true,
+    interactive: true,
+    themeable: true,
+    responsive: true,
+  },
+  // 该组件为纯静态展示和配置，不需要数据源
+  dataSources: [],
+}
+
+// 注册组件和设置
+componentRegistry.registerComponent(definition)
+componentRegistry.registerSettingConfig(appPromotionSettingConfig)
+
+export default definition
+```
+
+#### 1.4 `index.vue` - 组件实现
+这是组件的 UI 实现，与原始迁移指南中的 `AppPromotion.vue` 内容基本一致，但 props 定义需要更新以匹配 `settingConfig.ts`。
+
+```vue
+<!-- src/card2.1/components/app-promotion/index.vue -->
+<script setup lang="ts">
+import { computed, ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import QRCode from 'qrcode'
+import type { AppPromotionConfig } from './settingConfig'
+
+interface Props {
+  customConfig?: AppPromotionConfig
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  customConfig: undefined,
 })
 
 const emit = defineEmits<{
-  downloadClick: [platform: string, url: string]
+  (e: 'downloadClick', platform: string, url: string): void
 }>()
 
 const { t } = useI18n()
 
-// Card 2.1 数据绑定
-const { data } = useCard2DataBinding({
-  componentType: 'AppPromotion',
-  dataBinding: props.dataBinding
-})
+// 从 customConfig 中获取配置
+const config = computed(() => props.customConfig?.customize)
 
-// 本地状态
 const qrCodeDataUrl = ref('')
 const currentPlatform = ref('')
 
-// 检测用户平台
 const detectPlatform = () => {
   const userAgent = navigator.userAgent.toLowerCase()
-  if (/iphone|ipad|ipod/.test(userAgent)) {
-    return 'iOS'
-  } else if (/android/.test(userAgent)) {
-    return 'Android'
-  }
+  if (/iphone|ipad|ipod/.test(userAgent)) return 'iOS'
+  if (/android/.test(userAgent)) return 'Android'
   return ''
 }
 
-// 过滤显示的平台
 const visiblePlatforms = computed(() => {
-  let platforms = props.config.platforms.filter(p => p.enabled)
-  
-  if (props.config.autoDetectPlatform && currentPlatform.value) {
-    // 优先显示当前平台
-    platforms = platforms.sort(p => 
-      p.name === currentPlatform.value ? -1 : 1
-    )
+  if (!config.value) return []
+  let platforms = config.value.platforms.filter(p => p.enabled)
+  if (config.value.autoDetectPlatform && currentPlatform.value) {
+    platforms = platforms.sort(p => p.name === currentPlatform.value ? -1 : 1)
   }
-  
   return platforms
 })
 
-// 生成二维码
 const generateQRCode = async () => {
-  if (!props.config.qrCode.autoGenerate || !props.config.qrCode.url) return
-  
+  if (!config.value?.qrCode.autoGenerate || !config.value?.qrCode.url) return
   try {
-    const dataUrl = await QRCode.toDataURL(props.config.qrCode.url, {
-      width: props.config.qrCode.size,
+    qrCodeDataUrl.value = await QRCode.toDataURL(config.value.qrCode.url, {
+      width: config.value.qrCode.size,
       margin: 1,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      }
     })
-    qrCodeDataUrl.value = dataUrl
   } catch (error) {
     console.error('生成二维码失败:', error)
   }
 }
 
-// 处理下载点击
 const handleDownloadClick = (platform: any, event: Event) => {
   event.preventDefault()
-  
-  // 统计分析
-  if (props.config.enableAnalytics) {
-    // 发送统计事件
+  if (config.value?.enableAnalytics) {
     console.log(`下载点击统计: ${platform.name}`)
   }
-  
-  // 打开下载链接
   window.open(platform.url, '_blank', 'noopener,noreferrer')
-  
-  // 发送事件
   emit('downloadClick', platform.name, platform.url)
 }
-
-// 应用信息
-const appInfo = computed(() => data.value?.appInfo || {})
 
 onMounted(() => {
   currentPlatform.value = detectPlatform()
@@ -348,53 +367,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <div 
-    class="app-promotion-card"
-    :class="`layout-${config.layout}`"
-  >
-    <!-- 标题区域 -->
+  <div v-if="config" class="app-promotion-card" :class="`layout-${config.layout}`">
     <div class="header">
       <h3 class="title">{{ t(config.title) }}</h3>
-      
-      <!-- 应用信息 -->
-      <div v-if="appInfo.name" class="app-info">
-        <div class="app-name">{{ appInfo.name }}</div>
-        <div v-if="appInfo.version" class="app-version">
-          v{{ appInfo.version }}
-        </div>
-        <div v-if="appInfo.downloadCount" class="download-count">
-          {{ t('appPromotion.downloadCount', { count: appInfo.downloadCount }) }}
-        </div>
-      </div>
     </div>
-    
-    <!-- 内容区域 -->
     <div class="content">
-      <!-- 二维码区域 -->
       <div v-if="config.qrCode.url" class="qr-section">
         <div class="qr-container">
-          <img 
-            v-if="qrCodeDataUrl"
-            :src="qrCodeDataUrl"
-            :alt="t('appPromotion.qrCodeAlt')"
-            class="qr-image"
-          />
-          <div v-else class="qr-placeholder">
-            <n-spin size="small" />
-          </div>
+          <img v-if="qrCodeDataUrl" :src="qrCodeDataUrl" alt="QR Code" class="qr-image" />
+          <div v-else class="qr-placeholder"><n-spin size="small" /></div>
         </div>
-        
-        <div class="qr-tip">
-          {{ t('appPromotion.scanTip') }}
-        </div>
+        <div class="qr-tip">{{ t('appPromotion.scanTip') }}</div>
       </div>
-      
-      <!-- 平台链接区域 -->
       <div class="platforms-section">
-        <div class="platforms-title">
-          {{ t('appPromotion.downloadFrom') }}
-        </div>
-        
+        <div class="platforms-title">{{ t('appPromotion.downloadFrom') }}</div>
         <div class="platforms-list">
           <a
             v-for="platform in visiblePlatforms"
@@ -404,26 +390,15 @@ onMounted(() => {
             :class="{ 'primary-platform': platform.name === currentPlatform }"
             @click="handleDownloadClick(platform, $event)"
           >
-            <n-icon size="24" class="platform-icon">
-              <component :is="platform.icon" />
-            </n-icon>
+            <n-icon size="24" class="platform-icon"><component :is="platform.icon" /></n-icon>
             <span class="platform-name">{{ platform.name }}</span>
-            
-            <!-- 推荐标签 -->
-            <n-tag 
-              v-if="platform.name === currentPlatform" 
-              size="small" 
-              type="primary"
-              class="recommend-tag"
-            >
+            <n-tag v-if="platform.name === currentPlatform" size="small" type="primary" class="recommend-tag">
               {{ t('appPromotion.recommended') }}
             </n-tag>
           </a>
         </div>
       </div>
     </div>
-    
-    <!-- 描述区域 -->
     <div v-if="config.description" class="footer">
       <p class="description">{{ t(config.description) }}</p>
     </div>
@@ -431,242 +406,117 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.app-promotion-card {
-  padding: 20px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: var(--card-color);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-}
-
-.header {
-  margin-bottom: 16px;
-}
-
-.title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-color);
-  margin: 0 0 8px 0;
-}
-
-.app-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.app-name {
-  font-weight: 500;
-  color: var(--text-color);
-}
-
-.app-version,
-.download-count {
-  font-size: 12px;
-  color: var(--text-color-2);
-}
-
-.content {
-  flex: 1;
-  display: flex;
-  gap: 20px;
-}
-
-/* 垂直布局 */
-.layout-vertical .content {
-  flex-direction: column;
-  align-items: center;
-}
-
-/* 水平布局 */
-.layout-horizontal .content {
-  flex-direction: row;
-  align-items: flex-start;
-}
-
-/* 紧凑布局 */
-.layout-compact .content {
-  flex-direction: column;
-  gap: 12px;
-}
-
-.qr-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.qr-container {
-  padding: 8px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.qr-image {
-  display: block;
-  border-radius: 4px;
-}
-
-.qr-placeholder {
-  width: 120px;
-  height: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px dashed var(--border-color);
-  border-radius: 4px;
-}
-
-.qr-tip {
-  font-size: 12px;
-  color: var(--text-color-2);
-  text-align: center;
-}
-
-.platforms-section {
-  flex: 1;
-}
-
-.platforms-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-color);
-  margin-bottom: 12px;
-}
-
-.platforms-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.platform-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  text-decoration: none;
-  color: var(--text-color);
-  background: var(--body-color);
-  transition: all 0.2s;
-  position: relative;
-}
-
-.platform-link:hover {
-  border-color: var(--primary-color);
-  background: var(--primary-color-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.primary-platform {
-  border-color: var(--primary-color);
-  background: var(--primary-color-pressed);
-}
-
-.platform-icon {
-  color: var(--text-color);
-}
-
-.platform-name {
-  font-weight: 500;
-  flex: 1;
-}
-
-.recommend-tag {
-  position: absolute;
-  top: -6px;
-  right: 8px;
-}
-
-.footer {
-  margin-top: 16px;
-  text-align: center;
-}
-
-.description {
-  font-size: 13px;
-  color: var(--text-color-2);
-  margin: 0;
-}
-
-/* 响应式适配 */
-@media (max-width: 480px) {
-  .layout-horizontal .content {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .platforms-list {
-    width: 100%;
-  }
-  
-  .platform-link {
-    justify-content: center;
-  }
-}
+/* 样式与原迁移指南保持一致，此处省略... */
+.app-promotion-card { padding: 20px; height: 100%; display: flex; flex-direction: column; background: var(--card-color); border-radius: var(--border-radius); border: 1px solid var(--border-color); }
+.header { margin-bottom: 16px; }
+.title { font-size: 18px; font-weight: 600; color: var(--text-color); margin: 0 0 8px 0; }
+.content { flex: 1; display: flex; gap: 20px; }
+.layout-vertical .content { flex-direction: column; align-items: center; }
+.layout-horizontal .content { flex-direction: row; align-items: flex-start; }
+.qr-section { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.qr-container { padding: 8px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+.qr-image { display: block; border-radius: 4px; }
+.qr-placeholder { width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; border: 2px dashed var(--border-color); border-radius: 4px; }
+.qr-tip { font-size: 12px; color: var(--text-color-2); text-align: center; }
+.platforms-section { flex: 1; }
+.platforms-title { font-size: 14px; font-weight: 500; color: var(--text-color); margin-bottom: 12px; }
+.platforms-list { display: flex; flex-direction: column; gap: 8px; }
+.platform-link { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-color); background: var(--body-color); transition: all 0.2s; position: relative; }
+.platform-link:hover { border-color: var(--primary-color); background: var(--primary-color-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+.primary-platform { border-color: var(--primary-color); background: var(--primary-color-pressed); }
+.platform-icon { color: var(--text-color); }
+.platform-name { font-weight: 500; flex: 1; }
+.recommend-tag { position: absolute; top: -6px; right: 8px; }
+.footer { margin-top: 16px; text-align: center; }
+.description { font-size: 13px; color: var(--text-color-2); margin: 0; }
 </style>
 ```
 
-### Phase 2: 创建预设配置
+#### 1.5 `setting.vue` - 设置界面
+此文件使用 `AutoFormGenerator` 自动生成设置面板。
 
-#### 2.1 预设配置
+```vue
+<!-- src/card2.1/components/app-promotion/setting.vue -->
+<template>
+  <div class="app-promotion-setting">
+    <AutoFormGenerator
+      :setting-config="appPromotionSettingConfig"
+      :model-value="localConfig"
+      @update:model-value="handleConfigChange"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { reactive, watch } from 'vue'
+import AutoFormGenerator from '@/card2.1/components/common/AutoFormGenerator.vue'
+import { appPromotionSettingConfig } from './settingConfig'
+import type { AppPromotionConfig } from './settingConfig'
+
+const props = defineProps<{ modelValue?: AppPromotionConfig }>()
+const emit = defineEmits<{ (e: 'update:modelValue', config: AppPromotionConfig): void }>()
+
+const localConfig = reactive(props.modelValue || appPromotionSettingConfig.customConfig)
+
+watch(() => props.modelValue, (newValue) => {
+  if (newValue) Object.assign(localConfig, newValue)
+}, { deep: true })
+
+const handleConfigChange = (newConfig: AppPromotionConfig) => {
+  emit('update:modelValue', newConfig)
+}
+</script>
+
+<style scoped>
+.app-promotion-setting { padding: 16px; }
+</style>
+```
+
+#### 1.6 `index.ts` - 统一导出
+
 ```typescript
-// src/card2.1/components/app-promotion/presets/thingspanel-app.ts
+// src/card2.1/components/app-promotion/index.ts
+export { default } from './definition'
+export * from './settingConfig'
+```
+
+### Phase 2: 创建预设配置
+创建一个预设，方便用户快速使用。
+
+```typescript
+// src/card2.1/presets/thingspanel-app-download.ts
 import type { ComponentPreset } from '@/card2.1/core/types'
+import { appPromotionSettingConfig } from '@/card2.1/components/app-promotion'
 
 export const thingspanelAppPreset: ComponentPreset = {
   id: 'thingspanel-app-download',
   name: 'ThingsPanel应用下载',
   description: '展示ThingsPanel移动应用的下载信息',
+  type: 'AppPromotion',
   
+  // 直接引用 settingConfig 中的默认配置，并按需覆盖
   config: {
-    title: 'card.appDownload.title',
-    description: 'card.appDownload.scanOrClick',
-    
-    qrCode: {
-      url: 'https://thingspanel.io/app/download',
-      size: 120,
-      autoGenerate: true
-    },
-    
-    platforms: [
-      {
-        name: 'iOS',
-        icon: 'logo-apple',
-        url: 'https://apps.apple.com/app/thingspanel',
-        enabled: true
-      },
-      {
-        name: 'Android', 
-        icon: 'logo-google-playstore',
-        url: 'https://play.google.com/store/apps/details?id=io.thingspanel.app',
-        enabled: true
-      },
-      {
-        name: 'APK',
-        icon: 'download-outline', 
-        url: 'https://github.com/ThingsPanel/thingspanel-app/releases/latest',
-        enabled: true
-      }
-    ],
-    
-    layout: 'vertical',
-    enableAnalytics: true,
-    autoDetectPlatform: true
+    ...appPromotionSettingConfig.customConfig,
+    customize: {
+        ...appPromotionSettingConfig.customConfig.customize,
+        title: 'card.appDownload.title',
+        description: 'card.appDownload.scanOrClick',
+        qrCode: {
+            url: 'https://thingspanel.io/app/download',
+            size: 120,
+            autoGenerate: true
+        },
+        platforms: [
+            { name: 'iOS', icon: 'logo-apple', url: 'https://apps.apple.com/app/thingspanel', enabled: true },
+            { name: 'Android', icon: 'logo-google-playstore', url: 'https://play.google.com/store/apps/details?id=io.thingspanel.app', enabled: true },
+            { name: 'APK', icon: 'download-outline', url: 'https://github.com/ThingsPanel/thingspanel-app/releases/latest', enabled: true }
+        ],
+        enableAnalytics: true,
+    }
   },
   
-  // 布局配置
   defaultLayout: {
-    canvas: { width: 320, height: 400 },
-    gridstack: { w: 3, h: 4, minH: 3, minW: 2 }
+    gridstack: { w: 3, h: 4 }
   }
 }
 ```
@@ -674,21 +524,15 @@ export const thingspanelAppPreset: ComponentPreset = {
 ## ✅ 迁移验证清单
 
 ### 功能验证清单
-- [ ] **二维码生成**: 动态生成二维码，支持自定义链接
-- [ ] **平台检测**: 自动检测用户设备并推荐对应平台
-- [ ] **下载链接**: 点击平台图标正确跳转到下载页面
-- [ ] **统计功能**: 启用统计时正确记录下载点击
-- [ ] **响应式**: 在不同屏幕尺寸下布局合适
-- [ ] **主题适配**: 支持明暗主题切换
-- [ ] **国际化**: 所有文本支持多语言切换
-- [ ] **可访问性**: 支持键盘导航和屏幕阅读器
-
-### 增强功能验证
-- [ ] **布局模式**: 垂直/水平/紧凑布局正常切换
-- [ ] **应用信息**: 显示版本号、下载次数等信息
-- [ ] **推荐标签**: 当前平台显示推荐标签
-- [ ] **悬停效果**: 平台链接悬停有视觉反馈
-- [ ] **错误处理**: 二维码生成失败时的降级处理
+- [ ] **三文件架构**: 确认 `index.vue`, `definition.ts`, `settingConfig.ts` 结构正确。
+- [ ] **组件注册**: 组件在 Card 2.1 组件库中可见。
+- [ ] **设置面板**: 设置面板能正确显示并修改所有配置项。
+- [ ] **二维码生成**: 动态生成二维码，支持自定义链接。
+- [ ] **平台检测**: 自动检测用户设备并推荐对应平台。
+- [ ] **下载链接**: 点击平台图标正确跳转到下载页面。
+- [ ] **响应式**: 在不同屏幕尺寸下布局合适。
+- [ ] **主题适配**: 支持明暗主题切换。
+- [ ] **国际化**: 所有文本支持多语言切换。
 
 ## 📚 相关资源
 
@@ -696,7 +540,7 @@ export const thingspanelAppPreset: ComponentPreset = {
 ```bash
 # 需要安装的依赖
 npm install qrcode
-npm install @types/qrcode  # TypeScript类型定义
+npm install @types/qrcode --save-dev
 ```
 
 ### 国际化配置
@@ -705,32 +549,16 @@ npm install @types/qrcode  # TypeScript类型定义
 const translations = {
   'card.appDownload.title': '应用下载',
   'card.appDownload.scanOrClick': '扫码下载或点击商店链接',
-  'appPromotion.qrCodeAlt': '应用下载二维码',
   'appPromotion.scanTip': '使用手机扫码下载',
   'appPromotion.downloadFrom': '下载渠道',
   'appPromotion.recommended': '推荐',
-  'appPromotion.downloadCount': '已下载 {count} 次'
 }
 ```
 
 ## 🎯 预期收益
 
-### 功能增强
-- **智能推荐**: 根据用户设备自动推荐合适的下载渠道
-- **动态二维码**: 支持动态生成和自定义二维码
-- **下载统计**: 可以跟踪用户下载行为和转化率
-- **多平台支持**: 灵活支持iOS、Android、APK等多种渠道
-
-### 用户体验提升
-- **一键下载**: 简化用户下载流程
-- **视觉优化**: 现代化的UI设计和交互效果
-- **响应式设计**: 在各种设备上都有良好的显示效果
-- **无障碍访问**: 完整的可访问性支持
-
-### 技术提升
-- **配置驱动**: 支持灵活的配置和定制
-- **组件化**: 可以在不同场景下复用
-- **类型安全**: 完整的TypeScript支持
-- **现代化**: 使用最新的Web技术和最佳实践
-
-该组件的迁移将显著提升应用推广的效果，为用户提供更便捷的下载体验。
+迁移到 Card 2.1 架构后，`AppPromotion` 组件将获得：
+- **架构一致性**: 与系统其他组件保持统一，降低维护成本。
+- **高度可配置**: 通过设置面板轻松定制所有内容。
+- **功能可扩展**: 易于增加新功能，如下载统计、A/B测试等。
+- **更好的开发体验**: 类型安全和职责分离，提升开发效率和代码质量。

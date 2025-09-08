@@ -2,744 +2,296 @@
 
 ## 📋 组件概述
 
-### 基本信息
 - **组件ID**: `alarm-info`
 - **组件名称**: 告警信息列表
 - **文件路径**: `src/card/builtin-card/alarm-info/`
-- **组件类型**: 数据表格组件
-- **当前状态**: ✅ 代码质量良好，使用Naive UI规范
+- **组件类型**: 静态信息展示
+- **当前状态**: ⚠️ 逻辑耦合，不易维护
 
 ### 功能描述
-显示最新的系统告警信息列表，包含告警名称、状态、内容、时间等信息。支持状态标签显示、时间格式化、数据分页，并提供跳转到详细告警页面的功能。
-
-## 🔧 技术分析
-
-### 使用的API接口
-```typescript
-// 主要API
-alarmHistory(params: {
-  page: number           // 页码
-  page_size: number     // 每页数量
-  alarm_status: string  // 告警状态筛选
-  start_time: string    // 开始时间
-  end_time: string      // 结束时间
-}): Promise<{
-  data: {
-    list: Array<{
-      id: string          // 告警ID
-      create_at: string   // 创建时间
-      name: string        // 告警名称
-      content: string     // 告警内容
-      alarm_status: 'H' | 'M' | 'L' | 'N'  // 告警级别
-    }>
-  }
-}>
-```
-
-### 技术依赖
-- **Vue 3**: Composition API, `<script setup>`
-- **UI组件库**: Naive UI (NDataTable, NTag, NButton, NTooltip)
-- **路由**: Vue Router 4 (页面跳转)
-- **时间处理**: dayjs 时间格式化
-- **类型系统**: TypeScript interface定义
-- **国际化**: `$t()` 翻译函数
-
-### 核心功能特性
-1. **数据表格**: 使用NDataTable展示告警列表
-2. **状态标签**: 不同告警级别用不同颜色的标签显示
-3. **文本省略**: 长文本自动省略并支持tooltip显示完整内容
-4. **时间格式化**: 统一的时间显示格式
-5. **页面跳转**: 点击"查看全部"跳转到告警详情页面
-6. **响应式设计**: 表格自适应容器大小
+该组件用于展示一个静态的告警信息列表。与旧版不同，新版将彻底移除后端数据源依赖，所有告警条目均通过前端静态配置生成，适用于展示固定的示例信息或说明。
 
 ## ❌ 存在问题
 
-### 代码质量问题
-1. **国际化使用方式**:
-   ```typescript
-   // ❌ 问题: 直接导入$t而非使用hook
-   import { $t } from '@/locales'
-   
-   // ✅ 建议: 使用Vue 3推荐的hook方式
-   import { useI18n } from 'vue-i18n'
-   const { t } = useI18n()
-   ```
-
-2. **错误处理简化**:
-   ```typescript
-   // ❌ 问题: 错误处理过于简单
-   } catch (error) {
-     console.error('Failed to fetch alarm history:', error)
-     alarmList.value = []
-   }
-   
-   // ✅ 建议: 更完善的错误处理
-   } catch (error) {
-     console.error('Failed to fetch alarm history:', error)
-     alarmList.value = []
-     // 显示用户友好的错误提示
-     message.error(t('common.loadError'))
-   }
-   ```
-
-3. **加载状态管理**:
-   ```typescript
-   // ❌ 问题: loading状态在template中未使用
-   const loading = ref(true)
-   
-   // ✅ 建议: 在UI中显示加载状态
-   <n-data-table :loading="loading" />
-   ```
-
-### 功能缺失
-1. **数据刷新**: 缺少手动刷新功能
-2. **实时更新**: 没有自动刷新机制
-3. **筛选功能**: 无法按告警级别筛选
-4. **分页支持**: API支持分页但组件未实现
-5. **详情查看**: 无法查看单个告警的详细信息
-
-### 用户体验问题
-1. **空状态处理**: 无数据时显示不够友好
-2. **表格交互**: 行点击、选择等交互缺失
-3. **移动端适配**: 表格在小屏幕上显示可能有问题
+1.  **硬编码内容**: 旧组件内容完全硬编码在 Vue 文件中，无法通过UI进行任何修改。
+2.  **维护困难**: 代码结构不清晰，不符合 Card 2.1 的开发规范，难以扩展和维护。
+3.  **无数据分离**: 视图和数据逻辑混合，违反了现代前端开发原则。
+4.  **功能固化**: 无法配置告警数量、内容、图标和颜色。
 
 ## 🔄 迁移建议
 
-### 迁移策略: 独立组件优化升级
-**建议保留为独立组件，但进行功能增强和体验优化**
+### 迁移策略: 重构为纯静态配置的独立组件
 
-#### 原因分析
-1. **功能独特**: 告警列表具有特定的业务逻辑和显示需求
-2. **复用价值**: 告警信息在多个场景下都会用到
-3. **扩展空间**: 可以发展为完整的告警管理组件库
+**核心思想**: 将 `alarm-info` 重构为一个全新的、遵循 Card 2.1 "三文件架构" 的独立组件 `AlarmInfoList`。最关键的改动是 **移除所有数据源（`dataRequirement`）**，将组件内容完全交由静态配置 `config` 管理。
 
-#### 优化方向
-1. **功能完善**: 添加筛选、搜索、分页等功能
-2. **实时更新**: 支持WebSocket实时推送新告警
-3. **交互增强**: 支持行选择、批量操作等
-4. **移动优化**: 改进移动端显示效果
+### 优化方向
+
+1.  **完全配置驱动**: 组件的所有可见内容，包括标题、告警条目（图标、颜色、文本、时间）以及列表为空时的提示，都必须通过 `config` 对象进行配置。
+2.  **三文件架构**:
+    *   `definition.ts`: 定义组件元数据和配置项结构。
+    *   `component.vue`: 负责渲染 `config` 提供的数据。
+    *   `preset.ts`: 提供一个开箱即用的默认告警列表配置。
+3.  **空状态处理**: 当未配置任何告警信息时，组件应能显示一条可配置的提示文本（如 “暂无告警信息”）。
+4.  **样式与交互**: 提供基础的样式，并支持设置最大高度以实现内容滚动。
 
 ## 🚀 具体迁移步骤
 
-### Phase 1: 创建Card 2.1数据列表组件
+### Phase 1: 创建 `AlarmInfoList` 组件
 
-#### 1.1 组件定义
+#### 1.1. 组件定义 (`definition.ts`)
+
+创建 `src/card2.1/components/alarm-info-list/definition.ts` 文件。此文件不包含 `dataRequirement` 字段。
+
 ```typescript
-// src/card2.1/components/data-list/component-definition.ts
+// src/card2.1/components/alarm-info-list/definition.ts
+
 import type { ComponentDefinition } from '@/card2.1/core/types'
 
-export const dataListDefinition: ComponentDefinition = {
-  type: 'DataList',
-  name: '数据列表',
-  description: '显示结构化数据的表格或列表组件',
-  category: 'data-display',
+/**
+ * @description 告警条目配置类型
+ */
+interface AlarmItem {
+  icon: string      // 图标，例如 'info-circle-filled'
+  color: string     // 图标颜色，例如 '#ff4d4f'
+  text: string      // 告警文本
+  timestamp: string // 时间戳文本
+}
+
+export const alarmInfoListDefinition: ComponentDefinition = {
+  type: 'AlarmInfoList',
+  name: '告警信息列表',
+  description: '一个用于显示静态告警信息的列表组件，所有内容均通过配置生成。',
+  category: 'information',
+
+  // 重点：此组件没有 dataRequirement，不依赖任何后端数据源
   
-  // 数据需求
-  dataRequirement: {
-    fields: {
-      listData: {
-        type: 'array',
-        arrayItemType: 'object',
-        required: true,
-        description: '列表数据数组'
-      },
-      pagination: {
-        type: 'object',
-        required: false,
-        description: '分页信息',
-        properties: {
-          total: { type: 'number' },
-          current: { type: 'number' },
-          pageSize: { type: 'number' }
-        }
-      }
-    }
-  },
-  
-  // 配置选项
+  // 通过 config 定义所有可配置项
   config: {
     title: {
       type: 'string',
-      default: '数据列表',
-      label: '组件标题'
+      label: '卡片标题',
+      default: '告警信息',
     },
-    displayMode: {
-      type: 'select',
-      options: [
-        { label: '表格模式', value: 'table' },
-        { label: '列表模式', value: 'list' },
-        { label: '卡片模式', value: 'card' }
-      ],
-      default: 'table',
-      label: '显示模式'
-    },
-    columns: {
+    alarmItems: {
       type: 'array',
-      label: '列配置',
+      label: '告警条目',
+      description: '配置要显示的告警信息列表',
       itemType: 'object',
-      default: []
+      default: [], // 默认为空数组
+      properties: {
+        icon: { type: 'string', label: '图标', default: 'info-circle-filled' },
+        color: { type: 'string', label: '图标颜色', default: '#ff4d4f' },
+        text: { type: 'string', label: '告警文本', default: '默认告警文本' },
+        timestamp: { type: 'string', label: '时间戳', default: '2023-01-01 10:00:00' },
+      },
     },
-    showPagination: {
-      type: 'boolean',
-      default: true,
-      label: '显示分页'
+    emptyText: {
+      type: 'string',
+      label: '空状态文本',
+      default: '暂无告警信息',
+      description: '当告警条目为空时显示的提示文字',
     },
-    pageSize: {
-      type: 'number',
-      default: 10,
-      label: '每页显示数量'
-    },
-    enableSearch: {
-      type: 'boolean',
-      default: false,
-      label: '启用搜索'
-    },
-    enableRefresh: {
-      type: 'boolean',
-      default: true,
-      label: '启用刷新'
-    },
-    autoRefreshInterval: {
-      type: 'number',
-      default: 0,
-      label: '自动刷新间隔(秒，0为禁用)'
+    maxHeight: {
+        type: 'number',
+        label: '最大高度 (px)',
+        default: 300,
+        description: '设置列表区域的最大高度，超出部分将出现滚动条',
     }
-  }
+  },
 }
 ```
 
-#### 1.2 组件实现
-```vue
-<!-- src/card2.1/components/data-list/DataList.vue -->
-<script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
-import { useMessage } from 'naive-ui'
-import { useCard2DataBinding } from '@/card2.1/hooks/useCard2DataBinding'
-import type { DataTableColumns } from 'naive-ui'
+#### 1.2. 组件实现 (`component.vue`)
 
+创建 `src/card2.1/components/alarm-info-list/component.vue` 文件。
+
+```vue
+<!-- src/card2.1/components/alarm-info-list/component.vue -->
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+// 定义组件的 Props，与 definition.ts 中的 config 结构完全对应
+interface AlarmItem {
+  icon: string
+  color: string
+  text: string
+  timestamp: string
+}
 interface Props {
   config: {
     title: string
-    displayMode: 'table' | 'list' | 'card'
-    columns: Array<{
-      key: string
-      title: string
-      width?: number
-      render?: string
-      ellipsis?: boolean
-      tooltip?: boolean
-    }>
-    showPagination: boolean
-    pageSize: number
-    enableSearch: boolean
-    enableRefresh: boolean
-    autoRefreshInterval: number
-    actionButton?: {
-      text: string
-      route: string
-    }
+    alarmItems: AlarmItem[]
+    emptyText: string
+    maxHeight: number
   }
-  dataBinding?: any
 }
 
 const props = withDefaults(defineProps<Props>(), {
   config: () => ({
-    title: '数据列表',
-    displayMode: 'table',
-    columns: [],
-    showPagination: true,
-    pageSize: 10,
-    enableSearch: false,
-    enableRefresh: true,
-    autoRefreshInterval: 0
-  })
+    title: '告警信息',
+    alarmItems: [],
+    emptyText: '暂无告警信息',
+    maxHeight: 300,
+  }),
 })
-
-const emit = defineEmits<{
-  rowClick: [row: any]
-  refresh: []
-}>()
 
 const { t } = useI18n()
-const router = useRouter()
-const message = useMessage()
 
-// Card 2.1 数据绑定
-const { data, loading, error, refresh } = useCard2DataBinding({
-  componentType: 'DataList',
-  dataBinding: props.dataBinding
-})
+// 计算属性，判断列表是否为空
+const isListEmpty = computed(() => !props.config.alarmItems || props.config.alarmItems.length === 0)
 
-// 本地状态
-const searchText = ref('')
-const currentPage = ref(1)
-const autoRefreshTimer = ref<number | null>(null)
-
-// 处理过的数据
-const processedData = computed(() => {
-  let listData = data.value?.listData || []
-  
-  // 搜索过滤
-  if (props.config.enableSearch && searchText.value.trim()) {
-    const search = searchText.value.toLowerCase().trim()
-    listData = listData.filter((item: any) => 
-      Object.values(item).some(value => 
-        String(value).toLowerCase().includes(search)
-      )
-    )
-  }
-  
-  // 分页处理
-  if (props.config.showPagination) {
-    const start = (currentPage.value - 1) * props.config.pageSize
-    const end = start + props.config.pageSize
-    return listData.slice(start, end)
-  }
-  
-  return listData
-})
-
-// 表格列配置
-const tableColumns = computed<DataTableColumns>(() => {
-  return props.config.columns.map(col => ({
-    key: col.key,
-    title: t(col.title),
-    width: col.width,
-    ellipsis: col.ellipsis ? { tooltip: col.tooltip } : false,
-    render: col.render ? createRenderer(col.render) : undefined
-  }))
-})
-
-// 创建渲染函数
-const createRenderer = (renderType: string) => {
-  return (row: any) => {
-    switch (renderType) {
-      case 'status-tag':
-        return h(NTag, {
-          type: getStatusType(row.alarm_status),
-          size: 'small',
-          round: true
-        }, () => getStatusLabel(row.alarm_status))
-      
-      case 'datetime':
-        return formatDateTime(row[col.key])
-      
-      default:
-        return row[col.key]
-    }
-  }
-}
-
-// 状态相关辅助函数
-const getStatusType = (status: string) => {
-  const statusMap = {
-    'H': 'error',    // 高级告警
-    'M': 'warning',  // 中级告警  
-    'L': 'info',     // 低级告警
-    'N': 'success'   // 正常
-  }
-  return statusMap[status as keyof typeof statusMap] || 'default'
-}
-
-const getStatusLabel = (status: string) => {
-  const labelMap = {
-    'H': t('common.highAlarm'),
-    'M': t('common.intermediateAlarm'),
-    'L': t('common.lowAlarm'),
-    'N': t('common.normal')
-  }
-  return labelMap[status as keyof typeof labelMap] || status
-}
-
-const formatDateTime = (dateTime: string) => {
-  return new Date(dateTime).toLocaleString()
-}
-
-// 刷新数据
-const handleRefresh = async () => {
-  try {
-    await refresh()
-    message.success(t('common.refreshSuccess'))
-    emit('refresh')
-  } catch (error) {
-    message.error(t('common.refreshError'))
-  }
-}
-
-// 行点击处理
-const handleRowClick = (row: any) => {
-  emit('rowClick', row)
-}
-
-// 页面操作
-const handlePageChange = (page: number) => {
-  currentPage.value = page
-}
-
-// 操作按钮点击
-const handleActionClick = () => {
-  if (props.config.actionButton?.route) {
-    router.push(props.config.actionButton.route)
-  }
-}
-
-// 自动刷新
-const setupAutoRefresh = () => {
-  if (props.config.autoRefreshInterval > 0) {
-    autoRefreshTimer.value = window.setInterval(
-      handleRefresh, 
-      props.config.autoRefreshInterval * 1000
-    )
-  }
-}
-
-const clearAutoRefresh = () => {
-  if (autoRefreshTimer.value) {
-    clearInterval(autoRefreshTimer.value)
-    autoRefreshTimer.value = null
-  }
-}
-
-onMounted(() => {
-  setupAutoRefresh()
-})
-
-onUnmounted(() => {
-  clearAutoRefresh()
-})
+// 列表区域的样式
+const listStyle = computed(() => ({
+  maxHeight: `${props.config.maxHeight}px`,
+  overflowY: 'auto',
+}))
 </script>
 
 <template>
-  <div class="data-list-container">
-    <!-- 头部区域 -->
-    <div class="header">
-      <div class="title-section">
-        <h3 class="title">{{ t(config.title) }}</h3>
-        
-        <!-- 操作按钮 -->
-        <n-button 
-          v-if="config.actionButton"
-          text 
-          size="small" 
-          type="primary"
-          @click="handleActionClick"
-        >
-          {{ t(config.actionButton.text) }}
-        </n-button>
-      </div>
-      
-      <!-- 工具栏 -->
-      <div class="toolbar">
-        <!-- 搜索框 -->
-        <n-input
-          v-if="config.enableSearch"
-          v-model:value="searchText"
-          :placeholder="t('common.search')"
-          size="small"
-          clearable
-          class="search-input"
-        >
-          <template #prefix>
-            <n-icon :component="SearchOutline" />
-          </template>
-        </n-input>
-        
-        <!-- 刷新按钮 -->
-        <n-button
-          v-if="config.enableRefresh"
-          size="small"
-          :loading="loading"
-          @click="handleRefresh"
-        >
-          <template #icon>
-            <n-icon :component="RefreshOutline" />
-          </template>
-        </n-button>
-      </div>
-    </div>
+  <div class="alarm-info-list-card">
+    <h3 class="card-title">{{ t(config.title) }}</h3>
     
-    <!-- 数据区域 -->
-    <div class="content">
-      <!-- 表格模式 -->
-      <n-data-table
-        v-if="config.displayMode === 'table'"
-        :columns="tableColumns"
-        :data="processedData"
-        :loading="loading"
-        :bordered="false"
-        striped
-        size="small"
-        flex-height
-        class="data-table"
-        @row-click="handleRowClick"
-      />
-      
-      <!-- 错误状态 -->
-      <div v-if="error" class="error-container">
-        <n-result status="error" :title="t('common.loadError')">
-          <template #footer>
-            <n-button @click="handleRefresh">{{ t('common.retry') }}</n-button>
-          </template>
-        </n-result>
-      </div>
-      
-      <!-- 空数据状态 -->
-      <div v-if="!loading && !error && !processedData.length" class="empty-container">
-        <n-empty :description="t('common.noData')" />
-      </div>
+    <div v-if="isListEmpty" class="empty-state">
+      {{ t(config.emptyText) }}
     </div>
-    
-    <!-- 分页器 -->
-    <div v-if="config.showPagination && processedData.length" class="pagination">
-      <n-pagination
-        v-model:page="currentPage"
-        :page-size="config.pageSize"
-        :item-count="(data?.listData || []).length"
-        size="small"
-        show-size-picker
-        show-quick-jumper
-      />
-    </div>
+
+    <ul v-else class="alarm-list" :style="listStyle">
+      <li v-for="(item, index) in config.alarmItems" :key="index" class="alarm-item">
+        <div class="item-icon">
+          <n-icon :color="item.color" size="20">
+            <!-- 假设你有一个图标组件或方法来渲染图标 -->
+            <component :is="item.icon" />
+          </n-icon>
+        </div>
+        <div class="item-content">
+          <p class="item-text">{{ t(item.text) }}</p>
+          <time class="item-timestamp">{{ item.timestamp }}</time>
+        </div>
+      </li>
+    </ul>
   </div>
 </template>
 
 <style scoped>
-.data-list-container {
+.alarm-info-list-card {
+  padding: 16px;
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 16px;
   background: var(--card-color);
   border-radius: var(--border-radius);
 }
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  flex-shrink: 0;
-}
-
-.title-section {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.title {
+.card-title {
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-color);
-  margin: 0;
+  margin: 0 0 12px 0;
+  color: var(--text-color-1);
 }
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.search-input {
-  width: 200px;
-}
-
-.content {
+.empty-state {
   flex: 1;
-  overflow: hidden;
-}
-
-.data-table {
-  height: 100%;
-}
-
-.error-container,
-.empty-container {
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-color-3);
+  font-size: 14px;
 }
-
-.pagination {
-  margin-top: 16px;
+.alarm-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+}
+.alarm-item {
   display: flex;
-  justify-content: center;
-  flex-shrink: 0;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
 }
-
-/* 响应式适配 */
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-  
-  .toolbar {
-    justify-content: space-between;
-  }
-  
-  .search-input {
-    width: auto;
-    flex: 1;
-  }
+.alarm-item:not(:last-child) {
+  border-bottom: 1px solid var(--border-color);
+}
+.item-content {
+  flex: 1;
+}
+.item-text {
+  margin: 0 0 4px 0;
+  color: var(--text-color-2);
+  font-size: 14px;
+}
+.item-timestamp {
+  color: var(--text-color-3);
+  font-size: 12px;
 }
 </style>
 ```
 
-### Phase 2: 告警信息预设配置
+#### 1.3. 创建预设 (`preset.ts`)
 
-#### 2.1 数据源配置
+创建 `src/card2.1/components/alarm-info-list/preset.ts` 文件，提供默认数据。
+
 ```typescript
-// src/card2.1/components/data-list/data-sources/alarm-history.ts
-import { alarmHistory } from '@/service/api/alarm'
-import type { DataSourceConfig } from '@/card2.1/core/data-binding/types'
-
-export const alarmHistoryDataSource: DataSourceConfig = {
-  type: 'api',
-  name: '告警历史数据',
-  description: '获取系统告警历史记录',
-  
-  config: {
-    endpoint: () => alarmHistory({
-      page: 1,
-      page_size: 10,
-      alarm_status: '',
-      start_time: '',
-      end_time: ''
-    }),
-    
-    // 数据转换
-    transform: (response: any) => ({
-      listData: response?.data?.list || [],
-      pagination: {
-        total: response?.data?.total || 0,
-        current: response?.data?.current_page || 1,
-        pageSize: response?.data?.page_size || 10
-      }
-    }),
-    
-    // 错误处理
-    errorHandler: (error: any) => {
-      console.error('获取告警历史失败:', error)
-      return { 
-        listData: [],
-        pagination: { total: 0, current: 1, pageSize: 10 }
-      }
-    }
-  }
-}
-```
-
-#### 2.2 预设配置
-```typescript
-// src/card2.1/components/data-list/presets/alarm-info.ts
+// src/card2.1/components/alarm-info-list/preset.ts
 import type { ComponentPreset } from '@/card2.1/core/types'
-import { alarmHistoryDataSource } from '../data-sources/alarm-history'
 
-export const alarmInfoPreset: ComponentPreset = {
-  id: 'alarm-info-list',
-  name: '告警信息',
-  description: '显示最新的系统告警信息列表',
+export const alarmInfoListPreset: ComponentPreset = {
+  id: 'default-alarm-info-list',
+  name: '默认告警列表',
+  description: '一个包含示例告警信息的静态列表。',
   
+  // 预设的配置
   config: {
-    title: 'card.alarmInfo.title',
-    displayMode: 'table',
-    showPagination: false,  // 只显示最新几条
-    pageSize: 10,
-    enableSearch: false,
-    enableRefresh: true,
-    autoRefreshInterval: 60,  // 60秒自动刷新
-    
-    // 操作按钮配置
-    actionButton: {
-      text: 'card.alarmInfo.viewAll',
-      route: '/alarm/warning-message'
-    },
-    
-    // 列配置
-    columns: [
+    title: 'card.alarmInfo.title', // 使用 i18n key
+    emptyText: 'card.alarmInfo.emptyText',
+    maxHeight: 300,
+    alarmItems: [
       {
-        key: 'name',
-        title: 'generate.alarm-name',
-        width: 170,
-        ellipsis: true,
-        tooltip: true
+        icon: 'error-warning-fill',
+        color: '#f5222d',
+        text: 'card.alarmInfo.items.item1.text',
+        timestamp: '2023-10-27 14:30:00',
       },
       {
-        key: 'alarm_status', 
-        title: 'generate.alarm-status',
-        width: 90,
-        render: 'status-tag'
+        icon: 'information-fill',
+        color: '#faad14',
+        text: 'card.alarmInfo.items.item2.text',
+        timestamp: '2023-10-27 11:15:00',
       },
       {
-        key: 'content',
-        title: 'generate.alarm-content',
-        ellipsis: true,
-        tooltip: true
+        icon: 'check-circle-fill',
+        color: '#52c41a',
+        text: 'card.alarmInfo.items.item3.text',
+        timestamp: '2023-10-26 18:00:00',
       },
-      {
-        key: 'create_at',
-        title: 'common.alarm_time',
-        width: 180,
-        render: 'datetime'
-      }
-    ]
+    ],
   },
-  
-  // 数据绑定配置
-  dataBinding: {
-    dataSources: [alarmHistoryDataSource],
-    updateTriggers: ['mount', 'timer'],
-    timerConfig: {
-      interval: 60000  // 1分钟刷新
-    }
-  },
-  
-  // 布局配置
+
+  // 默认布局
   defaultLayout: {
-    canvas: { width: 600, height: 400 },
-    gridstack: { w: 6, h: 4, minH: 3, minW: 4 }
-  }
+    w: 4,
+    h: 5,
+  },
 }
 ```
 
-## ✅ 迁移验证
+### Phase 2: 注册组件与预设
 
-### 功能验证清单
-- [ ] **数据获取**: API调用正常，告警数据正确显示
-- [ ] **状态标签**: 不同告警级别标签颜色和文本正确
-- [ ] **时间格式**: 创建时间显示格式符合用户习惯
-- [ ] **文本省略**: 长文本正确省略并支持tooltip
-- [ ] **页面跳转**: "查看全部"按钮正确跳转到详情页
-- [ ] **响应式**: 不同屏幕尺寸下表格显示正常
-- [ ] **加载状态**: 数据加载时显示loading效果
-- [ ] **错误处理**: 网络错误时显示友好提示
-- [ ] **自动刷新**: 定时刷新功能正常工作
-- [ ] **国际化**: 所有文本支持多语言切换
+1.  **注册组件**: 在 `src/card2.1/components/index.ts` 中导入并注册 `alarmInfoListDefinition`。
+2.  **注册预设**: 在 `src/card2.1/presets/index.ts` 中导入并注册 `alarmInfoListPreset`。
 
-### 增强功能验证
-- [ ] **搜索功能**: 可以搜索告警名称和内容
-- [ ] **手动刷新**: 刷新按钮功能正常
-- [ ] **行点击**: 点击行可以查看详细信息
-- [ ] **分页功能**: 大量数据时分页显示正常
-- [ ] **空状态**: 无数据时显示友好提示
+## ✅ 迁移验证清单
 
-## 📚 扩展建议
+- [ ] **组件渲染**: 使用预设创建卡片，能正确显示标题和3条告警信息。
+- [ ] **静态配置**: 在仪表盘编辑模式下，能够成功修改卡片标题。
+- [ ] **条目配置**: 能够通过UI增、删、改告警条目，并实时在卡片上看到变化。
+- [ ] **空状态验证**: 将 `alarmItems` 数组配置为空，卡片应显示 “暂无告警信息” 或自定义的 `emptyText`。
+- [ ] **滚动条验证**: 添加超过 `maxHeight` 高度的告警条目，列表区域应出现垂直滚动条。
+- [ ] **国际化**: 标题、空状态文本、告警内容均支持中英文切换。
+- [ ] **主题适配**: 组件在明亮和黑暗主题下样式表现正常。
 
-### 功能增强
-1. **实时推送**: 集成WebSocket，新告警实时推送到列表
-2. **快速操作**: 支持直接在列表中确认、忽略告警
-3. **批量操作**: 支持批量选择和批量处理告警
-4. **筛选功能**: 按告警级别、时间范围筛选
+## 🎯 预期收益
 
-### 技术优化  
-1. **虚拟滚动**: 大量告警数据时的性能优化
-2. **离线缓存**: 支持离线查看历史告警
-3. **数据导出**: 支持导出告警数据为Excel
-4. **可访问性**: 改进屏幕阅读器支持
-
-这个组件的迁移重点在于功能增强和用户体验优化，为用户提供更强大的告警管理能力。
+1.  **完全解耦**: 组件不再依赖任何后端接口，成为一个纯粹的前端展示单元。
+2.  **高度灵活**: 所有内容均可通过仪表盘UI动态配置，无需修改代码。
+3.  **易于维护**: 遵循 Card 2.1 的标准架构，代码清晰，职责单一。
+4.  **体验一致**: 与 Card 2.1 生态系统中的其他组件保持一致的开发和使用体验。

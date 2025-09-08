@@ -30,24 +30,6 @@
         <p style="margin: 8px 0 0 0; font-size: 12px; color: #999">传统组件配置功能待实现</p>
       </div>
     </div>
-
-    <!-- 无配置组件 -->
-    <div v-else>
-      <div
-        style="
-          border: 2px solid #orange;
-          padding: 16px;
-          margin: 16px 0;
-          background: #fff7e6;
-          border-radius: 6px;
-          text-align: center;
-        "
-      >
-        <h3 style="color: #d46b08; margin: 0 0 8px 0">⚠️ 无可用配置</h3>
-        <p style="margin: 0; font-size: 14px; color: #ad6800">组件类型: {{ widget?.type || '未知' }}</p>
-        <p style="margin: 8px 0 0 0; font-size: 12px; color: #ad6800">该组件未提供配置界面</p>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -98,11 +80,21 @@ const card2ConfigComponent = computed(() => {
     // 通过Card2集成hook获取组件定义
     const componentWidget = card2Integration.getComponentDefinition(props.widget.type)
 
+    // 优先使用组件自定义的配置组件
     if (componentWidget?.definition?.configComponent) {
       return componentWidget.definition.configComponent
-    } else {
-      return null
     }
+    
+    // 如果组件有配置属性但没有自定义配置组件，使用通用配置表单
+    const hasProperties = componentWidget?.definition?.config?.properties && 
+                         Object.keys(componentWidget.definition.config.properties).length > 0
+    
+    if (hasProperties) {
+      // 返回通用的Card2配置表单（使用FlexibleConfigForm）
+      return () => import('@/card2.1/core/FlexibleConfigForm.vue')
+    }
+    
+    return null
   } catch (error) {
     return null
   }

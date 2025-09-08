@@ -172,11 +172,20 @@
                 v-model:value="currentInteraction.targetComponentId"
                 :options="componentOptions"
                 :placeholder="t('interaction.placeholders.selectComponentToModify')"
-                @focus="() => console.log('🔥 [InteractionCardWizard] 目标组件选择器获得焦点, componentOptions:', componentOptions)"
-                @click="() => console.log('🔥 [InteractionCardWizard] 点击目标组件选择器, componentOptions:', componentOptions)"
+                @focus="
+                  () =>
+                    console.log(
+                      '🔥 [InteractionCardWizard] 目标组件选择器获得焦点, componentOptions:',
+                      componentOptions
+                    )
+                "
+                @click="
+                  () =>
+                    console.log('🔥 [InteractionCardWizard] 点击目标组件选择器, componentOptions:', componentOptions)
+                "
               />
               <!-- DEBUG信息 -->
-              <div style="font-size: 12px; color: #999; margin-top: 4px;">
+              <div style="font-size: 12px; color: #999; margin-top: 4px">
                 DEBUG: 组件选项数量: {{ componentOptions.length }}
               </div>
             </n-form-item>
@@ -232,7 +241,7 @@ import {
 } from 'naive-ui'
 import { FlashOutline, TrashOutline } from '@vicons/ionicons5'
 import { fetchGetUserRoutes } from '@/service/api/route'
-import { propertyExposureRegistry } from '@/card2.1/core/property-exposure'
+import { propertyExposureRegistry, getBaseConfigurationProperties } from '@/card2.1/core/property-exposure'
 import { useEditorStore } from '@/store/modules/editor'
 
 interface Props {
@@ -329,19 +338,19 @@ const componentOptions = computed(() => {
   const components = visualEditorState.getAvailableComponents()
   console.log('🔥 [InteractionCardWizard] 获取到的组件列表:', components)
   console.log('🔥 [InteractionCardWizard] visualEditorState:', visualEditorState)
-  
+
   const options = components.map(comp => ({
     // 优先使用标题，然后是名称，最后是ID的前8位
     label: comp.title || comp.label || comp.name || `组件 (${comp.id.slice(0, 8)}...)`,
     value: comp.id,
     componentType: comp.type // 保存组件类型，用于获取可响应属性
   }))
-  
+
   console.log('🔥 [InteractionCardWizard] 转换后的选项:', options)
   return options
 })
 
-// ✅ 根据选择的目标组件动态获取可响应属性
+// ✅ 根据选择的目标组件动态获取可响应属性（包含基础配置属性）
 const targetPropertyOptions = computed(() => {
   if (!currentInteraction.value.targetComponentId) {
     return []
@@ -354,33 +363,78 @@ const targetPropertyOptions = computed(() => {
   if (!targetComponent) {
     return []
   }
-  // 获取该组件类型的可响应属性（通过属性暴露注册表）
-  const componentExposure = propertyExposureRegistry.getComponentExposure(targetComponent.type)
-
-  if (!componentExposure || !componentExposure.listenableProperties) {
-    return []
-  }
 
   // 转换为选择器选项格式，按分组组织
   const groupedOptions: any[] = []
   const groups: Record<string, any[]> = {}
 
-  componentExposure.listenableProperties.forEach(property => {
-    const group = property.group || '其他'
-    if (!groups[group]) {
-      groups[group] = []
-    }
+  // 1. 获取该组件类型的可响应属性（通过属性暴露注册表）
+  const componentExposure = propertyExposureRegistry.getComponentExposure(targetComponent.type)
+  if (componentExposure && componentExposure.listenableProperties) {
+    componentExposure.listenableProperties.forEach(property => {
+      const group = property.group || '组件属性'
+      if (!groups[group]) {
+        groups[group] = []
+      }
 
-    groups[group].push({
-      label: `${property.label}${property.description ? ` (${property.description})` : ''}`,
-      value: property.name,
-      property // 保存完整属性信息
+      groups[group].push({
+        label: `${property.label}${property.description ? ` (${property.description})` : ''}`,
+        value: property.name,
+        property // 保存完整属性信息
+      })
     })
+  }
+
+  // 2. 🚀 获取基础配置级别的属性（只暴露 deviceId 和 metricsList）
+  const baseGroup = '基础配置'
+  if (!groups[baseGroup]) {
+    groups[baseGroup] = []
+  }
+
+  // 只添加 deviceId 和 metricsList
+  groups[baseGroup].push(
+    {
+      label: '设备ID (关联的设备ID，用于数据源自动配置)',
+      value: 'base.deviceId',
+      property: {
+        name: 'deviceId',
+        label: '设备ID',
+        type: 'string',
+        description: '关联的设备ID，用于数据源自动配置和设备模板',
+        isCore: true,
+        group: '设备配置'
+      }
+    },
+    {
+      label: '指标列表 (选择的设备指标列表)',
+      value: 'base.metricsList',
+      property: {
+        name: 'metricsList',
+        label: '指标列表',
+        type: 'array',
+        description: '选择的设备指标列表，用于数据获取和显示',
+        isCore: true,
+        group: '设备配置'
+      }
+    }
+  )
+
+  // 转换为分组选项格式，确保基础配置排在前面
+  const groupOrder = ['基础配置', '组件属性', '其他']
+  groupOrder.forEach(groupName => {
+    if (groups[groupName] && groups[groupName].length > 0) {
+      groupedOptions.push({
+        type: 'group',
+        label: groupName,
+        key: groupName,
+        children: groups[groupName]
+      })
+    }
   })
 
-  // 转换为分组选项格式
+  // 添加其他未预定义的分组
   Object.entries(groups).forEach(([groupName, options]) => {
-    if (options.length > 0) {
+    if (!groupOrder.includes(groupName) && options.length > 0) {
       groupedOptions.push({
         type: 'group',
         label: groupName,
@@ -391,19 +445,13 @@ const targetPropertyOptions = computed(() => {
   })
 
   const options = groupedOptions.length > 0 ? groupedOptions : []
+  console.log('🚀 [InteractionCardWizard] targetPropertyOptions:', options)
   return options
 })
 
-// 🔥 可用属性选项 - 基于组件类型动态获取
+// 🔥 可用属性选项 - 基于组件类型动态获取（包含基础配置属性）
 const availablePropertyOptions = computed(() => {
   if (!props.componentType) {
-    return []
-  }
-
-  // 从属性暴露注册表获取当前组件类型的可监听属性
-  const componentExposure = propertyExposureRegistry.getComponentExposure(props.componentType)
-
-  if (!componentExposure || !componentExposure.listenableProperties) {
     return []
   }
 
@@ -411,22 +459,73 @@ const availablePropertyOptions = computed(() => {
   const groupedOptions: any[] = []
   const groups: Record<string, any[]> = {}
 
-  componentExposure.listenableProperties.forEach(property => {
-    const group = property.group || '其他'
-    if (!groups[group]) {
-      groups[group] = []
-    }
+  // 1. 获取组件级别的可监听属性
+  const componentExposure = propertyExposureRegistry.getComponentExposure(props.componentType)
+  if (componentExposure && componentExposure.listenableProperties) {
+    componentExposure.listenableProperties.forEach(property => {
+      const group = property.group || '组件属性'
+      if (!groups[group]) {
+        groups[group] = []
+      }
 
-    groups[group].push({
-      label: `${property.label}${property.description ? ` (${property.description})` : ''}`,
-      value: property.name,
-      property // 保存完整属性信息供后续使用
+      groups[group].push({
+        label: `${property.label}${property.description ? ` (${property.description})` : ''}`,
+        value: property.name,
+        property // 保存完整属性信息供后续使用
+      })
     })
+  }
+
+  // 2. 🚀 获取基础配置级别的属性（只暴露 deviceId 和 metricsList）
+  const baseGroup = '基础配置'
+  if (!groups[baseGroup]) {
+    groups[baseGroup] = []
+  }
+
+  // 只添加 deviceId 和 metricsList
+  groups[baseGroup].push(
+    {
+      label: '设备ID (关联的设备ID，用于数据源自动配置)',
+      value: 'base.deviceId',
+      property: {
+        name: 'deviceId',
+        label: '设备ID',
+        type: 'string',
+        description: '关联的设备ID，用于数据源自动配置和设备模板',
+        isCore: true,
+        group: '设备配置'
+      }
+    },
+    {
+      label: '指标列表 (选择的设备指标列表)',
+      value: 'base.metricsList',
+      property: {
+        name: 'metricsList',
+        label: '指标列表',
+        type: 'array',
+        description: '选择的设备指标列表，用于数据获取和显示',
+        isCore: true,
+        group: '设备配置'
+      }
+    }
+  )
+
+  // 转换为分组选项格式，确保基础配置排在前面
+  const groupOrder = ['基础配置', '组件属性', '其他']
+  groupOrder.forEach(groupName => {
+    if (groups[groupName] && groups[groupName].length > 0) {
+      groupedOptions.push({
+        type: 'group',
+        label: groupName,
+        key: groupName,
+        children: groups[groupName]
+      })
+    }
   })
 
-  // 转换为分组选项格式
+  // 添加其他未预定义的分组
   Object.entries(groups).forEach(([groupName, options]) => {
-    if (options.length > 0) {
+    if (!groupOrder.includes(groupName) && options.length > 0) {
       groupedOptions.push({
         type: 'group',
         label: groupName,
@@ -437,6 +536,7 @@ const availablePropertyOptions = computed(() => {
   })
 
   const options = groupedOptions.length > 0 ? groupedOptions : []
+  console.log('🚀 [InteractionCardWizard] availablePropertyOptions:', options)
   return options
 })
 

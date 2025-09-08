@@ -190,11 +190,21 @@ export function createEditor() {
         card2Type = type.replace('card21-', '')
       }
 
+      console.log(`🔧 [useEditor] 尝试获取Card2组件: ${card2Type}`)
+      console.log(`🔧 [useEditor] Card2系统初始化状态: ${card2Integration.isInitialized.value}`)
+      console.log(`🔧 [useEditor] 可用组件数量: ${card2Integration.availableWidgets.value.length}`)
+      
       const card2Definition = card2Integration.getComponentDefinition(card2Type)
+      console.log(`🔧 [useEditor] 获取Card2定义结果:`, card2Definition)
+      
       if (card2Definition) {
         isCard2Component = true
         // ✅ 修复：getComponentDefinition 现在已经返回转换后的 WidgetDefinition
         widgetDef = card2Definition as WidgetDefinition
+        console.log(`✅ [useEditor] 成功获取Card2组件定义: ${card2Type}`)
+      } else {
+        console.error(`❌ [useEditor] Card2组件未找到: ${card2Type}`)
+        console.log(`❌ [useEditor] 所有可用组件:`, card2Integration.availableWidgets.value.map(w => w.type))
       }
     }
 

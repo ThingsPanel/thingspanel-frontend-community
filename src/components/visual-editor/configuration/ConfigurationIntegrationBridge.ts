@@ -46,19 +46,28 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
 
   /**
    * 获取组件配置
+   * 🔥 新增：自动迁移组件级设备配置到基础配置
    */
   getConfiguration(widgetId: string): WidgetConfiguration | null {
-    return configurationStateManager.getConfiguration(widgetId)
+    const config = configurationStateManager.getConfiguration(widgetId)
+    if (!config) return null
+
+    // 🚀 执行配置迁移检查和处理
+    return this.migrateConfigurationIfNeeded(widgetId, config)
   }
 
   /**
    * 设置组件配置
+   * 🔥 新增：设置时自动迁移旧格式配置
    * @param widgetId 组件ID
    * @param config 配置对象
    * @param componentType 组件类型，用于更精确的事件追踪
    */
   setConfiguration(widgetId: string, config: WidgetConfiguration, componentType?: string): void {
-    const updated = configurationStateManager.setConfiguration(widgetId, config, 'user')
+    // 🚀 在设置前执行迁移检查，确保配置结构正确
+    const migratedConfig = this.performDeviceConfigurationMigrationForSet(widgetId, config)
+
+    const updated = configurationStateManager.setConfiguration(widgetId, migratedConfig, 'user')
 
     if (updated) {
       // 🔥 关键修复：配置更新时清理缓存，确保数据一致性
@@ -70,7 +79,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         componentType: componentType || 'widget', // 使用传入的组件类型或默认为 'widget'
         section: 'dataSource', // 配置全量更新时使用 dataSource
         oldConfig: null, // 可以改进为保存之前的配置
-        newConfig: config,
+        newConfig: migratedConfig,
         timestamp: Date.now(),
         source: 'user'
       }
@@ -197,20 +206,29 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
 
   /**
    * 导入配置
+   * 🔥 新增：导入时自动迁移旧格式配置
    */
   importConfiguration(widgetId: string, configData: string): boolean {
     try {
       const config = JSON.parse(configData) as WidgetConfiguration
 
+      // 🚀 先迁移再验证，确保导入的配置结构正确
+      const migratedConfig = this.migrateConfigurationIfNeeded(widgetId, config)
+
       // 简单验证
-      const validationResult = this.validateConfiguration(config)
+      const validationResult = this.validateConfiguration(migratedConfig)
       if (!validationResult.valid) {
+        console.warn(`❌ [ConfigurationMigration] 导入的配置验证失败: ${widgetId}`)
         return false
       }
 
-      configurationStateManager.setConfiguration(widgetId, config, 'import')
+      // 保存迁移后的配置
+      configurationStateManager.setConfiguration(widgetId, migratedConfig, 'import')
+
+      console.log(`✅ [ConfigurationMigration] 配置导入并迁移成功: ${widgetId}`)
       return true
     } catch (error) {
+      console.error(`❌ [ConfigurationMigration] 配置导入失败: ${widgetId}`, error)
       return false
     }
   }
@@ -264,6 +282,164 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
   }
 
   // ========== 私有方法 ==========
+
+  /**
+   * 🔥 新增：配置迁移核心逻辑
+   * 检查并迁移组件级设备配置到基础配置层
+   * @param widgetId 组件ID
+   * @param config 原始配置
+   * @returns 迁移后的配置
+   */
+  private migrateConfigurationIfNeeded(widgetId: string, config: WidgetConfiguration): WidgetConfiguration {
+    // 检查组件配置中是否包含设备字段
+    const componentConfig = config.component || {}
+    const hasDeviceFields = this.hasComponentLevelDeviceFields(componentConfig)
+
+    if (!hasDeviceFields) {
+      // 无需迁移，直接返回原配置
+      return config
+    }
+
+    console.log(`🔄 [ConfigurationMigration] 检测到组件 ${widgetId} 需要设备配置迁移`, {
+      hasDeviceId: !!componentConfig.deviceId,
+      hasMetricsList: !!componentConfig.metricsList
+    })
+
+    // 执行迁移
+    const migrationResult = this.performDeviceConfigurationMigration(config)
+
+    // 🚀 只有实际迁移了才保存配置
+    if (migrationResult.migrated) {
+      configurationStateManager.setConfiguration(widgetId, migrationResult.config, 'migration')
+      console.log(`✅ [ConfigurationMigration] 组件 ${widgetId} 设备配置迁移完成`)
+    }
+
+    return migrationResult.config
+  }
+
+  /**
+   * 检查组件配置是否包含设备字段
+   * @param componentConfig 组件配置对象
+   * @returns 是否包含设备字段
+   */
+  private hasComponentLevelDeviceFields(componentConfig: any): boolean {
+    if (!componentConfig || typeof componentConfig !== 'object') {
+      return false
+    }
+
+    // 检查直接设备字段
+    const hasDirectDeviceFields = !!(componentConfig.deviceId || componentConfig.metricsList)
+
+    // 检查嵌套在customize中的设备字段（兼容某些组件结构）
+    const hasNestedDeviceFields = !!(componentConfig.customize?.deviceId || componentConfig.customize?.metricsList)
+
+    return hasDirectDeviceFields || hasNestedDeviceFields
+  }
+
+  /**
+   * 执行设备配置迁移
+   * 将组件级设备字段迁移到基础配置层
+   * @param config 原始配置
+   * @returns 迁移后的配置
+   */
+  private performDeviceConfigurationMigration(config: WidgetConfiguration): {
+    config: WidgetConfiguration
+    migrated: boolean
+  } {
+    const result = this.deepClone(config)
+    let hasMigrated = false
+
+    // 确保基础配置存在
+    if (!result.base) {
+      result.base = {}
+    }
+
+    const componentConfig = result.component || {}
+
+    // 🚀 迁移设备ID
+    if (componentConfig.deviceId && !result.base.deviceId) {
+      result.base.deviceId = componentConfig.deviceId
+      delete componentConfig.deviceId
+      console.log(`📋 [ConfigurationMigration] 迁移deviceId: ${result.base.deviceId}`)
+      hasMigrated = true
+    }
+
+    // 🚀 迁移指标列表
+    if (componentConfig.metricsList && !result.base.metricsList) {
+      result.base.metricsList = Array.isArray(componentConfig.metricsList) ? componentConfig.metricsList : []
+      delete componentConfig.metricsList
+      console.log(`📋 [ConfigurationMigration] 迁移metricsList: ${result.base.metricsList.length}个指标`)
+      hasMigrated = true
+    }
+
+    // 🚀 处理嵌套在customize中的设备字段
+    if (componentConfig.customize) {
+      if (componentConfig.customize.deviceId && !result.base.deviceId) {
+        result.base.deviceId = componentConfig.customize.deviceId
+        delete componentConfig.customize.deviceId
+        console.log(`📋 [ConfigurationMigration] 从customize迁移deviceId: ${result.base.deviceId}`)
+        hasMigrated = true
+      }
+
+      if (componentConfig.customize.metricsList && !result.base.metricsList) {
+        result.base.metricsList = Array.isArray(componentConfig.customize.metricsList)
+          ? componentConfig.customize.metricsList
+          : []
+        delete componentConfig.customize.metricsList
+        console.log(`📋 [ConfigurationMigration] 从customize迁移metricsList: ${result.base.metricsList.length}个指标`)
+        hasMigrated = true
+      }
+    }
+
+    // 🔥 修复：只对实际执行了迁移的配置更新元数据
+    if (hasMigrated) {
+      if (!result.metadata) {
+        result.metadata = {}
+      }
+      result.metadata.migrationVersion = '2.0'
+      result.metadata.migratedAt = Date.now()
+      result.metadata.updatedAt = Date.now()
+      console.log(`✅ [ConfigurationMigration] 配置迁移完成，已更新元数据`)
+    } else {
+      console.log(`ℹ️ [ConfigurationMigration] 无需迁移，保持原配置结构`)
+    }
+
+    return { config: result, migrated: hasMigrated }
+  }
+
+  /**
+   * 🔥 新增：为setConfiguration专门设计的迁移逻辑
+   * 与migrateConfigurationIfNeeded类似，但不自动保存，避免循环调用
+   * @param widgetId 组件ID
+   * @param config 待设置的配置
+   * @returns 迁移后的配置
+   */
+  private performDeviceConfigurationMigrationForSet(
+    widgetId: string,
+    config: WidgetConfiguration
+  ): WidgetConfiguration {
+    // 检查是否需要迁移
+    const componentConfig = config.component || {}
+    const hasDeviceFields = this.hasComponentLevelDeviceFields(componentConfig)
+
+    if (!hasDeviceFields) {
+      // 无需迁移，直接返回原配置
+      return config
+    }
+
+    console.log(`🔄 [ConfigurationMigration] setConfiguration检测到组件 ${widgetId} 需要设备配置迁移`)
+
+    // 执行迁移但不自动保存（避免循环调用setConfiguration）
+    const migrationResult = this.performDeviceConfigurationMigration(config)
+
+    if (migrationResult.migrated) {
+      console.log(`✅ [ConfigurationMigration] setConfiguration组件 ${widgetId} 设备配置迁移完成`)
+    } else {
+      console.log(`ℹ️ [ConfigurationMigration] setConfiguration组件 ${widgetId} 无需迁移`)
+    }
+
+    return migrationResult.config
+  }
 
   /**
    * 设置与EditorDataSourceManager的集成

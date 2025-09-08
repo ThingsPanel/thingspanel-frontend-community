@@ -46,17 +46,32 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
    * 初始化组件树
    */
   const initialize = async () => {
-    if (isLoading.value) return
+    console.log('🔧 [useComponentTree] 开始初始化...')
+    if (isLoading.value) {
+      console.log('🔧 [useComponentTree] 正在加载中，跳过重复初始化')
+      return
+    }
 
     isLoading.value = true
     error.value = null
 
     try {
+      console.log('🔧 [useComponentTree] 调用 initializeCard2System...')
       await initializeCard2System()
+      
+      console.log('🔧 [useComponentTree] 调用 getComponentTree...')
       const tree = getComponentTree()
+      console.log('🔧 [useComponentTree] 获取到组件树:', { 
+        componentsCount: tree.components.length, 
+        categoriesCount: tree.categories.length,
+        totalCount: tree.totalCount 
+      })
+      
       componentTree.value = tree
+      console.log('✅ [useComponentTree] 初始化完成')
     } catch (err) {
       error.value = err instanceof Error ? err.message : '初始化失败'
+      console.error('❌ [useComponentTree] 初始化失败:', err)
     } finally {
       isLoading.value = false
     }

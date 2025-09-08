@@ -1,25 +1,22 @@
 <script setup lang="ts">
 /**
  * simple-display 主组件
- * 基于新的三文件结构标准，支持 CustomConfig 类型配置和属性绑定
+ * 基于新的三文件结构标准
  */
 
 import { computed, reactive } from 'vue'
 import type { SimpleDisplayConfig, SimpleDisplayCustomize } from './settingConfig'
-import { interactionManager } from '@/card2.1/core/interaction-manager'
 
 // 组件状态接口
 interface ComponentState {
   isActive: boolean
-  clickCount: number
+  lastUpdate: string
 }
 
-// 组件props - 简化后的props接口
+// 组件props
 interface Props {
-  /** 新的CustomConfig结构配置 */
+  /** CustomConfig结构配置 */
   customConfig?: SimpleDisplayConfig
-  /** 向后兼容：旧的config结构 */
-  config?: Partial<SimpleDisplayCustomize>
   /** 组件ID */
   componentId?: string
   /** 预览模式 */
@@ -29,11 +26,10 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   componentId: '',
   customConfig: undefined,
-  config: () => ({}),
   previewMode: false
 })
 
-// 组件事件定义 - 简化为标准DOM事件
+// 组件事件定义
 interface Emits {
   (e: 'click', data: { componentId: string; timestamp: string }): void
   (e: 'hover', data: { componentId: string; type: 'enter' | 'leave' }): void
@@ -44,27 +40,20 @@ const emit = defineEmits<Emits>()
 // 组件状态管理
 const componentState = reactive<ComponentState>({
   isActive: true,
-  clickCount: 0
+  lastUpdate: new Date().toISOString()
 })
 
 /**
- * 获取组件配置 - 支持新旧格式
- * 优先使用 customConfig.customize，回退到 config
+ * 获取组件配置
  */
 const currentCustomize = computed((): SimpleDisplayCustomize => {
-  // 优先使用新的customConfig结构
-  if (props.customConfig?.customize) {
-    return props.customConfig.customize
-  }
-
-  // 回退到旧的config结构（向后兼容）
-  return {
-    title: props.config?.title || '简单展示组件',
-    content: props.config?.content || '这是一个静态展示组件，不需要数据源',
-    themeColor: props.config?.themeColor || '#2080f0',
-    fontSize: props.config?.fontSize || 16,
-    showIcon: props.config?.showIcon ?? true,
-    iconName: props.config?.iconName || '📊'
+  return props.customConfig?.customize || {
+    title: '简单展示组件',
+    content: '这是一个静态展示组件，不需要数据源',
+    themeColor: '#2080f0',
+    fontSize: 16,
+    showIcon: true,
+    iconName: '📊'
   }
 })
 
@@ -75,31 +64,15 @@ const currentTransform = computed(() => {
   return props.customConfig?.root?.transform || { rotate: 0, scale: 1 }
 })
 
-// 计算属性：从customize中提取各个属性
-const currentTitle = computed(() => currentCustomize.value.title)
-const currentContent = computed(() => currentCustomize.value.content)
-const themeColor = computed(() => currentCustomize.value.themeColor)
-const fontSize = computed(() => currentCustomize.value.fontSize)
-const showIcon = computed(() => currentCustomize.value.showIcon)
-const iconName = computed(() => currentCustomize.value.iconName)
-
-/**
- * 简化的点击处理 - 只处理组件业务逻辑
- */
+// 事件处理
 const handleClick = () => {
-  // 更新组件状态  
-  componentState.clickCount++
-
-  // 发送标准点击事件 - Card2Wrapper会拦截处理交互
+  componentState.lastUpdate = new Date().toISOString()
   emit('click', {
     componentId: props.componentId || '',
     timestamp: new Date().toISOString()
   })
 }
 
-/**
- * 简化的悬停处理 - 只处理组件业务逻辑
- */
 const handleMouseEnter = () => {
   emit('hover', {
     componentId: props.componentId || '',
@@ -114,36 +87,8 @@ const handleMouseLeave = () => {
   })
 }
 
-/**
- * 交互事件触发方法
- * 用于支持 dataChange 类型的交互触发
- */
-const triggerInteractionEvent = (eventType: string, data: any) => {
-  console.log(`🔔 [SimpleDisplay] 触发交互事件`, {
-    componentId: props.componentId,
-    eventType,
-    data,
-    currentConfig: currentCustomize.value
-  })
-
-  if (eventType === 'dataChange') {
-    // 🔥 直接使用导入的交互管理器
-    console.log(`🎯 [SimpleDisplay] 调用交互管理器处理事件`, {
-      componentId: props.componentId,
-      eventType,
-      data,
-      hasInteractionManager: !!interactionManager,
-      hasTriggerEvent: typeof interactionManager.triggerEvent === 'function'
-    })
-    
-    const results = interactionManager.triggerEvent(props.componentId, eventType, data)
-    console.log(`🎯 [SimpleDisplay] 交互处理结果`, { results })
-  }
-}
-
 // 暴露方法给父组件
 defineExpose({
-  triggerInteractionEvent,
   componentState,
   currentCustomize
 })
@@ -152,12 +97,9 @@ defineExpose({
 <template>
   <div
     class="simple-display"
-    :class="{
-      'preview-mode': previewMode
-    }"
     :style="{
-      '--theme-color': themeColor,
-      '--font-size': `${fontSize}px`,
+      '--theme-color': currentCustomize.themeColor,
+      '--font-size': currentCustomize.fontSize + 'px',
       transform: `rotate(${currentTransform.rotate}deg) scale(${currentTransform.scale})`
     }"
     :data-component-id="componentId"
@@ -165,47 +107,23 @@ defineExpose({
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >
-    <div class="header">
-      <div class="title-section">
-        <span v-if="showIcon" class="icon">{{ iconName }}</span>
-        <h3>{{ currentTitle }}</h3>
+    <!-- 标题区域 -->
+    <div class="display-header">
+      <div v-if="currentCustomize.showIcon" class="display-icon">
+        {{ currentCustomize.iconName }}
       </div>
+      <h3 class="display-title">{{ currentCustomize.title }}</h3>
     </div>
-
-    <div class="content-section">
-      <p class="main-content">{{ currentContent }}</p>
-
-      <div class="info-panel">
-        <div class="info-item">
-          <span class="label">组件类型:</span>
-          <span class="value">静态展示</span>
-        </div>
-        <div class="info-item">
-          <span class="label">数据源:</span>
-          <span class="value">无需数据源</span>
-        </div>
-        <div class="info-item">
-          <span class="label">状态:</span>
-          <span class="value status-ready">就绪</span>
-        </div>
-      </div>
+    
+    <!-- 内容区域 -->
+    <div class="display-content">
+      <p class="content-text">{{ currentCustomize.content }}</p>
     </div>
-
-    <!-- 组件信息和状态 -->
-    <div class="component-info">
-      <div class="basic-info">
-        <small>组件ID: {{ componentId || '未设置' }}</small>
-      </div>
-
-      <!-- 开发/调试模式下显示基本状态信息 -->
-      <div v-if="previewMode" class="state-info">
-        <div class="state-item">
-          <small>点击次数: {{ componentState.clickCount }}</small>
-        </div>
-        <div class="state-item">
-          <small>配置类型: {{ customConfig ? 'CustomConfig' : 'Legacy Config' }}</small>
-        </div>
-      </div>
+    
+    <!-- 状态指示器 -->
+    <div class="status-indicator" :class="{ active: componentState.isActive }">
+      <span class="status-dot"></span>
+      <span class="status-text">{{ componentState.isActive ? '活跃' : '非活跃' }}</span>
     </div>
   </div>
 </template>
@@ -216,183 +134,90 @@ defineExpose({
   background: var(--card-color);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  font-size: var(--font-size, 16px);
   height: 100%;
-  display: flex;
-  flex-direction: column;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: relative;
-  container-type: size; /* 启用容器查询 */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .simple-display:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-color: var(--theme-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
-/* 预览模式样式 */
-.simple-display.preview-mode {
-  cursor: pointer;
-}
-
-.header {
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--theme-color);
-}
-
-.title-section {
+.display-header {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.icon {
-  font-size: calc(var(--font-size, 16px) + 8px);
-  color: var(--theme-color);
+.display-icon {
+  font-size: 24px;
+  line-height: 1;
 }
 
-.title-section h3 {
+.display-title {
   margin: 0;
   color: var(--text-color);
-  font-size: calc(var(--font-size, 16px) + 4px);
-  font-weight: bold;
+  font-size: var(--font-size);
+  font-weight: 600;
+  flex: 1;
 }
 
-.content-section {
+.display-content {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.main-content {
-  margin: 0;
-  color: var(--text-color);
-  line-height: 1.6;
-  padding: 16px;
-  background: var(--body-color);
-  border-radius: 6px;
-  border-left: 4px solid var(--theme-color);
-}
-
-.info-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  background: var(--body-color);
-  border-radius: 6px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-}
-
-.info-item .label {
-  color: var(--text-color-2);
-  font-weight: 500;
-}
-
-.info-item .value {
-  color: var(--text-color);
-  font-weight: bold;
-}
-
-.status-ready {
-  color: var(--success-color) !important;
-}
-
-
-/* 组件信息区域 - 优化高度自适应 */
-.component-info {
-  margin-top: auto; /* 自动推到底部 */
-  padding-top: 8px;
-  border-top: 1px solid var(--border-color);
-  color: var(--text-color-3);
-  font-size: calc(var(--font-size, 16px) - 4px);
-  flex-shrink: 0; /* 防止被压缩 */
-}
-
-/* 在小高度容器中隐藏组件信息 */
-@media (max-height: 250px) {
-  .simple-display .component-info {
-    display: none;
-  }
-  .simple-display {
-    padding: 12px; /* 小高度时减少内边距 */
-  }
-}
-
-/* 容器查询支持的浏览器使用更精确的容器查询 */
-@container (height < 200px) {
-  .component-info {
-    display: none;
-  }
-}
-
-@container (height < 180px) {
-  .simple-display {
-    padding: 12px;
-  }
-  .header {
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-  }
-}
-
-.basic-info {
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-/* 状态信息 */
-.state-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
   justify-content: center;
-  padding: 8px;
-  background: var(--body-color);
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
-  margin-bottom: 8px;
 }
 
-.state-item {
-  padding: 2px 6px;
-  background: var(--tag-color, var(--card-color));
-  border-radius: 3px;
-  font-size: 10px;
+.content-text {
+  margin: 0;
   color: var(--text-color-2);
+  font-size: calc(var(--font-size) - 2px);
+  line-height: 1.6;
+  text-align: center;
 }
 
-.state-item small {
-  font-weight: 500;
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-color-3);
 }
 
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--error-color);
+  transition: background-color 0.3s ease;
+}
+
+.status-indicator.active .status-dot {
+  background: var(--success-color);
+}
+
+.status-text {
+  font-size: 12px;
+}
 
 /* 响应式设计 */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .simple-display {
     padding: 16px;
   }
-
-  .title-section {
-    flex-direction: column;
+  
+  .display-header {
     gap: 8px;
-    text-align: center;
   }
-
-  .info-item {
-    flex-direction: column;
-    gap: 4px;
-    text-align: center;
+  
+  .display-icon {
+    font-size: 20px;
   }
 }
 </style>

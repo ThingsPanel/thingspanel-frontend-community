@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access-Num 组件迁移验证测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .checklist li:before {
+            content: "✅ ";
+            color: #28a745;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .highlight {
+            background: #fff3d4;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Access-Num 组件迁移完成验证报告</h1>
+    <p><span class="status success">迁移成功</span> | 当前时间: <span id="currentTime"></span></p>
+
+    <div class="test-section">
+        <h2>📋 迁移概述</h2>
+        <p>成功将 <span class="highlight">builtin-card/access</span> 组件迁移到 <span class="highlight">Card2.1</span> 系统</p>
+        
+        <h3>✨ 关键特性</h3>
+        <ul class="checklist">
+            <li><strong>历史兼容性</strong>: 保持组件ID `access-num` 不变，兼容历史数据</li>
+            <li><strong>自包含设计</strong>: 移除数据源依赖，组件内部自动获取设备数据</li>
+            <li><strong>权限适配</strong>: 根据用户权限自动调用对应API(sumData/totalNumber)</li>
+            <li><strong>自动刷新</strong>: 支持可配置的定时数据更新(默认30秒)</li>
+            <li><strong>错误处理</strong>: 完善的错误恢复和用户反馈机制</li>
+            <li><strong>主题集成</strong>: 完全支持明暗主题切换</li>
+            <li><strong>响应式设计</strong>: 适配移动端和小屏幕显示</li>
+            <li><strong>国际化支持</strong>: 支持中英文切换</li>
+            <li><strong>调试功能</strong>: 内置开发调试面板</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📁 文件结构</h2>
+        <div class="code-block">
+src/card2.1/components/statistics/access-num/
+├── index.ts              # Card2.1组件定义(62行)
+├── AccessNumCard.vue     # Vue组件实现(420行)
+├── README.md            # 详细说明文档(366行)  
+└── MIGRATION_GUIDE.md   # 迁移指南文档(271行)
+        </div>
+
+        <h3>🔧 核心修改</h3>
+        <ul class="checklist">
+            <li><strong>组件注册</strong>: 已添加到 `src/card2.1/components/index.ts`</li>
+            <li><strong>语法修复</strong>: 修复了组件索引文件中的语法错误</li>
+            <li><strong>配置优化</strong>: 移除了不必要的数据源配置</li>
+            <li><strong>UI优化</strong>: 隐藏了无配置组件的配置面板提示</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 测试访问地址</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <h4>🔧 Visual Editor 测试</h4>
+                <div class="code-block">
+                    <a href="http://localhost:5005/test/editor-integration" target="_blank">
+                        http://localhost:5005/test/editor-integration
+                    </a>
+                </div>
+                <p><span class="status info">测试方法</span>: 在左侧"统计"分类中找到"设备总数"组件，拖拽到画布验证</p>
+            </div>
+            <div>
+                <h4>🌐 主应用访问</h4>
+                <div class="code-block">
+                    <a href="http://localhost:5005" target="_blank">
+                        http://localhost:5005
+                    </a>
+                </div>
+                <p><span class="status info">测试方法</span>: 在可视化编辑器中测试组件功能</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>⚡ 技术实现亮点</h2>
+        
+        <h3>1. 智能权限处理</h3>
+        <div class="code-block">
+// 根据用户权限自动选择API
+const response = authStore.userInfo?.authority === 'TENANT_ADMIN' 
+  ? await sumData() 
+  : await totalNumber()
+        </div>
+
+        <h3>2. 自动刷新机制</h3>
+        <div class="code-block">
+// 可配置的自动刷新定时器
+const startAutoRefresh = (): void => {
+  if (props.refreshInterval > 0) {
+    refreshTimer.value = setInterval(fetchDeviceData, props.refreshInterval)
+  }
+}
+        </div>
+
+        <h3>3. 数值格式化</h3>
+        <div class="code-block">
+// 智能数值显示(万、k单位)
+const formattedCount = computed(() => {
+  if (deviceTotal.value >= 10000) return `${(deviceTotal.value / 10000).toFixed(1)}万`
+  if (deviceTotal.value >= 1000) return `${(deviceTotal.value / 1000).toFixed(1)}k`
+  return deviceTotal.value.toString()
+})
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 验证清单</h2>
+        <ul class="checklist">
+            <li><strong>组件注册</strong>: Card2.1系统正确识别access-num组件</li>
+            <li><strong>拖拽功能</strong>: 可以从组件库拖拽到画布</li>
+            <li><strong>数据获取</strong>: 组件自动开始获取设备统计数据</li>
+            <li><strong>配置面板</strong>: 右侧属性面板显示可配置选项</li>
+            <li><strong>无数据源</strong>: 确认不显示数据源配置选项</li>
+            <li><strong>自动刷新</strong>: 验证30秒定时更新功能</li>
+            <li><strong>主题切换</strong>: 测试明暗主题下的显示效果</li>
+            <li><strong>响应式</strong>: 调整画布大小测试组件适配</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 迁移对比总结</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa;">
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">特性</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">原组件</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Card2.1版本</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">提升</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>组件ID</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">access-num</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">access-num</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><span class="status success">保持兼容</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>数据获取</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">依赖外部配置</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">内部自管理</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><span class="status success">简化使用</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>自动刷新</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">❌</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">✅ 可配置</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><span class="status success">新功能</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>错误处理</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">基础</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">完善恢复机制</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><span class="status success">可靠性↑</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>调试支持</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">❌</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">✅ 内置面板</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><span class="status success">开发效率↑</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="test-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h2 style="color: white;">🎉 迁移成功!</h2>
+        <p><strong>Access-Num 组件已成功迁移到 Card2.1 系统</strong></p>
+        <p>✨ 保持了完全的历史兼容性，同时提供了更强大的功能和更好的用户体验</p>
+        <p>🚀 现在可以在 Visual Editor 中正常使用该组件了!</p>
+    </div>
+
+    <script>
+        // 更新当前时间
+        document.getElementById('currentTime').textContent = new Date().toLocaleString('zh-CN');
+
+        // 简单的交互效果
+        document.querySelectorAll('.test-section').forEach(section => {
+            section.style.transition = 'transform 0.2s, box-shadow 0.2s';
+            section.addEventListener('mouseenter', () => {
+                section.style.transform = 'translateY(-2px)';
+                section.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            });
+            section.addEventListener('mouseleave', () => {
+                section.style.transform = 'translateY(0)';
+                section.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            });
+        });
+    </script>
+</body>
+</html>

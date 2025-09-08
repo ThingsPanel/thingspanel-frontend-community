@@ -248,10 +248,10 @@ export function getRecommendedTemplates(parameterType: 'header' | 'query' | 'pat
   return [
     // 1. 手动输入
     PARAMETER_TEMPLATES.find(t => t.id === 'manual')!,
-    
+
     // 2. 组件属性绑定
     PARAMETER_TEMPLATES.find(t => t.id === 'component-property-binding')!,
-    
+
     // 3. 设备配置（单个参数的设备配置）
     PARAMETER_TEMPLATES.find(t => t.id === 'device-metrics-selector')!
   ]

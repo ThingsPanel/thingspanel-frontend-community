@@ -15,7 +15,7 @@
  */
 
 import { reactive, watch, nextTick } from 'vue'
-import { simpleDisplaySettingConfig } from './settingConfig'
+import { simpleDisplaySettingConfig, customConfig } from './settingConfig'
 import type { SimpleDisplayConfig } from './settingConfig'
 import AutoFormGenerator from '@/card2.1/core/AutoFormGenerator.vue'
 
@@ -46,7 +46,7 @@ const settingConfig = simpleDisplaySettingConfig
 
 // 获取默认配置
 const getDefaultConfig = (): SimpleDisplayConfig => ({
-  ...settingConfig.customConfig
+  ...customConfig
 })
 
 // 本地配置状态
@@ -61,7 +61,6 @@ let isUpdatingFromProps = false
 const handleConfigChange = (newConfig: SimpleDisplayConfig) => {
   if (isUpdatingFromProps) return
 
-  // 更新本地配置
   Object.assign(localConfig, newConfig)
 
   // 发送更新事件
@@ -83,7 +82,6 @@ watch(
     if (sourceConfig) {
       isUpdatingFromProps = true
       try {
-        // 合并配置，保持完整的结构
         const mergedConfig = {
           ...getDefaultConfig(),
           ...sourceConfig,
@@ -92,7 +90,6 @@ watch(
             ...sourceConfig.customize
           }
         }
-
         Object.assign(localConfig, mergedConfig)
       } finally {
         nextTick(() => {
@@ -110,32 +107,5 @@ watch(
 <style scoped>
 .simple-display-setting {
   padding: 16px;
-}
-
-/* 为AutoFormGenerator提供样式支持 */
-:deep(.auto-form-generator) {
-  width: 100%;
-}
-
-:deep(.n-form-item) {
-  margin-bottom: 16px;
-}
-
-:deep(.n-form-item-label) {
-  font-weight: 500;
-  color: var(--text-color-2);
-}
-
-:deep(.form-group) {
-  margin-bottom: 20px;
-}
-
-:deep(.form-group-title) {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-color);
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-color);
 }
 </style>

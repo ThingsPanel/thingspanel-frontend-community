@@ -8,7 +8,7 @@
  * 基于SUBTASK-010要求，实现轻量级可视化配置界面
  */
 
-import { ref, reactive, computed, watch, onMounted, h } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted, h } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDialog, useMessage } from 'naive-ui'
 import {
@@ -24,6 +24,8 @@ import RawDataConfigModal from './modals/RawDataConfigModal.vue'
 import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
 // 🔥 导入组件级别轮询配置组件
 import ComponentPollingConfig from './ComponentPollingConfig.vue'
+// 🔥 导入全局轮询管理器
+import { useGlobalPollingManager } from '@/components/visual-editor/core/GlobalPollingManager'
 // 导入@vicons图标组件
 import {
   PlusOutlined,
@@ -81,6 +83,9 @@ const { t } = useI18n()
 // 弹窗和消息提示
 const dialog = useDialog()
 const message = useMessage()
+
+// 🔥 轮询管理器
+const pollingManager = useGlobalPollingManager()
 
 // 导入导出相关状态
 const exportLoading = ref<Record<string, boolean>>({})
@@ -494,14 +499,93 @@ const getComponentPollingConfig = () => {
 }
 
 /**
+ * 🔥 初始化组件轮询（用于恢复已保存的轮询配置）
+ */
+const initializeComponentPolling = () => {
+  try {
+    const pollingConfig = getComponentPollingConfig()
+    if (pollingConfig && pollingConfig.enabled) {
+      console.log(`🔄 恢复轮询配置: ${props.componentId}`, pollingConfig)
+
+      // 移除可能存在的旧任务
+      const existingTasks = pollingManager.getTasksByComponent(props.componentId)
+      existingTasks.forEach(task => pollingManager.removeTask(task.id))
+
+      // 注册轮询任务
+      const taskId = pollingManager.addTask({
+        componentId: props.componentId,
+        componentName: `${props.componentType}-${props.componentId.slice(0, 8)}`,
+        interval: pollingConfig.interval || 30000,
+        callback: executeComponentPolling,
+        autoStart: false
+      })
+
+      console.log(`✅ 恢复轮询任务: ${taskId}`)
+
+      // 如果全局轮询已启用，立即启动
+      if (pollingManager.isGlobalPollingEnabled()) {
+        pollingManager.startTask(taskId)
+      }
+    }
+  } catch (error) {
+    console.error('初始化组件轮询失败:', error)
+  }
+}
+
+/**
+ * 🔥 轮询任务执行函数
+ * 当轮询触发时执行组件的所有数据源刷新
+ */
+const executeComponentPolling = async () => {
+  try {
+    console.log(`🔄 执行组件轮询: ${props.componentId}`)
+
+    // 获取组件的数据源配置
+    const config = configurationManager.getConfiguration(props.componentId)
+    if (!config?.dataSource) {
+      console.warn(`⚠️ 组件 ${props.componentId} 没有数据源配置，跳过轮询`)
+      return
+    }
+
+    // 🔥 使用 VisualEditorBridge 执行组件数据刷新
+    const { getVisualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
+    const visualEditorBridge = getVisualEditorBridge()
+
+    // 清除缓存确保获取最新数据
+    simpleDataBridge.clearComponentCache(props.componentId)
+
+    // 执行组件数据更新
+    const result = await visualEditorBridge.updateComponentExecutor(
+      props.componentId,
+      props.componentType,
+      config.dataSource
+    )
+
+    console.log(`✅ 轮询执行完成: ${props.componentId}`, result)
+  } catch (error) {
+    console.error(`❌ 轮询执行失败: ${props.componentId}`, error)
+  }
+}
+
+/**
  * 处理组件轮询配置变化
- * 将轮询配置保存到 component 配置中
+ * 将轮询配置保存到 component 配置中，并同步到全局轮询管理器
  */
 const handleComponentPollingConfigChange = (pollingConfig: any) => {
   try {
+    console.log(`🔧 轮询配置变化: ${props.componentId}`, pollingConfig)
+
     // 获取当前组件配置
     const config = configurationManager.getConfiguration(props.componentId)
     const componentConfig = config?.component || {}
+
+    // 🔥 先移除现有的轮询任务（如果存在）
+    const existingTasks = pollingManager.getTasksByComponent(props.componentId)
+    existingTasks.forEach(task => {
+      pollingManager.removeTask(task.id)
+      console.log(`🗑️ 移除旧轮询任务: ${task.id}`)
+    })
+
     // 更新组件轮询配置
     componentConfig.polling = {
       enabled: pollingConfig.enabled || false,
@@ -513,7 +597,28 @@ const handleComponentPollingConfigChange = (pollingConfig: any) => {
 
     // 保存到配置管理器
     configurationManager.updateConfiguration(props.componentId, 'component', componentConfig)
-  } catch (error) {}
+
+    // 🔥 如果启用了轮询，注册新的轮询任务
+    if (pollingConfig.enabled) {
+      const taskId = pollingManager.addTask({
+        componentId: props.componentId,
+        componentName: `${props.componentType}-${props.componentId.slice(0, 8)}`,
+        interval: pollingConfig.interval || 30000,
+        callback: executeComponentPolling,
+        autoStart: false // 不自动启动，由全局开关控制
+      })
+
+      console.log(`✅ 注册轮询任务: ${taskId}, 间隔: ${pollingConfig.interval}ms`)
+
+      // 🔥 如果全局轮询已启用，立即启动这个任务
+      if (pollingManager.isGlobalPollingEnabled()) {
+        pollingManager.startTask(taskId)
+        console.log(`▶️ 立即启动轮询任务: ${taskId}`)
+      }
+    }
+  } catch (error) {
+    console.error('轮询配置变化处理失败:', error)
+  }
 }
 
 /**
@@ -791,11 +896,29 @@ onMounted(async () => {
 
     // 恢复显示状态
     restoreDataItemsFromConfig()
+
+    // 🔥 初始化组件轮询
+    initializeComponentPolling()
   } catch (error) {
     // 降级处理：即使配置管理器初始化失败，也尝试恢复显示状态
     try {
       restoreDataItemsFromConfig()
+      // 即使配置恢复失败，也尝试初始化轮询
+      initializeComponentPolling()
     } catch (fallbackError) {}
+  }
+})
+
+// 🔥 组件卸载时清理轮询任务
+onUnmounted(() => {
+  try {
+    const existingTasks = pollingManager.getTasksByComponent(props.componentId)
+    existingTasks.forEach(task => {
+      pollingManager.removeTask(task.id)
+      console.log(`🗑️ 清理轮询任务: ${task.id}`)
+    })
+  } catch (error) {
+    console.error('清理轮询任务失败:', error)
   }
 })
 

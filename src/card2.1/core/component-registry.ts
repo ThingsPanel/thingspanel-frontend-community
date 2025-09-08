@@ -50,24 +50,51 @@ export class ComponentRegistry {
    * @param definition 组件定义
    */
   static register(definition: ComponentDefinition): void {
-    // 🔥 强制补充必要字段：自动为每个组件添加 deviceId 和 metricsList
-    const enhancedDefinition: ComponentDefinition = {
-      ...definition,
-      // 自动补充 deviceId（如果未提供）
-      deviceId: definition.deviceId || '',
-      // 自动补充 metricsList（如果未提供）
-      metricsList: definition.metricsList || []
-    }
+    // 🔥 设备字段已移除 - 现在由基础配置统一管理
+    // deviceId 和 metricsList 不再是组件定义的一部分
+    // 直接注册组件定义，无需额外补充字段
 
     console.log(`🔧 [ComponentRegistry] 注册组件 ${definition.type}`, {
-      originalHasDeviceId: !!definition.deviceId,
-      originalHasMetricsList: !!definition.metricsList,
-      enhancedHasDeviceId: !!enhancedDefinition.deviceId,
-      enhancedHasMetricsList: !!enhancedDefinition.metricsList,
-      autoSupplemented: !definition.deviceId || !definition.metricsList
+      componentType: definition.type,
+      hasDataSources: !!definition.dataSources,
+      hasStaticParams: !!definition.staticParams,
+      configSource: 'baseConfiguration'
     })
 
-    this.definitions.set(definition.type, enhancedDefinition)
+    this.definitions.set(definition.type, definition)
+
+    // 🔥 修复：注册组件时同时注册属性暴露，确保基础配置属性可见
+    this.registerComponentPropertyExposure(definition).catch(error => {
+      console.error(`❌ [ComponentRegistry] 注册组件属性暴露失败`, { type: definition.type, error })
+    })
+  }
+
+  /**
+   * 🔥 新增：注册组件的属性暴露配置
+   * 确保设备配置迁移后，基础配置属性仍可被暴露和绑定
+   */
+  private static async registerComponentPropertyExposure(definition: ComponentDefinition): Promise<void> {
+    try {
+      // 🔥 使用动态导入避免循环依赖
+      const { enhancedAutoRegister } = await import('./property-exposure')
+
+      // 🚀 关键：增强注册，确保基础配置属性被包含
+      enhancedAutoRegister(
+        definition.type, // componentType
+        undefined, // componentInstanceId - 用于类型注册时为undefined
+        definition.type // componentName
+      )
+
+      console.log(`✅ [ComponentRegistry] 组件属性暴露注册完成`, {
+        componentType: definition.type,
+        includesBaseConfig: true
+      })
+    } catch (error) {
+      console.warn(`[ComponentRegistry] 属性暴露注册失败`, {
+        componentType: definition.type,
+        error: error instanceof Error ? error.message : error
+      })
+    }
   }
 
   /**
@@ -206,7 +233,6 @@ export class ComponentRegistry {
     }
   }
 
-
   /**
    * 🔥 新增：批量注册 settingConfig
    * @param settingConfigs settingConfig 数组
@@ -223,16 +249,31 @@ export class ComponentRegistry {
    * @param definition 组件定义
    * @param settingConfig 设置配置（可选）
    */
-  static registerComponent<T extends Record<string, any>>(
+  static async registerComponent<T extends Record<string, any>>(
     definition: ComponentDefinition,
     settingConfig?: ComponentSettingConfig<T>
-  ): void {
-    // 注册组件定义
+  ): Promise<void> {
+    // 注册组件定义（已包含属性暴露注册）
     this.register(definition)
 
-    // 🚀 使用增强的自动注册替代传统方式
-    if (enhancedAutoRegister) {
-      enhancedAutoRegister(definition.type, definition, settingConfig)
+    // 🚀 如果提供了settingConfig，注册设置配置
+    if (settingConfig) {
+      try {
+        // 🔥 暂时禁用动态导入以避免循环依赖问题
+        console.log(`ℹ️ [ComponentRegistry] settingConfig属性注册已跳过（避免循环依赖）`, {
+          componentType: definition.type,
+          settingsCount: settingConfig.settings?.length || 0
+        })
+        
+        // TODO: 在后续版本中重新启用属性自动注册
+        // const { autoRegisterFromSettingConfig } = await import('./property-exposure')
+        // autoRegisterFromSettingConfig(settingConfig)
+      } catch (error) {
+        console.warn(`[ComponentRegistry] settingConfig属性注册失败`, {
+          componentType: definition.type,
+          error: error instanceof Error ? error.message : error
+        })
+      }
     }
   }
 }

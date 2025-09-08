@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备ID绑定触发调试</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        .debug-section { 
+            background: white; 
+            padding: 20px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .log-output { 
+            background: #1e1e1e; 
+            color: #d4d4d4; 
+            padding: 15px; 
+            border-radius: 5px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            font-family: 'Consolas', monospace; 
+            font-size: 14px; 
+            white-space: pre-wrap; 
+        }
+        .test-controls { 
+            display: flex; 
+            gap: 10px; 
+            align-items: center; 
+            margin: 15px 0; 
+        }
+        input[type="text"] { 
+            padding: 8px 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-size: 14px; 
+            min-width: 150px; 
+        }
+        button { 
+            background: #007acc; 
+            color: white; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 14px; 
+        }
+        button:hover { background: #005a9e; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🔧 设备ID绑定触发调试工具</h1>
+    
+    <div class="debug-section">
+        <h3>问题描述</h3>
+        <p>用户反馈：修改基础配置中的设备ID时，已配置了HTTP属性绑定的数据源没有触发新请求。</p>
+        <p><strong>预期行为</strong>：设备ID改变 → InteractionManager检测绑定关系 → 更新数据源配置 → 触发HTTP请求</p>
+    </div>
+
+    <div class="debug-section">
+        <h3>🔍 调试步骤</h3>
+        <div class="test-controls">
+            <label>组件ID：</label>
+            <input type="text" id="componentId" value="triple-data-display_1757302119453" />
+            <label>新设备ID：</label>
+            <input type="text" id="newDeviceId" value="44" />
+            <button onclick="simulateDeviceIdChange()">模拟设备ID变更</button>
+            <button onclick="clearLogs()">清空日志</button>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h3>📋 关键检查点</h3>
+        <div id="checkpoints">
+            <div>✅ GridstackRenderer 接收配置变更事件</div>
+            <div>🔄 InteractionManager.notifyPropertyUpdate 被调用</div>
+            <div>🔄 triggerDataSourceConfigUpdateForPropertyChange 执行</div>
+            <div>🔄 isBaseConfigurationProperty 识别 base.deviceId</div>
+            <div>🔄 buildPropertyBindingPath 构建正确路径</div>
+            <div>🔄 configContainsPropertyBinding 找到绑定关系</div>
+            <div>🔄 updateCurrentComponentDataSourceForBaseConfig 更新配置</div>
+            <div>🔄 HTTP请求触发</div>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h3>🔍 实时调试日志</h3>
+        <div id="logOutput" class="log-output">等待日志输出...</div>
+    </div>
+
+    <div class="debug-section">
+        <h3>🚨 已知问题分析</h3>
+        <p><strong class="error">核心问题</strong>：从用户导出的配置文件看，HTTP参数配置包含：</p>
+        <pre>
+"selectedTemplate": "component-property-binding"
+"value": ""                    ← 绑定值为空！
+"variableName": ""            ← 变量名为空！
+        </pre>
+        <p><strong class="warning">疑似原因</strong>：属性绑定信息没有正确保存到HTTP参数配置中，或在导出时丢失。</p>
+    </div>
+
+    <script>
+        let logCount = 0;
+        
+        function appendLog(message, type = 'info') {
+            const logOutput = document.getElementById('logOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : type === 'success' ? '✅' : '📝';
+            logOutput.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+            logCount++;
+        }
+        
+        function clearLogs() {
+            document.getElementById('logOutput').textContent = '等待日志输出...\n';
+            logCount = 0;
+        }
+        
+        function simulateDeviceIdChange() {
+            const componentId = document.getElementById('componentId').value;
+            const newDeviceId = document.getElementById('newDeviceId').value;
+            
+            appendLog(`开始模拟设备ID变更: ${componentId} -> deviceId: ${newDeviceId}`);
+            
+            // 模拟GridstackRenderer的配置变更事件
+            const configChangeEvent = {
+                componentId: componentId,
+                componentType: 'widget',
+                section: 'base',
+                oldConfig: { deviceId: '4' },
+                newConfig: { deviceId: newDeviceId, metricsList: [] }
+            };
+            
+            appendLog(`GridstackRenderer 收到配置变更: ${JSON.stringify(configChangeEvent)}`);
+            
+            // 检查页面中是否有InteractionManager的实例
+            if (typeof interactionManager !== 'undefined') {
+                appendLog('发现 InteractionManager 实例，调用 notifyPropertyUpdate...', 'success');
+                try {
+                    interactionManager.notifyPropertyUpdate(componentId, 'base.deviceId', newDeviceId, '4');
+                    appendLog('InteractionManager.notifyPropertyUpdate 调用成功', 'success');
+                } catch (error) {
+                    appendLog(`InteractionManager.notifyPropertyUpdate 调用失败: ${error.message}`, 'error');
+                }
+            } else {
+                appendLog('未找到 InteractionManager 实例 - 请确保在Visual Editor页面中打开此调试工具', 'warning');
+            }
+            
+            // 检查控制台日志
+            appendLog('请查看浏览器控制台以获取详细的InteractionManager调试日志', 'warning');
+        }
+        
+        // 监听控制台日志（如果可能）
+        const originalLog = console.log;
+        console.log = function(...args) {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('InteractionManager')) {
+                appendLog(`Console: ${args.join(' ')}`);
+            }
+            return originalLog.apply(console, arguments);
+        };
+        
+        // 页面加载时的初始检查
+        window.addEventListener('load', function() {
+            appendLog('调试工具已加载');
+            
+            if (window.location.href.includes('localhost:5002')) {
+                appendLog('检测到开发服务器环境', 'success');
+            } else {
+                appendLog('请在开发服务器(localhost:5002)中打开此工具', 'warning');
+            }
+            
+            // 检查关键对象是否存在
+            setTimeout(() => {
+                if (typeof interactionManager !== 'undefined') {
+                    appendLog('✅ InteractionManager 可用', 'success');
+                } else {
+                    appendLog('❌ InteractionManager 不可用', 'error');
+                }
+                
+                if (typeof configEventBus !== 'undefined') {
+                    appendLog('✅ ConfigEventBus 可用', 'success');
+                } else {
+                    appendLog('❌ ConfigEventBus 不可用', 'error');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

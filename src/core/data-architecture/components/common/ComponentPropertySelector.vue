@@ -125,7 +125,7 @@ import {
 
 // 导入Card2.1相关功能
 import { interactionManager } from '@/card2.1/core/interaction-manager'
-import { propertyExposureRegistry } from '@/card2.1/core/property-exposure'
+import { propertyExposureRegistry, getBaseConfigurationProperties } from '@/card2.1/core/property-exposure'
 import type { ComponentPropertyTreeNode, ListenableProperty } from '@/card2.1/core/property-exposure'
 // 🚀 导入统一的路径管理器
 import { PropertyPath, PropertyPathManager } from '@/card2.1/core/property-path-manager'
@@ -195,8 +195,64 @@ const fetchTreeData = () => {
     return
   }
 
-  // 为每个组件实例生成属性树节点
-  const treeData: ComponentPropertyTreeNode[] = canvasNodes
+  // 初始化树数据数组
+  const treeData: ComponentPropertyTreeNode[] = []
+
+  // 🚀 1. 首先添加基础配置属性节点（面板级别，只暴露 deviceId 和 metricsList）
+  if (canvasNodes.length > 0) {
+    // 使用第一个组件的ID作为代表来生成路径
+    const representativeComponentId = canvasNodes[0].id
+
+    // 只暴露 deviceId 和 metricsList
+    const baseProperties: ComponentPropertyTreeNode[] = [
+      {
+        key: PropertyPathManager.createBaseConfigBindingPath(representativeComponentId, 'deviceId'),
+        label: '设备ID (string)',
+        type: 'property' as const,
+        componentId: representativeComponentId,
+        propertyName: 'deviceId',
+        propertyConfig: {
+          name: 'deviceId',
+          label: '设备ID',
+          type: 'string',
+          description: '关联的设备ID，用于数据源自动配置和设备模板',
+          isCore: true,
+          group: '设备配置',
+          defaultValue: ''
+        },
+        isLeaf: true
+      },
+      {
+        key: PropertyPathManager.createBaseConfigBindingPath(representativeComponentId, 'metricsList'),
+        label: '指标列表 (array)',
+        type: 'property' as const,
+        componentId: representativeComponentId,
+        propertyName: 'metricsList',
+        propertyConfig: {
+          name: 'metricsList',
+          label: '指标列表',
+          type: 'array',
+          description: '选择的设备指标列表，用于数据获取和显示',
+          isCore: true,
+          group: '设备配置',
+          defaultValue: []
+        },
+        isLeaf: true
+      }
+    ]
+
+    // 添加基础配置节点到树数据前面
+    treeData.push({
+      key: 'panel_base_config',
+      label: '面板基础配置',
+      type: 'component' as const,
+      children: baseProperties,
+      isLeaf: false
+    })
+  }
+
+  // 2. 然后添加各个组件实例的属性节点
+  const componentNodes = canvasNodes
     .map(node => {
       // 根据组件类型获取属性暴露配置
       const componentType = node.type || node.widget_type
@@ -235,6 +291,9 @@ const fetchTreeData = () => {
       }
     })
     .filter(Boolean) as ComponentPropertyTreeNode[]
+
+  // 将组件节点添加到树数据后面
+  treeData.push(...componentNodes)
 
   rawTreeData.value = treeData
 }

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单级分类结构测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .category { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .category-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .component-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .component-item { padding: 8px; background: #f5f5f5; border-radius: 4px; font-size: 14px; }
+        .debug-info { background: #f0f8ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .test-status { font-weight: bold; color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>🧪 单级分类结构测试</h1>
+    
+    <div class="debug-info">
+        <div class="test-status">测试时间: <span id="testTime"></span></div>
+        <div>测试URL: <a href="http://localhost:5002/test/panel-editor-v2" target="_blank">http://localhost:5002/test/panel-editor-v2</a></div>
+        <div>预期结果: 左侧抽屉应显示单级分类结构，不再有子分类</div>
+    </div>
+
+    <h2>📊 预期的分类结构（基于folder-category映射）</h2>
+    
+    <div class="category">
+        <div class="category-title">📊 仪表盘 (dashboard)</div>
+        <div>来自 /dashboard/ 文件夹，显示顺序: 1</div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">ℹ️ 信息 (information)</div>
+        <div>来自 /information/ 文件夹，显示顺序: 2</div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">🎮 控制 (control)</div>
+        <div>来自 /control/ 文件夹，显示顺序: 3</div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">📈 数据 (data)</div>
+        <div>来自 /data/ 文件夹，显示顺序: 5</div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">📊 统计 (statistics)</div>
+        <div>来自 /statistics/ 文件夹，显示顺序: 6</div>
+        <div style="margin-top: 8px; color: #e74c3c;">⚠️ 之前出现了重复的"统计类"和"统计"，现在应该只有一个"统计"</div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">📍 位置 (location)</div>
+        <div>来自 /location/ 文件夹，显示顺序: 7</div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">🎵 音视频 (media)</div>
+        <div>来自 /media/ 文件夹，显示顺序: 8</div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">⚠️ 告警 (alarm)</div>
+        <div>来自 /alarm/ 文件夹，显示顺序: 9</div>
+    </div>
+
+    <div class="category">
+        <div class="category-title">🧪 测试 (test)</div>
+        <div>来自 /test/ 文件夹，显示顺序: 999，仅开发环境显示</div>
+        <div style="margin-top: 8px; color: #e74c3c;">⚠️ 之前这个分类消失了，现在应该重新出现</div>
+    </div>
+
+    <h2>🔧 修复内容</h2>
+    <ul>
+        <li>✅ 将二级分类结构改为单级分类</li>
+        <li>✅ 修复重复的"统计"分类问题</li>
+        <li>✅ 确保"测试"分类在开发环境正确显示</li>
+        <li>✅ 使用正确的中文分类名称</li>
+        <li>✅ 组件按照文件夹结构正确归类</li>
+    </ul>
+
+    <h2>🚨 验证检查点</h2>
+    <ol>
+        <li><strong>打开测试页面</strong>: <a href="http://localhost:5002/test/panel-editor-v2" target="_blank">点击访问</a></li>
+        <li><strong>查看左侧抽屉</strong>: 点击左上角的"组件库"按钮</li>
+        <li><strong>检查分类</strong>: 应该看到上述中文分类名称，不再有英文或"统计类"</li>
+        <li><strong>检查结构</strong>: 每个分类下直接显示组件，不再有子分类</li>
+        <li><strong>检查测试分类</strong>: 应该能看到"测试"分类（开发环境）</li>
+    </ol>
+
+    <script>
+        document.getElementById('testTime').textContent = new Date().toLocaleString('zh-CN');
+        
+        // 简单的自动测试功能
+        setTimeout(() => {
+            console.log('🧪 单级分类结构测试页面已加载');
+            console.log('📍 请手动访问: http://localhost:5002/test/panel-editor-v2');
+            console.log('🔍 检查左侧抽屉的组件分类结构');
+        }, 1000);
+    </script>
+</body>
+</html>

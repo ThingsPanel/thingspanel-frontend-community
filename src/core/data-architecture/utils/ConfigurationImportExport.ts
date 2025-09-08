@@ -1149,6 +1149,12 @@ export class SingleDataSourceImporter {
         updatedAt: Date.now()
       }
 
+      // 🔧 确保 dataSources 数组存在
+      if (!existingConfig.dataSources || !Array.isArray(existingConfig.dataSources)) {
+        existingConfig.dataSources = []
+        console.warn(`⚠️ [SingleDataSourceImporter] dataSources 数组不存在或不是数组，已重置为空数组`)
+      }
+
       // 找到或创建目标槽位
       let targetSlotIndex = existingConfig.dataSources.findIndex((source: any) => source.sourceId === targetSlotId)
 

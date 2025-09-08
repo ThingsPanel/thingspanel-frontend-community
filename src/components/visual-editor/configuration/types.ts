@@ -7,7 +7,7 @@
 
 /**
  * 基础配置接口 - 定义NodeWrapper支持的所有基础配置项
- * 包含显示、样式、布局等通用配置
+ * 包含显示、样式、布局、设备关联等通用配置
  */
 export interface BaseConfiguration {
   // 显示配置
@@ -49,6 +49,25 @@ export interface BaseConfiguration {
     bottom: number
     left: number
   }
+
+  // 设备关联配置 - 统一管理所有组件的设备关联
+  /** 关联的设备ID - 用于数据源自动配置和设备模板 */
+  deviceId?: string
+  /** 监控的指标列表 - 定义组件关注的设备指标 */
+  metricsList?: Array<{
+    /** 指标唯一标识 */
+    id: string
+    /** 指标显示名称 */
+    name: string
+    /** 指标单位 */
+    unit?: string
+    /** 指标描述 */
+    description?: string
+    /** 数据类型 */
+    dataType?: 'number' | 'string' | 'boolean' | 'object'
+    /** 聚合方式 */
+    aggregation?: 'last' | 'avg' | 'sum' | 'min' | 'max' | 'count'
+  }>
 
   // 扩展字段支持
   [key: string]: any

@@ -258,7 +258,7 @@ const handleMetricsListUpdate = (tags: string[]) => {
     dataType: 'number' as const,
     aggregation: 'last' as const
   }))
-  
+
   // 更新配置
   handleUpdate()
 }
@@ -338,7 +338,7 @@ const loadConfigurationFromManager = async () => {
       const extendedConfig = baseConfig as BaseConfiguration & { deviceId?: string; metricsList?: MetricItem[] }
       formData.deviceId = extendedConfig.deviceId || ''
       formData.metricsList = extendedConfig.metricsList || []
-      
+
       // 将 MetricItem 对象转换为标签形式显示
       formData.metricsListTags = formData.metricsList.map(metric => metric.name)
 

@@ -18,11 +18,17 @@ import type {
   JumpConfig,
   ModifyConfig
 } from './interaction-types'
+
+// 导入配置管理相关模块（避免使用 require）
+import { configEventBus } from '@/core/data-architecture/ConfigEventBus'
+import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import { InteractionAdapter } from './interaction-adapter'
 import { VisualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
 import { propertyBindingLogger } from '@/utils/logger'
 // 🚀 导入统一的路径管理器
 import { PropertyPath, PropertyPathManager } from './property-path-manager'
+// 🔥 导入配置同步桥梁
+import { interactionConfigBridge } from './interaction-config-bridge'
 
 class InteractionManager {
   private componentConfigs = new Map<string, InteractionConfig[]>()
@@ -31,7 +37,47 @@ class InteractionManager {
   private visualEditorBridge = new VisualEditorBridge()
 
   // 🔥 新增：存储需要响应属性变化的HTTP数据源映射
-  private httpDataSourceMappings = new Map<string, { componentId: string; componentType: string; config: any }>()
+  private httpDataSourceMappings = new Map<string, string>()
+
+  // 🔥 新增：配置变化监听器清理函数映射
+  private configChangeListeners = new Map<string, () => void>()
+
+  // 🔥 新增：已初始化的标记
+  private isInitialized = false
+
+  // 🔥 新增：ConfigEventBus数据执行触发器清理函数
+  private dataExecutionTriggerCleanup: (() => void) | null = null
+
+  /**
+   * 🔥 初始化InteractionManager
+   * 设置全局配置变化监听器
+   */
+  async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      return
+    }
+
+    try {
+      // 设置全局配置变化监听
+      await this.setupGlobalConfigurationListener()
+
+      // 🔥 关键修复：注册ConfigEventBus数据执行触发器
+      console.log(`🔧 [InteractionManager] 注册ConfigEventBus数据执行触发器`)
+      
+      const { registerDataExecutionTrigger } = await import('../../core/data-architecture/ConfigEventBus')
+      
+      this.dataExecutionTriggerCleanup = registerDataExecutionTrigger(
+        this.handleDataExecutionTrigger.bind(this)
+      )
+
+      console.log(`✅ [InteractionManager] ConfigEventBus数据执行触发器注册成功`)
+
+      this.isInitialized = true
+      console.log(`🚀 [InteractionManager] 初始化完成`)
+    } catch (error) {
+      console.error(`❌ [InteractionManager] 初始化失败`, error)
+    }
+  }
 
   /**
    * 注册组件的交互配置
@@ -40,6 +86,19 @@ class InteractionManager {
     this.componentConfigs.set(componentId, configs)
     // 初始化组件状态
     this.componentStates.set(componentId, {})
+
+    // 🔥 为这个组件设置配置变化监听
+    this.setupComponentConfigurationListener(componentId).catch(error => {
+      console.error(`❌ [InteractionManager] 设置组件配置监听器失败`, { componentId, error })
+    })
+    
+    // 🔥 检查组件配置中是否有HTTP数据源，并存储映射
+    // 临时注释：修复方法调用错误
+    try {
+      this.checkAndStoreHttpDataSourceMapping(componentId, configs)
+    } catch (error) {
+      console.warn(`[InteractionManager] HTTP数据源映射检查失败，忽略:`, error)
+    }
   }
 
   /**
@@ -49,6 +108,9 @@ class InteractionManager {
     this.componentConfigs.delete(componentId)
     this.componentStates.delete(componentId)
     this.eventListeners.delete(componentId)
+
+    // 🔥 清理配置变化监听器
+    this.cleanupComponentConfigurationListener(componentId)
   }
 
   /**
@@ -275,6 +337,9 @@ class InteractionManager {
     const newState = { ...currentState, ...updates }
     this.componentStates.set(componentId, newState)
 
+    // 🔥 关键修复：同步状态到配置管理器
+    this.syncToConfigurationManager(componentId, updates)
+
     // 🔥 通知目标组件状态变化
     this.notifyComponentStateChange(componentId, updates, newState)
   }
@@ -314,12 +379,12 @@ class InteractionManager {
   }
 
   /**
-   * 🔥 新增：通知组件属性更新 - 支持 settingConfig 属性绑定
+   * 🔥 重构：通知组件属性更新 - 使用正确的数据源触发架构
    * 用于跨组件属性绑定，将一个组件的属性变更传递给另一个组件
    */
   notifyPropertyUpdate(componentId: string, propertyPath: string, newValue: any, oldValue?: any): void {
-    // 🔥 新增：触发HTTP数据源刷新
-    this.triggerHttpRefreshForPropertyChange(componentId, propertyPath, newValue, oldValue)
+    // 🚀 架构修复：通过更新数据源配置来触发执行器，而不是直接刷新
+    this.triggerDataSourceConfigUpdateForPropertyChange(componentId, propertyPath, newValue, oldValue)
 
     // 通过 DOM 事件通知组件属性更新
     const targetElement = document.querySelector(`[data-component-id="${componentId}"]`)
@@ -910,6 +975,7 @@ class InteractionManager {
   /**
    * 🚀 解析属性绑定表达式（使用统一路径格式）
    * 支持格式：componentInstanceId.propertyPath (如 comp-123.customize.title)
+   * 🔥 增强：支持从基础配置中读取设备字段
    */
   resolvePropertyBinding(bindingExpression: string): any {
     if (!bindingExpression || typeof bindingExpression !== 'string') {
@@ -925,25 +991,43 @@ class InteractionManager {
 
     const { componentInstanceId, propertyPath } = parseResult.pathInfo!
 
-    // 获取组件状态
-    const componentState = this.getComponentState(componentInstanceId)
-    if (!componentState) {
-      console.warn(`[InteractionManager] 组件状态不存在: ${componentInstanceId}`)
-      return undefined
+    // 🔥 增强：首先尝试从基础配置中获取属性值
+    const baseConfigValue = this.getPropertyFromBaseConfiguration(componentInstanceId, propertyPath)
+    if (baseConfigValue !== undefined) {
+      console.log(`🎯 [InteractionManager] 从基础配置解析属性`, {
+        bindingExpression,
+        componentInstanceId,
+        propertyPath,
+        value: baseConfigValue,
+        source: 'baseConfiguration'
+      })
+      return baseConfigValue
     }
 
-    // 解析嵌套属性路径
-    const value = this.getNestedProperty(componentState, propertyPath)
+    // 🔥 然后尝试从交互状态中获取属性值
+    const componentState = this.getComponentState(componentInstanceId)
+    if (componentState) {
+      const stateValue = this.getNestedProperty(componentState, propertyPath)
+      if (stateValue !== undefined) {
+        console.log(`🎯 [InteractionManager] 从交互状态解析属性`, {
+          bindingExpression,
+          componentInstanceId,
+          propertyPath,
+          value: stateValue,
+          source: 'interactionState'
+        })
+        return stateValue
+      }
+    }
 
-    console.log(`🎯 [InteractionManager] 属性绑定解析`, {
-      bindingExpression,
+    console.warn(`[InteractionManager] 属性解析失败: ${bindingExpression}`, {
       componentInstanceId,
       propertyPath,
-      value,
-      pathInfo: parseResult.pathInfo
+      hasComponentState: !!componentState,
+      stateKeys: componentState ? Object.keys(componentState) : []
     })
 
-    return value
+    return undefined
   }
 
   /**
@@ -991,8 +1075,30 @@ class InteractionManager {
   /**
    * 🔥 新增：设置组件属性值
    * 用于从外部（如 HTTP 响应）更新组件属性
+   * 🔥 增强：支持更新基础配置中的设备字段
    */
   setComponentProperty(componentId: string, propertyPath: string, newValue: any): boolean {
+    // 🔥 首先尝试更新基础配置中的属性
+    const wasUpdatedInBaseConfig = this.setPropertyInBaseConfiguration(componentId, propertyPath, newValue)
+
+    if (wasUpdatedInBaseConfig) {
+      // 如果成功更新了基础配置，获取旧值用于通知
+      const oldValue = this.getPropertyFromBaseConfiguration(componentId, propertyPath)
+
+      // 通知组件属性更新
+      this.notifyPropertyUpdate(componentId, propertyPath, newValue, oldValue)
+
+      console.log(`🔄 [InteractionManager] 基础配置属性更新成功`, {
+        componentId,
+        propertyPath,
+        newValue,
+        oldValue
+      })
+
+      return true
+    }
+
+    // 🔥 如果不是基础配置字段，则更新交互状态
     const currentState = this.getComponentState(componentId) || {}
     const oldValue = this.getNestedProperty(currentState, propertyPath)
 
@@ -1003,7 +1109,142 @@ class InteractionManager {
     // 通知组件属性更新
     this.notifyPropertyUpdate(componentId, propertyPath, newValue, oldValue)
 
+    console.log(`🔄 [InteractionManager] 交互状态属性更新成功`, {
+      componentId,
+      propertyPath,
+      newValue,
+      oldValue
+    })
+
     return true
+  }
+
+  /**
+   * 🔥 从基础配置中获取属性值
+   * 支持读取 BaseConfiguration 中的设备字段和其他基础配置项
+   */
+  private getPropertyFromBaseConfiguration(componentInstanceId: string, propertyPath: string): any {
+    try {
+      // 🔥 使用顶部导入的配置管理器
+
+      // 获取组件的完整配置
+      const fullConfig = configurationIntegrationBridge.getConfiguration(componentInstanceId)
+      if (!fullConfig || !fullConfig.base) {
+        return undefined
+      }
+
+      const baseConfig = fullConfig.base
+
+      // 🔥 特殊处理已知的基础配置字段
+      const baseConfigFields = [
+        'deviceId',
+        'metricsList',
+        'showTitle',
+        'title',
+        'visible',
+        'opacity',
+        'backgroundColor',
+        'borderWidth',
+        'borderColor',
+        'borderRadius',
+        'padding',
+        'margin'
+      ]
+
+      // 如果请求的是基础配置字段，直接从 base 配置中获取
+      if (baseConfigFields.includes(propertyPath)) {
+        const value = baseConfig[propertyPath]
+        return value
+      }
+
+      // 🔥 处理嵌套路径（如 padding.top）
+      const value = this.getNestedProperty(baseConfig, propertyPath)
+      return value
+    } catch (error) {
+      console.warn(`[InteractionManager] 获取基础配置属性失败`, {
+        componentInstanceId,
+        propertyPath,
+        error: error instanceof Error ? error.message : error
+      })
+      return undefined
+    }
+  }
+
+  /**
+   * 🔥 设置基础配置中的属性值
+   * 支持更新 BaseConfiguration 中的设备字段和其他基础配置项
+   */
+  private setPropertyInBaseConfiguration(componentInstanceId: string, propertyPath: string, newValue: any): boolean {
+    try {
+      // 🔥 导入配置管理器（延迟导入避免循环依赖）
+      // 🔥 使用顶部导入的配置管理器
+
+      // 获取组件的完整配置
+      const fullConfig = configurationIntegrationBridge.getConfiguration(componentInstanceId)
+      if (!fullConfig) {
+        console.warn(`[InteractionManager] 组件配置不存在: ${componentInstanceId}`)
+        return false
+      }
+
+      // 🔥 特殊处理已知的基础配置字段
+      const baseConfigFields = [
+        'deviceId',
+        'metricsList',
+        'showTitle',
+        'title',
+        'visible',
+        'opacity',
+        'backgroundColor',
+        'borderWidth',
+        'borderColor',
+        'borderRadius',
+        'padding',
+        'margin'
+      ]
+
+      // 只有基础配置字段才能通过此方法更新
+      if (!baseConfigFields.includes(propertyPath) && !propertyPath.includes('.')) {
+        return false
+      }
+
+      // 获取当前基础配置
+      const currentBaseConfig = fullConfig.base || {}
+
+      // 创建更新后的基础配置
+      let updatedBaseConfig: any
+
+      if (propertyPath.includes('.')) {
+        // 🔥 处理嵌套路径（如 padding.top）
+        updatedBaseConfig = { ...currentBaseConfig }
+        updatedBaseConfig = this.setNestedProperty(updatedBaseConfig, propertyPath, newValue)
+      } else {
+        // 🔥 处理顶级字段（如 deviceId）
+        updatedBaseConfig = {
+          ...currentBaseConfig,
+          [propertyPath]: newValue
+        }
+      }
+
+      // 🔥 通过配置管理器更新基础配置
+      configurationIntegrationBridge.updateConfiguration(componentInstanceId, 'base', updatedBaseConfig)
+
+      console.log(`🔄 [InteractionManager] 基础配置更新`, {
+        componentInstanceId,
+        propertyPath,
+        newValue,
+        oldValue: this.getNestedProperty(currentBaseConfig, propertyPath)
+      })
+
+      return true
+    } catch (error) {
+      console.error(`[InteractionManager] 设置基础配置属性失败`, {
+        componentInstanceId,
+        propertyPath,
+        newValue,
+        error: error instanceof Error ? error.message : error
+      })
+      return false
+    }
   }
 
   /**
@@ -1069,49 +1310,104 @@ class InteractionManager {
   }
 
   /**
-   * 🔥 新增：触发HTTP数据源刷新（属性变化时）
-   * 这是解决组件属性绑定后HTTP不更新的核心方法
+   * 🔥 重构：正确的数据源触发机制
+   * 属性变化 → 找到绑定该属性的数据源配置 → 更新数据源配置 → 配置变化触发执行器
+   *
+   * 这是架构修复的核心：不再直接触发数据源刷新，而是通过更新配置来触发
    */
-  private async triggerHttpRefreshForPropertyChange(
+  private async triggerDataSourceConfigUpdateForPropertyChange(
     componentId: string,
     propertyPath: string,
     newValue: any,
     oldValue?: any
   ): Promise<void> {
     try {
-      // 🔥 关键修复：查找所有可能受到这个属性变化影响的HTTP数据源
-      const affectedDataSources: string[] = []
+      console.log(`🔄 [InteractionManager] 属性变化，查找绑定的数据源配置`, {
+        componentId,
+        propertyPath,
+        newValue,
+        oldValue
+      })
 
-      // 1. 检查是否有直接使用这个组件属性的HTTP配置
+      // 🚀 核心修复：找到所有绑定此属性的数据源配置，并更新它们
+      const updatedConfigurations: string[] = []
+
+      // 遍历所有已注册的数据源映射，查找绑定关系
       for (const [mappingKey, mapping] of this.httpDataSourceMappings.entries()) {
-        // 检查HTTP配置中是否包含对这个组件属性的绑定引用
-        if (this.configContainsPropertyBinding(mapping.config, componentId, propertyPath)) {
-          affectedDataSources.push(mapping.componentId)
+        const bindingExpression = this.buildPropertyBindingPath(componentId, propertyPath)
+
+        // 检查配置中是否包含对此属性的绑定
+        const hasBinding = this.configContainsPropertyBinding(mapping.config, componentId, propertyPath)
+        console.log(`🔍 [InteractionManager] 检查绑定关系`, {
+          mappingKey,
+          hasBinding,
+          bindingExpression,
+          configStr: JSON.stringify(mapping.config).substring(0, 200) + '...'
+        })
+        
+        if (hasBinding) {
+          console.log(`🎯 [InteractionManager] 发现绑定关系，更新数据源配置`, {
+            sourceComponent: componentId,
+            sourceProperty: propertyPath,
+            targetComponent: mapping.componentId,
+            bindingExpression
+          })
+
+          // 🚀 关键：更新数据源配置而不是直接刷新
+          await this.updateDataSourceConfigurationWithPropertyValue(
+            mapping.componentId,
+            mapping.config,
+            bindingExpression,
+            newValue
+          )
+
+          updatedConfigurations.push(mapping.componentId)
         }
       }
 
-      // 2. 如果没有发现直接绑定，尝试刷新所有HTTP数据源（作为后备方案）
-      if (affectedDataSources.length === 0) {
-        for (const [mappingKey, mapping] of this.httpDataSourceMappings.entries()) {
-          affectedDataSources.push(mapping.componentId)
-        }
+      // 🔥 特殊处理基础配置字段：这些字段可能直接影响当前组件的数据源
+      const isBaseConfigProperty = this.isBaseConfigurationProperty(propertyPath)
+      if (isBaseConfigProperty && !updatedConfigurations.includes(componentId)) {
+        console.log(`🎯 [InteractionManager] 基础配置变化，更新当前组件数据源配置`, {
+          componentId,
+          propertyPath
+        })
+
+        await this.updateCurrentComponentDataSourceForBaseConfig(componentId, propertyPath, newValue)
+        updatedConfigurations.push(componentId)
       }
 
-      // 3. 刷新所有受影响的HTTP数据源
-      for (const targetComponentId of affectedDataSources) {
-        const mapping = this.httpDataSourceMappings.get(`http-${targetComponentId}`)
-        if (mapping) {
-          try {
-            // 使用VisualEditorBridge刷新数据源
-            const result = await this.visualEditorBridge.updateComponentExecutor(
-              mapping.componentId,
-              mapping.componentType,
-              mapping.config
-            )
-          } catch (error) {}
-        }
-      }
-    } catch (error) {}
+      console.log(`✅ [InteractionManager] 数据源配置更新完成`, {
+        affectedComponents: updatedConfigurations,
+        totalCount: updatedConfigurations.length
+      })
+    } catch (error) {
+      console.error(`[InteractionManager] 数据源配置更新失败`, {
+        componentId,
+        propertyPath,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 重构：使用PropertyPathManager构建正确的属性绑定路径
+   * 为基础配置属性构建正确的路径格式：componentId.base.propertyPath
+   */
+  private buildPropertyBindingPath(componentId: string, propertyPath: string): string {
+    // 检查是否为基础配置属性
+    const isBaseConfigProperty = this.isBaseConfigurationProperty(propertyPath)
+
+    if (isBaseConfigProperty) {
+      // 🔥 修复：从 base.propertyName 提取真实的属性名
+      const actualPropertyName = propertyPath.startsWith('base.') 
+        ? propertyPath.substring(5) 
+        : propertyPath
+      return PropertyPathManager.createBaseConfigBindingPath(componentId, actualPropertyName)
+    }
+
+    // 非基础配置属性，使用组件配置路径
+    return PropertyPathManager.createComponentConfigBindingPath(componentId, propertyPath)
   }
 
   /**
@@ -1121,13 +1417,498 @@ class InteractionManager {
   private configContainsPropertyBinding(config: any, componentId: string, propertyPath: string): boolean {
     if (!config) return false
 
-    const bindingPath = `${componentId}.${propertyPath}`
+    // 使用正确的绑定路径格式
+    const bindingPath = this.buildPropertyBindingPath(componentId, propertyPath)
     const configStr = JSON.stringify(config)
 
-    // 检查配置中是否包含绑定路径
-    const hasBinding = configStr.includes(bindingPath)
+    // 🔥 扩展绑定检查逻辑 - 检查多种可能的绑定格式
+    const possibleBindingFormats = [
+      bindingPath,
+      `base.${propertyPath}`,
+      `"${propertyPath}"`,
+      `component-property-binding`,  // 检查绑定模板
+      `"valueMode":"component"`      // 检查组件绑定模式
+    ]
+
+    let hasBinding = false
+    let matchedFormat = ''
+
+    for (const format of possibleBindingFormats) {
+      if (configStr.includes(format)) {
+        hasBinding = true
+        matchedFormat = format
+        break
+      }
+    }
+    
+    // 🔥 添加详细调试日志
+    console.log(`🔍 [InteractionManager] configContainsPropertyBinding 详细检查`, {
+      componentId,
+      propertyPath,
+      bindingPath,
+      hasBinding,
+      matchedFormat,
+      configLength: configStr.length,
+      possibleBindingFormats,
+      configSample: configStr.substring(0, 300) + '...'
+    })
 
     return hasBinding
+  }
+
+  /**
+   * 🔥 判断是否为基础配置属性
+   * 基础配置属性包括设备字段和其他由基础配置面板管理的字段
+   */
+  private isBaseConfigurationProperty(propertyPath: string): boolean {
+    const baseConfigFields = [
+      'deviceId',
+      'metricsList',
+      'showTitle',
+      'title',
+      'visible',
+      'opacity',
+      'backgroundColor',
+      'borderWidth',
+      'borderColor',
+      'borderRadius',
+      'padding',
+      'margin'
+    ]
+
+    // 🔥 修复：检查 base.propertyName 格式的属性路径
+    if (propertyPath.startsWith('base.')) {
+      const actualProperty = propertyPath.substring(5) // 移除 "base." 前缀
+      return baseConfigFields.includes(actualProperty)
+    }
+
+    // 检查顶级字段
+    if (baseConfigFields.includes(propertyPath)) {
+      return true
+    }
+
+    // 检查嵌套字段（如 padding.top）
+    const topLevelField = propertyPath.split('.')[0]
+    return baseConfigFields.includes(topLevelField)
+  }
+
+  /**
+   * 🔥 新增：通过属性值更新数据源配置
+   * 这是正确架构的核心：用属性值更新数据源配置，让配置变化触发执行器
+   */
+  private async updateDataSourceConfigurationWithPropertyValue(
+    targetComponentId: string,
+    currentConfig: any,
+    bindingExpression: string,
+    propertyValue: any
+  ): Promise<void> {
+    try {
+      // 🔥 导入配置管理器（延迟导入避免循环依赖）
+      // 🔥 使用顶部导入的配置管理器
+
+      // 获取当前组件的完整配置
+      const fullConfig = configurationIntegrationBridge.getConfiguration(targetComponentId)
+      if (!fullConfig || !fullConfig.dataSource) {
+        console.warn(`[InteractionManager] 目标组件数据源配置不存在: ${targetComponentId}`)
+        return
+      }
+
+      // 创建更新后的数据源配置
+      const updatedDataSourceConfig = this.replaceBindingExpressionWithValue(
+        fullConfig.dataSource,
+        bindingExpression,
+        propertyValue
+      )
+
+      // 检查配置是否真的发生了变化
+      const configChanged = JSON.stringify(fullConfig.dataSource) !== JSON.stringify(updatedDataSourceConfig)
+
+      if (configChanged) {
+        console.log(`🔄 [InteractionManager] 更新数据源配置`, {
+          targetComponent: targetComponentId,
+          bindingExpression,
+          propertyValue,
+          oldConfig: fullConfig.dataSource,
+          newConfig: updatedDataSourceConfig
+        })
+
+        // 🚀 关键：通过配置管理器更新数据源配置
+        // 这将触发ConfigurationStateManager的事件，最终触发执行器
+        configurationIntegrationBridge.updateConfiguration(targetComponentId, 'dataSource', updatedDataSourceConfig)
+
+        console.log(`✅ [InteractionManager] 数据源配置已更新，配置变化将触发执行器`)
+      } else {
+        console.log(`ℹ️ [InteractionManager] 数据源配置未发生实质变化，跳过更新`)
+      }
+    } catch (error) {
+      console.error(`[InteractionManager] 更新数据源配置失败`, {
+        targetComponentId,
+        bindingExpression,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 新增：为当前组件的基础配置变化更新其数据源配置
+   */
+  private async updateCurrentComponentDataSourceForBaseConfig(
+    componentId: string,
+    propertyPath: string,
+    newValue: any
+  ): Promise<void> {
+    try {
+      // 🔥 导入配置管理器（延迟导入避免循环依赖）
+      // 🔥 使用顶部导入的配置管理器
+
+      // 获取组件的完整配置
+      const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
+      if (!fullConfig || !fullConfig.dataSource) {
+        return // 没有数据源配置，无需更新
+      }
+
+      const bindingExpression = this.buildPropertyBindingPath(componentId, propertyPath)
+
+      // 检查数据源配置是否引用了此基础配置属性
+      const hasDirectBinding = this.configContainsPropertyBinding(fullConfig.dataSource, componentId, propertyPath)
+      console.log(`🔍 [InteractionManager] 检查基础配置属性直接绑定`, {
+        componentId,
+        propertyPath,
+        bindingExpression,
+        hasDirectBinding,
+        dataSourceConfigStr: JSON.stringify(fullConfig.dataSource).substring(0, 500) + '...'
+      })
+      
+      if (hasDirectBinding) {
+        console.log(`🎯 [InteractionManager] 基础配置属性被数据源引用，更新配置`, {
+          componentId,
+          propertyPath,
+          bindingExpression,
+          newValue
+        })
+
+        // 更新数据源配置中的绑定值
+        await this.updateDataSourceConfigurationWithPropertyValue(
+          componentId,
+          fullConfig.dataSource,
+          bindingExpression,
+          newValue
+        )
+      }
+    } catch (error) {
+      console.error(`[InteractionManager] 基础配置数据源更新失败`, {
+        componentId,
+        propertyPath,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 新增：在配置对象中替换绑定表达式为实际值
+   */
+  private replaceBindingExpressionWithValue(config: any, bindingExpression: string, value: any): any {
+    if (!config || typeof config !== 'object') {
+      return config
+    }
+
+    // 深度克隆配置以避免修改原对象
+    const newConfig = JSON.parse(JSON.stringify(config))
+
+    // 递归替换所有出现的绑定表达式
+    this.recursiveReplaceBinding(newConfig, bindingExpression, value)
+
+    return newConfig
+  }
+
+  /**
+   * 🔥 新增：递归替换绑定表达式
+   */
+  private recursiveReplaceBinding(obj: any, bindingExpression: string, value: any): void {
+    if (!obj || typeof obj !== 'object') {
+      return
+    }
+
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const val = obj[key]
+
+        if (typeof val === 'string' && val.includes(bindingExpression)) {
+          // 替换字符串中的绑定表达式
+          obj[key] = val.replace(new RegExp(bindingExpression, 'g'), String(value))
+        } else if (typeof val === 'object') {
+          // 递归处理嵌套对象
+          this.recursiveReplaceBinding(val, bindingExpression, value)
+        }
+      }
+    }
+  }
+
+  /**
+   * 🔥 为基础配置变化刷新相关数据源
+   * 当基础配置字段（特别是设备字段）发生变化时，刷新依赖这些字段的数据源
+   *
+   * ⚠️ 注意：这个方法将被逐步废弃，新的架构使用updateCurrentComponentDataSourceForBaseConfig
+   */
+  private async refreshDataSourcesForBaseConfigChange(
+    componentId: string,
+    propertyPath: string,
+    newValue: any,
+    oldValue?: any
+  ): Promise<void> {
+    try {
+      // 🔥 特别处理设备字段变化
+      if (propertyPath === 'deviceId' || propertyPath === 'metricsList') {
+        console.log(`🔄 [InteractionManager] 检测到设备字段变化，刷新组件数据源`, {
+          componentId,
+          propertyPath,
+          newValue,
+          oldValue
+        })
+
+        // 1. 刷新当前组件的数据源
+        await this.refreshComponentDataSource(componentId)
+
+        // 2. 查找其他可能依赖此设备信息的组件数据源
+        await this.refreshRelatedDeviceDataSources(componentId, propertyPath, newValue)
+      }
+
+      // 🔥 处理其他基础配置字段变化
+      else {
+        console.log(`🔄 [InteractionManager] 基础配置字段变化，检查数据源依赖`, {
+          componentId,
+          propertyPath,
+          newValue
+        })
+
+        // 刷新当前组件的数据源（如果数据源中使用了该字段）
+        await this.refreshComponentDataSource(componentId)
+      }
+    } catch (error) {
+      console.error(`[InteractionManager] 基础配置数据源刷新失败`, {
+        componentId,
+        propertyPath,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 刷新与设备相关的数据源
+   * 当设备字段变化时，查找并刷新其他可能依赖此设备的数据源
+   */
+  private async refreshRelatedDeviceDataSources(
+    sourceComponentId: string,
+    propertyPath: string,
+    newValue: any
+  ): Promise<void> {
+    // 遍历所有已注册的数据源映射
+    for (const [mappingKey, mapping] of this.httpDataSourceMappings.entries()) {
+      // 跳过源组件自身
+      if (mapping.componentId === sourceComponentId) {
+        continue
+      }
+
+      // 检查该数据源是否可能依赖设备信息
+      if (this.dataSourceMightDependOnDevice(mapping.config)) {
+        console.log(`🔄 [InteractionManager] 刷新相关设备数据源`, {
+          sourceComponentId,
+          targetComponentId: mapping.componentId,
+          propertyPath
+        })
+
+        await this.refreshComponentDataSource(mapping.componentId)
+      }
+    }
+  }
+
+  /**
+   * 🔥 判断数据源是否可能依赖设备信息
+   * 检查数据源配置中是否包含设备相关的字段或绑定
+   */
+  private dataSourceMightDependOnDevice(config: any): boolean {
+    if (!config || typeof config !== 'object') {
+      return false
+    }
+
+    const configStr = JSON.stringify(config).toLowerCase()
+
+    // 检查是否包含设备相关的关键词
+    const deviceKeywords = ['device', 'deviceid', 'metrics', 'sensor', 'iot']
+
+    for (const keyword of deviceKeywords) {
+      if (configStr.includes(keyword)) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  /**
+   * 🔥 判断是否应该为特定属性刷新数据源
+   * 智能判断数据源与属性的关联性
+   */
+  private shouldRefreshDataSourceForProperty(
+    mapping: { componentId: string; componentType: string; config: any },
+    componentId: string,
+    propertyPath: string
+  ): boolean {
+    // 1. 如果是同一个组件，优先刷新
+    if (mapping.componentId === componentId) {
+      return true
+    }
+
+    // 2. 检查配置中是否包含属性路径
+    if (this.configContainsPropertyBinding(mapping.config, componentId, propertyPath)) {
+      return true
+    }
+
+    // 3. 检查是否为设备相关属性
+    if (propertyPath === 'deviceId' || propertyPath === 'metricsList') {
+      return this.dataSourceMightDependOnDevice(mapping.config)
+    }
+
+    return false
+  }
+
+  /**
+   * 🔥 刷新指定组件的数据源
+   * 统一的数据源刷新入口点
+   */
+  private async refreshComponentDataSource(componentId: string): Promise<void> {
+    try {
+      // 1. 从HTTP数据源映射中查找
+      const httpMapping = this.httpDataSourceMappings.get(`http-${componentId}`)
+      if (httpMapping) {
+        console.log(`🔄 [InteractionManager] 刷新HTTP数据源`, {
+          componentId,
+          componentType: httpMapping.componentType
+        })
+
+        const result = await this.visualEditorBridge.updateComponentExecutor(
+          httpMapping.componentId,
+          httpMapping.componentType,
+          httpMapping.config
+        )
+
+        console.log(`✅ [InteractionManager] HTTP数据源刷新完成`, {
+          componentId,
+          success: !!result
+        })
+        return
+      }
+
+      // 2. 通过配置管理器获取数据源配置并刷新
+      await this.refreshComponentDataSourceFromConfig(componentId)
+    } catch (error) {
+      console.error(`[InteractionManager] 组件数据源刷新失败`, {
+        componentId,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 从配置管理器获取数据源配置并刷新
+   * 当HTTP映射不存在时的后备方案
+   */
+  private async refreshComponentDataSourceFromConfig(componentId: string): Promise<void> {
+    try {
+      // 🔥 导入配置管理器（延迟导入避免循环依赖）
+      // 🔥 使用顶部导入的配置管理器
+
+      // 获取组件的完整配置
+      const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
+      if (!fullConfig || !fullConfig.dataSource) {
+        return
+      }
+
+      console.log(`🔄 [InteractionManager] 从配置刷新数据源`, {
+        componentId,
+        hasDataSourceConfig: !!fullConfig.dataSource
+      })
+
+      // 使用配置中的数据源信息刷新
+      const result = await this.visualEditorBridge.updateComponentExecutor(
+        componentId,
+        fullConfig.metadata?.componentType || 'unknown',
+        fullConfig.dataSource
+      )
+
+      console.log(`✅ [InteractionManager] 配置数据源刷新完成`, {
+        componentId,
+        success: !!result
+      })
+    } catch (error) {
+      console.error(`[InteractionManager] 从配置刷新数据源失败`, {
+        componentId,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 新增：同步交互状态到配置管理器
+   * 这是修复配置持久化问题的核心方法
+   */
+  private syncToConfigurationManager(componentId: string, updates: Partial<ComponentInteractionState>): void {
+    try {
+      // 使用配置同步桥梁进行状态同步
+      interactionConfigBridge.syncInteractionStateToConfig(componentId, updates)
+
+      console.log(`🔄 [InteractionManager] 状态已同步到配置管理器`, {
+        componentId,
+        updates,
+        timestamp: Date.now()
+      })
+    } catch (error) {
+      console.error(`❌ [InteractionManager] 配置同步失败`, {
+        componentId,
+        updates,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 新增：从配置管理器加载初始状态
+   * 确保组件状态与持久化配置保持一致
+   */
+  loadStateFromConfiguration(componentId: string): void {
+    try {
+      const configState = interactionConfigBridge.getLatestInteractionConfig(componentId)
+      if (configState && Object.keys(configState).length > 0) {
+        // 合并到当前状态，不覆盖现有状态
+        const currentState = this.componentStates.get(componentId) || {}
+        const mergedState = { ...configState, ...currentState }
+
+        this.componentStates.set(componentId, mergedState)
+
+        console.log(`📥 [InteractionManager] 从配置加载状态`, {
+          componentId,
+          configState,
+          mergedState
+        })
+      }
+    } catch (error) {
+      console.error(`❌ [InteractionManager] 加载配置状态失败`, {
+        componentId,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 新增：获取组件的最新状态（包含配置中的状态）
+   * 优先级：当前内存状态 > 配置管理器状态
+   */
+  getLatestComponentState(componentId: string): ComponentInteractionState {
+    const memoryState = this.componentStates.get(componentId) || {}
+    const configState = interactionConfigBridge.getLatestInteractionConfig(componentId) || {}
+
+    // 合并状态，内存状态优先
+    return { ...configState, ...memoryState }
   }
 
   /**
@@ -1155,10 +1936,581 @@ class InteractionManager {
       this.removeEventListener(componentId, propertyWatcher)
     }
   }
+
+  // ===== 🔥 配置变化事件处理方法 =====
+
+  /**
+   * 🔥 设置全局配置变化监听器
+   * 监听所有组件的基础配置变化
+   */
+  private async setupGlobalConfigurationListener(): Promise<void> {
+    try {
+      // 🔥 使用顶部导入的配置事件总线
+
+      // 监听全局配置变化事件
+      configEventBus.onConfigChange((event: any) => {
+        this.handleGlobalConfigurationChange(event)
+      })
+
+      console.log(`🔧 [InteractionManager] 全局配置变化监听器设置完成`)
+    } catch (error) {
+      console.error(`❌ [InteractionManager] 设置全局配置监听器失败`, error)
+    }
+  }
+
+  /**
+   * 🔥 为特定组件设置配置变化监听器
+   * 监听组件的基础配置变化并处理相应的属性更新
+   */
+  private async setupComponentConfigurationListener(componentId: string): Promise<void> {
+    try {
+      // 🔥 使用顶部导入的配置管理器
+
+      // 监听组件配置变化
+      const removeListener = configurationIntegrationBridge.onConfigurationChange(componentId, (config: any) => {
+        this.handleComponentConfigurationChange(componentId, config)
+      })
+
+      // 保存清理函数
+      this.configChangeListeners.set(componentId, removeListener)
+
+      console.log(`🔧 [InteractionManager] 组件配置监听器设置完成`, { componentId })
+    } catch (error) {
+      console.error(`❌ [InteractionManager] 设置组件配置监听器失败`, {
+        componentId,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 清理组件配置变化监听器
+   */
+  private cleanupComponentConfigurationListener(componentId: string): void {
+    const removeListener = this.configChangeListeners.get(componentId)
+    if (removeListener) {
+      try {
+        removeListener()
+        this.configChangeListeners.delete(componentId)
+        console.log(`🧹 [InteractionManager] 组件配置监听器清理完成`, { componentId })
+      } catch (error) {
+        console.warn(`⚠️ [InteractionManager] 清理组件配置监听器失败`, {
+          componentId,
+          error: error instanceof Error ? error.message : error
+        })
+      }
+    }
+  }
+
+  /**
+   * 🔥 关键新增：处理数据执行触发器事件
+   * 当配置变更时，自动触发相关组件的数据源重新执行
+   */
+  private async handleDataExecutionTrigger(event: ConfigChangeEvent): Promise<void> {
+    try {
+      console.log(`🚀 [InteractionManager] 处理数据执行触发器事件`, {
+        componentId: event.componentId,
+        section: event.section,
+        changedFields: event.context?.changedFields
+      })
+
+      // 🔥 修复：使用正确的映射键
+      const mappingKey = `http-${event.componentId}`
+      const dataSourceConfigStr = this.httpDataSourceMappings.get(mappingKey)
+      
+      console.log(`🔍 [InteractionManager] 检查HTTP数据源映射`, {
+        componentId: event.componentId,
+        mappingKey,
+        hasMapping: !!dataSourceConfigStr,
+        totalMappings: this.httpDataSourceMappings.size,
+        allMappingKeys: Array.from(this.httpDataSourceMappings.keys())
+      })
+      
+      if (dataSourceConfigStr) {
+        try {
+          const dataSourceConfig = JSON.parse(dataSourceConfigStr)
+          console.log(`🔄 [InteractionManager] 触发HTTP数据源重新执行`, {
+            componentId: event.componentId,
+            configKeys: Object.keys(dataSourceConfig),
+            hasBaseConfig: !!dataSourceConfig._baseConfig
+          })
+          
+          // 🔥 使用 VisualEditorBridge 重新执行数据源
+          const result = await this.visualEditorBridge.updateComponentExecutor(
+            event.componentId,
+            'widget', // 组件类型
+            dataSourceConfig._fullConfig || dataSourceConfig
+          )
+          
+          console.log(`✅ [InteractionManager] HTTP数据源重新执行完成`, {
+            componentId: event.componentId,
+            executionResult: result
+          })
+        } catch (error) {
+          console.error(`❌ [InteractionManager] HTTP数据源重新执行失败`, {
+            componentId: event.componentId,
+            error: error instanceof Error ? error.message : error
+          })
+        }
+      } else {
+        console.log(`⚠️ [InteractionManager] 未找到该组件的HTTP数据源映射`, {
+          componentId: event.componentId,
+          mappingKey
+        })
+      }
+      
+      // 检查是否有其他组件需要基于该组件的配置变更进行数据更新
+      if (event.section === 'base' && event.context?.changedFields) {
+        const criticalFields = ['deviceId', 'metricsList']
+        const hasCriticalChange = event.context.changedFields.some(
+          field => criticalFields.includes(field)
+        )
+        
+        if (hasCriticalChange) {
+          console.log(`🔥 [InteractionManager] 检测到关键基础配置变更，检查所有相关组件`, {
+            componentId: event.componentId,
+            changedFields: event.context.changedFields
+          })
+          
+          // 检查所有组件的HTTP数据源，看是否需要重新执行
+          for (const [mappingComponentId, mapping] of this.httpDataSourceMappings) {
+            if (mappingComponentId !== event.componentId) {
+              // 检查该组件是否依赖于变更的基础配置
+              const dependsOnChangedComponent = this.checkComponentDependency(
+                mappingComponentId,
+                event.componentId
+              )
+              
+              if (dependsOnChangedComponent) {
+                console.log(`🔄 [InteractionManager] 触发依赖组件的数据源重新执行`, {
+                  依赖组件: mappingComponentId,
+                  源组件: event.componentId
+                })
+                
+                await this.visualEditorBridge.updateComponentExecutor(
+                  mappingComponentId,
+                  mapping.componentType,
+                  mapping.config
+                )
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`❌ [InteractionManager] 数据执行触发器处理失败`, {
+        event,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 检查组件依赖关系
+   * 检查一个组件是否依赖于另一个组件的配置
+   */
+  private checkComponentDependency(dependentComponentId: string, sourceComponentId: string): boolean {
+    // 这里可以实现复杂的依赖检查逻辑
+    // 目前简化为false，实际中可能需要检查配置中的交叉引用
+    return false
+  }
+
+  /**
+   * 🔥 销毁InteractionManager
+   * 清理所有监听器和资源
+   */
+  destroy(): void {
+    // 清理数据执行触发器
+    if (this.dataExecutionTriggerCleanup) {
+      this.dataExecutionTriggerCleanup()
+      this.dataExecutionTriggerCleanup = null
+    }
+    
+    // 清理所有组件的配置监听器
+    for (const componentId of this.configChangeListeners.keys()) {
+      this.cleanupComponentConfigurationListener(componentId)
+    }
+    
+    // 清理所有数据
+    this.componentConfigs.clear()
+    this.componentStates.clear()
+    this.eventListeners.clear()
+    this.httpDataSourceMappings.clear()
+    
+    this.isInitialized = false
+    console.log(`🗑️ [InteractionManager] 已销毁`)
+  }
+
+  /**
+   * 🔥 处理全局配置变化事件
+   * 当任何组件的配置发生变化时调用
+   */
+  private handleGlobalConfigurationChange(event: any): void {
+    try {
+      const { componentId, section, oldConfig, newConfig } = event
+
+      // 只处理基础配置变化
+      if (section === 'base') {
+        console.log(`🔔 [InteractionManager] 检测到基础配置变化`, {
+          componentId,
+          section,
+          hasOldConfig: !!oldConfig,
+          hasNewConfig: !!newConfig
+        })
+
+        this.processBaseConfigurationChange(componentId, oldConfig, newConfig)
+      }
+    } catch (error) {
+      console.error(`❌ [InteractionManager] 处理全局配置变化失败`, {
+        event,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 处理组件配置变化
+   * 当特定组件的配置发生变化时调用
+   */
+  private handleComponentConfigurationChange(componentId: string, newConfig: any): void {
+    try {
+      if (!newConfig || !newConfig.base) {
+        return
+      }
+
+      console.log(`🔔 [InteractionManager] 组件配置变化`, {
+        componentId,
+        hasBaseConfig: !!newConfig.base
+      })
+
+      // 检查基础配置中的设备字段变化
+      this.checkBaseConfigurationFieldChanges(componentId, newConfig.base)
+    } catch (error) {
+      console.error(`❌ [InteractionManager] 处理组件配置变化失败`, {
+        componentId,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 处理基础配置变化
+   * 比较新旧配置，识别具体的变化字段
+   */
+  private processBaseConfigurationChange(componentId: string, oldConfig: any, newConfig: any): void {
+    try {
+      // 获取基础配置字段列表
+      const baseConfigFields = [
+        'deviceId',
+        'metricsList',
+        'showTitle',
+        'title',
+        'visible',
+        'opacity',
+        'backgroundColor',
+        'borderWidth',
+        'borderColor',
+        'borderRadius',
+        'padding',
+        'margin'
+      ]
+
+      const changedFields: Array<{ field: string; oldValue: any; newValue: any }> = []
+
+      // 检查每个基础配置字段的变化
+      for (const field of baseConfigFields) {
+        const oldValue = oldConfig ? oldConfig[field] : undefined
+        const newValue = newConfig ? newConfig[field] : undefined
+
+        // 简单的值比较（对于复杂对象可能需要深度比较）
+        if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+          changedFields.push({ field, oldValue, newValue })
+        }
+      }
+
+      // 处理每个变化的字段
+      for (const { field, oldValue, newValue } of changedFields) {
+        this.processBaseConfigurationFieldChange(componentId, field, newValue, oldValue)
+      }
+    } catch (error) {
+      console.error(`❌ [InteractionManager] 处理基础配置变化失败`, {
+        componentId,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 检查基础配置字段变化（用于组件配置监听）
+   * 这个方法用于处理来自组件配置监听器的变化
+   */
+  private checkBaseConfigurationFieldChanges(componentId: string, newBaseConfig: any): void {
+    try {
+      // 获取之前的基础配置（如果存在）
+      const previousBaseConfig = this.getPreviousBaseConfiguration(componentId)
+
+      // 比较并处理变化
+      this.processBaseConfigurationChange(componentId, previousBaseConfig, newBaseConfig)
+
+      // 保存当前配置作为下次比较的基准
+      this.savePreviousBaseConfiguration(componentId, newBaseConfig)
+    } catch (error) {
+      console.error(`❌ [InteractionManager] 检查基础配置字段变化失败`, {
+        componentId,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 处理单个基础配置字段的变化
+   * 这是配置变化处理的核心逻辑
+   */
+  private processBaseConfigurationFieldChange(componentId: string, field: string, newValue: any, oldValue: any): void {
+    try {
+      console.log(`🔄 [InteractionManager] 基础配置字段变化`, {
+        componentId,
+        field,
+        oldValue,
+        newValue
+      })
+
+      // 🔥 通知属性更新（这会触发数据源刷新等后续处理）
+      this.notifyPropertyUpdate(componentId, field, newValue, oldValue)
+
+      // 🔥 特殊处理设备字段变化
+      if (field === 'deviceId' || field === 'metricsList') {
+        console.log(`🎯 [InteractionManager] 设备字段变化，触发特殊处理`, {
+          componentId,
+          field,
+          newValue
+        })
+
+        // 触发设备相关的特殊处理逻辑（异步执行）
+        this.handleDeviceFieldChange(componentId, field, newValue, oldValue).catch(error => {
+          console.error(`❌ [InteractionManager] handleDeviceFieldChange异步执行失败`, {
+            componentId, field, error
+          })
+        })
+      }
+    } catch (error) {
+      console.error(`❌ [InteractionManager] 处理基础配置字段变化失败`, {
+        componentId,
+        field,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  /**
+   * 🔥 处理设备字段变化的特殊逻辑
+   * 设备字段变化时需要额外的处理
+   */
+  private async handleDeviceFieldChange(componentId: string, field: string, newValue: any, oldValue: any): Promise<void> {
+    // 这里可以添加设备字段变化的特殊处理逻辑
+    // 例如：更新设备模板、刷新设备状态等
+    console.log(`⚡ [InteractionManager] 设备字段特殊处理`, {
+      componentId,
+      field,
+      newValue,
+      oldValue
+    })
+
+    // 🔥 关键修复：设备字段变更时，直接触发ConfigEventBus事件
+    try {
+      const configChangeEvent = {
+        componentId,
+        componentType: 'widget',
+        section: 'base' as const,
+        oldConfig: { [field]: oldValue },
+        newConfig: { [field]: newValue },
+        timestamp: Date.now(),
+        source: 'user' as const,
+        context: {
+          changedFields: [field],
+          shouldTriggerExecution: true,
+          triggerComponent: 'InteractionManager'
+        }
+      }
+
+      console.log(`🚀 [InteractionManager] 触发ConfigEventBus事件`, {
+        componentId,
+        field,
+        event: configChangeEvent
+      })
+
+      // 导入并使用ConfigEventBus
+      const { configEventBus } = await import('../../core/data-architecture/ConfigEventBus')
+      await configEventBus.emitConfigChange(configChangeEvent)
+    } catch (error) {
+      console.error(`❌ [InteractionManager] 触发ConfigEventBus失败`, {
+        componentId,
+        field,
+        error: error instanceof Error ? error.message : error
+      })
+    }
+  }
+
+  // 🔥 临时存储，用于配置变化比较
+  private previousBaseConfigurations = new Map<string, any>()
+
+  /**
+   * 获取之前保存的基础配置
+   */
+  private getPreviousBaseConfiguration(componentId: string): any {
+    return this.previousBaseConfigurations.get(componentId)
+  }
+
+  /**
+   * 保存基础配置用于下次比较
+   */
+  private savePreviousBaseConfiguration(componentId: string, baseConfig: any): void {
+    this.previousBaseConfigurations.set(componentId, baseConfig ? { ...baseConfig } : null)
+  }
+
+  /**
+   * 🔥 关键新增：检查并存储HTTP数据源映射
+   * 检查组件配置中是否包含HTTP数据源，并为后续的数据重新执行做准备
+   */
+  private checkAndStoreHttpDataSourceMapping(componentId: string, configs: InteractionConfig[]): void {
+    // 获取组件的完整配置
+    const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
+    if (!fullConfig) {
+      console.log(`❌ [InteractionManager] 无法获取组件配置`, { componentId })
+      return
+    }
+
+    // 🔥 添加详细配置日志
+    console.log(`🔍 [InteractionManager] checkAndStoreHttpDataSourceMapping 详细检查`, {
+      componentId,
+      hasFullConfig: !!fullConfig,
+      fullConfigKeys: Object.keys(fullConfig || {}),
+      hasDataSource: !!fullConfig.dataSource,
+      hasBase: !!fullConfig.base,
+      baseConfig: fullConfig.base,
+      dataSourceConfig: fullConfig.dataSource
+    })
+
+    // 检查是否有数据源配置
+    if (fullConfig.dataSource) {
+      // 检查数据源配置中是否包含HTTP类型
+      const hasHttpDataSource = this.hasHttpDataSourceInConfig(fullConfig.dataSource)
+      
+      if (hasHttpDataSource) {
+        // 获取组件类型（可以从配置中推断或从其他地方获取）
+        const componentType = this.inferComponentTypeFromConfig(fullConfig)
+        
+        // 🔥 存储完整配置信息，包括基础配置
+        const mappingKey = `http-${componentId}`
+        const fullConfigStr = JSON.stringify({
+          ...fullConfig.dataSource,
+          // 🔥 关键：将基础配置也包含进来
+          _baseConfig: fullConfig.base,
+          _fullConfig: fullConfig
+        })
+        
+        // 存储HTTP数据源映射
+        this.httpDataSourceMappings.set(mappingKey, fullConfigStr)
+        
+        console.log(`🔄 [InteractionManager] 存储HTTP数据源映射`, {
+          componentId,
+          componentType,
+          hasHttpDataSource,
+          mappingKey,
+          configLength: fullConfigStr.length,
+          包含基础配置: !!fullConfig.base,
+          基础配置内容: fullConfig.base
+        })
+
+        // 🔥 检查组件绑定参数
+        if (fullConfig.dataSource.config && fullConfig.dataSource.config.params) {
+          const componentParams = fullConfig.dataSource.config.params.filter(p => p.valueMode === 'component')
+          console.log(`📋 [InteractionManager] 发现组件绑定参数`, {
+            componentId,
+            componentParamCount: componentParams.length,
+            componentParams: componentParams.map(p => ({
+              key: p.key,
+              valueMode: p.valueMode,
+              selectedTemplate: p.selectedTemplate,
+              // 检查所有可能的绑定字段
+              propertyBinding: p.propertyBinding,
+              bindingExpression: p.bindingExpression,
+              bindingPath: p.bindingPath,
+              componentProperty: p.componentProperty
+            }))
+          })
+        }
+      }
+    }
+  }
+
+  /**
+   * 🔧 检查配置中是否包含HTTP数据源
+   */
+  private hasHttpDataSourceInConfig(dataSourceConfig: any): boolean {
+    if (!dataSourceConfig || typeof dataSourceConfig !== 'object') {
+      return false
+    }
+
+    // 检查各种可能的HTTP数据源配置格式
+    
+    // 1. 检查 dataSources 数组中的HTTP配置
+    if (dataSourceConfig.dataSources && Array.isArray(dataSourceConfig.dataSources)) {
+      return dataSourceConfig.dataSources.some((ds: any) => 
+        ds.dataItems && Array.isArray(ds.dataItems) && 
+        ds.dataItems.some((item: any) => item.item?.type === 'http')
+      )
+    }
+    
+    // 2. 检查直接的 type 字段
+    if (dataSourceConfig.type === 'http') {
+      return true
+    }
+    
+    // 3. 检查 rawDataList 中的HTTP配置
+    if (dataSourceConfig.rawDataList && Array.isArray(dataSourceConfig.rawDataList)) {
+      return dataSourceConfig.rawDataList.some((item: any) => item.type === 'http')
+    }
+    
+    // 4. 检查 dataSourceX 格式的配置
+    for (const [key, value] of Object.entries(dataSourceConfig)) {
+      if (key.startsWith('dataSource') && value && typeof value === 'object') {
+        const dsConfig = value as any
+        if (dsConfig.type === 'http') {
+          return true
+        }
+      }
+    }
+    
+    return false
+  }
+
+  /**
+   * 🔧 从配置推断组件类型
+   */
+  private inferComponentTypeFromConfig(config: any): string {
+    // 这里可以实现更复杂的类型推断逻辑
+    // 目前简化为使用默认类型
+    if (config.metadata?.componentType) {
+      return config.metadata.componentType
+    }
+    
+    // 可以根据配置特征来推断类型
+    if (config.component?.properties?.customize?.title) {
+      return 'simple-display' // 简单显示组件
+    }
+    
+    return 'unknown-component'
+  }
 }
 
 // 创建单例实例
 export const interactionManager = new InteractionManager()
+
+// 🔥 立即初始化InteractionManager，确保ConfigEventBus触发器注册
+interactionManager.initialize().catch(error => {
+  console.error(`❌ [InteractionManager] 自动初始化失败`, error)
+})
 
 // 导出类型
 export type { InteractionManager }

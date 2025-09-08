@@ -10,6 +10,8 @@ import PanelEditorV2 from '@/components/visual-editor/PanelEditorV2.vue'
 import { $t } from '@/locales'
 import { useAppStore } from '@/store/modules/app'
 import type { RendererType } from '@/components/visual-editor/types/renderer'
+// 导入 Card2.1 组件系统以触发自动注册
+import '@/card2.1/components/index'
 
 const appStore = useAppStore()
 
@@ -173,26 +175,30 @@ const handleEditorReady = (editor: any) => {
     <!-- 测试控制面板 -->
     <NCard class="control-panel" title="PanelEditorV2 测试控制台" size="small">
       <NSpace vertical>
-
         <!-- 🔥 超紧凑控制行 -->
         <div class="compact-controls">
           <NSpace size="small" align="center">
             <span class="mini-label">预设:</span>
             <NSelect :options="layoutPresets" size="small" style="width: 100px" @update:value="applyPreset" />
-            
+
             <NDivider vertical />
-            
+
             <span class="mini-label">渲染器:</span>
-            <NSelect v-model:value="testConfig.defaultRenderer" :options="rendererOptions" size="small" style="width: 90px" />
-            
+            <NSelect
+              v-model:value="testConfig.defaultRenderer"
+              :options="rendererOptions"
+              size="small"
+              style="width: 90px"
+            />
+
             <NDivider vertical />
-            
+
             <span class="mini-label">工具栏</span>
             <NSwitch v-model:value="testConfig.showToolbar" size="small" />
-            
+
             <span class="mini-label">标题</span>
             <NSwitch v-model:value="testConfig.showPageHeader" size="small" />
-            
+
             <span class="mini-label">底栏</span>
             <NSwitch v-model:value="testConfig.enableFooterArea" size="small" />
           </NSpace>
@@ -203,13 +209,28 @@ const handleEditorReady = (editor: any) => {
             <NSpace size="small">
               <span class="status-tag new">V2</span>
               <span class="status-tag">PanelLayout</span>
-              <span :class="['status-tag', { ready: editorState.isReady, loading: editorState.isLoading, error: editorState.hasError }]">
-                {{ editorState.isLoading ? '加载中' : editorState.isReady ? '就绪' : editorState.hasError ? '错误' : '未就绪' }}
+              <span
+                :class="[
+                  'status-tag',
+                  { ready: editorState.isReady, loading: editorState.isLoading, error: editorState.hasError }
+                ]"
+              >
+                {{
+                  editorState.isLoading
+                    ? '加载中'
+                    : editorState.isReady
+                      ? '就绪'
+                      : editorState.hasError
+                        ? '错误'
+                        : '未就绪'
+                }}
               </span>
             </NSpace>
-            <NSpace size="small" v-if="editorState.isReady">
+            <NSpace v-if="editorState.isReady" size="small">
               <span class="status-mini">组件: {{ editorState.totalWidgets }}</span>
-              <span class="status-mini" v-if="editorState.selectedNodeId">选中: {{ editorState.selectedNodeId.slice(0, 8) }}...</span>
+              <span v-if="editorState.selectedNodeId" class="status-mini">
+                选中: {{ editorState.selectedNodeId.slice(0, 8) }}...
+              </span>
             </NSpace>
           </NSpace>
         </div>

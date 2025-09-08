@@ -171,7 +171,7 @@ import { $t } from '@/locales'
 import { smartDeepClone } from '@/utils/deep-clone'
 
 // 导入配置组件注册中心
-import { getVisibleConfigLayers, getConfigLayer } from './component-registry'
+import { getVisibleConfigLayers, getConfigLayer } from './component-registry-final'
 
 // 导入配置管理器和类型
 import { configurationIntegrationBridge as configurationManager } from './ConfigurationIntegrationBridge'
@@ -184,6 +184,9 @@ import type {
   ValidationResult
 } from './types'
 import type { VisualEditorWidget } from '../types'
+
+// 🔥 导入交互管理器用于读取最新状态
+import { interactionManager } from '@/card2.1/core/interaction-manager'
 
 // 🔄 重构：移除直接导入执行器管理器，改为事件通信
 
@@ -636,10 +639,46 @@ const loadWidgetConfiguration = async (widgetId: string) => {
     if (config) {
       // 🔧 现在加载所有层级的配置
       baseConfig.value = { ...config.base }
-      componentConfig.value = { ...config.component }
+
+      // 🔥 关键修复：优先从 InteractionManager 获取最新的组件状态
+      const latestInteractionState = interactionManager.getLatestComponentState(widgetId)
+
+      // 合并配置管理器的配置和交互管理器的最新状态
+      const mergedComponentConfig = {
+        ...config.component,
+        properties: {
+          ...config.component.properties,
+          // 从交互状态中提取关键属性
+          ...(latestInteractionState.deviceId !== undefined && { deviceId: latestInteractionState.deviceId }),
+          ...(latestInteractionState.metricsList !== undefined && { metricsList: latestInteractionState.metricsList }),
+          // 处理 customize 对象
+          customize: {
+            ...config.component.properties?.customize,
+            ...(latestInteractionState.title !== undefined && { title: latestInteractionState.title }),
+            ...(latestInteractionState.content !== undefined && { content: latestInteractionState.content }),
+            ...(latestInteractionState.themeColor !== undefined && { themeColor: latestInteractionState.themeColor }),
+            ...(latestInteractionState.fontSize !== undefined && { fontSize: latestInteractionState.fontSize })
+          }
+        },
+        styles: {
+          ...config.component.styles,
+          // 从交互状态中提取样式属性
+          ...(latestInteractionState.backgroundColor !== undefined && {
+            backgroundColor: latestInteractionState.backgroundColor
+          }),
+          ...(latestInteractionState.textColor !== undefined && { color: latestInteractionState.textColor }),
+          ...(latestInteractionState.borderColor !== undefined && { borderColor: latestInteractionState.borderColor }),
+          ...(latestInteractionState.opacity !== undefined && { opacity: latestInteractionState.opacity }),
+          ...(latestInteractionState.visibility !== undefined && { visibility: latestInteractionState.visibility })
+        }
+      }
+
+      componentConfig.value = mergedComponentConfig
+
       // 🚨 不直接设置 dataSourceConfig，因为它是 computed 属性
       // dataSourceConfig 会通过 getter 自动从 ConfigurationManager 获取最新值
       interactionConfig.value = { ...config.interaction }
+
       // 🔄 重构：如果有保存的数据源配置，通过事件通知执行数据获取
       if (config.dataSource?.config && Object.keys(config.dataSource.config).length > 0) {
         // 发出事件让PanelEditor处理数据执行
@@ -650,9 +689,17 @@ const loadWidgetConfiguration = async (widgetId: string) => {
           action: 'config-restored'
         })
       }
+
+      console.log(`📋 [ConfigurationPanel] 配置加载完成`, {
+        widgetId,
+        原始配置: config.component,
+        交互状态: latestInteractionState,
+        合并结果: mergedComponentConfig
+      })
     }
   } catch (error) {
     message.error($t('visualEditor.configLoadFailed'))
+    console.error('配置加载失败:', error)
   } finally {
     // 🔥 修复：延迟重置防循环标记，确保Vue响应式更新完成
     nextTick(() => {

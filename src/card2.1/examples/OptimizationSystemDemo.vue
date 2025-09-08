@@ -74,8 +74,8 @@ import { ConfigMerge } from '@/card2.1/core/config-merge-manager'
 import { performanceOptimizer } from '@/card2.1/core/performance-optimizer'
 
 // 导入新组件
-import PerformanceMonitor from '@/card2.1/components/performance-monitor/PerformanceMonitor.vue'
-import PropertyBindingVisualizer from '@/card2.1/components/property-binding-visualizer/PropertyBindingVisualizer.vue'
+import PerformanceMonitor from '@/card2.1/components/dashboard/performance-monitor/PerformanceMonitor.vue'
+import PropertyBindingVisualizer from '@/card2.1/components/dashboard/property-binding-visualizer/PropertyBindingVisualizer.vue'
 
 // 响应式状态
 const showPerformanceMonitor = ref(true)
