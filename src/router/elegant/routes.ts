@@ -850,57 +850,12 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
-        name: 'test_auto-registry-test',
-        path: '/test/auto-registry-test',
-        component: 'view.test_auto-registry-test',
-        meta: {
-          title: 'test_auto-registry-test',
-          i18nKey: 'route.test_auto-registry-test'
-        }
-      },
-      {
-        name: 'test_extended-grid-system',
-        path: '/test/extended-grid-system',
-        component: 'view.test_extended-grid-system',
-        meta: {
-          title: 'test_extended-grid-system',
-          i18nKey: 'route.test_extended-grid-system'
-        }
-      },
-      {
-        name: 'test_new-config-system',
-        path: '/test/new-config-system',
-        component: 'view.test_new-config-system',
-        meta: {
-          title: 'test_new-config-system',
-          i18nKey: 'route.test_new-config-system'
-        }
-      },
-      {
-        name: 'test_optimization-system-demo',
-        path: '/test/optimization-system-demo',
-        component: 'view.test_optimization-system-demo',
-        meta: {
-          title: 'test_optimization-system-demo',
-          i18nKey: 'route.test_optimization-system-demo'
-        }
-      },
-      {
         name: 'test_panel-editor-v2',
         path: '/test/panel-editor-v2',
         component: 'view.test_panel-editor-v2',
         meta: {
           title: 'test_panel-editor-v2',
           i18nKey: 'route.test_panel-editor-v2'
-        }
-      },
-      {
-        name: 'test_script-editor-fix-test',
-        path: '/test/script-editor-fix-test',
-        component: 'view.test_script-editor-fix-test',
-        meta: {
-          title: 'test_script-editor-fix-test',
-          i18nKey: 'route.test_script-editor-fix-test'
         }
       }
     ]
