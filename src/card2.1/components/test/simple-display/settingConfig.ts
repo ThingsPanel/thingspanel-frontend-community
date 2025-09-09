@@ -91,6 +91,12 @@ export const customConfig = createCustomConfig<SimpleDisplayCustomize>('simple-d
   iconName: '📊'
 })
 
+// 确保添加设备ID和指标列表的默认值
+Object.assign(customConfig, {
+  deviceId: '',
+  metricsList: []
+})
+
 /**
  * 导出类型定义供外部使用
  */

@@ -4,7 +4,8 @@
  * 基于新的三文件结构标准
  */
 
-import { computed, reactive } from 'vue'
+import { computed, reactive, ref, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { SimpleDisplayConfig, SimpleDisplayCustomize } from './settingConfig'
 
 // 组件状态接口
@@ -33,15 +34,45 @@ const props = withDefaults(defineProps<Props>(), {
 interface Emits {
   (e: 'click', data: { componentId: string; timestamp: string }): void
   (e: 'hover', data: { componentId: string; type: 'enter' | 'leave' }): void
+  (e: 'config-change', config: SimpleDisplayConfig): void
 }
 
 const emit = defineEmits<Emits>()
+
+// 国际化
+const { t } = useI18n()
 
 // 组件状态管理
 const componentState = reactive<ComponentState>({
   isActive: true,
   lastUpdate: new Date().toISOString()
 })
+
+// 指标输入框的字符串值
+const metricsInputValue = ref('')
+
+/**
+ * 获取当前设备ID - 直接从customConfig顶级字段读取
+ */
+const currentDeviceId = computed(() => {
+  return props.customConfig?.deviceId || ''
+})
+
+/**
+ * 获取当前指标列表 - 直接从customConfig顶级字段读取
+ */
+const currentMetricsList = computed(() => {
+  if (props.customConfig?.metricsList && Array.isArray(props.customConfig.metricsList)) {
+    return props.customConfig.metricsList.map(metric => 
+      typeof metric === 'string' ? metric : (metric.name || metric.id || String(metric))
+    )
+  }
+  return []
+})
+
+// 本地编辑状态
+const localDeviceId = ref('')
+const localMetricsList = ref<string[]>([])
 
 /**
  * 获取组件配置
@@ -89,6 +120,84 @@ const handleMouseLeave = () => {
   })
 }
 
+/**
+ * 更新设备ID - 发送配置变更事件
+ */
+const updateDeviceId = (newDeviceId: string) => {
+  localDeviceId.value = newDeviceId
+  emitConfigChange()
+}
+
+/**
+ * 更新指标列表 - 发送配置变更事件
+ */
+const updateMetricsList = (newMetricsList: string[]) => {
+  localMetricsList.value = [...newMetricsList]
+  emitConfigChange()
+}
+
+/**
+ * 发送配置变更事件
+ */
+const emitConfigChange = () => {
+  // 构建完整的新配置对象
+  const newConfig: SimpleDisplayConfig = {
+    ...props.customConfig,
+    deviceId: localDeviceId.value,
+    metricsList: localMetricsList.value
+  }
+  
+  // 发送config-change事件
+  emit('config-change', newConfig)
+}
+
+/**
+ * 从输入框更新指标列表
+ */
+const updateMetricsFromInput = (value: string) => {
+  metricsInputValue.value = value
+  
+  // 解析逗号分隔的指标
+  const metrics = value
+    .split(',')
+    .map(m => m.trim())
+    .filter(m => m.length > 0)
+  
+  updateMetricsList(metrics)
+}
+
+// 初始化本地状态
+const initializeLocalState = () => {
+  const currentMetrics = currentMetricsList.value
+  localDeviceId.value = currentDeviceId.value
+  localMetricsList.value = [...currentMetrics]
+  metricsInputValue.value = currentMetrics.join(', ')
+}
+
+// 在组件挂载时初始化
+onMounted(() => {
+  initializeLocalState()
+})
+
+// 监听customConfig变化，同步到本地状态
+watch(() => props.customConfig, (newConfig) => {
+  if (newConfig) {
+    const newDeviceId = newConfig.deviceId || ''
+    const newMetrics = currentMetricsList.value
+    
+    // 只有当配置确实变化时才更新本地状态（避免循环）
+    if (newDeviceId !== localDeviceId.value) {
+      localDeviceId.value = newDeviceId
+    }
+    
+    if (JSON.stringify(newMetrics) !== JSON.stringify(localMetricsList.value)) {
+      localMetricsList.value = [...newMetrics]
+      metricsInputValue.value = newMetrics.join(', ')
+    }
+  }
+}, { deep: true })
+
+
 // 暴露方法给父组件
 defineExpose({
   componentState,
@@ -120,6 +229,29 @@ defineExpose({
     <!-- 内容区域 -->
     <div class="display-content">
       <p class="content-text">{{ currentCustomize.content }}</p>
+    </div>
+
+    <!-- 简单的设备配置输入 -->
+    <div class="device-config-simple">
+      <n-form-item label="设备ID:">
+        <n-input
+          v-model:value="localDeviceId"
+          placeholder="请输入设备ID"
+          size="small"
+          clearable
+          @update:value="updateDeviceId"
+        />
+      </n-form-item>
+      
+      <n-form-item label="指标:">
+        <n-input
+          v-model:value="metricsInputValue"
+          placeholder="多个指标用逗号分隔"
+          size="small"
+          clearable
+          @update:value="updateMetricsFromInput"
+        />
+      </n-form-item>
     </div>
 
     <!-- 状态指示器 -->
@@ -208,6 +340,29 @@ defineExpose({
   font-size: 12px;
 }
 
+/* 简单设备配置样式 */
+.device-config-simple {
+  margin: 16px 0;
+  padding: 16px;
+  background: var(--body-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.device-config-simple :deep(.n-form-item) {
+  margin-bottom: 12px;
+}
+
+.device-config-simple :deep(.n-form-item:last-child) {
+  margin-bottom: 0;
+}
+
+.device-config-simple :deep(.n-form-item-label) {
+  font-weight: 500;
+  color: var(--text-color-2);
+  font-size: 13px;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .simple-display {
@@ -220,6 +375,11 @@ defineExpose({
 
   .display-icon {
     font-size: 20px;
+  }
+
+  .device-config-simple {
+    margin: 12px 0;
+    padding: 12px;
   }
 }
 </style>
