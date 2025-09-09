@@ -176,9 +176,9 @@
             log('开始调试 Visual Editor 集成...', 'info');
             
             try {
-                const { useVisualEditorIntegration } = await import('./src/card2.1/hooks/useVisualEditorIntegration.ts');
+                const { useComponentTree } = await import('./src/card2.1/hooks/useComponentTree.ts');
                 
-                const integration = useVisualEditorIntegration({ autoInit: true });
+                const integration = useComponentTree({ autoInit: true });
                 await integration.initialize();
                 
                 log('✅ Visual Editor 集成初始化完成', 'success');

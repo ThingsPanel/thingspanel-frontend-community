@@ -7,7 +7,4 @@
 export { default } from './definition'
 
 // 导出组件类型定义
-export type {
-  TripleDataDisplayConfig,
-  TripleDataDisplayCustomize
-} from './settingConfig'
+export type { TripleDataDisplayConfig, TripleDataDisplayCustomize } from './settingConfig'

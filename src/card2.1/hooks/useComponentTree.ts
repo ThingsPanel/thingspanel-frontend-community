@@ -4,6 +4,7 @@
  */
 
 import { ref, computed, onMounted, shallowRef, readonly } from 'vue'
+
 import {
   initializeCard2System,
   getComponentTree,
@@ -12,6 +13,12 @@ import {
 } from '../index'
 import type { ComponentDefinition } from '../core/types'
 import type { ComponentTree, ComponentCategory } from '../core/auto-registry'
+
+// 🔥 全局共享状态，确保多个实例同步
+let globalComponentTree = shallowRef<ComponentTree>({ categories: [], components: [], totalCount: 0 })
+let globalIsLoading = ref(false)
+let globalError = ref<string | null>(null)
+let globalInitialized = false
 
 export interface ComponentTreeOptions {
   autoInit?: boolean
@@ -32,10 +39,10 @@ export interface FilteredComponentTree extends ComponentTree {
 export function useComponentTree(options: ComponentTreeOptions = {}) {
   const { autoInit = true, filter, sortBy = 'name', sortOrder = 'asc' } = options
 
-  // 状态管理
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
-  const componentTree = shallowRef<ComponentTree>({ categories: [], components: [], totalCount: 0 })
+  // 🔥 修复：使用全局共享状态，确保多个实例同步
+  const isLoading = globalIsLoading
+  const error = globalError
+  const componentTree = globalComponentTree
 
   // 筛选状态
   const searchQuery = ref('')
@@ -46,7 +53,14 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
    * 初始化组件树
    */
   const initialize = async () => {
-    console.log('🔧 [useComponentTree] 开始初始化...')
+    console.log('🔧 [useComponentTree] 开始初始化...', { globalInitialized, isLoading: isLoading.value })
+
+    // 🔥 修复：检查全局初始化状态
+    if (globalInitialized && componentTree.value.totalCount > 0) {
+      console.log('🔧 [useComponentTree] 已全局初始化，跳过重复初始化')
+      return
+    }
+
     if (isLoading.value) {
       console.log('🔧 [useComponentTree] 正在加载中，跳过重复初始化')
       return
@@ -58,17 +72,32 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
     try {
       console.log('🔧 [useComponentTree] 调用 initializeCard2System...')
       await initializeCard2System()
-      
+
       console.log('🔧 [useComponentTree] 调用 getComponentTree...')
       const tree = getComponentTree()
-      console.log('🔧 [useComponentTree] 获取到组件树:', { 
-        componentsCount: tree.components.length, 
+      console.log('🔧 [useComponentTree] 获取到组件树:', {
+        componentsCount: tree.components.length,
         categoriesCount: tree.categories.length,
-        totalCount: tree.totalCount 
+        totalCount: tree.totalCount,
+        rawTree: tree
       })
-      
+
+      console.log('🔧 [useComponentTree] 赋值前 componentTree.value:', componentTree.value)
       componentTree.value = tree
-      console.log('✅ [useComponentTree] 初始化完成')
+      console.log('🔧 [useComponentTree] 赋值后 componentTree.value:', componentTree.value)
+
+      // 🔥 修复：强制触发响应性更新
+      console.log('🔧 [useComponentTree] 触发响应性更新...')
+      componentTree.value = { ...tree }
+
+      // 🔥 修复：标记全局初始化完成
+      globalInitialized = true
+
+      console.log('✅ [useComponentTree] 初始化完成，最终状态:', {
+        componentTreeValue: componentTree.value,
+        filteredComponentsLength: filteredComponents.value.length,
+        globalInitialized
+      })
     } catch (err) {
       error.value = err instanceof Error ? err.message : '初始化失败'
       console.error('❌ [useComponentTree] 初始化失败:', err)
@@ -213,6 +242,55 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
     error.value = null
   }
 
+  /**
+   * 🔥 关键修复：获取指定类型的组件实例
+   * Card2Wrapper 需要此方法来加载实际的 Vue 组件
+   */
+  const getComponent = async (componentType: string) => {
+    console.log(`🔧 [useComponentTree] getComponent 被调用:`, {
+      componentType,
+      isLoading: isLoading.value,
+      error: error.value,
+      componentTreeData: componentTree.value,
+      filteredComponentsCount: filteredComponents.value?.length || 0,
+      allFilteredComponents: filteredComponents.value?.map(c => c.type) || []
+    })
+
+    // 🔥 调试：如果没有组件，强制重新初始化
+    if (filteredComponents.value.length === 0) {
+      console.warn(`⚠️ [useComponentTree] 没有可用组件，强制重新初始化...`)
+      await initialize()
+
+      console.log(`🔧 [useComponentTree] 重新初始化后:`, {
+        componentsCount: filteredComponents.value?.length || 0,
+        allComponents: filteredComponents.value?.map(c => c.type) || []
+      })
+    }
+
+    // 从已注册的组件中查找
+    const componentDefinition = filteredComponents.value.find(comp => comp.type === componentType)
+
+    if (!componentDefinition) {
+      console.error(`❌ [useComponentTree] 组件类型未找到: ${componentType}`)
+      console.log(
+        `❌ [useComponentTree] 可用组件:`,
+        filteredComponents.value.map(c => c.type)
+      )
+      console.log(`❌ [useComponentTree] componentTree原始数据:`, componentTree.value)
+      return null
+    }
+
+    console.log(`✅ [useComponentTree] 找到组件定义:`, {
+      type: componentDefinition.type,
+      name: componentDefinition.name,
+      hasComponent: !!componentDefinition.component,
+      componentKeys: componentDefinition.component ? Object.keys(componentDefinition.component) : []
+    })
+
+    // 返回组件实例
+    return componentDefinition.component
+  }
+
   // 自动初始化
   if (autoInit) {
     onMounted(() => {
@@ -240,6 +318,7 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
 
     // 方法
     initialize,
+    getComponent,
     getComponentsByCategory,
     clearFilters,
     reset

@@ -270,11 +270,11 @@ configEventBus.addEventFilter({
       const changedFields = event.context.changedFields || []
       const criticalFields = ['deviceId', 'metricsList']
       const hasCriticalChange = changedFields.some(field => criticalFields.includes(field))
-      
+
       if (hasCriticalChange) {
         // 确保关键基础配置变更一定会触发数据执行
         event.context.shouldTriggerExecution = true
-        
+
         console.log(`🔥 [ConfigEventBus] 检测到关键基础配置变更`, {
           componentId: event.componentId,
           changedFields,
@@ -282,7 +282,7 @@ configEventBus.addEventFilter({
         })
       }
     }
-    
+
     return true // 不过滤，只是增强事件信息
   },
   priority: 200 // 高优先级，在其他过滤器之前执行
@@ -297,9 +297,9 @@ let dataExecutionTriggerCallback: ((event: ConfigChangeEvent) => void) | null = 
  */
 export function registerDataExecutionTrigger(callback: (event: ConfigChangeEvent) => void): () => void {
   dataExecutionTriggerCallback = callback
-  
+
   console.log(`🔧 [ConfigEventBus] 数据执行触发器已注册`)
-  
+
   return () => {
     dataExecutionTriggerCallback = null
     console.log(`🔧 [ConfigEventBus] 数据执行触发器已取消注册`)
@@ -307,17 +307,28 @@ export function registerDataExecutionTrigger(callback: (event: ConfigChangeEvent
 }
 
 // 🔥 监听所有配置变更事件，特别关注基础配置和数据源配置变更
-configEventBus.onConfigChange('config-changed', async (event) => {
+configEventBus.onConfigChange('config-changed', async event => {
   // 对于需要触发数据执行的事件，调用注册的触发器
   if (event.context?.shouldTriggerExecution && dataExecutionTriggerCallback) {
     try {
       console.log(`🚀 [ConfigEventBus] 触发数据重新执行`, {
         componentId: event.componentId,
         section: event.section,
-        changedFields: event.context.changedFields
+        changedFields: event.context.changedFields,
+        hasCallback: !!dataExecutionTriggerCallback
       })
-      
-      dataExecutionTriggerCallback(event)
+
+      console.log(`🔄 [ConfigEventBus] 即将调用dataExecutionTriggerCallback`)
+      const result = dataExecutionTriggerCallback(event)
+      console.log(`✅ [ConfigEventBus] dataExecutionTriggerCallback调用完成`, {
+        result: typeof result,
+        isPromise: result instanceof Promise
+      })
+
+      if (result instanceof Promise) {
+        await result
+        console.log(`✅ [ConfigEventBus] 异步dataExecutionTriggerCallback完成`)
+      }
     } catch (error) {
       console.error(`❌ [ConfigEventBus] 数据执行触发失败`, {
         componentId: event.componentId,
@@ -328,19 +339,19 @@ configEventBus.onConfigChange('config-changed', async (event) => {
 })
 
 // 🔥 专门监听基础配置变更事件
-configEventBus.onConfigChange('base-config-changed', async (event) => {
+configEventBus.onConfigChange('base-config-changed', async event => {
   console.log(`🔧 [ConfigEventBus] 基础配置变更事件`, {
     componentId: event.componentId,
     changedFields: event.context?.changedFields,
     shouldTriggerExecution: event.context?.shouldTriggerExecution
   })
-  
+
   // 基础配置变更通常都需要触发数据重新执行
   if (!event.context) {
     event.context = {}
   }
   event.context.shouldTriggerExecution = true
-  
+
   // 调用数据执行触发器
   if (dataExecutionTriggerCallback) {
     try {
@@ -355,18 +366,18 @@ configEventBus.onConfigChange('base-config-changed', async (event) => {
 })
 
 // 🔥 专门监听数据源配置变更事件
-configEventBus.onConfigChange('data-source-changed', async (event) => {
+configEventBus.onConfigChange('data-source-changed', async event => {
   console.log(`🔧 [ConfigEventBus] 数据源配置变更事件`, {
     componentId: event.componentId,
     changedFields: event.context?.changedFields
   })
-  
+
   // 数据源配置变更通常都需要触发数据重新执行
   if (!event.context) {
     event.context = {}
   }
   event.context.shouldTriggerExecution = true
-  
+
   // 调用数据执行触发器
   if (dataExecutionTriggerCallback) {
     try {

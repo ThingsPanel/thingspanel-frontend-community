@@ -5,13 +5,7 @@
       <!-- 标题栏 -->
       <div class="header">
         <h3 class="title">{{ displayTitle }}</h3>
-        <n-button
-          v-if="showViewAllButton"
-          text
-          size="small"
-          type="primary"
-          @click="viewAllAlarms"
-        >
+        <n-button v-if="showViewAllButton" text size="small" type="primary" @click="viewAllAlarms">
           {{ $t('card.alarmInfo.viewAll') }}
         </n-button>
       </div>
@@ -82,17 +76,7 @@
 
 import { ref, computed, onMounted, onUnmounted, watch, h } from 'vue'
 import { useRouter } from 'vue-router'
-import { 
-  NDataTable, 
-  NSpin, 
-  NButton, 
-  NTag, 
-  NAlert, 
-  NCollapse, 
-  NCollapseItem, 
-  NCode,
-  NTooltip
-} from 'naive-ui'
+import { NDataTable, NSpin, NButton, NTag, NAlert, NCollapse, NCollapseItem, NCode, NTooltip } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
@@ -212,13 +196,17 @@ const tableColumns = computed<DataTableColumns<AlarmData>>(() => [
     width: 80,
     render(row) {
       const statusInfo = getStatusInfo(row.alarm_status)
-      return h(NTag, { 
-        type: statusInfo.type, 
-        size: 'small', 
-        round: true 
-      }, { 
-        default: () => statusInfo.label 
-      })
+      return h(
+        NTag,
+        {
+          type: statusInfo.type,
+          size: 'small',
+          round: true
+        },
+        {
+          default: () => statusInfo.label
+        }
+      )
     }
   },
   {
@@ -264,9 +252,9 @@ const fetchAlarmData = async (): Promise<void> => {
       start_time: '',
       end_time: ''
     }
-    
+
     const response = await alarmHistory(params)
-    
+
     if (response?.data?.list && Array.isArray(response.data.list)) {
       alarmList.value = response.data.list
       lastUpdateTime.value = new Date()

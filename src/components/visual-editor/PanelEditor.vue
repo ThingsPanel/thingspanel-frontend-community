@@ -27,7 +27,7 @@ import type { RendererType, VisualEditorWidget, GraphData } from './types'
 // 导入数据源注册
 // import './data-sources' // 临时注释，文件不存在
 
-import { useVisualEditorIntegration } from '@/card2.1/hooks/useVisualEditorIntegration'
+import { useComponentTree } from '@/card2.1/hooks/useComponentTree'
 import { visualEditorLogger } from '@/utils/logger'
 // 🔥 轮询系统导入
 import { useGlobalPollingManager } from './core/GlobalPollingManager'
@@ -44,11 +44,9 @@ provide('componentExecutorRegistry', componentExecutorRegistry.value)
 // 🔥 将组件执行器注册表传递给EditorDataSourceManager
 editorDataSourceManager.setComponentExecutorRegistry(componentExecutorRegistry.value)
 
-// 初始化 Card 2.1 集成
-useVisualEditorIntegration({
-  autoInit: true,
-  enableI18n: true
-})
+// 初始化 Card 2.1 组件树系统
+const componentTree = useComponentTree({ autoInit: true })
+provide('componentTree', componentTree)
 
 // 初始化设置面板
 initializeSettings()

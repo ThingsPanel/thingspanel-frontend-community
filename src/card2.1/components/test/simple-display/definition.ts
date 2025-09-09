@@ -3,7 +3,6 @@
  * 新三文件结构 - 标准组件模板
  */
 
-
 import type { ComponentDefinition } from '../../../core/types'
 import SimpleDisplayComponent from './index.vue'
 import SimpleDisplaySetting from './setting.vue'
@@ -90,11 +89,11 @@ const simpleDisplayDefinition: ComponentDefinition<SimpleDisplayConfig> = {
 
   // 特性标记
   features: {
-    realtime: false,      // 静态组件无需实时数据
-    dataBinding: false,   // 静态组件无需数据绑定
-    themeable: true,     // 支持主题定制
-    responsive: true,    // 支持响应式
-    configurable: true   // 支持配置定制
+    realtime: false, // 静态组件无需实时数据
+    dataBinding: false, // 静态组件无需数据绑定
+    themeable: true, // 支持主题定制
+    responsive: true, // 支持响应式
+    configurable: true // 支持配置定制
   },
 
   // 交互能力定义
@@ -116,14 +115,16 @@ const simpleDisplayDefinition: ComponentDefinition<SimpleDisplayConfig> = {
         scenario: 'click-jump',
         config: {
           event: 'click',
-          responses: [{
-            action: 'jump',
-            jumpConfig: {
-              jumpType: 'external',
-              url: 'https://example.com',
-              target: '_blank'
+          responses: [
+            {
+              action: 'jump',
+              jumpConfig: {
+                jumpType: 'external',
+                url: 'https://example.com',
+                target: '_blank'
+              }
             }
-          }],
+          ],
           enabled: true,
           priority: 1
         }
@@ -135,15 +136,17 @@ const simpleDisplayDefinition: ComponentDefinition<SimpleDisplayConfig> = {
         scenario: 'hover-modify',
         config: {
           event: 'hover',
-          responses: [{
-            action: 'modify',
-            modifyConfig: {
-              targetComponentId: 'comp-456',
-              targetProperty: 'themeColor',
-              updateValue: '#ff6b6b',
-              updateMode: 'replace'
+          responses: [
+            {
+              action: 'modify',
+              modifyConfig: {
+                targetComponentId: 'comp-456',
+                targetProperty: 'themeColor',
+                updateValue: '#ff6b6b',
+                updateMode: 'replace'
+              }
             }
-          }],
+          ],
           enabled: true
         }
       }

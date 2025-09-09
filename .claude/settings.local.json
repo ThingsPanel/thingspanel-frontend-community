@@ -659,7 +659,8 @@
       "Bash(start http://localhost:5003/test/auto-registry-test)",
       "Bash(start src/test-category-fix-verification.html)",
       "Bash(start http://localhost:5008/test/panel-editor-v2)",
-      "Bash(start test-single-level-categories.html)"
+      "Bash(start test-single-level-categories.html)",
+      "Bash(start test-callback-debugging-verification.html)"
     ],
     "deny": [],
     "additionalDirectories": [

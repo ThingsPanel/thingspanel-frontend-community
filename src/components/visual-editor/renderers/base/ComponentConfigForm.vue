@@ -41,7 +41,7 @@
  */
 
 import { computed, ref, watch, nextTick } from 'vue'
-import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
+import { useComponentTree as useCard2Integration } from '@/card2.1/hooks/useComponentTree'
 
 interface Props {
   widget?: any
@@ -84,16 +84,17 @@ const card2ConfigComponent = computed(() => {
     if (componentWidget?.definition?.configComponent) {
       return componentWidget.definition.configComponent
     }
-    
+
     // 如果组件有配置属性但没有自定义配置组件，使用通用配置表单
-    const hasProperties = componentWidget?.definition?.config?.properties && 
-                         Object.keys(componentWidget.definition.config.properties).length > 0
-    
+    const hasProperties =
+      componentWidget?.definition?.config?.properties &&
+      Object.keys(componentWidget.definition.config.properties).length > 0
+
     if (hasProperties) {
       // 返回通用的Card2配置表单（使用FlexibleConfigForm）
       return () => import('@/card2.1/core/FlexibleConfigForm.vue')
     }
-    
+
     return null
   } catch (error) {
     return null

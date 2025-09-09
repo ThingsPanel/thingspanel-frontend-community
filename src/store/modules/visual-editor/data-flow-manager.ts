@@ -137,7 +137,7 @@ export class DataFlowManager {
         break
 
       case 'UPDATE_NODE':
-        this.handleUpdateNode(action)
+        await this.handleUpdateNode(action)
         break
 
       case 'REMOVE_NODE':
@@ -174,13 +174,44 @@ export class DataFlowManager {
 
   /**
    * 处理更新节点操作
+   * 🔥 关键修复：同时更新节点状态和配置系统
    */
-  private handleUpdateNode(action: UserAction): void {
+  private async handleUpdateNode(action: UserAction): Promise<void> {
     if (!action.targetId) {
       throw new Error('更新节点操作需要targetId')
     }
 
+    console.log(`🔧 [DataFlowManager] handleUpdateNode 开始`, {
+      targetId: action.targetId,
+      updateKeys: Object.keys(action.data || {}),
+      hasProperties: !!(action.data && action.data.properties)
+    })
+
+    // 1. 更新store中的节点状态
     this.store.updateNode(action.targetId, action.data)
+
+    // 🔥 关键修复：如果更新包含properties，同时更新配置系统
+    if (action.data && action.data.properties) {
+      console.log(`🔄 [DataFlowManager] 检测到properties更新，同步配置系统`, {
+        componentId: action.targetId,
+        propertiesKeys: Object.keys(action.data.properties)
+      })
+
+      try {
+        // 获取更新后的完整节点数据
+        const updatedNode = this.store.nodes.find(n => n.id === action.targetId)
+        if (updatedNode) {
+          // 将节点的properties同步到配置系统的component配置中
+          await this.syncNodePropertiesToConfiguration(action.targetId, updatedNode.properties)
+        }
+      } catch (error) {
+        console.error(`❌ [DataFlowManager] 配置系统同步失败`, {
+          componentId: action.targetId,
+          error: error instanceof Error ? error.message : error
+        })
+        // 不抛出错误，避免阻断节点更新
+      }
+    }
   }
 
   /**
@@ -241,6 +272,59 @@ export class DataFlowManager {
     }>
 
     this.configService.batchUpdateConfiguration(updates)
+  }
+
+  /**
+   * 🔥 新增：将节点属性同步到配置系统
+   * 这是修复属性绑定链路的关键方法
+   * @param componentId 组件ID
+   * @param properties 节点属性对象
+   */
+  private async syncNodePropertiesToConfiguration(componentId: string, properties: Record<string, any>): Promise<void> {
+    console.log(`🔄 [DataFlowManager] syncNodePropertiesToConfiguration`, {
+      componentId,
+      propertiesKeys: Object.keys(properties || {}),
+      propertiesSample: JSON.stringify(properties).substring(0, 200) + '...'
+    })
+
+    try {
+      // 获取当前配置
+      const currentConfig = this.configService.getConfiguration(componentId)
+      console.log(`📋 [DataFlowManager] 当前配置状态:`, {
+        componentId,
+        hasConfig: !!currentConfig,
+        configSections: currentConfig ? Object.keys(currentConfig) : []
+      })
+
+      if (!currentConfig) {
+        // 如果没有配置，创建默认配置
+        console.log(`🆕 [DataFlowManager] 创建默认配置 for ${componentId}`)
+        this.configService.initializeConfiguration(componentId)
+      }
+
+      // 🔥 关键：将properties更新到component配置节中
+      // 这样配置变更事件就会被触发
+      console.log(`📝 [DataFlowManager] 更新component配置节`, {
+        componentId,
+        properties
+      })
+
+      // 使用updateConfigurationSection触发配置变更事件
+      this.configService.updateConfigurationSection(componentId, 'component', {
+        ...properties // 将所有properties作为component配置
+      })
+
+      console.log(`✅ [DataFlowManager] 配置系统同步完成`, {
+        componentId
+      })
+
+    } catch (error) {
+      console.error(`❌ [DataFlowManager] syncNodePropertiesToConfiguration 失败`, {
+        componentId,
+        error: error instanceof Error ? error.message : error
+      })
+      throw error
+    }
   }
 
   // ==================== 操作验证 ====================

@@ -41,15 +41,28 @@ export interface DualDataDisplayConfig extends CustomConfig<DualDataDisplayCusto
  * 双数据展示组件设置配置
  */
 export const dualDataDisplaySettingConfig: Setting[] = [
-  // 通用设备字段
-  createSetting(SettingControlType.INPUT, '设备ID', 'deviceId', {
-    group: '设备配置',
-    placeholder: '请输入设备ID',
+  // 数据源1配置
+  createSetting(SettingControlType.INPUT, '数据源1设备ID', 'dataSource1DeviceId', {
+    group: '数据源1配置',
+    placeholder: '请输入数据源1设备ID',
     defaultValue: ''
   }),
 
-  createSetting(SettingControlType.DYNAMIC_TAGS, '指标列表', 'metricsList', {
-    group: '设备配置',
+  createSetting(SettingControlType.DYNAMIC_TAGS, '数据源1指标列表', 'dataSource1MetricsList', {
+    group: '数据源1配置',
+    placeholder: '请输入指标名称',
+    defaultValue: []
+  }),
+
+  // 数据源2配置
+  createSetting(SettingControlType.INPUT, '数据源2设备ID', 'dataSource2DeviceId', {
+    group: '数据源2配置',
+    placeholder: '请输入数据源2设备ID',
+    defaultValue: ''
+  }),
+
+  createSetting(SettingControlType.DYNAMIC_TAGS, '数据源2指标列表', 'dataSource2MetricsList', {
+    group: '数据源2配置',
     placeholder: '请输入指标名称',
     defaultValue: []
   }),
@@ -139,7 +152,4 @@ export const customConfig = createCustomConfig<DualDataDisplayCustomize>({
 })
 
 // 导出类型
-export type {
-  DualDataDisplayConfig,
-  DualDataDisplayCustomize
-}
+export type { DualDataDisplayConfig, DualDataDisplayCustomize }

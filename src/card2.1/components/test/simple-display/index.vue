@@ -47,14 +47,16 @@ const componentState = reactive<ComponentState>({
  * 获取组件配置
  */
 const currentCustomize = computed((): SimpleDisplayCustomize => {
-  return props.customConfig?.customize || {
-    title: '简单展示组件',
-    content: '这是一个静态展示组件，不需要数据源',
-    themeColor: '#2080f0',
-    fontSize: 16,
-    showIcon: true,
-    iconName: '📊'
-  }
+  return (
+    props.customConfig?.customize || {
+      title: '简单展示组件',
+      content: '这是一个静态展示组件，不需要数据源',
+      themeColor: '#2080f0',
+      fontSize: 16,
+      showIcon: true,
+      iconName: '📊'
+    }
+  )
 })
 
 /**
@@ -114,12 +116,12 @@ defineExpose({
       </div>
       <h3 class="display-title">{{ currentCustomize.title }}</h3>
     </div>
-    
+
     <!-- 内容区域 -->
     <div class="display-content">
       <p class="content-text">{{ currentCustomize.content }}</p>
     </div>
-    
+
     <!-- 状态指示器 -->
     <div class="status-indicator" :class="{ active: componentState.isActive }">
       <span class="status-dot"></span>
@@ -211,11 +213,11 @@ defineExpose({
   .simple-display {
     padding: 16px;
   }
-  
+
   .display-header {
     gap: 8px;
   }
-  
+
   .display-icon {
     font-size: 20px;
   }

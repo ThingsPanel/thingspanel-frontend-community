@@ -63,20 +63,22 @@ const componentState = reactive<ComponentState>({
  * 获取组件配置
  */
 const currentCustomize = computed((): TripleDataDisplayCustomize => {
-  return props.customConfig?.customize || {
-    title: '三数据展示',
-    themeColor: '#2080f0',
-    fontSize: 16,
-    showBorder: true,
-    dataSource1Label: '数据源A',
-    dataSource2Label: '数据源B',
-    dataSource3Label: '数据源C',
-    numberFormat: 'raw',
-    unit: '',
-    layout: 'grid',
-    showIcons: true,
-    iconSize: 24
-  }
+  return (
+    props.customConfig?.customize || {
+      title: '三数据展示',
+      themeColor: '#2080f0',
+      fontSize: 16,
+      showBorder: true,
+      dataSource1Label: '数据源A',
+      dataSource2Label: '数据源B',
+      dataSource3Label: '数据源C',
+      numberFormat: 'raw',
+      unit: '',
+      layout: 'grid',
+      showIcons: true,
+      iconSize: 24
+    }
+  )
 })
 
 /**
@@ -246,7 +248,7 @@ defineExpose({
     <div class="display-header">
       <h3 class="display-title">{{ currentCustomize.title }}</h3>
     </div>
-    
+
     <!-- 数据展示区域 -->
     <div class="data-container">
       <!-- 数据源1 -->
@@ -264,7 +266,7 @@ defineExpose({
           <span class="status-indicator" :class="componentState.dataSource1Status"></span>
         </div>
       </div>
-      
+
       <!-- 数据源2 -->
       <div class="data-item data-source-2">
         <div v-if="currentCustomize.showIcons" class="data-icon">
@@ -280,7 +282,7 @@ defineExpose({
           <span class="status-indicator" :class="componentState.dataSource2Status"></span>
         </div>
       </div>
-      
+
       <!-- 数据源3 -->
       <div class="data-item data-source-3">
         <div v-if="currentCustomize.showIcons" class="data-icon">
@@ -297,7 +299,7 @@ defineExpose({
         </div>
       </div>
     </div>
-    
+
     <!-- 状态信息 -->
     <div class="status-info">
       <span class="update-time">更新时间: {{ new Date(componentState.lastUpdate).toLocaleTimeString() }}</span>
@@ -467,7 +469,8 @@ defineExpose({
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -480,22 +483,22 @@ defineExpose({
   .triple-data-display {
     padding: 16px;
   }
-  
+
   .data-container {
     gap: 12px;
   }
-  
+
   .layout-horizontal .data-container,
   .layout-grid .data-container {
     flex-direction: column;
     display: flex;
   }
-  
+
   .data-item {
     padding: 12px;
     min-height: 60px;
   }
-  
+
   .data-icon {
     width: 20px;
     height: 20px;
@@ -508,7 +511,7 @@ defineExpose({
     text-align: center;
     gap: 8px;
   }
-  
+
   .data-content {
     align-items: center;
   }

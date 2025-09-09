@@ -82,16 +82,21 @@ export const Card2ComponentTypes = new Proxy([] as string[], {
 export function getComponentTree() {
   const components = autoRegistry.getAllComponents()
   const categories = autoRegistry.getAllCategories()
-  
-  console.log(`🔧 [getComponentTree] 原始组件数据:`, components.map(c => ({ type: c?.type, name: c?.name, valid: !!(c?.type && c?.name) })))
-  
+
+  console.log(
+    `🔧 [getComponentTree] 原始组件数据:`,
+    components.map(c => ({ type: c?.type, name: c?.name, valid: !!(c?.type && c?.name) }))
+  )
+
   // 过滤掉无效组件
   const validComponents = components.filter(comp => comp && comp.type && comp.name)
   if (components.length !== validComponents.length) {
-    console.error(`❌ [getComponentTree] 发现 ${components.length - validComponents.length} 个无效组件`, 
-      components.filter(comp => !comp || !comp.type || !comp.name))
+    console.error(
+      `❌ [getComponentTree] 发现 ${components.length - validComponents.length} 个无效组件`,
+      components.filter(comp => !comp || !comp.type || !comp.name)
+    )
   }
-  
+
   return {
     components: validComponents,
     categories: categories.map(category => ({
@@ -161,13 +166,13 @@ export function isDataSourceSupported(componentType: string, dataSourceType: str
  */
 export async function reloadComponents(): Promise<void> {
   await autoRegistry.reload()
-  
+
   // 重新注册到 ComponentRegistry
   const allComponents = autoRegistry.getAllComponents()
   allComponents.forEach(definition => {
     ComponentRegistry.register(definition)
   })
-  
+
   console.log(`[Card2.1] 重新加载了 ${allComponents.length} 个组件`)
 }
 
@@ -177,13 +182,13 @@ export async function reloadComponents(): Promise<void> {
  */
 export async function initializeCard2System(): Promise<void> {
   await ensureInitialized()
-  
+
   // 注册所有组件到旧的组件注册表以保持兼容性
   const allComponents = autoRegistry.getAllComponents()
   allComponents.forEach(definition => {
     ComponentRegistry.register(definition)
   })
-  
+
   console.log(`[Card2.1 System] 初始化完成，共注册 ${allComponents.length} 个组件`)
 }
 
@@ -219,12 +224,12 @@ export const ComponentStats = new Proxy({} as any, {
  */
 export function debugComponents(): void {
   if (!import.meta.env.DEV) return
-  
+
   console.group('[Card2.1 组件调试信息]')
   console.log('统计信息:', autoRegistry.getStats())
   console.log('所有分类:', autoRegistry.getAllCategories())
   console.log('所有组件类型:', autoRegistry.getAllComponentTypes())
-  
+
   const components = autoRegistry.getAllComponents()
   console.table(
     components.map(c => ({
@@ -246,24 +251,24 @@ export function debugComponents(): void {
 export function validateComponents(): { valid: boolean; issues: string[] } {
   const issues: string[] = []
   const components = autoRegistry.getAllComponents()
-  
+
   for (const component of components) {
     // 检查必需字段
     if (!component.type) issues.push(`组件缺少 type 字段: ${component.name}`)
     if (!component.name) issues.push(`组件缺少 name 字段: ${component.type}`)
     if (!component.component) issues.push(`组件缺少 component 字段: ${component.type}`)
-    
+
     // 检查类型命名规范
     if (component.type && !/^[a-z0-9-]+$/.test(component.type)) {
       issues.push(`组件类型命名不规范 (应为 kebab-case): ${component.type}`)
     }
-    
+
     // 检查版本格式
     if (component.version && !/^\d+\.\d+\.\d+/.test(component.version)) {
       issues.push(`组件版本格式不正确: ${component.type} - ${component.version}`)
     }
   }
-  
+
   return { valid: issues.length === 0, issues }
 }
 
@@ -271,14 +276,16 @@ export function validateComponents(): { valid: boolean; issues: string[] } {
 initializeComponents()
   .then(() => {
     console.log(`🎉 [Card2.1] 组件自动注册完成! 共注册 ${getAllComponents().length} 个组件`)
-    
+
     // 列出所有已注册的组件
     const components = getAllComponents()
-    console.table(components.map(c => ({
-      类型: c.type,
-      名称: c.name,
-      分类: c.category || '其他'
-    })))
+    console.table(
+      components.map(c => ({
+        类型: c.type,
+        名称: c.name,
+        分类: c.category || '其他'
+      }))
+    )
   })
   .catch(error => {
     console.error('❌ [Card2.1] 组件自动注册失败:', error)
@@ -292,7 +299,7 @@ if (import.meta.env.DEV) {
     if (!validation.valid) {
       console.warn('[Card2.1] 发现组件定义问题:', validation.issues)
     }
-    
+
     // 额外调试信息
     console.log(`🔍 [Card2.1 调试] 当前注册组件数量: ${getAllComponents().length}`)
     console.log(`🔍 [Card2.1 调试] 所有分类:`, Object.keys(Card2Components))
@@ -302,11 +309,19 @@ if (import.meta.env.DEV) {
 // 默认导出主要接口
 export default {
   // 动态属性
-  get components() { return Card2ComponentMap },
-  get categories() { return Card2Components },
-  get types() { return Card2ComponentTypes },
-  get stats() { return ComponentStats },
-  
+  get components() {
+    return Card2ComponentMap
+  },
+  get categories() {
+    return Card2Components
+  },
+  get types() {
+    return Card2ComponentTypes
+  },
+  get stats() {
+    return ComponentStats
+  },
+
   // 功能函数
   getComponentDefinition,
   getComponentsByCategory,
@@ -315,7 +330,7 @@ export default {
   isDataSourceSupported,
   reloadComponents,
   initializeComponents,
-  
+
   // 开发工具
   debugComponents,
   validateComponents

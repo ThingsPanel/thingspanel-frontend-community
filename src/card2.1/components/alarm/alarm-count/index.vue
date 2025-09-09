@@ -67,13 +67,25 @@ const componentState = reactive<ComponentState>({
  * 优先使用 customConfig.customize，回退到 config
  */
 const currentCustomize = computed((): AlarmCountCustomize => {
+  console.log(`🔧 [AlarmCount] Props调试:`, {
+    componentId: props.componentId,
+    hasCustomConfig: !!props.customConfig,
+    customConfig: props.customConfig,
+    hasConfig: !!props.config,
+    config: props.config,
+    hasBoundData: !!props.boundData,
+    boundData: props.boundData
+  })
+
   // 优先使用新的customConfig结构
   if (props.customConfig?.customize) {
+    console.log(`✅ [AlarmCount] 使用customConfig.customize`)
     return props.customConfig.customize
   }
 
   // 回退到旧的config结构（向后兼容）
-  return {
+  console.log(`⚠️ [AlarmCount] 回退到config结构`)
+  const fallbackConfig = {
     title: props.config?.title || $t('card.alarmCount'),
     unit: props.config?.unit || '个',
     startColor: props.config?.startColor || '#f97316',
@@ -85,6 +97,9 @@ const currentCustomize = computed((): AlarmCountCustomize => {
     suffix: props.config?.suffix || '',
     enableAnimation: props.config?.enableAnimation ?? true
   }
+
+  console.log(`🔧 [AlarmCount] 最终配置:`, fallbackConfig)
+  return fallbackConfig
 })
 
 /**
@@ -120,9 +135,29 @@ const currentAlarmValue = computed(() => {
  * 获取渐变样式
  */
 const gradientStyle = computed(() => {
-  const startColor = currentCustomize.value.startColor
-  const endColor = currentCustomize.value.endColor
-  return `linear-gradient(135deg, ${startColor}, ${endColor})`
+  try {
+    console.log(`🔧 [AlarmCount] 渐变样式计算:`, {
+      currentCustomize: currentCustomize.value,
+      hasCurrentCustomize: !!currentCustomize.value,
+      startColor: currentCustomize.value?.startColor,
+      endColor: currentCustomize.value?.endColor
+    })
+
+    if (!currentCustomize.value) {
+      console.error(`❌ [AlarmCount] currentCustomize.value is undefined!`)
+      return 'linear-gradient(135deg, #f97316, #ef4444)' // 默认渐变
+    }
+
+    const startColor = currentCustomize.value.startColor || '#f97316'
+    const endColor = currentCustomize.value.endColor || '#ef4444'
+    const gradient = `linear-gradient(135deg, ${startColor}, ${endColor})`
+
+    console.log(`✅ [AlarmCount] 渐变样式生成:`, gradient)
+    return gradient
+  } catch (error) {
+    console.error(`❌ [AlarmCount] 渐变样式计算错误:`, error)
+    return 'linear-gradient(135deg, #f97316, #ef4444)' // 安全后备
+  }
 })
 
 /**
@@ -163,7 +198,6 @@ const fetchAlarmData = async () => {
     })
 
     logger.info('告警数据获取成功', { value: alarmCount })
-
   } catch (error) {
     componentState.error = error instanceof Error ? error.message : '获取告警数据失败'
     componentState.currentValue = 0
@@ -178,7 +212,7 @@ const fetchAlarmData = async () => {
  */
 const handleClick = () => {
   componentState.clickCount++
-  
+
   emit('click', {
     componentId: props.componentId || '',
     timestamp: new Date().toISOString(),
@@ -226,7 +260,7 @@ defineExpose({
     class="alarm-count-card"
     :class="{
       'preview-mode': previewMode,
-      'loading': componentState.loading
+      loading: componentState.loading
     }"
     :style="{
       backgroundImage: gradientStyle,
@@ -433,11 +467,11 @@ defineExpose({
 }
 
 /* 深色主题适配 */
-[data-theme="dark"] .alarm-count-card {
+[data-theme='dark'] .alarm-count-card {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-[data-theme="dark"] .alarm-count-card:hover {
+[data-theme='dark'] .alarm-count-card:hover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 </style>

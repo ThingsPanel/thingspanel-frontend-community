@@ -88,8 +88,7 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
     if (widget?.metadata?.card2Definition) {
       const card2Definition = widget.metadata.card2Definition
       const hasConfigProps = !!(
-        card2Definition.config?.properties && 
-        Object.keys(card2Definition.config.properties).length > 0
+        card2Definition.config?.properties && Object.keys(card2Definition.config.properties).length > 0
       )
       return hasConfigProps
     }
@@ -102,7 +101,7 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
         return true
       }
 
-      // 已知无配置的组件类型  
+      // 已知无配置的组件类型
       const nonConfigurableComponents = ['simple-display', 'app-download']
       if (nonConfigurableComponents.includes(widget.type)) {
         return false

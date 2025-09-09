@@ -6,9 +6,9 @@
 
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { 
-  Card2Components, 
-  Card2ComponentMap, 
+import {
+  Card2Components,
+  Card2ComponentMap,
   Card2ComponentTypes,
   ComponentStats,
   getAllComponents,
@@ -33,7 +33,7 @@ const loadComponentData = async () => {
   try {
     // 获取所有组件
     components.value = getAllComponents()
-    
+
     // 获取统计信息
     stats.value = {
       total: ComponentStats.total,
@@ -42,10 +42,10 @@ const loadComponentData = async () => {
       supportedDataSources: ComponentStats.supportedDataSources,
       versions: ComponentStats.versions
     }
-    
+
     // 验证组件
     validation.value = validateComponents()
-    
+
     console.log('Card2Components:', Card2Components)
     console.log('Card2ComponentMap:', Card2ComponentMap)
     console.log('Card2ComponentTypes:', Card2ComponentTypes)
@@ -88,17 +88,10 @@ onMounted(() => {
 
 <template>
   <div class="auto-registry-test">
-    <n-page-header 
-      title="Card2.1 自动注册系统测试" 
-      subtitle="验证组件自动发现和注册功能"
-    >
+    <n-page-header title="Card2.1 自动注册系统测试" subtitle="验证组件自动发现和注册功能">
       <template #extra>
         <n-space>
-          <n-button 
-            type="primary" 
-            :loading="loading"
-            @click="loadComponentData"
-          >
+          <n-button type="primary" :loading="loading" @click="loadComponentData">
             <template #icon>
               <n-icon>
                 <i-mdi-refresh />
@@ -106,11 +99,7 @@ onMounted(() => {
             </template>
             刷新数据
           </n-button>
-          <n-button 
-            type="info" 
-            :loading="loading"
-            @click="handleReload"
-          >
+          <n-button type="info" :loading="loading" @click="handleReload">
             <template #icon>
               <n-icon>
                 <i-mdi-reload />
@@ -118,10 +107,7 @@ onMounted(() => {
             </template>
             重新加载组件
           </n-button>
-          <n-button 
-            type="warning"
-            @click="handleDebug"
-          >
+          <n-button type="warning" @click="handleDebug">
             <template #icon>
               <n-icon>
                 <i-mdi-bug />
@@ -146,23 +132,14 @@ onMounted(() => {
             </n-descriptions-item>
             <n-descriptions-item label="支持的数据源">
               <n-space>
-                <n-tag 
-                  v-for="source in stats.supportedDataSources" 
-                  :key="source"
-                  size="small"
-                >
+                <n-tag v-for="source in stats.supportedDataSources" :key="source" size="small">
                   {{ source }}
                 </n-tag>
               </n-space>
             </n-descriptions-item>
             <n-descriptions-item label="版本分布">
               <n-space>
-                <n-tag 
-                  v-for="version in stats.versions" 
-                  :key="version"
-                  size="small"
-                  type="warning"
-                >
+                <n-tag v-for="version in stats.versions" :key="version" size="small" type="warning">
                   {{ version }}
                 </n-tag>
               </n-space>
@@ -173,7 +150,7 @@ onMounted(() => {
 
       <!-- 验证结果 -->
       <n-card title="✅ 组件验证结果" hoverable>
-        <n-alert 
+        <n-alert
           :type="validation.valid ? 'success' : 'warning'"
           :title="validation.valid ? '所有组件验证通过' : '发现组件定义问题'"
         >
@@ -184,9 +161,7 @@ onMounted(() => {
               </n-li>
             </n-ul>
           </div>
-          <div v-else>
-            所有组件定义都符合规范，可以正常使用。
-          </div>
+          <div v-else>所有组件定义都符合规范，可以正常使用。</div>
         </n-alert>
       </n-card>
 
@@ -194,11 +169,7 @@ onMounted(() => {
       <n-card title="📂 分类统计" hoverable>
         <n-spin :show="loading">
           <n-space v-if="stats.byCategory" vertical>
-            <div 
-              v-for="(count, category) in stats.byCategory" 
-              :key="category"
-              class="category-item"
-            >
+            <div v-for="(count, category) in stats.byCategory" :key="category" class="category-item">
               <n-space justify="space-between" align="center">
                 <n-text strong>{{ category }}</n-text>
                 <n-tag type="info">{{ count }} 个组件</n-tag>
@@ -221,14 +192,16 @@ onMounted(() => {
               { title: '数据源', key: 'supportedDataSources', ellipsis: { tooltip: true } },
               { title: '标签', key: 'tags', ellipsis: { tooltip: true } }
             ]"
-            :data="components.map(c => ({
-              type: c.type,
-              name: c.name,
-              category: c.category || '其他',
-              version: c.version || '未指定',
-              supportedDataSources: c.supportedDataSources?.join(', ') || '无',
-              tags: c.tags?.join(', ') || '无'
-            }))"
+            :data="
+              components.map(c => ({
+                type: c.type,
+                name: c.name,
+                category: c.category || '其他',
+                version: c.version || '未指定',
+                supportedDataSources: c.supportedDataSources?.join(', ') || '无',
+                tags: c.tags?.join(', ') || '无'
+              }))
+            "
             :pagination="{ pageSize: 10 }"
             :bordered="false"
           />
@@ -238,7 +211,9 @@ onMounted(() => {
       <!-- 使用示例 -->
       <n-card title="💡 使用示例" hoverable>
         <n-space vertical>
-          <n-code language="typescript" :code="`
+          <n-code
+            language="typescript"
+            :code="`
 // 获取所有组件
 import { getAllComponents } from '@/card2.1/components'
 const components = getAllComponents()
@@ -258,7 +233,8 @@ debugComponents()
 // 验证组件定义
 import { validateComponents } from '@/card2.1/components'
 const validation = validateComponents()
-`" />
+`"
+          />
         </n-space>
       </n-card>
     </n-space>

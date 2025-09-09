@@ -38,7 +38,6 @@ const alarmCountDefinition: ComponentDefinition = {
   // 权限控制 - 设置为全部权限
   permission: '不限',
 
-
   // 注意：此组件不需要数据源配置，数据通过组件内部API获取
 
   // 交互能力配置

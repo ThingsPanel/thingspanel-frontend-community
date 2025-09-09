@@ -58,17 +58,19 @@ const componentState = reactive<ComponentState>({
  * 获取组件配置
  */
 const currentCustomize = computed((): DualDataDisplayCustomize => {
-  return props.customConfig?.customize || {
-    title: '双数据展示',
-    themeColor: '#2080f0',
-    fontSize: 16,
-    showBorder: true,
-    dataSource1Label: '数据源A',
-    dataSource2Label: '数据源B',
-    numberFormat: 'raw',
-    unit: '',
-    layout: 'horizontal'
-  }
+  return (
+    props.customConfig?.customize || {
+      title: '双数据展示',
+      themeColor: '#2080f0',
+      fontSize: 16,
+      showBorder: true,
+      dataSource1Label: '数据源A',
+      dataSource2Label: '数据源B',
+      numberFormat: 'raw',
+      unit: '',
+      layout: 'horizontal'
+    }
+  )
 })
 
 /**
@@ -210,7 +212,7 @@ defineExpose({
     <div class="display-header">
       <h3 class="display-title">{{ currentCustomize.title }}</h3>
     </div>
-    
+
     <!-- 数据展示区域 -->
     <div class="data-container">
       <!-- 数据源1 -->
@@ -223,14 +225,14 @@ defineExpose({
           <span class="status-indicator" :class="componentState.dataSource1Status"></span>
         </div>
       </div>
-      
+
       <!-- 分隔符 -->
       <div class="separator">
         <span class="separator-line"></span>
         <span class="separator-text">VS</span>
         <span class="separator-line"></span>
       </div>
-      
+
       <!-- 数据源2 -->
       <div class="data-item data-source-2">
         <div class="data-label">{{ currentCustomize.dataSource2Label }}</div>
@@ -242,7 +244,7 @@ defineExpose({
         </div>
       </div>
     </div>
-    
+
     <!-- 状态信息 -->
     <div class="status-info">
       <span class="update-time">更新时间: {{ new Date(componentState.lastUpdate).toLocaleTimeString() }}</span>
@@ -422,7 +424,8 @@ defineExpose({
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -435,15 +438,15 @@ defineExpose({
   .dual-data-display {
     padding: 16px;
   }
-  
+
   .data-container {
     gap: 12px;
   }
-  
+
   .layout-horizontal .data-container {
     flex-direction: column;
   }
-  
+
   .data-item {
     padding: 12px;
   }

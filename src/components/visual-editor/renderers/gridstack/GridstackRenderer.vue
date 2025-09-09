@@ -171,7 +171,11 @@ const initializeDataSources = () => {
  * 🔥 关键修复：基础配置变更时更新数据源配置中的属性绑定
  * 当deviceId等基础配置变更时，自动更新数据源配置中依赖这些字段的绑定值
  */
-const updateDataSourceConfigForBaseConfigChange = async (componentId: string, newBaseConfig: any, oldBaseConfig: any) => {
+const updateDataSourceConfigForBaseConfigChange = async (
+  componentId: string,
+  newBaseConfig: any,
+  oldBaseConfig: any
+) => {
   try {
     console.log(`🔄 [GridstackRenderer] 处理基础配置变更，更新数据源配置`, {
       componentId,
@@ -192,12 +196,12 @@ const updateDataSourceConfigForBaseConfigChange = async (componentId: string, ne
 
     // 检查基础配置中的关键字段变化
     const baseConfigFields = ['deviceId', 'metricsList']
-    const changes: Array<{field: string, oldValue: any, newValue: any}> = []
+    const changes: Array<{ field: string; oldValue: any; newValue: any }> = []
 
     baseConfigFields.forEach(fieldName => {
       const newValue = newBaseConfig[fieldName]
       const oldValue = oldBaseConfig?.[fieldName]
-      
+
       if (newValue !== oldValue) {
         changes.push({ field: fieldName, oldValue, newValue })
         console.log(`🔄 [GridstackRenderer] 检测到 ${fieldName} 变化: ${oldValue} → ${newValue}`)
@@ -283,7 +287,6 @@ const updateDataSourceConfigForBaseConfigChange = async (componentId: string, ne
     } else {
       console.log(`⚠️ 数据源配置中未发现属性绑定引用，无需更新`)
     }
-
   } catch (error) {
     console.error(`❌ [GridstackRenderer] 基础配置变更处理失败`, {
       componentId,

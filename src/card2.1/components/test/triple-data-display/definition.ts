@@ -6,36 +6,37 @@
 import type { ComponentDefinition } from '../../../core/types'
 import { tripleDataDisplaySettingConfig, customConfig } from './settingConfig'
 import type { TripleDataDisplayConfig } from './settingConfig'
+import TripleDataDisplayCard from './index.vue'
+import TripleDataDisplaySetting from './setting.vue'
 
 /**
  * 三数据展示组件定义
  */
 export const tripleDataDisplayDefinition: ComponentDefinition<TripleDataDisplayConfig> = {
   // 基础信息
-  id: 'triple-data-display',
+  type: 'triple-data-display',
   name: '三数据展示',
   description: '展示三个数据源的数据，支持多种布局方式和数据格式化',
-  version: '1.0.0',
+  category: '数据展示',
+  mainCategory: '测试',
+  subCategory: '展示组件',
+  icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>`,
+  version: '2.1.0',
   author: 'ThingsPanel',
 
   // 组件实现
-  component: () => import('./index.vue'),
+  component: TripleDataDisplayCard,
 
   // 配置组件
-  settingComponent: () => import('./setting.vue'),
+  configComponent: TripleDataDisplaySetting,
 
   // 默认配置
-  defaultConfig: {
+  defaultConfig: customConfig,
+
+  // 默认配置
+  config: {
+    type: 'triple-data-display',
     root: {
-      version: '1.0.0',
-      theme: 'light',
-      layout: {
-        width: 400,
-        height: 300,
-        x: 0,
-        y: 0,
-        zIndex: 1
-      },
       transform: {
         rotate: 0,
         scale: 1
@@ -44,137 +45,200 @@ export const tripleDataDisplayDefinition: ComponentDefinition<TripleDataDisplayC
     customize: customConfig
   },
 
+  // 默认布局
+  defaultLayout: {
+    canvas: {
+      width: 450,
+      height: 300,
+      x: 0,
+      y: 0
+    },
+    gridstack: {
+      w: 8,
+      h: 5,
+      x: 0,
+      y: 0,
+      minW: 6,
+      minH: 4,
+      maxW: 12,
+      maxH: 8
+    }
+  },
+
   // 布局配置
   layout: {
-    defaultWidth: 400,
-    defaultHeight: 300,
-    minWidth: 300,
-    minHeight: 200,
-    maxWidth: 800,
-    maxHeight: 600,
-    resizable: true,
-    draggable: true
+    defaultSize: {
+      width: 8,
+      height: 5
+    },
+    minSize: {
+      width: 6,
+      height: 4
+    },
+    maxSize: {
+      width: 12,
+      height: 8
+    },
+    resizable: true
   },
 
-  // 权限配置
-  permissions: {
-    view: ['admin', 'user', 'guest'],
-    edit: ['admin', 'user'],
-    delete: ['admin']
-  },
+  // 权限配置 - 谁可以使用这个组件
+  permission: '不限', // '不限' | 'TENANT_ADMIN' | 'TENANT_USER' | 'SYS_ADMIN'
 
-  // 标签和分类
-  tags: ['数据展示', '三数据', '仪表板', '监控'],
-  category: 'data-display',
-
-  // 图标
-  icon: 'mdi:view-dashboard',
+  // 标签
+  tags: ['数据展示', '三数据', '仪表板', '监控', 'test'],
 
   // 特性标记
   features: {
-    responsive: true,
-    themeable: true,
-    configurable: true,
-    exportable: true,
-    printable: true
+    realtime: true, // 支持实时数据
+    dataBinding: true, // 支持数据绑定
+    themeable: true, // 支持主题定制
+    responsive: true, // 支持响应式
+    configurable: true // 支持配置定制
   },
 
-  // 数据源需求
-  dataSources: {
-    required: true,
-    multiple: true,
-    maxCount: 3,
-    types: ['realtime', 'historical', 'static']
-  },
+  // 交互能力定义
+  interaction: {
+    capability: {
+      supportedEvents: ['click', 'hover', 'dataChange'],
+      supportedActions: ['jump', 'modify', 'updateData'],
+      defaultPermissions: {
+        allowExternalControl: true,
+        requirePermissionCheck: false
+      },
+      listenableProperties: ['title', 'dataSource1', 'dataSource2', 'dataSource3', 'themeColor', 'layout']
+    },
 
-  // 交互能力
-  interactions: {
-    // 支持的事件
-    events: [
-      {
-        name: 'click',
-        description: '点击组件时触发',
-        params: {
-          componentId: 'string',
-          timestamp: 'string'
-        }
-      },
-      {
-        name: 'hover',
-        description: '鼠标悬停时触发',
-        params: {
-          componentId: 'string',
-          type: 'enter | leave'
-        }
-      },
-      {
-        name: 'dataChange',
-        description: '数据变化时触发',
-        params: {
-          source: 'dataSource1 | dataSource2 | dataSource3',
-          value: 'any'
-        }
-      }
-    ],
-
-    // 支持的动作
-    actions: [
-      {
-        name: 'updateData',
-        description: '更新组件数据',
-        params: {
-          dataSource1: 'any',
-          dataSource2: 'any',
-          dataSource3: 'any'
-        }
-      },
-      {
-        name: 'updateConfig',
-        description: '更新组件配置',
-        params: {
-          config: 'TripleDataDisplayConfig'
-        }
-      },
-      {
-        name: 'refresh',
-        description: '刷新组件',
-        params: {}
-      }
-    ],
-
-    // 交互示例
     examples: [
       {
-        title: '数据联动',
-        description: '当其他组件数据变化时，自动更新三数据展示',
-        code: `
-// 监听其他组件的数据变化
-componentBus.on('dataUpdate', (data) => {
-  tripleDataDisplay.updateData({
-    dataSource1: data.temperature,
-    dataSource2: data.humidity,
-    dataSource3: data.pressure
-  })
-})
-        `
+        name: '三数据联动示例',
+        description: '当其他组件数据变化时，自动更新三个数据源',
+        scenario: 'triple-data-update',
+        config: {
+          event: 'dataChange',
+          responses: [
+            {
+              action: 'modify',
+              modifyConfig: {
+                targetComponentId: 'self',
+                targetProperty: 'dataValues',
+                updateValue: '{{newDataSet}}',
+                updateMode: 'replace'
+              }
+            }
+          ],
+          enabled: true,
+          priority: 1
+        }
       },
       {
-        title: '点击跳转',
-        description: '点击数据项跳转到详情页面',
-        code: `
-// 监听组件点击事件
-tripleDataDisplay.on('click', (event) => {
-  router.push({
-    path: '/detail',
-    query: { componentId: event.componentId }
-  })
-})
-        `
+        name: '点击查看详情',
+        description: '点击组件跳转到三数据详情页面',
+        scenario: 'click-detail',
+        config: {
+          event: 'click',
+          responses: [
+            {
+              action: 'jump',
+              jumpConfig: {
+                jumpType: 'internal',
+                url: '/triple-data-detail',
+                target: '_self'
+              }
+            }
+          ],
+          enabled: true
+        }
       }
     ]
   },
 
-  // 设置配置
+  // 数据源需求定义 - 用于生成多个数据源插槽
+  dataSources: [
+    {
+      key: 'dataSource1',
+      name: '数据源1',
+      description: '第一个数据源，用于三数据对比展示',
+      supportedTypes: ['static', 'api', 'websocket'],
+      fieldMappings: {
+        'value': {
+          targetField: 'dataSource1Value',
+          type: 'value',
+          required: true,
+          defaultValue: 0
+        },
+        'label': {
+          targetField: 'dataSource1Label',
+          type: 'value',
+          required: false,
+          defaultValue: '数据源1'
+        },
+        'unit': {
+          targetField: 'dataSource1Unit',
+          type: 'value',
+          required: false,
+          defaultValue: ''
+        }
+      },
+      required: false
+    },
+    {
+      key: 'dataSource2',
+      name: '数据源2',
+      description: '第二个数据源，用于三数据对比展示',
+      supportedTypes: ['static', 'api', 'websocket'],
+      fieldMappings: {
+        'value': {
+          targetField: 'dataSource2Value',
+          type: 'value',
+          required: true,
+          defaultValue: 0
+        },
+        'label': {
+          targetField: 'dataSource2Label',
+          type: 'value',
+          required: false,
+          defaultValue: '数据源2'
+        },
+        'unit': {
+          targetField: 'dataSource2Unit',
+          type: 'value',
+          required: false,
+          defaultValue: ''
+        }
+      },
+      required: false
+    },
+    {
+      key: 'dataSource3',
+      name: '数据源3',
+      description: '第三个数据源，用于三数据对比展示',
+      supportedTypes: ['static', 'api', 'websocket'],
+      fieldMappings: {
+        'value': {
+          targetField: 'dataSource3Value',
+          type: 'value',
+          required: true,
+          defaultValue: 0
+        },
+        'label': {
+          targetField: 'dataSource3Label',
+          type: 'value',
+          required: false,
+          defaultValue: '数据源3'
+        },
+        'unit': {
+          targetField: 'dataSource3Unit',
+          type: 'value',
+          required: false,
+          defaultValue: ''
+        }
+      },
+      required: false
+    }
+  ],
+
+  // 设置配置 - 用于属性暴露和配置面板
   settingConfig: tripleDataDisplaySettingConfig
 }
 
@@ -183,7 +247,7 @@ tripleDataDisplay.on('click', (event) => {
  */
 export function registerTripleDataDisplayComponent() {
   // 这里可以添加组件注册逻辑
-  console.log('Triple Data Display Component registered:', tripleDataDisplayDefinition.id)
+  console.log('Triple Data Display Component registered:', tripleDataDisplayDefinition.type)
 }
 
 // 默认导出

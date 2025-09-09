@@ -20,6 +20,7 @@
       v-else-if="componentToRender"
       ref="currentComponentRef"
       :key="`${props.nodeId}-${forceUpdateKey}`"
+      :custom-config="extractCustomConfig"
       :config="extractComponentConfig"
       :raw-data-sources="safeDeepClone(getDataSourcesForComponent())"
       :component-id="props.nodeId"
@@ -40,7 +41,7 @@ import { ref, onMounted, watch, shallowRef, onBeforeUnmount, computed, inject, t
 import { interactionManager } from '@/card2.1/core/interaction-manager'
 import { NAlert } from 'naive-ui'
 import { $t } from '@/locales'
-import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
+import { useComponentTree as useCard2Integration } from '@/card2.1/hooks/useComponentTree'
 import type { DataSourceValue } from '../../types/data-source'
 // 🔥 新增：导入新架构的数据桥接器和配置管理器
 import { getVisualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
@@ -397,12 +398,70 @@ const defaultConfig = {
  * 🚀 优化3：使用统一配置合并策略系统
  * 智能合并多个配置源，处理优先级冲突
  */
+/**
+ * 🔥 修复：智能处理Card2.1配置格式
+ * 优先使用已有的结构化config，回退到从扁平化config构建
+ */
+const extractCustomConfig = computed(() => {
+  const rawConfig = extractComponentConfig.value
+
+  console.log(`🔧 [Card2Wrapper] 配置检查:`, {
+    componentType: props.componentType,
+    nodeId: props.nodeId,
+    rawConfig,
+    hasCustomize: !!(rawConfig && typeof rawConfig === 'object' && rawConfig.customize),
+    propsConfig: props.config
+  })
+
+  // 🚀 关键修复：如果rawConfig已经是结构化的Card2.1格式，直接使用
+  if (rawConfig && typeof rawConfig === 'object' && rawConfig.customize) {
+    console.log(`✅ [Card2Wrapper] 使用现有结构化config:`, rawConfig)
+    return rawConfig
+  }
+
+  // 回退：从扁平化config构建结构化config
+  const customConfig = {
+    type: props.componentType,
+    root: {
+      transform: {
+        rotate: rawConfig?.rotate || 0,
+        scale: rawConfig?.scale || 1
+      }
+    },
+    customize: { ...rawConfig }
+  }
+
+  // 从customize中移除root层级的属性
+  if (customConfig.customize) {
+    delete customConfig.customize.rotate
+    delete customConfig.customize.scale
+  }
+
+  console.log(`🔧 [Card2Wrapper] 构建新的结构化config:`, {
+    flatConfig: rawConfig,
+    customConfig
+  })
+
+  return customConfig
+})
+
 const extractComponentConfig = computed(() => {
   // 🚀 准备各种配置源
   const configSources: Partial<Record<ConfigSource, any>> = {}
 
-  // 1. 默认配置
-  configSources.default = { ...defaultConfig }
+  // 🔥 关键修复：优先从metadata中获取Card2.1组件的真实配置
+  let componentDefaultConfig = { ...defaultConfig }
+  if (props.metadata?.card2Definition?.config) {
+    console.log(`✅ [Card2Wrapper] 使用metadata中的组件配置:`, {
+      componentType: props.componentType,
+      nodeId: props.nodeId,
+      card2Config: props.metadata.card2Definition.config
+    })
+    componentDefaultConfig = props.metadata.card2Definition.config
+  }
+
+  // 1. 默认配置（现在是真实的组件配置）
+  configSources.default = { ...componentDefaultConfig }
 
   // 2. 用户配置（来自Visual Editor）
   if (props.config && typeof props.config === 'object') {
@@ -522,24 +581,38 @@ const loadComponent = async () => {
     hasError.value = false
     errorMessage.value = ''
 
-    // 🔥 修复：确保Card2集成已初始化
-    if (!card2Integration.isInitialized.value) {
+    console.log(`🔧 [Card2Wrapper] 开始加载组件: ${props.componentType}`)
+
+    // 🔥 修复：使用 useComponentTree 的正确API
+    // 检查是否还在加载中
+    if (card2Integration.isLoading.value) {
+      console.log(`⏳ [Card2Wrapper] Card2系统还在初始化，等待完成...`)
       await card2Integration.initialize()
     }
 
-    // 🔥 修复：使用正确的Card2集成API
-    const componentDefinition = card2Integration.getComponentDefinition(props.componentType)
-    if (!componentDefinition) {
-      throw new Error(`组件定义不存在: ${props.componentType}`)
-    }
+    console.log(`🔧 [Card2Wrapper] Card2系统状态:`, {
+      isLoading: card2Integration.isLoading.value,
+      error: card2Integration.error.value,
+      componentsCount: card2Integration.filteredComponents.value?.length || 0
+    })
 
+    // 获取组件实例
     const component = await card2Integration.getComponent(props.componentType)
+
+    console.log(`🔧 [Card2Wrapper] getComponent 返回:`, {
+      componentType: props.componentType,
+      component,
+      hasComponent: !!component
+    })
 
     if (!component) {
       throw new Error(`组件 [${props.componentType}] 的组件实现不存在。`)
     }
+
     componentToRender.value = component
+    console.log(`✅ [Card2Wrapper] 组件加载成功: ${props.componentType}`)
   } catch (error: any) {
+    console.error(`❌ [Card2Wrapper] 组件加载失败:`, error)
     hasError.value = true
     errorMessage.value = error.message || $t('visualEditor.unknownError')
     componentToRender.value = null

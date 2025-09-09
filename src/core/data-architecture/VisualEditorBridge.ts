@@ -21,11 +21,52 @@ export class VisualEditorBridge {
    * @param config 数据源配置
    */
   async updateComponentExecutor(componentId: string, componentType: string, config: any): Promise<DataResult> {
+    console.log(`🔍 [VisualEditorBridge] updateComponentExecutor 开始`, {
+      componentId,
+      componentType,
+      configKeys: Object.keys(config || {}),
+      configSample: JSON.stringify(config).substring(0, 200) + '...'
+    })
+
+    // 🔥 添加详细的配置结构调试
+    console.log(`🔍 [VisualEditorBridge] 接收到的详细配置`, {
+      componentId,
+      config: JSON.stringify(config, null, 2).substring(0, 3000),
+      hasBase: !!(config?.base),
+      hasDataSource: !!(config?.dataSource),
+      dataSourceKeys: config?.dataSource ? Object.keys(config.dataSource) : [],
+      hasDataSources: !!(config?.dataSource?.dataSources),
+      hasRawDataList: !!(config?.dataSource?.rawDataList),
+      configType: typeof config,
+      configConstructor: config?.constructor?.name
+    })
+
     // 将旧配置格式转换为新的数据需求格式
     const requirement = this.convertConfigToRequirement(componentId, componentType, config)
+    
+    console.log(`🔧 [VisualEditorBridge] 配置转换完成`, {
+      componentId,
+      requirementKeys: Object.keys(requirement),
+      dataSourcesCount: requirement.dataSources?.length || 0,
+      dataSources: requirement.dataSources?.map(ds => ({
+        id: ds.id,
+        type: ds.type,
+        hasConfig: !!ds.config
+      }))
+    })
 
     // 使用 SimpleDataBridge 执行数据获取
+    console.log(`🚀 [VisualEditorBridge] 开始执行 SimpleDataBridge.executeComponent`)
     const result = await simpleDataBridge.executeComponent(requirement)
+    
+    console.log(`✅ [VisualEditorBridge] SimpleDataBridge 执行完成`, {
+      componentId,
+      resultKeys: Object.keys(result || {}),
+      hasData: !!result.data,
+      hasError: !!result.error,
+      dataKeys: result.data ? Object.keys(result.data) : []
+    })
+
     // 通知数据更新回调
     this.notifyDataUpdate(componentId, result.data)
 
@@ -90,7 +131,7 @@ export class VisualEditorBridge {
     // 🔥 关键修复：提取基础配置属性
     let resolvedConfig = config
     let baseConfig: any = null
-    
+
     // 如果配置是 WidgetConfiguration 格式，提取相关部分
     if (config && typeof config === 'object') {
       // 检查是否是新的分层配置格式
@@ -105,7 +146,7 @@ export class VisualEditorBridge {
           // 保持原有的数据源配置
           ...(config.dataSource || {})
         }
-        
+
         console.log(`🔧 [VisualEditorBridge] 检测到分层配置，提取基础配置`, {
           componentId,
           baseConfig,
@@ -239,7 +280,7 @@ export class VisualEditorBridge {
 
     // 创建增强的配置对象
     const enhanced = { ...dataSourceConfig }
-    
+
     // 如果数据源配置中有 config 对象，则注入到 config 中
     if (enhanced.config && typeof enhanced.config === 'object') {
       enhanced.config = {

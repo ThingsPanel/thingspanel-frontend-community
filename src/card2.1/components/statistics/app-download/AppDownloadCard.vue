@@ -9,38 +9,24 @@
     <div class="app-download-title">
       {{ $t('card.appDownload.title') }}
     </div>
-    
+
     <!-- 内容展示区域 -->
     <div class="app-download-content">
       <!-- 二维码区域 -->
       <div class="qr-code-section">
-        <img 
-          :src="downloadAppImage" 
-          alt="App Download QR Code" 
-          class="qr-code-image"
-        />
+        <img :src="downloadAppImage" alt="App Download QR Code" class="qr-code-image" />
       </div>
-      
+
       <!-- 应用商店链接区域 -->
       <div class="app-store-section">
         <!-- App Store 下载链接 -->
-        <img 
-          :src="appStoreImage" 
-          alt="Download on App Store" 
-          class="store-badge"
-          @click="handleAppStoreClick"
-        />
-        
+        <img :src="appStoreImage" alt="Download on App Store" class="store-badge" @click="handleAppStoreClick" />
+
         <!-- Google Play 下载链接 -->
-        <img 
-          :src="googlePlayImage" 
-          alt="Get it on Google Play" 
-          class="store-badge"
-          @click="handleGooglePlayClick"
-        />
+        <img :src="googlePlayImage" alt="Get it on Google Play" class="store-badge" @click="handleGooglePlayClick" />
       </div>
     </div>
-    
+
     <!-- 说明文字 -->
     <div class="app-download-description">
       {{ $t('card.appDownload.scanOrClick') }}
@@ -83,7 +69,7 @@ const handleAppStoreClick = () => {
 }
 
 /**
- * 处理 Google Play 点击事件  
+ * 处理 Google Play 点击事件
  * 按照原组件逻辑：目前为占位符功能
  */
 const handleGooglePlayClick = () => {
@@ -106,13 +92,13 @@ const handleGooglePlayClick = () => {
   justify-content: center;
   height: 100%;
   padding: 16px;
-  
+
   /* 🚨 主题系统集成 - 使用 CSS 变量 */
   background-color: var(--card-color);
   color: var(--text-color);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  
+
   /* 防止内容溢出 */
   box-sizing: border-box;
   overflow: hidden;
@@ -124,7 +110,7 @@ const handleGooglePlayClick = () => {
   font-weight: 600;
   margin-bottom: 16px;
   text-align: center;
-  
+
   /* 主题适配 */
   color: var(--text-color);
 }
@@ -151,7 +137,7 @@ const handleGooglePlayClick = () => {
   width: 96px;
   height: 96px;
   object-fit: contain;
-  
+
   /* 主题适配 - 二维码在暗色模式下的处理 */
   filter: var(--image-filter, none);
 }
@@ -169,8 +155,10 @@ const handleGooglePlayClick = () => {
   height: 40px;
   cursor: pointer;
   object-fit: contain;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-  
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+
   /* 主题适配 */
   filter: var(--image-filter, none);
 }
@@ -191,7 +179,7 @@ const handleGooglePlayClick = () => {
   font-size: 14px;
   text-align: center;
   line-height: 1.4;
-  
+
   /* 主题适配 */
   color: var(--text-color-2);
 }
@@ -202,16 +190,16 @@ const handleGooglePlayClick = () => {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .qr-code-image {
     width: 80px;
     height: 80px;
   }
-  
+
   .store-badge {
     height: 36px;
   }
-  
+
   .app-download-title {
     font-size: 16px;
     margin-bottom: 12px;
@@ -219,14 +207,14 @@ const handleGooglePlayClick = () => {
 }
 
 /* 暗色主题特定样式 */
-[data-theme="dark"] .app-download-card {
+[data-theme='dark'] .app-download-card {
   /* 暗色模式下的边框和阴影 */
   border-color: var(--border-color);
   box-shadow: var(--box-shadow-dark);
 }
 
-[data-theme="dark"] .qr-code-image,
-[data-theme="dark"] .store-badge {
+[data-theme='dark'] .qr-code-image,
+[data-theme='dark'] .store-badge {
   /* 暗色模式下图片的亮度调整 */
   filter: brightness(0.9);
 }

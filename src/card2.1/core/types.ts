@@ -86,6 +86,9 @@ export interface ComponentDefinition {
 
   /** 交互能力定义 */
   interaction?: ComponentInteractionDefinition
+
+  /** 设置配置 - 用于属性暴露和配置面板 */
+  settingConfig?: any[]
 }
 
 export interface IComponentRegistry {

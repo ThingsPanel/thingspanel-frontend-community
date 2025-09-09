@@ -408,7 +408,7 @@ export class PropertyPathManager {
     // 检查是否为基础配置路径格式 (base.xxx)
     if (propertyPath.startsWith('base.')) {
       const basePropertyPath = propertyPath.substring(5) // 移除 'base.' 前缀
-      
+
       // 优先从 base 配置段获取
       if (config.base) {
         const value = PropertyPathManager.getNestedValue(config.base, basePropertyPath)
@@ -434,7 +434,7 @@ export class PropertyPathManager {
     // 检查是否为组件配置路径格式 (component.xxx)
     else if (propertyPath.startsWith('component.')) {
       const componentPropertyPath = propertyPath.substring(10) // 移除 'component.' 前缀
-      
+
       // 从 component 配置段获取
       if (config.component && config.component.properties) {
         const value = PropertyPathManager.getNestedValue(config.component.properties, componentPropertyPath)
@@ -450,7 +450,7 @@ export class PropertyPathManager {
     // 检查是否为数据源配置路径格式 (dataSource.xxx)
     else if (propertyPath.startsWith('dataSource.')) {
       const dataSourcePropertyPath = propertyPath.substring(11) // 移除 'dataSource.' 前缀
-      
+
       // 从 dataSource 配置段获取
       if (config.dataSource) {
         const value = PropertyPathManager.getNestedValue(config.dataSource, dataSourcePropertyPath)
@@ -504,7 +504,7 @@ export class PropertyPathManager {
       if (current == null) {
         return undefined
       }
-      
+
       if (typeof current === 'object') {
         current = current[key]
       } else {
@@ -535,12 +535,12 @@ export class PropertyPathManager {
     // 检查是否为基础配置路径格式 (base.xxx)
     if (propertyPath.startsWith('base.')) {
       const basePropertyPath = propertyPath.substring(5) // 移除 'base.' 前缀
-      
+
       // 确保 base 配置段存在
       if (!config.base) {
         config.base = {}
       }
-      
+
       PropertyPathManager.setNestedValue(config.base, basePropertyPath, value)
       console.log(`✅ [PropertyPathManager] 已设置base配置值`, {
         路径: propertyPath,
@@ -550,7 +550,7 @@ export class PropertyPathManager {
     // 检查是否为组件配置路径格式 (component.xxx)
     else if (propertyPath.startsWith('component.')) {
       const componentPropertyPath = propertyPath.substring(10) // 移除 'component.' 前缀
-      
+
       // 确保 component 配置段存在
       if (!config.component) {
         config.component = { properties: {}, styles: {}, behavior: {} }
@@ -558,7 +558,7 @@ export class PropertyPathManager {
       if (!config.component.properties) {
         config.component.properties = {}
       }
-      
+
       PropertyPathManager.setNestedValue(config.component.properties, componentPropertyPath, value)
       console.log(`✅ [PropertyPathManager] 已设置component配置值`, {
         路径: propertyPath,
@@ -568,12 +568,12 @@ export class PropertyPathManager {
     // 检查是否为数据源配置路径格式 (dataSource.xxx)
     else if (propertyPath.startsWith('dataSource.')) {
       const dataSourcePropertyPath = propertyPath.substring(11) // 移除 'dataSource.' 前缀
-      
+
       // 确保 dataSource 配置段存在
       if (!config.dataSource) {
         config.dataSource = {}
       }
-      
+
       PropertyPathManager.setNestedValue(config.dataSource, dataSourcePropertyPath, value)
       console.log(`✅ [PropertyPathManager] 已设置dataSource配置值`, {
         路径: propertyPath,
@@ -605,14 +605,14 @@ export class PropertyPathManager {
     // 遍历到最后一级之前的所有层级
     for (let i = 0; i < hierarchy.length - 1; i++) {
       const key = hierarchy[i]
-      
+
       // 如果当前层级不存在或不是对象，创建新对象
       if (!current[key] || typeof current[key] !== 'object') {
         // 如果下一级是数字，创建数组；否则创建对象
         const nextKey = hierarchy[i + 1]
         current[key] = typeof nextKey === 'number' ? [] : {}
       }
-      
+
       current = current[key]
     }
 

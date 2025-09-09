@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔍 回调调试测试</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .test-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .test-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .test-header h1 {
+      margin: 0 0 12px 0;
+      font-size: 28px;
+    }
+    .test-header p {
+      margin: 0;
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    .test-section {
+      margin-bottom: 40px;
+      padding: 24px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      background: #fafafa;
+    }
+    .test-section h3 {
+      margin: 0 0 20px 0;
+      color: #333;
+      font-size: 20px;
+    }
+    .step {
+      margin-bottom: 20px;
+      padding: 16px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #2080f0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .step h4 {
+      margin: 0 0 12px 0;
+      color: #333;
+      font-size: 16px;
+    }
+    .step p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .step ul {
+      margin: 8px 0 0 0;
+      color: #666;
+      font-size: 14px;
+    }
+    .debug-logs {
+      background: #f8f8f8;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #333;
+      margin: 16px 0;
+      border: 1px solid #e0e0e0;
+      overflow-x: auto;
+    }
+    .nav-link {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #2080f0;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-right: 12px;
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .nav-link:hover {
+      background: #40a9ff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(32,128,240,0.3);
+    }
+    .critical-check {
+      background: #fff3cd;
+      border-left-color: #ffc107;
+      border: 1px solid #ffeeba;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .critical-check h4 {
+      color: #856404;
+      margin: 0 0 8px 0;
+    }
+    .critical-check p {
+      color: #856404;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="test-header">
+      <h1>🔍 回调调试测试</h1>
+      <p>追踪 ConfigEventBus → InteractionManager 回调链路，定位 DataItemFetcher 未执行的原因</p>
+    </div>
+
+    <div class="test-section">
+      <h3>🎯 当前问题分析</h3>
+      
+      <div class="step">
+        <h4>✅ 已确认正常的部分</h4>
+        <ul>
+          <li>基础配置变更检测正常</li>
+          <li>ConfigEventBus 事件分发正常</li>
+          <li>shouldTriggerExecution 设置正确</li>
+          <li>看到了 "🚀 [ConfigEventBus] 触发数据重新执行" 日志</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h4>❌ 待解决的问题</h4>
+        <ul>
+          <li>没有看到 "🚀 [InteractionManager] 处理数据执行触发器事件"</li>
+          <li>说明 InteractionManager.handleDataExecutionTrigger 没有被调用</li>
+          <li>因此 DataItemFetcher 也不会被触发</li>
+        </ul>
+      </div>
+
+      <div class="critical-check">
+        <h4>🔍 关键调试点</h4>
+        <p>现在已经在 ConfigEventBus 和 InteractionManager 中添加了详细的调试日志，可以精确定位回调失败的原因。</p>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🧪 测试步骤</h3>
+      
+      <div class="step">
+        <h4>步骤 1：清空控制台并开始测试</h4>
+        <p>打开浏览器开发者工具，清空控制台日志</p>
+      </div>
+
+      <div class="step">
+        <h4>步骤 2：访问测试页面</h4>
+        <p>打开数据源系统测试页面</p>
+        <a href="http://localhost:5002/test/data-source-system" class="nav-link" target="_blank">
+          🔗 数据源系统测试
+        </a>
+      </div>
+
+      <div class="step">
+        <h4>步骤 3：修改基础配置</h4>
+        <p>找到任何组件，修改基础配置中的 deviceId，然后观察控制台日志</p>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🔍 预期调试日志</h3>
+      
+      <div class="step">
+        <h4>应该看到的完整日志链</h4>
+        <div class="debug-logs">
+// 基础配置变更
+🔧 [ConfigEventBus] 基础配置变更事件 {...}
+
+// 事件触发
+🚀 [ConfigEventBus] 触发数据重新执行 {...}
+
+// 新增的调试日志
+🔄 [ConfigEventBus] 即将调用dataExecutionTriggerCallback
+✅ [ConfigEventBus] dataExecutionTriggerCallback调用完成 {...}
+
+// InteractionManager 接收
+🔥🔥🔥 [InteractionManager] handleDataExecutionTrigger 被调用了！！！
+🚀 [InteractionManager] 处理数据执行触发器事件 {...}
+
+// 后续执行
+🔍 [InteractionManager] 检查HTTP数据源映射 {...}
+🔄 [InteractionManager] 触发HTTP数据源重新执行 {...}
+✅ [InteractionManager] HTTP数据源重新执行完成 {...}
+        </div>
+      </div>
+
+      <div class="step">
+        <h4>如果看不到 InteractionManager 日志</h4>
+        <p>说明回调注册或调用出现问题，需要检查：</p>
+        <ul>
+          <li>InteractionManager 是否正确初始化</li>
+          <li>registerDataExecutionTrigger 是否成功注册</li>
+          <li>回调函数绑定是否正确</li>
+          <li>是否有异步执行导致的上下文丢失</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🎯 诊断结果分析</h3>
+      
+      <div class="step">
+        <h4>情况1：看到了完整日志链</h4>
+        <p>说明回调链路正常，问题可能在于：</p>
+        <ul>
+          <li>HTTP 数据源映射没有找到</li>
+          <li>配置格式转换有问题</li>
+          <li>VisualEditorBridge 执行失败</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h4>情况2：ConfigEventBus 调用完成但 InteractionManager 没响应</h4>
+        <p>说明回调注册或调用有问题：</p>
+        <ul>
+          <li>InteractionManager 初始化失败</li>
+          <li>回调函数绑定错误</li>
+          <li>异步执行上下文丢失</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h4>情况3：ConfigEventBus 就没有调用</h4>
+        <p>说明配置事件分发有问题：</p>
+        <ul>
+          <li>事件格式不正确</li>
+          <li>shouldTriggerExecution 没有设置</li>
+          <li>事件监听器注册失败</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🔗 相关测试链接</h3>
+      <a href="http://localhost:5002/test/data-source-system" class="nav-link" target="_blank">
+        数据源系统测试
+      </a>
+      <a href="http://localhost:5002/test/editor-integration" class="nav-link" target="_blank">
+        编辑器集成测试
+      </a>
+    </div>
+  </div>
+</body>
+</html>

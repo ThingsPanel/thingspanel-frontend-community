@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔍 配置结构调试测试</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .test-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .test-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .test-header h1 {
+      margin: 0 0 12px 0;
+      font-size: 28px;
+    }
+    .test-header p {
+      margin: 0;
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    .test-section {
+      margin-bottom: 40px;
+      padding: 24px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      background: #fafafa;
+    }
+    .test-section h3 {
+      margin: 0 0 20px 0;
+      color: #333;
+      font-size: 20px;
+    }
+    .step {
+      margin-bottom: 20px;
+      padding: 16px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #2080f0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .step h4 {
+      margin: 0 0 12px 0;
+      color: #333;
+      font-size: 16px;
+    }
+    .step p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .step ul {
+      margin: 8px 0 0 0;
+      color: #666;
+      font-size: 14px;
+    }
+    .step li {
+      margin-bottom: 4px;
+    }
+    .debug-enhancement {
+      background: #e6f4ff;
+      border-left-color: #1890ff;
+    }
+    .debug-enhancement h4 {
+      color: #1890ff;
+    }
+    .nav-link {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #2080f0;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-right: 12px;
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .nav-link:hover {
+      background: #40a9ff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(32,128,240,0.3);
+    }
+    .debug-logs {
+      background: #f8f8f8;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #333;
+      margin: 16px 0;
+      border: 1px solid #e0e0e0;
+      overflow-x: auto;
+    }
+    .critical-issue {
+      background: #fff2e8;
+      border-left-color: #fa8c16;
+    }
+    .critical-issue h4 {
+      color: #fa8c16;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="test-header">
+      <h1>🔍 配置结构调试测试</h1>
+      <p>深入调试 InteractionManager → VisualEditorBridge 配置传递和转换问题</p>
+    </div>
+
+    <div class="test-section">
+      <h3>🔧 新增调试增强</h3>
+      
+      <div class="step debug-enhancement">
+        <h4>✅ InteractionManager 配置内容调试</h4>
+        <p>增加详细的配置内容输出，包括数据源结构分析</p>
+        <div class="debug-logs">
+🔍 [InteractionManager] 详细配置内容调试 {
+  componentId: 'xxx',
+  configForExecution: '{"base":{"deviceId":"2"},"dataSource":{"dataSources":[...]}}',
+  dataSourceConfig: '{"componentId":"xxx","config":{"dataSources":[...]}}',
+  hasDataSources: true,
+  dataSourcesLength: 1,
+  hasRawDataList: false,
+  rawDataListLength: 0
+}
+        </div>
+      </div>
+
+      <div class="step debug-enhancement">
+        <h4>✅ VisualEditorBridge 接收配置调试</h4>
+        <p>详细显示 VisualEditorBridge 接收到的配置结构和格式分析</p>
+        <div class="debug-logs">
+🔍 [VisualEditorBridge] 接收到的详细配置 {
+  componentId: 'xxx',
+  config: '{"base":{"deviceId":"2"},"dataSource":{"dataSources":[...]}}',
+  hasBase: true,
+  hasDataSource: true,
+  dataSourceKeys: ['componentId', 'dataSources'],
+  hasDataSources: true,
+  hasRawDataList: false,
+  configType: 'object',
+  configConstructor: 'Object'
+}
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🎯 关键诊断点</h3>
+      
+      <div class="step critical-issue">
+        <h4>🚨 关键问题分析</h4>
+        <p>根据之前的日志，问题可能出现在以下环节：</p>
+        <ul>
+          <li><strong>配置格式不匹配</strong>：VisualEditorBridge 期望的格式与 InteractionManager 提供的格式不一致</li>
+          <li><strong>数据源识别失败</strong>：convertConfigToRequirement 方法无法正确识别数据源结构</li>
+          <li><strong>字段映射问题</strong>：dataSources 或 rawDataList 字段在转换过程中丢失</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h4>🔍 现在需要查看的关键信息</h4>
+        <p>通过新的调试日志，我们需要重点关注：</p>
+        <ul>
+          <li><strong>configForExecution 的详细结构</strong>：是否包含正确的 dataSource.dataSources</li>
+          <li><strong>VisualEditorBridge 接收到的配置</strong>：是否与 InteractionManager 发送的一致</li>
+          <li><strong>hasDataSources 和 hasRawDataList</strong>：哪种格式在使用</li>
+          <li><strong>配置转换过程</strong>：convertConfigToRequirement 是否正确处理配置格式</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🧪 测试验证步骤</h3>
+      
+      <div class="step">
+        <h4>步骤 1：访问测试页面</h4>
+        <p>打开数据源系统测试页面，现在会显示详细的配置结构调试信息</p>
+        <a href="http://localhost:5002/test/data-source-system" class="nav-link" target="_blank">
+          🔗 数据源系统测试
+        </a>
+      </div>
+
+      <div class="step">
+        <h4>步骤 2：修改设备ID并观察日志</h4>
+        <p>修改组件的基础配置中的 deviceId，重点观察以下日志：</p>
+        <ul>
+          <li><strong>🔍 [InteractionManager] 详细配置内容调试</strong> - 查看配置结构是否正确</li>
+          <li><strong>🔍 [VisualEditorBridge] 接收到的详细配置</strong> - 验证传递是否无损</li>
+          <li><strong>dataSourcesLength 和 hasDataSources</strong> - 确认数据源被正确识别</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h4>步骤 3：分析配置转换问题</h4>
+        <p>如果配置结构正确但 dataSourcesCount 仍为 0，说明 convertConfigToRequirement 方法有问题</p>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>📋 预期诊断结果</h3>
+      
+      <div class="step">
+        <h4>情况 1：配置传递正确，转换有问题</h4>
+        <p>如果看到 InteractionManager 和 VisualEditorBridge 都显示 hasDataSources: true，但转换后 dataSourcesCount: 0</p>
+        <ul>
+          <li>问题在 convertConfigToRequirement 方法的数据源识别逻辑</li>
+          <li>需要修复配置格式匹配逻辑</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h4>情况 2：配置传递就有问题</h4>
+        <p>如果 InteractionManager 显示 hasDataSources: false 或配置内容不正确</p>
+        <ul>
+          <li>问题在 InteractionManager 的配置构造逻辑</li>
+          <li>需要检查 HTTP 数据源映射的存储和读取</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h4>情况 3：配置格式版本不匹配</h4>
+        <p>如果配置使用 rawDataList 格式但 convertConfigToRequirement 只识别 dataSources 格式</p>
+        <ul>
+          <li>需要增强配置转换的格式支持</li>
+          <li>统一配置存储和读取的格式标准</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🔗 相关测试链接</h3>
+      <a href="http://localhost:5002/test/data-source-system" class="nav-link" target="_blank">
+        数据源系统测试
+      </a>
+      <a href="http://localhost:5002/test/editor-integration" class="nav-link" target="_blank">
+        编辑器集成测试
+      </a>
+    </div>
+  </div>
+</body>
+</html>

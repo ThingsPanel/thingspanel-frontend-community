@@ -4,11 +4,11 @@
  */
 
 import type { ComponentDefinition } from '../core/types'
-import { 
-  getCategoryByFolderPath, 
-  getCategoryDisplayName, 
-  shouldShowCategory, 
-  getValidCategories 
+import {
+  getCategoryByFolderPath,
+  getCategoryDisplayName,
+  shouldShowCategory,
+  getValidCategories
 } from './category-mapping'
 
 /**
@@ -42,7 +42,7 @@ class AutoComponentRegistry {
     try {
       // 获取所有组件定义
       const componentDefinitions = await this.scanComponents()
-      
+
       // 注册所有组件（传递文件夹路径用于分类）
       componentDefinitions.forEach(({ definition, folderPath }) => {
         this.registerComponent(definition, folderPath)
@@ -67,34 +67,35 @@ class AutoComponentRegistry {
       const componentModules = import.meta.glob('./*/index.ts', { eager: false })
       const subComponentModules = import.meta.glob('./*/*/index.ts', { eager: false })
       const deepComponentModules = import.meta.glob('./*/*/*/index.ts', { eager: false })
-      
+
       // 合并所有模块路径，排除当前文件和auto-registry
       const allModules = { ...componentModules, ...subComponentModules, ...deepComponentModules }
       const filteredModules = Object.fromEntries(
-        Object.entries(allModules).filter(([path]) => 
-          !path.includes('auto-registry') && !path.includes('./index.ts')
-        )
+        Object.entries(allModules).filter(([path]) => !path.includes('auto-registry') && !path.includes('./index.ts'))
       )
 
       console.log('[Card2.1] 扫描到的组件模块:', Object.keys(filteredModules))
-      console.log('[Card2.1] 详细模块路径:', Object.keys(filteredModules).map(path => ({ path, exists: true })))
+      console.log(
+        '[Card2.1] 详细模块路径:',
+        Object.keys(filteredModules).map(path => ({ path, exists: true }))
+      )
 
       // 动态导入所有组件定义
       for (const [path, importFn] of Object.entries(filteredModules)) {
         console.log(`🔧 [Card2.1] 开始导入组件: ${path}`)
         try {
-          const module = await importFn() as any
+          const module = (await importFn()) as any
           console.log(`🔧 [Card2.1] 模块导入成功: ${path}`, Object.keys(module))
-          
+
           // 查找组件定义（支持多种导出方式）
           const definition = module.default || module.definition || module.componentDefinition
           console.log(`🔧 [Card2.1] 组件定义: ${path}`, definition ? definition.type : 'undefined')
-          
+
           if (definition && this.isValidComponentDefinition(definition)) {
             componentDefinitions.push({ definition, folderPath: path })
             console.log(`✅ [Card2.1] 成功加载组件: ${definition.name} (${definition.type}) 来源: ${path}`)
           } else {
-            console.warn(`❌ [Card2.1] 跳过无效组件定义: ${path}`, { 
+            console.warn(`❌ [Card2.1] 跳过无效组件定义: ${path}`, {
               hasDefault: !!module.default,
               hasDefinition: !!module.definition,
               hasComponentDefinition: !!module.componentDefinition,
@@ -144,7 +145,7 @@ class AutoComponentRegistry {
     // 检查是否应该显示该分类（开发环境检查）
     const isDev = import.meta.env.DEV
     const folderName = folderPath?.match(/^\.\/([^/]+)/)?.[1] || ''
-    
+
     if (folderName && !shouldShowCategory(folderName, isDev)) {
       console.log(`🔧 [AutoRegistry] 跳过组件 ${type}: 分类 ${categoryName} 在当前环境不显示`)
       return
@@ -152,21 +153,28 @@ class AutoComponentRegistry {
 
     console.log(`🔧 [AutoRegistry] 注册组件: ${type} -> ${categoryName} (来源: ${folderPath || '未知'})`)
 
-    // 注册到组件映射表
-    this.registry.components[type] = definition
+    // 🚨 CRITICAL: 覆盖组件定义中的分类信息，使用从文件夹路径确定的分类
+    const enhancedDefinition = {
+      ...definition,
+      category: categoryName, // 使用文件夹路径确定的分类名称
+      mainCategory: categoryName,
+      folderPath: folderPath // 保留原始路径信息用于调试
+    }
 
-    // 注册到分类表
+    // 注册到组件映射表（使用增强后的定义）
+    this.registry.components[type] = enhancedDefinition
+
+    // 注册到分类表（使用增强后的定义）
     if (!this.registry.categories[categoryName]) {
       this.registry.categories[categoryName] = []
     }
-    this.registry.categories[categoryName].push(definition)
+    this.registry.categories[categoryName].push(enhancedDefinition)
 
     // 更新类型列表
     if (!this.registry.types.includes(type)) {
       this.registry.types.push(type)
     }
   }
-
 
   /**
    * 获取组件定义
@@ -188,15 +196,13 @@ class AutoComponentRegistry {
   getAllComponents(): ComponentDefinition[] {
     const components = Object.values(this.registry.components)
     // 过滤掉 undefined 或无效的组件
-    const validComponents = components.filter(comp => 
-      comp && 
-      comp.type && 
-      comp.name && 
-      comp.component
-    )
+    const validComponents = components.filter(comp => comp && comp.type && comp.name && comp.component)
     console.log(`🔧 [AutoRegistry] 总组件数: ${components.length}, 有效组件数: ${validComponents.length}`)
     if (components.length !== validComponents.length) {
-      console.warn(`❌ [AutoRegistry] 发现无效组件:`, components.filter(comp => !comp || !comp.type))
+      console.warn(
+        `❌ [AutoRegistry] 发现无效组件:`,
+        components.filter(comp => !comp || !comp.type)
+      )
     }
     return validComponents
   }
@@ -218,16 +224,16 @@ class AutoComponentRegistry {
   getAllCategories(): string[] {
     // 获取实际有组件的分类
     const actualCategories = Object.keys(this.registry.categories)
-    
+
     // 过滤掉空分类，按配置文件顺序排序
     const isDev = import.meta.env.DEV
     const validCategories = getValidCategories(isDev)
       .filter(({ config }) => actualCategories.includes(config.displayName))
       .map(({ config }) => config.displayName)
-    
+
     // 添加其他未在配置中定义的分类
     const otherCategories = actualCategories.filter(cat => !validCategories.includes(cat))
-    
+
     return [...validCategories, ...otherCategories]
   }
 
@@ -235,8 +241,8 @@ class AutoComponentRegistry {
    * 根据标签筛选组件
    */
   getComponentsByTags(tags: string[]): ComponentDefinition[] {
-    return this.getAllComponents().filter(component => 
-      component.tags && tags.some(tag => component.tags!.includes(tag))
+    return this.getAllComponents().filter(
+      component => component.tags && tags.some(tag => component.tags!.includes(tag))
     )
   }
 
@@ -259,9 +265,7 @@ class AutoComponentRegistry {
       byCategory: Object.fromEntries(
         categories.map(category => [category, this.getComponentsByCategory(category).length])
       ),
-      supportedDataSources: Array.from(
-        new Set(this.getAllComponents().flatMap(c => c.supportedDataSources || []))
-      ),
+      supportedDataSources: Array.from(new Set(this.getAllComponents().flatMap(c => c.supportedDataSources || []))),
       versions: Array.from(
         new Set(
           this.getAllComponents()

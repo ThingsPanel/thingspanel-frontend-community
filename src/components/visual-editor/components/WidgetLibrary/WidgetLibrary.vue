@@ -175,13 +175,15 @@ const simplifiedWidgetTree = computed(() => {
     categoriesData[categoryName].push(widget)
   })
 
-  // 转换为单级分类结构 
+  // 转换为单级分类结构
   const result: TopCategory[] = Object.entries(categoriesData).map(([categoryName, widgets]) => ({
     name: categoryName,
-    subCategories: [{
-      name: '默认', // 统一的子分类名，在UI中不显示
-      children: widgets
-    }]
+    subCategories: [
+      {
+        name: '默认', // 统一的子分类名，在UI中不显示
+        children: widgets
+      }
+    ]
   }))
 
   return result.filter(cat => cat.subCategories[0]?.children.length > 0)

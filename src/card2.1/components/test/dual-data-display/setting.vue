@@ -6,7 +6,11 @@
 
 import { computed, watch } from 'vue'
 import AutoFormGenerator from '@/card2.1/core/AutoFormGenerator.vue'
-import { dualDataDisplaySettingConfig, type DualDataDisplayConfig, type DualDataDisplayCustomize } from './settingConfig'
+import {
+  dualDataDisplaySettingConfig,
+  type DualDataDisplayConfig,
+  type DualDataDisplayCustomize
+} from './settingConfig'
 
 // 组件props
 interface Props {
@@ -31,27 +35,29 @@ const emit = defineEmits<Emits>()
  */
 const currentConfig = computed({
   get: (): DualDataDisplayConfig => {
-    return props.config || {
-      customize: {
-        deviceId: '',
-        metricsList: [],
-        title: '双数据展示',
-        themeColor: '#2080f0',
-        fontSize: 16,
-        showBorder: true,
-        dataSource1Label: '数据源A',
-        dataSource2Label: '数据源B',
-        numberFormat: 'raw',
-        unit: '',
-        layout: 'horizontal'
-      },
-      root: {
-        transform: {
-          rotate: 0,
-          scale: 1
+    return (
+      props.config || {
+        customize: {
+          deviceId: '',
+          metricsList: [],
+          title: '双数据展示',
+          themeColor: '#2080f0',
+          fontSize: 16,
+          showBorder: true,
+          dataSource1Label: '数据源A',
+          dataSource2Label: '数据源B',
+          numberFormat: 'raw',
+          unit: '',
+          layout: 'horizontal'
+        },
+        root: {
+          transform: {
+            rotate: 0,
+            scale: 1
+          }
         }
       }
-    }
+    )
   },
   set: (value: DualDataDisplayConfig) => {
     emit('update:config', value)
@@ -67,7 +73,7 @@ const handleConfigChange = (newConfig: DualDataDisplayCustomize) => {
     ...currentConfig.value,
     customize: newConfig
   }
-  
+
   currentConfig.value = updatedConfig
 }
 
@@ -76,7 +82,7 @@ const handleConfigChange = (newConfig: DualDataDisplayCustomize) => {
  */
 watch(
   () => props.config,
-  (newConfig) => {
+  newConfig => {
     if (newConfig && JSON.stringify(newConfig) !== JSON.stringify(currentConfig.value)) {
       // 只有当配置真正发生变化时才更新
       currentConfig.value = newConfig

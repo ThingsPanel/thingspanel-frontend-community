@@ -37,36 +37,138 @@ export class AutoRegistry {
   async autoRegister(componentModules: Record<string, any>) {
     const registeredComponents: ComponentDefinition[] = []
     const userAuthority = getUserAuthorityFromStorage()
+
+    // 导入分类映射函数
+    const { getCategoryDisplayName } = await import('../components/category-mapping')
+
     for (const [componentId, module] of Object.entries(componentModules)) {
       try {
+        // 🔥 调试：检查模块导出的内容
+        console.log(`🔍 [AutoRegistry] 模块内容详细检查: ${componentId}`, {
+          moduleKeys: Object.keys(module),
+          hasDefault: 'default' in module,
+          defaultValue: module.default,
+          defaultType: typeof module.default,
+          fullModule: module
+        })
+
         // 获取默认导出（组件定义）
         const definition = module.default || module
 
+        console.log(`🔍 [AutoRegistry] 组件定义检查: ${componentId}`, {
+          definition,
+          definitionType: typeof definition,
+          definitionKeys: definition ? Object.keys(definition) : [],
+          hasType: definition?.type,
+          hasName: definition?.name,
+          hasComponent: definition?.component,
+          hasConfig: definition?.config
+        })
+
         if (this.isValidComponentDefinition(definition)) {
+          // 🚨 CRITICAL: 从路径提取分类信息并覆盖组件定义中的分类
+          const folderPath = this.extractFolderFromComponentId(componentId)
+          const categoryName = getCategoryDisplayName(folderPath)
+
+          // 🔥 强制覆盖组件定义的分类字段
+          const enhancedDefinition = {
+            ...definition,
+            category: categoryName, // 使用文件夹路径确定的分类名称
+            mainCategory: categoryName,
+            folderPath: folderPath // 保留原始路径信息用于调试
+          }
+
+          console.log(`🔧 [AutoRegistry] 组件分类映射: ${componentId}`, {
+            folderPath,
+            categoryName,
+            originalCategory: definition.category,
+            newCategory: categoryName
+          })
+
           // 检查权限
-          const hasPermission = this.checkComponentPermission(definition, userAuthority)
+          const hasPermission = this.checkComponentPermission(enhancedDefinition, userAuthority)
 
           if (hasPermission) {
             // 检查是否应该注册
-            if (this.shouldRegisterComponent(definition)) {
-              // 自动生成分类信息
-              this.autoGenerateCategories(definition)
+            if (this.shouldRegisterComponent(enhancedDefinition)) {
+              // 自动生成分类信息（使用增强后的定义）
+              this.autoGenerateCategories(enhancedDefinition)
 
-              // 注册组件
-              this.registry.register(componentId, definition)
-              registeredComponents.push(definition)
-              this.allComponents.push(definition)
+              // 注册增强后的组件定义
+              this.registry.register(enhancedDefinition)
+              registeredComponents.push(enhancedDefinition)
+              this.allComponents.push(enhancedDefinition)
+
+              console.log(`✅ [AutoRegistry] 组件注册成功: ${componentId}`, {
+                originalDefinition: definition,
+                enhancedDefinition,
+                folderPath,
+                categoryName,
+                registeredComponentsCount: registeredComponents.length
+              })
             }
           } else {
             // 记录被权限过滤的组件
-            this.allComponents.push(definition)
+            this.allComponents.push(enhancedDefinition)
           }
         }
-      } catch {
+      } catch (error) {
+        console.warn(`[AutoRegistry] 组件注册失败: ${componentId}`, error)
         // 忽略组件注册过程中的错误，继续处理其他组件
       }
     }
     return registeredComponents
+  }
+
+  /**
+   * 从组件ID提取文件夹路径
+   * @param componentId 组件ID，如 "alarm-count"
+   * @returns 文件夹名，如 "alarm"
+   */
+  private extractFolderFromComponentId(componentId: string): string {
+    // alarm-count -> alarm
+    // access-num -> statistics
+    // simple-display -> test
+
+    // 根据组件ID推断文件夹路径的映射关系
+    const componentFolderMap: Record<string, string> = {
+      'alarm-count': 'alarm',
+      'alarm-info': 'alarm',
+      'access-num': 'statistics',
+      'app-download': 'statistics',
+      'simple-display': 'test',
+      'dual-data-display': 'test',
+      'triple-data-display': 'test'
+    }
+
+    // 首先尝试直接映射
+    if (componentFolderMap[componentId]) {
+      return componentFolderMap[componentId]
+    }
+
+    // 如果没有直接映射，尝试从组件ID推断（取第一个单词）
+    const parts = componentId.split('-')
+    const firstPart = parts[0]
+
+    // 常见的文件夹映射
+    const folderMap: Record<string, string> = {
+      alarm: 'alarm',
+      access: 'statistics',
+      app: 'statistics',
+      simple: 'test',
+      dual: 'test',
+      triple: 'test',
+      data: 'data',
+      chart: 'data',
+      control: 'control',
+      info: 'information',
+      device: 'device',
+      location: 'location',
+      media: 'media',
+      dashboard: 'dashboard'
+    }
+
+    return folderMap[firstPart] || 'test' // 默认归到test分类
   }
 
   /**
@@ -240,7 +342,7 @@ export class AutoRegistry {
     // 重新注册有权限的组件
     for (const component of this.allComponents) {
       if (this.checkComponentPermission(component, userAuthority)) {
-        this.registry.register(component.type, component)
+        this.registry.register(component)
       }
     }
   }

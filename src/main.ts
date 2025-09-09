@@ -10,6 +10,8 @@ import { i18n, setupI18n } from './locales'
 import { initEChartsComponents } from '@/utils/echarts/echarts-manager'
 // 导入 Card2.1 组件注册文件以启动组件注册和属性暴露系统
 import '@/card2.1/components'
+// 🔥 关键修复：确保 InteractionManager 在应用启动时被正确初始化
+import '@/card2.1/core/interaction-manager'
 import App from './App.vue'
 // 定义 localStorage 的 key
 const RECENTLY_VISITED_ROUTES_KEY = 'RECENTLY_VISITED_ROUTES'

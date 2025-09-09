@@ -82,8 +82,8 @@ export class Card2VisualEditorAdapter {
   private async initializeCard2Integration(): Promise<void> {
     try {
       // 动态加载Card2.1系统（避免循环依赖）
-      const { useVisualEditorIntegration } = await import('@/card2.1/hooks/useVisualEditorIntegration')
-      this.card2System = useVisualEditorIntegration({ autoInit: false }) // 设置为false，手动控制初始化
+      const { useComponentTree } = await import('@/card2.1/hooks')
+      this.card2System = useComponentTree({ autoInit: false }) // 设置为false，手动控制初始化
 
       // 立即初始化
       await this.card2System.initialize()

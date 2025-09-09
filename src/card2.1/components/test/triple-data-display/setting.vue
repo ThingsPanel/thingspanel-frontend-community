@@ -34,22 +34,24 @@ const emit = defineEmits<Emits>()
  * 当前自定义配置
  */
 const currentCustomize = computed((): TripleDataDisplayCustomize => {
-  return props.config?.customize || {
-    deviceId: '',
-    metricList: [],
-    title: '三数据展示',
-    themeColor: '#2080f0',
-    fontSize: 16,
-    showBorder: true,
-    dataSource1Label: '数据源A',
-    dataSource2Label: '数据源B',
-    dataSource3Label: '数据源C',
-    numberFormat: 'raw',
-    unit: '',
-    layout: 'grid',
-    showIcons: true,
-    iconSize: 24
-  }
+  return (
+    props.config?.customize || {
+      deviceId: '',
+      metricList: [],
+      title: '三数据展示',
+      themeColor: '#2080f0',
+      fontSize: 16,
+      showBorder: true,
+      dataSource1Label: '数据源A',
+      dataSource2Label: '数据源B',
+      dataSource3Label: '数据源C',
+      numberFormat: 'raw',
+      unit: '',
+      layout: 'grid',
+      showIcons: true,
+      iconSize: 24
+    }
+  )
 })
 
 /**
@@ -57,7 +59,7 @@ const currentCustomize = computed((): TripleDataDisplayCustomize => {
  */
 const handleConfigChange = (newCustomize: TripleDataDisplayCustomize) => {
   if (!props.config) return
-  
+
   const newConfig: TripleDataDisplayConfig = {
     ...props.config,
     customize: {
@@ -65,7 +67,7 @@ const handleConfigChange = (newCustomize: TripleDataDisplayCustomize) => {
       ...newCustomize
     }
   }
-  
+
   emit('update:config', newConfig)
   emit('change', newConfig)
 }
@@ -77,7 +79,7 @@ let isInternalUpdate = false
 
 watch(
   () => props.config,
-  (newConfig) => {
+  newConfig => {
     if (isInternalUpdate) {
       isInternalUpdate = false
       return

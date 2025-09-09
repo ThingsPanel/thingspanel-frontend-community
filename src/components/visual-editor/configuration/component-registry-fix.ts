@@ -50,10 +50,9 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
     if (widget?.metadata?.card2Definition) {
       const card2Definition = widget.metadata.card2Definition
       const hasConfigProps = !!(
-        card2Definition.config?.properties && 
-        Object.keys(card2Definition.config.properties).length > 0
+        card2Definition.config?.properties && Object.keys(card2Definition.config.properties).length > 0
       )
-      
+
       console.log(`📋 [ComponentRegistry-Fix] Card2定义检查结果`, {
         componentType: widget.type,
         hasConfig: !!card2Definition.config,
@@ -61,7 +60,7 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
         propertiesCount: Object.keys(card2Definition.config?.properties || {}).length,
         决策: hasConfigProps ? '显示配置' : '仍显示配置(宽松策略)'
       })
-      
+
       // 修复：即使没有config.properties，也可能有其他配置需求
       // 采用宽松策略，只要是Card2.1组件就显示配置面板
       return true
@@ -101,7 +100,7 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
         card2Definition.dataRequirements?.primaryData ||
         card2Definition.dataSources?.length > 0
       )
-      
+
       console.log(`📊 [ComponentRegistry-Fix] Card2数据需求检查结果`, {
         componentType: widget.type,
         hasDataFields: !!card2Definition.dataRequirements?.dataFields?.length,
@@ -109,7 +108,7 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
         hasDataSources: !!card2Definition.dataSources?.length,
         决策: hasDataNeeds ? '显示数据源' : '隐藏数据源'
       })
-      
+
       return hasDataNeeds
     }
 

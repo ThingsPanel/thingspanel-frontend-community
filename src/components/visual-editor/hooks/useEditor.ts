@@ -8,7 +8,7 @@
 import { inject, provide, watchEffect } from 'vue'
 import { useEditorStore } from '../store/editor'
 import { useWidgetStore, type WidgetDefinition } from '../store/widget'
-import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
+import { useComponentTree as useCard2Integration } from '@/card2.1/hooks/useComponentTree'
 import { configRegistry } from '@/core/interaction-system'
 // 数据源注册已移除
 import type { GraphData, WidgetType } from '../types'
@@ -114,20 +114,31 @@ export function createEditor() {
         }
       })
       // 安全检查：确保 availableComponents 存在且有 value 属性
-      const availableComponents = card2Integration.availableComponents?.value || []
+      const availableComponents = card2Integration.filteredComponents.value || []
       availableComponents.forEach(componentDef => {
         if (!widgetStore.getWidget(componentDef.type)) {
-          // 从 properties 中提取默认属性值
+          // 🔥 修复：正确处理Card2.1的配置结构
           const defaultProperties: Record<string, any> = {}
-          if (componentDef.definition.properties) {
-            for (const [key, prop] of Object.entries(componentDef.definition.properties)) {
-              if (typeof prop === 'object' && prop !== null && 'default' in prop) {
-                defaultProperties[key] = (prop as any).default
-              } else {
-                defaultProperties[key] = prop
-              }
-            }
+
+          // 检查config是否是Card2.1格式（有customize字段）
+          if (componentDef.config && componentDef.config.customize) {
+            // Card2.1格式：保持结构化的config用于customConfig
+            console.log(`🔧 [useEditor] Card2.1格式组件: ${componentDef.type}`, {
+              config: componentDef.config,
+              hasCustomize: !!componentDef.config.customize
+            })
+            // 不放入defaultProperties，让Card2Wrapper直接使用structured config
+          } else if (componentDef.config) {
+            // 扁平化格式：放入defaultProperties
+            Object.assign(defaultProperties, componentDef.config)
           }
+
+          console.log(`🔧 [useEditor] 提取组件属性:`, {
+            type: componentDef.type,
+            hasConfig: !!componentDef.config,
+            configKeys: componentDef.config ? Object.keys(componentDef.config) : [],
+            defaultProperties
+          })
 
           const widgetDef = {
             type: componentDef.type,
@@ -145,17 +156,20 @@ export function createEditor() {
             metadata: {
               isCard2Component: true,
               card2ComponentId: componentDef.type,
-              card2Definition: componentDef.definition
+              card2Definition: componentDef // 🔥 修复：componentDef本身就是定义
             }
           }
 
           widgetStore.register(widgetDef)
           console.log(`[useEditor] Successfully registered widget: ${widgetDef.type}`, widgetDef)
-          // 注册配置组件到 configRegistry
-          if (componentDef.definition.configComponent) {
+          // 🔥 修复：注册配置组件到 configRegistry
+          if (componentDef.configComponent) {
             if (!configRegistry.has(componentDef.type)) {
-              configRegistry.register(componentDef.type, componentDef.definition.configComponent)
+              configRegistry.register(componentDef.type, componentDef.configComponent)
+              console.log(`✅ [useEditor] 注册配置组件: ${componentDef.type}`)
             }
+          } else {
+            console.log(`ℹ️ [useEditor] 组件无配置组件: ${componentDef.type}`)
           }
         }
       })
@@ -191,20 +205,63 @@ export function createEditor() {
       }
 
       console.log(`🔧 [useEditor] 尝试获取Card2组件: ${card2Type}`)
-      console.log(`🔧 [useEditor] Card2系统初始化状态: ${card2Integration.isInitialized.value}`)
-      console.log(`🔧 [useEditor] 可用组件数量: ${card2Integration.availableWidgets.value.length}`)
-      
-      const card2Definition = card2Integration.getComponentDefinition(card2Type)
+      console.log(`🔧 [useEditor] Card2系统加载状态: ${card2Integration.isLoading.value}`)
+      console.log(`🔧 [useEditor] 可用组件数量: ${card2Integration.filteredComponents.value?.length || 0}`)
+
+      // 从组件列表中查找指定类型的组件定义
+      const card2Definition = card2Integration.filteredComponents.value?.find(comp => comp.type === card2Type)
       console.log(`🔧 [useEditor] 获取Card2定义结果:`, card2Definition)
-      
+
       if (card2Definition) {
         isCard2Component = true
-        // ✅ 修复：getComponentDefinition 现在已经返回转换后的 WidgetDefinition
-        widgetDef = card2Definition as WidgetDefinition
-        console.log(`✅ [useEditor] 成功获取Card2组件定义: ${card2Type}`)
+        // 🔥 修复：正确处理Card2.1的配置结构
+        const defaultProperties: Record<string, any> = {}
+
+        // 检查config是否是Card2.1格式（有customize字段）
+        if (card2Definition.config && card2Definition.config.customize) {
+          // Card2.1格式：保持结构化的config用于customConfig
+          console.log(`🔧 [useEditor-addWidget] Card2.1格式组件: ${card2Definition.type}`, {
+            config: card2Definition.config,
+            hasCustomize: !!card2Definition.config.customize
+          })
+          // 不放入defaultProperties，让Card2Wrapper直接使用structured config
+        } else if (card2Definition.config) {
+          // 扁平化格式：放入defaultProperties
+          Object.assign(defaultProperties, card2Definition.config)
+        }
+
+        // 从layout配置中获取默认尺寸
+        const defaultSize = card2Definition.layout?.defaultSize || { width: 4, height: 3 }
+
+        widgetDef = {
+          type: card2Definition.type,
+          name: card2Definition.name,
+          description: card2Definition.description,
+          version: card2Definition.version,
+          icon: card2Definition.icon,
+          category: card2Definition.category,
+          source: 'card2',
+          defaultLayout: {
+            canvas: {
+              width: defaultSize.width * 120, // 每个网格单元约120px
+              height: defaultSize.height * 80 // 每个网格单元约80px
+            },
+            gridstack: {
+              w: defaultSize.width,
+              h: defaultSize.height
+            }
+          },
+          defaultProperties,
+          metadata: {
+            isCard2Component: true,
+            card2ComponentId: card2Definition.type,
+            card2Definition: card2Definition
+          }
+        }
+        console.log(`✅ [useEditor] 成功转换Card2组件定义: ${card2Type}`, widgetDef)
       } else {
         console.error(`❌ [useEditor] Card2组件未找到: ${card2Type}`)
-        console.log(`❌ [useEditor] 所有可用组件:`, card2Integration.availableWidgets.value.map(w => w.type))
+        console.log(`❌ [useEditor] 所有可用组件:`, card2Integration.filteredComponents.value?.map(w => w.type) || [])
       }
     }
 
@@ -213,7 +270,18 @@ export function createEditor() {
       throw new Error(`组件类型 "${type}" 未注册。`)
     }
 
-    const { w: newItemW, h: newItemH } = widgetDef.defaultLayout.gridstack
+    // 🔥 修复：安全访问 defaultLayout，提供默认值
+    const defaultLayout = widgetDef.defaultLayout || {
+      canvas: { width: 300, height: 200 },
+      gridstack: { w: 4, h: 4 }
+    }
+    const { w: newItemW, h: newItemH } = defaultLayout.gridstack
+
+    console.log(`🔧 [addWidget] 使用布局配置:`, {
+      type: widgetDef.type,
+      hasDefaultLayout: !!widgetDef.defaultLayout,
+      finalLayout: defaultLayout
+    })
     const colNum = 12
 
     const { x, y } = findNextAvailablePosition(editorStore.nodes, newItemW, newItemH, colNum)
@@ -238,15 +306,15 @@ export function createEditor() {
       type: widgetDef.type,
       x: finalPos.x,
       y: finalPos.y,
-      width: widgetDef.defaultLayout.canvas.width,
-      height: widgetDef.defaultLayout.canvas.height,
+      width: defaultLayout.canvas.width,
+      height: defaultLayout.canvas.height,
       label: widgetDef.name,
       showLabel: false,
       properties: defaultProperties, // 使用修复后的属性值
       renderer: ['canvas', 'gridstack'],
       layout: {
-        canvas: { ...widgetDef.defaultLayout.canvas, ...finalPos },
-        gridstack: { ...widgetDef.defaultLayout.gridstack, w: newItemW, h: newItemH, ...finalPos }
+        canvas: { ...defaultLayout.canvas, ...finalPos },
+        gridstack: { ...defaultLayout.gridstack, w: newItemW, h: newItemH, ...finalPos }
       },
       metadata: {
         createdAt: Date.now(),
@@ -277,7 +345,10 @@ export function createEditor() {
     addNode,
     getNodeById,
     card2Integration,
-    isCard2Component: card2Integration.isCard2Component
+    // 检查是否为Card2组件的函数
+    isCard2Component: (type: string) => {
+      return card2Integration.filteredComponents.value?.some(comp => comp.type === type) || false
+    }
   }
 
   return editorInstance

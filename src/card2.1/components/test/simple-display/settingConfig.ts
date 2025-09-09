@@ -44,39 +44,39 @@ export const simpleDisplaySettingConfig: Setting[] = [
   // 组件特定设置
   createSetting(SettingControlType.INPUT, '组件标题', 'customize.title', {
     group: '内容设置',
-      placeholder: '请输入组件标题',
-      defaultValue: '简单展示组件'
-    }),
+    placeholder: '请输入组件标题',
+    defaultValue: '简单展示组件'
+  }),
 
-    createSetting(SettingControlType.TEXTAREA, '展示内容', 'customize.content', {
-      group: '内容设置',
-      placeholder: '请输入展示内容',
-      defaultValue: '这是一个静态展示组件，不需要数据源'
-    }),
+  createSetting(SettingControlType.TEXTAREA, '展示内容', 'customize.content', {
+    group: '内容设置',
+    placeholder: '请输入展示内容',
+    defaultValue: '这是一个静态展示组件，不需要数据源'
+  }),
 
-    createSetting(SettingControlType.COLOR_PICKER, '主题颜色', 'customize.themeColor', {
-      group: '样式设置',
-      defaultValue: '#2080f0'
-    }),
+  createSetting(SettingControlType.COLOR_PICKER, '主题颜色', 'customize.themeColor', {
+    group: '样式设置',
+    defaultValue: '#2080f0'
+  }),
 
-    createSetting(SettingControlType.INPUT_NUMBER, '字体大小', 'customize.fontSize', {
-      group: '样式设置',
-      min: 12,
-      max: 24,
-      step: 1,
-      defaultValue: 16
-    }),
+  createSetting(SettingControlType.INPUT_NUMBER, '字体大小', 'customize.fontSize', {
+    group: '样式设置',
+    min: 12,
+    max: 24,
+    step: 1,
+    defaultValue: 16
+  }),
 
-    createSetting(SettingControlType.SWITCH, '显示图标', 'customize.showIcon', {
-      group: '显示设置',
-      defaultValue: true
-    }),
+  createSetting(SettingControlType.SWITCH, '显示图标', 'customize.showIcon', {
+    group: '显示设置',
+    defaultValue: true
+  }),
 
-    createSetting(SettingControlType.INPUT, '图标符号', 'customize.iconName', {
-      group: '显示设置',
-      placeholder: '输入emoji或图标符号',
-      defaultValue: '📊'
-    })
+  createSetting(SettingControlType.INPUT, '图标符号', 'customize.iconName', {
+    group: '显示设置',
+    placeholder: '输入emoji或图标符号',
+    defaultValue: '📊'
+  })
 ]
 
 /**

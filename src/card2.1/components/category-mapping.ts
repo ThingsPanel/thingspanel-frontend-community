@@ -127,7 +127,7 @@ export function getCategoryByFolderPath(folderPath: string): CategoryConfig | un
   // 从路径中提取第一级文件夹名
   const pathMatch = folderPath.match(/^\.\/([^/]+)/)
   if (!pathMatch) return undefined
-  
+
   const folderName = pathMatch[1]
   return FOLDER_CATEGORY_MAPPING[folderName]
 }
@@ -142,10 +142,10 @@ export function getValidCategories(includeDevOnly = false): Array<{ folder: stri
     .filter(([_, config]) => {
       // 过滤未启用的分类
       if (!config.enabled) return false
-      
+
       // 过滤开发专用分类（在生产环境）
       if (config.devOnly && !includeDevOnly) return false
-      
+
       return true
     })
     .map(([folder, config]) => ({ folder, config }))
@@ -170,13 +170,13 @@ export function getCategoryDisplayName(folderName: string): string {
 export function shouldShowCategory(folderName: string, isDevelopment = false): boolean {
   const config = FOLDER_CATEGORY_MAPPING[folderName]
   if (!config) return false
-  
+
   // 检查是否启用
   if (!config.enabled) return false
-  
+
   // 检查开发环境限制
   if (config.devOnly && !isDevelopment) return false
-  
+
   return true
 }
 
@@ -188,21 +188,21 @@ export function validateCategoryMapping(): {
   issues: string[]
 } {
   const issues: string[] = []
-  
+
   // 检查显示顺序是否有重复
   const orders = Object.values(FOLDER_CATEGORY_MAPPING).map(c => c.order)
   const duplicateOrders = orders.filter((order, index) => orders.indexOf(order) !== index)
   if (duplicateOrders.length > 0) {
     issues.push(`重复的显示顺序: ${duplicateOrders.join(', ')}`)
   }
-  
+
   // 检查显示名称是否有重复
   const displayNames = Object.values(FOLDER_CATEGORY_MAPPING).map(c => c.displayName)
   const duplicateNames = displayNames.filter((name, index) => displayNames.indexOf(name) !== index)
   if (duplicateNames.length > 0) {
     issues.push(`重复的显示名称: ${duplicateNames.join(', ')}`)
   }
-  
+
   return {
     valid: issues.length === 0,
     issues

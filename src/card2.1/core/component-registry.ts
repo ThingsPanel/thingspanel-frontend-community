@@ -58,7 +58,11 @@ export class ComponentRegistry {
       componentType: definition.type,
       hasDataSources: !!definition.dataSources,
       hasStaticParams: !!definition.staticParams,
-      configSource: 'baseConfiguration'
+      configSource: 'baseConfiguration',
+      hasComponent: !!definition.component,
+      hasConfig: !!definition.config,
+      definitionKeys: Object.keys(definition),
+      config: definition.config
     })
 
     this.definitions.set(definition.type, definition)
@@ -264,7 +268,7 @@ export class ComponentRegistry {
           componentType: definition.type,
           settingsCount: settingConfig.settings?.length || 0
         })
-        
+
         // TODO: 在后续版本中重新启用属性自动注册
         // const { autoRegisterFromSettingConfig } = await import('./property-exposure')
         // autoRegisterFromSettingConfig(settingConfig)

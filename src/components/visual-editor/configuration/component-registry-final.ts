@@ -48,11 +48,11 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
     if (widget?.type) {
       // ✅ 只有这3个test组件才显示配置面板
       const testComponentsOnly = [
-        'simple-display',      // test组件 - 7个配置项
-        'dual-data-display',   // test组件 - 9个配置项  
-        'triple-data-display'  // test组件 - 11个配置项
+        'simple-display', // test组件 - 7个配置项
+        'dual-data-display', // test组件 - 9个配置项
+        'triple-data-display' // test组件 - 11个配置项
       ]
-      
+
       if (testComponentsOnly.includes(widget.type)) {
         console.log(`✅ [ComponentRegistry-Final] 确认test组件，显示配置: ${widget.type}`)
         return true
@@ -60,11 +60,11 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
 
       // ❌ 所有其他组件都不显示配置面板（包括统计组件）
       const allOtherComponents = [
-        'access-num',     // 统计组件，不需要用户配置
-        'alarm-info',     // 统计组件，不需要用户配置
-        'alarm-count'     // 统计组件，不需要用户配置
+        'access-num', // 统计组件，不需要用户配置
+        'alarm-info', // 统计组件，不需要用户配置
+        'alarm-count' // 统计组件，不需要用户配置
       ]
-      
+
       if (allOtherComponents.includes(widget.type)) {
         console.log(`❌ [ComponentRegistry-Final] 非test组件，隐藏配置: ${widget.type}`)
         return false
@@ -74,20 +74,18 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
     // 检查Card2.1组件定义中的配置信息（备用检查）
     if (widget?.metadata?.card2Definition) {
       const card2Definition = widget.metadata.card2Definition
-      
+
       // 如果组件类型不在已知列表中，基于定义判断
       const hasDefaultConfig = !!card2Definition.defaultConfig
       const hasConfigProps = !!(
-        card2Definition.config?.properties && 
-        Object.keys(card2Definition.config.properties).length > 0
+        card2Definition.config?.properties && Object.keys(card2Definition.config.properties).length > 0
       )
-      
+
       // 但是仍然要检查是否是test组件
-      const isTestComponent = widget?.type?.includes('display') || 
-                              (widget?.metadata?.category === '测试')
-      
+      const isTestComponent = widget?.type?.includes('display') || widget?.metadata?.category === '测试'
+
       const shouldShow = (hasDefaultConfig || hasConfigProps) && isTestComponent
-      
+
       console.log(`📋 [ComponentRegistry-Final] Card2定义备用检查`, {
         componentType: widget.type,
         hasDefaultConfig,
@@ -95,7 +93,7 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
         isTestComponent,
         决策: shouldShow ? '显示配置' : '隐藏配置(非test组件)'
       })
-      
+
       return shouldShow
     }
 
@@ -123,12 +121,12 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
     if (widget?.type) {
       // ❌ 不需要数据源的组件（所有静态组件和统计组件）
       const noDataSourceComponents = [
-        'simple-display',   // 静态展示组件
-        'access-num',       // 统计组件
-        'alarm-info',       // 统计组件  
-        'alarm-count'       // 统计组件
+        'simple-display', // 静态展示组件
+        'access-num', // 统计组件
+        'alarm-info', // 统计组件
+        'alarm-count' // 统计组件
       ]
-      
+
       if (noDataSourceComponents.includes(widget.type)) {
         console.log(`❌ [ComponentRegistry-Final] 确认无数据源组件: ${widget.type}`)
         return false
@@ -136,10 +134,10 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
 
       // ✅ 需要数据源的组件（只有多数据源的test组件）
       const dataSourceComponents = [
-        'dual-data-display',    // 需要2个数据源
-        'triple-data-display'   // 需要3个数据源
+        'dual-data-display', // 需要2个数据源
+        'triple-data-display' // 需要3个数据源
       ]
-      
+
       if (dataSourceComponents.includes(widget.type)) {
         console.log(`✅ [ComponentRegistry-Final] 确认需数据源组件: ${widget.type}`)
         return true
@@ -154,7 +152,7 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
         card2Definition.dataRequirements?.primaryData ||
         card2Definition.dataSources?.length > 0
       )
-      
+
       console.log(`📊 [ComponentRegistry-Final] Card2数据需求检查结果`, {
         componentType: widget.type,
         hasDataFields: !!card2Definition.dataRequirements?.dataFields?.length,
@@ -162,7 +160,7 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
         hasDataSources: !!card2Definition.dataSources?.length,
         决策: hasDataNeeds ? '显示数据源' : '隐藏数据源'
       })
-      
+
       return hasDataNeeds
     }
 
@@ -245,9 +243,7 @@ export const getVisibleConfigLayers = (componentId?: string, widget?: any): Conf
     layerNames: layers.map(l => l.name),
     layerCount: layers.length,
     componentType: widget?.type,
-    说明: widget?.type?.includes('display') ? 
-          '测试组件，显示相应配置' : 
-          '统计组件，只显示基础和交互配置'
+    说明: widget?.type?.includes('display') ? '测试组件，显示相应配置' : '统计组件，只显示基础和交互配置'
   })
 
   return layers.sort((a, b) => a.order - b.order)
