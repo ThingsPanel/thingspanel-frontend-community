@@ -37,7 +37,7 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
    * "@elegant-router/vue"
    */
   const authRouteMode = ref(import.meta.env.VITE_AUTH_ROUTE_MODE)
-
+  console.log('authRouteMode', authRouteMode.value)
   /** Home route key */
   const routeHome = ref(import.meta.env.VITE_ROUTE_HOME)
 
