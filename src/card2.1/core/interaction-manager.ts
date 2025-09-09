@@ -2135,18 +2135,71 @@ class InteractionManager {
             hasBaseConfig: !!dataSourceConfig._baseConfig
           })
 
-          // 🔥 使用 VisualEditorBridge 重新执行数据源
-          // 构造完整的配置对象，包含基础配置和数据源配置
-          const configForExecution = {
-            base: dataSourceConfig._baseConfig,
-            dataSource: {
-              // 移除内部元数据字段
-              ...dataSourceConfig,
-              _baseConfig: undefined,
-              _fullConfigMetadata: undefined
-            },
-            // 如果有保存的元数据，使用它
-            ...(dataSourceConfig._fullConfigMetadata || {})
+          // 🔥 关键修复：正确构造数据源配置
+          // 检查存储的配置格式，确保数据源结构正确
+          
+          let configForExecution: any
+          
+          // 如果配置包含 dataSources 数组，直接使用
+          if (dataSourceConfig.dataSources && Array.isArray(dataSourceConfig.dataSources)) {
+            configForExecution = {
+              base: dataSourceConfig._baseConfig || {},
+              dataSource: dataSourceConfig,
+              dataSources: dataSourceConfig.dataSources // 确保数据源数组传递
+            }
+          }
+          // 如果配置包含 rawDataList，转换为 dataSources 格式
+          else if (dataSourceConfig.rawDataList && Array.isArray(dataSourceConfig.rawDataList)) {
+            const convertedDataSources = dataSourceConfig.rawDataList.map((item: any, index: number) => ({
+              sourceId: `dataSource${index + 1}`,
+              dataItems: [{
+                item: {
+                  type: item.type,
+                  config: item.config
+                },
+                processing: {
+                  filterPath: '$',
+                  defaultValue: {}
+                }
+              }],
+              mergeStrategy: { type: 'object' }
+            }))
+            
+            configForExecution = {
+              base: dataSourceConfig._baseConfig || {},
+              dataSource: {
+                ...dataSourceConfig,
+                dataSources: convertedDataSources
+              },
+              dataSources: convertedDataSources
+            }
+          }
+          // 兼容旧格式：单个HTTP配置直接转换
+          else {
+            // 🔥 关键修复：创建标准的 dataSources 结构而不是 rawDataList
+            const convertedDataSources = [{
+              sourceId: 'dataSource1',
+              dataItems: [{
+                item: {
+                  type: 'http',
+                  config: dataSourceConfig.config || dataSourceConfig
+                },
+                processing: {
+                  filterPath: '$',
+                  defaultValue: {}
+                }
+              }],
+              mergeStrategy: { type: 'object' }
+            }]
+
+            configForExecution = {
+              base: dataSourceConfig._baseConfig || {},
+              dataSource: {
+                ...dataSourceConfig,
+                dataSources: convertedDataSources
+              },
+              dataSources: convertedDataSources
+            }
           }
 
           console.log(`🔧 [InteractionManager] 准备执行配置`, {
@@ -2709,12 +2762,20 @@ class InteractionManager {
         propertiesKeys: targetNode.properties ? Object.keys(targetNode.properties) : []
       })
 
-      // 获取当前最新的配置
-      const currentConfiguration = this.configurationManager?.getConfiguration(event.componentId)
-      if (!currentConfiguration) {
-        console.log(`⚠️ [InteractionManager] 未找到配置信息: ${event.componentId}`)
-        return
+      // 🔥 修复：直接从事件中获取配置信息，而不依赖configurationManager
+      const currentConfiguration = {
+        base: event.newConfig || {},
+        component: {},
+        dataSource: {},
+        interaction: {}
       }
+      
+      console.log(`📋 [InteractionManager] 使用事件配置信息`, {
+        componentId: event.componentId,
+        section: event.section,
+        hasNewConfig: !!event.newConfig,
+        newConfigKeys: event.newConfig ? Object.keys(event.newConfig) : []
+      })
 
       // 🔥 关键：从配置系统中提取最新的属性值，更新到 EditorStore 节点
       let needUpdate = false

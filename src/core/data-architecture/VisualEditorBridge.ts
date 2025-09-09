@@ -128,7 +128,7 @@ export class VisualEditorBridge {
   ): ComponentDataRequirement {
     const dataSources: DataSourceDefinition[] = []
 
-    // 🔥 关键修复：提取基础配置属性
+    // 🔥 关键修复：提取基础配置属性并注入到数据源参数中
     let resolvedConfig = config
     let baseConfig: any = null
 
@@ -153,11 +153,29 @@ export class VisualEditorBridge {
           resolvedConfig,
           originalConfig: config
         })
+
+        // 🔥 新增：将基础配置注入到HTTP参数中，确保参数绑定使用最新值
+        resolvedConfig = this.injectBaseConfigToDataSource(resolvedConfig, baseConfig)
       }
     }
 
     // 处理配置中的数据源
     if (resolvedConfig && typeof resolvedConfig === 'object') {
+      // 🔥 新增：详细的配置结构调试日志
+      console.log(`🔍 [VisualEditorBridge] resolvedConfig结构详细调试`, {
+        componentId,
+        resolvedConfigKeys: Object.keys(resolvedConfig),
+        hasDataSources: !!(resolvedConfig.dataSources),
+        dataSourcesType: Array.isArray(resolvedConfig.dataSources) ? 'array' : typeof resolvedConfig.dataSources,
+        dataSourcesLength: Array.isArray(resolvedConfig.dataSources) ? resolvedConfig.dataSources.length : 'N/A',
+        hasRawDataList: !!(resolvedConfig.rawDataList),
+        rawDataListType: Array.isArray(resolvedConfig.rawDataList) ? 'array' : typeof resolvedConfig.rawDataList,
+        hasType: !!(resolvedConfig.type),
+        typeValue: resolvedConfig.type,
+        resolvedConfigSample: JSON.stringify(resolvedConfig, null, 2).substring(0, 2000),
+        dataSourceKeys: Object.keys(resolvedConfig).filter(key => key.startsWith('dataSource'))
+      })
+
       // 🆕 处理新的 DataSourceConfiguration 格式
       if (resolvedConfig.dataSources && Array.isArray(resolvedConfig.dataSources)) {
         resolvedConfig.dataSources.forEach((dataSource: any) => {
@@ -258,6 +276,19 @@ export class VisualEditorBridge {
         }
       }
     }
+
+    // 🔥 最终结果调试日志
+    console.log(`🎯 [VisualEditorBridge] 配置转换最终结果`, {
+      componentId,
+      finalDataSourcesCount: dataSources.length,
+      finalDataSources: dataSources.map(ds => ({
+        id: ds.id || ds.sourceId,
+        type: ds.type,
+        hasConfig: !!ds.config,
+        configKeys: ds.config ? Object.keys(ds.config) : []
+      })),
+      enabled: true
+    })
 
     return {
       componentId,

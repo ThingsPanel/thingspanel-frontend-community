@@ -96,6 +96,9 @@ export class DataItemFetcher implements IDataItemFetcher {
   private requestCache = new Map<string, Promise<any>>()
   // 请求缓存TTL：200毫秒内的相同请求会被去重
   private readonly REQUEST_CACHE_TTL = 200
+
+  // 🔥 新增：组件ID上下文，用于参数绑定
+  private currentComponentId?: string
   /**
    * 从组件实例中获取属性值
    * @param bindingPath 绑定路径，格式：组件实例ID.属性路径
@@ -103,13 +106,29 @@ export class DataItemFetcher implements IDataItemFetcher {
    */
   private getComponentPropertyValue(bindingPath: string): any {
     try {
+      // 🔥 新增：调试属性绑定路径
+      console.log(`🔍 [DataItemFetcher] getComponentPropertyValue 调试`, {
+        bindingPath,
+        bindingPathType: typeof bindingPath,
+        bindingPathLength: bindingPath?.length,
+        currentComponentId: this.currentComponentId
+      })
+
       if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
+        console.warn(`⚠️ [DataItemFetcher] 属性绑定路径格式错误`, { bindingPath })
         return undefined
       }
 
       const parts = bindingPath.split('.')
       const componentId = parts[0]
       const propertyPath = parts.slice(1).join('.')
+
+      console.log(`🔧 [DataItemFetcher] 解析属性绑定路径`, {
+        原始路径: bindingPath,
+        组件ID: componentId,
+        属性路径: propertyPath,
+        当前组件ID: this.currentComponentId
+      })
 
       // 获取编辑器store实例
       const editorStore = useEditorStore()
@@ -118,6 +137,9 @@ export class DataItemFetcher implements IDataItemFetcher {
       const targetComponent = editorStore.nodes?.find(node => node.id === componentId)
       if (!targetComponent) {
         console.warn('[DataItemFetcher] 组件属性绑定失败: 未找到组件', componentId)
+        console.log(`🔍 [DataItemFetcher] EditorStore节点列表`, {
+          availableNodes: editorStore.nodes?.map(n => ({ id: n.id, type: n.type })) || []
+        })
         return undefined
       }
 
@@ -166,15 +188,59 @@ export class DataItemFetcher implements IDataItemFetcher {
   private resolveParameterValue(param: HttpParameter): any {
     let resolvedValue = param.value
 
-    // 如果是组件属性绑定，需要从组件实例中获取实际值
-    if (param.selectedTemplate === 'component-property-binding' && typeof param.value === 'string') {
-      const actualValue = this.getComponentPropertyValue(param.value)
+    // 🔥 新增：调试参数解析过程
+    console.log(`🔍 [DataItemFetcher] resolveParameterValue 调试`, {
+      paramKey: param.key,
+      paramValue: param.value,
+      selectedTemplate: param.selectedTemplate,
+      valueMode: (param as any).valueMode,
+      defaultValue: param.defaultValue,
+      currentComponentId: this.currentComponentId
+    })
 
-      if (actualValue !== undefined && actualValue !== null && actualValue !== '') {
-        resolvedValue = actualValue
-      } else {
-        // 当组件属性值为空时，设置 resolvedValue 为 undefined，触发默认值机制
-        resolvedValue = undefined
+    // 如果是组件属性绑定，需要从组件实例中获取实际值
+    if (param.selectedTemplate === 'component-property-binding') {
+      let bindingPath = param.value
+
+      // 🔥 关键修复：如果 value 为空，尝试构造正确的属性绑定路径
+      if (!bindingPath || bindingPath.trim() === '') {
+        console.warn(`⚠️ [DataItemFetcher] 参数绑定路径为空，尝试智能推导`, {
+          paramKey: param.key,
+          currentComponentId: this.currentComponentId
+        })
+        
+        // 🔧 智能推导：从 EditorStore 查找当前活跃的组件ID
+        const editorStore = useEditorStore()
+        const selectedNode = editorStore.selectedNodeId
+        const availableNodes = editorStore.nodes || []
+        
+        if (selectedNode && availableNodes.some(n => n.id === selectedNode)) {
+          bindingPath = `${selectedNode}.customize.deviceId`
+          console.log(`🔧 [DataItemFetcher] 使用选中组件构造绑定路径: ${bindingPath}`)
+        } else if (availableNodes.length > 0) {
+          // 尝试使用第一个可用组件
+          bindingPath = `${availableNodes[0].id}.customize.deviceId`
+          console.log(`🔧 [DataItemFetcher] 使用第一个组件构造绑定路径: ${bindingPath}`)
+        } else {
+          console.error(`❌ [DataItemFetcher] 无法构造绑定路径，EditorStore中无可用组件`)
+          // 使用默认值处理
+        }
+      }
+
+      if (bindingPath && typeof bindingPath === 'string') {
+        const actualValue = this.getComponentPropertyValue(bindingPath)
+        console.log(`🎯 [DataItemFetcher] 属性绑定结果`, {
+          bindingPath,
+          actualValue,
+          actualValueType: typeof actualValue
+        })
+
+        if (actualValue !== undefined && actualValue !== null && actualValue !== '') {
+          resolvedValue = actualValue
+        } else {
+          // 当组件属性值为空时，设置 resolvedValue 为 undefined，触发默认值机制
+          resolvedValue = undefined
+        }
       }
     }
 

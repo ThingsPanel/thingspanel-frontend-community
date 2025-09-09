@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔧 属性绑定修复验证</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #1890ff 0%, #52c41a 100%);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #1890ff 0%, #52c41a 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+    }
+    .header p {
+      margin: 0;
+      opacity: 0.9;
+    }
+    .section {
+      margin-bottom: 24px;
+      padding: 20px;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    .section h3 {
+      margin: 0 0 16px 0;
+      color: #333;
+      font-size: 18px;
+    }
+    .step {
+      margin: 12px 0;
+      padding: 12px;
+      background: white;
+      border-radius: 6px;
+      border-left: 4px solid #1890ff;
+    }
+    .step.expected {
+      border-left-color: #52c41a;
+      background: #f6ffed;
+    }
+    .step.debug {
+      border-left-color: #fa8c16;
+      background: #fff7e6;
+    }
+    .log-example {
+      background: #1f1f1f;
+      color: #00ff00;
+      padding: 12px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      margin: 8px 0;
+      overflow-x: auto;
+    }
+    .nav-button {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #1890ff;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      margin-right: 12px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .nav-button:hover {
+      background: #40a9ff;
+      transform: translateY(-1px);
+    }
+    .nav-button.success {
+      background: #52c41a;
+    }
+    .nav-button.success:hover {
+      background: #73d13d;
+    }
+    .fix-list {
+      background: white;
+      padding: 16px;
+      border-radius: 6px;
+      border: 1px solid #d9d9d9;
+    }
+    .fix-list h4 {
+      margin: 0 0 12px 0;
+      color: #333;
+    }
+    .fix-list li {
+      margin: 8px 0;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔧 属性绑定修复验证</h1>
+      <p>验证修改设备ID是否正确触发HTTP请求</p>
+    </div>
+
+    <div class="section">
+      <h3>🎯 本次修复内容</h3>
+      <div class="fix-list">
+        <h4>✅ 已实施的修复：</h4>
+        <ul>
+          <li><strong>InteractionManager配置获取</strong>：修复 syncConfigChangeToEditorStore 直接从事件获取配置</li>
+          <li><strong>数据源配置增强</strong>：重构配置构造逻辑，支持多种数据源格式</li>
+          <li><strong>VisualEditorBridge调试</strong>：添加详细日志追踪配置转换过程</li>
+          <li><strong>基础配置注入</strong>：确保 deviceId 等属性正确注入到HTTP参数</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🧪 测试验证步骤</h3>
+      
+      <div class="step">
+        <h4>步骤 1：访问数据源测试页面</h4>
+        <p>点击下面的链接进入测试环境，或通过菜单：测试 → 数据源系统</p>
+      </div>
+
+      <div class="step">
+        <h4>步骤 2：添加带HTTP数据源的组件</h4>
+        <p>选择一个组件（如 TripleDataDisplay），配置HTTP数据源并设置路径参数绑定</p>
+      </div>
+
+      <div class="step">
+        <h4>步骤 3：修改设备ID属性</h4>
+        <p>在属性面板中修改 deviceId，观察控制台日志输出</p>
+      </div>
+
+      <div class="step expected">
+        <h4>步骤 4：验证预期日志</h4>
+        <p>检查控制台是否按顺序出现以下关键日志：</p>
+        <div class="log-example">
+🔄 [DataFlowManager] 检测到properties更新，同步配置系统
+🔥🔥🔥 [InteractionManager] handleDataExecutionTrigger 被调用了！！！
+📋 [InteractionManager] 使用事件配置信息
+🎯 [InteractionManager] 同步deviceId到customize: [新值]
+🔍 [VisualEditorBridge] resolvedConfig结构详细调试
+🎯 [VisualEditorBridge] 配置转换最终结果 { finalDataSourcesCount: 1+ }
+🚀 [SimpleDataBridge] 开始执行 MultiLayerExecutorChain
+🚀 [DataItemFetcher] fetchHttpData 开始执行
+🔗 [DataItemFetcher] 路径参数解析: id = [新值]
+        </div>
+      </div>
+
+      <div class="step debug">
+        <h4>🔍 新增调试信息</h4>
+        <p>重点关注 VisualEditorBridge 的新增调试日志，它会显示：</p>
+        <ul>
+          <li><code>resolvedConfigKeys</code> - 配置对象的所有键</li>
+          <li><code>hasDataSources</code> / <code>dataSourcesLength</code> - 是否有数据源数组</li>
+          <li><code>hasRawDataList</code> - 是否有原始数据列表</li>
+          <li><code>dataSourceKeys</code> - 所有以"dataSource"开头的键</li>
+          <li><code>finalDataSourcesCount</code> - 最终解析出的数据源数量</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🚨 问题排查指南</h3>
+      
+      <div class="step">
+        <h4>如果仍然显示 finalDataSourcesCount: 0</h4>
+        <p>说明配置结构与解析逻辑不匹配，请查看 resolvedConfig 样本数据，确认数据源存储格式</p>
+      </div>
+
+      <div class="step">
+        <h4>如果 hasHttpDataItems: false</h4>
+        <p>说明数据源类型不是 'http' 或结构不正确，检查数据源配置的 type 字段</p>
+      </div>
+
+      <div class="step">
+        <h4>如果参数绑定错误</h4>
+        <p>查看 DataItemFetcher 的路径参数解析日志，确认是否从 EditorStore 读取到最新值</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🔗 测试链接</h3>
+      <a href="http://localhost:5002/test/data-source-system" class="nav-button success" target="_blank">
+        🧪 数据源系统测试
+      </a>
+      <a href="http://localhost:5002/test/editor-integration" class="nav-button" target="_blank">
+        🎨 编辑器集成测试  
+      </a>
+      <a href="http://localhost:5002/visualization/visual-editor-details" class="nav-button" target="_blank">
+        📊 可视化编辑器
+      </a>
+      <a href="http://localhost:5002/test/panel-editor-v2" class="nav-button" target="_blank">
+        🎯 PanelV2 编辑器
+      </a>
+    </div>
+
+    <div class="section">
+      <h3>📋 修复文件清单</h3>
+      <div class="fix-list">
+        <h4>本次修改的关键文件：</h4>
+        <ul>
+          <li><code>/src/card2.1/core/interaction-manager.ts</code> - 配置获取和构造逻辑修复</li>
+          <li><code>/src/core/data-architecture/VisualEditorBridge.ts</code> - 添加配置转换调试日志</li>
+        </ul>
+        <h4>相关的核心文件（之前已修复）：</h4>
+        <ul>
+          <li><code>/src/main.ts</code> - InteractionManager 初始化</li>
+          <li><code>/src/store/modules/visual-editor/data-flow-manager.ts</code> - 属性同步</li>
+          <li><code>/src/core/data-architecture/executors/DataItemFetcher.ts</code> - HTTP执行和缓存</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
