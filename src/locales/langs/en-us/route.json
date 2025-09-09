@@ -123,5 +123,6 @@
   "route.personal-center": "Personal Center",
   "route.apply_plugin": "Apply Plugin",
   "route.device_service-access": "Third-party Integration",
-  "route.device_service-details": "Third-party Integration Details"
+  "route.device_service-details": "Third-party Integration Details",
+  "route.test_panel-editor-v2": "New Board Test"
 }
