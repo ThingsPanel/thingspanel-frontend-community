@@ -378,15 +378,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
-    name: 'device-details-app',
-    path: '/device-details-app',
-    component: 'layout.base$view.device-details-app',
-    meta: {
-      title: 'device-details-app',
-      i18nKey: 'route.device-details-app'
-    }
-  },
-  {
     name: 'function',
     path: '/function',
     component: 'layout.base',
@@ -477,15 +468,6 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.home',
       icon: 'mdi:monitor-dashboard',
       order: 1
-    }
-  },
-  {
-    name: 'i18n-test',
-    path: '/i18n-test',
-    component: 'layout.base$view.i18n-test',
-    meta: {
-      title: 'i18n-test',
-      i18nKey: 'route.i18n-test'
     }
   },
   {
@@ -859,6 +841,109 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'test',
+    path: '/test',
+    component: 'layout.base',
+    meta: {
+      title: 'test',
+      i18nKey: 'route.test'
+    },
+    children: [
+      {
+        name: 'test_auto-registry-test',
+        path: '/test/auto-registry-test',
+        component: 'view.test_auto-registry-test',
+        meta: {
+          title: 'test_auto-registry-test',
+          i18nKey: 'route.test_auto-registry-test'
+        }
+      },
+      {
+        name: 'test_extended-grid-system',
+        path: '/test/extended-grid-system',
+        component: 'view.test_extended-grid-system',
+        meta: {
+          title: 'test_extended-grid-system',
+          i18nKey: 'route.test_extended-grid-system'
+        }
+      },
+      {
+        name: 'test_new-config-system',
+        path: '/test/new-config-system',
+        component: 'view.test_new-config-system',
+        meta: {
+          title: 'test_new-config-system',
+          i18nKey: 'route.test_new-config-system'
+        }
+      },
+      {
+        name: 'test_optimization-system-demo',
+        path: '/test/optimization-system-demo',
+        component: 'view.test_optimization-system-demo',
+        meta: {
+          title: 'test_optimization-system-demo',
+          i18nKey: 'route.test_optimization-system-demo'
+        }
+      },
+      {
+        name: 'test_panel-editor-v2',
+        path: '/test/panel-editor-v2',
+        component: 'view.test_panel-editor-v2',
+        meta: {
+          title: 'test_panel-editor-v2',
+          i18nKey: 'route.test_panel-editor-v2'
+        }
+      },
+      {
+        name: 'test_script-editor-fix-test',
+        path: '/test/script-editor-fix-test',
+        component: 'view.test_script-editor-fix-test',
+        meta: {
+          title: 'test_script-editor-fix-test',
+          i18nKey: 'route.test_script-editor-fix-test'
+        }
+      }
+    ]
+  },
+  {
+    name: 'ultra-kanban',
+    path: '/ultra-kanban',
+    component: 'layout.base',
+    meta: {
+      title: 'ultra-kanban',
+      i18nKey: 'route.ultra-kanban'
+    },
+    children: [
+      {
+        name: 'ultra-kanban_index',
+        path: '/ultra-kanban/index',
+        component: 'view.ultra-kanban_index',
+        meta: {
+          title: 'ultra-kanban_index',
+          i18nKey: 'route.ultra-kanban_index'
+        }
+      },
+      {
+        name: 'ultra-kanban_kanban-details',
+        path: '/ultra-kanban/kanban-details',
+        component: 'view.ultra-kanban_kanban-details',
+        meta: {
+          title: 'ultra-kanban_kanban-details',
+          i18nKey: 'route.ultra-kanban_kanban-details'
+        }
+      },
+      {
+        name: 'ultra-kanban_panel-preview',
+        path: '/ultra-kanban/panel-preview',
+        component: 'view.ultra-kanban_panel-preview',
+        meta: {
+          title: 'ultra-kanban_panel-preview',
+          i18nKey: 'route.ultra-kanban_panel-preview'
+        }
+      }
+    ]
+  },
+  {
     name: 'user-center',
     path: '/user-center',
     component: 'layout.base$view.user-center',
@@ -902,6 +987,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'visualization_panel-preview',
           i18nKey: 'route.visualization_panel-preview'
+        }
+      },
+      {
+        name: 'visualization_visual-editor-details',
+        path: '/visualization/visual-editor-details',
+        component: 'view.visualization_visual-editor-details',
+        meta: {
+          title: 'visualization_visual-editor-details',
+          i18nKey: 'route.visualization_visual-editor-details'
         }
       }
     ]

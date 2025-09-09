@@ -152,8 +152,8 @@ import { ConfigMerge, ConfigMergeManager } from '@/card2.1/core/config-merge-man
 import { performanceOptimizer } from '@/card2.1/core/performance-optimizer'
 
 // 导入新组件
-import PerformanceMonitor from '@/card2.1/components/dashboard/performance-monitor/PerformanceMonitor.vue'
-import PropertyBindingVisualizer from '@/card2.1/components/dashboard/property-binding-visualizer/PropertyBindingVisualizer.vue'
+import PerformanceMonitor from '@/components/visual-editor/components/dashboard/performance-monitor/PerformanceMonitor.vue'
+import PropertyBindingVisualizer from '@/components/visual-editor/components/dashboard/property-binding-visualizer/PropertyBindingVisualizer.vue'
 
 const { t } = useI18n()
 
