@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 PanelV2 最终修复验证</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .test-section {
+            margin: 25px 0;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        .test-section.success {
+            border-left: 5px solid #28a745;
+            background: #d4edda;
+        }
+        .test-section.info {
+            border-left: 5px solid #17a2b8;
+            background: #d1ecf1;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background: #28a745; }
+        .status-info { background: #17a2b8; }
+        
+        .launch-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 15px 15px 15px 0;
+            transition: transform 0.2s;
+            font-weight: bold;
+        }
+        .launch-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .fix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .fix-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .fix-card h4 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        
+        .test-checklist {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .test-checklist ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .test-checklist li {
+            margin: 10px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 3px solid #28a745;
+        }
+        
+        .test-checklist li:before {
+            content: '✅ ';
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .code-snippet {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 PanelV2 最终修复验证</h1>
+            <p>解决"传统组件配置功能待实现"、"数据源显示不对"、"配置变更组件无响应"问题</p>
+            <a href="http://localhost:5002/test/panel-editor-v2" class="launch-button" target="_blank">
+                🚀 启动V2测试页面
+            </a>
+        </div>
+
+        <div class="test-section success">
+            <h3><span class="status-indicator status-success"></span>已完成的核心修复</h3>
+            <div class="fix-grid">
+                <div class="fix-card">
+                    <h4>🔧 配置面板显示修复</h4>
+                    <p><strong>问题</strong>：显示"传统组件配置功能待实现"</p>
+                    <p><strong>修复</strong>：添加selectedWidget计算属性，将selectedNodeId转换为完整组件对象</p>
+                    <p><strong>结果</strong>：配置面板能正确识别组件类型，显示具体配置选项</p>
+                </div>
+                
+                <div class="fix-card">
+                    <h4>📊 数据源显示修复</h4>
+                    <p><strong>问题</strong>：数据源显示错误</p>
+                    <p><strong>修复</strong>：添加数据源相关事件处理器，确保ConfigurationPanel正常工作</p>
+                    <p><strong>结果</strong>：数据源标签页能正确显示和配置</p>
+                </div>
+                
+                <div class="fix-card">
+                    <h4>🔄 配置响应修复</h4>
+                    <p><strong>问题</strong>：配置变更后组件无反应</p>
+                    <p><strong>修复</strong>：在GridstackRenderer中添加组件状态强制更新逻辑</p>
+                    <p><strong>结果</strong>：配置变更立即反映到组件上</p>
+                </div>
+                
+                <div class="fix-card">
+                    <h4>🏗️ 架构完善</h4>
+                    <p><strong>改进</strong>：完善事件驱动架构</p>
+                    <p><strong>实现</strong>：ConfigEventBus + 渲染器直接数据获取</p>
+                    <p><strong>效果</strong>：配置和数据源变更的完整响应链路</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section info">
+            <h3><span class="status-indicator status-info"></span>完整测试流程</h3>
+            <div class="test-checklist">
+                <h4>1. 基础功能验证</h4>
+                <ul>
+                    <li>从左侧组件库添加任意组件到画布</li>
+                    <li>右键选择组件，点击"配置"</li>
+                    <li>右侧配置面板应显示具体组件配置，不是"待实现"</li>
+                    <li>应该看到基础配置、组件配置、数据源、交互等标签页</li>
+                </ul>
+                
+                <h4>2. 配置变更验证</h4>
+                <ul>
+                    <li>在"组件配置"标签页中修改组件属性（如标题、颜色等）</li>
+                    <li>组件应立即反映配置变更</li>
+                    <li>控制台应显示配置变更事件日志</li>
+                    <li>保存后重新加载，配置应该被保持</li>
+                </ul>
+                
+                <h4>3. 数据源验证</h4>
+                <ul>
+                    <li>切换到"数据源"标签页</li>
+                    <li>应该显示数据源配置选项，不是错误信息</li>
+                    <li>修改数据源配置后，组件数据应自动更新</li>
+                    <li>控制台应显示数据源处理日志</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3><span class="status-indicator status-info"></span>预期的控制台输出</h3>
+            <div class="code-snippet">
+// 配置面板正常加载
+✅ selectedWidget computed: { id: "widget_123", type: "simple-display", ... }
+
+// 配置变更事件流
+🔄 GridstackRenderer 收到配置变更: {
+  componentId: "widget_123",
+  section: "component", 
+  newConfig: { properties: { title: "新标题" } },
+  timestamp: 1757240000000,
+  source: "user"
+}
+组件 widget_123 的 component 配置已更新
+
+// 数据源配置变更
+🔄 GridstackRenderer 收到配置变更: {
+  componentId: "widget_123",
+  section: "dataSource",
+  newConfig: { type: "static", config: { data: {...} } },
+  timestamp: 1757240001000,
+  source: "user"  
+}
+组件 widget_123 的数据源配置已更新，触发数据重新获取
+✅ 组件 widget_123 数据更新成功: {...}
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3><span class="status-indicator status-info"></span>问题排查指南</h3>
+            <div class="test-checklist">
+                <h4>如果配置面板仍显示"待实现"：</h4>
+                <ul>
+                    <li>检查selectedWidget计算属性是否返回正确对象</li>
+                    <li>在控制台执行：console.log('selectedWidget:', selectedWidget.value)</li>
+                    <li>确认组件type和metadata字段正确</li>
+                </ul>
+                
+                <h4>如果配置变更不生效：</h4>
+                <ul>
+                    <li>检查ConfigEventBus事件是否正常发出</li>
+                    <li>检查GridstackRenderer是否监听到事件</li>
+                    <li>确认组件状态更新逻辑是否执行</li>
+                </ul>
+                
+                <h4>如果数据源有问题：</h4>
+                <ul>
+                    <li>检查数据源事件处理器是否正确添加</li>
+                    <li>确认simpleDataBridge是否正常工作</li>
+                    <li>查看数据获取和更新的日志输出</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section success">
+            <h3><span class="status-indicator status-success"></span>修复总结</h3>
+            <p><strong>根本问题分析</strong>：用户反馈的三个问题都源于V2版本在从老版本迁移时缺少了关键的接口适配。</p>
+            
+            <div class="fix-grid">
+                <div class="fix-card">
+                    <h4>接口适配问题</h4>
+                    <ul>
+                        <li>缺少selectedWidget计算属性</li>
+                        <li>ConfigurationPanel接收字符串而非对象</li>
+                        <li>缺少数据源事件处理器</li>
+                    </ul>
+                </div>
+                
+                <div class="fix-card">
+                    <h4>响应链路问题</h4>
+                    <ul>
+                        <li>配置变更事件能发出但组件不响应</li>
+                        <li>缺少强制更新组件状态的逻辑</li>
+                        <li>数据流向不完整</li>
+                    </ul>
+                </div>
+                
+                <div class="fix-card">
+                    <h4>架构集成问题</h4>
+                    <ul>
+                        <li>新旧架构接口不兼容</li>
+                        <li>事件驱动架构不完整</li>
+                        <li>组件生命周期管理缺失</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <p><strong>修复效果</strong>：现在V2版本应该具备与老版本相同的配置功能，包括正确的组件识别、配置变更响应、数据源处理等核心功能。</p>
+        </div>
+    </div>
+
+    <script>
+        console.log('🎯 PanelV2最终修复验证页面已加载')
+        console.log('✅ 主要修复：selectedWidget计算属性、数据源事件处理器、配置响应机制')
+        console.log('🚀 点击按钮开始完整功能测试')
+        
+        // 提供测试辅助
+        window.testV2 = {
+            checkSelectedWidget: () => {
+                console.log('检查selectedWidget状态...')
+                // 可以在实际页面中使用
+            },
+            
+            triggerConfigTest: () => {
+                console.log('触发配置测试事件...')
+                // 可以用于调试
+            }
+        }
+    </script>
+</body>
+</html>

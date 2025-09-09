@@ -1,20 +1,20 @@
 <script setup lang="tsx">
-import { ref } from 'vue';
-import { NButton, NPopconfirm } from 'naive-ui';
-import dayjs from 'dayjs';
-import { $t } from '@/locales';
-import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue';
+import { ref } from 'vue'
+import { NButton, NPopconfirm } from 'naive-ui'
+import dayjs from 'dayjs'
+import { $t } from '@/locales'
+import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue'
 import {
   attributeDataPub,
   deleteAttributeDataSet,
   expectMessageAdd,
   getAttributeDataSet,
   getAttributeDataSetLogs
-} from '@/service/api';
+} from '@/service/api'
 defineProps<{
-  id: string;
-}>();
-const attributeRef = ref();
+  id: string
+}>()
+const attributeRef = ref()
 const columns0 = [
   {
     title: $t('device_template.table_header.attributeIdentifier'),
@@ -45,8 +45,8 @@ const columns0 = [
     render: row => (
       <NPopconfirm
         onPositiveClick={async () => {
-          await deleteAttributeDataSet(row.id);
-          attributeRef.value.refresh();
+          await deleteAttributeDataSet(row.id)
+          attributeRef.value.refresh()
         }}
       >
         {{
@@ -60,35 +60,35 @@ const columns0 = [
       </NPopconfirm>
     )
   }
-];
+]
 
 // 操作类型
 const formatOperationType = status => {
   switch (status) {
     case '1':
-      return $t('custom.device_details.manualOperation');
+      return $t('custom.device_details.manualOperation')
     case '2':
-      return $t('custom.device_details.automaticTriggering');
+      return $t('custom.device_details.automaticTriggering')
     default:
-      return '';
+      return ''
   }
-};
+}
 
 // 状态
 const formatStatus = status => {
   switch (status) {
     case '1':
-      return $t('generate.sendingSuccess');
+      return $t('generate.sendingSuccess')
     case '2':
-      return $t('generate.sendingFail');
+      return $t('generate.sendingFail')
     case '3':
-      return $t('generate.returnSuccess');
+      return $t('generate.returnSuccess')
     case '4':
-      return $t('generate.returnFail');
+      return $t('generate.returnFail')
     default:
-      return '';
+      return ''
   }
-};
+}
 const columns = [
   {
     title: $t('custom.device_details.attributeDistributionTime'),
@@ -123,7 +123,7 @@ const columns = [
     minWidth: '140px',
     key: 'error_message'
   }
-];
+]
 </script>
 
 <template>

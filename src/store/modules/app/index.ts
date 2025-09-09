@@ -20,7 +20,7 @@ export const useAppStore = defineStore(SetupStoreId.App, () => {
   const breakpoints = useBreakpoints(breakpointsTailwind)
   const { bool: themeDrawerVisible, setTrue: openThemeDrawer, setFalse: closeThemeDrawer } = useBoolean()
   const { bool: reloadFlag, setBool: setReloadFlag } = useBoolean(true)
-  const { bool: fullContent, toggle: toggleFullContent } = useBoolean()
+  const { bool: fullContent, setBool: setFullContent, toggle: toggleFullContent } = useBoolean()
   const { bool: contentXScrollable, setBool: setContentXScrollable } = useBoolean()
   const { bool: siderCollapse, setBool: setSiderCollapse, toggle: toggleSiderCollapse } = useBoolean()
   const { bool: mixSiderFixed, setBool: setMixSiderFixed, toggle: toggleMixSiderFixed } = useBoolean()
@@ -130,6 +130,7 @@ export const useAppStore = defineStore(SetupStoreId.App, () => {
     themeDrawerVisible,
     openThemeDrawer,
     closeThemeDrawer,
+    setFullContent,
     toggleFullContent,
     contentXScrollable,
     setContentXScrollable,

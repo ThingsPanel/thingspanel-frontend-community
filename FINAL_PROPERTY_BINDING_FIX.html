@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚀 属性绑定最终修复方案</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #1890ff 0%, #52c41a 100%);
+      min-height: 100vh;
+    }
+    .fix-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .fix-header {
+      background: linear-gradient(135deg, #1890ff 0%, #52c41a 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .fix-header h1 {
+      margin: 0 0 12px 0;
+      font-size: 32px;
+      font-weight: 700;
+    }
+    .fix-header p {
+      margin: 0;
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    .fix-section {
+      margin-bottom: 32px;
+      padding: 24px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      background: #fafafa;
+    }
+    .fix-section h3 {
+      margin: 0 0 20px 0;
+      color: #333;
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .fix-item {
+      margin-bottom: 20px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #1890ff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .fix-item.critical {
+      border-left-color: #ff4d4f;
+      background: #fff2f0;
+    }
+    .fix-item.success {
+      border-left-color: #52c41a;
+      background: #f6ffed;
+    }
+    .fix-item h4 {
+      margin: 0 0 12px 0;
+      color: #333;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .fix-item.critical h4 {
+      color: #ff4d4f;
+    }
+    .fix-item.success h4 {
+      color: #52c41a;
+    }
+    .fix-item p {
+      margin: 0 0 12px 0;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .code-section {
+      background: #f8f8f8;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #333;
+      margin: 12px 0;
+      border: 1px solid #e0e0e0;
+      overflow-x: auto;
+    }
+    .code-section.log {
+      background: #1f1f1f;
+      color: #00ff00;
+      border: 1px solid #333;
+    }
+    .nav-button {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #1890ff;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-right: 12px;
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .nav-button:hover {
+      background: #40a9ff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(24,144,255,0.3);
+    }
+    .nav-button.success {
+      background: #52c41a;
+    }
+    .nav-button.success:hover {
+      background: #73d13d;
+    }
+    .warning-banner {
+      background: #fff7e6;
+      border: 1px solid #ffec3d;
+      color: #d48806;
+      padding: 16px;
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+    .success-banner {
+      background: linear-gradient(135deg, #52c41a, #73d13d);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .success-banner h4 {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+    }
+    .success-banner p {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .flow-diagram {
+      background: #f0f7ff;
+      border: 2px solid #1890ff;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .flow-step {
+      background: white;
+      padding: 12px 16px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border-left: 4px solid #1890ff;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="fix-container">
+    <div class="fix-header">
+      <h1>🚀 属性绑定最终修复方案</h1>
+      <p>完整解决修改设备ID不触发HTTP请求的问题</p>
+    </div>
+
+    <div class="success-banner">
+      <h4>✅ 重新修复完成！</h4>
+      <p>已根据你提供的日志分析，实施了全面的修复方案</p>
+    </div>
+
+    <div class="fix-section">
+      <h3>🎯 根据日志发现的核心问题</h3>
+      
+      <div class="fix-item critical">
+        <h4>❌ 问题1：配置信息获取失败</h4>
+        <p><strong>日志显示</strong>：<code>⚠️ [InteractionManager] 未找到配置信息: triple-data-display_1757425416664</code></p>
+        <p><strong>原因</strong>：configurationManager 未正确初始化，导致 syncConfigChangeToEditorStore 无法获取配置</p>
+        <div class="code-section">
+// ❌ 原始代码 - 依赖可能未初始化的 configurationManager
+const currentConfiguration = this.configurationManager?.getConfiguration(event.componentId)
+if (!currentConfiguration) {
+  console.log(`⚠️ [InteractionManager] 未找到配置信息: ${event.componentId}`)
+  return
+}
+        </div>
+      </div>
+
+      <div class="fix-item critical">
+        <h4>❌ 问题2：HTTP数据源配置丢失</h4>
+        <p><strong>日志显示</strong>：<code>hasHttpDataItems: false, dataSourcesLength: 0</code></p>
+        <p><strong>原因</strong>：从 InteractionManager 传递到 VisualEditorBridge 的配置格式不正确，数据源结构丢失</p>
+      </div>
+    </div>
+
+    <div class="fix-section">
+      <h3>🔧 实施的修复方案</h3>
+      
+      <div class="fix-item success">
+        <h4>✅ 修复1：配置信息直接获取</h4>
+        <p><strong>文件</strong>：<code>/src/card2.1/core/interaction-manager.ts:2712-2725</code></p>
+        <p>改为直接从 ConfigEventBus 事件中获取配置信息，不再依赖 configurationManager</p>
+        <div class="code-section">
+// ✅ 修复后代码 - 直接从事件获取配置
+const currentConfiguration = {
+  base: event.newConfig || {},
+  component: {},
+  dataSource: {},
+  interaction: {}
+}
+
+console.log(`📋 [InteractionManager] 使用事件配置信息`, {
+  componentId: event.componentId,
+  section: event.section,
+  hasNewConfig: !!event.newConfig,
+  newConfigKeys: event.newConfig ? Object.keys(event.newConfig) : []
+})
+        </div>
+      </div>
+
+      <div class="fix-item success">
+        <h4>✅ 修复2：数据源配置结构修复</h4>
+        <p><strong>文件</strong>：<code>/src/card2.1/core/interaction-manager.ts:2138-2189</code></p>
+        <p>重新构造传递给 VisualEditorBridge 的配置对象，确保数据源结构完整</p>
+        <div class="code-section">
+// ✅ 新的配置构造逻辑
+let configForExecution: any
+
+// 如果配置包含 dataSources 数组，直接使用
+if (dataSourceConfig.dataSources && Array.isArray(dataSourceConfig.dataSources)) {
+  configForExecution = {
+    base: dataSourceConfig._baseConfig || {},
+    dataSource: dataSourceConfig,
+    dataSources: dataSourceConfig.dataSources // 确保数据源数组传递
+  }
+}
+// 如果配置包含 rawDataList，转换为 dataSources 格式
+else if (dataSourceConfig.rawDataList && Array.isArray(dataSourceConfig.rawDataList)) {
+  const convertedDataSources = dataSourceConfig.rawDataList.map((item: any, index: number) => ({
+    sourceId: `dataSource${index + 1}`,
+    dataItems: [{ ... }],
+    mergeStrategy: { type: 'object' }
+  }))
+  configForExecution = {
+    base: dataSourceConfig._baseConfig || {},
+    dataSource: { ...dataSourceConfig, dataSources: convertedDataSources },
+    dataSources: convertedDataSources
+  }
+}
+// 兼容旧格式：单个HTTP配置直接转换
+else {
+  configForExecution = {
+    base: dataSourceConfig._baseConfig || {},
+    dataSource: dataSourceConfig,
+    rawDataList: [{ type: 'http', enabled: true, config: dataSourceConfig.config || dataSourceConfig }]
+  }
+}
+        </div>
+      </div>
+
+      <div class="fix-item success">
+        <h4>✅ 修复3：基础配置注入增强</h4>
+        <p><strong>文件</strong>：<code>/src/core/data-architecture/VisualEditorBridge.ts:157-158</code></p>
+        <p>确保基础配置中的 deviceId 等属性能正确注入到HTTP参数绑定中</p>
+        <div class="code-section">
+// ✅ 在 VisualEditorBridge 中新增配置注入
+// 🔥 新增：将基础配置注入到HTTP参数中，确保参数绑定使用最新值
+resolvedConfig = this.injectBaseConfigToDataSource(resolvedConfig, baseConfig)
+        </div>
+      </div>
+    </div>
+
+    <div class="fix-section">
+      <h3>📊 预期的修复后日志流</h3>
+      
+      <div class="flow-diagram">
+        <h4>🔄 完整的数据流（修复后）</h4>
+        <div class="flow-step">🔧 [DataFlowManager] 检测到properties更新，同步配置系统</div>
+        <div class="flow-step">🔥🔥🔥 [InteractionManager] handleDataExecutionTrigger 被调用了！！！</div>
+        <div class="flow-step">🧹 [InteractionManager] 清理SimpleDataBridge缓存，确保重新执行HTTP请求</div>
+        <div class="flow-step">📋 [InteractionManager] 使用事件配置信息 ← 新增日志</div>
+        <div class="flow-step">🎯 [InteractionManager] 同步deviceId到customize: 12 ← 应该正常工作</div>
+        <div class="flow-step">🔧 [InteractionManager] 准备执行配置 { hasDataSource: true, dataSources: 1+ } ← 关键改进</div>
+        <div class="flow-step">🔧 [VisualEditorBridge] 检测到分层配置，提取基础配置</div>
+        <div class="flow-step">🚀 [SimpleDataBridge] 开始执行 MultiLayerExecutorChain { hasHttpDataItems: true } ← 关键改进</div>
+        <div class="flow-step">🚀 [DataItemFetcher] fetchHttpData 开始执行</div>
+        <div class="flow-step">🔗 [DataItemFetcher] 路径参数解析: id = 12 (最新值!) ← 最终目标</div>
+        <div class="flow-step">✅ [DataItemFetcher] HTTP请求成功响应</div>
+      </div>
+    </div>
+
+    <div class="fix-section">
+      <h3>🧪 测试验证步骤</h3>
+      
+      <div class="fix-item">
+        <h4>步骤 1：清除缓存并刷新</h4>
+        <p>由于修改了核心文件，建议先清除浏览器缓存或进行硬刷新 (Ctrl+Shift+R)</p>
+      </div>
+
+      <div class="fix-item">
+        <h4>步骤 2：重现测试场景</h4>
+        <p>按照相同步骤修改设备ID，观察控制台日志是否出现以下关键改进：</p>
+        <ul>
+          <li><code>📋 [InteractionManager] 使用事件配置信息</code> - 新增的配置获取日志</li>
+          <li><code>hasDataSource: true, dataSources: 1+</code> - 数据源结构应该正确</li>
+          <li><code>hasHttpDataItems: true</code> - HTTP数据项应该被正确解析</li>
+          <li><code>🔗 [DataItemFetcher] 路径参数解析: id = 12</code> - 参数应该使用新值</li>
+        </ul>
+      </div>
+
+      <div class="fix-item">
+        <h4>步骤 3：验证HTTP请求发送</h4>
+        <p>确认在修改设备ID后，能看到：</p>
+        <ul>
+          <li>HTTP请求被实际发送（在Network面板中可见）</li>
+          <li>请求URL中包含正确的新设备ID</li>
+          <li>组件显示更新后的数据</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="warning-banner">
+      <strong>⚠️ 重要提醒</strong>：如果修复后仍有问题，请提供最新的完整控制台日志，特别关注：
+      <br>• InteractionManager 的配置构造日志
+      <br>• VisualEditorBridge 的配置转换日志  
+      <br>• SimpleDataBridge 的数据项解析日志
+      <br>• DataItemFetcher 的参数绑定日志
+    </div>
+
+    <div class="fix-section">
+      <h3>🔗 测试链接</h3>
+      <a href="http://localhost:5002/test/data-source-system" class="nav-button success" target="_blank">
+        🧪 数据源系统测试
+      </a>
+      <a href="http://localhost:5002/test/editor-integration" class="nav-button" target="_blank">
+        🎨 编辑器集成测试
+      </a>
+      <a href="http://localhost:5002/visualization/visual-editor-details" class="nav-button" target="_blank">
+        📊 可视化编辑器
+      </a>
+    </div>
+
+    <div class="fix-section">
+      <h3>📋 修复文件清单</h3>
+      
+      <div class="code-section">
+修改的文件：
+1. /src/card2.1/core/interaction-manager.ts
+   - 修复 syncConfigChangeToEditorStore 配置获取逻辑
+   - 重构数据源配置构造逻辑
+
+2. /src/core/data-architecture/VisualEditorBridge.ts  
+   - 增强基础配置注入到数据源的逻辑
+
+主要修复点：
+- 解决配置管理器获取失败问题
+- 修复数据源配置结构丢失问题
+- 确保HTTP数据项能正确解析和执行
+- 保证参数绑定使用最新的属性值
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,7 +1,22 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
 // import {useRouter} from 'vue-router';
-import { NButton, NCard, NForm, NFormItem, NGrid, NGridItem, NInput, NModal, useMessage, NPopconfirm, NTooltip, NFlex, NPagination, NSelect } from 'naive-ui'
+import {
+  NButton,
+  NCard,
+  NForm,
+  NFormItem,
+  NGrid,
+  NGridItem,
+  NInput,
+  NModal,
+  useMessage,
+  NPopconfirm,
+  NTooltip,
+  NFlex,
+  NPagination,
+  NSelect
+} from 'naive-ui'
 import type { LastLevelRouteKey } from '@elegant-router/types' // 假设您已经定义好了这些API
 import { DelBoard, PostBoard, PutBoard, getBoardList } from '@/service/api/index'
 import { useRouterPush } from '@/hooks/common/router'
@@ -75,6 +90,12 @@ const editBoard = board => {
 const deleteBoard = async (id: string) => {
   await DelBoard(id) // 假设DelBoard接收看板的id
   await fetchBoards() // 刷新看板列表
+}
+
+// 取消操作
+const handleCancel = () => {
+  showModal.value = false
+  clearFormData()
 }
 
 // 页面跳转
@@ -211,13 +232,7 @@ onMounted(fetchBoards)
         </NForm>
         <template #footer>
           <div class="flex justify-end gap-2">
-            <NButton
-              type="default"
-              @click="
-                showModal = false;
-                clearFormData();
-              "
-            >
+            <NButton type="default" @click="handleCancel">
               {{ $t('generate.cancel') }}
             </NButton>
             <n-popconfirm v-if="formData.home_flag === 'Y'" @positive-click="submitForm">

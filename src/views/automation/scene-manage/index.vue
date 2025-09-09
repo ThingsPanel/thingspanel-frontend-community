@@ -1,30 +1,30 @@
 <script setup lang="tsx">
-import { ref } from 'vue';
-import type { Ref } from 'vue';
-import { NButton, NCard, NFlex, NPagination, NPopconfirm, NSpace, useDialog, useMessage } from 'naive-ui';
-import type { DataTableColumns } from 'naive-ui';
-import { IosSearch } from '@vicons/ionicons4';
-import moment from 'moment';
-import { sceneActive, sceneDel, sceneGet, sceneLog } from '@/service/api/automation';
-import { useRouterPush } from '@/hooks/common/router';
-import { $t } from '@/locales';
-import { formatDateTime } from '@/utils/common/datetime';
+import { ref } from 'vue'
+import type { Ref } from 'vue'
+import { NButton, NCard, NFlex, NPagination, NPopconfirm, NSpace, useDialog, useMessage } from 'naive-ui'
+import type { DataTableColumns } from 'naive-ui'
+import { IosSearch } from '@vicons/ionicons4'
+import moment from 'moment'
+import { sceneActive, sceneDel, sceneGet, sceneLog } from '@/service/api/automation'
+import { useRouterPush } from '@/hooks/common/router'
+import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
 
-const dialog = useDialog();
-const message = useMessage();
-const { routerPushByKey } = useRouterPush();
-const showLog = ref(false);
-const logDataTotal = ref(0);
-const logData = ref([]);
+const dialog = useDialog()
+const message = useMessage()
+const { routerPushByKey } = useRouterPush()
+const showLog = ref(false)
+const logDataTotal = ref(0)
+const logData = ref([])
 // 新建场景
 const sceneAdd = () => {
-  routerPushByKey('automation_scene-edit');
-};
+  routerPushByKey('automation_scene-edit')
+}
 
 // 编辑场景
 const sceneEdit = (item: any) => {
-  routerPushByKey('automation_scene-edit', { query: { id: item.id } });
-};
+  routerPushByKey('automation_scene-edit', { query: { id: item.id } })
+}
 
 // 激活场景
 const sceneActivation = async (item: any) => {
@@ -44,29 +44,29 @@ const sceneActivation = async (item: any) => {
   //     return false;
   //   }
   // });
-  const res = await sceneActive(item.id);
+  const res = await sceneActive(item.id)
   if (!res.error) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    await getData();
+    await getData()
   }
-};
-const tableData = ref([]);
+}
+const tableData = ref([])
 const queryData = ref({
   name: '',
   page: 1,
   page_size: 10
-});
-const dataTotal = ref(0);
+})
+const dataTotal = ref(0)
 
 const getData = async () => {
-  const { data } = await sceneGet(queryData.value);
-  tableData.value = data.list;
-  dataTotal.value = data.total;
-};
+  const { data } = await sceneGet(queryData.value)
+  tableData.value = data.list
+  dataTotal.value = data.total
+}
 const handleQuery = async () => {
-  queryData.value.page = 1;
-  await getData();
-};
+  queryData.value.page = 1
+  await getData()
+}
 const logQuery = ref({
   id: '',
   page: 1,
@@ -75,22 +75,22 @@ const logQuery = ref({
   execution_start_time: '',
   execution_end_time: '',
   execution_result: ''
-});
+})
 const getLogList = async () => {
   if (logQuery.value.time) {
-    logQuery.value.execution_start_time = moment(logQuery.value.time[0]).format();
-    logQuery.value.execution_end_time = moment(logQuery.value.time[1]).format();
+    logQuery.value.execution_start_time = moment(logQuery.value.time[0]).format()
+    logQuery.value.execution_end_time = moment(logQuery.value.time[1]).format()
   }
-  const res = await sceneLog(logQuery.value);
-  logData.value = res.data.list;
-  logDataTotal.value = res.data.total;
-};
+  const res = await sceneLog(logQuery.value)
+  logData.value = res.data.list
+  logDataTotal.value = res.data.total
+}
 // 查看日志
 const openLog = (item: any) => {
-  logQuery.value.id = item.id;
-  getLogList();
-  showLog.value = true;
-};
+  logQuery.value.id = item.id
+  getLogList()
+  showLog.value = true
+}
 // 删除场景
 const deleteScene = async (item: any) => {
   dialog.warning({
@@ -99,17 +99,17 @@ const deleteScene = async (item: any) => {
     positiveText: $t('device_template.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
-      const res = await sceneDel(item.id);
+      const res = await sceneDel(item.id)
       if (!res.error) {
-        await getData();
-        message.success($t('custom.grouping_details.operationSuccess'));
+        await getData()
+        message.success($t('custom.grouping_details.operationSuccess'))
       }
     }
-  });
-};
+  })
+}
 const bodyStyle = ref({
   width: '1000px'
-});
+})
 
 const columns: Ref<any> = ref([
   {
@@ -130,7 +130,7 @@ const columns: Ref<any> = ref([
     align: 'left',
     minWidth: '100px',
     render: (row: any) => {
-      return formatDateTime(row.created_at);
+      return formatDateTime(row.created_at)
     }
   },
   {
@@ -139,7 +139,7 @@ const columns: Ref<any> = ref([
     align: 'left',
     minWidth: '100px',
     render: (row: any) => {
-      return formatDateTime(row.updated_at);
+      return formatDateTime(row.updated_at)
     }
   },
   {
@@ -170,10 +170,10 @@ const columns: Ref<any> = ref([
             }}
           </NPopconfirm>
         </NSpace>
-      );
+      )
     }
   }
-]) as Ref<DataTableColumns<DataService.Data>>;
+]) as Ref<DataTableColumns<DataService.Data>>
 
 const execution_result_options = ref([
   {
@@ -188,13 +188,13 @@ const execution_result_options = ref([
     label: $t('generate.execution-failed'),
     value: 'F'
   }
-]);
+])
 
 const queryLog = () => {
-  logQuery.value.page = 1;
+  logQuery.value.page = 1
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  getLogList();
-};
+  getLogList()
+}
 
 const logClose = () => {
   logQuery.value = {
@@ -205,9 +205,9 @@ const logClose = () => {
     execution_start_time: '',
     execution_end_time: '',
     execution_result: ''
-  };
-};
-getData();
+  }
+}
+getData()
 </script>
 
 <template>

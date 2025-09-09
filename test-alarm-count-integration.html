@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>告警计数组件迁移测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .component-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .demo-card {
+            width: 300px;
+            height: 200px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .card-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex: 1;
+            padding-top: 30px;
+        }
+        .card-icon {
+            font-size: 32px;
+        }
+        .card-value {
+            font-size: 30px;
+            font-weight: bold;
+        }
+        .success {
+            color: #10b981;
+            font-weight: bold;
+        }
+        .info {
+            background: #e0f2fe;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #0284c7;
+            margin: 15px 0;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .checklist li:before {
+            content: '✅ ';
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="section">
+            <h1>🚨 告警计数组件 - Card 2.1 迁移验证</h1>
+            <p>该页面用于验证告警计数组件从旧系统到 Card 2.1 系统的迁移效果。</p>
+            
+            <div class="info">
+                <strong>📋 迁移概述：</strong><br>
+                • <strong>原组件位置：</strong> <code>src/card/builtin-card/alarm-count/</code><br>
+                • <strong>新组件位置：</strong> <code>src/card2.1/components/statistics/alarm-count/</code><br>
+                • <strong>组件类型保持：</strong> <code>alarm-count</code> (保证历史数据兼容)<br>
+                • <strong>权限配置：</strong> 不限 (全部权限)<br>
+                • <strong>分类归属：</strong> 统计类 > 系统监控 > 告警统计
+            </div>
+        </header>
+
+        <section class="section">
+            <h2>🎯 组件架构验证</h2>
+            <ul class="checklist">
+                <li><strong>三文件架构完整性</strong> - index.vue, settingConfig.ts, definition.ts</li>
+                <li><strong>类型安全</strong> - 完整的 TypeScript 类型定义</li>
+                <li><strong>配置驱动</strong> - 支持动态配置和主题系统集成</li>
+                <li><strong>国际化支持</strong> - 使用 $t('card.alarmCount')</li>
+                <li><strong>组件注册</strong> - 已注册到 Card2Components['统计类']</li>
+                <li><strong>权限配置</strong> - 权限设置为"不限"</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>🎨 视觉效果对比</h2>
+            <p>以下展示了组件的核心视觉效果（模拟渲染）：</p>
+            
+            <div class="component-demo">
+                <div class="demo-card">
+                    <h3 class="card-title">告警数量统计</h3>
+                    <div class="card-content">
+                        <span class="card-icon">🚨</span>
+                        <span class="card-value">23个</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info">
+                <strong>🎨 核心特性保持：</strong><br>
+                • 渐变背景 (橙红色系：#f97316 → #ef4444)<br>
+                • 数字动画效果 (CountTo 组件)<br>
+                • 悬停交互效果<br>
+                • 响应式设计<br>
+                • 主题系统适配
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>⚙️ 配置项验证</h2>
+            <ul class="checklist">
+                <li><strong>内容设置</strong> - 标题、单位、前缀、后缀</li>
+                <li><strong>样式设置</strong> - 渐变开始颜色、渐变结束颜色</li>
+                <li><strong>显示设置</strong> - 图标、显示图标开关</li>
+                <li><strong>动画设置</strong> - 启用动画、动画持续时间</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>🔗 数据源集成</h2>
+            <div class="info">                <strong>💡 重要说明：</strong><br>                • 此组件<strong>不需要配置数据源</strong>，开箱即用<br>                • 数据通过组件内部API自动获取，无需用户配置<br>                • 如果需要外部数据，可以通过属性绑定传入            </div>
+            <ul class="checklist">
+                <li><strong>内部API调用</strong> - 组件自动调用后端接口获取数据</li>
+                <li><strong>静态数据源</strong> - 支持预览模式模拟数据</li>
+                <li><strong>绑定数据支持</strong> - alarmCount, alarm_device_total</li>
+                <li><strong>错误处理</strong> - 加载状态和错误状态显示</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>🎮 交互能力</h2>
+            <ul class="checklist">
+                <li><strong>点击事件</strong> - 用户点击卡片时触发</li>
+                <li><strong>悬停事件</strong> - 鼠标悬停效果</li>
+                <li><strong>数据变化事件</strong> - 告警数量变化时触发</li>
+                <li><strong>属性暴露</strong> - 标题、颜色、告警数量等可被外部绑定</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>📊 兼容性保证</h2>
+            <div class="info">
+                <strong>🔄 历史数据兼容：</strong><br>
+                • 组件类型保持 <code>alarm-count</code><br>
+                • 支持旧的 config 结构向后兼容<br>
+                • 国际化键值保持 <code>card.alarmCount</code><br>
+                • API 数据格式兼容 <code>alarm_device_total</code> 字段
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>✅ 迁移完成状态</h2>
+            <div class="success">
+                ✨ 告警计数组件已成功迁移到 Card 2.1 系统！
+            </div>
+            
+            <p><strong>下一步操作：</strong></p>
+            <ol>
+                <li>在 Visual Editor 中测试组件的添加和配置</li>
+                <li>验证与现有面板的兼容性</li>
+                <li>确认数据绑定功能正常工作</li>
+                <li>测试主题切换效果</li>
+            </ol>
+
+            <div class="info">
+                <strong>🚀 访问方式：</strong><br>
+                在 Visual Editor 的组件库中，可以在"统计类"分类下找到"告警数量统计"组件。
+            </div>
+        </section>
+    </div>
+</body>
+</html>

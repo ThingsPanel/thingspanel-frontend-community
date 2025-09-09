@@ -1,33 +1,33 @@
 <script setup lang="tsx">
-import { h, reactive, ref } from 'vue';
-import type { Ref } from 'vue';
-import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { useBoolean, useLoading } from '@sa/hooks';
-import { routerSysFlagLabels, routerTypeLabels } from '@/constants/business';
-import { delElement, fetchElementList } from '@/service/api/route';
-import { deepClone } from '@/utils/common/tool';
-import { $t } from '@/locales';
-import TableActionModal from './components/table-action-modal.vue';
-import type { ModalType } from './components/table-action-modal.vue';
+import { h, reactive, ref } from 'vue'
+import type { Ref } from 'vue'
+import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui'
+import type { DataTableColumns, PaginationProps } from 'naive-ui'
+import { useBoolean, useLoading } from '@sa/hooks'
+import { routerSysFlagLabels, routerTypeLabels } from '@/constants/business'
+import { delElement, fetchElementList } from '@/service/api/route'
+import { deepClone } from '@/utils/common/tool'
+import { $t } from '@/locales'
+import TableActionModal from './components/table-action-modal.vue'
+import type { ModalType } from './components/table-action-modal.vue'
 
-const { loading, startLoading, endLoading } = useLoading(false);
-const { bool: visible, setTrue: openModal } = useBoolean();
+const { loading, startLoading, endLoading } = useLoading(false)
+const { bool: visible, setTrue: openModal } = useBoolean()
 
 type QueryFormModel = {
-  page: number;
-  page_size: number;
-};
+  page: number
+  page_size: number
+}
 
 const queryParams = reactive<QueryFormModel>({
   page: 1,
   page_size: 10
-});
+})
 
-const tableData = ref<CustomRoute.Route[]>([]);
+const tableData = ref<CustomRoute.Route[]>([])
 
 function setTableData(data: CustomRoute.Route[]) {
-  tableData.value = data;
+  tableData.value = data
 }
 
 const pagination: PaginationProps = reactive({
@@ -37,33 +37,33 @@ const pagination: PaginationProps = reactive({
   itemCount: 0,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
-    pagination.page = page;
-    queryParams.page = page;
-    getTableData();
+    pagination.page = page
+    queryParams.page = page
+    getTableData()
   },
   onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
-    queryParams.page = 1;
-    queryParams.page_size = pageSize;
-    getTableData();
+    pagination.pageSize = pageSize
+    pagination.page = 1
+    queryParams.page = 1
+    queryParams.page_size = pageSize
+    getTableData()
   }
-});
+})
 
 async function getTableData() {
-  startLoading();
-  const { data } = await fetchElementList(queryParams);
+  startLoading()
+  const { data } = await fetchElementList(queryParams)
   if (data) {
-    const list: Api.Route.MenuRoute[] = data.list;
-    pagination.itemCount = data.total;
-    setTableData(list);
-    endLoading();
+    const list: Api.Route.MenuRoute[] = data.list
+    pagination.itemCount = data.total
+    setTableData(list)
+    endLoading()
   }
 }
 
 const rowKey = (row: CustomRoute.Route) => {
-  return row.id;
-};
+  return row.id
+}
 
 const columns: Ref<DataTableColumns<CustomRoute.Route>> = ref([
   {
@@ -73,9 +73,9 @@ const columns: Ref<DataTableColumns<CustomRoute.Route>> = ref([
     minWidth: '140px',
     render: row => {
       if (row.multilingual && row.multilingual !== 'default') {
-        return <span>{$t(row.multilingual)}</span>;
+        return <span>{$t(row.multilingual)}</span>
       }
-      return <span>{row.description}</span>;
+      return <span>{row.description}</span>
     }
   },
 
@@ -86,9 +86,9 @@ const columns: Ref<DataTableColumns<CustomRoute.Route>> = ref([
     minWidth: '140px',
     render: row => {
       if (row.param2) {
-        return <svg-icon icon={row.param2} />;
+        return <svg-icon icon={row.param2} />
       }
-      return <span></span>;
+      return <span></span>
     }
   },
   {
@@ -122,10 +122,10 @@ const columns: Ref<DataTableColumns<CustomRoute.Route>> = ref([
           '3': 'warning'
           // "4": "default",
           // "5": "info",
-        };
-        return <NTag type={tagTypes[row.element_type]}>{routerTypeLabels[row.element_type]}</NTag>;
+        }
+        return <NTag type={tagTypes[row.element_type]}>{routerTypeLabels[row.element_type]}</NTag>
       }
-      return <span></span>;
+      return <span></span>
     }
   },
   {
@@ -144,11 +144,11 @@ const columns: Ref<DataTableColumns<CustomRoute.Route>> = ref([
             {
               default: () => routerSysFlagLabels[tagKey]
             }
-          );
-        });
-        return tags;
+          )
+        })
+        return tags
       }
-      return <span></span>;
+      return <span></span>
     }
   },
   {
@@ -183,44 +183,44 @@ const columns: Ref<DataTableColumns<CustomRoute.Route>> = ref([
             }}
           </NPopconfirm>
         </NSpace>
-      );
+      )
     }
   }
-]) as Ref<DataTableColumns<CustomRoute.Route>>;
+]) as Ref<DataTableColumns<CustomRoute.Route>>
 
-const modalType = ref<ModalType>('add');
+const modalType = ref<ModalType>('add')
 
 function setModalType(type: ModalType) {
-  modalType.value = type;
+  modalType.value = type
 }
 
-const editData = ref<CustomRoute.Route | null>(null);
+const editData = ref<CustomRoute.Route | null>(null)
 
 function handleAddTable() {
-  openModal();
-  setModalType('add');
+  openModal()
+  setModalType('add')
 }
 
 function handleEditTable(row: any) {
-  editData.value = deepClone(row);
-  setModalType('edit');
-  openModal();
+  editData.value = deepClone(row)
+  setModalType('edit')
+  openModal()
 }
 
 async function handleDeleteTable(rowId: string) {
-  const data = await delElement(rowId);
+  const data = await delElement(rowId)
   if (!data.error) {
-    window.$message?.success($t('common.deleteSuccess'));
-    await getTableData();
+    window.$message?.success($t('common.deleteSuccess'))
+    await getTableData()
   }
 }
 
 function init() {
-  getTableData();
+  getTableData()
 }
 
 // 初始化
-init();
+init()
 </script>
 
 <template>

@@ -1,18 +1,18 @@
 <script setup lang="tsx">
-import type { PropType } from 'vue';
-import { reactive } from 'vue';
-import { NButton, NSelect, NSpace } from 'naive-ui';
-import { $t } from '@/locales';
-import { enumDataTypeOption } from '@/constants/business';
+import type { PropType } from 'vue'
+import { reactive } from 'vue'
+import { NButton, NSelect, NSpace } from 'naive-ui'
+import { $t } from '@/locales'
+import { enumDataTypeOption } from '@/constants/business'
 
-const emit = defineEmits(['updateAdditionalInfo']);
+const emit = defineEmits(['updateAdditionalInfo'])
 
 const props = defineProps({
   additionalInfo: {
     type: Array as PropType<any[]>,
     required: true
   }
-});
+})
 
 const booleanOptions: any = reactive([
   {
@@ -23,29 +23,29 @@ const booleanOptions: any = reactive([
     label: 'False',
     value: false
   }
-]);
+])
 
 const onAdd = () => {
-  const additionalInfo = [...props.additionalInfo];
+  const additionalInfo = [...props.additionalInfo]
   additionalInfo.push({
     value_type: '',
     value: '',
     description: ''
-  });
-  emit('updateAdditionalInfo', additionalInfo);
-};
+  })
+  emit('updateAdditionalInfo', additionalInfo)
+}
 
 const onChange: (newVal, rowIndex: number, field: string) => void = (newVal, rowIndex, field) => {
-  const additionalInfo = [...props.additionalInfo];
-  (additionalInfo as any)[rowIndex][field] = newVal;
-  emit('updateAdditionalInfo', additionalInfo);
-};
+  const additionalInfo = [...props.additionalInfo]
+  ;(additionalInfo as any)[rowIndex][field] = newVal
+  emit('updateAdditionalInfo', additionalInfo)
+}
 
 const onDel: (rowIndex: number) => void = rowIndex => {
-  const additionalInfo = [...props.additionalInfo];
-  additionalInfo.splice(rowIndex, 1);
-  emit('updateAdditionalInfo', additionalInfo);
-};
+  const additionalInfo = [...props.additionalInfo]
+  additionalInfo.splice(rowIndex, 1)
+  emit('updateAdditionalInfo', additionalInfo)
+}
 
 const columns: any = [
   {
@@ -61,7 +61,7 @@ const columns: any = [
           onChange={newVal => onChange(newVal, rowIndex, 'value_type')}
           options={enumDataTypeOption}
         ></NSelect>
-      );
+      )
     }
   },
   {
@@ -72,12 +72,12 @@ const columns: any = [
     width: 120,
     render: (rowData, rowIndex) => {
       if (rowData.value_type === 'Number') {
-        return <n-input-number v-model:value={rowData.value} show-button={false} />;
+        return <n-input-number v-model:value={rowData.value} show-button={false} />
       } else if (rowData.value_type === 'Boolean') {
-        return <NSelect v-model:value={rowData.value} options={booleanOptions} />;
+        return <NSelect v-model:value={rowData.value} options={booleanOptions} />
       }
 
-      return <n-input value={rowData.value} onInput={newVal => onChange(newVal, rowIndex, 'value')} />;
+      return <n-input value={rowData.value} onInput={newVal => onChange(newVal, rowIndex, 'value')} />
     }
   },
   {
@@ -86,7 +86,7 @@ const columns: any = [
     align: 'center',
     className: 'enum-header',
     render: (rowData, rowIndex) => {
-      return <n-input value={rowData.description} onInput={newVal => onChange(newVal, rowIndex, 'description')} />;
+      return <n-input value={rowData.description} onInput={newVal => onChange(newVal, rowIndex, 'description')} />
     }
   },
   {
@@ -101,10 +101,10 @@ const columns: any = [
             {$t('common.delete')}
           </NButton>
         </NSpace>
-      );
+      )
     }
   }
-];
+]
 </script>
 
 <template>

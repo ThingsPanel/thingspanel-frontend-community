@@ -155,27 +155,27 @@ async function loadAutoLoginCredentials() {
   console.log('=== 自动登录调试信息 ===')
   console.log('当前URL:', window.location.href)
   console.log('查询参数字符串:', window.location.search)
-  
+
   // 检查路由参数
   const urlParams = new URLSearchParams(window.location.search)
   const autoLogin = urlParams.get('auto') === 'true'
   const urlUsername = urlParams.get('username')
   const urlPassword = urlParams.get('password')
-  
+
   console.log('auto参数值:', urlParams.get('auto'))
   console.log('URL中的用户名:', urlUsername ? '已提供' : '未提供')
   console.log('URL中的密码:', urlPassword ? '已提供' : '未提供')
   console.log('是否满足自动登录条件:', autoLogin && urlUsername && urlPassword)
-  
+
   // 只要URL参数中有账号密码且auto=true就允许自动登录
   if (autoLogin && urlUsername && urlPassword) {
     console.log('✅ 所有条件满足，开始自动登录...')
     console.log('使用账号:', urlUsername)
-    
+
     // 设置表单数据
     model.userName = urlUsername
     model.password = urlPassword
-    
+
     // 延迟一下确保组件完全挂载
     setTimeout(async () => {
       try {
@@ -197,9 +197,14 @@ async function loadAutoLoginCredentials() {
     if (!urlPassword) {
       console.log('  - URL中未提供密码参数')
     }
-    
+
     console.log('📝 使用方式: 在URL中传递账号密码: ?auto=true&username=test@example.com&password=123456')
-    console.log('  当前URL示例: ' + window.location.origin + window.location.pathname + '?auto=true&username=test@example.com&password=123456')
+    console.log(
+      '  当前URL示例: ' +
+        window.location.origin +
+        window.location.pathname +
+        '?auto=true&username=test@example.com&password=123456'
+    )
   }
   console.log('=== 调试信息结束 ===')
 }

@@ -69,7 +69,6 @@ const close: () => void = () => {
 }
 
 const submitSevice: () => void = async () => {
-
   formRef.value?.validate(async errors => {
     if (errors) return
 

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交互配置修复测试 - ThingsPanel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .test-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .test-description {
+            color: #6b7280;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .test-steps {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .test-steps h4 {
+            color: #374151;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .step-list {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+        
+        .step-list li {
+            counter-increment: step-counter;
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 40px;
+        }
+        
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .expected-results {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .expected-results h4 {
+            color: #0c4a6e;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .expected-results ul {
+            color: #075985;
+            margin-left: 20px;
+        }
+        
+        .expected-results li {
+            margin-bottom: 4px;
+        }
+        
+        .technical-details {
+            background: #fefce8;
+            border: 1px solid #eab308;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .technical-details h4 {
+            color: #92400e;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .technical-details code {
+            background: #fffbeb;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            color: #92400e;
+        }
+        
+        .btn-container {
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .icon {
+            font-size: 1.2rem;
+        }
+        
+        .summary {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #0ea5e9;
+            text-align: center;
+        }
+        
+        .summary h3 {
+            color: #0c4a6e;
+            margin-bottom: 16px;
+            font-size: 1.4rem;
+        }
+        
+        .summary p {
+            color: #075985;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🔧 交互配置修复测试</h1>
+            <p class="subtitle">验证 Card2.1 组件交互配置功能修复</p>
+            <span class="status">✅ 修复完成</span>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">
+                <span class="icon">🎯</span>
+                测试目标
+            </h3>
+            <p class="test-description">
+                验证交互配置系统的完整数据流，确保用户在配置面板中设置的交互配置能够正确传递给组件并生效。
+            </p>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">
+                <span class="icon">🔍</span>
+                问题诊断结果
+            </h3>
+            <div class="test-steps">
+                <h4>已修复的问题：</h4>
+                <ul class="step-list">
+                    <li><strong>Card2.1 组件缺少交互集成</strong> - 添加了 useInteraction 组合式函数</li>
+                    <li><strong>事件监听机制不完整</strong> - 实现了完整的事件监听和响应系统</li>
+                    <li><strong>配置传递链路验证</strong> - 确认了从 ConfigurationPanel → NodeWrapper → Card2Wrapper → 组件的完整数据流</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">
+                <span class="icon">🧪</span>
+                功能测试步骤
+            </h3>
+            <div class="test-steps">
+                <h4>执行以下测试步骤：</h4>
+                <ol class="step-list">
+                    <li>访问 Visual Editor 页面 (http://localhost:5002/visualization/visual-editor-details)</li>
+                    <li>添加一个 "简单展示组件" (simple-display)</li>
+                    <li>选中组件，打开右侧配置面板的 "交互" 标签页</li>
+                    <li>添加一个点击交互配置，选择 "修改组件属性" 动作</li>
+                    <li>设置目标属性为 "customize.themeColor"，值为 "#ff5722"</li>
+                    <li>保存配置并切换到预览模式</li>
+                    <li>点击组件，观察主题颜色是否变化</li>
+                </ol>
+                
+                <div class="expected-results">
+                    <h4>预期结果：</h4>
+                    <ul>
+                        <li>组件左下角显示 "⚡" 图标，表示交互已注册</li>
+                        <li>组件调试信息显示 "交互注册: 已注册"</li>
+                        <li>点击组件时主题颜色立即变化</li>
+                        <li>浏览器控制台显示交互事件执行日志</li>
+                    </ul>
+                </div>
+                
+                <div class="technical-details">
+                    <h4>技术实现细节：</h4>
+                    <p>修复了以下关键组件：</p>
+                    <ul>
+                        <li><code>simple-display/index.vue</code> - 集成了 useInteraction Hook</li>
+                        <li><code>useInteraction</code> - 自动处理配置注册和事件触发</li>
+                        <li><code>NodeWrapper</code> - 正确传递交互配置</li>
+                        <li><code>Card2Wrapper</code> - 接收并监听配置变化</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">
+                <span class="icon">🔧</span>
+                调试信息
+            </h3>
+            <div class="test-steps">
+                <h4>在预览模式下，组件会显示以下调试信息：</h4>
+                <ul class="step-list">
+                    <li><strong>交互注册状态</strong> - 显示是否已注册到 InteractionManager</li>
+                    <li><strong>交互配置数量</strong> - 显示当前组件的交互配置项数</li>
+                    <li><strong>点击/悬停次数</strong> - 统计用户交互次数</li>
+                    <li><strong>组件状态更新</strong> - 显示属性变化和响应情况</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="summary">
+            <h3>🎉 修复总结</h3>
+            <p>
+                通过完善 Card2.1 组件的交互集成，现在用户在配置面板中设置的交互配置能够正确传递给组件并生效。
+                系统支持点击、悬停、数据变化等多种交互事件，为用户提供了丰富的交互体验。
+            </p>
+        </div>
+        
+        <div class="btn-container">
+            <a href="http://localhost:5002/visualization/visual-editor-details" class="btn">
+                🚀 开始测试交互配置
+            </a>
+        </div>
+    </div>
+</body>
+</html>

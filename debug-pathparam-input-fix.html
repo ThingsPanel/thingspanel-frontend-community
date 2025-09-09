@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>路径参数输入框修复验证</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .test-header {
+      background: linear-gradient(135deg, #fa541c 0%, #faad14 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+    .step {
+      margin-bottom: 16px;
+      padding: 16px;
+      background: white;
+      border-radius: 6px;
+      border-left: 4px solid #fa541c;
+    }
+    .step h4 {
+      margin: 0 0 8px 0;
+      color: #333;
+    }
+    .step p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+    }
+    .critical-step {
+      border-left-color: #ff4d4f;
+      background: #fff2f0;
+    }
+    .critical-step h4 {
+      color: #ff4d4f;
+    }
+    .nav-link {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #fa541c;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      margin-right: 12px;
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+    }
+    .nav-link:hover {
+      background: #ff7875;
+      transform: translateY(-1px);
+    }
+    .code-block {
+      background: #f8f8f8;
+      padding: 16px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #333;
+      margin: 12px 0;
+      border: 1px solid #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="test-header">
+      <h1>🔍 路径参数输入框修复验证</h1>
+      <p>专门测试URL配置中的pathParam输入框焦点丢失问题</p>
+    </div>
+
+    <div style="background: #e6f7ff; border: 1px solid #91d5ff; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+      <h3>📍 问题定位结果</h3>
+      <p>您提到的URL参数输入框位于：<code>HttpConfigStep1.vue</code> → <code>DynamicParameterEditor</code> 组件</p>
+      <p>参数类型：<code>parameter-type="path"</code>，这是专门配置路径参数(pathParam)的输入框</p>
+      <p><strong>好消息</strong>：我的修复已经覆盖了这个组件，应该已经解决了焦点丢失问题！</p>
+    </div>
+
+    <div style="background: #fff2f0; border: 1px solid #ffccc7; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+      <h3>⚠️ 重要测试步骤</h3>
+      
+      <div class="step critical-step">
+        <h4>关键步骤1：选择内部接口</h4>
+        <p>1. 访问数据源系统测试页面<br>
+           2. 在HTTP配置的第1步中，选择"地址类型"为"内部地址"<br>
+           3. 选择任何一个有路径参数的内部接口（如：设备详情接口 - /device/detail/{id}）</p>
+      </div>
+
+      <div class="step critical-step">
+        <h4>关键步骤2：启用URL传参</h4>
+        <p>1. 选择内部接口后，会出现"URL传参"开关<br>
+           2. <strong>打开URL传参开关</strong><br>
+           3. 此时会显示"参数配置"区域，包含pathParam输入框</p>
+      </div>
+
+      <div class="step critical-step">
+        <h4>关键步骤3：测试参数名输入框</h4>
+        <p>1. 在"参数配置"区域，找到参数名输入框（默认可能是"pathParam"或空）<br>
+           2. <strong>连续输入多个字符测试焦点保持</strong><br>
+           3. <strong>验证：输入框应该保持焦点，不会每输入一个字符就失去焦点</strong></p>
+      </div>
+    </div>
+
+    <div style="background: #f6ffed; border: 1px solid #b7eb8f; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+      <h3>✅ 修复的技术细节</h3>
+      
+      <div class="code-block">
+// HttpConfigStep1.vue 中的路径参数配置
+&lt;DynamicParameterEditor
+  :model-value="urlParams"
+  parameter-type="path"           // 这是路径参数
+  add-button-text="添加URL参数"
+  key-placeholder="参数名（如：id）"  // 这就是您提到的参数名输入框
+  value-placeholder="参数值"
+  :max-parameters="1"
+  @update:model-value="onUrlParamsUpdate"
+/&gt;
+      </div>
+
+      <p><strong>修复内容</strong>：</p>
+      <ul>
+        <li>稳定的Vue Key值：<code>:key="param._id"</code></li>
+        <li>优化的事件处理：<code>@input</code> 替代 <code>@update:value</code></li>
+        <li>智能默认值策略：仅在失去焦点且为空时设置默认值</li>
+        <li>历史参数兼容：自动为旧参数生成稳定ID</li>
+      </ul>
+    </div>
+
+    <div style="background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px;">
+      <h3>🚀 测试链接</h3>
+      <a href="http://localhost:5002/test/data-source-system" class="nav-link" target="_blank">
+        数据源系统测试 - HTTP配置
+      </a>
+      <a href="http://localhost:5002/test/data-binding-system-integration" class="nav-link" target="_blank">
+        数据绑定系统测试
+      </a>
+      
+      <h4>📋 完整测试流程</h4>
+      <ol>
+        <li>打开数据源系统测试页面</li>
+        <li>找到HTTP配置表单</li>
+        <li>选择"地址类型" = "内部地址"</li>
+        <li>选择任何带有路径参数的接口（如设备详情）</li>
+        <li>打开"URL传参"开关</li>
+        <li>在出现的"参数配置"区域测试参数名输入框</li>
+        <li><strong>验证：连续输入时焦点不丢失</strong></li>
+      </ol>
+    </div>
+  </div>
+</body>
+</html>

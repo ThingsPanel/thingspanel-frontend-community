@@ -604,11 +604,7 @@ const inputFeedback = computed(() => {
         </n-form>
       </n-card>
     </n-modal>
-    <n-modal
-      v-model:show="showHistory"
-      :title="$t('generate.telemetry-history-data')"
-
-    >
+    <n-modal v-model:show="showHistory" :title="$t('generate.telemetry-history-data')">
       <NCard style="width: 80%">
         <HistoryData
           v-if="modelType === $t('custom.device_details.history')"

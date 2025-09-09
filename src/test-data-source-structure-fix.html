@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔧 数据源结构修复验证</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #722ed1 0%, #eb2f96 100%);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    }
+    .header {
+      background: linear-gradient(135deg, #722ed1 0%, #eb2f96 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+    }
+    .critical-section {
+      margin-bottom: 24px;
+      padding: 20px;
+      border: 2px solid #722ed1;
+      border-radius: 8px;
+      background: #f9f0ff;
+    }
+    .critical-section h3 {
+      margin: 0 0 16px 0;
+      color: #722ed1;
+      font-size: 18px;
+    }
+    .problem-item {
+      margin: 12px 0;
+      padding: 12px;
+      background: #fff2f0;
+      border-radius: 6px;
+      border-left: 4px solid #ff4d4f;
+    }
+    .fix-item {
+      margin: 12px 0;
+      padding: 12px;
+      background: #f6ffed;
+      border-radius: 6px;
+      border-left: 4px solid #52c41a;
+    }
+    .log-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+    }
+    .before-log, .after-log {
+      padding: 12px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 11px;
+    }
+    .before-log {
+      background: #fff2f0;
+      border: 1px solid #ff7875;
+      color: #a8071a;
+    }
+    .after-log {
+      background: #f6ffed;
+      border: 1px solid #52c41a;
+      color: #135200;
+    }
+    .code-block {
+      background: #f8f8f8;
+      border: 1px solid #d9d9d9;
+      padding: 12px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      margin: 8px 0;
+      white-space: pre-wrap;
+    }
+    .nav-button {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #722ed1;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      margin-right: 12px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .nav-button:hover {
+      background: #9254de;
+      transform: translateY(-1px);
+    }
+    .success-indicator {
+      background: #f6ffed;
+      border: 1px solid #52c41a;
+      color: #389e0d;
+      padding: 16px;
+      border-radius: 8px;
+      margin: 16px 0;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔧 数据源结构修复验证</h1>
+      <p>解决 finalDataSourcesCount: 0 导致HTTP请求不发送的问题</p>
+    </div>
+
+    <div class="critical-section">
+      <h3>🚨 发现的关键问题</h3>
+      
+      <div class="problem-item">
+        <h4>问题根因：兼容旧格式分支创建了错误结构</h4>
+        <p>InteractionManager 在处理旧格式HTTP配置时，创建了 <code>rawDataList</code> 结构而不是 <code>dataSources</code> 结构，导致 VisualEditorBridge 无法解析：</p>
+        <div class="code-block">❌ 错误的旧代码：
+// 兼容旧格式分支
+configForExecution = {
+  base: dataSourceConfig._baseConfig || {},
+  dataSource: dataSourceConfig,
+  rawDataList: [{  // ❌ 错误：应该是 dataSources 结构
+    type: 'http',
+    enabled: true,
+    config: dataSourceConfig.config || dataSourceConfig
+  }]
+}</div>
+        <p><strong>结果</strong>：VisualEditorBridge 收到的配置中没有 <code>dataSources</code> 字段，导致 <code>finalDataSourcesCount: 0</code></p>
+      </div>
+
+      <div class="problem-item">
+        <h4>确认日志证据</h4>
+        <p>从你提供的日志中可以清楚看到问题链条：</p>
+        <ol>
+          <li>InteractionManager: <code>hasDataSources: false, dataSourcesLength: 0</code></li>
+          <li>VisualEditorBridge: <code>hasDataSources: false, dataSourcesType: "undefined"</code></li>
+          <li>最终结果: <code>finalDataSourcesCount: 0, finalDataSources: []</code></li>
+          <li>SimpleDataBridge: <code>hasHttpDataItems: false</code></li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="critical-section">
+      <h3>✅ 实施的关键修复</h3>
+      
+      <div class="fix-item">
+        <h4>修复：统一使用 dataSources 结构</h4>
+        <p><strong>文件</strong>：<code>/src/card2.1/core/interaction-manager.ts:2179-2202</code></p>
+        <p>修复兼容旧格式分支，创建标准的 dataSources 结构：</p>
+        <div class="code-block">✅ 修复后的代码：
+// 🔥 关键修复：创建标准的 dataSources 结构而不是 rawDataList
+const convertedDataSources = [{
+  sourceId: 'dataSource1',
+  dataItems: [{
+    item: {
+      type: 'http',
+      config: dataSourceConfig.config || dataSourceConfig
+    },
+    processing: {
+      filterPath: '$',
+      defaultValue: {}
+    }
+  }],
+  mergeStrategy: { type: 'object' }
+}]
+
+configForExecution = {
+  base: dataSourceConfig._baseConfig || {},
+  dataSource: {
+    ...dataSourceConfig,
+    dataSources: convertedDataSources  // ✅ 正确：包含 dataSources
+  },
+  dataSources: convertedDataSources     // ✅ 正确：顶层也有 dataSources
+}</div>
+      </div>
+    </div>
+
+    <div class="critical-section">
+      <h3>📊 修复前后日志对比</h3>
+      
+      <div class="log-comparison">
+        <div class="before-log">
+          <h4>❌ 修复前（失败）</h4>
+🔍 [InteractionManager] 详细配置内容调试 {
+  "hasDataSources": false,
+  "dataSourcesLength": 0,
+  "hasRawDataList": true,
+  "rawDataListLength": 1
+}
+
+🔍 [VisualEditorBridge] resolvedConfig结构详细调试 {
+  "hasDataSources": false,
+  "dataSourcesType": "undefined",
+  "dataSourcesLength": "N/A"
+}
+
+🎯 [VisualEditorBridge] 配置转换最终结果 {
+  "finalDataSourcesCount": 0,
+  "finalDataSources": []
+}
+
+🚀 [SimpleDataBridge] 开始执行 MultiLayerExecutorChain {
+  "hasHttpDataItems": false
+}
+
+// ❌ 结果：没有HTTP请求发送
+        </div>
+        
+        <div class="after-log">
+          <h4>✅ 修复后（期望）</h4>
+🔍 [InteractionManager] 详细配置内容调试 {
+  "hasDataSources": true,
+  "dataSourcesLength": 1,
+  "hasRawDataList": false,
+  "rawDataListLength": 0
+}
+
+🔍 [VisualEditorBridge] resolvedConfig结构详细调试 {
+  "hasDataSources": true,
+  "dataSourcesType": "array",
+  "dataSourcesLength": 1
+}
+
+🎯 [VisualEditorBridge] 配置转换最终结果 {
+  "finalDataSourcesCount": 1,
+  "finalDataSources": [{
+    "id": "dataSource1",
+    "hasConfig": true
+  }]
+}
+
+🚀 [SimpleDataBridge] 开始执行 MultiLayerExecutorChain {
+  "hasHttpDataItems": true
+}
+
+🚀 [DataItemFetcher] fetchHttpData 开始执行
+🔗 [DataItemFetcher] 路径参数解析: id = 125
+
+// ✅ 结果：HTTP请求正常发送
+        </div>
+      </div>
+    </div>
+
+    <div class="success-indicator">
+      <h4>🎯 修复成功标志</h4>
+      <p>重新测试时，应该看到以下关键改变：</p>
+      <ul>
+        <li>✅ InteractionManager: <code>hasDataSources: true, dataSourcesLength: 1</code></li>
+        <li>✅ VisualEditorBridge: <code>dataSourcesType: "array", dataSourcesLength: 1</code></li>
+        <li>✅ VisualEditorBridge: <code>finalDataSourcesCount: 1</code></li>
+        <li>✅ SimpleDataBridge: <code>hasHttpDataItems: true</code></li>
+        <li>✅ DataItemFetcher: <code>fetchHttpData 开始执行</code></li>
+        <li>✅ HTTP请求URL: <code>/device/detail/125</code>（使用新的设备ID）</li>
+      </ul>
+    </div>
+
+    <div class="critical-section">
+      <h3>🧪 重新测试</h3>
+      <p>现在数据源结构已经修复，请重新测试属性绑定功能：</p>
+      <ol>
+        <li>访问测试页面</li>
+        <li>添加组件并配置HTTP数据源</li>
+        <li>修改设备ID属性值</li>
+        <li>观察控制台日志，确认看到上述成功标志</li>
+      </ol>
+      
+      <a href="http://localhost:5002/test/data-source-system" class="nav-button" target="_blank">
+        🚀 立即重新测试
+      </a>
+    </div>
+
+    <div class="critical-section">
+      <h3>📋 本次修复总结</h3>
+      <p><strong>根本问题</strong>：数据源配置格式不统一，导致解析失败</p>
+      <p><strong>修复方案</strong>：在所有分支中统一创建标准的 <code>dataSources</code> 结构</p>
+      <p><strong>影响范围</strong>：所有使用旧格式HTTP配置的组件都会受益</p>
+      <p><strong>修复文件</strong>：<code>/src/card2.1/core/interaction-manager.ts</code></p>
+    </div>
+  </div>
+</body>
+</html>

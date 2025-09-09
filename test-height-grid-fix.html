@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>栅格高度自适应测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .height-chain {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .chain-level {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            background: linear-gradient(90deg, #f8f9fa, #ffffff);
+        }
+        
+        .chain-level:last-child {
+            border-bottom: none;
+        }
+        
+        .level-label {
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .level-code {
+            font-family: 'Courier New', monospace;
+            background: #f1f1f1;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .issue-analysis {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .solution-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .nav-button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 10px 10px 0;
+        }
+        
+        .nav-button:hover {
+            background: #0056b3;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        
+        .status-issue {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-ok {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 栅格高度自适应问题分析</h1>
+        
+        <div class="test-section">
+            <div class="test-title">📋 用户报告的问题</div>
+            <div class="issue-analysis">
+                <strong>问题描述:</strong> "卡片的高度没有自适应栅格组件容器的高度"
+                <br><br>
+                <strong>现象:</strong> Card2.1 组件在栅格布局中显示时，组件内容高度没有完全占满栅格容器的高度
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">🔍 高度传递链路分析</div>
+            <div class="height-chain">
+                <div class="chain-level">
+                    <div class="level-label">1. GridLayoutPlusWrapper (.grid-node-wrapper)</div>
+                    <div class="level-code">width: 100%; height: 100%;</div>
+                    <span class="status-badge status-ok">✓ 正常</span>
+                </div>
+                <div class="chain-level">
+                    <div class="level-label">2. NodeWrapper (.node-wrapper)</div>
+                    <div class="level-code">width: 100%; height: 100%; display: flex; flex-direction: column;</div>
+                    <span class="status-badge status-ok">✓ 正常</span>
+                </div>
+                <div class="chain-level">
+                    <div class="level-label">3. NodeWrapper (.node-content-wrapper)</div>
+                    <div class="level-code">width: 100%; height: 100%; display: flex; flex-direction: column;</div>
+                    <span class="status-badge status-ok">✓ 正常</span>
+                </div>
+                <div class="chain-level">
+                    <div class="level-label">4. NodeWrapper (.node-content)</div>
+                    <div class="level-code">flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column;</div>
+                    <span class="status-badge status-ok">✓ 正常</span>
+                </div>
+                <div class="chain-level">
+                    <div class="level-label">5. Card2Wrapper (.card2-wrapper)</div>
+                    <div class="level-code">width: 100%; height: 100%; overflow: hidden; position: relative;</div>
+                    <span class="status-badge status-ok">✓ 正常</span>
+                </div>
+                <div class="chain-level">
+                    <div class="level-label">6. Card2.1 组件 (例如: .dual-data-display)</div>
+                    <div class="level-code">height: 100%; display: flex; flex-direction: column;</div>
+                    <span class="status-badge status-issue">? 需验证</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">🎯 可能的问题点</div>
+            <div class="issue-analysis">
+                <strong>1. 组件内部 flex 布局问题</strong>
+                <ul>
+                    <li>组件使用了 flex-direction: column 但某些子元素可能没有正确的 flex 属性</li>
+                    <li>内容区域(.content-section)可能需要 flex: 1 来占满剩余空间</li>
+                </ul>
+                
+                <strong>2. 固定高度冲突</strong>
+                <ul>
+                    <li>组件内部可能有固定的 padding 或 margin 影响高度计算</li>
+                    <li>某些子元素可能有 min-height 或 max-height 限制</li>
+                </ul>
+                
+                <strong>3. 网格系统配置</strong>
+                <ul>
+                    <li>GridLayoutPlus 的高度计算可能不正确</li>
+                    <li>网格项的 minH/maxH 配置问题</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">🔧 修复方案</div>
+            <div class="solution-box">
+                <strong>方案1: 优化组件内部布局</strong>
+                <ul>
+                    <li>确保 .content-section 使用 flex: 1</li>
+                    <li>检查所有子元素的高度设置</li>
+                    <li>移除可能的固定高度限制</li>
+                </ul>
+                
+                <strong>方案2: 统一高度样式规范</strong>
+                <ul>
+                    <li>为所有 Card2.1 组件建立统一的高度处理规范</li>
+                    <li>创建通用的 flex 布局模式</li>
+                    <li>添加响应式高度调整机制</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">🚀 测试验证</div>
+            <p>点击以下链接进入相关测试页面进行验证:</p>
+            <a href="http://localhost:5004/test/editor-integration" class="nav-button">编辑器集成测试</a>
+            <a href="http://localhost:5004/test/data-binding-system-integration" class="nav-button">数据绑定测试</a>
+            <a href="http://localhost:5004/visualization/visual-editor-details" class="nav-button">可视化编辑器</a>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">📝 修复计划</div>
+            <div class="solution-box">
+                <strong>执行步骤:</strong>
+                <ol>
+                    <li>检查三个 Card2.1 组件的内部布局结构</li>
+                    <li>统一 content-section 的 flex 属性设置</li>
+                    <li>验证在栅格布局中的显示效果</li>
+                    <li>测试不同高度的栅格单元中的表现</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

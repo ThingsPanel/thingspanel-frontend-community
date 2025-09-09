@@ -19,7 +19,9 @@ export function useMixMenu() {
 
     const routeName = (hideInMenu ? activeMenu : name) || name
 
-    const [firstLevelRouteName] = routeName.split('_')
+    // 确保 routeName 存在且为字符串，否则使用默认值
+    const safeRouteName = routeName || 'home'
+    const [firstLevelRouteName] = safeRouteName.split('_')
 
     setActiveFirstLevelMenuKey(firstLevelRouteName)
   }

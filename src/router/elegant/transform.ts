@@ -204,7 +204,6 @@ const routeMap: RouteMap = {
   "device_service-access": "/device/service-access",
   "device_service-details": "/device/service-details",
   "device_template": "/device/template",
-  "device-details-app": "/device-details-app",
   "function": "/function",
   "function_hide-child": "/function/hide-child",
   "function_hide-child_one": "/function/hide-child/one",
@@ -213,7 +212,6 @@ const routeMap: RouteMap = {
   "function_multi-tab": "/function/multi-tab",
   "function_tab": "/function/tab",
   "home": "/home",
-  "i18n-test": "/i18n-test",
   "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?",
   "manage": "/manage",
   "manage_menu": "/manage/menu",
@@ -251,11 +249,23 @@ const routeMap: RouteMap = {
   "rule-engine": "/rule-engine",
   "system-management-user": "/system-management-user",
   "system-management-user_system-log": "/system-management-user/system-log",
+  "test": "/test",
+  "test_auto-registry-test": "/test/auto-registry-test",
+  "test_extended-grid-system": "/test/extended-grid-system",
+  "test_new-config-system": "/test/new-config-system",
+  "test_optimization-system-demo": "/test/optimization-system-demo",
+  "test_panel-editor-v2": "/test/panel-editor-v2",
+  "test_script-editor-fix-test": "/test/script-editor-fix-test",
+  "ultra-kanban": "/ultra-kanban",
+  "ultra-kanban_index": "/ultra-kanban/index",
+  "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details",
+  "ultra-kanban_panel-preview": "/ultra-kanban/panel-preview",
   "user-center": "/user-center",
   "visualization": "/visualization",
   "visualization_kanban": "/visualization/kanban",
   "visualization_kanban-details": "/visualization/kanban-details",
-  "visualization_panel-preview": "/visualization/panel-preview"
+  "visualization_panel-preview": "/visualization/panel-preview",
+  "visualization_visual-editor-details": "/visualization/visual-editor-details"
 };
 
 /**

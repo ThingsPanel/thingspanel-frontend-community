@@ -9,7 +9,7 @@ interface Props {
   subtitle?: string
   /** 状态点是否激活，undefined时不显示状态点 */
   statusActive?: boolean
-  isStatus?:boolean
+  isStatus?: boolean
   /** 状态点类型，影响激活时的颜色 */
   statusType?: 'success' | 'warning' | 'error' | 'info' | 'default'
   /** 底部右侧显示的文本，可以是时间戳或其他文本 */
@@ -30,7 +30,7 @@ const props = withDefaults(defineProps<Props>(), {
   statusType: 'default',
   bordered: true,
   hoverable: false,
-  isStatus:true,
+  isStatus: true
 })
 
 // 定义组件事件
@@ -190,15 +190,13 @@ const handleTopRightIconClick = () => {
               </svg>
             </slot>
           </div>
-
         </div>
-        <div class="footer-right"> <slot name="footer" /> </div>
+        <div class="footer-right"><slot name="footer" /></div>
         <!-- 底部右侧：文本内容（可以是时间戳或其他文本） -->
         <div v-if="footerText" class="footer-right">
           <NEllipsis class="footer-text" :tooltip="false">
             {{ footerText }}
           </NEllipsis>
-
         </div>
       </div>
     </div>
@@ -214,12 +212,11 @@ const handleTopRightIconClick = () => {
   cursor: pointer;
   position: relative;
   transition: all 0.3s ease;
-
 }
 
 /* 悬停效果 - 调整为与用户提供的HTML示例一致 (无特定transform, box-shadow, border-color变化) */
 .item-card:hover {
-  border-color: #646CFF;
+  border-color: #646cff;
 }
 
 /* 点击时的动画 - kept subtle, can be removed if not desired */

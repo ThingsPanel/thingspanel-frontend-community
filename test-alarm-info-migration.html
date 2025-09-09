@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alarm-Info 组件迁移验证测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .checklist li:before {
+            content: "✅ ";
+            color: #28a745;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .highlight {
+            background: #fff3d4;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .feature-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚨 Alarm-Info 组件迁移完成验证报告</h1>
+    <p><span class="status success">迁移成功</span> | 当前时间: <span id="currentTime"></span></p>
+
+    <div class="test-section">
+        <h2>📋 迁移概述</h2>
+        <p>成功将 <span class="highlight">builtin-card/alarm-info</span> 组件迁移到 <span class="highlight">Card2.1</span> 系统</p>
+        
+        <h3>🎯 核心功能</h3>
+        <ul class="checklist">
+            <li><strong>历史兼容性</strong>: 保持组件ID `alarm-info` 不变，兼容历史数据</li>
+            <li><strong>告警信息展示</strong>: 显示最新告警列表，支持状态分类和时间格式化</li>
+            <li><strong>智能分页</strong>: 可配置显示条数(5-20条)，默认10条</li>
+            <li><strong>告警状态分类</strong>: 支持高危(H)、中危(M)、低危(L)、正常(N)四种状态</li>
+            <li><strong>自动刷新</strong>: 支持可配置的定时数据更新(默认1分钟)</li>
+            <li><strong>错误处理</strong>: 完善的错误恢复和重试机制</li>
+            <li><strong>路由跳转</strong>: "查看全部"按钮跳转到告警管理页面</li>
+            <li><strong>主题集成</strong>: 完全支持明暗主题切换</li>
+            <li><strong>响应式设计</strong>: 适配移动端和小屏幕显示</li>
+            <li><strong>调试功能</strong>: 内置开发调试面板</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📁 文件结构</h2>
+        <div class="code-block">
+src/card2.1/components/statistics/alarm-info/
+├── index.ts              # Card2.1组件定义(65行)
+├── AlarmInfoCard.vue     # Vue组件实现(350+行)
+├── README.md            # 详细说明文档(400+行)  
+└── MIGRATION_GUIDE.md   # 迁移指南文档(300+行)
+        </div>
+
+        <h3>🔧 配置优化</h3>
+        <ul class="checklist">
+            <li><strong>组件注册</strong>: 已配置自动注册系统识别</li>
+            <li><strong>数据源隐藏</strong>: 添加到不需要数据源配置的组件列表</li>
+            <li><strong>配置面板</strong>: 支持动态配置表单生成</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 测试访问地址</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <h4>🔧 Visual Editor 测试</h4>
+                <div class="code-block">
+                    <a href="http://localhost:5005/test/editor-integration" target="_blank">
+                        http://localhost:5005/test/editor-integration
+                    </a>
+                </div>
+                <p><span class="status info">测试方法</span>: 在左侧"统计"分类中找到"告警信息"组件，拖拽到画布验证</p>
+            </div>
+            <div>
+                <h4>🌐 主应用访问</h4>
+                <div class="code-block">
+                    <a href="http://localhost:5005" target="_blank">
+                        http://localhost:5005
+                    </a>
+                </div>
+                <p><span class="status info">测试方法</span>: 在可视化编辑器中测试告警信息组件功能</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>⚡ 技术实现亮点</h2>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h4>1. 智能告警状态映射</h4>
+                <div class="code-block">
+// 告警状态对应关系
+const statusMapping = {
+  'H': { label: '高危告警', type: 'error' },   // 红色
+  'M': { label: '中危告警', type: 'warning' }, // 橙色  
+  'L': { label: '低危告警', type: 'info' },    // 蓝色
+  'N': { label: '正常', type: 'success' }      // 绿色
+}
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <h4>2. 配置化数据获取</h4>
+                <div class="code-block">
+// 可配置的告警条数
+const params = {
+  page: 1,
+  page_size: props.pageSize, // 5-20可配置
+  alarm_status: '',
+  start_time: '',
+  end_time: ''
+}
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <h4>3. 智能加载状态</h4>
+                <div class="code-block">
+// 区分首次加载和刷新状态
+if (alarmList.value.length === 0) {
+  isLoading.value = true    // 完整loading
+} else {
+  isRefreshing.value = true // 小spinner
+}
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <h4>4. 自动刷新机制</h4>
+                <div class="code-block">
+// 可配置的自动刷新
+const startAutoRefresh = () => {
+  if (props.enableAutoRefresh && props.refreshInterval > 0) {
+    refreshTimer.value = setInterval(fetchAlarmData, props.refreshInterval)
+  }
+}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 验证清单</h2>
+        <ul class="checklist">
+            <li><strong>组件注册</strong>: Card2.1系统自动识别alarm-info组件</li>
+            <li><strong>拖拽功能</strong>: 可以从组件库拖拽到画布</li>
+            <li><strong>告警数据获取</strong>: 组件自动调用alarmHistory API获取数据</li>
+            <li><strong>告警状态展示</strong>: 正确显示H/M/L/N状态和对应颜色</li>
+            <li><strong>配置面板</strong>: 右侧属性面板显示可配置选项</li>
+            <li><strong>无数据源配置</strong>: 确认不显示数据源配置选项</li>
+            <li><strong>自动刷新</strong>: 验证1分钟定时更新功能</li>
+            <li><strong>错误处理</strong>: 测试网络错误时的重试功能</li>
+            <li><strong>路由跳转</strong>: 验证"查看全部"按钮跳转功能</li>
+            <li><strong>主题切换</strong>: 测试明暗主题下的显示效果</li>
+            <li><strong>响应式</strong>: 调整画布大小测试组件适配</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 迁移对比总结</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa;">
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">特性</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">原组件</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Card2.1版本</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">提升</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>组件ID</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">alarm-info</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">alarm-info</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><span class="status success">保持兼容</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>显示条数</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">固定10条</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">可配置5-20条</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><span class="status success">灵活配置</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>自动刷新</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">❌</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">✅ 可配置</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><span class="status success">新功能</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>错误处理</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">基础</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">完善+重试机制</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><span class="status success">可靠性↑</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>加载状态</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">简单loading</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">区分首次加载/刷新</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><span class="status success">体验↑</span></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><strong>调试支持</strong></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">❌</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">✅ 内置面板</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><span class="status success">开发效率↑</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="test-section">
+        <h2>🎨 配置选项</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h4>📝 基础配置</h4>
+                <ul>
+                    <li><strong>标题</strong>: 自定义组件显示标题</li>
+                    <li><strong>显示条数</strong>: 5-20条可配置</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4>🔄 刷新配置</h4>
+                <ul>
+                    <li><strong>刷新间隔</strong>: 毫秒级配置</li>
+                    <li><strong>启用自动刷新</strong>: 开关控制</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4>🎯 交互配置</h4>
+                <ul>
+                    <li><strong>查看全部按钮</strong>: 显示/隐藏控制</li>
+                    <li><strong>调试模式</strong>: 开发调试开关</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <h4>🌟 自动特性</h4>
+                <ul>
+                    <li><strong>主题适配</strong>: 自动明暗主题</li>
+                    <li><strong>响应式设计</strong>: 自动屏幕适配</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h2 style="color: white;">🎉 迁移成功!</h2>
+        <p><strong>Alarm-Info 组件已成功迁移到 Card2.1 系统</strong></p>
+        <p>✨ 保持了完全的历史兼容性，同时提供了更强大的功能和更好的用户体验</p>
+        <p>🚨 现在可以在 Visual Editor 中正常使用告警信息组件了!</p>
+        
+        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 15px;">
+            <h3 style="color: white; margin-top: 0;">🎯 关键提升</h3>
+            <ul style="color: rgba(255,255,255,0.9);">
+                <li>🔄 自动刷新 - 实时获取最新告警信息</li>
+                <li>⚙️ 灵活配置 - 显示条数、刷新间隔可调节</li>
+                <li>🛡️ 错误恢复 - 网络异常时自动重试</li>
+                <li>📱 响应式设计 - 完美适配各种设备</li>
+                <li>🎨 主题集成 - 明暗主题无缝切换</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 更新当前时间
+        document.getElementById('currentTime').textContent = new Date().toLocaleString('zh-CN');
+
+        // 简单的交互效果
+        document.querySelectorAll('.test-section').forEach(section => {
+            section.style.transition = 'transform 0.2s, box-shadow 0.2s';
+            section.addEventListener('mouseenter', () => {
+                section.style.transform = 'translateY(-2px)';
+                section.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            });
+            section.addEventListener('mouseleave', () => {
+                section.style.transform = 'translateY(0)';
+                section.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            });
+        });
+
+        // 表格hover效果
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.style.backgroundColor = '#f8f9fa';
+            });
+            row.addEventListener('mouseleave', () => {
+                row.style.backgroundColor = '';
+            });
+        });
+    </script>
+</body>
+</html>

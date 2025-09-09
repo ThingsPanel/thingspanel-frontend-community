@@ -7,59 +7,59 @@
  * @LastEditTime: 2024-03-20 19:48:13
 -->
 <script setup lang="tsx">
-import { computed, getCurrentInstance, h, reactive, ref } from 'vue';
-import type { Ref } from 'vue';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { NButton, NPopconfirm, useMessage } from 'naive-ui';
-import { getNotificationGroupList } from '@/service/api/notification';
-import { delInfo, editInfo, warningMessageList } from '@/service/api/alarm';
-import { $t } from '@/locales';
-import { createLogger } from '@/utils/logger';
-import type { ModalType } from './pop-up.vue';
-import popUp from './pop-up.vue';
-import { useBoolean } from '~/packages/hooks';
-const logger = createLogger('Information');
-const rowKey = (row: DeviceManagement.DeviceData) => row.id;
-const { bool: visible, setTrue: openModal } = useBoolean();
-const modalType = ref<ModalType>('add');
+import { computed, getCurrentInstance, h, reactive, ref } from 'vue'
+import type { Ref } from 'vue'
+import type { DataTableColumns, PaginationProps } from 'naive-ui'
+import { NButton, NPopconfirm, useMessage } from 'naive-ui'
+import { getNotificationGroupList } from '@/service/api/notification'
+import { delInfo, editInfo, warningMessageList } from '@/service/api/alarm'
+import { $t } from '@/locales'
+import { createLogger } from '@/utils/logger'
+import type { ModalType } from './pop-up.vue'
+import popUp from './pop-up.vue'
+import { useBoolean } from '~/packages/hooks'
+const logger = createLogger('Information')
+const rowKey = (row: DeviceManagement.DeviceData) => row.id
+const { bool: visible, setTrue: openModal } = useBoolean()
+const modalType = ref<ModalType>('add')
 const params = {
   ID: '',
   enabled: 'Y'
-};
-const deleteId = ref('');
+}
+const deleteId = ref('')
 
 function setModalType(type: ModalType) {
-  modalType.value = type;
+  modalType.value = type
 }
 
 function addWarningMessageBut() {
-  openModal();
-  setModalType('add');
+  openModal()
+  setModalType('add')
 }
 
 function newEdit() {
-  list();
+  list()
 }
 
 /** 表格案例处理事件 */
-const editData = ref<Api.Alarm.NotificationGroupList | null>(null);
+const editData = ref<Api.Alarm.NotificationGroupList | null>(null)
 
 function handleEditPwd(row, type) {
   // type:edit编辑，enable停用启用
   if (type === 'edit') {
-    editData.value = row;
-    setModalType('edit');
-    openModal();
+    editData.value = row
+    setModalType('edit')
+    openModal()
   } else if (type === 'enable') {
-    const enableds = row.enabled === 'Y' ? 'N' : 'Y';
-    params.ID = row.id;
-    params.enabled = enableds;
-    editInfos();
+    const enableds = row.enabled === 'Y' ? 'N' : 'Y'
+    params.ID = row.id
+    params.enabled = enableds
+    editInfos()
   }
 }
 
-const loading = ref(false);
-const message = useMessage();
+const loading = ref(false)
+const message = useMessage()
 const pagination: PaginationProps = reactive({
   page: 1,
   pageSize: 10,
@@ -67,38 +67,38 @@ const pagination: PaginationProps = reactive({
   showSizePicker: true,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
-    pagination.page = page;
-    list();
+    pagination.page = page
+    list()
   },
   onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
-    list();
+    pagination.pageSize = pageSize
+    pagination.page = 1
+    list()
   }
-});
+})
 
 interface ColumnsData {
-  name: string;
-  description: string;
-  alarm_level: string;
-  notification_group_id: string;
-  enabled: string;
+  name: string
+  description: string
+  alarm_level: string
+  notification_group_id: string
+  enabled: string
 
-  [key: string]: any;
+  [key: string]: any
 }
 
-const tableData = ref<ColumnsData[]>([]);
+const tableData = ref<ColumnsData[]>([])
 
 /** 告警信息列表 */
 async function list() {
-  loading.value = true;
-  const innerparams = { page: pagination.page, page_size: pagination.pageSize };
-  const { data } = await warningMessageList(innerparams);
+  loading.value = true
+  const innerparams = { page: pagination.page, page_size: pagination.pageSize }
+  const { data } = await warningMessageList(innerparams)
 
   if (data) {
     setTimeout(() => {
-      loading.value = false;
-      tableData.value = data.list;
+      loading.value = false
+      tableData.value = data.list
       const operatorBtn: { btnName: string; type: string; color: string }[] = [
         {
           btnName: $t('common.edit'),
@@ -115,22 +115,22 @@ async function list() {
           type: 'delete',
           color: 'error'
         }
-      ];
+      ]
       const operatorBtns: { btnName: string; type: string; color: string }[] = [
         { btnName: $t('common.edit'), type: 'edit', color: 'info' },
         { btnName: $t('page.manage.common.status.enable'), type: 'enable', color: 'success' },
         { btnName: $t('common.delete'), type: 'delete', color: 'error' }
-      ];
+      ]
       // eslint-disable-next-line array-callback-return
       tableData.value.map(item => {
         if (item.enabled === 'Y') {
-          item.operatorBtn = operatorBtn;
+          item.operatorBtn = operatorBtn
         } else {
-          item.operatorBtn = operatorBtns;
+          item.operatorBtn = operatorBtns
         }
-      });
-      pagination.itemCount = data.total;
-    }, 1000);
+      })
+      pagination.itemCount = data.total
+    }, 1000)
   }
 }
 
@@ -139,11 +139,11 @@ const getTableData = async () => {
   const prams = {
     page: 100,
     page_size: 100
-  };
-  const res = await getNotificationGroupList(prams);
-  logger.info(res);
-};
-getTableData();
+  }
+  const res = await getNotificationGroupList(prams)
+  logger.info(res)
+}
+getTableData()
 const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'name',
@@ -170,11 +170,11 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
     minWidth: '100px',
     render(row) {
       if (row.alarm_level === 'H') {
-        return $t('common.high');
+        return $t('common.high')
       } else if (row.alarm_level === 'M') {
-        return $t('common.middle');
+        return $t('common.middle')
       }
-      return $t('common.low');
+      return $t('common.low')
     }
   },
 
@@ -194,9 +194,9 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
     minWidth: '100px',
     render(row) {
       if (row.enabled === 'Y') {
-        return $t('page.manage.common.status.enable');
+        return $t('page.manage.common.status.enable')
       }
-      return $t('page.manage.common.status.disable');
+      return $t('page.manage.common.status.disable')
     }
   },
 
@@ -219,57 +219,57 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
                 )
               }}
             </NPopconfirm>
-          );
+          )
         }
         return h(
           <NButton type={item.color} size={'small'}>
             {item.btnName}
           </NButton>,
           { onClick: () => handleEditPwd(row, item.type) }
-        );
-      });
-      return <div class="flex">{operatorBtn}</div>;
+        )
+      })
+      return <div class="flex">{operatorBtn}</div>
     }
   }
-]) as Ref<DataTableColumns<ColumnsData>>;
+]) as Ref<DataTableColumns<ColumnsData>>
 
-list();
+list()
 
 /** 删除 */
 function handleDeleteTable(rowId) {
-  deleteId.value = rowId.id;
-  deleteInfo();
+  deleteId.value = rowId.id
+  deleteInfo()
 }
 
 /** 编辑:启动停止 */
 
 async function editInfos() {
-  const { data } = await editInfo(params);
+  const { data } = await editInfo(params)
   if (data) {
-    params.enabled === 'Y' ? message.success($t('common.startSuccess')) : message.success($t('common.stopSuccess'));
+    params.enabled === 'Y' ? message.success($t('common.startSuccess')) : message.success($t('common.stopSuccess'))
 
-    list();
+    list()
   } else {
-    params.enabled === 'Y' ? message.error($t('common.startFail')) : message.error($t('common.stopFail'));
+    params.enabled === 'Y' ? message.error($t('common.startFail')) : message.error($t('common.stopFail'))
   }
 }
 
 /** 删除告警 */
 
 async function deleteInfo() {
-  const { data } = await delInfo(deleteId.value);
+  const { data } = await delInfo(deleteId.value)
   if (!data) {
-    message.success($t('common.deleteSuccess'));
+    message.success($t('common.deleteSuccess'))
   } else {
-    message.error($t('common.deleteFail'));
+    message.error($t('common.deleteFail'))
   }
-  list();
+  list()
 }
 
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
 </script>
 
 <template>

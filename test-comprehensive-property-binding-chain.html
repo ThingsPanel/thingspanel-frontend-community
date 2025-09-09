@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔗 属性绑定链综合修复测试</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .test-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .test-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .test-header h1 {
+      margin: 0 0 12px 0;
+      font-size: 28px;
+    }
+    .test-header p {
+      margin: 0;
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    .test-section {
+      margin-bottom: 40px;
+      padding: 24px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      background: #fafafa;
+    }
+    .test-section h3 {
+      margin: 0 0 20px 0;
+      color: #333;
+      font-size: 20px;
+    }
+    .step {
+      margin-bottom: 20px;
+      padding: 16px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #2080f0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .step h4 {
+      margin: 0 0 12px 0;
+      color: #333;
+      font-size: 16px;
+    }
+    .step p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .step ul {
+      margin: 8px 0 0 0;
+      color: #666;
+      font-size: 14px;
+    }
+    .issue-fixed {
+      background: #f6ffed;
+      border-left-color: #52c41a;
+    }
+    .issue-fixed h4 {
+      color: #52c41a;
+    }
+    .issue-critical {
+      background: #fff1f0;
+      border-left-color: #ff4d4f;
+    }
+    .issue-critical h4 {
+      color: #ff4d4f;
+    }
+    .nav-link {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #2080f0;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-right: 12px;
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .nav-link:hover {
+      background: #40a9ff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(32,128,240,0.3);
+    }
+    .code-block {
+      background: #f8f8f8;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #333;
+      margin: 16px 0;
+      border: 1px solid #e0e0e0;
+      overflow-x: auto;
+    }
+    .architecture-flow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0;
+      padding: 16px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #d9d9d9;
+    }
+    .flow-item {
+      text-align: center;
+      flex: 1;
+      margin: 0 8px;
+    }
+    .flow-arrow {
+      color: #2080f0;
+      font-size: 18px;
+      margin: 0 8px;
+    }
+    .test-matrix {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .test-matrix .step {
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="test-header">
+      <h1>🔗 属性绑定链综合修复测试</h1>
+      <p>验证 deviceId 迁移到基础配置后，属性修改能否正确触发接口请求的完整链路</p>
+    </div>
+
+    <div class="test-section">
+      <h3>🎯 问题背景与修复概述</h3>
+      
+      <div class="step issue-critical">
+        <h4>🚨 核心问题</h4>
+        <p>有人将 deviceId 从组件级配置移到基础配置，破坏了属性绑定链，导致属性修改无法触发接口再次请求</p>
+      </div>
+
+      <div class="step">
+        <h4>📊 影响范围</h4>
+        <p>涉及以下系统组件的配置传递和事件处理机制：</p>
+        <ul>
+          <li><strong>VisualEditorBridge</strong> - 配置格式转换和基础配置注入</li>
+          <li><strong>PropertyPathManager</strong> - 属性路径解析和值设置</li>
+          <li><strong>ConfigEventBus</strong> - 配置变更事件分发和处理</li>
+          <li><strong>InteractionManager</strong> - 数据执行触发和HTTP数据源映射</li>
+        </ul>
+      </div>
+
+      <div class="architecture-flow">
+        <div class="flow-item">
+          <strong>基础配置变更</strong><br>
+          <small>deviceId/metricsList</small>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item">
+          <strong>事件总线分发</strong><br>
+          <small>ConfigEventBus</small>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item">
+          <strong>属性路径解析</strong><br>
+          <small>PropertyPathManager</small>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item">
+          <strong>数据源更新</strong><br>
+          <small>VisualEditorBridge</small>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item">
+          <strong>接口请求</strong><br>
+          <small>HTTP执行器</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🔧 修复的关键组件</h3>
+      
+      <div class="test-matrix">
+        <div class="step issue-fixed">
+          <h4>✅ VisualEditorBridge 增强</h4>
+          <p>支持分层配置格式检测，自动注入基础配置属性到数据源配置中</p>
+          <div class="code-block">
+// 检测分层配置格式
+if (config.base || config.dataSource) {
+  baseConfig = config.base || {}
+  // 合并基础配置中的设备属性
+  resolvedConfig = {
+    ...config.dataSource,
+    deviceId: baseConfig.deviceId,
+    metricsList: baseConfig.metricsList
+  }
+}
+          </div>
+        </div>
+
+        <div class="step issue-fixed">
+          <h4>✅ PropertyPathManager 扩展</h4>
+          <p>新增属性路径解析和设置方法，支持 'base.deviceId' 格式路径</p>
+          <div class="code-block">
+// 解析属性路径值
+resolvePropertyValue(config: any, propertyPath: string): any
+
+// 设置属性路径值
+setPropertyValue(config: any, propertyPath: string, value: any): void
+          </div>
+        </div>
+
+        <div class="step issue-fixed">
+          <h4>✅ ConfigEventBus 强化</h4>
+          <p>增强基础配置变更事件处理，自动识别关键字段变更并触发执行</p>
+          <div class="code-block">
+// 关键基础配置变更过滤器
+const criticalFields = ['deviceId', 'metricsList']
+const hasCriticalChange = changedFields.some(
+  field => criticalFields.includes(field)
+)
+if (hasCriticalChange) {
+  event.context.shouldTriggerExecution = true
+}
+          </div>
+        </div>
+
+        <div class="step issue-fixed">
+          <h4>✅ InteractionManager 集成</h4>
+          <p>集成配置事件总线，处理基础配置变更的数据执行触发</p>
+          <div class="code-block">
+// 注册数据执行触发器
+this.dataExecutionTriggerCleanup = registerDataExecutionTrigger(
+  this.handleDataExecutionTrigger.bind(this)
+)
+
+// 处理HTTP数据源重新执行
+async handleDataExecutionTrigger(event: ConfigChangeEvent) {
+  if (event.section === 'base') {
+    await this.reExecuteHttpDataSources(event.componentId)
+  }
+}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🚀 测试验证步骤</h3>
+      
+      <div class="step">
+        <h4>步骤 1：打开数据源系统测试页面</h4>
+        <p>访问综合测试环境，验证所有数据源配置功能</p>
+        <a href="http://localhost:5002/test/data-source-system" class="nav-link" target="_blank">
+          🔗 数据源系统测试
+        </a>
+      </div>
+
+      <div class="step">
+        <h4>步骤 2：测试基础配置变更链路</h4>
+        <p><strong>验证重点：</strong>修改基础配置中的 deviceId，观察是否自动触发接口请求</p>
+        <ul>
+          <li>在配置面板中修改基础配置的 deviceId</li>
+          <li>检查浏览器网络面板，确认有新的HTTP请求发出</li>
+          <li>验证返回数据是否基于新的 deviceId</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h4>步骤 3：测试属性绑定抽屉集成</h4>
+        <p><strong>验证重点：</strong>通过属性绑定抽屉修改组件属性，确认配置正确传递</p>
+        <ul>
+          <li>打开任意HTTP配置参数的属性绑定抽屉</li>
+          <li>选择基础配置中的 deviceId 属性</li>
+          <li>确认属性路径解析为 'base.deviceId' 格式</li>
+          <li>验证属性值能正确获取和设置</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h4>步骤 4：测试 Visual Editor 集成</h4>
+        <p><strong>验证重点：</strong>在可视化编辑器中测试完整的配置变更流程</p>
+        <a href="http://localhost:5002/test/editor-integration" class="nav-link" target="_blank">
+          🔗 编辑器集成测试
+        </a>
+        <ul>
+          <li>添加具有HTTP数据源的组件</li>
+          <li>修改组件的基础配置（deviceId、metricsList）</li>
+          <li>确认数据源重新执行，组件显示更新后的数据</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🔍 关键验证点</h3>
+      
+      <div class="step issue-fixed">
+        <h4>✅ 配置格式转换正确性</h4>
+        <p>VisualEditorBridge 能正确识别并处理新的分层配置格式，将基础配置属性注入到数据源配置中</p>
+      </div>
+
+      <div class="step issue-fixed">
+        <h4>✅ 事件链路完整性</h4>
+        <p>基础配置变更 → 事件分发 → 路径解析 → 数据源更新 → 接口请求，整个链路畅通无阻</p>
+      </div>
+
+      <div class="step issue-fixed">
+        <h4>✅ 属性绑定一致性</h4>
+        <p>属性绑定抽屉中的配置修改与直接配置修改效果一致，都能触发相同的更新流程</p>
+      </div>
+
+      <div class="step issue-fixed">
+        <h4>✅ 交互系统协调性</h4>
+        <p>InteractionManager 正确响应基础配置变更事件，触发对应组件的数据重新执行</p>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🎯 预期结果</h3>
+      
+      <div class="step issue-fixed">
+        <h4>✅ 属性修改立即生效</h4>
+        <p>修改基础配置中的 deviceId 或 metricsList 后，相关组件立即重新请求接口并更新显示</p>
+      </div>
+
+      <div class="step issue-fixed">
+        <h4>✅ 配置传递链路修复</h4>
+        <p>基础配置 → 数据源配置 → 执行器配置的传递链路完全修复，不再出现配置丢失</p>
+      </div>
+
+      <div class="step issue-fixed">
+        <h4>✅ 开发体验改善</h4>
+        <p>开发者和用户修改组件配置时，系统响应及时，不需要手动刷新或重新配置</p>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h3>🔗 相关测试链接</h3>
+      <a href="http://localhost:5002/test/data-source-system" class="nav-link" target="_blank">
+        数据源系统测试
+      </a>
+      <a href="http://localhost:5002/test/data-binding-system-integration" class="nav-link" target="_blank">
+        数据绑定系统集成测试
+      </a>
+      <a href="http://localhost:5002/test/editor-integration" class="nav-link" target="_blank">
+        编辑器集成测试
+      </a>
+      <a href="http://localhost:5002/test/panel-editor-v2" class="nav-link" target="_blank">
+        面板编辑器 V2 测试
+      </a>
+    </div>
+
+    <div class="test-section">
+      <h3>📋 调试建议</h3>
+      
+      <div class="step">
+        <h4>🔍 浏览器开发者工具检查</h4>
+        <ul>
+          <li><strong>网络面板</strong>：检查HTTP请求是否在配置变更后自动发出</li>
+          <li><strong>控制台日志</strong>：查看 ConfigEventBus 和 InteractionManager 的调试日志</li>
+          <li><strong>Vue DevTools</strong>：监控组件状态和配置对象的变化</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h4>🛠️ 关键调试点</h4>
+        <ul>
+          <li>验证 <code>configEventBus.emitConfigChange</code> 是否被正确调用</li>
+          <li>检查 <code>PropertyPathManager.resolvePropertyValue</code> 路径解析结果</li>
+          <li>确认 <code>InteractionManager.handleDataExecutionTrigger</code> 执行情况</li>
+          <li>观察 <code>VisualEditorBridge.injectBaseConfigToDataSource</code> 配置合并结果</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

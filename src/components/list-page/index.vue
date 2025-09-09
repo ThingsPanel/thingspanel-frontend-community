@@ -8,17 +8,17 @@
             <slot name="search-form-content" />
           </div>
         </div>
-        <n-divider v-if='showAddButton' style="margin-top: 10px; margin-bottom: 10px" />
+        <n-divider v-if="showAddButton" style="margin-top: 10px; margin-bottom: 10px" />
         <!-- 内容区域 -->
         <div class="list-content">
           <!-- 内容头部 -->
           <div class="list-content-header">
             <!-- 左侧操作区域 -->
-            <div class="list-content-header-left" >
+            <div class="list-content-header-left">
               <slot name="header-left">
                 <!-- 默认新建按钮 -->
                 <slot name="add-button">
-                  <n-button v-if='showAddButton' type="primary" size="small" @click="handleAddNew">
+                  <n-button v-if="showAddButton" type="primary" size="small" @click="handleAddNew">
                     <template #icon>
                       <n-icon><plus-icon /></n-icon>
                     </template>
@@ -28,8 +28,8 @@
               </slot>
             </div>
             <!-- 右侧操作区域 -->
-            <div class="list-content-header-right" >
-              <slot name="header-right" >
+            <div class="list-content-header-right">
+              <slot name="header-right">
                 <n-space v-if="shouldShowViewSwitcher || hasRefreshButton" align="center">
                   <n-button-group v-if="shouldShowViewSwitcher">
                     <n-button

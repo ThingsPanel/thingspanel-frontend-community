@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 // import {useFullscreen} from '@vueuse/core';
 import { useAppStore } from '@/store/modules/app'
 import { useThemeStore } from '@/store/modules/theme'
@@ -30,7 +30,8 @@ const appStore = useAppStore()
 const themeStore = useThemeStore()
 const routeStore = useRouteStore()
 // const {isFullscreen, toggle} = useFullscreen();
-const { menus } = useMixMenuContext()
+const mixMenuContext = useMixMenuContext()
+const menus = mixMenuContext?.menus || ref([])
 
 const headerMenus = computed(() => {
   if (themeStore.layout.mode === 'horizontal') {

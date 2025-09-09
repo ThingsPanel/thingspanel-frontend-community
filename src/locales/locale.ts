@@ -1,86 +1,59 @@
-import basicJson from './langs/zh-cn/basic.json'
-import othersJson from './langs/zh-cn/others.json'
-import commonJson from './langs/zh-cn/common.json'
-import themeJson from './langs/zh-cn/theme.json'
-import timeJson from './langs/zh-cn/time.json'
-import routeJson from './langs/zh-cn/route.json'
-import formJson from './langs/zh-cn/form.json'
-import dropdownJson from './langs/zh-cn/dropdown.json'
-import buttonsJson from './langs/zh-cn/buttons.json'
-import iconJson from './langs/zh-cn/icon.json'
-import kanbanJson from './langs/zh-cn/kanban.json'
-import customJson from './langs/zh-cn/custom.json'
-import pageJson from './langs/zh-cn/page.json'
-import generateJson from './langs/zh-cn/generate.json'
-import cardJson from './langs/zh-cn/card.json'
-import device_templateJson from './langs/zh-cn/device_template.json'
-import dashboard_panelJson from './langs/zh-cn/dashboard_panel.json'
-import grouping_detailsJson from './langs/zh-cn/grouping_details.json'
+// 使用 import.meta.globEager 替代大量 import
+// 这可以提高性能，并使代码更简洁
+const modules = import.meta.glob('./langs/**/*.json', { eager: true })
 
-import basicEnJson from './langs/en-us/basic.json'
-import othersEnJson from './langs/en-us/others.json'
-import commonEnJson from './langs/en-us/common.json'
-import themeEnJson from './langs/en-us/theme.json'
-import timeEnJson from './langs/en-us/time.json'
-import routeEnJson from './langs/en-us/route.json'
-import formEnJson from './langs/en-us/form.json'
-import dropdownEnJson from './langs/en-us/dropdown.json'
-import buttonsEnJson from './langs/en-us/buttons.json'
-import iconEnJson from './langs/en-us/icon.json'
-import kanbanEnJson from './langs/en-us/kanban.json'
-import customEnJson from './langs/en-us/custom.json'
-import pageEnJson from './langs/en-us/page.json'
-import generateEnJson from './langs/en-us/generate.json'
-import cardEnJson from './langs/en-us/card.json'
-import device_templateEnJson from './langs/en-us/device_template.json'
-import dashboard_panelEnJson from './langs/en-us/dashboard_panel.json'
-import grouping_detailsEnJson from './langs/en-us/grouping_details.json'
+function getLangMessages(modules: Record<string, any>, lang: 'zh-cn' | 'en-us') {
+  const messages: Record<string, any> = {}
+  const prefix = `./langs/${lang}/`
 
-const zhCNJson = {
-  ...basicJson,
-  ...othersJson,
-  ...commonJson,
-  ...themeJson,
-  ...timeJson,
-  ...routeJson,
-  ...formJson,
-  ...dropdownJson,
-  ...buttonsJson,
-  ...iconJson,
-  ...kanbanJson,
-  ...customJson,
-  ...pageJson,
-  ...generateJson,
-  ...cardJson,
-  ...device_templateJson,
-  ...dashboard_panelJson,
-  ...grouping_detailsJson
+  for (const path in modules) {
+    if (path.startsWith(prefix)) {
+      const content = modules[path].default
+
+      // 提取文件名作为命名空间
+      const fileName = path.replace(prefix, '').replace('.json', '')
+
+      // 特殊处理：某些文件保持扁平化结构以兼容现有代码
+      const flatFiles = [
+        'common',
+        'card',
+        'page',
+        'device_template',
+        'basic',
+        'buttons',
+        'custom',
+        'dashboard_panel',
+        'dropdown',
+        'form',
+        'generate',
+        'grouping_details',
+        'icon',
+        'interaction',
+        'kanban',
+        'others',
+        'route',
+        'script',
+        'test',
+        'theme',
+        'time',
+        'visual-editor'
+      ]
+
+      if (flatFiles.includes(fileName)) {
+        // 扁平化合并（保持现有行为）
+        Object.assign(messages, content)
+      } else {
+        // 使用文件名作为命名空间
+        messages[fileName] = content
+      }
+    }
+  }
+  return messages
 }
 
-const enUSJson = {
-  ...basicEnJson,
-  ...othersEnJson,
-  ...commonEnJson,
-  ...themeEnJson,
-  ...timeEnJson,
-  ...routeEnJson,
-  ...formEnJson,
-  ...dropdownEnJson,
-  ...buttonsEnJson,
-  ...iconEnJson,
-  ...kanbanEnJson,
-  ...customEnJson,
-  ...pageEnJson,
-  ...generateEnJson,
-  ...cardEnJson,
-  ...device_templateEnJson,
-  ...dashboard_panelEnJson,
-  ...grouping_detailsEnJson
-}
-
-const locales: Record<App.I18n.LangType, App.I18n.Schema> = {
-  'zh-CN': zhCNJson as unknown as App.I18n.Schema,
-  'en-US': enUSJson as unknown as App.I18n.Schema
+const locales: Record<I18n.LangType, I18n.Schema> = {
+  'zh-CN': getLangMessages(modules, 'zh-cn') as unknown as I18n.Schema,
+  'en-US': getLangMessages(modules, 'en-us') as unknown as I18n.Schema
 }
 
 export default locales

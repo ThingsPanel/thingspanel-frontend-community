@@ -1,41 +1,41 @@
 <script setup lang="tsx">
-import { reactive, ref } from 'vue';
-import type { Ref } from 'vue';
-import { NButton, NSpace, NTag } from 'naive-ui';
-import type { DataTableColumns, FormInst } from 'naive-ui';
-import dayjs from 'dayjs';
-import { useBoolean, useLoading } from '@sa/hooks';
-import { dataClearSettingEnabledTypeOptions } from '@/constants/business';
-import { editDataClear, fetchDataClearList } from '@/service/api/setting';
-import { deepClone } from '@/utils/common/tool';
-import { $t } from '@/locales';
+import { reactive, ref } from 'vue'
+import type { Ref } from 'vue'
+import { NButton, NSpace, NTag } from 'naive-ui'
+import type { DataTableColumns, FormInst } from 'naive-ui'
+import dayjs from 'dayjs'
+import { useBoolean, useLoading } from '@sa/hooks'
+import { dataClearSettingEnabledTypeOptions } from '@/constants/business'
+import { editDataClear, fetchDataClearList } from '@/service/api/setting'
+import { deepClone } from '@/utils/common/tool'
+import { $t } from '@/locales'
 
-const { loading, startLoading, endLoading } = useLoading(false);
-const { bool: visible, setTrue: openModal, setFalse: closeModal } = useBoolean();
+const { loading, startLoading, endLoading } = useLoading(false)
+const { bool: visible, setTrue: openModal, setFalse: closeModal } = useBoolean()
 
-const tableData = ref<GeneralSetting.DataClearSetting[]>([]);
+const tableData = ref<GeneralSetting.DataClearSetting[]>([])
 
 function setTableData(data: GeneralSetting.DataClearSetting[]) {
-  tableData.value = data;
+  tableData.value = data
 }
 
 type QueryFormModel = {
-  page: number;
-  page_size: number;
-};
+  page: number
+  page_size: number
+}
 
 const queryParams = reactive<QueryFormModel>({
   page: 1,
   page_size: 10
-});
+})
 
 async function getTableData() {
-  startLoading();
-  const { data } = await fetchDataClearList(queryParams);
+  startLoading()
+  const { data } = await fetchDataClearList(queryParams)
   if (data) {
-    const list: Api.GeneralSetting.DataClearSetting[] = data.list;
-    setTableData(list);
-    endLoading();
+    const list: Api.GeneralSetting.DataClearSetting[] = data.list
+    setTableData(list)
+    endLoading()
   }
 }
 
@@ -55,14 +55,14 @@ const columns: Ref<DataTableColumns<GeneralSetting.DataClearSetting>> = ref([
         const tagTypes: Record<GeneralSetting.CleanupTypeKey, NaiveUI.ThemeColor> = {
           '1': 'success',
           '2': 'warning'
-        };
+        }
         const key =
           row.data_type === '1'
             ? 'page.manage.setting.dataClearSetting.type.equipmentData'
-            : 'page.manage.setting.dataClearSetting.type.operationLog';
-        return <NTag type={tagTypes[row.data_type]}>{$t(key)}</NTag>;
+            : 'page.manage.setting.dataClearSetting.type.operationLog'
+        return <NTag type={tagTypes[row.data_type]}>{$t(key)}</NTag>
       }
-      return <span></span>;
+      return <span></span>
     }
   },
   {
@@ -75,7 +75,7 @@ const columns: Ref<DataTableColumns<GeneralSetting.DataClearSetting>> = ref([
     title: () => $t('page.manage.setting.dataClearSetting.form.lastCleanupTime'),
     align: 'left',
     render: row => {
-      return <span>{dayjs(row.last_cleanup_time).format('YYYY-MM-DD HH:mm:ss')}</span>;
+      return <span>{dayjs(row.last_cleanup_time).format('YYYY-MM-DD HH:mm:ss')}</span>
     }
   },
   {
@@ -83,7 +83,7 @@ const columns: Ref<DataTableColumns<GeneralSetting.DataClearSetting>> = ref([
     title: () => $t('page.manage.setting.dataClearSetting.form.lastCleanupDataTime'),
     align: 'left',
     render: row => {
-      return <span>{dayjs(row.last_cleanup_data_time).format('YYYY-MM-DD HH:mm:ss')}</span>;
+      return <span>{dayjs(row.last_cleanup_data_time).format('YYYY-MM-DD HH:mm:ss')}</span>
     }
   },
   {
@@ -103,50 +103,50 @@ const columns: Ref<DataTableColumns<GeneralSetting.DataClearSetting>> = ref([
             {$t('common.edit')}
           </NButton>
         </NSpace>
-      );
+      )
     }
   }
-]) as Ref<DataTableColumns<GeneralSetting.DataClearSetting>>;
+]) as Ref<DataTableColumns<GeneralSetting.DataClearSetting>>
 
-const formRef = ref<HTMLElement & FormInst>();
+const formRef = ref<HTMLElement & FormInst>()
 
-type FormModel = Pick<GeneralSetting.DataClearSetting, 'retention_days' | 'enabled' | 'remark'>;
+type FormModel = Pick<GeneralSetting.DataClearSetting, 'retention_days' | 'enabled' | 'remark'>
 
-const editData = reactive<FormModel>(createDefaultFormModel());
+const editData = reactive<FormModel>(createDefaultFormModel())
 
 function createDefaultFormModel(): FormModel {
   return {
     retention_days: 0,
     enabled: '1',
     remark: null
-  };
+  }
 }
 
 function setEditData(data: GeneralSetting.DataClearSetting | null) {
-  Object.assign(editData, data);
+  Object.assign(editData, data)
 }
 
 function handleEditTable(row: any) {
-  setEditData(row);
-  openModal();
+  setEditData(row)
+  openModal()
 }
 
 async function handleSubmit() {
-  await formRef.value?.validate();
-  const formData = deepClone(editData);
-  const data: any = await editDataClear(formData);
+  await formRef.value?.validate()
+  const formData = deepClone(editData)
+  const data: any = await editDataClear(formData)
   if (!data.error) {
-    window.$message?.success(data.msg);
-    getTableData();
+    window.$message?.success(data.msg)
+    getTableData()
   }
-  closeModal();
+  closeModal()
 }
 
 function init() {
-  getTableData();
+  getTableData()
 }
 
-init();
+init()
 </script>
 
 <template>

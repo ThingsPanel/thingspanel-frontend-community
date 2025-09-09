@@ -1,71 +1,71 @@
 <script setup lang="tsx">
-import { onMounted, ref } from 'vue';
-import type { Ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { NButton, NPopconfirm, NSpace } from 'naive-ui';
+import { onMounted, ref } from 'vue'
+import type { Ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { NButton, NPopconfirm, NSpace } from 'naive-ui'
 import {
   addChildDevice,
   childDeviceSelectList,
   childDeviceTableList,
   deviceUpdate,
   removeChildDevice
-} from '@/service/api/device';
+} from '@/service/api/device'
 // import { useRouterPush } from '@/hooks/common/router';
-import { $t } from '@/locales';
+import { $t } from '@/locales'
 
-const router = useRouter();
+const router = useRouter()
 // const { routerPushByKey } = useRouterPush();
 const props = defineProps<{
-  id: string;
-}>();
-const showAddDialog = ref(false);
-const showSetDialog = ref(false);
-const showDeleteDialog = ref(false);
-const deviceSetName = ref();
-const deviceSetId = ref();
-const tableData = ref([]);
-const total = ref(0);
-const log_page = ref(1);
-const selectChild = ref<string[]>([]);
-const sOptions = ref<any[]>([]);
+  id: string
+}>()
+const showAddDialog = ref(false)
+const showSetDialog = ref(false)
+const showDeleteDialog = ref(false)
+const deviceSetName = ref()
+const deviceSetId = ref()
+const tableData = ref([])
+const total = ref(0)
+const log_page = ref(1)
+const selectChild = ref<string[]>([])
+const sOptions = ref<any[]>([])
 const getData = async () => {
   const res = await childDeviceTableList({
     page: log_page.value,
     page_size: 5,
     id: props.id
-  });
-  tableData.value = res.data.list || [];
-  total.value = res.data.total;
-};
+  })
+  tableData.value = res.data.list || []
+  total.value = res.data.total
+}
 const selectConfig = v => {
-  selectChild.value = v;
-};
+  selectChild.value = v
+}
 const deleteDevice = async id => {
   const { error } = await removeChildDevice({
     sub_device_id: id
-  });
+  })
   if (!error) {
-    showDeleteDialog.value = false;
-    log_page.value = 1;
-    tableData.value = [];
-    getData();
+    showDeleteDialog.value = false
+    log_page.value = 1
+    tableData.value = []
+    getData()
   }
-};
+}
 
 const handleLook = (id: string) => {
-  router.push({ path: 'details-child', query: { d_id: id } });
+  router.push({ path: 'details-child', query: { d_id: id } })
   // routerPushByKey('device_details-child', {
   //   query: { d_id: id }
   // }).catch(error => {
   //   console.log('error----', error);
   // });
-};
+}
 
 const handleSetAddress = async (id, subDeviceAddr) => {
-  deviceSetId.value = id;
-  showSetDialog.value = true;
-  deviceSetName.value = subDeviceAddr;
-};
+  deviceSetId.value = id
+  showSetDialog.value = true
+  deviceSetName.value = subDeviceAddr
+}
 
 const columns: Ref<any> = ref([
   {
@@ -106,67 +106,67 @@ const columns: Ref<any> = ref([
             }}
           </NPopconfirm>
         </NSpace>
-      );
+      )
     }
   }
-]) as Ref<any>;
+]) as Ref<any>
 
 const setDeviceAddress = async () => {
   if (!deviceSetName.value) {
-    window.$message?.error($t('generate.enter-sub-device-address'));
-    return;
+    window.$message?.error($t('generate.enter-sub-device-address'))
+    return
   }
   const res = await deviceUpdate({
     id: deviceSetId.value,
     parent_id: props.id,
     sub_device_addr: deviceSetName.value
-  });
+  })
   if (res) {
-    tableData.value = [];
-    showSetDialog.value = false;
-    log_page.value = 1;
-    getData();
+    tableData.value = []
+    showSetDialog.value = false
+    log_page.value = 1
+    getData()
   }
-};
+}
 
 const addChildDeviceSure = () => {
   if (selectChild.value.length === 0) {
-    window.$message?.error($t('generate.selectSubDevices'));
+    window.$message?.error($t('generate.selectSubDevices'))
   } else {
     addChildDevice({
       id: props.id,
       son_id: selectChild.value.join(',')
     }).then(res => {
       if (!res.error) {
-        showAddDialog.value = false;
-        selectChild.value = [];
-        sOptions.value = [];
-        tableData.value = [];
-        getData();
+        showAddDialog.value = false
+        selectChild.value = []
+        sOptions.value = []
+        tableData.value = []
+        getData()
       }
-    });
+    })
   }
-};
+}
 
 const getDeviceList = async () => {
-  const res = await childDeviceSelectList();
+  const res = await childDeviceSelectList()
   if (res.data.length !== 0) {
-    sOptions.value = [];
+    sOptions.value = []
     const tempSOptions = res.data?.map(item => {
-      return { label: item.name, value: item.id };
-    });
-    sOptions.value = sOptions.value.concat(tempSOptions);
+      return { label: item.name, value: item.id }
+    })
+    sOptions.value = sOptions.value.concat(tempSOptions)
   }
-};
+}
 
 const addDevice = () => {
-  showAddDialog.value = true;
-  getDeviceList();
-};
+  showAddDialog.value = true
+  getDeviceList()
+}
 
-getData();
+getData()
 
-onMounted(() => {});
+onMounted(() => {})
 </script>
 
 <template>
@@ -213,9 +213,9 @@ onMounted(() => {});
         :page-size="5"
         @update:page="
           page => {
-            log_page = page;
-            log_page = page;
-            getData();
+            log_page = page
+            log_page = page
+            getData()
           }
         "
       />

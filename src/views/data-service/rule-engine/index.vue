@@ -1,45 +1,45 @@
 <script setup lang="tsx">
-import { reactive, ref } from 'vue';
-import type { Ref } from 'vue';
-import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
+import { reactive, ref } from 'vue'
+import type { Ref } from 'vue'
+import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui'
+import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import {
   dataServiceFlagLabels,
   dataServiceSignModeLabels,
   dataServiceStatusLabels,
   dataServiceStatusOptions
-} from '@/constants/business';
-import { fetchDataServiceList } from '@/service/api_demo/management';
-import { $t } from '@/locales';
-import { formatDateTime } from '@/utils/common/datetime';
-import type { ModalType } from './components/table-action-modal.vue';
-import TableActionModal from './components/table-action-modal.vue';
-import SecretKeyModal from './components/secret-key-modal.vue';
-import { useBoolean, useLoading } from '~/packages/hooks';
+} from '@/constants/business'
+import { fetchDataServiceList } from '@/service/api_demo/management'
+import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
+import type { ModalType } from './components/table-action-modal.vue'
+import TableActionModal from './components/table-action-modal.vue'
+import SecretKeyModal from './components/secret-key-modal.vue'
+import { useBoolean, useLoading } from '~/packages/hooks'
 
-const { loading, startLoading, endLoading } = useLoading(false);
-const { bool: visible, setTrue: openModal } = useBoolean();
-const { bool: secretKeyVisible, setTrue: openSecretKeyModal } = useBoolean();
+const { loading, startLoading, endLoading } = useLoading(false)
+const { bool: visible, setTrue: openModal } = useBoolean()
+const { bool: secretKeyVisible, setTrue: openSecretKeyModal } = useBoolean()
 
 const queryParams = reactive({
   name: '',
   status: null
-});
+})
 
-const tableData = ref<DataService.Data[]>([]);
+const tableData = ref<DataService.Data[]>([])
 
 function setTableData(data: DataService.Data[]) {
-  tableData.value = data;
+  tableData.value = data
 }
 
 async function getTableData() {
-  startLoading();
-  const { data } = (await fetchDataServiceList()) as any;
+  startLoading()
+  const { data } = (await fetchDataServiceList()) as any
   if (data) {
     setTimeout(() => {
-      setTableData(data);
-      endLoading();
-    }, 1000);
+      setTableData(data)
+      endLoading()
+    }, 1000)
   }
 }
 
@@ -66,9 +66,9 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
     align: 'left',
     render: row => {
       if (row.signMode) {
-        return <span>{dataServiceSignModeLabels[row.signMode]}</span>;
+        return <span>{dataServiceSignModeLabels[row.signMode]}</span>
       }
-      return <span></span>;
+      return <span></span>
     }
   },
   {
@@ -82,9 +82,9 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
     align: 'left',
     render: row => {
       if (row.flag) {
-        return <span>{dataServiceFlagLabels[row.flag]}</span>;
+        return <span>{dataServiceFlagLabels[row.flag]}</span>
       }
-      return <span></span>;
+      return <span></span>
     }
   },
   {
@@ -97,7 +97,7 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
     title: $t('common.creationTime'),
     align: 'left',
     render: row => {
-      return formatDateTime(row.createTime);
+      return formatDateTime(row.createTime)
     }
   },
   {
@@ -109,10 +109,10 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
         const tagTypes: Record<DataService.StatusKey, NaiveUI.ThemeColor> = {
           '1': 'success',
           '2': 'warning'
-        };
-        return <NTag type={tagTypes[row.status]}>{dataServiceStatusLabels[row.status]}</NTag>;
+        }
+        return <NTag type={tagTypes[row.status]}>{dataServiceStatusLabels[row.status]}</NTag>
       }
-      return <span></span>;
+      return <span></span>
     }
   },
   {
@@ -140,39 +140,39 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
             }}
           </NPopconfirm>
         </NSpace>
-      );
+      )
     }
   }
-]) as Ref<DataTableColumns<DataService.Data>>;
+]) as Ref<DataTableColumns<DataService.Data>>
 
-const modalType = ref<ModalType>('add');
+const modalType = ref<ModalType>('add')
 
 function setModalType(type: ModalType) {
-  modalType.value = type;
+  modalType.value = type
 }
 
-const editData = ref<DataService.Data | null>(null);
+const editData = ref<DataService.Data | null>(null)
 
 function setEditData(data: DataService.Data | null) {
-  editData.value = data;
+  editData.value = data
 }
 
 function handleAddTable() {
-  openModal();
-  setModalType('add');
+  openModal()
+  setModalType('add')
 }
 
 function handleEditTable(rowId: string) {
-  const findItem = tableData.value.find(item => item.id === rowId);
+  const findItem = tableData.value.find(item => item.id === rowId)
   if (findItem) {
-    setEditData(findItem);
+    setEditData(findItem)
   }
-  setModalType('edit');
-  openModal();
+  setModalType('edit')
+  openModal()
 }
 
 function handleDeleteTable(rowId: string) {
-  window.$message?.info(`${$t('generate.clickDelete')}，rowId为${rowId}`);
+  window.$message?.info(`${$t('generate.clickDelete')}，rowId为${rowId}`)
 }
 
 const pagination: PaginationProps = reactive({
@@ -181,32 +181,32 @@ const pagination: PaginationProps = reactive({
   showSizePicker: true,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
-    pagination.page = page;
+    pagination.page = page
   },
   onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
+    pagination.pageSize = pageSize
+    pagination.page = 1
   }
-});
+})
 
 /** 查看密钥 */
-const secretKey = ref<string>('');
+const secretKey = ref<string>('')
 
 function handleViewKey(rowId: string) {
-  secretKey.value = rowId;
-  openSecretKeyModal();
+  secretKey.value = rowId
+  openSecretKeyModal()
 }
 
 function handleQuery() {
-  init();
+  init()
 }
 
 function init() {
-  getTableData();
+  getTableData()
 }
 
 // 初始化
-init();
+init()
 </script>
 
 <template>

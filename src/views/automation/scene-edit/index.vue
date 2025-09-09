@@ -30,7 +30,6 @@ const configId = ref(route.query.id || '')
 const popUpVisible = ref(false)
 // 新建告警回执
 const newEdit = () => {
-
   getAlarmList('')
 }
 // 场景表单实例

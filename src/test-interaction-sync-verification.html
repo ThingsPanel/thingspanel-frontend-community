@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交互同步验证测试 - 快速验证</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-step {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-step h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .action {
+            background: #e3f2fd;
+            padding: 10px 15px;
+            border-left: 4px solid #2196f3;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .expected {
+            background: #e8f5e8;
+            padding: 10px 15px;
+            border-left: 4px solid #4caf50;
+            margin: 10px 0;
+        }
+        .result {
+            background: #fff3e0;
+            padding: 10px 15px;
+            border-left: 4px solid #ff9800;
+            margin: 10px 0;
+            min-height: 40px;
+        }
+        .navigation {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            border-left: 4px solid #2196f3;
+        }
+        .debug-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: Monaco, monospace;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+        .status-pass { color: #4caf50; font-weight: bold; }
+        .status-fail { color: #f44336; font-weight: bold; }
+        .status-pending { color: #ff9800; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 交互配置同步验证测试</h1>
+        
+        <div class="navigation">
+            <h3>🎯 快速验证目标</h3>
+            <p><strong>验证核心问题是否解决：</strong>交互系统的属性修改能否正确同步到配置面板并持久化保存。</p>
+            <p><strong>访问地址：</strong><a href="http://localhost:5003/test/editor-integration" target="_blank">http://localhost:5003/test/editor-integration</a></p>
+        </div>
+
+        <!-- 测试步骤1：基础同步测试 -->
+        <div class="test-step">
+            <h3>📋 步骤1：设备ID修改同步测试</h3>
+            
+            <div class="action">
+                <strong>操作：</strong>
+                <ol>
+                    <li>访问编辑器集成页面</li>
+                    <li>添加一个"简单展示组件"</li>
+                    <li>点击组件，在右侧交互面板中将设备ID从空修改为 <code>device_test_123</code></li>
+                    <li>立即打开配置面板，检查"设备配置"页面</li>
+                </ol>
+            </div>
+            
+            <div class="expected">
+                <strong>✅ 预期结果：</strong>
+                <ul>
+                    <li>配置面板的"设备配置"中显示设备ID为 <code>device_test_123</code></li>
+                    <li>不再是之前的空值或旧值</li>
+                    <li>组件展示区域也应显示最新的设备ID</li>
+                </ul>
+            </div>
+            
+            <div class="result">
+                <strong>📝 测试结果：</strong> <span class="status-pending">待测试</span>
+                <div class="debug-info">
+                    <strong>关键日志检查：</strong>
+                    <ul>
+                        <li>🔄 [InteractionConfigBridge] 开始同步状态到配置</li>
+                        <li>✅ [InteractionConfigBridge] 同步完成</li>
+                        <li>📋 [ConfigurationPanel] 配置加载完成，合并交互状态</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 测试步骤2：自定义属性测试 -->
+        <div class="test-step">
+            <h3>🎨 步骤2：自定义属性修改同步测试</h3>
+            
+            <div class="action">
+                <strong>操作：</strong>
+                <ol>
+                    <li>继续上一步的组件</li>
+                    <li>在交互面板中修改组件标题为 <code>测试标题123</code></li>
+                    <li>修改展示内容为 <code>这是测试内容456</code></li>
+                    <li>检查配置面板"内容设置"页面</li>
+                </ol>
+            </div>
+            
+            <div class="expected">
+                <strong>✅ 预期结果：</strong>
+                <ul>
+                    <li>配置面板"内容设置"中标题显示 <code>测试标题123</code></li>
+                    <li>展示内容显示 <code>这是测试内容456</code></li>
+                    <li>组件视觉效果实时更新</li>
+                </ul>
+            </div>
+            
+            <div class="result">
+                <strong>📝 测试结果：</strong> <span class="status-pending">待测试</span>
+            </div>
+        </div>
+
+        <!-- 测试步骤3：持久化验证 -->
+        <div class="test-step">
+            <h3>💾 步骤3：配置持久化验证</h3>
+            
+            <div class="action">
+                <strong>操作：</strong>
+                <ol>
+                    <li>完成上述修改后，点击保存配置</li>
+                    <li>刷新浏览器页面（F5）</li>
+                    <li>重新打开配置面板</li>
+                    <li>检查所有修改是否保持</li>
+                </ol>
+            </div>
+            
+            <div class="expected">
+                <strong>✅ 预期结果：</strong>
+                <ul>
+                    <li>刷新后，设备ID仍为 <code>device_test_123</code></li>
+                    <li>标题仍为 <code>测试标题123</code></li>
+                    <li>内容仍为 <code>这是测试内容456</code></li>
+                    <li>组件外观保持修改后的状态</li>
+                </ul>
+            </div>
+            
+            <div class="result">
+                <strong>📝 测试结果：</strong> <span class="status-pending">待测试</span>
+            </div>
+        </div>
+
+        <!-- 核心代码验证 -->
+        <div class="test-step">
+            <h3>🔍 核心机制验证</h3>
+            
+            <div class="action">
+                <strong>开发者工具检查：</strong>
+                <ol>
+                    <li>打开浏览器开发者工具（F12）</li>
+                    <li>在Console面板中查看日志输出</li>
+                    <li>查找包含以下关键词的日志：
+                        <ul>
+                            <li><code>[InteractionConfigBridge]</code></li>
+                            <li><code>[ConfigurationPanel]</code></li>
+                            <li><code>[InteractionManager]</code></li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+            
+            <div class="expected">
+                <strong>✅ 关键日志应包含：</strong>
+                <ul>
+                    <li>🔄 开始同步状态到配置（InteractionConfigBridge）</li>
+                    <li>✅ 同步完成，显示合并后的配置</li>
+                    <li>📋 配置加载完成，显示交互状态合并结果</li>
+                    <li>💾 配置已更新到localStorage</li>
+                </ul>
+            </div>
+            
+            <div class="result">
+                <strong>📝 日志检查结果：</strong> <span class="status-pending">待检查</span>
+                <div class="debug-info">
+                    在这里记录实际看到的关键日志...
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; padding: 20px; background: #f0f8ff; border-radius: 8px;">
+            <h3>🏁 测试总结</h3>
+            <p><strong>成功标准：</strong>所有3个步骤的测试结果都应该为"通过"</p>
+            <ul>
+                <li><strong>步骤1通过：</strong>设备ID修改能正确同步到配置面板</li>
+                <li><strong>步骤2通过：</strong>自定义属性修改能正确同步</li>
+                <li><strong>步骤3通过：</strong>配置能持久化保存并在刷新后保持</li>
+            </ul>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107;">
+                <strong>⚠️ 如果任何步骤失败，请：</strong>
+                <ol>
+                    <li>检查浏览器控制台是否有错误信息</li>
+                    <li>查看开发者工具的Network面板是否有异常请求</li>
+                    <li>确认Vue DevTools中InteractionManager的状态变化</li>
+                    <li>检查localStorage中的配置数据</li>
+                </ol>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; text-align: center; color: #666;">
+            <p>📝 <em>请按照上述步骤进行测试，并更新每个步骤的测试结果</em></p>
+            <p><strong>测试完成后，总结整个系统的工作状态</strong></p>
+        </div>
+    </div>
+
+    <script>
+        // 简单的页面交互脚本
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为结果区域添加点击编辑功能
+            const resultDivs = document.querySelectorAll('.result');
+            resultDivs.forEach(div => {
+                div.addEventListener('click', function() {
+                    const currentContent = this.innerHTML;
+                    const textarea = document.createElement('textarea');
+                    textarea.value = this.textContent;
+                    textarea.style.width = '100%';
+                    textarea.style.height = '100px';
+                    textarea.style.padding = '10px';
+                    textarea.style.border = '1px solid #ddd';
+                    textarea.style.borderRadius = '4px';
+                    
+                    this.innerHTML = '';
+                    this.appendChild(textarea);
+                    textarea.focus();
+                    
+                    textarea.addEventListener('blur', function() {
+                        div.innerHTML = currentContent.replace(
+                            /待测试|待检查/g, 
+                            textarea.value.includes('通过') ? '<span class="status-pass">通过</span>' :
+                            textarea.value.includes('失败') ? '<span class="status-fail">失败</span>' : 
+                            '<span class="status-pending">待测试</span>'
+                        );
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

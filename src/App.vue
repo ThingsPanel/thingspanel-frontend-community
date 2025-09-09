@@ -54,9 +54,9 @@ onBeforeUnmount(() => {
   >
     <NMessageProvider>
       <Content />
+      <AppProvider>
+        <RouterView class="bg-layout" />
+      </AppProvider>
     </NMessageProvider>
-    <AppProvider>
-      <RouterView class="bg-layout" />
-    </AppProvider>
   </NConfigProvider>
 </template>

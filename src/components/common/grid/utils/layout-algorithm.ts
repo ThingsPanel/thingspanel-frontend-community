@@ -1,0 +1,356 @@
+/**
+ * Grid 布局算法工具函数
+ * 专门处理布局计算、位置查找、碰撞检测等算法
+ */
+
+import type { GridLayoutPlusItem, LayoutOperationResult } from '../gridLayoutPlusTypes'
+
+/**
+ * 查找可用位置
+ */
+export function findAvailablePosition(
+  layout: GridLayoutPlusItem[],
+  w: number,
+  h: number,
+  cols: number = 12,
+  startY: number = 0
+): { x: number; y: number } {
+  try {
+    // 简单的位置查找算法
+    for (let y = startY; y < startY + 100; y++) {
+      for (let x = 0; x <= cols - w; x++) {
+        const proposed = { x, y, w, h }
+
+        // 检查是否与现有项目冲突
+        const hasCollision = layout.some(item => {
+          return !(
+            proposed.x + proposed.w <= item.x ||
+            proposed.x >= item.x + item.w ||
+            proposed.y + proposed.h <= item.y ||
+            proposed.y >= item.y + item.h
+          )
+        })
+
+        if (!hasCollision) {
+          return { x, y }
+        }
+      }
+    }
+
+    // 如果找不到位置，返回底部
+    const maxY = Math.max(0, ...layout.map(item => item.y + item.h))
+    return { x: 0, y: maxY }
+  } catch (error) {
+    console.warn('Failed to find available position:', error)
+    return { x: 0, y: startY }
+  }
+}
+
+/**
+ * 优化查找可用位置（更高效的算法）
+ */
+export function findOptimalPosition(
+  layout: GridLayoutPlusItem[],
+  w: number,
+  h: number,
+  cols: number = 12,
+  preferredX?: number,
+  preferredY?: number
+): { x: number; y: number; score: number } {
+  try {
+    const candidates: Array<{ x: number; y: number; score: number }> = []
+
+    // 如果有首选位置，先检查
+    if (preferredX !== undefined && preferredY !== undefined) {
+      const candidate = { x: preferredX, y: preferredY, score: 0 }
+      if (isPositionAvailable(layout, preferredX, preferredY, w, h, cols)) {
+        candidate.score = 100 // 最高分
+        candidates.push(candidate)
+      }
+    }
+
+    // 搜索最优位置
+    const maxY = Math.max(10, ...layout.map(item => item.y + item.h))
+
+    for (let y = 0; y < maxY + 5; y++) {
+      for (let x = 0; x <= cols - w; x++) {
+        if (isPositionAvailable(layout, x, y, w, h, cols)) {
+          // 计算位置得分（越靠上左越好）
+          const score = calculatePositionScore(x, y, w, h, layout, cols)
+          candidates.push({ x, y, score })
+        }
+      }
+    }
+
+    // 如果没有找到任何可用位置，返回底部位置
+    if (candidates.length === 0) {
+      const bottomY = Math.max(0, ...layout.map(item => item.y + item.h))
+      return { x: 0, y: bottomY, score: 0 }
+    }
+
+    // 返回得分最高的位置
+    return candidates.reduce((best, current) => (current.score > best.score ? current : best))
+  } catch (error) {
+    console.warn('Failed to find optimal position:', error)
+    return { x: 0, y: 0, score: 0 }
+  }
+}
+
+/**
+ * 检查位置是否可用
+ */
+export function isPositionAvailable(
+  layout: GridLayoutPlusItem[],
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  cols: number,
+  excludeId?: string
+): boolean {
+  try {
+    // 检查边界
+    if (x < 0 || y < 0 || x + w > cols) {
+      return false
+    }
+
+    // 检查碰撞
+    const proposed = { x, y, w, h }
+    return !layout.some(item => {
+      if (excludeId && item.i === excludeId) return false
+
+      return !(
+        proposed.x + proposed.w <= item.x ||
+        proposed.x >= item.x + item.w ||
+        proposed.y + proposed.h <= item.y ||
+        proposed.y >= item.y + item.h
+      )
+    })
+  } catch (error) {
+    console.warn('Failed to check position availability:', error)
+    return false
+  }
+}
+
+/**
+ * 计算位置得分
+ */
+function calculatePositionScore(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  layout: GridLayoutPlusItem[],
+  cols: number
+): number {
+  try {
+    let score = 1000
+
+    // Y位置惩罚（越高得分越低）
+    score -= y * 10
+
+    // X位置轻微惩罚（偏左更好）
+    score -= x * 2
+
+    // 边缘位置加分
+    if (x === 0) score += 5 // 左边缘
+    if (x + w === cols) score += 3 // 右边缘
+
+    // 与现有项目的邻接关系加分
+    for (const item of layout) {
+      // 垂直邻接
+      if ((item.y + item.h === y || y + h === item.y) && !(x + w <= item.x || x >= item.x + item.w)) {
+        score += 20 // 垂直相邻
+      }
+
+      // 水平邻接
+      if ((item.x + item.w === x || x + w === item.x) && !(y + h <= item.y || y >= item.y + item.h)) {
+        score += 15 // 水平相邻
+      }
+    }
+
+    return Math.max(0, score)
+  } catch (error) {
+    console.warn('Failed to calculate position score:', error)
+    return 0
+  }
+}
+
+/**
+ * 紧凑布局算法
+ */
+export function compactLayout(
+  layout: GridLayoutPlusItem[],
+  cols: number,
+  verticalCompact: boolean = true
+): GridLayoutPlusItem[] {
+  if (!verticalCompact || layout.length === 0) return layout
+
+  try {
+    // 按Y坐标排序
+    const sortedLayout = [...layout].sort((a, b) => {
+      if (a.y === b.y) return a.x - b.x
+      return a.y - b.y
+    })
+
+    const compacted: GridLayoutPlusItem[] = []
+
+    for (const item of sortedLayout) {
+      // 为每个项目找到最高可能的位置
+      let newY = 0
+
+      // 尝试将项目向上移动直到发生碰撞
+      while (newY <= item.y) {
+        if (isPositionAvailable(compacted, item.x, newY, item.w, item.h, cols)) {
+          // 找到了更高的位置，继续尝试
+          if (newY < item.y) {
+            newY++
+            continue
+          }
+        }
+        break
+      }
+
+      // 应用新位置
+      compacted.push({
+        ...item,
+        y: Math.max(0, newY - 1)
+      })
+    }
+
+    return compacted
+  } catch (error) {
+    console.warn('Failed to compact layout:', error)
+    return layout
+  }
+}
+
+/**
+ * 排序布局项目
+ */
+export function sortLayout(
+  layout: GridLayoutPlusItem[],
+  sortBy: 'position' | 'size' | 'id' = 'position'
+): GridLayoutPlusItem[] {
+  try {
+    const sorted = [...layout]
+
+    switch (sortBy) {
+      case 'position':
+        return sorted.sort((a, b) => {
+          if (a.y === b.y) return a.x - b.x
+          return a.y - b.y
+        })
+
+      case 'size':
+        return sorted.sort((a, b) => {
+          const aSize = a.w * a.h
+          const bSize = b.w * b.h
+          return bSize - aSize // 大的在前
+        })
+
+      case 'id':
+        return sorted.sort((a, b) => a.i.localeCompare(b.i))
+
+      default:
+        return sorted
+    }
+  } catch (error) {
+    console.warn('Failed to sort layout:', error)
+    return layout
+  }
+}
+
+/**
+ * 计算布局边界
+ */
+export function getLayoutBounds(layout: GridLayoutPlusItem[]): {
+  minX: number
+  maxX: number
+  minY: number
+  maxY: number
+  width: number
+  height: number
+} {
+  if (layout.length === 0) {
+    return { minX: 0, maxX: 0, minY: 0, maxY: 0, width: 0, height: 0 }
+  }
+
+  try {
+    const minX = Math.min(...layout.map(item => item.x))
+    const maxX = Math.max(...layout.map(item => item.x + item.w))
+    const minY = Math.min(...layout.map(item => item.y))
+    const maxY = Math.max(...layout.map(item => item.y + item.h))
+
+    return {
+      minX,
+      maxX,
+      minY,
+      maxY,
+      width: maxX - minX,
+      height: maxY - minY
+    }
+  } catch (error) {
+    console.warn('Failed to get layout bounds:', error)
+    return { minX: 0, maxX: 0, minY: 0, maxY: 0, width: 0, height: 0 }
+  }
+}
+
+/**
+ * 计算两个项目的重叠面积
+ */
+export function getOverlapArea(item1: GridLayoutPlusItem, item2: GridLayoutPlusItem): number {
+  try {
+    const left = Math.max(item1.x, item2.x)
+    const right = Math.min(item1.x + item1.w, item2.x + item2.w)
+    const top = Math.max(item1.y, item2.y)
+    const bottom = Math.min(item1.y + item1.h, item2.y + item2.h)
+
+    if (left >= right || top >= bottom) {
+      return 0 // 没有重叠
+    }
+
+    return (right - left) * (bottom - top)
+  } catch (error) {
+    console.warn('Failed to calculate overlap area:', error)
+    return 0
+  }
+}
+
+/**
+ * 移动项目到新位置并处理碰撞
+ */
+export function moveItemWithCollisionHandling(
+  layout: GridLayoutPlusItem[],
+  itemId: string,
+  newX: number,
+  newY: number,
+  cols: number,
+  preventCollisions: boolean = true
+): LayoutOperationResult<GridLayoutPlusItem[]> {
+  try {
+    const item = layout.find(i => i.i === itemId)
+    if (!item) {
+      return {
+        success: false,
+        error: new Error('Item not found'),
+        message: '项目未找到'
+      }
+    }
+
+    const newLayout = layout.map(i => (i.i === itemId ? { ...i, x: newX, y: newY } : { ...i }))
+
+    if (preventCollisions) {
+      // TODO: 实现碰撞处理逻辑
+      // 这里可以添加复杂的碰撞解决算法
+    }
+
+    return { success: true, data: newLayout }
+  } catch (error) {
+    return {
+      success: false,
+      error: error as Error,
+      message: '移动项目失败'
+    }
+  }
+}

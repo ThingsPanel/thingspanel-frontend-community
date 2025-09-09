@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏗️ PanelV2 架构集成测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .test-section {
+            margin: 25px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        .test-section.success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .test-section.warning {
+            border-color: #ffc107;
+            background: #fff3cd;
+        }
+        .test-section.error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background: #28a745; }
+        .status-warning { background: #ffc107; }
+        .status-error { background: #dc3545; }
+        .status-info { background: #17a2b8; }
+        
+        .test-steps {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .test-steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .test-steps li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        .launch-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 10px 10px 0;
+            transition: transform 0.2s;
+        }
+        .launch-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .architecture-diagram {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .flow-item {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 5px;
+            font-weight: bold;
+        }
+        .flow-arrow {
+            color: #666;
+            font-size: 18px;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ PanelV2 架构集成测试</h1>
+            <p>验证事件驱动架构、数据源直接获取、配置监听等核心功能</p>
+            <a href="http://localhost:5002/test/panel-editor-v2" class="launch-button" target="_blank">
+                🚀 启动V2测试页面
+            </a>
+        </div>
+
+        <div class="architecture-diagram">
+            <h3>🏗️ 新架构数据流向图</h3>
+            <div>
+                <span class="flow-item">ConfigurationPanel</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">ConfigEventBus</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">GridstackRenderer</span>
+            </div>
+            <div style="margin-top: 15px;">
+                <span class="flow-item">GridstackRenderer</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">SimpleDataBridge</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">组件数据</span>
+            </div>
+        </div>
+
+        <div class="test-section success">
+            <h3><span class="status-indicator status-success"></span>架构修复完成项</h3>
+            <ul>
+                <li>✅ <strong>撤销错误代码</strong>：移除了PanelEditorV2中的错误数据源处理</li>
+                <li>✅ <strong>事件驱动架构</strong>：GridstackRenderer现在监听ConfigEventBus配置变更</li>
+                <li>✅ <strong>直接数据获取</strong>：渲染器直接从data-architecture获取数据源数据</li>
+                <li>✅ <strong>简化中转逻辑</strong>：移除了不必要的事件处理器和调试日志</li>
+                <li>✅ <strong>架构合规</strong>：配置管理在configuration模块，数据源在data-architecture模块</li>
+            </ul>
+        </div>
+
+        <div class="test-section info">
+            <h3><span class="status-indicator status-info"></span>测试步骤</h3>
+            <div class="test-steps">
+                <ol>
+                    <li><strong>启动测试页面</strong>：点击上方按钮打开V2测试页面</li>
+                    <li><strong>添加组件</strong>：从左侧组件库点击任意组件添加到画布</li>
+                    <li><strong>配置测试</strong>：选中组件，点击右键菜单"配置"打开右侧配置面板</li>
+                    <li><strong>数据源测试</strong>：在配置面板中修改数据源配置</li>
+                    <li><strong>查看日志</strong>：打开开发者工具控制台，观察事件流</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="test-section warning">
+            <h3><span class="status-indicator status-warning"></span>期望的控制台日志</h3>
+            <div class="code-block">
+🔄 GridstackRenderer 收到配置变更: {
+  componentId: "widget_123",
+  section: "component",
+  timestamp: 1757230000000,
+  source: "user"
+}
+组件 widget_123 的 component 配置已更新
+
+🔄 GridstackRenderer 收到配置变更: {
+  componentId: "widget_123",
+  section: "dataSource",
+  timestamp: 1757230001000,
+  source: "user"
+}
+组件 widget_123 的数据源配置已更新，触发数据重新获取
+✅ 组件 widget_123 数据更新成功: {...}
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3><span class="status-indicator status-info"></span>架构验证点</h3>
+            <div class="test-steps">
+                <h4>1. 事件驱动架构验证</h4>
+                <ul>
+                    <li>配置变更时，GridstackRenderer应该自动收到ConfigEventBus事件</li>
+                    <li>不再需要PanelEditor作为中介传递配置变更</li>
+                </ul>
+                
+                <h4>2. 数据源流向验证</h4>
+                <ul>
+                    <li>数据源配置变更时，GridstackRenderer直接调用simpleDataBridge</li>
+                    <li>组件数据直接从data-architecture获取，不通过props传递</li>
+                </ul>
+                
+                <h4>3. 责任分离验证</h4>
+                <ul>
+                    <li>PanelEditorV2只负责布局和组件ID传递</li>
+                    <li>配置管理在configuration模块中完成</li>
+                    <li>数据源处理在data-architecture模块中完成</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3><span class="status-indicator status-info"></span>调试工具</h3>
+            <div class="code-block">
+// 检查配置事件总线
+console.log('ConfigEventBus:', window.configEventBus)
+
+// 查看事件统计
+console.log('事件统计:', window.configEventBus?.getStatistics())
+
+// 查看数据桥接器状态
+console.log('数据桥接器统计:', window.simpleDataBridge?.getStats?.())
+
+// 手动触发配置事件（测试用）
+window.configEventBus?.emitConfigChange({
+  componentId: 'test_component',
+  componentType: 'widget',
+  section: 'dataSource',
+  oldConfig: null,
+  newConfig: { type: 'static', config: { data: { test: 'value' } } },
+  timestamp: Date.now(),
+  source: 'user'
+})
+            </div>
+        </div>
+
+        <div class="test-section success">
+            <h3><span class="status-indicator status-success"></span>架构修复总结</h3>
+            <p><strong>问题根因</strong>：用户指出配置变更不生效的根本原因是事件驱动架构不完整 - ConfigurationPanel正确发出事件，但渲染器没有监听。</p>
+            
+            <p><strong>解决方案</strong>：</p>
+            <ul>
+                <li><strong>完善事件监听</strong>：GridstackRenderer增加ConfigEventBus监听，实现真正的事件驱动</li>
+                <li><strong>数据源解耦</strong>：渲染器直接从data-architecture获取数据，移除props依赖</li>
+                <li><strong>架构合规</strong>：严格按照用户要求的模块职责分离原则重构</li>
+                <li><strong>代码简化</strong>：移除不必要的中转逻辑和调试代码，提高可维护性</li>
+            </ul>
+            
+            <p><strong>用户反馈整合</strong>：严格按照用户"不认真分析，又开始瞎搞了"的批评进行了架构分析，找到真正问题所在并系统性修复。</p>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成提示
+        console.log('🎯 PanelV2架构集成测试页面已加载')
+        console.log('👆 点击"启动V2测试页面"按钮开始功能测试')
+        
+        // 监听页面可见性变化，当用户回到此页面时提供提示
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                console.log('📋 返回架构测试页面 - 如需查看测试结果，请检查V2页面的控制台日志')
+            }
+        })
+    </script>
+</body>
+</html>

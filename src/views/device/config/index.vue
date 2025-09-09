@@ -242,35 +242,35 @@ const availableViews = [
     <!-- 卡片视图 -->
     <template #card-view>
       <n-spin :show="loading">
-      <div v-if="deviceConfigList.length === 0 && !loading" class="empty-state">
-        <NEmpty size="huge" :description="$t('common.nodata')" class="min-h-60" />
-      </div>
-      <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
-        <n-gi v-for="item in deviceConfigList" :key="item.id">
-          <ItemCard
-            :title="item.name"
-            :footer-text="`${item.device_count} ${$t('generate.individual')} ${$t('generate.device')}`"
-            :subtitle="deviceTypeMap[item.device_type as keyof typeof deviceTypeMap]"
-            :device-config-id="item.id"
-            :isStatus="false"
-            @click-card="goToDetail(item.id)"
-          >
-            <template #subtitle-icon>
-              <img :src="getDeviceIconUrl(item.device_type)" alt="device type icon" class="image-icon" />
-            </template>
+        <div v-if="deviceConfigList.length === 0 && !loading" class="empty-state">
+          <NEmpty size="huge" :description="$t('common.nodata')" class="min-h-60" />
+        </div>
+        <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
+          <n-gi v-for="item in deviceConfigList" :key="item.id">
+            <ItemCard
+              :title="item.name"
+              :footer-text="`${item.device_count} ${$t('generate.individual')} ${$t('generate.device')}`"
+              :subtitle="deviceTypeMap[item.device_type as keyof typeof deviceTypeMap]"
+              :device-config-id="item.id"
+              :isStatus="false"
+              @click-card="goToDetail(item.id)"
+            >
+              <template #subtitle-icon>
+                <img :src="getDeviceIconUrl(item.device_type)" alt="device type icon" class="image-icon" />
+              </template>
 
-            <!-- 底部图标 - 左下角显示配置图片 -->
-            <template #footer-icon>
-              <div class="footer-icon-container">
-                <img :src="getConfigImageUrl(item.image_url)" alt="config image" class="config-image" />
-              </div>
-            </template>
+              <!-- 底部图标 - 左下角显示配置图片 -->
+              <template #footer-icon>
+                <div class="footer-icon-container">
+                  <img :src="getConfigImageUrl(item.image_url)" alt="config image" class="config-image" />
+                </div>
+              </template>
 
-            <!-- 卡片内容区域可以显示更多信息 -->
-          </ItemCard>
-        </n-gi>
-      </n-grid>
-    </n-spin>
+              <!-- 卡片内容区域可以显示更多信息 -->
+            </ItemCard>
+          </n-gi>
+        </n-grid>
+      </n-spin>
     </template>
 
     <!-- 表格视图 -->

@@ -18,6 +18,19 @@ const fontSize = ref('14px')
 const cardRef = ref(null)
 let resizeObserver: ResizeObserver | null = null
 
+// 简化的数组数据处理
+const processWebSocketData = (data: any) => {
+  if (!data) return null
+
+  // 如果数据是数组，直接取第一个元素
+  if (Array.isArray(data)) {
+    return data.length > 0 ? data[0] : null
+  }
+
+  // 直接返回数据
+  return data
+}
+
 const setSeries = async (dataSource: ICardData['dataSource']) => {
   if (!dataSource?.deviceSource?.[0]) return
 
@@ -78,7 +91,37 @@ defineExpose({
       logger.warn(`No data returned from websocket for ${metricsId}`)
       return
     }
-    detail.value = metricsId ? data[metricsId] : ''
+
+    // 处理 WebSocket 数据
+    const processedData = processWebSocketData(data[metricsId])
+
+    if (processedData) {
+      // 如果处理后的数据是对象，提取 value 和 unit
+      if (typeof processedData === 'object' && processedData !== null) {
+        // 检查是否有value属性
+        if (processedData.value !== undefined) {
+          detail.value = processedData.value
+          if (processedData.unit) {
+            unit.value = processedData.unit
+          }
+        } else {
+          // 直接使用处理后的数据
+          detail.value = processedData
+        }
+      } else {
+        // 直接使用处理后的数据
+        detail.value = processedData
+      }
+
+      logger.info(`WebSocket data updated for ${metricsId}:`, {
+        original: data[metricsId],
+        processed: processedData,
+        detail: detail.value,
+        unit: unit.value
+      })
+    } else {
+      detail.value = data[metricsId]
+    }
   }
 })
 </script>

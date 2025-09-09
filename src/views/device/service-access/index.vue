@@ -55,32 +55,48 @@ const handleRefresh = () => {
       :showAddButton="false"
       @refresh="handleRefresh"
     >
-
       <!-- 卡片视图 -->
       <template #card-view>
         <n-spin :show="loading">
-        <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
-          <n-gi v-for="item in deviceTemplateList" :key="item.id">
-            <DevCardItem
-              :isStatus="false"
-              :title="item.name"
-              :subtitle="item.description || '暂无描述'"
-              :footer-text="item.version || '--'"
-              @click-card="clickDevice(item)"
-            >
-              <!-- 左下角默认图标 -->
-              <template #footer-icon>
-                <div class="service-icon-container">
-                  <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
-                    <rect x="15" y="20" width="70" height="50" rx="3" fill="none" stroke="#333" stroke-width="3"></rect>
-                    <line x1="25" y1="80" x2="75" y2="80" stroke="#333" stroke-width="3" stroke-linecap="round"></line>
-                  </svg>
-                </div>
-              </template>
-            </DevCardItem>
-          </n-gi>
-        </n-grid>
-      </n-spin>
+          <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
+            <n-gi v-for="item in deviceTemplateList" :key="item.id">
+              <DevCardItem
+                :isStatus="false"
+                :title="item.name"
+                :subtitle="item.description || '暂无描述'"
+                :footer-text="item.version || '--'"
+                @click-card="clickDevice(item)"
+              >
+                <!-- 左下角默认图标 -->
+                <template #footer-icon>
+                  <div class="service-icon-container">
+                    <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
+                      <rect
+                        x="15"
+                        y="20"
+                        width="70"
+                        height="50"
+                        rx="3"
+                        fill="none"
+                        stroke="#333"
+                        stroke-width="3"
+                      ></rect>
+                      <line
+                        x1="25"
+                        y1="80"
+                        x2="75"
+                        y2="80"
+                        stroke="#333"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                      ></line>
+                    </svg>
+                  </div>
+                </template>
+              </DevCardItem>
+            </n-gi>
+          </n-grid>
+        </n-spin>
       </template>
 
       <!-- 底部分页 -->

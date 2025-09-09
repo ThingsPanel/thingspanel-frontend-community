@@ -29,7 +29,7 @@ export const deviceModelSourceForPanel = async (params: any) => {
 }
 
 export const deviceMetricsList = async (params: string) => {
-  const url = `device/metrics/${params}`
+  const url = `/device/metrics/${params}`
 
   return await request.get<any>(url)
 }

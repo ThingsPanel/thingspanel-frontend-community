@@ -28,9 +28,6 @@ export default defineConfig(configEnv => {
       }
     },
     plugins: [...setupVitePlugins(viteEnv), svgLoader()],
-    define: {
-      BUILD_TIME: JSON.stringify(buildTime)
-    },
     server: {
       host: '0.0.0.0',
       port: 5002,
@@ -38,6 +35,10 @@ export default defineConfig(configEnv => {
       proxy: createViteProxy(viteEnv),
       fs: {
         cachedChecks: false
+      },
+      watch: {
+        // 开启轮询模式
+        usePolling: true
       }
     },
     preview: {
@@ -66,6 +67,9 @@ export default defineConfig(configEnv => {
           }
         }
       }
+    },
+    define: {
+      BUILD_TIME: JSON.stringify(buildTime)
     },
     lintOnSave: false
   }

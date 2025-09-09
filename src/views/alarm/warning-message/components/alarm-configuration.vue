@@ -7,29 +7,29 @@
  * @LastEditTime: 2024-03-24 16:04:26
 -->
 <script setup lang="tsx">
-import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue';
-import type { Ref } from 'vue';
-import { NButton, NCard, NFlex, NInput } from 'naive-ui';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import dayjs from 'dayjs';
-import moment from 'moment';
-import { alarmHistory } from '@/service/api/alarm';
-import { $t } from '@/locales';
-import { deviceAlarmHistoryPut } from '@/service/api';
+import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
+import type { Ref } from 'vue'
+import { NButton, NCard, NFlex, NInput } from 'naive-ui'
+import type { DataTableColumns, PaginationProps } from 'naive-ui'
+import dayjs from 'dayjs'
+import moment from 'moment'
+import { alarmHistory } from '@/service/api/alarm'
+import { $t } from '@/locales'
+import { deviceAlarmHistoryPut } from '@/service/api'
 
-const loading = ref(false);
-const rowKey = (row: DeviceManagement.DeviceData) => row.id;
+const loading = ref(false)
+const rowKey = (row: DeviceManagement.DeviceData) => row.id
 
 interface ColumnsData {
-  id: string;
-  time: string;
-  name: string;
-  description: string;
-  alarm_level: string;
-  notification_group_id: string;
-  enabled: string;
-  result: string;
-  handler: string;
+  id: string
+  time: string
+  name: string
+  description: string
+  alarm_level: string
+  notification_group_id: string
+  enabled: string
+  result: string
+  handler: string
 }
 
 const columns: Ref<DataTableColumns<ColumnsData>> = ref([
@@ -45,7 +45,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
     align: 'left',
     minWidth: '170px',
     render(row: { id: string; name: string; description: string; created_at: string; [key: string]: any }) {
-      return dayjs(row.create_at).format('YYYY-MM-DD HH:mm:ss');
+      return dayjs(row.create_at).format('YYYY-MM-DD HH:mm:ss')
     }
   },
   {
@@ -64,7 +64,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
     minWidth: '120px',
     render(row: any) {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      return alarmStatusOptions.value.find(data => data.value === row.alarm_status)?.label || '';
+      return alarmStatusOptions.value.find(data => data.value === row.alarm_status)?.label || ''
     }
   },
   {
@@ -101,12 +101,12 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
             {$t('common.maintenance')}
           </NButton>
         </div>
-      );
+      )
     }
   }
-]) as Ref<DataTableColumns<ColumnsData>>;
+]) as Ref<DataTableColumns<ColumnsData>>
 
-const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()]);
+const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()])
 
 const queryData = ref({
   alarm_status: '',
@@ -114,8 +114,8 @@ const queryData = ref({
   end_time: '',
   page: 1,
   page_size: 10
-});
-const tableData = ref<ColumnsData[]>([]);
+})
+const tableData = ref<ColumnsData[]>([])
 const pagination: PaginationProps = reactive({
   page: 1,
   pageSize: 10,
@@ -123,51 +123,51 @@ const pagination: PaginationProps = reactive({
   showSizePicker: true,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
-    pagination.page = page;
+    pagination.page = page
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getAlarmHistory();
+    getAlarmHistory()
   },
   onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
+    pagination.pageSize = pageSize
+    pagination.page = 1
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getAlarmHistory();
+    getAlarmHistory()
   }
-});
+})
 const getAlarmHistory = async () => {
-  queryData.value.page = pagination.page as number;
-  queryData.value.page_size = pagination.pageSize as number;
-  const { data } = await alarmHistory(queryData.value);
+  queryData.value.page = pagination.page as number
+  queryData.value.page_size = pagination.pageSize as number
+  const { data } = await alarmHistory(queryData.value)
   if (data) {
     // eslint-disable-next-line require-atomic-updates
-    pagination.itemCount = data.total;
-    tableData.value = data.list;
-    loading.value = false;
+    pagination.itemCount = data.total
+    tableData.value = data.list
+    loading.value = false
   }
-};
+}
 const resetQuery = () => {
-  pagination.page = 1;
-  getAlarmHistory();
-};
+  pagination.page = 1
+  getAlarmHistory()
+}
 function pickerChange() {
   if (range.value && range.value.length > 0) {
-    queryData.value.start_time = moment(range.value[0]).format('YYYY-MM-DDTHH:mm:ssZ');
-    queryData.value.end_time = moment(range.value[1]).format('YYYY-MM-DDTHH:mm:ssZ');
+    queryData.value.start_time = moment(range.value[0]).format('YYYY-MM-DDTHH:mm:ssZ')
+    queryData.value.end_time = moment(range.value[1]).format('YYYY-MM-DDTHH:mm:ssZ')
   } else {
-    queryData.value.start_time = '';
-    queryData.value.end_time = '';
+    queryData.value.start_time = ''
+    queryData.value.end_time = ''
   }
-  resetQuery();
+  resetQuery()
 }
 
 onMounted(() => {
-  getAlarmHistory();
-});
+  getAlarmHistory()
+})
 
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
 
 const alarmStatusOptions = ref([
   {
@@ -190,40 +190,40 @@ const alarmStatusOptions = ref([
     label: $t('common.normal'),
     value: 'N'
   }
-]);
-const showDialog = ref(false);
-const infoData = ref({} as any);
+])
+const showDialog = ref(false)
+const infoData = ref({} as any)
 function getInfo(data: any) {
-  infoData.value = data;
-  showDialog.value = true;
+  infoData.value = data
+  showDialog.value = true
 }
 const closeModal = () => {
-  showDialog.value = false;
-};
-const showModal = ref(false);
-const description = ref('');
+  showDialog.value = false
+}
+const showModal = ref(false)
+const description = ref('')
 const maintenance = row => {
-  infoData.value = row;
-  description.value = row.description;
-  showModal.value = true;
-};
+  infoData.value = row
+  description.value = row.description
+  showModal.value = true
+}
 const cancelCallback = () => {
-  description.value = '';
-  showModal.value = false;
-};
+  description.value = ''
+  showModal.value = false
+}
 const submitCallback = async () => {
   if (description.value === '') {
-    window.$message?.error($t('common.enterAlarmDesc'));
-    return;
+    window.$message?.error($t('common.enterAlarmDesc'))
+    return
   }
   const putData = {
     id: infoData.value.id,
     description: description.value
-  };
-  await deviceAlarmHistoryPut(putData);
-  cancelCallback();
-  await getAlarmHistory();
-};
+  }
+  await deviceAlarmHistoryPut(putData)
+  cancelCallback()
+  await getAlarmHistory()
+}
 </script>
 
 <template>

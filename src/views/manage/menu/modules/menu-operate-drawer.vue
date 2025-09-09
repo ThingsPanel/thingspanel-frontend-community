@@ -1,14 +1,14 @@
 <script setup lang="tsx">
-import { computed, reactive, watch } from 'vue';
-import type { SelectOption } from 'naive-ui';
-import { useFormRules, useNaiveForm } from '@/hooks/common/form';
-import { enableStatusOptions, menuIconTypeOptions, menuTypeOptions } from '@/constants/business';
-import SvgIcon from '@/components/custom/svg-icon.vue';
-import { getLocalIcons } from '@/utils/icon';
-import { $t } from '@/locales';
+import { computed, reactive, watch } from 'vue'
+import type { SelectOption } from 'naive-ui'
+import { useFormRules, useNaiveForm } from '@/hooks/common/form'
+import { enableStatusOptions, menuIconTypeOptions, menuTypeOptions } from '@/constants/business'
+import SvgIcon from '@/components/custom/svg-icon.vue'
+import { getLocalIcons } from '@/utils/icon'
+import { $t } from '@/locales'
 defineOptions({
   name: 'MenuOperateDrawer'
-});
+})
 
 /**
  * the type of operation
@@ -16,44 +16,44 @@ defineOptions({
  * - add: add user
  * - edit: edit user
  */
-export type OperateType = 'add' | 'edit';
+export type OperateType = 'add' | 'edit'
 
 interface Props {
   /** the type of operation */
-  operateType: OperateType;
+  operateType: OperateType
   /** the edit row data */
-  rowData?: Api.SystemManage.Menu | null;
+  rowData?: Api.SystemManage.Menu | null
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
 interface Emits {
-  (e: 'submitted'): void;
+  (e: 'submitted'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const visible = defineModel<boolean>('visible', {
   default: false
-});
+})
 
-const { formRef, validate, restoreValidation } = useNaiveForm();
-const { defaultRequiredRule } = useFormRules();
+const { formRef, validate, restoreValidation } = useNaiveForm()
+const { defaultRequiredRule } = useFormRules()
 
 const title = computed(() => {
   const titles: Record<OperateType, string> = {
     add: $t('page.manage.menu.addMenu'),
     edit: $t('page.manage.menu.editMenu')
-  };
-  return titles[props.operateType];
-});
+  }
+  return titles[props.operateType]
+})
 
 type Model = Pick<
   Api.SystemManage.Menu,
   'menuType' | 'menuName' | 'icon' | 'iconType' | 'routeName' | 'routePath' | 'status' | 'hideInMenu' | 'order'
->;
+>
 
-const model: Model = reactive(createDefaultModel());
+const model: Model = reactive(createDefaultModel())
 
 function createDefaultModel(): Model {
   return {
@@ -66,17 +66,17 @@ function createDefaultModel(): Model {
     status: null,
     hideInMenu: false,
     order: 0
-  };
+  }
 }
 
-type RuleKey = Extract<keyof Model, 'userName' | 'userStatus'>;
+type RuleKey = Extract<keyof Model, 'userName' | 'userStatus'>
 
 const rules: Record<RuleKey, App.Global.FormRule> = {
   userName: defaultRequiredRule,
   userStatus: defaultRequiredRule
-};
+}
 
-const localIcons = getLocalIcons();
+const localIcons = getLocalIcons()
 const localIconOptions = localIcons.map<SelectOption>(item => ({
   label: () => (
     <div class="flex-y-center gap-16px">
@@ -85,37 +85,37 @@ const localIconOptions = localIcons.map<SelectOption>(item => ({
     </div>
   ),
   value: item
-}));
+}))
 
 function handleUpdateModelWhenEdit() {
   if (props.operateType === 'add') {
-    Object.assign(model, createDefaultModel());
-    return;
+    Object.assign(model, createDefaultModel())
+    return
   }
 
   if (props.operateType === 'edit' && props.rowData) {
-    Object.assign(model, props.rowData);
+    Object.assign(model, props.rowData)
   }
 }
 
 function closeDrawer() {
-  visible.value = false;
+  visible.value = false
 }
 
 async function handleSubmit() {
-  await validate();
+  await validate()
   // requestTs
   // window.$message?.success($t('common.updateSuccess'));
-  closeDrawer();
-  emit('submitted');
+  closeDrawer()
+  emit('submitted')
 }
 
 watch(visible, () => {
   if (visible.value) {
-    handleUpdateModelWhenEdit();
-    restoreValidation();
+    handleUpdateModelWhenEdit()
+    restoreValidation()
   }
-});
+})
 </script>
 
 <template>
