@@ -94,6 +94,7 @@ class AutoComponentRegistry {
           if (definition && this.isValidComponentDefinition(definition)) {
             componentDefinitions.push({ definition, folderPath: path })
             console.log(`✅ [Card2.1] 成功加载组件: ${definition.name} (${definition.type}) 来源: ${path}`)
+            
           } else {
             console.warn(`❌ [Card2.1] 跳过无效组件定义: ${path}`, {
               hasDefault: !!module.default,
@@ -150,7 +151,7 @@ class AutoComponentRegistry {
       console.log(`🔧 [AutoRegistry] 跳过组件 ${type}: 分类 ${categoryName} 在当前环境不显示`)
       return
     }
-
+    
     console.log(`🔧 [AutoRegistry] 注册组件: ${type} -> ${categoryName} (来源: ${folderPath || '未知'})`)
 
     // 🚨 CRITICAL: 覆盖组件定义中的分类信息，使用从文件夹路径确定的分类

@@ -8,7 +8,9 @@
       "Bash(pnpm build:*)",
       "Bash(find:*)",
       "Bash(pnpm typecheck:*)",
-      "Bash(pnpm remove:*)"
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

@@ -138,7 +138,8 @@ export class AutoRegistry {
       'app-download': 'statistics',
       'simple-display': 'test',
       'dual-data-display': 'test',
-      'triple-data-display': 'test'
+      'triple-data-display': 'test',
+      'gauge-dashboard-v2': 'dashboard'  // 🔥 修复：添加仪表盘组件映射
     }
 
     // 首先尝试直接映射
