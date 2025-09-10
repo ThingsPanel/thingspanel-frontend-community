@@ -3,7 +3,7 @@
  * 新三文件结构 - 标准组件模板
  */
 
-import type { ComponentDefinition } from '../../../core/types'
+import type { ComponentDefinition } from '../../../types'
 import SimpleDisplayComponent from './index.vue'
 import SimpleDisplaySetting from './setting.vue'
 import { simpleDisplaySettingConfig, customConfig, type SimpleDisplayConfig } from './settingConfig'

@@ -3,7 +3,7 @@
  * 基于Card2.1标准架构的仪表盘组件 - 使用vue-echarts重写版本
  */
 
-import type { ComponentDefinition } from '../../../core/types'
+import type { ComponentDefinition, DataSourceRequirement } from '../../../types'
 import type { GaugeDashboardV2Config, GaugeDashboardCustomize } from './settingConfig'
 import { customConfig, gaugeDashboardV2SettingConfig } from './settingConfig'
 import GaugeDashboardV2Card from './index.vue'

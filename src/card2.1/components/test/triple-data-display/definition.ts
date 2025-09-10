@@ -3,7 +3,7 @@
  * 基于新的三文件结构标准
  */
 
-import type { ComponentDefinition } from '../../../core/types'
+import type { ComponentDefinition } from '../../../types'
 import { tripleDataDisplaySettingConfig, customConfig } from './settingConfig'
 import type { TripleDataDisplayConfig } from './settingConfig'
 import TripleDataDisplayCard from './index.vue'

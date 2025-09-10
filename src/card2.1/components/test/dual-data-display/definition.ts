@@ -3,7 +3,7 @@
  * 基于新的三文件结构标准
  */
 
-import type { ComponentDefinition } from '../../../core/types'
+import type { ComponentDefinition } from '../../../types'
 import type { DualDataDisplayConfig, DualDataDisplayCustomize } from './settingConfig'
 import { customConfig, dualDataDisplaySettingConfig } from './settingConfig'
 import DualDataDisplayCard from './index.vue'
