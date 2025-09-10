@@ -250,7 +250,6 @@ const routeMap: RouteMap = {
   "system-management-user": "/system-management-user",
   "system-management-user_system-log": "/system-management-user/system-log",
   "test": "/test",
-  "test_gauge-dashboard-test": "/test/gauge-dashboard-test",
   "test_panel-editor-v2": "/test/panel-editor-v2",
   "ultra-kanban": "/ultra-kanban",
   "ultra-kanban_index": "/ultra-kanban/index",

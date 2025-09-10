@@ -80,7 +80,6 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   plugin_video: () => import("@/views/plugin/video/index.vue"),
   "rule-engine": () => import("@/views/rule-engine/index.vue"),
   "system-management-user_system-log": () => import("@/views/system-management-user/system-log/index.vue"),
-  "test_gauge-dashboard-test": () => import("@/views/test/gauge-dashboard-test/index.vue"),
   "test_panel-editor-v2": () => import("@/views/test/panel-editor-v2/index.vue"),
   "ultra-kanban_index": () => import("@/views/ultra-kanban/index/index.vue"),
   "ultra-kanban_kanban-details": () => import("@/views/ultra-kanban/kanban-details/index.vue"),

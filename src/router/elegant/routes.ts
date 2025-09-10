@@ -850,15 +850,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
-        name: 'test_gauge-dashboard-test',
-        path: '/test/gauge-dashboard-test',
-        component: 'view.test_gauge-dashboard-test',
-        meta: {
-          title: 'test_gauge-dashboard-test',
-          i18nKey: 'route.test_gauge-dashboard-test'
-        }
-      },
-      {
         name: 'test_panel-editor-v2',
         path: '/test/panel-editor-v2',
         component: 'view.test_panel-editor-v2',
