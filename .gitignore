@@ -49,3 +49,4 @@ scripts/re.ps1
 .env.development
 55.txt
 src/views/test/panel-editor-v2/index.vue
+CLAUDE.md
