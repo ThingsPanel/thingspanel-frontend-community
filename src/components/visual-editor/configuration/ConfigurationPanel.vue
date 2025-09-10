@@ -475,7 +475,9 @@ const componentDataSources = computed(() => {
       fieldsToMap: dataSource.fieldsToMap || [],
       fieldMappings: dataSource.fieldMappings || {},
       expectedDataFormat: dataSource.expectedDataFormat,
-      validationRules: dataSource.validationRules || {}
+      validationRules: dataSource.validationRules || {},
+      // 🔥 修复：传递原始数据源对象，包含所有示例数据
+      originalData: dataSource
     }))
   }
 
@@ -523,7 +525,7 @@ const enrichedDataSources = computed(() => {
 
 /**
  * 从组件定义中提取示例数据
- * 优先级：fieldMappings.defaultValue > 组件config中的默认数据 > 通用示例
+ * 🔥 统一标准：只使用 example 字段，确保组件间示例数据标准一致
  */
 function extractExampleDataFromDefinition(dataSource: any) {
   // 1. 从 fieldMappings 的 defaultValue 构建示例数据
@@ -543,7 +545,12 @@ function extractExampleDataFromDefinition(dataSource: any) {
     }
   }
 
-  // 2. 检查组件元数据中的测试数据
+  // 2. 🔥 统一标准：只检查 example 字段
+  if (dataSource.originalData?.example) {
+    return dataSource.originalData.example
+  }
+
+  // 3. 检查组件元数据中的测试数据
   if (componentDefinition.value?.metadata?.testData) {
     const testData = componentDefinition.value.metadata.testData[dataSource.key]
     if (testData) {
@@ -551,7 +558,7 @@ function extractExampleDataFromDefinition(dataSource: any) {
     }
   }
 
-  // 3. 使用通用默认数据
+  // 4. 使用通用默认数据
   return null // 返回 null，让 DataSourceConfigForm 使用自己的默认数据生成逻辑
 }
 

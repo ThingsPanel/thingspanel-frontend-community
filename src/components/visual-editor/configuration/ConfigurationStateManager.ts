@@ -70,17 +70,20 @@ export class ConfigurationStateManager {
   // 事件监听器
   private eventListeners = new Map<string, Set<(event: ConfigurationUpdateEvent) => void>>()
 
-  // 🆕 持久化存储
-  private readonly STORAGE_KEY = 'visual-editor-config-state-v2'
+  // 🧹 禁用持久化存储
+  // private readonly STORAGE_KEY = 'visual-editor-config-state-v2'
 
   constructor() {
-    this.loadFromStorage()
+    // this.loadFromStorage()
   }
 
   /**
    * 从 localStorage 加载配置
    */
   private loadFromStorage(): void {
+    // 🧹 禁用localStorage加载
+    return
+    /*
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY)
       if (stored) {
@@ -98,12 +101,15 @@ export class ConfigurationStateManager {
         }
       }
     } catch (error) {}
+    */
   }
 
   /**
    * 保存配置到 localStorage
    */
   private saveToStorage(): void {
+    // 🧹 禁用localStorage保存
+    return
     try {
       const states: Record<string, ConfigurationState> = {}
       this.configStates.forEach((state, componentId) => {
@@ -173,7 +179,7 @@ export class ConfigurationStateManager {
     const oldVersion = currentState?.version
     this.configStates.set(componentId, newState)
     // 🆕 持久化到 localStorage
-    this.saveToStorage()
+    // this.saveToStorage()
 
     // 异步触发事件，避免阻塞
     this.scheduleEventEmission(componentId, 'complete', oldVersion, newVersion, configuration)
@@ -240,7 +246,7 @@ export class ConfigurationStateManager {
 
     this.configStates.set(componentId, newState)
     // 🆕 持久化到 localStorage
-    this.saveToStorage()
+    // this.saveToStorage()
 
     // 异步触发事件和解锁
     this.scheduleEventEmission(componentId, section, currentState.version, newVersion, {
@@ -295,7 +301,7 @@ export class ConfigurationStateManager {
     this.configStates.set(componentId, state)
 
     // 🆕 持久化到 localStorage
-    this.saveToStorage()
+    // this.saveToStorage()
   }
 
   /**

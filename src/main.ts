@@ -12,13 +12,15 @@ import { initEChartsComponents } from '@/utils/echarts/echarts-manager'
 import '@/card2.1/components'
 // 🔥 关键修复：确保 InteractionManager 在应用启动时被正确初始化
 import '@/card2.1/core/interaction-manager'
+// 🧹 导入localStorage清理工具
+import { cleanupLocalStorage } from '@/utils/storage-cleaner'
 import App from './App.vue'
-// 定义 localStorage 的 key
-const RECENTLY_VISITED_ROUTES_KEY = 'RECENTLY_VISITED_ROUTES'
-const MAX_RECENT_ROUTES = 8
+// 🧹 禁用最近访问路由功能
+// const RECENTLY_VISITED_ROUTES_KEY = 'RECENTLY_VISITED_ROUTES'
+// const MAX_RECENT_ROUTES = 8
 
 // --- 更新排除路径列表，支持通配符 ---
-const excludedPaths = ['/login/*', '/404', '/home', '/visualization/kanban-details']
+// const excludedPaths = ['/login/*', '/404', '/home', '/visualization/kanban-details']
 
 // 防抖函数 - 减少频繁的 localStorage 操作
 function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
@@ -33,6 +35,9 @@ function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
 let recentRoutesCache: any[] | null = null
 
 async function setupApp() {
+  // 🧹 清理不需要的localStorage项
+  cleanupLocalStorage()
+  
   const app = createApp(App)
 
   // 1. 关键同步初始化 - 应用启动必需
@@ -89,23 +94,24 @@ async function setupApp() {
   // 4. 路由初始化 - 应用启动必需
   await setupRouter(app)
 
-  // 防抖保存函数 - 避免频繁的 localStorage 写入
-  const debouncedSaveRoutes = debounce((routes: any[]) => {
-    try {
-      localStorage.setItem(RECENTLY_VISITED_ROUTES_KEY, JSON.stringify(routes))
-      recentRoutesCache = routes
-    } catch (error) {}
-  }, 1000)
+  // 🧹 禁用路由记录功能
+  // const debouncedSaveRoutes = debounce((routes: any[]) => {
+  //   try {
+  //     localStorage.setItem(RECENTLY_VISITED_ROUTES_KEY, JSON.stringify(routes))
+  //     recentRoutesCache = routes
+  //   } catch (error) {}
+  // }, 1000)
 
   // 初始化缓存
-  try {
-    const routesRaw = localStorage.getItem(RECENTLY_VISITED_ROUTES_KEY)
-    recentRoutesCache = routesRaw ? JSON.parse(routesRaw) : []
-  } catch (error) {
-    recentRoutesCache = []
-  }
+  // try {
+  //   const routesRaw = localStorage.getItem(RECENTLY_VISITED_ROUTES_KEY)
+  //   recentRoutesCache = routesRaw ? JSON.parse(routesRaw) : []
+  // } catch (error) {
+  //   recentRoutesCache = []
+  // }
 
-  // 添加路由后置守卫 - 优化版本
+  // 🧹 禁用路由记录功能的后置守卫
+  /*
   router.afterEach(to => {
     // --- 更新排除逻辑以支持通配符 ---
     const isExcluded = excludedPaths.some(pattern => {
@@ -171,6 +177,7 @@ async function setupApp() {
       debouncedSaveRoutes(recentRoutes)
     } catch (error) {}
   })
+  */
 
   app.config.globalProperties.getPlatform = () => {
     const { appVersion }: any = window.navigator

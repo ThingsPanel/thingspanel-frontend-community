@@ -939,13 +939,16 @@ const getEditData = () => {
 
 /**
  * 获取当前数据源的示例数据
+ * 🔥 统一标准：只使用 example 字段，确保组件间示例数据标准一致
  */
 const getCurrentDataSourceExampleData = () => {
   if (!currentDataSourceKey.value) return undefined
 
   const currentDataSource = dataSourceOptions.value.find(opt => opt.value === currentDataSourceKey.value)
-  // 🔥 修复：支持两种示例数据格式
-  const exampleData = currentDataSource?.originalData?.config?.exampleData || currentDataSource?.originalData?.example
+  
+  // 🔥 统一标准：只检查example字段
+  const exampleData = currentDataSource?.originalData?.originalData?.example
+  
   return exampleData
 }
 

@@ -10,7 +10,8 @@
       "Bash(pnpm typecheck:*)",
       "Bash(pnpm remove:*)",
       "Bash(pnpm dev:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Read(//e/e/wbh/things2/thingspanel-frontend-community/**)"
     ],
     "deny": [],
     "ask": []

@@ -157,8 +157,66 @@ const editorConfig = ref({
 
 // This is from PanelEditor.vue's usePanelDataManager
 const getState = () => {
-  const widgets = toRaw(stateManager.nodes)
+  console.log('🔧 getState - 开始获取状态...')
+  
+  const widgets = toRaw(stateManager.nodes).map(widget => {
+    // 🔥 关键修复：从 configurationManager 获取数据源配置并添加到组件中
+    const savedConfig = configurationManager.getConfiguration(widget.id)
+    const dataSourceConfig = savedConfig?.dataSource || null
+    
+    console.log(`🔧 getState - 组件 ${widget.id}:`)
+    console.log('  - savedConfig:', savedConfig)
+    console.log('  - dataSourceConfig:', dataSourceConfig)
+    
+    // 🔥 额外调试：如果没有数据源配置，打印警告
+    if (!dataSourceConfig) {
+      console.warn(`⚠️ 组件 ${widget.id} 没有数据源配置！可能需要检查配置保存逻辑`)
+      console.log('  - configurationManager中的所有配置:', configurationManager.getAllConfigurations())
+    }
+    
+    // 🔥 数据优化：只保存必要的数据，移除冗余的metadata
+    const optimizedWidget = {
+      id: widget.id,
+      type: widget.type,
+      x: widget.x,
+      y: widget.y,
+      width: widget.width,
+      height: widget.height,
+      label: widget.label,
+      showLabel: widget.showLabel,
+      properties: widget.properties,
+      renderer: widget.renderer,
+      layout: widget.layout,
+      dataSource: dataSourceConfig,
+      // 🔥 只保留必要的元数据
+      metadata: {
+        version: widget.metadata?.version || '2.0.0',
+        createdAt: widget.metadata?.createdAt,
+        updatedAt: Date.now(),
+        isCard2Component: widget.metadata?.isCard2Component,
+        card2ComponentId: widget.metadata?.card2ComponentId,
+        // 🔥 关键修复：保留数据源基本定义信息（组件的数据源结构）
+        card2Definition: widget.metadata?.card2Definition ? {
+          type: widget.metadata.card2Definition.type,
+          name: widget.metadata.card2Definition.name,
+          description: widget.metadata.card2Definition.description,
+          dataSources: widget.metadata.card2Definition.dataSources, // 🔥 必须保留！
+          // 移除: defaultConfig、settingConfig、component、configComponent等大字段
+        } : undefined
+        // 移除: 完整的Vue组件定义、defaultConfig、settingConfig等
+      }
+    }
+    
+    return optimizedWidget
+  })
+  
   const config = toRaw(editorConfig.value)
+  
+  console.log('🔧 getState - 最终状态:')
+  console.log('  - widgets数量:', widgets.length)
+  console.log('  - widgets详情:', widgets.map(w => ({ id: w.id, hasDataSource: !!w.dataSource })))
+  console.log('  - config:', config)
+  
   return {
     widgets,
     config
@@ -177,7 +235,35 @@ const setState = (state: any) => {
   console.log('🔧 setState - 配置:', config)
 
   if (Array.isArray(widgets)) {
-    stateManager.setNodes(widgets)
+    // 🔥 处理组件数据，恢复数据源配置和必要的metadata
+    const processedWidgets = widgets.map(widget => {
+      // 🔥 关键修复：恢复数据源配置到 configurationManager
+      if (widget.dataSource) {
+        console.log('🔧 恢复数据源配置:', widget.id, widget.dataSource)
+        configurationManager.updateConfiguration(widget.id, 'dataSource', widget.dataSource)
+      } else {
+        console.warn(`⚠️ 组件 ${widget.id} 没有数据源配置`)
+      }
+
+      // 🔥 确保组件有基本的运行时metadata
+      const processedWidget = {
+        ...widget,
+        metadata: {
+          ...widget.metadata,
+          isCard2Component: true,
+          card2ComponentId: widget.type
+        }
+      }
+      
+      console.log(`✅ 处理组件 ${widget.id}:`, {
+        hasDataSource: !!widget.dataSource,
+        hasCard2Definition: !!widget.metadata?.card2Definition
+      })
+      
+      return processedWidget
+    })
+    
+    stateManager.setNodes(processedWidgets)
   }
 
   editorConfig.value = {
@@ -185,6 +271,7 @@ const setState = (state: any) => {
     canvasConfig: config.canvasConfig || {}
   }
 }
+
 
 const fetchBoard = async () => {
   try {

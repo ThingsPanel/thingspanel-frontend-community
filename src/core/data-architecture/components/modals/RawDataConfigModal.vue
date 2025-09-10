@@ -52,27 +52,8 @@ const inputMethods = [
  * 表单状态
  */
 const formState = reactive({
-  selectedMethod: 'http' as 'json' | 'http' | 'script' | 'websocket',
-  jsonData: JSON.stringify(
-    {
-      temperature: 25.6,
-      humidity: 68.3,
-      pressure: 1013.25,
-      timestamp: new Date().toISOString(),
-      location: {
-        building: 'A座',
-        floor: 3,
-        room: '301'
-      },
-      sensors: [
-        { id: 'temp_001', value: 25.6, status: 'online' },
-        { id: 'humi_001', value: 68.3, status: 'online' },
-        { id: 'press_001', value: 1013.25, status: 'offline' }
-      ]
-    },
-    null,
-    2
-  ),
+  selectedMethod: 'json' as 'json' | 'http' | 'script' | 'websocket',
+  jsonData: '', // 初始为空，由watch或mounted设置
   httpUrl: 'https://api.example.com/data',
   httpMethod: 'GET' as 'GET' | 'POST' | 'PUT' | 'DELETE',
   httpHeaders: '{\n  "Authorization": "Bearer your-token",\n  "Content-Type": "application/json"\n}',
@@ -517,30 +498,22 @@ watch(
 /**
  * 🔥 修复：重置所有表单状态
  * 弹窗打开时调用，确保每次都是新的干净状态
+ * 🔥 统一标准：优先使用组件示例数据，回退到通用数据
  */
 const resetFormState = () => {
   // 重置表单数据
   formState.selectedMethod = 'json'
-  formState.jsonData = JSON.stringify(
-    {
+  
+  // 如果有组件示例数据就用，否则用通用数据
+  if (props.exampleData) {
+    formState.jsonData = JSON.stringify(props.exampleData, null, 2)
+  } else {
+    formState.jsonData = JSON.stringify({
       temperature: 25.6,
       humidity: 68.3,
-      pressure: 1013.25,
-      timestamp: new Date().toISOString(),
-      location: {
-        building: 'A座',
-        floor: 3,
-        room: '301'
-      },
-      sensors: [
-        { id: 'temp_001', value: 25.6, status: 'online' },
-        { id: 'humi_001', value: 68.3, status: 'online' },
-        { id: 'press_001', value: 1013.25, status: 'offline' }
-      ]
-    },
-    null,
-    2
-  )
+      timestamp: new Date().toISOString()
+    }, null, 2)
+  }
   formState.httpUrl = 'https://api.example.com/data'
   formState.httpMethod = 'GET'
   formState.httpHeaders = '{\n  "Authorization": "Bearer your-token",\n  "Content-Type": "application/json"\n}'
@@ -561,81 +534,19 @@ const resetFormState = () => {
 }
 
 /**
- * 🔥 增强：加载示例数据
- * 支持JSON/HTTP/Script三种模式的示例数据加载
+ * 使用示例数据（仅JSON模式，用于调试）
  */
 const loadExampleData = (showMessage = false) => {
   if (!props.exampleData) {
-    if (showMessage) {
-      message.warning('当前组件没有提供示例数据')
-    }
+    if (showMessage) message.warning('当前组件没有提供示例数据')
     return
   }
 
-  // 检查原始数据源配置中是否有examples字段
-  const dataSourceExamples = props.exampleData?.examples || {}
-
-  switch (formState.selectedMethod) {
-    case 'json':
-      // JSON模式：使用主示例数据或静态示例
-      const jsonData = props.exampleData?.config?.exampleData || 
-                      props.exampleData?.example || 
-                      dataSourceExamples.static?.data
-      if (jsonData) {
-        formState.jsonData = JSON.stringify(jsonData, null, 2)
-        if (showMessage) message.success('已加载JSON示例数据')
-      } else {
-        if (showMessage) message.warning('没有找到JSON示例数据')
-      }
-      break
-
-    case 'http':
-      // HTTP模式：使用API示例配置
-      const apiExample = dataSourceExamples.api
-      if (apiExample) {
-        // 设置基本HTTP配置
-        httpConfig.value.url = apiExample.url || ''
-        httpConfig.value.method = (apiExample.method as any) || 'GET'
-        
-        // 如果有响应示例，在JSON区域显示（方便用户理解返回格式）
-        if (apiExample.responseExample) {
-          formState.jsonData = JSON.stringify(apiExample.responseExample, null, 2)
-        }
-        
-        if (showMessage) message.success('已加载HTTP示例配置')
-      } else {
-        if (showMessage) message.warning('没有找到HTTP示例配置')
-      }
-      break
-
-    case 'script':
-      // Script模式：生成模拟数据的脚本
-      const scriptData = props.exampleData?.config?.exampleData || 
-                        props.exampleData?.example || 
-                        dataSourceExamples.static?.data
-      if (scriptData) {
-        // 生成返回示例数据的JavaScript代码
-        const scriptTemplate = `// 返回示例数据的脚本
-return ${JSON.stringify(scriptData, null, 2)}`
-        
-        formState.scriptCode = scriptTemplate
-        if (showMessage) message.success('已加载Script示例代码')
-      } else {
-        if (showMessage) message.warning('没有找到Script示例数据')
-      }
-      break
-
-    default:
-      if (showMessage) {
-        message.info('当前模式不支持示例数据')
-      }
-  }
-
-  // 自动触发预览（如果启用了自动预览）
-  if (autoPreviewEnabled.value) {
-    nextTick(() => {
-      executePreview()
-    })
+  if (formState.selectedMethod === 'json') {
+    formState.jsonData = JSON.stringify(props.exampleData, null, 2)
+    if (showMessage) message.success('已加载组件示例数据')
+  } else {
+    if (showMessage) message.info('示例数据仅在JSON模式下可用')
   }
 }
 
@@ -643,17 +554,9 @@ return ${JSON.stringify(scriptData, null, 2)}`
  * 获取示例按钮的提示文本
  */
 const getExampleButtonTitle = () => {
-  const method = formState.selectedMethod
-  switch (method) {
-    case 'json':
-      return '加载组件定义中的JSON示例数据'
-    case 'http':
-      return '加载组件定义中的HTTP示例配置'
-    case 'script':
-      return '生成基于示例数据的JavaScript脚本'
-    default:
-      return '加载组件示例数据'
-  }
+  return formState.selectedMethod === 'json' 
+    ? '加载组件示例数据（用于调试）' 
+    : '示例数据仅在JSON模式下可用'
 }
 
 /**
@@ -758,9 +661,9 @@ onMounted(() => {
       loadEditData(props.editData)
     })
   } else {
-    // 如果不是编辑模式但有示例数据，加载示例数据
+    // 不是编辑模式，重置为初始状态（包含示例数据）
     nextTick(() => {
-      loadExampleData()
+      resetFormState()
     })
   }
 })

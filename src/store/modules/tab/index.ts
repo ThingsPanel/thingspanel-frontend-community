@@ -58,12 +58,13 @@ export const useTabStore = defineStore(SetupStoreId.Tab, () => {
    * @param currentRoute Current route
    */
   function initTabStore(currentRoute: App.Global.TabRoute) {
-    const storageTabs = localStg.get('globalTabs')
+    // 🧹 禁用localStorage缓存，直接初始化
+    // const storageTabs = localStg.get('globalTabs')
 
-    if (themeStore.tab.cache && storageTabs) {
-      const filteredTabs = filterTabsByAllRoutes(router, storageTabs)
-      tabs.value = updateTabsByI18nKey(filteredTabs)
-    }
+    // if (themeStore.tab.cache && storageTabs) {
+    //   const filteredTabs = filterTabsByAllRoutes(router, storageTabs)
+    //   tabs.value = updateTabsByI18nKey(filteredTabs)
+    // }
 
     addTab(currentRoute)
   }
@@ -254,9 +255,10 @@ export const useTabStore = defineStore(SetupStoreId.Tab, () => {
 
   /** Cache tabs */
   function cacheTabs() {
-    if (!themeStore.tab.cache) return
-
-    localStg.set('globalTabs', tabs.value)
+    // 🧹 禁用localStorage缓存
+    // if (!themeStore.tab.cache) return
+    // localStg.set('globalTabs', tabs.value)
+    return
   }
 
   // cache tabs when page is closed or refreshed
