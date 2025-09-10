@@ -35,6 +35,7 @@
         'type-test-card--dark': isDarkTheme,
         'type-test-card--light': !isDarkTheme
       }"
+      :content-style="{ flex: 1, overflow: 'auto' }"
     >
       <!-- 卡片头部 -->
       <template #header>
@@ -259,7 +260,7 @@ import {
 } from '@vicons/ionicons5'
 
 // 类型导入
-import type { TypeTestConfig } from './definition'
+import { dataSourceRequirements, type TypeTestConfig } from './definition'
 import type { 
   ComponentInteractionState,
   InteractionEventType,
@@ -460,6 +461,7 @@ const isDevelopment = computed(() => {
 const debugInfoJson = computed(() => {
   const debugInfo = {
     config: props.config,
+    dataSourceRequirements,
     instanceId: props.instanceId,
     isEditMode: props.isEditMode,
     externalData: props.externalData,
@@ -791,6 +793,8 @@ defineExpose({
 .type-test-card {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .type-test-card--dark {
