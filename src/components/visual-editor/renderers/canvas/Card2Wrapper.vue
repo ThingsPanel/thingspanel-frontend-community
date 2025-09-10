@@ -755,6 +755,23 @@ const getComponentSpecificProps = () => {
   const validation = DataSourceMapper.validateMapping(props.componentType, specificProps)
   // 🔥 获取映射统计信息
   const stats = DataSourceMapper.getMappingStats(props.componentType, executorData.value)
+  
+  // 🔍 调试信息 - 仅针对gauge-dashboard-v2组件
+  if (props.componentType === 'gauge-dashboard-v2') {
+    console.log('🎯 Card2Wrapper数据映射调试:', {
+      componentType: props.componentType,
+      nodeId: props.nodeId,
+      executorData: executorData.value,
+      specificProps,
+      validation,
+      stats,
+      // 额外调试信息
+      executorDataKeys: executorData.value ? Object.keys(executorData.value) : [],
+      specificPropsKeys: Object.keys(specificProps),
+      primaryDataContent: executorData.value?.primaryData?.data
+    })
+  }
+  
   return specificProps
 }
 

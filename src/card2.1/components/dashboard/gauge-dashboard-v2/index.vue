@@ -30,11 +30,31 @@ use([
  * 组件 Props 接口定义
  */
 interface Props {
-  /** 组件配置 */
-  config: {
+  /** 新的CustomConfig结构配置 */
+  customConfig?: {
+    customize: GaugeDashboardCustomize
+    root?: { transform?: { rotate: number; scale: number } }
+  }
+  /** 向后兼容：旧的config结构 */
+  config?: {
     customize: GaugeDashboardCustomize
   }
-  /** 动态数据 */
+  /** Card2.1数据绑定系统传递的数据 */
+  boundData?: {
+    currentValue?: number
+    unit?: string
+    title?: string
+    lastUpdateTime?: number
+    thresholdStatus?: 'normal' | 'warning' | 'danger'
+  }
+  /** primaryData数据源 */
+  primaryData?: {
+    value?: number
+    unit?: string
+    label?: string
+    timestamp?: number
+  }
+  /** 向后兼容：直接传递的数据 */
   data?: {
     currentValue?: number
     unit?: string
@@ -46,6 +66,8 @@ interface Props {
   componentId?: string
   /** 是否为预览模式 */
   isPreview?: boolean
+  /** 预览模式 */
+  previewMode?: boolean
 }
 
 /**
@@ -62,34 +84,138 @@ interface Emits {
 
 // Props 和 Emits
 const props = withDefaults(defineProps<Props>(), {
-  isPreview: false
+  isPreview: false,
+  previewMode: false
 })
 
 const emit = defineEmits<Emits>()
+
+// 🔍 调试：监控数据变化
+watch(
+  [() => props.boundData, () => props.data, () => props.primaryData],
+  ([boundData, data, primaryData]) => {
+    console.log('🎯 gauge-dashboard-v2 接收到数据变化:', {
+      boundData,
+      data,
+      primaryData,
+      componentId: props.componentId,
+      hasBoundData: !!boundData,
+      hasData: !!data,
+      hasPrimaryData: !!primaryData
+    })
+  },
+  { immediate: true, deep: true }
+)
 
 // 主题系统
 const themeStore = useThemeStore()
 
 /**
+ * 获取组件配置 - 支持新旧格式
+ * 优先使用 customConfig.customize，回退到 config
+ */
+const currentCustomize = computed((): GaugeDashboardCustomize => {
+  console.log(`🔧 [GaugeDashboardV2] Props调试:`, {
+    componentId: props.componentId,
+    hasCustomConfig: !!props.customConfig,
+    customConfig: props.customConfig,
+    hasConfig: !!props.config,
+    config: props.config,
+    hasBoundData: !!props.boundData,
+    boundData: props.boundData
+  })
+
+  // 优先使用新的customConfig结构
+  if (props.customConfig?.customize) {
+    console.log(`✅ [GaugeDashboardV2] 使用customConfig.customize`)
+    return props.customConfig.customize
+  }
+
+  // 回退到旧的config结构（向后兼容）
+  if (props.config?.customize) {
+    console.log(`⚠️ [GaugeDashboardV2] 回退到config结构`)
+    return props.config.customize
+  }
+
+  // 如果没有配置，返回默认配置
+  console.log(`❌ [GaugeDashboardV2] 使用默认配置`)
+  return {
+    title: '仪表盘V2',
+    currentValue: 0,
+    unit: '',
+    minValue: 0,
+    maxValue: 100,
+    showTitle: true,
+    showValue: true,
+    showUnit: true,
+    showTooltip: true,
+    radius: 120,
+    startAngle: 225,
+    endAngle: -45,
+    displayMode: 'full-circle',
+    decimal: 1,
+    enableAnimation: true,
+    animationType: 'ease-out',
+    animationDuration: 1000,
+    clickable: true,
+    enableThresholdAlert: false,
+    warningThreshold: 70,
+    dangerThreshold: 90
+  }
+})
+
+/**
  * 获取实际显示的值
+ * 优先级：boundData > primaryData > data > 配置默认值
  */
 const actualValue = computed(() => {
-  return props.data?.currentValue ?? props.config.customize.currentValue ?? 0
+  // 1. 从Card2.1绑定数据中获取
+  if (props.boundData?.currentValue !== undefined) {
+    return props.boundData.currentValue
+  }
+  
+  // 2. 从primaryData数据源获取
+  if (props.primaryData?.value !== undefined) {
+    return props.primaryData.value
+  }
+  
+  // 3. 从直接传递的data中获取
+  if (props.data?.currentValue !== undefined) {
+    return props.data.currentValue
+  }
+  
+  // 4. 从配置中获取
+  return currentCustomize.value.currentValue ?? 0
 })
 
 const actualUnit = computed(() => {
-  return props.data?.unit ?? props.config.customize.unit ?? ''
+  return props.boundData?.unit ?? props.primaryData?.unit ?? props.data?.unit ?? currentCustomize.value.unit ?? ''
 })
 
 const actualTitle = computed(() => {
-  return props.data?.title ?? props.config.customize.title ?? '仪表盘'
+  return props.boundData?.title ?? props.primaryData?.label ?? props.data?.title ?? currentCustomize.value.title ?? '仪表盘'
 })
+
+// 🔍 调试：监控计算后的值
+watch(
+  [actualValue, actualUnit, actualTitle],
+  ([value, unit, title]) => {
+    console.log('🎯 计算后的实际值:', {
+      value,
+      unit,
+      title,
+      fromData: !!props.data,
+      fromConfig: !props.data
+    })
+  },
+  { immediate: true }
+)
 
 /**
  * 获取当前值对应的状态颜色
  */
 const getCurrentValueColor = computed(() => {
-  const config = props.config.customize
+  const config = currentCustomize.value
   const value = actualValue.value
   
   if (!config.colorRanges || config.colorRanges.length === 0) {
@@ -109,7 +235,7 @@ const getCurrentValueColor = computed(() => {
  * ECharts 配置选项
  */
 const chartOption = computed(() => {
-  const config = props.config.customize
+  const config = currentCustomize.value
   const value = actualValue.value
   const unit = actualUnit.value
   const title = actualTitle.value
@@ -270,7 +396,7 @@ const chartOption = computed(() => {
  * 图表点击处理
  */
 const handleChartClick = (event: MouseEvent) => {
-  if (props.config.customize.clickable) {
+  if (currentCustomize.value.clickable) {
     emit('click', event)
   }
 }
@@ -279,7 +405,7 @@ const handleChartClick = (event: MouseEvent) => {
  * 监听数值变化，触发阈值警告
  */
 watch(actualValue, (newValue, oldValue) => {
-  const config = props.config.customize
+  const config = currentCustomize.value
   
   // 发出数据变化事件
   if (newValue !== oldValue) {
@@ -292,10 +418,10 @@ watch(actualValue, (newValue, oldValue) => {
   
   // 检查阈值警告
   if (config.enableThresholdAlert) {
-    if (newValue >= config.dangerThreshold) {
-      emit('threshold-exceeded', newValue, config.dangerThreshold)
-    } else if (newValue >= config.warningThreshold) {
-      emit('threshold-exceeded', newValue, config.warningThreshold)
+    if (newValue >= (config.dangerThreshold ?? 90)) {
+      emit('threshold-exceeded', newValue, config.dangerThreshold ?? 90)
+    } else if (newValue >= (config.warningThreshold ?? 70)) {
+      emit('threshold-exceeded', newValue, config.warningThreshold ?? 70)
     }
   }
 })

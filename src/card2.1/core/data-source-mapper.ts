@@ -93,7 +93,31 @@ export class DataSourceMapper {
       return result
     }
 
-    // 策略2: 直接从 executorData 根级别提取数据
+    // 🔥 策略2: 处理标准数据源格式 (primaryData.data)
+    if (executorData.primaryData && typeof executorData.primaryData === 'object') {
+      dataSourceKeys.forEach(key => {
+        if (key === 'primaryData' && executorData.primaryData) {
+          // 对于primaryData，提取.data字段的内容
+          const primaryDataObj = executorData.primaryData as any
+          result[key] = primaryDataObj.data || primaryDataObj
+        } else if (executorData.primaryData[key]) {
+          result[key] = executorData.primaryData[key]
+        } else {
+          result[key] = null
+        }
+      })
+
+      // 🔥 特殊处理：如果组件期望的是单一数据源但使用了primaryData
+      if (dataSourceKeys.length === 1 && dataSourceKeys[0] === 'primaryData') {
+        const primaryDataObj = executorData.primaryData as any
+        // 直接返回data字段的内容，而不是整个primaryData
+        result[dataSourceKeys[0]] = primaryDataObj.data || primaryDataObj
+      }
+
+      return result
+    }
+
+    // 策略3: 直接从 executorData 根级别提取数据
     dataSourceKeys.forEach(key => {
       if (key in executorData) {
         result[key] = executorData[key]
@@ -101,14 +125,6 @@ export class DataSourceMapper {
         result[key] = null
       }
     })
-
-    // 🔥 策略3: 处理多数据项合并场景（已被执行器合并后的数据）
-    // 现在执行器应该已经完成了合并，检查是否有合并后的数据
-    const hasAnyValidData = dataSourceKeys.some(key => key in executorData && executorData[key] !== null)
-
-    if (hasAnyValidData) {
-      return result // 使用策略2的结果
-    }
 
     return result
   }

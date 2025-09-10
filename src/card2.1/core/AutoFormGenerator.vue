@@ -252,6 +252,11 @@ let isUpdatingFromProps = false
 const settingGroups = computed(() => {
   const groups: Record<string, Setting[]> = {}
 
+  // 防护：确保 settings 存在且可迭代
+  if (!props.settingConfig?.settings || !Array.isArray(props.settingConfig.settings)) {
+    return groups
+  }
+
   for (const setting of props.settingConfig.settings) {
     const groupName = setting.options?.group || 'default'
     if (!groups[groupName]) {

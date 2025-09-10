@@ -32,8 +32,8 @@ export interface ConfigLayerDefinition {
 }
 
 /**
- * 最终精准的组件配置显示检查函数
- * 只有test目录下的3个测试组件才显示配置面板
+ * 精确控制组件配置显示逻辑
+ * 只有4个有settingConfig.ts的组件才显示配置面板
  */
 const shouldShowComponentConfig = (componentId: string, widget?: any): boolean => {
   try {
@@ -44,61 +44,31 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
       hasCard2Definition: !!widget?.metadata?.card2Definition
     })
 
-    // 最终策略：只有test目录下的3个测试组件才显示配置
+    // 精确匹配：只有这4个有settingConfig.ts文件的组件才显示配置面板
     if (widget?.type) {
-      // ✅ 只有这3个test组件才显示配置面板
-      const testComponentsOnly = [
-        'simple-display', // test组件 - 7个配置项
-        'dual-data-display', // test组件 - 9个配置项
-        'triple-data-display' // test组件 - 11个配置项
+      const componentsWithSettingConfig = [
+        // 测试组件 (3个)
+        'simple-display',
+        'dual-data-display', 
+        'triple-data-display',
+        // 仪表盘组件 (1个)
+        'gauge-dashboard-v2'
       ]
 
-      if (testComponentsOnly.includes(widget.type)) {
-        console.log(`✅ [ComponentRegistry-Final] 确认test组件，显示配置: ${widget.type}`)
-        return true
-      }
+      const shouldShow = componentsWithSettingConfig.includes(widget.type)
 
-      // ❌ 所有其他组件都不显示配置面板（包括统计组件）
-      const allOtherComponents = [
-        'access-num', // 统计组件，不需要用户配置
-        'alarm-info', // 统计组件，不需要用户配置
-        'alarm-count' // 统计组件，不需要用户配置
-      ]
-
-      if (allOtherComponents.includes(widget.type)) {
-        console.log(`❌ [ComponentRegistry-Final] 非test组件，隐藏配置: ${widget.type}`)
-        return false
-      }
-    }
-
-    // 检查Card2.1组件定义中的配置信息（备用检查）
-    if (widget?.metadata?.card2Definition) {
-      const card2Definition = widget.metadata.card2Definition
-
-      // 如果组件类型不在已知列表中，基于定义判断
-      const hasDefaultConfig = !!card2Definition.defaultConfig
-      const hasConfigProps = !!(
-        card2Definition.config?.properties && Object.keys(card2Definition.config.properties).length > 0
-      )
-
-      // 但是仍然要检查是否是test组件
-      const isTestComponent = widget?.type?.includes('display') || widget?.metadata?.category === '测试'
-
-      const shouldShow = (hasDefaultConfig || hasConfigProps) && isTestComponent
-
-      console.log(`📋 [ComponentRegistry-Final] Card2定义备用检查`, {
+      console.log(`📋 [ComponentRegistry-Final] 组件配置显示检查`, {
         componentType: widget.type,
-        hasDefaultConfig,
-        hasConfigProps,
-        isTestComponent,
-        决策: shouldShow ? '显示配置' : '隐藏配置(非test组件)'
+        hasSettingConfig: shouldShow,
+        允许的组件: componentsWithSettingConfig,
+        决策: shouldShow ? '显示配置面板' : '隐藏配置面板(无settingConfig.ts)'
       })
 
       return shouldShow
     }
 
-    // 对于未知组件，默认不显示配置
-    console.log(`🤔 [ComponentRegistry-Final] 未知组件，默认隐藏配置: ${widget?.type || 'unknown'}`)
+    // 对于没有类型的组件，默认不显示配置面板
+    console.log(`🤔 [ComponentRegistry-Final] 组件无类型信息，隐藏配置面板`)
     return false
   } catch (error) {
     console.error(`❌ [ComponentRegistry-Final] 配置检查出错`, { componentId, error })
