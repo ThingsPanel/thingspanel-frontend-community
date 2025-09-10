@@ -6,7 +6,9 @@
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
       "Bash(pnpm build:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm remove:*)"
     ],
     "deny": [],
     "ask": []
