@@ -8,6 +8,37 @@
 import type { Component } from 'vue'
 
 /**
+ * 支持的控件类型枚举
+ * 整合了原有的配置字段类型，提供统一的控件类型系统
+ */
+export enum SettingControlType {
+  /** 文本输入框 */
+  INPUT = 'input',
+  /** 文本域 */
+  TEXTAREA = 'textarea',
+  /** 数字输入框 */
+  INPUT_NUMBER = 'input-number',
+  /** 颜色选择器 */
+  COLOR_PICKER = 'color-picker',
+  /** 滑块 */
+  SLIDER = 'slider',
+  /** 开关 */
+  SWITCH = 'switch',
+  /** 下拉选择 */
+  SELECT = 'select',
+  /** 多选框 */
+  CHECKBOX = 'checkbox',
+  /** 单选框组 */
+  RADIO_GROUP = 'radio-group',
+  /** 日期选择器 */
+  DATE_PICKER = 'date-picker',
+  /** 动态标签 */
+  DYNAMIC_TAGS = 'dynamic-tags',
+  /** Vue组件渲染器（高级功能）*/
+  VUE_COMPONENT = 'vue-component'
+}
+
+/**
  * 设置项配置接口
  * 对应组件配置界面的每个设置项，用于生成动态配置表单
  * 

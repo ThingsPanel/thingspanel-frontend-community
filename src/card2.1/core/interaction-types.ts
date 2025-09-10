@@ -196,77 +196,20 @@ export interface InteractionResult {
   error?: string
 }
 
-// ============ 扩展配置（可选） ============
+// ============ 简化的组件交互能力定义 ============
 
 /**
- * 闪烁效果配置
- * 用于视觉反馈效果
+ * 组件交互能力声明（简化版本）
+ * 移除了冗余的示例和重复的属性暴露配置
  */
-export interface FlashConfig {
-  /** 闪烁颜色 */
-  color: string
-  /** 持续时间（毫秒） */
-  duration: number
-  /** 闪烁次数 */
-  times: number
-}
-
-// ============ 组件交互配置类型接口 ============
-
-// 组件交互能力声明
 export interface ComponentInteractionCapability {
   /** 组件支持的事件类型 */
   supportedEvents: InteractionEventType[]
-
   /** 组件支持的动作类型 */
   supportedActions: InteractionActionType[]
-
-  /** 默认交互权限 */
-  defaultPermissions: {
-    allowExternalControl: boolean
-    requirePermissionCheck: boolean
-  }
-
   /** 可被其他组件监听的属性列表 */
-  listenableProperties: string[]
-}
-
-// 交互配置示例
-export interface InteractionExample {
-  /** 示例名称 */
-  name: string
-
-  /** 示例描述 */
-  description: string
-
-  /** 示例场景 */
-  scenario: 'click-jump' | 'hover-modify' | 'data-change-action'
-
-  /** 示例配置 */
-  config: InteractionConfig
-
-  /** 适用组件类型 */
-  applicableComponents?: string[]
-}
-
-// 组件完整交互定义（用于组件index.ts）
-export interface ComponentInteractionDefinition {
-  /** 交互能力声明 */
-  capability: ComponentInteractionCapability
-
-  /** 交互配置示例 */
-  examples: InteractionExample[]
-
-  /** 属性暴露配置 */
-  propertyExposure: {
-    componentType: string
-    componentName: string
-    listenableProperties: Array<{
-      name: string
-      label: string
-      type: 'string' | 'number' | 'boolean' | 'object'
-      description?: string
-      group?: string
-    }>
-  }
+  listenableProperties: Record<string, {
+    type: 'string' | 'number' | 'boolean' | 'object'
+    description?: string
+  }>
 }

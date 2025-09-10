@@ -140,6 +140,10 @@ export interface DataValidationRule {
  * 数据源需求定义
  * 用于声明组件需要的动态数据源
  */
+/**
+ * 数据源需求定义
+ * 用于声明组件需要的动态数据源
+ */
 export interface DataSourceRequirement {
   /** 数据源唯一标识 */
   key: string
@@ -149,40 +153,15 @@ export interface DataSourceRequirement {
   description: string
   /** 支持的数据源类型 */
   supportedTypes: Array<'static' | 'api' | 'websocket' | 'mqtt' | 'database' | 'script'>
-  
-  /** 🔥 统一标准：示例数据（用于调试和配置界面显示） */
-  example?: Record<string, any>
-  
-  /** 字段映射规则 */
-  fieldMappings?: Record<string, {
-    /** 目标字段名 */
-    targetField: string
-    /** 字段类型 */
-    type: DataFieldType
-    /** 是否必填 */
-    required: boolean
-    /** 默认值 */
-    defaultValue?: any
-    /** 数据转换函数 */
-    transform?: string
-    /** 验证规则 */
-    validation?: DataValidationRule
-  }>
-  
-  /** 是否必填 */
+  /** 是否必需 */
   required?: boolean
-  /** 更新间隔（毫秒） */
-  updateInterval?: number
-  /** 错误处理配置 */
-  errorHandling?: {
-    onError: 'showLastValue' | 'showDefault' | 'showError'
-    retryCount?: number
-    retryInterval?: number
-  }
+  /** 数据示例 */
+  example?: Record<string, any>
 }
 
 /**
- * 静态参数需求定义
+ * 静态参数需求定义（简化版）
+ * UI渲染相关的配置应该在设置配置系统中定义，而不是在组件定义中
  */
 export interface StaticParamRequirement {
   /** 参数唯一标识 */
@@ -197,158 +176,42 @@ export interface StaticParamRequirement {
   defaultValue?: any
   /** 是否必填 */
   required?: boolean
-  /** 参数验证规则 */
-  validation?: {
-    min?: number
-    max?: number
-    pattern?: string
-    options?: Array<{ label: string; value: any }>
-  }
-  /** UI 渲染提示 */
-  ui?: {
-    component?: 'input' | 'select' | 'number' | 'switch' | 'textarea' | 'color' | 'slider'
-    placeholder?: string
-    label?: string
-    group?: string
-  }
 }
 
 // ============ 组件定义系统 ============
 
 /**
- * 组件定义核心接口
- * 支持泛型配置，确保类型安全
+ * 组件定义核心接口（极简化版本）
+ * 只保留运行时真正需要的核心信息
  */
 export interface ComponentDefinition<TConfig = Record<string, any>> {
-  // 基础信息
-  /** 组件类型标识 */
+  // === 核心标识信息 ===
+  /** 组件类型标识（必须唯一） */
   type: string
   /** 组件显示名称 */
   name: string
   /** 组件描述 */
   description: string
-  /** 组件分类（可选，由自动注册系统根据文件夹路径设置） */
+  /** Vue 组件实现 */
+  component: Component
+
+  // === 可选分类信息 ===
+  /** 组件分类 */
   category?: string
-  /** 子分类 */
-  subCategory?: string
-  /** 主分类 */
-  mainCategory?: string
-  /** 图标（SVG字符串） */
-  icon: string
   /** 组件版本 */
   version?: string
-  /** 组件作者 */
-  author?: string
-  /** 标签 */
+  /** 组件标签（用于搜索和分类） */
   tags?: string[]
 
-  // 组件实现
-  /** Vue 组件 */
-  component: Component
-  /** 配置组件 */
-  configComponent?: Component
-
-  // 配置系统
-  /** 默认配置对象 */
-  defaultConfig?: TConfig
-  /** 设置配置 - 用于属性暴露和配置面板 */
-  settingConfig?: any[]
-
-  // 布局系统
-  /** 默认布局配置 */
-  defaultLayout?: {
-    canvas?: {
-      width: number
-      height: number
-      x: number
-      y: number
-    }
-    gridstack?: {
-      w: number
-      h: number
-      x: number
-      y: number
-      minW?: number
-      minH?: number
-      maxW?: number
-      maxH?: number
-    }
-  }
-  
-  /** 布局选项 */
-  layout?: {
-    defaultSize?: Size
-    minSize?: Size
-    maxSize?: Size
-    resizable?: boolean
-  }
-
-  // 数据系统
+  // === 数据需求声明 ===
   /** 数据源需求 */
   dataSources?: DataSourceRequirement[]
   /** 静态参数需求 */
   staticParams?: StaticParamRequirement[]
 
-  // 功能特性
-  /** 特性标记 */
-  features?: {
-    realtime?: boolean      // 支持实时数据
-    dataBinding?: boolean   // 支持数据绑定
-    themeable?: boolean     // 支持主题定制
-    responsive?: boolean    // 支持响应式
-    configurable?: boolean  // 支持配置定制
-  }
-
-  /** 性能配置 */
-  performance?: {
-    renderOptimization?: {
-      useVirtualRendering?: boolean
-      debounceUpdate?: number
-      throttleResize?: number
-    }
-    dataUpdateOptimization?: {
-      enableDeltaUpdate?: boolean
-      batchSize?: number
-      updateThreshold?: number
-    }
-    animationOptimization?: {
-      useRequestAnimationFrame?: boolean
-      maxFPS?: number
-      enableHardwareAcceleration?: boolean
-    }
-  }
-
-  // 权限和注册
-  /** 权限配置 */
+  // === 权限控制 ===
+  /** 访问权限 */
   permission?: ComponentPermission
-  /** 是否注册到系统 */
-  isRegistered?: boolean
-
-  // 交互系统
-  /** 交互能力定义 */
-  interaction?: ComponentInteractionDefinition
-
-  // 通用属性（兼容现有系统）
-  /** 设备ID - 用于设备关联和模板配置 */
-  deviceId?: string
-  /** 指标列表 - 存储从模板配置的指标信息 */
-  metricsList?: MetricItem[]
-
-  // 遗留字段（保持向后兼容）
-  config?: Record<string, any>
-  supportedDataSources?: string[]
-  documentation?: Record<string, any>
-  properties?: Record<string, {
-    type: string
-    default: any
-    description: string
-    label?: string
-    placeholder?: string
-    min?: number
-    max?: number
-    step?: number
-    options?: Array<{ label: string; value: any }>
-  }>
 }
 
 // ============ 组件实例和配置 ============

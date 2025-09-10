@@ -268,13 +268,6 @@ export interface ComponentRegistryStats {
   invalid: number
 }
 
-// 工具函数
-export { 
-  createSetting, 
-  createCustomConfig, 
-  inferPropertyDataType 
-} from './setting-config'
-
 /**
  * Card2.1 类型系统版本
  */
