@@ -71,7 +71,7 @@ export interface TypeTestConfig {
  * 数据源需求定义（简化版本）
  * 只定义组件需要什么数据，数据映射由数据架构系统处理
  */
-const dataSourceRequirements: DataSourceRequirement[] = [
+export const dataSourceRequirements: DataSourceRequirement[] = [
   {
     key: 'realtime-data',
     name: '实时数据源',

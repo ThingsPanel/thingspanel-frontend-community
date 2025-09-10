@@ -174,12 +174,17 @@
         >
           <n-collapse>
             <n-collapse-item title="调试信息" name="debug">
-              <n-code 
-                :code="debugInfoJson" 
-                language="json"
-                show-line-numbers
-                word-wrap
-              />
+              <n-scrollbar style="max-height: 400px;">
+                <div v-for="(value, key) in debugInfo" :key="key" style="margin-bottom: 16px;">
+                  <n-h6 style="text-transform: capitalize; margin-bottom: 8px; color: #ff69b4;">{{ key }}</n-h6>
+                  <n-code 
+                    :code="JSON.stringify(value, null, 2)"
+                    language="json"
+                    show-line-numbers
+                    word-wrap
+                  />
+                </div>
+              </n-scrollbar>
             </n-collapse-item>
           </n-collapse>
         </div>
@@ -258,6 +263,9 @@ import {
   CloudOffline as OfflineIcon,
   Bug as DebugIcon
 } from '@vicons/ionicons5'
+
+// 定义组件版本
+const componentVersion = '2.1.0'
 
 // 类型导入
 import { dataSourceRequirements, type TypeTestConfig } from './definition'
@@ -344,6 +352,73 @@ const trendDirection = ref<'up' | 'down' | 'stable'>('stable')
 // 动画相关
 const displayPrimaryValue = ref(props.config.primaryValue)
 const animationTimer = ref<NodeJS.Timeout>()
+
+// ============ 事件处理 ============
+
+const handleRefresh = async () => {
+  if (isRefreshing.value) return
+  isRefreshing.value = true
+  message.info('正在刷新数据...')
+  emit('interaction', 'request-data-refresh')
+  
+  // 模拟异步刷新
+  setTimeout(() => {
+    lastUpdateTime.value = new Date()
+    isRefreshing.value = false
+    message.success('数据已刷新')
+  }, 1500)
+}
+
+const toggleDebugInfo = () => {
+  showDebugInfo.value = !showDebugInfo.value
+}
+
+const handleClick = (event: MouseEvent) => {
+  emit('interaction', 'click', { x: event.clientX, y: event.clientY })
+}
+
+const handleMouseEnter = () => {
+  if (props.config.enableAnimation) {
+    isAnimating.value = true
+  }
+}
+
+const handleMouseLeave = () => {
+  if (props.config.enableAnimation) {
+    isAnimating.value = false
+  }
+}
+
+// ============ 外部调用方法 ============
+
+const updatePrimaryValue = (newValue: number, animate = true) => {
+  if (newValue > displayPrimaryValue.value) {
+    trendDirection.value = 'up'
+  } else if (newValue < displayPrimaryValue.value) {
+    trendDirection.value = 'down'
+  } else {
+    trendDirection.value = 'stable'
+  }
+
+  if (props.config.enableAnimation && animate) {
+    if (animationTimer.value) {
+      clearTimeout(animationTimer.value)
+    }
+    animationTimer.value = setTimeout(() => {
+      displayPrimaryValue.value = newValue
+    }, props.config.animationDuration)
+  } else {
+    displayPrimaryValue.value = newValue
+  }
+  
+  lastUpdateTime.value = new Date()
+  emit('data-update', { primaryValue: newValue })
+}
+
+const update = (newConfig: Partial<TypeTestConfig>) => {
+  console.log('Component instance updated with new config:', newConfig);
+  emit('config-change', newConfig);
+};
 
 // ============ 计算属性 ============
 
@@ -456,278 +531,52 @@ const isDevelopment = computed(() => {
 })
 
 /**
- * 调试信息JSON
+ * 调试信息
+ * 将所有需要调试的 props, 计算属性, 数据源等聚合到一个对象中
+ * 方便在模板中分类展示
  */
-const debugInfoJson = computed(() => {
-  const debugInfo = {
-    config: props.config,
-    dataSourceRequirements,
-    instanceId: props.instanceId,
-    isEditMode: props.isEditMode,
-    externalData: props.externalData,
-    interactionState: props.interactionState,
+const debugInfo = computed(() => {
+  // 从 props 中安全地提取数据源数据
+  const realtimeData = (props as any).realtimeData || null
+  const historyData = (props as any).historyData || null
+
+  return {
+    props: {
+      instanceId: props.instanceId,
+      isEditMode: props.isEditMode,
+      externalData: props.externalData,
+      interactionState: props.interactionState,
+      config: props.config
+    },
+    dataSources: {
+      realtimeData: realtimeData,
+      historyData: historyData
+    },
     componentState: {
       isLoading: isLoading.value,
       isRefreshing: isRefreshing.value,
       isAnimating: isAnimating.value,
       currentStatus: currentStatus.value,
       trendDirection: trendDirection.value,
-      lastUpdateTime: lastUpdateTime.value
+      lastUpdateTime: formattedUpdateTime.value
     },
-    theme: {
+     definition: {
+       dataSourceRequirements
+     },
+      theme: {
       isDarkTheme: isDarkTheme.value,
-      themeVars: themeVars.value
+      // themeVars: themeVars.value // 避免过多内容
     }
   }
-  return JSON.stringify(debugInfo, null, 2)
 })
 
 /**
- * 组件版本信息
+ * 调试信息JSON (仅用于暴露给外部)
  */
-const componentVersion = computed(() => '2.1.0')
-
-// ============ 方法定义 ============
-
-/**
- * 处理点击事件
- */
-const handleClick = (event: MouseEvent) => {
-  console.log('组件点击事件:', { instanceId: props.instanceId, event })
-  
-  // 发射交互事件
-  emit('interaction', 'click', {
-    position: { x: event.clientX, y: event.clientY },
-    timestamp: new Date(),
-    config: props.config
-  })
-  
-  // 触发点击动画（如果启用）
-  if (props.config.enableAnimation) {
-    triggerClickAnimation()
-  }
-}
-
-/**
- * 处理鼠标悬停事件
- */
-const handleMouseEnter = () => {
-  emit('interaction', 'hover', {
-    type: 'enter',
-    timestamp: new Date()
-  })
-}
-
-const handleMouseLeave = () => {
-  emit('interaction', 'hover', {
-    type: 'leave', 
-    timestamp: new Date()
-  })
-}
-
-/**
- * 刷新数据
- */
-const handleRefresh = async () => {
-  if (isRefreshing.value) return
-  
-  try {
-    isRefreshing.value = true
-    
-    // 模拟数据刷新
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // 更新时间戳
-    lastUpdateTime.value = new Date()
-    
-    // 模拟数据变化
-    const newValue = Math.random() * 100
-    updatePrimaryValue(newValue)
-    
-    // 随机更新状态
-    const statuses: Array<typeof currentStatus.value> = ['normal', 'warning', 'error', 'offline']
-    currentStatus.value = statuses[Math.floor(Math.random() * statuses.length)]
-    
-    // 随机更新趋势
-    const trends: Array<typeof trendDirection.value> = ['up', 'down', 'stable']
-    trendDirection.value = trends[Math.floor(Math.random() * trends.length)]
-    
-    // 发射数据更新事件
-    emit('data-update', {
-      primaryValue: newValue,
-      status: currentStatus.value,
-      trend: trendDirection.value,
-      timestamp: lastUpdateTime.value
-    })
-    
-    message.success('数据刷新成功')
-    
-  } catch (error) {
-    console.error('数据刷新失败:', error)
-    message.error('数据刷新失败')
-    emit('error', error as Error)
-  } finally {
-    isRefreshing.value = false
-  }
-}
-
-/**
- * 更新主要数值（带动画）
- */
-const updatePrimaryValue = (newValue: number) => {
-  if (!props.config.enableAnimation) {
-    displayPrimaryValue.value = newValue
-    return
-  }
-  
-  // 清除之前的动画
-  if (animationTimer.value) {
-    clearTimeout(animationTimer.value)
-  }
-  
-  isAnimating.value = true
-  
-  // 数值渐变动画
-  const startValue = displayPrimaryValue.value
-  const diff = newValue - startValue
-  const steps = Math.max(10, Math.min(50, props.config.animationDuration / 20))
-  const stepValue = diff / steps
-  const stepDuration = props.config.animationDuration / steps
-  
-  let currentStep = 0
-  
-  const animate = () => {
-    currentStep++
-    displayPrimaryValue.value = startValue + (stepValue * currentStep)
-    
-    if (currentStep < steps) {
-      animationTimer.value = setTimeout(animate, stepDuration)
-    } else {
-      displayPrimaryValue.value = newValue
-      isAnimating.value = false
-    }
-  }
-  
-  animate()
-}
-
-/**
- * 触发点击动画效果
- */
-const triggerClickAnimation = () => {
-  // 这里可以添加自定义的点击动画效果
-  // 例如：缩放动画、波纹效果等
-  console.log('触发点击动画效果')
-}
-
-/**
- * 切换调试信息显示
- */
-const toggleDebugInfo = () => {
-  showDebugInfo.value = !showDebugInfo.value
-}
-
-// ============ 监听器 ============
-
-/**
- * 监听配置变化
- */
-watch(
-  () => props.config,
-  (newConfig, oldConfig) => {
-    console.log('配置发生变化:', { newConfig, oldConfig })
-    
-    // 如果主要数值发生变化，触发动画更新
-    if (newConfig.primaryValue !== oldConfig?.primaryValue) {
-      updatePrimaryValue(newConfig.primaryValue)
-      
-      // 发射数据变化交互事件
-      emit('interaction', 'dataChange', {
-        field: 'primaryValue',
-        oldValue: oldConfig?.primaryValue,
-        newValue: newConfig.primaryValue,
-        timestamp: new Date()
-      })
-    }
-    
-    emit('config-change', newConfig)
-  },
-  { deep: true }
-)
-
-/**
- * 监听外部数据变化
- */
-watch(
-  () => props.externalData,
-  (newData) => {
-    console.log('外部数据发生变化:', newData)
-    
-    // 处理外部数据更新逻辑
-    if (newData.primaryValue !== undefined) {
-      updatePrimaryValue(newData.primaryValue)
-    }
-    
-    if (newData.status) {
-      currentStatus.value = newData.status
-    }
-    
-    if (newData.trend) {
-      trendDirection.value = newData.trend
-    }
-    
-    lastUpdateTime.value = new Date()
-  },
-  { deep: true }
-)
-
-/**
- * 监听交互状态变化
- */
-watch(
-  () => props.interactionState,
-  (newState) => {
-    console.log('交互状态发生变化:', newState)
-    // 这里可以根据交互状态调整组件样式
-  },
-  { deep: true }
-)
-
-// ============ 生命周期钩子 ============
-
-onMounted(() => {
-  console.log('类型测试组件已挂载:', props.instanceId)
-  
-  // 初始化数据
-  lastUpdateTime.value = new Date()
-  updatePrimaryValue(props.config.primaryValue)
-  
-  // 发射生命周期事件
-  emit('lifecycle', 'mounted')
-  
-  nextTick(() => {
-    console.log('组件DOM已更新完成')
-  })
+const debugInfoJson = computed(() => {
+  return JSON.stringify(debugInfo.value, null, 2)
 })
 
-onUnmounted(() => {
-  console.log('类型测试组件即将卸载:', props.instanceId)
-  
-  // 清理定时器
-  if (animationTimer.value) {
-    clearTimeout(animationTimer.value)
-  }
-  
-  // 发射生命周期事件
-  emit('lifecycle', 'unmounted')
-})
-
-// ============ 组件暴露 ============
-
-/**
- * 向外暴露的方法和属性
- * 供父组件或编辑器调用
- */
 defineExpose({
   // 实例信息
   instanceId: props.instanceId,
@@ -743,6 +592,7 @@ defineExpose({
   refresh: handleRefresh,
   updateValue: updatePrimaryValue,
   toggleDebug: toggleDebugInfo,
+  update: update,
   
   // 配置访问
   getConfig: () => props.config,
