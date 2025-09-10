@@ -106,16 +106,7 @@ export const gaugeDashboardV2Definition: ComponentDefinition<GaugeDashboardV2Con
       name: '主数据源',
       description: '仪表盘的主要数据源，用于显示当前数值',
       supportedTypes: ['static', 'api', 'websocket', 'mqtt'],
-      // 🔥 正确的示例数据格式
-      config: {
-        exampleData: {
-          "value": 65,
-          "unit": "℃",
-          "label": "温度传感器",
-          "timestamp": 1694567890123
-        }
-      },
-      // 🔥 同时也在顶层添加一份，以防不同逻辑路径
+      // 🔥 统一标准：只使用 example 字段
       example: {
         "value": 65,
         "unit": "℃",
@@ -162,54 +153,6 @@ export const gaugeDashboardV2Definition: ComponentDefinition<GaugeDashboardV2Con
         onError: 'showLastValue',
         retryCount: 3,
         retryInterval: 5000
-      },
-      // 🔥 添加示例数据
-      exampleData: {
-        "value": 65,
-        "unit": "℃",
-        "label": "温度传感器",
-        "timestamp": 1694567890123
-      },
-      // 🔥 添加API示例
-      examples: {
-        static: {
-          name: '静态数据示例',
-          data: {
-            "value": 65,
-            "unit": "℃", 
-            "label": "温度传感器"
-          }
-        },
-        api: {
-          name: 'API数据示例',
-          url: '/api/sensor/temperature/latest',
-          method: 'GET',
-          responseExample: {
-            "data": {
-              "value": 72.5,
-              "unit": "℃",
-              "deviceName": "温度传感器-01",
-              "timestamp": "2024-09-10T10:30:00Z"
-            },
-            "status": "success"
-          },
-          pathMapping: {
-            "value": "data.value",
-            "unit": "data.unit", 
-            "label": "data.deviceName",
-            "timestamp": "data.timestamp"
-          }
-        },
-        websocket: {
-          name: 'WebSocket数据示例',
-          endpoint: 'ws://localhost:8080/sensor/temperature',
-          messageExample: {
-            "deviceId": "temp001",
-            "value": 68.3,
-            "unit": "℃",
-            "timestamp": 1694567890123
-          }
-        }
       }
     }
   ],
