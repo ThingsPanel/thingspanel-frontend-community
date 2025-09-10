@@ -1,8 +1,10 @@
 <script setup lang="tsx">
 import { computed, defineProps, getCurrentInstance, nextTick, onMounted, reactive, ref } from 'vue'
 import { NButton, NDataTable, NForm, NFormItem, NInput, NModal, NPagination, NPopconfirm, NTag } from 'naive-ui'
-import Codemirror from 'codemirror-editor-vue3'
+import CodeMirror from 'vue-codemirror6'
+import { javascript } from '@codemirror/lang-javascript'
 import { $t } from '@/locales'
+import { useThemeStore } from '@/store/modules/theme'
 import { isJSON } from '@/utils/common/tool'
 import {
   deviceCustomControlAdd,
@@ -14,6 +16,10 @@ import {
 const props = defineProps<{
   id: string
 }>()
+
+// 主题系统集成
+const themeStore = useThemeStore()
+
 const configFormRules = ref({
   name: {
     required: true,
@@ -45,21 +51,13 @@ const getControlList = (page: number = 1) => {
   })
 }
 const cmRef = ref()
-const cmOptions = {
-  mode: 'text/javascript',
-  lineNumbers: false
-}
 
-const onReady = cm => {
-  const lastLine = cm.lineCount() - 1
-  const lastCh = cm.getLine(lastLine).length
-  cm.focus()
-  cm.setCursor({ line: lastLine, ch: lastCh })
-}
 const setupEditor = () => {
   nextTick(() => {
+    // CodeMirror 6 自动处理刷新
     if (cmRef.value) {
-      cmRef.value.refresh() // ensure the editor is correctly refreshed
+      // 聚焦编辑器
+      cmRef.value.focus()
     }
   })
 }
@@ -221,15 +219,15 @@ const inputFeedback = computed(() => {
             :validation-status="validationJson"
             :feedback="inputFeedback"
           >
-            <Codemirror
+            <CodeMirror
               ref="cmRef"
-              v-model:value="commandjson.formjson.content"
-              :options="cmOptions"
-              height="100"
-              keepcursorinend
-              border
-              @ready="onReady"
-            ></Codemirror>
+              v-model="commandjson.formjson.content"
+              basic
+              :dark="themeStore.darkMode"
+              :lang="javascript()"
+              :style="{ height: '100px', border: '1px solid var(--n-border-color)', borderRadius: 'var(--n-border-radius)' }"
+              :placeholder="$t('generate.or-enter-here')"
+            />
             <!-- <NInput v-model:value="commandjson.formjson.content" :placeholder="$t('generate.or-enter-here')" /> -->
           </NFormItem>
           <NFormItem :label="$t('generate.enableStatus')" path="enable_status">
