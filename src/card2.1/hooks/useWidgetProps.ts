@@ -6,7 +6,7 @@
 
 import { ref, onUnmounted, watch } from 'vue'
 import type { Ref } from 'vue'
-import type { ComponentDefinition, WidgetConfiguration } from '../core/types'
+import type { ComponentDefinition, WidgetConfiguration } from '@/card2.1/types'
 import { dataSourceCenter } from '../core/data-sources'
 import type { DataSourceSubscription } from '../core/data-source-center'
 

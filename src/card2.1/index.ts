@@ -158,7 +158,7 @@ export type { ComponentTree, ComponentCategory } from './core/auto-registry'
 
 // 导出权限相关工具
 export * from './core/permission-utils'
-export type { ComponentPermission } from './core/types'
+export type { ComponentPermission } from './types'
 
 // 导出 Hooks
 export * from './hooks'

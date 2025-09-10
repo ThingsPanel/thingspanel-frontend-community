@@ -3,7 +3,7 @@
  * 为 Card 2.1 组件提供编辑器集成的标准配置
  */
 
-import type { ComponentDefinition } from '../core/types'
+import type { ComponentDefinition } from '@/card2.1/types'
 import { Card2ComponentMap, Card2Components, ComponentStats } from '../components'
 
 // ============ 编辑器组件转换器 ============

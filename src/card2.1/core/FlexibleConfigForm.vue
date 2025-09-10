@@ -25,7 +25,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { NTag } from 'naive-ui'
 import type { Component } from 'vue'
 import AutoFormGenerator from './AutoFormGenerator.vue'
-import type { TSConfig, ConfigMode, ConfigValues } from './config-types'
+import type { TSConfig, ConfigMode, ConfigValues } from '@/card2.1/types/setting-config'
 import { FlexibleConfigManager } from './config-manager'
 
 interface Props {

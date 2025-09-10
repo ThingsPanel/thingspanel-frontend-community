@@ -4,7 +4,7 @@
  */
 
 import AccessNumCard from './AccessNumCard.vue'
-import type { ComponentDefinition } from '../../../core/types'
+import type { ComponentDefinition } from '@/card2.1/types'
 
 const accessNumDefinition: ComponentDefinition = {
   // 基本信息 - 保持与历史数据的兼容性

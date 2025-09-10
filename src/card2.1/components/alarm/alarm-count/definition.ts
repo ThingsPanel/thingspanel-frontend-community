@@ -3,7 +3,7 @@
  * 展示系统告警设备总数的统计信息
  */
 
-import type { ComponentDefinition } from '@/card2.1/core/types'
+import type { ComponentDefinition } from '@/card2.1/types'
 import AlarmCountComponent from './index.vue'
 import { alarmCountSettingConfig } from './settingConfig'
 import { componentRegistry } from '@/card2.1/core/component-registry'

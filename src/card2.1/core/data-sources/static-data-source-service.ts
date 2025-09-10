@@ -3,7 +3,7 @@
  * 提供静态数据的数据源服务
  */
 
-import type { DataSourceInfo } from '../types'
+import type { DataSourceInfo } from '@/card2.1/types'
 import type { DataSourceService, DataSourceSubscription } from '../data-source-center'
 
 export interface StaticDataSourceConfig {

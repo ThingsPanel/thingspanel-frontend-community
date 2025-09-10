@@ -4,7 +4,7 @@
  * 支持动态发现和注册所有符合规范的组件
  */
 
-import type { ComponentDefinition } from '../core/types'
+import type { ComponentDefinition } from '@/card2.1/types'
 import { autoRegistry } from './auto-registry'
 import { ComponentRegistry } from '../core/component-registry'
 

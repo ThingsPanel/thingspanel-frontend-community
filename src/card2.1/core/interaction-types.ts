@@ -1,23 +1,28 @@
 /**
  * Card2.1 组件交互系统类型定义
  * 定义组件如何响应外部交互的类型系统
+ * 优化后的简洁版本，移除了冗余和过时的类型定义
  */
 
-// 交互事件类型 - 简化为3种核心事件
+// ============ 核心交互类型 ============
+
+/**
+ * 交互事件类型
+ * 简化为3种核心事件类型
+ */
 export type InteractionEventType =
   | 'click' // 点击事件
   | 'hover' // 悬停事件
   | 'dataChange' // 数据变化事件（属性改变时）
 
-// 交互响应动作类型 - 简化为2种核心动作
+/**
+ * 交互响应动作类型
+ * 简化为2种核心动作类型
+ */
 export type InteractionActionType =
   | 'jump' // URL跳转（包含外部URL和内部菜单）
   | 'modify' // 修改目标组件属性
 
-// 🔥 为兼容性保留的映射类型（内部使用）
-export type LegacyInteractionActionType =
-  | 'navigateToUrl' // 映射到 jump
-  | 'updateComponentData' // 映射到 modify
 
 // 跳转类型枚举
 export type JumpType = 'external' | 'internal'
@@ -39,25 +44,23 @@ export interface ModifyConfig {
   updateMode?: 'replace' | 'append' | 'prepend' // 更新模式
 }
 
-// 交互响应配置 - 简化版
+/**
+ * 交互响应配置
+ * 清理后的简化版本，移除了冗余的兼容性字段
+ */
 export interface InteractionResponse {
+  /** 交互动作类型 */
   action: InteractionActionType
-
-  // 根据动作类型的具体配置
-  jumpConfig?: JumpConfig // jump动作的配置
-  modifyConfig?: ModifyConfig // modify动作的配置
-
-  // 通用属性
-  delay?: number // 延迟时间（毫秒）
-
-  // 🔥 为兼容性保留的旧字段（已废弃，仅供内部映射使用）
-  value?: any
-  target?: string
-  windowFeatures?: string
-  targetComponentId?: string
-  targetProperty?: string
-  updateValue?: any
-  updateMode?: 'replace' | 'append' | 'prepend'
+  /** URL跳转配置（当action为'jump'时） */
+  jumpConfig?: JumpConfig
+  /** 属性修改配置（当action为'modify'时） */
+  modifyConfig?: ModifyConfig
+  /** 延迟执行时间（毫秒） */
+  delay?: number
+  /** 响应配置名称 */
+  name?: string
+  /** 是否启用此响应 */
+  enabled?: boolean
 }
 
 // 交互触发类型 - 区分是节点触发还是组件内部触发
@@ -78,11 +81,21 @@ export interface InteractionConfig {
   condition?: DataChangeCondition // 条件配置（仅dataChange事件使用）
 }
 
-// 数据变化条件 - 简化版
+/**
+ * 数据变化条件配置
+ * 统一的条件配置系统
+ */
 export interface DataChangeCondition {
-  property?: string // 属性名
-  operator: 'equals' | 'notEquals' | 'greaterThan' | 'lessThan' | 'contains'
-  value: any // 比较值
+  /** 监听的属性名 */
+  property?: string
+  /** 比较运算符 */
+  operator: 'equals' | 'notEquals' | 'greaterThan' | 'lessThan' | 'greaterThanOrEqual' | 'lessThanOrEqual' | 'contains' | 'startsWith' | 'endsWith'
+  /** 比较值 */
+  value: any
+  /** 范围最小值（用于范围比较） */
+  minValue?: any
+  /** 范围最大值（用于范围比较） */
+  maxValue?: any
 }
 
 // 组件交互状态
@@ -138,53 +151,64 @@ export interface InteractionResponseResult {
   error?: string
 }
 
-// 条件配置
-export interface ConditionConfig {
-  type: 'comparison' | 'range' | 'expression' // 条件类型
-  field?: string // 监听的字段名
-  operator?: ComparisonOperator // 比较运算符
-  value?: any // 比较值
-  minValue?: any // 范围条件的最小值
-  maxValue?: any // 范围条件的最大值
-  expression?: string // 自定义表达式
+
+// ============ 类型别名和简化接口 ============
+
+/**
+ * 比较运算符类型别名
+ * 从DataChangeCondition中提取的运算符类型
+ */
+export type ComparisonOperator = DataChangeCondition['operator']
+
+/**
+ * 交互触发器类型
+ * 区分节点级别和组件级别的触发
+ */
+export type InteractionTrigger = 'node' | 'component'
+
+/**
+ * 交互事件简化类型
+ * 常用的事件数据接口
+ */
+export interface InteractionEvent {
+  /** 事件类型 */
+  type: InteractionEventType
+  /** 事件来源组件ID */
+  sourceId: string
+  /** 事件时间戳 */
+  timestamp: Date
+  /** 事件附加数据 */
+  data?: any
 }
 
-// 比较运算符
-export type ComparisonOperator =
-  | 'equals' // 等于 (==)
-  | 'notEquals' // 不等于 (!=)
-  | 'greaterThan' // 大于 (>)
-  | 'greaterThanOrEqual' // 大于等于 (>=)
-  | 'lessThan' // 小于 (<)
-  | 'lessThanOrEqual' // 小于等于 (<=)
-  | 'contains' // 包含
-  | 'startsWith' // 以...开始
-  | 'endsWith' // 以...结束
-
-// 扩展的交互响应配置，支持跨组件动作
-export interface CrossComponentResponse extends InteractionResponse {
-  targetComponentId: string // 目标组件ID
-  targetProperty?: string // 目标属性名（用于数据修改）
+/**
+ * 交互响应简化类型
+ * 常用的响应结果接口
+ */
+export interface InteractionResult {
+  /** 是否成功执行 */
+  success: boolean
+  /** 执行的动作类型 */
+  action: InteractionActionType
+  /** 目标组件ID */
+  targetId?: string
+  /** 错误信息（如果失败） */
+  error?: string
 }
 
-// 闪烁配置
+// ============ 扩展配置（可选） ============
+
+/**
+ * 闪烁效果配置
+ * 用于视觉反馈效果
+ */
 export interface FlashConfig {
-  color: string // 闪烁颜色
-  duration: number // 持续时间
-  times: number // 闪烁次数
-}
-
-// URL跳转配置
-export interface NavigationConfig {
-  url: string // 目标URL
-  target?: '_blank' | '_self' | '_parent' | '_top' // 打开方式
-}
-
-// 数据更新配置
-export interface DataUpdateConfig {
-  targetProperty: string // 目标属性
-  updateValue: any // 更新值
-  updateMode?: 'replace' | 'append' | 'prepend' // 更新模式
+  /** 闪烁颜色 */
+  color: string
+  /** 持续时间（毫秒） */
+  duration: number
+  /** 闪烁次数 */
+  times: number
 }
 
 // ============ 组件交互配置类型接口 ============

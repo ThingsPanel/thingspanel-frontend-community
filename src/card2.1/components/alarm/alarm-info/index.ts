@@ -4,7 +4,7 @@
  */
 
 import AlarmInfoCard from './AlarmInfoCard.vue'
-import type { ComponentDefinition } from '../../../core/types'
+import type { ComponentDefinition } from '@/card2.1/types'
 
 const alarmInfoDefinition: ComponentDefinition = {
   // 基本信息 - 保持与历史数据的兼容性

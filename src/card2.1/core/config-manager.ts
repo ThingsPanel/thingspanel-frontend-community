@@ -3,7 +3,7 @@
  * 负责检测配置模式和生成表单
  */
 import type { Component } from 'vue'
-import type { TSConfig, FlexibleConfigDefinition, ConfigMode, ConfigValues } from './config-types'
+import type { TSConfig, ConfigMode, ConfigValues } from '@/card2.1/types/setting-config'
 
 export class FlexibleConfigManager {
   /**
@@ -13,9 +13,9 @@ export class FlexibleConfigManager {
     if (vueConfig && tsConfig) {
       return 'hybrid'
     } else if (tsConfig) {
-      return 'ts-only'
+      return 'standard'
     } else if (vueConfig) {
-      return 'vue-only'
+      return 'vue-component'
     }
 
     throw new Error('至少需要提供一种配置方式')

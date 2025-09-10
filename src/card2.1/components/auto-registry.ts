@@ -3,7 +3,7 @@
  * 自动扫描并注册所有符合规范的组件，按文件夹严格分类
  */
 
-import type { ComponentDefinition } from '../core/types'
+import type { ComponentDefinition } from '@/card2.1/types'
 import {
   getCategoryByFolderPath,
   getCategoryDisplayName,

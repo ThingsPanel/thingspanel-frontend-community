@@ -11,7 +11,7 @@ import {
   getComponentsByCategory as getComponentsByCategoryFromIndex,
   getCategories
 } from '../index'
-import type { ComponentDefinition } from '../core/types'
+import type { ComponentDefinition } from '@/card2.1/types'
 import type { ComponentTree, ComponentCategory } from '../core/auto-registry'
 
 // 🔥 全局共享状态，确保多个实例同步
