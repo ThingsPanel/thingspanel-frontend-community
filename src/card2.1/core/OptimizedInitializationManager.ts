@@ -114,13 +114,17 @@ export class OptimizedInitializationManager {
 
     // 检查是否需要重新初始化
     if (!forceReload && this.shouldSkipInitialization(cacheTimeout)) {
-      console.log('🚀 [OptimizedInitialization] 使用缓存结果，跳过重复初始化')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚀 [OptimizedInitialization] 使用缓存结果，跳过重复初始化')
+      }
       return
     }
 
     // 防止并发初始化
     if (this.initializationPromise) {
-      console.log('⏳ [OptimizedInitialization] 等待现有初始化完成')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⏳ [OptimizedInitialization] 等待现有初始化完成')
+      }
       return this.initializationPromise
     }
 
@@ -146,21 +150,27 @@ export class OptimizedInitializationManager {
     const now = Date.now()
     const cacheAge = now - this.cachedResult.timestamp
     if (cacheAge > cacheTimeout) {
-      console.log('🔄 [OptimizedInitialization] 缓存已过期，需要重新初始化')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 [OptimizedInitialization] 缓存已过期，需要重新初始化')
+      }
       return false
     }
 
     // 检查用户权限是否发生变化
     const currentAuthority = this.getCurrentUserAuthority()
     if (this.state.userAuthority !== currentAuthority) {
-      console.log('🔐 [OptimizedInitialization] 用户权限已变更，需要重新初始化')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔐 [OptimizedInitialization] 用户权限已变更，需要重新初始化')
+      }
       return false
     }
 
     // 检查组件注册数量是否发生变化（简单的变更检测）
     const currentRegisteredCount = componentRegistry.getAll().length
     if (this.state.registeredCount !== currentRegisteredCount) {
-      console.log('📦 [OptimizedInitialization] 组件注册数量已变更，需要重新初始化')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📦 [OptimizedInitialization] 组件注册数量已变更，需要重新初始化')
+      }
       return false
     }
 
@@ -172,7 +182,9 @@ export class OptimizedInitializationManager {
    */
   private async performInitialization(skipPermissionCheck: boolean): Promise<void> {
     const startTime = Date.now()
-    console.log('🚀 [OptimizedInitialization] 开始系统初始化')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚀 [OptimizedInitialization] 开始系统初始化')
+    }
 
     try {
       // 1. 加载组件模块（智能缓存）
@@ -180,11 +192,15 @@ export class OptimizedInitializationManager {
 
       // 2. 获取组件统计信息
       const componentStats = this.componentLoader.getComponentStats(componentModules)
-      console.log('📊 [OptimizedInitialization] 组件统计:', componentStats)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 [OptimizedInitialization] 组件统计:', componentStats)
+      }
 
       // 3. 自动注册组件（包含权限过滤）
       const registeredComponents = await this.autoRegistry.autoRegister(componentModules)
-      console.log('✅ [OptimizedInitialization] 注册组件数量:', registeredComponents.length)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ [OptimizedInitialization] 注册组件数量:', registeredComponents.length)
+      }
 
       // 4. 注册预设的数据需求
       componentDataRequirementsRegistry.registerPresets()
@@ -211,7 +227,9 @@ export class OptimizedInitializationManager {
       }
 
       const duration = Date.now() - startTime
-      console.log(`✨ [OptimizedInitialization] 初始化完成，耗时: ${duration}ms`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✨ [OptimizedInitialization] 初始化完成，耗时: ${duration}ms`)
+      }
     } catch (error) {
       console.error('❌ [OptimizedInitialization] 初始化失败:', error)
       throw error
@@ -309,11 +327,15 @@ export class OptimizedInitializationManager {
 
     // 如果权限没有变化，跳过重新过滤
     if (this.state.userAuthority === currentAuthority) {
-      console.log('🔐 [OptimizedInitialization] 权限未变更，跳过重新过滤')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔐 [OptimizedInitialization] 权限未变更，跳过重新过滤')
+      }
       return
     }
 
-    console.log('🔄 [OptimizedInitialization] 权限已变更，重新应用过滤')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 [OptimizedInitialization] 权限已变更，重新应用过滤')
+    }
 
     // 重新初始化以应用新的权限过滤
     await this.initialize({ forceReload: true })
@@ -344,7 +366,9 @@ export class OptimizedInitializationManager {
    * 清除缓存（强制重新初始化）
    */
   public clearCache(): void {
-    console.log('🗑️ [OptimizedInitialization] 清除缓存')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🗑️ [OptimizedInitialization] 清除缓存')
+    }
     this.state.isInitialized = false
     this.cachedResult = null
     this.initializationPromise = null
@@ -354,7 +378,9 @@ export class OptimizedInitializationManager {
    * 预热缓存（在应用启动时调用）
    */
   public async warmupCache(): Promise<void> {
-    console.log('🔥 [OptimizedInitialization] 开始预热缓存')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔥 [OptimizedInitialization] 开始预热缓存')
+    }
     await this.initialize({ forceReload: false })
   }
 
@@ -372,7 +398,7 @@ export class OptimizedInitializationManager {
       const currentHash = this.generateModuleHash(currentModules)
 
       const hasChanges = currentHash !== this.state.moduleHash
-      if (hasChanges) {
+      if (hasChanges && process.env.NODE_ENV === 'development') {
         console.log('🔄 [OptimizedInitialization] 检测到组件变更')
       }
 
@@ -389,9 +415,11 @@ export class OptimizedInitializationManager {
     const hasChanges = await this.checkForUpdates()
 
     if (hasChanges) {
-      console.log('📝 [OptimizedInitialization] 执行增量更新')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📝 [OptimizedInitialization] 执行增量更新')
+      }
       await this.initialize({ forceReload: true })
-    } else {
+    } else if (process.env.NODE_ENV === 'development') {
       console.log('✨ [OptimizedInitialization] 无需增量更新')
     }
   }

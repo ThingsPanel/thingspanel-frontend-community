@@ -70,34 +70,46 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
     error.value = null
 
     try {
-      console.log('🔧 [useComponentTree] 调用 initializeCard2System...')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 [useComponentTree] 调用 initializeCard2System...')
+      }
       await initializeCard2System()
 
-      console.log('🔧 [useComponentTree] 调用 getComponentTree...')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 [useComponentTree] 调用 getComponentTree...')
+      }
       const tree = getComponentTree()
-      console.log('🔧 [useComponentTree] 获取到组件树:', {
-        componentsCount: tree.components.length,
-        categoriesCount: tree.categories.length,
-        totalCount: tree.totalCount,
-        rawTree: tree
-      })
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 [useComponentTree] 获取到组件树:', {
+          componentsCount: tree.components.length,
+          categoriesCount: tree.categories.length,
+          totalCount: tree.totalCount,
+          rawTree: tree
+        })
 
-      console.log('🔧 [useComponentTree] 赋值前 componentTree.value:', componentTree.value)
+        console.log('🔧 [useComponentTree] 赋值前 componentTree.value:', componentTree.value)
+      }
       componentTree.value = tree
-      console.log('🔧 [useComponentTree] 赋值后 componentTree.value:', componentTree.value)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 [useComponentTree] 赋值后 componentTree.value:', componentTree.value)
+      }
 
       // 🔥 修复：强制触发响应性更新
-      console.log('🔧 [useComponentTree] 触发响应性更新...')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 [useComponentTree] 触发响应性更新...')
+      }
       componentTree.value = { ...tree }
 
       // 🔥 修复：标记全局初始化完成
       globalInitialized = true
 
-      console.log('✅ [useComponentTree] 初始化完成，最终状态:', {
-        componentTreeValue: componentTree.value,
-        filteredComponentsLength: filteredComponents.value.length,
-        globalInitialized
-      })
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ [useComponentTree] 初始化完成，最终状态:', {
+          componentTreeValue: componentTree.value,
+          filteredComponentsLength: filteredComponents.value.length,
+          globalInitialized
+        })
+      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : '初始化失败'
       console.error('❌ [useComponentTree] 初始化失败:', err)
@@ -247,24 +259,30 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
    * Card2Wrapper 需要此方法来加载实际的 Vue 组件
    */
   const getComponent = async (componentType: string) => {
-    console.log(`🔧 [useComponentTree] getComponent 被调用:`, {
-      componentType,
-      isLoading: isLoading.value,
-      error: error.value,
-      componentTreeData: componentTree.value,
-      filteredComponentsCount: filteredComponents.value?.length || 0,
-      allFilteredComponents: filteredComponents.value?.map(c => c.type) || []
-    })
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 [useComponentTree] getComponent 被调用:`, {
+        componentType,
+        isLoading: isLoading.value,
+        error: error.value,
+        componentTreeData: componentTree.value,
+        filteredComponentsCount: filteredComponents.value?.length || 0,
+        allFilteredComponents: filteredComponents.value?.map(c => c.type) || []
+      })
+    }
 
     // 🔥 调试：如果没有组件，强制重新初始化
     if (filteredComponents.value.length === 0) {
-      console.warn(`⚠️ [useComponentTree] 没有可用组件，强制重新初始化...`)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`⚠️ [useComponentTree] 没有可用组件，强制重新初始化...`)
+      }
       await initialize()
 
-      console.log(`🔧 [useComponentTree] 重新初始化后:`, {
-        componentsCount: filteredComponents.value?.length || 0,
-        allComponents: filteredComponents.value?.map(c => c.type) || []
-      })
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔧 [useComponentTree] 重新初始化后:`, {
+          componentsCount: filteredComponents.value?.length || 0,
+          allComponents: filteredComponents.value?.map(c => c.type) || []
+        })
+      }
     }
 
     // 从已注册的组件中查找
@@ -272,20 +290,24 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
 
     if (!componentDefinition) {
       console.error(`❌ [useComponentTree] 组件类型未找到: ${componentType}`)
-      console.log(
-        `❌ [useComponentTree] 可用组件:`,
-        filteredComponents.value.map(c => c.type)
-      )
-      console.log(`❌ [useComponentTree] componentTree原始数据:`, componentTree.value)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `❌ [useComponentTree] 可用组件:`,
+          filteredComponents.value.map(c => c.type)
+        )
+        console.log(`❌ [useComponentTree] componentTree原始数据:`, componentTree.value)
+      }
       return null
     }
 
-    console.log(`✅ [useComponentTree] 找到组件定义:`, {
-      type: componentDefinition.type,
-      name: componentDefinition.name,
-      hasComponent: !!componentDefinition.component,
-      componentKeys: componentDefinition.component ? Object.keys(componentDefinition.component) : []
-    })
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ [useComponentTree] 找到组件定义:`, {
+        type: componentDefinition.type,
+        name: componentDefinition.name,
+        hasComponent: !!componentDefinition.component,
+        componentKeys: componentDefinition.component ? Object.keys(componentDefinition.component) : []
+      })
+    }
 
     // 返回组件实例
     return componentDefinition.component

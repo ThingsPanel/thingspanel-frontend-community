@@ -44,11 +44,13 @@ export async function initializeCard2System() {
 
   // 返回兼容性信息
   const stats = optimizedInitializationManager.getCacheStats()
-  console.log('✅ [Card2.1] 系统初始化完成（优化版）:', {
-    componentCount: stats.componentCount,
-    cacheAge: stats.cacheAge,
-    userAuthority: stats.userAuthority
-  })
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ [Card2.1] 系统初始化完成（优化版）:', {
+      componentCount: stats.componentCount,
+      cacheAge: stats.cacheAge,
+      userAuthority: stats.userAuthority
+    })
+  }
 }
 
 /**

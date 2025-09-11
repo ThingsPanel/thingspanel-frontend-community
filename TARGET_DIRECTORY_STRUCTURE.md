@@ -95,6 +95,30 @@ src/
     │   │       ├── component-discovery.ts
     │   │       └── auto-loader.ts
     │   │
+    │   ├── interaction-engine/         # 统一交互引擎
+    │   │   ├── index.ts                # 交互引擎入口
+    │   │   ├── interaction-manager.ts  # 交互管理器
+    │   │   ├── config-registry.ts      # 配置注册表
+    │   │   └── components/             # 交互组件
+    │   │       ├── index.ts
+    │   │       ├── InteractionCardWizard.vue
+    │   │       ├── InteractionPreview.vue
+    │   │       └── InteractionTemplateSelector.vue
+    │   │
+    │   ├── script-engine/              # 统一脚本引擎
+    │   │   ├── index.ts                # 脚本引擎入口
+    │   │   ├── script-engine.ts        # 脚本引擎核心
+    │   │   ├── executor.ts             # 脚本执行器
+    │   │   ├── sandbox.ts              # 沙箱环境
+    │   │   ├── context-manager.ts      # 上下文管理器
+    │   │   ├── template-manager.ts     # 模板管理器
+    │   │   ├── components/             # 脚本编辑组件
+    │   │   │   ├── index.ts
+    │   │   │   ├── ScriptEditor.vue
+    │   │   │   └── SimpleScriptEditor.vue
+    │   │   └── templates/              # 内置模板
+    │   │       └── built-in-templates.ts
+    │   │
     │   ├── initialization/             # 统一初始化系统
     │   │   ├── index.ts                # 初始化入口
     │   │   ├── system-initializer.ts   # 系统初始化器
@@ -173,14 +197,16 @@ src/
     │   │       ├── position-constraints.ts
     │   │       └── collision-detection.ts
     │   │
-    │   └── interaction/                # 交互系统
-    │       ├── index.ts                # 交互系统入口
-    │       ├── interaction-manager.ts  # 交互管理器
+    │   └── visual-interaction/         # 可视化交互系统
+    │       ├── index.ts                # 可视化交互入口
+    │       ├── drag-drop-manager.ts    # 拖放管理器
+    │       ├── selection-manager.ts    # 选择管理器
+    │       ├── resize-manager.ts       # 调整大小管理器
     │       ├── gesture-handler.ts      # 手势处理器
     │       ├── keyboard-handler.ts     # 键盘处理器
     │       ├── mouse-handler.ts        # 鼠标处理器
     │       ├── touch-handler.ts        # 触摸处理器
-    │       └── commands/               # 交互命令
+    │       └── commands/               # 可视化交互命令
     │           ├── index.ts
     │           ├── DragCommand.ts
     │           ├── ResizeCommand.ts
@@ -420,6 +446,8 @@ src/core/ → src/iot-visualization-platform/core/
 - **配置引擎**: 整合所有配置管理功能
 - **注册引擎**: 整合所有组件注册功能
 - **事件引擎**: 整合所有事件处理功能
+- **交互引擎**: 整合所有交互相关功能
+- **脚本引擎**: 整合所有脚本执行功能
 
 #### 2.3 路径重定向
 - 建立从原路径到新路径的重定向

@@ -49,7 +49,9 @@ class AutoComponentRegistry {
       })
 
       this.initialized = true
-      console.log(`[Card2.1] 自动注册了 ${componentDefinitions.length} 个组件`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Card2.1] 自动注册了 ${componentDefinitions.length} 个组件`)
+      }
     } catch (error) {
       console.error('[Card2.1] 组件自动注册失败:', error)
     }
@@ -74,35 +76,46 @@ class AutoComponentRegistry {
         Object.entries(allModules).filter(([path]) => !path.includes('auto-registry') && !path.includes('./index.ts'))
       )
 
-      console.log('[Card2.1] 扫描到的组件模块:', Object.keys(filteredModules))
-      console.log(
-        '[Card2.1] 详细模块路径:',
-        Object.keys(filteredModules).map(path => ({ path, exists: true }))
-      )
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Card2.1] 扫描到的组件模块:', Object.keys(filteredModules))
+        console.log(
+          '[Card2.1] 详细模块路径:',
+          Object.keys(filteredModules).map(path => ({ path, exists: true }))
+        )
+      }
 
       // 动态导入所有组件定义
       for (const [path, importFn] of Object.entries(filteredModules)) {
-        console.log(`🔧 [Card2.1] 开始导入组件: ${path}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔧 [Card2.1] 开始导入组件: ${path}`)
+        }
         try {
           const module = (await importFn()) as any
-          console.log(`🔧 [Card2.1] 模块导入成功: ${path}`, Object.keys(module))
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔧 [Card2.1] 模块导入成功: ${path}`, Object.keys(module))
+          }
 
           // 查找组件定义（支持多种导出方式）
           const definition = module.default || module.definition || module.componentDefinition
-          console.log(`🔧 [Card2.1] 组件定义: ${path}`, definition ? definition.type : 'undefined')
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔧 [Card2.1] 组件定义: ${path}`, definition ? definition.type : 'undefined')
+          }
 
           if (definition && this.isValidComponentDefinition(definition)) {
             componentDefinitions.push({ definition, folderPath: path })
-            console.log(`✅ [Card2.1] 成功加载组件: ${definition.name} (${definition.type}) 来源: ${path}`)
-            
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`✅ [Card2.1] 成功加载组件: ${definition.name} (${definition.type}) 来源: ${path}`)
+            }
           } else {
-            console.warn(`❌ [Card2.1] 跳过无效组件定义: ${path}`, {
-              hasDefault: !!module.default,
-              hasDefinition: !!module.definition,
-              hasComponentDefinition: !!module.componentDefinition,
-              moduleKeys: Object.keys(module),
-              definition: definition
-            })
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`❌ [Card2.1] 跳过无效组件定义: ${path}`, {
+                hasDefault: !!module.default,
+                hasDefinition: !!module.definition,
+                hasComponentDefinition: !!module.componentDefinition,
+                moduleKeys: Object.keys(module),
+                definition: definition
+              })
+            }
           }
         } catch (error) {
           console.error(`💥 [Card2.1] 导入组件定义失败: ${path}`, error)
@@ -148,11 +161,15 @@ class AutoComponentRegistry {
     const folderName = folderPath?.match(/^\.\/([^/]+)/)?.[1] || ''
 
     if (folderName && !shouldShowCategory(folderName, isDev)) {
-      console.log(`🔧 [AutoRegistry] 跳过组件 ${type}: 分类 ${categoryName} 在当前环境不显示`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔧 [AutoRegistry] 跳过组件 ${type}: 分类 ${categoryName} 在当前环境不显示`)
+      }
       return
     }
     
-    console.log(`🔧 [AutoRegistry] 注册组件: ${type} -> ${categoryName} (来源: ${folderPath || '未知'})`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 [AutoRegistry] 注册组件: ${type} -> ${categoryName} (来源: ${folderPath || '未知'})`)
+    }
 
     // 🚨 CRITICAL: 覆盖组件定义中的分类信息，使用从文件夹路径确定的分类
     const enhancedDefinition = {
@@ -198,12 +215,14 @@ class AutoComponentRegistry {
     const components = Object.values(this.registry.components)
     // 过滤掉 undefined 或无效的组件
     const validComponents = components.filter(comp => comp && comp.type && comp.name && comp.component)
-    console.log(`🔧 [AutoRegistry] 总组件数: ${components.length}, 有效组件数: ${validComponents.length}`)
-    if (components.length !== validComponents.length) {
-      console.warn(
-        `❌ [AutoRegistry] 发现无效组件:`,
-        components.filter(comp => !comp || !comp.type)
-      )
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 [AutoRegistry] 总组件数: ${components.length}, 有效组件数: ${validComponents.length}`)
+      if (components.length !== validComponents.length) {
+        console.warn(
+          `❌ [AutoRegistry] 发现无效组件:`,
+          components.filter(comp => !comp || !comp.type)
+        )
+      }
     }
     return validComponents
   }
@@ -215,7 +234,9 @@ class AutoComponentRegistry {
     // 从有效组件中提取类型，确保没有 undefined
     const validComponents = this.getAllComponents()
     const types = validComponents.map(comp => comp.type).filter(type => type)
-    console.log(`🔧 [AutoRegistry] 组件类型列表:`, types)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 [AutoRegistry] 组件类型列表:`, types)
+    }
     return types
   }
 
