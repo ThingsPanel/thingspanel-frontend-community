@@ -22,13 +22,13 @@ import type {
 // 导入配置管理相关模块（避免使用 require）
 import { configEventBus } from '@/core/data-architecture/ConfigEventBus'
 import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
-import { InteractionAdapter } from './interaction-adapter'
+import { InteractionAdapter } from '@/card2.1/core/interaction-adapter'
 import { VisualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
 import { propertyBindingLogger } from '@/utils/logger'
 // 🚀 导入统一的路径管理器
-import { PropertyPath, PropertyPathManager } from './property-path-manager'
+import { PropertyPath, PropertyPathManager } from '@/card2.1/core/property-path-manager'
 // 🔥 导入配置同步桥梁
-import { interactionConfigBridge } from './interaction-config-bridge'
+import { interactionConfigBridge } from '@/card2.1/core/interaction-config-bridge'
 
 class InteractionManager {
   private componentConfigs = new Map<string, InteractionConfig[]>()
@@ -64,7 +64,7 @@ class InteractionManager {
       // 🔥 关键修复：注册ConfigEventBus数据执行触发器
       console.log(`🔧 [InteractionManager] 注册ConfigEventBus数据执行触发器`)
 
-      const { registerDataExecutionTrigger } = await import('../../core/data-architecture/ConfigEventBus')
+      const { registerDataExecutionTrigger } = await import('@/core/data-architecture/ConfigEventBus')
 
       this.dataExecutionTriggerCleanup = registerDataExecutionTrigger(this.handleDataExecutionTrigger.bind(this))
 
@@ -2053,7 +2053,7 @@ class InteractionManager {
       
       try {
         // 导入 SimpleDataBridge 并清理缓存
-        const { simpleDataBridge } = await import('../../core/data-architecture/SimpleDataBridge')
+        const { simpleDataBridge } = await import('@/core/data-architecture/SimpleDataBridge')
         simpleDataBridge.clearComponentCache(event.componentId)
         console.log(`✅ [InteractionManager] SimpleDataBridge缓存清理成功`, {
           componentId: event.componentId
@@ -2526,7 +2526,7 @@ class InteractionManager {
       })
 
       // 导入并使用ConfigEventBus
-      const { configEventBus } = await import('../../core/data-architecture/ConfigEventBus')
+      const { configEventBus } = await import('@/core/data-architecture/ConfigEventBus')
       await configEventBus.emitConfigChange(configChangeEvent)
     } catch (error) {
       console.error(`❌ [InteractionManager] 触发ConfigEventBus失败`, {

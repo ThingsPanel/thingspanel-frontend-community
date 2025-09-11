@@ -7,8 +7,8 @@
 import { ref, onUnmounted, watch } from 'vue'
 import type { Ref } from 'vue'
 import type { ComponentDefinition, WidgetConfiguration } from '@/card2.1/types'
-import { dataSourceCenter } from '../core/data-sources'
-import type { DataSourceSubscription } from '../core/data-source-center'
+import { dataSourceCenter } from '@/card2.1/core/data-sources'
+import type { DataSourceSubscription } from '@/card2.1/core/data-source-center'
 
 // Hook 的返回值结构
 export interface UseWidgetPropsReturn {

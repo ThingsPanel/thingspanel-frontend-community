@@ -30,11 +30,11 @@ import type {
   SettingGroup,
   EnhancedComponentSettingConfig
 } from '@/card2.1/types'
-import type { TypeTestConfig } from './definition'
+import type { TypeTestConfig } from '@/card2.1/components/test/type-test/definition'
 
 // 导入自定义设置组件（如果需要）
-// import CustomColorPicker from './components/CustomColorPicker.vue'
-// import AdvancedNumberInput from './components/AdvancedNumberInput.vue'
+// import CustomColorPicker from '@/card2.1/components/test/type-test/components/CustomColorPicker.vue'
+// import AdvancedNumberInput from '@/card2.1/components/test/type-test/components/AdvancedNumberInput.vue'
 
 /**
  * 设置项定义数组

@@ -13,7 +13,7 @@ import type {
   DataValidationResult
 } from './types'
 
-import { PathDataMapper } from './data-processors'
+import { PathDataMapper } from '@/card2.1/core/data-binding/data-processors'
 
 // ========== 数据验证器实现 ==========
 

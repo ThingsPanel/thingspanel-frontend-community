@@ -5,8 +5,8 @@
  */
 
 import type { ComponentDefinition } from '@/card2.1/types'
-import { autoRegistry } from './auto-registry'
-import { ComponentRegistry } from '../core/component-registry'
+import { autoRegistry } from '@/card2.1/components/auto-registry'
+import { ComponentRegistry } from '@/card2.1/core/component-registry'
 
 // ============ 自动化组件注册表 ============
 

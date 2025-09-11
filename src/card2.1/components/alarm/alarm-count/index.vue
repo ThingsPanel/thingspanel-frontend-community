@@ -5,7 +5,7 @@
  */
 
 import { computed, reactive, ref, onMounted } from 'vue'
-import type { AlarmCountConfig, AlarmCountCustomize } from './settingConfig'
+import type { AlarmCountConfig, AlarmCountCustomize } from '@/card2.1/components/alarm/alarm-count/settingConfig'
 import { createLogger } from '@/utils/logger'
 import { $t } from '@/locales'
 import { getAlarmCount } from '@/service/api'

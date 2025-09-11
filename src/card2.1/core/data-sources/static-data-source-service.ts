@@ -4,7 +4,7 @@
  */
 
 import type { DataSourceInfo } from '@/card2.1/types'
-import type { DataSourceService, DataSourceSubscription } from '../data-source-center'
+import type { DataSourceService, DataSourceSubscription } from '@/card2.1/core/data-source-center'
 
 export interface StaticDataSourceConfig {
   name: string

@@ -3,11 +3,11 @@
  * 验证完整的数据流：组件需求声明 → 数据源 → 转换管道 → 响应式绑定
  */
 
-import { componentRequirementManager } from './component-requirement-manager'
-import { DataSourceFactory } from './data-sources'
-import { DataTransformPipelineFactory } from './data-transform-pipeline'
-import { ReactiveDataBindingImpl, UpdateTriggerFactory } from './reactive-binding'
-import type { ComponentDataRequirement } from './types'
+import { componentRequirementManager } from '@/card2.1/core/data-binding/component-requirement-manager'
+import { DataSourceFactory } from '@/card2.1/core/data-binding/data-sources'
+import { DataTransformPipelineFactory } from '@/card2.1/core/data-binding/data-transform-pipeline'
+import { ReactiveDataBindingImpl, UpdateTriggerFactory } from '@/card2.1/core/data-binding/reactive-binding'
+import type { ComponentDataRequirement } from '@/card2.1/core/data-binding/types'
 
 export interface TestResult {
   testName: string

@@ -3,9 +3,9 @@
  * 用于验证通用数据源映射系统的功能
  */
 
-import { ComponentRegistry } from './component-registry'
-import { DataSourceMapper } from './data-source-mapper'
-import type { ComponentDefinition } from './types'
+import { ComponentRegistry } from '@/card2.1/core/component-registry'
+import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
+import type { ComponentDefinition } from '@/card2.1/core/types'
 
 /**
  * 测试数据源映射器功能

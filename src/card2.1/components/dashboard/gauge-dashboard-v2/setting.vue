@@ -21,7 +21,7 @@ import {
   NIcon
 } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
-import type { GaugeDashboardCustomize } from './settingConfig'
+import type { GaugeDashboardCustomize } from '@/card2.1/components/dashboard/gauge-dashboard-v2/settingConfig'
 
 /**
  * Props 定义

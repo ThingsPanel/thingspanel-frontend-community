@@ -44,9 +44,9 @@ import { useI18n } from 'vue-i18n'
 import { useThemeStore } from '@/store/modules/theme'
 
 // 🚨 严格遵循项目规范：导入图片资源
-import downloadAppImage from './download_app.png'
-import appStoreImage from './placeholder-app-store.png'
-import googlePlayImage from './placeholder-google-play.png'
+import downloadAppImage from '@/card2.1/components/statistics/app-download/download_app.png'
+import appStoreImage from '@/card2.1/components/statistics/app-download/placeholder-app-store.png'
+import googlePlayImage from '@/card2.1/components/statistics/app-download/placeholder-google-play.png'
 
 // 组件基本设置
 defineOptions({

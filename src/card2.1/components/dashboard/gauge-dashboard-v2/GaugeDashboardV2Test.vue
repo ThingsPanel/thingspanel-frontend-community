@@ -5,8 +5,8 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { NCard, NButton, NSpace, NInputNumber, NSelect, NSwitch } from 'naive-ui'
-import GaugeDashboardV2 from './index.vue'
-import type { GaugeDashboardCustomize } from './settingConfig'
+import GaugeDashboardV2 from '@/card2.1/components/dashboard/gauge-dashboard-v2/index.vue'
+import type { GaugeDashboardCustomize } from '@/card2.1/components/dashboard/gauge-dashboard-v2/settingConfig'
 
 // 测试配置
 const testConfig = reactive<{ customize: GaugeDashboardCustomize }>({

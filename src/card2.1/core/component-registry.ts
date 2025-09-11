@@ -4,9 +4,9 @@
  * 支持 settingConfig 的自动属性暴露注册
  */
 
-import type { ComponentDefinition } from './types'
-import type { ComponentSettingConfig } from '../types/setting-config'
-import { autoRegisterFromSettingConfig, enhancedAutoRegister } from './property-exposure'
+import type { ComponentDefinition } from '@/card2.1/core/types'
+import type { ComponentSettingConfig } from '@/card2.1/types/setting-config'
+import { autoRegisterFromSettingConfig, enhancedAutoRegister } from '@/card2.1/core/property-exposure'
 
 /**
  * 组件注册表类
@@ -80,7 +80,7 @@ export class ComponentRegistry {
   private static async registerComponentPropertyExposure(definition: ComponentDefinition): Promise<void> {
     try {
       // 🔥 使用动态导入避免循环依赖
-      const { enhancedAutoRegister } = await import('./property-exposure')
+      const { enhancedAutoRegister } = await import('@/card2.1/core/property-exposure')
 
       // 🚀 关键：增强注册，确保基础配置属性被包含
       enhancedAutoRegister(
@@ -270,7 +270,7 @@ export class ComponentRegistry {
         })
 
         // TODO: 在后续版本中重新启用属性自动注册
-        // const { autoRegisterFromSettingConfig } = await import('./property-exposure')
+        // const { autoRegisterFromSettingConfig } = await import('@/card2.1/core/property-exposure')
         // autoRegisterFromSettingConfig(settingConfig)
       } catch (error) {
         console.warn(`[ComponentRegistry] settingConfig属性注册失败`, {

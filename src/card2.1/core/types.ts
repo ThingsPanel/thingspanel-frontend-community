@@ -4,7 +4,7 @@
  */
 
 import type { Component } from 'vue'
-import type { ComponentInteractionDefinition } from './interaction-types'
+import type { ComponentInteractionDefinition } from '@/card2.1/core/interaction-types'
 
 // ============ 基础类型 ============
 

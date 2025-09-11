@@ -3,7 +3,7 @@
  * 支持脚本处理、格式化、过滤、转换等多种数据处理方式
  */
 
-import type { DataProcessor, DataMappingRule, DataMapper } from './types'
+import type { DataProcessor, DataMappingRule, DataMapper } from '@/card2.1/core/data-binding/types'
 
 // ========== 基础数据处理器 ==========
 

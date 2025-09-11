@@ -3,7 +3,7 @@
  * 支持多种数据源类型：静态数据、API、WebSocket、脚本、数据库等
  */
 
-import type { DataSource } from './types'
+import type { DataSource } from '@/card2.1/core/data-binding/types'
 import { defaultScriptEngine } from '@/core/script-engine'
 
 // ========== 静态数据源 ==========

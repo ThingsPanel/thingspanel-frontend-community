@@ -270,7 +270,7 @@ import {
 const widgetVersion = '2.1.0-fixed'
 
 // 类型导入
-import { dataSourceRequirements, type TypeTestConfig } from './definition'
+import { dataSourceRequirements, type TypeTestConfig } from '@/card2.1/components/test/type-test/definition'
 import type { 
   ComponentInteractionState,
   InteractionEventType,

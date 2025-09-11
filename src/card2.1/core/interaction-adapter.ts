@@ -3,7 +3,7 @@
  * 负责新旧交互配置格式之间的转换和兼容性处理
  */
 
-import type { JumpConfig, ModifyConfig, InteractionActionType } from './interaction-types'
+import type { JumpConfig, ModifyConfig, InteractionActionType } from '@/card2.1/core/interaction-types'
 
 // 旧格式的动作响应类型
 interface LegacyJumpResponse {

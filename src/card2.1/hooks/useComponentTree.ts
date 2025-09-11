@@ -12,7 +12,7 @@ import {
   getCategories
 } from '../index'
 import type { ComponentDefinition } from '@/card2.1/types'
-import type { ComponentTree, ComponentCategory } from '../core/auto-registry'
+import type { ComponentTree, ComponentCategory } from '@/card2.1/core/auto-registry'
 
 // 🔥 全局共享状态，确保多个实例同步
 let globalComponentTree = shallowRef<ComponentTree>({ categories: [], components: [], totalCount: 0 })

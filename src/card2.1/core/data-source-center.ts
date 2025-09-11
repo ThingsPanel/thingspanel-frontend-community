@@ -4,7 +4,7 @@
  * 实现配置驱动的动态数据源重构方案的核心组件
  */
 
-import type { DataSourceInfo } from './types'
+import type { DataSourceInfo } from '@/card2.1/core/types'
 
 export interface DataSourceSubscription {
   /** 取消订阅的方法 */

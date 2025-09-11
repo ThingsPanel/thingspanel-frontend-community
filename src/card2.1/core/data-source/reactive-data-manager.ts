@@ -3,9 +3,9 @@
  * 支持轮询更新、实时订阅等响应式数据获取
  */
 
-import type { StaticDataSource } from './static-data-source'
-import type { DeviceApiDataSource } from './device-api-data-source'
-import { dataBindingManager } from './data-binding-manager'
+import type { StaticDataSource } from '@/card2.1/core/data-source/static-data-source'
+import type { DeviceApiDataSource } from '@/card2.1/core/data-source/device-api-data-source'
+import { dataBindingManager } from '@/card2.1/core/data-source/data-binding-manager'
 
 type DataSource = StaticDataSource | DeviceApiDataSource
 

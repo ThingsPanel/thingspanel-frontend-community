@@ -4,8 +4,8 @@
  */
 
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { interactionManager } from '../core/interaction-manager'
-import type { InteractionConfig, ComponentInteractionState, InteractionEventType } from '../core/interaction-types'
+import { interactionManager } from '@/card2.1/core/interaction-manager'
+import type { InteractionConfig, ComponentInteractionState, InteractionEventType } from '@/card2.1/core/interaction-types'
 
 export interface UseInteractionOptions {
   /** 组件ID，用于标识组件 */

@@ -3,11 +3,11 @@
  * 避免重复工作，提供智能缓存和增量更新
  */
 
-import type { ComponentDefinition } from './types'
-import type { ComponentTree, ComponentCategory } from './auto-registry'
-import { ComponentLoader } from './component-loader'
-import { AutoRegistry } from './auto-registry'
-import { componentRegistry } from './component-registry'
+import type { ComponentDefinition } from '@/card2.1/core/types'
+import type { ComponentTree, ComponentCategory } from '@/card2.1/core/auto-registry'
+import { ComponentLoader } from '@/card2.1/core/component-loader'
+import { AutoRegistry } from '@/card2.1/core/auto-registry'
+import { componentRegistry } from '@/card2.1/core/component-registry'
 import { componentDataRequirementsRegistry } from '@/components/visual-editor/core/component-data-requirements'
 
 /**

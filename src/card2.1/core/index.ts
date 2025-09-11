@@ -2,25 +2,25 @@
  * Card2.1 核心功能导出
  */
 
-export * from './types'
-export * from './registry'
-export * from './interaction-types'
-export * from './interaction-manager'
+export * from '@/card2.1/core/types'
+export * from '@/card2.1/core/registry'
+export * from '@/card2.1/core/interaction-types'
+export * from '@/card2.1/core/interaction-manager'
 
 // 🔥 新增：组件注册表和数据源映射器
-export * from './component-registry'
-export * from './data-source-mapper'
+export * from '@/card2.1/core/component-registry'
+export * from '@/card2.1/core/data-source-mapper'
 
 // 数据源中心相关导出
-export * from './data-source-center'
-export * from './data-sources'
+export * from '@/card2.1/core/data-source-center'
+export * from '@/card2.1/core/data-sources'
 
 // 初始化数据源系统
-import { initializeDataSources } from './data-sources'
+import { initializeDataSources } from '@/card2.1/core/data-sources'
 // 🔥 新增：导入组件注册表初始化
-import { ComponentRegistry } from './component-registry'
+import { ComponentRegistry } from '@/card2.1/core/component-registry'
 // 导入数据源映射器用于调试
-import { DataSourceMapper } from './data-source-mapper'
+import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
 
 // 自动初始化数据源
 initializeDataSources()

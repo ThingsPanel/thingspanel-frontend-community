@@ -10,7 +10,7 @@
  */
 
 import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
-import type { ComponentInteractionState } from './interaction-types'
+import type { ComponentInteractionState } from '@/card2.1/core/interaction-types'
 import type { WidgetConfiguration, ComponentConfiguration } from '@/components/visual-editor/configuration/types'
 
 /**

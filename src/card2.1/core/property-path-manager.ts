@@ -4,7 +4,7 @@
  * 🚀 集成性能优化和缓存系统
  */
 
-import { performanceOptimizer } from './performance-optimizer'
+import { performanceOptimizer } from '@/card2.1/core/performance-optimizer'
 
 export interface PropertyPathInfo {
   /** 完整的绑定路径 */

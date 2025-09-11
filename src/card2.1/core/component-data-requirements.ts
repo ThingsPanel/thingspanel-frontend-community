@@ -5,8 +5,8 @@
  * 这是对 data-binding 系统的扩展，专注于组件数据需求的声明式定义
  */
 
-import type { ComponentDataRequirement, DataFieldRequirement } from './data-binding/types'
-import { ComponentRequirementManager } from './data-binding/component-requirement-manager'
+import type { ComponentDataRequirement, DataFieldRequirement } from '@/card2.1/core/data-binding/types'
+import { ComponentRequirementManager } from '@/card2.1/core/data-binding/component-requirement-manager'
 
 // 创建全局实例
 export const componentDataRequirementsRegistry = new ComponentRequirementManager()

@@ -3,9 +3,9 @@
  * 用于开发和测试阶段的调试功能
  */
 
-import { initializeCard2System, getComponentTree, getAllComponents, reapplyPermissionFilter } from './index'
-import { getUserAuthorityFromStorage, hasComponentPermission, getAvailablePermissions } from './core/permission-utils'
-import type { ComponentPermission } from './core/types'
+import { initializeCard2System, getComponentTree, getAllComponents, reapplyPermissionFilter } from '@/card2.1/index'
+import { getUserAuthorityFromStorage, hasComponentPermission, getAvailablePermissions } from '@/card2.1/core/permission-utils'
+import type { ComponentPermission } from '@/card2.1/core/types'
 
 /**
  * 测试权限系统

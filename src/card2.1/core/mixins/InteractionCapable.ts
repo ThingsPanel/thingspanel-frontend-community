@@ -4,7 +4,7 @@
  */
 
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { interactionManager } from '../interaction-manager'
+import { interactionManager } from '@/card2.1/core/interaction-manager'
 import type {
   InteractionConfig,
   InteractionEventType,

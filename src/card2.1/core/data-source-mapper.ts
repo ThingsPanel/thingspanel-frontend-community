@@ -3,8 +3,8 @@
  * 提供通用的数据源映射和转换服务，消除硬编码依赖
  */
 
-import { ComponentRegistry } from './component-registry'
-import type { ComponentDefinition } from './types'
+import { ComponentRegistry } from '@/card2.1/core/component-registry'
+import type { ComponentDefinition } from '@/card2.1/core/types'
 
 /**
  * 执行器数据格式

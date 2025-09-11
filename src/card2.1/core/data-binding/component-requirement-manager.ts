@@ -3,7 +3,7 @@
  * 负责组件数据需求的注册、验证和查询
  */
 
-import type { ComponentDataRequirement, DataFieldRequirement, DataRelationship } from './types'
+import type { ComponentDataRequirement, DataFieldRequirement, DataRelationship } from '@/card2.1/core/data-binding/types'
 
 export class ComponentRequirementManager {
   private requirements = new Map<string, ComponentDataRequirement>()

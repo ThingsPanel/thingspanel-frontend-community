@@ -4,7 +4,7 @@
  */
 
 // 导入组件定义作为默认导出
-import gaugeDashboardV2Definition from './definition'
+import gaugeDashboardV2Definition from '@/card2.1/components/dashboard/gauge-dashboard-v2/definition'
 
 // 默认导出组件定义（自动注册系统需要）
 export default gaugeDashboardV2Definition
@@ -13,12 +13,12 @@ export default gaugeDashboardV2Definition
 export { gaugeDashboardV2Definition }
 
 // 导出类型定义
-export type { GaugeDashboardV2Config, GaugeDashboardCustomize, GaugeColorRange } from './settingConfig'
+export type { GaugeDashboardV2Config, GaugeDashboardCustomize, GaugeColorRange } from '@/card2.1/components/dashboard/gauge-dashboard-v2/settingConfig'
 
 // 导出设置配置
-export { gaugeDashboardV2SettingConfig, customConfig } from './settingConfig'
+export { gaugeDashboardV2SettingConfig, customConfig } from '@/card2.1/components/dashboard/gauge-dashboard-v2/settingConfig'
 
 // 导出组件实现
-export { default as GaugeDashboardV2Card } from './index.vue'
-export { default as GaugeDashboardV2Setting } from './setting.vue'
-export { default as GaugeDashboardV2Test } from './GaugeDashboardV2Test.vue'
+export { default as GaugeDashboardV2Card } from '@/card2.1/components/dashboard/gauge-dashboard-v2/index.vue'
+export { default as GaugeDashboardV2Setting } from '@/card2.1/components/dashboard/gauge-dashboard-v2/setting.vue'
+export { default as GaugeDashboardV2Test } from '@/card2.1/components/dashboard/gauge-dashboard-v2/GaugeDashboardV2Test.vue'

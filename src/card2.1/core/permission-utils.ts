@@ -3,7 +3,7 @@
  * 用于组件权限控制和用户权限验证
  */
 
-import type { ComponentPermission } from './types'
+import type { ComponentPermission } from '@/card2.1/core/types'
 
 // 权限等级定义（从高到低）
 const PERMISSION_LEVELS = {

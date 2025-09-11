@@ -67,7 +67,7 @@ export type {
 } from './setting-config'
 
 // 导出枚举
-export { SettingControlType } from './setting-config'
+export { SettingControlType } from '@/card2.1/types/setting-config'
 
 // 导出设置配置工具函数
 export {

@@ -3,7 +3,7 @@
  * 迁移自 builtin-card/alarm-info，保持历史数据兼容性
  */
 
-import AlarmInfoCard from './AlarmInfoCard.vue'
+import AlarmInfoCard from '@/card2.1/components/alarm/alarm-info/AlarmInfoCard.vue'
 import type { ComponentDefinition } from '@/card2.1/types'
 
 const alarmInfoDefinition: ComponentDefinition = {
@@ -72,5 +72,5 @@ const alarmInfoDefinition: ComponentDefinition = {
 export default alarmInfoDefinition
 
 // 🔥 关键修复：手动注册到组件中心（与 alarm-count 保持一致）
-import { ComponentRegistry } from '../../../core/component-registry'
+import { ComponentRegistry } from '@/card2.1/core/component-registry'
 ComponentRegistry.register(alarmInfoDefinition)

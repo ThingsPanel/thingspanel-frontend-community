@@ -3,7 +3,7 @@
  * 支持动态导入和目录扫描
  */
 
-import type { ComponentDefinition } from './types'
+import type { ComponentDefinition } from '@/card2.1/core/types'
 
 export interface ComponentModule {
   default: ComponentDefinition

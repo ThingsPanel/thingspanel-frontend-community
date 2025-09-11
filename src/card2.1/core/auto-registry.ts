@@ -3,8 +3,8 @@
  * 支持目录扫描、自动分类和树形结构生成
  */
 
-import type { ComponentDefinition, IComponentRegistry } from './types'
-import { filterComponentsByPermission, getUserAuthorityFromStorage } from './permission-utils'
+import type { ComponentDefinition, IComponentRegistry } from '@/card2.1/core/types'
+import { filterComponentsByPermission, getUserAuthorityFromStorage } from '@/card2.1/core/permission-utils'
 
 export interface ComponentCategory {
   id: string
@@ -39,7 +39,7 @@ export class AutoRegistry {
     const userAuthority = getUserAuthorityFromStorage()
 
     // 导入分类映射函数
-    const { getCategoryDisplayName } = await import('../components/category-mapping')
+    const { getCategoryDisplayName } = await import('@/card2.1/components/category-mapping')
 
     for (const [componentId, module] of Object.entries(componentModules)) {
       try {

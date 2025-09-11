@@ -4,8 +4,8 @@
  * 支持从 settingConfig 自动注册可绑定属性
  */
 
-import type { ComponentSettingConfig } from '../types/setting-config'
-import { inferPropertyDataType } from '../types/setting-config'
+import type { ComponentSettingConfig } from '@/card2.1/types/setting-config'
+import { inferPropertyDataType } from '@/card2.1/types/setting-config'
 
 // 属性数据类型
 export type PropertyDataType =

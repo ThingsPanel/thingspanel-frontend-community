@@ -4,7 +4,7 @@
  * 纯展示型组件，无数据源和组件配置需求
  */
 
-import AppDownloadCard from './AppDownloadCard.vue'
+import AppDownloadCard from '@/card2.1/components/statistics/app-download/AppDownloadCard.vue'
 import type { ComponentDefinition } from '@/card2.1/types'
 
 const appDownloadDefinition: ComponentDefinition = {
@@ -41,5 +41,5 @@ const appDownloadDefinition: ComponentDefinition = {
 export default appDownloadDefinition
 
 // 🔥 关键修复：手动注册到组件中心（与其他组件保持一致）
-import { ComponentRegistry } from '../../../core/component-registry'
+import { ComponentRegistry } from '@/card2.1/core/component-registry'
 ComponentRegistry.register(appDownloadDefinition)

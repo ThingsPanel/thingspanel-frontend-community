@@ -3,7 +3,7 @@
  * 简单的组件管理
  */
 
-import type { ComponentDefinition, IComponentRegistry } from './types'
+import type { ComponentDefinition, IComponentRegistry } from '@/card2.1/core/types'
 
 class ComponentRegistry implements IComponentRegistry {
   private components: Map<string, ComponentDefinition> = new Map()

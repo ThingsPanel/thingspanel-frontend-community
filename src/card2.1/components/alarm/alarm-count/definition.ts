@@ -4,8 +4,8 @@
  */
 
 import type { ComponentDefinition } from '@/card2.1/types'
-import AlarmCountComponent from './index.vue'
-import { alarmCountSettingConfig } from './settingConfig'
+import AlarmCountComponent from '@/card2.1/components/alarm/alarm-count/index.vue'
+import { alarmCountSettingConfig } from '@/card2.1/components/alarm/alarm-count/settingConfig'
 import { componentRegistry } from '@/card2.1/core/component-registry'
 
 /**

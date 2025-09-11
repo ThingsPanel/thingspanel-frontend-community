@@ -4,10 +4,10 @@
  */
 
 import type { ComponentDefinition, DataSourceRequirement } from '@/card2.1/types'
-import type { GaugeDashboardV2Config, GaugeDashboardCustomize } from './settingConfig'
-import { customConfig, gaugeDashboardV2SettingConfig } from './settingConfig'
-import GaugeDashboardV2Card from './index.vue'
-import GaugeDashboardV2Setting from './setting.vue'
+import type { GaugeDashboardV2Config, GaugeDashboardCustomize } from '@/card2.1/components/dashboard/gauge-dashboard-v2/settingConfig'
+import { customConfig, gaugeDashboardV2SettingConfig } from '@/card2.1/components/dashboard/gauge-dashboard-v2/settingConfig'
+import GaugeDashboardV2Card from '@/card2.1/components/dashboard/gauge-dashboard-v2/index.vue'
+import GaugeDashboardV2Setting from '@/card2.1/components/dashboard/gauge-dashboard-v2/setting.vue'
 
 /**
  * gauge-dashboard-v2 仪表盘组件定义

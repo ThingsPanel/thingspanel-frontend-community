@@ -9,9 +9,9 @@
  * - MIGRATION_TODO.md - 迁移进度跟踪
  */
 
-import { componentRegistry } from './core/component-registry'
-import { AutoRegistry } from './core/auto-registry'
-import { ComponentLoader } from './core/component-loader'
+import { componentRegistry } from '@/card2.1/core/component-registry'
+import { AutoRegistry } from '@/card2.1/core/auto-registry'
+import { ComponentLoader } from '@/card2.1/core/component-loader'
 import { componentDataRequirementsRegistry } from '@/components/visual-editor/core/component-data-requirements'
 import {
   optimizedInitializationManager,
@@ -154,14 +154,14 @@ export {
 // 传统模块导出（向后兼容）
 export { componentRegistry }
 export { AutoRegistry, ComponentLoader }
-export type { ComponentTree, ComponentCategory } from './core/auto-registry'
+export type { ComponentTree, ComponentCategory } from '@/card2.1/core/auto-registry'
 
 // 导出权限相关工具
-export * from './core/permission-utils'
-export type { ComponentPermission } from './types'
+export * from '@/card2.1/core/permission-utils'
+export type { ComponentPermission } from '@/card2.1/types'
 
 // 导出 Hooks
-export * from './hooks'
+export * from '@/card2.1/hooks'
 
 // ========== 工具方法导出 ==========
 

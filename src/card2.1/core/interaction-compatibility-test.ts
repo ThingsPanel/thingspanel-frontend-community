@@ -3,8 +3,8 @@
  * 验证新旧配置格式之间的转换和兼容性
  */
 
-import { InteractionAdapter } from './interaction-adapter'
-import type { JumpConfig, ModifyConfig } from './interaction-types'
+import { InteractionAdapter } from '@/card2.1/core/interaction-adapter'
+import type { JumpConfig, ModifyConfig } from '@/card2.1/core/interaction-types'
 
 /**
  * 兼容性测试套件

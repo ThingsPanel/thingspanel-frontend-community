@@ -19,7 +19,7 @@ import type {
   StaticParamRequirement,
   ComponentInteractionCapability
 } from '@/card2.1/types'
-import TypeTestComponent from './index.vue'
+import TypeTestComponent from '@/card2.1/components/test/type-test/index.vue'
 
 /**
  * 组件自定义配置类型定义

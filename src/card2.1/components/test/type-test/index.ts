@@ -12,9 +12,9 @@
  */
 
 // 导入组件核心文件
-import { typeTestDefinition } from './definition'
-import { typeTestSettingConfig } from './settingConfig'
-import TypeTestComponent from './index.vue'
+import { typeTestDefinition } from '@/card2.1/components/test/type-test/definition'
+import { typeTestSettingConfig } from '@/card2.1/components/test/type-test/settingConfig'
+import TypeTestComponent from '@/card2.1/components/test/type-test/index.vue'
 
 // 导入类型验证系统
 import { 
@@ -37,7 +37,7 @@ import type {
   ComponentSettingConfig,
   ValidationResult
 } from '@/card2.1/types'
-import type { TypeTestConfig } from './definition'
+import type { TypeTestConfig } from '@/card2.1/components/test/type-test/definition'
 
 /**
  * 组件验证和初始化

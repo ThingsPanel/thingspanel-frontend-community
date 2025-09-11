@@ -15,7 +15,7 @@ import {
   LegendComponent 
 } from 'echarts/components'
 import { useThemeStore } from '@/store/modules/theme'
-import type { GaugeDashboardCustomize } from './settingConfig'
+import type { GaugeDashboardCustomize } from '@/card2.1/components/dashboard/gauge-dashboard-v2/settingConfig'
 
 // 注册 ECharts 组件
 use([
