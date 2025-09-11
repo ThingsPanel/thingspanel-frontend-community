@@ -222,11 +222,13 @@
 
           <!-- 版本信息 -->
           <n-text depth="3" style="font-size: 11px;">
-            Card2.1 v{{ componentVersion }}
+            Card2.1 v{{ widgetVersion }}
           </n-text>
         </n-space>
       </template>
-    </n-card>
+    
+
+</n-card>
 
     <!-- 加载状态遮罩 -->
     <div 
@@ -265,7 +267,7 @@ import {
 } from '@vicons/ionicons5'
 
 // 定义组件版本
-const componentVersion = '2.1.0'
+const widgetVersion = '2.1.0-fixed'
 
 // 类型导入
 import { dataSourceRequirements, type TypeTestConfig } from './definition'
@@ -292,6 +294,10 @@ interface Props {
   externalData?: Record<string, any>
   /** 交互状态 */
   interactionState?: ComponentInteractionState
+  /** 实时数据 */
+  realtimeData?: any
+  /** 历史数据 */
+  historyData?: any
 }
 
 /**
@@ -388,6 +394,38 @@ const handleMouseLeave = () => {
     isAnimating.value = false
   }
 }
+
+// ============ 数据处理 ============
+
+watch(() => props.realtimeData, (newData) => {
+  console.log("realtimeData changed:", newData);
+  if (newData && newData.length > 0) {
+    // 假设我们关心最新的数据点
+    const latestDataPoint = newData[newData.length - 1];
+    
+    // 假设数据点是一个对象，并且有一个名为 'value' 的属性
+    if (latestDataPoint && typeof latestDataPoint.value !== 'undefined') {
+      const value = latestDataPoint.value;
+      
+      // 更新主显示值
+      updatePrimaryValue(value);
+      
+      // 根据值更新状态 (示例逻辑)
+      if (props.config.warningThreshold && value > props.config.warningThreshold) {
+        currentStatus.value = 'warning';
+      } else if (props.config.errorThreshold && value < props.config.errorThreshold) {
+        currentStatus.value = 'error';
+      } else {
+        currentStatus.value = 'normal';
+      }
+    }
+    lastUpdateTime.value = new Date();
+  } else {
+    // 如果没有数据，可以设置为离线状态
+    currentStatus.value = 'offline';
+  }
+}, { deep: true, immediate: true });
+
 
 // ============ 外部调用方法 ============
 
@@ -536,10 +574,6 @@ const isDevelopment = computed(() => {
  * 方便在模板中分类展示
  */
 const debugInfo = computed(() => {
-  // 从 props 中安全地提取数据源数据
-  const realtimeData = (props as any).realtimeData || null
-  const historyData = (props as any).historyData || null
-
   return {
     props: {
       instanceId: props.instanceId,
@@ -549,8 +583,8 @@ const debugInfo = computed(() => {
       config: props.config
     },
     dataSources: {
-      realtimeData: realtimeData,
-      historyData: historyData
+      realtimeData: props.realtimeData || null,
+      historyData: props.historyData || null
     },
     componentState: {
       isLoading: isLoading.value,
@@ -581,7 +615,7 @@ defineExpose({
   // 实例信息
   instanceId: props.instanceId,
   componentType: 'type-test',
-  version: componentVersion,
+  version: widgetVersion,
   
   // 状态访问
   isLoading: readonly(isLoading),
