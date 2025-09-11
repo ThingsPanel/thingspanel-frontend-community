@@ -53,16 +53,22 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
    * 初始化组件树
    */
   const initialize = async () => {
-    console.log('🔧 [useComponentTree] 开始初始化...', { globalInitialized, isLoading: isLoading.value })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 [useComponentTree] 开始初始化...', { globalInitialized, isLoading: isLoading.value })
+    }
 
     // 🔥 修复：检查全局初始化状态
     if (globalInitialized && componentTree.value.totalCount > 0) {
-      console.log('🔧 [useComponentTree] 已全局初始化，跳过重复初始化')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 [useComponentTree] 已全局初始化，跳过重复初始化')
+      }
       return
     }
 
     if (isLoading.value) {
-      console.log('🔧 [useComponentTree] 正在加载中，跳过重复初始化')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 [useComponentTree] 正在加载中，跳过重复初始化')
+      }
       return
     }
 

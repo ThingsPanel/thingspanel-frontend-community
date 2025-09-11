@@ -114,6 +114,7 @@ export class AutoRegistry {
                   registeredComponentsCount: registeredComponents.length
                 })
               }
+            }
           } else {
             // 记录被权限过滤的组件
             this.allComponents.push(enhancedDefinition)
