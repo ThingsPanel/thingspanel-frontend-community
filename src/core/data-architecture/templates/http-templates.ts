@@ -178,7 +178,6 @@ if (missingParams.length > 0) {
 return config`,
       postResponseScript: `// 修复版：更稳健的响应数据处理
 if (process.env.NODE_ENV === 'development') {
-  console.log('🔍 [遥测数据] 原始响应:', response)
 }
 
 try {
@@ -209,7 +208,6 @@ try {
   }
   
   if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 [遥测数据] 提取的数据:', data)
   }
   
   if (data && Array.isArray(data)) {
@@ -226,7 +224,6 @@ try {
     }).filter(item => item[0] && item[1] !== undefined)
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 [遥测数据] 转换后数据:', result)
     }
     
     if (result.length > 0) {
@@ -234,7 +231,6 @@ try {
     }
   }
   
-  console.log('🔍 [遥测数据] 无有效数据，返回原始响应')
   return response
   
 } catch (error) {
@@ -275,7 +271,6 @@ config.headers['X-Request-Time'] = Date.now().toString()
 return config`,
       postResponseScript: `// 设备当前遥测数据响应处理
 if (process.env.NODE_ENV === 'development') {
-  console.log('🔍 [当前遥测] 原始响应:', response)
 }
 
 if (response && typeof response === 'object') {
@@ -324,7 +319,6 @@ config.headers['X-Request-Time'] = Date.now().toString()
 return config`,
       postResponseScript: `// 设备属性数据响应处理
 if (process.env.NODE_ENV === 'development') {
-  console.log('🔍 [设备属性] 原始响应:', response)
 }
 
 if (response && typeof response === 'object') {
@@ -391,7 +385,6 @@ try {
 return config`,
       postResponseScript: `// 命令下发响应处理
 if (process.env.NODE_ENV === 'development') {
-  console.log('🔍 [命令下发] 响应:', response)
 }
 
 if (response && typeof response === 'object') {
@@ -461,7 +454,6 @@ config.headers['X-Request-Time'] = Date.now().toString()
 return config`,
       postResponseScript: `// 告警历史响应处理
 if (process.env.NODE_ENV === 'development') {
-  console.log('🔍 [告警历史] 原始响应:', response)
 }
 
 if (response && typeof response === 'object') {
@@ -529,7 +521,6 @@ config.headers['X-Request-Time'] = Date.now().toString()
 return config`,
       postResponseScript: `// 设备状态响应处理
 if (process.env.NODE_ENV === 'development') {
-  console.log('🔍 [设备状态] 原始响应:', response)
 }
 
 if (response && typeof response === 'object') {
@@ -621,7 +612,6 @@ if (config.params) {
 return config`,
       postResponseScript: `// 设备列表响应处理
 if (process.env.NODE_ENV === 'development') {
-  console.log('🔍 [设备列表] 原始响应:', response)
 }
 
 if (response && typeof response === 'object') {
@@ -710,7 +700,6 @@ config.headers['X-Request-Time'] = Date.now().toString()
 return config`,
       postResponseScript: `// 事件数据响应处理
 if (process.env.NODE_ENV === 'development') {
-  console.log('🔍 [事件数据] 原始响应:', response)
 }
 
 if (response && typeof response === 'object') {

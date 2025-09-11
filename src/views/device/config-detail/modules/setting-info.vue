@@ -43,7 +43,6 @@ const deleteConfig = () => {
 const showModal = ref(false)
 const modalIndex = ref(1)
 if (process.env.NODE_ENV === 'development') {
-  console.log(props.configInfo)
 }
 const auto_register = ref(props.configInfo?.auto_register === 1 || false)
 const onlinejson = reactive({
@@ -98,7 +97,6 @@ const onOpenDialogModal = (val: number) => {
 const copyOneTypeOneSecretDevicePassword = () => {
   const textToCopy = props.configInfo?.template_secret || ''
   if (process.env.NODE_ENV === 'development') {
-    console.log('要复制的内容 (clipboard.js - refined):', textToCopy)
   }
 
   if (!textToCopy) {
@@ -135,7 +133,6 @@ const copyOneTypeOneSecretDevicePassword = () => {
   clipboard.on('success', e => {
     success = true
     if (process.env.NODE_ENV === 'development') {
-      console.log('Clipboard.js success event. Copied text:', e.text)
     }
     message.success($t('custom.grouping_details.operationSuccess'))
     e.clearSelection()
@@ -197,7 +194,6 @@ const getPlatform = computed(() => {
 })
 onMounted(() => {
   if (process.env.NODE_ENV === 'development') {
-    console.log(props.configInfo.auto_register, 'auto_register')
   }
   auto_register.value = props.configInfo?.auto_register === 1 || false
   // 初始化图片路径

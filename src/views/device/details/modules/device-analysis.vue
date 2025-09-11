@@ -54,13 +54,6 @@ const deleteDevice = async id => {
 
 const handleLook = (id: string) => {
   router.push({ path: 'details-child', query: { d_id: id } })
-  // routerPushByKey('device_details-child', {
-  //   query: { d_id: id }
-  // }).catch(error => {
-  //   if (process.env.NODE_ENV === 'development') {
-    console.log('error----', error)
-  };
-  // });
 }
 
 const handleSetAddress = async (id, subDeviceAddr) => {

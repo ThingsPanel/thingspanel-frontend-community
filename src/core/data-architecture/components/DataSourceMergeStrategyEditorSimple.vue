@@ -129,7 +129,6 @@ watch(
         })
       } else {
         if (process.env.NODE_ENV === 'development') {
-          console.log('⏭️ [DataSourceMergeStrategyEditor] props内容未变化，跳过同步')
         }
       }
     }
@@ -196,7 +195,6 @@ const selectMergeStrategy = (strategyType: string) => {
         @update:value="
           val => {
             currentStrategy.selectedIndex = val
-            console.log('📝 [DataSourceMergeStrategyEditor] 选择数据项:', val)
           }
         "
       />

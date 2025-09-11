@@ -22,14 +22,6 @@ import {
 // 🆕 SUBTASK-003: 导入增强数据仓库
 import { dataWarehouse, type EnhancedDataWarehouse } from '@/core/data-architecture/DataWarehouse'
 
-// 🧪 Task 2.1: 测试文件导入已移除，避免自动调用外部接口
-// 如需测试，请手动在控制台调用: await import('@/core/data-architecture/UnifiedDataExecutor.test')
-// if (process.env.NODE_ENV === 'development') {
-//   import('@/core/data-architecture/UnifiedDataExecutor.test').catch(() => {
-//     // 忽略导入错误，测试文件是可选的
-//   })
-// }
-
 /**
  * 简化的数据源配置
  */
@@ -106,37 +98,17 @@ export class SimpleDataBridge {
    */
   async executeComponent(requirement: ComponentDataRequirement): Promise<DataResult> {
     const startTime = Date.now()
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🚀 [SimpleDataBridge] executeComponent 开始`, {
-      componentId: requirement.componentId,
-      requirementKeys: Object.keys(requirement),
-      hasDataSources: !!(requirement as any).dataSources,
-      dataSourcesLength: (requirement as any).dataSources?.length
-    })
-    }
+
 
     try {
       // 🆕 检查缓存数据，但需要验证配置是否已更新
       const cachedData = this.warehouse.getComponentData(requirement.componentId)
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🔍 [SimpleDataBridge] 检查缓存数据`, {
-        componentId: requirement.componentId,
-        hasCachedData: !!cachedData,
-        cachedDataType: typeof cachedData,
-        cachedDataKeys: cachedData ? Object.keys(cachedData) : []
-      })
-      }
+
       
       if (cachedData) {
         // 🔥 修复：检查是否有数据项配置，如果没有则不使用缓存
         const hasDataItems = this.hasValidDataItems(requirement)
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🔍 [SimpleDataBridge] 验证缓存数据有效性`, {
-          componentId: requirement.componentId,
-          hasDataItems,
-          shouldUseCachedData: hasDataItems
-        })
-        }
+
 
         if (hasDataItems) {
           // 🔥 修复：如果缓存数据被 'complete' 包装，需要解包
@@ -145,13 +117,6 @@ export class SimpleDataBridge {
             finalData = cachedData.complete
           }
 
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ [SimpleDataBridge] 使用缓存数据，跳过HTTP请求`, {
-            componentId: requirement.componentId,
-            finalDataKeys: finalData ? Object.keys(finalData) : [],
-            cacheHit: true
-          })
-          }
           this.notifyDataUpdate(requirement.componentId, finalData)
           return {
             success: true,
@@ -159,18 +124,7 @@ export class SimpleDataBridge {
             timestamp: Date.now()
           }
         } else {
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`⚠️ [SimpleDataBridge] 缓存数据无效，清理缓存`, {
-            componentId: requirement.componentId
-          })
-          }
           this.warehouse.clearComponentCache(requirement.componentId)
-        }
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`ℹ️ [SimpleDataBridge] 无缓存数据，继续执行`, {
-          componentId: requirement.componentId
-        })
         }
       }
 
@@ -178,31 +132,13 @@ export class SimpleDataBridge {
       let dataSourceConfig: DataSourceConfiguration
 
       if (this.isDataSourceConfiguration(requirement)) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🔍 [SimpleDataBridge] 使用 DataSourceConfiguration 格式`, {
-          componentId: requirement.componentId
-        })
-        }
+      
         dataSourceConfig = requirement as any
       } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🔍 [SimpleDataBridge] 转换为 DataSourceConfiguration 格式`, {
-          componentId: requirement.componentId,
-          originalFormat: 'ComponentDataRequirement'
-        })
-        }
+   
         dataSourceConfig = this.convertToDataSourceConfiguration(requirement)
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🚀 [SimpleDataBridge] 开始执行 MultiLayerExecutorChain`, {
-        componentId: requirement.componentId,
-        dataSourcesCount: dataSourceConfig.dataSources?.length || 0,
-        hasHttpDataItems: dataSourceConfig.dataSources?.some(ds => 
-          ds.dataItems?.some(item => item.item.type === 'http')
-        ) || false
-      })
-      }
 
       // 🔥 使用多层执行器链执行完整的数据处理管道
       const executionResult: ExecutionResult = await this.executorChain.executeDataProcessingChain(
@@ -210,15 +146,6 @@ export class SimpleDataBridge {
         true
       )
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [SimpleDataBridge] MultiLayerExecutorChain 执行完成`, {
-        componentId: requirement.componentId,
-        executionSuccess: executionResult.success,
-        hasComponentData: !!executionResult.componentData,
-        componentDataKeys: executionResult.componentData ? Object.keys(executionResult.componentData) : [],
-        error: executionResult.error
-      })
-      }
 
       if (executionResult.success && executionResult.componentData) {
         // 🆕 存储到数据仓库

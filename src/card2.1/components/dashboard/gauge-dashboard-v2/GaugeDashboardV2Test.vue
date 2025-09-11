@@ -123,17 +123,14 @@ const simulateDataChange = () => {
 // 事件处理
 const handleClick = (event: MouseEvent) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('仪表盘被点击:', event)
   }
 }
 
 const handleDataChange = (data: any) => {
-  console.log('数据变化:', data)
 }
 
 const handleThresholdExceeded = (value: number, threshold: number) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('阈值超限:', { value, threshold })
   }
 }
 </script>

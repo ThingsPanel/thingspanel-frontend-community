@@ -37,7 +37,6 @@ export function basicUsageExample() {
     })
     .then(result => {
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ 执行结果:', result)
       }
     })
     .catch(error => {
@@ -48,7 +47,6 @@ export function basicUsageExample() {
   setTimeout(() => {
     cleanup()
     if (process.env.NODE_ENV === 'development') {
-      console.log('🧹 清理完成')
     }
   }, 10000)
 }
@@ -80,16 +78,13 @@ export function configConversionExample() {
 
   if (requirement) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('✅ 配置转换成功:', requirement)
     }
 
     // 使用转换后的配置执行数据获取
     simpleDataBridge.executeComponent(requirement).then(result => {
-      console.log('✅ 转换配置执行结果:', result)
     })
   } else {
     if (process.env.NODE_ENV === 'development') {
-      console.log('⚠️ 配置转换失败')
     }
   }
 }

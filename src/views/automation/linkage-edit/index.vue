@@ -144,7 +144,6 @@ const getSceneAutomationsInfo = async () => {
     // 条件数据回显
     conditionData.value = echoIfData(automationsInfo.value.trigger_condition_groups)
     if (process.env.NODE_ENV === 'development') {
-      console.log(conditionData.value, 'conditionData.value')
     }
     // 动作数据回显
     actionData.value = echoActionData(automationsInfo.value.actions)

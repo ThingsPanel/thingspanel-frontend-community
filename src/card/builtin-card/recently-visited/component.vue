@@ -46,7 +46,6 @@ const loadVisitedRoutes = () => {
   try {
     const routesRaw = localStorage.getItem(RECENTLY_VISITED_ROUTES_KEY)
     if (process.env.NODE_ENV === 'development') {
-      console.log('routesRaw', routesRaw)
     }
 
     if (routesRaw) {

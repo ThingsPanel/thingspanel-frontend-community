@@ -38,12 +38,6 @@ export interface ConfigLayerDefinition {
 const shouldShowComponentConfig = (componentId: string, widget?: any): boolean => {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔍 [ComponentRegistry-Precise] 检查组件配置显示条件`, {
-      componentId,
-      widgetType: widget?.type,
-      hasMetadata: !!widget?.metadata,
-      hasCard2Definition: !!widget?.metadata?.card2Definition
-    })
     }
 
     // 精准策略：基于实际settingConfig.ts文件存在情况
@@ -57,7 +51,6 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
       
       if (testComponentsWithConfig.includes(widget.type)) {
         if (process.env.NODE_ENV === 'development') {
-          console.log(`✅ [ComponentRegistry-Precise] 确认有settingConfig的组件: ${widget.type}`)
         }
         return true
       }
@@ -70,7 +63,6 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
       
       if (componentsWithoutSettingConfig.includes(widget.type)) {
         if (process.env.NODE_ENV === 'development') {
-          console.log(`❌ [ComponentRegistry-Precise] 确认无settingConfig的组件: ${widget.type}`)
         }
         return false
       }
@@ -92,14 +84,6 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
       const shouldShow = hasDefaultConfig || hasConfigProps
       
       if (process.env.NODE_ENV === 'development') {
-        console.log(`📋 [ComponentRegistry-Precise] Card2定义检查结果`, {
-        componentType: widget.type,
-        hasDefaultConfig,
-        hasConfig: !!card2Definition.config,
-        hasProperties: hasConfigProps,
-        propertiesCount: Object.keys(card2Definition.config?.properties || {}).length,
-        决策: shouldShow ? '显示配置' : '隐藏配置(精准策略)'
-      })
       }
       
       return shouldShow
@@ -107,7 +91,6 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
 
     // 对于未知组件，采用保守策略 - 默认不显示
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🤔 [ComponentRegistry-Precise] 未知组件类型，默认不显示配置: ${widget?.type || 'unknown'}`)
     }
     return false
   } catch (error) {
@@ -122,11 +105,6 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
 const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean => {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔍 [ComponentRegistry-Precise] 检查数据源配置显示条件`, {
-      componentId,
-      widgetType: widget?.type,
-      hasCard2Definition: !!widget?.metadata?.card2Definition
-    })
     }
 
     // 检查Card2.1组件的数据需求
@@ -139,13 +117,6 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
       )
       
       if (process.env.NODE_ENV === 'development') {
-        console.log(`📊 [ComponentRegistry-Precise] Card2数据需求检查结果`, {
-        componentType: widget.type,
-        hasDataFields: !!card2Definition.dataRequirements?.dataFields?.length,
-        hasPrimaryData: !!card2Definition.dataRequirements?.primaryData,
-        hasDataSources: !!card2Definition.dataSources?.length,
-        决策: hasDataNeeds ? '显示数据源' : '隐藏数据源'
-      })
       }
       
       return hasDataNeeds
@@ -159,7 +130,6 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
         alarm-count     // 统计组件，不需要用户配置']
       if (noDataSourceComponents.includes(widget.type)) {
         if (process.env.NODE_ENV === 'development') {
-          console.log(`❌ [ComponentRegistry-Precise] 确认无数据源组件: ${widget.type}`)
         }
         return false
       }
@@ -167,7 +137,6 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
       // 已知需要数据源的组件
       if (dataSourceComponents.includes(widget.type)) {
         if (process.env.NODE_ENV === 'development') {
-          console.log(`✅ [ComponentRegistry-Precise] 确认需数据源组件: ${widget.type}`)
         }
         return true
       }
@@ -180,18 +149,12 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
     if (traditionalDataRequirements) {
       const hasDataSources = !!(traditionalDataRequirements.dataSources?.length > 0)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔍 [ComponentRegistry-Precise] 传统数据需求检查`, {
-        componentType,
-        hasDataSources,
-        dataSources: traditionalDataRequirements.dataSources
-      })
       }
       return hasDataSources
     }
 
     // 默认不显示数据源配置
     if (process.env.NODE_ENV === 'development') {
-      console.log(`❌ [ComponentRegistry-Precise] 未知组件，默认隐藏数据源`)
     }
     return false
   } catch (error) {
@@ -245,11 +208,6 @@ export const getVisibleConfigLayers = (componentId?: string, widget?: any): Conf
   let layers = Object.values(configLayerRegistry).filter(layer => layer.visible)
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`🔧 [ComponentRegistry-Precise] 开始配置层级检查`, {
-    componentId,
-    widgetType: widget?.type,
-    totalLayers: layers.length
-  })
   }
 
   if (componentId) {
@@ -257,14 +215,12 @@ export const getVisibleConfigLayers = (componentId?: string, widget?: any): Conf
       if (layer.name === 'dataSource') {
         const shouldShow = shouldShowDataSourceConfig(componentId, widget)
         if (process.env.NODE_ENV === 'development') {
-          console.log(`📊 [ComponentRegistry-Precise] 数据源层级检查: ${shouldShow}`)
         }
         return shouldShow
       }
       if (layer.name === 'component') {
         const shouldShow = shouldShowComponentConfig(componentId, widget)
         if (process.env.NODE_ENV === 'development') {
-          console.log(`🔧 [ComponentRegistry-Precise] 组件层级检查: ${shouldShow}`)
         }
         return shouldShow
       }
@@ -273,11 +229,6 @@ export const getVisibleConfigLayers = (componentId?: string, widget?: any): Conf
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`✅ [ComponentRegistry-Precise] 最终可见层级`, {
-    layerNames: layers.map(l => l.name),
-    layerCount: layers.length,
-    componentType: widget?.type
-  })
   }
 
   return layers.sort((a, b) => a.order - b.order)

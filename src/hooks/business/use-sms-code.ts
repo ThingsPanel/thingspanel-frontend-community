@@ -59,7 +59,6 @@ export default function useSmsCode() {
     try {
       const { error, data } = await fetchSmsCode(phone)
       if (process.env.NODE_ENV === 'development') {
-        console.log('data', data, error)
       }
       if (!error && data) {
         start() // 只有在发送成功时才启动倒计时

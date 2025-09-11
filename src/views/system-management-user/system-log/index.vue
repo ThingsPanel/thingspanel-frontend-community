@@ -155,7 +155,6 @@ function pickerChange(value: [number, number] | null) {
     const startDate = moment(value[0])
     const endDateMoment = moment(value[1])
     if (process.env.NODE_ENV === 'development') {
-      console.log('Original end timestamp:', value[1], 'Moment object:', endDateMoment.toISOString())
     }
 
     // 检查用户是否可能只选了日期（时间部分为 00:00:00）
@@ -170,19 +169,16 @@ function pickerChange(value: [number, number] | null) {
     ) {
       adjustedEndDateMoment = endDateMoment.endOf('day')
       if (process.env.NODE_ENV === 'development') {
-        console.log('Adjusted end moment object (end of day):', adjustedEndDateMoment.toISOString())
       }
     } else {
       adjustedEndDateMoment = endDateMoment // 用户选择了具体时间，保持不变
       if (process.env.NODE_ENV === 'development') {
-        console.log('End moment object (user selected time):', adjustedEndDateMoment.toISOString())
       }
     }
 
     queryParams.start_time = startDate.format('YYYY-MM-DDTHH:mm:ssZ')
     queryParams.end_time = adjustedEndDateMoment.format('YYYY-MM-DDTHH:mm:ssZ')
     if (process.env.NODE_ENV === 'development') {
-      console.log('Assigned queryParams.end_time:', queryParams.end_time)
     }
 
     // 尝试更新 range ref 本身以改变输入框显示
@@ -193,7 +189,6 @@ function pickerChange(value: [number, number] | null) {
     queryParams.start_time = ''
     queryParams.end_time = ''
     if (process.env.NODE_ENV === 'development') {
-      console.log('Date range cleared')
     }
   }
 }

@@ -88,7 +88,6 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
     for (const [deviceMetricsId, socket] of socketMap.entries()) {
       if (!uniqueDeviceMetricsIds.includes(deviceMetricsId)) {
         if (process.env.NODE_ENV === 'development') {
-          console.log(`Closing and removing an old socket: ${deviceMetricsId}`)
         }
         socket.close()
         socketMap.delete(deviceMetricsId)
@@ -104,7 +103,6 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
 
       if (!socketMap.has(deviceMetricsId)) {
         if (process.env.NODE_ENV === 'development') {
-          console.log(`Attempting to create WebSocket for: ${deviceMetricsId}`)
         }
         const { ws, send, close, status } = useWebSocket(wsUrl, {
           autoReconnect: {
@@ -135,7 +133,6 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
           },
           onConnected(wsInstance: WebSocket) {
             if (process.env.NODE_ENV === 'development') {
-              console.log(`WebSocket connected for: ${deviceMetricsId}, status: ${status.value}`)
             }
             if (!deviceId || !metricsId) {
               console.error('onConnected: deviceId or metricsId is undefined before send for', deviceMetricsId)
@@ -165,10 +162,8 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
 
   const closeAllSockets = () => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('Closing all WebSockets')
     }
     socketMap.forEach((socket, key) => {
-      console.log(`Closing socket: ${key}`)
       socket.close()
       socketMap.delete(key)
     })

@@ -220,7 +220,6 @@ const updateConfig = () => {
     // 保持向后兼容：设置pathParameter
     const firstParam = config.pathParams[0]
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔧 [HttpConfigForm] 转换pathParameter前:', JSON.stringify(firstParam, null, 2))
     }
 
     config.pathParameter = {
@@ -237,7 +236,6 @@ const updateConfig = () => {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('✅ [HttpConfigForm] 转换pathParameter后:', JSON.stringify(config.pathParameter, null, 2))
     }
   } else {
     config.pathParameter = undefined

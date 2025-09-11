@@ -60,13 +60,6 @@ function initializeComponent() {
   
   if (import.meta.env.DEV) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('✅ 类型测试组件初始化完成:', {
-      definition: definitionValidation.valid ? '✅ 通过' : '❌ 失败',
-      config: configValidation.valid ? '✅ 通过' : '❌ 失败',
-      settings: typeTestSettingConfig.settings.length,
-      dataSources: typeTestDefinition.dataSources?.length || 0,
-      staticParams: typeTestDefinition.staticParams?.length || 0
-    })
     }
   }
   
@@ -309,12 +302,10 @@ const config = ref(createTypeTestConfig({
 
 const handleConfigChange = (newConfig) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('配置已更改:', newConfig)
   }
 }
 
 const handleDataUpdate = (data) => {
-  console.log('数据已更新:', data)
 }
 </script>
     `
@@ -371,7 +362,6 @@ const isEditMode = ref(false)
 // 事件处理
 const handleInteraction = (eventType, data) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('交互事件:', eventType, data)
   }
   
   if (eventType === 'click') {
@@ -387,9 +377,7 @@ const handleError = (error) => {
 // 开发工具使用示例
 if (import.meta.env.DEV) {
   if (process.env.NODE_ENV === 'development') {
-    console.log('组件摘要:', devTools.getComponentSummary())
   }
-  console.log('TypeScript接口:', devTools.generateTypeScript())
 }
 </script>
     `
@@ -400,8 +388,6 @@ if (import.meta.env.DEV) {
 if (import.meta.env.DEV) {
   console.group('📦 Card2.1 类型测试组件加载完成')
   if (process.env.NODE_ENV === 'development') {
-    console.log('组件元数据:', componentMeta)
   }
-  console.log('组件摘要:', devTools.getComponentSummary())
   console.groupEnd()
 }

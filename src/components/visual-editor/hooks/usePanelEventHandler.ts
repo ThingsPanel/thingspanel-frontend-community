@@ -86,7 +86,6 @@ export function usePanelEventHandler(
    */
   const handleRendererChange = (renderer: RendererType) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 渲染器变更:', { old: dependencies.currentRenderer.value, new: renderer })
     }
     dependencies.currentRenderer.value = renderer
     dependencies.hasChanges.value = true
@@ -139,7 +138,6 @@ export function usePanelEventHandler(
   const handleImportConfig = (config: Record<string, any>) => {
     try {
       if (process.env.NODE_ENV === 'development') {
-        console.log('导入配置:', config)
       }
 
       // 验证配置格式
@@ -292,7 +290,6 @@ export function usePanelEventHandler(
   const handleZoomIn = () => {
     // TODO: 实现缩放功能
     if (process.env.NODE_ENV === 'development') {
-      console.log('放大视图')
     }
   }
 
@@ -301,7 +298,6 @@ export function usePanelEventHandler(
    */
   const handleZoomOut = () => {
     // TODO: 实现缩放功能
-    console.log('缩小视图')
   }
 
   /**
@@ -310,7 +306,6 @@ export function usePanelEventHandler(
   const handleResetZoom = () => {
     // TODO: 实现重置缩放功能
     if (process.env.NODE_ENV === 'development') {
-      console.log('重置缩放')
     }
   }
 
@@ -319,7 +314,6 @@ export function usePanelEventHandler(
    */
   const handleUndo = () => {
     // TODO: 实现撤销功能
-    console.log('撤销操作')
   }
 
   /**
@@ -328,7 +322,6 @@ export function usePanelEventHandler(
   const handleRedo = () => {
     // TODO: 实现重做功能
     if (process.env.NODE_ENV === 'development') {
-      console.log('重做操作')
     }
   }
 

@@ -115,7 +115,6 @@ export class OptimizedInitializationManager {
     // 检查是否需要重新初始化
     if (!forceReload && this.shouldSkipInitialization(cacheTimeout)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('🚀 [OptimizedInitialization] 使用缓存结果，跳过重复初始化')
       }
       return
     }
@@ -123,7 +122,6 @@ export class OptimizedInitializationManager {
     // 防止并发初始化
     if (this.initializationPromise) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('⏳ [OptimizedInitialization] 等待现有初始化完成')
       }
       return this.initializationPromise
     }
@@ -151,7 +149,6 @@ export class OptimizedInitializationManager {
     const cacheAge = now - this.cachedResult.timestamp
     if (cacheAge > cacheTimeout) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 [OptimizedInitialization] 缓存已过期，需要重新初始化')
       }
       return false
     }
@@ -160,7 +157,6 @@ export class OptimizedInitializationManager {
     const currentAuthority = this.getCurrentUserAuthority()
     if (this.state.userAuthority !== currentAuthority) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔐 [OptimizedInitialization] 用户权限已变更，需要重新初始化')
       }
       return false
     }
@@ -169,7 +165,6 @@ export class OptimizedInitializationManager {
     const currentRegisteredCount = componentRegistry.getAll().length
     if (this.state.registeredCount !== currentRegisteredCount) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('📦 [OptimizedInitialization] 组件注册数量已变更，需要重新初始化')
       }
       return false
     }
@@ -183,7 +178,6 @@ export class OptimizedInitializationManager {
   private async performInitialization(skipPermissionCheck: boolean): Promise<void> {
     const startTime = Date.now()
     if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 [OptimizedInitialization] 开始系统初始化')
     }
 
     try {
@@ -193,13 +187,11 @@ export class OptimizedInitializationManager {
       // 2. 获取组件统计信息
       const componentStats = this.componentLoader.getComponentStats(componentModules)
       if (process.env.NODE_ENV === 'development') {
-        console.log('📊 [OptimizedInitialization] 组件统计:', componentStats)
       }
 
       // 3. 自动注册组件（包含权限过滤）
       const registeredComponents = await this.autoRegistry.autoRegister(componentModules)
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ [OptimizedInitialization] 注册组件数量:', registeredComponents.length)
       }
 
       // 4. 注册预设的数据需求
@@ -228,7 +220,6 @@ export class OptimizedInitializationManager {
 
       const duration = Date.now() - startTime
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✨ [OptimizedInitialization] 初始化完成，耗时: ${duration}ms`)
       }
     } catch (error) {
       console.error('❌ [OptimizedInitialization] 初始化失败:', error)
@@ -328,13 +319,11 @@ export class OptimizedInitializationManager {
     // 如果权限没有变化，跳过重新过滤
     if (this.state.userAuthority === currentAuthority) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔐 [OptimizedInitialization] 权限未变更，跳过重新过滤')
       }
       return
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 [OptimizedInitialization] 权限已变更，重新应用过滤')
     }
 
     // 重新初始化以应用新的权限过滤
@@ -367,7 +356,6 @@ export class OptimizedInitializationManager {
    */
   public clearCache(): void {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🗑️ [OptimizedInitialization] 清除缓存')
     }
     this.state.isInitialized = false
     this.cachedResult = null
@@ -379,7 +367,6 @@ export class OptimizedInitializationManager {
    */
   public async warmupCache(): Promise<void> {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔥 [OptimizedInitialization] 开始预热缓存')
     }
     await this.initialize({ forceReload: false })
   }
@@ -399,7 +386,6 @@ export class OptimizedInitializationManager {
 
       const hasChanges = currentHash !== this.state.moduleHash
       if (hasChanges && process.env.NODE_ENV === 'development') {
-        console.log('🔄 [OptimizedInitialization] 检测到组件变更')
       }
 
       return hasChanges
@@ -416,11 +402,9 @@ export class OptimizedInitializationManager {
 
     if (hasChanges) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('📝 [OptimizedInitialization] 执行增量更新')
       }
       await this.initialize({ forceReload: true })
     } else if (process.env.NODE_ENV === 'development') {
-      console.log('✨ [OptimizedInitialization] 无需增量更新')
     }
   }
 }

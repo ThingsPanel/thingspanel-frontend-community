@@ -401,10 +401,6 @@ export class PropertyPathManager {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔍 [PropertyPathManager] 解析属性路径值`, {
-      propertyPath,
-      configKeys: Object.keys(config || {})
-    })
     }
 
     // 检查是否为基础配置路径格式 (base.xxx)
@@ -416,10 +412,6 @@ export class PropertyPathManager {
         const value = PropertyPathManager.getNestedValue(config.base, basePropertyPath)
         if (value !== undefined) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ [PropertyPathManager] 从base配置段获取值`, {
-            路径: propertyPath,
-            值: value
-          })
           }
           return value
         }
@@ -429,10 +421,6 @@ export class PropertyPathManager {
       const rootValue = PropertyPathManager.getNestedValue(config, basePropertyPath)
       if (rootValue !== undefined) {
         if (process.env.NODE_ENV === 'development') {
-          console.log(`✅ [PropertyPathManager] 从根配置获取值（兼容模式）`, {
-          路径: propertyPath,
-          值: rootValue
-        })
         }
         return rootValue
       }
@@ -446,10 +434,6 @@ export class PropertyPathManager {
         const value = PropertyPathManager.getNestedValue(config.component.properties, componentPropertyPath)
         if (value !== undefined) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ [PropertyPathManager] 从component配置段获取值`, {
-            路径: propertyPath,
-            值: value
-          })
           }
           return value
         }
@@ -464,10 +448,6 @@ export class PropertyPathManager {
         const value = PropertyPathManager.getNestedValue(config.dataSource, dataSourcePropertyPath)
         if (value !== undefined) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ [PropertyPathManager] 从dataSource配置段获取值`, {
-            路径: propertyPath,
-            值: value
-          })
           }
           return value
         }
@@ -478,25 +458,12 @@ export class PropertyPathManager {
       const value = PropertyPathManager.getNestedValue(config, propertyPath)
       if (value !== undefined) {
         if (process.env.NODE_ENV === 'development') {
-          console.log(`✅ [PropertyPathManager] 从根配置获取值`, {
-          路径: propertyPath,
-          值: value
-        })
         }
         return value
       }
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`⚠️ [PropertyPathManager] 未找到属性路径值`, {
-      路径: propertyPath,
-      配置结构: {
-        hasBase: !!config.base,
-        hasComponent: !!config.component,
-        hasDataSource: !!config.dataSource,
-        rootKeys: Object.keys(config || {})
-      }
-    })
     }
 
     return undefined
@@ -542,10 +509,6 @@ export class PropertyPathManager {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 [PropertyPathManager] 设置属性路径值`, {
-      propertyPath,
-      value
-    })
     }
 
     // 检查是否为基础配置路径格式 (base.xxx)
@@ -559,10 +522,6 @@ export class PropertyPathManager {
 
       PropertyPathManager.setNestedValue(config.base, basePropertyPath, value)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [PropertyPathManager] 已设置base配置值`, {
-        路径: propertyPath,
-        值: value
-      })
       }
     }
     // 检查是否为组件配置路径格式 (component.xxx)
@@ -579,10 +538,6 @@ export class PropertyPathManager {
 
       PropertyPathManager.setNestedValue(config.component.properties, componentPropertyPath, value)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [PropertyPathManager] 已设置component配置值`, {
-        路径: propertyPath,
-        值: value
-      })
       }
     }
     // 检查是否为数据源配置路径格式 (dataSource.xxx)
@@ -596,20 +551,12 @@ export class PropertyPathManager {
 
       PropertyPathManager.setNestedValue(config.dataSource, dataSourcePropertyPath, value)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [PropertyPathManager] 已设置dataSource配置值`, {
-        路径: propertyPath,
-        值: value
-      })
       }
     }
     // 默认：直接在根配置设置
     else {
       PropertyPathManager.setNestedValue(config, propertyPath, value)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [PropertyPathManager] 已设置根配置值`, {
-        路径: propertyPath,
-        值: value
-      })
       }
     }
   }
@@ -695,5 +642,4 @@ export const PropertyPath = {
 }
 
 if (process.env.NODE_ENV === 'development') {
-  console.log('🎯 [PropertyPathManager] 统一属性路径格式管理器已初始化')
 }

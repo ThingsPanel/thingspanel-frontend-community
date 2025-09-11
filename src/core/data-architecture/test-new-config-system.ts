@@ -155,7 +155,6 @@ async function testAddSecondDataItemScenario() {
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('📝 添加第一个数据项...')
   }
   const result1 = configurationStateManager.updateConfigurationSection(
     testComponentId,
@@ -164,7 +163,6 @@ async function testAddSecondDataItemScenario() {
     'user'
   )
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ 第一个数据项添加结果:', result1)
   }
 
   // 等待防抖处理
@@ -194,7 +192,6 @@ async function testAddSecondDataItemScenario() {
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('📝 添加第二个数据项（原本会导致无限循环）...')
   }
   const result2 = configurationStateManager.updateConfigurationSection(
     testComponentId,
@@ -203,7 +200,6 @@ async function testAddSecondDataItemScenario() {
     'user'
   )
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ 第二个数据项添加结果:', result2)
   }
 
   // 等待防抖处理
@@ -221,7 +217,6 @@ async function testAddSecondDataItemScenario() {
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('📝 更新合并策略（原本会导致无限循环）...')
   }
   const result3 = configurationStateManager.updateConfigurationSection(
     testComponentId,
@@ -230,7 +225,6 @@ async function testAddSecondDataItemScenario() {
     'user'
   )
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ 合并策略更新结果:', result3)
   }
 
   // 获取最终状态
@@ -238,9 +232,7 @@ async function testAddSecondDataItemScenario() {
   const finalVersion = configurationStateManager.getConfigurationVersion(testComponentId)
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('📊 最终配置版本:', finalVersion)
   }
-  console.log('📊 最终配置状态:', finalConfig?.dataSource)
 }
 
 /**
@@ -248,7 +240,6 @@ async function testAddSecondDataItemScenario() {
  */
 async function testIntegrationBridgeCompatibility() {
   if (process.env.NODE_ENV === 'development') {
-    console.log('\n🔍 ===== 测试4：配置集成桥接器兼容性 =====')
   }
 
   // 初始化桥接器
@@ -258,14 +249,12 @@ async function testIntegrationBridgeCompatibility() {
 
   // 测试初始化配置
   if (process.env.NODE_ENV === 'development') {
-    console.log('📝 通过桥接器初始化配置...')
   }
   configurationIntegrationBridge.initializeConfiguration(testComponentId)
 
   // 测试获取配置
   const config = configurationIntegrationBridge.getConfiguration(testComponentId)
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ 获取的配置:', config)
   }
 
   // 测试更新配置
@@ -288,7 +277,6 @@ async function testIntegrationBridgeCompatibility() {
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('📝 通过桥接器更新配置...')
   }
   configurationIntegrationBridge.updateConfiguration(testComponentId, 'dataSource', updateConfig)
 
@@ -297,7 +285,6 @@ async function testIntegrationBridgeCompatibility() {
 
   const updatedConfig = configurationIntegrationBridge.getConfiguration(testComponentId)
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ 更新后的配置:', updatedConfig?.dataSource)
   }
 }
 
@@ -305,7 +292,6 @@ async function testIntegrationBridgeCompatibility() {
  * 主测试函数
  */
 export async function runNewConfigSystemTests() {
-  console.log('🚀 ===== 新配置管理系统测试开始 =====')
 
   try {
     await testContentHashDeduplication()
@@ -314,16 +300,9 @@ export async function runNewConfigSystemTests() {
     await testIntegrationBridgeCompatibility()
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('\n✅ ===== 所有测试完成！新配置管理系统工作正常 =====')
     }
-    console.log('🔥 原本导致无限循环的问题已通过以下机制解决：')
-    console.log('   1. 内容哈希去重 - 相同内容不会重复处理')
-    console.log('   2. 循环检测机制 - 防止同时更新同一组件')
     if (process.env.NODE_ENV === 'development') {
-      console.log('   3. 防抖处理 - 避免频繁更新')
     }
-    console.log('   4. 版本控制 - 追踪每次配置变更')
-    console.log('   5. 智能事件去重 - 避免重复emit')
   } catch (error) {
     console.error('❌ 测试过程中发生错误:', error)
   }
@@ -333,6 +312,5 @@ export async function runNewConfigSystemTests() {
 if (typeof window !== 'undefined') {
   ;(window as any).testNewConfigSystem = runNewConfigSystemTests
   if (process.env.NODE_ENV === 'development') {
-    console.log('🛠️ [测试脚本] 已暴露到 window.testNewConfigSystem，可在控制台运行')
   }
 }

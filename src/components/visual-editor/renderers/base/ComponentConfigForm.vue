@@ -74,10 +74,6 @@ const isCard2Component = computed(() => {
 const card2ConfigComponent = computed(() => {
   if (!isCard2Component.value || !props.widget?.type) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 [ComponentConfigForm] 跳过配置加载', {
-      isCard2Component: isCard2Component.value,
-      widgetType: props.widget?.type
-    })
     }
     return null
   }
@@ -89,22 +85,11 @@ const card2ConfigComponent = computed(() => {
     )
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 [ComponentConfigForm] 组件定义获取结果', {
-      widgetType: props.widget.type,
-      hasComponentDefinition: !!componentDefinition,
-      hasConfigComponent: !!componentDefinition?.configComponent,
-      configComponentName: componentDefinition?.configComponent?.name || 'unknown',
-      allAvailableComponents: card2Integration.filteredComponents.value.map(c => c.type),
-      totalAvailableCount: card2Integration.filteredComponents.value.length
-    })
     }
 
     // 优先使用组件自定义的配置组件
     if (componentDefinition?.configComponent) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ [ComponentConfigForm] 使用自定义配置组件', {
-        componentName: componentDefinition.configComponent.name || 'unknown'
-      })
       }
       return componentDefinition.configComponent
     }
@@ -115,24 +100,16 @@ const card2ConfigComponent = computed(() => {
       Object.keys(componentDefinition.config.properties).length > 0
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 [ComponentConfigForm] 检查配置属性', {
-      hasProperties,
-      propertiesCount: componentDefinition?.config?.properties ? 
-        Object.keys(componentDefinition.config.properties).length : 0,
-      configStructure: componentDefinition?.config
-    })
     }
 
     if (hasProperties) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('📋 [ComponentConfigForm] 使用通用配置表单 (FlexibleConfigForm)')
       }
       // 返回通用的Card2配置表单（使用FlexibleConfigForm）
       return () => import('@/card2.1/core/FlexibleConfigForm.vue')
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('❌ [ComponentConfigForm] 无配置组件可用')
     }
     return null
   } catch (error) {

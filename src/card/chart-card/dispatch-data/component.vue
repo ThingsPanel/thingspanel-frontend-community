@@ -35,7 +35,6 @@ const handleButtonClick = async () => {
 
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log(config.value.dataType)
     }
     if (config.value.dataType === 'attributes') {
       await attributeDataPub(obj)

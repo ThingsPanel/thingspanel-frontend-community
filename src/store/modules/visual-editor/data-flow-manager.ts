@@ -182,11 +182,6 @@ export class DataFlowManager {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 [DataFlowManager] handleUpdateNode 开始`, {
-      targetId: action.targetId,
-      updateKeys: Object.keys(action.data || {}),
-      hasProperties: !!(action.data && action.data.properties)
-    })
     }
 
     // 1. 更新store中的节点状态
@@ -195,10 +190,6 @@ export class DataFlowManager {
     // 🔥 关键修复：如果更新包含properties，同时更新配置系统
     if (action.data && action.data.properties) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔄 [DataFlowManager] 检测到properties更新，同步配置系统`, {
-        componentId: action.targetId,
-        propertiesKeys: Object.keys(action.data.properties)
-      })
       }
 
       try {
@@ -286,28 +277,17 @@ export class DataFlowManager {
    */
   private async syncNodePropertiesToConfiguration(componentId: string, properties: Record<string, any>): Promise<void> {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔄 [DataFlowManager] syncNodePropertiesToConfiguration`, {
-      componentId,
-      propertiesKeys: Object.keys(properties || {}),
-      propertiesSample: JSON.stringify(properties).substring(0, 200) + '...'
-    })
     }
 
     try {
       // 获取当前配置
       const currentConfig = this.configService.getConfiguration(componentId)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`📋 [DataFlowManager] 当前配置状态:`, {
-        componentId,
-        hasConfig: !!currentConfig,
-        configSections: currentConfig ? Object.keys(currentConfig) : []
-      })
       }
 
       if (!currentConfig) {
         // 如果没有配置，创建默认配置
         if (process.env.NODE_ENV === 'development') {
-          console.log(`🆕 [DataFlowManager] 创建默认配置 for ${componentId}`)
         }
         this.configService.initializeConfiguration(componentId)
       }
@@ -315,10 +295,6 @@ export class DataFlowManager {
       // 🔥 关键：将properties更新到component配置节中
       // 这样配置变更事件就会被触发
       if (process.env.NODE_ENV === 'development') {
-        console.log(`📝 [DataFlowManager] 更新component配置节`, {
-        componentId,
-        properties
-      })
       }
 
       // 使用updateConfigurationSection触发配置变更事件
@@ -327,9 +303,6 @@ export class DataFlowManager {
       })
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [DataFlowManager] 配置系统同步完成`, {
-        componentId
-      })
       }
 
     } catch (error) {

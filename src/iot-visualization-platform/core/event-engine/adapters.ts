@@ -369,5 +369,4 @@ if (typeof window !== 'undefined') {
 }
 
 if (process.env.NODE_ENV === 'development') {
-  console.log(`🔧 [EventAdapters] 事件适配器初始化完成，支持三大系统无缝集成`)
 }

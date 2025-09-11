@@ -50,7 +50,6 @@ class AutoComponentRegistry {
 
       this.initialized = true
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[Card2.1] 自动注册了 ${componentDefinitions.length} 个组件`)
       }
     } catch (error) {
       console.error('[Card2.1] 组件自动注册失败:', error)
@@ -77,34 +76,25 @@ class AutoComponentRegistry {
       )
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('[Card2.1] 扫描到的组件模块:', Object.keys(filteredModules))
-        console.log(
-          '[Card2.1] 详细模块路径:',
-          Object.keys(filteredModules).map(path => ({ path, exists: true }))
-        )
       }
 
       // 动态导入所有组件定义
       for (const [path, importFn] of Object.entries(filteredModules)) {
         if (process.env.NODE_ENV === 'development') {
-          console.log(`🔧 [Card2.1] 开始导入组件: ${path}`)
         }
         try {
           const module = (await importFn()) as any
           if (process.env.NODE_ENV === 'development') {
-            console.log(`🔧 [Card2.1] 模块导入成功: ${path}`, Object.keys(module))
           }
 
           // 查找组件定义（支持多种导出方式）
           const definition = module.default || module.definition || module.componentDefinition
           if (process.env.NODE_ENV === 'development') {
-            console.log(`🔧 [Card2.1] 组件定义: ${path}`, definition ? definition.type : 'undefined')
           }
 
           if (definition && this.isValidComponentDefinition(definition)) {
             componentDefinitions.push({ definition, folderPath: path })
             if (process.env.NODE_ENV === 'development') {
-              console.log(`✅ [Card2.1] 成功加载组件: ${definition.name} (${definition.type}) 来源: ${path}`)
             }
           } else {
             if (process.env.NODE_ENV === 'development') {
@@ -162,13 +152,11 @@ class AutoComponentRegistry {
 
     if (folderName && !shouldShowCategory(folderName, isDev)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔧 [AutoRegistry] 跳过组件 ${type}: 分类 ${categoryName} 在当前环境不显示`)
       }
       return
     }
     
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 [AutoRegistry] 注册组件: ${type} -> ${categoryName} (来源: ${folderPath || '未知'})`)
     }
 
     // 🚨 CRITICAL: 覆盖组件定义中的分类信息，使用从文件夹路径确定的分类
@@ -216,7 +204,6 @@ class AutoComponentRegistry {
     // 过滤掉 undefined 或无效的组件
     const validComponents = components.filter(comp => comp && comp.type && comp.name && comp.component)
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 [AutoRegistry] 总组件数: ${components.length}, 有效组件数: ${validComponents.length}`)
       if (components.length !== validComponents.length) {
         console.warn(
           `❌ [AutoRegistry] 发现无效组件:`,
@@ -235,7 +222,6 @@ class AutoComponentRegistry {
     const validComponents = this.getAllComponents()
     const types = validComponents.map(comp => comp.type).filter(type => type)
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 [AutoRegistry] 组件类型列表:`, types)
     }
     return types
   }

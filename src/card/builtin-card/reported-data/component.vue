@@ -304,7 +304,6 @@ const fetchData = async (initialLoad = false) => {
   // Clear previous error only when starting a new fetch
   error.value = null
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[ReportedData] Fetching data... Initial: ${initialLoad}`)
   }
 
   try {
@@ -338,10 +337,8 @@ const startPolling = () => {
   if (!isRefreshing.value) return
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[ReportedData] Starting polling every ${REFRESH_INTERVAL}ms`)
   }
   refreshIntervalId.value = setInterval(() => {
-    console.log('[ReportedData] Polling tick: fetching data...')
     fetchData(false)
   }, REFRESH_INTERVAL)
 }
@@ -349,7 +346,6 @@ const startPolling = () => {
 const stopPolling = () => {
   if (refreshIntervalId.value) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('[ReportedData] Stopping polling')
     }
     clearInterval(refreshIntervalId.value)
     refreshIntervalId.value = null
@@ -361,13 +357,11 @@ const toggleRefresh = () => {
   isRefreshing.value = !isRefreshing.value
   if (isRefreshing.value) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('[ReportedData] Manually starting refresh')
     }
     fetchData(false) // Fetch immediately when turning on
     startPolling()
   } else {
     if (process.env.NODE_ENV === 'development') {
-      console.log('[ReportedData] Manually stopping refresh')
     }
     stopPolling()
   }

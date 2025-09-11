@@ -22,7 +22,6 @@ const getData = async () => {
   try {
     const { data } = await tenant()
     if (process.env.NODE_ENV === 'development') {
-      console.log('Tenant board data response:', data)
     }
 
     if (data && typeof data.user_total === 'number') {

@@ -124,10 +124,6 @@ export function createEditor() {
           if (componentDef.config && componentDef.config.customize) {
             // Card2.1格式：保持结构化的config用于customConfig
             if (process.env.NODE_ENV === 'development') {
-              console.log(`🔧 [useEditor] Card2.1格式组件: ${componentDef.type}`, {
-              config: componentDef.config,
-              hasCustomize: !!componentDef.config.customize
-            })
             }
             // 不放入defaultProperties，让Card2Wrapper直接使用structured config
           } else if (componentDef.config) {
@@ -136,12 +132,6 @@ export function createEditor() {
           }
 
           if (process.env.NODE_ENV === 'development') {
-            console.log(`🔧 [useEditor] 提取组件属性:`, {
-            type: componentDef.type,
-            hasConfig: !!componentDef.config,
-            configKeys: componentDef.config ? Object.keys(componentDef.config) : [],
-            defaultProperties
-          })
           }
 
           const widgetDef = {
@@ -166,18 +156,15 @@ export function createEditor() {
 
           widgetStore.register(widgetDef)
           if (process.env.NODE_ENV === 'development') {
-            console.log(`[useEditor] Successfully registered widget: ${widgetDef.type}`, widgetDef)
           }
           // 🔥 修复：注册配置组件到 configRegistry
           if (componentDef.configComponent) {
             if (!configRegistry.has(componentDef.type)) {
               configRegistry.register(componentDef.type, componentDef.configComponent)
               if (process.env.NODE_ENV === 'development') {
-                console.log(`✅ [useEditor] 注册配置组件: ${componentDef.type}`)
               }
             }
           } else {
-            console.log(`ℹ️ [useEditor] 组件无配置组件: ${componentDef.type}`)
           }
         }
       })
@@ -213,17 +200,13 @@ export function createEditor() {
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔧 [useEditor] 尝试获取Card2组件: ${card2Type}`)
       }
-      console.log(`🔧 [useEditor] Card2系统加载状态: ${card2Integration.isLoading.value}`)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔧 [useEditor] 可用组件数量: ${card2Integration.filteredComponents.value?.length || 0}`)
       }
 
       // 从组件列表中查找指定类型的组件定义
       const card2Definition = card2Integration.filteredComponents.value?.find(comp => comp.type === card2Type)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔧 [useEditor] 获取Card2定义结果:`, card2Definition)
       }
 
       if (card2Definition) {
@@ -235,10 +218,6 @@ export function createEditor() {
         if (card2Definition.config && card2Definition.config.customize) {
           // Card2.1格式：保持结构化的config用于customConfig
           if (process.env.NODE_ENV === 'development') {
-            console.log(`🔧 [useEditor-addWidget] Card2.1格式组件: ${card2Definition.type}`, {
-            config: card2Definition.config,
-            hasCustomize: !!card2Definition.config.customize
-          })
           }
           // 不放入defaultProperties，让Card2Wrapper直接使用structured config
         } else if (card2Definition.config) {
@@ -275,12 +254,10 @@ export function createEditor() {
           }
         }
         if (process.env.NODE_ENV === 'development') {
-          console.log(`✅ [useEditor] 成功转换Card2组件定义: ${card2Type}`, widgetDef)
         }
       } else {
         console.error(`❌ [useEditor] Card2组件未找到: ${card2Type}`)
         if (process.env.NODE_ENV === 'development') {
-          console.log(`❌ [useEditor] 所有可用组件:`, card2Integration.filteredComponents.value?.map(w => w.type) || [])
         }
       }
     }
@@ -298,11 +275,6 @@ export function createEditor() {
     const { w: newItemW, h: newItemH } = defaultLayout.gridstack
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 [addWidget] 使用布局配置:`, {
-      type: widgetDef.type,
-      hasDefaultLayout: !!widgetDef.defaultLayout,
-      finalLayout: defaultLayout
-    })
     }
     const colNum = 12
 

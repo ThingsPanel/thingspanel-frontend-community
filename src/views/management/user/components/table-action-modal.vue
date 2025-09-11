@@ -88,7 +88,6 @@ const languageOptions = [
 // 处理省市区选择变化
 const handleAddressChange = (value: { province: string; city: string; district: string }) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('自定义三级联动选择的值:', value)
   };
   
   // 更新表单模型中的地址数据
@@ -97,11 +96,6 @@ const handleAddressChange = (value: { province: string; city: string; district: 
   formModel.address.district = value.district;
   
   if (process.env.NODE_ENV === 'development') {
-    console.log('处理后的地址数据:', {
-    province: formModel.address.province,
-    city: formModel.address.city,
-    district: formModel.address.district
-  })
   };
 };
 
@@ -233,7 +227,6 @@ async function handleSubmit() {
   delete (submitData as any).confirmPwd;
   
   if (process.env.NODE_ENV === 'development') {
-    console.log('提交的数据结构:', submitData)
   };
   
   let data: any
@@ -263,9 +256,7 @@ watch(
   () => [formModel.address.province, formModel.address.city, formModel.address.district],
   (newValue) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('地址字段值变化:', newValue)
     };
-    console.log('当前地址数据:', formModel.address);
   },
   { deep: true }
 )

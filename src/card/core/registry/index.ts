@@ -45,7 +45,6 @@ export class ComponentRegistry implements IComponentRegistry {
     })
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[ComponentRegistry] 组件 ${meta.id} 注册成功`)
     }
   }
 
@@ -86,7 +85,6 @@ export class ComponentRegistry implements IComponentRegistry {
     })
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[ComponentRegistry] 组件 ${componentId} 注销成功`)
     }
   }
 
@@ -156,7 +154,6 @@ export class ComponentRegistry implements IComponentRegistry {
     this.typeIndex.clear()
     this.rendererIndex.clear()
     if (process.env.NODE_ENV === 'development') {
-      console.log('[ComponentRegistry] 注册表已清空')
     }
   }
 

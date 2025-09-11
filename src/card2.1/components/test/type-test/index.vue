@@ -399,7 +399,6 @@ const handleMouseLeave = () => {
 
 watch(() => props.realtimeData, (newData) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log("realtimeData changed:", newData)
   };
   if (newData && newData.length > 0) {
     // 假设我们关心最新的数据点
@@ -457,7 +456,6 @@ const updatePrimaryValue = (newValue: number, animate = true) => {
 
 const update = (newConfig: Partial<TypeTestConfig>) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('Component instance updated with new config:', newConfig)
   };
   emit('config-change', newConfig);
 };

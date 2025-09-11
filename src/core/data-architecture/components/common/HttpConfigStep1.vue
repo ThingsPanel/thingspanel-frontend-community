@@ -101,10 +101,8 @@ const updateConfig = (field: keyof HttpConfig, value: any) => {
 
   // 🔥 调试：监听所有配置更新
   if (process.env.NODE_ENV === 'development') {
-    console.log(`🔄 [HttpConfigStep1] 配置更新 - ${String(field)}:`, value)
   }
   if (field === 'pathParameter') {
-    console.log('🔍 [HttpConfigStep1] pathParameter详细:', JSON.stringify(value, null, 2))
   }
 
   emit('update:modelValue', newConfig)
@@ -239,7 +237,6 @@ const onUrlParamsUpdate = (params: EnhancedParameter[]) => {
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('📝 [HttpConfigStep1] 批量参数配置更新:', Object.keys(batchUpdates))
   }
   emit('update:modelValue', newConfig)
 
@@ -420,7 +417,6 @@ watch(
     // 🔥 如果正在从子组件更新，跳过此次同步，避免循环
     if (isUpdatingFromChild.value) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 [HttpConfigStep1] 跳过循环更新，来自子组件')
       }
       return
     }

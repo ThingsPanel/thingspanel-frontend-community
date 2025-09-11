@@ -76,7 +76,6 @@ const filteredOptions = computed(() => {
 const handleLoadMore = () => {
   if (!props.loading && props.hasMore) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('Emitting loadMore')
     } // 调试日志
     emit('loadMore')
   }
@@ -110,7 +109,6 @@ const handlePopoverUpdateShow = (show: boolean) => {
   if (show && (!props.options || props.options.length === 0)) {
     // 当首次展开且没有选项时，触发初始加载
     if (process.env.NODE_ENV === 'development') {
-      console.log('Popover opened, emitting initialLoad')
     } // 调试日志
     emit('initialLoad')
   }

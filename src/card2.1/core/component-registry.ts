@@ -35,7 +35,6 @@ function getPortDefinitions(): Map<string, ComponentDefinition> {
     const definitions = new Map<string, ComponentDefinition>()
     portDefinitions.set(portId, definitions)
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 [ComponentRegistry] 为端口 ${portId} 创建新的组件注册表`)
     }
   }
 
@@ -57,16 +56,6 @@ export class ComponentRegistry {
     // 直接注册组件定义，无需额外补充字段
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 [ComponentRegistry] 注册组件 ${definition.type}`, {
-      componentType: definition.type,
-      hasDataSources: !!definition.dataSources,
-      hasStaticParams: !!definition.staticParams,
-      configSource: 'baseConfiguration',
-      hasComponent: !!definition.component,
-      hasConfig: !!definition.config,
-      definitionKeys: Object.keys(definition),
-      config: definition.config
-    })
     }
 
     this.definitions.set(definition.type, definition)
@@ -94,10 +83,6 @@ export class ComponentRegistry {
       )
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [ComponentRegistry] 组件属性暴露注册完成`, {
-        componentType: definition.type,
-        includesBaseConfig: true
-      })
       }
     } catch (error) {
       console.warn(`[ComponentRegistry] 属性暴露注册失败`, {
@@ -271,10 +256,6 @@ export class ComponentRegistry {
       try {
         // 🔥 暂时禁用动态导入以避免循环依赖问题
         if (process.env.NODE_ENV === 'development') {
-          console.log(`ℹ️ [ComponentRegistry] settingConfig属性注册已跳过（避免循环依赖）`, {
-          componentType: definition.type,
-          settingsCount: settingConfig.settings?.length || 0
-        })
         }
 
         // TODO: 在后续版本中重新启用属性自动注册

@@ -22,7 +22,6 @@ const pagination = reactive({
   pageSizes: [10, 15, 20]
 })
 if (process.env.NODE_ENV === 'development') {
-  console.log(props.card?.dataSource?.deviceSource, 'props.card')
 }
 const allTableData = ref<any[]>([])
 const paginatedData = computed(() => {
@@ -55,7 +54,6 @@ const columns = ref<any[]>([
     })
     .map(source => {
       if (process.env.NODE_ENV === 'development') {
-        console.log(source, 'props.card')
       }
       return {
         title: source.metricsName,

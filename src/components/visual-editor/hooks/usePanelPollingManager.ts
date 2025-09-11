@@ -36,13 +36,11 @@ export function usePanelPollingManager(dependencies: {
         const pollingConfig = config?.component?.polling
         if (pollingConfig && pollingConfig.enabled) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ [PanelEditor] 组件 ${componentId} 启用轮询:`, pollingConfig)
           }
 
           const interval = pollingConfig.interval || 30000
 
           if (process.env.NODE_ENV === 'development') {
-            console.log(`▶️ [PanelEditor] 启动组件轮询: ${componentId}, 间隔: ${interval}ms`)
           }
 
           // 创建轮询任务（但不自动启动）
@@ -67,7 +65,6 @@ export function usePanelPollingManager(dependencies: {
                   }
 
                   if (process.env.NODE_ENV === 'development') {
-                    console.log(`🔍 [PanelEditor] 找到组件配置，开始执行`)
                   }
 
                   // 获取组件类型
@@ -75,7 +72,6 @@ export function usePanelPollingManager(dependencies: {
                   const componentType = component?.type || 'unknown'
 
                   if (process.env.NODE_ENV === 'development') {
-                    console.log(`🔍 [PanelEditor] 轮询调用前清除缓存: ${componentId}`)
                   }
 
                   // 🔥 关键修复：轮询执行前先清除组件缓存，强制重新获取数据
@@ -88,9 +84,7 @@ export function usePanelPollingManager(dependencies: {
                     config.dataSource
                   )
                   if (process.env.NODE_ENV === 'development') {
-                    console.log(`✅ [PanelEditor] VisualEditorBridge 调用成功，执行结果:`, result)
                   }
-                  console.log(`✅ [PanelEditor] 轮询执行完成: ${componentId}`)
                 } catch (bridgeError) {
                   console.error(`❌ [PanelEditor] VisualEditorBridge 调用失败: ${componentId}`, bridgeError)
                   console.warn(`⚠️ [PanelEditor] 轮询执行失败: ${componentId}`)
@@ -103,7 +97,6 @@ export function usePanelPollingManager(dependencies: {
           })
 
           if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ [PanelEditor] 轮询任务已创建: ${componentId} -> ${taskId}`)
           }
 
           // 启动这个任务
@@ -114,11 +107,9 @@ export function usePanelPollingManager(dependencies: {
       // 最终轮询任务统计
       const finalStats = dependencies.pollingManager.getStatistics()
       if (process.env.NODE_ENV === 'development') {
-        console.log(`📊 [PanelEditor] 轮询任务创建完成，统计信息:`, finalStats)
       }
 
       // 🔛 启用全局轮询开关
-      console.log('🔛 [PanelEditor] 启用全局轮询开关')
       dependencies.pollingManager.enableGlobalPolling()
     } catch (error) {
       console.error('❌ [PanelEditor] 初始化轮询任务失败:', error)
@@ -131,12 +122,10 @@ export function usePanelPollingManager(dependencies: {
    */
   const handlePollingToggle = (enabled: boolean) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔄 [PanelEditor] 轮询状态切换: ${enabled ? '启用' : '关闭'}`)
     }
 
     if (enabled) {
       // 启用时需要先初始化轮询任务
-      console.log(`🔄 [PanelEditor] 启用全局轮询前先初始化任务`)
       initializePollingTasksAndEnable()
     }
     // 关闭时 PollingController 组件内部已经处理了
@@ -148,7 +137,6 @@ export function usePanelPollingManager(dependencies: {
    */
   const handlePollingEnabled = () => {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`✅ [PanelEditor] 全局轮询已启用`)
     }
   }
 
@@ -157,7 +145,6 @@ export function usePanelPollingManager(dependencies: {
    * 当轮询被禁用时触发
    */
   const handlePollingDisabled = () => {
-    console.log(`⏸️ [PanelEditor] 全局轮询已暂停`)
   }
 
   return {

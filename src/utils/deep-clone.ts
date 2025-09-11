@@ -107,7 +107,6 @@ export const smartDeepClone = <T>(
 
     if (debug) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 [smartDeepClone] 预处理完成，对象类型:', typeof rawObj)
       }
     }
 
@@ -117,7 +116,6 @@ export const smartDeepClone = <T>(
         const cloned = structuredClone(rawObj)
         if (debug) {
           if (process.env.NODE_ENV === 'development') {
-            console.log('✅ [smartDeepClone] structuredClone成功')
           }
         }
         return cloned
@@ -133,7 +131,6 @@ export const smartDeepClone = <T>(
     const jsonCloned = JSON.parse(JSON.stringify(rawObj))
     if (debug) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('📝 [smartDeepClone] JSON方法成功')
       }
     }
     return jsonCloned

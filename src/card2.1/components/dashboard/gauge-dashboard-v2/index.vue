@@ -95,15 +95,6 @@ watch(
   [() => props.boundData, () => props.data, () => props.primaryData],
   ([boundData, data, primaryData]) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🎯 gauge-dashboard-v2 接收到数据变化:', {
-      boundData,
-      data,
-      primaryData,
-      componentId: props.componentId,
-      hasBoundData: !!boundData,
-      hasData: !!data,
-      hasPrimaryData: !!primaryData
-    })
     }
   },
   { immediate: true, deep: true }
@@ -118,21 +109,11 @@ const themeStore = useThemeStore()
  */
 const currentCustomize = computed((): GaugeDashboardCustomize => {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`🔧 [GaugeDashboardV2] Props调试:`, {
-    componentId: props.componentId,
-    hasCustomConfig: !!props.customConfig,
-    customConfig: props.customConfig,
-    hasConfig: !!props.config,
-    config: props.config,
-    hasBoundData: !!props.boundData,
-    boundData: props.boundData
-  })
   }
 
   // 优先使用新的customConfig结构
   if (props.customConfig?.customize) {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`✅ [GaugeDashboardV2] 使用customConfig.customize`)
     }
     return props.customConfig.customize
   }
@@ -140,13 +121,11 @@ const currentCustomize = computed((): GaugeDashboardCustomize => {
   // 回退到旧的config结构（向后兼容）
   if (props.config?.customize) {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`⚠️ [GaugeDashboardV2] 回退到config结构`)
     }
     return props.config.customize
   }
 
   // 如果没有配置，返回默认配置
-  console.log(`❌ [GaugeDashboardV2] 使用默认配置`)
   return {
     title: '仪表盘V2',
     currentValue: 0,
@@ -209,13 +188,6 @@ watch(
   [actualValue, actualUnit, actualTitle],
   ([value, unit, title]) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🎯 计算后的实际值:', {
-      value,
-      unit,
-      title,
-      fromData: !!props.data,
-      fromConfig: !props.data
-    })
     }
   },
   { immediate: true }

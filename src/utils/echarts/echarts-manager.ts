@@ -154,7 +154,6 @@ export function registerEChartsExtensions(componentTypes: string[]) {
       newComponents.push(...EXTENDED_COMPONENTS_MAP[type])
       registeredExtensions.add(type)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔧 注册 ECharts 扩展组件: ${type}`)
       }
     }
   })
@@ -163,7 +162,6 @@ export function registerEChartsExtensions(componentTypes: string[]) {
     try {
       echarts.use(newComponents)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ ECharts 扩展组件注册完成: ${componentTypes.join(', ')}`)
       }
     } catch (error) {
       console.warn('⚠️ ECharts 扩展组件注册警告:', error)
@@ -218,7 +216,6 @@ export function useEChartsInstance() {
 export function resetEChartsRegistration() {
   isEChartsRegistered = false
   if (process.env.NODE_ENV === 'development') {
-    console.log('🔄 ECharts 注册状态已重置')
   }
 }
 

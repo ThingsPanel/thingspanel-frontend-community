@@ -135,7 +135,6 @@ const handleTabUpdate = (value: string) => {
   deviceSelectId.value = null
   tabValue.value = value
   if (process.env.NODE_ENV === 'development') {
-    console.log('[handleTabUpdate] deviceSelectId set to:', deviceSelectId.value)
   }
 }
 
@@ -171,7 +170,6 @@ onMounted(() => {
   if (initialDeviceId) {
     deviceSelectId.value = initialDeviceId
     if (process.env.NODE_ENV === 'development') {
-      console.log('[onMounted] deviceSelectId set from props:', deviceSelectId.value)
     }
     collectData(
       deviceSelectId.value,
@@ -179,7 +177,6 @@ onMounted(() => {
     )
   } else {
     if (process.env.NODE_ENV === 'development') {
-      console.log('[onMounted] No props.data, deviceSelectId remains:', deviceSelectId.value)
     }
   }
   if (!deviceSelectId.value) {
@@ -204,7 +201,7 @@ onMounted(() => {
           @update:value="handleTabUpdate"
         >
           <NTabPane v-for="item1 in tabList" :key="item1.type" class="h-full" :name="item1.type" :tab="item1.tab">
-            {{ console.log('[Template Render] deviceSelectId:', deviceSelectId) }}
+            {{  }}
             <div v-if="item1.tab === '设备'">
               <NSelect
                 v-model:value="deviceSelectId"

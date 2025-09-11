@@ -54,20 +54,17 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
    */
   const initialize = async () => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔧 [useComponentTree] 开始初始化...', { globalInitialized, isLoading: isLoading.value })
     }
 
     // 🔥 修复：检查全局初始化状态
     if (globalInitialized && componentTree.value.totalCount > 0) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 [useComponentTree] 已全局初始化，跳过重复初始化')
       }
       return
     }
 
     if (isLoading.value) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 [useComponentTree] 正在加载中，跳过重复初始化')
       }
       return
     }
@@ -77,34 +74,23 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
 
     try {
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 [useComponentTree] 调用 initializeCard2System...')
       }
       await initializeCard2System()
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 [useComponentTree] 调用 getComponentTree...')
       }
       const tree = getComponentTree()
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 [useComponentTree] 获取到组件树:', {
-          componentsCount: tree.components.length,
-          categoriesCount: tree.categories.length,
-          totalCount: tree.totalCount,
-          rawTree: tree
-        })
 
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔧 [useComponentTree] 赋值前 componentTree.value:', componentTree.value)
         }
       }
       componentTree.value = tree
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 [useComponentTree] 赋值后 componentTree.value:', componentTree.value)
       }
 
       // 🔥 修复：强制触发响应性更新
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 [useComponentTree] 触发响应性更新...')
       }
       componentTree.value = { ...tree }
 
@@ -112,11 +98,6 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
       globalInitialized = true
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ [useComponentTree] 初始化完成，最终状态:', {
-          componentTreeValue: componentTree.value,
-          filteredComponentsLength: filteredComponents.value.length,
-          globalInitialized
-        })
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : '初始化失败'
@@ -268,14 +249,6 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
    */
   const getComponent = async (componentType: string) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 [useComponentTree] getComponent 被调用:`, {
-        componentType,
-        isLoading: isLoading.value,
-        error: error.value,
-        componentTreeData: componentTree.value,
-        filteredComponentsCount: filteredComponents.value?.length || 0,
-        allFilteredComponents: filteredComponents.value?.map(c => c.type) || []
-      })
     }
 
     // 🔥 调试：如果没有组件，强制重新初始化
@@ -286,10 +259,6 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
       await initialize()
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔧 [useComponentTree] 重新初始化后:`, {
-          componentsCount: filteredComponents.value?.length || 0,
-          allComponents: filteredComponents.value?.map(c => c.type) || []
-        })
       }
     }
 
@@ -299,22 +268,11 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
     if (!componentDefinition) {
       console.error(`❌ [useComponentTree] 组件类型未找到: ${componentType}`)
       if (process.env.NODE_ENV === 'development') {
-        console.log(
-          `❌ [useComponentTree] 可用组件:`,
-          filteredComponents.value.map(c => c.type)
-        )
-        console.log(`❌ [useComponentTree] componentTree原始数据:`, componentTree.value)
       }
       return null
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`✅ [useComponentTree] 找到组件定义:`, {
-        type: componentDefinition.type,
-        name: componentDefinition.name,
-        hasComponent: !!componentDefinition.component,
-        componentKeys: componentDefinition.component ? Object.keys(componentDefinition.component) : []
-      })
     }
 
     // 返回组件实例

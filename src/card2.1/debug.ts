@@ -18,7 +18,6 @@ export async function testPermissionSystem() {
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('🧪 [Debug] 开始测试权限系统...')
   }
 
   // 1. 初始化系统
@@ -27,53 +26,32 @@ export async function testPermissionSystem() {
   // 2. 获取当前用户权限
   const userAuthority = getUserAuthorityFromStorage()
   if (process.env.NODE_ENV === 'development') {
-    console.log('👤 [Debug] 当前用户权限:', userAuthority)
   }
 
   // 3. 获取所有组件（包括无权限的）
   const allComponents = getAllComponents()
   if (process.env.NODE_ENV === 'development') {
-    console.log(
-      '📦 [Debug] 所有组件:',
-      allComponents.map(c => ({
-        name: c.name,
-        type: c.type,
-        permission: c.permission || '不限'
-      }))
-    )
   }
 
   // 4. 获取权限过滤后的组件
   const filteredComponents = getComponentTree().components
   if (process.env.NODE_ENV === 'development') {
-    console.log(
-      '✅ [Debug] 权限过滤后的组件:',
-      filteredComponents.map(c => ({
-        name: c.name,
-        type: c.type,
-        permission: c.permission || '不限'
-      }))
-    )
   }
 
   // 5. 测试权限检查函数
   if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 [Debug] 权限检查测试:')
   }
   const testPermissions: ComponentPermission[] = ['不限', 'TENANT_USER', 'TENANT_ADMIN', 'SYS_ADMIN']
 
   testPermissions.forEach(permission => {
     const hasAccess = hasComponentPermission(permission, userAuthority)
     if (process.env.NODE_ENV === 'development') {
-      console.log(`  - 组件权限 "${permission}" -> 用户 "${userAuthority}": ${hasAccess ? '✅ 有权限' : '❌ 无权限'}`)
     }
   })
 
   // 6. 显示可用权限选项
   const availablePermissions = getAvailablePermissions()
   if (process.env.NODE_ENV === 'development') {
-    console.log('📋 [Debug] 可用权限选项:', availablePermissions)
-    console.log('🎉 [Debug] 权限系统测试完成!')
   }
 }
 
@@ -88,7 +66,6 @@ export function simulateUserPermission(permission: string) {
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`🔄 [Debug] 模拟用户权限: ${permission}`)
   }
 
   // 模拟修改本地存储中的用户权限
@@ -104,7 +81,6 @@ export function simulateUserPermission(permission: string) {
   reapplyPermissionFilter()
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ [Debug] 权限模拟完成，请重新获取组件列表')
   }
 }
 
@@ -131,11 +107,6 @@ export function showComponentPermissionStats() {
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('📊 [Debug] 组件权限统计:', {
-      ...stats,
-      userAuthority,
-      accessiblePercentage: `${((stats.accessible / stats.total) * 100).toFixed(1)}%`
-    })
   }
 
   return stats

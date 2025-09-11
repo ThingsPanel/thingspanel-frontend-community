@@ -263,7 +263,5 @@ if (typeof window !== 'undefined') {
   ;(window as any).iotPlatformEventEngine = eventEngine
 }
 
-if (process.env.NODE_ENV === 'development') {
-  console.log(`🚀 [EventEngine] 事件引擎初始化完成，基于现有 ConfigEventBus 扩展`)
-}
+
 

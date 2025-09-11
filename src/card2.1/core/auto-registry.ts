@@ -45,28 +45,12 @@ export class AutoRegistry {
       try {
         // 🔥 调试：检查模块导出的内容
         if (process.env.NODE_ENV === 'development') {
-          console.log(`🔍 [AutoRegistry] 模块内容详细检查: ${componentId}`, {
-            moduleKeys: Object.keys(module),
-            hasDefault: 'default' in module,
-            defaultValue: module.default,
-            defaultType: typeof module.default,
-            fullModule: module
-          })
         }
 
         // 获取默认导出（组件定义）
         const definition = module.default || module
 
         if (process.env.NODE_ENV === 'development') {
-          console.log(`🔍 [AutoRegistry] 组件定义检查: ${componentId}`, {
-            definition,
-            definitionType: typeof definition,
-            definitionKeys: definition ? Object.keys(definition) : [],
-            hasType: definition?.type,
-            hasName: definition?.name,
-            hasComponent: definition?.component,
-            hasConfig: definition?.config
-          })
         }
 
         if (this.isValidComponentDefinition(definition)) {
@@ -83,12 +67,6 @@ export class AutoRegistry {
           }
 
           if (process.env.NODE_ENV === 'development') {
-            console.log(`🔧 [AutoRegistry] 组件分类映射: ${componentId}`, {
-              folderPath,
-              categoryName,
-              originalCategory: definition.category,
-              newCategory: categoryName
-            })
           }
 
           // 检查权限
@@ -106,13 +84,6 @@ export class AutoRegistry {
               this.allComponents.push(enhancedDefinition)
 
               if (process.env.NODE_ENV === 'development') {
-                console.log(`✅ [AutoRegistry] 组件注册成功: ${componentId}`, {
-                  originalDefinition: definition,
-                  enhancedDefinition,
-                  folderPath,
-                  categoryName,
-                  registeredComponentsCount: registeredComponents.length
-                })
               }
             }
           } else {

@@ -216,7 +216,6 @@ if (import.meta.env.DEV) {
     console.warn('🚨 [CategoryMapping] 分类映射配置存在问题:', validation.issues)
   } else {
     if (process.env.NODE_ENV === 'development') {
-      console.log('✅ [CategoryMapping] 分类映射配置验证通过')
     }
   }
 }

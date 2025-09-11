@@ -48,7 +48,6 @@ export class VueRenderer implements IRenderer {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[VueRenderer] Vue渲染器已初始化')
     }
   }
 
@@ -84,7 +83,6 @@ export class VueRenderer implements IRenderer {
       await this.hooks.afterRender?.(instance, context)
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[VueRenderer] 组件 ${instance.id} 渲染完成`)
       }
     } catch (error) {
       console.error(`[VueRenderer] 渲染失败:`, error)
@@ -141,7 +139,6 @@ export class VueRenderer implements IRenderer {
       await this.hooks.afterUpdate?.(instance, data, context)
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[VueRenderer] 组件 ${instance.id} 更新完成`)
       }
     } catch (error) {
       console.error(`[VueRenderer] 更新失败:`, error)
@@ -181,7 +178,6 @@ export class VueRenderer implements IRenderer {
       await this.hooks.afterDestroy?.(instance, context)
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[VueRenderer] 组件 ${instance.id} 已销毁`)
       }
     } catch (error) {
       console.error(`[VueRenderer] 销毁失败:`, error)
@@ -236,7 +232,6 @@ export class VueRenderer implements IRenderer {
   updateConfig(config: Partial<VueRendererConfig>): void {
     this.config = { ...this.config, ...config }
     if (process.env.NODE_ENV === 'development') {
-      console.log('[VueRenderer] 配置已更新')
     }
   }
 
@@ -259,7 +254,6 @@ export class VueRenderer implements IRenderer {
     this.eventListeners.clear()
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[VueRenderer] 渲染器已销毁')
     }
   }
 

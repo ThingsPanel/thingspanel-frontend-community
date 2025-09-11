@@ -12,7 +12,8 @@
       "Bash(pnpm dev:*)",
       "Bash(node:*)",
       "Read(//e/e/wbh/things2/thingspanel-frontend-community/**)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npm run clean-console:*)"
     ],
     "deny": [],
     "ask": []

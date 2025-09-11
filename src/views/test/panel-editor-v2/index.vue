@@ -124,7 +124,6 @@ const editorState = ref({
 const handleStateManagerReady = (stateManager: any) => {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log('V2 State Manager Ready:', stateManager)
     }
     editorState.value.isReady = true
     editorState.value.isLoading = false
@@ -142,7 +141,6 @@ const handleStateManagerReady = (stateManager: any) => {
 const handleWidgetAdded = (widget: any) => {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log('V2 Widget Added:', widget)
     }
     editorState.value.totalWidgets++
     editorState.value.lastAction = `添加组件: ${widget.type}`
@@ -155,7 +153,6 @@ const handleWidgetAdded = (widget: any) => {
 const handleNodeSelect = (nodeId: string) => {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log('V2 Node Selected:', nodeId)
     }
     editorState.value.selectedNodeId = nodeId
     editorState.value.lastAction = nodeId ? `选中组件: ${nodeId}` : '取消选中'
@@ -168,7 +165,6 @@ const handleNodeSelect = (nodeId: string) => {
 const handleEditorReady = (editor: any) => {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log('V2 Editor Ready:', editor)
     }
     editorState.value.lastAction = '编辑器核心已初始化'
   } catch (error) {

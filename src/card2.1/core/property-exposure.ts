@@ -214,11 +214,6 @@ export function autoRegisterFromSettingConfig(settingConfig: ComponentSettingCon
   })
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`🎯 [PropertyExposure] 自动注册属性暴露配置`, {
-    componentType: settingConfig.componentType,
-    propertiesCount: listenableProperties.length,
-    properties: listenableProperties.map(p => p.name)
-  })
   }
 }
 
@@ -421,14 +416,6 @@ export function enhancedAutoRegister(
   })
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`🎯 [EnhancedAutoRegister] 增强属性注册完成`, {
-    componentType,
-    totalProperties: allProperties.length,
-    settingProperties: settingConfig ? settingConfig.settings.length : 0,
-    detectedProperties: detectedProperties.length,
-    baseConfigProperties: baseConfigProperties.length,
-    properties: allProperties.map(p => ({ name: p.name, group: p.group }))
-  })
   }
 }
 
@@ -616,13 +603,6 @@ export function registerInstanceBaseProperties(
   })
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`🎯 [RegisterInstanceBaseProperties] 为组件实例注册基础配置属性`, {
-    componentInstanceId,
-    componentType,
-    basePropertiesCount: baseConfigProperties.length,
-    totalPropertiesCount: allProperties.length,
-    baseProperties: baseConfigProperties.map(p => p.name)
-  })
   }
 }
 
@@ -635,7 +615,6 @@ export function setupBaseConfigurationWatcher(configurationManager: any): void {
   // 用于监听 configurationManager 的 base 配置变化
   // 并触发相应的属性更新事件
   if (process.env.NODE_ENV === 'development') {
-    console.log(`🔧 [BaseConfigurationWatcher] 基础配置监听器设置完成`)
   }
 }
 

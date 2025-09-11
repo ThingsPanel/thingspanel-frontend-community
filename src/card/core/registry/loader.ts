@@ -63,7 +63,6 @@ export class ComponentLoader implements IComponentLoader {
       componentRegistry.register(definition)
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[ComponentLoader] 组件 ${componentId} 加载成功`)
       }
       return definition
     } catch (error) {
@@ -82,7 +81,6 @@ export class ComponentLoader implements IComponentLoader {
    */
   async preload(componentIds: string[]): Promise<void> {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[ComponentLoader] 开始预加载 ${componentIds.length} 个组件`)
     }
 
     const loadPromises = componentIds.map(async componentId => {
@@ -95,7 +93,6 @@ export class ComponentLoader implements IComponentLoader {
 
     await Promise.allSettled(loadPromises)
     if (process.env.NODE_ENV === 'development') {
-      console.log('[ComponentLoader] 预加载完成')
     }
   }
 
@@ -113,7 +110,6 @@ export class ComponentLoader implements IComponentLoader {
     this.errors.delete(componentId)
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[ComponentLoader] 组件 ${componentId} 已卸载`)
     }
   }
 
@@ -134,7 +130,6 @@ export class ComponentLoader implements IComponentLoader {
     this.loadingPromises.clear()
     this.errors.clear()
     if (process.env.NODE_ENV === 'development') {
-      console.log('[ComponentLoader] 缓存已清理')
     }
   }
 
@@ -265,7 +260,6 @@ export class ComponentLoader implements IComponentLoader {
     })
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[ComponentLoader] 初始化了 ${this.componentPaths.size} 个组件路径映射`)
     }
   }
 
@@ -277,7 +271,6 @@ export class ComponentLoader implements IComponentLoader {
   registerComponentPath(componentId: string, path: string): void {
     this.componentPaths.set(componentId, path)
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[ComponentLoader] 注册自定义组件路径: ${componentId} -> ${path}`)
     }
   }
 
@@ -290,7 +283,6 @@ export class ComponentLoader implements IComponentLoader {
       this.componentPaths.set(componentId, path)
     })
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[ComponentLoader] 批量注册了 ${Object.keys(pathMap).length} 个组件路径`)
     }
   }
 }

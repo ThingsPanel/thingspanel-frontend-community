@@ -305,14 +305,11 @@ const doQuiz = async () => {
 
     // 添加详细调试信息
     if (process.env.NODE_ENV === 'development') {
-      console.log('调试响应完整对象:', response)
     }
-    console.log('response的所有属性:', Object.keys(response))
 
     // 检查是否是错误响应结构 {data: null, error: {...}}
     if (response.error && response.data === null) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('检测到错误响应结构:', response.error)
       }
       // 处理网络错误或后端错误
       const errorInfo = response.error
@@ -328,16 +325,11 @@ const doQuiz = async () => {
     if (response.data && typeof response.data === 'object' && 'code' in response.data) {
       actualResponse = response.data
       if (process.env.NODE_ENV === 'development') {
-        console.log('检测到嵌套响应结构，使用response.data作为实际响应')
       }
     }
 
-    console.log('实际响应对象:', actualResponse)
-    console.log('actualResponse.code类型:', typeof actualResponse.code, '值:', actualResponse.code)
     if (process.env.NODE_ENV === 'development') {
-      console.log('actualResponse.data类型:', typeof actualResponse.data, '值:', actualResponse.data)
     }
-    console.log('actualResponse.message:', actualResponse.message)
 
     // 根据返回的code值决定显示内容
     // 使用宽松比较，因为code可能是字符串"200"

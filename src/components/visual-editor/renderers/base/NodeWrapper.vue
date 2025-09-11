@@ -138,7 +138,6 @@ watch(
   newMultiDataSourceData => {
     if (newMultiDataSourceData) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔧 [NodeWrapper] 多数据源数据变化 (${props.nodeId}):`, newMultiDataSourceData)
       }
     }
   },
@@ -425,7 +424,6 @@ const finishTitleEdit = () => {
 
       emit('title-update', props.nodeId, newTitle)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[NodeWrapper] 标题已更新: ${props.nodeId} -> "${newTitle}"`)
       }
     } catch (error) {
       console.error(`[NodeWrapper] 更新标题失败:`, error)

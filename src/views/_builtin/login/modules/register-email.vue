@@ -96,7 +96,6 @@ function handleSmsCode() {
   fetchEmailCode(model.email)
     .then((res: any) => {
       if (process.env.NODE_ENV === 'development') {
-        console.log(res)
       }
       const { error } = res
       if (!error) {

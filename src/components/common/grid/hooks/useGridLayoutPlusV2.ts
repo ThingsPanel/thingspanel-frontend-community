@@ -191,7 +191,6 @@ export function useGridLayoutPlusV2(options: UseGridLayoutPlusV2Options = {}) {
     const wasOptimized = gridPerformance.applyAutoOptimizations()
     if (wasOptimized) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('[GridLayoutPlusV2] Performance optimizations applied')
       }
     }
     return wasOptimized
@@ -264,7 +263,6 @@ export function useGridLayoutPlusV2(options: UseGridLayoutPlusV2Options = {}) {
       lastUpdated: Date.now()
     }
     if (process.env.NODE_ENV === 'development') {
-      console.log('[GridLayoutPlusV2] System reset completed')
     }
   }
 
@@ -291,7 +289,6 @@ export function useGridLayoutPlusV2(options: UseGridLayoutPlusV2Options = {}) {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[GridLayoutPlusV2] Initialized successfully')
     }
   })
 
@@ -301,7 +298,6 @@ export function useGridLayoutPlusV2(options: UseGridLayoutPlusV2Options = {}) {
     gridPerformance.stopMonitoring()
     gridResponsive.unobserveContainer()
     if (process.env.NODE_ENV === 'development') {
-      console.log('[GridLayoutPlusV2] Cleanup completed')
     }
   })
 

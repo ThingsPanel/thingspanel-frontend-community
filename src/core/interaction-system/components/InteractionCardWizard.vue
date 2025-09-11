@@ -172,17 +172,6 @@
                 v-model:value="currentInteraction.targetComponentId"
                 :options="componentOptions"
                 :placeholder="t('interaction.placeholders.selectComponentToModify')"
-                @focus="
-                  () =>
-                    console.log(
-                      '🔥 [InteractionCardWizard] 目标组件选择器获得焦点, componentOptions:',
-                      componentOptions
-                    )
-                "
-                @click="
-                  () =>
-                    console.log('🔥 [InteractionCardWizard] 点击目标组件选择器, componentOptions:', componentOptions)
-                "
               />
               <!-- DEBUG信息 -->
               <div style="font-size: 12px; color: #999; margin-top: 4px">
@@ -263,9 +252,7 @@ const editorStore = useEditorStore()
 // 保持向后兼容
 const visualEditorState = {
   getAvailableComponents: () => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔥 [InteractionCardWizard] editorStore.nodes:', editorStore.nodes)
-    }
+ 
     return editorStore.nodes || []
   }
 }
@@ -336,14 +323,9 @@ const actionTypeOptions = computed(() => [
 
 // ✅ 动态获取当前画布上的组件（用于目标组件选择）
 const componentOptions = computed(() => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔥 [InteractionCardWizard] 计算 componentOptions')
-  }
+ 
   const components = visualEditorState.getAvailableComponents()
-  console.log('🔥 [InteractionCardWizard] 获取到的组件列表:', components)
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔥 [InteractionCardWizard] visualEditorState:', visualEditorState)
-  }
+
 
   const options = components.map(comp => ({
     // 优先使用标题，然后是名称，最后是ID的前8位
@@ -352,9 +334,7 @@ const componentOptions = computed(() => {
     componentType: comp.type // 保存组件类型，用于获取可响应属性
   }))
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔥 [InteractionCardWizard] 转换后的选项:', options)
-  }
+
   return options
 })
 
@@ -453,9 +433,7 @@ const targetPropertyOptions = computed(() => {
   })
 
   const options = groupedOptions.length > 0 ? groupedOptions : []
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🚀 [InteractionCardWizard] targetPropertyOptions:', options)
-  }
+
   return options
 })
 
@@ -546,9 +524,7 @@ const availablePropertyOptions = computed(() => {
   })
 
   const options = groupedOptions.length > 0 ? groupedOptions : []
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🚀 [InteractionCardWizard] availablePropertyOptions:', options)
-  }
+
   return options
 })
 

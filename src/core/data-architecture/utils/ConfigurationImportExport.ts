@@ -203,7 +203,6 @@ export class ConfigurationExporter {
     componentType?: string
   ): Promise<ExportedConfiguration> {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔄 [ConfigurationExporter] 开始导出组件配置: ${componentId}`)
     }
 
     // 获取完整配置
@@ -240,7 +239,6 @@ export class ConfigurationExporter {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`✅ [ConfigurationExporter] 导出完成，依赖组件: ${dependencies.length} 个`)
     }
     return exportedConfig
   }
@@ -329,7 +327,6 @@ export class ConfigurationExporter {
     // 处理变量名中的组件 ID（如：device_id_comp_123）
     if (value.includes(currentComponentId)) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔄 [ConfigurationExporter] 替换变量名中的组件ID: ${value} (路径: ${path})`)
       }
       return value.replace(new RegExp(currentComponentId, 'g'), this.CURRENT_COMPONENT_PLACEHOLDER)
     }
@@ -342,7 +339,6 @@ export class ConfigurationExporter {
         if (match !== currentComponentId) {
           dependencies.add(match)
           if (process.env.NODE_ENV === 'development') {
-            console.log(`🔍 [ConfigurationExporter] 发现外部组件依赖: ${match} (路径: ${path})`)
           }
         }
       })
@@ -362,15 +358,11 @@ export class ConfigurationExporter {
   ): string {
     if (componentId === currentComponentId) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(
-        `🔄 [ConfigurationExporter] 替换组件ID字段: ${componentId} → ${this.CURRENT_COMPONENT_PLACEHOLDER} (路径: ${path})`
-      )
       }
       return this.CURRENT_COMPONENT_PLACEHOLDER
     } else {
       dependencies.add(componentId)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔍 [ConfigurationExporter] 保留外部组件ID: ${componentId} (路径: ${path})`)
       }
       return componentId
     }
@@ -443,7 +435,6 @@ export class ConfigurationExporter {
     URL.revokeObjectURL(url)
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`📁 [ConfigurationExporter] 配置已下载为: ${a.download}`)
     }
   }
 }
@@ -468,7 +459,6 @@ export class ConfigurationImporter {
     availableComponents?: any[]
   ): ImportPreview {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔍 [ConfigurationImporter] 开始预览导入到组件: ${targetComponentId}`)
     }
 
     try {
@@ -509,7 +499,6 @@ export class ConfigurationImporter {
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [ConfigurationImporter] 预览完成，可导入: ${canImport}`)
       }
       return preview
     } catch (error) {
@@ -536,7 +525,6 @@ export class ConfigurationImporter {
     } = {}
   ): Promise<ImportResult> {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`📥 [ConfigurationImporter] 开始导入配置到组件: ${targetComponentId}`)
     }
 
     try {
@@ -570,7 +558,6 @@ export class ConfigurationImporter {
       await this.applyConfiguration(processedConfig, targetComponentId, configurationManager, options)
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [ConfigurationImporter] 配置导入成功`)
       }
       return {
         success: true,
@@ -691,7 +678,6 @@ export class ConfigurationImporter {
       if (typeof obj === 'string') {
         if (obj === this.CURRENT_COMPONENT_PLACEHOLDER) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`🔄 [ConfigurationImporter] 恢复组件ID: ${obj} → ${targetComponentId}`)
           }
           return targetComponentId
         }
@@ -700,7 +686,6 @@ export class ConfigurationImporter {
         if (obj.includes(this.CURRENT_COMPONENT_PLACEHOLDER)) {
           const restored = obj.replace(new RegExp(this.CURRENT_COMPONENT_PLACEHOLDER, 'g'), targetComponentId)
           if (process.env.NODE_ENV === 'development') {
-            console.log(`🔄 [ConfigurationImporter] 恢复变量名: ${obj} → ${restored}`)
           }
           return restored
         }
@@ -756,7 +741,6 @@ export class ConfigurationImporter {
     // 应用数据源配置
     if (processedConfig.dataSource) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(`📊 [ConfigurationImporter] 应用数据源配置`)
       }
       configurationManager.updateConfiguration(targetComponentId, 'dataSource', processedConfig.dataSource)
     }
@@ -764,7 +748,6 @@ export class ConfigurationImporter {
     // 应用组件配置
     if (processedConfig.component) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(`⚙️ [ConfigurationImporter] 应用组件配置`)
       }
       configurationManager.updateConfiguration(targetComponentId, 'component', processedConfig.component)
     }
@@ -772,7 +755,6 @@ export class ConfigurationImporter {
     // 应用交互配置
     if (processedConfig.interaction) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🎯 [ConfigurationImporter] 应用交互配置`)
       }
       configurationManager.updateConfiguration(targetComponentId, 'interaction', processedConfig.interaction)
     }
@@ -802,7 +784,6 @@ export class SingleDataSourceExporter {
     componentType?: string
   ): Promise<SingleDataSourceExport> {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`📤 [SingleDataSourceExporter] 开始导出数据源: ${sourceId} from ${componentId}`)
     }
 
     if (!configurationManager) {
@@ -864,11 +845,6 @@ export class SingleDataSourceExporter {
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [SingleDataSourceExporter] 单数据源导出成功`, {
-        sourceId,
-        dataItemCount: processedDataSourceConfig.dataItems?.length || 0,
-        dependencies: Array.from(dependencies)
-      })
       }
 
       return exportData
@@ -1172,7 +1148,6 @@ export class SingleDataSourceImporter {
 
     try {
       if (process.env.NODE_ENV === 'development') {
-        console.log(`📥 [SingleDataSourceImporter] 开始导入单数据源到槽位: ${targetSlotId}`)
       }
 
       // 处理组件ID映射
@@ -1224,22 +1199,15 @@ export class SingleDataSourceImporter {
       // TODO: 应用相关的交互配置和HTTP绑定
       if (processedConfig.relatedConfig?.interactions?.length > 0) {
         if (process.env.NODE_ENV === 'development') {
-          console.log(
-          `🎯 [SingleDataSourceImporter] 应用相关交互配置: ${processedConfig.relatedConfig.interactions.length}个`
-        )
         }
       }
 
       if (processedConfig.relatedConfig?.httpBindings?.length > 0) {
         if (process.env.NODE_ENV === 'development') {
-          console.log(
-          `🔗 [SingleDataSourceImporter] 应用相关HTTP绑定: ${processedConfig.relatedConfig.httpBindings.length}个`
-        )
         }
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [SingleDataSourceImporter] 单数据源导入成功`)
       }
     } catch (error) {
       console.error(`❌ [SingleDataSourceImporter] 导入失败:`, error)

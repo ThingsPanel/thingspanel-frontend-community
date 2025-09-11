@@ -90,7 +90,6 @@ const submitSevice: () => void = async () => {
         })
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('Auto mode device list call:', error)
         }
       }
       

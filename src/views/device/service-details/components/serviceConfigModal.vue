@@ -162,7 +162,6 @@ const submitSevice: () => void = async () => {
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('Submitting params:', JSON.stringify(params, null, 2))
   } // Log formatted parameters
 
   // 4. Call API and handle result/error
@@ -175,7 +174,6 @@ const submitSevice: () => void = async () => {
     } else {
       // Log the actual result when API succeeds but operation fails
       if (process.env.NODE_ENV === 'development') {
-        console.log('API call succeeded but operation failed:', result)
       }
       // Only show error if a specific message is available from the result
       if (result?.message) {

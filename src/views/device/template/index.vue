@@ -91,7 +91,6 @@ const handleAddNew = () => {
 // 编辑模板
 const handleEdit = (id: string) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('id', id)
   }
   modalType.value = 'edit'
   templateId.value = id

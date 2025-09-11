@@ -203,7 +203,6 @@ const fetchData = async () => {
   try {
     const response = await tenant()
     if (process.env.NODE_ENV === 'development') {
-      console.log('Tenant data response:', response)
     }
 
     const responseData = response?.data

@@ -67,11 +67,6 @@ export class InteractionConfigBridge {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔄 [InteractionConfigBridge] 开始同步状态到配置`, {
-      componentId,
-      updates,
-      当前版本: this.versionMap.get(componentId) || 0
-    })
     }
 
     // 记录同步请求
@@ -164,12 +159,6 @@ export class InteractionConfigBridge {
         syncRecord.synced = true
 
         if (process.env.NODE_ENV === 'development') {
-          console.log(`✅ [InteractionConfigBridge] 同步完成`, {
-          componentId,
-          newVersion,
-          mergedConfig: mergedComponentConfig,
-          originalUpdates: syncRecord.updates
-        })
         }
       }
     } catch (error) {

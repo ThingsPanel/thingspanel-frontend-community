@@ -38,7 +38,6 @@ export class ComponentLoader {
       const allModules = import.meta.glob('../components/**/index.{ts,js}', { eager: true })
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 [ComponentLoader] Glob扫描结果:', Object.keys(allModules))
       }
 
       const componentModules: Record<string, ComponentModule> = {}
@@ -49,26 +48,17 @@ export class ComponentLoader {
         const category = this.extractComponentCategory(path)
 
         if (process.env.NODE_ENV === 'development') {
-          console.log(`🔧 [ComponentLoader] 处理路径: ${path} -> 组件ID: ${componentId}, 分类: ${category}`)
         }
 
         if (componentId && category && this.shouldIncludeComponent(componentId, category)) {
           // 获取默认导出或整个模块
           const definition = module.default || module
           if (process.env.NODE_ENV === 'development') {
-            console.log(`🔧 [ComponentLoader] 组件定义:`, {
-            componentId,
-            category,
-            hasDefault: !!module.default,
-            definitionType: definition?.type,
-            hasComponent: !!definition?.component
-          })
           }
 
           if (definition && definition.type) {
             componentModules[componentId] = { default: definition }
             if (process.env.NODE_ENV === 'development') {
-              console.log(`✅ [ComponentLoader] 成功加载组件: ${componentId} (${definition.type}) [分类: ${category}]`)
             }
           } else {
             console.warn(`⚠️ [ComponentLoader] 组件定义格式不正确，跳过: ${path}`)
@@ -80,7 +70,6 @@ export class ComponentLoader {
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 [ComponentLoader] 最终加载的组件:', Object.keys(componentModules))
       }
       return componentModules
     } catch (error) {
@@ -122,12 +111,10 @@ export class ComponentLoader {
 
     if (isProduction && isTestComponent) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🚫 [ComponentLoader] 生产环境跳过测试组件: ${componentId}`)
       }
       return false
     }
 
-    console.log(`✅ [ComponentLoader] 包含组件: ${componentId} (分类: ${category})`)
     return true
   }
 

@@ -21,7 +21,6 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
   // 处理 dataSourceBindings 格式 (来自 ConfigurationPanel)
   if (config.dataSourceBindings) {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`📋 [ConfigAdapter] 处理 dataSourceBindings 格式`)
     }
 
     Object.entries(config.dataSourceBindings).forEach(([key, binding]: [string, any]) => {
@@ -39,7 +38,6 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
           })
 
           if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ [ConfigAdapter] 转换数据源: ${key}`)
           }
         } catch (error) {
           console.error(`❌ [ConfigAdapter] 解析rawData失败: ${key}`, error)
@@ -51,7 +49,6 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
   // 处理直接的 config.dataSourceBindings 格式
   if (config.config?.dataSourceBindings) {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`📋 [ConfigAdapter] 处理嵌套 dataSourceBindings 格式`)
     }
 
     Object.entries(config.config.dataSourceBindings).forEach(([key, binding]: [string, any]) => {
@@ -68,7 +65,6 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
           })
 
           if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ [ConfigAdapter] 转换嵌套数据源: ${key}`)
           }
         } catch (error) {
           console.error(`❌ [ConfigAdapter] 解析嵌套rawData失败: ${key}`, error)
@@ -86,7 +82,6 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
     !config.config
   ) {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`📋 [ConfigAdapter] 处理简单对象格式`)
     }
 
     dataSources.push({
@@ -109,7 +104,6 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`✅ [ConfigAdapter] 配置转换完成: ${componentId}`, requirement)
   }
   return requirement
 }
@@ -164,7 +158,6 @@ export function batchConvertConfigs(configs: Record<string, any>): Record<string
   })
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`🎯 [ConfigAdapter] 批量转换完成，共 ${Object.keys(results).length} 个组件`)
   }
   return results
 }

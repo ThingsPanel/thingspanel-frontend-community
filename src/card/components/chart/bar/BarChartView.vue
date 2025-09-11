@@ -350,7 +350,6 @@ watch(
   () => props.config,
   newConfig => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('[BarChartView] 配置已更新', newConfig)
     }
   },
   { deep: true }
@@ -360,7 +359,6 @@ watch(
 watch(
   () => props.data,
   newData => {
-    console.log('[BarChartView] 数据已更新', newData)
   },
   { deep: true }
 )

@@ -529,7 +529,6 @@ export function getDataBindingManager(): DataBindingManagerImpl {
     const manager = new DataBindingManagerImpl()
     bindingManagerInstances.set(portId, manager)
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 [DataBindingManager] 为端口 ${portId} 创建新实例`)
     }
   }
 

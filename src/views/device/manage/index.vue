@@ -87,7 +87,6 @@ const createEventSourceConnection = () => {
 
     eventSource.onopen = () => {
       if (process.env.NODE_ENV === 'development') {
-        console.log('Device management EventSource connected')
       }
     }
 
@@ -95,7 +94,6 @@ const createEventSourceConnection = () => {
       try {
         const data = event.data ? JSON.parse(event.data) : {}
         if (process.env.NODE_ENV === 'development') {
-          console.log('Device status update received:', data)
         }
         
         if (data.device_id && typeof data.is_online === 'boolean') {
@@ -125,7 +123,6 @@ const cleanupEventSource = () => {
     eventSource.close()
     eventSource = null
     if (process.env.NODE_ENV === 'development') {
-      console.log('Device management EventSource connection closed')
     }
   }
 }
@@ -172,7 +169,6 @@ const getDeviceGroupOptions = async () => {
 
 const getDeviceConfigOptions = async () => {
   if (process.env.NODE_ENV === 'development') {
-    console.log(pattern, '我请求了筛选')
   }
 
   const res = await getDeviceConfigList({
@@ -575,7 +571,6 @@ const completeAdd = async () => {
 
 const completeHandAdd = () => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('tablePageRef in completeHandAdd:', tablePageRef.value)
   }
 
   tablePageRef.value?.handleSearch()

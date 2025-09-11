@@ -22,10 +22,7 @@ const STORAGE_KEYS_TO_CLEAN = [
  * 清理指定的localStorage项
  */
 export function cleanupLocalStorage(): void {
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🧹 开始清理localStorage...')
-  }
-  
+
   const cleanedKeys: string[] = []
   const skippedKeys: string[] = []
   
@@ -35,25 +32,16 @@ export function cleanupLocalStorage(): void {
       if (value !== null) {
         localStorage.removeItem(key)
         cleanedKeys.push(key)
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`✅ 已清理: ${key}`)
-        }
+      
       } else {
         skippedKeys.push(key)
-        console.log(`⏭️ 跳过(不存在): ${key}`)
       }
     } catch (error) {
       console.warn(`❌ 清理失败: ${key}`, error)
     }
   })
   
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🧹 localStorage清理完成:', {
-    cleaned: cleanedKeys,
-    skipped: skippedKeys,
-    total: cleanedKeys.length
-  })
-  }
+
 }
 
 /**
@@ -63,13 +51,10 @@ export function clearAllLocalStorage(): void {
   console.warn('⚠️ 正在清理所有localStorage...')
   
   const allKeys = Object.keys(localStorage)
-  if (process.env.NODE_ENV === 'development') {
-    console.log('📋 当前localStorage keys:', allKeys)
-  }
+ 
   
   try {
     localStorage.clear()
-    console.log('🧹 所有localStorage已清理')
   } catch (error) {
     console.error('❌ 清理localStorage失败:', error)
   }
@@ -79,24 +64,19 @@ export function clearAllLocalStorage(): void {
  * 检查localStorage使用情况
  */
 export function inspectLocalStorage(): void {
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 localStorage使用情况:')
-  }
+ 
   
   const keys = Object.keys(localStorage)
   keys.forEach(key => {
     try {
       const value = localStorage.getItem(key)
       const size = value ? new Blob([value]).size : 0
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`- ${key}: ${size} bytes`)
-      }
+   
     } catch (error) {
       console.warn(`无法读取 ${key}:`, error)
     }
   })
   
-  console.log(`总计 ${keys.length} 个localStorage项`)
 }
 
 // 开发环境下自动暴露到全局
@@ -106,7 +86,5 @@ if (import.meta.env.DEV) {
     clearAll: clearAllLocalStorage,
     inspect: inspectLocalStorage
   }
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔧 localStorage清理工具已暴露到 window.storageCleanup')
-  }
+ 
 }

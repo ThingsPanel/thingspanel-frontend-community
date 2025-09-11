@@ -163,12 +163,6 @@ const simplifiedWidgetTree = computed(() => {
 
     // 调试：记录正确分类的组件
     if (process.env.NODE_ENV === 'development') {
-      console.log('✅ [WidgetLibrary] 正确分类组件:', {
-      type: widget.type,
-      name: widget.name,
-      mainCategory: categoryName,
-      source: widget.source
-    })
     }
 
     if (!categoriesData[categoryName]) {

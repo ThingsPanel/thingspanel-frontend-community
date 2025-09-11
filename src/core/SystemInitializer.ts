@@ -157,7 +157,6 @@ export class SystemInitializer {
       initialize: async () => {
         // 配置管理器通常不需要异步初始化，但可以在这里执行预热
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔧 [SystemInitializer] 初始化配置管理器')
         }
       },
       healthCheck: async () => {
@@ -176,7 +175,6 @@ export class SystemInitializer {
       retries: 3,
       initialize: async () => {
         if (process.env.NODE_ENV === 'development') {
-          console.log('🎯 [SystemInitializer] 初始化Card2.1系统')
         }
         await optimizedInitializationManager.initialize({ forceReload: false })
       },
@@ -197,7 +195,6 @@ export class SystemInitializer {
       retries: 1,
       initialize: async () => {
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔍 [SystemInitializer] 初始化类型兼容性检查器')
         }
         // 预热类型映射表
         typeCompatibilityChecker.getTypeMappingStats()
@@ -219,7 +216,6 @@ export class SystemInitializer {
       retries: 2,
       initialize: async () => {
         if (process.env.NODE_ENV === 'development') {
-          console.log('🏗️ [SystemInitializer] 初始化数据架构系统')
         }
         // 这里可以初始化其他数据架构相关的组件
         // 如果有其他异步初始化需求，可以在这里添加
@@ -246,7 +242,6 @@ export class SystemInitializer {
 
     this.state.totalCount = this.subSystemConfigs.size
     if (process.env.NODE_ENV === 'development') {
-      console.log(`📋 [SystemInitializer] 注册子系统: ${config.displayName}`)
     }
   }
 
@@ -257,13 +252,11 @@ export class SystemInitializer {
     // 防止重复初始化
     if (this.state.isInitialized && !options.forceReload) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ [SystemInitializer] 系统已初始化，跳过重复初始化')
       }
       return
     }
 
     if (this.initializationPromise) {
-      console.log('⏳ [SystemInitializer] 等待现有初始化完成')
       return this.initializationPromise
     }
 
@@ -294,7 +287,6 @@ export class SystemInitializer {
     this.state.successCount = 0
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 [SystemInitializer] 开始系统初始化')
     }
     this.emit('initialization-started', this.getInitializationState())
 
@@ -302,10 +294,6 @@ export class SystemInitializer {
       // 获取初始化顺序
       const initializationOrder = this.resolveInitializationOrder(skipSubSystems)
       if (process.env.NODE_ENV === 'development') {
-        console.log(
-        '📊 [SystemInitializer] 初始化顺序:',
-        initializationOrder.map(config => config.displayName)
-      )
       }
 
       // 全局超时控制
@@ -331,9 +319,7 @@ export class SystemInitializer {
       this.state.totalDuration = this.state.endTime - this.state.startTime!
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [SystemInitializer] 系统初始化完成，耗时: ${this.state.totalDuration}ms`)
       }
-      console.log(`📊 [SystemInitializer] 成功: ${this.state.successCount}/${this.state.totalCount}`)
 
       if (this.state.failedSubSystems.length > 0) {
         console.warn(`⚠️ [SystemInitializer] 失败子系统: ${this.state.failedSubSystems.join(', ')}`)
@@ -423,9 +409,6 @@ export class SystemInitializer {
         state.retriesCount = attempt
 
         if (process.env.NODE_ENV === 'development') {
-          console.log(
-          `🔄 [SystemInitializer] 初始化子系统: ${config.displayName} (尝试 ${attempt + 1}/${maxRetries + 1})`
-        )
         }
         this.emit('subsystem-initializing', { name: config.name, attempt: attempt + 1 })
 
@@ -454,7 +437,6 @@ export class SystemInitializer {
         this.state.successCount++
 
         if (process.env.NODE_ENV === 'development') {
-          console.log(`✅ [SystemInitializer] 子系统初始化成功: ${config.displayName} (耗时: ${state.duration}ms)`)
         }
         this.emit('subsystem-initialized', { name: config.name, duration: state.duration })
 
@@ -550,12 +532,10 @@ export class SystemInitializer {
 
     if (failedSystems.length === 0) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ [SystemInitializer] 没有失败的子系统需要重新初始化')
       }
       return
     }
 
-    console.log(`🔄 [SystemInitializer] 重新初始化失败的子系统: ${failedSystems.join(', ')}`)
 
     for (const systemName of failedSystems) {
       const config = this.subSystemConfigs.get(systemName)

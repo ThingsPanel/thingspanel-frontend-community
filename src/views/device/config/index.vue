@@ -149,7 +149,6 @@ const handlePageSizeChange = (pageSize: number) => {
 const handleSorterChange = (sorter: any) => {
   // 根据需要实现排序逻辑
   if (process.env.NODE_ENV === 'development') {
-    console.log('Sorter changed:', sorter)
   }
 }
 

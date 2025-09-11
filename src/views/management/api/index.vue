@@ -190,7 +190,6 @@ async function handleCopyKey(key: string) {
 
   // 尝试后备方法 document.execCommand('copy')
   if (process.env.NODE_ENV === 'development') {
-    console.log("Trying fallback: document.execCommand('copy')")
   }
   const textArea = document.createElement('textarea')
   textArea.value = key

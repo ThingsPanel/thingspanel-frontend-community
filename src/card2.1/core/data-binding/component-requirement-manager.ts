@@ -455,7 +455,6 @@ export function getComponentRequirementManager(): ComponentRequirementManager {
     const manager = new ComponentRequirementManager()
     managerInstances.set(portId, manager)
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔧 [ComponentRequirementManager] 为端口 ${portId} 创建新实例`)
     }
   }
 
