@@ -4,8 +4,8 @@
  * 替代原有的 ComponentExecutorManager 直接依赖
  */
 
-import { simpleDataBridge, type ComponentDataRequirement, type DataResult } from './SimpleDataBridge'
-import type { DataSourceDefinition } from './interfaces/IComponentDataManager'
+import { simpleDataBridge, type ComponentDataRequirement, type DataResult } from '@/core/data-architecture/SimpleDataBridge'
+import type { DataSourceDefinition } from '@/core/data-architecture/interfaces/IComponentDataManager'
 
 /**
  * Visual Editor 专用的数据桥接器

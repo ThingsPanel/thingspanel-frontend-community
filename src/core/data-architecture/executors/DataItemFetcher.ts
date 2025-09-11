@@ -5,9 +5,9 @@
  * 支持新的 HttpConfig 类型和正确的 HTTP 方法处理
  */
 
-import { defaultScriptEngine } from '../../script-engine'
-import type { HttpConfig, HttpParameter, PathParameter } from '../types/http-config'
-import { convertValue } from '../types/http-config'
+import { defaultScriptEngine } from '@/core/script-engine'
+import type { HttpConfig, HttpParameter, PathParameter } from '@/core/data-architecture/types/http-config'
+import { convertValue } from '@/core/data-architecture/types/http-config'
 import { request } from '@/service/request'
 // 导入Visual Editor store以获取组件实例
 import { useEditorStore } from '@/components/visual-editor/store/editor'

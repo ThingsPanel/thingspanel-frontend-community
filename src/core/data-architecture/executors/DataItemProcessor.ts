@@ -4,7 +4,7 @@
  * 已集成 script-engine 安全脚本执行系统
  */
 
-import { defaultScriptEngine } from '../../script-engine'
+import { defaultScriptEngine } from '@/core/script-engine'
 
 export interface ProcessingConfig {
   /** JSONPath语法过滤路径，如: $.abc.bcd[0] */

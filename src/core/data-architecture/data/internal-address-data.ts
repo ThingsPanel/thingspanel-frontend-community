@@ -3,7 +3,7 @@
  * 基于实际API文件生成的内部地址选项数据
  */
 
-import type { InternalAddressOptions, InternalApiItem } from '../types/internal-api'
+import type { InternalAddressOptions, InternalApiItem } from '@/core/data-architecture/types/internal-api'
 
 /**
  * 设备数据查询模块API接口（仅包含数据查询类接口）

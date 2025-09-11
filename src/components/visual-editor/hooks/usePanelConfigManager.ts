@@ -3,7 +3,7 @@
  * 负责配置解析、验证、迁移和默认配置生成
  */
 
-import type { RendererType } from '../types'
+import type { RendererType } from '@/components/visual-editor/types'
 
 /**
  * 配置管理相关函数集合

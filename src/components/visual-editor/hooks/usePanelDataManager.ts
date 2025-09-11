@@ -8,7 +8,7 @@ import { useMessage } from 'naive-ui'
 import { getBoard } from '@/service/api'
 import { $t } from '@/locales'
 import { smartDeepClone } from '@/utils/deep-clone'
-import { usePanelConfigManager } from './usePanelConfigManager'
+import { usePanelConfigManager } from '@/components/visual-editor/hooks/usePanelConfigManager'
 import type { Panel } from '#/entity'
 
 /**

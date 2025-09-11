@@ -76,11 +76,11 @@ import { ref, computed, nextTick, watch, onMounted, onUnmounted, h } from 'vue'
 import { NInput, NModal, NSpace, NButton, NDropdown, NIcon } from 'naive-ui'
 import { SettingsOutline, CopyOutline, TrashOutline } from '@vicons/ionicons5'
 import { useI18n } from 'vue-i18n'
-import { configurationManager } from '../../configuration'
-import { useEditor } from '../../hooks/useEditor'
-import Card2Wrapper from '../canvas/Card2Wrapper.vue'
-import type { BaseConfiguration, WidgetConfiguration } from '../../configuration/types'
-import type { VisualEditorWidget } from '../../types'
+import { configurationManager } from '@/components/visual-editor/configuration'
+import { useEditor } from '@/components/visual-editor/hooks/useEditor'
+import Card2Wrapper from '@/components/visual-editor/renderers/canvas/Card2Wrapper.vue'
+import type { BaseConfiguration, WidgetConfiguration } from '@/components/visual-editor/configuration/types'
+import type { VisualEditorWidget } from '@/components/visual-editor/types'
 
 interface Props {
   /** 节点数据 */

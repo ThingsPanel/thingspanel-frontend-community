@@ -7,24 +7,24 @@
 
 import { ref, computed, onMounted, onUnmounted, watch, toRaw, provide } from 'vue'
 import { $t } from '@/locales'
-import PanelLayout from './components/PanelLayout.vue'
-import { VisualEditorToolbar } from './components/toolbar'
-import WidgetLibrary from './components/WidgetLibrary/WidgetLibrary.vue'
-import { CanvasRenderer, GridstackRenderer } from './renderers'
-import { createEditor } from './hooks'
-import { ConfigurationPanel } from './configuration'
-import { usePreviewMode } from './hooks/usePreviewMode'
-import type { RendererType } from './types'
+import PanelLayout from '@/components/visual-editor/components/PanelLayout.vue'
+import { VisualEditorToolbar } from '@/components/visual-editor/components/toolbar'
+import WidgetLibrary from '@/components/visual-editor/components/WidgetLibrary/WidgetLibrary.vue'
+import { CanvasRenderer, GridstackRenderer } from '@/components/visual-editor/renderers'
+import { createEditor } from '@/components/visual-editor/hooks'
+import { ConfigurationPanel } from '@/components/visual-editor/configuration'
+import { usePreviewMode } from '@/components/visual-editor/hooks/usePreviewMode'
+import type { RendererType } from '@/components/visual-editor/types'
 import { useMessage, useDialog } from 'naive-ui'
 import { getBoard, PutBoard } from '@/service/api'
 import { smartDeepClone } from '@/utils/deep-clone'
 
 // 🔥 轮询系统导入
-import { useGlobalPollingManager } from './core/GlobalPollingManager'
-import { usePanelPollingManager } from './hooks/usePanelPollingManager'
-import { editorDataSourceManager } from './core/EditorDataSourceManager'
-import { configurationIntegrationBridge as configurationManager } from './configuration/ConfigurationIntegrationBridge'
-import PollingController from './components/PollingController.vue'
+import { useGlobalPollingManager } from '@/components/visual-editor/core/GlobalPollingManager'
+import { usePanelPollingManager } from '@/components/visual-editor/hooks/usePanelPollingManager'
+import { editorDataSourceManager } from '@/components/visual-editor/core/EditorDataSourceManager'
+import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
+import PollingController from '@/components/visual-editor/components/PollingController.vue'
 
 // 🔥 接收测试页面的配置props
 interface Props {

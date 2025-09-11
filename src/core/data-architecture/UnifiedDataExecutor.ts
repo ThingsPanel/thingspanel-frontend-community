@@ -11,7 +11,7 @@
  */
 
 import { request } from '@/service/request'
-import type { HttpParam, HttpHeader } from './types/enhanced-types'
+import type { HttpParam, HttpHeader } from '@/core/data-architecture/types/enhanced-types'
 
 /**
  * 统一数据源配置

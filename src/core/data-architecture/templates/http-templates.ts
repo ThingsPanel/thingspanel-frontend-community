@@ -3,7 +3,7 @@
  * 专门维护HTTP数据源的预设配置模板
  */
 
-import type { HttpConfig } from '../types/http-config'
+import type { HttpConfig } from '@/core/data-architecture/types/http-config'
 
 /**
  * HTTP配置模板定义

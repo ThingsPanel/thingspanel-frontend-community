@@ -9,8 +9,8 @@
  * 4. 维持向后兼容性
  */
 
-import { configurationStateManager, type ConfigurationUpdateEvent } from './ConfigurationStateManager'
-import { editorDataSourceManager } from '../core/EditorDataSourceManager'
+import { configurationStateManager, type ConfigurationUpdateEvent } from '@/components/visual-editor/configuration/ConfigurationStateManager'
+import { editorDataSourceManager } from '@/components/visual-editor/core/EditorDataSourceManager'
 // 🔥 导入数据缓存清理功能，确保配置变更时数据一致性
 import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
 // 🔥 修复：导入配置事件总线，确保配置变更时发出事件

@@ -44,14 +44,14 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useVisualEditor } from '@/store/modules/visual-editor'
-import TextWidget from '../../widgets/custom/TextWidget/TextWidget.vue'
-import ImageWidget from '../../widgets/custom/ImageWidget/ImageWidget.vue'
-import BarChartWidget from '../../widgets/custom/BarChartWidget/BarChartWidget.vue'
-import DigitIndicatorWidget from '../../widgets/custom/DigitIndicatorWidget/DigitIndicatorWidget.vue'
-import DigitIndicatorChartWidget from '../../widgets/chart/DigitIndicatorChartWidget/DigitIndicatorChartWidget.vue'
-import BarChartChartWidget from '../../widgets/chart/BarChartChartWidget/BarChartChartWidget.vue'
-import ContextMenu from './ContextMenu.vue'
-import type { GraphData } from '../../types'
+import TextWidget from '@/components/visual-editor/widgets/custom/TextWidget/TextWidget.vue'
+import ImageWidget from '@/components/visual-editor/widgets/custom/ImageWidget/ImageWidget.vue'
+import BarChartWidget from '@/components/visual-editor/widgets/custom/BarChartWidget/BarChartWidget.vue'
+import DigitIndicatorWidget from '@/components/visual-editor/widgets/custom/DigitIndicatorWidget/DigitIndicatorWidget.vue'
+import DigitIndicatorChartWidget from '@/components/visual-editor/widgets/chart/DigitIndicatorChartWidget/DigitIndicatorChartWidget.vue'
+import BarChartChartWidget from '@/components/visual-editor/widgets/chart/BarChartChartWidget/BarChartChartWidget.vue'
+import ContextMenu from '@/components/visual-editor/components/Canvas/ContextMenu.vue'
+import type { GraphData } from '@/components/visual-editor/types'
 
 // 🔥 使用新的统一架构
 const unifiedEditor = useVisualEditor()

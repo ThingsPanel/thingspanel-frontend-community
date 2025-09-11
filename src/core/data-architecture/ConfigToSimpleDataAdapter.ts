@@ -3,7 +3,7 @@
  * 将现有的复杂配置格式转换为SimpleDataBridge需要的简化格式
  */
 
-import type { ComponentDataRequirement, SimpleDataSourceConfig } from './SimpleDataBridge'
+import type { ComponentDataRequirement, SimpleDataSourceConfig } from '@/core/data-architecture/SimpleDataBridge'
 
 /**
  * 将复杂的数据源配置转换为简化格式

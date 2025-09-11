@@ -5,9 +5,9 @@
  * 🔥 针对用户反馈的深度分析，确保不是"写死解决问题"
  */
 
-import { configurationStateManager } from './ConfigurationStateManager'
+import { configurationStateManager } from '@/components/visual-editor/configuration/ConfigurationStateManager'
 import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
-import type { WidgetConfiguration } from './types'
+import type { WidgetConfiguration } from '@/components/visual-editor/configuration/types'
 
 /**
  * 存储容量检查结果

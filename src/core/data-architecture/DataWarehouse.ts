@@ -9,7 +9,7 @@
  * 4. 缓存策略和过期管理
  */
 
-import type { ComponentDataRequirement } from './SimpleDataBridge'
+import type { ComponentDataRequirement } from '@/core/data-architecture/SimpleDataBridge'
 import { dataSourceLogger } from '@/utils/logger'
 
 /**

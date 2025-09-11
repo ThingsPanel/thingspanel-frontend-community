@@ -32,7 +32,7 @@ import type {
   ConfigurationAdapter as IConfigurationAdapter
 } from '../types/enhanced-types'
 
-import { DEFAULT_ENHANCED_FEATURES } from '../types/enhanced-types'
+import { DEFAULT_ENHANCED_FEATURES } from '@/core/data-architecture/types/enhanced-types'
 
 /**
  * 配置转换结果

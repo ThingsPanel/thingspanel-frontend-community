@@ -3,10 +3,10 @@
  * 整合4层执行器，提供完整的数据处理管道
  */
 
-import { DataItemFetcher, DataItem, IDataItemFetcher } from './DataItemFetcher'
-import { DataItemProcessor, ProcessingConfig, IDataItemProcessor } from './DataItemProcessor'
-import { DataSourceMerger, MergeStrategy, IDataSourceMerger } from './DataSourceMerger'
-import { MultiSourceIntegrator, ComponentData, DataSourceResult, IMultiSourceIntegrator } from './MultiSourceIntegrator'
+import { DataItemFetcher, DataItem, IDataItemFetcher } from '@/core/data-architecture/executors/DataItemFetcher'
+import { DataItemProcessor, ProcessingConfig, IDataItemProcessor } from '@/core/data-architecture/executors/DataItemProcessor'
+import { DataSourceMerger, MergeStrategy, IDataSourceMerger } from '@/core/data-architecture/executors/DataSourceMerger'
+import { MultiSourceIntegrator, ComponentData, DataSourceResult, IMultiSourceIntegrator } from '@/core/data-architecture/executors/MultiSourceIntegrator'
 
 /**
  * 数据源配置结构

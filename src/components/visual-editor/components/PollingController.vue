@@ -6,7 +6,7 @@
 
 import { computed } from 'vue'
 import { useMessage } from 'naive-ui'
-import { useGlobalPollingManager } from '../core/GlobalPollingManager'
+import { useGlobalPollingManager } from '@/components/visual-editor/core/GlobalPollingManager'
 import { $t } from '@/locales'
 
 interface Props {

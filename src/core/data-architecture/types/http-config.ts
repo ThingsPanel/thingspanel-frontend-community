@@ -96,7 +96,7 @@ export interface PathParameter {
 }
 
 // 导入EnhancedParameter类型
-import type { EnhancedParameter } from './parameter-editor'
+import type { EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
 
 /**
  * HTTP配置接口（简化路径参数版本）

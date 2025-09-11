@@ -12,7 +12,7 @@ import type {
   FieldType
 } from './data-source-config-types'
 
-import { DATA_SOURCE_CONFIG_CONSTANTS } from './data-source-config-types'
+import { DATA_SOURCE_CONFIG_CONSTANTS } from '@/components/visual-editor/core/data-source-config-types'
 
 // ========== 兼容性类型定义（保留旧版本支持）==========
 

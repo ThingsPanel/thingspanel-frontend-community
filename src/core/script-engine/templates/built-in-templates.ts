@@ -3,7 +3,7 @@
  * 为 data-architecture 系统提供预制的脚本模板
  */
 
-import type { ScriptTemplate, TemplateCategory } from '../types'
+import type { ScriptTemplate, TemplateCategory } from '@/core/script-engine/types'
 
 /**
  * 数据获取器脚本模板

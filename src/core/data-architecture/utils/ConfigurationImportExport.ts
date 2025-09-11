@@ -3,7 +3,7 @@
  * @description 配置导入导出工具类，处理组件 ID 映射和依赖管理
  */
 
-import type { DataSourceConfiguration } from '../index'
+import type { DataSourceConfiguration } from '@/core/data-architecture/index'
 import type { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import { smartDeepClone } from '@/utils/deep-clone'
 

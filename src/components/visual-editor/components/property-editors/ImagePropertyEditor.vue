@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ImageWidgetConfig } from '../../types'
+import type { ImageWidgetConfig } from '@/components/visual-editor/types'
 
 interface Props {
   config: ImageWidgetConfig

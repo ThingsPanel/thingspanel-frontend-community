@@ -10,12 +10,12 @@
  * - 异步脚本支持
  */
 
-export * from './types'
-export * from './executor'
-export * from './sandbox'
-export * from './template-manager'
-export * from './context-manager'
-export * from './script-engine'
+export * from '@/core/script-engine/types'
+export * from '@/core/script-engine/executor'
+export * from '@/core/script-engine/sandbox'
+export * from '@/core/script-engine/template-manager'
+export * from '@/core/script-engine/context-manager'
+export * from '@/core/script-engine/script-engine'
 
 // 导出默认脚本引擎实例
-export { defaultScriptEngine } from './script-engine'
+export { defaultScriptEngine } from '@/core/script-engine/script-engine'

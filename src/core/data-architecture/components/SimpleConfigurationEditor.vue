@@ -18,12 +18,12 @@ import {
   type DataItem,
   type ProcessingConfig
 } from '../index'
-import { type MergeStrategy } from '../executors/DataSourceMerger'
-import RawDataConfigModal from './modals/RawDataConfigModal.vue'
+import { type MergeStrategy } from '@/core/data-architecture/executors/DataSourceMerger'
+import RawDataConfigModal from '@/core/data-architecture/components/modals/RawDataConfigModal.vue'
 // 🔥 简洁脚本编辑器
 import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
 // 🔥 导入组件级别轮询配置组件
-import ComponentPollingConfig from './ComponentPollingConfig.vue'
+import ComponentPollingConfig from '@/core/data-architecture/components/ComponentPollingConfig.vue'
 // 🔥 导入全局轮询管理器
 import { useGlobalPollingManager } from '@/components/visual-editor/core/GlobalPollingManager'
 // 导入@vicons图标组件
@@ -43,10 +43,10 @@ import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
 import { MultiLayerExecutorChain } from '@/core/data-architecture/executors/MultiLayerExecutorChain'
 import { smartDeepClone } from '@/utils/deep-clone'
 // 🔥 导入导出面板组件
-import ConfigurationImportExportPanel from './common/ConfigurationImportExportPanel.vue'
+import ConfigurationImportExportPanel from '@/core/data-architecture/components/common/ConfigurationImportExportPanel.vue'
 // 🔥 单数据源导入导出功能
-import { singleDataSourceExporter, singleDataSourceImporter } from '../utils/ConfigurationImportExport'
-import type { SingleDataSourceImportPreview } from '../utils/ConfigurationImportExport'
+import { singleDataSourceExporter, singleDataSourceImporter } from '@/core/data-architecture/utils/ConfigurationImportExport'
+import type { SingleDataSourceImportPreview } from '@/core/data-architecture/utils/ConfigurationImportExport'
 
 // Props接口 - 匹配现有系统
 interface Props {

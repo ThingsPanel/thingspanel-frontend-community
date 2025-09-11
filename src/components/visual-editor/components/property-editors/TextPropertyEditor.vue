@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TextWidgetConfig } from '../../types'
+import type { TextWidgetConfig } from '@/components/visual-editor/types'
 
 interface Props {
   config: TextWidgetConfig

@@ -42,7 +42,7 @@ import { interactionManager } from '@/card2.1/core/interaction-manager'
 import { NAlert } from 'naive-ui'
 import { $t } from '@/locales'
 import { useComponentTree as useCard2Integration } from '@/card2.1/hooks/useComponentTree'
-import type { DataSourceValue } from '../../types/data-source'
+import type { DataSourceValue } from '@/components/visual-editor/types/data-source'
 // 🔥 新增：导入新架构的数据桥接器和配置管理器
 import { getVisualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
 import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'

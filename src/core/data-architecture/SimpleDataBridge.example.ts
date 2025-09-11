@@ -3,7 +3,7 @@
  * 展示如何使用简化的数据桥接器替代复杂的ComponentExecutorManager
  */
 
-import { simpleDataBridge, convertToSimpleDataRequirement } from './interfaces'
+import { simpleDataBridge, convertToSimpleDataRequirement } from '@/core/data-architecture/interfaces'
 
 /**
  * 示例1：基本使用

@@ -171,11 +171,11 @@ import { $t } from '@/locales'
 import { smartDeepClone } from '@/utils/deep-clone'
 
 // 导入配置组件注册中心
-import { getVisibleConfigLayers, getConfigLayer } from './component-registry-final'
+import { getVisibleConfigLayers, getConfigLayer } from '@/components/visual-editor/configuration/component-registry-final'
 
 // 导入配置管理器和类型
-import { configurationIntegrationBridge as configurationManager } from './ConfigurationIntegrationBridge'
-import { getComponentDataRequirements } from '../core/component-data-requirements'
+import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
+import { getComponentDataRequirements } from '@/components/visual-editor/core/component-data-requirements'
 import type {
   WidgetConfiguration,
   ComponentConfiguration,
@@ -183,7 +183,7 @@ import type {
   InteractionConfiguration,
   ValidationResult
 } from './types'
-import type { VisualEditorWidget } from '../types'
+import type { VisualEditorWidget } from '@/components/visual-editor/types'
 
 // 🔥 导入交互管理器用于读取最新状态
 import { interactionManager } from '@/card2.1/core/interaction-manager'

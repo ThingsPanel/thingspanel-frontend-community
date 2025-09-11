@@ -20,12 +20,12 @@ import {
 } from './executors/MultiLayerExecutorChain'
 
 // 🆕 SUBTASK-003: 导入增强数据仓库
-import { dataWarehouse, type EnhancedDataWarehouse } from './DataWarehouse'
+import { dataWarehouse, type EnhancedDataWarehouse } from '@/core/data-architecture/DataWarehouse'
 
 // 🧪 Task 2.1: 测试文件导入已移除，避免自动调用外部接口
-// 如需测试，请手动在控制台调用: await import('./UnifiedDataExecutor.test')
+// 如需测试，请手动在控制台调用: await import('@/core/data-architecture/UnifiedDataExecutor.test')
 // if (process.env.NODE_ENV === 'development') {
-//   import('./UnifiedDataExecutor.test').catch(() => {
+//   import('@/core/data-architecture/UnifiedDataExecutor.test').catch(() => {
 //     // 忽略导入错误，测试文件是可选的
 //   })
 // }

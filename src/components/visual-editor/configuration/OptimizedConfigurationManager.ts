@@ -3,8 +3,8 @@
  * 提供智能缓存机制和性能优化功能
  */
 
-import type { WidgetConfiguration } from './types'
-import { configurationStateManager } from './ConfigurationStateManager'
+import type { WidgetConfiguration } from '@/components/visual-editor/configuration/types'
+import { configurationStateManager } from '@/components/visual-editor/configuration/ConfigurationStateManager'
 
 /**
  * 缓存项接口

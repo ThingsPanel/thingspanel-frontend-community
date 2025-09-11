@@ -11,7 +11,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NCard, NSpace, NText, NDivider, NButton } from 'naive-ui'
-import DynamicParameterEditor from './DynamicParameterEditor.vue'
+import DynamicParameterEditor from '@/core/data-architecture/components/common/DynamicParameterEditor.vue'
 import type { EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
 
 const { t } = useI18n()

@@ -2,7 +2,7 @@
  * EditorLayout 组件模块统一导出
  */
 
-import EditorLayout from './EditorLayout.vue'
+import EditorLayout from '@/components/visual-editor/components/Layout/EditorLayout.vue'
 
 export { EditorLayout }
 export default EditorLayout
@@ -21,4 +21,4 @@ export type {
 } from './types'
 
 // 导出常量
-export { LAYOUT_BREAKPOINTS } from './types'
+export { LAYOUT_BREAKPOINTS } from '@/components/visual-editor/components/Layout/types'

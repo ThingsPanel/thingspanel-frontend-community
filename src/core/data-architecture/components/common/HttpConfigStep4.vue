@@ -9,7 +9,7 @@
  */
 
 import { useI18n } from 'vue-i18n'
-import type { HttpConfig } from '../../types/http-config'
+import type { HttpConfig } from '@/core/data-architecture/types/http-config'
 import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
 
 interface Props {

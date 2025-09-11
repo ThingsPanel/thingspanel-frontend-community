@@ -15,10 +15,10 @@ export {
 } from './DataItemFetcher'
 
 // 第二层：数据项处理器
-export { DataItemProcessor, type IDataItemProcessor, type ProcessingConfig } from './DataItemProcessor'
+export { DataItemProcessor, type IDataItemProcessor, type ProcessingConfig } from '@/core/data-architecture/executors/DataItemProcessor'
 
 // 第三层：数据源合并器
-export { DataSourceMerger, type IDataSourceMerger, type MergeStrategy } from './DataSourceMerger'
+export { DataSourceMerger, type IDataSourceMerger, type MergeStrategy } from '@/core/data-architecture/executors/DataSourceMerger'
 
 // 第四层：多源整合器
 export {
@@ -38,7 +38,7 @@ export {
 } from './MultiLayerExecutorChain'
 
 // 导入用于工厂函数
-import { MultiLayerExecutorChain } from './MultiLayerExecutorChain'
+import { MultiLayerExecutorChain } from '@/core/data-architecture/executors/MultiLayerExecutorChain'
 
 // 便捷工厂函数
 export function createExecutorChain(): MultiLayerExecutorChain {

@@ -4,7 +4,7 @@
  * 已集成 script-engine 安全脚本执行系统
  */
 
-import { defaultScriptEngine } from '../../script-engine'
+import { defaultScriptEngine } from '@/core/script-engine'
 
 export type MergeStrategy =
   | {

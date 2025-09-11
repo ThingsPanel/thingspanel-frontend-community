@@ -8,7 +8,7 @@ import { useMessage } from 'naive-ui'
 import { simpleConfigGenerator, dataSourceSystem } from '@/core/data-architecture'
 // 注意：simpleDataExecutor 已被 UnifiedDataExecutor 替代
 import { unifiedDataExecutor } from '@/core/data-architecture/UnifiedDataExecutor'
-import { useGlobalPollingManager } from './GlobalPollingManager'
+import { useGlobalPollingManager } from '@/components/visual-editor/core/GlobalPollingManager'
 // 🔥 关键导入：配置事件总线
 import { configEventBus, type ConfigChangeEvent } from '@/core/data-architecture/ConfigEventBus'
 import type {

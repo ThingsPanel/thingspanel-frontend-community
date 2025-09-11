@@ -18,7 +18,7 @@ import type {
   EnhancedDataSourceConfiguration,
   DynamicParam
 } from './enhanced-types'
-import { DEFAULT_ENHANCED_FEATURES } from './enhanced-types'
+import { DEFAULT_ENHANCED_FEATURES } from '@/core/data-architecture/types/enhanced-types'
 import type {
   DataSourceConfiguration as LegacyDataSourceConfiguration,
   JsonDataItemConfig as LegacyJsonDataItemConfig,

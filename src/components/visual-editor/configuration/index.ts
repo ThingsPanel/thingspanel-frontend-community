@@ -4,8 +4,8 @@
  */
 
 // 🔄 核心管理器 - 统一使用桥接系统确保数据一致性
-import { configurationIntegrationBridge as configurationManager } from './ConfigurationIntegrationBridge'
-import { ConfigurationManager } from './ConfigurationManager'
+import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
+import { ConfigurationManager } from '@/components/visual-editor/configuration/ConfigurationManager'
 export { configurationManager, ConfigurationManager }
 
 // 类型定义
@@ -26,16 +26,16 @@ export type {
 } from './types'
 
 // 配置面板组件
-export { default as ConfigurationPanel } from './ConfigurationPanel.vue'
+export { default as ConfigurationPanel } from '@/components/visual-editor/configuration/ConfigurationPanel.vue'
 
 // 配置表单组件 - 现在从renderers/base目录导入
-export { default as BaseConfigForm } from '../renderers/base/BaseConfigForm.vue'
-export { default as ComponentConfigForm } from '../renderers/base/ComponentConfigForm.vue'
+export { default as BaseConfigForm } from '@/components/visual-editor/renderers/base/BaseConfigForm.vue'
+export { default as ComponentConfigForm } from '@/components/visual-editor/renderers/base/ComponentConfigForm.vue'
 
 // 注意：InteractionConfigForm 暂时移除，专注基础测试
 
 // Hooks
-export { useConfiguration, type UseConfigurationOptions } from './hooks/useConfiguration'
+export { useConfiguration, type UseConfigurationOptions } from '@/components/visual-editor/configuration/hooks/useConfiguration'
 
 // 工具函数
 // 🔄 工具函数 - 通过桥接系统导出，确保一致性

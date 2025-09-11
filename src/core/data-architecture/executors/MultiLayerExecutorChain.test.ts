@@ -2,7 +2,7 @@
  * 多层级执行器链测试用例
  */
 
-import { MultiLayerExecutorChain, DataSourceConfiguration } from './MultiLayerExecutorChain'
+import { MultiLayerExecutorChain, DataSourceConfiguration } from '@/core/data-architecture/executors/MultiLayerExecutorChain'
 
 /**
  * JSON数据项示例配置

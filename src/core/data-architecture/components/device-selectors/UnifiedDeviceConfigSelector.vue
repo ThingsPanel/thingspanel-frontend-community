@@ -21,8 +21,8 @@ import {
   LocationOutline as LocationIcon,
   WifiOutline as StatusIcon
 } from '@vicons/ionicons5'
-import type { DeviceInfo, DeviceMetric } from '../../types/device-parameter-group'
-import type { EnhancedParameter } from '../../types/parameter-editor'
+import type { DeviceInfo, DeviceMetric } from '@/core/data-architecture/types/device-parameter-group'
+import type { EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
 import type { SelectOption } from 'naive-ui'
 
 interface Props {

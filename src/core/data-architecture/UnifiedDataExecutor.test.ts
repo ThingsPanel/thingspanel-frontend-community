@@ -3,7 +3,7 @@
  * Task 2.1: 验证统一执行器的基本功能
  */
 
-import { UnifiedDataExecutor, type UnifiedDataConfig } from './UnifiedDataExecutor'
+import { UnifiedDataExecutor, type UnifiedDataConfig } from '@/core/data-architecture/UnifiedDataExecutor'
 
 /**
  * 测试统一执行器功能
@@ -89,7 +89,7 @@ export async function testUnifiedDataExecutor(): Promise<void> {
  */
 export async function testSimpleDataBridgeIntegration(): Promise<void> {
   // 动态导入避免循环依赖
-  const { simpleDataBridge } = await import('./SimpleDataBridge')
+  const { simpleDataBridge } = await import('@/core/data-architecture/SimpleDataBridge')
 
   const testRequirement = {
     componentId: 'test-component-1',

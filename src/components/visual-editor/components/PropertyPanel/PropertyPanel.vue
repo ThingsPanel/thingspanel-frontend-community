@@ -36,12 +36,12 @@
 import { computed } from 'vue'
 import { $t } from '@/locales'
 import { useVisualEditor } from '@/store/modules/visual-editor'
-import TextPropertyEditor from './components/TextPropertyEditor.vue'
-import ImagePropertyEditor from './components/ImagePropertyEditor.vue'
-import BarChartPropertyEditor from './components/BarChartPropertyEditor.vue'
-import DigitIndicatorPropertyEditor from './components/DigitIndicatorPropertyEditor.vue'
-import ChartDigitIndicatorPropertyEditor from './components/ChartDigitIndicatorPropertyEditor.vue'
-import ChartBarPropertyEditor from './components/ChartBarPropertyEditor.vue'
+import TextPropertyEditor from '@/components/visual-editor/components/PropertyPanel/components/TextPropertyEditor.vue'
+import ImagePropertyEditor from '@/components/visual-editor/components/PropertyPanel/components/ImagePropertyEditor.vue'
+import BarChartPropertyEditor from '@/components/visual-editor/components/PropertyPanel/components/BarChartPropertyEditor.vue'
+import DigitIndicatorPropertyEditor from '@/components/visual-editor/components/PropertyPanel/components/DigitIndicatorPropertyEditor.vue'
+import ChartDigitIndicatorPropertyEditor from '@/components/visual-editor/components/PropertyPanel/components/ChartDigitIndicatorPropertyEditor.vue'
+import ChartBarPropertyEditor from '@/components/visual-editor/components/PropertyPanel/components/ChartBarPropertyEditor.vue'
 
 // 🔥 使用新的统一架构
 const unifiedEditor = useVisualEditor()

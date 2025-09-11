@@ -2,7 +2,7 @@
  * 编辑器相关类型定义
  */
 
-import type { RendererType } from './renderer'
+import type { RendererType } from '@/components/visual-editor/types/renderer'
 
 // 编辑器配置
 export interface EditorConfig {

@@ -75,9 +75,9 @@ import { NIcon } from 'naive-ui'
 import { AddOutline } from '@vicons/ionicons5'
 import { useEditorStore } from '@/store/modules/editor'
 import { useWidgetStore } from '@/store/modules/widget'
-import { globalPreviewMode } from '../../hooks/usePreviewMode'
-import BaseRendererComponent from '../base/BaseRendererComponent.vue'
-import Card2Wrapper from '../canvas/Card2Wrapper.vue'
+import { globalPreviewMode } from '@/components/visual-editor/hooks/usePreviewMode'
+import BaseRendererComponent from '@/components/visual-editor/renderers/base/BaseRendererComponent.vue'
+import Card2Wrapper from '@/components/visual-editor/renderers/canvas/Card2Wrapper.vue'
 
 // 网格配置
 interface GridConfig {

@@ -9,12 +9,12 @@ import type { Component } from 'vue'
 import { defineAsyncComponent } from 'vue'
 
 // 导入配置管理器用于检查组件数据源需求
-import { configurationIntegrationBridge as configurationManager } from './ConfigurationIntegrationBridge'
-import { getComponentDataRequirements } from '../core/component-data-requirements'
+import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
+import { getComponentDataRequirements } from '@/components/visual-editor/core/component-data-requirements'
 
 // 动态导入组件避免循环依赖问题
-const BaseConfigForm = defineAsyncComponent(() => import('../renderers/base/BaseConfigForm.vue'))
-const ComponentConfigForm = defineAsyncComponent(() => import('../renderers/base/ComponentConfigForm.vue'))
+const BaseConfigForm = defineAsyncComponent(() => import('@/components/visual-editor/renderers/base/BaseConfigForm.vue'))
+const ComponentConfigForm = defineAsyncComponent(() => import('@/components/visual-editor/renderers/base/ComponentConfigForm.vue'))
 // 导入新的卡片式交互配置组件（来自核心交互系统）
 const InteractionCardWizard = defineAsyncComponent(
   () => import('@/core/interaction-system/components/InteractionCardWizard.vue')

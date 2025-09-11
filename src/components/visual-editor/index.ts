@@ -4,7 +4,7 @@
  */
 
 // 主组件导出
-export { default as PanelEditor } from './PanelEditor.vue'
+export { default as PanelEditor } from '@/components/visual-editor/PanelEditor.vue'
 
 // 新架构Hook导出 - 替代旧的useEditor和createEditor
 export { useVisualEditor } from '@/store/modules/visual-editor'

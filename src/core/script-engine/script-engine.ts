@@ -13,11 +13,11 @@ import type {
   ScriptExecutionResult,
   ScriptConfig
 } from './types'
-import { ScriptExecutor, defaultScriptConfig } from './executor'
-import { ScriptSandbox, defaultSandboxConfig } from './sandbox'
-import { ScriptTemplateManager } from './template-manager'
-import { ScriptContextManager } from './context-manager'
-import { initializeBuiltInTemplates } from './templates/built-in-templates'
+import { ScriptExecutor, defaultScriptConfig } from '@/core/script-engine/executor'
+import { ScriptSandbox, defaultSandboxConfig } from '@/core/script-engine/sandbox'
+import { ScriptTemplateManager } from '@/core/script-engine/template-manager'
+import { ScriptContextManager } from '@/core/script-engine/context-manager'
+import { initializeBuiltInTemplates } from '@/core/script-engine/templates/built-in-templates'
 
 /**
  * 主脚本引擎实现类

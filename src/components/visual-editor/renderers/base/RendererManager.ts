@@ -3,7 +3,7 @@
  * 统一管理所有渲染器的注册、创建和切换
  */
 
-import type { BaseRenderer, RendererFactory, RendererContext, RendererConfig } from './BaseRenderer'
+import type { BaseRenderer, RendererFactory, RendererContext, RendererConfig } from '@/components/visual-editor/renderers/base/BaseRenderer'
 
 // 渲染器注册信息
 interface RendererRegistration {

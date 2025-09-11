@@ -1,7 +1,7 @@
 // 可视化编辑器工具栏组件入口文件
 
-export { default as VisualEditorToolbar } from './VisualEditorToolbar.vue'
-export { default as CommonToolbar } from './CommonToolbar.vue'
+export { default as VisualEditorToolbar } from '@/components/visual-editor/components/toolbar/VisualEditorToolbar.vue'
+export { default as CommonToolbar } from '@/components/visual-editor/components/toolbar/CommonToolbar.vue'
 
 // 工具栏相关类型定义
 export interface RendererOption {

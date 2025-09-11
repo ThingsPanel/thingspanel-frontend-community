@@ -10,9 +10,9 @@
 
 import { ref, computed, nextTick } from 'vue'
 import { NDrawer, NDrawerContent } from 'naive-ui'
-import DeviceSelectionModeChooser from './DeviceSelectionModeChooser.vue'
-import DeviceIdSelector from './DeviceIdSelector.vue'
-import DeviceMetricSelector from './DeviceMetricSelector.vue'
+import DeviceSelectionModeChooser from '@/core/data-architecture/components/device-selectors/DeviceSelectionModeChooser.vue'
+import DeviceIdSelector from '@/core/data-architecture/components/device-selectors/DeviceIdSelector.vue'
+import DeviceMetricSelector from '@/core/data-architecture/components/device-selectors/DeviceMetricSelector.vue'
 
 import {
   generateDeviceIdParameters,
@@ -27,7 +27,7 @@ import type {
   DeviceMetric,
   DeviceSelectionConfig
 } from '../../types/device-parameter-group'
-import type { EnhancedParameter } from '../../types/parameter-editor'
+import type { EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
 
 interface Props {
   /** 是否显示选择器 */

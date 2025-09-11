@@ -5,7 +5,7 @@
 
 import { useMessage } from 'naive-ui'
 import { $t } from '@/locales'
-import type { RendererType } from '../types'
+import type { RendererType } from '@/components/visual-editor/types'
 
 /**
  * 事件处理相关函数集合

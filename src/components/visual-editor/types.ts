@@ -4,7 +4,7 @@
  */
 
 import type { GraphData } from '@antv/x6'
-import type { DataSource } from './types/data-source'
+import type { DataSource } from '@/components/visual-editor/types/data-source'
 
 // 1. 定义我们自己的渲染器类型
 export type RendererType = 'canvas' | 'gridstack' | 'vue' | 'react' | 'angular' | 'svelte' | 'webgl'

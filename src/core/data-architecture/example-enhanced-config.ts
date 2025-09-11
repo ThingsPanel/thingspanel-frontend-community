@@ -11,7 +11,7 @@ import type {
   DynamicParam
 } from './types/enhanced-types'
 
-import { DEFAULT_ENHANCED_FEATURES } from './types/enhanced-types'
+import { DEFAULT_ENHANCED_FEATURES } from '@/core/data-architecture/types/enhanced-types'
 
 // ==================== JSON数据项示例 ====================
 

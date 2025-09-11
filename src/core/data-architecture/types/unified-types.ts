@@ -49,7 +49,7 @@ export type ComponentType = 'visual-editor' | 'card2.1' | 'standard'
 // ==================== 基础接口重导出 ====================
 
 // 从parameter-editor.ts导出增强参数类型
-export type { EnhancedParameter } from './parameter-editor'
+export type { EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
 
 // ==================== HTTP配置核心类型 ====================
 

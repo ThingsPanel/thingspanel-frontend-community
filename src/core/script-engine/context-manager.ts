@@ -3,7 +3,7 @@
  * 管理脚本执行时的上下文环境，包括变量和函数
  */
 
-import type { IScriptContextManager, ScriptExecutionContext } from './types'
+import type { IScriptContextManager, ScriptExecutionContext } from '@/core/script-engine/types'
 import { nanoid } from 'nanoid'
 import { smartDeepClone } from '@/utils/deep-clone'
 

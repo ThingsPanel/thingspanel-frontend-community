@@ -284,9 +284,9 @@ import {
 } from '@vicons/ionicons5'
 
 // 导入数据源管理器和全局轮询管理器
-import { editorDataSourceManager, DataSourceStatus } from '../core/EditorDataSourceManager'
-import type { ComponentDataSourceConfig } from '../core/EditorDataSourceManager'
-import { useGlobalPollingManager } from '../core/GlobalPollingManager'
+import { editorDataSourceManager, DataSourceStatus } from '@/components/visual-editor/core/EditorDataSourceManager'
+import type { ComponentDataSourceConfig } from '@/components/visual-editor/core/EditorDataSourceManager'
+import { useGlobalPollingManager } from '@/components/visual-editor/core/GlobalPollingManager'
 
 // 国际化和主题
 const { t } = useI18n()

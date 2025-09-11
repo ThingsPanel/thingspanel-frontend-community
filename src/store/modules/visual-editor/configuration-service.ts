@@ -3,7 +3,7 @@
  * 替代原有的ConfigurationManager，提供清晰的配置管理API
  */
 
-import { useUnifiedEditorStore } from './unified-editor'
+import { useUnifiedEditorStore } from '@/store/modules/visual-editor/unified-editor'
 import type {
   WidgetConfiguration,
   BaseConfiguration,

@@ -3,7 +3,7 @@
  * 提供配置验证、模板管理、存储功能
  */
 
-import type { DataSourceConfiguration, ValidationResult } from '../types'
+import type { DataSourceConfiguration, ValidationResult } from '@/core/data-architecture/types'
 import { smartDeepClone } from '@/utils/deep-clone'
 
 export interface ConfigurationTemplate {

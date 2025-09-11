@@ -149,7 +149,7 @@ import { useI18n } from 'vue-i18n'
 import { useThemeStore } from '@/store/modules/theme'
 import { useMessage } from 'naive-ui'
 import { CheckmarkOutline, CloseOutline, CopyOutline, DownloadOutline } from '@vicons/ionicons5'
-import type { ScriptExecutionResult } from '../types'
+import type { ScriptExecutionResult } from '@/core/script-engine/types'
 
 interface Props {
   /** 执行结果 */

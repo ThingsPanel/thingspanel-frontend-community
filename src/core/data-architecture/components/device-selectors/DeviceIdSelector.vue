@@ -11,7 +11,7 @@
 import { ref, computed } from 'vue'
 import { NSelect, NSpace, NText, NIcon, NButton, NAlert } from 'naive-ui'
 import { PhonePortraitOutline as DeviceIcon } from '@vicons/ionicons5'
-import type { DeviceInfo } from '../../types/device-parameter-group'
+import type { DeviceInfo } from '@/core/data-architecture/types/device-parameter-group'
 import type { SelectOption } from 'naive-ui'
 
 interface Props {

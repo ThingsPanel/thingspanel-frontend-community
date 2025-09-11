@@ -10,11 +10,11 @@
 
 import { computed, ref, watch, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { HttpConfig } from '../../types/http-config'
-import DynamicParameterEditor from './DynamicParameterEditor.vue'
-import { internalAddressOptions, getApiByValue } from '../../data/internal-address-data'
-import type { InternalApiItem } from '../../types/internal-api'
-import type { EnhancedParameter } from '../../types/parameter-editor'
+import type { HttpConfig } from '@/core/data-architecture/types/http-config'
+import DynamicParameterEditor from '@/core/data-architecture/components/common/DynamicParameterEditor.vue'
+import { internalAddressOptions, getApiByValue } from '@/core/data-architecture/data/internal-address-data'
+import type { InternalApiItem } from '@/core/data-architecture/types/internal-api'
+import type { EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
 
 interface Props {
   /** HTTP配置数据 */

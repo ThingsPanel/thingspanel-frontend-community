@@ -6,7 +6,7 @@
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { useThemeStore } from '@/store/modules/theme'
 import { createLogger } from '@/utils/logger'
-import type { LayoutContainer, LayoutItem } from '../types/layout'
+import type { LayoutContainer, LayoutItem } from '@/components/visual-editor/types/layout'
 
 const logger = createLogger('ThemeIntegration')
 

@@ -156,7 +156,7 @@ import {
 } from '@vicons/ionicons5'
 
 import type { InteractionConfig, InteractionEventType } from '@/card2.1/core/interaction-types'
-import InteractionTemplatePreview from './InteractionTemplatePreview.vue'
+import InteractionTemplatePreview from '@/core/interaction-system/components/InteractionTemplatePreview.vue'
 
 interface InteractionTemplate {
   id: string

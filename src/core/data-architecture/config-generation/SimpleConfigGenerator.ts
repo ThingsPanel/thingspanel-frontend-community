@@ -13,7 +13,7 @@ import type {
   MappingPreviewResult
 } from '../types/simple-types'
 
-import { SIMPLE_DATA_SOURCE_CONSTANTS } from '../types/simple-types'
+import { SIMPLE_DATA_SOURCE_CONSTANTS } from '@/core/data-architecture/types/simple-types'
 
 /**
  * 简化的配置生成器

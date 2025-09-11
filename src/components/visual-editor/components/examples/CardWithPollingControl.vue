@@ -5,7 +5,7 @@
  */
 
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import PollingController from '../PollingController.vue'
+import PollingController from '@/components/visual-editor/components/PollingController.vue'
 
 interface Props {
   /** 组件ID，用于轮询管理 */

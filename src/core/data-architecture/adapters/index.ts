@@ -4,10 +4,10 @@
  */
 
 // ==================== 主要适配器类导出 ====================
-export { ConfigurationAdapter, createConfigurationAdapter, type ConversionResult } from './ConfigurationAdapter'
+export { ConfigurationAdapter, createConfigurationAdapter, type ConversionResult } from '@/core/data-architecture/adapters/ConfigurationAdapter'
 
 // ==================== 便捷函数导出 ====================
-export { detectConfigVersion, upgradeToV2, downgradeToV1 } from './ConfigurationAdapter'
+export { detectConfigVersion, upgradeToV2, downgradeToV1 } from '@/core/data-architecture/adapters/ConfigurationAdapter'
 
 // ==================== 适配器版本信息 ====================
 export const ADAPTER_VERSION = '1.0.0'

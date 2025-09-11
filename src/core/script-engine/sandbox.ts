@@ -3,7 +3,7 @@
  * 提供安全的代码执行环境，防止恶意代码攻击
  */
 
-import type { IScriptSandbox, SandboxConfig } from './types'
+import type { IScriptSandbox, SandboxConfig } from '@/core/script-engine/types'
 import { smartDeepClone } from '@/utils/deep-clone'
 
 /**

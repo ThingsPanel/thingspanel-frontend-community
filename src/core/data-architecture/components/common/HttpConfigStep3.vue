@@ -9,9 +9,9 @@
  */
 
 import { NText } from 'naive-ui'
-import type { HttpConfig } from '../../types/http-config'
-import type { EnhancedParameter } from '../../types/parameter-editor'
-import DynamicParameterEditor from './DynamicParameterEditor.vue'
+import type { HttpConfig } from '@/core/data-architecture/types/http-config'
+import type { EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
+import DynamicParameterEditor from '@/core/data-architecture/components/common/DynamicParameterEditor.vue'
 
 interface Props {
   /** HTTP配置数据 */

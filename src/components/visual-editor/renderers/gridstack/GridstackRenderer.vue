@@ -32,9 +32,9 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useEditorStore } from '@/store/modules/editor'
 import { useWidgetStore } from '@/store/modules/widget'
-import { globalPreviewMode } from '../../hooks/usePreviewMode'
-import BaseRendererComponent from '../base/BaseRendererComponent.vue'
-import GridLayoutPlusWrapper from './GridLayoutPlusWrapper.vue'
+import { globalPreviewMode } from '@/components/visual-editor/hooks/usePreviewMode'
+import BaseRendererComponent from '@/components/visual-editor/renderers/base/BaseRendererComponent.vue'
+import GridLayoutPlusWrapper from '@/components/visual-editor/renderers/gridstack/GridLayoutPlusWrapper.vue'
 // 🔥 添加配置事件监听
 import { configEventBus, type ConfigChangeEvent } from '@/core/data-architecture/ConfigEventBus'
 // 🔥 添加数据源直接获取

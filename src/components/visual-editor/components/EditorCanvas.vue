@@ -43,8 +43,8 @@
 import { computed, ref, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCanvasStore } from '@/components/panelv2/store/canvasStore'
-import { TextWidget, ImageWidget } from '../widgets'
-import { isEditorItem, getWidgetType } from '../utils/adapter'
+import { TextWidget, ImageWidget } from '@/components/visual-editor/widgets'
+import { isEditorItem, getWidgetType } from '@/components/visual-editor/utils/adapter'
 import type { BaseCanvasItem } from '@/components/panelv2/types/core'
 
 // 使用canvas store

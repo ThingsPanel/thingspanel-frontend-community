@@ -30,19 +30,19 @@ import {
 } from 'naive-ui'
 import { type EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
 import { generateVariableName } from '@/core/data-architecture/types/http-config'
-import { getRecommendedTemplates, getTemplateById, ParameterTemplateType } from './templates/index'
+import { getRecommendedTemplates, getTemplateById, ParameterTemplateType } from '@/core/data-architecture/components/common/templates/index'
 
 // 导入组件模板使用的组件（简化版）
 import DeviceMetricsSelector from '@/components/device-selectors/DeviceMetricsSelector.vue'
 import DeviceDispatchSelector from '@/components/device-selectors/DeviceDispatchSelector.vue'
-import ComponentPropertySelector from './ComponentPropertySelector.vue'
-import AddParameterFromDevice from './AddParameterFromDevice.vue'
+import ComponentPropertySelector from '@/core/data-architecture/components/common/ComponentPropertySelector.vue'
+import AddParameterFromDevice from '@/core/data-architecture/components/common/AddParameterFromDevice.vue'
 // 导入新的统一设备配置选择器
-import UnifiedDeviceConfigSelector from '../device-selectors/UnifiedDeviceConfigSelector.vue'
+import UnifiedDeviceConfigSelector from '@/core/data-architecture/components/device-selectors/UnifiedDeviceConfigSelector.vue'
 // 导入设备参数选择器
-import DeviceParameterSelector from '../device-selectors/DeviceParameterSelector.vue'
+import DeviceParameterSelector from '@/core/data-architecture/components/device-selectors/DeviceParameterSelector.vue'
 // 导入参数组管理工具
-import { globalParameterGroupManager } from '../../utils/device-parameter-generator'
+import { globalParameterGroupManager } from '@/core/data-architecture/utils/device-parameter-generator'
 import {
   Sparkles as SparkleIcon,
   AddCircleOutline as AddIcon,

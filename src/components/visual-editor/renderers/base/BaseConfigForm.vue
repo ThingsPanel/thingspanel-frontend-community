@@ -135,8 +135,8 @@
 import { reactive, watch, computed, onMounted, onUnmounted, shallowReactive } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
-import { configurationManager } from '../../configuration'
-import type { BaseConfiguration } from '../../configuration/types'
+import { configurationManager } from '@/components/visual-editor/configuration'
+import type { BaseConfiguration } from '@/components/visual-editor/configuration/types'
 import type { MetricItem } from '@/card2.1/core/types'
 
 // 接收props

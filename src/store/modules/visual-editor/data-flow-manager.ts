@@ -3,9 +3,9 @@
  * 统一处理用户操作 → 状态更新 → 视图刷新的完整数据流
  */
 
-import { useUnifiedEditorStore } from './unified-editor'
-import { useConfigurationService } from './configuration-service'
-import type { GraphData, WidgetConfiguration } from './unified-editor'
+import { useUnifiedEditorStore } from '@/store/modules/visual-editor/unified-editor'
+import { useConfigurationService } from '@/store/modules/visual-editor/configuration-service'
+import type { GraphData, WidgetConfiguration } from '@/store/modules/visual-editor/unified-editor'
 
 /**
  * 用户操作类型定义

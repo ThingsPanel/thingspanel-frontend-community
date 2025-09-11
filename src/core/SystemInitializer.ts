@@ -3,9 +3,9 @@
  * 整合所有子系统的初始化流程，提供统一的启动和状态管理
  */
 
-import { optimizedConfigurationManager } from './data-architecture/configuration/OptimizedConfigurationManager'
-import { optimizedInitializationManager } from '../card2.1/core/OptimizedInitializationManager'
-import { typeCompatibilityChecker } from './data-architecture/TypeCompatibilityChecker'
+import { optimizedConfigurationManager } from '@/core/data-architecture/configuration/OptimizedConfigurationManager'
+import { optimizedInitializationManager } from '@/card2.1/core/OptimizedInitializationManager'
+import { typeCompatibilityChecker } from '@/core/data-architecture/TypeCompatibilityChecker'
 
 /**
  * 子系统状态枚举

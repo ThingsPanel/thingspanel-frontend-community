@@ -14,7 +14,7 @@
 import { computed, h } from 'vue'
 import { NIcon } from 'naive-ui'
 import { CopyOutline, TrashOutline, SettingsOutline, LockClosedOutline, LockOpenOutline } from '@vicons/ionicons5'
-import type { VisualEditorWidget } from '../../types'
+import type { VisualEditorWidget } from '@/components/visual-editor/types'
 
 interface Props {
   show: boolean

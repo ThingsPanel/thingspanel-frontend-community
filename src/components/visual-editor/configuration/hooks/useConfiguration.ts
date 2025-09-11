@@ -4,8 +4,8 @@
  */
 
 import { ref, computed, watch, onUnmounted } from 'vue'
-import { configurationIntegrationBridge as configurationManager } from '../ConfigurationIntegrationBridge'
-import type { WidgetConfiguration, ValidationResult } from '../types'
+import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
+import type { WidgetConfiguration, ValidationResult } from '@/components/visual-editor/configuration/types'
 
 export interface UseConfigurationOptions {
   /** 组件ID */

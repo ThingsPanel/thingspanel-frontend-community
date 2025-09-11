@@ -12,7 +12,7 @@ import type {
   DeviceInfo,
   DeviceMetric
 } from '../types/device-parameter-group'
-import type { EnhancedParameter } from '../types/parameter-editor'
+import type { EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
 
 /**
  * 生成唯一的参数组ID

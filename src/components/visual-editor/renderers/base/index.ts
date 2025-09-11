@@ -16,7 +16,7 @@ export {
 } from './BaseRenderer'
 
 // Vue 组件基础渲染器
-export { default as BaseRendererComponent } from './BaseRendererComponent.vue'
+export { default as BaseRendererComponent } from '@/components/visual-editor/renderers/base/BaseRendererComponent.vue'
 
 // 渲染器管理器
 export {

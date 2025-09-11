@@ -4,16 +4,16 @@
  */
 
 // Canvas渲染器 (当前主要渲染器)
-export { CanvasRenderer } from './canvas'
+export { CanvasRenderer } from '@/components/visual-editor/renderers/canvas'
 
 // GridStack渲染器
-export { GridstackRenderer } from './gridstack'
+export { GridstackRenderer } from '@/components/visual-editor/renderers/gridstack'
 
 // 待实现的渲染器
-// export { KanbanRenderer } from './kanban'  // 看板渲染器 (二期功能)
-// export { DashboardRenderer } from './dashboard'
-// export { ReportRenderer } from './report'
-// export { ThreeDRenderer } from './three-d'
+// export { KanbanRenderer } from '@/components/visual-editor/renderers/kanban'  // 看板渲染器 (二期功能)
+// export { DashboardRenderer } from '@/components/visual-editor/renderers/dashboard'
+// export { ReportRenderer } from '@/components/visual-editor/renderers/report'
+// export { ThreeDRenderer } from '@/components/visual-editor/renderers/three-d'
 
 /**
  * 渲染器接口规范

@@ -6,12 +6,12 @@
  */
 
 import { inject, provide, watchEffect } from 'vue'
-import { useEditorStore } from '../store/editor'
-import { useWidgetStore, type WidgetDefinition } from '../store/widget'
+import { useEditorStore } from '@/components/visual-editor/store/editor'
+import { useWidgetStore, type WidgetDefinition } from '@/components/visual-editor/store/widget'
 import { useComponentTree as useCard2Integration } from '@/card2.1/hooks/useComponentTree'
 import { configRegistry } from '@/core/interaction-system'
 // 数据源注册已移除
-import type { GraphData, WidgetType } from '../types'
+import type { GraphData, WidgetType } from '@/components/visual-editor/types'
 import type { ComponentDefinition } from '@/card2.1/core/types'
 
 // 拖拽数据接口

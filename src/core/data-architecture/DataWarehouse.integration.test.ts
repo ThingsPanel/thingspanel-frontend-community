@@ -3,8 +3,8 @@
  * 测试 DataWarehouse 与 SimpleDataBridge 的集成功能
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { simpleDataBridge, type ComponentDataRequirement } from './SimpleDataBridge'
-import { dataWarehouse } from './DataWarehouse'
+import { simpleDataBridge, type ComponentDataRequirement } from '@/core/data-architecture/SimpleDataBridge'
+import { dataWarehouse } from '@/core/data-architecture/DataWarehouse'
 
 // Mock UnifiedDataExecutor 以避免实际网络请求
 vi.mock('./UnifiedDataExecutor', () => ({
@@ -13,7 +13,7 @@ vi.mock('./UnifiedDataExecutor', () => ({
   }
 }))
 
-import { unifiedDataExecutor } from './UnifiedDataExecutor'
+import { unifiedDataExecutor } from '@/core/data-architecture/UnifiedDataExecutor'
 
 describe('DataWarehouse 与 SimpleDataBridge 集成测试', () => {
   beforeEach(() => {

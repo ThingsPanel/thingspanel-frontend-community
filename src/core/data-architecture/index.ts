@@ -8,16 +8,16 @@
  */
 
 // 多层级执行器链 (v1.0)
-export * from './executors'
+export * from '@/core/data-architecture/executors'
 
 // 增强版类型系统 (v2.0)
-export * from './types'
+export * from '@/core/data-architecture/types'
 
 // 配置适配器系统
-export * from './adapters'
+export * from '@/core/data-architecture/adapters'
 
 // 配置生成模块
-export * from './config-generation'
+export * from '@/core/data-architecture/config-generation'
 
 // 便捷功能导出
 export {
@@ -28,15 +28,15 @@ export {
 } from './executors/example-usage'
 
 // 简易配置系统 (SUBTASK-010)
-export { ConfigurationManager, configurationManager, type ConfigurationTemplate } from './services/ConfigurationManager'
+export { ConfigurationManager, configurationManager, type ConfigurationTemplate } from '@/core/data-architecture/services/ConfigurationManager'
 
 // 简易配置编辑器组件
-export { default as SimpleConfigurationEditor } from './components/SimpleConfigurationEditor.vue'
+export { default as SimpleConfigurationEditor } from '@/core/data-architecture/components/SimpleConfigurationEditor.vue'
 
 // 版本信息
-export { EXECUTOR_CHAIN_VERSION } from './executors'
-export { TYPE_SYSTEM_VERSION, SUPPORTED_CONFIG_VERSIONS } from './types'
-export { ADAPTER_VERSION } from './adapters'
+export { EXECUTOR_CHAIN_VERSION } from '@/core/data-architecture/executors'
+export { TYPE_SYSTEM_VERSION, SUPPORTED_CONFIG_VERSIONS } from '@/core/data-architecture/types'
+export { ADAPTER_VERSION } from '@/core/data-architecture/adapters'
 
 // 数据架构系统版本信息
 export const DATA_ARCHITECTURE_VERSION = {
@@ -63,4 +63,4 @@ export type {
 } from './executors'
 
 // 原有核心组件 (仅在需要时导出)
-// export { UnifiedDataExecutor } from './UnifiedDataExecutor'
+// export { UnifiedDataExecutor } from '@/core/data-architecture/UnifiedDataExecutor'

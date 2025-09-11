@@ -11,7 +11,7 @@
 import { ref, computed, watch } from 'vue'
 import { NSelect, NSpace, NText, NIcon, NButton, NAlert, NDivider } from 'naive-ui'
 import { PhonePortraitOutline as DeviceIcon, BarChartOutline as MetricIcon } from '@vicons/ionicons5'
-import type { DeviceInfo, DeviceMetric } from '../../types/device-parameter-group'
+import type { DeviceInfo, DeviceMetric } from '@/core/data-architecture/types/device-parameter-group'
 import type { SelectOption } from 'naive-ui'
 
 interface Props {

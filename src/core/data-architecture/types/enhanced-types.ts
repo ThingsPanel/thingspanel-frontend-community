@@ -18,9 +18,9 @@ import type {
   ScriptDataItemConfig
 } from '../executors/DataItemFetcher'
 
-import type { ProcessingConfig } from '../executors/DataItemProcessor'
+import type { ProcessingConfig } from '@/core/data-architecture/executors/DataItemProcessor'
 
-import type { MergeStrategy } from '../executors/DataSourceMerger'
+import type { MergeStrategy } from '@/core/data-architecture/executors/DataSourceMerger'
 
 import type {
   DataSourceConfiguration as LegacyDataSourceConfiguration,

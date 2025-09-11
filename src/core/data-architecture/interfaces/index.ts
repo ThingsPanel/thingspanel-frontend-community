@@ -4,7 +4,7 @@
  */
 
 // 编辑器大数据管理
-export type { IEditorDataManager, EditorData, EditorDataChangeEvent } from './IEditorDataManager'
+export type { IEditorDataManager, EditorData, EditorDataChangeEvent } from '@/core/data-architecture/interfaces/IEditorDataManager'
 
 // 组件配置管理
 export type {
@@ -31,7 +31,7 @@ export type {
 } from './IComponentDataManager'
 
 // 简化数据桥接器 (新架构)
-export { SimpleDataBridge, simpleDataBridge, createSimpleDataBridge } from '../SimpleDataBridge'
+export { SimpleDataBridge, simpleDataBridge, createSimpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
 
 export type {
   SimpleDataSourceConfig,
@@ -49,7 +49,7 @@ export {
 } from '../ConfigToSimpleDataAdapter'
 
 // Visual Editor 桥接器
-export { visualEditorBridge, VisualEditorBridge, getVisualEditorBridge } from '../VisualEditorBridge'
+export { visualEditorBridge, VisualEditorBridge, getVisualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
 
 /**
  * 数据架构设计原则：

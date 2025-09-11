@@ -5,11 +5,11 @@
 
 import { ref, computed, watch, nextTick } from 'vue'
 import { useMessage } from 'naive-ui'
-import type { LayoutContainer, LayoutItem } from '../types/layout'
+import type { LayoutContainer, LayoutItem } from '@/components/visual-editor/types/layout'
 import type { ICardView, PanelConfig } from '@/card2.1/core/types/legacy'
 import { usePanelConfigAdapter } from '@/card2.1/core/adapters/PanelConfigAdapter'
-import { useThemeIntegration } from '../theme/ThemeIntegration'
-import usePanelManager from './usePanelManager'
+import { useThemeIntegration } from '@/components/visual-editor/theme/ThemeIntegration'
+import usePanelManager from '@/components/visual-editor/composables/usePanelManager'
 import { createLogger } from '@/utils/logger'
 
 const logger = createLogger('PanelIntegration')

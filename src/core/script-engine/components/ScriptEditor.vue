@@ -155,8 +155,8 @@ import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useThemeStore } from '@/store/modules/theme'
 import { PlayOutline, CodeOutline, ExpandOutline, ContractOutline } from '@vicons/ionicons5'
-import { defaultScriptEngine } from '../script-engine'
-import type { ScriptExecutionResult, ScriptTemplate, TemplateCategory } from '../types'
+import { defaultScriptEngine } from '@/core/script-engine/script-engine'
+import type { ScriptExecutionResult, ScriptTemplate, TemplateCategory } from '@/core/script-engine/types'
 
 interface Props {
   /** 脚本代码 */

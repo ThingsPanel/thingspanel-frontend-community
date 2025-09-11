@@ -11,7 +11,7 @@ import type {
   ExecutionStats,
   ScriptLog
 } from './types'
-import { ScriptSandbox, defaultSandboxConfig } from './sandbox'
+import { ScriptSandbox, defaultSandboxConfig } from '@/core/script-engine/sandbox'
 
 /**
  * 脚本执行器实现类

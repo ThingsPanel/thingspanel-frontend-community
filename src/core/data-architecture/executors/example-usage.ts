@@ -3,7 +3,7 @@
  * 展示如何在实际项目中使用4层数据处理管道
  */
 
-import { createExecutorChain, DataSourceConfiguration, ExecutionResult } from './index'
+import { createExecutorChain, DataSourceConfiguration, ExecutionResult } from '@/core/data-architecture/executors/index'
 
 /**
  * 创建示例配置数据生成器

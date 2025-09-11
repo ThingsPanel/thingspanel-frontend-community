@@ -10,8 +10,8 @@
 
 import { ref, reactive, computed, watch, nextTick, onMounted } from 'vue'
 import { useMessage } from 'naive-ui'
-import { DataItemFetcher, type DataItem } from '../../executors'
-import HttpConfigForm from './HttpConfigForm.vue'
+import { DataItemFetcher, type DataItem } from '@/core/data-architecture/executors'
+import HttpConfigForm from '@/core/data-architecture/components/modals/HttpConfigForm.vue'
 // 🔥 简洁脚本编辑器
 import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
 

@@ -5,10 +5,10 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { NModal, useThemeVars, NSpace, NButton, NSelect, NDivider, NPopconfirm, NTooltip, useMessage } from 'naive-ui'
-import CommonToolbar from './CommonToolbar.vue'
+import CommonToolbar from '@/components/visual-editor/components/toolbar/CommonToolbar.vue'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
-import RendererConfigDropdown from './RendererConfigDropdown.vue'
+import RendererConfigDropdown from '@/components/visual-editor/components/toolbar/RendererConfigDropdown.vue'
 
 interface Props {
   mode: 'edit' | 'preview'

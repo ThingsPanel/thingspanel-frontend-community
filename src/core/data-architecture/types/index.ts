@@ -33,7 +33,7 @@ export type {
 } from '../executors'
 
 // ==================== 增强版类型系统导出 ====================
-export type { EnhancedParameter } from './parameter-editor'
+export type { EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
 export type {
   // 泛型配置类型
   DataItemConfig,
@@ -102,13 +102,13 @@ export type {
 } from './simple-types'
 
 // ==================== 类型守卫和工具导出 ====================
-export { isEnhancedConfiguration, isGenericDataItemConfig, isEnhancedHttpConfig } from './enhanced-types'
+export { isEnhancedConfiguration, isGenericDataItemConfig, isEnhancedHttpConfig } from '@/core/data-architecture/types/enhanced-types'
 
 // ==================== 默认配置导出 ====================
-export { DEFAULT_ENHANCED_FEATURES, ConfigurationVersionEnum } from './enhanced-types'
+export { DEFAULT_ENHANCED_FEATURES, ConfigurationVersionEnum } from '@/core/data-architecture/types/enhanced-types'
 
 // 简化数据源系统常量
-export { SIMPLE_DATA_SOURCE_CONSTANTS, FIELD_TYPE_MAPPING } from './simple-types'
+export { SIMPLE_DATA_SOURCE_CONSTANTS, FIELD_TYPE_MAPPING } from '@/core/data-architecture/types/simple-types'
 
 // ==================== 类型系统版本信息 ====================
 export const TYPE_SYSTEM_VERSION = {
@@ -133,5 +133,5 @@ export const TYPE_SYSTEM_FEATURES = {
   BACKWARD_COMPATIBILITY: true
 } as const
 
-export * from './enhanced-types'
-export * from './parameter-editor'
+export * from '@/core/data-architecture/types/enhanced-types'
+export * from '@/core/data-architecture/types/parameter-editor'
