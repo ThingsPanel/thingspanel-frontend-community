@@ -219,7 +219,9 @@ const updateConfig = () => {
 
     // 保持向后兼容：设置pathParameter
     const firstParam = config.pathParams[0]
-    console.log('🔧 [HttpConfigForm] 转换pathParameter前:', JSON.stringify(firstParam, null, 2))
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 [HttpConfigForm] 转换pathParameter前:', JSON.stringify(firstParam, null, 2))
+    }
 
     config.pathParameter = {
       value: firstParam.value,
@@ -234,7 +236,9 @@ const updateConfig = () => {
       enabled: firstParam.enabled
     }
 
-    console.log('✅ [HttpConfigForm] 转换pathParameter后:', JSON.stringify(config.pathParameter, null, 2))
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ [HttpConfigForm] 转换pathParameter后:', JSON.stringify(config.pathParameter, null, 2))
+    }
   } else {
     config.pathParameter = undefined
     config.pathParams = []

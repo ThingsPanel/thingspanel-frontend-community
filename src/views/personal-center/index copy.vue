@@ -110,7 +110,9 @@ function changeBtnType(btn: any) {
 }
 /** 更新用户信息 */
 async function updataUserInfo() {
-  console.log('user', userInfoData.value)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('user', userInfoData.value)
+  }
 
   const { error } = await changeInformation(userInfoData.value)
   if (!error) {

@@ -93,7 +93,9 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
           rawTree: tree
         })
 
-        console.log('🔧 [useComponentTree] 赋值前 componentTree.value:', componentTree.value)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔧 [useComponentTree] 赋值前 componentTree.value:', componentTree.value)
+        }
       }
       componentTree.value = tree
       if (process.env.NODE_ENV === 'development') {

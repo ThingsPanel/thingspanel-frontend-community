@@ -621,7 +621,9 @@ const updateParameter = (param: EnhancedParameter, index: number) => {
   updatedParams[index] = { ...param }
 
   // 🔥 调试：监听参数更新
-  console.log(`🔧 [DynamicParameterEditor] 参数更新 [${index}]:`, JSON.stringify(param, null, 2))
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔧 [DynamicParameterEditor] 参数更新 [${index}]:`, JSON.stringify(param, null, 2))
+  }
 
   emit('update:modelValue', updatedParams)
 }

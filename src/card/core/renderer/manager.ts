@@ -46,7 +46,9 @@ export class RendererManager implements IRendererManager {
       this.configs.set(type, config)
     }
 
-    console.log(`[RendererManager] 注册渲染器: ${type}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[RendererManager] 注册渲染器: ${type}`)
+    }
   }
 
   /**
@@ -67,7 +69,9 @@ export class RendererManager implements IRendererManager {
       this.renderers.delete(type)
       this.configs.delete(type)
 
-      console.log(`[RendererManager] 注销渲染器: ${type}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[RendererManager] 注销渲染器: ${type}`)
+      }
     }
   }
 
@@ -112,7 +116,9 @@ export class RendererManager implements IRendererManager {
 
     this.contexts.set(contextId, context)
 
-    console.log(`[RendererManager] 创建渲染上下文: ${contextId} (${rendererType})`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[RendererManager] 创建渲染上下文: ${contextId} (${rendererType})`)
+    }
     return context
   }
 
@@ -148,7 +154,9 @@ export class RendererManager implements IRendererManager {
     }
 
     this.contexts.delete(contextId)
-    console.log(`[RendererManager] 销毁渲染上下文: ${contextId}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[RendererManager] 销毁渲染上下文: ${contextId}`)
+    }
   }
 
   /**
@@ -175,7 +183,9 @@ export class RendererManager implements IRendererManager {
       context.state = 'idle'
       context.lastUsedAt = Date.now()
 
-      console.log(`[RendererManager] 渲染组件实例: ${instance.id} 在上下文 ${contextId}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[RendererManager] 渲染组件实例: ${instance.id} 在上下文 ${contextId}`)
+      }
     } catch (error) {
       context.state = 'error'
       console.error(`[RendererManager] 渲染失败:`, error)
@@ -206,7 +216,9 @@ export class RendererManager implements IRendererManager {
 
       context.lastUsedAt = Date.now()
 
-      console.log(`[RendererManager] 更新组件实例: ${instanceId}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[RendererManager] 更新组件实例: ${instanceId}`)
+      }
     } catch (error) {
       console.error(`[RendererManager] 更新失败:`, error)
       throw error
@@ -232,7 +244,9 @@ export class RendererManager implements IRendererManager {
       // 从上下文中移除实例
       context.instances.delete(instanceId)
 
-      console.log(`[RendererManager] 销毁组件实例: ${instanceId}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[RendererManager] 销毁组件实例: ${instanceId}`)
+      }
     } catch (error) {
       console.error(`[RendererManager] 销毁实例失败:`, error)
     }
@@ -255,7 +269,9 @@ export class RendererManager implements IRendererManager {
       throw new Error(`渲染器 ${type} 未注册`)
     }
     this.defaultRendererType = type
-    console.log(`[RendererManager] 设置默认渲染器: ${type}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[RendererManager] 设置默认渲染器: ${type}`)
+    }
   }
 
   /**
@@ -303,7 +319,9 @@ export class RendererManager implements IRendererManager {
     })
 
     if (contextsToDestroy.length > 0) {
-      console.log(`[RendererManager] 清理了 ${contextsToDestroy.length} 个空闲上下文`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[RendererManager] 清理了 ${contextsToDestroy.length} 个空闲上下文`)
+      }
     }
   }
 
@@ -331,7 +349,9 @@ export class RendererManager implements IRendererManager {
   private initializeDefaultRenderers(): void {
     // 这里可以注册默认的渲染器
     // 实际的渲染器实现将在具体的渲染器文件中定义
-    console.log('[RendererManager] 渲染器管理器已初始化')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[RendererManager] 渲染器管理器已初始化')
+    }
   }
 }
 
@@ -359,7 +379,9 @@ class ResourcePool implements IResourcePool {
       resource = factory()
       this.resources.set(key, resource)
       this.createdTimes.set(key, Date.now())
-      console.log(`[ResourcePool] 创建资源: ${key}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[ResourcePool] 创建资源: ${key}`)
+      }
     }
 
     if (resource) {
@@ -377,7 +399,9 @@ class ResourcePool implements IResourcePool {
   set(key: string, resource: any): void {
     this.resources.set(key, resource)
     this.createdTimes.set(key, Date.now())
-    console.log(`[ResourcePool] 设置资源: ${key}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[ResourcePool] 设置资源: ${key}`)
+    }
   }
 
   /**
@@ -388,7 +412,9 @@ class ResourcePool implements IResourcePool {
     this.resources.delete(key)
     this.usageCounts.delete(key)
     this.createdTimes.delete(key)
-    console.log(`[ResourcePool] 删除资源: ${key}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[ResourcePool] 删除资源: ${key}`)
+    }
   }
 
   /**
@@ -398,7 +424,9 @@ class ResourcePool implements IResourcePool {
     this.resources.clear()
     this.usageCounts.clear()
     this.createdTimes.clear()
-    console.log('[ResourcePool] 资源池已清理')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ResourcePool] 资源池已清理')
+    }
   }
 
   /**

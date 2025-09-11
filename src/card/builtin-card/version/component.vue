@@ -74,7 +74,9 @@ onMounted(async () => {
 
   // 比较版本信息
   if (latestVersion.value && version.value && latestVersion.value === version.value) {
-    console.log('最新版本')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('最新版本')
+    }
     isLatestVersion.value = true
   }
 })

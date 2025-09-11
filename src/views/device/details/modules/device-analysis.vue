@@ -57,7 +57,9 @@ const handleLook = (id: string) => {
   // routerPushByKey('device_details-child', {
   //   query: { d_id: id }
   // }).catch(error => {
-  //   console.log('error----', error);
+  //   if (process.env.NODE_ENV === 'development') {
+    console.log('error----', error)
+  };
   // });
 }
 

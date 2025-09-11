@@ -131,7 +131,9 @@ export function usePanelLifecycleManager(dependencies: {
       }
     })
 
-    console.log(`📊 [restoreMultiDataSourceConfigs] 配置恢复完成: ${restoredCount} 成功, ${skippedCount} 跳过`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📊 [restoreMultiDataSourceConfigs] 配置恢复完成: ${restoredCount} 成功, ${skippedCount} 跳过`)
+    }
     return { restored, restoredCount, skippedCount }
   }
 
@@ -160,7 +162,9 @@ export function usePanelLifecycleManager(dependencies: {
       async (newFlag, oldFlag) => {
         // 当 reloadFlag 从 false 变为 true 时，说明页签刷新完成，需要重新初始化
         if (newFlag && !oldFlag && dependencies.dataFetched.value) {
-          console.log('🔄 [PanelEditor] 检测到页签刷新，重新初始化面板数据')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔄 [PanelEditor] 检测到页签刷新，重新初始化面板数据')
+          }
           try {
             // 重新初始化面板数据和配置
             await dependencies.initializePanelData()

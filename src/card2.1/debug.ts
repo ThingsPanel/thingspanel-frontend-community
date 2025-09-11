@@ -17,7 +17,9 @@ export async function testPermissionSystem() {
     return
   }
 
-  console.log('🧪 [Debug] 开始测试权限系统...')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🧪 [Debug] 开始测试权限系统...')
+  }
 
   // 1. 初始化系统
   await initializeCard2System()
@@ -85,7 +87,9 @@ export function simulateUserPermission(permission: string) {
     return
   }
 
-  console.log(`🔄 [Debug] 模拟用户权限: ${permission}`)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔄 [Debug] 模拟用户权限: ${permission}`)
+  }
 
   // 模拟修改本地存储中的用户权限
   const mockUserInfo = {

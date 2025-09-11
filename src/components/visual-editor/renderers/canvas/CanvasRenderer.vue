@@ -372,7 +372,9 @@ const handleCard2Error = (error: Error) => {
 }
 
 const handleTitleUpdate = (nodeId: string, newTitle: string) => {
-  console.log(`[CanvasRenderer] 标题更新: ${nodeId} -> "${newTitle}"`)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[CanvasRenderer] 标题更新: ${nodeId} -> "${newTitle}"`)
+  }
 }
 */
 </script>

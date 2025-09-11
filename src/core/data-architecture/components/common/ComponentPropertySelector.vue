@@ -474,9 +474,11 @@ const getEmptyStateDescription = () => {
  * 组件挂载时获取数据
  */
 onMounted(() => {
-  console.log('🔍 [ComponentPropertySelector] 属性暴露注册表状态:', {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 [ComponentPropertySelector] 属性暴露注册表状态:', {
     registrations: Array.from((propertyExposureRegistry as any).registrations.keys())
   })
+  }
 
   fetchTreeData()
 

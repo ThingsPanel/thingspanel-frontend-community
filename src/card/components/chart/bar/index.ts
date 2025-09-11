@@ -140,7 +140,9 @@ const useBarChartLogic = () => {
    * @param context 组件上下文
    */
   const onMounted = async (context: any) => {
-    console.log('[BarChart] 组件已挂载', context.config)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[BarChart] 组件已挂载', context.config)
+    }
 
     // 初始化图表配置
     if (!context.config.chart) {
@@ -161,7 +163,9 @@ const useBarChartLogic = () => {
    * @param context 组件上下文
    */
   const onUnmounted = async (context: any) => {
-    console.log('[BarChart] 组件已卸载')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[BarChart] 组件已卸载')
+    }
     // 清理资源
   }
 
@@ -171,7 +175,9 @@ const useBarChartLogic = () => {
    * @param oldConfig 旧配置
    */
   const onConfigChanged = async (newConfig: any, oldConfig: any) => {
-    console.log('[BarChart] 配置已变更', { newConfig, oldConfig })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[BarChart] 配置已变更', { newConfig, oldConfig })
+    }
     // 处理配置变更逻辑
   }
 

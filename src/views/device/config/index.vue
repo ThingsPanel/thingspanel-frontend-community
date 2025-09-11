@@ -148,7 +148,9 @@ const handlePageSizeChange = (pageSize: number) => {
 // 排序处理
 const handleSorterChange = (sorter: any) => {
   // 根据需要实现排序逻辑
-  console.log('Sorter changed:', sorter)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Sorter changed:', sorter)
+  }
 }
 
 // 刷新数据

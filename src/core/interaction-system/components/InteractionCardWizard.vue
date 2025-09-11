@@ -263,7 +263,9 @@ const editorStore = useEditorStore()
 // 保持向后兼容
 const visualEditorState = {
   getAvailableComponents: () => {
-    console.log('🔥 [InteractionCardWizard] editorStore.nodes:', editorStore.nodes)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔥 [InteractionCardWizard] editorStore.nodes:', editorStore.nodes)
+    }
     return editorStore.nodes || []
   }
 }
@@ -334,10 +336,14 @@ const actionTypeOptions = computed(() => [
 
 // ✅ 动态获取当前画布上的组件（用于目标组件选择）
 const componentOptions = computed(() => {
-  console.log('🔥 [InteractionCardWizard] 计算 componentOptions')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔥 [InteractionCardWizard] 计算 componentOptions')
+  }
   const components = visualEditorState.getAvailableComponents()
   console.log('🔥 [InteractionCardWizard] 获取到的组件列表:', components)
-  console.log('🔥 [InteractionCardWizard] visualEditorState:', visualEditorState)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔥 [InteractionCardWizard] visualEditorState:', visualEditorState)
+  }
 
   const options = components.map(comp => ({
     // 优先使用标题，然后是名称，最后是ID的前8位
@@ -346,7 +352,9 @@ const componentOptions = computed(() => {
     componentType: comp.type // 保存组件类型，用于获取可响应属性
   }))
 
-  console.log('🔥 [InteractionCardWizard] 转换后的选项:', options)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔥 [InteractionCardWizard] 转换后的选项:', options)
+  }
   return options
 })
 
@@ -445,7 +453,9 @@ const targetPropertyOptions = computed(() => {
   })
 
   const options = groupedOptions.length > 0 ? groupedOptions : []
-  console.log('🚀 [InteractionCardWizard] targetPropertyOptions:', options)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🚀 [InteractionCardWizard] targetPropertyOptions:', options)
+  }
   return options
 })
 
@@ -536,7 +546,9 @@ const availablePropertyOptions = computed(() => {
   })
 
   const options = groupedOptions.length > 0 ? groupedOptions : []
-  console.log('🚀 [InteractionCardWizard] availablePropertyOptions:', options)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🚀 [InteractionCardWizard] availablePropertyOptions:', options)
+  }
   return options
 })
 

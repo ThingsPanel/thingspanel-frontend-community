@@ -87,7 +87,9 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
 
     for (const [deviceMetricsId, socket] of socketMap.entries()) {
       if (!uniqueDeviceMetricsIds.includes(deviceMetricsId)) {
-        console.log(`Closing and removing an old socket: ${deviceMetricsId}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Closing and removing an old socket: ${deviceMetricsId}`)
+        }
         socket.close()
         socketMap.delete(deviceMetricsId)
       }
@@ -101,7 +103,9 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
       }
 
       if (!socketMap.has(deviceMetricsId)) {
-        console.log(`Attempting to create WebSocket for: ${deviceMetricsId}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Attempting to create WebSocket for: ${deviceMetricsId}`)
+        }
         const { ws, send, close, status } = useWebSocket(wsUrl, {
           autoReconnect: {
             retries: 3,
@@ -130,7 +134,9 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
             }
           },
           onConnected(wsInstance: WebSocket) {
-            console.log(`WebSocket connected for: ${deviceMetricsId}, status: ${status.value}`)
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`WebSocket connected for: ${deviceMetricsId}, status: ${status.value}`)
+            }
             if (!deviceId || !metricsId) {
               console.error('onConnected: deviceId or metricsId is undefined before send for', deviceMetricsId)
               close() // Close the connection if vital info is missing
@@ -158,7 +164,9 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
   }
 
   const closeAllSockets = () => {
-    console.log('Closing all WebSockets')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Closing all WebSockets')
+    }
     socketMap.forEach((socket, key) => {
       console.log(`Closing socket: ${key}`)
       socket.close()

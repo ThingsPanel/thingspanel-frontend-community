@@ -21,7 +21,9 @@ const cardData = ref<any>({
 const getData = async () => {
   try {
     const { data } = await tenant()
-    console.log('Tenant board data response:', data)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Tenant board data response:', data)
+    }
 
     if (data && typeof data.user_total === 'number') {
       cardData.value.value = data.user_total || 0

@@ -697,12 +697,14 @@ const loadWidgetConfiguration = async (widgetId: string) => {
         })
       }
 
-      console.log(`📋 [ConfigurationPanel] 配置加载完成`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`📋 [ConfigurationPanel] 配置加载完成`, {
         widgetId,
         原始配置: config.component,
         交互状态: latestInteractionState,
         合并结果: mergedComponentConfig
       })
+      }
     }
   } catch (error) {
     message.error($t('visualEditor.configLoadFailed'))

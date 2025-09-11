@@ -417,7 +417,9 @@ export function demonstratePureJsonConfig() {
       try {
         const parsedData = JSON.parse(jsonConfig.jsonData)
         const keys = Object.keys(parsedData).slice(0, 3) // 只显示前3个键
-        console.log('  - JSON数据键:', keys.join(', ') + (Object.keys(parsedData).length > 3 ? '...' : ''))
+        if (process.env.NODE_ENV === 'development') {
+          console.log('  - JSON数据键:', keys.join(', ') + (Object.keys(parsedData).length > 3 ? '...' : ''))
+        }
       } catch (e) {
         console.log('  - JSON数据: 解析错误')
       }
@@ -425,7 +427,9 @@ export function demonstratePureJsonConfig() {
   })
 
   // 3. 增强功能状态
-  console.log('\n增强功能状态:')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('\n增强功能状态:')
+  }
   const features = pureJsonConfigExample.enhancedFeatures
 }
 

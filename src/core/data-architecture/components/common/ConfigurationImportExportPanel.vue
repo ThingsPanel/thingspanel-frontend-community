@@ -369,10 +369,12 @@ const handleExportConfiguration = async (): Promise<void> => {
       throw new Error(t('configuration.export.noManagerError'))
     }
 
-    console.log('🔄 [ConfigurationExportPanel] 开始导出配置', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 [ConfigurationExportPanel] 开始导出配置', {
       componentId: props.componentId,
       componentType: props.componentType
     })
+    }
 
     // 执行导出
     const exportResult = await configurationExporter.exportConfiguration(
@@ -399,10 +401,12 @@ const handleExportConfiguration = async (): Promise<void> => {
     message.success(t('configuration.export.success'))
     emit('exportSuccess', exportResult)
 
-    console.log('✅ [ConfigurationExportPanel] 配置导出成功', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ [ConfigurationExportPanel] 配置导出成功', {
       fileName,
       dataSize: JSON.stringify(exportResult).length
     })
+    }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     console.error('❌ [ConfigurationExportPanel] 配置导出失败:', error)
@@ -465,10 +469,12 @@ const handleSingleDataSourceExport = async (sourceId: string): Promise<void> => 
       throw new Error(t('configuration.export.noManagerError'))
     }
 
-    console.log('🔄 [ConfigurationExportPanel] 开始导出单数据源', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 [ConfigurationExportPanel] 开始导出单数据源', {
       componentId: props.componentId,
       sourceId
     })
+    }
 
     // 执行单数据源导出
     const exportResult = await singleDataSourceExporter.exportSingleDataSource(
@@ -496,11 +502,13 @@ const handleSingleDataSourceExport = async (sourceId: string): Promise<void> => 
     message.success(t('configuration.export.success'))
     emit('exportSuccess', exportResult)
 
-    console.log('✅ [ConfigurationExportPanel] 单数据源导出成功', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ [ConfigurationExportPanel] 单数据源导出成功', {
       sourceId,
       fileName,
       dataSize: JSON.stringify(exportResult).length
     })
+    }
 
     // 关闭模态框
     showSingleDataSourceModal.value = false
@@ -551,11 +559,13 @@ const handlePreviewImport = async (): Promise<void> => {
     const fileContent = await readFileAsText(importFile.value)
     const importData = JSON.parse(fileContent)
 
-    console.log('🔄 [ConfigurationExportPanel] 生成导入预览', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 [ConfigurationExportPanel] 生成导入预览', {
       fileName: importFile.value.name,
       fileSize: importFile.value.size,
       dataType: importData.type
     })
+    }
 
     // 判断是否为单数据源文件
     if (importData.type === 'singleDataSource') {
@@ -651,10 +661,12 @@ const handleSingleDataSourceImport = async (): Promise<void> => {
     const fileContent = await readFileAsText(importFile.value)
     const importData = JSON.parse(fileContent)
 
-    console.log('🔄 [ConfigurationExportPanel] 开始单数据源导入', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 [ConfigurationExportPanel] 开始单数据源导入', {
       fileName: importFile.value.name,
       targetSlot: selectedTargetSlot.value
     })
+    }
 
     // 执行导入
     await singleDataSourceImporter.importSingleDataSource(
@@ -667,9 +679,11 @@ const handleSingleDataSourceImport = async (): Promise<void> => {
     message.success(t('configuration.import.success'))
     emit('importSuccess', importData)
 
-    console.log('✅ [ConfigurationExportPanel] 单数据源导入成功', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ [ConfigurationExportPanel] 单数据源导入成功', {
       targetSlot: selectedTargetSlot.value
     })
+    }
 
     // 关闭模态框
     showSingleDataSourceImportModal.value = false
@@ -707,10 +721,12 @@ const handleConfirmImport = async (): Promise<void> => {
     const fileContent = await readFileAsText(importFile.value)
     const importData = JSON.parse(fileContent)
 
-    console.log('🔄 [ConfigurationExportPanel] 开始导入配置', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 [ConfigurationExportPanel] 开始导入配置', {
       componentId: props.componentId,
       hasConflicts: importPreview.value.conflicts.length > 0
     })
+    }
 
     // 执行导入
     const importResult = configurationImporter.importConfiguration(
@@ -727,7 +743,9 @@ const handleConfirmImport = async (): Promise<void> => {
     importFile.value = null
     importPreview.value = null
 
-    console.log('✅ [ConfigurationExportPanel] 配置导入成功', importResult)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ [ConfigurationExportPanel] 配置导入成功', importResult)
+    }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     console.error('❌ [ConfigurationExportPanel] 配置导入失败:', error)

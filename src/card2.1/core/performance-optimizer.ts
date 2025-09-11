@@ -414,4 +414,6 @@ export function measurePerformance(metricType: keyof PerformanceMetrics) {
  */
 export const performanceOptimizer = PerformanceOptimizer.getInstance()
 
-console.log('🚀 [PerformanceOptimizer] 性能优化系统已初始化')
+if (process.env.NODE_ENV === 'development') {
+  console.log('🚀 [PerformanceOptimizer] 性能优化系统已初始化')
+}

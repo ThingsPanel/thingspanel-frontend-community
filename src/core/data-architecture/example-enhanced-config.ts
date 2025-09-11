@@ -158,7 +158,9 @@ export const httpDataItemExample: DataItemConfig<EnhancedHttpDataItemConfig> = {
       // 响应后脚本示例
       if (response.status === 200) {
         const data = response.data;
-        console.log('API调用成功', data);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('API调用成功', data)
+        };
         
         // 提取关键数据
         const weather = {
@@ -345,46 +347,66 @@ export const completeEnhancedConfigExample: EnhancedDataSourceConfiguration = {
  * 展示如何使用配置适配器
  */
 export function demonstrateConfigUsage() {
-  console.log('=== 增强版配置系统示例 ===')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('=== 增强版配置系统示例 ===')
+  }
 
   // 1. 基础配置信息
   console.log('配置ID:', completeEnhancedConfigExample.componentId)
   console.log('配置版本:', completeEnhancedConfigExample.version)
-  console.log('数据源数量:', completeEnhancedConfigExample.dataSources.length)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('数据源数量:', completeEnhancedConfigExample.dataSources.length)
+  }
   console.log('动态参数数量:', completeEnhancedConfigExample.dynamicParams?.length)
 
   // 2. JSON数据项信息
   const jsonItem = completeEnhancedConfigExample.dataSources[0].dataItems[0].item
-  console.log('\nJSON数据项:')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('\nJSON数据项:')
+  }
   console.log('- ID:', jsonItem.id)
   console.log('- 类型:', jsonItem.type)
   console.log('- 显示名称:', jsonItem.metadata?.displayName)
-  console.log('- 启用JSON验证:', (jsonItem.config as EnhancedJsonDataItemConfig).validation?.enableFormat)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('- 启用JSON验证:', (jsonItem.config as EnhancedJsonDataItemConfig).validation?.enableFormat)
+  }
 
   // 3. HTTP数据项信息
   const httpItem = completeEnhancedConfigExample.dataSources[1].dataItems[0].item
-  console.log('\nHTTP数据项:')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('\nHTTP数据项:')
+  }
   console.log('- ID:', httpItem.id)
   console.log('- 类型:', httpItem.type)
   console.log('- 请求URL:', (httpItem.config as EnhancedHttpDataItemConfig).url)
-  console.log('- 请求方法:', (httpItem.config as EnhancedHttpDataItemConfig).method)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('- 请求方法:', (httpItem.config as EnhancedHttpDataItemConfig).method)
+  }
   console.log('- 请求头数量:', (httpItem.config as EnhancedHttpDataItemConfig).headers.length)
-  console.log('- 请求参数数量:', (httpItem.config as EnhancedHttpDataItemConfig).params.length)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('- 请求参数数量:', (httpItem.config as EnhancedHttpDataItemConfig).params.length)
+  }
 
   // 4. 动态参数信息
   console.log('\n动态参数:')
   completeEnhancedConfigExample.dynamicParams?.forEach(param => {
-    console.log(`- ${param.name} (${param.type}): ${param.currentValue}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`- ${param.name} (${param.type}): ${param.currentValue}`)
+    }
   })
 
   // 5. 增强功能信息
   console.log('\n增强功能状态:')
   const features = completeEnhancedConfigExample.enhancedFeatures
   if (features) {
-    console.log('- HTTP数组格式:', features.httpArrayFormat)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('- HTTP数组格式:', features.httpArrayFormat)
+    }
     console.log('- 动态参数支持:', features.dynamicParameterSupport)
     console.log('- 安全脚本执行:', features.secureScriptExecution)
-    console.log('- 配置验证:', features.configurationValidation)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('- 配置验证:', features.configurationValidation)
+    }
     console.log('- 性能监控:', features.performanceMonitoring)
   }
 }

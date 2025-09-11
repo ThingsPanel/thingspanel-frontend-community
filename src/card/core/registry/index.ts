@@ -44,7 +44,9 @@ export class ComponentRegistry implements IComponentRegistry {
       this.rendererIndex.get(rendererType)!.add(meta.id)
     })
 
-    console.log(`[ComponentRegistry] 组件 ${meta.id} 注册成功`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[ComponentRegistry] 组件 ${meta.id} 注册成功`)
+    }
   }
 
   /**
@@ -83,7 +85,9 @@ export class ComponentRegistry implements IComponentRegistry {
       }
     })
 
-    console.log(`[ComponentRegistry] 组件 ${componentId} 注销成功`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[ComponentRegistry] 组件 ${componentId} 注销成功`)
+    }
   }
 
   /**
@@ -151,7 +155,9 @@ export class ComponentRegistry implements IComponentRegistry {
     this.definitions.clear()
     this.typeIndex.clear()
     this.rendererIndex.clear()
-    console.log('[ComponentRegistry] 注册表已清空')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ComponentRegistry] 注册表已清空')
+    }
   }
 
   /**

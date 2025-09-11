@@ -225,7 +225,9 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       // 保存迁移后的配置
       configurationStateManager.setConfiguration(widgetId, migratedConfig, 'import')
 
-      console.log(`✅ [ConfigurationMigration] 配置导入并迁移成功: ${widgetId}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ [ConfigurationMigration] 配置导入并迁移成功: ${widgetId}`)
+      }
       return true
     } catch (error) {
       console.error(`❌ [ConfigurationMigration] 配置导入失败: ${widgetId}`, error)
@@ -300,10 +302,12 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       return config
     }
 
-    console.log(`🔄 [ConfigurationMigration] 检测到组件 ${widgetId} 需要设备配置迁移`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 [ConfigurationMigration] 检测到组件 ${widgetId} 需要设备配置迁移`, {
       hasDeviceId: !!componentConfig.deviceId,
       hasMetricsList: !!componentConfig.metricsList
     })
+    }
 
     // 执行迁移
     const migrationResult = this.performDeviceConfigurationMigration(config)
@@ -311,7 +315,9 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     // 🚀 只有实际迁移了才保存配置
     if (migrationResult.migrated) {
       configurationStateManager.setConfiguration(widgetId, migrationResult.config, 'migration')
-      console.log(`✅ [ConfigurationMigration] 组件 ${widgetId} 设备配置迁移完成`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ [ConfigurationMigration] 组件 ${widgetId} 设备配置迁移完成`)
+      }
     }
 
     return migrationResult.config
@@ -360,7 +366,9 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     if (componentConfig.deviceId && !result.base.deviceId) {
       result.base.deviceId = componentConfig.deviceId
       delete componentConfig.deviceId
-      console.log(`📋 [ConfigurationMigration] 迁移deviceId: ${result.base.deviceId}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`📋 [ConfigurationMigration] 迁移deviceId: ${result.base.deviceId}`)
+      }
       hasMigrated = true
     }
 
@@ -368,7 +376,9 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     if (componentConfig.metricsList && !result.base.metricsList) {
       result.base.metricsList = Array.isArray(componentConfig.metricsList) ? componentConfig.metricsList : []
       delete componentConfig.metricsList
-      console.log(`📋 [ConfigurationMigration] 迁移metricsList: ${result.base.metricsList.length}个指标`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`📋 [ConfigurationMigration] 迁移metricsList: ${result.base.metricsList.length}个指标`)
+      }
       hasMigrated = true
     }
 
@@ -377,7 +387,9 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       if (componentConfig.customize.deviceId && !result.base.deviceId) {
         result.base.deviceId = componentConfig.customize.deviceId
         delete componentConfig.customize.deviceId
-        console.log(`📋 [ConfigurationMigration] 从customize迁移deviceId: ${result.base.deviceId}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`📋 [ConfigurationMigration] 从customize迁移deviceId: ${result.base.deviceId}`)
+        }
         hasMigrated = true
       }
 
@@ -386,7 +398,9 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
           ? componentConfig.customize.metricsList
           : []
         delete componentConfig.customize.metricsList
-        console.log(`📋 [ConfigurationMigration] 从customize迁移metricsList: ${result.base.metricsList.length}个指标`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`📋 [ConfigurationMigration] 从customize迁移metricsList: ${result.base.metricsList.length}个指标`)
+        }
         hasMigrated = true
       }
     }
@@ -399,7 +413,9 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       result.metadata.migrationVersion = '2.0'
       result.metadata.migratedAt = Date.now()
       result.metadata.updatedAt = Date.now()
-      console.log(`✅ [ConfigurationMigration] 配置迁移完成，已更新元数据`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ [ConfigurationMigration] 配置迁移完成，已更新元数据`)
+      }
     } else {
       console.log(`ℹ️ [ConfigurationMigration] 无需迁移，保持原配置结构`)
     }
@@ -427,13 +443,17 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       return config
     }
 
-    console.log(`🔄 [ConfigurationMigration] setConfiguration检测到组件 ${widgetId} 需要设备配置迁移`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 [ConfigurationMigration] setConfiguration检测到组件 ${widgetId} 需要设备配置迁移`)
+    }
 
     // 执行迁移但不自动保存（避免循环调用setConfiguration）
     const migrationResult = this.performDeviceConfigurationMigration(config)
 
     if (migrationResult.migrated) {
-      console.log(`✅ [ConfigurationMigration] setConfiguration组件 ${widgetId} 设备配置迁移完成`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ [ConfigurationMigration] setConfiguration组件 ${widgetId} 设备配置迁移完成`)
+      }
     } else {
       console.log(`ℹ️ [ConfigurationMigration] setConfiguration组件 ${widgetId} 无需迁移`)
     }

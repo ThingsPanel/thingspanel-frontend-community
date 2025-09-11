@@ -86,12 +86,16 @@ let configChangeListener: ((event: ConfigChangeEvent) => void) | null = null
 onMounted(() => {
   // 监听配置变更事件，自动更新组件
   configChangeListener = async (event: ConfigChangeEvent) => {
-    console.log('🔄 GridstackRenderer 收到配置变更:', event)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 GridstackRenderer 收到配置变更:', event)
+    }
 
     // 根据配置变更类型进行相应处理
     if (event.section === 'base' || event.section === 'component') {
       // 🔥 基础配置或组件配置变更，需要更新组件状态
-      console.log(`组件 ${event.componentId} 的 ${event.section} 配置已更新`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`组件 ${event.componentId} 的 ${event.section} 配置已更新`)
+      }
 
       // 🔥 关键修复：基础配置变更时，自动更新数据源配置中的属性绑定
       if (event.section === 'base' && event.newConfig) {
@@ -111,7 +115,9 @@ onMounted(() => {
       }
     } else if (event.section === 'dataSource') {
       // 🔥 数据源配置变更，直接通过 data-architecture 处理
-      console.log(`组件 ${event.componentId} 的数据源配置已更新，触发数据重新获取`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`组件 ${event.componentId} 的数据源配置已更新，触发数据重新获取`)
+      }
 
       try {
         // 构建数据需求
@@ -128,7 +134,9 @@ onMounted(() => {
           multiDataSourceStore.value[event.componentId] = result.data
           multiDataSourceConfigStore.value[event.componentId] = event.newConfig
 
-          console.log(`✅ 组件 ${event.componentId} 数据更新成功:`, result.data)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`✅ 组件 ${event.componentId} 数据更新成功:`, result.data)
+          }
         } else {
           console.warn(`⚠️ 组件 ${event.componentId} 数据获取失败:`, result.error)
         }
@@ -162,7 +170,9 @@ const initializeDataSources = () => {
     const cachedData = simpleDataBridge.getComponentData(node.id)
     if (cachedData) {
       multiDataSourceStore.value[node.id] = cachedData
-      console.log(`🔄 初始化组件 ${node.id} 的缓存数据:`, cachedData)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 初始化组件 ${node.id} 的缓存数据:`, cachedData)
+      }
     }
   })
 }
@@ -177,16 +187,20 @@ const updateDataSourceConfigForBaseConfigChange = async (
   oldBaseConfig: any
 ) => {
   try {
-    console.log(`🔄 [GridstackRenderer] 处理基础配置变更，更新数据源配置`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 [GridstackRenderer] 处理基础配置变更，更新数据源配置`, {
       componentId,
       newBaseConfig,
       oldBaseConfig
     })
+    }
 
     // 获取当前组件的完整配置
     const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
     if (!fullConfig || !fullConfig.dataSource) {
-      console.log(`⚠️ 组件 ${componentId} 没有数据源配置，跳过更新`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⚠️ 组件 ${componentId} 没有数据源配置，跳过更新`)
+      }
       return
     }
 
@@ -204,12 +218,16 @@ const updateDataSourceConfigForBaseConfigChange = async (
 
       if (newValue !== oldValue) {
         changes.push({ field: fieldName, oldValue, newValue })
-        console.log(`🔄 [GridstackRenderer] 检测到 ${fieldName} 变化: ${oldValue} → ${newValue}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔄 [GridstackRenderer] 检测到 ${fieldName} 变化: ${oldValue} → ${newValue}`)
+        }
       }
     })
 
     if (changes.length === 0) {
-      console.log(`⚠️ 基础配置无关键字段变化，跳过数据源更新`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⚠️ 基础配置无关键字段变化，跳过数据源更新`)
+      }
       return
     }
 
@@ -227,12 +245,14 @@ const updateDataSourceConfigForBaseConfigChange = async (
             changes.forEach(({ field, newValue }) => {
               const bindingPattern = `${componentId}.base.${field}`
               if (value.includes(bindingPattern)) {
-                console.log(`🎯 [GridstackRenderer] 更新直接绑定引用`, {
+                if (process.env.NODE_ENV === 'development') {
+                  console.log(`🎯 [GridstackRenderer] 更新直接绑定引用`, {
                   path: currentPath,
                   oldValue: value,
                   bindingPattern,
                   newValue
                 })
+                }
                 obj[key] = newValue
                 needsUpdate = true
               }
@@ -252,12 +272,14 @@ const updateDataSourceConfigForBaseConfigChange = async (
                 // 这里需要更智能的检测逻辑
                 const isBaseConfigBinding = path.includes('pathParam') || path.includes('Param')
                 if (isBaseConfigBinding && field === 'deviceId') {
-                  console.log(`🎯 [GridstackRenderer] 发现HTTP参数组件属性绑定，更新绑定值`, {
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log(`🎯 [GridstackRenderer] 发现HTTP参数组件属性绑定，更新绑定值`, {
                     path: currentPath,
                     paramConfig: value,
                     field,
                     newValue
                   })
+                  }
                   // 更新绑定值为新的deviceId
                   value.value = newValue
                   value.defaultValue = newValue
@@ -276,16 +298,20 @@ const updateDataSourceConfigForBaseConfigChange = async (
 
     // 如果有更新，触发数据源配置变更
     if (needsUpdate) {
-      console.log(`✅ [GridstackRenderer] 更新数据源配置并触发重新执行`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ [GridstackRenderer] 更新数据源配置并触发重新执行`, {
         componentId,
         changes,
         updatedConfig: updatedDataSourceConfig
       })
+      }
 
       // 通过ConfigurationIntegrationBridge更新数据源配置，这会触发ConfigEventBus事件
       configurationIntegrationBridge.updateConfiguration(componentId, 'dataSource', updatedDataSourceConfig)
     } else {
-      console.log(`⚠️ 数据源配置中未发现属性绑定引用，无需更新`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⚠️ 数据源配置中未发现属性绑定引用，无需更新`)
+      }
     }
   } catch (error) {
     console.error(`❌ [GridstackRenderer] 基础配置变更处理失败`, {

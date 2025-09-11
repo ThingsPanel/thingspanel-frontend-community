@@ -89,7 +89,9 @@ const submitSevice: () => void = async () => {
           page_size: 10
         })
       } catch (error) {
-        console.log('Auto mode device list call:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Auto mode device list call:', error)
+        }
       }
       
       // 关闭当前弹窗，并打开配置弹窗

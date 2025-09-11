@@ -349,7 +349,9 @@ onUnmounted(() => {
 watch(
   () => props.config,
   newConfig => {
-    console.log('[BarChartView] 配置已更新', newConfig)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[BarChartView] 配置已更新', newConfig)
+    }
   },
   { deep: true }
 )

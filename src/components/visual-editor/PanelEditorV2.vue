@@ -76,7 +76,9 @@ watch(
   newRenderer => {
     if (newRenderer && newRenderer !== currentRenderer.value) {
       currentRenderer.value = newRenderer
-      console.log('🔄 渲染器已切换为:', newRenderer)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 渲染器已切换为:', newRenderer)
+      }
     }
   },
   { immediate: true }
@@ -157,21 +159,27 @@ const editorConfig = ref({
 
 // This is from PanelEditor.vue's usePanelDataManager
 const getState = () => {
-  console.log('🔧 getState - 开始获取状态...')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔧 getState - 开始获取状态...')
+  }
   
   const widgets = toRaw(stateManager.nodes).map(widget => {
     // 🔥 关键修复：从 configurationManager 获取数据源配置并添加到组件中
     const savedConfig = configurationManager.getConfiguration(widget.id)
     const dataSourceConfig = savedConfig?.dataSource || null
     
-    console.log(`🔧 getState - 组件 ${widget.id}:`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 getState - 组件 ${widget.id}:`)
+    }
     console.log('  - savedConfig:', savedConfig)
     console.log('  - dataSourceConfig:', dataSourceConfig)
     
     // 🔥 额外调试：如果没有数据源配置，打印警告
     if (!dataSourceConfig) {
       console.warn(`⚠️ 组件 ${widget.id} 没有数据源配置！可能需要检查配置保存逻辑`)
-      console.log('  - configurationManager中的所有配置:', configurationManager.getAllConfigurations())
+      if (process.env.NODE_ENV === 'development') {
+        console.log('  - configurationManager中的所有配置:', configurationManager.getAllConfigurations())
+      }
     }
     
     // 🔥 数据优化：只保存必要的数据，移除冗余的metadata
@@ -212,10 +220,14 @@ const getState = () => {
   
   const config = toRaw(editorConfig.value)
   
-  console.log('🔧 getState - 最终状态:')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔧 getState - 最终状态:')
+  }
   console.log('  - widgets数量:', widgets.length)
   console.log('  - widgets详情:', widgets.map(w => ({ id: w.id, hasDataSource: !!w.dataSource })))
-  console.log('  - config:', config)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('  - config:', config)
+  }
   
   return {
     widgets,
@@ -231,7 +243,9 @@ const setState = (state: any) => {
   const widgets = clonedState.widgets || []
   const config = clonedState.config || {}
 
-  console.log('🔧 setState - 设置组件数量:', widgets.length)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔧 setState - 设置组件数量:', widgets.length)
+  }
   console.log('🔧 setState - 配置:', config)
 
   if (Array.isArray(widgets)) {
@@ -239,7 +253,9 @@ const setState = (state: any) => {
     const processedWidgets = widgets.map(widget => {
       // 🔥 关键修复：恢复数据源配置到 configurationManager
       if (widget.dataSource) {
-        console.log('🔧 恢复数据源配置:', widget.id, widget.dataSource)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔧 恢复数据源配置:', widget.id, widget.dataSource)
+        }
         configurationManager.updateConfiguration(widget.id, 'dataSource', widget.dataSource)
       } else {
         console.warn(`⚠️ 组件 ${widget.id} 没有数据源配置`)
@@ -255,10 +271,12 @@ const setState = (state: any) => {
         }
       }
       
-      console.log(`✅ 处理组件 ${widget.id}:`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ 处理组件 ${widget.id}:`, {
         hasDataSource: !!widget.dataSource,
         hasCard2Definition: !!widget.metadata?.card2Definition
       })
+      }
       
       return processedWidget
     })
@@ -283,7 +301,9 @@ const fetchBoard = async () => {
       // 🔥 完全兼容的配置解析逻辑
       const fullConfig = JSON.parse(data.config)
 
-      console.log('🔍 原始配置结构:', fullConfig)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 原始配置结构:', fullConfig)
+      }
 
       // 检查是否是新的嵌套结构（包含 visualEditor 字段）
       if (fullConfig.visualEditor) {
@@ -292,25 +312,33 @@ const fetchBoard = async () => {
         preEditorConfig.value = smartDeepClone(fullConfig.visualEditor)
       } else if (fullConfig.widgets !== undefined || fullConfig.config !== undefined) {
         // 🔥 兼容老版本的直接格式 - 老版本直接保存 {widgets: [...], config: {...}}
-        console.log('✅ 发现老版本格式 (直接 widgets + config)')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ 发现老版本格式 (直接 widgets + config)')
+        }
         setState(fullConfig)
         preEditorConfig.value = smartDeepClone(fullConfig)
       } else if (Array.isArray(fullConfig)) {
         // 🔥 兼容更老的数组格式
-        console.log('✅ 发现数组格式 (超老版本)')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ 发现数组格式 (超老版本)')
+        }
         const legacyState = { widgets: fullConfig, config: { gridConfig: {}, canvasConfig: {} } }
         setState(legacyState)
         preEditorConfig.value = smartDeepClone(legacyState)
       } else {
         // 🔥 未知结构或空对象，设置默认状态
-        console.log('⚠️  未识别的配置格式，使用默认状态')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⚠️  未识别的配置格式，使用默认状态')
+        }
         const emptyState = { widgets: [], config: { gridConfig: {}, canvasConfig: {} } }
         setState(emptyState)
         preEditorConfig.value = emptyState
       }
     } else {
       // 设置默认空状态
-      console.log('📝 没有配置数据，使用默认状态')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📝 没有配置数据，使用默认状态')
+      }
       const emptyState = { widgets: [], config: { gridConfig: {}, canvasConfig: {} } }
       setState(emptyState)
       preEditorConfig.value = emptyState
@@ -390,7 +418,9 @@ const handlePollingDisabled = handlePollingDisabledFromManager
 
 // 🔥 初始化轮询任务并启用（使用真正的轮询逻辑）
 const initializePollingTasksAndEnable = () => {
-  console.log('🔛 初始化轮询任务并启用')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔛 初始化轮询任务并启用')
+  }
   initializePollingTasksAndEnableFromManager()
 }
 
@@ -429,7 +459,9 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
   if (editMode) {
     // 🔴 关闭全局轮询（编辑模式）
     pollingManager.disableGlobalPolling()
-    console.log('🔴 全局轮询已关闭（编辑模式）')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔴 全局轮询已关闭（编辑模式）')
+    }
 
     // 编辑模式不需要控制showFooter，由actualFooterShow自动处理
   } else {
@@ -545,7 +577,9 @@ const handleAddWidget = async (widget: { type: string }) => {
   try {
     await addWidget(widget.type)
     hasChanges.value = true
-    console.log('✅ 组件添加成功:', widget.type)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ 组件添加成功:', widget.type)
+    }
 
     // 🔥 发射widget-added事件，通知测试页面
     emit('widget-added', { type: widget.type })

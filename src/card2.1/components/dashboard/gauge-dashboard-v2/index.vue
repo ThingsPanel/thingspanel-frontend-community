@@ -94,7 +94,8 @@ const emit = defineEmits<Emits>()
 watch(
   [() => props.boundData, () => props.data, () => props.primaryData],
   ([boundData, data, primaryData]) => {
-    console.log('🎯 gauge-dashboard-v2 接收到数据变化:', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎯 gauge-dashboard-v2 接收到数据变化:', {
       boundData,
       data,
       primaryData,
@@ -103,6 +104,7 @@ watch(
       hasData: !!data,
       hasPrimaryData: !!primaryData
     })
+    }
   },
   { immediate: true, deep: true }
 )
@@ -115,7 +117,8 @@ const themeStore = useThemeStore()
  * 优先使用 customConfig.customize，回退到 config
  */
 const currentCustomize = computed((): GaugeDashboardCustomize => {
-  console.log(`🔧 [GaugeDashboardV2] Props调试:`, {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔧 [GaugeDashboardV2] Props调试:`, {
     componentId: props.componentId,
     hasCustomConfig: !!props.customConfig,
     customConfig: props.customConfig,
@@ -124,16 +127,21 @@ const currentCustomize = computed((): GaugeDashboardCustomize => {
     hasBoundData: !!props.boundData,
     boundData: props.boundData
   })
+  }
 
   // 优先使用新的customConfig结构
   if (props.customConfig?.customize) {
-    console.log(`✅ [GaugeDashboardV2] 使用customConfig.customize`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ [GaugeDashboardV2] 使用customConfig.customize`)
+    }
     return props.customConfig.customize
   }
 
   // 回退到旧的config结构（向后兼容）
   if (props.config?.customize) {
-    console.log(`⚠️ [GaugeDashboardV2] 回退到config结构`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`⚠️ [GaugeDashboardV2] 回退到config结构`)
+    }
     return props.config.customize
   }
 
@@ -200,13 +208,15 @@ const actualTitle = computed(() => {
 watch(
   [actualValue, actualUnit, actualTitle],
   ([value, unit, title]) => {
-    console.log('🎯 计算后的实际值:', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎯 计算后的实际值:', {
       value,
       unit,
       title,
       fromData: !!props.data,
       fromConfig: !props.data
     })
+    }
   },
   { immediate: true }
 )

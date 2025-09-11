@@ -42,7 +42,9 @@ const deleteConfig = () => {
 }
 const showModal = ref(false)
 const modalIndex = ref(1)
-console.log(props.configInfo)
+if (process.env.NODE_ENV === 'development') {
+  console.log(props.configInfo)
+}
 const auto_register = ref(props.configInfo?.auto_register === 1 || false)
 const onlinejson = reactive({
   online_timeout: 0,
@@ -95,7 +97,9 @@ const onOpenDialogModal = (val: number) => {
 }
 const copyOneTypeOneSecretDevicePassword = () => {
   const textToCopy = props.configInfo?.template_secret || ''
-  console.log('要复制的内容 (clipboard.js - refined):', textToCopy)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('要复制的内容 (clipboard.js - refined):', textToCopy)
+  }
 
   if (!textToCopy) {
     message.error($t('common.noContentToCopy'))
@@ -130,7 +134,9 @@ const copyOneTypeOneSecretDevicePassword = () => {
 
   clipboard.on('success', e => {
     success = true
-    console.log('Clipboard.js success event. Copied text:', e.text)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Clipboard.js success event. Copied text:', e.text)
+    }
     message.success($t('custom.grouping_details.operationSuccess'))
     e.clearSelection()
     cleanup()
@@ -190,7 +196,9 @@ const getPlatform = computed(() => {
   return proxy.getPlatform()
 })
 onMounted(() => {
-  console.log(props.configInfo.auto_register, 'auto_register')
+  if (process.env.NODE_ENV === 'development') {
+    console.log(props.configInfo.auto_register, 'auto_register')
+  }
   auto_register.value = props.configInfo?.auto_register === 1 || false
   // 初始化图片路径
   imagePath.value = props.configInfo?.image_url ? `${url.value.replace('api/v1', '') + props.configInfo.image_url}` : ''

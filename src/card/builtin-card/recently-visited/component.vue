@@ -45,7 +45,9 @@ const router = useRouter()
 const loadVisitedRoutes = () => {
   try {
     const routesRaw = localStorage.getItem(RECENTLY_VISITED_ROUTES_KEY)
-    console.log('routesRaw', routesRaw)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('routesRaw', routesRaw)
+    }
 
     if (routesRaw) {
       visitedRoutes.value = JSON.parse(routesRaw)

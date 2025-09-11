@@ -156,7 +156,9 @@ export class SystemInitializer {
       retries: 2,
       initialize: async () => {
         // 配置管理器通常不需要异步初始化，但可以在这里执行预热
-        console.log('🔧 [SystemInitializer] 初始化配置管理器')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔧 [SystemInitializer] 初始化配置管理器')
+        }
       },
       healthCheck: async () => {
         return optimizedConfigurationManager !== null
@@ -173,7 +175,9 @@ export class SystemInitializer {
       timeout: 15000,
       retries: 3,
       initialize: async () => {
-        console.log('🎯 [SystemInitializer] 初始化Card2.1系统')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🎯 [SystemInitializer] 初始化Card2.1系统')
+        }
         await optimizedInitializationManager.initialize({ forceReload: false })
       },
       healthCheck: async () => {
@@ -192,7 +196,9 @@ export class SystemInitializer {
       timeout: 3000,
       retries: 1,
       initialize: async () => {
-        console.log('🔍 [SystemInitializer] 初始化类型兼容性检查器')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 [SystemInitializer] 初始化类型兼容性检查器')
+        }
         // 预热类型映射表
         typeCompatibilityChecker.getTypeMappingStats()
       },
@@ -212,7 +218,9 @@ export class SystemInitializer {
       timeout: 8000,
       retries: 2,
       initialize: async () => {
-        console.log('🏗️ [SystemInitializer] 初始化数据架构系统')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🏗️ [SystemInitializer] 初始化数据架构系统')
+        }
         // 这里可以初始化其他数据架构相关的组件
         // 如果有其他异步初始化需求，可以在这里添加
       },
@@ -237,7 +245,9 @@ export class SystemInitializer {
     })
 
     this.state.totalCount = this.subSystemConfigs.size
-    console.log(`📋 [SystemInitializer] 注册子系统: ${config.displayName}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📋 [SystemInitializer] 注册子系统: ${config.displayName}`)
+    }
   }
 
   /**
@@ -246,7 +256,9 @@ export class SystemInitializer {
   public async initialize(options: InitializationOptions = {}): Promise<void> {
     // 防止重复初始化
     if (this.state.isInitialized && !options.forceReload) {
-      console.log('✅ [SystemInitializer] 系统已初始化，跳过重复初始化')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ [SystemInitializer] 系统已初始化，跳过重复初始化')
+      }
       return
     }
 
@@ -281,16 +293,20 @@ export class SystemInitializer {
     this.state.failedSubSystems = []
     this.state.successCount = 0
 
-    console.log('🚀 [SystemInitializer] 开始系统初始化')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚀 [SystemInitializer] 开始系统初始化')
+    }
     this.emit('initialization-started', this.getInitializationState())
 
     try {
       // 获取初始化顺序
       const initializationOrder = this.resolveInitializationOrder(skipSubSystems)
-      console.log(
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
         '📊 [SystemInitializer] 初始化顺序:',
         initializationOrder.map(config => config.displayName)
       )
+      }
 
       // 全局超时控制
       const initPromise = this.executeInitializationSequence(initializationOrder, concurrencyLimit, enableHealthCheck)
@@ -314,7 +330,9 @@ export class SystemInitializer {
       this.state.endTime = Date.now()
       this.state.totalDuration = this.state.endTime - this.state.startTime!
 
-      console.log(`✅ [SystemInitializer] 系统初始化完成，耗时: ${this.state.totalDuration}ms`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ [SystemInitializer] 系统初始化完成，耗时: ${this.state.totalDuration}ms`)
+      }
       console.log(`📊 [SystemInitializer] 成功: ${this.state.successCount}/${this.state.totalCount}`)
 
       if (this.state.failedSubSystems.length > 0) {
@@ -404,9 +422,11 @@ export class SystemInitializer {
         state.startTime = Date.now()
         state.retriesCount = attempt
 
-        console.log(
+        if (process.env.NODE_ENV === 'development') {
+          console.log(
           `🔄 [SystemInitializer] 初始化子系统: ${config.displayName} (尝试 ${attempt + 1}/${maxRetries + 1})`
         )
+        }
         this.emit('subsystem-initializing', { name: config.name, attempt: attempt + 1 })
 
         // 执行初始化
@@ -433,7 +453,9 @@ export class SystemInitializer {
         state.duration = state.endTime - state.startTime!
         this.state.successCount++
 
-        console.log(`✅ [SystemInitializer] 子系统初始化成功: ${config.displayName} (耗时: ${state.duration}ms)`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ [SystemInitializer] 子系统初始化成功: ${config.displayName} (耗时: ${state.duration}ms)`)
+        }
         this.emit('subsystem-initialized', { name: config.name, duration: state.duration })
 
         return // 成功，退出重试循环
@@ -527,7 +549,9 @@ export class SystemInitializer {
     const failedSystems = [...this.state.failedSubSystems]
 
     if (failedSystems.length === 0) {
-      console.log('✅ [SystemInitializer] 没有失败的子系统需要重新初始化')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ [SystemInitializer] 没有失败的子系统需要重新初始化')
+      }
       return
     }
 

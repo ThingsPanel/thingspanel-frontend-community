@@ -83,10 +83,12 @@ export function getComponentTree() {
   const components = autoRegistry.getAllComponents()
   const categories = autoRegistry.getAllCategories()
 
-  console.log(
+  if (process.env.NODE_ENV === 'development') {
+    console.log(
     `🔧 [getComponentTree] 原始组件数据:`,
     components.map(c => ({ type: c?.type, name: c?.name, valid: !!(c?.type && c?.name) }))
   )
+  }
 
   // 过滤掉无效组件
   const validComponents = components.filter(comp => comp && comp.type && comp.name)
@@ -173,7 +175,9 @@ export async function reloadComponents(): Promise<void> {
     ComponentRegistry.register(definition)
   })
 
-  console.log(`[Card2.1] 重新加载了 ${allComponents.length} 个组件`)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Card2.1] 重新加载了 ${allComponents.length} 个组件`)
+  }
 }
 
 /**
@@ -189,7 +193,9 @@ export async function initializeCard2System(): Promise<void> {
     ComponentRegistry.register(definition)
   })
 
-  console.log(`[Card2.1 System] 初始化完成，共注册 ${allComponents.length} 个组件`)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Card2.1 System] 初始化完成，共注册 ${allComponents.length} 个组件`)
+  }
 }
 
 /**
@@ -226,7 +232,9 @@ export function debugComponents(): void {
   if (!import.meta.env.DEV) return
 
   console.group('[Card2.1 组件调试信息]')
-  console.log('统计信息:', autoRegistry.getStats())
+  if (process.env.NODE_ENV === 'development') {
+    console.log('统计信息:', autoRegistry.getStats())
+  }
   console.log('所有分类:', autoRegistry.getAllCategories())
   console.log('所有组件类型:', autoRegistry.getAllComponentTypes())
 
@@ -275,7 +283,9 @@ export function validateComponents(): { valid: boolean; issues: string[] } {
 // 自动初始化并注册组件
 initializeComponents()
   .then(() => {
-    console.log(`🎉 [Card2.1] 组件自动注册完成! 共注册 ${getAllComponents().length} 个组件`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🎉 [Card2.1] 组件自动注册完成! 共注册 ${getAllComponents().length} 个组件`)
+    }
 
     // 列出所有已注册的组件
     const components = getAllComponents()
@@ -301,7 +311,9 @@ if (import.meta.env.DEV) {
     }
 
     // 额外调试信息
-    console.log(`🔍 [Card2.1 调试] 当前注册组件数量: ${getAllComponents().length}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 [Card2.1 调试] 当前注册组件数量: ${getAllComponents().length}`)
+    }
     console.log(`🔍 [Card2.1 调试] 所有分类:`, Object.keys(Card2Components))
   }, 2000)
 }

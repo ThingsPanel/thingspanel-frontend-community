@@ -21,14 +21,18 @@ const checkUserRole = () => {
       // Check if roles array exists and includes 'SYS_ADMIN'
       if (Array.isArray(userInfo?.roles) && userInfo.roles.includes('SYS_ADMIN')) {
         isAdmin.value = true
-        console.log('User is SYS_ADMIN, using guideListAdmin.')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('User is SYS_ADMIN, using guideListAdmin.')
+        }
       } else {
         isAdmin.value = false
         console.log('User is not SYS_ADMIN, using guideList.')
       }
     } else {
       isAdmin.value = false // Default to non-admin if userInfo not found
-      console.log('UserInfo not found in localStorage, using default guideList.')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('UserInfo not found in localStorage, using default guideList.')
+      }
     }
   } catch (error) {
     console.error('Error reading or parsing userInfo from localStorage:', error)
@@ -45,10 +49,14 @@ onMounted(() => {
 const guideList = computed(() => {
   const config = props.card?.config
   if (isAdmin.value) {
-    console.log('Returning guideListAdmin:', config?.guideListAdmin)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Returning guideListAdmin:', config?.guideListAdmin)
+    }
     return config?.guideListAdmin || [] // Use admin list if admin
   } else {
-    console.log('Returning guideList:', config?.guideList)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Returning guideList:', config?.guideList)
+    }
     return config?.guideList || [] // Use default list otherwise
   }
 })

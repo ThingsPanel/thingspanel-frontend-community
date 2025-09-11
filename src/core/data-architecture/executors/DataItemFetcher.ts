@@ -107,12 +107,14 @@ export class DataItemFetcher implements IDataItemFetcher {
   private getComponentPropertyValue(bindingPath: string): any {
     try {
       // 🔥 新增：调试属性绑定路径
-      console.log(`🔍 [DataItemFetcher] getComponentPropertyValue 调试`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔍 [DataItemFetcher] getComponentPropertyValue 调试`, {
         bindingPath,
         bindingPathType: typeof bindingPath,
         bindingPathLength: bindingPath?.length,
         currentComponentId: this.currentComponentId
       })
+      }
 
       if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
         console.warn(`⚠️ [DataItemFetcher] 属性绑定路径格式错误`, { bindingPath })
@@ -123,12 +125,14 @@ export class DataItemFetcher implements IDataItemFetcher {
       const componentId = parts[0]
       const propertyPath = parts.slice(1).join('.')
 
-      console.log(`🔧 [DataItemFetcher] 解析属性绑定路径`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔧 [DataItemFetcher] 解析属性绑定路径`, {
         原始路径: bindingPath,
         组件ID: componentId,
         属性路径: propertyPath,
         当前组件ID: this.currentComponentId
       })
+      }
 
       // 获取编辑器store实例
       const editorStore = useEditorStore()
@@ -137,9 +141,11 @@ export class DataItemFetcher implements IDataItemFetcher {
       const targetComponent = editorStore.nodes?.find(node => node.id === componentId)
       if (!targetComponent) {
         console.warn('[DataItemFetcher] 组件属性绑定失败: 未找到组件', componentId)
-        console.log(`🔍 [DataItemFetcher] EditorStore节点列表`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔍 [DataItemFetcher] EditorStore节点列表`, {
           availableNodes: editorStore.nodes?.map(n => ({ id: n.id, type: n.type })) || []
         })
+        }
         return undefined
       }
 
@@ -147,7 +153,9 @@ export class DataItemFetcher implements IDataItemFetcher {
       const propertyValue = this.getNestedProperty(targetComponent.properties, propertyPath)
 
       if (propertyValue !== undefined) {
-        console.log('[DataItemFetcher] 组件属性绑定成功:', `${componentId}.${propertyPath} = ${propertyValue}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[DataItemFetcher] 组件属性绑定成功:', `${componentId}.${propertyPath} = ${propertyValue}`)
+        }
       }
 
       return propertyValue
@@ -189,7 +197,8 @@ export class DataItemFetcher implements IDataItemFetcher {
     let resolvedValue = param.value
 
     // 🔥 新增：调试参数解析过程
-    console.log(`🔍 [DataItemFetcher] resolveParameterValue 调试`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 [DataItemFetcher] resolveParameterValue 调试`, {
       paramKey: param.key,
       paramValue: param.value,
       selectedTemplate: param.selectedTemplate,
@@ -197,6 +206,7 @@ export class DataItemFetcher implements IDataItemFetcher {
       defaultValue: param.defaultValue,
       currentComponentId: this.currentComponentId
     })
+    }
 
     // 如果是组件属性绑定，需要从组件实例中获取实际值
     if (param.selectedTemplate === 'component-property-binding') {
@@ -216,11 +226,15 @@ export class DataItemFetcher implements IDataItemFetcher {
         
         if (selectedNode && availableNodes.some(n => n.id === selectedNode)) {
           bindingPath = `${selectedNode}.customize.deviceId`
-          console.log(`🔧 [DataItemFetcher] 使用选中组件构造绑定路径: ${bindingPath}`)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔧 [DataItemFetcher] 使用选中组件构造绑定路径: ${bindingPath}`)
+          }
         } else if (availableNodes.length > 0) {
           // 尝试使用第一个可用组件
           bindingPath = `${availableNodes[0].id}.customize.deviceId`
-          console.log(`🔧 [DataItemFetcher] 使用第一个组件构造绑定路径: ${bindingPath}`)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔧 [DataItemFetcher] 使用第一个组件构造绑定路径: ${bindingPath}`)
+          }
         } else {
           console.error(`❌ [DataItemFetcher] 无法构造绑定路径，EditorStore中无可用组件`)
           // 使用默认值处理
@@ -229,11 +243,13 @@ export class DataItemFetcher implements IDataItemFetcher {
 
       if (bindingPath && typeof bindingPath === 'string') {
         const actualValue = this.getComponentPropertyValue(bindingPath)
-        console.log(`🎯 [DataItemFetcher] 属性绑定结果`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🎯 [DataItemFetcher] 属性绑定结果`, {
           bindingPath,
           actualValue,
           actualValueType: typeof actualValue
         })
+        }
 
         if (actualValue !== undefined && actualValue !== null && actualValue !== '') {
           resolvedValue = actualValue
@@ -319,7 +335,8 @@ export class DataItemFetcher implements IDataItemFetcher {
   private async fetchHttpData(config: HttpDataItemConfig): Promise<any> {
     // 🔥 步骤1：生成请求唯一标识符，用于去重
     const requestKey = this.generateRequestKey(config)
-    console.log(`🚀 [DataItemFetcher] fetchHttpData 开始执行`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🚀 [DataItemFetcher] fetchHttpData 开始执行`, {
       originalUrl: config.url,
       method: config.method,
       requestKey,
@@ -331,15 +348,18 @@ export class DataItemFetcher implements IDataItemFetcher {
       pathParamsCount: (config.pathParams || []).length,
       parametersCount: (config.parameters || []).length
     })
+    }
 
     // 🔥 步骤2：检查是否有进行中的相同请求
     const existingRequest = this.requestCache.get(requestKey)
     if (existingRequest) {
-      console.log(`🔄 [DataItemFetcher] 检测到重复请求，使用缓存Promise`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 [DataItemFetcher] 检测到重复请求，使用缓存Promise`, {
         requestKey,
         url: config.url,
         method: config.method
       })
+      }
       return await existingRequest
     }
 
@@ -380,7 +400,9 @@ export class DataItemFetcher implements IDataItemFetcher {
       // 添加headers
       if (config.headers && Object.keys(config.headers).length > 0) {
         requestConfig.headers = config.headers
-        console.log(`📋 [DataItemFetcher] 设置请求头:`, config.headers)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`📋 [DataItemFetcher] 设置请求头:`, config.headers)
+        }
       }
 
       // 处理参数
@@ -390,25 +412,33 @@ export class DataItemFetcher implements IDataItemFetcher {
       // 统一处理路径参数
       // 优先使用新格式 pathParams，如果不存在则回退到旧格式 pathParameter
       if (config.pathParams && config.pathParams.length > 0) {
-        console.log(`🛤️ [DataItemFetcher] 处理新格式路径参数:`, config.pathParams)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🛤️ [DataItemFetcher] 处理新格式路径参数:`, config.pathParams)
+        }
         config.pathParams
           .filter(p => p.enabled && p.key)
           .forEach(p => {
             const resolvedValue = this.resolveParameterValue(p)
-            console.log(`🔗 [DataItemFetcher] 路径参数解析: ${p.key} = ${resolvedValue}`)
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔗 [DataItemFetcher] 路径参数解析: ${p.key} = ${resolvedValue}`)
+            }
             if (resolvedValue !== null) {
               // 对于路径参数，优先替换URL中的占位符
               const placeholder = `{${p.key}}`
               if (finalUrl.includes(placeholder)) {
                 finalUrl = finalUrl.replace(placeholder, String(resolvedValue))
-                console.log(`✅ [DataItemFetcher] 路径参数替换成功: ${placeholder} → ${resolvedValue}`)
+                if (process.env.NODE_ENV === 'development') {
+                  console.log(`✅ [DataItemFetcher] 路径参数替换成功: ${placeholder} → ${resolvedValue}`)
+                }
               } else {
                 console.warn(`⚠️ [DataItemFetcher] 路径参数占位符未找到: {${p.key}} in ${finalUrl}`)
               }
             }
           })
       } else if (config.pathParameter) {
-        console.log(`🛤️ [DataItemFetcher] 处理旧格式路径参数:`, config.pathParameter)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🛤️ [DataItemFetcher] 处理旧格式路径参数:`, config.pathParameter)
+        }
         const resolvedValue = this.resolveParameterValue(config.pathParameter as HttpParameter)
         if (resolvedValue !== null && resolvedValue && String(resolvedValue).trim() !== '') {
           const pathParam = config.pathParameter as HttpParameter
@@ -416,7 +446,9 @@ export class DataItemFetcher implements IDataItemFetcher {
 
           if (finalUrl.includes(placeholder)) {
             finalUrl = finalUrl.replace(placeholder, String(resolvedValue))
-            console.log(`✅ [DataItemFetcher] 旧格式路径参数替换成功: ${placeholder} → ${resolvedValue}`)
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`✅ [DataItemFetcher] 旧格式路径参数替换成功: ${placeholder} → ${resolvedValue}`)
+            }
           } else {
             console.warn(`⚠️ [DataItemFetcher] 路径参数占位符未找到: ${placeholder} in ${finalUrl}`)
           }
@@ -425,12 +457,16 @@ export class DataItemFetcher implements IDataItemFetcher {
 
       // 处理查询参数
       if (config.params && config.params.length > 0) {
-        console.log(`🔍 [DataItemFetcher] 处理查询参数:`, config.params)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔍 [DataItemFetcher] 处理查询参数:`, config.params)
+        }
         config.params
           .filter(p => p.enabled && p.key)
           .forEach(p => {
             const resolvedValue = this.resolveParameterValue(p)
-            console.log(`🔗 [DataItemFetcher] 查询参数解析: ${p.key} = ${resolvedValue}`)
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔗 [DataItemFetcher] 查询参数解析: ${p.key} = ${resolvedValue}`)
+            }
             if (resolvedValue !== null) {
               queryParams[p.key] = resolvedValue
             }
@@ -439,12 +475,16 @@ export class DataItemFetcher implements IDataItemFetcher {
 
       // 向后兼容：统一参数系统
       else if (config.parameters && config.parameters.length > 0) {
-        console.log(`🔍 [DataItemFetcher] 处理统一参数系统:`, config.parameters)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔍 [DataItemFetcher] 处理统一参数系统:`, config.parameters)
+        }
         config.parameters
           .filter(p => p.enabled && p.key)
           .forEach(p => {
             const resolvedValue = this.resolveParameterValue(p)
-            console.log(`🔗 [DataItemFetcher] 统一参数解析: ${p.key} (${p.paramType}) = ${resolvedValue}`)
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔗 [DataItemFetcher] 统一参数解析: ${p.key} (${p.paramType}) = ${resolvedValue}`)
+            }
             if (resolvedValue !== null) {
               switch (p.paramType) {
                 case 'path':
@@ -452,17 +492,23 @@ export class DataItemFetcher implements IDataItemFetcher {
                   if (resolvedValue && String(resolvedValue).trim() !== '') {
                     const separator = finalUrl.endsWith('/') ? '' : '/'
                     finalUrl = finalUrl + separator + String(resolvedValue)
-                    console.log(`🔗 [统一参数] 拼接路径参数: ${separator}${resolvedValue}`)
+                    if (process.env.NODE_ENV === 'development') {
+                      console.log(`🔗 [统一参数] 拼接路径参数: ${separator}${resolvedValue}`)
+                    }
                   }
                   break
                 case 'query':
                   queryParams[p.key] = resolvedValue
-                  console.log(`🔍 [统一参数] 添加查询参数: ${p.key} = ${resolvedValue}`)
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log(`🔍 [统一参数] 添加查询参数: ${p.key} = ${resolvedValue}`)
+                  }
                   break
                 case 'header':
                   requestConfig.headers = requestConfig.headers || {}
                   requestConfig.headers[p.key] = String(resolvedValue)
-                  console.log(`📋 [统一参数] 添加请求头: ${p.key} = ${resolvedValue}`)
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log(`📋 [统一参数] 添加请求头: ${p.key} = ${resolvedValue}`)
+                  }
                   break
               }
             }
@@ -471,7 +517,9 @@ export class DataItemFetcher implements IDataItemFetcher {
 
       if (Object.keys(queryParams).length > 0) {
         requestConfig.params = queryParams
-        console.log(`🔍 [DataItemFetcher] 最终查询参数:`, queryParams)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔍 [DataItemFetcher] 最终查询参数:`, queryParams)
+        }
       }
 
       // 处理请求体
@@ -479,52 +527,68 @@ export class DataItemFetcher implements IDataItemFetcher {
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method) && config.body) {
         try {
           requestBody = typeof config.body === 'string' ? JSON.parse(config.body) : config.body
-          console.log(`📝 [DataItemFetcher] 处理请求体:`, requestBody)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`📝 [DataItemFetcher] 处理请求体:`, requestBody)
+          }
         } catch {
           requestBody = config.body
           console.log(`📝 [DataItemFetcher] 请求体解析失败，使用原始值:`, config.body)
         }
       }
 
-      console.log(`📡 [DataItemFetcher] 准备发送HTTP请求:`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`📡 [DataItemFetcher] 准备发送HTTP请求:`, {
         finalUrl,
         method: config.method,
         requestConfig,
         requestBody: requestBody ? 'body present' : 'no body'
       })
+      }
 
       // 发起HTTP请求
       let response
       switch (config.method.toUpperCase()) {
         case 'GET':
-          console.log(`🔄 [DataItemFetcher] 发送GET请求: ${finalUrl}`)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔄 [DataItemFetcher] 发送GET请求: ${finalUrl}`)
+          }
           response = await request.get(finalUrl, requestConfig)
           break
         case 'POST':
-          console.log(`🔄 [DataItemFetcher] 发送POST请求: ${finalUrl}`)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔄 [DataItemFetcher] 发送POST请求: ${finalUrl}`)
+          }
           response = await request.post(finalUrl, requestBody, requestConfig)
           break
         case 'PUT':
-          console.log(`🔄 [DataItemFetcher] 发送PUT请求: ${finalUrl}`)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔄 [DataItemFetcher] 发送PUT请求: ${finalUrl}`)
+          }
           response = await request.put(finalUrl, requestBody, requestConfig)
           break
         case 'PATCH':
-          console.log(`🔄 [DataItemFetcher] 发送PATCH请求: ${finalUrl}`)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔄 [DataItemFetcher] 发送PATCH请求: ${finalUrl}`)
+          }
           response = await request.patch(finalUrl, requestBody, requestConfig)
           break
         case 'DELETE':
-          console.log(`🔄 [DataItemFetcher] 发送DELETE请求: ${finalUrl}`)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔄 [DataItemFetcher] 发送DELETE请求: ${finalUrl}`)
+          }
           response = await request.delete(finalUrl, requestConfig)
           break
         default:
           throw new Error(`不支持的HTTP方法: ${config.method}`)
       }
 
-      console.log(`✅ [DataItemFetcher] HTTP请求成功响应:`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ [DataItemFetcher] HTTP请求成功响应:`, {
         url: finalUrl,
         status: response ? 'success' : 'no response',
         dataKeys: response && typeof response === 'object' ? Object.keys(response) : 'non-object response'
       })
+      }
 
       // 第三步：处理响应后脚本
       let finalResponse = response

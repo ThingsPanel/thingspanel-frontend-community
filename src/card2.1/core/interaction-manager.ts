@@ -62,13 +62,17 @@ class InteractionManager {
       await this.setupGlobalConfigurationListener()
 
       // 🔥 关键修复：注册ConfigEventBus数据执行触发器
-      console.log(`🔧 [InteractionManager] 注册ConfigEventBus数据执行触发器`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔧 [InteractionManager] 注册ConfigEventBus数据执行触发器`)
+      }
 
       const { registerDataExecutionTrigger } = await import('@/core/data-architecture/ConfigEventBus')
 
       this.dataExecutionTriggerCleanup = registerDataExecutionTrigger(this.handleDataExecutionTrigger.bind(this))
 
-      console.log(`✅ [InteractionManager] ConfigEventBus数据执行触发器注册成功`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ [InteractionManager] ConfigEventBus数据执行触发器注册成功`)
+      }
 
       this.isInitialized = true
       console.log(`🚀 [InteractionManager] 初始化完成`)
@@ -354,13 +358,15 @@ class InteractionManager {
     const targetElement = document.querySelector(`[data-component-id="${componentId}"]`)
 
     // 🔥 跨组件交互调试日志
-    console.log(`🔔 [InteractionManager] 通知组件状态变化`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔔 [InteractionManager] 通知组件状态变化`, {
       目标组件ID: componentId,
       找到DOM元素: !!targetElement,
       DOM查询: `[data-component-id="${componentId}"]`,
       更新内容: updates,
       完整状态: fullState
     })
+    }
 
     if (targetElement) {
       const customEvent = new CustomEvent('componentStateUpdate', {
@@ -992,13 +998,15 @@ class InteractionManager {
     // 🔥 增强：首先尝试从基础配置中获取属性值
     const baseConfigValue = this.getPropertyFromBaseConfiguration(componentInstanceId, propertyPath)
     if (baseConfigValue !== undefined) {
-      console.log(`🎯 [InteractionManager] 从基础配置解析属性`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🎯 [InteractionManager] 从基础配置解析属性`, {
         bindingExpression,
         componentInstanceId,
         propertyPath,
         value: baseConfigValue,
         source: 'baseConfiguration'
       })
+      }
       return baseConfigValue
     }
 
@@ -1007,13 +1015,15 @@ class InteractionManager {
     if (componentState) {
       const stateValue = this.getNestedProperty(componentState, propertyPath)
       if (stateValue !== undefined) {
-        console.log(`🎯 [InteractionManager] 从交互状态解析属性`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🎯 [InteractionManager] 从交互状态解析属性`, {
           bindingExpression,
           componentInstanceId,
           propertyPath,
           value: stateValue,
           source: 'interactionState'
         })
+        }
         return stateValue
       }
     }
@@ -1086,12 +1096,14 @@ class InteractionManager {
       // 通知组件属性更新
       this.notifyPropertyUpdate(componentId, propertyPath, newValue, oldValue)
 
-      console.log(`🔄 [InteractionManager] 基础配置属性更新成功`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 [InteractionManager] 基础配置属性更新成功`, {
         componentId,
         propertyPath,
         newValue,
         oldValue
       })
+      }
 
       return true
     }
@@ -1107,12 +1119,14 @@ class InteractionManager {
     // 通知组件属性更新
     this.notifyPropertyUpdate(componentId, propertyPath, newValue, oldValue)
 
-    console.log(`🔄 [InteractionManager] 交互状态属性更新成功`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 [InteractionManager] 交互状态属性更新成功`, {
       componentId,
       propertyPath,
       newValue,
       oldValue
     })
+    }
 
     return true
   }
@@ -1226,12 +1240,14 @@ class InteractionManager {
       // 🔥 通过配置管理器更新基础配置
       configurationIntegrationBridge.updateConfiguration(componentInstanceId, 'base', updatedBaseConfig)
 
-      console.log(`🔄 [InteractionManager] 基础配置更新`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 [InteractionManager] 基础配置更新`, {
         componentInstanceId,
         propertyPath,
         newValue,
         oldValue: this.getNestedProperty(currentBaseConfig, propertyPath)
       })
+      }
 
       return true
     } catch (error) {
@@ -1311,13 +1327,15 @@ class InteractionManager {
       const configStr = JSON.stringify(configToStore)
       this.httpDataSourceMappings.set(mappingKey, configStr)
       
-      console.log(`🔄 [InteractionManager] registerHttpDataSource 存储映射`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 [InteractionManager] registerHttpDataSource 存储映射`, {
         componentId,
         componentType,
         mappingKey,
         configLength: configStr.length,
         存储类型: typeof configStr
       })
+      }
     } catch (error) {
       console.error(`❌ [InteractionManager] registerHttpDataSource JSON序列化失败`, {
         componentId,
@@ -1347,12 +1365,14 @@ class InteractionManager {
     oldValue?: any
   ): Promise<void> {
     try {
-      console.log(`🔄 [InteractionManager] 属性变化，查找绑定的数据源配置`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 [InteractionManager] 属性变化，查找绑定的数据源配置`, {
         componentId,
         propertyPath,
         newValue,
         oldValue
       })
+      }
 
       // 🚀 核心修复：找到所有绑定此属性的数据源配置，并更新它们
       const updatedConfigurations: string[] = []
@@ -1363,20 +1383,24 @@ class InteractionManager {
 
         // 检查配置中是否包含对此属性的绑定
         const hasBinding = this.configContainsPropertyBinding(mapping.config, componentId, propertyPath)
-        console.log(`🔍 [InteractionManager] 检查绑定关系`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔍 [InteractionManager] 检查绑定关系`, {
           mappingKey,
           hasBinding,
           bindingExpression,
           configStr: JSON.stringify(mapping.config || {}).substring(0, 200) + '...'
         })
+        }
 
         if (hasBinding) {
-          console.log(`🎯 [InteractionManager] 发现绑定关系，更新数据源配置`, {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🎯 [InteractionManager] 发现绑定关系，更新数据源配置`, {
             sourceComponent: componentId,
             sourceProperty: propertyPath,
             targetComponent: mapping.componentId,
             bindingExpression
           })
+          }
 
           // 🚀 关键：更新数据源配置而不是直接刷新
           await this.updateDataSourceConfigurationWithPropertyValue(
@@ -1393,19 +1417,23 @@ class InteractionManager {
       // 🔥 特殊处理基础配置字段：这些字段可能直接影响当前组件的数据源
       const isBaseConfigProperty = this.isBaseConfigurationProperty(propertyPath)
       if (isBaseConfigProperty && !updatedConfigurations.includes(componentId)) {
-        console.log(`🎯 [InteractionManager] 基础配置变化，更新当前组件数据源配置`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🎯 [InteractionManager] 基础配置变化，更新当前组件数据源配置`, {
           componentId,
           propertyPath
         })
+        }
 
         await this.updateCurrentComponentDataSourceForBaseConfig(componentId, propertyPath, newValue)
         updatedConfigurations.push(componentId)
       }
 
-      console.log(`✅ [InteractionManager] 数据源配置更新完成`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ [InteractionManager] 数据源配置更新完成`, {
         affectedComponents: updatedConfigurations,
         totalCount: updatedConfigurations.length
       })
+      }
     } catch (error) {
       console.error(`[InteractionManager] 数据源配置更新失败`, {
         componentId,
@@ -1465,7 +1493,8 @@ class InteractionManager {
     }
 
     // 🔥 添加详细调试日志
-    console.log(`🔍 [InteractionManager] configContainsPropertyBinding 详细检查`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 [InteractionManager] configContainsPropertyBinding 详细检查`, {
       componentId,
       propertyPath,
       bindingPath,
@@ -1475,6 +1504,7 @@ class InteractionManager {
       possibleBindingFormats,
       configSample: configStr.substring(0, 300) + '...'
     })
+    }
 
     return hasBinding
   }
@@ -1547,19 +1577,23 @@ class InteractionManager {
       const configChanged = JSON.stringify(fullConfig.dataSource) !== JSON.stringify(updatedDataSourceConfig)
 
       if (configChanged) {
-        console.log(`🔄 [InteractionManager] 更新数据源配置`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔄 [InteractionManager] 更新数据源配置`, {
           targetComponent: targetComponentId,
           bindingExpression,
           propertyValue,
           oldConfig: fullConfig.dataSource,
           newConfig: updatedDataSourceConfig
         })
+        }
 
         // 🚀 关键：通过配置管理器更新数据源配置
         // 这将触发ConfigurationStateManager的事件，最终触发执行器
         configurationIntegrationBridge.updateConfiguration(targetComponentId, 'dataSource', updatedDataSourceConfig)
 
-        console.log(`✅ [InteractionManager] 数据源配置已更新，配置变化将触发执行器`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ [InteractionManager] 数据源配置已更新，配置变化将触发执行器`)
+        }
       } else {
         console.log(`ℹ️ [InteractionManager] 数据源配置未发生实质变化，跳过更新`)
       }
@@ -1594,21 +1628,25 @@ class InteractionManager {
 
       // 检查数据源配置是否引用了此基础配置属性
       const hasDirectBinding = this.configContainsPropertyBinding(fullConfig.dataSource, componentId, propertyPath)
-      console.log(`🔍 [InteractionManager] 检查基础配置属性直接绑定`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔍 [InteractionManager] 检查基础配置属性直接绑定`, {
         componentId,
         propertyPath,
         bindingExpression,
         hasDirectBinding,
         dataSourceConfigStr: JSON.stringify(fullConfig.dataSource).substring(0, 500) + '...'
       })
+      }
 
       if (hasDirectBinding) {
-        console.log(`🎯 [InteractionManager] 基础配置属性被数据源引用，更新配置`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🎯 [InteractionManager] 基础配置属性被数据源引用，更新配置`, {
           componentId,
           propertyPath,
           bindingExpression,
           newValue
         })
+        }
 
         // 更新数据源配置中的绑定值
         await this.updateDataSourceConfigurationWithPropertyValue(
@@ -1682,12 +1720,14 @@ class InteractionManager {
     try {
       // 🔥 特别处理设备字段变化
       if (propertyPath === 'deviceId' || propertyPath === 'metricsList') {
-        console.log(`🔄 [InteractionManager] 检测到设备字段变化，刷新组件数据源`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔄 [InteractionManager] 检测到设备字段变化，刷新组件数据源`, {
           componentId,
           propertyPath,
           newValue,
           oldValue
         })
+        }
 
         // 1. 刷新当前组件的数据源
         await this.refreshComponentDataSource(componentId)
@@ -1698,11 +1738,13 @@ class InteractionManager {
 
       // 🔥 处理其他基础配置字段变化
       else {
-        console.log(`🔄 [InteractionManager] 基础配置字段变化，检查数据源依赖`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔄 [InteractionManager] 基础配置字段变化，检查数据源依赖`, {
           componentId,
           propertyPath,
           newValue
         })
+        }
 
         // 刷新当前组件的数据源（如果数据源中使用了该字段）
         await this.refreshComponentDataSource(componentId)
@@ -1734,11 +1776,13 @@ class InteractionManager {
 
       // 检查该数据源是否可能依赖设备信息
       if (this.dataSourceMightDependOnDevice(mapping.config)) {
-        console.log(`🔄 [InteractionManager] 刷新相关设备数据源`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔄 [InteractionManager] 刷新相关设备数据源`, {
           sourceComponentId,
           targetComponentId: mapping.componentId,
           propertyPath
         })
+        }
 
         await this.refreshComponentDataSource(mapping.componentId)
       }
@@ -1804,10 +1848,12 @@ class InteractionManager {
       // 1. 从HTTP数据源映射中查找
       const httpMapping = this.httpDataSourceMappings.get(`http-${componentId}`)
       if (httpMapping) {
-        console.log(`🔄 [InteractionManager] 刷新HTTP数据源`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔄 [InteractionManager] 刷新HTTP数据源`, {
           componentId,
           componentType: httpMapping.componentType
         })
+        }
 
         const result = await this.visualEditorBridge.updateComponentExecutor(
           httpMapping.componentId,
@@ -1815,10 +1861,12 @@ class InteractionManager {
           httpMapping.config
         )
 
-        console.log(`✅ [InteractionManager] HTTP数据源刷新完成`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ [InteractionManager] HTTP数据源刷新完成`, {
           componentId,
           success: !!result
         })
+        }
         return
       }
 
@@ -1847,10 +1895,12 @@ class InteractionManager {
         return
       }
 
-      console.log(`🔄 [InteractionManager] 从配置刷新数据源`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 [InteractionManager] 从配置刷新数据源`, {
         componentId,
         hasDataSourceConfig: !!fullConfig.dataSource
       })
+      }
 
       // 使用配置中的数据源信息刷新
       const result = await this.visualEditorBridge.updateComponentExecutor(
@@ -1859,10 +1909,12 @@ class InteractionManager {
         fullConfig.dataSource
       )
 
-      console.log(`✅ [InteractionManager] 配置数据源刷新完成`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ [InteractionManager] 配置数据源刷新完成`, {
         componentId,
         success: !!result
       })
+      }
     } catch (error) {
       console.error(`[InteractionManager] 从配置刷新数据源失败`, {
         componentId,
@@ -1880,11 +1932,13 @@ class InteractionManager {
       // 使用配置同步桥梁进行状态同步
       interactionConfigBridge.syncInteractionStateToConfig(componentId, updates)
 
-      console.log(`🔄 [InteractionManager] 状态已同步到配置管理器`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 [InteractionManager] 状态已同步到配置管理器`, {
         componentId,
         updates,
         timestamp: Date.now()
       })
+      }
     } catch (error) {
       console.error(`❌ [InteractionManager] 配置同步失败`, {
         componentId,
@@ -1908,11 +1962,13 @@ class InteractionManager {
 
         this.componentStates.set(componentId, mergedState)
 
-        console.log(`📥 [InteractionManager] 从配置加载状态`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`📥 [InteractionManager] 从配置加载状态`, {
           componentId,
           configState,
           mergedState
         })
+        }
       }
     } catch (error) {
       console.error(`❌ [InteractionManager] 加载配置状态失败`, {
@@ -1975,7 +2031,9 @@ class InteractionManager {
         this.handleGlobalConfigurationChange(event)
       })
 
-      console.log(`🔧 [InteractionManager] 全局配置变化监听器设置完成`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔧 [InteractionManager] 全局配置变化监听器设置完成`)
+      }
     } catch (error) {
       console.error(`❌ [InteractionManager] 设置全局配置监听器失败`, error)
     }
@@ -1997,7 +2055,9 @@ class InteractionManager {
       // 保存清理函数
       this.configChangeListeners.set(componentId, removeListener)
 
-      console.log(`🔧 [InteractionManager] 组件配置监听器设置完成`, { componentId })
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔧 [InteractionManager] 组件配置监听器设置完成`, { componentId })
+      }
     } catch (error) {
       console.error(`❌ [InteractionManager] 设置组件配置监听器失败`, {
         componentId,
@@ -2015,7 +2075,9 @@ class InteractionManager {
       try {
         removeListener()
         this.configChangeListeners.delete(componentId)
-        console.log(`🧹 [InteractionManager] 组件配置监听器清理完成`, { componentId })
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🧹 [InteractionManager] 组件配置监听器清理完成`, { componentId })
+        }
       } catch (error) {
         console.warn(`⚠️ [InteractionManager] 清理组件配置监听器失败`, {
           componentId,
@@ -2030,34 +2092,42 @@ class InteractionManager {
    * 当配置变更时，自动触发相关组件的数据源重新执行
    */
   private async handleDataExecutionTrigger(event: ConfigChangeEvent): Promise<void> {
-    console.log(`🔥🔥🔥 [InteractionManager] handleDataExecutionTrigger 被调用了！！！`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔥🔥🔥 [InteractionManager] handleDataExecutionTrigger 被调用了！！！`, {
       componentId: event.componentId,
       section: event.section,
       changedFields: event.context?.changedFields,
       eventKeys: Object.keys(event)
     })
+    }
 
     try {
-      console.log(`🚀 [InteractionManager] 处理数据执行触发器事件`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🚀 [InteractionManager] 处理数据执行触发器事件`, {
         componentId: event.componentId,
         section: event.section,
         changedFields: event.context?.changedFields
       })
+      }
 
       // 🔥 关键修复：在处理配置变更前，先清理SimpleDataBridge缓存
       // 这确保了属性变化后会重新执行HTTP请求而不是使用旧缓存数据
-      console.log(`🧹 [InteractionManager] 清理SimpleDataBridge缓存，确保重新执行HTTP请求`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🧹 [InteractionManager] 清理SimpleDataBridge缓存，确保重新执行HTTP请求`, {
         componentId: event.componentId,
         reason: '配置变更检测'
       })
+      }
       
       try {
         // 导入 SimpleDataBridge 并清理缓存
         const { simpleDataBridge } = await import('@/core/data-architecture/SimpleDataBridge')
         simpleDataBridge.clearComponentCache(event.componentId)
-        console.log(`✅ [InteractionManager] SimpleDataBridge缓存清理成功`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ [InteractionManager] SimpleDataBridge缓存清理成功`, {
           componentId: event.componentId
         })
+        }
       } catch (error) {
         console.warn(`⚠️ [InteractionManager] SimpleDataBridge缓存清理失败`, {
           componentId: event.componentId,
@@ -2079,17 +2149,20 @@ class InteractionManager {
       const mappingKey = `http-${event.componentId}`
       const dataSourceConfigStr = this.httpDataSourceMappings.get(mappingKey)
 
-      console.log(`🔍 [InteractionManager] 检查HTTP数据源映射`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔍 [InteractionManager] 检查HTTP数据源映射`, {
         componentId: event.componentId,
         mappingKey,
         hasMapping: !!dataSourceConfigStr,
         totalMappings: this.httpDataSourceMappings.size,
         allMappingKeys: Array.from(this.httpDataSourceMappings.keys())
       })
+      }
 
       if (dataSourceConfigStr) {
         // 🔥 调试：检查存储的内容类型
-        console.log(`🔍 [InteractionManager] 存储内容调试`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔍 [InteractionManager] 存储内容调试`, {
           componentId: event.componentId,
           contentType: typeof dataSourceConfigStr,
           contentLength: dataSourceConfigStr?.length,
@@ -2098,6 +2171,7 @@ class InteractionManager {
             dataSourceConfigStr.substring(0, 100) + '...' : 
             String(dataSourceConfigStr).substring(0, 100) + '...'
         })
+        }
 
         try {
           // 🔥 安全的JSON解析
@@ -2106,7 +2180,9 @@ class InteractionManager {
             dataSourceConfig = JSON.parse(dataSourceConfigStr)
           } else {
             // 🔥 处理旧格式的对象存储 - 转换为新格式
-            console.log(`⚠️ [InteractionManager] 检测到旧格式对象存储，转换为新格式`)
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`⚠️ [InteractionManager] 检测到旧格式对象存储，转换为新格式`)
+            }
             const oldFormatConfig = dataSourceConfigStr as any
             
             if (oldFormatConfig.componentId && oldFormatConfig.config) {
@@ -2122,18 +2198,22 @@ class InteractionManager {
               dataSourceConfig = dataSourceConfigStr
             }
             
-            console.log(`🔄 [InteractionManager] 旧格式转换完成`, {
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔄 [InteractionManager] 旧格式转换完成`, {
               componentId: event.componentId,
               hasComponentId: !!oldFormatConfig?.componentId,
               hasConfig: !!oldFormatConfig?.config
             })
+            }
           }
 
-          console.log(`🔄 [InteractionManager] 触发HTTP数据源重新执行`, {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔄 [InteractionManager] 触发HTTP数据源重新执行`, {
             componentId: event.componentId,
             configKeys: Object.keys(dataSourceConfig || {}),
             hasBaseConfig: !!dataSourceConfig._baseConfig
           })
+          }
 
           // 🔥 关键修复：正确构造数据源配置
           // 检查存储的配置格式，确保数据源结构正确
@@ -2202,15 +2282,18 @@ class InteractionManager {
             }
           }
 
-          console.log(`🔧 [InteractionManager] 准备执行配置`, {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔧 [InteractionManager] 准备执行配置`, {
             componentId: event.componentId,
             hasBase: !!configForExecution.base,
             hasDataSource: !!configForExecution.dataSource,
             configKeys: Object.keys(configForExecution)
           })
+          }
 
           // 🔥 添加详细的配置内容调试
-          console.log(`🔍 [InteractionManager] 详细配置内容调试`, {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔍 [InteractionManager] 详细配置内容调试`, {
             componentId: event.componentId,
             configForExecution: JSON.stringify(configForExecution, null, 2).substring(0, 2000),
             dataSourceConfig: JSON.stringify(dataSourceConfig, null, 2).substring(0, 1000),
@@ -2219,6 +2302,7 @@ class InteractionManager {
             hasRawDataList: !!(configForExecution.dataSource?.rawDataList),
             rawDataListLength: configForExecution.dataSource?.rawDataList?.length || 0
           })
+          }
 
           const result = await this.visualEditorBridge.updateComponentExecutor(
             event.componentId,
@@ -2226,10 +2310,12 @@ class InteractionManager {
             configForExecution
           )
 
-          console.log(`✅ [InteractionManager] HTTP数据源重新执行完成`, {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`✅ [InteractionManager] HTTP数据源重新执行完成`, {
             componentId: event.componentId,
             executionResult: result
           })
+          }
         } catch (error) {
           console.error(`❌ [InteractionManager] HTTP数据源重新执行失败`, {
             componentId: event.componentId,
@@ -2237,10 +2323,12 @@ class InteractionManager {
           })
         }
       } else {
-        console.log(`⚠️ [InteractionManager] 未找到该组件的HTTP数据源映射`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`⚠️ [InteractionManager] 未找到该组件的HTTP数据源映射`, {
           componentId: event.componentId,
           mappingKey
         })
+        }
       }
 
       // 检查是否有其他组件需要基于该组件的配置变更进行数据更新
@@ -2249,10 +2337,12 @@ class InteractionManager {
         const hasCriticalChange = event.context.changedFields.some(field => criticalFields.includes(field))
 
         if (hasCriticalChange) {
-          console.log(`🔥 [InteractionManager] 检测到关键基础配置变更，检查所有相关组件`, {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔥 [InteractionManager] 检测到关键基础配置变更，检查所有相关组件`, {
             componentId: event.componentId,
             changedFields: event.context.changedFields
           })
+          }
 
           // 检查所有组件的HTTP数据源，看是否需要重新执行
           for (const [mappingComponentId, mapping] of this.httpDataSourceMappings) {
@@ -2261,10 +2351,12 @@ class InteractionManager {
               const dependsOnChangedComponent = this.checkComponentDependency(mappingComponentId, event.componentId)
 
               if (dependsOnChangedComponent) {
-                console.log(`🔄 [InteractionManager] 触发依赖组件的数据源重新执行`, {
+                if (process.env.NODE_ENV === 'development') {
+                  console.log(`🔄 [InteractionManager] 触发依赖组件的数据源重新执行`, {
                   依赖组件: mappingComponentId,
                   源组件: event.componentId
                 })
+                }
 
                 await this.visualEditorBridge.updateComponentExecutor(
                   mappingComponentId,
@@ -2317,7 +2409,9 @@ class InteractionManager {
     this.httpDataSourceMappings.clear()
 
     this.isInitialized = false
-    console.log(`🗑️ [InteractionManager] 已销毁`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🗑️ [InteractionManager] 已销毁`)
+    }
   }
 
   /**
@@ -2330,12 +2424,14 @@ class InteractionManager {
 
       // 只处理基础配置变化
       if (section === 'base') {
-        console.log(`🔔 [InteractionManager] 检测到基础配置变化`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔔 [InteractionManager] 检测到基础配置变化`, {
           componentId,
           section,
           hasOldConfig: !!oldConfig,
           hasNewConfig: !!newConfig
         })
+        }
 
         this.processBaseConfigurationChange(componentId, oldConfig, newConfig)
       }
@@ -2357,10 +2453,12 @@ class InteractionManager {
         return
       }
 
-      console.log(`🔔 [InteractionManager] 组件配置变化`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔔 [InteractionManager] 组件配置变化`, {
         componentId,
         hasBaseConfig: !!newConfig.base
       })
+      }
 
       // 检查基础配置中的设备字段变化
       this.checkBaseConfigurationFieldChanges(componentId, newConfig.base)
@@ -2447,23 +2545,27 @@ class InteractionManager {
    */
   private processBaseConfigurationFieldChange(componentId: string, field: string, newValue: any, oldValue: any): void {
     try {
-      console.log(`🔄 [InteractionManager] 基础配置字段变化`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 [InteractionManager] 基础配置字段变化`, {
         componentId,
         field,
         oldValue,
         newValue
       })
+      }
 
       // 🔥 通知属性更新（这会触发数据源刷新等后续处理）
       this.notifyPropertyUpdate(componentId, field, newValue, oldValue)
 
       // 🔥 特殊处理设备字段变化
       if (field === 'deviceId' || field === 'metricsList') {
-        console.log(`🎯 [InteractionManager] 设备字段变化，触发特殊处理`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🎯 [InteractionManager] 设备字段变化，触发特殊处理`, {
           componentId,
           field,
           newValue
         })
+        }
 
         // 触发设备相关的特殊处理逻辑（异步执行）
         this.handleDeviceFieldChange(componentId, field, newValue, oldValue).catch(error => {
@@ -2495,12 +2597,14 @@ class InteractionManager {
   ): Promise<void> {
     // 这里可以添加设备字段变化的特殊处理逻辑
     // 例如：更新设备模板、刷新设备状态等
-    console.log(`⚡ [InteractionManager] 设备字段特殊处理`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`⚡ [InteractionManager] 设备字段特殊处理`, {
       componentId,
       field,
       newValue,
       oldValue
     })
+    }
 
     // 🔥 关键修复：设备字段变更时，直接触发ConfigEventBus事件
     try {
@@ -2519,11 +2623,13 @@ class InteractionManager {
         }
       }
 
-      console.log(`🚀 [InteractionManager] 触发ConfigEventBus事件`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🚀 [InteractionManager] 触发ConfigEventBus事件`, {
         componentId,
         field,
         event: configChangeEvent
       })
+      }
 
       // 导入并使用ConfigEventBus
       const { configEventBus } = await import('@/core/data-architecture/ConfigEventBus')
@@ -2562,7 +2668,9 @@ class InteractionManager {
     // 获取组件的完整配置
     const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
     if (!fullConfig) {
-      console.log(`❌ [InteractionManager] 无法获取组件配置`, { componentId })
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`❌ [InteractionManager] 无法获取组件配置`, { componentId })
+      }
       return
     }
 
@@ -2607,11 +2715,13 @@ class InteractionManager {
           
           fullConfigStr = JSON.stringify(configToStore, null, 2)
           
-          console.log(`🔧 [InteractionManager] JSON序列化成功`, {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔧 [InteractionManager] JSON序列化成功`, {
             componentId,
             configLength: fullConfigStr.length,
             配置预览: fullConfigStr.substring(0, 200) + '...'
           })
+          }
         } catch (jsonError) {
           console.error(`❌ [InteractionManager] JSON序列化失败，使用简化配置`, {
             componentId,
@@ -2628,7 +2738,8 @@ class InteractionManager {
         // 存储HTTP数据源映射
         this.httpDataSourceMappings.set(mappingKey, fullConfigStr)
 
-        console.log(`🔄 [InteractionManager] 存储HTTP数据源映射`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔄 [InteractionManager] 存储HTTP数据源映射`, {
           componentId,
           componentType,
           hasHttpDataSource,
@@ -2639,6 +2750,7 @@ class InteractionManager {
           存储类型: typeof fullConfigStr,
           存储内容是字符串: typeof fullConfigStr === 'string'
         })
+        }
 
         // 🔥 验证存储的确实是字符串
         if (typeof fullConfigStr !== 'string') {
@@ -2654,7 +2766,8 @@ class InteractionManager {
         // 🔥 检查组件绑定参数
         if (fullConfig.dataSource.config && fullConfig.dataSource.config.params) {
           const componentParams = fullConfig.dataSource.config.params.filter(p => p.valueMode === 'component')
-          console.log(`📋 [InteractionManager] 发现组件绑定参数`, {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`📋 [InteractionManager] 发现组件绑定参数`, {
             componentId,
             componentParamCount: componentParams.length,
             componentParams: componentParams.map(p => ({
@@ -2668,6 +2781,7 @@ class InteractionManager {
               componentProperty: p.componentProperty
             }))
           })
+          }
         }
       }
     }
@@ -2737,11 +2851,13 @@ class InteractionManager {
    * 确保 DataItemFetcher 获取到最新的属性值而不是过期缓存
    */
   private async syncConfigChangeToEditorStore(event: ConfigChangeEvent): Promise<void> {
-    console.log(`🔄 [InteractionManager] 开始同步配置变更到EditorStore`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 [InteractionManager] 开始同步配置变更到EditorStore`, {
       componentId: event.componentId,
       section: event.section,
       hasChangedFields: !!event.context?.changedFields
     })
+    }
 
     try {
       // 导入 Visual Editor Store
@@ -2751,7 +2867,9 @@ class InteractionManager {
       // 查找目标节点
       const targetNode = editorStore.nodes?.find(node => node.id === event.componentId)
       if (!targetNode) {
-        console.log(`⚠️ [InteractionManager] EditorStore中未找到组件节点: ${event.componentId}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`⚠️ [InteractionManager] EditorStore中未找到组件节点: ${event.componentId}`)
+        }
         return
       }
 
@@ -2770,12 +2888,14 @@ class InteractionManager {
         interaction: {}
       }
       
-      console.log(`📋 [InteractionManager] 使用事件配置信息`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`📋 [InteractionManager] 使用事件配置信息`, {
         componentId: event.componentId,
         section: event.section,
         hasNewConfig: !!event.newConfig,
         newConfigKeys: event.newConfig ? Object.keys(event.newConfig) : []
       })
+      }
 
       // 🔥 关键：从配置系统中提取最新的属性值，更新到 EditorStore 节点
       let needUpdate = false
@@ -2784,10 +2904,12 @@ class InteractionManager {
       // 如果是基础配置变更，更新对应的属性值
       if (event.section === 'base' && currentConfiguration.base) {
         const baseConfig = currentConfiguration.base
-        console.log(`📝 [InteractionManager] 处理基础配置变更`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`📝 [InteractionManager] 处理基础配置变更`, {
           componentId: event.componentId,
           baseConfigKeys: Object.keys(baseConfig)
         })
+        }
 
         // 遍历基础配置，同步到节点属性中
         for (const [key, value] of Object.entries(baseConfig)) {
@@ -2797,7 +2919,9 @@ class InteractionManager {
           }
           
           if (updatedProperties.base[key] !== value) {
-            console.log(`🔄 [InteractionManager] 同步基础配置属性: ${key} = ${value}`)
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔄 [InteractionManager] 同步基础配置属性: ${key} = ${value}`)
+            }
             updatedProperties.base[key] = value
             needUpdate = true
           }
@@ -2809,7 +2933,9 @@ class InteractionManager {
             updatedProperties.customize = {}
           }
           if (updatedProperties.customize.deviceId !== baseConfig.deviceId) {
-            console.log(`🎯 [InteractionManager] 同步deviceId到customize: ${baseConfig.deviceId}`)
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🎯 [InteractionManager] 同步deviceId到customize: ${baseConfig.deviceId}`)
+            }
             updatedProperties.customize.deviceId = baseConfig.deviceId
             needUpdate = true
           }
@@ -2818,7 +2944,9 @@ class InteractionManager {
 
       // 如果是组件配置变更，直接同步
       if (event.section === 'component' && currentConfiguration.component) {
-        console.log(`📝 [InteractionManager] 处理组件配置变更`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`📝 [InteractionManager] 处理组件配置变更`)
+        }
         // 合并组件配置到属性中
         Object.assign(updatedProperties, currentConfiguration.component)
         needUpdate = true
@@ -2826,17 +2954,21 @@ class InteractionManager {
 
       // 如果需要更新，更新 EditorStore 中的节点
       if (needUpdate) {
-        console.log(`✅ [InteractionManager] 更新EditorStore节点属性`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ [InteractionManager] 更新EditorStore节点属性`, {
           componentId: event.componentId,
           updatedKeys: Object.keys(updatedProperties)
         })
+        }
 
         // 更新节点属性
         editorStore.updateNode(event.componentId, {
           properties: updatedProperties
         })
 
-        console.log(`🎉 [InteractionManager] EditorStore同步完成，DataItemFetcher现在可以获取最新属性值`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🎉 [InteractionManager] EditorStore同步完成，DataItemFetcher现在可以获取最新属性值`)
+        }
       } else {
         console.log(`ℹ️ [InteractionManager] 无需更新EditorStore，属性值未变化`)
       }

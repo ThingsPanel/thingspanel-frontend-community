@@ -34,7 +34,9 @@ function getPortDefinitions(): Map<string, ComponentDefinition> {
   if (!portDefinitions.has(portId)) {
     const definitions = new Map<string, ComponentDefinition>()
     portDefinitions.set(portId, definitions)
-    console.log(`🔧 [ComponentRegistry] 为端口 ${portId} 创建新的组件注册表`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 [ComponentRegistry] 为端口 ${portId} 创建新的组件注册表`)
+    }
   }
 
   return portDefinitions.get(portId)!
@@ -54,7 +56,8 @@ export class ComponentRegistry {
     // deviceId 和 metricsList 不再是组件定义的一部分
     // 直接注册组件定义，无需额外补充字段
 
-    console.log(`🔧 [ComponentRegistry] 注册组件 ${definition.type}`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 [ComponentRegistry] 注册组件 ${definition.type}`, {
       componentType: definition.type,
       hasDataSources: !!definition.dataSources,
       hasStaticParams: !!definition.staticParams,
@@ -64,6 +67,7 @@ export class ComponentRegistry {
       definitionKeys: Object.keys(definition),
       config: definition.config
     })
+    }
 
     this.definitions.set(definition.type, definition)
 
@@ -89,10 +93,12 @@ export class ComponentRegistry {
         definition.type // componentName
       )
 
-      console.log(`✅ [ComponentRegistry] 组件属性暴露注册完成`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ [ComponentRegistry] 组件属性暴露注册完成`, {
         componentType: definition.type,
         includesBaseConfig: true
       })
+      }
     } catch (error) {
       console.warn(`[ComponentRegistry] 属性暴露注册失败`, {
         componentType: definition.type,
@@ -264,10 +270,12 @@ export class ComponentRegistry {
     if (settingConfig) {
       try {
         // 🔥 暂时禁用动态导入以避免循环依赖问题
-        console.log(`ℹ️ [ComponentRegistry] settingConfig属性注册已跳过（避免循环依赖）`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`ℹ️ [ComponentRegistry] settingConfig属性注册已跳过（避免循环依赖）`, {
           componentType: definition.type,
           settingsCount: settingConfig.settings?.length || 0
         })
+        }
 
         // TODO: 在后续版本中重新启用属性自动注册
         // const { autoRegisterFromSettingConfig } = await import('@/card2.1/core/property-exposure')

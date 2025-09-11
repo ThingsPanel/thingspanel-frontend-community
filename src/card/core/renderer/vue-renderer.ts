@@ -47,7 +47,9 @@ export class VueRenderer implements IRenderer {
       ...config
     }
 
-    console.log('[VueRenderer] Vue渲染器已初始化')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[VueRenderer] Vue渲染器已初始化')
+    }
   }
 
   /**
@@ -81,7 +83,9 @@ export class VueRenderer implements IRenderer {
       // 调用渲染后钩子
       await this.hooks.afterRender?.(instance, context)
 
-      console.log(`[VueRenderer] 组件 ${instance.id} 渲染完成`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[VueRenderer] 组件 ${instance.id} 渲染完成`)
+      }
     } catch (error) {
       console.error(`[VueRenderer] 渲染失败:`, error)
 
@@ -136,7 +140,9 @@ export class VueRenderer implements IRenderer {
       // 调用更新后钩子
       await this.hooks.afterUpdate?.(instance, data, context)
 
-      console.log(`[VueRenderer] 组件 ${instance.id} 更新完成`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[VueRenderer] 组件 ${instance.id} 更新完成`)
+      }
     } catch (error) {
       console.error(`[VueRenderer] 更新失败:`, error)
       throw error
@@ -174,7 +180,9 @@ export class VueRenderer implements IRenderer {
       // 调用销毁后钩子
       await this.hooks.afterDestroy?.(instance, context)
 
-      console.log(`[VueRenderer] 组件 ${instance.id} 已销毁`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[VueRenderer] 组件 ${instance.id} 已销毁`)
+      }
     } catch (error) {
       console.error(`[VueRenderer] 销毁失败:`, error)
       throw error
@@ -227,7 +235,9 @@ export class VueRenderer implements IRenderer {
    */
   updateConfig(config: Partial<VueRendererConfig>): void {
     this.config = { ...this.config, ...config }
-    console.log('[VueRenderer] 配置已更新')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[VueRenderer] 配置已更新')
+    }
   }
 
   /**
@@ -248,7 +258,9 @@ export class VueRenderer implements IRenderer {
     this.componentInstances.clear()
     this.eventListeners.clear()
 
-    console.log('[VueRenderer] 渲染器已销毁')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[VueRenderer] 渲染器已销毁')
+    }
   }
 
   /**

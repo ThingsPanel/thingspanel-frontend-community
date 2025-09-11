@@ -128,7 +128,9 @@ watch(
           isUpdatingFromProps.value = false
         })
       } else {
-        console.log('⏭️ [DataSourceMergeStrategyEditor] props内容未变化，跳过同步')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⏭️ [DataSourceMergeStrategyEditor] props内容未变化，跳过同步')
+        }
       }
     }
   },

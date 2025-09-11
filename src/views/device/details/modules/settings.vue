@@ -195,7 +195,9 @@ const handleDeleteDevice = () => {
 const deleteD = async (id: string) => {
   try {
     await deleteDevice({ id })
-    console.log(1)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(1)
+    }
     window.$message?.success($t('common.deleteSuccess'))
     // 关闭当前标签页
     await removeTab(currentTabId)

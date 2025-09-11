@@ -147,11 +147,13 @@ export class ConfigMergeManager {
       ...options
     }
 
-    console.log(`🔄 [ConfigMergeManager] 开始配置合并`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 [ConfigMergeManager] 开始配置合并`, {
       配置源: Object.keys(configs),
       各源内容: configs,
       合并选项: mergeOptions
     })
+    }
 
     let merged: T = {} as T
     const changes: ConfigChangeInfo[] = []
@@ -403,13 +405,15 @@ export class ConfigMergeManager {
           timestamp: Date.now()
         })
 
-        console.log(`🔄 [ConfigMergeManager] 配置更新成功`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔄 [ConfigMergeManager] 配置更新成功`, {
           key,
           oldValue,
           newValue: value,
           source,
           priority: strategy.priority
         })
+        }
       }
     }
 
@@ -565,4 +569,6 @@ export const ConfigMerge = {
   })
 }
 
-console.log('🎯 [ConfigMergeManager] 配置合并策略系统已初始化')
+if (process.env.NODE_ENV === 'development') {
+  console.log('🎯 [ConfigMergeManager] 配置合并策略系统已初始化')
+}

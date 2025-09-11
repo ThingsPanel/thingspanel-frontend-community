@@ -578,13 +578,17 @@ export const typeTestSettingConfig: EnhancedComponentSettingConfig<TypeTestConfi
   hooks: {
     // 配置初始化时
     onConfigInit: (config: TypeTestConfig) => {
-      console.log('配置初始化:', config)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('配置初始化:', config)
+      }
       return config
     },
     
     // 配置改变时
     onConfigChange: (newConfig: TypeTestConfig, oldConfig: TypeTestConfig, field?: string) => {
-      console.log('配置改变:', { field, newConfig, oldConfig })
+      if (process.env.NODE_ENV === 'development') {
+        console.log('配置改变:', { field, newConfig, oldConfig })
+      }
       
       // 特殊逻辑处理
       if (field === 'size') {

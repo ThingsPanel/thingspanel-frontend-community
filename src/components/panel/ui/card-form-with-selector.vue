@@ -242,7 +242,9 @@ const deviceCountUpdate = v => {
 const onDeviceChange = (deviceId: string, device: any, item: any) => {
   item.deviceId = deviceId
   item.name = device.name
-  console.log('设备选择变化:', deviceId, device)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('设备选择变化:', deviceId, device)
+  }
 }
 
 const onMetricsChange = (metricsId: string, metrics: any, item: any) => {
@@ -250,7 +252,9 @@ const onMetricsChange = (metricsId: string, metrics: any, item: any) => {
   item.metricsName = metrics.label || metrics.key
   item.metricsType = metrics.data_source_type
   item.metricsDataType = metrics.data_type
-  console.log('指标选择变化:', metricsId, metrics)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('指标选择变化:', metricsId, metrics)
+  }
 }
 
 const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange === 'no_aggregate')

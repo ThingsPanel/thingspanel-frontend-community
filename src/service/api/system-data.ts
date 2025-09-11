@@ -276,10 +276,14 @@ export const getSysVersion = async (params?: any): Promise<any> => {
 
 /** 获取系统指标历史数据 */
 export const getSystemMetricsHistory = async (params?: any): Promise<any> => {
-  console.log('Fetching system metrics history with params:', params)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Fetching system metrics history with params:', params)
+  }
   try {
     const data = await request.get<any>('/system/metrics/history', { params })
-    console.log('Raw response from /system/metrics/history:', data) // Log raw response
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Raw response from /system/metrics/history:', data)
+    } // Log raw response
     return data
   } catch (error) {
     console.error('Error fetching system metrics history:', error)

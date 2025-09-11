@@ -49,7 +49,9 @@ const save = () => {
   const deviceSource = state.curCardData.dataSource.deviceSource[0]
   const cardId = state.curCardData.cardId
   state.curCardData.cardId = `${cardId}-${deviceSource.metricsId}`
-  console.log(state.curCardData)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(state.curCardData)
+  }
   emit('save', JSON.parse(JSON.stringify(state.curCardData)))
 }
 watch(props, pr => {

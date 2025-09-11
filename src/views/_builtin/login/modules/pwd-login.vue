@@ -152,7 +152,9 @@ function loadSavedCredentials() {
 // 从环境变量加载自动登录凭据
 async function loadAutoLoginCredentials() {
   // 添加详细的调试信息
-  console.log('=== 自动登录调试信息 ===')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('=== 自动登录调试信息 ===')
+  }
   console.log('当前URL:', window.location.href)
   console.log('查询参数字符串:', window.location.search)
 
@@ -162,14 +164,20 @@ async function loadAutoLoginCredentials() {
   const urlUsername = urlParams.get('username')
   const urlPassword = urlParams.get('password')
 
-  console.log('auto参数值:', urlParams.get('auto'))
+  if (process.env.NODE_ENV === 'development') {
+    console.log('auto参数值:', urlParams.get('auto'))
+  }
   console.log('URL中的用户名:', urlUsername ? '已提供' : '未提供')
   console.log('URL中的密码:', urlPassword ? '已提供' : '未提供')
-  console.log('是否满足自动登录条件:', autoLogin && urlUsername && urlPassword)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('是否满足自动登录条件:', autoLogin && urlUsername && urlPassword)
+  }
 
   // 只要URL参数中有账号密码且auto=true就允许自动登录
   if (autoLogin && urlUsername && urlPassword) {
-    console.log('✅ 所有条件满足，开始自动登录...')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ 所有条件满足，开始自动登录...')
+    }
     console.log('使用账号:', urlUsername)
 
     // 设置表单数据
@@ -180,14 +188,18 @@ async function loadAutoLoginCredentials() {
     setTimeout(async () => {
       try {
         await authStore.login(model.userName.trim(), model.password)
-        console.log('✅ 自动登录成功')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ 自动登录成功')
+        }
       } catch (error) {
         console.error('❌ 自动登录失败:', error)
         window.$message?.error('自动登录失败，请手动输入账号密码')
       }
     }, 500)
   } else {
-    console.log('❌ 自动登录条件不满足:')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('❌ 自动登录条件不满足:')
+    }
     if (!autoLogin) {
       console.log('  - URL中未包含 auto=true 参数')
     }
@@ -195,7 +207,9 @@ async function loadAutoLoginCredentials() {
       console.log('  - URL中未提供用户名参数')
     }
     if (!urlPassword) {
-      console.log('  - URL中未提供密码参数')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('  - URL中未提供密码参数')
+      }
     }
 
     console.log('📝 使用方式: 在URL中传递账号密码: ?auto=true&username=test@example.com&password=123456')
@@ -206,7 +220,9 @@ async function loadAutoLoginCredentials() {
         '?auto=true&username=test@example.com&password=123456'
     )
   }
-  console.log('=== 调试信息结束 ===')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('=== 调试信息结束 ===')
+  }
 }
 
 onMounted(() => {

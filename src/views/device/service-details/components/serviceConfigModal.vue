@@ -161,7 +161,9 @@ const submitSevice: () => void = async () => {
     device_list: deviceListPayload
   }
 
-  console.log('Submitting params:', JSON.stringify(params, null, 2)) // Log formatted parameters
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Submitting params:', JSON.stringify(params, null, 2))
+  } // Log formatted parameters
 
   // 4. Call API and handle result/error
   try {
@@ -172,7 +174,9 @@ const submitSevice: () => void = async () => {
       emit('getList')
     } else {
       // Log the actual result when API succeeds but operation fails
-      console.log('API call succeeded but operation failed:', result)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('API call succeeded but operation failed:', result)
+      }
       // Only show error if a specific message is available from the result
       if (result?.message) {
         window.$message?.error(result.message)

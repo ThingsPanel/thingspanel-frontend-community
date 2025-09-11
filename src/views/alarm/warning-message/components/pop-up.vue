@@ -81,7 +81,9 @@ const loadMoreNotificationGroupData = async () => {
     state.generalOptions = [...state.generalOptions, ...list]
 
     state.generalOptions = state.generalOptions.map((item: any) => {
-      console.log(item, 'item')
+      if (process.env.NODE_ENV === 'development') {
+        console.log(item, 'item')
+      }
       return {
         id: item.id,
         name: item.name,

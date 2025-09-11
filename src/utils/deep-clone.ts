@@ -106,7 +106,9 @@ export const smartDeepClone = <T>(
     const rawObj = smartDeepToRaw(obj)
 
     if (debug) {
-      console.log('🔍 [smartDeepClone] 预处理完成，对象类型:', typeof rawObj)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 [smartDeepClone] 预处理完成，对象类型:', typeof rawObj)
+      }
     }
 
     // 第二步：尝试高性能的structuredClone
@@ -114,7 +116,9 @@ export const smartDeepClone = <T>(
       try {
         const cloned = structuredClone(rawObj)
         if (debug) {
-          console.log('✅ [smartDeepClone] structuredClone成功')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ [smartDeepClone] structuredClone成功')
+          }
         }
         return cloned
       } catch (structuredCloneError) {
@@ -128,7 +132,9 @@ export const smartDeepClone = <T>(
     // 第三步：降级到JSON方法
     const jsonCloned = JSON.parse(JSON.stringify(rawObj))
     if (debug) {
-      console.log('📝 [smartDeepClone] JSON方法成功')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📝 [smartDeepClone] JSON方法成功')
+      }
     }
     return jsonCloned
   } catch (error) {

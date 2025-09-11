@@ -303,7 +303,9 @@ const fetchData = async (initialLoad = false) => {
   }
   // Clear previous error only when starting a new fetch
   error.value = null
-  console.log(`[ReportedData] Fetching data... Initial: ${initialLoad}`)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[ReportedData] Fetching data... Initial: ${initialLoad}`)
+  }
 
   try {
     const response: ApiLatestTelemetryResponse = await getLatestTelemetryData()
@@ -335,7 +337,9 @@ const startPolling = () => {
   stopPolling()
   if (!isRefreshing.value) return
 
-  console.log(`[ReportedData] Starting polling every ${REFRESH_INTERVAL}ms`)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[ReportedData] Starting polling every ${REFRESH_INTERVAL}ms`)
+  }
   refreshIntervalId.value = setInterval(() => {
     console.log('[ReportedData] Polling tick: fetching data...')
     fetchData(false)
@@ -344,7 +348,9 @@ const startPolling = () => {
 
 const stopPolling = () => {
   if (refreshIntervalId.value) {
-    console.log('[ReportedData] Stopping polling')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ReportedData] Stopping polling')
+    }
     clearInterval(refreshIntervalId.value)
     refreshIntervalId.value = null
   }
@@ -354,11 +360,15 @@ const stopPolling = () => {
 const toggleRefresh = () => {
   isRefreshing.value = !isRefreshing.value
   if (isRefreshing.value) {
-    console.log('[ReportedData] Manually starting refresh')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ReportedData] Manually starting refresh')
+    }
     fetchData(false) // Fetch immediately when turning on
     startPolling()
   } else {
-    console.log('[ReportedData] Manually stopping refresh')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ReportedData] Manually stopping refresh')
+    }
     stopPolling()
   }
 }

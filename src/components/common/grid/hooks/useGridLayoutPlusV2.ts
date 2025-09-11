@@ -190,7 +190,9 @@ export function useGridLayoutPlusV2(options: UseGridLayoutPlusV2Options = {}) {
   const optimizePerformance = () => {
     const wasOptimized = gridPerformance.applyAutoOptimizations()
     if (wasOptimized) {
-      console.log('[GridLayoutPlusV2] Performance optimizations applied')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[GridLayoutPlusV2] Performance optimizations applied')
+      }
     }
     return wasOptimized
   }
@@ -261,7 +263,9 @@ export function useGridLayoutPlusV2(options: UseGridLayoutPlusV2Options = {}) {
       fps: 60,
       lastUpdated: Date.now()
     }
-    console.log('[GridLayoutPlusV2] System reset completed')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[GridLayoutPlusV2] System reset completed')
+    }
   }
 
   // 监听布局变化以更新性能指标
@@ -286,7 +290,9 @@ export function useGridLayoutPlusV2(options: UseGridLayoutPlusV2Options = {}) {
       startAutoSave()
     }
 
-    console.log('[GridLayoutPlusV2] Initialized successfully')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[GridLayoutPlusV2] Initialized successfully')
+    }
   })
 
   // 清理
@@ -294,7 +300,9 @@ export function useGridLayoutPlusV2(options: UseGridLayoutPlusV2Options = {}) {
     stopAutoSave()
     gridPerformance.stopMonitoring()
     gridResponsive.unobserveContainer()
-    console.log('[GridLayoutPlusV2] Cleanup completed')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[GridLayoutPlusV2] Cleanup completed')
+    }
   })
 
   return {

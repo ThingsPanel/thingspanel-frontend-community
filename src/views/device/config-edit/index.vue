@@ -282,7 +282,9 @@ onMounted(async () => {
     modalTitle.value = 'generate.add'
   }
   getDeviceTemplate()
-  console.log(1)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(1)
+  }
 
   await getProtocolList(configForm?.value.device_type || '1')
 

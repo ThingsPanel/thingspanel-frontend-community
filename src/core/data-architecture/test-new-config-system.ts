@@ -154,14 +154,18 @@ async function testAddSecondDataItemScenario() {
     updatedAt: Date.now()
   }
 
-  console.log('📝 添加第一个数据项...')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📝 添加第一个数据项...')
+  }
   const result1 = configurationStateManager.updateConfigurationSection(
     testComponentId,
     'dataSource',
     firstItemConfig,
     'user'
   )
-  console.log('✅ 第一个数据项添加结果:', result1)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ 第一个数据项添加结果:', result1)
+  }
 
   // 等待防抖处理
   await new Promise(resolve => setTimeout(resolve, 100))
@@ -189,14 +193,18 @@ async function testAddSecondDataItemScenario() {
     updatedAt: Date.now()
   }
 
-  console.log('📝 添加第二个数据项（原本会导致无限循环）...')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📝 添加第二个数据项（原本会导致无限循环）...')
+  }
   const result2 = configurationStateManager.updateConfigurationSection(
     testComponentId,
     'dataSource',
     secondItemConfig,
     'user'
   )
-  console.log('✅ 第二个数据项添加结果:', result2)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ 第二个数据项添加结果:', result2)
+  }
 
   // 等待防抖处理
   await new Promise(resolve => setTimeout(resolve, 100))
@@ -212,20 +220,26 @@ async function testAddSecondDataItemScenario() {
     ]
   }
 
-  console.log('📝 更新合并策略（原本会导致无限循环）...')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📝 更新合并策略（原本会导致无限循环）...')
+  }
   const result3 = configurationStateManager.updateConfigurationSection(
     testComponentId,
     'dataSource',
     strategyUpdateConfig,
     'user'
   )
-  console.log('✅ 合并策略更新结果:', result3)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ 合并策略更新结果:', result3)
+  }
 
   // 获取最终状态
   const finalConfig = configurationStateManager.getConfiguration(testComponentId)
   const finalVersion = configurationStateManager.getConfigurationVersion(testComponentId)
 
-  console.log('📊 最终配置版本:', finalVersion)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📊 最终配置版本:', finalVersion)
+  }
   console.log('📊 最终配置状态:', finalConfig?.dataSource)
 }
 
@@ -233,7 +247,9 @@ async function testAddSecondDataItemScenario() {
  * 测试配置集成桥接器的兼容性
  */
 async function testIntegrationBridgeCompatibility() {
-  console.log('\n🔍 ===== 测试4：配置集成桥接器兼容性 =====')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('\n🔍 ===== 测试4：配置集成桥接器兼容性 =====')
+  }
 
   // 初始化桥接器
   await configurationIntegrationBridge.initialize()
@@ -241,12 +257,16 @@ async function testIntegrationBridgeCompatibility() {
   const testComponentId = 'test-component-bridge'
 
   // 测试初始化配置
-  console.log('📝 通过桥接器初始化配置...')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📝 通过桥接器初始化配置...')
+  }
   configurationIntegrationBridge.initializeConfiguration(testComponentId)
 
   // 测试获取配置
   const config = configurationIntegrationBridge.getConfiguration(testComponentId)
-  console.log('✅ 获取的配置:', config)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ 获取的配置:', config)
+  }
 
   // 测试更新配置
   const updateConfig = {
@@ -267,14 +287,18 @@ async function testIntegrationBridgeCompatibility() {
     updatedAt: Date.now()
   }
 
-  console.log('📝 通过桥接器更新配置...')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📝 通过桥接器更新配置...')
+  }
   configurationIntegrationBridge.updateConfiguration(testComponentId, 'dataSource', updateConfig)
 
   // 等待处理
   await new Promise(resolve => setTimeout(resolve, 100))
 
   const updatedConfig = configurationIntegrationBridge.getConfiguration(testComponentId)
-  console.log('✅ 更新后的配置:', updatedConfig?.dataSource)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ 更新后的配置:', updatedConfig?.dataSource)
+  }
 }
 
 /**
@@ -289,11 +313,15 @@ export async function runNewConfigSystemTests() {
     await testAddSecondDataItemScenario()
     await testIntegrationBridgeCompatibility()
 
-    console.log('\n✅ ===== 所有测试完成！新配置管理系统工作正常 =====')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('\n✅ ===== 所有测试完成！新配置管理系统工作正常 =====')
+    }
     console.log('🔥 原本导致无限循环的问题已通过以下机制解决：')
     console.log('   1. 内容哈希去重 - 相同内容不会重复处理')
     console.log('   2. 循环检测机制 - 防止同时更新同一组件')
-    console.log('   3. 防抖处理 - 避免频繁更新')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('   3. 防抖处理 - 避免频繁更新')
+    }
     console.log('   4. 版本控制 - 追踪每次配置变更')
     console.log('   5. 智能事件去重 - 避免重复emit')
   } catch (error) {
@@ -304,5 +332,7 @@ export async function runNewConfigSystemTests() {
 // 在浏览器环境中暴露测试函数
 if (typeof window !== 'undefined') {
   ;(window as any).testNewConfigSystem = runNewConfigSystemTests
-  console.log('🛠️ [测试脚本] 已暴露到 window.testNewConfigSystem，可在控制台运行')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🛠️ [测试脚本] 已暴露到 window.testNewConfigSystem，可在控制台运行')
+  }
 }

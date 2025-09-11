@@ -90,7 +90,9 @@ const handleAddNew = () => {
 
 // 编辑模板
 const handleEdit = (id: string) => {
-  console.log('id', id)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('id', id)
+  }
   modalType.value = 'edit'
   templateId.value = id
   openModal()

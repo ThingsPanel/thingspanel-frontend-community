@@ -62,7 +62,9 @@ export class ComponentLoader implements IComponentLoader {
       // 注册到组件注册表
       componentRegistry.register(definition)
 
-      console.log(`[ComponentLoader] 组件 ${componentId} 加载成功`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[ComponentLoader] 组件 ${componentId} 加载成功`)
+      }
       return definition
     } catch (error) {
       this.loadingStates.set(componentId, 'error')
@@ -79,7 +81,9 @@ export class ComponentLoader implements IComponentLoader {
    * @param componentIds 组件ID数组
    */
   async preload(componentIds: string[]): Promise<void> {
-    console.log(`[ComponentLoader] 开始预加载 ${componentIds.length} 个组件`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[ComponentLoader] 开始预加载 ${componentIds.length} 个组件`)
+    }
 
     const loadPromises = componentIds.map(async componentId => {
       try {
@@ -90,7 +94,9 @@ export class ComponentLoader implements IComponentLoader {
     })
 
     await Promise.allSettled(loadPromises)
-    console.log('[ComponentLoader] 预加载完成')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ComponentLoader] 预加载完成')
+    }
   }
 
   /**
@@ -106,7 +112,9 @@ export class ComponentLoader implements IComponentLoader {
     this.loadingPromises.delete(componentId)
     this.errors.delete(componentId)
 
-    console.log(`[ComponentLoader] 组件 ${componentId} 已卸载`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[ComponentLoader] 组件 ${componentId} 已卸载`)
+    }
   }
 
   /**
@@ -125,7 +133,9 @@ export class ComponentLoader implements IComponentLoader {
     this.loadingStates.clear()
     this.loadingPromises.clear()
     this.errors.clear()
-    console.log('[ComponentLoader] 缓存已清理')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ComponentLoader] 缓存已清理')
+    }
   }
 
   /**
@@ -254,7 +264,9 @@ export class ComponentLoader implements IComponentLoader {
       this.componentPaths.set(componentId, `@/card/components/builtin/${componentName}/index.ts`)
     })
 
-    console.log(`[ComponentLoader] 初始化了 ${this.componentPaths.size} 个组件路径映射`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[ComponentLoader] 初始化了 ${this.componentPaths.size} 个组件路径映射`)
+    }
   }
 
   /**
@@ -264,7 +276,9 @@ export class ComponentLoader implements IComponentLoader {
    */
   registerComponentPath(componentId: string, path: string): void {
     this.componentPaths.set(componentId, path)
-    console.log(`[ComponentLoader] 注册自定义组件路径: ${componentId} -> ${path}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[ComponentLoader] 注册自定义组件路径: ${componentId} -> ${path}`)
+    }
   }
 
   /**
@@ -275,7 +289,9 @@ export class ComponentLoader implements IComponentLoader {
     Object.entries(pathMap).forEach(([componentId, path]) => {
       this.componentPaths.set(componentId, path)
     })
-    console.log(`[ComponentLoader] 批量注册了 ${Object.keys(pathMap).length} 个组件路径`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[ComponentLoader] 批量注册了 ${Object.keys(pathMap).length} 个组件路径`)
+    }
   }
 }
 

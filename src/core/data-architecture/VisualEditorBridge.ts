@@ -21,15 +21,18 @@ export class VisualEditorBridge {
    * @param config 数据源配置
    */
   async updateComponentExecutor(componentId: string, componentType: string, config: any): Promise<DataResult> {
-    console.log(`🔍 [VisualEditorBridge] updateComponentExecutor 开始`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 [VisualEditorBridge] updateComponentExecutor 开始`, {
       componentId,
       componentType,
       configKeys: Object.keys(config || {}),
       configSample: JSON.stringify(config).substring(0, 200) + '...'
     })
+    }
 
     // 🔥 添加详细的配置结构调试
-    console.log(`🔍 [VisualEditorBridge] 接收到的详细配置`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 [VisualEditorBridge] 接收到的详细配置`, {
       componentId,
       config: JSON.stringify(config, null, 2).substring(0, 3000),
       hasBase: !!(config?.base),
@@ -40,11 +43,13 @@ export class VisualEditorBridge {
       configType: typeof config,
       configConstructor: config?.constructor?.name
     })
+    }
 
     // 将旧配置格式转换为新的数据需求格式
     const requirement = this.convertConfigToRequirement(componentId, componentType, config)
     
-    console.log(`🔧 [VisualEditorBridge] 配置转换完成`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 [VisualEditorBridge] 配置转换完成`, {
       componentId,
       requirementKeys: Object.keys(requirement),
       dataSourcesCount: requirement.dataSources?.length || 0,
@@ -54,18 +59,23 @@ export class VisualEditorBridge {
         hasConfig: !!ds.config
       }))
     })
+    }
 
     // 使用 SimpleDataBridge 执行数据获取
-    console.log(`🚀 [VisualEditorBridge] 开始执行 SimpleDataBridge.executeComponent`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🚀 [VisualEditorBridge] 开始执行 SimpleDataBridge.executeComponent`)
+    }
     const result = await simpleDataBridge.executeComponent(requirement)
     
-    console.log(`✅ [VisualEditorBridge] SimpleDataBridge 执行完成`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ [VisualEditorBridge] SimpleDataBridge 执行完成`, {
       componentId,
       resultKeys: Object.keys(result || {}),
       hasData: !!result.data,
       hasError: !!result.error,
       dataKeys: result.data ? Object.keys(result.data) : []
     })
+    }
 
     // 通知数据更新回调
     this.notifyDataUpdate(componentId, result.data)
@@ -147,12 +157,14 @@ export class VisualEditorBridge {
           ...(config.dataSource || {})
         }
 
-        console.log(`🔧 [VisualEditorBridge] 检测到分层配置，提取基础配置`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔧 [VisualEditorBridge] 检测到分层配置，提取基础配置`, {
           componentId,
           baseConfig,
           resolvedConfig,
           originalConfig: config
         })
+        }
 
         // 🔥 新增：将基础配置注入到HTTP参数中，确保参数绑定使用最新值
         resolvedConfig = this.injectBaseConfigToDataSource(resolvedConfig, baseConfig)
@@ -162,7 +174,8 @@ export class VisualEditorBridge {
     // 处理配置中的数据源
     if (resolvedConfig && typeof resolvedConfig === 'object') {
       // 🔥 新增：详细的配置结构调试日志
-      console.log(`🔍 [VisualEditorBridge] resolvedConfig结构详细调试`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔍 [VisualEditorBridge] resolvedConfig结构详细调试`, {
         componentId,
         resolvedConfigKeys: Object.keys(resolvedConfig),
         hasDataSources: !!(resolvedConfig.dataSources),
@@ -175,6 +188,7 @@ export class VisualEditorBridge {
         resolvedConfigSample: JSON.stringify(resolvedConfig, null, 2).substring(0, 2000),
         dataSourceKeys: Object.keys(resolvedConfig).filter(key => key.startsWith('dataSource'))
       })
+      }
 
       // 🆕 处理新的 DataSourceConfiguration 格式
       if (resolvedConfig.dataSources && Array.isArray(resolvedConfig.dataSources)) {
@@ -278,7 +292,8 @@ export class VisualEditorBridge {
     }
 
     // 🔥 最终结果调试日志
-    console.log(`🎯 [VisualEditorBridge] 配置转换最终结果`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🎯 [VisualEditorBridge] 配置转换最终结果`, {
       componentId,
       finalDataSourcesCount: dataSources.length,
       finalDataSources: dataSources.map(ds => ({
@@ -289,6 +304,7 @@ export class VisualEditorBridge {
       })),
       enabled: true
     })
+    }
 
     return {
       componentId,
@@ -326,11 +342,13 @@ export class VisualEditorBridge {
       enhanced.metricsList = enhanced.metricsList || baseConfig.metricsList
     }
 
-    console.log(`🔧 [VisualEditorBridge] 注入基础配置到数据源`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 [VisualEditorBridge] 注入基础配置到数据源`, {
       原始配置: dataSourceConfig,
       基础配置: baseConfig,
       增强配置: enhanced
     })
+    }
 
     return enhanced
   }

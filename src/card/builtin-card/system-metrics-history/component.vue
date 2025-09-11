@@ -253,7 +253,9 @@ const fetchData = async () => {
   try {
     const params = {}
     const response = await getSystemMetricsHistory(params)
-    console.log('API Response in component:', response)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Response in component:', response)
+    }
     const dataArray = response?.data
     if (dataArray) {
       const processed = processData(dataArray)

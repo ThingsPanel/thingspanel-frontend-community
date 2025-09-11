@@ -405,17 +405,21 @@ const defaultConfig = {
 const extractCustomConfig = computed(() => {
   const rawConfig = extractComponentConfig.value
 
-  console.log(`🔧 [Card2Wrapper] 配置检查:`, {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔧 [Card2Wrapper] 配置检查:`, {
     componentType: props.componentType,
     nodeId: props.nodeId,
     rawConfig,
     hasCustomize: !!(rawConfig && typeof rawConfig === 'object' && rawConfig.customize),
     propsConfig: props.config
   })
+  }
 
   // 🚀 关键修复：如果rawConfig已经是结构化的Card2.1格式，直接使用
   if (rawConfig && typeof rawConfig === 'object' && rawConfig.customize) {
-    console.log(`✅ [Card2Wrapper] 使用现有结构化config:`, rawConfig)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ [Card2Wrapper] 使用现有结构化config:`, rawConfig)
+    }
     return rawConfig
   }
 
@@ -437,10 +441,12 @@ const extractCustomConfig = computed(() => {
     delete customConfig.customize.scale
   }
 
-  console.log(`🔧 [Card2Wrapper] 构建新的结构化config:`, {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔧 [Card2Wrapper] 构建新的结构化config:`, {
     flatConfig: rawConfig,
     customConfig
   })
+  }
 
   return customConfig
 })
@@ -452,11 +458,13 @@ const extractComponentConfig = computed(() => {
   // 🔥 关键修复：优先从metadata中获取Card2.1组件的真实配置
   let componentDefaultConfig = { ...defaultConfig }
   if (props.metadata?.card2Definition?.config) {
-    console.log(`✅ [Card2Wrapper] 使用metadata中的组件配置:`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ [Card2Wrapper] 使用metadata中的组件配置:`, {
       componentType: props.componentType,
       nodeId: props.nodeId,
       card2Config: props.metadata.card2Definition.config
     })
+    }
     componentDefaultConfig = props.metadata.card2Definition.config
   }
 
@@ -510,13 +518,15 @@ const extractComponentConfig = computed(() => {
   const _ = forceUpdateKey.value // 添加响应式依赖
 
   // 🔥 详细调试交互状态获取
-  console.log(`🔍 [Card2Wrapper] 交互状态调试`, {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔍 [Card2Wrapper] 交互状态调试`, {
     componentId: props.nodeId,
     interactionState,
     interactionStateKeys: interactionState ? Object.keys(interactionState) : [],
     interactionStateLength: interactionState ? Object.keys(interactionState).length : 0,
     interactionManager: !!interactionManager
   })
+  }
 
   if (interactionState && Object.keys(interactionState).length > 0) {
     // 🔥 彻底修复：直接将所有交互属性扁平化处理，统一与用户配置的处理方式
@@ -535,12 +545,14 @@ const extractComponentConfig = computed(() => {
 
     configSources.interaction = processedInteractionState
 
-    console.log(`🔥 [Card2Wrapper] 交互状态扁平化处理完成`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔥 [Card2Wrapper] 交互状态扁平化处理完成`, {
       componentId: props.nodeId,
       原始交互状态: interactionState,
       扁平化后: processedInteractionState,
       所有配置源: Object.keys(configSources)
     })
+    }
   }
 
   // 5. 运行时配置（来自其他动态来源）
@@ -559,7 +571,8 @@ const extractComponentConfig = computed(() => {
   lastConfigMergeTime.value = Date.now()
 
   // 📊 输出合并统计信息
-  console.log(`🎯 [Card2Wrapper] 配置合并调试`, {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🎯 [Card2Wrapper] 配置合并调试`, {
     componentId: props.nodeId,
     configSources: {
       user: configSources.user,
@@ -572,6 +585,7 @@ const extractComponentConfig = computed(() => {
     finalContent: mergeResult.merged?.content,
     stats: mergeResult.stats
   })
+  }
 
   return mergeResult.merged
 })
@@ -581,12 +595,16 @@ const loadComponent = async () => {
     hasError.value = false
     errorMessage.value = ''
 
-    console.log(`🔧 [Card2Wrapper] 开始加载组件: ${props.componentType}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 [Card2Wrapper] 开始加载组件: ${props.componentType}`)
+    }
 
     // 🔥 修复：使用 useComponentTree 的正确API
     // 检查是否还在加载中
     if (card2Integration.isLoading.value) {
-      console.log(`⏳ [Card2Wrapper] Card2系统还在初始化，等待完成...`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⏳ [Card2Wrapper] Card2系统还在初始化，等待完成...`)
+      }
       await card2Integration.initialize()
     }
 
@@ -599,18 +617,22 @@ const loadComponent = async () => {
     // 获取组件实例
     const component = await card2Integration.getComponent(props.componentType)
 
-    console.log(`🔧 [Card2Wrapper] getComponent 返回:`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 [Card2Wrapper] getComponent 返回:`, {
       componentType: props.componentType,
       component,
       hasComponent: !!component
     })
+    }
 
     if (!component) {
       throw new Error(`组件 [${props.componentType}] 的组件实现不存在。`)
     }
 
     componentToRender.value = component
-    console.log(`✅ [Card2Wrapper] 组件加载成功: ${props.componentType}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ [Card2Wrapper] 组件加载成功: ${props.componentType}`)
+    }
   } catch (error: any) {
     console.error(`❌ [Card2Wrapper] 组件加载失败:`, error)
     hasError.value = true
@@ -758,7 +780,8 @@ const getComponentSpecificProps = () => {
   
   // 🔍 调试信息 - 仅针对gauge-dashboard-v2组件
   if (props.componentType === 'gauge-dashboard-v2') {
-    console.log('🎯 Card2Wrapper数据映射调试:', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎯 Card2Wrapper数据映射调试:', {
       componentType: props.componentType,
       nodeId: props.nodeId,
       executorData: executorData.value,
@@ -770,6 +793,7 @@ const getComponentSpecificProps = () => {
       specificPropsKeys: Object.keys(specificProps),
       primaryDataContent: executorData.value?.primaryData?.data
     })
+    }
   }
   
   return specificProps
@@ -924,13 +948,15 @@ onMounted(async () => {
     const { componentId, updates, fullState } = event.detail
 
     // 🔥 跨组件交互调试日志
-    console.log(`🔔 [Card2Wrapper] 收到状态更新事件`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔔 [Card2Wrapper] 收到状态更新事件`, {
       事件目标组件: componentId,
       当前组件: props.nodeId,
       是否匹配: componentId === props.nodeId,
       更新内容: updates,
       完整状态: fullState
     })
+    }
 
     if (componentId === props.nodeId) {
       // 🚀 使用统一的配置合并系统处理状态更新
@@ -953,16 +979,19 @@ onMounted(async () => {
           }
 
           // 📊 输出更新统计
-          console.log('🚀 [Card2Wrapper] 智能状态更新', {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🚀 [Card2Wrapper] 智能状态更新', {
             componentId: props.nodeId,
             updates,
             changes: updateResult.changes?.length || 0,
             stats: updateResult.stats,
             mergedInteractionConfig: updateResult.merged
           })
+          }
 
           // 🔥 关键修复：触发 dataChange 事件，支持链式交互
-          console.log(`🔍 [Card2Wrapper] 准备触发dataChange事件`, {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔍 [Card2Wrapper] 准备触发dataChange事件`, {
             componentId: props.nodeId,
             updatesKeys: Object.keys(updates),
             currentComponentRef: !!currentComponentRef.value,
@@ -970,6 +999,7 @@ onMounted(async () => {
               ? typeof currentComponentRef.value.triggerInteractionEvent
               : 'undefined'
           })
+          }
 
           // 为每个变化的属性触发 dataChange 事件
           Object.entries(updates).forEach(([property, newValue]) => {
@@ -983,7 +1013,8 @@ onMounted(async () => {
                 configSources.value.user?.[flattenedProperty] || extractComponentConfig.value[flattenedProperty]
             }
 
-            console.log(`🔍 [Card2Wrapper] 处理属性变化`, {
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔍 [Card2Wrapper] 处理属性变化`, {
               componentId: props.nodeId,
               property,
               oldValue,
@@ -996,16 +1027,19 @@ onMounted(async () => {
               hasTriggerMethod:
                 currentComponentRef.value && typeof currentComponentRef.value.triggerInteractionEvent === 'function'
             })
+            }
 
             if (currentComponentRef.value && typeof currentComponentRef.value.triggerInteractionEvent === 'function') {
               try {
-                console.log(`🔔 [Card2Wrapper] 跨组件更新触发dataChange事件`, {
+                if (process.env.NODE_ENV === 'development') {
+                  console.log(`🔔 [Card2Wrapper] 跨组件更新触发dataChange事件`, {
                   componentId: props.nodeId,
                   property,
                   oldValue,
                   newValue,
                   source: 'cross-component-interaction'
                 })
+                }
 
                 currentComponentRef.value.triggerInteractionEvent('dataChange', {
                   property,
@@ -1014,10 +1048,12 @@ onMounted(async () => {
                   source: 'cross-component-interaction'
                 })
 
-                console.log(`✅ [Card2Wrapper] dataChange事件触发成功`, {
+                if (process.env.NODE_ENV === 'development') {
+                  console.log(`✅ [Card2Wrapper] dataChange事件触发成功`, {
                   componentId: props.nodeId,
                   property
                 })
+                }
               } catch (error) {
                 console.warn(`❌ [Card2Wrapper] 触发dataChange事件失败:`, error)
               }
@@ -1057,12 +1093,14 @@ onMounted(async () => {
             // 🔥 第二步：关键修复！同步到 editorStore.nodes[].properties
             // 这是配置面板真正读取的地方
             if (editorContext && editorContext.updateNode) {
-              console.log(`🎯 [Card2Wrapper] 同步配置到 editorStore`, {
+              if (process.env.NODE_ENV === 'development') {
+                console.log(`🎯 [Card2Wrapper] 同步配置到 editorStore`, {
                 componentId: props.nodeId,
                 fullConfig,
                 updates,
                 hasEditorContext: !!editorContext
               })
+              }
 
               // 更新 editorStore 中的节点配置
               editorContext.updateNode(props.nodeId, {
@@ -1074,10 +1112,12 @@ onMounted(async () => {
                 }
               })
 
-              console.log(`✅ [Card2Wrapper] editorStore 同步完成`, {
+              if (process.env.NODE_ENV === 'development') {
+                console.log(`✅ [Card2Wrapper] editorStore 同步完成`, {
                 componentId: props.nodeId,
                 nodeExists: !!editorContext.getNodeById(props.nodeId)
               })
+              }
             } else {
               console.warn(`⚠️ [Card2Wrapper] 无法访问 editorContext，配置不会持久化`, {
                 componentId: props.nodeId,

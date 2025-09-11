@@ -109,7 +109,9 @@ export class RendererManager {
         }
       })
 
-      console.log(`[RendererManager] Created renderer instance: ${type}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[RendererManager] Created renderer instance: ${type}`)
+      }
       return renderer
     } catch (error) {
       console.error(`[RendererManager] Failed to create renderer '${type}':`, error)
@@ -142,7 +144,9 @@ export class RendererManager {
     try {
       await Promise.all(destroyPromises)
       this.activeRenderers.clear()
-      console.log(`[RendererManager] Destroyed ${renderers.length} renderer instances`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[RendererManager] Destroyed ${renderers.length} renderer instances`)
+      }
     } catch (error) {
       console.error('[RendererManager] Error destroying renderers:', error)
       throw error
@@ -205,7 +209,9 @@ export class RendererManager {
     try {
       // 这里可以实现预加载逻辑
       // 例如：预加载渲染器的依赖资源
-      console.log(`[RendererManager] Preloaded renderer: ${type}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[RendererManager] Preloaded renderer: ${type}`)
+      }
     } catch (error) {
       console.error(`[RendererManager] Failed to preload renderer '${type}':`, error)
     }
@@ -242,7 +248,9 @@ export class RendererManager {
   dispose(): void {
     this.destroyAllRenderers().catch(console.error)
     this.registrations.clear()
-    console.log('[RendererManager] Disposed')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[RendererManager] Disposed')
+    }
   }
 }
 

@@ -95,7 +95,9 @@ function handleSmsCode() {
   // 调用 fetchEmailCode 函数获取验证码
   fetchEmailCode(model.email)
     .then((res: any) => {
-      console.log(res)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(res)
+      }
       const { error } = res
       if (!error) {
         start() // 开始计时

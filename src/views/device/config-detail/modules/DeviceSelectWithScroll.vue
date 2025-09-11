@@ -75,7 +75,9 @@ const filteredOptions = computed(() => {
 /** 处理无限滚动加载事件 */
 const handleLoadMore = () => {
   if (!props.loading && props.hasMore) {
-    console.log('Emitting loadMore') // 调试日志
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Emitting loadMore')
+    } // 调试日志
     emit('loadMore')
   }
 }
@@ -107,7 +109,9 @@ const handlePopoverUpdateShow = (show: boolean) => {
   showPopover.value = show
   if (show && (!props.options || props.options.length === 0)) {
     // 当首次展开且没有选项时，触发初始加载
-    console.log('Popover opened, emitting initialLoad') // 调试日志
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Popover opened, emitting initialLoad')
+    } // 调试日志
     emit('initialLoad')
   }
 }

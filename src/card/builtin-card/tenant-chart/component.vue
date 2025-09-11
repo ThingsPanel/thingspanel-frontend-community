@@ -202,7 +202,9 @@ const fetchData = async () => {
   isEmpty.value = false
   try {
     const response = await tenant()
-    console.log('Tenant data response:', response)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Tenant data response:', response)
+    }
 
     const responseData = response?.data
 

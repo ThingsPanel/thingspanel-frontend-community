@@ -398,7 +398,9 @@ const handleMouseLeave = () => {
 // ============ 数据处理 ============
 
 watch(() => props.realtimeData, (newData) => {
-  console.log("realtimeData changed:", newData);
+  if (process.env.NODE_ENV === 'development') {
+    console.log("realtimeData changed:", newData)
+  };
   if (newData && newData.length > 0) {
     // 假设我们关心最新的数据点
     const latestDataPoint = newData[newData.length - 1];
@@ -454,7 +456,9 @@ const updatePrimaryValue = (newValue: number, animate = true) => {
 }
 
 const update = (newConfig: Partial<TypeTestConfig>) => {
-  console.log('Component instance updated with new config:', newConfig);
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Component instance updated with new config:', newConfig)
+  };
   emit('config-change', newConfig);
 };
 

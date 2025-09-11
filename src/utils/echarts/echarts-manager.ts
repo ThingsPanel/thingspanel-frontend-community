@@ -153,14 +153,18 @@ export function registerEChartsExtensions(componentTypes: string[]) {
     if (!registeredExtensions.has(type) && EXTENDED_COMPONENTS_MAP[type]) {
       newComponents.push(...EXTENDED_COMPONENTS_MAP[type])
       registeredExtensions.add(type)
-      console.log(`🔧 注册 ECharts 扩展组件: ${type}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔧 注册 ECharts 扩展组件: ${type}`)
+      }
     }
   })
 
   if (newComponents.length > 0) {
     try {
       echarts.use(newComponents)
-      console.log(`✅ ECharts 扩展组件注册完成: ${componentTypes.join(', ')}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ ECharts 扩展组件注册完成: ${componentTypes.join(', ')}`)
+      }
     } catch (error) {
       console.warn('⚠️ ECharts 扩展组件注册警告:', error)
     }
@@ -213,7 +217,9 @@ export function useEChartsInstance() {
  */
 export function resetEChartsRegistration() {
   isEChartsRegistered = false
-  console.log('🔄 ECharts 注册状态已重置')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔄 ECharts 注册状态已重置')
+  }
 }
 
 // 移除自动初始化，改为延迟加载

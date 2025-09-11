@@ -275,11 +275,13 @@ configEventBus.addEventFilter({
         // 确保关键基础配置变更一定会触发数据执行
         event.context.shouldTriggerExecution = true
 
-        console.log(`🔥 [ConfigEventBus] 检测到关键基础配置变更`, {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔥 [ConfigEventBus] 检测到关键基础配置变更`, {
           componentId: event.componentId,
           changedFields,
           shouldTriggerExecution: true
         })
+        }
       }
     }
 
@@ -298,7 +300,9 @@ let dataExecutionTriggerCallback: ((event: ConfigChangeEvent) => void) | null = 
 export function registerDataExecutionTrigger(callback: (event: ConfigChangeEvent) => void): () => void {
   dataExecutionTriggerCallback = callback
 
-  console.log(`🔧 [ConfigEventBus] 数据执行触发器已注册`)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔧 [ConfigEventBus] 数据执行触发器已注册`)
+  }
 
   return () => {
     dataExecutionTriggerCallback = null
@@ -311,14 +315,18 @@ configEventBus.onConfigChange('config-changed', async event => {
   // 对于需要触发数据执行的事件，调用注册的触发器
   if (event.context?.shouldTriggerExecution && dataExecutionTriggerCallback) {
     try {
-      console.log(`🚀 [ConfigEventBus] 触发数据重新执行`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🚀 [ConfigEventBus] 触发数据重新执行`, {
         componentId: event.componentId,
         section: event.section,
         changedFields: event.context.changedFields,
         hasCallback: !!dataExecutionTriggerCallback
       })
+      }
 
-      console.log(`🔄 [ConfigEventBus] 即将调用dataExecutionTriggerCallback`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 [ConfigEventBus] 即将调用dataExecutionTriggerCallback`)
+      }
       const result = dataExecutionTriggerCallback(event)
       console.log(`✅ [ConfigEventBus] dataExecutionTriggerCallback调用完成`, {
         result: typeof result,
@@ -327,7 +335,9 @@ configEventBus.onConfigChange('config-changed', async event => {
 
       if (result instanceof Promise) {
         await result
-        console.log(`✅ [ConfigEventBus] 异步dataExecutionTriggerCallback完成`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ [ConfigEventBus] 异步dataExecutionTriggerCallback完成`)
+        }
       }
     } catch (error) {
       console.error(`❌ [ConfigEventBus] 数据执行触发失败`, {
@@ -340,11 +350,13 @@ configEventBus.onConfigChange('config-changed', async event => {
 
 // 🔥 专门监听基础配置变更事件
 configEventBus.onConfigChange('base-config-changed', async event => {
-  console.log(`🔧 [ConfigEventBus] 基础配置变更事件`, {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔧 [ConfigEventBus] 基础配置变更事件`, {
     componentId: event.componentId,
     changedFields: event.context?.changedFields,
     shouldTriggerExecution: event.context?.shouldTriggerExecution
   })
+  }
 
   // 基础配置变更通常都需要触发数据重新执行
   if (!event.context) {
@@ -367,10 +379,12 @@ configEventBus.onConfigChange('base-config-changed', async event => {
 
 // 🔥 专门监听数据源配置变更事件
 configEventBus.onConfigChange('data-source-changed', async event => {
-  console.log(`🔧 [ConfigEventBus] 数据源配置变更事件`, {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔧 [ConfigEventBus] 数据源配置变更事件`, {
     componentId: event.componentId,
     changedFields: event.context?.changedFields
   })
+  }
 
   // 数据源配置变更通常都需要触发数据重新执行
   if (!event.context) {

@@ -20,7 +20,9 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
 
   // 处理 dataSourceBindings 格式 (来自 ConfigurationPanel)
   if (config.dataSourceBindings) {
-    console.log(`📋 [ConfigAdapter] 处理 dataSourceBindings 格式`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📋 [ConfigAdapter] 处理 dataSourceBindings 格式`)
+    }
 
     Object.entries(config.dataSourceBindings).forEach(([key, binding]: [string, any]) => {
       if (binding && binding.rawData) {
@@ -36,7 +38,9 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
             }
           })
 
-          console.log(`✅ [ConfigAdapter] 转换数据源: ${key}`)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`✅ [ConfigAdapter] 转换数据源: ${key}`)
+          }
         } catch (error) {
           console.error(`❌ [ConfigAdapter] 解析rawData失败: ${key}`, error)
         }
@@ -46,7 +50,9 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
 
   // 处理直接的 config.dataSourceBindings 格式
   if (config.config?.dataSourceBindings) {
-    console.log(`📋 [ConfigAdapter] 处理嵌套 dataSourceBindings 格式`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📋 [ConfigAdapter] 处理嵌套 dataSourceBindings 格式`)
+    }
 
     Object.entries(config.config.dataSourceBindings).forEach(([key, binding]: [string, any]) => {
       if (binding && binding.rawData) {
@@ -61,7 +67,9 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
             }
           })
 
-          console.log(`✅ [ConfigAdapter] 转换嵌套数据源: ${key}`)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`✅ [ConfigAdapter] 转换嵌套数据源: ${key}`)
+          }
         } catch (error) {
           console.error(`❌ [ConfigAdapter] 解析嵌套rawData失败: ${key}`, error)
         }
@@ -77,7 +85,9 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
     !config.dataSourceBindings &&
     !config.config
   ) {
-    console.log(`📋 [ConfigAdapter] 处理简单对象格式`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📋 [ConfigAdapter] 处理简单对象格式`)
+    }
 
     dataSources.push({
       id: 'main',
@@ -98,7 +108,9 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
     dataSources
   }
 
-  console.log(`✅ [ConfigAdapter] 配置转换完成: ${componentId}`, requirement)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`✅ [ConfigAdapter] 配置转换完成: ${componentId}`, requirement)
+  }
   return requirement
 }
 
@@ -151,6 +163,8 @@ export function batchConvertConfigs(configs: Record<string, any>): Record<string
     }
   })
 
-  console.log(`🎯 [ConfigAdapter] 批量转换完成，共 ${Object.keys(results).length} 个组件`)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🎯 [ConfigAdapter] 批量转换完成，共 ${Object.keys(results).length} 个组件`)
+  }
   return results
 }

@@ -37,12 +37,14 @@ export interface ConfigLayerDefinition {
  */
 const shouldShowComponentConfig = (componentId: string, widget?: any): boolean => {
   try {
-    console.log(`🔍 [ComponentRegistry-Final] 检查组件配置显示条件`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 [ComponentRegistry-Final] 检查组件配置显示条件`, {
       componentId,
       widgetType: widget?.type,
       hasMetadata: !!widget?.metadata,
       hasCard2Definition: !!widget?.metadata?.card2Definition
     })
+    }
 
     // 精确匹配：只有这4个有settingConfig.ts文件的组件才显示配置面板
     if (widget?.type) {
@@ -57,18 +59,22 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
 
       const shouldShow = componentsWithSettingConfig.includes(widget.type)
 
-      console.log(`📋 [ComponentRegistry-Final] 组件配置显示检查`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`📋 [ComponentRegistry-Final] 组件配置显示检查`, {
         componentType: widget.type,
         hasSettingConfig: shouldShow,
         允许的组件: componentsWithSettingConfig,
         决策: shouldShow ? '显示配置面板' : '隐藏配置面板(无settingConfig.ts)'
       })
+      }
 
       return shouldShow
     }
 
     // 对于没有类型的组件，默认不显示配置面板
-    console.log(`🤔 [ComponentRegistry-Final] 组件无类型信息，隐藏配置面板`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🤔 [ComponentRegistry-Final] 组件无类型信息，隐藏配置面板`)
+    }
     return false
   } catch (error) {
     console.error(`❌ [ComponentRegistry-Final] 配置检查出错`, { componentId, error })
@@ -81,11 +87,13 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
  */
 const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean => {
   try {
-    console.log(`🔍 [ComponentRegistry-Final] 检查数据源配置显示条件`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 [ComponentRegistry-Final] 检查数据源配置显示条件`, {
       componentId,
       widgetType: widget?.type,
       hasCard2Definition: !!widget?.metadata?.card2Definition
     })
+    }
 
     // 基于组件类型的精准判断
     if (widget?.type) {
@@ -98,7 +106,9 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
       ]
 
       if (noDataSourceComponents.includes(widget.type)) {
-        console.log(`❌ [ComponentRegistry-Final] 确认无数据源组件: ${widget.type}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`❌ [ComponentRegistry-Final] 确认无数据源组件: ${widget.type}`)
+        }
         return false
       }
 
@@ -109,7 +119,9 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
       ]
 
       if (dataSourceComponents.includes(widget.type)) {
-        console.log(`✅ [ComponentRegistry-Final] 确认需数据源组件: ${widget.type}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ [ComponentRegistry-Final] 确认需数据源组件: ${widget.type}`)
+        }
         return true
       }
     }
@@ -123,19 +135,23 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
         card2Definition.dataSources?.length > 0
       )
 
-      console.log(`📊 [ComponentRegistry-Final] Card2数据需求检查结果`, {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`📊 [ComponentRegistry-Final] Card2数据需求检查结果`, {
         componentType: widget.type,
         hasDataFields: !!card2Definition.dataRequirements?.dataFields?.length,
         hasPrimaryData: !!card2Definition.dataRequirements?.primaryData,
         hasDataSources: !!card2Definition.dataSources?.length,
         决策: hasDataNeeds ? '显示数据源' : '隐藏数据源'
       })
+      }
 
       return hasDataNeeds
     }
 
     // 默认不显示数据源配置
-    console.log(`❌ [ComponentRegistry-Final] 未知组件，默认隐藏数据源`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`❌ [ComponentRegistry-Final] 未知组件，默认隐藏数据源`)
+    }
     return false
   } catch (error) {
     console.error(`❌ [ComponentRegistry-Final] 数据源配置检查出错`, { componentId, error })
@@ -187,34 +203,42 @@ export const configLayerRegistry: Record<string, ConfigLayerDefinition> = {
 export const getVisibleConfigLayers = (componentId?: string, widget?: any): ConfigLayerDefinition[] => {
   let layers = Object.values(configLayerRegistry).filter(layer => layer.visible)
 
-  console.log(`🔧 [ComponentRegistry-Final] 开始配置层级检查`, {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔧 [ComponentRegistry-Final] 开始配置层级检查`, {
     componentId,
     widgetType: widget?.type,
     totalLayers: layers.length
   })
+  }
 
   if (componentId) {
     layers = layers.filter(layer => {
       if (layer.name === 'dataSource') {
         const shouldShow = shouldShowDataSourceConfig(componentId, widget)
-        console.log(`📊 [ComponentRegistry-Final] 数据源层级检查: ${shouldShow}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`📊 [ComponentRegistry-Final] 数据源层级检查: ${shouldShow}`)
+        }
         return shouldShow
       }
       if (layer.name === 'component') {
         const shouldShow = shouldShowComponentConfig(componentId, widget)
-        console.log(`🔧 [ComponentRegistry-Final] 组件层级检查: ${shouldShow}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔧 [ComponentRegistry-Final] 组件层级检查: ${shouldShow}`)
+        }
         return shouldShow
       }
       return true
     })
   }
 
-  console.log(`✅ [ComponentRegistry-Final] 最终可见层级`, {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`✅ [ComponentRegistry-Final] 最终可见层级`, {
     layerNames: layers.map(l => l.name),
     layerCount: layers.length,
     componentType: widget?.type,
     说明: widget?.type?.includes('display') ? '测试组件，显示相应配置' : '统计组件，只显示基础和交互配置'
   })
+  }
 
   return layers.sort((a, b) => a.order - b.order)
 }

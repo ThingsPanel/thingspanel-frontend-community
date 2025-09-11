@@ -325,10 +325,14 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
     case 'http':
       // 🔥 关键修复：优先使用完整的 httpConfigData，回退到基础配置
       // HTTP配置转换
-      console.log('🔍 [convertToStandardDataItem] 处理HTTP配置:', JSON.stringify(dataItemConfig, null, 2))
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 [convertToStandardDataItem] 处理HTTP配置:', JSON.stringify(dataItemConfig, null, 2))
+      }
 
       if (dataItemConfig.httpConfigData) {
-        console.log('✅ [convertToStandardDataItem] 使用完整的httpConfigData分支')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ [convertToStandardDataItem] 使用完整的httpConfigData分支')
+        }
         const httpConfigData = dataItemConfig.httpConfigData
 
         // 将HttpConfigData转换为标准DataItem格式，同时保留完整信息
@@ -372,10 +376,12 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
         }
         if (httpConfigData.pathParameter) {
           // 🔥 调试：监听pathParameter传递
-          console.log(
+          if (process.env.NODE_ENV === 'development') {
+            console.log(
             '🔍 [SimpleConfigurationEditor] pathParameter传递:',
             JSON.stringify(httpConfigData.pathParameter, null, 2)
           )
+          }
           config.pathParameter = httpConfigData.pathParameter
         }
 
@@ -397,7 +403,9 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
           config
         }
       } else {
-        console.log('❌ [convertToStandardDataItem] 使用旧的基础配置格式分支（数据可能丢失）')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('❌ [convertToStandardDataItem] 使用旧的基础配置格式分支（数据可能丢失）')
+        }
         // 回退到旧的基础配置格式
         return {
           type: 'http',
@@ -505,7 +513,9 @@ const initializeComponentPolling = () => {
   try {
     const pollingConfig = getComponentPollingConfig()
     if (pollingConfig && pollingConfig.enabled) {
-      console.log(`🔄 恢复轮询配置: ${props.componentId}`, pollingConfig)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 恢复轮询配置: ${props.componentId}`, pollingConfig)
+      }
 
       // 移除可能存在的旧任务
       const existingTasks = pollingManager.getTasksByComponent(props.componentId)
@@ -520,7 +530,9 @@ const initializeComponentPolling = () => {
         autoStart: false
       })
 
-      console.log(`✅ 恢复轮询任务: ${taskId}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ 恢复轮询任务: ${taskId}`)
+      }
 
       // 如果全局轮询已启用，立即启动
       if (pollingManager.isGlobalPollingEnabled()) {
@@ -538,7 +550,9 @@ const initializeComponentPolling = () => {
  */
 const executeComponentPolling = async () => {
   try {
-    console.log(`🔄 执行组件轮询: ${props.componentId}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 执行组件轮询: ${props.componentId}`)
+    }
 
     // 获取组件的数据源配置
     const config = configurationManager.getConfiguration(props.componentId)
@@ -561,7 +575,9 @@ const executeComponentPolling = async () => {
       config.dataSource
     )
 
-    console.log(`✅ 轮询执行完成: ${props.componentId}`, result)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ 轮询执行完成: ${props.componentId}`, result)
+    }
   } catch (error) {
     console.error(`❌ 轮询执行失败: ${props.componentId}`, error)
   }
@@ -573,7 +589,9 @@ const executeComponentPolling = async () => {
  */
 const handleComponentPollingConfigChange = (pollingConfig: any) => {
   try {
-    console.log(`🔧 轮询配置变化: ${props.componentId}`, pollingConfig)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 轮询配置变化: ${props.componentId}`, pollingConfig)
+    }
 
     // 获取当前组件配置
     const config = configurationManager.getConfiguration(props.componentId)
@@ -583,7 +601,9 @@ const handleComponentPollingConfigChange = (pollingConfig: any) => {
     const existingTasks = pollingManager.getTasksByComponent(props.componentId)
     existingTasks.forEach(task => {
       pollingManager.removeTask(task.id)
-      console.log(`🗑️ 移除旧轮询任务: ${task.id}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🗑️ 移除旧轮询任务: ${task.id}`)
+      }
     })
 
     // 更新组件轮询配置
@@ -608,12 +628,16 @@ const handleComponentPollingConfigChange = (pollingConfig: any) => {
         autoStart: false // 不自动启动，由全局开关控制
       })
 
-      console.log(`✅ 注册轮询任务: ${taskId}, 间隔: ${pollingConfig.interval}ms`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ 注册轮询任务: ${taskId}, 间隔: ${pollingConfig.interval}ms`)
+      }
 
       // 🔥 如果全局轮询已启用，立即启动这个任务
       if (pollingManager.isGlobalPollingEnabled()) {
         pollingManager.startTask(taskId)
-        console.log(`▶️ 立即启动轮询任务: ${taskId}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`▶️ 立即启动轮询任务: ${taskId}`)
+        }
       }
     }
   } catch (error) {
@@ -915,7 +939,9 @@ onUnmounted(() => {
     const existingTasks = pollingManager.getTasksByComponent(props.componentId)
     existingTasks.forEach(task => {
       pollingManager.removeTask(task.id)
-      console.log(`🗑️ 清理轮询任务: ${task.id}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🗑️ 清理轮询任务: ${task.id}`)
+      }
     })
   } catch (error) {
     console.error('清理轮询任务失败:', error)
@@ -1157,7 +1183,9 @@ const viewFinalData = async (dataSourceKey: string) => {
  * 🔥 处理导出成功事件
  */
 const handleExportSuccess = (exportData: any) => {
-  console.log('✅ [SimpleConfigurationEditor] 配置导出成功:', exportData)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ [SimpleConfigurationEditor] 配置导出成功:', exportData)
+  }
 
   // 显示成功消息
   const stats = exportData.metadata?.statistics
@@ -1176,7 +1204,9 @@ const handleExportSuccess = (exportData: any) => {
  * 🔥 处理导入成功事件
  */
 const handleImportSuccess = (importData: any) => {
-  console.log('✅ [SimpleConfigurationEditor] 配置导入成功:', importData)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ [SimpleConfigurationEditor] 配置导入成功:', importData)
+  }
 
   // 刷新显示状态
   restoreDataItemsFromConfig()
@@ -1210,10 +1240,12 @@ const exportSingleDataSource = async (dataSourceId: string): Promise<void> => {
   try {
     exportLoading.value[dataSourceId] = true
 
-    console.log('🔄 [SimpleConfigurationEditor] 开始导出单数据源', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 [SimpleConfigurationEditor] 开始导出单数据源', {
       componentId: props.componentId,
       dataSourceId
     })
+    }
 
     // 执行单数据源导出
     const exportResult = await singleDataSourceExporter.exportSingleDataSource(
@@ -1240,11 +1272,13 @@ const exportSingleDataSource = async (dataSourceId: string): Promise<void> => {
 
     message.success(`数据源 ${dataSourceId} 配置导出成功`)
 
-    console.log('✅ [SimpleConfigurationEditor] 单数据源导出成功', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ [SimpleConfigurationEditor] 单数据源导出成功', {
       dataSourceId,
       fileName,
       dataSize: JSON.stringify(exportResult).length
     })
+    }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     console.error('❌ [SimpleConfigurationEditor] 单数据源导出失败:', error)
@@ -1292,12 +1326,14 @@ const handleImportPreview = async (file: File): Promise<void> => {
     const fileContent = await readFileAsText(file)
     const importData = JSON.parse(fileContent)
 
-    console.log('🔄 [SimpleConfigurationEditor] 生成导入预览', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 [SimpleConfigurationEditor] 生成导入预览', {
       fileName: file.name,
       fileSize: file.size,
       exportType: importData.exportType,
       type: importData.type
     })
+    }
 
     // 判断是否为单数据源文件 - 支持两种格式标识
     if (importData.exportType === 'single-datasource' || importData.type === 'singleDataSource') {
@@ -1331,10 +1367,12 @@ const handleSingleDataSourceImport = async (): Promise<void> => {
   }
 
   try {
-    console.log('🔄 [SimpleConfigurationEditor] 开始单数据源导入', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 [SimpleConfigurationEditor] 开始单数据源导入', {
       componentId: props.componentId,
       targetDataSourceId: targetDataSourceId.value
     })
+    }
 
     // 使用原始导入数据执行导入
     await singleDataSourceImporter.importSingleDataSource(
@@ -1346,9 +1384,11 @@ const handleSingleDataSourceImport = async (): Promise<void> => {
 
     message.success(`数据源 ${targetDataSourceId.value} 配置导入成功`)
 
-    console.log('✅ [SimpleConfigurationEditor] 单数据源导入成功', {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ [SimpleConfigurationEditor] 单数据源导入成功', {
       targetDataSourceId: targetDataSourceId.value
     })
+    }
 
     // 关闭模态框并重置状态
     showSingleDataSourceImportModal.value = false
@@ -1385,7 +1425,9 @@ const refreshConfigurationData = async (): Promise<void> => {
   try {
     // 触发重新获取配置数据
     await restoreDataItemsFromConfig()
-    console.log('✅ [SimpleConfigurationEditor] 配置数据刷新成功')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ [SimpleConfigurationEditor] 配置数据刷新成功')
+    }
   } catch (error) {
     console.error('❌ [SimpleConfigurationEditor] 配置数据刷新失败:', error)
   }

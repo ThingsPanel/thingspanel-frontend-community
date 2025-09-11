@@ -134,7 +134,9 @@ const handleTabUpdate = (value: string) => {
   webChartConfig.value = []
   deviceSelectId.value = null
   tabValue.value = value
-  console.log('[handleTabUpdate] deviceSelectId set to:', deviceSelectId.value)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[handleTabUpdate] deviceSelectId set to:', deviceSelectId.value)
+  }
 }
 
 const getDeviceOptions = async () => {
@@ -168,13 +170,17 @@ onMounted(() => {
   const initialDeviceId = props?.data?.dataSource?.deviceSource?.[0]?.deviceId
   if (initialDeviceId) {
     deviceSelectId.value = initialDeviceId
-    console.log('[onMounted] deviceSelectId set from props:', deviceSelectId.value)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[onMounted] deviceSelectId set from props:', deviceSelectId.value)
+    }
     collectData(
       deviceSelectId.value,
       deviceOptions.value?.find(item => item.device_id === deviceSelectId.value)
     )
   } else {
-    console.log('[onMounted] No props.data, deviceSelectId remains:', deviceSelectId.value)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[onMounted] No props.data, deviceSelectId remains:', deviceSelectId.value)
+    }
   }
   if (!deviceSelectId.value) {
     availableCardIds.value = []

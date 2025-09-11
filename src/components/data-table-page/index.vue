@@ -342,14 +342,18 @@ const handleAddNew = () => {
   // 触发新建事件，由父组件或第一个 topAction 处理
   if (props.topActions && props.topActions.length > 0) {
     // 这里可以根据实际需求调整
-    console.log('Add new action triggered');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Add new action triggered')
+    };
   }
 };
 
 const handleViewChange = ({ viewType }: { viewType: string }) => {
   // 更新当前视图类型
   currentViewType.value = viewType;
-  console.log('View changed to:', viewType);
+  if (process.env.NODE_ENV === 'development') {
+    console.log('View changed to:', viewType)
+  };
 };
 
 const handleRefresh = () => {

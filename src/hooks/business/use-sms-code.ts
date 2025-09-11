@@ -58,7 +58,9 @@ export default function useSmsCode() {
     startLoading()
     try {
       const { error, data } = await fetchSmsCode(phone)
-      console.log('data', data, error)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('data', data, error)
+      }
       if (!error && data) {
         start() // 只有在发送成功时才启动倒计时
         window.$message?.success($t('page.login.common.codeSent'))
