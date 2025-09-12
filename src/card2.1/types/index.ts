@@ -199,7 +199,7 @@ export function isSetting(obj: unknown): obj is Setting {
  * @param obj 待检查的对象
  * @returns 是否为数据源需求
  */
-export function isDataSourceRequirement(obj: any): obj is DataSourceRequirement {
+export function isDataSourceRequirement(obj: unknown): obj is DataSourceRequirement {
   return obj &&
          typeof obj === 'object' &&
          typeof obj.key === 'string' &&
