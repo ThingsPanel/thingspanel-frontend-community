@@ -120,58 +120,95 @@ function handleBack() {
 
 setupMixMenuContext()
 
-// SSE连接管理
+/**
+ * ===========================================
+ * 物联网设备状态实时监控系统 (SSE)
+ * ===========================================
+ * 
+ * 功能说明：
+ * 1. 通过Server-Sent Events与后端建立长连接
+ * 2. 实时接收设备上线/下线状态变化通知
+ * 3. 在全局范围内显示设备状态变化通知
+ * 4. 播放音效提醒用户注意设备状态变化
+ * 
+ * 技术实现：
+ * - 使用EventSourcePolyfill确保浏览器兼容性
+ * - 自动重连机制处理网络中断
+ * - 完整的错误处理和日志记录
+ * - 组件销毁时自动清理连接资源
+ */
+
+// SSE连接实例，用于维持与服务器的长连接
 let eventSource: EventSourcePolyfill | null = null
+// 重连尝试次数计数器
 let tryNum = 0
 
 /**
  * 创建EventSource连接
- * 用于接收服务器端的实时事件推送
+ * 建立与后端的实时通信连接，用于接收设备状态变化事件
  */
 const createEventSource = () => {
+  // 获取用户认证token，用于SSE连接身份验证
   const token = localStg.get('token')
   if (!token) {
-    logger.warn('Token not found, skipping EventSource creation')
+    logger.warn('未找到用户token，跳过EventSource连接创建')
     return
   }
   
   try {
+    /**
+     * 创建EventSource连接
+     * 开发环境：通过/proxy-default代理访问后端
+     * 生产环境：直接访问/events端点
+     */
     eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/events`, {
-      heartbeatTimeout: 3 * 60 * 1000, // 配置请求超时时间为3分钟
+      heartbeatTimeout: 3 * 60 * 1000, // 心跳超时时间：3分钟
       headers: {
-        'x-token': token
+        'x-token': token // 传递用户认证token
       }
     })
     
-    // 连接成功回调
+    /**
+     * 连接成功回调
+     * 重置重连计数器，记录连接成功状态
+     */
     eventSource.onopen = () => {
       tryNum = 0
-      logger.info('EventSource connected successfully')
+      logger.info('设备状态监控SSE连接建立成功')
     }
     
-    // 监听设备在线状态变化事件
+    /**
+     * 监听设备在线状态变化事件
+     * 当设备上线或下线时，服务器会推送'device_online'事件
+     */
     eventSource.addEventListener(
       'device_online',
       event => {
         try {
-          // 安全解析JSON数据
+          // 数据安全验证：检查事件数据是否存在
           if (!event.data) {
-            logger.warn('EventSource received empty data')
+            logger.warn('接收到空的设备状态事件数据')
             return
           }
           
+          // 解析JSON格式的设备状态数据
           const data = JSON.parse(event.data)
           
-          // 验证必要的数据字段
+          // 验证设备数据的必要字段
           if (!data.device_name || typeof data.device_name !== 'string') {
-            logger.warn('Invalid device data received:', data)
+            logger.warn('设备状态事件数据无效，缺少有效的设备名称:', data)
             return
           }
           
+          /**
+           * 根据设备状态显示不同类型的通知
+           * is_online: true = 设备上线，false = 设备下线
+           */
           if (data.is_online) {
+            // 设备上线通知（成功类型，绿色）
             window.$notification?.success({
               title: `${data.device_name}${$t('card.deviceConnected')}`,
-              duration: 5000,
+              duration: 5000, // 显示5秒
               action: () =>
                 h(
                   NButton,
@@ -179,6 +216,7 @@ const createEventSource = () => {
                     text: true,
                     type: 'default',
                     onClick: () => {
+                      // 点击通知跳转到设备详情页
                       routerPushByKey('device_details', {
                         query: {
                           d_id: data.device_id
@@ -192,9 +230,10 @@ const createEventSource = () => {
                 )
             })
           } else {
+            // 设备下线通知（信息类型，蓝色）
             window.$notification?.info({
               title: `${data.device_name}${$t('card.deviceDisconnected')}`,
-              duration: 5000,
+              duration: 5000, // 显示5秒
               action: () =>
                 h(
                   NButton,
@@ -202,6 +241,7 @@ const createEventSource = () => {
                     text: true,
                     type: 'default',
                     onClick: () => {
+                      // 点击通知跳转到设备详情页
                       routerPushByKey('device_details', {
                         query: {
                           d_id: data.device_id
@@ -216,64 +256,78 @@ const createEventSource = () => {
             })
           }
           
-          // 播放通知音效
+          /**
+           * 播放设备状态变化提示音
+           * 使用异步播放，避免阻塞UI线程
+           */
           try {
             const audio = new Audio(deviceStatusMp3)
             audio.play().catch(audioError => {
-              logger.warn('Failed to play notification sound:', audioError)
+              logger.warn('播放设备状态变化提示音失败:', audioError)
             })
           } catch (audioError) {
-            logger.warn('Audio creation failed:', audioError)
+            logger.warn('创建音频对象失败:', audioError)
           }
           
         } catch (parseError) {
-          logger.error('Failed to parse EventSource data:', parseError, 'Raw data:', event.data)
+          logger.error('解析设备状态事件数据失败:', parseError, '原始数据:', event.data)
         }
       },
       false
     )
     
-    // 错误处理和重连逻辑
+    /**
+     * EventSource错误处理和自动重连机制
+     * 当连接中断时自动尝试重连，最多重试3次
+     */
     eventSource.onerror = error => {
-      logger.error('EventSource error:', error)
+      logger.error('EventSource连接发生错误:', error)
       
-      // 清理当前连接
+      // 清理当前连接，释放资源
       if (eventSource) {
         eventSource.close()
         eventSource = null
       }
       
-      // 重连逻辑（最多3次）
+      // 智能重连逻辑：最多重试3次，每次间隔5秒
       if (tryNum < 3) {
         tryNum += 1
-        logger.info(`Attempting to reconnect EventSource (attempt ${tryNum}/3)`)
+        logger.info(`正在尝试重连设备状态监控服务 (第${tryNum}/3次尝试)`)
         setTimeout(createEventSource, 5000) // 延迟5秒后重连
       } else {
-        logger.error('EventSource max reconnection attempts reached')
+        logger.error('设备状态监控服务重连次数已达上限，停止重连')
       }
     }
     
   } catch (error) {
-    logger.error('Failed to create EventSource:', error)
+    logger.error('创建设备状态监控EventSource连接失败:', error)
   }
 }
 
 /**
  * 清理EventSource连接
+ * 确保组件销毁时正确释放连接资源，避免内存泄漏
  */
 const cleanupEventSource = () => {
   if (eventSource) {
     eventSource.close()
     eventSource = null
-    logger.info('EventSource connection cleaned up')
+    logger.info('设备状态监控SSE连接已清理')
   }
 }
 
+/**
+ * 组件挂载时建立设备状态监控连接
+ * 在用户进入系统后立即开始监控设备状态变化
+ */
 onMounted(() => {
   createEventSource()
 })
 
-// 组件卸载时清理连接
+/**
+ * 组件卸载时清理连接
+ * 确保用户离开或组件销毁时正确清理资源
+ */
 onUnmounted(() => {
   cleanupEventSource()
 })

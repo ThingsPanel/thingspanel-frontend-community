@@ -53,134 +53,184 @@ const queryOfServiceIdentifier = ref(route.query.service_identifier)
 const queryOfServiceAccessId = ref(route.query.service_access_id)
 const { cache: query, setCache } = usePageCache()
 
-// EventSource 相关变量
+/**
+ * ===========================================
+ * 设备管理页面实时状态监控系统
+ * ===========================================
+ * 
+ * 功能说明：
+ * 1. 专门用于设备管理页面的设备状态实时更新
+ * 2. 当设备上线/下线时，自动更新表格中的设备状态显示
+ * 3. 无需用户手动刷新页面，提供流畅的用户体验
+ * 4. 与全局通知系统配合，实现页面级的状态同步
+ * 
+ * 技术特点：
+ * - 仅更新表格数据，不显示弹窗通知（避免与全局通知重复）
+ * - 智能重连机制，确保连接稳定性
+ * - 完整的错误处理和数据验证
+ * - 页面卸载时自动清理资源
+ */
+
+// EventSource 连接实例，专用于设备管理页面的状态监控
 let eventSource: EventSourcePolyfill | null = null
+// 重连尝试次数计数器
 let reconnectAttempts = 0
+// 最大重连尝试次数限制
 const MAX_RECONNECT_ATTEMPTS = 3
 
 /**
  * 更新表格中设备状态的函数
- * 根据设备ID更新表格中对应设备的在线状态
+ * 根据设备ID在当前显示的设备列表中找到对应设备并更新其在线状态
+ * @param {string} deviceId - 设备唯一标识ID
+ * @param {boolean} isOnline - 设备在线状态：true=在线，false=离线
  */
 const updateDeviceStatusInTable = (deviceId: string, isOnline: boolean) => {
   try {
-    // 通过 tablePageRef 获取数据表格组件的数据
+    // 通过表格组件引用获取当前显示的设备数据列表
     if (tablePageRef.value?.dataList && Array.isArray(tablePageRef.value.dataList)) {
+      // 在当前页面的设备列表中查找目标设备
       const deviceIndex = tablePageRef.value.dataList.findIndex(
         device => device.device_id === deviceId
       )
+      
       if (deviceIndex !== -1) {
+        // 找到设备，更新其在线状态 (1=在线, 0=离线)
         tablePageRef.value.dataList[deviceIndex].is_online = isOnline ? 1 : 0
-        console.info(`Device ${deviceId} status updated to ${isOnline ? 'online' : 'offline'}`)
+        console.info(`设备 ${deviceId} 状态已更新为 ${isOnline ? '在线' : '离线'}`)
       } else {
-        console.warn(`Device ${deviceId} not found in current table data`)
+        // 设备不在当前页面显示范围内（可能在其他分页或已被过滤）
+        console.warn(`设备 ${deviceId} 未在当前表格数据中找到，可能不在当前页面显示范围内`)
       }
+    } else {
+      console.warn('表格数据未加载或格式异常，无法更新设备状态')
     }
   } catch (error) {
-    console.error('Error updating device status in table:', error)
+    console.error('更新表格中设备状态时发生错误:', error)
   }
 }
 
 /**
- * 创建 EventSource 连接
- * 用于接收设备状态实时更新
+ * 创建设备管理页面专用的EventSource连接
+ * 建立与后端的实时通信，专门用于更新当前页面表格中的设备状态
  */
 const createEventSourceConnection = () => {
   try {
+    // 获取用户认证token
     const token = localStg.get('token')
     if (!token) {
-      console.warn('Token not found, cannot establish EventSource connection')
+      console.warn('未找到用户token，无法建立设备状态监控连接')
       return
     }
 
-    // 清理之前的连接
+    // 清理之前可能存在的连接，避免重复连接
     if (eventSource) {
       eventSource.close()
       eventSource = null
     }
 
+    /**
+     * 创建专用于设备管理页面的EventSource连接
+     * 与全局的base-layout连接共享同一个端点，但处理逻辑不同：
+     * - 全局连接：显示通知 + 播放音效
+     * - 页面连接：仅更新表格数据
+     */
     eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/events`, {
-      heartbeatTimeout: 3 * 60 * 1000, // 3分钟超时
+      heartbeatTimeout: 3 * 60 * 1000, // 心跳超时：3分钟
       headers: {
-        'x-token': token
+        'x-token': token // 用户身份验证
       }
     })
 
-    // 连接成功处理
+    /**
+     * 连接建立成功回调
+     * 重置重连计数器，记录连接状态
+     */
     eventSource.onopen = () => {
       reconnectAttempts = 0
-      console.info('Device management EventSource connected successfully')
+      console.info('设备管理页面EventSource连接建立成功')
     }
 
-    // 监听设备在线状态变化事件
+    /**
+     * 监听设备状态变化事件
+     * 专注于更新当前页面表格中的设备状态显示
+     */
     eventSource.addEventListener('device_online', (event: any) => {
       try {
-        // 安全验证事件数据
+        // 数据安全验证：确保事件数据存在
         if (!event?.data) {
-          console.warn('EventSource received empty or invalid event data')
+          console.warn('接收到空的设备状态事件数据')
           return
         }
 
+        // 解析服务器推送的JSON数据
         const data = JSON.parse(event.data)
         
-        // 验证必要的数据字段
+        // 验证设备ID字段的有效性
         if (!data.device_id || typeof data.device_id !== 'string') {
-          console.warn('Invalid device_id in EventSource data:', data)
+          console.warn('设备状态事件中缺少有效的设备ID:', data)
           return
         }
 
+        // 验证在线状态字段的有效性
         if (typeof data.is_online !== 'boolean') {
-          console.warn('Invalid is_online value in EventSource data:', data)
+          console.warn('设备状态事件中在线状态值无效:', data)
           return
         }
         
-        // 更新表格中的设备状态
+        /**
+         * 调用表格更新函数
+         * 仅更新表格显示，不显示通知（避免与全局通知重复）
+         */
         updateDeviceStatusInTable(data.device_id, data.is_online)
         
       } catch (parseError) {
-        console.error('Error parsing device status event:', parseError, 'Raw data:', event.data)
+        console.error('解析设备状态事件数据失败:', parseError, '原始数据:', event.data)
       }
     })
 
-    // 错误处理和重连逻辑
+    /**
+     * 错误处理和智能重连机制
+     * 采用递增延迟策略，避免频繁重连对服务器造成压力
+     */
     eventSource.onerror = (error) => {
-      console.error('EventSource error in device management:', error)
+      console.error('设备管理页面EventSource连接错误:', error)
       
-      // 清理当前连接
+      // 立即清理当前连接
       if (eventSource) {
         eventSource.close()
         eventSource = null
       }
 
-      // 重连逻辑（最多3次，延迟递增）
+      // 智能重连：递增延迟策略 (5s -> 10s -> 15s)
       if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
         reconnectAttempts += 1
-        const delay = reconnectAttempts * 5000 // 5s, 10s, 15s
-        console.info(`Attempting to reconnect device management EventSource (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}) in ${delay}ms`)
+        const delay = reconnectAttempts * 5000 // 延迟时间递增
+        console.info(`正在尝试重连设备管理页面EventSource (第${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}次尝试)，${delay/1000}秒后重连`)
         
         setTimeout(() => {
           createEventSourceConnection()
         }, delay)
       } else {
-        console.error('Device management EventSource max reconnection attempts reached')
+        console.error('设备管理页面EventSource重连次数已达上限，停止重连尝试')
       }
     }
 
   } catch (error) {
-    console.error('Failed to create device management EventSource connection:', error)
+    console.error('创建设备管理页面EventSource连接失败:', error)
   }
 }
 
 /**
- * 清理 EventSource 连接
- * 确保在组件销毁时正确释放资源
+ * 清理EventSource连接
+ * 确保页面切换或组件销毁时正确释放连接资源，防止内存泄漏
  */
 const cleanupEventSource = () => {
   if (eventSource) {
     eventSource.close()
     eventSource = null
-    console.info('Device management EventSource connection cleaned up')
+    console.info('设备管理页面EventSource连接已清理')
   }
+  // 重置重连计数器
   reconnectAttempts = 0
 }
 
@@ -575,12 +625,18 @@ onBeforeMount(async () => {
   setServiceParams()
 })
 
-// 组件挂载后建立 EventSource 连接
+/**
+ * 组件挂载完成后建立设备状态监控连接
+ * 确保页面加载完成后立即开始监控当前页面中设备的状态变化
+ */
 onMounted(() => {
   createEventSourceConnection()
 })
 
-// 组件卸载前清理 EventSource 连接
+/**
+ * 组件卸载前清理EventSource连接
+ * 确保用户离开设备管理页面时正确清理资源，避免内存泄漏
+ */
 onUnmounted(() => {
   cleanupEventSource()
 })
