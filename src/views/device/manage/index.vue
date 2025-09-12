@@ -55,21 +55,36 @@ const { cache: query, setCache } = usePageCache()
 
 // EventSource 相关变量
 let eventSource: EventSourcePolyfill | null = null
+let reconnectAttempts = 0
+const MAX_RECONNECT_ATTEMPTS = 3
 
-// 更新表格中设备状态的函数
-const updateDeviceStatusInTable = (deviceNumber: string, isOnline: boolean) => {
-  // 通过 tablePageRef 获取数据表格组件的数据
-  if (tablePageRef.value && tablePageRef.value.dataList) {
-    const deviceIndex = tablePageRef.value.dataList.findIndex(
-      device => device.device_number === deviceNumber
-    )
-    if (deviceIndex !== -1) {
-      tablePageRef.value.dataList[deviceIndex].is_online = isOnline ? 1 : 0
+/**
+ * 更新表格中设备状态的函数
+ * 根据设备ID更新表格中对应设备的在线状态
+ */
+const updateDeviceStatusInTable = (deviceId: string, isOnline: boolean) => {
+  try {
+    // 通过 tablePageRef 获取数据表格组件的数据
+    if (tablePageRef.value?.dataList && Array.isArray(tablePageRef.value.dataList)) {
+      const deviceIndex = tablePageRef.value.dataList.findIndex(
+        device => device.device_id === deviceId
+      )
+      if (deviceIndex !== -1) {
+        tablePageRef.value.dataList[deviceIndex].is_online = isOnline ? 1 : 0
+        console.info(`Device ${deviceId} status updated to ${isOnline ? 'online' : 'offline'}`)
+      } else {
+        console.warn(`Device ${deviceId} not found in current table data`)
+      }
     }
+  } catch (error) {
+    console.error('Error updating device status in table:', error)
   }
 }
 
-// 创建 EventSource 连接
+/**
+ * 创建 EventSource 连接
+ * 用于接收设备状态实时更新
+ */
 const createEventSourceConnection = () => {
   try {
     const token = localStg.get('token')
@@ -78,53 +93,95 @@ const createEventSourceConnection = () => {
       return
     }
 
+    // 清理之前的连接
+    if (eventSource) {
+      eventSource.close()
+      eventSource = null
+    }
+
     eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/events`, {
-      heartbeatTimeout: 3 * 60 * 1000,
+      heartbeatTimeout: 3 * 60 * 1000, // 3分钟超时
       headers: {
         'x-token': token
       }
     })
 
+    // 连接成功处理
     eventSource.onopen = () => {
-      if (process.env.NODE_ENV === 'development') {
-      }
+      reconnectAttempts = 0
+      console.info('Device management EventSource connected successfully')
     }
 
+    // 监听设备在线状态变化事件
     eventSource.addEventListener('device_online', (event: any) => {
       try {
-        const data = event.data ? JSON.parse(event.data) : {}
-        if (process.env.NODE_ENV === 'development') {
+        // 安全验证事件数据
+        if (!event?.data) {
+          console.warn('EventSource received empty or invalid event data')
+          return
+        }
+
+        const data = JSON.parse(event.data)
+        
+        // 验证必要的数据字段
+        if (!data.device_id || typeof data.device_id !== 'string') {
+          console.warn('Invalid device_id in EventSource data:', data)
+          return
+        }
+
+        if (typeof data.is_online !== 'boolean') {
+          console.warn('Invalid is_online value in EventSource data:', data)
+          return
         }
         
-        if (data.device_id && typeof data.is_online === 'boolean') {
-          updateDeviceStatusInTable(data.device_id, data.is_online)
-        }
-      } catch (error) {
-        console.error('Error parsing device status event:', error)
+        // 更新表格中的设备状态
+        updateDeviceStatusInTable(data.device_id, data.is_online)
+        
+      } catch (parseError) {
+        console.error('Error parsing device status event:', parseError, 'Raw data:', event.data)
       }
     })
 
+    // 错误处理和重连逻辑
     eventSource.onerror = (error) => {
       console.error('EventSource error in device management:', error)
-      // 连接错误时关闭连接，避免无限重试
+      
+      // 清理当前连接
       if (eventSource) {
         eventSource.close()
         eventSource = null
       }
+
+      // 重连逻辑（最多3次，延迟递增）
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        reconnectAttempts += 1
+        const delay = reconnectAttempts * 5000 // 5s, 10s, 15s
+        console.info(`Attempting to reconnect device management EventSource (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}) in ${delay}ms`)
+        
+        setTimeout(() => {
+          createEventSourceConnection()
+        }, delay)
+      } else {
+        console.error('Device management EventSource max reconnection attempts reached')
+      }
     }
+
   } catch (error) {
-    console.error('Failed to create EventSource connection:', error)
+    console.error('Failed to create device management EventSource connection:', error)
   }
 }
 
-// 清理 EventSource 连接
+/**
+ * 清理 EventSource 连接
+ * 确保在组件销毁时正确释放资源
+ */
 const cleanupEventSource = () => {
   if (eventSource) {
     eventSource.close()
     eventSource = null
-    if (process.env.NODE_ENV === 'development') {
-    }
+    console.info('Device management EventSource connection cleaned up')
   }
+  reconnectAttempts = 0
 }
 
 const getFormJson = async id => {
