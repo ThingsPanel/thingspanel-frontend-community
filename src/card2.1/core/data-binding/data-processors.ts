@@ -30,7 +30,7 @@ export class ScriptProcessor implements DataProcessor {
       data: input,
       console: {
         log: console.log,
-        warn: console.warn,
+        warn: console.error,
         error: console.error
       },
       Math,

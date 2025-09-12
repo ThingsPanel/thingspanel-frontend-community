@@ -273,7 +273,7 @@ const handleFocus = (ifIndex: any) => {
   if (queryDeviceName.value[ifIndex]) {
     queryDeviceName.value[ifIndex].focus()
   } else {
-    console.warn(`Ref for queryDeviceName at index ${ifIndex} not found.`)
+    console.error(`Ref for queryDeviceName at index ${ifIndex} not found.`)
   }
 }
 

@@ -84,7 +84,7 @@ export default class Logger {
    */
   warn(...args: any[]): void {
     if (this.isLevelEnabled(LogLevel.WARN)) {
-      console.warn(this.formatPrefix('WARN'), ...args)
+      console.error(this.formatPrefix('WARN'), ...args)
     }
   }
 

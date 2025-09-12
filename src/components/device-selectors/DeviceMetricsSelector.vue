@@ -258,7 +258,7 @@ const loadMetricsOptions = async () => {
     if (res && res.data && Array.isArray(res.data)) {
       metricsOptions.value = res.data
     } else {
-      console.warn('API返回数据格式异常:', res)
+      console.error('API返回数据格式异常:', res)
       metricsOptions.value = []
     }
 

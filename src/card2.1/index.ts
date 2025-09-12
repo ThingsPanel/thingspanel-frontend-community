@@ -13,13 +13,7 @@ import { componentRegistry } from '@/card2.1/core/component-registry'
 import { AutoRegistry } from '@/card2.1/core/auto-registry'
 import { ComponentLoader } from '@/card2.1/core/component-loader'
 import { componentDataRequirementsRegistry } from '@/components/visual-editor/core/component-data-requirements'
-import {
-  optimizedInitializationManager,
-  initializeCard2SystemOptimized,
-  getOptimizedComponentTree,
-  getOptimizedComponentsByCategory,
-  getOptimizedCategories
-} from './core/OptimizedInitializationManager'
+// 🔥 已移除过度工程化的OptimizedInitializationManager
 
 // ========== 优化版本的初始化系统 ==========
 
@@ -32,20 +26,41 @@ let isInitialized = false
 let initializationPromise: Promise<void> | null = null
 
 /**
- * 初始化 Card 2.1 系统（优化版本）
- * 使用智能缓存避免重复工作，自动扫描并注册所有组件
+ * 初始化 Card 2.1 系统（简化版本）
+ * 直接使用传统注册系统，避免过度复杂化
  */
 export async function initializeCard2System() {
-  // 🔥 优化：使用新的优化初始化管理器
-  await initializeCard2SystemOptimized()
+  if (isInitialized) return
 
-  // 🔥 向后兼容：同步传统状态
-  isInitialized = true
-
-  // 返回兼容性信息
-  const stats = optimizedInitializationManager.getCacheStats()
-  if (process.env.NODE_ENV === 'development') {
+  if (initializationPromise) {
+    return initializationPromise
   }
+
+  initializationPromise = (async () => {
+    try {
+      // 1. 加载组件模块
+      const componentModules = await componentLoader.loadComponents()
+
+      // 2. 自动注册组件（包含权限过滤）
+      const registeredComponents = await autoRegistry.autoRegister(componentModules)
+
+      // 3. 注册预设的数据需求
+      componentDataRequirementsRegistry.registerPresets()
+
+      isInitialized = true
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚀 Card2.1 System Init Complete', {
+          componentCount: registeredComponents.length,
+          categoryCount: autoRegistry.getComponentTree().categories.length
+        })
+      }
+    } finally {
+      initializationPromise = null
+    }
+  })()
+
+  return initializationPromise
 }
 
 /**
@@ -95,36 +110,43 @@ export function getComponentRegistry() {
 }
 
 /**
- * 获取组件树形结构（优化版本）
+ * 获取组件树形结构（简化版本）
  */
 export function getComponentTree() {
-  // 🔥 优化：优先使用缓存的组件树
-  return getOptimizedComponentTree()
+  if (!isInitialized) {
+    return { components: [], categories: [], totalCount: 0 }
+  }
+  return autoRegistry.getComponentTree()
 }
 
 /**
- * 按分类获取组件（优化版本）
+ * 按分类获取组件（简化版本）
  */
 export function getComponentsByCategory(mainCategory?: string, subCategory?: string) {
-  // 🔥 优化：使用缓存的分类组件
-  return getOptimizedComponentsByCategory(mainCategory, subCategory)
+  if (!isInitialized) {
+    return []
+  }
+  return autoRegistry.getComponentsByCategory(mainCategory, subCategory)
 }
 
 /**
- * 获取所有分类（优化版本）
+ * 获取所有分类（简化版本）
  */
 export function getCategories() {
-  // 🔥 优化：使用缓存的分类信息
-  return getOptimizedCategories()
+  if (!isInitialized) {
+    return []
+  }
+  return autoRegistry.getAllCategories()
 }
 
 /**
- * 重新应用权限过滤（优化版本）
+ * 重新应用权限过滤（简化版本）
  * 当用户权限发生变化时调用此函数
  */
 export async function reapplyPermissionFilter() {
-  // 🔥 优化：使用智能权限过滤重新应用
-  await optimizedInitializationManager.reapplyPermissionFilter()
+  // 简化实现：直接重新初始化
+  isInitialized = false
+  await initializeCard2System()
 }
 
 /**
@@ -139,14 +161,8 @@ export function getAllComponents() {
 
 // ========== 核心模块导出 ==========
 
-// 优化的初始化管理器导出
-export {
-  optimizedInitializationManager,
-  initializeCard2SystemOptimized,
-  getOptimizedComponentTree,
-  getOptimizedComponentsByCategory,
-  getOptimizedCategories
-} from './core/OptimizedInitializationManager'
+// 🔥 已移除过度复杂的OptimizedInitializationManager
+// 如需高级缓存功能，建议在应用层实现，而非组件系统内部
 
 // 传统模块导出（向后兼容）
 export { componentRegistry }
@@ -160,48 +176,33 @@ export type { ComponentPermission } from '@/card2.1/types'
 // 导出 Hooks
 export * from '@/card2.1/hooks'
 
-// ========== 工具方法导出 ==========
+// ========== 简化的工具方法导出 ==========
 
 /**
  * 获取系统初始化状态
  */
 export function getInitializationState() {
-  return optimizedInitializationManager.getInitializationState()
-}
-
-/**
- * 获取缓存统计信息
- */
-export function getCacheStats() {
-  return optimizedInitializationManager.getCacheStats()
+  return {
+    isInitialized,
+    componentCount: isInitialized ? autoRegistry.getAllComponents().length : 0,
+    categories: isInitialized ? autoRegistry.getAllCategories() : []
+  }
 }
 
 /**
  * 清除缓存（强制重新初始化）
  */
 export function clearInitializationCache() {
-  optimizedInitializationManager.clearCache()
+  isInitialized = false
+  initializationPromise = null
 }
 
 /**
- * 预热缓存（在应用启动时调用）
- */
-export async function warmupInitializationCache() {
-  await optimizedInitializationManager.warmupCache()
-}
-
-/**
- * 检查组件更新
+ * 检查组件更新（简化版）
  */
 export async function checkForComponentUpdates() {
-  return await optimizedInitializationManager.checkForUpdates()
-}
-
-/**
- * 执行增量更新
- */
-export async function performIncrementalUpdate() {
-  await optimizedInitializationManager.incrementalUpdate()
+  // 简化实现：总是返回true，让调用方决定是否重新初始化
+  return !isInitialized
 }
 
 // 默认导出注册表（保持向后兼容）

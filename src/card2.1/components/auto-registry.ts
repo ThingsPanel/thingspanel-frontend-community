@@ -98,7 +98,7 @@ class AutoComponentRegistry {
             }
           } else {
             if (process.env.NODE_ENV === 'development') {
-              console.warn(`❌ [Card2.1] 跳过无效组件定义: ${path}`, {
+              console.error(`❌ [Card2.1] 跳过无效组件定义: ${path}`, {
                 hasDefault: !!module.default,
                 hasDefinition: !!module.definition,
                 hasComponentDefinition: !!module.componentDefinition,
@@ -155,7 +155,7 @@ class AutoComponentRegistry {
       }
       return
     }
-    
+
     if (process.env.NODE_ENV === 'development') {
     }
 
@@ -205,7 +205,7 @@ class AutoComponentRegistry {
     const validComponents = components.filter(comp => comp && comp.type && comp.name && comp.component)
     if (process.env.NODE_ENV === 'development') {
       if (components.length !== validComponents.length) {
-        console.warn(
+        console.error(
           `❌ [AutoRegistry] 发现无效组件:`,
           components.filter(comp => !comp || !comp.type)
         )

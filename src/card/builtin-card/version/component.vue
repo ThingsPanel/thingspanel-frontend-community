@@ -62,7 +62,7 @@ onMounted(async () => {
       latestVersion.value = res.data[0].name || '--'
     }
   } catch (error) {
-    console.warn('获取最新版本信息失败:', error)
+    console.error('获取最新版本信息失败:', error)
     latestVersion.value = '--'
   }
 

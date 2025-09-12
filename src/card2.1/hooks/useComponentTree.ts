@@ -254,7 +254,7 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
     // 🔥 调试：如果没有组件，强制重新初始化
     if (filteredComponents.value.length === 0) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn(`⚠️ [useComponentTree] 没有可用组件，强制重新初始化...`)
+        console.error(`⚠️ [useComponentTree] 没有可用组件，强制重新初始化...`)
       }
       await initialize()
 

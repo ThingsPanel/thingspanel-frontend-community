@@ -134,7 +134,7 @@ onMounted(() => {
           if (process.env.NODE_ENV === 'development') {
           }
         } else {
-          console.warn(`⚠️ 组件 ${event.componentId} 数据获取失败:`, result.error)
+          console.error(`⚠️ 组件 ${event.componentId} 数据获取失败:`, result.error)
         }
       } catch (error) {
         console.error(`❌ 组件 ${event.componentId} 数据处理异常:`, error)

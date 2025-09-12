@@ -39,7 +39,7 @@ export function useGridCore(options: UseGridCoreOptions = {}) {
     try {
       return getLayoutStats(layout.value, config.value.colNum)
     } catch (err) {
-      console.warn('Failed to calculate layout stats:', err)
+      console.error('Failed to calculate layout stats:', err)
       return {
         totalItems: layout.value.length,
         totalRows: 0,
@@ -53,7 +53,7 @@ export function useGridCore(options: UseGridCoreOptions = {}) {
     try {
       return getLayoutBounds(layout.value)
     } catch (err) {
-      console.warn('Failed to calculate layout bounds:', err)
+      console.error('Failed to calculate layout bounds:', err)
       return { minX: 0, maxX: 0, minY: 0, maxY: 0, width: 0, height: 0 }
     }
   })

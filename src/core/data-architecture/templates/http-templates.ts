@@ -150,7 +150,7 @@ config.headers['X-Request-Time'] = Date.now().toString()
 if (config.params) {
   const startTimeParam = config.params.find(p => p.key === 'start_time')
   const endTimeParam = config.params.find(p => p.key === 'end_time')
-  
+
   // 如果时间参数是示例值，则自动更新为当前时间
   if (startTimeParam && startTimeParam.value === '1640995200000') {
     startTimeParam.value = (Date.now() - 3600000).toString() // 1小时前
@@ -172,7 +172,7 @@ if (config.params) {
   }
 }
 if (missingParams.length > 0) {
-  console.warn('⚠️ 缺少必要参数:', missingParams)
+  console.error('⚠️ 缺少必要参数:', missingParams)
 }
 
 return config`,
@@ -182,7 +182,7 @@ if (process.env.NODE_ENV === 'development') {
 
 try {
   let data = null
-  
+
   // 处理响应数据的多种格式
   if (response && typeof response === 'object') {
     // 标准格式: response.data 包含数组
@@ -206,33 +206,33 @@ try {
       data = [response.data]
     }
   }
-  
+
   if (process.env.NODE_ENV === 'development') {
   }
-  
+
   if (data && Array.isArray(data)) {
     // 🔧 修复：更稳健的数据转换
     const result = data.map(item => {
       if (!item || typeof item !== 'object') return [0, 0]
-      
+
       // 多种时间字段兼容
       const timeValue = item.x || item.timestamp || item.time || item.ts || Date.now()
-      // 多种数值字段兼容  
+      // 多种数值字段兼容
       const dataValue = item.y || item.value || item.val || item.data || 0
-      
+
       return [timeValue, dataValue]
     }).filter(item => item[0] && item[1] !== undefined)
-    
+
     if (process.env.NODE_ENV === 'development') {
     }
-    
+
     if (result.length > 0) {
       return result
     }
   }
-  
+
   return response
-  
+
 } catch (error) {
   console.error('❌ [遥测数据] 处理失败:', error)
   return response
@@ -376,7 +376,7 @@ let commandData
 try {
   commandData = JSON.parse(config.body)
   if (!commandData.device_id || !commandData.command_identifier) {
-    console.warn('缺少必要的命令参数: device_id, command_identifier')
+    console.error('缺少必要的命令参数: device_id, command_identifier')
   }
 } catch (e) {
   console.error('命令数据格式错误:', e)
@@ -467,7 +467,7 @@ if (response && typeof response === 'object') {
       status: alarm.status
     }))
   }
-  
+
   if (Array.isArray(response)) {
     return response
   }
@@ -533,7 +533,7 @@ if (response && typeof response === 'object') {
       status_text: device.is_online ? '在线' : '离线'
     }))
   }
-  
+
   // 单个设备详情
   if (response.data && response.data.id) {
     const device = response.data
@@ -604,7 +604,7 @@ config.headers['X-Request-Time'] = Date.now().toString()
 
 // 清理空参数
 if (config.params) {
-  config.params = config.params.filter(param => 
+  config.params = config.params.filter(param =>
     param.enabled && param.value !== '' && param.value != null
   )
 }
@@ -623,7 +623,7 @@ if (response && typeof response === 'object') {
       page_size: response.page_size || 20
     }
   }
-  
+
   if (Array.isArray(response)) {
     return {
       devices: response,
@@ -713,7 +713,7 @@ if (response && typeof response === 'object') {
       created_at: event.created_at
     }))
   }
-  
+
   if (Array.isArray(response)) {
     return response
   }

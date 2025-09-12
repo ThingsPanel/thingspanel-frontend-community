@@ -547,7 +547,7 @@ const executeComponentPolling = async () => {
     // 获取组件的数据源配置
     const config = configurationManager.getConfiguration(props.componentId)
     if (!config?.dataSource) {
-      console.warn(`⚠️ 组件 ${props.componentId} 没有数据源配置，跳过轮询`)
+      console.error(`⚠️ 组件 ${props.componentId} 没有数据源配置，跳过轮询`)
       return
     }
 
@@ -955,10 +955,10 @@ const getCurrentDataSourceExampleData = () => {
   if (!currentDataSourceKey.value) return undefined
 
   const currentDataSource = dataSourceOptions.value.find(opt => opt.value === currentDataSourceKey.value)
-  
+
   // 🔥 统一标准：只检查example字段
   const exampleData = currentDataSource?.originalData?.originalData?.example
-  
+
   return exampleData
 }
 

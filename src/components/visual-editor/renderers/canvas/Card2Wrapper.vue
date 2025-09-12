@@ -119,7 +119,7 @@ const handleWrapperClick = (event: MouseEvent) => {
   try {
     const componentId = props.nodeId
     if (!componentId) {
-      console.warn('[Card2Wrapper] 缺少组件ID，无法处理点击交互')
+      console.error('[Card2Wrapper] 缺少组件ID，无法处理点击交互')
       return
     }
 
@@ -721,13 +721,13 @@ const getComponentSpecificProps = () => {
   const validation = DataSourceMapper.validateMapping(props.componentType, specificProps)
   // 🔥 获取映射统计信息
   const stats = DataSourceMapper.getMappingStats(props.componentType, executorData.value)
-  
+
   // 🔍 调试信息 - 仅针对gauge-dashboard-v2组件
   if (props.componentType === 'gauge-dashboard-v2') {
     if (process.env.NODE_ENV === 'development') {
     }
   }
-  
+
   return specificProps
 }
 
@@ -941,10 +941,10 @@ onMounted(async () => {
                 if (process.env.NODE_ENV === 'development') {
                 }
               } catch (error) {
-                console.warn(`❌ [Card2Wrapper] 触发dataChange事件失败:`, error)
+                console.error(`❌ [Card2Wrapper] 触发dataChange事件失败:`, error)
               }
             } else {
-              console.warn(`⚠️ [Card2Wrapper] 无法触发dataChange事件`, {
+              console.error(`⚠️ [Card2Wrapper] 无法触发dataChange事件`, {
                 componentId: props.nodeId,
                 property,
                 hasComponentRef: !!currentComponentRef.value,
@@ -995,7 +995,7 @@ onMounted(async () => {
               if (process.env.NODE_ENV === 'development') {
               }
             } else {
-              console.warn(`⚠️ [Card2Wrapper] 无法访问 editorContext，配置不会持久化`, {
+              console.error(`⚠️ [Card2Wrapper] 无法访问 editorContext，配置不会持久化`, {
                 componentId: props.nodeId,
                 hasEditorContext: !!editorContext,
                 hasUpdateNode: editorContext?.updateNode
@@ -1010,7 +1010,7 @@ onMounted(async () => {
               editorStoreSynced: !!editorContext
             })
           } catch (error) {
-            console.warn('[Card2Wrapper] 配置同步失败，继续使用强制重新渲染:', error)
+            console.error('[Card2Wrapper] 配置同步失败，继续使用强制重新渲染:', error)
           }
         }
       }

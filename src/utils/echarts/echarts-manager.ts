@@ -164,7 +164,7 @@ export function registerEChartsExtensions(componentTypes: string[]) {
       if (process.env.NODE_ENV === 'development') {
       }
     } catch (error) {
-      console.warn('⚠️ ECharts 扩展组件注册警告:', error)
+      console.error('⚠️ ECharts 扩展组件注册警告:', error)
     }
   }
 }

@@ -1,9 +1,9 @@
 /**
  * 物联网可视化平台 - 事件引擎
- * 
+ *
  * 基于现有 ConfigEventBus 扩展，提供统一的事件通信机制
  * 确保与现有系统 100% 向后兼容
- * 
+ *
  * 核心原则：
  * 1. 不破坏现有 ConfigEventBus 功能
  * 2. 扩展而非替代现有事件机制
@@ -12,14 +12,14 @@
  */
 
 import { configEventBus, registerDataExecutionTrigger } from '@/core/data-architecture/ConfigEventBus'
-import type { 
-  ConfigChangeEvent, 
-  ConfigEventType, 
-  ConfigEventHandler 
+import type {
+  ConfigChangeEvent,
+  ConfigEventType,
+  ConfigEventHandler
 } from '@/core/data-architecture/ConfigEventBus'
 
 // 扩展事件类型 - 在原有基础上增加新的事件类型
-export type ExtendedEventType = 
+export type ExtendedEventType =
   | ConfigEventType // 保持所有原有事件类型
   | 'component-lifecycle' // 组件生命周期事件
   | 'data-update' // 数据更新事件
@@ -46,7 +46,7 @@ export type ExtendedEventHandler = (event: ExtendedEventData) => void | Promise<
 export class EventEngine {
   /** 扩展事件处理器存储 */
   private extendedHandlers = new Map<ExtendedEventType, Set<ExtendedEventHandler>>()
-  
+
   /** 事件统计 */
   private stats = {
     totalEvents: 0,
@@ -61,7 +61,7 @@ export class EventEngine {
   emitConfigChange = configEventBus.emitConfigChange.bind(configEventBus)
   addEventFilter = configEventBus.addEventFilter.bind(configEventBus)
   removeEventFilter = configEventBus.removeEventFilter.bind(configEventBus)
-  
+
   /**
    * 向后兼容：暴露数据执行触发器注册
    */
@@ -73,8 +73,8 @@ export class EventEngine {
   on(eventType: ExtendedEventType, handler: ExtendedEventHandler): () => void {
     // 如果是配置事件类型，直接转发到原有的 ConfigEventBus，避免重复处理
     if (this.isConfigEventType(eventType)) {
-      console.warn(`[EventEngine] 配置事件类型 ${eventType} 应使用 onConfigChange 方法`)
-      
+      console.error(`[EventEngine] 配置事件类型 ${eventType} 应使用 onConfigChange 方法`)
+
       // 转发到 ConfigEventBus，但需要适配处理器格式
       return configEventBus.onConfigChange(eventType as ConfigEventType, (configEvent: ConfigChangeEvent) => {
         // 将 ConfigChangeEvent 转换为 ExtendedEventData 格式
@@ -85,7 +85,7 @@ export class EventEngine {
           source: configEvent.source,
           componentId: configEvent.componentId
         }
-        
+
         // 安全执行处理器
         this.safeExecuteHandler(handler, extendedEvent).catch(error => {
           console.error(`[EventEngine] 配置事件处理器执行失败`, { eventType, error })
@@ -116,8 +116,8 @@ export class EventEngine {
   async emit(eventType: ExtendedEventType, payload: any, source = 'unknown'): Promise<void> {
     // 如果是配置事件类型，检查payload是否是正确的ConfigChangeEvent格式
     if (this.isConfigEventType(eventType)) {
-      console.warn(`[EventEngine] 配置事件类型 ${eventType} 应使用 emitConfigChange 方法`)
-      
+      console.error(`[EventEngine] 配置事件类型 ${eventType} 应使用 emitConfigChange 方法`)
+
       // 如果payload是ConfigChangeEvent格式，则转发
       if (this.isValidConfigChangeEvent(payload)) {
         await configEventBus.emitConfigChange(payload)
@@ -145,7 +145,7 @@ export class EventEngine {
     }
 
     // 并行执行所有处理器
-    const promises = Array.from(handlers).map(handler => 
+    const promises = Array.from(handlers).map(handler =>
       this.safeExecuteHandler(handler, event)
     )
 
@@ -158,7 +158,7 @@ export class EventEngine {
   async emitConfigChangeCompat(event: ConfigChangeEvent): Promise<void> {
     this.stats.totalEvents++
     this.stats.configEvents++
-    
+
     // 直接使用原有的 ConfigEventBus
     await configEventBus.emitConfigChange(event)
   }
@@ -168,7 +168,7 @@ export class EventEngine {
    */
   getStatistics() {
     const configStats = configEventBus.getStatistics()
-    
+
     return {
       ...this.stats,
       configEventBus: configStats,
@@ -197,14 +197,14 @@ export class EventEngine {
   private isConfigEventType(eventType: ExtendedEventType): boolean {
     const configEventTypes: ConfigEventType[] = [
       'config-changed',
-      'data-source-changed', 
+      'data-source-changed',
       'component-props-changed',
       'base-config-changed',
       'interaction-changed',
       'before-config-change',
       'after-config-change'
     ]
-    
+
     return configEventTypes.includes(eventType as ConfigEventType)
   }
 
@@ -212,7 +212,7 @@ export class EventEngine {
    * 验证是否是有效的配置变更事件格式
    */
   private isValidConfigChangeEvent(payload: any): payload is ConfigChangeEvent {
-    return payload && 
+    return payload &&
            typeof payload === 'object' &&
            typeof payload.componentId === 'string' &&
            typeof payload.componentType === 'string' &&
@@ -227,7 +227,7 @@ export class EventEngine {
    * 安全执行事件处理器
    */
   private async safeExecuteHandler(
-    handler: ExtendedEventHandler, 
+    handler: ExtendedEventHandler,
     event: ExtendedEventData
   ): Promise<void> {
     try {
@@ -249,7 +249,7 @@ export class EventEngine {
 export const eventEngine = new EventEngine()
 
 // 兼容性导出 - 确保现有代码可以继续使用
-export { 
+export {
   configEventBus,
   registerDataExecutionTrigger,
   type ConfigChangeEvent,

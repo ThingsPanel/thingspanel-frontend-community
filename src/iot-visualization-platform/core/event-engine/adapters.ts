@@ -1,6 +1,6 @@
 /**
  * 事件引擎适配器
- * 
+ *
  * 为现有系统提供无缝的事件集成，确保：
  * 1. Card2.1 系统的 InteractionManager 可以无缝使用新事件引擎
  * 2. Visual Editor 的 ConfigurationIntegrationBridge 可以平滑迁移
@@ -9,11 +9,11 @@
  */
 
 import { eventEngine } from './index'
-import type { 
-  ConfigChangeEvent, 
-  ConfigEventType, 
+import type {
+  ConfigChangeEvent,
+  ConfigEventType,
   ExtendedEventData,
-  ExtendedEventHandler 
+  ExtendedEventHandler
 } from './index'
 
 /**
@@ -23,7 +23,7 @@ import type {
 export class Card21EventAdapter {
   /** 组件事件监听器映射 */
   private componentListeners = new Map<string, Set<(data: any) => void>>()
-  
+
   /** 事件清理函数存储 */
   private cleanupFunctions: (() => void)[] = []
 
@@ -31,14 +31,14 @@ export class Card21EventAdapter {
    * 为组件注册交互事件监听器（兼容原 InteractionManager 接口）
    */
   registerComponentEventListener(
-    componentId: string, 
-    eventType: string, 
+    componentId: string,
+    eventType: string,
     listener: (data: any) => void
   ): () => void {
     // 如果是配置相关事件，使用 ConfigEventBus
     if (this.isConfigRelatedEvent(eventType)) {
       const cleanup = eventEngine.onConfigChange(
-        eventType as ConfigEventType, 
+        eventType as ConfigEventType,
         (event: ConfigChangeEvent) => {
           if (event.componentId === componentId) {
             listener(event)
@@ -52,7 +52,7 @@ export class Card21EventAdapter {
     // 其他事件使用扩展事件系统
     // 验证事件类型是否为有效的扩展事件类型
     if (!this.isValidExtendedEventType(eventType)) {
-      console.warn(`[Card21EventAdapter] 未知事件类型: ${eventType}`)
+      console.error(`[Card21EventAdapter] 未知事件类型: ${eventType}`)
       return () => {} // 返回空的清理函数
     }
 
@@ -63,7 +63,7 @@ export class Card21EventAdapter {
     })
 
     this.cleanupFunctions.push(cleanup)
-    
+
     // 存储监听器（兼容原有接口）
     if (!this.componentListeners.has(componentId)) {
       this.componentListeners.set(componentId, new Set())
@@ -99,7 +99,7 @@ export class Card21EventAdapter {
     // 其他事件使用扩展事件系统
     // 验证事件类型
     if (!this.isValidExtendedEventType(eventType)) {
-      console.warn(`[Card21EventAdapter] 尝试发出未知事件类型: ${eventType}`)
+      console.error(`[Card21EventAdapter] 尝试发出未知事件类型: ${eventType}`)
       return
     }
 
@@ -129,7 +129,7 @@ export class Card21EventAdapter {
     const configEvents = [
       'config-changed',
       'data-source-changed',
-      'component-props-changed', 
+      'component-props-changed',
       'base-config-changed',
       'interaction-changed',
       'before-config-change',
@@ -146,7 +146,7 @@ export class Card21EventAdapter {
       // 配置事件类型
       'config-changed',
       'data-source-changed',
-      'component-props-changed', 
+      'component-props-changed',
       'base-config-changed',
       'interaction-changed',
       'before-config-change',
@@ -165,7 +165,7 @@ export class Card21EventAdapter {
    * 检查数据是否是配置变更事件格式
    */
   private isConfigChangeEvent(data: any): data is ConfigChangeEvent {
-    return data && 
+    return data &&
            typeof data.componentId === 'string' &&
            typeof data.componentType === 'string' &&
            typeof data.section === 'string' &&
@@ -205,7 +205,7 @@ export class VisualEditorEventAdapter {
   async emitEditorEvent(eventType: string, payload: any): Promise<void> {
     // 验证事件类型
     if (!this.isValidEventType(eventType)) {
-      console.warn(`[VisualEditorEventAdapter] 尝试发出未知事件类型: ${eventType}`)
+      console.error(`[VisualEditorEventAdapter] 尝试发出未知事件类型: ${eventType}`)
       return
     }
 
@@ -237,7 +237,7 @@ export class VisualEditorEventAdapter {
       // 配置事件类型
       'config-changed',
       'data-source-changed',
-      'component-props-changed', 
+      'component-props-changed',
       'base-config-changed',
       'interaction-changed',
       'before-config-change',
@@ -289,14 +289,14 @@ export class CoreEventAdapter {
     // 验证事件类型
     const validSystemEventTypes = [
       'component-lifecycle',
-      'data-update', 
+      'data-update',
       'ui-interaction',
       'system-ready',
       'error-occurred'
     ]
-    
+
     if (!validSystemEventTypes.includes(eventType)) {
-      console.warn(`[CoreEventAdapter] 尝试发出未知系统事件类型: ${eventType}`)
+      console.error(`[CoreEventAdapter] 尝试发出未知系统事件类型: ${eventType}`)
       return
     }
 

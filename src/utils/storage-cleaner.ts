@@ -25,22 +25,22 @@ export function cleanupLocalStorage(): void {
 
   const cleanedKeys: string[] = []
   const skippedKeys: string[] = []
-  
+
   STORAGE_KEYS_TO_CLEAN.forEach(key => {
     try {
       const value = localStorage.getItem(key)
       if (value !== null) {
         localStorage.removeItem(key)
         cleanedKeys.push(key)
-      
+
       } else {
         skippedKeys.push(key)
       }
     } catch (error) {
-      console.warn(`❌ 清理失败: ${key}`, error)
+      console.error(`❌ 清理失败: ${key}`, error)
     }
   })
-  
+
 
 }
 
@@ -48,11 +48,11 @@ export function cleanupLocalStorage(): void {
  * 清理所有localStorage（危险操作）
  */
 export function clearAllLocalStorage(): void {
-  console.warn('⚠️ 正在清理所有localStorage...')
-  
+  console.error('⚠️ 正在清理所有localStorage...')
+
   const allKeys = Object.keys(localStorage)
- 
-  
+
+
   try {
     localStorage.clear()
   } catch (error) {
@@ -64,19 +64,19 @@ export function clearAllLocalStorage(): void {
  * 检查localStorage使用情况
  */
 export function inspectLocalStorage(): void {
- 
-  
+
+
   const keys = Object.keys(localStorage)
   keys.forEach(key => {
     try {
       const value = localStorage.getItem(key)
       const size = value ? new Blob([value]).size : 0
-   
+
     } catch (error) {
-      console.warn(`无法读取 ${key}:`, error)
+      console.error(`无法读取 ${key}:`, error)
     }
   })
-  
+
 }
 
 // 开发环境下自动暴露到全局
@@ -86,5 +86,5 @@ if (import.meta.env.DEV) {
     clearAll: clearAllLocalStorage,
     inspect: inspectLocalStorage
   }
- 
+
 }

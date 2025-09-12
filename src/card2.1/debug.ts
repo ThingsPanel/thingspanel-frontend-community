@@ -13,7 +13,7 @@ import type { ComponentPermission } from '@/card2.1/core/types'
 export async function testPermissionSystem() {
   // 生产环境保护
   if (process.env.NODE_ENV !== 'development') {
-    console.warn('testPermissionSystem 仅在开发环境可用')
+    console.error('[DEBUG] testPermissionSystem - development env only')
     return
   }
 
@@ -61,7 +61,7 @@ export async function testPermissionSystem() {
 export function simulateUserPermission(permission: string) {
   // 生产环境保护
   if (process.env.NODE_ENV !== 'development') {
-    console.warn('simulateUserPermission 仅在开发环境可用')
+    console.error('[DEBUG] simulateUserPermission - development env only')
     return
   }
 
@@ -90,7 +90,7 @@ export function simulateUserPermission(permission: string) {
 export function showComponentPermissionStats() {
   // 生产环境保护
   if (process.env.NODE_ENV !== 'development') {
-    console.warn('showComponentPermissionStats 仅在开发环境可用')
+    console.error('[DEBUG] showComponentPermissionStats - development env only')
     return
   }
 

@@ -111,7 +111,7 @@ export class DataItemFetcher implements IDataItemFetcher {
       }
 
       if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
-        console.warn(`⚠️ [DataItemFetcher] 属性绑定路径格式错误`, { bindingPath })
+        console.error(`⚠️ [DataItemFetcher] 属性绑定路径格式错误`, { bindingPath })
         return undefined
       }
 
@@ -128,7 +128,7 @@ export class DataItemFetcher implements IDataItemFetcher {
       // 查找目标组件实例
       const targetComponent = editorStore.nodes?.find(node => node.id === componentId)
       if (!targetComponent) {
-        console.warn('[DataItemFetcher] 组件属性绑定失败: 未找到组件', componentId)
+        console.error('[DataItemFetcher] 组件属性绑定失败: 未找到组件', componentId)
         if (process.env.NODE_ENV === 'development') {
         }
         return undefined
@@ -190,16 +190,16 @@ export class DataItemFetcher implements IDataItemFetcher {
 
       // 🔥 关键修复：如果 value 为空，尝试构造正确的属性绑定路径
       if (!bindingPath || bindingPath.trim() === '') {
-        console.warn(`⚠️ [DataItemFetcher] 参数绑定路径为空，尝试智能推导`, {
+        console.error(`⚠️ [DataItemFetcher] 参数绑定路径为空，尝试智能推导`, {
           paramKey: param.key,
           currentComponentId: this.currentComponentId
         })
-        
+
         // 🔧 智能推导：从 EditorStore 查找当前活跃的组件ID
         const editorStore = useEditorStore()
         const selectedNode = editorStore.selectedNodeId
         const availableNodes = editorStore.nodes || []
-        
+
         if (selectedNode && availableNodes.some(n => n.id === selectedNode)) {
           bindingPath = `${selectedNode}.customize.deviceId`
           if (process.env.NODE_ENV === 'development') {
@@ -340,7 +340,7 @@ export class DataItemFetcher implements IDataItemFetcher {
             Object.assign(config, scriptResult.data)
           }
         } catch (error) {
-          console.warn(`⚠️ [DataItemFetcher] 请求前脚本执行失败:`, error)
+          console.error(`⚠️ [DataItemFetcher] 请求前脚本执行失败:`, error)
         }
       }
 
@@ -379,7 +379,7 @@ export class DataItemFetcher implements IDataItemFetcher {
                 if (process.env.NODE_ENV === 'development') {
                 }
               } else {
-                console.warn(`⚠️ [DataItemFetcher] 路径参数占位符未找到: {${p.key}} in ${finalUrl}`)
+                console.error(`⚠️ [DataItemFetcher] 路径参数占位符未找到: {${p.key}} in ${finalUrl}`)
               }
             }
           })
@@ -396,7 +396,7 @@ export class DataItemFetcher implements IDataItemFetcher {
             if (process.env.NODE_ENV === 'development') {
             }
           } else {
-            console.warn(`⚠️ [DataItemFetcher] 路径参数占位符未找到: ${placeholder} in ${finalUrl}`)
+            console.error(`⚠️ [DataItemFetcher] 路径参数占位符未找到: ${placeholder} in ${finalUrl}`)
           }
         }
       }
@@ -519,7 +519,7 @@ export class DataItemFetcher implements IDataItemFetcher {
             finalResponse = scriptResult.data !== undefined ? scriptResult.data : response
           }
         } catch (error) {
-          console.warn(`⚠️ [DataItemFetcher] 响应后脚本执行失败:`, error)
+          console.error(`⚠️ [DataItemFetcher] 响应后脚本执行失败:`, error)
         }
       }
 
@@ -555,7 +555,7 @@ export class DataItemFetcher implements IDataItemFetcher {
       keyComponents.push(`path:${pathParams.join('&')}`)
     }
 
-    // 添加查询参数  
+    // 添加查询参数
     if (config.params && config.params.length > 0) {
       const queryParams = config.params
         .filter(p => p.enabled && p.key)
@@ -589,13 +589,13 @@ export class DataItemFetcher implements IDataItemFetcher {
   private simpleHash(str: string): string {
     let hash = 0
     if (str.length === 0) return hash.toString()
-    
+
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
       hash = ((hash << 5) - hash) + char
       hash = hash & hash // 转换为32位整数
     }
-    
+
     return Math.abs(hash).toString(36) // 转为36进制字符串
   }
 

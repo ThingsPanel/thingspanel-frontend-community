@@ -380,7 +380,7 @@ export function validateComponentDefinitions(definitions: any[]): ValidationResu
   const typeSet = new Set<string>()
   definitions.forEach((definition, index) => {
     const validationResult = validateComponentDefinition(definition)
-    
+
     // 收集错误和警告
     if (!validationResult.valid) {
       result.errors.push(`定义[${index}]: ${validationResult.errors.join(', ')}`)
@@ -439,14 +439,14 @@ export function isValidSetting(obj: any): obj is Setting {
  * 开发模式下的验证警告
  * 在开发环境中输出验证警告信息
  */
-export function devModeValidationWarning(result: ValidationResult, objectName: string = '对象'): void {
+export function devModeValidationWarning(result: ValidationResult, objectName: string = 'object'): void {
   if (!import.meta.env.DEV) return
 
   if (!result.valid) {
-    console.error(`❌ [类型验证] ${objectName} 验证失败:`, result.errors)
+    console.error(`❌ [TypeValidation] ${objectName} validation failed:`, result.errors)
   }
 
   if (result.warnings.length > 0) {
-    console.warn(`⚠️ [类型验证] ${objectName} 验证警告:`, result.warnings)
+    console.error(`⚠️ [TypeValidation] ${objectName} validation warnings:`, result.warnings)
   }
 }

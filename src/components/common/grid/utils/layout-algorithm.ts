@@ -41,7 +41,7 @@ export function findAvailablePosition(
     const maxY = Math.max(0, ...layout.map(item => item.y + item.h))
     return { x: 0, y: maxY }
   } catch (error) {
-    console.warn('Failed to find available position:', error)
+    console.error('Failed to find available position:', error)
     return { x: 0, y: startY }
   }
 }
@@ -91,7 +91,7 @@ export function findOptimalPosition(
     // 返回得分最高的位置
     return candidates.reduce((best, current) => (current.score > best.score ? current : best))
   } catch (error) {
-    console.warn('Failed to find optimal position:', error)
+    console.error('Failed to find optimal position:', error)
     return { x: 0, y: 0, score: 0 }
   }
 }
@@ -127,7 +127,7 @@ export function isPositionAvailable(
       )
     })
   } catch (error) {
-    console.warn('Failed to check position availability:', error)
+    console.error('Failed to check position availability:', error)
     return false
   }
 }
@@ -171,7 +171,7 @@ function calculatePositionScore(
 
     return Math.max(0, score)
   } catch (error) {
-    console.warn('Failed to calculate position score:', error)
+    console.error('Failed to calculate position score:', error)
     return 0
   }
 }
@@ -220,7 +220,7 @@ export function compactLayout(
 
     return compacted
   } catch (error) {
-    console.warn('Failed to compact layout:', error)
+    console.error('Failed to compact layout:', error)
     return layout
   }
 }
@@ -256,7 +256,7 @@ export function sortLayout(
         return sorted
     }
   } catch (error) {
-    console.warn('Failed to sort layout:', error)
+    console.error('Failed to sort layout:', error)
     return layout
   }
 }
@@ -291,7 +291,7 @@ export function getLayoutBounds(layout: GridLayoutPlusItem[]): {
       height: maxY - minY
     }
   } catch (error) {
-    console.warn('Failed to get layout bounds:', error)
+    console.error('Failed to get layout bounds:', error)
     return { minX: 0, maxX: 0, minY: 0, maxY: 0, width: 0, height: 0 }
   }
 }
@@ -312,7 +312,7 @@ export function getOverlapArea(item1: GridLayoutPlusItem, item2: GridLayoutPlusI
 
     return (right - left) * (bottom - top)
   } catch (error) {
-    console.warn('Failed to calculate overlap area:', error)
+    console.error('Failed to calculate overlap area:', error)
     return 0
   }
 }

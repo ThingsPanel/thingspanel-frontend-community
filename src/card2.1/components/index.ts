@@ -297,7 +297,7 @@ if (import.meta.env.DEV) {
   setTimeout(() => {
     const validation = validateComponents()
     if (!validation.valid) {
-      console.warn('[Card2.1] 发现组件定义问题:', validation.issues)
+      console.error('[Card2.1] 发现组件定义问题:', validation.issues)
     }
 
     // 额外调试信息

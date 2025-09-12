@@ -367,7 +367,7 @@ export class ConfigMergeManager {
 
       // 检查优先级冲突
       if (currentStrategy && currentStrategy.priority > strategy.priority) {
-        console.warn(`🔄 [ConfigMergeManager] 配置更新被拒绝`, {
+        console.error(`🔄 [ConfigMergeManager] 配置更新被拒绝`, {
           key,
           currentSource,
           newSource: source,
@@ -378,7 +378,7 @@ export class ConfigMergeManager {
 
       // 检查是否允许覆盖
       if (currentStrategy && !currentStrategy.canOverride) {
-        console.warn(`🔄 [ConfigMergeManager] 配置更新被拒绝`, {
+        console.error(`🔄 [ConfigMergeManager] 配置更新被拒绝`, {
           key,
           currentSource,
           newSource: source,

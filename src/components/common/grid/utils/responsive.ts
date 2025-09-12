@@ -27,7 +27,7 @@ export function createResponsiveLayout(
 
     return responsiveLayout
   } catch (error) {
-    console.warn('Failed to create responsive layout:', error)
+    console.error('Failed to create responsive layout:', error)
     return {}
   }
 }
@@ -66,7 +66,7 @@ export function transformLayoutForBreakpoint(
       }
     })
   } catch (error) {
-    console.warn('Failed to transform layout for breakpoint:', error)
+    console.error('Failed to transform layout for breakpoint:', error)
     return sourceLayout
   }
 }
@@ -90,7 +90,7 @@ function getResponsiveHeight(item: GridLayoutPlusItem, breakpoint: string): numb
         return item.h
     }
   } catch (error) {
-    console.warn('Failed to get responsive height:', error)
+    console.error('Failed to get responsive height:', error)
     return item.h
   }
 }
@@ -108,7 +108,7 @@ export function mergeResponsiveLayouts(layout1: ResponsiveLayout, layout2: Respo
 
     return merged
   } catch (error) {
-    console.warn('Failed to merge responsive layouts:', error)
+    console.error('Failed to merge responsive layouts:', error)
     return layout1
   }
 }
@@ -199,7 +199,7 @@ export function getBreakpointInfo(
       width: currentWidth
     }
   } catch (error) {
-    console.warn('Failed to get breakpoint info:', error)
+    console.error('Failed to get breakpoint info:', error)
     return {
       current: 'lg',
       width: currentWidth
@@ -232,7 +232,7 @@ export function calculateBreakpointTransition(
 
     return { direction, ratio, significant }
   } catch (error) {
-    console.warn('Failed to calculate breakpoint transition:', error)
+    console.error('Failed to calculate breakpoint transition:', error)
     return { direction: 'up', ratio: 1, significant: false }
   }
 }
@@ -281,7 +281,7 @@ export function adaptItemSizeForBreakpoint(
 
     return adapted
   } catch (error) {
-    console.warn('Failed to adapt item size for breakpoint:', error)
+    console.error('Failed to adapt item size for breakpoint:', error)
     return item
   }
 }

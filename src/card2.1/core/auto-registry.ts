@@ -92,7 +92,7 @@ export class AutoRegistry {
           }
         }
       } catch (error) {
-        console.warn(`[AutoRegistry] 组件注册失败: ${componentId}`, error)
+        console.error(`[AutoRegistry] Component registration failed: ${componentId}`, error)
         // 忽略组件注册过程中的错误，继续处理其他组件
       }
     }

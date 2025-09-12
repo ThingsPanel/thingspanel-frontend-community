@@ -60,7 +60,7 @@ export function usePanelPollingManager(dependencies: {
                   // 获取组件配置
                   const config = dependencies.configurationManager.getConfiguration(componentId)
                   if (!config || !config.dataSource) {
-                    console.warn(`⚠️ [PanelEditor] 组件数据源配置不存在: ${componentId}`)
+                    console.error(`⚠️ [PanelEditor] 组件数据源配置不存在: ${componentId}`)
                     return
                   }
 
@@ -87,7 +87,7 @@ export function usePanelPollingManager(dependencies: {
                   }
                 } catch (bridgeError) {
                   console.error(`❌ [PanelEditor] VisualEditorBridge 调用失败: ${componentId}`, bridgeError)
-                  console.warn(`⚠️ [PanelEditor] 轮询执行失败: ${componentId}`)
+                  console.error(`⚠️ [PanelEditor] 轮询执行失败: ${componentId}`)
                 }
               } catch (error) {
                 console.error(`❌ [PanelEditor] 轮询执行错误: ${componentId}`, error)

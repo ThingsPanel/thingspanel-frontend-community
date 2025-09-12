@@ -85,7 +85,7 @@ export class ComponentRegistry {
       if (process.env.NODE_ENV === 'development') {
       }
     } catch (error) {
-      console.warn(`[ComponentRegistry] 属性暴露注册失败`, {
+      console.error(`[ComponentRegistry] 属性暴露注册失败`, {
         componentType: definition.type,
         error: error instanceof Error ? error.message : error
       })
@@ -262,7 +262,7 @@ export class ComponentRegistry {
         // const { autoRegisterFromSettingConfig } = await import('@/card2.1/core/property-exposure')
         // autoRegisterFromSettingConfig(settingConfig)
       } catch (error) {
-        console.warn(`[ComponentRegistry] settingConfig属性注册失败`, {
+        console.error(`[ComponentRegistry] settingConfig属性注册失败`, {
           componentType: definition.type,
           error: error instanceof Error ? error.message : error
         })

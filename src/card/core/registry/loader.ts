@@ -87,7 +87,7 @@ export class ComponentLoader implements IComponentLoader {
       try {
         await this.load(componentId)
       } catch (error) {
-        console.warn(`[ComponentLoader] 预加载组件 ${componentId} 失败:`, error)
+        console.error(`[ComponentLoader] 预加载组件 ${componentId} 失败:`, error)
       }
     })
 

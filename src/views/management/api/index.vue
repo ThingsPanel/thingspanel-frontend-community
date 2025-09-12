@@ -182,9 +182,9 @@ async function handleCopyKey(key: string) {
     // 如果 Clipboard API 不可用，检查是否因为非安全环境
     if (window.isSecureContext === false) {
       errorMessage = $t('theme.configOperation.copyFailSecure') || '复制功能需要HTTPS或localhost环境'
-      console.warn('Clipboard API not available, likely due to non-secure context.')
+      console.error('Clipboard API not available, likely due to non-secure context.')
     } else {
-      console.warn('Clipboard API not available.')
+      console.error('Clipboard API not available.')
     }
   }
 

@@ -94,7 +94,7 @@ export function convertToSimpleDataRequirement(componentId: string, config: any)
   }
 
   if (dataSources.length === 0) {
-    console.warn(`⚠️ [ConfigAdapter] 没有找到有效的数据源配置: ${componentId}`)
+    console.error(`⚠️ [ConfigAdapter] 没有找到有效的数据源配置: ${componentId}`)
     return null
   }
 

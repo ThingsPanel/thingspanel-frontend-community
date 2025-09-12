@@ -81,7 +81,7 @@ const processData = (
       diskData.push(Number(item.disk?.toFixed(1)) || 0)
     })
   } else {
-    console.warn('processData received unexpected data format:', apiData)
+    console.error('processData received unexpected data format:', apiData)
   }
 
   isEmpty.value = timeAxis.length === 0
@@ -260,7 +260,7 @@ const fetchData = async () => {
       const processed = processData(dataArray)
       updateChartOption(processed)
     } else {
-      console.warn('No data array found in API response:', response)
+      console.error('No data array found in API response:', response)
       isEmpty.value = true
     }
   } catch (err: any) {

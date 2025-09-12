@@ -174,7 +174,7 @@ export function useGridPerformance(options: UseGridPerformanceOptions = {}) {
       metrics.value.memoryUsage = totalSize
       return totalSize
     } catch (error) {
-      console.warn('[GridPerformance] Failed to estimate memory usage:', error)
+      console.error('[GridPerformance] Failed to estimate memory usage:', error)
       return 0
     }
   }

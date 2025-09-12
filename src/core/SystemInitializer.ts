@@ -322,7 +322,7 @@ export class SystemInitializer {
       }
 
       if (this.state.failedSubSystems.length > 0) {
-        console.warn(`⚠️ [SystemInitializer] 失败子系统: ${this.state.failedSubSystems.join(', ')}`)
+        console.error(`⚠️ [SystemInitializer] 失败子系统: ${this.state.failedSubSystems.join(', ')}`)
       }
 
       this.emit('initialization-completed', this.getInitializationState())

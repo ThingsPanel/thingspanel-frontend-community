@@ -97,7 +97,7 @@ const handleClose = () => {
 
 const getDeviceOptions = async (isInitialLoad = false) => {
   if (loadingMore.value) {
-    console.warn('Load request ignored, already loading.')
+    console.error('Load request ignored, already loading.')
     return
   }
   if (!isInitialLoad && !hasMoreDevices.value) return

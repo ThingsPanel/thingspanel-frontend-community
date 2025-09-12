@@ -208,7 +208,7 @@ export function checkItemsOverlap(item1: GridLayoutPlusItem, item2: GridLayoutPl
       item1.y >= item2.y + item2.h
     )
   } catch (error) {
-    console.warn('Failed to check items overlap:', error)
+    console.error('Failed to check items overlap:', error)
     return false
   }
 }
@@ -392,7 +392,7 @@ export function optimizeItemForLargeGrid(
 
     return optimized
   } catch (error) {
-    console.warn('Failed to optimize item for large grid:', error)
+    console.error('Failed to optimize item for large grid:', error)
     return { ...item }
   }
 }

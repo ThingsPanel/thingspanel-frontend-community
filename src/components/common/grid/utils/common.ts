@@ -19,7 +19,7 @@ export function cloneLayout(layout: GridLayoutPlusItem[]): GridLayoutPlusItem[] 
   try {
     return JSON.parse(JSON.stringify(layout))
   } catch (error) {
-    console.warn('Failed to clone layout:', error)
+    console.error('Failed to clone layout:', error)
     return layout.map(item => ({ ...item }))
   }
 }
@@ -31,7 +31,7 @@ export function cloneGridItem(item: GridLayoutPlusItem): GridLayoutPlusItem {
   try {
     return JSON.parse(JSON.stringify(item))
   } catch (error) {
-    console.warn('Failed to clone grid item:', error)
+    console.error('Failed to clone grid item:', error)
     return { ...item }
   }
 }
@@ -105,7 +105,7 @@ export function getLayoutStats(
       smallestItem
     }
   } catch (error) {
-    console.warn('Failed to get layout stats:', error)
+    console.error('Failed to get layout stats:', error)
     return {
       totalItems: layout.length,
       totalRows: 0,
@@ -128,7 +128,7 @@ export function filterLayout(
   try {
     return layout.filter(predicate)
   } catch (error) {
-    console.warn('Failed to filter layout:', error)
+    console.error('Failed to filter layout:', error)
     return layout
   }
 }
@@ -159,7 +159,7 @@ export function searchLayout(
       })
     })
   } catch (error) {
-    console.warn('Failed to search layout:', error)
+    console.error('Failed to search layout:', error)
     return layout
   }
 }
@@ -177,7 +177,7 @@ export function itemToGridArea(item: GridLayoutPlusItem): string {
 
     return `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
   } catch (error) {
-    console.warn('Failed to convert item to grid area:', error)
+    console.error('Failed to convert item to grid area:', error)
     return 'auto'
   }
 }
@@ -195,7 +195,7 @@ export function calculateGridUtilization(layout: GridLayoutPlusItem[], cols: num
 
     return totalCells > 0 ? (occupiedCells / totalCells) * 100 : 0
   } catch (error) {
-    console.warn('Failed to calculate grid utilization:', error)
+    console.error('Failed to calculate grid utilization:', error)
     return 0
   }
 }
@@ -208,7 +208,7 @@ export function calculateTotalRows(layout: GridLayoutPlusItem[]): number {
     if (layout.length === 0) return 0
     return Math.max(...layout.map(item => item.y + item.h))
   } catch (error) {
-    console.warn('Failed to calculate total rows:', error)
+    console.error('Failed to calculate total rows:', error)
     return 0
   }
 }
@@ -276,7 +276,7 @@ export function getGridStatistics(
       }
     }
   } catch (error) {
-    console.warn('Failed to get grid statistics:', error)
+    console.error('Failed to get grid statistics:', error)
     return {
       basic: getLayoutStats(layout, cols),
       distribution: {
@@ -332,7 +332,7 @@ function calculateFragmentation(layout: GridLayoutPlusItem[], cols: number): num
 
     return totalCells > 0 ? (gaps / totalCells) * 100 : 0
   } catch (error) {
-    console.warn('Failed to calculate fragmentation:', error)
+    console.error('Failed to calculate fragmentation:', error)
     return 0
   }
 }
@@ -350,7 +350,7 @@ function calculateCompactness(layout: GridLayoutPlusItem[], cols: number): numbe
 
     return boundingArea > 0 ? (totalArea / boundingArea) * 100 : 0
   } catch (error) {
-    console.warn('Failed to calculate compactness:', error)
+    console.error('Failed to calculate compactness:', error)
     return 0
   }
 }
@@ -393,7 +393,7 @@ function calculateBalance(layout: GridLayoutPlusItem[], cols: number): number {
 
     return Math.max(0, (1 - totalDeviation) * 100)
   } catch (error) {
-    console.warn('Failed to calculate balance:', error)
+    console.error('Failed to calculate balance:', error)
     return 0
   }
 }
@@ -417,7 +417,7 @@ export function uniqueArray<T>(array: T[], keyFn?: (item: T) => string | number)
       return true
     })
   } catch (error) {
-    console.warn('Failed to get unique array:', error)
+    console.error('Failed to get unique array:', error)
     return array
   }
 }

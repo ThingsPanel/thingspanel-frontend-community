@@ -61,11 +61,11 @@ export class ComponentLoader {
             if (process.env.NODE_ENV === 'development') {
             }
           } else {
-            console.warn(`⚠️ [ComponentLoader] 组件定义格式不正确，跳过: ${path}`)
-            console.warn(`⚠️ [ComponentLoader] 定义内容:`, definition)
+            console.error(`⚠️ [ComponentLoader] 组件定义格式不正确，跳过: ${path}`)
+            console.error(`⚠️ [ComponentLoader] 定义内容:`, definition)
           }
         } else {
-          console.warn(`⚠️ [ComponentLoader] 组件被排除或ID无效，跳过: ${path} (ID: ${componentId}, 分类: ${category})`)
+          console.error(`⚠️ [ComponentLoader] 组件被排除或ID无效，跳过: ${path} (ID: ${componentId}, 分类: ${category})`)
         }
       }
 

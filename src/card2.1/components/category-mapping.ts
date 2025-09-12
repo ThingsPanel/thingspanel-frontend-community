@@ -213,7 +213,7 @@ export function validateCategoryMapping(): {
 if (import.meta.env.DEV) {
   const validation = validateCategoryMapping()
   if (!validation.valid) {
-    console.warn('🚨 [CategoryMapping] 分类映射配置存在问题:', validation.issues)
+    console.error('🚨 [CategoryMapping] 分类映射配置存在问题:', validation.issues)
   } else {
     if (process.env.NODE_ENV === 'development') {
     }

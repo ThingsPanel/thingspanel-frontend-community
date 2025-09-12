@@ -223,7 +223,7 @@ const fetchData = async () => {
         isEmpty.value = true // No chart data
       }
     } else {
-      console.warn('No data found in API response:', response)
+      console.error('No data found in API response:', response)
       isEmpty.value = true
       stats.value = { user_total: 0, user_added_yesterday: 0, user_added_month: 0 } // Reset stats
     }

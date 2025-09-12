@@ -144,7 +144,7 @@ export type {
  */
 export type ExtractConfigType<T extends ComponentDefinition> = T extends ComponentDefinition<infer Config> 
   ? Config 
-  : Record<string, any>
+  : Record<string, unknown>
 
 /**
  * 提取自定义配置的 customize 类型
@@ -152,7 +152,7 @@ export type ExtractConfigType<T extends ComponentDefinition> = T extends Compone
  */
 export type ExtractCustomizeType<T extends CustomConfig> = T extends CustomConfig<infer Customize>
   ? Customize
-  : Record<string, any>
+  : Record<string, unknown>
 
 /**
  * 组件设置配置的类型推导
@@ -161,9 +161,9 @@ export type ExtractCustomizeType<T extends CustomConfig> = T extends CustomConfi
 export type InferConfigFromSettings<T extends readonly Setting[]> = {
   [K in T[number] as K['field']]: K['defaultValue'] extends infer V 
     ? V extends undefined 
-      ? any 
+      ? unknown 
       : V
-    : any
+    : unknown
 }
 
 // ============ 类型断言工具 ============
@@ -173,7 +173,7 @@ export type InferConfigFromSettings<T extends readonly Setting[]> = {
  * @param obj 待检查的对象
  * @returns 是否为组件定义
  */
-export function isComponentDefinition(obj: any): obj is ComponentDefinition {
+export function isComponentDefinition(obj: unknown): obj is ComponentDefinition {
   return obj && 
          typeof obj === 'object' &&
          typeof obj.type === 'string' &&
@@ -186,7 +186,7 @@ export function isComponentDefinition(obj: any): obj is ComponentDefinition {
  * @param obj 待检查的对象
  * @returns 是否为设置项配置
  */
-export function isSetting(obj: any): obj is Setting {
+export function isSetting(obj: unknown): obj is Setting {
   return obj &&
          typeof obj === 'object' &&
          typeof obj.type === 'string' &&

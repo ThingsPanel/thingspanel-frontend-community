@@ -55,7 +55,7 @@ export class ComponentRegistry implements IComponentRegistry {
   unregister(componentId: string): void {
     const definition = this.definitions.get(componentId)
     if (!definition) {
-      console.warn(`[ComponentRegistry] 组件 ${componentId} 不存在，无法注销`)
+      console.error(`[ComponentRegistry] 组件 ${componentId} 不存在，无法注销`)
       return
     }
 

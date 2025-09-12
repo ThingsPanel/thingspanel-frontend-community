@@ -37,7 +37,7 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
     data: any
   ) => {
     if (!deviceId || !metricsId) {
-      console.warn('setComponentsValue: deviceId or metricsId is undefined')
+      console.error('setComponentsValue: deviceId or metricsId is undefined')
       return
     }
     if (!layout || !layout.value) return
@@ -97,7 +97,7 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
     for (const deviceMetricsId of uniqueDeviceMetricsIds) {
       const [deviceId, metricsId] = deviceMetricsId.split('|')
       if (!deviceId || !metricsId) {
-        console.warn(`Invalid deviceMetricsId format: ${deviceMetricsId}, skipping socket creation.`)
+        console.error(`Invalid deviceMetricsId format: ${deviceMetricsId}, skipping socket creation.`)
         continue
       }
 
@@ -124,7 +124,7 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
                 if (parsedData && typeof parsedData === 'object') {
                   setComponentsValue(layout, deviceId, metricsId, parsedData)
                 } else {
-                  console.warn('Received data is not a valid object:', parsedData, `for ${deviceMetricsId}`)
+                  console.error('Received data is not a valid object:', parsedData, `for ${deviceMetricsId}`)
                 }
               } catch (error) {
                 console.error('Failed to parse WebSocket message:', event.data, `for ${deviceMetricsId}`, error)

@@ -425,7 +425,7 @@ export function usePanelEventHandler(
   const handleComponentConfigChanged = async (componentId: string, config: any) => {
     // 🔥 错误边界：确保数据源管理器已初始化
     if (!dependencies.editorDataSourceManager.isInitialized()) {
-      console.warn(`⚠️ [PanelEditor] 数据源管理器未初始化，跳过配置变更: ${componentId}`)
+      console.error(`⚠️ [PanelEditor] 数据源管理器未初始化，跳过配置变更: ${componentId}`)
       return
     }
 

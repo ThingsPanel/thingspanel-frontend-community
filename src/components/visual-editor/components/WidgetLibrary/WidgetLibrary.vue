@@ -149,7 +149,7 @@ const simplifiedWidgetTree = computed(() => {
   allWidgets.value.forEach(widget => {
     // 只检查mainCategory，忽略subCategory
     if (!widget.definition?.mainCategory) {
-      console.warn('⚠️ [WidgetLibrary] 跳过未分类组件:', {
+      console.error('⚠️ [WidgetLibrary] 跳过未分类组件:', {
         type: widget.type,
         name: widget.name,
         mainCategory: widget.definition?.mainCategory,

@@ -333,7 +333,7 @@ export class PerformanceOptimizer {
       this.alerts = this.alerts.slice(-25) // 保留最新25条
     }
 
-    console.warn(`🚨 [PerformanceOptimizer] ${alert.level.toUpperCase()}:`, alert.message, alert.data)
+    console.error(`🚨 [PerformanceOptimizer] ${alert.level.toUpperCase()}:`, alert.message, alert.data)
   }
 
   /**

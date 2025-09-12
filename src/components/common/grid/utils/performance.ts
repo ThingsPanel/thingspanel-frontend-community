@@ -71,7 +71,7 @@ export function optimizeLayoutPerformance(
 
     return optimizedLayout
   } catch (error) {
-    console.warn('Failed to optimize layout performance:', error)
+    console.error('Failed to optimize layout performance:', error)
     return layout
   }
 }
@@ -89,7 +89,7 @@ function virtualizeLayout(layout: GridLayoutPlusItem[], config: PerformanceConfi
 
     return visibleItems
   } catch (error) {
-    console.warn('Failed to virtualize layout:', error)
+    console.error('Failed to virtualize layout:', error)
     return layout
   }
 }
@@ -111,7 +111,7 @@ function applyLazyLoading(layout: GridLayoutPlusItem[], config: PerformanceConfi
       }
     }))
   } catch (error) {
-    console.warn('Failed to apply lazy loading:', error)
+    console.error('Failed to apply lazy loading:', error)
     return layout
   }
 }
@@ -169,7 +169,7 @@ export class PerformanceMonitor {
         return duration
       }
     } catch (error) {
-      console.warn('Performance monitoring error:', error)
+      console.error('Performance monitoring error:', error)
     }
 
     return null
@@ -254,7 +254,7 @@ export function getMemoryUsage(): {
       }
     }
   } catch (error) {
-    console.warn('Failed to get memory usage:', error)
+    console.error('Failed to get memory usage:', error)
   }
 
   return null

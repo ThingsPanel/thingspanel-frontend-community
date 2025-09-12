@@ -647,7 +647,7 @@ export class ConfigurationImporter {
         )
       }
     } catch (error) {
-      console.warn('❌ [ConfigurationImporter] 冲突检测失败:', error)
+      console.error('❌ [ConfigurationImporter] 冲突检测失败:', error)
       // 检测失败时认为没有冲突，允许导入
       return {
         dataSource: false,
@@ -937,7 +937,7 @@ export class SingleDataSourceExporter {
         )
       }
     } catch (error) {
-      console.warn(`⚠️ [SingleDataSourceExporter] 提取相关配置失败:`, error)
+      console.error(`⚠️ [SingleDataSourceExporter] 提取相关配置失败:`, error)
       // 相关配置失败不影响主要导出
     }
 
@@ -1001,7 +1001,7 @@ export class SingleDataSourceExporter {
         dataItemCount: source.dataItems?.length || 0
       }))
     } catch (error) {
-      console.warn(`⚠️ [SingleDataSourceExporter] 获取数据源列表失败:`, error)
+      console.error(`⚠️ [SingleDataSourceExporter] 获取数据源列表失败:`, error)
       return []
     }
   }
@@ -1100,7 +1100,7 @@ export class SingleDataSourceImporter {
         })
       }
     } catch (error) {
-      console.warn(`⚠️ [SingleDataSourceImporter] 获取数据源槽位失败:`, error)
+      console.error(`⚠️ [SingleDataSourceImporter] 获取数据源槽位失败:`, error)
     }
 
     return slots
@@ -1124,7 +1124,7 @@ export class SingleDataSourceImporter {
       // 检查组件类型兼容性
       // TODO: 根据实际需要实现组件类型检查
     } catch (error) {
-      console.warn(`⚠️ [SingleDataSourceImporter] 冲突检测失败:`, error)
+      console.error(`⚠️ [SingleDataSourceImporter] 冲突检测失败:`, error)
     }
 
     return conflicts
@@ -1165,7 +1165,7 @@ export class SingleDataSourceImporter {
       // 🔧 确保 dataSources 数组存在
       if (!existingConfig.dataSources || !Array.isArray(existingConfig.dataSources)) {
         existingConfig.dataSources = []
-        console.warn(`⚠️ [SingleDataSourceImporter] dataSources 数组不存在或不是数组，已重置为空数组`)
+        console.error(`⚠️ [SingleDataSourceImporter] dataSources 数组不存在或不是数组，已重置为空数组`)
       }
 
       // 找到或创建目标槽位

@@ -13,7 +13,8 @@
       "Bash(node:*)",
       "Read(//e/e/wbh/things2/thingspanel-frontend-community/**)",
       "Bash(grep:*)",
-      "Bash(npm run clean-console:*)"
+      "Bash(npm run clean-console:*)",
+      "Bash(del:*)"
     ],
     "deny": [],
     "ask": []

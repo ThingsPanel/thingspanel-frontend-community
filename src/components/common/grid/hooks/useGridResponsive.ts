@@ -89,7 +89,7 @@ export function useGridResponsive(options: UseGridResponsiveOptions = {}) {
 
       return transformLayoutForBreakpoint(sourceLayout, sourceCols, targetCols, currentBreakpoint.value)
     } catch (error) {
-      console.warn('[GridResponsive] Failed to transform layout:', error)
+      console.error('[GridResponsive] Failed to transform layout:', error)
       return sourceLayout
     }
   }

@@ -152,7 +152,7 @@ export abstract class BaseRenderer {
   // 生命周期方法 - 渲染
   async render(): Promise<void> {
     if (this.state !== RendererState.READY) {
-      console.warn(`[${this.constructor.name}] Render called in state: ${this.state}`)
+      console.error(`[${this.constructor.name}] Render called in state: ${this.state}`)
       return
     }
 

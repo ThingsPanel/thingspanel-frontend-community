@@ -121,7 +121,7 @@ export const smartDeepClone = <T>(
         return cloned
       } catch (structuredCloneError) {
         if (debug) {
-          console.warn('⚠️ [smartDeepClone] structuredClone失败，降级到JSON:', structuredCloneError)
+          console.error('⚠️ [smartDeepClone] structuredClone失败，降级到JSON:', structuredCloneError)
         }
         // 继续到JSON方法
       }

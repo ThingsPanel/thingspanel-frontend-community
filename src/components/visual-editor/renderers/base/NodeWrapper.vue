@@ -190,7 +190,7 @@ const baseConfig = computed((): BaseConfiguration => {
       ...widgetConfig.base
     }
   } catch (error) {
-    console.warn(`[NodeWrapper] 获取节点 ${props.nodeId} 基础配置失败:`, error)
+    console.error(`[NodeWrapper] 获取节点 ${props.nodeId} 基础配置失败:`, error)
     return defaultBaseConfig
   }
 })
@@ -201,7 +201,7 @@ const nodeComponentConfig = computed(() => {
     const widgetConfig = configurationManager.getConfiguration(props.nodeId)
     return widgetConfig?.component?.properties
   } catch (error) {
-    console.warn(`[NodeWrapper] 获取节点 ${props.nodeId} 组件配置失败:`, error)
+    console.error(`[NodeWrapper] 获取节点 ${props.nodeId} 组件配置失败:`, error)
     return undefined
   }
 })
@@ -215,7 +215,7 @@ const getNodeComponentConfig = (nodeId: string): any => {
     const widgetConfig = configurationManager.getConfiguration(nodeId)
     return widgetConfig?.component?.properties
   } catch (error) {
-    console.warn(`[NodeWrapper] 获取节点 ${nodeId} 组件配置失败:`, error)
+    console.error(`[NodeWrapper] 获取节点 ${nodeId} 组件配置失败:`, error)
     return undefined
   }
 }
@@ -226,7 +226,7 @@ const nodeInteractionConfigs = computed(() => {
     const widgetConfig = configurationManager.getConfiguration(props.nodeId)
     return widgetConfig?.interaction?.configs || []
   } catch (error) {
-    console.warn(`[NodeWrapper] 获取节点 ${props.nodeId} 交互配置失败:`, error)
+    console.error(`[NodeWrapper] 获取节点 ${props.nodeId} 交互配置失败:`, error)
     return []
   }
 })
@@ -240,7 +240,7 @@ const getNodeInteractionConfigs = (nodeId: string): any[] => {
     const widgetConfig = configurationManager.getConfiguration(nodeId)
     return widgetConfig?.interaction?.configs || []
   } catch (error) {
-    console.warn(`[NodeWrapper] 获取节点 ${nodeId} 交互配置失败:`, error)
+    console.error(`[NodeWrapper] 获取节点 ${nodeId} 交互配置失败:`, error)
     return []
   }
 }
@@ -256,7 +256,7 @@ const nodeInteractionPermissions = computed(() => {
       }
     )
   } catch (error) {
-    console.warn(`[NodeWrapper] 获取节点 ${props.nodeId} 交互权限失败:`, error)
+    console.error(`[NodeWrapper] 获取节点 ${props.nodeId} 交互权限失败:`, error)
     return {
       allowExternalControl: true,
       allowedEvents: ['click', 'hover', 'focus', 'blur']
@@ -278,7 +278,7 @@ const getNodeInteractionPermissions = (nodeId: string): any => {
       }
     )
   } catch (error) {
-    console.warn(`[NodeWrapper] 获取节点 ${nodeId} 交互权限失败:`, error)
+    console.error(`[NodeWrapper] 获取节点 ${nodeId} 交互权限失败:`, error)
     return {
       allowExternalControl: true,
       allowedEvents: ['click', 'hover', 'focus', 'blur']
@@ -472,7 +472,7 @@ onMounted(() => {
     //   // baseConfig是computed，会自动响应configurationManager的变化
     // })
   } catch (error) {
-    console.warn(`[NodeWrapper] 添加配置监听器失败:`, error)
+    console.error(`[NodeWrapper] 添加配置监听器失败:`, error)
   }
 })
 
@@ -482,7 +482,7 @@ onUnmounted(() => {
   //   try {
   //     removeConfigListener()
   //   } catch (error) {
-  //     console.warn(`[NodeWrapper] 移除配置监听器失败:`, error)
+  //     console.error(`[NodeWrapper] 移除配置监听器失败:`, error)
   //   }
   // }
 })

@@ -159,13 +159,13 @@ const gridValidation = computed(() => {
   // 验证扩展网格配置
   const configValidation = validateExtendedGridConfig(colNum)
   if (!configValidation.success) {
-    console.warn('Grid configuration validation failed:', configValidation.message)
+    console.error('Grid configuration validation failed:', configValidation.message)
   }
 
   // 大网格性能验证
   const performanceCheck = validateLargeGridPerformance(props.layout, colNum)
   if (performanceCheck.success && (performanceCheck.data?.warning || performanceCheck.data?.recommendation)) {
-    console.warn('Grid performance warning:', performanceCheck.data.warning)
+    console.error('Grid performance warning:', performanceCheck.data.warning)
     console.info('Grid performance recommendation:', performanceCheck.data.recommendation)
   }
 

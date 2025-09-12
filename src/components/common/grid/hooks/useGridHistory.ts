@@ -84,7 +84,7 @@ export function useGridHistory(options: UseGridHistoryOptions = {}) {
    */
   const undo = (): GridLayoutPlusItem[] | null => {
     if (!canUndo.value) {
-      console.warn('[GridHistory] Cannot undo: no previous state available')
+      console.error('[GridHistory] Cannot undo: no previous state available')
       return null
     }
 
@@ -104,7 +104,7 @@ export function useGridHistory(options: UseGridHistoryOptions = {}) {
    */
   const redo = (): GridLayoutPlusItem[] | null => {
     if (!canRedo.value) {
-      console.warn('[GridHistory] Cannot redo: no next state available')
+      console.error('[GridHistory] Cannot redo: no next state available')
       return null
     }
 
@@ -124,7 +124,7 @@ export function useGridHistory(options: UseGridHistoryOptions = {}) {
    */
   const jumpToHistory = (index: number): GridLayoutPlusItem[] | null => {
     if (!enabled || index < 0 || index >= history.value.length) {
-      console.warn(`[GridHistory] Invalid history index: ${index}`)
+      console.error(`[GridHistory] Invalid history index: ${index}`)
       return null
     }
 

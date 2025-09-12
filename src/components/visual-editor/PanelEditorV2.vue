@@ -160,22 +160,22 @@ const editorConfig = ref({
 const getState = () => {
   if (process.env.NODE_ENV === 'development') {
   }
-  
+
   const widgets = toRaw(stateManager.nodes).map(widget => {
     // 🔥 关键修复：从 configurationManager 获取数据源配置并添加到组件中
     const savedConfig = configurationManager.getConfiguration(widget.id)
     const dataSourceConfig = savedConfig?.dataSource || null
-    
+
     if (process.env.NODE_ENV === 'development') {
     }
-    
+
     // 🔥 额外调试：如果没有数据源配置，打印警告
     if (!dataSourceConfig) {
-      console.warn(`⚠️ 组件 ${widget.id} 没有数据源配置！可能需要检查配置保存逻辑`)
+      console.error(`⚠️ 组件 ${widget.id} 没有数据源配置！可能需要检查配置保存逻辑`)
       if (process.env.NODE_ENV === 'development') {
       }
     }
-    
+
     // 🔥 数据优化：只保存必要的数据，移除冗余的metadata
     const optimizedWidget = {
       id: widget.id,
@@ -208,17 +208,17 @@ const getState = () => {
         // 移除: 完整的Vue组件定义、defaultConfig、settingConfig等
       }
     }
-    
+
     return optimizedWidget
   })
-  
+
   const config = toRaw(editorConfig.value)
-  
+
   if (process.env.NODE_ENV === 'development') {
   }
   if (process.env.NODE_ENV === 'development') {
   }
-  
+
   return {
     widgets,
     config
@@ -245,7 +245,7 @@ const setState = (state: any) => {
         }
         configurationManager.updateConfiguration(widget.id, 'dataSource', widget.dataSource)
       } else {
-        console.warn(`⚠️ 组件 ${widget.id} 没有数据源配置`)
+        console.error(`⚠️ 组件 ${widget.id} 没有数据源配置`)
       }
 
       // 🔥 确保组件有基本的运行时metadata
@@ -257,13 +257,13 @@ const setState = (state: any) => {
           card2ComponentId: widget.type
         }
       }
-      
+
       if (process.env.NODE_ENV === 'development') {
       }
-      
+
       return processedWidget
     })
-    
+
     stateManager.setNodes(processedWidgets)
   }
 
@@ -527,14 +527,14 @@ const handleDrop = async (event: DragEvent) => {
 
     const dragDataStr = event.dataTransfer.getData('application/json')
     if (!dragDataStr) {
-      console.warn('拖拽数据为空')
+      console.error('拖拽数据为空')
       return
     }
 
     const dragData = JSON.parse(dragDataStr)
 
     if (!dragData.type) {
-      console.warn('拖拽数据缺少组件类型')
+      console.error('拖拽数据缺少组件类型')
       return
     }
 

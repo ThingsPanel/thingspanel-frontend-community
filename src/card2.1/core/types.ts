@@ -241,7 +241,7 @@ export interface ComponentInstance<TConfig = Record<string, any>> {
   /** 是否可见 */
   visible?: boolean
   /** 自定义属性 */
-  props?: Record<string, any>
+  props?: Record<string, unknown>
 }
 
 /**
@@ -249,7 +249,7 @@ export interface ComponentInstance<TConfig = Record<string, any>> {
  */
 export interface WidgetConfiguration {
   /** 静态参数配置 */
-  staticParams: Record<string, any>
+  staticParams: Record<string, unknown>
   /** 数据源绑定配置 */
   dataSourceBindings: Record<string, {
     /** 绑定的数据源ID */
@@ -272,7 +272,7 @@ export interface RendererConfig {
   /** 渲染器类型 */
   type: RendererType
   /** 渲染器特定配置 */
-  options: Record<string, any>
+  options: Record<string, unknown>
   /** 是否启用 */
   enabled?: boolean
 }
@@ -292,7 +292,7 @@ export interface PanelConfig {
   /** 组件实例列表 */
   components: ComponentInstance[]
   /** Panel设置 */
-  settings?: Record<string, any>
+  settings?: Record<string, unknown>
   /** 创建时间 */
   createdAt?: Date
   /** 更新时间 */
@@ -316,9 +316,9 @@ export interface DataSourceInfo {
   /** 数据源状态 */
   status: 'active' | 'inactive' | 'error'
   /** 数据结构示例 */
-  schema?: Record<string, any>
+  schema?: Record<string, unknown>
   /** 配置信息 */
-  config?: Record<string, any>
+  config?: Record<string, unknown>
   /** 最后更新时间 */
   lastUpdated?: Date
 }
@@ -332,9 +332,9 @@ export interface DataUpdateEvent {
   /** 数据源Key */
   dataSourceKey: string
   /** 新数据 */
-  newData: any
+  newData: unknown
   /** 旧数据 */
-  oldData?: any
+  oldData?: unknown
   /** 更新时间戳 */
   timestamp: number
   /** 更新来源 */
@@ -354,9 +354,9 @@ export interface ComponentLifecycleHooks {
   /** 组件挂载后 */
   mounted?: () => void
   /** 组件更新前 */
-  beforeUpdate?: (newData: any, oldData: any) => void
+  beforeUpdate?: (newData: unknown, oldData: unknown) => void
   /** 组件更新后 */
-  updated?: (newData: any, oldData: any) => void
+  updated?: (newData: unknown, oldData: unknown) => void
   /** 组件销毁前 */
   beforeUnmount?: () => void
   /** 组件销毁后 */

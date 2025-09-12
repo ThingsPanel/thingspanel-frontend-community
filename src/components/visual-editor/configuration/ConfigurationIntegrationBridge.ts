@@ -218,7 +218,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       // 简单验证
       const validationResult = this.validateConfiguration(migratedConfig)
       if (!validationResult.valid) {
-        console.warn(`❌ [ConfigurationMigration] 导入的配置验证失败: ${widgetId}`)
+        console.error(`❌ [ConfigurationMigration] 导入的配置验证失败: ${widgetId}`)
         return false
       }
 

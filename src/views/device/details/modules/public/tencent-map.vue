@@ -23,44 +23,44 @@ let currentMarker // 当前位置标记
 async function renderMap() {
   await load(true)
   if (!domRef.value) return
-  
+
   // 使用传入的经纬度或默认坐标作为地图中心点
   const lat = Number(props.latitude) || 39.98412
   const lng = Number(props.longitude) || 116.307484
   const hasValidCoords = props.latitude && props.longitude && props.latitude !== '' && props.longitude !== '' && !isNaN(lat) && !isNaN(lng)
-  
+
   const center = new TMap.LatLng(lat, lng)
-  
+
   map = new TMap.Map(domRef.value, {
     center,
     zoom: hasValidCoords ? 15 : 9, // 如果有坐标则放大显示，否则使用默认缩放
     maxZoom: 18,
     minZoom: 6
   })
-  
+
   // 如果有有效的经纬度参数，在地图上显示当前位置标记
   if (hasValidCoords) {
     addCurrentLocationMarker(lat, lng)
   }
-  
+
   map.on('click', event => {
     const lat = event.latLng.getLat()
     const lng = event.latLng.getLng()
-    
+
     // 验证经纬度是否为有效数字
     if (isNaN(lat) || isNaN(lng)) {
-      console.warn('地图点击事件获取到无效的经纬度:', { lat, lng })
+      console.error('地图点击事件获取到无效的经纬度:', { lat, lng })
       return
     }
-    
+
     // 移除之前的标记
     if (currentMarker) {
       currentMarker.setMap(null)
     }
-    
+
     // 添加新的标记
     addCurrentLocationMarker(lat, lng)
-    
+
     emit('position-selected', { lat, lng })
   })
 }
@@ -69,17 +69,17 @@ async function renderMap() {
 function addCurrentLocationMarker(lat: number, lng: number) {
   // 验证经纬度参数是否为有效数字
   if (isNaN(lat) || isNaN(lng)) {
-    console.warn('addCurrentLocationMarker接收到无效的经纬度参数:', { lat, lng })
+    console.error('addCurrentLocationMarker接收到无效的经纬度参数:', { lat, lng })
     return
   }
-  
+
   // 如果已存在标记，先移除
   if (currentMarker) {
     currentMarker.setMap(null)
   }
-  
+
   const position = new TMap.LatLng(lat, lng)
-  
+
   // 创建标记样式
   const markerStyle = new TMap.MarkerStyle({
     width: 30,
@@ -94,7 +94,7 @@ function addCurrentLocationMarker(lat: number, lng: number) {
       </svg>
     `)
   })
-  
+
   // 创建多标记实例
   currentMarker = new TMap.MultiMarker({
     map,

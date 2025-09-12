@@ -200,7 +200,7 @@ export class RendererManager {
   async preloadRenderer(type: string): Promise<void> {
     const registration = this.registrations.get(type)
     if (!registration || !registration.supported) {
-      console.warn(`[RendererManager] Cannot preload unsupported renderer: ${type}`)
+      console.error(`[RendererManager] Cannot preload unsupported renderer: ${type}`)
       return
     }
 

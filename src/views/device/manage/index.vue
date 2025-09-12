@@ -57,13 +57,13 @@ const { cache: query, setCache } = usePageCache()
  * ===========================================
  * 设备管理页面实时状态监控系统
  * ===========================================
- * 
+ *
  * 功能说明：
  * 1. 专门用于设备管理页面的设备状态实时更新
  * 2. 当设备上线/下线时，自动更新表格中的设备状态显示
  * 3. 无需用户手动刷新页面，提供流畅的用户体验
  * 4. 与全局通知系统配合，实现页面级的状态同步
- * 
+ *
  * 技术特点：
  * - 仅更新表格数据，不显示弹窗通知（避免与全局通知重复）
  * - 智能重连机制，确保连接稳定性
@@ -92,17 +92,17 @@ const updateDeviceStatusInTable = (deviceId: string, isOnline: boolean) => {
       const deviceIndex = tablePageRef.value.dataList.findIndex(
         device => device.device_id === deviceId
       )
-      
+
       if (deviceIndex !== -1) {
         // 找到设备，更新其在线状态 (1=在线, 0=离线)
         tablePageRef.value.dataList[deviceIndex].is_online = isOnline ? 1 : 0
         console.info(`设备 ${deviceId} 状态已更新为 ${isOnline ? '在线' : '离线'}`)
       } else {
         // 设备不在当前页面显示范围内（可能在其他分页或已被过滤）
-        console.warn(`设备 ${deviceId} 未在当前表格数据中找到，可能不在当前页面显示范围内`)
+        console.error(`设备 ${deviceId} 未在当前表格数据中找到，可能不在当前页面显示范围内`)
       }
     } else {
-      console.warn('表格数据未加载或格式异常，无法更新设备状态')
+      console.error('表格数据未加载或格式异常，无法更新设备状态')
     }
   } catch (error) {
     console.error('更新表格中设备状态时发生错误:', error)
@@ -118,7 +118,7 @@ const createEventSourceConnection = () => {
     // 获取用户认证token
     const token = localStg.get('token')
     if (!token) {
-      console.warn('未找到用户token，无法建立设备状态监控连接')
+      console.error('未找到用户token，无法建立设备状态监控连接')
       return
     }
 
@@ -158,31 +158,31 @@ const createEventSourceConnection = () => {
       try {
         // 数据安全验证：确保事件数据存在
         if (!event?.data) {
-          console.warn('接收到空的设备状态事件数据')
+          console.error('接收到空的设备状态事件数据')
           return
         }
 
         // 解析服务器推送的JSON数据
         const data = JSON.parse(event.data)
-        
+
         // 验证设备ID字段的有效性
         if (!data.device_id || typeof data.device_id !== 'string') {
-          console.warn('设备状态事件中缺少有效的设备ID:', data)
+          console.error('设备状态事件中缺少有效的设备ID:', data)
           return
         }
 
         // 验证在线状态字段的有效性
         if (typeof data.is_online !== 'boolean') {
-          console.warn('设备状态事件中在线状态值无效:', data)
+          console.error('设备状态事件中在线状态值无效:', data)
           return
         }
-        
+
         /**
          * 调用表格更新函数
          * 仅更新表格显示，不显示通知（避免与全局通知重复）
          */
         updateDeviceStatusInTable(data.device_id, data.is_online)
-        
+
       } catch (parseError) {
         console.error('解析设备状态事件数据失败:', parseError, '原始数据:', event.data)
       }
@@ -194,7 +194,7 @@ const createEventSourceConnection = () => {
      */
     eventSource.onerror = (error) => {
       console.error('设备管理页面EventSource连接错误:', error)
-      
+
       // 立即清理当前连接
       if (eventSource) {
         eventSource.close()
@@ -206,7 +206,7 @@ const createEventSourceConnection = () => {
         reconnectAttempts += 1
         const delay = reconnectAttempts * 5000 // 延迟时间递增
         console.info(`正在尝试重连设备管理页面EventSource (第${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}次尝试)，${delay/1000}秒后重连`)
-        
+
         setTimeout(() => {
           createEventSourceConnection()
         }, delay)

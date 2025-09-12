@@ -255,7 +255,7 @@ onMounted(async () => {
       detailed_address: data.address?.detailed_address || ''
     }
   }
-  
+
   // 兼容两种字段名的头像显示逻辑
   const additionalInfoStr = userInfoData.value.additional_info || '{}'
   if (additionalInfoStr === '{}' || !additionalInfoStr) {
@@ -270,7 +270,7 @@ onMounted(async () => {
         headUrl.value = serverUrl + obj.user_icon.substring(1)
       }
     } catch (error) {
-      console.warn('解析用户头像信息失败:', error)
+      console.error('解析用户头像信息失败:', error)
       header.value = false
     }
   }
