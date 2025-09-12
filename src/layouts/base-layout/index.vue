@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, onMounted } from 'vue'
+import { computed, h, onMounted, onUnmounted } from 'vue'
 import { NButton, NIcon } from 'naive-ui'
 import { ArrowBack } from '@vicons/ionicons5'
 import { AdminLayout, LAYOUT_SCROLL_EL_ID } from '@sa/materials'
@@ -119,94 +119,163 @@ function handleBack() {
 }
 
 setupMixMenuContext()
-let eventSource = null
+
+// SSE连接管理
+let eventSource: EventSourcePolyfill | null = null
 let tryNum = 0
+
+/**
+ * 创建EventSource连接
+ * 用于接收服务器端的实时事件推送
+ */
 const createEventSource = () => {
   const token = localStg.get('token')
-  eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/events`, {
-    heartbeatTimeout: 3 * 60 * 1000, // 这是自定义配置请求超时时间  默认是4500ms(印象中是)
-    headers: {
-      'x-token': token
-    }
-  })
-}
-onMounted(() => {
-  createEventSource()
-  if (eventSource) {
+  if (!token) {
+    logger.warn('Token not found, skipping EventSource creation')
+    return
+  }
+  
+  try {
+    eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/events`, {
+      heartbeatTimeout: 3 * 60 * 1000, // 配置请求超时时间为3分钟
+      headers: {
+        'x-token': token
+      }
+    })
+    
+    // 连接成功回调
     eventSource.onopen = () => {
       tryNum = 0
+      logger.info('EventSource connected successfully')
     }
+    
+    // 监听设备在线状态变化事件
     eventSource.addEventListener(
       'device_online',
       event => {
-        const data = event.data ? JSON.parse(event.data) : {}
-        if (data.is_online) {
-          window.$notification?.success({
-            title: `${data.device_name}${$t('card.deviceConnected')}`,
-
-            duration: 5000,
-
-            action: () =>
-              h(
-                NButton,
-                {
-                  text: true,
-                  type: 'default',
-                  onClick: () => {
-                    routerPushByKey('device_details', {
-                      query: {
-                        d_id: data.device_id
-                      }
-                    })
+        try {
+          // 安全解析JSON数据
+          if (!event.data) {
+            logger.warn('EventSource received empty data')
+            return
+          }
+          
+          const data = JSON.parse(event.data)
+          
+          // 验证必要的数据字段
+          if (!data.device_name || typeof data.device_name !== 'string') {
+            logger.warn('Invalid device data received:', data)
+            return
+          }
+          
+          if (data.is_online) {
+            window.$notification?.success({
+              title: `${data.device_name}${$t('card.deviceConnected')}`,
+              duration: 5000,
+              action: () =>
+                h(
+                  NButton,
+                  {
+                    text: true,
+                    type: 'default',
+                    onClick: () => {
+                      routerPushByKey('device_details', {
+                        query: {
+                          d_id: data.device_id
+                        }
+                      })
+                    }
+                  },
+                  {
+                    default: () => $t('card.toDeviceDetailPage')
                   }
-                },
-                {
-                  default: () => $t('card.toDeviceDetailPage')
-                }
-              )
-          })
-        } else {
-          window.$notification?.info({
-            title: `${data.device_name}${$t('card.deviceDisconnected')}`,
-
-            duration: 5000,
-            action: () =>
-              h(
-                NButton,
-                {
-                  text: true,
-                  type: 'default',
-                  onClick: () => {
-                    routerPushByKey('device_details', {
-                      query: {
-                        d_id: data.device_id
-                      }
-                    })
+                )
+            })
+          } else {
+            window.$notification?.info({
+              title: `${data.device_name}${$t('card.deviceDisconnected')}`,
+              duration: 5000,
+              action: () =>
+                h(
+                  NButton,
+                  {
+                    text: true,
+                    type: 'default',
+                    onClick: () => {
+                      routerPushByKey('device_details', {
+                        query: {
+                          d_id: data.device_id
+                        }
+                      })
+                    }
+                  },
+                  {
+                    default: () => $t('card.toDeviceDetailPage')
                   }
-                },
-                {
-                  default: () => $t('card.toDeviceDetailPage')
-                }
-              )
-          })
+                )
+            })
+          }
+          
+          // 播放通知音效
+          try {
+            const audio = new Audio(deviceStatusMp3)
+            audio.play().catch(audioError => {
+              logger.warn('Failed to play notification sound:', audioError)
+            })
+          } catch (audioError) {
+            logger.warn('Audio creation failed:', audioError)
+          }
+          
+        } catch (parseError) {
+          logger.error('Failed to parse EventSource data:', parseError, 'Raw data:', event.data)
         }
-        //         // 创建一个新的Audio对象
-        const audio = new Audio(deviceStatusMp3)
-
-        //  // 播放音乐
-        audio.play()
       },
       false
     )
+    
+    // 错误处理和重连逻辑
     eventSource.onerror = error => {
-      logger.error(error)
-      eventSource.close()
+      logger.error('EventSource error:', error)
+      
+      // 清理当前连接
+      if (eventSource) {
+        eventSource.close()
+        eventSource = null
+      }
+      
+      // 重连逻辑（最多3次）
       if (tryNum < 3) {
         tryNum += 1
-        createEventSource()
+        logger.info(`Attempting to reconnect EventSource (attempt ${tryNum}/3)`)
+        setTimeout(createEventSource, 5000) // 延迟5秒后重连
+      } else {
+        logger.error('EventSource max reconnection attempts reached')
       }
     }
+    
+  } catch (error) {
+    logger.error('Failed to create EventSource:', error)
   }
+}
+
+/**
+ * 清理EventSource连接
+ */
+const cleanupEventSource = () => {
+  if (eventSource) {
+    eventSource.close()
+    eventSource = null
+    logger.info('EventSource connection cleaned up')
+  }
+}
+
+onMounted(() => {
+  createEventSource()
+})
+
+// 组件卸载时清理连接
+onUnmounted(() => {
+  cleanupEventSource()
 })
 </script>
 
