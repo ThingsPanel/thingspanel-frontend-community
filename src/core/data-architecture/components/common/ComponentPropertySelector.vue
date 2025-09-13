@@ -125,12 +125,29 @@ import {
 
 // 导入Card2.1相关功能
 import { interactionManager } from '@/card2.1/core/interaction-manager'
-import { propertyExposureRegistry, getBaseConfigurationProperties } from '@/card2.1/core/property-exposure'
-import type { ComponentPropertyTreeNode, ListenableProperty } from '@/card2.1/core/property-exposure'
-// 🚀 导入统一的路径管理器
-import { PropertyPath, PropertyPathManager } from '@/card2.1/core/property-path-manager'
+// 🔥 简化：移除复杂的属性暴露和路径管理系统
 // 导入Visual Editor状态管理 - 使用正确的editor store
 import { useEditorStore } from '@/components/visual-editor/store/editor'
+
+// 定义树节点接口
+interface ComponentPropertyTreeNode {
+  key: string
+  label: string
+  type: 'component' | 'property'
+  componentId?: string
+  propertyName?: string
+  propertyConfig?: {
+    name: string
+    label: string
+    type: string
+    description?: string
+    isCore?: boolean
+    group?: string
+    defaultValue?: any
+  }
+  children?: ComponentPropertyTreeNode[]
+  isLeaf: boolean
+}
 
 // Props接口
 interface Props {
@@ -206,7 +223,7 @@ const fetchTreeData = () => {
     // 只暴露 deviceId 和 metricsList
     const baseProperties: ComponentPropertyTreeNode[] = [
       {
-        key: PropertyPathManager.createBaseConfigBindingPath(representativeComponentId, 'deviceId'),
+        key: `${representativeComponentId}.base.deviceId`,
         label: '设备ID (string)',
         type: 'property' as const,
         componentId: representativeComponentId,
@@ -223,7 +240,7 @@ const fetchTreeData = () => {
         isLeaf: true
       },
       {
-        key: PropertyPathManager.createBaseConfigBindingPath(representativeComponentId, 'metricsList'),
+        key: `${representativeComponentId}.base.metricsList`,
         label: '指标列表 (array)',
         type: 'property' as const,
         componentId: representativeComponentId,
@@ -251,32 +268,27 @@ const fetchTreeData = () => {
     })
   }
 
-  // 2. 然后添加各个组件实例的属性节点
+  // 2. 🔥 简化：使用基础属性列表替代复杂的属性暴露系统
   const componentNodes = canvasNodes
     .map(node => {
-      // 根据组件类型获取属性暴露配置
-      const componentType = node.type || node.widget_type
-      const exposure = propertyExposureRegistry.getComponentExposure(componentType)
+      // 🔥 简化：使用简单的基础属性列表
+      const basicProperties = [
+        { name: 'title', label: '标题', type: 'string', description: '组件标题', group: '外观配置' },
+        { name: 'visible', label: '可见性', type: 'boolean', description: '组件是否可见', group: '外观配置' },
+        { name: 'opacity', label: '透明度', type: 'number', description: '组件透明度', group: '外观配置' },
+        { name: 'backgroundColor', label: '背景色', type: 'color', description: '组件背景颜色', group: '外观配置' }
+      ]
 
-      if (!exposure || !exposure.listenableProperties || exposure.listenableProperties.length === 0) {
-        return null
-      }
-
-      // 🚀 使用统一的路径管理器生成标准化的属性节点
-      const properties: ComponentPropertyTreeNode[] = exposure.listenableProperties.map(prop => {
-        // 使用 PropertyPath 创建标准化的绑定路径
-        const bindingPath = PropertyPath.create(node.id, prop.name)
-
+      const properties: ComponentPropertyTreeNode[] = basicProperties.map(prop => {
         return {
-          key: bindingPath,
+          key: `${node.id}.${prop.name}`,
           label: `${prop.label} (${prop.type})`,
           type: 'property' as const,
-          componentId: node.id, // 使用实例ID而不是组件类型
+          componentId: node.id,
           propertyName: prop.name,
           propertyConfig: {
             ...prop,
-            // 确保每个属性都有默认值
-            defaultValue: prop.defaultValue !== undefined ? prop.defaultValue : getDefaultValueByType(prop.type)
+            defaultValue: getDefaultValueByType(prop.type)
           },
           isLeaf: true
         }
@@ -284,7 +296,7 @@ const fetchTreeData = () => {
 
       return {
         key: node.id,
-        label: `${exposure.componentName} (ID: ${node.id.substring(0, 8)})`, // 显示组件名称和简化的实例ID
+        label: `组件 (ID: ${node.id.substring(0, 8)})`, // 显示简化的实例ID
         type: 'component' as const,
         children: properties,
         isLeaf: false
@@ -375,21 +387,29 @@ const onSelectionChange = (selectedKeysValue: string[]) => {
   const selectedKey = selectedKeysValue[0]
 
   if (selectedKey) {
-    // 🚀 使用统一路径管理器解析选中的属性
-    const parseResult = PropertyPath.parse(selectedKey)
-
-    if (parseResult.isValid && parseResult.pathInfo) {
-      const { componentInstanceId, propertyPath, propertyName } = parseResult.pathInfo
+    // 🔥 简化：使用简单的字符串解析
+    const parts = selectedKey.split('.')
+    if (parts.length >= 2) {
+      const componentId = parts[0]
+      const propertyName = parts.slice(1).join('.')
 
       // 查找对应的树节点
-      const componentNode = rawTreeData.value.find(node => node.key === componentInstanceId)
-      const propertyNode = componentNode?.children?.find(prop => prop.key === selectedKey)
+      let componentNode: ComponentPropertyTreeNode | undefined
+      let propertyNode: ComponentPropertyTreeNode | undefined
+
+      for (const node of rawTreeData.value) {
+        if (node.key === componentId || (node.children && node.children.some(child => child.key === selectedKey))) {
+          componentNode = node
+          propertyNode = node.children?.find(prop => prop.key === selectedKey)
+          break
+        }
+      }
 
       if (propertyNode && propertyNode.propertyConfig) {
         const propertyInfo: SelectedPropertyInfo = {
-          bindingPath: selectedKey, // 使用标准化的绑定路径
-          componentId: componentInstanceId, // 组件实例ID
-          componentName: componentNode?.label || componentInstanceId,
+          bindingPath: selectedKey,
+          componentId: componentId,
+          componentName: componentNode?.label || componentId,
           propertyName,
           propertyLabel: propertyNode.propertyConfig.label,
           type: propertyNode.propertyConfig.type,

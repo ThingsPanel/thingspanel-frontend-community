@@ -1,0 +1,5 @@
+import type { SettingConfig } from '@/card2.1/types/setting-config'
+export interface SimpleMapCustomize { showTitle: boolean; showControls: boolean; title: string; defaultLat: number; defaultLon: number; backgroundColor: string; borderColor: string; borderRadius: number }
+export interface SimpleMapConfig { type: 'simple-map'; root: { transform: { rotate: number; scale: number } }; customize: SimpleMapCustomize }
+export const customConfig: SimpleMapCustomize = { showTitle: true, showControls: true, title: '位置地图', defaultLat: 39.9042, defaultLon: 116.4074, backgroundColor: 'transparent', borderColor: 'var(--border-color)', borderRadius: 8 }
+export const simpleMapSettingConfig: SettingConfig<SimpleMapCustomize> = [{ group: '内容设置', items: [{ key: 'title', label: '标题', type: 'input', defaultValue: '位置地图' }] }]

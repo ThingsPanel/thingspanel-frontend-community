@@ -27,6 +27,7 @@
       :show-interaction-indicator="true"
       :preview-mode="props.previewMode"
       v-bind="getComponentSpecificProps()"
+      @update:config="handleComponentConfigUpdate"
     />
   </div>
 </template>
@@ -50,8 +51,7 @@ import { configurationIntegrationBridge } from '@/components/visual-editor/confi
 import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
 import { smartDeepClone } from '@/utils/deep-clone'
 import { visualEditorLogger } from '@/utils/logger'
-// 🚀 导入配置合并管理器
-import { ConfigMerge, ConfigMergeManager, type ConfigSource } from '@/card2.1/core/config-merge-manager'
+// 🔥 简化：移除复杂的配置合并管理器，使用简单的对象合并
 
 // 🔥 使用统一的智能深拷贝工具，自动处理Vue响应式对象
 const safeDeepClone = smartDeepClone
@@ -103,9 +103,8 @@ const currentComponentRef = ref<any>(null)
 // 🔥 容器引用
 const containerRef = ref<HTMLElement | null>(null)
 
-// 🚀 使用统一的配置管理系统
-const configSources = ref<Partial<Record<ConfigSource, any>>>({})
-const configSourceMap = ref<Record<string, ConfigSource>>({})
+// 🔥 简化：使用简单的配置管理系统
+const configSources = ref<Record<string, any>>({})
 const lastConfigMergeTime = ref(0)
 
 /**
@@ -440,8 +439,8 @@ const extractCustomConfig = computed(() => {
 })
 
 const extractComponentConfig = computed(() => {
-  // 🚀 准备各种配置源
-  const configSources: Partial<Record<ConfigSource, any>> = {}
+  // 🔥 简化：准备各种配置源
+  const configSources: Record<string, any> = {}
 
   // 🔥 关键修复：优先从metadata中获取Card2.1组件的真实配置
   let componentDefaultConfig = { ...defaultConfig }
@@ -528,23 +527,26 @@ const extractComponentConfig = computed(() => {
   // 5. 运行时配置（来自其他动态来源）
   // 预留接口，目前暂无
 
-  // 🚀 使用统一的配置合并管理器 - 修复交互配置优先级
-  const mergeResult = ConfigMerge.merge(configSources, {
-    priorityOrder: ['default', 'user', 'dataSource', 'runtime', 'interaction'], // 交互配置最高优先级
-    enableDeepMerge: true,
-    preserveSource: true,
-    enableChangeTracking: true
-  })
-
-  // 更新全局配置状态
-  configSourceMap.value = mergeResult.sourceMap || {}
-  lastConfigMergeTime.value = Date.now()
-
-  // 📊 输出合并统计信息
-  if (process.env.NODE_ENV === 'development') {
+  // 🔥 简化：使用简单的对象合并替代复杂的配置合并管理器
+  // 合并顺序：default -> user -> dataSource -> runtime -> interaction（交互配置最高优先级）
+  let merged = { ...configSources.default }
+  
+  if (configSources.user) {
+    merged = { ...merged, ...configSources.user }
+  }
+  if (configSources.dataSource) {
+    merged = { ...merged, ...configSources.dataSource }
+  }
+  if (configSources.runtime) {
+    merged = { ...merged, ...configSources.runtime }
+  }
+  if (configSources.interaction) {
+    merged = { ...merged, ...configSources.interaction }
   }
 
-  return mergeResult.merged
+  lastConfigMergeTime.value = Date.now()
+
+  return merged
 })
 
 const loadComponent = async () => {
@@ -884,24 +886,15 @@ onMounted(async () => {
     }
 
     if (componentId === props.nodeId) {
-      // 🚀 使用统一的配置合并系统处理状态更新
+      // 🔥 简化：使用简单的对象合并处理状态更新
       if (updates && Object.keys(updates).length > 0) {
-        // 🚀 使用智能更新处理交互覆盖
-        const updateResult = ConfigMerge.smartUpdate(
-          configSources.value.interaction || {},
-          updates,
-          'interaction',
-          configSourceMap.value
-        )
+        // 简单合并交互状态
+        const currentInteraction = configSources.value.interaction || {}
+        const merged = { ...currentInteraction, ...updates }
 
-        if (updateResult.merged && Object.keys(updateResult.merged).length > 0) {
+        if (Object.keys(merged).length > 0) {
           // 更新交互配置源
-          configSources.value.interaction = updateResult.merged
-
-          // 更新源映射
-          if (updateResult.sourceMap) {
-            Object.assign(configSourceMap.value, updateResult.sourceMap)
-          }
+          configSources.value.interaction = merged
 
           // 📊 输出更新统计
           if (process.env.NODE_ENV === 'development') {
@@ -1040,6 +1033,43 @@ onMounted(async () => {
     }
   })
 })
+
+// 🔥 处理组件内部配置更新
+const handleComponentConfigUpdate = (newConfig: any) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔥 [Card2Wrapper] 组件内部配置更新', {
+      componentId: props.nodeId,
+      newConfig,
+      configType: typeof newConfig
+    })
+  }
+
+  try {
+    // 🔥 关键修复：直接同步到 editorContext，让响应式系统处理更新
+    if (editorContext?.updateNode) {
+      editorContext.updateNode(props.nodeId, {
+        properties: newConfig
+      })
+    }
+
+    // 🔥 简化：只更新ConfigurationManager，不干扰其他更新流程
+    configurationIntegrationBridge.updateConfiguration(
+      props.nodeId,
+      'component',
+      { properties: newConfig },
+      props.componentType
+    )
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔥 [Card2Wrapper] 配置更新完成', {
+        componentId: props.nodeId,
+        updatedProperties: newConfig
+      })
+    }
+  } catch (error) {
+    console.error('❌ [Card2Wrapper] 配置更新失败', error)
+  }
+}
 </script>
 
 <style scoped>

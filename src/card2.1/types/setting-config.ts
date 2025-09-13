@@ -44,7 +44,7 @@ export enum SettingControlType {
  * 
  * @template T - 设置项值的类型
  */
-export interface Setting<T = any> {
+export interface Setting<T = unknown> {
   /** 控件类型，如 'input', 'color-picker', 'slider', 'vue-component' */
   type: string
   /** UI上显示的标签 */
@@ -76,10 +76,10 @@ export interface Setting<T = any> {
   /** Vue组件渲染器（当type为'vue-component'时使用） */
   component?: Component | string
   /** 传递给Vue组件的Props */
-  componentProps?: Record<string, any>
+  componentProps?: Record<string, unknown>
 
   /** 控件的其他配置 */
-  [key: string]: any
+  [key: string]: unknown
 }
 
 /**
@@ -87,7 +87,7 @@ export interface Setting<T = any> {
  * 对应您提供的 CustomConfig 设计
  * @template T - 组件特有的 customize 对象类型
  */
-export interface CustomConfig<T = Record<string, any>> {
+export interface CustomConfig<T = Record<string, unknown>> {
   /** 组件的唯一类型标识符 */
   type: string
   /** 组件根级别的通用变换属性 */
@@ -106,7 +106,7 @@ export interface CustomConfig<T = Record<string, any>> {
  * 对应您提供的 DataConfig 设计
  * @template T - 组件特有的 customize 对象类型
  */
-export interface DataConfig<T = Record<string, any>> {
+export interface DataConfig<T = Record<string, unknown>> {
   /** 组件实例的唯一ID */
   id: string
   /** 组件的显示名称 */
@@ -134,7 +134,7 @@ export interface TargetComponent {
  * 组件设置配置
  * 将 Setting 和 CustomConfig 整合，定义组件的完整配置结构
  */
-export interface ComponentSettingConfig<T = Record<string, any>> {
+export interface ComponentSettingConfig<T = Record<string, unknown>> {
   /** 组件类型标识符 */
   componentType: string
   /** 设置项列表 */
@@ -238,7 +238,7 @@ export interface SettingValidationRule {
   /** 正则表达式验证 */
   pattern?: string
   /** 自定义验证函数 */
-  validator?: (value: any) => boolean | string
+  validator?: (value: unknown) => boolean | string
 }
 
 /**
@@ -250,7 +250,7 @@ export interface EnhancedSetting extends Setting {
   /** 是否只读 */
   readonly?: boolean
   /** 是否可见 */
-  visible?: boolean | ((config: any) => boolean)
+  visible?: boolean | ((config: unknown) => boolean)
   /** 帮助文本 */
   helpText?: string
 }
@@ -297,14 +297,14 @@ export interface TSConfig {
  * 配置值类型（从原config-types.ts整合）
  */
 export interface ConfigValues {
-  [key: string]: any
+  [key: string]: unknown
 }
 
 /**
  * 扩展的组件设置配置
  * 整合了配置分组和模式管理
  */
-export interface EnhancedComponentSettingConfig<T = Record<string, any>> extends ComponentSettingConfig<T> {
+export interface EnhancedComponentSettingConfig<T = Record<string, unknown>> extends ComponentSettingConfig<T> {
   /** 配置模式 */
   mode?: ConfigMode
   /** 配置分组定义 */
@@ -338,7 +338,7 @@ export function createSetting(type: string, label: string, field: string, option
  * @param transform - 变换配置（旋转和缩放）
  * @returns 完整的自定义配置对象
  */
-export function createCustomConfig<T extends Record<string, any>>(
+export function createCustomConfig<T extends Record<string, unknown>>(
   typeOrCustomize: string | T,
   customize?: T,
   transform: { rotate: number; scale: number } = { rotate: 0, scale: 1 }

@@ -171,7 +171,7 @@ import { $t } from '@/locales'
 import { smartDeepClone } from '@/utils/deep-clone'
 
 // 导入配置组件注册中心
-import { getVisibleConfigLayers, getConfigLayer } from '@/components/visual-editor/configuration/component-registry-final'
+import { getVisibleConfigLayers, getConfigLayer } from '@/components/visual-editor/configuration/component-registry'
 
 // 导入配置管理器和类型
 import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
@@ -983,7 +983,7 @@ const getLayerProps = (layer: any) => {
     case 'component':
       return {
         ...commonProps,
-        modelValue: componentConfig.value,
+        modelValue: componentConfig.value.properties || {},
         widget: props.selectedWidget
       }
     case 'dataSource':

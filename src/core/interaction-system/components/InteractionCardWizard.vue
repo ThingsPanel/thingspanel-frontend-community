@@ -230,7 +230,7 @@ import {
 } from 'naive-ui'
 import { FlashOutline, TrashOutline } from '@vicons/ionicons5'
 import { fetchGetUserRoutes } from '@/service/api/route'
-import { propertyExposureRegistry, getBaseConfigurationProperties } from '@/card2.1/core/property-exposure'
+// 🔥 简化：移除复杂的属性暴露系统，使用简单的属性访问
 import { useEditorStore } from '@/store/modules/editor'
 
 interface Props {
@@ -252,7 +252,6 @@ const editorStore = useEditorStore()
 // 保持向后兼容
 const visualEditorState = {
   getAvailableComponents: () => {
- 
     return editorStore.nodes || []
   }
 }
@@ -356,22 +355,28 @@ const targetPropertyOptions = computed(() => {
   const groupedOptions: any[] = []
   const groups: Record<string, any[]> = {}
 
-  // 1. 获取该组件类型的可响应属性（通过属性暴露注册表）
-  const componentExposure = propertyExposureRegistry.getComponentExposure(targetComponent.type)
-  if (componentExposure && componentExposure.listenableProperties) {
-    componentExposure.listenableProperties.forEach(property => {
-      const group = property.group || '组件属性'
-      if (!groups[group]) {
-        groups[group] = []
-      }
+  // 🔥 简化：使用简单的基础配置属性列表替代复杂的属性暴露系统
+  const basicConfigProperties = [
+    { name: 'deviceId', label: '设备ID', group: '基础配置', description: '设备标识符' },
+    { name: 'metricsList', label: '指标列表', group: '基础配置', description: '设备指标配置' },
+    { name: 'title', label: '标题', group: '外观配置', description: '组件标题' },
+    { name: 'visible', label: '可见性', group: '外观配置', description: '组件是否可见' },
+    { name: 'opacity', label: '透明度', group: '外观配置', description: '组件透明度' },
+    { name: 'backgroundColor', label: '背景色', group: '外观配置', description: '组件背景颜色' }
+  ]
 
-      groups[group].push({
-        label: `${property.label}${property.description ? ` (${property.description})` : ''}`,
-        value: property.name,
-        property // 保存完整属性信息
-      })
+  basicConfigProperties.forEach(property => {
+    const group = property.group || '组件属性'
+    if (!groups[group]) {
+      groups[group] = []
+    }
+
+    groups[group].push({
+      label: `${property.label}${property.description ? ` (${property.description})` : ''}`,
+      value: property.name,
+      property // 保存完整属性信息
     })
-  }
+  })
 
   // 2. 🚀 获取基础配置级别的属性（只暴露 deviceId 和 metricsList）
   const baseGroup = '基础配置'
@@ -447,22 +452,28 @@ const availablePropertyOptions = computed(() => {
   const groupedOptions: any[] = []
   const groups: Record<string, any[]> = {}
 
-  // 1. 获取组件级别的可监听属性
-  const componentExposure = propertyExposureRegistry.getComponentExposure(props.componentType)
-  if (componentExposure && componentExposure.listenableProperties) {
-    componentExposure.listenableProperties.forEach(property => {
-      const group = property.group || '组件属性'
-      if (!groups[group]) {
-        groups[group] = []
-      }
+  // 🔥 简化：使用简单的基础配置属性列表
+  const basicConfigProperties = [
+    { name: 'deviceId', label: '设备ID', group: '基础配置', description: '设备标识符' },
+    { name: 'metricsList', label: '指标列表', group: '基础配置', description: '设备指标配置' },
+    { name: 'title', label: '标题', group: '外观配置', description: '组件标题' },
+    { name: 'visible', label: '可见性', group: '外观配置', description: '组件是否可见' },
+    { name: 'opacity', label: '透明度', group: '外观配置', description: '组件透明度' },
+    { name: 'backgroundColor', label: '背景色', group: '外观配置', description: '组件背景颜色' }
+  ]
 
-      groups[group].push({
-        label: `${property.label}${property.description ? ` (${property.description})` : ''}`,
-        value: property.name,
-        property // 保存完整属性信息供后续使用
-      })
+  basicConfigProperties.forEach(property => {
+    const group = property.group || '组件属性'
+    if (!groups[group]) {
+      groups[group] = []
+    }
+
+    groups[group].push({
+      label: `${property.label}${property.description ? ` (${property.description})` : ''}`,
+      value: property.name,
+      property // 保存完整属性信息供后续使用
     })
-  }
+  })
 
   // 2. 🚀 获取基础配置级别的属性（只暴露 deviceId 和 metricsList）
   const baseGroup = '基础配置'

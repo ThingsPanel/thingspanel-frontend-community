@@ -12,7 +12,7 @@
 import { componentRegistry } from '@/card2.1/core/component-registry'
 import { AutoRegistry } from '@/card2.1/core/auto-registry'
 import { ComponentLoader } from '@/card2.1/core/component-loader'
-import { componentDataRequirementsRegistry } from '@/components/visual-editor/core/component-data-requirements'
+// 🔥 已删除过度复杂的组件数据需求注册系统
 // 🔥 已移除过度工程化的OptimizedInitializationManager
 
 // ========== 优化版本的初始化系统 ==========
@@ -44,16 +44,11 @@ export async function initializeCard2System() {
       // 2. 自动注册组件（包含权限过滤）
       const registeredComponents = await autoRegistry.autoRegister(componentModules)
 
-      // 3. 注册预设的数据需求
-      componentDataRequirementsRegistry.registerPresets()
+      // 🔥 已移除过度复杂的数据需求注册
 
       isInitialized = true
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('🚀 Card2.1 System Init Complete', {
-          componentCount: registeredComponents.length,
-          categoryCount: autoRegistry.getComponentTree().categories.length
-        })
       }
     } finally {
       initializationPromise = null
@@ -87,8 +82,7 @@ export async function initializeCard2SystemLegacy() {
       // 3. 自动注册组件（包含权限过滤）
       const registeredComponents = await autoRegistry.autoRegister(componentModules)
 
-      // 4. 注册预设的数据需求
-      componentDataRequirementsRegistry.registerPresets()
+      // 🔥 已移除过度复杂的数据需求注册
 
       // 6. 获取组件树形结构
       const componentTree = autoRegistry.getComponentTree()

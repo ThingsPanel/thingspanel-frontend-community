@@ -50,3 +50,6 @@ scripts/re.ps1
 55.txt
 src/views/test/panel-editor-v2/index.vue
 CLAUDE.md
+AGENTS.md
+.claude/settings.local.json
+.claude/settings.local.json

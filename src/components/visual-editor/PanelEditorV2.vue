@@ -26,6 +26,9 @@ import { editorDataSourceManager } from '@/components/visual-editor/core/EditorD
 import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import PollingController from '@/components/visual-editor/components/PollingController.vue'
 
+// 🔥 导入Card2.1组件注册系统，用于恢复完整的组件定义
+import { getComponentDefinition } from '@/card2.1/components/index'
+
 // 🔥 接收测试页面的配置props
 interface Props {
   panelId: string
@@ -248,13 +251,32 @@ const setState = (state: any) => {
         console.error(`⚠️ 组件 ${widget.id} 没有数据源配置`)
       }
 
-      // 🔥 确保组件有基本的运行时metadata
+      // 🔥 关键修复：从Card2.1组件注册系统恢复完整的组件定义
+      let fullCard2Definition = widget.metadata?.card2Definition
+      
+      // 如果保存的定义不完整（缺少configComponent），从注册系统恢复
+      if (fullCard2Definition && !fullCard2Definition.configComponent) {
+        try {
+          const registeredDefinition = getComponentDefinition(widget.type)
+          if (registeredDefinition) {
+            fullCard2Definition = registeredDefinition
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔥 [setState] 从注册系统恢复 ${widget.type} 的完整定义，包含 configComponent:`, !!registeredDefinition.configComponent)
+            }
+          }
+        } catch (error) {
+          console.error(`❌ [setState] 恢复组件定义失败: ${widget.type}`, error)
+        }
+      }
+
+      // 🔥 确保组件有完整的运行时metadata
       const processedWidget = {
         ...widget,
         metadata: {
           ...widget.metadata,
           isCard2Component: true,
-          card2ComponentId: widget.type
+          card2ComponentId: widget.type,
+          card2Definition: fullCard2Definition
         }
       }
 

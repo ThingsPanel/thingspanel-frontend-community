@@ -127,14 +127,7 @@ export type {
 } from '../core/interaction-types'
 
 // ============ 数据绑定类型（简化版） ============
-// 使用简化的数据绑定类型，保持向后兼容性
-export type {
-  DataFieldRequirement,
-  ComponentDataRequirement,
-  ReactiveDataBinding,
-  DataSource,
-  DataSourceType
-} from '../core/data-binding/types'
+// 🔥 简化：数据绑定功能已简化，使用核心类型系统
 
 // ============ 类型工具函数 ============
 

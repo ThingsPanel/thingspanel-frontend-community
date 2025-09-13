@@ -118,7 +118,17 @@ export class AutoRegistry {
       'simple-display': 'test',
       'dual-data-display': 'test',
       'triple-data-display': 'test',
-      'gauge-dashboard-v2': 'dashboard'  // 🔥 修复：添加仪表盘组件映射
+      'gauge-dashboard-v2': 'dashboard',  // 🔥 修复：添加仪表盘组件映射
+      
+      // 🔥 新增：我们的测试组件直接映射
+      'info-card-simple': 'information',
+      'switch-controller': 'control',
+      'simple-chart': 'data',
+      'counter-stats': 'statistics',
+      'simple-map': 'location',
+      'video-player': 'media',
+      'alert-status': 'alarm',
+      'simple-dashboard': 'dashboard'
     }
 
     // 首先尝试直接映射
@@ -132,6 +142,7 @@ export class AutoRegistry {
 
     // 常见的文件夹映射
     const folderMap: Record<string, string> = {
+      // 现有的映射
       alarm: 'alarm',
       access: 'statistics',
       app: 'statistics',
@@ -145,7 +156,13 @@ export class AutoRegistry {
       device: 'device',
       location: 'location',
       media: 'media',
-      dashboard: 'dashboard'
+      dashboard: 'dashboard',
+      
+      // 🔥 新增：我们的测试组件映射
+      switch: 'control',      // switch-controller
+      counter: 'statistics',  // counter-stats
+      video: 'media',         // video-player
+      alert: 'alarm'          // alert-status
     }
 
     return folderMap[firstPart] || 'test' // 默认归到test分类

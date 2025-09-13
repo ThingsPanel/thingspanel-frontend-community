@@ -53,19 +53,12 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
    * 初始化组件树
    */
   const initialize = async () => {
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     // 🔥 修复：检查全局初始化状态
     if (globalInitialized && componentTree.value.totalCount > 0) {
-      if (process.env.NODE_ENV === 'development') {
-      }
       return
     }
 
     if (isLoading.value) {
-      if (process.env.NODE_ENV === 'development') {
-      }
       return
     }
 
@@ -73,32 +66,16 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
     error.value = null
 
     try {
-      if (process.env.NODE_ENV === 'development') {
-      }
       await initializeCard2System()
 
-      if (process.env.NODE_ENV === 'development') {
-      }
       const tree = getComponentTree()
-      if (process.env.NODE_ENV === 'development') {
-
-        if (process.env.NODE_ENV === 'development') {
-        }
-      }
       componentTree.value = tree
-      if (process.env.NODE_ENV === 'development') {
-      }
 
       // 🔥 修复：强制触发响应性更新
-      if (process.env.NODE_ENV === 'development') {
-      }
       componentTree.value = { ...tree }
 
       // 🔥 修复：标记全局初始化完成
       globalInitialized = true
-
-      if (process.env.NODE_ENV === 'development') {
-      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : '初始化失败'
       console.error('❌ [useComponentTree] 初始化失败:', err)
@@ -248,18 +225,12 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
    * Card2Wrapper 需要此方法来加载实际的 Vue 组件
    */
   const getComponent = async (componentType: string) => {
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     // 🔥 调试：如果没有组件，强制重新初始化
     if (filteredComponents.value.length === 0) {
       if (process.env.NODE_ENV === 'development') {
         console.error(`⚠️ [useComponentTree] 没有可用组件，强制重新初始化...`)
       }
       await initialize()
-
-      if (process.env.NODE_ENV === 'development') {
-      }
     }
 
     // 从已注册的组件中查找
@@ -267,12 +238,7 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
 
     if (!componentDefinition) {
       console.error(`❌ [useComponentTree] 组件类型未找到: ${componentType}`)
-      if (process.env.NODE_ENV === 'development') {
-      }
       return null
-    }
-
-    if (process.env.NODE_ENV === 'development') {
     }
 
     // 返回组件实例

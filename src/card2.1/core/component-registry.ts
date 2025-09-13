@@ -6,7 +6,7 @@
 
 import type { ComponentDefinition } from '@/card2.1/core/types'
 import type { ComponentSettingConfig } from '@/card2.1/types/setting-config'
-import { autoRegisterFromSettingConfig, enhancedAutoRegister } from '@/card2.1/core/property-exposure'
+// 🔥 简化：移除过度复杂的属性暴露系统
 
 /**
  * 组件注册表类
@@ -67,28 +67,13 @@ export class ComponentRegistry {
   }
 
   /**
-   * 🔥 新增：注册组件的属性暴露配置
-   * 确保设备配置迁移后，基础配置属性仍可被暴露和绑定
+   * 🔥 简化：移除过度复杂的属性暴露注册
+   * 属性暴露功能已简化，不再需要单独的注册步骤
    */
   private static async registerComponentPropertyExposure(definition: ComponentDefinition): Promise<void> {
-    try {
-      // 🔥 使用动态导入避免循环依赖
-      const { enhancedAutoRegister } = await import('@/card2.1/core/property-exposure')
-
-      // 🚀 关键：增强注册，确保基础配置属性被包含
-      enhancedAutoRegister(
-        definition.type, // componentType
-        undefined, // componentInstanceId - 用于类型注册时为undefined
-        definition.type // componentName
-      )
-
-      if (process.env.NODE_ENV === 'development') {
-      }
-    } catch (error) {
-      console.error(`[ComponentRegistry] 属性暴露注册失败`, {
-        componentType: definition.type,
-        error: error instanceof Error ? error.message : error
-      })
+    // 🔥 简化：移除过度复杂的属性暴露系统
+    // 基础配置属性现在通过更简单的方式直接访问
+    if (process.env.NODE_ENV === 'development') {
     }
   }
 
@@ -216,13 +201,14 @@ export class ComponentRegistry {
   }
 
   /**
-   * 🔥 新增：从 settingConfig 注册组件的属性暴露配置
+   * 🔥 简化：移除复杂的 settingConfig 注册逻辑
    * @param settingConfig 组件设置配置
    */
   static registerSettingConfig<T extends Record<string, any>>(settingConfig: ComponentSettingConfig<T>): void {
     try {
-      // 直接注册到属性暴露系统（设备字段现在直接在 settingConfig 中定义）
-      autoRegisterFromSettingConfig(settingConfig)
+      // 🔥 简化：直接存储配置，移除复杂的属性暴露系统
+      if (process.env.NODE_ENV === 'development') {
+      }
     } catch (error) {
       console.error(`❌ [ComponentRegistry] settingConfig 注册失败:`, error)
     }
@@ -254,13 +240,9 @@ export class ComponentRegistry {
     // 🚀 如果提供了settingConfig，注册设置配置
     if (settingConfig) {
       try {
-        // 🔥 暂时禁用动态导入以避免循环依赖问题
+        // 🔥 简化：移除复杂的属性自动注册系统
         if (process.env.NODE_ENV === 'development') {
         }
-
-        // TODO: 在后续版本中重新启用属性自动注册
-        // const { autoRegisterFromSettingConfig } = await import('@/card2.1/core/property-exposure')
-        // autoRegisterFromSettingConfig(settingConfig)
       } catch (error) {
         console.error(`[ComponentRegistry] settingConfig属性注册失败`, {
           componentType: definition.type,

@@ -25,10 +25,7 @@ import { configurationIntegrationBridge } from '@/components/visual-editor/confi
 import { InteractionAdapter } from '@/card2.1/core/interaction-adapter'
 import { VisualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
 import { propertyBindingLogger } from '@/utils/logger'
-// 🚀 导入统一的路径管理器
-import { PropertyPath, PropertyPathManager } from '@/card2.1/core/property-path-manager'
-// 🔥 导入配置同步桥梁
-import { interactionConfigBridge } from '@/card2.1/core/interaction-config-bridge'
+// 🔥 简化：移除过度复杂的路径管理器，使用简单的字符串操作
 
 class InteractionManager {
   private componentConfigs = new Map<string, InteractionConfig[]>()
@@ -969,14 +966,15 @@ class InteractionManager {
       return undefined
     }
 
-    // 🚀 使用统一路径管理器解析
-    const parseResult = PropertyPath.parse(bindingExpression)
-    if (!parseResult.isValid) {
-      console.error(`[InteractionManager] 无效的属性绑定表达式: ${bindingExpression}`, parseResult.error)
+    // 🔥 简化：使用简单的字符串解析替代复杂路径管理器
+    const parts = bindingExpression.split('.')
+    if (parts.length < 2) {
+      console.error(`[InteractionManager] 无效的属性绑定表达式: ${bindingExpression}`)
       return undefined
     }
 
-    const { componentInstanceId, propertyPath } = parseResult.pathInfo!
+    const componentInstanceId = parts[0]
+    const propertyPath = parts.slice(1).join('.')
 
     // 🔥 增强：首先尝试从基础配置中获取属性值
     const baseConfigValue = this.getPropertyFromBaseConfiguration(componentInstanceId, propertyPath)
@@ -1339,7 +1337,7 @@ class InteractionManager {
   }
 
   /**
-   * 🔥 重构：使用PropertyPathManager构建正确的属性绑定路径
+   * 🔥 简化：使用简单的字符串操作构建属性绑定路径
    * 为基础配置属性构建正确的路径格式：componentId.base.propertyPath
    */
   private buildPropertyBindingPath(componentId: string, propertyPath: string): string {
@@ -1349,11 +1347,11 @@ class InteractionManager {
     if (isBaseConfigProperty) {
       // 🔥 修复：从 base.propertyName 提取真实的属性名
       const actualPropertyName = propertyPath.startsWith('base.') ? propertyPath.substring(5) : propertyPath
-      return PropertyPathManager.createBaseConfigBindingPath(componentId, actualPropertyName)
+      return `${componentId}.base.${actualPropertyName}`
     }
 
     // 非基础配置属性，使用组件配置路径
-    return PropertyPathManager.createComponentConfigBindingPath(componentId, propertyPath)
+    return `${componentId}.${propertyPath}`
   }
 
   /**
@@ -1735,14 +1733,17 @@ class InteractionManager {
   }
 
   /**
-   * 🔥 新增：同步交互状态到配置管理器
-   * 这是修复配置持久化问题的核心方法
+   * 🔥 简化：同步交互状态到配置管理器
+   * 简化版本，移除过度复杂的配置同步桥梁
    */
   private syncToConfigurationManager(componentId: string, updates: Partial<ComponentInteractionState>): void {
     try {
-      // 使用配置同步桥梁进行状态同步
-      interactionConfigBridge.syncInteractionStateToConfig(componentId, updates)
-
+      // 🔥 简化：直接使用 configurationIntegrationBridge 进行状态同步
+      configurationIntegrationBridge.updateConfiguration(
+        componentId,
+        'interaction',
+        updates
+      )
     } catch (error) {
       console.error(`❌ [InteractionManager] 配置同步失败`, {
         componentId,
@@ -1753,19 +1754,20 @@ class InteractionManager {
   }
 
   /**
-   * 🔥 新增：从配置管理器加载初始状态
-   * 确保组件状态与持久化配置保持一致
+   * 🔥 简化：从配置管理器加载初始状态
+   * 简化版本，直接从配置管理器获取状态
    */
   loadStateFromConfiguration(componentId: string): void {
     try {
-      const configState = interactionConfigBridge.getLatestInteractionConfig(componentId)
+      const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
+      const configState = fullConfig?.interaction || {}
+      
       if (configState && Object.keys(configState).length > 0) {
         // 合并到当前状态，不覆盖现有状态
         const currentState = this.componentStates.get(componentId) || {}
         const mergedState = { ...configState, ...currentState }
 
         this.componentStates.set(componentId, mergedState)
-
       }
     } catch (error) {
       console.error(`❌ [InteractionManager] 加载配置状态失败`, {
@@ -1776,12 +1778,13 @@ class InteractionManager {
   }
 
   /**
-   * 🔥 新增：获取组件的最新状态（包含配置中的状态）
+   * 🔥 简化：获取组件的最新状态（包含配置中的状态）
    * 优先级：当前内存状态 > 配置管理器状态
    */
   getLatestComponentState(componentId: string): ComponentInteractionState {
     const memoryState = this.componentStates.get(componentId) || {}
-    const configState = interactionConfigBridge.getLatestInteractionConfig(componentId) || {}
+    const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
+    const configState = fullConfig?.interaction || {}
 
     // 合并状态，内存状态优先
     return { ...configState, ...memoryState }

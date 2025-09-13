@@ -10,9 +10,9 @@ import type { ComponentDefinition } from '@/card2.1/core/types'
  * 执行器数据格式
  */
 export interface ExecutorData {
-  [key: string]: any
+  [key: string]: unknown
   main?: {
-    [dataSourceKey: string]: any
+    [dataSourceKey: string]: unknown
   }
 }
 
@@ -20,7 +20,7 @@ export interface ExecutorData {
  * 数据源映射结果
  */
 export interface DataSourceMappingResult {
-  [propName: string]: any
+  [propName: string]: unknown
 }
 
 /**
