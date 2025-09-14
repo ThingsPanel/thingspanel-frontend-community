@@ -165,18 +165,20 @@ const getState = () => {
   }
 
   const widgets = toRaw(stateManager.nodes).map(widget => {
-    // 🔥 关键修复：从 configurationManager 获取数据源配置并添加到组件中
-    const savedConfig = configurationManager.getConfiguration(widget.id)
-    const dataSourceConfig = savedConfig?.dataSource || null
+    // 🔥 统一配置架构：优先从组件的统一配置获取数据源配置
+    const unifiedConfig = widget.metadata?.unifiedConfig
+    const dataSourceConfig = unifiedConfig?.dataSource || null
 
-    if (process.env.NODE_ENV === 'development') {
-    }
+    console.log(`🔥 [getState] 组件 ${widget.id} (${widget.type}) 数据源配置:`, {
+      hasUnifiedConfig: !!unifiedConfig,
+      hasDataSource: !!dataSourceConfig,
+      dataSourceConfig,
+      fullUnifiedConfig: unifiedConfig
+    })
 
     // 🔥 额外调试：如果没有数据源配置，打印警告
     if (!dataSourceConfig) {
-      console.error(`⚠️ 组件 ${widget.id} 没有数据源配置！可能需要检查配置保存逻辑`)
-      if (process.env.NODE_ENV === 'development') {
-      }
+      console.warn(`⚠️ 组件 ${widget.id} 没有数据源配置！`)
     }
 
     // 🔥 数据优化：只保存必要的数据，移除冗余的metadata
@@ -193,22 +195,25 @@ const getState = () => {
       renderer: widget.renderer,
       layout: widget.layout,
       dataSource: dataSourceConfig,
-      // 🔥 只保留必要的元数据
+      // 🔥 统一配置架构：保留完整的统一配置信息
       metadata: {
         version: widget.metadata?.version || '2.0.0',
         createdAt: widget.metadata?.createdAt,
         updatedAt: Date.now(),
         isCard2Component: widget.metadata?.isCard2Component,
         card2ComponentId: widget.metadata?.card2ComponentId,
-        // 🔥 关键修复：保留数据源基本定义信息（组件的数据源结构）
+        // 🔥 关键修复：保留统一配置，包含所有配置层级
+        unifiedConfig: widget.metadata?.unifiedConfig || {
+          component: widget.properties || {},
+          dataSource: dataSourceConfig
+        },
+        // 🔥 兼容性：保留数据源基本定义信息
         card2Definition: widget.metadata?.card2Definition ? {
           type: widget.metadata.card2Definition.type,
           name: widget.metadata.card2Definition.name,
           description: widget.metadata.card2Definition.description,
-          dataSources: widget.metadata.card2Definition.dataSources, // 🔥 必须保留！
-          // 移除: defaultConfig、settingConfig、component、configComponent等大字段
+          dataSources: widget.metadata.card2Definition.dataSources
         } : undefined
-        // 移除: 完整的Vue组件定义、defaultConfig、settingConfig等
       }
     }
 
@@ -242,13 +247,23 @@ const setState = (state: any) => {
   if (Array.isArray(widgets)) {
     // 🔥 处理组件数据，恢复数据源配置和必要的metadata
     const processedWidgets = widgets.map(widget => {
-      // 🔥 关键修复：恢复数据源配置到 configurationManager
-      if (widget.dataSource) {
-        if (process.env.NODE_ENV === 'development') {
-        }
+      // 🔥 统一配置架构：恢复统一配置到组件元数据
+      console.log(`🔥 [setState] 组件 ${widget.id} (${widget.type}) 配置恢复:`, {
+        hasMetadataUnifiedConfig: !!widget.metadata?.unifiedConfig,
+        hasDataSource: !!widget.dataSource,
+        dataSource: widget.dataSource,
+        metadataUnifiedConfig: widget.metadata?.unifiedConfig
+      })
+      
+      if (widget.metadata?.unifiedConfig) {
+        console.log(`✅ [setState] 组件 ${widget.id} 使用统一配置`)
+        // 统一配置已包含在metadata中，无需额外处理
+      } else if (widget.dataSource) {
+        console.log(`🔄 [setState] 组件 ${widget.id} 从数据源配置恢复`)
+        // 🔥 兼容性：回退到传统配置恢复方式
         configurationManager.updateConfiguration(widget.id, 'dataSource', widget.dataSource)
       } else {
-        console.error(`⚠️ 组件 ${widget.id} 没有数据源配置`)
+        console.warn(`⚠️ 组件 ${widget.id} 没有数据源配置`)
       }
 
       // 🔥 关键修复：从Card2.1组件注册系统恢复完整的组件定义
@@ -276,7 +291,12 @@ const setState = (state: any) => {
           ...widget.metadata,
           isCard2Component: true,
           card2ComponentId: widget.type,
-          card2Definition: fullCard2Definition
+          card2Definition: fullCard2Definition,
+          // 🔥 统一配置架构：确保统一配置存在
+          unifiedConfig: widget.metadata?.unifiedConfig || {
+            component: widget.properties || {},
+            dataSource: widget.dataSource || null
+          }
         }
       }
 

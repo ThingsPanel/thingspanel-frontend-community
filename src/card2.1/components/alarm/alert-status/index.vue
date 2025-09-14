@@ -4,28 +4,54 @@
       <!-- 标题显示 -->
       <div class="field-group">
         <label class="field-label">标题:</label>
-        <div class="field-value">{{ config.title }}</div>
+        <div class="field-value">{{ String(displayData.title || config.title || '未设置') }}</div>
         <n-button size="tiny" @click="changeTitle">修改标题</n-button>
       </div>
       
       <!-- 金额显示 -->
       <div class="field-group">
         <label class="field-label">金额:</label>
-        <div class="field-value">{{ config.amount }}</div>
+        <div class="field-value">{{ String(displayData.amount || config.amount || 0) }}</div>
         <n-button size="tiny" @click="changeAmount">修改金额</n-button>
       </div>
       
       <!-- 简介显示 -->
       <div class="field-group">
         <label class="field-label">简介:</label>
-        <div class="field-value">{{ config.description }}</div>
+        <div class="field-value">{{ String(displayData.description || config.description || '无描述') }}</div>
         <n-button size="tiny" @click="changeDescription">修改简介</n-button>
       </div>
       
+      <!-- 数据源调试信息 -->
+      <div class="debug-info">
+        <n-divider>🔍 调试信息</n-divider>
+        <div class="debug-section">
+          <span class="debug-label">配置值:</span>
+          <pre class="debug-value">{{ JSON.stringify({
+            title: config.title,
+            amount: config.amount,
+            description: config.description
+          }, null, 2) }}</pre>
+        </div>
+        <div class="debug-section">
+          <span class="debug-label">数据源值:</span>
+          <pre class="debug-value">{{ JSON.stringify(props.data, null, 2) }}</pre>
+        </div>
+        <div class="debug-section">
+          <span class="debug-label">最终显示值:</span>
+          <pre class="debug-value">{{ JSON.stringify({
+            title: displayData.title,
+            amount: displayData.amount,
+            description: displayData.description
+          }, null, 2) }}</pre>
+        </div>
+      </div>
+
       <!-- 测试按钮 -->
       <div class="actions">
         <n-button type="primary" size="small" @click="randomUpdate">随机更新所有值</n-button>
         <n-button size="small" @click="resetToDefault">重置为默认值</n-button>
+        <n-button type="warning" size="small" @click="testDataSource">测试数据源</n-button>
       </div>
     </div>
   </n-card>
@@ -33,22 +59,25 @@
 
 <script setup lang="ts">
 /**
- * 告警状态组件 - 简化版，用于测试双向数据绑定
+ * 告警状态组件 - 统一配置管理版本
+ * 🔥 采用新的统一配置架构：所有配置归集到卡片级别
  */
 
 import { NCard, NButton, useMessage } from 'naive-ui'
-import { useCard2Props } from '@/card2.1/hooks'
+import { useCard2Props, type UnifiedCard2Configuration } from '@/card2.1/hooks'
 import type { AlertStatusCustomize } from './settingConfig'
 
-// 组件属性接口
+// 组件属性接口 - 支持统一配置架构
 interface Props { 
   config: AlertStatusCustomize  // 接收扁平的配置对象
-  data?: Record<string, unknown> 
+  data?: Record<string, unknown>
+  componentId?: string  // 🔥 新增：组件ID用于配置管理
 }
 
 // 组件事件 - 用于通知配置变更
 interface Emits {
   (e: 'update:config', config: AlertStatusCustomize): void
+  (e: 'update:unified-config', config: UnifiedCard2Configuration): void  // 🔥 新增：统一配置变更事件
 }
 
 const props = withDefaults(defineProps<Props>(), { 
@@ -57,17 +86,28 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
-// 使用 Card 2.1 数据绑定
-const { config, displayData } = useCard2Props(props)
+// 🔥 使用增强的 Card 2.1 数据绑定，支持统一配置管理
+const { config, displayData, unifiedConfig, updateUnifiedConfig, getFullConfiguration } = useCard2Props({
+  config: props.config,
+  data: props.data,
+  componentId: props.componentId
+})
+
 const message = useMessage()
 
-// 本地更新配置函数
+// 🔥 本地更新配置函数 - 直接更新编辑器状态
 const updateConfig = (partialCustomize: Partial<AlertStatusCustomize>) => {
   const newConfig: AlertStatusCustomize = {
-    ...props.config,
+    ...config.value,
     ...partialCustomize
   }
+  
+  // 🔥 直接更新统一配置中的组件配置部分
+  updateUnifiedConfig({ component: newConfig })
+  
+  // 🔥 发出更新事件，让父组件知道配置已变更
   emit('update:config', newConfig)
+  emit('update:unified-config', getFullConfiguration())
 }
 
 // 修改标题
@@ -116,6 +156,26 @@ const resetToDefault = () => {
   updateConfig(defaultConfig)
   message.info('已重置为默认值')
 }
+
+// 测试数据源
+const testDataSource = () => {
+  console.log('🔍 数据源测试信息:')
+  console.log('1. 组件ID:', props.componentId)
+  console.log('2. 原始数据源数据:', props.data)
+  console.log('3. 当前配置:', config.value)
+  console.log('4. 计算后的显示数据:', displayData.value)
+  console.log('5. 统一配置:', unifiedConfig.value)
+  
+  message.info('数据源测试信息已输出到控制台，请按F12查看')
+}
+
+// 🔥 导出统一配置管理功能，供外部访问
+const expose = {
+  getFullConfiguration,
+  updateUnifiedConfig
+}
+
+defineExpose(expose)
 </script>
 
 <style scoped>
@@ -163,17 +223,53 @@ const resetToDefault = () => {
   word-break: break-all;
 }
 
+/* 调试信息区域 */
+.debug-info {
+  margin: 16px 0;
+  padding: 12px;
+  background: var(--code-color);
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.debug-section {
+  margin-bottom: 8px;
+}
+
+.debug-label {
+  display: block;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 4px;
+}
+
+.debug-value {
+  background: var(--input-color);
+  padding: 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border-color);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  max-height: 100px;
+  overflow-y: auto;
+  color: var(--text-color-1);
+  white-space: pre-wrap;
+}
+
 /* 操作按钮区域 */
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   margin-top: auto;
   padding-top: 8px;
   border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
 }
 
 .actions .n-button {
   flex: 1;
+  min-width: 80px;
 }
 
 /* 响应式设计 */

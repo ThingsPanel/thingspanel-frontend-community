@@ -81,7 +81,7 @@
               <component
                 :is="layer.component"
                 ref="dataSourceConfigRef"
-                v-model="dataSourceConfig"
+                :model-value="dataSourceConfig"
                 :data-sources="componentDataSources"
                 :selected-widget-id="selectedWidget?.id"
                 :component-id="selectedWidget?.id"
@@ -89,6 +89,12 @@
                 :preview-mode="props.previewMode"
                 :global-polling-enabled="props.globalPollingEnabled"
                 @request-current-data="handleCurrentDataRequest"
+                @update:model-value="(newValue) => {
+                  console.log('🔥 [ConfigurationPanel] 数据源配置组件发出更新:', newValue)
+                  if (props.selectedWidget) {
+                    dataSourceConfig = newValue
+                  }
+                }"
               />
             </div>
           </template>
@@ -146,7 +152,7 @@
  * 简化的配置面板，直接传递definition和配置数据，专注于协调数据流
  */
 
-import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick, inject } from 'vue'
 import {
   NTabs,
   NTabPane,
@@ -187,6 +193,8 @@ import type { VisualEditorWidget } from '@/components/visual-editor/types'
 
 // 🔥 导入交互管理器用于读取最新状态
 import { interactionManager } from '@/card2.1/core/interaction-manager'
+// 🔥 注入编辑器上下文，用于配置同步
+const editorContext = inject('editorContext', null) as any
 
 // 🔄 重构：移除直接导入执行器管理器，改为事件通信
 
@@ -254,67 +262,164 @@ const dataSourceConfigRef = ref<any>(null)
 
 // 配置数据
 const baseConfig = ref({})
-const componentConfig = ref<ComponentConfiguration>({
-  properties: {},
-  styles: {},
-  behavior: {},
-  validation: { required: [], rules: {} }
-})
-
-// 🔄 重构：dataSourceConfig为computed属性，与ConfigurationManager直接同步
-const dataSourceConfig = computed<DataSourceConfiguration | null>({
+// 🔥 统一配置架构：组件配置改为computed属性，直接与统一配置同步
+const componentConfig = computed<ComponentConfiguration>({
   get: () => {
-    if (!props.selectedWidget) return null
+    if (!props.selectedWidget) return { properties: {}, styles: {}, behavior: {}, validation: { required: [], rules: {} } }
+    
+    // 🔥 从统一配置中获取组件配置
+    const unifiedConfig = props.selectedWidget.metadata?.unifiedConfig
+    if (unifiedConfig?.component) {
+      return {
+        properties: { ...unifiedConfig.component },
+        styles: {},
+        behavior: {},
+        validation: { required: [], rules: {} }
+      }
+    }
+    
+    // 回退到传统配置获取方式
     const config = configurationManager.getConfiguration(props.selectedWidget.id)
-    return config?.dataSource || null
+    return {
+      properties: config?.component?.properties || {},
+      styles: {},
+      behavior: {},
+      validation: { required: [], rules: {} }
+    }
   },
   set: value => {
-    // 🚨 防止循环更新：如果正在从ConfigurationManager更新，不再同步回去
-    if (isUpdatingFromManager) {
-      return
+    if (!props.selectedWidget) return
+    
+    // 🔥 更新统一配置中的组件配置部分
+    const unifiedConfig = props.selectedWidget.metadata?.unifiedConfig || {}
+    const updatedUnifiedConfig = {
+      ...unifiedConfig,
+      component: { ...value.properties }
     }
-
-    if (props.selectedWidget && value) {
-      // 🚨 设置标志防止监听器重复触发
-      isUpdatingFromManager = true
-
-      try {
-        // 确保类型和元数据正确
-        const enhancedValue = {
-          // 保持原有类型，不硬编码为 'data-source-bindings'
-          type: value.type || 'data-source-bindings',
-          enabled: true,
-          ...value,
-          metadata: {
-            componentType: props.selectedWidget.type,
-            updatedAt: Date.now(),
-            source: 'data-source-config-form',
-            ...value.metadata
-          }
+    
+    // 同步到编辑器上下文
+    if (editorContext?.updateNode) {
+      editorContext.updateNode(props.selectedWidget.id, {
+        properties: value.properties,
+        metadata: {
+          ...props.selectedWidget.metadata,
+          unifiedConfig: updatedUnifiedConfig,
+          updatedAt: Date.now()
         }
-        configurationManager.updateConfiguration(props.selectedWidget.id, 'dataSource', enhancedValue)
-
-        // 🔄 重构：发出数据源配置更新事件，由外部系统负责数据执行
-        const eventData = {
-          componentId: props.selectedWidget.id,
-          componentType: props.selectedWidget.type,
-          config: enhancedValue,
-          action: 'config-updated'
-        }
-        emit('data-source-manager-update', eventData)
-      } finally {
-        // 🔥 修复：延迟重置标志，避免异步问题导致的递归更新
-        nextTick(() => {
-          setTimeout(() => {
-            isUpdatingFromManager = false
-          }, 50) // 50ms延迟确保所有响应式更新完成
-        })
-      }
+      })
     }
   }
 })
 
-const interactionConfig = ref<InteractionConfiguration>({})
+// 🔥 统一配置架构：数据源配置改为与统一配置同步
+const dataSourceConfig = computed<DataSourceConfiguration | null>({
+  get: () => {
+    if (!props.selectedWidget) return null
+    
+    // 🔥 从统一配置中获取数据源配置
+    const unifiedConfig = props.selectedWidget.metadata?.unifiedConfig
+    if (unifiedConfig?.dataSource) {
+      return unifiedConfig.dataSource
+    }
+    
+    // 回退到传统配置获取方式
+    const config = configurationManager.getConfiguration(props.selectedWidget.id)
+    return config?.dataSource || null
+  },
+  set: value => {
+    if (!props.selectedWidget || !value) return
+    
+    // 🔥 更新统一配置中的数据源配置部分
+    const unifiedConfig = props.selectedWidget.metadata?.unifiedConfig || {}
+    const updatedUnifiedConfig = {
+      ...unifiedConfig,
+      dataSource: {
+        // 保持原有类型，不硬编码为 'data-source-bindings'
+        type: value.type || 'data-source-bindings',
+        enabled: true,
+        ...value,
+        metadata: {
+          componentType: props.selectedWidget.type,
+          updatedAt: Date.now(),
+          source: 'data-source-config-form',
+          ...value.metadata
+        }
+      }
+    }
+    
+    // 同步到编辑器上下文
+    if (editorContext?.updateNode) {
+      console.log('🔥 [ConfigurationPanel] 数据源配置更新，调用 updateNode:', {
+        componentId: props.selectedWidget.id,
+        dataSourceConfig: value,
+        updatedUnifiedConfig
+      })
+      
+      editorContext.updateNode(props.selectedWidget.id, {
+        metadata: {
+          ...props.selectedWidget.metadata,
+          unifiedConfig: updatedUnifiedConfig,
+          updatedAt: Date.now()
+        }
+      })
+      
+      // 🔥 验证更新是否生效
+      setTimeout(() => {
+        const updatedNode = editorContext.getNodeById?.(props.selectedWidget.id)
+        console.log('🔍 [ConfigurationPanel] 更新后的节点:', updatedNode?.metadata?.unifiedConfig)
+      }, 100)
+    } else {
+      console.error('❌ [ConfigurationPanel] editorContext.updateNode 不可用!')
+    }
+    
+    // 🔄 重构：发出数据源配置更新事件，由外部系统负责数据执行
+    const eventData = {
+      componentId: props.selectedWidget.id,
+      componentType: props.selectedWidget.type,
+      config: value,
+      action: 'config-updated'
+    }
+    emit('data-source-manager-update', eventData)
+  }
+})
+
+// 🔥 统一配置架构：交互配置改为computed属性，与统一配置同步
+const interactionConfig = computed<InteractionConfiguration>({
+  get: () => {
+    if (!props.selectedWidget) return {}
+    
+    // 🔥 从统一配置中获取交互配置
+    const unifiedConfig = props.selectedWidget.metadata?.unifiedConfig
+    if (unifiedConfig?.interaction) {
+      return unifiedConfig.interaction
+    }
+    
+    // 回退到传统配置获取方式
+    const config = configurationManager.getConfiguration(props.selectedWidget.id)
+    return config?.interaction || {}
+  },
+  set: value => {
+    if (!props.selectedWidget) return
+    
+    // 🔥 更新统一配置中的交互配置部分
+    const unifiedConfig = props.selectedWidget.metadata?.unifiedConfig || {}
+    const updatedUnifiedConfig = {
+      ...unifiedConfig,
+      interaction: { ...value }
+    }
+    
+    // 同步到编辑器上下文
+    if (editorContext?.updateNode) {
+      editorContext.updateNode(props.selectedWidget.id, {
+        metadata: {
+          ...props.selectedWidget.metadata,
+          unifiedConfig: updatedUnifiedConfig,
+          updatedAt: Date.now()
+        }
+      })
+    }
+  }
+})
 
 // 配置状态
 const configurationStatus = ref<ValidationResult | null>(null)

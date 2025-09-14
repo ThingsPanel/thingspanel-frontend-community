@@ -43,6 +43,7 @@ import { interactionManager } from '@/card2.1/core/interaction-manager'
 import { NAlert } from 'naive-ui'
 import { $t } from '@/locales'
 import { useComponentTree as useCard2Integration } from '@/card2.1/hooks/useComponentTree'
+import { useCard2Props } from '@/card2.1/hooks/useCard2Props'
 import type { DataSourceValue } from '@/components/visual-editor/types/data-source'
 // 🔥 新增：导入新架构的数据桥接器和配置管理器
 import { getVisualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
@@ -103,9 +104,19 @@ const currentComponentRef = ref<any>(null)
 // 🔥 容器引用
 const containerRef = ref<HTMLElement | null>(null)
 
-// 🔥 简化：使用简单的配置管理系统
-const configSources = ref<Record<string, any>>({})
-const lastConfigMergeTime = ref(0)
+// 🔥 关键修复：从编辑器获取完整的统一配置，包括数据源配置
+const editorNode = computed(() => {
+  return editorContext?.getNodeById?.(props.nodeId)
+})
+
+// 🔥 统一配置架构：使用完整的编辑器统一配置
+const { unifiedConfig, updateUnifiedConfig, getFullConfiguration } = useCard2Props({
+  config: props.config || {},
+  data: props.data,
+  componentId: props.nodeId,
+  // 🔥 关键：传递编辑器的统一配置到 useCard2Props
+  editorUnifiedConfig: editorNode.value?.metadata?.unifiedConfig
+})
 
 /**
  * 🔥 统一的交互事件处理 - 在Wrapper层拦截和处理所有交互
@@ -398,32 +409,22 @@ const defaultConfig = {
  * 智能合并多个配置源，处理优先级冲突
  */
 /**
- * 🔥 修复：智能处理Card2.1配置格式
- * 优先使用已有的结构化config，回退到从扁平化config构建
+ * 🔥 统一配置架构：直接使用统一配置中的组件配置
  */
 const extractCustomConfig = computed(() => {
-  const rawConfig = extractComponentConfig.value
-
-  if (process.env.NODE_ENV === 'development') {
-  }
-
-  // 🚀 关键修复：如果rawConfig已经是结构化的Card2.1格式，直接使用
-  if (rawConfig && typeof rawConfig === 'object' && rawConfig.customize) {
-    if (process.env.NODE_ENV === 'development') {
-    }
-    return rawConfig
-  }
-
-  // 回退：从扁平化config构建结构化config
+  // 直接从统一配置中获取组件配置
+  const componentConfig = unifiedConfig.value.component || {}
+  
+  // 构建标准的Card2.1配置格式
   const customConfig = {
     type: props.componentType,
     root: {
       transform: {
-        rotate: rawConfig?.rotate || 0,
-        scale: rawConfig?.scale || 1
+        rotate: componentConfig.rotate || 0,
+        scale: componentConfig.scale || 1
       }
     },
-    customize: { ...rawConfig }
+    customize: { ...componentConfig }
   }
 
   // 从customize中移除root层级的属性
@@ -432,121 +433,17 @@ const extractCustomConfig = computed(() => {
     delete customConfig.customize.scale
   }
 
-  if (process.env.NODE_ENV === 'development') {
-  }
-
   return customConfig
 })
 
 const extractComponentConfig = computed(() => {
-  // 🔥 简化：准备各种配置源
-  const configSources: Record<string, any> = {}
-
-  // 🔥 关键修复：优先从metadata中获取Card2.1组件的真实配置
-  let componentDefaultConfig = { ...defaultConfig }
-  if (props.metadata?.card2Definition?.config) {
-    if (process.env.NODE_ENV === 'development') {
-    }
-    componentDefaultConfig = props.metadata.card2Definition.config
-  }
-
-  // 1. 默认配置（现在是真实的组件配置）
-  configSources.default = { ...componentDefaultConfig }
-
-  // 2. 用户配置（来自Visual Editor）
-  if (props.config && typeof props.config === 'object') {
-    let userConfig = null
-
-    // 处理不同的配置结构
-    const configKeys = Object.keys(props.config)
-    const validConfigKeys = configKeys.filter(
-      key =>
-        !['type', 'version', 'metadata', 'id'].includes(key) &&
-        props.config[key] !== undefined &&
-        props.config[key] !== null
-    )
-
-    if (validConfigKeys.length > 0) {
-      userConfig = props.config
-    }
-    // 检查properties中的配置
-    else if (props.config.properties) {
-      userConfig = props.config.properties
-    }
-
-    if (userConfig) {
-      // 处理customize结构的扁平化
-      if (userConfig.customize && typeof userConfig.customize === 'object') {
-        userConfig = {
-          ...userConfig,
-          ...userConfig.customize // 扁平化customize属性
-        }
-      }
-      configSources.user = userConfig
-    }
-  }
-
-  // 3. 数据源绑定配置
-  if (props.dataSourcesConfig?.dataSourceBindings) {
-    configSources.dataSource = {
-      dataSourceBindings: props.dataSourcesConfig.dataSourceBindings
-    }
-  }
-
-  // 4. 交互覆盖配置 - 添加响应式依赖
-  const interactionState = interactionManager.getComponentState(props.nodeId || '')
-
-  // 🔥 强制响应式依赖：确保在交互状态变化时重新计算
-  const _ = forceUpdateKey.value // 添加响应式依赖
-
-  // 🔥 详细调试交互状态获取
-  if (process.env.NODE_ENV === 'development') {
-  }
-
-  if (interactionState && Object.keys(interactionState).length > 0) {
-    // 🔥 彻底修复：直接将所有交互属性扁平化处理，统一与用户配置的处理方式
-    const processedInteractionState: any = {}
-
-    for (const [key, value] of Object.entries(interactionState)) {
-      if (key.startsWith('customize.')) {
-        // customize.xxx -> xxx (直接扁平化，不创建嵌套结构)
-        const propertyName = key.substring('customize.'.length)
-        processedInteractionState[propertyName] = value
-      } else {
-        // 根级别属性直接赋值
-        processedInteractionState[key] = value
-      }
-    }
-
-    configSources.interaction = processedInteractionState
-
-    if (process.env.NODE_ENV === 'development') {
-    }
-  }
-
-  // 5. 运行时配置（来自其他动态来源）
-  // 预留接口，目前暂无
-
-  // 🔥 简化：使用简单的对象合并替代复杂的配置合并管理器
-  // 合并顺序：default -> user -> dataSource -> runtime -> interaction（交互配置最高优先级）
-  let merged = { ...configSources.default }
+  // 🔥 统一配置架构：直接从统一配置中获取组件配置
+  // 不再需要复杂的配置合并逻辑，所有配置已经在 useCard2Props 中统一管理
   
-  if (configSources.user) {
-    merged = { ...merged, ...configSources.user }
-  }
-  if (configSources.dataSource) {
-    merged = { ...merged, ...configSources.dataSource }
-  }
-  if (configSources.runtime) {
-    merged = { ...merged, ...configSources.runtime }
-  }
-  if (configSources.interaction) {
-    merged = { ...merged, ...configSources.interaction }
-  }
-
-  lastConfigMergeTime.value = Date.now()
-
-  return merged
+  const componentConfig = unifiedConfig.value.component || {}
+  
+  // 确保返回完整的配置对象
+  return { ...componentConfig }
 })
 
 const loadComponent = async () => {
@@ -594,63 +491,9 @@ watch(() => props.componentType, loadComponent, { immediate: true })
 watch(
   () => props.config,
   (newConfig, oldConfig) => {
-    // 🔥 关键修复：配置更新时，清理对应的交互覆盖
-    if (newConfig && oldConfig) {
-      // 检测哪些属性发生了变化
-      const changedProperties: string[] = []
-
-      // 检查customize中的变化
-      if (newConfig.customize && oldConfig.customize) {
-        for (const key in newConfig.customize) {
-          if (newConfig.customize[key] !== oldConfig.customize[key]) {
-            changedProperties.push(key)
-          }
-        }
-      }
-
-      // 检查根级别属性的变化
-      for (const key in newConfig) {
-        if (key !== 'customize' && newConfig[key] !== oldConfig[key]) {
-          changedProperties.push(key)
-        }
-      }
-
-      // 🚀 智能清理对应的交互覆盖（使用新配置合并系统）
-      if (changedProperties.length > 0) {
-        // 清理交互配置源中的对应属性
-        if (configSources.value.interaction) {
-          let needUpdate = false
-          const currentInteractionConfig = { ...configSources.value.interaction }
-
-          for (const prop of changedProperties) {
-            // 清理根级别和嵌套结构中的属性
-            if (currentInteractionConfig[prop] !== undefined) {
-              delete currentInteractionConfig[prop]
-              needUpdate = true
-            }
-            if (currentInteractionConfig.customize?.[prop] !== undefined) {
-              delete currentInteractionConfig.customize[prop]
-              needUpdate = true
-            }
-
-            // 清理源映射
-            Object.keys(configSourceMap.value).forEach(key => {
-              if (key === prop || key.includes(`${prop}.`)) {
-                delete configSourceMap.value[key]
-              }
-            })
-          }
-
-          if (needUpdate) {
-            configSources.value.interaction = currentInteractionConfig
-            visualEditorLogger.info('[Card2Wrapper] 配置更新，智能清理交互覆盖', {
-              componentId: props.nodeId,
-              changedProperties,
-              updatedInteractionConfig: currentInteractionConfig
-            })
-          }
-        }
-      }
+    // 🔥 统一配置架构：外部配置变化时更新统一配置
+    if (newConfig && typeof newConfig === 'object') {
+      updateUnifiedConfig({ component: { ...newConfig } })
     }
 
     // 🔥 触发属性变化事件给组件
@@ -1045,20 +888,20 @@ const handleComponentConfigUpdate = (newConfig: any) => {
   }
 
   try {
+    // 🔥 统一配置架构：更新统一配置中的组件配置部分
+    updateUnifiedConfig({ component: newConfig })
+
     // 🔥 关键修复：直接同步到 editorContext，让响应式系统处理更新
     if (editorContext?.updateNode) {
       editorContext.updateNode(props.nodeId, {
-        properties: newConfig
+        properties: newConfig,
+        metadata: {
+          ...editorContext.getNodeById(props.nodeId)?.metadata,
+          unifiedConfig: getFullConfiguration(),
+          updatedAt: Date.now()
+        }
       })
     }
-
-    // 🔥 简化：只更新ConfigurationManager，不干扰其他更新流程
-    configurationIntegrationBridge.updateConfiguration(
-      props.nodeId,
-      'component',
-      { properties: newConfig },
-      props.componentType
-    )
 
     if (process.env.NODE_ENV === 'development') {
       console.log('🔥 [Card2Wrapper] 配置更新完成', {
