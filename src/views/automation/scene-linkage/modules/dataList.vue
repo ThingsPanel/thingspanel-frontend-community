@@ -6,6 +6,7 @@ import { PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/io
 import { DocumentOnePage24Regular } from '@vicons/fluent'
 import moment from 'moment'
 import { useRouterPush } from '@/hooks/common/router'
+import ItemCard from '@/components/dev-card-item/index.vue'
 import {
   sceneAutomationsDel,
   sceneAutomationsGet,
@@ -201,7 +202,68 @@ getData()
     ></n-empty>
     <NGrid v-else x-gap="20px" y-gap="20px" cols="1 s:2 m:3 l:4" responsive="screen">
       <NGridItem v-for="(item, index) in sceneLinkageList" :key="index">
-        <NCard hoverable style="height: 180px">
+        <ItemCard
+          :title="item.name"
+          :subtitle="item.description"
+          :status-active="true"
+          :status-type="'success'"
+          :isStatus="false"
+          :hideFooterLeft="true"
+          hoverable
+        >
+          <!-- 右上角开关 -->
+          <template #top-right-icon>
+            <n-switch
+              v-model:value="item.enabled"
+              checked-value="Y"
+              unchecked-value="N"
+              @update-value="() => linkActivation(item)"
+            />
+          </template>
+
+          <!-- 底部操作按钮 -->
+          <template #footer>
+            <div class="flex items-center gap-2 w-full justify-between">
+              <NTooltip trigger="hover">
+                <template #trigger>
+                  <NButton size="small" quaternary circle @click="linkEdit(item)">
+                    <template #icon>
+                      <n-icon>
+                        <editIcon />
+                      </n-icon>
+                    </template>
+                  </NButton>
+                </template>
+                {{ $t('common.edit') }}
+              </NTooltip>
+              <NTooltip trigger="hover">
+                <template #trigger>
+                  <NButton size="small" quaternary circle @click="openLog(item)">
+                    <template #icon>
+                      <n-icon>
+                        <DocumentOnePage24Regular />
+                      </n-icon>
+                    </template>
+                  </NButton>
+                </template>
+                {{ $t('page.irrigation.time.log.name') }}
+              </NTooltip>
+              <NTooltip trigger="hover">
+                <template #trigger>
+                  <NButton size="small" quaternary circle @click="deleteLink(item)">
+                    <template #icon>
+                      <n-icon>
+                        <trashIcon />
+                      </n-icon>
+                    </template>
+                  </NButton>
+                </template>
+                {{ $t('common.delete') }}
+              </NTooltip>
+            </div>
+          </template>
+        </ItemCard>
+        <!-- <NCard hoverable style="height: 180px" content-style="padding: 0px;margin: 0px;">
           <NFlex justify="space-between" align="center" class="mb-4" :wrap="false">
             <div class="mr-2 flex-1 overflow-hidden text-16px font-600">
               <n-ellipsis>
@@ -256,7 +318,7 @@ getData()
               {{ $t('common.delete') }}
             </NTooltip>
           </NFlex>
-        </NCard>
+        </NCard> -->
       </NGridItem>
     </NGrid>
     <NFlex justify="flex-end" class="mt-4">

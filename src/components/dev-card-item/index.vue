@@ -24,6 +24,7 @@ interface Props {
   deviceId?: string
   /** 设备配置ID，用于副标题跳转 */
   deviceConfigId?: string
+  hideFooterLeft?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -180,7 +181,7 @@ const handleTopRightIconClick = () => {
       <!-- 卡片底部 - 固定在底部 -->
       <div v-if="footerText || $slots['footer-icon'] || $slots.footer" class="card-footer">
         <!-- 底部左侧：图标 + 自定义内容 -->
-        <div class="footer-left">
+        <div v-if="!props.hideFooterLeft" class="footer-left">
           <div class="footer-icon-container">
             <!-- 如果没有提供footer-icon插槽，显示默认设备图标 -->
             <slot name="footer-icon">
@@ -399,7 +400,9 @@ const handleTopRightIconClick = () => {
 
 .footer-right {
   flex-shrink: 0;
-  margin-left: 16px;
+
+  flex: 1;
+  box-sizing: border-box;
 }
 
 .footer-text {

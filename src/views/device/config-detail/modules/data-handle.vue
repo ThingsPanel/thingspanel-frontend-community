@@ -2,7 +2,8 @@
 import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from 'vue'
 import { type FormInst, NButton, useDialog } from 'naive-ui'
 import { PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5'
-import MonacoEditor from 'monaco-editor-vue3';
+import MonacoEditor from 'monaco-editor-vue3'
+import ItemCard from '@/components/dev-card-item/index.vue'
 import {
   dataScriptAdd,
   dataScriptDel,
@@ -13,8 +14,8 @@ import {
 } from '@/service/api/device'
 import { $t } from '@/locales'
 import { useI18n } from 'vue-i18n'
-import { createLogger } from '@/utils/logger'
-const logger = createLogger('DataHandle')
+// import { createLogger } from '@/utils/logger'
+// const logger = createLogger('DataHandle')
 
 // 获取国际化函数
 const { t } = useI18n()
@@ -137,32 +138,32 @@ const editorOptions = ref({
   },
   formatOnPaste: true,
   formatOnType: true
-});
+})
 
 // 编辑器实例引用
-const editorRef = ref(null);
+const editorRef = ref(null)
 
 // 编辑器工具栏功能
 const formatCode = () => {
   if (editorRef.value) {
-    editorRef.value.getAction('editor.action.formatDocument').run();
+    editorRef.value.getAction('editor.action.formatDocument').run()
   }
-};
+}
 
 const toggleMinimap = () => {
-  editorOptions.value.minimap.enabled = !editorOptions.value.minimap.enabled;
-};
+  editorOptions.value.minimap.enabled = !editorOptions.value.minimap.enabled
+}
 
 const toggleWordWrap = () => {
-  editorOptions.value.wordWrap = editorOptions.value.wordWrap === 'on' ? 'off' : 'on';
-};
+  editorOptions.value.wordWrap = editorOptions.value.wordWrap === 'on' ? 'off' : 'on'
+}
 
 const changeFontSize = (delta: number) => {
-  const newSize = editorOptions.value.fontSize + delta;
+  const newSize = editorOptions.value.fontSize + delta
   if (newSize >= 10 && newSize <= 24) {
-    editorOptions.value.fontSize = newSize;
+    editorOptions.value.fontSize = newSize
   }
-};
+}
 
 const configFormRules = ref({
   name: {
@@ -244,14 +245,15 @@ const queryDataScriptList = async () => {
   dataScriptList.value = res.data.list
   dataScriptTotal.value = res.data.total
 }
-const findScriptType = (scriptType: any) => {
-  if (scriptType) {
-    return scripTypeOpt.value.find((data: any) => {
-      return scriptType === data.value
-    })?.label
-  }
-  return ''
-}
+// const findScriptType = (scriptType: any) => {
+
+//   if (scriptType) {
+//     return scripTypeOpt.value.find((data: any) => {
+//       return scriptType === data.value
+//     })?.label
+//   }
+//   return ''
+// }
 const searchDataScript = () => {
   queryData.value.page = 1
   queryDataScriptList()
@@ -302,15 +304,11 @@ const doQuiz = async () => {
 
   try {
     const response = await dataScriptQuiz(configForm.value)
-
     // 添加详细调试信息
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     // 检查是否是错误响应结构 {data: null, error: {...}}
     if (response.error && response.data === null) {
-      if (process.env.NODE_ENV === 'development') {
-      }
+      // if (process.env.NODE_ENV === 'development') {
+      // }
       // 处理网络错误或后端错误
       const errorInfo = response.error
       const errorMessage = errorInfo.message || t('page.dataForward.requestFailed')
@@ -320,17 +318,14 @@ const doQuiz = async () => {
 
     // 检查响应结构，可能是嵌套的
     let actualResponse = response
-
     // 如果response.data存在且包含code属性，说明真正的响应在response.data中
     if (response.data && typeof response.data === 'object' && 'code' in response.data) {
       actualResponse = response.data
-      if (process.env.NODE_ENV === 'development') {
-      }
+      // if (process.env.NODE_ENV === 'development') {
+      // }
     }
-
-    if (process.env.NODE_ENV === 'development') {
-    }
-
+    // if (process.env.NODE_ENV === 'development') {
+    // }
     // 根据返回的code值决定显示内容
     // 使用宽松比较，因为code可能是字符串"200"
     if (actualResponse.code == 200 || actualResponse.code === '200') {
@@ -360,7 +355,6 @@ const doQuiz = async () => {
   }
 }
 
-
 watch(queryData.value, () => queryDataScriptList(), { deep: true })
 
 onMounted(() => {
@@ -378,7 +372,49 @@ onMounted(() => {
   <n-empty v-if="dataScriptList.length === 0" size="huge" :description="$t('common.nodata')"></n-empty>
   <NGrid v-else x-gap="20" y-gap="20" cols="1 s:2 m:3 l:4" responsive="screen">
     <NGridItem v-for="item in dataScriptList" :key="item.id">
-      <NCard hoverable style="height: 180px">
+      <ItemCard
+        :title="item.name"
+        :subtitle="item.description"
+        :status-active="true"
+        :status-type="'success'"
+        :isStatus="false"
+        :hideFooterLeft="true"
+        hoverable
+      >
+        <!-- <template >
+          <div class="item-desc">{{ findScriptType(item.script_type) }}</div>
+        </template> -->
+        <!-- 右上角开关 -->
+        <template #top-right-icon>
+          <NSwitch
+            v-model:value="item.enable_flag"
+            checked-value="Y"
+            unchecked-value="N"
+            @update-value="handleChange(item)"
+          />
+        </template>
+
+        <!-- 底部操作按钮 -->
+        <template #footer>
+          <div class="flex items-center gap-2 w-full justify-between">
+            <NButton size="small" quaternary circle @click="openModal($t('common.edit'), item)">
+              <template #icon>
+                <n-icon>
+                  <editIcon />
+                </n-icon>
+              </template>
+            </NButton>
+            <NButton size="small" quaternary circle @click="deleteData(item)">
+              <template #icon>
+                <n-icon>
+                  <trashIcon />
+                </n-icon>
+              </template>
+            </NButton>
+          </div>
+        </template>
+      </ItemCard>
+      <!-- <NCard hoverable style="height: 180px">
         <div class="item-name item-center flex">
           <div class="flex-1">
             {{ item.name }}
@@ -410,7 +446,7 @@ onMounted(() => {
             </template>
           </NButton>
         </NFlex>
-      </NCard>
+      </NCard> -->
     </NGridItem>
   </NGrid>
 
@@ -457,19 +493,40 @@ onMounted(() => {
             <div class="toolbar-left">
               <NButton size="small" tertiary @click="formatCode">
                 <template #icon>
-                  <n-icon><svg viewBox="0 0 24 24"><path fill="currentColor" d="M9.5 15.5L4.5 10.5L9.5 5.5L8.09 4.09L1.5 10.68L8.09 17.27L9.5 15.5ZM14.5 8.5L19.5 13.5L14.5 18.5L15.91 19.91L22.5 13.32L15.91 6.73L14.5 8.5Z"/></svg></n-icon>
+                  <n-icon>
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M9.5 15.5L4.5 10.5L9.5 5.5L8.09 4.09L1.5 10.68L8.09 17.27L9.5 15.5ZM14.5 8.5L19.5 13.5L14.5 18.5L15.91 19.91L22.5 13.32L15.91 6.73L14.5 8.5Z"
+                      />
+                    </svg>
+                  </n-icon>
                 </template>
                 格式化
               </NButton>
               <NButton size="small" tertiary @click="toggleWordWrap">
                 <template #icon>
-                  <n-icon><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 19h6v-2H4v2zM20 5H4v2h16V5zm-3 6H4v2h13.25c1.1 0 2 .9 2 2s-.9 2-2 2H15v-2l-3 3l3 3v-2h2.25c2.3 0 4.25-2.05 4.25-4.5S19.55 11 17.25 11z"/></svg></n-icon>
+                  <n-icon>
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M4 19h6v-2H4v2zM20 5H4v2h16V5zm-3 6H4v2h13.25c1.1 0 2 .9 2 2s-.9 2-2 2H15v-2l-3 3l3 3v-2h2.25c2.3 0 4.25-2.05 4.25-4.5S19.55 11 17.25 11z"
+                      />
+                    </svg>
+                  </n-icon>
                 </template>
                 自动换行
               </NButton>
               <NButton size="small" tertiary @click="toggleMinimap">
                 <template #icon>
-                  <n-icon><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 3h18v18H3V3zm16 16V5H5v14h14zM7 7h2v2H7V7zm0 4h2v2H7v-2zm0 4h2v2H7v-2zm4-8h6v2h-6V7zm0 4h6v2h-6v-2zm0 4h6v2h-6v-2z"/></svg></n-icon>
+                  <n-icon>
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M3 3h18v18H3V3zm16 16V5H5v14h14zM7 7h2v2H7V7zm0 4h2v2H7v-2zm0 4h2v2H7v-2zm4-8h6v2h-6V7zm0 4h6v2h-6v-2zm0 4h6v2h-6v-2z"
+                      />
+                    </svg>
+                  </n-icon>
                 </template>
                 小地图
               </NButton>
@@ -477,13 +534,17 @@ onMounted(() => {
             <div class="toolbar-right">
               <NButton size="small" tertiary @click="changeFontSize(-1)">
                 <template #icon>
-                  <n-icon><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 13H5v-2h14v2z"/></svg></n-icon>
+                  <n-icon>
+                    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 13H5v-2h14v2z" /></svg>
+                  </n-icon>
                 </template>
               </NButton>
               <span class="font-size-display">{{ editorOptions.fontSize }}px</span>
               <NButton size="small" tertiary @click="changeFontSize(1)">
                 <template #icon>
-                  <n-icon><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></n-icon>
+                  <n-icon>
+                    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>
+                  </n-icon>
                 </template>
               </NButton>
             </div>
@@ -639,7 +700,7 @@ onMounted(() => {
     gap: 8px;
     padding: 12px;
   }
-  
+
   .toolbar-left,
   .toolbar-right {
     width: 100%;
