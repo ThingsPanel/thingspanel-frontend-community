@@ -81,6 +81,7 @@ const userInfoData = ref({
   organization: '', // 组织
   timezone: '', // 时区
   default_language: '', // 默认语言
+  avatar_url: '', // 头像
   address: {
     province: '', // 省份
     city: '', // 城市
@@ -228,11 +229,36 @@ async function handleFinish({ event }: { event?: ProgressEvent }) {
   obj.user_icon = response.data.path
   const info = JSON.stringify(obj)
   userInfoData.value.additional_info = info
+  userInfoData.value.avatar_url = response.data.path
+
+  // 调用用户信息更新接口,更新成功，刷新页面头像显示
   const { error } = await changeInformation(userInfoData.value)
   if (!error) {
     // 显示头像时使用服务器域名，去掉 /api/v1 路径
     const serverUrl = getDemoServerUrl().replace('/api/v1', '')
     headUrl.value = serverUrl + response.data.path.substring(1)
+    // header.value = true
+
+    // 重新获取最新的用户信息，确保本地数据与服务器数据保持同步
+    const { data } = await fetchUserInfo()
+    userInfoData.value = {
+      ...data,
+      // 处理电话号码字段的兼容性映射
+      phone_number: data.phone_num || data.phone_number || '',
+      // 处理附加信息字段的兼容性映射
+      additional_info: data.additional_info || data.additionalInfo || '{}',
+      // 确保新增字段有默认值
+      organization: data.organization || '',
+      timezone: data.timezone || '',
+      default_language: data.default_language || '',
+      address: {
+        province: data.address?.province || '',
+        city: data.address?.city || '',
+        district: data.address?.district || '',
+        detailed_address: data.address?.detailed_address || ''
+      }
+    }
+
     window.$message?.success($t('custom.grouping_details.operationSuccess'))
   }
 }
@@ -291,7 +317,7 @@ onMounted(async () => {
             :data="{
               type: 'user_icon'
             }"
-            @on-finish="handleFinish"
+            @finish="handleFinish"
           >
             <div class="relative w-100px h-100px">
               <div v-if="!header" class="avatar">
