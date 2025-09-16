@@ -11,6 +11,7 @@
 
 import type { ComponentDataRequirement } from '@/core/data-architecture/SimpleDataBridge'
 import { dataSourceLogger } from '@/utils/logger'
+import { ref, reactive, type Ref } from 'vue'
 
 /**
  * 数据存储项接口
@@ -114,6 +115,9 @@ export interface PerformanceMetrics {
 export class EnhancedDataWarehouse {
   /** 组件数据存储 */
   private componentStorage = new Map<string, ComponentDataStorage>()
+
+  /** 🔥 响应式数据变更通知 */
+  private dataChangeNotifier = ref(0)
 
   /** 动态参数存储（预留） */
   private parameterStorage = new Map<string, DynamicParameterStorage>()
@@ -229,6 +233,9 @@ export class EnhancedDataWarehouse {
 
     console.log(`✅ [DataWarehouse] 成功存储数据: ${componentId}/${sourceId}, 大小: ${dataSize} bytes`)
 
+    // 🔥 响应式通知：数据变更时触发Vue响应式更新
+    this.dataChangeNotifier.value++
+
     // 🎯 用户要求的打印这几个字 - 阶段2：DataWarehouse存储完成
     console.log(`🎯 用户要求的打印这几个字 - 阶段2：DataWarehouse存储完成`, {
       componentId,
@@ -252,6 +259,9 @@ export class EnhancedDataWarehouse {
    */
   getComponentData(componentId: string): Record<string, any> | null {
     const startTime = Date.now()
+
+    // 🔥 响应式依赖：触发计算属性重新计算
+    const changeNotifier = this.dataChangeNotifier.value
 
     const componentStorage = this.componentStorage.get(componentId)
     if (!componentStorage) {

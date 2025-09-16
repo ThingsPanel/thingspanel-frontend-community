@@ -89,11 +89,12 @@ const componentExecutorRegistry = inject('componentExecutorRegistry', null) as M
 // 🔥 预览模式检测
 const { isPreviewMode } = usePreviewMode()
 
-// 🔥 核心修复：从DataWarehouse获取数据源执行结果  
+// 🔥 核心修复：从DataWarehouse获取数据源执行结果（响应式）
 const componentDataFromWarehouse = computed(() => {
   try {
+    // 🔥 响应式依赖：DataWarehouse内置的响应式通知机制
     const warehouseData = dataWarehouse.getComponentData(props.nodeId)
-    
+
     console.log(`🔥 [Card2Wrapper] 从DataWarehouse获取数据 ${props.nodeId}:`, {
       hasData: !!warehouseData,
       dataType: typeof warehouseData,
@@ -653,6 +654,13 @@ const executeComponentDataSource = async (): Promise<void> => {
 
     console.log(`✅ [Card2Wrapper] 数据源执行完成 ${props.nodeId}:`, result)
 
+    // 🔥 响应式更新：DataWarehouse已自动触发响应式通知，无需手动刷新
+    console.log(`🎯 用户要求的打印这几个字 - 阶段1：数据源执行完成，等待DataWarehouse响应式更新`, {
+      componentId: props.nodeId,
+      执行结果: result.success,
+      数据内容: result.data
+    })
+
   } catch (error) {
     console.error(`❌ [Card2Wrapper] 数据源执行失败 ${props.nodeId}:`, error)
     throw error
@@ -717,6 +725,7 @@ onMounted(async () => {
           })
 
           // 直接调用执行器，重新执行数据源
+          console.log(`🎯 用户要求的打印这几个字 - 阶段I2a.5：准备调用executeComponentDataSource，组件${props.nodeId}`)
           await executeComponentDataSource()
           console.log(`🎯 用户要求的打印这几个字 - 阶段I2b：Card2Wrapper重新执行数据源完成，组件${props.nodeId}`)
         } else {

@@ -1,24 +1,30 @@
 <template>
   <n-card class="alert-status" embedded>
     <div class="content">
+      <!-- 🔥 直接显示 props.data 转成的字符串 -->
+      <div class="field-group">
+        <label class="field-label">🔥 数据源数据:</label>
+        <div class="field-value">{{ JSON.stringify(props.data) }}</div>
+      </div>
+
       <!-- 标题显示 -->
       <div class="field-group">
         <label class="field-label">标题:</label>
-        <div class="field-value">{{ String(unifiedConfig.component?.title || '未设置') }}</div>
+        <div class="field-value">{{ getDisplayValue('title', '未设置') }}</div>
         <n-button size="tiny" @click="changeTitle">修改标题</n-button>
       </div>
-      
+
       <!-- 金额显示 -->
       <div class="field-group">
         <label class="field-label">金额:</label>
-        <div class="field-value">{{ String(unifiedConfig.component?.amount || 0) }}</div>
+        <div class="field-value">{{ getDisplayValue('amount', 0) }}</div>
         <n-button size="tiny" @click="changeAmount">修改金额</n-button>
       </div>
-      
+
       <!-- 简介显示 -->
       <div class="field-group">
         <label class="field-label">简介:</label>
-        <div class="field-value">{{ String(unifiedConfig.component?.description || '无描述') }}</div>
+        <div class="field-value">{{ getDisplayValue('description', '无描述') }}</div>
         <n-button size="tiny" @click="changeDescription">修改简介</n-button>
       </div>
       
@@ -38,11 +44,19 @@
           <pre class="debug-value">{{ JSON.stringify(props.data, null, 2) }}</pre>
         </div>
         <div class="debug-section">
-          <span class="debug-label">最终显示值:</span>
+          <span class="debug-label">最终显示值（数据源优先）:</span>
           <pre class="debug-value">{{ JSON.stringify({
-            title: unifiedConfig.component?.title,
-            amount: unifiedConfig.component?.amount,
-            description: unifiedConfig.component?.description
+            title: getDisplayValue('title', '未设置'),
+            amount: getDisplayValue('amount', 0),
+            description: getDisplayValue('description', '无描述')
+          }, null, 2) }}</pre>
+        </div>
+        <div class="debug-section">
+          <span class="debug-label">数据来源分析:</span>
+          <pre class="debug-value">{{ JSON.stringify({
+            title: getDataSource('title'),
+            amount: getDataSource('amount'),
+            description: getDataSource('description')
           }, null, 2) }}</pre>
         </div>
       </div>
@@ -114,6 +128,41 @@ const { config, displayData, unifiedConfig, updateUnifiedConfig, getFullConfigur
 })
 
 const message = useMessage()
+
+// 🔥 核心数据获取函数：优先使用数据源数据，回退到配置数据
+const getDisplayValue = (field: string, defaultValue: any) => {
+  // 1. 优先使用数据源数据（这是执行结果）
+  if (props.data && typeof props.data === 'object' && field in props.data && props.data[field] !== undefined && props.data[field] !== null) {
+    console.log(`🎯 [alert-status] 字段${field}使用数据源数据:`, props.data[field])
+    return String(props.data[field])
+  }
+
+  // 2. 回退到统一配置中的组件配置
+  if (unifiedConfig.value.component && field in unifiedConfig.value.component && unifiedConfig.value.component[field] !== undefined) {
+    console.log(`🎯 [alert-status] 字段${field}使用配置数据:`, unifiedConfig.value.component[field])
+    return String(unifiedConfig.value.component[field])
+  }
+
+  // 3. 使用默认值
+  console.log(`🎯 [alert-status] 字段${field}使用默认值:`, defaultValue)
+  return String(defaultValue)
+}
+
+// 🔥 数据来源分析函数：判断数据来自哪里
+const getDataSource = (field: string) => {
+  // 检查数据源数据
+  if (props.data && typeof props.data === 'object' && field in props.data && props.data[field] !== undefined && props.data[field] !== null) {
+    return `数据源: ${props.data[field]}`
+  }
+
+  // 检查配置数据
+  if (unifiedConfig.value.component && field in unifiedConfig.value.component && unifiedConfig.value.component[field] !== undefined) {
+    return `配置: ${unifiedConfig.value.component[field]}`
+  }
+
+  // 默认值
+  return '使用默认值'
+}
 
 // 🔥 修复递归更新：深度比较函数，替代JSON.stringify避免proxy序列化问题
 const isConfigEqual = (a: any, b: any): boolean => {
