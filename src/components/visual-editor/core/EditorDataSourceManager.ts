@@ -428,26 +428,43 @@ export class EditorDataSourceManager {
    * 通过组件执行器注册表调用组件的 executeDataSource 方法
    */
   private async triggerComponentExecutor(componentId: string): Promise<void> {
+    console.log(`🎯 用户要求的打印这几个字 - 阶段G1：EditorDataSourceManager.triggerComponentExecutor被调用`, {
+      组件ID: componentId,
+      有执行器注册表: !!this.componentExecutorRegistry,
+      注册表大小: this.componentExecutorRegistry?.size || 0
+    })
+
     // 🆕 备用方案：如果注册表不可用，直接使用 VisualEditorBridge
     if (!this.componentExecutorRegistry) {
+      console.log(`🎯 用户要求的打印这几个字 - 阶段G2：执行器注册表不可用，使用fallback方案`)
       await this.fallbackToVisualEditorBridge(componentId)
       return
     }
 
     const executor = this.componentExecutorRegistry.get(componentId)
     if (!executor) {
+      console.log(`🎯 用户要求的打印这几个字 - 阶段G3：组件${componentId}无注册执行器，使用fallback方案`)
       await this.fallbackToVisualEditorBridge(componentId)
       return
     }
 
+    console.log(`🎯 用户要求的打印这几个字 - 阶段G4：找到组件${componentId}的执行器，开始执行`)
     const startTime = Date.now()
     try {
       await executor()
       const executionTime = Date.now() - startTime
+      console.log(`🎯 用户要求的打印这几个字 - 阶段G5：组件${componentId}执行器执行成功`, {
+        执行时间: executionTime,
+        毫秒: 'ms'
+      })
       // 更新统计
       this.updateExecutionStats(true, executionTime)
     } catch (error) {
       const executionTime = Date.now() - startTime
+      console.log(`🎯 用户要求的打印这几个字 - 阶段G6：组件${componentId}执行器执行失败`, {
+        执行时间: executionTime,
+        错误: error
+      })
       // 更新统计
       this.updateExecutionStats(false, executionTime)
       throw error
@@ -477,12 +494,25 @@ export class EditorDataSourceManager {
   private setupConfigurationEventListener(): void {
     // 🔥 修复：监听配置事件怽线，使用正确的 API 和事件格式
     configEventBus.onConfigChange('config-changed', async (event: ConfigChangeEvent) => {
+      console.log(`🎯 用户要求的打印这几个字 - 阶段H1：EditorDataSourceManager接收到配置变更事件`, {
+        事件详情: event,
+        组件ID: event.componentId,
+        配置节: event.section,
+        是数据源相关: event.section === 'dataSource' || event.section === 'component'
+      })
+
       // 只处理数据源相关的配置变更
       if (event.section === 'dataSource' || event.section === 'component') {
+        console.log(`🎯 用户要求的打印这几个字 - 阶段H2：准备触发组件${event.componentId}的执行器`)
         try {
           // 通过组件执行器触发数据更新
           await this.triggerComponentExecutor(event.componentId)
-        } catch (error) {}
+          console.log(`🎯 用户要求的打印这几个字 - 阶段H3：组件${event.componentId}执行器触发完成`)
+        } catch (error) {
+          console.log(`🎯 用户要求的打印这几个字 - 阶段H4：组件${event.componentId}执行器触发失败`, error)
+        }
+      } else {
+        console.log(`🎯 用户要求的打印这几个字 - 阶段H5：非数据源相关配置变更，跳过执行`)
       }
     })
   }

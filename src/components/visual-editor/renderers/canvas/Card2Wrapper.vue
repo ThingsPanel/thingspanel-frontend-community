@@ -134,7 +134,7 @@ const {
   syncToEditor
 } = useCard2Props({
   config: props.config || {},
-  data: componentDataFromWarehouse.value, // 🔥 修复：使用DataWarehouse中的真实数据
+  data: componentDataFromWarehouse, // 🔥 关键修复：传递响应式计算属性，而不是静态值
   componentId: props.nodeId,
   initialUnifiedConfig: getInitialUnifiedConfig()
 })
@@ -695,19 +695,44 @@ const initializeDataSourceConfiguration = async () => {
 }
 
 onMounted(async () => {
+  console.log(`🎯 用户要求的打印这几个字 - 阶段I0：Card2Wrapper组件${props.nodeId}开始挂载`)
   console.log(`🔥 [Card2Wrapper] 组件挂载完成 ${props.nodeId}`)
 
   // 🔥 关键修复：注册组件执行器到执行器注册表
   if (componentExecutorRegistry) {
     componentExecutorRegistry.set(props.nodeId, executeComponentDataSource)
     console.log(`🔥 [Card2Wrapper] 组件执行器已注册 ${props.nodeId}`)
+    console.log(`🎯 用户要求的打印这几个字 - 阶段I1：Card2Wrapper执行器注册完成，组件${props.nodeId}，注册表大小: ${componentExecutorRegistry.size}`)
+
+    // 🔥 关键修复：执行器注册后，检查并重新触发已有配置的执行
+    nextTick(async () => {
+      try {
+        // 检查是否已有配置（说明fetchBoard已经执行过）
+        const existingConfig = configurationManager.getConfiguration(props.nodeId)
+        if (existingConfig && existingConfig.dataSource) {
+          console.log(`🎯 用户要求的打印这几个字 - 阶段I2a：Card2Wrapper发现已有数据源配置，重新触发执行`, {
+            组件: props.nodeId,
+            有数据源配置: !!existingConfig.dataSource,
+            数据源详情: existingConfig.dataSource
+          })
+
+          // 直接调用执行器，重新执行数据源
+          await executeComponentDataSource()
+          console.log(`🎯 用户要求的打印这几个字 - 阶段I2b：Card2Wrapper重新执行数据源完成，组件${props.nodeId}`)
+        } else {
+          // 没有配置，执行初始化
+          await initializeDataSourceConfiguration()
+          console.log(`🎯 用户要求的打印这几个字 - 阶段I2c：Card2Wrapper主动触发数据源配置初始化完成，组件${props.nodeId}`)
+        }
+      } catch (error) {
+        console.error(`❌ [Card2Wrapper] 组件挂载后数据源处理失败 ${props.nodeId}:`, error)
+      }
+    })
   } else {
     console.warn(`⚠️ [Card2Wrapper] 组件执行器注册表不可用 ${props.nodeId}`)
   }
 
-  // 🔥 新增：通过配置变更初始化数据源（统一的触发方式）
-  await nextTick() // 确保组件完全挂载
-  await initializeDataSourceConfiguration()
+  // 🔥 注释：数据源初始化已在执行器注册后进行，这里不需要重复调用
 
   // 初始化交互配置
   const savedConfigs = unifiedConfig.value.interaction?.configs as InteractionConfig[]

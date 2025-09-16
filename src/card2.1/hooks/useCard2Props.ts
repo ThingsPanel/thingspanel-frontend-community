@@ -8,7 +8,7 @@
  * 4. 与编辑器保持配置同步
  */
 
-import { computed, ref, watch, inject } from 'vue'
+import { computed, ref, watch, inject, type ComputedRef, isRef } from 'vue'
 import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
 import type { MetricItem } from '@/card2.1/core/types'
 
@@ -54,7 +54,7 @@ export interface UnifiedCard2Configuration {
  */
 interface ConfigManagementOptions {
   config: any
-  data?: Record<string, unknown>
+  data?: Record<string, unknown> | ComputedRef<Record<string, unknown>>
   componentId?: string
   /** 从编辑器接收的初始统一配置 */
   initialUnifiedConfig?: UnifiedCard2Configuration
@@ -199,12 +199,26 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
    * 🔥 简化版显示数据计算 - 直接传递数据源执行结果
    */
   const displayData = computed(() => {
+    // 🔥 关键修复：正确获取data值，无论它是响应式引用还是普通值
+    const currentData = isRef(data) || (typeof data === 'object' && data !== null && '__v_isRef' in data)
+      ? (data as ComputedRef<Record<string, unknown>>).value
+      : data as Record<string, unknown>
+
+    console.log(`🔥 [useCard2Props] displayData 计算中 ${componentId}:`, {
+      isDataRef: isRef(data) || (typeof data === 'object' && data !== null && '__v_isRef' in data),
+      originalData: data,
+      currentData: currentData,
+      hasCurrentData: !!currentData,
+      currentDataType: typeof currentData,
+      currentDataKeys: currentData && typeof currentData === 'object' ? Object.keys(currentData) : []
+    })
+
     // 🔥 简化逻辑：如果有数据源执行结果，直接使用；否则使用组件配置
-    if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+    if (currentData && typeof currentData === 'object' && Object.keys(currentData).length > 0) {
       // 🔥 数据源执行结果直接转换为组件可用格式
       const dataSourceResults = {}
 
-      Object.entries(data).forEach(([sourceId, sourceResult]) => {
+      Object.entries(currentData).forEach(([sourceId, sourceResult]) => {
         if (sourceResult && typeof sourceResult === 'object' && 'data' in sourceResult) {
           // 标准格式：{type, data, metadata}
           const sourceData = sourceResult.data
@@ -224,7 +238,7 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
       // 🎯 用户要求的打印这几个字 - 阶段4：useCard2Props数据转换完成
       console.log(`🎯 用户要求的打印这几个字 - 阶段4：useCard2Props数据转换完成`, {
         componentId,
-        接收到的原始数据: data,
+        接收到的原始数据: currentData,
         转换后的数据源结果: dataSourceResults,
         组件将接收到的数据: dataSourceResults
       })
@@ -242,7 +256,8 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
     console.log(`🎯 用户要求的打印这几个字 - 阶段4.5：useCard2Props无数据源时使用配置`, {
       componentId,
       使用组件配置: result,
-      无数据源执行结果: true
+      无数据源执行结果: true,
+      currentData的内容: currentData
     })
 
     return result

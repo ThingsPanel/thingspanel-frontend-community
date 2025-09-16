@@ -64,10 +64,20 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
    * @param componentType 组件类型，用于更精确的事件追踪
    */
   setConfiguration(widgetId: string, config: WidgetConfiguration, componentType?: string): void {
+    console.log(`🎯 用户要求的打印这几个字 - 阶段D3：ConfigurationIntegrationBridge.setConfiguration被调用`, {
+      组件ID: widgetId,
+      组件类型: componentType,
+      配置内容: config
+    })
+
     // 🚀 在设置前执行迁移检查，确保配置结构正确
     const migratedConfig = this.performDeviceConfigurationMigrationForSet(widgetId, config)
 
     const updated = configurationStateManager.setConfiguration(widgetId, migratedConfig, 'user')
+    console.log(`🎯 用户要求的打印这几个字 - 阶段D4：ConfigurationIntegrationBridge.setConfiguration更新结果`, {
+      更新成功: updated,
+      将触发事件链: !!updated
+    })
 
     if (updated) {
       // 🔥 关键修复：配置更新时清理缓存，确保数据一致性
@@ -83,7 +93,13 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         timestamp: Date.now(),
         source: 'user'
       }
+      console.log(`🎯 用户要求的打印这几个字 - 阶段F1：ConfigurationIntegrationBridge准备发送configEventBus.emitConfigChange事件`, {
+        事件详情: changeEvent,
+        组件ID: widgetId,
+        配置节: 'dataSource'
+      })
       configEventBus.emitConfigChange(changeEvent)
+      console.log(`🎯 用户要求的打印这几个字 - 阶段F2：ConfigurationIntegrationBridge已发送configEventBus.emitConfigChange事件`)
     }
   }
 
@@ -100,7 +116,17 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     config: WidgetConfiguration[K],
     componentType?: string
   ): void {
+    console.log(`🎯 用户要求的打印这几个字 - 阶段E1：ConfigurationIntegrationBridge.updateConfiguration被调用`, {
+      组件ID: widgetId,
+      配置节: section,
+      组件类型: componentType,
+      配置内容: config
+    })
     const updated = configurationStateManager.updateConfigurationSection(widgetId, section, config, 'user')
+    console.log(`🎯 用户要求的打印这几个字 - 阶段E2：ConfigurationIntegrationBridge配置更新结果`, {
+      更新成功: updated,
+      将触发事件链: !!updated
+    })
 
     if (updated) {
       // 🔥 关键修复：配置部分更新时清理缓存，特别是 dataSource 更新

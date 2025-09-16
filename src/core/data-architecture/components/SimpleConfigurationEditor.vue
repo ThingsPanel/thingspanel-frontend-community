@@ -420,9 +420,7 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
     
     // 🔥 修复：移除重复的数据源执行调用
     // 第一次保存时已经通过正常流程触发了数据源执行，不需要重复调用
-    console.log(`🚀 [SimpleConfigurationEditor] 配置保存完成，数据源将通过正常流程执行`).catch(error => {
-      console.error('导入SimpleDataBridge失败:', error)
-    })
+    console.log(`🚀 [SimpleConfigurationEditor] 配置保存完成，数据源将通过正常流程执行`)
     
     // 🔥 强制同步到编辑器确保配置持久化
     try {

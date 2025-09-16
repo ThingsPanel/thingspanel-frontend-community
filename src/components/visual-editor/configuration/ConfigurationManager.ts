@@ -515,7 +515,13 @@ export class ConfigurationManager implements IConfigurationManager {
         }
       }
       // 异步发送事件，避免阻塞当前流程
+      console.log(`🎯 用户要求的打印这几个字 - 阶段F1：ConfigurationManager准备发送configEventBus.emitConfigChange事件`, {
+        事件详情: event,
+        组件ID: widgetId,
+        配置节: this.lastUpdatedSection
+      })
       configEventBus.emitConfigChange(event).catch(error => {})
+      console.log(`🎯 用户要求的打印这几个字 - 阶段F2：ConfigurationManager已发送configEventBus.emitConfigChange事件`)
     } catch (error) {}
   }
 
@@ -655,27 +661,5 @@ export class ConfigurationManager implements IConfigurationManager {
 
 // 导出全局配置管理器单例
 export const configurationManager = new ConfigurationManager()
-
-export default configurationManager
-
-/**
- * @description: 从localStorage加载配置
- * @return {*}
- */
-public loadConfigurationsFromLocalStorage(): void {
-  try {
-    const storedConfig = localStorage.getItem(this.storageKey)
-    if (storedConfig) {
-      const parsedConfig = JSON.parse(storedConfig)
-      this.setConfigurations(parsedConfig)
-    }
-  } catch (error) {
-    console.error('从localStorage加载配置失败:', error)
-    // 清除损坏的配置以避免循环错误
-    localStorage.removeItem(this.storageKey)
-    // 重置为安全的默认状态
-    this.setConfigurations({})
-  }
-}
 
 export default configurationManager

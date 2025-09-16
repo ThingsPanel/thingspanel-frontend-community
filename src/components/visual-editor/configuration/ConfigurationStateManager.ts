@@ -171,6 +171,12 @@ export class ConfigurationStateManager {
   ): boolean {
     // 🔒 循环检测：防止同组件同时更新
     if (this.UPDATE_LOCKS.has(componentId)) {
+      console.log(`🎯 用户要求的打印这几个字 - 阶段E3：ConfigurationStateManager检测到更新锁，跳过更新`, {
+        组件ID: componentId,
+        配置节: section,
+        锁状态: true,
+        当前锁数量: this.UPDATE_LOCKS.size
+      })
       return false
     }
 

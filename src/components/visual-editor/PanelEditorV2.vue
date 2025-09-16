@@ -5,7 +5,7 @@
  * 实现真实的工具栏和渲染器切换功能
  */
 
-import { ref, computed, onMounted, onUnmounted, watch, toRaw, provide } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, toRaw, provide, nextTick } from 'vue'
 import { $t } from '@/locales'
 import PanelLayout from '@/components/visual-editor/components/PanelLayout.vue'
 import { VisualEditorToolbar } from '@/components/visual-editor/components/toolbar'
@@ -174,6 +174,15 @@ const getState = () => {
       // 使用 ConfigurationManager 中的最新配置
       unifiedConfig = configFromManager
       console.log(`🔄 [getState] 组件 ${widget.id} 从ConfigurationManager获取最新配置:`, configFromManager)
+
+      // 🎯 关键调试：检查是否有数据源配置
+      if (configFromManager.dataSource) {
+        console.log(`🎯 用户要求的打印这几个字 - 阶段C1：组件${widget.id}在ConfigurationManager中确实有数据源配置`, {
+          配置存在: true,
+          数据源数量: configFromManager.dataSource.dataSources?.length || 0,
+          数据源详情: configFromManager.dataSource.dataSources
+        })
+      }
     } else if (unifiedConfig) {
       console.log(`⚠️ [getState] 组件 ${widget.id} ConfigurationManager无配置，使用节点配置:`, unifiedConfig)
     } else {
@@ -288,32 +297,23 @@ const setState = async (state: any) => {
           dataSource: widget.metadata.unifiedConfig.dataSource
         })
 
-        if (widget.metadata.unifiedConfig.dataSource &&
-            typeof widget.metadata.unifiedConfig.dataSource === 'object') {
-          console.log(`🔄 [setState] 恢复组件 ${widget.id} 的数据源配置到ConfigurationManager:`, widget.metadata.unifiedConfig.dataSource)
-          configurationManager.updateConfiguration(widget.id, 'dataSource', widget.metadata.unifiedConfig.dataSource)
+        // 🔥 关键修复：一次性设置完整配置，避免多次更新导致的锁冲突
+        console.log(`🎯 用户要求的打印这几个字 - 阶段D1：setState准备一次性设置完整配置`, {
+          组件ID: widget.id,
+          完整统一配置: widget.metadata.unifiedConfig
+        })
 
-          // 🔍 验证配置是否真的更新了
-          const verifyConfig = configurationManager.getConfiguration(widget.id)
-          console.log(`✅ [setState] 验证更新后的配置:`, {
-            hasConfig: !!verifyConfig,
-            dataSource: verifyConfig?.dataSource,
-            fullConfig: verifyConfig
-          })
-        } else {
-          console.warn(`⚠️ [setState] 组件 ${widget.id} 的 unifiedConfig 中没有有效的 dataSource 配置:`, widget.metadata.unifiedConfig)
-        }
+        // 使用ConfigurationIntegrationBridge的setConfiguration一次性设置完整配置
+        configurationManager.setConfiguration(widget.id, widget.metadata.unifiedConfig, widget.type)
+        console.log(`🎯 用户要求的打印这几个字 - 阶段D2：setState已调用setConfiguration完成完整配置设置`)
 
-        // 🔥 恢复其他配置段
-        if (widget.metadata.unifiedConfig.base) {
-          configurationManager.updateConfiguration(widget.id, 'base', widget.metadata.unifiedConfig.base)
-        }
-        if (widget.metadata.unifiedConfig.component) {
-          configurationManager.updateConfiguration(widget.id, 'component', widget.metadata.unifiedConfig.component)
-        }
-        if (widget.metadata.unifiedConfig.interaction) {
-          configurationManager.updateConfiguration(widget.id, 'interaction', widget.metadata.unifiedConfig.interaction)
-        }
+        // 🔍 验证配置是否真的更新了
+        const verifyConfig = configurationManager.getConfiguration(widget.id)
+        console.log(`✅ [setState] 验证更新后的配置:`, {
+          hasConfig: !!verifyConfig,
+          dataSource: verifyConfig?.dataSource,
+          fullConfig: verifyConfig
+        })
       } else if (widget.dataSource) {
         console.log(`🔄 [setState] 组件 ${widget.id} 从数据源配置恢复`)
         // 🔥 兼容性：回退到传统配置恢复方式
@@ -400,7 +400,9 @@ const fetchBoard = async () => {
       // 检查是否是新的嵌套结构（包含 visualEditor 字段）
       if (fullConfig.visualEditor) {
         console.log(`🔥 [fetchBoard] 使用嵌套结构，调用setState:`, fullConfig.visualEditor)
+        console.log(`🎯 用户要求的打印这几个字 - 阶段B1：fetchBoard准备调用setState恢复配置数据`)
         await setState(fullConfig.visualEditor)
+        console.log(`🎯 用户要求的打印这几个字 - 阶段B2：fetchBoard的setState调用完成，配置已恢复到ConfigurationManager`)
         preEditorConfig.value = smartDeepClone(fullConfig.visualEditor)
       } else if (fullConfig.widgets !== undefined || fullConfig.config !== undefined) {
         // 🔥 兼容老版本的直接格式 - 老版本直接保存 {widgets: [...], config: {...}}
@@ -409,7 +411,9 @@ const fetchBoard = async () => {
           hasConfig: !!fullConfig.config,
           firstWidget: fullConfig.widgets?.[0]
         })
+        console.log(`🎯 用户要求的打印这几个字 - 阶段B1：fetchBoard准备调用setState恢复配置数据(直接格式)`)
         await setState(fullConfig)
+        console.log(`🎯 用户要求的打印这几个字 - 阶段B2：fetchBoard的setState调用完成，配置已恢复到ConfigurationManager(直接格式)`)
         preEditorConfig.value = smartDeepClone(fullConfig)
       } else if (Array.isArray(fullConfig)) {
         // 🔥 兼容更老的数组格式
@@ -480,23 +484,38 @@ const startCard2SystemCheck = () => {
 }
 
 onMounted(async () => {
-  await fetchBoard()
-
-  // 🔥 初始化数据源管理器和配置管理器
+  // 🔥 关键修复：先初始化管理器和设置注册表，再获取数据
   try {
     await configurationManager.initialize()
     if (!editorDataSourceManager.isInitialized()) {
       await editorDataSourceManager.initialize()
     }
 
+    // 🔥 设置组件执行器注册表 - 必须在fetchBoard之前
+    editorDataSourceManager.setComponentExecutorRegistry(componentExecutorRegistry.value)
+  } catch (error) {
+    console.error('初始化管理器失败:', error)
+  }
+
+  // 🔥 现在可以安全地获取面板数据，配置更新会正确触发执行
+  console.log(`🎯 用户要求的打印这几个字 - 阶段A1：PanelEditorV2开始调用fetchBoard，执行器注册表已设置完成`)
+
+  // 🔥 新策略：不等待组件挂载，直接执行fetchBoard，组件挂载后会重新触发执行
+  console.log(`🎯 用户要求的打印这几个字 - 阶段A1.5：直接执行fetchBoard，组件挂载后将重新触发数据源执行`)
+  await nextTick() // 确保DOM更新完成
+
+  console.log(`🎯 用户要求的打印这几个字 - 阶段A1.8：开始fetchBoard，当前注册表大小: ${componentExecutorRegistry.value.size}`)
+
+  await fetchBoard()
+  console.log(`🎯 用户要求的打印这几个字 - 阶段A2：PanelEditorV2的fetchBoard调用完成，即将触发setState`)
+
+  // 其他初始化
+  try {
     // 监听组件系统就绪事件
     window.addEventListener('card2-system-ready', handleCard2SystemReady)
-    
+
     // 启动组件系统就绪检查（后备机制）
     startCard2SystemCheck()
-
-    // 🔥 设置组件执行器注册表
-    editorDataSourceManager.setComponentExecutorRegistry(componentExecutorRegistry.value)
   } catch (error) {
     console.error('初始化管理器失败:', error)
   }
