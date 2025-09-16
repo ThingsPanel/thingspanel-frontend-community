@@ -418,21 +418,9 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
       firstDataSource: dataSourceConfig.dataSources?.[0]
     })
     
-    // 🔥 关键：保存后立即触发数据源执行
-    import('@/core/data-architecture/SimpleDataBridge').then(async ({ simpleDataBridge }) => {
-      try {
-        console.log(`🚀 [SimpleConfigurationEditor] 立即执行数据源...`)
-        
-        const executionResult = await simpleDataBridge.executeComponent({
-          componentId: componentInfo.value.componentId,
-          dataSources: [] // 这里传空数组，让SimpleDataBridge使用配置管理器的配置
-        } as any)
-        
-        console.log(`🚀 [SimpleConfigurationEditor] 数据源执行结果:`, executionResult)
-      } catch (error) {
-        console.error('立即执行数据源失败:', error)
-      }
-    }).catch(error => {
+    // 🔥 修复：移除重复的数据源执行调用
+    // 第一次保存时已经通过正常流程触发了数据源执行，不需要重复调用
+    console.log(`🚀 [SimpleConfigurationEditor] 配置保存完成，数据源将通过正常流程执行`).catch(error => {
       console.error('导入SimpleDataBridge失败:', error)
     })
     
@@ -464,7 +452,21 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
     isEditMode.value = false
     editingItemId.value = ''
   } catch (error) {
-    // 可以在这里添加用户友好的错误提示
+    console.error('数据项配置保存失败:', error)
+
+    // 🔥 关键修复：即使出现错误也要关闭抽屉
+    showRawDataModal.value = false
+    currentDataSourceKey.value = ''
+    isEditMode.value = false
+    editingItemId.value = ''
+
+    // 显示用户友好的错误提示
+    const errorMessage = error instanceof Error ? error.message : '保存配置时发生未知错误'
+    message.error(`数据项配置保存失败：${errorMessage}`)
+
+    if (process.env.NODE_ENV === 'development') {
+      console.error('详细错误信息:', error)
+    }
   }
 }
 

@@ -229,6 +229,17 @@ export class EnhancedDataWarehouse {
 
     console.log(`✅ [DataWarehouse] 成功存储数据: ${componentId}/${sourceId}, 大小: ${dataSize} bytes`)
 
+    // 🎯 用户要求的打印这几个字 - 阶段2：DataWarehouse存储完成
+    console.log(`🎯 用户要求的打印这几个字 - 阶段2：DataWarehouse存储完成`, {
+      componentId,
+      sourceId,
+      数据类型: typeof data,
+      数据大小: dataSize,
+      存储的数据内容: data,
+      是否为对象: typeof data === 'object',
+      对象键值: typeof data === 'object' && data !== null ? Object.keys(data) : '非对象类型'
+    })
+
     // 更新性能监控
     const responseTime = Date.now() - startTime
     this.updateMetrics(responseTime, 'store')
@@ -299,6 +310,20 @@ export class EnhancedDataWarehouse {
     }
 
     console.log(`✅ [DataWarehouse] 成功获取组件 ${componentId} 数据，包含 ${Object.keys(componentData).length} 个数据源`)
+
+    // 🎯 用户要求的打印这几个字 - 阶段2.5：DataWarehouse数据读取完成
+    console.log(`🎯 用户要求的打印这几个字 - 阶段2.5：DataWarehouse数据读取完成`, {
+      componentId,
+      读取的数据源数量: Object.keys(componentData).length,
+      数据源列表: Object.keys(componentData),
+      完整数据内容: componentData,
+      各数据源详情: Object.entries(componentData).map(([sourceId, sourceData]) => ({
+        数据源ID: sourceId,
+        数据类型: typeof sourceData,
+        数据内容: sourceData
+      }))
+    })
+
     this.updateMetrics(Date.now() - startTime, 'get', true)
     return componentData
   }

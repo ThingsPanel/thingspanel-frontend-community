@@ -196,120 +196,55 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
   }
 
   /**
-   * 🔥 显示数据计算 - 集成基础配置和数据源映射
+   * 🔥 简化版显示数据计算 - 直接传递数据源执行结果
    */
   const displayData = computed(() => {
-    if (!componentId) {
-      return { ...config, ...(data || {}) }
-    }
-    
-    // 获取组件类型
-    let componentType = componentId
-    if (editorContext?.getNodeById) {
-      const node = editorContext.getNodeById(componentId)
-      componentType = node?.type || componentId
-    }
-    
-    // 🔥 修复：处理真实的数据源执行结果结构
-    let mappedData = {}
-    if (data && typeof data === 'object') {
-      console.log(`🔥 [useCard2Props] 处理数据源执行结果 ${componentId}:`, {
-        originalData: data,
-        dataKeys: Object.keys(data),
-        dataStructure: Object.keys(data).reduce((acc, key) => {
-          const item = data[key]
-          acc[key] = {
-            hasType: item && typeof item === 'object' && 'type' in item,
-            hasData: item && typeof item === 'object' && 'data' in item,
-            hasMetadata: item && typeof item === 'object' && 'metadata' in item,
-            structure: item && typeof item === 'object' ? Object.keys(item) : 'primitive'
-          }
-          return acc
-        }, {})
-      })
-      
-      // 🔥 处理数据源执行结果：每个数据源都有 {type, data, metadata} 结构
-      mappedData = Object.keys(data).reduce((result, sourceId) => {
-        const sourceResult = data[sourceId]
-        
-        if (sourceResult && typeof sourceResult === 'object') {
-          // 🔥 标准数据源结果：{type, data, metadata}
-          if ('data' in sourceResult && sourceResult.data !== undefined) {
-            // 提取 .data 部分，并智能处理显示
-            const sourceData = sourceResult.data
-            
-            if (sourceData && typeof sourceData === 'object') {
-              // 如果data是对象，转换为可读字符串
-              result[sourceId] = JSON.stringify(sourceData, null, 2)
-            } else {
-              // 如果data是基础类型，直接使用
-              result[sourceId] = String(sourceData)
-            }
-            
-            console.log(`🔥 [useCard2Props] 数据源 ${sourceId} 映射:`, {
-              type: sourceResult.type,
-              originalData: sourceData,
-              mappedValue: result[sourceId]
-            })
+    // 🔥 简化逻辑：如果有数据源执行结果，直接使用；否则使用组件配置
+    if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+      // 🔥 数据源执行结果直接转换为组件可用格式
+      const dataSourceResults = {}
+
+      Object.entries(data).forEach(([sourceId, sourceResult]) => {
+        if (sourceResult && typeof sourceResult === 'object' && 'data' in sourceResult) {
+          // 标准格式：{type, data, metadata}
+          const sourceData = sourceResult.data
+          if (sourceData && typeof sourceData === 'object') {
+            dataSourceResults[sourceId] = JSON.stringify(sourceData, null, 2)
           } else {
-            // 🔥 非标准结构，直接字符串化
-            result[sourceId] = JSON.stringify(sourceResult, null, 2)
-            console.log(`🔥 [useCard2Props] 数据源 ${sourceId} 非标准结构，直接字符串化`)
+            dataSourceResults[sourceId] = String(sourceData)
           }
         } else {
-          // 🔥 基础类型数据
-          result[sourceId] = String(sourceResult)
-          console.log(`🔥 [useCard2Props] 数据源 ${sourceId} 基础类型:`, sourceResult)
+          // 非标准格式，直接字符串化
+          dataSourceResults[sourceId] = typeof sourceResult === 'object'
+            ? JSON.stringify(sourceResult, null, 2)
+            : String(sourceResult)
         }
-        
-        return result
-      }, {})
-      
-      console.log(`🔥 [useCard2Props] 最终映射结果:`, mappedData)
-    } else {
-      // 使用原来的映射器逻辑作为回退
-      mappedData = DataSourceMapper.mapDataSources(componentType, data as any)
+      })
+
+      // 🎯 用户要求的打印这几个字 - 阶段4：useCard2Props数据转换完成
+      console.log(`🎯 用户要求的打印这几个字 - 阶段4：useCard2Props数据转换完成`, {
+        componentId,
+        接收到的原始数据: data,
+        转换后的数据源结果: dataSourceResults,
+        组件将接收到的数据: dataSourceResults
+      })
+
+      return dataSourceResults
     }
-    
-    // 🔥 调试信息：查看各层数据
-    const baseConfig = unifiedConfig.value.base
-    const componentConfig = unifiedConfig.value.component
-    
-    console.log(`🔥 [displayData] 计算各层数据 ${componentId}:`, {
-      config,
-      baseConfig,
-      componentConfig,
-      mappedData,
-      hasNullInMappedData: mappedData && Object.keys(mappedData).some(key => mappedData[key] === null)
-    })
-    
-    // 🔥 修复：过滤掉mappedData中的null值，避免覆盖有效配置
-    const filteredMappedData = mappedData ? Object.fromEntries(
-      Object.entries(mappedData).filter(([key, value]) => value !== null && value !== undefined)
-    ) : {}
-    
-    // 🔥 数据优先级：数据源数据 > 组件配置 > 基础配置 > 默认配置
+
+    // 🔥 没有数据源结果时，返回组件配置
     const result = {
       ...config,
-      ...baseConfig,              // 基础配置：设备ID、设备指标、标题、样式等
-      ...componentConfig,         // 组件配置：组件特有属性
-      ...filteredMappedData,      // 数据源数据：最高优先级（过滤null值）
-      
-      // 🔥 修复：添加嵌套的base对象，支持base.deviceId等路径访问
-      base: {
-        ...baseConfig,
-        deviceId: baseConfig?.deviceId,
-        metricsList: baseConfig?.metricsList || []
-      }
+      ...unifiedConfig.value.component
     }
-    
-    console.log(`🔥 [displayData] 计算结果 ${componentId}:`, {
-      result,
-      titleFromComponent: componentConfig?.title,
-      titleFromMapped: mappedData?.title,
-      titleFinal: result.title
+
+    // 🎯 用户要求的打印这几个字 - 阶段4.5：useCard2Props无数据源时使用配置
+    console.log(`🎯 用户要求的打印这几个字 - 阶段4.5：useCard2Props无数据源时使用配置`, {
+      componentId,
+      使用组件配置: result,
+      无数据源执行结果: true
     })
-    
+
     return result
   })
 

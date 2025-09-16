@@ -47,6 +47,9 @@ import type {
 } from '@/card2.1/core/interaction-types'
 // 🔥 导入DataWarehouse以获取数据源执行结果
 import { dataWarehouse } from '@/core/data-architecture/DataWarehouse'
+// 🔥 导入配置管理器和数据桥接器
+import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
+import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
 
 interface Props {
   componentType: string
@@ -80,6 +83,9 @@ const currentComponentDef = computed(() => {
 // 注入编辑器上下文
 const editorContext = inject('editorContext', null) as any
 
+// 🔥 注入组件执行器注册表
+const componentExecutorRegistry = inject('componentExecutorRegistry', null) as Map<string, () => Promise<void>> | null
+
 // 🔥 预览模式检测
 const { isPreviewMode } = usePreviewMode()
 
@@ -97,7 +103,18 @@ const componentDataFromWarehouse = computed(() => {
       // 🔥 详细调试：检查DataWarehouse存储状态
       warehouseStats: dataWarehouse.getStorageStats()
     })
-    
+
+    // 🎯 用户要求的打印这几个字 - 阶段3：Card2Wrapper从DataWarehouse获取数据
+    console.log(`🎯 用户要求的打印这几个字 - 阶段3：Card2Wrapper从DataWarehouse获取数据`, {
+      componentId: props.nodeId,
+      是否有数据: !!warehouseData,
+      数据类型: typeof warehouseData,
+      从DataWarehouse获取的原始数据: warehouseData,
+      数据源数量: warehouseData ? Object.keys(warehouseData).length : 0,
+      数据源列表: warehouseData ? Object.keys(warehouseData) : [],
+      准备传给useCard2Props的数据: warehouseData || {}
+    })
+
     return warehouseData || {}
   } catch (error) {
     console.error(`❌ [Card2Wrapper] 获取DataWarehouse数据失败 ${props.nodeId}:`, error)
@@ -590,18 +607,115 @@ const checkExpressionCondition = (currentValue: any, expression: string): boolea
   }
 }
 
+// ================== 组件执行器 ==================
+
+/**
+ * 🔥 组件数据源执行器函数
+ * 这是注册到 componentExecutorRegistry 的核心函数
+ */
+const executeComponentDataSource = async (): Promise<void> => {
+  try {
+    // 🎯 用户要求的打印这几个字 - 阶段0：Card2Wrapper组件执行器被调用
+    console.log(`🎯 用户要求的打印这几个字 - 阶段0：Card2Wrapper组件执行器被调用`, {
+      componentId: props.nodeId,
+      componentType: props.componentType,
+      触发方式: '通过componentExecutorRegistry注册的执行器'
+    })
+
+    // 获取当前组件的数据源配置
+    const latestConfig = configurationManager.getConfiguration(props.nodeId)
+    const dataSourceConfig = latestConfig?.dataSource
+
+    if (!dataSourceConfig) {
+      console.log(`🔥 [Card2Wrapper] 组件 ${props.nodeId} 没有数据源配置，跳过执行`)
+      return
+    }
+
+    console.log(`🔥 [Card2Wrapper] 开始执行数据源:`, {
+      componentId: props.nodeId,
+      componentType: props.componentType,
+      dataSourceConfig
+    })
+
+    // 🔥 使用 VisualEditorBridge 执行数据源
+    const { getVisualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
+    const visualEditorBridge = getVisualEditorBridge()
+
+    // 清除缓存确保获取最新数据
+    simpleDataBridge.clearComponentCache(props.nodeId)
+
+    // 执行数据源
+    const result = await visualEditorBridge.updateComponentExecutor(
+      props.nodeId,
+      props.componentType,
+      dataSourceConfig
+    )
+
+    console.log(`✅ [Card2Wrapper] 数据源执行完成 ${props.nodeId}:`, result)
+
+  } catch (error) {
+    console.error(`❌ [Card2Wrapper] 数据源执行失败 ${props.nodeId}:`, error)
+    throw error
+  }
+}
+
 // ================== 生命周期 ==================
 
-onMounted(() => {
+/**
+ * 🔥 初始化数据源配置 - 通过配置变更触发数据源执行
+ * 这是进入编辑器时触发数据源执行的正确方式
+ */
+const initializeDataSourceConfiguration = async () => {
+  try {
+    console.log(`🔥 [Card2Wrapper] 初始化数据源配置 ${props.nodeId}`)
+
+    // 检查是否有数据源配置
+    const currentConfig = configurationManager.getConfiguration(props.nodeId)
+    const hasDataSourceConfig = currentConfig?.dataSource &&
+      currentConfig.dataSource.dataSources &&
+      currentConfig.dataSource.dataSources.length > 0
+
+    if (hasDataSourceConfig) {
+      console.log(`🔥 [Card2Wrapper] 组件 ${props.nodeId} 有数据源配置，触发配置变更执行`)
+
+      // 🔥 关键：通过"触碰"配置来触发执行，而不是直接执行
+      // 这样能确保所有监听器都被正确触发
+      configurationManager.updateConfiguration(
+        props.nodeId,
+        'dataSource',
+        currentConfig.dataSource,
+        props.componentType
+      )
+    } else {
+      console.log(`🔥 [Card2Wrapper] 组件 ${props.nodeId} 无数据源配置，跳过初始化`)
+    }
+  } catch (error) {
+    console.error(`❌ [Card2Wrapper] 初始化数据源配置失败 ${props.nodeId}:`, error)
+  }
+}
+
+onMounted(async () => {
   console.log(`🔥 [Card2Wrapper] 组件挂载完成 ${props.nodeId}`)
-  
+
+  // 🔥 关键修复：注册组件执行器到执行器注册表
+  if (componentExecutorRegistry) {
+    componentExecutorRegistry.set(props.nodeId, executeComponentDataSource)
+    console.log(`🔥 [Card2Wrapper] 组件执行器已注册 ${props.nodeId}`)
+  } else {
+    console.warn(`⚠️ [Card2Wrapper] 组件执行器注册表不可用 ${props.nodeId}`)
+  }
+
+  // 🔥 新增：通过配置变更初始化数据源（统一的触发方式）
+  await nextTick() // 确保组件完全挂载
+  await initializeDataSourceConfiguration()
+
   // 初始化交互配置
   const savedConfigs = unifiedConfig.value.interaction?.configs as InteractionConfig[]
   if (savedConfigs) {
     interactionConfigs.value = savedConfigs
     console.log(`🎯 [Card2Wrapper] 加载已保存的交互配置:`, savedConfigs)
   }
-  
+
   // 监听配置更新和请求事件
   window.addEventListener('card2-config-update', handleConfigUpdateEvent as EventListener)
   window.addEventListener('card2-config-request', handleConfigRequestEvent as EventListener)
@@ -609,6 +723,12 @@ onMounted(() => {
 
 // 清理事件监听
 onUnmounted(() => {
+  // 🔥 清理组件执行器注册
+  if (componentExecutorRegistry) {
+    componentExecutorRegistry.delete(props.nodeId)
+    console.log(`🔥 [Card2Wrapper] 组件执行器已注销 ${props.nodeId}`)
+  }
+
   window.removeEventListener('card2-config-update', handleConfigUpdateEvent as EventListener)
   window.removeEventListener('card2-config-request', handleConfigRequestEvent as EventListener)
 })

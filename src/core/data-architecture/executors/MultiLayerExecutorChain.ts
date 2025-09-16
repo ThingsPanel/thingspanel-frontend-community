@@ -101,6 +101,23 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
   ): Promise<ExecutionResult> {
     const startTime = Date.now()
 
+    // 🎯 用户要求的打印这几个字 - 调试：MultiLayerExecutorChain开始执行
+    console.log(`🎯 用户要求的打印这几个字 - 调试：MultiLayerExecutorChain开始执行`, {
+      componentId: config.componentId,
+      数据源数量: config.dataSources.length,
+      调试模式: debugMode,
+      配置详情: config.dataSources.map(ds => ({
+        数据源ID: ds.sourceId,
+        数据项数量: ds.dataItems.length,
+        合并策略: ds.mergeStrategy,
+        数据项详情: ds.dataItems.map(item => ({
+          类型: item.item.type,
+          配置: item.item.config,
+          处理配置: item.processing
+        }))
+      }))
+    })
+
     try {
       const dataSourceResults: DataSourceResult[] = []
       let executionState: ExecutionState | undefined
@@ -112,11 +129,24 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
 
       // 处理每个数据源
       for (const dataSourceConfig of config.dataSources) {
-        // 🔥 性能优化：仅在调试模式输出详细日志
+        // 🎯 用户要求的打印这几个字 - 调试：开始处理数据源
+        console.log(`🎯 用户要求的打印这几个字 - 调试：开始处理数据源`, {
+          数据源ID: dataSourceConfig.sourceId,
+          数据项数量: dataSourceConfig.dataItems.length,
+          合并策略: dataSourceConfig.mergeStrategy
+        })
 
         try {
           const sourceResult = await this.processDataSource(dataSourceConfig, executionState)
-          // 🔥 性能优化：避免每次都进行JSON序列化
+
+          // 🎯 用户要求的打印这几个字 - 调试：数据源处理完成
+          console.log(`🎯 用户要求的打印这几个字 - 调试：数据源处理完成`, {
+            数据源ID: dataSourceConfig.sourceId,
+            处理结果: sourceResult,
+            是否成功: sourceResult.success,
+            数据内容: sourceResult.data,
+            错误信息: sourceResult.error
+          })
 
           dataSourceResults.push(sourceResult)
         } catch (error) {
@@ -130,8 +160,29 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
         }
       }
 
+      // 🎯 用户要求的打印这几个字 - 调试：开始最终整合
+      console.log(`🎯 用户要求的打印这几个字 - 调试：开始最终整合`, {
+        数据源结果数量: dataSourceResults.length,
+        各数据源结果: dataSourceResults.map(result => ({
+          数据源ID: result.sourceId,
+          是否成功: result.success,
+          数据类型: result.type,
+          数据内容: result.data,
+          错误: result.error
+        }))
+      })
+
       // 第四层：多源整合
       const componentData = await this.multiSourceIntegrator.integrateDataSources(dataSourceResults, config.componentId)
+
+      // 🎯 用户要求的打印这几个字 - 调试：最终整合完成
+      console.log(`🎯 用户要求的打印这几个字 - 调试：最终整合完成`, {
+        组件ID: config.componentId,
+        最终组件数据: componentData,
+        数据键数量: Object.keys(componentData).length,
+        数据键列表: Object.keys(componentData),
+        是否为空: Object.keys(componentData).length === 0
+      })
 
       // 更新调试状态
       if (executionState) {

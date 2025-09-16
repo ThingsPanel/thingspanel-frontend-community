@@ -657,3 +657,25 @@ export class ConfigurationManager implements IConfigurationManager {
 export const configurationManager = new ConfigurationManager()
 
 export default configurationManager
+
+/**
+ * @description: 从localStorage加载配置
+ * @return {*}
+ */
+public loadConfigurationsFromLocalStorage(): void {
+  try {
+    const storedConfig = localStorage.getItem(this.storageKey)
+    if (storedConfig) {
+      const parsedConfig = JSON.parse(storedConfig)
+      this.setConfigurations(parsedConfig)
+    }
+  } catch (error) {
+    console.error('从localStorage加载配置失败:', error)
+    // 清除损坏的配置以避免循环错误
+    localStorage.removeItem(this.storageKey)
+    // 重置为安全的默认状态
+    this.setConfigurations({})
+  }
+}
+
+export default configurationManager

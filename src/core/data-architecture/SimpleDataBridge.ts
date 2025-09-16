@@ -99,6 +99,21 @@ export class SimpleDataBridge {
   async executeComponent(requirement: ComponentDataRequirement): Promise<DataResult> {
     const startTime = Date.now()
 
+    // 🎯 用户要求的打印这几个字 - 调试：SimpleDataBridge接收到的配置
+    console.log(`🎯 用户要求的打印这几个字 - 调试：SimpleDataBridge接收到的配置`, {
+      componentId: requirement.componentId,
+      接收到的原始配置: requirement,
+      数据源配置数量: requirement.dataSources?.length || 0,
+      数据源配置列表: requirement.dataSources || [],
+      调用栈: new Error().stack, // 🔥 添加调用栈，找出是谁调用的
+      每个数据源详情: requirement.dataSources?.map(ds => ({
+        数据源ID: ds.id,
+        数据源类型: ds.type,
+        配置内容: ds.config,
+        是否有配置: !!ds.config,
+        配置对象键: ds.config ? Object.keys(ds.config) : []
+      })) || []
+    })
 
     try {
       // 🆕 检查缓存数据，但需要验证配置是否已更新
@@ -131,13 +146,65 @@ export class SimpleDataBridge {
       // 🔥 检查数据格式：如果已经是 DataSourceConfiguration 格式，直接使用
       let dataSourceConfig: DataSourceConfiguration
 
-      if (this.isDataSourceConfiguration(requirement)) {
-      
+      // 🎯 用户要求的打印这几个字 - 调试：检查格式判断过程
+      const isDataSourceConfigFormat = this.isDataSourceConfiguration(requirement)
+      console.log(`🎯 用户要求的打印这几个字 - 调试：格式检查结果`, {
+        是否为DataSourceConfiguration格式: isDataSourceConfigFormat,
+        检查的配置: requirement,
+        第一个数据源: requirement.dataSources?.[0],
+        第一个数据源的sourceId: requirement.dataSources?.[0]?.sourceId,
+        第一个数据源的dataItems: requirement.dataSources?.[0]?.dataItems
+      })
+
+      if (isDataSourceConfigFormat) {
+        console.log(`🎯 用户要求的打印这几个字 - 调试：使用现有DataSourceConfiguration格式`)
         dataSourceConfig = requirement as any
       } else {
-   
-        dataSourceConfig = this.convertToDataSourceConfiguration(requirement)
+        console.log(`🎯 用户要求的打印这几个字 - 调试：转换为DataSourceConfiguration格式`)
+
+        // 🔥 修复：检查是否是双层嵌套结构
+        if (requirement.dataSources?.[0]?.dataSources) {
+          console.log(`🎯 用户要求的打印这几个字 - 调试：检测到双层嵌套，解包内层配置`)
+          // 双层嵌套：取内层的真正配置
+          const innerConfig = requirement.dataSources[0] as any
+          dataSourceConfig = {
+            componentId: requirement.componentId,
+            dataSources: innerConfig.dataSources,
+            createdAt: innerConfig.createdAt || Date.now(),
+            updatedAt: innerConfig.updatedAt || Date.now()
+          }
+        } else {
+          dataSourceConfig = this.convertToDataSourceConfiguration(requirement)
+        }
       }
+
+      // 🎯 用户要求的打印这几个字 - 调试：最终传给MultiLayerExecutorChain的配置
+      console.log(`🎯 用户要求的打印这几个字 - 调试：最终传给MultiLayerExecutorChain的配置`, {
+        componentId: dataSourceConfig.componentId,
+        数据源数量: dataSourceConfig.dataSources.length,
+        完整配置对象: dataSourceConfig,
+        数据源详情: dataSourceConfig.dataSources.map((ds, index) => {
+          console.log(`数据源${index}原始对象:`, ds)
+          console.log(`数据源${index}的sourceId:`, ds.sourceId)
+          console.log(`数据源${index}的dataItems:`, ds.dataItems)
+          return {
+            数据源ID: ds.sourceId,
+            原始sourceId字段: 'sourceId' in ds ? ds.sourceId : '字段不存在',
+            数据项数量: ds.dataItems?.length || 0,
+            原始dataItems: ds.dataItems,
+            数据项详情: ds.dataItems?.map((item, itemIndex) => {
+              console.log(`数据项${itemIndex}原始对象:`, item)
+              console.log(`数据项${itemIndex}的item:`, item.item)
+              return {
+                类型: item.item?.type,
+                配置: item.item?.config,
+                item对象: item.item,
+                处理配置: item.processing
+              }
+            }) || []
+          }
+        })
+      })
 
 
       // 🔥 使用多层执行器链执行完整的数据处理管道
@@ -161,6 +228,19 @@ export class SimpleDataBridge {
             }
             return acc
           }, {})
+        })
+
+        // 🎯 用户要求的打印这几个字 - 阶段1：SimpleDataBridge数据执行完成
+        console.log(`🎯 用户要求的打印这几个字 - 阶段1：SimpleDataBridge数据执行完成`, {
+          componentId: requirement.componentId,
+          原始执行结果: executionResult.componentData,
+          数据源数量: Object.keys(executionResult.componentData).length,
+          各数据源内容: Object.entries(executionResult.componentData).map(([sourceId, sourceData]) => ({
+            数据源ID: sourceId,
+            数据类型: typeof sourceData,
+            数据内容: sourceData,
+            是否标准格式: sourceData && typeof sourceData === 'object' && 'data' in sourceData
+          }))
         })
         
         // 🔥 修复：为每个数据源分别存储数据，并存储合并后的完整数据
