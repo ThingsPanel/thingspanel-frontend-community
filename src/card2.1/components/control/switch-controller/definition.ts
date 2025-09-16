@@ -148,27 +148,90 @@ export const switchControllerDefinition: ComponentDefinition<SwitchControllerCon
   // 设置配置
   settingConfig: switchControllerSettingConfig,
 
-  // 交互配置
-  interactions: [
-    {
-      event: 'control',
-      name: '控制事件',
-      description: '当用户操作开关时触发',
-      parameters: {
-        action: 'toggle',
-        value: 'boolean'
+  // 🎯 交互能力声明
+  interactionCapabilities: {
+    // 支持的交互事件类型
+    supportedEvents: ['click', 'hover', 'focus', 'blur', 'dataChange'],
+    
+    // 可触发的交互动作类型
+    availableActions: [
+      'navigateToUrl', 'updateComponentData', 'changeVisibility', 
+      'changeBackgroundColor', 'triggerAnimation', 'showNotification',
+      'emitEvent'
+    ],
+    
+    // 可被其他组件监听的属性列表
+    watchableProperties: {
+      'title': {
+        type: 'string',
+        description: '开关控制器标题',
+        defaultValue: '设备开关'
+      },
+      'value': {
+        type: 'boolean',
+        description: '开关状态值',
+        defaultValue: false
+      },
+      'description': {
+        type: 'string',
+        description: '开关描述信息',
+        defaultValue: ''
+      },
+      'timestamp': {
+        type: 'number',
+        description: '状态变化时间戳',
+        defaultValue: null
       }
     },
-    {
-      event: 'dataChange',
-      name: '数据变化',
-      description: '当开关状态改变时触发数据更新',
-      parameters: {
-        value: 'boolean',
-        timestamp: 'number'
+
+    // 交互区域定义
+    interactionZones: [
+      {
+        id: 'switch-button',
+        name: '开关按钮',
+        description: '可点击的开关控制按钮',
+        selector: '.switch-button',
+        supportedEvents: ['click', 'hover']
       }
-    }
-  ]
+    ],
+
+    // 默认交互配置
+    defaultInteractions: [
+      {
+        event: 'click',
+        responses: [
+          {
+            action: 'updateComponentData',
+            delay: 0,
+            name: '切换开关状态',
+            enabled: true
+          },
+          {
+            action: 'triggerAnimation',
+            delay: 100,
+            name: '切换反馈动画',
+            enabled: true
+          }
+        ],
+        enabled: true,
+        name: '开关控制交互'
+      },
+      {
+        event: 'dataChange',
+        responses: [
+          {
+            action: 'emitEvent',
+            delay: 0,
+            name: '广播状态变化',
+            enabled: true
+          }
+        ],
+        enabled: true,
+        name: '状态变化通知',
+        watchedProperty: 'value'
+      }
+    ]
+  }
 }
 
 export default switchControllerDefinition

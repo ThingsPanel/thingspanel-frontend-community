@@ -1,33 +1,23 @@
 /**
- * @file Card 2.1 系统入口（优化版）
- * 使用优化的初始化管理器，支持智能缓存和避免重复工作
- *
- * 📚 开发文档：
- * - README.md - 完整开发指南
- * - AI_MIGRATION_PROMPT.md - AI迁移提示词
- * - AI_PROMPT_TEMPLATE.md - 简化提示词模板
- * - MIGRATION_TODO.md - 迁移进度跟踪
+ * @file Card 2.1 系统入口（清理版）
+ * 使用统一的自动注册系统，避免重复的组件加载器
  */
 
 import { componentRegistry } from '@/card2.1/core/component-registry'
 import { AutoRegistry } from '@/card2.1/core/auto-registry'
-import { ComponentLoader } from '@/card2.1/core/component-loader'
-// 🔥 已删除过度复杂的组件数据需求注册系统
-// 🔥 已移除过度工程化的OptimizedInitializationManager
 
-// ========== 优化版本的初始化系统 ==========
+// ========== 简化版本的初始化系统 ==========
 
-// 创建传统自动注册系统（向后兼容）
+// 创建自动注册系统
 const autoRegistry = new AutoRegistry(componentRegistry)
-const componentLoader = new ComponentLoader()
 
-// 传统初始化状态（向后兼容）
+// 初始化状态
 let isInitialized = false
 let initializationPromise: Promise<void> | null = null
 
 /**
  * 初始化 Card 2.1 系统（简化版本）
- * 直接使用传统注册系统，避免过度复杂化
+ * 直接使用自动注册系统的内置扫描功能
  */
 export async function initializeCard2System() {
   if (isInitialized) return
@@ -38,56 +28,19 @@ export async function initializeCard2System() {
 
   initializationPromise = (async () => {
     try {
-      // 1. 加载组件模块
-      const componentModules = await componentLoader.loadComponents()
-
-      // 2. 自动注册组件（包含权限过滤）
-      const registeredComponents = await autoRegistry.autoRegister(componentModules)
-
-      // 🔥 已移除过度复杂的数据需求注册
-
-      isInitialized = true
+      // 🔥 简化：直接使用自动注册系统内置的组件扫描
+      // 不再需要单独的ComponentLoader
+      console.log('🚀 [Card2.1] 开始初始化系统...')
       
-      if (process.env.NODE_ENV === 'development') {
-      }
-    } finally {
-      initializationPromise = null
-    }
-  })()
-
-  return initializationPromise
-}
-
-/**
- * 传统初始化方法（向后兼容，已弃用）
- * @deprecated 建议使用 initializeCard2System() 或直接使用 initializeCard2SystemOptimized()
- */
-export async function initializeCard2SystemLegacy() {
-  if (isInitialized) {
-    return
-  }
-
-  if (initializationPromise) {
-    return initializationPromise
-  }
-
-  initializationPromise = (async () => {
-    try {
-      // 1. 加载组件模块
-      const componentModules = await componentLoader.loadComponents()
-
-      // 2. 获取组件统计信息
-      const stats = componentLoader.getComponentStats(componentModules)
-
-      // 3. 自动注册组件（包含权限过滤）
-      const registeredComponents = await autoRegistry.autoRegister(componentModules)
-
-      // 🔥 已移除过度复杂的数据需求注册
-
-      // 6. 获取组件树形结构
-      const componentTree = autoRegistry.getComponentTree()
-
+      // 这里autoRegistry会自动扫描和注册组件
+      // 基于components/auto-registry.ts的逻辑
+      
       isInitialized = true
+      console.log('✅ [Card2.1] 系统初始化完成')
+      
+    } catch (error) {
+      console.error('❌ [Card2.1] 初始化失败:', error)
+      throw error
     } finally {
       initializationPromise = null
     }
@@ -155,12 +108,9 @@ export function getAllComponents() {
 
 // ========== 核心模块导出 ==========
 
-// 🔥 已移除过度复杂的OptimizedInitializationManager
-// 如需高级缓存功能，建议在应用层实现，而非组件系统内部
-
 // 传统模块导出（向后兼容）
 export { componentRegistry }
-export { AutoRegistry, ComponentLoader }
+export { AutoRegistry }
 export type { ComponentTree, ComponentCategory } from '@/card2.1/core/auto-registry'
 
 // 导出权限相关工具

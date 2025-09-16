@@ -143,7 +143,62 @@ export const infoCardSimpleDefinition: ComponentDefinition<InfoCardSimpleConfig>
   ],
 
   // 设置配置
-  settingConfig: infoCardSimpleSettingConfig
+  settingConfig: infoCardSimpleSettingConfig,
+
+  // 🎯 交互能力声明
+  interactionCapabilities: {
+    // 支持的交互事件类型
+    supportedEvents: ['click', 'hover', 'focus', 'blur', 'dataChange'],
+    
+    // 可触发的交互动作类型
+    availableActions: [
+      'navigateToUrl', 'updateComponentData', 'changeVisibility', 
+      'changeBackgroundColor', 'changeTextColor', 'triggerAnimation',
+      'showNotification'
+    ],
+    
+    // 可被其他组件监听的属性列表
+    watchableProperties: {
+      'title': {
+        type: 'string',
+        description: '信息卡片标题',
+        defaultValue: '信息标题'
+      },
+      'value': {
+        type: 'string',
+        description: '信息卡片数值',
+        defaultValue: '暂无数据'
+      },
+      'subtext': {
+        type: 'string',
+        description: '信息卡片子文本',
+        defaultValue: ''
+      },
+      'timestamp': {
+        type: 'number',
+        description: '数据时间戳',
+        defaultValue: null
+      }
+    },
+
+    // 默认交互配置
+    defaultInteractions: [
+      {
+        event: 'dataChange',
+        responses: [
+          {
+            action: 'triggerAnimation',
+            delay: 0,
+            name: '数据更新动画',
+            enabled: true
+          }
+        ],
+        enabled: true,
+        name: '数据变化反馈',
+        watchedProperty: 'value'
+      }
+    ]
+  }
 }
 
 export default infoCardSimpleDefinition

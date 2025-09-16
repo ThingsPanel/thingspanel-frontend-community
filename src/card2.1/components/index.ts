@@ -5,17 +5,105 @@
  */
 
 import type { ComponentDefinition } from '@/card2.1/types'
-import { autoRegistry } from '@/card2.1/components/auto-registry'
-import { ComponentRegistry } from '@/card2.1/core/component-registry'
+import { AutoRegistry } from '@/card2.1/core/auto-registry'
+import { ComponentRegistry, componentRegistry } from '@/card2.1/core/component-registry'
+
+// 创建自动注册系统实例
+const autoRegistry = new AutoRegistry(componentRegistry)
 
 // ============ 自动化组件注册表 ============
 
+// 🔥 修复：使用同步eager加载确保组件在页面加载时立即可用
+let initializationPromise: Promise<void> | null = null
+let isInitialized = false
+
 /**
  * 确保自动注册系统已初始化
- * 在首次访问时自动初始化
+ * 使用同步eager加载，确保组件立即可用
  */
 async function ensureInitialized(): Promise<void> {
-  await autoRegistry.initialize()
+  // 如果已经初始化，直接返回
+  if (isInitialized) {
+    return
+  }
+  
+  // 如果正在初始化，等待完成
+  if (initializationPromise) {
+    return initializationPromise
+  }
+
+  initializationPromise = (async () => {
+    try {
+      console.log('🚀 [ensureInitialized] 开始初始化Card2.1组件系统...')
+      
+      // 🔥 关键修复：使用eager: true进行同步加载，确保组件立即可用
+      const componentModules = import.meta.glob('./*/index.ts', { eager: true })
+      const subComponentModules = import.meta.glob('./*/*/index.ts', { eager: true })
+      const deepComponentModules = import.meta.glob('./*/*/*/index.ts', { eager: true })
+
+      // 合并所有模块
+      const allModules = { ...componentModules, ...subComponentModules, ...deepComponentModules }
+      
+      console.log(`🔥 [ensureInitialized] 发现 ${Object.keys(allModules).length} 个组件模块:`, Object.keys(allModules))
+      
+      // 处理已加载的模块
+      const loadedModules: Record<string, any> = {}
+      for (const [path, module] of Object.entries(allModules)) {
+        try {
+          const componentId = extractComponentIdFromPath(path)
+          if (componentId && module) {
+            loadedModules[componentId] = module
+            console.log(`✅ [ensureInitialized] 加载组件: ${componentId} (${path})`)
+          }
+        } catch (error) {
+          console.warn(`⚠️ [ensureInitialized] 处理组件失败: ${path}`, error)
+        }
+      }
+
+      console.log(`🔥 [ensureInitialized] 准备注册 ${Object.keys(loadedModules).length} 个组件:`, Object.keys(loadedModules))
+
+      // 使用 autoRegistry.autoRegister 注册所有组件
+      const registeredComponents = await autoRegistry.autoRegister(loadedModules)
+      
+      isInitialized = true
+      console.log(`✅ [ensureInitialized] 组件初始化完成，注册了 ${registeredComponents.length} 个组件`)
+      
+    } catch (error) {
+      console.error('❌ [ensureInitialized] 组件初始化失败:', error)
+      throw error
+    } finally {
+      initializationPromise = null
+    }
+  })()
+
+  return initializationPromise
+}
+
+/**
+ * 从文件路径提取组件ID
+ */
+function extractComponentIdFromPath(path: string): string | null {
+  // 🔥 修复：更严格的路径匹配，支持嵌套目录结构
+  // 匹配模式: ./category/component-name/index.ts 或 ./category/subcategory/component-name/index.ts
+  
+  // 直接的两级结构：./category/component-name/index.ts
+  const twoLevelMatch = path.match(/\.\/([^/]+)\/([^/]+)\/index\.ts$/)
+  if (twoLevelMatch) {
+    const componentId = twoLevelMatch[2]
+    console.log(`🔥 [extractComponentIdFromPath] 两级路径匹配: ${path} -> ${componentId}`)
+    return componentId
+  }
+  
+  // 三级结构：./category/subcategory/component-name/index.ts  
+  const threeLevelMatch = path.match(/\.\/([^/]+)\/([^/]+)\/([^/]+)\/index\.ts$/)
+  if (threeLevelMatch) {
+    const componentId = threeLevelMatch[3]
+    console.log(`🔥 [extractComponentIdFromPath] 三级路径匹配: ${path} -> ${componentId}`)
+    return componentId
+  }
+  
+  console.warn(`⚠️ [extractComponentIdFromPath] 路径格式不匹配: ${path}`)
+  return null
 }
 
 /**
@@ -25,13 +113,22 @@ async function ensureInitialized(): Promise<void> {
 export const Card2Components = new Proxy({} as Record<string, ComponentDefinition[]>, {
   get(target, prop: string) {
     if (typeof prop !== 'string') return undefined
+    
+    // 🔥 修复：确保初始化完成
+    if (!isInitialized) {
+      console.warn(`⚠️ [Card2Components] 组件系统未初始化，分类: ${prop}`)
+      return []
+    }
+    
     return autoRegistry.getComponentsByCategory(prop)
   },
   ownKeys() {
-    return autoRegistry.getAllCategories()
+    if (!isInitialized) return []
+    return autoRegistry.getCategories().map(cat => cat.name)
   },
   has(target, prop: string) {
-    return autoRegistry.getAllCategories().includes(prop)
+    if (!isInitialized) return false
+    return autoRegistry.getCategories().some(cat => cat.name === prop)
   }
 })
 
@@ -42,13 +139,23 @@ export const Card2Components = new Proxy({} as Record<string, ComponentDefinitio
 export const Card2ComponentMap = new Proxy({} as Record<string, ComponentDefinition>, {
   get(target, prop: string) {
     if (typeof prop !== 'string') return undefined
-    return autoRegistry.getComponentDefinition(prop)
+    
+    // 🔥 修复：确保初始化完成
+    if (!isInitialized) {
+      console.warn(`⚠️ [Card2ComponentMap] 组件系统未初始化，组件类型: ${prop}`)
+      return undefined
+    }
+    
+    // 从所有组件中查找指定类型的组件
+    return autoRegistry.getAllComponents().find(comp => comp.type === prop)
   },
   ownKeys() {
-    return autoRegistry.getAllComponentTypes()
+    if (!isInitialized) return []
+    return autoRegistry.getAllComponents().map(comp => comp.type)
   },
   has(target, prop: string) {
-    return autoRegistry.getComponentDefinition(prop) !== undefined
+    if (!isInitialized) return false
+    return autoRegistry.getAllComponents().some(comp => comp.type === prop)
   }
 })
 
@@ -58,18 +165,28 @@ export const Card2ComponentMap = new Proxy({} as Record<string, ComponentDefinit
  */
 export const Card2ComponentTypes = new Proxy([] as string[], {
   get(target, prop) {
-    if (prop === 'length') return autoRegistry.getAllComponentTypes().length
+    if (!isInitialized) {
+      if (prop === 'length') return 0
+      if (prop === Symbol.iterator) {
+        return function* () {
+          // 空迭代器
+        }
+      }
+      return undefined
+    }
+    
+    const allTypes = autoRegistry.getAllComponents().map(comp => comp.type)
+    if (prop === 'length') return allTypes.length
     if (prop === Symbol.iterator) {
       return function* () {
-        yield* autoRegistry.getAllComponentTypes()
+        yield* allTypes
       }
     }
     if (typeof prop === 'string' && /^\d+$/.test(prop)) {
       const index = parseInt(prop)
-      return autoRegistry.getAllComponentTypes()[index]
+      return allTypes[index]
     }
-    const types = autoRegistry.getAllComponentTypes()
-    return (types as any)[prop]
+    return (allTypes as any)[prop]
   }
 })
 
@@ -79,11 +196,16 @@ export const Card2ComponentTypes = new Proxy([] as string[], {
  * 获取组件树结构
  * 用于 useComponentTree Hook 的数据源
  */
-export function getComponentTree() {
-  const components = autoRegistry.getAllComponents()
-  const categories = autoRegistry.getAllCategories()
+export async function getComponentTree() {
+  // 🔥 修复：确保初始化完成
+  await ensureInitialized()
+  
+  const componentTreeData = autoRegistry.getComponentTree()
+  const components = componentTreeData.components
+  const categories = autoRegistry.getCategories()
 
   if (process.env.NODE_ENV === 'development') {
+    console.log(`🔥 [getComponentTree] 获取组件树: ${components.length} 个组件，${categories.length} 个分类`)
   }
 
   // 过滤掉无效组件
@@ -98,8 +220,8 @@ export function getComponentTree() {
   return {
     components: validComponents,
     categories: categories.map(category => ({
-      name: category,
-      components: autoRegistry.getComponentsByCategory(category).filter(comp => comp && comp.type && comp.name)
+      name: category.name,
+      components: autoRegistry.getComponentsByCategory(category.name).filter(comp => comp && comp.type && comp.name)
     })),
     totalCount: validComponents.length
   }
@@ -109,8 +231,10 @@ export function getComponentTree() {
  * 获取所有分类
  * 用于组件树筛选和分类显示
  */
-export function getCategories() {
-  return autoRegistry.getAllCategories()
+export async function getCategories() {
+  // 🔥 修复：确保初始化完成
+  await ensureInitialized()
+  return autoRegistry.getCategories().map(cat => cat.name)
 }
 
 /**
@@ -118,8 +242,10 @@ export function getCategories() {
  * @param type 组件类型
  * @returns 组件定义或 undefined
  */
-export function getComponentDefinition(type: string): ComponentDefinition | undefined {
-  return autoRegistry.getComponentDefinition(type)
+export async function getComponentDefinition(type: string): Promise<ComponentDefinition | undefined> {
+  // 🔥 修复：确保初始化完成
+  await ensureInitialized()
+  return autoRegistry.getAllComponents().find(comp => comp.type === type)
 }
 
 /**
@@ -127,7 +253,9 @@ export function getComponentDefinition(type: string): ComponentDefinition | unde
  * @param category 组件分类
  * @returns 该分类下的组件定义数组
  */
-export function getComponentsByCategory(category: string): ComponentDefinition[] {
+export async function getComponentsByCategory(category: string): Promise<ComponentDefinition[]> {
+  // 🔥 修复：确保初始化完成
+  await ensureInitialized()
   return autoRegistry.getComponentsByCategory(category)
 }
 
@@ -135,7 +263,9 @@ export function getComponentsByCategory(category: string): ComponentDefinition[]
  * 获取所有组件定义
  * @returns 所有组件定义数组
  */
-export function getAllComponents(): ComponentDefinition[] {
+export async function getAllComponents(): Promise<ComponentDefinition[]> {
+  // 🔥 修复：确保初始化完成
+  await ensureInitialized()
   return autoRegistry.getAllComponents()
 }
 
@@ -145,7 +275,9 @@ export function getAllComponents(): ComponentDefinition[] {
  * @returns 匹配标签的组件定义数组
  */
 export function getComponentsByTags(tags: string[]): ComponentDefinition[] {
-  return autoRegistry.getComponentsByTags(tags)
+  return autoRegistry.getAllComponents().filter(
+    component => component.tags && tags.some(tag => component.tags!.includes(tag))
+  )
 }
 
 /**
@@ -155,7 +287,8 @@ export function getComponentsByTags(tags: string[]): ComponentDefinition[] {
  * @returns 是否支持
  */
 export function isDataSourceSupported(componentType: string, dataSourceType: string): boolean {
-  return autoRegistry.isDataSourceSupported(componentType, dataSourceType)
+  const definition = autoRegistry.getAllComponents().find(comp => comp.type === componentType)
+  return definition?.supportedDataSources?.includes(dataSourceType) || false
 }
 
 /**
@@ -163,13 +296,8 @@ export function isDataSourceSupported(componentType: string, dataSourceType: str
  * 用于开发时动态添加新组件后刷新
  */
 export async function reloadComponents(): Promise<void> {
-  await autoRegistry.reload()
-
-  // 重新注册到 ComponentRegistry
-  const allComponents = autoRegistry.getAllComponents()
-  allComponents.forEach(definition => {
-    ComponentRegistry.register(definition)
-  })
+  // 重新初始化整个系统
+  await ensureInitialized()
 
   if (process.env.NODE_ENV === 'development') {
   }
@@ -189,6 +317,7 @@ export async function initializeCard2System(): Promise<void> {
   })
 
   if (process.env.NODE_ENV === 'development') {
+    console.log(`✅ [initializeCard2System] 系统初始化完成，注册了 ${allComponents.length} 个组件`)
   }
 }
 
@@ -208,11 +337,29 @@ export async function initializeComponents(): Promise<void> {
  */
 export const ComponentStats = new Proxy({} as any, {
   get(target, prop: string) {
-    const stats = autoRegistry.getStats()
+    const components = autoRegistry.getAllComponents()
+    const categories = autoRegistry.getCategories()
+    
+    const stats = {
+      total: components.length,
+      categories: categories.map(cat => cat.name),
+      byCategory: Object.fromEntries(
+        categories.map(category => [category.name, autoRegistry.getComponentsByCategory(category.name).length])
+      ),
+      supportedDataSources: Array.from(new Set(components.flatMap(c => c.supportedDataSources || []))),
+      versions: Array.from(
+        new Set(
+          components
+            .map(c => c.version)
+            .filter(Boolean)
+        )
+      )
+    }
+    
     return stats[prop as keyof typeof stats]
   },
   ownKeys() {
-    return Object.keys(autoRegistry.getStats())
+    return ['total', 'categories', 'byCategory', 'supportedDataSources', 'versions']
   }
 })
 
@@ -271,39 +418,25 @@ export function validateComponents(): { valid: boolean; issues: string[] } {
   return { valid: issues.length === 0, issues }
 }
 
-// 自动初始化并注册组件
-initializeComponents()
-  .then(() => {
-    if (process.env.NODE_ENV === 'development') {
-    }
+// ============ 自动初始化 ============
 
-    // 列出所有已注册的组件
-    const components = getAllComponents()
-    console.table(
-      components.map(c => ({
-        类型: c.type,
-        名称: c.name,
-        分类: c.category || '其他'
-      }))
-    )
-  })
-  .catch(error => {
-    console.error('❌ [Card2.1] 组件自动注册失败:', error)
-  })
+// 🔥 重要：不再在文件级别自动初始化，改为按需初始化
+// 这样可以避免页面刷新时的时序问题
+// 初始化将由 useComponentTree 或其他需要组件的地方主动触发
 
-// 开发模式下自动验证组件
-if (import.meta.env.DEV) {
-  // 延迟验证，确保所有组件都已加载
-  setTimeout(() => {
-    const validation = validateComponents()
-    if (!validation.valid) {
-      console.error('[Card2.1] 发现组件定义问题:', validation.issues)
+if (process.env.NODE_ENV === 'development') {
+  // 开发模式下，延迟进行组件验证（不阻塞加载）
+  setTimeout(async () => {
+    try {
+      await ensureInitialized()
+      const validation = validateComponents()
+      if (!validation.valid) {
+        console.error('[Card2.1] 发现组件定义问题:', validation.issues)
+      }
+    } catch (error) {
+      console.error('[Card2.1] 开发模式验证失败:', error)
     }
-
-    // 额外调试信息
-    if (process.env.NODE_ENV === 'development') {
-    }
-  }, 2000)
+  }, 3000)
 }
 
 // 默认导出主要接口

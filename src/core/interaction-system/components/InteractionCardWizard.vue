@@ -211,7 +211,7 @@
  * 特点：列表 + 弹窗，简单直接
  */
 
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   NSpace,
@@ -232,6 +232,8 @@ import { FlashOutline, TrashOutline } from '@vicons/ionicons5'
 import { fetchGetUserRoutes } from '@/service/api/route'
 // 🔥 简化：移除复杂的属性暴露系统，使用简单的属性访问
 import { useEditorStore } from '@/store/modules/editor'
+// 🔥 新增：交互执行引擎
+import { createInteractionEngine } from '../interaction-engine'
 
 interface Props {
   modelValue?: any[]
@@ -260,6 +262,25 @@ const visualEditorState = {
 const interactions = ref(props.modelValue || [])
 const showAddModal = ref(false)
 const editingIndex = ref(-1)
+
+// 🔥 关键修复：监听外部传入的modelValue变化，确保组件内部数据同步
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    console.log(`🎯 [InteractionCardWizard] ModelValue变化:`, {
+      newValue,
+      oldInteractions: interactions.value,
+      newCount: newValue?.length || 0,
+      oldCount: interactions.value.length
+    })
+    
+    if (newValue) {
+      interactions.value = [...newValue] // 🔥 使用展开语法确保响应式更新
+      console.log(`🎯 [InteractionCardWizard] 内部数据已更新:`, interactions.value)
+    }
+  },
+  { immediate: true, deep: true }
+)
 const currentInteraction = ref({
   event: 'click',
   enabled: true,
@@ -443,74 +464,147 @@ const targetPropertyOptions = computed(() => {
 })
 
 // 🔥 可用属性选项 - 基于组件类型动态获取（包含基础配置属性）
+// 🔥 修复：优先读取组件运行时暴露的真实属性值，然后再回退到定义
 const availablePropertyOptions = computed(() => {
   if (!props.componentType) {
     return []
   }
 
+  console.log(`🔍 [InteractionCardWizard] 获取 ${props.componentType} 的可监听属性`)
+
   // 按分组整理属性选项
   const groupedOptions: any[] = []
   const groups: Record<string, any[]> = {}
 
-  // 🔥 简化：使用简单的基础配置属性列表
-  const basicConfigProperties = [
-    { name: 'deviceId', label: '设备ID', group: '基础配置', description: '设备标识符' },
-    { name: 'metricsList', label: '指标列表', group: '基础配置', description: '设备指标配置' },
-    { name: 'title', label: '标题', group: '外观配置', description: '组件标题' },
-    { name: 'visible', label: '可见性', group: '外观配置', description: '组件是否可见' },
-    { name: 'opacity', label: '透明度', group: '外观配置', description: '组件透明度' },
-    { name: 'backgroundColor', label: '背景色', group: '外观配置', description: '组件背景颜色' }
-  ]
+  // 🔥 第一步：尝试从当前画布上找到对应的组件实例，获取运行时暴露的属性
+  const editorComponents = visualEditorState.getAvailableComponents()
+  const currentComponent = editorComponents.find(comp => comp.type === props.componentType)
 
-  basicConfigProperties.forEach(property => {
-    const group = property.group || '组件属性'
-    if (!groups[group]) {
-      groups[group] = []
+  // 🔥 优先检查运行时暴露的属性
+  let hasRuntimeProperties = false
+  if (currentComponent?.metadata?.exposedProperties) {
+    console.log(`✅ [InteractionCardWizard] 找到组件 ${props.componentType} 的运行时暴露属性:`,
+      currentComponent.metadata.exposedProperties)
+
+    const exposedProps = currentComponent.metadata.exposedProperties
+    const runtimeGroup = '实时属性 (当前值)'
+
+    if (!groups[runtimeGroup]) {
+      groups[runtimeGroup] = []
     }
 
-    groups[group].push({
-      label: `${property.label}${property.description ? ` (${property.description})` : ''}`,
-      value: property.name,
-      property // 保存完整属性信息供后续使用
+    // 遍历运行时暴露的属性
+    Object.entries(exposedProps).forEach(([propName, currentValue]: [string, any]) => {
+      groups[runtimeGroup].push({
+        label: `${propName} (当前值: ${String(currentValue)})`,
+        value: propName,
+        property: {
+          name: propName,
+          label: propName,
+          type: typeof currentValue,
+          description: `当前值: ${String(currentValue)}`,
+          currentValue: currentValue,
+          isRuntimeProperty: true
+        }
+      })
     })
-  })
 
-  // 2. 🚀 获取基础配置级别的属性（只暴露 deviceId 和 metricsList）
+    hasRuntimeProperties = true
+  }
+
+  // 🔥 第二步：从组件定义获取可监听属性声明
+  if (currentComponent?.metadata?.card2Definition?.interactionCapabilities?.watchableProperties) {
+    console.log(`✅ [InteractionCardWizard] 找到组件 ${props.componentType} 的watchableProperties定义:`,
+      currentComponent.metadata.card2Definition.interactionCapabilities.watchableProperties)
+
+    const watchableProps = currentComponent.metadata.card2Definition.interactionCapabilities.watchableProperties
+    const definitionGroup = hasRuntimeProperties ? '属性定义 (声明)' : '组件属性'
+
+    if (!groups[definitionGroup]) {
+      groups[definitionGroup] = []
+    }
+
+    // 遍历组件声明的可监听属性
+    Object.entries(watchableProps).forEach(([propName, propInfo]: [string, any]) => {
+      groups[definitionGroup].push({
+        label: `${propInfo.label || propName} (${propInfo.description || propInfo.type})`,
+        value: propName,
+        property: {
+          name: propName,
+          label: propInfo.label || propName,
+          type: propInfo.type,
+          description: propInfo.description,
+          defaultValue: propInfo.defaultValue,
+          isComponentProperty: true
+        }
+      })
+    })
+  } else if (!hasRuntimeProperties) {
+    console.warn(`⚠️ [InteractionCardWizard] 组件 ${props.componentType} 没有运行时属性也没有定义watchableProperties`)
+
+    // 🔥 如果组件既没有运行时属性也没有定义watchableProperties，显示通用基础属性作为fallback
+    const fallbackGroup = '通用属性 (组件未声明具体属性)'
+    if (!groups[fallbackGroup]) {
+      groups[fallbackGroup] = []
+    }
+
+    // 只添加最基础的通用属性
+    const universalProperties = [
+      { name: 'title', label: '标题', type: 'string', description: '组件标题' },
+      { name: 'visible', label: '可见性', type: 'boolean', description: '组件是否可见' }
+    ]
+
+    universalProperties.forEach(prop => {
+      groups[fallbackGroup].push({
+        label: `${prop.label} (${prop.description})`,
+        value: prop.name,
+        property: {
+          name: prop.name,
+          label: prop.label,
+          type: prop.type,
+          description: prop.description,
+          isFallback: true
+        }
+      })
+    })
+  }
+
+  // 🔥 第三步：添加基础配置级别的核心属性（设备ID和指标列表）
   const baseGroup = '基础配置'
   if (!groups[baseGroup]) {
     groups[baseGroup] = []
   }
 
-  // 只添加 deviceId 和 metricsList
   groups[baseGroup].push(
     {
-      label: '设备ID (关联的设备ID，用于数据源自动配置)',
+      label: '设备ID (base.deviceId - 关联的设备ID)',
       value: 'base.deviceId',
       property: {
         name: 'deviceId',
         label: '设备ID',
         type: 'string',
-        description: '关联的设备ID，用于数据源自动配置和设备模板',
+        description: '关联的设备ID，用于数据源自动配置',
         isCore: true,
         group: '设备配置'
       }
     },
     {
-      label: '指标列表 (选择的设备指标列表)',
+      label: '指标列表 (base.metricsList - 设备指标列表)',
       value: 'base.metricsList',
       property: {
         name: 'metricsList',
         label: '指标列表',
         type: 'array',
-        description: '选择的设备指标列表，用于数据获取和显示',
+        description: '选择的设备指标列表',
         isCore: true,
         group: '设备配置'
       }
     }
   )
 
-  // 转换为分组选项格式，确保基础配置排在前面
-  const groupOrder = ['基础配置', '组件属性', '其他']
+  // 转换为分组选项格式，确保实时属性排在最前面
+  const groupOrder = hasRuntimeProperties ? ['实时属性 (当前值)', '属性定义 (声明)', '基础配置', '通用属性 (组件未声明具体属性)'] : ['组件属性', '基础配置', '通用属性 (组件未声明具体属性)']
+
   groupOrder.forEach(groupName => {
     if (groups[groupName] && groups[groupName].length > 0) {
       groupedOptions.push({
@@ -522,21 +616,12 @@ const availablePropertyOptions = computed(() => {
     }
   })
 
-  // 添加其他未预定义的分组
-  Object.entries(groups).forEach(([groupName, options]) => {
-    if (!groupOrder.includes(groupName) && options.length > 0) {
-      groupedOptions.push({
-        type: 'group',
-        label: groupName,
-        key: groupName,
-        children: options
-      })
-    }
+  console.log(`🔍 [InteractionCardWizard] 最终生成的属性选项:`, {
+    hasRuntimeProperties,
+    groupedOptions,
+    componentId: currentComponent?.id
   })
-
-  const options = groupedOptions.length > 0 ? groupedOptions : []
-
-  return options
+  return groupedOptions
 })
 
 // ✅ 正确的事件类型样式 (3种)

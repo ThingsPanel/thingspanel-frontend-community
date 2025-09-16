@@ -1181,10 +1181,26 @@ export class SingleDataSourceImporter {
         targetSlotIndex = existingConfig.dataSources.length - 1
       }
 
+      // 🔥 重要修复：根据真实导出数据结构，dataItems 已经是标准格式
+      // 从你的导出数据看，dataItems 已经包含 {item, processing} 结构，直接使用
+      const standardDataItems = processedConfig.dataSourceConfig?.dataItems || []
+      
+      console.log(`🔥 [SingleDataSourceImporter] 处理导入数据项:`, {
+        originalDataItems: processedConfig.dataSourceConfig?.dataItems,
+        itemCount: standardDataItems.length,
+        firstItemStructure: standardDataItems[0] ? {
+          hasItem: 'item' in standardDataItems[0],
+          hasProcessing: 'processing' in standardDataItems[0],
+          itemType: standardDataItems[0].item?.type,
+          itemConfig: standardDataItems[0].item?.config,
+          processingFilterPath: standardDataItems[0].processing?.filterPath
+        } : 'no items'
+      })
+
       // 更新目标槽位的配置
       existingConfig.dataSources[targetSlotIndex] = {
         sourceId: targetSlotId,
-        dataItems: processedConfig.dataSourceConfig?.dataItems || [],
+        dataItems: standardDataItems,
         mergeStrategy: processedConfig.dataSourceConfig?.mergeStrategy || { type: 'object' },
         ...(processedConfig.dataSourceConfig?.processing && {
           processing: processedConfig.dataSourceConfig.processing

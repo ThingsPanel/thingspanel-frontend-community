@@ -53,22 +53,25 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
    * 初始化组件树
    */
   const initialize = async () => {
-    // 🔥 修复：检查全局初始化状态
+    // 🔥 修复：避免重复初始化
     if (globalInitialized && componentTree.value.totalCount > 0) {
+      console.log('✅ [useComponentTree] 系统已初始化，跳过重复初始化')
       return
     }
 
     if (isLoading.value) {
+      console.log('⏳ [useComponentTree] 正在初始化中，等待完成')
       return
     }
 
+    console.log('🚀 [useComponentTree] 开始初始化组件树...')
     isLoading.value = true
     error.value = null
 
     try {
       await initializeCard2System()
 
-      const tree = getComponentTree()
+      const tree = await getComponentTree()
       componentTree.value = tree
 
       // 🔥 修复：强制触发响应性更新
@@ -76,6 +79,8 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
 
       // 🔥 修复：标记全局初始化完成
       globalInitialized = true
+      
+      console.log(`✅ [useComponentTree] 初始化完成，已加载 ${tree.totalCount} 个组件`)
     } catch (err) {
       error.value = err instanceof Error ? err.message : '初始化失败'
       console.error('❌ [useComponentTree] 初始化失败:', err)
@@ -167,14 +172,23 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
   /**
    * 按分类获取组件
    */
-  const getComponentsByCategory = (mainCategory?: string, subCategory?: string) => {
-    return getComponentsByCategoryFromIndex(mainCategory, subCategory)
+  const getComponentsByCategory = async (mainCategory?: string, subCategory?: string) => {
+    return await getComponentsByCategoryFromIndex(mainCategory, subCategory)
   }
 
   /**
    * 获取所有分类
    */
-  const categories = computed(() => getCategories())
+  const categories = computed(() => {
+    // 如果未初始化，返回空数组
+    if (!globalInitialized) return []
+    try {
+      // 从已加载的组件树中获取分类信息，避免异步调用
+      return componentTree.value.categories?.map(cat => cat.name) || []
+    } catch {
+      return []
+    }
+  })
 
   /**
    * 获取可用的主分类
@@ -225,12 +239,12 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
    * Card2Wrapper 需要此方法来加载实际的 Vue 组件
    */
   const getComponent = async (componentType: string) => {
-    // 🔥 调试：如果没有组件，强制重新初始化
+    // 🔥 修复死循环：移除强制重新初始化，避免与Card2Wrapper循环调用
     if (filteredComponents.value.length === 0) {
       if (process.env.NODE_ENV === 'development') {
-        console.error(`⚠️ [useComponentTree] 没有可用组件，强制重新初始化...`)
+        console.warn(`⚠️ [useComponentTree] 没有可用组件，等待系统初始化完成`)
       }
-      await initialize()
+      return null
     }
 
     // 从已注册的组件中查找

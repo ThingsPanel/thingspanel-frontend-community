@@ -8,20 +8,61 @@
 
 /**
  * 交互事件类型
- * 简化为3种核心事件类型
+ * 定义了所有支持的用户交互和系统事件类型
  */
 export type InteractionEventType =
-  | 'click' // 点击事件
-  | 'hover' // 悬停事件
-  | 'dataChange' // 数据变化事件（属性改变时）
+  | 'click'              // 鼠标点击事件
+  | 'hover'              // 鼠标悬停事件
+  | 'focus'              // 元素获得焦点事件
+  | 'blur'               // 元素失去焦点事件
+  | 'visibility'         // 元素可见性状态变化事件
+  | 'dataChange'         // 组件数据属性值变化事件
+  | 'conditional'        // 条件表达式满足时触发的事件
+  | 'crossComponent'     // 跨组件通信事件
+  | 'custom'             // 用户自定义事件类型
 
 /**
  * 交互响应动作类型
- * 简化为2种核心动作类型
+ * 定义了交互触发后可执行的所有动作类型
  */
 export type InteractionActionType =
-  | 'jump' // URL跳转（包含外部URL和内部菜单）
-  | 'modify' // 修改目标组件属性
+  // 导航动作
+  | 'navigateToUrl'            // URL跳转 (支持内部路由和外部链接)
+  | 'jumpToPage'               // 页面跳转 (内部路由专用)
+  
+  // 数据操作动作
+  | 'updateComponentData'      // 更新目标组件数据
+  | 'modifyProperty'           // 修改组件属性
+  
+  // 视觉样式动作  
+  | 'changeVisibility'         // 改变元素可见性 (visible/hidden)
+  | 'changeBackgroundColor'    // 改变背景颜色
+  | 'changeTextColor'          // 改变文字颜色
+  | 'changeBorderColor'        // 改变边框颜色
+  | 'changeSize'               // 改变尺寸 (width/height)
+  | 'changeOpacity'            // 改变透明度 (0-1)
+  | 'changeTransform'          // CSS变换操作 (scale/rotate/translate)
+  | 'changeContent'            // 改变文本内容
+  
+  // 动画效果动作
+  | 'triggerAnimation'         // 触发CSS动画或关键帧动画
+  | 'flashColor'               // 颜色闪烁效果
+  | 'pulseEffect'              // 脉冲动画效果
+  | 'shakeEffect'              // 震动动画效果
+  
+  // 高级功能动作
+  | 'conditionalStyle'         // 基于条件的样式应用
+  | 'callFunction'             // 调用JavaScript函数
+  | 'emitEvent'                // 发送自定义事件
+  | 'playSound'                // 播放音效
+  | 'showNotification'         // 显示通知消息
+  
+  // 兼容旧版本
+  | 'jump'                     // URL跳转（兼容旧版本）
+  | 'modify'                   // 修改目标组件属性（兼容旧版本）
+  
+  // 扩展动作
+  | 'custom'                   // 用户自定义动作处理器
 
 
 // 跳转类型枚举
@@ -196,20 +237,46 @@ export interface InteractionResult {
   error?: string
 }
 
-// ============ 简化的组件交互能力定义 ============
+// ============ 组件交互能力定义 ============
 
 /**
- * 组件交互能力声明（简化版本）
- * 移除了冗余的示例和重复的属性暴露配置
+ * 交互区域定义
+ * 定义组件内可交互的区域
+ */
+export interface InteractionZone {
+  /** 区域唯一标识 */
+  id: string
+  /** 区域显示名称 */
+  name: string
+  /** 区域描述 */
+  description?: string
+  /** 区域选择器（CSS selector或特殊标识） */
+  selector?: string
+  /** 支持的事件类型 */
+  supportedEvents?: InteractionEventType[]
+}
+
+/**
+ * 组件交互能力声明
+ * 定义组件的完整交互能力
  */
 export interface ComponentInteractionCapability {
   /** 组件支持的事件类型 */
   supportedEvents: InteractionEventType[]
-  /** 组件支持的动作类型 */
-  supportedActions: InteractionActionType[]
+  
+  /** 组件可触发的动作类型 */
+  availableActions: InteractionActionType[]
+  
   /** 可被其他组件监听的属性列表 */
-  listenableProperties: Record<string, {
-    type: 'string' | 'number' | 'boolean' | 'object'
+  watchableProperties: Record<string, {
+    type: 'string' | 'number' | 'boolean' | 'object' | 'array'
     description?: string
+    defaultValue?: any
   }>
+  
+  /** 交互区域定义（可选） */
+  interactionZones?: InteractionZone[]
+  
+  /** 默认交互配置（可选） */
+  defaultInteractions?: InteractionConfig[]
 }

@@ -1,5 +1,0 @@
-import type { SettingConfig } from '@/card2.1/types/setting-config'
-export interface SimpleDashboardCustomize { title: string; defaultValue: number; valueSize: number; valueColor: string; backgroundColor: string; borderColor: string; borderRadius: number }
-export interface SimpleDashboardConfig { type: 'simple-dashboard'; root: { transform: { rotate: number; scale: number } }; customize: SimpleDashboardCustomize }
-export const customConfig: SimpleDashboardCustomize = { title: '简单仪表盘', defaultValue: 0, valueSize: 32, valueColor: 'var(--primary-color)', backgroundColor: 'transparent', borderColor: 'var(--border-color)', borderRadius: 8 }
-export const simpleDashboardSettingConfig: SettingConfig<SimpleDashboardCustomize> = [{ group: '内容设置', items: [{ key: 'title', label: '标题', type: 'input', defaultValue: '简单仪表盘' }] }]

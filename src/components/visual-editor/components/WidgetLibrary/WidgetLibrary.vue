@@ -76,7 +76,6 @@ import { useComponentTree } from '@/card2.1/hooks/useComponentTree'
 import { getCategoryDisplayName } from '@/card2.1/components/category-mapping'
 import type { WidgetDefinition, WidgetTreeNode } from '@/components/visual-editor/types/widget'
 import { registerAllWidgets } from '@/components/visual-editor/widgets'
-import { testPermissionSystem } from '@/card2.1/debug'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
 
@@ -95,7 +94,6 @@ const initializationError = computed(() => componentTree.error.value)
 
 const initializeWidgets = async () => {
   try {
-    await testPermissionSystem()
     await componentTree.initialize()
   } catch (error) {}
 }

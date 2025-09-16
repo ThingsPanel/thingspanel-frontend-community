@@ -2,7 +2,7 @@
  * 配置管理器
  * 负责管理所有组件的配置数据，提供配置的CRUD操作和事件监听
  *
- * Task 1.2 重构：集成配置事件总线，实现解耦架构
+ * Task 1.2 重构：集成配置事件总线，实现解耦合架构
  */
 import { reactive, ref, computed } from 'vue'
 
@@ -399,26 +399,27 @@ export class ConfigurationManager implements IConfigurationManager {
   }
 
   /**
-   * 导入配置
+   * 导入组件配置
+   * @param componentId - 组件ID
+   * @param configuration - 要导入的配置
    */
-  importConfiguration(widgetId: string, configData: string): boolean {
-    try {
-      const config = JSON.parse(configData) as WidgetConfiguration
-
-      // 验证导入的配置
-      const validationResult = this.validateConfiguration(config)
-      if (!validationResult.valid) {
-        return false
-      }
-
-      // 检查是否需要迁移
-      const migratedConfig = this.migrateConfiguration(config)
-
-      this.setConfiguration(widgetId, migratedConfig)
-      return true
-    } catch (error) {
-      return false
+  public importConfiguration(componentId: string, configuration: Record<string, any>): void {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📥 [ConfigurationManager] 正在导入组件 ${componentId} 的配置:`, configuration)
     }
+
+    // 在设置新配置之前，遍历即将被替换的旧配置中的所有数据源，并清除它们的缓存
+    const oldConfig = this.configurations[componentId]
+    if (oldConfig) {
+      for (const key in oldConfig) {
+        // 检查属性是否为数据源类型
+        if (oldConfig[key] && oldConfig[key].dataType === 'dataSource') {
+          this.clearDataSourceCache(componentId, key)
+        }
+      }
+    }
+
+    this.setConfiguration(componentId, configuration)
   }
 
   /**

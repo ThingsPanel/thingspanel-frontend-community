@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Engine 使用演示</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #ddd;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .demo-section {
+            margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            background: #f5f5f5;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .demo-body {
+            padding: 20px;
+        }
+        
+        .demo-button {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .demo-button:active {
+            transform: translateY(0);
+        }
+        
+        .demo-button.danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+        
+        .demo-button.success {
+            background: linear-gradient(45deg, #27ae60, #229954);
+        }
+        
+        .demo-button.warning {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+        
+        .log-container {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 3px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .log-time {
+            color: #888;
+            margin-right: 10px;
+        }
+        
+        .log-level-info {
+            color: #00ff00;
+        }
+        
+        .log-level-warn {
+            color: #ffff00;
+        }
+        
+        .log-level-error {
+            color: #ff4444;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+        
+        .event-type-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        
+        .event-type-item {
+            background: #e9ecef;
+            margin: 5px 0;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .input-group {
+            margin: 10px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        .input-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        
+        .clear-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            float: right;
+        }
+        
+        .performance-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+        
+        .performance-good { background: #28a745; }
+        .performance-ok { background: #ffc107; }
+        .performance-bad { background: #dc3545; }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .pulsing {
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Event Engine 使用演示</h1>
+            <p>ThingsPanel 物联网可视化平台 - 事件驱动架构演示</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <h3>📊 实时统计</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalEvents">0</div>
+                        <div class="stat-label">总事件数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalHandlers">0</div>
+                        <div class="stat-label">活跃监听器</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="eventTypes">0</div>
+                        <div class="stat-label">事件类型</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="performance">-</div>
+                        <div class="stat-label">性能指标</div>
+                    </div>
+                </div>
+                
+                <h3>📝 活跃事件类型</h3>
+                <div class="event-type-list" id="eventTypesList"></div>
+                
+                <h3>🎛️ 控制面板</h3>
+                <button class="demo-button success" onclick="startPerformanceTest()">性能测试</button>
+                <button class="demo-button warning" onclick="generateRandomEvents()">随机事件</button>
+                <button class="demo-button danger" onclick="stopAllTests()">停止测试</button>
+                <button class="clear-button" onclick="clearLogs()">清空日志</button>
+            </div>
+            
+            <div class="content">
+                <div class="demo-section">
+                    <div class="demo-header">🎯 基础事件演示</div>
+                    <div class="demo-body">
+                        <p>演示基本的事件发送和监听功能</p>
+                        <button class="demo-button" onclick="sendDeviceStatusEvent()">设备状态变更</button>
+                        <button class="demo-button" onclick="sendConfigChangeEvent()">配置变更</button>
+                        <button class="demo-button" onclick="sendUserActionEvent()">用户操作</button>
+                        <button class="demo-button" onclick="sendDataUpdateEvent()">数据更新</button>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <div class="demo-header">🔗 系统集成演示</div>
+                    <div class="demo-body">
+                        <p>演示与各个子系统的集成能力</p>
+                        <button class="demo-button" onclick="simulateCard21Integration()">Card2.1 集成</button>
+                        <button class="demo-button" onclick="simulateVisualEditorIntegration()">可视化编辑器</button>
+                        <button class="demo-button" onclick="simulateCoreSystemIntegration()">核心系统</button>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <div class="demo-header">⚡ 高级功能演示</div>
+                    <div class="demo-body">
+                        <p>演示事件链、错误处理、批量操作等高级功能</p>
+                        <button class="demo-button" onclick="demonstrateEventChain()">事件处理链</button>
+                        <button class="demo-button" onclick="demonstrateErrorHandling()">错误处理</button>
+                        <button class="demo-button" onclick="demonstrateBatchOperations()">批量操作</button>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <div class="demo-header">🛠️ 自定义事件测试</div>
+                    <div class="demo-body">
+                        <div class="input-group">
+                            <label for="customEventType">事件类型:</label>
+                            <input type="text" id="customEventType" placeholder="例: custom:test:event" value="custom:test:event">
+                        </div>
+                        <div class="input-group">
+                            <label for="customEventPayload">事件载荷 (JSON):</label>
+                            <textarea id="customEventPayload" placeholder='{"message": "测试消息", "data": 123}'>{
+  "message": "自定义测试事件",
+  "customData": {
+    "value": 42,
+    "timestamp": "{{timestamp}}"
+  }
+}</textarea>
+                        </div>
+                        <button class="demo-button" onclick="sendCustomEvent()">发送自定义事件</button>
+                        <button class="demo-button warning" onclick="listenToCustomEvent()">监听自定义事件</button>
+                    </div>
+                </div>
+                
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry">
+                        <span class="log-time">[系统]</span>
+                        <span class="log-level-info">Event Engine 演示系统已启动</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟 Event Engine 基础功能
+        class DemoEventEngine {
+            constructor() {
+                this.handlers = new Map()
+                this.stats = {
+                    totalEvents: 0,
+                    totalHandlers: 0,
+                    eventTypes: new Set()
+                }
+                this.performanceData = []
+                this.testIntervals = new Set()
+            }
+            
+            on(eventType, handler) {
+                if (!this.handlers.has(eventType)) {
+                    this.handlers.set(eventType, new Set())
+                }
+                this.handlers.get(eventType).add(handler)
+                this.stats.eventTypes.add(eventType)
+                this.updateStats()
+                
+                // 返回取消订阅函数
+                return () => {
+                    this.handlers.get(eventType).delete(handler)
+                    if (this.handlers.get(eventType).size === 0) {
+                        this.handlers.delete(eventType)
+                        this.stats.eventTypes.delete(eventType)
+                    }
+                    this.updateStats()
+                }
+            }
+            
+            async emit(eventType, payload) {
+                const startTime = performance.now()
+                
+                // 添加时间戳
+                payload.timestamp = payload.timestamp || Date.now()
+                payload.source = payload.source || 'demo-system'
+                
+                this.stats.totalEvents++
+                this.stats.eventTypes.add(eventType)
+                
+                // 触发事件处理器
+                if (this.handlers.has(eventType)) {
+                    const handlers = Array.from(this.handlers.get(eventType))
+                    for (const handler of handlers) {
+                        try {
+                            await handler(payload, eventType)
+                        } catch (error) {
+                            logMessage(`事件处理器错误: ${error.message}`, 'error')
+                        }
+                    }
+                }
+                
+                // 记录性能数据
+                const duration = performance.now() - startTime
+                this.performanceData.push(duration)
+                if (this.performanceData.length > 100) {
+                    this.performanceData.shift()
+                }
+                
+                this.updateStats()
+                
+                // 记录日志
+                logMessage(`事件发送: ${eventType}`, 'info', payload)
+            }
+            
+            getStatistics() {
+                const avgPerformance = this.performanceData.length > 0 
+                    ? (this.performanceData.reduce((a, b) => a + b, 0) / this.performanceData.length).toFixed(2)
+                    : 0
+                    
+                return {
+                    totalEvents: this.stats.totalEvents,
+                    totalHandlers: Array.from(this.handlers.values()).reduce((sum, handlers) => sum + handlers.size, 0),
+                    eventTypes: Array.from(this.stats.eventTypes),
+                    averagePerformance: parseFloat(avgPerformance)
+                }
+            }
+            
+            updateStats() {
+                const stats = this.getStatistics()
+                
+                document.getElementById('totalEvents').textContent = stats.totalEvents
+                document.getElementById('totalHandlers').textContent = stats.totalHandlers
+                document.getElementById('eventTypes').textContent = stats.eventTypes.length
+                
+                // 更新性能指标
+                const perfElement = document.getElementById('performance')
+                if (stats.averagePerformance > 0) {
+                    perfElement.textContent = stats.averagePerformance + 'ms'
+                    
+                    // 性能指示器
+                    perfElement.className = 'stat-value'
+                    if (stats.averagePerformance < 1) {
+                        perfElement.innerHTML += '<span class="performance-indicator performance-good"></span>'
+                    } else if (stats.averagePerformance < 5) {
+                        perfElement.innerHTML += '<span class="performance-indicator performance-ok"></span>'
+                    } else {
+                        perfElement.innerHTML += '<span class="performance-indicator performance-bad"></span>'
+                    }
+                }
+                
+                // 更新事件类型列表
+                const eventTypesList = document.getElementById('eventTypesList')
+                eventTypesList.innerHTML = ''
+                stats.eventTypes.forEach(eventType => {
+                    const item = document.createElement('div')
+                    item.className = 'event-type-item'
+                    item.textContent = eventType
+                    eventTypesList.appendChild(item)
+                })
+            }
+            
+            clearAllIntervals() {
+                this.testIntervals.forEach(interval => clearInterval(interval))
+                this.testIntervals.clear()
+            }
+        }
+        
+        // 创建演示事件引擎实例
+        const eventEngine = new DemoEventEngine()
+        
+        // 日志系统
+        function logMessage(message, level = 'info', data = null) {
+            const logContainer = document.getElementById('logContainer')
+            const logEntry = document.createElement('div')
+            logEntry.className = 'log-entry'
+            
+            const now = new Date()
+            const timeStr = now.toLocaleTimeString()
+            
+            let logHtml = `<span class="log-time">[${timeStr}]</span>`
+            logHtml += `<span class="log-level-${level}">${message}</span>`
+            
+            if (data && typeof data === 'object') {
+                logHtml += `<br><span style="color: #888; font-size: 11px; margin-left: 80px;">数据: ${JSON.stringify(data, null, 2)}</span>`
+            }
+            
+            logEntry.innerHTML = logHtml
+            logContainer.appendChild(logEntry)
+            logContainer.scrollTop = logContainer.scrollHeight
+            
+            // 限制日志条数
+            while (logContainer.children.length > 100) {
+                logContainer.removeChild(logContainer.firstChild)
+            }
+        }
+        
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = ''
+            logMessage('日志已清空', 'info')
+        }
+        
+        // 基础事件演示函数
+        async function sendDeviceStatusEvent() {
+            const deviceId = 'demo_device_' + Math.floor(Math.random() * 1000)
+            const statuses = ['online', 'offline', 'maintenance', 'error']
+            const status = statuses[Math.floor(Math.random() * statuses.length)]
+            
+            await eventEngine.emit('device:status:change', {
+                deviceId,
+                status,
+                previousStatus: status === 'online' ? 'offline' : 'online',
+                reason: status === 'offline' ? '网络连接中断' : '状态正常更新'
+            })
+        }
+        
+        async function sendConfigChangeEvent() {
+            const configs = [
+                { key: 'themeMode', newValue: 'dark', oldValue: 'light' },
+                { key: 'language', newValue: 'zh-CN', oldValue: 'en-US' },
+                { key: 'refreshInterval', newValue: 5000, oldValue: 3000 },
+                { key: 'enableNotifications', newValue: true, oldValue: false }
+            ]
+            
+            const config = configs[Math.floor(Math.random() * configs.length)]
+            
+            await eventEngine.emit('config:change', {
+                ...config,
+                source: 'user-settings'
+            })
+        }
+        
+        async function sendUserActionEvent() {
+            const actions = [
+                {
+                    eventType: 'user:action:click',
+                    payload: {
+                        componentId: 'chart_widget_' + Math.floor(Math.random() * 100),
+                        position: { x: Math.floor(Math.random() * 800), y: Math.floor(Math.random() * 600) },
+                        button: 'left'
+                    }
+                },
+                {
+                    eventType: 'user:action:drag',
+                    payload: {
+                        componentId: 'panel_item_' + Math.floor(Math.random() * 100),
+                        startPosition: { x: 100, y: 100 },
+                        endPosition: { x: Math.floor(Math.random() * 400), y: Math.floor(Math.random() * 300) }
+                    }
+                },
+                {
+                    eventType: 'user:action:select',
+                    payload: {
+                        componentId: 'device_list_item_' + Math.floor(Math.random() * 50),
+                        selectionType: 'single',
+                        ctrlKey: Math.random() > 0.5
+                    }
+                }
+            ]
+            
+            const action = actions[Math.floor(Math.random() * actions.length)]
+            await eventEngine.emit(action.eventType, action.payload)
+        }
+        
+        async function sendDataUpdateEvent() {
+            const dataTypes = [
+                {
+                    eventType: 'data:received',
+                    payload: {
+                        deviceId: 'sensor_' + Math.floor(Math.random() * 100),
+                        rawData: {
+                            temperature: (Math.random() * 40 - 10).toFixed(1),
+                            humidity: (Math.random() * 100).toFixed(1),
+                            pressure: (Math.random() * 200 + 900).toFixed(2)
+                        }
+                    }
+                },
+                {
+                    eventType: 'data:processed',
+                    payload: {
+                        deviceId: 'gateway_' + Math.floor(Math.random() * 10),
+                        processedData: {
+                            averageTemp: (Math.random() * 30 + 10).toFixed(1),
+                            dataPoints: Math.floor(Math.random() * 100),
+                            quality: Math.random() > 0.8 ? 'high' : 'medium'
+                        },
+                        processingTime: Math.floor(Math.random() * 500)
+                    }
+                }
+            ]
+            
+            const dataUpdate = dataTypes[Math.floor(Math.random() * dataTypes.length)]
+            await eventEngine.emit(dataUpdate.eventType, dataUpdate.payload)
+        }
+        
+        // 系统集成演示
+        async function simulateCard21Integration() {
+            const events = [
+                'card21:config:update',
+                'card21:data:binding:change',
+                'card21:component:render',
+                'card21:validation:result'
+            ]
+            
+            for (const eventType of events) {
+                await eventEngine.emit(eventType, {
+                    cardId: 'card_' + Math.floor(Math.random() * 100),
+                    componentType: 'digital-indicator',
+                    configData: { theme: 'modern', size: 'medium' },
+                    status: 'success'
+                })
+                
+                // 小延迟以便观察
+                await new Promise(resolve => setTimeout(resolve, 200))
+            }
+        }
+        
+        async function simulateVisualEditorIntegration() {
+            const events = [
+                'visual-editor:component:select',
+                'visual-editor:layout:change',
+                'visual-editor:property:update',
+                'visual-editor:canvas:resize'
+            ]
+            
+            for (const eventType of events) {
+                await eventEngine.emit(eventType, {
+                    editorId: 'editor_main',
+                    componentId: 'component_' + Math.floor(Math.random() * 50),
+                    operation: 'user-interaction',
+                    data: { x: Math.random() * 1000, y: Math.random() * 800 }
+                })
+                
+                await new Promise(resolve => setTimeout(resolve, 300))
+            }
+        }
+        
+        async function simulateCoreSystemIntegration() {
+            const events = [
+                'core:system:init',
+                'core:module:loaded',
+                'core:service:ready',
+                'core:health:check'
+            ]
+            
+            for (const eventType of events) {
+                await eventEngine.emit(eventType, {
+                    module: 'data-architecture',
+                    version: '2.1.0',
+                    status: 'operational',
+                    metrics: {
+                        memoryUsage: Math.floor(Math.random() * 100) + 'MB',
+                        cpuUsage: Math.floor(Math.random() * 50) + '%'
+                    }
+                })
+                
+                await new Promise(resolve => setTimeout(resolve, 250))
+            }
+        }
+        
+        // 高级功能演示
+        async function demonstrateEventChain() {
+            logMessage('开始演示事件处理链', 'info')
+            
+            // 设置事件链监听器
+            eventEngine.on('chain:step1', async (payload) => {
+                logMessage('事件链步骤1: 数据接收', 'info', payload)
+                await new Promise(resolve => setTimeout(resolve, 100))
+                
+                await eventEngine.emit('chain:step2', {
+                    ...payload,
+                    step1Result: '数据验证完成',
+                    processedAt: Date.now()
+                })
+            })
+            
+            eventEngine.on('chain:step2', async (payload) => {
+                logMessage('事件链步骤2: 数据处理', 'info', payload)
+                await new Promise(resolve => setTimeout(resolve, 150))
+                
+                await eventEngine.emit('chain:step3', {
+                    ...payload,
+                    step2Result: '数据转换完成',
+                    transformedData: { ...payload.rawData, processed: true }
+                })
+            })
+            
+            eventEngine.on('chain:step3', (payload) => {
+                logMessage('事件链步骤3: 数据存储完成', 'info', payload)
+            })
+            
+            // 启动事件链
+            await eventEngine.emit('chain:step1', {
+                chainId: 'demo_chain_' + Date.now(),
+                rawData: {
+                    temperature: 25.6,
+                    humidity: 62.3,
+                    location: '传感器区域A'
+                }
+            })
+        }
+        
+        async function demonstrateErrorHandling() {
+            logMessage('开始演示错误处理机制', 'info')
+            
+            // 错误处理监听器
+            eventEngine.on('system:error', (payload) => {
+                logMessage(`系统错误捕获: ${payload.error.message}`, 'error', payload)
+            })
+            
+            eventEngine.on('error:test:event', (payload) => {
+                // 故意抛出错误来测试错误处理
+                throw new Error('这是一个测试错误: ' + payload.testData)
+            })
+            
+            // 发送会导致错误的事件
+            await eventEngine.emit('error:test:event', {
+                testData: '错误处理演示',
+                intentionalError: true
+            })
+            
+            // 发送错误恢复事件
+            setTimeout(async () => {
+                await eventEngine.emit('system:recovery', {
+                    recoveryAction: '错误处理完成',
+                    status: 'recovered'
+                })
+            }, 1000)
+        }
+        
+        async function demonstrateBatchOperations() {
+            logMessage('开始演示批量操作', 'info')
+            
+            const batchEvents = [
+                'batch:device:status:update',
+                'batch:data:sync',
+                'batch:config:validate',
+                'batch:notification:send'
+            ]
+            
+            // 批量监听器
+            batchEvents.forEach(eventType => {
+                eventEngine.on(eventType, (payload) => {
+                    logMessage(`批量操作: ${eventType}`, 'info', {
+                        batchId: payload.batchId,
+                        itemCount: payload.items ? payload.items.length : 0
+                    })
+                })
+            })
+            
+            // 并发发送批量事件
+            const batchPromises = batchEvents.map((eventType, index) => 
+                eventEngine.emit(eventType, {
+                    batchId: 'batch_' + Date.now() + '_' + index,
+                    items: Array.from({length: Math.floor(Math.random() * 10) + 5}, (_, i) => ({
+                        id: `item_${i}`,
+                        data: `批量数据项 ${i + 1}`
+                    })),
+                    operation: '批量处理演示'
+                })
+            )
+            
+            await Promise.all(batchPromises)
+            logMessage('批量操作完成', 'info')
+        }
+        
+        // 自定义事件功能
+        let customEventUnsubscriber = null
+        
+        async function sendCustomEvent() {
+            const eventType = document.getElementById('customEventType').value.trim()
+            const payloadStr = document.getElementById('customEventPayload').value.trim()
+            
+            if (!eventType) {
+                logMessage('请输入事件类型', 'error')
+                return
+            }
+            
+            try {
+                let payload = {}
+                if (payloadStr) {
+                    // 替换时间戳占位符
+                    const processedPayload = payloadStr.replace('{{timestamp}}', Date.now().toString())
+                    payload = JSON.parse(processedPayload)
+                }
+                
+                await eventEngine.emit(eventType, payload)
+                logMessage(`自定义事件已发送: ${eventType}`, 'info')
+            } catch (error) {
+                logMessage(`JSON 解析错误: ${error.message}`, 'error')
+            }
+        }
+        
+        function listenToCustomEvent() {
+            const eventType = document.getElementById('customEventType').value.trim()
+            
+            if (!eventType) {
+                logMessage('请输入事件类型', 'error')
+                return
+            }
+            
+            // 清除之前的监听器
+            if (customEventUnsubscriber) {
+                customEventUnsubscriber()
+            }
+            
+            // 添加新的监听器
+            customEventUnsubscriber = eventEngine.on(eventType, (payload) => {
+                logMessage(`自定义事件接收: ${eventType}`, 'info', payload)
+            })
+            
+            logMessage(`开始监听自定义事件: ${eventType}`, 'info')
+        }
+        
+        // 性能测试功能
+        function startPerformanceTest() {
+            logMessage('开始性能测试 - 每秒发送10个事件', 'info')
+            
+            let eventCount = 0
+            const testInterval = setInterval(async () => {
+                eventCount++
+                
+                await eventEngine.emit('performance:test:event', {
+                    eventNumber: eventCount,
+                    testData: `性能测试数据 ${eventCount}`,
+                    batchSize: 10,
+                    timestamp: Date.now()
+                })
+                
+                if (eventCount >= 100) {
+                    clearInterval(testInterval)
+                    eventEngine.testIntervals.delete(testInterval)
+                    logMessage('性能测试完成 - 共发送100个事件', 'info')
+                }
+            }, 100) // 每100ms发送一个事件
+            
+            eventEngine.testIntervals.add(testInterval)
+        }
+        
+        function generateRandomEvents() {
+            logMessage('开始生成随机事件', 'info')
+            
+            const randomEventTypes = [
+                'random:sensor:reading',
+                'random:user:activity',
+                'random:system:metric',
+                'random:device:heartbeat',
+                'random:data:update'
+            ]
+            
+            const randomInterval = setInterval(async () => {
+                const eventType = randomEventTypes[Math.floor(Math.random() * randomEventTypes.length)]
+                
+                await eventEngine.emit(eventType, {
+                    randomValue: Math.random(),
+                    randomId: Math.floor(Math.random() * 1000),
+                    randomData: {
+                        metric: Math.floor(Math.random() * 100),
+                        status: Math.random() > 0.5 ? 'active' : 'inactive'
+                    }
+                })
+            }, 500) // 每500ms一个随机事件
+            
+            eventEngine.testIntervals.add(randomInterval)
+            
+            // 30秒后自动停止
+            setTimeout(() => {
+                clearInterval(randomInterval)
+                eventEngine.testIntervals.delete(randomInterval)
+                logMessage('随机事件生成已停止', 'info')
+            }, 30000)
+        }
+        
+        function stopAllTests() {
+            eventEngine.clearAllIntervals()
+            logMessage('所有测试已停止', 'info')
+        }
+        
+        // 初始化演示
+        window.addEventListener('load', () => {
+            logMessage('Event Engine 演示系统初始化完成', 'info')
+            
+            // 设置全局事件监听器进行演示
+            eventEngine.on('*', (payload, eventType) => {
+                // 这里可以添加全局事件处理逻辑
+                if (eventType.startsWith('system:') || eventType.startsWith('demo:')) {
+                    // 高亮重要系统事件
+                    const logContainer = document.getElementById('logContainer')
+                    if (logContainer.lastElementChild) {
+                        logContainer.lastElementChild.classList.add('pulsing')
+                        setTimeout(() => {
+                            if (logContainer.lastElementChild) {
+                                logContainer.lastElementChild.classList.remove('pulsing')
+                            }
+                        }, 1000)
+                    }
+                }
+            })
+            
+            // 定期更新统计信息
+            setInterval(() => {
+                eventEngine.updateStats()
+            }, 1000)
+        })
+    </script>
+</body>
+</html>

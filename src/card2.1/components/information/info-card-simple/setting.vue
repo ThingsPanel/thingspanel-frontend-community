@@ -1,25 +1,25 @@
 <template>
   <div class="info-card-simple-setting">
-    <n-form :model="config" label-placement="left" label-width="80" size="small">
+    <n-form :model="localConfig" label-placement="left" label-width="80" size="small">
       <!-- 显示设置 -->
       <n-divider title-placement="left">
         <span style="font-size: 12px; color: var(--text-color-2)">显示设置</span>
       </n-divider>
       
       <n-form-item label="显示图标">
-        <n-switch v-model:value="config.showIcon" />
+        <n-switch v-model:value="localConfig.showIcon" @update:value="handleConfigChange" />
       </n-form-item>
       
       <n-form-item label="显示标题">
-        <n-switch v-model:value="config.showTitle" />
+        <n-switch v-model:value="localConfig.showTitle" @update:value="handleConfigChange" />
       </n-form-item>
       
       <n-form-item label="显示副文本">
-        <n-switch v-model:value="config.showSubtext" />
+        <n-switch v-model:value="localConfig.showSubtext" @update:value="handleConfigChange" />
       </n-form-item>
       
       <n-form-item label="显示时间">
-        <n-switch v-model:value="config.showUpdateTime" />
+        <n-switch v-model:value="localConfig.showUpdateTime" @update:value="handleConfigChange" />
       </n-form-item>
       
       <!-- 内容配置 -->
@@ -28,15 +28,15 @@
       </n-divider>
       
       <n-form-item label="标题">
-        <n-input v-model:value="config.title" placeholder="请输入标题" />
+        <n-input v-model:value="localConfig.title" placeholder="请输入标题" @input="handleConfigChange" />
       </n-form-item>
       
       <n-form-item label="默认值">
-        <n-input v-model:value="config.defaultValue" placeholder="无数据时显示的默认值" />
+        <n-input v-model:value="localConfig.defaultValue" placeholder="无数据时显示的默认值" @input="handleConfigChange" />
       </n-form-item>
       
       <n-form-item label="副文本">
-        <n-input v-model:value="config.subtext" placeholder="请输入副文本说明" />
+        <n-input v-model:value="localConfig.subtext" placeholder="请输入副文本说明" @input="handleConfigChange" />
       </n-form-item>
       
       <!-- 样式配置 -->
@@ -45,41 +45,43 @@
       </n-divider>
       
       <n-form-item label="背景颜色">
-        <n-color-picker v-model:value="config.backgroundColor" />
+        <n-color-picker v-model:value="localConfig.backgroundColor" @update:value="handleConfigChange" />
       </n-form-item>
       
       <n-form-item label="边框颜色">
-        <n-color-picker v-model:value="config.borderColor" />
+        <n-color-picker v-model:value="localConfig.borderColor" @update:value="handleConfigChange" />
       </n-form-item>
       
       <n-form-item label="圆角">
         <n-input-number
-          v-model:value="config.borderRadius"
+          v-model:value="localConfig.borderRadius"
           :min="0"
           :max="20"
           placeholder="6"
+          @update:value="handleConfigChange"
         />
         <span style="margin-left: 8px; font-size: 12px; color: var(--text-color-3)">px</span>
       </n-form-item>
       
       <!-- 图标设置 -->
-      <template v-if="config.showIcon">
+      <template v-if="localConfig.showIcon">
         <n-divider title-placement="left">
           <span style="font-size: 12px; color: var(--text-color-2)">图标设置</span>
         </n-divider>
         
         <n-form-item label="图标大小">
           <n-input-number
-            v-model:value="config.iconSize"
+            v-model:value="localConfig.iconSize"
             :min="16"
             :max="48"
             placeholder="24"
+            @update:value="handleConfigChange"
           />
           <span style="margin-left: 8px; font-size: 12px; color: var(--text-color-3)">px</span>
         </n-form-item>
         
         <n-form-item label="图标颜色">
-          <n-color-picker v-model:value="config.iconColor" />
+          <n-color-picker v-model:value="localConfig.iconColor" @update:value="handleConfigChange" />
         </n-form-item>
       </template>
       
@@ -90,20 +92,21 @@
       
       <n-form-item label="字体大小">
         <n-input-number
-          v-model:value="config.valueSize"
+          v-model:value="localConfig.valueSize"
           :min="12"
           :max="48"
           placeholder="24"
+          @update:value="handleConfigChange"
         />
         <span style="margin-left: 8px; font-size: 12px; color: var(--text-color-3)">px</span>
       </n-form-item>
       
       <n-form-item label="字体颜色">
-        <n-color-picker v-model:value="config.valueColor" />
+        <n-color-picker v-model:value="localConfig.valueColor" @update:value="handleConfigChange" />
       </n-form-item>
       
       <n-form-item label="数值加粗">
-        <n-switch v-model:value="config.valueBold" />
+        <n-switch v-model:value="localConfig.valueBold" @update:value="handleConfigChange" />
       </n-form-item>
     </n-form>
   </div>
@@ -111,10 +114,11 @@
 
 <script setup lang="ts">
 /**
- * 简单信息卡片组件配置表单
+ * 简单信息卡片组件配置表单 - 重写版本
+ * 🔥 解决递归更新问题：使用本地状态管理，防抖更新
  */
 
-import { ref, watch } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { 
   NForm, 
   NFormItem, 
@@ -172,31 +176,49 @@ interface Emits {
 
 const emit = defineEmits<Emits>()
 
-// 配置数据
-const config = ref<InfoCardSimpleCustomize>({ ...props.modelValue })
+// 🔥 使用本地状态，避免直接修改props
+const localConfig = ref<InfoCardSimpleCustomize>({ ...props.modelValue })
 
-// 监听配置变化并向上传递
-watch(
-  config,
-  (newConfig) => {
-    if (!props.readonly) {
-      emit('update:modelValue', { ...newConfig })
-      emit('change', { ...newConfig })
-    }
-  },
-  { deep: true }
-)
+// 防抖更新定时器
+let updateTimer: number | null = null
 
-// 监听外部配置变化
+/**
+ * 🔥 处理配置变更 - 防抖发送事件
+ */
+const handleConfigChange = () => {
+  if (props.readonly) return
+  
+  if (updateTimer) {
+    clearTimeout(updateTimer)
+  }
+  
+  updateTimer = setTimeout(() => {
+    console.log(`🔥 [info-card-simple-setting] 配置变更:`, localConfig.value)
+    emit('update:modelValue', { ...localConfig.value })
+    emit('change', { ...localConfig.value })
+  }, 50) // 50ms防抖，更快响应
+}
+
+/**
+ * 🔥 监听外部配置变化，同步到本地状态（单向）
+ */
 watch(
   () => props.modelValue,
   (newValue) => {
-    if (newValue) {
-      config.value = { ...newValue }
+    if (newValue && JSON.stringify(newValue) !== JSON.stringify(localConfig.value)) {
+      console.log(`🔥 [info-card-simple-setting] 外部配置变化:`, newValue)
+      localConfig.value = { ...newValue }
     }
   },
-  { deep: true }
+  { deep: true, immediate: true }
 )
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  if (updateTimer) {
+    clearTimeout(updateTimer)
+  }
+})
 </script>
 
 <style scoped>

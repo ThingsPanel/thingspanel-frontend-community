@@ -72,7 +72,8 @@
  * 负责标题显示/编辑、基础配置应用、选中状态等
  */
 
-import { ref, computed, nextTick, watch, onMounted, onUnmounted, h } from 'vue'
+import { ref, computed, nextTick, watch, watchEffect, onMounted, onUnmounted, h } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import { NInput, NModal, NSpace, NButton, NDropdown, NIcon } from 'naive-ui'
 import { SettingsOutline, CopyOutline, TrashOutline } from '@vicons/ionicons5'
 import { useI18n } from 'vue-i18n'
@@ -175,36 +176,104 @@ const defaultBaseConfig: BaseConfiguration = {
   margin: { top: 0, right: 0, bottom: 0, left: 0 }
 }
 
-const baseConfig = computed((): BaseConfiguration => {
+// 🔥 修复递归更新：使用ref + watchEffect替代computed，避免在计算属性中触发配置系统
+const baseConfigRef = ref<BaseConfiguration>(defaultBaseConfig)
+
+// 🔥 修复递归更新：将配置获取逻辑移到watchEffect中，并添加防抖
+const updateBaseConfig = useDebounceFn(() => {
   try {
+    // 🔥 统一使用配置管理器获取配置，无论是否为Card2组件
     const widgetConfig = configurationManager.getConfiguration(props.nodeId)
 
-    // 🔥 如果没有配置，直接返回默认配置，避免创建新对象
     if (!widgetConfig?.base) {
-      return defaultBaseConfig
+      baseConfigRef.value = defaultBaseConfig
+      return
     }
 
-    // 🔥 使用展开运算符合并，确保返回稳定的对象
-    return {
+    baseConfigRef.value = {
       ...defaultBaseConfig,
       ...widgetConfig.base
     }
   } catch (error) {
     console.error(`[NodeWrapper] 获取节点 ${props.nodeId} 基础配置失败:`, error)
-    return defaultBaseConfig
+    baseConfigRef.value = defaultBaseConfig
   }
+}, 50) // 50ms防抖，避免频繁更新
+
+// 🔥 简化的Card2配置获取，使用配置管理器避免DOM操作
+const getBaseConfigFromCard2 = (): BaseConfiguration | null => {
+  try {
+    // 🔥 优先使用配置管理器获取配置
+    const config = configurationManager.getConfiguration(props.nodeId)
+    if (config?.base) {
+      return config.base
+    }
+
+    // 🔥 回退：发送自定义事件请求配置
+    const configRequestEvent = new CustomEvent('card2-config-request', {
+      detail: { componentId: props.nodeId, layer: 'base' }
+    })
+
+    let receivedConfig: BaseConfiguration | null = null
+    const handleConfigResponse = (event: CustomEvent) => {
+      if (event.detail.componentId === props.nodeId && event.detail.layer === 'base') {
+        receivedConfig = event.detail.config
+      }
+    }
+
+    window.addEventListener('card2-config-response', handleConfigResponse as EventListener)
+    window.dispatchEvent(configRequestEvent)
+    window.removeEventListener('card2-config-response', handleConfigResponse as EventListener)
+
+    return receivedConfig
+  } catch (error) {
+    console.error(`[NodeWrapper] 获取Card2配置失败 ${props.nodeId}:`, error)
+    return null
+  }
+}
+
+// 🔥 修复递归更新：使用计算属性引用ref，避免直接在computed中调用配置系统
+const baseConfig = computed(() => baseConfigRef.value)
+
+// 🔥 修复递归更新：使用ref避免在computed中调用配置系统
+const nodeComponentConfigRef = ref<any>(undefined)
+const nodeInteractionConfigsRef = ref<any[]>([])
+const nodeInteractionPermissionsRef = ref<any>({
+  allowExternalControl: true,
+  allowedEvents: ['click', 'hover', 'focus', 'blur']
 })
 
-// 获取节点组件配置 - 🔥 修复：改为计算属性避免无限循环
-const nodeComponentConfig = computed(() => {
+// 🔥 修复递归更新：统一的配置更新函数，防抖处理
+const updateAllConfigs = useDebounceFn(() => {
   try {
     const widgetConfig = configurationManager.getConfiguration(props.nodeId)
-    return widgetConfig?.component?.properties
+    
+    // 更新组件配置
+    nodeComponentConfigRef.value = widgetConfig?.component?.properties || undefined
+    
+    // 更新交互配置
+    nodeInteractionConfigsRef.value = widgetConfig?.interaction?.configs || []
+    
+    // 更新交互权限
+    nodeInteractionPermissionsRef.value = widgetConfig?.interaction?.permissions || {
+      allowExternalControl: true,
+      allowedEvents: ['click', 'hover', 'focus', 'blur']
+    }
   } catch (error) {
-    console.error(`[NodeWrapper] 获取节点 ${props.nodeId} 组件配置失败:`, error)
-    return undefined
+    console.error(`[NodeWrapper] 获取节点 ${props.nodeId} 配置失败:`, error)
+    nodeComponentConfigRef.value = undefined
+    nodeInteractionConfigsRef.value = []
+    nodeInteractionPermissionsRef.value = {
+      allowExternalControl: true,
+      allowedEvents: ['click', 'hover', 'focus', 'blur']
+    }
   }
-})
+}, 50)
+
+// 🔥 修复递归更新：使用计算属性引用ref
+const nodeComponentConfig = computed(() => nodeComponentConfigRef.value)
+const nodeInteractionConfigs = computed(() => nodeInteractionConfigsRef.value)
+const nodeInteractionPermissions = computed(() => nodeInteractionPermissionsRef.value)
 
 // 保持向后兼容的函数版本
 const getNodeComponentConfig = (nodeId: string): any => {
@@ -220,18 +289,6 @@ const getNodeComponentConfig = (nodeId: string): any => {
   }
 }
 
-// 🔥 获取节点交互配置 - 改为计算属性避免无限循环
-const nodeInteractionConfigs = computed(() => {
-  try {
-    const widgetConfig = configurationManager.getConfiguration(props.nodeId)
-    return widgetConfig?.interaction?.configs || []
-  } catch (error) {
-    console.error(`[NodeWrapper] 获取节点 ${props.nodeId} 交互配置失败:`, error)
-    return []
-  }
-})
-
-// 保持向后兼容的函数版本
 const getNodeInteractionConfigs = (nodeId: string): any[] => {
   if (nodeId === props.nodeId) {
     return nodeInteractionConfigs.value
@@ -245,26 +302,6 @@ const getNodeInteractionConfigs = (nodeId: string): any[] => {
   }
 }
 
-// 🔥 获取节点交互权限配置 - 改为计算属性避免无限循环
-const nodeInteractionPermissions = computed(() => {
-  try {
-    const widgetConfig = configurationManager.getConfiguration(props.nodeId)
-    return (
-      widgetConfig?.interaction?.permissions || {
-        allowExternalControl: true,
-        allowedEvents: ['click', 'hover', 'focus', 'blur']
-      }
-    )
-  } catch (error) {
-    console.error(`[NodeWrapper] 获取节点 ${props.nodeId} 交互权限失败:`, error)
-    return {
-      allowExternalControl: true,
-      allowedEvents: ['click', 'hover', 'focus', 'blur']
-    }
-  }
-})
-
-// 保持向后兼容的函数版本
 const getNodeInteractionPermissions = (nodeId: string): any => {
   if (nodeId === props.nodeId) {
     return nodeInteractionPermissions.value
@@ -285,6 +322,15 @@ const getNodeInteractionPermissions = (nodeId: string): any => {
     }
   }
 }
+
+// 🔥 修复递归更新：使用watchEffect来响应配置变化，而不是在computed中调用
+watchEffect(() => {
+  // 监听props.nodeId变化，触发配置更新
+  if (props.nodeId) {
+    updateBaseConfig()
+    updateAllConfigs()
+  }
+})
 
 // 标题显示逻辑
 const shouldShowTitle = computed(() => {
@@ -439,52 +485,75 @@ const cancelTitleEdit = () => {
 // 配置变化监听器取消函数
 let removeConfigListener: (() => void) | null = null
 
+// 🔥 修复递归更新：优化Card2配置变更事件处理，避免触发新的计算循环
+const handleCard2ConfigChange = (event: CustomEvent) => {
+  const { componentId, layer, config } = event.detail
+  if (componentId === props.nodeId && layer === 'base') {
+    console.log(`🔥 [NodeWrapper] 接收到Card2基础配置变更 ${componentId}:`, config)
+    // 🔥 直接更新ref，避免重新调用配置系统
+    if (config) {
+      baseConfigRef.value = {
+        ...defaultBaseConfig,
+        ...config
+      }
+    }
+  }
+}
+
 // 监听配置管理器的配置变化
 onMounted(() => {
   try {
-    // 检查节点是否有配置，如果没有则创建默认配置
-    const existingConfig = configurationManager.getConfiguration(props.nodeId)
-    if (!existingConfig) {
-      const defaultConfig: WidgetConfiguration = {
-        base: {
-          showTitle: false,
-          title: props.node.label || props.node.type || t('config.base.untitledComponent'),
-          opacity: 1,
-          visible: true,
-          padding: { top: 0, right: 0, bottom: 0, left: 0 },
-          margin: { top: 0, right: 0, bottom: 0, left: 0 }
-        },
-        component: { properties: props.node.properties || {} },
-        dataSource: null,
-        interaction: {},
-        metadata: {
-          version: '1.0.0',
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        }
-      }
-      configurationManager.setConfiguration(props.nodeId, defaultConfig)
+    // 🔥 为Card2组件监听配置变更事件
+    if (props.node.metadata?.isCard2Component) {
+      window.addEventListener('card2-config-update', handleCard2ConfigChange as EventListener)
+      console.log(`🔥 [NodeWrapper] 已为Card2组件 ${props.nodeId} 添加配置监听`)
     }
 
-    // 🔥 修复：移除配置监听器，因为计算属性已经能够自动响应配置变化
-    // 避免重复监听导致的无限循环
-    // removeConfigListener = configurationManager.onConfigurationChange(props.nodeId, newConfig => {
-    //   // baseConfig是computed，会自动响应configurationManager的变化
-    // })
+    // 检查节点是否有配置，如果没有则创建默认配置（仅用于非Card2组件）
+    if (!props.node.metadata?.isCard2Component) {
+      const existingConfig = configurationManager.getConfiguration(props.nodeId)
+      if (!existingConfig) {
+        const defaultConfig: WidgetConfiguration = {
+          base: {
+            showTitle: false,
+            title: props.node.label || props.node.type || t('config.base.untitledComponent'),
+            opacity: 1,
+            visible: true,
+            padding: { top: 0, right: 0, bottom: 0, left: 0 },
+            margin: { top: 0, right: 0, bottom: 0, left: 0 }
+          },
+          component: { properties: props.node.properties || {} },
+          dataSource: null,
+          interaction: {},
+          metadata: {
+            version: '1.0.0',
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+          }
+        }
+        configurationManager.setConfiguration(props.nodeId, defaultConfig)
+      }
+    }
   } catch (error) {
-    console.error(`[NodeWrapper] 添加配置监听器失败:`, error)
+    console.error(`[NodeWrapper] 配置监听器添加失败:`, error)
   }
 })
 
 onUnmounted(() => {
-  // 🔥 修复：不再需要手动清理配置监听器，因为我们移除了显式监听器
-  // if (removeConfigListener) {
-  //   try {
-  //     removeConfigListener()
-  //   } catch (error) {
-  //     console.error(`[NodeWrapper] 移除配置监听器失败:`, error)
-  //   }
-  // }
+  // 🔥 清理Card2配置变更事件监听器
+  if (props.node.metadata?.isCard2Component) {
+    window.removeEventListener('card2-config-update', handleCard2ConfigChange as EventListener)
+    console.log(`🔥 [NodeWrapper] 已移除Card2组件 ${props.nodeId} 配置监听`)
+  }
+
+  // 清理旧的配置监听器（如果存在）
+  if (removeConfigListener) {
+    try {
+      removeConfigListener()
+    } catch (error) {
+      console.error(`[NodeWrapper] 移除配置监听器失败:`, error)
+    }
+  }
 })
 
 // 监听节点变化，同步标题

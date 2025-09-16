@@ -70,60 +70,33 @@ export class ConfigurationStateManager {
   // 事件监听器
   private eventListeners = new Map<string, Set<(event: ConfigurationUpdateEvent) => void>>()
 
-  // 🧹 禁用持久化存储
+  // 🚨 禁用localStorage - 避免持续干扰配置系统
   // private readonly STORAGE_KEY = 'visual-editor-config-state-v2'
 
   constructor() {
-    // this.loadFromStorage()
+    // this.loadFromStorage() - 禁用localStorage加载
+    
+    // 🚨 清除现有的localStorage数据，防止干扰
+    try {
+      localStorage.removeItem('visual-editor-config-state-v2')
+      console.log('🚨 [ConfigurationStateManager] 清除localStorage干扰数据')
+    } catch (error) {}
   }
 
   /**
    * 从 localStorage 加载配置
    */
   private loadFromStorage(): void {
-    // 🧹 禁用localStorage加载
+    // 🚨 完全禁用localStorage加载 - 避免配置干扰
     return
-    /*
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY)
-      if (stored) {
-        const data = JSON.parse(stored)
-        // 恢复配置状态
-        if (data.states) {
-          Object.entries(data.states).forEach(([componentId, state]) => {
-            this.configStates.set(componentId, state as ConfigurationState)
-          })
-        }
-
-        // 恢复版本计数器
-        if (data.versionCounter) {
-          this.versionCounter.value = data.versionCounter
-        }
-      }
-    } catch (error) {}
-    */
   }
 
   /**
    * 保存配置到 localStorage
    */
   private saveToStorage(): void {
-    // 🧹 禁用localStorage保存
+    // 🚨 完全禁用localStorage保存 - 避免配置干扰
     return
-    try {
-      const states: Record<string, ConfigurationState> = {}
-      this.configStates.forEach((state, componentId) => {
-        states[componentId] = state
-      })
-
-      const data = {
-        states,
-        versionCounter: this.versionCounter.value,
-        timestamp: Date.now()
-      }
-
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data))
-    } catch (error) {}
   }
 
   /**
@@ -179,7 +152,7 @@ export class ConfigurationStateManager {
     const oldVersion = currentState?.version
     this.configStates.set(componentId, newState)
     // 🆕 持久化到 localStorage
-    // this.saveToStorage()
+    // this.saveToStorage() - 禁用localStorage
 
     // 异步触发事件，避免阻塞
     this.scheduleEventEmission(componentId, 'complete', oldVersion, newVersion, configuration)
@@ -246,7 +219,7 @@ export class ConfigurationStateManager {
 
     this.configStates.set(componentId, newState)
     // 🆕 持久化到 localStorage
-    // this.saveToStorage()
+    // this.saveToStorage() - 禁用localStorage
 
     // 异步触发事件和解锁
     this.scheduleEventEmission(componentId, section, currentState.version, newVersion, {
@@ -301,7 +274,7 @@ export class ConfigurationStateManager {
     this.configStates.set(componentId, state)
 
     // 🆕 持久化到 localStorage
-    // this.saveToStorage()
+    // this.saveToStorage() - 禁用localStorage
   }
 
   /**

@@ -178,17 +178,21 @@ export class EnhancedDataWarehouse {
     const now = Date.now()
     const startTime = now
 
+    console.log(`🔍 [DataWarehouse] 开始存储组件数据: ${componentId}/${sourceId}`, data)
+
     // 计算数据大小（估算）
     const dataSize = this.calculateDataSize(data)
 
     // 检查内存限制
     if (this.shouldRejectStorage(dataSize)) {
+      console.log(`❌ [DataWarehouse] 存储被拒绝，内存限制: ${dataSize} bytes`)
       return
     }
 
     // 获取或创建组件存储
     let componentStorage = this.componentStorage.get(componentId)
     if (!componentStorage) {
+      console.log(`✅ [DataWarehouse] 创建新组件存储: ${componentId}`)
       componentStorage = {
         componentId,
         dataSources: new Map(),
@@ -219,8 +223,11 @@ export class EnhancedDataWarehouse {
 
     // 清除合并数据缓存（因为数据源发生变化）
     if (componentStorage.mergedData) {
+      console.log(`🔄 [DataWarehouse] 清除合并数据缓存: ${componentId}`)
       componentStorage.mergedData = undefined
     }
+
+    console.log(`✅ [DataWarehouse] 成功存储数据: ${componentId}/${sourceId}, 大小: ${dataSize} bytes`)
 
     // 更新性能监控
     const responseTime = Date.now() - startTime
@@ -237,6 +244,7 @@ export class EnhancedDataWarehouse {
 
     const componentStorage = this.componentStorage.get(componentId)
     if (!componentStorage) {
+      console.log(`🔍 [DataWarehouse] 组件 ${componentId} 没有存储数据`)
       this.updateMetrics(Date.now() - startTime, 'get', false)
       return null
     }
@@ -246,6 +254,7 @@ export class EnhancedDataWarehouse {
       componentStorage.mergedData.accessCount++
       componentStorage.mergedData.lastAccessed = Date.now()
       this.updateMetrics(Date.now() - startTime, 'get', true)
+      console.log(`✅ [DataWarehouse] 从缓存获取组件 ${componentId} 数据，数据源数量: ${Object.keys(componentStorage.mergedData.data).length}`)
       return componentStorage.mergedData.data
     }
 
@@ -253,18 +262,23 @@ export class EnhancedDataWarehouse {
     const componentData: Record<string, any> = {}
     let hasValidData = false
 
+    console.log(`🔍 [DataWarehouse] 组件 ${componentId} 数据源数量: ${componentStorage.dataSources.size}`)
+    
     for (const [sourceId, item] of componentStorage.dataSources) {
       if (!this.isExpired(item)) {
         componentData[sourceId] = item.data
         item.accessCount++
         item.lastAccessed = Date.now()
         hasValidData = true
+        console.log(`✅ [DataWarehouse] 包含有效数据源 ${sourceId}:`, item.data)
       } else {
+        console.log(`❌ [DataWarehouse] 数据源 ${sourceId} 已过期，删除`)
         componentStorage.dataSources.delete(sourceId)
       }
     }
 
     if (!hasValidData) {
+      console.log(`❌ [DataWarehouse] 组件 ${componentId} 没有有效数据`)
       this.updateMetrics(Date.now() - startTime, 'get', false)
       return null
     }
@@ -284,6 +298,7 @@ export class EnhancedDataWarehouse {
       lastAccessed: Date.now()
     }
 
+    console.log(`✅ [DataWarehouse] 成功获取组件 ${componentId} 数据，包含 ${Object.keys(componentData).length} 个数据源`)
     this.updateMetrics(Date.now() - startTime, 'get', true)
     return componentData
   }

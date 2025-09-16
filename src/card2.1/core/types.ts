@@ -4,7 +4,10 @@
  */
 
 import type { Component } from 'vue'
-import type { ComponentInteractionDefinition } from '@/card2.1/core/interaction-types'
+import type { 
+  ComponentInteractionDefinition,
+  ComponentInteractionCapability 
+} from '@/card2.1/core/interaction-types'
 
 // ============ 基础类型 ============
 
@@ -212,6 +215,10 @@ export interface ComponentDefinition<TConfig = Record<string, any>> {
   // === 权限控制 ===
   /** 访问权限 */
   permission?: ComponentPermission
+
+  // === 交互能力声明 ===
+  /** 组件交互能力声明 */
+  interactionCapabilities?: ComponentInteractionCapability
 }
 
 // ============ 组件实例和配置 ============

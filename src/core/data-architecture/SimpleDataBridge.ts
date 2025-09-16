@@ -148,13 +148,60 @@ export class SimpleDataBridge {
 
 
       if (executionResult.success && executionResult.componentData) {
-        // 🆕 存储到数据仓库
-        this.warehouse.storeComponentData(
-          requirement.componentId,
-          'complete',
-          executionResult.componentData,
-          'multi-source'
-        )
+        console.log(`🔥 [SimpleDataBridge] 执行成功，准备存储到DataWarehouse:`, {
+          componentId: requirement.componentId,
+          executionResult: executionResult,
+          dataKeys: Object.keys(executionResult.componentData),
+          dataStructure: Object.keys(executionResult.componentData).reduce((acc, key) => {
+            const item = executionResult.componentData[key]
+            acc[key] = {
+              hasType: item && typeof item === 'object' && 'type' in item,
+              hasData: item && typeof item === 'object' && 'data' in item,
+              hasMetadata: item && typeof item === 'object' && 'metadata' in item
+            }
+            return acc
+          }, {})
+        })
+        
+        // 🔥 修复：为每个数据源分别存储数据，并存储合并后的完整数据
+        if (executionResult.componentData && typeof executionResult.componentData === 'object') {
+          // 存储各个数据源的数据
+          Object.entries(executionResult.componentData).forEach(([sourceId, sourceData]) => {
+            this.warehouse.storeComponentData(
+              requirement.componentId,
+              sourceId,
+              sourceData,
+              'multi-source'
+            )
+            console.log(`✅ [SimpleDataBridge] 存储数据源 ${sourceId}:`, sourceData)
+          })
+          
+          // 同时存储完整的合并数据作为备份
+          this.warehouse.storeComponentData(
+            requirement.componentId,
+            'complete',
+            executionResult.componentData,
+            'multi-source'
+          )
+          console.log(`✅ [SimpleDataBridge] 存储完整数据到 'complete'`)
+          
+          // 🔥 新增：立即验证数据是否成功存储到DataWarehouse
+          const warehouseStats = this.warehouse.getStorageStats()
+          console.log(`🔥 [SimpleDataBridge] DataWarehouse存储验证:`, {
+            totalComponents: warehouseStats.totalComponents,
+            totalDataSources: warehouseStats.totalDataSources,
+            memoryUsageMB: warehouseStats.memoryUsageMB,
+            componentStats: warehouseStats.componentStats[requirement.componentId]
+          })
+          
+          // 🔥 新增：立即验证数据是否可以从DataWarehouse中读取
+          const retrievedData = this.warehouse.getComponentData(requirement.componentId)
+          console.log(`🔥 [SimpleDataBridge] DataWarehouse读取验证:`, {
+            hasData: !!retrievedData,
+            dataKeys: retrievedData ? Object.keys(retrievedData) : [],
+            dataStructure: retrievedData
+          })
+        }
 
         // 通知数据更新
         this.notifyDataUpdate(requirement.componentId, executionResult.componentData)

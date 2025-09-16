@@ -6,5 +6,79 @@ export const alertStatusDefinition: ComponentDefinition = { type: 'alert-status'
     { key: 'title', name: '标题', description: '告警标题', supportedTypes: ['static', 'api', 'websocket'], example: "高温告警", required: false },
     { key: 'amount', name: '金额', description: '相关金额数据', supportedTypes: ['static', 'api', 'websocket'], example: 1000, required: false },
     { key: 'description', name: '描述', description: '告警描述信息', supportedTypes: ['static', 'api', 'websocket'], example: "系统运行正常", required: false }
-  ], settingConfig: alertStatusSettingConfig }
+  ], settingConfig: alertStatusSettingConfig,
+
+  // 🎯 交互能力声明
+  interactionCapabilities: {
+    // 支持的交互事件类型
+    supportedEvents: ['click', 'hover', 'focus', 'blur', 'dataChange'],
+    
+    // 可触发的交互动作类型
+    availableActions: [
+      'navigateToUrl', 'updateComponentData', 'changeVisibility', 
+      'changeBackgroundColor', 'changeBorderColor', 'triggerAnimation',
+      'showNotification', 'emitEvent', 'flashColor', 'pulseEffect'
+    ],
+    
+    // 可被其他组件监听的属性列表
+    watchableProperties: {
+      'title': {
+        type: 'string',
+        description: '告警标题',
+        defaultValue: '高温告警'
+      },
+      'amount': {
+        type: 'number',
+        description: '相关金额数据',
+        defaultValue: 1000
+      },
+      'description': {
+        type: 'string',
+        description: '告警描述信息',
+        defaultValue: '系统运行正常'
+      },
+      'alertLevel': {
+        type: 'string',
+        description: '告警级别',
+        defaultValue: 'normal'
+      }
+    },
+
+    // 默认交互配置
+    defaultInteractions: [
+      {
+        event: 'dataChange',
+        responses: [
+          {
+            action: 'flashColor',
+            delay: 0,
+            name: '告警闪烁效果',
+            enabled: true
+          },
+          {
+            action: 'showNotification',
+            delay: 500,
+            name: '告警通知',
+            enabled: true
+          }
+        ],
+        enabled: true,
+        name: '告警状态变化',
+        watchedProperty: 'alertLevel'
+      },
+      {
+        event: 'click',
+        responses: [
+          {
+            action: 'navigateToUrl',
+            delay: 0,
+            name: '跳转告警详情',
+            enabled: true
+          }
+        ],
+        enabled: true,
+        name: '查看告警详情'
+      }
+    ]
+  } }
 export default alertStatusDefinition

@@ -187,34 +187,28 @@ export function compactLayout(
   if (!verticalCompact || layout.length === 0) return layout
 
   try {
-    // 按Y坐标排序
+    // 按Y坐标排序，确保我们从上到下处理项目
     const sortedLayout = [...layout].sort((a, b) => {
       if (a.y === b.y) return a.x - b.x
       return a.y - b.y
     })
 
+    // 用于存放已处理和放置好的项目
     const compacted: GridLayoutPlusItem[] = []
 
     for (const item of sortedLayout) {
-      // 为每个项目找到最高可能的位置
+      // 从顶部开始为当前项目寻找新的Y坐标
       let newY = 0
 
-      // 尝试将项目向上移动直到发生碰撞
-      while (newY <= item.y) {
-        if (isPositionAvailable(compacted, item.x, newY, item.w, item.h, cols)) {
-          // 找到了更高的位置，继续尝试
-          if (newY < item.y) {
-            newY++
-            continue
-          }
-        }
-        break
+      // 持续增加Y坐标，直到找到一个不与 `compacted` 中任何项目碰撞的位置
+      while (!isPositionAvailable(compacted, item.x, newY, item.w, item.h, cols)) {
+        newY++
       }
 
-      // 应用新位置
+      // 将项目放置在找到的第一个可用位置
       compacted.push({
         ...item,
-        y: Math.max(0, newY - 1)
+        y: newY
       })
     }
 
@@ -319,38 +313,124 @@ export function getOverlapArea(item1: GridLayoutPlusItem, item2: GridLayoutPlusI
 
 /**
  * 移动项目到新位置并处理碰撞
+ * @param layout - 当前布局
+ * @param movingItem - 正在移动的项
+ * @param newX - 移动项的新x坐标
+ * @param newY - 移动项的新y坐标
+ * @param cols - 网格的列数
+ * @returns 经过碰撞处理和紧凑化后的新布局
  */
 export function moveItemWithCollisionHandling(
   layout: GridLayoutPlusItem[],
-  itemId: string,
+  movingItem: GridLayoutPlusItem,
   newX: number,
   newY: number,
-  cols: number,
-  preventCollisions: boolean = true
-): LayoutOperationResult<GridLayoutPlusItem[]> {
-  try {
-    const item = layout.find(i => i.i === itemId)
-    if (!item) {
-      return {
-        success: false,
-        error: new Error('Item not found'),
-        message: '项目未找到'
+  cols: number
+): GridLayoutPlusItem[] {
+  // 步骤1: 布局净化与规范化
+  // 深拷贝布局以进行修改，并规范化所有项的坐标。
+  // 解决新添加项（坐标为 'auto' 或 undefined）无法参与碰撞检测的核心问题。
+  const workingLayout = cloneLayout(layout).map(item => {
+    // 检查x和y坐标是否为无效值（非数字、NaN、'auto'等）。
+    const isInvalidX = typeof item.x !== 'number' || isNaN(item.x);
+    const isInvalidY = typeof item.y !== 'number' || isNaN(item.y);
+
+    // 为无效坐标提供一个临时的、可预测的初始位置。
+    // 如果y坐标无效，则假定其在顶部（y=0）。
+    // 如果x坐标无效，则假定其在最左侧（x=0）。
+    // 这使得项的逻辑位置与其初始视觉位置（通常在左上角）相匹配。
+    return {
+      ...item,
+      x: isInvalidX ? 0 : item.x,
+      y: isInvalidY ? 0 : item.y,
+    };
+  });
+
+  // 步骤2: 更新移动项的位置
+  // 在净化后的工作布局中找到正在移动的项。
+  const movingItemInLayout = workingLayout.find(item => item.i === movingItem.i);
+  // 如果找不到（理论上不应发生），则返回原始布局以保证安全。
+  if (!movingItemInLayout) {
+    return layout;
+  }
+
+  // 将移动项的位置更新为拖拽操作提供的新坐标。
+  movingItemInLayout.x = newX;
+  movingItemInLayout.y = newY;
+
+  // 步骤3: 连锁碰撞处理 (BFS)
+  // 使用广度优先搜索（BFS）来处理由移动项引起的连锁碰撞。
+  const queue: GridLayoutPlusItem[] = [movingItemInLayout];
+  // `movedItems` 用于跟踪在此次操作中已经移动过的项，防止在同一次连锁反应中被重复处理，避免无限循环。
+  const movedItems = new Set<string>([movingItemInLayout.i]);
+
+  // 设置最大迭代次数，作为防止无限循环的安全阀。
+  let iterations = 0;
+  const maxIterations = workingLayout.length * workingLayout.length;
+
+  while (queue.length > 0) {
+    iterations++;
+    if (iterations > maxIterations) {
+      console.error('moveItemWithCollisionHandling: Max iterations reached, aborting.');
+      return layout; // 检测到可能的无限循环，返回原始布局以避免应用冻结。
+    }
+
+    const currentItem = queue.shift()!;
+
+    // 遍历布局中的所有其他项以检测与当前项的碰撞。
+    for (const other of workingLayout) {
+      if (other.i === currentItem.i) continue;
+
+      if (collides(currentItem, other)) {
+        // 如果与静态项（static=true）发生碰撞，则认为此次移动无效，立即返回原始布局。
+        if (other.static) {
+          return layout;
+        }
+
+        // 计算将 'other' 项向下推到的新y坐标。
+        const pushToY = currentItem.y + currentItem.h;
+
+        // 只有当 'other' 项当前位置在推挤目标位置之上时，才执行推挤。
+        // 这可以防止不必要的移动和潜在的循环。
+        if (other.y < pushToY) {
+          other.y = pushToY;
+
+          // 如果 'other' 项是第一次在此操作中被移动，则将其加入队列。
+          // 这确保了它引发的后续碰撞也会被处理。
+          if (!movedItems.has(other.i)) {
+            movedItems.add(other.i);
+            queue.push(other);
+          }
+        }
       }
     }
-
-    const newLayout = layout.map(i => (i.i === itemId ? { ...i, x: newX, y: newY } : { ...i }))
-
-    if (preventCollisions) {
-      // TODO: 实现碰撞处理逻辑
-      // 这里可以添加复杂的碰撞解决算法
-    }
-
-    return { success: true, data: newLayout }
-  } catch (error) {
-    return {
-      success: false,
-      error: error as Error,
-      message: '移动项目失败'
-    }
   }
+
+  // 步骤4: 布局紧凑化
+  // 在所有碰撞处理完成后，对布局进行紧凑化，移除因推挤而产生的垂直间隙。
+  return compactLayout(workingLayout, cols);
+}
+
+/**
+ * 深拷贝一个布局数组。
+ * @param layout - 要克隆的布局。
+ * @returns 返回一个新的布局数组，与原始布局完全独立。
+ */
+function cloneLayout(layout: GridLayoutPlusItem[]): GridLayoutPlusItem[] {
+  return JSON.parse(JSON.stringify(layout));
+}
+
+/**
+ * 检测两个布局项是否发生碰撞。
+ * @param item1 - 第一个布局项。
+ * @param item2 - 第二个布局项。
+ * @returns 如果两项重叠，则返回 true，否则返回 false。
+ */
+function collides(item1: GridLayoutPlusItem, item2: GridLayoutPlusItem): boolean {
+  if (item1.i === item2.i) return false;
+  if (item1.x + item1.w <= item2.x) return false;
+  if (item1.x >= item2.x + item2.w) return false;
+  if (item1.y + item1.h <= item2.y) return false;
+  if (item1.y >= item2.y + item2.h) return false;
+  return true;
 }

@@ -1,7 +1,29 @@
 <template>
   <div class="base-config-form">
     <n-form :model="formData" label-placement="left" label-width="80" size="small">
+      <!-- 🔥 设备配置 - 最高优先级 -->
+      <n-divider title-placement="left">{{ t('config.base.device.section') }}</n-divider>
+
+      <n-form-item :label="t('config.base.deviceId')">
+        <n-input
+          v-model:value="formData.deviceId"
+          :placeholder="t('config.base.deviceIdPlaceholder')"
+          clearable
+          @input="handleUpdate"
+        />
+      </n-form-item>
+
+      <n-form-item :label="t('config.base.metricsList')">
+        <n-dynamic-tags
+          v-model:value="formData.metricsListTags"
+          :placeholder="t('config.base.metricsListPlaceholder')"
+          @update:value="handleMetricsListUpdate"
+        />
+      </n-form-item>
+
       <!-- 标题配置 -->
+      <n-divider title-placement="left">{{ t('config.base.title.section') }}</n-divider>
+      
       <n-form-item :label="t('config.base.showTitle')">
         <n-switch v-model:value="formData.showTitle" @update:value="handleUpdate" />
       </n-form-item>
@@ -95,26 +117,6 @@
         />
       </n-form-item>
 
-      <!-- 设备配置 -->
-      <n-divider title-placement="left">{{ t('config.base.device.section') }}</n-divider>
-
-      <n-form-item :label="t('config.base.deviceId')">
-        <n-input
-          v-model:value="formData.deviceId"
-          :placeholder="t('config.base.deviceIdPlaceholder')"
-          clearable
-          @input="handleUpdate"
-        />
-      </n-form-item>
-
-      <n-form-item :label="t('config.base.metricsList')">
-        <n-dynamic-tags
-          v-model:value="formData.metricsListTags"
-          :placeholder="t('config.base.metricsListPlaceholder')"
-          @update:value="handleMetricsListUpdate"
-        />
-      </n-form-item>
-
       <!-- 快捷操作 -->
       <n-divider title-placement="left">{{ t('config.base.advanced.section') }}</n-divider>
 
@@ -132,11 +134,11 @@
  * 模仿SimpleTestConfig的简洁UI风格
  */
 
-import { reactive, watch, computed, onMounted, onUnmounted, shallowReactive } from 'vue'
+import { reactive, watch, computed, onMounted, onUnmounted, shallowReactive, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
 import { configurationManager } from '@/components/visual-editor/configuration'
-import type { BaseConfiguration } from '@/components/visual-editor/configuration/types'
+import type { BaseConfiguration } from '@/card2.1/hooks/useCard2Props'
 import type { MetricItem } from '@/card2.1/core/types'
 
 // 接收props
@@ -158,6 +160,9 @@ const emit = defineEmits<Emits>()
 // 组合式函数
 const { t } = useI18n()
 const message = useMessage()
+
+// 注入编辑器上下文
+const editorContext = inject('editorContext', null) as any
 
 // 防止循环更新的标记
 let isUpdating = false
@@ -264,6 +269,34 @@ const handleMetricsListUpdate = (tags: string[]) => {
 }
 
 /**
+ * 🔥 直接与卡片层通信更新配置
+ * 使用可靠的配置管理器方法，避免DOM查询
+ */
+const updateCardLayerConfig = (baseConfig: BaseConfiguration) => {
+  const nodeId = selectedNodeId.value
+  if (!nodeId) return false
+
+  try {
+    // 🔥 方法1: 优先使用配置管理器更新配置
+    configurationManager.updateConfiguration(nodeId, 'base', baseConfig)
+
+    // 🔥 方法2: 发送自定义事件通知卡片层（用于实时更新）
+    window.dispatchEvent(new CustomEvent('card2-config-update', {
+      detail: {
+        componentId: nodeId,
+        layer: 'base',
+        config: baseConfig
+      }
+    }))
+
+    return true
+  } catch (error) {
+    console.error('🔥 [BaseConfigForm] 卡片层通信失败:', error)
+    return false
+  }
+}
+
+/**
  * 处理配置更新 - 防抖处理
  */
 const handleUpdate = () => {
@@ -280,7 +313,7 @@ const handleUpdate = () => {
   updateTimer = window.setTimeout(() => {
     try {
       // 构建base配置对象，包含设备字段
-      const baseConfig: BaseConfiguration & { deviceId?: string; metricsList?: MetricItem[] } = {
+      const baseConfig: BaseConfiguration = {
         showTitle: formData.showTitle,
         title: formData.title,
         opacity: formData.opacity,
@@ -292,21 +325,63 @@ const handleUpdate = () => {
         borderRadius: formData.borderRadius > 0 ? formData.borderRadius : undefined,
         padding: { ...formData.padding },
         margin: { ...formData.margin },
-        // 🔥 新增：设备字段
+        // 🔥 设备字段
         deviceId: formData.deviceId || '',
         metricsList: formData.metricsList
       }
 
-      // 通过configurationManager更新base配置
-      configurationManager.updateConfiguration(nodeId, 'base', baseConfig)
+      // 🔥 优先尝试与卡片层直接通信
+      const cardUpdateSuccess = updateCardLayerConfig(baseConfig)
+      
+      if (!cardUpdateSuccess) {
+        // 回退到使用configurationManager
+        console.warn('🔥 [BaseConfigForm] 卡片层通信失败，回退到configurationManager')
+        configurationManager.updateConfiguration(nodeId, 'base', baseConfig)
+      }
     } catch (error) {
+      console.error('🔥 [BaseConfigForm] 配置更新失败:', error)
       message.error(t('common.updateFailed'))
     }
   }, 300)
 }
 
 /**
- * 从configurationManager加载配置数据到表单
+ * 🔥 从卡片层获取配置数据
+ * 使用可靠的配置管理器方法，避免DOM查询
+ */
+const getCardLayerConfig = (nodeId: string): BaseConfiguration | null => {
+  try {
+    // 🔥 方法1: 优先使用配置管理器获取配置
+    const config = configurationManager.getConfiguration(nodeId)
+    if (config?.base) {
+      return config.base
+    }
+
+    // 🔥 方法2: 发送自定义事件请求配置（用于获取实时配置）
+    const configRequestEvent = new CustomEvent('card2-config-request', {
+      detail: { componentId: nodeId, layer: 'base' }
+    })
+
+    let receivedConfig: BaseConfiguration | null = null
+    const handleConfigResponse = (event: CustomEvent) => {
+      if (event.detail.componentId === nodeId && event.detail.layer === 'base') {
+        receivedConfig = event.detail.config
+      }
+    }
+
+    window.addEventListener('card2-config-response', handleConfigResponse as EventListener)
+    window.dispatchEvent(configRequestEvent)
+    window.removeEventListener('card2-config-response', handleConfigResponse as EventListener)
+
+    return receivedConfig
+  } catch (error) {
+    console.error('🔥 [BaseConfigForm] 获取卡片层配置失败:', error)
+    return null
+  }
+}
+
+/**
+ * 从卡片层或configurationManager加载配置数据到表单
  */
 const loadConfigurationFromManager = async () => {
   const nodeId = selectedNodeId.value
@@ -319,8 +394,15 @@ const loadConfigurationFromManager = async () => {
   isUpdating = true
 
   try {
-    const config = configurationManager.getConfiguration(nodeId)
-    const baseConfig = config?.base
+    // 🔥 优先尝试从卡片层获取配置
+    let baseConfig = getCardLayerConfig(nodeId)
+    
+    // 回退到从configurationManager获取配置
+    if (!baseConfig) {
+      console.warn('🔥 [BaseConfigForm] 卡片层配置获取失败，回退到configurationManager')
+      const config = configurationManager.getConfiguration(nodeId)
+      baseConfig = config?.base
+    }
 
     if (baseConfig) {
       // 同步配置到表单
@@ -334,10 +416,9 @@ const loadConfigurationFromManager = async () => {
       formData.borderStyle = baseConfig.borderStyle || 'solid'
       formData.borderRadius = baseConfig.borderRadius ?? 6
 
-      // 🔥 新增：加载设备字段
-      const extendedConfig = baseConfig as BaseConfiguration & { deviceId?: string; metricsList?: MetricItem[] }
-      formData.deviceId = extendedConfig.deviceId || ''
-      formData.metricsList = extendedConfig.metricsList || []
+      // 🔥 加载设备字段
+      formData.deviceId = baseConfig.deviceId || ''
+      formData.metricsList = baseConfig.metricsList || []
 
       // 将 MetricItem 对象转换为标签形式显示
       formData.metricsListTags = formData.metricsList.map(metric => metric.name)
@@ -365,6 +446,7 @@ const loadConfigurationFromManager = async () => {
       resetToDefaults()
     }
   } catch (error) {
+    console.error('🔥 [BaseConfigForm] 配置加载失败:', error)
     resetToDefaults()
   } finally {
     // 延迟重置标记
@@ -471,8 +553,6 @@ onUnmounted(() => {
 <style scoped>
 .base-config-form {
   padding: 12px;
-  height: 100%;
-  overflow-y: auto;
 }
 
 /* 表单项样式优化 */
@@ -511,23 +591,5 @@ onUnmounted(() => {
 /* 颜色选择器 */
 :deep(.n-color-picker) {
   width: 100%;
-}
-
-/* 滚动条样式 */
-.base-config-form::-webkit-scrollbar {
-  width: 4px;
-}
-
-.base-config-form::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.base-config-form::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 2px;
-}
-
-.base-config-form::-webkit-scrollbar-thumb:hover {
-  background: var(--text-color-3);
 }
 </style>

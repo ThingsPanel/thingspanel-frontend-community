@@ -30,7 +30,70 @@ export const counterStatsDefinition: ComponentDefinition<CounterStatsConfig> = {
     required: true, updateInterval: 30000,
     errorHandling: { onError: 'showLastValue', retryCount: 3, retryInterval: 5000 }
   }],
-  settingConfig: counterStatsSettingConfig
+  settingConfig: counterStatsSettingConfig,
+
+  // 🎯 交互能力声明
+  interactionCapabilities: {
+    // 支持的交互事件类型
+    supportedEvents: ['click', 'hover', 'focus', 'blur', 'dataChange'],
+    
+    // 可触发的交互动作类型
+    availableActions: [
+      'navigateToUrl', 'updateComponentData', 'changeVisibility', 
+      'changeBackgroundColor', 'changeTextColor', 'triggerAnimation',
+      'showNotification', 'emitEvent'
+    ],
+    
+    // 可被其他组件监听的属性列表
+    watchableProperties: {
+      'title': {
+        type: 'string',
+        description: '统计标题',
+        defaultValue: '统计数据'
+      },
+      'value': {
+        type: 'number',
+        description: '统计数值',
+        defaultValue: 0
+      },
+      'change': {
+        type: 'number',
+        description: '变化百分比',
+        defaultValue: 0
+      }
+    },
+
+    // 默认交互配置
+    defaultInteractions: [
+      {
+        event: 'dataChange',
+        responses: [
+          {
+            action: 'triggerAnimation',
+            delay: 0,
+            name: '数值变化动画',
+            enabled: true
+          }
+        ],
+        enabled: true,
+        name: '数据变化反馈',
+        watchedProperty: 'value'
+      },
+      {
+        event: 'click',
+        responses: [
+          {
+            action: 'showNotification',
+            delay: 0,
+            name: '显示详细信息',
+            enabled: true
+          }
+        ],
+        enabled: true,
+        name: '点击查看详情'
+      }
+    ]
+  }
 }
 
 export default counterStatsDefinition

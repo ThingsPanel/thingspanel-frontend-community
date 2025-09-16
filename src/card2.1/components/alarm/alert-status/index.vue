@@ -4,21 +4,21 @@
       <!-- 标题显示 -->
       <div class="field-group">
         <label class="field-label">标题:</label>
-        <div class="field-value">{{ String(displayData.title || config.title || '未设置') }}</div>
+        <div class="field-value">{{ String(unifiedConfig.component?.title || '未设置') }}</div>
         <n-button size="tiny" @click="changeTitle">修改标题</n-button>
       </div>
       
       <!-- 金额显示 -->
       <div class="field-group">
         <label class="field-label">金额:</label>
-        <div class="field-value">{{ String(displayData.amount || config.amount || 0) }}</div>
+        <div class="field-value">{{ String(unifiedConfig.component?.amount || 0) }}</div>
         <n-button size="tiny" @click="changeAmount">修改金额</n-button>
       </div>
       
       <!-- 简介显示 -->
       <div class="field-group">
         <label class="field-label">简介:</label>
-        <div class="field-value">{{ String(displayData.description || config.description || '无描述') }}</div>
+        <div class="field-value">{{ String(unifiedConfig.component?.description || '无描述') }}</div>
         <n-button size="tiny" @click="changeDescription">修改简介</n-button>
       </div>
       
@@ -26,11 +26,11 @@
       <div class="debug-info">
         <n-divider>🔍 调试信息</n-divider>
         <div class="debug-section">
-          <span class="debug-label">配置值:</span>
+          <span class="debug-label">统一配置值:</span>
           <pre class="debug-value">{{ JSON.stringify({
-            title: config.title,
-            amount: config.amount,
-            description: config.description
+            title: unifiedConfig.component?.title,
+            amount: unifiedConfig.component?.amount,
+            description: unifiedConfig.component?.description
           }, null, 2) }}</pre>
         </div>
         <div class="debug-section">
@@ -40,9 +40,9 @@
         <div class="debug-section">
           <span class="debug-label">最终显示值:</span>
           <pre class="debug-value">{{ JSON.stringify({
-            title: displayData.title,
-            amount: displayData.amount,
-            description: displayData.description
+            title: unifiedConfig.component?.title,
+            amount: unifiedConfig.component?.amount,
+            description: unifiedConfig.component?.description
           }, null, 2) }}</pre>
         </div>
       </div>
@@ -63,6 +63,7 @@
  * 🔥 采用新的统一配置架构：所有配置归集到卡片级别
  */
 
+import { watch, onMounted, onUnmounted, ref } from 'vue'
 import { NCard, NButton, useMessage } from 'naive-ui'
 import { useCard2Props, type UnifiedCard2Configuration } from '@/card2.1/hooks'
 import type { AlertStatusCustomize } from './settingConfig'
@@ -86,28 +87,150 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
+// 🔥 获取初始统一配置 - 从Card2Wrapper的统一配置架构获取
+function getInitialUnifiedConfig(): UnifiedCard2Configuration | undefined {
+  if (!props.componentId) return undefined
+  
+  try {
+    // 通过DOM查找Card2Wrapper实例获取完整配置
+    const cardElement = document.querySelector(`[data-component-id="${props.componentId}"]`)
+    if (cardElement && (cardElement as any)?.__vueParentComponent?.exposed?.getFullConfiguration) {
+      const fullConfig = (cardElement as any).__vueParentComponent.exposed.getFullConfiguration()
+      console.log(`🔥 [alert-status] 从Card2Wrapper获取初始配置:`, fullConfig)
+      return fullConfig
+    }
+  } catch (error) {
+    console.warn(`🔥 [alert-status] 获取初始配置失败:`, error)
+  }
+  return undefined
+}
+
 // 🔥 使用增强的 Card 2.1 数据绑定，支持统一配置管理
 const { config, displayData, unifiedConfig, updateUnifiedConfig, getFullConfiguration } = useCard2Props({
   config: props.config,
   data: props.data,
-  componentId: props.componentId
+  componentId: props.componentId,
+  initialUnifiedConfig: getInitialUnifiedConfig()  // 🔥 传递初始统一配置
 })
 
 const message = useMessage()
 
-// 🔥 本地更新配置函数 - 直接更新编辑器状态
+// 🔥 修复递归更新：深度比较函数，替代JSON.stringify避免proxy序列化问题
+const isConfigEqual = (a: any, b: any): boolean => {
+  if (a === b) return true
+  if (a == null || b == null) return false
+  if (typeof a !== typeof b) return false
+  
+  if (typeof a === 'object') {
+    const keysA = Object.keys(a)
+    const keysB = Object.keys(b)
+    
+    if (keysA.length !== keysB.length) return false
+    
+    for (const key of keysA) {
+      if (!keysB.includes(key)) return false
+      if (!isConfigEqual(a[key], b[key])) return false
+    }
+    
+    return true
+  }
+  
+  return false
+}
+
+// 🔥 调试信息 - 监控配置变化
+watch(
+  () => unifiedConfig.value,
+  (newUnifiedConfig) => {
+    console.log(`🔥 [alert-status] 统一配置变化 ${props.componentId}:`, {
+      component: newUnifiedConfig?.component,
+      title: newUnifiedConfig?.component?.title,
+      amount: newUnifiedConfig?.component?.amount,
+      description: newUnifiedConfig?.component?.description
+    })
+  },
+  { deep: true, immediate: true }
+)
+
+// 🔥 监听外部配置更新事件
+const handleExternalConfigUpdate = (event: CustomEvent) => {
+  const { componentId, layer, config } = event.detail
+  if (componentId === props.componentId && layer === 'component') {
+    console.log(`🔥 [alert-status] 接收到外部配置更新事件:`, config)
+    // 手动同步到内部统一配置
+    updateUnifiedConfig({ component: config })
+  }
+}
+
+// 🔥 定时同步Card2Wrapper的配置（作为备用机制）
+const syncFromCard2Wrapper = () => {
+  if (!props.componentId) return
+  
+  try {
+    const cardElement = document.querySelector(`[data-component-id="${props.componentId}"]`)
+    if (cardElement && (cardElement as any)?.__vueParentComponent?.exposed?.getFullConfiguration) {
+      const fullConfig = (cardElement as any).__vueParentComponent.exposed.getFullConfiguration()
+      if (fullConfig?.component) {
+        const currentComponent = unifiedConfig.value.component
+        // 🔥 修复递归更新：使用深度比较替代JSON.stringify，避免proxy对象和复杂数据的序列化问题
+        if (!isConfigEqual(currentComponent, fullConfig.component)) {
+          console.log(`🔥 [alert-status] 定时同步Card2Wrapper配置:`, fullConfig.component)
+          updateUnifiedConfig({ component: fullConfig.component })
+        }
+      }
+    }
+  } catch (error) {
+    console.warn(`🔥 [alert-status] 同步Card2Wrapper配置失败:`, error)
+  }
+}
+
+let syncTimer: number | null = null
+
+// 监听配置更新事件
+onMounted(() => {
+  window.addEventListener('card2-config-update', handleExternalConfigUpdate as EventListener)
+  console.log(`🔥 [alert-status] 开始监听外部配置更新 ${props.componentId}`)
+  
+  // 启动定时同步（每100ms检查一次）
+  syncTimer = setInterval(syncFromCard2Wrapper, 100)
+  console.log(`🔥 [alert-status] 启动定时同步机制`)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('card2-config-update', handleExternalConfigUpdate as EventListener)
+  
+  // 清理定时器
+  if (syncTimer) {
+    clearInterval(syncTimer)
+    syncTimer = null
+  }
+})
+
+// 🔥 本地更新配置函数 - 同步到Card2Wrapper的统一配置仓库
 const updateConfig = (partialCustomize: Partial<AlertStatusCustomize>) => {
   const newConfig: AlertStatusCustomize = {
-    ...config.value,
+    ...unifiedConfig.value.component,  // 🔥 基于当前统一配置
     ...partialCustomize
   }
   
-  // 🔥 直接更新统一配置中的组件配置部分
+  console.log(`🔥 [alert-status] 组件内部更新配置:`, newConfig)
+  
+  // 🔥 关键：直接更新Card2Wrapper的统一配置，而不是内部的
+  if (props.componentId) {
+    const cardElement = document.querySelector(`[data-component-id="${props.componentId}"]`)
+    if (cardElement && (cardElement as any)?.__vueParentComponent?.exposed?.updateConfig) {
+      console.log(`🔥 [alert-status] 通过Card2Wrapper更新配置`)
+      ;(cardElement as any).__vueParentComponent.exposed.updateConfig('component', newConfig)
+      return // 不更新内部配置，让定时同步来处理
+    }
+  }
+  
+  // 备用：如果找不到Card2Wrapper，更新内部配置
+  console.log(`🔥 [alert-status] 备用：更新内部统一配置`)
   updateUnifiedConfig({ component: newConfig })
   
-  // 🔥 发出更新事件，让父组件知道配置已变更
+  // 🔥 发出更新事件
   emit('update:config', newConfig)
-  emit('update:unified-config', getFullConfiguration())
 }
 
 // 修改标题

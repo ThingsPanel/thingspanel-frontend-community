@@ -98,7 +98,7 @@
  * 开关控制器组件配置表单
  */
 
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { 
   NForm, 
   NFormItem, 
@@ -160,27 +160,61 @@ const switchSizeOptions = [
   { label: '大', value: 'large' }
 ]
 
-// 配置数据
+// 🔥 修复递归更新：使用防循环的双向绑定
 const config = ref<SwitchControllerCustomize>({ ...props.modelValue })
 
-// 监听配置变化并向上传递
+// 🔥 防止循环更新的标志
+let isInternalUpdate = false
+
+// 🔥 深度比较函数，避免不必要的更新
+const isConfigEqual = (a: any, b: any): boolean => {
+  if (a === b) return true
+  if (a == null || b == null) return false
+  if (typeof a !== typeof b) return false
+  
+  if (typeof a === 'object') {
+    const keysA = Object.keys(a)
+    const keysB = Object.keys(b)
+    
+    if (keysA.length !== keysB.length) return false
+    
+    for (const key of keysA) {
+      if (!keysB.includes(key)) return false
+      if (!isConfigEqual(a[key], b[key])) return false
+    }
+    
+    return true
+  }
+  
+  return false
+}
+
+// 🔥 修复：防循环的配置变化监听
 watch(
   config,
   (newConfig) => {
-    if (!props.readonly) {
-      emit('update:modelValue', { ...newConfig })
-      emit('change', { ...newConfig })
+    if (!props.readonly && !isInternalUpdate) {
+      // 🔥 只有配置真的变化时才发出事件
+      if (!isConfigEqual(newConfig, props.modelValue)) {
+        emit('update:modelValue', { ...newConfig })
+        emit('change', { ...newConfig })
+      }
     }
   },
   { deep: true }
 )
 
-// 监听外部配置变化
+// 🔥 修复：防循环的外部配置变化监听  
 watch(
   () => props.modelValue,
   (newValue) => {
-    if (newValue) {
+    if (newValue && !isConfigEqual(newValue, config.value)) {
+      isInternalUpdate = true
       config.value = { ...newValue }
+      // 🔥 使用nextTick确保更新完成后再允许新的更新
+      nextTick(() => {
+        isInternalUpdate = false
+      })
     }
   },
   { deep: true }
