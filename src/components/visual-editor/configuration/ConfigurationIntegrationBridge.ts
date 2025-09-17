@@ -139,6 +139,16 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         simpleDataBridge.clearComponentCache(widgetId)
       }
 
+      // 🔥 新增：对于 base 层配置更新（deviceId、metricsList等），也需要触发数据源重新执行
+      if (section === 'base') {
+        console.log(`🔥 [ConfigurationIntegrationBridge] 基础配置更新，清理缓存:`, { widgetId, config })
+        simpleDataBridge.clearComponentCache(widgetId)
+
+        // 🔥 修复：不再手动触发数据源重新执行，让正常的事件流程处理
+        // 避免多重执行导致的请求竞争和参数混乱
+        console.log(`🔥 [ConfigurationIntegrationBridge] base层配置更新，依赖正常事件流程触发数据源`)
+      }
+
       // 🔥 修复：发出配置部分更新事件，使用正确的 API
       const changeEvent: ConfigChangeEvent = {
         componentId: widgetId,
@@ -217,6 +227,16 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       if (section === 'dataSource' || section === 'component') {
         console.log(`🔍 [TRACE-32] 清理 simpleDataBridge 缓存:`, { widgetId, section })
         simpleDataBridge.clearComponentCache(widgetId)
+      }
+
+      // 🔥 新增：对于 base 层配置更新（deviceId、metricsList等），也需要触发数据源重新执行
+      if (section === 'base') {
+        console.log(`🔥 [ConfigurationIntegrationBridge] 常规base配置更新，清理缓存:`, { widgetId, config })
+        simpleDataBridge.clearComponentCache(widgetId)
+
+        // 🔥 修复：不再手动触发数据源重新执行，让正常的事件流程处理
+        // 避免多重执行导致的请求竞争和参数混乱
+        console.log(`🔥 [ConfigurationIntegrationBridge] 常规base层配置更新，依赖正常事件流程触发数据源`)
       }
 
       // 🔥 修复：发出配置部分更新事件，使用正确的 API
@@ -608,6 +628,88 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         } catch (error) {}
       }
     })
+  }
+
+  /**
+   * 🔥 新增：触发数据源重新执行
+   * 当base层配置（如deviceId、metricsList等动态参数）变更时调用
+   * @param componentId 组件ID
+   * @param componentType 组件类型
+   */
+  private async triggerDataSourceReExecution(componentId: string, componentType: string): Promise<void> {
+    try {
+      console.log(`🔥 [ConfigurationIntegrationBridge] 触发数据源重新执行:`, {
+        componentId,
+        componentType,
+        reason: 'base层动态参数变更'
+      })
+
+      // 获取当前组件的数据源配置
+      const currentConfig = configurationStateManager.getConfiguration(componentId)
+      const dataSourceConfig = currentConfig?.dataSource
+
+      if (!dataSourceConfig || !dataSourceConfig.dataSources || dataSourceConfig.dataSources.length === 0) {
+        console.log(`🔥 [ConfigurationIntegrationBridge] 组件 ${componentId} 没有数据源配置，跳过重新执行`)
+        return
+      }
+
+      console.log(`🔥 [ConfigurationIntegrationBridge] 组件 ${componentId} 有数据源配置，开始重新执行:`, {
+        dataSourcesCount: dataSourceConfig.dataSources.length,
+        dataSourceTypes: dataSourceConfig.dataSources.map(ds => ds.type)
+      })
+
+      // 🔥 关键：清理缓存确保获取最新数据
+      simpleDataBridge.clearComponentCache(componentId)
+
+      // 🔥 使用 VisualEditorBridge 重新执行数据源
+      const { getVisualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
+      const visualEditorBridge = getVisualEditorBridge()
+
+      // 🔥 关键修复：传入完整的配置对象，而不是仅仅数据源配置
+      // VisualEditorBridge需要完整配置来正确注入base层属性到数据源参数中
+      const fullConfig = {
+        base: currentConfig?.base || {},
+        dataSource: dataSourceConfig,
+        component: currentConfig?.component || {},
+        interaction: currentConfig?.interaction || {}
+      }
+
+      console.log(`🔥 [ConfigurationIntegrationBridge] 传递完整配置给VisualEditorBridge:`, {
+        componentId,
+        hasBase: !!fullConfig.base,
+        baseConfig: fullConfig.base,
+        hasDataSource: !!fullConfig.dataSource,
+        dataSourceKeys: Object.keys(fullConfig.dataSource || {})
+      })
+
+      // 重新执行数据源，传入完整的配置对象
+      const result = await visualEditorBridge.updateComponentExecutor(
+        componentId,
+        componentType,
+        fullConfig // 🔥 传递完整配置，确保base层属性能被正确注入
+      )
+
+      console.log(`✅ [ConfigurationIntegrationBridge] 数据源重新执行完成 ${componentId}:`, {
+        success: result.success,
+        dataCount: result.data ? Object.keys(result.data).length : 0,
+        executionTime: result.executionTime
+      })
+
+      // 🔥 重要：发出数据源执行完成事件，通知其他系统组件
+      configEventBus.emitConfigChange({
+        componentId,
+        componentType,
+        section: 'dataSource',
+        oldConfig: null,
+        newConfig: dataSourceConfig,
+        timestamp: Date.now(),
+        source: 'dynamic-parameter-update'
+      })
+
+    } catch (error) {
+      console.error(`❌ [ConfigurationIntegrationBridge] 数据源重新执行失败 ${componentId}:`, error)
+      // 不抛出错误，避免影响其他流程
+    }
   }
 
   /**

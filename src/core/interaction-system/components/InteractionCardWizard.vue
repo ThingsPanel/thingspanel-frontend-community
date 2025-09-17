@@ -110,19 +110,8 @@
                 v-model:value="currentWatchedProperty"
                 :options="availablePropertyOptions"
                 :placeholder="t('interaction.placeholders.selectWatchedProperty')"
-                filterable
-                clearable
                 @update:value="handleWatchedPropertyChange"
-              >
-                <template #empty>
-                  <div style="padding: 12px; text-align: center; color: var(--text-color-3)">
-                    <div>{{ t('interaction.messages.noWatchableProperties') }}</div>
-                    <div style="font-size: 12px; margin-top: 4px">
-                      {{ t('interaction.messages.noWatchablePropertiesDesc') }}
-                    </div>
-                  </div>
-                </template>
-              </n-select>
+              />
             </n-form-item>
 
             <n-form-item :label="t('interaction.properties.executionCondition')">
@@ -167,22 +156,13 @@
 
           <!-- 属性修改配置 -->
           <template v-if="currentActionType === 'modify'">
-            <n-form-item :label="t('interaction.properties.targetComponent')">
-              <n-select
-                v-model:value="currentInteraction.targetComponentId"
-                :options="componentOptions"
-                :placeholder="t('interaction.placeholders.selectComponentToModify')"
-              />
-              <!-- DEBUG信息 -->
-              <div style="font-size: 12px; color: #999; margin-top: 4px">
-                DEBUG: 组件选项数量: {{ componentOptions?.length || 0 }}
-              </div>
-            </n-form-item>
+            <!-- 🔥 替换为新的二级联动组件属性选择器 -->
             <n-form-item :label="t('interaction.properties.modifyProperty')">
-              <n-select
-                v-model:value="currentInteraction.targetProperty"
-                :options="targetPropertyOptions"
+              <ComponentPropertySelector
+                v-model:value="currentTargetPropertyBinding"
                 :placeholder="t('interaction.placeholders.selectPropertyToModify')"
+                :current-component-id="props.componentId"
+                @change="handleTargetPropertyChange"
               />
             </n-form-item>
             <n-form-item :label="t('interaction.properties.newValue')">
@@ -234,6 +214,10 @@ import { fetchGetUserRoutes } from '@/service/api/route'
 import { useEditorStore } from '@/store/modules/editor'
 // 🔥 新增：交互执行引擎
 import { createInteractionEngine } from '../interaction-engine'
+// 🔥 新增：导入二级联动组件属性选择器
+import ComponentPropertySelector from '@/core/data-architecture/components/common/ComponentPropertySelector.vue'
+// 🔥 新增：导入配置管理器，用于监听属性选择器
+import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 
 interface Props {
   modelValue?: any[]
@@ -306,6 +290,10 @@ const currentWatchedProperty = ref('')
 const currentConditionType = ref('')
 const currentConditionOperator = ref('')
 const currentConditionValue = ref('')
+
+// 🔥 新增：目标属性绑定状态（替换原来的分离选择）
+const currentTargetPropertyBinding = ref('')
+const currentTargetPropertyInfo = ref<any>(null)
 
 // ✅ 正确的3个事件选项
 const eventOptions = computed(() => [
@@ -538,165 +526,121 @@ const targetPropertyOptions = computed(() => {
   return options
 })
 
-// 🔥 可用属性选项 - 基于组件类型动态获取（包含基础配置属性）
-// 🔥 修复：优先读取组件运行时暴露的真实属性值，然后再回退到定义
+// 🔥 可用属性选项 - 直接基于当前组件ID获取配置属性（与ComponentPropertySelector逻辑一致）
 const availablePropertyOptions = computed(() => {
-  if (!props.componentType) {
+  console.log(`🚨 [InteractionCardWizard] 监听属性选择器调试开始:`, {
+    componentId: props.componentId,
+    componentType: props.componentType,
+    hasComponentId: !!props.componentId
+  })
+
+  if (!props.componentId) {
+    console.error(`🚨 [InteractionCardWizard] 监听属性选择器：缺少componentId!`, {
+      props: props,
+      componentId: props.componentId,
+      componentType: props.componentType
+    })
     return []
   }
 
-  console.log(`🔍 [InteractionCardWizard] 获取 ${props.componentType} 的可监听属性`)
+  console.log(`🔍 [InteractionCardWizard] 获取组件 ${props.componentId} 的可监听属性`)
 
-  // 按分组整理属性选项
-  const groupedOptions: any[] = []
-  const groups: Record<string, any[]> = {}
-
-  // 🔥 第一步：尝试从当前画布上找到对应的组件实例，获取运行时暴露的属性
-  const editorComponents = visualEditorState.getAvailableComponents()
-  const currentComponent = editorComponents.find(comp => comp.type === props.componentType)
-
-  // 🔥 优先检查运行时暴露的属性
-  let hasRuntimeProperties = false
-  if (currentComponent?.metadata?.exposedProperties) {
-    console.log(`✅ [InteractionCardWizard] 找到组件 ${props.componentType} 的运行时暴露属性:`,
-      currentComponent.metadata.exposedProperties)
-
-    const exposedProps = currentComponent.metadata.exposedProperties
-    const runtimeGroup = '实时属性 (当前值)'
-
-    if (!groups[runtimeGroup]) {
-      groups[runtimeGroup] = []
-    }
-
-    // 遍历运行时暴露的属性
-    Object.entries(exposedProps).forEach(([propName, currentValue]: [string, any]) => {
-      groups[runtimeGroup].push({
-        label: `${propName} (当前值: ${String(currentValue)})`,
-        value: propName,
-        property: {
-          name: propName,
-          label: propName,
-          type: typeof currentValue,
-          description: `当前值: ${String(currentValue)}`,
-          currentValue: currentValue,
-          isRuntimeProperty: true
-        }
-      })
-    })
-
-    hasRuntimeProperties = true
-  }
-
-  // 🔥 第二步：从组件定义获取可监听属性声明
-  if (currentComponent?.metadata?.card2Definition?.interactionCapabilities?.watchableProperties) {
-    console.log(`✅ [InteractionCardWizard] 找到组件 ${props.componentType} 的watchableProperties定义:`,
-      currentComponent.metadata.card2Definition.interactionCapabilities.watchableProperties)
-
-    const watchableProps = currentComponent.metadata.card2Definition.interactionCapabilities.watchableProperties
-    const definitionGroup = hasRuntimeProperties ? '属性定义 (声明)' : '组件属性'
-
-    if (!groups[definitionGroup]) {
-      groups[definitionGroup] = []
-    }
-
-    // 遍历组件声明的可监听属性
-    Object.entries(watchableProps).forEach(([propName, propInfo]: [string, any]) => {
-      groups[definitionGroup].push({
-        label: `${propInfo.label || propName} (${propInfo.description || propInfo.type})`,
-        value: propName,
-        property: {
-          name: propName,
-          label: propInfo.label || propName,
-          type: propInfo.type,
-          description: propInfo.description,
-          defaultValue: propInfo.defaultValue,
-          isComponentProperty: true
-        }
-      })
-    })
-  } else if (!hasRuntimeProperties) {
-    console.warn(`⚠️ [InteractionCardWizard] 组件 ${props.componentType} 没有运行时属性也没有定义watchableProperties`)
-
-    // 🔥 如果组件既没有运行时属性也没有定义watchableProperties，显示通用基础属性作为fallback
-    const fallbackGroup = '通用属性 (组件未声明具体属性)'
-    if (!groups[fallbackGroup]) {
-      groups[fallbackGroup] = []
-    }
-
-    // 只添加最基础的通用属性
-    const universalProperties = [
-      { name: 'title', label: '标题', type: 'string', description: '组件标题' },
-      { name: 'visible', label: '可见性', type: 'boolean', description: '组件是否可见' }
-    ]
-
-    universalProperties.forEach(prop => {
-      groups[fallbackGroup].push({
-        label: `${prop.label} (${prop.description})`,
-        value: prop.name,
-        property: {
-          name: prop.name,
-          label: prop.label,
-          type: prop.type,
-          description: prop.description,
-          isFallback: true
-        }
-      })
-    })
-  }
-
-  // 🔥 第三步：添加基础配置级别的核心属性（设备ID和指标列表）
-  const baseGroup = '基础配置'
-  if (!groups[baseGroup]) {
-    groups[baseGroup] = []
-  }
-
-  groups[baseGroup].push(
-    {
-      label: '设备ID (base.deviceId - 关联的设备ID)',
-      value: 'base.deviceId',
-      property: {
-        name: 'deviceId',
-        label: '设备ID',
-        type: 'string',
-        description: '关联的设备ID，用于数据源自动配置',
-        isCore: true,
-        group: '设备配置'
-      }
-    },
-    {
-      label: '指标列表 (base.metricsList - 设备指标列表)',
-      value: 'base.metricsList',
-      property: {
-        name: 'metricsList',
-        label: '指标列表',
-        type: 'array',
-        description: '选择的设备指标列表',
-        isCore: true,
-        group: '设备配置'
-      }
-    }
-  )
-
-  // 转换为分组选项格式，确保实时属性排在最前面
-  const groupOrder = hasRuntimeProperties ? ['实时属性 (当前值)', '属性定义 (声明)', '基础配置', '通用属性 (组件未声明具体属性)'] : ['组件属性', '基础配置', '通用属性 (组件未声明具体属性)']
-
-  groupOrder.forEach(groupName => {
-    if (groups[groupName] && groups[groupName].length > 0) {
-      groupedOptions.push({
-        type: 'group',
-        label: groupName,
-        key: groupName,
-        children: groups[groupName]
-      })
-    }
+  // 🔥 直接从配置管理器获取当前组件配置
+  const config = configurationIntegrationBridge.getConfiguration(props.componentId)
+  console.log(`🚨 [InteractionCardWizard] 配置获取结果:`, {
+    componentId: props.componentId,
+    hasConfig: !!config,
+    config: config,
+    configKeys: config ? Object.keys(config) : []
   })
 
-  console.log(`🔍 [InteractionCardWizard] 最终生成的属性选项:`, {
-    hasRuntimeProperties,
-    groupedOptions,
-    componentId: currentComponent?.id
+  if (!config) {
+    console.error(`🚨 [InteractionCardWizard] 无法获取组件 ${props.componentId} 的配置，生成标准属性!`)
+    // 🔥 即使无配置，也要生成标准属性
+  } else {
+    console.log(`✅ [InteractionCardWizard] 成功获取组件配置`)
+  }
+
+  const options: any[] = []
+
+  // 🔥 基础层标准属性定义 - 与ComponentPropertySelector保持一致
+  const standardBaseProperties = [
+    // 显示配置
+    { path: 'showTitle', displayPath: '显示标题', type: 'boolean' },
+    { path: 'title', displayPath: '标题', type: 'string' },
+    { path: 'visible', displayPath: '可见性', type: 'boolean' },
+    { path: 'opacity', displayPath: '透明度', type: 'number' },
+
+    // 样式配置
+    { path: 'backgroundColor', displayPath: '背景颜色', type: 'string' },
+    { path: 'borderWidth', displayPath: '边框宽度', type: 'number' },
+    { path: 'borderColor', displayPath: '边框颜色', type: 'string' },
+    { path: 'borderStyle', displayPath: '边框样式', type: 'string' },
+    { path: 'borderRadius', displayPath: '圆角大小', type: 'number' },
+    { path: 'boxShadow', displayPath: '阴影效果', type: 'string' },
+
+    // 布局配置
+    { path: 'padding', displayPath: '内边距', type: 'object' },
+    { path: 'margin', displayPath: '外边距', type: 'object' },
+
+    // 设备关联配置 (核心必需)
+    { path: 'deviceId', displayPath: '设备ID', type: 'string' },
+    { path: 'metricsList', displayPath: '指标列表', type: 'array' }
+  ]
+
+  console.log(`🚨 [InteractionCardWizard] 开始添加${standardBaseProperties.length}个基础属性`)
+
+  // 添加所有标准基础属性
+  standardBaseProperties.forEach(prop => {
+    const currentValue = config?.base?.[prop.path] // 🔥 使用可选链，即使config为空也不报错
+    const option = {
+      label: `[基础] ${prop.displayPath} (${prop.type})`,
+      value: `base.${prop.path}`, // 🔥 修复：监听属性使用简单路径，不需要组件ID
+      property: {
+        name: prop.path,
+        label: prop.displayPath,
+        type: prop.type,
+        currentValue: currentValue
+      }
+    }
+    options.push(option)
+    console.log(`🚨 [InteractionCardWizard] 添加基础属性:`, prop.displayPath, '→', option.value)
   })
-  return groupedOptions
+
+  // Component层标准属性
+  const standardComponentProperties = [
+    { path: 'properties', displayPath: '组件属性', type: 'object' },
+    { path: 'styles', displayPath: '组件样式', type: 'object' },
+    { path: 'behavior', displayPath: '组件行为', type: 'object' }
+  ]
+
+  console.log(`🚨 [InteractionCardWizard] 开始添加${standardComponentProperties.length}个组件属性`)
+
+  standardComponentProperties.forEach(prop => {
+    const currentValue = config?.component?.[prop.path] // 🔥 使用可选链，即使config为空也不报错
+    const option = {
+      label: `[组件] ${prop.displayPath} (${prop.type})`,
+      value: `component.${prop.path}`, // 🔥 修复：监听属性使用简单路径，不需要组件ID
+      property: {
+        name: prop.path,
+        label: prop.displayPath,
+        type: prop.type,
+        currentValue: currentValue
+      }
+    }
+    options.push(option)
+    console.log(`🚨 [InteractionCardWizard] 添加组件属性:`, prop.displayPath, '→', option.value)
+  })
+
+  console.log(`🚨 [InteractionCardWizard] 监听属性选择器最终结果:`, {
+    componentId: props.componentId,
+    totalOptions: options.length,
+    baseOptions: standardBaseProperties.length,
+    componentOptions: standardComponentProperties.length,
+    生成的选项: options.map(opt => ({ label: opt.label, value: opt.value }))
+  })
+
+  return options
 })
 
 // ✅ 正确的事件类型样式 (3种)
@@ -843,6 +787,10 @@ const editInteraction = (index: number) => {
   currentConditionOperator.value = ''
   currentConditionValue.value = ''
 
+  // 🔥 重置目标属性绑定状态
+  currentTargetPropertyBinding.value = ''
+  currentTargetPropertyInfo.value = null
+
   // 🔥 如果是数据变化事件，加载监听属性和条件配置
   if (interaction.event === 'dataChange') {
     currentWatchedProperty.value = interaction.watchedProperty || ''
@@ -919,11 +867,21 @@ const editInteraction = (index: number) => {
         currentInteraction.value.targetComponentId = modifyConfig.targetComponentId || ''
         currentInteraction.value.targetProperty = modifyConfig.targetProperty || ''
         currentInteraction.value.updateValue = modifyConfig.updateValue || ''
+
+        // 🔥 构建目标属性绑定路径
+        if (modifyConfig.targetComponentId && modifyConfig.targetProperty) {
+          currentTargetPropertyBinding.value = `${modifyConfig.targetComponentId}.${modifyConfig.targetProperty}`
+        }
       } else {
         // 向后兼容旧格式
         currentInteraction.value.targetComponentId = firstResponse.targetComponentId || ''
         currentInteraction.value.targetProperty = firstResponse.targetProperty || ''
         currentInteraction.value.updateValue = firstResponse.updateValue || ''
+
+        // 🔥 构建目标属性绑定路径
+        if (firstResponse.targetComponentId && firstResponse.targetProperty) {
+          currentTargetPropertyBinding.value = `${firstResponse.targetComponentId}.${firstResponse.targetProperty}`
+        }
       }
     }
     // 处理旧的修改格式
@@ -932,6 +890,11 @@ const editInteraction = (index: number) => {
       currentInteraction.value.targetComponentId = firstResponse.targetComponentId || ''
       currentInteraction.value.targetProperty = firstResponse.targetProperty || ''
       currentInteraction.value.updateValue = firstResponse.updateValue || ''
+
+      // 🔥 构建目标属性绑定路径
+      if (firstResponse.targetComponentId && firstResponse.targetProperty) {
+        currentTargetPropertyBinding.value = `${firstResponse.targetComponentId}.${firstResponse.targetProperty}`
+      }
     }
   }
 
@@ -945,8 +908,38 @@ const deleteInteraction = (index: number) => {
 }
 
 // 🔥 数据变化相关处理函数
-const handleWatchedPropertyChange = (value: string) => {
-  currentWatchedProperty.value = value
+const handleWatchedPropertyChange = (bindingPath: string, propertyInfo?: any) => {
+  currentWatchedProperty.value = bindingPath
+
+  // 🔥 可选：如果需要使用属性信息进行额外处理
+  if (propertyInfo) {
+    console.log(`🔥 [InteractionCardWizard] 属性选择变化:`, {
+      bindingPath,
+      componentName: propertyInfo.componentName,
+      propertyLabel: propertyInfo.propertyLabel,
+      type: propertyInfo.type
+    })
+  }
+}
+
+// 🔥 新增：目标属性绑定变化处理
+const handleTargetPropertyChange = (bindingPath: string, propertyInfo?: any) => {
+  currentTargetPropertyBinding.value = bindingPath
+  currentTargetPropertyInfo.value = propertyInfo
+
+  console.log(`🔥 [InteractionCardWizard] 目标属性绑定变化:`, {
+    bindingPath,
+    propertyInfo
+  })
+
+  // 解析绑定路径更新原有字段（向后兼容）
+  if (bindingPath && propertyInfo) {
+    currentInteraction.value.targetComponentId = propertyInfo.componentId
+    currentInteraction.value.targetProperty = `${propertyInfo.layer}.${propertyInfo.propertyName}`
+  } else {
+    currentInteraction.value.targetComponentId = ''
+    currentInteraction.value.targetProperty = ''
+  }
 }
 
 const handleConditionTypeChange = (value: string) => {
@@ -1094,12 +1087,30 @@ const saveInteraction = () => {
       }
     ]
   } else if (currentActionType.value === 'modify') {
+    // 🔥 优先使用新的绑定路径，解析出组件ID和属性路径
+    let targetComponentId = currentInteraction.value.targetComponentId
+    let targetProperty = currentInteraction.value.targetProperty
+
+    if (currentTargetPropertyBinding.value && currentTargetPropertyInfo.value) {
+      // 使用新的绑定路径信息
+      targetComponentId = currentTargetPropertyInfo.value.componentId
+      targetProperty = `${currentTargetPropertyInfo.value.layer}.${currentTargetPropertyInfo.value.propertyName}`
+
+      console.log(`🔥 [InteractionCardWizard] 使用新绑定路径保存:`, {
+        bindingPath: currentTargetPropertyBinding.value,
+        targetComponentId,
+        targetProperty
+      })
+    }
+
     // 生成新的修改配置格式
     const modifyConfig = {
-      targetComponentId: currentInteraction.value.targetComponentId,
-      targetProperty: currentInteraction.value.targetProperty,
+      targetComponentId: targetComponentId,
+      targetProperty: targetProperty,
       updateValue: currentInteraction.value.updateValue,
-      updateMode: 'replace'
+      updateMode: 'replace',
+      // 🔥 新增：保存完整的绑定路径信息
+      bindingPath: currentTargetPropertyBinding.value
     }
 
     interaction.responses = [
@@ -1107,8 +1118,8 @@ const saveInteraction = () => {
         action: 'modify',
         modifyConfig: modifyConfig,
         // 向后兼容旧格式
-        targetComponentId: currentInteraction.value.targetComponentId,
-        targetProperty: currentInteraction.value.targetProperty,
+        targetComponentId: targetComponentId,
+        targetProperty: targetProperty,
         updateValue: currentInteraction.value.updateValue
       }
     ]
@@ -1146,6 +1157,10 @@ const saveInteraction = () => {
   currentConditionType.value = ''
   currentConditionOperator.value = ''
   currentConditionValue.value = ''
+
+  // 🔥 重置目标属性绑定状态
+  currentTargetPropertyBinding.value = ''
+  currentTargetPropertyInfo.value = null
 }
 </script>
 

@@ -471,6 +471,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'iot-visualization-platform',
+    path: '/iot-visualization-platform',
+    component: 'layout.base$view.iot-visualization-platform',
+    meta: {
+      title: 'iot-visualization-platform',
+      i18nKey: 'route.iot-visualization-platform'
+    }
+  },
+  {
     name: 'login',
     path: '/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?',
     component: 'layout.blank$view.login',
@@ -886,15 +895,6 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'ultra-kanban_kanban-details',
           i18nKey: 'route.ultra-kanban_kanban-details'
         }
-      },
-      {
-        name: 'ultra-kanban_panel-preview',
-        path: '/ultra-kanban/panel-preview',
-        component: 'view.ultra-kanban_panel-preview',
-        meta: {
-          title: 'ultra-kanban_panel-preview',
-          i18nKey: 'route.ultra-kanban_panel-preview'
-        }
       }
     ]
   },
@@ -933,24 +933,6 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'visualization_kanban-details',
           i18nKey: 'route.visualization_kanban-details'
-        }
-      },
-      {
-        name: 'visualization_panel-preview',
-        path: '/visualization/panel-preview',
-        component: 'view.visualization_panel-preview',
-        meta: {
-          title: 'visualization_panel-preview',
-          i18nKey: 'route.visualization_panel-preview'
-        }
-      },
-      {
-        name: 'visualization_visual-editor-details',
-        path: '/visualization/visual-editor-details',
-        component: 'view.visualization_visual-editor-details',
-        meta: {
-          title: 'visualization_visual-editor-details',
-          i18nKey: 'route.visualization_visual-editor-details'
         }
       }
     ]

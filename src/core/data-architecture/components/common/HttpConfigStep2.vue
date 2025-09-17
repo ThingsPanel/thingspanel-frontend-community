@@ -17,6 +17,8 @@ interface Props {
   modelValue: Partial<HttpConfig>
   /** 当前选择的内部接口信息 */
   currentApiInfo?: any
+  /** 🔥 新增：当前组件ID，用于属性绑定 */
+  componentId?: string
 }
 
 interface Emits {
@@ -49,6 +51,7 @@ const updateHeaders = (headers: EnhancedParameter[]) => {
       key-placeholder="头部名称（如：Content-Type）"
       value-placeholder="头部值（如：application/json）"
       :current-api-info="currentApiInfo"
+      :current-component-id="componentId"
       @update:model-value="updateHeaders"
     />
   </div>

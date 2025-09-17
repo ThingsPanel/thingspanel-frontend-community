@@ -1286,6 +1286,4 @@ export class CanvasInteractionController extends EventEmitter {
   }
 }
 
-// 导出
-export type { InteractionConfig, AlignmentGuide }
-export { CanvasInteractionController, InteractionMode, GestureType, AlignmentType }
+export default CanvasInteractionController

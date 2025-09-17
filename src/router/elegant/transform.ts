@@ -212,6 +212,7 @@ const routeMap: RouteMap = {
   "function_multi-tab": "/function/multi-tab",
   "function_tab": "/function/tab",
   "home": "/home",
+  "iot-visualization-platform": "/iot-visualization-platform",
   "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?",
   "manage": "/manage",
   "manage_menu": "/manage/menu",
@@ -254,13 +255,10 @@ const routeMap: RouteMap = {
   "ultra-kanban": "/ultra-kanban",
   "ultra-kanban_index": "/ultra-kanban/index",
   "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details",
-  "ultra-kanban_panel-preview": "/ultra-kanban/panel-preview",
   "user-center": "/user-center",
   "visualization": "/visualization",
   "visualization_kanban": "/visualization/kanban",
-  "visualization_kanban-details": "/visualization/kanban-details",
-  "visualization_panel-preview": "/visualization/panel-preview",
-  "visualization_visual-editor-details": "/visualization/visual-editor-details"
+  "visualization_kanban-details": "/visualization/kanban-details"
 };
 
 /**

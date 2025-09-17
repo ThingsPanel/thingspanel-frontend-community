@@ -18,6 +18,8 @@ interface Props {
   modelValue: Partial<HttpConfig>
   /** 当前选择的内部接口信息 */
   currentApiInfo?: any
+  /** 🔥 新增：当前组件ID，用于属性绑定 */
+  componentId?: string
 }
 
 interface Emits {
@@ -43,6 +45,7 @@ const emit = defineEmits<Emits>()
       key-placeholder="参数名（如：deviceId）"
       value-placeholder="参数值（如：DEV001）"
       :current-api-info="currentApiInfo"
+      :current-component-id="componentId"
       @update:model-value="
         updatedParams => {
           emit('update:modelValue', { ...modelValue, params: updatedParams })

@@ -2015,6 +2015,7 @@ defineExpose({
         <RawDataConfigModal
           :show="true"
           :data-source-key="currentDataSourceKey"
+          :component-id="componentId"
           :is-edit-mode="isEditMode"
           :edit-data="getEditData()"
           :example-data="getCurrentDataSourceExampleData()"

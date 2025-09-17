@@ -255,10 +255,18 @@ const updateDataSourceConfigForBaseConfigChange = async (
                 if (isBaseConfigBinding && field === 'deviceId') {
                   if (process.env.NODE_ENV === 'development') {
                   }
-                  // 更新绑定值为新的deviceId
-                  value.value = newValue
+                  // 🔥 关键修复：不要修改value（绑定路径），只更新defaultValue
+                  // value字段必须保持绑定路径格式：componentId.layer.propertyName
+                  // 只更新defaultValue作为预览值，实际请求时会动态解析绑定路径
                   value.defaultValue = newValue
                   needsUpdate = true
+
+                  console.log(`🔥 [GridstackRenderer] 基础配置变更，只更新参数默认值:`, {
+                    field,
+                    paramPath: currentPath,
+                    保持的绑定路径: value.value,
+                    更新的默认值: newValue
+                  })
                 }
               })
             }

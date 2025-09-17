@@ -501,9 +501,12 @@ export class EditorDataSourceManager {
         是数据源相关: event.section === 'dataSource' || event.section === 'component'
       })
 
-      // 只处理数据源相关的配置变更
-      if (event.section === 'dataSource' || event.section === 'component') {
-        console.log(`🎯 用户要求的打印这几个字 - 阶段H2：准备触发组件${event.componentId}的执行器`)
+      // 🔥 修复：处理所有可能影响数据源的配置变更，包括base层（deviceId、metricsList等动态参数）
+      if (event.section === 'dataSource' || event.section === 'component' || event.section === 'base') {
+        console.log(`🎯 用户要求的打印这几个字 - 阶段H2：准备触发组件${event.componentId}的执行器`, {
+          配置节: event.section,
+          原因: event.section === 'base' ? 'base层动态参数变更可能影响数据源' : '数据源或组件配置变更'
+        })
         try {
           // 通过组件执行器触发数据更新
           await this.triggerComponentExecutor(event.componentId)
@@ -512,7 +515,10 @@ export class EditorDataSourceManager {
           console.log(`🎯 用户要求的打印这几个字 - 阶段H4：组件${event.componentId}执行器触发失败`, error)
         }
       } else {
-        console.log(`🎯 用户要求的打印这几个字 - 阶段H5：非数据源相关配置变更，跳过执行`)
+        console.log(`🎯 用户要求的打印这几个字 - 阶段H5：非数据源相关配置变更，跳过执行`, {
+          配置节: event.section,
+          支持的配置节: ['dataSource', 'component', 'base']
+        })
       }
     })
   }

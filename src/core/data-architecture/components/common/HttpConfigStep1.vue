@@ -19,6 +19,8 @@ import type { EnhancedParameter } from '@/core/data-architecture/types/parameter
 interface Props {
   /** HTTP配置数据 */
   modelValue: Partial<HttpConfig>
+  /** 🔥 新增：当前组件ID，用于属性绑定 */
+  componentId?: string
 }
 
 interface Emits {
@@ -530,6 +532,7 @@ onMounted(() => {
           value-placeholder="参数值"
           :max-parameters="1"
           :current-api-info="selectedApiInfo"
+          :current-component-id="componentId"
           @update:model-value="onUrlParamsUpdate"
         />
         <n-text v-if="urlParams.length === 0" depth="3" style="font-size: 12px; margin-top: 8px">

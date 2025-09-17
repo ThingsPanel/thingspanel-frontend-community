@@ -45,6 +45,7 @@ import type {
   InteractionResponse,
   ComponentInteractionCapability
 } from '@/card2.1/core/interaction-types'
+import type { UnifiedCard2Configuration } from '@/card2.1/hooks/useCard2Props'
 // 🔥 导入DataWarehouse以获取数据源执行结果
 import { dataWarehouse } from '@/core/data-architecture/DataWarehouse'
 // 🔥 导入配置管理器和数据桥接器
@@ -197,6 +198,34 @@ const componentInteractionCapability = computed<ComponentInteractionCapability |
   return currentComponentDef.value?.interactionCapabilities
 })
 
+// 🔥 字段层级映射函数：判断字段应该更新到哪个配置层
+const isBaseLayerField = (field: string): boolean => {
+  // base层字段：设备绑定、UI基础配置
+  const baseFields = [
+    'deviceId', 'metricsList', // 设备绑定字段
+    'title', 'showTitle', 'visible', 'opacity', // UI基础字段
+    'backgroundColor', 'borderWidth', 'borderColor', 'borderStyle', 'borderRadius',
+    'padding', 'margin'
+  ]
+  return baseFields.includes(field)
+}
+
+const isDataSourceLayerField = (field: string): boolean => {
+  // dataSource层字段：数据绑定配置
+  const dataSourceFields = [
+    'dataSourceConfig', 'fieldMappings', 'refreshInterval', 'autoRefresh'
+  ]
+  return dataSourceFields.includes(field)
+}
+
+const isInteractionLayerField = (field: string): boolean => {
+  // interaction层字段：交互配置
+  const interactionFields = [
+    'interactions', 'clickActions', 'hoverActions', 'eventHandlers'
+  ]
+  return interactionFields.includes(field)
+}
+
 // 🔥 批量执行交互响应 - 解决多属性修改相互覆盖问题
 const executeBatchedInteractionResponses = async (responses: InteractionResponse[]) => {
   console.log(`🎯 [Card2Wrapper] 批量执行交互响应:`, responses)
@@ -258,29 +287,62 @@ const executeBatchedInteractionResponses = async (responses: InteractionResponse
 
   // 🔥 关键修复2：批量处理跨组件属性修改
   for (const [targetComponentId, targetResponses] of groupedResponses.cross.entries()) {
-    const batchedCrossUpdates = {}
+    // 🔥 分层收集配置更新 - 根据字段特性分配到不同配置层
+    const layeredUpdates = {
+      base: {},        // 设备绑定等基础配置
+      component: {},   // 组件特有属性
+      dataSource: {}, // 数据源配置
+      interaction: {} // 交互配置
+    }
 
     targetResponses.forEach(response => {
       if (response.modifyConfig) {
         const { targetProperty, updateValue } = response.modifyConfig
-        batchedCrossUpdates[targetProperty] = updateValue
-        console.log(`🎯 [Card2Wrapper] 收集跨组件修改: ${targetComponentId}.${targetProperty} = ${updateValue}`)
+
+        // 🔥 处理带层级前缀的字段名（如 "base.deviceId"）
+        let actualProperty = targetProperty
+        let targetLayer = 'component' // 默认层级
+
+        if (targetProperty.includes('.')) {
+          const [layerPrefix, fieldName] = targetProperty.split('.')
+          actualProperty = fieldName
+          targetLayer = layerPrefix
+          console.log(`🎯 [Card2Wrapper] 检测到层级前缀: ${layerPrefix}.${fieldName}`)
+        } else {
+          // 🔥 字段层级映射：根据字段名确定应该更新哪个配置层
+          if (isBaseLayerField(targetProperty)) {
+            targetLayer = 'base'
+          } else if (isDataSourceLayerField(targetProperty)) {
+            targetLayer = 'dataSource'
+          } else if (isInteractionLayerField(targetProperty)) {
+            targetLayer = 'interaction'
+          }
+        }
+
+        // 根据目标层级收集更新
+        layeredUpdates[targetLayer][actualProperty] = updateValue
+        console.log(`🎯 [Card2Wrapper] 收集${targetLayer}层修改: ${targetComponentId}.${actualProperty} = ${updateValue}`)
       }
     })
 
-    console.log(`🎯 [Card2Wrapper] 批量修改其他组件 ${targetComponentId}:`, batchedCrossUpdates)
+    console.log(`🎯 [Card2Wrapper] 批量修改其他组件 ${targetComponentId}:`, layeredUpdates)
 
     try {
-      // 批量更新目标组件的多个属性
-      configurationManager.updateConfigurationForInteraction(
-        targetComponentId,
-        'component',
-        batchedCrossUpdates,  // 🔥 关键：传递批量更新对象
-        'cross-component-interaction'
-      )
-      console.log(`✅ [Card2Wrapper] 跨组件批量修改完成: ${targetComponentId}`)
+      // 🔥 分层批量更新：按配置层级分别更新
+      for (const [layer, updates] of Object.entries(layeredUpdates)) {
+        if (Object.keys(updates).length > 0) {
+          console.log(`🎯 [Card2Wrapper] 更新${layer}层:`, updates)
+          configurationManager.updateConfigurationForInteraction(
+            targetComponentId,
+            layer as keyof UnifiedCard2Configuration,
+            updates,
+            'cross-component-interaction'
+          )
+        }
+      }
+      console.log(`✅ [Card2Wrapper] 跨组件分层批量修改完成: ${targetComponentId}`)
     } catch (error) {
-      console.error(`❌ [Card2Wrapper] 跨组件批量修改失败 ${targetComponentId}:`, error)
+      console.error(`❌ [Card2Wrapper] 跨组件分层批量修改失败 ${targetComponentId}:`, error)
     }
   }
 

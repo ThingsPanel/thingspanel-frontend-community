@@ -53,12 +53,14 @@ const clearFormData = () => {
 const setupData = v => {
   boards.value = v
 }
-// 获取看板列表
+// 获取看板列表（过滤掉 vis_type 为 new_board 的数据）
 const fetchBoards = async () => {
   const { data } = await getBoardList({ page: currentPage.value, page_size: pageSize.value, name: nameSearch.value })
   if (data && data.list) {
-    setupData(data.list as Panel.Board[])
-    total.value = data.total
+    const filtered = (data.list as Panel.Board[]).filter(item => item?.vis_type !== 'new_board')
+    setupData(filtered)
+    // 使用过滤后的数量，避免展示被过滤条目
+    total.value = filtered.length
   }
 }
 

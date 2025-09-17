@@ -101,6 +101,9 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
   ): Promise<ExecutionResult> {
     const startTime = Date.now()
 
+    // 🔥 设置DataItemFetcher的组件上下文
+    this.dataItemFetcher.setCurrentComponentId(config.componentId)
+
     // 🎯 用户要求的打印这几个字 - 调试：MultiLayerExecutorChain开始执行
     console.log(`🎯 用户要求的打印这几个字 - 调试：MultiLayerExecutorChain开始执行`, {
       componentId: config.componentId,

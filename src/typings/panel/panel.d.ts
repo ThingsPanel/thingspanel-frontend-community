@@ -10,6 +10,8 @@ declare namespace Panel {
     description?: string
     remark?: string
     menu_flag?: string
+    /** 可视化类型（例如：new_board） */
+    vis_type?: string
   }
 
   interface Data {
@@ -28,5 +30,7 @@ declare namespace Panel {
     name?: string
     page: number
     page_size: number
+    /** 可视化类型（例如：new_board） */
+    vis_type?: string
   }
 }

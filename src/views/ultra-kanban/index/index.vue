@@ -27,6 +27,7 @@ import { DelBoard, PostBoard, PutBoard, getBoardList } from '@/service/api/index
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
 import { useThemeStore } from '@/store/modules/theme'
+import ItemCard from '@/components/dev-card-item/index.vue'
 
 // 路由和消息管理
 const { routerPushByKey } = useRouterPush()
@@ -86,11 +87,15 @@ const fetchBoards = async () => {
     const { data } = await getBoardList({
       page: currentPage.value,
       page_size: pageSize.value,
-      name: nameSearch.value
+      name: nameSearch.value,
+      // 仅列表请求：携带可视化类型参数
+      vis_type: 'new_board'
     })
     if (data && data.list) {
-      setupData(data.list as Panel.Board[])
-      total.value = data.total
+      const filtered = (data.list as Panel.Board[]).filter(item => item?.vis_type === 'new_board')
+      setupData(filtered)
+      // 使用过滤后的数量，避免展示非 new_board 的条目数量
+      total.value = filtered.length
     }
   } catch (error) {
     message.error($t('common.error'))
@@ -111,7 +116,8 @@ const submitForm = async () => {
       await PutBoard(formData)
       message.success($t('common.updateSuccess'))
     } else {
-      await PostBoard(formData)
+      // 新增时传递可视化类型参数
+      await PostBoard({ ...formData, vis_type: 'new_board' })
       message.success($t('common.addSuccess'))
     }
 
@@ -207,62 +213,40 @@ onMounted(fetchBoards)
 
       <!-- 看板网格列表 -->
       <NGrid x-gap="24" y-gap="16" cols="1 s:2 m:3 l:4" responsive="screen">
-        <NGridItem
-          v-for="board in boards"
-          :key="board.id"
-          @click="goRouter('ultra-kanban_kanban-details', board.id as string)"
-        >
-          <NCard
+        <NGridItem v-for="board in boards" :key="board.id">
+          <ItemCard
+            :title="board.name || ''"
+            :subtitle="board.description || $t('common.noDescription')"
+            :isStatus="false"
             hoverable
-            style="height: 180px"
-            content-style="display: flex; flex-direction: column; height: 100%; gap: 8px;"
-            class="ultra-kanban-card"
+            :hideFooterLeft="true"
+            @click-card="goRouter('ultra-kanban_kanban-details', board.id as string)"
           >
-            <!-- 看板标题和首页标识 -->
-            <div class="flex justify-between items-start">
-              <div class="text-16px font-600 text-primary">
-                {{ board.name }}
-              </div>
+            <template #top-right-icon>
               <div v-if="board.home_flag === 'Y'" class="home-badge">
                 {{ $t('generate.first') }}
               </div>
-            </div>
-
-            <!-- 看板描述信息 -->
-            <NTooltip
-              trigger="hover"
-              :disabled="!board.description || !board.description.trim()"
-              placement="top-start"
-              :style="{ maxWidth: '200px' }"
-            >
-              <template #trigger>
-                <div class="description-text">{{ board.description || $t('common.noDescription') }}</div>
-              </template>
-              {{ board.description }}
-            </NTooltip>
-
-            <!-- 操作按钮区域 -->
-            <div class="flex justify-end gap-8px mt-auto">
-              <!-- 编辑按钮 -->
-              <NButton strong circle secondary @click.stop="editBoard(board)">
-                <template #icon>
-                  <icon-material-symbols:contract-edit-outline class="text-20px text-blue" />
-                </template>
-              </NButton>
-
-              <!-- 删除按钮 -->
-              <NPopconfirm @positive-click="deleteBoard(board.id as string)">
-                <template #trigger>
-                  <NButton strong secondary circle @click.stop>
-                    <template #icon>
-                      <icon-material-symbols:delete-outline class="text-20px text-red" />
-                    </template>
-                  </NButton>
-                </template>
-                {{ $t('common.confirmDelete') }}
-              </NPopconfirm>
-            </div>
-          </NCard>
+            </template>
+            <template #footer>
+              <div class="flex justify-end gap-8px mt-auto">
+                <NButton strong circle secondary @click.stop="editBoard(board)">
+                  <template #icon>
+                    <icon-material-symbols:contract-edit-outline class="text-20px text-blue" />
+                  </template>
+                </NButton>
+                <NPopconfirm @positive-click="deleteBoard(board.id as string)">
+                  <template #trigger>
+                    <NButton strong secondary circle @click.stop>
+                      <template #icon>
+                        <icon-material-symbols:delete-outline class="text-20px text-red" />
+                      </template>
+                    </NButton>
+                  </template>
+                  {{ $t('common.confirmDelete') }}
+                </NPopconfirm>
+              </div>
+            </template>
+          </ItemCard>
         </NGridItem>
       </NGrid>
 

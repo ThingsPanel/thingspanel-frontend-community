@@ -72,6 +72,7 @@ interface Props {
   customClass?: string
   maxParameters?: number // 最大参数数量限制
   currentApiInfo?: any // 当前选择的内部接口信息，用于接口模板功能
+  currentComponentId?: string // 🔥 新增：当前组件ID，用于属性绑定
 }
 
 // Emits接口
@@ -815,6 +816,7 @@ const isCustomInputAllowed = (param: EnhancedParameter) => {
 
 /**
  * 获取组件模板配置
+ * 🔥 修复：动态注入currentComponentId到ComponentPropertySelector
  */
 const getComponentTemplate = (param: EnhancedParameter | null) => {
   if (!param || !param.selectedTemplate) return null
@@ -827,7 +829,29 @@ const getComponentTemplate = (param: EnhancedParameter | null) => {
       ? componentMap[config.component as keyof typeof componentMap]
       : config.component
 
-  return { ...config, component }
+  // 🔥 关键修复：为ComponentPropertySelector动态注入currentComponentId
+  let enhancedProps = { ...config.props }
+
+  if (config.component === 'ComponentPropertySelector' ||
+      (typeof config.component === 'string' && config.component === 'ComponentPropertySelector')) {
+    enhancedProps = {
+      ...enhancedProps,
+      currentComponentId: props.currentComponentId, // 🔥 传递当前组件ID
+      autoDetectComponentId: true // 🔥 保持自动检测功能
+    }
+
+    console.log(`🔥 [DynamicParameterEditor] 为ComponentPropertySelector注入currentComponentId:`, {
+      currentComponentId: props.currentComponentId,
+      originalProps: config.props,
+      enhancedProps
+    })
+  }
+
+  return {
+    ...config,
+    component,
+    props: enhancedProps // 🔥 使用增强后的props
+  }
 }
 
 // 监听抽屉中参数值的变化，并更新 drawerParam

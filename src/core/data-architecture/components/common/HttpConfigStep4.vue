@@ -15,6 +15,8 @@ import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEdit
 interface Props {
   /** HTTP配置数据 */
   modelValue: Partial<HttpConfig>
+  /** 当前组件ID，用于属性绑定（预留） */
+  componentId?: string
 }
 
 interface Emits {

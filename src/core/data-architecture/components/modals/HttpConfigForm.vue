@@ -23,6 +23,8 @@ import HttpConfigStep4 from '@/core/data-architecture/components/common/HttpConf
 interface Props {
   /** v-model绑定的HTTP配置 */
   modelValue?: Partial<HttpConfig>
+  /** 🔥 新增：当前组件ID，用于属性绑定 */
+  componentId?: string
 }
 
 // Emits接口
@@ -365,6 +367,7 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
         <n-tab-pane name="basic" tab="基础配置">
           <HttpConfigStep1
             :model-value="localConfig"
+            :component-id="componentId"
             @update:model-value="
               value => {
                 Object.assign(localConfig, value)
@@ -378,6 +381,7 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
         <n-tab-pane name="headers" tab="请求头" :disabled="!isBasicConfigValid">
           <HttpConfigStep2
             :model-value="localConfig"
+            :component-id="componentId"
             :current-api-info="currentApiInfo"
             @update:model-value="
               value => {
@@ -390,6 +394,7 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
         <n-tab-pane name="params" tab="参数配置" :disabled="!isBasicConfigValid">
           <HttpConfigStep3
             :model-value="localConfig"
+            :component-id="componentId"
             :current-api-info="currentApiInfo"
             @update:model-value="
               value => {
@@ -411,6 +416,7 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
         <n-tab-pane name="scripts" tab="请求脚本" :disabled="!isBasicConfigValid">
           <HttpConfigStep4
             :model-value="localConfig"
+            :component-id="componentId"
             @update:model-value="
               value => {
                 Object.assign(localConfig, value)

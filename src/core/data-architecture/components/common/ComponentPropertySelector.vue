@@ -1,604 +1,610 @@
-<!--
-  组件属性选择器
-  用于在HttpConfigForm中选择已加入编辑器的组件属性进行绑定
--->
 <template>
   <div class="component-property-selector">
-    <!-- 搜索框 -->
-    <div class="search-section">
-      <n-input v-model:value="searchKeyword" placeholder="搜索组件或属性..." clearable size="small">
-        <template #prefix>
-          <n-icon><search-icon /></n-icon>
-        </template>
-      </n-input>
+    <!-- 第一级：组件选择 -->
+    <div class="selector-level">
+      <n-form-item label="选择组件">
+        <n-select
+          v-model:value="selectedComponentId"
+          :options="componentOptions"
+          placeholder="请选择要绑定的组件"
+          clearable
+          filterable
+          @update:value="onComponentChange"
+        />
+      </n-form-item>
     </div>
 
-    <!-- 组件属性树 -->
-    <div class="tree-section">
-      <n-tree
-        v-if="filteredTreeData.length > 0"
-        :data="filteredTreeData"
-        key-field="key"
-        label-field="label"
-        children-field="children"
-        selectable
-        :selected-keys="selectedKeys"
-        :expand-on-click="false"
-        :default-expanded-keys="defaultExpandedKeys"
-        @update:selected-keys="onSelectionChange"
-        @update:expanded-keys="onExpandedKeysChange"
-      >
-        <template #prefix="{ option }">
-          <n-icon>
-            <component-icon v-if="option.type === 'component'" />
-            <property-icon v-else />
-          </n-icon>
-        </template>
+    <!-- 第二级：属性选择 -->
+    <div v-if="selectedComponentId" class="selector-level">
+      <n-form-item label="选择属性">
+        <n-select
+          v-model:value="selectedPropertyPath"
+          :options="propertyOptions"
+          placeholder="请选择要绑定的属性"
+          clearable
+          filterable
+          @update:value="onPropertyChange"
+        />
+      </n-form-item>
+    </div>
 
-        <template #suffix="{ option }">
-          <n-tag
-            v-if="option.type === 'property'"
-            size="small"
-            :type="getPropertyTypeTagType(option.propertyConfig?.type)"
-          >
-            {{ option.propertyConfig?.type }}
-          </n-tag>
-        </template>
-      </n-tree>
-
-      <!-- 空状态 -->
-      <div v-else class="empty-state">
-        <n-empty :description="getEmptyStateDescription()" size="small">
-          <template #icon>
-            <n-icon><empty-icon /></n-icon>
-          </template>
-          <template #extra>
-            <n-text depth="3" style="font-size: 12px">
-              提示：请先在编辑器画布中添加组件，然后为组件配置可暴露的属性
-            </n-text>
-          </template>
-        </n-empty>
+    <!-- 调试信息 -->
+    <div v-if="isDevelopment" class="debug-info">
+      <div style="font-size: 12px; color: #999; margin-top: 8px;">
+        <div>DEBUG - 组件数量: {{ componentOptions.length }}</div>
+        <div>DEBUG - 属性数量: {{ propertyOptions.length }}</div>
+        <div>DEBUG - 选中路径: {{ selectedPropertyPath }}</div>
       </div>
-    </div>
-
-    <!-- 选中属性信息 -->
-    <div v-if="selectedProperty" class="selected-info">
-      <n-card size="small" :bordered="true">
-        <template #header>
-          <span class="info-title">选中属性</span>
-        </template>
-
-        <n-descriptions :column="1" size="small">
-          <n-descriptions-item label="组件">
-            {{ selectedProperty.componentName }}
-          </n-descriptions-item>
-          <n-descriptions-item label="属性">
-            {{ selectedProperty.propertyLabel }}
-          </n-descriptions-item>
-          <n-descriptions-item label="类型">
-            <n-tag size="small" :type="getPropertyTypeTagType(selectedProperty.type)">
-              {{ selectedProperty.type }}
-            </n-tag>
-          </n-descriptions-item>
-          <n-descriptions-item v-if="selectedProperty.description" label="描述">
-            <n-text depth="3" style="font-size: 12px">
-              {{ selectedProperty.description }}
-            </n-text>
-          </n-descriptions-item>
-        </n-descriptions>
-
-        <!-- 绑定路径 -->
-        <div class="binding-path">
-          <n-alert type="success" size="small" :show-icon="false">
-            <template #header>
-              <n-icon style="margin-right: 4px"><link-icon /></n-icon>
-              绑定路径
-            </template>
-            <n-text code>{{ selectedProperty.bindingPath }}</n-text>
-          </n-alert>
-        </div>
-      </n-card>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 /**
- * ComponentPropertySelector - 组件属性选择器
- *
- * 功能：
- * 1. 显示编辑器中已注册组件的可绑定属性
- * 2. 支持搜索过滤
- * 3. 返回选中属性的绑定路径
+ * 组件属性选择器（二级联动）
+ * 基于配置分离原则，使用黑名单机制暴露所有可绑定属性
  */
 
-import { ref, computed, watch, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { NInput, NTree, NIcon, NTag, NCard, NDescriptions, NDescriptionsItem, NText, NAlert, NEmpty } from 'naive-ui'
-import {
-  SearchOutline as SearchIcon,
-  ConstructOutline as ComponentIcon,
-  SettingsOutline as PropertyIcon,
-  LinkOutline as LinkIcon,
-  FileTrayStackedOutline as EmptyIcon
-} from '@vicons/ionicons5'
+import { ref, computed, watch, nextTick } from 'vue'
+import { NFormItem, NSelect } from 'naive-ui'
+import { useEditorStore } from '@/store/modules/editor'
+import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
+import type { WidgetConfiguration } from '@/components/visual-editor/configuration/types'
 
-// 导入Card2.1相关功能
-import { interactionManager } from '@/card2.1/core/interaction-manager'
-// 🔥 简化：移除复杂的属性暴露和路径管理系统
-// 导入Visual Editor状态管理 - 使用正确的editor store
-import { useEditorStore } from '@/components/visual-editor/store/editor'
-
-// 定义树节点接口
-interface ComponentPropertyTreeNode {
-  key: string
-  label: string
-  type: 'component' | 'property'
-  componentId?: string
-  propertyName?: string
-  propertyConfig?: {
-    name: string
-    label: string
-    type: string
-    description?: string
-    isCore?: boolean
-    group?: string
-    defaultValue?: any
-  }
-  children?: ComponentPropertyTreeNode[]
-  isLeaf: boolean
-}
-
-// Props接口
+// Props 和 Emits
 interface Props {
   modelValue?: string
   placeholder?: string
-  allowClear?: boolean
+  currentComponentId?: string // 🔥 当前组件ID，用于显示"当前组件"标识
+  autoDetectComponentId?: boolean // 🔥 新增：是否自动检测当前活跃组件ID
 }
 
-// Emits接口
 interface Emits {
   (e: 'update:modelValue', value: string): void
-  (e: 'update:selectedValue', value: string): void
-  (e: 'change', value: string, propertyInfo?: SelectedPropertyInfo): void
+  (e: 'change', bindingPath: string, propertyInfo?: PropertyInfo): void
 }
 
-interface SelectedPropertyInfo {
-  bindingPath: string
+interface PropertyInfo {
   componentId: string
   componentName: string
+  layer: 'base' | 'component'
   propertyName: string
   propertyLabel: string
   type: string
   description?: string
-  defaultValue?: any
+  currentValue?: any
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  placeholder: '请选择要绑定的组件属性',
-  allowClear: true
-})
-
+const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
-const { t } = useI18n()
 
-// Visual Editor Store - 获取画布组件实例（使用正确的editor store）
+// 黑名单配置 - 排除敏感和内部属性
+const PROPERTY_BLACKLIST = [
+  'metadata',
+  'password',
+  'token',
+  'secret',
+  'key',
+  'auth',
+  'credential',
+  '_internal',
+  '__'
+]
+
+// 内部状态
+const selectedComponentId = ref<string>('')
+const selectedPropertyPath = ref<string>('')
+
+// Editor Store
 const editorStore = useEditorStore()
 
-// 搜索关键词
-const searchKeyword = ref('')
+// 开发模式检查
+const isDevelopment = process.env.NODE_ENV === 'development'
 
-// 选中的key
-const selectedKeys = ref<string[]>([])
-
-// 展开的key
-const expandedKeys = ref<string[]>([])
-
-// 原始组件属性树数据
-const rawTreeData = ref<ComponentPropertyTreeNode[]>([])
-
-// 选中的属性信息
-const selectedProperty = ref<SelectedPropertyInfo | null>(null)
-
-/**
- * 获取组件属性树数据 - 基于画布组件实例
- */
-const fetchTreeData = () => {
-  // 获取画布中的组件实例
-  const canvasNodes = editorStore.nodes
-
-  if (!canvasNodes || canvasNodes.length === 0) {
-    rawTreeData.value = []
-    return
-  }
-
-  // 初始化树数据数组
-  const treeData: ComponentPropertyTreeNode[] = []
-
-  // 🚀 1. 首先添加基础配置属性节点（面板级别，只暴露 deviceId 和 metricsList）
-  if (canvasNodes.length > 0) {
-    // 使用第一个组件的ID作为代表来生成路径
-    const representativeComponentId = canvasNodes[0].id
-
-    // 只暴露 deviceId 和 metricsList
-    const baseProperties: ComponentPropertyTreeNode[] = [
-      {
-        key: `${representativeComponentId}.base.deviceId`,
-        label: '设备ID (string)',
-        type: 'property' as const,
-        componentId: representativeComponentId,
-        propertyName: 'deviceId',
-        propertyConfig: {
-          name: 'deviceId',
-          label: '设备ID',
-          type: 'string',
-          description: '关联的设备ID，用于数据源自动配置和设备模板',
-          isCore: true,
-          group: '设备配置',
-          defaultValue: ''
-        },
-        isLeaf: true
-      },
-      {
-        key: `${representativeComponentId}.base.metricsList`,
-        label: '指标列表 (array)',
-        type: 'property' as const,
-        componentId: representativeComponentId,
-        propertyName: 'metricsList',
-        propertyConfig: {
-          name: 'metricsList',
-          label: '指标列表',
-          type: 'array',
-          description: '选择的设备指标列表，用于数据获取和显示',
-          isCore: true,
-          group: '设备配置',
-          defaultValue: []
-        },
-        isLeaf: true
-      }
-    ]
-
-    // 添加基础配置节点到树数据前面
-    treeData.push({
-      key: 'panel_base_config',
-      label: '面板基础配置',
-      type: 'component' as const,
-      children: baseProperties,
-      isLeaf: false
-    })
-  }
-
-  // 2. 🔥 简化：使用基础属性列表替代复杂的属性暴露系统
-  const componentNodes = canvasNodes
-    .map(node => {
-      // 🔥 简化：使用简单的基础属性列表
-      const basicProperties = [
-        { name: 'title', label: '标题', type: 'string', description: '组件标题', group: '外观配置' },
-        { name: 'visible', label: '可见性', type: 'boolean', description: '组件是否可见', group: '外观配置' },
-        { name: 'opacity', label: '透明度', type: 'number', description: '组件透明度', group: '外观配置' },
-        { name: 'backgroundColor', label: '背景色', type: 'color', description: '组件背景颜色', group: '外观配置' }
-      ]
-
-      const properties: ComponentPropertyTreeNode[] = basicProperties.map(prop => {
-        return {
-          key: `${node.id}.${prop.name}`,
-          label: `${prop.label} (${prop.type})`,
-          type: 'property' as const,
-          componentId: node.id,
-          propertyName: prop.name,
-          propertyConfig: {
-            ...prop,
-            defaultValue: getDefaultValueByType(prop.type)
-          },
-          isLeaf: true
-        }
-      })
-
-      return {
-        key: node.id,
-        label: `组件 (ID: ${node.id.substring(0, 8)})`, // 显示简化的实例ID
-        type: 'component' as const,
-        children: properties,
-        isLeaf: false
-      }
-    })
-    .filter(Boolean) as ComponentPropertyTreeNode[]
-
-  // 将组件节点添加到树数据后面
-  treeData.push(...componentNodes)
-
-  rawTreeData.value = treeData
-}
-
-/**
- * 根据属性类型获取默认值
- */
-const getDefaultValueByType = (type: string): any => {
-  switch (type) {
-    case 'string':
-      return ''
-    case 'number':
-      return 0
-    case 'boolean':
-      return false
-    case 'array':
-      return []
-    case 'object':
-      return {}
-    case 'date':
-      return null
-    case 'color':
-      return '#000000'
-    case 'url':
-      return ''
-    default:
-      return null
-  }
-}
-
-/**
- * 过滤后的树数据（基于搜索关键词）
- */
-const filteredTreeData = computed(() => {
-  if (!searchKeyword.value.trim()) {
-    return rawTreeData.value
-  }
-
-  const keyword = searchKeyword.value.toLowerCase().trim()
-
-  return rawTreeData.value
-    .map(componentNode => {
-      // 检查组件名是否匹配
-      const componentMatches = componentNode.label.toLowerCase().includes(keyword)
-
-      // 过滤属性
-      const filteredProperties =
-        componentNode.children?.filter(
-          propertyNode =>
-            propertyNode.label.toLowerCase().includes(keyword) ||
-            propertyNode.propertyConfig?.description?.toLowerCase().includes(keyword)
-        ) || []
-
-      // 如果组件名匹配或有匹配的属性，则显示该组件节点
-      if (componentMatches || filteredProperties.length > 0) {
-        return {
-          ...componentNode,
-          children: componentMatches ? componentNode.children : filteredProperties
-        }
-      }
-
-      return null
-    })
-    .filter(Boolean) as ComponentPropertyTreeNode[]
-})
-
-/**
- * 默认展开的key（自动展开所有组件节点）
- */
-const defaultExpandedKeys = computed(() => {
-  return rawTreeData.value.map(node => node.key)
-})
-
-/**
- * 选择变化处理
- */
-const onSelectionChange = (selectedKeysValue: string[]) => {
-  selectedKeys.value = selectedKeysValue
-  const selectedKey = selectedKeysValue[0]
-
-  if (selectedKey) {
-    // 🔥 简化：使用简单的字符串解析
-    const parts = selectedKey.split('.')
-    if (parts.length >= 2) {
-      const componentId = parts[0]
-      const propertyName = parts.slice(1).join('.')
-
-      // 查找对应的树节点
-      let componentNode: ComponentPropertyTreeNode | undefined
-      let propertyNode: ComponentPropertyTreeNode | undefined
-
-      for (const node of rawTreeData.value) {
-        if (node.key === componentId || (node.children && node.children.some(child => child.key === selectedKey))) {
-          componentNode = node
-          propertyNode = node.children?.find(prop => prop.key === selectedKey)
-          break
-        }
-      }
-
-      if (propertyNode && propertyNode.propertyConfig) {
-        const propertyInfo: SelectedPropertyInfo = {
-          bindingPath: selectedKey,
-          componentId: componentId,
-          componentName: componentNode?.label || componentId,
-          propertyName,
-          propertyLabel: propertyNode.propertyConfig.label,
-          type: propertyNode.propertyConfig.type,
-          description: propertyNode.propertyConfig.description,
-          defaultValue: propertyNode.propertyConfig.defaultValue
-        }
-
-        selectedProperty.value = propertyInfo
-
-        // 发送事件
-        emit('update:modelValue', selectedKey)
-        emit('update:selectedValue', selectedKey)
-        emit('change', selectedKey, propertyInfo)
-      }
-    }
-  } else {
-    selectedProperty.value = null
-    emit('update:modelValue', '')
-    emit('update:selectedValue', '')
-    emit('change', '')
-  }
-}
-
-/**
- * 展开状态变化处理
- */
-const onExpandedKeysChange = (keys: string[]) => {
-  expandedKeys.value = keys
-}
-
-/**
- * 获取属性类型标签颜色
- */
-const getPropertyTypeTagType = (type?: string) => {
-  const typeMap: Record<string, string> = {
-    string: 'default',
-    number: 'primary',
-    boolean: 'success',
-    color: 'warning',
-    date: 'info',
-    object: 'error',
-    array: 'error'
-  }
-  return typeMap[type || ''] || 'default'
-}
-
-/**
- * 监听modelValue变化，同步选中状态
- */
+// 监听外部 modelValue 变化
 watch(
   () => props.modelValue,
-  newValue => {
-    if (newValue && newValue !== selectedKeys.value[0]) {
-      selectedKeys.value = [newValue]
-      // 触发选择事件以更新selectedProperty
-      onSelectionChange([newValue])
+  (newValue) => {
+    if (newValue && newValue !== selectedPropertyPath.value) {
+      parseBindingPath(newValue)
     } else if (!newValue) {
-      selectedKeys.value = []
-      selectedProperty.value = null
+      selectedComponentId.value = ''
+      selectedPropertyPath.value = ''
     }
   },
   { immediate: true }
 )
 
 /**
- * 获取空状态描述
+ * 解析绑定路径，设置对应的组件和属性选择
  */
-const getEmptyStateDescription = () => {
-  const canvasNodes = editorStore.nodes
-  if (!canvasNodes || canvasNodes.length === 0) {
-    return '画布中暂无组件实例'
-  }
+const parseBindingPath = (bindingPath: string) => {
+  if (!bindingPath || !bindingPath.includes('.')) return
 
-  if (searchKeyword.value.trim()) {
-    return `没有找到匹配 "${searchKeyword.value}" 的组件属性`
+  const parts = bindingPath.split('.')
+  if (parts.length >= 3) {
+    const componentId = parts[0]
+    selectedComponentId.value = componentId
+    selectedPropertyPath.value = bindingPath
   }
-
-  return '当前组件没有可绑定的属性'
 }
 
 /**
- * 组件挂载时获取数据
+ * 获取画布上的所有组件选项
  */
-onMounted(() => {
-  if (process.env.NODE_ENV === 'development') {
+const componentOptions = computed(() => {
+  const components = editorStore.nodes || []
+
+  return components.map(comp => {
+    // 🔥 关键修复：智能确定当前组件
+    // 1. 优先使用明确传入的 currentComponentId
+    // 2. 如果开启自动检测，使用选中的节点ID或第一个节点
+    let effectiveCurrentComponentId = props.currentComponentId
+
+    if (!effectiveCurrentComponentId && props.autoDetectComponentId) {
+      // 自动检测：优先使用选中的节点，否则使用第一个节点
+      effectiveCurrentComponentId = editorStore.selectedNodeId || components[0]?.id
+    }
+
+    const isCurrentComponent = comp.id === effectiveCurrentComponentId
+    const componentLabel = isCurrentComponent
+      ? `${comp.type || 'unknown'} (当前组件)`
+      : `${comp.type || 'unknown'} (${comp.id.slice(0, 8)}...)`
+
+    return {
+      label: componentLabel,
+      value: comp.id,
+      componentType: comp.type
+    }
+  })
+})
+
+/**
+ * 获取选中组件的所有可绑定属性（黑名单机制）
+ */
+const propertyOptions = computed(() => {
+  if (!selectedComponentId.value) return []
+
+  console.log(`🚨🚨🚨 [ComponentPropertySelector] 开始获取组件属性:`, {
+    selectedComponentId: selectedComponentId.value,
+    组件类型: getComponentName(selectedComponentId.value),
+    全部已注册组件配置: Object.keys(configurationIntegrationBridge.getAllConfigurations())
+  })
+
+  const config = configurationIntegrationBridge.getConfiguration(selectedComponentId.value)
+
+  console.log(`🚨🚨🚨 [ComponentPropertySelector] 配置获取结果:`, {
+    selectedComponentId: selectedComponentId.value,
+    hasConfig: !!config,
+    config: config,
+    configType: typeof config,
+    configKeys: config ? Object.keys(config) : '无配置',
+    isNull: config === null,
+    isUndefined: config === undefined
+  })
+
+  if (!config) {
+    console.error(`❌❌❌ [ComponentPropertySelector] 组件 ${selectedComponentId.value} 无配置，使用备用函数`)
+    const fallbackOptions = getStandardPropertiesForEmptyConfig(selectedComponentId.value)
+    console.log(`🚨🚨🚨 [ComponentPropertySelector] 备用函数返回:`, {
+      optionsCount: fallbackOptions.length,
+      options: fallbackOptions.map(opt => opt.label)
+    })
+    return fallbackOptions
   }
 
-  fetchTreeData()
+  const options: any[] = []
 
-  // 定时检查 store 状态变化
-  const checkInterval = setInterval(() => {
-    const currentNodes = editorStore.nodes
-    if (currentNodes && currentNodes.length > 0) {
-      fetchTreeData()
-      clearInterval(checkInterval)
+  console.log(`🔥 [ComponentPropertySelector] 开始解析组件配置:`, {
+    componentId: selectedComponentId.value,
+    hasConfig: !!config,
+    hasBase: !!config?.base,
+    hasComponent: !!config?.component,
+    完整配置: config,
+    base配置详情: config?.base,
+    component配置详情: config?.component
+  })
+
+  // 🔥 基础层标准属性定义 - 基于BaseConfiguration接口
+  const standardBaseProperties = [
+    // 显示配置
+    { path: 'showTitle', displayPath: '显示标题', type: 'boolean', description: '是否显示组件标题' },
+    { path: 'title', displayPath: '标题', type: 'string', description: '组件标题文本' },
+    { path: 'visible', displayPath: '可见性', type: 'boolean', description: '组件是否可见' },
+    { path: 'opacity', displayPath: '透明度', type: 'number', description: '组件透明度 (0-1)' },
+
+    // 样式配置
+    { path: 'backgroundColor', displayPath: '背景颜色', type: 'string', description: '组件背景颜色' },
+    { path: 'borderWidth', displayPath: '边框宽度', type: 'number', description: '边框宽度像素值' },
+    { path: 'borderColor', displayPath: '边框颜色', type: 'string', description: '边框颜色' },
+    { path: 'borderStyle', displayPath: '边框样式', type: 'string', description: '边框样式类型' },
+    { path: 'borderRadius', displayPath: '圆角大小', type: 'number', description: '边框圆角像素值' },
+    { path: 'boxShadow', displayPath: '阴影效果', type: 'string', description: '盒子阴影效果' },
+
+    // 布局配置 (简化显示，实际是对象)
+    { path: 'padding', displayPath: '内边距', type: 'object', description: '组件内边距配置' },
+    { path: 'margin', displayPath: '外边距', type: 'object', description: '组件外边距配置' },
+
+    // 设备关联配置 (核心必需)
+    { path: 'deviceId', displayPath: '设备ID', type: 'string', description: '关联的设备ID，用于数据源自动配置', isMandatory: true },
+    { path: 'metricsList', displayPath: '指标列表', type: 'array', description: '监控的设备指标列表', isMandatory: true }
+  ]
+
+  // 添加所有标准基础属性
+  standardBaseProperties.forEach(prop => {
+    const currentValue = config.base?.[prop.path]
+    const option = {
+      label: `[基础] ${prop.displayPath} (${prop.type})`,
+      value: `${selectedComponentId.value}.base.${prop.path}`,
+      propertyInfo: {
+        componentId: selectedComponentId.value,
+        componentName: getComponentName(selectedComponentId.value),
+        layer: 'base',
+        propertyName: prop.path,
+        propertyLabel: prop.displayPath,
+        type: prop.type,
+        description: prop.description,
+        currentValue: currentValue,
+        isMandatory: prop.isMandatory || false
+      }
     }
-  }, 2000)
+    options.push(option)
+  })
 
-  // 10秒后清理定时器
-  setTimeout(() => {
-    clearInterval(checkInterval)
-  }, 10000)
+  console.log(`🔥 [ComponentPropertySelector] 添加标准基础属性: ${standardBaseProperties.length}个`)
+
+  // 解析 base 层额外配置（不在标准属性列表中的动态属性）
+  if (config.base && Object.keys(config.base).length > 0) {
+    console.log(`🔥 [ComponentPropertySelector] 解析base层额外配置:`, config.base)
+    const baseProperties = extractPropertiesFromObject(config.base, 'base')
+    const standardPaths = standardBaseProperties.map(p => p.path)
+
+    baseProperties.forEach(prop => {
+      // 跳过已经添加的标准属性
+      if (standardPaths.includes(prop.path)) return
+
+      options.push({
+        label: `[基础·额外] ${prop.displayPath} (${prop.type})`,
+        value: `${selectedComponentId.value}.base.${prop.path}`,
+        propertyInfo: {
+          componentId: selectedComponentId.value,
+          componentName: getComponentName(selectedComponentId.value),
+          layer: 'base',
+          propertyName: prop.path,
+          propertyLabel: prop.displayPath,
+          type: prop.type,
+          description: `基础配置动态属性: ${prop.displayPath}`,
+          currentValue: prop.currentValue
+        }
+      })
+    })
+    console.log(`🔥 [ComponentPropertySelector] base层额外属性数量:`, baseProperties.length - standardPaths.length)
+  } else {
+    console.log(`🔥 [ComponentPropertySelector] base层无额外配置，使用标准属性`)
+  }
+
+  // 解析 component 层配置
+  if (config.component && Object.keys(config.component).length > 0) {
+    console.log(`🔥 [ComponentPropertySelector] 解析component层配置:`, config.component)
+
+    // 🔥 Component层标准属性定义 - 基于ComponentConfiguration接口
+    const standardComponentProperties = [
+      { path: 'properties', displayPath: '组件属性', type: 'object', description: '组件特定的属性配置' },
+      { path: 'styles', displayPath: '组件样式', type: 'object', description: '组件样式配置' },
+      { path: 'behavior', displayPath: '组件行为', type: 'object', description: '组件行为配置' },
+      { path: 'validation', displayPath: '验证规则', type: 'object', description: '组件验证规则配置' }
+    ]
+
+    // 添加标准component属性
+    standardComponentProperties.forEach(prop => {
+      const currentValue = config.component?.[prop.path]
+      options.push({
+        label: `[组件] ${prop.displayPath} (${prop.type})`,
+        value: `${selectedComponentId.value}.component.${prop.path}`,
+        propertyInfo: {
+          componentId: selectedComponentId.value,
+          componentName: getComponentName(selectedComponentId.value),
+          layer: 'component',
+          propertyName: prop.path,
+          propertyLabel: prop.displayPath,
+          type: prop.type,
+          description: prop.description,
+          currentValue: currentValue
+        }
+      })
+    })
+
+    // 解析额外的component层属性
+    const componentProperties = extractPropertiesFromObject(config.component, 'component')
+    const standardComponentPaths = standardComponentProperties.map(p => p.path)
+
+    componentProperties.forEach(prop => {
+      // 跳过已经添加的标准属性
+      if (standardComponentPaths.includes(prop.path)) return
+
+      options.push({
+        label: `[组件·额外] ${prop.displayPath} (${prop.type})`,
+        value: `${selectedComponentId.value}.component.${prop.path}`,
+        propertyInfo: {
+          componentId: selectedComponentId.value,
+          componentName: getComponentName(selectedComponentId.value),
+          layer: 'component',
+          propertyName: prop.path,
+          propertyLabel: prop.displayPath,
+          type: prop.type,
+          description: `组件配置动态属性: ${prop.displayPath}`,
+          currentValue: prop.currentValue
+        }
+      })
+    })
+    console.log(`🔥 [ComponentPropertySelector] component层标准属性: ${standardComponentProperties.length}个，额外属性: ${componentProperties.length - standardComponentPaths.length}个`)
+  } else {
+    console.log(`🔥 [ComponentPropertySelector] component层配置为空，添加标准component属性占位`)
+
+    // 即使component层为空，也显示标准属性供选择
+    const standardComponentProperties = [
+      { path: 'properties', displayPath: '组件属性', type: 'object', description: '组件特定的属性配置' },
+      { path: 'styles', displayPath: '组件样式', type: 'object', description: '组件样式配置' },
+      { path: 'behavior', displayPath: '组件行为', type: 'object', description: '组件行为配置' }
+    ]
+
+    standardComponentProperties.forEach(prop => {
+      options.push({
+        label: `[组件] ${prop.displayPath} (${prop.type})`,
+        value: `${selectedComponentId.value}.component.${prop.path}`,
+        propertyInfo: {
+          componentId: selectedComponentId.value,
+          componentName: getComponentName(selectedComponentId.value),
+          layer: 'component',
+          propertyName: prop.path,
+          propertyLabel: prop.displayPath,
+          type: prop.type,
+          description: prop.description,
+          currentValue: undefined
+        }
+      })
+    })
+  }
+
+  console.log(`🔥 [ComponentPropertySelector] 属性解析完成:`, {
+    componentId: selectedComponentId.value,
+    totalProperties: options.length,
+    standardBaseProperties: standardBaseProperties.length,
+    baseExtraCount: config.base ? Object.keys(config.base).length : 0,
+    componentCount: config.component ? Object.keys(config.component).length : 0,
+    配置状态: {
+      base层是否为空: !config.base || Object.keys(config.base).length === 0,
+      component层是否为空: !config.component || Object.keys(config.component).length === 0
+    },
+    显示的属性类型: options.map(opt => ({
+      类型: opt.label.match(/\[(.*?)\]/)?.[1] || '未知',
+      属性名: opt.propertyInfo.propertyLabel,
+      绑定路径: opt.value
+    }))
+  })
+
+  return options
 })
+
+/**
+ * 🔥 为无配置的组件生成标准属性选项
+ */
+const getStandardPropertiesForEmptyConfig = (componentId: string) => {
+  console.warn(`⚠️ [ComponentPropertySelector] 组件 ${componentId} 无配置，生成标准属性`)
+
+  const options: any[] = []
+
+  // 基础层标准属性
+  const standardBaseProperties = [
+    { path: 'showTitle', displayPath: '显示标题', type: 'boolean' },
+    { path: 'title', displayPath: '标题', type: 'string' },
+    { path: 'visible', displayPath: '可见性', type: 'boolean' },
+    { path: 'opacity', displayPath: '透明度', type: 'number' },
+    { path: 'backgroundColor', displayPath: '背景颜色', type: 'string' },
+    { path: 'borderWidth', displayPath: '边框宽度', type: 'number' },
+    { path: 'borderColor', displayPath: '边框颜色', type: 'string' },
+    { path: 'borderStyle', displayPath: '边框样式', type: 'string' },
+    { path: 'borderRadius', displayPath: '圆角大小', type: 'number' },
+    { path: 'boxShadow', displayPath: '阴影效果', type: 'string' },
+    { path: 'padding', displayPath: '内边距', type: 'object' },
+    { path: 'margin', displayPath: '外边距', type: 'object' },
+    { path: 'deviceId', displayPath: '设备ID', type: 'string' },
+    { path: 'metricsList', displayPath: '指标列表', type: 'array' }
+  ]
+
+  standardBaseProperties.forEach(prop => {
+    options.push({
+      label: `[基础] ${prop.displayPath} (${prop.type})`,
+      value: `${componentId}.base.${prop.path}`,
+      propertyInfo: {
+        componentId: componentId,
+        componentName: getComponentName(componentId),
+        layer: 'base',
+        propertyName: prop.path,
+        propertyLabel: prop.displayPath,
+        type: prop.type,
+        description: `标准基础属性: ${prop.displayPath}`,
+        currentValue: undefined,
+        isMandatory: prop.path === 'deviceId' || prop.path === 'metricsList'
+      }
+    })
+  })
+
+  // 组件层标准属性
+  const standardComponentProperties = [
+    { path: 'properties', displayPath: '组件属性', type: 'object' },
+    { path: 'styles', displayPath: '组件样式', type: 'object' },
+    { path: 'behavior', displayPath: '组件行为', type: 'object' }
+  ]
+
+  standardComponentProperties.forEach(prop => {
+    options.push({
+      label: `[组件] ${prop.displayPath} (${prop.type})`,
+      value: `${componentId}.component.${prop.path}`,
+      propertyInfo: {
+        componentId: componentId,
+        componentName: getComponentName(componentId),
+        layer: 'component',
+        propertyName: prop.path,
+        propertyLabel: prop.displayPath,
+        type: prop.type,
+        description: `标准组件属性: ${prop.displayPath}`,
+        currentValue: undefined
+      }
+    })
+  })
+
+  console.log(`🔥 [ComponentPropertySelector] 为无配置组件生成 ${options.length} 个标准属性`)
+  return options
+}
+
+/**
+ * 从配置对象中递归提取所有属性（黑名单过滤）
+ */
+interface PropertyItem {
+  path: string
+  displayPath: string
+  type: string
+  currentValue: any
+}
+
+const extractPropertiesFromObject = (obj: any, layer: string, prefix = ''): PropertyItem[] => {
+  const properties: PropertyItem[] = []
+
+  if (!obj || typeof obj !== 'object') return properties
+
+  Object.keys(obj).forEach(key => {
+    // 黑名单检查
+    if (isBlacklisted(key)) {
+      console.log(`🔥 [ComponentPropertySelector] 跳过黑名单属性: ${key}`)
+      return
+    }
+
+    const currentPath = prefix ? `${prefix}.${key}` : key
+    const displayPath = currentPath
+    const value = obj[key]
+    const valueType = getValueType(value)
+
+    // 添加当前属性
+    properties.push({
+      path: currentPath,
+      displayPath: displayPath,
+      type: valueType,
+      currentValue: value
+    })
+
+    // 如果是对象且不是数组，递归解析子属性
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const subProperties = extractPropertiesFromObject(value, layer, currentPath)
+      properties.push(...subProperties)
+    }
+  })
+
+  return properties
+}
+
+/**
+ * 检查属性名是否在黑名单中
+ */
+const isBlacklisted = (propertyName: string): boolean => {
+  const lowerName = propertyName.toLowerCase()
+  return PROPERTY_BLACKLIST.some(blacklisted =>
+    lowerName.includes(blacklisted.toLowerCase())
+  )
+}
+
+/**
+ * 获取值的类型描述
+ */
+const getValueType = (value: any): string => {
+  if (value === null) return 'null'
+  if (value === undefined) return 'undefined'
+  if (Array.isArray(value)) return 'array'
+  if (typeof value === 'object') return 'object'
+  return typeof value
+}
+
+/**
+ * 获取组件显示名称
+ */
+const getComponentName = (componentId: string): string => {
+  const component = editorStore.nodes?.find(n => n.id === componentId)
+  return component?.type || 'unknown'
+}
+
+/**
+ * 组件选择变化处理
+ */
+const onComponentChange = (componentId: string | null) => {
+  selectedComponentId.value = componentId || ''
+  selectedPropertyPath.value = ''
+
+  // 清空外部值
+  emit('update:modelValue', '')
+  emit('change', '', undefined)
+}
+
+/**
+ * 属性选择变化处理
+ */
+const onPropertyChange = (propertyPath: string | null) => {
+  selectedPropertyPath.value = propertyPath || ''
+
+  if (propertyPath) {
+    // 获取属性信息
+    const option = propertyOptions.value.find(opt => opt.value === propertyPath)
+    const propertyInfo = option?.propertyInfo
+
+    console.log(`🚨🚨🚨 [ComponentPropertySelector] 属性选择变化详细调试:`, {
+      原始propertyPath: propertyPath,
+      propertyPath类型: typeof propertyPath,
+      propertyPath长度: propertyPath ? propertyPath.length : 0,
+      找到的option: option,
+      propertyInfo: propertyInfo,
+      所有可用选项: propertyOptions.value.map(opt => ({
+        label: opt.label,
+        value: opt.value,
+        valueType: typeof opt.value
+      }))
+    })
+
+    console.log(`🚨🚨🚨 [ComponentPropertySelector] 即将emit的值:`, {
+      propertyPath,
+      propertyPathType: typeof propertyPath,
+      propertyPathLength: propertyPath.length,
+      propertyInfo,
+      当前选项值类型检查: propertyOptions.value.map(opt => ({
+        label: opt.label.slice(0, 30),
+        value: opt.value,
+        valueType: typeof opt.value,
+        valueLength: typeof opt.value === 'string' ? opt.value.length : '非字符串'
+      }))
+    })
+
+    emit('update:modelValue', propertyPath)
+    emit('change', propertyPath, propertyInfo)
+  } else {
+    emit('update:modelValue', '')
+    emit('change', '', undefined)
+  }
+}
 </script>
 
 <style scoped>
 .component-property-selector {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  min-height: 400px;
+  gap: 12px;
 }
 
-.search-section {
-  flex-shrink: 0;
+.selector-level {
+  width: 100%;
 }
 
-.tree-section {
-  flex: 1;
-  min-height: 200px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
+.debug-info {
   padding: 8px;
-  background: var(--card-color);
-  overflow-y: auto;
-}
-
-.empty-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 150px;
-}
-
-.selected-info {
-  flex-shrink: 0;
-}
-
-.info-title {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 500;
-}
-
-.binding-path {
-  margin-top: 12px;
-}
-
-.binding-path :deep(.n-alert) {
-  --n-padding: 8px 12px;
-}
-
-.binding-path :deep(.n-alert__header) {
-  display: flex;
-  align-items: center;
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-/* 树形控件样式优化 */
-.tree-section :deep(.n-tree-node) {
-  margin-bottom: 2px;
-}
-
-.tree-section :deep(.n-tree-node-content) {
-  padding: 4px 8px;
+  background: #f5f5f5;
   border-radius: 4px;
-  transition: all 0.3s ease;
-}
-
-.tree-section :deep(.n-tree-node-content:hover) {
-  background: var(--action-color);
-}
-
-.tree-section :deep(.n-tree-node--selected .n-tree-node-content) {
-  background: var(--primary-color-suppl);
-  color: var(--primary-color);
-  font-weight: 500;
-}
-
-/* 响应式设计 */
-@media (max-width: 600px) {
-  .component-property-selector {
-    gap: 12px;
-  }
-
-  .tree-section {
-    min-height: 150px;
-  }
+  border: 1px solid #e0e0e0;
 }
 </style>

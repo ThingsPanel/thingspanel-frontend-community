@@ -8,18 +8,16 @@ import { onMounted, ref, computed, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { NCard, NSpace, useMessage, NSpin, NBackTop } from 'naive-ui'
 import { $t } from '@/locales'
-import { useThemeStore } from '@/store/modules/theme'
 import { getBoard } from '@/service/api'
 
-// 导入Visual Editor核心组件
-import PanelEditor from '@/components/visual-editor/PanelEditor.vue'
+// 正式编辑器：基于 PanelEditorV2（无测试选项）
+import PanelEditorV2 from '@/components/visual-editor/PanelEditorV2.vue'
 
 // 路由和消息管理
 const route = useRoute()
 const message = useMessage()
 
-// 主题系统集成
-const themeStore = useThemeStore()
+// 主题系统集成（如需主题响应可在此扩展）
 
 // 页面状态管理
 const loading = ref(true)
@@ -110,9 +108,17 @@ const retryLoad = async () => {
 
     <!-- 主内容区域 - 集成Visual Editor -->
     <div v-else-if="panelData && !isUnmounted" class="main-content">
-      <!-- Visual Editor集成 -->
+      <!-- 正式编辑器（V2）集成 -->
       <div class="visual-editor-container">
-        <PanelEditor :key="`ultra-panel-editor-${panelId}`" :panel-id="panelId" />
+        <PanelEditorV2
+          :key="`ultra-panel-editor-${panelId}`"
+          :panel-id="panelId"
+          :show-toolbar="true"
+          :show-page-header="true"
+          :enable-header-area="true"
+          :enable-toolbar-area="true"
+          :enable-footer-area="true"
+        />
       </div>
     </div>
 
@@ -125,7 +131,8 @@ const retryLoad = async () => {
 /* 主容器样式 */
 .ultra-kanban-details {
   width: 100%;
-  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background-color: var(--body-color);
 }
 
@@ -158,15 +165,17 @@ const retryLoad = async () => {
 /* 主内容区域 */
 .main-content {
   width: 100%;
-  /* height: 100%; */
-  /* overflow: hidden; */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
 }
 
 /* Visual Editor容器 */
 .visual-editor-container {
   width: 100%;
-  height: 100%;
-  min-height: 100vh;
+  flex: 1;
+  min-height: 0;
   background-color: var(--card-color);
 }
 

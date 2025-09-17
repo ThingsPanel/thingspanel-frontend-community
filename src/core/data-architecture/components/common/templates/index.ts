@@ -141,7 +141,9 @@ export const PARAMETER_TEMPLATES: ParameterTemplate[] = [
     componentConfig: {
       component: 'ComponentPropertySelector',
       props: {
-        placeholder: '选择要绑定的组件属性'
+        placeholder: '选择要绑定的组件属性',
+        // 🔥 关键修复：启用自动检测当前组件ID
+        autoDetectComponentId: true
       },
       events: {
         'update:selectedValue': 'handleComponentPropertyChange'

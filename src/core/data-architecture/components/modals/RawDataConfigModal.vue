@@ -25,6 +25,8 @@ interface Props {
   isEditMode?: boolean
   /** 示例数据 */
   exampleData?: any
+  /** 🔥 新增：当前组件ID，用于属性绑定 */
+  componentId?: string
 }
 
 // Emits接口
@@ -777,7 +779,11 @@ defineExpose({
 
               <!-- HTTP接口配置 -->
               <div v-if="formState.selectedMethod === 'http'" class="editor-container">
-                <HttpConfigForm v-model:model-value="httpConfig" @update:model-value="onHttpConfigUpdate" />
+                <HttpConfigForm
+                  v-model:model-value="httpConfig"
+                  :component-id="componentId"
+                  @update:model-value="onHttpConfigUpdate"
+                />
               </div>
 
               <!-- 脚本录入 -->
