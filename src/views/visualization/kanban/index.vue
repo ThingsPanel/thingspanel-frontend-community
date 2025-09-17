@@ -21,7 +21,7 @@ import type { LastLevelRouteKey } from '@elegant-router/types' // 假设您已�
 import { DelBoard, PostBoard, PutBoard, getBoardList } from '@/service/api/index'
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
-
+import DevCardItem from '@/components/dev-card-item/index.vue'
 const { routerPushByKey } = useRouterPush()
 const message = useMessage()
 const nameSearch = ref('')
@@ -141,53 +141,54 @@ onMounted(fetchBoards)
           :key="board.id"
           @click="goRouter('visualization_kanban-details', board.id as string)"
         >
-          <NCard
-            hoverable
-            style="height: 160px"
-            content-style="display: flex; flex-direction: column; height: 100%; gap: 8px;"
+          <DevCardItem
+            :title="board.name"
+            :isStatus="false"
+            @click-card="goRouter('visualization_kanban-details', board.id as string)"
           >
-            <div class="flex justify-between">
-              <div class="text-16px font-600">
-                {{ board.name }}
-              </div>
+            <template #default>{{ board.description || '--' }}</template>
+            <!-- 右上角首页图标 -->
+            <template #top-right-icon>
               <div
                 v-if="board.home_flag === 'Y'"
-                class="mr--4 mt--2 h-24px w-24px border border-red-4 rounded-50 text-center text-12px text-red font-600"
+                class="h-24px w-24px border border-red-4 rounded-50 text-center text-12px text-red font-600 flex items-center justify-center"
               >
                 {{ $t('generate.first') }}
               </div>
-            </div>
-            <!-- 使用NTooltip组件 -->
-            <NTooltip
-              trigger="hover"
-              :disabled="!board.description || !board.description.trim()"
-              placement="top-start"
-              :style="{ maxWidth: '200px' }"
-            >
-              <template #trigger>
-                <div class="description">{{ board.description }}</div>
-              </template>
-              {{ board.description }}
-            </NTooltip>
-            <div class="flex justify-end">
-              <NButton strong circle secondary @click.stop="editBoard(board)">
-                <template #icon>
-                  <icon-material-symbols:contract-edit-outline class="text-24px text-blue" />
-                </template>
-              </NButton>
-              <!-- 使用 Vue 模板语法的 NPopconfirm -->
-              <NPopconfirm @positive-click="deleteBoard(board.id as string)">
-                <template #trigger>
-                  <NButton strong secondary circle @click.stop>
-                    <template #icon>
-                      <icon-material-symbols:delete-outline class="text-24px text-red" />
-                    </template>
-                  </NButton>
-                </template>
-                {{ $t('common.confirmDelete') }}
-              </NPopconfirm>
-            </div>
-          </NCard>
+            </template>
+
+            <!-- 左下角图标 -->
+            <template #footer-icon>
+              <div class="kanban-icon-container">
+                <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
+                  <rect x="10" y="20" width="80" height="50" rx="3" fill="none" stroke="#888" stroke-width="3"></rect>
+                  <line x1="20" y1="35" x2="80" y2="35" stroke="#888" stroke-width="2"></line>
+                  <line x1="20" y1="50" x2="60" y2="50" stroke="#888" stroke-width="2"></line>
+                </svg>
+              </div>
+            </template>
+
+            <!-- 右下角操作按钮 -->
+            <template #footer>
+              <div class="flex gap-2 justify-between">
+                <NButton size="small" quaternary circle @click.stop="editBoard(board)">
+                  <template #icon>
+                    <icon-material-symbols:contract-edit-outline class="text-24px" color="#888" />
+                  </template>
+                </NButton>
+                <NPopconfirm @positive-click="deleteBoard(board.id as string)">
+                  <template #trigger>
+                    <NButton size="small" quaternary circle @click.stop>
+                      <template #icon>
+                        <icon-material-symbols:delete-outline class="text-24px" color="#888" />
+                      </template>
+                    </NButton>
+                  </template>
+                  {{ $t('common.confirmDelete') }}
+                </NPopconfirm>
+              </div>
+            </template>
+          </DevCardItem>
         </NGridItem>
       </NGrid>
       <!-- 看板列表后面添加分页器 -->

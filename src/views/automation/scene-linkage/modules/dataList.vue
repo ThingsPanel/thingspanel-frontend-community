@@ -204,13 +204,13 @@ getData()
       <NGridItem v-for="(item, index) in sceneLinkageList" :key="index">
         <ItemCard
           :title="item.name"
-          :subtitle="item.description"
           :status-active="true"
           :status-type="'success'"
           :isStatus="false"
           :hideFooterLeft="true"
           hoverable
         >
+          <template #default>{{ item.description }}</template>
           <!-- 右上角开关 -->
           <template #top-right-icon>
             <n-switch
@@ -228,7 +228,7 @@ getData()
                 <template #trigger>
                   <NButton size="small" quaternary circle @click="linkEdit(item)">
                     <template #icon>
-                      <n-icon>
+                      <n-icon color="#888">
                         <editIcon />
                       </n-icon>
                     </template>
@@ -240,7 +240,7 @@ getData()
                 <template #trigger>
                   <NButton size="small" quaternary circle @click="openLog(item)">
                     <template #icon>
-                      <n-icon>
+                      <n-icon color="#888">
                         <DocumentOnePage24Regular />
                       </n-icon>
                     </template>
@@ -252,7 +252,7 @@ getData()
                 <template #trigger>
                   <NButton size="small" quaternary circle @click="deleteLink(item)">
                     <template #icon>
-                      <n-icon>
+                      <n-icon color="#888">
                         <trashIcon />
                       </n-icon>
                     </template>
