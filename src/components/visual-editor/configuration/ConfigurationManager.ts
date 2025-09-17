@@ -72,38 +72,11 @@ export class ConfigurationManager implements IConfigurationManager {
   private migrators: ConfigurationMigrator[] = []
 
   // 🆕 持久化存储键名
-  private readonly STORAGE_KEY = 'visual-editor-configurations'
-
   /**
-   * 构造函数 - 从 localStorage 恢复配置
+   * 构造函数 - 🔥 已移除localStorage依赖，符合架构原则
    */
   constructor() {
-    this.loadFromStorage()
-  }
-
-  /**
-   * 从 localStorage 加载配置
-   */
-  private loadFromStorage(): void {
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY)
-      if (stored) {
-        const configurations = JSON.parse(stored)
-        Object.entries(configurations).forEach(([widgetId, config]) => {
-          this.configurations.set(widgetId, config as WidgetConfiguration)
-        })
-      }
-    } catch (error) {}
-  }
-
-  /**
-   * 保存配置到 localStorage
-   */
-  private saveToStorage(): void {
-    try {
-      const configurationsObject = Object.fromEntries(this.configurations.entries())
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(configurationsObject))
-    } catch (error) {}
+    // 🔥 配置完全依赖统一配置中心，无需localStorage
   }
 
   /**
@@ -140,8 +113,7 @@ export class ConfigurationManager implements IConfigurationManager {
     }
     // 保存配置
     this.configurations.set(widgetId, updatedConfig)
-    // 🆕 持久化到 localStorage
-    this.saveToStorage()
+    // 🔥 已移除localStorage持久化 - 配置依赖统一配置中心
 
     // 触发监听器
     this.notifyListeners(widgetId, updatedConfig)
@@ -191,8 +163,7 @@ export class ConfigurationManager implements IConfigurationManager {
 
     this.configurations.set(widgetId, updatedConfig)
 
-    // 🆕 持久化到 localStorage
-    this.saveToStorage()
+    // 🔥 已移除localStorage持久化 - 配置依赖统一配置中心
 
     // 🔥 重要修复：清除组件缓存，确保新配置能被执行
     if (section === 'dataSource') {
@@ -515,13 +486,7 @@ export class ConfigurationManager implements IConfigurationManager {
         }
       }
       // 异步发送事件，避免阻塞当前流程
-      console.log(`🎯 用户要求的打印这几个字 - 阶段F1：ConfigurationManager准备发送configEventBus.emitConfigChange事件`, {
-        事件详情: event,
-        组件ID: widgetId,
-        配置节: this.lastUpdatedSection
-      })
       configEventBus.emitConfigChange(event).catch(error => {})
-      console.log(`🎯 用户要求的打印这几个字 - 阶段F2：ConfigurationManager已发送configEventBus.emitConfigChange事件`)
     } catch (error) {}
   }
 
@@ -657,6 +622,7 @@ export class ConfigurationManager implements IConfigurationManager {
     this.setConfiguration(widgetId, updatedConfig)
     return true
   }
+
 }
 
 // 导出全局配置管理器单例

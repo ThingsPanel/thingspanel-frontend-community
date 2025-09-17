@@ -43,52 +43,17 @@ export class ConfigurationRobustnessManager {
   private readonly WARNING_THRESHOLD = 0.8 // 80% 使用率警告
 
   /**
-   * 检查 localStorage 容量状态
+   * 检查存储容量状态 - 🔥 已移除localStorage依赖
    */
   checkStorageCapacity(): StorageCapacityCheck {
-    try {
-      // 估算当前配置数据大小
-      const configData = localStorage.getItem('configuration-states')
-      const usedSpace = configData ? new Blob([configData]).size : 0
-
-      // 通过写入测试数据检测可用空间
-      let testSize = 1024 // 开始测试 1KB
-      let maxWriteSize = 0
-
-      while (testSize <= 1024 * 1024) {
-        // 最多测试到 1MB
-        const testData = 'x'.repeat(testSize)
-        try {
-          localStorage.setItem('_storage_test', testData)
-          localStorage.removeItem('_storage_test')
-          maxWriteSize = testSize
-          testSize *= 2
-        } catch {
-          break
-        }
-      }
-
-      const totalSpace = usedSpace + maxWriteSize
-      const remainingSpace = maxWriteSize
-      const warningThreshold = totalSpace * this.WARNING_THRESHOLD
-
-      return {
-        isAvailable: remainingSpace > 1024, // 至少 1KB 可用空间
-        usedSpace,
-        totalSpace,
-        remainingSpace,
-        warningThreshold,
-        errorDetails: remainingSpace < 1024 ? '存储空间不足，配置可能无法保存' : undefined
-      }
-    } catch (error) {
-      return {
-        isAvailable: false,
-        usedSpace: 0,
-        totalSpace: 0,
-        remainingSpace: 0,
-        warningThreshold: 0,
-        errorDetails: `存储检查失败: ${error instanceof Error ? error.message : String(error)}`
-      }
+    // 🔥 配置完全依赖统一配置中心，无需检查localStorage容量
+    return {
+      isAvailable: true,
+      usedSpace: 0,
+      totalSpace: Number.MAX_SAFE_INTEGER,
+      remainingSpace: Number.MAX_SAFE_INTEGER,
+      warningThreshold: Number.MAX_SAFE_INTEGER,
+      errorDetails: undefined
     }
   }
 

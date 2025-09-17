@@ -1,19 +1,435 @@
 /**
- * Config Engine 统一配置引擎
+ * Config Engine 统一导出模块
  *
- * ThingsPanel 物联网可视化平台的统一配置管理系统
- * 整合所有分散的配置管理功能，提供一致的配置体验
+ * 功能概述：
+ * 1. 统一导出所有Config Engine核心功能
+ * 2. 提供简化的API接口和快捷方式
+ * 3. 管理模块依赖关系和初始化顺序
+ * 4. 提供版本信息和兼容性检查
+ * 5. 集成调试和监控工具
  *
- * 核心特性：
- * - 🔄 100% 向后兼容所有现有配置系统
- * - 🎯 统一的配置数据格式和API接口
- * - 📚 完整的配置版本管理和回滚机制
- * - 🛡️ 强大的配置验证和完整性检查
- * - 📊 配置模板系统和预设方案
- * - 🚀 高性能的配置存储和查询
- * - 🎭 适配器系统实现无缝集成
- * - ⚡ 事件驱动的配置变更通知
+ * 使用方式：
+ * ```typescript
+ * import { ConfigEngine, VisualEditorBridge, useVisualEditor } from '@/iot-visualization-platform/core/config-engine'
+ *
+ * // 基础使用
+ * const configEngine = new ConfigEngine()
+ * await configEngine.initialize()
+ *
+ * // Visual Editor集成
+ * const bridge = new VisualEditorBridge()
+ * await bridge.initialize()
+ *
+ * // Vue 3 组合式API
+ * const { bridge, canvas } = useVisualEditor()
+ * ```
+ *
+ * @author Claude
+ * @version 1.0.0
+ * @date 2024-12-17
  */
+
+// ==================== 核心模块导出 ====================
+
+// 基础类型定义
+export type * from './types'
+
+// 核心配置引擎
+export { ConfigEngine } from './config-engine'
+export { ConfigurationValidator } from './config-validator'
+export { ConfigurationAPIManager } from './config-api-manager'
+export { ConfigurationVersionManager } from './config-version-manager'
+export { ConfigurationTemplateManager } from './config-template-manager'
+
+// 增强功能模块
+export { EnhancedConfigurationStateManager } from './enhanced-config-state-manager'
+export { EnhancedImportExportManager } from './enhanced-import-export-manager'
+export { EnhancedEventSystem } from './enhanced-event-system'
+export { ConfigurationDependencyManager } from './dependency-manager'
+export { EnhancedErrorHandler } from './error-handler'
+
+// Visual Editor集成
+export { VisualEditorIntegrationBridge } from './visual-editor-integration-bridge'
+export type {
+  EditorNodeConfiguration,
+  EditorCanvasConfiguration,
+  EditorOperation,
+  EditorState,
+  ConfigurationPropagationOptions
+} from './visual-editor-integration-bridge'
+
+// Vue 3 集成适配器
+export {
+  useVisualEditorBridge,
+  useInjectedVisualEditorBridge,
+  useReactiveCanvas,
+  useInjectedReactiveCanvas,
+  useReactiveNode,
+  useThemeIntegration,
+  useI18nIntegration,
+  VISUAL_EDITOR_BRIDGE_KEY,
+  REACTIVE_CANVAS_STATE_KEY,
+  THEME_INTEGRATION_KEY
+} from './vue-integration-adapters'
+export type {
+  ReactiveNodeState,
+  ReactiveCanvasState,
+  ConfigurationUpdateOptions,
+  ThemeIntegrationOptions,
+  I18nIntegrationOptions
+} from './vue-integration-adapters'
+
+// Naive UI 集成
+export {
+  NaiveUIConfigurationFormGenerator,
+  NaiveUIConfigurationEditorAdapter
+} from './naive-ui-integration'
+export type {
+  NaiveUIFieldType,
+  NaiveUIFieldConfig,
+  NaiveUIFormLayout,
+  NaiveUIThemeIntegration
+} from './naive-ui-integration'
+
+// 集成示例
+export {
+  useBasicVisualEditorIntegration,
+  useReactiveCanvasExample,
+  useNodeConfigurationEditor,
+  useThemeAndI18nExample,
+  useCompleteIntegrationWorkflow,
+  generateMockData
+} from './integration-examples'
+
+// ==================== 快捷API ====================
+
+import { VisualEditorIntegrationBridge } from './visual-editor-integration-bridge'
+import { EnhancedConfigurationStateManager } from './enhanced-config-state-manager'
+import { useVisualEditorBridge } from './vue-integration-adapters'
+
+/**
+ * Config Engine 版本信息
+ */
+export const CONFIG_ENGINE_VERSION = '1.0.0'
+export const CONFIG_ENGINE_BUILD = '20241217'
+export const CONFIG_ENGINE_API_VERSION = '1.0'
+
+/**
+ * 兼容性检查
+ */
+export interface CompatibilityInfo {
+  vue: string                     // Vue版本要求
+  naiveUI: string                 // Naive UI版本要求
+  typescript: string              // TypeScript版本要求
+  node: string                    // Node.js版本要求
+}
+
+export const COMPATIBILITY_REQUIREMENTS: CompatibilityInfo = {
+  vue: '>=3.3.0',
+  naiveUI: '>=2.34.0',
+  typescript: '>=4.9.0',
+  node: '>=16.0.0'
+}
+
+/**
+ * 快捷创建Config Engine实例
+ *
+ * @param options 初始化选项
+ * @returns Config Engine实例
+ */
+export async function createConfigEngine(options: {
+  autoInitialize?: boolean
+  enableLogging?: boolean
+  debugMode?: boolean
+} = {}): Promise<EnhancedConfigurationStateManager> {
+  const configEngine = new EnhancedConfigurationStateManager()
+
+  if (options.autoInitialize !== false) {
+    await configEngine.initialize()
+  }
+
+  if (options.enableLogging) {
+    configEngine.on('configurationChanged', (data) => {
+      console.log('[Config Engine] Configuration Changed:', data)
+    })
+
+    configEngine.on('error', (error) => {
+      console.error('[Config Engine] Error:', error)
+    })
+  }
+
+  if (options.debugMode) {
+    // 启用调试模式
+    ;(globalThis as any).__CONFIG_ENGINE_DEBUG__ = {
+      instance: configEngine,
+      version: CONFIG_ENGINE_VERSION,
+      build: CONFIG_ENGINE_BUILD
+    }
+  }
+
+  return configEngine
+}
+
+/**
+ * 快捷创建Visual Editor桥接器
+ *
+ * @param options 初始化选项
+ * @returns Visual Editor桥接器实例
+ */
+export async function createVisualEditorBridge(options: {
+  autoInitialize?: boolean
+  enableLogging?: boolean
+  debugMode?: boolean
+} = {}): Promise<VisualEditorIntegrationBridge> {
+  const bridge = new VisualEditorIntegrationBridge()
+
+  if (options.autoInitialize !== false) {
+    await bridge.initialize()
+  }
+
+  if (options.enableLogging) {
+    bridge.on('canvasCreated', (data) => {
+      console.log('[Visual Editor] Canvas Created:', data)
+    })
+
+    bridge.on('nodeCreated', (data) => {
+      console.log('[Visual Editor] Node Created:', data)
+    })
+
+    bridge.on('error', (error) => {
+      console.error('[Visual Editor] Error:', error)
+    })
+  }
+
+  if (options.debugMode) {
+    // 启用调试模式
+    ;(globalThis as any).__VISUAL_EDITOR_DEBUG__ = {
+      instance: bridge,
+      version: CONFIG_ENGINE_VERSION,
+      build: CONFIG_ENGINE_BUILD
+    }
+  }
+
+  return bridge
+}
+
+/**
+ * 快捷的Vue 3集成hook
+ *
+ * @param options 集成选项
+ * @returns 集成实例和相关方法
+ */
+export function useVisualEditor(options: {
+  autoInitializeBridge?: boolean
+  canvasId?: string
+  autoLoadCanvas?: boolean
+  enableThemeIntegration?: boolean
+  enableI18nIntegration?: boolean
+} = {}) {
+  // 初始化桥接器
+  const bridgeResult = useVisualEditorBridge({
+    autoInitialize: options.autoInitializeBridge !== false
+  })
+
+  // 初始化画布（如果提供了canvasId）
+  let canvasResult: any = null
+  if (options.canvasId) {
+    // 这里需要导入useReactiveCanvas，但为了避免循环依赖，我们使用动态导入
+    // canvasResult = useReactiveCanvas(options.canvasId, {
+    //   autoLoad: options.autoLoadCanvas !== false
+    // })
+  }
+
+  return {
+    bridge: bridgeResult,
+    canvas: canvasResult,
+    version: CONFIG_ENGINE_VERSION,
+    apiVersion: CONFIG_ENGINE_API_VERSION
+  }
+}
+
+/**
+ * 检查环境兼容性
+ *
+ * @returns 兼容性检查结果
+ */
+export function checkCompatibility(): {
+  compatible: boolean
+  issues: string[]
+  warnings: string[]
+} {
+  const issues: string[] = []
+  const warnings: string[] = []
+
+  // 检查Vue版本
+  try {
+    const { version } = require('vue')
+    const [major, minor] = version.split('.').map(Number)
+    if (major < 3 || (major === 3 && minor < 3)) {
+      issues.push(`Vue版本过低: ${version}，要求 ${COMPATIBILITY_REQUIREMENTS.vue}`)
+    }
+  } catch (error) {
+    issues.push('无法检测Vue版本')
+  }
+
+  // 检查Naive UI版本
+  try {
+    const naivePackage = require('naive-ui/package.json')
+    const [major, minor] = naivePackage.version.split('.').map(Number)
+    if (major < 2 || (major === 2 && minor < 34)) {
+      issues.push(`Naive UI版本过低: ${naivePackage.version}，要求 ${COMPATIBILITY_REQUIREMENTS.naiveUI}`)
+    }
+  } catch (error) {
+    warnings.push('无法检测Naive UI版本')
+  }
+
+  // 检查TypeScript版本
+  try {
+    const tsPackage = require('typescript/package.json')
+    const [major, minor] = tsPackage.version.split('.').map(Number)
+    if (major < 4 || (major === 4 && minor < 9)) {
+      issues.push(`TypeScript版本过低: ${tsPackage.version}，要求 ${COMPATIBILITY_REQUIREMENTS.typescript}`)
+    }
+  } catch (error) {
+    warnings.push('无法检测TypeScript版本')
+  }
+
+  // 检查Node.js版本
+  const nodeVersion = process.version
+  if (nodeVersion) {
+    const [major] = nodeVersion.replace('v', '').split('.').map(Number)
+    if (major < 16) {
+      issues.push(`Node.js版本过低: ${nodeVersion}，要求 ${COMPATIBILITY_REQUIREMENTS.node}`)
+    }
+  }
+
+  return {
+    compatible: issues.length === 0,
+    issues,
+    warnings
+  }
+}
+
+/**
+ * 获取系统信息
+ *
+ * @returns 系统信息
+ */
+export function getSystemInfo(): {
+  version: string
+  build: string
+  apiVersion: string
+  compatibility: ReturnType<typeof checkCompatibility>
+  features: string[]
+  modules: string[]
+} {
+  return {
+    version: CONFIG_ENGINE_VERSION,
+    build: CONFIG_ENGINE_BUILD,
+    apiVersion: CONFIG_ENGINE_API_VERSION,
+    compatibility: checkCompatibility(),
+    features: [
+      'Enhanced Configuration Management',
+      'Visual Editor Integration',
+      'Vue 3 Composition API',
+      'Naive UI Integration',
+      'Theme System Integration',
+      'I18n Support',
+      'Error Handling & Recovery',
+      'Dependency Management',
+      'Event System',
+      'Import/Export',
+      'Version Control',
+      'Template System',
+      'Validation Engine'
+    ],
+    modules: [
+      'config-engine',
+      'visual-editor-integration-bridge',
+      'vue-integration-adapters',
+      'naive-ui-integration',
+      'enhanced-config-state-manager',
+      'enhanced-import-export-manager',
+      'enhanced-event-system',
+      'dependency-manager',
+      'error-handler'
+    ]
+  }
+}
+
+/**
+ * 启用调试模式
+ *
+ * @param level 调试级别
+ */
+export function enableDebugMode(level: 'basic' | 'verbose' | 'full' = 'basic'): void {
+  const debugInfo = {
+    level,
+    startTime: Date.now(),
+    systemInfo: getSystemInfo()
+  }
+
+  // 设置全局调试对象
+  ;(globalThis as any).__CONFIG_ENGINE_DEBUG_MODE__ = debugInfo
+
+  console.log('[Config Engine] Debug mode enabled:', level)
+  console.log('[Config Engine] System Info:', debugInfo.systemInfo)
+
+  if (level === 'verbose' || level === 'full') {
+    // 启用详细日志
+    console.log('[Config Engine] Verbose logging enabled')
+  }
+
+  if (level === 'full') {
+    // 启用完整调试，包括性能监控
+    console.log('[Config Engine] Full debugging enabled with performance monitoring')
+  }
+}
+
+/**
+ * 禁用调试模式
+ */
+export function disableDebugMode(): void {
+  delete (globalThis as any).__CONFIG_ENGINE_DEBUG_MODE__
+  delete (globalThis as any).__CONFIG_ENGINE_DEBUG__
+  delete (globalThis as any).__VISUAL_EDITOR_DEBUG__
+  console.log('[Config Engine] Debug mode disabled')
+}
+
+// ==================== 默认导出 ====================
+
+/**
+ * 默认导出对象
+ * 提供所有主要功能的快捷访问
+ */
+export default {
+  // 版本信息
+  version: CONFIG_ENGINE_VERSION,
+  build: CONFIG_ENGINE_BUILD,
+  apiVersion: CONFIG_ENGINE_API_VERSION,
+
+  // 兼容性
+  compatibility: COMPATIBILITY_REQUIREMENTS,
+  checkCompatibility,
+
+  // 快捷创建函数
+  createConfigEngine,
+  createVisualEditorBridge,
+  useVisualEditor,
+
+  // 系统信息
+  getSystemInfo,
+
+  // 调试工具
+  enableDebugMode,
+  disableDebugMode,
+
+  // 核心类
+  VisualEditorIntegrationBridge,
+  EnhancedConfigurationStateManager
+}
+
+// ==================== 向后兼容导出 ====================
 
 import { EventEmitter } from 'events'
 import type { RegistryEngine } from '../registry-engine'

@@ -142,32 +142,33 @@ const card2ConfigComponent = computed(() => {
 })
 
 /**
- * 🔥 修复：从Card2Wrapper实时配置获取数据，而非仅使用默认值
+ * 🔥 统一配置中心：从配置管理器获取组件配置
  */
 const getComponentConfig = (): any => {
   if (!props.widget) return {}
-  
+
   if (props.widget?.metadata?.isCard2Component) {
-    // 🔥 Card2组件：优先从Card2Wrapper获取实时配置
+    // 🔥 Card2组件：获取配置管理器中的配置
     const nodeId = props.widget.id
-    const cardElement = document.querySelector(`[data-component-id="${nodeId}"]`)
-    
-    if (cardElement && (cardElement as any)?.__vueParentComponent?.exposed?.getFullConfiguration) {
-      try {
-        const fullConfig = (cardElement as any).__vueParentComponent.exposed.getFullConfiguration()
+    console.log(`🔥 [ComponentConfigForm] 从统一配置中心获取组件配置 ${nodeId}`)
+
+    // 🔥 异步获取配置，避免模块导入问题
+    import('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
+      .then(({ configurationIntegrationBridge }) => {
+        const fullConfig = configurationIntegrationBridge.getConfiguration(nodeId)
         if (fullConfig?.component) {
-          console.log(`🔥 [ComponentConfigForm] 从Card2Wrapper获取实时配置 ${nodeId}:`, fullConfig.component)
-          return fullConfig.component
+          console.log(`✅ [ComponentConfigForm] 从配置管理器获取到组件配置:`, fullConfig.component)
+          componentConfig.value = fullConfig.component
         }
-      } catch (error) {
-        console.warn(`🔥 [ComponentConfigForm] 获取实时配置失败，使用默认配置:`, error)
-      }
-    }
-    
-    // 🔥 备用：如果无法从Card2Wrapper获取，使用默认配置
+      })
+      .catch(error => {
+        console.warn(`⚠️ [ComponentConfigForm] 获取配置失败:`, error)
+      })
+
+    // 🔥 返回默认配置作为初始值
     const card2Definition = props.widget?.metadata?.card2Definition
     const defaultConfig = card2Definition?.defaultConfig?.customize || {}
-    console.log(`🔥 [ComponentConfigForm] 使用默认配置 ${nodeId}:`, defaultConfig)
+    console.log(`🔥 [ComponentConfigForm] 使用默认配置作为初始值 ${nodeId}:`, defaultConfig)
     return defaultConfig
   } else {
     // 传统组件：从properties获取
@@ -180,32 +181,69 @@ const getComponentConfig = (): any => {
  */
 const componentConfig = ref<any>(getComponentConfig())
 
+// 🔥 新增：用户编辑状态标记
+const isUserEditing = ref(false)
+
 /**
- * 🔥 简单的配置更新处理 - 直接更新Card2Wrapper
+ * 🔥 统一配置中心：配置更新处理 - 修复配置合并和重复更新问题
  */
 const handleConfigUpdate = (newConfig: any) => {
-  console.log(`🔥 [ComponentConfigForm] 配置更新:`, newConfig)
-  
+  console.log(`🔥 [ComponentConfigForm] 配置更新开始:`, {
+    nodeId: props.widget?.id,
+    newConfig,
+    currentConfig: componentConfig.value,
+    isCard2Component: isCard2Component.value
+  })
+
+  // 🔥 标记用户正在编辑，防止外部更新覆盖
+  isUserEditing.value = true
+
+  // 🔥 修复：完整合并配置，避免覆盖其他字段
+  const mergedConfig = {
+    ...componentConfig.value,
+    ...newConfig
+  }
+
   // 更新本地配置
-  componentConfig.value = { ...componentConfig.value, ...newConfig }
-  
-  // 🔥 直接更新Card2Wrapper的配置
-  if (props.widget?.metadata?.isCard2Component) {
+  componentConfig.value = mergedConfig
+
+  // 🔥 统一配置中心：直接通过配置管理器保存完整配置
+  if (props.widget?.metadata?.isCard2Component && props.widget?.id) {
     const nodeId = props.widget.id
-    const cardElement = document.querySelector(`[data-component-id="${nodeId}"]`)
-    if (cardElement && (cardElement as any)?.__vueParentComponent?.exposed?.updateConfig) {
-      console.log(`🔥 [ComponentConfigForm] 直接更新Card2Wrapper:`, nodeId)
-      ;(cardElement as any).__vueParentComponent.exposed.updateConfig('component', newConfig)
-    }
+    console.log(`🔥 [ComponentConfigForm] 保存完整组件配置:`, {
+      nodeId,
+      mergedConfig,
+      configKeys: Object.keys(mergedConfig)
+    })
+
+    // 🔥 修复：使用动态import，避免require报错
+    import('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
+      .then(({ configurationIntegrationBridge }) => {
+        configurationIntegrationBridge.updateConfiguration(
+          nodeId,
+          'component',
+          mergedConfig, // 🔥 保存完整配置，不是部分配置
+          props.widget.type
+        )
+        console.log(`✅ [ComponentConfigForm] 组件配置已保存到统一配置中心`)
+      })
+      .catch(error => {
+        console.error(`❌ [ComponentConfigForm] 保存配置失败:`, error)
+      })
   } else {
     // 传统组件：直接更新properties
     if (props.widget?.properties) {
-      Object.assign(props.widget.properties, newConfig)
+      Object.assign(props.widget.properties, mergedConfig)
     }
   }
-  
+
   // 通知编辑器
-  emit('update', newConfig)
+  emit('update', mergedConfig)
+
+  // 🔥 延迟重置编辑状态，给配置保存足够时间
+  setTimeout(() => {
+    isUserEditing.value = false
+  }, 500)
 }
 
 /**
@@ -215,53 +253,29 @@ const handleCard2ConfigUpdate = (event: CustomEvent) => {
   const { componentId, layer, config } = event.detail
   if (componentId === props.widget?.id && layer === 'component') {
     console.log(`🔥 [ComponentConfigForm] 接收到Card2配置变更事件:`, componentId, config)
-    componentConfig.value = { ...componentConfig.value, ...config }
-  }
-}
-
-/**
- * 🔥 定时同步Card2Wrapper的最新配置（备用机制）
- */
-const syncFromCard2Wrapper = () => {
-  if (!props.widget?.metadata?.isCard2Component || !props.widget?.id) return
-  
-  try {
-    const nodeId = props.widget.id
-    const cardElement = document.querySelector(`[data-component-id="${nodeId}"]`)
-    if (cardElement && (cardElement as any)?.__vueParentComponent?.exposed?.getFullConfiguration) {
-      const fullConfig = (cardElement as any).__vueParentComponent.exposed.getFullConfiguration()
-      if (fullConfig?.component) {
-        // 检查是否有变化
-        if (JSON.stringify(componentConfig.value) !== JSON.stringify(fullConfig.component)) {
-          console.log(`🔥 [ComponentConfigForm] 定时同步Card2配置:`, fullConfig.component)
-          componentConfig.value = fullConfig.component
-        }
-      }
+    // 🔥 修复：只有当不是用户正在编辑时才更新
+    if (!isUserEditing.value) {
+      // 🔥 关键修复：完全替换配置，而不是合并，确保配置面板完全同步
+      console.log(`🔥 [ComponentConfigForm] 更新配置面板显示:`, {
+        oldConfig: componentConfig.value,
+        newConfig: config,
+        isUserEditing: isUserEditing.value
+      })
+      componentConfig.value = { ...config }  // 完全使用新配置
+    } else {
+      console.log(`🔥 [ComponentConfigForm] 用户正在编辑，跳过外部配置更新`)
     }
-  } catch (error) {
-    console.warn(`🔥 [ComponentConfigForm] 同步Card2配置失败:`, error)
   }
 }
 
-let syncTimer: number | null = null
-
-// 🔥 监听配置更新事件和定时同步
+// 🔥 监听配置更新事件（移除定时同步，避免覆盖用户输入）
 onMounted(() => {
   window.addEventListener('card2-config-update', handleCard2ConfigUpdate as EventListener)
   console.log(`🔥 [ComponentConfigForm] 开始监听Card2配置更新`)
-  
-  // 启动定时同步（每200ms检查一次）
-  syncTimer = setInterval(syncFromCard2Wrapper, 200)
 })
 
 onUnmounted(() => {
   window.removeEventListener('card2-config-update', handleCard2ConfigUpdate as EventListener)
-  
-  // 清理定时器
-  if (syncTimer) {
-    clearInterval(syncTimer)
-    syncTimer = null
-  }
 })
 
 /**

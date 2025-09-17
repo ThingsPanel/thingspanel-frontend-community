@@ -4,14 +4,14 @@
     <div v-if="isDevelopment" class="debug-info" style="margin-bottom: 12px; padding: 8px; background: #f5f5f5; border-radius: 4px; font-size: 12px;">
       <div><strong>调试信息:</strong></div>
       <div>NodeId: {{ props.nodeId }}</div>
-      <div>ComponentId: {{ componentId }}</div>  
+      <div>ComponentId: {{ componentId }}</div>
       <div>ComponentType: {{ componentType }}</div>
       <div>配置数量: {{ interactionConfigs.length }}</div>
       <div>配置内容: {{ JSON.stringify(interactionConfigs, null, 2) }}</div>
       <div>HasWidget: {{ !!props.widget }}</div>
       <div>HasEditorContext: {{ !!editorContext }}</div>
     </div>
-    
+
     <InteractionCardWizard
       v-model="interactionConfigs"
       :component-id="componentId"
@@ -23,13 +23,22 @@
 
 <script setup lang="ts">
 /**
- * 交互配置包装器
- * 负责将InteractionCardWizard与统一配置系统集成
+ * 🔥 交互配置包装器 - 重构版本
+ * 使用InteractionConfigRouter统一管理交互配置
+ *
+ * 解决的问题：
+ * 1. 刷新后交互失效 - 统一配置加载和注册时机
+ * 2. 一个组件多交互配置支持 - 路由器并发管理
+ * 3. 跨组件属性修改 - 配置级别的属性修改
  */
 
 import { ref, computed, watch, inject, onMounted, onUnmounted, nextTick } from 'vue'
 import InteractionCardWizard from '@/core/interaction-system/components/InteractionCardWizard.vue'
 import type { InteractionConfig } from '@/card2.1/core/interaction-types'
+// 🔥 导入新的交互配置路由器
+import { interactionConfigRouter } from './InteractionConfigRouter'
+// 保留原有配置管理器用于持久化
+import { configurationIntegrationBridge as configurationManager } from './ConfigurationIntegrationBridge'
 
 interface Props {
   nodeId: string
@@ -48,7 +57,6 @@ const editorContext = inject('editorContext', null) as any
 
 // 开发环境检测
 const isDevelopment = computed(() => {
-  // 使用import.meta.env替代process.env，更安全且Vite原生支持
   return import.meta.env.DEV || import.meta.env.NODE_ENV === 'development'
 })
 
@@ -56,201 +64,151 @@ const isDevelopment = computed(() => {
 const componentId = computed(() => props.componentId || props.nodeId)
 const componentType = computed(() => props.componentType || props.widget?.type || 'unknown')
 
-// 交互配置数据
+// 🔥 使用路由器管理的交互配置
 const interactionConfigs = ref<InteractionConfig[]>([])
 
-// 从统一配置中获取交互配置
-const loadInteractionConfigs = () => {
+// 🔥 从统一配置中心加载交互配置
+const loadInteractionConfigs = (): void => {
+  console.log(`🔥 [InteractionConfigWrapper] 加载交互配置: ${componentId.value}`)
+
   try {
-    console.log(`🎯 [InteractionConfigWrapper] 开始加载交互配置: ${props.nodeId}`)
-    
-    // 🔥 优先从stateManager读取已保存的配置
+    // 从stateManager读取配置
     if (editorContext?.stateManager) {
       const nodes = editorContext.stateManager.nodes
-      const node = nodes.find(n => n.id === props.nodeId)
-      
-      // 🔥 详细调试信息
-      console.log(`🎯 [InteractionConfigWrapper] StateManager节点查找:`, {
-        nodeId: props.nodeId,
-        totalNodes: nodes.length,
-        nodeFound: !!node,
-        hasMetadata: !!node?.metadata,
-        hasUnifiedConfig: !!node?.metadata?.unifiedConfig,
-        hasInteractionConfig: !!node?.metadata?.unifiedConfig?.interaction,
-        interactionConfigs: node?.metadata?.unifiedConfig?.interaction?.configs,
-        fullNodeData: node
-      })
-      
+      const node = nodes.find(n => n.id === componentId.value)
       if (node?.metadata?.unifiedConfig?.interaction?.configs) {
         const configs = node.metadata.unifiedConfig.interaction.configs
-        console.log(`🎯 [InteractionConfigWrapper] 从stateManager成功加载配置:`, {
-          nodeId: props.nodeId,
-          configCount: configs.length,
-          configs: configs,
-          configTypes: configs.map(c => c.event),
-          beforeAssignment: interactionConfigs.value,
-        })
-        
-        interactionConfigs.value = [...configs] // 🔥 使用展开语法确保响应式更新
-        
-        console.log(`🎯 [InteractionConfigWrapper] 配置赋值后:`, {
-          afterAssignment: interactionConfigs.value,
-          isReactive: JSON.stringify(interactionConfigs.value) === JSON.stringify(configs)
-        })
-        
-        return // 如果从stateManager成功加载，就不需要再发送事件
-      } else {
-        console.warn(`🎯 [InteractionConfigWrapper] StateManager中未找到交互配置:`, {
-          nodeId: props.nodeId,
-          nodeExists: !!node,
-          metadataExists: !!node?.metadata,
-          unifiedConfigExists: !!node?.metadata?.unifiedConfig,
-          interactionExists: !!node?.metadata?.unifiedConfig?.interaction
-        })
+        console.log(`🔥 [InteractionConfigWrapper] 从stateManager加载${configs.length}个配置`)
+
+        // 更新本地状态
+        interactionConfigs.value = configs
+
+        // 🔥 关键：向路由器注册配置
+        interactionConfigRouter.registerComponentConfigs(componentId.value, configs)
+        return
       }
-    } else {
-      console.error(`🎯 [InteractionConfigWrapper] EditorContext或StateManager不存在`)
     }
-    
-    // 如果stateManager中没有配置，则发送配置请求事件给Card2Wrapper
-    window.dispatchEvent(new CustomEvent('card2-config-request', {
-      detail: {
-        componentId: props.nodeId,
-        layer: 'interaction'
-      }
-    }))
-    
-    console.log(`🎯 [InteractionConfigWrapper] 发送配置请求事件: ${props.nodeId}`)
+
+    // 从ConfigurationManager获取配置作为备选
+    const config = configurationManager.getConfiguration(componentId.value)
+    const configs = config?.interaction?.configs || []
+
+    console.log(`🔥 [InteractionConfigWrapper] 从ConfigurationManager加载${configs.length}个配置`)
+
+    // 更新本地状态
+    interactionConfigs.value = configs
+
+    // 🔥 关键：向路由器注册配置
+    interactionConfigRouter.registerComponentConfigs(componentId.value, configs)
+
   } catch (error) {
-    console.error('🎯 [InteractionConfigWrapper] 加载交互配置失败:', error)
+    console.error(`❌ [InteractionConfigWrapper] 加载交互配置失败:`, error)
+    interactionConfigs.value = []
   }
 }
 
-// 监听配置响应事件
-const handleConfigResponse = (event: CustomEvent) => {
-  const { componentId, layer, config } = event.detail
-  if (componentId === props.nodeId && layer === 'interaction') {
-    console.log(`🎯 [InteractionConfigWrapper] 接收到配置响应:`, config)
-    if (config?.configs && Array.isArray(config.configs)) {
-      interactionConfigs.value = config.configs
-    }
-  }
-}
+// 🔥 交互配置更新处理器
+const handleInteractionConfigUpdate = (configs: InteractionConfig[]): void => {
+  console.log(`🔥 [InteractionConfigWrapper] 交互配置更新:`, {
+    componentId: componentId.value,
+    configCount: configs.length,
+    configs: configs
+  })
 
-// 处理交互配置更新
-const handleInteractionConfigUpdate = (configs: InteractionConfig[]) => {
-  console.log(`🎯 [InteractionConfigWrapper] 交互配置更新:`, configs)
-  
   try {
-    // 🔥 关键修复：直接更新stateManager中的节点配置
+    // 🔥 第一步：保存到ConfigurationManager
+    configurationManager.updateConfiguration(
+      componentId.value,
+      'interaction',
+      { configs },
+      props.widget?.type
+    )
+
+    // 🔥 第二步：保存到stateManager（统一配置中心）
     if (editorContext?.stateManager) {
       const nodes = editorContext.stateManager.nodes
-      const nodeIndex = nodes.findIndex(n => n.id === props.nodeId)
+      const nodeIndex = nodes.findIndex(n => n.id === componentId.value)
       if (nodeIndex !== -1) {
         const node = nodes[nodeIndex]
-        
+
         // 确保unifiedConfig结构存在
         if (!node.metadata) node.metadata = {}
         if (!node.metadata.unifiedConfig) node.metadata.unifiedConfig = {}
         if (!node.metadata.unifiedConfig.interaction) node.metadata.unifiedConfig.interaction = {}
-        
-        // 保存交互配置
-        node.metadata.unifiedConfig.interaction.configs = configs
-        
-        // 触发状态更新
-        editorContext.stateManager.setNodes([...nodes])
-        
-        // 验证保存是否成功
-        const verifyNode = editorContext.stateManager.nodes.find(n => n.id === props.nodeId)
-        const verifyConfigs = verifyNode?.metadata?.unifiedConfig?.interaction?.configs
-        
-        console.log(`🎯 [InteractionConfigWrapper] 配置已保存到stateManager:`, {
-          nodeId: props.nodeId,
-          configCount: configs.length,
-          savedConfig: node.metadata.unifiedConfig.interaction,
-          verificationPassed: verifyConfigs?.length === configs.length,
-          savedConfigsMatch: JSON.stringify(verifyConfigs) === JSON.stringify(configs)
-        })
-      } else {
-        console.warn(`🎯 [InteractionConfigWrapper] 未找到节点:`, props.nodeId)
+
+        // 保存配置
+        if (configs.length === 0) {
+          node.metadata.unifiedConfig.interaction = {}
+          delete node.metadata.unifiedConfig.interaction.configs
+        } else {
+          node.metadata.unifiedConfig.interaction.configs = configs
+        }
+
+        console.log(`✅ [InteractionConfigWrapper] stateManager保存完成`)
       }
     }
-    
-    // 发送配置更新事件给Card2Wrapper（运行时使用）
-    window.dispatchEvent(new CustomEvent('card2-config-update', {
-      detail: {
-        componentId: props.nodeId,
-        layer: 'interaction',
-        config: { configs }
-      }
-    }))
-    
-    console.log(`🎯 [InteractionConfigWrapper] 发送配置更新事件`)
+
+    // 🔥 第三步：更新本地状态
+    interactionConfigs.value = configs
+
+    // 🔥 第四步：向路由器注册更新的配置（会自动重新注册监听器）
+    interactionConfigRouter.registerComponentConfigs(componentId.value, configs)
+
+    console.log(`✅ [InteractionConfigWrapper] 交互配置更新完成`)
+
   } catch (error) {
-    console.error('🎯 [InteractionConfigWrapper] 保存交互配置失败:', error)
+    console.error('❌ [InteractionConfigWrapper] 保存交互配置失败:', error)
   }
 }
-
-// 🔥 调试：监听interactionConfigs变化
-watch(() => interactionConfigs.value, (newValue, oldValue) => {
-  console.log(`🎯 [InteractionConfigWrapper] 交互配置响应式变化:`, {
-    nodeId: props.nodeId,
-    oldValue: oldValue,
-    newValue: newValue,
-    newCount: newValue.length,
-    timestamp: Date.now()
-  })
-}, { deep: true })
 
 // 监听widget变化，重新加载配置
 watch(() => props.widget, (newWidget, oldWidget) => {
   console.log(`🎯 [InteractionConfigWrapper] Widget变化触发重新加载:`, {
-    nodeId: props.nodeId,
+    componentId: componentId.value,
     oldWidget: !!oldWidget,
     newWidget: !!newWidget,
-    widgetType: newWidget?.type,
-    hasInteractionCapability: !!newWidget?.metadata?.card2Definition?.interactionCapabilities
+    widgetType: newWidget?.type
   })
   loadInteractionConfigs()
 }, { immediate: true })
 
 // 监听nodeId变化，防止节点切换时数据不更新
-watch(() => props.nodeId, (newNodeId, oldNodeId) => {
-  console.log(`🎯 [InteractionConfigWrapper] NodeId变化:`, {
-    oldNodeId,
-    newNodeId,
-    shouldReload: newNodeId !== oldNodeId
+watch(() => componentId.value, (newComponentId, oldComponentId) => {
+  console.log(`🎯 [InteractionConfigWrapper] ComponentId变化:`, {
+    oldComponentId,
+    newComponentId,
+    shouldReload: newComponentId !== oldComponentId
   })
-  if (newNodeId !== oldNodeId) {
+  if (newComponentId !== oldComponentId) {
+    // 清理旧组件
+    if (oldComponentId) {
+      interactionConfigRouter.unregisterComponent(oldComponentId)
+    }
+    // 加载新配置
     loadInteractionConfigs()
   }
 })
 
-// 生命周期管理
-
+// 🔥 生命周期管理
 onMounted(() => {
-  console.log(`🎯 [InteractionConfigWrapper] 组件挂载开始:`, {
-    nodeId: props.nodeId,
+  console.log(`🔥 [InteractionConfigWrapper] 组件挂载:`, {
+    componentId: componentId.value,
     hasWidget: !!props.widget,
     hasEditorContext: !!editorContext
   })
-  
-  // 监听配置响应事件
-  window.addEventListener('card2-config-response', handleConfigResponse as EventListener)
-  
-  // 🔥 延迟初始化，确保editorContext完全就绪
+
+  // 初始化加载配置
   nextTick(() => {
-    console.log(`🎯 [InteractionConfigWrapper] NextTick后初始化加载配置`)
+    console.log(`🔥 [InteractionConfigWrapper] NextTick后初始化加载配置`)
     loadInteractionConfigs()
   })
-  
-  console.log(`🎯 [InteractionConfigWrapper] 组件挂载完成: ${props.nodeId}`)
 })
 
 onUnmounted(() => {
-  // 清理事件监听
-  window.removeEventListener('card2-config-response', handleConfigResponse as EventListener)
-  console.log(`🎯 [InteractionConfigWrapper] 组件卸载: ${props.nodeId}`)
+  console.log(`🔥 [InteractionConfigWrapper] 组件卸载: ${componentId.value}`)
+
+  // 🔥 清理路由器中的组件配置和监听器
+  interactionConfigRouter.unregisterComponent(componentId.value)
 })
 </script>
 
