@@ -1,6 +1,6 @@
 <template>
   <div class="advanced-list-container">
-    <n-card class="full-height-card" footer-style="padding-top: 0px; padding-bottom: 0px; margin-top: -19px">
+    <n-card class="full-height-card" footer-style="padding-top: 0px; padding-bottom: 0px;">
       <div class="advanced-list-layout">
         <!-- 搜索区域 -->
         <div v-if="shouldShowSearchArea" class="search">
@@ -215,15 +215,15 @@ const initializeView = () => {
   // 优先从 memory storage 中获取
   if (props.useViewMemory && storageView.value && available.some(v => v.key === storageView.value)) {
     initial = storageView.value
-  } 
+  }
   // 其次使用 initialView prop
   else if (props.initialView && available.some(v => v.key === props.initialView)) {
     initial = props.initialView
-  } 
+  }
   // 最后使用第一个可用的视图
   else if (available.length > 0) {
     initial = available[0].key
-  } 
+  }
   // 默认值
   else {
     initial = 'list'
@@ -385,7 +385,8 @@ onUnmounted(() => {
 
       /* 视图包装器：确保内容正确显示 */
       .view-wrapper {
-        min-height: calc(100% - 32px); /* 减去padding */
+        height: calc(100% - 66px); /* 减去padding */
+        overflow: auto;
       }
     }
   }

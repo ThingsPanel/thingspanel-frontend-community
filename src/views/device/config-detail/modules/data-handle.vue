@@ -354,14 +354,11 @@ const doQuiz = async () => {
       t('page.dataForward.debugRequestFailed') + ': ' + (error.message || t('page.dataForward.unknownError'))
   }
 }
-
 watch(queryData.value, () => queryDataScriptList(), { deep: true })
-
 onMounted(() => {
   queryDataScriptList()
 })
 </script>
-
 <template>
   <div class="m-b-20px flex items-center gap-20px">
     <n-select v-model:value="queryData.script_type" :options="scripTypeOpt" class="max-w-40" clearable />
@@ -370,20 +367,19 @@ onMounted(() => {
     </NButton>
   </div>
   <n-empty v-if="dataScriptList.length === 0" size="huge" :description="$t('common.nodata')"></n-empty>
-  <NGrid v-else x-gap="20" y-gap="20" cols="1 s:2 m:3 l:4" responsive="screen">
+  <NGrid v-else x-gap="24" y-gap="16" cols="1 s:2 m:3 l:4" responsive="screen">
     <NGridItem v-for="item in dataScriptList" :key="item.id">
       <ItemCard
         :title="item.name"
-        :subtitle="item.description"
         :status-active="true"
         :status-type="'success'"
         :isStatus="false"
         :hideFooterLeft="true"
         hoverable
       >
-        <!-- <template >
-          <div class="item-desc">{{ findScriptType(item.script_type) }}</div>
-        </template> -->
+        <template #default>
+          <div class="item-desc">{{ item.description }}</div>
+        </template>
         <!-- 右上角开关 -->
         <template #top-right-icon>
           <NSwitch
@@ -399,14 +395,14 @@ onMounted(() => {
           <div class="flex items-center gap-2 w-full justify-between">
             <NButton size="small" quaternary circle @click="openModal($t('common.edit'), item)">
               <template #icon>
-                <n-icon>
+                <n-icon color="#888">
                   <editIcon />
                 </n-icon>
               </template>
             </NButton>
             <NButton size="small" quaternary circle @click="deleteData(item)">
               <template #icon>
-                <n-icon>
+                <n-icon color="#888">
                   <trashIcon />
                 </n-icon>
               </template>
