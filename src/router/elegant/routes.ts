@@ -895,6 +895,15 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'ultra-kanban_kanban-details',
           i18nKey: 'route.ultra-kanban_kanban-details'
         }
+      },
+      {
+        name: 'ultra-kanban_kanban-preview',
+        path: '/ultra-kanban/kanban-preview',
+        component: 'view.ultra-kanban_kanban-preview',
+        meta: {
+          title: 'ultra-kanban_kanban-preview',
+          i18nKey: 'route.ultra-kanban_kanban-preview'
+        }
       }
     ]
   },

@@ -111,6 +111,7 @@ declare module "@elegant-router/types" {
     "ultra-kanban": "/ultra-kanban";
     "ultra-kanban_index": "/ultra-kanban/index";
     "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details";
+    "ultra-kanban_kanban-preview": "/ultra-kanban/kanban-preview";
     "user-center": "/user-center";
     "visualization": "/visualization";
     "visualization_kanban": "/visualization/kanban";
@@ -262,6 +263,7 @@ declare module "@elegant-router/types" {
     | "test_panel-editor-v2"
     | "ultra-kanban_index"
     | "ultra-kanban_kanban-details"
+    | "ultra-kanban_kanban-preview"
     | "user-center"
     | "visualization_kanban-details"
     | "visualization_kanban"

@@ -5,6 +5,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { NModal, useThemeVars, NSpace, NButton, NSelect, NDivider, NPopconfirm, NTooltip, useMessage } from 'naive-ui'
+import { useRouter, useRoute } from 'vue-router'
 import CommonToolbar from '@/components/visual-editor/components/toolbar/CommonToolbar.vue'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
@@ -67,6 +68,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
+// 路由管理
+const router = useRouter()
+const route = useRoute()
+
 // 配置面板显示状态
 const showConfigPanel = ref(false)
 
@@ -124,7 +129,25 @@ const visualizationConfig = computed(() => ({
 
 // 编辑状态控制
 const handleModeChange = (mode: 'edit' | 'preview') => {
-  emit('mode-change', mode)
+  if (mode === 'preview') {
+    // 跳转到预览页面，在新标签页打开，传递当前渲染器信息
+    const panelId = route.query.id
+    if (panelId) {
+      const previewUrl = router.resolve({
+        path: '/ultra-kanban/kanban-preview',
+        query: {
+          id: panelId,
+          renderer: props.currentRenderer // 传递当前选择的渲染器类型
+        }
+      })
+      window.open(previewUrl.href, '_blank')
+    } else {
+      message.error($t('common.invalidParameter'))
+    }
+  } else {
+    // 编辑模式正常处理
+    emit('mode-change', mode)
+  }
 }
 const handleRendererChange = (rendererId: string) => emit('renderer-change', rendererId)
 
@@ -378,21 +401,17 @@ const handleExport = () => {
           </NButton>
         </template>
 
-        <!-- 编辑/预览切换按钮 - 始终显示在最右侧 -->
+        <!-- 编辑/预览按钮 - 预览改为跳转新页面 -->
         <NDivider vertical />
         <NButton
           size="small"
-          :type="mode === 'edit' ? 'primary' : 'default'"
-          @click="handleModeChange(mode === 'edit' ? 'preview' : 'edit')"
+          type="primary"
+          @click="handleModeChange('preview')"
         >
           <template #icon>
-            <SvgIcon
-              :icon="mode === 'edit' ? 'material-symbols:visibility-outline' : 'material-symbols:edit-outline'"
-            />
+            <SvgIcon icon="material-symbols:visibility-outline" />
           </template>
-          {{ mode === 'edit' ? $t('visualEditor.preview') : $t('visualEditor.edit') }}
-          <!-- 调试信息 -->
-          <span style="font-size: 10px; margin-left: 4px">({{ mode }})</span>
+          {{ $t('visualEditor.preview') }}
         </NButton>
       </NSpace>
     </div>

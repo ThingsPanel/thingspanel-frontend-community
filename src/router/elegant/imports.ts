@@ -84,6 +84,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "test_panel-editor-v2": () => import("@/views/test/panel-editor-v2/index.vue"),
   "ultra-kanban_index": () => import("@/views/ultra-kanban/index/index.vue"),
   "ultra-kanban_kanban-details": () => import("@/views/ultra-kanban/kanban-details/index.vue"),
+  "ultra-kanban_kanban-preview": () => import("@/views/ultra-kanban/kanban-preview/index.vue"),
   "user-center": () => import("@/views/user-center/index.vue"),
   "visualization_kanban-details": () => import("@/views/visualization/kanban-details/index.vue"),
   visualization_kanban: () => import("@/views/visualization/kanban/index.vue"),

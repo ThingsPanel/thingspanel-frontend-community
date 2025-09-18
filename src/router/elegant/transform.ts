@@ -255,6 +255,7 @@ const routeMap: RouteMap = {
   "ultra-kanban": "/ultra-kanban",
   "ultra-kanban_index": "/ultra-kanban/index",
   "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details",
+  "ultra-kanban_kanban-preview": "/ultra-kanban/kanban-preview",
   "user-center": "/user-center",
   "visualization": "/visualization",
   "visualization_kanban": "/visualization/kanban",
