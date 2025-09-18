@@ -198,7 +198,8 @@ const simplifiedWidgetTree = computed(() => {
   allWidgets.value.forEach(widget => {
     const main = widget.definition?.mainCategory
     if (!main) return
-    const sub = main === '系统' ? '默认' : widget.definition?.subCategory || '默认'
+    // ✅ 修复：系统分类也应该正确显示子分类，而不是强制归类到"默认"
+    const sub = widget.definition?.subCategory || '默认'
 
     if (!map[main]) map[main] = {}
     if (!map[main][sub]) map[main][sub] = []

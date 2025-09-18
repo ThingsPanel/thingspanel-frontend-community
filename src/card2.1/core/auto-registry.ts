@@ -51,11 +51,10 @@ export class AutoRegistry {
 
         if (this.isValidComponentDefinition(definition)) {
           const componentType = definition.type as ComponentType
-          // 优先从映射表获取分类
-          let subCategoryId = COMPONENT_TO_CATEGORY_MAP[componentType]
+          let subCategoryId: string | undefined;
 
-          // 如果映射表不存在，则根据目录结构推断
-          if (!subCategoryId && module.__sourcePath) {
+          // 优先根据目录结构推断分类
+          if (module.__sourcePath) {
             const path = module.__sourcePath as string
             const pathSegments = path.replace('./', '').split('/')
 
@@ -70,10 +69,20 @@ export class AutoRegistry {
                 subCategoryId = subCatId
                 if (process.env.NODE_ENV === 'development') {
                   console.log(
-                    `[AutoRegistry] Inferred category for ${componentType}: ${mainCatId}/${subCatId}`,
+                    `[AutoRegistry] ✅ Inferred category for ${componentType}: ${mainCatId}/${subCatId}`,
                   )
                 }
               }
+            }
+          }
+
+          // 如果路径推断失败，则从映射表获取分类作为后备
+          if (!subCategoryId) {
+            subCategoryId = COMPONENT_TO_CATEGORY_MAP[componentType]
+            if (subCategoryId && process.env.NODE_ENV === 'development') {
+              console.log(
+                `[AutoRegistry] ℹ️ Falling back to COMPONENT_TO_CATEGORY_MAP for ${componentType}: ${subCategoryId}`,
+              )
             }
           }
 

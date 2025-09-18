@@ -91,6 +91,7 @@
   "route.ultra-kanban": "New Kanban",
   "route.ultra-kanban_index": "New Kanban List",
   "route.ultra-kanban_kanban-details": "New Kanban Details",
+  "route.ultra-kanban_kanban-preview": "New Kanban Preview",
   "route.ultra-kanban_panel-preview": "New Kanban Preview",
   "route.automation_scene-manage": "Scene",
   "route.automation_scene-linkage": "Automations",
