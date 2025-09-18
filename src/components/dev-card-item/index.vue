@@ -174,10 +174,11 @@ const handleTopRightIconClick = () => {
       </div>
 
       <!-- 卡片内容区域：自定义内容插槽 - 这个区域会自动填充剩余空间 -->
-
-      <NEllipsis v-if="$slots.default" :line-clamp="2" :tooltip="true" class="card-content">
-        <slot />
-      </NEllipsis>
+      <div class="card-content">
+        <NEllipsis v-if="$slots.default" :line-clamp="2" :tooltip="true">
+          <slot />
+        </NEllipsis>
+      </div>
 
       <!-- 卡片底部 - 固定在底部 -->
       <div v-if="footerText || $slots['footer-icon'] || $slots.footer" class="card-footer">
@@ -253,7 +254,7 @@ const handleTopRightIconClick = () => {
 }
 
 .title-row {
-  margin-bottom: 2px;
+  margin-bottom: 8px;
   transition: transform 0.2s ease;
 }
 
