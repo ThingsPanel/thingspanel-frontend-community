@@ -111,7 +111,11 @@ export function getCategoryDisplayName(folderName: string): string {
   if ((['system', 'chart'] as const).includes(folderName as any)) {
     return TOP_LEVEL_MAPPING[folderName as 'system' | 'chart']?.displayName || folderName
   }
-  return CHART_CATEGORY_MAPPING[folderName]?.displayName || folderName
+  return (
+    (SYSTEM_CATEGORY_MAPPING as any)?.[folderName]?.displayName ||
+    CHART_CATEGORY_MAPPING[folderName]?.displayName ||
+    folderName
+  )
 }
 
 /**

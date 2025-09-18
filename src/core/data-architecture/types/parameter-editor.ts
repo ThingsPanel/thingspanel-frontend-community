@@ -17,6 +17,9 @@ export interface EnhancedParameter {
   /** Whether the parameter is currently enabled and should be included in the final output. */
   enabled: boolean
 
+  /** Whether the parameter is dynamic (for property binding) */
+  isDynamic?: boolean
+
   /** The editing mode for the parameter's value. */
   valueMode: 'manual' | 'dropdown' | 'property' | 'component'
 

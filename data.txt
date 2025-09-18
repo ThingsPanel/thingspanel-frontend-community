@@ -1,0 +1,144 @@
+{
+  "version": "1.0.0",
+  "exportType": "single-datasource",
+  "exportTime": 1758184875866,
+  "sourceMetadata": {
+    "originalSourceId": "title",
+    "sourceIndex": 0,
+    "originalComponentId": "alert-status_1758184830442",
+    "exportSource": "SingleDataSourceExporter",
+    "componentType": "alert-status"
+  },
+  "dataSourceConfig": {
+    "dataItems": [
+      {
+        "item": {
+          "type": "http",
+          "config": {
+            "url": "/device/detail/{id}",
+            "method": "GET",
+            "timeout": 10000,
+            "addressType": "internal",
+            "selectedInternalAddress": "/device/detail/{id}",
+            "enableParams": true,
+            "pathParams": [
+              {
+                "key": "id",
+                "value": "__CURRENT_COMPONENT__.base.deviceId",
+                "enabled": true,
+                "isDynamic": false,
+                "valueMode": "component",
+                "selectedTemplate": "component-property-binding",
+                "dataType": "string",
+                "variableName": "__CURRENT_COMPONENT___deviceId",
+                "description": "绑定到组件属性: alert-status -> 设备ID",
+                "_id": "param_1758184842887_qbbuklpgq",
+                "defaultValue": "12",
+                "paramType": "path"
+              }
+            ],
+            "pathParameter": {
+              "value": "__CURRENT_COMPONENT__.base.deviceId",
+              "isDynamic": true,
+              "dataType": "string",
+              "variableName": "__CURRENT_COMPONENT___deviceId",
+              "description": "绑定到组件属性: alert-status -> 设备ID",
+              "selectedTemplate": "component-property-binding",
+              "defaultValue": "12",
+              "key": "id",
+              "enabled": true
+            },
+            "body": "{}"
+          }
+        },
+        "processing": {
+          "filterPath": "$"
+        }
+      }
+    ],
+    "mergeStrategy": {
+      "type": "object"
+    }
+  },
+  "relatedConfig": {
+    "interactions": [
+      {
+        "base": {},
+        "component": {},
+        "dataSource": {
+          "componentId": "__CURRENT_COMPONENT__",
+          "dataSources": [
+            {
+              "sourceId": "title",
+              "dataItems": [
+                {
+                  "item": {
+                    "type": "http",
+                    "config": {
+                      "url": "/device/detail/{id}",
+                      "method": "GET",
+                      "timeout": 10000,
+                      "addressType": "internal",
+                      "selectedInternalAddress": "/device/detail/{id}",
+                      "enableParams": true,
+                      "pathParams": [
+                        {
+                          "key": "id",
+                          "value": "__CURRENT_COMPONENT__.base.deviceId",
+                          "enabled": true,
+                          "isDynamic": false,
+                          "valueMode": "component",
+                          "selectedTemplate": "component-property-binding",
+                          "dataType": "string",
+                          "variableName": "__CURRENT_COMPONENT___deviceId",
+                          "description": "绑定到组件属性: alert-status -> 设备ID",
+                          "_id": "param_1758184842887_qbbuklpgq",
+                          "defaultValue": "12",
+                          "paramType": "path"
+                        }
+                      ],
+                      "pathParameter": {
+                        "value": "__CURRENT_COMPONENT__.base.deviceId",
+                        "isDynamic": true,
+                        "dataType": "string",
+                        "variableName": "__CURRENT_COMPONENT___deviceId",
+                        "description": "绑定到组件属性: alert-status -> 设备ID",
+                        "selectedTemplate": "component-property-binding",
+                        "defaultValue": "12",
+                        "key": "id",
+                        "enabled": true
+                      },
+                      "body": "{}"
+                    }
+                  },
+                  "processing": {
+                    "filterPath": "$"
+                  }
+                }
+              ],
+              "mergeStrategy": {
+                "type": "object"
+              }
+            }
+          ],
+          "createdAt": 1758184873881,
+          "updatedAt": 1758184873881
+        },
+        "interaction": {},
+        "metadata": {
+          "version": "1.0.0",
+          "createdAt": 1758184832739,
+          "updatedAt": 1758184873882,
+          "description": "Auto-generated configuration"
+        }
+      }
+    ],
+    "httpBindings": []
+  },
+  "mapping": {
+    "placeholders": {
+      "__CURRENT_COMPONENT__": "current_component"
+    },
+    "dependencies": []
+  }
+}

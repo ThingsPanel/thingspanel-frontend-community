@@ -228,14 +228,26 @@ const updateDataSourceConfigForBaseConfigChange = async (
           const currentPath = path ? `${path}.${key}` : key
 
           if (typeof value === 'string') {
-            // 1. 检查字符串中是否包含直接的属性绑定引用
+            // 🚨 关键修复：绝对不要替换绑定路径！
+            // 字符串类型的 value 字段如果包含绑定路径，说明这是一个绑定关系，
+            // 必须保持绑定路径格式，不能用实际值替换
             changes.forEach(({ field, newValue }) => {
               const bindingPattern = `${componentId}.base.${field}`
               if (value.includes(bindingPattern)) {
                 if (process.env.NODE_ENV === 'development') {
+                  console.warn(`🚨 [GridstackRenderer] 发现绑定路径，保持原样不修改:`, {
+                    path: currentPath,
+                    key,
+                    绑定路径: value,
+                    field,
+                    newValue,
+                    bindingPattern,
+                    说明: "绑定路径不能被替换为实际值，否则会破坏参数绑定关系"
+                  })
                 }
-                obj[key] = newValue
-                needsUpdate = true
+                // ✅ 修复：不修改绑定路径，让运行时动态解析
+                // obj[key] = newValue // ❌ 删除这个破坏性操作
+                // needsUpdate = true // ❌ 也不需要更新，因为绑定路径保持不变
               }
             })
           } else if (Array.isArray(value)) {

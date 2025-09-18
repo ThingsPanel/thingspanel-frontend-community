@@ -28,12 +28,16 @@ export async function initializeCard2System() {
 
   initializationPromise = (async () => {
     try {
-      // 🔥 简化：直接使用自动注册系统内置的组件扫描
-      // 不再需要单独的ComponentLoader
       console.log('🚀 [Card2.1] 开始初始化系统...')
-      
-      // 这里autoRegistry会自动扫描和注册组件
-      // 基于components/auto-registry.ts的逻辑
+
+      // 1. 使用 import.meta.glob 动态扫描所有组件的 index.ts 文件
+      // **/* 模式确保可以扫描到任意深度的子目录
+      const componentModules = import.meta.glob('./components/**/index.ts', { eager: true });
+
+      console.log(`[Card2.1] 扫描到 ${Object.keys(componentModules).length} 个组件模块。`);
+
+      // 2. 调用自动注册系统，并传入扫描到的模块
+      await autoRegistry.autoRegister(componentModules);
       
       isInitialized = true
       console.log('✅ [Card2.1] 系统初始化完成')

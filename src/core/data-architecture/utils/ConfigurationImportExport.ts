@@ -1232,6 +1232,126 @@ export class SingleDataSourceImporter {
   }
 
   /**
+   * 🔥 智能检测参数是否应该是动态参数
+   * 防御性编程：即使isDynamic为false，但有绑定关系特征时自动修正为true
+   */
+  private detectIsDynamicParameter(param: any): boolean {
+    console.log(`🔥 [ConfigurationImportExport.detectIsDynamicParameter] 开始检测参数:`, {
+      paramKey: param.key,
+      originalIsDynamic: param.isDynamic,
+      valueMode: param.valueMode,
+      selectedTemplate: param.selectedTemplate,
+      value: param.value,
+      variableName: param.variableName,
+      description: param.description
+    })
+
+    // 🔥 关键修复：检测明显的绑定特征，不依赖于原始isDynamic值
+    const hasBindingFeatures =
+      // 特征1：valueMode为component（最强特征）
+      param.valueMode === 'component' ||
+      // 特征2：selectedTemplate为组件属性绑定（最强特征）
+      param.selectedTemplate === 'component-property-binding' ||
+      // 特征3：value值看起来像绑定路径（包含.且格式正确）
+      (typeof param.value === 'string' &&
+       param.value.includes('.') &&
+       param.value.split('.').length >= 3 &&
+       param.value.length > 15) ||
+      // 特征4：有variableName且包含组件ID格式
+      (param.variableName && param.variableName.includes('_') && param.variableName.length > 5) ||
+      // 特征5：description包含"绑定"关键词
+      (param.description && (
+        param.description.includes('绑定') ||
+        param.description.includes('属性') ||
+        param.description.includes('component')
+      ))
+
+    // 🔥 关键修复：如果检测到绑定特征，直接返回true，忽略原始isDynamic设置
+    if (hasBindingFeatures) {
+      console.warn(`🔧 [ConfigurationImportExport] 检测到绑定特征，强制设置为动态:`, {
+        paramKey: param.key,
+        原始isDynamic: param.isDynamic,
+        修正为: true,
+        检测到的特征: {
+          valueMode: param.valueMode,
+          selectedTemplate: param.selectedTemplate,
+          value: param.value,
+          valueLength: param.value ? param.value.length : 0,
+          variableName: param.variableName,
+          description: param.description
+        }
+      })
+      return true
+    }
+
+    // 如果没有绑定特征，保持原始设置或默认为false
+    const result = param.isDynamic !== undefined ? param.isDynamic : false
+
+    console.log(`🔥 [ConfigurationImportExport] 未检测到绑定特征:`, {
+      paramKey: param.key,
+      result,
+      reason: param.isDynamic !== undefined ? '保持原始设置' : '默认为静态'
+    })
+
+    return result
+  }
+
+  /**
+   * 🔥 新增：保护HTTP参数的绑定路径不被意外覆盖
+   * 这是一个防御性机制，确保即使配置管理过程中出现问题，绑定路径也不会被损坏
+   */
+  private protectParameterBindingPaths(params: any[]): any[] {
+    if (!params || !Array.isArray(params)) return params
+
+    return params.map(param => {
+      // 只保护已设置绑定关系的参数
+      if (!param.isDynamic && !param.selectedTemplate && !param.valueMode) {
+        return param
+      }
+
+      // 检测绑定路径是否被损坏
+      const isBindingCorrupted = param.value &&
+        typeof param.value === 'string' &&
+        !param.value.includes('.') &&
+        param.value.length < 10 &&
+        param.variableName &&
+        param.variableName.includes('_')
+
+      if (isBindingCorrupted) {
+        console.warn(`🛡️ [ConfigurationImportExport.protectParameterBindingPaths] 检测到损坏的绑定路径，正在恢复:`, {
+          paramKey: param.key,
+          损坏的绑定路径: param.value,
+          variableName: param.variableName
+        })
+
+        // 从variableName重建正确的绑定路径
+        if (param.variableName.includes('_')) {
+          const lastUnderscoreIndex = param.variableName.lastIndexOf('_')
+          if (lastUnderscoreIndex > 0) {
+            const componentId = param.variableName.substring(0, lastUnderscoreIndex)
+            const propertyName = param.variableName.substring(lastUnderscoreIndex + 1)
+            const reconstructedPath = `${componentId}.base.${propertyName}`
+
+            console.log(`🛡️ [ConfigurationImportExport.protectParameterBindingPaths] 已重建绑定路径:`, {
+              paramKey: param.key,
+              原损坏值: param.value,
+              重建路径: reconstructedPath
+            })
+
+            return {
+              ...param,
+              value: reconstructedPath,
+              isDynamic: true // 确保设置为动态
+            }
+          }
+        }
+      }
+
+      return param
+    })
+  }
+
+  /**
    * 处理导入配置中的组件ID映射
    */
   private processConfigurationForImport(
@@ -1251,7 +1371,24 @@ export class SingleDataSourceImporter {
       }
 
       if (Array.isArray(obj)) {
-        return obj.map(item => processValue(item))
+        const processedArray = obj.map(item => {
+          const processedItem = processValue(item)
+
+          // 🔥 关键修复：检测数组中的HTTP参数并修正isDynamic字段
+          if (processedItem && typeof processedItem === 'object' &&
+              ('valueMode' in processedItem || 'selectedTemplate' in processedItem)) {
+            const correctedIsDynamic = this.detectIsDynamicParameter(processedItem)
+            return {
+              ...processedItem,
+              isDynamic: correctedIsDynamic
+            }
+          }
+
+          return processedItem
+        })
+
+        // 🔥 新增：对数组中的HTTP参数应用绑定路径保护
+        return this.protectParameterBindingPaths(processedArray)
       }
 
       if (typeof obj === 'object') {
@@ -1259,6 +1396,17 @@ export class SingleDataSourceImporter {
         for (const [key, value] of Object.entries(obj)) {
           result[key] = processValue(value)
         }
+
+        // 🔥 关键修复：检测HTTP参数对象并修正isDynamic字段
+        if (result && ('valueMode' in result || 'selectedTemplate' in result)) {
+          const correctedIsDynamic = this.detectIsDynamicParameter(result)
+          result.isDynamic = correctedIsDynamic
+
+          // 🔥 新增：对单个HTTP参数对象应用绑定路径保护
+          const protectedParams = this.protectParameterBindingPaths([result])
+          return protectedParams[0]
+        }
+
         return result
       }
 

@@ -176,6 +176,7 @@ const createDefaultParameter = (): EnhancedParameter => ({
   key: '',
   value: '',
   enabled: true,
+  isDynamic: false, // 🔥 新增：默认为静态参数
   valueMode: ParameterTemplateType.MANUAL,
   selectedTemplate: 'manual',
   dataType: 'string',
@@ -224,6 +225,7 @@ const handleSelectAddOption = (key: string) => {
       // 🔥 修复：属性绑定 - 立即显示面板
       newParam.selectedTemplate = 'component-property-binding'
       newParam.valueMode = ParameterTemplateType.COMPONENT
+      newParam.isDynamic = true // 🔥 关键修复：设置为动态参数
 
       // 添加参数
       const updatedParams = [...props.modelValue, newParam]
@@ -692,6 +694,16 @@ const ensureParameterHasId = (param: EnhancedParameter, index: number): Enhanced
   if (!param._id) {
     return {
       ...param,
+      // 🔥 关键修复：确保isDynamic字段有正确的值
+      isDynamic: param.isDynamic !== undefined
+        ? param.isDynamic
+        : (param.valueMode === 'component' ||
+           param.selectedTemplate === 'component-property-binding' ||
+           // 检测绑定路径格式
+           (typeof param.value === 'string' &&
+            param.value.includes('.') &&
+            param.value.split('.').length >= 3 &&
+            param.value.length > 10)),
       _id: `param_legacy_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 6)}`
     }
   }
@@ -744,8 +756,10 @@ const onTemplateChange = (param: EnhancedParameter, index: number, templateId: s
       updatedParam.variableName = generateVariableName(param.key)
       updatedParam.description = updatedParam.description || `${getTypeDisplayName()}参数：${param.key}`
     }
+    updatedParam.isDynamic = true // 🔥 关键修复：设置为动态参数
   } else if (template.type === ParameterTemplateType.COMPONENT) {
     // 🔥 修复：属性绑定模板 - 确保编辑状态和抽屉立即显示
+    updatedParam.isDynamic = true // 🔥 关键修复：设置为动态参数
     editingIndex.value = index
 
     // 先更新参数
@@ -759,6 +773,7 @@ const onTemplateChange = (param: EnhancedParameter, index: number, templateId: s
   } else {
     updatedParam.variableName = ''
     updatedParam.description = ''
+    updatedParam.isDynamic = false // 🔥 关键修复：其他模板为静态参数
   }
 
   updateParameter(updatedParam, index)
@@ -807,6 +822,17 @@ const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) 
     }
 
     console.log(`🔥 [DynamicParameterEditor] 更新drawerParam.value从 "${drawerParam.value.value}" 到 "${bindingPath}"`)
+
+    // 🚨🚨🚨 超详细调试：记录每次value变更的调用栈
+    if (bindingPath === '789' || bindingPath === '878' || drawerParam.value.value === '789' || drawerParam.value.value === '878') {
+      console.error(`🚨🚨🚨 [DynamicParameterEditor] 检测到可疑值变更！`, {
+        异常bindingPath: bindingPath,
+        异常当前值: drawerParam.value.value,
+        调用栈: new Error().stack,
+        propertyInfo,
+        drawerParam完整对象: JSON.parse(JSON.stringify(drawerParam.value))
+      })
+    }
 
     // 更新抽屉中参数的绑定值
     drawerParam.value.value = bindingPath
@@ -1179,7 +1205,7 @@ const getComponentTemplate = (param: EnhancedParameter | null) => {
           <component
             :is="getComponentTemplate(drawerParam)?.component"
             v-if="getComponentTemplate(drawerParam)?.component"
-            v-model:value="drawerParam.value"
+            :value="drawerParam.value"
             v-bind="getComponentTemplate(drawerParam)?.props || {}"
             @change="handleComponentPropertyChange"
           />

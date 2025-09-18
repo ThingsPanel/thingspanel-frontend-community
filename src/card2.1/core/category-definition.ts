@@ -22,6 +22,7 @@ export interface CategoryConfig {
   description?: string; // 描述
   enabled?: boolean; // 是否启用
   devOnly?: boolean; // 是否仅开发模式可见
+  parentId?: 'system' | 'chart'; // 新增：父分类ID
 }
 
 /**
@@ -57,6 +58,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     icon: 'dashboard',
     description: '展示系统级别的硬件资源使用情况',
     enabled: true,
+    parentId: 'system',
   },
   'device-status': {
     id: 'device-status',
@@ -65,6 +67,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     icon: 'laptop',
     description: '监控和展示设备的在线状态',
     enabled: true,
+    parentId: 'system',
   },
   'alarm-management': {
     id: 'alarm-management',
@@ -73,6 +76,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     icon: 'alert',
     description: '展示与告警相关的信息',
     enabled: true,
+    parentId: 'system',
   },
   'tenant-app': {
     id: 'tenant-app',
@@ -81,6 +85,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     icon: 'appstore',
     description: '提供与租户和应用相关的数据和功能',
     enabled: true,
+    parentId: 'system',
   },
   'data-information': {
     id: 'data-information',
@@ -89,6 +94,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     icon: 'info-circle',
     description: '用于展示通用数据和信息',
     enabled: true,
+    parentId: 'system',
   },
   'user-behavior': {
     id: 'user-behavior',
@@ -97,6 +103,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     icon: 'user',
     description: '追踪和展示用户的活动',
     enabled: true,
+    parentId: 'system',
   },
   'operation-guide': {
     id: 'operation-guide',
@@ -105,6 +112,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     icon: 'book',
     description: '为用户提供操作上的引导',
     enabled: true,
+    parentId: 'system',
   },
 };
 
@@ -118,6 +126,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     order: 10,
     icon: 'dashboard',
     enabled: true,
+    parentId: 'chart',
   },
   information: {
     id: 'information',
@@ -125,6 +134,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     order: 20,
     icon: 'info-circle',
     enabled: true,
+    parentId: 'chart',
   },
   control: {
     id: 'control',
@@ -132,6 +142,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     order: 30,
     icon: 'control',
     enabled: true,
+    parentId: 'chart',
   },
   device: {
     id: 'device',
@@ -139,6 +150,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     order: 40,
     icon: 'device',
     enabled: true,
+    parentId: 'chart',
   },
   data: {
     id: 'data',
@@ -146,6 +158,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     order: 50,
     icon: 'chart-bar',
     enabled: true,
+    parentId: 'chart',
   },
   statistics: {
     id: 'statistics',
@@ -153,6 +166,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     order: 60,
     icon: 'statistics',
     enabled: true,
+    parentId: 'chart',
   },
   location: {
     id: 'location',
@@ -160,6 +174,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     order: 70,
     icon: 'location',
     enabled: true,
+    parentId: 'chart',
   },
   media: {
     id: 'media',
@@ -167,6 +182,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     order: 80,
     icon: 'play-circle',
     enabled: true,
+    parentId: 'chart',
   },
   alarm: {
     id: 'alarm',
@@ -174,7 +190,16 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
     order: 90,
     icon: 'warning',
     enabled: true,
+    parentId: 'chart',
   },
+};
+
+/**
+ * 合并所有子分类
+ */
+export const SUB_CATEGORIES: Record<string, CategoryConfig> = {
+  ...SYSTEM_SUB_CATEGORIES,
+  ...CHART_SUB_CATEGORIES,
 };
 
 /**
@@ -205,7 +230,7 @@ export const COMPONENT_TO_CATEGORY_MAP: Record<string, string> = {
   'operation-guide-card': 'operation-guide',
 
   // --- 图表组件 (可以根据组件名推断，也可以在这里显式指定) ---
-  // 示例:
-  // 'gauge-dashboard': 'dashboard',
-  // 'switch-controller': 'control',
+  'alert-status': 'alarm',
+  'alert-status-v2': 'alarm',
+  'switch-controller': 'control',
 };

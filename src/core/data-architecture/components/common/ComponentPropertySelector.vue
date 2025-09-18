@@ -581,6 +581,20 @@ const onPropertyChange = (propertyPath: string | null) => {
       }))
     })
 
+    // 🚨🚨🚨 超详细调试：检测可疑值
+    if (propertyPath === '789' || propertyPath === '878' || typeof propertyPath !== 'string' ||
+        (propertyPath && !propertyPath.includes('.') && propertyPath.length < 10)) {
+      console.error(`🚨🚨🚨 [ComponentPropertySelector] 检测到可疑的propertyPath！`, {
+        异常propertyPath: propertyPath,
+        propertyPath类型: typeof propertyPath,
+        propertyPath长度: propertyPath ? propertyPath.length : 0,
+        调用栈: new Error().stack,
+        选中的option: option,
+        propertyOptions长度: propertyOptions.value.length,
+        propertyInfo
+      })
+    }
+
     emit('update:modelValue', propertyPath)
     emit('change', propertyPath, propertyInfo)
   } else {

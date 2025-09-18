@@ -5,7 +5,12 @@
 
 import type { ComponentDefinition, IComponentRegistry } from '@/card2.1/core/types'
 import { filterComponentsByPermission, getUserAuthorityFromStorage } from '@/card2.1/core/permission-utils'
-import { parseCategoryFromPath } from '@/card2.1/components/category-mapping'
+import {
+  COMPONENT_TO_CATEGORY_MAP,
+  SUB_CATEGORIES,
+  TOP_LEVEL_CATEGORIES,
+} from './category-definition'
+import { ComponentType } from '@/card2.1/enum'
 
 export interface ComponentCategory {
   id: string
@@ -39,46 +44,58 @@ export class AutoRegistry {
     const registeredComponents: ComponentDefinition[] = []
     const userAuthority = getUserAuthorityFromStorage()
 
-    // 导入分类映射工具（动态导入保持兼容）
-    const { TOP_LEVEL_MAPPING } = await import('@/card2.1/components/category-mapping')
-
     for (const [componentId, module] of Object.entries(componentModules)) {
       try {
-        // 🔥 调试：检查模块导出的内容
-        if (process.env.NODE_ENV === 'development') {
-        }
-
         // 获取默认导出（组件定义）
         const definition = module.default || module
 
-        if (process.env.NODE_ENV === 'development') {
-        }
-
         if (this.isValidComponentDefinition(definition)) {
-          // 🚨 新：根据模块源路径(__sourcePath)解析“系统/图表(子类)”两级分类
-          const sourcePath: string | undefined = (module as any).__sourcePath
+          const componentType = definition.type as ComponentType
+          // 优先从映射表获取分类
+          let subCategoryId = COMPONENT_TO_CATEGORY_MAP[componentType]
+
+          // 如果映射表不存在，则根据目录结构推断
+          if (!subCategoryId) {
+            const pathSegments = componentId.split('/')
+            const componentsIndex = pathSegments.indexOf('components')
+            // 路径必须包含 /components/<main>/<sub>/<component-name>/...
+            if (componentsIndex > -1 && pathSegments.length > componentsIndex + 3) {
+              const mainCatId = pathSegments[componentsIndex + 1]
+              const subCatId = pathSegments[componentsIndex + 2]
+
+              // 验证推断的分类是否有效
+              const inferredSubCategory = SUB_CATEGORIES[subCatId]
+              if (inferredSubCategory && inferredSubCategory.parentId === mainCatId) {
+                subCategoryId = subCatId
+              }
+            }
+          }
+
           let mainCategory = '其他'
           let subCategory: string | undefined
           let category = '其他'
 
-          if (sourcePath) {
-            const parsed = parseCategoryFromPath(sourcePath)
-            mainCategory = parsed.topLevelName
-            subCategory = parsed.subCategoryName
-            category = subCategory ? `${mainCategory}/${subCategory}` : mainCategory
-          } else {
-            // Fallback：无源路径时，默认归入“图表”顶层
-            mainCategory = TOP_LEVEL_MAPPING.chart.displayName
-            category = mainCategory
+          if (subCategoryId) {
+            const subCategoryDef = Object.values(SUB_CATEGORIES).find(s => s.id === subCategoryId)
+            if (subCategoryDef) {
+              subCategory = subCategoryDef.displayName
+              const mainCatId = subCategoryDef.parentId
+              const topLevelCategoryDef = Object.values(TOP_LEVEL_CATEGORIES).find(
+                t => t.id === mainCatId,
+              )
+              if (topLevelCategoryDef) {
+                mainCategory = topLevelCategoryDef.displayName
+              }
+            }
           }
 
+          category = subCategory ? `${mainCategory}/${subCategory}` : mainCategory
           // 🔥 强制覆盖组件定义的分类字段
           const enhancedDefinition = {
             ...definition,
             mainCategory,
             subCategory,
             category,
-            folderPath: sourcePath
           }
 
           if (process.env.NODE_ENV === 'development') {
@@ -112,75 +129,6 @@ export class AutoRegistry {
       }
     }
     return registeredComponents
-  }
-
-  /**
-   * 从组件ID提取文件夹路径
-   * @param componentId 组件ID，如 "alarm-count"
-   * @returns 文件夹名，如 "alarm"
-   */
-  private extractFolderFromComponentId(componentId: string): string {
-    // alarm-count -> alarm
-    // access-num -> statistics
-    // simple-display -> test
-
-    // 根据组件ID推断文件夹路径的映射关系
-    const componentFolderMap: Record<string, string> = {
-      'alarm-count': 'alarm',
-      'alarm-info': 'alarm',
-      'access-num': 'statistics',
-      'app-download': 'statistics',
-      'simple-display': 'test',
-      'dual-data-display': 'test',
-      'triple-data-display': 'test',
-      'gauge-dashboard-v2': 'dashboard',  // 🔥 修复：添加仪表盘组件映射
-      
-      // 🔥 新增：我们的测试组件直接映射
-      'info-card-simple': 'information',
-      'switch-controller': 'control',
-      'simple-chart': 'data',
-      'counter-stats': 'statistics',
-      'simple-map': 'location',
-      'video-player': 'media',
-      'alert-status': 'alarm',
-      'simple-dashboard': 'dashboard'
-    }
-
-    // 首先尝试直接映射
-    if (componentFolderMap[componentId]) {
-      return componentFolderMap[componentId]
-    }
-
-    // 如果没有直接映射，尝试从组件ID推断（取第一个单词）
-    const parts = componentId.split('-')
-    const firstPart = parts[0]
-
-    // 常见的文件夹映射
-    const folderMap: Record<string, string> = {
-      // 现有的映射
-      alarm: 'alarm',
-      access: 'statistics',
-      app: 'statistics',
-      simple: 'test',
-      dual: 'test',
-      triple: 'test',
-      data: 'data',
-      chart: 'data',
-      control: 'control',
-      info: 'information',
-      device: 'device',
-      location: 'location',
-      media: 'media',
-      dashboard: 'dashboard',
-      
-      // 🔥 新增：我们的测试组件映射
-      switch: 'control',      // switch-controller
-      counter: 'statistics',  // counter-stats
-      video: 'media',         // video-player
-      alert: 'alarm'          // alert-status
-    }
-
-    return folderMap[firstPart] || 'test' // 默认归到test分类
   }
 
   /**
@@ -231,11 +179,13 @@ export class AutoRegistry {
    * 验证组件定义是否有效
    */
   private isValidComponentDefinition(definition: any): definition is ComponentDefinition {
+    // 修复：组件实例可以是对象（标准组件）或函数（函数式组件）
+    const isComponentValid = definition.component && (typeof definition.component === 'object' || typeof definition.component === 'function');
     return (
       definition &&
       typeof definition.type === 'string' &&
       typeof definition.name === 'string' &&
-      typeof definition.component === 'object'
+      isComponentValid
     )
   }
 
@@ -274,8 +224,18 @@ export class AutoRegistry {
    */
   getComponentTree(): ComponentTree {
     const components = this.registry.getAll()
+
+    // 对分类进行排序：“系统”分类优先，其他按名称排序
+    const sortedCategories = [...this.categoryTree].sort((a, b) => {
+      if (a.name === '系统') return -1;
+      if (b.name === '系统') return 1;
+      if (a.name < b.name) return -1;
+      if (a.name > b.name) return 1;
+      return 0;
+    });
+
     return {
-      categories: this.categoryTree,
+      categories: sortedCategories,
       components,
       totalCount: components.length
     }
