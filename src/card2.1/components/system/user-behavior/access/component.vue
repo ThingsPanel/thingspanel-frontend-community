@@ -48,8 +48,11 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-/* 渐变动画 */
-@keyframes gradient-bg {
+/* 
+  Keyframes for the dazzling gradient animation.
+  Moves the background position to create a sweeping light effect.
+*/
+@keyframes dazzling-gradient {
   0% {
     background-position: 0% 50%;
   }
@@ -61,7 +64,7 @@ onMounted(() => {
   }
 }
 
-/* 基础容器样式 */
+/* Base styles for the card container */
 .card-container {
   width: 100%;
   height: 100%;
@@ -70,16 +73,29 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: all 0.3s ease;
-  background-size: 200% 200%;
-  animation: gradient-bg 3s ease infinite;
-  /* 恢复用户喜欢的蓝绿色渐变 */
-  background-image: linear-gradient(-45deg, #22EDF0, #58B2F8);
-  /* 调整文字颜色为白色以保证对比度 */
-  color: white;
+  color: white; /* Set text color to white for better contrast */
+
+  /* 
+    Animation setup for the metallic reflection effect.
+    - The background is sized at 400% to make the gradient movement more pronounced.
+    - The 'dazzling-gradient' animation runs over 10 seconds for a dynamic yet smooth feel.
+  */
+  background-size: 400% 400%;
+  animation: dazzling-gradient 10s ease-in-out infinite;
+
+  /* 
+    Pure, flowing blue-green gradient without white highlights.
+  */
+  background-image: linear-gradient(
+    45deg,
+    #409eff,
+    #58b2f8,
+    #22edf0,
+    #67c23a
+  );
 }
 
-/* 内容包裹器 */
+/* Content wrapper for centering */
 .content-wrapper {
   display: flex;
   flex-direction: column;
@@ -88,29 +104,40 @@ onMounted(() => {
   text-align: center;
 }
 
-/* 内容包裹器 */.icon {
+/* Icon styles */
+.icon {
   width: 32px;
   height: 32px;
   opacity: 0.9;
-  color: white; /* 确保图标也是白色 */
+  color: white; /* Ensure icon is white */
 }
 
+/* Title styles */
 .title {
   font-size: 16px;
   font-weight: 500;
-  color: white; /* 确保标题也是白色 */
+  color: white; /* Ensure title is white */
 }
 
+/* Value styles */
 .value {
   font-size: 36px;
   font-weight: bold;
-  color: white; /* 确保数值也是白色 */
+  color: white; /* Ensure value is white */
 }
 
-/* 暗色主题样式 */
+/* Dark theme styles */
 :global(.dark) .card-container {
-  /* 使用更柔和的暗色渐变 */
-  background-image: linear-gradient(-45deg, #485563, #29323c);
+  /* 
+    A coordinated dark blue-green gradient for dark mode.
+  */
+  background-image: linear-gradient(
+    45deg,
+    #1d3a5c,
+    #2c5282,
+    #2b6cb0,
+    #2a5c40
+  );
   color: #e5e7eb; /* Tailwind gray-200 */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
