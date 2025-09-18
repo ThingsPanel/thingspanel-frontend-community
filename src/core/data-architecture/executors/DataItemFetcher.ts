@@ -162,7 +162,9 @@ export class DataItemFetcher implements IDataItemFetcher {
             componentKeys: latestConfig.component ? Object.keys(latestConfig.component) : [],
             baseContent: latestConfig.base,
             componentContent: latestConfig.component
-          } : null
+          } : null,
+          请求的属性路径: propertyPath,
+          完整配置对象: latestConfig
         })
 
         if (!latestConfig && this.currentComponentId && this.currentComponentId !== componentId) {
@@ -266,7 +268,12 @@ export class DataItemFetcher implements IDataItemFetcher {
           console.error(`❌ [DataItemFetcher] 无法获取组件配置:`, { componentId, currentComponentId: this.currentComponentId })
         }
       } catch (configError) {
-        console.warn(`⚠️ [DataItemFetcher] 从配置管理器获取属性失败，回退到编辑器存储:`, configError)
+        console.warn(`⚠️ [DataItemFetcher] 从配置管理器获取属性失败，回退到编辑器存储:`, {
+          configError: configError.message || configError,
+          bindingPath,
+          componentId,
+          propertyPath
+        })
       }
 
       // 🔥 回退：从编辑器store获取属性值（兼容性处理）
@@ -314,9 +321,21 @@ export class DataItemFetcher implements IDataItemFetcher {
       // 从组件properties中获取属性值
       const propertyValue = this.getNestedProperty(targetComponent.properties, propertyPath)
 
+      console.log(`🔥 [DataItemFetcher] fallback从editor store获取属性值:`, {
+        bindingPath,
+        componentId,
+        propertyPath,
+        targetComponent: {
+          id: targetComponent.id,
+          type: targetComponent.type,
+          properties: targetComponent.properties
+        },
+        获取到的propertyValue: propertyValue,
+        propertyValueType: typeof propertyValue
+      })
+
       if (propertyValue !== undefined) {
-        if (process.env.NODE_ENV === 'development') {
-        }
+        console.log(`✅ [DataItemFetcher] fallback成功获取属性值: ${propertyValue}`)
       }
 
       return propertyValue
@@ -371,7 +390,43 @@ export class DataItemFetcher implements IDataItemFetcher {
 
     // 🔥 修复：检查多种组件属性绑定的标识
     if (param.selectedTemplate === 'component-property-binding' || param.valueMode === 'component') {
+      // 🔥 关键修复：使用深拷贝保护原始参数，防止数据被意外修改
       let bindingPath = param.value
+
+      // 🔥 超强防护：如果bindingPath看起来不像绑定路径但variableName是正确的，说明value被损坏了
+      const isBindingPathCorrupted = bindingPath &&
+        typeof bindingPath === 'string' &&
+        !bindingPath.includes('.') &&
+        bindingPath.length < 10 && // 绑定路径通常很长
+        param.variableName &&
+        param.variableName.includes('_')
+
+      if (isBindingPathCorrupted) {
+        console.error(`🚨 [DataItemFetcher] 检测到bindingPath被损坏! 尝试从variableName恢复:`, {
+          损坏的bindingPath: bindingPath,
+          variableName: param.variableName,
+          description: param.description,
+          原始参数: param
+        })
+
+        // 从variableName重建绑定路径
+        if (param.variableName.includes('_')) {
+          const lastUnderscoreIndex = param.variableName.lastIndexOf('_')
+          if (lastUnderscoreIndex > 0) {
+            const componentId = param.variableName.substring(0, lastUnderscoreIndex)
+            const propertyName = param.variableName.substring(lastUnderscoreIndex + 1)
+            const reconstructedPath = `${componentId}.base.${propertyName}`
+
+            console.log(`🔧 [DataItemFetcher] 成功从variableName重建绑定路径:`, {
+              原损坏值: bindingPath,
+              重建路径: reconstructedPath,
+              variableName: param.variableName
+            })
+
+            bindingPath = reconstructedPath
+          }
+        }
+      }
 
       console.log(`🔥 [DataItemFetcher] 检测到组件属性绑定:`, {
         paramKey: param.key,
@@ -385,98 +440,58 @@ export class DataItemFetcher implements IDataItemFetcher {
         variableName: param.variableName
       })
 
-      // 🔥 关键检查：如果绑定路径格式不正确，这里可能是数据损坏的源头
+      // 🔥 最终验证：如果修复后的绑定路径仍然不正确，才报错
       if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
-        console.error(`❌ [DataItemFetcher] 属性绑定路径格式异常，这可能是数据损坏:`, {
+        console.error(`❌ [DataItemFetcher] 属性绑定路径格式异常，修复失败:`, {
           paramKey: param.key,
           bindingPath,
           bindingPathType: typeof bindingPath,
           expectedFormat: 'componentId.layer.propertyName',
-          原始参数对象: param
+          原始参数对象: param,
+          variableName: param.variableName,
+          description: param.description
         })
 
-        // 🔥 改进的智能修复策略：
-        // 1. 尝试从variableName重建绑定路径
-        if (param.variableName && param.variableName.includes('_')) {
-          const parts = param.variableName.split('_')
-          if (parts.length >= 2) {
-            // variableName格式: componentId_propertyName
-            const componentId = parts[0]
-            const propertyName = parts.slice(1).join('_')
-            const reconstructedPath = `${componentId}.base.${propertyName}`
-
-            console.log(`🔧 [DataItemFetcher] 从variableName重建绑定路径:`, {
-              原始variableName: param.variableName,
-              重建后路径: reconstructedPath
-            })
-
-            bindingPath = reconstructedPath
-          }
-        }
-
-        // 2. 如果仍然无效，尝试使用当前组件ID进行智能推导
-        if (!bindingPath || !bindingPath.includes('.')) {
-          const targetComponentId = this.currentComponentId
-          if (targetComponentId) {
-            // 推导常见的设备相关属性
-            const commonProperties = ['deviceId', 'metricsList']
-            const suggestedProperty = commonProperties.find(prop =>
-              param.key?.toLowerCase().includes(prop.toLowerCase()) ||
-              param.description?.toLowerCase().includes(prop.toLowerCase())
-            ) || 'deviceId' // 默认使用deviceId
-
-            const fallbackPath = `${targetComponentId}.base.${suggestedProperty}`
-            console.log(`🔧 [DataItemFetcher] 智能推导绑定路径:`, {
-              目标组件ID: targetComponentId,
-              推导属性: suggestedProperty,
-              推导路径: fallbackPath,
-              推导依据: `参数key: ${param.key}, 描述: ${param.description}`
-            })
-
-            bindingPath = fallbackPath
-          }
-        }
-      }
-
-      // 🔥 关键修复：如果 value 为空，尝试构造正确的属性绑定路径
-      if (!bindingPath || bindingPath.trim() === '') {
-        console.error(`⚠️ [DataItemFetcher] 参数绑定路径为空，尝试智能推导`, {
-          paramKey: param.key,
-          currentComponentId: this.currentComponentId
-        })
-
-        // 🔧 智能推导：从 EditorStore 查找当前活跃的组件ID
-        const editorStore = useEditorStore()
-        const selectedNode = editorStore.selectedNodeId
-        const availableNodes = editorStore.nodes || []
-
-        if (selectedNode && availableNodes.some(n => n.id === selectedNode)) {
-          bindingPath = `${selectedNode}.customize.deviceId`
-          if (process.env.NODE_ENV === 'development') {
-          }
-        } else if (availableNodes.length > 0) {
-          // 尝试使用第一个可用组件
-          bindingPath = `${availableNodes[0].id}.customize.deviceId`
-          if (process.env.NODE_ENV === 'development') {
-          }
-        } else {
-          console.error(`❌ [DataItemFetcher] 无法构造绑定路径，EditorStore中无可用组件`)
-          // 使用默认值处理
+        // 🔥 如果修复后仍然无效，返回null使用默认值
+        if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
+          console.warn(`⚠️ [DataItemFetcher] 无法修复绑定路径，将使用默认值:`, {
+            paramKey: param.key,
+            defaultValue: param.defaultValue
+          })
+          return param.defaultValue || null
         }
       }
 
       if (bindingPath && typeof bindingPath === 'string') {
         const actualValue = this.getComponentPropertyValue(bindingPath)
+
+        // 🔥 关键保护：防止属性值被错误地当作绑定路径使用
+        // 如果actualValue看起来不像组件属性值（比如是'878'这样的短字符串），可能存在问题
+        const isLikelyPropertyValue = actualValue === undefined ||
+          actualValue === null ||
+          actualValue === '' ||
+          (typeof actualValue === 'string' && (actualValue.length > 15 || actualValue.includes('DEV') || actualValue.includes('device'))) ||
+          typeof actualValue !== 'string'
+
         console.log(`🔥 [DataItemFetcher] 属性绑定解析完成:`, {
           paramKey: param.key,
           bindingPath,
           actualValue,
           actualValueType: typeof actualValue,
+          isLikelyPropertyValue,
           将使用的值: actualValue !== undefined && actualValue !== null && actualValue !== '' ? actualValue : param.defaultValue
         })
 
-        if (actualValue !== undefined && actualValue !== null && actualValue !== '') {
+        if (actualValue !== undefined && actualValue !== null && actualValue !== '' && isLikelyPropertyValue) {
           resolvedValue = actualValue
+        } else if (!isLikelyPropertyValue) {
+          console.warn(`⚠️ [DataItemFetcher] 获取到的属性值看起来不正常，使用默认值:`, {
+            paramKey: param.key,
+            bindingPath,
+            suspiciousValue: actualValue,
+            defaultValue: param.defaultValue
+          })
+          resolvedValue = undefined // 触发默认值机制
         } else {
           // 当组件属性值为空时，设置 resolvedValue 为 undefined，触发默认值机制
           resolvedValue = undefined
@@ -876,7 +891,34 @@ export class DataItemFetcher implements IDataItemFetcher {
       })
 
       if (param.selectedTemplate === 'component-property-binding' || param.valueMode === 'component') {
-        const bindingPath = param.value
+        let bindingPath = param.value
+
+        // 🔥 关键修复：在验证阶段也应用智能修复逻辑
+        if (!bindingPath || !bindingPath.includes('.')) {
+          // 尝试从variableName重建绑定路径（与resolveParameterValue中的逻辑保持一致）
+          if (param.variableName && param.variableName.includes('_')) {
+            const lastUnderscoreIndex = param.variableName.lastIndexOf('_')
+            if (lastUnderscoreIndex > 0) {
+              const componentId = param.variableName.substring(0, lastUnderscoreIndex)
+              const propertyName = param.variableName.substring(lastUnderscoreIndex + 1)
+              const reconstructedPath = `${componentId}.base.${propertyName}`
+
+              console.log(`🔧 [validateParameterBindingPaths] 应用智能修复:`, {
+                原始值: param.value,
+                variableName: param.variableName,
+                重建路径: reconstructedPath
+              })
+
+              bindingPath = reconstructedPath
+
+              // 🔥 关键修复：将修复后的值直接更新到参数对象中
+              // 这样后续的解析阶段就能使用修复后的正确值
+              param.value = reconstructedPath
+              console.log(`✅ [validateParameterBindingPaths] 已将修复后的值更新到参数对象: ${reconstructedPath}`)
+            }
+          }
+        }
+
         const isValidPath = bindingPath && typeof bindingPath === 'string' && bindingPath.includes('.')
 
         console.log(`🔥 [BINDING_PATH_CHECK] 参数绑定路径验证:`, {

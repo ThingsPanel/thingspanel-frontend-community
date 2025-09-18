@@ -621,9 +621,24 @@ const updateParameter = (param: EnhancedParameter, index: number) => {
   const updatedParams = [...props.modelValue]
   updatedParams[index] = { ...param }
 
-  // 🔥 调试：监听参数更新
-  if (process.env.NODE_ENV === 'development') {
-  }
+  console.log(`🚨🚨🚨 [updateParameter] 即将emit的参数详情:`, {
+    index,
+    param参数: {
+      key: param.key,
+      value: param.value,
+      valueType: typeof param.value,
+      selectedTemplate: param.selectedTemplate,
+      valueMode: param.valueMode,
+      variableName: param.variableName,
+      description: param.description
+    },
+    updatedParams数组长度: updatedParams.length,
+    更新后的该索引参数: {
+      key: updatedParams[index].key,
+      value: updatedParams[index].value,
+      valueType: typeof updatedParams[index].value
+    }
+  })
 
   emit('update:modelValue', updatedParams)
 }
@@ -762,7 +777,37 @@ const openComponentDrawer = (param: EnhancedParameter) => {
  * 当用户在组件属性选择器中选择了属性时调用
  */
 const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) => {
+  console.log(`🚨🚨🚨 [DynamicParameterEditor] handleComponentPropertyChange 被调用:`, {
+    bindingPath,
+    bindingPathType: typeof bindingPath,
+    bindingPathLength: typeof bindingPath === 'string' ? bindingPath.length : '非字符串',
+    propertyInfo,
+    有drawerParam: !!drawerParam.value,
+    drawerParam当前值: drawerParam.value ? {
+      currentValue: drawerParam.value.value,
+      currentValueType: typeof drawerParam.value.value,
+      selectedTemplate: drawerParam.value.selectedTemplate,
+      valueMode: drawerParam.value.valueMode
+    } : null
+  })
+
   if (drawerParam.value) {
+    // 🔥 关键修复：验证bindingPath格式，防止奇怪的值（如"12"）被设置
+    const isValidBindingPath = typeof bindingPath === 'string' &&
+      (bindingPath === '' || bindingPath.includes('.'))
+
+    if (!isValidBindingPath && bindingPath !== '') {
+      console.error(`❌ [DynamicParameterEditor] 检测到无效的bindingPath: "${bindingPath}"，拒绝更新！`, {
+        bindingPath,
+        bindingPathType: typeof bindingPath,
+        expectedFormat: 'componentId.layer.propertyName 或 空字符串',
+        propertyInfo
+      })
+      return // 拒绝设置无效的绑定路径
+    }
+
+    console.log(`🔥 [DynamicParameterEditor] 更新drawerParam.value从 "${drawerParam.value.value}" 到 "${bindingPath}"`)
+
     // 更新抽屉中参数的绑定值
     drawerParam.value.value = bindingPath
 
@@ -773,7 +818,19 @@ const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) 
     if (propertyInfo) {
       drawerParam.value.description = `绑定到组件属性: ${propertyInfo.componentName} -> ${propertyInfo.propertyLabel}`
       drawerParam.value.variableName = `${propertyInfo.componentId}_${propertyInfo.propertyName}`
+
+      console.log(`🔥 [DynamicParameterEditor] 更新描述和变量名:`, {
+        description: drawerParam.value.description,
+        variableName: drawerParam.value.variableName
+      })
     }
+
+    console.log(`🔥 [DynamicParameterEditor] drawerParam更新后状态:`, {
+      value: drawerParam.value.value,
+      description: drawerParam.value.description,
+      variableName: drawerParam.value.variableName,
+      selectedTemplate: drawerParam.value.selectedTemplate
+    })
   }
 }
 
@@ -782,6 +839,26 @@ const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) 
  */
 const saveDrawerChanges = () => {
   if (drawerParam.value && editingIndex.value !== -1) {
+    console.log(`🚨🚨🚨 [DynamicParameterEditor] saveDrawerChanges 详细调试:`, {
+      editingIndex: editingIndex.value,
+      drawerParam: {
+        key: drawerParam.value.key,
+        value: drawerParam.value.value,
+        valueType: typeof drawerParam.value.value,
+        valueLength: typeof drawerParam.value.value === 'string' ? drawerParam.value.value.length : '非字符串',
+        selectedTemplate: drawerParam.value.selectedTemplate,
+        valueMode: drawerParam.value.valueMode,
+        variableName: drawerParam.value.variableName,
+        description: drawerParam.value.description,
+        defaultValue: drawerParam.value.defaultValue
+      },
+      即将更新的原始参数: props.modelValue[editingIndex.value] ? {
+        key: props.modelValue[editingIndex.value].key,
+        value: props.modelValue[editingIndex.value].value,
+        selectedTemplate: props.modelValue[editingIndex.value].selectedTemplate
+      } : '无原始参数'
+    })
+
     updateParameter(drawerParam.value, editingIndex.value)
   }
   isDrawerVisible.value = false
@@ -854,15 +931,9 @@ const getComponentTemplate = (param: EnhancedParameter | null) => {
   }
 }
 
-// 监听抽屉中参数值的变化，并更新 drawerParam
-watch(
-  () => drawerParam.value?.value,
-  (newValue, oldValue) => {
-    if (drawerParam.value && newValue !== undefined && newValue !== oldValue) {
-      drawerParam.value.value = newValue
-    }
-  }
-)
+// 🔥 移除循环更新的watch监听器，避免值被错误覆盖
+// 原因：这个watch会监听drawerParam.value.value的变化，然后重新设置自己，可能导致数据损坏
+// ComponentPropertySelector通过v-model:value和@change事件已经正确处理了数据更新
 </script>
 
 <template>
@@ -1111,7 +1182,6 @@ watch(
             v-model:value="drawerParam.value"
             v-bind="getComponentTemplate(drawerParam)?.props || {}"
             @change="handleComponentPropertyChange"
-            @update:selectedValue="value => handleComponentPropertyChange(value)"
           />
           <div v-else>组件加载失败</div>
 

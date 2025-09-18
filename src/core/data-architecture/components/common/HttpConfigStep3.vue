@@ -48,6 +48,11 @@ const emit = defineEmits<Emits>()
       :current-component-id="componentId"
       @update:model-value="
         updatedParams => {
+          console.log(`🚨🚨🚨 [HttpConfigStep3] 接收到DynamicParameterEditor更新:`, {
+            原始params: modelValue.params,
+            新的updatedParams: updatedParams,
+            即将emit的完整配置: { ...modelValue, params: updatedParams }
+          })
           emit('update:modelValue', { ...modelValue, params: updatedParams })
         }
       "

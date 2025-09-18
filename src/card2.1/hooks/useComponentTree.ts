@@ -10,7 +10,7 @@ import {
   getComponentTree,
   getComponentsByCategory as getComponentsByCategoryFromIndex,
   getCategories
-} from '../index'
+} from '@/card2.1/components'
 import type { ComponentDefinition } from '@/card2.1/types'
 import type { ComponentTree, ComponentCategory } from '@/card2.1/core/auto-registry'
 

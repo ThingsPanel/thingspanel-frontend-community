@@ -36,13 +36,14 @@ async function ensureInitialized(): Promise<void> {
     try {
       console.log('🚀 [ensureInitialized] 开始初始化Card2.1组件系统...')
       
-      // 🔥 关键修复：使用eager: true进行同步加载，确保组件立即可用
-      const componentModules = import.meta.glob('./*/index.ts', { eager: true })
-      const subComponentModules = import.meta.glob('./*/*/index.ts', { eager: true })
-      const deepComponentModules = import.meta.glob('./*/*/*/index.ts', { eager: true })
+      // 使用静态字面量模式，兼容 Vite import.meta.glob 的静态分析
+      const level1 = import.meta.glob('./*/index.ts', { eager: true })
+      const level2 = import.meta.glob('./*/*/index.ts', { eager: true })
+      const level3 = import.meta.glob('./*/*/*/index.ts', { eager: true })
+      const level4 = import.meta.glob('./*/*/*/*/index.ts', { eager: true })
 
-      // 合并所有模块
-      const allModules = { ...componentModules, ...subComponentModules, ...deepComponentModules }
+      // 合并所有模块（包含 chart 和 system 新结构）
+      const allModules = { ...level1, ...level2, ...level3, ...level4 }
       
       console.log(`🔥 [ensureInitialized] 发现 ${Object.keys(allModules).length} 个组件模块:`, Object.keys(allModules))
       
@@ -52,7 +53,8 @@ async function ensureInitialized(): Promise<void> {
         try {
           const componentId = extractComponentIdFromPath(path)
           if (componentId && module) {
-            loadedModules[componentId] = module
+            // 附加源路径，便于后续根据路径推断分层分类
+            loadedModules[componentId] = { ...(module as any), __sourcePath: path }
             console.log(`✅ [ensureInitialized] 加载组件: ${componentId} (${path})`)
           }
         } catch (error) {
@@ -83,25 +85,18 @@ async function ensureInitialized(): Promise<void> {
  * 从文件路径提取组件ID
  */
 function extractComponentIdFromPath(path: string): string | null {
-  // 🔥 修复：更严格的路径匹配，支持嵌套目录结构
-  // 匹配模式: ./category/component-name/index.ts 或 ./category/subcategory/component-name/index.ts
-  
-  // 直接的两级结构：./category/component-name/index.ts
-  const twoLevelMatch = path.match(/\.\/([^/]+)\/([^/]+)\/index\.ts$/)
-  if (twoLevelMatch) {
-    const componentId = twoLevelMatch[2]
-    console.log(`🔥 [extractComponentIdFromPath] 两级路径匹配: ${path} -> ${componentId}`)
+  // 通用提取：获取 index.ts 之前的最后一级目录名作为组件ID
+  // 兼容以下结构：
+  // ./category/component/index.ts
+  // ./category/subcategory/component/index.ts
+  // ./top/category/component/index.ts（新增顶层目录）
+  // ./a/b/c/d/component/index.ts（更深层预留）
+  const match = path.match(/\/([^/]+)\/index\.ts$/)
+  if (match) {
+    const componentId = match[1]
+    console.log(`🔥 [extractComponentIdFromPath] 通用路径匹配: ${path} -> ${componentId}`)
     return componentId
   }
-  
-  // 三级结构：./category/subcategory/component-name/index.ts  
-  const threeLevelMatch = path.match(/\.\/([^/]+)\/([^/]+)\/([^/]+)\/index\.ts$/)
-  if (threeLevelMatch) {
-    const componentId = threeLevelMatch[3]
-    console.log(`🔥 [extractComponentIdFromPath] 三级路径匹配: ${path} -> ${componentId}`)
-    return componentId
-  }
-  
   console.warn(`⚠️ [extractComponentIdFromPath] 路径格式不匹配: ${path}`)
   return null
 }

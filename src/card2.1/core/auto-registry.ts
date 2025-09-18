@@ -5,6 +5,7 @@
 
 import type { ComponentDefinition, IComponentRegistry } from '@/card2.1/core/types'
 import { filterComponentsByPermission, getUserAuthorityFromStorage } from '@/card2.1/core/permission-utils'
+import { parseCategoryFromPath } from '@/card2.1/components/category-mapping'
 
 export interface ComponentCategory {
   id: string
@@ -38,8 +39,8 @@ export class AutoRegistry {
     const registeredComponents: ComponentDefinition[] = []
     const userAuthority = getUserAuthorityFromStorage()
 
-    // 导入分类映射函数
-    const { getCategoryDisplayName } = await import('@/card2.1/components/category-mapping')
+    // 导入分类映射工具（动态导入保持兼容）
+    const { TOP_LEVEL_MAPPING } = await import('@/card2.1/components/category-mapping')
 
     for (const [componentId, module] of Object.entries(componentModules)) {
       try {
@@ -54,16 +55,30 @@ export class AutoRegistry {
         }
 
         if (this.isValidComponentDefinition(definition)) {
-          // 🚨 CRITICAL: 从路径提取分类信息并覆盖组件定义中的分类
-          const folderPath = this.extractFolderFromComponentId(componentId)
-          const categoryName = getCategoryDisplayName(folderPath)
+          // 🚨 新：根据模块源路径(__sourcePath)解析“系统/图表(子类)”两级分类
+          const sourcePath: string | undefined = (module as any).__sourcePath
+          let mainCategory = '其他'
+          let subCategory: string | undefined
+          let category = '其他'
+
+          if (sourcePath) {
+            const parsed = parseCategoryFromPath(sourcePath)
+            mainCategory = parsed.topLevelName
+            subCategory = parsed.subCategoryName
+            category = subCategory ? `${mainCategory}/${subCategory}` : mainCategory
+          } else {
+            // Fallback：无源路径时，默认归入“图表”顶层
+            mainCategory = TOP_LEVEL_MAPPING.chart.displayName
+            category = mainCategory
+          }
 
           // 🔥 强制覆盖组件定义的分类字段
           const enhancedDefinition = {
             ...definition,
-            category: categoryName, // 使用文件夹路径确定的分类名称
-            mainCategory: categoryName,
-            folderPath: folderPath // 保留原始路径信息用于调试
+            mainCategory,
+            subCategory,
+            category,
+            folderPath: sourcePath
           }
 
           if (process.env.NODE_ENV === 'development') {
@@ -228,60 +243,31 @@ export class AutoRegistry {
    * 自动生成分类树
    */
   private autoGenerateCategories(definition: ComponentDefinition) {
-    const { mainCategory = '其他', subCategory = '未分类' } = definition
+    const mainName = definition.mainCategory || '其他'
+    const subName = definition.subCategory
 
-    // 查找或创建主分类
-    let mainCat = this.categoryTree.find(cat => cat.id === mainCategory)
+    // 顶层分类
+    let mainCat = this.categoryTree.find(cat => cat.id === mainName)
     if (!mainCat) {
-      mainCat = {
-        id: mainCategory,
-        name: this.getCategoryDisplayName(mainCategory),
-        description: this.getCategoryDescription(mainCategory)
-      }
+      mainCat = { id: mainName, name: mainName }
       this.categoryTree.push(mainCat)
     }
 
-    // 查找或创建子分类
-    if (!mainCat.children) {
-      mainCat.children = []
-    }
-
-    let subCat = mainCat.children.find(cat => cat.id === subCategory)
-    if (!subCat) {
-      subCat = {
-        id: subCategory,
-        name: this.getCategoryDisplayName(subCategory),
-        description: this.getCategoryDescription(subCategory)
+    // 仅当存在子类时创建子分类（图表）
+    if (subName) {
+      if (!mainCat.children) mainCat.children = []
+      let subCat = mainCat.children.find(cat => cat.id === subName)
+      if (!subCat) {
+        subCat = { id: subName, name: subName }
+        mainCat.children.push(subCat)
       }
-      mainCat.children.push(subCat)
     }
   }
 
   /**
    * 获取分类显示名称
    */
-  private getCategoryDisplayName(categoryId: string): string {
-    const displayNames: Record<string, string> = {
-      系统: '系统组件',
-      曲线: '图表组件',
-      其他: '其他组件',
-      未分类: '未分类组件'
-    }
-    return displayNames[categoryId] || categoryId
-  }
-
-  /**
-   * 获取分类描述
-   */
-  private getCategoryDescription(categoryId: string): string {
-    const descriptions: Record<string, string> = {
-      系统: '系统监控和状态显示组件',
-      曲线: '数据可视化和图表组件',
-      其他: '其他功能组件',
-      未分类: '待分类的组件'
-    }
-    return descriptions[categoryId] || ''
-  }
+  // 旧的显示/描述映射已移除，直接使用分类名称
 
   /**
    * 获取组件树形结构（权限过滤后）

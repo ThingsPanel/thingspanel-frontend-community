@@ -35,7 +35,7 @@
       >
         <div class="tab-content">
           <div v-for="subCategory in topCategory.subCategories" :key="subCategory.name" class="widget-subcategory">
-            <h4 class="subcategory-title">{{ subCategory.name }}</h4>
+            <h4 v-if="subCategory.name !== '默认'" class="subcategory-title">{{ subCategory.name }}</h4>
             <div class="category-grid">
               <div
                 v-for="widget in subCategory.children"
@@ -65,11 +65,19 @@
         </div>
       </n-tab-pane>
     </n-tabs>
+
+    <!-- Dev 调试数据面板（仅开发环境显示） -->
+    <div v-if="DEV" class="debug-dump">
+      <details>
+        <summary>调试数据（摘要）</summary>
+        <pre class="debug-pre">{{ debugDump }}</pre>
+      </details>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watchEffect } from 'vue'
 import { SearchOutline, AlertCircleOutline } from '@vicons/ionicons5'
 import { useI18n } from 'vue-i18n'
 import { useComponentTree } from '@/card2.1/hooks/useComponentTree'
@@ -120,10 +128,53 @@ const allWidgets = computed(() => {
     icon: component.icon,
     source: 'card2' as const,
     definition: {
-      mainCategory: getCategoryDisplayName(component.category || ''),
+      // 使用自动注册写入的显示名：mainCategory 为“系统/图表”，subCategory 为子类显示名
+      mainCategory: component.mainCategory || '图表',
       subCategory: component.subCategory || '默认'
     }
   }))
+})
+
+// --- Debug: 打印当前传入/计算的数据，便于分析数据结构 ---
+if (import.meta.env.DEV) {
+  watchEffect(() => {
+    if (!isInitialized.value) return
+    console.group('[WidgetLibrary] 数据调试(基础)')
+    try {
+      console.log('componentTree.componentTree.value:', componentTree.componentTree.value)
+      console.log('componentTree.filteredComponents.value:', componentTree.filteredComponents.value)
+      console.log('allWidgets (mapped):', allWidgets.value)
+    } finally {
+      console.groupEnd()
+    }
+  })
+}
+
+// Dev 面板简要数据摘要（仅开发显示）
+const DEV = import.meta.env.DEV
+const debugDump = computed(() => {
+  if (!DEV || !isInitialized.value) return ''
+  const tree = componentTree.componentTree.value
+  const filtered = componentTree.filteredComponents.value || []
+  const sample = Array.isArray(filtered)
+    ? filtered.slice(0, 5).map(c => ({
+        type: c?.type,
+        name: c?.name,
+        mainCategory: c?.mainCategory,
+        subCategory: c?.subCategory,
+        category: c?.category
+      }))
+    : []
+  const categories = Array.isArray(tree?.categories) ? tree.categories.map((c: any) => c?.name) : []
+  return JSON.stringify(
+    {
+      totalCount: tree?.totalCount,
+      categories,
+      componentsSample: sample
+    },
+    null,
+    2
+  )
 })
 
 // --- Combined & Re-grouped Logic ---
@@ -139,49 +190,48 @@ interface TopCategory {
   subCategories: SubCategory[]
 }
 
-// ✅ 修改为单级分类结构，忽略subCategory
+// ✅ 生成两级分类树：顶层（系统/图表）、图表下再分子类；系统无子类
 const simplifiedWidgetTree = computed(() => {
-  // 按mainCategory分组组件
-  const categoriesData: Record<string, WidgetDefinition[]> = {}
+  // main → sub → widgets
+  const map: Record<string, Record<string, WidgetDefinition[]>> = {}
 
   allWidgets.value.forEach(widget => {
-    // 只检查mainCategory，忽略subCategory
-    if (!widget.definition?.mainCategory) {
-      console.error('⚠️ [WidgetLibrary] 跳过未分类组件:', {
-        type: widget.type,
-        name: widget.name,
-        mainCategory: widget.definition?.mainCategory,
-        source: widget.source,
-        definition: widget.definition
-      })
-      return // 跳过此组件
-    }
+    const main = widget.definition?.mainCategory
+    if (!main) return
+    const sub = main === '系统' ? '默认' : widget.definition?.subCategory || '默认'
 
-    const categoryName = widget.definition.mainCategory
-
-    // 调试：记录正确分类的组件
-    if (process.env.NODE_ENV === 'development') {
-    }
-
-    if (!categoriesData[categoryName]) {
-      categoriesData[categoryName] = []
-    }
-    categoriesData[categoryName].push(widget)
+    if (!map[main]) map[main] = {}
+    if (!map[main][sub]) map[main][sub] = []
+    map[main][sub].push(widget)
   })
 
-  // 转换为单级分类结构
-  const result: TopCategory[] = Object.entries(categoriesData).map(([categoryName, widgets]) => ({
-    name: categoryName,
-    subCategories: [
-      {
-        name: '默认', // 统一的子分类名，在UI中不显示
-        children: widgets
-      }
-    ]
+  const result: TopCategory[] = Object.entries(map).map(([main, subMap]) => ({
+    name: main,
+    subCategories: Object.entries(subMap)
+      .map(([subName, list]) => ({ name: subName, children: list }))
+      // 系统只有“默认”子类；图表按字母排序子类
+      .sort((a, b) => a.name.localeCompare(b.name))
   }))
 
-  return result.filter(cat => cat.subCategories[0]?.children.length > 0)
+  // 过滤空类
+  return result.map(top => ({
+    name: top.name,
+    subCategories: top.subCategories.filter(s => s.children.length > 0)
+  }))
 })
+
+// 追加调试：在定义完成后再打印两级树，避免初始化顺序问题
+if (import.meta.env.DEV) {
+  watchEffect(() => {
+    if (!isInitialized.value) return
+    console.group('[WidgetLibrary] 数据调试(分组后)')
+    try {
+      console.log('simplifiedWidgetTree (two-level):', simplifiedWidgetTree.value)
+    } finally {
+      console.groupEnd()
+    }
+  })
+}
 
 const filteredWidgetTree = computed(() => {
   const result = !searchTerm.value
@@ -401,5 +451,21 @@ const handleAddWidget = (widget: any) => {
 .svg-icon-inline svg {
   width: 20px;
   height: 20px;
+}
+
+/* Dev 调试面板样式 */
+.debug-dump {
+  padding: 8px 12px;
+  border-top: 1px dashed var(--n-border-color);
+}
+.debug-pre {
+  margin: 8px 0 0;
+  background: var(--n-code-color);
+  border: 1px solid var(--n-border-color);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  max-height: 320px;
+  overflow: auto;
 }
 </style>
