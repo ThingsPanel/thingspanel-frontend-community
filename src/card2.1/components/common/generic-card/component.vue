@@ -112,7 +112,7 @@ const cardStyle = computed(() => ({
 
 /* 数值样式 */
 .value {
-  font-size: 56px;
+  font-size: 44px;
   font-weight: bold;
   color: white; /* 确保数值是白色的 */
   text-align: left;
