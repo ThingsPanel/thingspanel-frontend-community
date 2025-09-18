@@ -153,7 +153,7 @@ const handleTopRightIconClick = () => {
             </div>
             <!-- 副标题文本，支持两行省略 -->
             <div v-if="subtitle" class="subtitle-text-container">
-              <NEllipsis :line-clamp="2" class="subtitle-text" :tooltip="false">
+              <NEllipsis :line-clamp="1" class="subtitle-text" :tooltip="false">
                 {{ subtitle }}
               </NEllipsis>
             </div>
@@ -174,9 +174,10 @@ const handleTopRightIconClick = () => {
       </div>
 
       <!-- 卡片内容区域：自定义内容插槽 - 这个区域会自动填充剩余空间 -->
-      <div v-if="$slots.default" class="card-content">
+
+      <NEllipsis v-if="$slots.default" :line-clamp="2" :tooltip="true" class="card-content">
         <slot />
-      </div>
+      </NEllipsis>
 
       <!-- 卡片底部 - 固定在底部 -->
       <div v-if="footerText || $slots['footer-icon'] || $slots.footer" class="card-footer">
@@ -207,7 +208,7 @@ const handleTopRightIconClick = () => {
 <style scoped>
 .item-card {
   width: 100%;
-  height: 180px;
+  height: 160px;
   border-radius: 12px;
   border: 1px solid #e1e5e9;
   cursor: pointer;
@@ -228,17 +229,18 @@ const handleTopRightIconClick = () => {
 
 /* 卡片内容容器，使用flexbox布局 */
 .card-container {
-  padding: 20px;
+  padding: 20px 20px 10px;
   height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
+  /* margin-bottom: 16px; */
   flex-shrink: 0;
 }
 
@@ -251,7 +253,7 @@ const handleTopRightIconClick = () => {
 }
 
 .title-row {
-  margin-bottom: 12px;
+  margin-bottom: 2px;
   transition: transform 0.2s ease;
 }
 
@@ -278,7 +280,7 @@ const handleTopRightIconClick = () => {
 .card-title {
   font-size: 18px;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: 1.2;
   min-width: 0;
   transition: color 0.2s ease;
 }
@@ -295,7 +297,7 @@ const handleTopRightIconClick = () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  /* margin-bottom: 8px; */
   transition: transform 0.2s ease;
 }
 
@@ -329,7 +331,7 @@ const handleTopRightIconClick = () => {
 }
 
 .subtitle-text {
-  font-size: 14px;
+  font-size: 12px;
   color: #888;
   transition: color 0.2s ease;
 }
@@ -362,7 +364,6 @@ const handleTopRightIconClick = () => {
 
 .card-content {
   flex: 1;
-  margin: 16px 0;
 }
 
 .card-footer {
@@ -370,7 +371,6 @@ const handleTopRightIconClick = () => {
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
-  margin-top: auto;
 }
 
 .footer-left {
