@@ -1,0 +1,1 @@
+// Placeholder for system-metrics-history component
