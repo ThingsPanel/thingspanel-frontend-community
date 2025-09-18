@@ -36,14 +36,9 @@ async function ensureInitialized(): Promise<void> {
     try {
       console.log('🚀 [ensureInitialized] 开始初始化Card2.1组件系统...')
       
-      // 使用静态字面量模式，兼容 Vite import.meta.glob 的静态分析
-      const level1 = import.meta.glob('./*/index.ts', { eager: true })
-      const level2 = import.meta.glob('./*/*/index.ts', { eager: true })
-      const level3 = import.meta.glob('./*/*/*/index.ts', { eager: true })
-      const level4 = import.meta.glob('./*/*/*/*/index.ts', { eager: true })
-
-      // 合并所有模块（包含 chart 和 system 新结构）
-      const allModules = { ...level1, ...level2, ...level3, ...level4 }
+      // 使用 **/* 模式，动态扫描所有组件的 index.ts 文件
+      // 这可以确保扫描到任意深度的子目录，更具扩展性
+      const allModules = import.meta.glob('./**/index.ts', { eager: true });
       
       console.log(`🔥 [ensureInitialized] 发现 ${Object.keys(allModules).length} 个组件模块:`, Object.keys(allModules))
       

@@ -11,9 +11,9 @@
 
 import { configurationStateManager, type ConfigurationUpdateEvent } from '@/components/visual-editor/configuration/ConfigurationStateManager'
 import { editorDataSourceManager } from '@/components/visual-editor/core/EditorDataSourceManager'
-// 🔥 导入数据缓存清理功能，确保配置变更时数据一致性
+// 导入数据缓存清理功能，确保配置变更时数据一致性
 import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
-// 🔥 修复：导入配置事件总线，确保配置变更时发出事件
+// 修复：导入配置事件总线，确保配置变更时发出事件
 import { configEventBus, type ConfigChangeEvent } from '@/core/data-architecture/ConfigEventBus'
 import type {
   IConfigurationManager,
@@ -46,7 +46,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
 
   /**
    * 获取组件配置
-   * 🔥 新增：自动迁移组件级设备配置到基础配置
+   * 新增：自动迁移组件级设备配置到基础配置
    */
   getConfiguration(widgetId: string): WidgetConfiguration | null {
     const config = configurationStateManager.getConfiguration(widgetId)
@@ -58,7 +58,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
 
   /**
    * 设置组件配置
-   * 🔥 新增：设置时自动迁移旧格式配置
+   * 新增：设置时自动迁移旧格式配置
    * @param widgetId 组件ID
    * @param config 配置对象
    * @param componentType 组件类型，用于更精确的事件追踪
@@ -80,10 +80,10 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     })
 
     if (updated) {
-      // 🔥 关键修复：配置更新时清理缓存，确保数据一致性
+      // 关键修复：配置更新时清理缓存，确保数据一致性
       simpleDataBridge.clearComponentCache(widgetId)
 
-      // 🔥 修复：发出配置变更事件，使用正确的事件格式
+      // 修复：发出配置变更事件，使用正确的事件格式
       const changeEvent: ConfigChangeEvent = {
         componentId: widgetId,
         componentType: componentType || 'widget', // 使用传入的组件类型或默认为 'widget'
@@ -104,7 +104,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
   }
 
   /**
-   * 🔥 新增：跨组件交互专用配置更新 - 强制触发事件
+   * 新增：跨组件交互专用配置更新 - 强制触发事件
    * @param widgetId 组件ID
    * @param section 配置节
    * @param config 配置数据
@@ -116,21 +116,8 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     config: WidgetConfiguration[K],
     componentType?: string
   ): boolean {
-    console.log(`🔥 [ConfigurationIntegrationBridge] 跨组件交互配置更新:`, {
-      组件ID: widgetId,
-      配置节: section,
-      组件类型: componentType,
-      配置内容: config,
-      强制更新: true
-    })
-
-    // 🔥 关键：使用强制更新，确保即使配置相同也触发事件
+    // 关键：使用强制更新，确保即使配置相同也触发事件
     const updated = configurationStateManager.updateConfigurationSection(widgetId, section, config, 'interaction', true)
-
-    console.log(`🔥 [ConfigurationIntegrationBridge] 跨组件交互更新结果:`, {
-      更新成功: updated,
-      将触发事件链: !!updated
-    })
 
     if (updated) {
       // 🔥 关键修复：配置部分更新时清理缓存，特别是 dataSource 更新
@@ -179,7 +166,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         }
       }))
 
-      console.log(`✅ [ConfigurationIntegrationBridge] 跨组件 card2-config-update 事件已发送`)
+      // 跨组件配置更新事件已发送
       return true  // 🔥 返回成功状态
     } else {
       console.error(`❌ [ConfigurationIntegrationBridge] 跨组件交互配置更新失败，事件不会触发`)
@@ -200,32 +187,11 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     config: WidgetConfiguration[K],
     componentType?: string
   ): void {
-    console.log(`🔍 [TRACE-29] ConfigurationIntegrationBridge.updateConfiguration 被调用:`, {
-      组件ID: widgetId,
-      配置节: section,
-      组件类型: componentType,
-      配置内容: config,
-      callStack: new Error().stack?.split('\n').slice(1, 5)
-    })
-
-    console.log(`🔍 [TRACE-30] 即将调用 configurationStateManager.updateConfigurationSection:`, {
-      widgetId,
-      section,
-      configType: typeof config,
-      configContent: config
-    })
-
     const updated = configurationStateManager.updateConfigurationSection(widgetId, section, config, 'user')
 
-    console.log(`🔍 [TRACE-31] configurationStateManager.updateConfigurationSection 调用完成:`, {
-      更新成功: updated,
-      将触发事件链: !!updated
-    })
-
     if (updated) {
-      // 🔥 关键修复：配置部分更新时清理缓存，特别是 dataSource 更新
+      // 关键修复：配置部分更新时清理缓存，特别是 dataSource 更新
       if (section === 'dataSource' || section === 'component') {
-        console.log(`🔍 [TRACE-32] 清理 simpleDataBridge 缓存:`, { widgetId, section })
         simpleDataBridge.clearComponentCache(widgetId)
       }
 
@@ -250,17 +216,9 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         source: 'user'
       }
 
-      console.log(`🔍 [TRACE-33] 即将发送 configEventBus.emitConfigChange 事件:`, changeEvent)
       configEventBus.emitConfigChange(changeEvent)
-      console.log(`🔍 [TRACE-34] configEventBus.emitConfigChange 事件已发送`)
 
-      // 🔥 关键修复：发送 card2-config-update 事件，让组件能接收到配置更新
-      console.log(`🔥 [ConfigurationIntegrationBridge] 发送 card2-config-update 事件:`, {
-        componentId: widgetId,
-        layer: section,
-        config: config
-      })
-
+      // 关键修复：发送 card2-config-update 事件，让组件能接收到配置更新
       window.dispatchEvent(new CustomEvent('card2-config-update', {
         detail: {
           componentId: widgetId,
@@ -269,7 +227,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         }
       }))
 
-      console.log(`✅ [ConfigurationIntegrationBridge] card2-config-update 事件已发送`)
+      // card2-config-update 事件已发送
     }
   }
 
@@ -686,16 +644,12 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       const result = await visualEditorBridge.updateComponentExecutor(
         componentId,
         componentType,
-        fullConfig // 🔥 传递完整配置，确保base层属性能被正确注入
+        fullConfig // 传递完整配置，确保base层属性能被正确注入
       )
 
-      console.log(`✅ [ConfigurationIntegrationBridge] 数据源重新执行完成 ${componentId}:`, {
-        success: result.success,
-        dataCount: result.data ? Object.keys(result.data).length : 0,
-        executionTime: result.executionTime
-      })
+      // 数据源重新执行完成
 
-      // 🔥 重要：发出数据源执行完成事件，通知其他系统组件
+      // 重要：发出数据源执行完成事件，通知其他系统组件
       configEventBus.emitConfigChange({
         componentId,
         componentType,

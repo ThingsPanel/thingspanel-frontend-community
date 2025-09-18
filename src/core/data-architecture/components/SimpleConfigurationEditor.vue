@@ -20,11 +20,11 @@ import {
 } from '../index'
 import { type MergeStrategy } from '@/core/data-architecture/executors/DataSourceMerger'
 import RawDataConfigModal from '@/core/data-architecture/components/modals/RawDataConfigModal.vue'
-// 🔥 简洁脚本编辑器
+// 简洁脚本编辑器
 import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
-// 🔥 导入组件级别轮询配置组件
+// 导入组件级别轮询配置组件
 import ComponentPollingConfig from '@/core/data-architecture/components/ComponentPollingConfig.vue'
-// 🔥 导入全局轮询管理器
+// 导入全局轮询管理器
 import { useGlobalPollingManager } from '@/components/visual-editor/core/GlobalPollingManager'
 // 导入@vicons图标组件
 import {
@@ -37,14 +37,14 @@ import {
   UploadOutlined
 } from '@vicons/antd'
 import { DocumentTextOutline, BarChartOutline, GlobeOutline } from '@vicons/ionicons5'
-// 🔥 新配置管理系统
+// 新配置管理系统
 import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
 import { MultiLayerExecutorChain } from '@/core/data-architecture/executors/MultiLayerExecutorChain'
 import { smartDeepClone } from '@/utils/deep-clone'
-// 🔥 导入导出面板组件
+// 导入导出面板组件
 import ConfigurationImportExportPanel from '@/core/data-architecture/components/common/ConfigurationImportExportPanel.vue'
-// 🔥 单数据源导入导出功能
+// 单数据源导入导出功能
 import { singleDataSourceExporter, singleDataSourceImporter } from '@/core/data-architecture/utils/ConfigurationImportExport'
 import type { SingleDataSourceImportPreview } from '@/core/data-architecture/utils/ConfigurationImportExport'
 
@@ -62,11 +62,11 @@ interface Props {
   selectedWidgetId?: string
   /** 是否为预览模式 - 轮询功能仅在预览模式下生效 */
   previewMode?: boolean
-  /** 🔥 新增：从ConfigurationPanel传递的widget对象 */
+  /** 新增：从ConfigurationPanel传递的widget对象 */
   widget?: any
-  /** 🔥 新增：从ConfigurationPanel传递的nodeId */
+  /** 新增：从ConfigurationPanel传递的nodeId */
   nodeId?: string
-  /** 🔥 新增：只读模式 */
+  /** 新增：只读模式 */
   readonly?: boolean
 }
 
@@ -91,10 +91,10 @@ const { t } = useI18n()
 const dialog = useDialog()
 const message = useMessage()
 
-// 🔥 轮询管理器
+// 轮询管理器
 const pollingManager = useGlobalPollingManager()
 
-// 🔥 注入编辑器上下文用于配置同步
+// 注入编辑器上下文用于配置同步
 const editorContext = inject('editorContext', null) as any
 
 // 导入导出相关状态
@@ -104,30 +104,15 @@ const singleDataSourceImportPreview = ref<SingleDataSourceImportPreview | null>(
 const originalImportData = ref<any>(null) // 保存原始导入数据
 const showSingleDataSourceImportModal = ref(false)
 const targetDataSourceId = ref<string>('')
-const isProcessing = ref(false) // 🔥 新增：导入导出处理状态
+const isProcessing = ref(false) // 新增：导入导出处理状态
 
 /**
- * 🔥 新增：从widget对象智能提取组件信息
+ * 新增：从widget对象智能提取组件信息
  * 兼容ConfigurationPanel的调用方式
  */
 const componentInfo = computed(() => {
-  console.log(`🚀 [SimpleConfigurationEditor] componentInfo计算开始:`, {
-    hasComponentId: !!props.componentId,
-    hasComponentType: !!props.componentType,
-    hasDataSources: !!props.dataSources,
-    hasWidget: !!props.widget,
-    hasNodeId: !!props.nodeId,
-    componentId: props.componentId,
-    componentType: props.componentType,
-    nodeId: props.nodeId,
-    dataSources: props.dataSources,
-    dataSourcesType: typeof props.dataSources,
-    dataSourcesLength: Array.isArray(props.dataSources) ? props.dataSources.length : 'not array'
-  })
-
   // 优先使用直接传递的props（只有当dataSources有内容时才使用）
   if (props.componentId && props.componentType && props.dataSources && Array.isArray(props.dataSources) && props.dataSources.length > 0) {
-    console.log(`✅ [SimpleConfigurationEditor] 使用直接传递的props，数据源数量: ${props.dataSources.length}`)
     return {
       componentId: props.componentId,
       componentType: props.componentType,
@@ -140,49 +125,20 @@ const componentInfo = computed(() => {
     const widget = props.widget
     const componentId = props.nodeId || widget.id
     const componentType = widget.type
-    
-    console.log(`🔍 [SimpleConfigurationEditor] 调试widget对象完整结构:`, {
-      componentId,
-      componentType,
-      widget: {
-        id: widget.id,
-        type: widget.type,
-        metadata: widget.metadata,
-        hasMetadata: !!widget.metadata,
-        hasCard2Definition: !!widget.metadata?.card2Definition,
-        metadataKeys: widget.metadata ? Object.keys(widget.metadata) : [],
-        card2DefinitionKeys: widget.metadata?.card2Definition ? Object.keys(widget.metadata.card2Definition) : []
-      }
-    })
-    
-    // 🔥 关键：从Card2.1组件定义中提取数据源
+
+    // 从Card2.1组件定义中提取数据源
     let dataSources = []
-    
+
     if (widget.metadata?.card2Definition) {
       const card2Definition = widget.metadata.card2Definition
-      console.log(`🔥 [SimpleConfigurationEditor] 检测到Card2.1组件:`, {
-        type: componentType,
-        hasDataSources: !!card2Definition.dataSources,
-        dataSourcesCount: card2Definition.dataSources?.length || 0,
-        dataSources: card2Definition.dataSources,
-        fullCard2Definition: card2Definition
-      })
-      
       dataSources = card2Definition.dataSources || []
-    } else {
-      console.warn(`⚠️ [SimpleConfigurationEditor] 未找到Card2.1定义:`, {
-        type: componentType,
-        metadataExists: !!widget.metadata,
-        card2DefinitionExists: !!widget.metadata?.card2Definition
-      })
     }
-    
+
     // 检查传统组件的数据源定义
     if (dataSources.length === 0 && widget.metadata?.dataSources) {
-      console.log(`🔄 [SimpleConfigurationEditor] 使用传统组件数据源:`, widget.metadata.dataSources)
       dataSources = widget.metadata.dataSources
     }
-    
+
     return {
       componentId,
       componentType,
@@ -191,14 +147,6 @@ const componentInfo = computed(() => {
   }
 
   // 默认返回空信息
-  console.warn(`⚠️ [SimpleConfigurationEditor] 无法提取组件信息:`, {
-    hasComponentId: !!props.componentId,
-    hasComponentType: !!props.componentType,
-    hasDataSources: !!props.dataSources,
-    hasWidget: !!props.widget,
-    hasNodeId: !!props.nodeId
-  })
-  
   return {
     componentId: props.componentId || props.nodeId || '',
     componentType: props.componentType || '',
@@ -211,15 +159,14 @@ const componentInfo = computed(() => {
  */
 const dataSourceOptions = computed(() => {
   const dataSources = componentInfo.value.dataSources
-  
+
   if (!dataSources || dataSources.length === 0) {
-    console.warn(`⚠️ [SimpleConfigurationEditor] 组件 ${componentInfo.value.componentType} 没有数据源定义`)
     return []
   }
 
   // 处理数组格式
   if (Array.isArray(dataSources)) {
-    const result = dataSources.map((dataSource, index) => {
+    return dataSources.map((dataSource, index) => {
       const key = dataSource.key || `dataSource${index + 1}`
       return {
         label: dataSource.name || dataSource.title || `数据源${index + 1}`,
@@ -229,18 +176,10 @@ const dataSourceOptions = computed(() => {
         originalData: dataSource
       }
     })
-    
-    console.log(`🔥 [SimpleConfigurationEditor] 解析数据源选项:`, {
-      componentType: componentInfo.value.componentType,
-      optionsCount: result.length,
-      options: result
-    })
-    
-    return result
   }
 
   // 处理对象格式
-  const result = Object.entries(dataSources).map(([key, dataSource]) => {
+  return Object.entries(dataSources).map(([key, dataSource]) => {
     return {
       label: dataSource.name || dataSource.title || key,
       value: key,
@@ -249,8 +188,6 @@ const dataSourceOptions = computed(() => {
       originalData: dataSource
     }
   })
-  
-  return result
 })
 
 /**
@@ -258,7 +195,7 @@ const dataSourceOptions = computed(() => {
  */
 const showRawDataModal = ref(false)
 const currentDataSourceKey = ref('')
-// 🔥 修复：添加编辑模式状态
+// 修复：添加编辑模式状态
 const isEditMode = ref(false)
 const editingItemId = ref('')
 
@@ -283,7 +220,7 @@ const mergeStrategies = reactive<Record<string, any>>({})
  */
 const handleAddDataItem = (dataSourceKey: string) => {
   currentDataSourceKey.value = dataSourceKey
-  // 🔥 修复：重置为新增模式
+  // 修复：重置为新增模式
   isEditMode.value = false
   editingItemId.value = ''
   showRawDataModal.value = true
@@ -298,7 +235,7 @@ const handleEditDataItem = (dataSourceKey: string, itemId: string) => {
   // 找到要编辑的数据项
   const item = dataSourceItems[dataSourceKey]?.find(item => item.id === itemId)
   if (item) {
-    // 🔥 修复：设置为编辑模式
+    // 修复：设置为编辑模式
     isEditMode.value = true
     editingItemId.value = itemId
     showRawDataModal.value = true
@@ -311,7 +248,7 @@ const handleEditDataItem = (dataSourceKey: string, itemId: string) => {
 const handleMergeStrategyUpdate = (dataSourceKey: string, strategy: any) => {
   mergeStrategies[dataSourceKey] = strategy
 
-  // 🔥 使用新配置管理系统：内容哈希去重和版本控制
+  // 使用新配置管理系统：内容哈希去重和版本控制
   // 重建完整配置并提交
   const rebuiltConfig = rebuildCompleteDataSourceConfiguration()
 
@@ -378,13 +315,13 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
       dataSourceItems[dataSourceKey] = []
     }
 
-    // 🔥 修复：根据模式进行新增或编辑
+    // 修复：根据模式进行新增或编辑
     let displayItem
     if (isEditMode.value && editingItemId.value) {
       // 编辑模式：查找并更新现有项
       const existingIndex = dataSourceItems[dataSourceKey].findIndex(item => item.id === editingItemId.value)
       if (existingIndex !== -1) {
-        // 🔥 性能优化：使用结构化克隆或浅拷贝代替JSON深拷贝
+        // 性能优化：使用结构化克隆或浅拷贝代替JSON深拷贝
         displayItem = {
           id: editingItemId.value,
           ...smartDeepClone(dataItemConfig), // 使用智能深拷贝
@@ -405,24 +342,15 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
       dataSourceItems[dataSourceKey].push(displayItem)
     }
 
-    // 🔥 核心：根据当前所有数据项重新构建完整的 DataSourceConfiguration
+    // 核心：根据当前所有数据项重新构建完整的 DataSourceConfiguration
     const dataSourceConfig = rebuildCompleteDataSourceConfiguration()
 
-    // 🔥 新配置管理系统：内容哈希去重，避免无限循环
+    // 新配置管理系统：内容哈希去重，避免无限循环
     configurationManager.updateConfiguration(componentInfo.value.componentId, 'dataSource', dataSourceConfig)
     
-    // 🔥 立即触发数据源执行测试
-    console.log(`🚀 [SimpleConfigurationEditor] 保存配置完成，准备执行数据源:`, {
-      componentId: componentInfo.value.componentId,
-      configDataSources: dataSourceConfig.dataSources?.length || 0,
-      firstDataSource: dataSourceConfig.dataSources?.[0]
-    })
+    // 配置保存完成，数据源将通过正常流程执行
     
-    // 🔥 修复：移除重复的数据源执行调用
-    // 第一次保存时已经通过正常流程触发了数据源执行，不需要重复调用
-    console.log(`🚀 [SimpleConfigurationEditor] 配置保存完成，数据源将通过正常流程执行`)
-    
-    // 🔥 强制同步到编辑器确保配置持久化
+    // 强制同步到编辑器确保配置持久化
     try {
       if (editorContext?.updateNode) {
         const currentNode = editorContext.getNodeById(componentInfo.value.componentId)
@@ -436,7 +364,6 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
               }
             }
           })
-          console.log(`🔥 [SimpleConfigurationEditor] 强制同步数据源配置到编辑器`)
         }
       }
     } catch (error) {
@@ -446,13 +373,13 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
     // 关闭弹窗并重置状态
     showRawDataModal.value = false
     currentDataSourceKey.value = ''
-    // 🔥 修复：重置编辑状态
+    // 修复：重置编辑状态
     isEditMode.value = false
     editingItemId.value = ''
   } catch (error) {
     console.error('数据项配置保存失败:', error)
 
-    // 🔥 关键修复：即使出现错误也要关闭抽屉
+    // 即使出现错误也要关闭抽屉
     showRawDataModal.value = false
     currentDataSourceKey.value = ''
     isEditMode.value = false
@@ -493,14 +420,8 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
       }
 
     case 'http':
-      // 🔥 关键修复：优先使用完整的 httpConfigData，回退到基础配置
       // HTTP配置转换
-      if (process.env.NODE_ENV === 'development') {
-      }
-
       if (dataItemConfig.httpConfigData) {
-        if (process.env.NODE_ENV === 'development') {
-        }
         const httpConfigData = dataItemConfig.httpConfigData
 
         // 将HttpConfigData转换为标准DataItem格式，同时保留完整信息
@@ -523,14 +444,14 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
           }
         }
 
-        // 🔥 关键修复：保持params数组格式，应用保护机制
+        // 保持params数组格式，应用保护机制
         if (httpConfigData.params && httpConfigData.params.length > 0) {
           // 在保存前应用保护机制，确保绑定路径不被损坏
           const protectedParams = protectParameterBindingPaths(httpConfigData.params)
           config.params = protectedParams.filter(p => p.enabled && p.key) // 只保存启用且有key的param
         }
 
-        // 🔥 关键修复：保存新增的HTTP配置字段
+        // 保存新增的HTTP配置字段
         if (httpConfigData.addressType) {
           config.addressType = httpConfigData.addressType
         }
@@ -545,9 +466,6 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
           config.pathParams = protectParameterBindingPaths(httpConfigData.pathParams)
         }
         if (httpConfigData.pathParameter) {
-          // 🔥 调试：监听pathParameter传递
-          if (process.env.NODE_ENV === 'development') {
-          }
           // 应用保护机制到单个路径参数
           const protectedParams = protectParameterBindingPaths([httpConfigData.pathParameter])
           config.pathParameter = protectedParams[0]
@@ -558,7 +476,7 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
           config.body = httpConfigData.body
         }
 
-        // 🔥 关键：保存脚本配置
+        // 保存脚本配置
         if (httpConfigData.preRequestScript) {
           config.preRequestScript = httpConfigData.preRequestScript
         }
@@ -571,8 +489,6 @@ const convertToStandardDataItem = (dataItemConfig: any): DataItem => {
           config
         }
       } else {
-        if (process.env.NODE_ENV === 'development') {
-        }
         // 回退到旧的基础配置格式
         return {
           type: 'http',
@@ -605,7 +521,7 @@ const convertToProcessingConfig = (dataItemConfig: any): ProcessingConfig => {
 }
 
 /**
- * 🔥 新方法：基于当前所有显示数据项重建完整配置
+ * 新方法：基于当前所有显示数据项重建完整配置
  * 这确保了本地显示状态和配置状态的完全同步
  */
 const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
@@ -618,7 +534,7 @@ const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
     mergeStrategy: MergeStrategy
   }> = []
 
-  // 🔥 修复：遍历所有数据源，保留空数据源的结构
+  // 修复：遍历所有数据源，保留空数据源的结构
   for (const [sourceId, items] of Object.entries(dataSourceItems)) {
     // 转换数据项（如果有的话）
     const standardDataItems =
@@ -626,14 +542,14 @@ const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
         ? items.map((item, index) => {
             const convertedItem = convertToStandardDataItem(item)
             const convertedProcessing = convertToProcessingConfig(item)
-            // 🔥 性能优化：仅在开发环境输出详细调试信息
+            // 性能优化：仅在开发环境输出详细调试信息
 
             return {
               item: convertedItem,
               processing: convertedProcessing
             }
           })
-        : [] // 🔥 关键：空数据源也要保留，传空数组
+        : [] // 关键：空数据源也要保留，传空数组
 
     // 获取合并策略
     const strategy = mergeStrategies[sourceId] || { type: 'object' }
@@ -647,7 +563,7 @@ const rebuildCompleteDataSourceConfiguration = (): DataSourceConfiguration => {
       mergeStrategy = { type: strategy.type }
     }
 
-    // 🔥 关键：即使数据项为空也要添加到配置中
+    // 关键：即使数据项为空也要添加到配置中
     dataSources.push({
       sourceId,
       dataItems: standardDataItems,
@@ -674,7 +590,7 @@ const getComponentPollingConfig = () => {
 }
 
 /**
- * 🔥 初始化组件轮询（用于恢复已保存的轮询配置）
+ * 初始化组件轮询（用于恢复已保存的轮询配置）
  */
 const initializeComponentPolling = () => {
   try {
@@ -710,7 +626,7 @@ const initializeComponentPolling = () => {
 }
 
 /**
- * 🔥 轮询任务执行函数
+ * 轮询任务执行函数
  * 当轮询触发时执行组件的所有数据源刷新
  */
 const executeComponentPolling = async () => {
@@ -725,7 +641,7 @@ const executeComponentPolling = async () => {
       return
     }
 
-    // 🔥 使用 VisualEditorBridge 执行组件数据刷新
+    // 使用 VisualEditorBridge 执行组件数据刷新
     const { getVisualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
     const visualEditorBridge = getVisualEditorBridge()
 
@@ -759,7 +675,7 @@ const handleComponentPollingConfigChange = (pollingConfig: any) => {
     const config = configurationManager.getConfiguration(componentInfo.value.componentId)
     const componentConfig = config?.component || {}
 
-    // 🔥 先移除现有的轮询任务（如果存在）
+    // 先移除现有的轮询任务（如果存在）
     const existingTasks = pollingManager.getTasksByComponent(componentInfo.value.componentId)
     existingTasks.forEach(task => {
       pollingManager.removeTask(task.id)
@@ -771,7 +687,7 @@ const handleComponentPollingConfigChange = (pollingConfig: any) => {
     componentConfig.polling = {
       enabled: pollingConfig.enabled || false,
       interval: pollingConfig.interval || 30000,
-      // 🔥 修复：正确保存 immediate 属性，允许为 false
+      // 修复：正确保存 immediate 属性，允许为 false
       immediate: pollingConfig.immediate !== undefined ? pollingConfig.immediate : true,
       lastUpdated: Date.now()
     }
@@ -779,7 +695,7 @@ const handleComponentPollingConfigChange = (pollingConfig: any) => {
     // 保存到配置管理器
     configurationManager.updateConfiguration(componentInfo.value.componentId, 'component', componentConfig)
 
-    // 🔥 如果启用了轮询，注册新的轮询任务
+    // 如果启用了轮询，注册新的轮询任务
     if (pollingConfig.enabled) {
       const taskId = pollingManager.addTask({
         componentId: componentInfo.value.componentId,
@@ -792,7 +708,7 @@ const handleComponentPollingConfigChange = (pollingConfig: any) => {
       if (process.env.NODE_ENV === 'development') {
       }
 
-      // 🔥 如果全局轮询已启用，立即启动这个任务
+      // 如果全局轮询已启用，立即启动这个任务
       if (pollingManager.isGlobalPollingEnabled()) {
         pollingManager.startTask(taskId)
         if (process.env.NODE_ENV === 'development') {
@@ -804,61 +720,6 @@ const handleComponentPollingConfigChange = (pollingConfig: any) => {
   }
 }
 
-/**
- * 🚨 废弃：旧的构建方法（会导致重复添加问题）
- * 构建完整的 DataSourceConfiguration
- */
-const buildDataSourceConfiguration_DEPRECATED = (
-  dataSourceKey: string,
-  dataItem: DataItem,
-  processing: ProcessingConfig
-): DataSourceConfiguration => {
-  // 获取现有配置或创建新配置
-  const existingConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
-  const currentDataSourceConfig = existingConfig?.dataSource as DataSourceConfiguration | undefined
-
-  // 构建新的数据项
-  const newDataItem = {
-    item: dataItem,
-    processing: processing
-  }
-
-  // 如果已有配置，则在现有数据源中添加数据项
-  if (currentDataSourceConfig?.dataSources) {
-    const existingDataSource = currentDataSourceConfig.dataSources.find(ds => ds.sourceId === dataSourceKey)
-
-    if (existingDataSource) {
-      // 添加到现有数据源
-      existingDataSource.dataItems.push(newDataItem)
-      return currentDataSourceConfig
-    } else {
-      // 创建新数据源
-      const strategy = mergeStrategies[dataSourceKey] || { type: 'object' }
-      currentDataSourceConfig.dataSources.push({
-        sourceId: dataSourceKey,
-        dataItems: [newDataItem],
-        mergeStrategy: strategy.type === 'script' ? { type: 'script', script: strategy.script } : strategy.type
-      })
-      currentDataSourceConfig.updatedAt = Date.now()
-      return currentDataSourceConfig
-    }
-  } else {
-    // 创建全新配置
-    const strategy = mergeStrategies[dataSourceKey] || { type: 'object' }
-    return {
-      componentId: componentInfo.value.componentId,
-      dataSources: [
-        {
-          sourceId: dataSourceKey,
-          dataItems: [newDataItem],
-          mergeStrategy: strategy.type === 'script' ? { type: 'script', script: strategy.script } : strategy.type
-        }
-      ],
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    }
-  }
-}
 
 /**
  * 删除数据项 - 集成配置驱动架构
@@ -897,12 +758,12 @@ const handleDeleteDataItem = (dataSourceKey: string, itemId: string) => {
           // 更新时间戳
           currentDataSourceConfig.updatedAt = Date.now()
 
-          // 🔥 新配置管理系统：删除后重建完整配置
+          // 新配置管理系统：删除后重建完整配置
           const rebuiltConfig = rebuildCompleteDataSourceConfiguration()
 
           // 清除组件缓存，确保删除后数据更新
           simpleDataBridge.clearComponentCache(componentInfo.value.componentId)
-          // 🔥 使用新配置管理系统提交更新（内置去重和循环检测）
+          // 使用新配置管理系统提交更新（内置去重和循环检测）
           configurationManager.updateConfiguration(componentInfo.value.componentId, 'dataSource', rebuiltConfig)
         }
       }
@@ -916,66 +777,31 @@ const handleDeleteDataItem = (dataSourceKey: string, itemId: string) => {
  */
 const restoreDataItemsFromConfig = () => {
   try {
-    console.log(`🔍 [restoreDataItemsFromConfig] 开始恢复配置 ${componentInfo.value.componentId}`)
-    console.log(`🔍 [restoreDataItemsFromConfig] 当前组件信息:`, {
-      componentId: componentInfo.value.componentId,
-      componentType: componentInfo.value.componentType,
-      dataSourcesCount: componentInfo.value.dataSources?.length || 0,
-      dataSources: componentInfo.value.dataSources
-    })
-
-    // 🔥 重要修复：优先级重排 - ConfigurationManager是最新数据的唯一真实来源
+    // 重要修复：优先级重排 - ConfigurationManager是最新数据的唯一真实来源
     let dataSourceConfig: DataSourceConfiguration | undefined = undefined
-    
-    // 🔥 策略1：优先从ConfigurationManager获取最新配置（导入后的数据在这里）
-    const latestConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
 
-    // 🔍 调试：检查ConfigurationManager中的所有配置
-    const allConfigs = configurationManager.getAllConfigurations()
-    console.log(`🔍 [restoreDataItemsFromConfig] ConfigurationManager状态:`, {
-      targetComponentId: componentInfo.value.componentId,
-      hasTargetConfig: !!latestConfig,
-      allConfigsCount: allConfigs.size,
-      allConfigIds: Array.from(allConfigs.keys()),
-      targetConfigContent: latestConfig
-    })
+    // 策略1：优先从ConfigurationManager获取最新配置（导入后的数据在这里）
+    const latestConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
 
     if (latestConfig?.dataSource) {
       dataSourceConfig = latestConfig.dataSource as DataSourceConfiguration
-      console.log(`✅ [restoreDataItemsFromConfig] 使用ConfigurationManager最新配置:`, {
-        hasDataSource: !!dataSourceConfig,
-        dataSourcesCount: dataSourceConfig?.dataSources?.length || 0,
-        firstDataSource: dataSourceConfig?.dataSources?.[0],
-        fullDataSourceConfig: dataSourceConfig
-      })
     }
-    
-    // 🔥 策略2：回退到编辑器节点数据（可能是过期数据）
+
+    // 策略2：回退到编辑器节点数据（可能是过期数据）
     else if (editorContext?.getNodeById) {
       const realNode = editorContext.getNodeById(componentInfo.value.componentId)
-      console.log(`🔄 [restoreDataItemsFromConfig] ConfigurationManager无数据，回退到编辑器节点:`, {
-        hasRealNode: !!realNode,
-        hasDataSource: !!realNode?.dataSource,
-        hasMetadataUnifiedConfig: !!realNode?.metadata?.unifiedConfig,
-        hasMetadataDataSource: !!realNode?.metadata?.unifiedConfig?.dataSource,
-        realNodeDataSource: realNode?.dataSource,
-        metadataDataSource: realNode?.metadata?.unifiedConfig?.dataSource,
-        fullRealNode: realNode
-      })
-      
+
       // 从节点的dataSource字段读取
       if (realNode?.dataSource && typeof realNode.dataSource === 'object' && Object.keys(realNode.dataSource).length > 0) {
         dataSourceConfig = realNode.dataSource as DataSourceConfiguration
-        console.log(`✅ [restoreDataItemsFromConfig] 使用节点dataSource:`, dataSourceConfig)
       }
       // 从metadata.unifiedConfig.dataSource读取
       else if (realNode?.metadata?.unifiedConfig?.dataSource &&
                typeof realNode.metadata.unifiedConfig.dataSource === 'object' &&
                Object.keys(realNode.metadata.unifiedConfig.dataSource).length > 0) {
         dataSourceConfig = realNode.metadata.unifiedConfig.dataSource as DataSourceConfiguration
-        console.log(`✅ [restoreDataItemsFromConfig] 使用metadata.unifiedConfig.dataSource:`, dataSourceConfig)
       }
-      // 🔥 新增：从 metadata.unifiedConfig 整体配置中提取dataSource（因为新的保存方式）
+      // 新增：从 metadata.unifiedConfig 整体配置中提取dataSource（因为新的保存方式）
       else if (realNode?.metadata?.unifiedConfig &&
                typeof realNode.metadata.unifiedConfig === 'object' &&
                'dataSource' in realNode.metadata.unifiedConfig &&
@@ -983,7 +809,6 @@ const restoreDataItemsFromConfig = () => {
                typeof realNode.metadata.unifiedConfig.dataSource === 'object' &&
                Object.keys(realNode.metadata.unifiedConfig.dataSource).length > 0) {
         dataSourceConfig = realNode.metadata.unifiedConfig.dataSource as DataSourceConfiguration
-        console.log(`✅ [restoreDataItemsFromConfig] 使用metadata.unifiedConfig整体配置中的dataSource:`, dataSourceConfig)
       }
     }
 
@@ -992,7 +817,7 @@ const restoreDataItemsFromConfig = () => {
       Object.keys(dataSourceItems).forEach(key => {
         dataSourceItems[key] = []
       })
-      // 🔥 修复：清空现有合并策略
+      // 修复：清空现有合并策略
       Object.keys(mergeStrategies).forEach(key => {
         delete mergeStrategies[key]
       })
@@ -1005,31 +830,17 @@ const restoreDataItemsFromConfig = () => {
           dataSourceItems[sourceId] = []
         }
 
-        // 🔥 修复：恢复合并策略，避免无限循环
+        // 修复：恢复合并策略，避免无限循环
         mergeStrategies[sourceId] = mergeStrategy || { type: 'object' }
-        
-        // 🔥 关键修复：处理不同的数据项格式
-        if (configDataItems && Array.isArray(configDataItems)) {
-          console.log(`🔍 [restoreDataItemsFromConfig] 处理数据源 ${sourceId} 的数据项:`, {
-            configDataItemsLength: configDataItems.length,
-            configDataItems: configDataItems
-          })
 
+        // 关键修复：处理不同的数据项格式
+        if (configDataItems && Array.isArray(configDataItems)) {
           configDataItems.forEach((configItem, index) => {
             try {
-              console.log(`🔍 [restoreDataItemsFromConfig] 处理第${index}项:`, {
-                configItem,
-                hasItem: 'item' in configItem,
-                hasProcessing: 'processing' in configItem,
-                itemType: configItem?.item?.type,
-                itemConfig: configItem?.item?.config
-              })
-
               // 检查是否是标准的 {item, processing} 结构
               if (configItem && typeof configItem === 'object' && 'item' in configItem) {
                 // 标准结构，直接转换
                 const displayItem = convertConfigItemToDisplay(configItem, index)
-                console.log(`✅ [restoreDataItemsFromConfig] 转换显示项:`, displayItem)
                 dataSourceItems[sourceId].push(displayItem)
               } else {
                 // 可能是导入的原始结构，需要包装
@@ -1042,7 +853,6 @@ const restoreDataItemsFromConfig = () => {
                   }
                 }
                 const displayItem = convertConfigItemToDisplay(wrappedItem, index)
-                console.log(`✅ [restoreDataItemsFromConfig] 包装后转换显示项:`, displayItem)
                 dataSourceItems[sourceId].push(displayItem)
               }
             } catch (itemError) {
@@ -1055,21 +865,9 @@ const restoreDataItemsFromConfig = () => {
             }
           })
         }
-        
-        console.log(`✅ [restoreDataItemsFromConfig] 恢复数据源 ${sourceId}:`, {
-          originalItems: configDataItems?.length || 0,
-          restoredItems: dataSourceItems[sourceId]?.length || 0,
-          mergeStrategy: mergeStrategies[sourceId]
-        })
       })
     } else {
       // 如果没有配置，但有数据源选项，初始化空的数据项列表
-      console.log(`⚠️ [restoreDataItemsFromConfig] 没有找到数据源配置，初始化空数据项列表`)
-      console.log(`🔍 [restoreDataItemsFromConfig] 数据源选项:`, {
-        optionsCount: dataSourceOptions.length,
-        options: dataSourceOptions
-      })
-
       dataSourceOptions.forEach(option => {
         if (!dataSourceItems[option.value]) {
           dataSourceItems[option.value] = []
@@ -1077,28 +875,17 @@ const restoreDataItemsFromConfig = () => {
         if (!mergeStrategies[option.value]) {
           mergeStrategies[option.value] = { type: 'object' }
         }
-        console.log(`✅ [restoreDataItemsFromConfig] 初始化空数据源: ${option.value}`)
       })
     }
   } catch (error) {}
 }
 
 /**
- * 🔥 新增：智能检测参数是否应该是动态参数
+ * 新增：智能检测参数是否应该是动态参数
  * 防御性编程：即使isDynamic为false，但有绑定关系特征时自动修正为true
  */
 const detectIsDynamicParameter = (param: any): boolean => {
-  console.log(`🔥 [detectIsDynamicParameter] 开始检测参数:`, {
-    paramKey: param.key,
-    originalIsDynamic: param.isDynamic,
-    valueMode: param.valueMode,
-    selectedTemplate: param.selectedTemplate,
-    value: param.value,
-    variableName: param.variableName,
-    description: param.description
-  })
-
-  // 🔥 关键修复：检测明显的绑定特征，不依赖于原始isDynamic值
+  // 关键修复：检测明显的绑定特征，不依赖于原始isDynamic值
   const hasBindingFeatures =
     // 特征1：valueMode为component（最强特征）
     param.valueMode === 'component' ||
@@ -1108,7 +895,7 @@ const detectIsDynamicParameter = (param: any): boolean => {
     (typeof param.value === 'string' &&
      param.value.includes('.') &&
      param.value.split('.').length >= 3 &&
-     // 🔥 修复：降低长度要求，因为 "__CURRENT_COMPONENT__.base.deviceId" 可能不够长
+     // 修复：降低长度要求，因为 "__CURRENT_COMPONENT__.base.deviceId" 可能不够长
      param.value.length > 15) ||
     // 特征4：有variableName且包含组件ID格式
     (param.variableName && param.variableName.includes('_') && param.variableName.length > 5) ||
@@ -1119,38 +906,19 @@ const detectIsDynamicParameter = (param: any): boolean => {
       param.description.includes('component')
     ))
 
-  // 🔥 关键修复：如果检测到绑定特征，直接返回true，忽略原始isDynamic设置
+  // 关键修复：如果检测到绑定特征，直接返回true，忽略原始isDynamic设置
   if (hasBindingFeatures) {
-    console.warn(`🔧 [detectIsDynamicParameter] 检测到绑定特征，强制设置为动态:`, {
-      paramKey: param.key,
-      原始isDynamic: param.isDynamic,
-      修正为: true,
-      检测到的特征: {
-        valueMode: param.valueMode,
-        selectedTemplate: param.selectedTemplate,
-        value: param.value,
-        valueLength: param.value ? param.value.length : 0,
-        variableName: param.variableName,
-        description: param.description
-      }
-    })
     return true
   }
 
   // 如果没有绑定特征，保持原始设置或默认为false
   const result = param.isDynamic !== undefined ? param.isDynamic : false
 
-  console.log(`🔥 [detectIsDynamicParameter] 未检测到绑定特征:`, {
-    paramKey: param.key,
-    result,
-    reason: param.isDynamic !== undefined ? '保持原始设置' : '默认为静态'
-  })
-
   return result
 }
 
 /**
- * 🔥 新增：保护HTTP参数的绑定路径不被意外覆盖
+ * 新增：保护HTTP参数的绑定路径不被意外覆盖
  * 这是一个防御性机制，确保即使配置管理过程中出现问题，绑定路径也不会被损坏
  */
 const protectParameterBindingPaths = (params: any[]): any[] => {
@@ -1171,12 +939,6 @@ const protectParameterBindingPaths = (params: any[]): any[] => {
       param.variableName.includes('_')
 
     if (isBindingCorrupted) {
-      console.warn(`🛡️ [protectParameterBindingPaths] 检测到损坏的绑定路径，正在恢复:`, {
-        paramKey: param.key,
-        损坏的绑定路径: param.value,
-        variableName: param.variableName
-      })
-
       // 从variableName重建正确的绑定路径
       if (param.variableName.includes('_')) {
         const lastUnderscoreIndex = param.variableName.lastIndexOf('_')
@@ -1184,12 +946,6 @@ const protectParameterBindingPaths = (params: any[]): any[] => {
           const componentId = param.variableName.substring(0, lastUnderscoreIndex)
           const propertyName = param.variableName.substring(lastUnderscoreIndex + 1)
           const reconstructedPath = `${componentId}.base.${propertyName}`
-
-          console.log(`🛡️ [protectParameterBindingPaths] 已重建绑定路径:`, {
-            paramKey: param.key,
-            原损坏值: param.value,
-            重建路径: reconstructedPath
-          })
 
           return {
             ...param,
@@ -1235,7 +991,7 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
         displayConfig.body = JSON.stringify(item.config.body)
       }
 
-      // 🔥 关键修复：从原始配置中恢复httpConfigData
+      // 关键修复：从原始配置中恢复httpConfigData
       // 由于这是从配置管理器恢复，需要重构HttpConfig格式
       // 如果原始配置包含了完整的HttpConfig信息，恢复它
       if (item.config.url) {
@@ -1257,7 +1013,7 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
               }))
             : [],
 
-          // 🔥 关键：恢复params数组格式，正确处理isDynamic字段，并应用保护机制
+          // 关键：恢复params数组格式，正确处理isDynamic字段，并应用保护机制
           params: item.config.params
             ? // 如果是数组格式（新格式），直接使用并保持原有的isDynamic状态
               Array.isArray(item.config.params)
@@ -1265,12 +1021,12 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
                   key: param.key || '',
                   value: param.value || '',
                   enabled: param.enabled !== undefined ? param.enabled : true,
-                  // 🔥 关键修复：智能检测并修正isDynamic状态
+                  // 关键修复：智能检测并修正isDynamic状态
                   isDynamic: detectIsDynamicParameter(param),
                   dataType: param.dataType || 'string',
                   variableName: param.variableName || '',
                   description: param.description || '',
-                  // 🔥 保持组件属性绑定相关字段
+                  // 保持组件属性绑定相关字段
                   valueMode: param.valueMode || 'manual',
                   selectedTemplate: param.selectedTemplate || 'manual',
                   defaultValue: param.defaultValue
@@ -1295,22 +1051,22 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
               : JSON.stringify(item.config.body)
             : '',
 
-          // 🔥 关键：恢复脚本配置
+          // 关键：恢复脚本配置
           preRequestScript: item.config.preRequestScript || '',
           postResponseScript: item.config.postResponseScript || '',
 
-          // 🔥 重大修复：恢复地址类型相关字段（这是数据不一致的根本原因）
+          // 重大修复：恢复地址类型相关字段（这是数据不一致的根本原因）
           addressType: item.config.addressType || 'external',
           selectedInternalAddress: item.config.selectedInternalAddress || '',
           enableParams: item.config.enableParams || false,
-          // 🔥 修复：pathParams也应用智能检测和保护机制
+          // 修复：pathParams也应用智能检测和保护机制
           pathParams: item.config.pathParams
             ? protectParameterBindingPaths(item.config.pathParams.map((param: any) => ({
                 ...param,
                 isDynamic: detectIsDynamicParameter(param)
               })))
             : [],
-          // 🔥 修复：pathParameter也应用智能检测和保护机制
+          // 修复：pathParameter也应用智能检测和保护机制
           pathParameter: item.config.pathParameter
             ? (() => {
                 const processedParam = {
@@ -1339,7 +1095,7 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
 // 组件挂载时恢复显示状态并设置集成
 onMounted(async () => {
   try {
-    // 🔥 新架构：初始化配置集成桥接器
+    // 新架构：初始化配置集成桥接器
     await configurationManager.initialize()
 
     // 为当前组件设置数据源执行集成
@@ -1347,32 +1103,22 @@ onMounted(async () => {
       ;(configurationManager as any).setupComponentDataSourceIntegration(componentInfo.value.componentId)
     }
 
-    // 🔥 修复：确保组件配置存在，如果不存在则初始化
+    // 修复：确保组件配置存在，如果不存在则初始化
     let existingConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
     if (!existingConfig) {
       configurationManager.initializeConfiguration(componentInfo.value.componentId)
       existingConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
     }
 
-    // 🔥 关键修复：如果ConfigurationManager的配置是空的，但编辑器节点有数据，则同步
+    // 关键修复：如果ConfigurationManager的配置是空的，但编辑器节点有数据，则同步
     if (existingConfig && (!existingConfig.dataSource || Object.keys(existingConfig.dataSource).length === 0)) {
-      console.log(`🔍 [onMounted] ConfigurationManager配置为空，检查编辑器节点数据...`)
-
       if (editorContext?.getNodeById) {
         const realNode = editorContext.getNodeById(componentInfo.value.componentId)
-        console.log(`🔍 [onMounted] 编辑器节点检查:`, {
-          hasRealNode: !!realNode,
-          hasUnifiedConfig: !!realNode?.metadata?.unifiedConfig,
-          hasDataSource: !!realNode?.metadata?.unifiedConfig?.dataSource,
-          unifiedConfig: realNode?.metadata?.unifiedConfig
-        })
 
         // 从编辑器节点恢复配置到ConfigurationManager
         if (realNode?.metadata?.unifiedConfig?.dataSource &&
             typeof realNode.metadata.unifiedConfig.dataSource === 'object' &&
             Object.keys(realNode.metadata.unifiedConfig.dataSource).length > 0) {
-
-          console.log(`✅ [onMounted] 从编辑器节点恢复配置到ConfigurationManager:`, realNode.metadata.unifiedConfig.dataSource)
 
           // 更新ConfigurationManager中的dataSource配置
           configurationManager.updateConfiguration(
@@ -1387,7 +1133,7 @@ onMounted(async () => {
     // 恢复显示状态
     restoreDataItemsFromConfig()
 
-    // 🔥 初始化组件轮询
+    // 初始化组件轮询
     initializeComponentPolling()
   } catch (error) {
     // 降级处理：即使配置管理器初始化失败，也尝试恢复显示状态
@@ -1399,7 +1145,7 @@ onMounted(async () => {
   }
 })
 
-// 🔥 组件卸载时清理轮询任务
+// 组件卸载时清理轮询任务
 onUnmounted(() => {
   try {
     const existingTasks = pollingManager.getTasksByComponent(componentInfo.value.componentId)
@@ -1414,7 +1160,7 @@ onUnmounted(() => {
 })
 
 /**
- * 🔥 新增：获取当前编辑的数据项
+ * 新增：获取当前编辑的数据项
  */
 const getEditData = () => {
   if (!isEditMode.value || !editingItemId.value || !currentDataSourceKey.value) {
@@ -1430,20 +1176,20 @@ const getEditData = () => {
 
 /**
  * 获取当前数据源的示例数据
- * 🔥 统一标准：只使用 example 字段，确保组件间示例数据标准一致
+ * 统一标准：只使用 example 字段，确保组件间示例数据标准一致
  */
 const getCurrentDataSourceExampleData = () => {
   if (!currentDataSourceKey.value) return undefined
 
   const currentDataSource = dataSourceOptions.value.find(opt => opt.value === currentDataSourceKey.value)
 
-  // 🔥 统一标准：只检查example字段
+  // 统一标准：只检查example字段
   const exampleData = currentDataSource?.originalData?.originalData?.example
 
   return exampleData
 }
 
-// 🔥 新UI辅助方法
+// 新UI辅助方法
 
 /**
  * 获取数据项类型的颜色
@@ -1568,7 +1314,7 @@ const updateMergeStrategyScript = (dataSourceKey: string, newScript: string) => 
   handleMergeStrategyUpdate(dataSourceKey, newStrategy)
 }
 
-// 🔥 查看真实数据结果
+// 查看真实数据结果
 
 /**
  * 查看最终数据
@@ -1586,7 +1332,7 @@ const viewFinalData = async (dataSourceKey: string) => {
       return
     }
 
-    // 🔥 修复：使用配置管理系统获取最新配置，确保数据一致性
+    // 修复：使用配置管理系统获取最新配置，确保数据一致性
     const existingConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
     let dataSourceConfig = existingConfig?.dataSource as DataSourceConfiguration | undefined
 
@@ -1642,10 +1388,10 @@ const viewFinalData = async (dataSourceKey: string) => {
 }
 
 /**
- * 🔥 导出配置为 JSON 文件
+ * 导出配置为 JSON 文件
  */
 /**
- * 🔥 处理导出成功事件
+ * 处理导出成功事件
  */
 const handleExportSuccess = (exportData: any) => {
   if (process.env.NODE_ENV === 'development') {
@@ -1665,7 +1411,7 @@ const handleExportSuccess = (exportData: any) => {
 }
 
 /**
- * 🔥 处理导入成功事件
+ * 处理导入成功事件
  */
 const handleImportSuccess = (importData: any) => {
   if (process.env.NODE_ENV === 'development') {
@@ -1682,7 +1428,7 @@ const handleImportSuccess = (importData: any) => {
 }
 
 /**
- * 🔥 处理导入导出错误事件
+ * 处理导入导出错误事件
  */
 const handleImportExportError = (error: Error) => {
   console.error('❌ [SimpleConfigurationEditor] 导入导出失败:', error)
@@ -1815,7 +1561,7 @@ const handleSingleDataSourceImport = async (): Promise<void> => {
   }
 
   try {
-    isProcessing.value = true // 🔥 开始处理，显示loading
+    isProcessing.value = true // 开始处理，显示loading
 
     if (process.env.NODE_ENV === 'development') {
     }
@@ -1847,7 +1593,7 @@ const handleSingleDataSourceImport = async (): Promise<void> => {
     message.error(`导入失败: ${errorMessage}`)
     handleImportExportError(error instanceof Error ? error : new Error(errorMessage))
   } finally {
-    isProcessing.value = false // 🔥 处理完成，隐藏loading
+    isProcessing.value = false // 处理完成，隐藏loading
   }
 }
 
@@ -1870,10 +1616,10 @@ const refreshConfigurationData = async (): Promise<void> => {
   try {
     console.log(`🔄 [refreshConfigurationData] 开始刷新配置数据 ${componentInfo.value.componentId}`)
     
-    // 🔥 关键修复：强制清理数据缓存，确保获取最新配置
+    // 关键修复：强制清理数据缓存，确保获取最新配置
     simpleDataBridge.clearComponentCache(componentInfo.value.componentId)
     
-    // 🔥 修复：强制清空当前显示的数据项，然后重新恢复
+    // 修复：强制清空当前显示的数据项，然后重新恢复
     Object.keys(dataSourceItems).forEach(key => {
       delete dataSourceItems[key]
     })
@@ -1881,16 +1627,16 @@ const refreshConfigurationData = async (): Promise<void> => {
       delete mergeStrategies[key]
     })
     
-    // 🔥 等待Vue响应式更新完成
+    // 等待Vue响应式更新完成
     await nextTick()
     
-    // 🔥 重要：强制触发配置恢复
+    // 重要：强制触发配置恢复
     restoreDataItemsFromConfig()
     
-    // 🔥 再次等待Vue响应式更新
+    // 再次等待Vue响应式更新
     await nextTick()
     
-    // 🔥 额外：如果有编辑器上下文，同步最新状态
+    // 额外：如果有编辑器上下文，同步最新状态
     if (editorContext?.updateNode) {
       const latestConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
       if (latestConfig) {
@@ -1910,7 +1656,7 @@ const refreshConfigurationData = async (): Promise<void> => {
       }
     }
     
-    // 🔥 强制验证恢复结果
+    // 强制验证恢复结果
     const totalItems = Object.values(dataSourceItems).reduce((sum, items) => sum + items.length, 0)
     console.log(`✅ [refreshConfigurationData] 配置数据刷新完成:`, {
       dataSourceCount: Object.keys(dataSourceItems).length,
@@ -1918,7 +1664,7 @@ const refreshConfigurationData = async (): Promise<void> => {
       dataSourceItems: dataSourceItems
     })
     
-    // 🔥 如果还是没有数据，强制日志输出配置状态
+    // 如果还是没有数据，强制日志输出配置状态
     if (totalItems === 0) {
       const latestConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
       console.error(`❌ [refreshConfigurationData] 恢复后仍无数据项:`, {
@@ -1946,7 +1692,7 @@ defineExpose({
 
 <template>
   <div class="simple-configuration-editor">
-    <!-- 🔥 配置操作工具栏 -->
+    <!-- 配置操作工具栏 -->
     <div class="config-toolbar">
       <div class="toolbar-title">
         <span>{{ componentInfo.componentType || '组件' }}配置</span>
@@ -2294,7 +2040,7 @@ defineExpose({
   width: 100%;
 }
 
-/* 🔥 配置工具栏样式 */
+/* 配置工具栏样式 */
 .config-toolbar {
   display: flex;
   align-items: center;

@@ -107,12 +107,11 @@ export class DataItemFetcher implements IDataItemFetcher {
   private currentComponentId?: string
 
   /**
-   * 🔥 新增：设置当前执行上下文的组件ID
+   * 设置当前执行上下文的组件ID
    * @param componentId 组件ID
    */
   setCurrentComponentId(componentId: string): void {
     this.currentComponentId = componentId
-    console.log(`🔥 [DataItemFetcher] 设置当前组件上下文: ${componentId}`)
   }
   /**
    * 🔥 新增：运行时智能检测参数是否应该是动态参数
@@ -145,14 +144,7 @@ export class DataItemFetcher implements IDataItemFetcher {
    */
   private async getComponentPropertyValue(bindingPath: string): Promise<any> {
     try {
-      // 🔥 关键调试：输出绑定路径解析过程
-      console.log(`🔥 [DataItemFetcher] 开始解析属性绑定路径:`, {
-        bindingPath,
-        currentComponentId: this.currentComponentId
-      })
-
       if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
-        console.error(`⚠️ [DataItemFetcher] 属性绑定路径格式错误`, { bindingPath })
         return undefined
       }
 
@@ -160,219 +152,74 @@ export class DataItemFetcher implements IDataItemFetcher {
       const componentId = parts[0]
       const propertyPath = parts.slice(1).join('.')
 
-      console.log(`🔥 [DataItemFetcher] 路径解析结果:`, {
-        原始路径: bindingPath,
-        组件ID: componentId,
-        属性路径: propertyPath
-      })
-
-      // 🔥 关键修复：优先从ConfigurationIntegrationBridge获取最新配置
+      // 优先从ConfigurationIntegrationBridge获取最新配置
       try {
-        console.log(`🔥 [DataItemFetcher] 准备从ConfigurationIntegrationBridge获取配置`, {
-          componentId,
-          currentComponentId: this.currentComponentId
-        })
-
-        // 🔥 修复：使用直接导入替代动态require，避免循环依赖问题
+        // 使用直接导入替代动态require，避免循环依赖问题
         const { configurationIntegrationBridge } = await import('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
 
-        console.log(`🔥 [DataItemFetcher] 成功导入configurationIntegrationBridge`, {
-          bridgeExists: !!configurationIntegrationBridge,
-          bridgeType: typeof configurationIntegrationBridge,
-          bridgeMethods: configurationIntegrationBridge ? Object.getOwnPropertyNames(Object.getPrototypeOf(configurationIntegrationBridge)) : []
-        })
-
-        // 🔥 智能组件ID映射：如果原始组件ID无法找到配置，尝试使用当前上下文组件ID
+        // 智能组件ID映射：如果原始组件ID无法找到配置，尝试使用当前上下文组件ID
         let targetComponentId = componentId
         let latestConfig = configurationIntegrationBridge.getConfiguration(componentId)
 
-        console.log(`🔥 [DataItemFetcher] 配置获取结果:`, {
-          原始ComponentId: componentId,
-          当前ComponentId: this.currentComponentId,
-          找到配置: !!latestConfig,
-          配置类型: typeof latestConfig,
-          配置内容: latestConfig ? {
-            hasBase: !!latestConfig.base,
-            hasComponent: !!latestConfig.component,
-            baseKeys: latestConfig.base ? Object.keys(latestConfig.base) : [],
-            componentKeys: latestConfig.component ? Object.keys(latestConfig.component) : [],
-            baseContent: latestConfig.base,
-            componentContent: latestConfig.component
-          } : null,
-          请求的属性路径: propertyPath,
-          完整配置对象: latestConfig
-        })
-
         if (!latestConfig && this.currentComponentId && this.currentComponentId !== componentId) {
-          console.warn(`⚠️ [DataItemFetcher] 原始组件ID ${componentId} 无配置，尝试使用当前组件ID ${this.currentComponentId}`)
           targetComponentId = this.currentComponentId
           latestConfig = configurationIntegrationBridge.getConfiguration(this.currentComponentId)
         }
 
         if (latestConfig) {
-          console.log(`🔥 [DataItemFetcher] 从ConfigurationIntegrationBridge获取最新配置:`, {
-            原始ComponentId: componentId,
-            实际使用ComponentId: targetComponentId,
-            propertyPath,
-            hasBase: !!latestConfig.base,
-            hasComponent: !!latestConfig.component,
-            baseDeviceId: latestConfig.base?.deviceId,
-            componentDeviceId: latestConfig.component?.deviceId,
-            完整base配置: latestConfig.base,
-            完整component配置: latestConfig.component
-          })
-
-          // 🔥 关键：支持多层级属性路径解析
+          // 支持多层级属性路径解析
           if (propertyPath.startsWith('customize.')) {
             // 处理 customize.deviceId 格式 - 映射到 component 层
             const customizePropertyPath = propertyPath.replace('customize.', '')
             const componentValue = this.getNestedProperty(latestConfig.component, customizePropertyPath)
 
-            console.log(`🔥 [DataItemFetcher] 检查customize路径 -> component层:`, {
-              customizePropertyPath,
-              componentValue
-            })
-
             if (componentValue !== undefined) {
-              console.log(`✅ [DataItemFetcher] 从component层获取属性值:`, {
-                componentId: targetComponentId,
-                propertyPath: customizePropertyPath,
-                value: componentValue
-              })
               return componentValue
             }
 
             // 回退到base层查找
             const baseValue = this.getNestedProperty(latestConfig.base, customizePropertyPath)
-            console.log(`🔥 [DataItemFetcher] 检查customize路径 -> base层:`, {
-              customizePropertyPath,
-              baseValue
-            })
-
             if (baseValue !== undefined) {
-              console.log(`✅ [DataItemFetcher] 从base层获取属性值:`, {
-                componentId: targetComponentId,
-                propertyPath: customizePropertyPath,
-                value: baseValue
-              })
               return baseValue
             }
           } else if (propertyPath.startsWith('base.')) {
-            // 🔥 关键修复：处理 base.deviceId 格式路径
+            // 处理 base.deviceId 格式路径
             const actualPropertyPath = propertyPath.replace('base.', '')
-            console.log(`🔥 [DataItemFetcher] 检测到base.属性路径，提取实际属性名:`, {
-              原始路径: propertyPath,
-              实际属性名: actualPropertyPath
-            })
 
             // 直接从 base 层获取属性（去掉base前缀）
             const baseValue = this.getNestedProperty(latestConfig.base, actualPropertyPath)
-            console.log(`🔥 [DataItemFetcher] 检查base层(修正后):`, {
-              actualPropertyPath,
-              baseValue,
-              baseConfig: latestConfig.base,
-              查找路径: `latestConfig.base.${actualPropertyPath}`,
-              base层所有键: latestConfig.base ? Object.keys(latestConfig.base) : []
-            })
-
             if (baseValue !== undefined) {
-              console.log(`✅ [DataItemFetcher] 从base层获取属性值(修正后):`, {
-                componentId: targetComponentId,
-                originalPath: propertyPath,
-                actualPropertyPath,
-                value: baseValue,
-                valueType: typeof baseValue
-              })
               return baseValue
             }
 
             // 如果base层没有，也尝试component层
             const componentValue = this.getNestedProperty(latestConfig.component, actualPropertyPath)
-            console.log(`🔥 [DataItemFetcher] 检查component层(修正后):`, {
-              actualPropertyPath,
-              componentValue,
-              componentConfig: latestConfig.component,
-              查找路径: `latestConfig.component.${actualPropertyPath}`,
-              component层所有键: latestConfig.component ? Object.keys(latestConfig.component) : []
-            })
-
             if (componentValue !== undefined) {
-              console.log(`✅ [DataItemFetcher] 从component层获取属性值(修正后):`, {
-                componentId: targetComponentId,
-                originalPath: propertyPath,
-                actualPropertyPath,
-                value: componentValue,
-                valueType: typeof componentValue
-              })
               return componentValue
             }
           } else {
             // 处理其他属性路径
             // 首先尝试从 base 层获取（优先级更高，因为交互通常修改 base 层）
             const baseValue = this.getNestedProperty(latestConfig.base, propertyPath)
-            console.log(`🔥 [DataItemFetcher] 检查base层:`, {
-              propertyPath,
-              baseValue,
-              baseConfig: latestConfig.base,
-              查找路径: `latestConfig.base.${propertyPath}`,
-              base层所有键: latestConfig.base ? Object.keys(latestConfig.base) : []
-            })
-
             if (baseValue !== undefined) {
-              console.log(`✅ [DataItemFetcher] 从base层获取属性值:`, {
-                componentId: targetComponentId,
-                propertyPath,
-                value: baseValue,
-                valueType: typeof baseValue
-              })
               return baseValue
             }
 
             // 然后从 component 层获取
             const componentValue = this.getNestedProperty(latestConfig.component, propertyPath)
-            console.log(`🔥 [DataItemFetcher] 检查component层:`, {
-              propertyPath,
-              componentValue,
-              componentConfig: latestConfig.component,
-              查找路径: `latestConfig.component.${propertyPath}`,
-              component层所有键: latestConfig.component ? Object.keys(latestConfig.component) : []
-            })
-
             if (componentValue !== undefined) {
-              console.log(`✅ [DataItemFetcher] 从component层获取属性值:`, {
-                componentId: targetComponentId,
-                propertyPath,
-                value: componentValue,
-                valueType: typeof componentValue
-              })
               return componentValue
             }
           }
-
-          console.warn(`⚠️ [DataItemFetcher] 在配置中未找到属性值:`, {
-            componentId: targetComponentId,
-            propertyPath,
-            配置结构: {
-              base: latestConfig.base,
-              component: latestConfig.component
-            }
-          })
-        } else {
-          console.error(`❌ [DataItemFetcher] 无法获取组件配置:`, { componentId, currentComponentId: this.currentComponentId })
         }
       } catch (configError) {
-        console.warn(`⚠️ [DataItemFetcher] 从配置管理器获取属性失败，回退到编辑器存储:`, {
-          configError: configError.message || configError,
-          bindingPath,
-          componentId,
-          propertyPath
-        })
+        // 配置获取失败，回退到编辑器存储
       }
 
-      // 🔥 回退：从编辑器store获取属性值（兼容性处理）
+      // 回退：从编辑器store获取属性值（兼容性处理）
       const editorStore = useEditorStore()
 
-      // 🔥 改进的组件查找策略：支持模糊匹配
+      // 改进的组件查找策略：支持模糊匹配
       let targetComponent = editorStore.nodes?.find(node => node.id === componentId)
 
       if (!targetComponent) {
@@ -380,57 +227,19 @@ export class DataItemFetcher implements IDataItemFetcher {
         targetComponent = editorStore.nodes?.find(node =>
           node.id.includes(componentId) || componentId.includes(node.id)
         )
-
-        if (targetComponent) {
-          console.warn(`🔧 [DataItemFetcher] 使用模糊匹配找到组件:`, {
-            原始ComponentId: componentId,
-            匹配到的ComponentId: targetComponent.id,
-            匹配类型: 'fuzzy'
-          })
-        }
       }
 
       if (!targetComponent && this.currentComponentId) {
         // 最终回退：使用当前组件ID
         targetComponent = editorStore.nodes?.find(node => node.id === this.currentComponentId)
-        if (targetComponent) {
-          console.warn(`🔧 [DataItemFetcher] 使用当前组件ID作为回退:`, {
-            原始ComponentId: componentId,
-            当前ComponentId: this.currentComponentId,
-            匹配类型: 'fallback'
-          })
-        }
       }
 
       if (!targetComponent) {
-        console.error('[DataItemFetcher] 组件属性绑定失败: 未找到组件', {
-          目标ComponentId: componentId,
-          当前ComponentId: this.currentComponentId,
-          可用组件: editorStore.nodes?.map(n => ({ id: n.id, type: n.type })) || []
-        })
         return undefined
       }
 
       // 从组件properties中获取属性值
       const propertyValue = this.getNestedProperty(targetComponent.properties, propertyPath)
-
-      console.log(`🔥 [DataItemFetcher] fallback从editor store获取属性值:`, {
-        bindingPath,
-        componentId,
-        propertyPath,
-        targetComponent: {
-          id: targetComponent.id,
-          type: targetComponent.type,
-          properties: targetComponent.properties
-        },
-        获取到的propertyValue: propertyValue,
-        propertyValueType: typeof propertyValue
-      })
-
-      if (propertyValue !== undefined) {
-        console.log(`✅ [DataItemFetcher] fallback成功获取属性值: ${propertyValue}`)
-      }
-
       return propertyValue
     } catch (error) {
       console.error('[DataItemFetcher] 组件属性绑定错误:', error)
@@ -469,52 +278,20 @@ export class DataItemFetcher implements IDataItemFetcher {
   private async resolveParameterValue(param: HttpParameter): Promise<any> {
     let resolvedValue = param.value
 
-    // 🔥 防御性检测：运行时智能修正isDynamic字段
+    // 防御性检测：运行时智能修正isDynamic字段
     const shouldBeDynamic = this.detectRuntimeIsDynamic(param)
     if (shouldBeDynamic && !param.isDynamic) {
-      console.warn(`🔧 [DataItemFetcher] 运行时检测到参数应为动态但设置为静态，临时修正:`, {
-        paramKey: param.key,
-        原始isDynamic: param.isDynamic,
-        临时修正为: true,
-        检测依据: {
-          selectedTemplate: param.selectedTemplate,
-          valueMode: param.valueMode,
-          value: param.value,
-          variableName: param.variableName
-        }
-      })
-      // 🔥 临时修正，不修改原参数对象
+      // 临时修正，不修改原参数对象
       param = { ...param, isDynamic: true }
     }
 
-    // 🔥 关键调试：详细输出参数信息
-    console.log(`🔥 [DataItemFetcher] 参数解析详细信息:`, {
-      paramKey: param.key,
-      paramValue: param.value,
-      paramValueType: typeof param.value,
-      selectedTemplate: param.selectedTemplate,
-      valueMode: param.valueMode,
-      variableName: param.variableName,
-      defaultValue: param.defaultValue,
-      isDynamic: param.isDynamic,
-      是否为属性绑定: param.selectedTemplate === 'component-property-binding' || param.valueMode === 'component'
-    })
-
-    // 🔥 修复：优先使用isDynamic字段判断，支持属性绑定
+    // 修复：优先使用isDynamic字段判断，支持属性绑定
     if (param.isDynamic || param.selectedTemplate === 'component-property-binding' || param.valueMode === 'component') {
-      console.log(`🔥 [DataItemFetcher] 检测到动态参数，开始属性绑定解析:`, {
-        paramKey: param.key,
-        isDynamic: param.isDynamic,
-        selectedTemplate: param.selectedTemplate,
-        valueMode: param.valueMode,
-        bindingValue: param.value,
-        variableName: param.variableName
-      })
 
-      // 🔥 关键修复：使用深拷贝保护原始参数，防止数据被意外修改
+      // 关键修复：使用深拷贝保护原始参数，防止数据被意外修改
       let bindingPath = param.value
 
-      // 🔥 超强防护：如果bindingPath看起来不像绑定路径但variableName是正确的，说明value被损坏了
+      // 超强防护：如果bindingPath看起来不像绑定路径但variableName是正确的，说明value被损坏了
       const isBindingPathCorrupted = bindingPath &&
         typeof bindingPath === 'string' &&
         !bindingPath.includes('.') &&
@@ -523,116 +300,33 @@ export class DataItemFetcher implements IDataItemFetcher {
         param.variableName.includes('_')
 
       if (isBindingPathCorrupted) {
-        console.error(`🚨 [DataItemFetcher] 检测到bindingPath被损坏! 尝试从variableName恢复:`, {
-          损坏的bindingPath: bindingPath,
-          variableName: param.variableName,
-          description: param.description,
-          原始参数: param,
-          损坏原因分析: {
-            不包含点: !bindingPath.includes('.'),
-            长度太短: bindingPath.length < 10,
-            看起来像数值: /^\d+$/.test(bindingPath),
-            variableName正常: param.variableName && param.variableName.includes('_')
-          }
-        })
-
-        // 🔥 关键修复：强制阻止损坏的绑定路径继续传播
-        console.error(`❌ [DataItemFetcher] 绑定路径已损坏，这是一个严重的配置错误！请检查参数保存逻辑`)
-        console.error(`❌ [DataItemFetcher] 绑定路径不应该是实际值，而应该是组件属性路径！`)
-
         // 从variableName重建绑定路径
         if (param.variableName.includes('_')) {
           const lastUnderscoreIndex = param.variableName.lastIndexOf('_')
           if (lastUnderscoreIndex > 0) {
             const componentId = param.variableName.substring(0, lastUnderscoreIndex)
             const propertyName = param.variableName.substring(lastUnderscoreIndex + 1)
-            const reconstructedPath = `${componentId}.base.${propertyName}`
-
-            console.log(`🔧 [DataItemFetcher] 成功从variableName重建绑定路径:`, {
-              原损坏值: bindingPath,
-              重建路径: reconstructedPath,
-              variableName: param.variableName,
-              推断的组件ID: componentId,
-              推断的属性名: propertyName
-            })
-
-            bindingPath = reconstructedPath
-
-            // 🔥 关键：强制输出警告，提醒修复配置保存逻辑
-            console.error(`⚠️ ⚠️ ⚠️ [CRITICAL] 绑定路径损坏问题需要修复！`)
-            console.error(`⚠️ 绑定路径不应该被替换为实际值，这表明配置保存或恢复逻辑存在严重错误！`)
-            console.error(`⚠️ 需要检查SimpleConfigurationEditor或ConfigurationIntegrationBridge中的保存逻辑！`)
+            bindingPath = `${componentId}.base.${propertyName}`
           }
         }
       }
 
-      console.log(`🔥 [DataItemFetcher] 最终使用的绑定路径:`, {
-        paramKey: param.key,
-        finalBindingPath: bindingPath,
-        bindingPathType: typeof bindingPath,
-        bindingPathLength: bindingPath ? bindingPath.length : 0,
-        isValidBindingPath: bindingPath && typeof bindingPath === 'string' && bindingPath.includes('.')
-      })
-
-      // 🔥 最终验证：如果修复后的绑定路径仍然不正确，才报错
+      // 最终验证：如果修复后的绑定路径仍然不正确，使用默认值
       if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
-        console.error(`❌ [DataItemFetcher] 属性绑定路径格式异常，修复失败:`, {
-          paramKey: param.key,
-          bindingPath,
-          bindingPathType: typeof bindingPath,
-          expectedFormat: 'componentId.layer.propertyName',
-          原始参数对象: param,
-          variableName: param.variableName,
-          description: param.description
-        })
-
-        // 🔥 如果修复后仍然无效，返回null使用默认值
-        if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
-          console.warn(`⚠️ [DataItemFetcher] 无法修复绑定路径，将使用默认值:`, {
-            paramKey: param.key,
-            defaultValue: param.defaultValue
-          })
-          return param.defaultValue || null
-        }
+        return param.defaultValue || null
       }
 
       if (bindingPath && typeof bindingPath === 'string') {
         const actualValue = await this.getComponentPropertyValue(bindingPath)
 
-        console.log(`🔥 [DataItemFetcher] 属性绑定解析完成:`, {
-          paramKey: param.key,
-          bindingPath,
-          actualValue,
-          actualValueType: typeof actualValue,
-          将使用的值: actualValue !== undefined && actualValue !== null && actualValue !== '' ? actualValue : param.defaultValue
-        })
-
-        // 🔥 修复：移除愚蠢的"像不像属性值"判断，直接使用获取到的值
         if (actualValue !== undefined && actualValue !== null && actualValue !== '') {
           resolvedValue = actualValue
-          console.log(`✅ [DataItemFetcher] 成功设置resolvedValue为actualValue:`, {
-            paramKey: param.key,
-            resolvedValue: actualValue,
-            resolvedValueType: typeof actualValue
-          })
         } else {
           // 当组件属性值为空时，设置 resolvedValue 为 undefined，触发默认值机制
           resolvedValue = undefined
-          console.log(`⚠️ [DataItemFetcher] actualValue为空，设置resolvedValue为undefined:`, {
-            paramKey: param.key,
-            actualValue,
-            actualValueType: typeof actualValue
-          })
         }
       }
     }
-
-    console.log(`🔥 [DataItemFetcher] 进入isEmpty检查前的状态:`, {
-      paramKey: param.key,
-      resolvedValue,
-      resolvedValueType: typeof resolvedValue,
-      defaultValue: param.defaultValue
-    })
 
     // 检查值是否为"空"（需要使用默认值的情况）
     const isEmpty =
@@ -641,23 +335,7 @@ export class DataItemFetcher implements IDataItemFetcher {
       resolvedValue === '' ||
       (typeof resolvedValue === 'string' && resolvedValue.trim() === '')
 
-    console.log(`🔥 [DataItemFetcher] isEmpty检查结果:`, {
-      paramKey: param.key,
-      resolvedValue,
-      isEmpty,
-      isNull: resolvedValue === null,
-      isUndefined: resolvedValue === undefined,
-      isEmptyString: resolvedValue === '',
-      isEmptyTrimmedString: typeof resolvedValue === 'string' && resolvedValue.trim() === ''
-    })
-
     if (isEmpty) {
-      console.log(`⚠️ [DataItemFetcher] 值为空，使用默认值:`, {
-        paramKey: param.key,
-        resolvedValue,
-        defaultValue: param.defaultValue
-      })
-
       // 如果有默认值，使用默认值
       if (param.defaultValue !== undefined && param.defaultValue !== null) {
         resolvedValue = param.defaultValue
@@ -668,14 +346,6 @@ export class DataItemFetcher implements IDataItemFetcher {
 
     // 转换数据类型
     const convertedValue = convertValue(resolvedValue, param.dataType)
-
-    console.log(`🔥 [DataItemFetcher] 参数值解析最终结果:`, {
-      paramKey: param.key,
-      originalValue: param.value,
-      resolvedValue,
-      convertedValue,
-      convertedValueType: typeof convertedValue
-    })
 
     return convertedValue
   }
@@ -757,11 +427,11 @@ export class DataItemFetcher implements IDataItemFetcher {
   }
 
   /**
-   * 🔥 实际执行HTTP请求的方法（从fetchHttpData中提取）
+   * 实际执行HTTP请求的方法（从fetchHttpData中提取）
    */
   private async executeHttpRequest(config: HttpDataItemConfig, requestKey: string): Promise<any> {
     try {
-      // 🔥 CRITICAL：验证参数绑定路径完整性
+      // CRITICAL：验证参数绑定路径完整性
       this.validateParameterBindingPaths(config)
 
       // 第一步：处理请求前脚本
@@ -784,8 +454,6 @@ export class DataItemFetcher implements IDataItemFetcher {
       // 添加headers
       if (config.headers && Object.keys(config.headers).length > 0) {
         requestConfig.headers = config.headers
-        if (process.env.NODE_ENV === 'development') {
-        }
       }
 
       // 处理参数
@@ -795,163 +463,55 @@ export class DataItemFetcher implements IDataItemFetcher {
       // 统一处理路径参数
       // 优先使用新格式 pathParams，如果不存在则回退到旧格式 pathParameter
       if (config.pathParams && config.pathParams.length > 0) {
-        if (process.env.NODE_ENV === 'development') {
-        }
-        for (const p of config.pathParams.filter(p => p.enabled)) { // 🔥 修复：移除p.key检查，因为key可能为空
-          console.log(`🔥 [DataItemFetcher] 开始解析pathParams参数:`, {
-            paramKey: p.key,
-            paramValue: p.value,
-            isDynamic: p.isDynamic,
-            valueMode: p.valueMode,
-            selectedTemplate: p.selectedTemplate,
-            defaultValue: p.defaultValue,
-            variableName: p.variableName
-          })
-
+        for (const p of config.pathParams.filter(p => p.enabled)) {
           const resolvedValue = await this.resolveParameterValue(p)
 
-          console.log(`🔥 [DataItemFetcher] pathParams解析结果:`, {
-            paramKey: p.key,
-            paramValue: p.value,
-            resolvedValue,
-            resolvedValueType: typeof resolvedValue,
-            originalUrl: finalUrl,
-            willUseValue: resolvedValue !== null
-          })
-
           if (resolvedValue !== null) {
-            // 🔥 修复：路径参数key为空时，自动匹配URL中的第一个占位符
+            // 修复：路径参数key为空时，自动匹配URL中的第一个占位符
             let placeholder = p.key ? `{${p.key}}` : null
 
             if (!placeholder || placeholder === '{}') {
-              // 🔥 自动检测URL中的占位符
+              // 自动检测URL中的占位符
               const placeholderMatch = finalUrl.match(/\{([^}]+)\}/)
               if (placeholderMatch) {
                 placeholder = placeholderMatch[0] // 完整的 {id} 格式
-                console.log(`🔥 [DataItemFetcher] 自动检测到路径占位符: ${placeholder}`)
               }
             }
-
-            console.log(`🔥 [DataItemFetcher] 准备替换URL占位符:`, {
-              placeholder,
-              resolvedValue,
-              resolvedValueString: String(resolvedValue),
-              currentUrl: finalUrl,
-              包含占位符: finalUrl.includes(placeholder)
-            })
 
             if (placeholder && finalUrl.includes(placeholder)) {
               const oldUrl = finalUrl
               finalUrl = finalUrl.replace(placeholder, String(resolvedValue))
-              console.log(`✅ [DataItemFetcher] 路径参数替换成功:`, {
-                placeholder,
-                resolvedValue,
-                旧URL: oldUrl,
-                新URL: finalUrl
-              })
-            } else {
-              console.error(`❌ [DataItemFetcher] 路径参数占位符未找到:`, {
-                placeholder,
-                resolvedValue,
-                currentUrl: finalUrl,
-                所有占位符: finalUrl.match(/\{[^}]+\}/g)
-              })
             }
-          } else {
-            console.warn(`⚠️ [DataItemFetcher] pathParams参数解析为null，跳过:`, {
-              paramKey: p.key,
-              paramValue: p.value
-            })
           }
         }
       } else if (config.pathParameter) {
-        if (process.env.NODE_ENV === 'development') {
-        }
-
-        console.log(`🔥 [DataItemFetcher] 开始解析pathParameter参数:`, {
-          paramKey: config.pathParameter.key,
-          paramValue: config.pathParameter.value,
-          isDynamic: config.pathParameter.isDynamic,
-          valueMode: config.pathParameter.valueMode,
-          selectedTemplate: config.pathParameter.selectedTemplate,
-          defaultValue: config.pathParameter.defaultValue,
-          variableName: config.pathParameter.variableName
-        })
-
         const resolvedValue = await this.resolveParameterValue(config.pathParameter as HttpParameter)
-
-        console.log(`🔥 [DataItemFetcher] pathParameter解析结果:`, {
-          paramKey: config.pathParameter.key,
-          paramValue: config.pathParameter.value,
-          resolvedValue,
-          resolvedValueType: typeof resolvedValue,
-          originalUrl: finalUrl,
-          willUseValue: resolvedValue !== null
-        })
 
         if (resolvedValue !== null && resolvedValue && String(resolvedValue).trim() !== '') {
           const pathParam = config.pathParameter as HttpParameter
 
-          // 🔥 修复：pathParameter的key为空时，自动匹配URL中的第一个占位符
+          // 修复：pathParameter的key为空时，自动匹配URL中的第一个占位符
           let placeholder = pathParam.key ? `{${pathParam.key}}` : null
 
           if (!placeholder || placeholder === '{}') {
-            // 🔥 自动检测URL中的占位符
+            // 自动检测URL中的占位符
             const placeholderMatch = finalUrl.match(/\{([^}]+)\}/)
             if (placeholderMatch) {
               placeholder = placeholderMatch[0] // 完整的 {id} 格式
-              console.log(`🔥 [DataItemFetcher] pathParameter自动检测到占位符: ${placeholder}`)
             }
           }
-
-          console.log(`🔥 [DataItemFetcher] pathParameter准备替换URL占位符:`, {
-            placeholder,
-            resolvedValue,
-            resolvedValueString: String(resolvedValue),
-            currentUrl: finalUrl,
-            包含占位符: finalUrl.includes(placeholder)
-          })
 
           if (placeholder && finalUrl.includes(placeholder)) {
             const oldUrl = finalUrl
             finalUrl = finalUrl.replace(placeholder, String(resolvedValue))
-            console.log(`✅ [DataItemFetcher] pathParameter替换成功:`, {
-              placeholder,
-              resolvedValue,
-              旧URL: oldUrl,
-              新URL: finalUrl
-            })
-          } else {
-            console.error(`❌ [DataItemFetcher] pathParameter占位符未找到:`, {
-              placeholder,
-              resolvedValue,
-              currentUrl: finalUrl,
-              所有占位符: finalUrl.match(/\{[^}]+\}/g)
-            })
           }
-        } else {
-          console.warn(`⚠️ [DataItemFetcher] pathParameter参数解析为空，跳过:`, {
-            paramKey: config.pathParameter.key,
-            paramValue: config.pathParameter.value,
-            resolvedValue
-          })
         }
       }
 
       // 处理查询参数
       if (config.params && config.params.length > 0) {
-        if (process.env.NODE_ENV === 'development') {
-        }
         for (const p of config.params.filter(p => p.enabled && p.key)) {
           const resolvedValue = await this.resolveParameterValue(p)
-          console.log(`🔥 [DataItemFetcher] 查询参数解析结果:`, {
-            paramKey: p.key,
-            paramValue: p.value,
-            paramValueMode: p.valueMode,
-            paramDefaultValue: p.defaultValue,
-            resolvedValue,
-            willAddToQuery: resolvedValue !== null
-          })
           if (resolvedValue !== null) {
             queryParams[p.key] = resolvedValue
           }
@@ -960,33 +520,23 @@ export class DataItemFetcher implements IDataItemFetcher {
 
       // 向后兼容：统一参数系统
       else if (config.parameters && config.parameters.length > 0) {
-        if (process.env.NODE_ENV === 'development') {
-        }
         for (const p of config.parameters.filter(p => p.enabled && p.key)) {
           const resolvedValue = await this.resolveParameterValue(p)
-          if (process.env.NODE_ENV === 'development') {
-          }
           if (resolvedValue !== null) {
             switch (p.paramType) {
               case 'path':
-                // 🔥 修复：路径参数的拼接逻辑，避免直接字符串拼接
+                // 修复：路径参数的拼接逻辑，避免直接字符串拼接
                 if (resolvedValue && String(resolvedValue).trim() !== '') {
                   const separator = finalUrl.endsWith('/') ? '' : '/'
                   finalUrl = finalUrl + separator + String(resolvedValue)
-                  if (process.env.NODE_ENV === 'development') {
-                  }
                 }
                 break
               case 'query':
                 queryParams[p.key] = resolvedValue
-                if (process.env.NODE_ENV === 'development') {
-                }
                 break
               case 'header':
                 requestConfig.headers = requestConfig.headers || {}
                 requestConfig.headers[p.key] = String(resolvedValue)
-                if (process.env.NODE_ENV === 'development') {
-                }
                 break
             }
           }
@@ -995,8 +545,6 @@ export class DataItemFetcher implements IDataItemFetcher {
 
       if (Object.keys(queryParams).length > 0) {
         requestConfig.params = queryParams
-        if (process.env.NODE_ENV === 'development') {
-        }
       }
 
       // 处理请求体
@@ -1004,59 +552,31 @@ export class DataItemFetcher implements IDataItemFetcher {
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method) && config.body) {
         try {
           requestBody = typeof config.body === 'string' ? JSON.parse(config.body) : config.body
-          if (process.env.NODE_ENV === 'development') {
-          }
         } catch {
           requestBody = config.body
         }
       }
 
-      if (process.env.NODE_ENV === 'development') {
-      }
-
-      // 🔥 关键调试：输出最终的请求信息
-      console.log(`🔥 [DataItemFetcher] 最终HTTP请求信息:`, {
-        finalUrl,
-        method: config.method,
-        queryParams,
-        requestConfig,
-        hasBody: !!requestBody,
-        bodyContent: requestBody
-      })
-
       // 发起HTTP请求
       let response
       switch (config.method.toUpperCase()) {
         case 'GET':
-          if (process.env.NODE_ENV === 'development') {
-          }
           response = await request.get(finalUrl, requestConfig)
           break
         case 'POST':
-          if (process.env.NODE_ENV === 'development') {
-          }
           response = await request.post(finalUrl, requestBody, requestConfig)
           break
         case 'PUT':
-          if (process.env.NODE_ENV === 'development') {
-          }
           response = await request.put(finalUrl, requestBody, requestConfig)
           break
         case 'PATCH':
-          if (process.env.NODE_ENV === 'development') {
-          }
           response = await request.patch(finalUrl, requestBody, requestConfig)
           break
         case 'DELETE':
-          if (process.env.NODE_ENV === 'development') {
-          }
           response = await request.delete(finalUrl, requestConfig)
           break
         default:
           throw new Error(`不支持的HTTP方法: ${config.method}`)
-      }
-
-      if (process.env.NODE_ENV === 'development') {
       }
 
       // 第三步：处理响应后脚本
@@ -1085,7 +605,7 @@ export class DataItemFetcher implements IDataItemFetcher {
   }
 
   /**
-   * 🔥 调试工具：验证参数绑定路径完整性
+   * 调试工具：验证参数绑定路径完整性
    * 帮助用户快速发现参数绑定路径损坏问题
    */
   private validateParameterBindingPaths(config: HttpDataItemConfig): void {
@@ -1097,34 +617,12 @@ export class DataItemFetcher implements IDataItemFetcher {
     if (config.params) allParams.push(...config.params)
     if (config.parameters) allParams.push(...config.parameters)
 
-    console.log(`🔥 [DEBUG] HTTP配置完整信息:`, {
-      config,
-      pathParamsCount: config.pathParams?.length || 0,
-      pathParameterExists: !!config.pathParameter,
-      paramsCount: config.params?.length || 0,
-      parametersCount: config.parameters?.length || 0,
-      totalParams: allParams.length
-    })
-
     // 检查每个参数的绑定路径完整性
     allParams.forEach((param, index) => {
-      console.log(`🔥 [DEBUG] 参数${index + 1}完整信息:`, {
-        完整参数对象: param,
-        key: param.key,
-        value: param.value,
-        enabled: param.enabled,
-        selectedTemplate: param.selectedTemplate,
-        valueMode: param.valueMode,
-        variableName: param.variableName,
-        defaultValue: param.defaultValue,
-        dataType: param.dataType,
-        paramType: param.paramType
-      })
-
       if (param.selectedTemplate === 'component-property-binding' || param.valueMode === 'component') {
         let bindingPath = param.value
 
-        // 🔥 关键修复：在验证阶段也应用智能修复逻辑
+        // 关键修复：在验证阶段也应用智能修复逻辑
         if (!bindingPath || !bindingPath.includes('.')) {
           // 尝试从variableName重建绑定路径（与resolveParameterValue中的逻辑保持一致）
           if (param.variableName && param.variableName.includes('_')) {
@@ -1134,34 +632,15 @@ export class DataItemFetcher implements IDataItemFetcher {
               const propertyName = param.variableName.substring(lastUnderscoreIndex + 1)
               const reconstructedPath = `${componentId}.base.${propertyName}`
 
-              console.log(`🔧 [validateParameterBindingPaths] 应用智能修复:`, {
-                原始值: param.value,
-                variableName: param.variableName,
-                重建路径: reconstructedPath
-              })
-
               bindingPath = reconstructedPath
 
-              // 🔥 重要：不直接修改参数对象，避免污染原始配置
+              // 重要：不直接修改参数对象，避免污染原始配置
               // 只在当前执行上下文中使用修复后的路径
-              console.log(`✅ [validateParameterBindingPaths] 已在当前上下文中使用修复后的路径: ${reconstructedPath}`)
-              console.warn(`⚠️ [validateParameterBindingPaths] 注意：这只是临时修复，需要找到绑定路径损坏的根本原因！`)
             }
           }
         }
 
         const isValidPath = bindingPath && typeof bindingPath === 'string' && bindingPath.includes('.')
-
-        console.log(`🔥 [BINDING_PATH_CHECK] 参数绑定路径验证:`, {
-          paramKey: param.key || 'unknown',
-          绑定路径: bindingPath,
-          路径类型: typeof bindingPath,
-          是否有效格式: isValidPath,
-          预期格式: 'componentId.layer.propertyName',
-          状态: isValidPath ? '✅ 正常' : '❌ 损坏',
-          参数模式: param.selectedTemplate || param.valueMode,
-          默认值: param.defaultValue
-        })
 
         if (!isValidPath) {
           console.error(`❌ [CRITICAL] 发现损坏的参数绑定路径！`, {
@@ -1176,7 +655,7 @@ export class DataItemFetcher implements IDataItemFetcher {
   }
 
   /**
-   * 🔥 生成HTTP请求的唯一标识符，用于去重
+   * 生成HTTP请求的唯一标识符，用于去重
    * 基于URL、方法、参数等关键信息生成唯一key
    */
   private async generateRequestKey(config: HttpDataItemConfig): Promise<string> {
@@ -1191,12 +670,6 @@ export class DataItemFetcher implements IDataItemFetcher {
       const pathParams = []
       for (const p of config.pathParams.filter(p => p.enabled && p.key)) {
         const resolvedValue = await this.resolveParameterValue(p)
-        console.log(`🔥 [generateRequestKey] pathParams参数解析:`, {
-          paramKey: p.key,
-          paramValue: p.value,
-          resolvedValue,
-          参数模式: p.selectedTemplate || p.valueMode
-        })
         pathParams.push(`${p.key}=${resolvedValue}`)
       }
       pathParams.sort() // 排序确保一致性
@@ -1206,12 +679,6 @@ export class DataItemFetcher implements IDataItemFetcher {
     // 添加旧路径参数格式
     if (config.pathParameter) {
       const resolvedValue = await this.resolveParameterValue(config.pathParameter as HttpParameter)
-      console.log(`🔥 [generateRequestKey] pathParameter参数解析:`, {
-        paramKey: config.pathParameter.key,
-        paramValue: config.pathParameter.value,
-        resolvedValue,
-        参数模式: (config.pathParameter as HttpParameter).selectedTemplate || (config.pathParameter as HttpParameter).valueMode
-      })
       keyComponents.push(`pathParam:${resolvedValue}`)
     }
 
@@ -1246,19 +713,11 @@ export class DataItemFetcher implements IDataItemFetcher {
     const fullKey = keyComponents.join('|')
     const finalKey = `http_${this.simpleHash(fullKey)}`
 
-    console.log(`🔥 [generateRequestKey] 生成请求唯一标识:`, {
-      url: config.url,
-      method: config.method,
-      keyComponents,
-      fullKey,
-      finalKey
-    })
-
     return finalKey
   }
 
   /**
-   * 🔥 简单哈希函数，避免requestKey过长
+   * 简单哈希函数，避免requestKey过长
    */
   private simpleHash(str: string): string {
     let hash = 0

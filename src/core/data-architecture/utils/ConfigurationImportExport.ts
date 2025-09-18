@@ -202,9 +202,6 @@ export class ConfigurationExporter {
     configurationManager: any,
     componentType?: string
   ): Promise<ExportedConfiguration> {
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     // 获取完整配置
     const fullConfig = configurationManager.getConfiguration(componentId)
     if (!fullConfig) {
@@ -238,8 +235,6 @@ export class ConfigurationExporter {
       }
     }
 
-    if (process.env.NODE_ENV === 'development') {
-    }
     return exportedConfig
   }
 
@@ -326,8 +321,6 @@ export class ConfigurationExporter {
   ): string {
     // 处理变量名中的组件 ID（如：device_id_comp_123）
     if (value.includes(currentComponentId)) {
-      if (process.env.NODE_ENV === 'development') {
-      }
       return value.replace(new RegExp(currentComponentId, 'g'), this.CURRENT_COMPONENT_PLACEHOLDER)
     }
 
@@ -338,8 +331,6 @@ export class ConfigurationExporter {
       matches.forEach(match => {
         if (match !== currentComponentId) {
           dependencies.add(match)
-          if (process.env.NODE_ENV === 'development') {
-          }
         }
       })
     }
@@ -357,13 +348,9 @@ export class ConfigurationExporter {
     path: string
   ): string {
     if (componentId === currentComponentId) {
-      if (process.env.NODE_ENV === 'development') {
-      }
       return this.CURRENT_COMPONENT_PLACEHOLDER
     } else {
       dependencies.add(componentId)
-      if (process.env.NODE_ENV === 'development') {
-      }
       return componentId
     }
   }
@@ -433,9 +420,6 @@ export class ConfigurationExporter {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-
-    if (process.env.NODE_ENV === 'development') {
-    }
   }
 }
 
@@ -458,9 +442,6 @@ export class ConfigurationImporter {
     configurationManager: any,
     availableComponents?: any[]
   ): ImportPreview {
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     try {
       const config = typeof configJson === 'string' ? JSON.parse(configJson) : configJson
 
@@ -498,8 +479,6 @@ export class ConfigurationImporter {
         conflicts: conflictList
       }
 
-      if (process.env.NODE_ENV === 'development') {
-      }
       return preview
     } catch (error) {
       console.error(`❌ [ConfigurationImporter] 预览失败:`, error)
@@ -524,9 +503,6 @@ export class ConfigurationImporter {
       skipMissingDependencies?: boolean
     } = {}
   ): Promise<ImportResult> {
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     try {
       const config = typeof configJson === 'string' ? JSON.parse(configJson) : configJson
 
@@ -557,8 +533,6 @@ export class ConfigurationImporter {
       // 应用配置
       await this.applyConfiguration(processedConfig, targetComponentId, configurationManager, options)
 
-      if (process.env.NODE_ENV === 'development') {
-      }
       return {
         success: true,
         errors,
@@ -677,16 +651,12 @@ export class ConfigurationImporter {
       // 处理字符串中的占位符
       if (typeof obj === 'string') {
         if (obj === this.CURRENT_COMPONENT_PLACEHOLDER) {
-          if (process.env.NODE_ENV === 'development') {
-          }
           return targetComponentId
         }
 
         // 处理变量名中的占位符
         if (obj.includes(this.CURRENT_COMPONENT_PLACEHOLDER)) {
           const restored = obj.replace(new RegExp(this.CURRENT_COMPONENT_PLACEHOLDER, 'g'), targetComponentId)
-          if (process.env.NODE_ENV === 'development') {
-          }
           return restored
         }
 
@@ -740,22 +710,16 @@ export class ConfigurationImporter {
 
     // 应用数据源配置
     if (processedConfig.dataSource) {
-      if (process.env.NODE_ENV === 'development') {
-      }
       configurationManager.updateConfiguration(targetComponentId, 'dataSource', processedConfig.dataSource)
     }
 
     // 应用组件配置
     if (processedConfig.component) {
-      if (process.env.NODE_ENV === 'development') {
-      }
       configurationManager.updateConfiguration(targetComponentId, 'component', processedConfig.component)
     }
 
     // 应用交互配置
     if (processedConfig.interaction) {
-      if (process.env.NODE_ENV === 'development') {
-      }
       configurationManager.updateConfiguration(targetComponentId, 'interaction', processedConfig.interaction)
     }
   }
@@ -783,9 +747,6 @@ export class SingleDataSourceExporter {
     configurationManager: any,
     componentType?: string
   ): Promise<SingleDataSourceExport> {
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     if (!configurationManager) {
       throw new Error('配置管理器未提供')
     }
@@ -842,9 +803,6 @@ export class SingleDataSourceExporter {
           },
           dependencies: Array.from(dependencies)
         }
-      }
-
-      if (process.env.NODE_ENV === 'development') {
       }
 
       return exportData
@@ -1147,9 +1105,6 @@ export class SingleDataSourceImporter {
     }
 
     try {
-      if (process.env.NODE_ENV === 'development') {
-      }
-
       // 处理组件ID映射
       const processedConfig = this.processConfigurationForImport(importData, targetComponentId)
 
@@ -1162,10 +1117,9 @@ export class SingleDataSourceImporter {
         updatedAt: Date.now()
       }
 
-      // 🔧 确保 dataSources 数组存在
+      // 确保 dataSources 数组存在
       if (!existingConfig.dataSources || !Array.isArray(existingConfig.dataSources)) {
         existingConfig.dataSources = []
-        console.error(`⚠️ [SingleDataSourceImporter] dataSources 数组不存在或不是数组，已重置为空数组`)
       }
 
       // 找到或创建目标槽位
@@ -1181,21 +1135,9 @@ export class SingleDataSourceImporter {
         targetSlotIndex = existingConfig.dataSources.length - 1
       }
 
-      // 🔥 重要修复：根据真实导出数据结构，dataItems 已经是标准格式
-      // 从你的导出数据看，dataItems 已经包含 {item, processing} 结构，直接使用
+      // 根据真实导出数据结构，dataItems 已经是标准格式
+      // 从导出数据看，dataItems 已经包含 {item, processing} 结构，直接使用
       const standardDataItems = processedConfig.dataSourceConfig?.dataItems || []
-      
-      console.log(`🔥 [SingleDataSourceImporter] 处理导入数据项:`, {
-        originalDataItems: processedConfig.dataSourceConfig?.dataItems,
-        itemCount: standardDataItems.length,
-        firstItemStructure: standardDataItems[0] ? {
-          hasItem: 'item' in standardDataItems[0],
-          hasProcessing: 'processing' in standardDataItems[0],
-          itemType: standardDataItems[0].item?.type,
-          itemConfig: standardDataItems[0].item?.config,
-          processingFilterPath: standardDataItems[0].processing?.filterPath
-        } : 'no items'
-      })
 
       // 更新目标槽位的配置
       existingConfig.dataSources[targetSlotIndex] = {
@@ -1214,16 +1156,11 @@ export class SingleDataSourceImporter {
 
       // TODO: 应用相关的交互配置和HTTP绑定
       if (processedConfig.relatedConfig?.interactions?.length > 0) {
-        if (process.env.NODE_ENV === 'development') {
-        }
+        // 未来可以实现交互配置导入
       }
 
       if (processedConfig.relatedConfig?.httpBindings?.length > 0) {
-        if (process.env.NODE_ENV === 'development') {
-        }
-      }
-
-      if (process.env.NODE_ENV === 'development') {
+        // 未来可以实现HTTP绑定导入
       }
     } catch (error) {
       console.error(`❌ [SingleDataSourceImporter] 导入失败:`, error)
@@ -1232,21 +1169,11 @@ export class SingleDataSourceImporter {
   }
 
   /**
-   * 🔥 智能检测参数是否应该是动态参数
+   * 智能检测参数是否应该是动态参数
    * 防御性编程：即使isDynamic为false，但有绑定关系特征时自动修正为true
    */
   private detectIsDynamicParameter(param: any): boolean {
-    console.log(`🔥 [ConfigurationImportExport.detectIsDynamicParameter] 开始检测参数:`, {
-      paramKey: param.key,
-      originalIsDynamic: param.isDynamic,
-      valueMode: param.valueMode,
-      selectedTemplate: param.selectedTemplate,
-      value: param.value,
-      variableName: param.variableName,
-      description: param.description
-    })
-
-    // 🔥 关键修复：检测明显的绑定特征，不依赖于原始isDynamic值
+    // 检测明显的绑定特征，不依赖于原始isDynamic值
     const hasBindingFeatures =
       // 特征1：valueMode为component（最强特征）
       param.valueMode === 'component' ||
@@ -1266,38 +1193,17 @@ export class SingleDataSourceImporter {
         param.description.includes('component')
       ))
 
-    // 🔥 关键修复：如果检测到绑定特征，直接返回true，忽略原始isDynamic设置
+    // 如果检测到绑定特征，直接返回true，忽略原始isDynamic设置
     if (hasBindingFeatures) {
-      console.warn(`🔧 [ConfigurationImportExport] 检测到绑定特征，强制设置为动态:`, {
-        paramKey: param.key,
-        原始isDynamic: param.isDynamic,
-        修正为: true,
-        检测到的特征: {
-          valueMode: param.valueMode,
-          selectedTemplate: param.selectedTemplate,
-          value: param.value,
-          valueLength: param.value ? param.value.length : 0,
-          variableName: param.variableName,
-          description: param.description
-        }
-      })
       return true
     }
 
     // 如果没有绑定特征，保持原始设置或默认为false
-    const result = param.isDynamic !== undefined ? param.isDynamic : false
-
-    console.log(`🔥 [ConfigurationImportExport] 未检测到绑定特征:`, {
-      paramKey: param.key,
-      result,
-      reason: param.isDynamic !== undefined ? '保持原始设置' : '默认为静态'
-    })
-
-    return result
+    return param.isDynamic !== undefined ? param.isDynamic : false
   }
 
   /**
-   * 🔥 新增：保护HTTP参数的绑定路径不被意外覆盖
+   * 保护HTTP参数的绑定路径不被意外覆盖
    * 这是一个防御性机制，确保即使配置管理过程中出现问题，绑定路径也不会被损坏
    */
   private protectParameterBindingPaths(params: any[]): any[] {
@@ -1318,12 +1224,6 @@ export class SingleDataSourceImporter {
         param.variableName.includes('_')
 
       if (isBindingCorrupted) {
-        console.warn(`🛡️ [ConfigurationImportExport.protectParameterBindingPaths] 检测到损坏的绑定路径，正在恢复:`, {
-          paramKey: param.key,
-          损坏的绑定路径: param.value,
-          variableName: param.variableName
-        })
-
         // 从variableName重建正确的绑定路径
         if (param.variableName.includes('_')) {
           const lastUnderscoreIndex = param.variableName.lastIndexOf('_')
@@ -1331,12 +1231,6 @@ export class SingleDataSourceImporter {
             const componentId = param.variableName.substring(0, lastUnderscoreIndex)
             const propertyName = param.variableName.substring(lastUnderscoreIndex + 1)
             const reconstructedPath = `${componentId}.base.${propertyName}`
-
-            console.log(`🛡️ [ConfigurationImportExport.protectParameterBindingPaths] 已重建绑定路径:`, {
-              paramKey: param.key,
-              原损坏值: param.value,
-              重建路径: reconstructedPath
-            })
 
             return {
               ...param,
@@ -1374,7 +1268,7 @@ export class SingleDataSourceImporter {
         const processedArray = obj.map(item => {
           const processedItem = processValue(item)
 
-          // 🔥 关键修复：检测数组中的HTTP参数并修正isDynamic字段
+          // 检测数组中的HTTP参数并修正isDynamic字段
           if (processedItem && typeof processedItem === 'object' &&
               ('valueMode' in processedItem || 'selectedTemplate' in processedItem)) {
             const correctedIsDynamic = this.detectIsDynamicParameter(processedItem)
@@ -1387,7 +1281,7 @@ export class SingleDataSourceImporter {
           return processedItem
         })
 
-        // 🔥 新增：对数组中的HTTP参数应用绑定路径保护
+        // 对数组中的HTTP参数应用绑定路径保护
         return this.protectParameterBindingPaths(processedArray)
       }
 
@@ -1397,12 +1291,12 @@ export class SingleDataSourceImporter {
           result[key] = processValue(value)
         }
 
-        // 🔥 关键修复：检测HTTP参数对象并修正isDynamic字段
+        // 检测HTTP参数对象并修正isDynamic字段
         if (result && ('valueMode' in result || 'selectedTemplate' in result)) {
           const correctedIsDynamic = this.detectIsDynamicParameter(result)
           result.isDynamic = correctedIsDynamic
 
-          // 🔥 新增：对单个HTTP参数对象应用绑定路径保护
+          // 对单个HTTP参数对象应用绑定路径保护
           const protectedParams = this.protectParameterBindingPaths([result])
           return protectedParams[0]
         }

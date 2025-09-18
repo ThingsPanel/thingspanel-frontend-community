@@ -1,135 +1,129 @@
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useAuthStore } from '@/store/modules/auth'
-import { createLogger } from '@/utils/logger'
-import { $t } from '@/locales'
-import { sumData, totalNumber } from '@/service/api/system-data'
-import CountTo from '@/components/custom/count-to.vue'
-import GradientBg from './components/gradient-bg.vue'
-
-defineOptions({ name: 'AccessCard' })
-
-const authStore = useAuthStore()
-const logger = createLogger('AccessCard')
-
-// 定义卡片数据状态
-const todayData = ref({
-  value: 0,
-  unit: '人',
-})
-
-const yesterdayData = ref({
-  value: 0,
-  unit: '人',
-})
-
-/**
- * 获取数据
- * @description 根据用户权限决定调用哪个接口
- */
-const fetchData = async () => {
-  try {
-    // 在 card2.1 架构中，我们假设不再区分租户和普通用户的数据接口，
-    // 而是统一使用一个接口，后端根据用户信息返回相应数据。
-    // 此处暂时使用 totalNumber 作为示例，实际应替换为获取用户访问数据的接口。
-    const response = await totalNumber()
-
-    // 假设接口返回的数据结构为 { user_total_today: number, user_total_yesterday: number }
-    // 这里使用随机数模拟数据，以便于 UI 展示
-    if (response && typeof response.data === 'object' && response.data !== null) {
-      // 真实场景下，应该使用下面的赋值逻辑
-      // todayData.value.value = response.data.user_total_today || 0;
-      // yesterdayData.value.value = response.data.user_total_yesterday || 0;
-    } else {
-      // 模拟数据
-      todayData.value.value = Math.floor(Math.random() * 1000)
-      yesterdayData.value.value = Math.floor(Math.random() * 800)
-    }
-  } catch (error) {
-    logger.error('获取访问数据失败:', error)
-    // 发生错误时，将数值重置为0
-    todayData.value.value = 0
-    yesterdayData.value.value = 0
-  }
-}
-
-// 组件挂载后执行数据获取
-onMounted(() => {
-  fetchData()
-})
-</script>
-
 <template>
-  <div class="access-card">
-    <GradientBg
-      class="access-card__item"
-      start-color="#56cdf3"
-      end-color="#719de3"
-    >
-      <div class="access-card__info">
-        <span class="access-card__title">今日访问用户数</span>
-        <CountTo
-          :start-value="0"
-          :end-value="todayData.value"
-          class="access-card__value"
-        />
-        <span class="access-card__unit">{{ todayData.unit }}</span>
+  <div class="card-container">
+    <div class="content-wrapper">
+      <!-- CPU Icon -->
+      <svg
+        class="icon"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24">
+        <path
+          fill="currentColor"
+          d="M12 2a10 10 0 0 0-10 10a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2M9 9h6v6H9zM5 9h2v2H5zm0 4h2v2H5zm12-4h2v2h-2zm0 4h2v2h-2zM9 5h2v2H9zm4 0h2v2h-2zM5 13h2v2H5zm12 0h2v2h-2zm-4 4h2v2h-2zm-4 0h2v2H9z" />
+      </svg>
+      <div class="title">
+        {{ t('card.deviceTotal') }}
       </div>
-    </GradientBg>
-    <GradientBg
-      class="access-card__item"
-      start-color="#fcbc2d"
-      end-color="#fc9a2d"
-    >
-      <div class="access-card__info">
-        <span class="access-card__title">昨日访问用户数</span>
-        <CountTo
-          :start-value="0"
-          :end-value="yesterdayData.value"
-          class="access-card__value"
-        />
-        <span class="access-card__unit">{{ yesterdayData.unit }}</span>
+      <div class="value">
+        <CountTo :end-val="count" />
       </div>
-    </GradientBg>
+    </div>
   </div>
 </template>
 
-<style scoped>
-.access-card {
-  display: flex;
+<script lang="ts" setup>
+import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { CountTo } from 'vue3-count-to';
+import { totalNumber } from '@/service/api/system-data';
+
+const { t } = useI18n();
+const count = ref(0);
+
+async function fetchDeviceTotal() {
+  try {
+    const { data } = await totalNumber();
+    if (data && typeof data.device_total === 'number') {
+      count.value = data.device_total;
+    }
+  } catch (error) {
+    console.error('Error fetching device total:', error);
+  }
+}
+
+onMounted(() => {
+  fetchDeviceTotal();
+});
+</script>
+
+<style lang="scss" scoped>
+/* 渐变动画 */
+@keyframes gradient-bg {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 基础容器样式 */
+.card-container {
   width: 100%;
   height: 100%;
-  gap: 16px;
-}
-
-.access-card__item {
-  flex: 1;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   display: flex;
-  align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  padding: 16px;
-  color: #fff;
+  align-items: center;
+  transition: all 0.3s ease;
+  background-size: 200% 200%;
+  animation: gradient-bg 3s ease infinite;
+  /* 恢复用户喜欢的蓝绿色渐变 */
+  background-image: linear-gradient(-45deg, #22EDF0, #58B2F8);
+  /* 调整文字颜色为白色以保证对比度 */
+  color: white;
 }
 
-.access-card__info {
+/* 内容包裹器 */
+.content-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 8px;
+  text-align: center;
 }
 
-.access-card__title {
-  font-size: 14px;
-  margin-bottom: 8px;
+/* 内容包裹器 */.icon {
+  width: 32px;
+  height: 32px;
+  opacity: 0.9;
+  color: white; /* 确保图标也是白色 */
 }
 
-.access-card__value {
-  font-size: 28px;
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: white; /* 确保标题也是白色 */
+}
+
+.value {
+  font-size: 36px;
   font-weight: bold;
+  color: white; /* 确保数值也是白色 */
 }
 
-.access-card__unit {
-  font-size: 12px;
-  margin-left: 4px;
+/* 暗色主题样式 */
+:global(.dark) .card-container {
+  /* 使用更柔和的暗色渐变 */
+  background-image: linear-gradient(-45deg, #485563, #29323c);
+  color: #e5e7eb; /* Tailwind gray-200 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+:global(.dark) .icon {
+  color: #e5e7eb;
+}
+
+:global(.dark) .title {
+  color: #d1d5db;
+}
+
+:global(.dark) .value {
+  color: #f9fafb;
 }
 </style>
