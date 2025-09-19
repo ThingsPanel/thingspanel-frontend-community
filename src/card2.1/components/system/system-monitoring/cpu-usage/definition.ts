@@ -16,7 +16,7 @@ export default {
   tags: ['系统', '监控', 'CPU', '性能'],
   dataDriven: true,
   supportedDataSources: ['api'],
-  permission: '不限',
+  permission: 'SYS_ADMIN',
   dataSources: [
     {
       key: 'systemMetrics',

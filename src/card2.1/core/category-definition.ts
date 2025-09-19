@@ -213,8 +213,6 @@ export const COMPONENT_TO_CATEGORY_MAP: Record<string, string> = {
   'disk-usage': 'system-monitoring',
   'memory-usage': 'system-monitoring',
   'system-metrics-history': 'system-monitoring',
-  'off-line': 'device-status',
-  'on-line': 'device-status',
   'online-trend': 'device-status',
   'alarm-count': 'alarm-management',
   'alarm-info': 'alarm-management',

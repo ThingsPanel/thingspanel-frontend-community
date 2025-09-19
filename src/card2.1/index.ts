@@ -5,6 +5,7 @@
 
 import { componentRegistry } from '@/card2.1/core/component-registry'
 import { AutoRegistry } from '@/card2.1/core/auto-registry'
+import { setupStorageListener } from '@/card2.1/core/permission-watcher'
 
 // ========== 简化版本的初始化系统 ==========
 
@@ -30,6 +31,9 @@ export async function initializeCard2System() {
     try {
       console.log('🚀 [Card2.1] 开始初始化系统...')
 
+      // 🔥 优化：设置权限监听器
+      setupStorageListener()
+
       // 1. 使用 import.meta.glob 动态扫描所有组件的 index.ts 文件
       // **/* 模式确保可以扫描到任意深度的子目录
       const componentModules = import.meta.glob('./components/**/index.ts', { eager: true });
@@ -38,7 +42,7 @@ export async function initializeCard2System() {
 
       // 2. 调用自动注册系统，并传入扫描到的模块
       await autoRegistry.autoRegister(componentModules);
-      
+
       isInitialized = true
       console.log('✅ [Card2.1] 系统初始化完成')
       
@@ -73,7 +77,7 @@ export function getComponentTree() {
 /**
  * 按分类获取组件（简化版本）
  */
-export function getComponentsByCategory(mainCategory?: string, subCategory?: string) {
+export async function getComponentsByCategory(mainCategory?: string, subCategory?: string) {
   if (!isInitialized) {
     return []
   }

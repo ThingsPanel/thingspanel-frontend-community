@@ -183,20 +183,13 @@ export const Card2ComponentTypes = new Proxy([] as string[], {
 // ============ 编辑器集成工具函数 ============
 
 /**
- * 获取组件树结构
+ * 获取组件树结构（弃用 - 使用 @/card2.1/index 统一入口）
  * 用于 useComponentTree Hook 的数据源
  */
 export async function getComponentTree() {
-  // 🔥 修复：确保初始化完成
-  await ensureInitialized()
-  
-  const componentTreeData = autoRegistry.getComponentTree()
-  const components = componentTreeData.components
-  const categories = autoRegistry.getCategories()
-
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`🔥 [getComponentTree] 获取组件树: ${components.length} 个组件，${categories.length} 个分类`)
-  }
+  console.warn('⚠️ [getComponentTree] 此函数已弃用，请使用 @/card2.1/index 的统一初始化入口')
+  // 返回空数据，强制使用统一入口
+  return { categories: [], components: [], totalCount: 0 }
 
   // 过滤掉无效组件
   const validComponents = components.filter(comp => comp && comp.type && comp.name)
@@ -298,17 +291,14 @@ export async function reloadComponents(): Promise<void> {
  * useComponentTree 和其他 Hook 的统一初始化入口
  */
 export async function initializeCard2System(): Promise<void> {
-  await ensureInitialized()
-
-  // 注册所有组件到旧的组件注册表以保持兼容性
-  const allComponents = autoRegistry.getAllComponents()
-  allComponents.forEach(definition => {
-    ComponentRegistry.register(definition)
-  })
-
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`✅ [initializeCard2System] 系统初始化完成，注册了 ${allComponents.length} 个组件`)
-  }
+  console.warn('⚠️ [initializeCard2System] 此函数已弃用，请使用 @/card2.1/index 的统一初始化入口')
+  // 禁用：避免重复注册导致权限过滤失效
+  // await ensureInitialized()
+  // 禁用：避免重复注册
+  // const allComponents = autoRegistry.getAllComponents()
+  // allComponents.forEach(definition => {
+  //   ComponentRegistry.register(definition)
+  // })
 }
 
 /**

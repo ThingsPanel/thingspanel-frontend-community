@@ -56,7 +56,7 @@ export function getUserAuthorityFromStorage(): string {
     const userInfo = localStorage.getItem('userInfo')
     if (userInfo) {
       const parsed = JSON.parse(userInfo)
-      return parsed.authority || 'TENANT_USER' // 默认返回租户用户权限
+      return parsed.authority || 'TENANT_USER'
     }
   } catch (error) {}
 

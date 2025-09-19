@@ -16,7 +16,7 @@ export default {
   tags: ['系统', '租户', '统计', '用户管理'],
   dataDriven: true,
   supportedDataSources: ['api'],
-  permission: '不限',
+  permission: 'SYS_ADMIN',
   dataSources: [
     {
       key: 'tenantData',

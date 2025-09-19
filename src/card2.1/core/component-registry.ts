@@ -6,6 +6,7 @@
 
 import type { ComponentDefinition } from '@/card2.1/core/types'
 import type { ComponentSettingConfig } from '@/card2.1/types/setting-config'
+import { getUserAuthorityFromStorage, hasComponentPermission } from '@/card2.1/core/permission-utils'
 // 🔥 简化：移除过度复杂的属性暴露系统
 
 /**
@@ -51,9 +52,16 @@ export class ComponentRegistry {
    * @param definition 组件定义
    */
   static register(definition: ComponentDefinition): void {
-    // 🔥 设备字段已移除 - 现在由基础配置统一管理
-    // deviceId 和 metricsList 不再是组件定义的一部分
-    // 直接注册组件定义，无需额外补充字段
+    // 🔥 修复：同步权限检查，防止竞态条件
+    const userAuthority = getUserAuthorityFromStorage()
+    const permission = definition.permission || '不限'
+
+    if (!hasComponentPermission(permission as any, userAuthority)) {
+      console.warn(`🚫 [ComponentRegistry] 拦截未授权注册: ${definition.type} (需要${permission}, 用户${userAuthority})`)
+      return // 直接返回，不注册
+    }
+
+    console.log(`📝 [ComponentRegistry] 注册组件: ${definition.type} (权限: ${definition.permission})`)
 
     if (process.env.NODE_ENV === 'development') {
     }
