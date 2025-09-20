@@ -75,13 +75,41 @@ export class ComponentRegistry {
   }
 
   /**
-   * 🔥 简化：移除过度复杂的属性暴露注册
-   * 属性暴露功能已简化，不再需要单独的注册步骤
+   * 🔒 注册组件的属性暴露白名单
+   * 确保组件的属性暴露配置被正确注册到管理器中
    */
   private static async registerComponentPropertyExposure(definition: ComponentDefinition): Promise<void> {
-    // 🔥 简化：移除过度复杂的属性暴露系统
-    // 基础配置属性现在通过更简单的方式直接访问
-    if (process.env.NODE_ENV === 'development') {
+    try {
+      // 🔒 动态导入属性暴露管理器
+      const { propertyExposureManager, createPropertyWhitelist } = await import('@/card2.1/core/PropertyExposureManager')
+
+      // 如果组件定义包含属性白名单，则注册到管理器
+      if (definition.propertyWhitelist) {
+        propertyExposureManager.registerComponentWhitelist(definition.type, definition.propertyWhitelist)
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔒 [ComponentRegistry] 成功注册属性白名单: ${definition.type}`, {
+            propertiesCount: Object.keys(definition.propertyWhitelist.properties).length,
+            enabled: definition.propertyWhitelist.enabled
+          })
+        }
+      } else {
+        // 🔥 为没有配置属性白名单的组件创建默认白名单（包含全局基础属性）
+        const defaultWhitelist = createPropertyWhitelist({
+          // 空的组件特定属性，全局基础属性将由 PropertyExposureManager 自动添加
+        })
+
+        propertyExposureManager.registerComponentWhitelist(definition.type, defaultWhitelist)
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔒 [ComponentRegistry] 为组件 ${definition.type} 创建默认属性白名单（包含全局基础属性）`, {
+            propertiesCount: Object.keys(defaultWhitelist.properties).length,
+            包含全局基础属性: ['deviceId', 'metricsList'].every(prop => prop in defaultWhitelist.properties)
+          })
+        }
+      }
+    } catch (error) {
+      console.error(`❌ [ComponentRegistry] 注册属性白名单失败: ${definition.type}`, error)
     }
   }
 

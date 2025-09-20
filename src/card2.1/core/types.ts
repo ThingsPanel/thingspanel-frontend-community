@@ -16,6 +16,59 @@ import type {
  */
 export type ComponentPermission = '不限' | 'TENANT_ADMIN' | 'TENANT_USER' | 'SYS_ADMIN'
 
+// ============ 属性暴露白名单类型 ============
+
+/**
+ * 属性访问级别
+ */
+export type PropertyAccessLevel = 'public' | 'protected' | 'private'
+
+/**
+ * 属性数据类型
+ */
+export type PropertyDataType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'any'
+
+/**
+ * 属性暴露配置
+ */
+export interface PropertyExposureConfig {
+  /** 访问级别 */
+  level: PropertyAccessLevel
+  /** 属性别名（用于对外暴露时的名称） */
+  alias?: string
+  /** 属性描述 */
+  description: string
+  /** 数据类型 */
+  type: PropertyDataType
+  /** 是否只读 */
+  readonly?: boolean
+  /** 默认值 */
+  defaultValue?: any
+  /** 是否在交互配置中可见 */
+  visibleInInteraction?: boolean
+  /** 是否在调试模式中可见 */
+  visibleInDebug?: boolean
+}
+
+/**
+ * 组件属性暴露白名单
+ */
+export interface ComponentPropertyWhitelist {
+  /** 属性暴露配置映射：属性名 -> 暴露配置 */
+  properties: Record<string, PropertyExposureConfig>
+  /** 默认访问级别 */
+  defaultLevel?: PropertyAccessLevel
+  /** 是否启用属性暴露 */
+  enabled?: boolean
+  /** 属性暴露审计配置 */
+  audit?: {
+    /** 是否记录访问日志 */
+    logAccess?: boolean
+    /** 是否记录修改日志 */
+    logModification?: boolean
+  }
+}
+
 /**
  * 位置坐标
  */
@@ -219,6 +272,10 @@ export interface ComponentDefinition<TConfig = Record<string, any>> {
   // === 交互能力声明 ===
   /** 组件交互能力声明 */
   interactionCapabilities?: ComponentInteractionCapability
+
+  // === 属性暴露白名单 ===
+  /** 属性暴露白名单配置 */
+  propertyWhitelist?: ComponentPropertyWhitelist
 }
 
 // ============ 组件实例和配置 ============

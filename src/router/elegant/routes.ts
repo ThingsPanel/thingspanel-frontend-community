@@ -866,6 +866,15 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'test_panel-editor-v2',
           i18nKey: 'route.test_panel-editor-v2'
         }
+      },
+      {
+        name: 'test_property-binding-fix-validation',
+        path: '/test/property-binding-fix-validation',
+        component: 'view.test_property-binding-fix-validation',
+        meta: {
+          title: 'test_property-binding-fix-validation',
+          i18nKey: 'route.test_property-binding-fix-validation'
+        }
       }
     ]
   },

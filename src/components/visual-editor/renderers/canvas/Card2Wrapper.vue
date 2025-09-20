@@ -896,9 +896,7 @@ const initializeDataSourceConfiguration = async () => {
 
     // 检查是否有数据源配置
     const currentConfig = configurationManager.getConfiguration(props.nodeId)
-    const hasDataSourceConfig = currentConfig?.dataSource &&
-      currentConfig.dataSource.dataSources &&
-      currentConfig.dataSource.dataSources.length > 0
+    const hasDataSourceConfig = currentConfig?.dataSource
 
     if (hasDataSourceConfig) {
       console.log(`🔥 [Card2Wrapper] 组件 ${props.nodeId} 有数据源配置，触发配置变更执行`)

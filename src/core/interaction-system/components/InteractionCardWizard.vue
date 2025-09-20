@@ -193,6 +193,8 @@
 
 import { ref, computed, inject, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+// 🔒 导入属性暴露管理器用于安全的属性访问
+import { propertyExposureManager, type PropertyAccessContext } from '@/card2.1/core/PropertyExposureManager'
 import {
   NSpace,
   NButton,
@@ -370,10 +372,14 @@ const componentOptions = computed(() => {
   }
 })
 
-// ✅ 根据选择的目标组件动态获取可响应属性（包含基础配置属性）
-const targetPropertyOptions = computed(() => {
+// 🔒 安全的目标属性选项（使用ref支持异步更新）
+const targetPropertyOptions = ref<any[]>([])
+
+// 🔒 异步更新目标属性选项的函数
+const updateTargetPropertyOptions = async () => {
   if (!currentInteraction.value.targetComponentId) {
-    return []
+    targetPropertyOptions.value = []
+    return
   }
 
   // 🔥 移除 "self" 概念，直接根据组件ID查找
@@ -381,37 +387,16 @@ const targetPropertyOptions = computed(() => {
   const targetComponent = components.find(comp => comp.id === currentInteraction.value.targetComponentId)
 
   if (!targetComponent) {
-    return []
+    targetPropertyOptions.value = []
+    return
   }
 
   // 转换为选择器选项格式，按分组组织
   const groupedOptions: any[] = []
   const groups: Record<string, any[]> = {}
 
-  // 🔥 第一步：优先从组件的运行时暴露属性获取
-  if (targetComponent.metadata?.exposedProperties) {
-    const exposedProps = targetComponent.metadata.exposedProperties
-    const runtimeGroup = '运行时属性 (当前值)'
-
-    if (!groups[runtimeGroup]) {
-      groups[runtimeGroup] = []
-    }
-
-    Object.entries(exposedProps).forEach(([propName, currentValue]: [string, any]) => {
-      groups[runtimeGroup].push({
-        label: `${propName} (当前值: ${String(currentValue)})`,
-        value: propName,
-        property: {
-          name: propName,
-          label: propName,
-          type: typeof currentValue,
-          description: `当前值: ${String(currentValue)}`,
-          currentValue: currentValue,
-          isRuntimeProperty: true
-        }
-      })
-    })
-  }
+  // 🔒 第一步：安全获取白名单属性（替换不安全的exposedProperties访问）
+  await getWhitelistedProperties(targetComponent, groups)
 
   // 🔥 第二步：从组件定义获取可修改属性声明
   if (targetComponent.metadata?.card2Definition?.interactionCapabilities?.watchableProperties) {
@@ -500,9 +485,9 @@ const targetPropertyOptions = computed(() => {
     })
   }
 
-  // 转换为分组选项格式，确保基础配置排在前面
-  const groupOrder = ['运行时属性 (当前值)', '组件属性 (定义)', '基础配置', '通用属性 (fallback)']
-  groupOrder.forEach(groupName => {
+  // 🔒 转换为分组选项格式，确保基础配置排在前面
+  const safeGroupOrder = ['🔒 白名单属性 (安全)', '组件属性 (定义)', '基础配置', '通用属性 (fallback)']
+  safeGroupOrder.forEach(groupName => {
     if (groups[groupName] && groups[groupName].length > 0) {
       groupedOptions.push({
         type: 'group',
@@ -514,17 +499,25 @@ const targetPropertyOptions = computed(() => {
   })
 
   const options = groupedOptions.length > 0 ? groupedOptions : []
-  console.log(`🔥 [InteractionCardWizard] targetPropertyOptions 生成:`, {
+  console.log(`🔒 [InteractionCardWizard] 安全属性选项生成:`, {
     targetComponentId: currentInteraction.value.targetComponentId,
-    isSelf: currentInteraction.value.targetComponentId === 'self',
     targetComponent: targetComponent,
-    hasRuntimeProperties: !!targetComponent.metadata?.exposedProperties,
+    hasWhitelistProperties: !!groups['🔒 白名单属性 (安全)'],
     hasDefinitionProperties: !!targetComponent.metadata?.card2Definition?.interactionCapabilities?.watchableProperties,
     finalOptions: options
   })
 
-  return options
-})
+  targetPropertyOptions.value = options
+}
+
+// 🔒 监听目标组件ID变化，自动更新属性选项
+watch(
+  () => currentInteraction.value.targetComponentId,
+  () => {
+    updateTargetPropertyOptions()
+  },
+  { immediate: true }
+)
 
 // 🔥 可用属性选项 - 直接基于当前组件ID获取配置属性（与ComponentPropertySelector逻辑一致）
 const availablePropertyOptions = computed(() => {
@@ -762,6 +755,77 @@ const getActionType = (interaction: any) => {
   if (firstResponse.action === 'updateComponentData') return 'modify'
 
   return 'custom'
+}
+
+// 🔒 安全的属性获取函数 - 基于白名单访问组件属性
+const getWhitelistedProperties = async (targetComponent: any, groups: Record<string, any[]>) => {
+  if (!targetComponent?.type) return
+
+  try {
+    // 获取组件的白名单属性配置
+    const whitelistedProperties = propertyExposureManager.getWhitelistedProperties(
+      targetComponent.type,
+      'public',
+      { source: 'interaction' }
+    )
+
+    if (Object.keys(whitelistedProperties).length === 0) {
+      console.log(`🔒 [InteractionCardWizard] 组件 ${targetComponent.type} 没有配置属性白名单`)
+      return
+    }
+
+    const whitelistGroup = '🔒 白名单属性 (安全)'
+
+    if (!groups[whitelistGroup]) {
+      groups[whitelistGroup] = []
+    }
+
+    // 从组件的暴露属性中获取当前值
+    const exposedProps = targetComponent.metadata?.exposedProperties || {}
+
+    for (const [propertyName, config] of Object.entries(whitelistedProperties)) {
+      const exposedName = config.alias || propertyName
+      const currentValue = exposedProps[exposedName]
+
+      // 使用属性暴露管理器验证访问权限
+      const accessContext: PropertyAccessContext = {
+        accessType: 'read',
+        timestamp: Date.now(),
+        source: 'interaction'
+      }
+
+      const accessResult = propertyExposureManager.getExposedProperty(
+        targetComponent.type,
+        targetComponent.id,
+        propertyName,
+        currentValue,
+        accessContext
+      )
+
+      if (accessResult.allowed) {
+        groups[whitelistGroup].push({
+          label: `${exposedName} (${config.description})${currentValue !== undefined ? ` - 当前: ${String(currentValue)}` : ''}`,
+          value: exposedName,
+          property: {
+            name: exposedName,
+            label: exposedName,
+            type: config.type,
+            description: config.description,
+            source: 'whitelist',
+            readonly: config.readonly,
+            level: config.level
+          }
+        })
+      }
+    }
+
+    console.log(`🔒 [InteractionCardWizard] 成功获取白名单属性: ${targetComponent.type}`, {
+      totalWhitelisted: Object.keys(whitelistedProperties).length,
+      accessible: groups[whitelistGroup].length
+    })
+  } catch (error) {
+    console.error(`❌ [InteractionCardWizard] 获取白名单属性失败: ${targetComponent.type}`, error)
+  }
 }
 
 // 编辑交互

@@ -252,6 +252,7 @@ const routeMap: RouteMap = {
   "system-management-user_system-log": "/system-management-user/system-log",
   "test": "/test",
   "test_panel-editor-v2": "/test/panel-editor-v2",
+  "test_property-binding-fix-validation": "/test/property-binding-fix-validation",
   "ultra-kanban": "/ultra-kanban",
   "ultra-kanban_index": "/ultra-kanban/index",
   "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details",

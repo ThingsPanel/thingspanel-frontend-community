@@ -203,92 +203,29 @@ const getWhitelistedProperties = async (componentId: string) => {
         source: 'property-selector'
       }
 
-      // 🔒 从多个层级获取当前值，确保白名单属性与配置系统正确关联
-      let currentValue = undefined
-
-      // 🔥 修复：全局基础属性优先从 base 层获取
-      const isGlobalBaseProperty = propertyName === 'deviceId' || propertyName === 'metricsList'
-
-      if (isGlobalBaseProperty) {
-        // 全局基础属性：优先从 base 层获取
-        if (config?.base?.[propertyName] !== undefined) {
-          currentValue = config.base[propertyName]
-        }
-        // 兼容性：如果 base 层没有，从其他层获取
-        else if (config?.component?.[propertyName] !== undefined) {
-          currentValue = config.component[propertyName]
-        }
-        else if (config?.customize?.[propertyName] !== undefined) {
-          currentValue = config.customize[propertyName]
-        }
-        else if (config?.[propertyName] !== undefined) {
-          currentValue = config[propertyName]
-        }
-      } else {
-        // 普通组件属性：按原有顺序获取
-        // 1. 首先从组件层级获取
-        if (config?.component?.[propertyName] !== undefined) {
-          currentValue = config.component[propertyName]
-        }
-        // 2. 从customize层级获取（对于告警状态组件等）
-        else if (config?.customize?.[propertyName] !== undefined) {
-          currentValue = config.customize[propertyName]
-        }
-        // 3. 从根层级获取
-        else if (config?.[propertyName] !== undefined) {
-          currentValue = config[propertyName]
-        }
-      }
-
-      console.log(`🔒 [ComponentPropertySelector] 获取属性 ${propertyName} 的当前值:`, {
-        componentId,
-        propertyName,
-        isGlobalBaseProperty,
-        fromBase: config?.base?.[propertyName],
-        fromComponent: config?.component?.[propertyName],
-        fromCustomize: config?.customize?.[propertyName],
-        fromRoot: config?.[propertyName],
-        finalValue: currentValue,
-        获取策略: isGlobalBaseProperty ? '全局基础属性优先从base层获取' : '普通属性按组件->customize->根层顺序获取'
-      })
-
       const accessResult = propertyExposureManager.getExposedProperty(
         componentType,
         componentId,
         propertyName,
-        currentValue, // 使用正确获取的当前值
+        config?.component?.[propertyName], // 尝试获取当前值
         accessContext
       )
 
       if (accessResult.allowed) {
-        // 🔥 修复：区分全局基础属性和组件特定属性
-        const isGlobalBaseProperty = exposedName === 'deviceId' || exposedName === 'metricsList'
-        const propertyLayer = isGlobalBaseProperty ? 'base' : 'component'
-        const propertyPath = `${componentId}.${propertyLayer}.${exposedName}`
-
-        console.log(`🔒 [ComponentPropertySelector] 暴露白名单属性:`, {
-          propertyName: exposedName,
-          isGlobalBaseProperty,
-          propertyLayer,
-          propertyPath,
-          description: propConfig.description
-        })
-
         options.push({
-          label: `🔒 [安全] ${propConfig.description || exposedName} (${propConfig.type})${isGlobalBaseProperty ? ' - 全局基础属性' : ''}`,
-          value: propertyPath,
+          label: `🔒 [安全] ${propConfig.description || exposedName} (${propConfig.type})`,
+          value: `${componentId}.whitelist.${exposedName}`,
           propertyInfo: {
             componentId: componentId,
             componentName: getComponentName(componentId),
-            layer: propertyLayer,
+            layer: 'whitelist',
             propertyName: exposedName,
             propertyLabel: propConfig.description || exposedName,
             type: propConfig.type,
             description: propConfig.description,
             currentValue: accessResult.value,
             isWhitelisted: true,
-            accessLevel: propConfig.level,
-            isGlobalBaseProperty
+            accessLevel: propConfig.level
           }
         })
       }
@@ -337,71 +274,19 @@ const updatePropertyOptions = async () => {
   })
 
   try {
-    // 🔒 获取白名单属性
+    // 🔒 优先使用白名单属性
     const whitelistOptions = await getWhitelistedProperties(selectedComponentId.value)
 
-    // 🔒 获取组件配置，用于提取设备ID和指标
-    const config = configurationIntegrationBridge.getConfiguration(selectedComponentId.value)
-
-    // 🚨 强制添加用户要求的必须暴露属性：设备ID和设备指标
-    const mandatoryOptions: any[] = []
-
-    if (config?.base?.deviceId !== undefined) {
-      mandatoryOptions.push({
-        label: `🚨 [必需] 设备ID (string) - 用户要求必须暴露`,
-        value: `${selectedComponentId.value}.base.deviceId`,
-        propertyInfo: {
-          componentId: selectedComponentId.value,
-          componentName: getComponentName(selectedComponentId.value),
-          layer: 'base',
-          propertyName: 'deviceId',
-          propertyLabel: '设备ID',
-          type: 'string',
-          description: '关联的设备唯一标识（用户要求必须暴露）',
-          currentValue: config.base.deviceId,
-          isWhitelisted: false,
-          isMandatory: true,
-          userRequired: true
-        }
-      })
-    }
-
-    if (config?.base?.metricsList !== undefined) {
-      mandatoryOptions.push({
-        label: `🚨 [必需] 设备指标列表 (array) - 用户要求必须暴露`,
-        value: `${selectedComponentId.value}.base.metricsList`,
-        propertyInfo: {
-          componentId: selectedComponentId.value,
-          componentName: getComponentName(selectedComponentId.value),
-          layer: 'base',
-          propertyName: 'metricsList',
-          propertyLabel: '设备指标列表',
-          type: 'array',
-          description: '监控的设备指标列表（用户要求必须暴露）',
-          currentValue: config.base.metricsList,
-          isWhitelisted: false,
-          isMandatory: true,
-          userRequired: true
-        }
-      })
-    }
-
-    // 🔒 合并所有选项：白名单属性 + 必需属性
-    const allOptions = [...whitelistOptions, ...mandatoryOptions]
-
-    if (allOptions.length > 0) {
-      console.log(`🔒 [ComponentPropertySelector] 属性获取完成:`, {
-        白名单属性: whitelistOptions.length,
-        必需属性: mandatoryOptions.length,
-        总计: allOptions.length
-      })
-      propertyOptions.value = allOptions
+    if (whitelistOptions.length > 0) {
+      console.log(`🔒 [ComponentPropertySelector] 使用白名单属性:`, whitelistOptions.length)
+      propertyOptions.value = whitelistOptions
       return
     }
 
-    // 🔒 如果没有任何配置，提供基础安全属性
-    console.warn(`⚠️ [ComponentPropertySelector] 组件 ${selectedComponentId.value} 没有配置，只提供基础安全属性`)
+    // 🔒 如果没有白名单配置，显示警告并提供基础属性
+    console.warn(`⚠️ [ComponentPropertySelector] 组件 ${selectedComponentId.value} 没有白名单配置，将只提供基础安全属性`)
 
+    // 🔒 提供最基础的安全属性
     const basicSafeOptions = [
       {
         label: `🔒 [安全] 组件ID (string)`,
@@ -438,102 +323,3 @@ watch(
   { immediate: true }
 )
 
-// 🔒 新的白名单安全机制实现完成
-
-/**
- * 获取组件名称
- */
-const getComponentName = (componentId: string): string => {
-  const components = editorStore.nodes || []
-  const component = components.find(comp => comp.id === componentId)
-  return component?.name || component?.type || 'Unknown'
-}
-
-// 事件处理
-const onComponentChange = (componentId: string | null) => {
-  selectedComponentId.value = componentId || ''
-  selectedPropertyPath.value = ''
-
-  if (componentId) {
-    // 组件选择变化时，属性选项会通过 watch 自动更新
-    nextTick(() => {
-      emit('change', '', null)
-    })
-  } else {
-    emit('change', '', null)
-  }
-}
-
-const onPropertyChange = (propertyPath: string | null) => {
-  // 🔥 关键修复：严格验证绑定路径格式，防止错误值传递
-  if (propertyPath) {
-    // 验证绑定路径格式：必须是 componentId.layer.propertyName 格式
-    const isValidBindingPath = typeof propertyPath === 'string' &&
-      propertyPath.includes('.') &&
-      propertyPath.split('.').length >= 3 &&
-      propertyPath.length > 10 && // 绑定路径通常较长
-      !/^\d+$/.test(propertyPath) && // 不能是纯数字
-      !propertyPath.includes('undefined') && // 不能包含undefined
-      !propertyPath.includes('null') // 不能包含null
-
-    if (!isValidBindingPath) {
-      console.error(`❌ [ComponentPropertySelector] 检测到无效的绑定路径格式:`, {
-        输入值: propertyPath,
-        值类型: typeof propertyPath,
-        预期格式: 'componentId.layer.propertyName',
-        实际长度: typeof propertyPath === 'string' ? propertyPath.length : '非字符串'
-      })
-      // 拒绝设置无效的绑定路径，保持当前选择不变
-      return
-    }
-  }
-
-  selectedPropertyPath.value = propertyPath || ''
-
-  if (propertyPath) {
-    // 从选项中找到对应的属性信息
-    const selectedOption = propertyOptions.value.find(opt => opt.value === propertyPath)
-    const propertyInfo = selectedOption?.propertyInfo || null
-
-    console.log(`✅ [ComponentPropertySelector] 发送有效的绑定路径:`, {
-      绑定路径: propertyPath,
-      属性信息: propertyInfo,
-      组件ID: propertyInfo?.componentId,
-      属性名: propertyInfo?.propertyName
-    })
-
-    emit('change', propertyPath, propertyInfo)
-  } else {
-    emit('change', '', null)
-  }
-}
-</script>
-
-<style scoped>
-.component-property-selector {
-  width: 100%;
-}
-
-.selector-level {
-  margin-bottom: 16px;
-}
-
-.selector-level:last-child {
-  margin-bottom: 0;
-}
-
-.selector-level .n-form-item {
-  margin-bottom: 0;
-}
-
-.selector-level .n-select {
-  width: 100%;
-}
-
-.debug-info {
-  padding: 8px;
-  background: #f5f5f5;
-  border-radius: 4px;
-  border: 1px solid #e0e0e0;
-}
-</style>

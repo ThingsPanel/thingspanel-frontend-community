@@ -207,11 +207,24 @@ export class SimpleDataBridge {
       })
 
 
+      // 🔥 在执行前详细检查配置中的HTTP参数
+      this.validateConfigBeforeExecution(dataSourceConfig)
+
       // 🔥 使用多层执行器链执行完整的数据处理管道
+      console.log(`🔥 [SimpleDataBridge] 即将调用 MultiLayerExecutorChain.executeDataProcessingChain`)
+      console.log(`🔥 [SimpleDataBridge] 传入的配置:`, dataSourceConfig)
+
       const executionResult: ExecutionResult = await this.executorChain.executeDataProcessingChain(
         dataSourceConfig,
         true
       )
+
+      console.log(`🔥 [SimpleDataBridge] MultiLayerExecutorChain 执行完成:`, {
+        success: executionResult.success,
+        hasComponentData: !!executionResult.componentData,
+        hasError: !!executionResult.error,
+        executionResult
+      })
 
 
       if (executionResult.success && executionResult.componentData) {
@@ -477,6 +490,90 @@ export class SimpleDataBridge {
         memoryUsageMB: warehouseStats.memoryUsageMB
       }
     }
+  }
+
+  /**
+   * 🔥 新增：在执行前验证配置完整性，特别检查HTTP参数绑定路径
+   */
+  private validateConfigBeforeExecution(config: DataSourceConfiguration): void {
+    console.log(`🔍 [SimpleDataBridge] 执行前配置验证:`)
+    console.log(`================================================`)
+
+    config.dataSources.forEach((dataSource, dsIndex) => {
+      console.log(`🔍 [数据源 ${dsIndex}] 基本信息:`, {
+        sourceId: dataSource.sourceId,
+        dataItems数量: dataSource.dataItems.length,
+        mergeStrategy: dataSource.mergeStrategy
+      })
+
+      dataSource.dataItems.forEach((dataItem, itemIndex) => {
+        const { item } = dataItem
+        console.log(`🔍 [数据源 ${dsIndex} - 数据项 ${itemIndex}] 信息:`, {
+          类型: item.type,
+          配置完整对象: JSON.stringify(item.config, null, 2)
+        })
+
+        // 🚨 特别检查HTTP类型的参数
+        if (item.type === 'http' && item.config) {
+          const httpConfig = item.config
+          console.log(`🔍 [HTTP配置检查] 基本信息:`, {
+            url: httpConfig.url,
+            method: httpConfig.method,
+            params数量: httpConfig.params ? httpConfig.params.length : 0,
+            parameters数量: httpConfig.parameters ? httpConfig.parameters.length : 0,
+            pathParams数量: httpConfig.pathParams ? httpConfig.pathParams.length : 0
+          })
+
+          // 检查所有参数源
+          const allParams = [
+            ...(httpConfig.params || []).map(p => ({ source: 'params', param: p })),
+            ...(httpConfig.parameters || []).map(p => ({ source: 'parameters', param: p })),
+            ...(httpConfig.pathParams || []).map(p => ({ source: 'pathParams', param: p }))
+          ]
+
+          allParams.forEach(({ source, param }, paramIndex) => {
+            console.log(`🔍 [${source}[${paramIndex}]] 参数详情:`, {
+              key: param.key,
+              value: param.value,
+              valueType: typeof param.value,
+              valueLength: typeof param.value === 'string' ? param.value.length : 'N/A',
+              variableName: param.variableName,
+              isDynamic: param.isDynamic,
+              valueMode: param.valueMode,
+              selectedTemplate: param.selectedTemplate,
+              完整参数JSON: JSON.stringify(param, null, 2)
+            })
+
+            // 🚨 检测损坏的绑定路径
+            if (param.value && typeof param.value === 'string') {
+              const isSuspiciousPath = !param.value.includes('.') && param.value.length < 10 && param.variableName
+
+              if (isSuspiciousPath) {
+                console.error(`🚨 [SimpleDataBridge] 在传递给MultiLayerExecutorChain前发现损坏的绑定路径!`, {
+                  数据源索引: dsIndex,
+                  数据项索引: itemIndex,
+                  参数源: source,
+                  参数索引: paramIndex,
+                  参数key: param.key,
+                  损坏的value: param.value,
+                  variableName: param.variableName,
+                  检测时间戳: Date.now(),
+                  堆栈跟踪: new Error().stack
+                })
+              } else {
+                console.log(`✅ [${source}[${paramIndex}]] 绑定路径完整性验证通过:`, {
+                  key: param.key,
+                  value: param.value,
+                  valueLength: param.value.length
+                })
+              }
+            }
+          })
+        }
+      })
+    })
+
+    console.log(`================================================`)
   }
 
   /**

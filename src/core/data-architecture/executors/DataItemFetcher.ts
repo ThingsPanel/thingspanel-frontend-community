@@ -197,6 +197,21 @@ export class DataItemFetcher implements IDataItemFetcher {
             if (componentValue !== undefined) {
               return componentValue
             }
+          } else if (propertyPath.startsWith('component.')) {
+            // 🔥 处理 component.title 格式路径
+            const actualPropertyPath = propertyPath.replace('component.', '')
+
+            // 直接从 component 层获取属性（去掉component前缀）
+            const componentValue = this.getNestedProperty(latestConfig.component, actualPropertyPath)
+            if (componentValue !== undefined) {
+              return componentValue
+            }
+
+            // 如果component层没有，也尝试base层
+            const baseValue = this.getNestedProperty(latestConfig.base, actualPropertyPath)
+            if (baseValue !== undefined) {
+              return baseValue
+            }
           } else {
             // 处理其他属性路径
             // 首先尝试从 base 层获取（优先级更高，因为交互通常修改 base 层）
@@ -271,27 +286,190 @@ export class DataItemFetcher implements IDataItemFetcher {
   }
 
   /**
+   * 🔥 新增：生成对象的简单哈希值，用于调试对象引用变化
+   * @param obj 要哈希的对象
+   * @returns 哈希字符串
+   */
+  private getObjectHash(obj: any): string {
+    try {
+      const str = JSON.stringify(obj, (key, value) => {
+        if (typeof value === 'function') return '[Function]'
+        if (value instanceof Date) return value.toISOString()
+        return value
+      })
+
+      let hash = 0
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i)
+        hash = ((hash << 5) - hash) + char
+        hash = hash & hash // 转换为32位整数
+      }
+
+      return Math.abs(hash).toString(16)
+    } catch {
+      return 'hash-failed'
+    }
+  }
+
+  /**
+   * 🔥 新增：专门的HTTP参数调试追踪器
+   * 用于详细记录HTTP请求中所有参数的生命周期
+   */
+  private logHttpParametersLifecycle(config: HttpDataItemConfig, stage: string): void {
+    console.log(`🔍 [DataItemFetcher] HTTP参数生命周期追踪 - ${stage}:`)
+    console.log(`================================================`)
+
+    const allParams: Array<{ source: string; param: HttpParameter; index: number }> = []
+
+    // 收集所有参数源
+    if (config.pathParams) {
+      config.pathParams.forEach((param, index) => {
+        allParams.push({ source: 'pathParams', param, index })
+      })
+    }
+
+    if (config.pathParameter) {
+      allParams.push({ source: 'pathParameter', param: config.pathParameter as HttpParameter, index: 0 })
+    }
+
+    if (config.params) {
+      config.params.forEach((param, index) => {
+        allParams.push({ source: 'params', param, index })
+      })
+    }
+
+    if (config.parameters) {
+      config.parameters.forEach((param, index) => {
+        allParams.push({ source: 'parameters', param, index })
+      })
+    }
+
+    // 详细记录每个参数
+    allParams.forEach(({ source, param, index }) => {
+      console.log(`🔍 [${source}[${index}]] 参数详情:`, {
+        参数源: source,
+        参数索引: index,
+        参数key: param.key,
+        参数value: param.value,
+        value类型: typeof param.value,
+        value长度: typeof param.value === 'string' ? param.value.length : 'N/A',
+        valueMode: param.valueMode,
+        selectedTemplate: param.selectedTemplate,
+        isDynamic: param.isDynamic,
+        variableName: param.variableName,
+        defaultValue: param.defaultValue,
+        enabled: param.enabled,
+        参数哈希: this.getObjectHash(param),
+        完整参数JSON: JSON.stringify(param, null, 2)
+      })
+
+      // 🔥 特别关注疑似损坏的绑定路径
+      if (param.value && typeof param.value === 'string') {
+        const isSuspiciousPath = !param.value.includes('.') && param.value.length < 10 && param.variableName
+        if (isSuspiciousPath) {
+          console.error(`🚨 [${source}[${index}]] 发现疑似损坏的绑定路径:`, {
+            参数key: param.key,
+            疑似损坏路径: param.value,
+            variableName: param.variableName,
+            阶段: stage,
+            时间戳: Date.now()
+          })
+        }
+      }
+    })
+
+    console.log(`================================================`)
+  }
+
+  /**
    * 解析参数值，支持默认值回退机制和组件属性绑定
    * @param param HTTP参数
    * @returns 解析后的参数值
    */
   private async resolveParameterValue(param: HttpParameter): Promise<any> {
+    // 🔥 关键调试：记录参数解析前的状态
+    console.log(`🔍 [DataItemFetcher] ================================ 开始解析参数 ================================`)
+    console.log(`🔍 [DataItemFetcher] 参数解析前完整状态:`, {
+      参数key: param.key,
+      原始value: param.value,
+      valueType: typeof param.value,
+      valueLength: typeof param.value === 'string' ? param.value.length : 'N/A',
+      valueMode: param.valueMode,
+      selectedTemplate: param.selectedTemplate,
+      isDynamic: param.isDynamic,
+      variableName: param.variableName,
+      defaultValue: param.defaultValue,
+      完整参数对象JSON: JSON.stringify(param, null, 2)
+    })
+
+    // 🔥 新增：记录参数对象的内存引用信息
+    console.log(`🔍 [DataItemFetcher] 参数对象内存调试:`, {
+      参数对象哈希: this.getObjectHash(param),
+      value字段是否为引用: typeof param.value === 'object',
+      参数对象是否被冻结: Object.isFrozen(param),
+      参数对象是否被密封: Object.isSealed(param)
+    })
+
     let resolvedValue = param.value
+
+    // 🔥 新增：记录value字段的详细分析
+    console.log(`🔍 [DataItemFetcher] value字段详细分析:`, {
+      value值: param.value,
+      value原始类型: typeof param.value,
+      value字符串长度: typeof param.value === 'string' ? param.value.length : 'N/A',
+      value是否包含点号: typeof param.value === 'string' ? param.value.includes('.') : false,
+      value是否为纯数字: typeof param.value === 'string' ? /^\d+$/.test(param.value) : false,
+      value是否为短字符串: typeof param.value === 'string' ? param.value.length < 10 : false,
+      是否疑似损坏的绑定路径: typeof param.value === 'string' &&
+        !param.value.includes('.') &&
+        param.value.length < 10 &&
+        param.variableName &&
+        param.variableName.includes('_')
+    })
 
     // 防御性检测：运行时智能修正isDynamic字段
     const shouldBeDynamic = this.detectRuntimeIsDynamic(param)
     if (shouldBeDynamic && !param.isDynamic) {
       // 临时修正，不修改原参数对象
       param = { ...param, isDynamic: true }
+      console.log(`🔧 [DataItemFetcher] 修正参数isDynamic字段:`, {
+        参数key: param.key,
+        修正前: false,
+        修正后: true,
+        修正依据: {
+          valueMode: param.valueMode,
+          selectedTemplate: param.selectedTemplate,
+          value格式: typeof param.value === 'string' && param.value.includes('.')
+        }
+      })
     }
 
     // 修复：优先使用isDynamic字段判断，支持属性绑定
     if (param.isDynamic || param.selectedTemplate === 'component-property-binding' || param.valueMode === 'component') {
+      console.log(`🎯 [DataItemFetcher] 检测到动态参数绑定:`, {
+        参数key: param.key,
+        绑定路径: param.value,
+        绑定条件: {
+          isDynamic: param.isDynamic,
+          selectedTemplate: param.selectedTemplate,
+          valueMode: param.valueMode
+        }
+      })
 
       // 关键修复：使用深拷贝保护原始参数，防止数据被意外修改
       let bindingPath = param.value
 
-      // 超强防护：如果bindingPath看起来不像绑定路径但variableName是正确的，说明value被损坏了
+      // 🔥 详细记录绑定路径处理前的状态
+      console.log(`🔍 [DataItemFetcher] 绑定路径处理前状态:`, {
+        参数key: param.key,
+        绑定路径原始值: bindingPath,
+        绑定路径类型: typeof bindingPath,
+        绑定路径长度: typeof bindingPath === 'string' ? bindingPath.length : 'N/A',
+        variableName: param.variableName,
+        处理时间戳: Date.now()
+      })
+
+      // 🔥 检测绑定路径损坏的情况
       const isBindingPathCorrupted = bindingPath &&
         typeof bindingPath === 'string' &&
         !bindingPath.includes('.') &&
@@ -300,32 +478,123 @@ export class DataItemFetcher implements IDataItemFetcher {
         param.variableName.includes('_')
 
       if (isBindingPathCorrupted) {
+        console.error(`🚨 [DataItemFetcher] 检测到绑定路径损坏！`, {
+          参数key: param.key,
+          损坏的绑定路径: bindingPath,
+          损坏路径JSON: JSON.stringify(bindingPath),
+          variableName: param.variableName,
+          variableNameJSON: JSON.stringify(param.variableName),
+          损坏特征: {
+            不包含点号: !bindingPath.includes('.'),
+            长度过短: bindingPath.length < 10,
+            有变量名: !!param.variableName,
+            是否为纯数字: /^\d+$/.test(bindingPath)
+          },
+          堆栈跟踪: new Error().stack
+        })
+
         // 从variableName重建绑定路径
         if (param.variableName.includes('_')) {
           const lastUnderscoreIndex = param.variableName.lastIndexOf('_')
           if (lastUnderscoreIndex > 0) {
             const componentId = param.variableName.substring(0, lastUnderscoreIndex)
             const propertyName = param.variableName.substring(lastUnderscoreIndex + 1)
-            bindingPath = `${componentId}.base.${propertyName}`
+            const recoveredPath = `${componentId}.component.${propertyName}` // 🔥 修复：使用component层而不是base层
+
+            console.log(`🔧 [DataItemFetcher] 从variableName恢复绑定路径:`, {
+              参数key: param.key,
+              损坏的路径: bindingPath,
+              损坏路径类型: typeof bindingPath,
+              variableName: param.variableName,
+              lastUnderscoreIndex: lastUnderscoreIndex,
+              解析的componentId: componentId,
+              解析的propertyName: propertyName,
+              恢复的路径: recoveredPath,
+              恢复后路径长度: recoveredPath.length,
+              恢复时间戳: Date.now()
+            })
+
+            bindingPath = recoveredPath
+
+            // 🔥 验证恢复后的路径
+            console.log(`✅ [DataItemFetcher] 绑定路径恢复验证:`, {
+              参数key: param.key,
+              恢复后绑定路径: bindingPath,
+              恢复后路径类型: typeof bindingPath,
+              恢复后路径长度: bindingPath.length,
+              是否包含点号: bindingPath.includes('.'),
+              路径格式验证: bindingPath.split('.').length >= 3
+            })
           }
         }
+      } else {
+        console.log(`✅ [DataItemFetcher] 绑定路径完整性验证通过:`, {
+          参数key: param.key,
+          绑定路径: bindingPath,
+          路径长度: typeof bindingPath === 'string' ? bindingPath.length : 'N/A',
+          包含点号: typeof bindingPath === 'string' ? bindingPath.includes('.') : false
+        })
       }
 
       // 最终验证：如果修复后的绑定路径仍然不正确，使用默认值
       if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
+        console.error(`❌ [DataItemFetcher] 绑定路径验证失败，使用默认值:`, {
+          参数key: param.key,
+          无效路径: bindingPath,
+          使用默认值: param.defaultValue
+        })
         return param.defaultValue || null
       }
 
       if (bindingPath && typeof bindingPath === 'string') {
+        console.log(`🔍 [DataItemFetcher] 开始获取组件属性值:`, {
+          参数key: param.key,
+          绑定路径: bindingPath,
+          绑定路径长度: bindingPath.length,
+          currentComponentId: this.currentComponentId,
+          调用时间戳: Date.now()
+        })
+
+        // 🔥 记录属性值获取前的完整状态
+        console.log(`🔍 [DataItemFetcher] 属性值获取前状态快照:`, {
+          参数完整对象: JSON.stringify(param, null, 2),
+          绑定路径详情: {
+            原始值: bindingPath,
+            分割部分: bindingPath.split('.'),
+            组件ID部分: bindingPath.split('.')[0],
+            属性路径部分: bindingPath.split('.').slice(1).join('.')
+          }
+        })
+
         const actualValue = await this.getComponentPropertyValue(bindingPath)
+
+        console.log(`📝 [DataItemFetcher] 组件属性值获取结果:`, {
+          参数key: param.key,
+          绑定路径: bindingPath,
+          获取到的值: actualValue,
+          值类型: typeof actualValue,
+          值长度: typeof actualValue === 'string' ? actualValue.length : 'N/A',
+          是否有效: actualValue !== undefined && actualValue !== null && actualValue !== '',
+          获取时间戳: Date.now()
+        })
 
         if (actualValue !== undefined && actualValue !== null && actualValue !== '') {
           resolvedValue = actualValue
         } else {
           // 当组件属性值为空时，设置 resolvedValue 为 undefined，触发默认值机制
           resolvedValue = undefined
+          console.log(`⚠️ [DataItemFetcher] 组件属性值为空，将使用默认值:`, {
+            参数key: param.key,
+            绑定路径: bindingPath,
+            defaultValue: param.defaultValue
+          })
         }
       }
+    } else {
+      console.log(`📄 [DataItemFetcher] 静态参数，直接使用value:`, {
+        参数key: param.key,
+        静态值: param.value
+      })
     }
 
     // 检查值是否为"空"（需要使用默认值的情况）
@@ -354,20 +623,51 @@ export class DataItemFetcher implements IDataItemFetcher {
    * 根据类型分支处理数据获取
    */
   async fetchData(item: DataItem): Promise<any> {
+    console.log(`🎯 [DataItemFetcher] ==================== 开始fetchData ====================`)
+    console.log(`🎯 [DataItemFetcher] 接收到的item类型: ${item.type}`)
+    console.log(`🎯 [DataItemFetcher] 接收到的item配置:`, JSON.stringify(item.config, null, 2))
+    console.log(`🎯 [DataItemFetcher] 当前组件ID上下文: ${this.currentComponentId}`)
+    console.log(`🎯 [DataItemFetcher] =======================================`)
+
     try {
+      let result
       switch (item.type) {
         case 'json':
-          return await this.fetchJsonData(item.config)
+          console.log(`🎯 [DataItemFetcher] 执行 fetchJsonData`)
+          result = await this.fetchJsonData(item.config)
+          break
         case 'http':
-          return await this.fetchHttpData(item.config)
+          console.log(`🎯 [DataItemFetcher] 执行 fetchHttpData`)
+          result = await this.fetchHttpData(item.config)
+          break
         case 'websocket':
-          return await this.fetchWebSocketData(item.config)
+          console.log(`🎯 [DataItemFetcher] 执行 fetchWebSocketData`)
+          result = await this.fetchWebSocketData(item.config)
+          break
         case 'script':
-          return await this.fetchScriptData(item.config)
+          console.log(`🎯 [DataItemFetcher] 执行 fetchScriptData`)
+          result = await this.fetchScriptData(item.config)
+          break
         default:
-          return {}
+          console.log(`🎯 [DataItemFetcher] 未知类型，返回空对象`)
+          result = {}
       }
+
+      console.log(`🎯 [DataItemFetcher] fetchData执行完成:`, {
+        类型: item.type,
+        结果类型: typeof result,
+        结果是否为空: result === null || result === undefined,
+        结果键数量: typeof result === 'object' && result ? Object.keys(result).length : 'N/A',
+        完整结果: result
+      })
+
+      return result
     } catch (error) {
+      console.error(`❌ [DataItemFetcher] fetchData执行失败:`, {
+        类型: item.type,
+        错误: error instanceof Error ? error.message : error,
+        堆栈: error instanceof Error ? error.stack : undefined
+      })
       return {} // 统一错误处理：返回空对象
     }
   }
@@ -431,8 +731,14 @@ export class DataItemFetcher implements IDataItemFetcher {
    */
   private async executeHttpRequest(config: HttpDataItemConfig, requestKey: string): Promise<any> {
     try {
+      // 🔥 第一步：记录HTTP请求开始前的参数状态
+      this.logHttpParametersLifecycle(config, '请求开始前')
+
       // CRITICAL：验证参数绑定路径完整性
       this.validateParameterBindingPaths(config)
+
+      // 🔥 第二步：验证后再次记录参数状态
+      this.logHttpParametersLifecycle(config, '参数验证后')
 
       // 第一步：处理请求前脚本
       if (config.preRequestScript) {
@@ -460,11 +766,28 @@ export class DataItemFetcher implements IDataItemFetcher {
       let finalUrl = config.url
       const queryParams: Record<string, any> = {}
 
+      // 🔥 第三步：开始处理参数前记录状态
+      this.logHttpParametersLifecycle(config, '开始处理参数前')
+
       // 统一处理路径参数
       // 优先使用新格式 pathParams，如果不存在则回退到旧格式 pathParameter
       if (config.pathParams && config.pathParams.length > 0) {
+        console.log(`🔍 [DataItemFetcher] 开始处理pathParams，数量: ${config.pathParams.length}`)
+
         for (const p of config.pathParams.filter(p => p.enabled)) {
+          console.log(`🔍 [DataItemFetcher] 处理pathParam:`, {
+            参数key: p.key,
+            参数value: p.value,
+            处理前参数哈希: this.getObjectHash(p)
+          })
+
           const resolvedValue = await this.resolveParameterValue(p)
+
+          console.log(`🔍 [DataItemFetcher] pathParam解析完成:`, {
+            参数key: p.key,
+            解析后值: resolvedValue,
+            处理后参数哈希: this.getObjectHash(p)
+          })
 
           if (resolvedValue !== null) {
             // 修复：路径参数key为空时，自动匹配URL中的第一个占位符
@@ -510,8 +833,23 @@ export class DataItemFetcher implements IDataItemFetcher {
 
       // 处理查询参数
       if (config.params && config.params.length > 0) {
+        console.log(`🔍 [DataItemFetcher] 开始处理查询参数，数量: ${config.params.length}`)
+
         for (const p of config.params.filter(p => p.enabled && p.key)) {
+          console.log(`🔍 [DataItemFetcher] 处理查询参数:`, {
+            参数key: p.key,
+            参数value: p.value,
+            处理前参数哈希: this.getObjectHash(p)
+          })
+
           const resolvedValue = await this.resolveParameterValue(p)
+
+          console.log(`🔍 [DataItemFetcher] 查询参数解析完成:`, {
+            参数key: p.key,
+            解析后值: resolvedValue,
+            处理后参数哈希: this.getObjectHash(p)
+          })
+
           if (resolvedValue !== null) {
             queryParams[p.key] = resolvedValue
           }
@@ -557,27 +895,65 @@ export class DataItemFetcher implements IDataItemFetcher {
         }
       }
 
-      // 发起HTTP请求
+      // 🔥 第四步：HTTP请求发送前的最终状态记录
+      this.logHttpParametersLifecycle(config, 'HTTP请求发送前')
+
+      console.log(`🔍 [DataItemFetcher] HTTP请求最终参数汇总:`, {
+        finalUrl: finalUrl,
+        queryParams: queryParams,
+        requestBody: requestBody,
+        method: config.method,
+        requestConfig: requestConfig,
+        发送时间戳: Date.now()
+      })
+
+      // 🔥 发起HTTP请求 - 关键调试
+      console.log(`🚀 [DataItemFetcher] ========== 即将发送HTTP请求 ==========`)
+      console.log(`🚀 [DataItemFetcher] 请求方法: ${config.method.toUpperCase()}`)
+      console.log(`🚀 [DataItemFetcher] 请求URL: ${finalUrl}`)
+      console.log(`🚀 [DataItemFetcher] 请求配置:`, requestConfig)
+      console.log(`🚀 [DataItemFetcher] 请求体:`, requestBody)
+      console.log(`🚀 [DataItemFetcher] 发送时间戳: ${Date.now()}`)
+      console.log(`🚀 [DataItemFetcher] =======================================`)
+
       let response
       switch (config.method.toUpperCase()) {
         case 'GET':
+          console.log(`🚀 [DataItemFetcher] 执行 request.get(${finalUrl})`)
           response = await request.get(finalUrl, requestConfig)
+          console.log(`✅ [DataItemFetcher] GET请求完成，响应:`, response)
           break
         case 'POST':
+          console.log(`🚀 [DataItemFetcher] 执行 request.post(${finalUrl})`)
           response = await request.post(finalUrl, requestBody, requestConfig)
+          console.log(`✅ [DataItemFetcher] POST请求完成，响应:`, response)
           break
         case 'PUT':
+          console.log(`🚀 [DataItemFetcher] 执行 request.put(${finalUrl})`)
           response = await request.put(finalUrl, requestBody, requestConfig)
+          console.log(`✅ [DataItemFetcher] PUT请求完成，响应:`, response)
           break
         case 'PATCH':
+          console.log(`🚀 [DataItemFetcher] 执行 request.patch(${finalUrl})`)
           response = await request.patch(finalUrl, requestBody, requestConfig)
+          console.log(`✅ [DataItemFetcher] PATCH请求完成，响应:`, response)
           break
         case 'DELETE':
+          console.log(`🚀 [DataItemFetcher] 执行 request.delete(${finalUrl})`)
           response = await request.delete(finalUrl, requestConfig)
+          console.log(`✅ [DataItemFetcher] DELETE请求完成，响应:`, response)
           break
         default:
           throw new Error(`不支持的HTTP方法: ${config.method}`)
       }
+
+      console.log(`🏁 [DataItemFetcher] HTTP请求完全完成，最终响应:`, {
+        响应类型: typeof response,
+        响应是否为空: response === null || response === undefined,
+        响应是否为对象: typeof response === 'object',
+        响应键数量: typeof response === 'object' && response ? Object.keys(response).length : 'N/A',
+        完整响应: response
+      })
 
       // 第三步：处理响应后脚本
       let finalResponse = response

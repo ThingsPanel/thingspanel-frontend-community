@@ -792,72 +792,107 @@ const openComponentDrawer = (param: EnhancedParameter) => {
  * 当用户在组件属性选择器中选择了属性时调用
  */
 const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) => {
-  console.log(`🚨🚨🚨 [DynamicParameterEditor] handleComponentPropertyChange 被调用:`, {
+  console.log(`🔥 [DynamicParameterEditor] handleComponentPropertyChange 被调用:`, {
     bindingPath,
     bindingPathType: typeof bindingPath,
     bindingPathLength: typeof bindingPath === 'string' ? bindingPath.length : '非字符串',
     propertyInfo,
-    有drawerParam: !!drawerParam.value,
-    drawerParam当前值: drawerParam.value ? {
-      currentValue: drawerParam.value.value,
-      currentValueType: typeof drawerParam.value.value,
-      selectedTemplate: drawerParam.value.selectedTemplate,
-      valueMode: drawerParam.value.valueMode
-    } : null
+    有drawerParam: !!drawerParam.value
   })
 
-  if (drawerParam.value) {
-    // 🔥 关键修复：验证bindingPath格式，防止奇怪的值（如"12"）被设置
-    const isValidBindingPath = typeof bindingPath === 'string' &&
-      (bindingPath === '' || bindingPath.includes('.'))
+  if (!drawerParam.value) {
+    console.warn(`⚠️ [DynamicParameterEditor] drawerParam 为空，忽略属性变更`)
+    return
+  }
 
-    if (!isValidBindingPath && bindingPath !== '') {
-      console.error(`❌ [DynamicParameterEditor] 检测到无效的bindingPath: "${bindingPath}"，拒绝更新！`, {
-        bindingPath,
-        bindingPathType: typeof bindingPath,
-        expectedFormat: 'componentId.layer.propertyName 或 空字符串',
-        propertyInfo
-      })
-      return // 拒绝设置无效的绑定路径
-    }
+  // 🔥 增强的绑定路径验证：更严格的格式检查
+  const isValidBindingPath = bindingPath === '' || (
+    typeof bindingPath === 'string' &&
+    bindingPath.includes('.') &&
+    bindingPath.split('.').length >= 3 && // 至少包含组件ID.layer.property
+    bindingPath.length > 10 && // 绑定路径通常较长
+    !/^\d{1,4}$/.test(bindingPath) && // 拒绝短数字字符串（如"12"、"789"）
+    !bindingPath.includes('undefined') && // 拒绝包含undefined的路径
+    !bindingPath.includes('null') && // 拒绝包含null的路径
+    /^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_.-]+$/.test(bindingPath) // 基本格式验证
+  )
 
-    console.log(`🔥 [DynamicParameterEditor] 更新drawerParam.value从 "${drawerParam.value.value}" 到 "${bindingPath}"`)
-
-    // 🚨🚨🚨 超详细调试：记录每次value变更的调用栈
-    if (bindingPath === '789' || bindingPath === '878' || drawerParam.value.value === '789' || drawerParam.value.value === '878') {
-      console.error(`🚨🚨🚨 [DynamicParameterEditor] 检测到可疑值变更！`, {
-        异常bindingPath: bindingPath,
-        异常当前值: drawerParam.value.value,
-        调用栈: new Error().stack,
-        propertyInfo,
-        drawerParam完整对象: JSON.parse(JSON.stringify(drawerParam.value))
-      })
-    }
-
-    // 更新抽屉中参数的绑定值
-    drawerParam.value.value = bindingPath
-
-    // 🔥 移除自动设置默认值 - 默认值应该由用户手动输入
-    // 保持已有的默认值不变，让用户自己设置
-
-    // 更新参数描述，包含属性信息
-    if (propertyInfo) {
-      drawerParam.value.description = `绑定到组件属性: ${propertyInfo.componentName} -> ${propertyInfo.propertyLabel}`
-      drawerParam.value.variableName = `${propertyInfo.componentId}_${propertyInfo.propertyName}`
-
-      console.log(`🔥 [DynamicParameterEditor] 更新描述和变量名:`, {
-        description: drawerParam.value.description,
+  if (!isValidBindingPath && bindingPath !== '') {
+    console.error(`❌ [DynamicParameterEditor] 检测到无效的bindingPath格式，执行自动恢复:`, {
+      输入值: bindingPath,
+      值类型: typeof bindingPath,
+      值长度: typeof bindingPath === 'string' ? bindingPath.length : '非字符串',
+      预期格式: 'componentId.layer.propertyName',
+      当前参数: {
+        key: drawerParam.value.key,
+        当前value: drawerParam.value.value,
         variableName: drawerParam.value.variableName
-      })
-    }
+      }
+    })
 
-    console.log(`🔥 [DynamicParameterEditor] drawerParam更新后状态:`, {
-      value: drawerParam.value.value,
+    // 🔥 自动恢复机制：尝试从variableName重建正确的绑定路径
+    if (drawerParam.value.variableName && drawerParam.value.variableName.includes('_')) {
+      const lastUnderscoreIndex = drawerParam.value.variableName.lastIndexOf('_')
+      if (lastUnderscoreIndex > 0) {
+        const componentId = drawerParam.value.variableName.substring(0, lastUnderscoreIndex)
+        const propertyName = drawerParam.value.variableName.substring(lastUnderscoreIndex + 1)
+        const recoveredPath = `${componentId}.base.${propertyName}`
+
+        console.log(`🔧 [DynamicParameterEditor] 从variableName自动恢复绑定路径:`, {
+          原始variableName: drawerParam.value.variableName,
+          提取的componentId: componentId,
+          提取的propertyName: propertyName,
+          恢复的绑定路径: recoveredPath
+        })
+
+        // 使用恢复的路径替代错误的输入
+        bindingPath = recoveredPath
+      } else {
+        console.error(`❌ [DynamicParameterEditor] 无法从variableName恢复绑定路径，拒绝更新`)
+        return
+      }
+    } else {
+      // 无法恢复，保持当前值不变
+      console.error(`❌ [DynamicParameterEditor] 无变量名可用于恢复，拒绝设置无效绑定路径`)
+      return
+    }
+  }
+
+  // 记录值的变更历史，便于调试
+  const oldValue = drawerParam.value.value
+  console.log(`✅ [DynamicParameterEditor] 更新绑定路径:`, {
+    从: oldValue,
+    到: bindingPath,
+    变更合理性: bindingPath === '' || bindingPath.length > oldValue?.length || bindingPath.includes('.')
+  })
+
+  // 更新抽屉中参数的绑定值
+  drawerParam.value.value = bindingPath
+
+  // 更新参数描述和变量名
+  if (propertyInfo && bindingPath) {
+    drawerParam.value.description = `绑定到组件属性: ${propertyInfo.componentName} -> ${propertyInfo.propertyLabel}`
+    drawerParam.value.variableName = `${propertyInfo.componentId}_${propertyInfo.propertyName}`
+
+    console.log(`✅ [DynamicParameterEditor] 更新属性信息:`, {
       description: drawerParam.value.description,
       variableName: drawerParam.value.variableName,
-      selectedTemplate: drawerParam.value.selectedTemplate
+      propertyType: propertyInfo.type
     })
+  } else if (bindingPath === '') {
+    // 清空绑定时，也清理相关字段
+    drawerParam.value.description = ''
+    drawerParam.value.variableName = ''
+    console.log(`🧹 [DynamicParameterEditor] 清空绑定路径，同时清理相关字段`)
   }
+
+  console.log(`📝 [DynamicParameterEditor] 最终状态:`, {
+    value: drawerParam.value.value,
+    description: drawerParam.value.description,
+    variableName: drawerParam.value.variableName,
+    selectedTemplate: drawerParam.value.selectedTemplate,
+    参数有效性: !!drawerParam.value.value || drawerParam.value.defaultValue !== undefined
+  })
 }
 
 /**

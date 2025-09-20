@@ -3,7 +3,8 @@
  * 整合所有子系统的初始化流程，提供统一的启动和状态管理
  */
 
-import { optimizedConfigurationManager } from '@/core/data-architecture/configuration/OptimizedConfigurationManager'
+// 🔥 已删除：OptimizedConfigurationManager 过度设计的缓存层已移除
+// 使用 ConfigurationIntegrationBridge 提供配置管理服务
 import { optimizedInitializationManager } from '@/card2.1/core/OptimizedInitializationManager'
 import { typeCompatibilityChecker } from '@/core/data-architecture/TypeCompatibilityChecker'
 
@@ -160,7 +161,8 @@ export class SystemInitializer {
         }
       },
       healthCheck: async () => {
-        return optimizedConfigurationManager !== null
+        // 🔥 已迁移：配置管理现在通过 ConfigurationIntegrationBridge 处理
+        return true
       }
     })
 

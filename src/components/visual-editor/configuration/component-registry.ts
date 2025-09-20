@@ -10,7 +10,8 @@ import { defineAsyncComponent } from 'vue'
 
 // 导入配置管理器用于检查组件数据源需求
 import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
-import { getComponentDataRequirements } from '@/components/visual-editor/core/component-data-requirements'
+// 🔥 已迁移：使用核心数据架构的组件数据需求
+import type { ComponentDataRequirement } from '@/core/data-architecture/types/simple-types'
 
 // 动态导入组件避免循环依赖问题
 const BaseConfigForm = defineAsyncComponent(() => import('@/components/visual-editor/renderers/base/BaseConfigForm.vue'))

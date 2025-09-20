@@ -7,6 +7,7 @@ import type { SwitchControllerConfig } from './settingConfig'
 import { customConfig, switchControllerSettingConfig } from './settingConfig'
 import SwitchController from './index.vue'
 import SwitchControllerSetting from './setting.vue'
+import { createPropertyWhitelist } from '@/card2.1/core/PropertyExposureManager'
 
 /**
  * 开关控制器组件定义
@@ -231,7 +232,91 @@ export const switchControllerDefinition: ComponentDefinition<SwitchControllerCon
         watchedProperty: 'value'
       }
     ]
-  }
+  },
+
+  // 🔒 属性暴露白名单配置
+  propertyWhitelist: createPropertyWhitelist({
+    // 🔒 核心控制属性 - 可在交互中使用
+    title: {
+      level: 'public',
+      type: 'string',
+      description: '开关控制器标题',
+      defaultValue: '设备开关',
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+    switchValue: {
+      level: 'public',
+      type: 'boolean',
+      description: '开关状态值',
+      defaultValue: false,
+      alias: 'value', // 🔒 对外暴露为 value
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+    description: {
+      level: 'public',
+      type: 'string',
+      description: '开关描述信息',
+      defaultValue: '',
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+
+    // 🔒 状态属性 - 只读
+    isUpdating: {
+      level: 'public',
+      type: 'boolean',
+      description: '是否正在更新状态',
+      defaultValue: false,
+      readonly: true,
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+    lastUpdated: {
+      level: 'public',
+      type: 'string',
+      description: '最后更新时间',
+      readonly: true,
+      visibleInInteraction: false,
+      visibleInDebug: true
+    },
+
+    // 🔒 计算属性 - 只读
+    status: {
+      level: 'public',
+      type: 'string',
+      description: '开关状态描述',
+      readonly: true,
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+
+    // 🔒 配置属性 - 受保护级别
+    disabled: {
+      level: 'protected',
+      type: 'boolean',
+      description: '是否禁用开关',
+      defaultValue: false,
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+    showStatus: {
+      level: 'protected',
+      type: 'boolean',
+      description: '是否显示状态文字',
+      defaultValue: true,
+      visibleInInteraction: false,
+      visibleInDebug: true
+    }
+  }, {
+    enabled: true,
+    defaultLevel: 'public',
+    audit: {
+      logAccess: process.env.NODE_ENV === 'development',
+      logModification: true
+    }
+  })
 }
 
 export default switchControllerDefinition

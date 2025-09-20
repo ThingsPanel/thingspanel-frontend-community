@@ -22,9 +22,11 @@ import { smartDeepClone } from '@/utils/deep-clone'
 // 🔥 轮询系统导入
 import { useGlobalPollingManager } from '@/components/visual-editor/core/GlobalPollingManager'
 import { usePanelPollingManager } from '@/components/visual-editor/hooks/usePanelPollingManager'
-import { editorDataSourceManager } from '@/components/visual-editor/core/EditorDataSourceManager'
 import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import PollingController from '@/components/visual-editor/components/PollingController.vue'
+
+// 🔥 关键修复：导入配置事件总线和数据源触发器
+import { registerDataExecutionTrigger, type ConfigChangeEvent } from '@/core/data-architecture/ConfigEventBus'
 
 // 🔥 导入Card2.1组件注册系统，用于恢复完整的组件定义
 import { getComponentDefinition } from '@/card2.1/components/index'
@@ -122,18 +124,115 @@ const pollingManager = useGlobalPollingManager()
 // 🔥 组件执行器注册表
 const componentExecutorRegistry = ref(new Map<string, () => Promise<void>>())
 
-// 🔥 提供管理器给子组件使用
-provide('editorDataSourceManager', editorDataSourceManager)
+// 🔥 关键修复：数据执行触发器 - 处理配置变更事件并触发数据源重新执行
+const handleDataExecutionTrigger = async (event: ConfigChangeEvent) => {
+  console.log(`🔥 [PanelEditorV2] 配置变更触发数据执行:`, {
+    componentId: event.componentId,
+    section: event.section,
+    shouldTrigger: event.context?.shouldTriggerExecution,
+    执行器注册表大小: componentExecutorRegistry.value.size,
+    执行器是否存在: componentExecutorRegistry.value.has(event.componentId)
+  })
+
+  // 检查是否需要触发数据执行
+  if (!event.context?.shouldTriggerExecution) {
+    console.log(`🔥 [PanelEditorV2] 配置变更不需要触发数据执行，跳过`)
+    return
+  }
+
+  // 🔥 修复：优先尝试组件执行器，如果不存在则直接调用核心数据架构系统
+  const executor = componentExecutorRegistry.value.get(event.componentId)
+  if (executor) {
+    try {
+      console.log(`🔥 [PanelEditorV2] 找到组件执行器，开始执行: ${event.componentId}`)
+      await executor()
+      console.log(`✅ [PanelEditorV2] 组件数据源执行完成: ${event.componentId}`)
+    } catch (error) {
+      console.error(`❌ [PanelEditorV2] 组件数据源执行失败: ${event.componentId}`, error)
+    }
+  } else {
+    console.warn(`⚠️ [PanelEditorV2] 未找到组件执行器: ${event.componentId}，尝试直接调用核心数据架构系统`)
+
+    // 🔥 新增：直接调用核心数据架构系统来执行数据源
+    try {
+      const { SimpleDataBridge } = await import('@/core/data-architecture/SimpleDataBridge')
+      const dataBridge = new SimpleDataBridge()
+
+      // 获取组件的完整配置
+      const fullConfig = configurationManager.getConfiguration(event.componentId)
+      if (fullConfig && fullConfig.dataSource) {
+        console.log(`🔥 [PanelEditorV2] 直接执行数据源: ${event.componentId}`)
+
+        // 🔥 关键修复：执行前强制清理所有缓存，确保发送真实请求
+        console.log(`🔥 [PanelEditorV2] 执行前强制清理缓存: ${event.componentId}`)
+        dataBridge.clearComponentCache(event.componentId)
+
+        // 🔥 同时清理 DataWarehouse 缓存
+        const { dataWarehouse } = await import('@/core/data-architecture/DataWarehouse')
+        dataWarehouse.clearComponentCache(event.componentId)
+        console.log(`🔥 [PanelEditorV2] DataWarehouse 缓存已清理: ${event.componentId}`)
+
+        // 构建数据需求并执行
+        const dataRequirement = {
+          componentId: event.componentId,
+          dataSourceBindings: fullConfig.dataSource,
+          // 保持兼容性，如果没有dataSourceBindings则使用原配置
+          dataSources: fullConfig.dataSource.dataSources || [fullConfig.dataSource]
+        }
+
+        const result = await dataBridge.executeComponent(dataRequirement)
+
+        console.log(`✅ [PanelEditorV2] 直接数据源执行完成: ${event.componentId}`, {
+          success: result.success,
+          dataKeysCount: result.data ? Object.keys(result.data).length : 0,
+          timestamp: result.timestamp,
+          hasError: !!result.error
+        })
+
+        // 🔥 修复：通过Card2Wrapper的数据更新机制来传递数据
+        if (result.success && result.data) {
+          // 触发组件数据更新事件，让Card2Wrapper接收到新数据
+          const dataUpdateEvent = new CustomEvent('componentDataUpdate', {
+            detail: {
+              componentId: event.componentId,
+              data: result.data,
+              timestamp: Date.now(),
+              source: 'PanelEditorV2-directExecution'
+            },
+            bubbles: true
+          })
+
+          // 查找目标组件元素并分发事件
+          const targetElement = document.querySelector(`[data-component-id="${event.componentId}"]`)
+          if (targetElement) {
+            targetElement.dispatchEvent(dataUpdateEvent)
+            console.log(`🔥 [PanelEditorV2] 已分发数据更新事件到组件: ${event.componentId}`)
+          } else {
+            console.warn(`⚠️ [PanelEditorV2] 未找到目标组件元素: ${event.componentId}`)
+          }
+        }
+      } else {
+        console.warn(`⚠️ [PanelEditorV2] 组件没有数据源配置: ${event.componentId}`)
+      }
+    } catch (error) {
+      console.error(`❌ [PanelEditorV2] 直接数据源执行失败: ${event.componentId}`, error)
+    }
+  }
+}
+
+// 数据执行触发器清理函数
+let dataExecutionTriggerCleanup: (() => void) | null = null
+
+// 🔥 提供管理器给子组件使用 (已移除 EditorDataSourceManager)
 // 🔥 关键修复：提供 editorContext 给所有子组件，确保配置能真正同步
 provide('editorContext', editorContext)
 provide('componentExecutorRegistry', componentExecutorRegistry.value)
 
-// 🔥 轮询管理组合式函数
+// 🔥 轮询管理组合式函数 (已迁移到核心数据架构系统)
 const pollingManagerDependencies = {
   pollingManager,
   stateManager,
-  configurationManager,
-  editorDataSourceManager
+  configurationManager
 }
 const {
   initializePollingTasksAndEnable: initializePollingTasksAndEnableFromManager,
@@ -487,12 +586,14 @@ onMounted(async () => {
   // 🔥 关键修复：先初始化管理器和设置注册表，再获取数据
   try {
     await configurationManager.initialize()
-    if (!editorDataSourceManager.isInitialized()) {
-      await editorDataSourceManager.initialize()
-    }
 
-    // 🔥 设置组件执行器注册表 - 必须在fetchBoard之前
-    editorDataSourceManager.setComponentExecutorRegistry(componentExecutorRegistry.value)
+    // 🔥 关键修复：注册数据执行触发器，用于处理配置变更事件
+    dataExecutionTriggerCleanup = registerDataExecutionTrigger(handleDataExecutionTrigger)
+    console.log('🔥 [PanelEditorV2] 数据执行触发器已注册')
+
+    // 🔥 已迁移：数据源管理现在通过核心数据架构系统处理
+    // 组件执行器注册表现在由 Card2Wrapper 自行管理
+    console.log('🔥 [PanelEditorV2] 数据源管理已迁移到核心架构系统')
   } catch (error) {
     console.error('初始化管理器失败:', error)
   }
@@ -534,9 +635,16 @@ onMounted(async () => {
 
 // 🔥 组件卸载时清理
 onUnmounted(() => {
+  // 🔥 关键修复：清理数据执行触发器
+  if (dataExecutionTriggerCleanup) {
+    dataExecutionTriggerCleanup()
+    dataExecutionTriggerCleanup = null
+    console.log('🔥 [PanelEditorV2] 数据执行触发器已清理')
+  }
+
   // 清理事件监听
   window.removeEventListener('card2-system-ready', handleCard2SystemReady)
-  
+
   // 清理组件系统检查间隔
   if (card2SystemCheckInterval) {
     clearInterval(card2SystemCheckInterval)

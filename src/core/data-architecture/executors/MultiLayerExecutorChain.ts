@@ -135,12 +135,43 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
         // 🎯 用户要求的打印这几个字 - 调试：开始处理数据源
         console.log(`🎯 用户要求的打印这几个字 - 调试：开始处理数据源`, {
           数据源ID: dataSourceConfig.sourceId,
-          数据项数量: dataSourceConfig.dataItems.length,
-          合并策略: dataSourceConfig.mergeStrategy
+          数据项数量: dataSourceConfig.dataItems ? dataSourceConfig.dataItems.length : 'undefined',
+          数据项存在: !!dataSourceConfig.dataItems,
+          合并策略: dataSourceConfig.mergeStrategy,
+          数据源配置完整性: {
+            sourceId存在: !!dataSourceConfig.sourceId,
+            dataItems存在: !!dataSourceConfig.dataItems,
+            mergeStrategy存在: !!dataSourceConfig.mergeStrategy
+          }
         })
 
+        // 🔥 关键调试：如果dataItems不存在或为空，立即报告
+        if (!dataSourceConfig.dataItems || dataSourceConfig.dataItems.length === 0) {
+          console.error(`🚨 [MultiLayerExecutorChain] 数据源配置异常 - dataItems为空！`, {
+            数据源ID: dataSourceConfig.sourceId,
+            dataItems类型: typeof dataSourceConfig.dataItems,
+            dataItems值: dataSourceConfig.dataItems,
+            这意味着: 'DataItemFetcher.fetchData方法不会被调用',
+            数据源完整配置: JSON.stringify(dataSourceConfig, null, 2)
+          })
+        }
+
         try {
-          const sourceResult = await this.processDataSource(dataSourceConfig, executionState)
+          console.log(`🔍 [MultiLayerExecutorChain] ============ 即将调用 processDataSource ============`)
+          console.log(`🚨 [MultiLayerExecutorChain] 161行测试 - 这行应该能看到`)
+          console.log(`🔍 [MultiLayerExecutorChain] processDataSource调用参数:`, {
+            数据源ID: dataSourceConfig.sourceId,
+            dataSourceConfig完整: dataSourceConfig,
+            executionState存在: !!executionState,
+            processDataSource方法存在: typeof this.processDataSource === 'function'
+          })
+
+          const sourceResult = await this.processDataSource(dataSourceConfig, executionState, config.componentId)
+
+          console.log(`🔍 [MultiLayerExecutorChain] processDataSource调用完成:`, {
+            数据源ID: dataSourceConfig.sourceId,
+            返回结果: sourceResult
+          })
 
           // 🎯 用户要求的打印这几个字 - 调试：数据源处理完成
           console.log(`🎯 用户要求的打印这几个字 - 调试：数据源处理完成`, {
@@ -153,6 +184,14 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
 
           dataSourceResults.push(sourceResult)
         } catch (error) {
+          console.error(`❌ [MultiLayerExecutorChain] processDataSource调用失败:`, {
+            数据源ID: dataSourceConfig.sourceId,
+            错误类型: typeof error,
+            错误消息: error instanceof Error ? error.message : error,
+            错误堆栈: error instanceof Error ? error.stack : undefined,
+            原始错误对象: error
+          })
+
           dataSourceResults.push({
             sourceId: dataSourceConfig.sourceId,
             type: 'unknown',
@@ -230,20 +269,144 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
       dataItems: Array<{ item: DataItem; processing: ProcessingConfig }>
       mergeStrategy: MergeStrategy
     },
-    executionState?: ExecutionState
+    executionState?: ExecutionState,
+    componentId?: string
   ): Promise<DataSourceResult> {
+    // 🔥 最简单的确认日志
+    console.log(`🚨 [processDataSource] 方法入口已到达!`)
+
+    // 🔥 关键调试：记录processDataSource的入口参数
+    console.log(`🔍 [MultiLayerExecutorChain] =============== processDataSource开始 ===============`)
+    console.log(`🔍 [MultiLayerExecutorChain] 数据源配置完整信息:`, {
+      数据源ID: dataSourceConfig.sourceId,
+      dataItems数组长度: dataSourceConfig.dataItems ? dataSourceConfig.dataItems.length : 'undefined',
+      dataItems是否存在: !!dataSourceConfig.dataItems,
+      mergeStrategy: dataSourceConfig.mergeStrategy,
+      executionState存在: !!executionState,
+      完整配置JSON: JSON.stringify(dataSourceConfig, null, 2)
+    })
+
+    console.log(`🚨 [processDataSource] 进入try块`)
+
     try {
       const processedItems: any[] = []
+      console.log(`🚨 [processDataSource] processedItems初始化完成`)
+
+      // 🔥 关键调试：检查dataItems数组
+      console.log(`🚨 [processDataSource] 即将检查dataItems数组`)
+      console.log(`🔍 [MultiLayerExecutorChain] 开始处理dataItems:`, {
+        数据源ID: dataSourceConfig.sourceId,
+        dataItems长度: dataSourceConfig.dataItems.length,
+        dataItems是否为空: dataSourceConfig.dataItems.length === 0,
+        dataItems详情: dataSourceConfig.dataItems.map((item, index) => ({
+          索引: index,
+          类型: item.item.type,
+          配置有效性: !!item.item.config,
+          processing有效性: !!item.processing
+        }))
+      })
+
+      if (dataSourceConfig.dataItems.length === 0) {
+        console.warn(`⚠️ [MultiLayerExecutorChain] dataItems数组为空，无法执行任何数据获取！`, {
+          数据源ID: dataSourceConfig.sourceId,
+          这意味着: '不会调用DataItemFetcher.fetchData方法'
+        })
+      }
+
+      console.log(`🚨 [processDataSource] 即将开始for循环处理dataItems`)
+      console.log(`🚨 [processDataSource] dataItems.length = ${dataSourceConfig.dataItems.length}`)
 
       // 处理每个数据项
       for (let i = 0; i < dataSourceConfig.dataItems.length; i++) {
+        console.log(`🚨 [processDataSource] 进入for循环，i = ${i}`)
+
         const { item, processing } = dataSourceConfig.dataItems[i]
         const itemId = `${dataSourceConfig.sourceId}_item_${i}`
 
+        console.log(`🚨 [processDataSource] 数据项解构完成，itemId = ${itemId}`)
+        console.log(`🚨 [processDataSource] 326行测试 - 这行应该能看到`)
+        console.log(`🔍 [MultiLayerExecutorChain] 即将处理第${i}个数据项:`, {
+          数据项索引: i,
+          数据项ID: itemId,
+          item类型: item.type,
+          item配置存在: !!item.config,
+          processing配置存在: !!processing
+        })
+
         try {
           // 🔍 调试：检查传递给fetchData的item对象
-          // 第一层：数据项获取
+          console.log(`🔍 [MultiLayerExecutorChain] 传递给fetchData的item对象详情:`, {
+            组件ID: componentId || 'unknown',
+            数据源ID: dataSourceConfig.sourceId,
+            数据项索引: i,
+            数据项ID: itemId,
+            item类型: item.type,
+            item完整配置: JSON.stringify(item, null, 2),
+            传递时间戳: Date.now()
+          })
+
+          // 🔥 特别检查HTTP类型的配置
+          if (item.type === 'http' && item.config) {
+            console.log(`🔍 [MultiLayerExecutorChain] HTTP配置详细检查:`, {
+              url: item.config.url,
+              method: item.config.method,
+              params数量: item.config.params ? item.config.params.length : 0,
+              parameters数量: item.config.parameters ? item.config.parameters.length : 0,
+              pathParams数量: item.config.pathParams ? item.config.pathParams.length : 0
+            })
+
+            // 🚨 检查HTTP参数中是否有损坏的绑定路径
+            const allParams = [
+              ...(item.config.params || []),
+              ...(item.config.parameters || []),
+              ...(item.config.pathParams || [])
+            ]
+
+            allParams.forEach((param, paramIndex) => {
+              if (param.value && typeof param.value === 'string') {
+                const isSuspiciousPath = !param.value.includes('.') && param.value.length < 10 && param.variableName
+
+                if (isSuspiciousPath) {
+                  console.error(`🚨 [MultiLayerExecutorChain] 在传递给fetchData前发现损坏的绑定路径!`, {
+                    组件ID: componentId || 'unknown',
+                    数据源ID: dataSourceConfig.sourceId,
+                    参数索引: paramIndex,
+                    参数key: param.key,
+                    损坏的value: param.value,
+                    variableName: param.variableName,
+                    完整参数对象: JSON.stringify(param, null, 2)
+                  })
+                } else {
+                  console.log(`✅ [MultiLayerExecutorChain] 参数绑定路径检查通过:`, {
+                    参数key: param.key,
+                    绑定路径: param.value,
+                    路径长度: param.value.length
+                  })
+                }
+              }
+            })
+          }
+
+          // 🔥 第一层：数据项获取 - 即将调用DataItemFetcher.fetchData
+          console.log(`🚀 [MultiLayerExecutorChain] ============ 即将调用 DataItemFetcher.fetchData ============`)
+          console.log(`🚀 [MultiLayerExecutorChain] 调用参数:`, {
+            itemId: itemId,
+            item类型: item.type,
+            item配置: item.config,
+            fetchData方法存在: typeof this.dataItemFetcher.fetchData === 'function',
+            dataItemFetcher实例存在: !!this.dataItemFetcher,
+            调用时间戳: Date.now()
+          })
+
           const rawData = await this.dataItemFetcher.fetchData(item)
+
+          console.log(`✅ [MultiLayerExecutorChain] DataItemFetcher.fetchData调用完成:`, {
+            itemId: itemId,
+            rawData类型: typeof rawData,
+            rawData是否为空: rawData === null || rawData === undefined,
+            rawData键数量: typeof rawData === 'object' && rawData ? Object.keys(rawData).length : 'N/A',
+            rawData完整内容: rawData
+          })
 
           // 更新调试状态
           if (executionState) {
@@ -268,6 +431,17 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
 
           processedItems.push(processedData)
         } catch (error) {
+          console.error(`🚨 [MultiLayerExecutorChain] 数据项处理失败 - 这是关键异常！`, {
+            itemId: itemId,
+            item类型: item.type,
+            数据项索引: i,
+            错误类型: typeof error,
+            错误消息: error instanceof Error ? error.message : error,
+            错误堆栈: error instanceof Error ? error.stack : undefined,
+            原始错误对象: error,
+            item配置: item.config,
+            这就是为什么没有HTTP请求的原因: '异常被静默处理了'
+          })
           processedItems.push({}) // 失败时添加空对象
         }
       }
