@@ -100,8 +100,8 @@ export interface IDataItemFetcher {
 export class DataItemFetcher implements IDataItemFetcher {
   // 🔥 新增：请求去重缓存，防止重复HTTP请求
   private requestCache = new Map<string, Promise<any>>()
-  // 请求缓存TTL：200毫秒内的相同请求会被去重
-  private readonly REQUEST_CACHE_TTL = 200
+  // 请求缓存TTL：2秒内的相同请求会被去重
+  private readonly REQUEST_CACHE_TTL = 2000
 
   // 🔥 新增：组件ID上下文，用于参数绑定
   private currentComponentId?: string
@@ -387,61 +387,20 @@ export class DataItemFetcher implements IDataItemFetcher {
    * @returns 解析后的参数值
    */
   private async resolveParameterValue(param: HttpParameter): Promise<any> {
-    // 🔥 关键调试：记录参数解析前的状态
-    console.log(`🔍 [DataItemFetcher] ================================ 开始解析参数 ================================`)
-    console.log(`🔍 [DataItemFetcher] 参数解析前完整状态:`, {
-      参数key: param.key,
-      原始value: param.value,
-      valueType: typeof param.value,
-      valueLength: typeof param.value === 'string' ? param.value.length : 'N/A',
+    // 🔥 简化调试：只记录关键信息
+    console.log(`🔍 [DataItemFetcher] 解析参数 ${param.key}:`, {
+      value: param.value,
       valueMode: param.valueMode,
-      selectedTemplate: param.selectedTemplate,
-      isDynamic: param.isDynamic,
-      variableName: param.variableName,
-      defaultValue: param.defaultValue,
-      完整参数对象JSON: JSON.stringify(param, null, 2)
-    })
-
-    // 🔥 新增：记录参数对象的内存引用信息
-    console.log(`🔍 [DataItemFetcher] 参数对象内存调试:`, {
-      参数对象哈希: this.getObjectHash(param),
-      value字段是否为引用: typeof param.value === 'object',
-      参数对象是否被冻结: Object.isFrozen(param),
-      参数对象是否被密封: Object.isSealed(param)
+      isDynamic: param.isDynamic
     })
 
     let resolvedValue = param.value
-
-    // 🔥 新增：记录value字段的详细分析
-    console.log(`🔍 [DataItemFetcher] value字段详细分析:`, {
-      value值: param.value,
-      value原始类型: typeof param.value,
-      value字符串长度: typeof param.value === 'string' ? param.value.length : 'N/A',
-      value是否包含点号: typeof param.value === 'string' ? param.value.includes('.') : false,
-      value是否为纯数字: typeof param.value === 'string' ? /^\d+$/.test(param.value) : false,
-      value是否为短字符串: typeof param.value === 'string' ? param.value.length < 10 : false,
-      是否疑似损坏的绑定路径: typeof param.value === 'string' &&
-        !param.value.includes('.') &&
-        param.value.length < 10 &&
-        param.variableName &&
-        param.variableName.includes('_')
-    })
 
     // 防御性检测：运行时智能修正isDynamic字段
     const shouldBeDynamic = this.detectRuntimeIsDynamic(param)
     if (shouldBeDynamic && !param.isDynamic) {
       // 临时修正，不修改原参数对象
       param = { ...param, isDynamic: true }
-      console.log(`🔧 [DataItemFetcher] 修正参数isDynamic字段:`, {
-        参数key: param.key,
-        修正前: false,
-        修正后: true,
-        修正依据: {
-          valueMode: param.valueMode,
-          selectedTemplate: param.selectedTemplate,
-          value格式: typeof param.value === 'string' && param.value.includes('.')
-        }
-      })
     }
 
     // 修复：优先使用isDynamic字段判断，支持属性绑定
@@ -703,14 +662,17 @@ export class DataItemFetcher implements IDataItemFetcher {
   private async fetchHttpData(config: HttpDataItemConfig): Promise<any> {
     // 🔥 步骤1：生成请求唯一标识符，用于去重
     const requestKey = await this.generateRequestKey(config)
-    if (process.env.NODE_ENV === 'development') {
-    }
+
+    console.log(`🔄 [DataItemFetcher] HTTP请求缓存检查:`, {
+      请求键: requestKey,
+      缓存中存在: this.requestCache.has(requestKey),
+      缓存大小: this.requestCache.size
+    })
 
     // 🔥 步骤2：检查是否有进行中的相同请求
     const existingRequest = this.requestCache.get(requestKey)
     if (existingRequest) {
-      if (process.env.NODE_ENV === 'development') {
-      }
+      console.log(`⚡ [DataItemFetcher] 使用缓存的HTTP请求，避免重复发送`)
       return await existingRequest
     }
 
