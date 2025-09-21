@@ -1,7 +1,18 @@
 <script setup lang="ts">
-import { computed, reactive, ref, toRefs, watch, nextTick } from 'vue'
+import { computed, reactive, ref, toRefs, watch } from 'vue'
 import type { FormInst, FormItemRule } from 'naive-ui'
-import { NButton, NForm, NFormItemGridItem, NGrid, NInput, NModal, NSpace, NSelect, NRadioGroup, NRadio } from 'naive-ui'
+import {
+  NButton,
+  NForm,
+  NFormItemGridItem,
+  NGrid,
+  NInput,
+  NModal,
+  NSpace,
+  NSelect,
+  NRadioGroup,
+  NRadio
+} from 'naive-ui'
 // import { genderOptions } from '@/constants'
 import { addUser, editUser } from '@/service/api/auth'
 import { createRequiredFormRule, formRules, getConfirmPwdRule } from '@/utils/form/rule'
@@ -55,6 +66,11 @@ const customUserStatusOptions = computed(() => {
   })
 })
 
+// 计算完整的手机号
+const fullPhoneNumber = computed(() => {
+  return `${formModel.country_code}${formModel.phone_only}`
+})
+
 // 时区选项
 const timezoneOptions = [
   { label: 'Asia/Shanghai (北京时间)', value: 'Asia/Shanghai' },
@@ -85,19 +101,60 @@ const languageOptions = [
   { label: 'English', value: 'en-US' }
 ]
 
+// 国家区号选项
+const countryCodeOptions = [
+  { label: '+86', value: '+86' },
+  { label: '+1', value: '+1' },
+  { label: '+44', value: '+44' },
+  { label: '+33', value: '+33' },
+  { label: '+49', value: '+49' },
+  { label: '+39', value: '+39' },
+  { label: '+34', value: '+34' },
+  { label: '+7', value: '+7' },
+  { label: '+81', value: '+81' },
+  { label: '+82', value: '+82' },
+  { label: '+65', value: '+65' },
+  { label: '+60', value: '+60' },
+  { label: '+66', value: '+66' },
+  { label: '+84', value: '+84' },
+  { label: '+62', value: '+62' },
+  { label: '+63', value: '+63' },
+  { label: '+91', value: '+91' },
+  { label: '+61', value: '+61' },
+  { label: '+64', value: '+64' },
+  { label: '+55', value: '+55' },
+  { label: '+52', value: '+52' },
+  { label: '+54', value: '+54' },
+  { label: '+27', value: '+27' },
+  { label: '+20', value: '+20' },
+  { label: '+971', value: '+971' },
+  { label: '+966', value: '+966' },
+  { label: '+90', value: '+90' },
+  { label: '+31', value: '+31' },
+  { label: '+46', value: '+46' },
+  { label: '+47', value: '+47' },
+  { label: '+45', value: '+45' },
+  { label: '+41', value: '+41' },
+  { label: '+43', value: '+43' },
+  { label: '+32', value: '+32' },
+  { label: '+351', value: '+351' },
+  { label: '+30', value: '+30' },
+  { label: '+48', value: '+48' },
+  { label: '+420', value: '+420' },
+  { label: '+36', value: '+36' },
+  { label: '+385', value: '+385' },
+  { label: '+852', value: '+852' },
+  { label: '+853', value: '+853' },
+  { label: '+886', value: '+886' }
+]
+
 // 处理省市区选择变化
 const handleAddressChange = (value: { province: string; city: string; district: string }) => {
-  if (process.env.NODE_ENV === 'development') {
-  };
-  
   // 更新表单模型中的地址数据
-  formModel.address.province = value.province;
-  formModel.address.city = value.city;
-  formModel.address.district = value.district;
-  
-  if (process.env.NODE_ENV === 'development') {
-  };
-};
+  formModel.address.province = value.province
+  formModel.address.city = value.city
+  formModel.address.district = value.district
+}
 
 const closeModal = () => {
   modalVisible.value = false
@@ -119,6 +176,8 @@ type FormModel = Pick<UserManagement.User, 'email' | 'name' | 'phone_number' | '
   organization: string
   timezone: string
   default_language: string
+  country_code: string
+  phone_only: string
   address: {
     province: string
     city: string
@@ -129,25 +188,56 @@ type FormModel = Pick<UserManagement.User, 'email' | 'name' | 'phone_number' | '
 
 const formModel = reactive<FormModel>(createDefaultFormModel())
 
-const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
-  name: createRequiredFormRule($t('common.pleaseCheckValue')),
-  gender: createRequiredFormRule($t('common.pleaseCheckValue')),
-  phone_number: formRules.phone,
-  email: formRules.email,
-  password: formRules.pwd,
-  confirmPwd: getConfirmPwdRule(toRefs(formModel).password),
-  status: getConfirmPwdRule(toRefs(formModel).password),
-  remark: createRequiredFormRule($t('common.pleaseCheckValue')),
-  organization: createRequiredFormRule($t('common.pleaseCheckValue')),
-  timezone: createRequiredFormRule($t('common.pleaseCheckValue')),
-  default_language: createRequiredFormRule($t('common.pleaseCheckValue')),
-  address: {
-    province: createRequiredFormRule($t('page.manage.user.form.address')),
-    city: createRequiredFormRule($t('page.manage.user.form.address')),
-    district: createRequiredFormRule($t('page.manage.user.form.address')),
-    detailed_address: createRequiredFormRule($t('page.manage.user.form.detailedAddress'))
-  }
+const rules = ref({})
+// 手机号数字校验规则
+const phoneNumberRule: FormItemRule = {
+  validator: (rule, value) => {
+    if (!value) return true
+    // 只允许数字
+    if (!/^\d+$/.test(value)) {
+      return new Error($t('form.phone.invalid'))
+    }
+    // // 长度校验（根据区号调整）
+    // const minLength = formModel.country_code === '+86' ? 11 : 7
+    // const maxLength = formModel.country_code === '+86' ? 11 : 15
+    // if (value.length < minLength || value.length > maxLength) {
+    //   return new Error(`手机号长度应在${minLength}-${maxLength}位之间`)
+    // }
+    return true
+  },
+  trigger: ['input', 'blur']
 }
+watch(
+  () => props.type,
+  () => {
+    if (props.type == 'add') {
+      rules.value = {
+        name: createRequiredFormRule($t('common.pleaseCheckValue')),
+        gender: createRequiredFormRule($t('common.pleaseCheckValue')),
+        phone_only: [createRequiredFormRule($t('form.phone.required'))].concat(phoneNumberRule),
+        email: formRules.email,
+        password: [{ required: true, message: $t('form.pwd.tip') }].concat(formRules.pwd),
+        confirmPwd: getConfirmPwdRule(toRefs(formModel).password),
+        status: getConfirmPwdRule(toRefs(formModel).password),
+        remark: createRequiredFormRule($t('common.pleaseCheckValue')),
+        // organization: createRequiredFormRule($t('common.pleaseCheckValue')),
+        timezone: createRequiredFormRule($t('common.pleaseCheckValue')),
+        default_language: createRequiredFormRule($t('common.pleaseCheckValue'))
+        // address: {
+        //   province: createRequiredFormRule($t('page.manage.user.form.address')),
+        //   city: createRequiredFormRule($t('page.manage.user.form.address')),
+        //   district: createRequiredFormRule($t('page.manage.user.form.address')),
+        //   detailed_address: createRequiredFormRule($t('page.manage.user.form.detailedAddress'))
+        // }
+      }
+    } else {
+      rules.value = {}
+    }
+  },
+  {
+    immediate: true
+  }
+)
 
 function createDefaultFormModel(): FormModel {
   return {
@@ -162,12 +252,42 @@ function createDefaultFormModel(): FormModel {
     organization: '',
     timezone: 'Asia/Shanghai',
     default_language: 'zh-CN',
+    country_code: '+86',
+    phone_only: '',
     address: {
       province: '',
       city: '',
       district: '',
       detailed_address: ''
     }
+  }
+}
+
+// 解析手机号，拆分为区号和手机号部分
+function parsePhoneNumber(phoneNumber: string): { country_code: string; phone_only: string } {
+  if (!phoneNumber) {
+    return { country_code: '+86', phone_only: '' }
+  }
+
+  // 移除所有空格和特殊字符，只保留数字和+号
+  const cleanPhone = phoneNumber.replace(/[^\d+]/g, '')
+
+  // 按长度匹配区号（从长到短匹配，避免误匹配）
+  const sortedCountryCodes = countryCodeOptions.map(option => option.value).sort((a, b) => b.length - a.length)
+
+  for (const code of sortedCountryCodes) {
+    if (cleanPhone.startsWith(code)) {
+      return {
+        country_code: code,
+        phone_only: cleanPhone.substring(code.length)
+      }
+    }
+  }
+
+  // 如果没有匹配到区号，默认使用+86
+  return {
+    country_code: '+86',
+    phone_only: cleanPhone
   }
 }
 
@@ -179,21 +299,24 @@ function handleUpdateFormModelByModalType() {
   const handlers: Record<ModalType, () => void> = {
     add: () => {
       const defaultFormModel = createDefaultFormModel()
+
       handleUpdateFormModel(defaultFormModel)
     },
     edit: () => {
       if (props.editData) {
         // 从后端数据中提取地址字段（地址字段在 address 对象中）
-        const editDataAny = props.editData as any;
+        const editDataAny = props.editData as any
         const addressData = editDataAny.address || {
           province: '',
           city: '',
           district: '',
           detailed_address: ''
-        };
-        
+        }
+
+        // 解析现有手机号，拆分为区号和手机号部分
+        const phoneData = parsePhoneNumber(editDataAny.phone_number || '')
+
         // 编辑模式下不需要构建级联选择器的值，因为我们使用的是独立的省市区字段
-        
         const editFormData = {
           ...editDataAny,
           password: '',
@@ -201,12 +324,14 @@ function handleUpdateFormModelByModalType() {
           organization: editDataAny.organization || '',
           timezone: editDataAny.timezone || 'Asia/Shanghai',
           default_language: editDataAny.default_language || 'zh-CN',
+          country_code: phoneData.country_code,
+          phone_only: phoneData.phone_only,
           address: {
             ...addressData
           }
         }
         handleUpdateFormModel(editFormData)
-        
+
         // 编辑模式下地址数据已经直接设置到表单模型中
       }
     }
@@ -217,18 +342,15 @@ function handleUpdateFormModelByModalType() {
 
 async function handleSubmit() {
   await formRef.value?.validate()
-  
+
   // 准备提交的数据，确保地址字段正确
   const submitData = {
     ...formModel
-  };
-  
+  }
+
   // 移除不需要提交的字段
-  delete (submitData as any).confirmPwd;
-  
-  if (process.env.NODE_ENV === 'development') {
-  };
-  
+  delete (submitData as any).confirmPwd
+
   let data: any
   if (props.type === 'add') {
     data = await addUser(submitData)
@@ -244,19 +366,18 @@ async function handleSubmit() {
 
 watch(
   () => props.visible,
-  newValue => {
-    if (newValue) {
+  newVal => {
+    if (newVal) {
       handleUpdateFormModelByModalType()
     }
   }
 )
 
-// 监听地址字段值的变化，用于调试
+// 监听区号和手机号变化，更新完整手机号
 watch(
-  () => [formModel.address.province, formModel.address.city, formModel.address.district],
-  (newValue) => {
-    if (process.env.NODE_ENV === 'development') {
-    };
+  () => [formModel.country_code, formModel.phone_only],
+  () => {
+    formModel.phone_number = fullPhoneNumber.value
   },
   { deep: true }
 )
@@ -272,17 +393,33 @@ watch(
         <NFormItemGridItem :span="12" :label="$t('page.manage.user.userEmail')" path="email">
           <NInput v-model:value="formModel.email" :disabled="type === 'edit'" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="12" :label="$t('page.manage.user.userPhone')" path="phone_number">
-          <NInput v-model:value="formModel.phone_number" />
+        <NFormItemGridItem :span="12" :label="$t('page.manage.user.userPhone')" path="phone_only">
+          <div class="flex gap-2">
+            <NSelect
+              v-model:value="formModel.country_code"
+              :options="countryCodeOptions"
+              class="w-32"
+              :placeholder="'区号'"
+            />
+            <NInput v-model:value="formModel.phone_only" :placeholder="'请输入手机号'" class="flex-1" />
+          </div>
         </NFormItemGridItem>
         <NFormItemGridItem :span="12" :label="$t('page.manage.user.organization')" path="organization">
           <NInput v-model:value="formModel.organization" :placeholder="$t('page.manage.user.form.organization')" />
         </NFormItemGridItem>
         <NFormItemGridItem :span="12" :label="$t('page.manage.user.timezone')" path="timezone">
-          <NSelect v-model:value="formModel.timezone" :options="timezoneOptions" :placeholder="$t('page.manage.user.form.timezone')" />
+          <NSelect
+            v-model:value="formModel.timezone"
+            :options="timezoneOptions"
+            :placeholder="$t('page.manage.user.form.timezone')"
+          />
         </NFormItemGridItem>
         <NFormItemGridItem :span="12" :label="$t('page.manage.user.defaultLanguage')" path="default_language">
-          <NSelect v-model:value="formModel.default_language" :options="languageOptions" :placeholder="$t('page.manage.user.form.defaultLanguage')" />
+          <NSelect
+            v-model:value="formModel.default_language"
+            :options="languageOptions"
+            :placeholder="$t('page.manage.user.form.defaultLanguage')"
+          />
         </NFormItemGridItem>
         <NFormItemGridItem :span="24" :label="$t('page.manage.user.address')" path="address.province">
           <ProvinceCityDistrictSelector
@@ -293,7 +430,10 @@ watch(
           />
         </NFormItemGridItem>
         <NFormItemGridItem :span="24" :label="$t('page.manage.user.detailedAddress')" path="address.detailed_address">
-          <NInput v-model:value="formModel.address.detailed_address" :placeholder="$t('page.manage.user.form.detailedAddress')" />
+          <NInput
+            v-model:value="formModel.address.detailed_address"
+            :placeholder="$t('page.manage.user.form.detailedAddress')"
+          />
         </NFormItemGridItem>
 
         <template v-if="type === 'add'">
