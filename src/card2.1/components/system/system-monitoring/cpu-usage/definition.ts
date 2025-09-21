@@ -1,5 +1,6 @@
 import type { ComponentDefinition } from '@/card2.1/core/types';
 import component from './component.vue';
+import { $t } from '@/locales';
 
 /**
  * @description CPU 使用率组件定义
@@ -7,11 +8,11 @@ import component from './component.vue';
  */
 export default {
   type: 'cpu-usage',
-  name: 'CPU 使用率',
+  name: $t('widget-library.components.cpuUsage'),
   description: '显示系统 CPU 使用率百分比，每30秒自动刷新数据',
-  icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>',
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm5 5h6v6H9V9z"/><path d="M7 2h2v3H7V2zm8 0h2v3h-2V2zm-8 17h2v3H7v-3zm8 0h2v3h-2v-3zM2 7h3v2H2V7zm0 6h3v2H2v-2zm17-6h3v2h-3V7zm0 6h3v2h-3v-2z" fill="#3b82f6"/></svg>',
   component,
-  category: '系统/系统监控',
+  category: $t('widget-library.subCategories.systemMonitoring'),
   version: '2.1.0',
   tags: ['系统', '监控', 'CPU', '性能'],
   dataDriven: true,

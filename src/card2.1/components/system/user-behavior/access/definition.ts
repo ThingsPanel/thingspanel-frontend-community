@@ -1,5 +1,6 @@
 import type { ComponentDefinition } from '@/card2.1/core/types';
 import component from './component.vue';
+import { $t } from '@/locales';
 
 /**
  * @description 组件定义
@@ -7,7 +8,7 @@ import component from './component.vue';
  */
 export default {
   type: 'access',
-  name: 'access',
+  name: $t('widget-library.components.access'),
   title: '访问量',
   description: '显示系统或应用的累计访问量',
   icon: '<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M512 384a128 128 0 1 0 0 256 128 128 0 0 0 0-256zm0 320a192 192 0 1 1 0-384 192 192 0 0 1 0 384z"/><path fill="currentColor" d="M512 896a448 448 0 1 1 0-896 448 448 0 0 1 0 896zm0-64a384 384 0 1 0 0-768 384 384 0 0 0 0 768z"/></svg>',

@@ -1,5 +1,6 @@
 import type { ComponentDefinition } from '@/card2.1/core/types';
 import component from './component.vue';
+import { $t } from '@/locales';
 
 /**
  * @description 磁盘使用率组件定义
@@ -7,11 +8,11 @@ import component from './component.vue';
  */
 export default {
   type: 'disk-usage',
-  name: '磁盘使用率',
+  name: $t('widget-library.components.diskUsage'),
   description: '显示系统磁盘使用率百分比，每30秒自动刷新数据',
-  icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/></svg>',
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H6zm0 18V4h12v16H6z"/><path d="M7 6h10v2H7V6zm0 4h10v2H7v-2zm0 4h7v2H7v-2z" fill="#f59e0b"/></svg>',
   component,
-  category: '系统/系统监控',
+  category: $t('widget-library.subCategories.systemMonitoring'),
   version: '2.1.0',
   tags: ['系统', '监控', '磁盘', '存储'],
   dataDriven: true,

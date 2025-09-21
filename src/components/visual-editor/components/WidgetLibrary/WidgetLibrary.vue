@@ -31,11 +31,11 @@
         v-for="topCategory in filteredWidgetTree"
         :key="topCategory.name"
         :name="topCategory.name"
-        :tab="topCategory.name"
+        :tab="getTopCategoryDisplayName(topCategory.name)"
       >
         <div class="tab-content">
           <div v-for="subCategory in topCategory.subCategories" :key="subCategory.name" class="widget-subcategory">
-            <h4 v-if="subCategory.name !== '默认'" class="subcategory-title">{{ subCategory.name }}</h4>
+            <h4 v-if="subCategory.name !== '默认'" class="subcategory-title">{{ getSubCategoryDisplayName(subCategory.name) }}</h4>
             <div class="category-grid">
               <div
                 v-for="widget in subCategory.children"
@@ -58,7 +58,7 @@
                     v-html="widget.icon"
                   ></div>
                 </div>
-                <div class="widget-name">{{ widget.name }}</div>
+                <div class="widget-name">{{ getComponentDisplayName(widget.type, widget.name) }}</div>
               </div>
             </div>
           </div>
@@ -81,7 +81,7 @@ import { ref, computed, onMounted, watchEffect } from 'vue'
 import { SearchOutline, AlertCircleOutline } from '@vicons/ionicons5'
 import { useI18n } from 'vue-i18n'
 import { useComponentTree } from '@/card2.1/hooks/useComponentTree'
-import { getCategoryDisplayName } from '@/card2.1/components/category-mapping'
+import { getCategoryDisplayNameI18n } from '@/card2.1/components/category-mapping'
 import type { WidgetDefinition, WidgetTreeNode } from '@/components/visual-editor/types/widget'
 import { registerAllWidgets } from '@/components/visual-editor/widgets'
 import SvgIcon from '@/components/custom/svg-icon.vue'
@@ -121,18 +121,28 @@ const allWidgets = computed(() => {
     return []
   }
 
-  return components.map(component => ({
-    type: component.type,
-    name: component.name || component.type,
-    description: component.description || '',
-    icon: component.icon,
-    source: 'card2' as const,
-    definition: {
-      // 使用自动注册写入的显示名：mainCategory 为“系统/图表”，subCategory 为子类显示名
-      mainCategory: component.mainCategory || '图表',
-      subCategory: component.subCategory || '默认'
+  return components.map(component => {
+    // 处理分类的国际化
+    const translateCategory = (categoryValue: string, fallback: string) => {
+      if (categoryValue && categoryValue.startsWith('widget-library.')) {
+        const translated = $t(categoryValue)
+        return translated !== categoryValue ? translated : fallback
+      }
+      return categoryValue || fallback
     }
-  }))
+
+    return {
+      type: component.type,
+      name: component.name || component.type,
+      description: component.description || '',
+      icon: component.icon,
+      source: 'card2' as const,
+      definition: {
+        mainCategory: translateCategory(component.mainCategory, '图表'),
+        subCategory: translateCategory(component.subCategory, '默认')
+      }
+    }
+  })
 })
 
 // --- Debug: 打印当前传入/计算的数据，便于分析数据结构 ---
@@ -206,13 +216,37 @@ const simplifiedWidgetTree = computed(() => {
     map[main][sub].push(widget)
   })
 
-  const result: TopCategory[] = Object.entries(map).map(([main, subMap]) => ({
-    name: main,
-    subCategories: Object.entries(subMap)
-      .map(([subName, list]) => ({ name: subName, children: list }))
-      // 系统只有“默认”子类；图表按字母排序子类
-      .sort((a, b) => a.name.localeCompare(b.name))
-  }))
+  // 🔥 修复：使用componentTree中已排序好的分类顺序，而不是Object.entries的随机顺序
+  const orderedCategories = componentTree.componentTree.value?.categories || []
+  const categoryOrder = orderedCategories.map(cat => cat.name)
+
+  // 按照componentTree中的分类顺序构建结果
+  const result: TopCategory[] = []
+
+  // 首先按照已排序的分类顺序添加
+  categoryOrder.forEach(categoryName => {
+    if (map[categoryName]) {
+      result.push({
+        name: categoryName,
+        subCategories: Object.entries(map[categoryName])
+          .map(([subName, list]) => ({ name: subName, children: list }))
+          // 子分类按字母排序
+          .sort((a, b) => a.name.localeCompare(b.name))
+      })
+    }
+  })
+
+  // 然后添加任何未在categoryOrder中的分类（作为后备）
+  Object.keys(map).forEach(categoryName => {
+    if (!categoryOrder.includes(categoryName)) {
+      result.push({
+        name: categoryName,
+        subCategories: Object.entries(map[categoryName])
+          .map(([subName, list]) => ({ name: subName, children: list }))
+          .sort((a, b) => a.name.localeCompare(b.name))
+      })
+    }
+  })
 
   // 过滤空类
   return result.map(top => ({
@@ -264,6 +298,39 @@ const filteredWidgetTree = computed(() => {
 
   return result
 })
+
+// --- 国际化显示名称获取函数 ---
+/**
+ * 获取顶层分类的国际化显示名称
+ */
+const getTopCategoryDisplayName = (categoryName: string): string => {
+  return getCategoryDisplayNameI18n(categoryName)
+}
+
+/**
+ * 获取子分类的国际化显示名称
+ */
+const getSubCategoryDisplayName = (subCategoryName: string): string => {
+  return getCategoryDisplayNameI18n(subCategoryName)
+}
+
+/**
+ * 获取组件的国际化显示名称
+ */
+const getComponentDisplayName = (componentType: string, fallbackName: string): string => {
+  // 如果fallbackName本身就是一个国际化key，直接使用它
+  if (fallbackName && fallbackName.startsWith('widget-library.components.')) {
+    const translatedName = $t(fallbackName)
+    return translatedName !== fallbackName ? translatedName : componentType
+  }
+
+  // 否则尝试通过componentType构建key
+  const i18nKey = `widget-library.components.${componentType}`
+  const translatedName = $t(i18nKey)
+
+  // 如果翻译的结果和键值相同，说明没有找到翻译，使用 fallbackName
+  return translatedName !== i18nKey ? translatedName : (fallbackName || componentType)
+}
 
 // --- Event Handlers ---
 const handleAddWidget = (widget: any) => {

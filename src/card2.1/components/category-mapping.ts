@@ -5,9 +5,12 @@
  * - ./chart/<sub-category>/<component>/index.ts → 顶层：图表（子类：告警/控制/统计/...）
  */
 
+import { $t } from '@/locales'
+
 /** 分类显示配置接口 */
 export interface CategoryConfig {
   displayName: string
+  displayNameKey?: string // 国际化键值
   order: number
   devOnly?: boolean
   enabled?: boolean
@@ -19,6 +22,7 @@ export interface CategoryConfig {
 export const TOP_LEVEL_MAPPING: Record<'system' | 'chart', CategoryConfig> = {
   system: {
     displayName: '系统',
+    displayNameKey: 'widget-library.categories.system',
     order: 1,
     enabled: true,
     icon: 'settings',
@@ -26,10 +30,79 @@ export const TOP_LEVEL_MAPPING: Record<'system' | 'chart', CategoryConfig> = {
   },
   chart: {
     displayName: '图表',
+    displayNameKey: 'widget-library.categories.chart',
     order: 2,
     enabled: true,
     icon: 'chart',
     description: '图表级组件（含子分类）'
+  }
+}
+
+// 系统级别的子分类映射（基于实际目录结构）
+export const SYSTEM_CATEGORY_MAPPING: Record<string, CategoryConfig> = {
+  'alarm-management': {
+    displayName: '告警管理',
+    displayNameKey: 'widget-library.subCategories.alarmManagement',
+    order: 10,
+    enabled: true,
+    icon: 'warning',
+    description: '告警通知和监控组件'
+  },
+  'data-information': {
+    displayName: '数据信息',
+    displayNameKey: 'widget-library.subCategories.dataInformation',
+    order: 20,
+    enabled: true,
+    icon: 'info-circle',
+    description: '数据信息展示组件'
+  },
+  'device-status': {
+    displayName: '设备状态',
+    displayNameKey: 'widget-library.subCategories.deviceStatus',
+    order: 30,
+    enabled: true,
+    icon: 'device',
+    description: '设备状态监控组件'
+  },
+  'operation-guide': {
+    displayName: '操作指引',
+    displayNameKey: 'widget-library.subCategories.operationGuide',
+    order: 40,
+    enabled: true,
+    icon: 'compass-outline',
+    description: '操作指引和帮助组件'
+  },
+  'system-monitoring': {
+    displayName: '系统监控',
+    displayNameKey: 'widget-library.subCategories.systemMonitoring',
+    order: 50,
+    enabled: true,
+    icon: 'monitor',
+    description: '系统性能监控组件'
+  },
+  'tenant-app': {
+    displayName: '租户应用',
+    displayNameKey: 'widget-library.subCategories.tenantApp',
+    order: 60,
+    enabled: true,
+    icon: 'app',
+    description: '租户相关应用组件'
+  },
+  'tenant-management': {
+    displayName: '租户管理',
+    displayNameKey: 'widget-library.subCategories.tenantManagement',
+    order: 70,
+    enabled: true,
+    icon: 'users',
+    description: '租户管理组件'
+  },
+  'user-behavior': {
+    displayName: '用户行为',
+    displayNameKey: 'widget-library.subCategories.userBehavior',
+    order: 80,
+    enabled: true,
+    icon: 'user',
+    description: '用户行为分析组件'
   }
 }
 
@@ -102,9 +175,31 @@ export const CHART_CATEGORY_MAPPING: Record<string, CategoryConfig> = {
 }
 
 /**
- * 兼容导出：根据旧的“文件夹名称”返回显示名
+ * 获取国际化的分类显示名称
+ */
+export function getCategoryDisplayNameI18n(folderName: string): string {
+  if ((['system', 'chart'] as const).includes(folderName as any)) {
+    const config = TOP_LEVEL_MAPPING[folderName as 'system' | 'chart']
+    return config?.displayNameKey ? $t(config.displayNameKey) : config?.displayName || folderName
+  }
+
+  const systemConfig = SYSTEM_CATEGORY_MAPPING[folderName]
+  if (systemConfig) {
+    return systemConfig.displayNameKey ? $t(systemConfig.displayNameKey) : systemConfig.displayName
+  }
+
+  const chartConfig = CHART_CATEGORY_MAPPING[folderName]
+  if (chartConfig) {
+    return chartConfig.displayNameKey ? $t(chartConfig.displayNameKey) : chartConfig.displayName
+  }
+
+  return folderName
+}
+
+/**
+ * 兼容导出：根据旧的"文件夹名称"返回显示名
  * - 识别顶层：'system' | 'chart'
- * - 识别图表子类：alarm/control/information/statistics/... 
+ * - 识别图表子类：alarm/control/information/statistics/...
  * - 其他返回原值
  */
 export function getCategoryDisplayName(folderName: string): string {
@@ -112,7 +207,7 @@ export function getCategoryDisplayName(folderName: string): string {
     return TOP_LEVEL_MAPPING[folderName as 'system' | 'chart']?.displayName || folderName
   }
   return (
-    (SYSTEM_CATEGORY_MAPPING as any)?.[folderName]?.displayName ||
+    SYSTEM_CATEGORY_MAPPING[folderName]?.displayName ||
     CHART_CATEGORY_MAPPING[folderName]?.displayName ||
     folderName
   )
@@ -163,7 +258,7 @@ export function getChartCategories(includeDevOnly = false): Array<{ folder: stri
 /**
  * 从组件相对路径解析分类（相对于 components 目录，以 ./ 开头）
  * 支持：
- * - ./system/<comp>/index.ts → { main: 系统 }
+ * - ./system/<sub>/<comp>/index.ts → { main: 系统, sub: <子类显示名> }
  * - ./chart/<sub>/<comp>/index.ts → { main: 图表, sub: <子类显示名> }
  */
 export function parseCategoryFromPath(relPath: string): {
@@ -172,11 +267,18 @@ export function parseCategoryFromPath(relPath: string): {
   subCategoryId?: string
   subCategoryName?: string
 } {
-  // 系统级：./system/<comp>/index.ts
-  let m = relPath.match(/^\.\/system\/([^/]+)\/index\.ts$/)
+  // 系统级：./system/<sub>/<comp>/index.ts
+  let m = relPath.match(/^\.\/system\/([^/]+)\/([^/]+)\/index\.ts$/)
   if (m) {
+    const subFolder = m[1]
     const top = TOP_LEVEL_MAPPING.system
-    return { topLevelId: 'system', topLevelName: top.displayName }
+    const sub = SYSTEM_CATEGORY_MAPPING[subFolder]
+    return {
+      topLevelId: 'system',
+      topLevelName: top.displayNameKey ? $t(top.displayNameKey) : top.displayName,
+      subCategoryId: subFolder,
+      subCategoryName: sub?.displayNameKey ? $t(sub.displayNameKey) : (sub?.displayName || subFolder)
+    }
   }
 
   // 图表级：./chart/<sub>/<comp>/index.ts
@@ -187,9 +289,9 @@ export function parseCategoryFromPath(relPath: string): {
     const sub = CHART_CATEGORY_MAPPING[subFolder]
     return {
       topLevelId: 'chart',
-      topLevelName: top.displayName,
+      topLevelName: top.displayNameKey ? $t(top.displayNameKey) : top.displayName,
       subCategoryId: subFolder,
-      subCategoryName: sub?.displayName || subFolder
+      subCategoryName: sub?.displayNameKey ? $t(sub.displayNameKey) : (sub?.displayName || subFolder)
     }
   }
 
@@ -197,18 +299,41 @@ export function parseCategoryFromPath(relPath: string): {
   const legacy = relPath.match(/^\.\/([^/]+)\/([^/]+)\/index\.ts$/)
   if (legacy) {
     const folder = legacy[1]
-    // 默认归入图表 → 子类映射
-    const top = TOP_LEVEL_MAPPING.chart
-    const sub = CHART_CATEGORY_MAPPING[folder]
+    // 先尝试系统分类映射
+    const systemSub = SYSTEM_CATEGORY_MAPPING[folder]
+    if (systemSub) {
+      const top = TOP_LEVEL_MAPPING.system
+      return {
+        topLevelId: 'system',
+        topLevelName: top.displayNameKey ? $t(top.displayNameKey) : top.displayName,
+        subCategoryId: folder,
+        subCategoryName: systemSub.displayNameKey ? $t(systemSub.displayNameKey) : systemSub.displayName
+      }
+    }
+
+    // 再尝试图表分类映射
+    const chartSub = CHART_CATEGORY_MAPPING[folder]
+    if (chartSub) {
+      const top = TOP_LEVEL_MAPPING.chart
+      return {
+        topLevelId: 'chart',
+        topLevelName: top.displayNameKey ? $t(top.displayNameKey) : top.displayName,
+        subCategoryId: folder,
+        subCategoryName: chartSub.displayNameKey ? $t(chartSub.displayNameKey) : chartSub.displayName
+      }
+    }
+
+    // 默认归入系统分类
+    const top = TOP_LEVEL_MAPPING.system
     return {
-      topLevelId: 'chart',
-      topLevelName: top.displayName,
+      topLevelId: 'system',
+      topLevelName: top.displayNameKey ? $t(top.displayNameKey) : top.displayName,
       subCategoryId: folder,
-      subCategoryName: sub?.displayName || folder
+      subCategoryName: folder
     }
   }
 
-  return { topLevelId: 'other', topLevelName: '其他' }
+  return { topLevelId: 'other', topLevelName: $t('common.other', '其他') }
 }
 
 /** 简单的显示控制（顶层/子类） */

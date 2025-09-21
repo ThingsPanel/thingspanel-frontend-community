@@ -7,13 +7,13 @@ import component from './component.vue';
  */
 export default {
   type: 'on-line',
-  name: '在线设备数',
+  name: 'widget-library.components.onLine',
   description: '显示当前在线的设备数量',
-  icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/><circle cx="12" cy="12" r="3" fill="#4ade80"/></svg>',
   component,
-  mainCategory: '系统',
-  subCategory: '设备状态',
-  category: '系统/设备状态',
+  mainCategory: 'widget-library.categories.system',
+  subCategory: 'widget-library.subCategories.deviceStatus',
+  category: 'widget-library.subCategories.deviceStatus',
   version: '2.1.0',
   tags: ['系统', '设备', '在线', '状态'],
   dataDriven: true,

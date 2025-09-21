@@ -255,13 +255,39 @@ export class AutoRegistry {
   getComponentTree(): ComponentTree {
     const components = this.registry.getAll()
 
-    // 对分类进行排序：“系统”分类优先，其他按名称排序
+    // 🔥 智能排序："系统"分类有组件时优先，空分类不优先
     const sortedCategories = [...this.categoryTree].sort((a, b) => {
-      if (a.name === '系统') return -1;
-      if (b.name === '系统') return 1;
-      if (a.name < b.name) return -1;
-      if (a.name > b.name) return 1;
-      return 0;
+      // 计算每个分类下的组件数量
+      const getComponentCount = (categoryName: string) => {
+        return components.filter(comp => comp.mainCategory === categoryName).length
+      }
+
+      const aIsSystem = a.name === '系统'
+      const bIsSystem = b.name === '系统'
+      const systemComponentCount = getComponentCount('系统')
+
+      // 🚀 系统分类智能优先：只有当系统分类有组件时才优先
+      if (aIsSystem && systemComponentCount > 0) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[AutoRegistry] 📊 系统分类优先排序 (${systemComponentCount}个组件)`)
+        }
+        return -1
+      }
+      if (bIsSystem && systemComponentCount > 0) {
+        return 1
+      }
+
+      // 系统分类为空时的特殊处理
+      if (aIsSystem && systemComponentCount === 0) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[AutoRegistry] 📊 系统分类为空，不优先排序`)
+        }
+      }
+
+      // 其他情况按名称排序
+      if (a.name < b.name) return -1
+      if (a.name > b.name) return 1
+      return 0
     });
 
     return {

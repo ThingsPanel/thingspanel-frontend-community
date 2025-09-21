@@ -1,1 +1,7 @@
-// Placeholder for alarm-info component
+import definition from './definition'
+
+/**
+ * @description 告警信息组件导出
+ * @summary 默认导出组件定义，供 `card2.1` 自动注册系统使用。
+ */
+export default definition

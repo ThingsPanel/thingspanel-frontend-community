@@ -1,5 +1,6 @@
 import type { ComponentDefinition } from '@/card2.1/core/types';
 import component from './component.vue';
+import { $t } from '@/locales';
 
 /**
  * @description 告警统计组件定义
@@ -7,11 +8,11 @@ import component from './component.vue';
  */
 export default {
   type: 'alarm-count',
-  name: '告警统计',
+  name: $t('widget-library.components.alarmCount'),
   description: '显示系统当前的告警总数统计',
-  icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><bell/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-1.1 0-2 .9-2 2v.17c-2.1.4-3.5 2.24-3.5 4.83v4l-2 2v1h15v-1l-2-2V9c0-2.59-1.4-4.43-3.5-4.83V4c0-1.1-.9-2-2-2zm-1 17h2c0 1.1-.9 2-2 2s-2-.9-2-2z"/></svg>',
   component,
-  category: '系统/告警管理',
+  category: $t('widget-library.subCategories.alarmManagement'),
   version: '2.1.0',
   tags: ['系统', '告警', '统计', '监控'],
   dataDriven: true,
