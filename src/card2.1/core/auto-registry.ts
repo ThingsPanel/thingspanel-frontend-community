@@ -53,15 +53,14 @@ export class AutoRegistry {
           const componentType = definition.type as ComponentType
           let subCategoryId: string | undefined;
 
-          // 优先根据目录结构推断分类
-          if (module.__sourcePath) {
-            const path = module.__sourcePath as string
-            const pathSegments = path.replace('./', '').split('/')
+          // 🔥 修复：根据componentId路径推断分类，而不是依赖__sourcePath
+          // componentId 格式通常是从 ./components/<main>/<sub>/<component>/index.ts 提取的路径
+          if (componentId) {
+            // 从componentId中提取路径信息，跳过'./components/'部分
+            const pathMatch = componentId.match(/^\.\/components\/([^\/]+)\/([^\/]+)\/([^\/]+)\/index\.ts$/)
 
-            // 路径结构必须是 <main-category>/<sub-category>/<component-name>/index.ts
-            if (pathSegments.length >= 3) {
-              const mainCatId = pathSegments[0]
-              const subCatId = pathSegments[1]
+            if (pathMatch) {
+              const [, mainCatId, subCatId, componentName] = pathMatch
 
               // 验证推断的分类是否有效
               const inferredSubCategory = SUB_CATEGORIES[subCatId]
@@ -69,19 +68,35 @@ export class AutoRegistry {
                 subCategoryId = subCatId
                 if (process.env.NODE_ENV === 'development') {
                   console.log(
-                    `[AutoRegistry] ✅ Inferred category for ${componentType}: ${mainCatId}/${subCatId}`,
+                    `[AutoRegistry] ✅ 路径推断分类成功 ${componentType}: ${mainCatId}/${subCatId} (来源: ${componentId})`,
                   )
                 }
+              } else {
+                if (process.env.NODE_ENV === 'development') {
+                  console.warn(
+                    `[AutoRegistry] ⚠️ 路径推断分类失败 ${componentType}: ${mainCatId}/${subCatId} 无效 (来源: ${componentId})`,
+                  )
+                }
+              }
+            } else {
+              if (process.env.NODE_ENV === 'development') {
+                console.warn(
+                  `[AutoRegistry] ⚠️ 路径格式不匹配 ${componentType}: ${componentId}`,
+                )
               }
             }
           }
 
-          // 如果路径推断失败，则从映射表获取分类作为后备
+          // 🔥 如果路径推断失败，从映射表获取分类作为后备（主要用于历史兼容）
           if (!subCategoryId) {
             subCategoryId = COMPONENT_TO_CATEGORY_MAP[componentType]
             if (subCategoryId && process.env.NODE_ENV === 'development') {
-              console.log(
-                `[AutoRegistry] ℹ️ Falling back to COMPONENT_TO_CATEGORY_MAP for ${componentType}: ${subCategoryId}`,
+              console.warn(
+                `[AutoRegistry] ⚠️ 使用后备映射表 ${componentType} → ${subCategoryId} (应该修改目录结构以支持自动推断)`,
+              )
+            } else if (process.env.NODE_ENV === 'development') {
+              console.error(
+                `[AutoRegistry] ❌ 无法确定分类 ${componentType}，既不能从路径推断，也不在映射表中`,
               )
             }
           }
