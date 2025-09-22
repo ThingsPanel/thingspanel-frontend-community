@@ -1,4 +1,4 @@
-;<svg width="36" height="28" viewBox="0 0 36 28" xmlns="http://www.w3.org/2000/svg">
+<svg width="36" height="28" viewBox="0 0 36 28" xmlns="http://www.w3.org/2000/svg">
   <line x1="6" y1="6" x2="30" y2="6" stroke="#aaa" stroke-dasharray="3,2" stroke-width="1.5"></line>
   <line x1="12" y1="6" x2="12" y2="14" stroke="#aaa" stroke-dasharray="2,2" stroke-width="1"></line>
   <line x1="18" y1="6" x2="18" y2="14" stroke="#aaa" stroke-dasharray="2,2" stroke-width="1"></line>
