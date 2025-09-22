@@ -23,7 +23,7 @@ import ItemCard from '@/components/dev-card-item/index.vue'
 import TemplateModal from './components/template-modal.vue'
 import { useBoolean, useLoading } from '~/packages/hooks/src'
 // 导入SvgIcon组件，使用项目标准图标系统
-import { SvgIcon } from '@/components/custom/svg-icon'
+import SvgIcon from '@/components/custom/svg-icon.vue'
 import { getDemoServerUrl } from '@/utils/common/tool'
 
 const route = useRoute()

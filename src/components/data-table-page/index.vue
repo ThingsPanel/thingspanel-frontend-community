@@ -351,7 +351,7 @@ const handleRefresh = () => {
 }
 
 // 导入SvgIcon组件，使用项目标准图标系统
-import { SvgIcon } from '@/components/custom/svg-icon'
+import SvgIcon from '@/components/custom/svg-icon.vue'
 
 // 设备类型到图标名称的映射 (使用项目标准图标系统)
 const deviceTypeIcons = {
