@@ -35,5 +35,6 @@
   "components.tenantCount": "租户数量",
   "components.access": "访问量",
   "components.offLine": "离线设备数",
-  "components.onLine": "在线设备数"
+  "components.onLine": "在线设备数",
+  "components.digitIndicator": "数字指示器"
 }

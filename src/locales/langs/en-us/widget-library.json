@@ -35,5 +35,6 @@
   "components.tenantCount": "Tenant Count",
   "components.access": "Access Quantity",
   "components.offLine": "Offline Devices",
-  "components.onLine": "Online Devices"
+  "components.onLine": "Online Devices",
+  "components.digitIndicator": "Digit Indicator"
 }
