@@ -22,7 +22,8 @@ import AdvancedListLayout from '@/components/list-page/index.vue'
 import ItemCard from '@/components/dev-card-item/index.vue'
 import TemplateModal from './components/template-modal.vue'
 import { useBoolean, useLoading } from '~/packages/hooks/src'
-import defaultTemplate from './components/svg/default-template.svg?url'
+// 导入SvgIcon组件，使用项目标准图标系统
+import { SvgIcon } from '@/components/custom/svg-icon'
 import { getDemoServerUrl } from '@/utils/common/tool'
 
 const route = useRoute()
@@ -345,7 +346,8 @@ onMounted(() => {
                 <!-- 底部图标 - 固定40x40正方形 -->
                 <template #footer-icon>
                   <div class="footer-icon-container">
-                    <img :src="getPath(item.path) || defaultTemplate" alt="device type icon" class="template-image" />
+                    <img v-if="item.path" :src="getPath(item.path)" alt="device type icon" class="template-image" />
+                    <SvgIcon v-else local-icon="default-template" class="template-image" />
                   </div>
                 </template>
               </ItemCard>

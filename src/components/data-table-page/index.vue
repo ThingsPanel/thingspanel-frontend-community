@@ -350,33 +350,30 @@ const handleRefresh = () => {
   getData()
 }
 
-// 导入您在 modules 文件夹下创建的SVG图标 (使用 ?url 后缀)
-import directDeviceIconUrl from './modules/svg/direct.svg?url'
-import gatewayIconUrl from './modules/svg/gateway.svg?url'
-import subDeviceIconUrl from './modules/svg/subdevice.svg?url'
-import defaultDeviceIconUrl from './modules/svg/defaultdevice.svg?url'
+// 导入SvgIcon组件，使用项目标准图标系统
+import { SvgIcon } from '@/components/custom/svg-icon'
 
-// 设备类型到图标URL的映射 (现在使用导入的SVG路径)
-const deviceTypeIconUrls = {
-  '1': directDeviceIconUrl, // 直连设备图标
-  '2': gatewayIconUrl, // 网关图标
-  '3': subDeviceIconUrl, // 网关子设备图标
-  default: '' // 如果没有匹配的类型，则不显示图标
+// 设备类型到图标名称的映射 (使用项目标准图标系统)
+const deviceTypeIcons = {
+  '1': 'direct', // 直连设备图标
+  '2': 'gateway', // 网关图标
+  '3': 'subdevice', // 网关子设备图标
+  default: 'defaultdevice' // 默认设备图标
 }
 
-// 修改获取设备图标URL的函数，针对"默认配置"使用直连设备图标
-const getDeviceIconUrl = (deviceType: string, deviceConfigName?: string): string => {
+// 获取设备图标名称的函数，针对"默认配置"使用直连设备图标
+const getDeviceIconName = (deviceType: string, deviceConfigName?: string): string => {
   // 当配置是默认配置时，强制使用直连设备图标
   if (!deviceConfigName || deviceConfigName === '默认配置') {
-    return deviceTypeIconUrls['1'] // 直连设备图标
+    return deviceTypeIcons['1'] // 直连设备图标
   }
-  return deviceTypeIconUrls[deviceType] || deviceTypeIconUrls.default
+  return deviceTypeIcons[deviceType] || deviceTypeIcons.default
 }
 
 // 获取配置图片URL的函数
 const getConfigImageUrl = (imagePath: string | undefined): string => {
   logger.info('imagePath:', imagePath)
-  if (!imagePath) return defaultDeviceIconUrl
+  if (!imagePath) return '' // 返回空字符串，让模板使用默认图标
   const relativePath = imagePath.replace(/^\.?\//, '')
   return `${url.value.replace('api/v1', '') + relativePath}`
 }
@@ -512,9 +509,8 @@ const handleWarningClick = (item: DeviceItem) => {
                 @click-top-right-icon="handleWarningClick(item)"
               >
                 <template #subtitle-icon>
-                  <img
-                    :src="getDeviceIconUrl(item.device_type, item.device_config_name)"
-                    alt="device type icon"
+                  <SvgIcon
+                    :local-icon="getDeviceIconName(item.device_type, item.device_config_name)"
                     class="image-icon"
                   />
                 </template>
@@ -536,7 +532,8 @@ const handleWarningClick = (item: DeviceItem) => {
                 </template>
                 <template #footer-icon>
                   <div class="footer-icon-container">
-                    <img :src="getConfigImageUrl(item.image_url)" alt="config image" class="config-image" />
+                    <img v-if="item.image_url" :src="getConfigImageUrl(item.image_url)" alt="config image" class="config-image" />
+                    <SvgIcon v-else local-icon="defaultdevice" class="config-image" />
                   </div>
                 </template>
               </DevCardItem>
