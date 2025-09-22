@@ -158,8 +158,8 @@ const updateChartOption = (processedData: {
       x2: 0,
       y2: 1,
       colorStops: [
-        { offset: 0, color: 'rgba(84, 112, 198, 0.2)' },
-        { offset: 1, color: 'rgba(84, 112, 198, 0.02)' }
+        { offset: 0, color: 'rgba(84, 112, 198, 0.3)' },
+        { offset: 1, color: 'rgba(84, 112, 198, 0)' }
       ]
     },
     {
@@ -169,8 +169,8 @@ const updateChartOption = (processedData: {
       x2: 0,
       y2: 1,
       colorStops: [
-        { offset: 0, color: 'rgba(145, 204, 117, 0.2)' },
-        { offset: 1, color: 'rgba(145, 204, 117, 0.02)' }
+        { offset: 0, color: 'rgba(145, 204, 117, 0.3)' },
+        { offset: 1, color: 'rgba(145, 204, 117, 0)' }
       ]
     },
     {
@@ -180,8 +180,8 @@ const updateChartOption = (processedData: {
       x2: 0,
       y2: 1,
       colorStops: [
-        { offset: 0, color: 'rgba(250, 200, 88, 0.2)' },
-        { offset: 1, color: 'rgba(250, 200, 88, 0.02)' }
+        { offset: 0, color: 'rgba(250, 200, 88, 0.3)' },
+        { offset: 1, color: 'rgba(250, 200, 88, 0)' }
       ]
     }
   ]
@@ -200,10 +200,10 @@ const updateChartOption = (processedData: {
       formatter: (params: any) => {
         if (!params || params.length === 0) return ''
         const dataIndex = params[0].dataIndex
-        const timeStr = dayjs(timestamps[dataIndex]).format('MM-DD HH:mm:ss')
-        let tooltipHtml = `<div style="margin-bottom: 4px; font-weight: bold;">${timeStr}</div>`
+        const timeStr = dayjs(timestamps[dataIndex]).format('MMM D YYYY HH:mm:ss')
+        let tooltipHtml = `${timeStr}<br/>`
         params.forEach((param: any) => {
-          tooltipHtml += `<div>${param.marker} ${param.seriesName}: <span style="font-weight: bold;">${param.value?.toFixed(1)}%</span></div>`
+          tooltipHtml += `${param.marker} ${param.seriesName} &nbsp;&nbsp;<b>${param.value?.toFixed(1)}%</b><br/>`
         })
         return tooltipHtml
       }
@@ -272,15 +272,10 @@ const updateChartOption = (processedData: {
       {
         name: cpuLabel,
         type: 'line',
-        smooth: 0.3,
-        symbol: 'circle',
-        symbolSize: 4,
-        lineStyle: {
-          width: 2,
-          shadowColor: 'rgba(84, 112, 198, 0.3)',
-          shadowBlur: 4
-        },
-        areaStyle: areaColors[0],
+        smooth: 0.6,
+        symbol: 'none',
+        lineStyle: { width: 2 },
+        areaStyle: { color: areaColors[0], origin: 'start' },
         emphasis: {
           focus: 'series'
         },
@@ -289,15 +284,10 @@ const updateChartOption = (processedData: {
       {
         name: memLabel,
         type: 'line',
-        smooth: 0.3,
-        symbol: 'circle',
-        symbolSize: 4,
-        lineStyle: {
-          width: 2,
-          shadowColor: 'rgba(145, 204, 117, 0.3)',
-          shadowBlur: 4
-        },
-        areaStyle: areaColors[1],
+        smooth: 0.6,
+        symbol: 'none',
+        lineStyle: { width: 2 },
+        areaStyle: { color: areaColors[1], origin: 'start' },
         emphasis: {
           focus: 'series'
         },
@@ -306,15 +296,10 @@ const updateChartOption = (processedData: {
       {
         name: diskLabel,
         type: 'line',
-        smooth: 0.3,
-        symbol: 'circle',
-        symbolSize: 4,
-        lineStyle: {
-          width: 2,
-          shadowColor: 'rgba(250, 200, 88, 0.3)',
-          shadowBlur: 4
-        },
-        areaStyle: areaColors[2],
+        smooth: 0.6,
+        symbol: 'none',
+        lineStyle: { width: 2 },
+        areaStyle: { color: areaColors[2], origin: 'start' },
         emphasis: {
           focus: 'series'
         },

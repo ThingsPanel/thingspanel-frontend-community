@@ -142,7 +142,7 @@ provide(
  * 获取月份标签
  */
 const getMonthLabel = (monthNumber: number): string => {
-  return `${monthNumber}月`
+  return String(monthNumber)
 }
 
 /**
@@ -193,14 +193,14 @@ const updateChartOption = (processedData: { monthLabels: string[]; userCounts: n
       formatter: (params: any) => {
         if (!params || params.length === 0) return ''
         const p = params[0]
-        return `<div style="margin-bottom: 4px; font-weight: bold;">${p.name}</div><div>${p.marker}${p.seriesName}: <span style="font-weight: bold;">${p.value}</span></div>`
+        return `${p.name}月<br/>${p.marker}${p.seriesName}: <b>${p.value}</b>`
       }
     },
     grid: {
-      left: '5%',
-      right: '5%',
+      left: '1%',
+      right: '3%',
       top: '15%',
-      bottom: '10%',
+      bottom: '3%',
       containLabel: true
     },
     xAxis: {
@@ -210,11 +210,7 @@ const updateChartOption = (processedData: { monthLabels: string[]; userCounts: n
         show: false,
         alignWithLabel: true
       },
-      axisLine: {
-        lineStyle: {
-          color: themeStore.isDark ? '#555' : '#e1e5e9'
-        }
-      },
+      axisLine: { show: false },
       axisLabel: {
         color: themeStore.isDark ? '#aaa' : '#666',
         fontSize: 11
@@ -222,25 +218,16 @@ const updateChartOption = (processedData: { monthLabels: string[]; userCounts: n
     },
     yAxis: {
       type: 'value',
-      axisLabel: {
-        color: themeStore.isDark ? '#aaa' : '#666',
-        fontSize: 11
-      },
-      splitLine: {
-        lineStyle: {
-          color: themeStore.isDark ? '#333' : '#f0f0f0',
-          type: 'dashed'
-        }
-      },
-      axisLine: {
-        show: false
-      }
+      axisLabel: { show: true, color: themeStore.isDark ? '#aaa' : '#888', fontSize: 11, margin: 15 },
+      splitLine: { lineStyle: { color: themeStore.isDark ? '#333' : '#eee', type: 'dashed' } },
+      axisLine: { show: false },
+      nameTextStyle: { color: 'transparent' }
     },
     series: [
       {
         name: seriesName,
         type: 'bar',
-        barWidth: '40%',
+        barWidth: '30%',
         data: userCounts,
         itemStyle: {
           color: barColor,
@@ -248,9 +235,7 @@ const updateChartOption = (processedData: { monthLabels: string[]; userCounts: n
         },
         emphasis: {
           itemStyle: {
-            color: hoverColor,
-            shadowColor: 'rgba(0, 0, 0, 0.2)',
-            shadowBlur: 10
+            color: hoverColor
           }
         }
       }

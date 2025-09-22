@@ -24,27 +24,17 @@
       </n-button>
     </div>
 
-    <!-- 数据表格区域 -->
-    <div class="flex-1 p-4 overflow-hidden">
-      <div class="h-full">
-        <n-spin :show="loading">
-          <n-data-table
-            v-if="!loading"
-            :columns="columns"
-            :data="alarmList"
-            :bordered="false"
-            striped
-            size="small"
-            flex-height
-            class="h-full rounded-lg"
-            :scroll-x="600"
-          />
-          <div v-if="!loading && alarmList.length === 0" class="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
-            <Icon icon="mdi:shield-check-outline" class="text-4xl mb-2 text-green-500" />
-            <span class="text-sm">{{ $t('card.alarmInfo.noAlarms') }}</span>
-          </div>
-        </n-spin>
-      </div>
+    <div class="flex-grow overflow-auto relative">
+      <n-data-table
+        v-if="!loading"
+        :columns="columns"
+        :data="alarmList"
+        :bordered="false"
+        striped
+        size="small"
+        flex-height
+        class="h-full"
+      />
     </div>
   </div>
 </template>
@@ -109,26 +99,19 @@ const columns: DataTableColumns<AlarmData> = [
   {
     key: 'name',
     title: $t('generate.alarm-name'),
-    width: 140,
+    width: 170,
     ellipsis: {
       tooltip: true
-    },
-    render(row) {
-      return h('div', { class: 'font-medium text-gray-900 dark:text-gray-100' }, row.name)
     }
   },
+
   {
     key: 'alarm_status',
     title: $t('generate.alarm-status'),
-    width: 80,
+    width: 90,
     render(row) {
       const statusInfo = getStatusInfo(row.alarm_status)
-      return h(NTag, {
-        type: statusInfo.type,
-        size: 'small',
-        round: true,
-        class: 'font-medium'
-      }, { default: () => statusInfo.label })
+      return h(NTag, { type: statusInfo.type, size: 'small', round: true }, { default: () => statusInfo.label })
     }
   },
   {
@@ -136,17 +119,14 @@ const columns: DataTableColumns<AlarmData> = [
     title: $t('generate.alarm-content'),
     ellipsis: {
       tooltip: true
-    },
-    render(row) {
-      return h('div', { class: 'text-gray-700 dark:text-gray-300 text-sm' }, row.content)
     }
   },
   {
     key: 'create_at',
     title: $t('common.alarm_time'),
-    width: 180, // 与原版保持1:1一致的宽度
+    width: 180,
     render(row) {
-      return formatTime(row.create_at) // 简化渲染，与原版保持一致
+      return formatTime(row.create_at)
     }
   }
 ]
@@ -164,13 +144,20 @@ const fetchData = async () => {
       start_time: '',
       end_time: ''
     }
-    const { data } = await alarmHistory(params)
+    const response = await alarmHistory(params)
+    console.log('alarm-info 新版 - response:', response)
+    const { data } = response
+    console.log('alarm-info 新版 - data:', data)
+    console.log('alarm-info 新版 - data?.list:', data?.list)
     alarmList.value = data?.list || []
+    console.log('alarm-info 新版 - alarmList.value after assignment:', alarmList.value)
+    console.log('alarm-info 新版 - alarmList.value.length:', alarmList.value.length)
   } catch (error) {
     console.error('Failed to fetch alarm history:', error) // 与原版保持一致的错误信息
     alarmList.value = []
   }
   loading.value = false // 与原版保持1:1一致的loading处理方式
+  console.log('alarm-info 新版 - loading set to false, final alarmList.length:', alarmList.value.length)
 }
 
 /**

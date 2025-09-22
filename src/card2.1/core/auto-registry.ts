@@ -11,6 +11,7 @@ import {
   TOP_LEVEL_CATEGORIES,
 } from './category-definition'
 import { ComponentType } from '@/card2.1/enum'
+import { $t } from '@/locales'
 
 export interface ComponentCategory {
   id: string
@@ -53,6 +54,10 @@ export class AutoRegistry {
           const componentType = definition.type as ComponentType
           let subCategoryId: string | undefined;
 
+          // 🔍 调试信息：组件注册开始
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[AutoRegistry] 📝 开始注册组件: ${componentType} (来源: ${componentId})`)
+          }
           // 🔥 修复：根据componentId路径推断分类，而不是依赖__sourcePath
           // componentId 格式通常是从 ./components/<main>/<sub>/<component>/index.ts 提取的路径
           if (componentId) {
@@ -101,31 +106,34 @@ export class AutoRegistry {
             }
           }
 
-          let mainCategory = '其他'
-          let subCategory: string | undefined
-          let category = '其他'
+          // 🔥 核心修复：不翻译，只生成翻译键，让UI层响应式翻译
+          let mainCategoryKey = 'widget-library.categories.chart' // 默认
+          let subCategoryKey = 'widget-library.subCategories.data' // 默认
 
           if (subCategoryId) {
             const subCategoryDef = Object.values(SUB_CATEGORIES).find(s => s.id === subCategoryId)
             if (subCategoryDef) {
-              subCategory = subCategoryDef.displayName
+              // 生成翻译键，不翻译
+              subCategoryKey = this.getTranslationKey(subCategoryId, 'subCategory')
+
               const mainCatId = subCategoryDef.parentId
-              const topLevelCategoryDef = Object.values(TOP_LEVEL_CATEGORIES).find(
-                t => t.id === mainCatId,
-              )
+              const topLevelCategoryDef = Object.values(TOP_LEVEL_CATEGORIES).find(t => t.id === mainCatId)
               if (topLevelCategoryDef) {
-                mainCategory = topLevelCategoryDef.displayName
+                mainCategoryKey = this.getTranslationKey(mainCatId, 'mainCategory')
+              }
+
+              if (process.env.NODE_ENV === 'development') {
+                console.log(`[AutoRegistry] 🔑 生成翻译键: ${componentType} -> 主分类: ${mainCategoryKey}, 子分类: ${subCategoryKey}`)
               }
             }
           }
-
-          category = subCategory ? `${mainCategory}/${subCategory}` : mainCategory
-          // 🔥 强制覆盖组件定义的分类字段
+          // 🔥 关键修复：传递翻译键，让UI层响应式翻译
           const enhancedDefinition = {
             ...definition,
-            mainCategory,
-            subCategory,
-            category,
+            name: definition.name, // 保持翻译键，不翻译
+            mainCategory: mainCategoryKey, // 传递翻译键
+            subCategory: subCategoryKey, // 传递翻译键
+            category: `${mainCategoryKey}/${subCategoryKey}`, // 组合翻译键
           }
 
           if (process.env.NODE_ENV === 'development') {
@@ -206,6 +214,41 @@ export class AutoRegistry {
   }
 
   /**
+   * 🌍 生成翻译键：将分类ID映射为国际化翻译键
+   */
+  private getTranslationKey(categoryId: string, type: 'mainCategory' | 'subCategory'): string {
+    if (type === 'mainCategory') {
+      // 主分类映射
+      const mainCategoryMap: Record<string, string> = {
+        'system': 'widget-library.categories.system',
+        'chart': 'widget-library.categories.chart'
+      }
+      return mainCategoryMap[categoryId] || `widget-library.categories.${categoryId}`
+    } else {
+      // 子分类映射：将kebab-case转换为camelCase
+      const subCategoryMap: Record<string, string> = {
+        'system-monitoring': 'widget-library.subCategories.systemMonitoring',
+        'device-status': 'widget-library.subCategories.deviceStatus',
+        'alarm-management': 'widget-library.subCategories.alarmManagement',
+        'tenant-app': 'widget-library.subCategories.tenantApp',
+        'data-information': 'widget-library.subCategories.dataInformation',
+        'user-behavior': 'widget-library.subCategories.userBehavior',
+        'operation-guide': 'widget-library.subCategories.operationGuide',
+        'dashboard': 'widget-library.subCategories.dashboard',
+        'information': 'widget-library.subCategories.information',
+        'control': 'widget-library.subCategories.control',
+        'device': 'widget-library.subCategories.device',
+        'data': 'widget-library.subCategories.data',
+        'statistics': 'widget-library.subCategories.statistics',
+        'location': 'widget-library.subCategories.location',
+        'media': 'widget-library.subCategories.media',
+        'alarm': 'widget-library.subCategories.alarm'
+      }
+      return subCategoryMap[categoryId] || `widget-library.subCategories.${categoryId}`
+    }
+  }
+
+  /**
    * 验证组件定义是否有效
    */
   private isValidComponentDefinition(definition: any): definition is ComponentDefinition {
@@ -255,16 +298,18 @@ export class AutoRegistry {
   getComponentTree(): ComponentTree {
     const components = this.registry.getAll()
 
-    // 🔥 智能排序："系统"分类有组件时优先，空分类不优先
+    // 🔥 智能排序：系统分类有组件时优先，空分类不优先
     const sortedCategories = [...this.categoryTree].sort((a, b) => {
       // 计算每个分类下的组件数量
       const getComponentCount = (categoryName: string) => {
         return components.filter(comp => comp.mainCategory === categoryName).length
       }
 
-      const aIsSystem = a.name === '系统'
-      const bIsSystem = b.name === '系统'
-      const systemComponentCount = getComponentCount('系统')
+      // 🔥 修复：使用翻译键而不是硬编码中文
+      const systemCategoryKey = 'widget-library.categories.system'
+      const aIsSystem = a.name === systemCategoryKey
+      const bIsSystem = b.name === systemCategoryKey
+      const systemComponentCount = getComponentCount(systemCategoryKey)
 
       // 🚀 系统分类智能优先：只有当系统分类有组件时才优先
       if (aIsSystem && systemComponentCount > 0) {

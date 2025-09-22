@@ -35,7 +35,7 @@
       >
         <div class="tab-content">
           <div v-for="subCategory in topCategory.subCategories" :key="subCategory.name" class="widget-subcategory">
-            <h4 v-if="subCategory.name !== '默认'" class="subcategory-title">{{ getSubCategoryDisplayName(subCategory.name) }}</h4>
+            <h4 v-if="subCategory.name !== 'widget-library.subCategories.data'" class="subcategory-title">{{ getSubCategoryDisplayName(subCategory.name) }}</h4>
             <div class="category-grid">
               <div
                 v-for="widget in subCategory.children"
@@ -79,15 +79,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watchEffect } from 'vue'
 import { SearchOutline, AlertCircleOutline } from '@vicons/ionicons5'
-import { useI18n } from 'vue-i18n'
 import { useComponentTree } from '@/card2.1/hooks/useComponentTree'
-import { getCategoryDisplayNameI18n } from '@/card2.1/components/category-mapping'
 import type { WidgetDefinition, WidgetTreeNode } from '@/components/visual-editor/types/widget'
 import { registerAllWidgets } from '@/components/visual-editor/widgets'
 import SvgIcon from '@/components/custom/svg-icon.vue'
-import { $t } from '@/locales'
+import { useI18n } from 'vue-i18n'
 
 const componentTree = useComponentTree({ autoInit: true })
+
+// --- 国际化 ---
+const { t } = useI18n()
 
 // --- State and Emits ---
 const searchTerm = ref('')
@@ -122,24 +123,16 @@ const allWidgets = computed(() => {
   }
 
   return components.map(component => {
-    // 处理分类的国际化
-    const translateCategory = (categoryValue: string, fallback: string) => {
-      if (categoryValue && categoryValue.startsWith('widget-library.')) {
-        const translated = $t(categoryValue)
-        return translated !== categoryValue ? translated : fallback
-      }
-      return categoryValue || fallback
-    }
-
+    // 🔥 架构修复：auto-registry.ts 传递翻译键，UI层负责翻译
     return {
       type: component.type,
-      name: component.name || component.type,
+      name: component.name || component.type, // auto-registry.ts传递的翻译键
       description: component.description || '',
       icon: component.icon,
       source: 'card2' as const,
       definition: {
-        mainCategory: translateCategory(component.mainCategory, '图表'),
-        subCategory: translateCategory(component.subCategory, '默认')
+        mainCategory: component.mainCategory || 'widget-library.categories.chart', // auto-registry.ts传递的翻译键
+        subCategory: component.subCategory || 'widget-library.subCategories.data'    // auto-registry.ts传递的翻译键
       }
     }
   })
@@ -208,8 +201,8 @@ const simplifiedWidgetTree = computed(() => {
   allWidgets.value.forEach(widget => {
     const main = widget.definition?.mainCategory
     if (!main) return
-    // ✅ 修复：系统分类也应该正确显示子分类，而不是强制归类到"默认"
-    const sub = widget.definition?.subCategory || '默认'
+    // ✅ 修复：系统分类也应该正确显示子分类，使用翻译键作为默认值
+    const sub = widget.definition?.subCategory || 'widget-library.subCategories.data'
 
     if (!map[main]) map[main] = {}
     if (!map[main][sub]) map[main][sub] = []
@@ -301,35 +294,42 @@ const filteredWidgetTree = computed(() => {
 
 // --- 国际化显示名称获取函数 ---
 /**
- * 获取顶层分类的国际化显示名称
+ * 获取顶层分类的显示名称
+ * 🔥 架构修复：auto-registry.ts 传递翻译键，UI层进行响应式翻译
  */
-const getTopCategoryDisplayName = (categoryName: string): string => {
-  return getCategoryDisplayNameI18n(categoryName)
-}
-
-/**
- * 获取子分类的国际化显示名称
- */
-const getSubCategoryDisplayName = (subCategoryName: string): string => {
-  return getCategoryDisplayNameI18n(subCategoryName)
-}
-
-/**
- * 获取组件的国际化显示名称
- */
-const getComponentDisplayName = (componentType: string, fallbackName: string): string => {
-  // 如果fallbackName本身就是一个国际化key，直接使用它
-  if (fallbackName && fallbackName.startsWith('widget-library.components.')) {
-    const translatedName = $t(fallbackName)
-    return translatedName !== fallbackName ? translatedName : componentType
+const getTopCategoryDisplayName = (categoryKey: string): string => {
+  // 如果是翻译键，使用 t() 进行翻译
+  if (categoryKey && categoryKey.startsWith('widget-library.')) {
+    return t(categoryKey)
   }
+  // 兼容性处理：如果不是翻译键，直接返回
+  return categoryKey
+}
 
-  // 否则尝试通过componentType构建key
-  const i18nKey = `widget-library.components.${componentType}`
-  const translatedName = $t(i18nKey)
+/**
+ * 获取子分类的显示名称
+ * 🔥 架构修复：auto-registry.ts 传递翻译键，UI层进行响应式翻译
+ */
+const getSubCategoryDisplayName = (subCategoryKey: string): string => {
+  // 如果是翻译键，使用 t() 进行翻译
+  if (subCategoryKey && subCategoryKey.startsWith('widget-library.')) {
+    return t(subCategoryKey)
+  }
+  // 兼容性处理：如果不是翻译键，直接返回
+  return subCategoryKey
+}
 
-  // 如果翻译的结果和键值相同，说明没有找到翻译，使用 fallbackName
-  return translatedName !== i18nKey ? translatedName : (fallbackName || componentType)
+/**
+ * 获取组件的显示名称
+ * 🔥 架构修复：auto-registry.ts 传递翻译键，UI层进行响应式翻译
+ */
+const getComponentDisplayName = (componentType: string, nameKey: string): string => {
+  // 如果是翻译键，使用 t() 进行翻译
+  if (nameKey && nameKey.startsWith('widget-library.')) {
+    return t(nameKey)
+  }
+  // 兼容性处理：如果不是翻译键，直接返回或使用组件类型作为后备
+  return nameKey || componentType
 }
 
 // --- Event Handlers ---
