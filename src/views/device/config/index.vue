@@ -162,38 +162,28 @@ onMounted(() => {
   getData()
 })
 import { ListOutline, GridOutline as CardIcon } from '@vicons/ionicons5'
-// eslint-disable-next-line no-unused-vars
-import defaultConfig from './modules/svg/default-config.svg?url'
+import SvgIcon from '@/components/custom/svg-icon.vue'
 import { getDemoServerUrl } from '@/utils/common/tool'
 
 const demoUrl = getDemoServerUrl()
 const url: any = ref(demoUrl)
 
-// 导入设备类型图标
-import directDeviceIconUrl from '@/components/data-table-page/modules/svg/direct.svg?url'
-import gatewayIconUrl from '@/components/data-table-page/modules/svg/gateway.svg?url'
-import subDeviceIconUrl from '@/components/data-table-page/modules/svg/subdevice.svg?url'
-import defaultDeviceIconUrl from '@/components/data-table-page/modules/svg/defaultdevice.svg?url'
+// 注释：已移除defaultConfigSvg导入和svgToDataUrl函数，现在使用SvgIcon组件处理SVG图标
 
-// 设备类型到图标URL的映射
-const deviceTypeIconUrls = {
-  '1': directDeviceIconUrl, // 直连设备图标
-  '2': gatewayIconUrl, // 网关图标
-  '3': subDeviceIconUrl, // 网关子设备图标
-  default: defaultDeviceIconUrl // 默认图标
+// 设备类型图标映射 - 使用本地SVG图标名称
+const deviceTypeIcons = {
+  1: 'direct', // 直连设备
+  2: 'gateway', // 网关设备  
+  3: 'subdevice', // 子设备
+  default: 'defaultdevice' // 默认设备图标
 }
 
-// 获取设备图标URL的函数
-const getDeviceIconUrl = (deviceType: string): string => {
-  return deviceTypeIconUrls[deviceType] || deviceTypeIconUrls.default
+// 获取设备图标名称的函数
+const getDeviceIconName = (deviceType: string): string => {
+  return deviceTypeIcons[deviceType] || deviceTypeIcons.default
 }
 
-// 获取配置图片URL的函数
-const getConfigImageUrl = (imagePath: string): string => {
-  if (!imagePath) return defaultConfig
-  const relativePath = imagePath.replace(/^\.?\//, '')
-  return `${url.value.replace('api/v1', '') + relativePath}`
-}
+// 注释：已移除getConfigImageUrl函数，现在直接在模板中判断是否有image_url
 
 const availableViews = [
   { key: 'card', icon: CardIcon, label: 'views.card' },
@@ -257,13 +247,14 @@ const availableViews = [
               @click-card="goToDetail(item.id)"
             >
               <template #subtitle-icon>
-                <img :src="getDeviceIconUrl(item.device_type)" alt="device type icon" class="image-icon" />
+                <SvgIcon :local-icon="getDeviceIconName(item.device_type)" class="image-icon" />
               </template>
 
               <!-- 底部图标 - 左下角显示配置图片 -->
               <template #footer-icon>
                 <div class="footer-icon-container">
-                  <img :src="getConfigImageUrl(item.image_url)" alt="config image" class="config-image" />
+                  <img v-if="item.image_url" :src="item.image_url" alt="config image" class="config-image" />
+                  <SvgIcon v-else local-icon="default-config" class="config-image" />
                 </div>
               </template>
 
