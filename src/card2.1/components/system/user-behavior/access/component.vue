@@ -24,20 +24,35 @@
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { CountTo } from 'vue3-count-to';
-import { totalNumber } from '@/service/api/system-data';
+import { totalNumber, sumData } from '@/service/api/system-data';
+import { useAuthStore } from '@/store/modules/auth';
+import { createLogger } from '@/utils/logger';
 import GenericCard from '@/card2.1/components/common/generic-card/component.vue';
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const logger = createLogger('Access');
 const count = ref(0);
 
+/**
+ * 获取设备总数数据
+ * 根据用户权限调用不同的API接口
+ */
 async function fetchDeviceTotal() {
   try {
-    const { data } = await totalNumber();
-    if (data && typeof data.device_total === 'number') {
-      count.value = data.device_total;
+    // 根据用户权限选择不同的API接口，与原版保持1:1一致
+    const response = authStore?.$state.userInfo.authority === 'TENANT_ADMIN'
+      ? await sumData()
+      : await totalNumber();
+
+    if (response.data && typeof response.data.device_total === 'number') {
+      count.value = response.data.device_total;
+    } else {
+      logger.error('Data does not contain the required properties or they are not numbers.');
     }
   } catch (error) {
-    console.error('Error fetching device total:', error);
+    // 处理请求数据时的错误
+    logger.error('Error fetching data:', error);
   }
 }
 

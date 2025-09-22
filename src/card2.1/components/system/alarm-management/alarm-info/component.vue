@@ -76,10 +76,10 @@ const alarmList = ref<AlarmData[]>([])
 const router = useRouter()
 
 /**
- * 格式化时间显示
+ * 格式化时间显示，与原版保持1:1一致
  */
 const formatTime = (time: string) => {
-  return dayjs(time).format('MM-DD HH:mm')
+  return dayjs(time).format('YYYY-MM-DD HH:mm:ss')
 }
 
 /**
@@ -144,9 +144,9 @@ const columns: DataTableColumns<AlarmData> = [
   {
     key: 'create_at',
     title: $t('common.alarm_time'),
-    width: 80,
+    width: 180, // 与原版保持1:1一致的宽度
     render(row) {
-      return h('div', { class: 'text-gray-600 dark:text-gray-400 text-xs' }, formatTime(row.create_at))
+      return formatTime(row.create_at) // 简化渲染，与原版保持一致
     }
   }
 ]
@@ -159,7 +159,7 @@ const fetchData = async () => {
   try {
     const params = {
       page: 1,
-      page_size: 8, // 减少数量以适应卡片大小
+      page_size: 10, // 与原版保持1:1一致
       alarm_status: '',
       start_time: '',
       end_time: ''
@@ -167,11 +167,10 @@ const fetchData = async () => {
     const { data } = await alarmHistory(params)
     alarmList.value = data?.list || []
   } catch (error) {
-    console.error('获取告警历史失败:', error)
+    console.error('Failed to fetch alarm history:', error) // 与原版保持一致的错误信息
     alarmList.value = []
-  } finally {
-    loading.value = false
   }
+  loading.value = false // 与原版保持1:1一致的loading处理方式
 }
 
 /**

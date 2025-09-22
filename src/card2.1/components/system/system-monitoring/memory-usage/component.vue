@@ -55,7 +55,7 @@ const fetchData = async () => {
   startLoading();
   try {
     const response = await getSystemMetricsCurrent();
-    logger.info('系统指标响应:', response);
+    logger.info('System Metrics Response:', response); // 与原版保持1:1一致
 
     const memoryUsagePercent = response?.data?.memory_usage;
 
@@ -63,12 +63,12 @@ const fetchData = async () => {
       value.value = parseFloat(memoryUsagePercent.toFixed(1));
       unit.value = '%';
     } else {
-      logger.warn('内存使用率数据未找到或格式错误:', response);
+      logger.warn('Memory usage percentage not found or not a number in response:', response); // 与原版保持一致
       value.value = null;
       unit.value = '';
     }
   } catch (error) {
-    logger.error('获取系统指标失败:', error);
+    logger.error('Error fetching system metrics:', error); // 与原版保持一致
     value.value = null;
     unit.value = '';
   } finally {

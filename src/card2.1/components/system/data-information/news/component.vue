@@ -7,73 +7,61 @@
       {{ cardData.title }}
     </template>
     <template #icon>
-      <Icon icon="mdi:email-outline" class="text-white" />
+      <SvgIcon :icon="cardData.icon" class="text-32px" />
     </template>
     <template #value>
-      <div class="flex items-center gap-2">
-        <CountTo
-          :start-value="0"
-          :end-value="cardData.value"
-          :duration="1500"
-          class="text-white font-bold"
-        />
-        <span class="text-white text-lg opacity-90">{{ cardData.unit }}</span>
-      </div>
+      <CountTo
+        :prefix="cardData.unit"
+        :start-value="1"
+        :end-value="cardData.value"
+        class="text-30px text-white dark:text-dark"
+      />
     </template>
   </GenericCard>
 </template>
 
 <script setup lang="ts">
 /**
- * 消息资讯组件
- * 显示系统消息总数统计，使用渐变背景和动态数字效果
+ * 消息资讯组件，与原版保持1:1功能匹配
  */
-import { ref, onMounted } from 'vue'
-import { Icon } from '@iconify/vue'
+import { ref } from 'vue'
 import { $t } from '@/locales'
 import { tenantNum } from '@/service/api'
 import { createLogger } from '@/utils/logger'
 import GenericCard from '@/card2.1/components/common/generic-card/component.vue'
 
-// CountTo 组件用于数字动效
-import CountTo from '@/components/custom/count-to.vue'
+const logger = createLogger('News') // 与原版保持一致的logger名称
 
-const logger = createLogger('NewsCard')
-
-// 卡片数据配置
+// 卡片数据配置，与原版保持1:1一致
 const cardData = ref({
-  id: 'news',
+  id: 'trade', // 与原版保持一致
   title: $t('card.msgTotal'),
   value: 0,
   unit: $t('card.msgUnit'),
-  colors: ['#fcbc25', '#f68057'], // 橙黄色渐变
-  icon: 'mdi:email-outline'
+  colors: ['#fcbc25', '#f68057'],
+  icon: 'fa-envelope' // 与原版保持一致
 })
 
-/**
- * 获取消息数据
- */
-const fetchData = async () => {
+// 获取数据，与原版保持1:1一致
+const getData = async () => {
   try {
     const response = await tenantNum()
-    if (response?.data) {
+    if (response.data) {
       cardData.value.value = response.data?.msg ?? 0
     } else {
-      logger.error('响应数据格式不正确')
+      logger.error('Data does not contain the required properties or they are not numbers.')
     }
   } catch (error) {
-    logger.error('获取消息数据失败:', error)
-    // 设置默认值以防接口失败
-    cardData.value.value = 0
+    // 处理请求数据时的错误
+    logger.error('Error fetching data:')
   }
 }
 
-onMounted(() => {
-  fetchData()
-})
+// 调用 getData 函数，与原版保持一致
+getData()
 
 defineOptions({
-  name: 'NewsCard21'
+  name: 'NumCard' // 与原版保持一致的组件名
 })
 </script>
 

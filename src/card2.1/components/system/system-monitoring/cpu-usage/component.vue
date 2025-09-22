@@ -59,20 +59,20 @@ const fetchData = async () => {
   startLoading();
   try {
     const response = await getSystemMetricsCurrent();
-    logger.info('系统指标响应:', response);
+    logger.info('System Metrics Response:', response); // 与原版保持1:1一致
 
     const cpuUsagePercent = response?.data?.cpu_usage;
 
     if (typeof cpuUsagePercent === 'number') {
-      value.value = parseFloat(cpuUsagePercent.toFixed(1));
-      unit.value = '%';
+      value.value = parseFloat(cpuUsagePercent.toFixed(1)); // Keep one decimal place
+      unit.value = '%'; // Set unit to percentage
     } else {
-      logger.warn('CPU 使用率数据未找到或格式错误:', response);
+      logger.warn('CPU usage percentage not found or not a number in response:', response); // 与原版保持一致
       value.value = null;
       unit.value = '';
     }
   } catch (error) {
-    logger.error('获取系统指标失败:', error);
+    logger.error('Error fetching system metrics:', error); // 与原版保持一致
     value.value = null;
     unit.value = '';
   } finally {

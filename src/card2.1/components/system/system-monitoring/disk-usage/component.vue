@@ -61,12 +61,12 @@ const fetchData = async () => {
       value.value = parseFloat(diskUsagePercent.toFixed(1));
       unit.value = '%';
     } else {
-      logger.warn('磁盘使用率数据未找到或格式错误:', response);
+      logger.warn('Disk usage percentage not found or not a number in response:', response); // 与原版保持一致
       value.value = null;
       unit.value = '';
     }
   } catch (error) {
-    logger.error('获取系统指标失败:', error);
+    logger.error('Error fetching system metrics:', error); // 与原版保持一致
     value.value = null;
     unit.value = '';
   } finally {

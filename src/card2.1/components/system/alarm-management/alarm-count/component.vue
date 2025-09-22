@@ -35,12 +35,12 @@ defineOptions({ name: 'AlarmCountCardV2' });
 // 日志记录器
 const logger = createLogger('AlarmCountCardV2');
 
-// 卡片响应式数据
+// 卡片响应式数据，与原版保持1:1一致
 const cardData = ref({
   title: $t('card.alarmCount'),
   value: 0,
-  unit: '个',
-  colors: ['#ef4444', '#dc2626'], // 红色渐变，表示告警的紧急性
+  unit: $t('card.alarmUnit'), // 使用国际化，与原版一致
+  colors: ['#f97316', '#ef4444'], // 与原版保持一致的颜色配置
 });
 
 /**
