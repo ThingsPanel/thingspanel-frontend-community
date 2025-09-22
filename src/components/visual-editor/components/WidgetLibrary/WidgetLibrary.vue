@@ -1,5 +1,6 @@
 <template>
   <div class="widget-library">
+
     <!-- 搜索框 -->
     <div class="search-bar">
       <n-input v-model:value="searchTerm" :placeholder="$t('visualEditor.searchComponents')" clearable>
@@ -77,11 +78,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watchEffect } from 'vue'
+import { ref, computed } from 'vue'
 import { SearchOutline, AlertCircleOutline } from '@vicons/ionicons5'
 import { useComponentTree } from '@/card2.1/hooks/useComponentTree'
-import type { WidgetDefinition, WidgetTreeNode } from '@/components/visual-editor/types/widget'
-import { registerAllWidgets } from '@/components/visual-editor/widgets'
+import type { WidgetDefinition } from '@/components/visual-editor/types/widget'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { useI18n } from 'vue-i18n'
 
@@ -107,10 +107,6 @@ const initializeWidgets = async () => {
   } catch (error) {}
 }
 
-// 组件挂载时的初始化检查
-onMounted(() => {
-  // 系统会自动初始化，无需额外操作
-})
 
 // --- Widget Data ---
 const allWidgets = computed(() => {
@@ -123,7 +119,7 @@ const allWidgets = computed(() => {
   }
 
   return components.map(component => {
-    // 🔥 架构修复：auto-registry.ts 传递翻译键，UI层负责翻译
+    // auto-registry.ts 传递翻译键，UI层负责翻译
     return {
       type: component.type,
       name: component.name || component.type, // auto-registry.ts传递的翻译键
@@ -131,27 +127,13 @@ const allWidgets = computed(() => {
       icon: component.icon,
       source: 'card2' as const,
       definition: {
-        mainCategory: component.mainCategory || 'widget-library.categories.chart', // auto-registry.ts传递的翻译键
-        subCategory: component.subCategory || 'widget-library.subCategories.data'    // auto-registry.ts传递的翻译键
+        mainCategory: component.mainCategory || 'widget-library.categories.chart', // 默认翻译键
+        subCategory: component.subCategory || 'widget-library.subCategories.data'     // 默认翻译键
       }
     }
   })
 })
 
-// --- Debug: 打印当前传入/计算的数据，便于分析数据结构 ---
-if (import.meta.env.DEV) {
-  watchEffect(() => {
-    if (!isInitialized.value) return
-    console.group('[WidgetLibrary] 数据调试(基础)')
-    try {
-      console.log('componentTree.componentTree.value:', componentTree.componentTree.value)
-      console.log('componentTree.filteredComponents.value:', componentTree.filteredComponents.value)
-      console.log('allWidgets (mapped):', allWidgets.value)
-    } finally {
-      console.groupEnd()
-    }
-  })
-}
 
 // Dev 面板简要数据摘要（仅开发显示）
 const DEV = import.meta.env.DEV
@@ -180,8 +162,6 @@ const debugDump = computed(() => {
   )
 })
 
-// --- Combined & Re-grouped Logic ---
-// combinedWidgetTree is no longer needed as we process a flat list directly in twoLevelWidgetTree
 
 interface SubCategory {
   name: string
@@ -193,7 +173,7 @@ interface TopCategory {
   subCategories: SubCategory[]
 }
 
-// ✅ 生成两级分类树：顶层（系统/图表）、图表下再分子类；系统无子类
+// 生成两级分类树：顶层（系统/图表）、图表下再分子类
 const simplifiedWidgetTree = computed(() => {
   // main → sub → widgets
   const map: Record<string, Record<string, WidgetDefinition[]>> = {}
@@ -201,7 +181,7 @@ const simplifiedWidgetTree = computed(() => {
   allWidgets.value.forEach(widget => {
     const main = widget.definition?.mainCategory
     if (!main) return
-    // ✅ 修复：系统分类也应该正确显示子分类，使用翻译键作为默认值
+    // 使用翻译键默认值
     const sub = widget.definition?.subCategory || 'widget-library.subCategories.data'
 
     if (!map[main]) map[main] = {}
@@ -209,7 +189,7 @@ const simplifiedWidgetTree = computed(() => {
     map[main][sub].push(widget)
   })
 
-  // 🔥 修复：使用componentTree中已排序好的分类顺序，而不是Object.entries的随机顺序
+  // 使用componentTree中已排序好的分类顺序
   const orderedCategories = componentTree.componentTree.value?.categories || []
   const categoryOrder = orderedCategories.map(cat => cat.name)
 
@@ -248,18 +228,6 @@ const simplifiedWidgetTree = computed(() => {
   }))
 })
 
-// 追加调试：在定义完成后再打印两级树，避免初始化顺序问题
-if (import.meta.env.DEV) {
-  watchEffect(() => {
-    if (!isInitialized.value) return
-    console.group('[WidgetLibrary] 数据调试(分组后)')
-    try {
-      console.log('simplifiedWidgetTree (two-level):', simplifiedWidgetTree.value)
-    } finally {
-      console.groupEnd()
-    }
-  })
-}
 
 const filteredWidgetTree = computed(() => {
   const result = !searchTerm.value
@@ -295,38 +263,36 @@ const filteredWidgetTree = computed(() => {
 // --- 国际化显示名称获取函数 ---
 /**
  * 获取顶层分类的显示名称
- * 🔥 架构修复：auto-registry.ts 传递翻译键，UI层进行响应式翻译
  */
 const getTopCategoryDisplayName = (categoryKey: string): string => {
-  // 如果是翻译键，使用 t() 进行翻译
+  // widget-library.categories.system -> categories.system
   if (categoryKey && categoryKey.startsWith('widget-library.')) {
-    return t(categoryKey)
+    const actualKey = categoryKey.replace('widget-library.', '')
+    return t(actualKey)
   }
-  // 兼容性处理：如果不是翻译键，直接返回
   return categoryKey
 }
 
 /**
  * 获取子分类的显示名称
- * 🔥 架构修复：auto-registry.ts 传递翻译键，UI层进行响应式翻译
  */
 const getSubCategoryDisplayName = (subCategoryKey: string): string => {
-  // 如果是翻译键，使用 t() 进行翻译
+  // widget-library.subCategories.deviceStatus -> subCategories.deviceStatus
   if (subCategoryKey && subCategoryKey.startsWith('widget-library.')) {
-    return t(subCategoryKey)
+    const actualKey = subCategoryKey.replace('widget-library.', '')
+    return t(actualKey)
   }
-  // 兼容性处理：如果不是翻译键，直接返回
   return subCategoryKey
 }
 
 /**
  * 获取组件的显示名称
- * 🔥 架构修复：auto-registry.ts 传递翻译键，UI层进行响应式翻译
  */
 const getComponentDisplayName = (componentType: string, nameKey: string): string => {
-  // 如果是翻译键，使用 t() 进行翻译
+  // widget-library.components.onLine -> components.onLine
   if (nameKey && nameKey.startsWith('widget-library.')) {
-    return t(nameKey)
+    const actualKey = nameKey.replace('widget-library.', '')
+    return t(actualKey)
   }
   // 兼容性处理：如果不是翻译键，直接返回或使用组件类型作为后备
   return nameKey || componentType
@@ -479,7 +445,7 @@ const handleAddWidget = (widget: any) => {
   transform: scale(0.98);
 }
 
-/* 🔥 确保拖拽事件不被子元素阻断 */
+/* 确保拖拽事件不被子元素阻断 */
 .widget-card * {
   pointer-events: none;
 }

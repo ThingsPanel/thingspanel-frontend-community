@@ -5,13 +5,8 @@
 
 import type { ComponentDefinition, IComponentRegistry } from '@/card2.1/core/types'
 import { filterComponentsByPermission, getUserAuthorityFromStorage } from '@/card2.1/core/permission-utils'
-import {
-  COMPONENT_TO_CATEGORY_MAP,
-  SUB_CATEGORIES,
-  TOP_LEVEL_CATEGORIES,
-} from './category-definition'
 import { ComponentType } from '@/card2.1/enum'
-import { $t } from '@/locales'
+import { parseCategoryFromPath } from '@/card2.1/components/category-mapping'
 
 export interface ComponentCategory {
   id: string
@@ -58,81 +53,31 @@ export class AutoRegistry {
           if (process.env.NODE_ENV === 'development') {
             console.log(`[AutoRegistry] 📝 开始注册组件: ${componentType} (来源: ${componentId})`)
           }
-          // 🔥 修复：根据componentId路径推断分类，而不是依赖__sourcePath
-          // componentId 格式通常是从 ./components/<main>/<sub>/<component>/index.ts 提取的路径
-          if (componentId) {
-            // 从componentId中提取路径信息，跳过'./components/'部分
-            const pathMatch = componentId.match(/^\.\/components\/([^\/]+)\/([^\/]+)\/([^\/]+)\/index\.ts$/)
+          // 🔥 转换路径格式给 category-mapping.ts 使用
+          // 从 ./components/system/xxx/yyy/index.ts 转换为 ./system/xxx/yyy/index.ts
+          const normalizedPath = componentId.replace(/^\.\/components\//, './')
+          const categoryInfo = parseCategoryFromPath(normalizedPath)
 
-            if (pathMatch) {
-              const [, mainCatId, subCatId, componentName] = pathMatch
-
-              // 验证推断的分类是否有效
-              const inferredSubCategory = SUB_CATEGORIES[subCatId]
-              if (inferredSubCategory && inferredSubCategory.parentId === mainCatId) {
-                subCategoryId = subCatId
-                if (process.env.NODE_ENV === 'development') {
-                  console.log(
-                    `[AutoRegistry] ✅ 路径推断分类成功 ${componentType}: ${mainCatId}/${subCatId} (来源: ${componentId})`,
-                  )
-                }
-              } else {
-                if (process.env.NODE_ENV === 'development') {
-                  console.warn(
-                    `[AutoRegistry] ⚠️ 路径推断分类失败 ${componentType}: ${mainCatId}/${subCatId} 无效 (来源: ${componentId})`,
-                  )
-                }
-              }
-            } else {
-              if (process.env.NODE_ENV === 'development') {
-                console.warn(
-                  `[AutoRegistry] ⚠️ 路径格式不匹配 ${componentType}: ${componentId}`,
-                )
-              }
-            }
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[AutoRegistry] 🏷️ 路径转换: ${componentId} → ${normalizedPath}`)
+            console.log(`[AutoRegistry] 🏷️ category-mapping解析: ${componentType}`, categoryInfo)
           }
 
-          // 🔥 如果路径推断失败，从映射表获取分类作为后备（主要用于历史兼容）
-          if (!subCategoryId) {
-            subCategoryId = COMPONENT_TO_CATEGORY_MAP[componentType]
-            if (subCategoryId && process.env.NODE_ENV === 'development') {
-              console.warn(
-                `[AutoRegistry] ⚠️ 使用后备映射表 ${componentType} → ${subCategoryId} (应该修改目录结构以支持自动推断)`,
-              )
-            } else if (process.env.NODE_ENV === 'development') {
-              console.error(
-                `[AutoRegistry] ❌ 无法确定分类 ${componentType}，既不能从路径推断，也不在映射表中`,
-              )
-            }
-          }
+          // 🔥 传递翻译键，让UI层翻译
+          const mainCategoryKey = categoryInfo.topLevelId === 'system' ? 'widget-library.categories.system' : 'widget-library.categories.chart'
 
-          // 🔥 核心修复：不翻译，只生成翻译键，让UI层响应式翻译
-          let mainCategoryKey = 'widget-library.categories.chart' // 默认
+          // 生成子分类翻译键，将 kebab-case 转为 camelCase
           let subCategoryKey = 'widget-library.subCategories.data' // 默认
-
-          if (subCategoryId) {
-            const subCategoryDef = Object.values(SUB_CATEGORIES).find(s => s.id === subCategoryId)
-            if (subCategoryDef) {
-              // 生成翻译键，不翻译
-              subCategoryKey = this.getTranslationKey(subCategoryId, 'subCategory')
-
-              const mainCatId = subCategoryDef.parentId
-              const topLevelCategoryDef = Object.values(TOP_LEVEL_CATEGORIES).find(t => t.id === mainCatId)
-              if (topLevelCategoryDef) {
-                mainCategoryKey = this.getTranslationKey(mainCatId, 'mainCategory')
-              }
-
-              if (process.env.NODE_ENV === 'development') {
-                console.log(`[AutoRegistry] 🔑 生成翻译键: ${componentType} -> 主分类: ${mainCategoryKey}, 子分类: ${subCategoryKey}`)
-              }
-            }
+          if (categoryInfo.subCategoryId) {
+            const camelCase = categoryInfo.subCategoryId.replace(/-([a-z])/g, (g) => g[1].toUpperCase())
+            subCategoryKey = `widget-library.subCategories.${camelCase}`
           }
-          // 🔥 关键修复：传递翻译键，让UI层响应式翻译
+
           const enhancedDefinition = {
             ...definition,
-            name: definition.name, // 保持翻译键，不翻译
-            mainCategory: mainCategoryKey, // 传递翻译键
-            subCategory: subCategoryKey, // 传递翻译键
+            name: definition.name, // 组件翻译键
+            mainCategory: mainCategoryKey, // 主分类翻译键
+            subCategory: subCategoryKey, // 子分类翻译键
             category: `${mainCategoryKey}/${subCategoryKey}`, // 组合翻译键
           }
 
@@ -213,40 +158,6 @@ export class AutoRegistry {
     return true
   }
 
-  /**
-   * 🌍 生成翻译键：将分类ID映射为国际化翻译键
-   */
-  private getTranslationKey(categoryId: string, type: 'mainCategory' | 'subCategory'): string {
-    if (type === 'mainCategory') {
-      // 主分类映射
-      const mainCategoryMap: Record<string, string> = {
-        'system': 'widget-library.categories.system',
-        'chart': 'widget-library.categories.chart'
-      }
-      return mainCategoryMap[categoryId] || `widget-library.categories.${categoryId}`
-    } else {
-      // 子分类映射：将kebab-case转换为camelCase
-      const subCategoryMap: Record<string, string> = {
-        'system-monitoring': 'widget-library.subCategories.systemMonitoring',
-        'device-status': 'widget-library.subCategories.deviceStatus',
-        'alarm-management': 'widget-library.subCategories.alarmManagement',
-        'tenant-app': 'widget-library.subCategories.tenantApp',
-        'data-information': 'widget-library.subCategories.dataInformation',
-        'user-behavior': 'widget-library.subCategories.userBehavior',
-        'operation-guide': 'widget-library.subCategories.operationGuide',
-        'dashboard': 'widget-library.subCategories.dashboard',
-        'information': 'widget-library.subCategories.information',
-        'control': 'widget-library.subCategories.control',
-        'device': 'widget-library.subCategories.device',
-        'data': 'widget-library.subCategories.data',
-        'statistics': 'widget-library.subCategories.statistics',
-        'location': 'widget-library.subCategories.location',
-        'media': 'widget-library.subCategories.media',
-        'alarm': 'widget-library.subCategories.alarm'
-      }
-      return subCategoryMap[categoryId] || `widget-library.subCategories.${categoryId}`
-    }
-  }
 
   /**
    * 验证组件定义是否有效
@@ -305,7 +216,7 @@ export class AutoRegistry {
         return components.filter(comp => comp.mainCategory === categoryName).length
       }
 
-      // 🔥 修复：使用翻译键而不是硬编码中文
+      // 🔥 修复：使用翻译键进行比较
       const systemCategoryKey = 'widget-library.categories.system'
       const aIsSystem = a.name === systemCategoryKey
       const bIsSystem = b.name === systemCategoryKey

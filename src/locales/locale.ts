@@ -36,7 +36,8 @@ function getLangMessages(modules: Record<string, any>, lang: 'zh-cn' | 'en-us') 
         'test',
         'theme',
         'time',
-        'visual-editor'
+        'visual-editor',
+        'widget-library'
       ]
 
       if (flatFiles.includes(fileName)) {

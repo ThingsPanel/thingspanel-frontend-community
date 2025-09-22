@@ -24,17 +24,20 @@
       </n-button>
     </div>
 
-    <div class="flex-grow overflow-auto relative">
-      <n-data-table
-        v-if="!loading"
-        :columns="columns"
-        :data="alarmList"
-        :bordered="false"
-        striped
-        size="small"
-        flex-height
-        class="h-full"
-      />
+    <div class="flex-1 overflow-hidden">
+      <div class="h-full overflow-auto">
+        <n-data-table
+          v-if="!loading"
+          :columns="columns"
+          :data="alarmList"
+          :bordered="false"
+          striped
+          size="small"
+          class="min-h-full"
+          :scroll-x="600"
+          :max-height="400"
+        />
+      </div>
     </div>
   </div>
 </template>
