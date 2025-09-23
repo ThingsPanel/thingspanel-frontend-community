@@ -8,7 +8,7 @@
  * 1. 中心化管理：所有分类信息集中于此，便于维护和扩展。
  * 2. 结构清晰：采用层级结构，清晰反映分类关系。
  * 3. 易于消费：导出的数据结构可以直接被注册系统使用。
- * 4. 国际化支持：displayName在auto-registry.ts中动态翻译，避免模块加载时机问题。
+ * 4. 国际化支持：displayName直接使用翻译key，注释说明对应的中文含义。
  */
 
 /**
@@ -17,7 +17,7 @@
  */
 export interface CategoryConfig {
   id: string; // 唯一标识符，通常是英文
-  displayName: string; // 显示名称，用于 UI
+  displayName: string; // 显示名称翻译key，用于 i18n 系统
   order: number; // 排序权重
   icon?: string; // 图标
   description?: string; // 描述
@@ -32,7 +32,7 @@ export interface CategoryConfig {
 export const TOP_LEVEL_CATEGORIES: Record<'system' | 'chart', CategoryConfig> = {
   system: {
     id: 'system',
-    displayName: '系统',
+    displayName: 'widget-library.categories.system', // 对应中文：系统
     order: 1,
     icon: 'settings',
     description: '系统级组件，用于监控和管理平台状态',
@@ -40,7 +40,7 @@ export const TOP_LEVEL_CATEGORIES: Record<'system' | 'chart', CategoryConfig> = 
   },
   chart: {
     id: 'chart',
-    displayName: '图表',
+    displayName: 'widget-library.categories.chart', // 对应中文：图表
     order: 2,
     icon: 'chart',
     description: '图表级组件，用于数据可视化和交互',
@@ -54,7 +54,7 @@ export const TOP_LEVEL_CATEGORIES: Record<'system' | 'chart', CategoryConfig> = 
 export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   'system-monitoring': {
     id: 'system-monitoring',
-    displayName: '系统监控',
+    displayName: 'widget-library.subCategories.systemMonitoring', // 对应中文：系统监控
     order: 10,
     icon: 'dashboard',
     description: '展示系统级别的硬件资源使用情况',
@@ -63,7 +63,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   'device-status': {
     id: 'device-status',
-    displayName: '设备状态',
+    displayName: 'widget-library.subCategories.deviceStatus', // 对应中文：设备状态
     order: 20,
     icon: 'laptop',
     description: '监控和展示设备的在线状态',
@@ -72,7 +72,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   'alarm-management': {
     id: 'alarm-management',
-    displayName: '告警管理',
+    displayName: 'widget-library.subCategories.alarmManagement', // 对应中文：告警管理
     order: 30,
     icon: 'alert',
     description: '展示与告警相关的信息',
@@ -81,7 +81,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   'tenant-app': {
     id: 'tenant-app',
-    displayName: '租户与应用',
+    displayName: 'widget-library.subCategories.tenantApp', // 对应中文：租户与应用
     order: 40,
     icon: 'appstore',
     description: '提供与租户和应用相关的数据和功能',
@@ -90,7 +90,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   'data-information': {
     id: 'data-information',
-    displayName: '数据与信息',
+    displayName: 'widget-library.subCategories.dataInformation', // 对应中文：数据与信息
     order: 50,
     icon: 'info-circle',
     description: '用于展示通用数据和信息',
@@ -99,7 +99,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   'user-behavior': {
     id: 'user-behavior',
-    displayName: '用户行为',
+    displayName: 'widget-library.subCategories.userBehavior', // 对应中文：用户行为
     order: 60,
     icon: 'user',
     description: '追踪和展示用户的活动',
@@ -108,7 +108,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   'operation-guide': {
     id: 'operation-guide',
-    displayName: '操作指引',
+    displayName: 'widget-library.subCategories.operationGuide', // 对应中文：操作指引
     order: 70,
     icon: 'book',
     description: '为用户提供操作上的引导',
@@ -123,7 +123,7 @@ export const SYSTEM_SUB_CATEGORIES: Record<string, CategoryConfig> = {
 export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   dashboard: {
     id: 'dashboard',
-    displayName: '仪表盘',
+    displayName: 'widget-library.subCategories.dashboard', // 对应中文：仪表盘
     order: 10,
     icon: 'dashboard',
     enabled: true,
@@ -131,7 +131,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   information: {
     id: 'information',
-    displayName: '信息',
+    displayName: 'widget-library.subCategories.information', // 对应中文：信息
     order: 20,
     icon: 'info-circle',
     enabled: true,
@@ -139,7 +139,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   control: {
     id: 'control',
-    displayName: '控制',
+    displayName: 'widget-library.subCategories.control', // 对应中文：控制
     order: 30,
     icon: 'control',
     enabled: true,
@@ -147,7 +147,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   device: {
     id: 'device',
-    displayName: '设备',
+    displayName: 'widget-library.subCategories.device', // 对应中文：设备
     order: 40,
     icon: 'device',
     enabled: true,
@@ -155,7 +155,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   data: {
     id: 'data',
-    displayName: '数据',
+    displayName: 'widget-library.subCategories.data', // 对应中文：数据
     order: 50,
     icon: 'chart-bar',
     enabled: true,
@@ -163,7 +163,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   statistics: {
     id: 'statistics',
-    displayName: '统计',
+    displayName: 'widget-library.subCategories.statistics', // 对应中文：统计
     order: 60,
     icon: 'statistics',
     enabled: true,
@@ -171,7 +171,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   location: {
     id: 'location',
-    displayName: '位置',
+    displayName: 'widget-library.subCategories.location', // 对应中文：位置
     order: 70,
     icon: 'location',
     enabled: true,
@@ -179,7 +179,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   media: {
     id: 'media',
-    displayName: '音视频',
+    displayName: 'widget-library.subCategories.media', // 对应中文：音视频
     order: 80,
     icon: 'play-circle',
     enabled: true,
@@ -187,7 +187,7 @@ export const CHART_SUB_CATEGORIES: Record<string, CategoryConfig> = {
   },
   alarm: {
     id: 'alarm',
-    displayName: '告警',
+    displayName: 'widget-library.subCategories.alarm', // 对应中文：告警
     order: 90,
     icon: 'warning',
     enabled: true,
@@ -224,9 +224,8 @@ export const COMPONENT_TO_CATEGORY_MAP: Record<string, string> = {
   'app-download': 'tenant-app',
   'reported-data': 'data-information',
   'news': 'data-information',
-  'information': 'data-information',
   'version': 'data-information',
-  'access': 'user-behavior',
+  'access': 'device-status', // 修正：设备总数应该属于设备状态分类
   'recently-visited': 'user-behavior',
   'operation-guide-card': 'operation-guide',
 

@@ -7,6 +7,7 @@ import type { ComponentDefinition, IComponentRegistry } from '@/card2.1/core/typ
 import { filterComponentsByPermission, getUserAuthorityFromStorage } from '@/card2.1/core/permission-utils'
 import { ComponentType } from '@/card2.1/enum'
 import { parseCategoryFromPath } from '@/card2.1/components/category-mapping'
+import { TOP_LEVEL_CATEGORIES, SUB_CATEGORIES } from '@/card2.1/core/category-definition'
 
 export interface ComponentCategory {
   id: string
@@ -63,22 +64,16 @@ export class AutoRegistry {
             console.log(`[AutoRegistry] 🏷️ category-mapping解析: ${componentType}`, categoryInfo)
           }
 
-          // 🔥 传递翻译键，让UI层翻译
-          const mainCategoryKey = categoryInfo.topLevelId === 'system' ? 'widget-library.categories.system' : 'widget-library.categories.chart'
-
-          // 生成子分类翻译键，将 kebab-case 转为 camelCase
-          let subCategoryKey = 'widget-library.subCategories.data' // 默认
-          if (categoryInfo.subCategoryId) {
-            const camelCase = categoryInfo.subCategoryId.replace(/-([a-z])/g, (g) => g[1].toUpperCase())
-            subCategoryKey = `widget-library.subCategories.${camelCase}`
-          }
+          // 🔥 直接使用 category-definition.ts 中定义的翻译key
+          const topLevelCategory = TOP_LEVEL_CATEGORIES[categoryInfo.topLevelId as 'system' | 'chart']
+          const subCategory = categoryInfo.subCategoryId ? SUB_CATEGORIES[categoryInfo.subCategoryId] : null
 
           const enhancedDefinition = {
             ...definition,
             name: definition.name, // 组件翻译键
-            mainCategory: mainCategoryKey, // 主分类翻译键
-            subCategory: subCategoryKey, // 子分类翻译键
-            category: `${mainCategoryKey}/${subCategoryKey}`, // 组合翻译键
+            mainCategory: topLevelCategory?.displayName || TOP_LEVEL_CATEGORIES.chart.displayName, // 主分类翻译键
+            subCategory: subCategory?.displayName || SUB_CATEGORIES.data.displayName, // 子分类翻译键
+            category: `${topLevelCategory?.displayName || TOP_LEVEL_CATEGORIES.chart.displayName}/${subCategory?.displayName || SUB_CATEGORIES.data.displayName}`, // 组合翻译键
           }
 
           if (process.env.NODE_ENV === 'development') {
@@ -216,8 +211,8 @@ export class AutoRegistry {
         return components.filter(comp => comp.mainCategory === categoryName).length
       }
 
-      // 🔥 修复：使用翻译键进行比较
-      const systemCategoryKey = 'widget-library.categories.system'
+      // 🔥 使用翻译键进行比较
+      const systemCategoryKey = TOP_LEVEL_CATEGORIES.system.displayName
       const aIsSystem = a.name === systemCategoryKey
       const bIsSystem = b.name === systemCategoryKey
       const systemComponentCount = getComponentCount(systemCategoryKey)

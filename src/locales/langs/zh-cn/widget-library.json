@@ -33,7 +33,7 @@
   "components.memoryUsage": "内存使用率",
   "components.diskUsage": "硬盘使用率",
   "components.tenantCount": "租户数量",
-  "components.access": "访问量",
+  "components.access": "设备总数",
   "components.offLine": "离线设备数",
   "components.onLine": "在线设备数",
   "components.digitIndicator": "数字指示器"

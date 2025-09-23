@@ -33,7 +33,7 @@
   "components.memoryUsage": "Memory Usage",
   "components.diskUsage": "Disk Usage",
   "components.tenantCount": "Tenant Count",
-  "components.access": "Access Quantity",
+  "components.access": "Device Total",
   "components.offLine": "Offline Devices",
   "components.onLine": "Online Devices",
   "components.digitIndicator": "Digit Indicator"

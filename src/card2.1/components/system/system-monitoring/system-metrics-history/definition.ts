@@ -14,5 +14,5 @@ export default {
   component,
   version: '2.1.0',
   tags: ['系统监控', '性能指标', '历史趋势'],
-  permission: '不限'
+  permission: 'SYS_ADMIN'
 } as ComponentDefinition
