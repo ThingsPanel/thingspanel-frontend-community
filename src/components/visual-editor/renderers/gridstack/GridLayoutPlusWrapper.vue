@@ -48,6 +48,7 @@ import NodeWrapper from '@/components/visual-editor/renderers/base/NodeWrapper.v
 import ContextMenu from '@/components/visual-editor/renderers/canvas/ContextMenu.vue'
 import type { VisualEditorWidget, GraphData } from '@/components/visual-editor/types'
 import { smartDeepClone } from '@/utils/deep-clone'
+
 const props = defineProps<{
   graphData: GraphData
   readonly?: boolean
@@ -150,7 +151,6 @@ interface ExtendedGridLayoutPlusItem extends GridLayoutPlusItem {
 
 const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[] => {
   return nodes.map(node => ({
-  return nodes.map(node => ({
     i: node.id,
     x: node.layout?.gridstack?.x ?? 0,
     y: node.layout?.gridstack?.y ?? 0,
@@ -162,6 +162,11 @@ const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[
     type: node.type,
     raw: node
   }))
+}
+
+watch(
+  () => props.graphData.nodes,
+  newNodes => {
     if (newNodes) {
       newNodes.forEach(node => {})
     }
@@ -199,11 +204,6 @@ const onLayoutChange = (newLayout: ExtendedGridLayoutPlusItem[]) => {
   if (props.readonly || props.staticGrid) {
     return
   }
-      layout: { ...node.layout, gridstack: { x: item.x, y: item.y, w: item.w, h: item.h } }
-    })
-  }
-}
-
 
   // 更新所有节点的布局信息
   newLayout.forEach(item => {
@@ -218,6 +218,10 @@ const updateNodeLayout = (item: ExtendedGridLayoutPlusItem) => {
       layout: { ...node.layout, gridstack: { x: item.x, y: item.y, w: item.w, h: item.h } }
     })
   }
+}
+
+const onDragStop = (itemId: string, newX: number, newY: number) => {
+  const item = layout.value.find(item => item.i === itemId)
   if (item) {
     item.x = newX
     item.y = newY
@@ -225,7 +229,8 @@ const updateNodeLayout = (item: ExtendedGridLayoutPlusItem) => {
   }
 }
 
-    updateNodeLayout(item)
+const onResizeStop = (itemId: string, newH: number, newW: number, newHPx: number, newWPx: number) => {
+  const item = layout.value.find(item => item.i === itemId)
   if (item) {
     item.h = newH
     item.w = newW
@@ -234,7 +239,8 @@ const updateNodeLayout = (item: ExtendedGridLayoutPlusItem) => {
 }
 const handleNodeSelect = (nodeId: string) => {
   selectNode(nodeId)
-    updateNodeLayout(item)
+  emit('node-select', nodeId)
+}
 
 const handleInteraction = (widget: VisualEditorWidget) => {
   if (props.readonly) {
@@ -283,8 +289,15 @@ const handleContextMenuSelect = (action: string) => {
       addNode(newNode)
       break
     }
-      if (newNode.layout?.gridstack) {
-        newNode.layout.gridstack.y += 1
+    case 'delete':
+      removeNode(widget.id)
+      break
+    case 'settings':
+      emit('request-settings', widget.id)
+      break
+  }
+  closeContextMenu()
+}
 
 const closeContextMenu = () => {
   contextMenu.value.show = false

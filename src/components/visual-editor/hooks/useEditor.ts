@@ -308,6 +308,8 @@ export function createEditor() {
       renderer: ['canvas', 'gridstack'],
       layout: {
         canvas: { ...defaultLayout.canvas, ...finalPos },
+        gridstack: { ...defaultLayout.gridstack, w: newItemW, h: newItemH, ...finalPos }
+      },
       metadata: {
         createdAt: Date.now(),
         updatedAt: Date.now(),
