@@ -147,7 +147,8 @@ export function usePanelConfigManager() {
       gridConfig: {
         colNum: 24,
         rowHeight: 80,
-        margin: [10, 10],
+        // 默认无间距：从 [10, 10] 调整为 [0, 0]
+        margin: [0, 0],
         isDraggable: true,
         isResizable: true,
         staticGrid: false

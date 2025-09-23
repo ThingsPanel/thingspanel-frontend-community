@@ -95,10 +95,7 @@ const checkFabricAvailability = async () => {
     const { Canvas } = await import('fabric')
     if (Canvas) {
       fabricAvailable.value = true
-      console.log('✅ Fabric.js 6.7.1 依赖检测成功')
-
-      // 初始化 Fabric 渲染器
-      await initFabricRenderer()
+      console.log('✅ Fabric.js 6.7.1 依赖检测成功，但等待数据准备后再初始化')
     }
   } catch (error) {
     fabricAvailable.value = false
@@ -110,7 +107,19 @@ const checkFabricAvailability = async () => {
  * 初始化 Fabric 渲染器
  */
 const initFabricRenderer = async () => {
-  if (!canvasContainer.value || fabricRenderer.value) return
+  console.log('🎯 开始初始化 Fabric 渲染器')
+  console.log('🎯 canvasContainer.value:', canvasContainer.value)
+  console.log('🎯 fabricRenderer.value:', fabricRenderer.value)
+
+  if (!canvasContainer.value) {
+    console.error('❌ Canvas 容器不存在')
+    return
+  }
+
+  if (fabricRenderer.value) {
+    console.log('⚠️ Fabric 渲染器已存在，跳过初始化')
+    return
+  }
 
   try {
     const config: FabricRendererConfig = {
@@ -137,11 +146,16 @@ const initFabricRenderer = async () => {
     canvasSize.value = fabricRenderer.value.getSize()
 
     // 添加现有节点
+    console.log('🎯 开始添加现有节点到 Fabric 画布, 节点数量:', nodes.value.length)
     for (const node of nodes.value) {
+      console.log('📝 添加节点:', node.id, node.type, node)
       await fabricRenderer.value.addNode(node)
     }
 
-    console.log('🎨 Fabric 渲染器组件初始化完成')
+    console.log('🎨 Fabric 渲染器组件初始化完成, 画布对象数量:', fabricRenderer.value.getNodes().size)
+
+    // 🧪 添加测试节点来验证 Fabric 是否正常工作
+    await addTestNodes()
 
   } catch (error) {
     console.error('❌ Fabric 渲染器初始化失败:', error)
@@ -189,25 +203,91 @@ const handleNodeContextMenu = (nodeId: string, event: MouseEvent) => {
 }
 
 /**
+ * 🧪 添加测试节点来验证 Fabric 是否正常工作
+ */
+const addTestNodes = async () => {
+  if (!fabricRenderer.value) return
+
+  try {
+    console.log('🧪 开始添加测试节点')
+
+    // 创建测试节点数据
+    const testNodes = [
+      {
+        id: 'test-rect-1',
+        type: 'rect',
+        layout: { canvas: { x: 50, y: 50, width: 150, height: 100 } },
+        properties: {}
+      },
+      {
+        id: 'test-text-1',
+        type: 'text',
+        layout: { canvas: { x: 250, y: 80, width: 200, height: 50 } },
+        properties: { text: '测试文本节点' }
+      },
+      {
+        id: 'test-circle-1',
+        type: 'circle',
+        layout: { canvas: { x: 100, y: 200, width: 80, height: 80 } },
+        properties: {}
+      }
+    ]
+
+    for (const testNode of testNodes) {
+      console.log('🧪 添加测试节点:', testNode.id, testNode.type)
+      await fabricRenderer.value.addNode(testNode as any)
+    }
+
+    console.log('🧪 测试节点添加完成')
+
+  } catch (error) {
+    console.error('🧪 测试节点添加失败:', error)
+  }
+}
+
+/**
  * 监听节点数据变化
  */
 watch(
-  () => [nodes.value, props.multiDataSourceStore],
-  async ([newNodes, newDataStore]) => {
-    if (!fabricRenderer.value) return
-
-    console.log('🔄 Fabric 数据更新:', {
-      nodes: newNodes?.length || 0,
-      dataSources: Object.keys(newDataStore || {}).length
+  () => [nodes.value, props.multiDataSourceStore, fabricAvailable.value],
+  async ([newNodes, newDataStore, isFabricAvailable]) => {
+    console.log('🔄 Fabric 数据监听触发:', {
+      nodesCount: newNodes?.length || 0,
+      dataSourcesCount: Object.keys(newDataStore || {}).length,
+      fabricAvailable: isFabricAvailable,
+      fabricRenderer: !!fabricRenderer.value
     })
 
-    // 简单的重新渲染策略
-    fabricRenderer.value.clear()
-    for (const node of newNodes || []) {
-      await fabricRenderer.value.addNode(node)
+    // 如果 Fabric 可用但渲染器未初始化，则初始化（不要求必须有节点数据）
+    if (isFabricAvailable && !fabricRenderer.value) {
+      console.log('🎯 Fabric 可用，开始初始化渲染器')
+      await nextTick() // 确保 DOM 准备好
+      await initFabricRenderer()
+      return
+    }
+
+    // 如果渲染器已初始化，更新数据
+    if (fabricRenderer.value) {
+      console.log('🔄 更新 Fabric 画布数据')
+
+      // 简单的重新渲染策略
+      fabricRenderer.value.clear()
+
+      if (newNodes && newNodes.length > 0) {
+        console.log('🎯 重新添加节点到 Fabric 画布')
+        for (const node of newNodes) {
+          console.log('📝 重新添加节点:', node.id, node.type)
+          await fabricRenderer.value.addNode(node)
+        }
+        console.log('✅ 节点重新添加完成, 画布对象数量:', fabricRenderer.value.getNodes().size)
+      } else {
+        console.log('⚠️ 没有节点数据需要添加')
+      }
+    } else {
+      console.log('⚠️ Fabric 渲染器未初始化，等待条件满足')
     }
   },
-  { deep: true }
+  { deep: true, immediate: true }
 )
 
 /**
@@ -225,7 +305,23 @@ watch(
 
 // 生命周期
 onMounted(async () => {
+  console.log('🎯 FabricCanvasComponent onMounted')
+  console.log('🎯 初始节点数据:', nodes.value)
+  console.log('🎯 初始 graphData:', props.graphData)
+
   await checkFabricAvailability()
+
+  // 如果 Fabric 可用，主动尝试初始化渲染器
+  if (fabricAvailable.value) {
+    console.log('🎯 组件挂载后主动初始化 Fabric 渲染器')
+    await nextTick() // 确保 DOM 完全准备好
+    setTimeout(async () => {
+      // 延迟一点初始化，确保容器已渲染
+      if (!fabricRenderer.value) {
+        await initFabricRenderer()
+      }
+    }, 100)
+  }
 })
 
 onUnmounted(() => {

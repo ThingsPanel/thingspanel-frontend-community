@@ -16,6 +16,8 @@ import { initializeComponents } from '@/card2.1/components'
 import '@/card2.1/core/interaction-manager'
 // 🧹 导入localStorage清理工具
 import { cleanupLocalStorage } from '@/utils/storage-cleaner'
+// 🎯 导入渲染器注册系统
+import { registerAllRenderers } from '@/components/visual-editor/renderers/registry'
 import App from './App.vue'
 // 最近访问路由功能
 const RECENTLY_VISITED_ROUTES_KEY = 'RECENTLY_VISITED_ROUTES'
@@ -58,6 +60,14 @@ async function setupApp() {
     .catch(error => {
       console.error('❌ Card2.1 组件系统初始化失败:', error)
     })
+
+  // 🎯 初始化渲染器注册系统
+  try {
+    registerAllRenderers()
+    console.log('✅ 渲染器注册系统初始化完成')
+  } catch (error) {
+    console.error('❌ 渲染器注册系统初始化失败:', error)
+  }
 
   // 2. 系统设置延迟加载 - 避免阻塞应用启动
   const sysSettingStore = useSysSettingStore()

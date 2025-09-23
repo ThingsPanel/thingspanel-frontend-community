@@ -72,7 +72,8 @@ const canvasConfig = computed(() => ({
 const gridstackConfig = computed(() => ({
   colNum: 12,
   rowHeight: 80,
-  margin: [10, 10],
+  // 将默认边距从 [10,10] 调整为 [0,0]，默认无间距
+  margin: [0, 0],
   isDraggable: true,
   isResizable: true,
   staticGrid: false,

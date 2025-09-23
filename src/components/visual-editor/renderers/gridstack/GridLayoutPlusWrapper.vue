@@ -17,6 +17,7 @@
       @item-moved="onDragStop"
     >
       <template #default="{ item }">
+        <!-- 关键：允许事件冒泡到 GridStack（整卡片 mousedown 触发拖拽） -->
         <NodeWrapper
           :node="item.raw"
           :node-id="item.raw.id"
@@ -27,6 +28,8 @@
           :multi-data-source-data="props.multiDataSourceStore?.[item.raw.id]"
           :multi-data-source-config="props.multiDataSourceConfigStore?.[item.raw.id]"
           class="grid-node-wrapper"
+          :event-stop-propagation="false"
+
           @node-click="() => handleNodeSelect(item.i)"
           @node-contextmenu="(nodeId, event) => handleContextMenu(event, nodeId)"
           @title-update="handleTitleUpdate"
@@ -130,7 +133,8 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => {
   const config = {
     colNum: 12,
     rowHeight: 80,
-    margin: [10, 10] as [number, number],
+    // 默认无间距：从 [10, 10] 调整为 [0, 0]
+    margin: [0, 0] as [number, number],
     isDraggable: !isReadOnly.value && !props.staticGrid,
     isResizable: !isReadOnly.value && !props.staticGrid,
     responsive: false,

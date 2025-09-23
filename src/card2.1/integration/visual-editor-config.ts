@@ -191,7 +191,8 @@ export const VisualEditorIntegrationConfig = {
     gridConfig: {
       cellHeight: 100,
       cellWidth: 100,
-      margin: [10, 10],
+      // 默认无间距：从 [10, 10] 调整为 [0, 0]
+      margin: [0, 0],
       outerMargin: true,
       resizable: true,
       draggable: true

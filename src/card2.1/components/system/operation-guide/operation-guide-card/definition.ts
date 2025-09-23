@@ -13,6 +13,11 @@ export default {
   component,
   category: 'widget-library.subCategories.operationGuide',
   version: '2.1.0',
-  tags: ['指引', '操作手册', '用户引导'],
+  tags: ['指引', '操作手册', '用户引导', '交互'],
+  dataDriven: false, // 这是一个纯交互性组件，基于用户角色提供导航功能，不依赖外部数据源
+  interactionCapabilities: {
+    // 声明组件支持点击事件和导航功能
+    supportedEvents: ['click', 'navigate'],
+  },
   permission: '不限'
 } as ComponentDefinition

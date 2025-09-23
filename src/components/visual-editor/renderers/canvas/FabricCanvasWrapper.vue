@@ -6,7 +6,7 @@
         <n-space vertical :size="16">
           <n-alert type="info" :show-icon="false">
             <strong>安装命令：</strong>
-            <n-code>pnpm add fabric && pnpm add --save-dev @types/fabric</n-code>
+            <n-code>pnpm add fabric</n-code>
           </n-alert>
           <n-space>
             <n-button type="primary" @click="checkFabricAvailability">
@@ -15,11 +15,27 @@
             <n-button @click="switchToGridstack">
               切换到 GridStack 渲染器
             </n-button>
+            <n-button @click="useSimpleRenderer">
+              使用简单渲染器
+            </n-button>
           </n-space>
         </n-space>
       </template>
     </n-result>
   </div>
+
+  <!-- Fabric.js 渲染器 -->
+  <FabricCanvasComponent
+    v-else-if="fabricAvailable && useFabricRenderer"
+    :graph-data="props.graphData"
+    :readonly="props.readonly"
+    :canvas-config="fabricConfig"
+    :show-widget-titles="props.showWidgetTitles"
+    :multi-data-source-store="props.multiDataSourceStore"
+    :multi-data-source-config-store="props.multiDataSourceConfigStore"
+    @node-select="handleNodeClick"
+    @request-settings="handleRequestSettings"
+  />
 
   <!-- 简单Canvas渲染区域 - 平铺显示组件 -->
   <div v-else ref="canvasContainer" class="simple-canvas-wrapper">
@@ -105,6 +121,8 @@ import { useMessage } from 'naive-ui'
 import { NResult, NSpace, NAlert, NCode, NButton, NTag, NText, NTooltip, NEmpty, NIcon } from 'naive-ui'
 import { $t } from '@/locales'
 import NodeWrapper from '@/components/visual-editor/renderers/base/NodeWrapper.vue'
+import { FabricCanvasComponent } from './fabric'
+import type { FabricRendererConfig } from './fabric'
 
 // Props 接口定义 - 完全按照 GridLayoutPlusWrapper 的模式
 const props = withDefaults(defineProps<{
@@ -126,9 +144,21 @@ const emit = defineEmits(['node-select', 'request-settings'])
 
 const message = useMessage()
 
-// 组件状态 - 暂时设为true，跳过Fabric检查
-const fabricAvailable = ref(true)
+// 组件状态
+const fabricAvailable = ref(false)
+const useFabricRenderer = ref(true) // 默认使用 Fabric 渲染器
 const canvasContainer = ref<HTMLElement>()
+
+// Fabric 配置
+const fabricConfig = computed<FabricRendererConfig>(() => ({
+  width: props.canvasConfig?.width || 1200,
+  height: props.canvasConfig?.height || 800,
+  backgroundColor: props.canvasConfig?.backgroundColor || '#f8f9fa',
+  selection: !props.readonly,
+  interactive: !props.readonly,
+  preserveObjectStacking: true,
+  renderOnAddRemove: true
+}))
 
 // 从 graphData 中提取节点数据
 const nodes = computed(() => props.graphData?.nodes || [])
@@ -138,12 +168,21 @@ const selectedNodes = computed(() => props.graphData?.selectedIds || [])
 const showGrid = ref(props.canvasConfig?.showGrid ?? true)
 
 /**
- * 检查 Fabric.js 依赖是否可用 (临时跳过)
+ * 检查 Fabric.js 依赖是否可用
  */
 const checkFabricAvailability = async () => {
-  // 暂时直接设为可用，跳过复杂的检查逻辑
-  fabricAvailable.value = true
-  console.log('[FabricCanvasWrapper] 使用简单渲染模式')
+  try {
+    // 动态导入 Fabric.js 进行检测
+    const { Canvas } = await import('fabric')
+    if (Canvas) {
+      fabricAvailable.value = true
+      console.log('✅ Fabric.js 6.7.1 检测成功，启用 Fabric 渲染器')
+    }
+  } catch (error) {
+    fabricAvailable.value = false
+    console.warn('⚠️ Fabric.js 依赖未找到，回退到简单渲染器:', error)
+    useFabricRenderer.value = false
+  }
 }
 
 /**
@@ -151,6 +190,22 @@ const checkFabricAvailability = async () => {
  */
 const switchToGridstack = () => {
   message.info('请在渲染器选择中切换到 GridStack')
+}
+
+/**
+ * 使用简单渲染器
+ */
+const useSimpleRenderer = () => {
+  useFabricRenderer.value = false
+  message.info('已切换到简单平铺渲染器')
+}
+
+/**
+ * 处理设置请求
+ */
+const handleRequestSettings = (nodeId: string) => {
+  console.log('[FabricCanvasWrapper] 请求设置:', nodeId)
+  emit('request-settings', nodeId)
 }
 
 /**

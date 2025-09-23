@@ -4,9 +4,9 @@
     class="node-wrapper"
     :class="wrapperClasses"
     :style="wrapperStyles"
-    @mousedown.stop="$emit('node-mousedown', nodeId, $event)"
-    @click.stop="$emit('node-click', nodeId, $event)"
-    @contextmenu.stop.prevent="$emit('node-contextmenu', nodeId, $event)"
+    @mousedown="onMouseDown"
+    @click="onClick"
+    @contextmenu="onContextMenu"
   >
     <!-- 内容包装器 - 控制可见性但保持事件响应 -->
     <div v-show="baseConfig?.visible !== false" class="node-content-wrapper">
@@ -102,6 +102,12 @@ interface Props {
   multiDataSourceData?: Record<string, any>
   /** 多数据源配置 */
   multiDataSourceConfig?: any
+  /**
+   * 事件传播控制开关（默认 true）：
+   * - true：调用内部交互时阻止事件冒泡（适用于 Canvas 渲染器交互）
+   * - false：允许事件冒泡到父级（GridStack 需要在整卡片区域接收 mousedown 以触发拖拽）
+   */
+  eventStopPropagation?: boolean
 }
 
 interface Emits {
@@ -119,6 +125,34 @@ const props = defineProps<Props>()
 const multiDataSourceData = computed(() => props.multiDataSourceData || {})
 const multiDataSourceConfig = computed(() => props.multiDataSourceConfig || {})
 const emit = defineEmits<Emits>()
+
+/**
+ * 统一的事件处理函数：根据 eventStopPropagation 决定是否阻止事件冒泡。
+ * - 在 GridStack 集成场景下，允许整卡片区域的 mousedown 冒泡到 .grid-stack-item，触发拖拽
+ * - 在 Canvas 集成场景下，默认阻止冒泡以防止被背景层捕获
+ */
+const onMouseDown = (event: MouseEvent): void => {
+  if (props.eventStopPropagation !== false) {
+    event.stopPropagation()
+  }
+  emit('node-mousedown', props.nodeId, event)
+}
+
+const onClick = (event: MouseEvent): void => {
+  if (props.eventStopPropagation !== false) {
+    event.stopPropagation()
+  }
+  emit('node-click', props.nodeId, event)
+}
+
+const onContextMenu = (event: MouseEvent): void => {
+  // 始终阻止默认右键菜单，以便自定义菜单展示
+  event.preventDefault()
+  if (props.eventStopPropagation !== false) {
+    event.stopPropagation()
+  }
+  emit('node-contextmenu', props.nodeId, event)
+}
 
 const { updateNode } = useEditor()
 const { t } = useI18n()

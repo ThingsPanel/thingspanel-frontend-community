@@ -12,20 +12,11 @@ export default {
   icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/><circle cx="12" cy="12" r="3" fill="#4ade80"/></svg>',
   component,
   version: '2.1.0',
-  tags: ['系统', '设备', '在线', '状态'],
-  dataDriven: true,
-  supportedDataSources: ['api'],
-  permission: '不限',
-  dataSources: [
-    {
-      key: 'deviceStatus',
-      name: '设备状态数据',
-      description: '获取在线设备数量统计',
-      supportedTypes: ['api'],
-      required: true,
-      example: {
-        online_count: 12
-      }
-    }
-  ]
+  tags: ['系统', '设备', '在线', '状态', '交互'],
+  dataDriven: false, // 这是一个纯展示性组件，数据由内部 API 调用获取，而非外部数据源驱动
+  interactionCapabilities: {
+    // 声明组件支持点击事件
+    supportedEvents: ['click'],
+  },
+  permission: '不限'
 } as ComponentDefinition;

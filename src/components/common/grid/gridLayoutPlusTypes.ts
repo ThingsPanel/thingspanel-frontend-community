@@ -166,7 +166,8 @@ export const DEFAULT_GRID_LAYOUT_PLUS_CONFIG: GridLayoutPlusConfig = {
   isMirrored: false,
   autoSize: true,
   verticalCompact: true,
-  margin: [10, 10],
+  // 默认无间距：由 [10, 10] 调整为 [0, 0]
+  margin: [0, 0],
   useCssTransforms: true,
   responsive: false,
   breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },

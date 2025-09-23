@@ -1,37 +1,37 @@
 <template>
   <div class="h-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
-    <!-- 卡片标题栏 -->
-    <div class="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-700 dark:to-gray-800">
-      <div class="flex items-center space-x-3">
-        <div class="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-          <Icon icon="mdi:database-arrow-up" class="text-lg text-green-600 dark:text-green-400" />
+    <!-- 卡片标题栏 - 紧凑设计 -->
+    <div class="flex justify-between items-center px-3 py-2 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-700 dark:to-gray-800">
+      <div class="flex items-center space-x-2">
+        <div class="p-1.5 bg-green-100 dark:bg-green-900 rounded-md">
+          <Icon icon="mdi:database-arrow-up" class="text-sm text-green-600 dark:text-green-400" />
         </div>
-        <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">
+        <h3 class="text-sm font-medium text-gray-800 dark:text-gray-100">
           {{ $t('card.reportedData.title') }}
         </h3>
       </div>
 
-      <!-- 刷新按钮 -->
+      <!-- 刷新按钮 - 更小尺寸 -->
       <n-button
         text
-        size="small"
+        size="tiny"
         :type="isRefreshing ? 'primary' : 'default'"
         :loading="isFetchingUpdate && !isRefreshing"
-        class="hover:bg-green-50 dark:hover:bg-green-900 px-3 py-1 rounded-lg transition-colors"
+        class="hover:bg-green-50 dark:hover:bg-green-900 px-2 py-1 rounded transition-colors"
         @click="toggleRefresh"
       >
         <template #icon>
           <Icon
             icon="mdi:refresh"
+            class="text-xs"
             :class="{ 'animate-spin': isRefreshing }"
           />
         </template>
-        {{ isRefreshing ? $t('card.reportedData.refreshing') : $t('card.reportedData.startRefresh') }}
       </n-button>
     </div>
 
-    <!-- 内容区域 -->
-    <div class="flex-1 p-4 overflow-hidden">
+    <!-- 内容区域 - 减少内边距 -->
+    <div class="flex-1 p-2 overflow-hidden">
       <n-spin :show="loading">
         <!-- 错误状态 -->
         <n-alert v-if="error && !loading" type="error" :title="$t('common.error')" class="mb-4">
@@ -49,10 +49,10 @@
           </template>
         </n-empty>
 
-        <!-- 设备列表 -->
+        <!-- 设备列表 - 减少间距 -->
         <div v-else-if="!loading && devices && devices.length > 0" class="h-full overflow-auto">
           <n-spin :show="isFetchingUpdate && !loading">
-            <div class="space-y-3">
+            <div class="space-y-2">
               <div
                 v-for="(device, index) in devices"
                 :key="device.device_id"
@@ -61,8 +61,8 @@
                   'ring-2 ring-blue-500 ring-opacity-50 bg-blue-50 dark:bg-blue-900/20': index === 0
                 }"
               >
-                <!-- 设备标题 -->
-                <div class="p-3 border-b border-gray-200 dark:border-gray-600">
+                <!-- 设备标题 - 减少内边距 -->
+                <div class="px-3 py-2 border-b border-gray-200 dark:border-gray-600">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2 flex-1 min-w-0">
                       <Icon icon="mdi:devices" class="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0" />
@@ -90,16 +90,16 @@
                   </div>
                 </div>
 
-                <!-- 遥测数据区域 -->
-                <div class="p-3">
+                <!-- 遥测数据区域 - 减少内边距 -->
+                <div class="px-3 py-2">
                   <BottomUpInfiniteScroller
                     v-if="device.telemetry_data && device.telemetry_data.length > 0"
                     :list="getPairedTelemetry(device.telemetry_data)"
-                    height="80px"
+                    height="60px"
                     class="border border-gray-200 dark:border-gray-600 rounded-md overflow-hidden"
                   >
                     <template #default="{ item: pair }">
-                      <div class="grid grid-cols-2 gap-3 p-2 text-xs border-b border-gray-100 dark:border-gray-600 last:border-b-0">
+                      <div class="grid grid-cols-2 gap-2 px-2 py-1.5 text-xs border-b border-gray-100 dark:border-gray-600 last:border-b-0">
                         <!-- 左列 -->
                         <div v-if="pair.left" class="space-y-1">
                           <div
@@ -137,8 +137,8 @@
                     </template>
                   </BottomUpInfiniteScroller>
 
-                  <!-- 无遥测数据 -->
-                  <div v-else class="text-xs text-center py-3 text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 rounded-md">
+                  <!-- 无遥测数据 - 减少内边距 -->
+                  <div v-else class="text-xs text-center py-2 text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 rounded-md">
                     {{ $t('card.reportedData.noTelemetry') }}
                   </div>
                 </div>
@@ -149,8 +149,8 @@
       </n-spin>
     </div>
 
-    <!-- 底部链接 -->
-    <div class="p-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+    <!-- 底部链接 - 减少内边距 -->
+    <div class="px-3 py-2 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
       <div class="text-center">
         <router-link
           to="/device/manage"
