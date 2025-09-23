@@ -103,15 +103,6 @@ onMounted(() => {
         // 强制触发响应式更新
         editorStore.updateNode(event.componentId, { ...node })
       }
-    } else if (event.section === 'dataSource') {
-      // 数据源配置变更，直接通过 data-architecture 处理
-
-      try {
-        // 构建数据需求
-        const requirement = {
-          componentId: event.componentId,
-          dataSources: event.newConfig ? [event.newConfig] : []
-        }
 
         // 直接通过 simpleDataBridge 执行数据获取
         const result = await simpleDataBridge.executeComponent(requirement)

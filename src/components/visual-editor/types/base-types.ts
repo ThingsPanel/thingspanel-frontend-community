@@ -14,19 +14,6 @@ export interface Size {
   height: number
 }
 
-// 统一数据节点协议
-export interface GraphData<TConfig = any, TItem = any> {
-  id: string
-  type: string
-  x: number
-  y: number
-  width: number // Canvas像素宽度
-  height: number // Canvas像素高度
-  properties: TConfig
-  renderer: string[] // 适配的渲染器
-
-  // 不同渲染器的布局属性
-  layout?: {
     canvas?: {
       width: number // 像素
       height: number // 像素
@@ -44,10 +31,10 @@ export interface GraphData<TConfig = any, TItem = any> {
     sourceId: string
     transform: TransformOperation[]
   }
-  metadata: {
-    createdAt: number
-    updatedAt: number
-    version: string
+    gridstack?: {
+      w: number // 网格宽度单位
+      h: number // 网格高度单位
+    }
   }
 }
 

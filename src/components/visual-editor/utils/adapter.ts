@@ -7,7 +7,6 @@ import type { BaseCanvasItem, Position } from '@/components/panelv2/types/core'
 import { DEFAULT_CONSTRAINTS } from '@/components/panelv2/types/core'
 import { generateId } from '@/components/panelv2/utils/id'
 import type { WidgetType, TextWidgetConfig, ImageWidgetConfig } from '@/components/visual-editor/types'
-
 /**
  * 生成默认的组件配置
  */

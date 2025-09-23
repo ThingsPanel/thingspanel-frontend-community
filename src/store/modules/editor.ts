@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import type { GraphData, CanvasState } from '@/components/visual-editor/types/base-types'
-import { useWidgetStore } from './widget'
 
 // 从旧的 StateManager 迁移过来的状态
 interface EditorState {
@@ -48,22 +47,3 @@ export const useEditorStore = defineStore('editor', {
         }
       }
     },
-
-    // 视口操作
-    updateViewport(updates: Partial<EditorState['viewport']>) {
-      Object.assign(this.viewport, updates)
-    },
-
-    // 模式切换
-    setMode(mode: 'edit' | 'preview') {
-      this.mode = mode
-    },
-
-    // 重置状态
-    reset() {
-      this.nodes = []
-      this.viewport = { zoom: 1, offsetX: 0, offsetY: 0 }
-      this.mode = 'edit'
-    }
-  }
-})
