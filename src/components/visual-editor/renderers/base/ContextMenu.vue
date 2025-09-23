@@ -11,6 +11,11 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * 基础右键菜单组件
+ * 为所有渲染器提供统一的右键菜单功能
+ */
+
 import { computed, h } from 'vue'
 import { NIcon } from 'naive-ui'
 import { CopyOutline, TrashOutline, SettingsOutline, LockClosedOutline, LockOpenOutline } from '@vicons/ionicons5'
@@ -89,7 +94,7 @@ const handleClickOutside = () => {
 </script>
 
 <style scoped>
-/* 禁用状态样式 */
+/* 基础右键菜单样式 */
 .context-menu-disabled {
   position: fixed;
   top: 0;
@@ -112,9 +117,4 @@ const handleClickOutside = () => {
   border: 1px solid #e0e0e0;
   padding: 8px;
 }
-
-/* 原有样式（已注释） */
-/*
-无原有样式
-*/
 </style>

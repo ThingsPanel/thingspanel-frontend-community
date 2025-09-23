@@ -62,7 +62,7 @@ import { useEditorStore } from '@/store/modules/editor'
 import { useWidgetStore } from '@/store/modules/widget'
 import { globalPreviewMode } from '@/components/visual-editor/hooks/usePreviewMode'
 import BaseRendererComponent from '@/components/visual-editor/renderers/base/BaseRendererComponent.vue'
-import Card2Wrapper from '@/components/visual-editor/renderers/canvas/Card2Wrapper.vue'
+import { Card2Wrapper } from '@/components/visual-editor/renderers/base'
 
 // 流式布局配置
 interface FlowConfig {

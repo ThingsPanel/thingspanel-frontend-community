@@ -15,7 +15,7 @@
     <!-- 网格核心组件 -->
     <GridCore
       ref="gridCoreRef"
-      :layout="layout"
+      :layout="normalizedLayout"
       :config="config"
       :readonly="readonly"
       :show-title="showTitle"
@@ -86,7 +86,9 @@ const props = withDefaults(defineProps<Props>(), {
   showTitle: false, // 默认不显示标题
   config: () => ({}),
   gridSize: 'standard', // 默认使用标准网格 (24列)
-  customColumns: 50
+  customColumns: 50,
+  /** 唯一键字段名，默认使用 'i'。允许外部数据结构重命名主键（如 'id'） */
+  idKey: 'i'
 })
 
 // Emits
@@ -99,6 +101,21 @@ const themeStore = useThemeStore()
 
 // 组件引用
 const gridCoreRef = ref<InstanceType<typeof GridCore> | null>(null)
+
+// 计算属性：根据 idKey 规范化布局，确保每个项都有 item.i
+const normalizedLayout = computed<GridLayoutPlusItem[]>(() => {
+  const key = props.idKey || 'i'
+  return (props.layout || []).map(item => {
+    // 如果外部使用了自定义键名（如 'id'），则将其映射到内部字段 i
+    const currentId = (item as any)[key] ?? (item as any).i
+    const withI: GridLayoutPlusItem = { ...item, i: currentId as string }
+    // 同步写回自定义键，保证双字段一致（不改变原始协议，只补充字段）
+    if (key !== 'i') {
+      ;(withI as any)[key] = withI.i
+    }
+    return withI
+  })
+})
 
 // Computed
 const isDarkTheme = computed(() => themeStore.darkMode)
@@ -178,7 +195,7 @@ const gridValidation = computed(() => {
 
 // 业务方法
 const handleItemEdit = (item: GridLayoutPlusItem) => {
-  emit('item-edit', item)
+  emit('item-edit', withIdKey([item])[0])
 }
 
 const handleItemDelete = (item: GridLayoutPlusItem) => {
@@ -207,33 +224,42 @@ const handleItemDataUpdate = (itemId: string, data: any) => {
 
 // Grid Layout Plus 事件处理
 const handleLayoutCreated = (newLayout: GridLayoutPlusItem[]) => {
-  emit('layout-created', newLayout)
+  // 统一对外布局协议：补齐 idKey 别名字段
+  emit('layout-created', withIdKey(newLayout))
 }
 
 const handleLayoutBeforeMount = (newLayout: GridLayoutPlusItem[]) => {
-  emit('layout-before-mount', newLayout)
+  emit('layout-before-mount', withIdKey(newLayout))
 }
 
 const handleLayoutMounted = (newLayout: GridLayoutPlusItem[]) => {
-  emit('layout-mounted', newLayout)
+  emit('layout-mounted', withIdKey(newLayout))
 }
 
 const handleLayoutUpdated = (newLayout: GridLayoutPlusItem[]) => {
-  emit('layout-updated', newLayout)
+  emit('layout-updated', withIdKey(newLayout))
+}
+
+const withIdKey = (items: GridLayoutPlusItem[]): GridLayoutPlusItem[] => {
+  // 在对外派发布局相关事件前，补充 idKey 字段，保证任意主键协议兼容
+  const key = props.idKey || 'i'
+  if (key === 'i') return items
+  return items.map(it => ({ ...(it as any), [key]: it.i })) as GridLayoutPlusItem[]
 }
 
 const handleLayoutReady = (newLayout: GridLayoutPlusItem[]) => {
-  emit('layout-ready', newLayout)
+  emit('layout-ready', withIdKey(newLayout))
 }
 
 const handleLayoutChange = (newLayout: GridLayoutPlusItem[]) => {
   // 由 GridCore 组件处理布局变化，主组件只负责转发事件
-  emit('layout-change', newLayout)
-  emit('update:layout', newLayout)
+  const patched = withIdKey(newLayout)
+  emit('layout-change', patched)
+  emit('update:layout', patched)
 }
 
 const handleBreakpointChanged = (newBreakpoint: string, newLayout: GridLayoutPlusItem[]) => {
-  emit('breakpoint-changed', newBreakpoint, newLayout)
+  emit('breakpoint-changed', newBreakpoint, withIdKey(newLayout))
 }
 
 const handleContainerResized = (width: number, height: number, cols: number) => {
@@ -296,13 +322,19 @@ const addItem = (type: string, options?: Partial<GridLayoutPlusItem>) => {
     ...options
   }
 
+  // 若外部定义了自定义键名，则写回该字段，保证双字段一致
+  const key = props.idKey || 'i'
+  if (key !== 'i') {
+    ;(newItem as any)[key] = newItem.i
+  }
+
   // 寻找合适的位置
   const position = findAvailablePosition(newItem.w, newItem.h)
   newItem.x = position.x
   newItem.y = position.y
 
   coreLayout.push(newItem)
-  emit('item-add', newItem)
+  emit('item-add', withIdKey([newItem])[0])
   return newItem
 }
 
@@ -336,8 +368,8 @@ const clearLayout = () => {
   const coreLayout = gridCoreRef.value?.internalLayout
   if (coreLayout) {
     coreLayout.splice(0)
-    emit('layout-change', [])
-    emit('update:layout', [])
+    emit('layout-change', withIdKey([]))
+    emit('update:layout', withIdKey([...coreLayout]))
   }
 }
 
@@ -396,8 +428,8 @@ const optimizeLayoutForGridSize = (targetCols?: number, sourceCols?: number) => 
     Object.assign(item, optimized)
   })
 
-  emit('layout-change', [...coreLayout])
-  emit('update:layout', [...coreLayout])
+  emit('layout-change', withIdKey([...coreLayout]))
+  emit('update:layout', withIdKey([...coreLayout]))
 }
 
 // 布局数据监听已移至 GridCore 组件处理

@@ -73,6 +73,7 @@
     "dayjs": "1.11.10",
     "echarts": "^5.5.1",
     "event-source-polyfill": "^1.0.31",
+    "fabric": "^6.7.1",
     "form-data": "4.0.0",
     "grid-layout-plus": "^1.1.0",
     "gridstack": "^9.5.1",

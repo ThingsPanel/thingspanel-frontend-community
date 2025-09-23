@@ -1,9 +1,17 @@
 <template>
   <div ref="gridWrapperEl" class="grid-layout-plus-wrapper-editor">
-    <GridLayoutPlus
+    <!--
+      将原先的 GridLayoutPlus 替换为 GridV2
+      - GridV2 保持与 GridLayoutPlus 完全一致的 Props 接口
+      - 支持默认插槽并传出 { item }，现有模板可无缝复用
+      - 用于 props/idKey 链路调试，不触发原网格事件
+    -->
+    <GridV2
       v-model:layout="layout"
       :config="gridConfig"
       :readonly="isReadOnly"
+      :show-title="props.showWidgetTitles"
+      :id-key="props.idKey"
       @layout-change="onLayoutChange"
       @item-resized="onResizeStop"
       @item-moved="onDragStop"
@@ -24,7 +32,7 @@
           @title-update="handleTitleUpdate"
         />
       </template>
-    </GridLayoutPlus>
+    </GridV2>
 
     <ContextMenu
       :show="contextMenu.show"
@@ -41,22 +49,33 @@
 import { ref, computed, watch, shallowRef, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { nanoid } from 'nanoid'
-import { GridLayoutPlus, type GridLayoutPlusItem, type GridLayoutPlusConfig } from '@/components/common/grid'
+// 替换导入：从 common/gridv2 引入 GridV2；类型仍从 common/grid 复用
+import { GridV2 } from '@/components/common/gridv2'
+import type { GridLayoutPlusItem, GridLayoutPlusConfig } from '@/components/common/grid'
 import { useEditorStore } from '@/store/modules/editor'
 import { useWidgetStore } from '@/store/modules/widget'
 import NodeWrapper from '@/components/visual-editor/renderers/base/NodeWrapper.vue'
-import ContextMenu from '@/components/visual-editor/renderers/canvas/ContextMenu.vue'
+import { ContextMenu } from '@/components/visual-editor/renderers/base'
 import type { VisualEditorWidget, GraphData } from '@/components/visual-editor/types'
 import { smartDeepClone } from '@/utils/deep-clone'
 
-const props = defineProps<{
-  graphData: GraphData
+const props = withDefaults(defineProps<{
+  graphData: any
   readonly?: boolean
   staticGrid?: boolean
+  // 将 any 改为 Partial<GridLayoutPlusConfig>，避免不必要的 any
   gridConfig?: Partial<GridLayoutPlusConfig>
-  multiDataSourceStore?: Record<string, Record<string, any>>
-  multiDataSourceConfigStore?: Record<string, any>
-}>()
+  // 新增：控制是否显示标题
+  showWidgetTitles?: boolean
+  // 新增：可配置主键字段名，默认 'i'
+  idKey?: string
+}>(), {
+  readonly: false,
+  staticGrid: false,
+  gridConfig: () => ({}),
+  showWidgetTitles: false,
+  idKey: 'i'
+})
 const emit = defineEmits(['node-select', 'request-settings'])
 
 const router = useRouter()
@@ -150,18 +169,26 @@ interface ExtendedGridLayoutPlusItem extends GridLayoutPlusItem {
 }
 
 const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[] => {
-  return nodes.map(node => ({
-    i: node.id,
-    x: node.layout?.gridstack?.x ?? 0,
-    y: node.layout?.gridstack?.y ?? 0,
-    w: node.layout?.gridstack?.w ?? 4,
-    h: node.layout?.gridstack?.h ?? 2,
-    static: props.staticGrid || (props.gridConfig?.staticGrid ?? false),
-    isDraggable: !isReadOnly.value && !props.staticGrid && (props.gridConfig?.isDraggable ?? true),
-    isResizable: !isReadOnly.value && !props.staticGrid && (props.gridConfig?.isResizable ?? true),
-    type: node.type,
-    raw: node
-  }))
+  const key = props.idKey || 'i'
+  return nodes.map(node => {
+    const item = {
+      i: node.id,
+      x: node.layout?.gridstack?.x ?? 0,
+      y: node.layout?.gridstack?.y ?? 0,
+      w: node.layout?.gridstack?.w ?? 4,
+      h: node.layout?.gridstack?.h ?? 2,
+      static: props.staticGrid || (props.gridConfig?.staticGrid ?? false),
+      isDraggable: !isReadOnly.value && !props.staticGrid && (props.gridConfig?.isDraggable ?? true),
+      isResizable: !isReadOnly.value && !props.staticGrid && (props.gridConfig?.isResizable ?? true),
+      type: node.type,
+      raw: node
+    } as ExtendedGridLayoutPlusItem
+    // 写回自定义主键，保证双字段一致
+    if (key !== 'i') {
+      ;(item as any)[key] = item.i
+    }
+    return item
+  })
 }
 
 watch(

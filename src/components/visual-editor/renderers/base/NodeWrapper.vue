@@ -79,7 +79,7 @@ import { SettingsOutline, CopyOutline, TrashOutline } from '@vicons/ionicons5'
 import { useI18n } from 'vue-i18n'
 import { configurationManager } from '@/components/visual-editor/configuration'
 import { useEditor } from '@/components/visual-editor/hooks/useEditor'
-import Card2Wrapper from '@/components/visual-editor/renderers/canvas/Card2Wrapper.vue'
+import Card2Wrapper from '@/components/visual-editor/renderers/base/Card2Wrapper.vue'
 import type { BaseConfiguration, WidgetConfiguration } from '@/components/visual-editor/configuration/types'
 import type { VisualEditorWidget } from '@/components/visual-editor/types'
 

@@ -18,6 +18,11 @@ export {
 // Vue 组件基础渲染器
 export { default as BaseRendererComponent } from '@/components/visual-editor/renderers/base/BaseRendererComponent.vue'
 
+// 基础 UI 组件
+export { default as NodeWrapper } from '@/components/visual-editor/renderers/base/NodeWrapper.vue'
+export { default as ContextMenu } from '@/components/visual-editor/renderers/base/ContextMenu.vue'
+export { default as Card2Wrapper } from '@/components/visual-editor/renderers/base/Card2Wrapper.vue'
+
 // 渲染器管理器
 export {
   RendererManager,

@@ -1,131 +1,46 @@
 <template>
-  <!-- 敬请期待界面 -->
-  <div class="coming-soon-container">
-    <div class="coming-soon-content">
-      <div class="coming-soon-icon">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M12 2L2 7L12 12L22 7L12 2Z"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M2 17L12 22L22 17"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M2 12L12 17L22 12"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </div>
-      <h2 class="coming-soon-title">{{ $t('visualEditor.comingSoon') }}</h2>
-      <p class="coming-soon-description">{{ $t('visualEditor.canvasUnderDevelopment') }}</p>
-      <div class="coming-soon-features">
-        <div class="feature-item">
-          <span class="feature-icon">🎨</span>
-          <span>{{ $t('visualEditor.dragDropEditing') }}</span>
-        </div>
-        <div class="feature-item">
-          <span class="feature-icon">📐</span>
-          <span>{{ $t('visualEditor.gridAlignment') }}</span>
-        </div>
-        <div class="feature-item">
-          <span class="feature-icon">🔧</span>
-          <span>{{ $t('visualEditor.realtimeConfig') }}</span>
-        </div>
-        <div class="feature-item">
-          <span class="feature-icon">📱</span>
-          <span>{{ $t('visualEditor.responsiveLayout') }}</span>
-        </div>
-      </div>
-      <div class="coming-soon-note">
-        <n-alert type="info" size="small">
-          <template #header>
-            <span>{{ $t('visualEditor.developmentProgress') }}</span>
-          </template>
-          {{ $t('visualEditor.architectureComplete') }}
-        </n-alert>
-      </div>
-    </div>
-  </div>
-
-  <!-- 原有代码（已注释） -->
-  <!--
   <BaseRendererComponent
     :readonly="readonly"
-    :config="canvasConfig"
     @ready="onRendererReady"
     @error="onRendererError"
     @node-select="onNodeSelect"
     @canvas-click="onCanvasClick"
   >
-    <div
-      class="canvas grid-background-base"
-      :class="{
-        'show-grid': canvasConfig.showGrid,
-        'preview-mode': isPreviewMode.value
-      }"
-      @click="handleCanvasClick"
-      @contextmenu.prevent="handleCanvasContextMenu"
-    >
-      <NodeWrapper
-        v-for="node in nodes"
-        :key="node.id"
-        :node="node"
-        :node-id="node.id"
-        :readonly="readonly || isPreviewMode.value"
-        :is-selected="selectedIds.includes(node.id) && !isPreviewMode.value"
-        :show-resize-handles="selectedIds.includes(node.id) && !readonly && !isPreviewMode.value"
-        :get-widget-component="getWidgetComponent"
-        class="canvas-node"
-        :style="getNodeStyle(node)"
-        @node-click="handleNodeClick"
-        @node-mousedown="handleNodeMouseDown"
-        @node-contextmenu="handleNodeContextMenu"
-        @resize-start="handleResizeStart"
-        @title-update="handleTitleUpdate"
-        @component-error="handleCard2Error"
-      />
-
-      <ContextMenu
-        v-if="!readonly"
-        :show="contextMenu.show"
-        :x="contextMenu.x"
-        :y="contextMenu.y"
-        :selected-widgets="selectedNodes"
-        @select="handleContextMenuAction"
-        @close="closeContextMenu"
+    <div class="canvas-renderer" @click="onCanvasClick">
+      <FabricCanvasWrapper
+        v-if="stateManager.nodes"
+        :graph-data="stateManager"
+        :readonly="readonly || isPreviewMode"
+        :show-widget-titles="showWidgetTitles"
+        :canvas-config="canvasConfig"
+        :multi-data-source-store="multiDataSourceStore"
+        :multi-data-source-config-store="multiDataSourceConfigStore"
+        @node-select="onNodeSelect"
+        @request-settings="onRequestSettings"
       />
     </div>
   </BaseRendererComponent>
-  -->
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { nanoid } from 'nanoid'
-import { NAlert } from 'naive-ui'
-import { $t } from '@/locales'
-// 注意：useEditor已迁移到新的统一架构，请使用useVisualEditor
+/**
+ * Canvas 渲染器组件
+ * 已迁移到新的统一架构 - 数据管理层
+ */
+
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useEditorStore } from '@/store/modules/editor'
+import { useWidgetStore } from '@/store/modules/widget'
 import { globalPreviewMode } from '@/components/visual-editor/hooks/usePreviewMode'
 import BaseRendererComponent from '@/components/visual-editor/renderers/base/BaseRendererComponent.vue'
-import NodeWrapper from '@/components/visual-editor/renderers/base/NodeWrapper.vue'
-import TextWidget from '@/components/visual-editor/widgets/custom/TextWidget/TextWidget.vue'
-import ImageWidget from '@/components/visual-editor/widgets/custom/ImageWidget/ImageWidget.vue'
-import ContextMenu from '@/components/visual-editor/renderers/canvas/ContextMenu.vue'
-import type { GraphData } from '@/components/visual-editor/types'
-import { smartDeepClone } from '@/utils/deep-clone'
+import FabricCanvasWrapper from '@/components/visual-editor/renderers/canvas/FabricCanvasWrapper.vue'
+// 添加配置事件监听
+import { configEventBus, type ConfigChangeEvent } from '@/core/data-architecture/ConfigEventBus'
+// 添加数据源直接获取
+import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
+// 添加配置管理器，用于数据源配置更新
+import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 
-// Props, Emits, Configs
 interface CanvasConfig {
   showGrid?: boolean
   backgroundColor?: string
@@ -133,337 +48,188 @@ interface CanvasConfig {
   height?: number
   snapToGrid?: boolean
   gridSize?: number
+  enableSelection?: boolean
+  enableGroupSelection?: boolean
+  preserveObjectStacking?: boolean
 }
-interface Props {
+
+const props = defineProps<{
   readonly?: boolean
-  config?: CanvasConfig
   showWidgetTitles?: boolean
-}
-const props = withDefaults(defineProps<Props>(), {
-  readonly: false,
-  config: () => ({
-    showGrid: true,
-    backgroundColor: '#f5f5f5',
-    width: 1200,
-    height: 800,
-    snapToGrid: true,
-    gridSize: 10
-  }),
-  showWidgetTitles: false
-})
-interface Emits {
-  (e: 'ready'): void
-  (e: 'error', error: Error): void
-  (e: 'node-select', id: string): void
-  (e: 'canvas-click', event?: MouseEvent): void
-  (e: 'request-settings', id: string): void
-}
-const emit = defineEmits<Emits>()
+  canvasConfig?: CanvasConfig
+}>()
 
-// 立即发出ready事件，表示组件已加载
-onMounted(() => {
-  emit('ready')
-})
+const emit = defineEmits(['ready', 'error', 'node-select', 'canvas-click', 'request-settings'])
 
-// 添加保存时的提示
-const showSaveWarning = () => {
-  // 这里可以触发一个全局的提示，告知用户功能尚未完成
-  // 可以在这里添加一个全局的提示组件
-}
+// 使用原始的 store
+const editorStore = useEditorStore()
+const widgetStore = useWidgetStore()
 
-// 暴露保存警告方法给父组件
-defineExpose({
-  showSaveWarning
-})
-
-// 原有代码（已注释）
-/*
-// 根据预览模式动态调整画布配置
-const canvasConfig = computed(() => ({
-  ...props.config,
-  showGrid: isPreviewMode.value ? false : (props.config?.showGrid ?? true),
-  snapToGrid: isPreviewMode.value ? false : (props.config?.snapToGrid ?? true)
+// 为兼容旧组件接口，创建stateManager适配
+const stateManager = computed(() => ({
+  nodes: editorStore.nodes || [],
+  selectedIds: widgetStore.selectedNodeIds || [],
+  viewport: editorStore.viewport || { zoom: 1, offsetX: 0, offsetY: 0 }
 }))
 
-const { stateManager, widgetStore, selectNode, updateNode, addNode, removeNode } = useEditor()
+// 选择节点方法适配
+const selectNode = (nodeId: string) => {
+  if (nodeId) {
+    widgetStore.selectNodes([nodeId])
+  } else {
+    widgetStore.selectNodes([])
+  }
+}
 
 // 全局预览模式
-const { isPreviewMode, rendererConfig } = globalPreviewMode
+const { isPreviewMode } = globalPreviewMode
 
-const nodes = computed(() => stateManager.nodes)
-const selectedIds = computed(() => widgetStore.selectedIds)
-const selectedNodes = computed(() => nodes.value.filter(n => selectedIds.value.includes(n.id)))
+// Canvas 配置
+const canvasConfig = computed(() => ({
+  showGrid: true,
+  backgroundColor: '#f5f5f5',
+  width: 1200,
+  height: 800,
+  snapToGrid: true,
+  gridSize: 10,
+  enableSelection: !props.readonly,
+  enableGroupSelection: !props.readonly,
+  preserveObjectStacking: true,
+  ...props.canvasConfig
+}))
 
-const onRendererReady = () => emit('ready')
-const onRendererError = (error: Error) => emit('error', error)
-const onNodeSelect = (nodeId: string) => emit('node-select', nodeId)
-const onCanvasClick = (event?: MouseEvent) => emit('canvas-click', event)
+// 数据源管理 - 直接从 data-architecture 获取
+const multiDataSourceStore = ref<Record<string, Record<string, any>>>({})
+const multiDataSourceConfigStore = ref<Record<string, any>>({})
 
-const widgetComponents = { text: TextWidget, image: ImageWidget }
-
-const isDragging = ref(false)
-const isResizing = ref(false)
-const dragStartPos = ref({ x: 0, y: 0 })
-const dragNodeId = ref<string | null>(null)
-const resizeNodeId = ref<string | null>(null)
-const resizeDirection = ref<string>('')
-
-const snapToGrid = (value: number) => {
-  const gridSize = canvasConfig.value.gridSize || 10
-  return canvasConfig.value.snapToGrid ? Math.round(value / gridSize) * gridSize : value
-}
-
-const contextMenu = ref({ show: false, x: 0, y: 0 })
-
-const getWidgetComponent = (type: string) => widgetComponents[type as keyof typeof widgetComponents]
-const getNodeStyle = (node: GraphData) => ({
-  position: 'absolute' as const,
-  left: `${node.x}px`,
-  top: `${node.y}px`,
-  width: `${node.width}px`,
-  height: `${node.height}px`
-})
-const handleCanvasClick = () => {
-  if (!isPreviewMode.value) {
-    stateManager.clearSelection()
-  }
-}
-
-const handleNodeClick = (id: string, event?: MouseEvent) => {
-  // 预览模式下禁用节点选择
-  if (isPreviewMode.value) return
-
-  if (event?.ctrlKey || event?.metaKey) {
-    const newSelected = selectedIds.value.includes(id)
-      ? selectedIds.value.filter(nodeId => nodeId !== id)
-      : [...selectedIds.value, id]
-    stateManager.selectNodes(newSelected)
-  } else {
-    selectNode(id)
-  }
-  emit('node-select', id)
-}
-
-const handleNodeMouseDown = (nodeId: string, event: MouseEvent) => {
-  // 预览模式下禁用拖拽
-  if (isPreviewMode.value) return
-
-  event.preventDefault()
-  isDragging.value = true
-  dragNodeId.value = nodeId
-  dragStartPos.value = { x: event.clientX, y: event.clientY }
-  if (!selectedIds.value.includes(nodeId)) selectNode(nodeId)
-  document.addEventListener('mousemove', handleMouseMove)
-  document.addEventListener('mouseup', handleMouseUp)
-}
-
-const handleResizeStart = (nodeId: string, direction: string, event: MouseEvent) => {
-  // 预览模式下禁用调整大小
-  if (isPreviewMode.value) return
-
-  event.preventDefault()
-  isResizing.value = true
-  resizeNodeId.value = nodeId
-  resizeDirection.value = direction
-  dragStartPos.value = { x: event.clientX, y: event.clientY }
-  document.addEventListener('mousemove', handleMouseMove)
-  document.addEventListener('mouseup', handleMouseUp)
-}
-
-const handleMouseMove = (event: MouseEvent) => {
-  if (!isDragging.value && !isResizing.value) return
-  const deltaX = event.clientX - dragStartPos.value.x
-  const deltaY = event.clientY - dragStartPos.value.y
-
-  if (isDragging.value && dragNodeId.value) {
-    const node = nodes.value.find(n => n.id === dragNodeId.value)
-    if (node) {
-      updateNode(dragNodeId.value, { x: snapToGrid(node.x + deltaX), y: snapToGrid(node.y + deltaY) })
-      dragStartPos.value = { x: event.clientX, y: event.clientY }
-    }
-  } else if (isResizing.value && resizeNodeId.value) {
-    const node = nodes.value.find(n => n.id === resizeNodeId.value)
-    if (node) {
-      const updates: Partial<GraphData> = {}
-      if (resizeDirection.value.includes('n')) {
-        updates.y = snapToGrid(node.y + deltaY)
-        updates.height = snapToGrid(node.height - deltaY)
-      }
-      if (resizeDirection.value.includes('s')) updates.height = snapToGrid(node.height + deltaY)
-      if (resizeDirection.value.includes('w')) {
-        updates.x = snapToGrid(node.x + deltaX)
-        updates.width = snapToGrid(node.width - deltaX)
-      }
-      if (resizeDirection.value.includes('e')) updates.width = snapToGrid(node.width + deltaX)
-      updateNode(resizeNodeId.value, updates)
-      dragStartPos.value = { x: event.clientX, y: event.clientY }
-    }
-  }
-}
-
-const handleMouseUp = () => {
-  isDragging.value = false
-  isResizing.value = false
-  dragNodeId.value = null
-  resizeNodeId.value = null
-  resizeDirection.value = ''
-  document.removeEventListener('mousemove', handleMouseMove)
-  document.removeEventListener('mouseup', handleMouseUp)
-}
+// 配置事件监听 - 让渲染器直接响应配置变更
+let unsubscribeConfigChange: (() => void) | null = null
 
 onMounted(() => {
-  document.addEventListener('selectstart', e => {
-    if (isDragging.value || isResizing.value) e.preventDefault()
-  })
+  // 监听配置变更事件，自动更新组件
+  const configChangeListener = async (event: ConfigChangeEvent) => {
+    // 根据配置变更类型进行相应处理
+    if (event.section === 'base' || event.section === 'component') {
+      // 基础配置或组件配置变更，需要更新组件状态
+
+      // 关键修复：基础配置变更时，自动更新数据源配置中的属性绑定
+      if (event.section === 'base' && event.newConfig) {
+        await updateDataSourceConfigForBaseConfigChange(event.componentId, event.newConfig, event.oldConfig)
+      }
+
+      // 关键修复：确保组件配置变更能触发组件重新渲染
+      // 通过更新组件的properties来触发响应式更新
+      const node = stateManager.value.nodes.find(n => n.id === event.componentId)
+      if (node && event.newConfig) {
+        // 更新组件的properties，触发重新渲染
+        if (event.section === 'component' && event.newConfig.properties) {
+          Object.assign(node.properties || {}, event.newConfig.properties)
+        }
+        // 强制触发响应式更新
+        editorStore.updateNode(event.componentId, { ...node })
+      }
+    } else if (event.section === 'dataSource') {
+      // 数据源配置变更，直接通过 data-architecture 处理
+
+      try {
+        // 构建数据需求
+        const requirement = {
+          componentId: event.componentId,
+          dataSources: event.newConfig ? [event.newConfig] : []
+        }
+
+        // 直接通过 simpleDataBridge 执行数据获取
+        const result = await simpleDataBridge.executeComponent(requirement)
+
+        if (result.success && result.data) {
+          // 更新数据源存储
+          multiDataSourceStore.value[event.componentId] = result.data
+          multiDataSourceConfigStore.value[event.componentId] = event.newConfig
+        } else {
+          console.error(`⚠️ 组件 ${event.componentId} 数据获取失败:`, result.error)
+        }
+      } catch (error) {
+        console.error(`❌ 组件 ${event.componentId} 数据处理异常:`, error)
+      }
+    }
+  }
+
+  // 注册配置变更监听器，保存取消注册的函数
+  unsubscribeConfigChange = configEventBus.onConfigChange('config-changed', configChangeListener)
+
+  // 为现有节点初始化数据源
+  initializeExistingNodesData()
+
   emit('ready')
 })
+
 onUnmounted(() => {
-  document.removeEventListener('mousemove', handleMouseMove)
-  document.removeEventListener('mouseup', handleMouseUp)
+  // 移除配置变更监听器
+  if (unsubscribeConfigChange) {
+    unsubscribeConfigChange()
+    unsubscribeConfigChange = null
+  }
 })
 
-const handleCanvasContextMenu = (event: MouseEvent) => {
-  // 预览模式下禁用右键菜单
-  if (isPreviewMode.value) return
-  contextMenu.value = { show: true, x: event.clientX, y: event.clientY }
-}
-const handleNodeContextMenu = (nodeId: string, event: MouseEvent) => {
-  // 预览模式下禁用右键菜单
-  if (isPreviewMode.value) return
-
-  if (!selectedIds.value.includes(nodeId)) selectNode(nodeId)
-  contextMenu.value = { show: true, x: event.clientX, y: event.clientY }
-}
-const closeContextMenu = () => {
-  contextMenu.value.show = false
+// 基础配置变更时，更新数据源配置中的属性绑定
+const updateDataSourceConfigForBaseConfigChange = async (componentId: string, newConfig: any, oldConfig: any) => {
+  // 实现基础配置变更的数据源配置更新逻辑
+  // 这里可以根据具体需求来实现
+  console.log(`[CanvasRenderer] 基础配置变更: ${componentId}`, { newConfig, oldConfig })
 }
 
-const handleContextMenuAction = (action: string) => {
-  const newNodes: GraphData[] = []
-  selectedNodes.value.forEach(node => {
-    switch (action) {
-      case 'copy': {
-        // 🔥 使用智能深拷贝，自动处理Vue响应式对象
-        const newNode = smartDeepClone(node)
-        newNode.id = `${newNode.type}_${nanoid()}`
-        newNode.x += 20
-        newNode.y += 20
-        newNodes.push(newNode)
-        break
-      }
-      case 'delete':
-        removeNode(node.id)
-        break
-      case 'settings':
-        if (selectedNodes.value.length === 1) {
-          emit('request-settings', selectedNodes.value[0].id)
+// 初始化现有节点的数据源
+const initializeExistingNodesData = async () => {
+  const nodes = stateManager.value.nodes
+  for (const node of nodes) {
+    // 尝试从缓存或配置中获取数据源配置
+    const cachedConfig = multiDataSourceConfigStore.value[node.id]
+    if (cachedConfig) {
+      // 如果有缓存的配置，尝试获取数据
+      try {
+        const requirement = {
+          componentId: node.id,
+          dataSources: [cachedConfig]
         }
-        break
+
+        const result = await simpleDataBridge.executeComponent(requirement)
+        if (result.success && result.data) {
+          multiDataSourceStore.value[node.id] = result.data
+        }
+      } catch (error) {
+        console.warn(`[CanvasRenderer] 节点 ${node.id} 数据初始化失败:`, error)
+      }
     }
-  })
-  if (newNodes.length > 0) {
-    addNode(...newNodes)
   }
 }
 
-const handleCard2Error = (error: Error) => {
-  console.error('Card 2.1 Component Error:', error)
+// 事件处理器
+const onRendererReady = () => {
+  emit('ready')
+}
+
+const onRendererError = (error: Error) => {
   emit('error', error)
 }
 
-const handleTitleUpdate = (nodeId: string, newTitle: string) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[CanvasRenderer] 标题更新: ${nodeId} -> "${newTitle}"`)
-  }
+const onNodeSelect = (nodeId: string) => {
+  selectNode(nodeId)
+  emit('node-select', nodeId)
 }
-*/
+
+const onCanvasClick = (event?: MouseEvent) => {
+  emit('canvas-click', event)
+}
+
+const onRequestSettings = (nodeId: string) => {
+  emit('request-settings', nodeId)
+}
 </script>
 
 <style scoped>
-/* 敬请期待样式 */
-.coming-soon-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 600px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 2rem;
-}
-
-.coming-soon-content {
-  text-align: center;
-  max-width: 500px;
-}
-
-.coming-soon-icon {
-  margin-bottom: 1.5rem;
-  opacity: 0.8;
-}
-
-.coming-soon-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  background: linear-gradient(45deg, #fff, #f0f0f0);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.coming-soon-description {
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
-  opacity: 0.9;
-  line-height: 1.6;
-}
-
-.coming-soon-features {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.feature-icon {
-  font-size: 1.2rem;
-}
-
-.coming-soon-note {
-  margin-top: 1.5rem;
-}
-
-/* 原有样式（已注释） */
-/*
-.canvas {
-  position: relative;
+.canvas-renderer {
   width: 100%;
   height: 100%;
   min-height: 600px;
-  user-select: none;
 }
-
-.canvas-node {
-  cursor: move;
-}
-
-.canvas-node.readonly {
-  cursor: default;
-}
-
-.canvas-node.preview-mode {
-  cursor: default !important;
-}
-*/
 </style>

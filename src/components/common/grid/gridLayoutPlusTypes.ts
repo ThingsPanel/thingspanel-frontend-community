@@ -243,6 +243,8 @@ export interface GridLayoutPlusProps {
   containerStyle?: Record<string, string | number>
   /** 容器类名 */
   containerClass?: string
+  /** 唯一键字段名（默认使用 'i'）。允许外部数据结构将主键字段重命名为任意名称（如 'id'），组件内部将自动归一化为 item.i */
+  idKey?: string
 }
 
 // 组件Emits
