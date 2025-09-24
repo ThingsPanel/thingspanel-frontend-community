@@ -49,6 +49,8 @@
  */
 // 启用原生 HTML5 拖拽/缩放插件（gridstack v9 使用 dd-gridstack 作为 H5 DnD 驱动）
 import 'gridstack/dist/dd-gridstack'
+// 新增：引入 GridStack 必需的基础样式（避免刷新后无样式导致宽高为 0）
+import 'gridstack/dist/gridstack.min.css'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { GridStack, type GridStackNode, type GridItemHTMLElement, type GridStackOptions } from 'gridstack'
 import type { GridLayoutPlusProps, GridLayoutPlusEmits, GridLayoutPlusItem } from '@/components/common/grid/gridLayoutPlusTypes'
@@ -62,6 +64,62 @@ const gridEl = ref<HTMLDivElement | null>(null)
 let grid: GridStack | null = null
 // 在列数切换时的内部标志：用于屏蔽 change 事件，避免父级更新造成的循环
 let isChangingColumns = false
+// 新增：记录是否已完成首次初始化（避免重复 init），以及“可见性观察器”
+let hasInitialized = false
+let visibilityObserver: ResizeObserver | null = null
+
+/**
+ * 将 props.config.margin 转为内容层的 CSS 变量（水平/垂直内间距）：
+ * - 仅影响 .grid-stack-item-content 的 padding，避免触碰 GridStack 引擎配置
+ * - 好处：不需要重建实例，视觉间距可快速切换
+ */
+function applyContentGutterFromConfig(): void {
+  const el = gridEl.value
+  if (!el) return
+  const margin = props.config?.margin
+  // 支持 [水平, 垂直] 元组；缺省为 [0, 0]
+  let h = 0
+  let v = 0
+  if (Array.isArray(margin) && margin.length >= 2) {
+    const [mx, my] = margin
+    h = Number(mx) || 0
+    v = Number(my) || 0
+  }
+  // 设置容器级 CSS 变量，供 .grid-stack-item-content 使用
+  el.style.setProperty('--h-gap', `${h}px`)
+  el.style.setProperty('--v-gap', `${v}px`)
+  debugLog('应用外层内容间距变量: hGap=', h, ' vGap=', v)
+}
+
+// 新增：当容器可见（非零宽高）时再初始化 GridStack，修复刷新后宽高为 0 必须改配置才显示的问题
+function scheduleInitWhenVisible(): void {
+  const el = gridEl.value
+  if (!el || hasInitialized) return
+  const w = el.clientWidth
+  const h = el.clientHeight
+  if (w > 0 && h > 0) {
+    debugLog('容器可见，开始初始化 GridStack，size=', w, h)
+    reinitGrid()
+    hasInitialized = true
+    return
+  }
+  debugLog('容器当前不可见，等待可见后初始化，size=', w, h)
+  try { visibilityObserver?.disconnect() } catch {}
+  visibilityObserver = new ResizeObserver((entries: ReadonlyArray<ResizeObserverEntry>) => {
+    const entry = entries[0]
+    const rect = entry?.contentRect
+    const cw = rect?.width ?? el.clientWidth
+    const ch = rect?.height ?? el.clientHeight
+    if (cw > 0 && ch > 0) {
+      debugLog('检测到容器已可见，执行初始化，size=', cw, ch)
+      try { visibilityObserver?.disconnect() } catch {}
+      visibilityObserver = null
+      reinitGrid()
+      hasInitialized = true
+    }
+  })
+  visibilityObserver.observe(el)
+}
 
 // 统一获取条目唯一 ID：支持 idKey 自定义（默认 'i'）
 const idKey = computed<string>(() => (props.idKey && props.idKey.length > 0 ? props.idKey : 'i'))
@@ -176,14 +234,16 @@ function createOptionsFromProps(): (GridStackOptions & { margin?: number | strin
       cancel: 'input,textarea,button,select,option,[draggable="false"]'
     },
     // 是否允许元素“浮动”（不压缩），GridLayoutPlus 默认 verticalCompact=true，这里默认关闭浮动
-    float: false
+    float: false,
+    // 外层处理“视觉间距”，引擎层统一设为 0，避免影响绝对定位计算
+    margin: 0
   }
 
-  // 将 [水平, 垂直] margin 元组映射为 CSS 简写（top/bottom left/right）
-  if (props.config?.margin && Array.isArray(props.config.margin) && props.config.margin.length === 2) {
-    const [marginX, marginY] = props.config.margin
-    options.margin = `${marginY}px ${marginX}px`
-  }
+  // （变更）不再使用引擎 margin 做间距，统一交由内容层 CSS 变量控制
+  // if (props.config?.margin && Array.isArray(props.config.margin) && props.config.margin.length === 2) {
+  //   const [marginX, marginY] = props.config.margin
+  //   options.margin = `${marginY}px ${marginX}px`
+  // }
 
   return options
 }
@@ -198,9 +258,68 @@ interface NodeSnapshot {
 
 /** 统一调试输出，便于控制台筛选 */
 function debugLog(...args: unknown[]): void {
-  console.debug('[GridV2]', ...args)
+  console.log('[GridV2]', ...args)
 }
 
+/**
+ * 运行时切换全局“可拖拽”开关（不重建实例）：
+ * - 优先考虑 readonly 与 staticGrid，若二者为真则始终禁用拖拽
+ * - 调用引擎的 enableMove（若存在），并逐个节点设置 noMove，确保与条目级别 static / isDraggable=false 一致
+ */
+function setGlobalDragEnabled(enable: boolean): void {
+  if (!grid) return
+  const effectiveEnable = enable && !props.readonly && props.config?.staticGrid !== true
+  debugLog('切换全局可拖拽:', effectiveEnable)
+  // 某些 GridStack 类型定义可能未暴露 enableMove，这里做兼容调用
+  // @ts-expect-error runtime API 兼容调用
+  grid.enableMove?.(effectiveEnable)
+
+  const nodes = (grid as unknown as { engine?: { nodes?: GridStackNode[] } }).engine?.nodes ?? []
+  grid.batchUpdate()
+  nodes.forEach((n) => {
+    const id = String(n.id)
+    const item = props.layout.find((it) => getItemId(it) === id)
+    const itemStatic = (item as unknown as { static?: boolean })?.static === true
+    const itemNoDrag = (item as unknown as { isDraggable?: boolean })?.isDraggable === false
+    const nodeNoMove = !effectiveEnable || itemStatic || itemNoDrag
+    const el = n.el as GridItemHTMLElement | undefined
+    if (el) {
+      grid!.update(el, { noMove: nodeNoMove })
+    }
+  })
+  grid.commit()
+  nextTick(() => ensureAllWidgetsRegistered())
+}
+
+/**
+ * 运行时切换全局“可缩放”开关（不重建实例）：
+ * - 优先考虑 readonly 与 staticGrid，若二者为真则始终禁用缩放
+ * - 调用引擎的 enableResize（若存在），并逐个节点设置 noResize，确保与条目级别 static / isResizable=false 一致
+ */
+function setGlobalResizeEnabled(enable: boolean): void {
+  if (!grid) return
+  const effectiveEnable = enable && !props.readonly && props.config?.staticGrid !== true
+  debugLog('切换全局可缩放:', effectiveEnable)
+  // 某些 GridStack 类型定义可能未暴露 enableResize，这里做兼容调用
+  // @ts-expect-error runtime API 兼容调用
+  grid.enableResize?.(effectiveEnable)
+
+  const nodes = (grid as unknown as { engine?: { nodes?: GridStackNode[] } }).engine?.nodes ?? []
+  grid.batchUpdate()
+  nodes.forEach((n) => {
+    const id = String(n.id)
+    const item = props.layout.find((it) => getItemId(it) === id)
+    const itemStatic = (item as unknown as { static?: boolean })?.static === true
+    const itemNoResize = (item as unknown as { isResizable?: boolean })?.isResizable === false
+    const nodeNoResize = !effectiveEnable || itemStatic || itemNoResize
+    const el = n.el as GridItemHTMLElement | undefined
+    if (el) {
+      grid!.update(el, { noResize: nodeNoResize })
+    }
+  })
+  grid.commit()
+  nextTick(() => ensureAllWidgetsRegistered())
+}
 /** 从 Grid 引擎快照当前所有节点的 x/w（保留 el 引用） */
 function snapshotNodes(): NodeSnapshot[] {
   if (!grid) return []
@@ -226,6 +345,29 @@ function restoreNodesWithinColumns(snapshots: NodeSnapshot[], maxCol: number): v
 }
 
 /**
+ * 基于列数变更按比例缩放并恢复节点：
+ * - 保持相对占比：w' = round(w * newCol / oldCol)，x' = round(x * newCol / oldCol)
+ * - 同时裁剪到合法范围，防止溢出
+ */
+function restoreNodesScaled(snapshots: NodeSnapshot[], oldCol: number, newCol: number): void {
+  if (!grid) return
+  if (!Number.isFinite(oldCol) || !Number.isFinite(newCol) || oldCol <= 0 || newCol <= 0) return
+  const ratio = newCol / oldCol
+  snapshots.forEach(p => {
+    const el = p.el ?? (gridEl.value?.querySelector(`#${CSS.escape(p.id)}`) as GridItemHTMLElement | null) ?? undefined
+    if (!el) return
+    // 计算缩放后的 w/x，并进行边界裁剪
+    let nextW = Math.max(1, Math.round(p.w * ratio))
+    if (nextW > newCol) nextW = newCol
+    let nextX = Math.round(p.x * ratio)
+    if (nextX < 0) nextX = 0
+    if (nextX > newCol - nextW) nextX = Math.max(0, newCol - nextW)
+    debugLog('scale node:', p.id, 'old {x=', p.x, ', w=', p.w, '} -> new {x=', nextX, ', w=', nextW, '}', 'ratio=', ratio)
+    grid!.update(el, { x: nextX, w: nextW })
+  })
+}
+
+/**
  * 封装列切换逻辑：
  * - 应用列 CSS
  * - 快照节点
@@ -242,16 +384,22 @@ function setColumns(newCol: number, oldCol?: number): void {
     // 先应用对应列数的 CSS，避免 >12 时样式缺失或旧样式残留
     applyColumnCss(newCol)
 
-    // 快照 -> 切换列数（不缩放）-> 恢复 -> 提交
+    // 快照 -> 切换列数 -> 恢复(保持 w/x 数值，仅裁剪边界) -> 提交
     const snaps = snapshotNodes()
 
     isChangingColumns = true
     grid!.batchUpdate()
     grid!.column(Number(newCol), 'move')
+    // 保持原有 w/x 数值，不进行缩放，仅在新列数范围内做边界裁剪
     restoreNodesWithinColumns(snaps, Number(newCol))
     grid!.commit()
 
-    nextTick(() => ensureAllWidgetsRegistered())
+    nextTick(() => {
+      ensureAllWidgetsRegistered()
+      auditGridNodes('[setColumns]')
+      measureAndLogItemSizes('[setColumns]')
+      window.dispatchEvent(new Event('resize'))
+    })
   } catch (err) {
     console.warn('[GridV2] 列数运行时调整失败，回退重建实例。错误：', err)
     reinitGrid()
@@ -277,23 +425,24 @@ function applyColumnCss(colNum: number): void {
   activeColForCss = null
 
   // 统一为任意列数生成规则（不再依赖 gridstack-extra.css 的 data-gs-* 选择器）
+  // 说明：为避免被引擎的内联样式覆盖，关键属性 width/left 增加 !important
   const precision = 6
   const rules: string[] = []
   for (let i = 1; i <= colNum; i++) {
     const pct = (i * 100 / colNum).toFixed(precision)
-    rules.push(`.grid-stack > .grid-stack-item[gs-w='${i}']{width:${pct}%;}`)
+    rules.push(`.grid-stack > .grid-stack-item[gs-w='${i}']{width:${pct}% !important;}`)
   }
   for (let i = 1; i <= colNum; i++) {
     const pct = (i * 100 / colNum).toFixed(precision)
-    rules.push(`.grid-stack > .grid-stack-item[gs-x='${i}']{left:${pct}%;}`)
+    rules.push(`.grid-stack > .grid-stack-item[gs-x='${i}']{left:${pct}% !important;}`)
   }
   for (let i = 1; i <= colNum; i++) {
     const pct = (i * 100 / colNum).toFixed(precision)
-    rules.push(`.grid-stack > .grid-stack-item.grid-stack-item[gs-min-w='${i}']{min-width:${pct}%;}`)
+    rules.push(`.grid-stack > .grid-stack-item.grid-stack-item[gs-min-w='${i}']{min-width:${pct}% !important;}`)
   }
   for (let i = 1; i <= colNum; i++) {
     const pct = (i * 100 / colNum).toFixed(precision)
-    rules.push(`.grid-stack > .grid-stack-item.grid-stack-item[gs-max-w='${i}']{max-width:${pct}%;}`)
+    rules.push(`.grid-stack > .grid-stack-item.grid-stack-item[gs-max-w='${i}']{max-width:${pct}% !important;}`)
   }
 
   // 创建或更新单一样式节点，并确保其位于 <head> 末尾，从而拥有最高优先级
@@ -303,9 +452,37 @@ function applyColumnCss(colNum: number): void {
   activeColStyleEl.textContent = rules.join('\n')
   document.head.appendChild(activeColStyleEl)
   activeColForCss = colNum
-  console.debug(`[GridV2] 应用动态列样式: colNum=`, colNum)
-}
+  debugLog('应用动态列样式: colNum=', colNum)
+ }
 
+/**
+ * 审计当前所有节点的列属性与实际宽度（调试用）：
+ * - 输出 id、w（引擎）、元素 gs-w 属性、内联样式 width/left、计算后的宽度（px）、容器宽度
+ * - 帮你定位“列数切了但宽度不变”的具体原因
+ */
+function auditGridNodes(context: string): void {
+  try {
+    if (!grid) return
+    const container = gridEl.value
+    const containerW = container?.clientWidth ?? 0
+    const engineNodes = (grid as unknown as { engine?: { nodes?: GridStackNode[] } }).engine?.nodes ?? []
+    debugLog('audit:', context, 'containerW=', containerW, 'nodes=', engineNodes.length)
+    engineNodes.forEach((n) => {
+      const el = n.el as GridItemHTMLElement | undefined
+      if (!el) return
+      const attrW = el.getAttribute('gs-w')
+      const attrX = el.getAttribute('gs-x')
+      const inlineW = el.style.width
+      const inlineL = el.style.left
+      const cs = window.getComputedStyle(el)
+      const csW = cs.width
+      const csL = cs.left
+      debugLog('node:', String(n.id), 'w=', n.w, 'x=', n.x, 'attrW=', attrW, 'attrX=', attrX, 'inlineW=', inlineW, 'inlineL=', inlineL, 'computedW=', csW, 'computedL=', csL)
+    })
+  } catch (err) {
+    console.warn('[GridV2] auditGridNodes 异常：', err)
+  }
+}
 function reinitGrid(): void {
   // 若实例已存在，先销毁（不销毁 DOM，由 Vue 管理）
   if (grid) {
@@ -321,7 +498,7 @@ function reinitGrid(): void {
   applyColumnCss(col)
 
   // 调试日志：重建实例时的列数
-  console.log(`[GridV2] reinitGrid: 使用列数=`, col)
+ debugLog('reinitGrid: 使用列数=', col)
 
   // 初始化实例（显式传入容器，避免多实例冲突）
   if (gridEl.value) {
@@ -344,79 +521,89 @@ function reinitGrid(): void {
       emit('item-resized', String(n.id), n.h ?? 0, n.w ?? 0, 0, 0)
     })
 
-    // 下一帧确保所有节点注册给 GridStack
-    nextTick(() => ensureAllWidgetsRegistered())
+    // 下一帧确保所有节点注册给 GridStack，并触发一次 resize 便于内部组件自适应
+    nextTick(() => {
+      ensureAllWidgetsRegistered()
+      measureAndLogItemSizes('[reinitGrid]')
+      auditGridNodes('[reinitGrid]')
+      window.dispatchEvent(new Event('resize'))
+    })
   }
 }
 
-// 初始化 GridStack
+// （去重）上方监听与卸载、测量函数已下移并统一维护，此处删除重复实现以避免执行两次。
+
+// 初始化入口：mounted 时调度可见性初始化，避免“刷新后无日志、需改配置才触发”
 onMounted(() => {
-  // 调试日志：组件挂载时打印初始列数（若父级未传，则为默认 12）
-  console.log(`[GridV2] 初始 colNum=`, props.config?.colNum ?? 12)
-  reinitGrid() // 首次挂载按当前 props 初始化
+  debugLog('onMounted: 调用 scheduleInitWhenVisible()')
+  // 按当前配置应用内容层间距变量（不重建实例）
+  applyContentGutterFromConfig()
+  scheduleInitWhenVisible()
 })
 
-// 监听 layout 变化（新增/删除/替换），在 DOM 更新后与 Grid 引擎同步
+// 监听 layout（异步到达场景）：若尚未初始化，则再次尝试 scheduleInitWhenVisible；否则注册新节点
 watch(
   () => props.layout,
-  () => nextTick(() => ensureAllWidgetsRegistered()),
+  (newLayout, oldLayout) => {
+    if (!hasInitialized) {
+      debugLog('layout 变更到达但尚未初始化，尝试 scheduleInitWhenVisible()')
+      nextTick(() => scheduleInitWhenVisible())
+      return
+    }
+    nextTick(() => ensureAllWidgetsRegistered())
+  },
   { deep: true }
 )
 
-// ---- 新增：监听列数变化，动态调整列并按比例缩放现有项，避免出现“>12列变成窄条”
+// 初始化 GridStack
+// ---- 新增：仅切换“可拖拽（isDraggable）”时，运行时更新，不重建实例
 watch(
-  () => props.config?.colNum,
-  (newCol, oldCol) => {
+  () => props.config?.isDraggable,
+  (newVal, oldVal) => {
     if (!grid) return
-    if (typeof newCol !== 'number' || newCol === oldCol) return
+    // 调试：打印传入的 isDraggable 新旧值，确认是否正常传递
+    debugLog('isDraggable 变更:', oldVal, '->', newVal)
+    if (newVal === oldVal) return
     try {
-      // 调试日志：打印列数变化
-      console.log(`[GridV2] 收到列数变更 colNum:`, oldCol, '->', newCol)
-
-      // 在调用 column API 之前应用对应列数的 CSS，避免 >12 时样式缺失或旧样式残留
-      applyColumnCss(Number(newCol))
-
-      // 策略调整：不按比例缩放(w/h)，而是保持每个 item 的格子数不变（用户期望：列数越小，每列越宽，item 越宽）
-      // 1) 先快照当前节点的 x/w，后续在新列数下恢复
-      const engineNodes = (grid as unknown as { engine?: { nodes?: GridStackNode[] } }).engine?.nodes ?? []
-      const prevNodes = engineNodes.map(n => ({
-        id: String(n.id),
-        x: typeof n.x === 'number' ? n.x : 0,
-        w: typeof n.w === 'number' ? n.w : 1,
-        el: n.el as GridItemHTMLElement | undefined
-      }))
-
-      // 2) 切换列数：使用 'move' 策略（不缩放 w/h），随后我们手动恢复快照以确保行为符合预期
-      isChangingColumns = true
-      grid.batchUpdate()
-      grid.column(Number(newCol), 'move')
-
-      // 3) 在新的列数范围下恢复各节点的 x/w（并进行边界裁剪）
-      const maxCol = Number(newCol)
-      prevNodes.forEach(p => {
-        const el = p.el ?? (gridEl.value?.querySelector(`#${CSS.escape(p.id)}`) as GridItemHTMLElement | null) ?? undefined
-        if (!el) return
-        const targetW = Math.max(1, Math.min(p.w, maxCol))
-        const targetX = Math.max(0, Math.min(p.x, maxCol - targetW))
-        grid!.update(el, { x: targetX, w: targetW })
-      })
-
-      grid.commit()
-
-      // 下一帧确保新增/变更的节点重新注册
-      nextTick(() => ensureAllWidgetsRegistered())
+      setGlobalDragEnabled(newVal !== false)
     } catch (err) {
-      // 兼容性兜底：若运行时调整失败，回退到重建实例
-      console.warn('[GridV2] 列数运行时调整失败，回退重建实例。错误：', err)
+      console.warn('[GridV2] 运行时切换可拖拽失败，重建实例。错误：', err)
       reinitGrid()
-    } finally {
-      // 结束列数切换批处理，恢复事件派发
-      isChangingColumns = false
     }
   }
 )
-
-// ---- 新增：监听行高变化，动态更新 cellHeight
+// ---- 新增：仅切换“可调整大小（isResizable）”时，运行时更新，不重建实例
+watch(
+  () => props.config?.isResizable,
+  (newVal, oldVal) => {
+    if (!grid) return
+    // 调试：打印传入的 isResizable 新旧值，确认是否正常传递
+    debugLog('isResizable 变更:', oldVal, '->', newVal)
+    if (newVal === oldVal) return
+    try {
+      setGlobalResizeEnabled(newVal !== false)
+    } catch (err) {
+      console.warn('[GridV2] 运行时切换可缩放失败，重建实例。错误：', err)
+      reinitGrid()
+    }
+  }
+)
+// ---- 监听列数变化，动态更新列并按比例缩放现有项，避免出现“>12列变成窄条”
+watch(
+  () => props.config?.colNum,
+  (newCol, oldCol) => {
+    const next = Number(newCol)
+    const prev = Number(oldCol)
+    if (!Number.isFinite(next)) return
+    // 若 grid 尚未初始化：先应用对应列数的动态样式，初始化后会按 options.column 生效
+    if (!grid) {
+      applyColumnCss(next)
+      return
+    }
+    setColumns(next, Number.isFinite(prev) ? prev : undefined)
+  }
+)
+// ---- 监听行高变化，动态更新 cellHeight
 watch(
   () => props.config?.rowHeight,
   (newHeight, oldHeight) => {
@@ -431,38 +618,66 @@ watch(
   }
 )
 
-// ---- 新增：监听间距变化（margin 变更），由于缺少官方运行时 API，采用重建实例以确保样式更新
+// ---- 监听间距变化（margin 变更）：改为通过 CSS 变量更新内容层内间距，避免重建实例
 watch(
   () => props.config?.margin,
   (newMargin, oldMargin) => {
-    if (!grid) return
     if (newMargin === oldMargin) return
-    reinitGrid()
+    // 1) 更新 CSS 变量，驱动视觉间距
+    applyContentGutterFromConfig()
+    // 2) 下一帧：测量与广播 resize，促使内部组件根据新可用高度自适应
+    nextTick(() => {
+      measureAndLogItemSizes('[margin change via CSS vars]')
+      window.dispatchEvent(new Event('resize'))
+    })
   },
   { deep: true }
 )
 
-// ---- 保留：监听影响交互的开关与只读模式，统一重建实例确保一致性
+// ---- 保留：监听影响交互的开关与只读模式，统一重建实例确保一致性（移除 isDraggable / isResizable，改为运行时切换）
 watch(
   () => ({
     readonly: props.readonly,
-    isDraggable: props.config?.isDraggable,
-    isResizable: props.config?.isResizable,
     staticGrid: props.config?.staticGrid
   }),
   () => {
     reinitGrid()
-  },
-  { deep: true }
+ },
+ { deep: true }
 )
 
 // 卸载：销毁 GridStack 实例
 onBeforeUnmount(() => {
+  try { visibilityObserver?.disconnect() } catch {}
+  visibilityObserver = null
   if (grid) {
-    grid.destroy(false) // 不销毁 DOM，由 Vue 处理
+    grid.destroy(false) // 不销毁 DOM，由 Vue 管理
     grid = null
   }
 })
+
+/**
+ * 调试测量：输出首个 grid item 与其内容容器的尺寸，便于定位“容器变小但内容未收缩”的问题
+ */
+function measureAndLogItemSizes(context?: string): void {
+  try {
+    const container = gridEl.value
+    if (!container) return
+    const item = container.querySelector<HTMLElement>('.grid-stack-item')
+    const content = container.querySelector<HTMLElement>('.grid-stack-item-content')
+    if (!item || !content) return
+    const itemRect = item.getBoundingClientRect()
+    const contentRect = content.getBoundingClientRect()
+    debugLog(
+      '尺寸检查', context ?? '',
+      'item: {h=', itemRect.height, ', w=', itemRect.width, '}',
+      'content: {h=', contentRect.height, ', w=', contentRect.width, '}',
+      'scrollH=', content.scrollHeight, 'clientH=', content.clientHeight
+    )
+  } catch (err) {
+    console.warn('[GridV2] measureAndLogItemSizes 异常：', err)
+  }
+}
 </script>
 
 <style scoped>
@@ -483,13 +698,13 @@ onBeforeUnmount(() => {
 }
 
 .grid-stack-item-content {
-  background-color: #18a05822;
-  border: 1px solid #18a058;
+  border: none;
   height: 100%;
-  padding: 6px;
+  /* 使用 CSS 变量控制内容层的水平/垂直内间距，默认 0 */
+  padding: var(--v-gap, 0px) var(--h-gap, 0px);
   display: flex;
   align-items: center;
-  gap: 8px;
+
 }
 
 .fallback {
@@ -497,5 +712,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 2px;
 }
+
 </style>
+
 
