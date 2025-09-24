@@ -10,7 +10,7 @@ import { $t } from '@/locales'
 import PanelLayout from '@/components/visual-editor/components/PanelLayout.vue'
 import { VisualEditorToolbar } from '@/components/visual-editor/components/toolbar'
 import WidgetLibrary from '@/components/visual-editor/components/WidgetLibrary/WidgetLibrary.vue'
-import { CanvasRenderer, GridstackRenderer } from '@/components/visual-editor/renderers'
+import { CanvasRenderer, FabricCanvasRenderer, GridstackRenderer } from '@/components/visual-editor/renderers'
 import { createEditor } from '@/components/visual-editor/hooks'
 import { ConfigurationPanel } from '@/components/visual-editor/configuration'
 import { usePreviewMode } from '@/components/visual-editor/hooks/usePreviewMode'
@@ -1131,10 +1131,10 @@ const refreshCard2Definitions = async () => {
 
         <!-- 渲染器区域 -->
         <div v-else class="renderer-main-area w-full relative" @click="handleCanvasClick">
-          <!-- Canvas 渲染器 -->
-          <CanvasRenderer
+          <!-- Fabric Canvas 渲染器 -->
+          <FabricCanvasRenderer
             v-if="currentRenderer === 'canvas' && dataFetched && !isUnmounted"
-            key="canvas-renderer-v2"
+            key="fabric-canvas-renderer-v2"
             :readonly="!isEditing"
             :show-widget-titles="showWidgetTitles"
             class="renderer-container"

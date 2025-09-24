@@ -60,6 +60,8 @@ const emit = defineEmits<GridLayoutPlusEmits>()
 // Grid 容器与实例（注意：不要用 ref 包装 grid 实例，避免 Proxy 干扰内部比较逻辑）
 const gridEl = ref<HTMLDivElement | null>(null)
 let grid: GridStack | null = null
+// 在列数切换时的内部标志：用于屏蔽 change 事件，避免父级更新造成的循环
+let isChangingColumns = false
 
 // 统一获取条目唯一 ID：支持 idKey 自定义（默认 'i'）
 const idKey = computed<string>(() => (props.idKey && props.idKey.length > 0 ? props.idKey : 'i'))
@@ -99,6 +101,8 @@ let lastIds = new Set<string>()
 
 // 将 GridStack 变更同步回 layout，并按协议透出事件
 function handleChange(_event: Event, changed: GridStackNode[] | undefined): void {
+  // 若正处于列数切换的批处理阶段，临时屏蔽 change 事件，避免外部双向绑定引发“死循环”
+  if (isChangingColumns) return
   if (!changed || changed.length === 0) return
 
   // 基于当前 props.layout 生成新的布局（不可直接修改 props，需拷贝）
@@ -184,49 +188,122 @@ function createOptionsFromProps(): (GridStackOptions & { margin?: number | strin
   return options
 }
 
-// ---- 新增：在配置变化时，安全地重建 GridStack 实例并重新注册所有节点
-// ---- 新增：按需为 >12 列生成运行时样式，避免缺少 gridstack-extra.css 对应规则导致的“窄条”
-// gridstack-extra.css 仅内置 [2-11] 的 data-gs-x / data-gs-width 等规则；当列数超过 12 时，需要动态生成 CSS
-// 参考官方/社区讨论结论：超过内置列数需自定义生成 CSS 规则，否则宽度/left 无法正确计算
-// 这里在运行时为当前列数 colNum 生成 1..colNum 的百分比规则，精度保留 6 位小数，避免累计误差
-const injectedColCss = new Set<number>()
-function injectColumnCssIfNeeded(colNum: number): void {
-  // 仅当列数 > 12 时需要注入（2-11 已由 gridstack-extra.css 提供；12 由核心样式/计算支持）
-  if (!Number.isFinite(colNum) || colNum <= 12) return
-  if (injectedColCss.has(colNum)) return
+// ---- 工具与封装：日志、节点快照与列切换（替代旧的按需注入CSS实现）
+interface NodeSnapshot {
+  id: string
+  x: number
+  w: number
+  el?: GridItemHTMLElement
+}
 
-  const styleId = `gridstack-dynamic-cols-${colNum}`
-  if (document.getElementById(styleId)) {
-    injectedColCss.add(colNum)
-    return
+/** 统一调试输出，便于控制台筛选 */
+function debugLog(...args: unknown[]): void {
+  console.debug('[GridV2]', ...args)
+}
+
+/** 从 Grid 引擎快照当前所有节点的 x/w（保留 el 引用） */
+function snapshotNodes(): NodeSnapshot[] {
+  if (!grid) return []
+  const engineNodes = (grid as unknown as { engine?: { nodes?: GridStackNode[] } }).engine?.nodes ?? []
+  return engineNodes.map(n => ({
+    id: String(n.id),
+    x: typeof n.x === 'number' ? n.x : 0,
+    w: typeof n.w === 'number' ? n.w : 1,
+    el: n.el as GridItemHTMLElement | undefined
+  }))
+}
+
+/** 在给定列数范围内恢复节点位置与宽度（自动裁剪边界） */
+function restoreNodesWithinColumns(snapshots: NodeSnapshot[], maxCol: number): void {
+  if (!grid) return
+  snapshots.forEach(p => {
+    const el = p.el ?? (gridEl.value?.querySelector(`#${CSS.escape(p.id)}`) as GridItemHTMLElement | null) ?? undefined
+    if (!el) return
+    const targetW = Math.max(1, Math.min(p.w, maxCol))
+    const targetX = Math.max(0, Math.min(p.x, maxCol - targetW))
+    grid!.update(el, { x: targetX, w: targetW })
+  })
+}
+
+/**
+ * 封装列切换逻辑：
+ * - 应用列 CSS
+ * - 快照节点
+ * - 批处理内调用 grid.column(newCol, 'move')
+ * - 恢复快照并裁剪
+ * - 提交与重新注册
+ */
+function setColumns(newCol: number, oldCol?: number): void {
+  if (!grid) return
+  if (!Number.isFinite(newCol)) return
+  if (typeof oldCol === 'number' && oldCol === newCol) return
+  try {
+    debugLog('收到列数变更 colNum:', oldCol, '->', newCol)
+    // 先应用对应列数的 CSS，避免 >12 时样式缺失或旧样式残留
+    applyColumnCss(newCol)
+
+    // 快照 -> 切换列数（不缩放）-> 恢复 -> 提交
+    const snaps = snapshotNodes()
+
+    isChangingColumns = true
+    grid!.batchUpdate()
+    grid!.column(Number(newCol), 'move')
+    restoreNodesWithinColumns(snaps, Number(newCol))
+    grid!.commit()
+
+    nextTick(() => ensureAllWidgetsRegistered())
+  } catch (err) {
+    console.warn('[GridV2] 列数运行时调整失败，回退重建实例。错误：', err)
+    reinitGrid()
+  } finally {
+    isChangingColumns = false
   }
+}
 
+// ---- 新增：在配置变化时，安全地重建 GridStack 实例并重新注册所有节点
+// ---- 新增（修复）：仅维护一个“当前列数”的动态样式节点，避免旧列样式残留覆盖，确保可在大/小列数间自由切换
+// 说明：gridstack-extra.css 内置的是小列数规则（2-11），当列数 > 12 时需要我们动态生成 CSS 以实现百分比宽度/left
+let activeColStyleEl: HTMLStyleElement | null = null
+let activeColForCss: number | null = null
+function applyColumnCss(colNum: number): void {
+  // 非数字直接忽略
+  if (!Number.isFinite(colNum)) return
+
+  // 清理历史上注入过的动态样式（包括旧版本的 gridstack-dynamic-cols-*）以避免覆盖顺序问题
+  document
+    .querySelectorAll('style#gridstack-dynamic-cols-active, style[id^="gridstack-dynamic-cols-"]')
+    .forEach((el) => el.parentElement?.removeChild(el))
+  activeColStyleEl = null
+  activeColForCss = null
+
+  // 统一为任意列数生成规则（不再依赖 gridstack-extra.css 的 data-gs-* 选择器）
   const precision = 6
   const rules: string[] = []
-  // 生成 width / left / min-width / max-width 规则，覆盖 1..colNum
   for (let i = 1; i <= colNum; i++) {
     const pct = (i * 100 / colNum).toFixed(precision)
-    rules.push(`.grid-stack > .grid-stack-item[data-gs-width='${i}']{width:${pct}%;}`)
+    rules.push(`.grid-stack > .grid-stack-item[gs-w='${i}']{width:${pct}%;}`)
   }
   for (let i = 1; i <= colNum; i++) {
     const pct = (i * 100 / colNum).toFixed(precision)
-    rules.push(`.grid-stack > .grid-stack-item[data-gs-x='${i}']{left:${pct}%;}`)
+    rules.push(`.grid-stack > .grid-stack-item[gs-x='${i}']{left:${pct}%;}`)
   }
   for (let i = 1; i <= colNum; i++) {
     const pct = (i * 100 / colNum).toFixed(precision)
-    rules.push(`.grid-stack > .grid-stack-item.grid-stack-item[data-gs-min-width='${i}']{min-width:${pct}%;}`)
+    rules.push(`.grid-stack > .grid-stack-item.grid-stack-item[gs-min-w='${i}']{min-width:${pct}%;}`)
   }
   for (let i = 1; i <= colNum; i++) {
     const pct = (i * 100 / colNum).toFixed(precision)
-    rules.push(`.grid-stack > .grid-stack-item.grid-stack-item[data-gs-max-width='${i}']{max-width:${pct}%;}`)
+    rules.push(`.grid-stack > .grid-stack-item.grid-stack-item[gs-max-w='${i}']{max-width:${pct}%;}`)
   }
 
-  const styleEl = document.createElement('style')
-  styleEl.id = styleId
-  styleEl.type = 'text/css'
-  styleEl.textContent = rules.join('\n')
-  document.head.appendChild(styleEl)
-  injectedColCss.add(colNum)
+  // 创建或更新单一样式节点，并确保其位于 <head> 末尾，从而拥有最高优先级
+  activeColStyleEl = document.createElement('style')
+  activeColStyleEl.id = 'gridstack-dynamic-cols-active'
+  activeColStyleEl.type = 'text/css'
+  activeColStyleEl.textContent = rules.join('\n')
+  document.head.appendChild(activeColStyleEl)
+  activeColForCss = colNum
+  console.debug(`[GridV2] 应用动态列样式: colNum=`, colNum)
 }
 
 function reinitGrid(): void {
@@ -239,9 +316,12 @@ function reinitGrid(): void {
   // 基于最新 props 生成初始化参数
   const options = createOptionsFromProps()
 
-  // 在初始化前，若列数 > 12，动态注入对应 CSS 规则，避免出现“窄条”
+  // 在初始化前，统一按当前列数生成 [gs-*] 百分比规则，避免小/大列数切换残留
   const col = Number(options.column || 12)
-  injectColumnCssIfNeeded(col)
+  applyColumnCss(col)
+
+  // 调试日志：重建实例时的列数
+  console.log(`[GridV2] reinitGrid: 使用列数=`, col)
 
   // 初始化实例（显式传入容器，避免多实例冲突）
   if (gridEl.value) {
@@ -271,6 +351,8 @@ function reinitGrid(): void {
 
 // 初始化 GridStack
 onMounted(() => {
+  // 调试日志：组件挂载时打印初始列数（若父级未传，则为默认 12）
+  console.log(`[GridV2] 初始 colNum=`, props.config?.colNum ?? 12)
   reinitGrid() // 首次挂载按当前 props 初始化
 })
 
@@ -288,15 +370,48 @@ watch(
     if (!grid) return
     if (typeof newCol !== 'number' || newCol === oldCol) return
     try {
-      // 在调用 column API 之前注入对应列数的 CSS，避免 >12 时样式缺失
-      injectColumnCssIfNeeded(Number(newCol))
-      // 使用 GridStack 的 column API，并开启按比例缩放（true）
-      grid.column(Number(newCol), true)
+      // 调试日志：打印列数变化
+      console.log(`[GridV2] 收到列数变更 colNum:`, oldCol, '->', newCol)
+
+      // 在调用 column API 之前应用对应列数的 CSS，避免 >12 时样式缺失或旧样式残留
+      applyColumnCss(Number(newCol))
+
+      // 策略调整：不按比例缩放(w/h)，而是保持每个 item 的格子数不变（用户期望：列数越小，每列越宽，item 越宽）
+      // 1) 先快照当前节点的 x/w，后续在新列数下恢复
+      const engineNodes = (grid as unknown as { engine?: { nodes?: GridStackNode[] } }).engine?.nodes ?? []
+      const prevNodes = engineNodes.map(n => ({
+        id: String(n.id),
+        x: typeof n.x === 'number' ? n.x : 0,
+        w: typeof n.w === 'number' ? n.w : 1,
+        el: n.el as GridItemHTMLElement | undefined
+      }))
+
+      // 2) 切换列数：使用 'move' 策略（不缩放 w/h），随后我们手动恢复快照以确保行为符合预期
+      isChangingColumns = true
+      grid.batchUpdate()
+      grid.column(Number(newCol), 'move')
+
+      // 3) 在新的列数范围下恢复各节点的 x/w（并进行边界裁剪）
+      const maxCol = Number(newCol)
+      prevNodes.forEach(p => {
+        const el = p.el ?? (gridEl.value?.querySelector(`#${CSS.escape(p.id)}`) as GridItemHTMLElement | null) ?? undefined
+        if (!el) return
+        const targetW = Math.max(1, Math.min(p.w, maxCol))
+        const targetX = Math.max(0, Math.min(p.x, maxCol - targetW))
+        grid!.update(el, { x: targetX, w: targetW })
+      })
+
+      grid.commit()
+
       // 下一帧确保新增/变更的节点重新注册
       nextTick(() => ensureAllWidgetsRegistered())
     } catch (err) {
       // 兼容性兜底：若运行时调整失败，回退到重建实例
+      console.warn('[GridV2] 列数运行时调整失败，回退重建实例。错误：', err)
       reinitGrid()
+    } finally {
+      // 结束列数切换批处理，恢复事件派发
+      isChangingColumns = false
     }
   }
 )
@@ -383,3 +498,4 @@ onBeforeUnmount(() => {
   gap: 2px;
 }
 </style>
+

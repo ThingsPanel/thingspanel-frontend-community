@@ -5,6 +5,7 @@
 
 // 核心 Canvas 渲染器组件
 export { default as CanvasRenderer } from '@/components/visual-editor/renderers/canvas/CanvasRenderer.vue'
+export { default as FabricCanvasRenderer } from '@/components/visual-editor/renderers/canvas/FabricCanvasRenderer.vue'
 export { default as FabricCanvasWrapper } from '@/components/visual-editor/renderers/canvas/FabricCanvasWrapper.vue'
 
 // Fabric.js 高级渲染器

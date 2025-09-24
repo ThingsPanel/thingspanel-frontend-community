@@ -4,7 +4,7 @@
  */
 
 // Canvas渲染器 (当前主要渲染器)
-export { CanvasRenderer } from '@/components/visual-editor/renderers/canvas'
+export { CanvasRenderer, FabricCanvasRenderer } from '@/components/visual-editor/renderers/canvas'
 
 // GridStack渲染器
 export { GridstackRenderer } from '@/components/visual-editor/renderers/gridstack'
