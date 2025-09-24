@@ -70,7 +70,7 @@ const canvasConfig = computed(() => ({
 }))
 
 const gridstackConfig = computed(() => ({
-  colNum: 12,
+  colNum: 24, // 🔥 修复：统一默认为24列
   rowHeight: 80,
   // 将默认边距从 [10,10] 调整为 [0,0]，默认无间距
   margin: [0, 0],

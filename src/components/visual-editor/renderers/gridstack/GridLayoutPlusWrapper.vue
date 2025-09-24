@@ -131,7 +131,7 @@ const contextMenu = ref<{
 
 const gridConfig = computed<GridLayoutPlusConfig>(() => {
   const config = {
-    colNum: 12,
+    colNum: 24, // 🔥 修复：统一默认为24列
     rowHeight: 80,
     // 默认无间距：从 [10, 10] 调整为 [0, 0]
     margin: [0, 0] as [number, number],
@@ -144,7 +144,7 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => {
     autoSize: false, // 🔥 禁用自动调整大小，让父容器处理滚动
     useCssTransforms: true,
     breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
-    cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
+    cols: { lg: 24, md: 20, sm: 12, xs: 8, xxs: 4 }, // 🔥 修复：调整断点列数以匹配24列基准
     useStyleCursor: true,
     restoreOnDrag: false,
     ...props.gridConfig

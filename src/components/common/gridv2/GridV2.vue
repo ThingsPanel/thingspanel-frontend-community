@@ -220,16 +220,32 @@ function ensureNewWidgetsRegistered(): void {
  */
 function createOptionsFromProps(): GridStackOptions {
   const config = props.config || {}
-  
+
+  debugLog('创建GridStack配置，输入config:', config)
+
+  // 🔥 修复：正确映射配置字段
+  const columnCount = Number(config.colNum) || 24 // 统一默认为24列
+  const rowHeightValue = Number(config.rowHeight) || 80 // 默认80px行高
+
+  // 🔥 修复：正确处理margin配置，支持[水平, 垂直]格式
+  let marginValue: string | number = 0
+  if (Array.isArray(config.margin)) {
+    // GridStack的margin可以是数字（统一间距）或字符串（"水平px 垂直px"）
+    const [horizontal = 0, vertical = 0] = config.margin
+    marginValue = horizontal === vertical ? horizontal : `${horizontal}px ${vertical}px`
+  } else if (typeof config.margin === 'number') {
+    marginValue = config.margin
+  }
+
   // 基础配置
   const options: GridStackOptions = {
     // 核心布局配置
-    column: Number(config.colNum) || 12,
-    cellHeight: Number(config.rowHeight) || 80,
-    
-    // 🔥 关键：使用简单的margin配置，避免复杂的CSS生成
-    margin: Array.isArray(config.margin) ? config.margin[0] || 0 : 0,
-    
+    column: columnCount,
+    cellHeight: rowHeightValue,
+
+    // 🔥 关键：正确处理margin配置
+    margin: marginValue,
+
     // 交互配置
     disableDrag: props.readonly || config.isDraggable === false,
     disableResize: props.readonly || config.isResizable === false,
@@ -271,7 +287,14 @@ function createOptionsFromProps(): GridStackOptions {
     oneColumnSize: 768 // 移动端单列阈值
   }
 
-  debugLog('GridStack初始化配置:', options)
+  debugLog('GridStack初始化配置:', {
+    column: options.column,
+    cellHeight: options.cellHeight,
+    margin: options.margin,
+    disableDrag: options.disableDrag,
+    disableResize: options.disableResize,
+    staticGrid: options.staticGrid
+  })
   return options
 }
 
@@ -317,29 +340,136 @@ function initGrid(): void {
   // 下一帧注册widgets
   nextTick(() => {
     ensureNewWidgetsRegistered()
+
+    // 🔥 关键修复：强制触发GridStack重新布局和样式计算
+    // 解决列数切换后视觉上没有变化的问题
+    setTimeout(() => {
+      if (grid) {
+        debugLog('强制触发GridStack重新布局，当前列数:', grid.getColumn())
+
+        // 方法1：触发resize事件强制重新计算
+        grid.batchUpdate(false) // 暂停批量更新
+        grid.compact() // 重新排列
+        grid.batchUpdate(true) // 恢复批量更新
+
+        // 方法2：强制触发窗口resize事件
+        window.dispatchEvent(new Event('resize'))
+
+        // 方法3：强制重新计算所有组件的CSS尺寸
+        const allItems = grid.getGridItems()
+        allItems.forEach((el: GridItemHTMLElement) => {
+          if (el.gridstackNode) {
+            // 强制重新设置组件的CSS属性
+            grid!.update(el, {
+              x: el.gridstackNode.x,
+              y: el.gridstackNode.y,
+              w: el.gridstackNode.w,
+              h: el.gridstackNode.h
+            })
+          }
+        })
+
+        // 方法4：直接检查和修复CSS问题
+        debugLog('检查GridStack CSS状态...')
+
+        // 检查grid-stack容器的CSS
+        const gridContainer = gridEl.value
+        if (gridContainer) {
+          const computedStyle = window.getComputedStyle(gridContainer)
+          debugLog('Grid容器CSS:', {
+            width: computedStyle.width,
+            height: computedStyle.height,
+            position: computedStyle.position,
+            display: computedStyle.display
+          })
+        }
+
+        // 检查每个组件的实际CSS
+        allItems.forEach((el: GridItemHTMLElement, index: number) => {
+          const computedStyle = window.getComputedStyle(el)
+          const node = el.gridstackNode
+          debugLog(`组件${index} CSS:`, {
+            id: node?.id,
+            gridPosition: `x:${node?.x}, y:${node?.y}, w:${node?.w}, h:${node?.h}`,
+            cssWidth: computedStyle.width,
+            cssHeight: computedStyle.height,
+            cssLeft: computedStyle.left,
+            cssTop: computedStyle.top,
+            transform: computedStyle.transform
+          })
+        })
+
+        debugLog('GridStack重新布局完成，更新了', allItems.length, '个组件')
+      }
+    }, 100) // 100ms延迟确保DOM完全渲染
+
     debugLog('GridStack初始化完成')
   })
 }
 
 /**
- * 🔥 关键修复：优化的列数切换
+ * 🔥 关键修复：安全的列数切换逻辑
+ * 解决切换列数时组件消失的问题
  */
 function updateColumns(newCol: number): void {
   if (!grid || !Number.isFinite(newCol)) return
-  
-  debugLog('更新列数:', newCol)
-  
+
+  debugLog('更新列数:', newCol, '当前布局:', props.layout)
+
   try {
-    // 使用GridStack内置的列切换，避免手动CSS操作
-    grid.column(newCol, 'moveScale')
-    
+    // 🔥 关键修复：检查现有组件是否会超出新的列数限制
+    const maxWidthInLayout = props.layout.length > 0
+      ? Math.max(...props.layout.map(item => item.x + item.w))
+      : 0
+    debugLog('布局中最大宽度:', maxWidthInLayout, '新列数:', newCol)
+
+    // 🔥 关键修复：GridStack的column()方法存在宽度计算bug
+    // 统一使用重新初始化策略，确保组件宽度正确计算
+    debugLog('⚠️ 检测到列数变更，使用重新初始化策略以确保组件宽度正确')
+
+    isInitialized = false
     nextTick(() => {
-      ensureNewWidgetsRegistered()
+      initGrid()
     })
   } catch (err) {
     console.warn('[GridV2] 列数切换失败，重新初始化:', err)
     isInitialized = false
     initGrid()
+  }
+}
+
+/**
+ * 🔥 新增：通用的配置更新函数
+ * 当行高、间距等配置变更时，需要重新初始化GridStack实例
+ */
+function updateGridConfig(): void {
+  if (!grid) return
+
+  debugLog('配置变更，重新初始化GridStack')
+
+  try {
+    // 配置变更需要重新初始化GridStack实例
+    const wasInitialized = isInitialized
+    isInitialized = false
+
+    // 销毁旧实例
+    grid.destroy(false)
+    grid = null
+
+    // 重新初始化
+    if (wasInitialized) {
+      nextTick(() => {
+        initGrid()
+      })
+    }
+  } catch (err) {
+    console.error('[GridV2] 配置更新失败:', err)
+    // 强制重新初始化
+    isInitialized = false
+    grid = null
+    nextTick(() => {
+      initGrid()
+    })
   }
 }
 
@@ -411,6 +541,31 @@ watch(
       updateColumns(Number(newCol))
     }
   }
+)
+
+// 🔥 新增：监听行高变化
+watch(
+  () => props.config?.rowHeight,
+  (newHeight, oldHeight) => {
+    if (newHeight !== oldHeight && newHeight && isInitialized) {
+      debugLog('行高变更，从', oldHeight, '到', newHeight)
+      updateGridConfig()
+    }
+  }
+)
+
+// 🔥 新增：监听间距变化
+watch(
+  () => props.config?.margin,
+  (newMargin, oldMargin) => {
+    // 深度比较数组
+    const marginChanged = JSON.stringify(newMargin) !== JSON.stringify(oldMargin)
+    if (marginChanged && isInitialized) {
+      debugLog('间距变更，从', oldMargin, '到', newMargin)
+      updateGridConfig()
+    }
+  },
+  { deep: true }
 )
 
 // 监听拖拽/缩放开关
