@@ -125,8 +125,10 @@ export interface ResizeOption {
 export interface GridLayoutPlusConfig {
   /** 列数 */
   colNum: number
-  /** 行高 */
+  /** 行高（像素），用于计算每行的高度 */
   rowHeight: number
+  /** 最小行数（可选）：用于控制容器初始/最小高度 = minRows * rowHeight */
+  minRows?: number
   /** 是否可拖拽 */
   isDraggable: boolean
   /** 是否可调整大小 */

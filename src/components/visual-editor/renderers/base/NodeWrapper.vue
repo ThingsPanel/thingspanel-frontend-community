@@ -127,21 +127,36 @@ const multiDataSourceConfig = computed(() => props.multiDataSourceConfig || {})
 const emit = defineEmits<Emits>()
 
 /**
- * 统一的事件处理函数：根据 eventStopPropagation 决定是否阻止事件冒泡。
+ * 🔥 优化的事件处理函数：确保GridStack拖拽流畅性
  * - 在 GridStack 集成场景下，允许整卡片区域的 mousedown 冒泡到 .grid-stack-item，触发拖拽
  * - 在 Canvas 集成场景下，默认阻止冒泡以防止被背景层捕获
+ * - 避免在拖拽过程中的不必要事件处理
  */
 const onMouseDown = (event: MouseEvent): void => {
-  if (props.eventStopPropagation !== false) {
-    event.stopPropagation()
+  // 🔥 关键修复：在GridStack环境下，优先保证拖拽流畅性
+  if (props.eventStopPropagation === false) {
+    // GridStack模式：不阻止冒泡，让GridStack处理拖拽
+    emit('node-mousedown', props.nodeId, event)
+    return
   }
+  
+  // Canvas模式：阻止冒泡，自行处理
+  event.stopPropagation()
   emit('node-mousedown', props.nodeId, event)
 }
 
 const onClick = (event: MouseEvent): void => {
-  if (props.eventStopPropagation !== false) {
-    event.stopPropagation()
+  // 🔥 关键修复：点击事件优化，避免干扰拖拽
+  if (props.eventStopPropagation === false) {
+    // GridStack模式：延迟处理点击，避免干扰拖拽
+    setTimeout(() => {
+      emit('node-click', props.nodeId, event)
+    }, 0)
+    return
   }
+  
+  // Canvas模式：立即处理
+  event.stopPropagation()
   emit('node-click', props.nodeId, event)
 }
 

@@ -4,5 +4,4 @@
  * - 暴露 GridV2 组件与必要类型（类型仍复用 gridLayoutPlusTypes）
  */
 export { default as GridV2 } from './GridV2.vue'
-export { default as GridstackExample } from './GridstackExample.vue'
 export type { GridLayoutPlusProps, GridLayoutPlusEmits, GridLayoutPlusItem, GridLayoutPlusConfig } from '@/components/common/grid/gridLayoutPlusTypes'
