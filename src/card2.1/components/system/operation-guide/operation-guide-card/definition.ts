@@ -7,7 +7,7 @@ import component from './component.vue'
  */
 export default {
   type: 'operation-guide-card',
-  name: 'widget-library.components.operationGuideCard',
+  name: 'components.operationGuideCard',
   description: '根据用户角色显示相应的操作指引列表，支持快速导航',
   icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/><path d="M9 11h6v2H9v-2zm0 4h4v2H9v-2z" fill="#fbbf24"/></svg>',
   component,

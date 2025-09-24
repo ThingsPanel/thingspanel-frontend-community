@@ -8,10 +8,10 @@ import { setupStore } from './store'
 import { router, setupRouter } from './router'
 import { i18n, setupI18n } from './locales'
 import { initEChartsComponents } from '@/utils/echarts/echarts-manager'
-// 导入 Card2.1 组件注册文件以启动组件注册和属性暴露系统
-import '@/card2.1/components'
-// 🔥 关键修复：确保组件系统在应用启动时初始化
-import { initializeComponents } from '@/card2.1/components'
+// 导入 Card2.1 组件注册文件以启动组件注册和属性暴露系统（使用统一入口）
+import '@/card2.1/index'
+// 🔥 关键修复：确保组件系统在应用启动时初始化（使用统一入口）
+import { initializeCard2System } from '@/card2.1/index'
 // 🔥 关键修复：确保 InteractionManager 在应用启动时被正确初始化
 import '@/card2.1/core/interaction-manager'
 // 🧹 导入localStorage清理工具
@@ -51,7 +51,7 @@ async function setupApp() {
   setupNProgress()
 
   // 🔥 关键修复：初始化 Card2.1 组件系统
-  initializeComponents()
+  initializeCard2System()
     .then(() => {
       // 组件系统初始化完成，通知所有监听器
       window.dispatchEvent(new CustomEvent('card2-system-ready'))

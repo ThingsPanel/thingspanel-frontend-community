@@ -287,26 +287,23 @@ export async function reloadComponents(): Promise<void> {
 }
 
 /**
- * 初始化 Card2.1 系统
- * useComponentTree 和其他 Hook 的统一初始化入口
+ * 初始化 Card2.1 系统（已弃用）
+ * 请使用 @/card2.1/index 的统一初始化入口
  */
 export async function initializeCard2System(): Promise<void> {
   console.warn('⚠️ [initializeCard2System] 此函数已弃用，请使用 @/card2.1/index 的统一初始化入口')
-  // 禁用：避免重复注册导致权限过滤失效
-  // await ensureInitialized()
-  // 禁用：避免重复注册
-  // const allComponents = autoRegistry.getAllComponents()
-  // allComponents.forEach(definition => {
-  //   ComponentRegistry.register(definition)
-  // })
+  // 完全禁用，避免与新系统冲突
+  return Promise.resolve()
 }
 
 /**
- * 手动初始化组件系统
- * 确保在使用前完成初始化
+ * 手动初始化组件系统（已弃用）
+ * 请使用 @/card2.1/index 的统一初始化入口
  */
 export async function initializeComponents(): Promise<void> {
-  await initializeCard2System()
+  console.warn('⚠️ [initializeComponents] 此函数已弃用，请使用 @/card2.1/index 的统一初始化入口')
+  // 完全禁用，避免与新系统冲突
+  return Promise.resolve()
 }
 
 // ============ 组件元数据统计 ============

@@ -36,7 +36,7 @@
       >
         <div class="tab-content">
           <div v-for="subCategory in topCategory.subCategories" :key="subCategory.name" class="widget-subcategory">
-            <h4 v-if="subCategory.name !== 'widget-library.subCategories.data'" class="subcategory-title">{{ getSubCategoryDisplayName(subCategory.name) }}</h4>
+            <h4 v-if="subCategory.name !== 'subCategories.data'" class="subcategory-title">{{ getSubCategoryDisplayName(subCategory.name) }}</h4>
             <div class="category-grid">
               <div
                 v-for="widget in subCategory.children"
@@ -127,8 +127,8 @@ const allWidgets = computed(() => {
       icon: component.icon,
       source: 'card2' as const,
       definition: {
-        mainCategory: component.mainCategory || 'widget-library.categories.chart', // 默认翻译键
-        subCategory: component.subCategory || 'widget-library.subCategories.data'     // 默认翻译键
+        mainCategory: component.mainCategory || 'categories.chart', // 默认翻译键
+        subCategory: component.subCategory || 'subCategories.data'     // 默认翻译键
       }
     }
   })
@@ -182,7 +182,7 @@ const simplifiedWidgetTree = computed(() => {
     const main = widget.definition?.mainCategory
     if (!main) return
     // 使用翻译键默认值
-    const sub = widget.definition?.subCategory || 'widget-library.subCategories.data'
+    const sub = widget.definition?.subCategory || 'subCategories.data'
 
     if (!map[main]) map[main] = {}
     if (!map[main][sub]) map[main][sub] = []

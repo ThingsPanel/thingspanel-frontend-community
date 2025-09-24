@@ -658,5 +658,6 @@
   "visualEditor.pollingStart": "启动轮询",
   "visualEditor.pollingPause": "暂停轮询",
   "visualEditor.pollingEnabled": "全局轮询已启用",
-  "visualEditor.pollingDisabled": "全局轮询已关闭"
+  "visualEditor.pollingDisabled": "全局轮询已关闭",
+  "visualEditor.ready": "V2 编辑器已就绪"
 }

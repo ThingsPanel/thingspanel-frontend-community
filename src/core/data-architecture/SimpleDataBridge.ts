@@ -163,21 +163,7 @@ export class SimpleDataBridge {
    * 实际的组件执行逻辑（从executeComponent中提取）
    */
   private async doExecuteComponent(requirement: ComponentDataRequirement, startTime: number, callerInfo: string): Promise<DataResult> {
-    // 🎯 用户要求的打印这几个字 - 调试：SimpleDataBridge接收到的配置
-    console.log(`🎯 用户要求的打印这几个字 - 调试：SimpleDataBridge接收到的配置`, {
-      componentId: requirement.componentId,
-      接收到的原始配置: requirement,
-      数据源配置数量: requirement.dataSources?.length || 0,
-      数据源配置列表: requirement.dataSources || [],
-      调用来源: callerInfo,
-      每个数据源详情: requirement.dataSources?.map(ds => ({
-        数据源ID: ds.id,
-        数据源类型: ds.type,
-        配置内容: ds.config,
-        是否有配置: !!ds.config,
-        配置对象键: ds.config ? Object.keys(ds.config) : []
-      })) || []
-    })
+    // 🔥 移除循环打印日志，避免200+组件场景下的性能问题
 
     try {
       // 🆕 检查缓存数据，但需要验证配置是否已更新

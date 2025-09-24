@@ -363,52 +363,89 @@ class InteractionManager {
   }
 
   /**
-   * 🔥 重构：通知组件属性更新 - 使用正确的数据源触发架构
+   * 🔥 关键修复：防循环的组件属性更新通知机制
    * 用于跨组件属性绑定，将一个组件的属性变更传递给另一个组件
    */
+  private notificationInProgress = new Set<string>()
+  private notificationDebounce = new Map<string, NodeJS.Timeout>()
+
   notifyPropertyUpdate(componentId: string, propertyPath: string, newValue: any, oldValue?: any): void {
-    console.log(`🔥🔥🔥 [InteractionManager] notifyPropertyUpdate被调用:`, {
-      componentId,
-      propertyPath,
-      newValue,
-      oldValue,
-      当前映射数量: this.httpDataSourceMappings.size,
-      所有映射键: Array.from(this.httpDataSourceMappings.keys()),
-      组件是否注册: this.hasComponent(componentId)
-    })
-
-    // 🚀 架构修复：通过更新数据源配置来触发执行器，而不是直接刷新
-    this.triggerDataSourceConfigUpdateForPropertyChange(componentId, propertyPath, newValue, oldValue)
-
-    // 通过 DOM 事件通知组件属性更新
-    const targetElement = document.querySelector(`[data-component-id="${componentId}"]`)
-
-    if (targetElement) {
-      const propertyUpdateEvent = new CustomEvent('componentPropertyUpdate', {
-        detail: {
-          componentId,
-          propertyPath,
-          value: newValue,
-          oldValue,
-          timestamp: Date.now()
-        },
-        bubbles: true
-      })
-
-      targetElement.dispatchEvent(propertyUpdateEvent)
+    // 🔥 关键修复1：防止递归通知
+    const notificationKey = `${componentId}:${propertyPath}:${JSON.stringify(newValue)}`
+    if (this.notificationInProgress.has(notificationKey)) {
+      console.log(`🔥 [InteractionManager] 跳过递归通知 ${componentId}:${propertyPath}`)
+      return
     }
-    // 同时触发交互系统的 dataChange 事件
-    this.triggerEvent(componentId, 'dataChange', {
-      property: propertyPath,
-      newValue,
-      oldValue,
-      timestamp: Date.now()
-    })
+
+    // 🔥 关键修复2：防抖处理，避免同一属性的频繁更新
+    const debounceKey = `${componentId}:${propertyPath}`
+    if (this.notificationDebounce.has(debounceKey)) {
+      clearTimeout(this.notificationDebounce.get(debounceKey)!)
+    }
+
+    this.notificationDebounce.set(debounceKey, setTimeout(() => {
+      this.notificationInProgress.add(notificationKey)
+
+      try {
+        // 🔥 性能优化：只在开发模式下输出详细日志
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔥🔥🔥 [InteractionManager] notifyPropertyUpdate被调用:`, {
+            componentId,
+            propertyPath,
+            newValue,
+            oldValue,
+            当前映射数量: this.httpDataSourceMappings.size,
+            防重复通知: true
+          })
+        }
+
+        // 🚀 架构修复：通过更新数据源配置来触发执行器，而不是直接刷新
+        this.triggerDataSourceConfigUpdateForPropertyChange(componentId, propertyPath, newValue, oldValue)
+
+        // 通过 DOM 事件通知组件属性更新（异步处理，避免阻塞）
+        setTimeout(() => {
+          const targetElement = document.querySelector(`[data-component-id="${componentId}"]`)
+
+          if (targetElement) {
+            const propertyUpdateEvent = new CustomEvent('componentPropertyUpdate', {
+              detail: {
+                componentId,
+                propertyPath,
+                value: newValue,
+                oldValue,
+                timestamp: Date.now(),
+                source: 'interaction-manager'
+              },
+              bubbles: true
+            })
+
+            targetElement.dispatchEvent(propertyUpdateEvent)
+          }
+        }, 50)
+
+        // 异步触发交互系统的 dataChange 事件
+        setTimeout(() => {
+          this.triggerEvent(componentId, 'dataChange', {
+            property: propertyPath,
+            newValue,
+            oldValue,
+            timestamp: Date.now()
+          })
+        }, 100)
+      } finally {
+        // 清理状态
+        setTimeout(() => {
+          this.notificationInProgress.delete(notificationKey)
+        }, 1000) // 1秒后清理，避免短期内的重复通知
+
+        this.notificationDebounce.delete(debounceKey)
+      }
+    }, 100)) // 100ms防抖延迟
   }
 
   /**
-   * 🔥 新增：批量属性更新
-   * 一次性更新组件的多个属性
+   * 🔥 关键修复：防循环的批量属性更新
+   * 一次性更新组件的多个属性，避免多次循环调用
    */
   batchPropertyUpdate(
     componentId: string,
@@ -418,26 +455,65 @@ class InteractionManager {
       oldValue?: any
     }>
   ): void {
-    const targetElement = document.querySelector(`[data-component-id="${componentId}"]`)
+    if (propertyUpdates.length === 0) return
 
-    if (targetElement) {
-      // 发送批量更新事件
-      const batchUpdateEvent = new CustomEvent('componentBatchPropertyUpdate', {
-        detail: {
-          componentId,
-          updates: propertyUpdates,
-          timestamp: Date.now()
-        },
-        bubbles: true
-      })
+    // 🔥 关键修复：批量处理，避免单个属性的递归调用
+    const batchKey = `batch-${componentId}-${Date.now()}`
 
-      targetElement.dispatchEvent(batchUpdateEvent)
+    console.log(`🔥 [InteractionManager] 批量属性更新:`, {
+      componentId,
+      updateCount: propertyUpdates.length,
+      batchKey,
+      properties: propertyUpdates.map(u => u.propertyPath)
+    })
 
-      // 同时发送单个更新事件（向后兼容）
-      propertyUpdates.forEach(update => {
-        this.notifyPropertyUpdate(componentId, update.propertyPath, update.newValue, update.oldValue)
-      })
-    }
+    // 批量处理数据源配置更新
+    propertyUpdates.forEach(update => {
+      this.triggerDataSourceConfigUpdateForPropertyChange(
+        componentId,
+        update.propertyPath,
+        update.newValue,
+        update.oldValue
+      )
+    })
+
+    // 异步发送批量更新事件，避免阻塞
+    setTimeout(() => {
+      const targetElement = document.querySelector(`[data-component-id="${componentId}"]`)
+
+      if (targetElement) {
+        // 发送批量更新事件
+        const batchUpdateEvent = new CustomEvent('componentBatchPropertyUpdate', {
+          detail: {
+            componentId,
+            updates: propertyUpdates,
+            timestamp: Date.now(),
+            batchKey
+          },
+          bubbles: true
+        })
+
+        targetElement.dispatchEvent(batchUpdateEvent)
+
+        // 🔥 关键修复：不再调用单个notifyPropertyUpdate，避免递归
+        // 直接发送单个事件，但不触发额外处理
+        propertyUpdates.forEach(update => {
+          const individualEvent = new CustomEvent('componentPropertyUpdate', {
+            detail: {
+              componentId,
+              propertyPath: update.propertyPath,
+              value: update.newValue,
+              oldValue: update.oldValue,
+              timestamp: Date.now(),
+              source: 'batch-update',
+              batchKey
+            },
+            bubbles: true
+          })
+          targetElement.dispatchEvent(individualEvent)
+        })
+      }
+    }, 50)
   }
 
   /**

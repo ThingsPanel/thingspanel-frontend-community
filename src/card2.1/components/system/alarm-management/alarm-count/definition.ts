@@ -7,7 +7,7 @@ import component from './component.vue';
  */
 export default {
   type: 'alarm-count',
-  name: 'widget-library.components.alarmCount',
+  name: 'components.alarmCount',
   description: '提供告警管理功能的快速入口，包括查看告警、配置规则等交互功能',
   icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-1.1 0-2 .9-2 2v.17c-2.1.4-3.5 2.24-3.5 4.83v4l-2 2v1h15v-1l-2-2V9c0-2.59-1.4-4.43-3.5-4.83V4c0-1.1-.9-2-2-2zm-1 17h2c0 1.1-.9 2-2 2s-2-.9-2-2z"/></svg>',
   component,

@@ -39,6 +39,8 @@ import { NAlert } from 'naive-ui'
 import { useComponentTree as useCard2Integration } from '@/card2.1/hooks/useComponentTree'
 import { useCard2Props } from '@/card2.1/hooks/useCard2Props'
 import { usePreviewMode } from '@/components/visual-editor/hooks/usePreviewMode'
+// 🔥 导入循环保护管理器
+import { loopProtectionManager } from '@/utils/LoopProtectionManager'
 import type {
   InteractionConfig,
   InteractionEventType,
@@ -92,34 +94,31 @@ const componentExecutorRegistry = inject('componentExecutorRegistry', null) as M
 // 🔥 预览模式检测
 const { isPreviewMode } = usePreviewMode()
 
-// 🔥 核心修复：从DataWarehouse获取数据源执行结果（响应式）
+// 🔥 关键修复：性能优化的数据源获取 - 解决200+组件的频繁计算问题
+let lastDataHash = ''
+let cachedWarehouseData = {}
+let dataFetchDebounce: NodeJS.Timeout | null = null
+
 const componentDataFromWarehouse = computed(() => {
   try {
     // 🔥 响应式依赖：DataWarehouse内置的响应式通知机制
     const warehouseData = dataWarehouse.getComponentData(props.nodeId)
 
-    console.log(`🔥 [Card2Wrapper] 从DataWarehouse获取数据 ${props.nodeId}:`, {
-      hasData: !!warehouseData,
-      dataType: typeof warehouseData,
-      data: warehouseData,
-      dataKeys: warehouseData ? Object.keys(warehouseData) : [],
-      isEmpty: !warehouseData || Object.keys(warehouseData).length === 0,
-      // 🔥 详细调试：检查DataWarehouse存储状态
-      warehouseStats: dataWarehouse.getStorageStats()
-    })
+    // 🔥 性能优化：检查数据是否真的变化，避免无效重新计算
+    const currentDataHash = JSON.stringify(warehouseData)
+    if (currentDataHash === lastDataHash) {
+      // 数据未变化，返回缓存结果，减少日志输出
+      return cachedWarehouseData
+    }
 
-    // 🎯 用户要求的打印这几个字 - 阶段3：Card2Wrapper从DataWarehouse获取数据
-    console.log(`🎯 用户要求的打印这几个字 - 阶段3：Card2Wrapper从DataWarehouse获取数据`, {
-      componentId: props.nodeId,
-      是否有数据: !!warehouseData,
-      数据类型: typeof warehouseData,
-      从DataWarehouse获取的原始数据: warehouseData,
-      数据源数量: warehouseData ? Object.keys(warehouseData).length : 0,
-      数据源列表: warehouseData ? Object.keys(warehouseData) : [],
-      准备传给useCard2Props的数据: warehouseData || {}
-    })
+    // 数据有变化，更新缓存
+    lastDataHash = currentDataHash
+    cachedWarehouseData = warehouseData || {}
 
-    return warehouseData || {}
+    // 🔥 完全移除开发模式日志，避免在200+组件场景下的性能问题和循环打印
+    // 计算属性中的任何日志都可能在大规模组件场景下导致性能问题
+
+    return cachedWarehouseData
   } catch (error) {
     console.error(`❌ [Card2Wrapper] 获取DataWarehouse数据失败 ${props.nodeId}:`, error)
     return {}
@@ -828,60 +827,111 @@ const checkExpressionCondition = (currentValue: any, expression: string): boolea
 // ================== 组件执行器 ==================
 
 /**
- * 🔥 组件数据源执行器函数
+ * 🔥 关键修复：防循环的组件数据源执行器
  * 这是注册到 componentExecutorRegistry 的核心函数
  */
+let executionInProgress = false
+let lastExecutionConfig = ''
+let executionDebounce: NodeJS.Timeout | null = null
+
 const executeComponentDataSource = async (): Promise<void> => {
-  try {
-    // 🎯 用户要求的打印这几个字 - 阶段0：Card2Wrapper组件执行器被调用
-    console.log(`🎯 用户要求的打印这几个字 - 阶段0：Card2Wrapper组件执行器被调用`, {
-      componentId: props.nodeId,
-      componentType: props.componentType,
-      触发方式: '通过componentExecutorRegistry注册的执行器'
-    })
+  // 🔥 循环保护：检查是否应该允许这次执行
+  const callId = loopProtectionManager.markCallStart(
+    'Card2Wrapper.executeComponentDataSource',
+    props.nodeId,
+    'data-source-execution'
+  )
 
-    // 获取当前组件的数据源配置
-    const latestConfig = configurationManager.getConfiguration(props.nodeId)
-    const dataSourceConfig = latestConfig?.dataSource
-
-    if (!dataSourceConfig) {
-      console.log(`🔥 [Card2Wrapper] 组件 ${props.nodeId} 没有数据源配置，跳过执行`)
-      return
-    }
-
-    console.log(`🔥 [Card2Wrapper] 开始执行数据源:`, {
-      componentId: props.nodeId,
-      componentType: props.componentType,
-      dataSourceConfig
-    })
-
-    // 🔥 使用 VisualEditorBridge 执行数据源
-    const { getVisualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
-    const visualEditorBridge = getVisualEditorBridge()
-
-    // 清除缓存确保获取最新数据
-    simpleDataBridge.clearComponentCache(props.nodeId)
-
-    // 执行数据源
-    const result = await visualEditorBridge.updateComponentExecutor(
-      props.nodeId,
-      props.componentType,
-      dataSourceConfig
-    )
-
-    console.log(`✅ [Card2Wrapper] 数据源执行完成 ${props.nodeId}:`, result)
-
-    // 🔥 响应式更新：DataWarehouse已自动触发响应式通知，无需手动刷新
-    console.log(`🎯 用户要求的打印这几个字 - 阶段1：数据源执行完成，等待DataWarehouse响应式更新`, {
-      componentId: props.nodeId,
-      执行结果: result.success,
-      数据内容: result.data
-    })
-
-  } catch (error) {
-    console.error(`❌ [Card2Wrapper] 数据源执行失败 ${props.nodeId}:`, error)
-    throw error
+  if (!callId) {
+    console.warn(`🚫 [Card2Wrapper] 数据源执行被循环保护阻止: ${props.nodeId}`)
+    return
   }
+
+  // 🔥 关键修复1：防止并发执行和递归调用
+  if (executionInProgress) {
+    loopProtectionManager.markCallEnd(callId, 'Card2Wrapper.executeComponentDataSource', props.nodeId)
+    console.log(`🔥 [Card2Wrapper] 跳过并发执行 ${props.nodeId}`)
+    return
+  }
+
+  // 🔥 关键修复2：防抖处理，避免频繁触发
+  if (executionDebounce) {
+    clearTimeout(executionDebounce)
+  }
+
+  return new Promise((resolve) => {
+    executionDebounce = setTimeout(async () => {
+      if (executionInProgress) {
+        resolve()
+        return
+      }
+
+      executionInProgress = true
+      try {
+        // 获取当前组件的数据源配置
+        const latestConfig = configurationManager.getConfiguration(props.nodeId)
+        const dataSourceConfig = latestConfig?.dataSource
+
+        if (!dataSourceConfig) {
+          resolve()
+          return
+        }
+
+        // 🔥 关键修复3：检查配置是否真的变化，避免重复执行
+        const currentConfigHash = JSON.stringify(dataSourceConfig)
+        if (currentConfigHash === lastExecutionConfig) {
+          console.log(`🔥 [Card2Wrapper] 配置未变化，跳过重复执行 ${props.nodeId}`)
+          resolve()
+          return
+        }
+
+        // 更新配置哈希
+        lastExecutionConfig = currentConfigHash
+
+        // 🎯 用户要求的打印这几个字 - 阶段0：Card2Wrapper组件执行器被调用
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🎯 用户要求的打印这几个字 - 阶段0：Card2Wrapper组件执行器被调用`, {
+            componentId: props.nodeId,
+            componentType: props.componentType,
+            触发方式: '通过componentExecutorRegistry注册的执行器',
+            防重复执行: true
+          })
+        }
+
+        // 🔥 使用 VisualEditorBridge 执行数据源
+        const { getVisualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
+        const visualEditorBridge = getVisualEditorBridge()
+
+        // 清除缓存确保获取最新数据
+        simpleDataBridge.clearComponentCache(props.nodeId)
+
+        // 执行数据源
+        const result = await visualEditorBridge.updateComponentExecutor(
+          props.nodeId,
+          props.componentType,
+          dataSourceConfig
+        )
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🎯 用户要求的打印这几个字 - 阶段1：数据源执行完成，等待DataWarehouse响应式更新`, {
+            componentId: props.nodeId,
+            执行结果: result.success,
+            数据内容: result.data
+          })
+        }
+
+        resolve()
+      } catch (error) {
+        console.error(`❌ [Card2Wrapper] 数据源执行失败 ${props.nodeId}:`, error)
+        resolve() // 即使失败也要resolve，避免阻塞
+      } finally {
+        executionInProgress = false
+        executionDebounce = null
+        // 🔥 循环保护：标记调用结束
+        loopProtectionManager.markCallEnd(callId, 'Card2Wrapper.executeComponentDataSource', props.nodeId)
+      }
+    }, 300) // 300ms防抖延迟，适应大量组件场景
+  })
 }
 
 // ================== 生命周期 ==================

@@ -7,7 +7,7 @@ import component from './component.vue';
  */
 export default {
   type: 'off-line',
-  name: 'widget-library.components.offLine', // 存储翻译键，而不是调用$t()
+  name: 'components.offLine', // 存储翻译键，而不是调用$t()
   description: '显示当前离线的设备数量',
   // 修复：SVG path `d` 属性包含非法的数字分隔（例如 `10-10 2`），导致浏览器解析错误。
   // 解决：替换为合法的 Material 图标路径，并保留红色状态圆点。

@@ -22,7 +22,7 @@ export interface CategoryConfig {
 export const TOP_LEVEL_MAPPING: Record<'system' | 'chart', CategoryConfig> = {
   system: {
     displayName: '系统',
-    displayNameKey: 'widget-library.categories.system',
+    displayNameKey: 'categories.system',
     order: 1,
     enabled: true,
     icon: 'settings',
@@ -30,7 +30,7 @@ export const TOP_LEVEL_MAPPING: Record<'system' | 'chart', CategoryConfig> = {
   },
   chart: {
     displayName: '图表',
-    displayNameKey: 'widget-library.categories.chart',
+    displayNameKey: 'categories.chart',
     order: 2,
     enabled: true,
     icon: 'chart',
@@ -42,7 +42,7 @@ export const TOP_LEVEL_MAPPING: Record<'system' | 'chart', CategoryConfig> = {
 export const SYSTEM_CATEGORY_MAPPING: Record<string, CategoryConfig> = {
   'alarm-management': {
     displayName: '告警管理',
-    displayNameKey: 'widget-library.subCategories.alarmManagement',
+    displayNameKey: 'subCategories.alarmManagement',
     order: 10,
     enabled: true,
     icon: 'warning',
@@ -50,7 +50,7 @@ export const SYSTEM_CATEGORY_MAPPING: Record<string, CategoryConfig> = {
   },
   'data-information': {
     displayName: '数据信息',
-    displayNameKey: 'widget-library.subCategories.dataInformation',
+    displayNameKey: 'subCategories.dataInformation',
     order: 20,
     enabled: true,
     icon: 'info-circle',
@@ -58,7 +58,7 @@ export const SYSTEM_CATEGORY_MAPPING: Record<string, CategoryConfig> = {
   },
   'device-status': {
     displayName: '设备状态',
-    displayNameKey: 'widget-library.subCategories.deviceStatus',
+    displayNameKey: 'subCategories.deviceStatus',
     order: 30,
     enabled: true,
     icon: 'device',
@@ -66,7 +66,7 @@ export const SYSTEM_CATEGORY_MAPPING: Record<string, CategoryConfig> = {
   },
   'operation-guide': {
     displayName: '操作指引',
-    displayNameKey: 'widget-library.subCategories.operationGuide',
+    displayNameKey: 'subCategories.operationGuide',
     order: 40,
     enabled: true,
     icon: 'compass-outline',
@@ -74,7 +74,7 @@ export const SYSTEM_CATEGORY_MAPPING: Record<string, CategoryConfig> = {
   },
   'system-monitoring': {
     displayName: '系统监控',
-    displayNameKey: 'widget-library.subCategories.systemMonitoring',
+    displayNameKey: 'subCategories.systemMonitoring',
     order: 50,
     enabled: true,
     icon: 'monitor',
@@ -82,7 +82,7 @@ export const SYSTEM_CATEGORY_MAPPING: Record<string, CategoryConfig> = {
   },
   'tenant-app': {
     displayName: '租户应用',
-    displayNameKey: 'widget-library.subCategories.tenantApp',
+    displayNameKey: 'subCategories.tenantApp',
     order: 60,
     enabled: true,
     icon: 'app',
@@ -90,7 +90,7 @@ export const SYSTEM_CATEGORY_MAPPING: Record<string, CategoryConfig> = {
   },
   'tenant-management': {
     displayName: '租户管理',
-    displayNameKey: 'widget-library.subCategories.tenantManagement',
+    displayNameKey: 'subCategories.tenantManagement',
     order: 70,
     enabled: true,
     icon: 'users',
@@ -98,7 +98,7 @@ export const SYSTEM_CATEGORY_MAPPING: Record<string, CategoryConfig> = {
   },
   'user-behavior': {
     displayName: '用户行为',
-    displayNameKey: 'widget-library.subCategories.userBehavior',
+    displayNameKey: 'subCategories.userBehavior',
     order: 80,
     enabled: true,
     icon: 'user',

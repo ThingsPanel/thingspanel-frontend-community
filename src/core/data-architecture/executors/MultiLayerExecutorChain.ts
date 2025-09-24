@@ -104,22 +104,7 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
     // 🔥 设置DataItemFetcher的组件上下文
     this.dataItemFetcher.setCurrentComponentId(config.componentId)
 
-    // 🎯 用户要求的打印这几个字 - 调试：MultiLayerExecutorChain开始执行
-    console.log(`🎯 用户要求的打印这几个字 - 调试：MultiLayerExecutorChain开始执行`, {
-      componentId: config.componentId,
-      数据源数量: config.dataSources.length,
-      调试模式: debugMode,
-      配置详情: config.dataSources.map(ds => ({
-        数据源ID: ds.sourceId,
-        数据项数量: ds.dataItems.length,
-        合并策略: ds.mergeStrategy,
-        数据项详情: ds.dataItems.map(item => ({
-          类型: item.item.type,
-          配置: item.item.config,
-          处理配置: item.processing
-        }))
-      }))
-    })
+    // 🔥 移除循环打印日志，避免200+组件场景下的性能问题
 
     try {
       const dataSourceResults: DataSourceResult[] = []
@@ -132,18 +117,7 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
 
       // 处理每个数据源
       for (const dataSourceConfig of config.dataSources) {
-        // 🎯 用户要求的打印这几个字 - 调试：开始处理数据源
-        console.log(`🎯 用户要求的打印这几个字 - 调试：开始处理数据源`, {
-          数据源ID: dataSourceConfig.sourceId,
-          数据项数量: dataSourceConfig.dataItems ? dataSourceConfig.dataItems.length : 'undefined',
-          数据项存在: !!dataSourceConfig.dataItems,
-          合并策略: dataSourceConfig.mergeStrategy,
-          数据源配置完整性: {
-            sourceId存在: !!dataSourceConfig.sourceId,
-            dataItems存在: !!dataSourceConfig.dataItems,
-            mergeStrategy存在: !!dataSourceConfig.mergeStrategy
-          }
-        })
+        // 🔥 移除循环打印日志
 
         // 🔥 关键调试：如果dataItems不存在或为空，立即报告
         if (!dataSourceConfig.dataItems || dataSourceConfig.dataItems.length === 0) {
@@ -173,14 +147,7 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
             返回结果: sourceResult
           })
 
-          // 🎯 用户要求的打印这几个字 - 调试：数据源处理完成
-          console.log(`🎯 用户要求的打印这几个字 - 调试：数据源处理完成`, {
-            数据源ID: dataSourceConfig.sourceId,
-            处理结果: sourceResult,
-            是否成功: sourceResult.success,
-            数据内容: sourceResult.data,
-            错误信息: sourceResult.error
-          })
+          // 🔥 移除循环打印日志
 
           dataSourceResults.push(sourceResult)
         } catch (error) {
@@ -202,29 +169,12 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
         }
       }
 
-      // 🎯 用户要求的打印这几个字 - 调试：开始最终整合
-      console.log(`🎯 用户要求的打印这几个字 - 调试：开始最终整合`, {
-        数据源结果数量: dataSourceResults.length,
-        各数据源结果: dataSourceResults.map(result => ({
-          数据源ID: result.sourceId,
-          是否成功: result.success,
-          数据类型: result.type,
-          数据内容: result.data,
-          错误: result.error
-        }))
-      })
+      // 🔥 移除循环打印日志
 
       // 第四层：多源整合
       const componentData = await this.multiSourceIntegrator.integrateDataSources(dataSourceResults, config.componentId)
 
-      // 🎯 用户要求的打印这几个字 - 调试：最终整合完成
-      console.log(`🎯 用户要求的打印这几个字 - 调试：最终整合完成`, {
-        组件ID: config.componentId,
-        最终组件数据: componentData,
-        数据键数量: Object.keys(componentData).length,
-        数据键列表: Object.keys(componentData),
-        是否为空: Object.keys(componentData).length === 0
-      })
+      // 🔥 移除循环打印日志
 
       // 更新调试状态
       if (executionState) {

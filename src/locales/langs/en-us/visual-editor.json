@@ -541,5 +541,6 @@
   "visualEditor.mobileLayout": "Mobile Layout",
   "visualEditor.tabletLayout": "Tablet Layout",
   "visualEditor.desktopLayout": "Desktop Layout",
-  "visualEditor.printLayout": "Print Layout"
+  "visualEditor.printLayout": "Print Layout",
+  "visualEditor.ready": "V2 Editor Ready"
 }

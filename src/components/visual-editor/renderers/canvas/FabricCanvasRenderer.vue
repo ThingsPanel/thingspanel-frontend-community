@@ -251,17 +251,33 @@ const createFabricPlaceholder = (node: any) => {
     top: position.y,
     width: size.width,
     height: size.height,
-    fill: 'transparent',
-    stroke: 'transparent',
+    fill: 'rgba(0,0,0,0.01)', // 极其透明但仍可点击
+    stroke: readonly.value ? 'transparent' : 'rgba(64, 158, 255, 0.8)', // 选中时显示边框
     strokeWidth: 0,
+    strokeDashArray: [5, 5],
     selectable: !readonly.value,
-    moveCursor: 'move',
-    hoverCursor: 'move'
+    moveCursor: readonly.value ? 'default' : 'move',
+    hoverCursor: readonly.value ? 'default' : 'move',
+    hasControls: !readonly.value, // 显示变换控件
+    hasBorders: !readonly.value, // 显示边框
+    cornerStyle: 'circle',
+    cornerSize: 8,
+    borderColor: 'rgba(64, 158, 255, 0.8)',
+    cornerColor: 'rgba(64, 158, 255, 0.8)',
+    transparentCorners: false
   })
 
   // 添加自定义属性
   placeholder.set('nodeId', node.id)
   placeholder.set('nodeType', node.type)
+
+  console.log('🎯 [创建占位对象]', {
+    nodeId: node.id,
+    position: { x: position.x, y: position.y },
+    size: { width: size.width, height: size.height },
+    selectable: !readonly.value,
+    hasControls: !readonly.value
+  })
 
   return placeholder
 }
@@ -376,6 +392,7 @@ const bindFabricEvents = () => {
   // 对象移动事件
   canvas.on('object:moving', (e) => {
     if (e.target) {
+      console.log('🔄 [Fabric事件] 对象拖拽中:', e.target.get('nodeId'))
       syncFabricToVue(e.target)
     }
   })
@@ -383,6 +400,7 @@ const bindFabricEvents = () => {
   // 对象缩放事件
   canvas.on('object:scaling', (e) => {
     if (e.target) {
+      console.log('🔄 [Fabric事件] 对象缩放中:', e.target.get('nodeId'))
       syncFabricToVue(e.target)
     }
   })
@@ -390,6 +408,7 @@ const bindFabricEvents = () => {
   // 对象旋转事件
   canvas.on('object:rotating', (e) => {
     if (e.target) {
+      console.log('🔄 [Fabric事件] 对象旋转中:', e.target.get('nodeId'))
       syncFabricToVue(e.target)
     }
   })
@@ -414,25 +433,49 @@ const bindFabricEvents = () => {
   // 选择事件
   canvas.on('selection:created', (e) => {
     if (e.selected && e.selected.length > 0) {
-      const nodeId = e.selected[0].get('nodeId')
+      const selected = e.selected[0]
+      const nodeId = selected.get('nodeId')
       if (nodeId) {
+        // 显示选中状态的边框
+        selected.set({
+          strokeWidth: 2,
+          stroke: 'rgba(64, 158, 255, 0.8)'
+        })
         selectNode(nodeId)
       }
     }
+    canvas.renderAll()
   })
 
   canvas.on('selection:updated', (e) => {
     if (e.selected && e.selected.length > 0) {
-      const nodeId = e.selected[0].get('nodeId')
+      const selected = e.selected[0]
+      const nodeId = selected.get('nodeId')
       if (nodeId) {
+        // 显示选中状态的边框
+        selected.set({
+          strokeWidth: 2,
+          stroke: 'rgba(64, 158, 255, 0.8)'
+        })
         selectNode(nodeId)
       }
     }
+    canvas.renderAll()
   })
 
   // 清空选择事件
-  canvas.on('selection:cleared', () => {
+  canvas.on('selection:cleared', (e) => {
+    // 隐藏所有对象的边框
+    if (e.deselected) {
+      e.deselected.forEach((obj: any) => {
+        obj.set({
+          strokeWidth: 0,
+          stroke: 'transparent'
+        })
+      })
+    }
     selectNode('')
+    canvas.renderAll()
   })
 
   // 画布点击事件
@@ -671,7 +714,7 @@ const onRendererError = (error: Error) => {
   border: 2px solid transparent;
   border-radius: var(--n-border-radius);
   transition: all 0.3s ease;
-  pointer-events: auto;
+  pointer-events: none; /* 不阻挡Fabric.js的鼠标事件 */
 }
 
 .vue-component-wrapper:hover {

@@ -28,8 +28,14 @@ import PollingController from '@/components/visual-editor/components/PollingCont
 // 🔥 关键修复：导入配置事件总线和数据源触发器
 import { registerDataExecutionTrigger, type ConfigChangeEvent } from '@/core/data-architecture/ConfigEventBus'
 
-// 🔥 导入Card2.1组件注册系统，用于恢复完整的组件定义
-import { getComponentDefinition } from '@/card2.1/components/index'
+// 🔥 导入Card2.1组件注册系统，用于恢复完整的组件定义（使用统一入口）
+import { getAllComponents } from '@/card2.1/index'
+
+// 🔥 创建本地组件定义查找函数，替代已弃用的 getComponentDefinition
+const getComponentDefinition = async (componentType: string) => {
+  const allComponents = await getAllComponents()
+  return allComponents.find(comp => comp.type === componentType)
+}
 
 // 🔥 接收测试页面的配置props
 interface Props {
@@ -151,7 +157,10 @@ const handleDataExecutionTrigger = async (event: ConfigChangeEvent) => {
       console.error(`❌ [PanelEditorV2] 组件数据源执行失败: ${event.componentId}`, error)
     }
   } else {
-    console.warn(`⚠️ [PanelEditorV2] 未找到组件执行器: ${event.componentId}，尝试直接调用核心数据架构系统`)
+    // 🔥 性能优化：减少重复警告，只在开发模式下输出详细日志
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 [PanelEditorV2] 组件执行器未注册，使用核心数据架构系统: ${event.componentId}`)
+    }
 
     // 🔥 新增：直接调用核心数据架构系统来执行数据源
     try {
@@ -161,16 +170,17 @@ const handleDataExecutionTrigger = async (event: ConfigChangeEvent) => {
       // 获取组件的完整配置
       const fullConfig = configurationManager.getConfiguration(event.componentId)
       if (fullConfig && fullConfig.dataSource) {
-        console.log(`🔥 [PanelEditorV2] 直接执行数据源: ${event.componentId}`)
+        // 🔥 性能优化：减少日志输出，避免366条重复日志
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔍 [PanelEditorV2] 使用核心架构执行数据源: ${event.componentId}`)
+        }
 
         // 🔥 关键修复：执行前强制清理所有缓存，确保发送真实请求
-        console.log(`🔥 [PanelEditorV2] 执行前强制清理缓存: ${event.componentId}`)
         dataBridge.clearComponentCache(event.componentId)
 
         // 🔥 同时清理 DataWarehouse 缓存
         const { dataWarehouse } = await import('@/core/data-architecture/DataWarehouse')
         dataWarehouse.clearComponentCache(event.componentId)
-        console.log(`🔥 [PanelEditorV2] DataWarehouse 缓存已清理: ${event.componentId}`)
 
         // 构建数据需求并执行
         const dataRequirement = {
@@ -182,12 +192,14 @@ const handleDataExecutionTrigger = async (event: ConfigChangeEvent) => {
 
         const result = await dataBridge.executeComponent(dataRequirement)
 
-        console.log(`✅ [PanelEditorV2] 直接数据源执行完成: ${event.componentId}`, {
-          success: result.success,
-          dataKeysCount: result.data ? Object.keys(result.data).length : 0,
-          timestamp: result.timestamp,
-          hasError: !!result.error
-        })
+        // 🔥 性能优化：减少成功执行日志，避免366条重复输出
+        if (process.env.NODE_ENV === 'development' && (!result.success || result.error)) {
+          console.log(`✅ [PanelEditorV2] 核心架构执行完成: ${event.componentId}`, {
+            success: result.success,
+            dataKeysCount: result.data ? Object.keys(result.data).length : 0,
+            hasError: !!result.error
+          })
+        }
 
         // 🔥 修复：通过Card2Wrapper的数据更新机制来传递数据
         if (result.success && result.data) {
@@ -206,16 +218,25 @@ const handleDataExecutionTrigger = async (event: ConfigChangeEvent) => {
           const targetElement = document.querySelector(`[data-component-id="${event.componentId}"]`)
           if (targetElement) {
             targetElement.dispatchEvent(dataUpdateEvent)
-            console.log(`🔥 [PanelEditorV2] 已分发数据更新事件到组件: ${event.componentId}`)
+            // 🔥 性能优化：只在调试模式下输出事件分发成功日志
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔍 [PanelEditorV2] 已分发数据更新事件: ${event.componentId}`)
+            }
           } else {
-            console.warn(`⚠️ [PanelEditorV2] 未找到目标组件元素: ${event.componentId}`)
+            // 🔥 性能优化：组件元素未找到通常是正常的（组件可能还未渲染），只在调试时输出
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔍 [PanelEditorV2] 目标组件元素尚未渲染: ${event.componentId}`)
+            }
           }
         }
       } else {
-        console.warn(`⚠️ [PanelEditorV2] 组件没有数据源配置: ${event.componentId}`)
+        // 🔥 性能优化：组件没有数据源配置是正常状态，不需要警告
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔍 [PanelEditorV2] 组件无数据源配置，跳过: ${event.componentId}`)
+        }
       }
     } catch (error) {
-      console.error(`❌ [PanelEditorV2] 直接数据源执行失败: ${event.componentId}`, error)
+      console.error(`❌ [PanelEditorV2] 数据源执行异常: ${event.componentId}`, error)
     }
   }
 }

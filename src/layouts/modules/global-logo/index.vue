@@ -19,14 +19,18 @@ withDefaults(defineProps<Props>(), {
 
 <template>
   <RouterLink to="/" class="w-full flex items-center nowrap-hidden ml-3">
-    <SystemLogo class="text-64px text-primary" />
-    <n-ellipsis
+    <SystemLogo width="64" class="text-64px text-primary" />
+    <div
       v-show="showTitle"
-      style="max-width: 150px"
-      class="pl-8px mt-2 text-18px text-primary font-bold transition duration-300 ease-in-out"
+      class="pl-8px mt-2"
     >
-      {{ sysSettingStore.system_name === '' ? $t('title') : sysSettingStore.system_name }}
-    </n-ellipsis>
+      <n-ellipsis
+        style="max-width: 150px"
+        class="text-18px text-primary font-bold transition duration-300 ease-in-out"
+      >
+        {{ sysSettingStore.system_name === '' ? $t('title') : sysSettingStore.system_name }}
+      </n-ellipsis>
+    </div>
   </RouterLink>
 </template>
 

@@ -419,5 +419,6 @@
   "common.card2EditorStoreSyncFailed": "syncConfigChangeToEditorStore失败",
   "common.card2AutoInitFailed": "自动初始化失败",
   "common.card2TypeTestFailed": "类型测试组件定义验证失败",
-  "common.card2ComponentError": "组件错误"
+  "common.card2ComponentError": "组件错误",
+  "common.other": "其他"
 }

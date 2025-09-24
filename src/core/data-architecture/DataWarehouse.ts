@@ -116,8 +116,11 @@ export class EnhancedDataWarehouse {
   /** 组件数据存储 */
   private componentStorage = new Map<string, ComponentDataStorage>()
 
-  /** 🔥 响应式数据变更通知 */
-  private dataChangeNotifier = ref(0)
+  /** 🔥 组件级响应式通知器：避免全局响应式导致的性能问题 */
+  private componentChangeNotifiers = new Map<string, any>()
+
+  /** 🔥 移除全局通知器，避免所有组件响应任何组件的数据变化 */
+  // private dataChangeNotifier = ref(0) // 已移除，使用组件级通知器替代
 
   /** 动态参数存储（预留） */
   private parameterStorage = new Map<string, DynamicParameterStorage>()
@@ -233,19 +236,19 @@ export class EnhancedDataWarehouse {
 
     console.log(`✅ [DataWarehouse] 成功存储数据: ${componentId}/${sourceId}, 大小: ${dataSize} bytes`)
 
-    // 🔥 响应式通知：数据变更时触发Vue响应式更新
-    this.dataChangeNotifier.value++
+    // 🔥 关键修复：只触发该组件的响应式更新，避免全局重计算
+    let componentNotifier = this.componentChangeNotifiers.get(componentId)
+    if (!componentNotifier) {
+      componentNotifier = ref(0)
+      this.componentChangeNotifiers.set(componentId, componentNotifier)
+    }
+    componentNotifier.value++
 
-    // 🎯 用户要求的打印这几个字 - 阶段2：DataWarehouse存储完成
-    console.log(`🎯 用户要求的打印这几个字 - 阶段2：DataWarehouse存储完成`, {
-      componentId,
-      sourceId,
-      数据类型: typeof data,
-      数据大小: dataSize,
-      存储的数据内容: data,
-      是否为对象: typeof data === 'object',
-      对象键值: typeof data === 'object' && data !== null ? Object.keys(data) : '非对象类型'
-    })
+    // 🔥 完全移除全局通知器，避免触发所有组件的无效重计算
+    // this.dataChangeNotifier.value++ // 已移除，避免"好几千次"的重复打印问题
+
+    // 🔥 移除循环打印日志，避免200+组件场景下的性能问题
+    // DataWarehouse 存储操作应该是静默的，避免大量组件时的日志爆炸
 
     // 更新性能监控
     const responseTime = Date.now() - startTime
@@ -260,12 +263,20 @@ export class EnhancedDataWarehouse {
   getComponentData(componentId: string): Record<string, any> | null {
     const startTime = Date.now()
 
-    // 🔥 响应式依赖：触发计算属性重新计算
-    const changeNotifier = this.dataChangeNotifier.value
+    // 🔥 关键修复：使用组件级响应式，只有该组件的数据更新时才重新计算
+    let componentNotifier = this.componentChangeNotifiers.get(componentId)
+    if (!componentNotifier) {
+      componentNotifier = ref(0)
+      this.componentChangeNotifiers.set(componentId, componentNotifier)
+    }
+    // 🔥 关键修复：访问组件级通知器，建立精确的响应式依赖
+    // 这确保只有该组件的数据更新时才会重新计算，而不是所有组件
+    const changeNotifier = componentNotifier.value
 
     const componentStorage = this.componentStorage.get(componentId)
     if (!componentStorage) {
-      console.log(`🔍 [DataWarehouse] 组件 ${componentId} 没有存储数据`)
+      // 🔥 性能优化：减少无意义的日志输出，避免在200+组件场景下的日志爆炸
+      // 组件没有数据是正常状态，不需要每次都打印
       this.updateMetrics(Date.now() - startTime, 'get', false)
       return null
     }
@@ -275,7 +286,7 @@ export class EnhancedDataWarehouse {
       componentStorage.mergedData.accessCount++
       componentStorage.mergedData.lastAccessed = Date.now()
       this.updateMetrics(Date.now() - startTime, 'get', true)
-      console.log(`✅ [DataWarehouse] 从缓存获取组件 ${componentId} 数据，数据源数量: ${Object.keys(componentStorage.mergedData.data).length}`)
+      // 🔥 性能优化：减少重复日志，避免68个组件每次都打印缓存获取日志
       return componentStorage.mergedData.data
     }
 
@@ -283,23 +294,23 @@ export class EnhancedDataWarehouse {
     const componentData: Record<string, any> = {}
     let hasValidData = false
 
-    console.log(`🔍 [DataWarehouse] 组件 ${componentId} 数据源数量: ${componentStorage.dataSources.size}`)
-    
+    // 🔥 性能优化：移除数据源数量日志，避免68个组件的重复打印
+
     for (const [sourceId, item] of componentStorage.dataSources) {
       if (!this.isExpired(item)) {
         componentData[sourceId] = item.data
         item.accessCount++
         item.lastAccessed = Date.now()
         hasValidData = true
-        console.log(`✅ [DataWarehouse] 包含有效数据源 ${sourceId}:`, item.data)
+        // 🔥 性能优化：减少详细数据打印，避免大量组件时的日志爆炸
       } else {
-        console.log(`❌ [DataWarehouse] 数据源 ${sourceId} 已过期，删除`)
+        // 🔥 性能优化：减少过期数据删除日志
         componentStorage.dataSources.delete(sourceId)
       }
     }
 
     if (!hasValidData) {
-      console.log(`❌ [DataWarehouse] 组件 ${componentId} 没有有效数据`)
+      // 🔥 性能优化：组件没有数据是正常状态，不需要每次都打印错误日志
       this.updateMetrics(Date.now() - startTime, 'get', false)
       return null
     }
@@ -319,20 +330,11 @@ export class EnhancedDataWarehouse {
       lastAccessed: Date.now()
     }
 
-    console.log(`✅ [DataWarehouse] 成功获取组件 ${componentId} 数据，包含 ${Object.keys(componentData).length} 个数据源`)
+    // 🔥 性能优化：移除成功获取数据日志，避免68个组件的重复打印
+    // 在大规模组件场景下，每次数据获取都打印会产生大量无意义的日志
 
-    // 🎯 用户要求的打印这几个字 - 阶段2.5：DataWarehouse数据读取完成
-    console.log(`🎯 用户要求的打印这几个字 - 阶段2.5：DataWarehouse数据读取完成`, {
-      componentId,
-      读取的数据源数量: Object.keys(componentData).length,
-      数据源列表: Object.keys(componentData),
-      完整数据内容: componentData,
-      各数据源详情: Object.entries(componentData).map(([sourceId, sourceData]) => ({
-        数据源ID: sourceId,
-        数据类型: typeof sourceData,
-        数据内容: sourceData
-      }))
-    })
+    // 🔥 移除循环打印日志，避免200+组件场景下的性能问题
+    // DataWarehouse 数据读取应该是静默的，避免大量组件时的日志爆炸
 
     this.updateMetrics(Date.now() - startTime, 'get', true)
     return componentData
@@ -370,8 +372,9 @@ export class EnhancedDataWarehouse {
   clearComponentCache(componentId: string): void {
     const componentStorage = this.componentStorage.get(componentId)
     if (componentStorage) {
-      const dataSourceCount = componentStorage.dataSources.size
       this.componentStorage.delete(componentId)
+      // 🔥 关键修复：同时清理组件级响应式通知器，避免内存泄漏
+      this.componentChangeNotifiers.delete(componentId)
     }
   }
 
@@ -387,6 +390,11 @@ export class EnhancedDataWarehouse {
       if (removed) {
         // 清除合并数据缓存
         componentStorage.mergedData = undefined
+        // 🔥 关键修复：只触发该组件的响应式更新
+        const componentNotifier = this.componentChangeNotifiers.get(componentId)
+        if (componentNotifier) {
+          componentNotifier.value++
+        }
       }
     }
   }
@@ -398,6 +406,8 @@ export class EnhancedDataWarehouse {
     const componentCount = this.componentStorage.size
     this.componentStorage.clear()
     this.parameterStorage.clear()
+    // 🔥 关键修复：同时清理所有组件级响应式通知器，避免内存泄漏
+    this.componentChangeNotifiers.clear()
   }
 
   /**
@@ -482,7 +492,7 @@ export class EnhancedDataWarehouse {
       this.metricsTimer = null
     }
 
-    // 清除所有数据
+    // 清除所有数据（已包含组件级响应式通知器清理）
     this.clearAllCache()
   }
 

@@ -4,7 +4,7 @@
  */
 
 import type { ComponentDefinition } from '@/card2.1/types'
-import { Card2ComponentMap, Card2Components, ComponentStats } from '@/card2.1/components'
+import { getAllComponents, getCategories } from '@/card2.1/index'
 
 // ============ 编辑器组件转换器 ============
 
