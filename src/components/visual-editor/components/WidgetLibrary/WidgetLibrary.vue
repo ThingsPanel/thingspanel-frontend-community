@@ -1,5 +1,9 @@
 <template>
   <div class="widget-library">
+    <!-- 我下面这个两示例显示非常正常，但你特么的怎么给我显示的就是key呢 -->
+    <div>{{ $t('subCategories.alarmManagement') }}</div>
+    <div>{{ $t('categories.system') }}</div>
+    <!-- 我上面这个两示例显示非常正常，但你特么的怎么给我显示的就是key呢 -->
 
     <!-- 搜索框 -->
     <div class="search-bar">
@@ -32,11 +36,11 @@
         v-for="topCategory in filteredWidgetTree"
         :key="topCategory.name"
         :name="topCategory.name"
-        :tab="getTopCategoryDisplayName(topCategory.name)"
+        :tab="$t(topCategory.name)"
       >
         <div class="tab-content">
           <div v-for="subCategory in topCategory.subCategories" :key="subCategory.name" class="widget-subcategory">
-            <h4 v-if="subCategory.name !== 'subCategories.data'" class="subcategory-title">{{ getSubCategoryDisplayName(subCategory.name) }}</h4>
+            <h4 v-if="subCategory.name !== 'subCategories.data'" class="subcategory-title">{{ $t(subCategory.name) }}</h4>
             <div class="category-grid">
               <div
                 v-for="widget in subCategory.children"
@@ -59,7 +63,7 @@
                     v-html="widget.icon"
                   ></div>
                 </div>
-                <div class="widget-name">{{ getComponentDisplayName(widget.type, widget.name) }}</div>
+                <div class="widget-name">{{ $t(widget.name) }}</div>
               </div>
             </div>
           </div>
@@ -260,43 +264,7 @@ const filteredWidgetTree = computed(() => {
   return result
 })
 
-// --- 国际化显示名称获取函数 ---
-/**
- * 获取顶层分类的显示名称
- */
-const getTopCategoryDisplayName = (categoryKey: string): string => {
-  // widget-library.categories.system -> categories.system
-  if (categoryKey && categoryKey.startsWith('widget-library.')) {
-    const actualKey = categoryKey.replace('widget-library.', '')
-    return t(actualKey)
-  }
-  return categoryKey
-}
 
-/**
- * 获取子分类的显示名称
- */
-const getSubCategoryDisplayName = (subCategoryKey: string): string => {
-  // widget-library.subCategories.deviceStatus -> subCategories.deviceStatus
-  if (subCategoryKey && subCategoryKey.startsWith('widget-library.')) {
-    const actualKey = subCategoryKey.replace('widget-library.', '')
-    return t(actualKey)
-  }
-  return subCategoryKey
-}
-
-/**
- * 获取组件的显示名称
- */
-const getComponentDisplayName = (componentType: string, nameKey: string): string => {
-  // widget-library.components.onLine -> components.onLine
-  if (nameKey && nameKey.startsWith('widget-library.')) {
-    const actualKey = nameKey.replace('widget-library.', '')
-    return t(actualKey)
-  }
-  // 兼容性处理：如果不是翻译键，直接返回或使用组件类型作为后备
-  return nameKey || componentType
-}
 
 // --- Event Handlers ---
 const handleAddWidget = (widget: any) => {

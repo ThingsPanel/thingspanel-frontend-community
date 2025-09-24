@@ -4,7 +4,8 @@
  */
 
 import { rendererManager } from '@/components/visual-editor/renderers/base/RendererManager'
-import { canvasRendererFactory } from '@/components/visual-editor/renderers/canvas/CanvasRendererFactory'
+// TODO: 重新实现 CanvasRendererFactory
+// import { canvasRendererFactory } from '@/components/visual-editor/renderers/canvas/CanvasRendererFactory'
 
 /**
  * 注册所有渲染器
@@ -14,14 +15,15 @@ export function registerAllRenderers(): void {
   console.log('🎯 [RendererRegistry] 开始注册所有渲染器')
 
   try {
+    // TODO: 暂时注释掉 Canvas 渲染器注册，直到重新实现工厂
     // 注册 Canvas 渲染器
-    rendererManager.register('canvas', canvasRendererFactory, {
-      name: 'Canvas 渲染器',
-      description: '基于 Fabric.js 的自由画布渲染器，支持拖拽、缩放、旋转等高级交互',
-      icon: 'i-material-symbols-grid-view-outline'
-    })
+    // rendererManager.register('canvas', canvasRendererFactory, {
+    //   name: 'Canvas 渲染器',
+    //   description: '基于 Fabric.js 的自由画布渲染器，支持拖拽、缩放、旋转等高级交互',
+    //   icon: 'i-material-symbols-grid-view-outline'
+    // })
 
-    console.log('✅ [RendererRegistry] Canvas 渲染器注册成功')
+    // console.log('✅ [RendererRegistry] Canvas 渲染器注册成功')
 
     // TODO: 注册其他渲染器
     // 注册 GridStack 渲染器

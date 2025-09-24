@@ -10,7 +10,8 @@ import { $t } from '@/locales'
 import PanelLayout from '@/components/visual-editor/components/PanelLayout.vue'
 import { VisualEditorToolbar } from '@/components/visual-editor/components/toolbar'
 import WidgetLibrary from '@/components/visual-editor/components/WidgetLibrary/WidgetLibrary.vue'
-import { CanvasRenderer, FabricCanvasRenderer, GridstackRenderer } from '@/components/visual-editor/renderers'
+import { CanvasRenderer, GridstackRenderer } from '@/components/visual-editor/renderers'
+// TODO: FabricCanvasRenderer 已被删除，需要重新实现或使用 CanvasRenderer 替代
 import { createEditor } from '@/components/visual-editor/hooks'
 import { ConfigurationPanel } from '@/components/visual-editor/configuration'
 import { usePreviewMode } from '@/components/visual-editor/hooks/usePreviewMode'
@@ -31,9 +32,23 @@ import { registerDataExecutionTrigger, type ConfigChangeEvent } from '@/core/dat
 // 🔥 导入Card2.1组件注册系统，用于恢复完整的组件定义（使用统一入口）
 import { getAllComponents } from '@/card2.1/index'
 
-// 🔥 创建本地组件定义查找函数，替代已弃用的 getComponentDefinition
+// 🔥 组件缓存 - 避免重复调用 getAllComponents()
+let componentCache: any[] | null = null
+let cachePromise: Promise<any[]> | null = null
+
 const getComponentDefinition = async (componentType: string) => {
-  const allComponents = await getAllComponents()
+  // 使用缓存避免重复调用
+  if (componentCache) {
+    return componentCache.find(comp => comp.type === componentType)
+  }
+
+  // 防止并发调用
+  if (!cachePromise) {
+    cachePromise = getAllComponents()
+  }
+
+  const allComponents = await cachePromise
+  componentCache = allComponents
   return allComponents.find(comp => comp.type === componentType)
 }
 
@@ -132,35 +147,25 @@ const componentExecutorRegistry = ref(new Map<string, () => Promise<void>>())
 
 // 🔥 关键修复：数据执行触发器 - 处理配置变更事件并触发数据源重新执行
 const handleDataExecutionTrigger = async (event: ConfigChangeEvent) => {
-  console.log(`🔥 [PanelEditorV2] 配置变更触发数据执行:`, {
-    componentId: event.componentId,
-    section: event.section,
-    shouldTrigger: event.context?.shouldTriggerExecution,
-    执行器注册表大小: componentExecutorRegistry.value.size,
-    执行器是否存在: componentExecutorRegistry.value.has(event.componentId)
-  })
+  if (import.meta.env.DEV) {
+    console.log(`[PanelEditorV2] 配置变更触发数据执行: ${event.componentId}`)
+  }
 
   // 检查是否需要触发数据执行
   if (!event.context?.shouldTriggerExecution) {
-    console.log(`🔥 [PanelEditorV2] 配置变更不需要触发数据执行，跳过`)
     return
   }
 
-  // 🔥 修复：优先尝试组件执行器，如果不存在则直接调用核心数据架构系统
   const executor = componentExecutorRegistry.value.get(event.componentId)
   if (executor) {
     try {
-      console.log(`🔥 [PanelEditorV2] 找到组件执行器，开始执行: ${event.componentId}`)
       await executor()
-      console.log(`✅ [PanelEditorV2] 组件数据源执行完成: ${event.componentId}`)
     } catch (error) {
-      console.error(`❌ [PanelEditorV2] 组件数据源执行失败: ${event.componentId}`, error)
+      if (import.meta.env.DEV) {
+        console.error(`组件数据源执行失败: ${event.componentId}`, error)
+      }
     }
   } else {
-    // 🔥 性能优化：减少重复警告，只在开发模式下输出详细日志
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔍 [PanelEditorV2] 组件执行器未注册，使用核心数据架构系统: ${event.componentId}`)
-    }
 
     // 🔥 新增：直接调用核心数据架构系统来执行数据源
     try {
@@ -1023,27 +1028,28 @@ const refreshCard2Definitions = async () => {
   try {
     console.log('🔥 [refreshCard2Definitions] 开始刷新组件定义...')
     
-    // 🔥 修复：确保widgets存在并且是可迭代的
-    if (!editorConfig.value || !editorConfig.value.widgets || !Array.isArray(editorConfig.value.widgets)) {
-      console.warn('⚠️ [refreshCard2Definitions] editorConfig.widgets 不存在或不是数组，跳过刷新')
+    // 🔥 修复：从 stateManager.nodes 获取组件列表，而不是从 editorConfig.widgets
+    const currentWidgets = toRaw(stateManager.nodes)
+    if (!currentWidgets || !Array.isArray(currentWidgets) || currentWidgets.length === 0) {
+      console.log('ℹ️ [refreshCard2Definitions] 当前没有组件，跳过刷新')
       return
     }
-    
-    // 获取当前所有组件
-    const currentWidgets = [...editorConfig.value.widgets]
+
+    // 创建副本以进行修改
+    const updatedWidgets = [...currentWidgets]
     let updated = false
     
     // 检查每个组件是否需要刷新
-    for (let i = 0; i < currentWidgets.length; i++) {
-      const widget = currentWidgets[i]
+    for (let i = 0; i < updatedWidgets.length; i++) {
+      const widget = updatedWidgets[i]
       if (widget.metadata?.needsCard2Refresh) {
         console.log(`🔄 [refreshCard2Definitions] 刷新组件: ${widget.type}`)
-        
+
         try {
           const registeredDefinition = await getComponentDefinition(widget.type)
           if (registeredDefinition && registeredDefinition.configComponent) {
             // 更新组件定义
-            currentWidgets[i] = {
+            updatedWidgets[i] = {
               ...widget,
               metadata: {
                 ...widget.metadata,
@@ -1063,10 +1069,8 @@ const refreshCard2Definitions = async () => {
     // 如果有更新，重新设置状态
     if (updated) {
       console.log('🔥 [refreshCard2Definitions] 应用更新后的组件状态')
-      await setState({
-        ...editorConfig.value,
-        widgets: currentWidgets
-      })
+      // 直接更新 stateManager 中的节点，而不是通过 setState
+      stateManager.setNodes(updatedWidgets)
     }
     
     console.log('✅ [refreshCard2Definitions] 刷新完成')
@@ -1152,10 +1156,10 @@ const refreshCard2Definitions = async () => {
 
         <!-- 渲染器区域 -->
         <div v-else class="renderer-main-area w-full relative" @click="handleCanvasClick">
-          <!-- Fabric Canvas 渲染器 -->
-          <FabricCanvasRenderer
+          <!-- Canvas 渲染器 -->
+          <CanvasRenderer
             v-if="currentRenderer === 'canvas' && dataFetched && !isUnmounted"
-            key="fabric-canvas-renderer-v2"
+            key="canvas-renderer-v2"
             :readonly="!isEditing"
             :show-widget-titles="showWidgetTitles"
             class="renderer-container"
