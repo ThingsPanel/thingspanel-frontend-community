@@ -11,8 +11,6 @@
 import { computed, ref, watch, inject, type ComputedRef, isRef } from 'vue'
 import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
 import type { MetricItem } from '@/card2.1/core/types'
-// 🔥 导入循环保护管理器
-import { loopProtectionManager } from '@/utils/LoopProtectionManager'
 
 // 🔥 关键优化：属性绑定检查缓存，避免重复的配置获取和检查
 const propertyBindingCache = new Map<string, {
@@ -21,11 +19,8 @@ const propertyBindingCache = new Map<string, {
   configHash: string
 }>()
 
-// 🔥 性能优化：大数据量下的缓存策略
-// 缓存有效期：10秒（减少频繁检查）
-const BINDING_CACHE_TTL = 10000
-// 全局防抖计时器，避免同时大量检查
-let globalBindingCheckDebounce: NodeJS.Timeout | null = null
+// 缓存有效期：2秒（避免配置变更后的延迟）
+const BINDING_CACHE_TTL = 2000
 
 /**
  * 🔥 高效的属性绑定检查函数
@@ -35,20 +30,17 @@ async function checkPropertyBinding(componentId: string, propertyPath: string): 
   const cacheKey = `${componentId}:${propertyPath}`
   const now = Date.now()
 
-  // 🔥 性能优化：全局防抖，避免同时大量检查
-  if (globalBindingCheckDebounce) {
-    clearTimeout(globalBindingCheckDebounce)
+  // 检查缓存
+  const cached = propertyBindingCache.get(cacheKey)
+  if (cached && (now - cached.lastCheck) < BINDING_CACHE_TTL) {
+    console.log(`🔄 [checkPropertyBinding] 使用缓存结果:`, {
+      componentId,
+      propertyPath,
+      hasBinding: cached.hasBinding,
+      缓存时间: now - cached.lastCheck
+    })
+    return cached.hasBinding
   }
-
-  return new Promise((resolve) => {
-    globalBindingCheckDebounce = setTimeout(async () => {
-      // 检查缓存
-      const cached = propertyBindingCache.get(cacheKey)
-      if (cached && (now - cached.lastCheck) < BINDING_CACHE_TTL) {
-        // 静默使用缓存，减少日志输出
-        resolve(cached.hasBinding)
-        return
-      }
 
   try {
     // 获取当前组件的数据源配置
@@ -126,35 +118,30 @@ async function checkPropertyBinding(componentId: string, propertyPath: string): 
       if (hasBinding) break
     }
 
-      // 缓存检查结果
-      propertyBindingCache.set(cacheKey, {
-        hasBinding,
-        lastCheck: now,
-        configHash
-      })
+    // 缓存检查结果
+    propertyBindingCache.set(cacheKey, {
+      hasBinding,
+      lastCheck: now,
+      configHash
+    })
 
-      // 🔥 性能优化：减少日志输出，只在调试模式下输出
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🔍 [checkPropertyBinding] 完成检查:`, {
-          componentId,
-          propertyPath,
-          hasBinding,
-          HTTP配置数量: httpConfigs.length,
-          已缓存: true
-        })
-      }
+    console.log(`🔍 [checkPropertyBinding] 完成检查:`, {
+      componentId,
+      propertyPath,
+      hasBinding,
+      HTTP配置数量: httpConfigs.length,
+      已缓存: true
+    })
 
-      resolve(hasBinding)
-    } catch (error) {
-      console.error(`❌ [checkPropertyBinding] 检查失败:`, {
-        componentId,
-        propertyPath,
-        error: error instanceof Error ? error.message : error
-      })
-      resolve(false)
-    }
-    }, 50) // 50ms防抖延迟
-  })
+    return hasBinding
+  } catch (error) {
+    console.error(`❌ [checkPropertyBinding] 检查失败:`, {
+      componentId,
+      propertyPath,
+      error: error instanceof Error ? error.message : error
+    })
+    return false
+  }
 }
 
 /**
@@ -270,75 +257,55 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
   let configChangeCallback: ((config: UnifiedCard2Configuration) => void) | null = null
 
   /**
-   * 🔥 关键修复：带循环保护的配置更新函数 - 核心配置管理函数
+   * 🔥 按层级更新配置 - 核心配置管理函数
    */
   const updateConfig = (layer: keyof UnifiedCard2Configuration, newConfig: any) => {
-    // 🔥 循环保护：检查是否应该允许这次调用
-    const callId = loopProtectionManager.markCallStart(
-      'useCard2Props.updateConfig',
+    console.log(`🔍 [TRACE-14] useCard2Props.updateConfig 被调用:`, {
       componentId,
-      `updateConfig-${layer}`
-    )
+      layer,
+      newConfig,
+      当前统一配置: unifiedConfig.value,
+      callStack: new Error().stack?.split('\n').slice(1, 5)
+    })
+    console.log(`🔍 [TRACE-15] 更新前配置:`, unifiedConfig.value[layer])
 
-    if (!callId) {
-      console.warn(`🚫 [useCard2Props] updateConfig 调用被循环保护阻止: ${componentId}:${layer}`)
-      return
+    // 🔥 强制响应式更新 - 深度合并并触发响应
+    const updatedLayer = { ...unifiedConfig.value[layer], ...newConfig }
+
+    // 🔥 关键修复：使用完全新的对象引用，确保响应式更新
+    const newUnifiedConfig = {
+      ...unifiedConfig.value,
+      [layer]: updatedLayer
     }
 
-    try {
-      // 🔥 性能优化：只在真正有变化时处理
-      const currentLayerConfig = unifiedConfig.value[layer]
-      if (JSON.stringify(currentLayerConfig) === JSON.stringify(newConfig)) {
-        console.log(`🔥 [useCard2Props] 配置无变化，跳过更新: ${componentId}:${layer}`)
-        return
-      }
+    console.log(`🔍 [TRACE-16] 即将设置新的统一配置:`, newUnifiedConfig)
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🔍 [TRACE-14] useCard2Props.updateConfig 被调用:`, {
-          componentId,
-          layer,
-          newConfig,
-          循环保护: true,
-          callId
-        })
-      }
+    // 🔥 直接赋值新对象，确保触发响应式更新
+    unifiedConfig.value = newUnifiedConfig
 
-      // 🔥 强制响应式更新 - 深度合并并触发响应
-      const updatedLayer = { ...unifiedConfig.value[layer], ...newConfig }
+    console.log(`🔍 [TRACE-17] 更新后配置:`, unifiedConfig.value[layer])
+    console.log(`🔍 [TRACE-18] 新的displayData将会重新计算`)
 
-      // 🔥 关键修复：使用完全新的对象引用，确保响应式更新
-      const newUnifiedConfig = {
-        ...unifiedConfig.value,
-        [layer]: updatedLayer
-      }
+    console.log(`🔍 [TRACE-19] 即将调用 syncToEditor():`)
+    // 同步到编辑器
+    syncToEditor()
+    console.log(`🔍 [TRACE-20] syncToEditor() 调用完成`)
 
-      // 🔥 直接赋值新对象，确保触发响应式更新
-      unifiedConfig.value = newUnifiedConfig
+    console.log(`🔍 [TRACE-21] 即将同步到配置管理器:`)
+    // 🚀 关键修复：同步到配置管理器，确保VisualEditorBridge能获取到最新值
+    syncToConfigurationManager()
+    console.log(`🔍 [TRACE-21.5] 配置管理器同步完成`)
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🔍 [TRACE-17] 更新后配置:`, unifiedConfig.value[layer])
-      }
-
-      // 异步执行后续操作，避免阻塞
-      setTimeout(() => {
-        // 同步到编辑器
-        syncToEditor()
-
-        // 同步到配置管理器
-        syncToConfigurationManager()
-
-        // 🔥 关键修复：当配置更新时清理绑定缓存，确保下次检查使用最新配置
-        if (componentId && (layer === 'dataSource' || layer === 'component')) {
-          clearPropertyBindingCache(componentId)
-        }
-
-        // 触发配置变更事件
-        emitConfigChange()
-      }, 0)
-    } finally {
-      // 标记调用结束
-      loopProtectionManager.markCallEnd(callId, 'useCard2Props.updateConfig', componentId)
+    // 🔥 关键修复：当配置更新时清理绑定缓存，确保下次检查使用最新配置
+    if (componentId && (layer === 'dataSource' || layer === 'component')) {
+      clearPropertyBindingCache(componentId)
+      console.log(`🧹 [useCard2Props] 配置更新后清理绑定缓存: ${layer}`)
     }
+
+    console.log(`🔍 [TRACE-22] 即将调用 emitConfigChange():`)
+    // 触发配置变更事件
+    emitConfigChange()
+    console.log(`🔍 [TRACE-23] emitConfigChange() 调用完成`)
   }
 
   /**
@@ -357,63 +324,75 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
   }
 
   /**
-   * 🔥 关键修复：防循环的配置管理器同步机制
-   * 确保 VisualEditorBridge 能获取到最新的属性值，但不触发循环更新
+   * 🚀 关键修复：同步配置到配置管理器
+   * 确保 VisualEditorBridge 能获取到最新的属性值
    */
-  let syncDebounceTimer: NodeJS.Timeout | null = null
-  let isSyncing = false // 防止并发同步
-
   const syncToConfigurationManager = () => {
-    if (!componentId || isSyncing) {
-      return // 跳过无ID或正在同步的情况
+    if (!componentId) {
+      console.log(`🔍 [useCard2Props] syncToConfigurationManager 跳过：无组件ID`)
+      return
     }
 
-    // 🔥 防抖处理，避免频繁同步
-    if (syncDebounceTimer) {
-      clearTimeout(syncDebounceTimer)
-    }
+    try {
+      console.log(`🔍 [useCard2Props] syncToConfigurationManager 开始:`, {
+        componentId,
+        unifiedConfig: unifiedConfig.value
+      })
 
-    syncDebounceTimer = setTimeout(async () => {
-      if (isSyncing) return
+      // 动态导入配置管理器
+      import('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
+        .then(({ configurationIntegrationBridge }) => {
+          // 获取当前配置
+          const currentConfig = configurationIntegrationBridge.getConfiguration(componentId)
 
-      isSyncing = true
-      try {
-        // 静默同步，减少日志输出
-        const { configurationIntegrationBridge } = await import('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
+          // 创建更新后的配置
+          const updatedConfig = {
+            ...currentConfig,
+            component: unifiedConfig.value.component,
+            base: unifiedConfig.value.base,
+            dataSource: unifiedConfig.value.dataSource || currentConfig?.dataSource,
+            interaction: unifiedConfig.value.interaction || currentConfig?.interaction
+          }
 
-        // 获取当前配置，避免覆盖其他层级的配置
-        const currentConfig = configurationIntegrationBridge.getConfiguration(componentId)
-
-        // 🔥 关键修复：检查是否真的需要更新，避免无效同步
-        if (currentConfig &&
-            JSON.stringify(currentConfig.component) === JSON.stringify(unifiedConfig.value.component)) {
-          // 配置相同，跳过同步
-          return
-        }
-
-        // 只更新component层配置，避免影响其他层级
-        const configurationStateManager = (configurationIntegrationBridge as any).configurationStateManager
-        if (configurationStateManager) {
-          // 🔥 直接静默更新，不触发任何事件
-          configurationStateManager.updateConfigurationSection(
+          console.log(`🔍 [useCard2Props] 配置管理器更新:`, {
             componentId,
-            'component',
-            unifiedConfig.value.component,
-            'silent-sync', // 标记为静默同步
-            false,         // 不强制更新
-            true           // 跳过事件发送
-          )
-        }
-      } catch (error) {
-        // 静默处理错误，避免干扰正常流程
-        if (process.env.NODE_ENV === 'development') {
-          console.error(`❌ [useCard2Props] 配置同步失败:`, error)
-        }
-      } finally {
-        isSyncing = false
-        syncDebounceTimer = null
-      }
-    }, 200) // 200ms防抖延迟
+            oldComponentConfig: currentConfig?.component,
+            newComponentConfig: updatedConfig.component,
+            说明: '确保配置管理器有最新的属性值'
+          })
+
+          // 🚀 关键：直接更新配置管理器的状态，不触发事件
+          // 使用内部方法确保配置同步但不产生额外的事件循环
+          const configurationStateManager = (configurationIntegrationBridge as any).configurationStateManager
+          if (configurationStateManager) {
+            // 直接设置配置状态，绕过事件发送
+            configurationStateManager.updateConfigurationSection(
+              componentId,
+              'component',
+              updatedConfig.component,
+              'sync', // 标记为同步更新
+              false   // 不强制更新
+            )
+            console.log(`🔍 [useCard2Props] 直接更新configurationStateManager，无事件发送`)
+          } else {
+            // 降级方案：使用正常的更新方法
+            configurationIntegrationBridge.updateConfiguration(
+              componentId,
+              'component',
+              updatedConfig.component,
+              'card2-sync'
+            )
+            console.log(`🔍 [useCard2Props] 使用降级方案更新配置`)
+          }
+
+          console.log(`✅ [useCard2Props] 配置管理器同步完成`)
+        })
+        .catch(error => {
+          console.error(`❌ [useCard2Props] 配置管理器同步失败:`, error)
+        })
+    } catch (error) {
+      console.error(`❌ [useCard2Props] syncToConfigurationManager 失败:`, error)
+    }
   }
 
   /**
@@ -498,30 +477,28 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
   }
 
   /**
-   * 🔥 关键修复：防循环的显示数据计算 - 完全解决响应式死循环
+   * 🔥 修复：显示数据计算 - 确保完全响应统一配置变化
    */
-  let lastDisplayDataHash = ''
-  let lastDisplayDataResult: any = {}
-
   const displayData = computed(() => {
-    // 🔥 关键修复：移除所有循环触发的console.log，只在真正需要时输出
+    console.log(`🔥 [useCard2Props] displayData 计算开始 ${componentId}`)
 
     // 🔥 关键修复：正确获取data值，无论它是响应式引用还是普通值
     const currentData = isRef(data) || (typeof data === 'object' && data !== null && '__v_isRef' in data)
       ? (data as ComputedRef<Record<string, unknown>>).value
       : data as Record<string, unknown>
 
-    // 🔥 关键修复：防止无限循环计算 - 检查数据是否真的变化
-    const currentDataHash = JSON.stringify(currentData) + JSON.stringify(unifiedConfig.value.component)
-    if (currentDataHash === lastDisplayDataHash) {
-      // 数据未变化，使用缓存结果（不输出日志避免循环）
-      return lastDisplayDataResult
-    }
-
-    lastDisplayDataHash = currentDataHash
-
-    // 🔥 完全移除开发模式日志，避免触发响应式更新
-    // 计算属性必须是纯函数，不应该有任何副作用（包括异步日志）
+    console.log(`🔥 [useCard2Props] displayData 计算中 ${componentId}:`, {
+      isDataRef: isRef(data) || (typeof data === 'object' && data !== null && '__v_isRef' in data),
+      originalData: data,
+      currentData: currentData,
+      hasCurrentData: !!currentData,
+      currentDataType: typeof currentData,
+      currentDataKeys: currentData && typeof currentData === 'object' ? Object.keys(currentData) : [],
+      // 🔥 新增：统一配置调试信息
+      unifiedConfigComponent: unifiedConfig.value.component,
+      configKeys: unifiedConfig.value.component ? Object.keys(unifiedConfig.value.component) : [],
+      配置内容: unifiedConfig.value.component
+    })
 
     // 🔥 修复逻辑：检查是否有有效的数据源执行结果
     const hasValidDataSource = currentData &&
@@ -569,9 +546,15 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
         }
       })
 
-      // 🔥 关键修复：缓存结果，移除所有日志避免响应式循环
-      lastDisplayDataResult = dataSourceResults
+      // 🎯 用户要求的打印这几个字 - 阶段4：useCard2Props数据转换完成
+      console.log(`🎯 用户要求的打印这几个字 - 阶段4：useCard2Props数据转换完成`, {
+        componentId,
+        接收到的原始数据: currentData,
+        转换后的数据源结果: dataSourceResults,
+        组件将接收到的数据: dataSourceResults
+      })
 
+      console.log(`🔥 [useCard2Props] displayData 返回数据源结果 ${componentId}:`, dataSourceResults)
       return dataSourceResults
     }
 
@@ -581,9 +564,16 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
       ...unifiedConfig.value.component  // 🔥 关键：只使用统一配置，移除初始config的干扰
     }
 
-    // 🔥 关键修复：缓存结果，完全移除日志避免响应式循环
-    lastDisplayDataResult = result
+    // 🎯 用户要求的打印这几个字 - 阶段4.5：useCard2Props无数据源时使用配置
+    console.log(`🎯 用户要求的打印这几个字 - 阶段4.5：useCard2Props无数据源时使用配置`, {
+      componentId,
+      使用统一配置: result,
+      无数据源执行结果: true,
+      currentData的内容: currentData,
+      unifiedConfigComponent: unifiedConfig.value.component
+    })
 
+    console.log(`🔥 [useCard2Props] displayData 返回统一配置结果 ${componentId}:`, result)
     return result
   })
 
@@ -840,19 +830,20 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
       // 🔒 直接设置经过白名单过滤的属性，绕过旧的暴露函数
       exposedProperties.value = { ...safeExposedProperties }
 
-      // 🔒 同步到编辑器节点的metadata
-      if (editorContext?.updateNode && componentId) {
-        const currentNode = editorContext.getNodeById(componentId)
-        if (currentNode) {
-          editorContext.updateNode(componentId, {
-            metadata: {
-              ...currentNode.metadata,
-              exposedProperties: { ...exposedProperties.value },
-              lastPropertyUpdate: Date.now()
-            }
-          })
-        }
-      }
+      // 🔒 注释掉编辑器节点更新，避免循环依赖
+      // 编辑器节点的 metadata 更新应该由编辑器自身管理，而不是在这里触发
+      // if (editorContext?.updateNode && componentId) {
+      //   const currentNode = editorContext.getNodeById(componentId)
+      //   if (currentNode) {
+      //     editorContext.updateNode(componentId, {
+      //       metadata: {
+      //         ...currentNode.metadata,
+      //         exposedProperties: { ...exposedProperties.value },
+      //         lastPropertyUpdate: Date.now()
+      //       }
+      //     })
+      //   }
+      // }
 
       console.log(`🔒 [useCard2Props] 安全暴露白名单属性 ${componentId}:`, {
         白名单属性数: Object.keys(whitelistedProperties).length,
@@ -905,8 +896,16 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
       console.log(`🔥 [useCard2Props] 已自动设置配置同步监听 ${componentId}`)
     }
 
-    // 返回清理函数
+    // 返回增强的清理函数
     return () => {
+      // 清理防抖定时器
+      if (exposePropertiesTimer) {
+        clearTimeout(exposePropertiesTimer)
+        exposePropertiesTimer = null
+        console.log(`🔥 [useCard2Props] 已清理防抖定时器 ${componentId}`)
+      }
+      
+      // 清理事件监听器
       if (typeof window !== 'undefined') {
         window.removeEventListener('card2-config-update', handleExternalConfigUpdate as EventListener)
         console.log(`🔥 [useCard2Props] 已清理配置同步监听 ${componentId}`)
@@ -917,133 +916,126 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
   // 🔥 自动设置同步和属性暴露
   const cleanupAutoSync = setupAutoSync()
 
-  // 🔥 关键修复：性能优化的监听器 - 解决200+组件的循环触发问题
-  let watchDebounceTimer: NodeJS.Timeout | null = null
-  let isProcessingChange = false // 防止递归处理
+  // 🔒 防抖机制：避免无限循环调用
+  let exposePropertiesTimer: NodeJS.Timeout | null = null
+  const debouncedExposeProperties = () => {
+    if (exposePropertiesTimer) {
+      clearTimeout(exposePropertiesTimer)
+    }
+    exposePropertiesTimer = setTimeout(() => {
+      exposeWhitelistedProperties()
+    }, 100) // 100ms 防抖延迟
+  }
 
+  // 🔒 监听统一配置变化，安全地重新暴露白名单属性，并触发数据源更新
   watch(
     () => unifiedConfig.value.component,
     (newComponent, oldComponent) => {
-      // 🔥 关键修复1：防止递归处理
-      if (isProcessingChange) {
-        console.log(`🔥 [useCard2Props] 跳过递归处理 ${componentId}`)
-        return
-      }
+      // 🔒 使用防抖机制重新暴露白名单属性，避免无限循环
+      debouncedExposeProperties()
 
-      // 🔥 关键修复2：防抖处理，避免频繁触发
-      if (watchDebounceTimer) {
-        clearTimeout(watchDebounceTimer)
-      }
+      // 🔥 新增：检查属性变化并触发数据源更新
+      if (componentId && newComponent && oldComponent) {
+        Object.keys(newComponent).forEach(async propertyName => {
+          const newValue = newComponent[propertyName]
+          const oldValue = oldComponent?.[propertyName]
 
-      watchDebounceTimer = setTimeout(async () => {
-        isProcessingChange = true
-        try {
-          console.log(`🔥 [useCard2Props] 防抖处理配置变化 ${componentId}`)
-
-          // 重新暴露白名单属性（但不触发额外事件）
-          await exposeWhitelistedProperties()
-
-          // 🔥 关键修复3：只在真正有变化且非初始化时处理
-          if (componentId && newComponent && oldComponent && JSON.stringify(newComponent) !== JSON.stringify(oldComponent)) {
-            // 批量收集所有需要处理的属性变化
-            const changedProperties = []
-
-            Object.keys(newComponent).forEach(propertyName => {
-              const newValue = newComponent[propertyName]
-              const oldValue = oldComponent?.[propertyName]
-
-              if (newValue !== oldValue) {
-                changedProperties.push({ propertyName, newValue, oldValue })
-              }
+          if (newValue !== oldValue) {
+            console.log(`🔥 [useCard2Props] 检测到白名单属性变化:`, {
+              componentId,
+              propertyName,
+              oldValue,
+              newValue
             })
 
-            if (changedProperties.length > 0) {
-              console.log(`🔥 [useCard2Props] 批量处理 ${changedProperties.length} 个属性变化:`, {
+            // 🔥 关键修复：触发内部属性监听器（这个总是需要的）
+            const watchers = propertyWatchers.value[propertyName]
+            if (watchers && watchers.length > 0) {
+              console.log(`🔥 [useCard2Props] 触发 ${watchers.length} 个属性监听器: ${propertyName}`)
+              watchers.forEach(callback => {
+                try {
+                  callback(newValue, oldValue)
+                } catch (error) {
+                  console.error(`❌ [useCard2Props] 属性监听器执行失败 ${componentId}.${propertyName}:`, error)
+                }
+              })
+            }
+
+            // 🚀 关键修复：只有当属性真正被绑定到数据源时，才触发数据源重新执行
+            console.log(`🔥 [useCard2Props] 检查属性 ${propertyName} 是否有数据源绑定...`)
+
+            try {
+              // 🔥 关键优化：提前构造属性绑定路径
+              const propertyPath = `${componentId}.component.${propertyName}`
+
+              // 🔥 第一步优化：使用缓存的绑定检查函数，避免重复获取配置
+              const hasBinding = await checkPropertyBinding(componentId, propertyPath)
+
+              console.log(`🔥 [useCard2Props] 绑定检查结果:`, {
                 componentId,
-                properties: changedProperties.map(p => p.propertyName)
+                propertyName,
+                propertyPath,
+                hasBinding,
+                检查耗时: '已优化'
               })
 
-              // 🔥 关键修复4：使用 requestIdleCallback 或 nextTick 异步处理，避免阻塞
-              const processChanges = async () => {
-                for (const { propertyName, newValue, oldValue } of changedProperties) {
-                  // 触发内部属性监听器
-                  const watchers = propertyWatchers.value[propertyName]
-                  if (watchers && watchers.length > 0) {
-                    watchers.forEach(callback => {
-                      try {
-                        callback(newValue, oldValue)
-                      } catch (error) {
-                        console.error(`❌ [useCard2Props] 属性监听器执行失败 ${componentId}.${propertyName}:`, error)
-                      }
-                    })
+              if (hasBinding) {
+                console.log(`🔥 [useCard2Props] 发现绑定关系，触发数据源更新`)
+
+                // 只有真正绑定的属性才调用交互管理器
+                const { interactionManager } = await import('@/card2.1/core/interaction-manager')
+                console.log(`🔥 [useCard2Props] 通过交互管理器触发绑定属性的数据源更新:`, {
+                  componentId,
+                  propertyPath,
+                  newValue,
+                  oldValue,
+                  绑定状态: '已确认绑定到数据源'
+                })
+                interactionManager.notifyPropertyUpdate(componentId, propertyPath, newValue, oldValue)
+                console.log(`🔥 [useCard2Props] 交互管理器调用完成`)
+
+                // 发送全局属性变化事件（只对绑定的属性）
+                window.dispatchEvent(new CustomEvent('property-change', {
+                  detail: {
+                    componentId,
+                    propertyName,
+                    propertyPath,
+                    oldValue,
+                    newValue,
+                    source: 'bound-property-change',
+                    hasBinding: true,
+                    timestamp: Date.now()
                   }
-
-                  // 🔥 关键修复5：大幅优化绑定检查 - 只对可能有绑定的属性进行检查
-                  const propertyPath = `${componentId}.component.${propertyName}`
-
-                  try {
-                    // 使用优化的绑定检查（带缓存）
-                    const hasBinding = await checkPropertyBinding(componentId, propertyPath)
-
-                    if (hasBinding) {
-                      console.log(`🔥 [useCard2Props] 属性 ${propertyName} 有绑定，异步触发数据源更新`)
-
-                      // 异步触发，避免阻塞当前处理
-                      setTimeout(async () => {
-                        try {
-                          const { interactionManager } = await import('@/card2.1/core/interaction-manager')
-                          interactionManager.notifyPropertyUpdate(componentId, propertyPath, newValue, oldValue)
-                        } catch (error) {
-                          console.error(`❌ [useCard2Props] 异步数据源更新失败:`, error)
-                        }
-                      }, 50) // 50ms延迟，让当前更新完成
-                    }
-
-                    // 发送属性变化事件（但不立即触发更多处理）
-                    setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent('property-change', {
-                        detail: {
-                          componentId,
-                          propertyName,
-                          propertyPath,
-                          oldValue,
-                          newValue,
-                          source: hasBinding ? 'bound-property-change' : 'unbound-property-change',
-                          hasBinding,
-                          timestamp: Date.now(),
-                          batchProcessed: true
-                        }
-                      }))
-                    }, 100)
-                  } catch (error) {
-                    console.error(`❌ [useCard2Props] 属性绑定检查失败:`, {
-                      componentId,
-                      propertyName,
-                      error: error instanceof Error ? error.message : error
-                    })
-                  }
-                }
-              }
-
-              // 使用 requestIdleCallback 或 setTimeout 进行异步处理
-              if (typeof window.requestIdleCallback === 'function') {
-                window.requestIdleCallback(() => processChanges())
+                }))
               } else {
-                setTimeout(() => processChanges(), 0)
+                console.log(`🔥 [useCard2Props] 属性 ${propertyName} 未绑定到数据源，不触发数据源更新`)
+
+                // 发送全局属性变化事件（标记为未绑定）
+                window.dispatchEvent(new CustomEvent('property-change', {
+                  detail: {
+                    componentId,
+                    propertyName,
+                    propertyPath,
+                    oldValue,
+                    newValue,
+                    source: 'unbound-property-change',
+                    hasBinding: false,
+                    timestamp: Date.now()
+                  }
+                }))
               }
+            } catch (error) {
+              console.error(`❌ [useCard2Props] 检查属性绑定失败:`, {
+                componentId,
+                propertyName,
+                error: error instanceof Error ? error.message : error
+              })
             }
           }
-        } finally {
-          isProcessingChange = false
-          watchDebounceTimer = null
-        }
-      }, 150) // 防抖延迟150ms，减少频繁触发
+        })
+      }
     },
-    {
-      deep: true,
-      immediate: false, // 🔥 关键修复：不立即执行，避免初始化时的大量触发
-      flush: 'post' // 🔥 在DOM更新后执行，避免与响应式更新冲突
-    }
+    { deep: true, immediate: true }
   )
 
   /**

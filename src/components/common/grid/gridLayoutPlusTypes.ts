@@ -365,10 +365,6 @@ export const DARK_THEME: GridTheme = {
 
 // 性能配置
 export interface PerformanceConfig {
-  /** 是否启用虚拟化 */
-  enableVirtualization: boolean
-  /** 虚拟化阈值 */
-  virtualizationThreshold: number
   /** 防抖延迟 */
   debounceDelay: number
   /** 节流延迟 */

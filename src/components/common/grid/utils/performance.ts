@@ -59,11 +59,6 @@ export function optimizeLayoutPerformance(
   try {
     let optimizedLayout = [...layout]
 
-    // 虚拟化处理
-    if (config.enableVirtualization && layout.length >= config.virtualizationThreshold) {
-      optimizedLayout = virtualizeLayout(optimizedLayout, config)
-    }
-
     // 懒加载处理
     if (config.enableLazyLoading) {
       optimizedLayout = applyLazyLoading(optimizedLayout, config)
@@ -76,23 +71,7 @@ export function optimizeLayoutPerformance(
   }
 }
 
-/**
- * 虚拟化布局
- */
-function virtualizeLayout(layout: GridLayoutPlusItem[], config: PerformanceConfig): GridLayoutPlusItem[] {
-  try {
-    // 简化版虚拟化：只保留可见区域的项目
-    // 实际应用中需要根据滚动位置和视口大小来计算
-    const visibleItems = layout.slice(0, config.virtualizationThreshold)
 
-    console.debug(`[Performance] Virtualized layout: ${layout.length} -> ${visibleItems.length} items`)
-
-    return visibleItems
-  } catch (error) {
-    console.error('Failed to virtualize layout:', error)
-    return layout
-  }
-}
 
 /**
  * 应用懒加载

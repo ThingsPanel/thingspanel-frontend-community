@@ -121,10 +121,10 @@ onMounted(() => {
           multiDataSourceStore.value[event.componentId] = result.data
           multiDataSourceConfigStore.value[event.componentId] = event.newConfig
         } else {
-          console.error(`⚠️ 组件 ${event.componentId} 数据获取失败:`, result.error)
+    if (import.meta.env.DEV) console.error(`⚠️ 组件 ${event.componentId} 数据获取失败:`, result.error)
         }
       } catch (error) {
-        console.error(`❌ 组件 ${event.componentId} 数据处理异常:`, error)
+    if (import.meta.env.DEV) console.error(`❌ 组件 ${event.componentId} 数据处理异常:`, error)
       }
     }
   }
@@ -253,7 +253,7 @@ const updateDataSourceConfigForBaseConfigChange = async (
       configurationIntegrationBridge.updateConfiguration(componentId, 'dataSource', updatedDataSourceConfig)
     }
   } catch (error) {
-    console.error(`❌ [GridstackRenderer] 基础配置变更处理失败`, {
+    if (import.meta.env.DEV) console.error(`❌ [GridstackRenderer] 基础配置变更处理失败`, {
       componentId,
       error: error instanceof Error ? error.message : error
     })

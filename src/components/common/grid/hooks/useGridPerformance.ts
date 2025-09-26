@@ -42,8 +42,6 @@ export function useGridPerformance(options: UseGridPerformanceOptions = {}) {
 
   // 性能配置
   const config = ref<PerformanceConfig>({
-    enableVirtualization: false,
-    virtualizationThreshold: 100,
     debounceDelay: 100,
     throttleDelay: 16,
     enableLazyLoading: false,
@@ -253,13 +251,6 @@ export function useGridPerformance(options: UseGridPerformanceOptions = {}) {
   const applyAutoOptimizations = () => {
     const { itemCount } = metrics.value
     let optimized = false
-
-    // 自动启用虚拟化
-    if (itemCount >= config.value.virtualizationThreshold && !config.value.enableVirtualization) {
-      config.value.enableVirtualization = true
-      optimized = true
-      console.debug('[GridPerformance] Auto-enabled virtualization')
-    }
 
     // 自动调整防抖延迟
     if (metrics.value.renderTime > 20 && config.value.debounceDelay < 200) {
