@@ -511,8 +511,9 @@ const resetFormState = () => {
     formState.jsonData = JSON.stringify(props.exampleData, null, 2)
   } else {
     formState.jsonData = JSON.stringify({
-      temperature: 25.6,
-      humidity: 68.3,
+      value: 45,
+      unit: '%',
+      metricsName: '湿度',
       timestamp: new Date().toISOString()
     }, null, 2)
   }
@@ -576,8 +577,15 @@ const loadEditData = (editData: any) => {
   // 根据类型加载对应数据
   switch (editData.type) {
     case 'json':
+      // 🔥 关键修复：支持多种JSON数据字段名，优先使用实际保存的字段
       if (editData.jsonData) {
         formState.jsonData = editData.jsonData
+      } else if (editData.jsonString) {
+        // 从config.jsonString中恢复
+        formState.jsonData = editData.jsonString
+      } else if (editData.config?.jsonString) {
+        // 从嵌套的config.jsonString中恢复
+        formState.jsonData = editData.config.jsonString
       }
       break
     case 'script':
@@ -654,18 +662,18 @@ const loadEditData = (editData: any) => {
  * 组件挂载时初始化
  */
 onMounted(() => {
-  // 先重置状态
-  resetFormState()
-
-  // 如果是编辑模式且有编辑数据，则加载编辑数据
+  // 🔥 关键修复：只在非编辑模式下重置状态，避免覆盖用户数据
   if (props.isEditMode && props.editData) {
+    // 编辑模式：先设置基础状态，然后加载编辑数据
+    formState.selectedMethod = 'json' // 基础状态
     nextTick(() => {
       loadEditData(props.editData)
     })
   } else {
-    // 不是编辑模式，重置为初始状态（包含示例数据）
+    // 非编辑模式：重置为初始状态（包含示例数据）
+    resetFormState()
     nextTick(() => {
-      resetFormState()
+      resetFormState() // 确保状态一致性
     })
   }
 })

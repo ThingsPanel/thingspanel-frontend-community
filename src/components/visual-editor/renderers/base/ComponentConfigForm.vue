@@ -1,16 +1,5 @@
 <template>
   <div class="component-config-form">
-    <!-- 🔥 调试信息面板 -->
-    <div v-if="isDevelopment" style="background: #f0f0f0; padding: 8px; margin-bottom: 8px; font-size: 12px;">
-      <div>isCard2Component: {{ isCard2Component }}</div>
-      <div>widget?.type: {{ widget?.type }}</div>
-      <div>widget?.metadata?.isCard2Component: {{ widget?.metadata?.isCard2Component }}</div>
-      <div>hasCard2ConfigComponent: {{ !!card2ConfigComponent }}</div>
-      <div>card2Definition: {{ !!widget?.metadata?.card2Definition }}</div>
-      <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid #ccc;">
-        <strong>componentConfig:</strong> {{ JSON.stringify(componentConfig, null, 2) }}
-      </div>
-    </div>
 
     <!-- Card2.1组件配置 -->
     <div v-if="isCard2Component && card2ConfigComponent">
@@ -60,6 +49,23 @@
         <p style="margin: 8px 0 0 0; font-size: 12px; color: #999">传统组件配置功能待实现</p>
       </div>
     </div>
+
+    <!-- 开发模式调试tip -->
+    <div v-if="isDevelopment" class="debug-tip">
+      <n-tooltip>
+        <template #trigger>
+          <span class="debug-icon">🐛</span>
+        </template>
+        <div>
+          <div>类型: {{ widget?.type }}</div>
+          <div>Card2.1: {{ isCard2Component ? '是' : '否' }}</div>
+          <div>有配置: {{ !!card2ConfigComponent ? '是' : '否' }}</div>
+          <div style="margin-top: 8px;">
+            <n-button size="tiny" @click="logToConsole">控制台输出</n-button>
+          </div>
+        </div>
+      </n-tooltip>
+    </div>
   </div>
 </template>
 
@@ -71,6 +77,11 @@
  */
 
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import {
+  NTooltip,
+  NButton,
+  useMessage
+} from 'naive-ui'
 import { useComponentTree as useCard2Integration } from '@/card2.1/hooks/useComponentTree'
 
 interface Props {
@@ -292,6 +303,20 @@ watch(
   },
   { immediate: true }
 )
+
+// ============ 调试方法 ============
+
+/**
+ * 输出调试信息到控制台
+ */
+const logToConsole = () => {
+  console.group('🔍 [ComponentConfigForm] 调试信息')
+  console.log('组件类型:', props.widget?.type)
+  console.log('是否Card2组件:', isCard2Component.value)
+  console.log('Widget:', props.widget)
+  console.log('组件配置:', componentConfig.value)
+  console.groupEnd()
+}
 </script>
 
 <style scoped>
@@ -303,6 +328,7 @@ watch(
   flex-direction: column;
   padding: 0;
   margin: 0;
+  position: relative;
 }
 
 /* Card2组件配置区域 */
@@ -325,5 +351,24 @@ watch(
   align-items: center;
   justify-content: center;
   min-height: 200px;
+}
+
+/* 调试tip样式 */
+.debug-tip {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+}
+
+.debug-icon {
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.debug-icon:hover {
+  opacity: 1;
 }
 </style>

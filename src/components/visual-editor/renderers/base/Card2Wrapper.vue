@@ -20,6 +20,15 @@
       :component-id="props.nodeId"
       class="card2-component"
     />
+
+    <!-- 🔥 第一级调试：Card2Wrapper 传递给组件的数据 -->
+    <div v-if="props.componentType === 'digit-indicator'" class="card2-wrapper-debug">
+      <div class="debug-title">🔥 Card2Wrapper 数据传递（第一级）:</div>
+      <div class="debug-content">
+        <div>传递给组件的 data: {{ JSON.stringify(componentDataFromWarehouse) }}</div>
+        <div>时间戳: {{ new Date().toLocaleTimeString() }}</div>
+      </div>
+    </div>
     
     <!-- 组件加载失败提示 -->
     <n-alert v-else-if="!currentComponentDef?.component" type="error" size="small">
@@ -48,13 +57,20 @@ import type {
   ComponentInteractionCapability
 } from '@/card2.1/core/interaction-types'
 import type { UnifiedCard2Configuration } from '@/card2.1/hooks/useCard2Props'
-// 🔥 导入DataWarehouse以获取数据源执行结果
+// 🔥 导入DataWarehouse以获取数据源执行结果（兼容性保留）
 import { dataWarehouse } from '@/core/data-architecture/DataWarehouse'
 // 🔥 导入配置管理器和数据桥接器
 import { configurationIntegrationBridge as configurationManager } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
 // 🔥 导入交互配置路由器
 import { interactionConfigRouter } from '@/components/visual-editor/configuration/InteractionConfigRouter'
+
+// 🚀 新增：导入Card2.1 Core响应式数据绑定系统
+import { dataBindingManager } from '@/card2.1/core/data-source/data-binding-manager'
+import { reactiveDataManager } from '@/card2.1/core/data-source/reactive-data-manager'
+import { ComponentRegistry } from '@/card2.1/core/component-registry'
+import { dataSourceMapper } from '@/card2.1/core/data-source-mapper'
+import type { ComponentDataBinding, DataBindingStatus } from '@/card2.1/core/data-source/data-binding-manager'
 
 interface Props {
   componentType: string
@@ -94,33 +110,149 @@ const componentExecutorRegistry = inject('componentExecutorRegistry', null) as M
 // 🔥 预览模式检测
 const { isPreviewMode } = usePreviewMode()
 
+// 🚀 Card2.1 Core响应式数据绑定状态
+const card2CoreDataBinding = ref<string | null>(null)
+const card2CoreBindingStatus = ref<DataBindingStatus>({})
+const card2CoreData = ref<Record<string, any>>({})
+const useCard2CoreDataBinding = ref(false)
+
+// 🚀 检查组件是否支持Card2.1 Core数据绑定
+const checkCard2CoreSupport = () => {
+  const isRegistered = ComponentRegistry.has(props.componentType)
+  const dataSourceKeys = ComponentRegistry.getDataSourceKeys(props.componentType)
+  const supportsDataBinding = isRegistered && dataSourceKeys.length > 0
+
+  console.log(`🚀 [Card2Wrapper] Card2.1 Core支持检查 ${props.nodeId}:`, {
+    componentType: props.componentType,
+    isRegistered,
+    dataSourceKeys,
+    supportsDataBinding
+  })
+
+  useCard2CoreDataBinding.value = supportsDataBinding
+  return supportsDataBinding
+}
+
+// 🚀 初始化Card2.1 Core数据绑定
+const initializeCard2CoreBinding = async () => {
+  if (!useCard2CoreDataBinding.value) {
+    console.log(`🚀 [Card2Wrapper] 组件 ${props.componentType} 不支持Card2.1 Core数据绑定`)
+    return
+  }
+
+  try {
+    console.log(`🚀 [Card2Wrapper] 开始初始化Card2.1 Core数据绑定 ${props.nodeId}`)
+
+    // 创建组件数据绑定配置
+    const bindingConfig: ComponentDataBinding = {
+      componentId: props.nodeId,
+      dataSourceId: `${props.nodeId}-datasource`, // 临时数据源ID
+      bindingConfig: {
+        // 基于组件定义自动生成绑定配置
+        ...generateBindingConfig()
+      }
+    }
+
+    // 创建绑定
+    const bindingId = dataBindingManager.createBinding(bindingConfig)
+    card2CoreDataBinding.value = bindingId
+
+    // 订阅数据更新
+    dataBindingManager.subscribe(bindingId, (newData) => {
+      console.log(`🚀 [Card2Wrapper] Card2.1 Core数据更新 ${props.nodeId}:`, newData)
+      card2CoreData.value = newData
+
+      // 🔥 更新绑定状态
+      const status = dataBindingManager.getBindingStatus(bindingId)
+      if (status) {
+        card2CoreBindingStatus.value = status
+      }
+    })
+
+    console.log(`✅ [Card2Wrapper] Card2.1 Core数据绑定初始化完成 ${props.nodeId}`)
+  } catch (error) {
+    console.error(`❌ [Card2Wrapper] Card2.1 Core数据绑定初始化失败 ${props.nodeId}:`, error)
+  }
+}
+
+// 🚀 生成绑定配置
+const generateBindingConfig = () => {
+  const dataSourceKeys = ComponentRegistry.getDataSourceKeys(props.componentType)
+  const bindingConfig: Record<string, any> = {}
+
+  dataSourceKeys.forEach(key => {
+    bindingConfig[key] = {
+      dataPath: key,
+      fallbackValue: null
+    }
+  })
+
+  console.log(`🚀 [Card2Wrapper] 生成绑定配置 ${props.componentType}:`, bindingConfig)
+  return bindingConfig
+}
+
+// 🚀 清理Card2.1 Core绑定
+const cleanupCard2CoreBinding = () => {
+  if (card2CoreDataBinding.value) {
+    dataBindingManager.removeBinding(card2CoreDataBinding.value)
+    card2CoreDataBinding.value = null
+    card2CoreData.value = {}
+    card2CoreBindingStatus.value = {}
+    console.log(`🚀 [Card2Wrapper] 已清理Card2.1 Core数据绑定 ${props.nodeId}`)
+  }
+}
+
 // 🔥 关键修复：性能优化的数据源获取 - 解决200+组件的频繁计算问题
 let lastDataHash = ''
 let cachedWarehouseData = {}
 let dataFetchDebounce: NodeJS.Timeout | null = null
 
-const componentDataFromWarehouse = computed(() => {
-  try {
-    // 🔥 响应式依赖：DataWarehouse内置的响应式通知机制
-    const warehouseData = dataWarehouse.getComponentData(props.nodeId)
+// 🔥 强制清除缓存的方法
+const clearDataCache = () => {
+  lastDataHash = ''
+  cachedWarehouseData = {}
+  console.log('🔥 [Card2Wrapper] 已清除数据缓存:', props.nodeId)
+}
 
-    // 🔥 性能优化：检查数据是否真的变化，避免无效重新计算
-    const currentDataHash = JSON.stringify(warehouseData)
-    if (currentDataHash === lastDataHash) {
-      // 数据未变化，返回缓存结果，减少日志输出
-      return cachedWarehouseData
+const componentDataFromWarehouse = computed(() => {
+  // 🚨 **最优先的调试**：确认计算属性执行开始
+  console.log('🚨 [Card2Wrapper] ===== 计算属性开始执行 =====', {
+    nodeId: props.nodeId,
+    timestamp: new Date().toLocaleTimeString()
+  })
+
+  try {
+    // 🚀 优先使用Card2.1 Core响应式数据绑定
+    if (useCard2CoreDataBinding.value && Object.keys(card2CoreData.value).length > 0) {
+      console.log('🚀 [Card2Wrapper] 使用Card2.1 Core数据:', {
+        nodeId: props.nodeId,
+        card2CoreData: card2CoreData.value,
+        bindingStatus: card2CoreBindingStatus.value,
+        timestamp: new Date().toISOString()
+      })
+      return card2CoreData.value
     }
 
-    // 数据有变化，更新缓存
-    lastDataHash = currentDataHash
-    cachedWarehouseData = warehouseData || {}
+    // 🚨 **关键修复**：直接绕过DataWarehouse的响应式，手动获取最新数据
+    console.log('🚨 [Card2Wrapper] 直接从DataWarehouse获取最新数据')
 
-    // 🔥 完全移除开发模式日志，避免在200+组件场景下的性能问题和循环打印
-    // 计算属性中的任何日志都可能在大规模组件场景下导致性能问题
+    // 强制清除缓存，确保获取最新数据
+    dataWarehouse.clearComponentMergedCache(props.nodeId)
 
-    return cachedWarehouseData
+    // 直接调用DataWarehouse获取数据，绕过响应式依赖问题
+    const latestData = dataWarehouse.getComponentData(props.nodeId)
+
+    console.log('🚨 [Card2Wrapper] 获取到的最新数据:', {
+      nodeId: props.nodeId,
+      latestData,
+      dataType: typeof latestData,
+      dataKeys: latestData && typeof latestData === 'object' ? Object.keys(latestData) : null,
+      timestamp: new Date().toLocaleTimeString()
+    })
+
+    return latestData || {}
   } catch (error) {
-    if (import.meta.env.DEV) console.error(`❌ [Card2Wrapper] 获取DataWarehouse数据失败 ${props.nodeId}:`, error)
+    if (import.meta.env.DEV) console.error(`❌ [Card2Wrapper] 获取数据失败 ${props.nodeId}:`, error)
     return {}
   }
 })
@@ -833,8 +965,37 @@ const checkExpressionCondition = (currentValue: any, expression: string): boolea
 let executionInProgress = false
 let lastExecutionConfig = ''
 let executionDebounce: NodeJS.Timeout | null = null
+// 🔥 新增：执行序号追踪，确保只有最新的执行结果被应用
+let currentExecutionSequence = 0
+// 🔥 新增：配置版本追踪，防止使用过期配置
+let lastConfigHash = ''
 
 const executeComponentDataSource = async (): Promise<void> => {
+  // 🔥 生成当前执行序号
+  currentExecutionSequence++
+  const currentSequence = currentExecutionSequence
+  const executionId = `${props.nodeId}-seq${currentSequence}-${Date.now()}`
+
+  console.log(`🎯 用户要求的打印这几个字 - 执行序号 ${currentSequence}：Card2Wrapper组件执行器开始执行 ${props.nodeId}`)
+
+  // 🔥 关键修复：立即获取最新配置快照，防止执行过程中配置变化
+  const configSnapshot = await captureLatestConfigurationSnapshot(executionId)
+  if (!configSnapshot) {
+    console.log(`🔥 [Card2Wrapper] [${executionId}] 无法获取配置快照，跳过执行`)
+    return
+  }
+
+  // 🔥 关键修复：检查配置版本，防止重复执行相同配置
+  const currentConfigHash = calculateConfigurationHash(configSnapshot.dataSource)
+  if (currentConfigHash === lastConfigHash && currentConfigHash !== '') {
+    console.log(`🔥 [Card2Wrapper] [${executionId}] 配置未变化，跳过重复执行:`, {
+      configHash: currentConfigHash,
+      说明: '配置内容相同，避免无效重复执行'
+    })
+    return
+  }
+  lastConfigHash = currentConfigHash
+
   // 🔥 循环保护：检查是否应该允许这次执行
   const callId = loopProtectionManager.markCallStart(
     'Card2Wrapper.executeComponentDataSource',
@@ -861,6 +1022,17 @@ const executeComponentDataSource = async (): Promise<void> => {
 
   return new Promise((resolve) => {
     executionDebounce = setTimeout(async () => {
+      // 🔥 再次检查序号，确保这是最新的执行请求
+      if (currentSequence !== currentExecutionSequence) {
+        console.log(`🔥 [Card2Wrapper] 执行序号已过期，跳过执行 ${props.nodeId}:`, {
+          当前序号: currentSequence,
+          最新序号: currentExecutionSequence,
+          说明: '有更新的执行请求，取消此次执行'
+        })
+        resolve()
+        return
+      }
+
       if (executionInProgress) {
         resolve()
         return
@@ -868,25 +1040,21 @@ const executeComponentDataSource = async (): Promise<void> => {
 
       executionInProgress = true
       try {
-        // 获取当前组件的数据源配置
-        const latestConfig = configurationManager.getConfiguration(props.nodeId)
-        const dataSourceConfig = latestConfig?.dataSource
+        // 🔥 关键修复：使用配置快照，而不是重新获取（可能已过期）
+        const dataSourceConfig = configSnapshot.dataSource
 
         if (!dataSourceConfig) {
+          console.log(`🔥 [Card2Wrapper] [${executionId}] 配置快照中无数据源配置，跳过执行`)
           resolve()
           return
         }
 
-        // 🔥 关键修复3：检查配置是否真的变化，避免重复执行
-        const currentConfigHash = JSON.stringify(dataSourceConfig)
-        if (currentConfigHash === lastExecutionConfig) {
-    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 配置未变化，跳过重复执行 ${props.nodeId}`)
-          resolve()
-          return
-        }
-
-        // 更新配置哈希
-        lastExecutionConfig = currentConfigHash
+        // 🔥 关键修复3：使用快照的配置哈希，避免重复执行检查
+        console.log(`🔥 [Card2Wrapper] [${executionId}] 使用配置快照执行数据源:`, {
+          configHash: currentConfigHash,
+          executionSequence: currentSequence,
+          snapshotTimestamp: configSnapshot.timestamp
+        })
 
         // 🎯 用户要求的打印这几个字 - 阶段0：Card2Wrapper组件执行器被调用
         if (process.env.NODE_ENV === 'development') {
@@ -894,13 +1062,22 @@ const executeComponentDataSource = async (): Promise<void> => {
             componentId: props.nodeId,
             componentType: props.componentType,
             触发方式: '通过componentExecutorRegistry注册的执行器',
-            防重复执行: true
+            防重复执行: true,
+            执行序号: currentSequence
           })
         }
 
         // 🔥 使用 VisualEditorBridge 执行数据源
         const { getVisualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
         const visualEditorBridge = getVisualEditorBridge()
+
+        // 🔥 关键修复：传递带有执行ID的完整配置快照
+        const enhancedConfig = {
+          ...configSnapshot,
+          executionId,
+          executionSequence: currentSequence,
+          configHash: currentConfigHash
+        }
 
         // 清除缓存确保获取最新数据
         simpleDataBridge.clearComponentCache(props.nodeId)
@@ -909,16 +1086,41 @@ const executeComponentDataSource = async (): Promise<void> => {
         const result = await visualEditorBridge.updateComponentExecutor(
           props.nodeId,
           props.componentType,
-          dataSourceConfig
+          enhancedConfig
         )
+
+        // 🔥 再次检查序号，确保这个结果仍然是最新的
+        if (currentSequence !== currentExecutionSequence) {
+          console.log(`🔥 [Card2Wrapper] 执行完成但序号已过期，丢弃结果 ${props.nodeId}:`, {
+            执行序号: currentSequence,
+            最新序号: currentExecutionSequence,
+            executionId,
+            说明: '执行期间有新的请求，丢弃此次结果'
+          })
+          resolve()
+          return
+        }
 
         if (process.env.NODE_ENV === 'development') {
     if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段1：数据源执行完成，等待DataWarehouse响应式更新`, {
             componentId: props.nodeId,
             执行结果: result.success,
-            数据内容: result.data
+            数据内容: result.data,
+            executionId,
+            执行序号: currentSequence
           })
         }
+
+        // 🔥 数据源执行完成后，清除缓存强制重新获取最新数据
+        clearDataCache()
+
+        // 🔥 强制清除 DataWarehouse 的合并缓存并触发响应式更新
+        dataWarehouse.clearComponentMergedCache(props.nodeId)
+
+        // 🔥 新增：延迟强制刷新，确保数据传播
+        setTimeout(() => {
+          forceDataRefresh()
+        }, 100)
 
         resolve()
       } catch (error) {
@@ -932,6 +1134,51 @@ const executeComponentDataSource = async (): Promise<void> => {
       }
     }, 300) // 300ms防抖延迟，适应大量组件场景
   })
+}
+
+// 🔥 新增：捕获最新配置快照的工具函数
+const captureLatestConfigurationSnapshot = async (executionId: string): Promise<{ dataSource: any; base: any; timestamp: number } | null> => {
+  try {
+    const latestConfig = configurationManager.getConfiguration(props.nodeId)
+    if (!latestConfig) {
+      console.log(`🔥 [Card2Wrapper] [${executionId}] 无法获取组件配置`)
+      return null
+    }
+
+    const snapshot = {
+      dataSource: latestConfig.dataSource ? JSON.parse(JSON.stringify(latestConfig.dataSource)) : null,
+      base: latestConfig.base ? JSON.parse(JSON.stringify(latestConfig.base)) : null,
+      timestamp: Date.now()
+    }
+
+    console.log(`🔥 [Card2Wrapper] [${executionId}] 配置快照已捕获:`, {
+      hasDataSource: !!snapshot.dataSource,
+      hasBase: !!snapshot.base,
+      timestamp: snapshot.timestamp
+    })
+
+    return snapshot
+  } catch (error) {
+    console.error(`❌ [Card2Wrapper] [${executionId}] 配置快照捕获失败:`, error)
+    return null
+  }
+}
+
+// 🔥 新增：计算配置哈希值的工具函数
+const calculateConfigurationHash = (config: any): string => {
+  try {
+    if (!config) return ''
+    const configString = JSON.stringify(config)
+    let hash = 0
+    for (let i = 0; i < configString.length; i++) {
+      const char = configString.charCodeAt(i)
+      hash = ((hash << 5) - hash) + char
+      hash = hash & hash // 转换为32位整数
+    }
+    return Math.abs(hash).toString(36)
+  } catch (error) {
+    return Date.now().toString(36)
+  }
 }
 
 // ================== 生命周期 ==================
@@ -995,9 +1242,67 @@ watch(
   { immediate: false }
 )
 
+// 🔥 监听 componentDataFromWarehouse 变化
+watch(
+  () => componentDataFromWarehouse.value,
+  (newData, oldData) => {
+    if (props.componentType === 'digit-indicator') {
+      console.log('🔥 [Card2Wrapper] componentDataFromWarehouse 变化:', {
+        nodeId: props.nodeId,
+        componentType: props.componentType,
+        newData,
+        oldData,
+        newDataKeys: newData && typeof newData === 'object' ? Object.keys(newData) : '不是对象',
+        oldDataKeys: oldData && typeof oldData === 'object' ? Object.keys(oldData) : '不是对象',
+        timestamp: new Date().toISOString(),
+        hasValidNewData: newData && typeof newData === 'object' && Object.keys(newData).length > 0
+      })
+    }
+  },
+  { deep: true, immediate: true }
+)
+
+// 🔥 新增：强制数据更新机制 - 当数据源执行完成后手动触发
+const forceDataRefresh = () => {
+  console.log('🔥 [Card2Wrapper] 强制数据刷新:', props.nodeId)
+  // 强制清除DataWarehouse缓存
+  dataWarehouse.clearComponentMergedCache(props.nodeId)
+
+  // 手动触发计算属性重新计算
+  nextTick(() => {
+    const freshData = componentDataFromWarehouse.value
+    console.log('🔥 [Card2Wrapper] 强制刷新后的数据:', freshData)
+  })
+}
+
 onMounted(async () => {
     if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段I0：Card2Wrapper组件${props.nodeId}开始挂载`)
     if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 组件挂载完成 ${props.nodeId}`)
+
+  // 🚀 首先初始化Card2.1 Core响应式数据绑定系统
+  checkCard2CoreSupport()
+  if (useCard2CoreDataBinding.value) {
+    await initializeCard2CoreBinding()
+  }
+
+  // 🔥 强制清除缓存，确保获取最新数据
+  clearDataCache()
+
+  // 🚨 **关键修复**：强制初始化计算属性，建立Vue响应式依赖
+  console.log('🚨 [Card2Wrapper] 强制初始化计算属性，建立响应式依赖:', props.nodeId)
+  try {
+    // 强制访问计算属性，确保Vue响应式系统能追踪到依赖关系
+    const initialData = componentDataFromWarehouse.value
+    console.log('🚨 [Card2Wrapper] 初始化计算属性成功，获取数据:', {
+      nodeId: props.nodeId,
+      hasData: !!initialData,
+      dataKeys: initialData && typeof initialData === 'object' ? Object.keys(initialData) : null,
+      initialData,
+      建立时间: new Date().toLocaleTimeString()
+    })
+  } catch (initError) {
+    console.error('❌ [Card2Wrapper] 初始化计算属性失败:', initError)
+  }
 
   // 🔥 新增：确保组件定义被注入到节点的metadata中
   if (currentComponentDef.value && editorContext?.updateNode) {
@@ -1111,6 +1416,9 @@ onMounted(async () => {
 
 // 清理事件监听
 onUnmounted(() => {
+  // 🚀 清理Card2.1 Core数据绑定
+  cleanupCard2CoreBinding()
+
   // 🔥 清理组件执行器注册
   if (componentExecutorRegistry) {
     componentExecutorRegistry.delete(props.nodeId)
@@ -1166,6 +1474,30 @@ defineExpose({
   height: 100%;
   border-radius: 4px;
   overflow: hidden;
+}
+
+/* 🔥 Card2Wrapper 调试样式 */
+.card2-wrapper-debug {
+  background: #e8f4ff;
+  border: 2px solid #1890ff;
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.card2-wrapper-debug .debug-title {
+  color: #1890ff;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.card2-wrapper-debug .debug-content {
+  background: #fff;
+  padding: 4px;
+  border-radius: 2px;
+  font-family: monospace;
+  word-break: break-all;
 }
 
 .card2-component {

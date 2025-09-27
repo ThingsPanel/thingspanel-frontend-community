@@ -37,8 +37,7 @@ const LEGACY_CONFIG_PATTERNS = [
 
 // Visual Editor 专用配置组件路径
 const VISUAL_EDITOR_CONFIG_PATTERNS = [
-  './src/components/visual-editor/components/config/*Config.vue',
-  './src/components/visual-editor/components/PropertyPanel/components/*PropertyEditor.vue'
+  './src/components/visual-editor/components/config/*Config.vue'
 ]
 
 // ====== 配置组件元数据 ======
@@ -280,8 +279,7 @@ export class ConfigDiscovery {
 
     try {
       const visualEditorConfigModules = import.meta.glob([
-        '/src/components/visual-editor/components/config/*Config.vue',
-        '/src/components/visual-editor/components/PropertyPanel/components/*PropertyEditor.vue'
+        '/src/components/visual-editor/components/config/*Config.vue'
       ])
 
       for (const [filePath, moduleLoader] of Object.entries(visualEditorConfigModules)) {

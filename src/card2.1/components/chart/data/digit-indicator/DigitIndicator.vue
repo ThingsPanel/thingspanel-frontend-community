@@ -1,5 +1,13 @@
 <template>
   <div ref="cardRef" class="digit-indicator-container">
+    <!-- 🔥 直接显示数据源结果 - 测试用 -->
+    <div class="raw-data-display">
+      <div class="raw-data-title">🔥 直接数据源显示（测试）:</div>
+      <div class="raw-data-content">{{ JSON.stringify(props.data) }}</div>
+      <div class="raw-data-timestamp">{{ new Date().toLocaleTimeString() }}</div>
+      <div class="raw-data-debug">🚨 强制调试: {{ debugTimestamp }}</div>
+    </div>
+
     <div class="digit-indicator-content" :style="{ fontSize: fontSize }">
       <!-- 图标容器 -->
       <div class="icon-container">
@@ -14,7 +22,7 @@
           class="value"
           :title="displayValueWithUnit"
         >
-          {{ displayValue }} {{ displayUnit }}
+          {{ getDisplayValue('value', '45') }} {{ getDisplayValue('unit', '%') }}
         </span>
       </div>
 
@@ -22,9 +30,9 @@
       <div class="metric-name-container">
         <span
           class="metric-name"
-          :title="metricNameComputed"
+          :title="getDisplayValue('metricsName', '湿度')"
         >
-          {{ metricNameComputed }}
+          {{ getDisplayValue('metricsName', '湿度') }}
         </span>
       </div>
     </div>
@@ -44,170 +52,269 @@
 /**
  * 数字指示器组件 - Card 2.1 版本
  * 用于显示设备的遥测数据或属性数据，包括图标、数值、单位和指标名称
- * 支持 WebSocket 实时数据更新和响应式字体大小调整
  */
 
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { NIcon, NCollapse, NCollapseItem, NCode } from 'naive-ui'
 import { icons as iconOptions } from '@/components/common/icons'
-import { createLogger } from '@/utils/logger'
-import { $t } from '@/locales'
+import { useCard2Props } from '@/card2.1/hooks/useCard2Props'
 
-const logger = createLogger('DigitIndicator')
+// 🚀 导入Card2.1 Core数据绑定支持
+import { dataBindingManager } from '@/card2.1/core/data-source/data-binding-manager'
+import { reactiveDataManager } from '@/card2.1/core/data-source/reactive-data-manager'
+import { ComponentRegistry } from '@/card2.1/core/component-registry'
 
 // Props 接口 - Card 2.1 标准接口
 interface Props {
-  rawDataSources?: any // 接收原始数据源配置
-  config?: {           // 接收组件配置
-    title?: string
-    unit?: string
-    iconName?: string
-    color?: string
-    showDebug?: boolean
-  }
-  // 兼容直接传递的props
-  iconName?: string
-  iconColor?: string
-  unit?: string
-  title?: string
-  showDebug?: boolean
+  config: any          // 🔥 配置数据
+  data?: Record<string, unknown>  // 🔥 数据源执行结果
+  componentId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  rawDataSources: null,
-  config: () => ({}),
-  iconName: 'Water',
-  iconColor: '#1890ff',
-  unit: '',
-  title: '',
-  showDebug: false
+  data: () => ({})
 })
+
+// 🔥 获取初始统一配置 - 从Card2Wrapper的统一配置架构获取
+function getInitialUnifiedConfig() {
+  if (!props.componentId) return undefined
+
+  console.log(`🔥 [DigitIndicator] 获取初始统一配置开始:`, props.componentId)
+
+  try {
+    // 通过DOM查找Card2Wrapper实例获取完整配置
+    const cardElement = document.querySelector(`[data-component-id="${props.componentId}"]`)
+    if (cardElement && (cardElement as any)?.__vueParentComponent?.exposed?.getFullConfiguration) {
+      const fullConfig = (cardElement as any).__vueParentComponent.exposed.getFullConfiguration()
+      console.log(`🔥 [DigitIndicator] 从Card2Wrapper获取初始配置:`, fullConfig)
+
+      // 🔥 关键调试：显示组件配置的具体内容
+      if (fullConfig?.component) {
+        console.log(`🔥 [DigitIndicator] 初始组件配置:`, {
+          value: fullConfig.component.value,
+          unit: fullConfig.component.unit,
+          metricsName: fullConfig.component.metricsName,
+          iconName: fullConfig.component.iconName,
+          color: fullConfig.component.color,
+          完整配置: fullConfig.component
+        })
+      } else {
+        console.warn(`🔥 [DigitIndicator] 初始配置中没有component节!`)
+      }
+
+      return fullConfig
+    } else {
+      console.warn(`🔥 [DigitIndicator] 未找到Card2Wrapper元素或暴露方法`)
+    }
+  } catch (error) {
+    console.warn(`🔥 [DigitIndicator] 获取初始配置失败:`, error)
+  }
+
+  console.log(`🔥 [DigitIndicator] 返回undefined，使用默认配置`)
+  return undefined
+}
+
+// 🔥 使用 Card 2.1 统一配置管理
+const {
+  unifiedConfig,
+  updateConfig
+} = useCard2Props({
+  config: props.config,
+  data: props.data,
+  componentId: props.componentId,
+  initialUnifiedConfig: getInitialUnifiedConfig()  // 🔥 传递初始统一配置
+})
+
+// 🚀 Card2.1 Core数据绑定状态
+const card2CoreDataBinding = ref<string | null>(null)
+const card2CoreBindingStatus = ref<any>({})
+const card2CoreData = ref<Record<string, any>>({})
+const useCard2CoreDataBinding = ref(false)
+
+// 🚨 强制调试时间戳 - 监听props.data变化
+const debugTimestamp = ref(Date.now())
+
+// 🚨 监听props.data变化并强制更新调试时间戳
+watch(() => props.data, (newData, oldData) => {
+  debugTimestamp.value = Date.now()
+  console.log('🚨 [DigitIndicator] props.data发生变化:', {
+    newData,
+    oldData,
+    newTimestamp: debugTimestamp.value,
+    调用时间: new Date().toISOString()
+  })
+}, { deep: true, immediate: true })
+
+// 🚀 检查组件是否支持Card2.1 Core数据绑定
+const checkCard2CoreSupport = () => {
+  if (!props.componentId) return false
+
+  const isRegistered = ComponentRegistry.has('digit-indicator')
+  const dataSourceKeys = ComponentRegistry.getDataSourceKeys('digit-indicator')
+  const supportsDataBinding = isRegistered && dataSourceKeys.length > 0
+
+  console.log(`🚀 [DigitIndicator] Card2.1 Core支持检查:`, {
+    componentId: props.componentId,
+    isRegistered,
+    dataSourceKeys,
+    supportsDataBinding
+  })
+
+  useCard2CoreDataBinding.value = supportsDataBinding
+  return supportsDataBinding
+}
+
+// 🚀 初始化Card2.1 Core数据绑定
+const initializeCard2CoreBinding = async () => {
+  if (!useCard2CoreDataBinding.value || !props.componentId) {
+    console.log(`🚀 [DigitIndicator] 组件不支持Card2.1 Core数据绑定`)
+    return
+  }
+
+  try {
+    console.log(`🚀 [DigitIndicator] 开始初始化Card2.1 Core数据绑定:`, props.componentId)
+
+    // 创建组件数据绑定配置
+    const bindingConfig = {
+      componentId: props.componentId,
+      dataSourceId: `${props.componentId}-datasource`,
+      bindingConfig: {
+        value: { dataPath: 'value', fallbackValue: '0' },
+        unit: { dataPath: 'unit', fallbackValue: '%' },
+        metricsName: { dataPath: 'metricsName', fallbackValue: '数值' },
+        iconName: { dataPath: 'iconName', fallbackValue: 'Water' },
+        color: { dataPath: 'color', fallbackValue: '#1890ff' }
+      }
+    }
+
+    // 创建绑定
+    const bindingId = dataBindingManager.createBinding(bindingConfig)
+    card2CoreDataBinding.value = bindingId
+
+    // 订阅数据更新
+    dataBindingManager.subscribe(bindingId, (newData) => {
+      console.log(`🚀 [DigitIndicator] Card2.1 Core数据更新:`, newData)
+      card2CoreData.value = newData
+
+      // 更新绑定状态
+      const status = dataBindingManager.getBindingStatus(bindingId)
+      if (status) {
+        card2CoreBindingStatus.value = status
+      }
+    })
+
+    console.log(`✅ [DigitIndicator] Card2.1 Core数据绑定初始化完成:`, bindingId)
+  } catch (error) {
+    console.error(`❌ [DigitIndicator] Card2.1 Core数据绑定初始化失败:`, error)
+  }
+}
+
+// 🚀 清理Card2.1 Core绑定
+const cleanupCard2CoreBinding = () => {
+  if (card2CoreDataBinding.value) {
+    dataBindingManager.removeBinding(card2CoreDataBinding.value)
+    card2CoreDataBinding.value = null
+    card2CoreData.value = {}
+    card2CoreBindingStatus.value = {}
+    console.log(`🚀 [DigitIndicator] 已清理Card2.1 Core数据绑定:`, props.componentId)
+  }
+}
 
 // 响应式数据
-const detail = ref<string>('')
-const unit = ref<string>('%')
 const fontSize = ref('14px')
 const cardRef = ref<HTMLElement>()
-const metricName = ref<string>('')
 let resizeObserver: ResizeObserver | null = null
 
-// 数据源解析 - 从 rawDataSources 中解析数据
-const deviceData = computed(() => {
-  const binding = props.rawDataSources?.dataSourceBindings?.deviceData
-  if (!binding?.rawData) return null
-  try {
-    return JSON.parse(binding.rawData)
-  } catch {
-    return null
-  }
-})
+// 🔥 增强的数据获取函数：优先使用Card2.1 Core数据，然后是props.data，最后是配置
+const getDisplayValue = (field: string, defaultValue: any) => {
+  console.log(`🔥 [DigitIndicator] getDisplayValue调试开始 - 字段: ${field}`)
 
-// 配置数据解析
-const configData = computed(() => {
-  const binding = props.rawDataSources?.dataSourceBindings?.configData
-  if (!binding?.rawData) return null
-  try {
-    return JSON.parse(binding.rawData)
-  } catch {
-    return null
+  // 🚀 首先检查Card2.1 Core数据
+  if (useCard2CoreDataBinding.value && Object.keys(card2CoreData.value).length > 0) {
+    if (field in card2CoreData.value && card2CoreData.value[field] !== undefined && card2CoreData.value[field] !== null) {
+      console.log(`✅ [DigitIndicator] ${field} 使用Card2.1 Core数据:`, card2CoreData.value[field])
+      return String(card2CoreData.value[field])
+    }
   }
-})
+
+  console.log('🔥 [DigitIndicator] props.data类型:', typeof props.data)
+  console.log('🔥 [DigitIndicator] props.data内容:', props.data)
+  console.log('🔥 [DigitIndicator] props.data的键:', props.data && typeof props.data === 'object' ? Object.keys(props.data) : '不是对象')
+  console.log('🔥 [DigitIndicator] unifiedConfig.component:', unifiedConfig.value.component)
+  console.log('🔥 [DigitIndicator] componentId:', props.componentId)
+
+  // 1. 使用数据源数据
+  if (props.data && typeof props.data === 'object' && field in props.data && props.data[field] !== undefined && props.data[field] !== null) {
+    console.log(`✅ [DigitIndicator] ${field} 使用数据源:`, props.data[field])
+    return String(props.data[field])
+  } else {
+    console.log(`❌ [DigitIndicator] ${field} 数据源检查失败:`, {
+      hasData: !!props.data,
+      isObject: typeof props.data === 'object',
+      hasField: props.data && typeof props.data === 'object' && field in props.data,
+      fieldValue: props.data && typeof props.data === 'object' ? props.data[field] : '无法获取',
+      isUndefined: props.data && typeof props.data === 'object' ? props.data[field] === undefined : '无法判断',
+      isNull: props.data && typeof props.data === 'object' ? props.data[field] === null : '无法判断'
+    })
+  }
+
+  // 2. 回退到统一配置中的组件配置
+  if (unifiedConfig.value.component && field in unifiedConfig.value.component && unifiedConfig.value.component[field] !== undefined) {
+    console.log(`✅ [DigitIndicator] ${field} 使用配置:`, unifiedConfig.value.component[field])
+    return String(unifiedConfig.value.component[field])
+  } else {
+    console.log(`❌ [DigitIndicator] ${field} 配置检查失败:`, {
+      hasComponent: !!unifiedConfig.value.component,
+      hasField: unifiedConfig.value.component && field in unifiedConfig.value.component,
+      fieldValue: unifiedConfig.value.component ? unifiedConfig.value.component[field] : '无配置',
+      componentKeys: unifiedConfig.value.component ? Object.keys(unifiedConfig.value.component) : '无配置'
+    })
+  }
+
+  // 3. 使用默认值
+  console.log(`⚠️ [DigitIndicator] ${field} 使用默认值:`, defaultValue)
+  return String(defaultValue)
+}
 
 // 计算图标组件
 const iconComponent = computed(() => {
-  // 优先级：组件配置 > 数据源配置 > props > 默认值
-  const iconName = props.config?.iconName ||
-                   configData.value?.iconName ||
-                   props.iconName ||
-                   'Water'
+  const iconName = getDisplayValue('iconName', 'Water')
   return iconOptions[iconName] || iconOptions.Water
 })
 
 // 计算图标颜色
 const iconColor = computed(() => {
-  // 优先级：组件配置 > 数据源配置 > props > 默认值
-  return props.config?.color ||
-         configData.value?.color ||
-         props.iconColor ||
-         '#1890ff'
-})
-
-// 计算显示值
-const displayValue = computed(() => {
-  // 优先级：设备数据 > 本地状态 > 默认值
-  if (deviceData.value?.value !== undefined && deviceData.value?.value !== null && deviceData.value?.value !== '') {
-    return deviceData.value.value
-  }
-  if (detail.value !== '' && detail.value !== null) {
-    return detail.value
-  }
-  return '45' // 默认值
-})
-
-// 计算显示单位
-const displayUnit = computed(() => {
-  // 优先级：组件配置 > 数据源配置 > props > 设备数据 > 默认值
-  return props.config?.unit ||
-         configData.value?.unit ||
-         props.unit ||
-         deviceData.value?.unit ||
-         unit.value ||
-         '%'
+  return getDisplayValue('color', '#1890ff')
 })
 
 // 计算完整显示值（包含单位）
 const displayValueWithUnit = computed(() => {
-  return `${displayValue.value} ${displayUnit.value}`
-})
-
-// 计算指标名称
-const metricNameComputed = computed(() => {
-  return deviceData.value?.metricsName ||
-         configData.value?.metricName ||
-         props.config?.title ||
-         props.title ||
-         $t('card.humidity')
+  return `${getDisplayValue('value', '45')} ${getDisplayValue('unit', '%')}`
 })
 
 // 计算是否显示调试信息
 const shouldShowDebug = computed(() => {
-  return props.config?.showDebug || props.showDebug || false
+  return unifiedConfig.value.component?.showDebug || false
 })
 
 // 调试信息
 const debugInfo = computed(() => {
   return JSON.stringify({
-    config: props.config,
-    deviceData: deviceData.value,
-    configData: configData.value,
-    computedValues: {
-      displayValue: displayValue.value,
-      displayUnit: displayUnit.value,
-      iconComponent: iconComponent.value?.name,
-      iconColor: iconColor.value,
-      metricName: metricNameComputed.value,
-      shouldShowDebug: shouldShowDebug.value
+    props: {
+      data: props.data,
+      config: props.config
     },
-    rawDataSources: props.rawDataSources,
-    localState: {
-      detail: detail.value,
-      unit: unit.value
+    unifiedConfig: unifiedConfig.value,
+    computedValues: {
+      value: getDisplayValue('value', '45'),
+      unit: getDisplayValue('unit', '%'),
+      metricsName: getDisplayValue('metricsName', '湿度'),
+      iconName: getDisplayValue('iconName', 'Water'),
+      color: getDisplayValue('color', '#1890ff'),
+      shouldShowDebug: shouldShowDebug.value
     }
   }, null, 2)
 })
-
-// 简化的数组数据处理（保持与原版本兼容）
-const processWebSocketData = (data: any) => {
-  if (!data) return null
-
-  // 如果数据是数组，直接取第一个元素
-  if (Array.isArray(data)) {
-    return data.length > 0 ? data[0] : null
-  }
-
-  // 直接返回数据
-  return data
-}
 
 // 处理 ResizeObserver 回调
 const handleResize = (entries: ResizeObserverEntry[]) => {
@@ -218,64 +325,46 @@ const handleResize = (entries: ResizeObserverEntry[]) => {
   }
 }
 
-// 监听数据变化并更新本地状态
-watch(() => deviceData.value, (newData) => {
-  if (newData) {
-    if (newData.value !== undefined) {
-      detail.value = newData.value
-    }
-    if (newData.unit !== undefined) {
-      unit.value = newData.unit
-    }
-    if (newData.metricsName !== undefined) {
-      metricName.value = newData.metricsName
-    }
-  }
-}, { deep: true, immediate: true })
-
-// 监听配置数据变化
-watch(() => configData.value, (newConfig) => {
-  if (newConfig) {
-    logger.info('配置数据更新:', newConfig)
-  }
-}, { deep: true, immediate: true })
-
-// 监听组件配置变化
-watch(() => props.config, (newConfig, oldConfig) => {
-  logger.info('组件配置发生变化:', {
-    新配置: newConfig,
-    旧配置: oldConfig,
-    变化字段: getChangedFields(oldConfig, newConfig)
+// 🚀 监听Card2.1 Core数据变化
+watch(() => card2CoreData.value, (newData, oldData) => {
+  console.log('🚀 [DigitIndicator] Card2.1 Core数据变化监听:', {
+    componentId: props.componentId,
+    newData,
+    oldData,
+    timestamp: new Date().toISOString()
   })
 }, { deep: true, immediate: true })
 
-// 监听原始数据源变化（调试用）
-watch(() => props.rawDataSources, (newRawDataSources) => {
-  logger.info('接收到新的rawDataSources:', {
-    rawDataSources: newRawDataSources,
-    hasDataSourceBindings: !!newRawDataSources?.dataSourceBindings,
-    dataSourceKeys: newRawDataSources?.dataSourceBindings ? Object.keys(newRawDataSources.dataSourceBindings) : []
+// 🔥 监听 props.data
+watch(() => props.data, (newData, oldData) => {
+  console.log('🔥 [DigitIndicator] props.data 变化监听:', {
+    componentId: props.componentId,
+    newData,
+    oldData,
+    newDataKeys: newData && typeof newData === 'object' ? Object.keys(newData) : '不是对象',
+    oldDataKeys: oldData && typeof oldData === 'object' ? Object.keys(oldData) : '不是对象',
+    timestamp: new Date().toISOString()
   })
 }, { deep: true, immediate: true })
 
-// 辅助函数：检测配置变化的字段
-function getChangedFields(oldConfig: any, newConfig: any): string[] {
-  const changed: string[] = []
-  if (!oldConfig || !newConfig) return changed
-
-  const allKeys = new Set([...Object.keys(oldConfig || {}), ...Object.keys(newConfig || {})])
-
-  for (const key of allKeys) {
-    if (oldConfig[key] !== newConfig[key]) {
-      changed.push(key)
-    }
-  }
-
-  return changed
-}
+// 🔥 监听 unifiedConfig 变化
+watch(() => unifiedConfig.value, (newConfig, oldConfig) => {
+  console.log('🔥 [DigitIndicator] unifiedConfig 变化监听:', {
+    componentId: props.componentId,
+    newComponent: newConfig.component,
+    oldComponent: oldConfig?.component,
+    timestamp: new Date().toISOString()
+  })
+}, { deep: true, immediate: true })
 
 // 生命周期钩子
-onMounted(() => {
+onMounted(async () => {
+  // 🚀 首先初始化Card2.1 Core数据绑定
+  checkCard2CoreSupport()
+  if (useCard2CoreDataBinding.value) {
+    await initializeCard2CoreBinding()
+  }
+
   if (cardRef.value) {
     resizeObserver = new ResizeObserver(handleResize)
     resizeObserver.observe(cardRef.value)
@@ -283,52 +372,18 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  // 🚀 清理Card2.1 Core数据绑定
+  cleanupCard2CoreBinding()
+
   if (resizeObserver) {
     resizeObserver.disconnect()
     resizeObserver = null
   }
 })
 
-// 暴露给父组件的方法（保持与原版本兼容）
+// 暴露给父组件的方法
 defineExpose({
-  updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
-    // Only update detail value when data[metricsId] is not undefined, null or ''
-    if (!metricsId || data[metricsId] === undefined || data[metricsId] === null || data[metricsId] === '') {
-      logger.warn(`No data returned from websocket for ${metricsId}`)
-      return
-    }
-
-    // 处理 WebSocket 数据
-    const processedData = processWebSocketData(data[metricsId])
-
-    if (processedData) {
-      // 如果处理后的数据是对象，提取 value 和 unit
-      if (typeof processedData === 'object' && processedData !== null) {
-        // 检查是否有value属性
-        if (processedData.value !== undefined) {
-          detail.value = processedData.value
-          if (processedData.unit) {
-            unit.value = processedData.unit
-          }
-        } else {
-          // 直接使用处理后的数据
-          detail.value = processedData
-        }
-      } else {
-        // 直接使用处理后的数据
-        detail.value = processedData
-      }
-
-      logger.info(`WebSocket data updated for ${metricsId}:`, {
-        original: data[metricsId],
-        processed: processedData,
-        detail: detail.value,
-        unit: unit.value
-      })
-    } else {
-      detail.value = data[metricsId]
-    }
-  }
+  // Card 2.1 组件的数据更新通过 props.data 自动处理
 })
 </script>
 
@@ -336,6 +391,38 @@ defineExpose({
 .digit-indicator-container {
   width: 100%;
   height: 100%;
+}
+
+/* 🔥 原始数据显示区域样式 */
+.raw-data-display {
+  background: #f0f0f0;
+  border: 2px solid #ff6b6b;
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.raw-data-title {
+  color: #ff6b6b;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.raw-data-content {
+  background: #fff;
+  padding: 4px;
+  border-radius: 2px;
+  margin-bottom: 4px;
+  min-height: 20px;
+  font-family: monospace;
+}
+
+.raw-data-timestamp {
+  color: #666;
+  font-size: 10px;
+  text-align: right;
 }
 
 .digit-indicator-content {

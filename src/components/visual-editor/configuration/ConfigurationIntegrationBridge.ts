@@ -560,7 +560,8 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
             组件ID: widgetId,
             配置节: section,
             时间间隔: timeDiff,
-            配置哈希: configHash
+            配置哈希: configHash,
+            说明: '防止配置重复触发导致的多重数据源执行'
           })
           return false // 不是真实变更
         }
@@ -569,6 +570,24 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       // 清理之前的待处理事件
       if (cached.pendingEventTimeout) {
         clearTimeout(cached.pendingEventTimeout)
+      }
+    }
+
+    // 🔥 关键修复：对于数据源配置，额外检查数据项内容是否真的变化了
+    if (section === 'dataSource' && newConfig && typeof newConfig === 'object') {
+      const currentConfig = configurationStateManager.getConfiguration(widgetId)
+      const existingDataSourceConfig = currentConfig?.dataSource
+
+      if (existingDataSourceConfig) {
+        const existingHash = this.calculateConfigHash(existingDataSourceConfig)
+        if (existingHash === configHash) {
+          console.log(`🔄 [ConfigurationIntegrationBridge] 数据源配置内容未变化，跳过重复执行:`, {
+            组件ID: widgetId,
+            配置哈希: configHash,
+            说明: '数据源配置实际内容相同，避免无效执行'
+          })
+          return false
+        }
       }
     }
 
@@ -582,7 +601,8 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       组件ID: widgetId,
       配置节: section,
       配置哈希: configHash,
-      是否首次: !cached
+      是否首次: !cached,
+      说明: '配置真实变更，将触发相应的数据源执行'
     })
 
     return true // 是真实变更
@@ -944,3 +964,8 @@ export const configurationIntegrationBridge = new ConfigurationIntegrationBridge
 
 // 向后兼容的导出
 export const configurationManager = configurationIntegrationBridge
+
+// 🔥 新增：暴露全局实例供其他模块使用
+if (typeof globalThis !== 'undefined') {
+  (globalThis as any).__configurationIntegrationBridge = configurationIntegrationBridge
+}

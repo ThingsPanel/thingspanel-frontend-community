@@ -483,79 +483,63 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
     console.log(`🔥 [useCard2Props] displayData 计算开始 ${componentId}`)
 
     // 🔥 关键修复：正确获取data值，无论它是响应式引用还是普通值
-    const currentData = isRef(data) || (typeof data === 'object' && data !== null && '__v_isRef' in data)
-      ? (data as ComputedRef<Record<string, unknown>>).value
-      : data as Record<string, unknown>
+    let currentData: Record<string, unknown>
 
-    console.log(`🔥 [useCard2Props] displayData 计算中 ${componentId}:`, {
-      isDataRef: isRef(data) || (typeof data === 'object' && data !== null && '__v_isRef' in data),
-      originalData: data,
-      currentData: currentData,
-      hasCurrentData: !!currentData,
-      currentDataType: typeof currentData,
-      currentDataKeys: currentData && typeof currentData === 'object' ? Object.keys(currentData) : [],
-      // 🔥 新增：统一配置调试信息
-      unifiedConfigComponent: unifiedConfig.value.component,
-      configKeys: unifiedConfig.value.component ? Object.keys(unifiedConfig.value.component) : [],
-      配置内容: unifiedConfig.value.component
+    if (isRef(data)) {
+      // 如果是 ref，直接获取 .value
+      currentData = data.value as Record<string, unknown>
+      console.log(`🔥 [useCard2Props] 检测到 ref 类型数据:`, data.value)
+    } else if (typeof data === 'object' && data !== null && 'value' in data) {
+      // 如果是计算属性对象，获取 .value
+      currentData = (data as any).value as Record<string, unknown>
+      console.log(`🔥 [useCard2Props] 检测到计算属性对象:`, (data as any).value)
+    } else if (typeof data === 'function') {
+      // 如果是函数（某些情况下计算属性可能表现为函数），调用它获取值
+      try {
+        currentData = (data as any)() as Record<string, unknown>
+        console.log(`🔥 [useCard2Props] 检测到函数类型，调用后获取:`, currentData)
+      } catch (error) {
+        console.warn(`🔥 [useCard2Props] 函数调用失败，使用空对象:`, error)
+        currentData = {}
+      }
+    } else {
+      // 普通对象或值
+      currentData = (data as Record<string, unknown>) || {}
+      console.log(`🔥 [useCard2Props] 检测到普通对象:`, currentData)
+    }
+
+    console.log(`🔥 [useCard2Props] displayData 数据提取结果 ${componentId}:`, {
+      数据类型: typeof data,
+      是否为ref: isRef(data),
+      提取到的数据: currentData,
+      数据键列表: currentData && typeof currentData === 'object' ? Object.keys(currentData) : [],
+      数据内容预览: currentData
     })
 
     // 🔥 修复逻辑：检查是否有有效的数据源执行结果
     const hasValidDataSource = currentData &&
       typeof currentData === 'object' &&
-      Object.keys(currentData).length > 0 &&
-      // 🔥 关键修复：过滤掉无效的数据源结果（如空的complete字段）
-      Object.values(currentData).some(sourceResult => {
-        if (!sourceResult || typeof sourceResult !== 'object') return false
+      Object.keys(currentData).length > 0
 
-        // 检查是否有有效的data字段
-        if ('data' in sourceResult) {
-          const data = sourceResult.data
-          // data必须存在且不能是空字符串或空对象
-          if (!data) return false
-          if (typeof data === 'string' && (data === '{}' || data.trim() === '')) return false
-          if (typeof data === 'object' && Object.keys(data).length === 0) return false
-          return true
-        }
+    // 🔥 关键修复：检查数据是否来自DataWarehouse且包含组件需要的字段
+    const isDataFromWarehouse = hasValidDataSource &&
+      // 检查是否包含组件需要的基本字段（如value, unit等）
+      Object.keys(currentData).some(key =>
+        ['value', 'unit', 'metricsName', 'data', 'title', 'amount', 'description', 'timestamp'].includes(key)
+      )
 
-        // 非标准格式也需要有实际内容
-        if (typeof sourceResult === 'string' && (sourceResult === '{}' || sourceResult.trim() === '')) return false
-        if (typeof sourceResult === 'object' && Object.keys(sourceResult).length === 0) return false
+    console.log(`🔥 [useCard2Props] 数据源有效性判断 ${componentId}:`, {
+      hasValidDataSource,
+      isDataFromWarehouse,
+      currentDataKeys: currentData ? Object.keys(currentData) : [],
+      判断结果: isDataFromWarehouse ? '使用数据源数据' : '使用配置数据',
+      currentDataContent: currentData
+    })
 
-        return true
-      })
-
-    if (hasValidDataSource) {
-      // 🔥 数据源执行结果直接转换为组件可用格式
-      const dataSourceResults = {}
-
-      Object.entries(currentData).forEach(([sourceId, sourceResult]) => {
-        if (sourceResult && typeof sourceResult === 'object' && 'data' in sourceResult) {
-          // 标准格式：{type, data, metadata}
-          const sourceData = sourceResult.data
-          if (sourceData && typeof sourceData === 'object') {
-            dataSourceResults[sourceId] = JSON.stringify(sourceData, null, 2)
-          } else {
-            dataSourceResults[sourceId] = String(sourceData)
-          }
-        } else {
-          // 非标准格式，直接字符串化
-          dataSourceResults[sourceId] = typeof sourceResult === 'object'
-            ? JSON.stringify(sourceResult, null, 2)
-            : String(sourceResult)
-        }
-      })
-
-      // 🎯 用户要求的打印这几个字 - 阶段4：useCard2Props数据转换完成
-      console.log(`🎯 用户要求的打印这几个字 - 阶段4：useCard2Props数据转换完成`, {
-        componentId,
-        接收到的原始数据: currentData,
-        转换后的数据源结果: dataSourceResults,
-        组件将接收到的数据: dataSourceResults
-      })
-
-      console.log(`🔥 [useCard2Props] displayData 返回数据源结果 ${componentId}:`, dataSourceResults)
-      return dataSourceResults
+    if (isDataFromWarehouse) {
+      // 🔥 直接返回DataWarehouse的数据，这已经是组件需要的格式
+      console.log(`🔥 [useCard2Props] displayData 返回DataWarehouse数据 ${componentId}:`, currentData)
+      return currentData
     }
 
     // 🔥 核心修复：没有数据源结果时，直接使用统一配置的组件配置

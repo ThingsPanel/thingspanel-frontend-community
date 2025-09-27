@@ -163,34 +163,28 @@ export class SimpleDataBridge {
    * 实际的组件执行逻辑（从executeComponent中提取）
    */
   private async doExecuteComponent(requirement: ComponentDataRequirement, startTime: number, callerInfo: string): Promise<DataResult> {
-    // 🔥 移除循环打印日志，避免200+组件场景下的性能问题
+    const executionId = `${requirement.componentId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    console.log(`🔥 [SimpleDataBridge] doExecuteComponent开始 [执行ID: ${executionId}]`, {
+      componentId: requirement.componentId,
+      callerInfo,
+      hasDataSources: !!requirement.dataSources?.length
+    })
 
     try {
-      // 🆕 检查缓存数据，但需要验证配置是否已更新
-      const cachedData = this.warehouse.getComponentData(requirement.componentId)
+      // 🔥 关键修复：强制跳过缓存，确保每次都获取最新配置和数据
+      // 配置修改后必须重新执行数据源，不能依赖旧缓存
+      console.log(`🔥 [SimpleDataBridge] [${executionId}] 强制跳过缓存，重新执行数据源`)
+      this.warehouse.clearComponentCache(requirement.componentId)
 
-      
-      if (cachedData) {
-        // 🔥 修复：检查是否有数据项配置，如果没有则不使用缓存
-        const hasDataItems = this.hasValidDataItems(requirement)
-
-
-        if (hasDataItems) {
-          // 🔥 修复：如果缓存数据被 'complete' 包装，需要解包
-          let finalData = cachedData
-          if (cachedData && typeof cachedData === 'object' && 'complete' in cachedData) {
-            finalData = cachedData.complete
-          }
-
-          this.notifyDataUpdate(requirement.componentId, finalData)
-          return {
-            success: true,
-            data: finalData,
-            timestamp: Date.now()
-          }
-        } else {
-          this.warehouse.clearComponentCache(requirement.componentId)
-        }
+      // 🔥 关键修复：确保获取最新的配置快照
+      const configSnapshot = await this.captureConfigurationSnapshot(requirement.componentId, executionId)
+      if (configSnapshot) {
+        console.log(`🔥 [SimpleDataBridge] [${executionId}] 使用最新配置快照`, {
+          snapshotTimestamp: configSnapshot.timestamp,
+          hasDataSource: !!configSnapshot.config.dataSource
+        })
+        // 使用最新配置重构数据需求
+        requirement = this.reconstructRequirementFromSnapshot(requirement, configSnapshot)
       }
 
       // 🔥 检查数据格式：如果已经是 DataSourceConfiguration 格式，直接使用
@@ -199,6 +193,7 @@ export class SimpleDataBridge {
       // 🎯 用户要求的打印这几个字 - 调试：检查格式判断过程
       const isDataSourceConfigFormat = this.isDataSourceConfiguration(requirement)
       console.log(`🎯 用户要求的打印这几个字 - 调试：格式检查结果`, {
+        executionId,
         是否为DataSourceConfiguration格式: isDataSourceConfigFormat,
         检查的配置: requirement,
         第一个数据源: requirement.dataSources?.[0],
@@ -260,12 +255,20 @@ export class SimpleDataBridge {
       // 🔥 在执行前详细检查配置中的HTTP参数
       this.validateConfigBeforeExecution(dataSourceConfig)
 
+      // 🔥 关键修复：为数据源配置添加执行序号，防止结果混乱
+      const enhancedDataSourceConfig = {
+        ...dataSourceConfig,
+        executionId,
+        executionTimestamp: Date.now(),
+        configHash: this.calculateConfigHash(dataSourceConfig)
+      }
+
       // 🔥 使用多层执行器链执行完整的数据处理管道
-      console.log(`🔥 [SimpleDataBridge] 即将调用 MultiLayerExecutorChain.executeDataProcessingChain`)
-      console.log(`🔥 [SimpleDataBridge] 传入的配置:`, dataSourceConfig)
+      console.log(`🔥 [SimpleDataBridge] [${executionId}] 即将调用 MultiLayerExecutorChain.executeDataProcessingChain`)
+      console.log(`🔥 [SimpleDataBridge] 传入的配置:`, enhancedDataSourceConfig)
 
       const executionResult: ExecutionResult = await this.executorChain.executeDataProcessingChain(
-        dataSourceConfig,
+        enhancedDataSourceConfig,
         true
       )
 
@@ -295,9 +298,11 @@ export class SimpleDataBridge {
 
         // 🎯 用户要求的打印这几个字 - 阶段1：SimpleDataBridge数据执行完成
         console.log(`🎯 用户要求的打印这几个字 - 阶段1：SimpleDataBridge数据执行完成`, {
+          executionId,
           componentId: requirement.componentId,
           原始执行结果: executionResult.componentData,
           数据源数量: Object.keys(executionResult.componentData).length,
+          configHash: enhancedDataSourceConfig.configHash,
           各数据源内容: Object.entries(executionResult.componentData).map(([sourceId, sourceData]) => ({
             数据源ID: sourceId,
             数据类型: typeof sourceData,
@@ -308,6 +313,12 @@ export class SimpleDataBridge {
         
         // 🔥 修复：为每个数据源分别存储数据，并存储合并后的完整数据
         if (executionResult.componentData && typeof executionResult.componentData === 'object') {
+          // 🔥 关键修复：带执行ID的原子性数据存储
+          console.log(`🔥 [SimpleDataBridge] [${executionId}] 开始原子性数据存储`)
+
+          // 先清除旧数据，再存储新数据（原子性操作）
+          this.warehouse.clearComponentCache(requirement.componentId)
+
           // 存储各个数据源的数据
           Object.entries(executionResult.componentData).forEach(([sourceId, sourceData]) => {
             this.warehouse.storeComponentData(
@@ -316,9 +327,9 @@ export class SimpleDataBridge {
               sourceData,
               'multi-source'
             )
-            console.log(`✅ [SimpleDataBridge] 存储数据源 ${sourceId}:`, sourceData)
+            console.log(`✅ [SimpleDataBridge] [${executionId}] 存储数据源 ${sourceId}:`, sourceData)
           })
-          
+
           // 同时存储完整的合并数据作为备份
           this.warehouse.storeComponentData(
             requirement.componentId,
@@ -326,7 +337,7 @@ export class SimpleDataBridge {
             executionResult.componentData,
             'multi-source'
           )
-          console.log(`✅ [SimpleDataBridge] 存储完整数据到 'complete'`)
+          console.log(`✅ [SimpleDataBridge] [${executionId}] 存储完整数据到 'complete'`)
           
           // 🔥 新增：立即验证数据是否成功存储到DataWarehouse
           const warehouseStats = this.warehouse.getStorageStats()
@@ -624,6 +635,81 @@ export class SimpleDataBridge {
     })
 
     console.log(`================================================`)
+  }
+
+  /**
+   * 🔥 新增：捕获配置快照，确保执行时使用一致的配置
+   */
+  private async captureConfigurationSnapshot(componentId: string, executionId: string): Promise<{ config: any; timestamp: number } | null> {
+    try {
+      // 🔥 修复：使用动态导入替代require
+      const { configurationIntegrationBridge } = await import('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
+      const config = configurationIntegrationBridge.getConfiguration(componentId)
+
+      if (config) {
+        const snapshot = {
+          config: JSON.parse(JSON.stringify(config)), // 深拷贝
+          timestamp: Date.now()
+        }
+        console.log(`🔥 [SimpleDataBridge] [${executionId}] 配置快照已捕获`, {
+          componentId,
+          hasBase: !!snapshot.config.base,
+          hasDataSource: !!snapshot.config.dataSource,
+          timestamp: snapshot.timestamp
+        })
+        return snapshot
+      }
+      return null
+    } catch (error) {
+      console.error(`❌ [SimpleDataBridge] [${executionId}] 配置快照捕获失败:`, error)
+      return null
+    }
+  }
+
+  /**
+   * 🔥 新增：基于配置快照重构数据需求
+   */
+  private reconstructRequirementFromSnapshot(
+    originalRequirement: ComponentDataRequirement,
+    snapshot: { config: any; timestamp: number }
+  ): ComponentDataRequirement {
+    // 如果快照包含完整的数据源配置，使用快照重构
+    if (snapshot.config.dataSource) {
+      return {
+        ...originalRequirement,
+        dataSources: this.convertSnapshotToDataSources(snapshot.config)
+      }
+    }
+    return originalRequirement
+  }
+
+  /**
+   * 🔥 新增：将配置快照转换为数据源格式
+   */
+  private convertSnapshotToDataSources(config: any): any[] {
+    // 根据配置结构转换为标准数据源格式
+    if (config.dataSource && config.dataSource.dataSources) {
+      return config.dataSource.dataSources
+    }
+    return []
+  }
+
+  /**
+   * 🔥 新增：计算配置哈希值，用于检测配置变化
+   */
+  private calculateConfigHash(config: any): string {
+    try {
+      const configString = JSON.stringify(config)
+      let hash = 0
+      for (let i = 0; i < configString.length; i++) {
+        const char = configString.charCodeAt(i)
+        hash = ((hash << 5) - hash) + char
+        hash = hash & hash // 转换为32位整数
+      }
+      return Math.abs(hash).toString(36)
+    } catch (error) {
+      return Date.now().toString(36)
+    }
   }
 
   /**

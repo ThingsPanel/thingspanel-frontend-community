@@ -48,6 +48,11 @@ import ConfigurationImportExportPanel from '@/core/data-architecture/components/
 import { singleDataSourceExporter, singleDataSourceImporter } from '@/core/data-architecture/utils/ConfigurationImportExport'
 import type { SingleDataSourceImportPreview } from '@/core/data-architecture/utils/ConfigurationImportExport'
 
+// 🚀 导入Card2.1 Core响应式数据管理器
+import { reactiveDataManager } from '@/card2.1/core/data-source/reactive-data-manager'
+import { dataBindingManager } from '@/card2.1/core/data-source/data-binding-manager'
+import { ComponentRegistry } from '@/card2.1/core/component-registry'
+
 // Props接口 - 兼容现有系统和ConfigurationPanel调用方式
 interface Props {
   /** v-model绑定的配置数据 */
@@ -96,6 +101,10 @@ const pollingManager = useGlobalPollingManager()
 
 // 注入编辑器上下文用于配置同步
 const editorContext = inject('editorContext', null) as any
+
+// 🚀 Card2.1 Core响应式数据管理状态
+const card2CoreDataSubscription = ref<string | null>(null)
+const useCard2CoreReactiveData = ref(false)
 
 // 导入导出相关状态
 const exportLoading = ref<Record<string, boolean>>({})
@@ -299,7 +308,7 @@ const handleRawDataModalClose = () => {
 /**
  * 处理数据项配置确认 - 集成配置驱动架构
  */
-const handleDataItemConfirm = (dataItemConfig: any) => {
+const handleDataItemConfirm = async (dataItemConfig: any) => {
   const dataSourceKey = currentDataSourceKey.value
   if (!dataSourceKey) return
 
@@ -345,11 +354,38 @@ const handleDataItemConfirm = (dataItemConfig: any) => {
     // 核心：根据当前所有数据项重新构建完整的 DataSourceConfiguration
     const dataSourceConfig = rebuildCompleteDataSourceConfiguration()
 
+    // 🔥 关键修复：清除组件缓存，确保新数据源配置生效
+    simpleDataBridge.clearComponentCache(componentInfo.value.componentId)
+
     // 新配置管理系统：内容哈希去重，避免无限循环
     configurationManager.updateConfiguration(componentInfo.value.componentId, 'dataSource', dataSourceConfig)
-    
-    // 配置保存完成，数据源将通过正常流程执行
-    
+
+    // 🔥 关键修复：配置保存后立即重新执行数据源，获取最新数据
+    console.log('🔥 [SimpleConfigurationEditor] 即将重新执行数据源:', {
+      componentId: componentInfo.value.componentId,
+      componentType: componentInfo.value.componentType,
+      dataSourceConfig
+    })
+
+    const { getVisualEditorBridge } = await import('@/core/data-architecture/VisualEditorBridge')
+    const visualEditorBridge = getVisualEditorBridge()
+    const result = await visualEditorBridge.updateComponentExecutor(
+      componentInfo.value.componentId,
+      componentInfo.value.componentType,
+      dataSourceConfig
+    )
+
+    console.log('🔥 [SimpleConfigurationEditor] 数据源执行完成:', {
+      success: result.success,
+      hasData: !!result.data,
+      dataKeys: result.data ? Object.keys(result.data) : []
+    })
+
+    // 🔥 关键修复：强制清除DataWarehouse的合并数据缓存，确保组件获取最新数据
+    const { dataWarehouse } = await import('@/core/data-architecture/DataWarehouse')
+    dataWarehouse.clearComponentMergedCache(componentInfo.value.componentId)
+    console.log('🔥 [SimpleConfigurationEditor] 已强制清除DataWarehouse合并缓存')
+
     // 强制同步到编辑器确保配置持久化
     try {
       if (editorContext?.updateNode) {
@@ -626,6 +662,76 @@ const initializeComponentPolling = () => {
 }
 
 /**
+ * 🚀 检查组件是否支持Card2.1 Core响应式数据管理
+ */
+const checkCard2CoreReactiveSupport = () => {
+  const isRegistered = ComponentRegistry.has(componentInfo.value.componentType)
+  const dataSourceKeys = ComponentRegistry.getDataSourceKeys(componentInfo.value.componentType)
+  const supportsReactiveData = isRegistered && dataSourceKeys.length > 0
+
+  console.log(`🚀 [SimpleConfigurationEditor] Card2.1 Core响应式支持检查:`, {
+    componentType: componentInfo.value.componentType,
+    isRegistered,
+    dataSourceKeys,
+    supportsReactiveData
+  })
+
+  useCard2CoreReactiveData.value = supportsReactiveData
+  return supportsReactiveData
+}
+
+/**
+ * 🚀 初始化Card2.1 Core响应式数据管理
+ */
+const initializeCard2CoreReactiveData = async () => {
+  if (!useCard2CoreReactiveData.value) {
+    console.log(`🚀 [SimpleConfigurationEditor] 组件 ${componentInfo.value.componentType} 不支持Card2.1 Core响应式数据`)
+    return
+  }
+
+  try {
+    console.log(`🚀 [SimpleConfigurationEditor] 初始化Card2.1 Core响应式数据管理:`, componentInfo.value.componentId)
+
+    // 获取数据源配置
+    const dataSourceConfig = configurationManager.getConfiguration(componentInfo.value.componentId)?.dataSource
+
+    if (!dataSourceConfig) {
+      console.log(`🚀 [SimpleConfigurationEditor] 没有数据源配置，跳过响应式数据管理`)
+      return
+    }
+
+    // 创建响应式数据订阅
+    const subscriptionId = reactiveDataManager.subscribe(
+      componentInfo.value.componentId, // 使用组件ID作为数据源ID
+      (newData) => {
+        console.log(`🚀 [SimpleConfigurationEditor] Card2.1 Core响应式数据更新:`, newData)
+      },
+      {
+        updateStrategy: 'polling', // 使用轮询策略
+        interval: 30000, // 30秒轮询间隔
+      }
+    )
+
+    card2CoreDataSubscription.value = subscriptionId
+
+    console.log(`✅ [SimpleConfigurationEditor] Card2.1 Core响应式数据订阅创建完成:`, subscriptionId)
+  } catch (error) {
+    console.error(`❌ [SimpleConfigurationEditor] Card2.1 Core响应式数据初始化失败:`, error)
+  }
+}
+
+/**
+ * 🚀 清理Card2.1 Core响应式数据订阅
+ */
+const cleanupCard2CoreReactiveData = () => {
+  if (card2CoreDataSubscription.value) {
+    reactiveDataManager.removeSubscription(card2CoreDataSubscription.value)
+    card2CoreDataSubscription.value = null
+    console.log(`🚀 [SimpleConfigurationEditor] 已清理Card2.1 Core响应式数据订阅`)
+  }
+}
+
+/**
  * 轮询任务执行函数
  * 当轮询触发时执行组件的所有数据源刷新
  */
@@ -634,7 +740,15 @@ const executeComponentPolling = async () => {
     if (process.env.NODE_ENV === 'development') {
     }
 
-    // 获取组件的数据源配置
+    // 🚀 优先使用Card2.1 Core响应式数据管理，如果不支持则回退到传统轮询
+    if (useCard2CoreReactiveData.value && card2CoreDataSubscription.value) {
+      console.log(`🚀 [SimpleConfigurationEditor] 使用Card2.1 Core响应式数据管理执行轮询`)
+      // Card2.1 Core会自动处理数据更新，这里只需要触发一次更新
+      reactiveDataManager.triggerUpdate(card2CoreDataSubscription.value)
+      return
+    }
+
+    // 传统轮询逻辑（回退方案）
     const config = configurationManager.getConfiguration(componentInfo.value.componentId)
     if (!config?.dataSource) {
       console.error(`⚠️ 组件 ${componentInfo.value.componentId} 没有数据源配置，跳过轮询`)
@@ -1098,6 +1212,12 @@ onMounted(async () => {
     // 新架构：初始化配置集成桥接器
     await configurationManager.initialize()
 
+    // 🚀 首先检查并初始化Card2.1 Core响应式数据管理
+    checkCard2CoreReactiveSupport()
+    if (useCard2CoreReactiveData.value) {
+      await initializeCard2CoreReactiveData()
+    }
+
     // 为当前组件设置数据源执行集成
     if ('setupComponentDataSourceIntegration' in configurationManager) {
       ;(configurationManager as any).setupComponentDataSourceIntegration(componentInfo.value.componentId)
@@ -1148,6 +1268,10 @@ onMounted(async () => {
 // 组件卸载时清理轮询任务
 onUnmounted(() => {
   try {
+    // 🚀 清理Card2.1 Core响应式数据订阅
+    cleanupCard2CoreReactiveData()
+
+    // 清理传统轮询任务
     const existingTasks = pollingManager.getTasksByComponent(componentInfo.value.componentId)
     existingTasks.forEach(task => {
       pollingManager.removeTask(task.id)

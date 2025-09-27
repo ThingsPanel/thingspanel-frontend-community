@@ -92,11 +92,9 @@ const digitIndicatorDefinition: ComponentDefinition = {
       supportedTypes: ['static', 'api', 'websocket'],
       required: false,
       example: {
-        value: 45,
+        value: 68.5,
         unit: '%',
-        metricsName: '湿度',
-        deviceId: 'device-001',
-        metricsId: 'humidity'
+        metricsName: '湿度'
       }
     },
     {
@@ -108,8 +106,8 @@ const digitIndicatorDefinition: ComponentDefinition = {
       example: {
         iconName: 'Water',
         color: '#1890ff',
-        unit: '°C',
-        metricName: '温度传感器'
+        unit: '%',
+        metricName: '湿度传感器'
       }
     }
   ],
