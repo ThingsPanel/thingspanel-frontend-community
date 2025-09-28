@@ -139,6 +139,35 @@ const editorContext = createEditor()
 const { stateManager, addWidget, updateNode, selectNode } = editorContext
 const { setPreviewMode, isPreviewMode } = usePreviewMode()
 
+// 🔥 监听全局预览模式变化，同步到组件内部状态
+watch(
+  () => isPreviewMode.value,
+  (newPreviewMode) => {
+    const shouldBeEditing = !newPreviewMode
+    if (isEditing.value !== shouldBeEditing) {
+      isEditing.value = shouldBeEditing
+      if (!shouldBeEditing) {
+        // 切换到预览模式
+        showFooter.value = false
+        leftCollapsed.value = true
+        rightCollapsed.value = true
+        // 启动轮询（需要等待组件完全初始化）
+        nextTick(() => {
+          if (typeof initializePollingTasksAndEnable === 'function') {
+            initializePollingTasksAndEnable()
+          }
+        })
+      } else {
+        // 切换到编辑模式
+        if (pollingManager) {
+          pollingManager.disableGlobalPolling()
+        }
+      }
+    }
+  },
+  { immediate: true }
+)
+
 // 🔥 轮询管理器实例
 const pollingManager = useGlobalPollingManager()
 

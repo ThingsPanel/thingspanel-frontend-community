@@ -129,7 +129,7 @@ const retryLoad = async () => {
           :show-page-header="false"
           :enable-header-area="false"
           :enable-toolbar-area="false"
-          :enable-footer-area="false"
+          :enable-footer-area="true"
           :default-renderer="rendererType"
         />
       </div>
