@@ -65,7 +65,7 @@ const clickConfig: () => void = () => {
 </script>
 
 <template>
-  <div class="h-full overflow-hidden">
+  <div class="h-full overflow-auto">
     <NCard :title="configForm?.name || '--'">
       <template #header-extra>
         <NButton type="primary" @click="editConfig">{{ $t('common.edit') }}</NButton>

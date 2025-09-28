@@ -1926,6 +1926,7 @@ declare namespace App {
         addAlarmRule: string
         heartbeatFunctionInfo: string
         manualOnlineStatusEdit: string
+        forceDeviceOnline: string
         deviceCode: string
         enterReadWriteFlag: string
         heartbeatThreshold: string

@@ -85,7 +85,7 @@
 <script setup lang="ts">
 import { ref, computed, useSlots, onMounted, onUnmounted, onActivated } from 'vue'
 import { useStorage } from '@vueuse/core'
-import { NCard, NButton, NButtonGroup, NIcon, NSpace, NScrollbar } from 'naive-ui'
+import { NCard, NButton, NButtonGroup, NIcon, NSpace } from 'naive-ui'
 import { $t } from '@/locales'
 import {
   AddOutline as PlusIcon,
@@ -159,11 +159,6 @@ const handleResize = () => {
   windowWidth.value = window.innerWidth
 }
 
-// 计算属性
-const isMobileLayout = computed(() => {
-  return windowWidth.value <= props.mobileBreakpoint
-})
-
 const shouldShowSearchArea = computed(() => {
   // 如果有搜索表单内容插槽，或者显示查询/重置按钮，则显示搜索区域
   return hasSlot('search-form-content') || props.showQueryButton || props.showResetButton
@@ -235,12 +230,6 @@ const initializeView = () => {
   if (props.useViewMemory && !storageView.value) {
     storageView.value = initial
   }
-}
-
-const handleQuery = () => {
-  // 通过事件携带筛选表单数据，由父组件负责收集表单数据
-  const filterData = {} // 实际使用时父组件应通过ref获取表单数据
-  emit('query', filterData)
 }
 
 const handleReset = () => {
@@ -431,7 +420,7 @@ onUnmounted(() => {
   padding: 20px; /* 根据需要调整内边距 */
 }
 
-:deep(.n-card) {
+:deep(.full-height-card) {
   height: 100%;
   display: flex;
   flex-direction: column;

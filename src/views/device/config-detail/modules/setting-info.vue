@@ -238,7 +238,7 @@ onMounted(() => {
       </n-upload>
     </div>
     <div>
-      <div class="m-b-10px color-error-500">{{ $t('generate.delete-device-configuration') }}</div>
+      <!-- <div class="m-b-10px color-error-500">{{ $t('generate.delete-device-configuration') }}</div> -->
       <NButton type="error" @click="deleteConfig">{{ $t('common.delete') }}</NButton>
     </div>
 
