@@ -12,7 +12,7 @@ export function usePanelPollingManager(dependencies: {
   pollingManager: any
   stateManager: any
   configurationManager: any
-  editorDataSourceManager: any
+  editorDataSourceManager?: any // 🔥 修复：设为可选参数，兼容新架构
 }) {
   // 全局轮询开关状态
   const globalPollingEnabled = computed(() => dependencies.pollingManager.isGlobalPollingEnabled())
