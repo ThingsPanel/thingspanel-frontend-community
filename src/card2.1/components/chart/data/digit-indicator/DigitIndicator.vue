@@ -75,6 +75,9 @@ const { unifiedConfig } = useCard2Props({
 // 响应式变量
 const containerRef = ref<HTMLElement>()
 
+// 开发环境标识
+const isDev = computed(() => import.meta.env.DEV)
+
 // 获取样式配置（纯样式，不包含业务数据）
 const config = computed((): DigitIndicatorCustomize => {
   return {
@@ -104,15 +107,16 @@ const config = computed((): DigitIndicatorCustomize => {
 
 // 业务数据获取 - 正确的默认值逻辑：数据源优先，无数据时显示默认值
 const displayValue = computed(() => {
-  return props.data?.value || '45'  // 数据源优先，无数据时显示默认值
+  // 添加调试信息
+  return props.data?.main?.data?.value || '45'  // 数据源优先，无数据时显示默认值
 })
 
 const displayUnit = computed(() => {
-  return props.data?.unit || '%'    // 数据源优先，无数据时显示默认值
+  return props.data?.main?.data?.unit || '%'    // 数据源优先，无数据时显示默认值
 })
 
 const displayTitle = computed(() => {
-  return props.data?.metricsName || '湿度'  // 数据源优先，无数据时显示默认值
+  return props.data?.main?.data?.metricsName || '湿度'  // 数据源优先，无数据时显示默认值
 })
 
 // 计算图标组件
@@ -172,6 +176,34 @@ const titleTextStyle = computed(() => {
 </script>
 
 <style scoped>
+/* 调试面板样式 */
+.debug-panel {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  background: rgba(255, 0, 0, 0.9);
+  color: white;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  z-index: 1000;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.debug-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: #ffff00;
+}
+
+.debug-item {
+  margin-bottom: 2px;
+  word-break: break-all;
+  line-height: 1.3;
+}
+
 .digit-indicator-container {
   width: 100%;
   height: 100%;
