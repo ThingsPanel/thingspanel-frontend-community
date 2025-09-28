@@ -1,512 +1,423 @@
 <template>
-  <div ref="cardRef" class="digit-indicator-container">
-    <!-- 🔥 直接显示数据源结果 - 测试用 -->
-    <div class="raw-data-display">
-      <div class="raw-data-title">🔥 直接数据源显示（测试）:</div>
-      <div class="raw-data-content">{{ JSON.stringify(props.data) }}</div>
-      <div class="raw-data-timestamp">{{ new Date().toLocaleTimeString() }}</div>
-      <div class="raw-data-debug">🚨 强制调试: {{ debugTimestamp }}</div>
+  <div
+    ref="containerRef"
+    class="digit-indicator-container"
+    :class="{
+      'gradient-bg': config.showGradient,
+      'hover-enabled': config.enableHover
+    }"
+    :style="containerStyle"
+  >
+    <!-- 图标区域 -->
+    <div class="icon-section" :style="iconSectionStyle">
+      <n-icon
+        class="main-icon"
+        :size="config.iconSize"
+        :color="config.iconColor"
+      >
+        <component :is="iconComponent" />
+      </n-icon>
     </div>
 
-    <div class="digit-indicator-content" :style="{ fontSize: fontSize }">
-      <!-- 图标容器 -->
-      <div class="icon-container">
-        <NIcon class="icon-class" :color="iconColor">
-          <component :is="iconComponent" />
-        </NIcon>
-      </div>
-
-      <!-- 数值容器 -->
-      <div class="value-container">
-        <span
-          class="value"
-          :title="displayValueWithUnit"
-        >
-          {{ getDisplayValue('value', '45') }} {{ getDisplayValue('unit', '%') }}
-        </span>
-      </div>
-
-      <!-- 指标名称容器 -->
-      <div class="metric-name-container">
-        <span
-          class="metric-name"
-          :title="getDisplayValue('metricsName', '湿度')"
-        >
-          {{ getDisplayValue('metricsName', '湿度') }}
-        </span>
-      </div>
+    <!-- 数值区域 -->
+    <div class="value-section" :style="valueSectionStyle">
+      <span class="value-text" :style="valueTextStyle">
+        {{ displayValue }}
+      </span>
+      <span class="unit-text" :style="unitTextStyle">
+        {{ displayUnit }}
+      </span>
     </div>
 
-    <!-- 调试信息 -->
-    <div v-if="shouldShowDebug" class="debug-info">
-      <NCollapse size="small">
-        <NCollapseItem title="调试信息" name="debug">
-          <NCode :code="debugInfo" language="json" />
-        </NCollapseItem>
-      </NCollapse>
+    <!-- 标题区域 -->
+    <div
+      v-if="displayTitle"
+      class="title-section"
+      :style="titleSectionStyle"
+    >
+      <span class="title-text" :style="titleTextStyle">
+        {{ displayTitle }}
+      </span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 /**
- * 数字指示器组件 - Card 2.1 版本
- * 用于显示设备的遥测数据或属性数据，包括图标、数值、单位和指标名称
+ * 数字指示器组件 - 职责清晰版本
+ * 数据源负责业务数据，组件配置负责样式
  */
 
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { NIcon, NCollapse, NCollapseItem, NCode } from 'naive-ui'
+import { computed, ref } from 'vue'
+import { NIcon } from 'naive-ui'
 import { icons as iconOptions } from '@/components/common/icons'
 import { useCard2Props } from '@/card2.1/hooks/useCard2Props'
+import type { DigitIndicatorCustomize } from './settingConfig'
 
-// 🚀 导入Card2.1 Core数据绑定支持
-import { dataBindingManager } from '@/card2.1/core/data-source/data-binding-manager'
-import { reactiveDataManager } from '@/card2.1/core/data-source/reactive-data-manager'
-import { ComponentRegistry } from '@/card2.1/core/component-registry'
-
-// Props 接口 - Card 2.1 标准接口
+// Props 接口
 interface Props {
-  config: any          // 🔥 配置数据
-  data?: Record<string, unknown>  // 🔥 数据源执行结果
-  componentId?: string
+  config: any                    // 配置数据
+  data?: Record<string, unknown> // 数据源执行结果
+  componentId?: string           // 组件唯一ID
 }
 
 const props = withDefaults(defineProps<Props>(), {
   data: () => ({})
 })
 
-// 🔥 获取初始统一配置 - 从Card2Wrapper的统一配置架构获取
-function getInitialUnifiedConfig() {
-  if (!props.componentId) return undefined
-
-  console.log(`🔥 [DigitIndicator] 获取初始统一配置开始:`, props.componentId)
-
-  try {
-    // 通过DOM查找Card2Wrapper实例获取完整配置
-    const cardElement = document.querySelector(`[data-component-id="${props.componentId}"]`)
-    if (cardElement && (cardElement as any)?.__vueParentComponent?.exposed?.getFullConfiguration) {
-      const fullConfig = (cardElement as any).__vueParentComponent.exposed.getFullConfiguration()
-      console.log(`🔥 [DigitIndicator] 从Card2Wrapper获取初始配置:`, fullConfig)
-
-      // 🔥 关键调试：显示组件配置的具体内容
-      if (fullConfig?.component) {
-        console.log(`🔥 [DigitIndicator] 初始组件配置:`, {
-          value: fullConfig.component.value,
-          unit: fullConfig.component.unit,
-          metricsName: fullConfig.component.metricsName,
-          iconName: fullConfig.component.iconName,
-          color: fullConfig.component.color,
-          完整配置: fullConfig.component
-        })
-      } else {
-        console.warn(`🔥 [DigitIndicator] 初始配置中没有component节!`)
-      }
-
-      return fullConfig
-    } else {
-      console.warn(`🔥 [DigitIndicator] 未找到Card2Wrapper元素或暴露方法`)
-    }
-  } catch (error) {
-    console.warn(`🔥 [DigitIndicator] 获取初始配置失败:`, error)
-  }
-
-  console.log(`🔥 [DigitIndicator] 返回undefined，使用默认配置`)
-  return undefined
-}
-
-// 🔥 使用 Card 2.1 统一配置管理
-const {
-  unifiedConfig,
-  updateConfig
-} = useCard2Props({
+// 使用统一配置管理
+const { unifiedConfig } = useCard2Props({
   config: props.config,
   data: props.data,
-  componentId: props.componentId,
-  initialUnifiedConfig: getInitialUnifiedConfig()  // 🔥 传递初始统一配置
+  componentId: props.componentId
 })
 
-// 🚀 Card2.1 Core数据绑定状态
-const card2CoreDataBinding = ref<string | null>(null)
-const card2CoreBindingStatus = ref<any>({})
-const card2CoreData = ref<Record<string, any>>({})
-const useCard2CoreDataBinding = ref(false)
+// 响应式变量
+const containerRef = ref<HTMLElement>()
 
-// 🚨 强制调试时间戳 - 监听props.data变化
-const debugTimestamp = ref(Date.now())
+// 开发环境标识
+const isDev = computed(() => import.meta.env.DEV)
 
-// 🚨 监听props.data变化并强制更新调试时间戳
-watch(() => props.data, (newData, oldData) => {
-  debugTimestamp.value = Date.now()
-  console.log('🚨 [DigitIndicator] props.data发生变化:', {
-    newData,
-    oldData,
-    newTimestamp: debugTimestamp.value,
-    调用时间: new Date().toISOString()
-  })
-}, { deep: true, immediate: true })
-
-// 🚀 检查组件是否支持Card2.1 Core数据绑定
-const checkCard2CoreSupport = () => {
-  if (!props.componentId) return false
-
-  const isRegistered = ComponentRegistry.has('digit-indicator')
-  const dataSourceKeys = ComponentRegistry.getDataSourceKeys('digit-indicator')
-  const supportsDataBinding = isRegistered && dataSourceKeys.length > 0
-
-  console.log(`🚀 [DigitIndicator] Card2.1 Core支持检查:`, {
-    componentId: props.componentId,
-    isRegistered,
-    dataSourceKeys,
-    supportsDataBinding
-  })
-
-  useCard2CoreDataBinding.value = supportsDataBinding
-  return supportsDataBinding
-}
-
-// 🚀 初始化Card2.1 Core数据绑定
-const initializeCard2CoreBinding = async () => {
-  if (!useCard2CoreDataBinding.value || !props.componentId) {
-    console.log(`🚀 [DigitIndicator] 组件不支持Card2.1 Core数据绑定`)
-    return
+// 获取样式配置（纯样式，不包含业务数据）
+const config = computed((): DigitIndicatorCustomize => {
+  return {
+    // 图标样式配置
+    iconName: 'Water',
+    iconColor: '#1890ff',
+    iconSize: 48,
+    // 数值样式配置
+    valueColor: 'var(--text-color)',
+    valueSize: 32,
+    valueFontWeight: 700,
+    // 单位样式配置
+    unitColor: 'var(--text-color-2)',
+    unitSize: 16,
+    // 标题样式配置
+    titleColor: 'var(--text-color-2)',
+    titleSize: 14,
+    // 布局样式配置
+    padding: 16,
+    backgroundColor: '',
+    showGradient: true,
+    enableHover: true,
+    // 合并用户样式配置
+    ...unifiedConfig.value.component
   }
+})
 
-  try {
-    console.log(`🚀 [DigitIndicator] 开始初始化Card2.1 Core数据绑定:`, props.componentId)
+// 业务数据获取 - 正确的默认值逻辑：数据源优先，无数据时显示默认值
+const displayValue = computed(() => {
+  // 添加调试信息
+  return props.data?.main?.data?.value || '45'  // 数据源优先，无数据时显示默认值
+})
 
-    // 创建组件数据绑定配置
-    const bindingConfig = {
-      componentId: props.componentId,
-      dataSourceId: `${props.componentId}-datasource`,
-      bindingConfig: {
-        value: { dataPath: 'value', fallbackValue: '0' },
-        unit: { dataPath: 'unit', fallbackValue: '%' },
-        metricsName: { dataPath: 'metricsName', fallbackValue: '数值' },
-        iconName: { dataPath: 'iconName', fallbackValue: 'Water' },
-        color: { dataPath: 'color', fallbackValue: '#1890ff' }
-      }
-    }
+const displayUnit = computed(() => {
+  return props.data?.main?.data?.unit || '%'    // 数据源优先，无数据时显示默认值
+})
 
-    // 创建绑定
-    const bindingId = dataBindingManager.createBinding(bindingConfig)
-    card2CoreDataBinding.value = bindingId
-
-    // 订阅数据更新
-    dataBindingManager.subscribe(bindingId, (newData) => {
-      console.log(`🚀 [DigitIndicator] Card2.1 Core数据更新:`, newData)
-      card2CoreData.value = newData
-
-      // 更新绑定状态
-      const status = dataBindingManager.getBindingStatus(bindingId)
-      if (status) {
-        card2CoreBindingStatus.value = status
-      }
-    })
-
-    console.log(`✅ [DigitIndicator] Card2.1 Core数据绑定初始化完成:`, bindingId)
-  } catch (error) {
-    console.error(`❌ [DigitIndicator] Card2.1 Core数据绑定初始化失败:`, error)
-  }
-}
-
-// 🚀 清理Card2.1 Core绑定
-const cleanupCard2CoreBinding = () => {
-  if (card2CoreDataBinding.value) {
-    dataBindingManager.removeBinding(card2CoreDataBinding.value)
-    card2CoreDataBinding.value = null
-    card2CoreData.value = {}
-    card2CoreBindingStatus.value = {}
-    console.log(`🚀 [DigitIndicator] 已清理Card2.1 Core数据绑定:`, props.componentId)
-  }
-}
-
-// 响应式数据
-const fontSize = ref('14px')
-const cardRef = ref<HTMLElement>()
-let resizeObserver: ResizeObserver | null = null
-
-// 🔥 增强的数据获取函数：优先使用Card2.1 Core数据，然后是props.data，最后是配置
-const getDisplayValue = (field: string, defaultValue: any) => {
-  console.log(`🔥 [DigitIndicator] getDisplayValue调试开始 - 字段: ${field}`)
-
-  // 🚀 首先检查Card2.1 Core数据
-  if (useCard2CoreDataBinding.value && Object.keys(card2CoreData.value).length > 0) {
-    if (field in card2CoreData.value && card2CoreData.value[field] !== undefined && card2CoreData.value[field] !== null) {
-      console.log(`✅ [DigitIndicator] ${field} 使用Card2.1 Core数据:`, card2CoreData.value[field])
-      return String(card2CoreData.value[field])
-    }
-  }
-
-  console.log('🔥 [DigitIndicator] props.data类型:', typeof props.data)
-  console.log('🔥 [DigitIndicator] props.data内容:', props.data)
-  console.log('🔥 [DigitIndicator] props.data的键:', props.data && typeof props.data === 'object' ? Object.keys(props.data) : '不是对象')
-  console.log('🔥 [DigitIndicator] unifiedConfig.component:', unifiedConfig.value.component)
-  console.log('🔥 [DigitIndicator] componentId:', props.componentId)
-
-  // 1. 使用数据源数据
-  if (props.data && typeof props.data === 'object' && field in props.data && props.data[field] !== undefined && props.data[field] !== null) {
-    console.log(`✅ [DigitIndicator] ${field} 使用数据源:`, props.data[field])
-    return String(props.data[field])
-  } else {
-    console.log(`❌ [DigitIndicator] ${field} 数据源检查失败:`, {
-      hasData: !!props.data,
-      isObject: typeof props.data === 'object',
-      hasField: props.data && typeof props.data === 'object' && field in props.data,
-      fieldValue: props.data && typeof props.data === 'object' ? props.data[field] : '无法获取',
-      isUndefined: props.data && typeof props.data === 'object' ? props.data[field] === undefined : '无法判断',
-      isNull: props.data && typeof props.data === 'object' ? props.data[field] === null : '无法判断'
-    })
-  }
-
-  // 2. 回退到统一配置中的组件配置
-  if (unifiedConfig.value.component && field in unifiedConfig.value.component && unifiedConfig.value.component[field] !== undefined) {
-    console.log(`✅ [DigitIndicator] ${field} 使用配置:`, unifiedConfig.value.component[field])
-    return String(unifiedConfig.value.component[field])
-  } else {
-    console.log(`❌ [DigitIndicator] ${field} 配置检查失败:`, {
-      hasComponent: !!unifiedConfig.value.component,
-      hasField: unifiedConfig.value.component && field in unifiedConfig.value.component,
-      fieldValue: unifiedConfig.value.component ? unifiedConfig.value.component[field] : '无配置',
-      componentKeys: unifiedConfig.value.component ? Object.keys(unifiedConfig.value.component) : '无配置'
-    })
-  }
-
-  // 3. 使用默认值
-  console.log(`⚠️ [DigitIndicator] ${field} 使用默认值:`, defaultValue)
-  return String(defaultValue)
-}
+const displayTitle = computed(() => {
+  return props.data?.main?.data?.metricsName || '湿度'  // 数据源优先，无数据时显示默认值
+})
 
 // 计算图标组件
 const iconComponent = computed(() => {
-  const iconName = getDisplayValue('iconName', 'Water')
+  const iconName = config.value.iconName || 'Water'
   return iconOptions[iconName] || iconOptions.Water
 })
 
-// 计算图标颜色
-const iconColor = computed(() => {
-  return getDisplayValue('color', '#1890ff')
-})
-
-// 计算完整显示值（包含单位）
-const displayValueWithUnit = computed(() => {
-  return `${getDisplayValue('value', '45')} ${getDisplayValue('unit', '%')}`
-})
-
-// 计算是否显示调试信息
-const shouldShowDebug = computed(() => {
-  return unifiedConfig.value.component?.showDebug || false
-})
-
-// 调试信息
-const debugInfo = computed(() => {
-  return JSON.stringify({
-    props: {
-      data: props.data,
-      config: props.config
-    },
-    unifiedConfig: unifiedConfig.value,
-    computedValues: {
-      value: getDisplayValue('value', '45'),
-      unit: getDisplayValue('unit', '%'),
-      metricsName: getDisplayValue('metricsName', '湿度'),
-      iconName: getDisplayValue('iconName', 'Water'),
-      color: getDisplayValue('color', '#1890ff'),
-      shouldShowDebug: shouldShowDebug.value
-    }
-  }, null, 2)
-})
-
-// 处理 ResizeObserver 回调
-const handleResize = (entries: ResizeObserverEntry[]) => {
-  for (const entry of entries) {
-    const { width, height } = entry.contentRect
-    const newFontSize = `${Math.min(width, height) / 10}px`
-    fontSize.value = newFontSize
-  }
-}
-
-// 🚀 监听Card2.1 Core数据变化
-watch(() => card2CoreData.value, (newData, oldData) => {
-  console.log('🚀 [DigitIndicator] Card2.1 Core数据变化监听:', {
-    componentId: props.componentId,
-    newData,
-    oldData,
-    timestamp: new Date().toISOString()
-  })
-}, { deep: true, immediate: true })
-
-// 🔥 监听 props.data
-watch(() => props.data, (newData, oldData) => {
-  console.log('🔥 [DigitIndicator] props.data 变化监听:', {
-    componentId: props.componentId,
-    newData,
-    oldData,
-    newDataKeys: newData && typeof newData === 'object' ? Object.keys(newData) : '不是对象',
-    oldDataKeys: oldData && typeof oldData === 'object' ? Object.keys(oldData) : '不是对象',
-    timestamp: new Date().toISOString()
-  })
-}, { deep: true, immediate: true })
-
-// 🔥 监听 unifiedConfig 变化
-watch(() => unifiedConfig.value, (newConfig, oldConfig) => {
-  console.log('🔥 [DigitIndicator] unifiedConfig 变化监听:', {
-    componentId: props.componentId,
-    newComponent: newConfig.component,
-    oldComponent: oldConfig?.component,
-    timestamp: new Date().toISOString()
-  })
-}, { deep: true, immediate: true })
-
-// 生命周期钩子
-onMounted(async () => {
-  // 🚀 首先初始化Card2.1 Core数据绑定
-  checkCard2CoreSupport()
-  if (useCard2CoreDataBinding.value) {
-    await initializeCard2CoreBinding()
-  }
-
-  if (cardRef.value) {
-    resizeObserver = new ResizeObserver(handleResize)
-    resizeObserver.observe(cardRef.value)
+// 样式计算
+const containerStyle = computed(() => {
+  return {
+    padding: `${config.value.padding}px`,
+    backgroundColor: config.value.backgroundColor || 'transparent'
   }
 })
 
-onBeforeUnmount(() => {
-  // 🚀 清理Card2.1 Core数据绑定
-  cleanupCard2CoreBinding()
-
-  if (resizeObserver) {
-    resizeObserver.disconnect()
-    resizeObserver = null
+const iconSectionStyle = computed(() => {
+  return {
+    marginBottom: `${config.value.padding / 2}px`
   }
 })
 
-// 暴露给父组件的方法
-defineExpose({
-  // Card 2.1 组件的数据更新通过 props.data 自动处理
+const valueSectionStyle = computed(() => {
+  return {
+    marginBottom: `${config.value.padding / 3}px`
+  }
+})
+
+const valueTextStyle = computed(() => {
+  return {
+    fontSize: `${config.value.valueSize}px`,
+    fontWeight: config.value.valueFontWeight,
+    color: config.value.valueColor
+  }
+})
+
+const unitTextStyle = computed(() => {
+  return {
+    fontSize: `${config.value.unitSize}px`,
+    color: config.value.unitColor,
+    marginLeft: '4px'
+  }
+})
+
+const titleSectionStyle = computed(() => {
+  return {
+    marginTop: `${config.value.padding / 2}px`
+  }
+})
+
+const titleTextStyle = computed(() => {
+  return {
+    fontSize: `${config.value.titleSize}px`,
+    color: config.value.titleColor
+  }
 })
 </script>
 
 <style scoped>
+/* 调试面板样式 */
+.debug-panel {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  background: rgba(255, 0, 0, 0.9);
+  color: white;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  z-index: 1000;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.debug-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: #ffff00;
+}
+
+.debug-item {
+  margin-bottom: 2px;
+  word-break: break-all;
+  line-height: 1.3;
+}
+
 .digit-indicator-container {
   width: 100%;
   height: 100%;
-}
-
-/* 🔥 原始数据显示区域样式 */
-.raw-data-display {
-  background: #f0f0f0;
-  border: 2px solid #ff6b6b;
-  border-radius: 4px;
-  padding: 8px;
-  margin-bottom: 8px;
-  font-size: 12px;
-  word-break: break-all;
-}
-
-.raw-data-title {
-  color: #ff6b6b;
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.raw-data-content {
-  background: #fff;
-  padding: 4px;
-  border-radius: 2px;
-  margin-bottom: 4px;
-  min-height: 20px;
-  font-family: monospace;
-}
-
-.raw-data-timestamp {
-  color: #666;
-  font-size: 10px;
-  text-align: right;
-}
-
-.digit-indicator-content {
-  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 5% 5%;
+  position: relative;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.icon-container {
+/* 专业渐变背景效果 */
+.digit-indicator-container.gradient-bg {
+  background: linear-gradient(145deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(248, 250, 252, 0.8) 100%
+  );
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 专业Hover效果 */
+.digit-indicator-container.hover-enabled:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.08),
+    0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.digit-indicator-container.hover-enabled.gradient-bg:hover {
+  background: linear-gradient(145deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(248, 250, 252, 0.85) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 图标区域 */
+.icon-section {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
+  position: relative;
 }
 
-.icon-class {
-  font-size: 3em;
+.main-icon {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
-.value-container {
+.hover-enabled:hover .main-icon {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+/* 数值区域 */
+.value-section {
   display: flex;
   justify-content: center;
   align-items: baseline;
-  width: 100%;
+  text-align: center;
+  position: relative;
 }
 
-.value {
-  font-size: 2em;
-  font-weight: bold;
-  text-wrap: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--text-color);
+.value-text {
+  line-height: 1;
+  transition: all 0.3s ease;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.metric-name-container {
+.unit-text {
+  line-height: 1;
+  transition: all 0.3s ease;
+  opacity: 0.8;
+}
+
+/* 标题区域 */
+.title-section {
   display: flex;
   justify-content: center;
-  align-items: flex-end;
+  align-items: center;
   width: 100%;
 }
 
-.metric-name {
-  font-size: 1em;
+.title-text {
   text-align: center;
-  white-space: nowrap;
+  line-height: 1.3;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 90%;
-  color: var(--text-color-2);
-}
-
-.debug-info {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-color);
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  opacity: 0.75;
+  letter-spacing: 0.01em;
 }
 
 /* 响应式设计 */
 @media (max-width: 480px) {
-  .digit-indicator-content {
-    padding: 3% 3%;
+  .digit-indicator-container {
+    padding: 8px !important;
+    border-radius: 8px;
   }
 
-  .icon-class {
-    font-size: 2.5em;
+  .value-text {
+    font-size: 24px !important;
   }
 
-  .value {
-    font-size: 1.5em;
+  .unit-text {
+    font-size: 12px !important;
+  }
+
+  .title-text {
+    font-size: 11px !important;
+  }
+
+  .main-icon {
+    transform: scale(0.85);
+  }
+}
+
+/* 平板适配 */
+@media (max-width: 768px) and (min-width: 481px) {
+  .digit-indicator-container {
+    border-radius: 10px;
+  }
+
+  .value-text {
+    font-size: calc(var(--value-size, 32px) * 0.9);
   }
 }
 
 /* 暗主题适配 */
 [data-theme="dark"] .digit-indicator-container {
-  .value {
-    color: var(--text-color);
-  }
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
 
-  .metric-name {
-    color: var(--text-color-2);
+[data-theme="dark"] .digit-indicator-container.gradient-bg {
+  background: linear-gradient(145deg,
+    rgba(30, 35, 42, 0.9) 0%,
+    rgba(45, 52, 62, 0.7) 50%,
+    rgba(25, 30, 36, 0.8) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .digit-indicator-container.hover-enabled.gradient-bg:hover {
+  background: linear-gradient(145deg,
+    rgba(35, 40, 47, 0.95) 0%,
+    rgba(50, 57, 67, 0.75) 50%,
+    rgba(30, 35, 41, 0.85) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .main-icon {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+[data-theme="dark"] .hover-enabled:hover .main-icon {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+[data-theme="dark"] .value-text {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 数值变化动画 */
+@keyframes valueChange {
+  0% {
+    transform: scale(1);
+    opacity: 1;
   }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.value-text.changing {
+  animation: valueChange 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 加载状态 */
+.digit-indicator-container.loading {
+  opacity: 0.6;
+}
+
+.digit-indicator-container.loading .value-text {
+  color: var(--text-color-3);
+}
+
+/* 高级玻璃态效果（可选） */
+.digit-indicator-container.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .digit-indicator-container.glass-effect {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 </style>

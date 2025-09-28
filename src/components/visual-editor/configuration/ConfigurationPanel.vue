@@ -152,7 +152,7 @@ watch(() => props.selectedWidget, async (newWidget) => {
 
 .config-scrollbar {
   flex: 1;
-  overflow: auto;
+
 }
 
 .config-form {
