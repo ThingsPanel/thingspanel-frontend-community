@@ -86,28 +86,16 @@ const digitIndicatorDefinition: ComponentDefinition = {
   // ===== 数据源需求声明 =====
   dataSources: [
     {
-      key: 'deviceData',
-      name: '设备数据',
-      description: '设备的遥测数据或属性数据，包含数值、单位和指标名称',
+      key: 'main',
+      name: '数据源',
+      description: '数字指示器的主要数据源，包含数值、单位和指标名称',
       supportedTypes: ['static', 'api', 'websocket'],
       required: false,
       example: {
-        value: 68.5,
+        value: 45,
         unit: '%',
-        metricsName: '湿度'
-      }
-    },
-    {
-      key: 'configData',
-      name: '配置数据',
-      description: '组件的配置信息，包含图标、颜色、自定义单位等',
-      supportedTypes: ['static'],
-      required: false,
-      example: {
-        iconName: 'Water',
-        color: '#1890ff',
-        unit: '%',
-        metricName: '湿度传感器'
+        metricsName: '湿度',
+        timestamp: '2025-09-28T02:18:46.567Z'
       }
     }
   ],
@@ -135,13 +123,18 @@ const digitIndicatorDefinition: ComponentDefinition = {
       },
       'metricsName': {
         type: 'string',
-        description: '指标名称',
+        description: '指标名称/标题',
         defaultValue: '湿度'
       },
       'iconColor': {
         type: 'string',
         description: '图标颜色',
         defaultValue: '#1890ff'
+      },
+      'iconName': {
+        type: 'string',
+        description: '图标名称',
+        defaultValue: 'Water'
       }
     },
     defaultInteractions: [
@@ -184,8 +177,18 @@ const digitIndicatorDefinition: ComponentDefinition = {
     metricsName: {
       level: 'public',
       type: 'string',
-      description: '指标名称',
+      description: '指标名称/标题',
       defaultValue: '湿度',
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+
+    // 样式配置属性
+    iconName: {
+      level: 'public',
+      type: 'string',
+      description: '图标名称',
+      defaultValue: 'Water',
       visibleInInteraction: true,
       visibleInDebug: true
     },
@@ -197,12 +200,102 @@ const digitIndicatorDefinition: ComponentDefinition = {
       visibleInInteraction: true,
       visibleInDebug: true
     },
-    iconName: {
+    iconSize: {
+      level: 'public',
+      type: 'number',
+      description: '图标大小',
+      defaultValue: 48,
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+    valueColor: {
       level: 'public',
       type: 'string',
-      description: '图标名称',
-      defaultValue: 'Water',
+      description: '数值颜色',
+      defaultValue: 'var(--text-color)',
       visibleInInteraction: true,
+      visibleInDebug: true
+    },
+    valueSize: {
+      level: 'public',
+      type: 'number',
+      description: '数值字体大小',
+      defaultValue: 32,
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+    valueFontWeight: {
+      level: 'public',
+      type: 'number',
+      description: '数值字体粗细',
+      defaultValue: 700,
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+    unitColor: {
+      level: 'public',
+      type: 'string',
+      description: '单位颜色',
+      defaultValue: 'var(--text-color-2)',
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+    unitSize: {
+      level: 'public',
+      type: 'number',
+      description: '单位字体大小',
+      defaultValue: 16,
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+    titleColor: {
+      level: 'public',
+      type: 'string',
+      description: '标题颜色',
+      defaultValue: 'var(--text-color-2)',
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+    titleSize: {
+      level: 'public',
+      type: 'number',
+      description: '标题字体大小',
+      defaultValue: 14,
+      visibleInInteraction: true,
+      visibleInDebug: true
+    },
+
+    // 布局配置属性
+    padding: {
+      level: 'public',
+      type: 'number',
+      description: '组件内边距',
+      defaultValue: 16,
+      visibleInInteraction: false,
+      visibleInDebug: true
+    },
+    backgroundColor: {
+      level: 'public',
+      type: 'string',
+      description: '背景颜色',
+      defaultValue: '',
+      visibleInInteraction: false,
+      visibleInDebug: true
+    },
+    showGradient: {
+      level: 'public',
+      type: 'boolean',
+      description: '是否显示渐变背景',
+      defaultValue: true,
+      visibleInInteraction: false,
+      visibleInDebug: true
+    },
+    enableHover: {
+      level: 'public',
+      type: 'boolean',
+      description: '是否启用hover效果',
+      defaultValue: true,
+      visibleInInteraction: false,
       visibleInDebug: true
     },
 
