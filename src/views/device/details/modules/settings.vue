@@ -166,7 +166,7 @@ const initData = async () => {
 }
 
 onMounted(() => {
-  is_online.value = String(props.online)
+  //  is_online.value = String(props.online)
   initData()
   deviceConfigList('')
 })
@@ -195,13 +195,10 @@ const handleDeleteDevice = () => {
 const deleteD = async (id: string) => {
   try {
     await deleteDevice({ id })
-    if (process.env.NODE_ENV === 'development') {
-    }
     window.$message?.success($t('common.deleteSuccess'))
     // 关闭当前标签页
-    await removeTab(currentTabId)
+    removeTab(currentTabId)
   } catch (error) {
-    window.$message?.error($t('common.deleteFailed'))
     console.error('删除设备失败:', error)
   }
 }
@@ -225,29 +222,6 @@ const deleteD = async (id: string) => {
       <span>{{ device_coding }}</span>
     </div>
 
-    <div class="flex-col gap-10px">
-      <div class="flex items-center">
-        <span class="m-r-5px">{{ $t('generate.manualOnlineStatusEdit') }}</span>
-        <n-popover trigger="hover" placement="right">
-          <template #trigger>
-            <span class="h-17px w-20px">
-              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512">
-                <path fill="none" d="M240 304h32l6-160h-44l6 160z"></path>
-                <path
-                  d="M256 48C141.31 48 48 141.31 48 256s93.31 208 208 208s208-93.31 208-208S370.69 48 256 48zm20 319.91h-40v-40h40zM272 304h-32l-6-160h44z"
-                  fill="currentColor"
-                ></path>
-              </svg>
-            </span>
-          </template>
-          <span>{{ $t('generate.heartbeatFunctionInfo') }}</span>
-        </n-popover>
-      </div>
-      <div class="flex items-center gap-10px">
-        <n-switch v-model:value="is_online" checked-value="1" unchecked-value="0" @update:value="handleUpdateValue" />
-        <span>{{ is_online === '1' ? $t('custom.device_details.online') : $t('custom.device_details.offline') }}</span>
-      </div>
-    </div>
     <div class="flex items-center">
       {{ $t('generate.device-firmware') }}
       <span class="ml-4">{{ deviceDataStore?.deviceData?.current_version || '--' }}</span>

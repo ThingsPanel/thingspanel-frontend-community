@@ -219,22 +219,30 @@ export function createFlatRequest<ResponseData = any>(
         return { data, error: null }
       }
 
-      return { data: response.data as MappedType<R, T>, error: null }
+      return Promise.resolve({ data: response.data as MappedType<R, T>, error: null })
     } catch (error) {
-      // 如果是后端业务错误，直接返回后端的响应数据而不是复杂的错误对象
+      // 如果是后端业务错误，应该将错误信息放在error字段中
       if (error?.response?.data && typeof error.response.data === 'object') {
-        return { data: error.response.data, error: null }
+        return Promise.reject({
+          data: null,
+          error: {
+            message: error.response.data.message || error.response.data.msg || '请求失败',
+            status: error?.response?.status,
+            code: error?.code,
+            data: error.response.data
+          }
+        })
       }
 
       // 其他错误返回简化的错误信息
-      return {
+      return Promise.reject({
         data: null,
         error: {
           message: error?.message || '请求失败',
           status: error?.response?.status,
           code: error?.code
         }
-      }
+      })
     }
   } as FlatRequestInstance
   const requestMethods = {

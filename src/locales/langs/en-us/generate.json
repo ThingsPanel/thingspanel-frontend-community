@@ -421,6 +421,7 @@
   "generate.addAlarmRule": "Add Alarm Rule",
   "generate.heartbeatFunctionInfo": "Heartbeat Function Info",
   "generate.manualOnlineStatusEdit": "Manual Online Status Edit",
+  "generate.forceDeviceOnline": "Force device online",
   "generate.deviceCode": "Device Code",
   "generate.enterReadWriteFlag": "Enter Read/Write Flag",
   "generate.heartbeatThreshold": "Heartbeat Threshold",

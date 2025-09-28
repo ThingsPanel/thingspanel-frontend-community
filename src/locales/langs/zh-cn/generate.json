@@ -421,6 +421,7 @@
   "generate.addAlarmRule": "新增告警规则",
   "generate.heartbeatFunctionInfo": "当设备模板里启用心跳判断功能，手动修改无效；当前设备模板启用超时时间，在超时的情况下手动修改无效。",
   "generate.manualOnlineStatusEdit": "手动修改在线状态",
+  "generate.forceDeviceOnline": "强制设备在线",
   "generate.deviceCode": "设备编码:",
   "generate.enterReadWriteFlag": "请输入读写标志",
   "generate.heartbeatThreshold": ">0代表启用心跳判断，系统仅按照遥测数据的上报作为设备的心跳判断在线离线状态",

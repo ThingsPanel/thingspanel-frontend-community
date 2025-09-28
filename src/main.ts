@@ -27,7 +27,7 @@ const MAX_RECENT_ROUTES = 8
 const excludedPaths = ['/login/*', '/404', '/home', '/visualization/kanban-details']
 
 // 防抖函数 - 减少频繁的 localStorage 操作
-function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
+function debounce<T extends () => any>(func: T, wait: number): T {
   let timeout: NodeJS.Timeout | null = null
   return ((...args: any[]) => {
     if (timeout) clearTimeout(timeout)
@@ -41,15 +41,13 @@ let recentRoutesCache: any[] | null = null
 async function setupApp() {
   // 🧹 清理不需要的localStorage项
   cleanupLocalStorage()
-  
+
   const app = createApp(App)
 
   // 1. 关键同步初始化 - 应用启动必需
   setupStore(app)
   setupI18n(app)
-  setupLoading()
   setupNProgress()
-
   // 🔥 关键修复：初始化 Card2.1 组件系统
   initializeCard2System()
     .then(() => {
@@ -73,26 +71,26 @@ async function setupApp() {
   const sysSettingStore = useSysSettingStore()
 
   // 使用 Promise 但不等待，让系统设置并行加载
-  sysSettingStore
-    .initSysSetting()
-    .then(() => {
-      // 监听 system_name 的变化，并根据变化动态更新国际化消息
-      watch(
-        () => sysSettingStore.system_name,
-        newSystemName => {
-          const locales = i18n.global.availableLocales
-          locales.forEach(locale => {
-            i18n.global.mergeLocaleMessage(locale, {
-              system: {
-                title: newSystemName
-              }
-            })
+  sysSettingStore.initSysSetting().then(() => {
+    // 监听 system_name 的变化，并根据变化动态更新国际化消息
+    watch(
+      () => sysSettingStore.system_name,
+      newSystemName => {
+        const locales = i18n.global.availableLocales
+
+        locales.forEach(locale => {
+          i18n.global.mergeLocaleMessage(locale, {
+            system: {
+              title: newSystemName
+            }
           })
-        },
-        { immediate: true }
-      )
-    })
-    .catch(error => {})
+        })
+        //加载时有用到locales，且是动态的，所以把这两个放这里来
+        setupLoading()
+      },
+      { immediate: true }
+    )
+  })
 
   // 3. 非关键初始化 - 使用 requestIdleCallback 延迟执行
   if (typeof requestIdleCallback !== 'undefined') {
