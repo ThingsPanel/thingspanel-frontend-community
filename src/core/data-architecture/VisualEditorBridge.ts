@@ -7,6 +7,10 @@
 import { simpleDataBridge, type ComponentDataRequirement, type DataResult } from '@/core/data-architecture/SimpleDataBridge'
 import type { DataSourceDefinition } from '@/core/data-architecture/interfaces/IComponentDataManager'
 
+// 🔥 修复：使用 ES6 导入替代 require
+import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
+import { useEditorStore } from '@/components/visual-editor/store/editor'
+
 /**
  * Visual Editor 专用的数据桥接器
  * 封装 SimpleDataBridge，提供与旧API兼容的接口
@@ -471,7 +475,6 @@ export class VisualEditorBridge {
    */
   private getBaseConfigPropertyValue(componentId: string, propertyName: string): any {
     try {
-      const { configurationIntegrationBridge } = require('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
       const config = configurationIntegrationBridge.getConfiguration(componentId)
 
       if (config?.base?.[propertyName] !== undefined) {
@@ -514,7 +517,6 @@ export class VisualEditorBridge {
       })
 
       // 🚀 关键修复：直接从配置管理器获取最新的组件配置
-      const { configurationIntegrationBridge } = require('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
       const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
 
       console.log(`🔥 [VisualEditorBridge] 获取到的完整配置:`, {
@@ -552,7 +554,6 @@ export class VisualEditorBridge {
       }
 
       // 3. 从编辑器节点获取（备用方案）
-      const { useEditorStore } = require('@/components/visual-editor/store/editor')
       const editorStore = useEditorStore()
       const node = editorStore.nodes?.find((n: any) => n.id === componentId)
 
@@ -615,7 +616,6 @@ export class VisualEditorBridge {
       })
 
       // 方法1: 从配置管理器的component层获取（最高优先级）
-      const { configurationIntegrationBridge } = require('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
       const config = configurationIntegrationBridge.getConfiguration(componentId)
 
       console.log(`🔥 [VisualEditorBridge] 配置管理器返回的配置:`, {
@@ -674,7 +674,6 @@ export class VisualEditorBridge {
       }
 
       // 方法2: 从编辑器节点获取（第二优先级）
-      const { useEditorStore } = require('@/components/visual-editor/store/editor')
       const editorStore = useEditorStore()
       const node = editorStore.nodes?.find((n: any) => n.id === componentId)
 

@@ -12,7 +12,7 @@ export function usePanelPollingManager(dependencies: {
   pollingManager: any
   stateManager: any
   configurationManager: any
-  editorDataSourceManager: any
+  editorDataSourceManager?: any // 🔥 修复：设为可选参数，兼容新架构
 }) {
   // 全局轮询开关状态
   const globalPollingEnabled = computed(() => dependencies.pollingManager.isGlobalPollingEnabled())
@@ -29,19 +29,48 @@ export function usePanelPollingManager(dependencies: {
 
       // 获取所有组件的轮询配置
       const allComponents = dependencies.stateManager.nodes
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔥 [PanelPollingManager] 扫描 ${allComponents.length} 个组件的轮询配置`)
+      }
+
       allComponents.forEach(component => {
         const componentId = component.id
         // 从 ConfigurationManager 读取组件级别的轮询配置
         const config = dependencies.configurationManager.getConfiguration(componentId)
-        const pollingConfig = config?.component?.polling
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔥 [PanelPollingManager] 组件 ${componentId} 配置:`, {
+            hasConfig: !!config,
+            hasComponent: !!config?.component,
+            hasPolling: !!config?.component?.polling,
+            pollingConfig: config?.component?.polling,
+            hasDataSource: !!config?.dataSource
+          })
+        }
+
+        let pollingConfig = config?.component?.polling
+
+        // 🔥 关键修复：预览模式下自动启用轮询（如果组件有数据源）
+        if (!pollingConfig && config?.dataSource) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🔥 [PanelPollingManager] 组件 ${componentId} 没有轮询配置，但有数据源，自动启用轮询`)
+          }
+          pollingConfig = {
+            enabled: true,
+            interval: 30000,
+            immediate: true
+          }
+
+          // 保存轮询配置到组件配置中
+          dependencies.configurationManager.updateConfiguration(componentId, 'component.polling', pollingConfig)
+        }
+
         if (pollingConfig && pollingConfig.enabled) {
           if (process.env.NODE_ENV === 'development') {
+            console.log(`✅ [PanelPollingManager] 组件 ${componentId} 轮询已启用，间隔: ${pollingConfig.interval}ms`)
           }
 
           const interval = pollingConfig.interval || 30000
-
-          if (process.env.NODE_ENV === 'development') {
-          }
 
           // 创建轮询任务（但不自动启动）
           const taskId = dependencies.pollingManager.addTask({
@@ -60,19 +89,17 @@ export function usePanelPollingManager(dependencies: {
                   // 获取组件配置
                   const config = dependencies.configurationManager.getConfiguration(componentId)
                   if (!config || !config.dataSource) {
-                    console.error(`⚠️ [PanelEditor] 组件数据源配置不存在: ${componentId}`)
+                    console.error(`⚠️ [PanelPollingManager] 组件数据源配置不存在: ${componentId}`)
                     return
                   }
 
                   if (process.env.NODE_ENV === 'development') {
+                    console.log(`🔥 [PanelPollingManager] 执行轮询: ${componentId}`)
                   }
 
                   // 获取组件类型
                   const component = dependencies.stateManager.nodes.find(n => n.id === componentId)
                   const componentType = component?.type || 'unknown'
-
-                  if (process.env.NODE_ENV === 'development') {
-                  }
 
                   // 🔥 关键修复：轮询执行前先清除组件缓存，强制重新获取数据
                   const { simpleDataBridge } = await import('@/core/data-architecture/SimpleDataBridge')
@@ -84,35 +111,42 @@ export function usePanelPollingManager(dependencies: {
                     config.dataSource
                   )
                   if (process.env.NODE_ENV === 'development') {
+                    console.log(`✅ [PanelPollingManager] 轮询完成: ${componentId}`, result?.success)
                   }
                 } catch (bridgeError) {
-                  console.error(`❌ [PanelEditor] VisualEditorBridge 调用失败: ${componentId}`, bridgeError)
-                  console.error(`⚠️ [PanelEditor] 轮询执行失败: ${componentId}`)
+                  console.error(`❌ [PanelPollingManager] VisualEditorBridge 调用失败: ${componentId}`, bridgeError)
+                  console.error(`⚠️ [PanelPollingManager] 轮询执行失败: ${componentId}`)
                 }
               } catch (error) {
-                console.error(`❌ [PanelEditor] 轮询执行错误: ${componentId}`, error)
+                console.error(`❌ [PanelPollingManager] 轮询执行错误: ${componentId}`, error)
               }
             },
             autoStart: false // 统一不自动启动，由全局开关控制
           })
 
           if (process.env.NODE_ENV === 'development') {
+            console.log(`✅ [PanelPollingManager] 轮询任务已创建: ${taskId}`)
           }
 
           // 启动这个任务
           dependencies.pollingManager.startTask(taskId)
+        } else {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`⚠️ [PanelPollingManager] 组件 ${componentId} 轮询未启用或无数据源`)
+          }
         }
       })
 
       // 最终轮询任务统计
       const finalStats = dependencies.pollingManager.getStatistics()
       if (process.env.NODE_ENV === 'development') {
+        console.log(`🔥 [PanelPollingManager] 轮询初始化完成:`, finalStats)
       }
 
       // 🔛 启用全局轮询开关
       dependencies.pollingManager.enableGlobalPolling()
     } catch (error) {
-      console.error('❌ [PanelEditor] 初始化轮询任务失败:', error)
+      console.error('❌ [PanelPollingManager] 初始化轮询任务失败:', error)
     }
   }
 
