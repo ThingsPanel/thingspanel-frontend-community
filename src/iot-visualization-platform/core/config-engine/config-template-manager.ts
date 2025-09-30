@@ -193,7 +193,6 @@ export class ConfigurationTemplateManager extends EventEmitter {
     // 初始化内置模板
     this.initializeBuiltInTemplates()
 
-    console.log('✅ [ConfigurationTemplateManager] 模板和导入导出管理器初始化完成')
   }
 
   // ===== 🎨 模板管理功能 =====
@@ -236,7 +235,6 @@ export class ConfigurationTemplateManager extends EventEmitter {
         timestamp: new Date()
       })
 
-      console.log(`✅ [ConfigurationTemplateManager] 模板创建成功: ${template.id}`)
 
       return {
         success: true,
@@ -317,7 +315,6 @@ export class ConfigurationTemplateManager extends EventEmitter {
         timestamp: new Date()
       })
 
-      console.log(`🎯 [ConfigurationTemplateManager] 模板配置创建成功: ${templateId} → ${renderedConfig.id}`)
 
       return {
         success: true,
@@ -366,7 +363,6 @@ export class ConfigurationTemplateManager extends EventEmitter {
     // 📊 按创建时间排序（最新的在前）
     templates.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 
-    console.log(`📋 [ConfigurationTemplateManager] 获取模板列表: ${templates.length} 个模板`)
     return templates
   }
 
@@ -388,7 +384,6 @@ export class ConfigurationTemplateManager extends EventEmitter {
     const startTime = performance.now()
 
     try {
-      console.log(`📥 [ConfigurationTemplateManager] 开始导入配置: 格式 ${options.format}`)
 
       // 🔄 解析导入数据
       const parsedData = await this.parseImportData(data, options.format)
@@ -446,7 +441,6 @@ export class ConfigurationTemplateManager extends EventEmitter {
         timestamp: new Date()
       })
 
-      console.log(`📥 [ConfigurationTemplateManager] 导入完成: ${successCount}/${importDetails.length} 成功`)
       return result
 
     } catch (error) {
@@ -487,7 +481,6 @@ export class ConfigurationTemplateManager extends EventEmitter {
     const startTime = performance.now()
 
     try {
-      console.log(`📤 [ConfigurationTemplateManager] 开始导出配置: ${configurations.length} 个配置 → ${options.format}`)
 
       // 🔍 过滤导出范围
       const filteredConfigs = this.filterExportScope(configurations, options.scope)
@@ -537,7 +530,6 @@ export class ConfigurationTemplateManager extends EventEmitter {
         timestamp: new Date()
       })
 
-      console.log(`📤 [ConfigurationTemplateManager] 导出完成: ${filteredConfigs.length} 个配置, ${size} 字节`)
       return result
 
     } catch (error) {
@@ -568,7 +560,6 @@ export class ConfigurationTemplateManager extends EventEmitter {
   registerConverter(converter: ConfigurationConverter): void {
     const key = `${converter.sourceFormat}->${converter.targetFormat}`
     this.converters.set(key, converter)
-    console.log(`🔄 [ConfigurationTemplateManager] 注册转换器: ${key}`)
   }
 
   /**
@@ -610,7 +601,6 @@ export class ConfigurationTemplateManager extends EventEmitter {
       this.statistics.conversionsPerformed++
       this.statistics.totalOperations++
 
-      console.log(`🔄 [ConfigurationTemplateManager] 格式转换完成: ${converterKey} (${performance.now() - startTime}ms)`)
       return convertedData
 
     } catch (error) {
@@ -663,7 +653,6 @@ export class ConfigurationTemplateManager extends EventEmitter {
       validate: (data: any) => typeof data === 'string'
     })
 
-    console.log('✅ [ConfigurationTemplateManager] 内置转换器初始化完成')
   }
 
   /**
@@ -748,7 +737,6 @@ export class ConfigurationTemplateManager extends EventEmitter {
 
     this.templates.set(deviceTemplate.id, deviceTemplate)
 
-    console.log('✅ [ConfigurationTemplateManager] 内置模板初始化完成')
   }
 
   /**
@@ -1104,4 +1092,3 @@ if (typeof window !== 'undefined') {
   ;(window as any).configurationTemplateManager = configurationTemplateManager
 }
 
-console.log('🎉 [config-template-manager.ts] 配置模板和导入导出管理器加载完成')

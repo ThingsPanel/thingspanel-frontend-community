@@ -129,7 +129,6 @@ export class ConfigurationValidator {
     // 初始化内置 JSON Schema 验证器
     this.initializeBuiltInSchemas()
 
-    console.log('✅ [ConfigurationValidator] 配置验证器初始化完成')
   }
 
   /**
@@ -159,7 +158,6 @@ export class ConfigurationValidator {
 
       if (cachedResult) {
         this.statistics.cacheHits++
-        console.log(`🚀 [ConfigurationValidator] 缓存命中 - ${item.id}`)
         return cachedResult
       }
 
@@ -197,7 +195,6 @@ export class ConfigurationValidator {
 
       this.updateStatistics(performance.now() - startTime)
 
-      console.log(`✅ [ConfigurationValidator] 验证完成 - ${item.id}: ${result.isValid ? '通过' : '失败'}`)
       return result
 
     } catch (error) {
@@ -235,7 +232,6 @@ export class ConfigurationValidator {
     items: ConfigurationItem[],
     context?: Partial<ValidationContext>
   ): Promise<Map<string, ConfigurationValidationResult>> {
-    console.log(`🚀 [ConfigurationValidator] 开始批量验证 ${items.length} 个配置项`)
 
     const results = new Map<string, ConfigurationValidationResult>()
 
@@ -272,7 +268,6 @@ export class ConfigurationValidator {
     })
 
     const validCount = Array.from(results.values()).filter(r => r.isValid).length
-    console.log(`✅ [ConfigurationValidator] 批量验证完成: ${validCount}/${items.length} 通过`)
 
     return results
   }
@@ -286,7 +281,6 @@ export class ConfigurationValidator {
    */
   registerValidationRule(rule: ValidationRule): void {
     this.customValidationRules.set(rule.name, rule)
-    console.log(`🔧 [ConfigurationValidator] 注册自定义验证规则: ${rule.name}`)
   }
 
   /**
@@ -299,7 +293,6 @@ export class ConfigurationValidator {
    */
   registerSchemaValidator(type: ConfigurationType, validator: JsonSchemaValidator): void {
     this.schemaValidators.set(type, validator)
-    console.log(`🔧 [ConfigurationValidator] 注册 Schema 验证器: ${type}`)
   }
 
   /**
@@ -316,11 +309,9 @@ export class ConfigurationValidator {
         .filter(key => key.includes(configurationId))
 
       keysToDelete.forEach(key => this.validationCache.delete(key))
-      console.log(`🗑️ [ConfigurationValidator] 清除配置缓存: ${configurationId}`)
     } else {
       // 清除所有缓存
       this.validationCache.clear()
-      console.log('🗑️ [ConfigurationValidator] 清除所有验证缓存')
     }
   }
 
@@ -446,7 +437,6 @@ export class ConfigurationValidator {
       }
     })
 
-    console.log('✅ [ConfigurationValidator] 内置验证规则初始化完成')
   }
 
   /**
@@ -456,7 +446,6 @@ export class ConfigurationValidator {
     // 这里可以根据需要添加各种配置类型的 JSON Schema
     // 暂时使用基础的验证逻辑，后续可以扩展为完整的 JSON Schema
 
-    console.log('✅ [ConfigurationValidator] 内置 Schema 验证器初始化完成')
   }
 
   /**
@@ -641,4 +630,3 @@ if (typeof window !== 'undefined') {
   ;(window as any).validateConfigurations = validateConfigurations
 }
 
-console.log('🎉 [config-validator.ts] 配置验证系统加载完成')

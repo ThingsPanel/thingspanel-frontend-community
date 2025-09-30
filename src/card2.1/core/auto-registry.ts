@@ -51,21 +51,13 @@ export class AutoRegistry {
           let subCategoryId: string | undefined;
 
           // 🔍 调试信息：组件注册开始
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`[AutoRegistry] 📝 开始注册组件: ${componentType} (来源: ${componentId})`)
-          }
           // 🔥 转换路径格式给 category-mapping.ts 使用
           // 从 ./components/system/xxx/yyy/index.ts 转换为 ./system/xxx/yyy/index.ts
           const normalizedPath = componentId.replace(/^\.\/components\//, './')
           const categoryInfo = parseCategoryFromPath(normalizedPath)
 
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`[AutoRegistry] 🏷️ 路径转换: ${componentId} → ${normalizedPath}`)
-            console.log(`[AutoRegistry] 🏷️ category-mapping解析: ${componentType}`, categoryInfo)
-          }
-
           // 🔥 直接使用 category-definition.ts 中定义的翻译key
-          const topLevelCategory = TOP_LEVEL_CATEGORIES[categoryInfo.topLevelId as 'system' | 'chart']
+          const topLevelCategory = categoryInfo.topLevelCategoryId ? TOP_LEVEL_CATEGORIES[categoryInfo.topLevelCategoryId as keyof typeof TOP_LEVEL_CATEGORIES] : null
           const subCategory = categoryInfo.subCategoryId ? SUB_CATEGORIES[categoryInfo.subCategoryId] : null
 
           const enhancedDefinition = {
@@ -219,9 +211,6 @@ export class AutoRegistry {
 
       // 🚀 系统分类智能优先：只有当系统分类有组件时才优先
       if (aIsSystem && systemComponentCount > 0) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[AutoRegistry] 📊 系统分类优先排序 (${systemComponentCount}个组件)`)
-        }
         return -1
       }
       if (bIsSystem && systemComponentCount > 0) {
@@ -230,9 +219,6 @@ export class AutoRegistry {
 
       // 系统分类为空时的特殊处理
       if (aIsSystem && systemComponentCount === 0) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[AutoRegistry] 📊 系统分类为空，不优先排序`)
-        }
       }
 
       // 其他情况按名称排序

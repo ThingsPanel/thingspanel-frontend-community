@@ -268,7 +268,6 @@ export class EnhancedEventSystem extends EventEmitter {
   constructor() {
     super()
     this.initializeEventSystem()
-    console.log('🚀 EnhancedEventSystem 初始化完成')
   }
 
   // ========== 🎯 核心事件方法 ==========
@@ -387,7 +386,6 @@ export class EnhancedEventSystem extends EventEmitter {
     this.updateStatistics('subscribe')
     this.emit('handlerRegistered', eventHandler)
 
-    console.log(`事件处理器已注册: ${handlerId} -> [${eventTypesArray.join(', ')}]`)
 
     // 返回取消订阅函数
     return handlerId
@@ -419,7 +417,6 @@ export class EnhancedEventSystem extends EventEmitter {
     this.updateStatistics('unsubscribe')
     this.emit('handlerUnregistered', handler)
 
-    console.log(`事件处理器已注销: ${handlerId}`)
     return true
   }
 
@@ -580,7 +577,6 @@ export class EnhancedEventSystem extends EventEmitter {
     }
 
     await this.enqueueEvent(replayEvent)
-    console.log(`事件已重播: ${eventId} -> ${replayEvent.id}`)
     return true
   }
 
@@ -594,7 +590,6 @@ export class EnhancedEventSystem extends EventEmitter {
       this.processingTimer = undefined
     }
     this.emit('systemPaused')
-    console.log('事件系统已暂停')
   }
 
   /**
@@ -604,7 +599,6 @@ export class EnhancedEventSystem extends EventEmitter {
     this.isProcessing = true
     this.startProcessing()
     this.emit('systemResumed')
-    console.log('事件系统已恢复')
   }
 
   /**
@@ -638,7 +632,6 @@ export class EnhancedEventSystem extends EventEmitter {
     }
 
     if (cleanedEvents > 0 || cleanedHistory > 0) {
-      console.log(`事件清理完成: ${cleanedEvents} 个过期事件, ${cleanedHistory} 个历史记录`)
     }
   }
 
@@ -670,7 +663,6 @@ export class EnhancedEventSystem extends EventEmitter {
     this.scheduledEvents.clear()
 
     this.emit('systemDestroyed')
-    console.log('事件系统已销毁')
   }
 
   // ========== 🔧 私有方法 ==========
@@ -1188,4 +1180,3 @@ export function createEventPublisher(eventSystem: EnhancedEventSystem) {
 // 全局实例
 export const enhancedEventSystem = new EnhancedEventSystem()
 
-console.log('✨ EnhancedEventSystem 模块加载完成')

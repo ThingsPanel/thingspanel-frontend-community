@@ -183,7 +183,6 @@ export class ConfigurationVersionManager extends EventEmitter {
       this.executeCleanupPolicies()
     }, 60 * 60 * 1000)
 
-    console.log('✅ [ConfigurationVersionManager] 版本管理器初始化完成')
   }
 
   // ===== 🔄 版本创建和管理 =====
@@ -244,7 +243,6 @@ export class ConfigurationVersionManager extends EventEmitter {
         timestamp: new Date()
       })
 
-      console.log(`✅ [ConfigurationVersionManager] 版本创建成功: ${configItem.id} v${newVersionNumber}`)
 
       return {
         success: true,
@@ -324,7 +322,6 @@ export class ConfigurationVersionManager extends EventEmitter {
       filteredVersions = filteredVersions.slice(start, end)
     }
 
-    console.log(`📋 [ConfigurationVersionManager] 获取版本历史: ${configId} - 返回 ${filteredVersions.length} 个版本`)
     return filteredVersions
   }
 
@@ -342,7 +339,6 @@ export class ConfigurationVersionManager extends EventEmitter {
     const targetVersion = versions.find(v => v.version === version)
 
     if (targetVersion) {
-      console.log(`🎯 [ConfigurationVersionManager] 获取版本: ${configId} v${version}`)
       return targetVersion
     }
 
@@ -387,7 +383,6 @@ export class ConfigurationVersionManager extends EventEmitter {
       if (options.createBackup) {
         // 这里需要获取当前配置并创建备份
         // 实际实现中需要与 ConfigEngine 集成
-        console.log(`💾 [ConfigurationVersionManager] 创建回滚前备份: ${configId}`)
       }
 
       // ⏪ 执行回滚操作
@@ -420,7 +415,6 @@ export class ConfigurationVersionManager extends EventEmitter {
         timestamp: new Date()
       })
 
-      console.log(`⏪ [ConfigurationVersionManager] 回滚成功: ${configId} → v${targetVersion}`)
 
       return {
         success: true,
@@ -481,7 +475,6 @@ export class ConfigurationVersionManager extends EventEmitter {
       comparedAt: new Date()
     }
 
-    console.log(`🔍 [ConfigurationVersionManager] 版本比较完成: ${configId} v${sourceVersion} ↔ v${targetVersion}`)
     return result
   }
 
@@ -515,7 +508,6 @@ export class ConfigurationVersionManager extends EventEmitter {
     }
     this.versionTags.get(configId)!.set(tag, version)
 
-    console.log(`🏷️ [ConfigurationVersionManager] 标签添加成功: ${configId} v${version} → ${tag}`)
     return true
   }
 
@@ -532,7 +524,6 @@ export class ConfigurationVersionManager extends EventEmitter {
     const tagMap = this.versionTags.get(configId)
     if (tagMap && tagMap.has(tag)) {
       const version = tagMap.get(tag)!
-      console.log(`🔍 [ConfigurationVersionManager] 通过标签获取版本: ${configId} ${tag} → v${version}`)
       return version
     }
 
@@ -548,14 +539,12 @@ export class ConfigurationVersionManager extends EventEmitter {
    * 根据配置的清理策略自动清理过期版本
    */
   private async executeCleanupPolicies(): Promise<void> {
-    console.log('🧹 [ConfigurationVersionManager] 开始执行版本清理策略')
 
     for (const [configId, versions] of this.versionHistory) {
       for (const policy of this.cleanupPolicies) {
         const versionsToRemove = this.identifyVersionsForCleanup(versions, policy)
 
         if (versionsToRemove.length > 0) {
-          console.log(`🧹 [ConfigurationVersionManager] 清理版本: ${configId} - 移除 ${versionsToRemove.length} 个版本`)
 
           // 移除标识的版本
           const remainingVersions = versions.filter(v => !versionsToRemove.includes(v))
@@ -763,7 +752,6 @@ export class ConfigurationVersionManager extends EventEmitter {
     history.push(historyEntry)
     this.changeHistory.set(config.id, history)
 
-    console.log(`📝 [ConfigurationVersionManager] 创建变更历史: ${config.id} - ${operation}`)
   }
 
   /**
@@ -861,4 +849,3 @@ if (typeof window !== 'undefined') {
   ;(window as any).configurationVersionManager = configurationVersionManager
 }
 
-console.log('🎉 [config-version-manager.ts] 配置版本管理器加载完成')

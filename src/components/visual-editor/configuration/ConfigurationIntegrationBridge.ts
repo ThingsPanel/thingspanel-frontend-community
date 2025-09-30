@@ -73,35 +73,19 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
    * @param componentType 组件类型，用于更精确的事件追踪
    */
   setConfiguration(widgetId: string, config: WidgetConfiguration, componentType?: string): void {
-    console.log(`🎯 用户要求的打印这几个字 - 阶段D3：ConfigurationIntegrationBridge.setConfiguration被调用`, {
-      组件ID: widgetId,
-      组件类型: componentType,
-      配置内容: config
-    })
 
     // 🚀 在设置前执行迁移检查，确保配置结构正确
     const migratedConfig = this.performDeviceConfigurationMigrationForSet(widgetId, config)
 
     const updated = configurationStateManager.setConfiguration(widgetId, migratedConfig, 'user')
-    console.log(`🎯 用户要求的打印这几个字 - 阶段D4：ConfigurationIntegrationBridge.setConfiguration更新结果`, {
-      更新成功: updated,
-      将触发事件链: !!updated
-    })
 
     if (updated) {
       // 关键修复：配置更新时清理缓存，确保数据一致性
       simpleDataBridge.clearComponentCache(widgetId)
 
       // 🔥 检查数据源配置内容
-      console.log(`🔥 [setConfiguration] 准备发送事件，检查数据源配置:`, {
-        组件ID: widgetId,
-        有数据源配置: !!migratedConfig.dataSource,
-        数据源配置内容: migratedConfig.dataSource,
-        数据源类型: typeof migratedConfig.dataSource
-      })
 
       const shouldTrigger = this.shouldTriggerDataExecution('dataSource', migratedConfig.dataSource)
-      console.log(`🔥 [setConfiguration] shouldTriggerDataExecution 返回值: ${shouldTrigger}`)
 
       // 修复：发出配置变更事件，使用正确的事件格式
       const changeEvent: ConfigChangeEvent = {
@@ -117,13 +101,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
           shouldTriggerExecution: shouldTrigger
         }
       }
-      console.log(`🎯 用户要求的打印这几个字 - 阶段F1：ConfigurationIntegrationBridge准备发送configEventBus.emitConfigChange事件`, {
-        事件详情: changeEvent,
-        组件ID: widgetId,
-        配置节: 'dataSource'
-      })
       configEventBus.emitConfigChange(changeEvent)
-      console.log(`🎯 用户要求的打印这几个字 - 阶段F2：ConfigurationIntegrationBridge已发送configEventBus.emitConfigChange事件`)
     }
   }
 
@@ -146,18 +124,15 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     if (updated) {
       // 🔥 关键修复：配置部分更新时清理缓存，特别是 dataSource 更新
       if (section === 'dataSource' || section === 'component') {
-        console.log(`🔥 [ConfigurationIntegrationBridge] 清理 simpleDataBridge 缓存:`, { widgetId, section })
         simpleDataBridge.clearComponentCache(widgetId)
       }
 
       // 🔥 新增：对于 base 层配置更新（deviceId、metricsList等），也需要触发数据源重新执行
       if (section === 'base') {
-        console.log(`🔥 [ConfigurationIntegrationBridge] 基础配置更新，清理缓存:`, { widgetId, config })
         simpleDataBridge.clearComponentCache(widgetId)
 
         // 🔥 修复：不再手动触发数据源重新执行，让正常的事件流程处理
         // 避免多重执行导致的请求竞争和参数混乱
-        console.log(`🔥 [ConfigurationIntegrationBridge] base层配置更新，依赖正常事件流程触发数据源`)
       }
 
       // 🔥 修复：发出配置部分更新事件，使用正确的 API
@@ -175,16 +150,9 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         }
       }
 
-      console.log(`🔥 [ConfigurationIntegrationBridge] 即将发送跨组件交互事件:`, changeEvent)
       configEventBus.emitConfigChange(changeEvent)
-      console.log(`🔥 [ConfigurationIntegrationBridge] 跨组件交互事件已发送`)
 
       // 🔥 关键修复：发送 card2-config-update 事件，让组件能接收到配置更新
-      console.log(`🔥 [ConfigurationIntegrationBridge] 发送跨组件 card2-config-update 事件:`, {
-        componentId: widgetId,
-        layer: section,
-        config: config
-      })
 
       window.dispatchEvent(new CustomEvent('card2-config-update', {
         detail: {
@@ -217,11 +185,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
   ): void {
     // 🔥 关键修复：检查是否为真实的配置变更，避免无意义的重复触发
     if (!this.isRealConfigChange(widgetId, section, config)) {
-      console.log(`⏭️ [ConfigurationIntegrationBridge] 跳过重复配置更新:`, {
-        组件ID: widgetId,
-        配置节: section,
-        原因: '配置内容未发生实际变化'
-      })
       return // 提前返回，避免无意义的更新和事件触发
     }
 
@@ -235,7 +198,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
 
       // 🔥 对于base层配置更新（deviceId、metricsList等），触发数据源重新执行
       if (section === 'base') {
-        console.log(`🔥 [ConfigurationIntegrationBridge] base层配置更新，清理缓存:`, { widgetId, config })
         simpleDataBridge.clearComponentCache(widgetId)
       }
 
@@ -256,11 +218,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
           }
         }
 
-        console.log(`📤 [ConfigurationIntegrationBridge] 发送防抖配置变更事件:`, {
-          组件ID: widgetId,
-          配置节: section,
-          是否触发数据执行: changeEvent.context?.shouldTriggerExecution
-        })
 
         configEventBus.emitConfigChange(changeEvent)
 
@@ -283,39 +240,26 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
    * @returns 是否需要触发数据执行
    */
   private shouldTriggerDataExecution(section: keyof WidgetConfiguration, config: any): boolean {
-    console.log(`🔥 [ConfigurationIntegrationBridge] shouldTriggerDataExecution 判断:`, {
-      section,
-      config,
-      configType: typeof config,
-      hasConfig: !!config
-    })
 
     // base 层的 deviceId、metricsList 等字段变更需要触发
     if (section === 'base') {
       const criticalBaseFields = ['deviceId', 'metricsList']
       const shouldTrigger = criticalBaseFields.some(field => config.hasOwnProperty(field))
-      console.log(`🔥 [shouldTriggerDataExecution] base层判断结果: ${shouldTrigger}`, {
-        criticalBaseFields,
-        configFields: Object.keys(config || {})
-      })
       return shouldTrigger
     }
 
     // dataSource 层的变更通常需要触发
     if (section === 'dataSource') {
-      console.log(`🔥 [shouldTriggerDataExecution] dataSource层，直接返回 true`)
       return true
     }
 
     // component 层需要检查是否包含动态参数绑定
     if (section === 'component') {
       // 这里可以添加更复杂的逻辑来检测是否有属性绑定变更
-      console.log(`🔥 [shouldTriggerDataExecution] component层，返回 false`)
       return false // 暂时不触发，避免过度执行
     }
 
     // interaction 层通常不需要触发数据执行
-    console.log(`🔥 [shouldTriggerDataExecution] ${section}层，返回 false`)
     return false
   }
 
@@ -556,13 +500,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         // 配置相同，检查时间间隔
         const timeDiff = now - cached.lastUpdateTime
         if (timeDiff < this.CONFIG_CHANGE_DEBOUNCE_TIME) {
-          console.log(`🔄 [ConfigurationIntegrationBridge] 检测到重复配置变更，跳过事件:`, {
-            组件ID: widgetId,
-            配置节: section,
-            时间间隔: timeDiff,
-            配置哈希: configHash,
-            说明: '防止配置重复触发导致的多重数据源执行'
-          })
           return false // 不是真实变更
         }
       }
@@ -581,11 +518,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       if (existingDataSourceConfig) {
         const existingHash = this.calculateConfigHash(existingDataSourceConfig)
         if (existingHash === configHash) {
-          console.log(`🔄 [ConfigurationIntegrationBridge] 数据源配置内容未变化，跳过重复执行:`, {
-            组件ID: widgetId,
-            配置哈希: configHash,
-            说明: '数据源配置实际内容相同，避免无效执行'
-          })
           return false
         }
       }
@@ -597,13 +529,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       lastUpdateTime: now
     })
 
-    console.log(`✅ [ConfigurationIntegrationBridge] 检测到真实配置变更:`, {
-      组件ID: widgetId,
-      配置节: section,
-      配置哈希: configHash,
-      是否首次: !cached,
-      说明: '配置真实变更，将触发相应的数据源执行'
-    })
 
     return true // 是真实变更
   }
@@ -816,7 +741,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     try {
       // 🔥 已迁移：数据源管理现在通过核心数据架构系统处理
       // VisualEditorBridge 和 DataWarehouse 提供统一的数据源服务
-      console.log('🔥 [ConfigurationIntegrationBridge] 数据源集成已迁移到核心架构系统')
     } catch (error) {}
   }
 
@@ -826,7 +750,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
   setupComponentDataSourceIntegration(componentId: string): void {
     // 🔥 已迁移：数据源执行集成现在通过 ConfigEventBus 和 VisualEditorBridge 处理
     // 配置变更事件会自动触发 VisualEditorBridge 更新组件执行器
-    console.log(`🔥 [ConfigurationIntegrationBridge] 组件数据源集成已迁移到核心架构系统: ${componentId}`)
 
     // 核心架构系统会自动处理配置变更和数据源执行
     // 通过 ConfigEventBus 事件和 EditorDataSourceManager 的事件监听器
@@ -840,25 +763,15 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
    */
   private async triggerDataSourceReExecution(componentId: string, componentType: string): Promise<void> {
     try {
-      console.log(`🔥 [ConfigurationIntegrationBridge] 触发数据源重新执行:`, {
-        componentId,
-        componentType,
-        reason: 'base层动态参数变更'
-      })
 
       // 获取当前组件的数据源配置
       const currentConfig = configurationStateManager.getConfiguration(componentId)
       const dataSourceConfig = currentConfig?.dataSource
 
       if (!dataSourceConfig || !dataSourceConfig.dataSources || dataSourceConfig.dataSources.length === 0) {
-        console.log(`🔥 [ConfigurationIntegrationBridge] 组件 ${componentId} 没有数据源配置，跳过重新执行`)
         return
       }
 
-      console.log(`🔥 [ConfigurationIntegrationBridge] 组件 ${componentId} 有数据源配置，开始重新执行:`, {
-        dataSourcesCount: dataSourceConfig.dataSources.length,
-        dataSourceTypes: dataSourceConfig.dataSources.map(ds => ds.type)
-      })
 
       // 🔥 关键：清理缓存确保获取最新数据
       simpleDataBridge.clearComponentCache(componentId)
@@ -876,13 +789,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         interaction: currentConfig?.interaction || {}
       }
 
-      console.log(`🔥 [ConfigurationIntegrationBridge] 传递完整配置给VisualEditorBridge:`, {
-        componentId,
-        hasBase: !!fullConfig.base,
-        baseConfig: fullConfig.base,
-        hasDataSource: !!fullConfig.dataSource,
-        dataSourceKeys: Object.keys(fullConfig.dataSource || {})
-      })
 
       // 重新执行数据源，传入完整的配置对象
       const result = await visualEditorBridge.updateComponentExecutor(

@@ -180,7 +180,6 @@ export class CanvasConfigIntegration extends EventEmitter {
       }
 
       this.emit('sync:node:added', event)
-      console.log(`[Canvas集成] 节点已添加并同步到配置系统: ${node.id}`)
     } catch (error) {
       console.error('[Canvas集成] 节点添加同步失败:', error)
       this.emit('sync:error', { event, error })
@@ -213,7 +212,6 @@ export class CanvasConfigIntegration extends EventEmitter {
       }
 
       this.emit('sync:node:removed', event)
-      console.log(`[Canvas集成] 节点已从配置系统移除: ${nodeId}`)
     } catch (error) {
       console.error('[Canvas集成] 节点移除同步失败:', error)
       this.emit('sync:error', { event, error })
@@ -293,7 +291,6 @@ export class CanvasConfigIntegration extends EventEmitter {
       })
 
       this.emit('sync:canvas:updated', event)
-      console.log(`[Canvas集成] Canvas配置已更新: ${data.canvasId}`)
     } catch (error) {
       console.error('[Canvas集成] Canvas更新同步失败:', error)
       this.emit('sync:error', { event, error })
@@ -326,7 +323,6 @@ export class CanvasConfigIntegration extends EventEmitter {
           await this.canvasEngine.updateNodeVisualProperties(componentId, changes)
         }
 
-        console.log(`[Canvas集成] 配置变更已同步到Canvas节点: ${componentId}`)
       }
     } catch (error) {
       console.error('[Canvas集成] 配置到Canvas同步失败:', error)
@@ -363,7 +359,6 @@ export class CanvasConfigIntegration extends EventEmitter {
         }
 
         await this.canvasEngine.createNode(nodeConfig)
-        console.log(`[Canvas集成] 基于配置创建新Canvas节点: ${componentId}`)
       }
     } catch (error) {
       console.error('[Canvas集成] 配置添加到Canvas同步失败:', error)
@@ -388,7 +383,6 @@ export class CanvasConfigIntegration extends EventEmitter {
       const node = this.canvasEngine.getNode(componentId)
       if (node) {
         await this.canvasEngine.removeNode(componentId)
-        console.log(`[Canvas集成] 基于配置移除Canvas节点: ${componentId}`)
       }
     } catch (error) {
       console.error('[Canvas集成] 配置移除到Canvas同步失败:', error)
@@ -739,7 +733,6 @@ export class CanvasConfigIntegration extends EventEmitter {
         })
       }
 
-      console.log(`[Canvas集成] 强制同步完成，同步了 ${nodes.length} 个节点`)
       this.emit('force:sync:completed', { nodeCount: nodes.length })
     } catch (error) {
       console.error('[Canvas集成] 强制同步失败:', error)
@@ -777,7 +770,6 @@ export class CanvasConfigIntegration extends EventEmitter {
         syncedCount++
       }
 
-      console.log(`[Canvas集成] 配置到Canvas强制同步完成，同步了 ${syncedCount} 个配置`)
       this.emit('force:config:sync:completed', { configCount: syncedCount })
     } catch (error) {
       console.error('[Canvas集成] 配置到Canvas强制同步失败:', error)
@@ -829,7 +821,6 @@ export class CanvasConfigIntegration extends EventEmitter {
     this.undoStack = []
     this.redoStack = []
 
-    console.log('[Canvas集成] 资源清理完成')
   }
 }
 

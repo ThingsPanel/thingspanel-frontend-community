@@ -180,7 +180,6 @@ export class ComponentRegistryManager {
       const success = await registryEngine.register(registryItem)
 
       if (success && process.env.NODE_ENV === 'development') {
-        console.log(`✅ [ComponentRegistryManager] 成功注册组件: ${unifiedDef.type}/${unifiedDef.id}`)
       }
 
       return success
@@ -232,13 +231,6 @@ export class ComponentRegistryManager {
           success: false,
           error: error instanceof Error ? error.message : String(error)
         })
-      }
-    }
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`📦 [ComponentRegistryManager] 批量注册完成: 成功 ${results.successCount}, 失败 ${results.failedCount}`)
-      if (results.failedCount > 0) {
-        console.warn('❌ [ComponentRegistryManager] 失败的组件:', results.details.filter(d => !d.success))
       }
     }
 
@@ -710,10 +702,6 @@ export class ComponentRegistryManager {
    * 初始化组件
    */
   private static async initializeComponent(definition: UnifiedComponentDefinition): Promise<void> {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🎯 [ComponentRegistryManager] 初始化组件: ${definition.sourceSystem}/${definition.type}`)
-    }
-
     // 根据来源系统执行特定的初始化逻辑
     switch (definition.sourceSystem) {
       case 'card21':
@@ -732,10 +720,6 @@ export class ComponentRegistryManager {
    * 清理组件
    */
   private static async cleanupComponent(definition: UnifiedComponentDefinition): Promise<void> {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🧹 [ComponentRegistryManager] 清理组件: ${definition.sourceSystem}/${definition.type}`)
-    }
-
     // 根据来源系统执行特定的清理逻辑
   }
 }

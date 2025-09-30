@@ -34,13 +34,11 @@ async function ensureInitialized(): Promise<void> {
 
   initializationPromise = (async () => {
     try {
-      console.log('🚀 [ensureInitialized] 开始初始化Card2.1组件系统...')
       
       // 使用 **/* 模式，动态扫描所有组件的 index.ts 文件
       // 这可以确保扫描到任意深度的子目录，更具扩展性
       const allModules = import.meta.glob('./**/index.ts', { eager: true });
       
-      console.log(`🔥 [ensureInitialized] 发现 ${Object.keys(allModules).length} 个组件模块:`, Object.keys(allModules))
       
       // 处理已加载的模块
       const loadedModules: Record<string, any> = {}
@@ -50,20 +48,17 @@ async function ensureInitialized(): Promise<void> {
           if (componentId && module) {
             // 附加源路径，便于后续根据路径推断分层分类
             loadedModules[componentId] = { ...(module as any), __sourcePath: path }
-            console.log(`✅ [ensureInitialized] 加载组件: ${componentId} (${path})`)
           }
         } catch (error) {
           console.warn(`⚠️ [ensureInitialized] 处理组件失败: ${path}`, error)
         }
       }
 
-      console.log(`🔥 [ensureInitialized] 准备注册 ${Object.keys(loadedModules).length} 个组件:`, Object.keys(loadedModules))
 
       // 使用 autoRegistry.autoRegister 注册所有组件
       const registeredComponents = await autoRegistry.autoRegister(loadedModules)
       
       isInitialized = true
-      console.log(`✅ [ensureInitialized] 组件初始化完成，注册了 ${registeredComponents.length} 个组件`)
       
     } catch (error) {
       console.error('❌ [ensureInitialized] 组件初始化失败:', error)
@@ -89,7 +84,6 @@ function extractComponentIdFromPath(path: string): string | null {
   const match = path.match(/\/([^/]+)\/index\.ts$/)
   if (match) {
     const componentId = match[1]
-    console.log(`🔥 [extractComponentIdFromPath] 通用路径匹配: ${path} -> ${componentId}`)
     return componentId
   }
   console.warn(`⚠️ [extractComponentIdFromPath] 路径格式不匹配: ${path}`)

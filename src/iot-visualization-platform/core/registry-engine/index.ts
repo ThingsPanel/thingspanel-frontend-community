@@ -180,22 +180,10 @@ export class RegistryEngine extends EventEmitter {
   constructor() {
     super()
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 [RegistryEngine] 初始化统一注册引擎')
-    }
-
     // 监听自身事件用于调试
-    this.on('register', (metadata) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`📝 [RegistryEngine] 注册项目: ${metadata.type}/${metadata.id}`)
-      }
-    })
+    this.on('register', (metadata) => {    })
 
-    this.on('unregister', (id) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🗑️ [RegistryEngine] 注销项目: ${id}`)
-      }
-    })
+    this.on('unregister', (id) => {    })
   }
 
   /**
@@ -257,10 +245,6 @@ export class RegistryEngine extends EventEmitter {
       this.emit('register', metadata)
       this.emit('change', { action: 'register', metadata })
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [RegistryEngine] 成功注册: ${metadata.type}/${metadata.id}`)
-      }
-
       return true
 
     } catch (error) {
@@ -313,10 +297,6 @@ export class RegistryEngine extends EventEmitter {
       // 发送注销事件
       this.emit('unregister', id)
       this.emit('change', { action: 'unregister', metadata })
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [RegistryEngine] 成功注销: ${metadata.type}/${id}`)
-      }
 
       return true
 
@@ -540,10 +520,6 @@ export class RegistryEngine extends EventEmitter {
   async registerBatch<T>(items: RegistryItem<T>[]): Promise<number> {
     let successCount = 0
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`📦 [RegistryEngine] 开始批量注册: ${items.length} 个项目`)
-    }
-
     // 🎯 按依赖关系拓扑排序，确保依赖项先注册
     // 这是关键优化：避免因依赖缺失导致的注册失败
     const sortedItems = this.sortByDependencies(items)
@@ -563,10 +539,6 @@ export class RegistryEngine extends EventEmitter {
       success: successCount,
       failed: items.length - successCount
     })
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`📦 [RegistryEngine] 批量注册完成: ${successCount}/${items.length}`)
-    }
 
     return successCount
   }
@@ -595,10 +567,6 @@ export class RegistryEngine extends EventEmitter {
     this.validationCache.clear()
 
     this.emit('clear')
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🧹 [RegistryEngine] 已清空所有注册项')
-    }
   }
 
   /**

@@ -252,11 +252,6 @@ export class VisualEditorBridge {
       return dataSourceConfig
     }
 
-    console.log(`🔥 [VisualEditorBridge] injectBaseConfigToDataSource开始:`, {
-      baseConfig,
-      dataSourceConfig类型: typeof dataSourceConfig,
-      是否有config: !!(dataSourceConfig?.config)
-    })
 
     // 创建增强的配置对象
     const enhanced = JSON.parse(JSON.stringify(dataSourceConfig)) // 深拷贝
@@ -264,7 +259,6 @@ export class VisualEditorBridge {
     // 🚀 关键扩展：不仅注入基础配置，还要处理所有绑定表达式替换
     this.processBindingReplacements(enhanced, baseConfig)
 
-    console.log(`🔥 [VisualEditorBridge] injectBaseConfigToDataSource完成`)
 
     return enhanced
   }
@@ -275,20 +269,9 @@ export class VisualEditorBridge {
    * ⚠️ 关键警告：此方法修改传入的配置对象，确保传入的是克隆对象！
    */
   private processBindingReplacements(config: any, baseConfig: any): void {
-    console.log(`🔥 [VisualEditorBridge] processBindingReplacements开始:`, {
-      配置类型: typeof config,
-      配置键: config && typeof config === 'object' ? Object.keys(config) : [],
-      基础配置: baseConfig,
-      配置内容预览: config
-    })
 
     // 1. 首先处理基础配置注入（原有逻辑，模拟设备ID的硬编码机制）
     if (config.config && typeof config.config === 'object') {
-      console.log(`🔥 [VisualEditorBridge] 注入基础配置到config层:`, {
-        原config: config.config,
-        注入的deviceId: baseConfig.deviceId,
-        注入的metricsList: baseConfig.metricsList
-      })
       config.config = {
         ...config.config,
         // 注入基础配置中的设备属性（模拟设备ID硬编码逻辑）
@@ -296,23 +279,14 @@ export class VisualEditorBridge {
         ...(baseConfig.metricsList && { metricsList: baseConfig.metricsList })
       }
     } else {
-      console.log(`🔥 [VisualEditorBridge] 注入基础配置到顶层:`, {
-        注入的deviceId: baseConfig.deviceId,
-        注入的metricsList: baseConfig.metricsList
-      })
       // 如果没有 config 对象，直接在顶层注入
       config.deviceId = config.deviceId || baseConfig.deviceId
       config.metricsList = config.metricsList || baseConfig.metricsList
     }
 
     // 2. 🔥 关键新增：然后处理所有绑定表达式替换（这是组件属性绑定的核心逻辑）
-    console.log(`🔥 [VisualEditorBridge] 开始递归绑定表达式替换...`)
     this.recursivelyReplaceBindings(config)
 
-    console.log(`🔥 [VisualEditorBridge] processBindingReplacements完成:`, {
-      处理后的配置: config,
-      说明: '基础配置注入 + 绑定表达式替换完成'
-    })
   }
 
   /**
@@ -325,11 +299,6 @@ export class VisualEditorBridge {
       return
     }
 
-    console.log(`🔥 [VisualEditorBridge] 检查对象层级:`, {
-      路径: path,
-      对象类型: typeof obj,
-      对象键: typeof obj === 'object' && obj !== null ? Object.keys(obj) : []
-    })
 
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
@@ -337,12 +306,6 @@ export class VisualEditorBridge {
         const currentPath = `${path}.${key}`
 
         if (typeof val === 'string') {
-          console.log(`🔥 [VisualEditorBridge] 检查字符串值:`, {
-            路径: currentPath,
-            键: key,
-            值: val,
-            值长度: val.length
-          })
 
           // 🔥 关键修复：检查多种绑定表达式格式
           // 格式1: componentId.component.propertyName （标准组件属性绑定）
@@ -356,114 +319,39 @@ export class VisualEditorBridge {
 
           if (componentBindingMatch) {
             const [, componentId, propertyName] = componentBindingMatch
-            console.log(`🔥 [VisualEditorBridge] 发现组件属性绑定:`, {
-              路径: currentPath,
-              键: key,
-              原值: val,
-              componentId,
-              propertyName,
-              绑定类型: 'component'
-            })
 
             // 🚀 关键修复：获取组件的当前属性值，使用正确的获取逻辑
             const actualValue = this.getComponentPropertyValueFixed(componentId, propertyName)
             if (actualValue !== undefined) {
-              console.log(`🔥 [VisualEditorBridge] 组件属性绑定替换成功:`, {
-                路径: currentPath,
-                键: key,
-                原值: val,
-                新值: actualValue,
-                数据类型: typeof actualValue
-              })
               obj[key] = String(actualValue)
             } else {
-              console.log(`🔥 [VisualEditorBridge] 组件属性未找到，保持原值:`, {
-                路径: currentPath,
-                原值: val,
-                componentId,
-                propertyName
-              })
             }
           } else if (baseBindingMatch) {
             const [, componentId, propertyName] = baseBindingMatch
-            console.log(`🔥 [VisualEditorBridge] 发现基础配置绑定:`, {
-              路径: currentPath,
-              键: key,
-              原值: val,
-              componentId,
-              propertyName,
-              绑定类型: 'base'
-            })
 
             // 尝试获取基础配置值（使用已有的获取逻辑）
             const actualValue = this.getBaseConfigPropertyValue(componentId, propertyName)
             if (actualValue !== undefined) {
-              console.log(`🔥 [VisualEditorBridge] 基础配置绑定替换成功:`, {
-                路径: currentPath,
-                键: key,
-                原值: val,
-                新值: actualValue,
-                数据类型: typeof actualValue
-              })
               obj[key] = String(actualValue)
             } else {
-              console.log(`🔥 [VisualEditorBridge] 基础配置未找到，保持原值:`, {
-                路径: currentPath,
-                原值: val,
-                componentId,
-                propertyName
-              })
             }
           } else if (whitelistBindingMatch) {
             // 🔥 兼容性处理：将旧的whitelist格式转换为component格式再处理
             const [, componentId, propertyName] = whitelistBindingMatch
-            console.log(`🔥 [VisualEditorBridge] 发现旧格式绑定（whitelist），转换为component格式:`, {
-              路径: currentPath,
-              键: key,
-              原值: val,
-              componentId,
-              propertyName,
-              绑定类型: 'whitelist（已废弃）'
-            })
 
             // 转换为标准component格式再处理
             const actualValue = this.getComponentPropertyValueFixed(componentId, propertyName)
             if (actualValue !== undefined) {
-              console.log(`🔥 [VisualEditorBridge] 旧格式绑定替换成功:`, {
-                路径: currentPath,
-                键: key,
-                原值: val,
-                新值: actualValue,
-                数据类型: typeof actualValue,
-                说明: '已自动转换旧格式'
-              })
               obj[key] = String(actualValue)
             } else {
-              console.log(`🔥 [VisualEditorBridge] 旧格式绑定未找到属性值，保持原值:`, {
-                路径: currentPath,
-                原值: val,
-                componentId,
-                propertyName
-              })
             }
           } else {
             // 不是绑定表达式，无需处理
             if (val.includes('.')) {
-              console.log(`🔥 [VisualEditorBridge] 字符串包含点号但不是绑定表达式:`, {
-                路径: currentPath,
-                键: key,
-                值: val,
-                说明: '可能是普通URL或其他格式'
-              })
             }
           }
         } else if (typeof val === 'object' && val !== null) {
           // 递归处理嵌套对象
-          console.log(`🔥 [VisualEditorBridge] 递归处理嵌套对象:`, {
-            路径: currentPath,
-            对象类型: Array.isArray(val) ? 'array' : 'object',
-            子键数量: Array.isArray(val) ? val.length : Object.keys(val).length
-          })
           this.recursivelyReplaceBindings(val, currentPath)
         }
       }
@@ -479,20 +367,9 @@ export class VisualEditorBridge {
 
       if (config?.base?.[propertyName] !== undefined) {
         const value = config.base[propertyName]
-        console.log(`🔥 [VisualEditorBridge] 从基础配置获取属性值:`, {
-          componentId,
-          propertyName,
-          value,
-          配置来源: 'config.base'
-        })
         return value
       }
 
-      console.log(`🔥 [VisualEditorBridge] 基础配置中未找到属性:`, {
-        componentId,
-        propertyName,
-        基础配置键: config?.base ? Object.keys(config.base) : []
-      })
       return undefined
     } catch (error) {
       console.error(`❌ [VisualEditorBridge] 获取基础配置属性值失败:`, {
@@ -510,46 +387,20 @@ export class VisualEditorBridge {
    */
   private getComponentPropertyValueFixed(componentId: string, propertyName: string): any {
     try {
-      console.log(`🔥 [VisualEditorBridge] getComponentPropertyValueFixed开始:`, {
-        componentId,
-        propertyName,
-        说明: '修复版本的属性值获取'
-      })
 
       // 🚀 关键修复：直接从配置管理器获取最新的组件配置
       const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
 
-      console.log(`🔥 [VisualEditorBridge] 获取到的完整配置:`, {
-        componentId,
-        propertyName,
-        hasConfig: !!fullConfig,
-        hasComponent: !!(fullConfig?.component),
-        componentConfig: fullConfig?.component,
-        说明: '检查component层配置中的属性',
-        关键检查: `寻找属性 ${propertyName} 在配置中的值`
-      })
 
       // 1. 优先从component层直接获取属性
       if (fullConfig?.component?.[propertyName] !== undefined) {
         const value = fullConfig.component[propertyName]
-        console.log(`🔥 [VisualEditorBridge] 从component层获取属性值成功:`, {
-          componentId,
-          propertyName,
-          value,
-          type: typeof value
-        })
         return value
       }
 
       // 2. 检查customize层（兼容某些组件结构）
       if (fullConfig?.component?.customize?.[propertyName] !== undefined) {
         const value = fullConfig.component.customize[propertyName]
-        console.log(`🔥 [VisualEditorBridge] 从customize层获取属性值成功:`, {
-          componentId,
-          propertyName,
-          value,
-          type: typeof value
-        })
         return value
       }
 
@@ -559,38 +410,15 @@ export class VisualEditorBridge {
 
       if (node?.properties?.[propertyName] !== undefined) {
         const value = node.properties[propertyName]
-        console.log(`🔥 [VisualEditorBridge] 从编辑器节点获取属性值:`, {
-          componentId,
-          propertyName,
-          value,
-          type: typeof value
-        })
         return value
       }
 
       // 4. 检查编辑器节点的统一配置
       if (node?.metadata?.unifiedConfig?.component?.[propertyName] !== undefined) {
         const value = node.metadata.unifiedConfig.component[propertyName]
-        console.log(`🔥 [VisualEditorBridge] 从编辑器节点统一配置获取属性值:`, {
-          componentId,
-          propertyName,
-          value,
-          type: typeof value
-        })
         return value
       }
 
-      console.log(`🔥 [VisualEditorBridge] 未找到属性值:`, {
-        componentId,
-        propertyName,
-        检查的配置: {
-          hasFullConfig: !!fullConfig,
-          hasComponent: !!(fullConfig?.component),
-          componentKeys: fullConfig?.component ? Object.keys(fullConfig.component) : [],
-          hasNode: !!node,
-          nodePropertyKeys: node?.properties ? Object.keys(node.properties) : []
-        }
-      })
       return undefined
     } catch (error) {
       console.error(`❌ [VisualEditorBridge] getComponentPropertyValueFixed失败:`, {
@@ -609,50 +437,21 @@ export class VisualEditorBridge {
    */
   private getComponentPropertyValue(componentId: string, propertyName: string): any {
     try {
-      console.log(`🔥 [VisualEditorBridge] 开始获取组件属性值:`, {
-        componentId,
-        propertyName,
-        调用位置: '绑定表达式替换'
-      })
 
       // 方法1: 从配置管理器的component层获取（最高优先级）
       const config = configurationIntegrationBridge.getConfiguration(componentId)
 
-      console.log(`🔥 [VisualEditorBridge] 配置管理器返回的配置:`, {
-        componentId,
-        propertyName,
-        hasConfig: !!config,
-        hasComponent: !!(config?.component),
-        componentKeys: config?.component ? Object.keys(config.component) : [],
-        配置结构: {
-          base: config?.base ? Object.keys(config.base) : [],
-          component: config?.component ? Object.keys(config.component) : [],
-          dataSource: config?.dataSource ? Object.keys(config.dataSource) : []
-        }
-      })
 
       // 🔥 关键修复：优先从component层获取，然后检查customize层（兼容不同组件结构）
       let value = undefined
       if (config?.component?.[propertyName] !== undefined) {
         value = config.component[propertyName]
-        console.log(`🔥 [VisualEditorBridge] 从配置管理器component层获取属性值:`, {
-          componentId,
-          propertyName,
-          value,
-          配置来源: 'config.component'
-        })
         return value
       }
 
       // 兼容性检查：某些组件可能将属性存储在customize层
       if (config?.component?.customize?.[propertyName] !== undefined) {
         value = config.component.customize[propertyName]
-        console.log(`🔥 [VisualEditorBridge] 从配置管理器customize层获取属性值:`, {
-          componentId,
-          propertyName,
-          value,
-          配置来源: 'config.component.customize'
-        })
         return value
       }
 
@@ -662,12 +461,6 @@ export class VisualEditorBridge {
         const componentConfig = config.component
         for (const [key, val] of Object.entries(componentConfig)) {
           if (key === propertyName && val !== undefined) {
-            console.log(`🔥 [VisualEditorBridge] 从配置管理器component层根级获取属性值:`, {
-              componentId,
-              propertyName,
-              value: val,
-              配置来源: 'config.component.root'
-            })
             return val
           }
         }
@@ -677,48 +470,21 @@ export class VisualEditorBridge {
       const editorStore = useEditorStore()
       const node = editorStore.nodes?.find((n: any) => n.id === componentId)
 
-      console.log(`🔥 [VisualEditorBridge] 编辑器节点信息:`, {
-        componentId,
-        propertyName,
-        hasNode: !!node,
-        nodeId: node?.id,
-        hasProperties: !!(node?.properties),
-        propertyKeys: node?.properties ? Object.keys(node.properties) : [],
-        节点属性结构: node?.properties
-      })
 
       if (node?.properties?.[propertyName] !== undefined) {
         value = node.properties[propertyName]
-        console.log(`🔥 [VisualEditorBridge] 从编辑器节点获取属性值:`, {
-          componentId,
-          propertyName,
-          value,
-          配置来源: 'editorStore.node.properties'
-        })
         return value
       }
 
       // 检查编辑器节点的component层属性
       if (node?.properties?.component?.[propertyName] !== undefined) {
         value = node.properties.component[propertyName]
-        console.log(`🔥 [VisualEditorBridge] 从编辑器节点component层获取属性值:`, {
-          componentId,
-          propertyName,
-          value,
-          配置来源: 'editorStore.node.properties.component'
-        })
         return value
       }
 
       // 🚀 关键新增：检查统一配置格式（metadata.unifiedConfig）
       if (node?.metadata?.unifiedConfig?.component?.[propertyName] !== undefined) {
         value = node.metadata.unifiedConfig.component[propertyName]
-        console.log(`🔥 [VisualEditorBridge] 从编辑器节点统一配置获取属性值:`, {
-          componentId,
-          propertyName,
-          value,
-          配置来源: 'editorStore.node.metadata.unifiedConfig.component'
-        })
         return value
       }
 
@@ -729,29 +495,11 @@ export class VisualEditorBridge {
           const exposedProps = (element as any).__exposedProperties
           if (exposedProps?.[propertyName] !== undefined) {
             value = exposedProps[propertyName]
-            console.log(`🔥 [VisualEditorBridge] 从DOM元素获取属性值:`, {
-              componentId,
-              propertyName,
-              value,
-              配置来源: 'DOM.__exposedProperties'
-            })
             return value
           }
         }
       }
 
-      console.log(`🔥 [VisualEditorBridge] 未找到属性值:`, {
-        componentId,
-        propertyName,
-        检查的来源: ['config.component', 'config.component.customize', 'node.properties', 'node.properties.component', 'DOM.__exposedProperties'],
-        配置内容预览: {
-          hasConfig: !!config,
-          hasComponent: !!(config?.component),
-          componentKeys: config?.component ? Object.keys(config.component) : [],
-          hasNode: !!node,
-          nodePropertyKeys: node?.properties ? Object.keys(node.properties) : []
-        }
-      })
       return undefined
     } catch (error) {
       console.error(`❌ [VisualEditorBridge] 获取组件属性值失败:`, {

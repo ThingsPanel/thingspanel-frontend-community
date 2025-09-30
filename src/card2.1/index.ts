@@ -29,7 +29,6 @@ export async function initializeCard2System() {
 
   initializationPromise = (async () => {
     try {
-      console.log('🚀 [Card2.1] 开始初始化系统...')
 
       // 🔥 优化：设置权限监听器
       setupStorageListener()
@@ -38,13 +37,11 @@ export async function initializeCard2System() {
       // **/* 模式确保可以扫描到任意深度的子目录
       const componentModules = import.meta.glob('./components/**/index.ts', { eager: true });
 
-      console.log(`[Card2.1] 扫描到 ${Object.keys(componentModules).length} 个组件模块。`);
 
       // 2. 调用自动注册系统，并传入扫描到的模块
       await autoRegistry.autoRegister(componentModules);
 
       isInitialized = true
-      console.log('✅ [Card2.1] 系统初始化完成')
       
     } catch (error) {
       console.error('❌ [Card2.1] 初始化失败:', error)

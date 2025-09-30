@@ -107,25 +107,15 @@ export class SimpleDataBridge {
    */
   private async doExecuteComponent(requirement: ComponentDataRequirement, startTime: number, callerInfo: string): Promise<DataResult> {
     const executionId = `${requirement.componentId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    console.log(`🔥 [SimpleDataBridge] doExecuteComponent开始 [执行ID: ${executionId}]`, {
-      componentId: requirement.componentId,
-      callerInfo,
-      hasDataSources: !!requirement.dataSources?.length
-    })
 
     try {
       // 🔥 关键修复：强制跳过缓存，确保每次都获取最新配置和数据
       // 配置修改后必须重新执行数据源，不能依赖旧缓存
-      console.log(`🔥 [SimpleDataBridge] [${executionId}] 强制跳过缓存，重新执行数据源`)
       this.warehouse.clearComponentCache(requirement.componentId)
 
       // 🔥 关键修复：确保获取最新的配置快照
       const configSnapshot = await this.captureConfigurationSnapshot(requirement.componentId, executionId)
       if (configSnapshot) {
-        console.log(`🔥 [SimpleDataBridge] [${executionId}] 使用最新配置快照`, {
-          snapshotTimestamp: configSnapshot.timestamp,
-          hasDataSource: !!configSnapshot.config.dataSource
-        })
         // 使用最新配置重构数据需求
         requirement = this.reconstructRequirementFromSnapshot(requirement, configSnapshot)
       }
@@ -135,24 +125,13 @@ export class SimpleDataBridge {
 
       // 🎯 用户要求的打印这几个字 - 调试：检查格式判断过程
       const isDataSourceConfigFormat = this.isDataSourceConfiguration(requirement)
-      console.log(`🎯 用户要求的打印这几个字 - 调试：格式检查结果`, {
-        executionId,
-        是否为DataSourceConfiguration格式: isDataSourceConfigFormat,
-        检查的配置: requirement,
-        第一个数据源: requirement.dataSources?.[0],
-        第一个数据源的sourceId: requirement.dataSources?.[0]?.sourceId,
-        第一个数据源的dataItems: requirement.dataSources?.[0]?.dataItems
-      })
 
       if (isDataSourceConfigFormat) {
-        console.log(`🎯 用户要求的打印这几个字 - 调试：使用现有DataSourceConfiguration格式`)
         dataSourceConfig = requirement as any
       } else {
-        console.log(`🎯 用户要求的打印这几个字 - 调试：转换为DataSourceConfiguration格式`)
 
         // 🔥 修复：检查是否是双层嵌套结构
         if (requirement.dataSources?.[0]?.dataSources) {
-          console.log(`🎯 用户要求的打印这几个字 - 调试：检测到双层嵌套，解包内层配置`)
           // 双层嵌套：取内层的真正配置
           const innerConfig = requirement.dataSources[0] as any
           dataSourceConfig = {
@@ -167,97 +146,27 @@ export class SimpleDataBridge {
       }
 
       // 🎯 用户要求的打印这几个字 - 调试：最终传给MultiLayerExecutorChain的配置
-      console.log(`🎯 用户要求的打印这几个字 - 调试：最终传给MultiLayerExecutorChain的配置`, {
-        componentId: dataSourceConfig.componentId,
-        数据源数量: dataSourceConfig.dataSources.length,
-        完整配置对象: dataSourceConfig,
-        数据源详情: dataSourceConfig.dataSources.map((ds, index) => {
-          console.log(`数据源${index}原始对象:`, ds)
-          console.log(`数据源${index}的sourceId:`, ds.sourceId)
-          console.log(`数据源${index}的dataItems:`, ds.dataItems)
-          return {
-            数据源ID: ds.sourceId,
-            原始sourceId字段: 'sourceId' in ds ? ds.sourceId : '字段不存在',
-            数据项数量: ds.dataItems?.length || 0,
-            原始dataItems: ds.dataItems,
-            数据项详情: ds.dataItems?.map((item, itemIndex) => {
-              console.log(`数据项${itemIndex}原始对象:`, item)
-              console.log(`数据项${itemIndex}的item:`, item.item)
-              return {
-                类型: item.item?.type,
-                配置: item.item?.config,
-                item对象: item.item,
-                处理配置: item.processing
-              }
-            }) || []
-          }
-        })
-      })
-
-
-      // 🔥 在执行前详细检查配置中的HTTP参数
-      this.validateConfigBeforeExecution(dataSourceConfig)
-
-      // 🔥 关键修复：为数据源配置添加执行序号，防止结果混乱
       const enhancedDataSourceConfig = {
         ...dataSourceConfig,
-        executionId,
-        executionTimestamp: Date.now(),
         configHash: this.calculateConfigHash(dataSourceConfig)
       }
 
       // 🔥 使用多层执行器链执行完整的数据处理管道
-      console.log(`🔥 [SimpleDataBridge] [${executionId}] 即将调用 MultiLayerExecutorChain.executeDataProcessingChain`)
-      console.log(`🔥 [SimpleDataBridge] 传入的配置:`, enhancedDataSourceConfig)
 
       const executionResult: ExecutionResult = await this.executorChain.executeDataProcessingChain(
         enhancedDataSourceConfig,
         true
       )
 
-      console.log(`🔥 [SimpleDataBridge] MultiLayerExecutorChain 执行完成:`, {
-        success: executionResult.success,
-        hasComponentData: !!executionResult.componentData,
-        hasError: !!executionResult.error,
-        executionResult
-      })
 
 
       if (executionResult.success && executionResult.componentData) {
-        console.log(`🔥 [SimpleDataBridge] 执行成功，准备存储到DataWarehouse:`, {
-          componentId: requirement.componentId,
-          executionResult: executionResult,
-          dataKeys: Object.keys(executionResult.componentData),
-          dataStructure: Object.keys(executionResult.componentData).reduce((acc, key) => {
-            const item = executionResult.componentData[key]
-            acc[key] = {
-              hasType: item && typeof item === 'object' && 'type' in item,
-              hasData: item && typeof item === 'object' && 'data' in item,
-              hasMetadata: item && typeof item === 'object' && 'metadata' in item
-            }
-            return acc
-          }, {})
-        })
 
         // 🎯 用户要求的打印这几个字 - 阶段1：SimpleDataBridge数据执行完成
-        console.log(`🎯 用户要求的打印这几个字 - 阶段1：SimpleDataBridge数据执行完成`, {
-          executionId,
-          componentId: requirement.componentId,
-          原始执行结果: executionResult.componentData,
-          数据源数量: Object.keys(executionResult.componentData).length,
-          configHash: enhancedDataSourceConfig.configHash,
-          各数据源内容: Object.entries(executionResult.componentData).map(([sourceId, sourceData]) => ({
-            数据源ID: sourceId,
-            数据类型: typeof sourceData,
-            数据内容: sourceData,
-            是否标准格式: sourceData && typeof sourceData === 'object' && 'data' in sourceData
-          }))
-        })
         
         // 🔥 修复：为每个数据源分别存储数据，并存储合并后的完整数据
         if (executionResult.componentData && typeof executionResult.componentData === 'object') {
           // 🔥 关键修复：带执行ID的原子性数据存储
-          console.log(`🔥 [SimpleDataBridge] [${executionId}] 开始原子性数据存储`)
 
           // 先清除旧数据，再存储新数据（原子性操作）
           this.warehouse.clearComponentCache(requirement.componentId)
@@ -270,7 +179,6 @@ export class SimpleDataBridge {
               sourceData,
               'multi-source'
             )
-            console.log(`✅ [SimpleDataBridge] [${executionId}] 存储数据源 ${sourceId}:`, sourceData)
           })
 
           // 同时存储完整的合并数据作为备份
@@ -280,24 +188,12 @@ export class SimpleDataBridge {
             executionResult.componentData,
             'multi-source'
           )
-          console.log(`✅ [SimpleDataBridge] [${executionId}] 存储完整数据到 'complete'`)
           
           // 🔥 新增：立即验证数据是否成功存储到DataWarehouse
           const warehouseStats = this.warehouse.getStorageStats()
-          console.log(`🔥 [SimpleDataBridge] DataWarehouse存储验证:`, {
-            totalComponents: warehouseStats.totalComponents,
-            totalDataSources: warehouseStats.totalDataSources,
-            memoryUsageMB: warehouseStats.memoryUsageMB,
-            componentStats: warehouseStats.componentStats[requirement.componentId]
-          })
           
           // 🔥 新增：立即验证数据是否可以从DataWarehouse中读取
           const retrievedData = this.warehouse.getComponentData(requirement.componentId)
-          console.log(`🔥 [SimpleDataBridge] DataWarehouse读取验证:`, {
-            hasData: !!retrievedData,
-            dataKeys: retrievedData ? Object.keys(retrievedData) : [],
-            dataStructure: retrievedData
-          })
         }
 
         // 通知数据更新
@@ -500,33 +396,15 @@ export class SimpleDataBridge {
    * 🔥 新增：在执行前验证配置完整性，特别检查HTTP参数绑定路径
    */
   private validateConfigBeforeExecution(config: DataSourceConfiguration): void {
-    console.log(`🔍 [SimpleDataBridge] 执行前配置验证:`)
-    console.log(`================================================`)
 
     config.dataSources.forEach((dataSource, dsIndex) => {
-      console.log(`🔍 [数据源 ${dsIndex}] 基本信息:`, {
-        sourceId: dataSource.sourceId,
-        dataItems数量: dataSource.dataItems.length,
-        mergeStrategy: dataSource.mergeStrategy
-      })
 
       dataSource.dataItems.forEach((dataItem, itemIndex) => {
         const { item } = dataItem
-        console.log(`🔍 [数据源 ${dsIndex} - 数据项 ${itemIndex}] 信息:`, {
-          类型: item.type,
-          配置完整对象: JSON.stringify(item.config, null, 2)
-        })
 
         // 🚨 特别检查HTTP类型的参数
         if (item.type === 'http' && item.config) {
           const httpConfig = item.config
-          console.log(`🔍 [HTTP配置检查] 基本信息:`, {
-            url: httpConfig.url,
-            method: httpConfig.method,
-            params数量: httpConfig.params ? httpConfig.params.length : 0,
-            parameters数量: httpConfig.parameters ? httpConfig.parameters.length : 0,
-            pathParams数量: httpConfig.pathParams ? httpConfig.pathParams.length : 0
-          })
 
           // 检查所有参数源
           const allParams = [
@@ -536,17 +414,6 @@ export class SimpleDataBridge {
           ]
 
           allParams.forEach(({ source, param }, paramIndex) => {
-            console.log(`🔍 [${source}[${paramIndex}]] 参数详情:`, {
-              key: param.key,
-              value: param.value,
-              valueType: typeof param.value,
-              valueLength: typeof param.value === 'string' ? param.value.length : 'N/A',
-              variableName: param.variableName,
-              isDynamic: param.isDynamic,
-              valueMode: param.valueMode,
-              selectedTemplate: param.selectedTemplate,
-              完整参数JSON: JSON.stringify(param, null, 2)
-            })
 
             // 🚨 检测损坏的绑定路径
             if (param.value && typeof param.value === 'string') {
@@ -565,11 +432,6 @@ export class SimpleDataBridge {
                   堆栈跟踪: new Error().stack
                 })
               } else {
-                console.log(`✅ [${source}[${paramIndex}]] 绑定路径完整性验证通过:`, {
-                  key: param.key,
-                  value: param.value,
-                  valueLength: param.value.length
-                })
               }
             }
           })
@@ -577,7 +439,6 @@ export class SimpleDataBridge {
       })
     })
 
-    console.log(`================================================`)
   }
 
   /**
@@ -594,12 +455,6 @@ export class SimpleDataBridge {
           config: JSON.parse(JSON.stringify(config)), // 深拷贝
           timestamp: Date.now()
         }
-        console.log(`🔥 [SimpleDataBridge] [${executionId}] 配置快照已捕获`, {
-          componentId,
-          hasBase: !!snapshot.config.base,
-          hasDataSource: !!snapshot.config.dataSource,
-          timestamp: snapshot.timestamp
-        })
         return snapshot
       }
       return null

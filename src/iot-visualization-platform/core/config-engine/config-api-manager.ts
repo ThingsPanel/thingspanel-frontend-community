@@ -170,7 +170,6 @@ export class ConfigurationAPIManager extends EventEmitter {
     // 初始化内置中间件
     this.initializeBuiltInMiddlewares()
 
-    console.log('✅ [ConfigurationAPIManager] 统一 API 管理器初始化完成')
   }
 
   // ===== 🎯 核心 CRUD 操作接口 =====
@@ -239,7 +238,6 @@ export class ConfigurationAPIManager extends EventEmitter {
         // 🗑️ 清除相关缓存
         this.clearRelatedCache('create', processedItem.type)
 
-        console.log(`✅ [ConfigurationAPIManager] 配置创建成功: ${item.id}`)
 
         return {
           success: true,
@@ -305,7 +303,6 @@ export class ConfigurationAPIManager extends EventEmitter {
       if (options.useCache !== false) {
         const cachedResult = this.getCachedResult(cacheKey)
         if (cachedResult) {
-          console.log(`🚀 [ConfigurationAPIManager] 查询缓存命中`)
           return cachedResult
         }
       }
@@ -359,7 +356,6 @@ export class ConfigurationAPIManager extends EventEmitter {
       // 🔄 执行后置中间件
       await this.executeMiddlewares('after-query', result, options)
 
-      console.log(`✅ [ConfigurationAPIManager] 查询完成: 返回 ${result.data.length} 条记录`)
       return result
 
     } catch (error) {
@@ -470,7 +466,6 @@ export class ConfigurationAPIManager extends EventEmitter {
         // 🗑️ 清除相关缓存
         this.clearRelatedCache('update', processedConfig.type, id)
 
-        console.log(`✅ [ConfigurationAPIManager] 配置更新成功: ${id}`)
 
         return {
           success: true,
@@ -570,7 +565,6 @@ export class ConfigurationAPIManager extends EventEmitter {
         // 🗑️ 清除相关缓存
         this.clearRelatedCache('delete', currentConfig.type, id)
 
-        console.log(`✅ [ConfigurationAPIManager] 配置删除成功: ${id}`)
 
         return {
           success: true,
@@ -633,7 +627,6 @@ export class ConfigurationAPIManager extends EventEmitter {
       this.statistics.totalOperations++
       this.statistics.bulkOperations++
 
-      console.log(`🚀 [ConfigurationAPIManager] 开始批量操作: ${operations.length} 个操作`)
 
       const results = new Map<string, ConfigurationOperationResult>()
 
@@ -731,7 +724,6 @@ export class ConfigurationAPIManager extends EventEmitter {
       this.clearAllCache()
 
       const successCount = Array.from(results.values()).filter(r => r.success).length
-      console.log(`✅ [ConfigurationAPIManager] 批量操作完成: ${successCount}/${operations.length} 成功`)
 
       return results
 
@@ -772,7 +764,6 @@ export class ConfigurationAPIManager extends EventEmitter {
     this.middlewares.push(middleware)
     // 按优先级排序
     this.middlewares.sort((a, b) => (b.priority || 0) - (a.priority || 0))
-    console.log(`🔧 [ConfigurationAPIManager] 注册中间件: ${middleware.name}`)
   }
 
   /**
@@ -786,7 +777,6 @@ export class ConfigurationAPIManager extends EventEmitter {
     permissionManager: (operation: string, configId: string, userId?: string) => Promise<boolean>
   ): void {
     this.permissionManager = permissionManager
-    console.log('🔒 [ConfigurationAPIManager] 权限管理器已设置')
   }
 
   /**
@@ -811,10 +801,8 @@ export class ConfigurationAPIManager extends EventEmitter {
     if (pattern) {
       const keysToDelete = Array.from(this.cache.keys()).filter(key => key.includes(pattern))
       keysToDelete.forEach(key => this.cache.delete(key))
-      console.log(`🗑️ [ConfigurationAPIManager] 清除匹配缓存: ${pattern}`)
     } else {
       this.cache.clear()
-      console.log('🗑️ [ConfigurationAPIManager] 清除所有 API 缓存')
     }
   }
 
@@ -831,7 +819,6 @@ export class ConfigurationAPIManager extends EventEmitter {
       priority: 100,
       execute: async (hook, data, options) => {
         if (hook.startsWith('before-')) {
-          console.log(`📝 [ConfigurationAPIManager] ${hook}: ${JSON.stringify(data).slice(0, 100)}...`)
         }
         return data
       }
@@ -856,7 +843,6 @@ export class ConfigurationAPIManager extends EventEmitter {
       }
     })
 
-    console.log('✅ [ConfigurationAPIManager] 内置中间件初始化完成')
   }
 
   /**
@@ -984,4 +970,3 @@ if (typeof window !== 'undefined') {
   ;(window as any).configurationAPIManager = configurationAPIManager
 }
 
-console.log('🎉 [config-api-manager.ts] 统一 API 管理器加载完成')

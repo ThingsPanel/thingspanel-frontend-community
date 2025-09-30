@@ -196,7 +196,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
     // 加载可用模板
     this.loadAvailableTemplates()
 
-    console.log('✅ [VisualEditorConfigurationIntegration] Visual Editor 配置集成初始化完成')
   }
 
   // ===== 🎯 配置操作接口 =====
@@ -232,7 +231,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
         this.addToHistory(config)
 
         this.state.saveState = 'saved'
-        console.log(`📋 [EditorIntegration] 配置加载成功: ${id}`)
 
       } catch (error) {
         this.state.error = error instanceof Error ? error.message : '配置加载失败'
@@ -308,7 +306,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
         this.addToHistory(newConfig)
 
         this.state.saveState = 'idle'
-        console.log(`🔨 [EditorIntegration] 新配置创建成功: ${newConfig.id}`)
 
       } catch (error) {
         this.state.error = error instanceof Error ? error.message : '配置创建失败'
@@ -354,7 +351,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
           timestamp: new Date()
         })
 
-        console.log(`💾 [EditorIntegration] 配置保存成功: ${this.state.currentConfig.id}`)
 
       } catch (error) {
         this.state.error = error instanceof Error ? error.message : '配置保存失败'
@@ -388,7 +384,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
         // 💾 保存配置
         await this.actions.saveConfiguration()
 
-        console.log(`📚 [EditorIntegration] 新版本创建成功: ${this.state.currentConfig.id}`)
 
       } catch (error) {
         this.state.error = error instanceof Error ? error.message : '版本创建失败'
@@ -414,7 +409,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
           timestamp: new Date()
         })
 
-        console.log(`✅ [EditorIntegration] 配置验证完成: ${this.state.currentConfig.id} - ${validation.isValid ? '通过' : '失败'}`)
 
       } catch (error) {
         console.error(`❌ [EditorIntegration] 配置验证失败`, error)
@@ -437,7 +431,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
       this.history.currentIndex = -1
       this.updateHistoryState()
 
-      console.log(`🔄 [EditorIntegration] 配置已重置`)
     },
 
     /**
@@ -470,7 +463,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
         this.addToHistory(renderResult.data)
 
         this.state.saveState = 'idle'
-        console.log(`🎨 [EditorIntegration] 模板应用成功: ${templateId}`)
 
       } catch (error) {
         this.state.error = error instanceof Error ? error.message : '模板应用失败'
@@ -508,7 +500,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
           timestamp: new Date()
         })
 
-        console.log(`📤 [EditorIntegration] 配置导出成功: ${this.state.currentConfig.id}`)
 
       } catch (error) {
         this.state.error = error instanceof Error ? error.message : '配置导出失败'
@@ -543,7 +534,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
         if (importResult.successCount === 1) {
           // 这里需要从导入结果中获取实际的配置对象
           // 暂时模拟
-          console.log(`📥 [EditorIntegration] 配置导入成功`)
         }
 
         this.state.saveState = 'saved'
@@ -610,7 +600,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
         timestamp: new Date()
       })
 
-      console.log(`⏪ [EditorIntegration] 撤销操作: 回到版本 ${this.history.currentIndex}`)
     }
   }
 
@@ -632,7 +621,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
         timestamp: new Date()
       })
 
-      console.log(`⏩ [EditorIntegration] 重做操作: 前进到版本 ${this.history.currentIndex}`)
     }
   }
 
@@ -765,7 +753,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
   private loadAvailableTemplates(): void {
     const templates = configurationTemplateManager.getAvailableTemplates()
     this.availableTemplates.value = templates
-    console.log(`📋 [EditorIntegration] 加载可用模板: ${templates.length} 个`)
   }
 
   /**
@@ -781,7 +768,6 @@ export class VisualEditorConfigurationIntegration extends EventEmitter {
     // 移除所有事件监听器
     this.removeAllListeners()
 
-    console.log('🧹 [EditorIntegration] 资源清理完成')
   }
 }
 
@@ -847,4 +833,3 @@ if (typeof window !== 'undefined') {
   ;(window as any).useEditorConfigurationIntegration = useEditorConfigurationIntegration
 }
 
-console.log('🎉 [visual-editor-integration.ts] Visual Editor 配置集成加载完成')

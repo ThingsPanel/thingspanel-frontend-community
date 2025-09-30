@@ -225,7 +225,6 @@ export class EnhancedConfigurationStateManager {
     // 加载内置模板
     this.loadBuiltInTemplates()
 
-    console.log('🚀 EnhancedConfigurationStateManager 初始化完成')
   }
 
   // ========== 🎯 核心配置管理方法 ==========
@@ -339,7 +338,6 @@ export class EnhancedConfigurationStateManager {
         // 🆕 异步触发事件
         await this.scheduleEventEmission(componentId, 'complete', currentState?.version, newVersion, configuration)
 
-        console.log(`配置已更新 [${componentId}]: v${newVersion.version}`)
         return true
 
       } finally {
@@ -370,7 +368,6 @@ export class EnhancedConfigurationStateManager {
 
     // 🔒 循环检测
     if (this.UPDATE_LOCKS.has(componentId)) {
-      console.log(`检测到更新锁，跳过更新 [${componentId}].${section}`)
       return false
     }
 
@@ -482,7 +479,6 @@ export class EnhancedConfigurationStateManager {
     }
 
     this.configStates.set(componentId, state)
-    console.log(`配置已初始化 [${componentId}]: v${version.version}`)
   }
 
   // ========== 🔄 版本管理方法 ==========
@@ -603,7 +599,6 @@ export class EnhancedConfigurationStateManager {
       })
 
       if (success) {
-        console.log(`模板已应用 [${templateId}] -> [${componentId}]`)
       }
 
       return success
@@ -676,7 +671,6 @@ export class EnhancedConfigurationStateManager {
     // 更新依赖状态
     this.updateDependencyStates(dependency)
 
-    console.log(`依赖关系已添加: ${dependency.sourceId} -> ${dependency.targetId} (${dependency.type})`)
     return true
   }
 
@@ -694,7 +688,6 @@ export class EnhancedConfigurationStateManager {
     if (index !== -1) {
       const removed = deps.splice(index, 1)[0]
       this.updateDependencyStates(removed, true)
-      console.log(`依赖关系已移除: ${sourceId} -> ${targetId}`)
       return true
     }
 
@@ -809,7 +802,6 @@ export class EnhancedConfigurationStateManager {
         this.updateQueue.delete(componentId)
       }
 
-      console.log(`配置已清理 [${componentId}]`)
     }
     return exists
   }
@@ -1175,7 +1167,6 @@ export class EnhancedConfigurationStateManager {
       }
     })
 
-    console.log('内置验证规则已注册')
   }
 
   /**
@@ -1243,7 +1234,6 @@ export class EnhancedConfigurationStateManager {
       for (const template of builtInTemplates) {
         await this.templateManager.createTemplate(template)
       }
-      console.log(`已加载 ${builtInTemplates.length} 个内置模板`)
     } catch (error) {
       console.error('加载内置模板失败:', error)
     }
@@ -1324,4 +1314,3 @@ export function useEnhancedConfigurationState() {
 // 全局导出
 export const enhancedConfigurationStateManager = new EnhancedConfigurationStateManager()
 
-console.log('✨ EnhancedConfigurationStateManager 模块加载完成')

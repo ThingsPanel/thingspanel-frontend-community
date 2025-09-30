@@ -10,7 +10,6 @@ import type { PropertyAccessContext } from './types'
  * 测试属性白名单机制
  */
 export async function testPropertyWhitelistMechanism() {
-  console.log('🔒 开始测试属性白名单机制...')
 
   const testResults: Array<{
     componentType: string
@@ -21,7 +20,6 @@ export async function testPropertyWhitelistMechanism() {
 
   try {
     // 测试1: 验证白名单属性注册
-    console.log('\n📋 测试1: 验证白名单属性注册')
 
     const switchControllerWhitelist = propertyExposureManager.getWhitelistedProperties(
       'switch-controller',
@@ -44,10 +42,8 @@ export async function testPropertyWhitelistMechanism() {
       }
     })
 
-    console.log('✅ Switch Controller 白名单属性:', Object.keys(switchControllerWhitelist))
 
     // 🚨 测试1.1: 验证告警状态组件的白名单属性（用户关注的四个属性）
-    console.log('\n📋 测试1.1: 验证告警状态组件的白名单属性')
 
     const alertStatusWhitelist = propertyExposureManager.getWhitelistedProperties(
       'alert-status',
@@ -76,16 +72,8 @@ export async function testPropertyWhitelistMechanism() {
       }
     })
 
-    console.log('🚨 Alert Status 白名单属性:', Object.keys(alertStatusWhitelist))
-    console.log('🔍 用户关注的四个属性检查:', {
-      title: hasAlertTitle,
-      amount: hasAlertAmount,
-      description: hasAlertDescription,
-      alertLevel: hasAlertLevel
-    })
 
     // 测试2: 验证属性访问控制
-    console.log('\n🔐 测试2: 验证属性访问控制')
 
     const accessContext: PropertyAccessContext = {
       accessType: 'read',
@@ -123,11 +111,8 @@ export async function testPropertyWhitelistMechanism() {
       }
     })
 
-    console.log('✅ 合法属性访问:', validAccess)
-    console.log('❌ 非法属性访问:', invalidAccess)
 
     // 🚨 测试2.1: 验证告警状态组件的属性访问控制
-    console.log('\n🔐 测试2.1: 验证告警状态组件的属性访问控制')
 
     // 测试告警状态组件的合法属性访问
     const alertTitleAccess = propertyExposureManager.getExposedProperty(
@@ -190,15 +175,8 @@ export async function testPropertyWhitelistMechanism() {
       }
     })
 
-    console.log('🚨 告警状态组件属性访问测试:')
-    console.log('  - Title访问:', alertTitleAccess.allowed ? '✅ 允许' : '❌ 拒绝')
-    console.log('  - Amount访问:', alertAmountAccess.allowed ? '✅ 允许' : '❌ 拒绝')
-    console.log('  - Description访问:', alertDescriptionAccess.allowed ? '✅ 允许' : '❌ 拒绝')
-    console.log('  - AlertLevel访问:', alertLevelAccess.allowed ? '✅ 允许' : '❌ 拒绝')
-    console.log('  - 非法属性访问:', alertInvalidAccess.allowed ? '❌ 意外允许' : '✅ 正确拒绝')
 
     // 测试3: 验证属性级别控制
-    console.log('\n🔐 测试4: 验证属性级别控制')
 
     // 测试 public 级别属性
     const publicProperties = propertyExposureManager.getWhitelistedProperties(
@@ -229,23 +207,15 @@ export async function testPropertyWhitelistMechanism() {
       }
     })
 
-    console.log('✅ Public 级别属性:', Object.keys(publicProperties))
-    console.log('✅ Protected 级别属性:', Object.keys(protectedProperties))
 
     // 生成测试报告
-    console.log('\n📋 测试报告:')
     const passedTests = testResults.filter(r => r.passed).length
     const totalTests = testResults.length
 
-    console.log(`总测试数: ${totalTests}`)
-    console.log(`通过测试数: ${passedTests}`)
-    console.log(`测试通过率: ${(passedTests / totalTests * 100).toFixed(1)}%`)
 
     testResults.forEach((result, index) => {
       const status = result.passed ? '✅' : '❌'
-      console.log(`${status} 测试${index + 1}: ${result.componentType} - ${result.test}`)
       if (!result.passed) {
-        console.log('   详情:', result.details)
       }
     })
 
@@ -278,8 +248,6 @@ export async function testPropertyWhitelistMechanism() {
 export function setupBrowserTest() {
   if (typeof window !== 'undefined') {
     ;(window as any).testPropertyWhitelist = testPropertyWhitelistMechanism
-    console.log('🔒 属性白名单测试已设置完成！')
-    console.log('💡 在浏览器控制台运行: window.testPropertyWhitelist()')
   }
 }
 

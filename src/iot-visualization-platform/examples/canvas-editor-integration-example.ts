@@ -37,7 +37,6 @@ export class CanvasEditorIntegrationExample {
    * 初始化完整的Canvas编辑器系统
    */
   public async initializeCanvasEditor(): Promise<void> {
-    console.log('🚀 开始初始化Canvas编辑器系统...')
 
     try {
       // 1. 首先初始化Config Engine
@@ -52,7 +51,6 @@ export class CanvasEditorIntegrationExample {
       // 4. 创建示例节点
       await this.createExampleNodes()
 
-      console.log('✅ Canvas编辑器系统初始化完成!')
     } catch (error) {
       console.error('❌ Canvas编辑器初始化失败:', error)
     }
@@ -62,7 +60,6 @@ export class CanvasEditorIntegrationExample {
    * 初始化Config Engine
    */
   private async initializeConfigEngine(): Promise<void> {
-    console.log('📊 初始化Config Engine...')
 
     // 创建Config Engine实例
     this.configManager = new EnhancedConfigurationStateManager({
@@ -77,14 +74,12 @@ export class CanvasEditorIntegrationExample {
     // 初始化Config Engine
     await this.configManager.initialize()
 
-    console.log('✅ Config Engine初始化完成')
   }
 
   /**
    * 初始化Canvas Engine
    */
   private async initializeCanvasEngine(): Promise<void> {
-    console.log('🎨 初始化Canvas Engine...')
 
     // Canvas引擎配置
     const canvasConfig: CanvasEngineConfig = {
@@ -149,7 +144,6 @@ export class CanvasEditorIntegrationExample {
       throw new Error(`Canvas引擎初始化失败: ${result.error}`)
     }
 
-    console.log('✅ Canvas Engine初始化完成')
   }
 
   /**
@@ -158,19 +152,15 @@ export class CanvasEditorIntegrationExample {
   private setupEventListeners(): void {
     if (!this.canvasEngine || !this.configManager) return
 
-    console.log('👂 设置事件监听器...')
 
     // Canvas引擎事件监听
     this.canvasEngine.on('initialized', (data) => {
-      console.log('Canvas引擎已初始化:', data)
     })
 
     this.canvasEngine.on('node:sync:completed', (event) => {
-      console.log('节点同步完成:', event)
     })
 
     this.canvasEngine.on('state:sync:completed', (data) => {
-      console.log('状态同步完成:', data)
     })
 
     this.canvasEngine.on('sync:error', (error) => {
@@ -184,19 +174,11 @@ export class CanvasEditorIntegrationExample {
     this.canvasEngine.on('performance:metrics:updated', (data) => {
       const metrics = data.metadata?.metrics
       if (metrics) {
-        console.log('性能指标更新:', {
-          渲染时间: `${metrics.renderTime.toFixed(2)}ms`,
-          事件处理时间: `${metrics.eventProcessingTime.toFixed(2)}ms`,
-          同步时间: `${metrics.syncTime.toFixed(2)}ms`,
-          节点数量: metrics.nodeCount,
-          事件队列大小: metrics.eventQueueSize
-        })
       }
     })
 
     // Config Engine事件监听
     this.configManager.on('configuration:updated', (data) => {
-      console.log('配置更新:', data)
     })
 
     this.configManager.on('validation:failed', (data) => {
@@ -204,10 +186,8 @@ export class CanvasEditorIntegrationExample {
     })
 
     this.configManager.on('version:created', (data) => {
-      console.log('新版本创建:', data)
     })
 
-    console.log('✅ 事件监听器设置完成')
   }
 
   /**
@@ -216,7 +196,6 @@ export class CanvasEditorIntegrationExample {
   private async createExampleNodes(): Promise<void> {
     if (!this.canvasEngine) return
 
-    console.log('🎯 创建示例节点...')
 
     try {
       // 创建图表节点
@@ -263,7 +242,6 @@ export class CanvasEditorIntegrationExample {
 
       const chartResult = await this.canvasEngine.createNode(chartNodeConfig)
       if (chartResult.success) {
-        console.log('✅ 图表节点创建成功:', chartResult.data?.id)
       } else {
         console.error('❌ 图表节点创建失败:', chartResult.error)
       }
@@ -315,7 +293,6 @@ export class CanvasEditorIntegrationExample {
 
       const indicatorResult = await this.canvasEngine.createNode(indicatorNodeConfig)
       if (indicatorResult.success) {
-        console.log('✅ 数字指示器节点创建成功:', indicatorResult.data?.id)
       } else {
         console.error('❌ 数字指示器节点创建失败:', indicatorResult.error)
       }
@@ -360,12 +337,10 @@ export class CanvasEditorIntegrationExample {
 
       const switchResult = await this.canvasEngine.createNode(switchNodeConfig)
       if (switchResult.success) {
-        console.log('✅ 开关控制节点创建成功:', switchResult.data?.id)
       } else {
         console.error('❌ 开关控制节点创建失败:', switchResult.error)
       }
 
-      console.log('✅ 示例节点创建完成')
     } catch (error) {
       console.error('❌ 创建示例节点失败:', error)
     }
@@ -380,18 +355,14 @@ export class CanvasEditorIntegrationExample {
       return
     }
 
-    console.log('🎮 开始演示基本操作...')
 
     try {
       // 1. 选择节点
-      console.log('1. 选择图表节点...')
       const selectResult = this.canvasEngine.selectNode('chart-node-1')
-      console.log('选择结果:', selectResult.success ? '成功' : selectResult.error)
 
       await this.sleep(1000)
 
       // 2. 更新节点配置
-      console.log('2. 更新节点配置...')
       const updateConfig: Partial<WidgetConfiguration> = {
         title: '温度趋势图 (已更新)',
         style: {
@@ -402,53 +373,35 @@ export class CanvasEditorIntegrationExample {
       }
 
       const updateResult = await this.canvasEngine.updateNodeConfiguration('chart-node-1', updateConfig)
-      console.log('更新结果:', updateResult.success ? '成功' : updateResult.error)
 
       await this.sleep(1000)
 
       // 3. 设置缩放
-      console.log('3. 设置缩放到1.5倍...')
       const zoomResult = this.canvasEngine.setZoom(1.5, { x: 400, y: 300 })
-      console.log('缩放结果:', zoomResult.success ? '成功' : zoomResult.error)
 
       await this.sleep(1000)
 
       // 4. 多选节点
-      console.log('4. 多选节点...')
       const multiSelectResult = this.canvasEngine.selectNodes(['chart-node-1', 'indicator-node-1'])
-      console.log('多选结果:', multiSelectResult.success ? '成功' : multiSelectResult.error)
 
       await this.sleep(1000)
 
       // 5. 对齐节点
-      console.log('5. 对齐选中节点...')
       const alignResult = this.canvasEngine.alignSelectedNodes('top')
-      console.log('对齐结果:', alignResult.success ? '成功' : alignResult.error)
 
       await this.sleep(1000)
 
       // 6. 适应内容
-      console.log('6. 适应Canvas内容...')
       const fitResult = this.canvasEngine.fitToContent()
-      console.log('适应结果:', fitResult.success ? '成功' : fitResult.error)
 
       await this.sleep(1000)
 
       // 7. 创建状态快照
-      console.log('7. 创建状态快照...')
       const snapshotResult = this.canvasEngine.createSnapshot()
       if (snapshotResult.success && snapshotResult.data) {
-        console.log('快照创建成功:', {
-          id: snapshotResult.data.id,
-          版本: snapshotResult.data.version,
-          节点数量: snapshotResult.data.nodes.size,
-          时间戳: new Date(snapshotResult.data.timestamp).toLocaleString()
-        })
       } else {
-        console.log('快照创建失败:', snapshotResult.error)
       }
 
-      console.log('✅ 基本操作演示完成!')
     } catch (error) {
       console.error('❌ 操作演示失败:', error)
     }
@@ -463,11 +416,9 @@ export class CanvasEditorIntegrationExample {
       return
     }
 
-    console.log('🔗 开始演示Config Engine集成功能...')
 
     try {
       // 1. 通过Config Engine创建配置
-      console.log('1. 通过Config Engine创建新节点配置...')
       const newNodeConfig: WidgetConfiguration = {
         type: 'gauge-chart',
         title: '湿度计',
@@ -508,12 +459,10 @@ export class CanvasEditorIntegrationExample {
         source: 'canvas-integration-demo'
       })
 
-      console.log('配置设置结果:', configResult ? '成功' : '失败')
 
       await this.sleep(2000)
 
       // 2. 通过Config Engine更新配置
-      console.log('2. 通过Config Engine更新现有配置...')
       const existingConfig = await this.configManager.getConfiguration('chart-node-1')
       if (existingConfig) {
         const updatedConfig = {
@@ -532,22 +481,18 @@ export class CanvasEditorIntegrationExample {
           source: 'config-engine-direct'
         })
 
-        console.log('配置更新结果:', updateConfigResult ? '成功' : '失败')
       }
 
       await this.sleep(2000)
 
       // 3. 创建配置版本
-      console.log('3. 创建配置版本...')
       const versionResult = await this.configManager.createVersion('保存Canvas编辑状态', '示例用户')
       if (versionResult) {
-        console.log('版本创建成功:', versionResult)
       }
 
       await this.sleep(1000)
 
       // 4. 导出配置
-      console.log('4. 导出所有配置...')
       const exportResult = await this.configManager.exportConfigurations(['chart-node-1', 'indicator-node-1', 'gauge-node-1'], {
         format: 'json',
         includeMetadata: true,
@@ -555,16 +500,11 @@ export class CanvasEditorIntegrationExample {
       })
 
       if (exportResult.success) {
-        console.log('配置导出成功, 数据长度:', exportResult.data?.length || 0)
-        console.log('导出的配置预览:', JSON.parse(exportResult.data || '{}').configurations)
       }
 
       // 5. 强制同步演示
-      console.log('5. 强制从Config Engine同步到Canvas...')
       const syncResult = await this.canvasEngine.forceSyncFromConfig()
-      console.log('强制同步结果:', syncResult.success ? '成功' : syncResult.error)
 
-      console.log('✅ Config Engine集成演示完成!')
     } catch (error) {
       console.error('❌ Config Engine集成演示失败:', error)
     }
@@ -579,11 +519,9 @@ export class CanvasEditorIntegrationExample {
       return
     }
 
-    console.log('↩️ 开始演示撤销重做功能...')
 
     try {
       // 执行一些操作
-      console.log('1. 执行一些操作作为撤销基础...')
 
       await this.canvasEngine.updateNodeConfiguration('chart-node-1', {
         title: '操作步骤1 - 更新标题'
@@ -597,22 +535,16 @@ export class CanvasEditorIntegrationExample {
       await this.sleep(500)
 
       // 撤销操作
-      console.log('2. 执行撤销操作...')
       const undoResult1 = await this.canvasEngine.undo()
-      console.log('第1次撤销结果:', undoResult1.success ? '成功' : undoResult1.error)
       await this.sleep(1000)
 
       const undoResult2 = await this.canvasEngine.undo()
-      console.log('第2次撤销结果:', undoResult2.success ? '成功' : undoResult2.error)
       await this.sleep(1000)
 
       // 重做操作
-      console.log('3. 执行重做操作...')
       const redoResult1 = await this.canvasEngine.redo()
-      console.log('第1次重做结果:', redoResult1.success ? '成功' : redoResult1.error)
       await this.sleep(1000)
 
-      console.log('✅ 撤销重做演示完成!')
     } catch (error) {
       console.error('❌ 撤销重做演示失败:', error)
     }
@@ -627,59 +559,30 @@ export class CanvasEditorIntegrationExample {
       return
     }
 
-    console.log('📊 系统状态信息:')
 
     // Canvas引擎状态
     const canvasState = this.canvasEngine.getState()
-    console.log('Canvas引擎状态:', {
-      初始化状态: canvasState.isInitialized ? '已初始化' : '未初始化',
-      Canvas ID: canvasState.canvasId,
-      节点数量: canvasState.nodeCount,
-      选中节点: canvasState.selectedNodeIds,
-      当前模式: canvasState.currentMode,
-      缩放级别: canvasState.zoom,
-      平移位置: canvasState.pan,
-      协作用户数: canvasState.collaborationUsers.length,
-      待处理冲突: canvasState.pendingConflicts.length
-    })
 
-    console.log('性能指标:', {
-      渲染时间: `${canvasState.performanceMetrics.renderTime.toFixed(2)}ms`,
-      事件处理时间: `${canvasState.performanceMetrics.eventProcessingTime.toFixed(2)}ms`,
-      同步时间: `${canvasState.performanceMetrics.syncTime.toFixed(2)}ms`,
-      事件队列大小: canvasState.performanceMetrics.eventQueueSize
-    })
 
     // Config Engine状态
     const configStats = this.configManager.getEngineStats()
-    console.log('Config Engine统计:', {
-      总配置数: configStats.totalConfigurations,
-      历史版本数: configStats.totalVersions,
-      缓存大小: configStats.cacheSize,
-      验证通过率: `${(configStats.validationSuccessRate * 100).toFixed(1)}%`,
-      API调用统计: configStats.apiCallStats
-    })
   }
 
   /**
    * 清理资源
    */
   public async cleanup(): Promise<void> {
-    console.log('🧹 开始清理资源...')
 
     if (this.canvasEngine) {
       this.canvasEngine.destroy()
       this.canvasEngine = null
-      console.log('✅ Canvas引擎已清理')
     }
 
     if (this.configManager) {
       await this.configManager.shutdown()
       this.configManager = null
-      console.log('✅ Config Engine已清理')
     }
 
-    console.log('✅ 资源清理完成')
   }
 
   /**
@@ -694,8 +597,6 @@ export class CanvasEditorIntegrationExample {
  * 运行完整的Canvas编辑器集成示例
  */
 export async function runCanvasEditorIntegrationExample(): Promise<void> {
-  console.log('🎪 Canvas编辑器集成完整示例开始...')
-  console.log('='.repeat(60))
 
   const example = new CanvasEditorIntegrationExample()
 
@@ -703,37 +604,27 @@ export async function runCanvasEditorIntegrationExample(): Promise<void> {
     // 1. 初始化系统
     await example.initializeCanvasEditor()
 
-    console.log('\n' + '⏱️  等待3秒让系统稳定...'.padEnd(60, ' '))
     await new Promise(resolve => setTimeout(resolve, 3000))
 
     // 2. 演示基本操作
-    console.log('\n' + '='.repeat(60))
     await example.demonstrateBasicOperations()
 
-    console.log('\n' + '⏱️  等待2秒...'.padEnd(60, ' '))
     await new Promise(resolve => setTimeout(resolve, 2000))
 
     // 3. 演示Config Engine集成
-    console.log('\n' + '='.repeat(60))
     await example.demonstrateConfigEngineIntegration()
 
-    console.log('\n' + '⏱️  等待2秒...'.padEnd(60, ' '))
     await new Promise(resolve => setTimeout(resolve, 2000))
 
     // 4. 演示撤销重做
-    console.log('\n' + '='.repeat(60))
     await example.demonstrateUndoRedo()
 
     // 5. 显示系统状态
-    console.log('\n' + '='.repeat(60))
     example.getSystemStatus()
 
     // 6. 清理资源
-    console.log('\n' + '='.repeat(60))
     await example.cleanup()
 
-    console.log('\n' + '🎉 Canvas编辑器集成示例运行完成!')
-    console.log('='.repeat(60))
   } catch (error) {
     console.error('❌ 示例运行失败:', error)
     await example.cleanup()

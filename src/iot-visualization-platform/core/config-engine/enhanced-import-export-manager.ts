@@ -171,7 +171,6 @@ export class EnhancedImportExportManager extends EventEmitter {
   constructor() {
     super()
     this.registerBuiltInConverters()
-    console.log('🚀 EnhancedImportExportManager 初始化完成')
   }
 
   // ========== 📤 导出功能 ==========
@@ -404,7 +403,6 @@ export class EnhancedImportExportManager extends EventEmitter {
       // 创建备份
       if (createBackup) {
         const backupId = await this.createBackup('导入前自动备份')
-        console.log(`已创建备份: ${backupId}`)
       }
 
       // 阶段3：导入数据
@@ -514,7 +512,6 @@ export class EnhancedImportExportManager extends EventEmitter {
     this.cleanupOldBackups()
 
     this.emit('backupCreated', backup)
-    console.log(`备份已创建: ${backupId}`)
 
     return backupId
   }
@@ -534,7 +531,6 @@ export class EnhancedImportExportManager extends EventEmitter {
       throw new Error(`无法读取备份数据: ${backupId}`)
     }
 
-    console.log(`正在恢复备份: ${backup.name}`)
 
     // 使用导入功能恢复备份
     return await this.importConfigurations(backupData, {
@@ -559,7 +555,6 @@ export class EnhancedImportExportManager extends EventEmitter {
     const deleted = this.backups.delete(backupId)
     if (deleted) {
       this.emit('backupDeleted', { backupId })
-      console.log(`备份已删除: ${backupId}`)
     }
     return deleted
   }
@@ -572,7 +567,6 @@ export class EnhancedImportExportManager extends EventEmitter {
   registerConverter(converter: FormatConverter): void {
     const key = `${converter.fromFormat}_to_${converter.toFormat}`
     this.converters.set(key, converter)
-    console.log(`格式转换器已注册: ${converter.name}`)
   }
 
   /**
@@ -1197,7 +1191,6 @@ export class EnhancedImportExportManager extends EventEmitter {
   private async processConfigurationItem(componentId: string, config: WidgetConfiguration, mode: string): Promise<void> {
     // 这里应该集成到实际的配置管理器
     // 现在只是模拟处理
-    console.log(`处理配置项: ${componentId}, 模式: ${mode}`)
 
     // 模拟一些处理时间
     await new Promise(resolve => setTimeout(resolve, Math.random() * 10))
@@ -1261,7 +1254,6 @@ export class EnhancedImportExportManager extends EventEmitter {
       const toDelete = backups.slice(this.MAX_BACKUP_COUNT)
       for (const backup of toDelete) {
         this.backups.delete(backup.id)
-        console.log(`已清理旧备份: ${backup.id}`)
       }
     }
   }
@@ -1323,7 +1315,6 @@ export class EnhancedImportExportManager extends EventEmitter {
       validate: (data) => typeof data === 'object' && data !== null
     })
 
-    console.log('内置格式转换器已注册')
   }
 }
 
@@ -1331,4 +1322,3 @@ export class EnhancedImportExportManager extends EventEmitter {
 
 export const enhancedImportExportManager = new EnhancedImportExportManager()
 
-console.log('✨ EnhancedImportExportManager 模块加载完成')

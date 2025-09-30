@@ -301,7 +301,6 @@ export class EnhancedErrorHandler extends EventEmitter {
     this.initializeErrorHandler()
     this.registerBuiltInHandlers()
     this.registerBuiltInRecoveryPlans()
-    console.log('🚀 EnhancedErrorHandler 初始化完成')
   }
 
   // ========== 🎯 核心错误处理方法 ==========
@@ -403,7 +402,6 @@ export class EnhancedErrorHandler extends EventEmitter {
   registerHandler(handler: ErrorHandler): void {
     this.handlers.set(handler.id, handler)
     this.emit('handlerRegistered', handler)
-    console.log(`错误处理器已注册: ${handler.name} (${handler.id})`)
   }
 
   /**
@@ -414,7 +412,6 @@ export class EnhancedErrorHandler extends EventEmitter {
     if (handler) {
       this.handlers.delete(handlerId)
       this.emit('handlerUnregistered', handler)
-      console.log(`错误处理器已注销: ${handler.name} (${handlerId})`)
       return true
     }
     return false
@@ -426,7 +423,6 @@ export class EnhancedErrorHandler extends EventEmitter {
   registerRecoveryPlan(plan: RecoveryPlan): void {
     this.recoveryPlans.set(plan.id, plan)
     this.emit('recoveryPlanRegistered', plan)
-    console.log(`恢复方案已注册: ${plan.name} (${plan.id})`)
   }
 
   // ========== 📊 监控和分析方法 ==========
@@ -642,7 +638,6 @@ export class EnhancedErrorHandler extends EventEmitter {
     }
 
     if (cleanedCount > 0) {
-      console.log(`错误清理完成: 清理了 ${cleanedCount} 个过期错误`)
     }
   }
 
@@ -657,7 +652,6 @@ export class EnhancedErrorHandler extends EventEmitter {
     this.systemHealthScore = 100
 
     this.emit('errorHandlerReset')
-    console.log('错误处理器已重置')
   }
 
   /**
@@ -666,7 +660,6 @@ export class EnhancedErrorHandler extends EventEmitter {
   setEnabled(enabled: boolean): void {
     this.isEnabled = enabled
     this.emit('errorHandlerToggled', { enabled })
-    console.log(`错误处理器已${enabled ? '启用' : '禁用'}`)
   }
 
   /**
@@ -675,7 +668,6 @@ export class EnhancedErrorHandler extends EventEmitter {
   setEmergencyMode(enabled: boolean): void {
     this.isEmergencyMode = enabled
     this.emit('emergencyModeToggled', { enabled })
-    console.log(`${enabled ? '进入' : '退出'}紧急模式`)
   }
 
   // ========== 🔧 私有方法 ==========
@@ -1331,7 +1323,6 @@ export class EnhancedErrorHandler extends EventEmitter {
       }
     })
 
-    console.log('内置错误处理器已注册')
   }
 
   /**
@@ -1393,7 +1384,6 @@ export class EnhancedErrorHandler extends EventEmitter {
       prerequisites: ['system_running', 'backup_available']
     })
 
-    console.log('内置恢复方案已注册')
   }
 }
 
@@ -1453,4 +1443,3 @@ export function createError(
 // 全局实例
 export const enhancedErrorHandler = new EnhancedErrorHandler()
 
-console.log('✨ EnhancedErrorHandler 模块加载完成')

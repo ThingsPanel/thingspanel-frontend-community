@@ -258,7 +258,6 @@ export class CanvasEventStateManager extends EventEmitter {
       this.processEventQueue()
     }, 16) // 60fps
 
-    console.log(`[Canvas事件管理] 事件处理机制已初始化: ${this.canvasId}`)
   }
 
   /**
@@ -276,7 +275,6 @@ export class CanvasEventStateManager extends EventEmitter {
       this.restorePersistedState()
     }
 
-    console.log(`[Canvas状态同步] 状态同步已初始化: ${this.canvasId}`)
   }
 
   /**
@@ -295,7 +293,6 @@ export class CanvasEventStateManager extends EventEmitter {
       })
     }, 5000) // 每5秒更新一次性能指标
 
-    console.log(`[Canvas性能监控] 性能监控已启动: ${this.canvasId}`)
   }
 
   /**
@@ -505,7 +502,6 @@ export class CanvasEventStateManager extends EventEmitter {
    */
   private handleGenericEvent(type: CanvasEventType, data: CanvasEventData): void {
     // 对于其他事件类型的通用处理
-    console.log(`[Canvas事件] 处理事件: ${type}`, data)
   }
 
   /**
@@ -628,7 +624,6 @@ export class CanvasEventStateManager extends EventEmitter {
         this.currentState = snapshot
         this.addToStateHistory(snapshot)
 
-        console.log(`[Canvas状态恢复] 成功恢复状态: ${snapshot.id}`)
         this.emitEvent(CanvasEventType.STATE_SYNC_COMPLETED, {
           canvasId: this.canvasId,
           source: 'state-restorer',
@@ -670,7 +665,6 @@ export class CanvasEventStateManager extends EventEmitter {
   private async syncWithRemote(snapshot: CanvasStateSnapshot): Promise<void> {
     // 实际项目中这里会连接到WebSocket服务器或其他协作服务
     // 现在只是模拟实现
-    console.log(`[Canvas远程同步] 同步状态到远程: ${snapshot.id}`)
   }
 
   /**
@@ -678,7 +672,6 @@ export class CanvasEventStateManager extends EventEmitter {
    */
   private broadcastEvent(type: CanvasEventType, data: CanvasEventData): void {
     // 实际项目中这里会广播到其他协作用户
-    console.log(`[Canvas事件广播] 广播事件: ${type}`, data)
   }
 
   /**
@@ -729,7 +722,6 @@ export class CanvasEventStateManager extends EventEmitter {
       metadata: { conflict, resolution }
     })
 
-    console.log(`[Canvas冲突解决] 自动解决冲突: ${conflict.id}, 策略: ${resolution}`)
   }
 
   /**
@@ -800,7 +792,6 @@ export class CanvasEventStateManager extends EventEmitter {
       metadata: { conflict, resolution }
     })
 
-    console.log(`[Canvas冲突解决] 手动解决冲突: ${conflictId}, 策略: ${resolution}`)
   }
 
   /**
@@ -828,7 +819,6 @@ export class CanvasEventStateManager extends EventEmitter {
     // 移除所有监听器
     this.removeAllListeners()
 
-    console.log(`[Canvas事件状态管理] 资源清理完成: ${this.canvasId}`)
   }
 
   /**

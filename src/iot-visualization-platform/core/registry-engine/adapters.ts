@@ -52,7 +52,6 @@ export abstract class BaseRegistryAdapter {
     }
 
     try {
-      console.log(`🔄 [${this.name}] 开始集成适配器...`)
 
       // 执行集成逻辑
       await this.performIntegration()
@@ -62,7 +61,6 @@ export abstract class BaseRegistryAdapter {
 
       this.integrated = true
 
-      console.log(`✅ [${this.name}] 适配器集成完成`)
       return true
 
     } catch (error) {
@@ -81,7 +79,6 @@ export abstract class BaseRegistryAdapter {
     }
 
     try {
-      console.log(`🔄 [${this.name}] 开始断开适配器...`)
 
       // 执行断开逻辑
       await this.performDisconnection()
@@ -91,7 +88,6 @@ export abstract class BaseRegistryAdapter {
 
       this.integrated = false
 
-      console.log(`✅ [${this.name}] 适配器断开完成`)
 
     } catch (error) {
       console.error(`❌ [${this.name}] 适配器断开失败:`, error)
@@ -194,7 +190,6 @@ export class Card21RegistryAdapter extends BaseRegistryAdapter {
       // 📊 获取已注册的所有组件，进行数据迁移
       const existingComponents = ComponentRegistry.getAll()
 
-      console.log(`🔄 [Card21RegistryAdapter] 开始迁移 ${existingComponents.length} 个现有组件...`)
 
       // 🚀 将现有组件逐个迁移到Registry Engine
       for (const component of existingComponents) {
@@ -204,7 +199,6 @@ export class Card21RegistryAdapter extends BaseRegistryAdapter {
       // 🎯 拦截新的注册操作，确保新组件也注册到Registry Engine
       this.interceptRegistration(ComponentRegistry)
 
-      console.log(`📦 [Card21RegistryAdapter] 已迁移 ${existingComponents.length} 个Card2.1组件`)
 
     } catch (error) {
       console.error(`❌ [Card21RegistryAdapter] 集成失败:`, error)
@@ -276,11 +270,7 @@ export class Card21RegistryAdapter extends BaseRegistryAdapter {
         return !!(definition.type && (definition.dataSources || definition.staticParams))
       },
       initialize: async () => {
-        // Card2.1组件初始化逻辑
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🎯 [Card21RegistryAdapter] 初始化组件: ${definition.type}`)
-        }
-      }
+        // Card2.1组件初始化逻辑      }
     }
 
     await getRegistryEngine().register(registryItem)
@@ -326,7 +316,6 @@ export class LegacyCardRegistryAdapter extends BaseRegistryAdapter {
       // 监听新的注册操作
       this.setupLegacyRegistryListeners(componentRegistry)
 
-      console.log(`📦 [LegacyCardRegistryAdapter] 已迁移 ${existingComponents.length} 个传统Card组件`)
 
     } catch (error) {
       console.error(`❌ [LegacyCardRegistryAdapter] 集成失败:`, error)
@@ -378,11 +367,7 @@ export class LegacyCardRegistryAdapter extends BaseRegistryAdapter {
         return !!(definition.meta.id && definition.meta.name && definition.logic && definition.views)
       },
       initialize: async () => {
-        // 传统Card组件初始化逻辑
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🎯 [LegacyCardRegistryAdapter] 初始化组件: ${definition.meta.name}`)
-        }
-      }
+        // 传统Card组件初始化逻辑      }
     }
 
     await getRegistryEngine().register(registryItem)
@@ -425,7 +410,6 @@ export class RendererRegistryAdapter extends BaseRegistryAdapter {
         await this.registerRenderer(renderer)
       }
 
-      console.log(`🎨 [RendererRegistryAdapter] 已迁移 ${existingRenderers.length} 个渲染器`)
 
     } catch (error) {
       console.error(`❌ [RendererRegistryAdapter] 集成失败:`, error)
@@ -468,11 +452,7 @@ export class RendererRegistryAdapter extends BaseRegistryAdapter {
         return !!(rendererInfo.factory && rendererInfo.type && rendererInfo.name)
       },
       initialize: async () => {
-        // 渲染器初始化逻辑
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🎨 [RendererRegistryAdapter] 初始化渲染器: ${rendererInfo.name}`)
-        }
-      }
+        // 渲染器初始化逻辑      }
     }
 
     await getRegistryEngine().register(registryItem)
@@ -512,7 +492,6 @@ export class VisualEditorRegistryAdapter extends BaseRegistryAdapter {
         await this.registerConfigLayer(key, layer)
       }
 
-      console.log(`🎛️ [VisualEditorRegistryAdapter] 已迁移 ${Object.keys(configLayerRegistry).length} 个配置层级`)
 
     } catch (error) {
       console.error(`❌ [VisualEditorRegistryAdapter] 集成失败:`, error)
@@ -556,11 +535,7 @@ export class VisualEditorRegistryAdapter extends BaseRegistryAdapter {
         return !!(layer.name && layer.component)
       },
       initialize: async () => {
-        // 配置层级初始化逻辑
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🎛️ [VisualEditorRegistryAdapter] 初始化配置层级: ${layer.label}`)
-        }
-      }
+        // 配置层级初始化逻辑      }
     }
 
     await getRegistryEngine().register(registryItem)
@@ -596,7 +571,6 @@ export class AdapterManager {
    */
   registerAdapter(adapter: BaseRegistryAdapter): void {
     this.adapters.set(adapter.name, adapter)
-    console.log(`📝 [AdapterManager] 已注册适配器: ${adapter.name}`)
   }
 
   /**
@@ -630,7 +604,6 @@ export class AdapterManager {
       details: [] as any[]
     }
 
-    console.log('🚀 [AdapterManager] 开始集成所有适配器...')
 
     // 按顺序集成适配器
     for (const adapterName of this.integrationOrder) {
@@ -673,7 +646,6 @@ export class AdapterManager {
       }
     }
 
-    console.log(`✅ [AdapterManager] 适配器集成完成: 成功 ${results.success}, 失败 ${results.failed}`)
     return results
   }
 
@@ -681,7 +653,6 @@ export class AdapterManager {
    * 断开所有适配器
    */
   async disconnectAll(): Promise<void> {
-    console.log('🔄 [AdapterManager] 开始断开所有适配器...')
 
     // 按相反顺序断开适配器
     const reverseOrder = [...this.integrationOrder].reverse()
@@ -697,7 +668,6 @@ export class AdapterManager {
       }
     }
 
-    console.log('✅ [AdapterManager] 所有适配器已断开')
   }
 
   /**
@@ -735,14 +705,7 @@ export class AdapterManager {
 // 创建全局适配器管理器实例
 export const adapterManager = new AdapterManager()
 
-// 自动集成所有可用适配器（在开发环境中）
-if (process.env.NODE_ENV === 'development') {
-  // 延迟执行，确保所有模块都已加载
-  setTimeout(async () => {
-    try {
-      const results = await adapterManager.integrateAll()
-      console.log('🎉 [RegistryEngine] 自动适配器集成完成:', results)
-    } catch (error) {
+// 自动集成所有可用适配器（在开发环境中）catch (error) {
       console.error('❌ [RegistryEngine] 自动适配器集成失败:', error)
     }
   }, 1000)

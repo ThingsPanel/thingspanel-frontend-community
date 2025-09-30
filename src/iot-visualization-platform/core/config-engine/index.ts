@@ -150,7 +150,6 @@ export async function createConfigEngine(options: {
 
   if (options.enableLogging) {
     configEngine.on('configurationChanged', (data) => {
-      console.log('[Config Engine] Configuration Changed:', data)
     })
 
     configEngine.on('error', (error) => {
@@ -189,11 +188,9 @@ export async function createVisualEditorBridge(options: {
 
   if (options.enableLogging) {
     bridge.on('canvasCreated', (data) => {
-      console.log('[Visual Editor] Canvas Created:', data)
     })
 
     bridge.on('nodeCreated', (data) => {
-      console.log('[Visual Editor] Node Created:', data)
     })
 
     bridge.on('error', (error) => {
@@ -372,17 +369,13 @@ export function enableDebugMode(level: 'basic' | 'verbose' | 'full' = 'basic'): 
   // 设置全局调试对象
   ;(globalThis as any).__CONFIG_ENGINE_DEBUG_MODE__ = debugInfo
 
-  console.log('[Config Engine] Debug mode enabled:', level)
-  console.log('[Config Engine] System Info:', debugInfo.systemInfo)
 
   if (level === 'verbose' || level === 'full') {
     // 启用详细日志
-    console.log('[Config Engine] Verbose logging enabled')
   }
 
   if (level === 'full') {
     // 启用完整调试，包括性能监控
-    console.log('[Config Engine] Full debugging enabled with performance monitoring')
   }
 }
 
@@ -393,7 +386,6 @@ export function disableDebugMode(): void {
   delete (globalThis as any).__CONFIG_ENGINE_DEBUG_MODE__
   delete (globalThis as any).__CONFIG_ENGINE_DEBUG__
   delete (globalThis as any).__VISUAL_EDITOR_DEBUG__
-  console.log('[Config Engine] Debug mode disabled')
 }
 
 // ==================== 默认导出 ====================
@@ -718,16 +710,8 @@ export class ConfigEngine extends EventEmitter {
 
     this.registryEngine = options?.registryEngine
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 [ConfigEngine] 初始化统一配置引擎')
-    }
-
     // 监听自身事件用于调试
-    this.on('configuration-changed', (event) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`📝 [ConfigEngine] 配置变更: ${event.changeType}/${event.configurationId}`)
-      }
-    })
+    this.on('configuration-changed', (event) => {    })
 
     this.on('error', (errorInfo) => {
       if (process.env.NODE_ENV === 'development') {
@@ -811,10 +795,6 @@ export class ConfigEngine extends EventEmitter {
       this.emit('configuration-changed', changeEvent)
       this.emit('create', completeItem)
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [ConfigEngine] 成功创建配置: ${metadata.type}/${metadata.id}`)
-      }
-
       return true
 
     } catch (error) {
@@ -897,10 +877,6 @@ export class ConfigEngine extends EventEmitter {
       this.emit('configuration-changed', changeEvent)
       this.emit('update', updatedItem, oldItem)
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [ConfigEngine] 成功更新配置: ${id}`)
-      }
-
       return true
 
     } catch (error) {
@@ -973,10 +949,6 @@ export class ConfigEngine extends EventEmitter {
 
       this.emit('configuration-changed', changeEvent)
       this.emit('delete', oldItem, soft)
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [ConfigEngine] 成功${soft ? '软' : '硬'}删除配置: ${id}`)
-      }
 
       return true
 
@@ -1381,10 +1353,6 @@ export class ConfigEngine extends EventEmitter {
       this.emit('configuration-changed', changeEvent)
       this.emit('restore', restoredItem, version)
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ [ConfigEngine] 成功恢复配置 ${configurationId} 到版本 ${version}`)
-      }
-
       return true
 
     } catch (error) {
@@ -1568,32 +1536,25 @@ export async function initializeConfigEngine(options: {
     defaultLanguage = 'zh-CN'
   } = options
 
-  console.log('🚀 [Config Engine] 开始初始化配置引擎系统...')
 
   try {
     // 🔧 初始化核心配置引擎
-    console.log('1. 初始化核心配置引擎...')
     // configEngine 已经在模块加载时初始化
 
     // 🔍 初始化配置验证器
-    console.log('2. 初始化配置验证器...')
     // configurationValidator 已经在模块加载时初始化
 
     // 🌐 初始化 API 管理器
-    console.log('3. 初始化 API 管理器...')
     // configurationAPIManager 已经在模块加载时初始化
 
     // 📚 初始化版本管理器
-    console.log('4. 初始化版本管理器...')
     // configurationVersionManager 已经在模块加载时初始化
 
     // 🎨 初始化模板管理器
-    console.log('5. 初始化模板管理器...')
     // configurationTemplateManager 已经在模块加载时初始化
 
     // 🎯 初始化 Visual Editor 集成（如果启用）
     if (enableVisualEditorIntegration) {
-      console.log('6. 初始化 Visual Editor 集成...')
 
       // 设置实时验证
       if (enableRealtimeValidation) {
@@ -1607,7 +1568,6 @@ export async function initializeConfigEngine(options: {
     }
 
     // 🔗 建立系统间的事件连接
-    console.log('7. 建立系统事件连接...')
 
     // 配置变更时自动清除验证缓存
     configEngine.on('configuration-updated', (event) => {
@@ -1642,16 +1602,6 @@ export async function initializeConfigEngine(options: {
     })
 
     // ✅ 初始化完成
-    console.log('✅ [Config Engine] 配置引擎系统初始化完成!')
-    console.log('📊 系统组件状态:')
-    console.log(`   - 核心引擎: ✅ 已启用`)
-    console.log(`   - 配置验证: ✅ 已启用`)
-    console.log(`   - API管理: ✅ 已启用`)
-    console.log(`   - 版本管理: ✅ 已启用`)
-    console.log(`   - 模板系统: ✅ 已启用`)
-    console.log(`   - Editor集成: ${enableVisualEditorIntegration ? '✅ 已启用' : '❌ 已禁用'}`)
-    console.log(`   - 实时验证: ${enableRealtimeValidation ? '✅ 已启用' : '❌ 已禁用'}`)
-    console.log(`   - 自动保存: ${enableAutoSave ? '✅ 已启用' : '❌ 已禁用'}`)
 
     return {
       success: true,
@@ -1729,7 +1679,6 @@ if (typeof window !== 'undefined') {
   ;(window as any).getConfigEngineSystemStatus = getConfigEngineSystemStatus
 }
 
-console.log('🎉 [config-engine/index.ts] Config Engine 完整系统加载完成')
 
 // 🚀 自动初始化（在浏览器环境中）
 if (typeof window !== 'undefined') {
@@ -1741,7 +1690,6 @@ if (typeof window !== 'undefined') {
       enableAutoSave: true
     }).then(result => {
       if (result.success) {
-        console.log('🎯 [Config Engine] 自动初始化成功')
       } else {
         console.error('❌ [Config Engine] 自动初始化失败:', result.message)
       }

@@ -275,13 +275,6 @@ export class ConfigurationStateManager {
 
     // 🔒 修复：使用组件+节区的复合锁，避免不同节区互相阻塞
     if (this.UPDATE_LOCKS.has(lockKey)) {
-      console.log(`🎯 用户要求的打印这几个字 - 阶段E3：ConfigurationStateManager检测到更新锁，跳过更新`, {
-        组件ID: componentId,
-        配置节: section,
-        锁状态: true,
-        当前锁数量: this.UPDATE_LOCKS.size,
-        锁键: lockKey
-      })
       return false
     }
 
@@ -306,22 +299,11 @@ export class ConfigurationStateManager {
     // 🔥 内容哈希去重检查 - 但跨组件交互时强制触发
     const newContentHash = this.calculateContentHash(updatedConfiguration)
     if (currentState.version.contentHash === newContentHash && !forceUpdate) {
-      console.log(`🔥 [ConfigurationStateManager] 配置内容相同，跳过更新`, {
-        componentId,
-        section,
-        forceUpdate,
-        哈希值: newContentHash
-      })
       return false
     }
 
     // 🔥 强制更新时的特殊处理
     if (forceUpdate && currentState.version.contentHash === newContentHash) {
-      console.log(`🔥 [ConfigurationStateManager] 强制更新模式，即使内容相同也触发事件`, {
-        componentId,
-        section,
-        原因: '跨组件交互需要触发属性变化事件'
-      })
       // 为强制更新添加时间戳，确保哈希不同
       updatedConfiguration.metadata = {
         ...updatedConfiguration.metadata,
@@ -687,7 +669,6 @@ export class ConfigurationStateManager {
       }
 
       this.configurationTemplates.set(template.id, template)
-      console.log(`配置模板已注册: ${template.name} (${template.id})`)
       return true
     } catch (error) {
       console.error(`注册模板失败 [${template.id}]:`, error)
@@ -779,7 +760,6 @@ export class ConfigurationStateManager {
       )
 
       if (success) {
-        console.log(`模板已应用到组件: ${template.name} -> ${componentId}`)
       }
 
       return success
@@ -1310,7 +1290,6 @@ export class ConfigurationStateManager {
       this.configurationTemplates.set(template.id, template)
     })
 
-    console.log(`已加载 ${builtInTemplates.length} 个内置模板`)
   }
 
   /**

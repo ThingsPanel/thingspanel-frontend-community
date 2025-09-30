@@ -76,7 +76,6 @@ let isProcessingChange = false
 
 /** 统一调试输出 */
 function debugLog(...args: unknown[]): void {
-  console.log('[GridV2]', ...args)
 }
 
 // 统一获取条目唯一 ID

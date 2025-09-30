@@ -373,7 +373,6 @@ class InteractionManager {
     // 🔥 关键修复1：防止递归通知
     const notificationKey = `${componentId}:${propertyPath}:${JSON.stringify(newValue)}`
     if (this.notificationInProgress.has(notificationKey)) {
-      console.log(`🔥 [InteractionManager] 跳过递归通知 ${componentId}:${propertyPath}`)
       return
     }
 
@@ -388,17 +387,6 @@ class InteractionManager {
 
       try {
         // 🔥 性能优化：只在开发模式下输出详细日志
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🔥🔥🔥 [InteractionManager] notifyPropertyUpdate被调用:`, {
-            componentId,
-            propertyPath,
-            newValue,
-            oldValue,
-            当前映射数量: this.httpDataSourceMappings.size,
-            防重复通知: true
-          })
-        }
-
         // 🚀 架构修复：通过更新数据源配置来触发执行器，而不是直接刷新
         this.triggerDataSourceConfigUpdateForPropertyChange(componentId, propertyPath, newValue, oldValue)
 
@@ -460,12 +448,6 @@ class InteractionManager {
     // 🔥 关键修复：批量处理，避免单个属性的递归调用
     const batchKey = `batch-${componentId}-${Date.now()}`
 
-    console.log(`🔥 [InteractionManager] 批量属性更新:`, {
-      componentId,
-      updateCount: propertyUpdates.length,
-      batchKey,
-      properties: propertyUpdates.map(u => u.propertyPath)
-    })
 
     // 批量处理数据源配置更新
     propertyUpdates.forEach(update => {
@@ -1381,24 +1363,15 @@ class InteractionManager {
     oldValue?: any
   ): Promise<void> {
     try {
-      console.log(`🔥 [InteractionManager] triggerDataSourceConfigUpdateForPropertyChange开始:`, {
-        componentId,
-        propertyPath,
-        newValue,
-        mappingCount: this.httpDataSourceMappings.size,
-        allMappingKeys: Array.from(this.httpDataSourceMappings.keys())
-      })
 
       // 🔥 关键修复：如果映射表为空，立即尝试建立映射
       if (this.httpDataSourceMappings.size === 0) {
-        console.log(`🔥 [InteractionManager] 映射表为空，尝试立即建立映射`)
         await this.ensureComponentMapping(componentId)
       }
 
       // 🔥 新增：确保当前组件一定有映射
       const currentComponentMappingKey = `http-${componentId}`
       if (!this.httpDataSourceMappings.has(currentComponentMappingKey)) {
-        console.log(`🔥 [InteractionManager] 当前组件映射缺失，立即建立: ${componentId}`)
         await this.ensureComponentMapping(componentId)
       }
 
@@ -1407,11 +1380,6 @@ class InteractionManager {
 
       // 遍历所有已注册的数据源映射，查找绑定关系
       for (const [mappingKey, mappingStr] of this.httpDataSourceMappings.entries()) {
-        console.log(`🔥 [InteractionManager] 检查映射:`, {
-          mappingKey,
-          mappingType: typeof mappingStr,
-          mappingLength: typeof mappingStr === 'string' ? mappingStr.length : 'N/A'
-        })
 
         // 🔥 修复：正确解析映射数据
         let mapping: any
@@ -1431,12 +1399,6 @@ class InteractionManager {
         // 检查配置中是否包含对此属性的绑定
         const hasBinding = this.configContainsPropertyBinding(mapping.config || mapping, componentId, propertyPath)
 
-        console.log(`🔥 [InteractionManager] 绑定检查结果:`, {
-          mappingKey,
-          hasBinding,
-          bindingExpression,
-          mappingComponentId: mapping.componentId || mapping._componentId
-        })
 
         if (hasBinding) {
           // 🚀 关键：更新数据源配置而不是直接刷新
@@ -1462,19 +1424,8 @@ class InteractionManager {
       // 🚀 关键修复：移除无条件后备逻辑，避免所有属性变化都触发数据源执行
       // 只有真正找到绑定关系的属性才应该触发数据源更新
       if (updatedConfigurations.length === 0) {
-        console.log(`🔥 [InteractionManager] 未找到任何绑定关系，跳过数据源更新:`, {
-          componentId,
-          propertyPath,
-          说明: '没有映射也没有基础配置绑定，属性变化不应该触发数据源'
-        })
       }
 
-      console.log(`🔥 [InteractionManager] triggerDataSourceConfigUpdateForPropertyChange完成:`, {
-        componentId,
-        propertyPath,
-        updatedCount: updatedConfigurations.length,
-        updatedComponents: updatedConfigurations
-      })
 
     } catch (error) {
       console.error(`[InteractionManager] 数据源配置更新失败`, {
@@ -1501,17 +1452,9 @@ class InteractionManager {
    */
   private configContainsPropertyBinding(config: any, componentId: string, propertyPath: string): boolean {
     if (!config) {
-      console.log(`🔥🔥🔥 [InteractionManager] configContainsPropertyBinding: 配置为空，返回false`)
       return false
     }
 
-    console.log(`🔥🔥🔥 [InteractionManager] configContainsPropertyBinding开始绑定检查:`, {
-      propertyPath,
-      配置类型: typeof config,
-      配置键: Object.keys(config),
-      配置内容: config,
-      说明: '正在检查此属性路径是否在HTTP参数中被绑定'
-    })
 
     // 🚀 关键修复：检查所有可能的HTTP配置格式
     let foundHttpConfig = null
@@ -1523,7 +1466,6 @@ class InteractionManager {
           for (const item of ds.dataItems) {
             if (item.item?.type === 'http' && item.item?.config?.params) {
               foundHttpConfig = item.item.config
-              console.log(`🔥 [InteractionManager] 在dataSources中发现HTTP配置:`, foundHttpConfig)
               break
             }
           }
@@ -1535,7 +1477,6 @@ class InteractionManager {
     // 2. 检查旧格式：直接的HTTP配置
     if (!foundHttpConfig && config.type === 'http' && config.config?.params) {
       foundHttpConfig = config.config
-      console.log(`🔥 [InteractionManager] 在顶层发现HTTP配置:`, foundHttpConfig)
     }
 
     // 3. 检查rawDataList格式
@@ -1543,7 +1484,6 @@ class InteractionManager {
       for (const item of config.rawDataList) {
         if (item.type === 'http' && item.config?.params) {
           foundHttpConfig = item.config
-          console.log(`🔥 [InteractionManager] 在rawDataList中发现HTTP配置:`, foundHttpConfig)
           break
         }
       }
@@ -1554,30 +1494,12 @@ class InteractionManager {
 
     for (const paramType of allParameterTypes) {
       if (foundHttpConfig && foundHttpConfig[paramType] && Array.isArray(foundHttpConfig[paramType])) {
-        console.log(`🔥 [InteractionManager] 检查HTTP ${paramType}参数绑定:`, {
-          propertyPath,
-          参数类型: paramType,
-          参数数量: foundHttpConfig[paramType].length,
-          参数列表: foundHttpConfig[paramType]
-        })
 
         // 遍历当前类型的所有参数
         for (const param of foundHttpConfig[paramType]) {
-          console.log(`🔥 [InteractionManager] 检查${paramType}参数:`, {
-            参数键: param.key,
-            参数值: param.value,
-            是否启用: param.enabled,
-            值模式: param.valueMode,
-            是否匹配: param.value === propertyPath
-          })
 
           // 检查参数值是否匹配属性路径
           if (param.enabled !== false && param.value === propertyPath) {
-            console.log(`🔥 [InteractionManager] 找到匹配的${paramType}绑定参数:`, {
-              propertyPath,
-              参数: param,
-              绑定确认: true
-            })
             return true
           }
         }
@@ -1589,13 +1511,6 @@ class InteractionManager {
     const escapedPropertyPath = propertyPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const directMatch = configStr.includes(`"${propertyPath}"`) || configStr.includes(`'${propertyPath}'`)
 
-    console.log(`🔥 [InteractionManager] 绑定检查结果:`, {
-      propertyPath,
-      HTTP参数绑定: false,
-      通用字符串匹配: directMatch,
-      最终结果: directMatch,
-      配置预览: configStr.substring(0, 300) + '...'
-    })
 
     return directMatch
   }
@@ -1606,12 +1521,6 @@ class InteractionManager {
    */
   private isBaseConfigurationProperty(propertyPath: string): boolean {
     const result = propertyPath.includes('.base.')
-    console.log(`🔥 [InteractionManager] isBaseConfigurationProperty检查:`, {
-      propertyPath,
-      result,
-      包含base: propertyPath.includes('.base.'),
-      包含component: propertyPath.includes('.component.')
-    })
     return result
   }
 
@@ -1626,12 +1535,6 @@ class InteractionManager {
     propertyValue: any
   ): Promise<void> {
     try {
-      console.log(`🔥 [InteractionManager] 开始处理属性绑定变化，触发数据重新执行`, {
-        targetComponentId,
-        bindingExpression,
-        propertyValue,
-        说明: '不修改绑定配置，只触发数据重新执行'
-      })
 
       // 🔥 修复：不再替换绑定表达式，而是直接触发数据重新执行
       // 获取当前组件的完整配置
@@ -1660,11 +1563,6 @@ class InteractionManager {
         }
       })
 
-      console.log(`✅ [InteractionManager] 已通过配置事件总线触发数据重新执行`, {
-        targetComponentId,
-        bindingExpression,
-        说明: '绑定配置保持不变，数据执行器将重新解析绑定值'
-      })
 
     } catch (error) {
       console.error(`[InteractionManager] 数据重新执行触发失败`, {
@@ -1685,36 +1583,19 @@ class InteractionManager {
     newValue: any
   ): Promise<void> {
     try {
-      console.log(`🔥 [InteractionManager] updateCurrentComponentDataSourceForAnyProperty开始:`, {
-        componentId,
-        propertyPath,
-        newValue
-      })
 
       // 获取组件的完整配置
       const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
       if (!fullConfig || !fullConfig.dataSource) {
-        console.log(`🔥 [InteractionManager] 组件没有数据源配置:`, componentId)
         return // 没有数据源配置，无需更新
       }
 
-      console.log(`🔥 [InteractionManager] 组件有数据源配置，检查绑定:`, {
-        componentId,
-        dataSourceKeys: Object.keys(fullConfig.dataSource),
-        propertyPath
-      })
 
       // 检查数据源配置是否引用了此属性
       const hasDirectBinding = this.configContainsPropertyBinding(fullConfig.dataSource, componentId, propertyPath)
 
-      console.log(`🔥 [InteractionManager] 绑定检查结果:`, {
-        componentId,
-        propertyPath,
-        hasDirectBinding
-      })
 
       if (hasDirectBinding) {
-        console.log(`🔥 [InteractionManager] 找到绑定，开始更新数据源配置`)
 
         // 更新数据源配置中的绑定值
         await this.updateDataSourceConfigurationWithPropertyValue(
@@ -1724,9 +1605,7 @@ class InteractionManager {
           newValue
         )
 
-        console.log(`🔥 [InteractionManager] 数据源配置更新完成`)
       } else {
-        console.log(`🔥 [InteractionManager] 未找到属性绑定，跳过更新`)
       }
     } catch (error) {
       console.error(`[InteractionManager] 任意属性数据源更新失败`, {
@@ -1796,7 +1675,6 @@ class InteractionManager {
 
     // 🔥 直接返回原配置，不做任何替换
     // 绑定路径应该保持不变，让数据执行层在运行时动态解析
-    console.log(`🔥 [InteractionManager] 保护HTTP配置完整性，不执行绑定替换`)
     return config
 
     // 以下代码被禁用，因为它是问题的根源
@@ -1829,7 +1707,6 @@ class InteractionManager {
 
     // 🔥 完全禁用这个函数，防止绑定路径被破坏
     // 绑定路径应该始终保持为路径格式，而不是被替换为值
-    console.log(`🔥 [InteractionManager] 拒绝执行绑定替换，保护绑定路径完整性`)
     return
 
     // 以下代码被注释掉，因为它是导致绑定路径被破坏的根源
@@ -2182,13 +2059,6 @@ class InteractionManager {
    * 🚀 关键修复：添加绑定检查，只有真正绑定的配置变更才触发数据源
    */
   private async handleDataExecutionTrigger(event: ConfigChangeEvent): Promise<void> {
-    console.log(`🔥🔥🔥 [InteractionManager] handleDataExecutionTrigger被调用:`, {
-      componentId: event.componentId,
-      section: event.section,
-      newConfig: event.newConfig,
-      source: event.source,
-      说明: '所有ConfigEventBus事件都会到达这里，需要检查绑定关系'
-    })
 
     // 🚀 关键修复：添加绑定关系检查
     // 只有以下情况才应该触发数据源：
@@ -2197,29 +2067,18 @@ class InteractionManager {
     // 3. component 层配置变更且确实有绑定关系
 
     if (event.section === 'dataSource') {
-      console.log(`🔥🔥🔥 [InteractionManager] dataSource层配置变更，直接执行数据源`)
     } else if (event.section === 'base') {
-      console.log(`🔥🔥🔥 [InteractionManager] base层配置变更，检查是否有绑定关系`)
 
       // 检查base层配置变更是否真的有绑定
       const hasBaseBindings = await this.checkBaseConfigurationBindings(event.componentId, event.newConfig)
       if (!hasBaseBindings) {
-        console.log(`🔥🔥🔥 [InteractionManager] ❌❌❌ base层配置变更但无绑定关系，跳过数据源执行:`, {
-          componentId: event.componentId,
-          changedConfig: event.newConfig,
-          绝对不执行: 'BASE层无绑定，停止执行'
-        })
         return
       }
-      console.log(`🔥🔥🔥 [InteractionManager] ✅✅✅ base层配置变更且有绑定关系，继续执行数据源`)
     } else if (event.section === 'component') {
-      console.log(`🔥🔥🔥 [InteractionManager] component层配置变更，检查是否有绑定关系`)
 
       // component层配置变更通过useCard2Props已经做了绑定检查，这里不应该执行
-      console.log(`🔥🔥🔥 [InteractionManager] ❌❌❌ component层配置变更应该通过useCard2Props处理，跳过`)
       return
     } else {
-      console.log(`🔥🔥🔥 [InteractionManager] ❌❌❌ ${event.section}层配置变更，跳过数据源执行`)
       return
     }
 
@@ -2564,14 +2423,6 @@ class InteractionManager {
    */
   private processBaseConfigurationFieldChange(componentId: string, field: string, newValue: any, oldValue: any): void {
     try {
-      console.log(`🔥🔥🔥 [InteractionManager] processBaseConfigurationFieldChange被调用:`, {
-        componentId,
-        field,
-        newValue,
-        oldValue,
-        说明: 'base层配置变化，需要检查绑定后再决定是否触发数据源',
-        调用堆栈: new Error().stack?.split('\n').slice(1, 5)
-      })
 
       // 🔥 关键修复：base层配置变化也要检查绑定，不能无条件触发
       // 构造base层属性路径
@@ -2589,10 +2440,6 @@ class InteractionManager {
 
       // 🔥 特殊处理设备字段变化（仅用于其他业务逻辑，不触发数据源）
       if (field === 'deviceId' || field === 'metricsList') {
-        console.log(`🔥 [InteractionManager] 设备字段变化，执行特殊业务逻辑（不触发数据源）:`, {
-          componentId,
-          field
-        })
 
         // 触发设备相关的特殊处理逻辑（异步执行）
         this.handleDeviceFieldChange(componentId, field, newValue, oldValue).catch(error => {
@@ -2618,16 +2465,10 @@ class InteractionManager {
    */
   private async checkBaseConfigurationBindings(componentId: string, baseConfig: any): Promise<boolean> {
     try {
-      console.log(`🔥 [InteractionManager] checkBaseConfigurationBindings开始:`, {
-        componentId,
-        baseConfig,
-        说明: '检查base层配置字段是否绑定到数据源参数'
-      })
 
       // 获取组件的数据源配置
       const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
       if (!fullConfig?.dataSource) {
-        console.log(`🔥 [InteractionManager] 组件没有数据源配置，base配置不触发数据源:`, componentId)
         return false
       }
 
@@ -2639,24 +2480,12 @@ class InteractionManager {
         const basePropertyPath = `${componentId}.base.${field}`
         const hasBinding = this.configContainsPropertyBinding(fullConfig.dataSource, componentId, basePropertyPath)
 
-        console.log(`🔥 [InteractionManager] 检查base字段绑定:`, {
-          componentId,
-          field,
-          basePropertyPath,
-          hasBinding
-        })
 
         if (hasBinding) {
           hasAnyBinding = true
-          console.log(`🔥 [InteractionManager] 发现base字段绑定: ${field}`)
         }
       }
 
-      console.log(`🔥 [InteractionManager] base配置绑定检查结果:`, {
-        componentId,
-        hasAnyBinding,
-        检查的字段: baseFields
-      })
 
       return hasAnyBinding
     } catch (error) {
@@ -2680,53 +2509,22 @@ class InteractionManager {
     oldValue: any
   ): Promise<void> {
     try {
-      console.log(`🔥🔥🔥 [InteractionManager] checkBasePropertyBindingAndNotify被调用:`, {
-        componentId,
-        field,
-        basePropertyPath,
-        newValue,
-        oldValue,
-        说明: '开始检查base属性是否真的绑定到数据源',
-        调用堆栈: new Error().stack?.split('\n').slice(1, 3)
-      })
 
       // 获取组件的数据源配置
       const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
       if (!fullConfig?.dataSource) {
-        console.log(`🔥 [InteractionManager] 组件没有数据源配置，base属性不触发数据源:`, {
-          componentId,
-          field
-        })
         return
       }
 
       // 检查base属性是否真的绑定到数据源参数中
       const hasBinding = this.configContainsPropertyBinding(fullConfig.dataSource, componentId, basePropertyPath)
 
-      console.log(`🔥 [InteractionManager] base属性绑定检查结果:`, {
-        componentId,
-        field,
-        basePropertyPath,
-        hasBinding,
-        数据源结构: Object.keys(fullConfig.dataSource)
-      })
 
       if (hasBinding) {
-        console.log(`🔥 [InteractionManager] base属性确实有绑定，触发数据源更新:`, {
-          componentId,
-          field,
-          basePropertyPath
-        })
 
         // 只有真正绑定的base属性才通知更新
         this.notifyPropertyUpdate(componentId, basePropertyPath, newValue, oldValue)
       } else {
-        console.log(`🔥 [InteractionManager] base属性没有绑定，不触发数据源:`, {
-          componentId,
-          field,
-          basePropertyPath,
-          说明: '避免无关属性变化导致的无效HTTP请求'
-        })
       }
     } catch (error) {
       console.error(`❌ [InteractionManager] base属性绑定检查失败:`, {
@@ -2805,23 +2603,16 @@ class InteractionManager {
    */
   private async ensureComponentMapping(componentId: string): Promise<void> {
     try {
-      console.log(`🔥 [InteractionManager] ensureComponentMapping开始:`, componentId)
 
       // 检查组件是否已经有映射
       const mappingKey = `http-${componentId}`
       if (this.httpDataSourceMappings.has(mappingKey)) {
-        console.log(`🔥 [InteractionManager] 组件映射已存在:`, componentId)
         return
       }
 
       // 立即建立映射
       this.checkAndStoreHttpDataSourceMapping(componentId, [])
 
-      console.log(`🔥 [InteractionManager] 组件映射建立完成:`, {
-        componentId,
-        新映射数量: this.httpDataSourceMappings.size,
-        所有映射: Array.from(this.httpDataSourceMappings.keys())
-      })
     } catch (error) {
       console.error(`❌ [InteractionManager] ensureComponentMapping失败:`, {
         componentId,

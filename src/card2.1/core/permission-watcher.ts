@@ -62,8 +62,6 @@ class PermissionWatcher {
     this.updateCurrentAuthority()
 
     if (oldAuthority !== this.currentAuthority) {
-      console.log(`🔄 [PermissionWatcher] 权限变更: ${oldAuthority || '未知'} -> ${this.currentAuthority}`)
-      console.log(`🔍 [PermissionWatcher] localStorage userInfo:`, localStorage.getItem('userInfo'))
 
       // 通知所有监听器
       this.callbacks.forEach(callback => {
@@ -106,7 +104,6 @@ export const permissionWatcher = new PermissionWatcher()
  * 手动触发权限检查（用于登录后立即更新）
  */
 export function triggerPermissionCheck() {
-  console.log('🔄 [PermissionWatcher] 手动触发权限检查')
   // 使用私有方法访问
   ;(permissionWatcher as any).checkPermissionChange()
 }
@@ -123,7 +120,6 @@ export function setupStorageListener() {
 
     // 如果是 userInfo 变化，立即触发权限检查
     if (key === 'userInfo' && oldValue !== value) {
-      console.log('🔄 [PermissionWatcher] 检测到 userInfo 变化，立即检查权限')
       triggerPermissionCheck()
     }
   }

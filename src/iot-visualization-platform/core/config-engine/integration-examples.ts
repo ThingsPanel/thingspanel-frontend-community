@@ -412,7 +412,6 @@ export function useNodeConfigurationEditor(nodeId: string) {
       const history = await getConfigurationHistory(20)
 
       // 这里可以显示历史记录对话框
-      console.log('配置历史:', history)
 
       dialog.info({
         title: '配置历史',

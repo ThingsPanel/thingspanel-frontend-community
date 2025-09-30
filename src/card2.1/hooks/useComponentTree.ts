@@ -55,16 +55,13 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
   const initialize = async () => {
     // 🔥 修复：避免重复初始化
     if (globalInitialized && componentTree.value.totalCount > 0) {
-      console.log('✅ [useComponentTree] 系统已初始化，跳过重复初始化')
       return
     }
 
     if (isLoading.value) {
-      console.log('⏳ [useComponentTree] 正在初始化中，等待完成')
       return
     }
 
-    console.log('🚀 [useComponentTree] 开始初始化组件树...')
     isLoading.value = true
     error.value = null
 
@@ -80,7 +77,6 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
       // 🔥 修复：标记全局初始化完成
       globalInitialized = true
       
-      console.log(`✅ [useComponentTree] 初始化完成，已加载 ${tree.totalCount} 个组件`)
     } catch (err) {
       error.value = err instanceof Error ? err.message : '初始化失败'
       console.error('❌ [useComponentTree] 初始化失败:', err)
@@ -269,7 +265,6 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
 
       // 监听权限变更
       unsubscribePermissionWatcher = permissionWatcher.onPermissionChange((newAuthority, oldAuthority) => {
-        console.log(`🔄 [useComponentTree] 权限变更: ${oldAuthority} -> ${newAuthority}，重新初始化组件`)
         globalInitialized = false
         initialize()
       })

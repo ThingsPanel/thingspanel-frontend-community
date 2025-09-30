@@ -57,40 +57,33 @@ export class DataFormatNormalizer {
    * 🔥 核心方法：将任意格式转换为标准格式
    */
   static normalizeToStandard(data: any, componentId: string): StandardDataSourceConfig {
-    console.log(`🔧 [DataFormatNormalizer] 开始标准化数据格式:`, { componentId, inputData: data })
     
     // 1. 如果已经是标准格式，直接返回
     if (this.isStandardFormat(data)) {
-      console.log(`✅ [DataFormatNormalizer] 数据已是标准格式`)
       return data as StandardDataSourceConfig
     }
     
     // 2. 处理 SimpleConfigurationEditor 格式
     if (this.isSimpleConfigEditorFormat(data)) {
-      console.log(`🔄 [DataFormatNormalizer] 转换 SimpleConfigurationEditor 格式`)
       return this.convertFromSimpleConfigEditor(data, componentId)
     }
     
     // 3. 处理导入导出格式（原始 DataItem[]）
     if (this.isImportExportFormat(data)) {
-      console.log(`🔄 [DataFormatNormalizer] 转换导入导出格式`)
       return this.convertFromImportExport(data, componentId)
     }
     
     // 4. 处理 Card2.1 执行器格式
     if (this.isCard2ExecutorFormat(data)) {
-      console.log(`🔄 [DataFormatNormalizer] 转换 Card2.1 执行器格式`)
       return this.convertFromCard2Executor(data, componentId)
     }
     
     // 5. 处理 EditorDataSourceManager 格式
     if (this.isEditorManagerFormat(data)) {
-      console.log(`🔄 [DataFormatNormalizer] 转换 EditorDataSourceManager 格式`)
       return this.convertFromEditorManager(data, componentId)
     }
     
     // 6. 处理任意对象格式（兜底）
-    console.log(`⚠️ [DataFormatNormalizer] 使用兜底转换策略`)
     return this.convertFromGenericObject(data, componentId)
   }
   
@@ -98,7 +91,6 @@ export class DataFormatNormalizer {
    * 🔥 反向转换：从标准格式转换为目标格式
    */
   static convertFromStandard(standardData: StandardDataSourceConfig, targetFormat: 'simpleConfigEditor' | 'importExport' | 'card2Executor'): any {
-    console.log(`🔧 [DataFormatNormalizer] 从标准格式转换为 ${targetFormat}`)
     
     switch (targetFormat) {
       case 'simpleConfigEditor':

@@ -151,7 +151,6 @@ export class ComponentSchemaManager {
    * @param schema 组件模式定义
    */
   registerSchema(componentType: string, schema: ComponentSchema): void {
-    console.log(`📋 [ComponentSchemaManager] 注册组件模式: ${componentType}`)
 
     // 合并默认字段和自定义字段
     const mergedFields = {
@@ -168,10 +167,6 @@ export class ComponentSchemaManager {
 
     this.schemas.set(componentType, finalSchema)
 
-    console.log(`✅ [ComponentSchemaManager] 模式注册完成: ${componentType}`, {
-      字段数量: Object.keys(finalSchema.fields).length,
-      字段列表: Object.keys(finalSchema.fields)
-    })
   }
 
   /**
@@ -230,7 +225,6 @@ export class ComponentSchemaManager {
     if (!schema) {
       const definition = ComponentRegistry.get(componentType)
       if (definition) {
-        console.log(`🔄 [ComponentSchemaManager] 自动生成模式: ${componentType}`)
         schema = this.generateSchemaFromDefinition(definition)
       } else {
         console.warn(`⚠️ [ComponentSchemaManager] 未找到组件定义: ${componentType}`)
@@ -330,7 +324,6 @@ export class ComponentSchemaManager {
    */
   clearSchema(componentType: string): void {
     this.schemas.delete(componentType)
-    console.log(`🧹 [ComponentSchemaManager] 已清除组件模式: ${componentType}`)
   }
 
   /**
@@ -339,7 +332,6 @@ export class ComponentSchemaManager {
   clearAllSchemas(): void {
     const count = this.schemas.size
     this.schemas.clear()
-    console.log(`🧹 [ComponentSchemaManager] 已清除所有组件模式，共 ${count} 个`)
   }
 
   // ==================== 私有方法 ====================

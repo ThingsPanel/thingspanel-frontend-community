@@ -184,7 +184,6 @@ const getWhitelistedProperties = async (componentId: string) => {
     )
 
     if (Object.keys(whitelistedProperties).length === 0) {
-      console.log(`🔒 [ComponentPropertySelector] 组件 ${componentType} 没有配置属性白名单`)
       return []
     }
 
@@ -240,17 +239,6 @@ const getWhitelistedProperties = async (componentId: string) => {
         }
       }
 
-      console.log(`🔒 [ComponentPropertySelector] 获取属性 ${propertyName} 的当前值:`, {
-        componentId,
-        propertyName,
-        isGlobalBaseProperty,
-        fromBase: config?.base?.[propertyName],
-        fromComponent: config?.component?.[propertyName],
-        fromCustomize: config?.customize?.[propertyName],
-        fromRoot: config?.[propertyName],
-        finalValue: currentValue,
-        获取策略: isGlobalBaseProperty ? '全局基础属性优先从base层获取' : '普通属性按组件->customize->根层顺序获取'
-      })
 
       const accessResult = propertyExposureManager.getExposedProperty(
         componentType,
@@ -266,13 +254,6 @@ const getWhitelistedProperties = async (componentId: string) => {
         const propertyLayer = isGlobalBaseProperty ? 'base' : 'component'
         const propertyPath = `${componentId}.${propertyLayer}.${exposedName}`
 
-        console.log(`🔒 [ComponentPropertySelector] 暴露白名单属性:`, {
-          propertyName: exposedName,
-          isGlobalBaseProperty,
-          propertyLayer,
-          propertyPath,
-          description: propConfig.description
-        })
 
         options.push({
           label: `🔒 [安全] ${propConfig.description || exposedName} (${propConfig.type})${isGlobalBaseProperty ? ' - 全局基础属性' : ''}`,
@@ -294,12 +275,6 @@ const getWhitelistedProperties = async (componentId: string) => {
       }
     }
 
-    console.log(`🔒 [ComponentPropertySelector] 白名单属性获取完成:`, {
-      componentType,
-      whitelistCount: Object.keys(whitelistedProperties).length,
-      accessibleCount: options.length,
-      properties: options.map(opt => opt.propertyInfo.propertyName)
-    })
 
     return options
   } catch (error) {
@@ -331,10 +306,6 @@ const updatePropertyOptions = async () => {
     return
   }
 
-  console.log(`🔒 [ComponentPropertySelector] 开始获取白名单属性:`, {
-    selectedComponentId: selectedComponentId.value,
-    组件类型: getComponentType(selectedComponentId.value)
-  })
 
   try {
     // 🔒 获取白名单属性
@@ -390,11 +361,6 @@ const updatePropertyOptions = async () => {
     const allOptions = [...whitelistOptions, ...mandatoryOptions]
 
     if (allOptions.length > 0) {
-      console.log(`🔒 [ComponentPropertySelector] 属性获取完成:`, {
-        白名单属性: whitelistOptions.length,
-        必需属性: mandatoryOptions.length,
-        总计: allOptions.length
-      })
       propertyOptions.value = allOptions
       return
     }
@@ -495,12 +461,6 @@ const onPropertyChange = (propertyPath: string | null) => {
     const selectedOption = propertyOptions.value.find(opt => opt.value === propertyPath)
     const propertyInfo = selectedOption?.propertyInfo || null
 
-    console.log(`✅ [ComponentPropertySelector] 发送有效的绑定路径:`, {
-      绑定路径: propertyPath,
-      属性信息: propertyInfo,
-      组件ID: propertyInfo?.componentId,
-      属性名: propertyInfo?.propertyName
-    })
 
     emit('change', propertyPath, propertyInfo)
   } else {

@@ -14,15 +14,9 @@ import type { ExtendedEventPayload } from './index'
  * 示例1: 基础事件监听和发送
  */
 export function basicEventExample() {
-  console.log('=== 基础事件示例 ===')
   
   // 监听设备状态变更事件
   const unsubscribe = eventEngine.on('device:status:change', (payload) => {
-    console.log('收到设备状态变更事件:', {
-      设备ID: payload.deviceId,
-      新状态: payload.status,
-      变更时间: new Date(payload.timestamp).toLocaleString()
-    })
   })
   
   // 模拟发送设备状态变更事件
@@ -38,7 +32,6 @@ export function basicEventExample() {
     // 5秒后清理监听器
     setTimeout(() => {
       unsubscribe()
-      console.log('已清理设备状态监听器')
     }, 5000)
   }, 1000)
 }
@@ -47,22 +40,14 @@ export function basicEventExample() {
  * 示例2: 配置事件兼容性演示
  */
 export function configCompatibilityExample() {
-  console.log('=== 配置事件兼容性示例 ===')
   
   // 使用原有的 ConfigEventBus 方式（完全兼容）
   eventEngine.onConfigChange('themeMode', (newValue, oldValue) => {
-    console.log('通过ConfigEventBus监听到主题变更:', { 新值: newValue, 旧值: oldValue })
   })
   
   // 使用新的统一事件方式
   eventEngine.on('config:change', (payload) => {
     if (payload.key === 'themeMode') {
-      console.log('通过Event Engine监听到主题变更:', {
-        配置键: payload.key,
-        新值: payload.newValue,
-        旧值: payload.oldValue,
-        时间戳: payload.timestamp
-      })
     }
   })
   
@@ -84,11 +69,9 @@ export function configCompatibilityExample() {
  * 示例3: 数据流处理链
  */
 export function dataFlowChainExample() {
-  console.log('=== 数据流处理链示例 ===')
   
   // 第一步: 监听原始数据接收
   eventEngine.on('data:received', async (payload) => {
-    console.log('收到原始数据:', payload.rawData)
     
     try {
       // 模拟数据处理
@@ -122,12 +105,6 @@ export function dataFlowChainExample() {
   
   // 第二步: 监听处理完成的数据
   eventEngine.on('data:processed', (payload) => {
-    console.log('数据处理完成:', {
-      设备ID: payload.deviceId,
-      原始数据: payload.originalData,
-      处理后数据: payload.processedData,
-      处理用时: payload.processedData.processTime - payload.originalData.timestamp
-    })
   })
   
   // 第三步: 监听数据处理错误
@@ -158,15 +135,9 @@ export function dataFlowChainExample() {
  * 示例4: 用户交互事件处理
  */
 export function userInteractionExample() {
-  console.log('=== 用户交互事件示例 ===')
   
   // 监听用户点击事件
   eventEngine.on('user:action:click', (payload) => {
-    console.log('用户点击操作:', {
-      组件ID: payload.componentId,
-      点击位置: payload.position,
-      点击时间: new Date(payload.timestamp).toLocaleString()
-    })
     
     // 根据不同组件执行不同操作
     if (payload.componentId.startsWith('device_')) {
@@ -181,15 +152,6 @@ export function userInteractionExample() {
   
   // 监听用户拖拽事件
   eventEngine.on('user:action:drag', (payload) => {
-    console.log('用户拖拽操作:', {
-      组件ID: payload.componentId,
-      起始位置: payload.startPosition,
-      结束位置: payload.endPosition,
-      拖拽距离: Math.sqrt(
-        Math.pow(payload.endPosition.x - payload.startPosition.x, 2) +
-        Math.pow(payload.endPosition.y - payload.startPosition.y, 2)
-      ).toFixed(2) + 'px'
-    })
   })
   
   // 模拟用户交互
@@ -219,15 +181,9 @@ export function userInteractionExample() {
  * 示例5: 系统监控和错误处理
  */
 export function systemMonitoringExample() {
-  console.log('=== 系统监控示例 ===')
   
   // 监听系统就绪事件
   eventEngine.on('system:ready', (payload) => {
-    console.log('系统就绪:', {
-      模块: payload.module,
-      启动用时: payload.startupTime + 'ms',
-      版本: payload.version
-    })
   })
   
   // 监听系统警告
@@ -299,7 +255,6 @@ export function systemMonitoringExample() {
  * 示例6: 批量事件处理
  */
 export function batchEventExample() {
-  console.log('=== 批量事件处理示例 ===')
   
   const deviceEvents = [
     'device:status:change',
@@ -311,11 +266,6 @@ export function batchEventExample() {
   // 批量监听设备相关事件
   const unsubscribers = deviceEvents.map(eventType => 
     eventEngine.on(eventType, (payload) => {
-      console.log(`批量监听 - ${eventType}:`, {
-        设备ID: payload.deviceId,
-        时间戳: new Date(payload.timestamp).toLocaleString(),
-        数据: payload
-      })
     })
   )
   
@@ -361,7 +311,6 @@ export function batchEventExample() {
     // 10秒后清理所有监听器
     setTimeout(() => {
       unsubscribers.forEach(unsubscribe => unsubscribe())
-      console.log('已清理所有批量事件监听器')
     }, 12000)
   }, 1000)
 }
@@ -372,17 +321,10 @@ export function batchEventExample() {
  * 示例7: 性能监控和统计
  */
 export function performanceMonitoringExample() {
-  console.log('=== 性能监控示例 ===')
   
   // 定期输出事件统计
   const statsInterval = setInterval(() => {
     const stats = eventEngine.getStatistics()
-    console.log('事件引擎统计:', {
-      总事件数: stats.totalEvents,
-      总处理器数: stats.totalHandlers,
-      事件类型数量: stats.eventTypes.length,
-      活跃事件类型: stats.eventTypes
-    })
   }, 5000)
   
   // 监听所有事件进行性能分析
@@ -415,7 +357,6 @@ export function performanceMonitoringExample() {
       setTimeout(() => {
         clearInterval(statsInterval)
         performanceTracker()
-        console.log('性能监控示例结束')
       }, 2000)
     }
   }, 100) // 每100ms发送一个事件
@@ -427,7 +368,6 @@ export function performanceMonitoringExample() {
  * 示例8: Vue 组合式函数中的事件处理
  */
 export function vueComposableExample() {
-  console.log('=== Vue组合式函数示例 ===')
   
   /**
    * 设备状态监控组合式函数
@@ -442,7 +382,6 @@ export function vueComposableExample() {
       if (payload.deviceId === deviceId) {
         status.value = payload.status
         lastUpdate.value = new Date(payload.timestamp)
-        console.log(`设备 ${deviceId} 状态更新为: ${payload.status}`)
       }
     })
     
@@ -450,14 +389,12 @@ export function vueComposableExample() {
     const connectionLostUnsubscribe = eventEngine.on('device:connection:lost', (payload) => {
       if (payload.deviceId === deviceId) {
         connectionLost.value = true
-        console.log(`设备 ${deviceId} 连接丢失: ${payload.reason}`)
       }
     })
     
     const connectionRestoredUnsubscribe = eventEngine.on('device:connection:restored', (payload) => {
       if (payload.deviceId === deviceId) {
         connectionLost.value = false
-        console.log(`设备 ${deviceId} 连接恢复，用时: ${payload.reconnectTime}ms`)
       }
     })
     
@@ -466,7 +403,6 @@ export function vueComposableExample() {
       statusUnsubscribe()
       connectionLostUnsubscribe()
       connectionRestoredUnsubscribe()
-      console.log(`已清理设备 ${deviceId} 的所有监听器`)
     }
     
     return {
@@ -520,8 +456,6 @@ export function vueComposableExample() {
  * 运行所有示例
  */
 export async function runAllExamples() {
-  console.log('🚀 开始运行 Event Engine 示例集合 🚀')
-  console.log('================================================\n')
   
   // 基础示例
   basicEventExample()
@@ -556,12 +490,9 @@ export async function runAllExamples() {
   
   // 30秒后结束所有示例
   setTimeout(() => {
-    console.log('\n================================================')
-    console.log('✅ Event Engine 示例集合运行完成 ✅')
     
     // 输出最终统计
     const finalStats = eventEngine.getStatistics()
-    console.log('最终统计:', finalStats)
   }, 30000)
 }
 

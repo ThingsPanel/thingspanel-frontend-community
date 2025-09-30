@@ -28,34 +28,16 @@ export function usePanelPollingManager(dependencies: {
       dependencies.pollingManager.clearAllTasks()
 
       // 获取所有组件的轮询配置
-      const allComponents = dependencies.stateManager.nodes
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🔥 [PanelPollingManager] 扫描 ${allComponents.length} 个组件的轮询配置`)
-      }
-
+      const allComponents = dependencies.stateManager.nodes
       allComponents.forEach(component => {
         const componentId = component.id
         // 从 ConfigurationManager 读取组件级别的轮询配置
         const config = dependencies.configurationManager.getConfiguration(componentId)
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🔥 [PanelPollingManager] 组件 ${componentId} 配置:`, {
-            hasConfig: !!config,
-            hasComponent: !!config?.component,
-            hasPolling: !!config?.component?.polling,
-            pollingConfig: config?.component?.polling,
-            hasDataSource: !!config?.dataSource
-          })
-        }
-
+
         let pollingConfig = config?.component?.polling
 
         // 🔥 关键修复：预览模式下自动启用轮询（如果组件有数据源）
-        if (!pollingConfig && config?.dataSource) {
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`🔥 [PanelPollingManager] 组件 ${componentId} 没有轮询配置，但有数据源，自动启用轮询`)
-          }
-          pollingConfig = {
+        if (!pollingConfig && config?.dataSource) {          pollingConfig = {
             enabled: true,
             interval: 30000,
             immediate: true
@@ -65,11 +47,7 @@ export function usePanelPollingManager(dependencies: {
           dependencies.configurationManager.updateConfiguration(componentId, 'component.polling', pollingConfig)
         }
 
-        if (pollingConfig && pollingConfig.enabled) {
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ [PanelPollingManager] 组件 ${componentId} 轮询已启用，间隔: ${pollingConfig.interval}ms`)
-          }
-
+        if (pollingConfig && pollingConfig.enabled) {
           const interval = pollingConfig.interval || 30000
 
           // 创建轮询任务（但不自动启动）
@@ -92,11 +70,7 @@ export function usePanelPollingManager(dependencies: {
                     console.error(`⚠️ [PanelPollingManager] 组件数据源配置不存在: ${componentId}`)
                     return
                   }
-
-                  if (process.env.NODE_ENV === 'development') {
-                    console.log(`🔥 [PanelPollingManager] 执行轮询: ${componentId}`)
-                  }
-
+
                   // 获取组件类型
                   const component = dependencies.stateManager.nodes.find(n => n.id === componentId)
                   const componentType = component?.type || 'unknown'
@@ -109,11 +83,7 @@ export function usePanelPollingManager(dependencies: {
                     componentId,
                     componentType,
                     config.dataSource
-                  )
-                  if (process.env.NODE_ENV === 'development') {
-                    console.log(`✅ [PanelPollingManager] 轮询完成: ${componentId}`, result?.success)
-                  }
-                } catch (bridgeError) {
+                  )                } catch (bridgeError) {
                   console.error(`❌ [PanelPollingManager] VisualEditorBridge 调用失败: ${componentId}`, bridgeError)
                   console.error(`⚠️ [PanelPollingManager] 轮询执行失败: ${componentId}`)
                 }
@@ -123,26 +93,14 @@ export function usePanelPollingManager(dependencies: {
             },
             autoStart: false // 统一不自动启动，由全局开关控制
           })
-
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ [PanelPollingManager] 轮询任务已创建: ${taskId}`)
-          }
-
+
           // 启动这个任务
           dependencies.pollingManager.startTask(taskId)
-        } else {
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`⚠️ [PanelPollingManager] 组件 ${componentId} 轮询未启用或无数据源`)
-          }
-        }
+        } else {        }
       })
 
       // 最终轮询任务统计
-      const finalStats = dependencies.pollingManager.getStatistics()
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🔥 [PanelPollingManager] 轮询初始化完成:`, finalStats)
-      }
-
+      const finalStats = dependencies.pollingManager.getStatistics()
       // 🔛 启用全局轮询开关
       dependencies.pollingManager.enableGlobalPolling()
     } catch (error) {

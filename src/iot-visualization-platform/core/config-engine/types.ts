@@ -685,4 +685,3 @@ export type ConfigurationTypeMap = {
  */
 export type TypedConfigurationItem<T extends ConfigurationType> = ConfigurationItem<ConfigurationTypeMap[T]>
 
-console.log('🎉 [types.ts] 配置引擎类型定义加载完成')

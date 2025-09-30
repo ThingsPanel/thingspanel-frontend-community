@@ -201,7 +201,6 @@ export class ConfigurationDependencyManager extends EventEmitter {
   constructor() {
     super()
     this.dependencyGraph = this.createEmptyGraph()
-    console.log('🚀 ConfigurationDependencyManager 初始化完成')
   }
 
   // ========== 🎯 核心依赖管理方法 ==========
@@ -248,7 +247,6 @@ export class ConfigurationDependencyManager extends EventEmitter {
     this.clearAnalysisCache()
 
     this.emit('dependencyAdded', fullDependency)
-    console.log(`依赖关系已添加: ${dependency.sourceId} -> ${dependency.targetId} (${dependency.type})`)
 
     return dependencyId
   }
@@ -269,7 +267,6 @@ export class ConfigurationDependencyManager extends EventEmitter {
     this.clearAnalysisCache()
 
     this.emit('dependencyRemoved', dependency)
-    console.log(`依赖关系已移除: ${dependency.sourceId} -> ${dependency.targetId}`)
 
     return true
   }
@@ -315,7 +312,6 @@ export class ConfigurationDependencyManager extends EventEmitter {
     this.clearAnalysisCache()
 
     this.emit('dependencyUpdated', updatedDependency, dependency)
-    console.log(`依赖关系已更新: ${dependencyId}`)
 
     return true
   }
@@ -613,7 +609,6 @@ export class ConfigurationDependencyManager extends EventEmitter {
     // 更新图元数据
     this.updateGraphMetadata()
 
-    console.log(`依赖图清理完成: 移除 ${invalidDependencies.length} 个无效依赖, ${isolatedNodes.length} 个孤立节点`)
   }
 
   /**
@@ -625,7 +620,6 @@ export class ConfigurationDependencyManager extends EventEmitter {
     this.impactCache.clear()
 
     this.emit('dependencyGraphReset')
-    console.log('依赖图已重置')
   }
 
   /**
@@ -644,7 +638,6 @@ export class ConfigurationDependencyManager extends EventEmitter {
     this.impactCache.clear()
 
     this.emit('dependencyGraphRestored', snapshot)
-    console.log('依赖图快照已恢复')
   }
 
   /**
@@ -1541,4 +1534,3 @@ export const DependencyTypes = DependencyType
 // 全局实例
 export const configurationDependencyManager = new ConfigurationDependencyManager()
 
-console.log('✨ ConfigurationDependencyManager 模块加载完成')

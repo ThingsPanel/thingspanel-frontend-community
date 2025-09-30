@@ -53,10 +53,8 @@ export function createInteractionEngine() {
         const { jumpType, url, internalPath, target = '_self' } = action.jumpConfig
 
         if (jumpType === 'external' && url) {
-          console.log(`🔥 [InteractionEngine] 执行外部跳转: ${url}`)
           window.open(url, target)
         } else if (jumpType === 'internal' && internalPath) {
-          console.log(`🔥 [InteractionEngine] 执行内部跳转: ${internalPath}`)
           if (target === '_blank') {
             window.open(`${window.location.origin}${internalPath}`, '_blank')
           } else {
@@ -67,7 +65,6 @@ export function createInteractionEngine() {
         // 兼容旧格式
         const url = action.updateValue || ''
         const target = action.targetProperty || '_blank'
-        console.log(`🔥 [InteractionEngine] 执行跳转 (兼容格式): ${url}`)
         window.open(url, target)
       }
     } catch (error) {
@@ -87,7 +84,6 @@ export function createInteractionEngine() {
         throw new Error('缺少目标组件ID或属性名')
       }
 
-      console.log(`🔥 [InteractionEngine] 执行属性修改: ${targetComponentId}.${targetProperty} = ${updateValue}`)
 
       // 找到目标组件节点
       const targetNode = editorStore.nodes.find(node => node.id === targetComponentId)
@@ -127,14 +123,12 @@ export function createInteractionEngine() {
       try {
         const targetElement = document.querySelector(`[data-component-id="${targetComponentId}"]`)
         if (targetElement && (targetElement as any)?.__vueParentComponent?.exposed?.updateConfig) {
-          console.log(`🔥 [InteractionEngine] 通过Card2Wrapper更新配置`)
           ;(targetElement as any).__vueParentComponent.exposed.updateConfig('component', updatedComponent)
         }
       } catch (error) {
         console.warn(`🔥 [InteractionEngine] 直接更新组件配置失败:`, error)
       }
 
-      console.log(`✅ [InteractionEngine] 属性修改成功: ${targetComponentId}.${targetProperty}`)
       message.success(`属性已更新: ${targetProperty} = ${updateValue}`)
 
     } catch (error) {
@@ -147,7 +141,6 @@ export function createInteractionEngine() {
    * 🔥 执行单个交互动作
    */
   const executeAction = (action: InteractionAction) => {
-    console.log(`🔥 [InteractionEngine] 执行交互动作:`, action)
 
     switch (action.action) {
       case 'jump':
@@ -171,16 +164,13 @@ export function createInteractionEngine() {
    */
   const executeInteraction = (interaction: InteractionEvent, triggerData?: any) => {
     if (!interaction.enabled) {
-      console.log(`🔥 [InteractionEngine] 交互已禁用，跳过执行:`, interaction)
       return
     }
 
-    console.log(`🔥 [InteractionEngine] 执行交互:`, { interaction, triggerData })
 
     // 检查条件是否满足（用于dataChange事件）
     if (interaction.event === 'dataChange' && interaction.condition && triggerData !== undefined) {
       if (!checkCondition(interaction.condition, triggerData)) {
-        console.log(`🔥 [InteractionEngine] 条件不满足，跳过交互执行`)
         return
       }
     }
@@ -312,7 +302,6 @@ export function createInteractionEngine() {
         const unwatch = (targetElement as any).__vueParentComponent.exposed.watchProperty(
           propertyName,
           (newValue: any, oldValue: any) => {
-            console.log(`🔥 [InteractionEngine] 属性变化触发: ${componentId}.${propertyName}`, { newValue, oldValue })
 
             // 执行相关的交互
             interactions.forEach(interaction => {
@@ -323,7 +312,6 @@ export function createInteractionEngine() {
           }
         )
 
-        console.log(`✅ [InteractionEngine] 属性监听器注册成功: ${componentId}.${propertyName}`)
         return unwatch
       }
     } catch (error) {

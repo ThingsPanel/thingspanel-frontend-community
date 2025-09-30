@@ -281,13 +281,6 @@ class LoopProtectionManager {
       this.performanceStats.lastResetTime = now
 
       if (this.config.enableDebug && totalCalls > 0) {
-        console.log(`📊 [LoopProtection] 性能统计:`, {
-          平均每秒调用数: this.performanceStats.averageCallsPerSecond.toFixed(2),
-          总阻止调用数: this.performanceStats.totalCallsBlocked,
-          总检测循环数: this.performanceStats.totalLoopsDetected,
-          当前黑名单数量: this.blacklistedFunctions.size,
-          活跃调用数量: Array.from(this.activeCallCounts.values()).reduce((a, b) => a + b, 0)
-        })
       }
 
       // 清理过期的历史记录
@@ -351,7 +344,6 @@ class LoopProtectionManager {
       lastResetTime: Date.now()
     }
 
-    console.log('🔄 [LoopProtection] 已重置所有状态')
   }
 
   /**
@@ -359,7 +351,6 @@ class LoopProtectionManager {
    */
   public updateConfig(newConfig: Partial<LoopDetectionConfig>): void {
     this.config = { ...this.config, ...newConfig }
-    console.log('⚙️ [LoopProtection] 配置已更新:', this.config)
   }
 }
 

@@ -149,7 +149,6 @@ export class CanvasEngine extends EventEmitter {
       }
     }
 
-    console.log(`[Canvas引擎] 创建Canvas引擎实例: ${canvasId}`)
   }
 
   /**
@@ -163,7 +162,6 @@ export class CanvasEngine extends EventEmitter {
         return { success: true, data: true, warnings: ['Canvas引擎已经初始化'] }
       }
 
-      console.log(`[Canvas引擎] 开始初始化Canvas引擎: ${this.canvasId}`)
 
       // 保存Config Manager引用
       if (configManager) {
@@ -172,20 +170,16 @@ export class CanvasEngine extends EventEmitter {
 
       // 1. 初始化事件状态管理器
       this.eventStateManager = new CanvasEventStateManager(this.canvasId, this.config.stateSyncOptions)
-      console.log('[Canvas引擎] ✓ 事件状态管理器已初始化')
 
       // 2. 初始化Fabric Canvas引擎
       this.canvasEngine = new FabricCanvasEngine(this.canvasId, this.config.canvasConfig)
       await this.canvasEngine.initialize(this.containerId)
-      console.log('[Canvas引擎] ✓ Fabric Canvas引擎已初始化')
 
       // 3. 初始化节点渲染管理器
       this.rendererManager = new NodeRendererManager(this.config.rendererConfig)
-      console.log('[Canvas引擎] ✓ 节点渲染管理器已初始化')
 
       // 4. 初始化交互控制器
       this.interactionController = new CanvasInteractionController(this.canvasEngine, this.config.interactionConfig)
-      console.log('[Canvas引擎] ✓ 交互控制器已初始化')
 
       // 5. 如果提供了Config Manager，初始化集成
       if (this.configManager && this.config.enableAutoIntegration) {
@@ -194,17 +188,14 @@ export class CanvasEngine extends EventEmitter {
           this.configManager,
           this.config.configSyncOptions
         )
-        console.log('[Canvas引擎] ✓ Config Engine集成已初始化')
       }
 
       // 6. 建立组件间的事件连接
       this.setupInterComponentEvents()
-      console.log('[Canvas引擎] ✓ 组件间事件连接已建立')
 
       this.isInitialized = true
       this.emit('initialized', { canvasId: this.canvasId })
 
-      console.log(`[Canvas引擎] ✅ Canvas引擎初始化完成: ${this.canvasId}`)
 
       return { success: true, data: true }
     } catch (error) {
@@ -693,7 +684,6 @@ export class CanvasEngine extends EventEmitter {
    * 清理资源
    */
   public destroy(): void {
-    console.log(`[Canvas引擎] 开始销毁Canvas引擎: ${this.canvasId}`)
 
     // 清理各个子系统
     if (this.configIntegration) {
@@ -725,7 +715,6 @@ export class CanvasEngine extends EventEmitter {
     this.removeAllListeners()
 
     this.isInitialized = false
-    console.log(`[Canvas引擎] ✅ Canvas引擎销毁完成: ${this.canvasId}`)
   }
 }
 

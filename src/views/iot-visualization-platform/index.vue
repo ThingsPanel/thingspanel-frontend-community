@@ -156,7 +156,6 @@ let configManager: any = null
  * 添加日志
  */
 function addLog(type: LogEntry['type'], message: string) {
-  console.log(`[${type.toUpperCase()}] ${message}`)
 
   logs.value.unshift({
     type,

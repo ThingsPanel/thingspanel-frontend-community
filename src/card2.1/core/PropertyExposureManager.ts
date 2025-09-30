@@ -79,14 +79,6 @@ export class PropertyExposureManager {
     const enhancedWhitelist = this.addGlobalBaseProperties(whitelist)
     this.whitelistCache.set(componentType, enhancedWhitelist)
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔒 [PropertyExposureManager] 注册组件属性白名单: ${componentType}`, {
-        propertiesCount: Object.keys(enhancedWhitelist.properties).length,
-        properties: Object.keys(enhancedWhitelist.properties),
-        defaultLevel: enhancedWhitelist.defaultLevel,
-        包含全局基础属性: ['deviceId', 'metricsList'].every(prop => prop in enhancedWhitelist.properties)
-      })
-    }
   }
 
   /**
@@ -121,11 +113,6 @@ export class PropertyExposureManager {
       ...whitelist.properties // 组件特定属性可以覆盖全局属性（如果需要自定义配置）
     }
 
-    console.log(`🌐 [PropertyExposureManager] 为组件添加全局基础属性`, {
-      添加的全局属性: Object.keys(globalBaseProperties),
-      原有属性数量: Object.keys(whitelist.properties).length,
-      增强后属性数量: Object.keys(enhancedProperties).length
-    })
 
     return {
       ...whitelist,
@@ -323,7 +310,6 @@ export class PropertyExposureManager {
    * 用于修复现有组件缺失全局基础属性的问题
    */
   refreshAllComponentWhitelists(): void {
-    console.log(`🔄 [PropertyExposureManager] 开始刷新所有组件白名单，确保包含全局基础属性`)
 
     const updatedComponents: string[] = []
 
@@ -337,19 +323,9 @@ export class PropertyExposureManager {
         this.whitelistCache.set(componentType, enhancedWhitelist)
         updatedComponents.push(componentType)
 
-        console.log(`📝 [PropertyExposureManager] 更新组件白名单: ${componentType}`, {
-          缺失deviceId: !hasDeviceId,
-          缺失metricsList: !hasMetricsList,
-          更新后属性数量: Object.keys(enhancedWhitelist.properties).length
-        })
       }
     }
 
-    console.log(`✅ [PropertyExposureManager] 白名单刷新完成`, {
-      总组件数: this.whitelistCache.size,
-      更新的组件数: updatedComponents.length,
-      更新的组件: updatedComponents
-    })
   }
 
   /**
@@ -478,16 +454,6 @@ export class PropertyExposureManager {
     }
 
     // 开发环境打印访问日志
-    if (process.env.NODE_ENV === 'development') {
-      if (result.allowed) {
-        console.log(`🔓 [PropertyExposure] 属性访问成功: ${componentId}.${propertyName}`, context)
-      } else {
-        console.warn(`🔒 [PropertyExposure] 属性访问被拒绝: ${componentId}.${propertyName}`, {
-          reason: result.reason,
-          context
-        })
-      }
-    }
   }
 }
 
@@ -516,10 +482,8 @@ if (process.env.NODE_ENV === 'development') {
       setupBrowserTest()
     }),
     import('./verify-no-full-exposure').then(() => {
-      console.log('🔒 属性暴露安全验证工具已加载')
     })
   ]).catch(error => {
-    console.log('🔒 开发工具加载失败 (非关键):', error.message)
   })
 
   // 🔥 开发环境下，延迟执行白名单刷新，确保所有组件都包含全局基础属性
