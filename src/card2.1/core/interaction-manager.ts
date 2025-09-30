@@ -1549,32 +1549,37 @@ class InteractionManager {
       }
     }
 
-    // 检查找到的HTTP配置中的参数绑定
-    if (foundHttpConfig && foundHttpConfig.params && Array.isArray(foundHttpConfig.params)) {
-      console.log(`🔥 [InteractionManager] 检查HTTP参数绑定:`, {
-        propertyPath,
-        参数数量: foundHttpConfig.params.length,
-        参数列表: foundHttpConfig.params
-      })
+    // 🚀 关键修复：检查HTTP配置中的各种参数类型（pathParams、queryParams、bodyParams等）
+    const allParameterTypes = ['params', 'pathParams', 'queryParams', 'bodyParams', 'headers']
 
-      // 遍历所有参数，检查是否有绑定到此属性路径的参数
-      for (const param of foundHttpConfig.params) {
-        console.log(`🔥 [InteractionManager] 检查参数:`, {
-          参数键: param.key,
-          参数值: param.value,
-          是否启用: param.enabled,
-          值模式: param.valueMode,
-          是否匹配: param.value === propertyPath
+    for (const paramType of allParameterTypes) {
+      if (foundHttpConfig && foundHttpConfig[paramType] && Array.isArray(foundHttpConfig[paramType])) {
+        console.log(`🔥 [InteractionManager] 检查HTTP ${paramType}参数绑定:`, {
+          propertyPath,
+          参数类型: paramType,
+          参数数量: foundHttpConfig[paramType].length,
+          参数列表: foundHttpConfig[paramType]
         })
 
-        // 检查参数值是否匹配属性路径
-        if (param.enabled !== false && param.value === propertyPath) {
-          console.log(`🔥 [InteractionManager] 找到匹配的绑定参数:`, {
-            propertyPath,
-            参数: param,
-            绑定确认: true
+        // 遍历当前类型的所有参数
+        for (const param of foundHttpConfig[paramType]) {
+          console.log(`🔥 [InteractionManager] 检查${paramType}参数:`, {
+            参数键: param.key,
+            参数值: param.value,
+            是否启用: param.enabled,
+            值模式: param.valueMode,
+            是否匹配: param.value === propertyPath
           })
-          return true
+
+          // 检查参数值是否匹配属性路径
+          if (param.enabled !== false && param.value === propertyPath) {
+            console.log(`🔥 [InteractionManager] 找到匹配的${paramType}绑定参数:`, {
+              propertyPath,
+              参数: param,
+              绑定确认: true
+            })
+            return true
+          }
         }
       }
     }

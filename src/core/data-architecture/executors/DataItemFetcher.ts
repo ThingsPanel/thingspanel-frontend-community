@@ -149,8 +149,25 @@ export class DataItemFetcher implements IDataItemFetcher {
       }
 
       const parts = bindingPath.split('.')
-      const componentId = parts[0]
+      let componentId = parts[0]
       const propertyPath = parts.slice(1).join('.')
+
+      // 🔥 关键修复：处理__CURRENT_COMPONENT__占位符
+      if (componentId === '__CURRENT_COMPONENT__') {
+        console.log(`🔍 [DataItemFetcher] 检测到__CURRENT_COMPONENT__占位符，替换为当前组件ID:`, {
+          原始绑定路径: bindingPath,
+          当前组件ID: this.currentComponentId,
+          占位符替换: componentId + ' -> ' + this.currentComponentId
+        })
+
+        // 使用当前上下文中的组件ID替换占位符
+        if (this.currentComponentId) {
+          componentId = this.currentComponentId
+        } else {
+          console.error(`❌ [DataItemFetcher] __CURRENT_COMPONENT__占位符无法解析：当前组件ID为空`)
+          return undefined
+        }
+      }
 
       // 优先从ConfigurationIntegrationBridge获取最新配置
       try {
@@ -458,7 +475,7 @@ export class DataItemFetcher implements IDataItemFetcher {
           if (lastUnderscoreIndex > 0) {
             const componentId = param.variableName.substring(0, lastUnderscoreIndex)
             const propertyName = param.variableName.substring(lastUnderscoreIndex + 1)
-            const recoveredPath = `${componentId}.component.${propertyName}` // 🔥 修复：使用component层而不是base层
+            const recoveredPath = `${componentId}.base.${propertyName}` // 🔥 修复：使用base层（因为deviceId在base层）
 
             console.log(`🔧 [DataItemFetcher] 从variableName恢复绑定路径:`, {
               参数key: param.key,
