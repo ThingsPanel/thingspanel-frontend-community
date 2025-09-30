@@ -272,10 +272,6 @@ export interface ComponentDefinition<TConfig = Record<string, any>> {
   // === 交互能力声明 ===
   /** 组件交互能力声明 */
   interactionCapabilities?: ComponentInteractionCapability
-
-  // === 属性暴露白名单 ===
-  /** 属性暴露白名单配置 */
-  propertyWhitelist?: ComponentPropertyWhitelist
 }
 
 // ============ 组件实例和配置 ============

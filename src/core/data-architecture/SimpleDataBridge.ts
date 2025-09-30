@@ -81,19 +81,7 @@ export type DataUpdateCallback = (componentId: string, data: Record<string, any>
  * 只提供最基本的配置→数据转换功能
  */
 export class SimpleDataBridge {
-  /** 🔍 静态调用计数器，用于追踪重复调用 */
-  private static instanceCallCounts = new Map<string, number>()
-
-  /** 🚀 全局执行去重缓存：防止同一组件短时间内被多次执行 */
-  private static executionCache = new Map<string, {
-    promise: Promise<any>
-    timestamp: number
-    source: string
-  }>()
-
-  /** 执行去重的时间窗口：300ms内的相同组件执行会被去重 */
-  private static readonly EXECUTION_DEDUP_WINDOW = 300
-
+  /** ✅ 简化：移除复杂的调用计数和去重缓存 */
   /** 数据更新回调列表 */
   private callbacks = new Set<DataUpdateCallback>()
 
@@ -110,53 +98,8 @@ export class SimpleDataBridge {
    * @returns 执行结果
    */
   async executeComponent(requirement: ComponentDataRequirement): Promise<DataResult> {
-    const startTime = Date.now()
-
-    // 🔍 调用计数和调用栈追踪
-    const componentCallKey = requirement.componentId
-    const currentCount = (SimpleDataBridge.instanceCallCounts.get(componentCallKey) || 0) + 1
-    SimpleDataBridge.instanceCallCounts.set(componentCallKey, currentCount)
-
-    const callStack = new Error().stack
-    const callerInfo = callStack?.split('\n')[2]?.trim() || 'unknown'
-
-    console.log(`🚨 [SimpleDataBridge] executeComponent第${currentCount}次调用`, {
-      组件ID: requirement.componentId,
-      调用时间戳: Date.now(),
-      调用来源: callerInfo
-    })
-
-    // 🚀 全局执行去重：检查是否已有相同组件在执行中
-    const now = Date.now()
-    const cacheKey = requirement.componentId
-    const cachedExecution = SimpleDataBridge.executionCache.get(cacheKey)
-
-    if (cachedExecution && (now - cachedExecution.timestamp) < SimpleDataBridge.EXECUTION_DEDUP_WINDOW) {
-      console.log(`⚡ [SimpleDataBridge] 去重：使用缓存的执行结果，避免重复执行`, {
-        组件ID: requirement.componentId,
-        原始执行来源: cachedExecution.source,
-        当前调用来源: callerInfo,
-        时间差: now - cachedExecution.timestamp
-      })
-      return await cachedExecution.promise
-    }
-
-    // 🚀 创建执行Promise并缓存
-    const executionPromise = this.doExecuteComponent(requirement, startTime, callerInfo)
-
-    // 缓存当前执行
-    SimpleDataBridge.executionCache.set(cacheKey, {
-      promise: executionPromise,
-      timestamp: now,
-      source: callerInfo
-    })
-
-    // 300ms后清理缓存
-    setTimeout(() => {
-      SimpleDataBridge.executionCache.delete(cacheKey)
-    }, SimpleDataBridge.EXECUTION_DEDUP_WINDOW)
-
-    return await executionPromise
+    // ✅ 简化：直接执行，移除复杂的去重和计数逻辑
+    return await this.doExecuteComponent(requirement, Date.now(), 'direct-call')
   }
 
   /**
