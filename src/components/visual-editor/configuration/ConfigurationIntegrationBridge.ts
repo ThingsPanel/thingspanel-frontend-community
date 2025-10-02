@@ -14,6 +14,10 @@ import { configurationStateManager, type ConfigurationUpdateEvent } from '@/comp
 import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
 // 修复：导入配置事件总线，确保配置变更时发出事件
 import { configEventBus, type ConfigChangeEvent } from '@/core/data-architecture/ConfigEventBus'
+// 🚀 新增：导入简化数据流管理器
+import { simpleDataFlow } from '@/core/data-architecture/SimpleDataFlow'
+// 🔥 修复：导入数据源绑定配置管理器
+import { dataSourceBindingConfig } from '@/core/data-architecture/DataSourceBindingConfig'
 import type {
   IConfigurationManager,
   WidgetConfiguration,
@@ -39,7 +43,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
   }>()
 
   // 配置变更去重的时间窗口（毫秒）
-  private readonly CONFIG_CHANGE_DEBOUNCE_TIME = 300
+  private readonly CONFIG_CHANGE_DEBOUNCE_TIME = 50
 
   /**
    * 初始化桥接器
@@ -183,14 +187,47 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     config: WidgetConfiguration[K],
     componentType?: string
   ): void {
+    // 🔄[DeviceID-HTTP-Debug] 配置更新检测开始
+    console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge.updateConfiguration() - 开始检测:`, {
+      widgetId,
+      section,
+      hasDeviceId: section === 'base' && config && typeof config === 'object' && 'deviceId' in config,
+      configDeviceId: section === 'base' && config && typeof config === 'object' ? (config as any).deviceId : 'N/A',
+      timestamp: Date.now()
+    })
+
     // 🔥 关键修复：检查是否为真实的配置变更，避免无意义的重复触发
     if (!this.isRealConfigChange(widgetId, section, config)) {
+      console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 配置变更被isRealConfigChange过滤，非真实变更`)
       return // 提前返回，避免无意义的更新和事件触发
     }
 
     const updated = configurationStateManager.updateConfigurationSection(widgetId, section, config, 'user')
 
     if (updated) {
+      // 🚀 新增：使用 SimpleDataFlow 处理配置更新
+      try {
+        // 确保组件在 SimpleDataFlow 中注册
+        const fullConfig = configurationStateManager.getConfiguration(widgetId)
+        if (fullConfig) {
+          // 注册组件（如果尚未注册）
+          simpleDataFlow.registerComponent(widgetId, {
+            ...fullConfig,
+            componentType: componentType || 'widget'
+          })
+
+          // 通知 SimpleDataFlow 配置变更
+          simpleDataFlow.updateComponentConfig(widgetId, section as string, config)
+        }
+      } catch (error) {
+        console.error(`❌ [ConfigurationIntegrationBridge] SimpleDataFlow 处理失败:`, {
+          widgetId,
+          section,
+          error: error instanceof Error ? error.message : error
+        })
+        // 继续使用原有逻辑作为fallback
+      }
+
       // 关键修复：配置部分更新时清理缓存，特别是 dataSource 更新
       if (section === 'dataSource' || section === 'component') {
         simpleDataBridge.clearComponentCache(widgetId)
@@ -218,7 +255,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
           }
         }
 
-
         configEventBus.emitConfigChange(changeEvent)
 
         // 发送 card2-config-update 事件，让组件能接收到配置更新
@@ -230,36 +266,80 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
           }
         }))
       }, widgetId, section)
+
+      // 🔄[DeviceID-HTTP-Debug] 配置变更事件已发送
+      console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 配置变更事件已发送:`, {
+        widgetId,
+        section,
+        componentType: componentType || 'widget',
+        shouldTriggerExecution: this.shouldTriggerDataExecution(section, config),
+        eventType: 'config-change',
+        timestamp: Date.now()
+      })
     }
   }
 
   /**
-   * 🔥 新增：智能判断配置变更是否需要触发数据源执行
+   * 🔥 修复：完全动态化的触发判断，消除硬编码
    * @param section 配置节
    * @param config 配置内容
    * @returns 是否需要触发数据执行
    */
   private shouldTriggerDataExecution(section: keyof WidgetConfiguration, config: any): boolean {
+    // 🔄[DeviceID-HTTP-Debug] 触发数据源执行判断开始
+    console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge.shouldTriggerDataExecution() - 开始判断:`, {
+      section,
+      hasConfig: !!config,
+      configKeys: config && typeof config === 'object' ? Object.keys(config) : [],
+      timestamp: Date.now()
+    })
 
-    // base 层的 deviceId、metricsList 等字段变更需要触发
-    if (section === 'base') {
-      const criticalBaseFields = ['deviceId', 'metricsList']
-      const shouldTrigger = criticalBaseFields.some(field => config.hasOwnProperty(field))
+    // 🚀 修复：使用动态触发规则判断，不再硬编码字段列表
+    if (config && typeof config === 'object') {
+      const configKeys = Object.keys(config)
+      let shouldTrigger = false
+
+      // 检查每个配置属性是否在触发规则中
+      for (const key of configKeys) {
+        const propertyPath = `${section}.${key}`
+
+        // 🔥 关键修复：通过 dataSourceBindingConfig 动态检查是否应该触发
+        if (dataSourceBindingConfig.shouldTriggerDataSource(propertyPath)) {
+          shouldTrigger = true
+          console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 发现触发属性:`, {
+            propertyPath,
+            value: config[key],
+            section,
+            key
+          })
+        }
+      }
+
+      console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 动态触发判断结果:`, {
+        section,
+        configKeys,
+        shouldTrigger,
+        method: 'dynamic-rules'
+      })
+
       return shouldTrigger
     }
 
     // dataSource 层的变更通常需要触发
     if (section === 'dataSource') {
+      console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - dataSource层触发判断结果:`, {
+        section,
+        result: true,
+        reason: 'dataSource层变更默认触发'
+      })
       return true
     }
 
-    // component 层需要检查是否包含动态参数绑定
-    if (section === 'component') {
-      // 这里可以添加更复杂的逻辑来检测是否有属性绑定变更
-      return false // 暂时不触发，避免过度执行
-    }
-
-    // interaction 层通常不需要触发数据执行
+    console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 默认不触发:`, {
+      section,
+      result: false,
+      reason: '没有匹配的触发规则'
+    })
     return false
   }
 
@@ -312,6 +392,16 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     if (result) {
       // 🔥 删除配置时清理相关缓存
       simpleDataBridge.clearComponentCache(widgetId)
+
+      // 🚀 新增：从 SimpleDataFlow 中注销组件
+      try {
+        simpleDataFlow.unregisterComponent(widgetId)
+      } catch (error) {
+        console.error(`❌ [ConfigurationIntegrationBridge] SimpleDataFlow 注销失败:`, {
+          widgetId,
+          error: error instanceof Error ? error.message : error
+        })
+      }
     }
 
     return result
@@ -488,6 +578,16 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
    * @returns 是否为真实变更
    */
   private isRealConfigChange(widgetId: string, section: keyof WidgetConfiguration, newConfig: any): boolean {
+    // 🔄[DeviceID-HTTP-Debug] 配置变更检测开始
+    console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge.isRealConfigChange() - 开始检测:`, {
+      widgetId,
+      section,
+      isBaseSection: section === 'base',
+      hasDeviceId: section === 'base' && newConfig && typeof newConfig === 'object' && 'deviceId' in newConfig,
+      deviceIdValue: section === 'base' && newConfig && typeof newConfig === 'object' ? (newConfig as any).deviceId : 'N/A',
+      timestamp: Date.now()
+    })
+
     const cacheKey = `${widgetId}.${section}`
     const configHash = this.calculateConfigHash(newConfig)
     const now = Date.now()
@@ -495,12 +595,37 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     const cached = this.configChangeCache.get(cacheKey)
 
     if (cached) {
-      // 检查是否是相同的配置
+      // 🔥 关键修复：优先检查配置内容是否真的变化了
       if (cached.lastConfigHash === configHash) {
-        // 配置相同，检查时间间隔
-        const timeDiff = now - cached.lastUpdateTime
-        if (timeDiff < this.CONFIG_CHANGE_DEBOUNCE_TIME) {
-          return false // 不是真实变更
+        // 配置内容完全相同，直接过滤
+        console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 配置变更被过滤，配置内容相同:`, {
+          cacheKey,
+          configHash,
+          result: 'filtered-same-content'
+        })
+        return false
+      }
+
+      // 🔥 改进：配置内容不同时，减少时间检查的严格性
+      const timeDiff = now - cached.lastUpdateTime
+      if (timeDiff < this.CONFIG_CHANGE_DEBOUNCE_TIME) {
+        // 🔥 关键修复：对于base层的配置变更（如deviceId），放宽时间限制
+        if (section === 'base') {
+          console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - base层配置变更，允许快速更新:`, {
+            section,
+            timeDiff,
+            configChanged: cached.lastConfigHash !== configHash,
+            result: 'allowed-base-config'
+          })
+          // base层配置变更（如deviceId）即使时间间隔短也要允许
+        } else {
+          console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 配置变更被过滤，时间间隔短:`, {
+            timeDiff,
+            debounceTime: this.CONFIG_CHANGE_DEBOUNCE_TIME,
+            section,
+            result: 'filtered-time'
+          })
+          return false
         }
       }
 
@@ -518,17 +643,30 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       if (existingDataSourceConfig) {
         const existingHash = this.calculateConfigHash(existingDataSourceConfig)
         if (existingHash === configHash) {
+          console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 数据源配置变更被过滤，配置相同:`, {
+            existingHash,
+            newHash: configHash,
+            result: 'filtered'
+          })
           return false
         }
       }
     }
+
+    // 🔄[DeviceID-HTTP-Debug] 配置变更检测通过
+    console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 配置变更检测通过:`, {
+      widgetId,
+      section,
+      cacheKey,
+      hasCache: !!cached,
+      result: 'allowed'
+    })
 
     // 更新缓存
     this.configChangeCache.set(cacheKey, {
       lastConfigHash: configHash,
       lastUpdateTime: now
     })
-
 
     return true // 是真实变更
   }
@@ -559,7 +697,7 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       if (currentCached) {
         delete currentCached.pendingEventTimeout
       }
-    }, 50) // 50ms 防抖延迟
+    }, 30) // 30ms 防抖延迟，减少延迟提高响应性
 
     if (cached) {
       cached.pendingEventTimeout = timeout

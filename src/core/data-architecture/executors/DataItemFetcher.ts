@@ -143,8 +143,16 @@ export class DataItemFetcher implements IDataItemFetcher {
    * @returns 组件属性的实际值
    */
   private async getComponentPropertyValue(bindingPath: string): Promise<any> {
+    // 🔄[DeviceID-HTTP-Debug] 开始获取组件属性值
+    console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher.getComponentPropertyValue() - 开始获取:`, {
+      bindingPath,
+      currentComponentId: this.currentComponentId,
+      timestamp: Date.now()
+    })
+
     try {
       if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
+        console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 绑定路径格式无效:`, bindingPath)
         return undefined
       }
 
@@ -152,12 +160,26 @@ export class DataItemFetcher implements IDataItemFetcher {
       let componentId = parts[0]
       const propertyPath = parts.slice(1).join('.')
 
+      // 🔄[DeviceID-HTTP-Debug] 解析绑定路径
+      console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 解析绑定路径:`, {
+        componentId,
+        propertyPath,
+        originalBindingPath: bindingPath
+      })
+
       // 🔥 关键修复：处理__CURRENT_COMPONENT__占位符
       if (componentId === '__CURRENT_COMPONENT__') {
+        // 🔄[DeviceID-HTTP-Debug] 处理__CURRENT_COMPONENT__占位符
+        console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 处理__CURRENT_COMPONENT__占位符`)
 
         // 使用当前上下文中的组件ID替换占位符
         if (this.currentComponentId) {
           componentId = this.currentComponentId
+          // 🔄[DeviceID-HTTP-Debug] 占位符替换完成
+          console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 占位符替换完成:`, {
+            originalComponentId: '__CURRENT_COMPONENT__',
+            resolvedComponentId: componentId
+          })
         } else {
           console.error(`❌ [DataItemFetcher] __CURRENT_COMPONENT__占位符无法解析：当前组件ID为空`)
           return undefined
@@ -176,9 +198,24 @@ export class DataItemFetcher implements IDataItemFetcher {
         if (!latestConfig && this.currentComponentId && this.currentComponentId !== componentId) {
           targetComponentId = this.currentComponentId
           latestConfig = configurationIntegrationBridge.getConfiguration(this.currentComponentId)
+          // 🔄[DeviceID-HTTP-Debug] 智能组件ID映射
+          console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 智能组件ID映射:`, {
+            originalComponentId: componentId,
+            resolvedComponentId: targetComponentId,
+            hasLatestConfig: !!latestConfig
+          })
         }
 
         if (latestConfig) {
+          // 🔄[DeviceID-HTTP-Debug] 获取到最新配置
+          console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 获取到最新配置:`, {
+            componentId: targetComponentId,
+            propertyPath,
+            configKeys: Object.keys(latestConfig),
+            hasBase: !!latestConfig.base,
+            hasComponent: !!latestConfig.component
+          })
+
           // 支持多层级属性路径解析
           if (propertyPath.startsWith('customize.')) {
             // 处理 customize.deviceId 格式 - 映射到 component 层
@@ -186,6 +223,11 @@ export class DataItemFetcher implements IDataItemFetcher {
             const componentValue = this.getNestedProperty(latestConfig.component, customizePropertyPath)
 
             if (componentValue !== undefined) {
+              // 🔄[DeviceID-HTTP-Debug] customize层属性获取成功
+              console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - customize层属性获取成功:`, {
+                customizePropertyPath,
+                componentValue
+              })
               return componentValue
             }
 
@@ -195,18 +237,34 @@ export class DataItemFetcher implements IDataItemFetcher {
               return baseValue
             }
           } else if (propertyPath.startsWith('base.')) {
-            // 处理 base.deviceId 格式路径
+            // 🔥 处理 base.deviceId 格式路径
             const actualPropertyPath = propertyPath.replace('base.', '')
+
+            // 🔄[DeviceID-HTTP-Debug] 处理base层属性路径
+            console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 处理base层属性路径:`, {
+              originalPath: propertyPath,
+              actualPath: actualPropertyPath
+            })
 
             // 直接从 base 层获取属性（去掉base前缀）
             const baseValue = this.getNestedProperty(latestConfig.base, actualPropertyPath)
             if (baseValue !== undefined) {
+              // 🔄[DeviceID-HTTP-Debug] base层属性获取成功
+              console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - base层属性获取成功:`, {
+                actualPropertyPath,
+                baseValue
+              })
               return baseValue
             }
 
             // 如果base层没有，也尝试component层
             const componentValue = this.getNestedProperty(latestConfig.component, actualPropertyPath)
             if (componentValue !== undefined) {
+              // 🔄[DeviceID-HTTP-Debug] component层回退获取成功
+              console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - component层回退获取成功:`, {
+                actualPropertyPath,
+                componentValue
+              })
               return componentValue
             }
           } else if (propertyPath.startsWith('component.')) {
@@ -216,12 +274,22 @@ export class DataItemFetcher implements IDataItemFetcher {
             // 直接从 component 层获取属性（去掉component前缀）
             const componentValue = this.getNestedProperty(latestConfig.component, actualPropertyPath)
             if (componentValue !== undefined) {
+              // 🔄[DeviceID-HTTP-Debug] component层属性获取成功
+              console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - component层属性获取成功:`, {
+                actualPropertyPath,
+                componentValue
+              })
               return componentValue
             }
 
             // 如果component层没有，也尝试base层
             const baseValue = this.getNestedProperty(latestConfig.base, actualPropertyPath)
             if (baseValue !== undefined) {
+              // 🔄[DeviceID-HTTP-Debug] base层回退获取成功
+              console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - base层回退获取成功:`, {
+                actualPropertyPath,
+                baseValue
+              })
               return baseValue
             }
           } else {
@@ -229,15 +297,32 @@ export class DataItemFetcher implements IDataItemFetcher {
             // 首先尝试从 base 层获取（优先级更高，因为交互通常修改 base 层）
             const baseValue = this.getNestedProperty(latestConfig.base, propertyPath)
             if (baseValue !== undefined) {
+              // 🔄[DeviceID-HTTP-Debug] base层属性获取成功
+              console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - base层属性获取成功:`, {
+                propertyPath,
+                baseValue
+              })
               return baseValue
             }
 
             // 然后从 component 层获取
             const componentValue = this.getNestedProperty(latestConfig.component, propertyPath)
             if (componentValue !== undefined) {
+              // 🔄[DeviceID-HTTP-Debug] component层属性获取成功
+              console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - component层属性获取成功:`, {
+                propertyPath,
+                componentValue
+              })
               return componentValue
             }
           }
+
+          // 🔄[DeviceID-HTTP-Debug] 配置层属性获取失败
+          console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 配置层属性获取失败:`, {
+            propertyPath,
+            hasBase: !!latestConfig.base,
+            hasComponent: !!latestConfig.component
+          })
         }
       } catch (configError) {
         // 配置获取失败，回退到编辑器存储
@@ -380,7 +465,16 @@ export class DataItemFetcher implements IDataItemFetcher {
    * @returns 解析后的参数值
    */
   private async resolveParameterValue(param: HttpParameter): Promise<any> {
-    // 🔥 简化调试：只记录关键信息
+    // 🔄[DeviceID-HTTP-Debug] 参数值解析开始
+    console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher.resolveParameterValue() - 开始解析:`, {
+      paramKey: param.key,
+      paramValue: param.value,
+      isDynamic: param.isDynamic,
+      selectedTemplate: param.selectedTemplate,
+      valueMode: param.valueMode,
+      variableName: param.variableName,
+      timestamp: Date.now()
+    })
 
     let resolvedValue = param.value
 
@@ -389,15 +483,17 @@ export class DataItemFetcher implements IDataItemFetcher {
     if (shouldBeDynamic && !param.isDynamic) {
       // 临时修正，不修改原参数对象
       param = { ...param, isDynamic: true }
+      // 🔄[DeviceID-HTTP-Debug] 运行时智能修正isDynamic字段
+      console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 运行时智能修正isDynamic字段`)
     }
 
     // 修复：优先使用isDynamic字段判断，支持属性绑定
     if (param.isDynamic || param.selectedTemplate === 'component-property-binding' || param.valueMode === 'component') {
+      // 🔄[DeviceID-HTTP-Debug] 检测到动态参数，开始属性绑定解析
+      console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 检测到动态参数，开始属性绑定解析`)
 
       // 关键修复：使用深拷贝保护原始参数，防止数据被意外修改
       let bindingPath = param.value
-
-      // 🔥 详细记录绑定路径处理前的状态
 
       // 🔥 检测绑定路径损坏的情况
       const isBindingPathCorrupted = bindingPath &&
@@ -423,6 +519,9 @@ export class DataItemFetcher implements IDataItemFetcher {
           堆栈跟踪: new Error().stack
         })
 
+        // 🔄[DeviceID-HTTP-Debug] 从variableName重建绑定路径
+        console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 从variableName重建绑定路径`)
+
         // 从variableName重建绑定路径
         if (param.variableName.includes('_')) {
           const lastUnderscoreIndex = param.variableName.lastIndexOf('_')
@@ -430,6 +529,14 @@ export class DataItemFetcher implements IDataItemFetcher {
             const componentId = param.variableName.substring(0, lastUnderscoreIndex)
             const propertyName = param.variableName.substring(lastUnderscoreIndex + 1)
             const recoveredPath = `${componentId}.base.${propertyName}` // 🔥 修复：使用base层（因为deviceId在base层）
+
+            // 🔄[DeviceID-HTTP-Debug] 绑定路径恢复完成
+            console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 绑定路径恢复完成:`, {
+              originalBindingPath: param.value,
+              recoveredPath,
+              componentId,
+              propertyName
+            })
 
 
             bindingPath = recoveredPath
@@ -442,7 +549,8 @@ export class DataItemFetcher implements IDataItemFetcher {
 
       // 最终验证：如果修复后的绑定路径仍然不正确，使用默认值
       if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
-        console.error(`❌ [DataItemFetcher] 绑定路径验证失败，使用默认值:`, {
+        // 🔄[DeviceID-HTTP-Debug] 绑定路径验证失败
+        console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 绑定路径验证失败，使用默认值:`, {
           参数key: param.key,
           无效路径: bindingPath,
           使用默认值: param.defaultValue
@@ -451,11 +559,20 @@ export class DataItemFetcher implements IDataItemFetcher {
       }
 
       if (bindingPath && typeof bindingPath === 'string') {
-
-        // 🔥 记录属性值获取前的完整状态
+        // 🔄[DeviceID-HTTP-Debug] 开始获取组件属性值
+        console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 开始获取组件属性值:`, {
+          bindingPath,
+          paramKey: param.key
+        })
 
         const actualValue = await this.getComponentPropertyValue(bindingPath)
 
+        // 🔄[DeviceID-HTTP-Debug] 组件属性值获取完成
+        console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 组件属性值获取完成:`, {
+          bindingPath,
+          actualValue,
+          paramKey: param.key
+        })
 
         if (actualValue !== undefined && actualValue !== null && actualValue !== '') {
           resolvedValue = actualValue
@@ -474,9 +591,23 @@ export class DataItemFetcher implements IDataItemFetcher {
       resolvedValue === '' ||
       (typeof resolvedValue === 'string' && resolvedValue.trim() === '')
 
+    // 🔄[DeviceID-HTTP-Debug] 参数值解析完成
+    console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 参数值解析完成:`, {
+      paramKey: param.key,
+      resolvedValue,
+      isEmpty,
+      hasDefaultValue: param.defaultValue !== undefined && param.defaultValue !== null,
+      timestamp: Date.now()
+    })
+
     if (isEmpty) {
       // 如果有默认值，使用默认值
       if (param.defaultValue !== undefined && param.defaultValue !== null) {
+        // 🔄[DeviceID-HTTP-Debug] 使用默认值
+        console.log(`🔄[DeviceID-HTTP-Debug] DataItemFetcher - 使用默认值:`, {
+          paramKey: param.key,
+          defaultValue: param.defaultValue
+        })
         resolvedValue = param.defaultValue
       } else {
         return null // 返回null表示跳过此参数

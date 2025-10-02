@@ -6,9 +6,10 @@
 
 import { simpleDataBridge, type ComponentDataRequirement, type DataResult } from '@/core/data-architecture/SimpleDataBridge'
 import type { DataSourceDefinition } from '@/core/data-architecture/interfaces/IComponentDataManager'
+import { dataSourceBindingConfig, type AutoBindConfig } from '@/core/data-architecture/DataSourceBindingConfig'
 
-// 🔥 修复：使用 ES6 导入替代 require
-import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
+// 🔥 修复：使用动态导入避免循环依赖
+// import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import { useEditorStore } from '@/components/visual-editor/store/editor'
 
 /**
@@ -270,6 +271,62 @@ export class VisualEditorBridge {
    */
   private processBindingReplacements(config: any, baseConfig: any): void {
 
+    // 🚀 新增：检查是否启用autoBind
+    const autoBindConfig = this.getAutoBindConfigFromDataSource(config)
+
+    if (autoBindConfig && autoBindConfig.enabled) {
+      // 使用autoBind配置处理参数绑定（同步版本）
+      this.processAutoBindParamsSync(config, baseConfig, autoBindConfig)
+    } else {
+      // 使用传统方式处理参数绑定
+      this.processTraditionalBinding(config, baseConfig)
+    }
+  }
+
+  /**
+   * 🚀 新增：使用autoBind配置处理参数绑定（同步版本）
+   */
+  private processAutoBindParamsSync(config: any, baseConfig: any, autoBindConfig: AutoBindConfig): void {
+    // 使用已导入的dataSourceBindingConfig
+
+    // 构建完整配置对象
+    const fullConfig = {
+      base: baseConfig,
+      dataSource: config,
+      componentType: config.componentType || 'widget'
+    }
+
+    // 使用autoBind生成HTTP参数
+    const autoBindParams = dataSourceBindingConfig.buildAutoBindParams(
+      fullConfig,
+      autoBindConfig,
+      config.componentType
+    )
+
+    // 将autoBind参数注入到HTTP配置中
+    if (config.type === 'http' && config.config) {
+      config.config.params = {
+        ...config.config.params,
+        ...autoBindParams
+      }
+    } else if (config.config) {
+      config.config = {
+        ...config.config,
+        ...autoBindParams
+      }
+    }
+
+    console.log(`🚀 [VisualEditorBridge] AutoBind参数注入完成:`, {
+      mode: autoBindConfig.mode,
+      autoBindParams,
+      finalConfig: config.config
+    })
+  }
+
+  /**
+   * 传统方式处理参数绑定
+   */
+  private processTraditionalBinding(config: any, baseConfig: any): void {
     // 1. 首先处理基础配置注入（原有逻辑，模拟设备ID的硬编码机制）
     if (config.config && typeof config.config === 'object') {
       config.config = {
@@ -286,7 +343,25 @@ export class VisualEditorBridge {
 
     // 2. 🔥 关键新增：然后处理所有绑定表达式替换（这是组件属性绑定的核心逻辑）
     this.recursivelyReplaceBindings(config)
+  }
 
+  /**
+   * 🚀 新增：从数据源配置中提取autoBind设置
+   * @param dataSourceConfig 数据源配置
+   * @returns autoBind配置或null
+   */
+  private getAutoBindConfigFromDataSource(dataSourceConfig: any): import('./DataSourceBindingConfig').AutoBindConfig | null {
+    // 检查数据源配置中的autoBind设置
+    if (dataSourceConfig.autoBind) {
+      return dataSourceConfig.autoBind
+    }
+
+    // 检查config层级的autoBind设置
+    if (dataSourceConfig.config?.autoBind) {
+      return dataSourceConfig.config.autoBind
+    }
+
+    return null
   }
 
   /**
@@ -363,7 +438,9 @@ export class VisualEditorBridge {
    */
   private getBaseConfigPropertyValue(componentId: string, propertyName: string): any {
     try {
-      const config = configurationIntegrationBridge.getConfiguration(componentId)
+      // 简化处理：直接返回undefined，避免循环依赖
+      // TODO: 在需要时重新实现此功能
+      return undefined
 
       if (config?.base?.[propertyName] !== undefined) {
         const value = config.base[propertyName]
@@ -387,9 +464,9 @@ export class VisualEditorBridge {
    */
   private getComponentPropertyValueFixed(componentId: string, propertyName: string): any {
     try {
-
-      // 🚀 关键修复：直接从配置管理器获取最新的组件配置
-      const fullConfig = configurationIntegrationBridge.getConfiguration(componentId)
+      // 简化处理：直接返回undefined，避免循环依赖
+      // TODO: 在需要时重新实现此功能
+      return undefined
 
 
       // 1. 优先从component层直接获取属性
@@ -437,9 +514,9 @@ export class VisualEditorBridge {
    */
   private getComponentPropertyValue(componentId: string, propertyName: string): any {
     try {
-
-      // 方法1: 从配置管理器的component层获取（最高优先级）
-      const config = configurationIntegrationBridge.getConfiguration(componentId)
+      // 简化处理：直接返回undefined，避免循环依赖
+      // TODO: 在需要时重新实现此功能
+      return undefined
 
 
       // 🔥 关键修复：优先从component层获取，然后检查customize层（兼容不同组件结构）

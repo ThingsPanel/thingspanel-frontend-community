@@ -5,11 +5,18 @@
       <n-divider title-placement="left">{{ t('config.base.device.section') }}</n-divider>
 
       <n-form-item :label="t('config.base.deviceId')">
-        <n-input
+        <n-select
           v-model:value="formData.deviceId"
+          :options="deviceOptions"
           :placeholder="t('config.base.deviceIdPlaceholder')"
+          :loading="loadingDevices"
           clearable
-          @input="handleUpdate"
+          filterable
+          :filter="filterDevices"
+          :render-label="renderDeviceLabel"
+          :render-tag="renderDeviceTag"
+          @update:value="handleDeviceChange"
+          @focus="loadDeviceOptions"
         />
       </n-form-item>
 
@@ -134,12 +141,14 @@
  * 模仿SimpleTestConfig的简洁UI风格
  */
 
-import { reactive, watch, computed, onMounted, onUnmounted, shallowReactive, inject } from 'vue'
+import { reactive, watch, computed, onMounted, onUnmounted, shallowReactive, inject, ref, h } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
 import { configurationManager } from '@/components/visual-editor/configuration'
 import type { BaseConfiguration } from '@/card2.1/hooks/useCard2Props'
 import type { MetricItem } from '@/card2.1/core/types'
+import { getDeviceListForSelect } from '@/service/api/device-template-model'
+import type { SelectOption } from 'naive-ui'
 
 // 接收props
 interface Props {
@@ -210,6 +219,88 @@ const borderStyleOptions = [
   { label: t('config.base.borderStyles.dotted'), value: 'dotted' },
   { label: t('config.base.borderStyles.double'), value: 'double' }
 ]
+
+// 🔥 设备选择相关状态
+const deviceOptions = ref<SelectOption[]>([])
+const loadingDevices = ref(false)
+const deviceList = ref<Api.Device.DeviceSelectItem[]>([])
+
+/**
+ * 加载设备选项
+ */
+const loadDeviceOptions = async () => {
+  if (loadingDevices.value || deviceOptions.value.length > 0) {
+    return // 避免重复加载
+  }
+
+  loadingDevices.value = true
+  try {
+    const response = await getDeviceListForSelect({
+      page: '1',
+      page_size: '1000', // 获取更多设备选项
+      has_device_config: true
+    })
+
+    if (response.data && Array.isArray(response.data)) {
+      deviceList.value = response.data
+      deviceOptions.value = response.data.map(device => ({
+        label: `${device.device_name} (${device.device_id})`,
+        value: device.device_id,
+        device_name: device.device_name,
+        device_id: device.device_id
+      }))
+    }
+  } catch (error) {
+    console.error('加载设备列表失败:', error)
+    message.error(t('config.base.loadDevicesFailed'))
+  } finally {
+    loadingDevices.value = false
+  }
+}
+
+/**
+ * 设备选项过滤
+ */
+const filterDevices = (pattern: string, option: SelectOption) => {
+  if (!pattern) return true
+  const device = deviceList.value.find(d => d.device_id === option.value)
+  if (!device) return false
+
+  const searchText = pattern.toLowerCase()
+  return (
+    device.device_name.toLowerCase().includes(searchText) ||
+    device.device_id.toLowerCase().includes(searchText)
+  )
+}
+
+/**
+ * 渲染设备标签
+ */
+const renderDeviceLabel = (option: SelectOption) => {
+  const device = deviceList.value.find(d => d.device_id === option.value)
+  if (!device) return option.label
+
+  return h('div', { class: 'device-option' }, [
+    h('div', { class: 'device-name' }, device.device_name),
+    h('div', { class: 'device-id' }, device.device_id)
+  ])
+}
+
+/**
+ * 渲染选中的设备标签
+ */
+const renderDeviceTag = ({ option }: { option: SelectOption }) => {
+  const device = deviceList.value.find(d => d.device_id === option.value)
+  return device ? device.device_name : option.label
+}
+
+/**
+ * 处理设备变更
+ */
+const handleDeviceChange = (value: string | null) => {
+  formData.deviceId = value || ''
+  handleUpdate()
+}
 
 // 当前选中的节点ID
 const selectedNodeId = computed(() => {
@@ -305,6 +396,13 @@ const handleUpdate = () => {
     return
   }
 
+  // 🔄[DeviceID-HTTP-Debug] 设备ID修改检测开始
+  console.log(`🔄[DeviceID-HTTP-Debug] BaseConfigForm.handleUpdate() - 设备ID修改开始:`, {
+    nodeId,
+    currentDeviceId: formData.deviceId,
+    timestamp: Date.now()
+  })
+
   // 防抖处理
   if (updateTimer) {
     clearTimeout(updateTimer)
@@ -332,7 +430,15 @@ const handleUpdate = () => {
 
       // 🔥 优先尝试与卡片层直接通信
       const cardUpdateSuccess = updateCardLayerConfig(baseConfig)
-      
+
+      // 🔄[DeviceID-HTTP-Debug] 配置更新发送
+      console.log(`🔄[DeviceID-HTTP-Debug] BaseConfigForm - 即将发送配置更新:`, {
+        nodeId,
+        deviceId: baseConfig.deviceId,
+        updateMethod: cardUpdateSuccess ? 'cardLayer' : 'configurationManager',
+        timestamp: Date.now()
+      })
+
       if (!cardUpdateSuccess) {
         // 回退到使用configurationManager
         console.warn('🔥 [BaseConfigForm] 卡片层通信失败，回退到configurationManager')
@@ -513,6 +619,8 @@ watch(
 // 组件挂载时初始化
 onMounted(() => {
   loadConfigurationFromManager()
+  // 预加载设备列表
+  loadDeviceOptions()
 })
 
 /**
@@ -591,5 +699,24 @@ onUnmounted(() => {
 /* 颜色选择器 */
 :deep(.n-color-picker) {
   width: 100%;
+}
+
+/* 设备选择器样式 */
+:deep(.device-option) {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+:deep(.device-name) {
+  font-weight: 500;
+  color: var(--text-color);
+  font-size: 13px;
+}
+
+:deep(.device-id) {
+  font-size: 11px;
+  color: var(--text-color-3);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
 }
 </style>

@@ -152,13 +152,27 @@ export class SimpleDataBridge {
       }
 
       // 🔥 使用多层执行器链执行完整的数据处理管道
+      // 🔄[DeviceID-HTTP-Debug] 开始执行数据源处理链
+      console.log(`🔄[DeviceID-HTTP-Debug] SimpleDataBridge - 开始执行数据源处理链:`, {
+        componentId: requirement.componentId,
+        dataSourceCount: enhancedDataSourceConfig.dataSources?.length || 0,
+        configHash: enhancedDataSourceConfig.configHash,
+        timestamp: Date.now()
+      })
 
       const executionResult: ExecutionResult = await this.executorChain.executeDataProcessingChain(
         enhancedDataSourceConfig,
         true
       )
 
-
+      // 🔄[DeviceID-HTTP-Debug] 数据源处理链执行完成
+      console.log(`🔄[DeviceID-HTTP-Debug] SimpleDataBridge - 数据源处理链执行完成:`, {
+        componentId: requirement.componentId,
+        success: executionResult.success,
+        hasComponentData: !!executionResult.componentData,
+        error: executionResult.error,
+        timestamp: Date.now()
+      })
 
       if (executionResult.success && executionResult.componentData) {
 
@@ -191,13 +205,31 @@ export class SimpleDataBridge {
           
           // 🔥 新增：立即验证数据是否成功存储到DataWarehouse
           const warehouseStats = this.warehouse.getStorageStats()
-          
+          // 🔄[DeviceID-HTTP-Debug] 数据仓库统计信息
+          console.log(`🔄[DeviceID-HTTP-Debug] SimpleDataBridge - 数据仓库统计信息:`, {
+            componentId: requirement.componentId,
+            totalComponents: warehouseStats.totalComponents,
+            totalDataSources: warehouseStats.totalDataSources,
+            memoryUsageMB: warehouseStats.memoryUsageMB
+          })
+
           // 🔥 新增：立即验证数据是否可以从DataWarehouse中读取
           const retrievedData = this.warehouse.getComponentData(requirement.componentId)
+          // 🔄[DeviceID-HTTP-Debug] 数据存储验证
+          console.log(`🔄[DeviceID-HTTP-Debug] SimpleDataBridge - 数据存储验证:`, {
+            componentId: requirement.componentId,
+            hasRetrievedData: !!retrievedData,
+            retrievedDataKeys: retrievedData ? Object.keys(retrievedData) : []
+          })
         }
 
         // 通知数据更新
         this.notifyDataUpdate(requirement.componentId, executionResult.componentData)
+        // 🔄[DeviceID-HTTP-Debug] 数据更新通知已发送
+        console.log(`🔄[DeviceID-HTTP-Debug] SimpleDataBridge - 数据更新通知已发送:`, {
+          componentId: requirement.componentId,
+          dataKeys: executionResult.componentData ? Object.keys(executionResult.componentData) : []
+        })
 
         return {
           success: true,
@@ -205,6 +237,11 @@ export class SimpleDataBridge {
           timestamp: Date.now()
         }
       } else {
+        // 🔄[DeviceID-HTTP-Debug] 数据源执行失败
+        console.log(`🔄[DeviceID-HTTP-Debug] SimpleDataBridge - 数据源执行失败:`, {
+          componentId: requirement.componentId,
+          error: executionResult.error || '执行失败'
+        })
         return {
           success: false,
           error: executionResult.error || '执行失败',
@@ -213,6 +250,13 @@ export class SimpleDataBridge {
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error)
+
+      // 🔄[DeviceID-HTTP-Debug] 数据源执行异常
+      console.log(`🔄[DeviceID-HTTP-Debug] SimpleDataBridge - 数据源执行异常:`, {
+        componentId: requirement.componentId,
+        error: errorMsg,
+        errorType: error instanceof Error ? error.constructor.name : typeof error
+      })
 
       return {
         success: false,

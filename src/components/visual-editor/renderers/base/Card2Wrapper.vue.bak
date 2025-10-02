@@ -95,7 +95,7 @@ const currentComponentDef = computed(() => {
 
   // 🔥 修复：如果没找到组件且组件列表为空，等待系统初始化
   if (!found && filteredComponents.value.length === 0 && props.componentType) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.warn(`⚠️ [Card2Wrapper] 组件 ${props.componentType} 未找到，等待系统初始化`)
   }
 
   return found
@@ -122,7 +122,12 @@ const checkCard2CoreSupport = () => {
   const dataSourceKeys = ComponentRegistry.getDataSourceKeys(props.componentType)
   const supportsDataBinding = isRegistered && dataSourceKeys.length > 0
 
-  // 已移除：console语句
+  console.log(`🚀 [Card2Wrapper] Card2.1 Core支持检查 ${props.nodeId}:`, {
+    componentType: props.componentType,
+    isRegistered,
+    dataSourceKeys,
+    supportsDataBinding
+  })
 
   useCard2CoreDataBinding.value = supportsDataBinding
   return supportsDataBinding
@@ -131,12 +136,12 @@ const checkCard2CoreSupport = () => {
 // 🚀 初始化Card2.1 Core数据绑定
 const initializeCard2CoreBinding = async () => {
   if (!useCard2CoreDataBinding.value) {
-    // 已移除：console语句
+    console.log(`🚀 [Card2Wrapper] 组件 ${props.componentType} 不支持Card2.1 Core数据绑定`)
     return
   }
 
   try {
-    // 已移除：console语句
+    console.log(`🚀 [Card2Wrapper] 开始初始化Card2.1 Core数据绑定 ${props.nodeId}`)
 
     // 创建组件数据绑定配置
     const bindingConfig: ComponentDataBinding = {
@@ -154,6 +159,7 @@ const initializeCard2CoreBinding = async () => {
 
     // 订阅数据更新
     dataBindingManager.subscribe(bindingId, (newData) => {
+      console.log(`🚀 [Card2Wrapper] Card2.1 Core数据更新 ${props.nodeId}:`, newData)
       card2CoreData.value = newData
 
       // 🔥 更新绑定状态
@@ -163,9 +169,9 @@ const initializeCard2CoreBinding = async () => {
       }
     })
 
-    // 已移除：console语句
+    console.log(`✅ [Card2Wrapper] Card2.1 Core数据绑定初始化完成 ${props.nodeId}`)
   } catch (error) {
-    // 已移除：console语句
+    console.error(`❌ [Card2Wrapper] Card2.1 Core数据绑定初始化失败 ${props.nodeId}:`, error)
   }
 }
 
@@ -181,7 +187,7 @@ const generateBindingConfig = () => {
     }
   })
 
-  // 已移除：console语句
+  console.log(`🚀 [Card2Wrapper] 生成绑定配置 ${props.componentType}:`, bindingConfig)
   return bindingConfig
 }
 
@@ -192,7 +198,7 @@ const cleanupCard2CoreBinding = () => {
     card2CoreDataBinding.value = null
     card2CoreData.value = {}
     card2CoreBindingStatus.value = {}
-    // 已移除：console语句
+    console.log(`🚀 [Card2Wrapper] 已清理Card2.1 Core数据绑定 ${props.nodeId}`)
   }
 }
 
@@ -205,21 +211,30 @@ let dataFetchDebounce: NodeJS.Timeout | null = null
 const clearDataCache = () => {
   lastDataHash = ''
   cachedWarehouseData = {}
-  // 已移除：console语句
+  console.log('🔥 [Card2Wrapper] 已清除数据缓存:', props.nodeId)
 }
 
 const componentDataFromWarehouse = computed(() => {
-  // 已移除：console语句
+  // 🚨 **最优先的调试**：确认计算属性执行开始
+  console.log('🚨 [Card2Wrapper] ===== 计算属性开始执行 =====', {
+    nodeId: props.nodeId,
+    timestamp: new Date().toLocaleTimeString()
+  })
 
   try {
     // 🚀 优先使用Card2.1 Core响应式数据绑定
     if (useCard2CoreDataBinding.value && Object.keys(card2CoreData.value).length > 0) {
-      // 已移除：console语句
+      console.log('🚀 [Card2Wrapper] 使用Card2.1 Core数据:', {
+        nodeId: props.nodeId,
+        card2CoreData: card2CoreData.value,
+        bindingStatus: card2CoreBindingStatus.value,
+        timestamp: new Date().toISOString()
+      })
       return card2CoreData.value
     }
 
     // 🚨 **关键修复**：直接绕过DataWarehouse的响应式，手动获取最新数据
-    // 已移除：console语句
+    console.log('🚨 [Card2Wrapper] 直接从DataWarehouse获取最新数据')
 
     // 强制清除缓存，确保获取最新数据
     dataWarehouse.clearComponentMergedCache(props.nodeId)
@@ -227,11 +242,17 @@ const componentDataFromWarehouse = computed(() => {
     // 直接调用DataWarehouse获取数据，绕过响应式依赖问题
     const latestData = dataWarehouse.getComponentData(props.nodeId)
 
-    // 已移除：console语句
+    console.log('🚨 [Card2Wrapper] 获取到的最新数据:', {
+      nodeId: props.nodeId,
+      latestData,
+      dataType: typeof latestData,
+      dataKeys: latestData && typeof latestData === 'object' ? Object.keys(latestData) : null,
+      timestamp: new Date().toLocaleTimeString()
+    })
 
     return latestData || {}
   } catch (error) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.error(`❌ [Card2Wrapper] 获取数据失败 ${props.nodeId}:`, error)
     return {}
   }
 })
@@ -261,21 +282,34 @@ function getInitialUnifiedConfig() {
   try {
     if (editorContext?.getNodeById) {
       const node = editorContext.getNodeById(props.nodeId)
+      if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 获取初始统一配置 ${props.nodeId}:`, {
+        node: !!node,
+        hasMetadata: !!node?.metadata,
+        hasUnifiedConfig: !!node?.metadata?.unifiedConfig,
+        hasInteractionConfig: !!node?.metadata?.unifiedConfig?.interaction,
+        interactionConfigs: node?.metadata?.unifiedConfig?.interaction?.configs
+      })
       if (node?.metadata?.unifiedConfig) {
         return node.metadata.unifiedConfig
       }
     }
   } catch (error) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.warn(`[Card2Wrapper] 获取初始配置失败:`, error)
   }
   return undefined
 }
 
-// 已移除：console语句
+if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 统一配置架构初始化完成 ${props.nodeId}:`, {
+  componentType: props.componentType,
+  hasUnifiedConfig: !!unifiedConfig.value,
+  hasComponentConfig: !!componentConfig.value,
+  isPreviewMode: isPreviewMode.value,
+  interactionEnabled: isPreviewMode.value
+})
 
 // 配置变更回调
 setConfigChangeCallback((config) => {
-  // 已移除：console语句
+  if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 配置变更回调 ${props.nodeId}:`, config)
 })
 
 // ================== 交互系统集成 ==================
@@ -325,7 +359,7 @@ const isInteractionLayerField = (field: string): boolean => {
 
 // 🔥 批量执行交互响应 - 解决多属性修改相互覆盖问题
 const executeBatchedInteractionResponses = async (responses: InteractionResponse[]) => {
-  // 已移除：console语句
+  if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 批量执行交互响应:`, responses)
 
   // 按组件ID和动作类型分组响应
   const groupedResponses = {
@@ -357,7 +391,11 @@ const executeBatchedInteractionResponses = async (responses: InteractionResponse
     }
   }
 
-  // 已移除：console语句
+  if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 响应分组结果:`, {
+    自组件修改: groupedResponses.self.modify.length,
+    跨组件修改: Array.from(groupedResponses.cross.entries()).map(([id, resps]) => ({ id, count: resps.length })),
+    非修改动作: groupedResponses.nonModify.length
+  })
 
   // 🔥 关键修复1：批量处理自组件属性修改
   if (groupedResponses.self.modify.length > 0) {
@@ -367,15 +405,15 @@ const executeBatchedInteractionResponses = async (responses: InteractionResponse
       if (response.modifyConfig) {
         const { targetProperty, updateValue } = response.modifyConfig
         batchedSelfUpdates[targetProperty] = updateValue
-        // 已移除：console语句
+        if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 收集自组件修改: ${targetProperty} = ${updateValue}`)
       }
     })
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 批量修改自己的属性:`, batchedSelfUpdates)
 
     // 🔥 恢复原始逻辑：自组件修改用 updateConfig，保持与配置表单同步
     updateConfig('component', batchedSelfUpdates)
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`✅ [Card2Wrapper] 自组件批量修改完成`)
   }
 
   // 🔥 关键修复2：批量处理跨组件属性修改
@@ -400,7 +438,7 @@ const executeBatchedInteractionResponses = async (responses: InteractionResponse
           const [layerPrefix, fieldName] = targetProperty.split('.')
           actualProperty = fieldName
           targetLayer = layerPrefix
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 检测到层级前缀: ${layerPrefix}.${fieldName}`)
         } else {
           // 🔥 字段层级映射：根据字段名确定应该更新哪个配置层
           if (isBaseLayerField(targetProperty)) {
@@ -414,17 +452,17 @@ const executeBatchedInteractionResponses = async (responses: InteractionResponse
 
         // 根据目标层级收集更新
         layeredUpdates[targetLayer][actualProperty] = updateValue
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 收集${targetLayer}层修改: ${targetComponentId}.${actualProperty} = ${updateValue}`)
       }
     })
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 批量修改其他组件 ${targetComponentId}:`, layeredUpdates)
 
     try {
       // 🔥 分层批量更新：按配置层级分别更新
       for (const [layer, updates] of Object.entries(layeredUpdates)) {
         if (Object.keys(updates).length > 0) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 更新${layer}层:`, updates)
           configurationManager.updateConfigurationForInteraction(
             targetComponentId,
             layer as keyof UnifiedCard2Configuration,
@@ -433,14 +471,15 @@ const executeBatchedInteractionResponses = async (responses: InteractionResponse
           )
         }
       }
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`✅ [Card2Wrapper] 跨组件分层批量修改完成: ${targetComponentId}`)
     } catch (error) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.error(`❌ [Card2Wrapper] 跨组件分层批量修改失败 ${targetComponentId}:`, error)
     }
   }
 
   // 处理非修改动作（跳转等）
   for (const response of groupedResponses.nonModify) {
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 执行非修改响应:`, response)
     const delay = response.delay || 0
     setTimeout(() => {
       executeInteractionResponse(response)
@@ -450,26 +489,26 @@ const executeBatchedInteractionResponses = async (responses: InteractionResponse
 
 // 交互事件执行器（处理非属性修改动作）
 const executeInteractionResponse = async (response: InteractionResponse) => {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 执行交互响应:`, response)
 
   try {
     switch (response.action) {
       case 'navigateToUrl':
       case 'jump':
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 处理跳转动作:`, response)
         // 支持多种URL数据格式
         let url = response.jumpConfig?.url || response.value || response.url
         let target = response.jumpConfig?.target || response.target || '_self'
 
         if (url) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 执行跳转: ${url} (${target})`)
           if (target === '_self') {
             window.location.href = url
           } else {
             window.open(url, target)
           }
         } else {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.warn(`🎯 [Card2Wrapper] 跳转URL未找到:`, response)
         }
         break
 
@@ -477,7 +516,7 @@ const executeInteractionResponse = async (response: InteractionResponse) => {
       case 'modifyProperty':
       case 'modify':
         // 🔥 修复说明：属性修改现在由 executeBatchedInteractionResponses 批量处理
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 属性修改已由批量处理函数处理，跳过单独执行`)
         break
 
       case 'changeVisibility':
@@ -507,10 +546,10 @@ const executeInteractionResponse = async (response: InteractionResponse) => {
         break
 
       default:
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.warn(`🎯 [Card2Wrapper] 未支持的交互动作:`, response.action)
     }
   } catch (error) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.error(`🎯 [Card2Wrapper] 交互响应执行失败:`, error)
   }
 }
 
@@ -518,32 +557,43 @@ const executeInteractionResponse = async (response: InteractionResponse) => {
 const handleInteractionEvent = async (eventType: InteractionEventType, event?: Event) => {
   // 🔥 关键修复：编辑模式下禁用交互，避免与编辑操作冲突
   if (!isPreviewMode.value) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 编辑模式下交互被禁用 ${eventType} for ${props.nodeId}`)
     return // 编辑模式下不执行交互
   }
 
   if (!componentInteractionCapability.value?.supportedEvents.includes(eventType)) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 组件不支持事件类型 ${eventType}`)
     return // 组件不支持此事件类型
   }
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 预览模式下处理交互事件 ${eventType} for ${props.nodeId}`, {
+    totalConfigs: interactionConfigs.value.length,
+    configs: interactionConfigs.value,
+    // 🔥 新增调试信息
+    configEvents: interactionConfigs.value.map(c => c.event),
+    enabledConfigs: interactionConfigs.value.filter(c => c.enabled !== false),
+    matchingConfigs: interactionConfigs.value.filter(config => config.event === eventType && config.enabled !== false)
+  })
 
   // 执行匹配的交互配置
   const matchingConfigs = interactionConfigs.value.filter(config =>
     config.event === eventType && config.enabled !== false
   )
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 找到匹配配置:`, matchingConfigs)
 
   // 🔥 关键修复：将所有匹配配置的responses合并，避免多个配置相互覆盖
   const allResponses: InteractionResponse[] = []
   for (const config of matchingConfigs) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 收集配置响应:`, config)
     allResponses.push(...config.responses)
   }
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 合并所有响应进行批量处理:`, {
+    总配置数: matchingConfigs.length,
+    总响应数: allResponses.length,
+    响应列表: allResponses
+  })
 
   // 一次性批量处理所有响应，避免配置间相互覆盖
   if (allResponses.length > 0) {
@@ -554,7 +604,7 @@ const handleInteractionEvent = async (eventType: InteractionEventType, event?: E
 // ================== 事件处理 ==================
 
 const handleWrapperClick = async (event: MouseEvent) => {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 点击事件 ${props.nodeId} (预览模式: ${isPreviewMode.value})`)
 
   // 执行交互响应（内部已有预览模式检查）
   await handleInteractionEvent('click', event)
@@ -564,28 +614,28 @@ const handleWrapperClick = async (event: MouseEvent) => {
 }
 
 const handleContextMenu = (event: MouseEvent) => {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 右键菜单 ${props.nodeId}`)
   event.preventDefault() // 阻止默认右键菜单
 }
 
 // 新增交互事件处理函数
 const handleMouseEnter = async (event: MouseEvent) => {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 鼠标进入 ${props.nodeId} (预览模式: ${isPreviewMode.value})`)
   await handleInteractionEvent('hover', event)
 }
 
 const handleMouseLeave = (event: MouseEvent) => {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 鼠标离开 ${props.nodeId} (预览模式: ${isPreviewMode.value})`)
   // hover事件的离开可以触发一些重置操作
 }
 
 const handleFocus = async (event: FocusEvent) => {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 获得焦点 ${props.nodeId} (预览模式: ${isPreviewMode.value})`)
   await handleInteractionEvent('focus', event)
 }
 
 const handleBlur = async (event: FocusEvent) => {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 失去焦点 ${props.nodeId} (预览模式: ${isPreviewMode.value})`)
   await handleInteractionEvent('blur', event)
 }
 
@@ -593,21 +643,38 @@ const handleBlur = async (event: FocusEvent) => {
 const handleConfigUpdateEvent = (event: CustomEvent) => {
   const { componentId, layer, config } = event.detail
   if (componentId === props.nodeId) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔍 [TRACE-8] Card2Wrapper.handleConfigUpdateEvent 被调用:`, {
+      componentId,
+      layer,
+      config,
+      callStack: new Error().stack?.split('\n').slice(1, 5)
+    })
 
     if (layer === 'interaction') {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔍 [TRACE-9] 这是 interaction 配置更新事件:`, {
+        componentId,
+        configsCount: config?.configs?.length || 0,
+        willCallUpdateConfig: true,
+        oldInteractionConfigs: interactionConfigs.value
+      })
 
       // 🔥 统一配置中心：通过updateConfig更新交互配置
       if (config?.configs) {
         updateConfig('interaction', { configs: config.configs })
+    if (import.meta.env.DEV) console.log(`✅ [Card2Wrapper] 交互配置已通过统一配置中心更新:`, {
+          newConfigs: config.configs,
+          configsCount: config.configs.length
+        })
       }
     } else {
       // 非交互配置正常处理
       updateConfig(layer, config)
     }
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔍 [TRACE-10] Card2Wrapper.handleConfigUpdateEvent 处理完成:`, {
+      componentId,
+      layer
+    })
   }
 }
 
@@ -615,7 +682,7 @@ const handleConfigUpdateEvent = (event: CustomEvent) => {
 const handleConfigRequestEvent = (event: CustomEvent) => {
   const { componentId, layer } = event.detail
   if (componentId === props.nodeId) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 接收到配置请求事件 ${componentId}:`, { layer })
 
     const fullConfig = getFullConfiguration()
     const requestedConfig = layer ? fullConfig[layer] : fullConfig
@@ -635,14 +702,23 @@ const handleConfigRequestEvent = (event: CustomEvent) => {
 
 // 更新交互配置
 const updateInteractionConfigs = (configs: InteractionConfig[]) => {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔍 [TRACE-11] Card2Wrapper.updateInteractionConfigs 被调用:`, {
+    nodeId: props.nodeId,
+    configCount: configs.length,
+    configs: configs,
+    callStack: new Error().stack?.split('\n').slice(1, 5)
+  })
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔍 [TRACE-12] 通过统一配置中心更新交互配置:`, {
+    nodeId: props.nodeId,
+    configsLength: configs.length,
+    willTriggerPersistence: true
+  })
 
   // 🔥 统一配置中心：直接通过updateConfig更新，计算属性会自动响应
   updateConfig('interaction', { configs })
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔍 [TRACE-13] updateConfig('interaction', { configs }) 调用完成`)
 }
 
 // 获取交互配置
@@ -669,14 +745,18 @@ watch(
       return
     }
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] DisplayData变化检测 ${props.nodeId}:`, {
+      newData: newDisplayData,
+      oldData: oldDisplayData,
+      interactionConfigsCount: interactionConfigs.value.length
+    })
 
     // 检查每个dataChange交互配置
     const dataChangeConfigs = interactionConfigs.value.filter(config =>
       config.event === 'dataChange' && config.enabled !== false
     )
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] DataChange配置:`, dataChangeConfigs)
 
     // 🔥 关键修复：收集所有触发的dataChange响应，进行批量处理
     const triggeredResponses: InteractionResponse[] = []
@@ -688,19 +768,34 @@ watch(
         const newValue = getNestedValue(newDisplayData, propertyPath)
         const oldValue = getNestedValue(oldDisplayData || {}, propertyPath)
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 检查属性变化:`, {
+          property: propertyPath,
+          newValue,
+          oldValue,
+          hasChanged: newValue !== oldValue,
+          condition: config.condition
+        })
 
         // 如果属性值发生了变化
         if (newValue !== oldValue) {
           // 检查执行条件（使用config.condition而不是response.executionCondition）
           if (checkDataChangeCondition(config.condition, newValue)) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 属性变化触发交互:`, {
+              property: propertyPath,
+              value: newValue,
+              condition: config.condition,
+              responsesCount: config.responses.length
+            })
 
             // 🔥 关键修复：收集响应而不是立即执行
             triggeredResponses.push(...config.responses)
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 收集dataChange响应 ${config.responses.length} 个`)
           } else {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 条件不满足，不执行交互:`, {
+              property: propertyPath,
+              value: newValue,
+              condition: config.condition
+            })
           }
         }
       }
@@ -708,7 +803,7 @@ watch(
 
     // 🔥 关键修复：批量执行所有触发的响应，避免相互覆盖
     if (triggeredResponses.length > 0) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 批量执行dataChange触发的 ${triggeredResponses.length} 个响应`)
 
       // 延迟执行避免与同步更新冲突
       setTimeout(async () => {
@@ -742,14 +837,25 @@ const getNestedValue = (obj: any, path: string): any => {
 const checkDataChangeCondition = (condition: any, currentValue: any): boolean => {
   if (!condition) return true // 无条件直接执行
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 检查dataChange执行条件:`, {
+    condition,
+    currentValue,
+    conditionType: condition.type,
+    conditionOperator: condition.operator,
+    conditionValue: condition.value
+  })
 
   switch (condition.type) {
     case 'comparison':
       const operator = condition.operator || 'equals'
       const targetValue = condition.value
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] DataChange比较条件:`, {
+        operator,
+        currentValue,
+        targetValue,
+        result: compareValues(currentValue, targetValue, operator)
+      })
 
       return compareValues(currentValue, targetValue, operator)
 
@@ -760,7 +866,7 @@ const checkDataChangeCondition = (condition: any, currentValue: any): boolean =>
       return checkExpressionCondition(currentValue, condition.value)
 
     default:
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.warn(`🎯 [Card2Wrapper] 未知的dataChange条件类型:`, condition.type)
       return true
   }
 }
@@ -770,7 +876,12 @@ const checkExecutionCondition = (response: any, currentValue: any): boolean => {
   const condition = response.executionCondition
   if (!condition) return true // 无条件直接执行
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 检查通用执行条件:`, {
+    condition,
+    currentValue,
+    conditionType: condition.type,
+    conditionValue: condition.value
+  })
 
   switch (condition.type) {
     case 'equals':
@@ -778,7 +889,12 @@ const checkExecutionCondition = (response: any, currentValue: any): boolean => {
       const operator = condition.operator || '=='
       const targetValue = condition.value
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 [Card2Wrapper] 通用比较条件:`, {
+        operator,
+        currentValue,
+        targetValue,
+        result: compareValues(currentValue, targetValue, operator)
+      })
 
       return compareValues(currentValue, targetValue, operator)
 
@@ -789,7 +905,7 @@ const checkExecutionCondition = (response: any, currentValue: any): boolean => {
       return checkExpressionCondition(currentValue, condition.value)
 
     default:
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.warn(`🎯 [Card2Wrapper] 未知的通用条件类型:`, condition.type)
       return true
   }
 }
@@ -835,7 +951,7 @@ const checkExpressionCondition = (currentValue: any, expression: string): boolea
     // 这里应该使用安全的表达式求值器，暂时简化处理
     return eval(expr)
   } catch (error) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.error(`🎯 [Card2Wrapper] 表达式执行失败:`, expression, error)
     return false
   }
 }
@@ -860,19 +976,22 @@ const executeComponentDataSource = async (): Promise<void> => {
   const currentSequence = currentExecutionSequence
   const executionId = `${props.nodeId}-seq${currentSequence}-${Date.now()}`
 
-  // 已移除：console语句
+  console.log(`🎯 用户要求的打印这几个字 - 执行序号 ${currentSequence}：Card2Wrapper组件执行器开始执行 ${props.nodeId}`)
 
   // 🔥 关键修复：立即获取最新配置快照，防止执行过程中配置变化
   const configSnapshot = await captureLatestConfigurationSnapshot(executionId)
   if (!configSnapshot) {
-    // 已移除：console语句
+    console.log(`🔥 [Card2Wrapper] [${executionId}] 无法获取配置快照，跳过执行`)
     return
   }
 
   // 🔥 关键修复：检查配置版本，防止重复执行相同配置
   const currentConfigHash = calculateConfigurationHash(configSnapshot.dataSource)
   if (currentConfigHash === lastConfigHash && currentConfigHash !== '') {
-    // 已移除：console语句
+    console.log(`🔥 [Card2Wrapper] [${executionId}] 配置未变化，跳过重复执行:`, {
+      configHash: currentConfigHash,
+      说明: '配置内容相同，避免无效重复执行'
+    })
     return
   }
   lastConfigHash = currentConfigHash
@@ -885,14 +1004,14 @@ const executeComponentDataSource = async (): Promise<void> => {
   )
 
   if (!callId) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.warn(`🚫 [Card2Wrapper] 数据源执行被循环保护阻止: ${props.nodeId}`)
     return
   }
 
   // 🔥 关键修复1：防止并发执行和递归调用
   if (executionInProgress) {
     loopProtectionManager.markCallEnd(callId, 'Card2Wrapper.executeComponentDataSource', props.nodeId)
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 跳过并发执行 ${props.nodeId}`)
     return
   }
 
@@ -905,7 +1024,11 @@ const executeComponentDataSource = async (): Promise<void> => {
     executionDebounce = setTimeout(async () => {
       // 🔥 再次检查序号，确保这是最新的执行请求
       if (currentSequence !== currentExecutionSequence) {
-        // 已移除：console语句
+        console.log(`🔥 [Card2Wrapper] 执行序号已过期，跳过执行 ${props.nodeId}:`, {
+          当前序号: currentSequence,
+          最新序号: currentExecutionSequence,
+          说明: '有更新的执行请求，取消此次执行'
+        })
         resolve()
         return
       }
@@ -921,17 +1044,27 @@ const executeComponentDataSource = async (): Promise<void> => {
         const dataSourceConfig = configSnapshot.dataSource
 
         if (!dataSourceConfig) {
-          // 已移除：console语句
+          console.log(`🔥 [Card2Wrapper] [${executionId}] 配置快照中无数据源配置，跳过执行`)
           resolve()
           return
         }
 
         // 🔥 关键修复3：使用快照的配置哈希，避免重复执行检查
-        // 已移除：console语句
+        console.log(`🔥 [Card2Wrapper] [${executionId}] 使用配置快照执行数据源:`, {
+          configHash: currentConfigHash,
+          executionSequence: currentSequence,
+          snapshotTimestamp: configSnapshot.timestamp
+        })
 
         // 🎯 用户要求的打印这几个字 - 阶段0：Card2Wrapper组件执行器被调用
         if (process.env.NODE_ENV === 'development') {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段0：Card2Wrapper组件执行器被调用`, {
+            componentId: props.nodeId,
+            componentType: props.componentType,
+            触发方式: '通过componentExecutorRegistry注册的执行器',
+            防重复执行: true,
+            执行序号: currentSequence
+          })
         }
 
         // 🔥 使用 VisualEditorBridge 执行数据源
@@ -958,13 +1091,24 @@ const executeComponentDataSource = async (): Promise<void> => {
 
         // 🔥 再次检查序号，确保这个结果仍然是最新的
         if (currentSequence !== currentExecutionSequence) {
-          // 已移除：console语句
+          console.log(`🔥 [Card2Wrapper] 执行完成但序号已过期，丢弃结果 ${props.nodeId}:`, {
+            执行序号: currentSequence,
+            最新序号: currentExecutionSequence,
+            executionId,
+            说明: '执行期间有新的请求，丢弃此次结果'
+          })
           resolve()
           return
         }
 
         if (process.env.NODE_ENV === 'development') {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段1：数据源执行完成，等待DataWarehouse响应式更新`, {
+            componentId: props.nodeId,
+            执行结果: result.success,
+            数据内容: result.data,
+            executionId,
+            执行序号: currentSequence
+          })
         }
 
         // 🔥 数据源执行完成后，清除缓存强制重新获取最新数据
@@ -980,7 +1124,7 @@ const executeComponentDataSource = async (): Promise<void> => {
 
         resolve()
       } catch (error) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.error(`❌ [Card2Wrapper] 数据源执行失败 ${props.nodeId}:`, error)
         resolve() // 即使失败也要resolve，避免阻塞
       } finally {
         executionInProgress = false
@@ -997,7 +1141,7 @@ const captureLatestConfigurationSnapshot = async (executionId: string): Promise<
   try {
     const latestConfig = configurationManager.getConfiguration(props.nodeId)
     if (!latestConfig) {
-      // 已移除：console语句
+      console.log(`🔥 [Card2Wrapper] [${executionId}] 无法获取组件配置`)
       return null
     }
 
@@ -1007,11 +1151,15 @@ const captureLatestConfigurationSnapshot = async (executionId: string): Promise<
       timestamp: Date.now()
     }
 
-    // 已移除：console语句
+    console.log(`🔥 [Card2Wrapper] [${executionId}] 配置快照已捕获:`, {
+      hasDataSource: !!snapshot.dataSource,
+      hasBase: !!snapshot.base,
+      timestamp: snapshot.timestamp
+    })
 
     return snapshot
   } catch (error) {
-    // 已移除：console语句
+    console.error(`❌ [Card2Wrapper] [${executionId}] 配置快照捕获失败:`, error)
     return null
   }
 }
@@ -1041,14 +1189,14 @@ const calculateConfigurationHash = (config: any): string => {
  */
 const initializeDataSourceConfiguration = async () => {
   try {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 初始化数据源配置 ${props.nodeId}`)
 
     // 检查是否有数据源配置
     const currentConfig = configurationManager.getConfiguration(props.nodeId)
     const hasDataSourceConfig = currentConfig?.dataSource
 
     if (hasDataSourceConfig) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 组件 ${props.nodeId} 有数据源配置，触发配置变更执行`)
 
       // 🔥 关键：通过"触碰"配置来触发执行，而不是直接执行
       // 这样能确保所有监听器都被正确触发
@@ -1059,10 +1207,10 @@ const initializeDataSourceConfiguration = async () => {
         props.componentType
       )
     } else {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 组件 ${props.nodeId} 无数据源配置，跳过初始化`)
     }
   } catch (error) {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.error(`❌ [Card2Wrapper] 初始化数据源配置失败 ${props.nodeId}:`, error)
   }
 }
 
@@ -1083,7 +1231,11 @@ watch(
           metadata: updatedMetadata
         })
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 组件定义变化，已更新节点metadata ${props.nodeId}:`, {
+          componentType: props.componentType,
+          hasInteractionCapabilities: !!newDef?.interactionCapabilities,
+          watchablePropertiesCount: Object.keys(newDef?.interactionCapabilities?.watchableProperties || {}).length
+        })
       }
     }
   },
@@ -1094,25 +1246,38 @@ watch(
 watch(
   () => componentDataFromWarehouse.value,
   (newData, oldData) => {
-    // 已移除：console语句
+    if (props.componentType === 'digit-indicator') {
+      console.log('🔥 [Card2Wrapper] componentDataFromWarehouse 变化:', {
+        nodeId: props.nodeId,
+        componentType: props.componentType,
+        newData,
+        oldData,
+        newDataKeys: newData && typeof newData === 'object' ? Object.keys(newData) : '不是对象',
+        oldDataKeys: oldData && typeof oldData === 'object' ? Object.keys(oldData) : '不是对象',
+        timestamp: new Date().toISOString(),
+        hasValidNewData: newData && typeof newData === 'object' && Object.keys(newData).length > 0
+      })
+    }
   },
   { deep: true, immediate: true }
 )
 
 // 🔥 新增：强制数据更新机制 - 当数据源执行完成后手动触发
 const forceDataRefresh = () => {
+  console.log('🔥 [Card2Wrapper] 强制数据刷新:', props.nodeId)
   // 强制清除DataWarehouse缓存
   dataWarehouse.clearComponentMergedCache(props.nodeId)
 
   // 手动触发计算属性重新计算
   nextTick(() => {
     const freshData = componentDataFromWarehouse.value
-    // 已移除：console语句
+    console.log('🔥 [Card2Wrapper] 强制刷新后的数据:', freshData)
   })
 }
 
 onMounted(async () => {
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段I0：Card2Wrapper组件${props.nodeId}开始挂载`)
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 组件挂载完成 ${props.nodeId}`)
 
   // 🚀 首先初始化Card2.1 Core响应式数据绑定系统
   checkCard2CoreSupport()
@@ -1124,12 +1289,13 @@ onMounted(async () => {
   clearDataCache()
 
   // 🚨 **关键修复**：强制初始化计算属性，建立Vue响应式依赖
+  console.log('🚨 [Card2Wrapper] 强制初始化计算属性，建立响应式依赖:', props.nodeId)
   try {
     // 强制访问计算属性，确保Vue响应式系统能追踪到依赖关系
     const initialData = componentDataFromWarehouse.value
 
   } catch (initError) {
-    // 已移除：console语句
+    console.error('❌ [Card2Wrapper] 初始化计算属性失败:', initError)
   }
 
   // 🔥 新增：确保组件定义被注入到节点的metadata中
@@ -1146,7 +1312,12 @@ onMounted(async () => {
         metadata: updatedMetadata
       })
 
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 组件定义已注入到节点metadata ${props.nodeId}:`, {
+        componentType: props.componentType,
+        hasCard2Definition: !!currentComponentDef.value,
+        hasInteractionCapabilities: !!currentComponentDef.value?.interactionCapabilities,
+        watchableProperties: currentComponentDef.value?.interactionCapabilities?.watchableProperties
+      })
     }
   }
 
@@ -1167,7 +1338,7 @@ onMounted(async () => {
           await initializeDataSourceConfiguration()
         }
       } catch (error) {
-         // 已移除：console语句
+         console.error(`❌ [Card2Wrapper] 组件挂载后数据源处理失败 ${props.nodeId}:`, error)
       }
     })
   }
@@ -1191,8 +1362,10 @@ onMounted(async () => {
       getInteractionCapability,
       watchProperty: (propertyName: string, callback: (newValue: any, oldValue: any) => void) => {
         if (currentComponentRef.value?.watchProperty) {
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 代理属性监听到组件实例: ${propertyName}`)
           return currentComponentRef.value.watchProperty(propertyName, callback)
         } else {
+    if (import.meta.env.DEV) console.warn(`🔥 [Card2Wrapper] 组件实例不支持watchProperty，使用fallback监听`)
           return watch(
             () => unifiedConfig.value.component?.[propertyName],
             (newValue, oldValue) => {
@@ -1206,6 +1379,7 @@ onMounted(async () => {
       }
     }
 
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 向路由器注册组件实例: ${props.nodeId}`)
     interactionConfigRouter.registerComponentInstance(props.nodeId, componentExpose)
   })
 })
@@ -1218,12 +1392,12 @@ onUnmounted(() => {
   // 🔥 清理组件执行器注册
   if (componentExecutorRegistry) {
     componentExecutorRegistry.delete(props.nodeId)
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 组件执行器已注销 ${props.nodeId}`)
   }
 
   // 🔥 清理交互配置路由器中的组件注册
   interactionConfigRouter.unregisterComponent(props.nodeId)
-    // 已移除：console语句
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 交互配置路由器组件已注销 ${props.nodeId}`)
 
   window.removeEventListener('card2-config-update', handleConfigUpdateEvent as EventListener)
   window.removeEventListener('card2-config-request', handleConfigRequestEvent as EventListener)
@@ -1244,8 +1418,10 @@ defineExpose({
   watchProperty: (propertyName: string, callback: (newValue: any, oldValue: any) => void) => {
     // 检查当前组件实例是否有watchProperty方法
     if (currentComponentRef.value?.watchProperty) {
+    if (import.meta.env.DEV) console.log(`🔥 [Card2Wrapper] 代理属性监听到组件实例: ${propertyName}`)
       return currentComponentRef.value.watchProperty(propertyName, callback)
     } else {
+    if (import.meta.env.DEV) console.warn(`🔥 [Card2Wrapper] 组件实例不支持watchProperty，使用fallback监听`)
       // Fallback：监听 unifiedConfig 变化
       return watch(
         () => unifiedConfig.value.component?.[propertyName],
