@@ -28,7 +28,7 @@
 
       <!-- 标题配置 -->
       <n-divider title-placement="left">{{ t('config.base.title.section') }}</n-divider>
-      
+
       <n-form-item :label="t('config.base.showTitle')">
         <n-switch v-model:value="formData.showTitle" @update:value="handleUpdate" />
       </n-form-item>
@@ -274,13 +274,6 @@ const loadDevicePage = async () => {
 
       // 检查是否还有更多数据
       hasMoreDevices.value = deviceOptions.value.length < total
-
-      console.log('设备列表加载成功:', {
-        page: currentPage.value,
-        loaded: list.length,
-        total: deviceOptions.value.length,
-        hasMore: hasMoreDevices.value
-      })
     }
   } catch (error) {
     console.error('加载设备列表失败:', error)
@@ -412,13 +405,6 @@ const handleUpdate = () => {
     return
   }
 
-  // 🔄[DeviceID-HTTP-Debug] 设备ID修改检测开始
-  console.log(`🔄[DeviceID-HTTP-Debug] BaseConfigForm.handleUpdate() - 设备ID修改开始:`, {
-    nodeId,
-    currentDeviceId: formData.deviceId,
-    timestamp: Date.now()
-  })
-
   // 防抖处理
   if (updateTimer) {
     clearTimeout(updateTimer)
@@ -447,21 +433,11 @@ const handleUpdate = () => {
       // 🔥 优先尝试与卡片层直接通信
       const cardUpdateSuccess = updateCardLayerConfig(baseConfig)
 
-      // 🔄[DeviceID-HTTP-Debug] 配置更新发送
-      console.log(`🔄[DeviceID-HTTP-Debug] BaseConfigForm - 即将发送配置更新:`, {
-        nodeId,
-        deviceId: baseConfig.deviceId,
-        updateMethod: cardUpdateSuccess ? 'cardLayer' : 'configurationManager',
-        timestamp: Date.now()
-      })
-
       if (!cardUpdateSuccess) {
         // 回退到使用configurationManager
-        console.warn('🔥 [BaseConfigForm] 卡片层通信失败，回退到configurationManager')
         configurationManager.updateConfiguration(nodeId, 'base', baseConfig)
       }
     } catch (error) {
-      console.error('🔥 [BaseConfigForm] 配置更新失败:', error)
       message.error(t('common.updateFailed'))
     }
   }, 300)
@@ -518,7 +494,7 @@ const loadConfigurationFromManager = async () => {
   try {
     // 🔥 优先尝试从卡片层获取配置
     let baseConfig = getCardLayerConfig(nodeId)
-    
+
     // 回退到从configurationManager获取配置
     if (!baseConfig) {
       console.warn('🔥 [BaseConfigForm] 卡片层配置获取失败，回退到configurationManager')

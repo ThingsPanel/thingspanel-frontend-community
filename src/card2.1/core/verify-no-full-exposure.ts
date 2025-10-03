@@ -28,9 +28,6 @@ export function verifyNoFullExposure(
   const configKeys = Object.keys(componentConfig)
   const exposedKeys = Object.keys(exposedProperties)
 
-  console.log(`🔒 [验证] 开始验证组件 ${componentId} 的属性暴露安全性`)
-  console.log(`📊 配置属性数量: ${configKeys.length}`)
-  console.log(`📊 暴露属性数量: ${exposedKeys.length}`)
 
   // 检查1: 如果暴露属性数量接近配置属性数量，可能存在全量暴露
   const exposureRatio = exposedKeys.length / configKeys.length
@@ -76,13 +73,6 @@ export function verifyNoFullExposure(
   }
 
   const isSecure = issues.length === 0
-
-  console.log(`🔒 [验证结果] 组件 ${componentId}: ${isSecure ? '✅ 安全' : '❌ 存在风险'}`)
-  if (issues.length > 0) {
-    console.log(`🚨 发现 ${issues.length} 个安全问题:`)
-    issues.forEach(issue => console.log(`  ${issue}`))
-  }
-
   return {
     isSecure,
     issues,
@@ -111,7 +101,6 @@ export function verifyAllComponentsInPage(): {
     throw new Error('此函数只能在浏览器环境中运行')
   }
 
-  console.log(`🔒 开始验证页面中所有组件的属性暴露安全性...`)
 
   // 查找所有有 data-component-id 的元素
   const componentElements = document.querySelectorAll('[data-component-id]')
@@ -148,7 +137,6 @@ export function verifyAllComponentsInPage(): {
         insecureComponents.push(componentId)
       }
     } catch (error) {
-      console.error(`❌ 验证组件 ${componentId} 时出错:`, error)
       insecureComponents.push(componentId)
       results.push({
         componentId,
@@ -159,11 +147,6 @@ export function verifyAllComponentsInPage(): {
   })
 
   const totalComponents = componentElements.length
-  console.log(`📊 验证完成: ${secureCount}/${totalComponents} 个组件安全`)
-
-  if (insecureComponents.length > 0) {
-    console.log(`🚨 存在风险的组件:`, insecureComponents)
-  }
 
   return {
     totalComponents,
@@ -177,8 +160,5 @@ export function verifyAllComponentsInPage(): {
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   ;(window as any).verifyNoFullExposure = verifyNoFullExposure
   ;(window as any).verifyAllComponentsInPage = verifyAllComponentsInPage
-  console.log('🔒 属性暴露安全验证工具已设置完成！')
-  console.log('💡 使用方法:')
-  console.log('  - window.verifyNoFullExposure(componentId, exposedProps, config)')
-  console.log('  - window.verifyAllComponentsInPage()')
+
 }

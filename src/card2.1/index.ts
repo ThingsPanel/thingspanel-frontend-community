@@ -43,23 +43,15 @@ export async function initializeCard2System() {
       );
 
       // 🔥 调试：输出扫描到的模块
-      console.log('🔍 [Card2.1] 扫描到的组件模块:', {
-        原始总数: Object.keys(allComponentModules).length,
-        过滤后总数: Object.keys(componentModules).length,
-        模块列表: Object.keys(componentModules),
-        系统组件: Object.keys(componentModules).filter(path => path.includes('/system/')),
-        图表组件: Object.keys(componentModules).filter(path => path.includes('/chart/')),
-        排除的文件: Object.keys(allComponentModules).filter(path => path === './components/index.ts')
-      });
+
 
       // 2. 调用自动注册系统，并传入扫描到的模块
       await autoRegistry.autoRegister(componentModules);
 
       isInitialized = true
-      
-    } catch (error) {
-      console.error('❌ [Card2.1] 初始化失败:', error)
-      throw error
+    } catch (err) {
+      console.error('❌ [Card2.1] 初始化失败:', err)
+      throw err
     } finally {
       initializationPromise = null
     }

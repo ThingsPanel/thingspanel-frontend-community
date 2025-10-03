@@ -188,17 +188,10 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     componentType?: string
   ): void {
     // 🔄[DeviceID-HTTP-Debug] 配置更新检测开始
-    console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge.updateConfiguration() - 开始检测:`, {
-      widgetId,
-      section,
-      hasDeviceId: section === 'base' && config && typeof config === 'object' && 'deviceId' in config,
-      configDeviceId: section === 'base' && config && typeof config === 'object' ? (config as any).deviceId : 'N/A',
-      timestamp: Date.now()
-    })
+
 
     // 🔥 关键修复：检查是否为真实的配置变更，避免无意义的重复触发
     if (!this.isRealConfigChange(widgetId, section, config)) {
-      console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 配置变更被isRealConfigChange过滤，非真实变更`)
       return // 提前返回，避免无意义的更新和事件触发
     }
 
@@ -267,15 +260,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         }))
       }, widgetId, section)
 
-      // 🔄[DeviceID-HTTP-Debug] 配置变更事件已发送
-      console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 配置变更事件已发送:`, {
-        widgetId,
-        section,
-        componentType: componentType || 'widget',
-        shouldTriggerExecution: this.shouldTriggerDataExecution(section, config),
-        eventType: 'config-change',
-        timestamp: Date.now()
-      })
     }
   }
 
@@ -286,13 +270,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
    * @returns 是否需要触发数据执行
    */
   private shouldTriggerDataExecution(section: keyof WidgetConfiguration, config: any): boolean {
-    // 🔄[DeviceID-HTTP-Debug] 触发数据源执行判断开始
-    console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge.shouldTriggerDataExecution() - 开始判断:`, {
-      section,
-      hasConfig: !!config,
-      configKeys: config && typeof config === 'object' ? Object.keys(config) : [],
-      timestamp: Date.now()
-    })
 
     // 🚀 修复：使用动态触发规则判断，不再硬编码字段列表
     if (config && typeof config === 'object') {
@@ -306,40 +283,15 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
         // 🔥 关键修复：通过 dataSourceBindingConfig 动态检查是否应该触发
         if (dataSourceBindingConfig.shouldTriggerDataSource(propertyPath)) {
           shouldTrigger = true
-          console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 发现触发属性:`, {
-            propertyPath,
-            value: config[key],
-            section,
-            key
-          })
         }
       }
-
-      console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 动态触发判断结果:`, {
-        section,
-        configKeys,
-        shouldTrigger,
-        method: 'dynamic-rules'
-      })
-
       return shouldTrigger
     }
 
     // dataSource 层的变更通常需要触发
     if (section === 'dataSource') {
-      console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - dataSource层触发判断结果:`, {
-        section,
-        result: true,
-        reason: 'dataSource层变更默认触发'
-      })
       return true
     }
-
-    console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 默认不触发:`, {
-      section,
-      result: false,
-      reason: '没有匹配的触发规则'
-    })
     return false
   }
 
@@ -578,16 +530,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
    * @returns 是否为真实变更
    */
   private isRealConfigChange(widgetId: string, section: keyof WidgetConfiguration, newConfig: any): boolean {
-    // 🔄[DeviceID-HTTP-Debug] 配置变更检测开始
-    console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge.isRealConfigChange() - 开始检测:`, {
-      widgetId,
-      section,
-      isBaseSection: section === 'base',
-      hasDeviceId: section === 'base' && newConfig && typeof newConfig === 'object' && 'deviceId' in newConfig,
-      deviceIdValue: section === 'base' && newConfig && typeof newConfig === 'object' ? (newConfig as any).deviceId : 'N/A',
-      timestamp: Date.now()
-    })
-
     const cacheKey = `${widgetId}.${section}`
     const configHash = this.calculateConfigHash(newConfig)
     const now = Date.now()
@@ -597,12 +539,6 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
     if (cached) {
       // 🔥 关键修复：优先检查配置内容是否真的变化了
       if (cached.lastConfigHash === configHash) {
-        // 配置内容完全相同，直接过滤
-        console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 配置变更被过滤，配置内容相同:`, {
-          cacheKey,
-          configHash,
-          result: 'filtered-same-content'
-        })
         return false
       }
 
@@ -610,21 +546,8 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       const timeDiff = now - cached.lastUpdateTime
       if (timeDiff < this.CONFIG_CHANGE_DEBOUNCE_TIME) {
         // 🔥 关键修复：对于base层的配置变更（如deviceId），放宽时间限制
-        if (section === 'base') {
-          console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - base层配置变更，允许快速更新:`, {
-            section,
-            timeDiff,
-            configChanged: cached.lastConfigHash !== configHash,
-            result: 'allowed-base-config'
-          })
-          // base层配置变更（如deviceId）即使时间间隔短也要允许
-        } else {
-          console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 配置变更被过滤，时间间隔短:`, {
-            timeDiff,
-            debounceTime: this.CONFIG_CHANGE_DEBOUNCE_TIME,
-            section,
-            result: 'filtered-time'
-          })
+        if (section !== 'base') {
+          // base层配置变更（如deviceId）即使时间间隔短也要允许.
           return false
         }
       }
@@ -643,25 +566,10 @@ export class ConfigurationIntegrationBridge implements IConfigurationManager {
       if (existingDataSourceConfig) {
         const existingHash = this.calculateConfigHash(existingDataSourceConfig)
         if (existingHash === configHash) {
-          console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 数据源配置变更被过滤，配置相同:`, {
-            existingHash,
-            newHash: configHash,
-            result: 'filtered'
-          })
           return false
         }
       }
     }
-
-    // 🔄[DeviceID-HTTP-Debug] 配置变更检测通过
-    console.log(`🔄[DeviceID-HTTP-Debug] ConfigurationIntegrationBridge - 配置变更检测通过:`, {
-      widgetId,
-      section,
-      cacheKey,
-      hasCache: !!cached,
-      result: 'allowed'
-    })
-
     // 更新缓存
     this.configChangeCache.set(cacheKey, {
       lastConfigHash: configHash,

@@ -104,14 +104,7 @@ export class ConfigEventBus {
    */
   async emitConfigChange(event: ConfigChangeEvent): Promise<void> {
     // 🔄[DeviceID-HTTP-Debug] 配置变更事件发出开始
-    console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus.emitConfigChange() - 开始发出事件:`, {
-      componentId: event.componentId,
-      section: event.section,
-      source: event.source,
-      hasContext: !!event.context,
-      shouldTriggerExecution: event.context?.shouldTriggerExecution,
-      timestamp: Date.now()
-    })
+
 
     this.statistics.eventsEmitted++
 
@@ -119,18 +112,12 @@ export class ConfigEventBus {
     if (!this.passesGlobalFilters(event)) {
       this.statistics.eventsFiltered++
       // 🔄[DeviceID-HTTP-Debug] 事件被全局过滤器过滤
-      console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 事件被全局过滤器过滤`)
       return
     }
 
     // 确定要触发的事件类型
     const eventTypesToTrigger = this.determineEventTypes(event)
 
-    // 🔄[DeviceID-HTTP-Debug] 确定的事件类型
-    console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 确定的事件类型:`, {
-      eventTypesToTrigger,
-      totalHandlers: eventTypesToTrigger.length
-    })
 
     // 并行执行所有相关事件类型的处理器
     const handlerPromises: Promise<void>[] = []
@@ -149,14 +136,9 @@ export class ConfigEventBus {
       try {
         await Promise.allSettled(handlerPromises)
         // 🔄[DeviceID-HTTP-Debug] 所有处理器执行完成
-        console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 所有处理器执行完成，共${handlerPromises.length}个`)
       } catch (error) {
         // 🔄[DeviceID-HTTP-Debug] 处理器执行出错
-        console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 处理器执行出错:`, error)
       }
-    } else {
-      // 🔄[DeviceID-HTTP-Debug] 没有找到处理器
-      console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 没有找到处理器，事件类型:`, eventTypesToTrigger)
     }
   }
 
@@ -245,15 +227,6 @@ export class ConfigEventBus {
         eventTypes.push('interaction-changed')
         break
     }
-
-    // 🔄[DeviceID-HTTP-Debug] 确定的事件类型
-    console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus.determineEventTypes() - 事件类型确定:`, {
-      section: event.section,
-      eventTypes,
-      source: event.source,
-      timestamp: Date.now()
-    })
-
     return eventTypes
   }
 
@@ -352,81 +325,42 @@ configEventBus.onConfigChange('config-changed', async event => {
 configEventBus.onConfigChange('base-config-changed', async event => {
   if (process.env.NODE_ENV === 'development') {
   }
-
-  // 🔄[DeviceID-HTTP-Debug] 基础配置变更事件接收
-  console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 接收到基础配置变更事件:`, {
-    componentId: event.componentId,
-    section: event.section,
-    source: event.source,
-    hasContext: !!event.context,
-    timestamp: Date.now()
-  })
-
   // 基础配置变更通常都需要触发数据重新执行
   if (!event.context) {
     event.context = {}
   }
   event.context.shouldTriggerExecution = true
-
-  // 🔄[DeviceID-HTTP-Debug] 基础配置变更事件处理
-  console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 基础配置变更事件处理完成，shouldTriggerExecution=true`)
-
   // 调用数据执行触发器
   if (dataExecutionTriggerCallback) {
     try {
       dataExecutionTriggerCallback(event)
-      // 🔄[DeviceID-HTTP-Debug] 数据执行触发器调用成功
-      console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 数据执行触发器调用成功`)
     } catch (error) {
       console.error(`❌ [ConfigEventBus] 基础配置数据执行触发失败`, {
         componentId: event.componentId,
         error: error instanceof Error ? error.message : error
       })
     }
-  } else {
-    // 🔄[DeviceID-HTTP-Debug] 数据执行触发器未注册
-    console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 数据执行触发器未注册，无法触发执行`)
   }
 })
 
 // 🔥 专门监听数据源配置变更事件
 configEventBus.onConfigChange('data-source-changed', async event => {
-  if (process.env.NODE_ENV === 'development') {
-  }
-
-  // 🔄[DeviceID-HTTP-Debug] 数据源配置变更事件接收
-  console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 接收到数据源配置变更事件:`, {
-    componentId: event.componentId,
-    section: event.section,
-    source: event.source,
-    hasContext: !!event.context,
-    timestamp: Date.now()
-  })
 
   // 数据源配置变更通常都需要触发数据重新执行
   if (!event.context) {
     event.context = {}
   }
   event.context.shouldTriggerExecution = true
-
-  // 🔄[DeviceID-HTTP-Debug] 数据源配置变更事件处理
-  console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 数据源配置变更事件处理完成，shouldTriggerExecution=true`)
-
   // 调用数据执行触发器
   if (dataExecutionTriggerCallback) {
     try {
       dataExecutionTriggerCallback(event)
-      // 🔄[DeviceID-HTTP-Debug] 数据执行触发器调用成功
-      console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 数据执行触发器调用成功`)
     } catch (error) {
       console.error(`❌ [ConfigEventBus] 数据源配置数据执行触发失败`, {
         componentId: event.componentId,
         error: error instanceof Error ? error.message : error
       })
     }
-  } else {
-    // 🔄[DeviceID-HTTP-Debug] 数据执行触发器未注册
-    console.log(`🔄[DeviceID-HTTP-Debug] ConfigEventBus - 数据执行触发器未注册，无法触发执行`)
   }
 })
 

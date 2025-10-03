@@ -194,7 +194,6 @@ export class DataSourceBindingConfig {
    */
   registerBindingRule(rule: BindingRule): void {
     this.bindingRules.set(rule.propertyPath, rule)
-    console.log(`📋 [DataSourceBindingConfig] 注册绑定规则: ${rule.propertyPath} → ${rule.paramName}`)
   }
 
   /**
@@ -202,7 +201,6 @@ export class DataSourceBindingConfig {
    */
   registerTriggerRule(rule: TriggerRule): void {
     this.triggerRules.set(rule.propertyPath, rule)
-    console.log(`🎯 [DataSourceBindingConfig] 注册触发规则: ${rule.propertyPath} (${rule.enabled ? '启用' : '禁用'})`)
   }
 
   /**
@@ -210,9 +208,6 @@ export class DataSourceBindingConfig {
    */
   removeBindingRule(propertyPath: string): boolean {
     const removed = this.bindingRules.delete(propertyPath)
-    if (removed) {
-      console.log(`🗑️ [DataSourceBindingConfig] 移除绑定规则: ${propertyPath}`)
-    }
     return removed
   }
 
@@ -221,9 +216,6 @@ export class DataSourceBindingConfig {
    */
   removeTriggerRule(propertyPath: string): boolean {
     const removed = this.triggerRules.delete(propertyPath)
-    if (removed) {
-      console.log(`🗑️ [DataSourceBindingConfig] 移除触发规则: ${propertyPath}`)
-    }
     return removed
   }
 
@@ -233,7 +225,6 @@ export class DataSourceBindingConfig {
   clearAllRules(): void {
     this.bindingRules.clear()
     this.triggerRules.clear()
-    console.log(`🧹 [DataSourceBindingConfig] 清空所有规则`)
   }
 
   // 组件特定配置
@@ -340,12 +331,6 @@ export class DataSourceBindingConfig {
         }
 
         httpParams[rule.paramName] = value
-      } else if (rule.required) {
-        console.warn(`⚠️ [DataSourceBindingConfig] 必需参数缺失:`, {
-          propertyPath: rule.propertyPath,
-          paramName: rule.paramName,
-          componentType
-        })
       }
     }
 
@@ -490,12 +475,6 @@ export class DataSourceBindingConfig {
         }
 
         httpParams[rule.paramName] = value
-      } else if (rule.required) {
-        console.warn(`⚠️ [DataSourceBindingConfig] 自定义规则必需参数缺失:`, {
-          propertyPath: rule.propertyPath,
-          paramName: rule.paramName,
-          componentType
-        })
       }
     }
 
@@ -514,11 +493,6 @@ export class DataSourceBindingConfig {
       this.customBindingRules.push(rule)
     }
 
-    console.log(`➕ [DataSourceBindingConfig] 添加自定义绑定规则:`, {
-      propertyPath: rule.propertyPath,
-      paramName: rule.paramName,
-      description: rule.description
-    })
   }
 
   /**
@@ -533,11 +507,6 @@ export class DataSourceBindingConfig {
       this.customTriggerRules.push(rule)
     }
 
-    console.log(`🎯 [DataSourceBindingConfig] 添加自定义触发规则:`, {
-      propertyPath: rule.propertyPath,
-      enabled: rule.enabled,
-      description: rule.description
-    })
   }
 
   /**
@@ -545,12 +514,7 @@ export class DataSourceBindingConfig {
    */
   setComponentConfig(componentType: string, config: ComponentBindingConfig): void {
     this.componentConfigs.set(componentType, config)
-    console.log(`⚙️ [DataSourceBindingConfig] 设置组件特定配置:`, {
-      componentType,
-      hasAdditionalBindings: !!config.additionalBindings?.length,
-      hasAdditionalTriggers: !!config.additionalTriggers?.length,
-      autoBindEnabled: config.autoBindEnabled
-    })
+
   }
 
   /**
@@ -567,7 +531,6 @@ export class DataSourceBindingConfig {
     const index = this.customBindingRules.findIndex(r => r.propertyPath === propertyPath)
     if (index >= 0) {
       this.customBindingRules.splice(index, 1)
-      console.log(`🗑️ [DataSourceBindingConfig] 移除自定义绑定规则:`, { propertyPath })
       return true
     }
     return false
@@ -580,7 +543,6 @@ export class DataSourceBindingConfig {
     const index = this.customTriggerRules.findIndex(r => r.propertyPath === propertyPath)
     if (index >= 0) {
       this.customTriggerRules.splice(index, 1)
-      console.log(`🗑️ [DataSourceBindingConfig] 移除自定义触发规则:`, { propertyPath })
       return true
     }
     return false

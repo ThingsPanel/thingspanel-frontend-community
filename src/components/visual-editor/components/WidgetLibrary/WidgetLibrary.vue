@@ -1,10 +1,5 @@
 <template>
   <div class="widget-library">
-    <!-- 我下面这个两示例显示非常正常，但你特么的怎么给我显示的就是key呢 -->
-    <div>{{ $t('subCategories.alarmManagement') }}</div>
-    <div>{{ $t('categories.system') }}</div>
-    <!-- 我上面这个两示例显示非常正常，但你特么的怎么给我显示的就是key呢 -->
-
     <!-- 搜索框 -->
     <div class="search-bar">
       <n-input v-model:value="searchTerm" :placeholder="$t('visualEditor.searchComponents')" clearable>
