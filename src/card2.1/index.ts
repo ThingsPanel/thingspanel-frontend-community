@@ -42,6 +42,12 @@ export async function initializeCard2System() {
         Object.entries(allComponentModules).filter(([path]) => path !== './components/index.ts')
       );
 
+      // 🔥 调试：打印扫描到的模块
+      console.group('🔥 [Card2.1] 扫描到的组件模块')
+      console.log('扫描到的模块数量:', Object.keys(componentModules).length)
+      console.log('模块路径列表:', Object.keys(componentModules))
+      console.groupEnd()
+
       // 🔥 调试：输出扫描到的模块
 
 
@@ -74,7 +80,25 @@ export function getComponentTree() {
   if (!isInitialized) {
     return { components: [], categories: [], totalCount: 0 }
   }
-  return autoRegistry.getComponentTree()
+  const tree = autoRegistry.getComponentTree()
+
+  // 🔥 调试：打印 getComponentTree 返回的数据
+  console.group('🔥 [getComponentTree] 返回的组件树数据')
+  console.log('分类数量:', tree.categories?.length)
+  console.log('组件数量:', tree.components?.length)
+  console.log('分类详情:', tree.categories?.map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    children: cat.children?.length || 0
+  })))
+  console.log('组件分类统计:', tree.components?.reduce((acc, comp) => {
+    const mainCat = comp.mainCategory || '未知'
+    acc[mainCat] = (acc[mainCat] || 0) + 1
+    return acc
+  }, {} as Record<string, number>))
+  console.groupEnd()
+
+  return tree
 }
 
 /**

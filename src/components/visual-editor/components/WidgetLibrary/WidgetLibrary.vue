@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { SearchOutline, AlertCircleOutline } from '@vicons/ionicons5'
 import { useComponentTree } from '@/card2.1/hooks/useComponentTree'
 import type { WidgetDefinition } from '@/components/visual-editor/types/widget'
@@ -115,6 +115,7 @@ const emit = defineEmits<{
 const isInitialized = computed(() => !componentTree.isLoading.value && componentTree.componentTree.value.totalCount > 0)
 const initializationError = computed(() => componentTree.error.value)
 
+
 const initializeWidgets = async () => {
   try {
     await componentTree.initialize()
@@ -129,12 +130,21 @@ const allWidgets = computed(() => {
   // 从 componentTree 获取组件数据并转换为 WidgetDefinition 格式
   const components = componentTree.filteredComponents.value
   if (!Array.isArray(components)) {
+    console.warn('❌ [WidgetLibrary] filteredComponents 不是数组:', components)
     return []
   }
 
-  return components.map(component => {
+  // 🔥 调试：打印接收到的组件数据
+  console.log('🔥 [WidgetLibrary] 接收组件:', components.length, '个')
+  console.log('🔥 [WidgetLibrary] 分类统计:', components.reduce((acc, c) => {
+    const mainCat = c?.mainCategory || '未知'
+    acc[mainCat] = (acc[mainCat] || 0) + 1
+    return acc
+  }, {} as Record<string, number>))
+
+  const widgets = components.map(component => {
     // auto-registry.ts 传递翻译键，UI层负责翻译
-    return {
+    const widget = {
       type: component.type,
       name: component.name || component.type, // auto-registry.ts传递的翻译键
       description: component.description || '',
@@ -145,7 +155,11 @@ const allWidgets = computed(() => {
         subCategory: component.subCategory || 'subCategories.data'     // 默认翻译键
       }
     }
+
+    return widget
   })
+
+  return widgets
 })
 
 
@@ -203,9 +217,11 @@ const simplifiedWidgetTree = computed(() => {
     map[main][sub].push(widget)
   })
 
+
   // 使用componentTree中已排序好的分类顺序
   const orderedCategories = componentTree.componentTree.value?.categories || []
   const categoryOrder = orderedCategories.map(cat => cat.name)
+
 
   // 按照componentTree中的分类顺序构建结果
   const result: TopCategory[] = []
@@ -235,6 +251,7 @@ const simplifiedWidgetTree = computed(() => {
     }
   })
 
+
   // 🔥 修复：保留空分类，便于调试和确保系统分类显示
   return result.map(top => ({
     name: top.name,
@@ -263,12 +280,14 @@ const filteredWidgetTree = computed(() => {
             }
           })
 
+
           // 🔥 修复：总是包含分类，即使没有匹配的组件（便于显示空分类状态）
           filteredTopCategories.push({ name: topCategory.name, subCategories: filteredSubCategories })
         })
 
         return filteredTopCategories
       })()
+
 
   return result
 })

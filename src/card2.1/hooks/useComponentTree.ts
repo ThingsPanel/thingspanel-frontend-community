@@ -69,6 +69,23 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
       await initializeCard2System()
 
       const tree = await getComponentTree()
+
+      // 🔥 调试：打印获取到的组件树数据
+      console.group('🔥 [useComponentTree] 获取到的组件树数据')
+      console.log('组件树:', tree)
+      console.log('分类数量:', tree.categories?.length)
+      console.log('组件数量:', tree.components?.length)
+      console.log('分类详情:', tree.categories?.map(cat => ({
+        name: cat.name,
+        children: cat.children?.length || 0
+      })))
+      console.log('组件分类统计:', tree.components?.reduce((acc, comp) => {
+        const mainCat = comp.mainCategory || '未知'
+        acc[mainCat] = (acc[mainCat] || 0) + 1
+        return acc
+      }, {} as Record<string, number>))
+      console.groupEnd()
+
       componentTree.value = tree
 
       // 🔥 修复：强制触发响应性更新
@@ -76,7 +93,7 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
 
       // 🔥 修复：标记全局初始化完成
       globalInitialized = true
-      
+
     } catch (err) {
       error.value = err instanceof Error ? err.message : '初始化失败'
       console.error('❌ [useComponentTree] 初始化失败:', err)

@@ -53,23 +53,38 @@ export class AutoRegistry {
           const componentType = definition.type as ComponentType
           let subCategoryId: string | undefined;
 
-          // 🔍 调试信息：组件注册开始
           // 🔥 转换路径格式给 category-mapping.ts 使用
           // 从 ./components/system/xxx/yyy/index.ts 转换为 ./system/xxx/yyy/index.ts
           const normalizedPath = componentId.replace(/^\.\/components\//, './')
+
           const categoryInfo = parseCategoryFromPath(normalizedPath)
 
-          // 🔥 直接使用 category-definition.ts 中定义的翻译key
-          const topLevelCategory = categoryInfo.topLevelCategoryId ? TOP_LEVEL_CATEGORIES[categoryInfo.topLevelCategoryId as keyof typeof TOP_LEVEL_CATEGORIES] : null
+          const topLevelCategory = (categoryInfo.topLevelId === 'system' || categoryInfo.topLevelId === 'chart')
+            ? TOP_LEVEL_CATEGORIES[categoryInfo.topLevelId]
+            : null
           const subCategory = categoryInfo.subCategoryId ? SUB_CATEGORIES[categoryInfo.subCategoryId] : null
+
+          // 🔥 修复分类映射逻辑
+          const mainCategoryDisplayName = topLevelCategory?.displayName ||
+            (categoryInfo.topLevelId === 'system' ? TOP_LEVEL_CATEGORIES.system.displayName :
+             categoryInfo.topLevelId === 'chart' ? TOP_LEVEL_CATEGORIES.chart.displayName :
+             TOP_LEVEL_CATEGORIES.chart.displayName) // 默认使用图表分类
+
+          const subCategoryDisplayName = subCategory?.displayName || SUB_CATEGORIES.data.displayName
+
+          // 🔥 简化调试：检查分类映射
+          console.log('🔥 [AutoRegistry] 分类映射:', componentId, '=>', categoryInfo.topLevelId, '=>', mainCategoryDisplayName)
 
           const enhancedDefinition = {
             ...definition,
             name: definition.name, // 组件翻译键
-            mainCategory: topLevelCategory?.displayName || TOP_LEVEL_CATEGORIES.chart.displayName, // 主分类翻译键
-            subCategory: subCategory?.displayName || SUB_CATEGORIES.data.displayName, // 子分类翻译键
-            category: `${topLevelCategory?.displayName || TOP_LEVEL_CATEGORIES.chart.displayName}/${subCategory?.displayName || SUB_CATEGORIES.data.displayName}`, // 组合翻译键
+            mainCategory: mainCategoryDisplayName, // 主分类翻译键
+            subCategory: subCategoryDisplayName, // 子分类翻译键
+            category: `${mainCategoryDisplayName}/${subCategoryDisplayName}`, // 组合翻译键
           }
+
+          // 🔥 调试：打印最终分类
+          console.log('🔥 [AutoRegistry] 最终分类:', componentId, '=>', enhancedDefinition.mainCategory, '/', enhancedDefinition.subCategory)
 
 
 
@@ -102,7 +117,15 @@ export class AutoRegistry {
       }
     }
 
-
+    // 🔥 调试：打印注册总结
+    console.group('🔥 [AutoRegistry] 注册总结')
+    console.log('注册组件总数:', registeredComponents.length)
+    console.log('所有组件总数:', this.allComponents.length)
+    console.log('分类统计:', this.categoryTree.map(cat => ({
+      name: cat.name,
+      components: this.allComponents.filter(comp => comp.mainCategory === cat.name).length
+    })))
+    console.groupEnd()
 
     return registeredComponents
   }
