@@ -5,18 +5,16 @@
       <n-divider title-placement="left">{{ t('config.base.device.section') }}</n-divider>
 
       <n-form-item :label="t('config.base.deviceId')">
-        <n-select
-          v-model:value="formData.deviceId"
+        <DeviceSelectSingle
+          v-model="formData.deviceId"
           :options="deviceOptions"
-          :placeholder="t('config.base.deviceIdPlaceholder')"
           :loading="loadingDevices"
+          :has-more="hasMoreDevices"
+          :placeholder="t('config.base.deviceIdPlaceholder')"
           clearable
-          filterable
-          :filter="filterDevices"
-          :render-label="renderDeviceLabel"
-          :render-tag="renderDeviceTag"
-          @update:value="handleDeviceChange"
-          @focus="loadDeviceOptions"
+          @load-more="loadMoreDevices"
+          @initial-load="loadInitialDevices"
+          @search="handleDeviceSearch"
         />
       </n-form-item>
 
@@ -141,14 +139,14 @@
  * 模仿SimpleTestConfig的简洁UI风格
  */
 
-import { reactive, watch, computed, onMounted, onUnmounted, shallowReactive, inject, ref, h } from 'vue'
+import { reactive, watch, computed, onMounted, onUnmounted, shallowReactive, inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
 import { configurationManager } from '@/components/visual-editor/configuration'
 import type { BaseConfiguration } from '@/card2.1/hooks/useCard2Props'
 import type { MetricItem } from '@/card2.1/core/types'
 import { getDeviceListForSelect } from '@/service/api/device-template-model'
-import type { SelectOption } from 'naive-ui'
+import DeviceSelectSingle from '@/components/DeviceSelectSingle.vue'
 
 // 接收props
 interface Props {
@@ -220,35 +218,69 @@ const borderStyleOptions = [
   { label: t('config.base.borderStyles.double'), value: 'double' }
 ]
 
-// 🔥 设备选择相关状态
-const deviceOptions = ref<SelectOption[]>([])
+// 🔥 设备选择相关状态 - 无限滚动版本
+const deviceOptions = ref<Api.Device.DeviceSelectItem[]>([])
 const loadingDevices = ref(false)
-const deviceList = ref<Api.Device.DeviceSelectItem[]>([])
+const hasMoreDevices = ref(true)
+const currentPage = ref(1)
+const pageSize = 20
+const searchKeyword = ref('')
 
 /**
- * 加载设备选项
+ * 加载初始设备列表
  */
-const loadDeviceOptions = async () => {
-  if (loadingDevices.value || deviceOptions.value.length > 0) {
-    return // 避免重复加载
-  }
+const loadInitialDevices = async () => {
+  if (loadingDevices.value) return
 
+  currentPage.value = 1
+  deviceOptions.value = []
+  hasMoreDevices.value = true
+
+  await loadDevicePage()
+}
+
+/**
+ * 加载更多设备
+ */
+const loadMoreDevices = async () => {
+  if (loadingDevices.value || !hasMoreDevices.value) return
+
+  currentPage.value += 1
+  await loadDevicePage()
+}
+
+/**
+ * 加载设备分页数据
+ */
+const loadDevicePage = async () => {
   loadingDevices.value = true
+
   try {
     const response = await getDeviceListForSelect({
-      page: '1',
-      page_size: '1000', // 获取更多设备选项
-      has_device_config: true
+      page: currentPage.value.toString(),
+      page_size: pageSize.toString(),
+      search: searchKeyword.value || undefined
     })
 
-    if (response.data && Array.isArray(response.data)) {
-      deviceList.value = response.data
-      deviceOptions.value = response.data.map(device => ({
-        label: `${device.device_name} (${device.device_id})`,
-        value: device.device_id,
-        device_name: device.device_name,
-        device_id: device.device_id
-      }))
+    if (response.data && response.data.list) {
+      const { list, total } = response.data
+
+      // 追加数据而不是替换（修复无限滚动）
+      if (currentPage.value === 1) {
+        deviceOptions.value = list
+      } else {
+        deviceOptions.value.push(...list)
+      }
+
+      // 检查是否还有更多数据
+      hasMoreDevices.value = deviceOptions.value.length < total
+
+      console.log('设备列表加载成功:', {
+        page: currentPage.value,
+        loaded: list.length,
+        total: deviceOptions.value.length,
+        hasMore: hasMoreDevices.value
+      })
     }
   } catch (error) {
     console.error('加载设备列表失败:', error)
@@ -259,48 +291,32 @@ const loadDeviceOptions = async () => {
 }
 
 /**
- * 设备选项过滤
+ * 处理设备搜索
  */
-const filterDevices = (pattern: string, option: SelectOption) => {
-  if (!pattern) return true
-  const device = deviceList.value.find(d => d.device_id === option.value)
-  if (!device) return false
+const handleDeviceSearch = (keyword: string) => {
+  searchKeyword.value = keyword
+  // 搜索时重置分页
+  currentPage.value = 1
+  deviceOptions.value = []
+  hasMoreDevices.value = true
 
-  const searchText = pattern.toLowerCase()
-  return (
-    device.device_name.toLowerCase().includes(searchText) ||
-    device.device_id.toLowerCase().includes(searchText)
-  )
+  // 延迟执行搜索，避免频繁请求
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    loadDevicePage()
+  }, 300)
 }
 
-/**
- * 渲染设备标签
- */
-const renderDeviceLabel = (option: SelectOption) => {
-  const device = deviceList.value.find(d => d.device_id === option.value)
-  if (!device) return option.label
-
-  return h('div', { class: 'device-option' }, [
-    h('div', { class: 'device-name' }, device.device_name),
-    h('div', { class: 'device-id' }, device.device_id)
-  ])
-}
+// 搜索防抖定时器
+let searchTimer: number | null = null
 
 /**
- * 渲染选中的设备标签
+ * 监听设备选择变化
  */
-const renderDeviceTag = ({ option }: { option: SelectOption }) => {
-  const device = deviceList.value.find(d => d.device_id === option.value)
-  return device ? device.device_name : option.label
-}
-
-/**
- * 处理设备变更
- */
-const handleDeviceChange = (value: string | null) => {
-  formData.deviceId = value || ''
+watch(() => formData.deviceId, (newDeviceId) => {
+  // 设备ID变化时触发配置更新
   handleUpdate()
-}
+}, { deep: true })
 
 // 当前选中的节点ID
 const selectedNodeId = computed(() => {
@@ -529,6 +545,11 @@ const loadConfigurationFromManager = async () => {
       // 将 MetricItem 对象转换为标签形式显示
       formData.metricsListTags = formData.metricsList.map(metric => metric.name)
 
+      // 如果有选中的设备ID，确保设备列表中包含该设备信息
+      if (formData.deviceId && deviceOptions.value.length === 0) {
+        await loadInitialDevices()
+      }
+
       // 处理padding - 取最大值作为统一值
       if (baseConfig.padding) {
         const padding = baseConfig.padding
@@ -619,8 +640,8 @@ watch(
 // 组件挂载时初始化
 onMounted(() => {
   loadConfigurationFromManager()
-  // 预加载设备列表
-  loadDeviceOptions()
+  // 初始化设备列表
+  loadInitialDevices()
 })
 
 /**
@@ -654,6 +675,10 @@ onUnmounted(() => {
 
   if (updateTimer) {
     clearTimeout(updateTimer)
+  }
+
+  if (searchTimer) {
+    clearTimeout(searchTimer)
   }
 })
 </script>
@@ -701,22 +726,9 @@ onUnmounted(() => {
   width: 100%;
 }
 
-/* 设备选择器样式 */
-:deep(.device-option) {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-:deep(.device-name) {
-  font-weight: 500;
-  color: var(--text-color);
-  font-size: 13px;
-}
-
-:deep(.device-id) {
-  font-size: 11px;
-  color: var(--text-color-3);
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+/* 设备选择器容器样式 */
+:deep(.device-select-popover-content) {
+  min-width: 280px;
+  max-width: 400px;
 }
 </style>

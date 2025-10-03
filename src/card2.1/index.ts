@@ -35,8 +35,22 @@ export async function initializeCard2System() {
 
       // 1. 使用 import.meta.glob 动态扫描所有组件的 index.ts 文件
       // **/* 模式确保可以扫描到任意深度的子目录
-      const componentModules = import.meta.glob('./components/**/index.ts', { eager: true });
+      const allComponentModules = import.meta.glob('./components/**/index.ts', { eager: true });
 
+      // 排除 components/index.ts 本身避免冲突
+      const componentModules = Object.fromEntries(
+        Object.entries(allComponentModules).filter(([path]) => path !== './components/index.ts')
+      );
+
+      // 🔥 调试：输出扫描到的模块
+      console.log('🔍 [Card2.1] 扫描到的组件模块:', {
+        原始总数: Object.keys(allComponentModules).length,
+        过滤后总数: Object.keys(componentModules).length,
+        模块列表: Object.keys(componentModules),
+        系统组件: Object.keys(componentModules).filter(path => path.includes('/system/')),
+        图表组件: Object.keys(componentModules).filter(path => path.includes('/chart/')),
+        排除的文件: Object.keys(allComponentModules).filter(path => path === './components/index.ts')
+      });
 
       // 2. 调用自动注册系统，并传入扫描到的模块
       await autoRegistry.autoRegister(componentModules);

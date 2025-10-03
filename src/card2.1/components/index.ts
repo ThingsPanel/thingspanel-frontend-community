@@ -395,20 +395,21 @@ export function validateComponents(): { valid: boolean; issues: string[] } {
 // 这样可以避免页面刷新时的时序问题
 // 初始化将由 useComponentTree 或其他需要组件的地方主动触发
 
-if (process.env.NODE_ENV === 'development') {
-  // 开发模式下，延迟进行组件验证（不阻塞加载）
-  setTimeout(async () => {
-    try {
-      await ensureInitialized()
-      const validation = validateComponents()
-      if (!validation.valid) {
-        console.error('[Card2.1] 发现组件定义问题:', validation.issues)
-      }
-    } catch (error) {
-      console.error('[Card2.1] 开发模式验证失败:', error)
-    }
-  }, 3000)
-}
+// 🔥 禁用自动初始化，避免与主入口冲突
+// if (process.env.NODE_ENV === 'development') {
+//   // 开发模式下，延迟进行组件验证（不阻塞加载）
+//   setTimeout(async () => {
+//     try {
+//       await ensureInitialized()
+//       const validation = validateComponents()
+//       if (!validation.valid) {
+//         console.error('[Card2.1] 发现组件定义问题:', validation.issues)
+//       }
+//     } catch (error) {
+//       console.error('[Card2.1] 开发模式验证失败:', error)
+//     }
+//   }, 3000)
+// }
 
 // 默认导出主要接口
 export default {

@@ -41,10 +41,13 @@ export class AutoRegistry {
     const registeredComponents: ComponentDefinition[] = []
     const userAuthority = getUserAuthorityFromStorage()
 
+
     for (const [componentId, module] of Object.entries(componentModules)) {
       try {
         // 获取默认导出（组件定义）
         const definition = module.default || module
+
+
 
         if (this.isValidComponentDefinition(definition)) {
           const componentType = definition.type as ComponentType
@@ -68,11 +71,12 @@ export class AutoRegistry {
             category: `${topLevelCategory?.displayName || TOP_LEVEL_CATEGORIES.chart.displayName}/${subCategory?.displayName || SUB_CATEGORIES.data.displayName}`, // 组合翻译键
           }
 
-          if (process.env.NODE_ENV === 'development') {
-          }
+
 
           // 检查权限
           const hasPermission = this.checkComponentPermission(enhancedDefinition, userAuthority)
+
+
 
           if (hasPermission) {
             // 检查是否应该注册
@@ -85,8 +89,7 @@ export class AutoRegistry {
               registeredComponents.push(enhancedDefinition)
               this.allComponents.push(enhancedDefinition)
 
-              if (process.env.NODE_ENV === 'development') {
-              }
+
             }
           } else {
             // 记录被权限过滤的组件
@@ -94,10 +97,13 @@ export class AutoRegistry {
           }
         }
       } catch (error) {
-        console.error(`[AutoRegistry] Component registration failed: ${componentId}`, error)
+        console.error(`❌ [AutoRegistry] Component registration failed: ${componentId}`, error)
         // 忽略组件注册过程中的错误，继续处理其他组件
       }
     }
+
+
+
     return registeredComponents
   }
 

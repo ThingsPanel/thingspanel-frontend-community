@@ -626,6 +626,7 @@ declare namespace Api {
     interface DeviceSelectItem {
       device_id: string
       device_name: string
+      device_type: string
     }
 
     // 定义设备选择器请求参数的类型
@@ -633,6 +634,7 @@ declare namespace Api {
       page?: string // 注意文档类型为 string
       page_size?: string // 注意文档类型为 string
       has_device_config?: boolean
+      search?: string // 搜索关键词
     }
 
     // ... (这里可以添加其他与 device 相关的类型)

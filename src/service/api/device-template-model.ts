@@ -47,6 +47,9 @@ export const putDeviceModel = async (params: {
  */
 export const getDeviceListForSelect = async (params?: Api.Device.DeviceSelectorParams) => {
   // 使用文档提供的 URL 和参数类型
-  // 假设 request.get 返回的 data 部分是 Api.Device.DeviceSelectItem[]
-  return await request.get<Api.Device.DeviceSelectItem[]>(`/device/selector`, { params })
+  // API返回格式: { code: 200, message: "操作成功", data: { total: number, list: DeviceSelectItem[] } }
+  return await request.get<{
+    total: number
+    list: Api.Device.DeviceSelectItem[]
+  }>(`/device/selector`, { params })
 }

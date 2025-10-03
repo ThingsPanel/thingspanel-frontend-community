@@ -39,33 +39,48 @@
         :tab="$t(topCategory.name)"
       >
         <div class="tab-content">
-          <div v-for="subCategory in topCategory.subCategories" :key="subCategory.name" class="widget-subcategory">
-            <h4 v-if="subCategory.name !== 'subCategories.data'" class="subcategory-title">{{ $t(subCategory.name) }}</h4>
-            <div class="category-grid">
-              <div
-                v-for="widget in subCategory.children"
-                :key="widget.type"
-                class="widget-card"
-                :title="`点击添加到编辑器\n${widget.description}`"
-                @click="handleAddWidget(widget)"
-              >
-                <div class="widget-icon">
-                  <n-icon v-if="typeof widget.icon !== 'string' && widget.icon" size="20">
-                    <component :is="widget.icon" />
-                  </n-icon>
-                  <SvgIcon
-                    v-else-if="typeof widget.icon === 'string' && !widget.icon.startsWith('<svg')"
-                    :icon="widget.icon"
-                  />
-                  <div
-                    v-else-if="typeof widget.icon === 'string' && widget.icon.startsWith('<svg')"
-                    class="svg-icon-inline"
-                    v-html="widget.icon"
-                  ></div>
+          <!-- 检查是否有子分类 -->
+          <div v-if="topCategory.subCategories && topCategory.subCategories.length > 0">
+            <div v-for="subCategory in topCategory.subCategories" :key="subCategory.name" class="widget-subcategory">
+              <h4 v-if="subCategory.name !== 'subCategories.data'" class="subcategory-title">{{ $t(subCategory.name) }}</h4>
+
+              <!-- 检查是否有组件 -->
+              <div v-if="subCategory.children && subCategory.children.length > 0" class="category-grid">
+                <div
+                  v-for="widget in subCategory.children"
+                  :key="widget.type"
+                  class="widget-card"
+                  :title="`点击添加到编辑器\n${widget.description}`"
+                  @click="handleAddWidget(widget)"
+                >
+                  <div class="widget-icon">
+                    <n-icon v-if="typeof widget.icon !== 'string' && widget.icon" size="20">
+                      <component :is="widget.icon" />
+                    </n-icon>
+                    <SvgIcon
+                      v-else-if="typeof widget.icon === 'string' && !widget.icon.startsWith('<svg')"
+                      :icon="widget.icon"
+                    />
+                    <div
+                      v-else-if="typeof widget.icon === 'string' && widget.icon.startsWith('<svg')"
+                      class="svg-icon-inline"
+                      v-html="widget.icon"
+                    ></div>
+                  </div>
+                  <div class="widget-name">{{ $t(widget.name) }}</div>
                 </div>
-                <div class="widget-name">{{ $t(widget.name) }}</div>
+              </div>
+
+              <!-- 空子分类提示 -->
+              <div v-else class="empty-subcategory">
+                <n-empty size="small" :description="`暂无${$t(subCategory.name)}组件`" />
               </div>
             </div>
+          </div>
+
+          <!-- 空分类提示 -->
+          <div v-else class="empty-category">
+            <n-empty :description="`${$t(topCategory.name)}分类暂无组件`" />
           </div>
         </div>
       </n-tab-pane>
@@ -225,10 +240,10 @@ const simplifiedWidgetTree = computed(() => {
     }
   })
 
-  // 过滤空类
+  // 🔥 修复：保留空分类，便于调试和确保系统分类显示
   return result.map(top => ({
     name: top.name,
-    subCategories: top.subCategories.filter(s => s.children.length > 0)
+    subCategories: top.subCategories // 暂时移除空分类过滤
   }))
 })
 
@@ -253,9 +268,8 @@ const filteredWidgetTree = computed(() => {
             }
           })
 
-          if (filteredSubCategories.length > 0) {
-            filteredTopCategories.push({ name: topCategory.name, subCategories: filteredSubCategories })
-          }
+          // 🔥 修复：总是包含分类，即使没有匹配的组件（便于显示空分类状态）
+          filteredTopCategories.push({ name: topCategory.name, subCategories: filteredSubCategories })
         })
 
         return filteredTopCategories
@@ -469,5 +483,21 @@ const handleAddWidget = (widget: any) => {
   font-size: 12px;
   max-height: 320px;
   overflow: auto;
+}
+
+/* 空分类状态样式 */
+.empty-category,
+.empty-subcategory {
+  padding: 20px;
+  text-align: center;
+  color: var(--n-text-color-3);
+}
+
+.empty-subcategory {
+  padding: 10px;
+  margin: 10px 0;
+  background-color: var(--n-card-color);
+  border-radius: 6px;
+  border: 1px dashed var(--n-border-color);
 }
 </style>
