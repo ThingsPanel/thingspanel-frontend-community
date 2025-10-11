@@ -480,5 +480,9 @@
   "generate.connection-info": "Connection information",
   "generate.device-num-count": "Number of equipment data",
   "generate.latitude": "latitude",
-  "generate.longitude": "longitude"
+  "generate.longitude": "longitude",
+  "generate.visual-config": "Visual Configuration",
+  "generate.command-line": "Dynamic Command Parameters",
+  "generate.no-params-available": "No parameters available for current command",
+  "generate.select-command-first": "Please select command identifier first"
 }
