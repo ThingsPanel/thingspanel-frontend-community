@@ -18,7 +18,9 @@ import {
   NPagination,
   NPopover,
   NSelect,
-  NSwitch
+  NSwitch,
+  NTabs,
+  NTabPane
 } from 'naive-ui'
 import { useLoading } from '@sa/hooks'
 import { Refresh } from '@vicons/ionicons5'
@@ -59,6 +61,9 @@ const paramsSelect = ref<any>([
 ])
 const paramsData = ref<any>([])
 const isTextArea = ref<any>(true)
+
+// 新增：管理页签切换
+const activeTab = ref('visual')
 const rules = computed<FormRules>(() => {
   const r: FormRules = {}
   if (props.isCommand && isTextArea.value) {
@@ -99,6 +104,7 @@ const closeDialog = () => {
   isTextArea.value = true
   formModel.expected = false
   formModel.time = null
+  activeTab.value = 'visual'
   formRef.value?.restoreValidation()
 }
 
@@ -108,7 +114,9 @@ const submit = async () => {
 
     let parms
     const params: any = {}
-    if (!isTextArea.value) {
+    
+    // 处理可视化配置页签的参数
+    if (activeTab.value === 'visual' && paramsData.value.length > 0) {
       paramsData.value.forEach((item: any) => {
         params[item.data_identifier] = item[item.data_identifier]
       })
@@ -185,25 +193,25 @@ const getOptions = async show => {
   }
 }
 
-const selectBtn: () => void = () => {
-  formModel.commandValue = ''
-  isTextArea.value = !isTextArea.value
-}
 
-const selectVal: (arr: any, option: any) => void = (arr, option) => {
-  logger.info(arr)
-  formModel.commandValue = arr
+// 新增：处理命令标识符输入（支持输入和选择）
+const handleCommandInput = (value: string) => {
+  formModel.commandValue = value
+  // 如果输入的是现有选项，自动解析参数
+  const option = options.value?.find((opt: any) => opt.data_identifier === value)
   if (option && option.params) {
     try {
       paramsData.value = JSON.parse(option.params)
     } catch (e) {
-      logger.error('Failed to parse params for selected command:', e)
+      logger.error('Failed to parse params for input command:', e)
       paramsData.value = []
     }
   } else {
+    // 如果输入的是自定义命令标识符，清空参数数据
     paramsData.value = []
   }
 }
+
 
 const commandList = ref()
 
@@ -321,59 +329,67 @@ const isSubmitDisabled = computed(() => {
               </div>
             </NFormItem>
           </div>
-          <NFormItem v-if="isCommand" path="commandValue" :label="$t('generate.command-identifier')" required>
-            <NInput
-              v-if="isTextArea"
-              v-model:value="formModel.commandValue"
-              :placeholder="$t('generate.or-enter-here')"
-            />
+          <NFormItem v-if="isCommand" path="commandValue" :label="$t('generate.command-identifier')" required class="command-selector">
             <NSelect
-              v-else
               v-model:value="formModel.commandValue"
               label-field="data_name"
               value-field="data_identifier"
               :options="options"
+              filterable
+              tag
+              clearable
+              :placeholder="$t('generate.command-identifier-placeholder')"
               @update:show="getOptions"
-              @update:value="selectVal"
+              @update:value="handleCommandInput"
             />
-            <NButton type="primary" class="selectBtn" @click="selectBtn">
-              {{ isTextArea ? $t('card.selectFromExisting') : $t('card.manualInput') }}
-            </NButton>
           </NFormItem>
-          <NFormItem v-if="isTextArea" label="" :validation-status="validationJson" :feedback="inputFeedback">
-            <NInput v-model:value="formModel.textValue" type="textarea" />
-          </NFormItem>
-          <div v-else>
-            <div v-if="formModel.commandValue !== ''" class="title">{{ $t('common.param') }}</div>
-            <div v-for="item in paramsData" :key="item.id" class="form_box">
-              <div class="form_table">
-                <NFormItem :label="item.data_name" label-placement="left" label-width="80px" label-align="left">
-                  <NInput v-if="item.param_type === 'string'" v-model:value="item[item.data_identifier]" />
-                  <n-input-number v-else-if="item.param_type === 'Number'" v-model:value="item[item.data_identifier]" />
-                  <n-select
-                    v-else-if="item.param_type === 'Boolean'"
-                    v-model:value="item[item.data_identifier]"
-                    :options="paramsSelect"
-                  />
-                  <n-select
-                    v-else-if="item.param_type === 'Enum'"
-                    v-model:value="item[item.data_identifier]"
-                    :options="
-                      item.enum_config?.map(v => {
-                        return {
-                          ...v,
-                          label: v.desc
-                        }
-                      }) || []
-                    "
-                    :placeholder="$t('generate.please-select')"
-                  />
-                  <div class="description">{{ item.description }}</div>
-                </NFormItem>
+          
+          <!-- 切换页签：可视化配置和命令行 -->
+          <NTabs v-model:value="activeTab" type="line" animated>
+            <NTabPane name="visual" :tab="$t('generate.visual-config')">
+              <div v-if="formModel.commandValue !== ''">
+                <div v-for="item in paramsData" :key="item.id" class="form_box">
+                  <div class="form_table">
+                    <NFormItem :label="item.data_name" label-placement="left" label-width="80px" label-align="left">
+                      <NInput v-if="item.param_type === 'string'" v-model:value="item[item.data_identifier]" />
+                      <n-input-number v-else-if="item.param_type === 'Number'" v-model:value="item[item.data_identifier]" />
+                      <n-select
+                        v-else-if="item.param_type === 'Boolean'"
+                        v-model:value="item[item.data_identifier]"
+                        :options="paramsSelect"
+                      />
+                      <n-select
+                        v-else-if="item.param_type === 'Enum'"
+                        v-model:value="item[item.data_identifier]"
+                        :options="
+                          item.enum_config?.map(v => {
+                            return {
+                              ...v,
+                              label: v.desc
+                            }
+                          }) || []
+                        "
+                        :placeholder="$t('generate.please-select')"
+                      />
+                      <div class="description">{{ item.description }}</div>
+                    </NFormItem>
+                  </div>
+                </div>
+                <div v-if="paramsData.length === 0" class="empty-params">
+                  <p>{{ $t('generate.no-params-available') }}</p>
+                </div>
               </div>
-            </div>
-          </div>
-          <NFlex justify="end">
+              <div v-else class="empty-params">
+                <p>{{ $t('generate.select-command-first') }}</p>
+              </div>
+            </NTabPane>
+            <NTabPane name="command" :tab="$t('generate.command-line')">
+              <NFormItem label="" :validation-status="validationJson" :feedback="inputFeedback">
+                <NInput v-model:value="formModel.textValue" type="textarea" :placeholder="$t('generate.or-enter-here')" />
+              </NFormItem>
+            </NTabPane>
+          </NTabs>
+          <NFlex justify="end" class="button-group">
             <NButton @click="closeDialog">{{ $t('generate.cancel') }}</NButton>
             <NButton type="primary" :disabled="isSubmitDisabled" @click="submit">
               {{ $t('page.irrigation.distribute') }}
@@ -398,10 +414,12 @@ const isSubmitDisabled = computed(() => {
 
 .form_table {
   display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
 
   .n-form-item {
     flex: 1;
-    margin-right: 10px;
+    margin-right: 0;
 
     :deep(.n-form-item-blank) {
       display: flex;
@@ -410,8 +428,33 @@ const isSubmitDisabled = computed(() => {
     }
 
     .description {
-      margin-top: 10px;
-      font-size: 12px;
+      margin-top: 4px;
+      font-size: 11px;
+      color: #6b7280;
+      line-height: 1.3;
+    }
+
+    // 输入框样式优化
+    :deep(.n-input),
+    :deep(.n-input-number),
+    :deep(.n-select) {
+      .n-input__input-el,
+      .n-input-number-input,
+      .n-base-selection {
+        height: 32px;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+    }
+
+    // 文本域样式
+    :deep(.n-input--textarea) {
+      .n-input__textarea-el {
+        min-height: 60px;
+        border-radius: 4px;
+        font-size: 13px;
+        line-height: 1.4;
+      }
     }
   }
 
@@ -422,5 +465,16 @@ const isSubmitDisabled = computed(() => {
 
 .selectBtn {
   margin-left: 20px;
+}
+
+.empty-params {
+  text-align: center;
+  padding: 20px 16px;
+  color: #999;
+  
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
 }
 </style>
