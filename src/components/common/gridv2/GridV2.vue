@@ -74,6 +74,9 @@ let changeEventTimer: number | null = null
 let widgetRegistrationTimer: number | null = null
 let isProcessingChange = false
 
+// 🔥 记录上一次的layout数量，用于检测删除操作
+let previousLayoutCount = 0
+
 /** 统一调试输出 */
 function debugLog(...args: unknown[]): void {
 }
@@ -162,6 +165,8 @@ function handleChange(_event: Event, changed: GridStackNode[] | undefined): void
 function ensureNewWidgetsRegistered(): void {
   if (!grid) return
 
+  console.log('🔍 [GridV2] ensureNewWidgetsRegistered 被调用')
+
   // 🔥 防抖处理：避免频繁的widget操作
   if (widgetRegistrationTimer) {
     clearTimeout(widgetRegistrationTimer)
@@ -170,38 +175,168 @@ function ensureNewWidgetsRegistered(): void {
   widgetRegistrationTimer = window.setTimeout(() => {
     if (!grid) return
 
+    console.log('🔍 [GridV2] 开始执行widget管理（防抖后）')
+
     try {
       // 🔥 第一步：收集当前应该存在的widget ID
       const currentLayoutIds = new Set(props.layout.map(item => getItemId(item)))
-      
+      console.log('🔍 [GridV2] 当前layout中的IDs:', Array.from(currentLayoutIds))
+
       // 🔥 第二步：移除不再需要的widgets
       const existingNodes = grid.getGridItems()
+      console.log('🔍 [GridV2] GridStack中现有的节点数:', existingNodes.length)
+
+      let removedWidgetCount = 0
       existingNodes.forEach((el: GridItemHTMLElement) => {
         const node = el.gridstackNode
-        if (node && !currentLayoutIds.has(String(node.id))) {
-          debugLog('移除过时widget:', node.id)
+        const nodeId = String(node?.id)
+        console.log(`🔍 [GridV2] 检查节点 [${nodeId}], 是否在layout中: ${currentLayoutIds.has(nodeId)}`)
+
+        if (node && !currentLayoutIds.has(nodeId)) {
+          console.log(`🗑️ [GridV2] 移除过时widget: ${nodeId}`)
           grid!.removeWidget(el, false) // false表示不触发change事件
+          removedWidgetCount++
         }
       })
 
-      // 🔥 第三步：注册新的widgets
+      console.log(`🔍 [GridV2] 移除统计: ${removedWidgetCount} 个widget`)
+
+      // 🔥 第三步：检测layout变化中的删除（通过上一次和当前的layout数量对比）
+      // 因为DOM被Vue移除时GridStack不触发removed事件，需要通过layout数量变化来检测
+      const currentLayoutCount = props.layout.length
+      console.log(`🔍 [GridV2] Layout数量对比: 上一次=${previousLayoutCount}, 当前=${currentLayoutCount}`)
+
+      const actuallyRemovedCount = previousLayoutCount - currentLayoutCount
+
+      if (actuallyRemovedCount > 0 && removedWidgetCount === 0) {
+        console.log(`🗑️ [GridV2] 检测到 ${actuallyRemovedCount} 个组件被删除（通过layout变化检测）`)
+        removedWidgetCount = actuallyRemovedCount
+      }
+
+      // 更新记录，用于下次对比
+      previousLayoutCount = currentLayoutCount
+
+      // 🔥 第四步：注册新的widgets
       let newWidgetCount = 0
+      const newWidgets: HTMLElement[] = []
+
       props.layout.forEach((item) => {
         const id = getItemId(item)
         const el = gridEl.value?.querySelector<HTMLElement>(`#${CSS.escape(id)}`) as GridItemHTMLElement | null
-        
+
         // 只为未注册的新节点调用makeWidget
         if (el && !el.gridstackNode) {
           debugLog('注册新widget:', id)
           try {
             grid!.makeWidget(el)
             newWidgetCount++
+            newWidgets.push(el)
           } catch (err) {
             console.warn('[GridV2] makeWidget失败:', id, err)
           }
         }
       })
-      
+
+      // 🔥 第五步：处理新增或删除后的自动重排
+      const needsCompact = newWidgetCount > 0 || removedWidgetCount > 0
+
+      if (needsCompact) {
+        if (newWidgetCount > 0) {
+          console.log(`🔧 [GridV2] 处理 ${newWidgetCount} 个新组件的位置`)
+        }
+        if (removedWidgetCount > 0) {
+          console.log(`🔧 [GridV2] 删除了 ${removedWidgetCount} 个组件，触发自动重排`)
+        }
+
+        // 🔥 关键修复：删除后需要手动触发完整重排
+        // compact()只做垂直压缩，不做横向重排，需要手动重新布局
+
+        // 步骤1：收集所有现有组件
+        const allItems = grid.getGridItems()
+        const nodes: Array<{ el: GridItemHTMLElement; node: GridStackNode }> = []
+
+        allItems.forEach((el: GridItemHTMLElement) => {
+          if (el.gridstackNode) {
+            nodes.push({ el, node: el.gridstackNode })
+          }
+        })
+
+        // 步骤2：按y然后x排序（从上到下，从左到右）
+        nodes.sort((a, b) => {
+          if (a.node.y !== b.node.y) return (a.node.y ?? 0) - (b.node.y ?? 0)
+          return (a.node.x ?? 0) - (b.node.x ?? 0)
+        })
+
+        console.log(`🔧 [GridV2] 开始重新布局 ${nodes.length} 个组件`)
+
+        // 步骤3：临时启用float以便批量更新
+        const originalFloat = grid.opts.float ?? false
+        grid.float(true)
+
+        // 步骤4：批量更新开始
+        grid.batchUpdate()
+
+        // 步骤5：重新计算每个组件的位置（从左上角开始填充）
+        const currentColumn = grid.getColumn()
+        let currentX = 0
+        let currentY = 0
+        let rowMaxHeight = 0
+
+        nodes.forEach(({ el, node }) => {
+          const w = node.w ?? 4
+          const h = node.h ?? 2
+
+          // 如果当前行放不下，换到下一行
+          if (currentX + w > currentColumn) {
+            currentX = 0
+            currentY += rowMaxHeight
+            rowMaxHeight = 0
+          }
+
+          // 更新组件位置
+          console.log(`🔧 [GridV2] 重排 [${node.id}]: 从(${node.x},${node.y}) → (${currentX},${currentY})`)
+          grid.update(el, { x: currentX, y: currentY, w, h })
+
+          // 移动到下一个位置
+          currentX += w
+          rowMaxHeight = Math.max(rowMaxHeight, h)
+        })
+
+        // 步骤6：批量更新结束
+        grid.batchUpdate(false)
+
+        // 步骤7：恢复float设置并同步视觉位置
+        nextTick().then(() => {
+          setTimeout(() => {
+            if (!grid) return
+
+            grid.float(originalFloat)
+            console.log(`🔧 [GridV2] 恢复 float: ${originalFloat}`)
+
+            const currentColumn = grid.getColumn()
+            const cellHeight = grid.getCellHeight()
+            const allItems = grid.getGridItems()
+
+            console.log('🔧 [GridV2] 同步所有组件视觉位置:')
+            allItems.forEach((el: GridItemHTMLElement) => {
+              if (el.gridstackNode) {
+                const node = el.gridstackNode
+                const leftPercent = ((node.x ?? 0) / currentColumn) * 100
+                const topPx = (node.y ?? 0) * cellHeight
+
+                console.log(`  同步 [${node.id}]: x=${node.x}, y=${node.y} → left=${leftPercent.toFixed(2)}%`)
+
+                el.style.left = `${leftPercent}%`
+                el.style.top = `${topPx}px`
+                el.style.position = 'absolute'
+              }
+            })
+
+            console.log('✅ [GridV2] 删除后重排完成')
+          }, 50)
+        })
+      }
+
       debugLog(`Widget管理完成，新增: ${newWidgetCount}，当前总数: ${grid.getGridItems().length}`)
     } catch (err) {
       console.error('[GridV2] Widget管理失败:', err)
@@ -599,11 +734,54 @@ function initGrid(): void {
     emit('item-resized', String(node.id), node.h ?? 0, node.w ?? 0, 0, 0)
   })
 
+  // 🔥 新增：监听组件删除事件，触发自动重排
+  grid.on('removed', (_e: Event, items: GridItemHTMLElement[]) => {
+    console.log(`🗑️ [GridV2] 组件被删除，数量: ${items.length}`)
+
+    if (!grid) return
+
+    // 调用compact()自动重排剩余组件，填充空隙
+    console.log('🔧 [GridV2] 触发自动重排（填充删除后的空隙）')
+    grid.compact()
+
+    // 等待compact完成后同步所有组件的视觉位置
+    nextTick().then(() => {
+      setTimeout(() => {
+        if (!grid) return
+
+        const currentColumn = grid.getColumn()
+        const cellHeight = grid.getCellHeight()
+        const allItems = grid.getGridItems()
+
+        console.log('🔧 [GridV2] 同步剩余组件的视觉位置:')
+        allItems.forEach((item: GridItemHTMLElement) => {
+          if (item.gridstackNode) {
+            const n = item.gridstackNode
+            const leftPercent = ((n.x ?? 0) / currentColumn) * 100
+            const topPx = (n.y ?? 0) * cellHeight
+
+            console.log(`  同步 [${n.id}]: x=${n.x}, y=${n.y} → left=${leftPercent.toFixed(2)}%`)
+
+            item.style.left = `${leftPercent}%`
+            item.style.top = `${topPx}px`
+            item.style.position = 'absolute'
+          }
+        })
+
+        console.log('✅ [GridV2] 删除后自动重排完成')
+      }, 50)
+    })
+  })
+
   isInitialized = true
 
   // 下一帧注册widgets
   nextTick(() => {
     ensureNewWidgetsRegistered()
+
+    // 🔥 初始化记录：设置初始layout数量
+    previousLayoutCount = props.layout.length
+    console.log(`🔍 [GridV2] 初始化 previousLayoutCount = ${previousLayoutCount}`)
 
     // 🔥 关键修复：初始化时手动设置left/top
     // GridStack初始化后不会自动设置inline style（特别是>12列时）
