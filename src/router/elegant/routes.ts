@@ -471,6 +471,26 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'iot-visualization',
+    path: '/iot-visualization',
+    component: 'layout.base',
+    meta: {
+      title: 'iot-visualization',
+      i18nKey: 'route.iot-visualization'
+    },
+    children: [
+      {
+        name: 'iot-visualization_editor',
+        path: '/iot-visualization/editor',
+        component: 'view.iot-visualization_editor',
+        meta: {
+          title: 'iot-visualization_editor',
+          i18nKey: 'route.iot-visualization_editor'
+        }
+      }
+    ]
+  },
+  {
     name: 'iot-visualization-platform',
     path: '/iot-visualization-platform',
     component: 'layout.base$view.iot-visualization-platform',
@@ -858,6 +878,15 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.test'
     },
     children: [
+      {
+        name: 'test_iot-visualization-test',
+        path: '/test/iot-visualization-test',
+        component: 'view.test_iot-visualization-test',
+        meta: {
+          title: 'test_iot-visualization-test',
+          i18nKey: 'route.test_iot-visualization-test'
+        }
+      },
       {
         name: 'test_panel-editor-v2',
         path: '/test/panel-editor-v2',

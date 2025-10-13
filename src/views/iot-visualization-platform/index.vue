@@ -1,5 +1,6 @@
 <template>
   <div class="canvas-editor-test-page">
+    <NMessageProvider>
     <!-- 头部控制栏 -->
     <div class="control-bar">
       <n-space>
@@ -99,6 +100,7 @@
         </n-collapse-item>
       </n-collapse>
     </div>
+    </NMessageProvider>
   </div>
 </template>
 
@@ -110,7 +112,7 @@
  */
 
 import { ref, onMounted, onBeforeUnmount, nextTick, onErrorCaptured } from 'vue'
-import { useMessage } from 'naive-ui'
+import { NMessageProvider, useMessage } from 'naive-ui'
 
 interface LogEntry {
   type: 'info' | 'success' | 'warning' | 'error'

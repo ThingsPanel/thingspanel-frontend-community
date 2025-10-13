@@ -212,6 +212,34 @@ function ensureNewWidgetsRegistered(): void {
 }
 
 /**
+ * 🔥 关键修复：手动注入列数样式
+ * GridStack 默认只支持 1-12 列，超过 12 列需要手动注入 CSS
+ */
+function injectColumnStyles(columnCount: number): void {
+  // 检查是否已经注入过该列数的样式
+  const styleId = `gridstack-column-${columnCount}`
+  if (document.getElementById(styleId)) {
+    console.log(`🔍 [GridV2] 样式 ${styleId} 已存在，跳过注入`)
+    return
+  }
+
+  // 生成样式规则
+  const rules: string[] = []
+  for (let i = 1; i <= columnCount; i++) {
+    const widthPercent = ((i / columnCount) * 100).toFixed(4)
+    rules.push(`.gs-${columnCount} > .grid-stack-item[gs-w="${i}"] { width: ${widthPercent}% }`)
+  }
+
+  // 注入到 <head>
+  const style = document.createElement('style')
+  style.id = styleId
+  style.textContent = rules.join('\n')
+  document.head.appendChild(style)
+
+  console.log(`✅ [GridV2] 已注入 ${columnCount} 列样式，共 ${rules.length} 条规则`)
+}
+
+/**
  * 🔥 关键修复：基于官方文档的性能优化配置
  * - 使用GridStack内置的列管理
  * - 避免!important样式冲突
@@ -278,10 +306,12 @@ function createOptionsFromProps(): GridStackOptions {
     // 其他配置
     rtl: config.isMirrored || false,
     oneColumnModeDomSort: true,
-    
-    // 🔥 性能优化：样式配置
-    styleInHead: false, // 避免在HEAD中添加样式，减少重排
-    
+
+    // 🔥 关键修复：必须启用样式注入，否则列宽计算失效
+    // GridStack 需要在 <head> 中动态注入 CSS 来设置每一列的宽度百分比
+    // 例如：.grid-stack.grid-stack-24 > .grid-stack-item[gs-w="1"] { width: 4.1667% }
+    styleInHead: true, // 必须为 true，否则列数切换时组件宽度变成 0
+
     // 🔥 移动端优化
     oneColumnSize: 768 // 移动端单列阈值
   }
@@ -311,9 +341,76 @@ function initGrid(): void {
     grid = null
   }
 
+  // 🔥 关键修复：手动清理 GridStack 遗留的列数类名
+  if (gridEl.value) {
+    // 移除所有 gs-XX 格式的列数类名
+    const classList = Array.from(gridEl.value.classList)
+    classList.forEach(className => {
+      if (/^gs-\d+$/.test(className)) {
+        gridEl.value!.classList.remove(className)
+        console.log('🔍 [GridV2] 清理旧列数类名:', className)
+      }
+    })
+  }
+
   // 创建新实例
   const options = createOptionsFromProps()
+  console.log('🔍 [GridV2] 初始化GridStack，配置:', {
+    column: options.column,
+    cellHeight: options.cellHeight,
+    margin: options.margin,
+    styleInHead: options.styleInHead
+  })
   grid = GridStack.init(options, gridEl.value)
+  console.log('🔍 [GridV2] GridStack实例创建完成，当前列数:', grid.getColumn())
+
+  // 🔥 关键修复：GridStack 默认只支持 1-12 列
+  // 对于超过 12 的列数，需要手动注入 CSS 样式
+  const targetColumn = options.column || 12
+  if (targetColumn > 12) {
+    console.log(`🔍 [GridV2] 检测到超过12列(${targetColumn})，手动注入样式`)
+    injectColumnStyles(targetColumn)
+  }
+
+  // 🔍 检查 GridStack 是否在 <head> 中注入了样式
+  setTimeout(() => {
+    const currentCol = grid?.getColumn()
+    const styleElements = document.head.querySelectorAll('style')
+    let foundGridStackStyle = false
+    let foundColumnStyle = false
+
+    console.log(`🔍 [GridV2] 检查样式，当前列数: ${currentCol}，样式标签数量: ${styleElements.length}`)
+
+    styleElements.forEach((style, index) => {
+      const content = style.textContent || ''
+      if (content.includes('grid-stack') || content.includes('.gs-')) {
+        foundGridStackStyle = true
+
+        // 检查是否有当前列数的样式
+        if (content.includes(`.gs-${currentCol} >`)) {
+          console.log(`🔍 [GridV2] 找到 .gs-${currentCol} > 列数样式 (#${index})`)
+          foundColumnStyle = true
+        }
+      }
+    })
+
+    if (!foundGridStackStyle) {
+      console.error('❌ [GridV2] 未找到GridStack注入的样式！')
+    } else if (!foundColumnStyle) {
+      console.error(`❌ [GridV2] 找到GridStack样式，但缺少 .gs-${currentCol} > 选择器样式！`)
+      console.log('🔍 [GridV2] 尝试查找其他可能的样式格式...')
+
+      // 检查是否有其他格式的列数样式
+      styleElements.forEach((style, index) => {
+        const content = style.textContent || ''
+        if (content.includes(`${currentCol}`) && content.includes('grid-stack-item')) {
+          console.log(`🔍 [GridV2] 在 <style> #${index} 中找到包含 ${currentCol} 的内容:`, content.substring(0, 500))
+        }
+      })
+    } else {
+      console.log(`✅ [GridV2] GridStack样式检查通过，包含 .gs-${currentCol} 列数样式`)
+    }
+  }, 100) // 增加延迟到100ms
 
   // 绑定事件
   grid.on('change', handleChange)
@@ -344,7 +441,14 @@ function initGrid(): void {
     // 解决列数切换后视觉上没有变化的问题
     setTimeout(() => {
       if (grid) {
-        debugLog('强制触发GridStack重新布局，当前列数:', grid.getColumn())
+        const currentColumn = grid.getColumn()
+        console.log('🔍 [GridV2] 强制布局更新，当前列数:', currentColumn)
+
+        // 检查grid容器的CSS类名
+        const gridContainer = gridEl.value
+        if (gridContainer) {
+          console.log('🔍 [GridV2] Grid容器类名:', gridContainer.className)
+        }
 
         // 方法1：触发resize事件强制重新计算
         grid.batchUpdate(false) // 暂停批量更新
@@ -371,8 +475,7 @@ function initGrid(): void {
         // 方法4：直接检查和修复CSS问题
         debugLog('检查GridStack CSS状态...')
 
-        // 检查grid-stack容器的CSS
-        const gridContainer = gridEl.value
+        // 检查grid-stack容器的CSS（使用已声明的gridContainer变量）
         if (gridContainer) {
           const computedStyle = window.getComputedStyle(gridContainer)
           debugLog('Grid容器CSS:', {
@@ -387,14 +490,10 @@ function initGrid(): void {
         allItems.forEach((el: GridItemHTMLElement, index: number) => {
           const computedStyle = window.getComputedStyle(el)
           const node = el.gridstackNode
-          debugLog(`组件${index} CSS:`, {
-            id: node?.id,
-            gridPosition: `x:${node?.x}, y:${node?.y}, w:${node?.w}, h:${node?.h}`,
+          console.log(`🔍 [GridV2] 组件${index} [${node?.id}]:`, {
+            gridPosition: `w:${node?.w}`,
             cssWidth: computedStyle.width,
-            cssHeight: computedStyle.height,
-            cssLeft: computedStyle.left,
-            cssTop: computedStyle.top,
-            transform: computedStyle.transform
+            gsWAttr: el.getAttribute('gs-w')
           })
         })
 
@@ -411,29 +510,76 @@ function initGrid(): void {
  * 解决切换列数时组件消失的问题
  */
 function updateColumns(newCol: number): void {
-  if (!grid || !Number.isFinite(newCol)) return
+  if (!Number.isFinite(newCol)) return
 
-  debugLog('更新列数:', newCol, '当前布局:', props.layout)
+  const currentCol = grid?.getColumn()
+  console.log('🔍 [GridV2] updateColumns 调用:', {
+    newCol,
+    currentCol,
+    layoutItemsCount: props.layout.length
+  })
+
+  // 如果列数没有实际变化，直接返回
+  if (grid && currentCol === newCol) {
+    console.log('🔍 [GridV2] 列数未变化，跳过更新')
+    return
+  }
 
   try {
     // 🔥 关键修复：检查现有组件是否会超出新的列数限制
     const maxWidthInLayout = props.layout.length > 0
-      ? Math.max(...props.layout.map(item => item.x + item.w))
+      ? Math.max(...props.layout.map(item => (item.x || 0) + (item.w || 0)))
       : 0
     debugLog('布局中最大宽度:', maxWidthInLayout, '新列数:', newCol)
 
-    // 🔥 关键修复：GridStack的column()方法存在宽度计算bug
-    // 统一使用重新初始化策略，确保组件宽度正确计算
-    debugLog('⚠️ 检测到列数变更，使用重新初始化策略以确保组件宽度正确')
+    // 🔥 修复：调整超出列数限制的组件宽度
+    if (maxWidthInLayout > newCol) {
+      debugLog('⚠️ 检测到组件宽度超出新列数，需要调整布局')
+      // 在重新初始化前，调整布局中超出限制的组件
+      props.layout.forEach(item => {
+        if (item.x + item.w > newCol) {
+          // 调整宽度以适应新列数
+          const newWidth = Math.min(item.w, newCol - item.x)
+          if (newWidth > 0) {
+            item.w = newWidth
+          } else {
+            // 如果位置也超出了，重置到安全位置
+            item.x = 0
+            item.w = Math.min(item.w, newCol)
+          }
+          debugLog('调整组件:', item.i, '新宽度:', item.w, '新位置:', item.x)
+        }
+      })
+    }
 
+    // 🔥 关键修复：使用安全的重新初始化策略
+    console.log('🔍 [GridV2] 开始重新初始化，从', currentCol, '列切换到', newCol, '列')
+
+    // 先销毁旧实例
+    if (grid) {
+      grid.destroy(false)
+      grid = null
+    }
+
+    // 重置初始化标记
+    isInitialized = false
+
+    // 在下一帧重新初始化
+    nextTick(() => {
+      console.log('🔍 [GridV2] nextTick 中重新初始化')
+      initGrid()
+    })
+  } catch (err) {
+    console.error('[GridV2] 列数切换失败:', err)
+    // 出错时强制重新初始化
+    if (grid) {
+      grid.destroy(false)
+      grid = null
+    }
     isInitialized = false
     nextTick(() => {
       initGrid()
     })
-  } catch (err) {
-    console.warn('[GridV2] 列数切换失败，重新初始化:', err)
-    isInitialized = false
-    initGrid()
   }
 }
 
