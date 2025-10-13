@@ -821,10 +821,47 @@ const handleClearAll = () => {
     positiveText: $t('common.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: () => {
-      stateManager.clear()
+      console.log('🗑️ [PanelEditorV2] 开始清空所有内容')
+
+      // 1. 清空状态管理器中的所有节点
+      stateManager.reset()
+      console.log('✅ [PanelEditorV2] 已清空 stateManager 节点')
+
+      // 2. 清空编辑器配置
       editorConfig.value = { gridConfig: {}, canvasConfig: {} }
+      console.log('✅ [PanelEditorV2] 已清空 editorConfig')
+
+      // 3. 清空ConfigurationManager中的所有配置
+      try {
+        configurationManager.clearAll()
+        console.log('✅ [PanelEditorV2] 已清空 ConfigurationManager')
+      } catch (error) {
+        console.warn('⚠️ [PanelEditorV2] 清空 ConfigurationManager 失败:', error)
+      }
+
+      // 4. 清空组件执行器注册表
+      componentExecutorRegistry.value.clear()
+      console.log('✅ [PanelEditorV2] 已清空组件执行器注册表')
+
+      // 5. 清空轮询管理器（如果有活动任务）
+      try {
+        if (pollingManager) {
+          pollingManager.clearAll()
+          console.log('✅ [PanelEditorV2] 已清空轮询管理器')
+        }
+      } catch (error) {
+        console.warn('⚠️ [PanelEditorV2] 清空轮询管理器失败:', error)
+      }
+
+      // 6. 清空选中状态
+      selectedNodeId.value = ''
+      selectNode('')
+
+      // 7. 标记有变更
       hasChanges.value = true
-      message.success($t('visualEditor.clearedSuccess', '已清空'))
+
+      console.log('✅ [PanelEditorV2] 清空完成')
+      message.success($t('visualEditor.clearedSuccess', '已清空所有内容'))
     }
   })
 }
