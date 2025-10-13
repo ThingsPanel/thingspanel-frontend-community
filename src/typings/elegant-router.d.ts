@@ -68,9 +68,6 @@ declare module "@elegant-router/types" {
     "function_multi-tab": "/function/multi-tab";
     "function_tab": "/function/tab";
     "home": "/home";
-    "iot-visualization": "/iot-visualization";
-    "iot-visualization_editor": "/iot-visualization/editor";
-    "iot-visualization-platform": "/iot-visualization-platform";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
     "manage": "/manage";
     "manage_menu": "/manage/menu";
@@ -109,9 +106,8 @@ declare module "@elegant-router/types" {
     "system-management-user": "/system-management-user";
     "system-management-user_system-log": "/system-management-user/system-log";
     "test": "/test";
-    "test_iot-visualization-test": "/test/iot-visualization-test";
+    "test_category-test": "/test/category-test";
     "test_panel-editor-v2": "/test/panel-editor-v2";
-    "test_property-binding-fix-validation": "/test/property-binding-fix-validation";
     "ultra-kanban": "/ultra-kanban";
     "ultra-kanban_index": "/ultra-kanban/index";
     "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details";
@@ -168,8 +164,6 @@ declare module "@elegant-router/types" {
     | "device"
     | "function"
     | "home"
-    | "iot-visualization"
-    | "iot-visualization-platform"
     | "login"
     | "manage"
     | "management"
@@ -238,8 +232,6 @@ declare module "@elegant-router/types" {
     | "function_multi-tab"
     | "function_tab"
     | "home"
-    | "iot-visualization-platform"
-    | "iot-visualization_editor"
     | "manage_menu"
     | "manage_role"
     | "manage_user-detail"
@@ -266,9 +258,8 @@ declare module "@elegant-router/types" {
     | "plugin_video"
     | "rule-engine"
     | "system-management-user_system-log"
-    | "test_iot-visualization-test"
+    | "test_category-test"
     | "test_panel-editor-v2"
-    | "test_property-binding-fix-validation"
     | "ultra-kanban_index"
     | "ultra-kanban_kanban-details"
     | "ultra-kanban_kanban-preview"

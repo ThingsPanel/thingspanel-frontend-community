@@ -471,35 +471,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
-    name: 'iot-visualization',
-    path: '/iot-visualization',
-    component: 'layout.base',
-    meta: {
-      title: 'iot-visualization',
-      i18nKey: 'route.iot-visualization'
-    },
-    children: [
-      {
-        name: 'iot-visualization_editor',
-        path: '/iot-visualization/editor',
-        component: 'view.iot-visualization_editor',
-        meta: {
-          title: 'iot-visualization_editor',
-          i18nKey: 'route.iot-visualization_editor'
-        }
-      }
-    ]
-  },
-  {
-    name: 'iot-visualization-platform',
-    path: '/iot-visualization-platform',
-    component: 'layout.base$view.iot-visualization-platform',
-    meta: {
-      title: 'iot-visualization-platform',
-      i18nKey: 'route.iot-visualization-platform'
-    }
-  },
-  {
     name: 'login',
     path: '/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?',
     component: 'layout.blank$view.login',
@@ -879,12 +850,12 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
-        name: 'test_iot-visualization-test',
-        path: '/test/iot-visualization-test',
-        component: 'view.test_iot-visualization-test',
+        name: 'test_category-test',
+        path: '/test/category-test',
+        component: 'view.test_category-test',
         meta: {
-          title: 'test_iot-visualization-test',
-          i18nKey: 'route.test_iot-visualization-test'
+          title: 'test_category-test',
+          i18nKey: 'route.test_category-test'
         }
       },
       {
@@ -894,15 +865,6 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'test_panel-editor-v2',
           i18nKey: 'route.test_panel-editor-v2'
-        }
-      },
-      {
-        name: 'test_property-binding-fix-validation',
-        path: '/test/property-binding-fix-validation',
-        component: 'view.test_property-binding-fix-validation',
-        meta: {
-          title: 'test_property-binding-fix-validation',
-          i18nKey: 'route.test_property-binding-fix-validation'
         }
       }
     ]

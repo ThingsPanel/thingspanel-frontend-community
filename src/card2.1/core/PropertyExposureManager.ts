@@ -310,7 +310,6 @@ export class PropertyExposureManager {
    * 用于修复现有组件缺失全局基础属性的问题
    */
   refreshAllComponentWhitelists(): void {
-
     const updatedComponents: string[] = []
 
     for (const [componentType, whitelist] of this.whitelistCache.entries()) {
@@ -322,10 +321,8 @@ export class PropertyExposureManager {
         const enhancedWhitelist = this.addGlobalBaseProperties(whitelist)
         this.whitelistCache.set(componentType, enhancedWhitelist)
         updatedComponents.push(componentType)
-
       }
     }
-
   }
 
   /**
@@ -358,6 +355,16 @@ export class PropertyExposureManager {
       hasMetricsList,
       missingProperties
     }
+  }
+
+  /**
+   * 获取实例（单例模式）
+   */
+  static getInstance(): PropertyExposureManager {
+    if (!this.instance) {
+      this.instance = new PropertyExposureManager()
+    }
+    return this.instance
   }
 
   // ===== 私有方法 =====
@@ -477,15 +484,6 @@ export function createPropertyWhitelist(
 
 // 🔒 开发环境测试支持
 if (process.env.NODE_ENV === 'development') {
-  Promise.all([
-    import('./test-property-whitelist').then(({ setupBrowserTest }) => {
-      setupBrowserTest()
-    }),
-    import('./verify-no-full-exposure').then(() => {
-    })
-  ]).catch(error => {
-  })
-
   // 🔥 开发环境下，延迟执行白名单刷新，确保所有组件都包含全局基础属性
   setTimeout(() => {
     propertyExposureManager.refreshAllComponentWhitelists()

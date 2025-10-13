@@ -37,7 +37,7 @@
           <!-- 检查是否有子分类 -->
           <div v-if="topCategory.subCategories && topCategory.subCategories.length > 0">
             <div v-for="subCategory in topCategory.subCategories" :key="subCategory.name" class="widget-subcategory">
-              <h4 v-if="subCategory.name !== 'subCategories.data'" class="subcategory-title">{{ $t(subCategory.name) }}</h4>
+              <h4 class="subcategory-title">{{ $t(subCategory.name) }}</h4>
 
               <!-- 检查是否有组件 -->
               <div v-if="subCategory.children && subCategory.children.length > 0" class="category-grid">
@@ -141,6 +141,15 @@ const allWidgets = computed(() => {
     acc[mainCat] = (acc[mainCat] || 0) + 1
     return acc
   }, {} as Record<string, number>))
+  
+  // 🔥 详细调试：打印数字指示器的分类信息
+  const digitIndicator = components.find(c => c.type === 'digit-indicator')
+  console.log('🔥 [WidgetLibrary] 数字指示器分类信息:', {
+    type: digitIndicator?.type,
+    mainCategory: digitIndicator?.mainCategory,
+    subCategory: digitIndicator?.subCategory,
+    category: digitIndicator?.category
+  })
 
   const widgets = components.map(component => {
     // auto-registry.ts 传递翻译键，UI层负责翻译
@@ -152,7 +161,7 @@ const allWidgets = computed(() => {
       source: 'card2' as const,
       definition: {
         mainCategory: component.mainCategory || 'categories.chart', // 默认翻译键
-        subCategory: component.subCategory || 'subCategories.data'     // 默认翻译键
+        subCategory: component.subCategory     // 使用实际的子分类，不设置默认值
       }
     }
 
@@ -209,8 +218,10 @@ const simplifiedWidgetTree = computed(() => {
   allWidgets.value.forEach(widget => {
     const main = widget.definition?.mainCategory
     if (!main) return
-    // 使用翻译键默认值
-    const sub = widget.definition?.subCategory || 'subCategories.data'
+    // 使用实际的子分类，不设置默认值
+    const sub = widget.definition?.subCategory
+
+    if (!sub) return // 如果没有子分类，跳过该组件
 
     if (!map[main]) map[main] = {}
     if (!map[main][sub]) map[main][sub] = []

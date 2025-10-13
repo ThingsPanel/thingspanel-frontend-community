@@ -35,8 +35,7 @@ function getPortDefinitions(): Map<string, ComponentDefinition> {
   if (!portDefinitions.has(portId)) {
     const definitions = new Map<string, ComponentDefinition>()
     portDefinitions.set(portId, definitions)
-    if (process.env.NODE_ENV === 'development') {
-    }
+    // 开发环境调试日志已移除
   }
 
   return portDefinitions.get(portId)!
@@ -57,7 +56,9 @@ export class ComponentRegistry {
     const permission = definition.permission || '不限'
 
     if (!hasComponentPermission(permission as any, userAuthority)) {
-      console.warn(`🚫 [ComponentRegistry] 拦截未授权注册: ${definition.type} (需要${permission}, 用户${userAuthority})`)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`🚫 [ComponentRegistry] 拦截未授权注册: ${definition.type} (需要${permission}, 用户${userAuthority})`)
+      }
       return // 直接返回，不注册
     }
 
@@ -69,7 +70,9 @@ export class ComponentRegistry {
 
     // 🔥 关键修复：恢复属性暴露注册 - 这是绑定系统的核心
     this.registerComponentPropertyExposure(definition).catch(error => {
-      console.error(`❌ [ComponentRegistry] 注册组件属性暴露失败`, { type: definition.type, error })
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`⚠️ [ComponentRegistry] 注册组件属性暴露失败`, { type: definition.type, error })
+      }
     })
   }
 
@@ -85,16 +88,21 @@ export class ComponentRegistry {
       // 如果组件定义包含属性白名单，则注册到管理器
       if (definition.propertyWhitelist) {
         propertyExposureManager.registerComponentWhitelist(definition.type, definition.propertyWhitelist)
-      } else {
+
+      } else {
         // 🔥 为没有配置属性白名单的组件创建默认白名单（包含全局基础属性）
         const defaultWhitelist = createPropertyWhitelist({
           // 空的组件特定属性，全局基础属性将由 PropertyExposureManager 自动添加
         })
 
         propertyExposureManager.registerComponentWhitelist(definition.type, defaultWhitelist)
-      }
+
+      }
     } catch (error) {
-      console.error(`❌ [ComponentRegistry] 注册属性白名单失败: ${definition.type}`, error)
+      // 静默处理错误，避免影响组件注册流程
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`⚠️ [ComponentRegistry] 属性白名单注册失败: ${definition.type}`, error)
+      }
     }
   }
 

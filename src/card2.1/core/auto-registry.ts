@@ -6,8 +6,7 @@
 import type { ComponentDefinition, IComponentRegistry } from '@/card2.1/core/types'
 import { filterComponentsByPermission, getUserAuthorityFromStorage } from '@/card2.1/core/permission-utils'
 import { ComponentType } from '@/card2.1/enum'
-import { parseCategoryFromPath } from '@/card2.1/components/category-mapping'
-import { TOP_LEVEL_CATEGORIES, SUB_CATEGORIES } from '@/card2.1/core/category-definition'
+import { TOP_LEVEL_CATEGORIES, SUB_CATEGORIES, COMPONENT_TO_CATEGORY_MAP } from '@/card2.1/core/category-definition'
 
 export interface ComponentCategory {
   id: string
@@ -34,6 +33,44 @@ export class AutoRegistry {
   }
 
   /**
+   * 从文件路径提取组件ID
+   * 例如：./system/device-status/access/index.ts → access
+   */
+  private extractComponentIdFromPath(path: string): string | null {
+    const match = path.match(/\/([^/]+)\/index\.ts$/)
+    return match ? match[1] : null
+  }
+
+  /**
+   * 简化的分类映射：根据组件ID查找对应的分类
+   */
+  private getCategoryFromComponentId(componentId: string): { mainCategory: string; subCategory: string } {
+    // 从映射表中查找组件对应的子分类ID
+    const subCategoryId = COMPONENT_TO_CATEGORY_MAP[componentId]
+
+    if (subCategoryId) {
+      // 根据子分类ID确定主分类
+      const subCategoryConfig = SUB_CATEGORIES[subCategoryId]
+      if (subCategoryConfig) {
+        const mainCategory = subCategoryConfig.parentId === 'system'
+          ? 'categories.system'
+          : 'categories.chart'
+
+        return {
+          mainCategory,
+          subCategory: subCategoryConfig.displayName
+        }
+      }
+    }
+
+    // 默认分类
+    return {
+      mainCategory: 'categories.chart',
+      subCategory: 'subCategories.other'
+    }
+  }
+
+  /**
    * 自动扫描并注册组件
    * @param componentModules 组件模块映射
    */
@@ -41,70 +78,61 @@ export class AutoRegistry {
     const registeredComponents: ComponentDefinition[] = []
     const userAuthority = getUserAuthorityFromStorage()
 
-
-    for (const [componentId, module] of Object.entries(componentModules)) {
+    for (const [componentPath, module] of Object.entries(componentModules)) {
       try {
         // 获取默认导出（组件定义）
         const definition = module.default || module
 
-
-
         if (this.isValidComponentDefinition(definition)) {
-          const componentType = definition.type as ComponentType
-          let subCategoryId: string | undefined;
+          // 从路径提取组件ID
+          const componentId = this.extractComponentIdFromPath(componentPath)
 
-          // 🔥 转换路径格式给 category-mapping.ts 使用
-          // 从 ./components/system/xxx/yyy/index.ts 转换为 ./system/xxx/yyy/index.ts
-          const normalizedPath = componentId.replace(/^\.\/components\//, './')
+          if (!componentId) {
+            console.warn(`⚠️ [AutoRegistry] 无法从路径提取组件ID: ${componentPath}`)
+            continue
+          }
 
-          const categoryInfo = parseCategoryFromPath(normalizedPath)
+          // 🔥 调试：打印组件信息（开发模式）
+          if (import.meta.env.DEV) {
+            console.log('🔥 [AutoRegistry] 处理组件:', {
+              componentPath,
+              componentId,
+              componentType: definition.type
+            })
+          }
 
-          const topLevelCategory = (categoryInfo.topLevelId === 'system' || categoryInfo.topLevelId === 'chart')
-            ? TOP_LEVEL_CATEGORIES[categoryInfo.topLevelId]
-            : null
-          const subCategory = categoryInfo.subCategoryId ? SUB_CATEGORIES[categoryInfo.subCategoryId] : null
+          // 简化的分类映射：根据组件ID查找分类
+          const categoryInfo = this.getCategoryFromComponentId(componentId)
 
-          // 🔥 修复分类映射逻辑
-          const mainCategoryDisplayName = topLevelCategory?.displayName ||
-            (categoryInfo.topLevelId === 'system' ? TOP_LEVEL_CATEGORIES.system.displayName :
-             categoryInfo.topLevelId === 'chart' ? TOP_LEVEL_CATEGORIES.chart.displayName :
-             TOP_LEVEL_CATEGORIES.chart.displayName) // 默认使用图表分类
-
-          const subCategoryDisplayName = subCategory?.displayName || SUB_CATEGORIES.data.displayName
-
-          // 🔥 简化调试：检查分类映射
-          console.log('🔥 [AutoRegistry] 分类映射:', componentId, '=>', categoryInfo.topLevelId, '=>', mainCategoryDisplayName)
+          // 🔥 调试：打印分类映射结果
+          if (import.meta.env.DEV) {
+            console.log('🔥 [AutoRegistry] 分类映射结果:', {
+              componentId,
+              mainCategory: categoryInfo.mainCategory,
+              subCategory: categoryInfo.subCategory
+            })
+          }
 
           const enhancedDefinition = {
             ...definition,
-            name: definition.name, // 组件翻译键
-            mainCategory: mainCategoryDisplayName, // 主分类翻译键
-            subCategory: subCategoryDisplayName, // 子分类翻译键
-            category: `${mainCategoryDisplayName}/${subCategoryDisplayName}`, // 组合翻译键
+            mainCategory: categoryInfo.mainCategory,
+            subCategory: categoryInfo.subCategory,
+            category: `${categoryInfo.mainCategory}/${categoryInfo.subCategory}`,
           }
 
-          // 🔥 调试：打印最终分类
-          console.log('🔥 [AutoRegistry] 最终分类:', componentId, '=>', enhancedDefinition.mainCategory, '/', enhancedDefinition.subCategory)
-
-
+          // 生成分类信息
+          this.autoGenerateCategories(enhancedDefinition)
 
           // 检查权限
           const hasPermission = this.checkComponentPermission(enhancedDefinition, userAuthority)
 
-
-
           if (hasPermission) {
             // 检查是否应该注册
             if (this.shouldRegisterComponent(enhancedDefinition)) {
-              // 自动生成分类信息（使用增强后的定义）
-              this.autoGenerateCategories(enhancedDefinition)
-
               // 注册增强后的组件定义
               this.registry.register(enhancedDefinition)
               registeredComponents.push(enhancedDefinition)
               this.allComponents.push(enhancedDefinition)
-
-
             }
           } else {
             // 记录被权限过滤的组件
@@ -112,20 +140,19 @@ export class AutoRegistry {
           }
         }
       } catch (error) {
-        console.error(`❌ [AutoRegistry] Component registration failed: ${componentId}`, error)
+        console.error(`❌ [AutoRegistry] Component registration failed: ${componentPath}`, error)
         // 忽略组件注册过程中的错误，继续处理其他组件
       }
     }
 
-    // 🔥 调试：打印注册总结
-    console.group('🔥 [AutoRegistry] 注册总结')
-    console.log('注册组件总数:', registeredComponents.length)
-    console.log('所有组件总数:', this.allComponents.length)
-    console.log('分类统计:', this.categoryTree.map(cat => ({
-      name: cat.name,
-      components: this.allComponents.filter(comp => comp.mainCategory === cat.name).length
-    })))
-    console.groupEnd()
+    // 🔥 调试：打印注册总结（开发模式）
+    if (import.meta.env.DEV) {
+      console.log('✅ [AutoRegistry] 注册完成:', {
+        registered: registeredComponents.length,
+        total: this.allComponents.length,
+        categories: this.categoryTree.map(cat => cat.name)
+      })
+    }
 
     return registeredComponents
   }
@@ -175,6 +202,7 @@ export class AutoRegistry {
   }
 
 
+
   /**
    * 验证组件定义是否有效
    */
@@ -193,7 +221,7 @@ export class AutoRegistry {
    * 自动生成分类树
    */
   private autoGenerateCategories(definition: ComponentDefinition) {
-    const mainName = definition.mainCategory || '其他'
+    const mainName = definition.mainCategory || 'categories.chart'
     const subName = definition.subCategory
 
     // 顶层分类
@@ -203,7 +231,7 @@ export class AutoRegistry {
       this.categoryTree.push(mainCat)
     }
 
-    // 仅当存在子类时创建子分类（图表）
+    // 🔥 修复：所有分类都创建子分类，不区分系统/图表
     if (subName) {
       if (!mainCat.children) mainCat.children = []
       let subCat = mainCat.children.find(cat => cat.id === subName)
@@ -225,32 +253,21 @@ export class AutoRegistry {
   getComponentTree(): ComponentTree {
     const components = this.registry.getAll()
 
-    // 🔥 智能排序：系统分类有组件时优先，空分类不优先
     const sortedCategories = [...this.categoryTree].sort((a, b) => {
-      // 计算每个分类下的组件数量
       const getComponentCount = (categoryName: string) => {
         return components.filter(comp => comp.mainCategory === categoryName).length
       }
 
-      // 🔥 使用翻译键进行比较
       const systemCategoryKey = TOP_LEVEL_CATEGORIES.system.displayName
       const aIsSystem = a.name === systemCategoryKey
       const bIsSystem = b.name === systemCategoryKey
       const systemComponentCount = getComponentCount(systemCategoryKey)
 
-      // 🚀 系统分类智能优先：只有当系统分类有组件时才优先
-      if (aIsSystem && systemComponentCount > 0) {
-        return -1
-      }
-      if (bIsSystem && systemComponentCount > 0) {
-        return 1
-      }
+      if (aIsSystem && systemComponentCount > 0) return -1
+      if (bIsSystem && systemComponentCount > 0) return 1
+      if (aIsSystem && systemComponentCount === 0) return 1
+      if (bIsSystem && systemComponentCount === 0) return -1
 
-      // 系统分类为空时的特殊处理
-      if (aIsSystem && systemComponentCount === 0) {
-      }
-
-      // 其他情况按名称排序
       if (a.name < b.name) return -1
       if (a.name > b.name) return 1
       return 0

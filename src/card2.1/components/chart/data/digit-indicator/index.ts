@@ -156,8 +156,9 @@ const digitIndicatorDefinition: ComponentDefinition = {
   },
 
   // ===== 属性暴露白名单配置 =====
+  // 只暴露核心业务属性，不暴露样式配置属性
   propertyWhitelist: createPropertyWhitelist({
-    // 核心业务属性
+    // 核心业务属性 - 数据相关
     value: {
       level: 'public',
       type: 'string',
@@ -181,141 +182,9 @@ const digitIndicatorDefinition: ComponentDefinition = {
       defaultValue: '湿度',
       visibleInInteraction: true,
       visibleInDebug: true
-    },
-
-    // 样式配置属性
-    iconName: {
-      level: 'public',
-      type: 'string',
-      description: '图标名称',
-      defaultValue: 'Water',
-      visibleInInteraction: true,
-      visibleInDebug: true
-    },
-    iconColor: {
-      level: 'public',
-      type: 'string',
-      description: '图标颜色',
-      defaultValue: '#1890ff',
-      visibleInInteraction: true,
-      visibleInDebug: true
-    },
-    iconSize: {
-      level: 'public',
-      type: 'number',
-      description: '图标大小',
-      defaultValue: 48,
-      visibleInInteraction: true,
-      visibleInDebug: true
-    },
-    valueColor: {
-      level: 'public',
-      type: 'string',
-      description: '数值颜色',
-      defaultValue: 'var(--text-color)',
-      visibleInInteraction: true,
-      visibleInDebug: true
-    },
-    valueSize: {
-      level: 'public',
-      type: 'number',
-      description: '数值字体大小',
-      defaultValue: 32,
-      visibleInInteraction: true,
-      visibleInDebug: true
-    },
-    valueFontWeight: {
-      level: 'public',
-      type: 'number',
-      description: '数值字体粗细',
-      defaultValue: 700,
-      visibleInInteraction: true,
-      visibleInDebug: true
-    },
-    unitColor: {
-      level: 'public',
-      type: 'string',
-      description: '单位颜色',
-      defaultValue: 'var(--text-color-2)',
-      visibleInInteraction: true,
-      visibleInDebug: true
-    },
-    unitSize: {
-      level: 'public',
-      type: 'number',
-      description: '单位字体大小',
-      defaultValue: 16,
-      visibleInInteraction: true,
-      visibleInDebug: true
-    },
-    titleColor: {
-      level: 'public',
-      type: 'string',
-      description: '标题颜色',
-      defaultValue: 'var(--text-color-2)',
-      visibleInInteraction: true,
-      visibleInDebug: true
-    },
-    titleSize: {
-      level: 'public',
-      type: 'number',
-      description: '标题字体大小',
-      defaultValue: 14,
-      visibleInInteraction: true,
-      visibleInDebug: true
-    },
-
-    // 布局配置属性
-    padding: {
-      level: 'public',
-      type: 'number',
-      description: '组件内边距',
-      defaultValue: 16,
-      visibleInInteraction: false,
-      visibleInDebug: true
-    },
-    backgroundColor: {
-      level: 'public',
-      type: 'string',
-      description: '背景颜色',
-      defaultValue: '',
-      visibleInInteraction: false,
-      visibleInDebug: true
-    },
-    showGradient: {
-      level: 'public',
-      type: 'boolean',
-      description: '是否显示渐变背景',
-      defaultValue: true,
-      visibleInInteraction: false,
-      visibleInDebug: true
-    },
-    enableHover: {
-      level: 'public',
-      type: 'boolean',
-      description: '是否启用hover效果',
-      defaultValue: true,
-      visibleInInteraction: false,
-      visibleInDebug: true
-    },
-
-    // 状态属性
-    lastUpdated: {
-      level: 'public',
-      type: 'string',
-      description: '最后更新时间',
-      readonly: true,
-      visibleInInteraction: false,
-      visibleInDebug: true
-    },
-    visible: {
-      level: 'protected',
-      type: 'boolean',
-      description: '组件可见性',
-      defaultValue: true,
-      visibleInInteraction: true,
-      visibleInDebug: true
     }
+    // 注意：样式属性（iconColor、iconSize、valueColor 等）不在白名单中
+    // 这些属性只能通过配置面板修改，不能被其他组件访问或交互系统绑定
   }, {
     enabled: true,
     defaultLevel: 'public',

@@ -139,8 +139,12 @@ export interface GridLayoutPlusConfig {
   autoSize: boolean
   /** 是否垂直紧凑 */
   verticalCompact: boolean
-  /** 边距 [x, y] */
+  /** 边距 [x, y] - @deprecated 请使用 horizontalGap 和 verticalGap */
   margin: [number, number]
+  /** 组件水平间距（像素） */
+  horizontalGap?: number
+  /** 组件垂直间距（像素） */
+  verticalGap?: number
   /** 是否使用CSS变换 */
   useCssTransforms: boolean
   /** 是否响应式 */

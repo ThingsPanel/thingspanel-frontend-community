@@ -1,30 +1,11 @@
 /**
- * @file Card 2.1 - 全局分类定义
+ * Card 2.1 - 全局分类定义
  * @description
  * 该文件定义了组件的全局分类体系，包括顶级分类（系统、图表）及其所有子分类。
  * 它是"约定优于配置"的核心，自动化注册系统将依据此文件来补充和修正组件的分类信息。
- *
- * @designPrinciples
- * 1. 中心化管理：所有分类信息集中于此，便于维护和扩展。
- * 2. 结构清晰：采用层级结构，清晰反映分类关系。
- * 3. 易于消费：导出的数据结构可以直接被注册系统使用。
- * 4. 国际化支持：displayName直接使用翻译key，注释说明对应的中文含义。
  */
 
-/**
- * 分类配置接口
- * 定义了每个分类节点的元数据
- */
-export interface CategoryConfig {
-  id: string; // 唯一标识符，通常是英文
-  displayName: string; // 显示名称翻译key，用于 i18n 系统
-  order: number; // 排序权重
-  icon?: string; // 图标
-  description?: string; // 描述
-  enabled?: boolean; // 是否启用
-  devOnly?: boolean; // 是否仅开发模式可见
-  parentId?: 'system' | 'chart'; // 新增：父分类ID
-}
+import type { CategoryConfig } from '../types'
 
 /**
  * 顶级分类定义
@@ -235,3 +216,32 @@ export const COMPONENT_TO_CATEGORY_MAP: Record<string, string> = {
   'switch-controller': 'control',
   'digit-indicator': 'data',
 };
+
+/**
+ * 获取组件分类信息
+ */
+export function getCategoryFromComponentId(componentId: string): { mainCategory: string; subCategory: string } {
+  // 从映射表中查找组件对应的子分类ID
+  const subCategoryId = COMPONENT_TO_CATEGORY_MAP[componentId]
+
+  if (subCategoryId) {
+    // 根据子分类ID确定主分类
+    const subCategoryConfig = SUB_CATEGORIES[subCategoryId]
+    if (subCategoryConfig) {
+      const mainCategory = subCategoryConfig.parentId === 'system'
+        ? 'categories.system'
+        : 'categories.chart'
+
+      return {
+        mainCategory,
+        subCategory: subCategoryConfig.displayName
+      }
+    }
+  }
+
+  // 默认分类
+  return {
+    mainCategory: 'categories.chart',
+    subCategory: 'subCategories.other'
+  }
+}

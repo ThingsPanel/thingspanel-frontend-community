@@ -50,8 +50,8 @@ import { NFormItem, NSelect } from 'naive-ui'
 import { useEditorStore } from '@/store/modules/editor'
 import { configurationIntegrationBridge } from '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
 import type { WidgetConfiguration } from '@/components/visual-editor/configuration/types'
-// 🔒 导入白名单属性暴露管理器
-import { propertyExposureManager } from '@/card2.1/core/PropertyExposureManager'
+// 🔒 导入白名单属性暴露管理器（切换到 Core2 系统）
+import { propertyExposureManager } from '@/card2.1/core2/property'
 import type { PropertyAccessContext } from '@/card2.1/core/types'
 
 // Props 和 Emits
@@ -315,9 +315,21 @@ const updatePropertyOptions = async () => {
     const config = configurationIntegrationBridge.getConfiguration(selectedComponentId.value)
 
     // 🚨 强制添加用户要求的必须暴露属性：设备ID和设备指标
+    // 🔥 但要检查白名单中是否已经存在，避免重复
     const mandatoryOptions: any[] = []
 
-    if (config?.base?.deviceId !== undefined) {
+    // 检查白名单中是否已经有 deviceId
+    const hasDeviceIdInWhitelist = whitelistOptions.some(opt =>
+      opt.propertyInfo?.propertyName === 'deviceId'
+    )
+
+    // 检查白名单中是否已经有 metricsList
+    const hasMetricsListInWhitelist = whitelistOptions.some(opt =>
+      opt.propertyInfo?.propertyName === 'metricsList'
+    )
+
+    // 只在白名单中不存在时才添加强制必需属性
+    if (config?.base?.deviceId !== undefined && !hasDeviceIdInWhitelist) {
       mandatoryOptions.push({
         label: `🚨 [必需] 设备ID (string) - 用户要求必须暴露`,
         value: `${selectedComponentId.value}.base.deviceId`,
@@ -337,7 +349,7 @@ const updatePropertyOptions = async () => {
       })
     }
 
-    if (config?.base?.metricsList !== undefined) {
+    if (config?.base?.metricsList !== undefined && !hasMetricsListInWhitelist) {
       mandatoryOptions.push({
         label: `🚨 [必需] 设备指标列表 (array) - 用户要求必须暴露`,
         value: `${selectedComponentId.value}.base.metricsList`,
@@ -357,7 +369,7 @@ const updatePropertyOptions = async () => {
       })
     }
 
-    // 🔒 合并所有选项：白名单属性 + 必需属性
+    // 🔒 合并所有选项：白名单属性 + 必需属性（已去重）
     const allOptions = [...whitelistOptions, ...mandatoryOptions]
 
     if (allOptions.length > 0) {

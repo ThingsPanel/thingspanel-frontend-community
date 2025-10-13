@@ -14,6 +14,8 @@ export * from '@/card2.1/core/data-source-mapper'
 import { ComponentRegistry } from '@/card2.1/core/component-registry'
 // 导入数据源映射器用于调试
 import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
+// 导入 getComponentTree 函数用于调试接口
+import { getComponentTree } from '@/card2.1/index'
 
 // 🔥 新增：初始化组件注册表
 
@@ -24,10 +26,21 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     DataSourceMapper,
     getCard2CoreStatus,
     validateCard2Core,
+    getComponentTree: () => getComponentTree(),
     triggerDataUpdate: () => {
       // 这里可以添加实际的数据更新逻辑
     }
   }
+  
+  // 全局导出主要函数
+  window.card2System = {
+    getComponentTree,
+    getComponentRegistry,
+    initializeCard2System,
+    isInitialized: () => isInitialized
+  }
+  
+  window.card2Initialized = isInitialized
 }
 
 /**
