@@ -13,7 +13,7 @@ import '@/card2.1/index'
 // 🔥 关键修复：确保组件系统在应用启动时初始化（使用统一入口）
 import { initializeCard2System } from '@/card2.1/index'
 // 🔥 关键修复：确保 InteractionManager 在应用启动时被正确初始化
-import '@/card2.1/core/interaction-manager'
+import '@/card2.1/core2/interaction'
 // 🧹 导入localStorage清理工具
 import { cleanupLocalStorage } from '@/utils/storage-cleaner'
 // 🎯 导入渲染器注册系统

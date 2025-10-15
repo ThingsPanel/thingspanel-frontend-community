@@ -4,8 +4,8 @@
  * 用于数据绑定系统中的数据校验和转换
  */
 
-import type { ComponentDefinition, DataFieldType, DataValidationRule } from '@/card2.1/core/types'
-import { ComponentRegistry } from '@/card2.1/core/component-registry'
+import type { ComponentDefinition, DataFieldType, DataValidationRule } from '../types'
+import { ComponentRegistry } from '../registry/component-registry'
 
 /**
  * 组件字段定义接口

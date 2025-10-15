@@ -3,8 +3,8 @@
  * 集成原始 Panel 系统的布局逻辑，提供统一的布局管理接口
  */
 
-import type { ICardView, ICardData } from '@/card2.1/core/types/legacy'
-import type { IComponentDefinition } from '@/card2.1/core/types'
+import type { ICardView, ICardData } from '@/card2.1/core2/legacy'
+import type { IComponentDefinition } from '@/card2.1/core2'
 
 // ====== 基础布局类型 ======
 

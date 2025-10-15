@@ -11,8 +11,8 @@ import {
   getComponentsByCategory as getComponentsByCategoryFromIndex
 } from '@/card2.1/index'
 import type { ComponentDefinition } from '@/card2.1/types'
-import type { ComponentTree, ComponentCategory } from '@/card2.1/core/auto-registry'
-import { permissionWatcher } from '@/card2.1/core/permission-watcher'
+import type { ComponentTree, ComponentCategory } from '@/card2.1/core2/registry'
+import { permissionWatcher } from '@/card2.1/core2/utils'
 
 // 🔥 全局共享状态，确保多个实例同步
 let globalComponentTree = shallowRef<ComponentTree>({ categories: [], components: [], totalCount: 0 })

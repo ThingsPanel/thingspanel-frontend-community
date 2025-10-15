@@ -52,7 +52,7 @@ import { configurationIntegrationBridge } from '@/components/visual-editor/confi
 import type { WidgetConfiguration } from '@/components/visual-editor/configuration/types'
 // 🔒 导入白名单属性暴露管理器（切换到 Core2 系统）
 import { propertyExposureManager } from '@/card2.1/core2/property'
-import type { PropertyAccessContext } from '@/card2.1/core/types'
+import type { PropertyAccessContext } from '@/card2.1/core2'
 
 // Props 和 Emits
 interface Props {

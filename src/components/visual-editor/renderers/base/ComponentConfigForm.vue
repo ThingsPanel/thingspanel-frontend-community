@@ -142,7 +142,7 @@ const card2ConfigComponent = computed(() => {
 
     if (hasProperties) {
       // 返回通用的Card2配置表单（使用FlexibleConfigForm）
-      return () => import('@/card2.1/core/FlexibleConfigForm.vue')
+      return () => import('@/card2.1/core2/form/FlexibleConfigForm.vue')
     }
 
     return null

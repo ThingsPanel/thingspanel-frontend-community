@@ -9,8 +9,8 @@
  */
 
 import { computed, ref, watch, inject, type ComputedRef, isRef } from 'vue'
-import { DataSourceMapper } from '@/card2.1/core/data-source-mapper'
-import type { MetricItem } from '@/card2.1/core/types'
+import { DataSourceMapper } from '@/card2.1/core2/data-source'
+import type { MetricItem } from '@/card2.1/core2'
 
 // 🔥 关键优化：属性绑定检查缓存，避免重复的配置获取和检查
 const propertyBindingCache = new Map<string, {
@@ -389,29 +389,31 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
    * 🔥 修复：显示数据计算 - 确保完全响应统一配置变化
    */
   const displayData = computed(() => {
+    // 🔥 关键修复：先直接访问data以建立响应式依赖
+    // 无论data是什么类型，都先访问一次，让Vue追踪到依赖关系
+    const rawData = data
 
     // 🔥 关键修复：正确获取data值，无论它是响应式引用还是普通值
     let currentData: Record<string, unknown>
 
-    if (isRef(data)) {
+    if (isRef(rawData)) {
       // 如果是 ref，直接获取 .value
-      currentData = data.value as Record<string, unknown>
-    } else if (typeof data === 'object' && data !== null && 'value' in data) {
+      currentData = rawData.value as Record<string, unknown>
+    } else if (typeof rawData === 'object' && rawData !== null && 'value' in rawData) {
       // 如果是计算属性对象，获取 .value
-      currentData = (data as any).value as Record<string, unknown>
-    } else if (typeof data === 'function') {
+      currentData = (rawData as any).value as Record<string, unknown>
+    } else if (typeof rawData === 'function') {
       // 如果是函数（某些情况下计算属性可能表现为函数），调用它获取值
       try {
-        currentData = (data as any)() as Record<string, unknown>
+        currentData = (rawData as any)() as Record<string, unknown>
       } catch (error) {
         console.warn(`🔥 [useCard2Props] 函数调用失败，使用空对象:`, error)
         currentData = {}
       }
     } else {
       // 普通对象或值
-      currentData = (data as Record<string, unknown>) || {}
+      currentData = (rawData as Record<string, unknown>) || {}
     }
-
 
     // 🔥 修复逻辑：检查是否有有效的数据源执行结果
     const hasValidDataSource = currentData &&
@@ -419,12 +421,25 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
       Object.keys(currentData).length > 0
 
     // 🔥 关键修复：检查数据是否来自DataWarehouse且包含组件需要的字段
-    const isDataFromWarehouse = hasValidDataSource &&
-      // 检查是否包含组件需要的基本字段（如value, unit等）
-      Object.keys(currentData).some(key =>
+    // 支持嵌套结构（如 { main: { data: { value, ... } } }）
+    const isDataFromWarehouse = hasValidDataSource && (() => {
+      const dataKeys = Object.keys(currentData)
+
+      // 检查顶层是否包含组件需要的基本字段
+      const hasDirectFields = dataKeys.some(key =>
         ['value', 'unit', 'metricsName', 'data', 'title', 'amount', 'description', 'timestamp'].includes(key)
       )
 
+      if (hasDirectFields) return true
+
+      // 🔥 关键修复：检查是否是数据源嵌套结构（如 { main: { data: {...} }, secondary: {...} }）
+      const hasNestedData = dataKeys.some(key => {
+        const value = currentData[key]
+        return value && typeof value === 'object' && ('data' in value || 'type' in value)
+      })
+
+      return hasNestedData
+    })()
 
     if (isDataFromWarehouse) {
       // 🔥 直接返回DataWarehouse的数据，这已经是组件需要的格式
@@ -436,8 +451,6 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
     const result = {
       ...unifiedConfig.value.component  // 🔥 关键：只使用统一配置，移除初始config的干扰
     }
-
-    // 🎯 用户要求的打印这几个字 - 阶段4.5：useCard2Props无数据源时使用配置
 
     return result
   })
@@ -627,7 +640,7 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
 
     try {
       // 🔒 导入属性暴露管理器
-      const { propertyExposureManager } = await import('@/card2.1/core/PropertyExposureManager')
+      const { propertyExposureManager } = await import('@/card2.1/core2/property')
 
       // 获取组件类型（从注入的上下文或其他方式获取）
       const componentType = getComponentType()
@@ -809,7 +822,7 @@ export function useCard2Props<T = Record<string, unknown>>(options: ConfigManage
               if (hasBinding) {
 
                 // 只有真正绑定的属性才调用交互管理器
-                const { interactionManager } = await import('@/card2.1/core/interaction-manager')
+                const { interactionManager } = await import('@/card2.1/core2/interaction')
                 interactionManager.notifyPropertyUpdate(componentId, propertyPath, newValue, oldValue)
 
                 // 发送全局属性变化事件（只对绑定的属性）

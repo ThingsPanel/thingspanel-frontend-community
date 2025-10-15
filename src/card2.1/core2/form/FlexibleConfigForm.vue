@@ -24,9 +24,9 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { NTag } from 'naive-ui'
 import type { Component } from 'vue'
-import AutoFormGenerator from '@/card2.1/core/AutoFormGenerator.vue'
+import AutoFormGenerator from '@/card2.1/core2/form/AutoFormGenerator.vue'
 import type { TSConfig, ConfigMode, ConfigValues } from '@/card2.1/types/setting-config'
-import { FlexibleConfigManager } from '@/card2.1/core/config-manager'
+import { FlexibleConfigManager } from '@/card2.1/core2/registry/config-manager'
 
 interface Props {
   // 组件类型（用于自动检测配置）

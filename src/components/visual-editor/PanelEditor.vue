@@ -32,7 +32,7 @@ import { visualEditorLogger } from '@/utils/logger'
 // 🔥 轮询系统导入
 import { useGlobalPollingManager } from '@/components/visual-editor/core/GlobalPollingManager'
 import { editorDataSourceManager } from '@/components/visual-editor/core/EditorDataSourceManager'
-import { interactionManager } from '@/card2.1/core/interaction-manager'
+import { interactionManager } from '@/card2.1/core2/interaction'
 
 // 🔥 提供EditorDataSourceManager给子组件
 provide('editorDataSourceManager', editorDataSourceManager)

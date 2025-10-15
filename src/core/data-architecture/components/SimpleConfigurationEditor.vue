@@ -49,9 +49,9 @@ import { singleDataSourceExporter, singleDataSourceImporter } from '@/core/data-
 import type { SingleDataSourceImportPreview } from '@/core/data-architecture/utils/ConfigurationImportExport'
 
 // 🚀 导入Card2.1 Core响应式数据管理器
-import { reactiveDataManager } from '@/card2.1/core/data-source/reactive-data-manager'
-import { dataBindingManager } from '@/card2.1/core/data-source/data-binding-manager'
-import { ComponentRegistry } from '@/card2.1/core/component-registry'
+import { reactiveDataManager } from '@/card2.1/core2/data-source'
+import { dataBindingManager } from '@/card2.1/core2/data-source'
+import { ComponentRegistry } from '@/card2.1/core2/registry'
 
 // Props接口 - 兼容现有系统和ConfigurationPanel调用方式
 interface Props {
@@ -1274,7 +1274,7 @@ const getCurrentDataSourceExampleData = () => {
   const currentDataSource = dataSourceOptions.value.find(opt => opt.value === currentDataSourceKey.value)
 
   // 统一标准：只检查example字段
-  const exampleData = currentDataSource?.originalData?.originalData?.example
+  const exampleData = currentDataSource?.originalData?.example
 
   return exampleData
 }

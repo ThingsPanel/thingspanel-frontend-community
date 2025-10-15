@@ -6,9 +6,9 @@
 import { core2Bridge, initializeCore2System } from '@/card2.1/core2-adapter'
 
 // 向后兼容：保留旧系统的导入（不删除原有 core 系统）
-import { componentRegistry } from '@/card2.1/core/component-registry'
-import { AutoRegistry } from '@/card2.1/core/auto-registry'
-import { setupStorageListener } from '@/card2.1/core/permission-watcher'
+import { componentRegistry } from '@/card2.1/core2/registry'
+import { AutoRegistry } from '@/card2.1/core2/registry'
+import { setupStorageListener } from '@/card2.1/core2/utils'
 
 // ========== 切换到 Core2 系统的初始化 ==========
 
@@ -110,10 +110,10 @@ export function getAllComponents() {
 // 传统模块导出（向后兼容）
 export { componentRegistry }
 export { AutoRegistry }
-export type { ComponentTree, ComponentCategory } from '@/card2.1/core/auto-registry'
+export type { ComponentTree, ComponentCategory } from '@/card2.1/core2/registry'
 
 // 导出权限相关工具
-export * from '@/card2.1/core/permission-utils'
+export * from '@/card2.1/core2/utils'
 export type { ComponentPermission } from '@/card2.1/types'
 
 // 导出 Hooks

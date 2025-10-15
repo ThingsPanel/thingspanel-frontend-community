@@ -144,7 +144,7 @@ import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
 import { configurationManager } from '@/components/visual-editor/configuration'
 import type { BaseConfiguration } from '@/card2.1/hooks/useCard2Props'
-import type { MetricItem } from '@/card2.1/core/types'
+import type { MetricItem } from '@/card2.1/core2'
 import { getDeviceListForSelect } from '@/service/api/device-template-model'
 import DeviceSelectSingle from '@/components/DeviceSelectSingle.vue'
 

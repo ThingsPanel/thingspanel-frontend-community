@@ -13,7 +13,7 @@ import DigitIndicator from './DigitIndicator.vue'
 import DigitIndicatorSetting from './setting.vue'
 import type { ComponentDefinition } from '../../../core/types'
 import { customConfig, digitIndicatorSettingConfig } from './settingConfig'
-import { createPropertyWhitelist } from '@/card2.1/core/PropertyExposureManager'
+import { createPropertyWhitelist } from '@/card2.1/core2/property'
 
 const digitIndicatorDefinition: ComponentDefinition = {
   // ===== 核心标识信息 =====

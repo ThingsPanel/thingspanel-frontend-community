@@ -3,9 +3,9 @@
  * 负责将数据源与组件进行绑定和同步
  */
 
-import type { StaticDataSource } from '@/card2.1/core/data-source/static-data-source'
-import type { DeviceApiDataSource } from '@/card2.1/core/data-source/device-api-data-source'
-import { componentSchemaManager } from '@/card2.1/core/data-source/component-schema'
+import type { StaticDataSource } from './static-data-source'
+import type { DeviceApiDataSource } from './device-api-data-source'
+import { componentSchemaManager } from './component-schema'
 
 type DataSource = StaticDataSource | DeviceApiDataSource
 
@@ -192,7 +192,7 @@ export class DataBindingManager {
       const componentData: any = {}
 
       // 处理每个组件字段
-      for (const [componentField, fieldDef] of Object.entries(componentSchema)) {
+      for (const [componentField, fieldDef] of Object.entries(componentSchema.fields)) {
         const bindingConfig = binding.bindingConfig[componentField]
 
         if (bindingConfig) {

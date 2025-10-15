@@ -194,7 +194,7 @@
 import { ref, computed, inject, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 // 🔒 导入属性暴露管理器用于安全的属性访问
-import { propertyExposureManager, type PropertyAccessContext } from '@/card2.1/core/PropertyExposureManager'
+import { propertyExposureManager, type PropertyAccessContext } from '@/card2.1/core2/property'
 import {
   NSpace,
   NButton,

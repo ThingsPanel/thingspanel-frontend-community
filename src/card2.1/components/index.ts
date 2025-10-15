@@ -5,8 +5,8 @@
  */
 
 import type { ComponentDefinition } from '@/card2.1/types'
-import { AutoRegistry } from '@/card2.1/core/auto-registry'
-import { ComponentRegistry, componentRegistry } from '@/card2.1/core/component-registry'
+import { AutoRegistry } from '@/card2.1/core2/registry'
+import { ComponentRegistry, componentRegistry } from '@/card2.1/core2/registry'
 
 // 创建自动注册系统实例
 const autoRegistry = new AutoRegistry(componentRegistry)

@@ -34,7 +34,7 @@
 
 import { ref, computed, watch, inject, onMounted, onUnmounted, nextTick } from 'vue'
 import InteractionCardWizard from '@/core/interaction-system/components/InteractionCardWizard.vue'
-import type { InteractionConfig } from '@/card2.1/core/interaction-types'
+import type { InteractionConfig } from '@/card2.1/core2/interaction'
 // 🔥 导入新的交互配置路由器
 import { interactionConfigRouter } from './InteractionConfigRouter'
 // 保留原有配置管理器用于持久化

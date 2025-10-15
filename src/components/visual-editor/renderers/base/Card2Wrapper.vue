@@ -55,7 +55,7 @@ import type {
   InteractionEventType,
   InteractionResponse,
   ComponentInteractionCapability
-} from '@/card2.1/core/interaction-types'
+} from '@/card2.1/core2/interaction'
 import type { UnifiedCard2Configuration } from '@/card2.1/hooks/useCard2Props'
 // 🔥 导入DataWarehouse以获取数据源执行结果（兼容性保留）
 import { dataWarehouse } from '@/core/data-architecture/DataWarehouse'
@@ -66,11 +66,11 @@ import { simpleDataBridge } from '@/core/data-architecture/SimpleDataBridge'
 import { interactionConfigRouter } from '@/components/visual-editor/configuration/InteractionConfigRouter'
 
 // 🚀 新增：导入Card2.1 Core响应式数据绑定系统
-import { dataBindingManager } from '@/card2.1/core/data-source/data-binding-manager'
-import { reactiveDataManager } from '@/card2.1/core/data-source/reactive-data-manager'
-import { ComponentRegistry } from '@/card2.1/core/component-registry'
-import { dataSourceMapper } from '@/card2.1/core/data-source-mapper'
-import type { ComponentDataBinding, DataBindingStatus } from '@/card2.1/core/data-source/data-binding-manager'
+import { dataBindingManager } from '@/card2.1/core2/data-source'
+import { reactiveDataManager } from '@/card2.1/core2/data-source'
+import { componentRegistry } from '@/card2.1/core2/registry'
+import { dataSourceMapper } from '@/card2.1/core2/data-source'
+import type { ComponentDataBinding, DataBindingStatus } from '@/card2.1/core2/data-source'
 
 interface Props {
   componentType: string
@@ -118,8 +118,8 @@ const useCard2CoreDataBinding = ref(false)
 
 // 🚀 检查组件是否支持Card2.1 Core数据绑定
 const checkCard2CoreSupport = () => {
-  const isRegistered = ComponentRegistry.has(props.componentType)
-  const dataSourceKeys = ComponentRegistry.getDataSourceKeys(props.componentType)
+  const isRegistered = componentRegistry.has(props.componentType)
+  const dataSourceKeys = componentRegistry.getDataSourceKeys(props.componentType)
   const supportsDataBinding = isRegistered && dataSourceKeys.length > 0
 
   // 已移除：console语句
@@ -171,7 +171,7 @@ const initializeCard2CoreBinding = async () => {
 
 // 🚀 生成绑定配置
 const generateBindingConfig = () => {
-  const dataSourceKeys = ComponentRegistry.getDataSourceKeys(props.componentType)
+  const dataSourceKeys = componentRegistry.getDataSourceKeys(props.componentType)
   const bindingConfig: Record<string, any> = {}
 
   dataSourceKeys.forEach(key => {

@@ -194,3 +194,19 @@ export class WhitelistManager {
  * 默认导出
  */
 export default WhitelistManager
+/**
+ * 创建属性白名单 - 便捷函数
+ * @param properties 属性配置对象
+ * @returns 标准化后的属性白名单
+ */
+export function createPropertyWhitelist(
+  properties: Record<string, Partial<PropertyExposureConfig>>
+): ComponentPropertyWhitelist {
+  const whitelist: ComponentPropertyWhitelist = {}
+
+  Object.entries(properties).forEach(([propName, config]) => {
+    whitelist[propName] = WhitelistManager.normalizePropertyConfig(config)
+  })
+
+  return WhitelistManager.filterInvalidProperties(whitelist)
+}
