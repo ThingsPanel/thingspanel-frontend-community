@@ -215,7 +215,10 @@ export const COMPONENT_TO_CATEGORY_MAP: Record<string, string> = {
   'alert-status-v2': 'alarm',
   'switch-controller': 'control',
   'digit-indicator': 'data',
-  'gauge-chart': 'data',  // 仪表盘图表组件
+  'gauge-chart': 'data', // 仪表盘图表组件
+  'line-chart': 'data', // 折线图组件
+  'bar-chart': 'data', // 柱状图组件
+  'pie-chart': 'data', // 饼图组件
 };
 
 /**
