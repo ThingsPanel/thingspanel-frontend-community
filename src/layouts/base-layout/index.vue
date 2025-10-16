@@ -14,6 +14,7 @@ import { useRouterPush } from '@/hooks/common/router'
 import { useRouter, useRoute } from 'vue-router'
 import { createLogger } from '@/utils/logger'
 import { $t } from '@/locales'
+import { getSSEEndpoint } from '~/env.config'
 import GlobalHeader from '../modules/global-header/index.vue'
 import GlobalSider from '../modules/global-sider/index.vue'
 import GlobalTab from '../modules/global-tab/index.vue'
@@ -158,10 +159,9 @@ const createEventSource = () => {
   try {
     /**
      * 创建EventSource连接
-     * 开发环境：通过/proxy-default代理访问后端
-     * 生产环境：直接访问/events端点
+     * 根据环境配置自动选择正确的SSE端点
      */
-    eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/api/v1/events`, {
+    eventSource = new EventSourcePolyfill(getSSEEndpoint(import.meta.env), {
       heartbeatTimeout: 3 * 60 * 1000, // 心跳超时时间：3分钟
       headers: {
         'x-token': token // 传递用户认证token
@@ -259,10 +259,20 @@ const createEventSource = () => {
           /**
            * 播放设备状态变化提示音
            * 使用异步播放，避免阻塞UI线程
+           * 处理浏览器自动播放策略限制
            */
           try {
             const audio = new Audio(deviceStatusMp3)
+            // 设置音频属性以符合浏览器策略
+            audio.volume = 0.5 // 设置适中的音量
+            audio.preload = 'auto' // 预加载音频
+            
             audio.play().catch(audioError => {
+              // 静默处理自动播放被阻止的情况，这是正常的浏览器行为
+              if (audioError.name === 'NotAllowedError') {
+                return
+              }
+              // 其他音频错误才记录警告
               logger.warn('播放设备状态变化提示音失败:', audioError)
             })
           } catch (audioError) {

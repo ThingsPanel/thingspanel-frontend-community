@@ -2031,6 +2031,8 @@ declare namespace App {
       baseURL: string
       /** Other backend service base url map */
       otherBaseURL: Record<T, string>
+      /** Server-Sent Events endpoint */
+      sseEndpoint: string
     }
 
     /** The backend service config map */

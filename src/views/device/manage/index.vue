@@ -26,6 +26,7 @@ import AddDevicesServer1 from '@/views/device/manage/modules/add-devices-server1
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
 import { usePageCache } from '../../../utils/usePageCache'
+import { getSSEEndpoint } from '~/env.config'
 
 interface ServiceIds {
   service_identifier: string
@@ -69,6 +70,7 @@ const { cache: query, setCache } = usePageCache()
  * - 智能重连机制，确保连接稳定性
  * - 完整的错误处理和数据验证
  * - 页面卸载时自动清理资源
+ * - 网络状态检测和优雅降级
  */
 
 // EventSource 连接实例，专用于设备管理页面的状态监控
@@ -76,56 +78,116 @@ let eventSource: EventSourcePolyfill | null = null
 // 重连尝试次数计数器
 let reconnectAttempts = 0
 // 最大重连尝试次数限制
-const MAX_RECONNECT_ATTEMPTS = 3
+const MAX_RECONNECT_ATTEMPTS = 5
+// 重连延迟配置（毫秒）
+const RECONNECT_DELAYS = [2000, 5000, 10000, 20000, 30000]
+// 连接状态标识
+let isConnecting = false
+// 重连定时器
+let reconnectTimer: NodeJS.Timeout | null = null
+// 最后错误时间，用于避免频繁错误日志
+let lastErrorTime = 0
+const ERROR_LOG_THROTTLE = 10000 // 10秒内只记录一次相同错误
+
+/**
+ * 设备状态缓存，用于跟踪设备状态变化
+ */
+const deviceStatusCache = new Map<string, { isOnline: boolean; lastUpdate: number }>()
 
 /**
  * 更新表格中设备状态的函数
- * 根据设备ID在当前显示的设备列表中找到对应设备并更新其在线状态
- * @param {string} deviceId - 设备唯一标识ID
- * @param {boolean} isOnline - 设备在线状态：true=在线，false=离线
  */
 const updateDeviceStatusInTable = (deviceId: string, isOnline: boolean) => {
   try {
-    // 通过表格组件引用获取当前显示的设备数据列表
+    // 检查状态是否真的发生了变化，避免不必要的更新
+    const cachedStatus = deviceStatusCache.get(deviceId)
+    if (cachedStatus && cachedStatus.isOnline === isOnline) {
+      return
+    }
+
+    // 更新缓存
+    deviceStatusCache.set(deviceId, { isOnline, lastUpdate: Date.now() })
+
+    // 更新表格中的设备状态
     if (tablePageRef.value?.dataList && Array.isArray(tablePageRef.value.dataList)) {
-      // 在当前页面的设备列表中查找目标设备
       const deviceIndex = tablePageRef.value.dataList.findIndex(
-        device => device.device_id === deviceId
+        device => device.id === deviceId
       )
 
       if (deviceIndex !== -1) {
-        // 找到设备，更新其在线状态 (1=在线, 0=离线)
         tablePageRef.value.dataList[deviceIndex].is_online = isOnline ? 1 : 0
-        console.info(`设备 ${deviceId} 状态已更新为 ${isOnline ? '在线' : '离线'}`)
-      } else {
-        // 设备不在当前页面显示范围内（可能在其他分页或已被过滤）
-        console.error(`设备 ${deviceId} 未在当前表格数据中找到，可能不在当前页面显示范围内`)
       }
-    } else {
-      console.error('表格数据未加载或格式异常，无法更新设备状态')
     }
   } catch (error) {
-    console.error('更新表格中设备状态时发生错误:', error)
+    console.error('更新设备状态失败:', error)
+  }
+}
+
+/**
+ * 清理过期的设备状态缓存
+ */
+const cleanupDeviceStatusCache = () => {
+  const now = Date.now()
+  const maxAge = 60 * 60 * 1000 // 1小时
+  
+  for (const [deviceId, status] of deviceStatusCache.entries()) {
+    if (now - status.lastUpdate > maxAge) {
+      deviceStatusCache.delete(deviceId)
+    }
+  }
+}
+
+/**
+ * 检查网络连接状态
+ */
+const checkNetworkStatus = (): boolean => {
+  return navigator.onLine !== false
+}
+
+/**
+ * 节流错误日志记录
+ */
+const logErrorThrottled = (message: string, error?: any) => {
+  const now = Date.now()
+  if (now - lastErrorTime > ERROR_LOG_THROTTLE) {
+    console.error(message, error)
+    lastErrorTime = now
   }
 }
 
 /**
  * 创建设备管理页面专用的EventSource连接
- * 建立与后端的实时通信，专门用于更新当前页面表格中的设备状态
  */
 const createEventSourceConnection = () => {
+  // 防止重复连接
+  if (isConnecting || eventSource?.readyState === EventSource.OPEN) {
+    return
+  }
+
   try {
-    // 获取用户认证token
-    const token = localStg.get('token')
-    if (!token) {
-      console.error('未找到用户token，无法建立设备状态监控连接')
+    // 检查网络状态
+    if (!checkNetworkStatus()) {
       return
     }
 
-    // 清理之前可能存在的连接，避免重复连接
+    // 获取用户认证token
+    const token = localStg.get('token')
+    if (!token) {
+      return
+    }
+
+    isConnecting = true
+
+    // 清理之前可能存在的连接
     if (eventSource) {
       eventSource.close()
       eventSource = null
+    }
+
+    // 清除之前的重连定时器
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer)
+      reconnectTimer = null
     }
 
     /**
@@ -134,7 +196,7 @@ const createEventSourceConnection = () => {
      * - 全局连接：显示通知 + 播放音效
      * - 页面连接：仅更新表格数据
      */
-    eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/api/v1/events`, {
+    eventSource = new EventSourcePolyfill(getSSEEndpoint(import.meta.env), {
       heartbeatTimeout: 3 * 60 * 1000, // 心跳超时：3分钟
       headers: {
         'x-token': token // 用户身份验证
@@ -143,57 +205,44 @@ const createEventSourceConnection = () => {
 
     /**
      * 连接建立成功回调
-     * 重置重连计数器，记录连接状态
      */
     eventSource.onopen = () => {
+      isConnecting = false
       reconnectAttempts = 0
-      console.info('设备管理页面EventSource连接建立成功')
     }
 
     /**
      * 监听设备状态变化事件
-     * 专注于更新当前页面表格中的设备状态显示
      */
     eventSource.addEventListener('device_online', (event: any) => {
       try {
-        // 数据安全验证：确保事件数据存在
         if (!event?.data) {
-          console.error('接收到空的设备状态事件数据')
           return
         }
 
-        // 解析服务器推送的JSON数据
         const data = JSON.parse(event.data)
 
-        // 验证设备ID字段的有效性
         if (!data.device_id || typeof data.device_id !== 'string') {
-          console.error('设备状态事件中缺少有效的设备ID:', data)
           return
         }
 
-        // 验证在线状态字段的有效性
         if (typeof data.is_online !== 'boolean') {
-          console.error('设备状态事件中在线状态值无效:', data)
           return
         }
 
-        /**
-         * 调用表格更新函数
-         * 仅更新表格显示，不显示通知（避免与全局通知重复）
-         */
         updateDeviceStatusInTable(data.device_id, data.is_online)
 
       } catch (parseError) {
-        console.error('解析设备状态事件数据失败:', parseError, '原始数据:', event.data)
+        logErrorThrottled('解析设备状态事件数据失败:', parseError)
       }
     })
 
     /**
      * 错误处理和智能重连机制
-     * 采用递增延迟策略，避免频繁重连对服务器造成压力
      */
     eventSource.onerror = (error) => {
-      console.error('设备管理页面EventSource连接错误:', error)
+      isConnecting = false
+      logErrorThrottled('EventSource连接错误:', error)
 
       // 立即清理当前连接
       if (eventSource) {
@@ -201,37 +250,69 @@ const createEventSourceConnection = () => {
         eventSource = null
       }
 
-      // 智能重连：递增延迟策略 (5s -> 10s -> 15s)
+      // 智能重连：使用预定义的延迟时间
       if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
         reconnectAttempts += 1
-        const delay = reconnectAttempts * 5000 // 延迟时间递增
-        console.info(`正在尝试重连设备管理页面EventSource (第${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}次尝试)，${delay/1000}秒后重连`)
+        const delay = RECONNECT_DELAYS[Math.min(reconnectAttempts - 1, RECONNECT_DELAYS.length - 1)]
+        
 
-        setTimeout(() => {
-          createEventSourceConnection()
+        reconnectTimer = setTimeout(() => {
+          if (checkNetworkStatus()) {
+            createEventSourceConnection()
+          } else {
+            // 网络不可用时，延长重连间隔
+            reconnectTimer = setTimeout(() => {
+              createEventSourceConnection()
+            }, 60000) // 1分钟后重试
+          }
         }, delay)
       } else {
-        console.error('设备管理页面EventSource重连次数已达上限，停止重连尝试')
+        // 达到最大重连次数后，每5分钟尝试一次
+        reconnectTimer = setTimeout(() => {
+          reconnectAttempts = 0 // 重置计数器
+          createEventSourceConnection()
+        }, 5 * 60 * 1000)
       }
     }
 
   } catch (error) {
+    isConnecting = false
     console.error('创建设备管理页面EventSource连接失败:', error)
   }
 }
 
+// 缓存清理定时器
+let cacheCleanupTimer: NodeJS.Timeout | null = null
+
 /**
  * 清理EventSource连接
- * 确保页面切换或组件销毁时正确释放连接资源，防止内存泄漏
  */
 const cleanupEventSource = () => {
+  // 清理EventSource连接
   if (eventSource) {
     eventSource.close()
     eventSource = null
-    console.info('设备管理页面EventSource连接已清理')
   }
-  // 重置重连计数器
+  
+  // 清理重连定时器
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer)
+    reconnectTimer = null
+  }
+  
+  // 清理缓存清理定时器
+  if (cacheCleanupTimer) {
+    clearInterval(cacheCleanupTimer)
+    cacheCleanupTimer = null
+  }
+  
+  // 清理设备状态缓存
+  deviceStatusCache.clear()
+  
+  // 重置状态
+  isConnecting = false
   reconnectAttempts = 0
+  lastErrorTime = 0
 }
 
 const getFormJson = async id => {
@@ -626,19 +707,58 @@ onBeforeMount(async () => {
 })
 
 /**
+ * 网络状态变化处理
+ */
+const handleNetworkChange = () => {
+  if (navigator.onLine) {
+    // 网络恢复时，重置重连计数器并尝试连接
+    reconnectAttempts = 0
+    createEventSourceConnection()
+  } else {
+    cleanupEventSource()
+  }
+}
+
+/**
+ * 页面可见性变化处理
+ */
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    // 页面隐藏时，清理连接以节省资源
+    cleanupEventSource()
+  } else {
+    // 页面重新可见时，重新建立连接
+    createEventSourceConnection()
+  }
+}
+
+/**
  * 组件挂载完成后建立设备状态监控连接
- * 确保页面加载完成后立即开始监控当前页面中设备的状态变化
  */
 onMounted(() => {
   createEventSourceConnection()
+  
+  // 启动定期缓存清理（每30分钟清理一次）
+  cacheCleanupTimer = setInterval(cleanupDeviceStatusCache, 30 * 60 * 1000)
+  
+  // 监听网络状态变化
+  window.addEventListener('online', handleNetworkChange)
+  window.addEventListener('offline', handleNetworkChange)
+  
+  // 监听页面可见性变化
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 /**
  * 组件卸载前清理EventSource连接
- * 确保用户离开设备管理页面时正确清理资源，避免内存泄漏
  */
 onUnmounted(() => {
   cleanupEventSource()
+  
+  // 移除事件监听器
+  window.removeEventListener('online', handleNetworkChange)
+  window.removeEventListener('offline', handleNetworkChange)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 
 const topActions = [

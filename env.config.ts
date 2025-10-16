@@ -19,21 +19,24 @@ export function createServiceConfig(env: Env.ImportMeta) {
       otherBaseURL: {
         demo: devURL,
         mock: mockURL
-      }
+      },
+      sseEndpoint: '/proxy-default/events'
     },
     test: {
       baseURL: mockURL,
       otherBaseURL: {
         demo: testURL,
         mock: mockURL
-      }
+      },
+      sseEndpoint: '/api/v1/events'
     },
     prod: {
       baseURL: prodURL,
       otherBaseURL: {
         demo: prodURL,
         mock: mockURL
-      }
+      },
+      sseEndpoint: '/api/v1/events'
     }
   }
 
@@ -53,4 +56,14 @@ export function createProxyPattern(key?: App.Service.OtherBaseURLKey) {
   }
 
   return `/proxy-${key}`
+}
+
+/**
+ * Get SSE endpoint URL by current env
+ *
+ * @param env The current env
+ */
+export function getSSEEndpoint(env: Env.ImportMeta) {
+  const serviceConfig = createServiceConfig(env)
+  return serviceConfig.sseEndpoint
 }
