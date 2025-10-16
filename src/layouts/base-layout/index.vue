@@ -161,7 +161,7 @@ const createEventSource = () => {
      * 开发环境：通过/proxy-default代理访问后端
      * 生产环境：直接访问/events端点
      */
-    eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/events`, {
+    eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/api/v1/events`, {
       heartbeatTimeout: 3 * 60 * 1000, // 心跳超时时间：3分钟
       headers: {
         'x-token': token // 传递用户认证token

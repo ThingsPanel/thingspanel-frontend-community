@@ -134,7 +134,7 @@ const createEventSourceConnection = () => {
      * - 全局连接：显示通知 + 播放音效
      * - 页面连接：仅更新表格数据
      */
-    eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/events`, {
+    eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/api/v1/events`, {
       heartbeatTimeout: 3 * 60 * 1000, // 心跳超时：3分钟
       headers: {
         'x-token': token // 用户身份验证
