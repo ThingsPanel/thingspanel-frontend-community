@@ -194,7 +194,7 @@
 import { ref, computed, inject, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 // 🔒 导入属性暴露管理器用于安全的属性访问
-import { propertyExposureManager, type PropertyAccessContext } from '@/card2.1/core/PropertyExposureManager'
+import { propertyExposureManager, type PropertyAccessContext } from '@/card2.1/core2/property'
 import {
   NSpace,
   NButton,
@@ -253,16 +253,9 @@ const editingIndex = ref(-1)
 watch(
   () => props.modelValue,
   (newValue) => {
-    console.log(`🎯 [InteractionCardWizard] ModelValue变化:`, {
-      newValue,
-      oldInteractions: interactions.value,
-      newCount: newValue?.length || 0,
-      oldCount: interactions.value.length
-    })
     
     if (newValue) {
       interactions.value = [...newValue] // 🔥 使用展开语法确保响应式更新
-      console.log(`🎯 [InteractionCardWizard] 内部数据已更新:`, interactions.value)
     }
   },
   { immediate: true, deep: true }
@@ -351,13 +344,6 @@ const componentOptions = computed(() => {
       }
     })
 
-    console.log(`🔥 [InteractionCardWizard] componentOptions 生成 (移除self概念):`, {
-      currentComponentId: props.componentId,
-      componentType: props.componentType,
-      totalComponents: components.length,
-      totalOptions: options.length,
-      options: options
-    })
 
     return options
   } catch (error) {
@@ -499,13 +485,6 @@ const updateTargetPropertyOptions = async () => {
   })
 
   const options = groupedOptions.length > 0 ? groupedOptions : []
-  console.log(`🔒 [InteractionCardWizard] 安全属性选项生成:`, {
-    targetComponentId: currentInteraction.value.targetComponentId,
-    targetComponent: targetComponent,
-    hasWhitelistProperties: !!groups['🔒 白名单属性 (安全)'],
-    hasDefinitionProperties: !!targetComponent.metadata?.card2Definition?.interactionCapabilities?.watchableProperties,
-    finalOptions: options
-  })
 
   targetPropertyOptions.value = options
 }
@@ -521,11 +500,6 @@ watch(
 
 // 🔥 可用属性选项 - 直接基于当前组件ID获取配置属性（与ComponentPropertySelector逻辑一致）
 const availablePropertyOptions = computed(() => {
-  console.log(`🚨 [InteractionCardWizard] 监听属性选择器调试开始:`, {
-    componentId: props.componentId,
-    componentType: props.componentType,
-    hasComponentId: !!props.componentId
-  })
 
   if (!props.componentId) {
     console.error(`🚨 [InteractionCardWizard] 监听属性选择器：缺少componentId!`, {
@@ -536,22 +510,14 @@ const availablePropertyOptions = computed(() => {
     return []
   }
 
-  console.log(`🔍 [InteractionCardWizard] 获取组件 ${props.componentId} 的可监听属性`)
 
   // 🔥 直接从配置管理器获取当前组件配置
   const config = configurationIntegrationBridge.getConfiguration(props.componentId)
-  console.log(`🚨 [InteractionCardWizard] 配置获取结果:`, {
-    componentId: props.componentId,
-    hasConfig: !!config,
-    config: config,
-    configKeys: config ? Object.keys(config) : []
-  })
 
   if (!config) {
     console.error(`🚨 [InteractionCardWizard] 无法获取组件 ${props.componentId} 的配置，生成标准属性!`)
     // 🔥 即使无配置，也要生成标准属性
   } else {
-    console.log(`✅ [InteractionCardWizard] 成功获取组件配置`)
   }
 
   const options: any[] = []
@@ -581,7 +547,6 @@ const availablePropertyOptions = computed(() => {
     { path: 'metricsList', displayPath: '指标列表', type: 'array' }
   ]
 
-  console.log(`🚨 [InteractionCardWizard] 开始添加${standardBaseProperties.length}个基础属性`)
 
   // 添加所有标准基础属性
   standardBaseProperties.forEach(prop => {
@@ -597,7 +562,6 @@ const availablePropertyOptions = computed(() => {
       }
     }
     options.push(option)
-    console.log(`🚨 [InteractionCardWizard] 添加基础属性:`, prop.displayPath, '→', option.value)
   })
 
   // Component层标准属性
@@ -607,7 +571,6 @@ const availablePropertyOptions = computed(() => {
     { path: 'behavior', displayPath: '组件行为', type: 'object' }
   ]
 
-  console.log(`🚨 [InteractionCardWizard] 开始添加${standardComponentProperties.length}个组件属性`)
 
   standardComponentProperties.forEach(prop => {
     const currentValue = config?.component?.[prop.path] // 🔥 使用可选链，即使config为空也不报错
@@ -622,16 +585,8 @@ const availablePropertyOptions = computed(() => {
       }
     }
     options.push(option)
-    console.log(`🚨 [InteractionCardWizard] 添加组件属性:`, prop.displayPath, '→', option.value)
   })
 
-  console.log(`🚨 [InteractionCardWizard] 监听属性选择器最终结果:`, {
-    componentId: props.componentId,
-    totalOptions: options.length,
-    baseOptions: standardBaseProperties.length,
-    componentOptions: standardComponentProperties.length,
-    生成的选项: options.map(opt => ({ label: opt.label, value: opt.value }))
-  })
 
   return options
 })
@@ -770,7 +725,6 @@ const getWhitelistedProperties = async (targetComponent: any, groups: Record<str
     )
 
     if (Object.keys(whitelistedProperties).length === 0) {
-      console.log(`🔒 [InteractionCardWizard] 组件 ${targetComponent.type} 没有配置属性白名单`)
       return
     }
 
@@ -819,10 +773,6 @@ const getWhitelistedProperties = async (targetComponent: any, groups: Record<str
       }
     }
 
-    console.log(`🔒 [InteractionCardWizard] 成功获取白名单属性: ${targetComponent.type}`, {
-      totalWhitelisted: Object.keys(whitelistedProperties).length,
-      accessible: groups[whitelistGroup].length
-    })
   } catch (error) {
     console.error(`❌ [InteractionCardWizard] 获取白名单属性失败: ${targetComponent.type}`, error)
   }
@@ -977,12 +927,6 @@ const handleWatchedPropertyChange = (bindingPath: string, propertyInfo?: any) =>
 
   // 🔥 可选：如果需要使用属性信息进行额外处理
   if (propertyInfo) {
-    console.log(`🔥 [InteractionCardWizard] 属性选择变化:`, {
-      bindingPath,
-      componentName: propertyInfo.componentName,
-      propertyLabel: propertyInfo.propertyLabel,
-      type: propertyInfo.type
-    })
   }
 }
 
@@ -991,10 +935,6 @@ const handleTargetPropertyChange = (bindingPath: string, propertyInfo?: any) => 
   currentTargetPropertyBinding.value = bindingPath
   currentTargetPropertyInfo.value = propertyInfo
 
-  console.log(`🔥 [InteractionCardWizard] 目标属性绑定变化:`, {
-    bindingPath,
-    propertyInfo
-  })
 
   // 解析绑定路径更新原有字段（向后兼容）
   if (bindingPath && propertyInfo) {
@@ -1160,11 +1100,6 @@ const saveInteraction = () => {
       targetComponentId = currentTargetPropertyInfo.value.componentId
       targetProperty = `${currentTargetPropertyInfo.value.layer}.${currentTargetPropertyInfo.value.propertyName}`
 
-      console.log(`🔥 [InteractionCardWizard] 使用新绑定路径保存:`, {
-        bindingPath: currentTargetPropertyBinding.value,
-        targetComponentId,
-        targetProperty
-      })
     }
 
     // 生成新的修改配置格式

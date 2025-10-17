@@ -199,23 +199,9 @@ export class EnhancedDataWarehouse {
     // 🔥 新增：版本控制机制，防止过期数据覆盖新数据
     const dataVersion = this.generateDataVersion(componentId, data)
     if (!this.shouldAcceptData(componentId, dataVersion)) {
-      console.log(`🔥 [DataWarehouse] 数据版本过期，拒绝存储:`, {
-        componentId,
-        sourceId,
-        dataVersion,
-        说明: '新数据已存在，拒绝过期数据覆盖'
-      })
       return
     }
 
-    console.log(`🔍 [DataWarehouse] 开始存储组件数据 [执行ID: ${executionId}]: ${componentId}/${sourceId}`, {
-      数据内容: data,
-      提取的数值: dataValue,
-      数据类型: typeof data,
-      时间戳: now,
-      执行序号: executionId,
-      数据版本: dataVersion
-    })
 
     // 🔥 临时调试：详细记录存储过程，包含执行追踪
     ;(window as any).debugLastStorage = {
@@ -234,7 +220,6 @@ export class EnhancedDataWarehouse {
 
     // 检查内存限制
     if (this.shouldRejectStorage(dataSize)) {
-      console.log(`❌ [DataWarehouse] 存储被拒绝，内存限制: ${dataSize} bytes`)
       ;(window as any).debugLastStorage.step = 'rejected'
       return
     }
@@ -242,7 +227,6 @@ export class EnhancedDataWarehouse {
     // 获取或创建组件存储
     let componentStorage = this.componentStorage.get(componentId)
     if (!componentStorage) {
-      console.log(`✅ [DataWarehouse] 创建新组件存储: ${componentId}`)
       componentStorage = {
         componentId,
         dataSources: new Map(),
@@ -277,37 +261,17 @@ export class EnhancedDataWarehouse {
 
     // 清除合并数据缓存（因为数据源发生变化）
     if (componentStorage.mergedData) {
-      console.log(`🔄 [DataWarehouse] 数据存储时清除合并缓存: ${componentId}, 旧缓存数据:`, componentStorage.mergedData.data)
       componentStorage.mergedData = undefined
     }
 
     // 更新组件的最新数据版本
     this.updateLatestDataVersion(componentId, dataVersion)
 
-    console.log(`✅ [DataWarehouse] 成功存储数据 [执行ID: ${executionId}]: ${componentId}/${sourceId}`, {
-      数据内容: data,
-      提取的数值: dataValue,
-      数据大小: dataSize,
-      存储时间: new Date(now).toISOString(),
-      数据版本: dataVersion,
-      说明: '这是DataWarehouse最终存储的数据'
-    })
 
     // 🔥 临时调试：验证存储结果，包含数据值追踪
     const verification = this.componentStorage.get(componentId)
     const storedData = verification?.dataSources.get(sourceId)?.data
     const storedValue = this.extractDataValue(storedData)
-    console.log(`🔍 [DataWarehouse] 存储验证 [执行ID: ${executionId}]:`, {
-      componentId,
-      sourceId,
-      hasStorage: !!verification,
-      dataSourcesCount: verification?.dataSources.size,
-      actualData: storedData,
-      storedValue,
-      原始数值: dataValue,
-      数值是否一致: storedValue === dataValue,
-      存储成功: JSON.stringify(storedData) === JSON.stringify(data)
-    })
     ;(window as any).debugLastStorage.step = 'stored'
     ;(window as any).debugLastStorage.verification = verification
 
@@ -321,13 +285,6 @@ export class EnhancedDataWarehouse {
     componentNotifier.value++
 
     // 🚨 强制调试：响应式更新触发
-    console.log('🚨 [DataWarehouse] 触发组件响应式更新:', {
-      componentId,
-      旧值: oldValue,
-      新值: componentNotifier.value,
-      通知器实例: componentNotifier,
-      当前时间: new Date().toLocaleTimeString()
-    })
 
     // 🔥 完全移除全局通知器，避免触发所有组件的无效重计算
     // this.dataChangeNotifier.value++ // 已移除，避免"好几千次"的重复打印问题
@@ -341,7 +298,6 @@ export class EnhancedDataWarehouse {
 
     // 🔥 临时调试：最终状态检查
     const finalStats = this.getStorageStats()
-    console.log(`🔍 [DataWarehouse] 存储后统计:`, finalStats)
     ;(window as any).debugLastStorage.finalStats = finalStats
   }
 
@@ -364,13 +320,6 @@ export class EnhancedDataWarehouse {
     const changeNotifier = componentNotifier.value
 
     // 🚨 强制调试：响应式依赖访问
-    console.log('🚨 [DataWarehouse] getComponentData 访问响应式通知器:', {
-      componentId,
-      通知器值: changeNotifier,
-      通知器实例: componentNotifier,
-      当前时间: new Date().toLocaleTimeString(),
-      调用堆栈: new Error().stack?.split('\n').slice(1, 3)
-    })
 
     const componentStorage = this.componentStorage.get(componentId)
     if (!componentStorage) {
@@ -383,13 +332,6 @@ export class EnhancedDataWarehouse {
     // 检查是否有缓存的合并数据
     if (componentStorage.mergedData && !this.isExpired(componentStorage.mergedData)) {
       const cachedValue = this.extractDataValue(componentStorage.mergedData.data)
-      console.log(`🔍 [DataWarehouse] 使用缓存数据 ${componentId}:`, {
-        缓存时间: new Date(componentStorage.mergedData.timestamp).toLocaleTimeString(),
-        缓存数据: componentStorage.mergedData.data,
-        缓存数值: cachedValue,
-        访问次数: componentStorage.mergedData.accessCount,
-        说明: '返回已缓存的合并数据'
-      })
       componentStorage.mergedData.accessCount++
       componentStorage.mergedData.lastAccessed = Date.now()
       this.updateMetrics(Date.now() - startTime, 'get', true)
@@ -401,7 +343,6 @@ export class EnhancedDataWarehouse {
     const componentData: Record<string, any> = {}
     let hasValidData = false
 
-    console.log(`🔍 [DataWarehouse] 重新构建数据 ${componentId}, 数据源数量: ${componentStorage.dataSources.size}`)
 
     for (const [sourceId, item] of componentStorage.dataSources) {
       if (!this.isExpired(item)) {
@@ -410,14 +351,7 @@ export class EnhancedDataWarehouse {
         item.lastAccessed = Date.now()
         hasValidData = true
         const itemValue = this.extractDataValue(item.data)
-        console.log(`🔍 [DataWarehouse] 添加数据源 ${sourceId}:`, {
-          数据: item.data,
-          数值: itemValue,
-          存储时间: new Date(item.timestamp).toLocaleTimeString(),
-          访问次数: item.accessCount
-        })
       } else {
-        console.log(`⚠️ [DataWarehouse] 删除过期数据源 ${sourceId}`)
         componentStorage.dataSources.delete(sourceId)
       }
     }
@@ -432,12 +366,6 @@ export class EnhancedDataWarehouse {
 
     // 🔥 修复：如果有 complete 数据源，解包其中的实际数据
     const sourceIds = Object.keys(componentData)
-    console.log('🔥 [DataWarehouse] getComponentData 返回前调试:', {
-      componentId,
-      sourceIds,
-      componentData,
-      hasComplete: 'complete' in componentData
-    })
 
     // 🔥 关键修复：处理数据解包，得到最终要返回的数据
     let finalData = componentData
@@ -445,15 +373,12 @@ export class EnhancedDataWarehouse {
     // 如果有 complete 数据源，解包其中的数据源数据
     if ('complete' in componentData && componentData.complete) {
       const completeData = componentData.complete
-      console.log('🔥 [DataWarehouse] 发现 complete 数据:', completeData)
 
       // 检查 complete 是否包含 deviceData
       if (completeData.deviceData && completeData.deviceData.data) {
-        console.log('🔥 [DataWarehouse] 解包 deviceData.data:', completeData.deviceData.data)
         finalData = completeData.deviceData.data
       } else {
         // 如果不是标准结构，返回 complete 的直接内容
-        console.log('🔥 [DataWarehouse] 返回 complete 直接内容:', completeData)
         finalData = completeData
       }
     }
@@ -474,14 +399,6 @@ export class EnhancedDataWarehouse {
     }
 
     const finalValue = this.extractDataValue(finalData)
-    console.log(`🔍 [DataWarehouse] 创建新缓存 ${componentId}:`, {
-      最终数据: finalData,
-      最终数值: finalValue,
-      缓存时间: new Date().toLocaleTimeString(),
-      数据大小: this.calculateDataSize(finalData),
-      来源数据源: sourceIds,
-      说明: '这是组件最终获取的数据'
-    })
     return finalData
   }
 
@@ -632,7 +549,6 @@ export class EnhancedDataWarehouse {
       const hadCache = !!componentStorage.mergedData
       componentStorage.mergedData = undefined
 
-      console.log(`🔄 [DataWarehouse] 强制清除合并数据缓存: ${componentId}, 之前有缓存: ${hadCache}`)
 
       // 🔥 关键：无论是否有缓存都触发响应式更新，确保组件重新获取数据
       let componentNotifier = this.componentChangeNotifiers.get(componentId)
@@ -641,9 +557,7 @@ export class EnhancedDataWarehouse {
         this.componentChangeNotifiers.set(componentId, componentNotifier)
       }
       componentNotifier.value++
-      console.log(`🔄 [DataWarehouse] 触发响应式更新: ${componentId}, 新值: ${componentNotifier.value}`)
     } else {
-      console.log(`⚠️ [DataWarehouse] clearComponentMergedCache: 组件存储不存在: ${componentId}`)
     }
   }
 

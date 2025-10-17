@@ -133,13 +133,16 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => {
   const config = {
     colNum: 24, // 🔥 修复：统一默认为24列
     rowHeight: 80,
-    // 默认无间距：从 [10, 10] 调整为 [0, 0]
+    // 🔥 使用新的 gap 配置，更直接清晰
+    horizontalGap: 0, // 水平间距默认 0px
+    verticalGap: 0, // 垂直间距默认 0px
+    // 保留 margin 以保持向后兼容
     margin: [0, 0] as [number, number],
     isDraggable: !isReadOnly.value && !props.staticGrid,
     isResizable: !isReadOnly.value && !props.staticGrid,
     responsive: false,
-    preventCollision: false, // 改为 false，允许碰撞和替换
-    verticalCompact: true,
+    preventCollision: true, // 🔥 阻止组件重叠（关键配置）
+    verticalCompact: false, // 🔥 禁用垂直压缩，保持用户拖拽的布局不变
     isMirrored: false,
     autoSize: false, // 🔥 禁用自动调整大小，让父容器处理滚动
     useCssTransforms: true,

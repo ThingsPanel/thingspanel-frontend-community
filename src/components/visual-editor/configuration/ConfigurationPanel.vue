@@ -73,10 +73,6 @@ const visibleConfigLayers = computed(() => {
   return getVisibleConfigLayers(props.selectedWidget.id, props.selectedWidget)
 })
 
-console.log(`🔥 [ConfigurationPanel] 统一配置架构已启用`, {
-  selectedWidget: props.selectedWidget?.id,
-  visibleLayers: visibleConfigLayers.value.map(layer => layer.name)
-})
 
 // 监听组件选择变化，重置到基础标签页
 watch(() => props.selectedWidget, async (newWidget) => {

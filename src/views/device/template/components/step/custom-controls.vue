@@ -39,7 +39,7 @@ const commandjson: any = reactive({
   formjson: {
     name: '',
     description: '',
-    content: '',
+    content: '{}',
     enable_status: 'disable'
   }
 })
@@ -54,19 +54,14 @@ const cmRef = ref()
 
 const setupEditor = () => {
   nextTick(() => {
-    // CodeMirror 6 自动处理刷新
-    if (cmRef.value) {
-      // 聚焦编辑器
-      cmRef.value.focus()
-    }
+    // CodeMirror 6 会自动处理，不需要手动聚焦
   })
 }
 const openCommandDialog = () => {
   commandjson.formjson = {
     name: '',
-
     description: '',
-    content: '',
+    content: '{}',
     enable_status: 'disable'
   }
   commandjson.configForm = !commandjson.configForm
@@ -194,7 +189,7 @@ const inputFeedback = computed(() => {
     <NModal
       v-model:show="commandjson.configForm"
       :title="$t('generate.customCommand')"
-      :class="getPlatform ? 'w-90%' : 'w-500px'"
+      :class="getPlatform ? 'w-90%' : 'custom-control-modal'"
       @after-enter="setupEditor"
     >
       <n-card>
@@ -204,11 +199,8 @@ const inputFeedback = computed(() => {
           label-placement="left"
           class="flex-wrap"
           :rules="configFormRules"
-          label-width="auto"
+          label-width="120px"
         >
-          <div>
-            <NH3>{{ $t('generate.customCommand') }}</NH3>
-          </div>
           <NFormItem :label="$t('generate.btnname')" path="name">
             <NInput v-model:value="commandjson.formjson.name" :placeholder="$t('generate.or-enter-here')" />
           </NFormItem>
@@ -225,10 +217,14 @@ const inputFeedback = computed(() => {
               basic
               :dark="themeStore.darkMode"
               :lang="javascript()"
-              :style="{ height: '100px', border: '1px solid var(--n-border-color)', borderRadius: 'var(--n-border-radius)' }"
-              :placeholder="$t('generate.or-enter-here')"
+              :style="{
+                width: '100%',
+                height: '200px',
+                border: '1px solid var(--n-border-color)',
+                borderRadius: 'var(--n-border-radius)'
+              }"
+              :placeholder="$t('generate.enter-json-format')"
             />
-            <!-- <NInput v-model:value="commandjson.formjson.content" :placeholder="$t('generate.or-enter-here')" /> -->
           </NFormItem>
           <NFormItem :label="$t('generate.enableStatus')" path="enable_status">
             <n-switch
@@ -238,7 +234,12 @@ const inputFeedback = computed(() => {
             />
           </NFormItem>
           <NFormItem :label="$t('common.description')" path="description">
-            <NInput v-model:value="commandjson.formjson.description" type="textarea" />
+            <NInput
+              v-model:value="commandjson.formjson.description"
+              type="textarea"
+              :autosize="{ minRows: 3, maxRows: 6 }"
+              :placeholder="$t('device_template.table_header.PleaseEnterADescription')"
+            />
           </NFormItem>
 
           <NFlex justify="end">
@@ -251,8 +252,13 @@ const inputFeedback = computed(() => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .flex-align-end {
   align-items: flex-end;
+}
+
+.custom-control-modal {
+  width: 800px;
+  min-width: 600px;
 }
 </style>

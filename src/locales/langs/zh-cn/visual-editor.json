@@ -256,10 +256,11 @@
   "config.base.advanced.section": "高级配置",
   "config.base.device.section": "设备配置",
   "config.base.deviceId": "设备ID",
-  "config.base.deviceIdPlaceholder": "请输入设备ID",
+  "config.base.deviceIdPlaceholder": "请选择设备",
   "config.base.metricsList": "指标列表",
   "config.base.metricsListPlaceholder": "请输入指标名称",
   "config.base.customClassName.placeholder": "请输入自定义CSS类名",
+  "config.base.loadDevicesFailed": "加载设备列表失败",
 
   "config.dataSource.type.section": "数据源类型",
   "config.dataSource.type.placeholder": "选择数据源类型",

@@ -148,19 +148,13 @@ const fetchData = async () => {
       end_time: ''
     }
     const response = await alarmHistory(params)
-    console.log('alarm-info 新版 - response:', response)
     const { data } = response
-    console.log('alarm-info 新版 - data:', data)
-    console.log('alarm-info 新版 - data?.list:', data?.list)
     alarmList.value = data?.list || []
-    console.log('alarm-info 新版 - alarmList.value after assignment:', alarmList.value)
-    console.log('alarm-info 新版 - alarmList.value.length:', alarmList.value.length)
   } catch (error) {
     console.error('Failed to fetch alarm history:', error) // 与原版保持一致的错误信息
     alarmList.value = []
   }
   loading.value = false // 与原版保持1:1一致的loading处理方式
-  console.log('alarm-info 新版 - loading set to false, final alarmList.length:', alarmList.value.length)
 }
 
 /**

@@ -13,7 +13,7 @@ import '@/card2.1/index'
 // 🔥 关键修复：确保组件系统在应用启动时初始化（使用统一入口）
 import { initializeCard2System } from '@/card2.1/index'
 // 🔥 关键修复：确保 InteractionManager 在应用启动时被正确初始化
-import '@/card2.1/core/interaction-manager'
+import '@/card2.1/core2/interaction'
 // 🧹 导入localStorage清理工具
 import { cleanupLocalStorage } from '@/utils/storage-cleaner'
 // 🎯 导入渲染器注册系统
@@ -53,7 +53,6 @@ async function setupApp() {
     .then(() => {
       // 组件系统初始化完成，通知所有监听器
       window.dispatchEvent(new CustomEvent('card2-system-ready'))
-      console.log('✅ Card2.1 组件系统初始化完成，已发送就绪事件')
     })
     .catch(error => {
       console.error('❌ Card2.1 组件系统初始化失败:', error)
@@ -62,7 +61,6 @@ async function setupApp() {
   // 🎯 初始化渲染器注册系统
   try {
     registerAllRenderers()
-    console.log('✅ 渲染器注册系统初始化完成')
   } catch (error) {
     console.error('❌ 渲染器注册系统初始化失败:', error)
   }

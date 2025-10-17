@@ -17,7 +17,6 @@ import { ConfigurationPanel } from '@/components/visual-editor/configuration'
 import { usePreviewMode } from '@/components/visual-editor/hooks/usePreviewMode'
 import type { RendererType } from '@/components/visual-editor/types'
 import { useMessage, useDialog } from 'naive-ui'
-import { getBoard, PutBoard } from '@/service/api'
 import { smartDeepClone } from '@/utils/deep-clone'
 
 // 🔥 轮询系统导入
@@ -54,14 +53,17 @@ const getComponentDefinition = async (componentType: string) => {
 
 // 🔥 接收测试页面的配置props
 interface Props {
-  panelId: string
+  panelId: string // 仅作为编辑器标识符
+  initialConfig?: { widgets: any[]; config: any } // 🔥 父组件传递的初始编辑器配置
   showToolbar?: boolean
   showPageHeader?: boolean
   enableHeaderArea?: boolean
   enableToolbarArea?: boolean
   enableFooterArea?: boolean
   customLayoutClass?: string
-  defaultRenderer?: RendererType // 🔥 新增：默认渲染器类型
+  defaultRenderer?: RendererType // 🔥 默认渲染器类型
+  customSaveHandler?: (state: any) => Promise<void> // 🔥 父组件实现的保存函数
+  mode?: 'template' | 'dashboard' // 🔥 WidgetLibrary模式：template=模板配置，dashboard=看板编辑
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -71,21 +73,27 @@ const props = withDefaults(defineProps<Props>(), {
   enableToolbarArea: true,
   enableFooterArea: false,
   customLayoutClass: '',
-  defaultRenderer: 'gridstack' // 🔥 默认使用GridStack渲染器
+  defaultRenderer: 'gridstack', // 🔥 默认使用GridStack渲染器
+  mode: 'dashboard' // 🔥 默认为看板模式
 })
 
 const message = useMessage()
 const dialog = useDialog()
 
-// 🔥 定义emit事件 - 测试页面需要监听这些事件
+// 🔥 定义emit事件
 const emit = defineEmits<{
   'state-manager-ready': [stateManager: any]
   'widget-added': [widget: any]
   'node-select': [nodeId: string]
   'editor-ready': [editor: any]
+  'save': [state: any] // 保存事件，传递当前状态
+  'save-success': [] // 保存成功事件
+  'save-error': [error: any] // 保存失败事件
+  'config-loaded': [] // 🔥 配置加载完成事件
+  'load-error': [error: any] // 🔥 配置加载失败事件
 }>()
 
-const panelData = ref<any>({})
+// 🔥 移除 panelData 内部状态，不再由编辑器管理业务数据
 const preEditorConfig = ref<any>(null)
 
 // 基础状态
@@ -176,9 +184,7 @@ const componentExecutorRegistry = ref(new Map<string, () => Promise<void>>())
 
 // 🔥 关键修复：数据执行触发器 - 处理配置变更事件并触发数据源重新执行
 const handleDataExecutionTrigger = async (event: ConfigChangeEvent) => {
-  if (import.meta.env.DEV) {
-    if (import.meta.env.DEV) console.log(`[PanelEditorV2] 配置变更触发数据执行: ${event.componentId}`)
-  }
+
 
   // 检查是否需要触发数据执行
   if (!event.context?.shouldTriggerExecution) {
@@ -190,9 +196,8 @@ const handleDataExecutionTrigger = async (event: ConfigChangeEvent) => {
     try {
       await executor()
     } catch (error) {
-      if (import.meta.env.DEV) {
+
         console.error(`组件数据源执行失败: ${event.componentId}`, error)
-      }
     }
   } else {
 
@@ -205,9 +210,6 @@ const handleDataExecutionTrigger = async (event: ConfigChangeEvent) => {
       const fullConfig = configurationManager.getConfiguration(event.componentId)
       if (fullConfig && fullConfig.dataSource) {
         // 🔥 性能优化：减少日志输出，避免366条重复日志
-        if (process.env.NODE_ENV === 'development') {
-          if (import.meta.env.DEV) console.log(`🔍 [PanelEditorV2] 使用核心架构执行数据源: ${event.componentId}`)
-        }
 
         // 🔥 关键修复：执行前强制清理所有缓存，确保发送真实请求
         dataBridge.clearComponentCache(event.componentId)
@@ -225,15 +227,6 @@ const handleDataExecutionTrigger = async (event: ConfigChangeEvent) => {
         }
 
         const result = await dataBridge.executeComponent(dataRequirement)
-
-        // 🔥 性能优化：减少成功执行日志，避免366条重复输出
-        if (process.env.NODE_ENV === 'development' && (!result.success || result.error)) {
-          if (import.meta.env.DEV) console.log(`✅ [PanelEditorV2] 核心架构执行完成: ${event.componentId}`, {
-            success: result.success,
-            dataKeysCount: result.data ? Object.keys(result.data).length : 0,
-            hasError: !!result.error
-          })
-        }
 
         // 🔥 修复：通过Card2Wrapper的数据更新机制来传递数据
         if (result.success && result.data) {
@@ -253,21 +246,12 @@ const handleDataExecutionTrigger = async (event: ConfigChangeEvent) => {
           if (targetElement) {
             targetElement.dispatchEvent(dataUpdateEvent)
             // 🔥 性能优化：只在调试模式下输出事件分发成功日志
-            if (process.env.NODE_ENV === 'development') {
-              if (import.meta.env.DEV) console.log(`🔍 [PanelEditorV2] 已分发数据更新事件: ${event.componentId}`)
-            }
           } else {
             // 🔥 性能优化：组件元素未找到通常是正常的（组件可能还未渲染），只在调试时输出
-            if (process.env.NODE_ENV === 'development') {
-              if (import.meta.env.DEV) console.log(`🔍 [PanelEditorV2] 目标组件元素尚未渲染: ${event.componentId}`)
-            }
           }
         }
       } else {
         // 🔥 性能优化：组件没有数据源配置是正常状态，不需要警告
-        if (process.env.NODE_ENV === 'development') {
-          if (import.meta.env.DEV) console.log(`🔍 [PanelEditorV2] 组件无数据源配置，跳过: ${event.componentId}`)
-        }
       }
     } catch (error) {
       console.error(`❌ [PanelEditorV2] 数据源执行异常: ${event.componentId}`, error)
@@ -327,38 +311,8 @@ const getState = () => {
     if (configFromManager) {
       // 使用 ConfigurationManager 中的最新配置
       unifiedConfig = configFromManager
-      if (import.meta.env.DEV) console.log(`🔄 [getState] 组件 ${widget.id} 从ConfigurationManager获取最新配置:`, configFromManager)
-
-      // 🎯 关键调试：检查是否有数据源配置
-      if (configFromManager.dataSource) {
-        if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段C1：组件${widget.id}在ConfigurationManager中确实有数据源配置`, {
-          配置存在: true,
-          数据源数量: configFromManager.dataSource.dataSources?.length || 0,
-          数据源详情: configFromManager.dataSource.dataSources
-        })
-      }
-    } else if (unifiedConfig) {
-      if (import.meta.env.DEV) console.log(`⚠️ [getState] 组件 ${widget.id} ConfigurationManager无配置，使用节点配置:`, unifiedConfig)
-    } else {
-      if (import.meta.env.DEV) console.warn(`❌ [getState] 组件 ${widget.id} 无任何配置源`)
     }
-
     const dataSourceConfig = unifiedConfig?.dataSource || {}
-
-    if (import.meta.env.DEV) console.log(`🔥 [getState] 组件 ${widget.id} (${widget.type}) 配置状态:`, {
-      hasUnifiedConfig: !!unifiedConfig,
-      hasDataSource: !!dataSourceConfig,
-      hasInteractionConfig: !!unifiedConfig?.interaction?.configs,
-      interactionConfigCount: unifiedConfig?.interaction?.configs?.length || 0,
-      dataSourceConfig,
-      interactionConfigs: unifiedConfig?.interaction?.configs,
-      fullUnifiedConfig: unifiedConfig
-    })
-
-    // 🔥 额外调试：如果没有数据源配置，打印警告
-    if (!dataSourceConfig) {
-      if (import.meta.env.DEV) console.warn(`⚠️ 组件 ${widget.id} 没有数据源配置！`)
-    }
 
     // 🔥 数据优化：只保存必要的数据，移除冗余的metadata
     // 🔥 关键修复：移除重复的 dataSource 字段，只保留在 unifiedConfig 中
@@ -430,65 +384,30 @@ const setState = async (state: any) => {
   if (Array.isArray(widgets)) {
     // 🔥 处理组件数据，恢复数据源配置和必要的metadata
     const processedWidgets = []
-    
+
     for (const widget of widgets) {
       // 🔥 统一配置架构：恢复统一配置到组件元数据
-      if (import.meta.env.DEV) console.log(`🔥 [setState] 组件 ${widget.id} (${widget.type}) 配置恢复:`, {
-        hasMetadataUnifiedConfig: !!widget.metadata?.unifiedConfig,
-        hasDataSource: !!widget.dataSource,
-        dataSource: widget.dataSource,
-        metadataUnifiedConfig: widget.metadata?.unifiedConfig
-      })
-      
+
+
       if (widget.metadata?.unifiedConfig) {
-        if (import.meta.env.DEV) console.log(`✅ [setState] 组件 ${widget.id} 使用统一配置`)
-
-        // 🔥 关键修复：从统一配置恢复到ConfigurationManager
-        if (import.meta.env.DEV) console.log(`🔍 [setState] 检查组件 ${widget.id} 的数据源配置:`, {
-          hasDataSource: !!widget.metadata.unifiedConfig.dataSource,
-          dataSourceType: typeof widget.metadata.unifiedConfig.dataSource,
-          dataSourceKeys: widget.metadata.unifiedConfig.dataSource ? Object.keys(widget.metadata.unifiedConfig.dataSource) : [],
-          dataSource: widget.metadata.unifiedConfig.dataSource
-        })
-
-        // 🔥 关键修复：一次性设置完整配置，避免多次更新导致的锁冲突
-        if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段D1：setState准备一次性设置完整配置`, {
-          组件ID: widget.id,
-          完整统一配置: widget.metadata.unifiedConfig
-        })
 
         // 使用ConfigurationIntegrationBridge的setConfiguration一次性设置完整配置
         configurationManager.setConfiguration(widget.id, widget.metadata.unifiedConfig, widget.type)
-        if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段D2：setState已调用setConfiguration完成完整配置设置`)
-
         // 🔍 验证配置是否真的更新了
-        const verifyConfig = configurationManager.getConfiguration(widget.id)
-        if (import.meta.env.DEV) console.log(`✅ [setState] 验证更新后的配置:`, {
-          hasConfig: !!verifyConfig,
-          dataSource: verifyConfig?.dataSource,
-          fullConfig: verifyConfig
-        })
       } else if (widget.dataSource) {
-        if (import.meta.env.DEV) console.log(`🔄 [setState] 组件 ${widget.id} 从数据源配置恢复`)
         // 🔥 兼容性：回退到传统配置恢复方式
         configurationManager.updateConfiguration(widget.id, 'dataSource', widget.dataSource)
-      } else {
-        if (import.meta.env.DEV) console.warn(`⚠️ 组件 ${widget.id} 没有数据源配置`)
       }
 
       // 🔥 关键修复：从Card2.1组件注册系统恢复完整的组件定义
       let fullCard2Definition = widget.metadata?.card2Definition
-      
+
       // 如果保存的定义不完整（缺少configComponent），从注册系统恢复
       if (fullCard2Definition && !fullCard2Definition.configComponent) {
         try {
-          if (import.meta.env.DEV) console.log(`🔥 [setState] 尝试恢复 ${widget.type} 的完整定义...`)
           const registeredDefinition = await getComponentDefinition(widget.type)
           if (registeredDefinition) {
             fullCard2Definition = registeredDefinition
-            if (import.meta.env.DEV) console.log(`✅ [setState] 成功恢复 ${widget.type} 的完整定义，包含 configComponent:`, !!registeredDefinition.configComponent)
-          } else {
-            if (import.meta.env.DEV) console.warn(`⚠️ [setState] 组件 ${widget.type} 未在注册系统中找到`)
           }
         } catch (error) {
           console.error(`❌ [setState] 恢复组件定义失败: ${widget.type}`, error)
@@ -509,10 +428,8 @@ const setState = async (state: any) => {
           unifiedConfig: (() => {
             const latestConfig = configurationManager.getConfiguration(widget.id)
             if (latestConfig) {
-              if (import.meta.env.DEV) console.log(`🔄 [setState] 使用ConfigurationManager最新配置构建processedWidget: ${widget.id}`)
               return latestConfig
             } else {
-              if (import.meta.env.DEV) console.log(`⚠️ [setState] ConfigurationManager无配置，使用原始配置: ${widget.id}`)
               return widget.metadata?.unifiedConfig || {
                 component: widget.properties || {},
                 dataSource: widget.dataSource || null
@@ -537,72 +454,47 @@ const setState = async (state: any) => {
   }
 }
 
-
-const fetchBoard = async () => {
+/**
+ * 🔥 初始化编辑器配置
+ * 从父组件传递的 initialConfig 加载配置，不再内部调用 API
+ */
+const initializeEditorConfig = async () => {
   try {
     dataFetched.value = false
-    const { data } = await getBoard(props.panelId)
-    panelData.value = data
 
-    if (data?.config) {
-      // 🔥 完全兼容的配置解析逻辑
-      const fullConfig = JSON.parse(data.config)
+    // 如果父组件提供了初始配置，直接使用
+    if (props.initialConfig) {
+      const config = props.initialConfig
 
-      if (process.env.NODE_ENV === 'development') {
-      }
-
-      // 检查是否是新的嵌套结构（包含 visualEditor 字段）
-      if (fullConfig.visualEditor) {
-        if (import.meta.env.DEV) console.log(`🔥 [fetchBoard] 使用嵌套结构，调用setState:`, fullConfig.visualEditor)
-        if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段B1：fetchBoard准备调用setState恢复配置数据`)
-        await setState(fullConfig.visualEditor)
-        if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段B2：fetchBoard的setState调用完成，配置已恢复到ConfigurationManager`)
-        preEditorConfig.value = smartDeepClone(fullConfig.visualEditor)
-      } else if (fullConfig.widgets !== undefined || fullConfig.config !== undefined) {
-        // 🔥 兼容老版本的直接格式 - 老版本直接保存 {widgets: [...], config: {...}}
-        if (import.meta.env.DEV) console.log(`🔥 [fetchBoard] 使用直接格式，调用setState:`, {
-          widgetsCount: fullConfig.widgets?.length || 0,
-          hasConfig: !!fullConfig.config,
-          firstWidget: fullConfig.widgets?.[0]
-        })
-        if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段B1：fetchBoard准备调用setState恢复配置数据(直接格式)`)
-        await setState(fullConfig)
-        if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段B2：fetchBoard的setState调用完成，配置已恢复到ConfigurationManager(直接格式)`)
-        preEditorConfig.value = smartDeepClone(fullConfig)
-      } else if (Array.isArray(fullConfig)) {
-        // 🔥 兼容更老的数组格式
-        if (process.env.NODE_ENV === 'development') {
-        }
-        const legacyState = { widgets: fullConfig, config: { gridConfig: {}, canvasConfig: {} } }
-        await setState(legacyState)
-        preEditorConfig.value = smartDeepClone(legacyState)
+      if (config.widgets !== undefined || config.config !== undefined) {
+        // 标准格式：{widgets: [...], config: {...}}
+        await setState(config)
+        preEditorConfig.value = smartDeepClone(config)
       } else {
-        // 🔥 未知结构或空对象，设置默认状态
-        if (process.env.NODE_ENV === 'development') {
-        }
+        // 空配置
         const emptyState = { widgets: [], config: { gridConfig: {}, canvasConfig: {} } }
         await setState(emptyState)
         preEditorConfig.value = emptyState
       }
     } else {
-      // 设置默认空状态
-      if (process.env.NODE_ENV === 'development') {
-      }
+      // 没有提供初始配置，使用空状态
       const emptyState = { widgets: [], config: { gridConfig: {}, canvasConfig: {} } }
       await setState(emptyState)
       preEditorConfig.value = emptyState
     }
-  } catch (error) {
-    message.error($t('common.loadFailed') || '加载面板数据失败')
-    console.error('加载面板数据失败:', error)
-  } finally {
+
     dataFetched.value = true
+    emit('config-loaded')
+  } catch (error) {
+    console.error('❌ 初始化编辑器配置失败:', error)
+    message.error($t('common.loadFailed') || '加载配置失败')
+    emit('load-error', error)
+    dataFetched.value = true // 即使失败也设置为 true，显示空编辑器
   }
 }
 
 // 处理组件系统就绪事件
 const handleCard2SystemReady = () => {
-  if (import.meta.env.DEV) console.log('🔥 [PanelEditorV2] 接收到组件系统就绪事件，刷新组件定义')
   refreshCard2Definitions()
 }
 
@@ -615,7 +507,6 @@ const startCard2SystemCheck = () => {
       // 尝试获取一个组件定义来测试系统是否就绪
       const testDefinition = await getComponentDefinition('alert-status')
       if (testDefinition && testDefinition.configComponent) {
-        if (import.meta.env.DEV) console.log('✅ [Card2SystemCheck] 组件系统已就绪（通过检查）')
         if (card2SystemCheckInterval) {
           clearInterval(card2SystemCheckInterval)
           card2SystemCheckInterval = null
@@ -632,38 +523,29 @@ const startCard2SystemCheck = () => {
     if (card2SystemCheckInterval) {
       clearInterval(card2SystemCheckInterval)
       card2SystemCheckInterval = null
-      if (import.meta.env.DEV) console.log('⏹️ [Card2SystemCheck] 组件系统检查超时停止')
     }
   }, 30000)
 }
 
 onMounted(async () => {
-  // 🔥 关键修复：先初始化管理器和设置注册表，再获取数据
+  // 🔥 关键修复：先初始化管理器和设置注册表，再加载配置
   try {
     await configurationManager.initialize()
 
     // 🔥 关键修复：注册数据执行触发器，用于处理配置变更事件
     dataExecutionTriggerCleanup = registerDataExecutionTrigger(handleDataExecutionTrigger)
-    if (import.meta.env.DEV) console.log('🔥 [PanelEditorV2] 数据执行触发器已注册')
 
     // 🔥 已迁移：数据源管理现在通过核心数据架构系统处理
     // 组件执行器注册表现在由 Card2Wrapper 自行管理
-    if (import.meta.env.DEV) console.log('🔥 [PanelEditorV2] 数据源管理已迁移到核心架构系统')
+
   } catch (error) {
     console.error('初始化管理器失败:', error)
   }
 
-  // 🔥 现在可以安全地获取面板数据，配置更新会正确触发执行
-  if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段A1：PanelEditorV2开始调用fetchBoard，执行器注册表已设置完成`)
-
-  // 🔥 新策略：不等待组件挂载，直接执行fetchBoard，组件挂载后会重新触发执行
-  if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段A1.5：直接执行fetchBoard，组件挂载后将重新触发数据源执行`)
   await nextTick() // 确保DOM更新完成
 
-  if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段A1.8：开始fetchBoard，当前注册表大小: ${componentExecutorRegistry.value.size}`)
-
-  await fetchBoard()
-  if (import.meta.env.DEV) console.log(`🎯 用户要求的打印这几个字 - 阶段A2：PanelEditorV2的fetchBoard调用完成，即将触发setState`)
+  // 🔥 从父组件提供的 initialConfig 加载配置
+  await initializeEditorConfig()
 
   // 其他初始化
   try {
@@ -694,7 +576,6 @@ onUnmounted(() => {
   if (dataExecutionTriggerCleanup) {
     dataExecutionTriggerCleanup()
     dataExecutionTriggerCleanup = null
-    if (import.meta.env.DEV) console.log('🔥 [PanelEditorV2] 数据执行触发器已清理')
   }
 
   // 清理事件监听
@@ -741,8 +622,6 @@ const handlePollingDisabled = handlePollingDisabledFromManager
 
 // 🔥 初始化轮询任务并启用（使用真正的轮询逻辑）
 const initializePollingTasksAndEnable = () => {
-  if (process.env.NODE_ENV === 'development') {
-  }
   initializePollingTasksAndEnableFromManager()
 }
 
@@ -781,8 +660,6 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
   if (editMode) {
     // 🔴 关闭全局轮询（编辑模式）
     pollingManager.disableGlobalPolling()
-    if (process.env.NODE_ENV === 'development') {
-    }
 
     // 编辑模式不需要控制showFooter，由actualFooterShow自动处理
   } else {
@@ -806,24 +683,28 @@ const handleSave = async () => {
   try {
     const currentState = getState()
 
-    // 🔥 统一格式：直接保存简单格式，新老版本都能读取
-    const { error } = await PutBoard({
-      id: props.panelId,
-      config: JSON.stringify(currentState), // 直接保存 {widgets: [], config: {}}
-      name: panelData.value?.name,
-      home_flag: panelData.value?.home_flag
-    })
-
-    if (error) {
-      throw new Error(error)
+    // 🔥 必须由父组件提供保存函数
+    if (props.customSaveHandler) {
+      // 使用父组件提供的自定义保存函数
+      await props.customSaveHandler(currentState)
+    } else {
+      // 🔥 没有提供保存函数，抛出错误
+      throw new Error('customSaveHandler is required')
     }
+
+    // 🔥 触发保存成功事件
+    emit('save', currentState)
+    emit('save-success')
 
     message.success($t('page.dataForward.saveSuccess') || '保存成功')
     hasChanges.value = false
     preEditorConfig.value = smartDeepClone(currentState)
   } catch (error) {
+    console.error('❌ 保存失败:', error)
+    // 🔥 触发保存失败事件
+    emit('save-error', error)
+
     message.error($t('page.dataForward.saveFailed') || '保存失败')
-    console.error('保存失败:', error)
   } finally {
     isSaving.value = false
   }
@@ -873,14 +754,12 @@ const handleDrop = async (event: DragEvent) => {
 
     const dragDataStr = event.dataTransfer.getData('application/json')
     if (!dragDataStr) {
-      console.error('拖拽数据为空')
       return
     }
 
     const dragData = JSON.parse(dragDataStr)
 
     if (!dragData.type) {
-      console.error('拖拽数据缺少组件类型')
       return
     }
 
@@ -888,7 +767,6 @@ const handleDrop = async (event: DragEvent) => {
     await handleAddWidget({ type: dragData.type })
     message.success(`组件 "${dragData.type}" 添加成功`)
   } catch (error) {
-    console.error('拖放添加组件失败:', error)
     message.error('拖放添加组件失败')
   }
 }
@@ -898,9 +776,6 @@ const handleAddWidget = async (widget: { type: string }) => {
   try {
     await addWidget(widget.type)
     hasChanges.value = true
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     // 🔥 发射widget-added事件，通知测试页面
     emit('widget-added', { type: widget.type })
   } catch (error: any) {
@@ -926,7 +801,6 @@ const handleImportConfig = () => {
         message.success($t('visualEditor.configImportSuccess', '配置导入成功'))
       } catch (error) {
         message.error($t('visualEditor.configImportFailed', '配置文件解析失败'))
-        console.error('Import failed:', error)
       }
     }
     reader.readAsText(file)
@@ -961,10 +835,47 @@ const handleClearAll = () => {
     positiveText: $t('common.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: () => {
-      stateManager.clear()
+      console.log('🗑️ [PanelEditorV2] 开始清空所有内容')
+
+      // 1. 清空状态管理器中的所有节点
+      stateManager.reset()
+      console.log('✅ [PanelEditorV2] 已清空 stateManager 节点')
+
+      // 2. 清空编辑器配置
       editorConfig.value = { gridConfig: {}, canvasConfig: {} }
+      console.log('✅ [PanelEditorV2] 已清空 editorConfig')
+
+      // 3. 清空ConfigurationManager中的所有配置
+      try {
+        configurationManager.clearAll()
+        console.log('✅ [PanelEditorV2] 已清空 ConfigurationManager')
+      } catch (error) {
+        console.warn('⚠️ [PanelEditorV2] 清空 ConfigurationManager 失败:', error)
+      }
+
+      // 4. 清空组件执行器注册表
+      componentExecutorRegistry.value.clear()
+      console.log('✅ [PanelEditorV2] 已清空组件执行器注册表')
+
+      // 5. 清空轮询管理器（如果有活动任务）
+      try {
+        if (pollingManager) {
+          pollingManager.clearAll()
+          console.log('✅ [PanelEditorV2] 已清空轮询管理器')
+        }
+      } catch (error) {
+        console.warn('⚠️ [PanelEditorV2] 清空轮询管理器失败:', error)
+      }
+
+      // 6. 清空选中状态
+      selectedNodeId.value = ''
+      selectNode('')
+
+      // 7. 标记有变更
       hasChanges.value = true
-      message.success($t('visualEditor.clearedSuccess', '已清空'))
+
+      console.log('✅ [PanelEditorV2] 清空完成')
+      message.success($t('visualEditor.clearedSuccess', '已清空所有内容'))
     }
   })
 }
@@ -1055,24 +966,21 @@ const handleRequestCurrentData = (componentId: string) => {
  */
 const refreshCard2Definitions = async () => {
   try {
-    if (import.meta.env.DEV) console.log('🔥 [refreshCard2Definitions] 开始刷新组件定义...')
-    
+
     // 🔥 修复：从 stateManager.nodes 获取组件列表，而不是从 editorConfig.widgets
     const currentWidgets = toRaw(stateManager.nodes)
     if (!currentWidgets || !Array.isArray(currentWidgets) || currentWidgets.length === 0) {
-      if (import.meta.env.DEV) console.log('ℹ️ [refreshCard2Definitions] 当前没有组件，跳过刷新')
       return
     }
 
     // 创建副本以进行修改
     const updatedWidgets = [...currentWidgets]
     let updated = false
-    
+
     // 检查每个组件是否需要刷新
     for (let i = 0; i < updatedWidgets.length; i++) {
       const widget = updatedWidgets[i]
       if (widget.metadata?.needsCard2Refresh) {
-        if (import.meta.env.DEV) console.log(`🔄 [refreshCard2Definitions] 刷新组件: ${widget.type}`)
 
         try {
           const registeredDefinition = await getComponentDefinition(widget.type)
@@ -1087,22 +995,18 @@ const refreshCard2Definitions = async () => {
               }
             }
             updated = true
-            if (import.meta.env.DEV) console.log(`✅ [refreshCard2Definitions] 成功刷新组件: ${widget.type}`)
           }
         } catch (error) {
           console.error(`❌ [refreshCard2Definitions] 刷新组件失败: ${widget.type}`, error)
         }
       }
     }
-    
+
     // 如果有更新，重新设置状态
     if (updated) {
-      if (import.meta.env.DEV) console.log('🔥 [refreshCard2Definitions] 应用更新后的组件状态')
       // 直接更新 stateManager 中的节点，而不是通过 setState
       stateManager.setNodes(updatedWidgets)
     }
-    
-    if (import.meta.env.DEV) console.log('✅ [refreshCard2Definitions] 刷新完成')
   } catch (error) {
     console.error('❌ [refreshCard2Definitions] 刷新失败:', error)
   }
@@ -1169,7 +1073,7 @@ const refreshCard2Definitions = async () => {
 
       <!-- 🔥 真实的左侧组件库 -->
       <template #left>
-        <WidgetLibrary @add-widget="handleAddWidget" />
+        <WidgetLibrary :mode="props.mode" @add-widget="handleAddWidget" />
       </template>
 
       <!-- 🔥 主内容区域 - 真实渲染器实现 -->

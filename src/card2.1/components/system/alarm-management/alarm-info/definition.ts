@@ -1,4 +1,4 @@
-import type { ComponentDefinition } from '@/card2.1/core/types'
+import type { ComponentDefinition } from '@/card2.1/core2'
 import component from './component.vue'
 
 /**

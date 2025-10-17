@@ -79,6 +79,27 @@ export interface BaseConfiguration {
  */
 export interface DataSourceConfiguration extends Record<string, any> {
   // 🔧 保持泛型结构，具体字段由数据源系统定义
+
+  // 🚀 新增：autoBind配置支持
+  /** 自动绑定配置 - 简化数据源配置 */
+  autoBind?: {
+    /** 是否启用自动绑定 */
+    enabled: boolean
+    /** 绑定模式 */
+    mode: 'strict' | 'loose' | 'custom'
+    /** 自定义绑定规则 */
+    customRules?: Array<{
+      propertyPath: string
+      paramName: string
+      transform?: (value: any) => any
+      required?: boolean
+      description?: string
+    }>
+    /** 排除的属性列表 */
+    excludeProperties?: string[]
+    /** 包含的属性列表（仅在strict模式下生效） */
+    includeProperties?: string[]
+  }
 }
 
 /**

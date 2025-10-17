@@ -5,7 +5,7 @@
 
 // 🔥 已删除：OptimizedConfigurationManager 过度设计的缓存层已移除
 // 使用 ConfigurationIntegrationBridge 提供配置管理服务
-import { optimizedInitializationManager } from '@/card2.1/core/OptimizedInitializationManager'
+import { optimizedInitializationManager } from '@/card2.1/core2/OptimizedInitializationManager'
 import { typeCompatibilityChecker } from '@/core/data-architecture/TypeCompatibilityChecker'
 
 /**

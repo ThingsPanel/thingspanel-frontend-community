@@ -105,23 +105,15 @@ const emit = defineEmits<Emits>()
 function getInitialUnifiedConfig(): UnifiedCard2Configuration | undefined {
   if (!props.componentId) return undefined
 
-  console.log(`🔥 [alert-status] 获取初始统一配置开始:`, props.componentId)
 
   try {
     // 通过DOM查找Card2Wrapper实例获取完整配置
     const cardElement = document.querySelector(`[data-component-id="${props.componentId}"]`)
     if (cardElement && (cardElement as any)?.__vueParentComponent?.exposed?.getFullConfiguration) {
       const fullConfig = (cardElement as any).__vueParentComponent.exposed.getFullConfiguration()
-      console.log(`🔥 [alert-status] 从Card2Wrapper获取初始配置:`, fullConfig)
 
       // 🔥 关键调试：显示组件配置的具体内容
       if (fullConfig?.component) {
-        console.log(`🔥 [alert-status] 初始组件配置:`, {
-          title: fullConfig.component.title,
-          amount: fullConfig.component.amount,
-          description: fullConfig.component.description,
-          完整配置: fullConfig.component
-        })
       } else {
         console.warn(`🔥 [alert-status] 初始配置中没有component节!`)
       }
@@ -134,7 +126,6 @@ function getInitialUnifiedConfig(): UnifiedCard2Configuration | undefined {
     console.warn(`🔥 [alert-status] 获取初始配置失败:`, error)
   }
 
-  console.log(`🔥 [alert-status] 返回undefined，使用默认配置`)
   return undefined
 }
 
@@ -164,45 +155,31 @@ const message = useMessage()
 
 // 🔥 核心数据获取函数：修复为完全基于统一配置
 const getDisplayValue = (field: string, defaultValue: any) => {
-  console.log(`🔥 [getDisplayValue] 获取字段 ${field}:`, {
-    字段名: field,
-    默认值: defaultValue,
-    统一配置存在: !!unifiedConfig.value.component,
-    统一配置全部: unifiedConfig.value.component,
-    字段在配置中: unifiedConfig.value.component && field in unifiedConfig.value.component,
-    字段值: unifiedConfig.value.component?.[field],
-    字段值类型: typeof unifiedConfig.value.component?.[field]
-  })
 
   // 🔥 关键修复：title, amount, description 是组件配置属性，优先从统一配置获取
   if (['title', 'amount', 'description'].includes(field)) {
     // 只从统一配置中的组件配置获取
     if (unifiedConfig.value.component && field in unifiedConfig.value.component && unifiedConfig.value.component[field] !== undefined) {
       const value = unifiedConfig.value.component[field]
-      console.log(`🎯 [alert-status] 字段${field}使用统一配置数据:`, value)
       return String(value)
     }
 
     // 使用默认值
-    console.log(`🎯 [alert-status] 字段${field}使用默认值:`, defaultValue)
     return String(defaultValue)
   }
 
   // 🔥 其他字段可以继续使用原来的逻辑（先数据源，后配置，最后默认值）
   // 1. 优先使用数据源数据（这是执行结果）
   if (props.data && typeof props.data === 'object' && field in props.data && props.data[field] !== undefined && props.data[field] !== null) {
-    console.log(`🎯 [alert-status] 字段${field}使用数据源数据:`, props.data[field])
     return String(props.data[field])
   }
 
   // 2. 回退到统一配置中的组件配置
   if (unifiedConfig.value.component && field in unifiedConfig.value.component && unifiedConfig.value.component[field] !== undefined) {
-    console.log(`🎯 [alert-status] 字段${field}使用统一配置数据:`, unifiedConfig.value.component[field])
     return String(unifiedConfig.value.component[field])
   }
 
   // 3. 使用默认值
-  console.log(`🎯 [alert-status] 字段${field}使用默认值:`, defaultValue)
   return String(defaultValue)
 }
 
@@ -249,12 +226,6 @@ const isConfigEqual = (a: any, b: any): boolean => {
 watch(
   () => unifiedConfig.value,
   (newUnifiedConfig) => {
-    console.log(`🔥 [alert-status] 统一配置变化 ${props.componentId}:`, {
-      component: newUnifiedConfig?.component,
-      title: newUnifiedConfig?.component?.title,
-      amount: newUnifiedConfig?.component?.amount,
-      description: newUnifiedConfig?.component?.description
-    })
     // 🔥 属性暴露现在由 useCard2Props 自动处理，无需手动调用
   },
   { deep: true, immediate: true }
@@ -264,30 +235,21 @@ watch(
 watch(
   () => props.data,
   () => {
-    console.log(`🔥 [alert-status] 数据源变化，属性暴露由Hook自动处理`)
   },
   { deep: true, immediate: true }
 )
 
 // 生命周期管理
 onMounted(() => {
-  console.log(`🔥 [alert-status] 组件挂载，自动同步已由useCard2Props处理`)
 })
 
 onUnmounted(() => {
-  console.log(`🔥 [alert-status] 组件卸载开始，清理自动同步`)
   // 🔥 调用 Hook 提供的清理函数
   cleanupAutoSync()
-  console.log(`🔥 [alert-status] 组件卸载完成`)
 })
 
 // 🔥 简化的配置更新函数 - 直接使用统一配置管理
 const updateConfig = (partialCustomize: Partial<AlertStatusCustomize>) => {
-  console.log(`🔥 [alert-status] 组件内部更新配置:`, {
-    更新内容: partialCustomize,
-    当前配置: unifiedConfig.value.component,
-    组件ID: props.componentId
-  })
 
   // 🔥 关键修复：直接使用 updateCard2Config 更新组件配置层
   updateCard2Config('component', partialCustomize)
@@ -302,7 +264,6 @@ const updateConfig = (partialCustomize: Partial<AlertStatusCustomize>) => {
           partialCustomize,
           'component-internal-update'
         )
-        console.log(`✅ [alert-status] 配置已同步到配置管理器和表单`)
       })
       .catch(error => {
         console.error(`❌ [alert-status] 同步配置到管理器失败:`, error)
@@ -312,7 +273,6 @@ const updateConfig = (partialCustomize: Partial<AlertStatusCustomize>) => {
   // 🔥 发出更新事件
   emit('update:config', partialCustomize)
 
-  console.log(`🔥 [alert-status] 配置更新完成，已同步到统一配置`)
 }
 
 // 修改标题
@@ -385,12 +345,6 @@ const resetToDefault = () => {
 
 // 测试数据源
 const testDataSource = () => {
-  console.log('🔍 数据源测试信息:')
-  console.log('1. 组件ID:', props.componentId)
-  console.log('2. 原始数据源数据:', props.data)
-  console.log('3. 当前配置:', config.value)
-  console.log('4. 计算后的显示数据:', displayData.value)
-  console.log('5. 统一配置:', unifiedConfig.value)
 
   message.info('数据源测试信息已输出到控制台，请按F12查看')
 }
@@ -401,7 +355,6 @@ const expose = {
   updateConfig,  // 使用简化的本地更新函数
   // 🔥 保留：属性监听接口，供交互引擎使用
   watchProperty: (propertyName: string, callback: (newValue: any, oldValue: any) => void) => {
-    console.log(`🔥 [alert-status] 注册属性监听器: ${propertyName}`)
     return watchProperty(propertyName, callback)
   }
 }

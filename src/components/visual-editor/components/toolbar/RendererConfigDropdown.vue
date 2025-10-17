@@ -72,7 +72,10 @@ const canvasConfig = computed(() => ({
 const gridstackConfig = computed(() => ({
   colNum: 24, // 🔥 修复：统一默认为24列
   rowHeight: 80,
-  // 将默认边距从 [10,10] 调整为 [0,0]，默认无间距
+  // 🔥 使用新的 gap 配置
+  horizontalGap: 0, // 水平间距默认 0px
+  verticalGap: 0, // 垂直间距默认 0px
+  // 保留 margin 以保持向后兼容，但不再使用
   margin: [0, 0],
   isDraggable: true,
   isResizable: true,
@@ -197,31 +200,25 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
               />
             </NFormItem>
 
-            <NFormItem :label="`${$t('visualEditor.horizontalMargin')} ${gridstackConfig.margin[0]}px`">
+            <NFormItem :label="`${$t('visualEditor.horizontalMargin')} ${gridstackConfig.horizontalGap}px`">
               <NSlider
-                :value="gridstackConfig.margin[0]"
+                :value="gridstackConfig.horizontalGap"
                 :min="0"
                 :max="50"
                 :step="2"
                 style="width: 120px"
-                @update:value="
-                  value =>
-                    handleGridstackConfigChange({ ...gridstackConfig, margin: [value, gridstackConfig.margin[1]] })
-                "
+                @update:value="value => handleGridstackConfigChange({ ...gridstackConfig, horizontalGap: value })"
               />
             </NFormItem>
 
-            <NFormItem :label="`${$t('visualEditor.verticalMargin')} ${gridstackConfig.margin[1]}px`">
+            <NFormItem :label="`${$t('visualEditor.verticalMargin')} ${gridstackConfig.verticalGap}px`">
               <NSlider
-                :value="gridstackConfig.margin[1]"
+                :value="gridstackConfig.verticalGap"
                 :min="0"
                 :max="50"
                 :step="2"
                 style="width: 120px"
-                @update:value="
-                  value =>
-                    handleGridstackConfigChange({ ...gridstackConfig, margin: [gridstackConfig.margin[0], value] })
-                "
+                @update:value="value => handleGridstackConfigChange({ ...gridstackConfig, verticalGap: value })"
               />
             </NFormItem>
 

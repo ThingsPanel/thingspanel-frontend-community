@@ -623,24 +623,6 @@ const updateParameter = (param: EnhancedParameter, index: number) => {
   const updatedParams = [...props.modelValue]
   updatedParams[index] = { ...param }
 
-  console.log(`🚨🚨🚨 [updateParameter] 即将emit的参数详情:`, {
-    index,
-    param参数: {
-      key: param.key,
-      value: param.value,
-      valueType: typeof param.value,
-      selectedTemplate: param.selectedTemplate,
-      valueMode: param.valueMode,
-      variableName: param.variableName,
-      description: param.description
-    },
-    updatedParams数组长度: updatedParams.length,
-    更新后的该索引参数: {
-      key: updatedParams[index].key,
-      value: updatedParams[index].value,
-      valueType: typeof updatedParams[index].value
-    }
-  })
 
   emit('update:modelValue', updatedParams)
 }
@@ -792,13 +774,6 @@ const openComponentDrawer = (param: EnhancedParameter) => {
  * 当用户在组件属性选择器中选择了属性时调用
  */
 const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) => {
-  console.log(`🔥 [DynamicParameterEditor] handleComponentPropertyChange 被调用:`, {
-    bindingPath,
-    bindingPathType: typeof bindingPath,
-    bindingPathLength: typeof bindingPath === 'string' ? bindingPath.length : '非字符串',
-    propertyInfo,
-    有drawerParam: !!drawerParam.value
-  })
 
   if (!drawerParam.value) {
     console.warn(`⚠️ [DynamicParameterEditor] drawerParam 为空，忽略属性变更`)
@@ -838,12 +813,6 @@ const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) 
         const propertyName = drawerParam.value.variableName.substring(lastUnderscoreIndex + 1)
         const recoveredPath = `${componentId}.base.${propertyName}`
 
-        console.log(`🔧 [DynamicParameterEditor] 从variableName自动恢复绑定路径:`, {
-          原始variableName: drawerParam.value.variableName,
-          提取的componentId: componentId,
-          提取的propertyName: propertyName,
-          恢复的绑定路径: recoveredPath
-        })
 
         // 使用恢复的路径替代错误的输入
         bindingPath = recoveredPath
@@ -860,11 +829,6 @@ const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) 
 
   // 记录值的变更历史，便于调试
   const oldValue = drawerParam.value.value
-  console.log(`✅ [DynamicParameterEditor] 更新绑定路径:`, {
-    从: oldValue,
-    到: bindingPath,
-    变更合理性: bindingPath === '' || bindingPath.length > oldValue?.length || bindingPath.includes('.')
-  })
 
   // 更新抽屉中参数的绑定值
   drawerParam.value.value = bindingPath
@@ -874,25 +838,12 @@ const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) 
     drawerParam.value.description = `绑定到组件属性: ${propertyInfo.componentName} -> ${propertyInfo.propertyLabel}`
     drawerParam.value.variableName = `${propertyInfo.componentId}_${propertyInfo.propertyName}`
 
-    console.log(`✅ [DynamicParameterEditor] 更新属性信息:`, {
-      description: drawerParam.value.description,
-      variableName: drawerParam.value.variableName,
-      propertyType: propertyInfo.type
-    })
   } else if (bindingPath === '') {
     // 清空绑定时，也清理相关字段
     drawerParam.value.description = ''
     drawerParam.value.variableName = ''
-    console.log(`🧹 [DynamicParameterEditor] 清空绑定路径，同时清理相关字段`)
   }
 
-  console.log(`📝 [DynamicParameterEditor] 最终状态:`, {
-    value: drawerParam.value.value,
-    description: drawerParam.value.description,
-    variableName: drawerParam.value.variableName,
-    selectedTemplate: drawerParam.value.selectedTemplate,
-    参数有效性: !!drawerParam.value.value || drawerParam.value.defaultValue !== undefined
-  })
 }
 
 /**
@@ -900,25 +851,6 @@ const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) 
  */
 const saveDrawerChanges = () => {
   if (drawerParam.value && editingIndex.value !== -1) {
-    console.log(`🚨🚨🚨 [DynamicParameterEditor] saveDrawerChanges 详细调试:`, {
-      editingIndex: editingIndex.value,
-      drawerParam: {
-        key: drawerParam.value.key,
-        value: drawerParam.value.value,
-        valueType: typeof drawerParam.value.value,
-        valueLength: typeof drawerParam.value.value === 'string' ? drawerParam.value.value.length : '非字符串',
-        selectedTemplate: drawerParam.value.selectedTemplate,
-        valueMode: drawerParam.value.valueMode,
-        variableName: drawerParam.value.variableName,
-        description: drawerParam.value.description,
-        defaultValue: drawerParam.value.defaultValue
-      },
-      即将更新的原始参数: props.modelValue[editingIndex.value] ? {
-        key: props.modelValue[editingIndex.value].key,
-        value: props.modelValue[editingIndex.value].value,
-        selectedTemplate: props.modelValue[editingIndex.value].selectedTemplate
-      } : '无原始参数'
-    })
 
     updateParameter(drawerParam.value, editingIndex.value)
   }
@@ -978,11 +910,6 @@ const getComponentTemplate = (param: EnhancedParameter | null) => {
       autoDetectComponentId: true // 🔥 保持自动检测功能
     }
 
-    console.log(`🔥 [DynamicParameterEditor] 为ComponentPropertySelector注入currentComponentId:`, {
-      currentComponentId: props.currentComponentId,
-      originalProps: config.props,
-      enhancedProps
-    })
   }
 
   return {

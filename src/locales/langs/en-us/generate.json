@@ -45,6 +45,7 @@
   "generate.commandIssuanceTime": "Command Issuance Time",
   "generate.issueCommand": "Issue Command",
   "generate.commandConetnt": "Command Content",
+  "generate.enter-json-format": "Please enter command content in JSON format",
   "generate.selectSubDevices": "Please select sub-devices",
   "generate.unbind": "Unbind",
   "generate.unbound": "Unbound",

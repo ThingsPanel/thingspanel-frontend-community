@@ -1,4 +1,4 @@
-import type { ComponentPreset } from '@/card2.1/core/types';
+import type { ComponentPreset } from '@/card2.1/core2';
 
 /**
  * @description 预设配置

@@ -5,8 +5,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, provide, watch, onMounted, onUnmounted, computed, nextTick, type Component } from 'vue'
-import type { IConfigCtx } from '@/card2.1/core/types/legacy'
-import type { IComponentDefinition } from '@/card2.1/core/types'
+import type { IConfigCtx } from '@/card2.1/core2/legacy'
+import type { IComponentDefinition } from '@/card2.1/core2'
 import { createLogger } from '@/utils/logger'
 import { smartDeepClone } from '@/utils/deep-clone'
 

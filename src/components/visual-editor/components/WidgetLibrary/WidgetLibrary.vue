@@ -1,10 +1,5 @@
 <template>
   <div class="widget-library">
-    <!-- 我下面这个两示例显示非常正常，但你特么的怎么给我显示的就是key呢 -->
-    <div>{{ $t('subCategories.alarmManagement') }}</div>
-    <div>{{ $t('categories.system') }}</div>
-    <!-- 我上面这个两示例显示非常正常，但你特么的怎么给我显示的就是key呢 -->
-
     <!-- 搜索框 -->
     <div class="search-bar">
       <n-input v-model:value="searchTerm" :placeholder="$t('visualEditor.searchComponents')" clearable>
@@ -32,6 +27,7 @@
 
     <!-- 两级分类 Tabs -->
     <n-tabs v-else type="line" animated class="widget-tabs">
+      <!-- 图表分类Tabs -->
       <n-tab-pane
         v-for="topCategory in filteredWidgetTree"
         :key="topCategory.name"
@@ -39,11 +35,75 @@
         :tab="$t(topCategory.name)"
       >
         <div class="tab-content">
-          <div v-for="subCategory in topCategory.subCategories" :key="subCategory.name" class="widget-subcategory">
-            <h4 v-if="subCategory.name !== 'subCategories.data'" class="subcategory-title">{{ $t(subCategory.name) }}</h4>
+          <!-- 检查是否有子分类 -->
+          <div v-if="topCategory.subCategories && topCategory.subCategories.length > 0">
+            <div v-for="subCategory in topCategory.subCategories" :key="subCategory.name" class="widget-subcategory">
+              <h4 class="subcategory-title">{{ $t(subCategory.name) }}</h4>
+
+              <!-- 检查是否有组件 -->
+              <div v-if="subCategory.children && subCategory.children.length > 0" class="category-grid">
+                <div
+                  v-for="widget in subCategory.children"
+                  :key="widget.type"
+                  class="widget-card"
+                  :title="`点击添加到编辑器\n${widget.description}`"
+                  @click="handleAddWidget(widget)"
+                >
+                  <div class="widget-icon">
+                    <n-icon v-if="typeof widget.icon !== 'string' && widget.icon" size="20">
+                      <component :is="widget.icon" />
+                    </n-icon>
+                    <SvgIcon
+                      v-else-if="typeof widget.icon === 'string' && !widget.icon.startsWith('<svg')"
+                      :icon="widget.icon"
+                    />
+                    <div
+                      v-else-if="typeof widget.icon === 'string' && widget.icon.startsWith('<svg')"
+                      class="svg-icon-inline"
+                      v-html="widget.icon"
+                    ></div>
+                  </div>
+                  <div class="widget-name">{{ $t(widget.name) }}</div>
+                </div>
+              </div>
+
+              <!-- 空子分类提示 -->
+              <div v-else class="empty-subcategory">
+                <n-empty size="small" :description="`暂无${$t(subCategory.name)}组件`" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 空分类提示 -->
+          <div v-else class="empty-category">
+            <n-empty :description="`${$t(topCategory.name)}分类暂无组件`" />
+          </div>
+        </div>
+      </n-tab-pane>
+
+      <!-- 🔥 新增：设备Tab（仅看板模式） -->
+      <n-tab-pane v-if="props.mode === 'dashboard'" name="device" :tab="$t('card.deviceTab')">
+        <div class="tab-content">
+          <!-- 设备选择器 -->
+          <div class="device-selector">
+            <NSelect
+              v-model:value="selectedDeviceId"
+              :placeholder="$t('generate.select-device')"
+              :options="deviceOptions"
+              filterable
+              clearable
+              value-field="device_id"
+              label-field="device_name"
+              @update:value="(value, option) => parseDeviceTemplate(value, option)"
+            />
+          </div>
+
+          <!-- 设备组件网格 -->
+          <div v-if="deviceTabWidgets.length > 0" class="widget-subcategory">
+            <h4 class="subcategory-title">{{ $t('card.availableComponents') || '可用组件' }}</h4>
             <div class="category-grid">
               <div
-                v-for="widget in subCategory.children"
+                v-for="widget in deviceTabWidgets"
                 :key="widget.type"
                 class="widget-card"
                 :title="`点击添加到编辑器\n${widget.description}`"
@@ -67,6 +127,13 @@
               </div>
             </div>
           </div>
+
+          <!-- 空状态 -->
+          <div v-else class="empty-device-state">
+            <n-empty
+              :description="selectedDeviceId ? '该设备模板无可用组件（v2格式）' : '请选择设备'"
+            />
+          </div>
         </div>
       </n-tab-pane>
     </n-tabs>
@@ -82,17 +149,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { SearchOutline, AlertCircleOutline } from '@vicons/ionicons5'
 import { useComponentTree } from '@/card2.1/hooks/useComponentTree'
 import type { WidgetDefinition } from '@/components/visual-editor/types/widget'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { useI18n } from 'vue-i18n'
+import { deviceTemplateSelect } from '@/service/api/device'
 
 const componentTree = useComponentTree({ autoInit: true })
 
 // --- 国际化 ---
 const { t } = useI18n()
+
+// --- Props ---
+interface Props {
+  mode?: 'template' | 'dashboard' // 模式：template=模板配置，dashboard=看板编辑
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  mode: 'dashboard'
+})
 
 // --- State and Emits ---
 const searchTerm = ref('')
@@ -100,16 +177,90 @@ const emit = defineEmits<{
   'add-widget': [payload: { type: string; source: 'card2' | 'legacy' }]
 }>()
 
+// 🔥 设备Tab相关状态
+const deviceOptions = ref<any[]>([])
+const selectedDeviceId = ref<string | null>(null)
+const availableComponentTypes = ref<string[]>([])
+
 // --- Widget Initialization ---
 // 使用 componentTree 的初始化状态
 const isInitialized = computed(() => !componentTree.isLoading.value && componentTree.componentTree.value.totalCount > 0)
 const initializationError = computed(() => componentTree.error.value)
+
 
 const initializeWidgets = async () => {
   try {
     await componentTree.initialize()
   } catch (error) {}
 }
+
+// 🔥 设备相关功能
+
+/**
+ * 加载设备列表
+ */
+const loadDeviceOptions = async () => {
+  try {
+    const { data, error } = await deviceTemplateSelect()
+    if (!error && data) {
+      deviceOptions.value = [...data].reverse()
+    } else {
+      deviceOptions.value = []
+    }
+  } catch (error) {
+    console.error('❌ 加载设备列表失败:', error)
+    deviceOptions.value = []
+  }
+}
+
+/**
+ * 解析设备模板配置
+ * 提取可用的组件类型列表
+ */
+const parseDeviceTemplate = (deviceId: string | null, deviceOption: any) => {
+  // 清空选择
+  if (!deviceId || !deviceOption?.web_chart_config) {
+    availableComponentTypes.value = []
+    return
+  }
+
+  try {
+    const config = JSON.parse(deviceOption.web_chart_config)
+
+    // 只处理 v2 版本数据
+    if (config.version === 'v2' && config.web?.config?.widgets) {
+      // 提取所有组件的 type 字段
+      const types = config.web.config.widgets.map((w: any) => w.type).filter(Boolean)
+      availableComponentTypes.value = types
+      console.log('🔥 [设备Tab] 提取到的组件类型:', types)
+    } else {
+      // 旧版数据或非v2版本，显示空列表
+      console.log('⚠️ [设备Tab] 非v2格式数据，显示空列表')
+      availableComponentTypes.value = []
+    }
+  } catch (e) {
+    console.error('❌ [设备Tab] 解析 web_chart_config 失败:', e)
+    availableComponentTypes.value = []
+  }
+}
+
+/**
+ * 设备Tab专用的组件列表
+ * 根据模板配置过滤组件
+ */
+const deviceTabWidgets = computed(() => {
+  if (!selectedDeviceId.value || availableComponentTypes.value.length === 0) {
+    return []
+  }
+
+  // 过滤出模板中配置过的组件类型
+  const filtered = allWidgets.value.filter(widget =>
+    availableComponentTypes.value.includes(widget.type)
+  )
+
+  console.log('🔥 [设备Tab] 过滤后的组件:', filtered.length, '个')
+  return filtered
+})
 
 
 // --- Widget Data ---
@@ -119,12 +270,30 @@ const allWidgets = computed(() => {
   // 从 componentTree 获取组件数据并转换为 WidgetDefinition 格式
   const components = componentTree.filteredComponents.value
   if (!Array.isArray(components)) {
+    console.warn('❌ [WidgetLibrary] filteredComponents 不是数组:', components)
     return []
   }
 
-  return components.map(component => {
+  // 🔥 调试：打印接收到的组件数据
+  console.log('🔥 [WidgetLibrary] 接收组件:', components.length, '个')
+  console.log('🔥 [WidgetLibrary] 分类统计:', components.reduce((acc, c) => {
+    const mainCat = c?.mainCategory || '未知'
+    acc[mainCat] = (acc[mainCat] || 0) + 1
+    return acc
+  }, {} as Record<string, number>))
+  
+  // 🔥 详细调试：打印数字指示器的分类信息
+  const digitIndicator = components.find(c => c.type === 'digit-indicator')
+  console.log('🔥 [WidgetLibrary] 数字指示器分类信息:', {
+    type: digitIndicator?.type,
+    mainCategory: digitIndicator?.mainCategory,
+    subCategory: digitIndicator?.subCategory,
+    category: digitIndicator?.category
+  })
+
+  const widgets = components.map(component => {
     // auto-registry.ts 传递翻译键，UI层负责翻译
-    return {
+    const widget = {
       type: component.type,
       name: component.name || component.type, // auto-registry.ts传递的翻译键
       description: component.description || '',
@@ -132,10 +301,14 @@ const allWidgets = computed(() => {
       source: 'card2' as const,
       definition: {
         mainCategory: component.mainCategory || 'categories.chart', // 默认翻译键
-        subCategory: component.subCategory || 'subCategories.data'     // 默认翻译键
+        subCategory: component.subCategory     // 使用实际的子分类，不设置默认值
       }
     }
+
+    return widget
   })
+
+  return widgets
 })
 
 
@@ -185,17 +358,21 @@ const simplifiedWidgetTree = computed(() => {
   allWidgets.value.forEach(widget => {
     const main = widget.definition?.mainCategory
     if (!main) return
-    // 使用翻译键默认值
-    const sub = widget.definition?.subCategory || 'subCategories.data'
+    // 使用实际的子分类，不设置默认值
+    const sub = widget.definition?.subCategory
+
+    if (!sub) return // 如果没有子分类，跳过该组件
 
     if (!map[main]) map[main] = {}
     if (!map[main][sub]) map[main][sub] = []
     map[main][sub].push(widget)
   })
 
+
   // 使用componentTree中已排序好的分类顺序
   const orderedCategories = componentTree.componentTree.value?.categories || []
   const categoryOrder = orderedCategories.map(cat => cat.name)
+
 
   // 按照componentTree中的分类顺序构建结果
   const result: TopCategory[] = []
@@ -225,16 +402,17 @@ const simplifiedWidgetTree = computed(() => {
     }
   })
 
-  // 过滤空类
+
+  // 🔥 修复：保留空分类，便于调试和确保系统分类显示
   return result.map(top => ({
     name: top.name,
-    subCategories: top.subCategories.filter(s => s.children.length > 0)
+    subCategories: top.subCategories // 暂时移除空分类过滤
   }))
 })
 
 
 const filteredWidgetTree = computed(() => {
-  const result = !searchTerm.value
+  let result = !searchTerm.value
     ? simplifiedWidgetTree.value
     : (() => {
         const lowerCaseSearch = searchTerm.value.toLowerCase()
@@ -253,13 +431,19 @@ const filteredWidgetTree = computed(() => {
             }
           })
 
-          if (filteredSubCategories.length > 0) {
-            filteredTopCategories.push({ name: topCategory.name, subCategories: filteredSubCategories })
-          }
+
+          // 🔥 修复：总是包含分类，即使没有匹配的组件（便于显示空分类状态）
+          filteredTopCategories.push({ name: topCategory.name, subCategories: filteredSubCategories })
         })
 
         return filteredTopCategories
       })()
+
+  // 🔥 根据 mode 过滤顶层分类
+  if (props.mode === 'template') {
+    // 模板模式：只显示图表分类（categories.chart）
+    result = result.filter(topCategory => topCategory.name === 'categories.chart')
+  }
 
   return result
 })
@@ -275,6 +459,13 @@ const handleAddWidget = (widget: any) => {
   const payload = { type: widget.type, source: widget.source || 'legacy' }
   emit('add-widget', payload)
 }
+
+// 🔥 组件挂载时加载设备列表（仅看板模式）
+onMounted(() => {
+  if (props.mode === 'dashboard') {
+    loadDeviceOptions()
+  }
+})
 </script>
 
 <style scoped>
@@ -469,5 +660,21 @@ const handleAddWidget = (widget: any) => {
   font-size: 12px;
   max-height: 320px;
   overflow: auto;
+}
+
+/* 空分类状态样式 */
+.empty-category,
+.empty-subcategory {
+  padding: 20px;
+  text-align: center;
+  color: var(--n-text-color-3);
+}
+
+.empty-subcategory {
+  padding: 10px;
+  margin: 10px 0;
+  background-color: var(--n-card-color);
+  border-radius: 6px;
+  border: 1px dashed var(--n-border-color);
 }
 </style>

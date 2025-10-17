@@ -200,18 +200,6 @@ const onEnableParamsChange = (enabled: boolean) => {
  * 🔥 修复：传参配置更新 - 批量更新避免频繁重渲染
  */
 const onUrlParamsUpdate = (params: EnhancedParameter[]) => {
-  console.log(`🚨🚨🚨 [HttpConfigStep1] onUrlParamsUpdate被调用:`, {
-    接收到的params: params,
-    params长度: params.length,
-    第一个参数详情: params[0] ? {
-      key: params[0].key,
-      value: params[0].value,
-      valueType: typeof params[0].value,
-      selectedTemplate: params[0].selectedTemplate,
-      variableName: params[0].variableName,
-      description: params[0].description
-    } : '无参数'
-  })
 
   // 🔥 设置标记，避免watch监听器再次触发初始化
   isUpdatingFromChild.value = true

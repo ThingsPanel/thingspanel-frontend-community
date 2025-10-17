@@ -44,7 +44,7 @@ const commandjson: any = reactive({
     buttom_name: '',
     data_identifier: '',
     description: '',
-    instruct: '',
+    instruct: '{}',
     enable_status: 'disable'
   }
 })
@@ -59,11 +59,7 @@ const cmRef = ref()
 
 const setupEditor = () => {
   nextTick(() => {
-    // CodeMirror 6 自动处理刷新
-    if (cmRef.value) {
-      // 聚焦编辑器
-      cmRef.value.focus()
-    }
+    // CodeMirror 6 会自动处理，不需要手动聚焦
   })
 }
 const openCommandDialog = () => {
@@ -71,7 +67,7 @@ const openCommandDialog = () => {
     buttom_name: '',
     data_identifier: '',
     description: '',
-    instruct: '',
+    instruct: '{}',
     enable_status: 'disable'
   }
   commandjson.configForm = !commandjson.configForm
@@ -192,7 +188,7 @@ onMounted(() => {
     <NModal
       v-model:show="commandjson.configForm"
       :title="$t('generate.customCommand')"
-      :class="getPlatform ? 'w-90%' : 'w-500px'"
+      :class="getPlatform ? 'w-90%' : 'custom-command-modal'"
       @after-enter="setupEditor"
     >
       <n-card>
@@ -202,11 +198,8 @@ onMounted(() => {
           label-placement="left"
           class="flex-wrap"
           :rules="configFormRules"
-          label-width="auto"
+          label-width="120px"
         >
-          <div>
-            <NH3>{{ $t('generate.customCommand') }}</NH3>
-          </div>
           <NFormItem :label="$t('generate.btnname')" path="buttom_name">
             <NInput v-model:value="commandjson.formjson.buttom_name" :placeholder="$t('generate.or-enter-here')" />
           </NFormItem>
@@ -220,13 +213,22 @@ onMounted(() => {
               basic
               :dark="themeStore.darkMode"
               :lang="javascript()"
-              :style="{ height: '100px', border: '1px solid var(--n-border-color)', borderRadius: 'var(--n-border-radius)' }"
-              :placeholder="$t('generate.or-enter-here')"
+              :style="{
+                width: '100%',
+                height: '200px',
+                border: '1px solid var(--n-border-color)',
+                borderRadius: 'var(--n-border-radius)'
+              }"
+              :placeholder="$t('generate.enter-json-format')"
             />
-            <!-- <NInput v-model:value="commandjson.formjson.instruct" :placeholder="$t('generate.or-enter-here')" /> -->
           </NFormItem>
           <NFormItem :label="$t('device_template.table_header.commandDescription')" path="description">
-            <NInput v-model:value="commandjson.formjson.description" type="textarea" />
+            <NInput
+              v-model:value="commandjson.formjson.description"
+              type="textarea"
+              :autosize="{ minRows: 3, maxRows: 6 }"
+              :placeholder="$t('device_template.table_header.PleaseEnterADescription')"
+            />
           </NFormItem>
           <NFormItem :label="$t('generate.status')" path="enable_status">
             <n-switch
@@ -245,3 +247,10 @@ onMounted(() => {
     </NModal>
   </div>
 </template>
+
+<style scoped lang="scss">
+.custom-command-modal {
+  width: 800px;
+  min-width: 600px;
+}
+</style>

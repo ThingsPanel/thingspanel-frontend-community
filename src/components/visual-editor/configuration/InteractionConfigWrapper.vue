@@ -34,7 +34,7 @@
 
 import { ref, computed, watch, inject, onMounted, onUnmounted, nextTick } from 'vue'
 import InteractionCardWizard from '@/core/interaction-system/components/InteractionCardWizard.vue'
-import type { InteractionConfig } from '@/card2.1/core/interaction-types'
+import type { InteractionConfig } from '@/card2.1/core2/interaction'
 // 🔥 导入新的交互配置路由器
 import { interactionConfigRouter } from './InteractionConfigRouter'
 // 保留原有配置管理器用于持久化
@@ -69,7 +69,6 @@ const interactionConfigs = ref<InteractionConfig[]>([])
 
 // 🔥 从统一配置中心加载交互配置
 const loadInteractionConfigs = (): void => {
-  console.log(`🔥 [InteractionConfigWrapper] 加载交互配置: ${componentId.value}`)
 
   try {
     // 从stateManager读取配置
@@ -78,7 +77,6 @@ const loadInteractionConfigs = (): void => {
       const node = nodes.find(n => n.id === componentId.value)
       if (node?.metadata?.unifiedConfig?.interaction?.configs) {
         const configs = node.metadata.unifiedConfig.interaction.configs
-        console.log(`🔥 [InteractionConfigWrapper] 从stateManager加载${configs.length}个配置`)
 
         // 更新本地状态
         interactionConfigs.value = configs
@@ -93,7 +91,6 @@ const loadInteractionConfigs = (): void => {
     const config = configurationManager.getConfiguration(componentId.value)
     const configs = config?.interaction?.configs || []
 
-    console.log(`🔥 [InteractionConfigWrapper] 从ConfigurationManager加载${configs.length}个配置`)
 
     // 更新本地状态
     interactionConfigs.value = configs
@@ -109,11 +106,6 @@ const loadInteractionConfigs = (): void => {
 
 // 🔥 交互配置更新处理器
 const handleInteractionConfigUpdate = (configs: InteractionConfig[]): void => {
-  console.log(`🔥 [InteractionConfigWrapper] 交互配置更新:`, {
-    componentId: componentId.value,
-    configCount: configs.length,
-    configs: configs
-  })
 
   try {
     // 🔥 第一步：保存到ConfigurationManager
@@ -144,7 +136,6 @@ const handleInteractionConfigUpdate = (configs: InteractionConfig[]): void => {
           node.metadata.unifiedConfig.interaction.configs = configs
         }
 
-        console.log(`✅ [InteractionConfigWrapper] stateManager保存完成`)
       }
     }
 
@@ -154,7 +145,6 @@ const handleInteractionConfigUpdate = (configs: InteractionConfig[]): void => {
     // 🔥 第四步：向路由器注册更新的配置（会自动重新注册监听器）
     interactionConfigRouter.registerComponentConfigs(componentId.value, configs)
 
-    console.log(`✅ [InteractionConfigWrapper] 交互配置更新完成`)
 
   } catch (error) {
     console.error('❌ [InteractionConfigWrapper] 保存交互配置失败:', error)
@@ -163,22 +153,11 @@ const handleInteractionConfigUpdate = (configs: InteractionConfig[]): void => {
 
 // 监听widget变化，重新加载配置
 watch(() => props.widget, (newWidget, oldWidget) => {
-  console.log(`🎯 [InteractionConfigWrapper] Widget变化触发重新加载:`, {
-    componentId: componentId.value,
-    oldWidget: !!oldWidget,
-    newWidget: !!newWidget,
-    widgetType: newWidget?.type
-  })
   loadInteractionConfigs()
 }, { immediate: true })
 
 // 监听nodeId变化，防止节点切换时数据不更新
 watch(() => componentId.value, (newComponentId, oldComponentId) => {
-  console.log(`🎯 [InteractionConfigWrapper] ComponentId变化:`, {
-    oldComponentId,
-    newComponentId,
-    shouldReload: newComponentId !== oldComponentId
-  })
   if (newComponentId !== oldComponentId) {
     // 清理旧组件
     if (oldComponentId) {
@@ -191,21 +170,14 @@ watch(() => componentId.value, (newComponentId, oldComponentId) => {
 
 // 🔥 生命周期管理
 onMounted(() => {
-  console.log(`🔥 [InteractionConfigWrapper] 组件挂载:`, {
-    componentId: componentId.value,
-    hasWidget: !!props.widget,
-    hasEditorContext: !!editorContext
-  })
 
   // 初始化加载配置
   nextTick(() => {
-    console.log(`🔥 [InteractionConfigWrapper] NextTick后初始化加载配置`)
     loadInteractionConfigs()
   })
 })
 
 onUnmounted(() => {
-  console.log(`🔥 [InteractionConfigWrapper] 组件卸载: ${componentId.value}`)
 
   // 🔥 清理路由器中的组件配置和监听器
   interactionConfigRouter.unregisterComponent(componentId.value)

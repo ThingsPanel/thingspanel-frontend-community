@@ -1,24 +1,24 @@
 /**
- * @file Card 2.1 系统入口（清理版）
- * 使用统一的自动注册系统，避免重复的组件加载器
+ * @file Card 2.1 系统入口（切换到 Core2 版本）
+ * 使用新的 Core2 系统，保持向后兼容性
  */
 
-import { componentRegistry } from '@/card2.1/core/component-registry'
-import { AutoRegistry } from '@/card2.1/core/auto-registry'
-import { setupStorageListener } from '@/card2.1/core/permission-watcher'
+import { core2Bridge, initializeCore2System } from '@/card2.1/core2-adapter'
 
-// ========== 简化版本的初始化系统 ==========
+// 向后兼容：保留旧系统的导入（不删除原有 core 系统）
+import { componentRegistry } from '@/card2.1/core2/registry'
+import { AutoRegistry } from '@/card2.1/core2/registry'
+import { setupStorageListener } from '@/card2.1/core2/utils'
 
-// 创建自动注册系统
-const autoRegistry = new AutoRegistry(componentRegistry)
+// ========== 切换到 Core2 系统的初始化 ==========
 
 // 初始化状态
 let isInitialized = false
 let initializationPromise: Promise<void> | null = null
 
 /**
- * 初始化 Card 2.1 系统（简化版本）
- * 直接使用自动注册系统的内置扫描功能
+ * 初始化 Card 2.1 系统（切换到 Core2 版本）
+ * 使用新的 Core2 系统，保持向后兼容性
  */
 export async function initializeCard2System() {
   if (isInitialized) return
@@ -29,26 +29,17 @@ export async function initializeCard2System() {
 
   initializationPromise = (async () => {
     try {
-      console.log('🚀 [Card2.1] 开始初始化系统...')
+      console.log('🔄 [Card2.1] 切换到 Core2 系统...')
 
-      // 🔥 优化：设置权限监听器
-      setupStorageListener()
-
-      // 1. 使用 import.meta.glob 动态扫描所有组件的 index.ts 文件
-      // **/* 模式确保可以扫描到任意深度的子目录
-      const componentModules = import.meta.glob('./components/**/index.ts', { eager: true });
-
-      console.log(`[Card2.1] 扫描到 ${Object.keys(componentModules).length} 个组件模块。`);
-
-      // 2. 调用自动注册系统，并传入扫描到的模块
-      await autoRegistry.autoRegister(componentModules);
+      // 使用 Core2 系统进行初始化
+      await initializeCore2System()
 
       isInitialized = true
-      console.log('✅ [Card2.1] 系统初始化完成')
-      
-    } catch (error) {
-      console.error('❌ [Card2.1] 初始化失败:', error)
-      throw error
+
+      console.log('✅ [Card2.1] 系统初始化完成（使用 Core2）')
+    } catch (err) {
+      console.error('❌ [Card2.1] 初始化失败:', err)
+      throw err
     } finally {
       initializationPromise = null
     }
@@ -61,37 +52,37 @@ export async function initializeCard2System() {
  * 获取组件注册表
  */
 export function getComponentRegistry() {
-  return componentRegistry
+  return core2Bridge.getComponentRegistry()
 }
 
 /**
- * 获取组件树形结构（简化版本）
+ * 获取组件树形结构（使用 Core2 系统）
  */
 export function getComponentTree() {
   if (!isInitialized) {
     return { components: [], categories: [], totalCount: 0 }
   }
-  return autoRegistry.getComponentTree()
+  return core2Bridge.getComponentTree()
 }
 
 /**
- * 按分类获取组件（简化版本）
+ * 按分类获取组件（使用 Core2 系统）
  */
 export async function getComponentsByCategory(mainCategory?: string, subCategory?: string) {
   if (!isInitialized) {
     return []
   }
-  return autoRegistry.getComponentsByCategory(mainCategory, subCategory)
+  return core2Bridge.getComponentsByCategory(mainCategory, subCategory)
 }
 
 /**
- * 获取所有分类（简化版本）
+ * 获取所有分类（使用 Core2 系统）
  */
 export function getCategories() {
   if (!isInitialized) {
     return []
   }
-  return autoRegistry.getAllCategories()
+  return core2Bridge.getCategories()
 }
 
 /**
@@ -111,7 +102,7 @@ export function getAllComponents() {
   if (!isInitialized) {
     return []
   }
-  return autoRegistry.getAllComponents()
+  return core2Bridge.getComponentRegistry().getAll()
 }
 
 // ========== 核心模块导出 ==========
@@ -119,10 +110,10 @@ export function getAllComponents() {
 // 传统模块导出（向后兼容）
 export { componentRegistry }
 export { AutoRegistry }
-export type { ComponentTree, ComponentCategory } from '@/card2.1/core/auto-registry'
+export type { ComponentTree, ComponentCategory } from '@/card2.1/core2/registry'
 
 // 导出权限相关工具
-export * from '@/card2.1/core/permission-utils'
+export * from '@/card2.1/core2/utils'
 export type { ComponentPermission } from '@/card2.1/types'
 
 // 导出 Hooks
@@ -134,11 +125,14 @@ export * from '@/card2.1/hooks'
  * 获取系统初始化状态
  */
 export function getInitializationState() {
-  return {
-    isInitialized,
-    componentCount: isInitialized ? autoRegistry.getAllComponents().length : 0,
-    categories: isInitialized ? autoRegistry.getAllCategories() : []
+  if (!isInitialized) {
+    return {
+      isInitialized,
+      componentCount: 0,
+      categories: []
+    }
   }
+  return core2Bridge.getInitializationState()
 }
 
 /**
@@ -147,6 +141,7 @@ export function getInitializationState() {
 export function clearInitializationCache() {
   isInitialized = false
   initializationPromise = null
+  core2Bridge.clearCache()
 }
 
 /**
@@ -158,4 +153,4 @@ export async function checkForComponentUpdates() {
 }
 
 // 默认导出注册表（保持向后兼容）
-export default componentRegistry
+export default core2Bridge.getComponentRegistry()

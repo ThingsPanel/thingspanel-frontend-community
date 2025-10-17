@@ -45,6 +45,7 @@
   "generate.commandIssuanceTime": "命令下发时间",
   "generate.issueCommand": "下发命令",
   "generate.commandConetnt": "命令内容",
+  "generate.enter-json-format": "请输入 JSON 格式的命令内容",
   "generate.selectSubDevices": "请选择子设备",
   "generate.unbind": "不绑定",
   "generate.unbound": "未绑定",

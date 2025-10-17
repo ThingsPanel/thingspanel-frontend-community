@@ -170,7 +170,7 @@ import type {
   InteractionEventType,
   InteractionActionType,
   InteractionResponse
-} from '@/card2.1/core/interaction-types'
+} from '@/card2.1/core2/interaction'
 
 interface InteractionTemplate {
   id: string
