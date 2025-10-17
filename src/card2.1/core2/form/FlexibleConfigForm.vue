@@ -26,7 +26,25 @@ import { NTag } from 'naive-ui'
 import type { Component } from 'vue'
 import AutoFormGenerator from '@/card2.1/core2/form/AutoFormGenerator.vue'
 import type { TSConfig, ConfigMode, ConfigValues } from '@/card2.1/types/setting-config'
-import { FlexibleConfigManager } from '@/card2.1/core2/registry/config-manager'
+
+/**
+ * 检测配置模式
+ * 根据 vueConfig 和 tsConfig 的存在情况判断配置类型
+ */
+function detectConfigMode(vueConfig?: Component, tsConfig?: TSConfig): ConfigMode {
+  const hasVue = !!vueConfig
+  const hasTS = !!tsConfig
+
+  if (hasTS && hasVue) {
+    return 'hybrid'
+  } else if (hasTS) {
+    return 'ts-only'
+  } else if (hasVue) {
+    return 'vue-only'
+  } else {
+    return 'vue-only' // 默认为 vue-only
+  }
+}
 
 interface Props {
   // 组件类型（用于自动检测配置）
@@ -68,7 +86,7 @@ const vueConfig = ref<Component>()
 // 检测到的配置模式
 const detectedMode = computed<ConfigMode>(() => {
   try {
-    return FlexibleConfigManager.detectConfigMode(vueConfig.value, tsConfig.value)
+    return detectConfigMode(vueConfig.value, tsConfig.value)
   } catch {
     return 'vue-only'
   }
