@@ -3,7 +3,7 @@ import { STATIC_BASE_URL } from '@/constants/common'
 import { $t } from '@/locales'
 import { message } from './discrete'
 import { createServiceConfig } from '~/env.config'
-import { rsaPublicKey } from '~/rsa.js'
+import { rsaPublicKey } from '@/config/security/rsa'
 
 export function typeOf(obj: any): any {
   const toString: any = Object.prototype.toString
