@@ -27,6 +27,7 @@
 
     <!-- 两级分类 Tabs -->
     <n-tabs v-else type="line" animated class="widget-tabs">
+      <!-- 图表分类Tabs -->
       <n-tab-pane
         v-for="topCategory in filteredWidgetTree"
         :key="topCategory.name"
@@ -79,6 +80,62 @@
           </div>
         </div>
       </n-tab-pane>
+
+      <!-- 🔥 新增：设备Tab（仅看板模式） -->
+      <n-tab-pane v-if="props.mode === 'dashboard'" name="device" :tab="$t('card.deviceTab')">
+        <div class="tab-content">
+          <!-- 设备选择器 -->
+          <div class="device-selector">
+            <NSelect
+              v-model:value="selectedDeviceId"
+              :placeholder="$t('generate.select-device')"
+              :options="deviceOptions"
+              filterable
+              clearable
+              value-field="device_id"
+              label-field="device_name"
+              @update:value="(value, option) => parseDeviceTemplate(value, option)"
+            />
+          </div>
+
+          <!-- 设备组件网格 -->
+          <div v-if="deviceTabWidgets.length > 0" class="widget-subcategory">
+            <h4 class="subcategory-title">{{ $t('card.availableComponents') || '可用组件' }}</h4>
+            <div class="category-grid">
+              <div
+                v-for="widget in deviceTabWidgets"
+                :key="widget.type"
+                class="widget-card"
+                :title="`点击添加到编辑器\n${widget.description}`"
+                @click="handleAddWidget(widget)"
+              >
+                <div class="widget-icon">
+                  <n-icon v-if="typeof widget.icon !== 'string' && widget.icon" size="20">
+                    <component :is="widget.icon" />
+                  </n-icon>
+                  <SvgIcon
+                    v-else-if="typeof widget.icon === 'string' && !widget.icon.startsWith('<svg')"
+                    :icon="widget.icon"
+                  />
+                  <div
+                    v-else-if="typeof widget.icon === 'string' && widget.icon.startsWith('<svg')"
+                    class="svg-icon-inline"
+                    v-html="widget.icon"
+                  ></div>
+                </div>
+                <div class="widget-name">{{ $t(widget.name) }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 空状态 -->
+          <div v-else class="empty-device-state">
+            <n-empty
+              :description="selectedDeviceId ? '该设备模板无可用组件（v2格式）' : '请选择设备'"
+            />
+          </div>
+        </div>
+      </n-tab-pane>
     </n-tabs>
 
     <!-- Dev 调试数据面板（仅开发环境显示） -->
@@ -92,23 +149,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { SearchOutline, AlertCircleOutline } from '@vicons/ionicons5'
 import { useComponentTree } from '@/card2.1/hooks/useComponentTree'
 import type { WidgetDefinition } from '@/components/visual-editor/types/widget'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { useI18n } from 'vue-i18n'
+import { deviceTemplateSelect } from '@/service/api/device'
 
 const componentTree = useComponentTree({ autoInit: true })
 
 // --- 国际化 ---
 const { t } = useI18n()
 
+// --- Props ---
+interface Props {
+  mode?: 'template' | 'dashboard' // 模式：template=模板配置，dashboard=看板编辑
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  mode: 'dashboard'
+})
+
 // --- State and Emits ---
 const searchTerm = ref('')
 const emit = defineEmits<{
   'add-widget': [payload: { type: string; source: 'card2' | 'legacy' }]
 }>()
+
+// 🔥 设备Tab相关状态
+const deviceOptions = ref<any[]>([])
+const selectedDeviceId = ref<string | null>(null)
+const availableComponentTypes = ref<string[]>([])
 
 // --- Widget Initialization ---
 // 使用 componentTree 的初始化状态
@@ -121,6 +193,74 @@ const initializeWidgets = async () => {
     await componentTree.initialize()
   } catch (error) {}
 }
+
+// 🔥 设备相关功能
+
+/**
+ * 加载设备列表
+ */
+const loadDeviceOptions = async () => {
+  try {
+    const { data, error } = await deviceTemplateSelect()
+    if (!error && data) {
+      deviceOptions.value = [...data].reverse()
+    } else {
+      deviceOptions.value = []
+    }
+  } catch (error) {
+    console.error('❌ 加载设备列表失败:', error)
+    deviceOptions.value = []
+  }
+}
+
+/**
+ * 解析设备模板配置
+ * 提取可用的组件类型列表
+ */
+const parseDeviceTemplate = (deviceId: string | null, deviceOption: any) => {
+  // 清空选择
+  if (!deviceId || !deviceOption?.web_chart_config) {
+    availableComponentTypes.value = []
+    return
+  }
+
+  try {
+    const config = JSON.parse(deviceOption.web_chart_config)
+
+    // 只处理 v2 版本数据
+    if (config.version === 'v2' && config.web?.config?.widgets) {
+      // 提取所有组件的 type 字段
+      const types = config.web.config.widgets.map((w: any) => w.type).filter(Boolean)
+      availableComponentTypes.value = types
+      console.log('🔥 [设备Tab] 提取到的组件类型:', types)
+    } else {
+      // 旧版数据或非v2版本，显示空列表
+      console.log('⚠️ [设备Tab] 非v2格式数据，显示空列表')
+      availableComponentTypes.value = []
+    }
+  } catch (e) {
+    console.error('❌ [设备Tab] 解析 web_chart_config 失败:', e)
+    availableComponentTypes.value = []
+  }
+}
+
+/**
+ * 设备Tab专用的组件列表
+ * 根据模板配置过滤组件
+ */
+const deviceTabWidgets = computed(() => {
+  if (!selectedDeviceId.value || availableComponentTypes.value.length === 0) {
+    return []
+  }
+
+  // 过滤出模板中配置过的组件类型
+  const filtered = allWidgets.value.filter(widget =>
+    availableComponentTypes.value.includes(widget.type)
+  )
+
+  console.log('🔥 [设备Tab] 过滤后的组件:', filtered.length, '个')
+  return filtered
+})
 
 
 // --- Widget Data ---
@@ -272,7 +412,7 @@ const simplifiedWidgetTree = computed(() => {
 
 
 const filteredWidgetTree = computed(() => {
-  const result = !searchTerm.value
+  let result = !searchTerm.value
     ? simplifiedWidgetTree.value
     : (() => {
         const lowerCaseSearch = searchTerm.value.toLowerCase()
@@ -299,6 +439,11 @@ const filteredWidgetTree = computed(() => {
         return filteredTopCategories
       })()
 
+  // 🔥 根据 mode 过滤顶层分类
+  if (props.mode === 'template') {
+    // 模板模式：只显示图表分类（categories.chart）
+    result = result.filter(topCategory => topCategory.name === 'categories.chart')
+  }
 
   return result
 })
@@ -314,6 +459,13 @@ const handleAddWidget = (widget: any) => {
   const payload = { type: widget.type, source: widget.source || 'legacy' }
   emit('add-widget', payload)
 }
+
+// 🔥 组件挂载时加载设备列表（仅看板模式）
+onMounted(() => {
+  if (props.mode === 'dashboard') {
+    loadDeviceOptions()
+  }
+})
 </script>
 
 <style scoped>

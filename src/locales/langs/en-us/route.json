@@ -39,6 +39,8 @@
   "route.apply_service": "Protocol Plugin Management",
   "route.apply_in": "Plugin Management",
   "route.test": "page_testing",
+  "route.test_data-binding-system-integration": "Data Binding System Integration Test",
+  "route.test_editor-integration": "Editor Integration Test",
   "route.rule-engine": "Rule Engine",
   "route.data-service_rule-engine": "Rule Engine",
   "route.data-service": "Data Services",
@@ -127,5 +129,10 @@
   "route.device_service-details": "Third-party Integration Details",
   "route.test_panel-editor-v2": "New Board Test",
   "route.iot-visualization-platform": "IoT Visualization Platform",
-  "route.test_property-binding-fix-validation": "Property Binding Fix Validation Test"
+  "route.test_property-binding-fix-validation": "Property Binding Fix Validation Test",
+  "route.device_new-device-template": "Device Model (New)",
+  "route.device_new-device-template_template-list": "Model List (New)",
+  "route.device_new-device-template_template-details": "Model Details (New)",
+  "route.device_new-device-template_template-details_editor": "Edit Model (New)",
+  "route.device_new-device-template_template-details_viewer": "View Model (New)"
 }

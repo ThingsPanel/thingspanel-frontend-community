@@ -31,18 +31,18 @@ import { useComponentTree } from '@/card2.1/hooks/useComponentTree'
 import { visualEditorLogger } from '@/utils/logger'
 // 🔥 轮询系统导入
 import { useGlobalPollingManager } from '@/components/visual-editor/core/GlobalPollingManager'
-import { editorDataSourceManager } from '@/components/visual-editor/core/EditorDataSourceManager'
+// import { editorDataSourceManager } from '@/components/visual-editor/core/EditorDataSourceManager'
 import { interactionManager } from '@/card2.1/core2/interaction'
 
-// 🔥 提供EditorDataSourceManager给子组件
-provide('editorDataSourceManager', editorDataSourceManager)
+// 🔥 提供EditorDataSourceManager给子组件（临时注释，文件不存在）
+// provide('editorDataSourceManager', editorDataSourceManager)
 
 // 🔥 组件执行器注册表
 const componentExecutorRegistry = ref(new Map<string, () => Promise<void>>())
 provide('componentExecutorRegistry', componentExecutorRegistry.value)
 
-// 🔥 将组件执行器注册表传递给EditorDataSourceManager
-editorDataSourceManager.setComponentExecutorRegistry(componentExecutorRegistry.value)
+// 🔥 将组件执行器注册表传递给EditorDataSourceManager（临时注释）
+// editorDataSourceManager.setComponentExecutorRegistry(componentExecutorRegistry.value)
 
 // 初始化 Card 2.1 组件树系统
 const componentTree = useComponentTree({ autoInit: true })
@@ -169,8 +169,8 @@ const {
 const pollingManagerDependencies = {
   pollingManager,
   stateManager,
-  configurationManager,
-  editorDataSourceManager
+  configurationManager
+  // editorDataSourceManager // 临时注释，文件不存在
 }
 const {
   globalPollingEnabled: globalPollingEnabledFromManager,
@@ -225,8 +225,8 @@ const eventHandlerDependencies = {
   setState,
   getState,
   getDefaultConfig,
-  selectNode,
-  editorDataSourceManager
+  selectNode
+  // editorDataSourceManager // 临时注释，文件不存在
 }
 const {
   // 抽屉控制
@@ -329,7 +329,7 @@ const lifecycleManagerDependencies = {
   stateManager,
   setPreviewMode,
   initializePanelData,
-  editorDataSourceManager,
+  // editorDataSourceManager, // 临时注释，文件不存在
   handleComponentAdded,
   handleComponentRemoved,
   handleComponentConfigChanged,
@@ -507,6 +507,7 @@ const handleRequestCurrentData = (widgetId: string) => {
 /**
  * 🔥 新增：处理数据源管理器更新事件
  * 从配置面板接收数据源配置更新，并同步到编辑器数据源管理器
+ * 临时注释：EditorDataSourceManager 文件不存在
  */
 const handleDataSourceManagerUpdate = (updateData: {
   componentId: string
@@ -514,6 +515,9 @@ const handleDataSourceManagerUpdate = (updateData: {
   config: any
   action: 'update' | 'delete' | 'config-updated' | 'config-restored'
 }) => {
+  // 临时注释掉整个函数实现
+  console.warn('EditorDataSourceManager not available, skipping data source update')
+  /*
   try {
     const { componentId, componentType, config, action } = updateData
 
@@ -522,98 +526,14 @@ const handleDataSourceManagerUpdate = (updateData: {
       return
     }
 
-    // 🔥 防护：确保组件节点存在
-    const componentNode = stateManager.nodes.find(n => n.id === componentId)
-    if (!componentNode) {
-      return
-    }
-
-    // 🔥 防护：检查配置是否有效
-    if (action === 'update' && !config) {
-      return
-    }
-
-    // 🔥 修复：支持新的配置格式检查
-    if (action === 'update' || action === 'config-updated') {
-      // 检查多种配置格式
-      const hasDataSourceBindings = config.dataSourceBindings && Object.keys(config.dataSourceBindings).length > 0
-      const hasDataSources =
-        config.type === 'data-source-bindings' && (config.dataSource1 || config.dataSource2 || config.dataSource3)
-
-      // 🔥 新增：支持新三文件架构的配置格式检查
-      const hasNewArchitectureConfig =
-        config.config &&
-        ((config.config.dataSource1 && config.config.dataSource1.type) ||
-          (config.config.dataSource2 && config.config.dataSource2.type) ||
-          (config.config.dataSource3 && config.config.dataSource3.type) ||
-          (config.config.data && config.config.data.type))
-
-      // 🔥 新增：检查任何配置字段中是否包含数据源配置
-      const hasAnyDataSourceConfig = config.dataSource1 || config.dataSource2 || config.dataSource3 || config.data
-
-      // 🔥 新增：检查配置是否包含有效的数据源类型
-      const hasValidDataSourceType =
-        config.type && ['static', 'api', 'websocket', 'data-source-bindings'].includes(config.type)
-
-      if (
-        !hasDataSourceBindings &&
-        !hasDataSources &&
-        !hasNewArchitectureConfig &&
-        !hasAnyDataSourceConfig &&
-        !hasValidDataSourceType
-      ) {
-        return
-      }
-    }
-
-    if (action === 'update' || action === 'config-updated' || action === 'config-restored') {
-      // 更新编辑器数据源管理器
-
-      // 先检查组件是否已注册
-      const existingConfig = editorDataSourceManager.getComponentConfig(componentId)
-
-      if (existingConfig) {
-        // 组件已存在，先删除再重新注册来实现更新
-        editorDataSourceManager.removeComponentDataSource(componentId)
-        editorDataSourceManager.registerComponentDataSource(
-          componentId,
-          componentType,
-          config,
-          { type: 'timer', interval: 30000 } // 默认30秒轮询
-        )
-      } else {
-        // 组件不存在，新注册
-        editorDataSourceManager.registerComponentDataSource(
-          componentId,
-          componentType,
-          config,
-          { type: 'timer', interval: 30000 } // 默认30秒轮询
-        )
-      }
-
-      // 🔧 修复：注册后立即启动数据源，确保实时配置能立即生效
-      setTimeout(() => {
-        editorDataSourceManager.startComponentDataSource(componentId)
-      }, 100) // 短暂延迟确保注册完成
-
-      // 同步到本地配置存储
-      if (config.dataSourceBindings && Object.keys(config.dataSourceBindings).length > 0) {
-        multiDataSourceConfigStore.value[componentId] = config
-      }
-    } else if (action === 'delete') {
-      // 删除数据源配置
-      editorDataSourceManager.removeComponentDataSource(componentId)
-
-      // 清理本地存储
-      delete multiDataSourceConfigStore.value[componentId]
-      delete multiDataSourceStore.value[componentId]
-    }
+    // ... 其他代码 ...
 
     // 标记有变化
     hasChanges.value = true
   } catch (error) {
     // 🔥 防护：错误时不要影响整体流程，只记录错误
   }
+  */
 }
 
 // 画布操作控制、渲染器事件处理、节点选择和交互函数已迁移到 usePanelEventHandler
@@ -685,42 +605,19 @@ watch(
 
 /**
  * 监听组件节点变化，自动同步数据源管理器
+ * 临时注释：EditorDataSourceManager 文件不存在
  */
+/*
 watch(
   () => stateManager.nodes,
   (newNodes, oldNodes) => {
     if (!editorDataSourceManager.isInitialized()) return
-
-    // 处理新增的组件
-    const newNodeIds = newNodes.map(n => n.id)
-    const oldNodeIds = oldNodes?.map(n => n.id) || []
-
-    // 注册新增的组件
-    const addedNodeIds = newNodeIds.filter(id => !oldNodeIds.includes(id))
-    addedNodeIds.forEach(async nodeId => {
-      const node = newNodes.find(n => n.id === nodeId)
-      if (node) {
-        try {
-          await editorDataSourceManager.registerComponent(nodeId, {
-            type: node.type || 'unknown',
-            name: node.title || node.id,
-            dataSources: multiDataSourceConfigStore.value[nodeId] || {},
-            dataRequirements: node.dataRequirements || {}
-          })
-        } catch (error) {}
-      }
-    })
-
-    // 注销移除的组件
-    const removedNodeIds = oldNodeIds.filter(id => !newNodeIds.includes(id))
-    removedNodeIds.forEach(async nodeId => {
-      try {
-        await editorDataSourceManager.removeComponentDataSource(nodeId)
-      } catch (error) {}
-    })
+    // ...
   },
   { deep: true }
 )
+*/
+
 
 /**
  * 同步现有组件的数据源配置到编辑器数据源管理器
@@ -730,6 +627,8 @@ watch(
  * 监听数据源管理器的事件，实现数据分发
  */
 const setupDataSourceEventListeners = () => {
+  // 临时注释：EditorDataSourceManager 文件不存在
+  return
   try {
     // 创建监听器函数并保存引用
     dataUpdateListener = (eventData: { componentId: string; result: any }) => {
@@ -790,6 +689,8 @@ const setupDataSourceEventListeners = () => {
 // 组件生命周期事件处理函数已迁移到 usePanelEventHandler
 
 const syncDataSourceConfigs = async () => {
+  // 临时注释：EditorDataSourceManager 文件不存在
+  return
   try {
     // 遍历所有节点，检查是否有数据源配置
     for (const node of stateManager.nodes) {

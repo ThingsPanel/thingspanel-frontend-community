@@ -17,7 +17,6 @@ import { ConfigurationPanel } from '@/components/visual-editor/configuration'
 import { usePreviewMode } from '@/components/visual-editor/hooks/usePreviewMode'
 import type { RendererType } from '@/components/visual-editor/types'
 import { useMessage, useDialog } from 'naive-ui'
-import { getBoard, PutBoard } from '@/service/api'
 import { smartDeepClone } from '@/utils/deep-clone'
 
 // 🔥 轮询系统导入
@@ -54,14 +53,17 @@ const getComponentDefinition = async (componentType: string) => {
 
 // 🔥 接收测试页面的配置props
 interface Props {
-  panelId: string
+  panelId: string // 仅作为编辑器标识符
+  initialConfig?: { widgets: any[]; config: any } // 🔥 父组件传递的初始编辑器配置
   showToolbar?: boolean
   showPageHeader?: boolean
   enableHeaderArea?: boolean
   enableToolbarArea?: boolean
   enableFooterArea?: boolean
   customLayoutClass?: string
-  defaultRenderer?: RendererType // 🔥 新增：默认渲染器类型
+  defaultRenderer?: RendererType // 🔥 默认渲染器类型
+  customSaveHandler?: (state: any) => Promise<void> // 🔥 父组件实现的保存函数
+  mode?: 'template' | 'dashboard' // 🔥 WidgetLibrary模式：template=模板配置，dashboard=看板编辑
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -71,21 +73,27 @@ const props = withDefaults(defineProps<Props>(), {
   enableToolbarArea: true,
   enableFooterArea: false,
   customLayoutClass: '',
-  defaultRenderer: 'gridstack' // 🔥 默认使用GridStack渲染器
+  defaultRenderer: 'gridstack', // 🔥 默认使用GridStack渲染器
+  mode: 'dashboard' // 🔥 默认为看板模式
 })
 
 const message = useMessage()
 const dialog = useDialog()
 
-// 🔥 定义emit事件 - 测试页面需要监听这些事件
+// 🔥 定义emit事件
 const emit = defineEmits<{
   'state-manager-ready': [stateManager: any]
   'widget-added': [widget: any]
   'node-select': [nodeId: string]
   'editor-ready': [editor: any]
+  'save': [state: any] // 保存事件，传递当前状态
+  'save-success': [] // 保存成功事件
+  'save-error': [error: any] // 保存失败事件
+  'config-loaded': [] // 🔥 配置加载完成事件
+  'load-error': [error: any] // 🔥 配置加载失败事件
 }>()
 
-const panelData = ref<any>({})
+// 🔥 移除 panelData 内部状态，不再由编辑器管理业务数据
 const preEditorConfig = ref<any>(null)
 
 // 基础状态
@@ -446,44 +454,42 @@ const setState = async (state: any) => {
   }
 }
 
-
-const fetchBoard = async () => {
+/**
+ * 🔥 初始化编辑器配置
+ * 从父组件传递的 initialConfig 加载配置，不再内部调用 API
+ */
+const initializeEditorConfig = async () => {
   try {
     dataFetched.value = false
-    const { data } = await getBoard(props.panelId)
-    panelData.value = data
 
-    if (data?.config) {
-      // 🔥 完全兼容的配置解析逻辑
-      const fullConfig = JSON.parse(data.config)
+    // 如果父组件提供了初始配置，直接使用
+    if (props.initialConfig) {
+      const config = props.initialConfig
 
-      if (fullConfig.widgets !== undefined || fullConfig.config !== undefined) {
-        // 🔥 兼容老版本的直接格式 - 老版本直接保存 {widgets: [...], config: {...}}
-        await setState(fullConfig)
-        preEditorConfig.value = smartDeepClone(fullConfig)
-      } else if (Array.isArray(fullConfig)) {
-        // 🔥 兼容更老的数组格式
-        const legacyState = { widgets: fullConfig, config: { gridConfig: {}, canvasConfig: {} } }
-        await setState(legacyState)
-        preEditorConfig.value = smartDeepClone(legacyState)
+      if (config.widgets !== undefined || config.config !== undefined) {
+        // 标准格式：{widgets: [...], config: {...}}
+        await setState(config)
+        preEditorConfig.value = smartDeepClone(config)
       } else {
-        // 🔥 未知结构或空对象，设置默认状态
+        // 空配置
         const emptyState = { widgets: [], config: { gridConfig: {}, canvasConfig: {} } }
         await setState(emptyState)
         preEditorConfig.value = emptyState
       }
     } else {
-      // 设置默认空状态
-      if (process.env.NODE_ENV === 'development') {
-      }
+      // 没有提供初始配置，使用空状态
       const emptyState = { widgets: [], config: { gridConfig: {}, canvasConfig: {} } }
       await setState(emptyState)
       preEditorConfig.value = emptyState
     }
-  } catch (error) {
-    message.error($t('common.loadFailed') || '加载面板数据失败')
-  } finally {
+
     dataFetched.value = true
+    emit('config-loaded')
+  } catch (error) {
+    console.error('❌ 初始化编辑器配置失败:', error)
+    message.error($t('common.loadFailed') || '加载配置失败')
+    emit('load-error', error)
+    dataFetched.value = true // 即使失败也设置为 true，显示空编辑器
   }
 }
 
@@ -522,13 +528,12 @@ const startCard2SystemCheck = () => {
 }
 
 onMounted(async () => {
-  // 🔥 关键修复：先初始化管理器和设置注册表，再获取数据
+  // 🔥 关键修复：先初始化管理器和设置注册表，再加载配置
   try {
     await configurationManager.initialize()
 
     // 🔥 关键修复：注册数据执行触发器，用于处理配置变更事件
     dataExecutionTriggerCleanup = registerDataExecutionTrigger(handleDataExecutionTrigger)
-
 
     // 🔥 已迁移：数据源管理现在通过核心数据架构系统处理
     // 组件执行器注册表现在由 Card2Wrapper 自行管理
@@ -536,8 +541,12 @@ onMounted(async () => {
   } catch (error) {
     console.error('初始化管理器失败:', error)
   }
+
   await nextTick() // 确保DOM更新完成
-  await fetchBoard()
+
+  // 🔥 从父组件提供的 initialConfig 加载配置
+  await initializeEditorConfig()
+
   // 其他初始化
   try {
     // 监听组件系统就绪事件
@@ -674,22 +683,27 @@ const handleSave = async () => {
   try {
     const currentState = getState()
 
-    // 🔥 统一格式：直接保存简单格式，新老版本都能读取
-    const { error } = await PutBoard({
-      id: props.panelId,
-      config: JSON.stringify(currentState), // 直接保存 {widgets: [], config: {}}
-      name: panelData.value?.name,
-      home_flag: panelData.value?.home_flag
-    })
-
-    if (error) {
-      throw new Error(error)
+    // 🔥 必须由父组件提供保存函数
+    if (props.customSaveHandler) {
+      // 使用父组件提供的自定义保存函数
+      await props.customSaveHandler(currentState)
+    } else {
+      // 🔥 没有提供保存函数，抛出错误
+      throw new Error('customSaveHandler is required')
     }
+
+    // 🔥 触发保存成功事件
+    emit('save', currentState)
+    emit('save-success')
 
     message.success($t('page.dataForward.saveSuccess') || '保存成功')
     hasChanges.value = false
     preEditorConfig.value = smartDeepClone(currentState)
   } catch (error) {
+    console.error('❌ 保存失败:', error)
+    // 🔥 触发保存失败事件
+    emit('save-error', error)
+
     message.error($t('page.dataForward.saveFailed') || '保存失败')
   } finally {
     isSaving.value = false
@@ -1059,7 +1073,7 @@ const refreshCard2Definitions = async () => {
 
       <!-- 🔥 真实的左侧组件库 -->
       <template #left>
-        <WidgetLibrary @add-widget="handleAddWidget" />
+        <WidgetLibrary :mode="props.mode" @add-widget="handleAddWidget" />
       </template>
 
       <!-- 🔥 主内容区域 - 真实渲染器实现 -->

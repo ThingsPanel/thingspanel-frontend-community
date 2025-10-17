@@ -1,14 +1,14 @@
 <script setup lang="ts">
 /**
  * Ultra看板详情页面
- * 使用Visual Editor的PanelEditor组件实现看板编辑功能
+ * 使用Visual Editor的PanelEditorV2组件实现看板编辑功能
  */
 
 import { onMounted, ref, computed, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { NCard, NSpace, useMessage, NSpin, NBackTop } from 'naive-ui'
 import { $t } from '@/locales'
-import { getBoard } from '@/service/api'
+import { getBoard, PutBoard } from '@/service/api'
 
 // 正式编辑器：基于 PanelEditorV2（无测试选项）
 import PanelEditorV2 from '@/components/visual-editor/PanelEditorV2.vue'
@@ -17,13 +17,14 @@ import PanelEditorV2 from '@/components/visual-editor/PanelEditorV2.vue'
 const route = useRoute()
 const message = useMessage()
 
-// 主题系统集成（如需主题响应可在此扩展）
-
 // 页面状态管理
 const loading = ref(true)
 const panelData = ref<Panel.Board>()
 const error = ref<string>('')
 const isUnmounted = ref(false)
+
+// 🔥 编辑器配置状态
+const editorConfig = ref<{ widgets: any[]; config: any } | undefined>()
 
 /**
  * 获取看板ID
@@ -33,7 +34,7 @@ const panelId = computed(() => {
 })
 
 /**
- * 获取看板数据
+ * 🔥 获取看板数据并解析配置
  */
 const fetchBoardData = async () => {
   if (!panelId.value) {
@@ -48,14 +49,73 @@ const fetchBoardData = async () => {
 
     if (data) {
       panelData.value = data
+
+      // 🔥 解析看板配置为编辑器格式
+      if (data.config) {
+        try {
+          const parsedConfig = JSON.parse(data.config)
+
+          if (parsedConfig.widgets !== undefined || parsedConfig.config !== undefined) {
+            // 标准格式：{widgets: [...], config: {...}}
+            editorConfig.value = parsedConfig
+          } else if (Array.isArray(parsedConfig)) {
+            // 旧版数组格式
+            editorConfig.value = {
+              widgets: parsedConfig,
+              config: { gridConfig: {}, canvasConfig: {} }
+            }
+          } else {
+            // 空或未知格式，使用默认空配置
+            editorConfig.value = {
+              widgets: [],
+              config: { gridConfig: {}, canvasConfig: {} }
+            }
+          }
+        } catch (e) {
+          console.error('❌ 解析看板配置失败:', e)
+          // 解析失败，使用空配置
+          editorConfig.value = {
+            widgets: [],
+            config: { gridConfig: {}, canvasConfig: {} }
+          }
+        }
+      } else {
+        // 没有配置，使用空配置
+        editorConfig.value = {
+          widgets: [],
+          config: { gridConfig: {}, canvasConfig: {} }
+        }
+      }
     } else {
       error.value = $t('common.dataNotFound')
     }
   } catch (err) {
+    console.error('❌ 加载看板数据失败:', err)
     error.value = $t('common.loadError')
     message.error($t('common.loadError'))
   } finally {
     loading.value = false
+  }
+}
+
+/**
+ * 🔥 自定义保存处理函数
+ * 保存编辑器状态到看板 API
+ */
+const handleSave = async (state: any) => {
+  if (!panelData.value) {
+    throw new Error('Panel data not loaded')
+  }
+
+  const { error: saveError } = await PutBoard({
+    id: panelId.value,
+    config: JSON.stringify(state), // 保存 {widgets: [], config: {}}
+    name: panelData.value.name,
+    home_flag: panelData.value.home_flag
+  })
+
+  if (saveError) {
+    throw new Error(saveError)
   }
 }
 
@@ -107,12 +167,14 @@ const retryLoad = async () => {
     </div>
 
     <!-- 主内容区域 - 集成Visual Editor -->
-    <div v-else-if="panelData && !isUnmounted" class="main-content">
+    <div v-else-if="panelData && editorConfig && !isUnmounted" class="main-content">
       <!-- 正式编辑器（V2）集成 -->
       <div class="visual-editor-container">
         <PanelEditorV2
           :key="`ultra-panel-editor-${panelId}`"
           :panel-id="panelId"
+          :initial-config="editorConfig"
+          :custom-save-handler="handleSave"
           :show-toolbar="true"
           :show-page-header="true"
           :enable-header-area="true"

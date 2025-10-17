@@ -57,6 +57,11 @@ declare module "@elegant-router/types" {
     "device_grouping": "/device/grouping";
     "device_grouping-details": "/device/grouping-details";
     "device_manage": "/device/manage";
+    "device_new-device-template": "/device/new-device-template";
+    "device_new-device-template_template-details": "/device/new-device-template/template-details";
+    "device_new-device-template_template-details_editor": "/device/new-device-template/template-details/editor";
+    "device_new-device-template_template-details_viewer": "/device/new-device-template/template-details/viewer";
+    "device_new-device-template_template-list": "/device/new-device-template/template-list";
     "device_service-access": "/device/service-access";
     "device_service-details": "/device/service-details";
     "device_template": "/device/template";
@@ -223,6 +228,10 @@ declare module "@elegant-router/types" {
     | "device_grouping-details"
     | "device_grouping"
     | "device_manage"
+    | "device_new-device-template_template-details_editor"
+    | "device_new-device-template_template-details"
+    | "device_new-device-template_template-details_viewer"
+    | "device_new-device-template_template-list"
     | "device_service-access"
     | "device_service-details"
     | "device_template"
