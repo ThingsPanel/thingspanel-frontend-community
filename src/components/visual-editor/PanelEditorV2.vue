@@ -1362,11 +1362,19 @@ const refreshCard2Definitions = async () => {
   position: relative;
   background-color: var(--body-color, #f8fafc);
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .renderer-container {
   width: 100%;
   position: relative; /* 🔥 改为relative，避免绝对定位限制 */
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 }
 
 /* 🔥 拖拽状态样式 */

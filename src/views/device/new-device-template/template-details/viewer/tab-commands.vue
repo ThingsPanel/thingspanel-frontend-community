@@ -81,7 +81,11 @@ const columns: any = [
  * 加载命令数据
  */
 const loadData = async () => {
-  if (!templateData.value?.id) return
+  // 🔥 严格验证：必须有有效的模板ID
+  if (!templateData.value?.id || templateData.value.id === '') {
+    return
+  }
+
   loading.value = true
 
   try {
