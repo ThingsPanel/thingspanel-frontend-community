@@ -34,7 +34,7 @@
   "route.component_card": "Card",
   "route.component_table": "Table",
   "route.management_api": "API keys",
-  "route.device_template": "Device Model",
+  "route.device_template": "Thing Model",
   "route.apply": "Application Management",
   "route.apply_service": "Protocol Plugin Management",
   "route.apply_in": "Plugin Management",

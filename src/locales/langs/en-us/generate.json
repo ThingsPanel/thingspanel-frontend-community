@@ -279,7 +279,7 @@
   "generate.first": "First",
   "generate.more-dynamics": "More Dynamics",
   "generate.issue": "Issue",
-  "generate.select-device-function-template": "Select Device Function Template",
+  "generate.select-device-function-template": "Select Thing Model",
   "generate.through-protocol-access": "Access Through Protocol",
   "generate.credential": "Credential",
   "generate.dynamic": "Dynamic",
