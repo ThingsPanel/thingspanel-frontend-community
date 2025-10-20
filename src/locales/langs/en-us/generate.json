@@ -332,7 +332,7 @@
   "generate.enter-template-name": "Enter Template Name",
   "generate.extension-info": "Extension Info",
   "generate.next-step": "Next Step",
-  "generate.add-device-function-template": "Add Device Function Template",
+  "generate.add-device-function-template": "Add Device Thing Model",
   "generate.email-address": "Email Address",
   "generate.demo": "Demo",
   "generate.device-location": "Device Location",

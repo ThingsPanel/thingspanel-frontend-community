@@ -332,7 +332,7 @@
   "generate.enter-template-name": "请输入模板名称",
   "generate.extension-info": "扩展信息",
   "generate.next-step": "下一步",
-  "generate.add-device-function-template": "添加设备模型",
+  "generate.add-device-function-template": "新建物模型",
   "generate.email-address": "电子邮箱",
   "generate.demo": "插件demo地址：",
   "generate.device-location": "设备位置",

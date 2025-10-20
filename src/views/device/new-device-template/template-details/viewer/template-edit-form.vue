@@ -168,7 +168,7 @@ onMounted(() => {
       </NFormItem>
 
       <!-- 封面图标 -->
-      <NFormItem :label="$t('device_template.selectCover')">
+      <NFormItem :label="$t('device_template.cover')">
         <NUpload
           :action="url + '/file/up'"
           :headers="uploadHeaders"

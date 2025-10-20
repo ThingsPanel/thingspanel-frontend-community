@@ -62,8 +62,8 @@ const CurrentStepComponent = computed(() => {
 
 const title = computed(() => {
   const titles: Record<'add' | 'edit', string> = {
-    add: $t('device_template.templateInfo'),
-    edit: $t('device_template.editTemplateInfo')
+    add: $t('device_template.addThingModel'),
+    edit: $t('device_template.editThingModel')
   }
   return titles[editorType.value]
 })

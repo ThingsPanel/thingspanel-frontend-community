@@ -188,7 +188,7 @@ watchEffect(async () => {
         />
       </n-form-item>
 
-      <n-form-item :label="$t('device_template.selectCover')">
+      <n-form-item :label="$t('device_template.cover')">
         <n-upload
           :action="url + '/file/up'"
           :headers="{ 'x-token': localStg.get('token') || '' }"
