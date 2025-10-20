@@ -57,8 +57,8 @@ const modalVisible = computed({
 })
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
-    add: $t('device_template.templateInfo'),
-    edit: $t('device_template.editTemplateInfo')
+    add: $t('device_template.addThingModel'),
+    edit: $t('device_template.editThingModel')
   }
   return titles[props.type]
 })
@@ -84,7 +84,7 @@ defineOptions({ name: 'TableActionModal' })
     "
   >
     <n-steps :current="stepCurrent" status="process">
-      <n-step :title="$t('device_template.templateInfo')" :description="$t('device_template.addDeviceInfo')" />
+      <n-step :title="$t('device_template.basicInfo')" :description="$t('device_template.addDeviceInfo')" />
       <n-step
         :title="$t('device_template.modelDefinition')"
         :description="$t('device_template.deviceParameterDescribe')"

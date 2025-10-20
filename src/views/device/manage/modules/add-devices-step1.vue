@@ -51,7 +51,7 @@ function handleValidateClick(e: MouseEvent) {
         <n-form-item :label="$t('custom.devicePage.label')" path="label">
           <n-dynamic-tags v-model:value="formValue.label" />
         </n-form-item>
-        <n-form-item :label="$t('custom.devicePage.deviceConfig')" path="device_config_id">
+        <n-form-item :label="$t('device_template.equipmentConfig')" path="device_config_id">
           <n-select
             v-model:value="formValue.device_config_id"
             :placeholder="$t('custom.devicePage.selectDeviceConfig')"
