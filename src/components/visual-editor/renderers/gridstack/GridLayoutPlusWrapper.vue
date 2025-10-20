@@ -133,13 +133,16 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => {
   const config = {
     colNum: 24, // 🔥 修复：统一默认为24列
     rowHeight: 80,
-    // 默认无间距：从 [10, 10] 调整为 [0, 0]
+    // 🔥 使用新的 gap 配置，更直接清晰
+    horizontalGap: 0, // 水平间距默认 0px
+    verticalGap: 0, // 垂直间距默认 0px
+    // 保留 margin 以保持向后兼容
     margin: [0, 0] as [number, number],
     isDraggable: !isReadOnly.value && !props.staticGrid,
     isResizable: !isReadOnly.value && !props.staticGrid,
     responsive: false,
-    preventCollision: false, // 改为 false，允许碰撞和替换
-    verticalCompact: true,
+    preventCollision: true, // 🔥 阻止组件重叠（关键配置）
+    verticalCompact: false, // 🔥 禁用垂直压缩，保持用户拖拽的布局不变
     isMirrored: false,
     autoSize: false, // 🔥 禁用自动调整大小，让父容器处理滚动
     useCssTransforms: true,
@@ -206,28 +209,22 @@ watch(
   { immediate: true, deep: true }
 )
 
-// 监听配置变更
+// 🔥 监听交互相关配置，保持布局项行为同步
 watch(
-  () => props.gridConfig,
-  newConfig => {
-    // 重新计算布局以应用新配置
-    layout.value = nodesToLayout(props.graphData.nodes || [])
-  },
-  { deep: true }
-)
+  () => [props.staticGrid, props.gridConfig?.staticGrid, props.gridConfig?.isDraggable, props.gridConfig?.isResizable],
+  ([staticGridOverride, configStatic, configDraggable, configResizable]) => {
+    const effectiveStatic = Boolean(staticGridOverride || configStatic)
+    const allowDrag = !props.readonly && !effectiveStatic && (configDraggable ?? true)
+    const allowResize = !props.readonly && !effectiveStatic && (configResizable ?? true)
 
-// 🔥 监听 staticGrid 变更 - 修复预览模式切换问题
-watch(
-  () => props.staticGrid,
-  (newStaticGrid, oldStaticGrid) => {
-    // 只更新布局项的static属性，不重新计算位置，避免预览模式位置偏移
     layout.value = layout.value.map(item => ({
       ...item,
-      static: newStaticGrid || (props.gridConfig?.staticGrid ?? false),
-      isDraggable: !props.readonly && !newStaticGrid && (props.gridConfig?.isDraggable ?? true),
-      isResizable: !props.readonly && !newStaticGrid && (props.gridConfig?.isResizable ?? true)
+      static: effectiveStatic,
+      isDraggable: allowDrag,
+      isResizable: allowResize
     }))
-  }
+  },
+  { immediate: true }
 )
 
 const onLayoutChange = (newLayout: ExtendedGridLayoutPlusItem[]) => {

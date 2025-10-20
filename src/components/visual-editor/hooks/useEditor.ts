@@ -12,7 +12,7 @@ import { useComponentTree as useCard2Integration } from '@/card2.1/hooks/useComp
 import { configRegistry } from '@/core/interaction-system'
 // 数据源注册已移除
 import type { GraphData, WidgetType } from '@/components/visual-editor/types'
-import type { ComponentDefinition } from '@/card2.1/core/types'
+import type { ComponentDefinition } from '@/card2.1/core2'
 
 // 拖拽数据接口
 export interface WidgetDragData {

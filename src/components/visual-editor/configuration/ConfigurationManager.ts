@@ -374,11 +374,7 @@ export class ConfigurationManager implements IConfigurationManager {
    * @param componentId - 组件ID
    * @param configuration - 要导入的配置
    */
-  public importConfiguration(componentId: string, configuration: Record<string, any>): void {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`📥 [ConfigurationManager] 正在导入组件 ${componentId} 的配置:`, configuration)
-    }
-
+  public importConfiguration(componentId: string, configuration: Record<string, any>): void {
     // 在设置新配置之前，遍历即将被替换的旧配置中的所有数据源，并清除它们的缓存
     const oldConfig = this.configurations[componentId]
     if (oldConfig) {

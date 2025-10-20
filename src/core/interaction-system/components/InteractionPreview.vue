@@ -170,8 +170,8 @@ import type {
   InteractionEventType,
   InteractionActionType,
   InteractionResponse
-} from '@/card2.1/core/interaction-types'
-import { interactionManager } from '@/card2.1/core/interaction-manager'
+} from '@/card2.1/core2/interaction'
+import { interactionManager } from '@/card2.1/core2/interaction'
 
 interface Props {
   interactions: InteractionConfig[]

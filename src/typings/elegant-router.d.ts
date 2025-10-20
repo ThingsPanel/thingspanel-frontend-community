@@ -57,6 +57,11 @@ declare module "@elegant-router/types" {
     "device_grouping": "/device/grouping";
     "device_grouping-details": "/device/grouping-details";
     "device_manage": "/device/manage";
+    "device_new-device-template": "/device/new-device-template";
+    "device_new-device-template_template-details": "/device/new-device-template/template-details";
+    "device_new-device-template_template-details_editor": "/device/new-device-template/template-details/editor";
+    "device_new-device-template_template-details_viewer": "/device/new-device-template/template-details/viewer";
+    "device_new-device-template_template-list": "/device/new-device-template/template-list";
     "device_service-access": "/device/service-access";
     "device_service-details": "/device/service-details";
     "device_template": "/device/template";
@@ -68,7 +73,6 @@ declare module "@elegant-router/types" {
     "function_multi-tab": "/function/multi-tab";
     "function_tab": "/function/tab";
     "home": "/home";
-    "iot-visualization-platform": "/iot-visualization-platform";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
     "manage": "/manage";
     "manage_menu": "/manage/menu";
@@ -107,8 +111,8 @@ declare module "@elegant-router/types" {
     "system-management-user": "/system-management-user";
     "system-management-user_system-log": "/system-management-user/system-log";
     "test": "/test";
+    "test_category-test": "/test/category-test";
     "test_panel-editor-v2": "/test/panel-editor-v2";
-    "test_property-binding-fix-validation": "/test/property-binding-fix-validation";
     "ultra-kanban": "/ultra-kanban";
     "ultra-kanban_index": "/ultra-kanban/index";
     "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details";
@@ -165,7 +169,6 @@ declare module "@elegant-router/types" {
     | "device"
     | "function"
     | "home"
-    | "iot-visualization-platform"
     | "login"
     | "manage"
     | "management"
@@ -225,6 +228,10 @@ declare module "@elegant-router/types" {
     | "device_grouping-details"
     | "device_grouping"
     | "device_manage"
+    | "device_new-device-template_template-details_editor"
+    | "device_new-device-template_template-details"
+    | "device_new-device-template_template-details_viewer"
+    | "device_new-device-template_template-list"
     | "device_service-access"
     | "device_service-details"
     | "device_template"
@@ -234,7 +241,6 @@ declare module "@elegant-router/types" {
     | "function_multi-tab"
     | "function_tab"
     | "home"
-    | "iot-visualization-platform"
     | "manage_menu"
     | "manage_role"
     | "manage_user-detail"
@@ -261,8 +267,8 @@ declare module "@elegant-router/types" {
     | "plugin_video"
     | "rule-engine"
     | "system-management-user_system-log"
+    | "test_category-test"
     | "test_panel-editor-v2"
-    | "test_property-binding-fix-validation"
     | "ultra-kanban_index"
     | "ultra-kanban_kanban-details"
     | "ultra-kanban_kanban-preview"

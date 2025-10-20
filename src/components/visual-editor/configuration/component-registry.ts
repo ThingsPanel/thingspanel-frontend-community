@@ -44,14 +44,7 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
     // 检查Card2.1组件是否有configComponent
     if (widget?.metadata?.card2Definition) {
       const hasConfigComponent = !!widget.metadata.card2Definition.configComponent
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[ComponentRegistry] ${widget.type} configComponent检查:`, {
-          hasConfigComponent,
-          configComponent: widget.metadata.card2Definition.configComponent
-        })
-      }
-
+      
       return hasConfigComponent
     }
 
@@ -70,11 +63,7 @@ const shouldShowComponentConfig = (componentId: string, widget?: any): boolean =
  * 只有声明了交互能力的组件才显示交互配置
  */
 const shouldShowInteractionConfig = (componentId: string, widget?: any): boolean => {
-  try {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[ComponentRegistry] 检查交互配置显示: ${componentId}`, widget?.type)
-    }
-
+  try {
     // 检查Card2.1组件的交互能力声明
     if (widget?.metadata?.card2Definition) {
       const card2Definition = widget.metadata.card2Definition
@@ -83,23 +72,11 @@ const shouldShowInteractionConfig = (componentId: string, widget?: any): boolean
         (card2Definition.interactionCapabilities.supportedEvents?.length > 0 ||
          card2Definition.interactionCapabilities.availableActions?.length > 0)
       )
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[ComponentRegistry] ${widget.type} 交互能力检查:`, {
-          hasInteractionCapabilities,
-          supportedEvents: card2Definition.interactionCapabilities?.supportedEvents,
-          availableActions: card2Definition.interactionCapabilities?.availableActions
-        })
-      }
-
+
       return hasInteractionCapabilities
     }
 
-    // 对于传统组件，暂时返回false
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[ComponentRegistry] 传统组件 ${widget?.type} 不显示交互配置`)
-    }
-    return false
+    // 对于传统组件，暂时返回false    return false
   } catch (error) {
     console.error(`❌ [ComponentRegistry] 交互配置检查出错`, { componentId, error })
     return false
@@ -112,13 +89,6 @@ const shouldShowInteractionConfig = (componentId: string, widget?: any): boolean
  */
 const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean => {
   try {
-    console.log(`🔍 [shouldShowDataSourceConfig] 开始检查组件:`, {
-      componentId,
-      widgetType: widget?.type,
-      hasWidget: !!widget,
-      hasMetadata: !!widget?.metadata,
-      hasCard2Definition: !!widget?.metadata?.card2Definition
-    })
     
     if (process.env.NODE_ENV === 'development') {
     }
@@ -131,16 +101,7 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
         card2Definition.dataRequirements?.primaryData ||
         card2Definition.dataSources?.length > 0
       )
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🔥 [shouldShowDataSourceConfig] Card2.1组件 ${widget.type} 数据源检查:`, {
-          hasDataRequirements: !!card2Definition.dataRequirements,
-          hasDataSources: !!card2Definition.dataSources,
-          dataSourcesLength: card2Definition.dataSources?.length || 0,
-          hasDataNeeds
-        })
-      }
-
+
       if (hasDataNeeds) {
         return true // Card2.1组件有数据源定义，立即显示
       }
@@ -154,11 +115,7 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
         'triple-data-display' // 需要3个数据源
       ]
 
-      if (dataSourceComponents.includes(widget.type)) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🔥 [shouldShowDataSourceConfig] 传统组件 ${widget.type} 在硬编码列表中，显示数据源配置`)
-        }
-        return true
+      if (dataSourceComponents.includes(widget.type)) {        return true
       }
 
       // 明确不需要数据源的组件
@@ -169,19 +126,11 @@ const shouldShowDataSourceConfig = (componentId: string, widget?: any): boolean 
         'alarm-count' // 统计组件
       ]
 
-      if (noDataSourceComponents.includes(widget.type)) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🔥 [shouldShowDataSourceConfig] 组件 ${widget.type} 在不需要数据源列表中，隐藏数据源配置`)
-        }
-        return false
+      if (noDataSourceComponents.includes(widget.type)) {        return false
       }
     }
 
-    // 默认不显示数据源配置
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔥 [shouldShowDataSourceConfig] 组件 ${widget?.type || 'unknown'} 默认不显示数据源配置`)
-    }
-    return false
+    // 默认不显示数据源配置    return false
   } catch (error) {
     console.error(`❌ [ComponentRegistry] 数据源配置检查出错`, { componentId, error })
     return false
@@ -250,11 +199,7 @@ export const getVisibleConfigLayers = (componentId?: string, widget?: any): Conf
         return shouldShow
       }
       if (layer.name === 'interaction') {
-        const shouldShow = shouldShowInteractionConfig(componentId, widget)
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[getVisibleConfigLayers] 交互配置显示决策: ${componentId} -> ${shouldShow}`)
-        }
-        return shouldShow
+        const shouldShow = shouldShowInteractionConfig(componentId, widget)        return shouldShow
       }
       return true
     })
@@ -277,7 +222,6 @@ export const getConfigLayer = (layerName: string): ConfigLayerDefinition | undef
 export const refreshComponentDefinitions = async (widget?: any): Promise<boolean> => {
   try {
     if (!widget?.metadata?.card2Definition?.configComponent && widget?.type) {
-      console.log(`🔄 [refreshComponentDefinitions] 手动刷新组件: ${widget.type}`)
       
       // 尝试从全局获取组件定义
       const getComponentDefinition = async (type: string) => {
@@ -294,7 +238,6 @@ export const refreshComponentDefinitions = async (widget?: any): Promise<boolean
       const definition = await getComponentDefinition(widget.type)
       if (definition?.configComponent) {
         // 更新widget的metadata（这需要与PanelEditorV2集成）
-        console.log(`✅ [refreshComponentDefinitions] 成功刷新组件: ${widget.type}`)
         return true
       }
     }

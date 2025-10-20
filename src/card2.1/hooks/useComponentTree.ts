@@ -11,8 +11,8 @@ import {
   getComponentsByCategory as getComponentsByCategoryFromIndex
 } from '@/card2.1/index'
 import type { ComponentDefinition } from '@/card2.1/types'
-import type { ComponentTree, ComponentCategory } from '@/card2.1/core/auto-registry'
-import { permissionWatcher } from '@/card2.1/core/permission-watcher'
+import type { ComponentTree, ComponentCategory } from '@/card2.1/core2/registry'
+import { permissionWatcher } from '@/card2.1/core2/utils'
 
 // 🔥 全局共享状态，确保多个实例同步
 let globalComponentTree = shallowRef<ComponentTree>({ categories: [], components: [], totalCount: 0 })
@@ -55,16 +55,13 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
   const initialize = async () => {
     // 🔥 修复：避免重复初始化
     if (globalInitialized && componentTree.value.totalCount > 0) {
-      console.log('✅ [useComponentTree] 系统已初始化，跳过重复初始化')
       return
     }
 
     if (isLoading.value) {
-      console.log('⏳ [useComponentTree] 正在初始化中，等待完成')
       return
     }
 
-    console.log('🚀 [useComponentTree] 开始初始化组件树...')
     isLoading.value = true
     error.value = null
 
@@ -72,6 +69,23 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
       await initializeCard2System()
 
       const tree = await getComponentTree()
+
+      // 🔥 调试：打印获取到的组件树数据
+      console.group('🔥 [useComponentTree] 获取到的组件树数据')
+      console.log('组件树:', tree)
+      console.log('分类数量:', tree.categories?.length)
+      console.log('组件数量:', tree.components?.length)
+      console.log('分类详情:', tree.categories?.map(cat => ({
+        name: cat.name,
+        children: cat.children?.length || 0
+      })))
+      console.log('组件分类统计:', tree.components?.reduce((acc, comp) => {
+        const mainCat = comp.mainCategory || '未知'
+        acc[mainCat] = (acc[mainCat] || 0) + 1
+        return acc
+      }, {} as Record<string, number>))
+      console.groupEnd()
+
       componentTree.value = tree
 
       // 🔥 修复：强制触发响应性更新
@@ -79,8 +93,7 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
 
       // 🔥 修复：标记全局初始化完成
       globalInitialized = true
-      
-      console.log(`✅ [useComponentTree] 初始化完成，已加载 ${tree.totalCount} 个组件`)
+
     } catch (err) {
       error.value = err instanceof Error ? err.message : '初始化失败'
       console.error('❌ [useComponentTree] 初始化失败:', err)
@@ -269,7 +282,6 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
 
       // 监听权限变更
       unsubscribePermissionWatcher = permissionWatcher.onPermissionChange((newAuthority, oldAuthority) => {
-        console.log(`🔄 [useComponentTree] 权限变更: ${oldAuthority} -> ${newAuthority}，重新初始化组件`)
         globalInitialized = false
         initialize()
       })

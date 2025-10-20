@@ -103,16 +103,21 @@ export class ConfigEventBus {
    * @param event 配置变更事件
    */
   async emitConfigChange(event: ConfigChangeEvent): Promise<void> {
+    // 🔄[DeviceID-HTTP-Debug] 配置变更事件发出开始
+
+
     this.statistics.eventsEmitted++
 
     // 应用全局过滤器
     if (!this.passesGlobalFilters(event)) {
       this.statistics.eventsFiltered++
+      // 🔄[DeviceID-HTTP-Debug] 事件被全局过滤器过滤
       return
     }
 
     // 确定要触发的事件类型
     const eventTypesToTrigger = this.determineEventTypes(event)
+
 
     // 并行执行所有相关事件类型的处理器
     const handlerPromises: Promise<void>[] = []
@@ -130,7 +135,10 @@ export class ConfigEventBus {
     if (handlerPromises.length > 0) {
       try {
         await Promise.allSettled(handlerPromises)
-      } catch (error) {}
+        // 🔄[DeviceID-HTTP-Debug] 所有处理器执行完成
+      } catch (error) {
+        // 🔄[DeviceID-HTTP-Debug] 处理器执行出错
+      }
     }
   }
 
@@ -219,7 +227,6 @@ export class ConfigEventBus {
         eventTypes.push('interaction-changed')
         break
     }
-
     return eventTypes
   }
 
@@ -251,39 +258,8 @@ export class ConfigEventBus {
 // 创建全局配置事件总线实例
 export const configEventBus = new ConfigEventBus()
 
-// 🔥 新增：事件去重缓存，防止短时间内的重复事件
-const eventDeduplicationCache = new Map<string, {
-  lastEventTime: number
-  lastEventHash: string
-}>()
-
-// 事件去重的时间窗口（毫秒）
-const EVENT_DEDUPLICATION_WINDOW = 200
-
-/**
- * 🔥 新增：计算事件的哈希值，用于去重
- */
-function calculateEventHash(event: ConfigChangeEvent): string {
-  // 创建用于哈希计算的关键字段
-  const keyFields = {
-    componentId: event.componentId,
-    section: event.section,
-    // 只包含配置的关键部分，避免时间戳等干扰
-    configHash: JSON.stringify(event.newConfig)
-  }
-
-  const hashString = JSON.stringify(keyFields)
-
-  // 简单哈希函数
-  let hash = 0
-  for (let i = 0; i < hashString.length; i++) {
-    const char = hashString.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash = hash & hash // 转换为32位整数
-  }
-
-  return Math.abs(hash).toString(36)
-}
+// ✅ 简化：移除过度复杂的事件去重系统
+// 事件去重由调用方自行处理，保持事件系统简单直接
 
 // 添加一些默认的过滤器
 configEventBus.addEventFilter({
@@ -295,84 +271,11 @@ configEventBus.addEventFilter({
   priority: 100
 })
 
-// 🔥 新增：事件去重过滤器，防止短时间内的重复事件
-configEventBus.addEventFilter({
-  name: 'event-deduplication',
-  condition: event => {
-    const cacheKey = `${event.componentId}.${event.section}`
-    const eventHash = calculateEventHash(event)
-    const now = Date.now()
+// ✅ 简化：移除事件去重过滤器，保持事件系统简单直接
+// 事件去重逻辑由调用方自行处理
 
-    const cached = eventDeduplicationCache.get(cacheKey)
-
-    if (cached) {
-      const timeDiff = now - cached.lastEventTime
-      const isSameEvent = cached.lastEventHash === eventHash
-
-      if (isSameEvent && timeDiff < EVENT_DEDUPLICATION_WINDOW) {
-        console.log(`🔄 [ConfigEventBus] 过滤重复事件:`, {
-          组件ID: event.componentId,
-          配置节: event.section,
-          时间间隔: timeDiff,
-          事件哈希: eventHash,
-          来源: event.source
-        })
-        return false // 过滤掉重复事件
-      }
-    }
-
-    // 更新缓存
-    eventDeduplicationCache.set(cacheKey, {
-      lastEventTime: now,
-      lastEventHash: eventHash
-    })
-
-    return true // 允许事件通过
-  },
-  priority: 150 // 高优先级，在其他过滤器之前执行
-})
-
-// 🔥 增强：智能的基础配置变更事件处理
-configEventBus.addEventFilter({
-  name: 'enhance-base-config-events',
-  condition: event => {
-    // 特别关注基础配置中的关键字段变更
-    if (event.section === 'base') {
-      if (!event.context) {
-        event.context = {}
-      }
-
-      // 检查是否包含关键的动态参数字段
-      const criticalFields = ['deviceId', 'metricsList']
-      const configKeys = Object.keys(event.newConfig || {})
-      const hasCriticalFields = criticalFields.some(field => configKeys.includes(field))
-
-      if (hasCriticalFields) {
-        // 只有当配置中包含关键字段时才标记为需要触发执行
-        event.context.shouldTriggerExecution = true
-        event.context.changedFields = configKeys.filter(key => criticalFields.includes(key))
-
-        console.log(`🎯 [ConfigEventBus] 检测到关键基础配置变更:`, {
-          组件ID: event.componentId,
-          关键字段: event.context.changedFields,
-          将触发数据执行: true
-        })
-      } else {
-        // 非关键字段变更，不触发数据执行
-        event.context.shouldTriggerExecution = false
-
-        console.log(`📝 [ConfigEventBus] 检测到非关键基础配置变更:`, {
-          组件ID: event.componentId,
-          变更字段: configKeys,
-          将触发数据执行: false
-        })
-      }
-    }
-
-    return true // 不过滤，只是增强事件信息
-  },
-  priority: 200 // 高优先级，在其他过滤器之前执行
-})
+// ✅ 简化：移除智能事件增强过滤器
+// 事件处理逻辑保持简单直接，不过度分析配置内容
 
 // 🔥 新增：监听基础配置变更事件，自动触发数据源重新执行
 let dataExecutionTriggerCallback: ((event: ConfigChangeEvent) => void) | null = null
@@ -422,13 +325,11 @@ configEventBus.onConfigChange('config-changed', async event => {
 configEventBus.onConfigChange('base-config-changed', async event => {
   if (process.env.NODE_ENV === 'development') {
   }
-
   // 基础配置变更通常都需要触发数据重新执行
   if (!event.context) {
     event.context = {}
   }
   event.context.shouldTriggerExecution = true
-
   // 调用数据执行触发器
   if (dataExecutionTriggerCallback) {
     try {
@@ -444,15 +345,12 @@ configEventBus.onConfigChange('base-config-changed', async event => {
 
 // 🔥 专门监听数据源配置变更事件
 configEventBus.onConfigChange('data-source-changed', async event => {
-  if (process.env.NODE_ENV === 'development') {
-  }
 
   // 数据源配置变更通常都需要触发数据重新执行
   if (!event.context) {
     event.context = {}
   }
   event.context.shouldTriggerExecution = true
-
   // 调用数据执行触发器
   if (dataExecutionTriggerCallback) {
     try {

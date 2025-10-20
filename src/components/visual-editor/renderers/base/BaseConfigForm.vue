@@ -5,11 +5,16 @@
       <n-divider title-placement="left">{{ t('config.base.device.section') }}</n-divider>
 
       <n-form-item :label="t('config.base.deviceId')">
-        <n-input
-          v-model:value="formData.deviceId"
+        <DeviceSelectSingle
+          v-model="formData.deviceId"
+          :options="deviceOptions"
+          :loading="loadingDevices"
+          :has-more="hasMoreDevices"
           :placeholder="t('config.base.deviceIdPlaceholder')"
           clearable
-          @input="handleUpdate"
+          @load-more="loadMoreDevices"
+          @initial-load="loadInitialDevices"
+          @search="handleDeviceSearch"
         />
       </n-form-item>
 
@@ -23,7 +28,7 @@
 
       <!-- 标题配置 -->
       <n-divider title-placement="left">{{ t('config.base.title.section') }}</n-divider>
-      
+
       <n-form-item :label="t('config.base.showTitle')">
         <n-switch v-model:value="formData.showTitle" @update:value="handleUpdate" />
       </n-form-item>
@@ -134,12 +139,14 @@
  * 模仿SimpleTestConfig的简洁UI风格
  */
 
-import { reactive, watch, computed, onMounted, onUnmounted, shallowReactive, inject } from 'vue'
+import { reactive, watch, computed, onMounted, onUnmounted, shallowReactive, inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
 import { configurationManager } from '@/components/visual-editor/configuration'
 import type { BaseConfiguration } from '@/card2.1/hooks/useCard2Props'
-import type { MetricItem } from '@/card2.1/core/types'
+import type { MetricItem } from '@/card2.1/core2'
+import { getDeviceListForSelect } from '@/service/api/device-template-model'
+import DeviceSelectSingle from '@/components/DeviceSelectSingle.vue'
 
 // 接收props
 interface Props {
@@ -210,6 +217,99 @@ const borderStyleOptions = [
   { label: t('config.base.borderStyles.dotted'), value: 'dotted' },
   { label: t('config.base.borderStyles.double'), value: 'double' }
 ]
+
+// 🔥 设备选择相关状态 - 无限滚动版本
+const deviceOptions = ref<Api.Device.DeviceSelectItem[]>([])
+const loadingDevices = ref(false)
+const hasMoreDevices = ref(true)
+const currentPage = ref(1)
+const pageSize = 20
+const searchKeyword = ref('')
+
+/**
+ * 加载初始设备列表
+ */
+const loadInitialDevices = async () => {
+  if (loadingDevices.value) return
+
+  currentPage.value = 1
+  deviceOptions.value = []
+  hasMoreDevices.value = true
+
+  await loadDevicePage()
+}
+
+/**
+ * 加载更多设备
+ */
+const loadMoreDevices = async () => {
+  if (loadingDevices.value || !hasMoreDevices.value) return
+
+  currentPage.value += 1
+  await loadDevicePage()
+}
+
+/**
+ * 加载设备分页数据
+ */
+const loadDevicePage = async () => {
+  loadingDevices.value = true
+
+  try {
+    const response = await getDeviceListForSelect({
+      page: currentPage.value.toString(),
+      page_size: pageSize.toString(),
+      search: searchKeyword.value || undefined
+    })
+
+    if (response.data && response.data.list) {
+      const { list, total } = response.data
+
+      // 追加数据而不是替换（修复无限滚动）
+      if (currentPage.value === 1) {
+        deviceOptions.value = list
+      } else {
+        deviceOptions.value.push(...list)
+      }
+
+      // 检查是否还有更多数据
+      hasMoreDevices.value = deviceOptions.value.length < total
+    }
+  } catch (error) {
+    console.error('加载设备列表失败:', error)
+    message.error(t('config.base.loadDevicesFailed'))
+  } finally {
+    loadingDevices.value = false
+  }
+}
+
+/**
+ * 处理设备搜索
+ */
+const handleDeviceSearch = (keyword: string) => {
+  searchKeyword.value = keyword
+  // 搜索时重置分页
+  currentPage.value = 1
+  deviceOptions.value = []
+  hasMoreDevices.value = true
+
+  // 延迟执行搜索，避免频繁请求
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    loadDevicePage()
+  }, 300)
+}
+
+// 搜索防抖定时器
+let searchTimer: number | null = null
+
+/**
+ * 监听设备选择变化
+ */
+watch(() => formData.deviceId, (newDeviceId) => {
+  // 设备ID变化时触发配置更新
+  handleUpdate()
+}, { deep: true })
 
 // 当前选中的节点ID
 const selectedNodeId = computed(() => {
@@ -332,14 +432,12 @@ const handleUpdate = () => {
 
       // 🔥 优先尝试与卡片层直接通信
       const cardUpdateSuccess = updateCardLayerConfig(baseConfig)
-      
+
       if (!cardUpdateSuccess) {
         // 回退到使用configurationManager
-        console.warn('🔥 [BaseConfigForm] 卡片层通信失败，回退到configurationManager')
         configurationManager.updateConfiguration(nodeId, 'base', baseConfig)
       }
     } catch (error) {
-      console.error('🔥 [BaseConfigForm] 配置更新失败:', error)
       message.error(t('common.updateFailed'))
     }
   }, 300)
@@ -396,7 +494,7 @@ const loadConfigurationFromManager = async () => {
   try {
     // 🔥 优先尝试从卡片层获取配置
     let baseConfig = getCardLayerConfig(nodeId)
-    
+
     // 回退到从configurationManager获取配置
     if (!baseConfig) {
       console.warn('🔥 [BaseConfigForm] 卡片层配置获取失败，回退到configurationManager')
@@ -422,6 +520,11 @@ const loadConfigurationFromManager = async () => {
 
       // 将 MetricItem 对象转换为标签形式显示
       formData.metricsListTags = formData.metricsList.map(metric => metric.name)
+
+      // 如果有选中的设备ID，确保设备列表中包含该设备信息
+      if (formData.deviceId && deviceOptions.value.length === 0) {
+        await loadInitialDevices()
+      }
 
       // 处理padding - 取最大值作为统一值
       if (baseConfig.padding) {
@@ -513,6 +616,8 @@ watch(
 // 组件挂载时初始化
 onMounted(() => {
   loadConfigurationFromManager()
+  // 初始化设备列表
+  loadInitialDevices()
 })
 
 /**
@@ -546,6 +651,10 @@ onUnmounted(() => {
 
   if (updateTimer) {
     clearTimeout(updateTimer)
+  }
+
+  if (searchTimer) {
+    clearTimeout(searchTimer)
   }
 })
 </script>
@@ -591,5 +700,11 @@ onUnmounted(() => {
 /* 颜色选择器 */
 :deep(.n-color-picker) {
   width: 100%;
+}
+
+/* 设备选择器容器样式 */
+:deep(.device-select-popover-content) {
+  min-width: 280px;
+  max-width: 400px;
 }
 </style>

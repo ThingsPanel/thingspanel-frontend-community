@@ -538,7 +538,6 @@ let removeConfigListener: (() => void) | null = null
 const handleCard2ConfigChange = (event: CustomEvent) => {
   const { componentId, layer, config } = event.detail
   if (componentId === props.nodeId && layer === 'base') {
-    console.log(`🔥 [NodeWrapper] 接收到Card2基础配置变更 ${componentId}:`, config)
     // 🔥 直接更新ref，避免重新调用配置系统
     if (config) {
       baseConfigRef.value = {
@@ -555,7 +554,6 @@ onMounted(() => {
     // 🔥 为Card2组件监听配置变更事件
     if (props.node.metadata?.isCard2Component) {
       window.addEventListener('card2-config-update', handleCard2ConfigChange as EventListener)
-      console.log(`🔥 [NodeWrapper] 已为Card2组件 ${props.nodeId} 添加配置监听`)
     }
 
     // 检查节点是否有配置，如果没有则创建默认配置（仅用于非Card2组件）
@@ -592,7 +590,6 @@ onUnmounted(() => {
   // 🔥 清理Card2配置变更事件监听器
   if (props.node.metadata?.isCard2Component) {
     window.removeEventListener('card2-config-update', handleCard2ConfigChange as EventListener)
-    console.log(`🔥 [NodeWrapper] 已移除Card2组件 ${props.nodeId} 配置监听`)
   }
 
   // 清理旧的配置监听器（如果存在）

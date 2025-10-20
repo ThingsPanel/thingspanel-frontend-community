@@ -142,7 +142,7 @@ const card2ConfigComponent = computed(() => {
 
     if (hasProperties) {
       // 返回通用的Card2配置表单（使用FlexibleConfigForm）
-      return () => import('@/card2.1/core/FlexibleConfigForm.vue')
+      return () => import('@/card2.1/core2/form/FlexibleConfigForm.vue')
     }
 
     return null
@@ -161,14 +161,12 @@ const getComponentConfig = (): any => {
   if (props.widget?.metadata?.isCard2Component) {
     // 🔥 Card2组件：获取配置管理器中的配置
     const nodeId = props.widget.id
-    console.log(`🔥 [ComponentConfigForm] 从统一配置中心获取组件配置 ${nodeId}`)
 
     // 🔥 异步获取配置，避免模块导入问题
     import('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
       .then(({ configurationIntegrationBridge }) => {
         const fullConfig = configurationIntegrationBridge.getConfiguration(nodeId)
         if (fullConfig?.component) {
-          console.log(`✅ [ComponentConfigForm] 从配置管理器获取到组件配置:`, fullConfig.component)
           componentConfig.value = fullConfig.component
         }
       })
@@ -179,7 +177,6 @@ const getComponentConfig = (): any => {
     // 🔥 返回默认配置作为初始值
     const card2Definition = props.widget?.metadata?.card2Definition
     const defaultConfig = card2Definition?.defaultConfig?.customize || {}
-    console.log(`🔥 [ComponentConfigForm] 使用默认配置作为初始值 ${nodeId}:`, defaultConfig)
     return defaultConfig
   } else {
     // 传统组件：从properties获取
@@ -199,12 +196,6 @@ const isUserEditing = ref(false)
  * 🔥 统一配置中心：配置更新处理 - 修复配置合并和重复更新问题
  */
 const handleConfigUpdate = (newConfig: any) => {
-  console.log(`🔥 [ComponentConfigForm] 配置更新开始:`, {
-    nodeId: props.widget?.id,
-    newConfig,
-    currentConfig: componentConfig.value,
-    isCard2Component: isCard2Component.value
-  })
 
   // 🔥 标记用户正在编辑，防止外部更新覆盖
   isUserEditing.value = true
@@ -221,11 +212,6 @@ const handleConfigUpdate = (newConfig: any) => {
   // 🔥 统一配置中心：直接通过配置管理器保存完整配置
   if (props.widget?.metadata?.isCard2Component && props.widget?.id) {
     const nodeId = props.widget.id
-    console.log(`🔥 [ComponentConfigForm] 保存完整组件配置:`, {
-      nodeId,
-      mergedConfig,
-      configKeys: Object.keys(mergedConfig)
-    })
 
     // 🔥 修复：使用动态import，避免require报错
     import('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
@@ -236,7 +222,6 @@ const handleConfigUpdate = (newConfig: any) => {
           mergedConfig, // 🔥 保存完整配置，不是部分配置
           props.widget.type
         )
-        console.log(`✅ [ComponentConfigForm] 组件配置已保存到统一配置中心`)
       })
       .catch(error => {
         console.error(`❌ [ComponentConfigForm] 保存配置失败:`, error)
@@ -263,18 +248,11 @@ const handleConfigUpdate = (newConfig: any) => {
 const handleCard2ConfigUpdate = (event: CustomEvent) => {
   const { componentId, layer, config } = event.detail
   if (componentId === props.widget?.id && layer === 'component') {
-    console.log(`🔥 [ComponentConfigForm] 接收到Card2配置变更事件:`, componentId, config)
     // 🔥 修复：只有当不是用户正在编辑时才更新
     if (!isUserEditing.value) {
       // 🔥 关键修复：完全替换配置，而不是合并，确保配置面板完全同步
-      console.log(`🔥 [ComponentConfigForm] 更新配置面板显示:`, {
-        oldConfig: componentConfig.value,
-        newConfig: config,
-        isUserEditing: isUserEditing.value
-      })
       componentConfig.value = { ...config }  // 完全使用新配置
     } else {
-      console.log(`🔥 [ComponentConfigForm] 用户正在编辑，跳过外部配置更新`)
     }
   }
 }
@@ -282,7 +260,6 @@ const handleCard2ConfigUpdate = (event: CustomEvent) => {
 // 🔥 监听配置更新事件（移除定时同步，避免覆盖用户输入）
 onMounted(() => {
   window.addEventListener('card2-config-update', handleCard2ConfigUpdate as EventListener)
-  console.log(`🔥 [ComponentConfigForm] 开始监听Card2配置更新`)
 })
 
 onUnmounted(() => {
@@ -298,7 +275,6 @@ watch(
     if (newId) {
       const newConfig = getComponentConfig()
       componentConfig.value = newConfig
-      console.log(`🔥 [ComponentConfigForm] Widget变化，重新加载配置:`, newConfig)
     }
   },
   { immediate: true }
@@ -311,10 +287,6 @@ watch(
  */
 const logToConsole = () => {
   console.group('🔍 [ComponentConfigForm] 调试信息')
-  console.log('组件类型:', props.widget?.type)
-  console.log('是否Card2组件:', isCard2Component.value)
-  console.log('Widget:', props.widget)
-  console.log('组件配置:', componentConfig.value)
   console.groupEnd()
 }
 </script>
