@@ -291,7 +291,7 @@ const isSubmitDisabled = computed(() => {
         @update:page="updatePage"
       />
     </div>
-    <NModal v-if="submitApi" v-model:show="showDialog" :class="getPlatform ? 'w-90%' : 'w-400px'">
+    <NModal v-if="submitApi" v-model:show="showDialog" :class="getPlatform ? 'w-90%' : 'w-450px'">
       <n-card :title="isCommand ? $t('generate.issueCommand') : $t('generate.issue-attribute')">
         <NForm ref="formRef" :model="formModel" :rules="rules" :label-placement="formModel.expected ? 'left' : 'top'">
           <div v-if="expect" class="flex">

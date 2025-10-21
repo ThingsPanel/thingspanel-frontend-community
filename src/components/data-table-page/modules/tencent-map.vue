@@ -7,6 +7,7 @@ import { TENCENT_MAP_SDK_URL } from '@/constants/map-sdk'
 import { $t } from '@/locales'
 import { telemetryLatestApi } from '@/service/api/system-data'
 import { createLogger } from '@/utils/logger'
+import { isValidCoordinate } from '@/utils/common/map-validator'
 
 const logger = createLogger('GaodeMap')
 defineOptions({ name: 'TencentMap' })
@@ -61,10 +62,7 @@ const showMarker = (markerArr, bounds) => {
       position &&
       typeof position.lat === 'number' &&
       typeof position.lng === 'number' &&
-      !Number.isNaN(position.lat) &&
-      !Number.isNaN(position.lng) &&
-      position.lat !== 0 &&
-      position.lng !== 0
+      isValidCoordinate(position.lat, position.lng)
     )
   })
 
@@ -127,8 +125,8 @@ async function renderMap() {
         const latitude = Number(locations[1] || 0)
         const longitude = Number(locations[0] || 0)
 
-        // 验证经纬度是否有效
-        if (!Number.isNaN(latitude) && !Number.isNaN(longitude) && latitude !== 0 && longitude !== 0) {
+        // 验证经纬度是否在有效范围内
+        if (isValidCoordinate(latitude, longitude)) {
           markers.push({
             position: new TMap.LatLng(latitude, longitude),
             id: device.id,
@@ -213,16 +211,18 @@ onMounted(() => {
 
 watch(
   () => props.devices,
-  newValue => {
+  async newValue => {
     logger.info(newValue)
-    renderMap()
-    infoWindow.close()
+    await renderMap()
+    if (infoWindow) {
+      infoWindow.close()
+    }
   },
   { deep: true }
 )
 
-watchEffect(() => {
-  renderMap()
+watchEffect(async () => {
+  await renderMap()
 })
 </script>
 
