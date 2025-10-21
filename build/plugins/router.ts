@@ -40,7 +40,6 @@ export function setupElegantRouter() {
       if (constantRoutes.includes(key)) {
         meta.constant = true
       }
-
       return meta
     }
   })

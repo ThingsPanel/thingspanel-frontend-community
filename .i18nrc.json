@@ -8,7 +8,6 @@
     "case": "camel"
   },
   "defaultNamespace": "common",
-
   "namespaceResolvers": [
     {
       "type": "file",
@@ -76,7 +75,6 @@
       "resolve": "card.chart"
     }
   ],
-
   "keyResolvers": [
     {
       "type": "callback",
@@ -109,15 +107,11 @@
       "resolve": "page.${namespace}.${key}"
     }
   ],
-
   "sourceLanguage": "zh-CN",
   "targetLanguages": ["en-US"],
-
   "sortKeys": true,
   "indentation": 2,
-
   "keepFulfilled": true,
-
   "translate": {
     "engines": ["google-cn"],
     "googleCredentials": null,
@@ -125,9 +119,7 @@
     "preferredLanguage": "en",
     "fallbackEngine": "google-cn"
   },
-
   "ignoreFiles": ["**/node_modules/**", "**/dist/**", "**/build/**", "**/*.d.ts"],
-
   "ignoreKeys": [
     "^\\d+$",
     "^[A-Z_]+$",
@@ -137,12 +129,10 @@
     "^\\d{4}-\\d{2}-\\d{2}",
     "^\\d{2}:\\d{2}:\\d{2}"
   ],
-
   "locales": {
     "zh-CN": "src/locales/langs/zh-cn/*.json",
     "en-US": "src/locales/langs/en-us/*.json"
   },
-
   "termBase": {
     "设备": "device",
     "告警": "alarm",

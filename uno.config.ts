@@ -5,6 +5,7 @@ import presetUno from '@unocss/preset-uno'
 import type { Theme } from '@unocss/preset-uno'
 import { presetSoybeanAdmin } from '@sa/uno-preset'
 import { themeVars } from './src/theme/vars'
+
 const oldShortcuts = {
   'wh-full': 'w-full h-full',
   'flex-center': 'flex justify-center items-center',

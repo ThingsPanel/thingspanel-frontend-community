@@ -1,28 +1,15 @@
-// 导入 ESLint 基础配置
 import js from '@eslint/js'
-// 导入 Vue 解析器，用于解析 .vue 文件
 import vueParser from 'vue-eslint-parser'
-// 导入 TypeScript 解析器，用于解析 TypeScript 代码
 import tsParser from '@typescript-eslint/parser'
-// 导入 Vue ESLint 插件，提供 Vue 相关的 lint 规则
 import vuePlugin from 'eslint-plugin-vue'
-// 导入 TypeScript ESLint 插件，提供 TypeScript 相关的 lint 规则
 import tsPlugin from '@typescript-eslint/eslint-plugin'
-// 导入 Prettier ESLint 插件，集成 Prettier 代码格式化
 import prettierPlugin from 'eslint-plugin-prettier/recommended'
 
 /**
  * ESLint Flat Config 配置
- *
- * Flat Config 是 ESLint v9.0.0 开始的默认配置格式
- * 相比于传统的 .eslintrc 配置，Flat Config 具有以下优势：
- * 1. 更简洁的配置结构
- * 2. 原生支持 ES 模块导入
- * 3. 更好的类型支持
- * 4. 扁平化的配置数组，每个配置对象都是独立的
  */
 export default [
-  // 1. 忽略文件配置
+
   // 指定 ESLint 应该忽略的文件和目录
   {
     ignores: [
@@ -31,11 +18,9 @@ export default [
     ]
   },
 
-  // 2. JavaScript 基础推荐配置
   // 应用 ESLint 官方推荐的 JavaScript 规则
   js.configs.recommended,
 
-  // 3. Vue 文件配置
   // 专门针对 .vue 文件的 lint 配置
   {
     files: ['**/*.vue'], // 匹配所有 .vue 文件
@@ -74,7 +59,6 @@ export default [
     }
   },
 
-  // 4. TypeScript 文件配置
   // 专门针对 .ts 文件的 lint 配置
   {
     files: ['**/*.ts'], // 匹配所有 .ts 文件
@@ -99,11 +83,9 @@ export default [
     }
   },
 
-  // 5. Prettier 集成配置
   // 集成 Prettier 代码格式化工具
   prettierPlugin,
 
-  // 6. 全局自定义规则配置
   // 应用于所有文件的通用规则设置
   {
     rules: {
@@ -154,9 +136,6 @@ export default [
     }
   },
 
-  // 7. 脚本文件特殊配置
-  // 在 Flat Config 中，overrides 被替换为独立的配置对象
-  // 这个配置专门针对 scripts 目录下的 TypeScript 文件
   {
     files: ['./scripts/*.ts'], // 匹配 scripts 目录下的 .ts 文件
     rules: {
