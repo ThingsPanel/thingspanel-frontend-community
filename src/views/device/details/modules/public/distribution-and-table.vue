@@ -85,8 +85,8 @@ const fetchDataFunction = async () => {
   })
   if (!error) {
     tableData.value = data?.value || data?.list || (Array.isArray(data) ? data : []) || []
-    if (data?.count) {
-      page_coune.value = Math.ceil(data.count / 4)
+    if (data?.count || data?.total) {
+      page_coune.value = Math.ceil((data?.count || data?.total) / 4)
     }
     endLoading()
   }
