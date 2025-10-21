@@ -71,7 +71,7 @@ Password: 123456
 - **Multitenancy**: Super admin management, tenant account management systems, tenant users manage devices and view data.
 - **Device Access**: Edit and create projects, manage devices by groups, view device push status, access devices via plugins, gateway and sub-device access, Modbus RTU/TCP protocol access, TCP protocol access, GB28181 security camera access, custom protocol plugin access.
 - **Monitoring Dashboard**: Monitor charts after adding devices, set dashboard as menu or homepage, create multiple dashboards.
-- **Device Function Templates**: Set thing models, Web and App charts, can export to JSON.
+- **Thing Model TSL**: Set thing models, Web and App charts, can export to JSON.
 - **Device Configuration Templates**: Associate devices, attributes, and functions, protocol configurations, data processing, automation, alerts, extended information, device settings, one-type-one-secret settings.
 - **Device Map**: Filter devices by project and group, filter by device type.
 - **Visualization**: Basic visualization editing, open architecture, pre-bound data charts, add your own graphics, loosely coupled with the system, supports SCADA, large screens, 3D, Three.js.
