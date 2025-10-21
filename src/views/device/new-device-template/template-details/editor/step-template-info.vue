@@ -232,7 +232,7 @@ watchEffect(async () => {
       </NFormItem>
 
       <!-- 图标上传 -->
-      <NFormItem :label="$t('device_template.selectCover')">
+      <NFormItem :label="$t('device_template.cover')">
         <NUpload
           :action="url + '/file/up'"
           :headers="uploadHeaders"

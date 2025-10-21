@@ -8,10 +8,13 @@ import { useAppStore } from './store/modules/app'
 import { useThemeStore } from './store/modules/theme'
 import { naiveDateLocales, naiveLocales } from './locales/naive'
 import Content from './components/content/index.vue'
+
 hljs.registerLanguage('json', json)
+
 defineOptions({
   name: 'App'
 })
+
 const appStore = useAppStore()
 const themeStore = useThemeStore()
 const { isFullscreen, toggle } = useFullscreen()

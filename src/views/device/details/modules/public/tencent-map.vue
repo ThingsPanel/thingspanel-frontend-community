@@ -2,9 +2,13 @@
 import { onMounted, ref, watch } from 'vue'
 import { useScriptTag } from '@vueuse/core'
 import { TENCENT_MAP_SDK_URL } from '@/constants/map-sdk'
+import { isValidCoordinate, getCoordinateValidationError } from '@/utils/common/map-validator'
 
 const { load } = useScriptTag(TENCENT_MAP_SDK_URL)
 const emit = defineEmits(['position-selected'])
+
+// 添加组件名称
+defineOptions({ name: 'TencentMap' })
 
 // 定义props类型
 interface Props {
@@ -27,7 +31,7 @@ async function renderMap() {
   // 使用传入的经纬度或默认坐标作为地图中心点
   const lat = Number(props.latitude) || 39.98412
   const lng = Number(props.longitude) || 116.307484
-  const hasValidCoords = props.latitude && props.longitude && props.latitude !== '' && props.longitude !== '' && !isNaN(lat) && !isNaN(lng)
+  const hasValidCoords = props.latitude && props.longitude && props.latitude !== '' && props.longitude !== '' && isValidCoordinate(lat, lng)
 
   const center = new TMap.LatLng(lat, lng)
 
@@ -47,9 +51,10 @@ async function renderMap() {
     const lat = event.latLng.getLat()
     const lng = event.latLng.getLng()
 
-    // 验证经纬度是否为有效数字
-    if (isNaN(lat) || isNaN(lng)) {
-      console.error('地图点击事件获取到无效的经纬度:', { lat, lng })
+    // 验证经纬度是否在有效范围内
+    if (!isValidCoordinate(lat, lng)) {
+      const error = getCoordinateValidationError(lat, lng)
+      console.error('地图点击事件获取到无效的经纬度:', { lat, lng, error })
       return
     }
 
@@ -67,9 +72,10 @@ async function renderMap() {
 
 // 添加当前位置标记
 function addCurrentLocationMarker(lat: number, lng: number) {
-  // 验证经纬度参数是否为有效数字
-  if (isNaN(lat) || isNaN(lng)) {
-    console.error('addCurrentLocationMarker接收到无效的经纬度参数:', { lat, lng })
+  // 验证经纬度参数是否在有效范围内
+  if (!isValidCoordinate(lat, lng)) {
+    const error = getCoordinateValidationError(lat, lng)
+    console.error('addCurrentLocationMarker接收到无效的经纬度参数:', { lat, lng, error })
     return
   }
 
@@ -120,12 +126,15 @@ watch(
     if (map && newLat && newLng && newLat !== '' && newLng !== '') {
       const lat = Number(newLat)
       const lng = Number(newLng)
-      if (!isNaN(lat) && !isNaN(lng)) {
+      if (isValidCoordinate(lat, lng)) {
         // 更新地图中心点
         const center = new TMap.LatLng(lat, lng)
         map.setCenter(center)
         // 添加或更新标记
         addCurrentLocationMarker(lat, lng)
+      } else {
+        const error = getCoordinateValidationError(lat, lng)
+        console.warn('监听到无效的经纬度更新:', { lat, lng, error })
       }
     }
   },

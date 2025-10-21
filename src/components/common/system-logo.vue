@@ -13,7 +13,7 @@ withDefaults(defineProps<Props>(), {
 
 <template>
   <!-- <IconLocalLogo /> -->
-  <div>
+  <div :style="{ height: width + 'rpx' }">
     <!--  v-if="sysSettingStore.logo_background"  -->
     <!-- {{sysSettingStore  }} -->
     <n-image

@@ -596,6 +596,8 @@ const handleWarningClick = (item: DeviceItem) => {
 .image-icon {
   max-width: 100%;
   max-height: 100%;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
