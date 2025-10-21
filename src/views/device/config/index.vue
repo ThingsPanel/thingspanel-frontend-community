@@ -339,8 +339,8 @@ const availableViews = [
 
 // 设备类型图标样式
 .image-icon {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
   vertical-align: middle;
 }

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance } from 'vue'
-import { NCard, NEllipsis } from 'naive-ui'
 
 interface Props {
   /** 卡片主标题 */
@@ -153,9 +152,7 @@ const handleTopRightIconClick = () => {
             </div>
             <!-- 副标题文本，支持两行省略 -->
             <div v-if="subtitle" class="subtitle-text-container">
-              <NEllipsis :line-clamp="1" class="subtitle-text" :tooltip="false">
-                {{ subtitle }}
-              </NEllipsis>
+              {{ subtitle }}
             </div>
           </div>
         </div>
@@ -206,7 +203,7 @@ const handleTopRightIconClick = () => {
   </NCard>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .item-card {
   width: 100%;
   height: 160px;
@@ -297,7 +294,7 @@ const handleTopRightIconClick = () => {
 .subtitle-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   /* margin-bottom: 8px; */
   transition: transform 0.2s ease;
 }
@@ -320,10 +317,16 @@ const handleTopRightIconClick = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   font-size: 14px;
   flex-shrink: 0;
+
+  /** 设备图标 */
+  .device-icon {
+    width: 28px;
+    height: 28px;
+  }
 }
 
 .subtitle-text-container {

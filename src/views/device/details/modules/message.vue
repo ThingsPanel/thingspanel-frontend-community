@@ -1,13 +1,13 @@
 <script setup lang="tsx">
-import type { Ref } from 'vue';
-import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue';
+import { computed, getCurrentInstance, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { FormInst } from 'naive-ui';
-import { NButton, NPopconfirm, NSpace, NSwitch, useMessage, NInputNumber, NTooltip, NIcon } from 'naive-ui';
+import { NButton, NSpace, useMessage, NInputNumber, NTooltip, NIcon, NInput, NSelect, NSwitch } from 'naive-ui';
 import { deviceConfigInfo, deviceDetail, deviceLocation } from '@/service/api';
 // 移除deviceConfigEdit导入，不再调用设备配置接口
 import { $t } from '@/locales';
 import TencentMap from './public/tencent-map.vue'; // 路径根据实际位置调整
+import { getCoordinateStringValidationError } from '@/utils/common/map-validator';
 
 const props = defineProps<{
   id: string;
@@ -34,13 +34,17 @@ interface ExtensionInfo {
 // postData变量已移除，不再需要调用设备配置接口
 const { query } = useRoute();
 const message = useMessage();
-const modalClose = () => {};
-// 重置表单验证
-const resetFormValidation = () => {
-  extensionFormRef.value?.restoreValidation();
-};
 const handleSave = async () => {
   try {
+    // 验证经纬度是否有效
+    if (latitude.value && longitude.value) {
+      const error = getCoordinateStringValidationError(latitude.value, longitude.value);
+      if (error) {
+        message.error(`经纬度无效: ${error}`);
+        return;
+      }
+    }
+    
     // 验证扩展信息表单
     if (extensionFormRef.value) {
       await extensionFormRef.value.validate();
@@ -111,15 +115,6 @@ const renderFormControl = (item: ExtensionInfo, index: number) => {
   }
 };
 
-// 初始化扩展信息的值
-const initExtensionValue = (item: ExtensionInfo) => {
-  if (!item.value) {
-    item.value = item.default_value;
-  }
-  return item.value;
-};
-// 移除表格列定义，改为表单模式
-
 const onPositionSelected = position => {
   latitude.value = position.lat.toString();
   longitude.value = position.lng.toString();
@@ -127,8 +122,17 @@ const onPositionSelected = position => {
 };
 
 const openMapAndGetPosition = () => {
+  // 验证当前输入的经纬度是否有效
+  if (latitude.value && longitude.value) {
+    const error = getCoordinateStringValidationError(latitude.value, longitude.value);
+    if (error) {
+      window.$message?.error(`当前经纬度无效: ${error}`);
+      return;
+    }
+  }
   isShow.value = true;
 };
+
 const getConfigInfo = async () => {
   const result = await deviceDetail(query.d_id as string);
   const location = result?.data?.location || '';
@@ -181,7 +185,7 @@ onMounted(getConfigInfo);
         <div v-if="additionInfo.filter(item => item.enable === true).length > 0">
           <NForm ref="extensionFormRef" class="mt-4">
             <div class="space-y-4">
-              <div v-for="(item, index) in additionInfo.filter(item => item.enable === true)" :key="item.name" class="flex items-center gap-3">
+              <div v-for="item in additionInfo.filter(item => item.enable === true)" :key="item.name" class="flex items-center gap-3">
                 <!-- 名称和信息图标 -->
                 <div class="w-40 text-sm font-medium text-gray-700 flex-shrink-0 flex items-center gap-1">
                   <span class="truncate" :title="item.name">{{ item.name }}</span>

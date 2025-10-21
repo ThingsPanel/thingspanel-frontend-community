@@ -85,8 +85,8 @@ const fetchDataFunction = async () => {
   })
   if (!error) {
     tableData.value = data?.value || data?.list || (Array.isArray(data) ? data : []) || []
-    if (data?.count) {
-      page_coune.value = Math.ceil(data.count / 4)
+    if (data?.count || data?.total) {
+      page_coune.value = Math.ceil((data?.count || data?.total) / 4)
     }
     endLoading()
   }
@@ -291,7 +291,7 @@ const isSubmitDisabled = computed(() => {
         @update:page="updatePage"
       />
     </div>
-    <NModal v-if="submitApi" v-model:show="showDialog" :class="getPlatform ? 'w-90%' : 'w-400px'">
+    <NModal v-if="submitApi" v-model:show="showDialog" :class="getPlatform ? 'w-90%' : 'w-450px'">
       <n-card :title="isCommand ? $t('generate.issueCommand') : $t('generate.issue-attribute')">
         <NForm ref="formRef" :model="formModel" :rules="rules" :label-placement="formModel.expected ? 'left' : 'top'">
           <div v-if="expect" class="flex">
