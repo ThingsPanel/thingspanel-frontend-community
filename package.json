@@ -1,7 +1,7 @@
 {
   "name": "tp-tenant",
   "type": "module",
-  "version": "0.1.0",
+  "version": "1.1.9",
   "description": "ThingsPanel",
   "author": {
     "name": "ThingsPanle"
