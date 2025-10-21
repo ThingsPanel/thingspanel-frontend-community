@@ -46,7 +46,7 @@
   "custom.devicePage.unlimitedAccessType": "Unlimited Access Type",
   "custom.devicePage.manualAdd": "Manual Add",
   "custom.devicePage.addByNumber": "Add by Number",
-  "custom.devicePage.addByServer": "Add by Server",
+  "custom.devicePage.addByServer": "Add by Third-party Integration",
   "custom.devicePage.addDevice": "Add Device",
   "custom.devicePage.step1Title": "Step 1: Device Information",
   "custom.devicePage.step1Desc": "Configure basic device information",

@@ -46,7 +46,7 @@
   "custom.devicePage.unlimitedAccessType": "不限接入类型",
   "custom.devicePage.manualAdd": "手动添加",
   "custom.devicePage.addByNumber": "按编号添加",
-  "custom.devicePage.addByServer": "服务接入添加",
+  "custom.devicePage.addByServer": "三方接入添加",
   "custom.devicePage.addDevice": "添加设备",
   "custom.devicePage.step1Title": "步骤1：设备信息",
   "custom.devicePage.step1Desc": "配置基本设备信息",
