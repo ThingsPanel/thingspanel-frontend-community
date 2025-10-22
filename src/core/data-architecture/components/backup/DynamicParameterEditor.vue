@@ -26,14 +26,7 @@ import {
   NDrawerContent,
   NIcon,
   NDropdown,
-  NAlert,
-  NCard,
-  NForm,
-  NFormItem,
-  NRadioGroup,
-  NRadio,
-  NDivider,
-  useMessage
+  NAlert
 } from 'naive-ui'
 import { type EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
 import { generateVariableName } from '@/core/data-architecture/types/http-config'
@@ -56,8 +49,7 @@ import {
   PhonePortraitOutline,
   PhonePortraitOutline as DeviceIcon,
   CreateOutline as EditOutline,
-  TrashOutline,
-  LinkOutline
+  TrashOutline
 } from '@vicons/ionicons5'
 
 // 组件映射表（简化版）
@@ -100,21 +92,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 const { t } = useI18n()
-const message = useMessage()
-
-// 🔥 新增：添加参数抽屉控制
-const showAddParamDrawer = ref(false)
-// 🔥 新增：新参数的临时配置
-const newParamConfig = ref({
-  key: '',
-  configType: 'manual' as 'manual' | 'property' | 'device',
-  value: '',
-  description: '',
-  // 属性绑定相关
-  propertyBinding: null as any,
-  // 设备配置相关
-  deviceConfig: null as any
-})
 
 // 当前正在编辑的参数索引，-1表示没有参数处于编辑状态
 const editingIndex = ref(-1)
@@ -231,112 +208,20 @@ const createDefaultParameter = (): EnhancedParameter => ({
 })
 
 /**
- * 🔥 重构：打开添加参数抽屉
- */
-const openNewParamForm = () => {
-  // 重置配置
-  newParamConfig.value = {
-    key: '',
-    configType: 'manual',
-    value: '',
-    description: '',
-    propertyBinding: null,
-    deviceConfig: null
-  }
-  showAddParamDrawer.value = true
-}
-
-/**
- * 🔥 重构：取消添加参数
- */
-const cancelNewParam = () => {
-  showAddParamDrawer.value = false
-  newParamConfig.value = {
-    key: '',
-    configType: 'manual',
-    value: '',
-    description: '',
-    propertyBinding: null,
-    deviceConfig: null
-  }
-}
-
-/**
- * 🔥 新增：处理抽屉内属性绑定的变化
- */
-const handleNewParamPropertyChange = (value: any) => {
-  console.log('🔍 [handleNewParamPropertyChange] 属性绑定值变化:', value)
-  newParamConfig.value.propertyBinding = value
-}
-
-/**
- * 🔥 新增：处理抽屉内设备配置的变化
- */
-const handleNewParamDeviceConfigChange = (config: any) => {
-  console.log('🔍 [handleNewParamDeviceConfigChange] 设备配置变化:', config)
-  newParamConfig.value.deviceConfig = config
-}
-
-/**
- * 🔥 重构：确认添加新参数
- */
-const confirmNewParam = () => {
-  // 验证 key 不能为空
-  if (!newParamConfig.value.key || !newParamConfig.value.key.trim()) {
-    message.error('参数名(key)不能为空！')
-    return
-  }
-
-  // 验证 key 不能重复
-  const hasDuplicate = props.modelValue.some(p => p.key === newParamConfig.value.key.trim())
-  if (hasDuplicate) {
-    message.error(`参数 key "${newParamConfig.value.key}" 已存在，不允许重复！`)
-    return
-  }
-
-  // 根据配置类型创建参数
-  const newParam = createDefaultParameter()
-  newParam.key = newParamConfig.value.key.trim()
-  newParam.description = newParamConfig.value.description || `${newParam.key}参数`
-
-  // 根据配置类型设置参数
-  switch (newParamConfig.value.configType) {
-    case 'manual':
-      newParam.valueMode = ParameterTemplateType.MANUAL
-      newParam.selectedTemplate = 'manual'
-      newParam.value = newParamConfig.value.value
-      newParam.isDynamic = false
-      break
-    case 'property':
-      newParam.valueMode = ParameterTemplateType.COMPONENT
-      newParam.selectedTemplate = 'component-property-binding'
-      newParam.value = newParamConfig.value.propertyBinding || ''
-      newParam.isDynamic = true
-      break
-    case 'device':
-      newParam.valueMode = ParameterTemplateType.COMPONENT
-      newParam.selectedTemplate = 'device-metrics-selector'
-      newParam.value = newParamConfig.value.deviceConfig || ''
-      newParam.isDynamic = true
-      break
-  }
-
-  // 添加到参数列表
-  const updatedParams = [...props.modelValue, newParam]
-  emit('update:modelValue', updatedParams)
-
-  // 关闭抽屉
-  showAddParamDrawer.value = false
-
-  message.success(`参数 "${newParam.key}" 添加成功！`)
-}
-
-/**
- * 添加新参数 - 强制响应式更新（保留旧方法，向后兼容）
- * @deprecated 使用新的 openNewParamForm 替代
+ * 添加新参数 - 强制响应式更新
  */
 const addParameter = () => {
-  openNewParamForm()
+  const newParam = createDefaultParameter()
+  const updatedParams = [...props.modelValue, newParam]
+
+  // 立即发射更新事件
+  emit('update:modelValue', updatedParams)
+
+  // 强制刷新组件状态
+  nextTick(() => {
+    // 自动展开新添加的参数进行编辑
+    editingIndex.value = updatedParams.length - 1
+  })
 }
 
 /**
@@ -347,7 +232,7 @@ const handleSelectAddOption = (key: string) => {
   console.log('🔍 [DynamicParameterEditor] currentApiInfo:', props.currentApiInfo)
 
   // 🔥 新增：处理接口模板导入
-  if (key === 'api-template' || key === 'apply-interface-template') {
+  if (key === 'api-template') {
     console.log('✨ [DynamicParameterEditor] 触发接口模板导入')
     handleTemplateImport()
     return
@@ -514,43 +399,10 @@ const handleTemplateImport = () => {
 
   console.log('📥 [handleTemplateImport] 生成的 templateParams:', templateParams)
 
-  // 🔥 关键修复：智能合并 - 检查重复key，相同key则替换而非重复添加
-  const existingKeys = new Set(props.modelValue.map(p => p.key))
-  const newParams: EnhancedParameter[] = []
-  const replacedKeys: string[] = []
-
-  templateParams.forEach(templateParam => {
-    if (existingKeys.has(templateParam.key)) {
-      // 已存在相同key，记录为替换而不是新增
-      replacedKeys.push(templateParam.key)
-      console.log(`📥 [handleTemplateImport] 检测到重复key: ${templateParam.key}，将替换现有参数`)
-    } else {
-      // 新的key，添加到新参数列表
-      newParams.push(templateParam)
-    }
-  })
-
-  // 构建最终参数列表：保留所有现有参数（包括被替换的），然后追加新参数
-  const updatedParams = [
-    ...props.modelValue.map(existingParam => {
-      // 如果这个参数的key在模板中，用模板参数替换
-      const templateParam = templateParams.find(tp => tp.key === existingParam.key)
-      if (templateParam) {
-        console.log(`📥 [handleTemplateImport] 替换参数: ${existingParam.key}`)
-        return { ...templateParam, _id: existingParam._id } // 保留原有_id
-      }
-      return existingParam
-    }),
-    ...newParams // 追加真正新增的参数
-  ]
+  // 合并到现有参数列表
+  const updatedParams = [...props.modelValue, ...templateParams]
 
   console.log('📥 [handleTemplateImport] 合并后的 updatedParams:', updatedParams)
-  if (replacedKeys.length > 0) {
-    console.log(`📥 [handleTemplateImport] 替换了 ${replacedKeys.length} 个重复参数:`, replacedKeys)
-  }
-  if (newParams.length > 0) {
-    console.log(`📥 [handleTemplateImport] 新增了 ${newParams.length} 个参数`)
-  }
 
   // 🔥 立即发射更新事件
   emit('update:modelValue', updatedParams)
@@ -862,32 +714,14 @@ const updateParameterKey = (param: EnhancedParameter, index: number, newKey: str
 }
 
 /**
- * 🔥 严格模式：检查参数key是否重复
- * 失去焦点时检查key的有效性（非空 + 不重复）
+ * 🔥 新增：确保参数key不为空，失去焦点时检查
+ * 如果为空则恢复到合理的默认值，而不是覆盖用户输入
  */
 const ensureParameterKeyNotEmpty = (param: EnhancedParameter, index: number) => {
-  const trimmedKey = param.key?.trim() || ''
-
-  // 检查1：key不能为空
-  if (!trimmedKey) {
+  // 只有当key完全为空时才设置默认值，避免覆盖用户的输入
+  if (!param.key || param.key.trim() === '') {
     const defaultKey = `param${index + 1}`
     updateParameter({ ...param, key: defaultKey }, index)
-    return
-  }
-
-  // 检查2：严格模式 - key不能重复
-  const hasDuplicate = props.modelValue.some((p, i) => {
-    return i !== index && p.key === trimmedKey
-  })
-
-  if (hasDuplicate) {
-    // 检测到重复key，强制回滚到默认值并提示用户
-    const defaultKey = `param${index + 1}`
-    updateParameter({ ...param, key: defaultKey }, index)
-
-    // 使用 Naive UI 的 message 提示用户
-    message.error(`参数 key "${trimmedKey}" 已存在，不允许重复！已自动重置为 "${defaultKey}"`)
-    console.error(`❌ [严格模式] 参数 key "${trimmedKey}" 重复，已强制重置为 "${defaultKey}"`)
   }
 }
 
@@ -1159,38 +993,42 @@ const getComponentTemplate = (param: EnhancedParameter | null) => {
 </script>
 
 <template>
-  <div :class="['dynamic-parameter-editor-v3-enhanced', customClass]">
-    <!-- 🔥 重构：简化的标题和添加按钮区 -->
-    <div class="editor-header-enhanced">
+  <div :class="['dynamic-parameter-editor-v3', customClass]">
+    <!-- 标题和添加按钮 -->
+    <div class="editor-header">
       <span v-if="title" class="editor-title">{{ title }}</span>
-
-      <n-space :size="8">
-        <!-- 单个添加参数按钮 -->
+      <n-space>
+        <!-- 设备配置按钮（主要操作） -->
         <n-button
           size="small"
-          type="primary"
-          :disabled="!canAddMoreParameters"
-          @click="openNewParamForm"
+          :type="getExistingDeviceParameters().length > 0 ? 'warning' : 'info'"
+          @click="editDeviceConfig"
         >
           <template #icon>
-            <n-icon><add-icon /></n-icon>
+            <n-icon><DeviceIcon /></n-icon>
           </template>
-          添加参数
+          {{
+            getExistingDeviceParameters().length > 0 ? `设备配置 (${getExistingDeviceParameters().length})` : '设备配置'
+          }}
         </n-button>
 
-        <!-- 应用接口模板（独立功能，保留） -->
-        <n-button
-          v-if="currentApiInfo"
-          size="small"
-          type="success"
+        <!-- 添加参数按钮 -->
+        <n-dropdown
+          trigger="click"
+          :options="addParameterOptions"
           :disabled="!canAddMoreParameters"
-          @click="() => handleSelectAddOption('apply-interface-template')"
+          @select="handleSelectAddOption"
         >
-          <template #icon>
-            <n-icon><SparkleIcon /></n-icon>
-          </template>
-          应用接口模板
-        </n-button>
+          <n-button size="small" type="primary" :disabled="!canAddMoreParameters">
+            <template #icon>
+              <n-icon><add-icon /></n-icon>
+            </template>
+            {{ addButtonText }}
+            <span v-if="maxParameters && !canAddMoreParameters" class="limit-text">
+              ({{ modelValue.length }}/{{ maxParameters }})
+            </span>
+          </n-button>
+        </n-dropdown>
       </n-space>
     </div>
 
@@ -1214,129 +1052,166 @@ const getComponentTemplate = (param: EnhancedParameter | null) => {
       </n-alert>
     </div>
 
-    <!-- 🎯 重构：参数列表 - 一行展开所有配置项 -->
-    <div v-if="parametersWithStableIds.length > 0" class="parameter-list-inline">
+    <!-- 参数列表 -->
+    <div v-if="parametersWithStableIds.length > 0" class="parameter-list">
       <div
         v-for="(param, index) in parametersWithStableIds"
         :key="param._id"
-        class="parameter-item-inline"
+        class="parameter-item"
         :class="{
+          'is-editing': editingIndex === index,
           'is-device-param-group': isDeviceParameterGroup(param),
           'is-primary-param': isDeviceParameterGroup(param) && param.parameterGroup!.role === 'primary',
           'is-secondary-param': isDeviceParameterGroup(param) && param.parameterGroup!.role !== 'primary'
         }"
-        :data-param-type="param.valueMode || 'manual'"
       >
-        <!-- 参数组标识 -->
-        <div v-if="isDeviceParameterGroup(param)" class="param-group-indicator">
-          <n-icon size="14" color="#2080f0">
-            <PhonePortraitOutline />
-          </n-icon>
-        </div>
+        <!-- 主行 -->
+        <div class="parameter-row">
+          <!-- 参数组标识（如果是参数组的参数） -->
+          <div v-if="isDeviceParameterGroup(param)" class="param-group-indicator">
+            <n-icon size="14" color="#2080f0">
+              <PhonePortraitOutline />
+            </n-icon>
+          </div>
 
-        <!-- 启用checkbox -->
-        <n-checkbox
-          v-if="showEnabled"
-          :checked="param.enabled"
-          @update:checked="value => updateParameter({ ...param, enabled: value }, index)"
-        />
-
-        <!-- 参数名输入 -->
-        <n-input
-          :value="param.key"
-          :placeholder="keyPlaceholder"
-          size="small"
-          class="param-key-input-inline"
-          @input="value => updateParameterKey(param, index, value)"
-          @blur="() => ensureParameterKeyNotEmpty(param, index)"
-        />
-
-        <!-- 类型选择（下拉） -->
-        <n-select
-          :value="param.selectedTemplate"
-          :options="
-            recommendedTemplates.map(t => ({
-              label: t.name,
-              value: t.id
-            }))
-          "
-          size="small"
-          class="param-type-select-inline"
-          @update:value="templateId => onTemplateChange(param, index, templateId)"
-        />
-
-        <!-- 值输入区域（根据类型动态显示） -->
-        <div class="param-value-input-inline">
-          <!-- 手动输入 -->
-          <n-input
-            v-if="param.valueMode === 'manual'"
-            :value="param.value"
-            :placeholder="valuePlaceholder"
-            size="small"
-            @input="value => updateParameterValue(param, index, value)"
+          <n-checkbox
+            v-if="showEnabled"
+            :checked="param.enabled"
+            @update:checked="value => updateParameter({ ...param, enabled: value }, index)"
           />
 
-          <!-- 属性绑定 -->
-          <div v-else-if="param.valueMode === 'property'" class="property-binding-inline">
-            <n-input
-              :value="param.value"
-              placeholder="示例值"
+          <n-input
+            :value="param.key"
+            :placeholder="keyPlaceholder"
+            size="small"
+            class="param-key-input"
+            @input="value => updateParameterKey(param, index, value)"
+            @blur="() => ensureParameterKeyNotEmpty(param, index)"
+          />
+
+          <!-- 参数值显示（增强版，包含参数组信息） -->
+          <div class="param-value-display">
+            <n-text class="param-value-summary" depth="3">
+              {{ getParameterDisplayLabel(param) }}
+            </n-text>
+            <!-- 参数组角色标识 -->
+            <n-tag
+              v-if="isDeviceParameterGroup(param)"
               size="small"
-              @input="value => updateParameterValue(param, index, value)"
+              :type="param.parameterGroup!.role === 'primary' ? 'primary' : 'info'"
+              class="param-role-tag"
+            >
+              {{ param.parameterGroup!.role === 'primary' ? '主参数' : '子参数' }}
+            </n-tag>
+          </div>
+
+          <!-- 操作按钮（区分参数组和普通参数） -->
+          <n-space class="param-actions">
+            <!-- 普通参数操作 -->
+            <template v-if="!isDeviceParameterGroup(param)">
+              <n-button size="small" @click="toggleEditMode(index)">
+                {{ editingIndex === index ? '收起' : '配置' }}
+              </n-button>
+              <n-button size="small" type="error" ghost @click="removeParameter(index)">删除</n-button>
+            </template>
+
+            <!-- 参数组操作（只在主参数上显示） -->
+            <template v-else-if="param.parameterGroup!.role === 'primary'">
+              <n-button size="small" type="info" ghost @click="editParameterGroup(param)">
+                <template #icon>
+                  <n-icon><EditOutline /></n-icon>
+                </template>
+                编辑组
+              </n-button>
+              <n-button size="small" type="error" ghost @click="deleteParameterGroup(param)">
+                <template #icon>
+                  <n-icon><TrashOutline /></n-icon>
+                </template>
+                删除组
+              </n-button>
+            </template>
+
+            <!-- 子参数操作（简化版） -->
+            <template v-else>
+              <n-text depth="3" style="font-size: 12px; font-style: italic">从属于设备参数组</n-text>
+            </template>
+          </n-space>
+        </div>
+
+        <!-- 详细配置面板 (可折叠) -->
+        <div v-if="editingIndex === index" class="details-panel">
+          <!-- 模板选择（简化版：只显示最常用的选项） -->
+          <div class="detail-row">
+            <n-text class="detail-label">类型</n-text>
+            <n-select
+              :value="param.selectedTemplate"
+              :options="
+                recommendedTemplates.map(t => ({
+                  label: t.name,
+                  value: t.id,
+                  description: t.description
+                }))
+              "
+              size="small"
+              @update:value="templateId => onTemplateChange(param, index, templateId)"
             />
           </div>
 
-          <!-- 组件绑定（属性/设备） -->
-          <div v-else-if="param.valueMode === 'component'" class="component-binding-inline">
-            <n-input :value="param.value || '(点击配置)'" size="small" readonly />
-            <n-button size="small" type="primary" text @click="openComponentDrawer(param)">
-              配置
-            </n-button>
+          <!-- 值输入（简化版） -->
+          <div class="detail-row">
+            <n-text class="detail-label">值</n-text>
+            <!-- 手动输入 -->
+            <n-input
+              v-if="param.valueMode === 'manual'"
+              :value="param.value"
+              :placeholder="valuePlaceholder"
+              size="small"
+              @input="value => updateParameterValue(param, index, value)"
+            />
+            <!-- 下拉选择 -->
+            <n-select
+              v-else-if="param.valueMode === 'dropdown'"
+              :value="param.value"
+              :options="getCurrentTemplateOptions(param)"
+              :filterable="isCustomInputAllowed(param)"
+              :tag="isCustomInputAllowed(param)"
+              size="small"
+              placeholder="选择或输入值"
+              @update:value="value => updateParameter({ ...param, value: value }, index)"
+            />
+            <!-- 属性绑定（简化显示） -->
+            <div v-else-if="param.valueMode === 'property'" class="property-input-simple">
+              <n-input
+                :value="param.value"
+                placeholder="示例值 (运行时替换)"
+                size="small"
+                @input="value => updateParameterValue(param, index, value)"
+              />
+            </div>
+            <!-- 组件属性绑定（简化显示） -->
+            <div v-else-if="param.valueMode === 'component'" class="component-simple">
+              <n-space>
+                <n-tag size="small" type="success">
+                  {{ param.selectedTemplate === 'component-property-binding' ? '属性绑定' : '设备参数' }}
+                </n-tag>
+                <n-text depth="3">{{ param.value || '未设置' }}</n-text>
+                <!-- 🔥 添加重新配置按钮 -->
+                <n-button size="tiny" type="primary" text @click="openComponentDrawer(param)">重新配置</n-button>
+              </n-space>
+            </div>
           </div>
 
-          <!-- 下拉选择 -->
-          <n-select
-            v-else-if="param.valueMode === 'dropdown'"
-            :value="param.value"
-            :options="getCurrentTemplateOptions(param)"
-            :filterable="isCustomInputAllowed(param)"
-            :tag="isCustomInputAllowed(param)"
-            size="small"
-            placeholder="选择或输入值"
-            @update:value="value => updateParameter({ ...param, value: value }, index)"
-          />
+          <!-- 属性绑定简化提示 -->
+          <div v-if="param.valueMode === 'property'" class="property-binding-tip">
+            <n-alert size="small" type="info" :show-icon="false">
+              <template #header>
+                <n-icon style="margin-right: 4px"><SparkleIcon /></n-icon>
+                属性绑定
+              </template>
+              运行时将从组件属性中获取实际值
+            </n-alert>
+          </div>
         </div>
-
-        <!-- 操作按钮 - 使用小图标 -->
-        <n-space class="param-actions-inline" :size="4">
-          <!-- 普通参数 - 只显示删除图标 -->
-          <template v-if="!isDeviceParameterGroup(param)">
-            <n-button size="small" type="error" quaternary circle @click="removeParameter(index)">
-              <template #icon>
-                <n-icon><TrashOutline /></n-icon>
-              </template>
-            </n-button>
-          </template>
-
-          <!-- 参数组（主参数） - 编辑和删除图标 -->
-          <template v-else-if="param.parameterGroup!.role === 'primary'">
-            <n-button size="small" type="info" quaternary circle @click="editParameterGroup(param)">
-              <template #icon>
-                <n-icon><EditOutline /></n-icon>
-              </template>
-            </n-button>
-            <n-button size="small" type="error" quaternary circle @click="deleteParameterGroup(param)">
-              <template #icon>
-                <n-icon><TrashOutline /></n-icon>
-              </template>
-            </n-button>
-          </template>
-
-          <!-- 参数组（子参数） -->
-          <template v-else>
-            <n-text depth="3" style="font-size: 11px">设备组</n-text>
-          </template>
-        </n-space>
       </div>
     </div>
 
@@ -1344,156 +1219,6 @@ const getComponentTemplate = (param: EnhancedParameter | null) => {
     <div v-else class="empty-state">
       <n-text depth="3">暂无参数，点击"{{ addButtonText }}"添加</n-text>
     </div>
-
-    <!-- 🔥 新增：添加参数抽屉 -->
-    <n-drawer v-model:show="showAddParamDrawer" :width="550" placement="right">
-      <n-drawer-content title="添加参数" closable>
-        <n-space vertical :size="16">
-          <!-- 第一步：参数名(key) -->
-          <div>
-            <n-text strong>参数名 (Key)</n-text>
-            <n-text depth="3" style="font-size: 12px; margin-left: 8px">*必填</n-text>
-            <n-input
-              v-model:value="newParamConfig.key"
-              placeholder="请输入参数名，如: device_id"
-              size="medium"
-              clearable
-              style="margin-top: 8px"
-            />
-          </div>
-
-          <!-- 第二步：配置类型（只有key不为空时显示） -->
-          <div v-if="newParamConfig.key && newParamConfig.key.trim()">
-            <n-divider />
-
-            <div>
-              <n-text strong>配置类型</n-text>
-              <n-radio-group v-model:value="newParamConfig.configType" size="medium" style="margin-top: 8px">
-                <n-space vertical>
-                  <n-radio value="manual">
-                    <n-space align="center">
-                      <n-icon size="18" color="#18a058"><n-icon>✍️</n-icon></n-icon>
-                      <span>手动输入</span>
-                    </n-space>
-                  </n-radio>
-                  <n-radio value="property">
-                    <n-space align="center">
-                      <n-icon size="18" color="#2080f0"><LinkOutline /></n-icon>
-                      <span>属性绑定</span>
-                    </n-space>
-                  </n-radio>
-                  <n-radio value="device">
-                    <n-space align="center">
-                      <n-icon size="18" color="#f0a020"><DeviceIcon /></n-icon>
-                      <span>设备配置</span>
-                    </n-space>
-                  </n-radio>
-                </n-space>
-              </n-radio-group>
-            </div>
-
-            <n-divider />
-
-            <!-- 根据配置类型显示不同的表单 -->
-            <!-- 手动输入表单 -->
-            <div v-if="newParamConfig.configType === 'manual'">
-              <n-space vertical :size="12">
-                <div>
-                  <n-text strong>参数值</n-text>
-                  <n-input
-                    v-model:value="newParamConfig.value"
-                    placeholder="请输入参数值"
-                    size="medium"
-                    clearable
-                    style="margin-top: 8px"
-                  />
-                </div>
-
-                <div>
-                  <n-text strong>描述（可选）</n-text>
-                  <n-input
-                    v-model:value="newParamConfig.description"
-                    placeholder="请输入参数描述"
-                    size="medium"
-                    type="textarea"
-                    :rows="3"
-                    clearable
-                    style="margin-top: 8px"
-                  />
-                </div>
-              </n-space>
-            </div>
-
-            <!-- 属性绑定表单 - 复用现有组件 -->
-            <div v-else-if="newParamConfig.configType === 'property'">
-              <n-text strong>属性绑定配置</n-text>
-              <div style="margin-top: 12px">
-                <ComponentPropertySelector
-                  :value="newParamConfig.propertyBinding"
-                  :current-component-id="currentComponentId"
-                  @change="handleNewParamPropertyChange"
-                />
-              </div>
-
-              <n-divider />
-
-              <div>
-                <n-text strong>描述（可选）</n-text>
-                <n-input
-                  v-model:value="newParamConfig.description"
-                  placeholder="请输入参数描述"
-                  size="medium"
-                  type="textarea"
-                  :rows="2"
-                  clearable
-                  style="margin-top: 8px"
-                />
-              </div>
-            </div>
-
-            <!-- 设备配置表单 - 复用现有组件 -->
-            <div v-else-if="newParamConfig.configType === 'device'">
-              <n-text strong>设备配置</n-text>
-              <div style="margin-top: 12px">
-                <UnifiedDeviceConfigSelector
-                  :parameter-type="parameterType"
-                  :existing-parameters="modelValue"
-                  @confirm="handleNewParamDeviceConfigChange"
-                />
-              </div>
-
-              <n-divider />
-
-              <div>
-                <n-text strong>描述（可选）</n-text>
-                <n-input
-                  v-model:value="newParamConfig.description"
-                  placeholder="请输入参数描述"
-                  size="medium"
-                  type="textarea"
-                  :rows="2"
-                  clearable
-                  style="margin-top: 8px"
-                />
-              </div>
-            </div>
-          </div>
-        </n-space>
-
-        <template #footer>
-          <n-space justify="end">
-            <n-button @click="cancelNewParam">取消</n-button>
-            <n-button
-              type="primary"
-              :disabled="!newParamConfig.key || !newParamConfig.key.trim()"
-              @click="confirmNewParam"
-            >
-              确认添加
-            </n-button>
-          </n-space>
-        </template>
-      </n-drawer-content>
-    </n-drawer>
 
     <!-- 从设备添加参数抽屉 -->
     <n-drawer v-model:show="isAddFromDeviceDrawerVisible" :width="500">
@@ -1568,28 +1293,9 @@ const getComponentTemplate = (param: EnhancedParameter | null) => {
 </template>
 
 <style scoped>
-/* 🎯 优化2：增强版编辑器样式 */
-.dynamic-parameter-editor-v3-enhanced {
-  width: 100%;
-  font-size: 12px;
-}
-
-/* 兼容旧版class名 */
 .dynamic-parameter-editor-v3 {
   width: 100%;
   font-size: 12px;
-}
-
-/* 🎯 优化2：增强的编辑器头部 */
-.editor-header-enhanced {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding: 12px;
-  background: linear-gradient(135deg, var(--primary-color-suppl) 0%, transparent 100%);
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
 }
 
 .editor-header {
@@ -1601,29 +1307,7 @@ const getComponentTemplate = (param: EnhancedParameter | null) => {
 
 .editor-title {
   font-size: 14px;
-  font-weight: 600;
-  color: var(--text-color-1);
-}
-
-/* 🔥 新增参数表单区域 */
-.new-param-form {
-  margin-bottom: 16px;
-  animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.config-form-content {
-  margin-top: 8px;
+  font-weight: 500;
 }
 
 /* 🔥 设备配置信息区域 */
@@ -1637,35 +1321,16 @@ const getComponentTemplate = (param: EnhancedParameter | null) => {
   gap: 8px;
 }
 
-/* 🎯 优化2：参数类型视觉分组 - 通过边框颜色区分 */
 .parameter-item {
   background: var(--card-color);
   border: 1px solid var(--border-color);
-  border-left-width: 3px;
   border-radius: 6px;
   transition: all 0.3s ease;
 }
 
-/* 🎯 优化2：手动参数 - 蓝色边框 */
-.parameter-item:has([data-param-type='manual']) {
-  border-left-color: var(--info-color);
-}
-
-/* 🎯 优化2：属性绑定参数 - 绿色边框 */
-.parameter-item:has([data-param-type='property']) {
-  border-left-color: var(--success-color);
-}
-
-/* 🎯 优化2：组件绑定参数 - 绿色边框（深色） */
-.parameter-item:has([data-param-type='component']) {
-  border-left-color: var(--success-color);
-  background: linear-gradient(90deg, var(--success-color-suppl) 0%, var(--card-color) 20%);
-}
-
 .parameter-item.is-editing {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px var(--primary-color-suppl);
-  border-left-width: 4px;
+  box-shadow: 0 0 0 1px var(--primary-color-suppl);
 }
 
 /* 🔥 参数组样式增强 */
@@ -1814,90 +1479,5 @@ const getComponentTemplate = (param: EnhancedParameter | null) => {
   background: var(--body-color);
   border: 1px dashed var(--border-color);
   border-radius: 6px;
-}
-
-/* 🎯 新增：一行展开的参数列表样式 */
-.parameter-list-inline {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.parameter-item-inline {
-  display: grid;
-  grid-template-columns: auto auto 250px 180px 1fr auto;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
-  background: var(--card-color);
-  border: 1px solid var(--border-color);
-  border-left-width: 3px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-
-.parameter-item-inline:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-/* 参数类型视觉分组 - 通过边框颜色 */
-.parameter-item-inline[data-param-type='manual'] {
-  border-left-color: var(--info-color);
-}
-
-.parameter-item-inline[data-param-type='property'] {
-  border-left-color: var(--success-color);
-  background: linear-gradient(90deg, var(--success-color-suppl) 0%, var(--card-color) 15%);
-}
-
-.parameter-item-inline[data-param-type='component'] {
-  border-left-color: var(--warning-color);
-  background: linear-gradient(90deg, var(--warning-color-suppl) 0%, var(--card-color) 15%);
-}
-
-/* 参数组样式 */
-.parameter-item-inline.is-device-param-group {
-  border-left-color: var(--primary-color);
-  border-left-width: 4px;
-}
-
-.parameter-item-inline.is-secondary-param {
-  margin-left: 20px;
-  opacity: 0.95;
-}
-
-/* 参数名输入框 */
-.param-key-input-inline {
-  width: 100%;
-}
-
-/* 类型选择下拉 */
-.param-type-select-inline {
-  width: 100%;
-}
-
-/* 值输入区域 */
-.param-value-input-inline {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-}
-
-.property-binding-inline,
-.component-binding-inline {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-}
-
-.component-binding-inline .n-input {
-  flex: 1;
-}
-
-/* 操作按钮 */
-.param-actions-inline {
-  flex-shrink: 0;
 }
 </style>

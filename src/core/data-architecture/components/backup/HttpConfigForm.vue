@@ -1,14 +1,11 @@
 <!--
-  HTTP配置表单组件 - UI优化版（单栏布局）
-  ✨ 优化亮点：
-  1. 渐进式引导：未完成基础配置时其他Tab显示锁定提示
-  2. 参数计数器：实时显示各类参数数量
+  HTTP接口配置表单组件
+  恢复tab布局，去掉图标，保持紧凑
 -->
 <script setup lang="ts">
 /**
- * HttpConfigForm - HTTP接口配置表单（UI优化版）
- *
- * 🎯 优化：表单验证渐进式引导（Tab锁定图标、Hover提示、参数计数）
+ * HttpConfigForm - HTTP接口配置表单
+ * 恢复tab布局，去掉图标装饰
  */
 
 import { ref, reactive, computed, watch, nextTick } from 'vue'
@@ -21,8 +18,6 @@ import HttpConfigStep1 from '@/core/data-architecture/components/common/HttpConf
 import HttpConfigStep2 from '@/core/data-architecture/components/common/HttpConfigStep2.vue'
 import HttpConfigStep3 from '@/core/data-architecture/components/common/HttpConfigStep3.vue'
 import HttpConfigStep4 from '@/core/data-architecture/components/common/HttpConfigStep4.vue'
-// 导入图标
-import { LockClosedOutline as LockIcon } from '@vicons/ionicons5'
 
 // Props接口 - 支持v-model模式
 interface Props {
@@ -185,25 +180,10 @@ const switchToTab = (tab: 'basic' | 'headers' | 'params' | 'scripts') => {
 }
 
 /**
- * 🎯 优化：Tab验证 - 基础配置是否完成
+ * Tab验证 - 基础配置是否完成
  */
 const isBasicConfigValid = computed(() => {
   return localConfig.url && localConfig.method
-})
-
-/**
- * 🎯 优化：计算各类参数的数量（用于Tab计数显示）
- */
-const headersCount = computed(() => {
-  return localConfig.headers?.filter(h => h.enabled !== false).length || 0
-})
-
-const paramsCount = computed(() => {
-  return localConfig.params?.filter(p => p.enabled !== false).length || 0
-})
-
-const pathParamsCount = computed(() => {
-  return localConfig.pathParams?.filter(p => p.enabled !== false).length || 0
 })
 
 /**
@@ -381,18 +361,10 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
 
 <template>
   <div class="http-config-form">
-    <!-- 🎯 优化：Tab导航 - 带锁定提示和参数计数 -->
+    <!-- Tab导航 - 替代步骤条 -->
     <div class="tabs-section">
-      <n-tabs v-model:value="currentTab" type="line" size="medium" :animated="true" @update:value="switchToTab">
-        <!-- 基础配置Tab -->
-        <n-tab-pane name="basic">
-          <template #tab>
-            <n-space :size="4" align="center">
-              <span>{{ isBasicConfigValid ? '●' : '○' }}</span>
-              <span>基础配置</span>
-              <n-tag v-if="isBasicConfigValid" type="success" size="small" :bordered="false">✓</n-tag>
-            </n-space>
-          </template>
+      <n-tabs v-model:value="currentTab" type="line" size="small" :animated="true" @update:value="switchToTab">
+        <n-tab-pane name="basic" tab="基础配置">
           <HttpConfigStep1
             :model-value="localConfig"
             :component-id="componentId"
@@ -406,20 +378,7 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
           />
         </n-tab-pane>
 
-        <!-- 请求头Tab -->
-        <n-tab-pane name="headers" :disabled="!isBasicConfigValid">
-          <template #tab>
-            <n-tooltip :disabled="isBasicConfigValid">
-              <template #trigger>
-                <n-space :size="4" align="center">
-                  <n-icon v-if="!isBasicConfigValid" size="14"><lock-icon /></n-icon>
-                  <span>请求头</span>
-                  <n-tag v-if="headersCount > 0" type="info" size="small" :bordered="false">{{ headersCount }}</n-tag>
-                </n-space>
-              </template>
-              请先完成基础配置（URL和请求方法）
-            </n-tooltip>
-          </template>
+        <n-tab-pane name="headers" tab="请求头" :disabled="!isBasicConfigValid">
           <HttpConfigStep2
             :model-value="localConfig"
             :component-id="componentId"
@@ -432,20 +391,7 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
           />
         </n-tab-pane>
 
-        <!-- 参数配置Tab -->
-        <n-tab-pane name="params" :disabled="!isBasicConfigValid">
-          <template #tab>
-            <n-tooltip :disabled="isBasicConfigValid">
-              <template #trigger>
-                <n-space :size="4" align="center">
-                  <n-icon v-if="!isBasicConfigValid" size="14"><lock-icon /></n-icon>
-                  <span>参数配置</span>
-                  <n-tag v-if="paramsCount > 0" type="info" size="small" :bordered="false">{{ paramsCount }}</n-tag>
-                </n-space>
-              </template>
-              请先完成基础配置（URL和请求方法）
-            </n-tooltip>
-          </template>
+        <n-tab-pane name="params" tab="参数配置" :disabled="!isBasicConfigValid">
           <HttpConfigStep3
             :model-value="localConfig"
             :component-id="componentId"
@@ -467,20 +413,7 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
           />
         </n-tab-pane>
 
-        <!-- 请求脚本Tab -->
-        <n-tab-pane name="scripts" :disabled="!isBasicConfigValid">
-          <template #tab>
-            <n-tooltip :disabled="isBasicConfigValid">
-              <template #trigger>
-                <n-space :size="4" align="center">
-                  <n-icon v-if="!isBasicConfigValid" size="14"><lock-icon /></n-icon>
-                  <span>请求脚本</span>
-                  <n-tag v-if="localConfig.preRequestScript" type="warning" size="small" :bordered="false">已配置</n-tag>
-                </n-space>
-              </template>
-              请先完成基础配置（URL和请求方法）
-            </n-tooltip>
-          </template>
+        <n-tab-pane name="scripts" tab="请求脚本" :disabled="!isBasicConfigValid">
           <HttpConfigStep4
             :model-value="localConfig"
             :component-id="componentId"
@@ -494,32 +427,9 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
       </n-tabs>
     </div>
 
-    <!-- 🎯 优化：配置状态提示 -->
+    <!-- 配置状态提示 -->
     <div v-if="!isBasicConfigValid" class="config-tip">
-      <n-alert type="info" style="margin-top: 16px">
-        <template #header>
-          <n-space align="center">
-            <span>📝 配置进度</span>
-          </n-space>
-        </template>
-        <n-space vertical size="small">
-          <n-text depth="3">请先完成基础配置，然后可以配置其他选项</n-text>
-          <n-progress
-            type="line"
-            :percentage="localConfig.url && localConfig.method ? 100 : localConfig.url || localConfig.method ? 50 : 0"
-            :show-indicator="true"
-            status="info"
-          />
-          <n-space size="small">
-            <n-tag :type="localConfig.url ? 'success' : 'default'" size="small">
-              {{ localConfig.url ? '✓' : '○' }} URL
-            </n-tag>
-            <n-tag :type="localConfig.method ? 'success' : 'default'" size="small">
-              {{ localConfig.method ? '✓' : '○' }} 请求方法
-            </n-tag>
-          </n-space>
-        </n-space>
-      </n-alert>
+      <n-alert type="info" style="margin-top: 16px">📝 请先完成基础配置（URL和请求方法），然后可以配置其他选项</n-alert>
     </div>
   </div>
 </template>
@@ -557,20 +467,5 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
 
 .config-tip {
   padding: 12px;
-}
-
-/* Tab标签增强样式 */
-.tabs-section :deep(.n-tabs-tab) {
-  padding: 8px 16px;
-}
-
-.tabs-section :deep(.n-tabs-tab--disabled) {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 锁定图标样式 */
-.tabs-section :deep(.n-tabs-tab--disabled .n-icon) {
-  color: var(--warning-color);
 }
 </style>
