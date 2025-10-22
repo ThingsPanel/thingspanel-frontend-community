@@ -54,7 +54,7 @@ const inputMethods = [
  * 表单状态
  */
 const formState = reactive({
-  selectedMethod: 'json' as 'json' | 'http' | 'script' | 'websocket',
+  selectedMethod: 'http' as 'json' | 'http' | 'script' | 'websocket', // 🔥 修改默认值从 json 改为 http
   jsonData: '', // 初始为空，由watch或mounted设置
   httpUrl: 'https://api.example.com/data',
   httpMethod: 'GET' as 'GET' | 'POST' | 'PUT' | 'DELETE',

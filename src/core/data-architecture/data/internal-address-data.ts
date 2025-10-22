@@ -11,8 +11,8 @@ import type { InternalAddressOptions, InternalApiItem } from '@/core/data-archit
 const telemetryApis: InternalApiItem[] = [
   {
     label: '设备遥测当前值查询',
-    value: '/api/v1/telemetry/datas/current/{id}',
-    url: '/api/v1/telemetry/datas/current/{id}',
+    value: '/telemetry/datas/current/{id}',
+    url: '/telemetry/datas/current/{id}',
     method: 'GET',
     description: '设备当前值查询，获取设备每个key的最新一条数据',
     hasPathParams: true,
@@ -25,13 +25,19 @@ const telemetryApis: InternalApiItem[] = [
   },
   {
     label: '根据key查询指标当前值',
-    value: '/api/v1/telemetry/datas/current/keys',
-    url: '/api/v1/telemetry/datas/current/keys',
+    value: '/telemetry/datas/current/keys',
+    url: '/telemetry/datas/current/keys',
     method: 'GET',
     description: '设备当前值查询，获取设备每个key的最新一条数据',
     hasPathParams: false,
     commonParams: [
-      { name: 'device_id', type: 'string', required: true, description: '设备ID', example: '5fd9b168-9e2a-d91c-a7c3-9c1f4d4b5137' },
+      {
+        name: 'device_id',
+        type: 'string',
+        required: true,
+        description: '设备ID',
+        example: '5fd9b168-9e2a-d91c-a7c3-9c1f4d4b5137'
+      },
       { name: 'keys', type: 'object', required: true, description: '指标key数组', example: ['temperature', 'humidity'] }
     ],
     module: 'telemetry',
@@ -39,8 +45,8 @@ const telemetryApis: InternalApiItem[] = [
   },
   {
     label: '指标历史数值查询',
-    value: '/api/v1/telemetry/datas/history/pagination',
-    url: '/api/v1/telemetry/datas/history/pagination',
+    value: '/telemetry/datas/history/pagination',
+    url: '/telemetry/datas/history/pagination',
     method: 'GET',
     description: '设备历史数值查询，时间最多限一个月。不送分页支持全部返回，该接口不反回消息总数，只能上一页下一页操作',
     hasPathParams: false,
@@ -58,8 +64,8 @@ const telemetryApis: InternalApiItem[] = [
   },
   {
     label: '遥测聚合数据查询',
-    value: '/api/v1/telemetry/datas/statistic',
-    url: '/api/v1/telemetry/datas/statistic',
+    value: '/telemetry/datas/statistic',
+    url: '/telemetry/datas/statistic',
     method: 'GET',
     description: '查询遥测数据的聚合统计信息，支持多种时间范围和聚合方式',
     hasPathParams: false,
@@ -111,8 +117,8 @@ const telemetryApis: InternalApiItem[] = [
   },
   {
     label: '批量查询多个设备的遥测统计数据',
-    value: '/api/v1/telemetry/datas/statistic/batch',
-    url: '/api/v1/telemetry/datas/statistic/batch',
+    value: '/telemetry/datas/statistic/batch',
+    url: '/telemetry/datas/statistic/batch',
     method: 'GET',
     description: '批量查询多个设备的遥测统计数据，只有diff支持数字型字符串',
     hasPathParams: false,
@@ -146,8 +152,8 @@ const telemetryApis: InternalApiItem[] = [
 const deviceApis: InternalApiItem[] = [
   {
     label: '设备简单信息查询（带遥测数据）',
-    value: '/api/v1/device/map/telemetry/{id}',
-    url: '/api/v1/device/map/telemetry/{id}',
+    value: '/device/map/telemetry/{id}',
+    url: '/device/map/telemetry/{id}',
     method: 'GET',
     description: '地图上遥测接口，返回设备基本信息和遥测数据，如label不返回则显示key',
     hasPathParams: true,
@@ -160,8 +166,8 @@ const deviceApis: InternalApiItem[] = [
   },
   {
     label: '设备单指标图表数据查询',
-    value: '/api/v1/device/metrics/chart',
-    url: '/api/v1/device/metrics/chart',
+    value: '/device/metrics/chart',
+    url: '/device/metrics/chart',
     method: 'GET',
     description: '查询设备最新数据和历史数据',
     hasPathParams: false,
@@ -220,8 +226,8 @@ const deviceApis: InternalApiItem[] = [
   },
   {
     label: '【租户/用户】设备汇总',
-    value: '/api/v1/board/tenant/device/info',
-    url: '/api/v1/board/tenant/device/info',
+    value: '/board/tenant/device/info',
+    url: '/board/tenant/device/info',
     method: 'GET',
     description: '租户下设备总数、在线数和激活数统计',
     hasPathParams: false,
@@ -239,8 +245,8 @@ const deviceApis: InternalApiItem[] = [
 const attributeApis: InternalApiItem[] = [
   {
     label: '根据KEY查询属性信息',
-    value: '/api/v1/attribute/datas/key',
-    url: '/api/v1/attribute/datas/key',
+    value: '/attribute/datas/key',
+    url: '/attribute/datas/key',
     method: 'GET',
     description: '根据指定的key查询属性信息',
     hasPathParams: false,
@@ -250,8 +256,8 @@ const attributeApis: InternalApiItem[] = [
   },
   {
     label: '设备属性列表查询',
-    value: '/api/v1/attribute/datas/{id}',
-    url: '/api/v1/attribute/datas/{id}',
+    value: '/attribute/datas/{id}',
+    url: '/attribute/datas/{id}',
     method: 'GET',
     description: '查询指定设备的属性列表',
     hasPathParams: true,
@@ -270,8 +276,8 @@ const attributeApis: InternalApiItem[] = [
 const eventApis: InternalApiItem[] = [
   {
     label: '事件数据分页查询',
-    value: '/api/v1/event/datas',
-    url: '/api/v1/event/datas',
+    value: '/event/datas',
+    url: '/event/datas',
     method: 'GET',
     description: '事件数据查询（分页）',
     hasPathParams: false,
@@ -292,8 +298,8 @@ const eventApis: InternalApiItem[] = [
 const alarmApis: InternalApiItem[] = [
   {
     label: '【租户】当前告警状态的设备数量',
-    value: '/api/v1/alarm/device/counts',
-    url: '/api/v1/alarm/device/counts',
+    value: '/alarm/device/counts',
+    url: '/alarm/device/counts',
     method: 'GET',
     description: '查询租户下当前告警状态的设备数量统计',
     hasPathParams: false,
@@ -305,8 +311,8 @@ const alarmApis: InternalApiItem[] = [
   },
   {
     label: '获取设备告警状态',
-    value: '/api/v1/alarm/info/history/device',
-    url: '/api/v1/alarm/info/history/device',
+    value: '/alarm/info/history/device',
+    url: '/alarm/info/history/device',
     method: 'GET',
     description: '获取指定设备的告警状态',
     hasPathParams: false,
@@ -318,8 +324,8 @@ const alarmApis: InternalApiItem[] = [
   },
   {
     label: '获取告警历史列表',
-    value: '/api/v1/alarm/info/history',
-    url: '/api/v1/alarm/info/history',
+    value: '/alarm/info/history',
+    url: '/alarm/info/history',
     method: 'GET',
     description: '获取告警历史记录列表（分页）',
     hasPathParams: false,

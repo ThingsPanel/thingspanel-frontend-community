@@ -315,7 +315,7 @@ const updatePropertyOptions = async () => {
     const config = configurationIntegrationBridge.getConfiguration(selectedComponentId.value)
 
     // 🚨 强制添加用户要求的必须暴露属性：设备ID和设备指标
-    // 🔥 但要检查白名单中是否已经存在，避免重复
+    // 🔥 修复：无论 config 中是否存在，都强制添加，因为这是全局基础属性
     const mandatoryOptions: any[] = []
 
     // 检查白名单中是否已经有 deviceId
@@ -328,10 +328,11 @@ const updatePropertyOptions = async () => {
       opt.propertyInfo?.propertyName === 'metricsList'
     )
 
-    // 只在白名单中不存在时才添加强制必需属性
-    if (config?.base?.deviceId !== undefined && !hasDeviceIdInWhitelist) {
+    // 🔥 修复：只要白名单中不存在，就强制添加，不检查 config 中是否有值
+    if (!hasDeviceIdInWhitelist) {
+      const currentDeviceId = config?.base?.deviceId || config?.deviceId || ''
       mandatoryOptions.push({
-        label: `🚨 [必需] 设备ID (string) - 用户要求必须暴露`,
+        label: `🚨 [必需] 设备ID (string) - 全局基础属性`,
         value: `${selectedComponentId.value}.base.deviceId`,
         propertyInfo: {
           componentId: selectedComponentId.value,
@@ -340,8 +341,8 @@ const updatePropertyOptions = async () => {
           propertyName: 'deviceId',
           propertyLabel: '设备ID',
           type: 'string',
-          description: '关联的设备唯一标识（用户要求必须暴露）',
-          currentValue: config.base.deviceId,
+          description: '关联的设备唯一标识（全局基础属性）',
+          currentValue: currentDeviceId,
           isWhitelisted: false,
           isMandatory: true,
           userRequired: true
@@ -349,9 +350,10 @@ const updatePropertyOptions = async () => {
       })
     }
 
-    if (config?.base?.metricsList !== undefined && !hasMetricsListInWhitelist) {
+    if (!hasMetricsListInWhitelist) {
+      const currentMetricsList = config?.base?.metricsList || config?.metricsList || []
       mandatoryOptions.push({
-        label: `🚨 [必需] 设备指标列表 (array) - 用户要求必须暴露`,
+        label: `🚨 [必需] 设备指标列表 (array) - 全局基础属性`,
         value: `${selectedComponentId.value}.base.metricsList`,
         propertyInfo: {
           componentId: selectedComponentId.value,
@@ -360,8 +362,8 @@ const updatePropertyOptions = async () => {
           propertyName: 'metricsList',
           propertyLabel: '设备指标列表',
           type: 'array',
-          description: '监控的设备指标列表（用户要求必须暴露）',
-          currentValue: config.base.metricsList,
+          description: '监控的设备指标列表（全局基础属性）',
+          currentValue: currentMetricsList,
           isWhitelisted: false,
           isMandatory: true,
           userRequired: true
