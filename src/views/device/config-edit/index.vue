@@ -24,6 +24,8 @@ const route = useRoute()
 const configId = ref(route.query.id || null)
 const modalTitle = ref('generate.add')
 
+let loading = ref(false)
+
 // 定义表单数据类型 - 放在 configForm 定义之前
 interface ConfigFormData {
   id: string | number | null
@@ -147,6 +149,8 @@ const handleClose = () => {
 const handleSubmit = async () => {
   await configFormRef?.value?.validate()
 
+  loading.value = true
+
   // 1. 直接复制当前的表单值
   const postData = { ...configForm.value }
 
@@ -157,6 +161,9 @@ const handleSubmit = async () => {
     // 添加模式
     // 确保添加时不传递 id (defaultConfigForm 已将 id 设为 null)
     const res = await deviceConfigAdd(postData)
+
+    loading.value = false
+
     if (!res.error) {
       handleClose()
     } else {
@@ -169,6 +176,9 @@ const handleSubmit = async () => {
       message.error((error && 'message' in error && error.message) || $t('generate.editFailed'))
       return { error: true }
     })
+    
+    loading.value = false
+
     if (!res.error) {
       handleClose()
     } else {
@@ -388,7 +398,7 @@ function handleDeviceTypeChange(newValue: string | number) {
           <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements"></FormInput>
         </NFormItem>
         <NFlex justify="flex-start">
-          <NButton type="primary" @click="handleSubmit">{{ $t('page.login.common.confirm') }}</NButton>
+          <NButton type="primary" @click="handleSubmit" :loading="loading">{{ $t('page.login.common.confirm') }}</NButton>
         </NFlex>
       </NForm>
     </NCard>
