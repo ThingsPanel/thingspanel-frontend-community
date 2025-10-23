@@ -315,5 +315,6 @@
   "common.redo": "Redo",
   "common.preview": "Preview",
   "common.clear": "Clear",
-  "common.other": "Other"
+  "common.other": "Other",
+  "common.noDescription": "No description"
 }
