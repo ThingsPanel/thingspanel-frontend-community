@@ -181,8 +181,8 @@ onMounted(() => {
       <NPagination :page-count="total" :page-size="queryParams.page_size" @update:page="handlePageChange" />
     </div>
 
-    <!-- 自定义控制 -->
-    <CustomControls :id="templateData?.id || ''" />
+    <!-- 自定义控制 - 只有当templateData存在且id有效时才渲染 -->
+    <CustomControls v-if="templateData?.id" :id="templateData.id" />
 
     <!-- 编辑弹窗 -->
     <NModal
