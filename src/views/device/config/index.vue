@@ -1,5 +1,5 @@
 <script lang="tsx" setup>
-import { onMounted, ref, computed, h } from 'vue'
+import { onMounted, ref, computed, h, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { NButton, NInput, NIcon, NPagination, NDataTable, NTag, NSpace, NEmpty } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
@@ -159,6 +159,11 @@ const handleRefresh = () => {
 
 // 组件挂载时获取数据
 onMounted(() => {
+  getData()
+})
+
+// 打开时自动刷新页面
+onActivated(() => {
   getData()
 })
 import { ListOutline, GridOutline as CardIcon } from '@vicons/ionicons5'
