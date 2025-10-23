@@ -148,5 +148,8 @@
   "device_template.webChartConfigPending": "Web chart configuration feature pending implementation",
   "device_template.appChartConfigPending": "App chart configuration feature pending implementation",
   "device_template.templateCreatedSuccess": "Template created successfully",
-  "device_template.fullTemplateJson": "Full Template Configuration JSON"
+  "device_template.fullTemplateJson": "Full Template Configuration JSON",
+  "device_template.legacyDataDetected": "Legacy Data Detected",
+  "device_template.legacyDataMessage": "The current configuration is in legacy format and cannot be edited directly. Please recreate the configuration.",
+  "device_template.recreate": "Recreate"
 }

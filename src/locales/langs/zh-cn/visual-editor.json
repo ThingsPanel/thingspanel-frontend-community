@@ -660,5 +660,10 @@
   "visualEditor.pollingPause": "暂停轮询",
   "visualEditor.pollingEnabled": "全局轮询已启用",
   "visualEditor.pollingDisabled": "全局轮询已关闭",
-  "visualEditor.ready": "V2 编辑器已就绪"
+  "visualEditor.ready": "V2 编辑器已就绪",
+  "visualEditor.underDevelopment": "待开发",
+  "visualEditor.clearCanvas": "清空画布",
+  "visualEditor.clearCanvasConfirm": "确定要清空画布吗？此操作将删除所有组件且无法恢复。",
+  "visualEditor.fullscreen": "全屏",
+  "visualEditor.exitFullscreen": "退出全屏"
 }

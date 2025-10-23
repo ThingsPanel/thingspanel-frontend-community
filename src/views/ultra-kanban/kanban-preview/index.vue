@@ -25,6 +25,9 @@ const panelData = ref<Panel.Board>()
 const error = ref<string>('')
 const isUnmounted = ref(false)
 
+// 🔥 编辑器配置状态
+const editorConfig = ref<{ widgets: any[]; config: any } | undefined>()
+
 /**
  * 获取看板ID和渲染器类型
  */
@@ -40,7 +43,7 @@ const rendererType = computed(() => {
 })
 
 /**
- * 获取看板数据
+ * 🔥 获取看板数据并解析配置
  */
 const fetchBoardData = async () => {
   if (!panelId.value) {
@@ -55,10 +58,48 @@ const fetchBoardData = async () => {
 
     if (data) {
       panelData.value = data
+
+      // 🔥 解析看板配置为编辑器格式
+      if (data.config) {
+        try {
+          const parsedConfig = JSON.parse(data.config)
+
+          if (parsedConfig.widgets !== undefined || parsedConfig.config !== undefined) {
+            // 标准格式：{widgets: [...], config: {...}}
+            editorConfig.value = parsedConfig
+          } else if (Array.isArray(parsedConfig)) {
+            // 旧版数组格式
+            editorConfig.value = {
+              widgets: parsedConfig,
+              config: { gridConfig: {}, canvasConfig: {} }
+            }
+          } else {
+            // 空或未知格式，使用默认空配置
+            editorConfig.value = {
+              widgets: [],
+              config: { gridConfig: {}, canvasConfig: {} }
+            }
+          }
+        } catch (e) {
+          console.error('❌ 解析看板配置失败:', e)
+          // 解析失败，使用空配置
+          editorConfig.value = {
+            widgets: [],
+            config: { gridConfig: {}, canvasConfig: {} }
+          }
+        }
+      } else {
+        // 没有配置，使用空配置
+        editorConfig.value = {
+          widgets: [],
+          config: { gridConfig: {}, canvasConfig: {} }
+        }
+      }
     } else {
       error.value = $t('common.dataNotFound')
     }
   } catch (err) {
+    console.error('❌ 加载看板数据失败:', err)
     error.value = $t('common.loadError')
     message.error($t('common.loadError'))
   } finally {
@@ -119,12 +160,13 @@ const retryLoad = async () => {
     </div>
 
     <!-- 主内容区域 - 集成Visual Editor（预览模式） -->
-    <div v-else-if="panelData && !isUnmounted" class="main-content">
+    <div v-else-if="panelData && editorConfig && !isUnmounted" class="main-content">
       <!-- 预览模式编辑器（V2）集成 - 使用全局预览模式控制 -->
       <div class="visual-editor-container">
         <PanelEditorV2
           :key="`ultra-panel-preview-${panelId}-${rendererType}`"
           :panel-id="panelId"
+          :initial-config="editorConfig"
           :show-toolbar="false"
           :show-page-header="false"
           :enable-header-area="false"

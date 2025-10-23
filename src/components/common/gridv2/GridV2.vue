@@ -123,6 +123,17 @@ function createOptions(resolved: ReturnType<typeof resolveConfig>): GridStackOpt
   const disableDrag = isStatic || rawConfig.isDraggable === false
   const disableResize = isStatic || rawConfig.isResizable === false
 
+  // 🔥 关键调试：输出配置信息
+  console.log('🔧🔧🔧 [GridV2] createOptions 配置:', {
+    'props.readonly': props.readonly,
+    'rawConfig.staticGrid': rawConfig.staticGrid,
+    'rawConfig.isDraggable': rawConfig.isDraggable,
+    'rawConfig.isResizable': rawConfig.isResizable,
+    'isStatic': isStatic,
+    'disableDrag': disableDrag,
+    'disableResize': disableResize
+  })
+
   return {
     column: resolved.column,
     cellHeight: resolved.cellHeight,
@@ -134,7 +145,9 @@ function createOptions(resolved: ReturnType<typeof resolveConfig>): GridStackOpt
     styleInHead: true,
     animate: false,
     resizable: { handles: 'se' },
-    draggable: { handle: '.grid-stack-item-content', appendTo: 'parent', scroll: false }
+    // 🔥 最终修复：完全移除 handle 配置，让 GridStack 使用默认拖拽行为
+    // GridStack 默认会让整个 grid-stack-item 可拖拽，同时保护内部交互元素
+    draggable: { appendTo: 'parent', scroll: false }
   }
 }
 
@@ -207,14 +220,65 @@ function destroyGrid(): void {
 
 function applyLayoutInternal(layout: GridLayoutPlusItem[]): void {
   if (!grid) return
-  const currentColumn = grid.getColumn()
-  ensureColumnStyles(currentColumn)
-  applyColumnClass(currentColumn)
-  grid.batchUpdate()
-  grid.load(normalizeLayout(layout), true)
-  grid.batchUpdate(false)
-  layoutHashSnapshot = hashLayout(layout)
-  runAutoArrange()
+  console.log('🔥🔥🔥 [GridV2] applyLayoutInternal 开始执行，组件数:', layout.length)
+
+  try {
+    // 🔥 终极修复：完全销毁并重新初始化 GridStack
+    // 这是热更新能正常工作的原因 - 它会完全重新初始化
+    console.log('🔥🔥🔥 [GridV2] 销毁并重新初始化 GridStack')
+    const resolved = resolveConfig()
+    const currentColumn = resolved.column
+
+    // 保存当前的事件监听器
+    const changeHandler = handleGridChange
+
+    // 销毁旧的 grid
+    destroyGrid()
+
+    // 重新初始化
+    ensureColumnStyles(currentColumn)
+    grid = GridStack.init(createOptions(resolved), gridEl.value!)
+    grid.on('change', changeHandler)
+    applyColumnClass(currentColumn)
+
+    // 加载布局
+    grid.batchUpdate()
+    grid.load(normalizeLayout(layout), true)
+    grid.batchUpdate(false)
+    layoutHashSnapshot = hashLayout(layout)
+
+    // 同步交互性
+    syncInteractivity()
+
+    console.log('🔥🔥🔥 [GridV2] GridStack 重新初始化完成')
+
+    // 🔥 深度调试：检查每个元素的拖拽状态
+    console.log('🔍🔍🔍 [GridV2] 检查所有元素的拖拽状态:')
+    const items = grid.getGridItems()
+    items.forEach((el, index) => {
+      const node = el.gridstackNode
+      const hasDraggable = el.classList.contains('ui-draggable')
+      const hasResizable = el.classList.contains('ui-resizable')
+      const hasGridStackItem = el.classList.contains('grid-stack-item')
+
+      console.log(`  元素 ${index} [${node?.id}]:`, {
+        hasDraggable,
+        hasResizable,
+        hasGridStackItem,
+        noMove: node?.noMove,
+        noResize: node?.noResize,
+        locked: node?.locked,
+        '所有class': el.className
+      })
+    })
+
+    isReady = true
+  } catch (error) {
+    console.error('❌❌❌ [GridV2] applyLayoutInternal 执行出错:', error)
+    throw error
+  }
+
+  console.log('🔥🔥🔥 [GridV2] applyLayoutInternal 执行完成')
 }
 
 function initializeGrid(): void {
@@ -226,9 +290,29 @@ function initializeGrid(): void {
   grid = GridStack.init(createOptions(resolved), gridEl.value)
   grid.on('change', handleGridChange)
   applyColumnClass(resolved.column)
-  
+
   applyLayoutInternal(props.layout ?? [])
-    syncInteractivity()
+  syncInteractivity()
+
+  // 🔥 初始化后检查拖拽状态
+  console.log('🔍🔍🔍 [GridV2] 初始化完成后检查拖拽状态:')
+  const items = grid.getGridItems()
+  items.forEach((el, index) => {
+    const node = el.gridstackNode
+    const hasDraggable = el.classList.contains('ui-draggable')
+    const hasResizable = el.classList.contains('ui-resizable')
+    const hasGridStackItem = el.classList.contains('grid-stack-item')
+
+    console.log(`  初始元素 ${index} [${node?.id}]:`, {
+      hasDraggable,
+      hasResizable,
+      hasGridStackItem,
+      noMove: node?.noMove,
+      noResize: node?.noResize,
+      locked: node?.locked,
+      '所有class': el.className
+    })
+  })
 
   isReady = true
 }
@@ -308,10 +392,24 @@ onBeforeUnmount(() => destroyGrid())
 watch(
   () => props.layout,
   (layout) => {
-    if (!isReady) return
+    console.log('👀 [GridV2] props.layout 变化检测到，isReady:', isReady)
+    if (!isReady) {
+      console.log('❌ [GridV2] GridStack 未就绪，跳过处理')
+      return
+    }
     const incomingHash = hashLayout(layout ?? [])
-    if (incomingHash === layoutHashSnapshot) return
-    applyLayoutInternal(layout ?? [])
+    console.log('👀 [GridV2] 布局 hash 对比:', { incomingHash, layoutHashSnapshot })
+    if (incomingHash === layoutHashSnapshot) {
+      console.log('❌ [GridV2] 布局未变化，跳过处理')
+      return
+    }
+    console.log('✅ [GridV2] 布局已变化，准备调用 applyLayoutInternal')
+    // 🔥 关键修复：等待 Vue 的 DOM 更新完成后再调用 GridStack
+    // 因为新组件是通过 v-for 添加的，需要等 DOM 真正渲染后 GridStack 才能识别
+    nextTick(() => {
+      console.log('✅ [GridV2] nextTick 执行，调用 applyLayoutInternal')
+      applyLayoutInternal(layout ?? [])
+    })
   },
   { deep: true }
 )

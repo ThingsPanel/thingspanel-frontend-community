@@ -133,11 +133,10 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => {
   const config = {
     colNum: 24, // 🔥 修复：统一默认为24列
     rowHeight: 80,
-    // 🔥 使用新的 gap 配置，更直接清晰
-    horizontalGap: 0, // 水平间距默认 0px
-    verticalGap: 0, // 垂直间距默认 0px
-    // 保留 margin 以保持向后兼容
-    margin: [0, 0] as [number, number],
+    // 🔥 写死间距配置为8px，不再从外部配置
+    horizontalGap: 8,
+    verticalGap: 8,
+    margin: [8, 8] as [number, number],
     isDraggable: !isReadOnly.value && !props.staticGrid,
     isResizable: !isReadOnly.value && !props.staticGrid,
     responsive: false,
@@ -150,7 +149,14 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => {
     cols: { lg: 24, md: 20, sm: 12, xs: 8, xxs: 4 }, // 🔥 修复：调整断点列数以匹配24列基准
     useStyleCursor: true,
     restoreOnDrag: false,
-    ...props.gridConfig
+    // 🔥 合并外部配置，但排除间距相关配置
+    ...(props.gridConfig ? {
+      colNum: props.gridConfig.colNum,
+      rowHeight: props.gridConfig.rowHeight,
+      isDraggable: props.gridConfig.isDraggable,
+      isResizable: props.gridConfig.isResizable,
+      staticGrid: props.gridConfig.staticGrid
+    } : {})
   }
 
   // 确保开关配置正确应用
@@ -178,15 +184,21 @@ interface ExtendedGridLayoutPlusItem extends GridLayoutPlusItem {
 const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[] => {
   const key = props.idKey || 'i'
   return nodes.map(node => {
+    // 🔥 修复：在编辑模式下，优先保证组件可交互
+    // 只有在明确禁用（值为 false）时才禁用交互，undefined 时默认允许
+    const effectiveStatic = props.staticGrid || (props.gridConfig?.staticGrid ?? false)
+    const allowDrag = !isReadOnly.value && !effectiveStatic && (props.gridConfig?.isDraggable !== false)
+    const allowResize = !isReadOnly.value && !effectiveStatic && (props.gridConfig?.isResizable !== false)
+
     const item = {
       i: node.id,
       x: node.layout?.gridstack?.x ?? 0,
       y: node.layout?.gridstack?.y ?? 0,
       w: node.layout?.gridstack?.w ?? 4,
       h: node.layout?.gridstack?.h ?? 2,
-      static: props.staticGrid || (props.gridConfig?.staticGrid ?? false),
-      isDraggable: !isReadOnly.value && !props.staticGrid && (props.gridConfig?.isDraggable ?? true),
-      isResizable: !isReadOnly.value && !props.staticGrid && (props.gridConfig?.isResizable ?? true),
+      static: effectiveStatic,
+      isDraggable: allowDrag,
+      isResizable: allowResize,
       type: node.type,
       raw: node
     } as ExtendedGridLayoutPlusItem
@@ -213,9 +225,11 @@ watch(
 watch(
   () => [props.staticGrid, props.gridConfig?.staticGrid, props.gridConfig?.isDraggable, props.gridConfig?.isResizable],
   ([staticGridOverride, configStatic, configDraggable, configResizable]) => {
+    // 🔥 修复：使用与 nodesToLayout 相同的逻辑
+    // 只有在明确禁用（值为 false）时才禁用交互，undefined 时默认允许
     const effectiveStatic = Boolean(staticGridOverride || configStatic)
-    const allowDrag = !props.readonly && !effectiveStatic && (configDraggable ?? true)
-    const allowResize = !props.readonly && !effectiveStatic && (configResizable ?? true)
+    const allowDrag = !props.readonly && !effectiveStatic && (configDraggable !== false)
+    const allowResize = !props.readonly && !effectiveStatic && (configResizable !== false)
 
     layout.value = layout.value.map(item => ({
       ...item,

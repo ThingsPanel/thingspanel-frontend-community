@@ -72,11 +72,7 @@ const canvasConfig = computed(() => ({
 const gridstackConfig = computed(() => ({
   colNum: 24, // 🔥 修复：统一默认为24列
   rowHeight: 80,
-  // 🔥 使用新的 gap 配置
-  horizontalGap: 0, // 水平间距默认 0px
-  verticalGap: 0, // 垂直间距默认 0px
-  // 保留 margin 以保持向后兼容，但不再使用
-  margin: [0, 0],
+  // 🔥 移除间距配置，在渲染器内部写死
   isDraggable: true,
   isResizable: true,
   staticGrid: false,
@@ -197,28 +193,6 @@ const handleVisualizationConfigChange = (config: Record<string, any>) => {
                 :step="5"
                 style="width: 120px"
                 @update:value="value => handleGridstackConfigChange({ ...gridstackConfig, rowHeight: value })"
-              />
-            </NFormItem>
-
-            <NFormItem :label="`${$t('visualEditor.horizontalMargin')} ${gridstackConfig.horizontalGap}px`">
-              <NSlider
-                :value="gridstackConfig.horizontalGap"
-                :min="0"
-                :max="50"
-                :step="2"
-                style="width: 120px"
-                @update:value="value => handleGridstackConfigChange({ ...gridstackConfig, horizontalGap: value })"
-              />
-            </NFormItem>
-
-            <NFormItem :label="`${$t('visualEditor.verticalMargin')} ${gridstackConfig.verticalGap}px`">
-              <NSlider
-                :value="gridstackConfig.verticalGap"
-                :min="0"
-                :max="50"
-                :step="2"
-                style="width: 120px"
-                @update:value="value => handleGridstackConfigChange({ ...gridstackConfig, verticalGap: value })"
               />
             </NFormItem>
 

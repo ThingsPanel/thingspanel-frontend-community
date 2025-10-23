@@ -543,5 +543,10 @@
   "visualEditor.tabletLayout": "Tablet Layout",
   "visualEditor.desktopLayout": "Desktop Layout",
   "visualEditor.printLayout": "Print Layout",
-  "visualEditor.ready": "V2 Editor Ready"
+  "visualEditor.ready": "V2 Editor Ready",
+  "visualEditor.underDevelopment": "Under Development",
+  "visualEditor.clearCanvas": "Clear Canvas",
+  "visualEditor.clearCanvasConfirm": "Are you sure you want to clear the canvas? This will delete all components and cannot be undone.",
+  "visualEditor.fullscreen": "Fullscreen",
+  "visualEditor.exitFullscreen": "Exit Fullscreen"
 }

@@ -148,5 +148,8 @@
   "device_template.webChartConfigPending": "Web图表配置功能待实现",
   "device_template.appChartConfigPending": "App图表配置功能待实现",
   "device_template.templateCreatedSuccess": "模板创建成功",
-  "device_template.fullTemplateJson": "完整模板配置JSON"
+  "device_template.fullTemplateJson": "完整模板配置JSON",
+  "device_template.legacyDataDetected": "检测到旧版数据",
+  "device_template.legacyDataMessage": "当前配置为旧版格式，无法直接编辑。请重新创建配置。",
+  "device_template.recreate": "重新创建"
 }

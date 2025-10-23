@@ -78,6 +78,9 @@ const showConfigPanel = ref(false)
 // 消息提示
 const message = useMessage()
 
+// 全屏状态管理
+const isFullscreen = ref(false)
+
 // 移除自定义行高状态，由独立组件处理
 
 // 主题支持 - 使用Naive UI主题系统
@@ -113,8 +116,7 @@ const canvasConfig = computed(() => ({
 const gridstackConfig = computed(() => ({
   colNum: 24, // 🔥 修复：统一默认为24列
   rowHeight: 80,
-  // 将默认边距从 [10,10] 调整为 [0,0]，以便默认无间距布局
-  margin: [0, 0],
+  // 🔥 间距配置已在渲染器内部写死，不再从这里传递
   isDraggable: true,
   isResizable: true,
   staticGrid: false,
@@ -184,6 +186,51 @@ const handleCenterView = () => emit('center-view')
 const handleToggleLeftDrawer = () => emit('toggle-left-drawer')
 const handleToggleRightDrawer = () => emit('toggle-right-drawer')
 
+/**
+ * 全屏切换功能
+ * 进入/退出全屏模式
+ */
+const handleToggleFullscreen = () => {
+  const element = document.documentElement
+
+  if (!isFullscreen.value) {
+    // 进入全屏
+    if (element.requestFullscreen) {
+      element.requestFullscreen()
+    } else if ((element as any).webkitRequestFullscreen) {
+      // Safari 支持
+      ;(element as any).webkitRequestFullscreen()
+    } else if ((element as any).mozRequestFullScreen) {
+      // Firefox 支持
+      ;(element as any).mozRequestFullScreen()
+    } else if ((element as any).msRequestFullscreen) {
+      // IE11 支持
+      ;(element as any).msRequestFullscreen()
+    }
+  } else {
+    // 退出全屏
+    if (document.exitFullscreen) {
+      document.exitFullscreen()
+    } else if ((document as any).webkitExitFullscreen) {
+      ;(document as any).webkitExitFullscreen()
+    } else if ((document as any).mozCancelFullScreen) {
+      ;(document as any).mozCancelFullScreen()
+    } else if ((document as any).msExitFullscreen) {
+      ;(document as any).msExitFullscreen()
+    }
+  }
+}
+
+// 监听全屏状态变化
+const handleFullscreenChange = () => {
+  isFullscreen.value = !!(
+    document.fullscreenElement ||
+    (document as any).webkitFullscreenElement ||
+    (document as any).mozFullScreenElement ||
+    (document as any).msFullscreenElement
+  )
+}
+
 // 切换配置面板显示状态
 const handleToggleRendererConfig = () => {
   showConfigPanel.value = !showConfigPanel.value
@@ -211,10 +258,20 @@ const handleClickOutside = (event: Event) => {
 // 添加全局点击监听
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  // 监听全屏状态变化
+  document.addEventListener('fullscreenchange', handleFullscreenChange)
+  document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+  document.addEventListener('mozfullscreenchange', handleFullscreenChange)
+  document.addEventListener('MSFullscreenChange', handleFullscreenChange)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
+  // 移除全屏状态监听
+  document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
+  document.removeEventListener('mozfullscreenchange', handleFullscreenChange)
+  document.removeEventListener('MSFullscreenChange', handleFullscreenChange)
 })
 
 // 文件导入导出处理
@@ -322,24 +379,24 @@ const handleExport = () => {
           <div class="btn-group">
             <NTooltip trigger="hover">
               <template #trigger>
-                <NButton size="small" type="tertiary" :disabled="readonly" @click="handleUndo">
+                <NButton size="small" type="tertiary" disabled>
                   <template #icon>
                     <SvgIcon icon="material-symbols:undo" />
                   </template>
                 </NButton>
               </template>
-              <span>{{ $t('visualEditor.shortcuts.undo') }}</span>
+              <span>{{ $t('visualEditor.underDevelopment') }}</span>
             </NTooltip>
 
             <NTooltip trigger="hover">
               <template #trigger>
-                <NButton size="small" type="tertiary" :disabled="readonly" @click="handleRedo">
+                <NButton size="small" type="tertiary" disabled>
                   <template #icon>
                     <SvgIcon icon="material-symbols:redo" />
                   </template>
                 </NButton>
               </template>
-              <span>{{ $t('visualEditor.shortcuts.redo') }}</span>
+              <span>{{ $t('visualEditor.underDevelopment') }}</span>
             </NTooltip>
 
             <NPopconfirm
@@ -354,7 +411,7 @@ const handleExport = () => {
                   </template>
                 </NButton>
               </template>
-              <span>{{ $t('visualEditor.clearAllConfirm') }}</span>
+              <span>{{ $t('visualEditor.clearCanvasConfirm') }}</span>
             </NPopconfirm>
           </div>
 
@@ -400,6 +457,20 @@ const handleExport = () => {
               <SvgIcon icon="material-symbols:settings-outline" />
             </template>
           </NButton>
+
+          <!-- 全屏按钮 -->
+          <NTooltip trigger="hover">
+            <template #trigger>
+              <NButton size="small" type="tertiary" @click="handleToggleFullscreen">
+                <template #icon>
+                  <SvgIcon
+                    :icon="isFullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'"
+                  />
+                </template>
+              </NButton>
+            </template>
+            <span>{{ isFullscreen ? $t('visualEditor.exitFullscreen') : $t('visualEditor.fullscreen') }}</span>
+          </NTooltip>
         </template>
 
         <!-- 编辑/预览按钮 - 预览改为跳转新页面 -->
