@@ -69,18 +69,9 @@ function handleClickMenu(key: RouteKey) {
 }
 
 const renderMenuLabel = op => {
-  if (op.remark) {
-    return h(
-      NTooltip,
-      { trigger: 'hover' },
-      {
-        default: $t(op.remark),
-        trigger: op.label
-      }
-    )
-  }
   return op.label as string
 }
+
 watch(
   () => route.name,
   () => {
