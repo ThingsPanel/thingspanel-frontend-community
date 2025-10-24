@@ -486,4 +486,30 @@ watch(
 :deep(.grid-stack-item.ui-resizable-resizing) {
   z-index: 1000;
 }
+
+/* 🔥 修复：调整 resize handle 位置，确保在元素的最右下角 */
+:deep(.grid-stack-item > .ui-resizable-handle) {
+  /* 确保句柄不受 padding 影响 */
+  box-sizing: border-box;
+  position: absolute !important;
+}
+
+:deep(.grid-stack-item > .ui-resizable-se) {
+  /* 右下角句柄 - 让图标的右下角对齐元素的右下角 */
+  right: 14px !important;
+  bottom: 0 !important;
+  /* GridStack 的 resize handle 默认尺寸约为 20x20，边缘留 2px 视觉效果更好 */
+}
+
+:deep(.grid-stack-item > .ui-resizable-s) {
+  /* 底部句柄 */
+  bottom: 0 !important;
+  transform: translateY(-2px) !important;
+}
+
+:deep(.grid-stack-item > .ui-resizable-e) {
+  /* 右侧句柄 */
+  right: 0 !important;
+  transform: translateX(-2px) !important;
+}
 </style>
