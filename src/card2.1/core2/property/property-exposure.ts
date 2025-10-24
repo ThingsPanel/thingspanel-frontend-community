@@ -34,14 +34,6 @@ export class PropertyExposureManager implements IPropertyExposureManager {
     const enhancedWhitelist = this.addGlobalBaseProperties(normalizedWhitelist)
 
     this.propertyWhitelists.set(componentType, enhancedWhitelist)
-
-    if (import.meta.env.DEV) {
-      console.log(`✅ [PropertyExposureManager] 注册属性白名单: ${componentType}`, {
-        componentType,
-        propertiesCount: Object.keys(enhancedWhitelist).length,
-        properties: Object.keys(enhancedWhitelist)
-      })
-    }
   }
 
   /**
@@ -147,9 +139,6 @@ export class PropertyExposureManager implements IPropertyExposureManager {
     const whitelist = this.propertyWhitelists.get(componentType)
 
     if (!whitelist) {
-      if (import.meta.env.DEV) {
-        console.warn(`⚠️ [PropertyExposureManager] 组件 ${componentType} 没有注册属性白名单`)
-      }
       return {}
     }
 
