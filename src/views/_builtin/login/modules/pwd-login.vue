@@ -38,7 +38,7 @@ const model: FormModel = reactive({
 const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
   // 定义邮箱和手机号的正则表达式
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  const phoneRegex = /^1[3-9]\d{9}$/ // 中国大陆手机号基本格式
+  const phoneRegex = /^(\+|\d)\d{5,15}$/
 
   return {
     userName: [
