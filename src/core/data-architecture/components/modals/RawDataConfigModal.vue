@@ -14,6 +14,8 @@ import { DataItemFetcher, type DataItem } from '@/core/data-architecture/executo
 import HttpConfigForm from '@/core/data-architecture/components/modals/HttpConfigForm.vue'
 // 🔥 简洁脚本编辑器
 import SimpleScriptEditor from '@/core/script-engine/components/SimpleScriptEditor.vue'
+// 导入示例数据图标
+import { DocumentTextOutline } from '@vicons/ionicons5'
 
 // Props接口
 interface Props {
@@ -34,6 +36,7 @@ interface Emits {
   (e: 'confirm', data: DataItem): void
   (e: 'close'): void
   (e: 'cancel'): void
+  (e: 'method-change', method: 'json' | 'http' | 'script'): void // 新增：当录入方式改变时通知父组件
 }
 
 const props = defineProps<Props>()
@@ -432,13 +435,15 @@ const debouncePreview = (() => {
 })()
 
 /**
- * 监听录入方式变化，自动预览
+ * 监听录入方式变化，自动预览并通知父组件
  */
 watch(
   () => formState.selectedMethod,
-  () => {
+  (newMethod) => {
     previewData.value = null
     processingPreviewData.value = null
+    // 通知父组件录入方式已改变
+    emit('method-change', newMethod)
   },
   { immediate: true }
 )
@@ -679,11 +684,12 @@ onMounted(() => {
 })
 
 /**
- * 暴露方法给父组件使用
+ * 暴露方法和状态给父组件使用
  */
 defineExpose({
   resetFormState,
-  loadEditData
+  loadEditData,
+  formState // 暴露表单状态，让父组件可以访问 selectedMethod
 })
 </script>
 

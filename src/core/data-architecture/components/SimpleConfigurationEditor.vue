@@ -34,7 +34,8 @@ import {
   DotChartOutlined,
   SettingOutlined,
   DownloadOutlined,
-  UploadOutlined
+  UploadOutlined,
+  CopyOutlined
 } from '@vicons/antd'
 import { DocumentTextOutline, BarChartOutline, GlobeOutline } from '@vicons/ionicons5'
 // 新配置管理系统
@@ -207,6 +208,10 @@ const currentDataSourceKey = ref('')
 // 修复：添加编辑模式状态
 const isEditMode = ref(false)
 const editingItemId = ref('')
+// RawDataConfigModal 组件引用，用于访问内部状态
+const rawDataConfigModalRef = ref<any>(null)
+// 当前选择的数据录入方式
+const currentSelectedMethod = ref<'json' | 'http' | 'script'>('json')
 
 /**
  * 移除导入导出状态管理 - 已迁移到独立组件
@@ -223,6 +228,12 @@ const dataSourceItems = reactive<Record<string, any[]>>({})
  * 格式：{ dataSourceKey: { type: 'object' | 'array' | 'script', script?: string } }
  */
 const mergeStrategies = reactive<Record<string, any>>({})
+
+/**
+ * ⚡ 性能优化：HTTP配置转换缓存
+ * 缓存已转换的配置，避免重复计算
+ */
+const configConversionCache = new Map<string, any>()
 
 /**
  * 处理添加数据项按钮点击
@@ -854,101 +865,24 @@ const handleDeleteDataItem = (dataSourceKey: string, itemId: string) => {
 /**
  * 从 ConfigurationManager 恢复数据项显示状态
  * 组件初始化或配置变化时调用
+ * ⚡ 性能优化：批量操作、提前返回、减少响应式触发
  */
 const restoreDataItemsFromConfig = () => {
   try {
-    // 重要修复：优先级重排 - ConfigurationManager是最新数据的唯一真实来源
-    let dataSourceConfig: DataSourceConfiguration | undefined = undefined
-
-    // 策略1：优先从ConfigurationManager获取最新配置（导入后的数据在这里）
+    // ✅ 优化1：只查询一次 ConfigurationManager
     const latestConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
+    let dataSourceConfig: DataSourceConfiguration | undefined = latestConfig?.dataSource as DataSourceConfiguration | undefined
 
-    if (latestConfig?.dataSource) {
-      dataSourceConfig = latestConfig.dataSource as DataSourceConfiguration
-    }
-
-    // 策略2：回退到编辑器节点数据（可能是过期数据）
-    else if (editorContext?.getNodeById) {
+    // ✅ 优化2：简化回退逻辑，减少复杂判断
+    if (!dataSourceConfig && editorContext?.getNodeById) {
       const realNode = editorContext.getNodeById(componentInfo.value.componentId)
-
-      // 从节点的dataSource字段读取
-      if (realNode?.dataSource && typeof realNode.dataSource === 'object' && Object.keys(realNode.dataSource).length > 0) {
-        dataSourceConfig = realNode.dataSource as DataSourceConfiguration
-      }
-      // 从metadata.unifiedConfig.dataSource读取
-      else if (realNode?.metadata?.unifiedConfig?.dataSource &&
-               typeof realNode.metadata.unifiedConfig.dataSource === 'object' &&
-               Object.keys(realNode.metadata.unifiedConfig.dataSource).length > 0) {
-        dataSourceConfig = realNode.metadata.unifiedConfig.dataSource as DataSourceConfiguration
-      }
-      // 新增：从 metadata.unifiedConfig 整体配置中提取dataSource（因为新的保存方式）
-      else if (realNode?.metadata?.unifiedConfig &&
-               typeof realNode.metadata.unifiedConfig === 'object' &&
-               'dataSource' in realNode.metadata.unifiedConfig &&
-               realNode.metadata.unifiedConfig.dataSource &&
-               typeof realNode.metadata.unifiedConfig.dataSource === 'object' &&
-               Object.keys(realNode.metadata.unifiedConfig.dataSource).length > 0) {
-        dataSourceConfig = realNode.metadata.unifiedConfig.dataSource as DataSourceConfiguration
-      }
+      dataSourceConfig = realNode?.dataSource || realNode?.metadata?.unifiedConfig?.dataSource
     }
 
-    if (dataSourceConfig?.dataSources) {
-      // 清空现有显示状态
-      Object.keys(dataSourceItems).forEach(key => {
-        dataSourceItems[key] = []
-      })
-      // 修复：清空现有合并策略
-      Object.keys(mergeStrategies).forEach(key => {
-        delete mergeStrategies[key]
-      })
-
-      // 遍历配置中的数据源，恢复到显示状态
-      dataSourceConfig.dataSources.forEach(dataSource => {
-        const { sourceId, dataItems: configDataItems, mergeStrategy } = dataSource
-
-        if (!dataSourceItems[sourceId]) {
-          dataSourceItems[sourceId] = []
-        }
-
-        // 修复：恢复合并策略，避免无限循环
-        mergeStrategies[sourceId] = mergeStrategy || { type: 'object' }
-
-        // 关键修复：处理不同的数据项格式
-        if (configDataItems && Array.isArray(configDataItems)) {
-          configDataItems.forEach((configItem, index) => {
-            try {
-              // 检查是否是标准的 {item, processing} 结构
-              if (configItem && typeof configItem === 'object' && 'item' in configItem) {
-                // 标准结构，直接转换
-                const displayItem = convertConfigItemToDisplay(configItem, index)
-                dataSourceItems[sourceId].push(displayItem)
-              } else {
-                // 可能是导入的原始结构，需要包装
-                const wrappedItem = {
-                  item: configItem,
-                  processing: {
-                    filterPath: '$',
-                    customScript: undefined,
-                    defaultValue: undefined
-                  }
-                }
-                const displayItem = convertConfigItemToDisplay(wrappedItem, index)
-                dataSourceItems[sourceId].push(displayItem)
-              }
-            } catch (itemError) {
-              console.error(`❌ [restoreDataItemsFromConfig] 处理数据项失败:`, {
-                sourceId,
-                index,
-                configItem,
-                error: itemError
-              })
-            }
-          })
-        }
-      })
-    } else {
-      // 如果没有配置，但有数据源选项，初始化空的数据项列表
-      dataSourceOptions.forEach(option => {
+    // ✅ 优化3：提前返回，避免不必要的操作
+    if (!dataSourceConfig?.dataSources || dataSourceConfig.dataSources.length === 0) {
+      // 初始化空数据项列表（只在必要时）
+      dataSourceOptions.value.forEach(option => {
         if (!dataSourceItems[option.value]) {
           dataSourceItems[option.value] = []
         }
@@ -956,94 +890,152 @@ const restoreDataItemsFromConfig = () => {
           mergeStrategies[option.value] = { type: 'object' }
         }
       })
+      return // ✅ 提前返回
     }
-  } catch (error) {}
+
+    // ✅ 优化4：使用临时对象批量收集，减少响应式触发次数
+    const tempItems: Record<string, any[]> = {}
+    const tempStrategies: Record<string, any> = {}
+
+    // 遍历配置中的数据源，收集到临时对象
+    dataSourceConfig.dataSources.forEach(dataSource => {
+      const { sourceId, dataItems: configDataItems, mergeStrategy } = dataSource
+
+      tempItems[sourceId] = []
+      tempStrategies[sourceId] = mergeStrategy || { type: 'object' }
+
+      // 处理数据项
+      if (configDataItems && Array.isArray(configDataItems)) {
+        configDataItems.forEach((configItem, index) => {
+          try {
+            // 检查是否是标准的 {item, processing} 结构
+            if (configItem && typeof configItem === 'object' && 'item' in configItem) {
+              // 标准结构，直接转换
+              const displayItem = convertConfigItemToDisplay(configItem, index)
+              tempItems[sourceId].push(displayItem)
+            } else {
+              // 可能是导入的原始结构，需要包装
+              const wrappedItem = {
+                item: configItem,
+                processing: {
+                  filterPath: '$',
+                  customScript: undefined,
+                  defaultValue: undefined
+                }
+              }
+              const displayItem = convertConfigItemToDisplay(wrappedItem, index)
+              tempItems[sourceId].push(displayItem)
+            }
+          } catch (itemError) {
+            console.error(`❌ [restoreDataItemsFromConfig] 处理数据项失败:`, {
+              sourceId,
+              index,
+              configItem,
+              error: itemError
+            })
+          }
+        })
+      }
+    })
+
+    // ✅ 优化5：一次性赋值，减少响应式触发
+    // 清空旧数据
+    Object.keys(dataSourceItems).forEach(key => {
+      delete dataSourceItems[key]
+    })
+    Object.keys(mergeStrategies).forEach(key => {
+      delete mergeStrategies[key]
+    })
+
+    // 批量赋值新数据
+    Object.assign(dataSourceItems, tempItems)
+    Object.assign(mergeStrategies, tempStrategies)
+
+  } catch (error) {
+    console.error('❌ [restoreDataItemsFromConfig] 恢复配置失败:', error)
+  }
 }
 
 /**
- * 新增：智能检测参数是否应该是动态参数
- * 防御性编程：即使isDynamic为false，但有绑定关系特征时自动修正为true
+ * ⚡ 性能优化：合并智能检测和保护逻辑，减少重复遍历
+ * 检测参数是否为动态参数并保护绑定路径
  */
-const detectIsDynamicParameter = (param: any): boolean => {
-  // 关键修复：检测明显的绑定特征，不依赖于原始isDynamic值
+const processAndProtectParameter = (param: any): any => {
+  // ✅ 优化：一次性检测所有绑定特征
   const hasBindingFeatures =
-    // 特征1：valueMode为component（最强特征）
     param.valueMode === 'component' ||
-    // 特征2：selectedTemplate为组件属性绑定（最强特征）
     param.selectedTemplate === 'component-property-binding' ||
-    // 特征3：value值看起来像绑定路径（包含.且格式正确）
-    (typeof param.value === 'string' &&
-     param.value.includes('.') &&
-     param.value.split('.').length >= 3 &&
-     // 修复：降低长度要求，因为 "__CURRENT_COMPONENT__.base.deviceId" 可能不够长
-     param.value.length > 15) ||
-    // 特征4：有variableName且包含组件ID格式
-    (param.variableName && param.variableName.includes('_') && param.variableName.length > 5) ||
-    // 特征5：description包含"绑定"关键词
-    (param.description && (
-      param.description.includes('绑定') ||
-      param.description.includes('属性') ||
-      param.description.includes('component')
-    ))
+    (typeof param.value === 'string' && param.value.includes('.') && param.value.length > 15)
 
-  // 关键修复：如果检测到绑定特征，直接返回true，忽略原始isDynamic设置
-  if (hasBindingFeatures) {
-    return true
+  // ✅ 优化：检测绑定路径是否被损坏
+  const isBindingCorrupted =
+    param.value &&
+    typeof param.value === 'string' &&
+    !param.value.includes('.') &&
+    param.value.length < 10 &&
+    param.variableName &&
+    param.variableName.includes('_')
+
+  // ✅ 如果已经正确，直接返回
+  if (hasBindingFeatures && param.isDynamic && param.value?.includes('.') && !isBindingCorrupted) {
+    return param
   }
 
-  // 如果没有绑定特征，保持原始设置或默认为false
-  const result = param.isDynamic !== undefined ? param.isDynamic : false
+  // ✅ 需要修正的情况
+  if (isBindingCorrupted && param.variableName) {
+    const lastUnderscoreIndex = param.variableName.lastIndexOf('_')
+    if (lastUnderscoreIndex > 0) {
+      const componentId = param.variableName.substring(0, lastUnderscoreIndex)
+      const propertyName = param.variableName.substring(lastUnderscoreIndex + 1)
+      return {
+        ...param,
+        value: `${componentId}.base.${propertyName}`,
+        isDynamic: true
+      }
+    }
+  }
 
-  return result
+  // ✅ 设置正确的 isDynamic 状态
+  if (hasBindingFeatures && !param.isDynamic) {
+    return { ...param, isDynamic: true }
+  }
+
+  return param
 }
 
 /**
- * 新增：保护HTTP参数的绑定路径不被意外覆盖
- * 这是一个防御性机制，确保即使配置管理过程中出现问题，绑定路径也不会被损坏
+ * ⚡ 性能优化：批量处理参数数组
  */
-const protectParameterBindingPaths = (params: any[]): any[] => {
+const processAndProtectParameters = (params: any[]): any[] => {
   if (!params || !Array.isArray(params)) return params
+  return params.map(processAndProtectParameter)
+}
 
-  return params.map(param => {
-    // 只保护已设置绑定关系的参数
-    if (!param.isDynamic && !param.selectedTemplate && !param.valueMode) {
-      return param
-    }
+/**
+ * 保留原函数名作为兼容性包装（向后兼容）
+ */
+const detectIsDynamicParameter = (param: any): boolean => {
+  return processAndProtectParameter(param).isDynamic || false
+}
 
-    // 检测绑定路径是否被损坏
-    const isBindingCorrupted = param.value &&
-      typeof param.value === 'string' &&
-      !param.value.includes('.') &&
-      param.value.length < 10 &&
-      param.variableName &&
-      param.variableName.includes('_')
-
-    if (isBindingCorrupted) {
-      // 从variableName重建正确的绑定路径
-      if (param.variableName.includes('_')) {
-        const lastUnderscoreIndex = param.variableName.lastIndexOf('_')
-        if (lastUnderscoreIndex > 0) {
-          const componentId = param.variableName.substring(0, lastUnderscoreIndex)
-          const propertyName = param.variableName.substring(lastUnderscoreIndex + 1)
-          const reconstructedPath = `${componentId}.base.${propertyName}`
-
-          return {
-            ...param,
-            value: reconstructedPath,
-            isDynamic: true // 确保设置为动态
-          }
-        }
-      }
-    }
-
-    return param
-  })
+const protectParameterBindingPaths = (params: any[]): any[] => {
+  return processAndProtectParameters(params)
 }
 
 /**
  * 将配置格式的数据项转换为显示格式
+ * ⚡ 性能优化：使用缓存避免重复转换
  */
 const convertConfigItemToDisplay = (configItem: any, index: number) => {
+  // ✅ 优化：生成缓存键（基于配置内容）
+  const cacheKey = `${JSON.stringify(configItem)}-${index}`
+
+  // ✅ 优化：检查缓存
+  if (configConversionCache.has(cacheKey)) {
+    // 返回缓存的深拷贝，避免引用共享
+    return smartDeepClone(configConversionCache.get(cacheKey))
+  }
+
   const { item, processing } = configItem
 
   // 根据数据项类型转换
@@ -1169,25 +1161,19 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
     scriptCode: processing.customScript || '',
     defaultValue: processing.defaultValue || ''
   }
+
+  // ✅ 优化：缓存转换结果
+  configConversionCache.set(cacheKey, smartDeepClone(displayConfig))
+
   return displayConfig
 }
 
 // 组件挂载时恢复显示状态并设置集成
+// ⚡ 性能优化：使用延迟加载和懒初始化策略，避免阻塞UI渲染
 onMounted(async () => {
   try {
-    // 新架构：初始化配置集成桥接器
+    // ✅ 阶段1：关键初始化（必须同步完成）
     await configurationManager.initialize()
-
-    // 🚀 首先检查并初始化Card2.1 Core响应式数据管理
-    checkCard2CoreReactiveSupport()
-    if (useCard2CoreReactiveData.value) {
-      await initializeCard2CoreReactiveData()
-    }
-
-    // 为当前组件设置数据源执行集成
-    if ('setupComponentDataSourceIntegration' in configurationManager) {
-      ;(configurationManager as any).setupComponentDataSourceIntegration(componentInfo.value.componentId)
-    }
 
     // 修复：确保组件配置存在，如果不存在则初始化
     let existingConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
@@ -1195,6 +1181,14 @@ onMounted(async () => {
       configurationManager.initializeConfiguration(componentInfo.value.componentId)
       existingConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
     }
+
+    // 为当前组件设置数据源执行集成
+    if ('setupComponentDataSourceIntegration' in configurationManager) {
+      ;(configurationManager as any).setupComponentDataSourceIntegration(componentInfo.value.componentId)
+    }
+
+    // ✅ 阶段2：使用 nextTick 延迟配置同步和恢复（优先显示）
+    await nextTick()
 
     // 关键修复：如果ConfigurationManager的配置是空的，但编辑器节点有数据，则同步
     if (existingConfig && (!existingConfig.dataSource || Object.keys(existingConfig.dataSource).length === 0)) {
@@ -1216,18 +1210,44 @@ onMounted(async () => {
       }
     }
 
-    // 恢复显示状态
+    // 恢复显示状态（关键路径）
     restoreDataItemsFromConfig()
 
-    // 初始化组件轮询
-    initializeComponentPolling()
+    // ✅ 阶段3：使用 requestIdleCallback 或 setTimeout 延迟低优先级操作
+    const delayedInitialization = () => {
+      // 🚀 Card2.1 Core响应式数据管理（低优先级）
+      checkCard2CoreReactiveSupport()
+      if (useCard2CoreReactiveData.value) {
+        initializeCard2CoreReactiveData()
+      }
+
+      // 初始化组件轮询（低优先级）
+      initializeComponentPolling()
+    }
+
+    // 优先使用 requestIdleCallback，降级使用 setTimeout
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(delayedInitialization, { timeout: 2000 })
+    } else {
+      setTimeout(delayedInitialization, 100)
+    }
+
   } catch (error) {
+    console.error('❌ [SimpleConfigurationEditor] 初始化失败:', error)
     // 降级处理：即使配置管理器初始化失败，也尝试恢复显示状态
     try {
       restoreDataItemsFromConfig()
-      // 即使配置恢复失败，也尝试初始化轮询
-      initializeComponentPolling()
-    } catch (fallbackError) {}
+      // 即使配置恢复失败，也尝试初始化轮询（延迟执行）
+      setTimeout(() => {
+        try {
+          initializeComponentPolling()
+        } catch (pollingError) {
+          console.error('❌ [SimpleConfigurationEditor] 轮询初始化失败:', pollingError)
+        }
+      }, 100)
+    } catch (fallbackError) {
+      console.error('❌ [SimpleConfigurationEditor] 降级处理失败:', fallbackError)
+    }
   }
 })
 
@@ -1244,6 +1264,9 @@ onUnmounted(() => {
       if (process.env.NODE_ENV === 'development') {
       }
     })
+
+    // ⚡ 性能优化：清理配置转换缓存
+    configConversionCache.clear()
   } catch (error) {
     console.error('清理轮询任务失败:', error)
   }
@@ -1277,6 +1300,58 @@ const getCurrentDataSourceExampleData = () => {
   const exampleData = currentDataSource?.originalData?.example
 
   return exampleData
+}
+
+/**
+ * 计算属性：是否应该显示示例数据图标
+ * 只在 JSON 模式下显示
+ */
+const shouldShowExampleDataIcon = computed(() => {
+  // 检查是否有示例数据
+  const hasExampleData = !!getCurrentDataSourceExampleData()
+  // 检查当前选择的是否为 JSON 模式
+  const isJsonMode = currentSelectedMethod.value === 'json'
+  return hasExampleData && isJsonMode
+})
+
+/**
+ * 复制示例数据到剪贴板（用于抽屉标题）
+ */
+const copyExampleDataToClipboard = async () => {
+  const exampleData = getCurrentDataSourceExampleData()
+  if (!exampleData) {
+    message.warning('没有可复制的示例数据')
+    return
+  }
+
+  try {
+    const jsonString = JSON.stringify(exampleData, null, 2)
+    await navigator.clipboard.writeText(jsonString)
+    message.success('示例数据已复制到剪贴板')
+  } catch (error) {
+    console.error('复制失败:', error)
+    message.error('复制失败，请手动复制')
+  }
+}
+
+/**
+ * 复制数据源选项的示例数据到剪贴板（用于折叠面板）
+ */
+const copyDataSourceExampleToClipboard = async (dataSourceOption: any) => {
+  const exampleData = dataSourceOption?.originalData?.config?.exampleData || dataSourceOption?.originalData?.example
+  if (!exampleData) {
+    message.warning('没有可复制的示例数据')
+    return
+  }
+
+  try {
+    const jsonString = JSON.stringify(exampleData, null, 2)
+    await navigator.clipboard.writeText(jsonString)
+    message.success('示例数据已复制到剪贴板')
+  } catch (error) {
+    console.error('复制失败:', error)
+    message.error('复制失败，请手动复制')
+  }
 }
 
 // 新UI辅助方法
@@ -1823,11 +1898,27 @@ defineExpose({
                 </n-icon>
               </template>
               <div class="example-data-tooltip">
-                <div class="tooltip-title">
-                  <n-icon size="14" style="margin-right: 4px">
-                    <DocumentTextOutline />
-                  </n-icon>
-                  示例数据
+                <div class="tooltip-header">
+                  <div class="tooltip-title">
+                    <n-icon size="14" style="margin-right: 4px">
+                      <DocumentTextOutline />
+                    </n-icon>
+                    示例数据
+                  </div>
+                  <n-button
+                    size="tiny"
+                    text
+                    type="primary"
+                    @click="copyDataSourceExampleToClipboard(dataSourceOption)"
+                    class="copy-button"
+                  >
+                    <template #icon>
+                      <n-icon size="14">
+                        <CopyOutlined />
+                      </n-icon>
+                    </template>
+                    复制
+                  </n-button>
                 </div>
                 <pre class="example-data-content">{{
                   JSON.stringify(
@@ -1998,7 +2089,55 @@ defineExpose({
       placement="right"
       class="raw-data-config-drawer"
     >
-      <n-drawer-content title="数据项配置" closable>
+      <n-drawer-content closable>
+        <!-- 自定义标题：包含文本和示例数据图标 -->
+        <template #header>
+          <div class="drawer-header-with-icon">
+            <span>数据项配置</span>
+            <n-tooltip
+              v-if="shouldShowExampleDataIcon"
+              trigger="hover"
+              placement="bottom"
+              :style="{ maxWidth: '400px' }"
+            >
+              <template #trigger>
+                <n-icon
+                  size="16"
+                  class="example-data-icon-in-title"
+                  :style="{ color: 'var(--info-color)', cursor: 'pointer', marginLeft: '8px' }"
+                >
+                  <DocumentTextOutline />
+                </n-icon>
+              </template>
+              <div class="example-data-tooltip">
+                <div class="tooltip-header">
+                  <div class="tooltip-title">
+                    <n-icon size="14" style="margin-right: 4px">
+                      <DocumentTextOutline />
+                    </n-icon>
+                    示例数据
+                  </div>
+                  <n-button
+                    size="tiny"
+                    text
+                    type="primary"
+                    @click="copyExampleDataToClipboard"
+                    class="copy-button"
+                  >
+                    <template #icon>
+                      <n-icon size="14">
+                        <CopyOutlined />
+                      </n-icon>
+                    </template>
+                    复制
+                  </n-button>
+                </div>
+                <pre class="example-data-content">{{ JSON.stringify(getCurrentDataSourceExampleData(), null, 2) }}</pre>
+              </div>
+            </n-tooltip>
+          </div>
+        </template>
+
         <RawDataConfigModal
           :show="true"
           :data-source-key="currentDataSourceKey"
@@ -2275,18 +2414,58 @@ defineExpose({
   opacity: 1;
 }
 
+/* 抽屉标题布局 */
+.drawer-header-with-icon {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* 抽屉标题中的示例数据图标 */
+.example-data-icon-in-title {
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.example-data-icon-in-title:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
 /* 示例数据提示框样式 */
 .example-data-tooltip {
   max-width: 400px;
 }
 
-.tooltip-title {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--info-color);
+/* 提示框头部：标题和复制按钮 */
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 8px;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 4px;
+}
+
+.tooltip-title {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--info-color);
+}
+
+/* 复制按钮样式 */
+.copy-button {
+  font-size: 12px;
+  padding: 2px 8px;
+  transition: all 0.2s;
+}
+
+.copy-button:hover {
+  transform: translateY(-1px);
 }
 
 .example-data-content {
