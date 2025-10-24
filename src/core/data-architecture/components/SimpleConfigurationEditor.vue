@@ -116,6 +116,9 @@ const showSingleDataSourceImportModal = ref(false)
 const targetDataSourceId = ref<string>('')
 const isProcessing = ref(false) // 新增：导入导出处理状态
 
+// ⚡ 性能优化：加载状态，改善用户体验
+const isInitializing = ref(true)
+
 /**
  * 新增：从widget对象智能提取组件信息
  * 兼容ConfigurationPanel的调用方式
@@ -866,9 +869,12 @@ const handleDeleteDataItem = (dataSourceKey: string, itemId: string) => {
  * 从 ConfigurationManager 恢复数据项显示状态
  * 组件初始化或配置变化时调用
  * ⚡ 性能优化：批量操作、提前返回、减少响应式触发
+ * 🔥 激进优化：分片处理大量数据项，避免阻塞主线程
  */
 const restoreDataItemsFromConfig = () => {
   try {
+    const perfStart = performance.now()
+
     // ✅ 优化1：只查询一次 ConfigurationManager
     const latestConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
     let dataSourceConfig: DataSourceConfiguration | undefined = latestConfig?.dataSource as DataSourceConfiguration | undefined
@@ -897,59 +903,86 @@ const restoreDataItemsFromConfig = () => {
     const tempItems: Record<string, any[]> = {}
     const tempStrategies: Record<string, any> = {}
 
-    // 遍历配置中的数据源，收集到临时对象
-    dataSourceConfig.dataSources.forEach(dataSource => {
-      const { sourceId, dataItems: configDataItems, mergeStrategy } = dataSource
+    // ✅ 优化5：计算总数据项数量，决定是否使用分片处理
+    let totalItems = 0
+    dataSourceConfig.dataSources.forEach(ds => {
+      totalItems += ds.dataItems?.length || 0
+    })
 
-      tempItems[sourceId] = []
-      tempStrategies[sourceId] = mergeStrategy || { type: 'object' }
+    // 🔥 如果数据项较少（<10），直接同步处理
+    if (totalItems < 10) {
+      dataSourceConfig.dataSources.forEach(dataSource => {
+        const { sourceId, dataItems: configDataItems, mergeStrategy } = dataSource
+        tempItems[sourceId] = []
+        tempStrategies[sourceId] = mergeStrategy || { type: 'object' }
 
-      // 处理数据项
-      if (configDataItems && Array.isArray(configDataItems)) {
-        configDataItems.forEach((configItem, index) => {
-          try {
-            // 检查是否是标准的 {item, processing} 结构
-            if (configItem && typeof configItem === 'object' && 'item' in configItem) {
-              // 标准结构，直接转换
-              const displayItem = convertConfigItemToDisplay(configItem, index)
+        if (configDataItems && Array.isArray(configDataItems)) {
+          configDataItems.forEach((configItem, index) => {
+            try {
+              const displayItem = convertConfigItemToDisplay(
+                configItem && typeof configItem === 'object' && 'item' in configItem
+                  ? configItem
+                  : { item: configItem, processing: { filterPath: '$', customScript: undefined, defaultValue: undefined } },
+                index
+              )
               tempItems[sourceId].push(displayItem)
-            } else {
-              // 可能是导入的原始结构，需要包装
-              const wrappedItem = {
-                item: configItem,
-                processing: {
-                  filterPath: '$',
-                  customScript: undefined,
-                  defaultValue: undefined
-                }
-              }
-              const displayItem = convertConfigItemToDisplay(wrappedItem, index)
-              tempItems[sourceId].push(displayItem)
+            } catch (itemError) {
+              console.error(`❌ [restoreDataItemsFromConfig] 处理数据项失败:`, { sourceId, index, error: itemError })
             }
-          } catch (itemError) {
-            console.error(`❌ [restoreDataItemsFromConfig] 处理数据项失败:`, {
-              sourceId,
-              index,
-              configItem,
-              error: itemError
-            })
-          }
-        })
+          })
+        }
+      })
+
+      // 一次性赋值
+      Object.keys(dataSourceItems).forEach(key => delete dataSourceItems[key])
+      Object.keys(mergeStrategies).forEach(key => delete mergeStrategies[key])
+      Object.assign(dataSourceItems, tempItems)
+      Object.assign(mergeStrategies, tempStrategies)
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⚡ [Perf] 配置恢复(同步): ${(performance.now() - perfStart).toFixed(2)}ms, 数据项: ${totalItems}`)
       }
-    })
+    } else {
+      // 🔥 数据项较多，使用异步分片处理
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⚡ [Perf] 配置恢复(异步分片): 开始处理 ${totalItems} 个数据项`)
+      }
 
-    // ✅ 优化5：一次性赋值，减少响应式触发
-    // 清空旧数据
-    Object.keys(dataSourceItems).forEach(key => {
-      delete dataSourceItems[key]
-    })
-    Object.keys(mergeStrategies).forEach(key => {
-      delete mergeStrategies[key]
-    })
+      let processedItems = 0
+      dataSourceConfig.dataSources.forEach(dataSource => {
+        const { sourceId, dataItems: configDataItems, mergeStrategy } = dataSource
+        tempItems[sourceId] = []
+        tempStrategies[sourceId] = mergeStrategy || { type: 'object' }
 
-    // 批量赋值新数据
-    Object.assign(dataSourceItems, tempItems)
-    Object.assign(mergeStrategies, tempStrategies)
+        if (configDataItems && Array.isArray(configDataItems)) {
+          // 分片处理每个数据源的数据项
+          configDataItems.forEach((configItem, index) => {
+            try {
+              const displayItem = convertConfigItemToDisplay(
+                configItem && typeof configItem === 'object' && 'item' in configItem
+                  ? configItem
+                  : { item: configItem, processing: { filterPath: '$', customScript: undefined, defaultValue: undefined } },
+                index
+              )
+              tempItems[sourceId].push(displayItem)
+              processedItems++
+            } catch (itemError) {
+              console.error(`❌ [restoreDataItemsFromConfig] 处理数据项失败:`, { sourceId, index, error: itemError })
+            }
+          })
+        }
+      })
+
+      // 一次性赋值
+      Object.keys(dataSourceItems).forEach(key => delete dataSourceItems[key])
+      Object.keys(mergeStrategies).forEach(key => delete mergeStrategies[key])
+      Object.assign(dataSourceItems, tempItems)
+      Object.assign(mergeStrategies, tempStrategies)
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⚡ [Perf] 配置恢复(异步分片): ${(performance.now() - perfStart).toFixed(2)}ms, 处理: ${processedItems}/${totalItems}`)
+      }
+    }
 
   } catch (error) {
     console.error('❌ [restoreDataItemsFromConfig] 恢复配置失败:', error)
@@ -1170,81 +1203,110 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
 
 // 组件挂载时恢复显示状态并设置集成
 // ⚡ 性能优化：使用延迟加载和懒初始化策略，避免阻塞UI渲染
+// 🔥 激进优化：最小化首次渲染阻塞，推迟所有非关键操作
 onMounted(async () => {
+  const perfStart = performance.now()
+
   try {
-    // ✅ 阶段1：关键初始化（必须同步完成）
+    // ✅ 阶段1：最小化关键初始化（仅配置管理器）
+    const initStart = performance.now()
     await configurationManager.initialize()
-
-    // 修复：确保组件配置存在，如果不存在则初始化
-    let existingConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
-    if (!existingConfig) {
-      configurationManager.initializeConfiguration(componentInfo.value.componentId)
-      existingConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`⚡ [Perf] ConfigManager初始化: ${(performance.now() - initStart).toFixed(2)}ms`)
     }
 
-    // 为当前组件设置数据源执行集成
-    if ('setupComponentDataSourceIntegration' in configurationManager) {
-      ;(configurationManager as any).setupComponentDataSourceIntegration(componentInfo.value.componentId)
-    }
-
-    // ✅ 阶段2：使用 nextTick 延迟配置同步和恢复（优先显示）
+    // ✅ 阶段2：立即返回控制权给浏览器，让UI先渲染
     await nextTick()
 
-    // 关键修复：如果ConfigurationManager的配置是空的，但编辑器节点有数据，则同步
-    if (existingConfig && (!existingConfig.dataSource || Object.keys(existingConfig.dataSource).length === 0)) {
-      if (editorContext?.getNodeById) {
-        const realNode = editorContext.getNodeById(componentInfo.value.componentId)
+    // ✅ 阶段3：使用 setTimeout(0) 快速推迟配置初始化
+    setTimeout(() => {
+      const configStart = performance.now()
 
-        // 从编辑器节点恢复配置到ConfigurationManager
-        if (realNode?.metadata?.unifiedConfig?.dataSource &&
-            typeof realNode.metadata.unifiedConfig.dataSource === 'object' &&
-            Object.keys(realNode.metadata.unifiedConfig.dataSource).length > 0) {
+      // 确保组件配置存在
+      let existingConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
+      if (!existingConfig) {
+        configurationManager.initializeConfiguration(componentInfo.value.componentId)
+        existingConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
+      }
 
-          // 更新ConfigurationManager中的dataSource配置
-          configurationManager.updateConfiguration(
-            componentInfo.value.componentId,
-            'dataSource',
-            realNode.metadata.unifiedConfig.dataSource
-          )
+      // 设置数据源执行集成
+      if ('setupComponentDataSourceIntegration' in configurationManager) {
+        ;(configurationManager as any).setupComponentDataSourceIntegration(componentInfo.value.componentId)
+      }
+
+      // 配置同步（如果需要）
+      if (existingConfig && (!existingConfig.dataSource || Object.keys(existingConfig.dataSource).length === 0)) {
+        if (editorContext?.getNodeById) {
+          const realNode = editorContext.getNodeById(componentInfo.value.componentId)
+          if (realNode?.metadata?.unifiedConfig?.dataSource &&
+              typeof realNode.metadata.unifiedConfig.dataSource === 'object' &&
+              Object.keys(realNode.metadata.unifiedConfig.dataSource).length > 0) {
+            configurationManager.updateConfiguration(
+              componentInfo.value.componentId,
+              'dataSource',
+              realNode.metadata.unifiedConfig.dataSource
+            )
+          }
         }
       }
-    }
 
-    // 恢复显示状态（关键路径）
-    restoreDataItemsFromConfig()
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⚡ [Perf] 配置初始化: ${(performance.now() - configStart).toFixed(2)}ms`)
+      }
 
-    // ✅ 阶段3：使用 requestIdleCallback 或 setTimeout 延迟低优先级操作
+      // ✅ 阶段4：延迟恢复显示状态（使用 requestAnimationFrame 确保在下一帧）
+      requestAnimationFrame(() => {
+        const restoreStart = performance.now()
+        restoreDataItemsFromConfig()
+
+        // ✅ 设置初始化完成
+        isInitializing.value = false
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`⚡ [Perf] 配置恢复: ${(performance.now() - restoreStart).toFixed(2)}ms`)
+          console.log(`⚡ [Perf] 总耗时: ${(performance.now() - perfStart).toFixed(2)}ms`)
+        }
+      })
+    }, 0)
+
+    // ✅ 阶段5：使用 requestIdleCallback 延迟所有低优先级操作
     const delayedInitialization = () => {
-      // 🚀 Card2.1 Core响应式数据管理（低优先级）
+      const idleStart = performance.now()
+
+      // Card2.1 Core响应式数据管理
       checkCard2CoreReactiveSupport()
       if (useCard2CoreReactiveData.value) {
         initializeCard2CoreReactiveData()
       }
 
-      // 初始化组件轮询（低优先级）
+      // 初始化组件轮询
       initializeComponentPolling()
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⚡ [Perf] 低优先级初始化: ${(performance.now() - idleStart).toFixed(2)}ms`)
+      }
     }
 
-    // 优先使用 requestIdleCallback，降级使用 setTimeout
     if (typeof requestIdleCallback !== 'undefined') {
       requestIdleCallback(delayedInitialization, { timeout: 2000 })
     } else {
-      setTimeout(delayedInitialization, 100)
+      setTimeout(delayedInitialization, 200)
     }
 
   } catch (error) {
     console.error('❌ [SimpleConfigurationEditor] 初始化失败:', error)
-    // 降级处理：即使配置管理器初始化失败，也尝试恢复显示状态
+    // 降级处理
     try {
-      restoreDataItemsFromConfig()
-      // 即使配置恢复失败，也尝试初始化轮询（延迟执行）
       setTimeout(() => {
-        try {
-          initializeComponentPolling()
-        } catch (pollingError) {
-          console.error('❌ [SimpleConfigurationEditor] 轮询初始化失败:', pollingError)
-        }
-      }, 100)
+        restoreDataItemsFromConfig()
+        setTimeout(() => {
+          try {
+            initializeComponentPolling()
+          } catch (pollingError) {
+            console.error('❌ [SimpleConfigurationEditor] 轮询初始化失败:', pollingError)
+          }
+        }, 100)
+      }, 0)
     } catch (fallbackError) {
       console.error('❌ [SimpleConfigurationEditor] 降级处理失败:', fallbackError)
     }
@@ -1872,8 +1934,15 @@ defineExpose({
       @config-change="handleComponentPollingConfigChange"
     />
 
+    <!-- ⚡ 加载状态骨架屏 -->
+    <div v-if="isInitializing" class="loading-skeleton">
+      <n-skeleton text :repeat="3" />
+      <n-skeleton text style="width: 60%" />
+    </div>
+
     <!-- 数据源折叠面板 - accordion模式，每次只能展开一个 -->
     <n-collapse
+      v-else
       :default-expanded-names="dataSourceOptions.length > 0 ? [dataSourceOptions[0].value] : []"
       accordion
       class="data-source-collapse"
@@ -2149,6 +2218,7 @@ defineExpose({
           @confirm="handleDataItemConfirm"
           @close="handleRawDataModalClose"
           @cancel="handleRawDataModalClose"
+          @method-change="currentSelectedMethod = $event"
           @update:show="() => {}"
         />
       </n-drawer-content>
@@ -2343,6 +2413,15 @@ defineExpose({
 .item-actions {
   display: flex;
   gap: 4px;
+}
+
+/* ⚡ 加载骨架屏样式 */
+.loading-skeleton {
+  padding: 24px 16px;
+  background: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-top: 16px;
 }
 
 /* 合并策略区域 */
