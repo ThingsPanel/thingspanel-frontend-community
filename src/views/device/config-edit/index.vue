@@ -327,7 +327,7 @@ function handleDeviceTypeChange(newValue: string | number) {
 
 <template>
   <div class="overflow-y-auto">
-    <NCard :title="`${$t(modalTitle)}${$t('custom.devicePage.deviceConfig')}`">
+    <NCard :title="`${$t(modalTitle)}${$t('card.deviceTemplate')}`">
       <NForm ref="configFormRef" :model="configForm" :rules="configFormRules" label-placement="left" label-width="auto">
         <!-- 第一个文件中的原表单项 -->
         <NFormItem :label="$t('generate.device-configuration-name')" path="name" class="w-[600px]">
