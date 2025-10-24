@@ -330,7 +330,32 @@ const handleContextMenuAction = (action: string) => {
       // TODO: 实现图层管理
       break
     case 'lock':
-      // TODO: 实现锁定功能
+      // 锁定选中的组件
+      if (selectedIds.value.length > 0) {
+        const nodeId = selectedIds.value[0]
+        const node = stateManager.getNode(nodeId)
+        if (node) {
+          // 设置锁定标记
+          node._isLocked = true
+          // 更新节点，触发响应式更新
+          stateManager.updateNode(nodeId, { ...node })
+        }
+      }
+      closeContextMenu()
+      break
+    case 'unlock':
+      // 解锁选中的组件
+      if (selectedIds.value.length > 0) {
+        const nodeId = selectedIds.value[0]
+        const node = stateManager.getNode(nodeId)
+        if (node) {
+          // 移除锁定标记
+          node._isLocked = false
+          // 更新节点，触发响应式更新
+          stateManager.updateNode(nodeId, { ...node })
+        }
+      }
+      closeContextMenu()
       break
   }
 }

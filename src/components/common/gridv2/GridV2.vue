@@ -84,7 +84,10 @@ function hashLayout(layout: GridLayoutPlusItem[]): string {
       x: Number(item.x) || 0,
       y: Number(item.y) || 0,
       w: Number(item.w) || 0,
-      h: Number(item.h) || 0
+      h: Number(item.h) || 0,
+      // ✅ 添加锁定状态到hash中，使得锁定变化能触发更新
+      locked: (item as any).locked || false,
+      static: (item as any).static || false
     }))
   )
 }
@@ -206,7 +209,11 @@ function normalizeLayout(layout: GridLayoutPlusItem[]): GridStackNode[] {
     minW: item.minW,
     minH: item.minH,
     maxW: item.maxW,
-    maxH: item.maxH
+    maxH: item.maxH,
+    // ✅ 添加锁定属性支持
+    locked: (item as any).locked || false,
+    noMove: (item as any).locked || (item as any).static || false,
+    noResize: (item as any).locked || (item as any).static || false
   }))
 }
 

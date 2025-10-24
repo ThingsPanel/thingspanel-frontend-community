@@ -187,8 +187,13 @@ const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[
     // 🔥 修复：在编辑模式下，优先保证组件可交互
     // 只有在明确禁用（值为 false）时才禁用交互，undefined 时默认允许
     const effectiveStatic = props.staticGrid || (props.gridConfig?.staticGrid ?? false)
-    const allowDrag = !isReadOnly.value && !effectiveStatic && (props.gridConfig?.isDraggable !== false)
-    const allowResize = !isReadOnly.value && !effectiveStatic && (props.gridConfig?.isResizable !== false)
+
+    // ✅ 检查节点是否被锁定
+    const isLocked = (node as any)._isLocked === true
+
+    // ✅ 如果节点被锁定，禁止拖动和调整大小
+    const allowDrag = !isReadOnly.value && !effectiveStatic && !isLocked && (props.gridConfig?.isDraggable !== false)
+    const allowResize = !isReadOnly.value && !effectiveStatic && !isLocked && (props.gridConfig?.isResizable !== false)
 
     const item = {
       i: node.id,
@@ -196,9 +201,10 @@ const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[
       y: node.layout?.gridstack?.y ?? 0,
       w: node.layout?.gridstack?.w ?? 4,
       h: node.layout?.gridstack?.h ?? 2,
-      static: effectiveStatic,
+      static: effectiveStatic || isLocked, // ✅ 锁定的组件设置为 static
       isDraggable: allowDrag,
       isResizable: allowResize,
+      locked: isLocked, // ✅ 添加 locked 属性
       type: node.type,
       raw: node
     } as ExtendedGridLayoutPlusItem
@@ -325,6 +331,11 @@ const handleContextMenuSelect = (action: string) => {
       // 🔥 使用智能深拷贝，自动处理Vue响应式对象
       const newNode = smartDeepClone(widget)
       newNode.id = `${newNode.type}_${nanoid()}`
+
+      // ✅ 复制时移除锁定状态，让用户可以立即调整位置
+      // 参考 Figma、Sketch、Adobe XD 等设计工具的行业惯例
+      delete (newNode as any)._isLocked
+
       if (newNode.layout?.gridstack) {
         newNode.layout.gridstack.y += 1
       }
@@ -336,6 +347,24 @@ const handleContextMenuSelect = (action: string) => {
       break
     case 'settings':
       emit('request-settings', widget.id)
+      break
+    case 'lock':
+      // ✅ 锁定组件：设置 _isLocked 标记
+      if (widget) {
+        // 设置锁定标记
+        ;(widget as any)._isLocked = true
+        // 触发状态更新，watch会自动重新计算layout
+        editorStore.updateNode(widget.id, { ...widget })
+      }
+      break
+    case 'unlock':
+      // ✅ 解锁组件：移除 _isLocked 标记
+      if (widget) {
+        // 移除锁定标记
+        ;(widget as any)._isLocked = false
+        // 触发状态更新，watch会自动重新计算layout
+        editorStore.updateNode(widget.id, { ...widget })
+      }
       break
   }
   closeContextMenu()
