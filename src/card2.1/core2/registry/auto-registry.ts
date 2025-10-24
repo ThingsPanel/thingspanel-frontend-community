@@ -94,26 +94,9 @@ export class AutoRegistry {
             continue
           }
 
-          // 调试信息
-          if (import.meta.env.DEV) {
-            console.log('🔥 [AutoRegistry] 处理组件:', {
-              componentPath,
-              componentId,
-              componentType: definition.type
-            })
-          }
-
           // 根据组件ID获取分类信息
           const categoryInfo = getCategoryFromComponentId(componentId)
 
-          // 调试分类映射结果
-          if (import.meta.env.DEV) {
-            console.log('🔥 [AutoRegistry] 分类映射结果:', {
-              componentId,
-              mainCategory: categoryInfo.mainCategory,
-              subCategory: categoryInfo.subCategory
-            })
-          }
 
           // 增强组件定义
           const enhancedDefinition = {
@@ -139,14 +122,6 @@ export class AutoRegistry {
         console.error(`❌ [AutoRegistry] 组件注册失败: ${componentPath}`, error)
         // 忽略组件注册过程中的错误，继续处理其他组件
       }
-    }
-
-    // 调试总结
-    if (import.meta.env.DEV) {
-      console.log('✅ [AutoRegistry] 注册完成:', {
-        registered: registeredComponents.length,
-        categories: this.categoryTree.map(cat => cat.name)
-      })
     }
 
     return registeredComponents

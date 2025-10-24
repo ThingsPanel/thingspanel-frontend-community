@@ -28,7 +28,6 @@ export async function initializeCore2System() {
 
   core2InitializationPromise = (async () => {
     try {
-      console.log('🚀 [Core2] 开始初始化 Core2 系统...')
 
       // 扫描组件
       const allComponentModules = import.meta.glob('@/card2.1/components/**/index.ts', { eager: true })
@@ -45,11 +44,7 @@ export async function initializeCore2System() {
       LegacyAdapter.initialize()
 
       core2Initialized = true
-
-      console.log('✅ [Core2] Core2 系统初始化完成')
-      console.log('📊 [Core2] 系统状态:', componentRegistry.getStats())
     } catch (err) {
-      console.error('❌ [Core2] 初始化失败:', err)
       throw err
     } finally {
       core2InitializationPromise = null

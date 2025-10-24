@@ -29,16 +29,10 @@ export async function initializeCard2System() {
 
   initializationPromise = (async () => {
     try {
-      console.log('🔄 [Card2.1] 切换到 Core2 系统...')
-
-      // 使用 Core2 系统进行初始化
       await initializeCore2System()
 
       isInitialized = true
-
-      console.log('✅ [Card2.1] 系统初始化完成（使用 Core2）')
     } catch (err) {
-      console.error('❌ [Card2.1] 初始化失败:', err)
       throw err
     } finally {
       initializationPromise = null

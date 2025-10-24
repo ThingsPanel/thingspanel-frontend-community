@@ -23,14 +23,16 @@ interface FormModel {
   email: string
   phone: string
   code: string
-  pwd: string
+  pwd: string,
+  country_code: string
 }
 
 const model: FormModel = reactive({
   email: '',
   phone: '',
   code: '',
-  pwd: ''
+  pwd: '',
+  country_code: '+86'
 })
 const { label, isCounting, loading: smsLoading, start } = useSmsCode()
 
@@ -71,7 +73,7 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
 
   return {
     email: formRules.email,
-    phone: formRules.phone,
+    phone: formRules.phoneWithCountryCode,
     code: formRules.code,
     pwd: [
       {
@@ -122,7 +124,7 @@ async function handleSubmit() {
       email: model.email,
       verify_code: model.code,
       password: model.pwd,
-      phone_prefix: '+86',
+      phone_prefix: model.country_code,
       phone_number: model.phone
     })) as any
 
@@ -153,6 +155,52 @@ async function handleSubmit() {
     console.error('Registration failed:', error)
   }
 }
+
+const countryCodeOptions = [
+  { label: '+86', value: '+86' },
+  { label: '+1', value: '+1' },
+  { label: '+44', value: '+44' },
+  { label: '+33', value: '+33' },
+  { label: '+49', value: '+49' },
+  { label: '+39', value: '+39' },
+  { label: '+34', value: '+34' },
+  { label: '+7', value: '+7' },
+  { label: '+81', value: '+81' },
+  { label: '+82', value: '+82' },
+  { label: '+65', value: '+65' },
+  { label: '+60', value: '+60' },
+  { label: '+66', value: '+66' },
+  { label: '+84', value: '+84' },
+  { label: '+62', value: '+62' },
+  { label: '+63', value: '+63' },
+  { label: '+91', value: '+91' },
+  { label: '+61', value: '+61' },
+  { label: '+64', value: '+64' },
+  { label: '+55', value: '+55' },
+  { label: '+52', value: '+52' },
+  { label: '+54', value: '+54' },
+  { label: '+27', value: '+27' },
+  { label: '+20', value: '+20' },
+  { label: '+971', value: '+971' },
+  { label: '+966', value: '+966' },
+  { label: '+90', value: '+90' },
+  { label: '+31', value: '+31' },
+  { label: '+46', value: '+46' },
+  { label: '+47', value: '+47' },
+  { label: '+45', value: '+45' },
+  { label: '+41', value: '+41' },
+  { label: '+43', value: '+43' },
+  { label: '+32', value: '+32' },
+  { label: '+351', value: '+351' },
+  { label: '+30', value: '+30' },
+  { label: '+48', value: '+48' },
+  { label: '+420', value: '+420' },
+  { label: '+36', value: '+36' },
+  { label: '+385', value: '+385' },
+  { label: '+852', value: '+852' },
+  { label: '+853', value: '+853' },
+  { label: '+886', value: '+886' }
+]
 </script>
 
 <template>
@@ -182,7 +230,16 @@ async function handleSubmit() {
       </div>
     </NFormItem>
     <NFormItem path="phone">
-      <NInput v-model:value="model.phone" :placeholder="$t('page.login.common.phonePlaceholder')" autocomplete="off" />
+      <div class="flex gap-2">
+            <NSelect
+              v-model:value="model.country_code"
+              :options="countryCodeOptions"
+              class="w-32"
+              :placeholder="$t('page.login.common.countryCodePlaceholder')"
+            />
+            <NInput v-model:value="model.phone" :placeholder="$t('page.login.common.phonePlaceholder')" autocomplete="off" />
+          </div>
+
     </NFormItem>
 
     <NFormItem path="pwd">

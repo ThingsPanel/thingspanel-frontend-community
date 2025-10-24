@@ -187,12 +187,6 @@ export class LegacyAdapter {
    */
   static initialize(): void {
     this.setupLegacyExports()
-
-    // 在开发环境中提供额外的调试信息
-    if (process.env.NODE_ENV === 'development') {
-      const migrationCheck = this.performMigrationCheck()
-      console.log('[LegacyAdapter] 迁移状态:', migrationCheck)
-    }
   }
 }
 

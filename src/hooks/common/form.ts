@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import type { FormInst } from 'naive-ui'
-import { REG_CODE_SIX, REG_DEFAULT, REG_EMAIL, REG_PHONE, REG_PWD } from '@/constants/reg'
+import { REG_CODE_SIX, REG_DEFAULT, REG_EMAIL, REG_PHONE, REG_PWD, REG_PHONE_WITH_COUNTRY_CODE } from '@/constants/reg'
 import { $t } from '@/locales'
 
 export function useFormRules(paramObj?) {
@@ -12,6 +12,11 @@ export function useFormRules(paramObj?) {
     },
     phone: {
       pattern: REG_PHONE,
+      message: $t('form.phone.invalid'),
+      trigger: 'change'
+    },
+    phoneWithCountryCode: {
+      pattern: REG_PHONE_WITH_COUNTRY_CODE,
       message: $t('form.phone.invalid'),
       trigger: 'change'
     },
@@ -35,6 +40,7 @@ export function useFormRules(paramObj?) {
   const formRules = {
     userName: [createRequiredRule($t('form.userName.required')), patternRules.userName],
     phone: [createRequiredRule($t('form.phone.required')), patternRules.phone],
+    phoneWithCountryCode: [createRequiredRule($t('form.phone.required')), patternRules.phoneWithCountryCode],
     pwd: [createRequiredRule($t('form.pwd.required')), paramObj && paramObj.pwd ? paramObj.pwd : patternRules.pwd],
     code: [createRequiredRule($t('form.code.required')), patternRules.code],
     email: [createRequiredRule($t('form.email.required')), patternRules.email]

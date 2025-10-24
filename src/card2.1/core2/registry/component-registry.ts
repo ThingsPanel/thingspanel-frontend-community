@@ -31,10 +31,6 @@ export class ComponentRegistry implements IComponentRegistry {
     if (definition.propertyWhitelist) {
       propertyExposureManager.registerPropertyWhitelist(definition.type, definition.propertyWhitelist)
     }
-
-    if (import.meta.env.DEV) {
-      console.log(`✅ [ComponentRegistry] 注册组件: ${definition.type}`)
-    }
   }
 
   /**

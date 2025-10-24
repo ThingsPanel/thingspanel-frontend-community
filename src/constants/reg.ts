@@ -4,6 +4,9 @@ export const REG_USER_NAME = /^[\u4E00-\u9FA5a-zA-Z0-9_-]{4,16}$/
 /** Phone reg */
 export const REG_PHONE = /^1((3[0-9])|(4[01456789])|(5[012356789])|(6[2567])|(7[0-8])|(8[0-9])|(9[012356789]))[0-9]{8}$/
 
+/** Phone with country code reg */
+export const REG_PHONE_WITH_COUNTRY_CODE = /^\d{7,15}$/
+
 /**
  * Password reg
  *
