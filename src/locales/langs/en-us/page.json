@@ -123,6 +123,7 @@
   "page.login.common.phoneInvalid": "Invalid phone number format",
   "page.login.common.emailInvalid": "Invalid email format",
   "page.login.common.emailRequired": "Email address is required",
+  "page.login.common.countryCodePlaceholder": "Country/Region",
   "page.login.pwdLogin.title": "Password Login",
   "page.login.pwdLogin.rememberMe": "Remember Me",
   "page.login.pwdLogin.forgetPassword": "Forgot Password?",

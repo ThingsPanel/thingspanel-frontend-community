@@ -123,6 +123,7 @@
   "page.login.common.phoneInvalid": "手机号格式错误！",
   "page.login.common.emailInvalid": "邮箱格式错误！",
   "page.login.common.emailRequired": "邮箱地址不能为空！",
+  "page.login.common.countryCodePlaceholder": "国家/地区",
   "page.login.pwdLogin.title": "密码登录",
   "page.login.pwdLogin.rememberMe": "记住我",
   "page.login.pwdLogin.forgetPassword": "忘记密码？",
