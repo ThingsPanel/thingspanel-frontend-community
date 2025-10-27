@@ -27,23 +27,31 @@ const naiveLocale = computed(() => {
 const naiveDateLocale = computed(() => {
   return naiveDateLocales[appStore.locale]
 })
-const handleFullScreenChange = () => {
-  if (!document.fullscreenElement) {
-    if (isFullscreen) {
-      toggle()
-    }
-  }
-}
 
-onMounted(() => {
-  // 当组件挂载时，添加全屏变化事件的监听器
-  document.addEventListener('fullscreenchange', handleFullScreenChange)
-})
+/**
+ * 🔥 修复：禁用全局全屏监听器
+ *
+ * 原逻辑问题：当退出子元素全屏时，会误触发整个页面全屏
+ * 现在：注释掉这个监听器，让各个组件自己管理全屏状态
+ *
+ * 原代码：
+ * const handleFullScreenChange = () => {
+ *   if (!document.fullscreenElement) {
+ *     if (isFullscreen) {
+ *       toggle()  // ❌ 会导致退出编辑器全屏后，立即进入页面全屏
+ *     }
+ *   }
+ * }
+ */
 
-onBeforeUnmount(() => {
-  // 当组件卸载前，移除全屏变化事件的监听器
-  document.removeEventListener('fullscreenchange', handleFullScreenChange)
-})
+// 注释掉全局全屏监听器
+// onMounted(() => {
+//   document.addEventListener('fullscreenchange', handleFullScreenChange)
+// })
+
+// onBeforeUnmount(() => {
+//   document.removeEventListener('fullscreenchange', handleFullScreenChange)
+// })
 </script>
 
 <template>

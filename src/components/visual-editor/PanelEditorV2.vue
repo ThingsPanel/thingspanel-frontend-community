@@ -1179,6 +1179,39 @@ const refreshCard2Definitions = async () => {
   position: relative;
   width: 100%;
   height: 100%;
+  background: var(--body-color);
+}
+
+/* 🔥 全屏模式样式 */
+.panel-editor-wrapper:fullscreen {
+  background: var(--body-color);
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+}
+
+/* Safari 支持 */
+.panel-editor-wrapper:-webkit-full-screen {
+  background: var(--body-color);
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+}
+
+/* Firefox 支持 */
+.panel-editor-wrapper:-moz-full-screen {
+  background: var(--body-color);
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+}
+
+/* IE11 支持 */
+.panel-editor-wrapper:-ms-fullscreen {
+  background: var(--body-color);
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
 }
 
 /* 🔥 头部和底部样式 */
