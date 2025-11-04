@@ -406,3 +406,15 @@ export const deviceCustomCommandsIdList = async (paramsId: any) => {
 export const deviceProtocalServiceList = async (params: any) => {
   return await request.get<any>(`/service/plugin/select`, { params })
 }
+
+/** 获取设备状态历史记录 */
+export const deviceStatusHistory = async (params: {
+  device_id: string
+  page: number
+  page_size: number
+  start_time?: number
+  end_time?: number
+  status?: number
+}) => {
+  return await request.get<any>(`/device/status/history`, { params })
+}

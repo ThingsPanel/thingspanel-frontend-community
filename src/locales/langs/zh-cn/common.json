@@ -425,5 +425,7 @@
   "common.card2TypeTestFailed": "类型测试组件定义验证失败",
   "common.card2ComponentError": "组件错误",
   "common.other": "其他",
-  "common.noDescription": "暂无描述"
+  "common.noDescription": "暂无描述",
+  "common.deviceActiveTime": "设备活跃时间",
+  "common.status": "状态"
 }

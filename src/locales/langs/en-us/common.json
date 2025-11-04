@@ -314,7 +314,8 @@
   "common.undo": "Undo",
   "common.redo": "Redo",
   "common.preview": "Preview",
-  "common.clear": "Clear",
   "common.other": "Other",
-  "common.noDescription": "No description"
+  "common.noDescription": "No description",
+  "common.deviceActiveTime": "Device Active Time",
+  "common.status": "Status"
 }
