@@ -91,7 +91,7 @@ const clickConfig: () => void = () => {
         <n-tab-pane :name="$t('common.associatedDevices')" :tab="$t('common.associatedDevices')">
           <AssociatedDevices :device-config-id="configId" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('common.propertiesAndFunctions')" :tab="$t('common.propertiesAndFunctions')">
+        <n-tab-pane :name="$t('common.thingModel')" :tab="$t('common.thingModel')">
           <AttributeInfo :config-info="configForm" @up-date-config="getConfig" />
         </n-tab-pane>
         <n-tab-pane :name="$t('common.protocolConfig')" :tab="$t('common.protocolConfig')">

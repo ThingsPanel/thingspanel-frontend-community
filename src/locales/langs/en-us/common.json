@@ -317,5 +317,6 @@
   "common.other": "Other",
   "common.noDescription": "No description",
   "common.deviceActiveTime": "Device Active Time",
-  "common.status": "Status"
+  "common.status": "Status",
+  "common.thingModel": "Thing Model"
 }

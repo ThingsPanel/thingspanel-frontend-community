@@ -6,6 +6,39 @@ import { $t } from '@/locales'
 import dayjs from 'dayjs'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 
+/**
+ * 设备状态历史记录类型定义
+ * @interface StatusHistoryItem
+ * @property {number} status - 状态 0: 离线 1: 在线
+ * @property {string | number} change_time - 状态改变时间
+ */
+interface StatusHistoryItem {
+  status: 0 | 1
+  change_time?: string | number
+}
+
+// 请求参数类型定义
+interface StatusHistoryParams {
+  device_id: string
+  page: number
+  page_size: number
+  start_time?: number
+  end_time?: number
+  status?: number
+}
+
+// 响应数据类型定义
+interface StatusHistoryListResponse {
+  list?: StatusHistoryItem[]
+  total?: number
+}
+
+// 响应数据类型定义
+interface StatusHistoryResponse {
+  data?: StatusHistoryListResponse
+  error?: unknown
+}
+
 const props = defineProps<{
   deviceId: string
   visible: boolean
@@ -16,7 +49,7 @@ const emit = defineEmits<{
 }>()
 
 const { loading, startLoading, endLoading } = useLoading()
-const tableData = ref<any[]>([])
+const tableData = ref<StatusHistoryItem[]>([])
 const total = ref(0)
 
 const queryParams = reactive({
@@ -55,12 +88,12 @@ const pagination = reactive<PaginationProps>({
   }
 })
 
-const columns = [
+const columns: DataTableColumns<StatusHistoryItem> = [
   {
     title: $t('common.index'),
     key: 'index',
     width: 100,
-    render: (row: any, index: number) => {
+    render: (_row: StatusHistoryItem, index: number) => {
       return index + 1
     }
   },
@@ -68,7 +101,7 @@ const columns = [
     title: $t('common.status'),
     key: 'status',
     width: 120,
-    render: (row: any) => {
+    render: (row: StatusHistoryItem) => {
       const isOnline = row.status === 1
       const text = isOnline ? $t('custom.device_details.online') : $t('custom.device_details.offline')
       return h(
@@ -81,19 +114,19 @@ const columns = [
     title: $t('common.time'),
     key: 'change_time',
     width: 200,
-    render: (row: any) => {
+    render: (row: StatusHistoryItem) => {
       if (row.change_time) {
         return dayjs(row.change_time).format('YYYY-MM-DD HH:mm:ss')
       }
       return '--'
     }
   }
-] as DataTableColumns<any>
+]
 
 const fetchData = async () => {
   startLoading()
   try {
-    const params: any = {
+    const params: StatusHistoryParams = {
       device_id: props.deviceId,
       page: queryParams.page,
       page_size: queryParams.page_size
@@ -109,10 +142,12 @@ const fetchData = async () => {
       params.status = queryParams.status
     }
 
-    const { data, error } = await deviceStatusHistory(params)
+    const response = await deviceStatusHistory(params) as StatusHistoryResponse
+    const { data, error } = response
+    
     if (!error && data) {
-      tableData.value = data.list || []
-      total.value = data.total || 0
+      tableData.value = data.list ?? []
+      total.value = data.total ?? 0
       pagination.itemCount = total.value
     }
   } catch (error) {
@@ -220,7 +255,6 @@ watch(
           :pagination="pagination"
           :bordered="false"
           :max-height="350"
-          :scroll-x="500"
           remote
         />
       </div>

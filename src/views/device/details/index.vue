@@ -17,6 +17,7 @@ import GiveAnAlarm from '@/views/device/details/modules/give-an-alarm.vue'
 import User from '@/views/device/details/modules/user.vue'
 import Settings from '@/views/device/details/modules/settings.vue'
 import DeviceStatusHistory from '@/views/device/details/modules/device-status.vue'
+import DeviceDiagnosis from '@/views/device/details/modules/device-diagnosis.vue'
 import { $t } from '@/locales'
 import { useAppStore } from '@/store/modules/app'
 import { deviceAlarmStatus, deviceDetail, deviceUpdate } from '@/service/api/device'
@@ -96,6 +97,12 @@ let components = [
     key: 'give-an-alarm',
     name: () => $t('custom.device_details.giveAnAlarm'),
     component: GiveAnAlarm,
+    refreshKey: 0
+  },
+  {
+    key: 'device-diagnosis',
+    name: () => $t('custom.device_details.deviceDiagnosis'),
+    component: DeviceDiagnosis,
     refreshKey: 0
   },
   {
@@ -347,7 +354,7 @@ const getPlatform = computed(() => {
 
         <DeviceStatusHistory
           v-model:visible="showStatusHistoryDialog"
-          :device-id="(d_id || '') as string"
+          :device-id="(d_id || '')"
         />
 
         <NFlex style="margin-top: 8px">

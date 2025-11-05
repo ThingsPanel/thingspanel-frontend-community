@@ -418,3 +418,8 @@ export const deviceStatusHistory = async (params: {
 }) => {
   return await request.get<any>(`/device/status/history`, { params })
 }
+
+/** 获取设备诊断信息 */
+export const deviceDiagnostics = async (deviceId: string) => {
+  return await request.get<any>(`/devices/${deviceId}/diagnostics`)
+}
