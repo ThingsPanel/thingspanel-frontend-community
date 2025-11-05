@@ -16,6 +16,8 @@ import Automate from '@/views/device/details/modules/automate.vue'
 import GiveAnAlarm from '@/views/device/details/modules/give-an-alarm.vue'
 import User from '@/views/device/details/modules/user.vue'
 import Settings from '@/views/device/details/modules/settings.vue'
+import DeviceStatusHistory from '@/views/device/details/modules/device-status.vue'
+import DeviceDiagnosis from '@/views/device/details/modules/device-diagnosis.vue'
 import { $t } from '@/locales'
 import { useAppStore } from '@/store/modules/app'
 import { deviceAlarmStatus, deviceDetail, deviceUpdate } from '@/service/api/device'
@@ -98,6 +100,12 @@ let components = [
     refreshKey: 0
   },
   {
+    key: 'device-diagnosis',
+    name: () => $t('custom.device_details.deviceDiagnosis'),
+    component: DeviceDiagnosis,
+    refreshKey: 0
+  },
+  {
     key: 'user',
     name: () => $t('custom.device_details.user'),
     component: User,
@@ -113,6 +121,7 @@ let components = [
 
 const tabValue = ref<any>('telemetry')
 const showDialog = ref(false)
+const showStatusHistoryDialog = ref(false)
 const labels = ref<string[]>([])
 
 const deviceData: any = ref({})
@@ -304,9 +313,9 @@ const getPlatform = computed(() => {
 <template>
   <div>
     <n-card>
-      <div>
+      <div class="mb-4">
         <div style="display: flex; margin-top: -5px">
-          <span style="margin-right: 20px">{{ name || '--' }}</span>
+          <span style="margin-right: 20px; font-size:18px">{{ name || '--' }}</span>
           <NButton v-show="true" type="primary" style="margin-top: -5px" @click="editConfig">
             {{ $t('common.edit') }}
           </NButton>
@@ -343,25 +352,35 @@ const getPlatform = computed(() => {
           </n-card>
         </n-modal>
 
+        <DeviceStatusHistory
+          v-model:visible="showStatusHistoryDialog"
+          :device-id="(d_id || '')"
+        />
+
         <NFlex style="margin-top: 8px">
           <div class="mr-4">
-            <span class="mr-2" style="color: #ccc">ID:</span>
-            <span style="color: #ccc">{{ d_id || '--' }}</span>
+            <span class="mr-2">ID:</span>
+            <span>{{ d_id || '--' }}</span>
           </div>
-          <div class="mr-4" style="color: #ccc">
+          <div class="mr-4">
             <span class="mr-2">{{ $t('custom.devicePage.configTemplate') }} :</span>
             <span v-if="deviceData?.device_config_name" style="color: blue; cursor: pointer" @click="clickConfig">
               {{ deviceData?.device_config_name }}
             </span>
             <span v-else>--</span>
           </div>
-          <div v-if="device_type === '3'" class="mr-4" style="color: #ccc">
+          <div v-if="device_type === '3'" class="mr-4">
             <span class="mr-2">{{ $t('generate.gateway') }}:</span>
             <span style="color: blue; cursor: pointer" @click="clickGateway">
               {{ deviceData?.gateway_device_name || '--' }}
             </span>
           </div>
-          <div class="mr-4" style="display: flex">
+          <!-- 在线/离线，弹窗展示详情 -->
+          <div
+            class="mr-4"
+            style="display: flex; cursor: pointer"
+            @click="showStatusHistoryDialog = true"
+          >
             <!-- <span class="mr-2">{{ $t('generate.status') }}:</span> -->
             <SvgIcon
               local-icon="CellTowerRound"
@@ -399,7 +418,6 @@ const getPlatform = computed(() => {
           </div>
         </NFlex>
       </div>
-      <n-divider title-placement="left"></n-divider>
       <div>
         <n-tabs v-model:value="tabValue" animated type="line" @update:value="changeTabs">
           <n-tab-pane v-for="component in components" :key="component.key" :tab="component.name" :name="component.key">

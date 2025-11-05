@@ -42,11 +42,6 @@ function transformElegantRouteToVueRoute(
   }
 
   function getLayoutName(component: string) {
-    // 添加空值检查，防止 undefined 或 null 导致的错误
-    if (!component || typeof component !== 'string') {
-      throw new Error(`Invalid component name: ${component}`);
-    }
-    
     const layout = component.replace(LAYOUT_PREFIX, '');
 
     if(!layouts[layout]) {
@@ -61,11 +56,6 @@ function transformElegantRouteToVueRoute(
   }
 
   function getViewName(component: string) {
-    // 添加空值检查，防止 undefined 或 null 导致的错误
-    if (!component || typeof component !== 'string') {
-      throw new Error(`Invalid component name: ${component}`);
-    }
-    
     const view = component.replace(VIEW_PREFIX, '');
 
     if(!views[view]) {
