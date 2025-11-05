@@ -8,9 +8,6 @@ import { useRouterPush } from '@/hooks/common/router'
 import { useNaiveForm } from '@/hooks/common/form'
 import { useAuthStore } from '@/store/modules/auth'
 import { getFunction } from '@/service/api/setting'
-// import { createLogger } from '@/utils/logger'
-
-// const logger = createLogger('PwdLogin')
 
 defineOptions({
   name: 'PwdLogin'
@@ -96,12 +93,6 @@ const emailOptions = computed(() => {
   return filteredDomains.map(domain => `${username}@${domain}`)
 })
 
-// const rememberPath = e => {
-//   logger.info(e);
-//   isRememberPath.value = !isRememberPath.value;
-//   localStorage.setItem('isRememberPath', isRememberPath.value ? '1' : '0');
-// };
-
 async function handleSubmit() {
   // 先判断密码长度
   if (model.password.length < 6) {
@@ -151,26 +142,14 @@ function loadSavedCredentials() {
 
 // 从环境变量加载自动登录凭据
 async function loadAutoLoginCredentials() {
-  // 添加详细的调试信息
-  if (process.env.NODE_ENV === 'development') {
-  }
-
   // 检查路由参数
   const urlParams = new URLSearchParams(window.location.search)
   const autoLogin = urlParams.get('auto') === 'true'
   const urlUsername = urlParams.get('username')
   const urlPassword = urlParams.get('password')
 
-  if (process.env.NODE_ENV === 'development') {
-  }
-  if (process.env.NODE_ENV === 'development') {
-  }
-
   // 只要URL参数中有账号密码且auto=true就允许自动登录
   if (autoLogin && urlUsername && urlPassword) {
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     // 设置表单数据
     model.userName = urlUsername
     model.password = urlPassword
@@ -179,27 +158,10 @@ async function loadAutoLoginCredentials() {
     setTimeout(async () => {
       try {
         await authStore.login(model.userName.trim(), model.password)
-        if (process.env.NODE_ENV === 'development') {
-        }
       } catch (error) {
-        console.error('❌ 自动登录失败:', error)
         window.$message?.error('自动登录失败，请手动输入账号密码')
       }
     }, 500)
-  } else {
-    if (process.env.NODE_ENV === 'development') {
-    }
-    if (!autoLogin) {
-    }
-    if (!urlUsername) {
-    }
-    if (!urlPassword) {
-      if (process.env.NODE_ENV === 'development') {
-      }
-    }
-
-  }
-  if (process.env.NODE_ENV === 'development') {
   }
 }
 
@@ -253,7 +215,6 @@ onMounted(() => {
     <NSpace vertical :size="18">
       <div class="flex-y-center justify-between">
         <NCheckbox v-model:checked="rememberMe">{{ $t('page.login.pwdLogin.rememberMe') }}</NCheckbox>
-        <!--         <NButton quaternary @click="toggleLoginModule('reset-pwd')">-->
         <NButton quaternary @click="toggleLoginModule('reset-pwd')">
           {{ $t('page.login.pwdLogin.forgetPassword') }}
         </NButton>
@@ -268,9 +229,6 @@ onMounted(() => {
       >
         {{ $t('route.login') }}
       </NButton>
-      <!-- <NCheckbox :checked="isRememberPath" @update:checked="rememberPath">
-        {{ $t('page.login.common.rememberPath') }}
-      </NCheckbox> -->
       <n-divider title-placement="center" style="padding: 0px; margin: 0px">
         {{ $t('generate.or') }}
       </n-divider>
@@ -292,7 +250,6 @@ onMounted(() => {
         </NButton>
       </div>
     </NSpace>
-    <!-- <OtherAccount @login="handleLoginOtherAccount" /> -->
   </NForm>
 </template>
 

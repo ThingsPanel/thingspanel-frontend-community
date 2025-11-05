@@ -124,7 +124,7 @@
   "custom.device_details.user": "用户",
   "custom.device_details.settings": "设置",
   "custom.device_details.deviceConfig": "设备配置",
-  "custom.device_details.deviceDiagnosis": "设备诊断",
+  "custom.device_details.deviceDiagnosis": "诊断",
   "custom.device_details.noAlarm": "无报警",
   "custom.device_details.statisticsOverview": "统计概览",
   "custom.device_details.statisticsRange": "统计范围：系统启动至今",
