@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { NButton, NFormItem, NSelect } from 'naive-ui'
+import { onMounted, ref, h, watch, computed } from 'vue'
 import {
   deviceConfigEdit,
   deviceConfigVoucherType,
   deviceProtocalServiceList,
-  protocolPluginConfigForm
+  protocolPluginConfigForm,
+  getTopicMappingList,
+  createTopicMapping,
+  updateTopicMapping,
+  deleteTopicMapping
 } from '@/service/api/device'
 // protocolPluginConfigInput
 import { $t } from '@/locales'
 import FormInput from './form.vue'
+import TopicMappingModal from './components/topic-mapping-modal.vue'
+import { NButton, NPopconfirm, NSpace, NDataTable, useMessage } from 'naive-ui'
+import type { DataTableColumns } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
 
 type FormElementType = 'input' | 'table' | 'select'
 
@@ -59,6 +66,170 @@ const extendForm = ref({
 } as any)
 const extendFormRules = ref({})
 const protocol_config = ref({})
+
+// 主题映射表格相关
+interface TopicMapping {
+  id?: string | number
+  mapping_name: string
+  direction: 'up' | 'down'
+  description: string
+  original_topic: string
+  target_topic: string
+  priority?: number
+  enabled?: boolean
+}
+
+const topicMappingList = ref<TopicMapping[]>([])
+const topicMappingModalVisible = ref(false)
+const currentEditTopicMapping = ref<TopicMapping | null>(null)
+const topicMappingLoading = ref(false)
+const message = useMessage()
+const { t } = useI18n()
+
+const topicMappingColumns = computed<DataTableColumns<TopicMapping>>(() => [
+  {
+    title: t('generate.topicMapping.column.mappingName'),
+    key: 'mapping_name',
+    align: 'left'
+  },
+  {
+    title: t('common.description'),
+    key: 'description',
+    align: 'left'
+  },
+  {
+    title: t('generate.topicMapping.column.originalTopic'),
+    key: 'original_topic',
+    align: 'left'
+  },
+  {
+    title: t('generate.topicMapping.column.targetTopic'),
+    key: 'target_topic',
+    align: 'left'
+  },
+  {
+    title: t('common.actions'),
+    key: 'actions',
+    align: 'center',
+    width: 150,
+    render: row => {
+      return h(NSpace, { justify: 'center' }, {
+        default: () => [
+          h(
+            NButton,
+            {
+              type: 'primary',
+              size: 'small',
+              text: true,
+              onClick: () => handleEditTopicMapping(row)
+            },
+            { default: () => t('common.edit') }
+          ),
+          h(
+            NPopconfirm,
+            {
+              onPositiveClick: () => handleDeleteTopicMapping(row)
+            },
+            {
+              default: () => t('common.confirmDelete'),
+              trigger: () =>
+                h(
+                  NButton,
+                  {
+                    type: 'error',
+                    size: 'small',
+                    text: true
+                  },
+                  { default: () => t('common.delete') }
+                )
+            }
+          )
+        ]
+      })
+    }
+  }
+])
+
+const handleEditTopicMapping = (row: TopicMapping) => {
+  currentEditTopicMapping.value = { ...row }
+  topicMappingModalVisible.value = true
+}
+
+const handleDeleteTopicMapping = async (row: TopicMapping) => {
+  if (!row.id) return
+  try {
+    await deleteTopicMapping(row.id)
+    message.success(t('generate.topicMapping.message.deleteSuccess'))
+    await fetchTopicMappings()
+  } catch (error) {
+    message.error(t('generate.topicMapping.message.deleteFailed'))
+  }
+}
+
+const handleAddTopicMapping = () => {
+  currentEditTopicMapping.value = null
+  topicMappingModalVisible.value = true
+}
+
+const normalizeTopicMapping = (item: any): TopicMapping => ({
+  id: item.id,
+  mapping_name: item.name ?? '',
+  direction: item.direction === 'up' ? 'up' : 'down',
+  description: item.description ?? '',
+  original_topic: item.source_topic ?? '',
+  target_topic: item.target_topic ?? '',
+  priority: item.priority ?? 0,
+  enabled: item.enabled ?? true
+})
+
+const fetchTopicMappings = async () => {
+  if (!props.configInfo?.id) {
+    topicMappingList.value = []
+    return
+  }
+  topicMappingLoading.value = true
+  try {
+    const res = await getTopicMappingList({
+      device_config_id: props.configInfo.id
+    })
+    const list = res.data.list
+    topicMappingList.value = list.map((item: any) =>
+      normalizeTopicMapping(item)
+    )
+  } catch (error) {
+    message.error(t('generate.topicMapping.message.fetchFailed'))
+  } finally {
+    topicMappingLoading.value = false
+  }
+}
+
+const handleSaveTopicMapping = async (data: TopicMapping) => {
+  if (!props.configInfo?.id) return
+  const payload = {
+    device_config_id: props.configInfo.id,
+    name: data.mapping_name?.trim(),
+    direction: data.direction,
+    source_topic: data.original_topic?.trim(),
+    target_topic: data.target_topic?.trim(),
+    description: data.description,
+    priority: data.priority ?? 0,
+    enabled: data.enabled ?? true
+  }
+  try {
+    if (data.id) {
+      await updateTopicMapping(data.id, payload)
+      message.success(t('generate.topicMapping.message.updateSuccess'))
+    } else {
+      await createTopicMapping(payload)
+      message.success(t('generate.topicMapping.message.createSuccess'))
+    }
+    currentEditTopicMapping.value = null
+    await fetchTopicMappings()
+  } catch (error) {
+    message.error(t('generate.topicMapping.message.saveFailed'))
+  }
+}
+
 const handleSubmit = async () => {
   const postData = props.configInfo
   postData.protocol_type = extendForm.value.protocol_type
@@ -134,73 +305,87 @@ onMounted(async () => {
   await getVoucherType(extendForm.value.protocol_type)
 
   await getConfigForm(extendForm.value.protocol_type)
+  await fetchTopicMappings()
 })
+
+watch(
+  () => props.configInfo?.id,
+  async newId => {
+    if (newId) {
+      await fetchTopicMappings()
+    } else {
+      topicMappingList.value = []
+    }
+  }
+)
 </script>
 
 <template>
   <div class="connection-box">
-    <div class="connection-title">
-      {{ $t('generate.through-protocol-access') }}
-    </div>
-    <n-scrollbar class="h-[400px] overflow-y-scroll">
-      <NForm :model="extendForm" :rules="extendFormRules" label-placement="left" label-width="auto">
-        <NFormItem :label="$t('generate.choose-protocol-or-Service')" path="protocol_type" class="w-300">
-          <!-- <NSelect
-            v-model:value="extendForm.protocol_type"
-            :options="typeOptions"
-            :placeholder="$t('generate.select-protocol-service')"
-            label-field="name"
-            value-field="service_identifier"
-            @change="choseProtocolType"
-          ></NSelect> -->
-          <NSelect
-            v-model:value="extendForm.protocol_type"
-            :placeholder="$t('generate.select-protocol-service')"
-            label-field="name"
-            :disabled="true"
-            value-field="service_identifier"
-          ></NSelect>
-        </NFormItem>
-        <NFormItem
-          v-show="configInfo.device_type !== '3'"
-          :label="$t('generate.authentication-type')"
-          path="voucher_type"
-          class="w-300"
-        >
-          <!-- <NSelect
-            v-if="props.configInfo.device_type !== 1"
-            v-model:value="extendForm.voucher_type"
-            :options="connectOptions"
-            :placeholder="$t('generate.select-authentication-type')"
-          ></NSelect> -->
-          <NInput
-            v-if="props.configInfo.device_type !== 1"
-            v-model:value="extendForm.voucher_type"
-            :disabled="true"
-            :placeholder="$t('generate.select-authentication-type')"
+    <div class="text-18px">{{ $t('generate.through-protocol-access') }}</div>
+    <NForm class="mt-4" :model="extendForm" :rules="extendFormRules" label-placement="left" label-width="auto">
+      <NFormItem :label="$t('generate.choose-protocol-or-Service')" path="protocol_type" class="w-300">
+        <NSelect
+          v-model:value="extendForm.protocol_type"
+          :placeholder="$t('generate.select-protocol-service')"
+          label-field="name"
+          :disabled="true"
+          value-field="service_identifier"
+        ></NSelect>
+      </NFormItem>
+      <NFormItem
+        v-show="configInfo.device_type !== '3'"
+        :label="$t('generate.authentication-type')"
+        path="voucher_type"
+        class="w-300"
+      >
+        <NInput
+          v-if="props.configInfo.device_type !== 1"
+          v-model:value="extendForm.voucher_type"
+          :disabled="true"
+          :placeholder="$t('generate.select-authentication-type')"
+        />
+      </NFormItem>
+      <NFormItem v-if="formElements?.length > 0">
+        <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements" :edit="true"></FormInput>
+      </NFormItem>
+      <!-- 主题映射 -->
+      <NFormItem class="topic-mapping-form-item">
+        <div class="topic-mapping-section">
+          <div class="topic-mapping-header">
+            <div class="text-18px">{{ t('generate.topicMapping.sectionTitle') }}</div>
+            <NButton type="primary" @click="handleAddTopicMapping">{{ t('common._add') }}</NButton>
+          </div>
+          <NDataTable
+            :columns="topicMappingColumns"
+            :data="topicMappingList"
+            :bordered="false"
+            :loading="topicMappingLoading"
+            class="topic-mapping-table"
           />
-        </NFormItem>
-        <NFormItem>
-          <!-- <NButton type="primary" @click="openForm">{{ $t('generate.data-parsing') }}</NButton> -->
-          <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements" :edit="true"></FormInput>
-        </NFormItem>
-        <NFormItem>
-          <NButton type="primary" @click="handleSubmit">{{ $t('common.save') }}</NButton>
-        </NFormItem>
-        <NFlex justify="flex-end"></NFlex>
-      </NForm>
-    </n-scrollbar>
+        </div>
+      </NFormItem>
+      <NFormItem>
+        <NButton type="primary" @click="handleSubmit">{{ $t('common.save') }}</NButton>
+      </NFormItem>
+      <NFlex justify="flex-end"></NFlex>
+    </NForm>
     <n-drawer v-model:show="active" height="90%" placement="bottom">
       <n-drawer-content :title="$t('generate.form-configuration')">
         <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements"></FormInput>
       </n-drawer-content>
     </n-drawer>
+    <!-- 主题映射弹窗 -->
+    <TopicMappingModal
+      v-model:visible="topicMappingModalVisible"
+      :edit-data="currentEditTopicMapping"
+      @save="handleSaveTopicMapping"
+    />
   </div>
 </template>
 
 <style scoped lang="scss">
 .connection-box {
-  padding: 50px 10px;
 
   .connection-title {
     font-size: 15px;
@@ -224,5 +409,29 @@ onMounted(async () => {
 
 .table-item {
   margin-bottom: 8px;
+}
+
+.topic-mapping-form-item {
+  margin-top: 8px !important;
+}
+
+.topic-mapping-section {
+  width: 100%;
+
+  .topic-mapping-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .topic-mapping-title {
+      font-size: 15px;
+      font-weight: bold;
+    }
+  }
+
+  .topic-mapping-table {
+    width: 100%;
+  }
 }
 </style>
