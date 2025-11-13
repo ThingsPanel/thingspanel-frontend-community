@@ -423,3 +423,37 @@ export const deviceStatusHistory = async (params: {
 export const deviceDiagnostics = async (deviceId: string) => {
   return await request.get<any>(`/devices/${deviceId}/diagnostics`)
 }
+
+export interface TopicMappingPayload {
+  device_config_id: string
+  name: string
+  direction: 'up' | 'down'
+  source_topic: string
+  target_topic: string
+  description?: string
+  priority?: number
+  enabled?: boolean
+}
+
+export const getTopicMappingList = async (params: {
+  device_config_id: string
+  page?: number
+  page_size?: number
+}) => {
+  return await request.get<any>(`/device/topic-mappings`, { params })
+}
+
+export const createTopicMapping = async (data: TopicMappingPayload) => {
+  return await request.post<any>(`/device/topic-mappings`, data)
+}
+
+export const updateTopicMapping = async (
+  id: string | number,
+  data: Partial<TopicMappingPayload>
+) => {
+  return await request.put<any>(`/device/topic-mappings/${id}`, data)
+}
+
+export const deleteTopicMapping = async (id: string | number) => {
+  return await request.delete<any>(`/device/topic-mappings/${id}`)
+}

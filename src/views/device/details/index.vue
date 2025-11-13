@@ -378,7 +378,7 @@ const getPlatform = computed(() => {
           <!-- 在线/离线，弹窗展示详情 -->
           <div
             class="mr-4"
-            style="display: flex; cursor: pointer"
+            style="display: flex; cursor: pointer; align-items: center;"
             @click="showStatusHistoryDialog = true"
           >
             <!-- <span class="mr-2">{{ $t('generate.status') }}:</span> -->
@@ -395,6 +395,13 @@ const getPlatform = computed(() => {
             >
               {{ device_is_online === 1 ? $t('custom.device_details.online') : $t('custom.device_details.offline') }}
             </span>
+
+            <!-- 历史记录 -->
+            <SvgIcon
+              local-icon="history"
+              style="margin-left: 5px;"
+              class="text-18px text-primary"
+            />
           </div>
           <div class="mr-4" style="display: flex">
             <template v-if="alarmStatus === true">
