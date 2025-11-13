@@ -2,6 +2,7 @@
   "generate.inputRightJson": "Input is not a valid JSON format",
   "generate.customCommand": "Custom Command",
   "generate.addCustomCommand": "Add Custom Command",
+  "generate.create": "Create",
   "generate.customControl": "Custom Control",
   "generate.commandContent": "Command Content",
   "generate.enableStatus": "Enable Status",
