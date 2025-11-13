@@ -159,7 +159,6 @@ const handleDeleteTopicMapping = async (row: TopicMapping) => {
   if (!row.id) return
   try {
     await deleteTopicMapping(row.id)
-    message.success(t('generate.topicMapping.message.deleteSuccess'))
     await fetchTopicMappings()
   } catch (error) {
     message.error(t('generate.topicMapping.message.deleteFailed'))

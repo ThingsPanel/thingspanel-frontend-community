@@ -289,7 +289,7 @@ onMounted(async () => {
     await getConfig()
   } else {
     isEdit.value = false
-    modalTitle.value = 'generate.add'
+    modalTitle.value = 'generate.create'
   }
   getDeviceTemplate()
   if (process.env.NODE_ENV === 'development') {
@@ -327,11 +327,11 @@ function handleDeviceTypeChange(newValue: string | number) {
 
 <template>
   <div class="overflow-y-auto">
-    <NCard :title="`${$t(modalTitle)}${$t('custom.devicePage.deviceConfig')}`">
+    <NCard :title="`${$t(modalTitle)}${$t('custom.devicePage.configTemplate')}`">
       <NForm ref="configFormRef" :model="configForm" :rules="configFormRules" label-placement="left" label-width="auto">
         <!-- 第一个文件中的原表单项 -->
         <NFormItem :label="$t('generate.device-configuration-name')" path="name" class="w-[600px]">
-          <NInput v-model:value="configForm.name" :placeholder="$t('generate.enter-device-name')" />
+          <NInput v-model:value="configForm.name" :placeholder="$t('common.deviceConfigName')" />
         </NFormItem>
         <NFormItem class="w-[600px]" :label="$t('generate.select-device-function-template')" path="device_template_id">
           <NSelect

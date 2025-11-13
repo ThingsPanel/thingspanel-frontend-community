@@ -23,7 +23,7 @@
   "custom.devicePage.enterDeviceNumber": "Please enter device number",
   "custom.devicePage.deviceNumberMax": "Device number cannot exceed 100 characters",
   "custom.devicePage.label": "Label",
-  "custom.devicePage.configTemplate": "Config Template",
+  "custom.devicePage.configTemplate": "Device Template",
   "custom.devicePage.subDeviceAddress": "Sub-device Address",
   "custom.devicePage.maintenance": "Maintenance",
   "custom.devicePage.connectInfo": "Connection Information",

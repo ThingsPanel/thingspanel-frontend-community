@@ -197,7 +197,7 @@
   "card.triggerAction": "Trigger Action",
   "card.loading": "Loading...",
   "card.noMore": "No More",
-  "card.configTemplate": "Configuration Template",
+  "card.configTemplate": "Device Template",
   "card.anyProtocolService": "Any Protocol/Service",
   "card.deviceConfigTemplate": "Device Configuration Template",
   "card.templateNotSet": "Template not set. Please set the template before checking this option.",
