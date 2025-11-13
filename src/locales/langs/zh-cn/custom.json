@@ -23,7 +23,7 @@
   "custom.devicePage.enterDeviceNumber": "请输入设备编号",
   "custom.devicePage.deviceNumberMax": "设备编号不能超过100个字符",
   "custom.devicePage.label": "标签",
-  "custom.devicePage.configTemplate": "配置模板",
+  "custom.devicePage.configTemplate": "设备模板",
   "custom.devicePage.subDeviceAddress": "子设备地址",
   "custom.devicePage.maintenance": "维护",
   "custom.devicePage.connectInfo": "连接信息",

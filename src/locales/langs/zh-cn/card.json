@@ -199,7 +199,7 @@
   "card.triggerAction": "触发操作",
   "card.loading": "加载中...",
   "card.noMore": "没有更多了",
-  "card.configTemplate": "配置模版",
+  "card.configTemplate": "设备模版",
   "card.anyProtocolService": "不限协议/服务",
   "card.deviceConfigTemplate": "设备模板",
   "card.templateNotSet": "请先为设备选择模板",
