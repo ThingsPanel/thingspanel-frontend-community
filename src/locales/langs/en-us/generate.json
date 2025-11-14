@@ -262,6 +262,7 @@
   "generate.add-device": "Add Device",
   "generate.select-authentication-type": "Select Authentication Type",
   "generate.add-sub-device": "Add Sub-device",
+  "generate.select-sub-device": "Select Sub-device",
   "generate.parent-group": "Parent Group",
   "generate.gateway-sub-device": "Gateway Sub-device",
   "generate.device-configuration": "Device Configuration",

@@ -169,23 +169,32 @@ onMounted(() => {})
     <NButton type="primary" @click="addDevice">{{ $t('generate.add-sub-device') }}</NButton>
     <n-modal
       v-model:show="showAddDialog"
-      :title="$t('generate.issue-attribute')"
-      style="height: 300px"
-      class="w-[400px]"
+      preset="dialog"
+      :title="$t('generate.add-sub-device')"
+      style="width: 520px"
+      :showIcon="false"
+      :mask-closable="false"
     >
-      <n-card>
-        <n-form>
-          <n-form-item :label="$t('generate.add-sub-device')">
-            <n-select v-model:value="selectChild" multiple :options="sOptions" @update:value="selectConfig">
-              <template #header>{{ $t('page.irrigation.group.deviceName') }}</template>
-            </n-select>
+        <n-form class="mt-6" label-placement="left" label-width="auto">
+          <n-form-item :label="$t('generate.select-sub-device')">
+              <n-select
+                v-model:value="selectChild"
+                multiple
+                max-tag-count="responsive"
+                :options="sOptions"
+                :virtual-scroll="false"
+                @update:value="selectConfig"
+              >
+                <template #header>{{ $t('page.irrigation.group.deviceName') }}</template>
+              </n-select>
           </n-form-item>
-          <NSpace style="display: flex; justify-content: flex-end; margin-top: 140px">
-            <NButton @click="showAddDialog = false">{{ $t('generate.cancel') }}</NButton>
-            <NButton @click="addChildDeviceSure">{{ $t('page.login.common.confirm') }}</NButton>
-          </NSpace>
         </n-form>
-      </n-card>
+        <template #action>
+          <div class="modal-footer">
+            <NButton @click="showAddDialog = false">{{ $t('generate.cancel') }}</NButton>
+            <NButton type="primary" @click="addChildDeviceSure">{{ $t('page.login.common.confirm') }}</NButton>
+          </div>
+        </template>
     </n-modal>
     <n-modal v-model:show="showSetDialog" :title="$t('generate.issue-attribute')" class="w-[400px]">
       <n-card>
@@ -218,4 +227,10 @@ onMounted(() => {})
   </n-card>
 </template>
 
-<style scoped></style>
+<style scoped>
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+</style>
