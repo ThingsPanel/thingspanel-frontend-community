@@ -263,6 +263,7 @@
   "generate.add-device": "添加设备",
   "generate.select-authentication-type": "请选择认证类型",
   "generate.add-sub-device": "添加子设备",
+  "generate.select-sub-device": "选择子设备",
   "generate.parent-group": "父分组",
   "generate.gateway-sub-device": "网关子设备",
   "generate.device-configuration": "设备模板：",
