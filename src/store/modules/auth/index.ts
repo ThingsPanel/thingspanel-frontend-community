@@ -50,15 +50,21 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
    */
   async function login(userName: string, password: string) {
     startLoading()
-    let newP = password
-    const data = localStorage.getItem('enableZcAndYzm') ? JSON.parse(localStorage.getItem('enableZcAndYzm')) : []
-    let salt: string | null = null
-    if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
-      salt = generateRandomHexString(16)
-      newP = encryptDataByRsa(password + salt)
-    }
-    const { data: loginToken, error } = await fetchLogin(userName, newP, salt)
-    if (!error) {
+    try {
+      let newP = password
+      const data = localStorage.getItem('enableZcAndYzm') ? JSON.parse(localStorage.getItem('enableZcAndYzm')) : []
+      let salt: string | null = null
+      if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
+        salt = generateRandomHexString(16)
+        newP = encryptDataByRsa(password + salt)
+      }
+
+      const { data: loginToken } = await fetchLogin(userName, newP, salt)
+      if (!loginToken) {
+        await resetStore()
+        return
+      }
+
       const { loop, info } = await loginByToken(loginToken)
       if (loop) {
         const password_last_updated = info.password_last_updated
@@ -95,11 +101,11 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
           await redirectFromLogin()
         }
       }
-    } else {
+    } catch (_error) {
       await resetStore()
+    } finally {
+      endLoading()
     }
-
-    endLoading()
   }
 
   /**
