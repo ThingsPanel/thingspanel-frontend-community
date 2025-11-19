@@ -560,7 +560,7 @@ const handleWarningClick = (item: DeviceItem) => {
     <!-- 地图视图 -->
     <template #map-view>
       <n-spin :show="loading">
-        <div class="h-495px">
+        <div class="map-view-container">
           <TencentMap :devices="dataList" />
         </div>
       </n-spin>
@@ -623,5 +623,10 @@ const handleWarningClick = (item: DeviceItem) => {
   height: 100%;
   object-fit: cover;
   object-position: center;
+}
+
+.map-view-container {
+  height: calc(100vh - 442px);
+  min-height: 360px;
 }
 </style>
