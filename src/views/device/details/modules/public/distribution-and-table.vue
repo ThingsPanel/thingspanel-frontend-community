@@ -5,6 +5,7 @@ import {
   type FormRules,
   NButton,
   NCard,
+  NCheckbox,
   NDataTable,
   NFlex,
   NForm,
@@ -26,7 +27,7 @@ import { useLoading } from '@sa/hooks'
 import { Refresh } from '@vicons/ionicons5'
 import type { FlatResponseFailData, FlatResponseSuccessData } from '@sa/axios'
 import moment from 'moment'
-import { commandDataById, commandDataPub, deviceCustomCommandsIdList } from '@/service/api'
+import { commandDataById, commandDataPub, deviceCustomCommandsIdList, getAttributeDataSet } from '@/service/api'
 import { $t } from '@/locales'
 import { isJSON } from '@/utils/common/tool'
 import { createLogger } from '@/utils/logger'
@@ -60,6 +61,8 @@ const paramsSelect = ref<any>([
   { label: 'false', value: false }
 ])
 const paramsData = ref<any>([])
+const attributeList = ref<any[]>([])
+const attributeLoading = ref(false)
 const isTextArea = ref<any>(true)
 
 // 新增：管理页签切换
@@ -92,8 +95,11 @@ const fetchDataFunction = async () => {
   }
 }
 
-const openDialog = () => {
+const openDialog = async () => {
   showDialog.value = true
+  if (!props.isCommand) {
+    await loadAttributeList()
+  }
 }
 
 const closeDialog = () => {
@@ -105,6 +111,7 @@ const closeDialog = () => {
   formModel.expected = false
   formModel.time = null
   activeTab.value = 'visual'
+  attributeList.value = []
   formRef.value?.restoreValidation()
 }
 
@@ -116,13 +123,24 @@ const submit = async () => {
     const params: any = {}
     
     // 处理可视化配置页签的参数
-    if (activeTab.value === 'visual' && paramsData.value.length > 0) {
-      paramsData.value.forEach((item: any) => {
-        params[item.data_identifier] = item[item.data_identifier]
-      })
-      formModel.textValue = JSON.stringify(params)
+    if (activeTab.value === 'visual') {
+      if (props.isCommand && paramsData.value.length > 0) {
+        paramsData.value.forEach((item: any) => {
+          params[item.data_identifier] = item[item.data_identifier]
+        })
+        formModel.textValue = JSON.stringify(params)
+      }
+      if (!props.isCommand) {
+        if (!hasAttributeSelection.value) {
+          window.$message?.warning($t('generate.select-attribute-first'))
+          return
+        }
+        const attributePayload = buildAttributePayload()
+        formModel.textValue = JSON.stringify(attributePayload)
+      }
     }
 
+    // 统一要求载荷为合法 JSON（命令和属性下发都校验）
     if (formModel.textValue && !isJSON(formModel.textValue)) {
       window.$message?.error($t('generate.inputRightJson'))
       return
@@ -228,6 +246,7 @@ const getPlatform = computed(() => {
   return proxy.getPlatform()
 })
 const validationJson = computed(() => {
+  // 统一做 JSON 校验（命令和属性下发）
   if (formModel.textValue && !isJSON(formModel.textValue)) {
     return 'error'
   }
@@ -240,19 +259,134 @@ const inputFeedback = computed(() => {
   return ''
 })
 
-// 更新计算属性，移除 isTextArea 的判断，命令标识符在 isCommand 为 true 时总是需要
+const hasAttributeSelection = computed(() => attributeList.value.some(item => item.checked))
+const selectAllAttributes = computed({
+  get: () =>
+    attributeList.value.length > 0 && attributeList.value.every((item: any) => item.checked),
+  set: value => {
+    attributeList.value.forEach(item => {
+      item.checked = value
+    })
+  }
+})
+const isAttributeIndeterminate = computed(() => {
+  const checkedCount = attributeList.value.filter(item => item.checked).length
+  return checkedCount > 0 && checkedCount < attributeList.value.length
+})
+
 const isSubmitDisabled = computed(() => {
-  // 条件1：如果需要命令标识符，且该值为空，则禁用
+  // 条件1：如果是命令下发且命令标识符为空，则禁用
   if (props.isCommand && !formModel.commandValue) {
     return true
   }
-  // 条件2：如果载荷文本框有内容但不是有效的 JSON，则禁用
+  // 条件2：如果载荷文本框有内容但不是有效的 JSON，则禁用（命令和属性下发都校验）
   if (formModel.textValue && !isJSON(formModel.textValue)) {
     return true
   }
-  // 其他情况不禁用
   return false
 })
+
+const visualTabLabel = computed(() =>
+  props.isCommand ? $t('generate.visual-config') : $t('generate.attribute-config')
+)
+const customTabLabel = computed(() =>
+  props.isCommand ? $t('generate.command-line') : $t('generate.custom-attribute')
+)
+
+const formatAttributeValue = (value: any) => {
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value)
+    } catch (error) {
+      logger.error('Failed to stringify attribute value:', error)
+      return ''
+    }
+  }
+  return value
+}
+
+const normalizeAttributeItem = (item: any) => {
+  const type = (item.data_type || typeof item.value || 'string').toString().toLowerCase()
+  return {
+    ...item,
+    checked: false,
+    attributeType: type,
+    inputValue: type === 'number' ? Number(item.value ?? '') : formatAttributeValue(item.value)
+  }
+}
+
+const loadAttributeList = async () => {
+  attributeLoading.value = true
+  try {
+    const { data, error } = await getAttributeDataSet({ device_id: props.id })
+    if (!error) {
+      const list =
+        data?.value || data?.list || (Array.isArray(data) ? data : []) || []
+      attributeList.value = list.map((item: any) => normalizeAttributeItem(item))
+    } else {
+      attributeList.value = []
+    }
+  } catch (err) {
+    logger.error('loadAttributeList failed:', err)
+    attributeList.value = []
+  } finally {
+    attributeLoading.value = false
+  }
+}
+
+const parseBooleanValue = (value: any) => {
+  if (typeof value === 'boolean') return value
+  if (value === 'true' || value === '1' || value === 1) return true
+  if (value === 'false' || value === '0' || value === 0) return false
+  return Boolean(value)
+}
+
+const parseNumberValue = (value: any) => {
+  if (typeof value === 'number') return value
+  const num = Number(value)
+  return Number.isNaN(num) ? value : num
+}
+
+const parseJsonValue = (value: any) => {
+  if (typeof value !== 'string') return value
+  try {
+    return JSON.parse(value)
+  } catch (error) {
+    logger.warn('attribute payload JSON parse failed:', error)
+    return value
+  }
+}
+
+const getDescriptionText = (item: any) => item?.description_cn || item?.description || ''
+
+const buildAttributePayload = () => {
+  const payload: Record<string, any> = {}
+  attributeList.value
+    .filter(item => item.checked)
+    .forEach(item => {
+      const key = item.key || item.data_identifier || item.data_name
+      if (!key) return
+      let value = item.inputValue
+      switch (item.attributeType) {
+        case 'number':
+          value = parseNumberValue(value)
+          break
+        case 'boolean':
+          value = parseBooleanValue(value)
+          break
+        case 'object':
+        case 'array':
+        case 'json':
+          value = parseJsonValue(value)
+          break
+        default:
+          break
+      }
+      payload[key] = value
+    })
+  return payload
+}
 </script>
 
 <template>
@@ -346,46 +480,94 @@ const isSubmitDisabled = computed(() => {
           
           <!-- 切换页签：可视化配置和命令行 -->
           <NTabs v-model:value="activeTab" type="line" animated>
-            <NTabPane name="visual" :tab="$t('generate.visual-config')">
-              <div v-if="formModel.commandValue !== ''">
-                <div v-for="item in paramsData" :key="item.id" class="form_box">
-                  <div class="form_table">
-                    <NFormItem :label="item.data_name" label-placement="left" label-width="80px" label-align="left">
-                      <NInput v-if="item.param_type === 'string'" v-model:value="item[item.data_identifier]" />
-                      <n-input-number v-else-if="item.param_type === 'Number'" v-model:value="item[item.data_identifier]" />
-                      <n-select
-                        v-else-if="item.param_type === 'Boolean'"
-                        v-model:value="item[item.data_identifier]"
-                        :options="paramsSelect"
-                      />
-                      <n-select
-                        v-else-if="item.param_type === 'Enum'"
-                        v-model:value="item[item.data_identifier]"
-                        :options="
-                          item.enum_config?.map(v => {
-                            return {
-                              ...v,
-                              label: v.desc
-                            }
-                          }) || []
-                        "
-                        :placeholder="$t('generate.please-select')"
-                      />
-                      <div class="description">{{ item.description }}</div>
-                    </NFormItem>
+            <NTabPane name="visual" :tab="visualTabLabel">
+              <template v-if="isCommand">
+                <div v-if="formModel.commandValue !== ''">
+                  <div v-for="item in paramsData" :key="item.id" class="form_box">
+                    <div class="form_table">
+                      <NFormItem :label="item.data_name" label-placement="left" label-width="80px" label-align="left">
+                        <NInput v-if="item.param_type === 'string'" v-model:value="item[item.data_identifier]" />
+                        <n-input-number v-else-if="item.param_type === 'Number'" v-model:value="item[item.data_identifier]" />
+                        <n-select
+                          v-else-if="item.param_type === 'Boolean'"
+                          v-model:value="item[item.data_identifier]"
+                          :options="paramsSelect"
+                        />
+                        <n-select
+                          v-else-if="item.param_type === 'Enum'"
+                          v-model:value="item[item.data_identifier]"
+                          :options="
+                            item.enum_config?.map(v => {
+                              return {
+                                ...v,
+                                label: v.desc
+                              }
+                            }) || []
+                          "
+                          :placeholder="$t('generate.please-select')"
+                        />
+                        <div class="description">
+                          {{ $t('generate.description-label') }}：{{ getDescriptionText(item) || $t('generate.description-empty') }}
+                        </div>
+                      </NFormItem>
+                    </div>
+                  </div>
+                  <div v-if="paramsData.length === 0" class="empty-params">
+                    <p>{{ $t('generate.no-params-available') }}</p>
                   </div>
                 </div>
-                <div v-if="paramsData.length === 0" class="empty-params">
-                  <p>{{ $t('generate.no-params-available') }}</p>
+                <div v-else class="empty-params">
+                  <p>{{ $t('generate.select-command-first') }}</p>
                 </div>
-              </div>
-              <div v-else class="empty-params">
-                <p>{{ $t('generate.select-command-first') }}</p>
-              </div>
+              </template>
+              <template v-else>
+                <div v-if="attributeLoading" class="empty-params">
+                  <p>{{ $t('generate.loading') }}</p>
+                </div>
+                <div v-else-if="attributeList.length">
+                  <div class="attribute-toolbar">
+                    <NCheckbox
+                      v-model:checked="selectAllAttributes"
+                      :indeterminate="isAttributeIndeterminate"
+                    >
+                      {{ $t('generate.select-all') }}
+                    </NCheckbox>
+                  </div>
+                  <div v-for="item in attributeList" :key="item.key || item.id" class="attribute-row">
+                    <div class="attribute-info">
+                      <NCheckbox v-model:checked="item.checked">
+                        <div class="attribute-label">
+                          <div v-if="item.data_name" class="attribute-name">
+                            {{ item.data_name }}
+                          </div>
+                          <div class="attribute-key">{{ item.key }}</div>
+                        </div>
+                      </NCheckbox>
+                    </div>
+                    <div class="attribute-input">
+                      <NInput
+                        v-model:value="item.inputValue"
+                        :placeholder="$t('generate.attribute-value-placeholder')"
+                        :disabled="!item.checked"
+                      />
+                    </div>
+                  </div>
+                  <div v-if="!hasAttributeSelection" class="attribute-helper">
+                    {{ $t('generate.attribute-helper-text') }}
+                  </div>
+                </div>
+                <div v-else class="empty-params">
+                  <p>{{ $t('generate.no-attributes-available') }}</p>
+                </div>
+              </template>
             </NTabPane>
-            <NTabPane name="command" :tab="$t('generate.command-line')">
+            <NTabPane name="command" :tab="customTabLabel">
               <NFormItem label="" :validation-status="validationJson" :feedback="inputFeedback">
-                <NInput v-model:value="formModel.textValue" type="textarea" :placeholder="$t('generate.or-enter-here')" />
+                <NInput
+                  v-model:value="formModel.textValue"
+                  type="textarea"
+                  :placeholder="isCommand ? $t('generate.or-enter-here') : $t('generate.custom-attribute-placeholder')"
+                />
               </NFormItem>
             </NTabPane>
           </NTabs>
@@ -476,5 +658,54 @@ const isSubmitDisabled = computed(() => {
     margin: 0;
     font-size: 13px;
   }
+}
+
+.attribute-toolbar {
+  margin-bottom: 12px;
+}
+
+.attribute-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f2f4f7;
+
+  &:first-of-type {
+    border-top: 1px solid #f2f4f7;
+  }
+
+  &:last-of-type {
+    margin-bottom: 12px;
+  }
+}
+
+.attribute-info {
+  flex: 1;
+
+  .attribute-label {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+  }
+
+  .attribute-name {
+    font-weight: 500;
+    color: #1f2937;
+  }
+
+  .attribute-key {
+    font-size: 14px;
+    color: #6b7280;
+  }
+}
+
+.attribute-input {
+  flex: 1.2;
+}
+
+.button-group {
+  margin-top: 16px;
+  gap: 12px;
 }
 </style>
