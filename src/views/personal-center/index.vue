@@ -7,7 +7,7 @@
  * @LastEditTime: 2024-03-20 17:23:40
 -->
 <script setup lang="ts">
-import { onMounted, ref, toRefs } from 'vue'
+import { computed, onMounted, ref, toRefs, watch } from 'vue'
 import { NButton } from 'naive-ui'
 import type { FormItemRule, FormRules } from 'naive-ui'
 import { $t } from '@/locales'
@@ -23,8 +23,6 @@ import {
   validPasswordByExp
 } from '@/utils/common/tool'
 import { createProxyPattern } from '~/env.config'
-import CameraBg from '@/assets/imgs/camera-bg.png'
-import Camera from '@/assets/imgs/camera.png'
 import ProvinceCityDistrictSelector from '@/components/common/ProvinceCityDistrictSelector.vue'
 
 // 开发环境使用代理路径，生产环境使用完整URL
@@ -66,6 +64,53 @@ const languageOptions = [
   { label: 'English', value: 'en-US' }
 ]
 
+// 国家区号选项
+const countryCodeOptions = [
+  { label: '+86', value: '+86' },
+  { label: '+1', value: '+1' },
+  { label: '+44', value: '+44' },
+  { label: '+33', value: '+33' },
+  { label: '+49', value: '+49' },
+  { label: '+39', value: '+39' },
+  { label: '+34', value: '+34' },
+  { label: '+7', value: '+7' },
+  { label: '+81', value: '+81' },
+  { label: '+82', value: '+82' },
+  { label: '+65', value: '+65' },
+  { label: '+60', value: '+60' },
+  { label: '+66', value: '+66' },
+  { label: '+84', value: '+84' },
+  { label: '+62', value: '+62' },
+  { label: '+63', value: '+63' },
+  { label: '+91', value: '+91' },
+  { label: '+61', value: '+61' },
+  { label: '+64', value: '+64' },
+  { label: '+55', value: '+55' },
+  { label: '+52', value: '+52' },
+  { label: '+54', value: '+54' },
+  { label: '+27', value: '+27' },
+  { label: '+20', value: '+20' },
+  { label: '+971', value: '+971' },
+  { label: '+966', value: '+966' },
+  { label: '+90', value: '+90' },
+  { label: '+31', value: '+31' },
+  { label: '+46', value: '+46' },
+  { label: '+47', value: '+47' },
+  { label: '+45', value: '+45' },
+  { label: '+41', value: '+41' },
+  { label: '+43', value: '+43' },
+  { label: '+32', value: '+32' },
+  { label: '+351', value: '+351' },
+  { label: '+30', value: '+30' },
+  { label: '+48', value: '+48' },
+  { label: '+420', value: '+420' },
+  { label: '+36', value: '+36' },
+  { label: '+385', value: '+385' },
+  { label: '+852', value: '+852' },
+  { label: '+853', value: '+853' },
+  { label: '+886', value: '+886' }
+]
+
 // 处理省市区选择变化
 const handleAddressChange = (value: { province: string; city: string; district: string }) => {
   userInfoData.value.address.province = value.province
@@ -77,7 +122,10 @@ const userInfoData = ref({
   additional_info: '',
   name: '',
   email: '',
-  phone_number: '', // 修改为 phone_number
+  phone_number: '', // 完整手机号
+  country_code: '+86',
+  phone_only: '',
+  authority: '',
   organization: '', // 组织
   timezone: '', // 时区
   default_language: '', // 默认语言
@@ -89,6 +137,50 @@ const userInfoData = ref({
     detailed_address: '' // 详细地址
   }
 })
+
+const parsePhoneNumber = (phoneNumber: string) => {
+  if (!phoneNumber) return { country_code: '+86', phone_only: '' }
+  const cleanPhone = phoneNumber.replace(/[^\d+]/g, '')
+  const sortedCountryCodes = countryCodeOptions.map(option => option.value).sort((a, b) => b.length - a.length)
+  for (const code of sortedCountryCodes) {
+    if (cleanPhone.startsWith(code)) {
+      return {
+        country_code: code,
+        phone_only: cleanPhone.substring(code.length)
+      }
+    }
+  }
+  return {
+    country_code: '+86',
+    phone_only: cleanPhone
+  }
+}
+
+const fullPhoneNumber = computed(() => `${userInfoData.value.country_code}${userInfoData.value.phone_only}`)
+const displayPhoneNumber = computed(() => {
+  const code = userInfoData.value.country_code?.trim()
+  const phone = userInfoData.value.phone_only?.trim()
+  if (code && phone) {
+    return `${code} ${phone}`
+  }
+  return userInfoData.value.phone_number || ''
+})
+
+watch(
+  () => [userInfoData.value.country_code, userInfoData.value.phone_only],
+  () => {
+    userInfoData.value.phone_number = fullPhoneNumber.value
+  },
+  { immediate: true }
+)
+
+const getSubmitUserInfoData = () => {
+  const { country_code, phone_only, ...rest } = userInfoData.value
+  return {
+    ...rest,
+    phone_number: fullPhoneNumber.value
+  }
+}
 /** 初始from数据 */
 const formData = ref({
   name: '',
@@ -188,7 +280,7 @@ async function updataUserInfo() {
   if (process.env.NODE_ENV === 'development') {
   }
 
-  const { error } = await changeInformation(userInfoData.value)
+  const { error } = await changeInformation(getSubmitUserInfoData())
   if (!error) {
     window.$message?.success($t('custom.grouping_details.operationSuccess'))
     closeEdit() // 成功后退出编辑模式
@@ -203,7 +295,8 @@ const resetPass = async () => {
 /** 修改密码 */
 const submitPass = async () => {
   await validate()
-  const data = localStorage.getItem('enableZcAndYzm') ? JSON.parse(localStorage.getItem('enableZcAndYzm')) : []
+  const cacheStr = localStorage.getItem('enableZcAndYzm')
+  const data = cacheStr ? JSON.parse(cacheStr) : []
   let salt: any = null
   let password1 = formData.value.password
   if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
@@ -232,7 +325,7 @@ async function handleFinish({ event }: { event?: ProgressEvent }) {
   userInfoData.value.avatar_url = response.data.path
 
   // 调用用户信息更新接口,更新成功，刷新页面头像显示
-  const { error } = await changeInformation(userInfoData.value)
+  const { error } = await changeInformation(getSubmitUserInfoData())
   if (!error) {
     // 显示头像时使用服务器域名，去掉 /api/v1 路径
     const serverUrl = getDemoServerUrl().replace('/api/v1', '')
@@ -241,10 +334,15 @@ async function handleFinish({ event }: { event?: ProgressEvent }) {
 
     // 重新获取最新的用户信息，确保本地数据与服务器数据保持同步
     const { data } = await fetchUserInfo()
+    const basePhone = data.phone_num || data.phone_number || ''
+    const { country_code, phone_only } = parsePhoneNumber(basePhone)
     userInfoData.value = {
       ...data,
       // 处理电话号码字段的兼容性映射
-      phone_number: data.phone_num || data.phone_number || '',
+      phone_number: basePhone,
+      country_code,
+      phone_only,
+      authority: data.authority || '',
       // 处理附加信息字段的兼容性映射
       additional_info: data.additional_info || data.additionalInfo || '{}',
       // 确保新增字段有默认值
@@ -262,12 +360,21 @@ async function handleFinish({ event }: { event?: ProgressEvent }) {
     window.$message?.success($t('custom.grouping_details.operationSuccess'))
   }
 }
+
+function handleUploadFinish(payload: { event?: ProgressEvent }) {
+  void handleFinish(payload)
+}
 onMounted(async () => {
   const { data } = await fetchUserInfo()
+  const basePhone = data.phone_num || data.phone_number || ''
+  const { country_code, phone_only } = parsePhoneNumber(basePhone)
   userInfoData.value = {
     ...data,
     // 将 phone_num 映射为 phone_number
-    phone_number: data.phone_num || data.phone_number || '',
+    phone_number: basePhone,
+    country_code,
+    phone_only,
+    authority: data.authority || '',
     // 兼容 additional_info 和 additionalInfo 字段
     additional_info: data.additional_info || data.additionalInfo || '{}',
     // 确保新字段有默认值
@@ -317,7 +424,7 @@ onMounted(async () => {
             :data="{
               type: 'user_icon'
             }"
-            @finish="handleFinish"
+            @finish="handleUploadFinish"
           >
             <div class="relative w-100px h-100px">
               <div v-if="!header" class="avatar">
@@ -388,7 +495,7 @@ onMounted(async () => {
               <div class="flex justify-start">
                 <div class="w-120px text-14px text-#666 dark:text-gray-600">{{ $t('generate.phoneNumber') }}</div>
 
-                <div>{{ userInfoData.phone_number }}</div>
+                <div>{{ displayPhoneNumber }}</div>
               </div>
               <n-divider style="margin: 12px 0" />
               <div class="flex justify-start">
@@ -433,10 +540,19 @@ onMounted(async () => {
                 </NFormItem>
 
                 <NFormItem path="phone_number" :label="$t('generate.phoneNumber')">
-                  <NInput
-                    v-model:value="userInfoData.phone_number"
-                    placeholder="请输入手机号码"
-                  />
+                  <div class="flex gap-2 w-full">
+                    <NSelect
+                      v-model:value="userInfoData.country_code"
+                      class="w-24"
+                      :options="countryCodeOptions"
+                      :placeholder="'区号'"
+                    />
+                    <NInput
+                      v-model:value="userInfoData.phone_only"
+                      class="flex-1"
+                      placeholder="请输入手机号码"
+                    />
+                  </div>
                 </NFormItem>
 
                 <NFormItem path="email" :label="$t('generate.email-address')">
@@ -530,12 +646,7 @@ onMounted(async () => {
 
               <div class="flex gap-4">
                 <NButton type="primary" @click="submitPass">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                      d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"
-                    ></path>
-                  </svg>
-                  <span class="ml-8px">{{ $t('common.save') }}</span>
+                  {{ $t('common.save') }}
                 </NButton>
                 <NButton @click="resetPass">
                   {{ $t('generate.reset') }}

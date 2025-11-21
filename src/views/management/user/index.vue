@@ -251,6 +251,7 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
   {
     key: 'actions',
     width: '300px',
+    fixed: 'right',
     title: () => $t('common.actions'),
     align: 'left',
     render: row => {
