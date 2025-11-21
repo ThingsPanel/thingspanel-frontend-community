@@ -171,7 +171,6 @@ import SvgIcon from '@/components/custom/svg-icon.vue'
 import { getDemoServerUrl } from '@/utils/common/tool'
 
 const demoUrl = getDemoServerUrl()
-const url: any = ref(demoUrl)
 
 // 注释：已移除defaultConfigSvg导入和svgToDataUrl函数，现在使用SvgIcon组件处理SVG图标
 
@@ -186,6 +185,12 @@ const deviceTypeIcons = {
 // 获取设备图标名称的函数
 const getDeviceIconName = (deviceType: string): string => {
   return deviceTypeIcons[deviceType] || deviceTypeIcons.default
+}
+
+const getConfigImageUrl = (imageUrl?: string) => {
+  if (!imageUrl) return ''
+  if (/^https?:\/\//i.test(imageUrl)) return imageUrl
+  return `${demoUrl.replace('api/v1', '')}${imageUrl}`
 }
 
 // 注释：已移除getConfigImageUrl函数，现在直接在模板中判断是否有image_url
@@ -258,7 +263,12 @@ const availableViews = [
               <!-- 底部图标 - 左下角显示配置图片 -->
               <template #footer-icon>
                 <div class="footer-icon-container">
-                  <img v-if="item.image_url" :src="item.image_url" alt="config image" class="config-image" />
+                  <img
+                    v-if="item.image_url"
+                    :src="getConfigImageUrl(item.image_url)"
+                    alt="config image"
+                    class="config-image"
+                  />
                   <SvgIcon v-else local-icon="default-config" class="config-image" />
                 </div>
               </template>

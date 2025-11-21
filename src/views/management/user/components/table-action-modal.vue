@@ -398,7 +398,7 @@ watch(
             <NSelect
               v-model:value="formModel.country_code"
               :options="countryCodeOptions"
-              class="w-32"
+              class="w-24"
               :placeholder="'区号'"
             />
             <NInput v-model:value="formModel.phone_only" :placeholder="'请输入手机号'" class="flex-1" />
