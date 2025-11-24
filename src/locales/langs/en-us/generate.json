@@ -430,7 +430,7 @@
   "generate.heartbeatThreshold": "Heartbeat Threshold",
   "generate.heartbeatIntervalSeconds": "Heartbeat Interval (seconds)",
   "generate.timeoutThreshold": "Timeout Threshold",
-  "generate.timeoutMinutes": "Timeout (minutes)",
+  "generate.timeoutMinutes": "Timeout (seconds)",
   "generate.phoneNumber": "Phone Number",
   "generate.location": "Location",
   "generate.pluginDemoUrl": "Plugin Demo URL",
