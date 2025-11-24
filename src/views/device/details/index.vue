@@ -106,12 +106,6 @@ let components = [
     refreshKey: 0
   },
   {
-    key: 'user',
-    name: () => $t('custom.device_details.user'),
-    component: User,
-    refreshKey: 0
-  },
-  {
     key: 'settings',
     name: () => $t('custom.device_details.settings'),
     component: Settings,
