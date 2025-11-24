@@ -430,7 +430,7 @@
   "generate.heartbeatThreshold": ">0代表启用心跳判断，系统仅按照遥测数据的上报作为设备的心跳判断在线离线状态",
   "generate.heartbeatIntervalSeconds": "心跳判断（秒）",
   "generate.timeoutThreshold": ">0代表启用超时功能，用来判断设备是否异常在线。当设备在该时间内未上报遥测数据，平台会认为该设备已离线",
-  "generate.timeoutMinutes": "超时时间（分钟）",
+  "generate.timeoutMinutes": "超时时间（秒）",
   "generate.phoneNumber": "手机号码",
   "generate.location": "定位",
   "generate.latitude": "纬度",
