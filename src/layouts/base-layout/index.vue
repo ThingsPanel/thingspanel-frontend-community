@@ -9,7 +9,6 @@ import { useAppStore } from '@/store/modules/app'
 import { useThemeStore } from '@/store/modules/theme'
 import { useRouteStore } from '@/store/modules/route'
 import { localStg } from '@/utils/storage'
-import deviceStatusMp3 from '@/assets/audio/device-status.mp3'
 import { useRouterPush } from '@/hooks/common/router'
 import { useRouter, useRoute } from 'vue-router'
 import { createLogger } from '@/utils/logger'
@@ -22,6 +21,8 @@ import GlobalContent from '../modules/global-content/index.vue'
 import GlobalFooter from '../modules/global-footer/index.vue'
 import ThemeDrawer from '../modules/theme-drawer/index.vue'
 import { setupMixMenuContext } from '../hooks/use-mix-menu'
+import onlineAlert  from '@/assets/audio/online2.wav'
+import offLineAlert  from '@/assets/audio/offline.wav'
 const logger = createLogger('Layout')
 
 const { routerPushByKey } = useRouterPush()
@@ -334,7 +335,9 @@ const createEventSource = () => {
            * 处理浏览器自动播放策略限制
            */
           try {
-            const audio = new Audio(deviceStatusMp3)
+
+            // 上下线区分提示音
+            const audio = new Audio(data.is_online ? onlineAlert : offLineAlert)
             // 设置音频属性以符合浏览器策略
             audio.volume = 0.5 // 设置适中的音量
             audio.preload = 'auto' // 预加载音频
