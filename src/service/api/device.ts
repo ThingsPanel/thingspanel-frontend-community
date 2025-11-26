@@ -114,6 +114,11 @@ export const deviceAlarmHistoryPut = async (params: any) => {
   return await request.put<any>(`/alarm/info/history`, params)
 }
 
+/** 删除设备告警历史 */
+export const deviceAlarmHistoryDelete = async (id: string) => {
+  return await request.delete<any>(`/alarm/info/history/${id}`)
+}
+
 /** 获取设备功能模板列表 */
 export const deviceTemplate = async (params: any) => {
   return await request.get<Api.BaseApi.Data | any>(`/device/template`, {
