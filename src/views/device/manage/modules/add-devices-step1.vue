@@ -58,6 +58,7 @@ function handleValidateClick(e: MouseEvent) {
             label-field="name"
             value-field="id"
             :options="configOptions"
+            filterable
           />
         </n-form-item>
         <n-form-item>
