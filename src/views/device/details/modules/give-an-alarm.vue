@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { NButton, NCard, NFlex, NInput } from 'naive-ui'
-import { EyeOutline, Refresh } from '@vicons/ionicons5'
+import { EyeOutline, Refresh, TrashOutline } from '@vicons/ionicons5'
 import moment from 'moment/moment'
 import Heart from '@vicons/fa/Heart'
 import HeartBroken from '@vicons/fa/HeartBroken'
 import { Edit } from '@vicons/carbon'
 import { $t } from '@/locales'
-import { deviceAlarmHistory, deviceAlarmHistoryPut } from '@/service/api'
+import { deviceAlarmHistory, deviceAlarmHistoryPut, deviceAlarmHistoryDelete } from '@/service/api'
 import { useRouterPush } from '@/hooks/common/router'
 import alarmDataList from '@/views/automation/scene-linkage/modules/dataList.vue'
 
@@ -132,6 +132,28 @@ const submitCallback = async () => {
   cancelCallback()
   // await getAlarmHistory();
 }
+const handleDelete = async (item: any) => {
+  window.$dialog?.warning({
+    title: $t('common.deletePrompt'),
+    content: $t('common.sceneLinkageInfo'),
+    positiveText: $t('common._confirm'),
+    negativeText: $t('common._cancel'),
+    onPositiveClick: async () => {
+      try {
+        await deviceAlarmHistoryDelete(item.id)
+        window.$message?.success($t('common.deleteSuccess'))
+        // 从列表中移除已删除的项
+        const index = alarmHistory.value.findIndex(alarm => alarm.id === item.id)
+        if (index > -1) {
+          alarmHistory.value.splice(index, 1)
+          alarmHistoryTotal.value -= 1
+        }
+      } catch (error) {
+        window.$message?.error($t('common.deleteFail'))
+      }
+    }
+  })
+}
 const alarmAdd = () => {
   routerPushByKey('automation_linkage-edit', {
     query: { device_id: props.id, backType: 'device' }
@@ -230,6 +252,12 @@ onMounted(() => {
                   <Edit />
                 </NIcon>
                 {{ $t('custom.devicePage.maintenance') }}
+              </NButton>
+              <NButton text class="ml-8" @click="handleDelete(item)">
+                <NIcon size="18">
+                  <TrashOutline />
+                </NIcon>
+                {{ $t('common._delete') }}
               </NButton>
             </div>
           </div>
@@ -360,9 +388,6 @@ onMounted(() => {
       }
     }
   }
-}
-
-.alarm-list {
 }
 
 .color-ye {

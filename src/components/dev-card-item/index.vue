@@ -129,8 +129,9 @@ const handleTopRightIconClick = () => {
           <div class="title-row" :class="{ clickable: shouldHandleTitleClick }" @click="handleTitleClick">
             <div class="title-content">
               <!-- 主标题，支持单行省略 -->
-              <NEllipsis class="card-title" :tooltip="false">
-                {{ title }}
+              <NEllipsis :tooltip="true">
+                <template #tooltip>{{ title }}</template>
+                <span class="card-title">{{ title }}</span>
               </NEllipsis>
 
               <!-- 状态点，紧跟标题显示 -->
