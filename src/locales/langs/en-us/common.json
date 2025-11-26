@@ -31,7 +31,7 @@
   "common.templateDeleted": "The current template has been deleted",
   "common.normal": "Normal",
   "common.lowAlarm": "Low Alert",
-  "common.intermediateAlarm": "Intermediate Alert",
+  "common.intermediateAlarm": "Medium Alert",
   "common.highAlarm": "High Alert",
   "common.allStatus": "All Statuses",
   "common.enterAlarmDesc": "Enter the alert description",

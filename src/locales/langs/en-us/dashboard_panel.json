@@ -20,7 +20,7 @@
   "dashboard_panel.cardName.week.fri": "Friday",
   "dashboard_panel.cardName.week.sat": "Saturday",
   "dashboard_panel.cardName.week.sun": "Sunday",
-  "dashboard_panel.cardName.bugNum": "Total Alarms",
+  "dashboard_panel.cardName.bugNum": "Total Alerts",
   "dashboard_panel.cardName.deviceNum": "Total Devices",
   "dashboard_panel.cardName.userNum": "Total Users",
   "dashboard_panel.cardName.regionNum": "Total Regions",
