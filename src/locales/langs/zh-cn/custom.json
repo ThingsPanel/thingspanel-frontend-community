@@ -149,6 +149,7 @@
   "custom.device_details.operationUsers": "操作用户",
   "custom.device_details.operationTime": "操作时间",
   "custom.device_details.sendInputData": "请输入发送数据",
+  "custom.device_details.modelMatched": "物模型",
   "custom.device_details.deleteAttribute": "删除属性",
   "custom.device_details.online": "在线",
   "custom.device_details.offline": "离线",

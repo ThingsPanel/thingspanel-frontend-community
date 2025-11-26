@@ -2,7 +2,7 @@
 import { computed, getCurrentInstance, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import type { NumberAnimationInst } from 'naive-ui'
 import dayjs from 'dayjs'
-import { Activity } from '@vicons/tabler'
+import { Activity, CircleCheck } from '@vicons/tabler'
 import { DocumentOnePage24Regular } from '@vicons/fluent'
 import { useWebSocket } from '@vueuse/core'
 import { MovingNumbers } from 'moving-numbers-vue3'
@@ -20,7 +20,7 @@ import { localStg } from '@/utils/storage'
 import { deviceDetail } from '@/service/api/device'
 import { $t } from '@/locales'
 import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool'
-import { deviceCustomControlList } from '@/service/api/system-data'
+import { deviceCustomControlList, telemetryApi } from '@/service/api/system-data'
 import HistoryData from './modules/history-data.vue'
 import TimeSeriesData from './modules/time-series-data.vue'
 import { useLoading } from '~/packages/hooks'
@@ -319,6 +319,37 @@ const isColor = (i: any) => {
 }
 
 const controlList = ref<any[]>([])
+const modelTelemetryMap = ref<Record<string, any>>({})
+const fetchModelTelemetry = async () => {
+  if (!props.deviceTemplateId) {
+    modelTelemetryMap.value = {}
+    return
+  }
+  const { data, error }: any = await telemetryApi({
+    device_template_id: props.deviceTemplateId,
+    page: 1,
+    page_size: 99
+  })
+  if (!error && data) {
+    const map: Record<string, any> = {}
+    ;(data.list || []).forEach((item: any) => {
+      if (item?.data_identifier) {
+        map[item.data_identifier] = item
+      }
+    })
+    modelTelemetryMap.value = map
+  } else {
+    modelTelemetryMap.value = {}
+  }
+}
+const isModelTelemetry = (key: string) => {
+  if (!key) return false
+  return Boolean(modelTelemetryMap.value[key])
+}
+const getModelTelemetryName = (key: string) => {
+  if (!key) return ''
+  return modelTelemetryMap.value[key]?.data_name || ''
+}
 const getControlList = () => {
   if (props.deviceTemplateId) {
     const queryjson = {
@@ -338,12 +369,14 @@ watch(
   val => {
     if (!val) return
     getControlList()
+    fetchModelTelemetry()
   }
 )
 onMounted(() => {
   fetchData()
   fetchTelemetry()
   getControlList()
+  fetchModelTelemetry()
 })
 
 onUnmounted(() => {
@@ -364,6 +397,11 @@ const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance()
   return proxy.getPlatform()
 })
+const MAX_LABEL_LENGTH = 4
+const getShortLabel = (label?: string) => {
+  if (!label) return ''
+  return label.length > MAX_LABEL_LENGTH ? `${label.slice(0, MAX_LABEL_LENGTH)}...` : label
+}
 
 const validationJson = computed(() => {
   if (formValue.value && !isJSON(formValue.value)) {
@@ -409,9 +447,7 @@ const inputFeedback = computed(() => {
             <div class="card-body">
               <n-tooltip v-if="isColor(i)" trigger="hover" placement="top">
                 <template #trigger>
-                  <span class="value-display-ellipsis" style="font-size: 24px">
                     {{ i.value }}
-                  </span>
                 </template>
                 <div style="max-width: 300px; word-break: break-all">{{ i.value }}</div>
               </n-tooltip>
@@ -425,9 +461,9 @@ const inputFeedback = computed(() => {
               <span v-if="i.unit">{{ i.unit }}</span>
             </div>
             <template #header>
-              <div class="line1" :title="i.key">
+              <div class="line1" :title="i.label || i.key">
                 <template v-if="i.label">
-                  <span v-if="i.label">{{ i.label }}</span>
+                  <span :title="i.label">{{ getShortLabel(i.label) }}</span>
                   <span>({{ i.key }})</span>
                 </template>
                 <template v-else>
@@ -436,8 +472,22 @@ const inputFeedback = computed(() => {
               </div>
             </template>
             <template #footer>
-              <div class="flex justify-end">
-                {{ i.ts ? dayjs(i.ts).format('YYYY-MM-DD HH:mm:ss') : nowTime }}
+              <div class="flex justify-between items-center footer-row">
+                <div class="flex items-center gap-4px">
+                  <NIcon
+                    v-if="isModelTelemetry(i.key)"
+                    size="14"
+                    color="#52c41a"
+                  >
+                    <CircleCheck />
+                  </NIcon>
+                  <span v-if="isModelTelemetry(i.key)" class="model-matched-text">
+                    {{ $t('custom.device_details.modelMatched') }}
+                  </span>
+                </div>
+                <div class="flex justify-end">
+                  {{ i.ts ? dayjs(i.ts).format('YYYY-MM-DD HH:mm:ss') : nowTime }}
+                </div>
               </div>
             </template>
             <template #header-extra>
@@ -536,7 +586,7 @@ const inputFeedback = computed(() => {
                 margin-top: 5px;
                 margin-bottom: 5px;
                 width: 300px;
-                wite-space: nowrap;
+                white-space: nowrap;
                 overflow: hidden;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -630,6 +680,9 @@ const inputFeedback = computed(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 
   span {
     &:nth-child(2) {
@@ -637,6 +690,19 @@ const inputFeedback = computed(() => {
       padding-left: 5px;
     }
   }
+}
+.model-matched-tag {
+  flex-shrink: 0;
+}
+.model-matched-icon {
+  flex-shrink: 0;
+}
+.model-matched-text {
+  font-size: 12px;
+  color: #52c41a;
+}
+.footer-row {
+  min-height: 24px;
 }
 
 .card-body {
@@ -672,6 +738,7 @@ const inputFeedback = computed(() => {
 .value-display-ellipsis {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
