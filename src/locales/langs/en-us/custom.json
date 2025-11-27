@@ -149,7 +149,6 @@
   "custom.device_details.operationUsers": "Operation Users",
   "custom.device_details.operationTime": "Operation Time",
   "custom.device_details.sendInputData": "Please enter data to send",
-  "custom.device_details.modelMatched": "Thing Model",
   "custom.device_details.deleteAttribute": "Delete Attribute",
   "custom.device_details.online": "Online",
   "custom.device_details.offline": "Offline",
