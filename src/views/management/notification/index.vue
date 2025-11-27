@@ -10,13 +10,13 @@ import { $t } from '~/src/locales'
     <NCard :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="h-full flex-col">
         <NTabs type="line" animated>
-          <NTabPane name="1" :tab="$t('page.manage.notification.email.title')">
+          <NTabPane name="1" :tab="$t('page.manage.notification.email.title')" class="pannel-content">
             <Email></Email>
           </NTabPane>
-          <NTabPane name="2" :tab="$t('page.manage.notification.shortMessage.title')">
+          <NTabPane name="2" :tab="$t('page.manage.notification.shortMessage.title')" class="pannel-content">
             <ShortMessage></ShortMessage>
           </NTabPane>
-          <NTabPane name="3" :tab="$t('page.manage.notification.pushNotification.title')">
+          <NTabPane name="3" :tab="$t('page.manage.notification.pushNotification.title')" class="pannel-content">
             <PushNotification></PushNotification>
           </NTabPane>
         </NTabs>
@@ -25,4 +25,8 @@ import { $t } from '~/src/locales'
   </div>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+  .pannel-content {
+    padding-top: 16px !important;
+  }
+</style>

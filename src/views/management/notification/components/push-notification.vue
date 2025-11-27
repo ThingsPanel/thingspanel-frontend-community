@@ -13,8 +13,8 @@ const formModel = reactive<NotificationServices.PushNotification>(createDefaultF
 
 function setTableData(data: Api.NotificationServices.PushNotification) {
   Object.assign(formModel, data)
-  if (data.pushServer !== 'null') {
-    formModel.pushServer = JSON.parse(data.pushServer)
+  if (data.url !== 'null') {
+    formModel.url = data.url
   }
 }
 
@@ -29,7 +29,7 @@ async function getNotificationServices() {
 
 function createDefaultFormModel(): NotificationServices.PushNotification {
   return {
-    pushServer: ''
+    url: ''
   }
 }
 
@@ -44,7 +44,7 @@ async function handleSubmit() {
   delete formData.config
   const data: any = await editPushNotificationServices(formData)
   if (!data.error) {
-    window.$message?.success('success')
+    window.$message?.success($t('common.saveSuccess'))
     endLoading()
     await getNotificationServices()
   }
@@ -66,7 +66,7 @@ init()
           :label="$t('page.manage.notification.pushNotification.pushServer')"
           path="pushNotification.pushServer"
         >
-          <NInput v-model:value="formModel.pushServer" />
+          <NInput v-model:value="formModel.url" />
         </NFormItemGridItem>
       </NGrid>
       <NGrid :cols="24">
