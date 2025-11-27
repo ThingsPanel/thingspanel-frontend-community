@@ -20,12 +20,12 @@ export const sendTestEmail = async (params: any) => {
 
 /** 推送服务配置 */
 export const fetchPushNotificationServices = async () => {
-  const data = await request.get<Api.NotificationServices.PushNotification>(`/api/v1/push/config`)
+  const data = await request.get<Api.NotificationServices.PushNotification>(`/message_push/config `)
   return data
 }
 
 /** 修改推送服务配置 */
 export const editPushNotificationServices = async (params: any) => {
-  const data = await request.post<Api.BaseApi.Data>(`/api/v1/push/config`, params)
+  const data = await request.post<Api.BaseApi.Data>(`/message_push/config `, params)
   return data
 }
