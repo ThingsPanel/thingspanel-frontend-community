@@ -39,8 +39,8 @@ Dynamic Effect Demonstration
 </div>
 Mobile Application Interface
 <div align="center">
-  <img src="https://pub-dd72232484fd4c78b094868481918d04.r2.dev/tp-app-login.webp" width="30%" alt="Mobile App Login">
-  <img src="https://pub-dd72232484fd4c78b094868481918d04.r2.dev/tp-app.webp" width="30%" alt="Mobile App">
+  <img src="https://github.com/ThingsPanel/app/blob/main/github/iphone-1.png" width="30%">
+  <img src="https://github.com/ThingsPanel/app/blob/main/github/iphone-2.png" width="30%">
 </div>
 
 ## Demo
@@ -164,5 +164,6 @@ Thank you for your contributions to ThingsPanel!
 Special thanks to [paddy235](https://gitee.com/paddy235) for developing the ThingsPanel simulation test script, which can be used for simulation and stress testing. The script is available at: [ThingsPanel Simulation Test Script](https://gitee.com/paddy235/thingspanel_simulation_python).
 
 ![Contributors](https://contrib.rocks/image?repo=ThingsPanel/ThingsPanel-Go)
+
 
 
