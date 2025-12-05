@@ -439,7 +439,7 @@
   "generate.swiperPlugin": "Swiper Plugin",
   "generate.onlineDeviceConfig": "Online Device Config",
   "generate.svgIconCustomization": "SVG Icon Customization",
-  "generate.createDeviceConfig": "Create Device Config",
+  "generate.createDeviceConfig": "New Device Config",
   "generate.summaryOfLastMonth": "Summary of Last Month",
   "generate.salesOfCurrentMonth": "Sales of Current Month",
   "generate.customIconExample": "Custom Icon Example",
