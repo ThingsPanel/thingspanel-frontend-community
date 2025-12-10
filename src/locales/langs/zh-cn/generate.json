@@ -521,6 +521,7 @@
   "generate.topicMapping.column.mappingName": "映射名称",
   "generate.topicMapping.column.originalTopic": "原始主题",
   "generate.topicMapping.column.targetTopic": "目标主题",
+  "generate.topicMapping.column.dataIdentifier": "命令标识符",
   "generate.topicMapping.message.fetchFailed": "获取主题映射失败",
   "generate.topicMapping.message.createSuccess": "创建主题映射成功",
   "generate.topicMapping.message.updateSuccess": "更新主题映射成功",
@@ -534,6 +535,7 @@
   "generate.topicMapping.form.direction": "数据方向",
   "generate.topicMapping.form.originalTopic": "原始主题",
   "generate.topicMapping.form.targetTopic": "目标主题",
+  "generate.topicMapping.form.dataIdentifier": "命令标识符",
   "generate.topicMapping.form.description": "描述",
   "generate.topicMapping.placeholder.input": "请输入",
   "generate.topicMapping.placeholder.selectDirection": "请选择数据方向",
@@ -579,5 +581,6 @@
   "generate.topicMapping.validation.mappingName": "请输入映射名称",
   "generate.topicMapping.validation.direction": "请选择数据方向",
   "generate.topicMapping.validation.originalTopic": "请输入原始主题",
-  "generate.topicMapping.validation.targetTopic": "请选择目标主题"
+  "generate.topicMapping.validation.targetTopic": "请选择目标主题",
+  "generate.topicMapping.validation.dataIdentifier": "请输入命令标识符"
 }

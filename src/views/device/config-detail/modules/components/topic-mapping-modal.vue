@@ -10,6 +10,7 @@ interface TopicMapping {
   direction: 'up' | 'down'
   original_topic: string
   target_topic: string
+  data_identifier?: string
   description: string
   priority?: number
   enabled?: boolean
@@ -41,6 +42,7 @@ const formData = ref<TopicMapping>({
   direction: 'down',
   original_topic: '',
   target_topic: '',
+  data_identifier: '',
   description: '',
   priority: 0,
   enabled: true
@@ -209,6 +211,8 @@ const targetTopicOptions = computed(() =>
   formData.value.direction === 'up' ? uplinkTopicOptions.value : downlinkTopicOptions.value
 )
 
+const showDataIdentifier = computed(() => formData.value.target_topic === 'devices/command/{device_number}/+')
+
 const rules = computed<FormRules>(() => ({
   mapping_name: [
     {
@@ -237,6 +241,16 @@ const rules = computed<FormRules>(() => ({
       message: t('generate.topicMapping.validation.targetTopic'),
       trigger: 'change'
     }
+  ],
+  data_identifier: [
+    {
+      validator: () => {
+        if (!showDataIdentifier.value) return true
+        return !!formData.value.data_identifier
+      },
+      message: t('generate.topicMapping.validation.dataIdentifier'),
+      trigger: ['blur', 'change']
+    }
   ]
 }))
 
@@ -261,6 +275,7 @@ watch(
         direction: newData.direction || 'down',
         original_topic: newData.original_topic || '',
         target_topic: newData.target_topic || '',
+        data_identifier: newData.data_identifier || '',
         description: newData.description || '',
         priority: newData.priority ?? 0,
         enabled: newData.enabled ?? true
@@ -272,6 +287,7 @@ watch(
         direction: 'down',
         original_topic: '',
         target_topic: '',
+        data_identifier: '',
         description: '',
         priority: 0,
         enabled: true
@@ -289,6 +305,15 @@ watch(
   }
 )
 
+watch(
+  () => formData.value.target_topic,
+  value => {
+    if (value !== 'devices/command/{device_number}/+') {
+      formData.value.data_identifier = ''
+    }
+  }
+)
+
 // 监听弹窗显示状态，关闭时重置表单
 watch(
   () => props.visible,
@@ -301,6 +326,7 @@ watch(
           direction: 'down',
           original_topic: '',
           target_topic: '',
+        data_identifier: '',
           description: '',
           priority: 0,
           enabled: true
@@ -465,6 +491,14 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
           :render-label="renderTopicLabel"
           :render-tag="renderTopicTag"
         />
+      </NFormItem>
+
+      <NFormItem
+        v-if="showDataIdentifier"
+        :label="t('generate.topicMapping.form.dataIdentifier')"
+        path="data_identifier"
+      >
+        <NInput v-model:value="formData.data_identifier" :placeholder="t('generate.topicMapping.placeholder.input')" />
       </NFormItem>
 
       <NFormItem :label="t('generate.topicMapping.form.description')" path="description">
