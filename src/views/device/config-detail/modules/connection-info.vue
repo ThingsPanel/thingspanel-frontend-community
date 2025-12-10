@@ -75,6 +75,7 @@ interface TopicMapping {
   description: string
   original_topic: string
   target_topic: string
+  data_identifier?: string
   priority?: number
   enabled?: boolean
 }
@@ -105,6 +106,11 @@ const topicMappingColumns = computed<DataTableColumns<TopicMapping>>(() => [
   {
     title: t('generate.topicMapping.column.targetTopic'),
     key: 'target_topic',
+    align: 'left'
+  },
+  {
+    title: t('generate.topicMapping.column.dataIdentifier'),
+    key: 'data_identifier',
     align: 'left'
   },
   {
@@ -177,6 +183,7 @@ const normalizeTopicMapping = (item: any): TopicMapping => ({
   description: item.description ?? '',
   original_topic: item.source_topic ?? '',
   target_topic: item.target_topic ?? '',
+  data_identifier: item.data_identifier ?? '',
   priority: item.priority ?? 0,
   enabled: item.enabled ?? true
 })
@@ -210,6 +217,7 @@ const handleSaveTopicMapping = async (data: TopicMapping) => {
     direction: data.direction,
     source_topic: data.original_topic?.trim(),
     target_topic: data.target_topic?.trim(),
+    data_identifier: data.data_identifier?.trim(),
     description: data.description,
     priority: data.priority ?? 0,
     enabled: data.enabled ?? true

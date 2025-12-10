@@ -501,6 +501,7 @@
   "generate.topicMapping.column.mappingName": "Mapping Name",
   "generate.topicMapping.column.originalTopic": "Original Topic",
   "generate.topicMapping.column.targetTopic": "Target Topic",
+  "generate.topicMapping.column.dataIdentifier": "Command Identifier",
   "generate.topicMapping.message.fetchFailed": "Failed to fetch topic mappings",
   "generate.topicMapping.message.createSuccess": "Topic mapping created successfully",
   "generate.topicMapping.message.updateSuccess": "Topic mapping updated successfully",
@@ -514,6 +515,7 @@
   "generate.topicMapping.form.direction": "Data Direction",
   "generate.topicMapping.form.originalTopic": "Original Topic",
   "generate.topicMapping.form.targetTopic": "Target Topic",
+  "generate.topicMapping.form.dataIdentifier": "Command Identifier",
   "generate.topicMapping.form.description": "Description",
   "generate.topicMapping.placeholder.input": "Please enter",
   "generate.topicMapping.placeholder.selectDirection": "Please select data direction",
@@ -559,5 +561,6 @@
   "generate.topicMapping.validation.mappingName": "Please enter the mapping name",
   "generate.topicMapping.validation.direction": "Please select the data direction",
   "generate.topicMapping.validation.originalTopic": "Please enter the original topic",
-  "generate.topicMapping.validation.targetTopic": "Please select the target topic"
+  "generate.topicMapping.validation.targetTopic": "Please select the target topic",
+  "generate.topicMapping.validation.dataIdentifier": "Please enter the command identifier"
 }
