@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, h } from 'vue'
+import { ref, watch, computed, h, nextTick } from 'vue'
 import { NModal, NForm, NFormItem, NInput, NSelect, NButton, NPopover, useMessage, NText } from 'naive-ui'
 import type { FormInst, FormRules, SelectRenderLabel, SelectRenderTag } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
@@ -47,6 +47,9 @@ const formData = ref<TopicMapping>({
   priority: 0,
   enabled: true
 })
+
+// 标识当前是否处于编辑数据填充阶段，避免初始化时误清空目标主题
+const isFillingFromEdit = ref(false)
 
 interface TopicOptionSource {
   value: string
@@ -241,16 +244,6 @@ const rules = computed<FormRules>(() => ({
       message: t('generate.topicMapping.validation.targetTopic'),
       trigger: 'change'
     }
-  ],
-  data_identifier: [
-    {
-      validator: () => {
-        if (!showDataIdentifier.value) return true
-        return !!formData.value.data_identifier
-      },
-      message: t('generate.topicMapping.validation.dataIdentifier'),
-      trigger: ['blur', 'change']
-    }
   ]
 }))
 
@@ -268,6 +261,7 @@ const modalVisible = computed({
 watch(
   () => props.editData,
   newData => {
+    isFillingFromEdit.value = true
     if (newData) {
       formData.value = {
         id: newData.id,
@@ -293,6 +287,10 @@ watch(
         enabled: true
       }
     }
+    // 异步下一个 tick 后再关闭填充标志，确保 watcher 不清空目标主题
+    nextTick(() => {
+      isFillingFromEdit.value = false
+    })
   },
   { immediate: true }
 )
@@ -301,6 +299,7 @@ watch(
 watch(
   () => formData.value.direction,
   () => {
+    if (isFillingFromEdit.value) return
     formData.value.target_topic = ''
   }
 )
@@ -350,6 +349,33 @@ const handleSave = async () => {
 // 取消
 const handleCancel = () => {
   modalVisible.value = false
+}
+
+// 格式化 Markdown 文本
+const formatMarkdown = (text: string): string => {
+  if (!text) return ''
+  // 先处理代码块（```...```），避免被其他规则影响
+  const codeBlockPlaceholder = '__CODE_BLOCK_PLACEHOLDER__'
+  const codeBlocks: string[] = []
+  let result = text.replace(/```([\s\S]*?)```/g, (match, code) => {
+    const placeholder = `${codeBlockPlaceholder}${codeBlocks.length}`
+    codeBlocks.push(code.trim())
+    return placeholder
+  })
+  // 处理加粗文本
+  result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+  // 处理行内代码（不在代码块内的）
+  result = result.replace(/`([^`]+)`/g, '<code>$1</code>')
+  // 处理换行
+  result = result.replace(/\n/g, '<br>')
+  // 恢复代码块
+  codeBlocks.forEach((code, index) => {
+    result = result.replace(
+      `${codeBlockPlaceholder}${index}`,
+      `<pre class="code-block"><code>${code}</code></pre>`
+    )
+  })
+  return result
 }
 
 // 渲染目标主题标签（下拉选项中的显示）
@@ -451,16 +477,16 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
                   <div class="tip-content">
                     <div class="tip-section">
                       <div class="tip-label">{{ t('generate.topicMapping.tips.definitionLabel') }}</div>
-                      <div class="tip-text">{{ t('generate.topicMapping.tips.uplink.definition') }}</div>
+                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.uplink.definition'))"></div>
                     </div>
                     <div class="tip-section">
                       <div class="tip-label">{{ t('generate.topicMapping.tips.exampleLabel') }}</div>
-                      <div class="tip-text">{{ t('generate.topicMapping.tips.uplink.example') }}</div>
+                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.uplink.example'))"></div>
                     </div>
                     <div class="tip-section">
                       <div class="tip-label">{{ t('generate.topicMapping.tips.messageIdLabel') }}</div>
-                      <div class="tip-text">{{ t('generate.topicMapping.tips.uplink.messageIdLine1') }}</div>
-                      <div class="tip-text">{{ t('generate.topicMapping.tips.uplink.messageIdLine2') }}</div>
+                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.uplink.messageIdLine1'))"></div>
+                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.uplink.messageIdLine2'))"></div>
                     </div>
                   </div>
                 </template>
@@ -469,11 +495,17 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
                   <div class="tip-content">
                     <div class="tip-section">
                       <div class="tip-label">{{ t('generate.topicMapping.tips.definitionLabel') }}</div>
-                      <div class="tip-text">{{ t('generate.topicMapping.tips.downlink.definition') }}</div>
+                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.definition'))"></div>
                     </div>
                     <div class="tip-section">
                       <div class="tip-label">{{ t('generate.topicMapping.tips.exampleLabel') }}</div>
-                      <div class="tip-text">{{ t('generate.topicMapping.tips.downlink.example') }}</div>
+                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.example'))"></div>
+                    </div>
+                    <div class="tip-section">
+                      <div class="tip-label">{{ t('generate.topicMapping.tips.multiMappingLabel') }}</div>
+                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.multiMapping'))"></div>
+                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.multiMappingConfig'))"></div>
+                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.multiMappingProcess'))"></div>
                     </div>
                   </div>
                 </template>
@@ -573,9 +605,42 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
     color: #666;
     margin-bottom: 6px;
     padding-left: 8px;
+    white-space: pre-line;
     
     &:last-child {
       margin-bottom: 0;
+    }
+    
+    code {
+      background-color: #f5f5f5;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #e83e8c;
+    }
+    
+    .code-block {
+      background-color: #f5f5f5;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin: 8px 0;
+      overflow-x: auto;
+      white-space: pre;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      
+      code {
+        background-color: transparent;
+        padding: 0;
+        color: #333;
+      }
+    }
+    
+    strong {
+      font-weight: 600;
+      color: #333;
     }
   }
 }

@@ -16,10 +16,10 @@ import Automate from './modules/automate.vue'
 
 const { routerPushByKey } = useRouterPush()
 const route = useRoute()
-const configId = ref(route.query.id || '')
+const configId = ref<string>(typeof route.query.id === 'string' ? route.query.id : '')
 
 const configForm = ref({
-  id: route.query.id || '',
+  id: typeof route.query.id === 'string' ? route.query.id : '',
   additional_info: null,
   description: null,
   device_conn_type: null,
@@ -46,19 +46,29 @@ const getConfig = async () => {
   configForm.value = res.data
   if (configForm.value.device_template_id) {
     configForm.value.device_template_name = ''
-    getTemplateDetail(configForm.value.device_template_id)
+    getTemplateDetail(String(configForm.value.device_template_id))
   }
 }
-const activeName = ref('关联设备')
-// configId.value = <string>route.query.id || ''
+const tabKeys = {
+  associatedDevices: 'associatedDevices',
+  thingModel: 'thingModel',
+  protocolConfig: 'protocolConfig',
+  dataProces: 'dataProces',
+  automate: 'automate',
+  alarm: 'alarm',
+  extensionInfo: 'extensionInfo',
+  devicesSetting: 'devicesSetting'
+}
+
+const activeName = ref(tabKeys.associatedDevices)
 if (configId.value) {
   getConfig()
-  activeName.value = '关联设备'
+  activeName.value = tabKeys.associatedDevices
 }
 const clickConfig: () => void = () => {
   routerPushByKey('device_template', {
     query: {
-      id: configForm.value.device_template_id
+      id: String(configForm.value.device_template_id || '')
     }
   })
 }
@@ -88,28 +98,28 @@ const clickConfig: () => void = () => {
       </div>
 
       <n-tabs v-model:value="activeName" animated type="line">
-        <n-tab-pane :name="$t('common.associatedDevices')" :tab="$t('common.associatedDevices')">
+        <n-tab-pane :name="tabKeys.associatedDevices" :tab="$t('common.associatedDevices')">
           <AssociatedDevices :device-config-id="configId" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('common.thingModel')" :tab="$t('common.thingModel')">
+        <n-tab-pane :name="tabKeys.thingModel" :tab="$t('common.thingModel')">
           <AttributeInfo :config-info="configForm" @up-date-config="getConfig" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('common.protocolConfig')" :tab="$t('common.protocolConfig')">
+        <n-tab-pane :name="tabKeys.protocolConfig" :tab="$t('common.protocolConfig')">
           <ConnectionInfo :config-info="configForm" @up-date-config="getConfig" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('common.dataProces')" :tab="$t('common.dataProces')">
+        <n-tab-pane :name="tabKeys.dataProces" :tab="$t('common.dataProces')">
           <DataHandle :config-info="configForm" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('custom.device_details.automate')" :tab="$t('custom.device_details.automate')">
+        <n-tab-pane :name="tabKeys.automate" :tab="$t('custom.device_details.automate')">
           <Automate :config_id="configId" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('route.alarm')" :tab="$t('route.alarm')">
+        <n-tab-pane :name="tabKeys.alarm" :tab="$t('route.alarm')">
           <AlarmInfo :config_id="configId" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('generate.extension-info')" :tab="$t('generate.extension-info')">
+        <n-tab-pane :name="tabKeys.extensionInfo" :tab="$t('generate.extension-info')">
           <ExtendInfo :config-info="configForm" @up-date-config="getConfig" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('common.devicesSetting')" :tab="$t('common.devicesSetting')">
+        <n-tab-pane :name="tabKeys.devicesSetting" :tab="$t('common.devicesSetting')">
           <SettingInfo :config-info="configForm" @change="getConfig" />
         </n-tab-pane>
       </n-tabs>
