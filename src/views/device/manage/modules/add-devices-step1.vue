@@ -63,7 +63,7 @@ function handleValidateClick(e: MouseEvent) {
         </n-form-item>
         <n-form-item>
           <n-button type="primary" attr-type="button" @click="handleValidateClick">
-            {{ $t('device_template.nextStep') }}
+            {{ $t('custom.devicePage.saveAndNext') }}
           </n-button>
         </n-form-item>
       </n-form>

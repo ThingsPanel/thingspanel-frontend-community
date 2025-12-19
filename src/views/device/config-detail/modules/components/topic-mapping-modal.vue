@@ -48,7 +48,7 @@ const formData = ref<TopicMapping>({
   enabled: true
 })
 
-// 标识当前是否处于编辑数据填充阶段，避免初始化时误清空目标主题
+// 标识当前是否处于编辑数据填充阶段，避免初始化时误清空系统主题
 const isFillingFromEdit = ref(false)
 
 interface TopicOptionSource {
@@ -287,7 +287,7 @@ watch(
         enabled: true
       }
     }
-    // 异步下一个 tick 后再关闭填充标志，确保 watcher 不清空目标主题
+    // 异步下一个 tick 后再关闭填充标志，确保 watcher 不清空系统主题
     nextTick(() => {
       isFillingFromEdit.value = false
     })
@@ -295,7 +295,7 @@ watch(
   { immediate: true }
 )
 
-// 监听数据方向变化，重置目标主题
+// 监听数据方向变化，重置系统主题
 watch(
   () => formData.value.direction,
   () => {
@@ -378,7 +378,7 @@ const formatMarkdown = (text: string): string => {
   return result
 }
 
-// 渲染目标主题标签（下拉选项中的显示）
+// 渲染系统主题标签（下拉选项中的显示）
 const renderTopicLabel: SelectRenderLabel = (option) => {
   const topicOption = option as { label: string; value: string; description: string }
   return h(
@@ -413,7 +413,7 @@ const renderTopicLabel: SelectRenderLabel = (option) => {
   )
 }
 
-// 渲染目标主题标签（选中后显示在输入框中）
+// 渲染系统主题标签（选中后显示在输入框中）
 const renderTopicTag: SelectRenderTag = ({ option }) => {
   const topicOption = option as { label: string; value: string; description: string }
   return h(
