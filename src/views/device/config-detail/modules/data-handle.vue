@@ -35,6 +35,10 @@ const modalTitle = ref($t('generate.add'))
 const configForm: any = ref({})
 const scripTypeOpt = ref([
   {
+    label: $t('generate.all'),
+    value: ''
+  },
+  {
     label: $t('custom.devicePage.reportPreprocessing'),
     value: 'A'
   },
