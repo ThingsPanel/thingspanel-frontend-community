@@ -196,8 +196,8 @@ const getConfigImageUrl = (imageUrl?: string) => {
 // 注释：已移除getConfigImageUrl函数，现在直接在模板中判断是否有image_url
 
 const availableViews = [
-  { key: 'card', icon: CardIcon, label: 'views.card' },
-  { key: 'list', icon: ListOutline, label: 'views.list' }
+  { key: 'card', icon: CardIcon, label: 'common.viewCard' },
+  { key: 'list', icon: ListOutline, label: 'common.viewList' }
 ]
 </script>
 

@@ -432,7 +432,7 @@ const cleanupEventSource = () => {
  * 在用户进入系统后立即开始监控设备状态变化
  */
 onMounted(() => {
-  createEventSource()
+  // createEventSource()
 })
 
 /**
@@ -440,7 +440,7 @@ onMounted(() => {
  * 确保用户离开或组件销毁时正确清理资源
  */
 onUnmounted(() => {
-  cleanupEventSource()
+  // cleanupEventSource()
 })
 </script>
 

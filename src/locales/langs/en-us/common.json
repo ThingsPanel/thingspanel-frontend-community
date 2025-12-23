@@ -328,5 +328,8 @@
   "common.noDescription": "No description",
   "common.deviceActiveTime": "Device Active Time",
   "common.status": "Status",
-  "common.thingModel": "Thing Model"
+  "common.thingModel": "Thing Model",
+  "common.viewCard": "Card View",
+  "common.viewList": "List View",
+  "common.viewMap": "Map View"
 }

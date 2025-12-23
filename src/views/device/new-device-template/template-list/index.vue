@@ -208,8 +208,8 @@ const handleRefresh = () => {
 }
 
 const availableViews = [
-  { key: 'card', icon: GridOutline, label: 'views.card' },
-  { key: 'list', icon: ListOutline, label: 'views.list' }
+  { key: 'card', icon: GridOutline, label: 'common.viewCard' },
+  { key: 'list', icon: ListOutline, label: 'common.viewList' }
 ]
 
 const getTagArray = (labelStr: string) => {

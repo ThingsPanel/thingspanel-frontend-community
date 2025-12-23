@@ -49,7 +49,7 @@ const handleRefresh = () => {
 <template>
   <div>
     <AdvancedListLayout
-      :available-views="[{ key: 'card', icon: CardIcon, label: 'views.card' }]"
+      :available-views="[{ key: 'card', icon: CardIcon, label: 'common.viewCard' }]"
       :showQueryButton="false"
       :showResetButton="false"
       :showAddButton="false"

@@ -6,8 +6,8 @@ import type { DrawerPlacement, StepsProps } from 'naive-ui'
 import { NSpace, NTag, NButton } from 'naive-ui'
 import _ from 'lodash'
 import type { TreeSelectOption } from 'naive-ui/es/tree-select/src/interface'
-import { EventSourcePolyfill } from 'event-source-polyfill'
 import { localStg } from '@/utils/storage'
+import { useDeviceStatusWebSocket } from '@/utils/deviceStatusWebSocket'
 import {
   checkDevice,
   devicCeonnectForm,
@@ -26,7 +26,6 @@ import AddDevicesServer1 from '@/views/device/manage/modules/add-devices-server1
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
 import { usePageCache } from '../../../utils/usePageCache'
-import { getSSEEndpoint } from '~/env.config'
 
 interface ServiceIds {
   service_identifier: string
@@ -54,60 +53,14 @@ const queryOfServiceIdentifier = ref(route.query.service_identifier)
 const queryOfServiceAccessId = ref(route.query.service_access_id)
 const { cache: query, setCache } = usePageCache()
 
-/**
- * ===========================================
- * 设备管理页面实时状态监控系统
- * ===========================================
- *
- * 功能说明：
- * 1. 专门用于设备管理页面的设备状态实时更新
- * 2. 当设备上线/下线时，自动更新表格中的设备状态显示
- * 3. 无需用户手动刷新页面，提供流畅的用户体验
- * 4. 与全局通知系统配合，实现页面级的状态同步
- *
- * 技术特点：
- * - 仅更新表格数据，不显示弹窗通知（避免与全局通知重复）
- * - 智能重连机制，确保连接稳定性
- * - 完整的错误处理和数据验证
- * - 页面卸载时自动清理资源
- * - 网络状态检测和优雅降级
- */
-
-// EventSource 连接实例，专用于设备管理页面的状态监控
-let eventSource: EventSourcePolyfill | null = null
-// 重连尝试次数计数器
-let reconnectAttempts = 0
-// 最大重连尝试次数限制
-const MAX_RECONNECT_ATTEMPTS = 5
-// 重连延迟配置（毫秒）
-const RECONNECT_DELAYS = [2000, 5000, 10000, 20000, 30000]
-// 连接状态标识
-let isConnecting = false
-// 重连定时器
-let reconnectTimer: NodeJS.Timeout | null = null
-// 最后错误时间，用于避免频繁错误日志
-let lastErrorTime = 0
-const ERROR_LOG_THROTTLE = 10000 // 10秒内只记录一次相同错误
-
-/**
- * 设备状态缓存，用于跟踪设备状态变化
- */
-const deviceStatusCache = new Map<string, { isOnline: boolean; lastUpdate: number }>()
+// 初始化设备状态 WebSocket 管理器
+const deviceStatusWS = useDeviceStatusWebSocket()
 
 /**
  * 更新表格中设备状态的函数
  */
 const updateDeviceStatusInTable = (deviceId: string, isOnline: boolean) => {
   try {
-    // 检查状态是否真的发生了变化，避免不必要的更新
-    const cachedStatus = deviceStatusCache.get(deviceId)
-    if (cachedStatus && cachedStatus.isOnline === isOnline) {
-      return
-    }
-
-    // 更新缓存
-    deviceStatusCache.set(deviceId, { isOnline, lastUpdate: Date.now() })
-
     // 更新表格中的设备状态
     if (tablePageRef.value?.dataList && Array.isArray(tablePageRef.value.dataList)) {
       const deviceIndex = tablePageRef.value.dataList.findIndex(
@@ -124,195 +77,19 @@ const updateDeviceStatusInTable = (deviceId: string, isOnline: boolean) => {
 }
 
 /**
- * 清理过期的设备状态缓存
+ * 订阅当前页面的设备状态
  */
-const cleanupDeviceStatusCache = () => {
-  const now = Date.now()
-  const maxAge = 60 * 60 * 1000 // 1小时
+const subscribeDeviceStatus = () => {
+  // 获取当前页面的设备ID列表
+  const deviceIds = tablePageRef.value?.dataList?.map((device: any) => device.id) || []
   
-  for (const [deviceId, status] of deviceStatusCache.entries()) {
-    if (now - status.lastUpdate > maxAge) {
-      deviceStatusCache.delete(deviceId)
-    }
+  if (deviceIds.length > 0) {
+    // 连接并订阅（第一次会建立连接，后续会更新订阅）
+    deviceStatusWS.connect(deviceIds, updateDeviceStatusInTable)
+  } else {
+    // 没有设备时断开连接
+    deviceStatusWS.disconnect()
   }
-}
-
-/**
- * 检查网络连接状态
- */
-const checkNetworkStatus = (): boolean => {
-  return navigator.onLine !== false
-}
-
-/**
- * 节流错误日志记录
- */
-const logErrorThrottled = (message: string, error?: any) => {
-  const now = Date.now()
-  if (now - lastErrorTime > ERROR_LOG_THROTTLE) {
-    console.error(message, error)
-    lastErrorTime = now
-  }
-}
-
-/**
- * 创建设备管理页面专用的EventSource连接
- */
-const createEventSourceConnection = () => {
-  // 防止重复连接
-  if (isConnecting || eventSource?.readyState === EventSource.OPEN) {
-    return
-  }
-
-  try {
-    // 检查网络状态
-    if (!checkNetworkStatus()) {
-      return
-    }
-
-    // 获取用户认证token
-    const token = localStg.get('token')
-    if (!token) {
-      return
-    }
-
-    isConnecting = true
-
-    // 清理之前可能存在的连接
-    if (eventSource) {
-      eventSource.close()
-      eventSource = null
-    }
-
-    // 清除之前的重连定时器
-    if (reconnectTimer) {
-      clearTimeout(reconnectTimer)
-      reconnectTimer = null
-    }
-
-    /**
-     * 创建专用于设备管理页面的EventSource连接
-     * 与全局的base-layout连接共享同一个端点，但处理逻辑不同：
-     * - 全局连接：显示通知 + 播放音效
-     * - 页面连接：仅更新表格数据
-     */
-    eventSource = new EventSourcePolyfill(getSSEEndpoint(import.meta.env), {
-      heartbeatTimeout: 3 * 60 * 1000, // 心跳超时：3分钟
-      headers: {
-        'x-token': token // 用户身份验证
-      }
-    })
-
-    /**
-     * 连接建立成功回调
-     */
-    eventSource.onopen = () => {
-      isConnecting = false
-      reconnectAttempts = 0
-    }
-
-    /**
-     * 监听设备状态变化事件
-     */
-    eventSource.addEventListener('device_online', (event: any) => {
-      try {
-        if (!event?.data) {
-          return
-        }
-
-        const data = JSON.parse(event.data)
-
-        if (!data.device_id || typeof data.device_id !== 'string') {
-          return
-        }
-
-        if (typeof data.is_online !== 'boolean') {
-          return
-        }
-
-        updateDeviceStatusInTable(data.device_id, data.is_online)
-
-      } catch (parseError) {
-        logErrorThrottled('解析设备状态事件数据失败:', parseError)
-      }
-    })
-
-    /**
-     * 错误处理和智能重连机制
-     */
-    eventSource.onerror = (error) => {
-      isConnecting = false
-      logErrorThrottled('EventSource连接错误:', error)
-
-      // 立即清理当前连接
-      if (eventSource) {
-        eventSource.close()
-        eventSource = null
-      }
-
-      // 智能重连：使用预定义的延迟时间
-      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-        reconnectAttempts += 1
-        const delay = RECONNECT_DELAYS[Math.min(reconnectAttempts - 1, RECONNECT_DELAYS.length - 1)]
-        
-
-        reconnectTimer = setTimeout(() => {
-          if (checkNetworkStatus()) {
-            createEventSourceConnection()
-          } else {
-            // 网络不可用时，延长重连间隔
-            reconnectTimer = setTimeout(() => {
-              createEventSourceConnection()
-            }, 60000) // 1分钟后重试
-          }
-        }, delay)
-      } else {
-        // 达到最大重连次数后，每5分钟尝试一次
-        reconnectTimer = setTimeout(() => {
-          reconnectAttempts = 0 // 重置计数器
-          createEventSourceConnection()
-        }, 5 * 60 * 1000)
-      }
-    }
-
-  } catch (error) {
-    isConnecting = false
-    console.error('创建设备管理页面EventSource连接失败:', error)
-  }
-}
-
-// 缓存清理定时器
-let cacheCleanupTimer: NodeJS.Timeout | null = null
-
-/**
- * 清理EventSource连接
- */
-const cleanupEventSource = () => {
-  // 清理EventSource连接
-  if (eventSource) {
-    eventSource.close()
-    eventSource = null
-  }
-  
-  // 清理重连定时器
-  if (reconnectTimer) {
-    clearTimeout(reconnectTimer)
-    reconnectTimer = null
-  }
-  
-  // 清理缓存清理定时器
-  if (cacheCleanupTimer) {
-    clearInterval(cacheCleanupTimer)
-    cacheCleanupTimer = null
-  }
-  
-  // 清理设备状态缓存
-  deviceStatusCache.clear()
-  
-  // 重置状态
-  isConnecting = false
-  reconnectAttempts = 0
-  lastErrorTime = 0
 }
 
 const getFormJson = async id => {
@@ -482,7 +259,7 @@ const actions = []
 const searchConfigs = ref<SearchConfig[]>([
   {
     key: 'group_id',
-    label: $t('custom.devicePage.selectGroup'),
+    label: 'custom.devicePage.selectGroup',
     type: 'tree-select',
     multiple: false,
     initValue: query.group_id,
@@ -491,7 +268,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'device_config_id',
-    label: $t('custom.devicePage.unlimitedDeviceConfig'),
+    label: 'custom.devicePage.unlimitedDeviceConfig',
     type: 'select',
     options: [],
     initValue: query.device_config_id,
@@ -501,7 +278,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'is_online',
-    label: $t('custom.devicePage.unlimitedOnlineStatus'),
+    label: 'custom.devicePage.unlimitedOnlineStatus',
     type: 'select',
     initValue: query.is_online,
     options: [
@@ -512,7 +289,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'warn_status',
-    label: $t('custom.devicePage.unlimitedAlarmStatus'),
+    label: 'custom.devicePage.unlimitedAlarmStatus',
     type: 'select',
     initValue: query.warn_status,
     options: [
@@ -523,7 +300,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'device_type',
-    label: $t('custom.devicePage.unlimitedAccessType'),
+    label: 'custom.devicePage.unlimitedAccessType',
     initValue: query.device_type,
     type: 'select',
     options: [
@@ -545,13 +322,13 @@ const searchConfigs = ref<SearchConfig[]>([
   {
     key: 'search',
     initValue: query.search,
-    label: $t('custom.devicePage.deviceNameOrNumber'),
+    label: 'custom.devicePage.deviceNameOrNumber',
     type: 'input'
   },
   {
     key: 'label',
     initValue: query.label,
-    label: $t('custom.devicePage.label'),
+    label: 'custom.devicePage.label',
     type: 'input'
   }
 ])
@@ -707,58 +484,17 @@ onBeforeMount(async () => {
 })
 
 /**
- * 网络状态变化处理
- */
-const handleNetworkChange = () => {
-  if (navigator.onLine) {
-    // 网络恢复时，重置重连计数器并尝试连接
-    reconnectAttempts = 0
-    createEventSourceConnection()
-  } else {
-    cleanupEventSource()
-  }
-}
-
-/**
- * 页面可见性变化处理
- */
-const handleVisibilityChange = () => {
-  if (document.hidden) {
-    // 页面隐藏时，清理连接以节省资源
-    cleanupEventSource()
-  } else {
-    // 页面重新可见时，重新建立连接
-    createEventSourceConnection()
-  }
-}
-
-/**
- * 组件挂载完成后建立设备状态监控连接
+ * 组件挂载完成后初始化 WebSocket
  */
 onMounted(() => {
-  createEventSourceConnection()
-  
-  // 启动定期缓存清理（每30分钟清理一次）
-  cacheCleanupTimer = setInterval(cleanupDeviceStatusCache, 30 * 60 * 1000)
-  
-  // 监听网络状态变化
-  window.addEventListener('online', handleNetworkChange)
-  window.addEventListener('offline', handleNetworkChange)
-  
-  // 监听页面可见性变化
-  document.addEventListener('visibilitychange', handleVisibilityChange)
+  // 不需要在这里初始化，等待 fetchData 完成后自动订阅
 })
 
 /**
- * 组件卸载前清理EventSource连接
+ * 组件卸载前清理 WebSocket 连接
  */
 onUnmounted(() => {
-  cleanupEventSource()
-  
-  // 移除事件监听器
-  window.removeEventListener('online', handleNetworkChange)
-  window.removeEventListener('offline', handleNetworkChange)
-  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  deviceStatusWS.disconnect()
 })
 
 const topActions = [
@@ -841,9 +577,17 @@ watch(
     }
   }, 500)
 )
-const fetchData = (params: Record<string, any>) => {
+const fetchData = async (params: Record<string, any>) => {
   setCache(params)
-  return deviceList(params)
+  const result = await deviceList(params)
+  
+  // 数据加载完成后，订阅当前页面的设备状态
+  // 使用 nextTick 确保 tablePageRef.value.dataList 已更新
+  setTimeout(() => {
+    subscribeDeviceStatus()
+  }, 100)
+  
+  return result
 }
 </script>
 
