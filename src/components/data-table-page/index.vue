@@ -383,9 +383,9 @@ import { ListOutline, MapOutline, GridOutline as CardIcon } from '@vicons/ionico
 
 // 定义可用视图，修复图标引用
 const availableViews = [
-  { key: 'card', icon: CardIcon, label: 'views.card' },
-  { key: 'list', icon: ListOutline, label: 'views.list' },
-  { key: 'map', icon: MapOutline, label: 'views.map' }
+  { key: 'card', icon: CardIcon, label: 'common.viewCard' },
+  { key: 'list', icon: ListOutline, label: 'common.viewList' },
+  { key: 'map', icon: MapOutline, label: 'common.viewMap' }
 ]
 const formSize = ref(undefined)
 const router = useRouter()

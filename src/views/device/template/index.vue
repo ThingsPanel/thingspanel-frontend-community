@@ -227,8 +227,8 @@ const handleRefresh = () => {
 
 // 可用视图配置
 const availableViews = [
-  { key: 'card', icon: GridOutline, label: 'views.card' },
-  { key: 'list', icon: ListOutline, label: 'views.list' }
+  { key: 'card', icon: GridOutline, label: 'common.viewCard' },
+  { key: 'list', icon: ListOutline, label: 'common.viewList' }
 ]
 
 // 处理标签数组

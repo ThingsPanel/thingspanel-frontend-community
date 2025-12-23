@@ -134,5 +134,6 @@
   "route.device_new-device-template_template-list": "模型列表(新)",
   "route.device_new-device-template_template-details": "模型详情(新)",
   "route.device_new-device-template_template-details_editor": "编辑模型(新)",
-  "route.device_new-device-template_template-details_viewer": "查看模型(新)"
+  "route.device_new-device-template_template-details_viewer": "查看模型(新)",
+  "route.test_category-test": "分类测试"
 }
