@@ -54,7 +54,6 @@ onMounted(async () => {
         value-field="id"
         label-field="name"
         :options="plugList"
-        :disabled="true"
         filterable
         @update:value="choseTemp"
         @search="
