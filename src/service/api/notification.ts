@@ -36,7 +36,7 @@ export const putNotificationGroup = async (
 }
 
 export const getUserList = async (params: { page: number; page_size: number; name?: string }) => {
-  return await request.get('/user', { params })
+  return await request.get('/user/selector', { params })
 }
 
 // notification-record

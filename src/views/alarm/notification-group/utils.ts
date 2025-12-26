@@ -48,7 +48,7 @@ export const handleSearch = (query?: string) => {
       const formatList = userList.map(item => {
         return {
           label: item.name,
-          value: item.id
+          value: item.user_id
         }
       })
       notificationTypeOptions.value = [...notificationTypeOptions.value, ...formatList]
