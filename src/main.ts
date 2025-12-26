@@ -48,6 +48,8 @@ async function setupApp() {
   setupStore(app)
   setupI18n(app)
   setupNProgress()
+  // Show splash loading once during bootstrap (before mount).
+  setupLoading()
   // 🔥 关键修复：初始化 Card2.1 组件系统
   initializeCard2System()
     .then(() => {
@@ -83,8 +85,6 @@ async function setupApp() {
             }
           })
         })
-        //加载时有用到locales，且是动态的，所以把这两个放这里来
-        setupLoading()
       },
       { immediate: true }
     )

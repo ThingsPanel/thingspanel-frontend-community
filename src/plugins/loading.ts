@@ -5,6 +5,13 @@ import { localStg } from '@/utils/storage'
 import systemLogo from '@/assets/svg-icon/logo.svg?raw'
 
 export function setupLoading() {
+  const app = document.getElementById('app')
+  if (!app) return
+
+  // If Vue has already mounted on #app, never overwrite its DOM.
+  // Vue 3 attaches a private reference on the mount container.
+  if ((app as any).__vue_app__) return
+
   const themeColor = localStg.get('themeColor') || '#646cff'
   const logoLoading = localStg.get('logoLoading') || ''
 
@@ -40,8 +47,5 @@ export function setupLoading() {
   <h2 class="text-28px text-center font-500 text-#646464">${$t('system.title')}</h2>
 </div>`
 
-  const app = document.getElementById('app')
-  if (app) {
-    app.innerHTML = loading
-  }
+  app.innerHTML = loading
 }
