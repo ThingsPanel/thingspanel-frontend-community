@@ -190,7 +190,7 @@ const handleAddMember = () => {
           </NFormItem>
 
           <template v-for="(item, index) in memberTypeData" :key="item">
-            <MemberTypeData :selected-notification-type="item.notificationType" :index="index" />
+            <MemberTypeData :selected-notification-type="item.notificationType" :index="Number(index)" />
           </template>
         </template>
 

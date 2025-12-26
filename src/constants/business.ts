@@ -148,7 +148,9 @@ export const packageOptions = [
 export const memberNotificationLabels: Record<CustomRoute.routerSysFlagKey, string> = {
   EMAIL: $t('card.emailNotice'),
   SME: $t('card.smsNotice'),
-  VOICE: $t('card.voicemailNotice')
+  VOICE: $t('card.voicemailNotice'),
+  APP: $t('card.appNotice'),
+  WECHAT: $t('card.wechatNotice')
 }
 
 export const MemberNotificationOptions = transformObjectToOption(memberNotificationLabels)

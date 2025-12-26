@@ -68,7 +68,7 @@ const handleChange = () => {
         remote
         filterable
         :loading="loading"
-        style="width: 160px; margin-right: 16px"
+        style="width: 240px; margin-right: 16px"
         @search="handleSearch"
         @scroll="handleScroll"
         @update:value="handleChange"
