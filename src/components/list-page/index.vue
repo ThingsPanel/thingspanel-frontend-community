@@ -125,9 +125,9 @@ const props = withDefaults(defineProps<Props>(), {
   addButtonI18nKey: 'card.addButton',
   initialView: '',
   availableViews: () => [
-    { key: 'card', icon: CardIcon, label: 'views.card' },
-    { key: 'list', icon: ListIcon, label: 'views.list' },
-    { key: 'map', icon: MapIcon, label: 'views.map' }
+    { key: 'card', icon: CardIcon, label: 'common.viewCard' },
+    { key: 'list', icon: ListIcon, label: 'common.viewList' },
+    { key: 'map', icon: MapIcon, label: 'common.viewMap' }
   ],
   showQueryButton: true,
   showResetButton: true,

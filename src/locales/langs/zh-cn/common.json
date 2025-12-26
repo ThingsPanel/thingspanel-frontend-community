@@ -438,5 +438,8 @@
   "common.noDescription": "暂无描述",
   "common.deviceActiveTime": "设备活跃时间",
   "common.status": "状态",
-  "common.thingModel": "物模型"
+  "common.thingModel": "物模型",
+  "common.viewCard": "卡片视图",
+  "common.viewList": "列表视图",
+  "common.viewMap": "地图视图"
 }
