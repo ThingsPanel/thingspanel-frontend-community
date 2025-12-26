@@ -10,7 +10,9 @@ const props = defineProps<{
   id: string
 }>()
 
-const token = localStg.get('token')
+const token = localStg.get('token') || ''
+
+const chartLoading = ref(true)
 
 // CardRender相关
 const layout = ref<ICardView[]>([])
@@ -47,11 +49,20 @@ const initTemplateData = async (deviceTemplateId: string) => {
   }
 }
 const getDeviceDetail = async () => {
-  const { data, error } = await deviceDetail(props.id)
-  if (!error) {
-    if (data.device_config !== undefined) {
-      initTemplateData(data.device_config.device_template_id)
+  chartLoading.value = true
+  try {
+    const { data, error } = await deviceDetail(props.id)
+    if (!error) {
+      if (data.device_config !== undefined) {
+        await initTemplateData(data.device_config.device_template_id)
+      } else {
+        showDefaultCards.value = true
+      }
+    } else {
+      showDefaultCards.value = true
     }
+  } finally {
+    chartLoading.value = false
   }
 }
 
@@ -66,6 +77,10 @@ onUnmounted(() => {
 
 <template>
   <n-card class="w-full">
+    <template v-if="chartLoading">
+      <n-skeleton text :repeat="3" />
+      <n-skeleton height="180px" class="mt-12px" />
+    </template>
     <template v-if="showAppChart">
       <div style="width: calc(100% + 20px); margin-left: -10px">
         <CardRender

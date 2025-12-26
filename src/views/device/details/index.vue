@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onBeforeMount, reactive, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeMount, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLoading } from '@sa/hooks'
 import { useWebSocket } from '@vueuse/core'
@@ -14,7 +14,6 @@ import CommandDelivery from '@/views/device/details/modules/command-delivery.vue
 import ExpectMessage from '@/views/device/details/modules/expect-message.vue'
 import Automate from '@/views/device/details/modules/automate.vue'
 import GiveAnAlarm from '@/views/device/details/modules/give-an-alarm.vue'
-import User from '@/views/device/details/modules/user.vue'
 import Settings from '@/views/device/details/modules/settings.vue'
 import DeviceStatusHistory from '@/views/device/details/modules/device-status.vue'
 import DeviceDiagnosis from '@/views/device/details/modules/device-diagnosis.vue'
@@ -31,18 +30,31 @@ const route = useRoute()
 const { query } = useRoute()
 const appStore = useAppStore()
 let { d_id } = query
+
+const getDeviceId = () => {
+  return (Array.isArray(d_id) ? d_id[0] : d_id) || ''
+}
+
 const { loading, startLoading, endLoading } = useLoading()
-let components = [
-  {
-    key: 'telemetry',
-    name: () => $t('custom.device_details.telemetry'),
-    component: Telemetry,
-    refreshKey: 0
-  },
+
+type TabComponent = {
+  key: string
+  name: () => string
+  component: any
+  refreshKey: number
+}
+
+const baseComponents: TabComponent[] = [
   {
     key: 'chart',
     name: () => $t('custom.device_details.chart'),
     component: TelemetryChart,
+    refreshKey: 0
+  },
+  {
+    key: 'telemetry',
+    name: () => $t('custom.device_details.telemetry'),
+    component: Telemetry,
     refreshKey: 0
   },
   {
@@ -113,7 +125,38 @@ let components = [
   }
 ]
 
-const tabValue = ref<any>('telemetry')
+const components = ref<TabComponent[]>(baseComponents.map(item => ({ ...item })))
+
+const tabsRenderKey = ref(0)
+let lastTabsSig = components.value.map(item => item.key).join('|')
+
+function getPreferredTabKey() {
+  const keys = components.value.map(item => item.key)
+
+  // Prefer chart first, otherwise telemetry, otherwise the first available.
+  if (keys.includes('chart')) return 'chart'
+  if (keys.includes('telemetry')) return 'telemetry'
+  return components.value[0]?.key || ''
+}
+
+function ensureActiveTab() {
+  const preferredKey = getPreferredTabKey()
+  if (!preferredKey) {
+    tabValue.value = ''
+    return
+  }
+
+  const exists = components.value.some(item => item.key === tabValue.value)
+  if (!exists) tabValue.value = preferredKey
+}
+
+function bumpRefreshKey(targetKey: string) {
+  const current = components.value.find(item => item.key === targetKey)
+  if (current) current.refreshKey += 1
+}
+
+// Default active: prefer chart -> telemetry -> first.
+const tabValue = ref<string>(getPreferredTabKey())
 const showDialog = ref(false)
 const showStatusHistoryDialog = ref(false)
 const labels = ref<string[]>([])
@@ -153,7 +196,7 @@ const queryParams = reactive({
 const changeTabs = v => {
   startLoading()
 
-  tabValue.value = v
+  tabValue.value = String(v)
   setTimeout(() => {
     endLoading()
   }, 500)
@@ -175,8 +218,10 @@ const rules = {
   }
 }
 const getDeviceDetail = async () => {
+  components.value = baseComponents.map(item => ({ ...item }))
+
   device_loop.value = false
-  const { error, data } = await deviceDetail(d_id)
+  const { error, data } = await deviceDetail(getDeviceId())
   device_loop.value = true
   deviceData.value = data
   labels.value.length = 0
@@ -196,21 +241,31 @@ const getDeviceDetail = async () => {
     if (data?.device_config) {
       device_type.value = data.device_config.device_type
       if (device_type.value !== '2' || !data?.device_config_name) {
-        components = components.filter(item => item.key !== 'device-analysis')
+          components.value = components.value.filter(item => item.key !== 'device-analysis')
       }
       if (device_type.value === '3') {
-        components = components.filter(item => item.key !== 'join')
+          components.value = components.value.filter(item => item.key !== 'join')
       }
       if (!data.device_config.device_template_id) {
-        components = components.filter(item => item.key !== 'chart')
+          components.value = components.value.filter(item => item.key !== 'chart')
       }
     } else if (!data?.device_config_name) {
-      components = components.filter(item => item.key !== 'device-analysis')
-      components = components.filter(item => item.key !== 'chart')
+        components.value = components.value.filter(item => item.key !== 'device-analysis')
+        components.value = components.value.filter(item => item.key !== 'chart')
     }
+
+    ensureActiveTab()
+
+    const nextSig = components.value.map(item => item.key).join('|')
+    if (nextSig !== lastTabsSig) {
+      lastTabsSig = nextSig
+      await nextTick()
+      tabsRenderKey.value += 1
+    }
+
     send(
       JSON.stringify({
-        device_id: d_id,
+        device_id: getDeviceId(),
         token: localStg.get('token')
       })
     )
@@ -237,7 +292,7 @@ const clickGateway = () => {
 }
 const alarmStatus = ref(false)
 const getAlarmStatus = async () => {
-  const { data } = await deviceAlarmStatus({ device_id: d_id })
+  const { data } = await deviceAlarmStatus({ device_id: getDeviceId() })
   alarmStatus.value = data.alarm
 }
 
@@ -250,12 +305,9 @@ watch(
   () => route.query.d_id,
   async newVal => {
     d_id = newVal
-    const currentComponent = components.find(c => c.key === tabValue.value)
-    if (currentComponent) {
-      currentComponent.refreshKey += 1
-    }
-    getDeviceDetail()
-    getAlarmStatus()
+    await getDeviceDetail()
+    bumpRefreshKey(tabValue.value)
+    await getAlarmStatus()
   },
   { deep: true }
 )
@@ -348,13 +400,13 @@ const getPlatform = computed(() => {
 
         <DeviceStatusHistory
           v-model:visible="showStatusHistoryDialog"
-          :device-id="(d_id || '')"
+          :device-id="getDeviceId()"
         />
 
         <NFlex style="margin-top: 8px">
           <div class="mr-4">
             <span class="mr-2">ID:</span>
-            <span>{{ d_id || '--' }}</span>
+            <span>{{ getDeviceId() || '--' }}</span>
           </div>
           <div class="mr-4">
             <span class="mr-2">{{ $t('custom.devicePage.configTemplate') }} :</span>
@@ -420,12 +472,12 @@ const getPlatform = computed(() => {
         </NFlex>
       </div>
       <div>
-        <n-tabs v-model:value="tabValue" animated type="line" @update:value="changeTabs">
-          <n-tab-pane v-for="component in components" :key="component.key" :tab="component.name" :name="component.key">
+        <n-tabs :key="tabsRenderKey" v-model:value="tabValue" animated type="line" @update:value="changeTabs">
+          <n-tab-pane v-for="component in components" :key="component.key" :tab="component.name()" :name="component.key">
             <n-spin size="small" :show="loading">
               <component
                 :is="component.component"
-                :id="d_id as string"
+                :id="getDeviceId()"
                 :key="component.refreshKey"
                 :online="device_is_online"
                 :device-config-id="deviceData?.device_config_id || ''"
