@@ -84,6 +84,8 @@
   "card.emailNotice": "Email Notice",
   "card.smsNotice": "SMS Notice",
   "card.voicemailNotice": "Voice Mail Notice",
+  "card.appNotice": "App Notice",
+  "card.wechatNotice": "WeChat Notice",
   "card.memberNotice": "Member Notice",
   "card.issued": "Issued",
   "card.toBeIssued": "To be Issued",

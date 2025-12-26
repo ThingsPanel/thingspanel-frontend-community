@@ -84,6 +84,8 @@
   "card.emailNotice": "邮箱通知",
   "card.smsNotice": "短信通知",
   "card.voicemailNotice": "语音通知",
+  "card.appNotice": "APP通知",
+  "card.wechatNotice": "微信通知",
   "card.memberNotice": "成员通知",
   "card.issued": "已下发",
   "card.toBeIssued": "待下发",
