@@ -282,6 +282,27 @@ const deviceTypes = ref([
   { value: '3', labelKey: 'generate.gateway-sub-device', helpKey: 'generate.deviceTypeHelp.subDevice' }
 ])
 
+function getTooltipText(i18nKey: string) {
+  const raw = String($t(i18nKey) ?? '')
+  return raw
+    .replace(/\\n/g, '\n')
+    .replace(/<br\s*\/?\s*>/gi, '\n')
+    .replace(/n(?=\s*[●○])/g, '\n')
+}
+
+function getTooltipLines(i18nKey: string) {
+  return getTooltipText(i18nKey)
+    .split('\n')
+    .map(s => s.trim())
+    .filter(Boolean)
+}
+
+function tooltipLineClass(line: string) {
+  // Sub-bullets (○) should be indented under main bullets (●)
+  if (/^○/.test(line)) return 'pl-6'
+  return 'pl-0'
+}
+
 onMounted(async () => {
   if (configId.value) {
     modalTitle.value = 'common.edit'
@@ -352,17 +373,26 @@ function handleDeviceTypeChange(newValue: string | number) {
             <n-space>
               <!-- 使用 v-for 循环渲染 -->
               <div v-for="dtype in deviceTypes" :key="dtype.value" class="flex">
-                <n-radio :value="dtype.value" :disabled="isEdit">{{ $t(dtype.labelKey) }}</n-radio>
+                <n-radio :value="dtype.value">{{ $t(dtype.labelKey) }}</n-radio>
                 <NTooltip
                   trigger="hover"
-                  :content-style="{ whiteSpace: 'pre-wrap', textAlign: 'left', maxWidth: '400px' }"
+                  :content-style="{
+                    whiteSpace: 'pre-wrap',
+                    textAlign: 'left',
+                    maxWidth: '400px',
+                    wordBreak: 'break-word'
+                  }"
                 >
                   <template #trigger>
                     <NIcon class="cursor-help ml-1 mr-4">
                       <HelpCircle class="text-6" />
                     </NIcon>
                   </template>
-                  {{ $t(dtype.helpKey) }}
+                  <div class="tp-tooltip">
+                    <div v-for="(line, idx) in getTooltipLines(dtype.helpKey)" :key="idx" :class="tooltipLineClass(line)">
+                      {{ line }}
+                    </div>
+                  </div>
                 </NTooltip>
               </div>
             </n-space>
@@ -412,5 +442,9 @@ function handleDeviceTypeChange(newValue: string | number) {
 // Add style for cursor
 .cursor-help {
   cursor: help;
+}
+
+.tp-tooltip > div + div {
+  margin-top: 4px;
 }
 </style>
