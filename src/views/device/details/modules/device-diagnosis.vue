@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { h, onMounted, ref } from 'vue'
+import { h, onMounted, onUnmounted, nextTick, ref } from 'vue'
 import dayjs from 'dayjs'
 
 import { $t } from '@/locales'
-import { Refresh } from '@vicons/ionicons5'
+import { Refresh, HelpCircleOutline } from '@vicons/ionicons5'
 import type { DataTableColumns } from 'naive-ui'
-import { deviceDiagnostics } from '@/service/api'
+import { deviceDiagnostics, getDeviceDebugStatus, setDeviceDebugStatus, getDeviceDebugLogs } from '@/service/api'
 
 // 类型定义
 interface StatisticsItem {
@@ -168,10 +168,89 @@ const fetchDiagnostics = async () => {
 // 刷新数据
 const refresh = () => {
   fetchDiagnostics()
+  getLogStatus()
+}
+
+// 日志相关
+const logEnabled = ref(false)
+const debugLogs = ref<string[]>([])
+let logTimer: NodeJS.Timeout | null = null
+const logContainerRef = ref<HTMLElement | null>(null)
+
+// 获取日志开关状态
+const getLogStatus = async () => {
+  try {
+    const res = await getDeviceDebugStatus(props.id)
+    if (res.data) {
+      logEnabled.value = res.data.enabled
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+// 切换日志开关
+const handleLogSwitch = async (value: boolean) => {
+  try {
+    await setDeviceDebugStatus(props.id, { enabled: value })
+    logEnabled.value = value
+  } catch (e) {
+    console.error(e)
+    // 恢复开关状态
+    logEnabled.value = !value
+  }
+}
+
+// 获取日志
+const fetchLogs = async () => {
+  try {
+    const res = await getDeviceDebugLogs(props.id, { limit: 100 })
+    if (res.data && res.data.list) {
+      // 格式化日志展示
+      // 倒序排列，最新的在下面，符合控制台习惯
+      const list = res.data.list.reverse()
+      debugLogs.value = list.map((item: any) => {
+         const time = item.ts ? dayjs(item.ts).format('YYYY-MM-DD HH:mm:ss.SSS') : '' // eslint-disable-line
+         return `[${time}] ${JSON.stringify(item)}`
+      })
+      
+      // 自动滚动到底部
+      nextTick(() => {
+        if (logContainerRef.value) {
+            // 如果用户没有向上滚动太多，才自动滚动
+            // 这里简单处理，总是滚动到底部
+          logContainerRef.value.scrollTop = logContainerRef.value.scrollHeight
+        }
+      })
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+// 开始轮询日志
+const startLogPolling = () => {
+  if (logTimer) return
+  fetchLogs() // 立即执行一次
+  logTimer = setInterval(fetchLogs, 3000) // 每3秒查询一次
+}
+
+// 停止轮询日志
+const stopLogPolling = () => {
+  if (logTimer) {
+    clearInterval(logTimer)
+    logTimer = null
+  }
 }
 
 onMounted(() => {
   fetchDiagnostics()
+  getLogStatus()
+  startLogPolling()
+})
+
+onUnmounted(() => {
+  stopLogPolling()
 })
 </script>
 
@@ -240,6 +319,39 @@ onMounted(() => {
       </div>
 
       <NDataTable :columns="columns" :data="failureRecords" :max-height="350" remote />
+    </div>
+
+    <!-- 设备调试日志部分 -->
+    <div class="mt-4">
+      <div class="flex items-center justify-between mb-4">
+        <div class="text-18px">设备调试日志</div>
+        <div class="flex items-center gap-2">
+          <NTooltip trigger="hover">
+            <template #trigger>
+              <div class="flex items-center gap-1 cursor-help">
+                <span>调试模式</span>
+                <NIcon size="14" class="text-gray-400">
+                  <HelpCircleOutline />
+                </NIcon>
+              </div>
+            </template>
+            开启后，系统将记录该设备的通信报文以供排查问题。
+          </NTooltip>
+          <NSwitch :value="logEnabled" @update:value="handleLogSwitch" />
+        </div>
+      </div>
+
+      <div
+        ref="logContainerRef"
+        class="bg-[#1e1e1e] text-[#d4d4d4] font-mono p-4 rounded h-[400px] overflow-auto whitespace-pre-wrap break-all text-xs"
+      >
+        <div v-if="debugLogs.length === 0" class="text-center text-gray-500 py-10">
+          暂无日志...
+        </div>
+        <div v-for="(log, index) in debugLogs" :key="index" class="mb-1 border-b border-gray-700/50 pb-1 last:border-0 hover:bg-[#2a2d2e]">
+          {{ log }}
+        </div>
+      </div>
     </div>
   </div>
 </template>
