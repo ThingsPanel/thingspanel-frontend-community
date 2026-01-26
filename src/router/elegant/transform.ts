@@ -209,6 +209,7 @@ const routeMap: RouteMap = {
   "device_service-access": "/device/service-access",
   "device_service-details": "/device/service-details",
   "device_template": "/device/template",
+  "device-details-app": "/device-details-app",
   "function": "/function",
   "function_hide-child": "/function/hide-child",
   "function_hide-child_one": "/function/hide-child/one",
