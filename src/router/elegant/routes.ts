@@ -349,54 +349,6 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
-        name: 'device_new-device-template',
-        path: '/device/new-device-template',
-        meta: {
-          title: 'device_new-device-template',
-          i18nKey: 'route.device_new-device-template'
-        },
-        children: [
-          {
-            name: 'device_new-device-template_template-details',
-            path: '/device/new-device-template/template-details',
-            component: 'view.device_new-device-template_template-details',
-            meta: {
-              title: 'device_new-device-template_template-details',
-              i18nKey: 'route.device_new-device-template_template-details'
-            },
-            children: [
-              {
-                name: 'device_new-device-template_template-details_editor',
-                path: '/device/new-device-template/template-details/editor',
-                component: 'view.device_new-device-template_template-details_editor',
-                meta: {
-                  title: 'device_new-device-template_template-details_editor',
-                  i18nKey: 'route.device_new-device-template_template-details_editor'
-                }
-              },
-              {
-                name: 'device_new-device-template_template-details_viewer',
-                path: '/device/new-device-template/template-details/viewer',
-                component: 'view.device_new-device-template_template-details_viewer',
-                meta: {
-                  title: 'device_new-device-template_template-details_viewer',
-                  i18nKey: 'route.device_new-device-template_template-details_viewer'
-                }
-              }
-            ]
-          },
-          {
-            name: 'device_new-device-template_template-list',
-            path: '/device/new-device-template/template-list',
-            component: 'view.device_new-device-template_template-list',
-            meta: {
-              title: 'device_new-device-template_template-list',
-              i18nKey: 'route.device_new-device-template_template-list'
-            }
-          }
-        ]
-      },
-      {
         name: 'device_service-access',
         path: '/device/service-access',
         component: 'view.device_service-access',
