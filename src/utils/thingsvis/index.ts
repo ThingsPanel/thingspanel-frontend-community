@@ -5,3 +5,4 @@
 export * from './types'
 export * from './url-builder'
 export * from './platform-fields'
+export * from './thingsvis-auth'

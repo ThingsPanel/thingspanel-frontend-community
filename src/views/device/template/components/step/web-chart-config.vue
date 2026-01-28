@@ -62,18 +62,30 @@ const next = () => {
 
 // 处理保存
 const handleSave = async (payload: any) => {
-  if (saving.value) return
+  console.log('[web-chart-config] handleSave 被调用:', payload)
+  
+  if (saving.value) {
+    console.log('[web-chart-config] 正在保存中，跳过')
+    return
+  }
 
   saving.value = true
   try {
+    console.log('[web-chart-config] 开始保存，deviceTemplateId:', props.deviceTemplateId)
+    
     // 获取当前模板数据
     const res = await getTemplat(props.deviceTemplateId)
+    console.log('[web-chart-config] 获取模板成功:', res.data)
 
-    // 保存到 web_chart_config 字段
+    // 保存到 web_chart_config 和 app_chart_config 字段
+    // 根据用户要求，两个字段都保存同一份完整的配置数据
+    const configStr = JSON.stringify(payload)
     await putTemplat({
       ...res.data,
-      web_chart_config: JSON.stringify(payload)
+      web_chart_config: configStr,
+      app_chart_config: configStr
     })
+    console.log('[web-chart-config] 保存成功 (web & app)')
 
     window.$message?.success($t('common.saveSuccess'))
 
@@ -84,7 +96,7 @@ const handleSave = async (payload: any) => {
     // 关闭弹窗
     showEditorModal.value = false
   } catch (error) {
-    console.error('保存 Web 图表配置失败:', error)
+    console.error('[web-chart-config] 保存失败:', error)
     window.$message?.error($t('common.saveFailed'))
   } finally {
     saving.value = false
@@ -179,7 +191,7 @@ onMounted(() => {
           :initial-config="initialConfig"
           :platform-fields="platformFields"
           :loading="loading"
-          height="calc(90vh - 120px)"
+          height="calc(90vh - 180px)"
           @save="handleSave"
         />
       </div>

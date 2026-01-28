@@ -66,3 +66,39 @@ export interface PlatformDataMessage {
         timestamp: number
     }
 }
+
+/** SSO Token 交换请求 */
+export interface SSOExchangeRequest {
+    /** 平台标识 */
+    platform: 'thingspanel'
+    /** ThingsPanel JWT Token */
+    platformToken: string
+    /** 用户信息 */
+    userInfo: {
+        /** 用户 ID */
+        id: string
+        /** 用户邮箱 */
+        email: string
+        /** 用户名称 */
+        name?: string
+        /** 租户 ID */
+        tenantId: string
+    }
+}
+
+/** SSO Token 交换响应 */
+export interface SSOExchangeResponse {
+    /** ThingsVis JWT Access Token */
+    accessToken: string
+    /** 刷新 Token */
+    refreshToken?: string
+    /** Token 过期时间(秒) */
+    expiresIn: number
+    /** 用户信息 */
+    user?: {
+        id: string
+        email: string
+        name?: string
+        role?: string
+    }
+}

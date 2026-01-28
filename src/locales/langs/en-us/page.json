@@ -552,5 +552,7 @@
   "page.function.tab.tabTitle.changeTitle": "Change Title",
   "page.function.tab.tabTitle.change": "Change",
   "page.function.tab.tabTitle.resetTitle": "Reset Title",
-  "page.function.tab.tabTitle.reset": "Reset"
+  "page.function.tab.tabTitle.reset": "Reset",
+  "page.thingsvis.ssoError": "SSO Authentication Failed",
+  "page.thingsvis.retry": "Retry"
 }

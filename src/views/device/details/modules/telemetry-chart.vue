@@ -95,8 +95,7 @@ const getDeviceDetail = async () => {
 
 /**
  * 推送设备实时数据到编辑器
- * TODO: 这里需要根据实际的设备数据推送机制来实现
- * 可以是 WebSocket、轮询或者其他方式
+ * 从设备详情API中提取遥测和属性数据，并推送到ThingsVis编辑器
  */
 const pushDeviceData = async () => {
   if (!editorRef.value || !hasTemplate.value) return
@@ -105,25 +104,53 @@ const pushDeviceData = async () => {
     // 获取设备最新数据
     const { data, error } = await deviceDetail(props.id)
 
-    if (!error && data) {
-      // 构造数据对象，根据平台字段推送
-      const dataMap: Record<string, any> = {}
+    if (error || !data) {
+      console.warn('[ThingsVis] 获取设备数据失败:', error)
+      return
+    }
 
-      // 示例：从设备数据中提取字段值
-      // 这里需要根据实际的数据结构调整
+    // 构造数据对象
+    const dataMap: Record<string, any> = {}
+
+    // 方案1: 从 data.telemetry 字段提取（如果API返回格式是这样）
+    if (data.telemetry && typeof data.telemetry === 'object') {
+      platformFields.value.forEach((field) => {
+        if (field.dataType === 'telemetry' && data.telemetry[field.id] !== undefined) {
+          dataMap[field.id] = data.telemetry[field.id]
+        }
+      })
+    }
+
+    // 方案2: 从 data.attributes 字段提取（如果API返回格式是这样）
+    if (data.attributes && typeof data.attributes === 'object') {
+      platformFields.value.forEach((field) => {
+        if (field.dataType === 'attribute' && data.attributes[field.id] !== undefined) {
+          dataMap[field.id] = data.attributes[field.id]
+        }
+      })
+    }
+
+    // 方案3: 直接从 data 对象顶层提取（如果字段扁平化存储）
+    if (Object.keys(dataMap).length === 0) {
       platformFields.value.forEach((field) => {
         if (data[field.id] !== undefined) {
           dataMap[field.id] = data[field.id]
         }
       })
+    }
 
-      // 批量推送数据
-      if (Object.keys(dataMap).length > 0) {
-        editorRef.value.pushPlatformDataBatch(dataMap)
-      }
+    // 调试日志 - 方便排查数据映射问题
+    if (Object.keys(dataMap).length > 0) {
+      console.log('[ThingsVis] 推送设备数据:', dataMap)
+      editorRef.value.pushPlatformDataBatch(dataMap)
+    } else {
+      console.warn('[ThingsVis] 未找到匹配的平台字段数据', {
+        platformFields: platformFields.value.map(f => f.id),
+        deviceDataKeys: Object.keys(data)
+      })
     }
   } catch (error) {
-    console.error('推送设备数据失败:', error)
+    console.error('[ThingsVis] 推送设备数据失败:', error)
   }
 }
 

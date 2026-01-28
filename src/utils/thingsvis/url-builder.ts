@@ -22,6 +22,10 @@ export interface ThingsVisUrlOptions {
     showProps?: boolean
     /** 是否显示工具栏 */
     showToolbar?: boolean
+    /** 是否显示左上角区域 */
+    showTopLeft?: boolean
+    /** 是否显示右上角区域 */
+    showTopRight?: boolean
 }
 
 /**
@@ -29,28 +33,15 @@ export interface ThingsVisUrlOptions {
  */
 function getStudioBaseUrl(): string {
     // 从环境变量读取，如果没有则使用默认值
-    return import.meta.env.VITE_THINGSVIS_STUDIO_URL || 'http://localhost:3000/main#/editor'
+    return import.meta.env.VITE_THINGSVIS_STUDIO_URL || 'http://localhost:3000/main'
 }
 
-/**
- * Base64 URL 编码(安全的URL参数编码)
- */
-function encodeBase64Url(str: string): string {
-    try {
-        // 先 URI 编码，再 Base64 编码
-        const encoded = btoa(encodeURIComponent(str))
-        // URL 安全化：替换 +/= 字符
-        return encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
-    } catch (error) {
-        console.error('Base64 编码失败:', error)
-        return ''
-    }
-}
+
 
 /**
- * 构建 ThingsVis 编辑器 URL
+ * 构建 ThingsVis 编辑器 URL (支持 SSO)
  */
-export function buildThingsVisUrl(options: ThingsVisUrlOptions): string {
+export async function buildThingsVisUrl(options: ThingsVisUrlOptions): Promise<string> {
     const baseUrl = getStudioBaseUrl()
 
     // 确定集成级别
@@ -63,32 +54,69 @@ export function buildThingsVisUrl(options: ThingsVisUrlOptions): string {
         saveTarget: options.saveTarget || 'host'
     })
 
-    // 1. 添加认证 Token (关键修复)
-    const token = localStg.get('token')
-    if (token) {
-        params.set('token', token)
+    // 1. SSO Token 交换 (关键实现)
+    try {
+        // 动态导入以避免循环依赖
+        const { getThingsVisToken } = await import('./thingsvis-auth')
+        const thingsvisToken = await getThingsVisToken()
+
+        if (thingsvisToken) {
+            params.set('token', thingsvisToken)
+            console.log('✅ Using ThingsVis SSO token')
+        } else {
+            // 降级：使用 ThingsPanel token
+            const tpToken = localStg.get('token')
+            if (tpToken) {
+                params.set('token', tpToken)
+                console.warn('⚠️ Using ThingsPanel token as fallback')
+            }
+        }
+    } catch (error) {
+        console.error('❌ SSO token exchange failed, using fallback:', error)
+        // 降级：使用 ThingsPanel token
+        const tpToken = localStg.get('token')
+        if (tpToken) {
+            params.set('token', tpToken)
+        }
     }
 
     // 显示选项(编辑模式默认显示，预览模式默认隐藏)
     const isEditor = options.mode === 'editor'
-    params.set('showLibrary', options.showLibrary ?? isEditor ? '1' : '0')
-    params.set('showProps', options.showProps ?? isEditor ? '1' : '0')
-    params.set('showToolbar', options.showToolbar ?? isEditor ? '1' : '0')
+
+    // viewer 模式：明确隐藏所有 UI
+    if (options.mode === 'viewer') {
+        params.set('showLibrary', '0')
+        params.set('showProps', '0')
+        params.set('showToolbar', '0')
+        params.set('showTopLeft', '0')
+        params.set('showTopRight', '0')
+    } else if (integration === 'full') {
+        // editor 模式：只设置需要隐藏的 UI
+        const shouldShowLibrary = options.showLibrary ?? isEditor
+        const shouldShowProps = options.showProps ?? isEditor
+        const shouldShowToolbar = options.showToolbar ?? isEditor
+        const shouldShowTopLeft = options.showTopLeft ?? false
+        const shouldShowTopRight = options.showTopRight ?? false
+
+        if (!shouldShowLibrary) params.set('showLibrary', '0')
+        if (!shouldShowProps) params.set('showProps', '0')
+        if (!shouldShowToolbar) params.set('showToolbar', '0')
+        if (!shouldShowTopLeft) params.set('showTopLeft', '0')
+        if (!shouldShowTopRight) params.set('showTopRight', '0')
+    }
 
     // 平台字段
     if (options.platformFields && options.platformFields.length > 0) {
         params.set('platformFields', JSON.stringify(options.platformFields))
     }
 
-    // 默认项目配置
-    if (options.config) {
-        const encoded = encodeBase64Url(JSON.stringify(options.config))
-        if (encoded) {
-            params.set('defaultProject', encoded)
-        }
-    }
+    // 注意: 初始配置(defaultProject)改用 postMessage 发送
+    // 通过 thingsvis:editor-init 消息发送配置，避免 URL 过长
 
-    // 拼接完整URL
-    const separator = baseUrl.includes('?') ? '&' : '?'
-    return `${baseUrl}${separator}${params.toString()}`
+    // 拼接完整URL - 参数必须在 hash 后面！
+    // viewer 模式: /embed 路由（纯预览）
+    // editor 模式: /editor 路由（编辑器）
+    const route = options.mode === 'viewer' ? '/embed' : '/editor'
+
+    return `${baseUrl}#${route}?${params.toString()}`
 }
