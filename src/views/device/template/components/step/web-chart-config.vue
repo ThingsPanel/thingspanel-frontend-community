@@ -4,7 +4,7 @@
  * 显示预览，点击编辑按钮打开ThingsVis编辑器弹窗
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { NButton, NModal, NCard, NEmpty } from 'naive-ui'
 import { $t } from '@/locales'
 import { getTemplat, putTemplat } from '@/service/api'
@@ -39,6 +39,15 @@ const showEditorModal = ref(false)
 const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
 const hasConfig = ref(false)
+
+// 🎨 计算预览高度（根据画布大小）
+const previewHeight = computed(() => {
+  if (!initialConfig.value?.canvas) return '400px'
+  const canvas = initialConfig.value.canvas
+  // 使用画布的实际高度，最小 300px，最大 600px
+  const height = Math.min(Math.max(canvas.height || 400, 300), 600)
+  return `${height}px`
+})
 
 // 取消
 const cancellation: () => void = () => {
@@ -171,7 +180,7 @@ onMounted(() => {
           mode="viewer"
           :initial-config="initialConfig"
           :platform-fields="platformFields"
-          height="400px"
+          :height="previewHeight"
         />
       </div>
 
@@ -240,10 +249,16 @@ onMounted(() => {
 }
 
 .preview-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
+  min-height: 300px;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  overflow: hidden;
+  overflow: auto;
+  background: #f5f5f5;
+  padding: 20px;
 }
 
 .actions-bar {
