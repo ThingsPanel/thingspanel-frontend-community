@@ -105,36 +105,52 @@ const handleSave = async (payload: any) => {
 
 // 加载模板数据
 const loadTemplateData = async () => {
+  console.log('[web-chart-config] 🔄 开始加载模板数据, deviceTemplateId:', props.deviceTemplateId)
   loading.value = true
   try {
     const res = await getTemplat(props.deviceTemplateId)
+    console.log('[web-chart-config] 📦 模板数据获取成功:', res.data)
 
     if (res.data) {
       // 提取平台字段
       platformFields.value = extractPlatformFields(res.data)
+      console.log('[web-chart-config] 🏷️ 平台字段提取完成:', platformFields.value.length, '个字段')
 
       // 加载已有配置
       if (res.data.web_chart_config) {
+        console.log('[web-chart-config] 📄 发现 web_chart_config 字段')
         try {
           const config = JSON.parse(res.data.web_chart_config)
           initialConfig.value = config
           hasConfig.value = true
+          
+          // 🔍 详细日志
+          console.log('[web-chart-config] ✅ 配置解析成功:', {
+            canvas: config.canvas,
+            nodesCount: config.nodes?.length || 0,
+            dataSourcesCount: config.dataSources?.length || 0
+          })
+          console.log('[web-chart-config] 📊 完整配置对象:', config)
         } catch (e) {
-          console.warn('解析 web_chart_config 失败', e)
+          console.warn('[web-chart-config] ❌ 解析 web_chart_config 失败', e)
           initialConfig.value = null
           hasConfig.value = false
         }
+      } else {
+        console.log('[web-chart-config] ℹ️ 没有找到 web_chart_config，这是新配置')
       }
     }
   } catch (error) {
-    console.error('加载模板数据失败:', error)
+    console.error('[web-chart-config] ❌ 加载模板数据失败:', error)
     window.$message?.error($t('common.fetchDataFailed'))
   } finally {
     loading.value = false
+    console.log('[web-chart-config] ✅ 数据加载完成')
   }
 }
 
 onMounted(() => {
+  console.log('[web-chart-config] 🚀 组件已挂载')
   loadTemplateData()
 })
 </script>

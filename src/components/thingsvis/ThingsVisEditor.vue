@@ -100,6 +100,11 @@ const handleMessage = async (event: MessageEvent) => {
   // TODO: 在生产环境中应该检查 event.origin
   const { data } = event
 
+  // 🔍 调试：打印所有收到的消息
+  if (data?.type?.startsWith?.('thingsvis:') || data?.type === 'READY') {
+    console.log('[ThingsVisEditor] 📬 收到消息:', data.type, data)
+  }
+
   if (!data || typeof data !== 'object') return
 
   // 处理保存请求 (标准格式)
@@ -140,22 +145,40 @@ const handleMessage = async (event: MessageEvent) => {
 
   // 处理编辑器就绪事件 (Editor 模式)
   if (data.type === 'thingsvis:ready') {
+    console.log('[ThingsVisEditor] ✅ 收到 thingsvis:ready 事件')
     editorReady.value = true
     iframeLoading.value = false
     emit('ready')
     
+    // 🔍 调试：检查 props
+    console.log('[ThingsVisEditor] 📦 Props检查:', {
+      mode: props.mode,
+      hasInitialConfig: !!props.initialConfig,
+      initialConfigType: typeof props.initialConfig,
+      hasIframe: !!iframeRef.value?.contentWindow
+    })
+    
     // 发送初始配置到编辑器
     if (props.initialConfig && iframeRef.value?.contentWindow) {
-      console.log('[ThingsVisEditor] Editor就绪，发送初始配置(thingsvis:editor-init):', props.initialConfig)
+      console.log('[ThingsVisEditor] ✅ 准备发送初始配置(thingsvis:editor-init):', props.initialConfig)
       
       try {
         const pureConfig = JSON.parse(JSON.stringify(props.initialConfig))
         iframeRef.value.contentWindow.postMessage({
           type: 'thingsvis:editor-init',
-          payload: pureConfig
+          payload: { data: pureConfig }  // ✅ 修复：添加 data 包装，与文档一致
         }, '*')
+        console.log('[ThingsVisEditor] ✅ 配置已通过 postMessage 发送')
       } catch (e) {
-        console.error('[ThingsVisEditor] 配置序列化失败:', e)
+        console.error('[ThingsVisEditor] ❌ 配置序列化失败:', e)
+      }
+    } else {
+      // 🔍 调试：为什么没有发送配置
+      if (!props.initialConfig) {
+        console.warn('[ThingsVisEditor] ⚠️ initialConfig 为空，无法发送配置')
+      }
+      if (!iframeRef.value?.contentWindow) {
+        console.warn('[ThingsVisEditor] ⚠️ iframe contentWindow 不可用')
       }
     }
   }
@@ -260,17 +283,47 @@ const triggerSave = () => {
  * iframe 加载完成
  */
 const handleIframeLoad = () => {
+  console.log('[ThingsVisEditor] 🌐 Iframe onload 事件触发')
   iframeLoading.value = false
-  // 注意：编辑器内部应用加载完成后会发送 'thingsvis:ready' 消息
+  
+  // 🔧 修复：不完全依赖 ready 事件，主动延迟发送配置
+  // 参考 vue-host 的实现
+  if (props.mode === 'editor' && props.initialConfig) {
+    console.log('[ThingsVisEditor] ⏰ 设置延迟发送配置（1秒后）')
+    setTimeout(() => {
+      if (iframeRef.value?.contentWindow && props.initialConfig) {
+        console.log('[ThingsVisEditor] 🚀 主动发送配置到编辑器（延迟发送）')
+        
+        try {
+          const pureConfig = JSON.parse(JSON.stringify(props.initialConfig))
+          iframeRef.value.contentWindow.postMessage({
+            type: 'thingsvis:editor-init',
+            payload: { data: pureConfig }
+          }, '*')
+          console.log('[ThingsVisEditor] ✅ 延迟配置发送成功', pureConfig)
+        } catch (e) {
+          console.error('[ThingsVisEditor] ❌ 延迟配置发送失败:', e)
+        }
+      } else {
+        console.warn('[ThingsVisEditor] ⚠️ 延迟发送失败：iframe 或 config 不可用')
+      }
+    }, 1000) // 等待 1 秒，确保编辑器完全加载
+  }
 }
 
 // 监听 initialConfig 变化
 watch(
   () => props.initialConfig,
-  (newConfig) => {
+  (newConfig, oldConfig) => {
+    console.log('[ThingsVisEditor] 🔄 initialConfig 变化检测:', {
+      hasOld: !!oldConfig,
+      hasNew: !!newConfig,
+      mode: props.mode,
+      editorReady: editorReady.value
+    })
     // 如果是 viewer 模式且 iframe 已就绪，直接通过 postMessage 更新数据
     if (props.mode === 'viewer' && editorReady.value && iframeRef.value?.contentWindow) {
-      console.log('[ThingsVisEditor]Config更新，发送新配置(LOAD_DASHBOARD):', newConfig)
+      console.log('[ThingsVisEditor] Config更新(Viewer模式)，发送新配置(LOAD_DASHBOARD):', newConfig)
       
       try {
         // 使用 JSON 序列化确保移除 Vue 响应式代理
@@ -280,26 +333,64 @@ watch(
           type: 'LOAD_DASHBOARD',
           payload: pureConfig
         }, '*')
+        console.log('[ThingsVisEditor] ✅ Viewer配置更新成功')
       } catch (e) {
-        console.error('[ThingsVisEditor] 配置序列化失败:', e)
+        console.error('[ThingsVisEditor] ❌ 配置序列化失败:', e)
       }
       return
     }
 
-    // editor 模式或 iframe 未就绪，则重新构建 URL
-    buildEditorUrl()
+    // editor 模式且 iframe 已就绪，发送配置更新
+    if (props.mode === 'editor' && editorReady.value && iframeRef.value?.contentWindow && newConfig) {
+      console.log('[ThingsVisEditor] Config更新(Editor模式)，发送新配置(thingsvis:editor-init):', newConfig)
+      
+      try {
+        const pureConfig = JSON.parse(JSON.stringify(newConfig))
+        iframeRef.value.contentWindow.postMessage({
+          type: 'thingsvis:editor-init',
+          payload: { data: pureConfig }  // ✅ 修复：使用正确的格式
+        }, '*')
+        console.log('[ThingsVisEditor] ✅ Editor配置更新成功')
+      } catch (e) {
+        console.error('[ThingsVisEditor] ❌ 配置序列化失败:', e)
+      }
+      return
+    }
+
+    // iframe 未就绪，则重新构建 URL
+    if (!editorReady.value) {
+      buildEditorUrl()
+    }
   },
   { deep: true }
 )
 
 // 生命周期
 onMounted(() => {
+  console.log('========================================')
+  console.log('[ThingsVisEditor] 🚀 组件已挂载')
+  console.log('[ThingsVisEditor] 📋 Props:', {
+    mode: props.mode,
+    hasInitialConfig: !!props.initialConfig,
+    initialConfigType: typeof props.initialConfig,
+    platformFieldsCount: props.platformFields?.length || 0
+  })
+  
+  if (props.initialConfig) {
+    console.log('[ThingsVisEditor] 📊 初始配置内容:', props.initialConfig)
+  }
+  
+  console.log('[ThingsVisEditor] 📡 注册 message 监听器...')
   window.addEventListener('message', handleMessage)
+  console.log('[ThingsVisEditor] ✅ Message 监听器已注册')
+  
   // 初始化时构建 URL
   buildEditorUrl()
+  console.log('========================================')
 })
 
 onBeforeUnmount(() => {
+  console.log('[ThingsVisEditor] 🔴 组件卸载，移除 message 监听器')
   window.removeEventListener('message', handleMessage)
 })
 

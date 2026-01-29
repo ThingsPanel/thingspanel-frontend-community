@@ -22,9 +22,11 @@ const showTopLeft = ref(true)
 const showToolbar = ref(true)
 const showTopRight = ref(true)
 const injectDefaultProject = ref(false)
+const useSavedData = ref(false) // [NEW] Toggle to use saved data
 const iframeKey = ref(0)
 const events = ref<string[]>([])
 const iframeRef = ref<HTMLIFrameElement | null>(null)
+const savedProjectData = ref<any>(null) // [NEW] Store last saved data
 
 // 平台字段功能
 const enablePlatformFields = ref(true)
@@ -104,6 +106,60 @@ const iframeSrc = computed(() => {
 })
 
 // --- Methods ---
+// [NEW] Load saved data from localStorage
+function loadSavedData() {
+  try {
+    const saved = localStorage.getItem('vue-host-saved-project')
+    if (saved) {
+      savedProjectData.value = JSON.parse(saved)
+      events.value.unshift(`[${new Date().toLocaleTimeString()}] 📂 Loaded saved data from localStorage (${savedProjectData.value.nodes?.length || 0} nodes)`)
+      return savedProjectData.value
+    }
+  } catch (e) {
+    console.error('Failed to load saved data:', e)
+  }
+  return null
+}
+
+// [NEW] Send saved data to editor via postMessage
+function sendInitData() {
+  if (!iframeRef.value?.contentWindow) {
+    events.value.unshift(`[${new Date().toLocaleTimeString()}] ⚠️ Iframe not ready`)
+    return
+  }
+  
+  const dataToSend = useSavedData.value ? savedProjectData.value : null
+  
+  if (!dataToSend) {
+    events.value.unshift(`[${new Date().toLocaleTimeString()}] ⚠️ No saved data to send`)
+    return
+  }
+  
+  // Deep clone to ensure data is serializable for postMessage
+  try {
+    const clonedData = JSON.parse(JSON.stringify(dataToSend))
+    
+    iframeRef.value.contentWindow.postMessage({
+      type: 'thingsvis:editor-init',
+      payload: { data: clonedData }
+    }, '*')
+    
+    events.value.unshift(
+      `[${new Date().toLocaleTimeString()}] 📤 Sent saved data to editor (${clonedData.nodes?.length || 0} nodes)`
+    )
+  } catch (e: any) {
+    console.error('Failed to clone data:', e)
+    events.value.unshift(`[${new Date().toLocaleTimeString()}] ❌ Failed to send data: ${e.message}`)
+  }
+}
+
+// [NEW] Clear saved data
+function clearSavedData() {
+  localStorage.removeItem('vue-host-saved-project')
+  savedProjectData.value = null
+  events.value.unshift(`[${new Date().toLocaleTimeString()}] 🗑️ Cleared saved data`)
+}
+
 function reload() {
   iframeKey.value++
   events.value.unshift(`[${new Date().toLocaleTimeString()}] Reloading iframe...`)
@@ -202,6 +258,17 @@ function handleMessage(event: MessageEvent) {
     const payload = event.data.payload
     console.log('📦 [Vue Host] Received save data:', payload)
     
+    // [NEW] Save to localStorage for echo-back testing
+    try {
+      localStorage.setItem('vue-host-saved-project', JSON.stringify(payload))
+      savedProjectData.value = payload
+      events.value.unshift(
+        `[${new Date().toLocaleTimeString()}] 💾 Data saved to localStorage`
+      )
+    } catch (e) {
+      console.error('Failed to save to localStorage:', e)
+    }
+    
     // 安全地读取数据
     const projectName = payload?.meta?.name || payload?.canvasConfig?.name || 'Unnamed Project'
     const nodesCount = payload?.nodes?.length ?? 0
@@ -220,6 +287,8 @@ function handleMessage(event: MessageEvent) {
 // --- Lifecycle ---
 onMounted(() => {
   window.addEventListener('message', handleMessage)
+  // [NEW] Load saved data on mount
+  loadSavedData()
 })
 onUnmounted(() => {
   window.removeEventListener('message', handleMessage)
@@ -227,16 +296,33 @@ onUnmounted(() => {
     clearInterval(dataPushInterval.value)
   }
 })
+
+// --- Tabs ---
+const activeTab = ref<'editor' | 'preview'>('editor')
+import ThingsVisPreview from './components/ThingsVisPreview.vue'
+
+// Authenticated token for preview (retrieved from memory or localStorage in real app)
+// For demo, we assume the host has handled auth
+const currentToken = ref<string | null>(null)
 </script>
 
 <template>
   <div class="host-app">
     <header>
       <h1>Vue Host App</h1>
-      <p>Simulating an embedding platform (ThingsPanel)</p>
+      <div class="tabs">
+        <button 
+          :class="{ active: activeTab === 'editor' }" 
+          @click="activeTab = 'editor'"
+        >Editor Mode</button>
+        <button 
+          :class="{ active: activeTab === 'preview' }" 
+          @click="activeTab = 'preview'"
+        >Preview Mode</button>
+      </div>
     </header>
 
-    <main>
+    <main v-if="activeTab === 'editor'">
       <div class="sidebar" :class="{ collapsed: sidebarCollapsed }">
         <button class="collapse-btn" @click="sidebarCollapsed = !sidebarCollapsed">
           {{ sidebarCollapsed ? '▶' : '◀' }}
@@ -250,7 +336,9 @@ onUnmounted(() => {
             <input v-model="studioUrl" type="text" />
           </label>
         </div>
-
+        
+        <!-- ... existing constraints ... -->
+        
         <div class="control-group">
           <h3>Integration</h3>
           <div class="radio-group">
@@ -304,6 +392,14 @@ onUnmounted(() => {
         <div class="control-group">
           <h3>Data Injection</h3>
           <label><input type="checkbox" v-model="injectDefaultProject" /> Inject Default Project</label>
+          <label><input type="checkbox" v-model="useSavedData" /> Use Saved Data (Echo Back)</label>
+          <div v-if="savedProjectData" class="saved-data-info">
+            <span>✅ Saved: {{ savedProjectData.nodes?.length || 0 }} nodes</span>
+          </div>
+          <div class="button-group" v-if="useSavedData">
+            <button class="action-btn" @click="sendInitData">📤 Send Saved Data</button>
+            <button class="action-btn" @click="clearSavedData">🗑️ Clear Saved Data</button>
+          </div>
         </div>
 
         <button class="reload-btn" @click="reload">Reload Editor</button>
@@ -327,6 +423,13 @@ onUnmounted(() => {
         ></iframe>
       </div>
     </main>
+
+    <main v-else class="preview-mode">
+      <ThingsVisPreview 
+        :studio-url="studioUrl"
+        :token="currentToken"
+      />
+    </main>
   </div>
 </template>
 
@@ -347,19 +450,45 @@ header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  height: 36px;
+  gap: 0.75rem;
+  height: 48px;
   flex-shrink: 0;
 }
 
 header h1 {
   font-size: 0.9rem;
   margin: 0;
+  margin-right: 1rem;
 }
 
-header p {
-  font-size: 0.75rem;
-  color: #71717a;
-  margin: 0;
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tabs button {
+  padding: 0.4rem 0.8rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.tabs button.active {
+  background: #f4f4f5;
+  color: #000;
+  border-color: #e4e4e7;
+  font-weight: 600;
+}
+
+.preview-mode {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
 }
 
 main {
@@ -572,5 +701,18 @@ select {
   font-size: 0.85rem;
   background: #fff;
   margin-top: 0.2rem;
+}
+
+.saved-data-info {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.4rem;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  margin-top: 0.3rem;
+  color: #166534;
 }
 </style>
