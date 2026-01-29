@@ -40,6 +40,8 @@ interface Emits {
   (e: 'save-error', error: any): void
   /** 编辑器加载完成 */
   (e: 'ready'): void
+  /** 编辑器请求平台字段数据 */
+  (e: 'request-field-data'): void
 }
 
 const emit = defineEmits<Emits>()
@@ -141,6 +143,12 @@ const handleMessage = async (event: MessageEvent) => {
       console.error('[ThingsVisEditor] 保存失败:', error)
       emit('save-error', error)
     }
+  }
+
+  // 处理字段数据请求
+  if (data.type === 'thingsvis:requestFieldData') {
+    console.log('[ThingsVisEditor] 收到字段数据请求 (requestFieldData)')
+    emit('request-field-data')
   }
 
   // 处理编辑器就绪事件 (Editor 模式)

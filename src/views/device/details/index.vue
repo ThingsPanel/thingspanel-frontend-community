@@ -480,6 +480,7 @@ const getPlatform = computed(() => {
                 :id="getDeviceId()"
                 :key="component.refreshKey"
                 :online="device_is_online"
+                :device-data="deviceData"
                 :device-config-id="deviceData?.device_config_id || ''"
                 :device-template-id="deviceData?.device_config?.device_template_id"
                 @change="getDeviceDetail"

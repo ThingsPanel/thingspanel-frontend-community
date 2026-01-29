@@ -10,11 +10,14 @@ import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { NEmpty } from 'naive-ui'
 import ThingsVisEditor from '@/components/thingsvis/ThingsVisEditor.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
-import { deviceDetail, deviceTemplateDetail } from '@/service/api/device'
+import { deviceDetail, deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
+import { telemetryApi, attributesApi } from '@/service/api'
 import type { PlatformField } from '@/utils/thingsvis/types'
 
 const props = defineProps<{
   id: string
+  deviceTemplateId?: string
+  deviceData?: Record<string, any>
 }>()
 
 // 编辑器引用
@@ -28,6 +31,8 @@ const platformFields = ref<PlatformField[]>([])
 
 // WebSocket 或轮询的定时器
 let dataUpdateInterval: NodeJS.Timeout | null = null
+let lastPushAt = 0
+const minPushIntervalMs = 5000
 
 /**
  * 加载模板和配置
@@ -43,8 +48,31 @@ const initTemplateData = async (deviceTemplateId: string) => {
     const res = await deviceTemplateDetail({ id: deviceTemplateId })
 
     if (res.data) {
-      // 提取平台字段
-      platformFields.value = extractPlatformFields(res.data)
+      // 提取平台字段（优先从物模型接口获取）
+      const [telemetryRes, attributesRes] = await Promise.all([
+        telemetryApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId }),
+        attributesApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId })
+      ])
+
+      const telemetryList = Array.isArray(telemetryRes?.data?.list)
+        ? telemetryRes.data.list
+        : Array.isArray(telemetryRes?.data)
+          ? telemetryRes.data
+          : []
+
+      const attributesList = Array.isArray(attributesRes?.data?.list)
+        ? attributesRes.data.list
+        : Array.isArray(attributesRes?.data)
+          ? attributesRes.data
+          : []
+
+      const platformSource = {
+        telemetry: telemetryList,
+        attributes: attributesList
+      }
+
+      const extractedFields = extractPlatformFields(platformSource)
+      platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)
 
       // 加载 web_chart_config
       if (res.data.web_chart_config) {
@@ -68,29 +96,60 @@ const initTemplateData = async (deviceTemplateId: string) => {
 }
 
 /**
- * 获取设备详情
+ * 根据模板ID初始化图表配置
  */
-const getDeviceDetail = async () => {
+const initByTemplateId = async () => {
   chartLoading.value = true
-  try {
-    const { data, error } = await deviceDetail(props.id)
 
-    if (!error && data) {
-      if (data.device_config?.device_template_id) {
-        await initTemplateData(data.device_config.device_template_id)
-      } else {
-        hasTemplate.value = false
-        chartLoading.value = false
-      }
-    } else {
-      hasTemplate.value = false
-      chartLoading.value = false
-    }
-  } catch (error) {
-    console.error('获取设备详情失败:', error)
+  if (!props.deviceTemplateId) {
     hasTemplate.value = false
     chartLoading.value = false
+    return
   }
+
+  await initTemplateData(props.deviceTemplateId)
+}
+
+/**
+ * 获取遥测/属性当前值（设备详情页实际值来源）
+ */
+const fetchCurrentDataMaps = async () => {
+  if (!props.id) return { telemetryMap: {}, attributeMap: {} }
+
+  const [telemetryRes, attributeRes] = await Promise.all([
+    telemetryDataCurrent(props.id),
+    getAttributeDataSet({ device_id: props.id })
+  ])
+
+  const telemetryList = Array.isArray(telemetryRes?.data)
+    ? telemetryRes.data
+    : Array.isArray(telemetryRes?.data?.value)
+      ? telemetryRes.data.value
+      : []
+
+  const attributeList = Array.isArray(attributeRes?.data)
+    ? attributeRes.data
+    : Array.isArray(attributeRes?.data?.list)
+      ? attributeRes.data.list
+      : Array.isArray(attributeRes?.data?.value)
+        ? attributeRes.data.value
+        : []
+
+  const telemetryMap: Record<string, any> = {}
+  const telemetryLabelMap: Record<string, any> = {}
+  telemetryList.forEach((item: any) => {
+    if (item?.key !== undefined) telemetryMap[item.key] = item.value
+    if (item?.label) telemetryLabelMap[item.label] = item.value
+  })
+
+  const attributeMap: Record<string, any> = {}
+  const attributeLabelMap: Record<string, any> = {}
+  attributeList.forEach((item: any) => {
+    if (item?.key !== undefined) attributeMap[item.key] = item.value
+    if (item?.label) attributeLabelMap[item.label] = item.value
+  })
+
+  return { telemetryMap, telemetryLabelMap, attributeMap, attributeLabelMap }
 }
 
 /**
@@ -100,44 +159,32 @@ const getDeviceDetail = async () => {
 const pushDeviceData = async () => {
   if (!editorRef.value || !hasTemplate.value) return
 
+  const now = Date.now()
+  if (now - lastPushAt < minPushIntervalMs) return
+  lastPushAt = now
+
   try {
-    // 获取设备最新数据
-    const { data, error } = await deviceDetail(props.id)
+    const { telemetryMap, telemetryLabelMap, attributeMap, attributeLabelMap } = await fetchCurrentDataMaps()
 
-    if (error || !data) {
-      console.warn('[ThingsVis] 获取设备数据失败:', error)
-      return
-    }
-
-    // 构造数据对象
     const dataMap: Record<string, any> = {}
-
-    // 方案1: 从 data.telemetry 字段提取（如果API返回格式是这样）
-    if (data.telemetry && typeof data.telemetry === 'object') {
-      platformFields.value.forEach((field) => {
-        if (field.dataType === 'telemetry' && data.telemetry[field.id] !== undefined) {
-          dataMap[field.id] = data.telemetry[field.id]
-        }
-      })
-    }
-
-    // 方案2: 从 data.attributes 字段提取（如果API返回格式是这样）
-    if (data.attributes && typeof data.attributes === 'object') {
-      platformFields.value.forEach((field) => {
-        if (field.dataType === 'attribute' && data.attributes[field.id] !== undefined) {
-          dataMap[field.id] = data.attributes[field.id]
-        }
-      })
-    }
-
-    // 方案3: 直接从 data 对象顶层提取（如果字段扁平化存储）
-    if (Object.keys(dataMap).length === 0) {
-      platformFields.value.forEach((field) => {
-        if (data[field.id] !== undefined) {
-          dataMap[field.id] = data[field.id]
-        }
-      })
-    }
+    platformFields.value.forEach((field) => {
+      if (field.dataType === 'telemetry') {
+        const telemetryValue =
+          telemetryMap[field.id] ??
+          telemetryMap[field.name] ??
+          telemetryLabelMap[field.id] ??
+          telemetryLabelMap[field.name]
+        if (telemetryValue !== undefined) dataMap[field.id] = telemetryValue
+      }
+      if (field.dataType === 'attribute') {
+        const attributeValue =
+          attributeMap[field.id] ??
+          attributeMap[field.name] ??
+          attributeLabelMap[field.id] ??
+          attributeLabelMap[field.name]
+        if (attributeValue !== undefined) dataMap[field.id] = attributeValue
+      }
+    })
 
     // 调试日志 - 方便排查数据映射问题
     if (Object.keys(dataMap).length > 0) {
@@ -145,8 +192,7 @@ const pushDeviceData = async () => {
       editorRef.value.pushPlatformDataBatch(dataMap)
     } else {
       console.warn('[ThingsVis] 未找到匹配的平台字段数据', {
-        platformFields: platformFields.value.map(f => f.id),
-        deviceDataKeys: Object.keys(data)
+        platformFields: platformFields.value.map(f => f.id)
       })
     }
   } catch (error) {
@@ -158,6 +204,10 @@ const pushDeviceData = async () => {
  * 启动数据更新定时器
  */
 const startDataUpdate = () => {
+  if (dataUpdateInterval) {
+    clearInterval(dataUpdateInterval)
+    dataUpdateInterval = null
+  }
   // 首次立即推送
   pushDeviceData()
 
@@ -185,14 +235,25 @@ const handleEditorReady = () => {
   startDataUpdate()
 }
 
-// 监听设备ID变化
-watch(() => props.id, () => {
+// 监听模板ID变化
+watch(() => props.deviceTemplateId, () => {
   stopDataUpdate()
-  getDeviceDetail()
+  initByTemplateId()
 }, { immediate: false })
 
+// 监听外部设备数据变化（来自详情页Tab）
+watch(
+  () => props.deviceData,
+  () => {
+    if (editorRef.value?.editorReady?.value) {
+      pushDeviceData()
+    }
+  },
+  { deep: true }
+)
+
 onMounted(() => {
-  getDeviceDetail()
+  initByTemplateId()
 })
 
 onBeforeUnmount(() => {
@@ -219,6 +280,7 @@ onBeforeUnmount(() => {
         :platform-fields="platformFields"
         height="600px"
         @ready="handleEditorReady"
+        @request-field-data="pushDeviceData"
       />
     </template>
   </n-card>

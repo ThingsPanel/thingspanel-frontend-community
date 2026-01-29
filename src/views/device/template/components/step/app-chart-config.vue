@@ -7,7 +7,7 @@
 import { ref, onMounted } from 'vue'
 import { NButton, NModal, NCard, NEmpty } from 'naive-ui'
 import { $t } from '@/locales'
-import { getTemplat, putTemplat } from '@/service/api'
+import { getTemplat, putTemplat, telemetryApi, attributesApi } from '@/service/api'
 import ThingsVisEditor from '@/components/thingsvis/ThingsVisEditor.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import type { PlatformField } from '@/utils/thingsvis/types'
@@ -98,8 +98,31 @@ const loadTemplateData = async () => {
     const res = await getTemplat(props.deviceTemplateId)
 
     if (res.data) {
-      // 提取平台字段
-      platformFields.value = extractPlatformFields(res.data)
+      // 提取平台字段（优先从物模型接口获取）
+      const [telemetryRes, attributesRes] = await Promise.all([
+        telemetryApi({ page: 1, page_size: 1000, device_template_id: props.deviceTemplateId }),
+        attributesApi({ page: 1, page_size: 1000, device_template_id: props.deviceTemplateId })
+      ])
+
+      const telemetryList = Array.isArray(telemetryRes?.data?.list)
+        ? telemetryRes.data.list
+        : Array.isArray(telemetryRes?.data)
+          ? telemetryRes.data
+          : []
+
+      const attributesList = Array.isArray(attributesRes?.data?.list)
+        ? attributesRes.data.list
+        : Array.isArray(attributesRes?.data)
+          ? attributesRes.data
+          : []
+
+      const platformSource = {
+        telemetry: telemetryList,
+        attributes: attributesList
+      }
+
+      const extractedFields = extractPlatformFields(platformSource)
+      platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)
 
       // 加载已有配置
       if (res.data.app_chart_config) {

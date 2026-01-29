@@ -17,6 +17,21 @@ export function extractPlatformFields(template: any): PlatformField[] {
 
     // 解析模板中的字段定义
     try {
+        const normalizeField = (item: any, dataType: PlatformField['dataType']): PlatformField | null => {
+            const id = item?.key || item?.data_identifier || item?.identifier || item?.id
+            const name = item?.name || item?.data_name || item?.label || id
+            if (!id) return null
+
+            return {
+                id,
+                name: name || id,
+                type: mapDataType(item?.data_type || item?.type),
+                dataType,
+                unit: item?.unit,
+                description: item?.description || item?.define
+            }
+        }
+
         // 遥测字段
         if (template.telemetry) {
             const telemetryData =
@@ -24,16 +39,8 @@ export function extractPlatformFields(template: any): PlatformField[] {
 
             if (Array.isArray(telemetryData)) {
                 telemetryData.forEach((item: any) => {
-                    if (item.key && item.name) {
-                        fields.push({
-                            id: item.key,
-                            name: item.name || item.key,
-                            type: mapDataType(item.data_type || item.type),
-                            dataType: 'telemetry',
-                            unit: item.unit,
-                            description: item.description || item.define
-                        })
-                    }
+                    const field = normalizeField(item, 'telemetry')
+                    if (field) fields.push(field)
                 })
             }
         }
@@ -45,16 +52,8 @@ export function extractPlatformFields(template: any): PlatformField[] {
 
             if (Array.isArray(attributesData)) {
                 attributesData.forEach((item: any) => {
-                    if (item.key && item.name) {
-                        fields.push({
-                            id: item.key,
-                            name: item.name || item.key,
-                            type: mapDataType(item.data_type || item.type),
-                            dataType: 'attribute',
-                            unit: item.unit,
-                            description: item.description || item.define
-                        })
-                    }
+                    const field = normalizeField(item, 'attribute')
+                    if (field) fields.push(field)
                 })
             }
         }
@@ -66,16 +65,8 @@ export function extractPlatformFields(template: any): PlatformField[] {
 
             if (Array.isArray(commandsData)) {
                 commandsData.forEach((item: any) => {
-                    if (item.key && item.name) {
-                        fields.push({
-                            id: item.key,
-                            name: item.name || item.key,
-                            type: mapDataType(item.data_type || item.type),
-                            dataType: 'command',
-                            unit: item.unit,
-                            description: item.description || item.define
-                        })
-                    }
+                    const field = normalizeField(item, 'command')
+                    if (field) fields.push(field)
                 })
             }
         }
