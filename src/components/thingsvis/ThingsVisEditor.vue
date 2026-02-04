@@ -208,11 +208,20 @@ const sendInitDataToEditor = () => {
   try {
     const pureConfig = JSON.parse(JSON.stringify(props.initialConfig))
 
-    // 🔧 强制使用 grid (reflow) 模式 (应用户要求)
+    // 🔧 处理画布模式：保留原数据中的模式，无数据时默认 grid
+    // 同时将已废弃的 'reflow' 模式映射为 'grid'
     if (pureConfig.canvas) {
-      pureConfig.canvas.mode = 'reflow'
+      // 如果模式是 reflow（已废弃），映射为 grid
+      if (pureConfig.canvas.mode === 'reflow') {
+        pureConfig.canvas.mode = 'grid'
+      }
+      // 如果没有设置模式，默认使用 grid
+      if (!pureConfig.canvas.mode) {
+        pureConfig.canvas.mode = 'grid'
+      }
     } else {
-      pureConfig.canvas = { mode: 'reflow', width: 1920, height: 1080 }
+      // 完全没有 canvas 配置，创建默认配置
+      pureConfig.canvas = { mode: 'grid', width: 1920, height: 1080 }
     }
 
     // 🔧 确保所有节点都有 grid 属性，否则在 grid 模式下可能不显示
