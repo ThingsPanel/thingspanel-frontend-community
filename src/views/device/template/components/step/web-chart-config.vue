@@ -72,7 +72,7 @@ const next = () => {
 // 处理保存
 const handleSave = async (payload: any) => {
   console.log('[web-chart-config] handleSave 被调用:', payload)
-  
+
   if (saving.value) {
     console.log('[web-chart-config] 正在保存中，跳过')
     return
@@ -81,7 +81,7 @@ const handleSave = async (payload: any) => {
   saving.value = true
   try {
     console.log('[web-chart-config] 开始保存，deviceTemplateId:', props.deviceTemplateId)
-    
+
     // 获取当前模板数据
     const res = await getTemplat(props.deviceTemplateId)
     console.log('[web-chart-config] 获取模板成功:', res.data)
@@ -101,7 +101,7 @@ const handleSave = async (payload: any) => {
     // 更新状态
     initialConfig.value = payload
     hasConfig.value = true
-    
+
     // 关闭弹窗
     showEditorModal.value = false
   } catch (error) {
@@ -155,7 +155,7 @@ const loadTemplateData = async () => {
           const config = JSON.parse(res.data.web_chart_config)
           initialConfig.value = config
           hasConfig.value = true
-          
+
           // 🔍 详细日志
           console.log('[web-chart-config] ✅ 配置解析成功:', {
             canvas: config.canvas,
@@ -280,8 +280,6 @@ onMounted(() => {
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   overflow: auto;
-  background: #f5f5f5;
-  padding: 20px;
 }
 
 .actions-bar {
