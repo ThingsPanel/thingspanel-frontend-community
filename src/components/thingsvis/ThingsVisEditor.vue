@@ -246,7 +246,7 @@ const sendInitDataToEditor = () => {
       })
     }
 
-    console.log('[ThingsVisEditor] Sending init config with Grid forced:', pureConfig)
+    console.log('[ThingsVisEditor] Sending init config:', pureConfig)
 
     iframeRef.value.contentWindow.postMessage(
       {
