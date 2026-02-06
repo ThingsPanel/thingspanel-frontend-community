@@ -8,18 +8,8 @@ import { setupStore } from './store'
 import { router, setupRouter } from './router'
 import { i18n, setupI18n } from './locales'
 import { initEChartsComponents } from '@/utils/echarts/echarts-manager'
-// 导入 Card2.1 组件注册文件以启动组件注册和属性暴露系统（使用统一入口）
-import '@/card2.1/index'
-// 🔥 关键修复：确保组件系统在应用启动时初始化（使用统一入口）
-import { initializeCard2System } from '@/card2.1/index'
-// 🔥 关键修复：确保 InteractionManager 在应用启动时被正确初始化
-import '@/card2.1/core2/interaction'
-// 🧹 导入localStorage清理工具
-import { cleanupLocalStorage } from '@/utils/storage-cleaner'
-// 🎯 导入渲染器注册系统
-import { registerAllRenderers } from '@/components/visual-editor/renderers/registry'
+
 import App from './App.vue'
-// 最近访问路由功能
 const RECENTLY_VISITED_ROUTES_KEY = 'RECENTLY_VISITED_ROUTES'
 const MAX_RECENT_ROUTES = 8
 
@@ -39,33 +29,12 @@ function debounce<T extends () => any>(func: T, wait: number): T {
 let recentRoutesCache: any[] | null = null
 
 async function setupApp() {
-  // 🧹 清理不需要的localStorage项
-  cleanupLocalStorage()
-
   const app = createApp(App)
 
-  // 1. 关键同步初始化 - 应用启动必需
   setupStore(app)
   setupI18n(app)
   setupNProgress()
-  // Show splash loading once during bootstrap (before mount).
   setupLoading()
-  // 🔥 关键修复：初始化 Card2.1 组件系统
-  initializeCard2System()
-    .then(() => {
-      // 组件系统初始化完成，通知所有监听器
-      window.dispatchEvent(new CustomEvent('card2-system-ready'))
-    })
-    .catch(error => {
-      console.error('❌ Card2.1 组件系统初始化失败:', error)
-    })
-
-  // 🎯 初始化渲染器注册系统
-  try {
-    registerAllRenderers()
-  } catch (error) {
-    console.error('❌ 渲染器注册系统初始化失败:', error)
-  }
 
   // 2. 系统设置延迟加载 - 避免阻塞应用启动
   const sysSettingStore = useSysSettingStore()

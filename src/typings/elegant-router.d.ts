@@ -106,13 +106,6 @@ declare module "@elegant-router/types" {
     "rule-engine": "/rule-engine";
     "system-management-user": "/system-management-user";
     "system-management-user_system-log": "/system-management-user/system-log";
-    "test": "/test";
-    "test_category-test": "/test/category-test";
-    "test_panel-editor-v2": "/test/panel-editor-v2";
-    "ultra-kanban": "/ultra-kanban";
-    "ultra-kanban_index": "/ultra-kanban/index";
-    "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details";
-    "ultra-kanban_kanban-preview": "/ultra-kanban/kanban-preview";
     "user-center": "/user-center";
     "visualization": "/visualization";
     "visualization_kanban": "/visualization/kanban";
@@ -174,8 +167,6 @@ declare module "@elegant-router/types" {
     | "plugin"
     | "rule-engine"
     | "system-management-user"
-    | "test"
-    | "ultra-kanban"
     | "user-center"
     | "visualization"
   >;
@@ -261,11 +252,6 @@ declare module "@elegant-router/types" {
     | "plugin_video"
     | "rule-engine"
     | "system-management-user_system-log"
-    | "test_category-test"
-    | "test_panel-editor-v2"
-    | "ultra-kanban_index"
-    | "ultra-kanban_kanban-details"
-    | "ultra-kanban_kanban-preview"
     | "user-center"
     | "visualization_kanban-details"
     | "visualization_kanban"
