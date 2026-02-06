@@ -354,10 +354,13 @@ const handleCancel = () => {
 // 格式化 Markdown 文本
 const formatMarkdown = (text: string): string => {
   if (!text) return ''
-  // 先处理代码块（```...```），避免被其他规则影响
+  // 首先转义所有花括号，防止被 Vue 当作插值表达式解析
+  let result = text.replace(/\{/g, '&#123;').replace(/\}/g, '&#125;')
+
+  // 处理代码块（```...```），避免被其他规则影响
   const codeBlockPlaceholder = '__CODE_BLOCK_PLACEHOLDER__'
   const codeBlocks: string[] = []
-  let result = text.replace(/```([\s\S]*?)```/g, (match, code) => {
+  result = result.replace(/```([\s\S]*?)```/g, (match, code) => {
     const placeholder = `${codeBlockPlaceholder}${codeBlocks.length}`
     codeBlocks.push(code.trim())
     return placeholder
@@ -574,43 +577,43 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
   min-width: 450px;
   width: 750px;
   padding: 8px 12px;
-  
+
   .tip-title {
     font-size: 16px;
     font-weight: 600;
     color: #333;
     margin-bottom: 8px;
   }
-  
+
   .tip-content {
     font-size: 14px;
     line-height: 1.6;
   }
-  
+
   .tip-section {
     margin-bottom: 12px;
-    
+
     &:last-child {
       margin-bottom: 0;
     }
   }
-  
+
   .tip-label {
     font-weight: 500;
     color: #333;
     margin-bottom: 4px;
   }
-  
+
   .tip-text {
     color: #666;
     margin-bottom: 6px;
     padding-left: 8px;
     white-space: pre-line;
-    
+
     &:last-child {
       margin-bottom: 0;
     }
-    
+
     code {
       background-color: #f5f5f5;
       padding: 2px 4px;
@@ -619,7 +622,7 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
       font-size: 12px;
       color: #e83e8c;
     }
-    
+
     .code-block {
       background-color: #f5f5f5;
       padding: 8px 12px;
@@ -630,14 +633,14 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
       font-family: 'Courier New', monospace;
       font-size: 12px;
       line-height: 1.5;
-      
+
       code {
         background-color: transparent;
         padding: 0;
         color: #333;
       }
     }
-    
+
     strong {
       font-weight: 600;
       color: #333;
@@ -647,14 +650,14 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
 
 .topic-option {
   padding: 4px 0;
-  
+
   .topic-option-label {
     font-size: 14px;
     color: #333;
     line-height: 1.5;
     margin-bottom: 2px;
   }
-  
+
   .topic-option-desc {
     font-size: 12px;
     color: #999;
