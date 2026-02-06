@@ -1,6 +1,7 @@
 {
   "common.serviceConfi": "服务配置",
   "common.config": "配置",
+  "common.back": "返回",
   "common._add": "添加",
   "common._delete": "删除",
   "common._edit": "编辑",
@@ -313,7 +314,6 @@
   "json.compress.success": "JSON压缩成功",
   "json.compress.error": "JSON格式错误，无法压缩",
   "json.clear.success": "JSON内容已清空",
-
   "common.loading": "加载中...",
   "common.never": "从未",
   "common.stop": "停止",
@@ -328,7 +328,6 @@
   "common.updateFailed": "更新失败",
   "common.import": "导入",
   "common.notSpecified": "未指定",
-
   "configuration.import.previewTitle": "导入预览",
   "configuration.import.basicInfo": "基本信息",
   "configuration.import.version": "版本",
@@ -359,7 +358,6 @@
   "configuration.export.noData": "无数据",
   "configuration.export.dataItems": "数据项",
   "configuration.export.selectDataSourceHint": "请选择要导出的数据源",
-
   "configuration.import.singleDataSource": "单数据源导入",
   "configuration.import.selectTargetSlot": "选择目标槽位",
   "configuration.import.sourceDataSource": "源数据源",
@@ -370,9 +368,7 @@
   "configuration.import.singleDataSourcePreview": "单数据源导入预览",
   "configuration.import.sourceInfo": "源信息",
   "configuration.import.targetInfo": "目标信息",
-
   "configuration.import.managerInvalid": "配置管理器无效或未提供，无法应用配置",
-  
   "common.card2InitSuccess": "Card2.1 系统初始化完成",
   "common.card2ComponentCount": "组件数量",
   "common.card2CategoryCount": "分类数量",

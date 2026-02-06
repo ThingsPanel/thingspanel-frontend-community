@@ -42,6 +42,10 @@ interface Emits {
   (e: 'ready'): void
   /** 编辑器请求平台字段数据 */
   (e: 'request-field-data'): void
+  /** 预览事件 */
+  (e: 'preview', projectId: string): void
+  /** 发布事件 */
+  (e: 'publish', projectId: string): void
 }
 
 const emit = defineEmits<Emits>()
@@ -155,6 +159,20 @@ const handleMessage = async (event: MessageEvent) => {
   if (data.type === 'thingsvis:request-init-data') {
     console.log('[ThingsVisEditor] 📨 收到编辑器初始数据请求 (request-init-data)')
     sendInitDataToEditor()
+  }
+
+  // 🆕 处理预览请求
+  if (data.type === 'thingsvis:preview') {
+    const { projectId } = data
+    console.log('[ThingsVisEditor] 收到预览请求:', projectId)
+    emit('preview', projectId)
+  }
+
+  // 🆕 处理发布请求
+  if (data.type === 'thingsvis:publish') {
+    const { projectId } = data
+    console.log('[ThingsVisEditor] 收到发布请求:', projectId)
+    emit('publish', projectId)
   }
 
   // 处理编辑器就绪事件 (Editor 模式)
@@ -463,14 +481,24 @@ defineExpose({
 <style scoped lang="scss">
 .thingsvis-editor-wrapper {
   width: 100%;
+  height: 100%; /* Ensure wrapper takes full height */
   position: relative;
+}
+
+:deep(.n-spin-container) {
+  height: 100%;
+}
+
+:deep(.n-spin-content) {
+  height: 100%;
 }
 
 .thingsvis-iframe {
   width: 100%;
+  height: 100%;
   border: none;
   background: #fff;
-  min-height: 400px;
+  display: block; /* Remove inline-block gap */
 }
 
 .error-state {
@@ -478,7 +506,7 @@ defineExpose({
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
+  height: 100%; /* Use full height instead of min-height */
   padding: 20px;
   background: #f5f5f5;
   border-radius: 8px;

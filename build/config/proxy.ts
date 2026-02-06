@@ -35,5 +35,13 @@ export function createViteProxy(env: Env.ImportMeta) {
     }
   }
 
+  // ThingsVis 独立代理 - 使用 /thingsvis-api 前缀，不与默认代理冲突
+  proxy['/thingsvis-api'] = {
+    target: 'http://localhost:3001',
+    changeOrigin: true,
+    rewrite: path => path.replace(/^\/thingsvis-api/, '/api/v1')
+  }
+
   return proxy
 }
+

@@ -885,6 +885,44 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'visualization_kanban-details',
           i18nKey: 'route.visualization_kanban-details'
         }
+      },
+      {
+        name: 'visualization_thingsvis',
+        path: '/visualization/thingsvis',
+        component: 'view.visualization_thingsvis',
+        meta: {
+          title: 'visualization_thingsvis',
+          i18nKey: 'route.visualization_thingsvis'
+        }
+      },
+      {
+        name: 'visualization_thingsvis-dashboards',
+        path: '/visualization/thingsvis-dashboards',
+        component: 'view.visualization_thingsvis-dashboards',
+        meta: {
+          title: 'visualization_thingsvis-dashboards',
+          i18nKey: 'route.visualization_thingsvis-dashboards',
+          hideInMenu: true
+        }
+      },
+      {
+        name: 'visualization_thingsvis-editor',
+        path: '/visualization/thingsvis-editor',
+        component: 'view.visualization_thingsvis-editor',
+        meta: {
+          title: 'visualization_thingsvis-editor',
+          i18nKey: 'route.visualization_thingsvis-editor',
+          hideInMenu: true
+        }
+      },
+      {
+        name: 'visualization_thingsvis-preview',
+        path: '/visualization/thingsvis-preview',
+        component: 'view.visualization_thingsvis-preview',
+        meta: {
+          title: 'visualization_thingsvis-preview',
+          i18nKey: 'route.visualization_thingsvis-preview'
+        }
       }
     ]
   }

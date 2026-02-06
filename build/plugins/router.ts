@@ -32,9 +32,14 @@ export function setupElegantRouter() {
 
       const constantRoutes: RouteKey[] = ['login', '403', '404', '500']
 
+      let i18nKey = `route.${key}`
+      if (key.includes('thingsvis')) {
+        i18nKey = i18nKey.replace(/_/g, '-')
+      }
+
       const meta: Partial<RouteMeta> = {
         title: key,
-        i18nKey: `route.${key}` as App.I18n.I18nKey
+        i18nKey: i18nKey as App.I18n.I18nKey
       }
 
       if (constantRoutes.includes(key)) {
