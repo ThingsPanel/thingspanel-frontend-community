@@ -1,8 +1,6 @@
 import { BACKEND_ERROR_CODE, createFlatRequest } from '@sa/axios'
 import { localStg } from '@/utils/storage'
 import { createProxyPattern, createServiceConfig } from '~/env.config'
-import { $t } from '@/locales'
-import { useAuthStore } from '@/store/modules/auth'
 
 const { otherBaseURL } = createServiceConfig(import.meta.env)
 const isHttpProxy = import.meta.env.VITE_HTTP_PROXY === 'Y'
@@ -55,19 +53,66 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
       }
       return response.data.data
     },
-    onError(error) {
+    async onError(error) {
       // when the requestTs is fail, you can show error message
 
       if (error?.response?.status === 401) {
-        window.$message?.destroyAll()
-        window.$message?.error($t('custom.auth.authFailedPleaseLogin'))
+        // 检查错误码
+        const errorData = error?.response?.data
+        const errorCode = errorData?.code
 
-        // 使用 authStore.resetStore() 来清除认证信息并跳转到登录页
-        setTimeout(async () => {
+        if (errorCode === 40102) {
+          // 尝试刷新token
+          const { useAuthStore } = await import('@/store/modules/auth')
           const authStore = useAuthStore()
-          await authStore.resetStore()
-        }, 1000)
+          const refreshSuccess = await authStore.refreshToken()
 
+          if (refreshSuccess) {
+            // 刷新成功，重试原请求
+            const originalRequest = error.config
+            if (originalRequest && !(originalRequest as any)._retry) {
+              (originalRequest as any)._retry = true;
+              const newToken = localStg.get('token')
+              if (newToken) {
+                originalRequest.headers['x-token'] = newToken
+                return request(originalRequest)
+              }
+            }
+          } else {
+            // 刷新失败，跳转到登录页
+            window.$message?.destroyAll()
+            window.$message?.error('登录已过期，请重新登录。')
+
+            setTimeout(() => {
+              localStg.remove('token')
+              localStg.remove('refreshToken')
+              localStg.remove('userInfo')
+              window.location.reload()
+            }, 1000)
+          }
+        } else if (errorCode === 40100 || errorCode === 40101) {
+          // 缺少认证信息或无效Token，直接跳转到登录页
+          window.$message?.destroyAll()
+          window.$message?.error('认证失败，请重新登录。')
+
+          setTimeout(() => {
+            localStg.remove('token')
+            localStg.remove('refreshToken')
+            localStg.remove('userInfo')
+            window.location.reload()
+          }, 1000)
+        } else {
+          // 处理其他所有401情况（默认处理，防止页面卡死）
+          window.$message?.destroyAll()
+          window.$message?.error('登录已过期，请重新登录。')
+
+          setTimeout(() => {
+            localStg.remove('token')
+            localStg.remove('refreshToken')
+            localStg.remove('userInfo')
+            window.location.reload()
+          }, 1000)
+        }
         return
       }
 
