@@ -86,15 +86,13 @@ const handleSave = async (payload: any) => {
     const res = await getTemplat(props.deviceTemplateId)
     console.log('[web-chart-config] 获取模板成功:', res.data)
 
-    // 保存到 web_chart_config 和 app_chart_config 字段
-    // 根据用户要求，两个字段都保存同一份完整的配置数据
+    // 只保存到 web_chart_config 字段
     const configStr = JSON.stringify(payload)
     await putTemplat({
       ...res.data,
-      web_chart_config: configStr,
-      app_chart_config: configStr
+      web_chart_config: configStr
     })
-    console.log('[web-chart-config] 保存成功 (web & app)')
+    console.log('[web-chart-config] 保存成功 (web)')
 
     window.$message?.success($t('common.saveSuccess'))
 
