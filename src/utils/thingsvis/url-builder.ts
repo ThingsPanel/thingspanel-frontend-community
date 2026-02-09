@@ -64,27 +64,29 @@ export async function buildThingsVisUrl(options: ThingsVisUrlOptions): Promise<s
 
     // 1. SSO Token 交换 (关键实现)
     try {
+        console.log('[url-builder] 开始 SSO token 交换...')
         // 动态导入以避免循环依赖
         const { getThingsVisToken } = await import('./thingsvis-auth')
         const thingsvisToken = await getThingsVisToken()
 
         if (thingsvisToken) {
             params.set('token', thingsvisToken)
-            console.log('✅ Using ThingsVis SSO token')
+            console.log('✅ SSO token 获取成功, length:', thingsvisToken.length)
         } else {
             // 降级：使用 ThingsPanel token
             const tpToken = localStg.get('token')
             if (tpToken) {
                 params.set('token', tpToken)
-                console.warn('⚠️ Using ThingsPanel token as fallback')
+                console.warn('⚠️ SSO 失败，降级使用 ThingsPanel token')
             }
         }
     } catch (error) {
-        console.error('❌ SSO token exchange failed, using fallback:', error)
+        console.error('❌ SSO token exchange failed:', error)
         // 降级：使用 ThingsPanel token
         const tpToken = localStg.get('token')
         if (tpToken) {
             params.set('token', tpToken)
+            console.warn('⚠️ 降级使用 ThingsPanel token')
         }
     }
 
@@ -126,5 +128,14 @@ export async function buildThingsVisUrl(options: ThingsVisUrlOptions): Promise<s
     // editor 模式: /editor 路由（编辑器）
     const route = options.mode === 'viewer' ? '/embed' : '/editor'
 
-    return `${baseUrl}#${route}?${params.toString()}`
+    const finalUrl = `${baseUrl}#${route}?${params.toString()}`
+    
+    // 🔍 调试：打印最终 URL 中是否包含 token
+    console.log('[url-builder] 最终 URL:', {
+        hasToken: params.has('token'),
+        tokenLength: params.get('token')?.length,
+        urlPreview: finalUrl.substring(0, 200) + '...'
+    })
+    
+    return finalUrl
 }

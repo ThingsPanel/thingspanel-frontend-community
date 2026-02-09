@@ -70,6 +70,12 @@ const loadDashboard = async () => {
     const { data, error } = await getThingsVisDashboard(dashboardId)
 
     if (!error && data) {
+      // 🔍 调试：打印 API 返回的完整数据
+      console.log('[thingsvis-editor] 📥 API 返回数据:', {
+        id: data.id,
+        name: data.name,
+        canvasConfigName: data.canvasConfig?.name,
+      })
       dashboardData.value = data
     } else {
       message.error('加载失败')
@@ -167,6 +173,7 @@ onMounted(() => {
         height="100%"
         show-top-left
         show-top-right
+        save-target="self"
         @save="handleSave"
         @preview="handlePreview"
         @publish="handlePublish"

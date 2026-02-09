@@ -25,6 +25,8 @@ interface Props {
   showTopLeft?: boolean
   /** 是否显示右上角按钮（预览/发布） */
   showTopRight?: boolean
+  /** 保存目标: self=ThingsVis API, host=宿主平台处理 */
+  saveTarget?: 'self' | 'host'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -34,7 +36,8 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   height: '600px',
   showTopLeft: false,
-  showTopRight: false
+  showTopRight: false,
+  saveTarget: 'host'
 })
 
 interface Emits {
@@ -83,7 +86,7 @@ const buildEditorUrl = async () => {
       mode: props.mode,
       config: props.initialConfig,
       platformFields: props.platformFields,
-      saveTarget: 'host', // 保存到宿主平台
+      saveTarget: props.saveTarget, // 根据 saveTarget prop 决定
       // 编辑功能：组件库、属性面板、工具栏
       showLibrary: isEditor,
       showProps: isEditor,
@@ -230,7 +233,13 @@ const sendInitDataToEditor = () => {
   }
 
   try {
+    // 🔍 调试：打印原始 initialConfig 中的 meta.name
+    console.log('[ThingsVisEditor] 📝 原始 initialConfig.meta:', props.initialConfig.meta)
+    
     const pureConfig = JSON.parse(JSON.stringify(props.initialConfig))
+    
+    // 🔍 调试：打印深拷贝后的 meta.name
+    console.log('[ThingsVisEditor] 📝 深拷贝后 pureConfig.meta:', pureConfig.meta)
 
     // 🔧 处理画布模式：保留原数据中的模式，无数据时默认 grid
     // 同时将已废弃的 'reflow' 模式映射为 'grid'
@@ -283,8 +292,8 @@ const sendInitDataToEditor = () => {
             apiConfig: {
               baseURL: `${window.location.origin}/thingsvis-api`
             },
-            // 保存配置：保存到宿主平台而不是直接调用 API
-            saveTarget: 'host',
+            // 保存配置：根据 saveTarget prop 决定
+            saveTarget: props.saveTarget,
             // 集成模式
             mode: 'embedded'
           }

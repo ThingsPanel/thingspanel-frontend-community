@@ -15,9 +15,11 @@ export class ThingsVisAuthService {
     private thingsvisApiUrl: string
 
     constructor() {
-        // SSO API 地址 (默认 localhost:3001)
-        // 可以通过环境变量 VITE_THINGSVIS_API_URL 覆盖
-        this.thingsvisApiUrl = import.meta.env.VITE_THINGSVIS_API_URL || 'http://localhost:3001'
+        // SSO API 地址
+        // 使用代理路径 /thingsvis-api 避免 CORS 问题
+        // 代理会将 /thingsvis-api 重写为 localhost:3001/api/v1
+        // 注意：这里不需要 /api/v1 后缀，因为代理会自动添加
+        this.thingsvisApiUrl = import.meta.env.VITE_THINGSVIS_API_URL || '/thingsvis-api'
     }
 
     /**
@@ -49,8 +51,13 @@ export class ThingsVisAuthService {
                 }
             }
 
-            // 3. 调用 ThingsVis SSO API
-            const response = await fetch(`${this.thingsvisApiUrl}/api/v1/auth/sso`, {
+            // 3. 调用 ThingsVis SSO API (通过代理)
+            // /thingsvis-api/auth/sso -> localhost:3001/api/v1/auth/sso
+            const ssoUrl = `${this.thingsvisApiUrl}/auth/sso`
+            console.log('[SSO] 📡 调用 SSO API:', ssoUrl)
+            console.log('[SSO] 请求数据:', { platform: request.platform, userEmail: request.userInfo.email })
+            
+            const response = await fetch(ssoUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -58,8 +65,11 @@ export class ThingsVisAuthService {
                 body: JSON.stringify(request)
             })
 
+            console.log('[SSO] 响应状态:', response.status)
+            
             if (!response.ok) {
                 const errorText = await response.text()
+                console.error('[SSO] 响应错误:', errorText)
                 throw new Error(`Token exchange failed: ${response.status} - ${errorText}`)
             }
 
