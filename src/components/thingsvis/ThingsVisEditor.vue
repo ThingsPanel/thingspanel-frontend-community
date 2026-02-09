@@ -21,6 +21,10 @@ interface Props {
   loading?: boolean
   /** iframe高度 */
   height?: string
+  /** 是否显示左上角菜单（包含数据源管理等） */
+  showTopLeft?: boolean
+  /** 是否显示右上角按钮（预览/发布） */
+  showTopRight?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -28,7 +32,9 @@ const props = withDefaults(defineProps<Props>(), {
   initialConfig: null,
   platformFields: () => [],
   loading: false,
-  height: '600px'
+  height: '600px',
+  showTopLeft: false,
+  showTopRight: false
 })
 
 interface Emits {
@@ -82,9 +88,9 @@ const buildEditorUrl = async () => {
       showLibrary: isEditor,
       showProps: isEditor,
       showToolbar: isEditor,
-      // 暂时隐藏左上角和右上角（项目名称、用户头像等）
-      showTopLeft: false,
-      showTopRight: false
+      // 顶部工具栏可配置（由 props 控制）
+      showTopLeft: props.showTopLeft,
+      showTopRight: props.showTopRight,
     }
 
     const url = await buildThingsVisUrl(options)
@@ -269,7 +275,20 @@ const sendInitDataToEditor = () => {
     iframeRef.value.contentWindow.postMessage(
       {
         type: 'thingsvis:editor-init',
-        payload: { data: pureConfig }
+        payload: { 
+          data: pureConfig,
+          // 🔧 传递完整的嵌入式配置
+          config: {
+            // API 配置：使用 ThingsPanel 的代理路径
+            apiConfig: {
+              baseURL: `${window.location.origin}/thingsvis-api`
+            },
+            // 保存配置：保存到宿主平台而不是直接调用 API
+            saveTarget: 'host',
+            // 集成模式
+            mode: 'embedded'
+          }
+        }
       },
       '*'
     )

@@ -185,6 +185,7 @@ export interface ProjectListResponse {
 export interface ThingsVisDashboard {
   id: string
   name: string
+  thumbnail: string | null
   version: number
   canvasConfig: {
     mode: string
@@ -206,6 +207,7 @@ export interface ThingsVisDashboard {
 export interface DashboardListItem {
   id: string
   name: string
+  thumbnail: string | null
   version: number
   isPublished: boolean
   projectId: string
@@ -234,6 +236,7 @@ export interface CreateDashboardData {
 
 export interface UpdateDashboardData {
   name?: string
+  thumbnail?: string | null
   canvasConfig?: unknown
   nodes?: unknown[]
   dataSources?: unknown[]

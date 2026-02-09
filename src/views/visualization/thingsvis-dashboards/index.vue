@@ -16,6 +16,7 @@ import {
   NEmpty,
   NSpin,
   NTag,
+  NInputNumber,
   useMessage
 } from 'naive-ui'
 import { useRouterPush } from '@/hooks/common/router'
@@ -250,8 +251,14 @@ onMounted(async () => {
               @click="openEditor(dashboard.id)"
             >
               <!-- 缩略图区域 -->
-              <div class="h-40 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                <icon-mdi:chart-box class="text-64px text-primary/40" />
+              <div class="h-40 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden">
+                <img
+                  v-if="dashboard.thumbnail"
+                  :src="dashboard.thumbnail"
+                  class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  alt="thumbnail"
+                />
+                <icon-mdi:chart-box v-else class="text-64px text-primary/40" />
               </div>
 
               <!-- 卡片内容 -->
@@ -342,18 +349,18 @@ onMounted(async () => {
 
         <NFormItem v-if="formData.canvasMode === 'fixed'" label="画布尺寸">
           <div class="flex items-center gap-2">
-            <NInput
+            <NInputNumber
               v-model:value="formData.canvasWidth"
-              type="number"
               placeholder="宽度"
               style="width: 120px"
+              :show-button="false"
             />
             <span>×</span>
-            <NInput
+            <NInputNumber
               v-model:value="formData.canvasHeight"
-              type="number"
               placeholder="高度"
               style="width: 120px"
+              :show-button="false"
             />
             <span class="text-sm text-gray-400">px</span>
           </div>

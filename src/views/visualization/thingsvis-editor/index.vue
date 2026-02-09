@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NButton, NSpace, NBreadcrumb, NBreadcrumbItem, useMessage, NTooltip } from 'naive-ui'
+import { NButton, NBreadcrumb, NBreadcrumbItem, useMessage } from 'naive-ui'
 import { $t } from '@/locales'
 import { useRouterPush } from '@/hooks/common/router'
+
 import ThingsVisEditor from '@/components/thingsvis/ThingsVisEditor.vue'
 import {
   getThingsVisDashboard,
@@ -20,11 +21,6 @@ const dashboardId = route.query.id as string
 const editorRef = ref<InstanceType<typeof ThingsVisEditor>>()
 const loading = ref(true)
 const saving = ref(false)
-import { useFullscreen } from '@vueuse/core'
-
-/** ... */
-const editorContainerRef = ref<HTMLElement>()
-const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(editorContainerRef)
 const dashboardData = ref<any>(null)
 
 const handlePreview = (id: string) => {
@@ -40,21 +36,16 @@ const handlePublish = async (id: string) => {
     loading.value = true
     const { error } = await publishThingsVisDashboard(id)
     if (!error) {
-       message.success($t('common.publishSuccess') || '发布成功')
+      message.success($t('common.publishSuccess') || '发布成功')
     } else {
-       message.error($t('common.publishFailed') || '发布失败')
+      message.error($t('common.publishFailed') || '发布失败')
     }
-  } catch(e) {
+  } catch {
     message.error($t('common.publishFailed') || '发布失败')
   } finally {
     loading.value = false
   }
 }
-
-const openInNewTab = () => {
-  window.open(location.href, '_blank')
-}
-
 
 /** 构建编辑器初始配置 */
 const initialConfig = computed(() => {
@@ -114,8 +105,7 @@ const handleSave = async (payload: any) => {
     } else {
       message.error($t('common.saveFailed'))
     }
-  } catch (e) {
-    console.error('保存失败:', e)
+  } catch {
     message.error($t('common.saveFailed'))
   } finally {
     saving.value = false
@@ -139,71 +129,25 @@ onMounted(() => {
 </script>
 
 <template>
-  <div ref="editorContainerRef" class="h-full w-full flex flex-col bg-gray-50">
-    <!-- 顶部工具栏 -->
-    <div class="border-b border-gray-200 bg-white px-5 py-3">
-      <div class="flex items-center justify-between">
-        <!-- 左侧:面包屑和标题 -->
-        <div class="flex flex-col gap-2">
-          <NBreadcrumb>
-            <NBreadcrumbItem class="cursor-pointer" @click="routerPushByKey('visualization_thingsvis')">
-              可视化项目
-            </NBreadcrumbItem>
-            <NBreadcrumbItem class="cursor-pointer" @click="goBack">
-              仪表盘列表
-            </NBreadcrumbItem>
-            <NBreadcrumbItem>{{ dashboardData?.name || '编辑器' }}</NBreadcrumbItem>
-          </NBreadcrumb>
+  <div class="h-full w-full flex flex-col">
+    <!-- 顶部导航栏：面包屑 + 返回按钮 -->
+    <div class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2">
+      <NBreadcrumb>
+        <NBreadcrumbItem class="cursor-pointer" @click="routerPushByKey('visualization_thingsvis')">
+          可视化项目
+        </NBreadcrumbItem>
+        <NBreadcrumbItem class="cursor-pointer" @click="goBack">
+          仪表盘列表
+        </NBreadcrumbItem>
+        <NBreadcrumbItem>{{ dashboardData?.name || '编辑器' }}</NBreadcrumbItem>
+      </NBreadcrumb>
 
-          <h2 class="text-lg font-semibold">
-            {{ dashboardData?.name || '可视化编辑器' }}
-          </h2>
-        </div>
-
-        <!-- 右侧:操作按钮 -->
-        <NSpace>
-          <NTooltip trigger="hover">
-            <template #trigger>
-              <NButton quaternary circle @click="openInNewTab">
-                <template #icon>
-                  <icon-mdi:open-in-new />
-                </template>
-              </NButton>
-            </template>
-            新窗口打开
-          </NTooltip>
-
-          <NTooltip trigger="hover">
-            <template #trigger>
-              <NButton quaternary circle @click="toggleFullscreen">
-                <template #icon>
-                  <icon-mdi:fullscreen-exit v-if="isFullscreen" />
-                  <icon-mdi:fullscreen v-else />
-                </template>
-              </NButton>
-            </template>
-            {{ isFullscreen ? '退出全屏' : '全屏' }}
-          </NTooltip>
-
-          <NButton @click="goBack">
-            <template #icon>
-              <icon-mdi:arrow-left />
-            </template>
-            {{ $t('common.back') }}
-          </NButton>
-
-          <NButton
-            type="primary"
-            :loading="saving"
-            @click="editorRef?.triggerSave()"
-          >
-            <template #icon>
-              <icon-mdi:content-save />
-            </template>
-            {{ $t('common.save') }}
-          </NButton>
-        </NSpace>
-      </div>
+      <NButton size="small" @click="goBack">
+        <template #icon>
+          <icon-mdi:arrow-left />
+        </template>
+        {{ $t('common.back') }}
+      </NButton>
     </div>
 
     <!-- 编辑器区域 -->
@@ -221,6 +165,8 @@ onMounted(() => {
         mode="editor"
         :initial-config="initialConfig"
         height="100%"
+        show-top-left
+        show-top-right
         @save="handleSave"
         @preview="handlePreview"
         @publish="handlePublish"

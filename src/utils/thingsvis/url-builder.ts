@@ -54,6 +54,14 @@ export async function buildThingsVisUrl(options: ThingsVisUrlOptions): Promise<s
         saveTarget: options.saveTarget || 'host'
     })
 
+    // 🔧 关键修复：传递 API 基础路径
+    // 在嵌入模式下，ThingsVis 需要知道使用哪个 API 路径
+    // 使用 /thingsvis-api 会被代理重写为 /api/v1
+    const apiBaseUrl = window.location.origin + '/thingsvis-api'
+    params.set('apiBaseUrl', apiBaseUrl)
+    params.set('apiUrl', apiBaseUrl)  // 兼容不同的参数名
+    params.set('backendUrl', apiBaseUrl)  // 再加一个可能的参数名
+
     // 1. SSO Token 交换 (关键实现)
     try {
         // 动态导入以避免循环依赖
