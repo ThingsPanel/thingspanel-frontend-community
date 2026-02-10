@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { NButton, NBreadcrumb, NBreadcrumbItem, useMessage } from 'naive-ui'
 import { $t } from '@/locales'
 import { useRouterPush } from '@/hooks/common/router'
@@ -13,7 +13,6 @@ import {
 } from '@/service/api/thingsvis'
 
 const route = useRoute()
-const router = useRouter()
 const message = useMessage()
 const { routerPushByKey } = useRouterPush()
 
@@ -24,11 +23,8 @@ const saving = ref(false)
 const dashboardData = ref<any>(null)
 
 const handlePreview = (id: string) => {
-  const routeUrl = router.resolve({
-    name: 'visualization_thingsvis-preview',
-    query: { id }
-  })
-  window.open(routeUrl.href, '_blank')
+  // 新标签页预览 - 使用独立的常量路由，无需登录
+  window.open(`/thingsvis-preview?id=${id}`, '_blank')
 }
 
 const handlePublish = async (id: string) => {

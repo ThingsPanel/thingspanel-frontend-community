@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { NSpin, useMessage } from 'naive-ui'
-import ThingsVisEditor from '@/components/thingsvis/ThingsVisEditor.vue'
+import ThingsVisViewer from '@/components/thingsvis/ThingsVisViewer.vue'
 import { getThingsVisDashboard } from '@/service/api/thingsvis'
 
 const route = useRoute()
@@ -12,16 +12,13 @@ const dashboardId = route.query.id as string
 const loading = ref(true)
 const dashboardData = ref<any>(null)
 
-/** 构建编辑器初始配置 */
-const initialConfig = computed(() => {
+/** 构建查看器配置 */
+const viewerConfig = computed(() => {
   if (!dashboardData.value) return null
 
   return {
-    meta: {
-      id: dashboardData.value.id,
-      name: dashboardData.value.name,
-      version: String(dashboardData.value.version)
-    },
+    id: dashboardData.value.id,
+    name: dashboardData.value.name,
     canvas: dashboardData.value.canvasConfig,
     nodes: dashboardData.value.nodes || [],
     dataSources: dashboardData.value.dataSources || []
@@ -60,17 +57,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full w-full bg-gray-50 dark:bg-gray-900">
+  <div class="h-full w-full bg-gray-100 dark:bg-gray-900">
     <!-- 加载中 -->
     <div v-if="loading" class="flex h-full items-center justify-center">
       <NSpin size="large" />
     </div>
 
-    <!-- 预览器 -->
-    <ThingsVisEditor
-      v-else-if="initialConfig"
-      mode="viewer"
-      :initial-config="initialConfig"
+    <!-- 预览器 - 使用独立的 Viewer 组件 -->
+    <ThingsVisViewer
+      v-else-if="viewerConfig"
+      :config="viewerConfig"
       height="100%"
     />
 
@@ -85,7 +81,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* 确保容器占满全屏，因为通常是在新标签页打开 */
+/* 确保容器占满全屏 */
 :global(body), :global(#app) {
   height: 100vh;
   margin: 0;

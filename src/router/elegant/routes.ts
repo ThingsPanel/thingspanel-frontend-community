@@ -921,7 +921,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.visualization_thingsvis-preview',
         meta: {
           title: 'visualization_thingsvis-preview',
-          i18nKey: 'route.visualization_thingsvis-preview'
+          i18nKey: 'route.visualization-thingsvis-preview',
+          constant: true
         }
       }
     ]

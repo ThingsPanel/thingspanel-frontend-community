@@ -30,10 +30,25 @@ export interface ThingsVisUrlOptions {
 
 /**
  * 获取 ThingsVis Studio 基础 URL
+ * 返回不含 hash 部分的 URL，例如 http://localhost:3000/main.html
+ * rsbuild 的 entry 配置会生成对应的 HTML 文件
  */
 function getStudioBaseUrl(): string {
     // 从环境变量读取，如果没有则使用默认值
-    return import.meta.env.VITE_THINGSVIS_STUDIO_URL || 'http://localhost:3000/main'
+    let url = import.meta.env.VITE_THINGSVIS_STUDIO_URL || 'http://localhost:3000/main.html'
+    
+    // 移除 hash 部分（如 #/editor），确保只返回基础 URL
+    const hashIndex = url.indexOf('#')
+    if (hashIndex !== -1) {
+        url = url.substring(0, hashIndex)
+    }
+    
+    // 确保 URL 以 .html 结尾（rsbuild entry 输出格式）
+    if (url.endsWith('/main') && !url.endsWith('.html')) {
+        url = url + '.html'
+    }
+    
+    return url
 }
 
 
@@ -130,7 +145,13 @@ export async function buildThingsVisUrl(options: ThingsVisUrlOptions): Promise<s
 
     const finalUrl = `${baseUrl}#${route}?${params.toString()}`
     
-    // 🔍 调试：打印最终 URL 中是否包含 token
+    // 🔍 调试：打印最终 URL
+    console.log('[url-builder] 🔗 构建 URL:', {
+        mode: options.mode,
+        route,
+        baseUrl,
+        finalUrl: finalUrl.substring(0, 300)
+    })
     console.log('[url-builder] 最终 URL:', {
         hasToken: params.has('token'),
         tokenLength: params.get('token')?.length,
