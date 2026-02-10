@@ -19,7 +19,10 @@ const viewerConfig = computed(() => {
   return {
     id: dashboardData.value.id,
     name: dashboardData.value.name,
-    canvas: dashboardData.value.canvasConfig,
+    canvas: {
+      ...dashboardData.value.canvasConfig,
+      fullWidthPreview: true // 预览时自适应容器宽度
+    },
     nodes: dashboardData.value.nodes || [],
     dataSources: dashboardData.value.dataSources || []
   }
