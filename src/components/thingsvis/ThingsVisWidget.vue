@@ -99,7 +99,7 @@ watch(() => props.platformFields, (newVal) => {
 
 // 主动触发保存 (Host -> Guest -> Host:save)
 const triggerSave = () => {
-  client?.triggerSave();
+  client?.requestSave();
 };
 
 onBeforeUnmount(() => {

@@ -35,6 +35,7 @@ const editorRef = ref<InstanceType<typeof ThingsVisWidget>>()
 // 状态
 const loading = ref(true)
 const saving = ref(false)
+const widgetKey = ref(0)
 const showEditorModal = ref(false)
 const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
@@ -99,6 +100,8 @@ const handleSave = async (payload: any) => {
     // 更新状态
     initialConfig.value = payload
     hasConfig.value = true
+    widgetKey.value++ // 强制刷新预览
+
 
     // 关闭弹窗
     showEditorModal.value = false
@@ -193,6 +196,7 @@ onMounted(() => {
       <!-- 有配置时显示预览 -->
       <div v-if="hasConfig && initialConfig" class="preview-area">
         <ThingsVisWidget
+          :key="widgetKey"
           mode="viewer"
           :config="initialConfig"
           :platform-fields="platformFields"
@@ -225,13 +229,13 @@ onMounted(() => {
       :style="{ width: '90vw', height: '90vh' }"
       :segmented="{ content: 'soft' }"
     >
-      <div class="editor-modal-content">
+      <div class="editor-modal-content" style="overflow: hidden;">
         <ThingsVisWidget
           ref="editorRef"
           mode="editor"
           :config="initialConfig"
           :platform-fields="platformFields"
-          height="calc(90vh - 120px)"
+          height="calc(90vh - 160px)"
           @save="handleSave"
         />
       </div>

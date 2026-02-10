@@ -88,8 +88,9 @@ export class ThingsVisClient {
     }
 
     // 2. Ready Signal (Guest -> Host)
-    // EmbedPage sends { type: 'READY' } when it is mounted and listening
-    if (type === 'READY') {
+    // EmbedPage sends { type: 'READY' }
+    // Editor.tsx sends { type: 'thingsvis:ready' }
+    if (type === 'READY' || type === 'thingsvis:ready') {
       console.log('[SDK] Received READY signal from Guest');
       if (!this.ready) {
         this.ready = true;
@@ -227,6 +228,18 @@ export class ThingsVisClient {
   // ===========================
   // Public API: App Mode
   // ===========================
+
+  /**
+   * [Widget Mode] 主动请求保存
+   * 触发 Editor 的 saveNow()，随后会通过 onWidgetSave 回调返回数据
+   */
+  public requestSave() {
+    console.log('[SDK] Client requesting save from Editor...');
+    // Type casting because 'thingsvis:request-save' is not in standard EmbedMessage yet
+    this.send('thingsvis:request-save' as any);
+  }
+
+
 
   /**
    * [App Mode] 注入 Token
