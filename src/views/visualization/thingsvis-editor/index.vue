@@ -17,10 +17,29 @@ const message = useMessage()
 const { routerPushByKey } = useRouterPush()
 
 const dashboardId = route.query.id as string
-const editorRef = ref<InstanceType<typeof ThingsVisEditor>>()
 const loading = ref(true)
 const saving = ref(false)
 const dashboardData = ref<any>(null)
+const isFullscreen = ref(false)
+const editorContainerRef = ref<HTMLElement | null>(null)
+
+/** 切换编辑器区域全屏 */
+const toggleFullscreen = () => {
+  if (!editorContainerRef.value) return
+  
+  if (!document.fullscreenElement) {
+    editorContainerRef.value.requestFullscreen()
+    isFullscreen.value = true
+  } else {
+    document.exitFullscreen()
+    isFullscreen.value = false
+  }
+}
+
+// 监听全屏变化
+document.addEventListener('fullscreenchange', () => {
+  isFullscreen.value = !!document.fullscreenElement
+})
 
 const handlePreview = (id: string) => {
   // 新标签页预览 - 使用独立的常量路由，无需登录
@@ -32,12 +51,12 @@ const handlePublish = async (id: string) => {
     loading.value = true
     const { error } = await publishThingsVisDashboard(id)
     if (!error) {
-      message.success($t('common.publishSuccess') || '发布成功')
+      message.success($t('common.publishSuccess'))
     } else {
-      message.error($t('common.publishFailed') || '发布失败')
+      message.error($t('common.publishFailed'))
     }
   } catch {
-    message.error($t('common.publishFailed') || '发布失败')
+    message.error($t('common.publishFailed'))
   } finally {
     loading.value = false
   }
@@ -66,15 +85,9 @@ const loadDashboard = async () => {
     const { data, error } = await getThingsVisDashboard(dashboardId)
 
     if (!error && data) {
-      // 🔍 调试：打印 API 返回的完整数据
-      console.log('[thingsvis-editor] 📥 API 返回数据:', {
-        id: data.id,
-        name: data.name,
-        canvasConfigName: data.canvasConfig?.name,
-      })
       dashboardData.value = data
     } else {
-      message.error('加载失败')
+      message.error($t('common.loadFailed'))
     }
   } finally {
     loading.value = false
@@ -83,8 +96,6 @@ const loadDashboard = async () => {
 
 /** 保存配置 */
 const handleSave = async (payload: any) => {
-  console.log('[ThingsVisEditor] 保存回调:', payload)
-
   try {
     saving.value = true
 
@@ -136,34 +147,42 @@ onMounted(() => {
     <div class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2">
       <NBreadcrumb>
         <NBreadcrumbItem class="cursor-pointer" @click="routerPushByKey('visualization_thingsvis')">
-          可视化项目
+          {{ $t('route.visualization-thingsvis') }}
         </NBreadcrumbItem>
         <NBreadcrumbItem class="cursor-pointer" @click="goBack">
-          仪表盘列表
+          {{ $t('route.visualization-thingsvis-dashboards') }}
         </NBreadcrumbItem>
-        <NBreadcrumbItem>{{ dashboardData?.name || '编辑器' }}</NBreadcrumbItem>
+        <NBreadcrumbItem>{{ dashboardData?.name || $t('route.visualization-thingsvis-editor') }}</NBreadcrumbItem>
       </NBreadcrumb>
 
-      <NButton size="small" @click="goBack">
-        <template #icon>
-          <icon-mdi:arrow-left />
-        </template>
-        {{ $t('common.back') }}
-      </NButton>
+      <div class="flex gap-2">
+        <NButton size="small" @click="toggleFullscreen">
+          <template #icon>
+            <icon-mdi:fullscreen-exit v-if="isFullscreen" />
+            <icon-mdi:fullscreen v-else />
+          </template>
+          {{ isFullscreen ? $t('icon.fullscreenExit') : $t('icon.fullscreen') }}
+        </NButton>
+        <NButton size="small" @click="goBack">
+          <template #icon>
+            <icon-mdi:arrow-left />
+          </template>
+          {{ $t('common.back') }}
+        </NButton>
+      </div>
     </div>
 
     <!-- 编辑器区域 -->
-    <div class="flex-1 overflow-hidden">
+    <div ref="editorContainerRef" class="flex-1 overflow-hidden bg-white">
       <div v-if="loading" class="flex h-full items-center justify-center">
         <div class="text-center">
           <icon-mdi:loading class="animate-spin text-40px text-primary" />
-          <p class="mt-2 text-gray-500">加载中...</p>
+          <p class="mt-2 text-gray-500">{{ $t('common.loading') }}</p>
         </div>
       </div>
 
       <ThingsVisEditor
         v-else-if="initialConfig"
-        ref="editorRef"
         mode="editor"
         :initial-config="initialConfig"
         height="100%"
@@ -178,7 +197,7 @@ onMounted(() => {
       <div v-else class="flex h-full items-center justify-center">
         <div class="text-center text-gray-400">
           <icon-mdi:alert-circle-outline class="text-60px" />
-          <p class="mt-2">加载失败,请返回重试</p>
+          <p class="mt-2">{{ $t('common.loadFailedRetry') }}</p>
         </div>
       </div>
     </div>
