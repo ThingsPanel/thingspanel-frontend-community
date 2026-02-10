@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch, computed } from 'vue'
 import { debounce } from 'lodash'
 import { router } from '@/router'
 import { useWebsocketUtil } from '@/utils/websocketUtil'
 import { fetchHomeData } from '@/service/api'
+import { getThingsVisHomeDashboard, type ThingsVisHomeDashboard } from '@/service/api/thingsvis'
 import type { ICardRender, ICardView } from '@/components/panel/card'
 import { localStg } from '@/utils/storage'
 import { $t } from '@/locales'
+import ThingsVisViewer from '@/components/thingsvis/ThingsVisViewer.vue'
 
 const layoutFetched = ref(false)
 const layout = ref<ICardView[]>([])
@@ -17,7 +19,43 @@ const token = localStg.get('token')
 const cr = ref<ICardRender>()
 const { updateComponentsData, closeAllSockets } = useWebsocketUtil(cr, token as string)
 
+// ThingsVis 首页相关
+const thingsVisHome = ref<ThingsVisHomeDashboard | null>(null)
+const useThingsVis = ref(false)
+
+// 将 ThingsVis 仪表盘数据转换为 Viewer 需要的 config 格式
+const thingsVisConfig = computed(() => {
+  if (!thingsVisHome.value) return null
+  return {
+    canvas: {
+      ...thingsVisHome.value.canvasConfig,
+      fullWidthPreview: true // 首页嵌入时自适应容器宽度
+    },
+    nodes: thingsVisHome.value.nodes,
+    dataSources: thingsVisHome.value.dataSources
+  }
+})
+
 const getLayout = async () => {
+  // 先检查 ThingsVis 是否有设为首页的仪表盘
+  try {
+    console.log('[Home] 尝试获取 ThingsVis 首页...')
+    const thingsVisResult = await getThingsVisHomeDashboard()
+    console.log('[Home] ThingsVis 响应:', thingsVisResult)
+    if (!thingsVisResult.error && thingsVisResult.data?.data) {
+      console.log('[Home] 使用 ThingsVis 首页:', thingsVisResult.data.data)
+      thingsVisHome.value = thingsVisResult.data.data
+      useThingsVis.value = true
+      layoutFetched.value = true
+      return
+    }
+    console.log('[Home] ThingsVis 没有设置首页，使用原看板')
+  } catch (e) {
+    // ThingsVis 服务不可用，继续使用原来的看板
+    console.log('[Home] ThingsVis 服务错误，使用原看板:', e)
+  }
+
+  // 使用原来的看板首页
   const { data, error } = await fetchHomeData({})
 
   isError.value = (error || !(data && data.config)) as boolean
@@ -97,7 +135,7 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
 </script>
 
 <template>
-  <div v-if="isError" class="h-full w-full flex-center">
+  <div v-if="isError && !useThingsVis" class="h-full w-full flex-center">
     <n-result status="418" :title="$t('custom.home.title')" :description="$t('custom.home.description')">
       <template #footer>
         <n-button
@@ -121,6 +159,13 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
       </template>
     </n-result>
   </div>
+
+  <!-- ThingsVis 首页 -->
+  <ThingsVisViewer
+    v-else-if="useThingsVis && thingsVisHome"
+    :config="thingsVisConfig"
+    class="h-full w-full"
+  />
 
   <!--
  <div v-else>

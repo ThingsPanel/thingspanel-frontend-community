@@ -409,3 +409,23 @@ export function unsetHomeThingsVisDashboard(id: string) {
     thingsVisRequest.delete(`/dashboards/${id}/set-homepage`)
   )
 }
+
+/**
+ * 获取设为首页的仪表盘
+ */
+export interface ThingsVisHomeDashboard {
+  id: string
+  name: string
+  canvasConfig: any
+  nodes: any[]
+  dataSources: any[]
+  isPublished: boolean
+  shareToken?: string
+  project?: { id: string; name: string }
+}
+
+export function getThingsVisHomeDashboard() {
+  return wrapRequest<{ data: ThingsVisHomeDashboard | null }>(
+    thingsVisRequest.get('/dashboards/home')
+  )
+}
