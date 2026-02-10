@@ -1,6 +1,6 @@
 
 <template>
-  <div class="thingsvis-frame-container" v-loading="loading">
+  <div class="thingsvis-frame-container">
     <iframe
       v-if="url && token"
       ref="iframeRef"
@@ -17,8 +17,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { getThingsVisToken } from '@/service/api/thingsvis';
+import { getThingsVisToken, getThingsVisDashboard } from '@/service/api/thingsvis';
 import { ThingsVisClient } from '@/utils/thingsvis/sdk/client';
+
+const props = defineProps<{
+  id: string;
+  mode?: string;
+}>();
 
 const token = ref('');
 const url = ref('');
@@ -27,22 +32,36 @@ const iframeRef = ref<HTMLIFrameElement | null>(null);
 let client: ThingsVisClient | null = null;
 
 onMounted(async () => {
+  console.log('[AppFrame] 加载中...', props.id);
   try {
-    const res = await getThingsVisToken();
-    if (res?.data?.token) {
-      token.value = res.data.token;
+    const [tokenRes, dashboardRes] = await Promise.all([
+      getThingsVisToken(),
+      getThingsVisDashboard(props.id)
+    ]);
+
+    console.log('[AppFrame] 获取 Token 结果:', tokenRes);
+    console.log('[AppFrame] 获取 Dashboard 结果:', dashboardRes);
+
+    // res 可能是对象也可能是字符串 (取决于 axios 拦截器或接口定义)
+    // 根据 getThingsVisToken 实现，它直接返回 string | null
+    const tokenStr = typeof tokenRes === 'string' ? tokenRes : (tokenRes as any)?.data?.token || (tokenRes as any)?.token;
+
+    if (tokenStr) {
+      token.value = tokenStr;
+
+      // 尝试使用 API 返回的真实 ID (可能是 CUID)，如果失败则回退到 props.id (UUID)
+      const realId = dashboardRes?.data?.id || props.id;
+      console.log('[AppFrame] 解析出的真实 ID:', realId);
 
       // 临时硬编码，之后应从环境变量读取
       // 注意：需要指向 /main#/editor 而不是 /#/editor
       const baseUrl = 'http://localhost:3000/main';
-      url.value = `${baseUrl}#/editor?mode=embedded&token=${token.value}`;
 
-      // 初始化 SDK Client (用于监听保存事件)
-      // 注意：这里的 client 主要是为了保持双向通信通道打开
-      if (iframeRef.value) {
-        // 等待 iframe 渲染出来再初始化 client (虽然 v-if 可能导致它还没出来)
-        // 实际上 v-if 会导致 ref 为 null，直到 nextTick
-      }
+      // 构造 URL: /main#/editor/{id}?mode=embedded&token={token}
+      url.value = `${baseUrl}#/editor/${realId}?mode=embedded&token=${token.value}`;
+      console.log('[AppFrame] iframe URL 设置为:', url.value);
+    } else {
+      console.warn('[AppFrame] Token 获取失败或格式不正确', tokenRes);
     }
   } catch (error) {
     console.error('获取 ThingsVis Token 失败:', error);
