@@ -27,19 +27,22 @@ thingsVisRequest.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// 响应拦截器 - 处理 401 错误时自动刷新 token
+// 响应拦截器 - 处理 401 错误时自动刷新 token（仅重试一次，避免死循环）
 thingsVisRequest.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
+    const originalRequest = error.config
+    // 仅在首次 401 时重试，避免无限循环
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
       // 清除 token 并重新获取
       localStg.remove('thingsVisToken')
       localStg.remove('thingsVisTokenExpiry')
       // 重试请求
       const token = await getThingsVisToken()
       if (token) {
-        error.config.headers.Authorization = `Bearer ${token}`
-        return thingsVisRequest(error.config)
+        originalRequest.headers.Authorization = `Bearer ${token}`
+        return thingsVisRequest(originalRequest)
       }
     }
     return Promise.reject(error)
@@ -210,6 +213,7 @@ export interface DashboardListItem {
   thumbnail: string | null
   version: number
   isPublished: boolean
+  homeFlag: boolean
   projectId: string
   createdAt: string
   updatedAt: string
@@ -385,5 +389,23 @@ export function publishThingsVisDashboard(id: string) {
 export function duplicateThingsVisDashboard(id: string) {
   return wrapRequest<ThingsVisDashboard>(
     thingsVisRequest.post(`/dashboards/${id}/duplicate`)
+  )
+}
+
+/**
+ * 设为首页
+ */
+export function setHomeThingsVisDashboard(id: string) {
+  return wrapRequest<{ id: string; homeFlag: boolean; message: string }>(
+    thingsVisRequest.post(`/dashboards/${id}/set-homepage`)
+  )
+}
+
+/**
+ * 取消首页
+ */
+export function unsetHomeThingsVisDashboard(id: string) {
+  return wrapRequest<{ id: string; homeFlag: boolean; message: string }>(
+    thingsVisRequest.delete(`/dashboards/${id}/set-homepage`)
   )
 }

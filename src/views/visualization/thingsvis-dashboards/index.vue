@@ -17,6 +17,7 @@ import {
   NSpin,
   NTag,
   NInputNumber,
+  NTooltip,
   useMessage
 } from 'naive-ui'
 import { useRouterPush } from '@/hooks/common/router'
@@ -25,6 +26,7 @@ import {
   getThingsVisProject,
   createThingsVisDashboard,
   deleteThingsVisDashboard,
+  setHomeThingsVisDashboard,
   type DashboardListItem,
   type ThingsVisProject
 } from '@/service/api/thingsvis'
@@ -162,6 +164,22 @@ const handleDeleteDashboard = async (id: string, name: string) => {
   }
 }
 
+/** 设为首页 */
+const handleSetAsHomepage = async (dashboard: DashboardListItem) => {
+  try {
+    const { error } = await setHomeThingsVisDashboard(dashboard.id)
+    if (!error) {
+      message.success(`已将"${dashboard.name}"设为首页`)
+      await fetchDashboards()
+    } else {
+      message.error('设置首页失败')
+    }
+  } catch (e) {
+    message.error('设置首页失败')
+    console.error(e)
+  }
+}
+
 /** 打开编辑器 */
 const openEditor = (dashboardId: string) => {
   routerPushByKey('visualization_thingsvis-editor', { query: { id: dashboardId } })
@@ -251,7 +269,7 @@ onMounted(async () => {
               @click="openEditor(dashboard.id)"
             >
               <!-- 缩略图区域 -->
-              <div class="h-40 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden">
+              <div class="relative h-40 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden">
                 <img
                   v-if="dashboard.thumbnail"
                   :src="dashboard.thumbnail"
@@ -259,12 +277,20 @@ onMounted(async () => {
                   alt="thumbnail"
                 />
                 <icon-mdi:chart-box v-else class="text-64px text-primary/40" />
+                
+                <!-- 右上角首页图标 -->
+                <div
+                  v-if="dashboard.homeFlag"
+                  class="absolute top-2 right-2 h-24px w-24px border-2 border-red-500 rounded-full text-center text-12px text-red-500 font-600 flex items-center justify-center bg-white"
+                >
+                  首
+                </div>
               </div>
 
               <!-- 卡片内容 -->
               <div class="p-4">
                 <!-- 看板名称和状态 -->
-                <div class="mb-2 flex items-start justify-between">
+                <div class="mb-2 flex items-start justify-between gap-1">
                   <h3 class="flex-1 truncate font-semibold">
                     {{ dashboard.name }}
                   </h3>
@@ -285,18 +311,45 @@ onMounted(async () => {
                   </div>
                 </div>
 
-                <!-- 操作按钮(悬停显示) -->
-                <div class="mt-3 flex gap-2 border-t border-gray-100 pt-3 opacity-0 transition-opacity group-hover:opacity-100">
-                  <NButton size="small" secondary block @click.stop="openEditor(dashboard.id)">
+                <!-- 操作按钮(始终显示) -->
+                <div class="mt-3 flex gap-2 border-t border-gray-100 pt-3">
+                  <NButton size="small" secondary class="flex-1" @click.stop="openEditor(dashboard.id)">
                     <template #icon>
                       <icon-mdi:pencil />
                     </template>
                     编辑
                   </NButton>
 
+                  <!-- 设为首页按钮 -->
+                  <NTooltip v-if="!dashboard.homeFlag">
+                    <template #trigger>
+                      <NPopconfirm @positive-click.stop="handleSetAsHomepage(dashboard)">
+                        <template #trigger>
+                          <NButton size="small" secondary @click.stop>
+                            <template #icon>
+                              <icon-mdi:home-outline />
+                            </template>
+                          </NButton>
+                        </template>
+                        设为首页后，其他仪表盘的首页标记将被取消
+                      </NPopconfirm>
+                    </template>
+                    设为首页
+                  </NTooltip>
+                  <NTooltip v-else>
+                    <template #trigger>
+                      <NButton size="small" type="primary" secondary @click.stop disabled>
+                        <template #icon>
+                          <icon-mdi:home />
+                        </template>
+                      </NButton>
+                    </template>
+                    当前首页
+                  </NTooltip>
+
                   <NPopconfirm @positive-click.stop="handleDeleteDashboard(dashboard.id, dashboard.name)">
                     <template #trigger>
-                      <NButton size="small" secondary @click.stop>
+                      <NButton size="small" secondary type="error" @click.stop>
                         <template #icon>
                           <icon-mdi:delete />
                         </template>
