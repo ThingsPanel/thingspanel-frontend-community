@@ -69,7 +69,7 @@ interface SSOResponse {
  * 如果已有有效 token，直接返回
  * 否则通过 SSO 交换获取新 token
  */
-async function getThingsVisToken(): Promise<string | null> {
+export async function getThingsVisToken(): Promise<string | null> {
   // 检查现有 token 是否有效
   const existingToken = localStg.get('thingsVisToken') as string | null
   const expiry = localStg.get('thingsVisTokenExpiry') as number | null

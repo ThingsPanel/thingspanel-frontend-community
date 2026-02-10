@@ -1,38 +1,37 @@
-<!-- eslint-disable prettier/prettier -->
+
 <script setup lang="tsx">
 /**
  * 设备详情 - 图表Tab
  * 使用 ThingsVis 嵌入式编辑器预览模式展示图表
- * 通过 PostMessage 推送实时设备数据
+ * 通过 data prop 推送实时设备数据
  */
 
 import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
-import { NEmpty } from 'naive-ui'
-import ThingsVisEditor from '@/components/thingsvis/ThingsVisEditor.vue'
+import { NEmpty, NCard, NSkeleton } from 'naive-ui'
+import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
-import { deviceDetail, deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
+import { deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
 import { telemetryApi, attributesApi } from '@/service/api'
 import type { PlatformField } from '@/utils/thingsvis/types'
 
 const props = defineProps<{
+  /** 设备ID */
   id: string
+  /** 模板ID */
   deviceTemplateId?: string
+  /** 设备详情数据 (可选) */
   deviceData?: Record<string, any>
 }>()
-
-// 编辑器引用
-const editorRef = ref<InstanceType<typeof ThingsVisEditor>>()
 
 // 状态
 const chartLoading = ref(true)
 const hasTemplate = ref(false)
 const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
+const currentData = ref<Record<string, any>>({}) // 实时数据
 
-// WebSocket 或轮询的定时器
+// WebSocket 或轮询
 let dataUpdateInterval: NodeJS.Timeout | null = null
-let lastPushAt = 0
-const minPushIntervalMs = 5000
 
 /**
  * 加载模板和配置
@@ -48,23 +47,14 @@ const initTemplateData = async (deviceTemplateId: string) => {
     const res = await deviceTemplateDetail({ id: deviceTemplateId })
 
     if (res.data) {
-      // 提取平台字段（优先从物模型接口获取）
+      // 提取平台字段
       const [telemetryRes, attributesRes] = await Promise.all([
         telemetryApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId }),
         attributesApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId })
       ])
 
-      const telemetryList = Array.isArray(telemetryRes?.data?.list)
-        ? telemetryRes.data.list
-        : Array.isArray(telemetryRes?.data)
-          ? telemetryRes.data
-          : []
-
-      const attributesList = Array.isArray(attributesRes?.data?.list)
-        ? attributesRes.data.list
-        : Array.isArray(attributesRes?.data)
-          ? attributesRes.data
-          : []
+      const telemetryList = Array.isArray(telemetryRes?.data?.list) ? telemetryRes.data.list : []
+      const attributesList = Array.isArray(attributesRes?.data?.list) ? attributesRes.data.list : []
 
       const platformSource = {
         telemetry: telemetryList,
@@ -96,176 +86,84 @@ const initTemplateData = async (deviceTemplateId: string) => {
 }
 
 /**
- * 根据模板ID初始化图表配置
+ * 获取当前值并更新响应式数据
  */
-const initByTemplateId = async () => {
-  chartLoading.value = true
-
-  if (!props.deviceTemplateId) {
-    hasTemplate.value = false
-    chartLoading.value = false
-    return
-  }
-
-  await initTemplateData(props.deviceTemplateId)
-}
-
-/**
- * 获取遥测/属性当前值（设备详情页实际值来源）
- */
-const fetchCurrentDataMaps = async () => {
-  if (!props.id) return { telemetryMap: {}, attributeMap: {} }
-
-  const [telemetryRes, attributeRes] = await Promise.all([
-    telemetryDataCurrent(props.id),
-    getAttributeDataSet({ device_id: props.id })
-  ])
-
-  const telemetryList = Array.isArray(telemetryRes?.data)
-    ? telemetryRes.data
-    : Array.isArray(telemetryRes?.data?.value)
-      ? telemetryRes.data.value
-      : []
-
-  const attributeList = Array.isArray(attributeRes?.data)
-    ? attributeRes.data
-    : Array.isArray(attributeRes?.data?.list)
-      ? attributeRes.data.list
-      : Array.isArray(attributeRes?.data?.value)
-        ? attributeRes.data.value
-        : []
-
-  const telemetryMap: Record<string, any> = {}
-  const telemetryLabelMap: Record<string, any> = {}
-  telemetryList.forEach((item: any) => {
-    if (item?.key !== undefined) telemetryMap[item.key] = item.value
-    if (item?.label) telemetryLabelMap[item.label] = item.value
-  })
-
-  const attributeMap: Record<string, any> = {}
-  const attributeLabelMap: Record<string, any> = {}
-  attributeList.forEach((item: any) => {
-    if (item?.key !== undefined) attributeMap[item.key] = item.value
-    if (item?.label) attributeLabelMap[item.label] = item.value
-  })
-
-  return { telemetryMap, telemetryLabelMap, attributeMap, attributeLabelMap }
-}
-
-/**
- * 推送设备实时数据到编辑器
- * 从设备详情API中提取遥测和属性数据，并推送到ThingsVis编辑器
- */
-const pushDeviceData = async () => {
-  if (!editorRef.value || !hasTemplate.value) return
-
-  const now = Date.now()
-  if (now - lastPushAt < minPushIntervalMs) return
-  lastPushAt = now
+const fetchAndUpdateData = async () => {
+  if (!props.id || !hasTemplate.value) return
 
   try {
-    const { telemetryMap, telemetryLabelMap, attributeMap, attributeLabelMap } = await fetchCurrentDataMaps()
+    const [telemetryRes, attributeRes] = await Promise.all([
+      telemetryDataCurrent(props.id),
+      getAttributeDataSet({ device_id: props.id })
+    ])
+
+    // 如果接口返回结构不一致，需要做兼容处理
+    // (此处沿用原有逻辑解析list)
+    const telemetryList = telemetryRes?.data || telemetryRes?.data?.value || []
+    const attributeList = attributeRes?.data || attributeRes?.data?.list || attributeRes?.data?.value || []
 
     const dataMap: Record<string, any> = {}
+
+    // 构建映射字典
+    const kvMap: Record<string, any> = {}
+
+    // 辅助函数: 扁平化数据到 kvMap
+    const processItem = (item: any) => {
+       if (item?.key !== undefined) kvMap[item.key] = item.value
+       if (item?.label) kvMap[item.label] = item.value
+    }
+
+    if (Array.isArray(telemetryList)) telemetryList.forEach(processItem)
+    if (Array.isArray(attributeList)) attributeList.forEach(processItem)
+
+    // 根据 platformFields 筛选所需数据
     platformFields.value.forEach((field) => {
-      if (field.dataType === 'telemetry') {
-        const telemetryValue =
-          telemetryMap[field.id] ??
-          telemetryMap[field.name] ??
-          telemetryLabelMap[field.id] ??
-          telemetryLabelMap[field.name]
-        if (telemetryValue !== undefined) dataMap[field.id] = telemetryValue
-      }
-      if (field.dataType === 'attribute') {
-        const attributeValue =
-          attributeMap[field.id] ??
-          attributeMap[field.name] ??
-          attributeLabelMap[field.id] ??
-          attributeLabelMap[field.name]
-        if (attributeValue !== undefined) dataMap[field.id] = attributeValue
+      const val = kvMap[field.id] ?? kvMap[field.name]
+      if (val !== undefined) {
+        dataMap[field.id] = val
       }
     })
 
-    // 调试日志 - 方便排查数据映射问题
     if (Object.keys(dataMap).length > 0) {
-      console.log('[ThingsVis] 推送设备数据:', dataMap)
-      editorRef.value.pushPlatformDataBatch(dataMap)
-    } else {
-      console.warn('[ThingsVis] 未找到匹配的平台字段数据', {
-        platformFields: platformFields.value.map(f => f.id)
-      })
+      currentData.value = dataMap
     }
-  } catch (error) {
-    console.error('[ThingsVis] 推送设备数据失败:', error)
+  } catch (err) {
+    console.error('获取设备实时数据失败:', err)
   }
 }
 
-/**
- * 启动数据更新定时器
- */
-const startDataUpdate = () => {
-  if (dataUpdateInterval) {
-    clearInterval(dataUpdateInterval)
-    dataUpdateInterval = null
-  }
-  // 首次立即推送
-  pushDeviceData()
-
-  // 每5秒更新一次数据
-  dataUpdateInterval = setInterval(() => {
-    pushDeviceData()
-  }, 5000)
+const startPolling = () => {
+  stopPolling()
+  fetchAndUpdateData() // 立即执行一次
+  dataUpdateInterval = setInterval(fetchAndUpdateData, 5000)
 }
 
-/**
- * 停止数据更新
- */
-const stopDataUpdate = () => {
+const stopPolling = () => {
   if (dataUpdateInterval) {
     clearInterval(dataUpdateInterval)
     dataUpdateInterval = null
   }
 }
 
-/**
- * 编辑器就绪后开始推送数据
- */
-const handleEditorReady = () => {
-  // 编辑器加载完成后开始推送数据
-  startDataUpdate()
-}
-
-// 监听模板ID变化
-watch(() => props.deviceTemplateId, () => {
-  stopDataUpdate()
-  initByTemplateId()
-}, { immediate: false })
-
-// 监听外部设备数据变化（来自详情页Tab）
-watch(
-  () => props.deviceData,
-  () => {
-    if (editorRef.value?.editorReady?.value) {
-      pushDeviceData()
-    }
-  },
-  { deep: true }
-)
-
-onMounted(() => {
-  initByTemplateId()
-})
+// 监听 ID 变化重新加载
+watch(() => props.deviceTemplateId, async (newVal) => {
+  stopPolling()
+  if (newVal) {
+    await initTemplateData(newVal)
+    if (hasTemplate.value) startPolling()
+  }
+}, { immediate: true })
 
 onBeforeUnmount(() => {
-  stopDataUpdate()
+  stopPolling()
 })
 </script>
 
 <template>
-  <n-card class="w-full">
+  <NCard class="w-full">
     <template v-if="chartLoading">
-      <n-skeleton text :repeat="3" />
-      <n-skeleton height="180px" class="mt-12px" />
+      <NSkeleton text :repeat="3" />
+      <NSkeleton height="180px" class="mt-12px" />
     </template>
 
     <template v-else-if="!hasTemplate">
@@ -273,15 +171,13 @@ onBeforeUnmount(() => {
     </template>
 
     <template v-else>
-      <ThingsVisEditor
-        ref="editorRef"
+      <ThingsVisWidget
         mode="viewer"
-        :initial-config="initialConfig"
+        :config="initialConfig"
         :platform-fields="platformFields"
+        :data="currentData"
         height="600px"
-        @ready="handleEditorReady"
-        @request-field-data="pushDeviceData"
       />
     </template>
-  </n-card>
+  </NCard>
 </template>

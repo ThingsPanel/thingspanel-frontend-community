@@ -8,7 +8,7 @@ import { ref, onMounted } from 'vue'
 import { NButton, NModal, NCard, NEmpty } from 'naive-ui'
 import { $t } from '@/locales'
 import { getTemplat, putTemplat, telemetryApi, attributesApi } from '@/service/api'
-import ThingsVisEditor from '@/components/thingsvis/ThingsVisEditor.vue'
+import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import type { PlatformField } from '@/utils/thingsvis/types'
 
@@ -30,7 +30,7 @@ const props = defineProps({
 })
 
 // 编辑器引用
-const editorRef = ref<InstanceType<typeof ThingsVisEditor>>()
+const editorRef = ref<InstanceType<typeof ThingsVisWidget>>()
 
 // 状态
 const loading = ref(true)
@@ -80,7 +80,7 @@ const handleSave = async (payload: any) => {
     // 更新状态
     initialConfig.value = payload
     hasConfig.value = true
-    
+
     // 关闭弹窗
     showEditorModal.value = false
   } catch (error) {
@@ -162,9 +162,9 @@ onMounted(() => {
 
       <!-- 有配置时显示预览 -->
       <div v-if="hasConfig && initialConfig" class="preview-area">
-        <ThingsVisEditor
+        <ThingsVisWidget
           mode="viewer"
-          :initial-config="initialConfig"
+          :config="initialConfig"
           :platform-fields="platformFields"
           height="400px"
         />
@@ -196,12 +196,11 @@ onMounted(() => {
       :segmented="{ content: 'soft' }"
     >
       <div class="editor-modal-content">
-        <ThingsVisEditor
+        <ThingsVisWidget
           ref="editorRef"
           mode="editor"
-          :initial-config="initialConfig"
+          :config="initialConfig"
           :platform-fields="platformFields"
-          :loading="loading"
           height="calc(90vh - 120px)"
           @save="handleSave"
         />
