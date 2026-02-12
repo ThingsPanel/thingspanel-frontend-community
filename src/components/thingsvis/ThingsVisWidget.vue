@@ -47,9 +47,10 @@ onMounted(() => {
   // 临时硬编码 base url，之后应从环境变量读取
   const baseUrl = 'http://localhost:3000/main';
 
+  // 追加 saveTarget=host，告知 Editor 进入宿主托管模式
   const targetUrl = props.mode === 'editor'
-    ? `${baseUrl}#/editor`
-    : `${baseUrl}#/embed`;
+    ? `${baseUrl}#/editor?saveTarget=host`
+    : `${baseUrl}#/embed?saveTarget=host`;
 
   client = new ThingsVisClient({
     container: container.value,
@@ -118,10 +119,11 @@ defineExpose({
 <style scoped>
 .thingsvis-widget-container {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   position: relative;
-  overflow: hidden;
+  /* 不设 overflow:hidden，避免截断内容 */
+  overflow: auto;
   /* 确保有最小高度，否则iframe可能塌陷 */
-  min-height: 100px;
+  min-height: 400px;
 }
 </style>

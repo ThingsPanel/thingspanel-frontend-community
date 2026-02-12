@@ -176,7 +176,7 @@ onBeforeUnmount(() => {
         :config="initialConfig"
         :platform-fields="platformFields"
         :data="currentData"
-        height="600px"
+        height="calc(100vh - 200px)"
       />
     </template>
   </NCard>

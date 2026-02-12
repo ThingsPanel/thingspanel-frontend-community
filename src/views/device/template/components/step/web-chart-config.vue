@@ -146,7 +146,10 @@ const loadTemplateData = async () => {
       }
 
       const extractedFields = extractPlatformFields(platformSource)
-      platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)
+      // 仅保留遥测和属性，过滤掉命令类型
+      const filtered = (extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data))
+        .filter((f: PlatformField) => f.dataType !== 'command')
+      platformFields.value = filtered
       console.log('[web-chart-config] 🏷️ 平台字段提取完成:', platformFields.value.length, '个字段')
 
       // 加载已有配置

@@ -186,7 +186,7 @@ onBeforeUnmount(() => {
         :config="initialConfig"
         :platform-fields="platformFields"
         :data="currentData"
-        height="500px"
+        height="calc(100vh - 250px)"
       />
     </div>
   </div>
