@@ -156,7 +156,12 @@ export class ThingsVisClient {
    * Host -> Guest
    * 对应协议: thingsvis:editor-init
    */
-  public loadWidgetConfig(config: any) {
+  /**
+   * [Widget Mode] 加载/更新组件配置 (JSON)
+   * Host -> Guest
+   * 对应协议: thingsvis:editor-init
+   */
+  public loadWidgetConfig(config: any, platformFields?: any[]) {
     // 构造符合 EmbedInitPayload 的数据结构
     const payload = {
       data: {
@@ -164,7 +169,8 @@ export class ThingsVisClient {
         meta: config.meta || { id: 'widget', name: 'Widget' },
         canvas: config.canvas,
         nodes: config.nodes,
-        dataSources: config.dataSources
+        dataSources: config.dataSources,
+        platformFields: platformFields // Pass fields in init
       },
       config: {
         // Widget 模式下，保存目标是 Host

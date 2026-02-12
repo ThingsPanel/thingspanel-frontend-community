@@ -65,7 +65,7 @@ onMounted(() => {
   // Client Ready 时，发送初始数据
   client.on('ready', () => {
     emit('ready');
-    if (props.config) client?.loadWidgetConfig(clone(props.config));
+    if (props.config) client?.loadWidgetConfig(clone(props.config), clone(props.platformFields || []));
     if (props.platformFields) client?.updateSchema(clone(props.platformFields));
     if (props.data) client?.pushData(clone(props.data));
   });
@@ -80,7 +80,7 @@ onMounted(() => {
 // 响应式监听配置变化
 watch(() => props.config, (newVal) => {
   if (client?.ready && newVal) {
-    client.loadWidgetConfig(clone(newVal));
+    client.loadWidgetConfig(clone(newVal), clone(props.platformFields || []));
   }
 }, { deep: true });
 
