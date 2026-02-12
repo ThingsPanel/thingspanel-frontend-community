@@ -5,7 +5,7 @@
  */
 
 import { ref, onMounted } from 'vue'
-import { NButton, NModal, NCard, NEmpty, NSelect, NSpace } from 'naive-ui'
+import { NButton, NModal, NCard, NEmpty, NSelect, NSpace, NSpin } from 'naive-ui'
 import { $t } from '@/locales'
 import { getTemplat, putTemplat, telemetryApi, attributesApi } from '@/service/api'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
@@ -190,18 +190,21 @@ onMounted(() => {
         </NSpace>
       </template>
 
-      <!-- 有配置时显示预览 -->
-      <div v-if="hasConfig && initialConfig" class="preview-area">
-        <ThingsVisWidget
-          mode="viewer"
-          :config="initialConfig"
-          :platform-fields="platformFields"
-          height="400px"
-        />
-      </div>
+      <NSpin :show="loading" description="加载中...">
+        <!-- 有配置时显示预览 -->
+        <div v-if="hasConfig && initialConfig" class="preview-area">
+          <ThingsVisWidget
+            mode="viewer"
+            :config="initialConfig"
+            :platform-fields="platformFields"
+            height="400px"
+          />
+        </div>
 
-      <!-- 无配置时提示 -->
-      <NEmpty v-else description="暂无图表配置，点击上方按钮创建" />
+        <!-- 无配置时提示 -->
+        <NEmpty v-else-if="!loading" description="暂无图表配置，点击上方按钮创建" />
+        <div v-else style="min-height: 200px" />
+      </NSpin>
     </NCard>
 
     <!-- 操作按钮 -->

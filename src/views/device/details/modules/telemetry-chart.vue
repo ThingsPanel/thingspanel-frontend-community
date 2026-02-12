@@ -92,9 +92,11 @@ const fetchAndUpdateData = async () => {
   if (!props.id || !hasTemplate.value) return
 
   try {
+    const hasAttributes = platformFields.value.some(f => f.dataType === 'attribute')
+
     const [telemetryRes, attributeRes] = await Promise.all([
       telemetryDataCurrent(props.id),
-      getAttributeDataSet({ device_id: props.id })
+      hasAttributes ? getAttributeDataSet({ device_id: props.id }) : Promise.resolve({ data: [] })
     ])
 
     // 如果接口返回结构不一致，需要做兼容处理

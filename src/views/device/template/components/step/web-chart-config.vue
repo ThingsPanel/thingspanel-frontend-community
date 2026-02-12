@@ -5,7 +5,7 @@
  */
 
 import { ref, computed, onMounted } from 'vue'
-import { NButton, NModal, NCard, NEmpty, NSelect, NSpace } from 'naive-ui'
+import { NButton, NModal, NCard, NEmpty, NSelect, NSpace, NSpin } from 'naive-ui'
 import { $t } from '@/locales'
 import { getTemplat, putTemplat, telemetryApi, attributesApi } from '@/service/api'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
@@ -50,13 +50,9 @@ const refreshOptions = [
   { label: '1分钟', value: 60000 }
 ]
 
-// 🎨 计算预览高度（根据画布大小）
+// 🎨 iframe 高度设为足够大，确保内容完整渲染
 const previewHeight = computed(() => {
-  if (!initialConfig.value?.canvas) return '400px'
-  const canvas = initialConfig.value.canvas
-  // 使用画布的实际高度，最小 300px，最大 600px
-  const height = Math.min(Math.max(canvas.height || 400, 300), 600)
-  return `${height}px`
+  return '1200px'
 })
 
 // 取消
@@ -224,19 +220,22 @@ onMounted(() => {
         </NSpace>
       </template>
 
-      <!-- 有配置时显示预览 -->
-      <div v-if="hasConfig && initialConfig" class="preview-area">
-        <ThingsVisWidget
-          :key="widgetKey"
-          mode="viewer"
-          :config="initialConfig"
-          :platform-fields="platformFields"
-          :height="previewHeight"
-        />
-      </div>
+      <NSpin :show="loading" description="加载中...">
+        <!-- 有配置时显示预览 -->
+        <div v-if="hasConfig && initialConfig" class="preview-area">
+          <ThingsVisWidget
+            :key="widgetKey"
+            mode="viewer"
+            :config="initialConfig"
+            :platform-fields="platformFields"
+            :height="previewHeight"
+          />
+        </div>
 
-      <!-- 无配置时提示 -->
-      <NEmpty v-else description="暂无图表配置，点击上方按钮创建" />
+        <!-- 无配置时提示 -->
+        <NEmpty v-else-if="!loading" description="暂无图表配置，点击上方按钮创建" />
+        <div v-else style="min-height: 200px" />
+      </NSpin>
     </NCard>
 
     <!-- 操作按钮 -->
@@ -299,14 +298,12 @@ onMounted(() => {
 }
 
 .preview-area {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   width: 100%;
+  max-height: calc(100vh - 350px);
   min-height: 300px;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  overflow: auto;
+  overflow-y: auto;
 }
 
 .actions-bar {
