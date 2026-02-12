@@ -201,11 +201,6 @@ const routeMap: RouteMap = {
   "device_grouping": "/device/grouping",
   "device_grouping-details": "/device/grouping-details",
   "device_manage": "/device/manage",
-  "device_new-device-template": "/device/new-device-template",
-  "device_new-device-template_template-details": "/device/new-device-template/template-details",
-  "device_new-device-template_template-details_editor": "/device/new-device-template/template-details/editor",
-  "device_new-device-template_template-details_viewer": "/device/new-device-template/template-details/viewer",
-  "device_new-device-template_template-list": "/device/new-device-template/template-list",
   "device_service-access": "/device/service-access",
   "device_service-details": "/device/service-details",
   "device_template": "/device/template",
@@ -255,17 +250,14 @@ const routeMap: RouteMap = {
   "rule-engine": "/rule-engine",
   "system-management-user": "/system-management-user",
   "system-management-user_system-log": "/system-management-user/system-log",
-  "test": "/test",
-  "test_category-test": "/test/category-test",
-  "test_panel-editor-v2": "/test/panel-editor-v2",
-  "ultra-kanban": "/ultra-kanban",
-  "ultra-kanban_index": "/ultra-kanban/index",
-  "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details",
-  "ultra-kanban_kanban-preview": "/ultra-kanban/kanban-preview",
   "user-center": "/user-center",
   "visualization": "/visualization",
   "visualization_kanban": "/visualization/kanban",
-  "visualization_kanban-details": "/visualization/kanban-details"
+  "visualization_kanban-details": "/visualization/kanban-details",
+  "visualization_thingsvis": "/visualization/thingsvis",
+  "visualization_thingsvis-dashboards": "/visualization/thingsvis-dashboards",
+  "visualization_thingsvis-editor": "/visualization/thingsvis-editor",
+  "visualization_thingsvis-preview": "/visualization/thingsvis-preview"
 };
 
 /**

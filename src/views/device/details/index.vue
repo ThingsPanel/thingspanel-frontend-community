@@ -125,10 +125,10 @@ const baseComponents: TabComponent[] = [
   }
 ]
 
-const components = ref<TabComponent[]>(baseComponents.map(item => ({ ...item })))
+const components = ref<TabComponent[]>([])
 
 const tabsRenderKey = ref(0)
-let lastTabsSig = components.value.map(item => item.key).join('|')
+let lastTabsSig = ''
 
 function getPreferredTabKey() {
   const keys = components.value.map(item => item.key)
@@ -155,8 +155,8 @@ function bumpRefreshKey(targetKey: string) {
   if (current) current.refreshKey += 1
 }
 
-// Default active: prefer chart -> telemetry -> first.
-const tabValue = ref<string>(getPreferredTabKey())
+// Default active: will be set by ensureActiveTab after data loads
+const tabValue = ref<string>('')
 const showDialog = ref(false)
 const showStatusHistoryDialog = ref(false)
 const labels = ref<string[]>([])
@@ -218,8 +218,6 @@ const rules = {
   }
 }
 const getDeviceDetail = async () => {
-  components.value = baseComponents.map(item => ({ ...item }))
-
   device_loop.value = false
   const { error, data } = await deviceDetail(getDeviceId())
   device_loop.value = true
@@ -238,29 +236,38 @@ const getDeviceDetail = async () => {
     device_is_online.value = data.is_online
     name.value = data.name
 
+    // 构建过滤后的组件列表（一次性赋值，避免多次触发响应式更新）
+    let filtered = baseComponents.map(item => ({ ...item }))
+
     if (data?.device_config) {
       device_type.value = data.device_config.device_type
       if (device_type.value !== '2' || !data?.device_config_name) {
-          components.value = components.value.filter(item => item.key !== 'device-analysis')
+          filtered = filtered.filter(item => item.key !== 'device-analysis')
       }
       if (device_type.value === '3') {
-          components.value = components.value.filter(item => item.key !== 'join')
+          filtered = filtered.filter(item => item.key !== 'join')
       }
       if (!data.device_config.device_template_id) {
-          components.value = components.value.filter(item => item.key !== 'chart')
+          filtered = filtered.filter(item => item.key !== 'chart')
       }
     } else if (!data?.device_config_name) {
-        components.value = components.value.filter(item => item.key !== 'device-analysis')
-        components.value = components.value.filter(item => item.key !== 'chart')
+        filtered = filtered.filter(item => item.key !== 'device-analysis')
+        filtered = filtered.filter(item => item.key !== 'chart')
     }
+
+    // 一次性赋值
+    components.value = filtered
 
     ensureActiveTab()
 
     const nextSig = components.value.map(item => item.key).join('|')
     if (nextSig !== lastTabsSig) {
+      const isFirstRender = lastTabsSig === ''
       lastTabsSig = nextSig
-      await nextTick()
-      tabsRenderKey.value += 1
+      if (!isFirstRender) {
+        await nextTick()
+        tabsRenderKey.value += 1
+      }
     }
 
     send(
@@ -480,6 +487,7 @@ const getPlatform = computed(() => {
                 :id="getDeviceId()"
                 :key="component.refreshKey"
                 :online="device_is_online"
+                :device-data="deviceData"
                 :device-config-id="deviceData?.device_config_id || ''"
                 :device-template-id="deviceData?.device_config?.device_template_id"
                 @change="getDeviceDetail"

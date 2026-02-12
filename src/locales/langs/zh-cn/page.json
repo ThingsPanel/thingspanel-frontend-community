@@ -552,5 +552,7 @@
   "page.function.tab.tabTitle.changeTitle": "修改标题",
   "page.function.tab.tabTitle.change": "修改",
   "page.function.tab.tabTitle.resetTitle": "重置标题",
-  "page.function.tab.tabTitle.reset": "重置"
+  "page.function.tab.tabTitle.reset": "重置",
+  "page.thingsvis.ssoError": "SSO 认证失败",
+  "page.thingsvis.retry": "重试"
 }

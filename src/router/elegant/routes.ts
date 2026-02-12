@@ -349,54 +349,6 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
-        name: 'device_new-device-template',
-        path: '/device/new-device-template',
-        meta: {
-          title: 'device_new-device-template',
-          i18nKey: 'route.device_new-device-template'
-        },
-        children: [
-          {
-            name: 'device_new-device-template_template-details',
-            path: '/device/new-device-template/template-details',
-            component: 'view.device_new-device-template_template-details',
-            meta: {
-              title: 'device_new-device-template_template-details',
-              i18nKey: 'route.device_new-device-template_template-details'
-            },
-            children: [
-              {
-                name: 'device_new-device-template_template-details_editor',
-                path: '/device/new-device-template/template-details/editor',
-                component: 'view.device_new-device-template_template-details_editor',
-                meta: {
-                  title: 'device_new-device-template_template-details_editor',
-                  i18nKey: 'route.device_new-device-template_template-details_editor'
-                }
-              },
-              {
-                name: 'device_new-device-template_template-details_viewer',
-                path: '/device/new-device-template/template-details/viewer',
-                component: 'view.device_new-device-template_template-details_viewer',
-                meta: {
-                  title: 'device_new-device-template_template-details_viewer',
-                  i18nKey: 'route.device_new-device-template_template-details_viewer'
-                }
-              }
-            ]
-          },
-          {
-            name: 'device_new-device-template_template-list',
-            path: '/device/new-device-template/template-list',
-            component: 'view.device_new-device-template_template-list',
-            meta: {
-              title: 'device_new-device-template_template-list',
-              i18nKey: 'route.device_new-device-template_template-list'
-            }
-          }
-        ]
-      },
-      {
         name: 'device_service-access',
         path: '/device/service-access',
         component: 'view.device_service-access',
@@ -898,73 +850,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
-    name: 'test',
-    path: '/test',
-    component: 'layout.base',
-    meta: {
-      title: 'test',
-      i18nKey: 'route.test'
-    },
-    children: [
-      {
-        name: 'test_category-test',
-        path: '/test/category-test',
-        component: 'view.test_category-test',
-        meta: {
-          title: 'test_category-test',
-          i18nKey: 'route.test_category-test'
-        }
-      },
-      {
-        name: 'test_panel-editor-v2',
-        path: '/test/panel-editor-v2',
-        component: 'view.test_panel-editor-v2',
-        meta: {
-          title: 'test_panel-editor-v2',
-          i18nKey: 'route.test_panel-editor-v2'
-        }
-      }
-    ]
-  },
-  {
-    name: 'ultra-kanban',
-    path: '/ultra-kanban',
-    component: 'layout.base',
-    meta: {
-      title: 'ultra-kanban',
-      i18nKey: 'route.ultra-kanban'
-    },
-    children: [
-      {
-        name: 'ultra-kanban_index',
-        path: '/ultra-kanban/index',
-        component: 'view.ultra-kanban_index',
-        meta: {
-          title: 'ultra-kanban_index',
-          i18nKey: 'route.ultra-kanban_index'
-        }
-      },
-      {
-        name: 'ultra-kanban_kanban-details',
-        path: '/ultra-kanban/kanban-details',
-        component: 'view.ultra-kanban_kanban-details',
-        meta: {
-          title: 'ultra-kanban_kanban-details',
-          i18nKey: 'route.ultra-kanban_kanban-details'
-        }
-      },
-      {
-        name: 'ultra-kanban_kanban-preview',
-        path: '/ultra-kanban/kanban-preview',
-        component: 'view.ultra-kanban_kanban-preview',
-        meta: {
-          title: 'ultra-kanban_kanban-preview',
-          i18nKey: 'route.ultra-kanban_kanban-preview'
-        }
-      }
-    ]
-  },
-  {
     name: 'user-center',
     path: '/user-center',
     component: 'layout.base$view.user-center',
@@ -999,6 +884,45 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'visualization_kanban-details',
           i18nKey: 'route.visualization_kanban-details'
+        }
+      },
+      {
+        name: 'visualization_thingsvis',
+        path: '/visualization/thingsvis',
+        component: 'view.visualization_thingsvis',
+        meta: {
+          title: 'visualization_thingsvis',
+          i18nKey: 'route.visualization_thingsvis'
+        }
+      },
+      {
+        name: 'visualization_thingsvis-dashboards',
+        path: '/visualization/thingsvis-dashboards',
+        component: 'view.visualization_thingsvis-dashboards',
+        meta: {
+          title: 'visualization_thingsvis-dashboards',
+          i18nKey: 'route.visualization_thingsvis-dashboards',
+          hideInMenu: true
+        }
+      },
+      {
+        name: 'visualization_thingsvis-editor',
+        path: '/visualization/thingsvis-editor',
+        component: 'view.visualization_thingsvis-editor',
+        meta: {
+          title: 'visualization_thingsvis-editor',
+          i18nKey: 'route.visualization_thingsvis-editor',
+          hideInMenu: true
+        }
+      },
+      {
+        name: 'visualization_thingsvis-preview',
+        path: '/visualization/thingsvis-preview',
+        component: 'view.visualization_thingsvis-preview',
+        meta: {
+          title: 'visualization_thingsvis-preview',
+          i18nKey: 'route.visualization-thingsvis-preview',
+          constant: true
         }
       }
     ]

@@ -69,11 +69,26 @@ const customRoutes: CustomRoute[] = [
   }
 ]
 
+// ThingsVis 预览页面 - 独立的常量路由，无需登录
+// 使用 as any 绕过类型检查，因为这是新增的路由
+const thingsvisPreviewRoute = {
+  name: 'thingsvis-preview-standalone',
+  path: '/thingsvis-preview',
+  component: 'layout.blank$view.visualization_thingsvis-preview',
+  meta: {
+    title: 'thingsvis-preview',
+    constant: true
+  }
+} as any
+
 /** Create routes */
 export function createRoutes() {
   const constantRoutes: ElegantRoute[] = []
 
   const authRoutes: ElegantRoute[] = []
+
+  // 添加独立的常量路由
+  constantRoutes.push(thingsvisPreviewRoute)
 
   ;[...customRoutes, ...generatedRoutes].forEach(item => {
     if (item.meta?.constant) {

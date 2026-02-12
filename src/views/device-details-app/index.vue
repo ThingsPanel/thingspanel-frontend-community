@@ -1,13 +1,14 @@
+
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onBeforeUnmount, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import type { ICardView } from '@/components/panel/card';
-import type { ICardRender } from '@/utils/websocketUtil';
+import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue';
+import { extractPlatformFields } from '@/utils/thingsvis/platform-fields';
 import { $t, setLocale } from '@/locales';
 import { deviceDetail, deviceTemplateDetail } from '@/service/api/device';
 import { formatDateTime } from '@/utils/common/datetime';
 import { localStg } from '@/utils/storage';
-import { useWebsocketUtil } from '@/utils/websocketUtil';
+import type { PlatformField } from '@/utils/thingsvis/types';
 import TelemetryDataCards from './telemetryDataCards.vue';
 
 const { query } = useRoute();
@@ -26,15 +27,19 @@ const device_color = ref('#ccc');
 const device_type = ref('');
 const icon_type = ref('');
 const device_number = ref('');
-const layout = ref<ICardView[]>([]);
+
 const showDefaultCards = ref(false);
 const showAppChart = ref(false);
 const cardHeight = ref(160); // 卡片的高度
 const cardMargin = ref(15); // 卡片的间距
 
-const cr = ref<ICardRender>();
+// ThingsVis 编辑器相关
+const initialConfig = ref<any>(null);
+const platformFields = ref<PlatformField[]>([]);
+const currentData = ref<Record<string, any>>({}); // 实时数据
 
-const { updateComponentsData, closeAllSockets } = useWebsocketUtil(cr, token as string);
+// 数据更新定时器
+let dataUpdateInterval: NodeJS.Timeout | null = null;
 
 const getDeviceDetail = async () => {
   const { data, error } = await deviceDetail(d_id);
@@ -48,26 +53,83 @@ const getDeviceDetail = async () => {
     if (data.device_config !== undefined) {
       device_type.value = data.device_config.device_type;
     }
-    const res = await deviceTemplateDetail({ id: data.device_config.device_template_id });
-    if (res.data) {
-      if (res.data.app_chart_config) {
-        const configJson = JSON.parse(res.data.app_chart_config);
-        if (configJson.length > 0) {
-          configJson.forEach(item => {
-            item.data?.dataSource?.deviceSource?.forEach(device => {
-              device.deviceId = d_id;
-            });
-          });
-          layout.value = [...configJson];
-          showAppChart.value = true;
-          updateComponentsData(layout);
+
+    // 加载模板配置
+    if (data.device_config?.device_template_id) {
+      const res = await deviceTemplateDetail({ id: data.device_config.device_template_id });
+      if (res.data) {
+        // 提取平台字段
+        const extracted = extractPlatformFields(res.data);
+        platformFields.value = extracted;
+
+        // 加载 app_chart_config
+        if (res.data.app_chart_config) {
+          try {
+            const configJson = JSON.parse(res.data.app_chart_config);
+            initialConfig.value = configJson;
+            showAppChart.value = true;
+            // 配置加载成功后，启动数据轮询
+            startDataUpdate();
+          } catch (e) {
+            console.warn('解析 app_chart_config 失败', e);
+            showDefaultCards.value = true;
+          }
         } else {
           showDefaultCards.value = true;
         }
-      } else {
-        showDefaultCards.value = true;
+      }
+    } else {
+      showDefaultCards.value = true;
+    }
+  }
+};
+
+/**
+ * 推送设备实时数据
+ */
+const fetchDeviceData = async () => {
+  if (!showAppChart.value) return;
+
+  try {
+    const { data, error } = await deviceDetail(d_id as string);
+
+    if (!error && data) {
+      const dataMap: Record<string, any> = {};
+
+      // 从设备数据中提取字段值
+      platformFields.value.forEach((field) => {
+        // 这里假设 field.id 对应接口返回对象的一级 key
+        if (data[field.id] !== undefined) {
+          dataMap[field.id] = data[field.id];
+        }
+      });
+
+      if (Object.keys(dataMap).length > 0) {
+        currentData.value = dataMap;
       }
     }
+  } catch (error) {
+    console.error('获取设备数据失败:', error);
+  }
+};
+
+/**
+ * 启动数据更新
+ */
+const startDataUpdate = () => {
+  fetchDeviceData();
+  dataUpdateInterval = setInterval(() => {
+    fetchDeviceData();
+  }, 5000);
+};
+
+/**
+ * 停止数据更新
+ */
+const stopDataUpdate = () => {
+  if (dataUpdateInterval) {
+    clearInterval(dataUpdateInterval);
+    dataUpdateInterval = null;
   }
 };
 
@@ -75,8 +137,8 @@ onMounted(() => {
   getDeviceDetail();
 });
 
-onUnmounted(() => {
-  closeAllSockets();
+onBeforeUnmount(() => {
+  stopDataUpdate();
 });
 </script>
 
@@ -118,34 +180,15 @@ onUnmounted(() => {
       :card-height="cardHeight"
       :card-margin="cardMargin"
     />
-    <div v-if="showAppChart" style="width: calc(100% + 20px); margin-left: -10px">
-      <CardRender
-        ref="cr"
-        class="card-render"
-        :layout="layout"
-        :is-preview="true"
-        :col-num="4"
-        :default-card-col="4"
-        :row-height="85"
-        :breakpoints="{ lg: 780, md: 500, sm: 0 }"
-        :cols="{ lg: 12, md: 6, sm: 4 }"
+    <div v-if="showAppChart">
+      <ThingsVisWidget
+        mode="viewer"
+        :config="initialConfig"
+        :platform-fields="platformFields"
+        :data="currentData"
+        height="calc(100vh - 250px)"
       />
     </div>
-    <!--
-    <div>
-      <n-tabs v-model:value="tabValue" animated type="line" @update:value="changeTabs">
-        <n-tab-pane v-for="component in components" :key="component.key" :tab="component.name" :name="component.key">
-          <n-spin size="small" :show="loading">
-            <component
-              :is="component.component"
-              :id="d_id as string"
-              :device-config-id="deviceData?.device_config_id || ''"
-            />
-          </n-spin>
-        </n-tab-pane>
-      </n-tabs>
-    </div>
-    -->
   </div>
 </template>
 

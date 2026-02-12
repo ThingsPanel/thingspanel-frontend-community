@@ -1,6 +1,7 @@
 {
   "common.serviceConfi": "Service Configuration",
   "common.config": "Config",
+  "common.back": "Back",
   "common._add": "Add",
   "common._delete": "Delete",
   "common._edit": "Edit",
@@ -216,6 +217,10 @@
   "common.save": "Save",
   "common.saveSuccess": "Save Success",
   "common.saveFailed": "Save Failed",
+  "common.publishSuccess": "Publish Success",
+  "common.publishFailed": "Publish Failed",
+  "common.loadFailed": "Load Failed",
+  "common.loadFailedRetry": "Load failed, please go back and try again",
   "common.saveAndContinue": "Save & Continue",
   "common.saveAndClose": "Save & Close",
   "common.addSuccess": "Create Success",
@@ -313,7 +318,6 @@
   "json.compress.success": "JSON compressed successfully",
   "json.compress.error": "JSON format error, unable to compress",
   "json.clear.success": "JSON content cleared",
-
   "common.loading": "Loading...",
   "common.never": "Never",
   "common.stop": "Stop",
