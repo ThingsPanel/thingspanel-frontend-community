@@ -124,6 +124,10 @@ const fetchAndUpdateData = async () => {
       }
     })
 
+    console.log('[TelemetryChart] 🔍 Platform Fields:', platformFields.value.map(f => f.id))
+    console.log('[TelemetryChart] 📥 API Names/Keys:', Object.keys(kvMap))
+    console.log('[TelemetryChart] 📤 Push Data:', dataMap)
+
     if (Object.keys(dataMap).length > 0) {
       currentData.value = dataMap
     }
