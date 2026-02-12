@@ -5,7 +5,7 @@
  */
 
 import { ref, onMounted } from 'vue'
-import { NButton, NModal, NCard, NEmpty } from 'naive-ui'
+import { NButton, NModal, NCard, NEmpty, NSelect, NSpace } from 'naive-ui'
 import { $t } from '@/locales'
 import { getTemplat, putTemplat, telemetryApi, attributesApi } from '@/service/api'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
@@ -39,6 +39,15 @@ const showEditorModal = ref(false)
 const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
 const hasConfig = ref(false)
+const refreshInterval = ref(5000)
+
+const refreshOptions = [
+  { label: '手动刷新', value: 0 },
+  { label: '5秒', value: 5000 },
+  { label: '10秒', value: 10000 },
+  { label: '30秒', value: 30000 },
+  { label: '1分钟', value: 60000 }
+]
 
 // 取消
 const cancellation: () => void = () => {
@@ -70,9 +79,15 @@ const handleSave = async (payload: any) => {
     const res = await getTemplat(props.deviceTemplateId)
 
     // 保存到 app_chart_config 字段
+    // 将刷新频率合并到配置中
+    const configToSave = {
+      ...payload,
+      refreshInterval: refreshInterval.value
+    }
+
     await putTemplat({
       ...res.data,
-      app_chart_config: JSON.stringify(payload)
+      app_chart_config: JSON.stringify(configToSave)
     })
 
     window.$message?.success($t('common.saveSuccess'))
@@ -130,6 +145,10 @@ const loadTemplateData = async () => {
           const config = JSON.parse(res.data.app_chart_config)
           initialConfig.value = config
           hasConfig.value = true
+           // 恢复刷新频率配置
+          if (config.refreshInterval !== undefined) {
+             refreshInterval.value = config.refreshInterval
+          }
         } catch (e) {
           console.warn('解析 app_chart_config 失败', e)
           initialConfig.value = null
@@ -155,9 +174,20 @@ onMounted(() => {
     <!-- 预览区域 -->
     <NCard title="App 图表配置" class="preview-card">
       <template #header-extra>
-        <NButton type="primary" @click="openEditor">
-          {{ hasConfig ? '编辑配置' : '创建配置' }}
-        </NButton>
+        <NSpace align="center">
+           <span>刷新频率：</span>
+
+           <NSelect
+              v-model:value="refreshInterval"
+              :options="refreshOptions"
+              size="small"
+              style="width: 120px"
+              placeholder="刷新频率"
+            />
+          <NButton type="primary" size="small" @click="openEditor">
+            {{ hasConfig ? '编辑配置' : '创建配置' }}
+          </NButton>
+        </NSpace>
       </template>
 
       <!-- 有配置时显示预览 -->

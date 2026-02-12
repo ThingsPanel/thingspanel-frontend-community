@@ -139,7 +139,16 @@ const fetchAndUpdateData = async () => {
 const startPolling = () => {
   stopPolling()
   fetchAndUpdateData() // 立即执行一次
-  dataUpdateInterval = setInterval(fetchAndUpdateData, 5000)
+
+  // 获取刷新频率，默认 5000ms
+  const interval = initialConfig.value?.refreshInterval ?? 5000
+
+  if (interval > 0) {
+    console.log(`[TelemetryChart] ⏱️ 启动轮询, 间隔: ${interval}ms`)
+    dataUpdateInterval = setInterval(fetchAndUpdateData, interval)
+  } else {
+    console.log('[TelemetryChart] ⏸️ Manual refresh mode (polling disabled)')
+  }
 }
 
 const stopPolling = () => {
