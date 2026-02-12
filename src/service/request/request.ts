@@ -65,7 +65,10 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
           // 尝试刷新token
           const { useAuthStore } = await import('@/store/modules/auth')
           const authStore = useAuthStore()
-          const refreshSuccess = await authStore.refreshToken()
+          const refreshTokenFn = (authStore as any).refreshToken
+          const refreshSuccess = typeof refreshTokenFn === 'function'
+            ? await refreshTokenFn.call(authStore)
+            : false
 
           if (refreshSuccess) {
             // 刷新成功，重试原请求
