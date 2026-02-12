@@ -43,7 +43,7 @@ export class ThingsVisClient {
   private initIframe() {
     // 自动追加 embedded=1 参数，确保 Guest 端进入嵌入模式
     const separator = this.options.url.includes('?') ? '&' : '?'
-    const modeParam = 'mode=embedded'
+    const modeParam = 'mode=embedded&showTopLeft=0&showTopRight=0'
     const finalUrl = `${this.options.url}${separator}${modeParam}`
 
     this.iframe.src = finalUrl
