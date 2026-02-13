@@ -27,6 +27,7 @@ import {
   createThingsVisDashboard,
   deleteThingsVisDashboard,
   setHomeThingsVisDashboard,
+  getThingsVisDashboardThumbnail,
   type DashboardListItem,
   type ThingsVisProject
 } from '@/service/api/thingsvis'
@@ -91,12 +92,47 @@ const fetchDashboards = async () => {
         )
       }
       dashboards.value = list
+
+      // 延迟加载缩略图
+      loadThumbnails(list)
     } else if (error) {
       message.error('加载仪表盘失败')
     }
   } finally {
     loading.value = false
   }
+}
+
+/** 懒加载缩略图 */
+const loadThumbnails = async (list: DashboardListItem[]) => {
+  // 并发控制，每次请求 5 个
+  const CONCURRENCY = 5
+  const queue = [...list]
+
+  const processQueue = async () => {
+    while (queue.length > 0) {
+      const batch = queue.splice(0, CONCURRENCY)
+      await Promise.all(batch.map(async (item) => {
+        // 如果已有缩略图则跳过 (比如已经是 base64)
+        if (item.thumbnail && item.thumbnail.length > 1000) return
+
+        try {
+          const { data } = await getThingsVisDashboardThumbnail(item.id)
+          if (data?.thumbnail) {
+            // 更新响应式数据
+            const target = dashboards.value.find(d => d.id === item.id)
+            if (target) {
+              target.thumbnail = data.thumbnail
+            }
+          }
+        } catch (e) {
+          console.error(`Failed to load thumbnail for ${item.id}`, e)
+        }
+      }))
+    }
+  }
+
+  processQueue()
 }
 
 /** 打开新建弹窗 */
@@ -277,7 +313,7 @@ onMounted(async () => {
                   alt="thumbnail"
                 />
                 <icon-mdi:chart-box v-else class="text-64px text-primary/40" />
-                
+
                 <!-- 右上角首页图标 -->
                 <div
                   v-if="dashboard.homeFlag"

@@ -348,6 +348,15 @@ export function getThingsVisDashboard(id: string) {
 }
 
 /**
+ * 获取 Dashboard 缩略图
+ */
+export function getThingsVisDashboardThumbnail(id: string) {
+  return wrapRequest<{ thumbnail: string | null }>(
+    thingsVisRequest.get(`/dashboards/${id}/thumbnail`)
+  )
+}
+
+/**
  * 创建 Dashboard
  */
 export function createThingsVisDashboard(data: CreateDashboardData) {

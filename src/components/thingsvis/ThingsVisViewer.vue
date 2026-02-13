@@ -7,6 +7,7 @@
 
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { NSpin } from 'naive-ui'
+import { getThingsVisToken } from '@/service/api/thingsvis'
 
 interface Props {
   /** 仪表板配置数据 */
@@ -29,6 +30,7 @@ const iframeRef = ref<HTMLIFrameElement>()
 const loading = ref(true)
 const ready = ref(false)
 const error = ref<string | null>(null)
+const token = ref<string | null>(null)
 
 /**
  * 获取 ThingsVis Embed URL
@@ -36,17 +38,17 @@ const error = ref<string | null>(null)
 const embedUrl = computed(() => {
   // 基础 URL - 直接指向 /embed 路由
   const baseUrl = import.meta.env.VITE_THINGSVIS_STUDIO_URL || 'http://localhost:3000/main.html'
-  
+
   // 移除可能存在的 hash 部分
   const cleanBase = baseUrl.split('#')[0]
-  
+
   // 确保以 .html 结尾
-  const htmlBase = cleanBase.endsWith('.html') 
-    ? cleanBase 
-    : cleanBase.endsWith('/main') 
-      ? cleanBase + '.html' 
+  const htmlBase = cleanBase.endsWith('.html')
+    ? cleanBase
+    : cleanBase.endsWith('/main')
+      ? cleanBase + '.html'
       : cleanBase
-  
+
   // 构建 embed URL - 不需要任何认证参数，数据通过 postMessage 传递
   return `${htmlBase}#/embed`
 })
@@ -56,7 +58,7 @@ const embedUrl = computed(() => {
  */
 const handleMessage = (event: MessageEvent) => {
   const { data } = event
-  
+
   if (!data || typeof data !== 'object') return
 
   // EmbedPage 就绪
@@ -64,17 +66,26 @@ const handleMessage = (event: MessageEvent) => {
     console.log('[ThingsVisViewer] EmbedPage 已就绪')
     ready.value = true
     loading.value = false
-    
-    // 发送仪表板数据
+
+    // 1. 发送认证 Token (如果存在)
+    if (token.value && iframeRef.value?.contentWindow) {
+      console.log('[ThingsVisViewer] 发送 SET_TOKEN')
+      iframeRef.value.contentWindow.postMessage({
+        type: 'SET_TOKEN',
+        payload: token.value
+      }, '*')
+    }
+
+    // 2. 发送仪表板数据
     sendConfig()
     emit('ready')
   }
-  
+
   // 加载完成
   if (data.type === 'LOADED') {
     console.log('[ThingsVisViewer] 仪表板加载完成:', data.payload)
   }
-  
+
   // 加载错误
   if (data.type === 'ERROR') {
     console.error('[ThingsVisViewer] 加载错误:', data.payload)
@@ -95,11 +106,6 @@ const sendConfig = () => {
   try {
     // 深拷贝避免响应式数据问题
     const pureConfig = JSON.parse(JSON.stringify(props.config))
-    
-    console.log('[ThingsVisViewer] 发送 LOAD_DASHBOARD:', {
-      nodeCount: pureConfig.nodes?.length ?? 0,
-      canvasMode: pureConfig.canvas?.mode
-    })
 
     iframeRef.value.contentWindow.postMessage({
       type: 'LOAD_DASHBOARD',
@@ -121,14 +127,34 @@ const handleIframeLoad = () => {
 }
 
 // 监听配置变化，重新发送
-watch(() => props.config, (newConfig) => {
-  if (newConfig && ready.value) {
-    sendConfig()
-  }
-}, { deep: true })
+watch(
+  () => props.config,
+  (newConfig) => {
+    if (newConfig && ready.value) {
+      sendConfig()
+    }
+  },
+  { deep: true }
+)
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('message', handleMessage)
+
+  // 获取 Token
+  try {
+    token.value = await getThingsVisToken()
+  } catch (e) {
+    console.warn('[ThingsVisViewer] Token 获取失败', e)
+  }
+
+  // 增加连接超时检测
+  setTimeout(() => {
+    if (loading.value && !ready.value) {
+      console.warn('[ThingsVisViewer] Editor connection timeout')
+      error.value = '连接编辑器超时，请检查服务是否启动'
+      loading.value = false
+    }
+  }, 15000)
 })
 
 onBeforeUnmount(() => {
@@ -143,13 +169,14 @@ onBeforeUnmount(() => {
       <div v-if="error" class="error-state">
         <p class="error-message">⚠️ {{ error }}</p>
       </div>
-      
+
       <!-- Viewer iframe -->
       <iframe
         v-else
         ref="iframeRef"
         :src="embedUrl"
         class="thingsvis-iframe"
+        :class="{ visible: ready }"
         :style="{ height }"
         frameborder="0"
         @load="handleIframeLoad"
@@ -179,6 +206,12 @@ onBeforeUnmount(() => {
   border: none;
   background: #f5f5f5;
   display: block;
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+
+  &.visible {
+    opacity: 1;
+  }
 }
 
 .error-state {
