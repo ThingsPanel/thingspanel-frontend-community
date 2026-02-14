@@ -66,6 +66,16 @@ const customRoutes: CustomRoute[] = [
         }
       }
     ]
+  },
+  {
+    name: 'device-details-app',
+    path: '/device-details-app',
+    component: 'layout.base$view.device-details-app',
+    meta: {
+      title: 'device-details-app',
+      i18nKey: 'route.device-details-app',
+      constant: true
+    }
   }
 ]
 
@@ -90,13 +100,13 @@ export function createRoutes() {
   // 添加独立的常量路由
   constantRoutes.push(thingsvisPreviewRoute)
 
-  ;[...customRoutes, ...generatedRoutes].forEach(item => {
-    if (item.meta?.constant) {
-      constantRoutes.push(item)
-    } else {
-      authRoutes.push(item)
-    }
-  })
+    ;[...customRoutes, ...generatedRoutes].forEach(item => {
+      if (item.meta?.constant) {
+        constantRoutes.push(item)
+      } else {
+        authRoutes.push(item)
+      }
+    })
 
   const constantVueRoutes = transformElegantRoutesToVueRoutes(constantRoutes, layouts, views)
 
