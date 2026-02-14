@@ -162,14 +162,26 @@ export class ThingsVisClient {
    * 对应协议: thingsvis:editor-init
    */
   public loadWidgetConfig(config: any, platformFields?: any[]) {
+    // 防御性处理: 如果 config 为空或损坏 (没有 canvas/nodes)，提供默认值
+    // 这确保即使保存的配置是无效的，编辑器和预览都能正常加载
+    const safeConfig = config || {};
+    const safeCanvas = safeConfig.canvas || {
+      mode: 'grid',
+      width: 1920,
+      height: 1080,
+      gridCols: 24,
+      gridRowHeight: 50,
+      gridGap: 5,
+    };
+    const safeNodes = safeConfig.nodes || [];
+
     // 构造符合 EmbedInitPayload 的数据结构
     const payload = {
       data: {
-        // 如果 config 里有 meta，就用 meta，否则用默认
-        meta: config.meta || { id: 'widget', name: 'Widget' },
-        canvas: config.canvas,
-        nodes: config.nodes,
-        dataSources: config.dataSources,
+        meta: safeConfig.meta || { id: 'widget', name: 'Widget' },
+        canvas: safeCanvas,
+        nodes: safeNodes,
+        dataSources: safeConfig.dataSources,
         platformFields: platformFields // Pass fields in init
       },
       config: {

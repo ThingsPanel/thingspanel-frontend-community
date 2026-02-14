@@ -72,8 +72,12 @@ onMounted(() => {
 
   // 监听保存 (Guest -> Host)
   client.on('thingsvis:save-config', (payload: any) => {
-    emit('save', payload.config);
-    emit('change', payload.config);
+    // 兼容两种 payload 格式:
+    // 1. triggerSave 路径: payload = { canvas, nodes, dataBindings, thumbnail, meta }
+    // 2. request-save 路径: payload = { config: { meta, canvas, nodes, dataSources } }
+    const config = payload?.config || payload;
+    emit('save', config);
+    emit('change', config);
   });
 });
 
