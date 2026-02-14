@@ -44,9 +44,10 @@ onMounted(async () => {
     if (tokenStr) {
       token.value = tokenStr;
 
-      // 临时硬编码，之后应从环境变量读取
-      // 注意：需要指向 /main#/editor 而不是 /#/editor
-      const baseUrl = 'http://localhost:3000/main';
+      // 从环境变量读取 ThingsVis Studio URL
+      let baseUrl = import.meta.env.VITE_THINGSVIS_STUDIO_URL || 'http://localhost:3000/main';
+      const hashIdx = baseUrl.indexOf('#');
+      if (hashIdx !== -1) baseUrl = baseUrl.substring(0, hashIdx);
 
       // 构造 URL: /main#/editor/{id}?mode=embedded&token={token}
       // 直接使用传入的 props.id，后端已支持通过该 ID 自动创建或查找
@@ -70,7 +71,9 @@ const handleMessage = async (event: MessageEvent) => {
   if (type === 'tv:preview') {
     if (!token.value) return;
     // 打开预览页，复用当前 token
-    const baseUrl = 'http://localhost:3000/main';
+    let baseUrl = import.meta.env.VITE_THINGSVIS_STUDIO_URL || 'http://localhost:3000/main';
+    const hashIdx2 = baseUrl.indexOf('#');
+    if (hashIdx2 !== -1) baseUrl = baseUrl.substring(0, hashIdx2);
     const previewUrl = `${baseUrl}#/preview?projectId=${projectId || props.id}&token=${token.value}&mode=embedded`;
     window.open(previewUrl, '_blank');
   }

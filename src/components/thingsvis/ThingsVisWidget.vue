@@ -44,8 +44,11 @@ const clone = (obj: any) => {
 onMounted(() => {
   if (!container.value) return;
 
-  // 临时硬编码 base url，之后应从环境变量读取
-  const baseUrl = 'http://localhost:3000/main';
+  // 从环境变量读取 ThingsVis Studio URL
+  let baseUrl = import.meta.env.VITE_THINGSVIS_STUDIO_URL || 'http://localhost:3000/main';
+  // 移除可能的 hash 部分
+  const hashIdx = baseUrl.indexOf('#');
+  if (hashIdx !== -1) baseUrl = baseUrl.substring(0, hashIdx);
 
   // 追加 saveTarget=host，告知 Editor 进入宿主托管模式
   const targetUrl = props.mode === 'editor'
