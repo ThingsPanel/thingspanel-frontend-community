@@ -41,14 +41,14 @@ export interface ThingsVisProject {
 
 /** 保存请求消息 */
 export interface SaveRequestMessage {
-    type: 'thingsvis:requestSave'
+    type: 'tv:request-save'
     requestId: string
     payload: ThingsVisProject
 }
 
 /** 保存响应消息 */
 export interface SaveResponseMessage {
-    type: 'thingsvis:saveResponse'
+    type: 'tv:save-response'
     requestId: string
     payload: {
         success: boolean
@@ -59,7 +59,7 @@ export interface SaveResponseMessage {
 
 /** 平台数据推送消息 */
 export interface PlatformDataMessage {
-    type: 'thingsvis:platformData'
+    type: 'tv:platform-data'
     payload: {
         fieldId: string
         value: any

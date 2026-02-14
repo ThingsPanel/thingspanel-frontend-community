@@ -7,6 +7,21 @@
  * - 严格区分 Widget Mode 和 App Mode
  */
 
+// ─── Message Type Constants (aligned with Guest MSG_TYPES) ───
+const TV_MSG = {
+  // Host → Guest
+  INIT: 'tv:init',
+  TRIGGER_SAVE: 'tv:trigger-save',
+  REQUEST_SAVE: 'tv:request-save',
+  EVENT: 'tv:event',
+  // Guest → Host
+  SAVE: 'tv:save',
+  READY: 'tv:ready',
+  REQUEST_INIT: 'tv:request-init',
+  // SDK internal (Host-only event name)
+  SAVE_CONFIG: 'tv:save-config',
+} as const
+
 export interface ThingsVisOptions {
   /** 挂载的容器 DOM */
   container: HTMLElement
@@ -83,14 +98,12 @@ export class ThingsVisClient {
     // 协议适配: 仅仅接收我们关心的消息
 
     // 1. Host Save (Guest -> Host)
-    if (type === 'thingsvis:host-save') {
-      this.emit('thingsvis:save-config', payload) // 转发为 SDK 标准事件
+    if (type === TV_MSG.SAVE) {
+      this.emit(TV_MSG.SAVE_CONFIG, payload) // 转发为 SDK 标准事件
     }
 
     // 2. Ready Signal (Guest -> Host)
-    // EmbedPage sends { type: 'READY' }
-    // Editor.tsx sends { type: 'thingsvis:ready' }
-    if (type === 'READY' || type === 'thingsvis:ready') {
+    if (type === 'READY' || type === TV_MSG.READY) {
       console.log('[SDK] Received READY signal from Guest');
       if (!this.ready) {
         this.ready = true;
@@ -191,7 +204,7 @@ export class ThingsVisClient {
     }
 
     console.log('[SDK] Sending init payload:', payload)
-    this.send('thingsvis:editor-init', payload)
+    this.send(TV_MSG.INIT, payload)
   }
 
   /**
@@ -205,7 +218,7 @@ export class ThingsVisClient {
    */
   public updateSchema(fields: any[]) {
     // 尝试发送通用事件 (需 Guest 端配合支持)
-    this.send('thingsvis:editor-event', { event: 'updateSchema', payload: fields })
+    this.send(TV_MSG.EVENT, { event: 'updateSchema', payload: fields })
   }
 
   /**
@@ -218,7 +231,7 @@ export class ThingsVisClient {
    * 如果 Guest 内部有组件监听 'updateData'，就能工作。
    */
   public pushData(data: Record<string, any>) {
-    this.send('thingsvis:editor-event', { event: 'updateData', payload: data })
+    this.send(TV_MSG.EVENT, { event: 'updateData', payload: data })
   }
 
   /**
@@ -227,7 +240,7 @@ export class ThingsVisClient {
    * 对应协议: thingsvis:editor-trigger-save
    */
   public triggerSave() {
-    this.send('thingsvis:editor-trigger-save')
+    this.send(TV_MSG.TRIGGER_SAVE)
   }
 
   /**
@@ -236,7 +249,7 @@ export class ThingsVisClient {
    */
   public onWidgetSave(callback: (config: any) => void) {
     // 我们在 handleMessage 里把 'thingsvis:host-save' 转发为了 'thingsvis:save-config'
-    this.on('thingsvis:save-config', (payload) => {
+    this.on(TV_MSG.SAVE_CONFIG, (payload) => {
       // Payload 里的结构可能是 { canvas:..., nodes:..., dataBindings:... }
       callback(payload)
     })
@@ -254,7 +267,7 @@ export class ThingsVisClient {
   public requestSave() {
     console.log('[SDK] Client requesting save from Editor...');
     // Type casting because 'thingsvis:request-save' is not in standard EmbedMessage yet
-    this.send('thingsvis:request-save' as any);
+    this.send(TV_MSG.REQUEST_SAVE);
   }
 
 
@@ -266,7 +279,7 @@ export class ThingsVisClient {
    * App Mode 主要靠 URL 参数传 token，但在 PostMessage 里也可以更新。
    */
   public updateToken(token: string) {
-    this.send('thingsvis:editor-event', { event: 'updateToken', payload: { token } })
+    this.send(TV_MSG.EVENT, { event: 'updateToken', payload: { token } })
   }
 
   // ===========================

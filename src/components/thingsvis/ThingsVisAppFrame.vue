@@ -67,7 +67,7 @@ const handleMessage = async (event: MessageEvent) => {
 
   const { type, projectId } = event.data;
 
-  if (type === 'thingsvis:preview') {
+  if (type === 'tv:preview') {
     if (!token.value) return;
     // 打开预览页，复用当前 token
     const baseUrl = 'http://localhost:3000/main';
@@ -75,7 +75,7 @@ const handleMessage = async (event: MessageEvent) => {
     window.open(previewUrl, '_blank');
   }
 
-  if (type === 'thingsvis:publish') {
+  if (type === 'tv:publish') {
     try {
       // 动态导入以避免循环依赖或按需加载
       const { publishThingsVisDashboard } = await import('@/service/api/thingsvis');
