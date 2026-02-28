@@ -67,15 +67,6 @@ const handleMessage = (event: MessageEvent) => {
     ready.value = true
     loading.value = false
 
-    // 1. 发送认证 Token (如果存在)
-    if (token.value && iframeRef.value?.contentWindow) {
-      console.log('[ThingsVisViewer] 发送 SET_TOKEN')
-      iframeRef.value.contentWindow.postMessage({
-        type: 'SET_TOKEN',
-        payload: token.value
-      }, '*')
-    }
-
     // 2. 发送仪表板数据
     sendConfig()
     emit('ready')
@@ -106,10 +97,22 @@ const sendConfig = () => {
   try {
     // 深拷贝避免响应式数据问题
     const pureConfig = JSON.parse(JSON.stringify(props.config))
+    const apiBaseUrl = window.location.origin + '/thingsvis-api'
 
     iframeRef.value.contentWindow.postMessage({
-      type: 'LOAD_DASHBOARD',
-      payload: pureConfig
+      type: 'tv:init',
+      data: {
+        meta: { id: pureConfig.id, name: pureConfig.name },
+        canvas: pureConfig.canvas || pureConfig.canvasConfig,
+        nodes: pureConfig.nodes,
+        dataSources: pureConfig.dataSources
+      },
+      config: {
+        token: token.value,
+        apiBaseUrl: apiBaseUrl,
+        mode: 'viewer',
+        saveTarget: 'host'
+      }
     }, '*')
   } catch (e) {
     console.error('[ThingsVisViewer] 配置序列化失败:', e)
