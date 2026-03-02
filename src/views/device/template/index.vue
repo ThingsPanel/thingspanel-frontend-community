@@ -12,7 +12,9 @@ import {
   NEmpty,
   NGrid,
   NGi,
-  NPopconfirm
+  NPopconfirm,
+  NTabs,
+  NTabPane
 } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { ListOutline, GridOutline } from '@vicons/ionicons5'
@@ -21,6 +23,9 @@ import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import ItemCard from '@/components/dev-card-item/index.vue'
 import TemplateModal from './components/template-modal.vue'
+import MarketLoginModal from './components/market-login-modal.vue'
+import PublishConfirmModal from './components/publish-confirm-modal.vue'
+import MarketTemplateList from './components/market-template-list.vue'
 import { useBoolean, useLoading } from '~/packages/hooks/src'
 // 导入SvgIcon组件，使用项目标准图标系统
 import SvgIcon from '@/components/custom/svg-icon.vue'
@@ -32,6 +37,10 @@ const { startLoading, endLoading, loading } = useLoading(false)
 const { bool: visible, setTrue: openModal, setFalse: closeModal } = useBoolean()
 const demoUrl = getDemoServerUrl()
 const url: any = ref(demoUrl)
+const marketLoginRef = ref<InstanceType<typeof MarketLoginModal>>()
+const publishConfirmRef = ref<InstanceType<typeof PublishConfirmModal>>()
+const pendingPublishId = ref('')
+const activeTab = ref('local')
 
 // 查询参数
 const queryParams = reactive({
@@ -91,8 +100,6 @@ const handleAddNew = () => {
 
 // 编辑模板
 const handleEdit = (id: string) => {
-  if (process.env.NODE_ENV === 'development') {
-  }
   modalType.value = 'edit'
   templateId.value = id
   openModal()
@@ -199,6 +206,15 @@ const columns = computed(() => [
                     { default: () => $t('common.delete') }
                   )
               }
+            ),
+            h(
+              NButton,
+              {
+                size: 'small',
+                type: 'info',
+                onClick: () => handlePublishToMarket(row.id)
+              },
+              { default: () => $t('device_template.publishToMarket') }
             )
           ]
         }
@@ -262,132 +278,182 @@ onMounted(() => {
     }, 0)
   }
 })
+
+// 发布到市场
+const handlePublishToMarket = (id: string) => {
+  const token = sessionStorage.getItem('market_token')
+  if (!token) {
+    pendingPublishId.value = id
+    marketLoginRef.value?.open()
+  } else {
+    publishConfirmRef.value?.open(id)
+  }
+}
+
+// eslint-disable-next-line no-unused-vars
+const onMarketLoginSuccess = (_token: string) => {
+  if (pendingPublishId.value) {
+    publishConfirmRef.value?.open(pendingPublishId.value)
+    pendingPublishId.value = ''
+  }
+}
+
+const handleInstalled = () => {
+  activeTab.value = 'local'
+  getData()
+}
 </script>
 
 <template>
-  <AdvancedListLayout
-    :initial-view="'card'"
-    :available-views="availableViews"
-    :show-query-button="false"
-    :show-reset-button="false"
-    @add-new="handleAddNew"
-    @refresh="handleRefresh"
-  >
-    <!-- 左侧操作按钮 -->
-    <template #header-left>
-      <div class="flex gap-2">
-        <NButton type="primary" @click="handleAddNew">+ {{ $t('generate.add-device-function-template') }}</NButton>
-      </div>
-    </template>
-
-    <!-- 搜索表单内容 -->
-    <template #search-form-content>
-      <div class="flex gap-4 items-center">
-        <NInput
-          v-model:value="queryParams.name"
-          :placeholder="$t('generate.enter-template-name')"
-          type="text"
-          clearable
-          style="width: 240px"
-          @clear="handleReset"
-          @keydown.enter="handleQuery"
+  <div>
+    <NTabs v-model:value="activeTab" type="line" style="margin-bottom: 16px">
+      <NTabPane name="local" :tab="$t('device_template.localTemplates')">
+        <AdvancedListLayout
+          :initial-view="'card'"
+          :available-views="availableViews"
+          :show-query-button="false"
+          :show-reset-button="false"
+          @add-new="handleAddNew"
+          @refresh="handleRefresh"
         >
-          <template #prefix>
-            <NIcon>
-              <IosSearch />
-            </NIcon>
+          <!-- 左侧操作按钮 -->
+          <template #header-left>
+            <div class="flex gap-2">
+              <NButton type="primary" @click="handleAddNew">
+                + {{ $t('generate.add-device-function-template') }}
+              </NButton>
+            </div>
           </template>
-        </NInput>
-        <NButton type="primary" @click="handleQuery">
-          {{ $t('common.search') }}
-        </NButton>
-      </div>
-    </template>
 
-    <!-- 卡片视图 -->
-    <template #card-view>
-      <n-spin :show="loading">
-        <div v-if="deviceTemplateList.length === 0 && !loading" class="empty-state">
-          <NEmpty size="huge" :description="$t('common.nodata')" />
-        </div>
-        <div v-else>
-          <NGrid cols="1 s:2 m:3 l:4 xl:5 2xl:6" x-gap="20" y-gap="20" responsive="screen">
-            <NGi v-for="item in deviceTemplateList" :key="item.id">
-              <ItemCard
-                :isStatus="false"
-                :title="item.name"
-                :subtitle="item.description || '--'"
-                @click="handleEdit(item.id)"
+          <!-- 搜索表单内容 -->
+          <template #search-form-content>
+            <div class="flex gap-4 items-center">
+              <NInput
+                v-model:value="queryParams.name"
+                :placeholder="$t('generate.enter-template-name')"
+                type="text"
+                clearable
+                style="width: 240px"
+                @clear="handleReset"
+                @keydown.enter="handleQuery"
               >
-                <!-- 底部内容 - 标签靠右显示 -->
-                <template #footer>
-                  <div class="card-footer-content">
-                    <div class="tags-section">
-                      <div class="tags-container">
-                        <template v-if="item.label">
-                          <NTag
-                            v-for="tag in getDisplayTags(item.label).displayTags"
-                            :key="tag"
-                            size="small"
-                            class="tag-item"
-                          >
-                            {{ tag }}
-                          </NTag>
-                          <NTag v-if="getDisplayTags(item.label).hasMore" size="small" type="info" class="more-tag">
-                            +{{ getDisplayTags(item.label).moreCount }}
-                          </NTag>
-                        </template>
-                        <span v-else class="no-tags">--</span>
-                      </div>
-                    </div>
-                  </div>
+                <template #prefix>
+                  <NIcon>
+                    <IosSearch />
+                  </NIcon>
                 </template>
+              </NInput>
+              <NButton type="primary" @click="handleQuery">
+                {{ $t('common.search') }}
+              </NButton>
+            </div>
+          </template>
 
-                <!-- 底部图标 - 固定40x40正方形 -->
-                <template #footer-icon>
-                  <div class="footer-icon-container">
-                    <img v-if="item.path" :src="getPath(item.path)" alt="device type icon" class="template-image" />
-                    <SvgIcon v-else local-icon="default-template" class="template-image" />
-                  </div>
-                </template>
-              </ItemCard>
-            </NGi>
-          </NGrid>
-        </div>
-      </n-spin>
-    </template>
+          <!-- 卡片视图 -->
+          <template #card-view>
+            <n-spin :show="loading">
+              <div v-if="deviceTemplateList.length === 0 && !loading" class="empty-state">
+                <NEmpty size="huge" :description="$t('common.nodata')" />
+              </div>
+              <div v-else>
+                <NGrid cols="1 s:2 m:3 l:4 xl:5 2xl:6" x-gap="20" y-gap="20" responsive="screen">
+                  <NGi v-for="item in deviceTemplateList" :key="item.id">
+                    <ItemCard
+                      :isStatus="false"
+                      :title="item.name"
+                      :subtitle="item.description || '--'"
+                      @click="handleEdit(item.id)"
+                    >
+                      <!-- 底部内容 - 标签靠右显示 -->
+                      <template #footer>
+                        <div class="card-footer-content">
+                          <div class="tags-section">
+                            <div class="tags-container">
+                              <template v-if="item.label">
+                                <NTag
+                                  v-for="tag in getDisplayTags(item.label).displayTags"
+                                  :key="tag"
+                                  size="small"
+                                  class="tag-item"
+                                >
+                                  {{ tag }}
+                                </NTag>
+                                <NTag
+                                  v-if="getDisplayTags(item.label).hasMore"
+                                  size="small"
+                                  type="info"
+                                  class="more-tag"
+                                >
+                                  +{{ getDisplayTags(item.label).moreCount }}
+                                </NTag>
+                              </template>
+                              <span v-else class="no-tags">--</span>
+                            </div>
+                          </div>
+                        </div>
+                      </template>
 
-    <!-- 列表视图 -->
-    <template #list-view>
-      <NDataTable
-        :columns="columns"
-        :data="deviceTemplateList"
-        :loading="loading"
-        size="small"
-        :pagination="false"
-        :bordered="false"
-        :single-line="false"
-        striped
-      />
-    </template>
+                      <!-- 底部图标 - 固定40x40正方形 -->
+                      <template #footer-icon>
+                        <div class="footer-icon-container">
+                          <img
+                            v-if="item.path"
+                            :src="getPath(item.path)"
+                            alt="device type icon"
+                            class="template-image"
+                          />
+                          <SvgIcon v-else local-icon="default-template" class="template-image" />
+                        </div>
+                      </template>
+                    </ItemCard>
+                  </NGi>
+                </NGrid>
+              </div>
+            </n-spin>
+          </template>
 
-    <!-- 底部分页 -->
-    <template #footer>
-      <NPagination
-        v-model:page="queryParams.page"
-        :page-size="queryParams.page_size"
-        :item-count="dataTotal"
-        show-size-picker
-        :page-sizes="[10, 20, 50, 100]"
-        show-quick-jumper
-        @update:page="handlePageChange"
-        @update:page-size="handlePageSizeChange"
-      />
-    </template>
-  </AdvancedListLayout>
+          <!-- 列表视图 -->
+          <template #list-view>
+            <NDataTable
+              :columns="columns"
+              :data="deviceTemplateList"
+              :loading="loading"
+              size="small"
+              :pagination="false"
+              :bordered="false"
+              :single-line="false"
+              striped
+            />
+          </template>
 
-  <!-- 模板弹窗 -->
-  <TemplateModal v-model:visible="visible" :type="modalType" :template-id="templateId" :get-table-data="getData" />
+          <!-- 底部分页 -->
+          <template #footer>
+            <NPagination
+              v-model:page="queryParams.page"
+              :page-size="queryParams.page_size"
+              :item-count="dataTotal"
+              show-size-picker
+              :page-sizes="[10, 20, 50, 100]"
+              show-quick-jumper
+              @update:page="handlePageChange"
+              @update:page-size="handlePageSizeChange"
+            />
+          </template>
+        </AdvancedListLayout>
+      </NTabPane>
+
+      <NTabPane name="market" :tab="$t('device_template.marketTemplates')">
+        <MarketTemplateList @installed="handleInstalled" />
+      </NTabPane>
+    </NTabs>
+
+    <!-- 模板弹窗 -->
+    <TemplateModal v-model:visible="visible" :type="modalType" :template-id="templateId" :get-table-data="getData" />
+    <!-- 市场登录弹窗 -->
+    <MarketLoginModal ref="marketLoginRef" @login-success="onMarketLoginSuccess" />
+    <!-- 发布确认弹窗 -->
+    <PublishConfirmModal ref="publishConfirmRef" @publish-success="getData" />
+  </div>
 </template>
 
 <style scoped lang="scss">

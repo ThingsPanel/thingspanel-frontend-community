@@ -33,6 +33,8 @@ interface AddFrom {
   description: string
   path: string
   label: string
+  brand: string
+  model_number: string
   id?: string
 }
 
@@ -43,7 +45,9 @@ const addFrom: AddFrom = reactive({
   author: '',
   description: '',
   path: '',
-  label: ''
+  label: '',
+  brand: '',
+  model_number: ''
 })
 
 type Rule = {
@@ -130,6 +134,8 @@ watchEffect(async () => {
         addFrom.description = data.description
         addFrom.version = data.version
         addFrom.author = data.author
+        addFrom.brand = data.brand || ''
+        addFrom.model_number = data.model_number || ''
         addFrom.templateTage = data.label && data.label.length > 0 ? data.label?.split(',') : []
         pngPath.value = data.path === '' ? '' : `${url.value.replace('api/v1', '') + data.path}`
       }
@@ -142,6 +148,8 @@ watchEffect(async () => {
     addFrom.description = ''
     addFrom.version = ''
     addFrom.author = ''
+    addFrom.brand = ''
+    addFrom.model_number = ''
     addFrom.templateTage = []
   }
 })
@@ -217,6 +225,15 @@ watchEffect(async () => {
       </n-form-item>
       <n-form-item :label="$t('device_template.templateVersion')">
         <n-input v-model:value.trim="addFrom.version" :placeholder="$t('device_template.entertemplateVersion')" />
+      </n-form-item>
+      <n-form-item :label="$t('device_template.brand')">
+        <n-input v-model:value.trim="addFrom.brand" :placeholder="$t('device_template.brandPlaceholder')" />
+      </n-form-item>
+      <n-form-item :label="$t('device_template.modelNumber')">
+        <n-input
+          v-model:value.trim="addFrom.model_number"
+          :placeholder="$t('device_template.modelNumberPlaceholder')"
+        />
       </n-form-item>
       <n-form-item :label="$t('device_template.illustrate')">
         <n-input
