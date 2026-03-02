@@ -151,5 +151,16 @@
   "device_template.fullTemplateJson": "Full Template Configuration JSON",
   "device_template.legacyDataDetected": "Legacy Data Detected",
   "device_template.legacyDataMessage": "The current configuration is in legacy format and cannot be edited directly. Please recreate the configuration.",
-  "device_template.recreate": "Recreate"
+  "device_template.recreate": "Recreate",
+  "device_template.brand": "Brand",
+  "device_template.brandPlaceholder": "Enter brand name (optional)",
+  "device_template.modelNumber": "Model",
+  "device_template.modelNumberPlaceholder": "Enter product model (optional)",
+  "device_template.publishToMarket": "Publish to Market",
+  "device_template.publishSuccess": "Published successfully",
+  "device_template.publishFailed": "Publish failed",
+  "device_template.publishConfirmTitle": "Confirm Publish to Market",
+  "device_template.publishConfirmMessage": "Once published, the template will be publicly visible to all users. Confirm?",
+  "device_template.localTemplates": "My Templates",
+  "device_template.marketTemplates": "Market Templates"
 }

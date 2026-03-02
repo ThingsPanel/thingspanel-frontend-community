@@ -151,5 +151,16 @@
   "device_template.fullTemplateJson": "完整模板配置JSON",
   "device_template.legacyDataDetected": "检测到旧版数据",
   "device_template.legacyDataMessage": "当前配置为旧版格式，无法直接编辑。请重新创建配置。",
-  "device_template.recreate": "重新创建"
+  "device_template.recreate": "重新创建",
+  "device_template.brand": "品牌",
+  "device_template.brandPlaceholder": "请输入品牌名称（选填）",
+  "device_template.modelNumber": "型号",
+  "device_template.modelNumberPlaceholder": "请输入产品型号（选填）",
+  "device_template.publishToMarket": "发布到市场",
+  "device_template.publishSuccess": "发布成功",
+  "device_template.publishFailed": "发布失败",
+  "device_template.publishConfirmTitle": "确认发布到市场",
+  "device_template.publishConfirmMessage": "发布后模板将对所有用户公开可见，确认发布？",
+  "device_template.localTemplates": "我的模板",
+  "device_template.marketTemplates": "市场模板"
 }
