@@ -272,12 +272,21 @@ const getProtocolList = async (deviceCode: string) => {
 }
 
 const connectOptions = ref([] as any)
+const showTopicMapping = ref(true)
 const getConfigForm = async data => {
   const res = await protocolPluginConfigForm({
     device_type: props.configInfo.device_type,
     protocol_type: data
   })
-  formElements.value = res.data
+  const elements: FormElement[] = res.data || []
+  const metaIdx = elements.findIndex(e => e.dataKey === '__topic_mapping__')
+  if (metaIdx !== -1) {
+    showTopicMapping.value = (elements[metaIdx] as any).default !== 'false'
+    formElements.value = elements.filter(e => e.dataKey !== '__topic_mapping__')
+  } else {
+    showTopicMapping.value = true
+    formElements.value = elements
+  }
 }
 const getVoucherType = async data => {
   connectOptions.value = []
@@ -357,7 +366,7 @@ watch(
         <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements" :edit="true"></FormInput>
       </NFormItem>
       <!-- 主题映射 -->
-      <NFormItem class="topic-mapping-form-item">
+      <NFormItem v-if="showTopicMapping" class="topic-mapping-form-item">
         <div class="topic-mapping-section">
           <div class="topic-mapping-header">
             <div class="text-18px">{{ t('generate.topicMapping.sectionTitle') }}</div>
