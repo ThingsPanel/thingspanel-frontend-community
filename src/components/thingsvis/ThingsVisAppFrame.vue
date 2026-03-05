@@ -49,7 +49,7 @@ onMounted(async () => {
       const hashIdx = baseUrl.indexOf('#');
       if (hashIdx !== -1) baseUrl = baseUrl.substring(0, hashIdx);
 
-      // 构造 URL: /main#/editor/{id}?mode=embedded&token={token}
+      // 构造 URL: /main#/editor/{id}?mode=embedded&token=...
       // 直接使用传入的 props.id，后端已支持通过该 ID 自动创建或查找
       url.value = `${baseUrl}#/editor/${props.id}?mode=embedded&token=${token.value}`;
       console.log('[AppFrame] iframe URL 设置为:', url.value);
@@ -67,6 +67,25 @@ const handleMessage = async (event: MessageEvent) => {
   if (!event.data || typeof event.data !== 'object') return;
 
   const { type, projectId } = event.data;
+
+  if (type === 'tv:ready' || type === 'READY') {
+    if (iframeRef.value?.contentWindow && token.value) {
+      console.log('[AppFrame] Iframe ready, sending init postMessage')
+      const apiBaseUrl = window.location.origin + '/thingsvis-api'
+      iframeRef.value.contentWindow.postMessage({
+        type: 'tv:init',
+        data: {
+          meta: { id: props.id }
+        },
+        config: {
+          mode: 'app',
+          saveTarget: 'self',
+          token: token.value,
+          apiBaseUrl: apiBaseUrl
+        }
+      }, '*')
+    }
+  }
 
   if (type === 'tv:preview') {
     if (!token.value) return;
