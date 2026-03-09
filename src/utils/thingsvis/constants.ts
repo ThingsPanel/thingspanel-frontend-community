@@ -5,10 +5,12 @@
 
 /**
  * Vite proxy path prefix for ThingsVis backend requests.
- * Maps to VITE_THINGSVIS_API_URL env var (fallback: '/thingsvis-api').
- * Vite dev proxy rewrites this prefix to the real backend origin.
+ *
+ * This MUST match the key registered in build/config/proxy.ts — always '/thingsvis-api'.
+ * Do NOT read VITE_THINGSVIS_API_URL here: that env var holds the proxy TARGET (a full
+ * http address used by Vite at build-time), not the frontend path prefix.
  */
-export const THINGSVIS_API_PROXY_PATH: string = (import.meta.env.VITE_THINGSVIS_API_URL as string) || '/thingsvis-api'
+export const THINGSVIS_API_PROXY_PATH = '/thingsvis-api'
 
 /**
  * Returns the absolute ThingsVis API base URL suitable for cross-origin
