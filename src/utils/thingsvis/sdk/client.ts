@@ -19,7 +19,7 @@ const TV_MSG = {
   READY: 'tv:ready',
   REQUEST_INIT: 'tv:request-init',
   // SDK internal (Host-only event name)
-  SAVE_CONFIG: 'tv:save-config',
+  SAVE_CONFIG: 'tv:save-config'
 } as const
 
 export interface ThingsVisOptions {
@@ -79,7 +79,7 @@ export class ThingsVisClient {
     this.iframe.onload = () => {
       // Iframe onload doesn't guarantee React app is hydrated.
       // We rely on 'READY' message from Guest, but keep this as a basic check.
-      console.log('[SDK] Iframe loaded, waiting for READY signal...');
+      console.log('[SDK] Iframe loaded, waiting for READY signal...')
     }
   }
 
@@ -104,11 +104,11 @@ export class ThingsVisClient {
 
     // 2. Ready Signal (Guest -> Host)
     if (type === 'READY' || type === TV_MSG.READY) {
-      console.log('[SDK] Received READY signal from Guest');
+      console.log('[SDK] Received READY signal from Guest')
       if (!this.ready) {
-        this.ready = true;
-        this.flushPendingQueue();
-        this.emit('ready', {});
+        this.ready = true
+        this.flushPendingQueue()
+        this.emit('ready', {})
       }
     }
 
@@ -177,16 +177,16 @@ export class ThingsVisClient {
   public loadWidgetConfig(config: any, platformFields?: any[]) {
     // 防御性处理: 如果 config 为空或损坏 (没有 canvas/nodes)，提供默认值
     // 这确保即使保存的配置是无效的，编辑器和预览都能正常加载
-    const safeConfig = config || {};
+    const safeConfig = config || {}
     const safeCanvas = safeConfig.canvas || {
       mode: 'grid',
       width: 1920,
       height: 1080,
       gridCols: 24,
       gridRowHeight: 50,
-      gridGap: 5,
-    };
-    const safeNodes = safeConfig.nodes || [];
+      gridGap: 5
+    }
+    const safeNodes = safeConfig.nodes || []
 
     // 构造符合 EmbedInitPayload 的数据结构
     const payload = {
@@ -199,7 +199,9 @@ export class ThingsVisClient {
       },
       config: {
         // Widget 模式下，保存目标是 Host
-        saveTarget: 'host'
+        saveTarget: 'host',
+        // 告知 Guest 通过 ThingsPanel 代理访问 ThingsVis API，避免直接访问 origin/api/v1 返回 404
+        apiBaseUrl: window.location.origin + '/thingsvis-api'
       }
     }
 
@@ -249,12 +251,11 @@ export class ThingsVisClient {
    */
   public onWidgetSave(callback: (config: any) => void) {
     // 我们在 handleMessage 里把 'thingsvis:host-save' 转发为了 'thingsvis:save-config'
-    this.on(TV_MSG.SAVE_CONFIG, (payload) => {
+    this.on(TV_MSG.SAVE_CONFIG, payload => {
       // Payload 里的结构可能是 { canvas:..., nodes:..., dataBindings:... }
       callback(payload)
     })
   }
-
 
   // ===========================
   // Public API: App Mode
@@ -265,12 +266,10 @@ export class ThingsVisClient {
    * 触发 Editor 的 saveNow()，随后会通过 onWidgetSave 回调返回数据
    */
   public requestSave() {
-    console.log('[SDK] Client requesting save from Editor...');
+    console.log('[SDK] Client requesting save from Editor...')
     // Type casting because 'thingsvis:request-save' is not in standard EmbedMessage yet
-    this.send(TV_MSG.REQUEST_SAVE);
+    this.send(TV_MSG.REQUEST_SAVE)
   }
-
-
 
   /**
    * [App Mode] 注入 Token
