@@ -49,8 +49,10 @@ const embedUrl = computed(() => {
       ? cleanBase + '.html'
       : cleanBase
 
-  // 构建 embed URL - 不需要任何认证参数，数据通过 postMessage 传递
-  return `${htmlBase}#/embed`
+  // 构建 embed URL
+  // apiBaseUrl 必须写入 URL，以便 Studio 在 postMessage 到达前就能路由 API 请求
+  const apiBase = encodeURIComponent(window.location.origin + '/thingsvis-api')
+  return `${htmlBase}#/embed?apiBaseUrl=${apiBase}`
 })
 
 /**

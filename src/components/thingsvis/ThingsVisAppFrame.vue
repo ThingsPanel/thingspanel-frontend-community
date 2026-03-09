@@ -84,7 +84,8 @@ onMounted(async () => {
     const tokenStr = await getThingsVisToken()
     if (tokenStr) {
       token.value = tokenStr
-      url.value = `${getStudioBase()}#/editor/${props.id}?mode=embedded&token=${tokenStr}`
+      const apiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
+      url.value = `${getStudioBase()}#/editor/${props.id}?mode=embedded&token=${tokenStr}&apiBaseUrl=${apiBaseUrl}`
     } else {
       console.warn('[AppFrame] Token acquisition returned null')
     }
