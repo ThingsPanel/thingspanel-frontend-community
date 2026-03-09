@@ -40,8 +40,10 @@ const clone = (obj: any) => {
   }
 };
 
+import { getThingsVisToken } from '@/service/api/thingsvis';
+
 // 初始化客户端
-onMounted(() => {
+onMounted(async () => {
   if (!container.value) return;
 
   // 从环境变量读取 ThingsVis Studio URL
@@ -50,10 +52,14 @@ onMounted(() => {
   const hashIdx = baseUrl.indexOf('#');
   if (hashIdx !== -1) baseUrl = baseUrl.substring(0, hashIdx);
 
+  // 获取 Token 以便 URL 优先鉴权
+  const token = await getThingsVisToken();
+  const tokenParams = token ? `&token=${token}` : '';
+
   // 追加 saveTarget=host，告知 Editor 进入宿主托管模式
   const targetUrl = props.mode === 'editor'
-    ? `${baseUrl}#/editor?saveTarget=host`
-    : `${baseUrl}#/embed?saveTarget=host`;
+    ? `${baseUrl}#/editor?mode=embedded&saveTarget=host${tokenParams}`
+    : `${baseUrl}#/embed?mode=embedded&saveTarget=host${tokenParams}`;
 
   client = new ThingsVisClient({
     container: container.value,

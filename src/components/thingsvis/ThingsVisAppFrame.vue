@@ -29,6 +29,25 @@ const handleMessage = async (event: MessageEvent) => {
 
   const { type, projectId } = event.data
 
+  if (type === 'tv:ready' || type === 'READY') {
+    if (iframeRef.value?.contentWindow && token.value) {
+      console.log('[AppFrame] Iframe ready, sending init postMessage')
+      const apiBaseUrl = window.location.origin + '/thingsvis-api'
+      iframeRef.value.contentWindow.postMessage({
+        type: 'tv:init',
+        data: {
+          meta: { id: props.id }
+        },
+        config: {
+          mode: 'app',
+          saveTarget: 'self',
+          token: token.value,
+          apiBaseUrl: apiBaseUrl
+        }
+      }, '*')
+    }
+  }
+
   if (type === 'tv:preview') {
     if (!token.value) return
     const previewUrl = `${getStudioBase()}#/preview?projectId=${projectId || props.id}&token=${token.value}&mode=embedded`

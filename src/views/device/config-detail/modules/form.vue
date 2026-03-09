@@ -69,8 +69,9 @@ const onCreate = () => {
           <template v-if="element.type === 'select'">
             <NFormItem
               :label="element.label"
-              :path="element.dataKey"
-              :rules="[element.validate || { required: false }]"
+              :path="props.edit ? undefined : element.dataKey"
+              :rules="props.edit ? undefined : [element.validate || { required: false }]"
+              :show-feedback="!props.edit"
             >
               <NTooltip trigger="hover" placement="top">
                 <template #trigger>

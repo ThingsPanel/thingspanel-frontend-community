@@ -105,6 +105,7 @@ const fetchDashboards = async () => {
 
 /** 懒加载缩略图 */
 const loadThumbnails = async (list: DashboardListItem[]) => {
+  console.log('[loadThumbnails] 开始加载缩略图, 数量:', list.length)
   // 并发控制，每次请求 5 个
   const CONCURRENCY = 5
   const queue = [...list]
@@ -113,26 +114,35 @@ const loadThumbnails = async (list: DashboardListItem[]) => {
     while (queue.length > 0) {
       const batch = queue.splice(0, CONCURRENCY)
       await Promise.all(batch.map(async (item) => {
-        // 如果已有缩略图则跳过 (比如已经是 base64)
-        if (item.thumbnail && item.thumbnail.length > 1000) return
+        // 检查是否已有有效的缩略图（处理 null、undefined、空字符串）
+        const hasValidThumbnail = item.thumbnail && item.thumbnail.trim().startsWith('data:')
+        console.log(`[loadThumbnails] 检查 ${item.id}: hasValidThumbnail=${hasValidThumbnail}, thumbnail=${item.thumbnail?.substring(0, 50)}...`)
+        if (hasValidThumbnail) return
 
         try {
-          const { data } = await getThingsVisDashboardThumbnail(item.id)
-          if (data?.thumbnail) {
+          console.log(`[loadThumbnails] 请求缩略图 API: ${item.id}`)
+          const result = await getThingsVisDashboardThumbnail(item.id)
+          console.log(`[loadThumbnails] API 返回 ${item.id} 完整数据:`, result)
+          // 处理可能的嵌套数据结构
+          const thumbnail = result.data?.thumbnail || result.data?.data?.thumbnail
+          if (thumbnail) {
             // 更新响应式数据
             const target = dashboards.value.find(d => d.id === item.id)
             if (target) {
-              target.thumbnail = data.thumbnail
+              target.thumbnail = thumbnail
+              console.log(`[loadThumbnails] 已更新缩略图: ${item.id}, 长度: ${thumbnail.length}`)
             }
+          } else {
+            console.log(`[loadThumbnails] 没有找到缩略图数据: ${item.id}`)
           }
         } catch (e) {
-          console.error(`Failed to load thumbnail for ${item.id}`, e)
+          console.error(`[loadThumbnails] 加载缩略图失败 ${item.id}:`, e)
         }
       }))
     }
   }
 
-  processQueue()
+  await processQueue()
 }
 
 /** 打开新建弹窗 */
@@ -214,6 +224,17 @@ const handleSetAsHomepage = async (dashboard: DashboardListItem) => {
     message.error('设置首页失败')
     console.error(e)
   }
+}
+
+/** 处理缩略图 URL，确保 base64 格式正确 */
+const getThumbnailUrl = (thumbnail: string | null | undefined): string | null => {
+  if (!thumbnail) return null
+  // 如果已经是完整的 data URI，直接返回
+  if (thumbnail.startsWith('data:')) return thumbnail
+  // 如果已经是 http/https URL，直接返回
+  if (thumbnail.startsWith('http')) return thumbnail
+  // 否则添加 base64 前缀（默认按 png 处理）
+  return `data:image/png;base64,${thumbnail}`
 }
 
 /** 打开编辑器 */
@@ -308,7 +329,7 @@ onMounted(async () => {
               <div class="relative h-40 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden">
                 <img
                   v-if="dashboard.thumbnail"
-                  :src="dashboard.thumbnail"
+                  :src="getThumbnailUrl(dashboard.thumbnail)"
                   class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   alt="thumbnail"
                 />
