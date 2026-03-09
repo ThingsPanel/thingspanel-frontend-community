@@ -5,12 +5,13 @@
  */
 
 import axios from 'axios'
-import { localStg } from '@/utils/storage'
+import { getThingsVisToken, clearThingsVisToken } from '@/utils/thingsvis'
+import { THINGSVIS_API_PROXY_PATH } from '@/utils/thingsvis/constants'
 
 // ========== ThingsVis 专用 Axios 实例 ==========
 
 const thingsVisRequest = axios.create({
-  baseURL: '/thingsvis-api',
+  baseURL: THINGSVIS_API_PROXY_PATH,
   timeout: 30000
 })
 
@@ -35,10 +36,8 @@ thingsVisRequest.interceptors.response.use(
     // 仅在首次 401 时重试，避免无限循环
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
-      // 清除 token 并重新获取
-      localStg.remove('thingsVisToken')
-      localStg.remove('thingsVisTokenExpiry')
-      // 重试请求
+      // Clear cached token and retry with a fresh one
+      clearThingsVisToken()
       const token = await getThingsVisToken()
       if (token) {
         originalRequest.headers.Authorization = `Bearer ${token}`
@@ -48,91 +47,6 @@ thingsVisRequest.interceptors.response.use(
     return Promise.reject(error)
   }
 )
-
-// ========== SSO Token 管理 ==========
-
-interface SSOResponse {
-  accessToken: string
-  refreshToken: string
-  expiresIn: number
-  user: {
-    id: string
-    email: string
-    name: string
-    role: string
-    tenantId: string
-  }
-}
-
-/**
- * 获取 ThingsVis Token
- * 如果已有有效 token，直接返回
- * 否则通过 SSO 交换获取新 token
- */
-export async function getThingsVisToken(): Promise<string | null> {
-  // 检查现有 token 是否有效
-  const existingToken = localStg.get('thingsVisToken') as string | null
-  const expiry = localStg.get('thingsVisTokenExpiry') as number | null
-
-  if (existingToken && expiry && Date.now() < expiry) {
-    return existingToken
-  }
-
-  // 需要重新获取 token
-  try {
-    const token = await exchangeSSOToken()
-    return token
-  } catch (error) {
-    console.error('[ThingsVis] SSO token exchange failed:', error)
-    return null
-  }
-}
-
-/**
- * 通过 SSO 交换获取 ThingsVis Token
- */
-async function exchangeSSOToken(): Promise<string | null> {
-  // 获取 ThingsPanel 的用户信息和 token
-  const tpToken = localStg.get('token') as string | null
-  const userInfoStr = localStg.get('userInfo') as string | null
-
-  if (!tpToken || !userInfoStr) {
-    console.warn('[ThingsVis] No ThingsPanel token or user info found')
-    return null
-  }
-
-  let userInfo
-  try {
-    userInfo = typeof userInfoStr === 'string' ? JSON.parse(userInfoStr) : userInfoStr
-  } catch {
-    console.error('[ThingsVis] Failed to parse user info')
-    return null
-  }
-
-  // 调用 ThingsVis SSO 接口
-  const response = await axios.post<SSOResponse>('/thingsvis-api/auth/sso', {
-    platform: 'thingspanel',
-    platformToken: tpToken,
-    userInfo: {
-      id: userInfo.userId || userInfo.id,
-      email: userInfo.email || `user_${userInfo.userId}@thingspanel.local`,
-      name: userInfo.userName || userInfo.name || '用户',
-      tenantId: userInfo.tenant_id || userInfo.tenantId || 'default'
-    }
-  })
-
-  if (response.data?.accessToken) {
-    // 保存 token 和过期时间（提前 5 分钟过期）
-    const expiryTime = Date.now() + (response.data.expiresIn - 300) * 1000
-    localStg.set('thingsVisToken', response.data.accessToken)
-    localStg.set('thingsVisTokenExpiry', expiryTime)
-
-    console.log('[ThingsVis] SSO token exchange successful')
-    return response.data.accessToken
-  }
-
-  return null
-}
 
 // ========== TypeScript 类型定义 ==========
 

@@ -1,7 +1,8 @@
 /**
- * ThingsVis 工具函数导出
+ * ThingsVis utility exports
  */
 
+export * from './constants'
 export * from './types'
 export * from './url-builder'
 export * from './platform-fields'

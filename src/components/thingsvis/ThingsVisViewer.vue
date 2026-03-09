@@ -7,7 +7,7 @@
 
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { NSpin } from 'naive-ui'
-import { getThingsVisToken } from '@/service/api/thingsvis'
+import { getThingsVisToken } from '@/utils/thingsvis'
 
 interface Props {
   /** 仪表板配置数据 */
