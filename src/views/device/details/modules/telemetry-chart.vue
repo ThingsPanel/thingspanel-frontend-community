@@ -6,7 +6,7 @@
  * 通过 data prop 推送实时设备数据
  */
 
-import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { onMounted, onBeforeUnmount, ref, watch, computed } from 'vue'
 import { NEmpty, NCard, NSkeleton } from 'naive-ui'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
@@ -22,6 +22,27 @@ const props = defineProps<{
   /** 设备详情数据 (可选) */
   deviceData?: Record<string, any>
 }>()
+
+// 动态计算图表容器高度：基于元素在视口中的位置自适应
+const chartCardRef = ref<InstanceType<typeof NCard> | null>(null)
+const availableHeight = ref(0)
+let resizeObserver: ResizeObserver | null = null
+
+function updateAvailableHeight() {
+  const el = chartCardRef.value?.$el as HTMLElement | undefined
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  // 从卡片内容区顶部到视口底部，留 24px 下边距
+  const cardPaddingTop = 24
+  availableHeight.value = Math.max(window.innerHeight - rect.top - cardPaddingTop - 24, 200)
+}
+
+const chartHeight = computed(() => {
+  if (availableHeight.value > 0) {
+    return `${availableHeight.value}px`
+  }
+  return 'calc(100vh - 200px)'
+})
 
 // 状态
 const chartLoading = ref(true)
@@ -169,13 +190,26 @@ watch(() => props.deviceTemplateId, async (newVal) => {
   }
 }, { immediate: true })
 
+onMounted(() => {
+  const el = chartCardRef.value?.$el as HTMLElement | undefined
+  if (el) {
+    // 监听父容器大小变化来触发重新计算
+    resizeObserver = new ResizeObserver(() => updateAvailableHeight())
+    resizeObserver.observe(el.parentElement || el)
+  }
+  window.addEventListener('resize', updateAvailableHeight)
+  updateAvailableHeight()
+})
+
 onBeforeUnmount(() => {
   stopPolling()
+  resizeObserver?.disconnect()
+  window.removeEventListener('resize', updateAvailableHeight)
 })
 </script>
 
 <template>
-  <NCard class="w-full">
+  <NCard ref="chartCardRef" class="w-full h-full">
     <template v-if="chartLoading">
       <NSkeleton text :repeat="3" />
       <NSkeleton height="180px" class="mt-12px" />
@@ -191,7 +225,7 @@ onBeforeUnmount(() => {
         :config="initialConfig"
         :platform-fields="platformFields"
         :data="currentData"
-        height="calc(100vh - 200px)"
+        :height="chartHeight"
       />
     </template>
   </NCard>

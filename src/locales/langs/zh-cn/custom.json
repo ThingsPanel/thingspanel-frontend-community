@@ -152,7 +152,6 @@
   "custom.device_details.deleteAttribute": "删除属性",
   "custom.device_details.online": "在线",
   "custom.device_details.offline": "离线",
-  "custom.home.kanbanNameNull": "看板名称不能为空",
   "custom.management.all": "全部",
   "custom.management.close": "关闭",
   "custom.management.responseContent": "响应内容",

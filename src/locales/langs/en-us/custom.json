@@ -152,7 +152,6 @@
   "custom.device_details.deleteAttribute": "Delete Attribute",
   "custom.device_details.online": "Online",
   "custom.device_details.offline": "Offline",
-  "custom.home.kanbanNameNull": "Dashboard name cannot be empty",
   "custom.management.all": "All",
   "custom.management.close": "Close",
   "custom.management.responseContent": "Response Content",

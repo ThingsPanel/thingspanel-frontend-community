@@ -36,7 +36,7 @@ export default {
         {
           titleKey: 'card.operationGuideCard.guideItems.createDashboard.title',
           descriptionKey: 'card.operationGuideCard.guideItems.createDashboard.description',
-          link: '/visualization/kanban'
+          link: '/visualization/thingsvis'
         }
       ],
       guideListAdmin: [
