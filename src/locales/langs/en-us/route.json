@@ -3,7 +3,6 @@
   "route.404": "Page Not Found",
   "route.500": "Server Error",
   "route.login": "Login",
-  "route.visualization_kanban": "Boards",
   "route.home": "Home",
   "route.user-center": "User Center",
   "route.about": "About",

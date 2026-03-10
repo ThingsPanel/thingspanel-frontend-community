@@ -869,24 +869,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
-        name: 'visualization_kanban',
-        path: '/visualization/kanban',
-        component: 'view.visualization_kanban',
-        meta: {
-          title: 'visualization_kanban',
-          i18nKey: 'route.visualization_kanban'
-        }
-      },
-      {
-        name: 'visualization_kanban-details',
-        path: '/visualization/kanban-details',
-        component: 'view.visualization_kanban-details',
-        meta: {
-          title: 'visualization_kanban-details',
-          i18nKey: 'route.visualization_kanban-details'
-        }
-      },
-      {
         name: 'visualization_thingsvis',
         path: '/visualization/thingsvis',
         component: 'view.visualization_thingsvis',

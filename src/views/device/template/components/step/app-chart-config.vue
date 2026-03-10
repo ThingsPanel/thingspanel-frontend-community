@@ -228,13 +228,13 @@ onMounted(() => {
       :style="{ width: '90vw', height: '90vh' }"
       :segmented="{ content: 'soft' }"
     >
-      <div class="editor-modal-content">
+      <div class="editor-modal-content" style="overflow: hidden;">
         <ThingsVisWidget
           ref="editorRef"
           mode="editor"
           :config="initialConfig"
           :platform-fields="platformFields"
-          height="calc(90vh - 120px)"
+          height="calc(90vh - 160px)"
           @save="handleSave"
         />
       </div>

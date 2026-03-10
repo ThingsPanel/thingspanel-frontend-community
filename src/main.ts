@@ -14,7 +14,7 @@ const RECENTLY_VISITED_ROUTES_KEY = 'RECENTLY_VISITED_ROUTES'
 const MAX_RECENT_ROUTES = 8
 
 // --- 更新排除路径列表，支持通配符 ---
-const excludedPaths = ['/login/*', '/404', '/home', '/visualization/kanban-details']
+const excludedPaths = ['/login/*', '/404', '/home']
 
 // 防抖函数 - 减少频繁的 localStorage 操作
 function debounce<T extends () => any>(func: T, wait: number): T {

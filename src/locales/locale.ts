@@ -29,7 +29,6 @@ function getLangMessages(modules: Record<string, any>, lang: 'zh-cn' | 'en-us') 
         'grouping_details',
         'icon',
         'interaction',
-        'kanban',
         'others',
         'route',
         'script',

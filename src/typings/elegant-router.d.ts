@@ -108,8 +108,6 @@ declare module "@elegant-router/types" {
     "system-management-user_system-log": "/system-management-user/system-log";
     "user-center": "/user-center";
     "visualization": "/visualization";
-    "visualization_kanban": "/visualization/kanban";
-    "visualization_kanban-details": "/visualization/kanban-details";
     "visualization_thingsvis": "/visualization/thingsvis";
     "visualization_thingsvis-dashboards": "/visualization/thingsvis-dashboards";
     "visualization_thingsvis-editor": "/visualization/thingsvis-editor";
@@ -257,8 +255,6 @@ declare module "@elegant-router/types" {
     | "rule-engine"
     | "system-management-user_system-log"
     | "user-center"
-    | "visualization_kanban-details"
-    | "visualization_kanban"
     | "visualization_thingsvis-dashboards"
     | "visualization_thingsvis-editor"
     | "visualization_thingsvis-preview"

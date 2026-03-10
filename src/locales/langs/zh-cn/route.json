@@ -3,7 +3,6 @@
   "route.404": "页面不存在",
   "route.500": "服务器错误",
   "route.login": "登录",
-  "route.visualization_kanban": "看板",
   "route.home": "首页",
   "route.user-center": "个人中心",
   "route.about": "关于",
