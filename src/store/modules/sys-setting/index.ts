@@ -28,6 +28,9 @@ export const useSysSettingStore = defineStore('sys-setting', {
           setting.logo_cache = setting.logo_cache ? url.origin + setting.logo_cache.slice(1) : ''
           setting.home_background = setting.home_background ? url.origin + setting.home_background.slice(1) : ''
           localStg.set('logoLoading', setting.logo_loading)
+          if (setting.system_name) {
+            localStg.set('systemName', setting.system_name)
+          }
           Object.assign(this.$state, setting)
         }
       }
