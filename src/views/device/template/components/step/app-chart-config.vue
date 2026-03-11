@@ -8,6 +8,7 @@ import { ref, onMounted } from 'vue'
 import { NButton, NModal, NCard, NEmpty, NSelect, NSpace, NSpin } from 'naive-ui'
 import { $t } from '@/locales'
 import { getTemplat, putTemplat, telemetryApi, attributesApi } from '@/service/api'
+import { telemetryDataHistoryList } from '@/service/api/device'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import type { PlatformField } from '@/utils/thingsvis/types'
@@ -31,6 +32,14 @@ const props = defineProps({
 
 // 编辑器引用
 const editorRef = ref<InstanceType<typeof ThingsVisWidget>>()
+
+// Ring buffer size for the chart editor: enables `{fieldId}__history` arrays so that
+// line / area chart widgets can bind to time-series data during configuration.
+const CHART_EDITOR_BUFFER_SIZE = 200
+// Time window (ms) used when pre-filling the editor ring buffer with historical records.
+const HISTORY_SEED_WINDOW_MS = CHART_EDITOR_BUFFER_SIZE * 60_000
+// Aggregate window passed to the statistic API (1 point per minute).
+const HISTORY_AGGREGATE_WINDOW = '1m'
 
 // 状态
 const loading = ref(true)
@@ -62,6 +71,53 @@ const back: () => void = () => {
 // 打开编辑器
 const openEditor = () => {
   showEditorModal.value = true
+}
+
+/**
+ * Pre-fill the editor widget ring buffer with historical telemetry records so that
+ * line/area chart widgets render immediately instead of starting from an empty buffer.
+ * No-op when there are no telemetry fields or the editor ref is not yet mounted.
+ */
+const seedEditorHistory = async () => {
+  if (!editorRef.value) return
+  const now = Date.now()
+  const startTime = now - HISTORY_SEED_WINDOW_MS
+
+  await Promise.allSettled(
+    platformFields.value
+      .filter(f => f.dataType === 'telemetry')
+      .map(async field => {
+        try {
+          const { data, error } = await telemetryDataHistoryList({
+            device_id: props.deviceTemplateId,
+            key: field.id,
+            start_time: String(startTime),
+            end_time: String(now),
+            aggregate_window: HISTORY_AGGREGATE_WINDOW,
+          })
+          if (error) {
+            console.error('[app-chart-config] seedEditorHistory API error for field:', field.id, error)
+            return
+          }
+          const records: Array<{ value: unknown; ts: number }> = (Array.isArray(data) ? data : []).map(
+            (p: { x: number; y: unknown }) => ({ value: p.y, ts: p.x }),
+          )
+          if (records.length > 0) {
+            editorRef.value?.pushHistory(field.id, records)
+          }
+        } catch (e) {
+          console.error('[app-chart-config] seedEditorHistory failed for field:', field.id, e)
+        }
+      }),
+  )
+}
+
+/**
+ * Called when the editor ThingsVisWidget signals it is ready.
+ * Seeds historical data into the ring buffer at this point (iframe is live).
+ */
+const handleEditorReady = () => {
+  seedEditorHistory()
 }
 
 // 下一步 (完成)
@@ -137,7 +193,10 @@ const loadTemplateData = async () => {
       }
 
       const extractedFields = extractPlatformFields(platformSource)
-      platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)
+      // Filter out command-type fields — only telemetry and attributes are relevant for charts.
+      const filtered = (extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data))
+        .filter((f: PlatformField) => f.dataType !== 'command')
+      platformFields.value = filtered
 
       // 加载已有配置
       if (res.data.app_chart_config) {
@@ -234,8 +293,10 @@ onMounted(() => {
           mode="editor"
           :config="initialConfig"
           :platform-fields="platformFields"
+          :buffer-size="CHART_EDITOR_BUFFER_SIZE"
           height="calc(90vh - 160px)"
           @save="handleSave"
+          @ready="handleEditorReady"
         />
       </div>
 
