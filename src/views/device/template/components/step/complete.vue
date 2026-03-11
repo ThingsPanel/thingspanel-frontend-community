@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { getTemplat } from '@/service/api/system-data'
-import { $t } from '@/locales';
-import { message } from '@/utils/common/discrete';
+import { $t } from '@/locales'
+import { message } from '@/utils/common/discrete'
 
 const props = defineProps({
   stepCurrent: { type: Number, required: true },

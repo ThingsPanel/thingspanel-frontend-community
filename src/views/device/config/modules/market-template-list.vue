@@ -9,10 +9,7 @@ import MarketTemplateCard from './market-template-card.vue'
 import MarketTemplateDrawer from './market-template-drawer.vue'
 import MarketLoginModal from './market-login-modal.vue'
 
-// eslint-disable-next-line no-unused-vars
-const emit = defineEmits<{
-  (e: 'installed'): void
-}>()
+const emit = defineEmits(['installed'])
 
 const { isLoggedIn, getToken, clearToken } = useMarketAuth()
 
@@ -138,8 +135,7 @@ const doInstall = async (id: string) => {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
-const onMarketLoginSuccess = (_token: string) => {
+const onMarketLoginSuccess = () => {
   if (pendingInstallId.value) {
     doInstall(pendingInstallId.value)
     pendingInstallId.value = ''

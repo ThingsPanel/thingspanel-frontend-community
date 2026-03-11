@@ -17,11 +17,7 @@ defineProps<{
   }
 }>()
 
-// eslint-disable-next-line no-unused-vars
-const emit = defineEmits<{
-  (e: 'install', id: string): void
-  (e: 'view-detail', id: string): void
-}>()
+const emit = defineEmits(['install', 'view-detail'])
 </script>
 
 <template>

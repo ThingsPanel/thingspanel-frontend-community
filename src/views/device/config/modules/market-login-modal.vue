@@ -46,6 +46,13 @@ const handleLogin = async () => {
   }
 }
 
+const handleGoToRegister = () => {
+  // Opening the market portal registration page
+  // The port 18083 is the Portal's host port as per deployment_info.md
+  const marketUrl = window.location.origin.replace(/:\d+$/, ':18083') + '/register'
+  window.open(marketUrl, '_blank')
+}
+
 defineExpose({ open })
 </script>
 
@@ -64,6 +71,12 @@ defineExpose({ open })
         />
       </NFormItem>
     </NForm>
+    <div style="margin-top: 10px; text-align: right">
+      <span>{{ $t('market.noAccount') || '没有账号？' }}</span>
+      <NButton text type="primary" @click="handleGoToRegister">
+        {{ $t('market.goToRegister') || '去注册' }}
+      </NButton>
+    </div>
     <template #action>
       <NButton @click="visible = false">{{ $t('common.cancel') }}</NButton>
       <NButton type="primary" :loading="loading" @click="handleLogin">{{ $t('market.login') }}</NButton>

@@ -9,11 +9,7 @@ const props = defineProps<{
   templateId: string
 }>()
 
-// eslint-disable-next-line no-unused-vars
-const emit = defineEmits<{
-  (e: 'update:visible', val: boolean): void
-  (e: 'install', id: string): void
-}>()
+const emit = defineEmits(['update:visible', 'install'])
 
 const loading = ref(false)
 const detail = ref<any>(null)

@@ -93,14 +93,14 @@ const seedEditorHistory = async () => {
             key: field.id,
             start_time: String(startTime),
             end_time: String(now),
-            aggregate_window: HISTORY_AGGREGATE_WINDOW,
+            aggregate_window: HISTORY_AGGREGATE_WINDOW
           })
           if (error) {
             console.error('[app-chart-config] seedEditorHistory API error for field:', field.id, error)
             return
           }
           const records: Array<{ value: unknown; ts: number }> = (Array.isArray(data) ? data : []).map(
-            (p: { x: number; y: unknown }) => ({ value: p.y, ts: p.x }),
+            (p: { x: number; y: unknown }) => ({ value: p.y, ts: p.x })
           )
           if (records.length > 0) {
             editorRef.value?.pushHistory(field.id, records)
@@ -108,7 +108,7 @@ const seedEditorHistory = async () => {
         } catch (e) {
           console.error('[app-chart-config] seedEditorHistory failed for field:', field.id, e)
         }
-      }),
+      })
   )
 }
 
@@ -194,8 +194,9 @@ const loadTemplateData = async () => {
 
       const extractedFields = extractPlatformFields(platformSource)
       // Filter out command-type fields — only telemetry and attributes are relevant for charts.
-      const filtered = (extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data))
-        .filter((f: PlatformField) => f.dataType !== 'command')
+      const filtered = (extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)).filter(
+        (f: PlatformField) => f.dataType !== 'command'
+      )
       platformFields.value = filtered
 
       // 加载已有配置
@@ -204,9 +205,9 @@ const loadTemplateData = async () => {
           const config = JSON.parse(res.data.app_chart_config)
           initialConfig.value = config
           hasConfig.value = true
-           // 恢复刷新频率配置
+          // 恢复刷新频率配置
           if (config.refreshInterval !== undefined) {
-             refreshInterval.value = config.refreshInterval
+            refreshInterval.value = config.refreshInterval
           }
         } catch (e) {
           console.warn('解析 app_chart_config 失败', e)
@@ -234,15 +235,15 @@ onMounted(() => {
     <NCard title="App 图表配置" class="preview-card">
       <template #header-extra>
         <NSpace align="center">
-           <span>刷新频率：</span>
+          <span>刷新频率：</span>
 
-           <NSelect
-              v-model:value="refreshInterval"
-              :options="refreshOptions"
-              size="small"
-              style="width: 120px"
-              placeholder="刷新频率"
-            />
+          <NSelect
+            v-model:value="refreshInterval"
+            :options="refreshOptions"
+            size="small"
+            style="width: 120px"
+            placeholder="刷新频率"
+          />
           <NButton type="primary" size="small" @click="openEditor">
             {{ hasConfig ? '编辑配置' : '创建配置' }}
           </NButton>
@@ -252,12 +253,7 @@ onMounted(() => {
       <NSpin :show="loading" description="加载中...">
         <!-- 有配置时显示预览 -->
         <div v-if="hasConfig && initialConfig" class="preview-area">
-          <ThingsVisWidget
-            mode="viewer"
-            :config="initialConfig"
-            :platform-fields="platformFields"
-            height="400px"
-          />
+          <ThingsVisWidget mode="viewer" :config="initialConfig" :platform-fields="platformFields" height="400px" />
         </div>
 
         <!-- 无配置时提示 -->
@@ -287,7 +283,7 @@ onMounted(() => {
       :style="{ width: '90vw', height: '90vh' }"
       :segmented="{ content: 'soft' }"
     >
-      <div class="editor-modal-content" style="overflow: hidden;">
+      <div class="editor-modal-content" style="overflow: hidden">
         <ThingsVisWidget
           ref="editorRef"
           mode="editor"
@@ -303,13 +299,7 @@ onMounted(() => {
       <template #footer>
         <div class="modal-footer">
           <NButton @click="showEditorModal = false">取消</NButton>
-          <NButton
-            type="primary"
-            :loading="saving"
-            @click="editorRef?.triggerSave()"
-          >
-            保存配置
-          </NButton>
+          <NButton type="primary" :loading="saving" @click="editorRef?.triggerSave()">保存配置</NButton>
         </div>
       </template>
     </NModal>
