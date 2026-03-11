@@ -5,6 +5,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { ThingsVisClient } from '@/utils/thingsvis/sdk/client'
+import { telemetryDataPub } from '@/service/api/device'
 
 const props = defineProps<{
   /** 初始配置 (JSON) */
@@ -17,6 +18,8 @@ const props = defineProps<{
   height?: string
   /** 编辑模式: 'viewer' (纯预览) | 'editor' (可视化编辑) */
   mode?: 'viewer' | 'editor'
+  /** 可选: 当前设备 ID，用于接收 tv:platform-write 事件时执行写回操作 */
+  deviceId?: string
 }>()
 
 const emit = defineEmits<{
@@ -27,6 +30,26 @@ const emit = defineEmits<{
 
 const container = ref<HTMLElement | null>(null)
 let client: ThingsVisClient | null = null
+
+/**
+ * Handle tv:platform-write messages posted by the embedded ThingsVis iframe.
+ * Routes the write payload to the ThingsPanel telemetry publish API.
+ */
+const handlePlatformWrite = async (event: MessageEvent) => {
+  if (event.data?.type !== 'tv:platform-write') return
+  const writePayload = event.data?.payload as { dataSourceId?: string; data?: unknown } | undefined
+  const { dataSourceId, data } = writePayload ?? {}
+  if (!dataSourceId || data === undefined) return
+  if (!props.deviceId) {
+    console.warn('[ThingsVisWidget] tv:platform-write received but deviceId prop is not set')
+    return
+  }
+  try {
+    await telemetryDataPub({ device_id: props.deviceId, datas: data })
+  } catch (e) {
+    console.error('[ThingsVisWidget] telemetryDataPub failed for tv:platform-write:', e)
+  }
+}
 
 // 辅助函数: 深拷贝以去除 Vue Proxy，防止 DataCloneError
 const clone = (obj: any) => {
@@ -44,6 +67,9 @@ import { getThingsVisToken } from '@/utils/thingsvis'
 // 初始化客户端
 onMounted(async () => {
   if (!container.value) return
+
+  // Register platform-write listener for the lifetime of this component instance.
+  window.addEventListener('message', handlePlatformWrite)
 
   // 从环境变量读取 ThingsVis Studio URL
   let baseUrl = import.meta.env.VITE_THINGSVIS_STUDIO_URL || 'http://localhost:3000/main'
@@ -129,6 +155,7 @@ const triggerSave = () => {
 }
 
 onBeforeUnmount(() => {
+  window.removeEventListener('message', handlePlatformWrite)
   if (client) {
     client.destroy()
     client = null
