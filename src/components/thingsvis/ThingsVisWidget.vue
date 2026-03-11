@@ -8,18 +8,24 @@ import { ThingsVisClient } from '@/utils/thingsvis/sdk/client'
 import { telemetryDataPub } from '@/service/api/device'
 
 const props = defineProps<{
-  /** 初始配置 (JSON) */
+  /** Initial configuration (JSON page schema) */
   config: any
-  /** 可选: 实时数据 (Host推送) */
+  /** Optional: real-time data pushed by the host */
   data?: Record<string, any>
-  /** 可选: 平台字段 schema (用于选择器) */
+  /** Optional: platform field schema forwarded to the ThingsVis editor */
   platformFields?: any[]
-  /** 可选: 高度 */
+  /** Optional: iframe height */
   height?: string
-  /** 编辑模式: 'viewer' (纯预览) | 'editor' (可视化编辑) */
+  /** Render mode: 'viewer' (read-only preview) | 'editor' (visual editor) */
   mode?: 'viewer' | 'editor'
-  /** 可选: 当前设备 ID，用于接收 tv:platform-write 事件时执行写回操作 */
+  /** Optional: current device ID — used to route tv:platform-write back to the platform API */
   deviceId?: string
+  /**
+   * Optional: ring buffer capacity for the __platform__ data source.
+   * 0 = keep only the latest value (default, suitable for gauge / status widgets).
+   * > 0 = keep the last N values and expose `{fieldId}__history` for line / area chart widgets.
+   */
+  bufferSize?: number
 }>()
 
 const emit = defineEmits<{
@@ -100,7 +106,11 @@ onMounted(async () => {
   // Client Ready 时，发送初始数据
   client.on('ready', () => {
     emit('ready')
-    if (props.config) client?.loadWidgetConfig(clone(props.config), clone(props.platformFields || []))
+    if (props.config) client?.loadWidgetConfig(
+      clone(props.config),
+      clone(props.platformFields || []),
+      { platformBufferSize: props.bufferSize ?? 0 }
+    )
     if (props.platformFields) client?.updateSchema(clone(props.platformFields))
     if (props.data) client?.pushData(clone(props.data))
   })

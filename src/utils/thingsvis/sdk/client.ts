@@ -37,6 +37,16 @@ export interface ThingsVisOptions {
   style?: Partial<CSSStyleDeclaration>
 }
 
+export interface WidgetLoadOptions {
+  /**
+   * Ring buffer capacity for the __platform__ data source.
+   * 0 = keep only the latest single value (default, suitable for gauge / status widgets).
+   * > 0 = keep the last N values; exposes `{fieldId}__history` as a rolling time-series
+   *       array — required by line / area chart widgets that render historical trends.
+   */
+  platformBufferSize?: number;
+}
+
 export type MessageHandler = (payload: any) => void
 
 export class ThingsVisClient {
@@ -174,9 +184,9 @@ export class ThingsVisClient {
    * Host -> Guest
    * 对应协议: thingsvis:editor-init
    */
-  public loadWidgetConfig(config: any, platformFields?: any[]) {
-    // 防御性处理: 如果 config 为空或损坏 (没有 canvas/nodes)，提供默认值
-    // 这确保即使保存的配置是无效的，编辑器和预览都能正常加载
+  public loadWidgetConfig(config: any, platformFields?: any[], options?: WidgetLoadOptions) {
+    // Guard against empty or corrupt config (missing canvas/nodes) to ensure both
+    // the editor and viewer can mount without crashing on a blank slate.
     const safeConfig = config || {}
     const safeCanvas = safeConfig.canvas || {
       mode: 'grid',
@@ -188,19 +198,37 @@ export class ThingsVisClient {
     }
     const safeNodes = safeConfig.nodes || []
 
-    // 构造符合 EmbedInitPayload 的数据结构
+    // Build the __platform__ data source entry, honouring the caller-provided bufferSize.
+    // A non-zero bufferSize activates the rolling history buffer in PlatformFieldAdapter,
+    // which exposes `{fieldId}__history` arrays needed by line/area chart widgets.
+    const platformDs = {
+      id: '__platform__',
+      name: 'System Platform',
+      type: 'PLATFORM_FIELD',
+      config: {
+        source: 'platform',
+        fieldMappings: {},
+        bufferSize: options?.platformBufferSize ?? 0,
+      },
+    }
+
+    // Merge __platform__ (with correct bufferSize) with any custom data sources in the saved config.
+    const existingDataSources: any[] = safeConfig.dataSources ?? []
+    const mergedDataSources = [
+      platformDs,
+      ...existingDataSources.filter((ds: any) => ds.id !== '__platform__'),
+    ]
+
     const payload = {
       data: {
         meta: safeConfig.meta || { id: 'widget', name: 'Widget' },
         canvas: safeCanvas,
         nodes: safeNodes,
-        dataSources: safeConfig.dataSources,
-        platformFields: platformFields // Pass fields in init
+        dataSources: mergedDataSources,
+        platformFields: platformFields
       },
       config: {
-        // Widget 模式下，保存目标是 Host
         saveTarget: 'host',
-        // 告知 Guest 通过 ThingsPanel 代理访问 ThingsVis API，避免直接访问 origin/api/v1 返回 404
         apiBaseUrl: window.location.origin + '/thingsvis-api'
       }
     }

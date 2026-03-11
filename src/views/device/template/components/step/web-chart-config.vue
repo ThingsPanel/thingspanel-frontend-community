@@ -32,6 +32,10 @@ const props = defineProps({
 // 编辑器引用
 const editorRef = ref<InstanceType<typeof ThingsVisWidget>>()
 
+// Ring buffer size for the chart editor: enables `{fieldId}__history` arrays so that
+// line / area chart widgets can bind to time-series data during configuration.
+const CHART_EDITOR_BUFFER_SIZE = 200
+
 // 状态
 const loading = ref(true)
 const saving = ref(false)
@@ -265,6 +269,7 @@ onMounted(() => {
           mode="editor"
           :config="initialConfig"
           :platform-fields="platformFields"
+          :buffer-size="CHART_EDITOR_BUFFER_SIZE"
           height="calc(90vh - 160px)"
           @save="handleSave"
         />
