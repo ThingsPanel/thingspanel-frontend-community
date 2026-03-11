@@ -252,15 +252,37 @@ export class ThingsVisClient {
   }
 
   /**
-   * [Widget Mode] 推送实时数据
-   * Host -> Guest
-   * 对应协议: thingsvis:editor-event { event: 'updateData', payload: data }
-   * 或者是 thingsvis:update-data (如果 Guest 支持)
+   * [Widget Mode] Push real-time platform field values into the embedded widget.
+   * Sends a tv:platform-data bulk message that PlatformFieldAdapter handles directly.
    *
-   * 查看 Guest 代码，embed-mode.ts 会转发 'thingsvis:editor-event' 给 listeners。
-   * 如果 Guest 内部有组件监听 'updateData'，就能工作。
+   * @param fields - Map of fieldId to current value, e.g. { temperature: 25.3 }
    */
-  public pushData(data: Record<string, any>) {
+  public pushPlatformFieldData(fields: Record<string, unknown>): void {
+    this.send('tv:platform-data', { fields })
+  }
+
+  /**
+   * [Widget Mode] Bulk-fill the ring buffer for a single platform field with historical records.
+   * Sends a tv:platform-history message consumed by PlatformFieldAdapter.
+   * Call once after widget ready to seed line/area chart widgets with existing data.
+   * Has no effect when the widget's bufferSize is 0.
+   *
+   * @param fieldId - Platform field identifier, e.g. 'temperature'
+   * @param history - Time-ordered records (oldest first); format: { value, ts: unix_ms }
+   */
+  public pushFieldHistory(
+    fieldId: string,
+    history: Array<{ value: unknown; ts: number }>,
+  ): void {
+    this.send('tv:platform-history', { fieldId, history })
+  }
+
+  /**
+   * @deprecated Use pushPlatformFieldData() instead.
+   * This method sends a tv:event message which is NOT handled by PlatformFieldAdapter
+   * and therefore never reaches the ring buffer.
+   */
+  public pushData(data: Record<string, unknown>): void {
     this.send(TV_MSG.EVENT, { event: 'updateData', payload: data })
   }
 

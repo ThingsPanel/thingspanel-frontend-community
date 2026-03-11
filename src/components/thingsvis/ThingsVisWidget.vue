@@ -142,7 +142,7 @@ watch(
   () => props.data,
   newVal => {
     if (client?.ready && newVal) {
-      client.pushData(clone(newVal))
+      client.pushPlatformFieldData(clone(newVal))
     }
   },
   { deep: true }
@@ -164,6 +164,14 @@ const triggerSave = () => {
   client?.requestSave()
 }
 
+/**
+ * Bulk-fill the ring buffer for one platform field with historical records.
+ * Delegates to ThingsVisClient.pushFieldHistory(); no-op when client is not ready.
+ */
+const pushHistory = (fieldId: string, history: Array<{ value: unknown; ts: number }>) => {
+  client?.pushFieldHistory(fieldId, history)
+}
+
 onBeforeUnmount(() => {
   window.removeEventListener('message', handlePlatformWrite)
   if (client) {
@@ -174,7 +182,8 @@ onBeforeUnmount(() => {
 
 defineExpose({
   triggerSave,
-  client
+  client,
+  pushHistory
 })
 </script>
 
