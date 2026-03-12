@@ -7,7 +7,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { NButton, NModal, NCard, NEmpty, NSelect, NSpace, NSpin } from 'naive-ui'
 import { $t } from '@/locales'
-import { getTemplat, putTemplat, telemetryApi, attributesApi } from '@/service/api'
+import { getTemplat, putTemplat, telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api'
 import { telemetryDataHistoryList } from '@/service/api/device'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
@@ -188,10 +188,12 @@ const loadTemplateData = async () => {
     console.log('[web-chart-config] 📦 模板数据获取成功:', res.data)
 
     if (res.data) {
-      // 提取平台字段（优先从物模型接口获取）
-      const [telemetryRes, attributesRes] = await Promise.all([
+      // Fetch all platform field types from model APIs: telemetry, attributes, events, commands.
+      const [telemetryRes, attributesRes, eventsRes, commandsRes] = await Promise.all([
         telemetryApi({ page: 1, page_size: 1000, device_template_id: props.deviceTemplateId }),
-        attributesApi({ page: 1, page_size: 1000, device_template_id: props.deviceTemplateId })
+        attributesApi({ page: 1, page_size: 1000, device_template_id: props.deviceTemplateId }),
+        eventsApi({ page: 1, page_size: 1000, device_template_id: props.deviceTemplateId }),
+        commandsApi({ page: 1, page_size: 1000, device_template_id: props.deviceTemplateId })
       ])
 
       const telemetryList = Array.isArray(telemetryRes?.data?.list)
@@ -206,17 +208,27 @@ const loadTemplateData = async () => {
           ? attributesRes.data
           : []
 
+      const eventsList = Array.isArray(eventsRes?.data?.list)
+        ? eventsRes.data.list
+        : Array.isArray(eventsRes?.data)
+          ? eventsRes.data
+          : []
+
+      const commandsList = Array.isArray(commandsRes?.data?.list)
+        ? commandsRes.data.list
+        : Array.isArray(commandsRes?.data)
+          ? commandsRes.data
+          : []
+
       const platformSource = {
         telemetry: telemetryList,
-        attributes: attributesList
+        attributes: attributesList,
+        events: eventsList,
+        commands: commandsList
       }
 
       const extractedFields = extractPlatformFields(platformSource)
-      // 仅保留遥测和属性，过滤掉命令类型
-      const filtered = (extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)).filter(
-        (f: PlatformField) => f.dataType !== 'command'
-      )
-      platformFields.value = filtered
+      platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)
       console.log('[web-chart-config] 🏷️ 平台字段提取完成:', platformFields.value.length, '个字段')
 
       // 加载已有配置
