@@ -97,7 +97,7 @@ const fetchAndUpdateData = async () => {
 
     if (Object.keys(dataMap).length > 0) {
       currentData.value = dataMap
-      realtimePush.value?.start // 触发 reactive 更新
+      pushDataToVis(dataMap)
     }
   } catch (err) {
     console.error('[TelemetryChart] 获取设备实时数据失败:', err)
@@ -106,9 +106,7 @@ const fetchAndUpdateData = async () => {
 
 // WebSocket 推送数据到 ThingsVis
 const pushDataToVis = (fields: Record<string, unknown>) => {
-  if (visWidgetRef.value?.client?.ready) {
-    visWidgetRef.value.client.pushPlatformFieldData(fields)
-  }
+  visWidgetRef.value?.pushPlatformData(fields)
 }
 
 // 历史推送方法
@@ -194,6 +192,8 @@ const onVisReady = async () => {
   if (alarmPush.value) {
     await alarmPush.value.backfillAlarmHistory()
   }
+  // Push current snapshot so widgets show real values immediately after ready
+  await fetchAndUpdateData()
 }
 
 // ─── 监听模板ID变化重新加载 ───────────────────────────────────────────────────
@@ -229,9 +229,9 @@ watch(() => props.deviceTemplateId, async (newVal) => {
       )
 
       // 启动实时推送
-      realtimePush.value.start()
+      realtimePush.value?.start()
       // 启动告警轮询
-      alarmPush.value.start()
+      alarmPush.value?.start()
     }
   }
 }, { immediate: true })

@@ -76,9 +76,7 @@ const historyBackfill = ref<ReturnType<typeof useHistoryBackfill> | null>(null)
 
 // 推送实时数据到 ThingsVis
 const pushDataToVis = (fields: Record<string, unknown>) => {
-  if (visWidgetRef.value?.client?.ready) {
-    visWidgetRef.value.client.pushPlatformFieldData(fields)
-  }
+  visWidgetRef.value?.pushPlatformData(fields)
 }
 
 const pushHistoryToVis = (fieldId: string, history: Array<{ value: unknown; ts: number }>) => {
@@ -221,6 +219,8 @@ const onVisReady = async () => {
   if (historyBackfill.value) await historyBackfill.value.backfill()
   // tp-04: 告警历史回填
   if (alarmPush.value) await alarmPush.value.backfillAlarmHistory()
+  // Push current snapshot so widgets show real values immediately after ready
+  await fetchDeviceData()
 }
 
 onMounted(() => {
@@ -279,6 +279,7 @@ onBeforeUnmount(() => {
         :platform-fields="platformFields"
         height="calc(100vh - 250px)"
         :buffer-size="100"
+        :device-id="d_id as string"
         @ready="onVisReady"
       />
     </div>

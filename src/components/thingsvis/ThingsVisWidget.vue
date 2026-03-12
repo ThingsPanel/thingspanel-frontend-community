@@ -106,8 +106,10 @@ onMounted(async () => {
   })
 
   // Client Ready 时，发送初始数据
+  // NOTE: loadWidgetConfig (tv:init) MUST be called before emit('ready') so that
+  // when the parent's onVisReady fires and pushes platform-data, the PlatformFieldAdapter
+  // is already being set up in the iframe (tv:init triggers datasource registration).
   client.on('ready', () => {
-    emit('ready')
     if (props.config) client?.loadWidgetConfig(
       clone(props.config),
       clone(props.platformFields || []),
@@ -115,6 +117,7 @@ onMounted(async () => {
     )
     if (props.platformFields) client?.updateSchema(clone(props.platformFields))
     if (props.data) client?.pushData(clone(props.data))
+    emit('ready')
   })
 
   // 监听保存 (Guest -> Host)
@@ -174,6 +177,15 @@ const pushHistory = (fieldId: string, history: Array<{ value: unknown; ts: numbe
   client?.pushFieldHistory(fieldId, history)
 }
 
+/**
+ * Forward a real-time field value batch to the embedded ThingsVis widget.
+ * Uses closure reference to `client` so it always reflects the live instance,
+ * unlike the exposed `client` property which is snapshotted as null at setup time.
+ */
+const pushPlatformData = (fields: Record<string, unknown>) => {
+  client?.pushPlatformFieldData(fields)
+}
+
 onBeforeUnmount(() => {
   window.removeEventListener('message', handlePlatformWrite)
   if (client) {
@@ -185,7 +197,8 @@ onBeforeUnmount(() => {
 defineExpose({
   triggerSave,
   client,
-  pushHistory
+  pushHistory,
+  pushPlatformData,
 })
 </script>
 
