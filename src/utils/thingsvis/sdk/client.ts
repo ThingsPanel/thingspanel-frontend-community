@@ -122,7 +122,12 @@ export class ThingsVisClient {
       }
     }
 
-    // 2. 其他可能的事件
+    // 3. Handle re-init request from Guest (e.g. after bootstrap re-run)
+    if (type === TV_MSG.REQUEST_INIT) {
+      this.emit('ready', {})
+    }
+
+    // 4. 其他可能的事件
     this.emit(type, payload)
   }
 
