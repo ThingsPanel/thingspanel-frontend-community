@@ -102,10 +102,11 @@ const doInstall = async (id: string) => {
       const data = res.data
       if (data?.missing_plugins && data.missing_plugins.length > 0) {
         const pluginNames = data.missing_plugins
-          .map(
-            (p: any) =>
-              `${p.plugin_name} (≥${p.min_version}) [${p.required ? $t('market.pluginRequired') : $t('market.pluginOptional')}]`
-          )
+          .map((p: any) => {
+            const version = p.min_version ? ` (≥${p.min_version})` : ''
+            const required = p.required ? $t('market.pluginRequired') : $t('market.pluginOptional')
+            return `${p.plugin_name}${version} [${required}]`
+          })
           .join('\n')
         window.$dialog?.warning({
           title: $t('market.missingPluginsTitle'),

@@ -34,6 +34,7 @@ const { routerPushByKey } = useRouterPush()
 const marketLoginRef = ref<InstanceType<typeof MarketLoginModal>>()
 const publishConfirmRef = ref<InstanceType<typeof PublishConfirmModal>>()
 const pendingPublishId = ref('')
+const pendingPublishName = ref('')
 const activeTab = ref('local')
 
 const handleInstalled = () => {
@@ -91,7 +92,7 @@ const goToDetail = (id: string) => {
 }
 
 // 处理发布到市场
-const handlePublishToMarket = (deviceTemplateId: string) => {
+const handlePublishToMarket = (deviceTemplateId: string, defaultName?: string) => {
   if (!deviceTemplateId) {
     window.$message?.warning($t('device_template.requireThingModelBeforePublish'))
     return
@@ -99,17 +100,19 @@ const handlePublishToMarket = (deviceTemplateId: string) => {
   const token = sessionStorage.getItem('market_token')
   if (!token) {
     pendingPublishId.value = deviceTemplateId
+    pendingPublishName.value = defaultName || ''
     marketLoginRef.value?.open()
   } else {
-    publishConfirmRef.value?.open(deviceTemplateId)
+    publishConfirmRef.value?.open(deviceTemplateId, defaultName)
   }
 }
 
 // 市场登录成功回调
 const onMarketLoginSuccess = () => {
   if (pendingPublishId.value) {
-    publishConfirmRef.value?.open(pendingPublishId.value)
+    publishConfirmRef.value?.open(pendingPublishId.value, pendingPublishName.value)
     pendingPublishId.value = ''
+    pendingPublishName.value = ''
   }
 }
 
@@ -183,7 +186,7 @@ const columns = computed(() => [
                       size: 'small',
                       type: 'info',
                       disabled: !row.device_template_id,
-                      onClick: () => handlePublishToMarket(row.device_template_id)
+                      onClick: () => handlePublishToMarket(row.device_template_id, row.name)
                     },
                     { default: () => $t('device_template.publishToMarket') }
                   ),
@@ -346,7 +349,7 @@ const availableViews = [
                       @select="
                         key => {
                           if (key === 'edit') handleEdit(item.id)
-                          if (key === 'publish') handlePublishToMarket(item.device_template_id)
+                          if (key === 'publish') handlePublishToMarket(item.device_template_id, item.name)
                         }
                       "
                     >
