@@ -49,10 +49,10 @@ const categoryOptions = [
   { label: () => $t('device_template.catOther'), value: 'other' }
 ]
 
-const open = async (templateId: string) => {
+const open = async (templateId: string, defaultName?: string) => {
   templateIdValue.value = templateId
 
-  formModel.market_name = ''
+  formModel.market_name = defaultName || ''
   formModel.brand = ''
   formModel.model = ''
   formModel.category = ''
@@ -63,7 +63,9 @@ const open = async (templateId: string) => {
   try {
     const res: any = await getDeviceTemplateDetail(templateId)
     if (!res.error && res.data) {
-      formModel.market_name = res.data.name || ''
+      if (!formModel.market_name) {
+        formModel.market_name = res.data.name || ''
+      }
       formModel.brand = res.data.brand || ''
       formModel.model = res.data.model_number || ''
       formModel.version = res.data.version || '1.0.0'
