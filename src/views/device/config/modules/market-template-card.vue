@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { NCard, NButton, NSpace, NTag, NEllipsis } from 'naive-ui'
 import { $t } from '@/locales'
+import defaultCover from '@/assets/imgs/default_template_cover.png'
 
 defineProps<{
   template: {
@@ -25,7 +26,7 @@ const emit = defineEmits(['install', 'view-detail'])
     <!-- 封面 -->
     <div class="card-cover">
       <img v-if="template.cover_url" :src="template.cover_url" :alt="template.name" class="cover-img" />
-      <div v-else class="cover-placeholder">📦</div>
+      <img v-else :src="defaultCover" :alt="template.name" class="cover-img opacity-60" />
     </div>
 
     <div class="card-body">
