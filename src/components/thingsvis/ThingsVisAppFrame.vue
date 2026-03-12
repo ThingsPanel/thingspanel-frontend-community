@@ -1,6 +1,6 @@
 <template>
   <div class="thingsvis-frame-container">
-    <iframe v-if="url && token" :src="url" class="thingsvis-frame" frameborder="0" allowfullscreen></iframe>
+    <iframe ref="iframeRef" v-if="url && token" :src="url" class="thingsvis-frame" frameborder="0" allowfullscreen></iframe>
     <div v-else class="loading-placeholder">正在连接可视化引擎...</div>
   </div>
 </template>
@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { getThingsVisToken } from '@/utils/thingsvis'
+import { deviceList, deviceTemplate, getDeviceConfigList } from '@/service/api/device'
 
 const props = defineProps<{
   id: string
@@ -16,12 +17,71 @@ const props = defineProps<{
 
 const token = ref('')
 const url = ref('')
+const iframeRef = ref<HTMLIFrameElement>()
 
 /** Strip any hash fragment and return the bare Studio HTML base URL. */
 function getStudioBase(): string {
   const raw = (import.meta.env.VITE_THINGSVIS_STUDIO_URL as string) || 'http://localhost:3000/main'
   const hashIdx = raw.indexOf('#')
   return hashIdx !== -1 ? raw.substring(0, hashIdx) : raw
+}
+
+async function buildPlatformDevices() {
+  try {
+    const [devRes, confRes, tplRes] = await Promise.all([
+      deviceList({ page: 1, page_size: 1000 }),
+      getDeviceConfigList({ page: 1, page_size: 1000 }),
+      deviceTemplate({ page: 1, page_size: 1000 })
+    ])
+
+    const devices = devRes?.data?.list || devRes?.data || []
+    const configs = confRes?.data?.list || confRes?.data || []
+    const templates = tplRes?.data?.list || tplRes?.data || []
+
+    const tplMap = new Map()
+    templates.forEach((t: any) => {
+      if (t.web_chart_config) {
+        try {
+          const parsed = JSON.parse(t.web_chart_config)
+          if (parsed.device_widget_presets) {
+            tplMap.set(t.id, parsed.device_widget_presets)
+          }
+        } catch (e) {}
+      }
+    })
+
+    const confMap = new Map()
+    configs.forEach((c: any) => {
+      confMap.set(c.id, c.device_template_id)
+    })
+
+    const platformDevices: any[] = []
+    
+    devices.forEach((d: any) => {
+      const tplId = confMap.get(d.device_config_id)
+      if (tplId) {
+        const presetsMap = tplMap.get(tplId)
+        if (presetsMap) {
+          const presets: any[] = []
+          Object.values(presetsMap).forEach((arr: any) => {
+            if (Array.isArray(arr)) presets.push(...arr)
+          })
+          if (presets.length > 0) {
+            platformDevices.push({
+              deviceId: d.id,
+              deviceName: d.name || d.device_number,
+              presets
+            })
+          }
+        }
+      }
+    })
+
+    return platformDevices
+  } catch (err) {
+    console.error('[AppFrame] Failed to assemble platformDevices', err)
+    return []
+  }
 }
 
 const handleMessage = async (event: MessageEvent) => {
@@ -33,8 +93,12 @@ const handleMessage = async (event: MessageEvent) => {
     if (iframeRef.value?.contentWindow && token.value) {
       console.log('[AppFrame] Iframe ready, sending init postMessage')
       const apiBaseUrl = window.location.origin + '/thingsvis-api'
+      
+      const platformDevices = await buildPlatformDevices()
+      
       iframeRef.value.contentWindow.postMessage({
         type: 'tv:init',
+        platformDevices,
         data: {
           meta: { id: props.id }
         },

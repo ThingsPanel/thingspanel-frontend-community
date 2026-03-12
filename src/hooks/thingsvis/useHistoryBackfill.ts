@@ -37,6 +37,7 @@ export function useHistoryBackfill(
         const res = await telemetryDataHistoryList({
           device_id: deviceId.value,
           key: field.id,
+          time_range: 'custom',
           start_time: Date.now() - 3600 * 1000, // 最近 1 小时
           end_time: Date.now(),
           aggregate_window: '1m', // 1分钟聚合
