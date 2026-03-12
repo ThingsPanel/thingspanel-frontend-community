@@ -12,7 +12,8 @@ import {
   NEmpty,
   NDropdown,
   NTabs,
-  NTabPane
+  NTabPane,
+  NTooltip
 } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { deviceConfig } from '@/service/api/device'
@@ -90,13 +91,17 @@ const goToDetail = (id: string) => {
 }
 
 // 处理发布到市场
-const handlePublishToMarket = (id: string) => {
+const handlePublishToMarket = (deviceTemplateId: string) => {
+  if (!deviceTemplateId) {
+    window.$message?.warning($t('device_template.requireThingModelBeforePublish'))
+    return
+  }
   const token = sessionStorage.getItem('market_token')
   if (!token) {
-    pendingPublishId.value = id
+    pendingPublishId.value = deviceTemplateId
     marketLoginRef.value?.open()
   } else {
-    publishConfirmRef.value?.open(id)
+    publishConfirmRef.value?.open(deviceTemplateId)
   }
 }
 
@@ -168,13 +173,22 @@ const columns = computed(() => [
               { default: () => $t('common.edit') }
             ),
             h(
-              NButton,
+              NTooltip,
+              { trigger: 'hover', disabled: !!row.device_template_id },
               {
-                size: 'small',
-                type: 'info',
-                onClick: () => handlePublishToMarket(row.id)
-              },
-              { default: () => $t('device_template.publishToMarket') }
+                trigger: () =>
+                  h(
+                    NButton,
+                    {
+                      size: 'small',
+                      type: 'info',
+                      disabled: !row.device_template_id,
+                      onClick: () => handlePublishToMarket(row.device_template_id)
+                    },
+                    { default: () => $t('device_template.publishToMarket') }
+                  ),
+                default: () => $t('device_template.requireThingModelBeforePublish')
+              }
             )
           ]
         }
@@ -323,20 +337,29 @@ const availableViews = [
                       trigger="hover"
                       :options="[
                         { label: $t('common.edit'), key: 'edit' },
-                        { label: $t('device_template.publishToMarket'), key: 'publish' }
+                        {
+                          label: $t('device_template.publishToMarket'),
+                          key: 'publish',
+                          disabled: !item.device_template_id
+                        }
                       ]"
                       @select="
                         key => {
                           if (key === 'edit') handleEdit(item.id)
-                          if (key === 'publish') handlePublishToMarket(item.id)
+                          if (key === 'publish') handlePublishToMarket(item.device_template_id)
                         }
                       "
                     >
-                      <NButton size="tiny" quaternary circle>
-                        <template #icon>
-                          <NIcon><EllipsisHorizontal /></NIcon>
+                      <NTooltip :disabled="!!item.device_template_id" trigger="hover">
+                        <template #trigger>
+                          <NButton size="tiny" quaternary circle>
+                            <template #icon>
+                              <NIcon><EllipsisHorizontal /></NIcon>
+                            </template>
+                          </NButton>
                         </template>
-                      </NButton>
+                        {{ $t('device_template.requireThingModelBeforePublish') }}
+                      </NTooltip>
                     </NDropdown>
                   </template>
 

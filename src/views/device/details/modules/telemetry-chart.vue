@@ -3,7 +3,11 @@
 /**
  * 设备详情 - 图表Tab
  * 使用 ThingsVis 嵌入式编辑器预览模式展示图表
- * 通过 data prop 推送实时设备数据
+ *
+ * 数据推送策略：
+ *  - tp-03: WebSocket 实时推送（首选），断线自动回退轮询
+ *  - tp-02: ThingsVis ready 后历史数据回填
+ *  - tp-04: 告警/事件字段 30s 轮询推送
  */
 
 import { onMounted, onBeforeUnmount, ref, watch, computed } from 'vue'
@@ -11,8 +15,11 @@ import { NEmpty, NCard, NSkeleton } from 'naive-ui'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import { deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
-import { telemetryApi, attributesApi } from '@/service/api'
+import { telemetryApi, attributesApi, eventsApi } from '@/service/api'
 import type { PlatformField } from '@/utils/thingsvis/types'
+import { useHistoryBackfill } from '@/hooks/thingsvis/useHistoryBackfill'
+import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush'
+import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush'
 
 const props = defineProps<{
   /** 设备ID */
@@ -32,7 +39,6 @@ function updateAvailableHeight() {
   const el = chartCardRef.value?.$el as HTMLElement | undefined
   if (!el) return
   const rect = el.getBoundingClientRect()
-  // 从卡片内容区顶部到视口底部，留 24px 下边距
   const cardPaddingTop = 24
   availableHeight.value = Math.max(window.innerHeight - rect.top - cardPaddingTop - 24, 200)
 }
@@ -49,66 +55,15 @@ const chartLoading = ref(true)
 const hasTemplate = ref(false)
 const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
-const currentData = ref<Record<string, any>>({}) // 实时数据
+const visWidgetRef = ref<InstanceType<typeof ThingsVisWidget> | null>(null)
 
-// WebSocket 或轮询
-let dataUpdateInterval: NodeJS.Timeout | null = null
+// 当前数据（轮询回退使用）
+const currentData = ref<Record<string, any>>({})
 
-/**
- * 加载模板和配置
- */
-const initTemplateData = async (deviceTemplateId: string) => {
-  if (!deviceTemplateId) {
-    hasTemplate.value = false
-    chartLoading.value = false
-    return
-  }
+const deviceIdRef = computed(() => props.id)
 
-  try {
-    const res = await deviceTemplateDetail({ id: deviceTemplateId })
+// ─── tp-03: 实时 WebSocket 推送 ──────────────────────────────────────────────
 
-    if (res.data) {
-      // 提取平台字段
-      const [telemetryRes, attributesRes] = await Promise.all([
-        telemetryApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId }),
-        attributesApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId })
-      ])
-
-      const telemetryList = Array.isArray(telemetryRes?.data?.list) ? telemetryRes.data.list : []
-      const attributesList = Array.isArray(attributesRes?.data?.list) ? attributesRes.data.list : []
-
-      const platformSource = {
-        telemetry: telemetryList,
-        attributes: attributesList
-      }
-
-      const extractedFields = extractPlatformFields(platformSource)
-      platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)
-
-      // 加载 web_chart_config
-      if (res.data.web_chart_config) {
-        try {
-          initialConfig.value = JSON.parse(res.data.web_chart_config)
-          hasTemplate.value = true
-        } catch (e) {
-          console.warn('解析 web_chart_config 失败', e)
-          hasTemplate.value = false
-        }
-      } else {
-        hasTemplate.value = false
-      }
-    }
-  } catch (error) {
-    console.error('加载模板数据失败:', error)
-    hasTemplate.value = false
-  } finally {
-    chartLoading.value = false
-  }
-}
-
-/**
- * 获取当前值并更新响应式数据
- */
 const fetchAndUpdateData = async () => {
   if (!props.id || !hasTemplate.value) return
 
@@ -120,80 +75,172 @@ const fetchAndUpdateData = async () => {
       hasAttributes ? getAttributeDataSet({ device_id: props.id }) : Promise.resolve({ data: [] })
     ])
 
-    // 如果接口返回结构不一致，需要做兼容处理
-    // (此处沿用原有逻辑解析list)
-    const telemetryList = telemetryRes?.data || telemetryRes?.data?.value || []
-    const attributeList = attributeRes?.data || attributeRes?.data?.list || attributeRes?.data?.value || []
-
-    const dataMap: Record<string, any> = {}
-
-    // 构建映射字典
+    const telemetryList = telemetryRes?.data || []
+    const attributeList = attributeRes?.data || []
     const kvMap: Record<string, any> = {}
 
-    // 辅助函数: 扁平化数据到 kvMap
     const processItem = (item: any) => {
-       if (item?.key !== undefined) kvMap[item.key] = item.value
-       if (item?.label) kvMap[item.label] = item.value
+      if (item?.key !== undefined) kvMap[item.key] = item.value
+      if (item?.label) kvMap[item.label] = item.value
     }
 
     if (Array.isArray(telemetryList)) telemetryList.forEach(processItem)
     if (Array.isArray(attributeList)) attributeList.forEach(processItem)
 
-    // 根据 platformFields 筛选所需数据
-    platformFields.value.forEach((field) => {
+    const dataMap: Record<string, any> = {}
+    platformFields.value.forEach(field => {
       const val = kvMap[field.id] ?? kvMap[field.name]
       if (val !== undefined) {
         dataMap[field.id] = val
       }
     })
 
-    console.log('[TelemetryChart] 🔍 Platform Fields:', platformFields.value.map(f => f.id))
-    console.log('[TelemetryChart] 📥 API Names/Keys:', Object.keys(kvMap))
-    console.log('[TelemetryChart] 📤 Push Data:', dataMap)
-
     if (Object.keys(dataMap).length > 0) {
       currentData.value = dataMap
+      realtimePush.value?.start // 触发 reactive 更新
     }
   } catch (err) {
-    console.error('获取设备实时数据失败:', err)
+    console.error('[TelemetryChart] 获取设备实时数据失败:', err)
   }
 }
 
-const startPolling = () => {
-  stopPolling()
-  fetchAndUpdateData() // 立即执行一次
-
-  // 获取刷新频率，默认 5000ms
-  const interval = initialConfig.value?.refreshInterval ?? 5000
-
-  if (interval > 0) {
-    console.log(`[TelemetryChart] ⏱️ 启动轮询, 间隔: ${interval}ms`)
-    dataUpdateInterval = setInterval(fetchAndUpdateData, interval)
-  } else {
-    console.log('[TelemetryChart] ⏸️ Manual refresh mode (polling disabled)')
+// WebSocket 推送数据到 ThingsVis
+const pushDataToVis = (fields: Record<string, unknown>) => {
+  if (visWidgetRef.value?.client?.ready) {
+    visWidgetRef.value.client.pushPlatformFieldData(fields)
   }
 }
 
-const stopPolling = () => {
-  if (dataUpdateInterval) {
-    clearInterval(dataUpdateInterval)
-    dataUpdateInterval = null
+// 历史推送方法
+const pushHistoryToVis = (fieldId: string, history: Array<{ value: unknown; ts: number }>) => {
+  visWidgetRef.value?.pushHistory(fieldId, history)
+}
+
+const realtimePush = ref<ReturnType<typeof useRealtimePush> | null>(null)
+const alarmPush = ref<ReturnType<typeof useAlarmPush> | null>(null)
+const historyBackfill = ref<ReturnType<typeof useHistoryBackfill> | null>(null)
+
+// ─── 加载模板和配置 ───────────────────────────────────────────────────────────
+
+const initTemplateData = async (deviceTemplateId: string) => {
+  if (!deviceTemplateId) {
+    hasTemplate.value = false
+    chartLoading.value = false
+    return
+  }
+
+  try {
+    const res = await deviceTemplateDetail({ id: deviceTemplateId })
+
+    if (res.data) {
+      const apiCalls: Promise<any>[] = [
+        telemetryApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId }),
+        attributesApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId })
+      ]
+
+      // tp-01: 也拉取事件字段 (如果 eventsApi 存在)
+      let hasEventsApi = false
+      try {
+        if (typeof eventsApi === 'function') {
+          apiCalls.push(eventsApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId }))
+          hasEventsApi = true
+        }
+      } catch { /* eventsApi not yet implemented */ }
+
+      const results = await Promise.allSettled(apiCalls)
+
+      const telemetryList = results[0].status === 'fulfilled' && Array.isArray(results[0].value?.data?.list)
+        ? results[0].value.data.list : []
+      const attributesList = results[1].status === 'fulfilled' && Array.isArray(results[1].value?.data?.list)
+        ? results[1].value.data.list : []
+      const eventsList = hasEventsApi && results[2]?.status === 'fulfilled' && Array.isArray(results[2].value?.data?.list)
+        ? results[2].value.data.list : []
+
+      const platformSource = {
+        telemetry: telemetryList,
+        attributes: attributesList,
+        events: eventsList
+      }
+
+      const extractedFields = extractPlatformFields(platformSource)
+      platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)
+
+      if (res.data.web_chart_config) {
+        try {
+          initialConfig.value = JSON.parse(res.data.web_chart_config)
+          hasTemplate.value = true
+        } catch (e) {
+          console.warn('[TelemetryChart] 解析 web_chart_config 失败', e)
+          hasTemplate.value = false
+        }
+      } else {
+        hasTemplate.value = false
+      }
+    }
+  } catch (error) {
+    console.error('[TelemetryChart] 加载模板数据失败:', error)
+    hasTemplate.value = false
+  } finally {
+    chartLoading.value = false
   }
 }
 
-// 监听 ID 变化重新加载
+// ─── ThingsVis ready 回调 ─────────────────────────────────────────────────────
+
+const onVisReady = async () => {
+  // tp-02: 历史数据回填
+  if (historyBackfill.value) {
+    await historyBackfill.value.backfill()
+  }
+  // tp-04: 告警历史回填
+  if (alarmPush.value) {
+    await alarmPush.value.backfillAlarmHistory()
+  }
+}
+
+// ─── 监听模板ID变化重新加载 ───────────────────────────────────────────────────
+
 watch(() => props.deviceTemplateId, async (newVal) => {
-  stopPolling()
+  // 先停止旧的推送
+  realtimePush.value?.stop()
+  alarmPush.value?.stop()
+
   if (newVal) {
     await initTemplateData(newVal)
-    if (hasTemplate.value) startPolling()
+
+    if (hasTemplate.value) {
+      // 初始化 composables
+      historyBackfill.value = useHistoryBackfill(
+        deviceIdRef,
+        platformFields,
+        pushHistoryToVis
+      )
+
+      realtimePush.value = useRealtimePush(
+        deviceIdRef,
+        platformFields,
+        pushDataToVis,
+        fetchAndUpdateData
+      )
+
+      alarmPush.value = useAlarmPush(
+        deviceIdRef,
+        platformFields,
+        pushDataToVis,
+        pushHistoryToVis
+      )
+
+      // 启动实时推送
+      realtimePush.value.start()
+      // 启动告警轮询
+      alarmPush.value.start()
+    }
   }
 }, { immediate: true })
 
 onMounted(() => {
   const el = chartCardRef.value?.$el as HTMLElement | undefined
   if (el) {
-    // 监听父容器大小变化来触发重新计算
     resizeObserver = new ResizeObserver(() => updateAvailableHeight())
     resizeObserver.observe(el.parentElement || el)
   }
@@ -202,7 +249,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  stopPolling()
+  realtimePush.value?.stop()
+  alarmPush.value?.stop()
   resizeObserver?.disconnect()
   window.removeEventListener('resize', updateAvailableHeight)
 })
@@ -221,11 +269,13 @@ onBeforeUnmount(() => {
 
     <template v-else>
       <ThingsVisWidget
+        ref="visWidgetRef"
         mode="viewer"
         :config="initialConfig"
         :platform-fields="platformFields"
-        :data="currentData"
         :height="chartHeight"
+        :buffer-size="100"
+        @ready="onVisReady"
       />
     </template>
   </NCard>

@@ -21,6 +21,7 @@ import AddEditEvents from './add-edit-events.vue'
 import AddEditCommands from './add-edit-commands.vue'
 import CustomCommands from './custom-commands.vue'
 import CustomControls from './custom-controls.vue'
+import WidgetPresetConfig from './widget-preset-config.vue'
 const emit = defineEmits(['update:stepCurrent', 'update:modalVisible'])
 const { loading, startLoading, endLoading } = useLoading(false)
 
@@ -42,6 +43,9 @@ const props = defineProps({
 const deviceTemplateId = ref<string>(props.deviceTemplateId)
 const tabsCurrent: any = ref('telemetry')
 const addAndEditModalVisible = ref<boolean>(false)
+const presetModalVisible = ref<boolean>(false)
+const presetProperty = ref<any>({})
+const presetType = ref<'telemetry' | 'attributes'>('telemetry')
 const addAndEditTitle = ref<string>($t('device_template.addAndEditTelemetry'))
 
 const comList: { id: string; components: any; title: string }[] = [
@@ -117,6 +121,19 @@ const edit: (row: any) => void = row => {
   objItem = row
 }
 
+// 预设配置
+const configPreset = (row: any, type: 'telemetry' | 'attributes') => {
+  presetProperty.value = {
+    id: row.id,
+    name: row.data_name,
+    identifier: row.data_identifier,
+    dataType: row.data_type,
+    unit: row.unit
+  }
+  presetType.value = type
+  presetModalVisible.value = true
+}
+
 // 新增或者编辑成功后的回调函数
 const determine: () => void = () => {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -174,6 +191,10 @@ const columnsList: any = reactive([
               <NButton quaternary type="primary" size={'small'} onClick={() => edit(row)}>
                 {$t('common.edit')}
               </NButton>
+              {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
+              <NButton quaternary type="primary" size={'small'} onClick={() => configPreset(row, 'telemetry')}>
+                配置预设
+              </NButton>
               <NPopconfirm onPositiveClick={() => del(row.id)}>
                 {{
                   default: () => $t('common.confirmDelete'),
@@ -210,6 +231,10 @@ const columnsList: any = reactive([
             <NSpace justify={'center'}>
               <NButton quaternary type="primary" size={'small'} onClick={() => edit(row)}>
                 {$t('common.edit')}
+              </NButton>
+              {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
+              <NButton quaternary type="primary" size={'small'} onClick={() => configPreset(row, 'attributes')}>
+                配置预设
               </NButton>
               <NPopconfirm onPositiveClick={() => del(row.id)}>
                 {{
@@ -444,6 +469,14 @@ getTableData()
       @determine="determine"
     ></component>
   </NModal>
+  <!-- 预设组件配置弹窗 -->
+  <WidgetPresetConfig
+    v-if="presetModalVisible"
+    v-model:presetModalVisible="presetModalVisible"
+    :device-template-id="deviceTemplateId"
+    :property="presetProperty"
+    :property-type="presetType"
+  />
 </template>
 
 <style lang="scss" scoped>

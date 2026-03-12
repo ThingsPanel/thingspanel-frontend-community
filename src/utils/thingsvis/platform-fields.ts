@@ -70,6 +70,19 @@ export function extractPlatformFields(template: any): PlatformField[] {
                 })
             }
         }
+
+        // 事件字段
+        if (template.events) {
+            const eventsData =
+                typeof template.events === 'string' ? JSON.parse(template.events) : template.events
+
+            if (Array.isArray(eventsData)) {
+                eventsData.forEach((item: any) => {
+                    const field = normalizeField(item, 'event')
+                    if (field) fields.push(field)
+                })
+            }
+        }
     } catch (error) {
         console.error('提取平台字段失败:', error)
     }
