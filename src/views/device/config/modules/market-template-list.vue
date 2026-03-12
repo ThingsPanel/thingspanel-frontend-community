@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import { NInput, NSelect, NSpace, NSpin, NGrid, NGi, NEmpty, NPagination, NIcon } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { $t } from '@/locales'
@@ -59,7 +60,7 @@ const fetchMarketTemplates = async () => {
 
     const res: any = await getMarketTemplates(params)
     if (!res.error) {
-      templateList.value = res.data?.list ?? res.data ?? []
+      templateList.value = res.data?.list || (Array.isArray(res.data) ? res.data : [])
       total.value = res.data?.total ?? 0
     }
   } catch (e) {
@@ -73,6 +74,17 @@ const handleSearch = () => {
   searchParams.page = 1
   fetchMarketTemplates()
 }
+
+const debouncedSearch = useDebounceFn(() => {
+  handleSearch()
+}, 500)
+
+watch(
+  () => searchParams.keyword,
+  () => {
+    debouncedSearch()
+  }
+)
 
 const handleViewDetail = (id: string) => {
   selectedTemplateId.value = id
@@ -158,7 +170,6 @@ onMounted(() => {
         clearable
         style="width: 260px"
         @keyup.enter="handleSearch"
-        @clear="handleSearch"
       >
         <template #prefix>
           <NIcon><IosSearch /></NIcon>

@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { NDrawer, NDrawerContent, NButton, NDescriptions, NDescriptionsItem, NTag, NSpace, NSpin } from 'naive-ui'
 import { $t } from '@/locales'
 import { getMarketTemplateDetail } from '@/service/api/market'
+import defaultCover from '@/assets/imgs/default_template_cover.png'
 
 const props = defineProps<{
   visible: boolean
@@ -62,8 +63,9 @@ const handleClose = () => {
       <NSpin :show="loading">
         <template v-if="detail">
           <!-- 封面 -->
-          <div v-if="detail.cover_url" class="drawer-cover">
-            <img :src="detail.cover_url" :alt="detail.name" />
+          <div class="drawer-cover">
+            <img v-if="detail.cover_url" :src="detail.cover_url" :alt="detail.name" />
+            <img v-else :src="defaultCover" :alt="detail.name" class="opacity-60" />
           </div>
 
           <!-- 基本信息 -->
