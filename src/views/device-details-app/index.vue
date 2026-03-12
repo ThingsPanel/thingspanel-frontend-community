@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from 'vue'
+import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
@@ -11,6 +11,9 @@ import { formatDateTime } from '@/utils/common/datetime'
 import { localStg } from '@/utils/storage'
 import type { PlatformField } from '@/utils/thingsvis/types'
 import TelemetryDataCards from './telemetryDataCards.vue'
+import { useHistoryBackfill } from '@/hooks/thingsvis/useHistoryBackfill'
+import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush'
+import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush'
 
 const route = useRoute()
 const router = useRouter()
@@ -60,8 +63,27 @@ const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
 const currentData = ref<Record<string, any>>({})
 
-// 数据更新定时器
-let dataUpdateInterval: NodeJS.Timeout | null = null
+// ThingsVis Widget ref
+const visWidgetRef = ref<InstanceType<typeof ThingsVisWidget> | null>(null)
+
+// deviceId computed ref
+const deviceIdRef = computed(() => d_id as string)
+
+// ─── tp-02/03/04 composables ──────────────────────────────────────────────────
+const realtimePush = ref<ReturnType<typeof useRealtimePush> | null>(null)
+const alarmPush = ref<ReturnType<typeof useAlarmPush> | null>(null)
+const historyBackfill = ref<ReturnType<typeof useHistoryBackfill> | null>(null)
+
+// 推送实时数据到 ThingsVis
+const pushDataToVis = (fields: Record<string, unknown>) => {
+  if (visWidgetRef.value?.client?.ready) {
+    visWidgetRef.value.client.pushPlatformFieldData(fields)
+  }
+}
+
+const pushHistoryToVis = (fieldId: string, history: Array<{ value: unknown; ts: number }>) => {
+  visWidgetRef.value?.pushHistory(fieldId, history)
+}
 
 const getDeviceDetail = async () => {
   const { data, error } = await deviceDetail(d_id)
@@ -113,8 +135,30 @@ const getDeviceDetail = async () => {
             const configJson = JSON.parse(res.data.app_chart_config)
             initialConfig.value = configJson
             showAppChart.value = true
-            // 配置加载成功后，启动数据轮询
-            startDataUpdate()
+
+            // tp-03: 启动 WebSocket 实时推送
+            realtimePush.value = useRealtimePush(
+              deviceIdRef,
+              platformFields,
+              pushDataToVis,
+              fetchDeviceData
+            )
+            // tp-04: 启动告警推送
+            alarmPush.value = useAlarmPush(
+              deviceIdRef,
+              platformFields,
+              pushDataToVis,
+              pushHistoryToVis
+            )
+            // tp-02: 准备历史回填
+            historyBackfill.value = useHistoryBackfill(
+              deviceIdRef,
+              platformFields,
+              pushHistoryToVis
+            )
+
+            realtimePush.value.start()
+            alarmPush.value.start()
           } catch (e) {
             console.warn('解析 app_chart_config 失败', e)
             showDefaultCards.value = true
@@ -130,7 +174,7 @@ const getDeviceDetail = async () => {
 }
 
 /**
- * 获取设备实时数据（与 telemetry-chart.vue 保持一致）
+ * 获取设备实时数据（轮询回退时使用）
  */
 const fetchDeviceData = async () => {
   if (!showAppChart.value) return
@@ -143,12 +187,10 @@ const fetchDeviceData = async () => {
       hasAttributes ? getAttributeDataSet({ device_id: d_id as string }) : Promise.resolve({ data: [] })
     ])
 
-    const telemetryList = telemetryRes?.data || telemetryRes?.data?.value || []
-    const attributeList = attributeRes?.data || attributeRes?.data?.list || attributeRes?.data?.value || []
+    const telemetryList = telemetryRes?.data || []
+    const attributeList = attributeRes?.data || []
 
-    const dataMap: Record<string, any> = {}
     const kvMap: Record<string, any> = {}
-
     const processItem = (item: any) => {
       if (item?.key !== undefined) kvMap[item.key] = item.value
       if (item?.label) kvMap[item.label] = item.value
@@ -157,41 +199,28 @@ const fetchDeviceData = async () => {
     if (Array.isArray(telemetryList)) telemetryList.forEach(processItem)
     if (Array.isArray(attributeList)) attributeList.forEach(processItem)
 
-    // 根据 platformFields 筛选所需数据
+    const dataMap: Record<string, any> = {}
     platformFields.value.forEach(field => {
       const val = kvMap[field.id] ?? kvMap[field.name]
-      if (val !== undefined) {
-        dataMap[field.id] = val
-      }
+      if (val !== undefined) dataMap[field.id] = val
     })
 
     if (Object.keys(dataMap).length > 0) {
-      currentData.value = dataMap
+      pushDataToVis(dataMap)
     }
   } catch (error) {
-    console.error('获取设备数据失败:', error)
+    console.error('[DeviceDetailsApp] 获取设备数据失败:', error)
   }
 }
 
 /**
- * 启动数据更新
+ * ThingsVis ready 回调
  */
-const startDataUpdate = () => {
-  fetchDeviceData()
-  const interval = initialConfig.value?.refreshInterval ?? 5000
-  if (interval > 0) {
-    dataUpdateInterval = setInterval(fetchDeviceData, interval)
-  }
-}
-
-/**
- * 停止数据更新
- */
-const stopDataUpdate = () => {
-  if (dataUpdateInterval) {
-    clearInterval(dataUpdateInterval)
-    dataUpdateInterval = null
-  }
+const onVisReady = async () => {
+  // tp-02: 历史数据回填
+  if (historyBackfill.value) await historyBackfill.value.backfill()
+  // tp-04: 告警历史回填
+  if (alarmPush.value) await alarmPush.value.backfillAlarmHistory()
 }
 
 onMounted(() => {
@@ -199,7 +228,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  stopDataUpdate()
+  realtimePush.value?.stop()
+  alarmPush.value?.stop()
 })
 </script>
 
@@ -243,11 +273,13 @@ onBeforeUnmount(() => {
     />
     <div v-if="showAppChart">
       <ThingsVisWidget
+        ref="visWidgetRef"
         mode="viewer"
         :config="initialConfig"
         :platform-fields="platformFields"
-        :data="currentData"
         height="calc(100vh - 250px)"
+        :buffer-size="100"
+        @ready="onVisReady"
       />
     </div>
   </div>
