@@ -93,7 +93,8 @@ const seedEditorHistory = async () => {
             key: field.id,
             start_time: String(startTime),
             end_time: String(now),
-            aggregate_window: HISTORY_AGGREGATE_WINDOW
+            aggregate_window: HISTORY_AGGREGATE_WINDOW,
+            time_range: 'custom'
           })
           if (error) {
             console.error('[app-chart-config] seedEditorHistory API error for field:', field.id, error)
