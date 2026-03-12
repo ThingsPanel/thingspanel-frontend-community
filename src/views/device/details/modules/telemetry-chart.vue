@@ -15,7 +15,7 @@ import { NEmpty, NCard, NSkeleton } from 'naive-ui'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import { deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
-import { telemetryApi, attributesApi, eventsApi } from '@/service/api'
+import { telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api'
 import type { PlatformField } from '@/utils/thingsvis/types'
 import { useHistoryBackfill } from '@/hooks/thingsvis/useHistoryBackfill'
 import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush'
@@ -133,33 +133,31 @@ const initTemplateData = async (deviceTemplateId: string) => {
     const res = await deviceTemplateDetail({ id: deviceTemplateId })
 
     if (res.data) {
-      const apiCalls: Promise<any>[] = [
+      const [telemetryRes, attributesRes, eventsRes, commandsRes] = await Promise.all([
         telemetryApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId }),
-        attributesApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId })
-      ]
+        attributesApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId }),
+        eventsApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId }),
+        commandsApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId })
+      ])
 
-      // tp-01: 也拉取事件字段 (如果 eventsApi 存在)
-      let hasEventsApi = false
-      try {
-        if (typeof eventsApi === 'function') {
-          apiCalls.push(eventsApi({ page: 1, page_size: 1000, device_template_id: deviceTemplateId }))
-          hasEventsApi = true
-        }
-      } catch { /* eventsApi not yet implemented */ }
-
-      const results = await Promise.allSettled(apiCalls)
-
-      const telemetryList = results[0].status === 'fulfilled' && Array.isArray(results[0].value?.data?.list)
-        ? results[0].value.data.list : []
-      const attributesList = results[1].status === 'fulfilled' && Array.isArray(results[1].value?.data?.list)
-        ? results[1].value.data.list : []
-      const eventsList = hasEventsApi && results[2]?.status === 'fulfilled' && Array.isArray(results[2].value?.data?.list)
-        ? results[2].value.data.list : []
+      const telemetryList = Array.isArray(telemetryRes?.data?.list)
+        ? telemetryRes.data.list
+        : Array.isArray(telemetryRes?.data) ? telemetryRes.data : []
+      const attributesList = Array.isArray(attributesRes?.data?.list)
+        ? attributesRes.data.list
+        : Array.isArray(attributesRes?.data) ? attributesRes.data : []
+      const eventsList = Array.isArray(eventsRes?.data?.list)
+        ? eventsRes.data.list
+        : Array.isArray(eventsRes?.data) ? eventsRes.data : []
+      const commandsList = Array.isArray(commandsRes?.data?.list)
+        ? commandsRes.data.list
+        : Array.isArray(commandsRes?.data) ? commandsRes.data : []
 
       const platformSource = {
         telemetry: telemetryList,
         attributes: attributesList,
-        events: eventsList
+        events: eventsList,
+        commands: commandsList
       }
 
       const extractedFields = extractPlatformFields(platformSource)
@@ -275,6 +273,7 @@ onBeforeUnmount(() => {
         :platform-fields="platformFields"
         :height="chartHeight"
         :buffer-size="100"
+        :device-id="props.id"
         @ready="onVisReady"
       />
     </template>

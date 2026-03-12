@@ -51,7 +51,9 @@ const handlePlatformWrite = async (event: MessageEvent) => {
     return
   }
   try {
-    await telemetryDataPub({ device_id: props.deviceId, datas: data })
+    // API expects `value` as a JSON string, not a raw object under `datas`.
+    const valueStr = typeof data === 'string' ? data : JSON.stringify(data)
+    await telemetryDataPub({ device_id: props.deviceId, value: valueStr })
   } catch (e) {
     console.error('[ThingsVisWidget] telemetryDataPub failed for tv:platform-write:', e)
   }
