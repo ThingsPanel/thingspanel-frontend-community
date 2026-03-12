@@ -206,20 +206,46 @@ async function buildPlatformDevices() {
 
     const devices = unwrapList(devRes?.data)
     const configs = unwrapList(confRes?.data)
-    const configTemplateMap = new Map(configs.map((config: any) => [config.id, config.device_template_id]))
-    const templateIds = Array.from(
-      new Set(
-        devices
-          .map((device: any) => device?.device_config?.device_template_id || configTemplateMap.get(device?.device_config_id))
-          .filter((templateId): templateId is string | number => Boolean(templateId))
-      )
-    )
 
-    const templateEntries = new Map<string | number, Awaited<ReturnType<typeof loadTemplateEntry>>>()
+    console.log('[AppFrame] buildPlatformDevices — devices:', devices.length, 'configs:', configs.length)
+
+    // Build config → template map (only configs that actually have a template)
+    const configTemplateMap = new Map<string, string>()
+    for (const config of configs) {
+      if (config.id && config.device_template_id) {
+        configTemplateMap.set(String(config.id), String(config.device_template_id))
+      }
+    }
+
+    console.log('[AppFrame] configTemplateMap size:', configTemplateMap.size)
+
+    // Collect template IDs from configs directly (more reliable than going through
+    // devices, which may not have device_config_id populated in every list response)
+    const templateIdSet = new Set<string>()
+    for (const config of configs) {
+      if (config.device_template_id) templateIdSet.add(String(config.device_template_id))
+    }
+    // Also pick up any template IDs embedded directly on device objects (some API versions
+    // return the full device_config object inside the list item)
+    for (const device of devices) {
+      const tid = device?.device_config?.device_template_id
+      if (tid) templateIdSet.add(String(tid))
+    }
+
+    const templateIds = Array.from(templateIdSet)
+    console.log('[AppFrame] templateIds to load:', templateIds)
+
+    if (templateIds.length === 0) {
+      console.warn('[AppFrame] No template IDs found — configs may not have device_template_id set')
+      return []
+    }
+
+    const templateEntries = new Map<string, Awaited<ReturnType<typeof loadTemplateEntry>>>()
     const templateResults = await Promise.allSettled(
       templateIds.map(async (templateId) => {
         const entry = await loadTemplateEntry(templateId)
         templateEntries.set(templateId, entry)
+        console.log('[AppFrame] template', templateId, '— fields:', entry.fields.length, 'groupName:', entry.groupName)
       })
     )
 
@@ -231,7 +257,13 @@ async function buildPlatformDevices() {
 
     const platformDevices = devices
       .map((device: any) => {
-        const templateId = device?.device_config?.device_template_id || configTemplateMap.get(device?.device_config_id)
+        // Prefer embedded device_config (device-detail style response), otherwise look up via configTemplateMap
+        const templateId =
+          (device?.device_config?.device_template_id
+            ? String(device.device_config.device_template_id)
+            : null) ||
+          (device?.device_config_id ? configTemplateMap.get(String(device.device_config_id)) : null)
+
         if (!templateId) return null
 
         const templateEntry = templateEntries.get(templateId)
@@ -242,10 +274,8 @@ async function buildPlatformDevices() {
           if (Array.isArray(arr)) presets.push(...arr)
         })
 
-        if (presets.length === 0 && templateEntry.fields.length === 0) {
-          return null
-        }
-
+        // Include the device even when fields are empty — the UI can still show
+        // the device in the picker, and live data will populate fields at runtime
         return {
           deviceId: device.id,
           deviceName: device.name || device.device_number,
@@ -257,10 +287,21 @@ async function buildPlatformDevices() {
       .filter((item): item is NonNullable<typeof item> => Boolean(item))
 
     console.log('[AppFrame] platformDevices assembled:', platformDevices.length)
-    return platformDevices
+    return {
+      devices: platformDevices,
+      debug: {
+        devicesCount: devices.length,
+        configsCount: configs.length,
+        configTemplateMapSize: configTemplateMap.size,
+        templateIds,
+        firstRawConfig: configs[0] ? { ...configs[0] } : null,
+        firstRawDevice: devices[0] ? { id: devices[0].id, name: devices[0].name, device_config_id: devices[0].device_config_id } : null,
+        assembledCount: platformDevices.length
+      }
+    }
   } catch (err) {
     console.error('[AppFrame] Failed to assemble platformDevices', err)
-    return []
+    return { devices: [], debug: { error: String(err) } }
   }
 }
 
@@ -312,12 +353,13 @@ const handleMessage = async (event: MessageEvent) => {
       console.log('[AppFrame] Iframe ready, sending init postMessage')
       const apiBaseUrl = window.location.origin + '/thingsvis-api'
 
-      const platformDevices = await buildPlatformDevices()
+      const { devices: platformDevices, debug: _debugInfo } = await buildPlatformDevices()
 
       iframeRef.value.contentWindow.postMessage(
         {
           type: 'tv:init',
           platformDevices,
+          _debug: _debugInfo,
           data: {
             meta: { id: props.id }
           },
