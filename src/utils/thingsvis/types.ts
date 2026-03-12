@@ -11,7 +11,7 @@ export interface PlatformField {
     /** 数据类型 */
     type: 'number' | 'string' | 'boolean' | 'json'
     /** 字段类型 */
-    dataType: 'attribute' | 'telemetry' | 'command'
+    dataType: 'attribute' | 'telemetry' | 'command' | 'event'
     /** 单位(可选) */
     unit?: string
     /** 描述(可选) */
