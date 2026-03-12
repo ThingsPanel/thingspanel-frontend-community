@@ -20,6 +20,7 @@ export function createViteProxy(env: Env.ImportMeta) {
     [defaultProxyPattern]: {
       target: baseURL,
       changeOrigin: true,
+      ws: true,
       rewrite: path => path.replace(new RegExp(`^${defaultProxyPattern}`), '')
     }
   }

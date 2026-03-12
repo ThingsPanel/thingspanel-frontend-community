@@ -197,14 +197,21 @@ const fetchDeviceData = async () => {
     if (Array.isArray(telemetryList)) telemetryList.forEach(processItem)
     if (Array.isArray(attributeList)) attributeList.forEach(processItem)
 
+    console.log('[DeviceDetailsApp] kvMap:', JSON.stringify(kvMap))
+    console.log('[DeviceDetailsApp] platformFields:', platformFields.value.map(f => `${f.id}/${f.name}`))
+
     const dataMap: Record<string, any> = {}
     platformFields.value.forEach(field => {
       const val = kvMap[field.id] ?? kvMap[field.name]
       if (val !== undefined) dataMap[field.id] = val
     })
 
+    console.log('[DeviceDetailsApp] dataMap to push:', JSON.stringify(dataMap))
+
     if (Object.keys(dataMap).length > 0) {
       pushDataToVis(dataMap)
+    } else {
+      console.warn('[DeviceDetailsApp] dataMap is empty — field IDs may not match API keys')
     }
   } catch (error) {
     console.error('[DeviceDetailsApp] 获取设备数据失败:', error)
@@ -215,12 +222,17 @@ const fetchDeviceData = async () => {
  * ThingsVis ready 回调
  */
 const onVisReady = async () => {
+  console.log('[DeviceDetailsApp] onVisReady fired')
   // tp-02: 历史数据回填
   if (historyBackfill.value) await historyBackfill.value.backfill()
   // tp-04: 告警历史回填
   if (alarmPush.value) await alarmPush.value.backfillAlarmHistory()
   // Push current snapshot so widgets show real values immediately after ready
-  await fetchDeviceData()
+  // Use a short delay to ensure iframe has finished registering data sources
+  setTimeout(async () => {
+    console.log('[DeviceDetailsApp] Pushing initial data after delay')
+    await fetchDeviceData()
+  }, 500)
 }
 
 onMounted(() => {

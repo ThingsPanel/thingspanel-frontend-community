@@ -117,8 +117,13 @@ export class ThingsVisClient {
       console.log('[SDK] Received READY signal from Guest')
       if (!this.ready) {
         this.ready = true
-        this.flushPendingQueue()
+        // Emit 'ready' FIRST so that the host's on('ready') handler can call
+        // loadWidgetConfig() (tv:init) before we flush the pending queue.
+        // This ensures the iframe receives tv:init before any queued
+        // tv:platform-data messages, preventing the init handler from
+        // clearing an already-buffered data payload.
         this.emit('ready', {})
+        this.flushPendingQueue()
       }
     }
 
