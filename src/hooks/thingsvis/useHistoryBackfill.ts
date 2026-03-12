@@ -44,16 +44,19 @@ export function useHistoryBackfill(
           aggregate_function: 'avg' // 平均值
         })
 
-        const list = res?.data?.list
-        if (Array.isArray(list) && list.length > 0) {
-          const history: HistoryPoint[] = list
+        // transformBackendResponse 返回 response.data.data
+        // 实际结构: { time_series: [{ x: "ISO-date", y: number }] }
+        const timeSeries = res?.time_series
+        if (Array.isArray(timeSeries) && timeSeries.length > 0) {
+          const history: HistoryPoint[] = timeSeries
             .map((item: any) => ({
-              value: Number(item.value ?? item.avg ?? item.y ?? 0),
-              ts: new Date(item.time || item.x || item.ts || 0).getTime()
+              value: Number(item.y ?? item.value ?? item.avg ?? 0),
+              ts: new Date(item.x || item.time || item.ts || 0).getTime()
             }))
             .filter(p => !isNaN(p.ts) && !isNaN(p.value))
 
           if (history.length > 0) {
+            console.log(`[useHistoryBackfill] ${field.id}: ${history.length} points backfilled`)
             pushHistory(field.id, history)
           }
         }
