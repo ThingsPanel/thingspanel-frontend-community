@@ -384,8 +384,6 @@ async function buildPlatformDevices() {
     const devices = unwrapList(devRes?.data)
     const configs = unwrapList(confRes?.data)
 
-    console.log('[AppFrame] buildPlatformDevices — devices:', devices.length, 'configs:', configs.length)
-
     // Build config → template map (only configs that actually have a template)
     const configTemplateMap = new Map<string, string>()
     for (const config of configs) {
@@ -393,9 +391,6 @@ async function buildPlatformDevices() {
         configTemplateMap.set(String(config.id), String(config.device_template_id))
       }
     }
-
-    console.log('[AppFrame] configTemplateMap size:', configTemplateMap.size)
-
     // Collect template IDs from configs directly (more reliable than going through
     // devices, which may not have device_config_id populated in every list response)
     const templateIdSet = new Set<string>()
@@ -410,10 +405,8 @@ async function buildPlatformDevices() {
     }
 
     const templateIds = Array.from(templateIdSet)
-    console.log('[AppFrame] templateIds to load:', templateIds)
 
     if (templateIds.length === 0) {
-      console.warn('[AppFrame] No template IDs found — configs may not have device_template_id set')
       return { devices: [], debug: { noTemplates: true } }
     }
 
@@ -422,7 +415,6 @@ async function buildPlatformDevices() {
       templateIds.map(async (templateId) => {
         const entry = await loadTemplateEntry(templateId)
         templateEntries.set(templateId, entry)
-        console.log('[AppFrame] template', templateId, '— fields:', entry.fields.length, 'groupName:', entry.groupName)
       })
     )
 
@@ -462,8 +454,6 @@ async function buildPlatformDevices() {
         }
       })
       .filter((item): item is NonNullable<typeof item> => Boolean(item))
-
-    console.log('[AppFrame] platformDevices assembled:', platformDevices.length)
     return {
       devices: platformDevices,
       debug: {
@@ -486,7 +476,6 @@ async function buildPlatformDevices() {
 async function doInit() {
   if (!iframeRef.value?.contentWindow || !token.value) return
 
-  console.log('[AppFrame] Iframe ready, sending init postMessage')
   const apiBaseUrl = window.location.origin + '/thingsvis-api'
 
   const { devices: platformDevices, debug: _debugInfo } = await buildPlatformDevices()
@@ -541,7 +530,7 @@ async function doInit() {
           )
         }
       } catch (err) {
-        console.error('[AppFrame] Failed to prefetch device data:', device.deviceId, err)
+        // Best effort only: live WS will populate runtime values when prefetch fails.
       }
     }
   }
@@ -569,11 +558,6 @@ const handleMessage = async (event: MessageEvent) => {
           },
           '*'
         )
-      } else {
-        console.warn('[AppFrame] requestFieldData returned no matching fields', {
-          requestedFieldIds: payload.fieldIds,
-          deviceId: payload.deviceId
-        })
       }
 
       result.histories.forEach((item) => {
@@ -590,7 +574,7 @@ const handleMessage = async (event: MessageEvent) => {
         )
       })
     } catch (err) {
-      console.error('[AppFrame] Failed to fulfill field data request', err)
+      // Best effort only: ignore transient field-request failures to avoid console noise.
     }
     return
   }
