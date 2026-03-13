@@ -51,6 +51,7 @@ type PlatformDeviceEntry = {
   deviceId: string
   deviceName: string
   groupName: string
+  templateId?: string
   fields: Array<{ id?: string; name?: string }>
   presets: any[]
 }
@@ -257,7 +258,7 @@ function normalizeHistory(records: any[], valueKey: string): HistoryPoint[] {
       value: item?.[valueKey] ?? item?.value ?? item?.avg ?? item?.y ?? 0,
       ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
     }))
-    .filter((point) => !Number.isNaN(point.ts))
+    .filter(point => !Number.isNaN(point.ts))
 }
 
 function unwrapList(payload: any): any[] {
@@ -271,11 +272,10 @@ async function loadTemplateEntry(templateId: string | number) {
   const cached = templateEntryCache.get(cacheKey)
   if (cached) return cached
 
-  const [telemetryResult, attributesResult] =
-    await Promise.allSettled([
-      telemetryApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
-      attributesApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId })
-    ])
+  const [telemetryResult, attributesResult] = await Promise.allSettled([
+    telemetryApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
+    attributesApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId })
+  ])
 
   const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
   const attributesRes = attributesResult.status === 'fulfilled' ? attributesResult.value : null
@@ -303,10 +303,10 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
     return { fields: {}, histories: [] }
   }
 
-  const currentFieldIds = requestedFields.filter((fieldId) => !fieldId.endsWith('__history'))
+  const currentFieldIds = requestedFields.filter(fieldId => !fieldId.endsWith('__history'))
   const historyFieldIds = requestedFields
-    .filter((fieldId) => fieldId.endsWith('__history'))
-    .map((fieldId) => fieldId.replace(/__history$/, ''))
+    .filter(fieldId => fieldId.endsWith('__history'))
+    .map(fieldId => fieldId.replace(/__history$/, ''))
 
   if (deviceId) {
     const result: RequestedFieldResult = { fields: {}, histories: [] }
@@ -329,14 +329,14 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
       if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
       if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
 
-      currentFieldIds.forEach((fieldId) => {
+      currentFieldIds.forEach(fieldId => {
         if (kvMap[fieldId] !== undefined) result.fields[fieldId] = kvMap[fieldId]
       })
     }
 
     if (historyFieldIds.length > 0) {
       const historyResults = await Promise.allSettled(
-        historyFieldIds.map(async (fieldId) => {
+        historyFieldIds.map(async fieldId => {
           const historyRes = await telemetryDataHistoryList({
             device_id: deviceId,
             key: fieldId,
@@ -354,7 +354,7 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
         })
       )
 
-      historyResults.forEach((item) => {
+      historyResults.forEach(item => {
         if (item.status === 'rejected') {
           console.warn('[AppFrame] Device history fetch failed:', item.reason)
         }
@@ -378,11 +378,11 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
     device_activity: deviceOnline
   }
 
-  currentFieldIds.forEach((fieldId) => {
+  currentFieldIds.forEach(fieldId => {
     if (aggregateValues[fieldId] !== undefined) result.fields[fieldId] = aggregateValues[fieldId]
   })
 
-  if (historyFieldIds.some((fieldId) => fieldId === 'device_online' || fieldId === 'device_offline')) {
+  if (historyFieldIds.some(fieldId => fieldId === 'device_online' || fieldId === 'device_offline')) {
     const trendRes = await getOnlineDeviceTrend()
     const trendData = trendRes?.data as { points?: unknown[] } | undefined
     const points = Array.isArray(trendData?.points) ? trendData.points : []
@@ -451,42 +451,23 @@ async function buildPlatformDevices(): Promise<{
         return []
       }
 
-      const templateEntries = new Map<string, TemplateEntry>()
-      const templateResults = await Promise.allSettled(
-        templateIds.map(async templateId => {
-          const entry = await loadTemplateEntry(templateId)
-          templateEntries.set(templateId, entry)
-        })
-      )
-
-      templateResults.forEach((result, index) => {
-        if (result.status === 'rejected') {
-          console.warn('[AppFrame] Failed to load template fields:', templateIds[index], result.reason)
-        }
-      })
-
       const platformDevices = devices
         .map((device: any): PlatformDeviceEntry | null => {
           // Prefer embedded device_config (device-detail style response), otherwise look up via configTemplateMap
           const templateId =
-            (device?.device_config?.device_template_id
-              ? String(device.device_config.device_template_id)
-              : null) ||
+            (device?.device_config?.device_template_id ? String(device.device_config.device_template_id) : null) ||
             (device?.device_config_id ? configTemplateMap.get(String(device.device_config_id)) : null)
 
           if (!templateId || !device?.id) return null
 
-          const templateEntry = templateEntries.get(templateId)
-          if (!templateEntry) return null
-
-          const groupName =
-            String(device?.device_config?.name || device?.device_config_name || '').trim() || '设备字段'
+          const groupName = String(device?.device_config?.name || device?.device_config_name || '').trim() || '设备字段'
 
           return {
             deviceId: String(device.id),
             deviceName: String(device.name || device.device_number || device.id),
             groupName,
-            fields: Array.isArray(templateEntry.fields) ? templateEntry.fields : [],
+            templateId,
+            fields: [],
             presets: []
           }
         })
@@ -582,7 +563,7 @@ const handleMessage = async (event: MessageEvent) => {
         }
       }
 
-      result.histories.forEach((item) => {
+      result.histories.forEach(item => {
         iframeRef.value?.contentWindow?.postMessage(
           {
             type: 'tv:platform-history',
@@ -597,6 +578,31 @@ const handleMessage = async (event: MessageEvent) => {
       })
     } catch {
       // Best effort only: ignore transient field-request failures to avoid console noise.
+    }
+    return
+  }
+
+  if (type === 'thingsvis:requestDeviceFields') {
+    const payload = event.data?.payload || {}
+    const deviceId = typeof payload.deviceId === 'string' ? payload.deviceId : undefined
+    const templateId = typeof payload.templateId === 'string' ? payload.templateId : undefined
+    if (!iframeRef.value?.contentWindow || !deviceId || !templateId) return
+
+    try {
+      const entry = await loadTemplateEntry(templateId)
+      iframeRef.value.contentWindow.postMessage(
+        {
+          type: 'tv:device-fields',
+          payload: {
+            deviceId,
+            templateId,
+            fields: Array.isArray(entry.fields) ? entry.fields : []
+          }
+        },
+        '*'
+      )
+    } catch (error) {
+      console.warn('[AppFrame] Failed to load requested device fields:', deviceId, templateId, error)
     }
     return
   }
