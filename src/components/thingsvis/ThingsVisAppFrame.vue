@@ -32,6 +32,7 @@ import {
   telemetryApi,
   tenant
 } from '@/service/api'
+import { getThingsVisDashboard } from '@/service/api/thingsvis'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import {
   getGlobalPlatformFields,
@@ -651,6 +652,26 @@ async function doInit() {
 
   const apiBaseUrl = window.location.origin + '/thingsvis-api'
 
+  let dashboardPayload: Record<string, unknown> = { meta: { id: props.id } }
+
+  try {
+    const { data, error } = await getThingsVisDashboard(props.id)
+    if (!error && data) {
+      dashboardPayload = {
+        meta: {
+          id: data.id,
+          name: data.name,
+          thumbnail: data.thumbnail
+        },
+        canvas: data.canvasConfig,
+        nodes: Array.isArray(data.nodes) ? data.nodes : [],
+        dataSources: Array.isArray(data.dataSources) ? data.dataSources : []
+      }
+    }
+  } catch (error) {
+    console.warn('[AppFrame] Failed to preload dashboard schema for embed init:', props.id, error)
+  }
+
   const { devices: platformDevices } = await buildPlatformDevices()
 
   activePlatformDevices.clear()
@@ -669,7 +690,7 @@ async function doInit() {
       platformFields: globalPlatformFields,
       platformFieldScope: globalPlatformFieldScope,
       platformDevices,
-      data: { meta: { id: props.id } },
+      data: dashboardPayload,
       config: {
         mode: 'app',
         saveTarget: 'self',
