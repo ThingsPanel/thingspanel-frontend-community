@@ -59,8 +59,18 @@ export class ThingsVisClient {
   private container: HTMLElement
   private options: ThingsVisOptions
   public ready: boolean = false
+  /**
+   * Set to true when the guest sends LOADED (after registerAndLoad finishes).
+   * platform-data / platform-history messages must wait until this is true,
+   * otherwise they arrive before PlatformFieldAdapter is connected and are dropped.
+   */
+  private loaded: boolean = false
   private messageHandlers: Map<string, MessageHandler[]> = new Map()
   private pendingQueue: Array<() => void> = []
+  /** Queue for tv:platform-data / tv:platform-history — flushed on LOADED. */
+  private postLoadQueue: Array<() => void> = []
+  /** Last real-time value payload by scope, replayed after guest re-init. */
+  private latestPlatformDataByScope: Map<string, { fields: Record<string, unknown>; deviceId?: string }> = new Map()
   private lastInitPayload: any = null
   private platformPushCount = 0
 
@@ -95,8 +105,7 @@ export class ThingsVisClient {
     // 监听加载完成
     this.iframe.onload = () => {
       // Iframe onload doesn't guarantee React app is hydrated.
-      // We rely on 'READY' message from Guest, but keep this as a basic check.
-      console.log('[SDK] Iframe loaded, waiting for READY signal...')
+      // We rely on 'READY' message from Guest, but keep this hook for future use.
     }
   }
 
@@ -121,7 +130,6 @@ export class ThingsVisClient {
 
     // 2. Ready Signal (Guest -> Host)
     if (type === 'READY' || type === TV_MSG.READY) {
-      console.log('[SDK] Received READY signal from Guest')
       if (!this.ready) {
         this.ready = true
         // Emit 'ready' FIRST so that the host's on('ready') handler can call
@@ -131,13 +139,24 @@ export class ThingsVisClient {
         // clearing an already-buffered data payload.
         this.emit('ready', {})
         this.flushPendingQueue()
+        // NOTE: do NOT flush postLoadQueue here — platform data must wait for LOADED.
       }
+    }
+
+    // LOADED: guest signals that registerAndLoad finished and adapters are connected.
+    if (type === 'LOADED') {
+      if (!this.loaded) {
+        this.loaded = true
+        this.flushPostLoadQueue()
+        this.replayLatestPlatformData()
+      }
+      this.emit('loaded', payload)
     }
 
     // 3. Handle re-init request from Guest (e.g. after bootstrap re-run)
     if (type === TV_MSG.REQUEST_INIT) {
       if (this.lastInitPayload) {
-        console.log('[SDK] Guest requested init replay, resending cached init payload')
+        this.loaded = false
         this.send(TV_MSG.INIT, this.lastInitPayload)
       } else {
         this.emit('ready', {})
@@ -192,6 +211,40 @@ export class ThingsVisClient {
     }
   }
 
+  /**
+   * Send a message that should only be delivered after the guest's adapters are
+   * connected (i.e. after the LOADED signal). Any call before LOADED is buffered
+   * in postLoadQueue and flushed automatically when LOADED arrives.
+   */
+  private sendWhenLoaded(type: string, payload: any = {}) {
+    const message = { type, payload }
+    const action = () => {
+      if (this.iframe.contentWindow) {
+        this.iframe.contentWindow.postMessage(message, '*')
+      }
+    }
+    if (this.loaded) {
+      action()
+    } else {
+      this.postLoadQueue.push(action)
+    }
+  }
+
+  private flushPostLoadQueue() {
+    while (this.postLoadQueue.length > 0) {
+      const action = this.postLoadQueue.shift()
+      if (action) action()
+    }
+  }
+
+  private replayLatestPlatformData() {
+    if (this.latestPlatformDataByScope.size === 0) return
+
+    for (const { fields, deviceId } of this.latestPlatformDataByScope.values()) {
+      this.sendWhenLoaded('tv:platform-data', { fields, deviceId })
+    }
+  }
+
   // ===========================
   // Public API: Widget Mode
   // ===========================
@@ -207,6 +260,8 @@ export class ThingsVisClient {
    * 对应协议: thingsvis:editor-init
    */
   public loadWidgetConfig(config: any, platformFields?: any[], options?: WidgetLoadOptions) {
+    this.loaded = false
+
     // Guard against empty or corrupt config (missing canvas/nodes) to ensure both
     // the editor and viewer can mount without crashing on a blank slate.
     const safeConfig = config || {}
@@ -220,6 +275,13 @@ export class ThingsVisClient {
     }
     const safeNodes = safeConfig.nodes || []
 
+    // Merge __platform__ (with correct bufferSize) with any custom data sources in the saved config.
+    const existingDataSources: any[] = safeConfig.dataSources ?? []
+    // Preserve any deviceId injected into the existing __platform__ entry by the host
+    // (e.g. device-details-app injects the real device id at runtime so that strict
+    // adapter routing matches push messages that carry the same deviceId).
+    const existingPlatformDs = existingDataSources.find((ds: any) => ds.id === '__platform__')
+
     // Build the __platform__ data source entry, honouring the caller-provided bufferSize.
     // A non-zero bufferSize activates the rolling history buffer in PlatformFieldAdapter,
     // which exposes `{fieldId}__history` arrays needed by line/area chart widgets.
@@ -229,13 +291,12 @@ export class ThingsVisClient {
       type: 'PLATFORM_FIELD',
       config: {
         source: 'platform',
-        fieldMappings: {},
+        fieldMappings: existingPlatformDs?.config?.fieldMappings ?? {},
         bufferSize: options?.platformBufferSize ?? 0,
+        ...(existingPlatformDs?.config?.deviceId ? { deviceId: existingPlatformDs.config.deviceId } : {}),
       },
     }
 
-    // Merge __platform__ (with correct bufferSize) with any custom data sources in the saved config.
-    const existingDataSources: any[] = safeConfig.dataSources ?? []
     const mergedDataSources = [
       platformDs,
       ...existingDataSources.filter((ds: any) => ds.id !== '__platform__'),
@@ -258,7 +319,6 @@ export class ThingsVisClient {
     }
 
     this.lastInitPayload = payload
-    console.log('[SDK] Sending init payload:', payload)
     this.send(TV_MSG.INIT, payload)
   }
 
@@ -284,14 +344,14 @@ export class ThingsVisClient {
    */
   public pushPlatformFieldData(fields: Record<string, unknown>, deviceId?: string): void {
     this.platformPushCount += 1
-    if (import.meta.env.DEV && this.platformPushCount % 20 === 0) {
-      console.info('[SDK] tv:platform-data send progress', {
-        count: this.platformPushCount,
-        deviceId,
-        keys: Object.keys(fields).slice(0, 12),
-      })
-    }
-    this.send('tv:platform-data', { fields, deviceId })
+    const scopeKey = deviceId ?? '__global__'
+    this.latestPlatformDataByScope.set(scopeKey, {
+      fields: { ...fields },
+      ...(deviceId ? { deviceId } : {})
+    })
+    // Must wait until LOADED: PlatformFieldAdapter's messageListener isn't set up
+    // until registerAndLoad finishes, which happens after tv:init is processed.
+    this.sendWhenLoaded('tv:platform-data', { fields, deviceId })
   }
 
   /**
@@ -308,7 +368,8 @@ export class ThingsVisClient {
     history: Array<{ value: unknown; ts: number }>,
     deviceId?: string,
   ): void {
-    this.send('tv:platform-history', { fieldId, history, deviceId })
+    // Must wait until LOADED for the same reason as pushPlatformFieldData.
+    this.sendWhenLoaded('tv:platform-history', { fieldId, history, deviceId })
   }
 
   /**
@@ -393,7 +454,10 @@ export class ThingsVisClient {
     }
     this.messageHandlers.clear()
     this.pendingQueue = []
+    this.postLoadQueue = []
+    this.latestPlatformDataByScope.clear()
     this.lastInitPayload = null
     this.ready = false
+    this.loaded = false
   }
 }

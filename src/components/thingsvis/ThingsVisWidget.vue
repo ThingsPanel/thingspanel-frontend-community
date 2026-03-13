@@ -44,6 +44,30 @@ const getLoadOptions = () => ({
   platformDevices: clone(props.platformDevices || [])
 })
 
+const pushPlatformFieldDataCompat = (fields: Record<string, unknown>, deviceId?: string) => {
+  if (!client) return
+  const payload = clone(fields) || {}
+  client.pushPlatformFieldData(payload, deviceId)
+  // Backward compatibility: some saved templates still bind to the global __platform__
+  // datasource, which only accepts messages without deviceId.
+  if (deviceId) {
+    client.pushPlatformFieldData(payload)
+  }
+}
+
+const pushFieldHistoryCompat = (
+  fieldId: string,
+  history: Array<{ value: unknown; ts: number }>,
+  deviceId?: string
+) => {
+  if (!client) return
+  const payload = clone(history) || []
+  client.pushFieldHistory(fieldId, payload, deviceId)
+  if (deviceId) {
+    client.pushFieldHistory(fieldId, payload)
+  }
+}
+
 /**
  * Handle tv:platform-write messages posted by the embedded ThingsVis iframe.
  * Routes the write payload to the ThingsPanel telemetry publish API.
@@ -128,7 +152,7 @@ onMounted(async () => {
       getLoadOptions()
     )
     if (props.platformFields) client?.updateSchema(clone(props.platformFields))
-    if (props.data) client?.pushPlatformFieldData(clone(props.data), props.deviceId)
+    if (props.data) pushPlatformFieldDataCompat(props.data, props.deviceId)
     emit('ready')
   })
 
@@ -159,7 +183,7 @@ watch(
   () => props.data,
   newVal => {
     if (client?.ready && newVal) {
-      client.pushPlatformFieldData(clone(newVal), props.deviceId)
+      pushPlatformFieldDataCompat(newVal, props.deviceId)
     }
   },
   { deep: true }
@@ -186,7 +210,7 @@ const triggerSave = () => {
  * Delegates to ThingsVisClient.pushFieldHistory(); no-op when client is not ready.
  */
 const pushHistory = (fieldId: string, history: Array<{ value: unknown; ts: number }>, deviceId?: string) => {
-  client?.pushFieldHistory(fieldId, history, deviceId)
+  pushFieldHistoryCompat(fieldId, history, deviceId)
 }
 
 /**
@@ -195,7 +219,7 @@ const pushHistory = (fieldId: string, history: Array<{ value: unknown; ts: numbe
  * unlike the exposed `client` property which is snapshotted as null at setup time.
  */
 const pushPlatformData = (fields: Record<string, unknown>, deviceId?: string) => {
-  client?.pushPlatformFieldData(fields, deviceId)
+  pushPlatformFieldDataCompat(fields, deviceId)
 }
 
 onBeforeUnmount(() => {

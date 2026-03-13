@@ -1,4 +1,4 @@
-<template>
+  <template>
   <div class="thingsvis-frame-container">
     <iframe ref="iframeRef" v-if="url && token" :src="url" class="thingsvis-frame" frameborder="0" allowfullscreen></iframe>
     <div v-else class="loading-placeholder">正在连接可视化引擎...</div>
@@ -18,11 +18,188 @@ import {
 } from '@/service/api/device'
 import { attributesApi, commandsApi, eventsApi, getOnlineDeviceTrend, telemetryApi } from '@/service/api'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
+import { localStg } from '@/utils/storage'
+import { getWebsocketServerUrl } from '@/utils/common/tool'
 
 const props = defineProps<{
   id: string
   mode?: string
 }>()
+
+// ─── Device WebSocket management ─────────────────────────────────────────────
+
+const PING_INTERVAL_MS = 8_000
+const WS_RECONNECT_DELAY_MS = 3_000
+
+interface DeviceWsEntry {
+  ws: WebSocket | null
+  pingTimer: ReturnType<typeof setInterval> | null
+  reconnectTimer: ReturnType<typeof setTimeout> | null
+  destroyed: boolean
+  device: { deviceId: string; fields: Array<{ id?: string; name?: string }> }
+}
+
+const deviceWsMap = new Map<string, DeviceWsEntry>()
+
+/** Extract flat key→value map from various WS response shapes. */
+function extractWsFields(payload: unknown): Record<string, unknown> {
+  if (!payload || typeof payload !== 'object') return {}
+  const obj = payload as Record<string, unknown>
+
+  // Unwrap envelope formats
+  if (obj.fields && typeof obj.fields === 'object' && !Array.isArray(obj.fields)) {
+    return extractWsFields(obj.fields)
+  }
+  if (obj.data !== undefined) return extractWsFields(obj.data)
+  if (obj.payload !== undefined) return extractWsFields(obj.payload)
+
+  // Array of { key, value } items
+  if (Array.isArray(payload)) {
+    const fields: Record<string, unknown> = {}
+    ;(payload as Array<{ key?: string; label?: string; value?: unknown }>).forEach(item => {
+      if (!item) return
+      const k = item.key ?? item.label
+      if (!k || k === 'systime') return
+      if (item.value !== undefined) fields[k] = item.value
+    })
+    return fields
+  }
+
+  // Flat object
+  const fields: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(obj)) {
+    if (k !== 'systime') fields[k] = v
+  }
+  return fields
+}
+
+/**
+ * Map raw WS field keys to canonical platform field IDs.
+ * Tries field.id first, then field.name as fallback.
+ * Falls back to the raw payload when nothing maps.
+ */
+function mapFieldIds(
+  rawFields: Record<string, unknown>,
+  deviceFields: Array<{ id?: string; name?: string }>
+): Record<string, unknown> {
+  if (deviceFields.length === 0) return rawFields
+  const mapped: Record<string, unknown> = {}
+  for (const field of deviceFields) {
+    if (!field.id) continue
+    const byId = rawFields[field.id]
+    const byName = field.name !== undefined ? rawFields[field.name] : undefined
+    if (byId !== undefined) mapped[field.id] = byId
+    else if (byName !== undefined) mapped[field.id] = byName
+  }
+  return Object.keys(mapped).length > 0 ? mapped : rawFields
+}
+
+/** Open (or re-open) a telemetry WebSocket for one device. */
+function connectDeviceWs(device: { deviceId: string; fields: Array<{ id?: string; name?: string }> }) {
+  const { deviceId } = device
+
+  // Tear down any existing connection for this device
+  const prev = deviceWsMap.get(deviceId)
+  if (prev) {
+    prev.destroyed = true
+    if (prev.pingTimer) clearInterval(prev.pingTimer)
+    if (prev.reconnectTimer) clearTimeout(prev.reconnectTimer)
+    prev.ws?.close()
+  }
+
+  const entry: DeviceWsEntry = {
+    ws: null,
+    pingTimer: null,
+    reconnectTimer: null,
+    destroyed: false,
+    device
+  }
+  deviceWsMap.set(deviceId, entry)
+
+  function openWs() {
+    if (entry.destroyed) return
+
+    const token = localStg.get('token') as string | undefined
+    if (!token) {
+      entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
+      return
+    }
+
+    try {
+      const wsUrl = `${getWebsocketServerUrl()}/telemetry/datas/current/ws`
+      entry.ws = new WebSocket(wsUrl)
+    } catch (err) {
+      console.warn('[AppFrame] WS init failed for device', deviceId, err)
+      entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
+      return
+    }
+
+    entry.ws.onopen = () => {
+      if (!entry.ws) return
+      entry.ws.send(JSON.stringify({ device_id: deviceId, token }))
+      entry.pingTimer = setInterval(() => {
+        if (entry.ws?.readyState === WebSocket.OPEN) entry.ws.send('ping')
+      }, PING_INTERVAL_MS)
+    }
+
+    entry.ws.onmessage = evt => {
+      if (typeof evt.data !== 'string' || evt.data === 'pong') return
+      try {
+        const msg = JSON.parse(evt.data)
+        const rawFields = extractWsFields(msg)
+        if (Object.keys(rawFields).length === 0) return
+        const fields = mapFieldIds(rawFields, device.fields)
+        const win = iframeRef.value?.contentWindow
+        if (!win) return
+        // Fan-out to both channels:
+        // 1. Device-scoped  → __platform_deviceId__  (bindings configured with a specific device)
+        // 2. Global channel → __platform__            (bindings configured with "当前设备模板")
+        win.postMessage({ type: 'tv:platform-data', payload: { deviceId, fields } }, '*')
+        win.postMessage({ type: 'tv:platform-data', payload: { fields } }, '*')
+      } catch {
+        // ignore non-JSON frames
+      }
+    }
+
+    entry.ws.onerror = () => {
+      /* reconnect handled by onclose */
+    }
+
+    entry.ws.onclose = () => {
+      if (entry.destroyed) return
+      if (entry.pingTimer) {
+        clearInterval(entry.pingTimer)
+        entry.pingTimer = null
+      }
+      console.warn('[AppFrame] WS closed for device', deviceId, '— scheduling reconnect')
+      entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
+    }
+  }
+
+  openWs()
+}
+
+/** Disconnect and clean up all device WebSocket connections. */
+function disconnectAllDeviceWs() {
+  for (const entry of deviceWsMap.values()) {
+    entry.destroyed = true
+    if (entry.pingTimer) clearInterval(entry.pingTimer)
+    if (entry.reconnectTimer) clearTimeout(entry.reconnectTimer)
+    entry.ws?.close()
+  }
+  deviceWsMap.clear()
+}
+
+// ─── End WS management ───────────────────────────────────────────────────────
+
+/**
+ * Guard against concurrent tv:ready re-inits.
+ * Studio sends tv:ready twice (once on load, once after bootstrap completes).
+ * Both trigger buildPlatformDevices() which takes ~1s. Without a guard,
+ * the second call tears down WS while the first is still completing.
+ */
+let initInProgress = false
+let pendingInitDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
 type HistoryPoint = { value: unknown; ts: number }
 type RequestedFieldResult = {
@@ -237,7 +414,7 @@ async function buildPlatformDevices() {
 
     if (templateIds.length === 0) {
       console.warn('[AppFrame] No template IDs found — configs may not have device_template_id set')
-      return []
+      return { devices: [], debug: { noTemplates: true } }
     }
 
     const templateEntries = new Map<string, Awaited<ReturnType<typeof loadTemplateEntry>>>()
@@ -305,6 +482,71 @@ async function buildPlatformDevices() {
   }
 }
 
+/** Full init sequence triggered once per tv:ready (debounced). */
+async function doInit() {
+  if (!iframeRef.value?.contentWindow || !token.value) return
+
+  console.log('[AppFrame] Iframe ready, sending init postMessage')
+  const apiBaseUrl = window.location.origin + '/thingsvis-api'
+
+  const { devices: platformDevices, debug: _debugInfo } = await buildPlatformDevices()
+
+  iframeRef.value.contentWindow.postMessage(
+    {
+      type: 'tv:init',
+      platformDevices,
+      _debug: _debugInfo,
+      data: { meta: { id: props.id } },
+      config: {
+        mode: 'app',
+        saveTarget: 'self',
+        token: token.value,
+        apiBaseUrl
+      }
+    },
+    '*'
+  )
+
+  // Open real-time telemetry WebSocket for each device.
+  // WS sends current values immediately on connect, covering the initial-data
+  // case (value-card and other widgets) before REST prefetch completes.
+  disconnectAllDeviceWs()
+  if (Array.isArray(platformDevices)) {
+    for (const device of platformDevices) {
+      if (device?.deviceId) connectDeviceWs(device)
+    }
+  }
+
+  // Prefetch current device field values and push immediately after tv:init.
+  if (Array.isArray(platformDevices) && platformDevices.length > 0) {
+    for (const device of platformDevices) {
+      if (!device?.deviceId) continue
+      try {
+        const fieldIds = Array.isArray(device.fields)
+          ? (device.fields as Array<{ id?: unknown }>)
+              .map(f => f?.id)
+              .filter((id): id is string => typeof id === 'string')
+          : []
+        const prefetchResult = await buildRequestedFieldData(fieldIds, device.deviceId)
+        if (Object.keys(prefetchResult.fields).length > 0 && iframeRef.value?.contentWindow) {
+          const win = iframeRef.value.contentWindow
+          win.postMessage(
+            { type: 'tv:platform-data', payload: { deviceId: device.deviceId, fields: prefetchResult.fields } },
+            '*'
+          )
+          // Also push to global __platform__ for "当前设备模板" bindings
+          win.postMessage(
+            { type: 'tv:platform-data', payload: { fields: prefetchResult.fields } },
+            '*'
+          )
+        }
+      } catch (err) {
+        console.error('[AppFrame] Failed to prefetch device data:', device.deviceId, err)
+      }
+    }
+  }
+}
+
 const handleMessage = async (event: MessageEvent) => {
   if (!event.data || typeof event.data !== 'object') return
 
@@ -327,6 +569,11 @@ const handleMessage = async (event: MessageEvent) => {
           },
           '*'
         )
+      } else {
+        console.warn('[AppFrame] requestFieldData returned no matching fields', {
+          requestedFieldIds: payload.fieldIds,
+          deviceId: payload.deviceId
+        })
       }
 
       result.histories.forEach((item) => {
@@ -350,28 +597,21 @@ const handleMessage = async (event: MessageEvent) => {
 
   if (type === 'tv:ready' || type === 'READY') {
     if (iframeRef.value?.contentWindow && token.value) {
-      console.log('[AppFrame] Iframe ready, sending init postMessage')
-      const apiBaseUrl = window.location.origin + '/thingsvis-api'
-
-      const { devices: platformDevices, debug: _debugInfo } = await buildPlatformDevices()
-
-      iframeRef.value.contentWindow.postMessage(
-        {
-          type: 'tv:init',
-          platformDevices,
-          _debug: _debugInfo,
-          data: {
-            meta: { id: props.id }
-          },
-          config: {
-            mode: 'app',
-            saveTarget: 'self',
-            token: token.value,
-            apiBaseUrl: apiBaseUrl
-          }
-        },
-        '*'
-      )
+      // Debounce: studio sends tv:ready both on initial load and after bootstrap.
+      // Coalesce rapid signals into a single init run.
+      if (pendingInitDebounceTimer) {
+        clearTimeout(pendingInitDebounceTimer)
+      }
+      pendingInitDebounceTimer = setTimeout(async () => {
+        pendingInitDebounceTimer = null
+        if (initInProgress) return
+        initInProgress = true
+        try {
+          await doInit()
+        } finally {
+          initInProgress = false
+        }
+      }, 300)
     }
   }
 
@@ -423,6 +663,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('message', handleMessage)
+  if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
+  disconnectAllDeviceWs()
 })
 </script>
 
