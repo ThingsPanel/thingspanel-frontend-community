@@ -320,6 +320,36 @@ function normalizeSystemMetricHistory(records: any[], metricKey: 'cpu' | 'memory
     .filter((point) => !Number.isNaN(point.ts))
 }
 
+function normalizeMetricValue(value: unknown): number {
+  const num = Number(value)
+  return Number.isFinite(num) ? num : 0
+}
+
+function normalizeTenantGrowthHistory(records: any[]): HistoryPoint[] {
+  const currentYear = new Date().getFullYear()
+
+  return records
+    .map((item: any) => {
+      const month = Number(item?.mon)
+      if (!Number.isFinite(month) || month < 1 || month > 12) return null
+
+      return {
+        value: normalizeMetricValue(item?.num),
+        ts: new Date(currentYear, month - 1, 1).getTime()
+      }
+    })
+    .filter((point): point is HistoryPoint => Boolean(point) && !Number.isNaN(point.ts))
+}
+
+function normalizeSystemMetricHistory(records: any[], metricKey: 'cpu' | 'memory' | 'disk'): HistoryPoint[] {
+  return records
+    .map((item: any) => ({
+      value: normalizeMetricValue(item?.[`${metricKey}_usage`] ?? item?.[metricKey]),
+      ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
+    }))
+    .filter((point) => !Number.isNaN(point.ts))
+}
+
 function unwrapList(payload: any): any[] {
   if (Array.isArray(payload?.list)) return payload.list
   if (Array.isArray(payload)) return payload
