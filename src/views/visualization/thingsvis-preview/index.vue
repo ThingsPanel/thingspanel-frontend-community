@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { NSpin, useMessage } from 'naive-ui'
-import ThingsVisViewer from '@/components/thingsvis/ThingsVisViewer.vue'
+import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
 import { getThingsVisDashboard } from '@/service/api/thingsvis'
 
 const route = useRoute()
@@ -12,21 +12,7 @@ const dashboardId = route.query.id as string
 const loading = ref(true)
 const dashboardData = ref<any>(null)
 
-/** 构建查看器配置 */
-const viewerConfig = computed(() => {
-  if (!dashboardData.value) return null
-
-  return {
-    id: dashboardData.value.id,
-    name: dashboardData.value.name,
-    canvas: {
-      ...dashboardData.value.canvasConfig,
-      fullWidthPreview: true // 预览时自适应容器宽度
-    },
-    nodes: dashboardData.value.nodes || [],
-    dataSources: dashboardData.value.dataSources || []
-  }
-})
+const hasDashboard = computed(() => Boolean(dashboardData.value?.id))
 
 /** 加载 Dashboard 数据 */
 const loadDashboard = async () => {
@@ -66,11 +52,11 @@ onMounted(() => {
       <NSpin size="large" />
     </div>
 
-    <!-- 预览器 - 使用独立的 Viewer 组件 -->
-    <ThingsVisViewer
-      v-else-if="viewerConfig"
-      :config="viewerConfig"
-      height="100%"
+    <!-- 预览器 - 复用宿主桥接，保证平台数据请求仍由 ThingsPanel 响应 -->
+    <ThingsVisAppFrame
+      v-else-if="hasDashboard"
+      :id="dashboardId"
+      mode="viewer"
     />
 
     <!-- 错误/空状态 -->

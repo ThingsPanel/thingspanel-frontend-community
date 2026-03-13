@@ -8,39 +8,40 @@ import { getThingsVisHomeDashboard, type ThingsVisHomeDashboard } from '@/servic
 import type { ICardRender, ICardView } from '@/components/panel/card'
 import { localStg } from '@/utils/storage'
 import { $t } from '@/locales'
-import ThingsVisViewer from '@/components/thingsvis/ThingsVisViewer.vue'
+import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
+import { useAuthStore } from '@/store/modules/auth'
+import { isSysAdminUser } from '@/utils/thingsvis/space'
 
 const layoutFetched = ref(false)
 const layout = ref<ICardView[]>([])
 const theme = ref('')
 const isError = ref<boolean>(false)
 const active = ref<boolean>(true)
+const showSysAdminSetup = ref(false)
 const token = localStg.get('token')
 const cr = ref<ICardRender>()
 const { updateComponentsData, closeAllSockets } = useWebsocketUtil(cr, token as string)
+const authStore = useAuthStore()
+const isSysAdmin = computed(() => isSysAdminUser(authStore.userInfo))
 
 // ThingsVis 首页相关
 const thingsVisHome = ref<ThingsVisHomeDashboard | null>(null)
 const useThingsVis = ref(false)
 
-// 将 ThingsVis 仪表盘数据转换为 Viewer 需要的 config 格式
-const thingsVisConfig = computed(() => {
-  if (!thingsVisHome.value) return null
-  return {
-    canvas: {
-      ...thingsVisHome.value.canvasConfig,
-      fullWidthPreview: true // 首页嵌入时自适应容器宽度
-    },
-    nodes: thingsVisHome.value.nodes,
-    dataSources: thingsVisHome.value.dataSources
-  }
-})
-
 const getLayout = async () => {
+  isError.value = false
+  showSysAdminSetup.value = false
+  useThingsVis.value = false
+  thingsVisHome.value = null
+  layoutFetched.value = false
+  layout.value = []
+  theme.value = ''
+
   // 先检查 ThingsVis 是否有设为首页的仪表盘
   try {
     console.log('[Home] 尝试获取 ThingsVis 首页...')
     const thingsVisResult = await getThingsVisHomeDashboard()
+    const homeNotConfigured = !thingsVisResult.data?.data && (!thingsVisResult.error || thingsVisResult.error.status === 404)
     console.log('[Home] ThingsVis 响应:', thingsVisResult)
     if (!thingsVisResult.error && thingsVisResult.data?.data) {
       console.log('[Home] 使用 ThingsVis 首页:', thingsVisResult.data.data)
@@ -49,10 +50,29 @@ const getLayout = async () => {
       layoutFetched.value = true
       return
     }
+
+    if (isSysAdmin.value) {
+      if (!homeNotConfigured && thingsVisResult.error) {
+        isError.value = true
+        layoutFetched.value = true
+        return
+      }
+
+      console.log('[Home] 超管空间暂无首页，显示超管首页配置引导')
+      showSysAdminSetup.value = true
+      layoutFetched.value = true
+      return
+    }
+
     console.log('[Home] ThingsVis 没有设置首页，使用原看板')
   } catch (e) {
     // ThingsVis 服务不可用，继续使用原来的看板
     console.log('[Home] ThingsVis 服务错误，使用原看板:', e)
+    if (isSysAdmin.value) {
+      isError.value = true
+      layoutFetched.value = true
+      return
+    }
   }
 
   // 使用原来的看板首页
@@ -160,10 +180,43 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
     </n-result>
   </div>
 
+  <div v-else-if="showSysAdminSetup" class="h-full w-full flex-center">
+    <n-result
+      status="info"
+      title="请先配置超管首页看板"
+      description="当前账号使用独立的超管看板空间。进入可视化项目，创建并将一个 ThingsVis 仪表盘设为首页后，这里会直接展示该超管看板。"
+    >
+      <template #footer>
+        <div class="flex items-center gap-3">
+          <n-button
+            type="primary"
+            @click="
+              () => {
+                router.push('/visualization/thingsvis')
+              }
+            "
+          >
+            前往可视化项目
+          </n-button>
+          <n-button
+            @click="
+              () => {
+                router.go(0)
+              }
+            "
+          >
+            重新加载
+          </n-button>
+        </div>
+      </template>
+    </n-result>
+  </div>
+
   <!-- ThingsVis 首页 -->
-  <ThingsVisViewer
+  <ThingsVisAppFrame
     v-else-if="useThingsVis && thingsVisHome"
-    :config="thingsVisConfig"
+    :id="thingsVisHome.id"
+    mode="viewer"
     class="h-full w-full"
   />
 

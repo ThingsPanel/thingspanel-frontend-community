@@ -14,6 +14,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 import { getThingsVisToken } from '@/utils/thingsvis'
 import {
   deviceList,
@@ -22,8 +23,20 @@ import {
   getAttributeDataSet,
   telemetryDataHistoryList
 } from '@/service/api/device'
-import { attributesApi, getOnlineDeviceTrend, telemetryApi } from '@/service/api'
+import {
+  attributesApi,
+  getAlarmCount,
+  getOnlineDeviceTrend,
+  getSystemMetricsCurrent,
+  getSystemMetricsHistory,
+  telemetryApi,
+  tenant
+} from '@/service/api'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
+import {
+  getGlobalPlatformFields,
+  resolveGlobalPlatformFieldScope
+} from '@/utils/thingsvis/global-platform-fields'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
 
@@ -33,6 +46,8 @@ const props = defineProps<{
   id: string
   mode?: string
 }>()
+
+const router = useRouter()
 
 // ─── Device WebSocket management ─────────────────────────────────────────────
 
@@ -245,11 +260,25 @@ const token = ref('')
 const url = ref('')
 const iframeRef = ref<HTMLIFrameElement>()
 
+const currentUserInfo = localStg.get('userInfo') as Api.Auth.UserInfo | null
+const globalPlatformFieldScope = resolveGlobalPlatformFieldScope(currentUserInfo)
+const globalPlatformFields = getGlobalPlatformFields(globalPlatformFieldScope)
+
 /** Strip any hash fragment and return the bare Studio HTML base URL. */
 function getStudioBase(): string {
   const raw = (import.meta.env.VITE_THINGSVIS_STUDIO_URL as string) || 'http://localhost:3000/main'
   const hashIdx = raw.indexOf('#')
   return hashIdx !== -1 ? raw.substring(0, hashIdx) : raw
+}
+
+function buildThingsVisFrameUrl(thingsVisToken: string): string {
+  const apiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
+
+  if (props.mode === 'viewer') {
+    return `${getStudioBase()}#/embed?id=${encodeURIComponent(props.id)}&token=${thingsVisToken}&mode=embedded&apiBaseUrl=${apiBaseUrl}`
+  }
+
+  return `${getStudioBase()}#/editor/${encodeURIComponent(props.id)}?mode=embedded&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}`
 }
 
 function normalizeHistory(records: any[], valueKey: string): HistoryPoint[] {
@@ -259,6 +288,36 @@ function normalizeHistory(records: any[], valueKey: string): HistoryPoint[] {
       ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
     }))
     .filter(point => !Number.isNaN(point.ts))
+}
+
+function normalizeMetricValue(value: unknown): number {
+  const num = Number(value)
+  return Number.isFinite(num) ? num : 0
+}
+
+function normalizeTenantGrowthHistory(records: any[]): HistoryPoint[] {
+  const currentYear = new Date().getFullYear()
+
+  return records
+    .map((item: any) => {
+      const month = Number(item?.mon)
+      if (!Number.isFinite(month) || month < 1 || month > 12) return null
+
+      return {
+        value: normalizeMetricValue(item?.num),
+        ts: new Date(currentYear, month - 1, 1).getTime()
+      }
+    })
+    .filter((point): point is HistoryPoint => Boolean(point) && !Number.isNaN(point.ts))
+}
+
+function normalizeSystemMetricHistory(records: any[], metricKey: 'cpu' | 'memory' | 'disk'): HistoryPoint[] {
+  return records
+    .map((item: any) => ({
+      value: normalizeMetricValue(item?.[`${metricKey}_usage`] ?? item?.[metricKey]),
+      ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
+    }))
+    .filter((point) => !Number.isNaN(point.ts))
 }
 
 function unwrapList(payload: any): any[] {
@@ -365,8 +424,49 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   }
 
   const result: RequestedFieldResult = { fields: {}, histories: [] }
-  const devRes = await deviceList({ page: 1, page_size: 1000 })
-  const devices = devRes?.data?.list || devRes?.data || []
+  const requestedCurrentFieldSet = new Set(currentFieldIds)
+  const requestedHistoryFieldSet = new Set(historyFieldIds)
+
+  const requiresDeviceSummary = ['device_total', 'device_online', 'device_offline', 'device_activity'].some(fieldId =>
+    requestedCurrentFieldSet.has(fieldId)
+  )
+  const requiresAlarmSummary = requestedCurrentFieldSet.has('alarm_device_total')
+  const requiresTenantSummary =
+    globalPlatformFieldScope === 'super-admin' &&
+    ['tenant_added_yesterday', 'tenant_added_month', 'tenant_total'].some(fieldId =>
+      requestedCurrentFieldSet.has(fieldId)
+    )
+  const requiresTenantHistory =
+    globalPlatformFieldScope === 'super-admin' && requestedHistoryFieldSet.has('tenant_growth')
+  const requiresMetricSummary =
+    globalPlatformFieldScope === 'super-admin' &&
+    ['cpu_usage', 'memory_usage', 'disk_usage'].some(fieldId => requestedCurrentFieldSet.has(fieldId))
+  const requiresMetricHistory =
+    globalPlatformFieldScope === 'super-admin' &&
+    ['cpu_usage', 'memory_usage', 'disk_usage'].some(fieldId => requestedHistoryFieldSet.has(fieldId))
+  const requiresDeviceTrend =
+    requestedHistoryFieldSet.has('device_online') || requestedHistoryFieldSet.has('device_offline')
+
+  const [
+    deviceListResult,
+    alarmCountResult,
+    tenantResult,
+    systemMetricsCurrentResult,
+    systemMetricsHistoryResult,
+    deviceTrendResult
+  ] = await Promise.allSettled([
+    requiresDeviceSummary ? deviceList({ page: 1, page_size: 1000 }) : Promise.resolve(null),
+    requiresAlarmSummary ? getAlarmCount() : Promise.resolve(null),
+    requiresTenantSummary || requiresTenantHistory ? tenant() : Promise.resolve(null),
+    requiresMetricSummary ? getSystemMetricsCurrent() : Promise.resolve(null),
+    requiresMetricHistory ? getSystemMetricsHistory({}) : Promise.resolve(null),
+    requiresDeviceTrend ? getOnlineDeviceTrend() : Promise.resolve(null)
+  ])
+
+  const devices =
+    deviceListResult.status === 'fulfilled'
+      ? deviceListResult.value?.data?.list || deviceListResult.value?.data || []
+      : []
   const deviceTotal = Array.isArray(devices) ? devices.length : 0
   const deviceOnline = Array.isArray(devices)
     ? devices.filter((device: any) => Number(device?.is_online || 0) !== 0).length
@@ -378,14 +478,39 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
     device_activity: deviceOnline
   }
 
-  currentFieldIds.forEach(fieldId => {
+  if (alarmCountResult.status === 'fulfilled') {
+    aggregateValues.alarm_device_total = normalizeMetricValue(
+      alarmCountResult.value?.data?.alarm_device_total
+    )
+  }
+
+  if (tenantResult.status === 'fulfilled') {
+    aggregateValues.tenant_total = normalizeMetricValue(tenantResult.value?.data?.user_total)
+    aggregateValues.tenant_added_yesterday = normalizeMetricValue(
+      tenantResult.value?.data?.user_added_yesterday
+    )
+    aggregateValues.tenant_added_month = normalizeMetricValue(
+      tenantResult.value?.data?.user_added_month
+    )
+  }
+
+  if (systemMetricsCurrentResult.status === 'fulfilled') {
+    aggregateValues.cpu_usage = normalizeMetricValue(systemMetricsCurrentResult.value?.data?.cpu_usage)
+    aggregateValues.memory_usage = normalizeMetricValue(
+      systemMetricsCurrentResult.value?.data?.memory_usage
+    )
+    aggregateValues.disk_usage = normalizeMetricValue(systemMetricsCurrentResult.value?.data?.disk_usage)
+  }
+
+  currentFieldIds.forEach((fieldId) => {
     if (aggregateValues[fieldId] !== undefined) result.fields[fieldId] = aggregateValues[fieldId]
   })
 
-  if (historyFieldIds.some(fieldId => fieldId === 'device_online' || fieldId === 'device_offline')) {
-    const trendRes = await getOnlineDeviceTrend()
-    const trendData = trendRes?.data as { points?: unknown[] } | undefined
-    const points = Array.isArray(trendData?.points) ? trendData.points : []
+  if (requiresDeviceTrend) {
+    const points =
+      deviceTrendResult.status === 'fulfilled' && Array.isArray(deviceTrendResult.value?.data?.points)
+        ? deviceTrendResult.value.data.points
+        : []
 
     if (historyFieldIds.includes('device_online')) {
       const history = normalizeHistory(points, 'device_online')
@@ -396,6 +521,33 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
       const history = normalizeHistory(points, 'device_offline')
       if (history.length > 0) result.histories.push({ fieldId: 'device_offline', history })
     }
+  }
+
+  if (requiresTenantHistory && tenantResult.status === 'fulfilled') {
+    const growthHistory = normalizeTenantGrowthHistory(tenantResult.value?.data?.user_list_month || [])
+    if (growthHistory.length > 0) {
+      result.histories.push({ fieldId: 'tenant_growth', history: growthHistory })
+    }
+  }
+
+  if (requiresMetricHistory && systemMetricsHistoryResult.status === 'fulfilled') {
+    const records = Array.isArray(systemMetricsHistoryResult.value?.data)
+      ? systemMetricsHistoryResult.value.data
+      : []
+
+    const metricFieldMap: Array<{ fieldId: 'cpu_usage' | 'memory_usage' | 'disk_usage'; source: 'cpu' | 'memory' | 'disk' }> = [
+      { fieldId: 'cpu_usage', source: 'cpu' },
+      { fieldId: 'memory_usage', source: 'memory' },
+      { fieldId: 'disk_usage', source: 'disk' }
+    ]
+
+    metricFieldMap.forEach(({ fieldId, source }) => {
+      if (!historyFieldIds.includes(fieldId)) return
+      const history = normalizeSystemMetricHistory(records, source)
+      if (history.length > 0) {
+        result.histories.push({ fieldId, history })
+      }
+    })
   }
 
   return result
@@ -509,6 +661,8 @@ async function doInit() {
   iframeRef.value.contentWindow.postMessage(
     {
       type: 'tv:init',
+      platformFields: globalPlatformFields,
+      platformFieldScope: globalPlatformFieldScope,
       platformDevices,
       data: { meta: { id: props.id } },
       config: {
@@ -608,6 +762,10 @@ const handleMessage = async (event: MessageEvent) => {
   }
 
   if (type === 'tv:ready' || type === 'READY') {
+    if (props.mode === 'viewer') {
+      return
+    }
+
     if (iframeRef.value?.contentWindow && token.value) {
       // Debounce: studio sends tv:ready both on initial load and after bootstrap.
       // Coalesce rapid signals into a single init run.
@@ -628,9 +786,11 @@ const handleMessage = async (event: MessageEvent) => {
   }
 
   if (type === 'tv:preview') {
-    if (!token.value) return
-    const previewUrl = `${getStudioBase()}#/preview?projectId=${projectId || props.id}&token=${token.value}&mode=embedded`
-    window.open(previewUrl, '_blank')
+    const target = router.resolve({
+      path: '/visualization/thingsvis-preview',
+      query: { id: projectId || props.id }
+    })
+    window.open(target.href, '_blank')
   }
 
   if (type === 'tv:publish') {
@@ -663,8 +823,7 @@ onMounted(async () => {
     const tokenStr = await getThingsVisToken()
     if (tokenStr) {
       token.value = tokenStr
-      const apiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
-      url.value = `${getStudioBase()}#/editor/${props.id}?mode=embedded&token=${tokenStr}&apiBaseUrl=${apiBaseUrl}`
+      url.value = buildThingsVisFrameUrl(tokenStr)
     } else {
       console.warn('[AppFrame] Token acquisition returned null')
     }
