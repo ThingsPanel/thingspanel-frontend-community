@@ -30,11 +30,6 @@ export function useHistoryBackfill(
    */
   const backfill = async () => {
     const telemetryFields = platformFields.value.filter(f => f.dataType === 'telemetry')
-    console.log('[useHistoryBackfill] backfill start', {
-      deviceId: deviceId.value,
-      platformFieldCount: platformFields.value.length,
-      telemetryFieldIds: telemetryFields.map(field => field.id)
-    })
     if (!telemetryFields.length) return
 
     const historyPromises = telemetryFields.map(async field => {
@@ -48,17 +43,11 @@ export function useHistoryBackfill(
           aggregate_window: '1m', // 1分钟聚合
           aggregate_function: 'avg' // 平均值
         }
-        console.log(`[useHistoryBackfill] ${field.id}: history api params`, params)
         const res = await telemetryDataHistoryList(params)
 
         // transformBackendResponse 返回 response.data.data
         // 实际结构: { data: [{ x: "ISO-date", y: number }] }
         const timeSeries = res?.data
-        console.log(`[useHistoryBackfill] ${field.id}: history api response`, {
-          isArray: Array.isArray(timeSeries),
-          count: Array.isArray(timeSeries) ? timeSeries.length : 0,
-          first: Array.isArray(timeSeries) ? timeSeries[0] : undefined,
-        })
         if (Array.isArray(timeSeries) && timeSeries.length > 0) {
           const history: HistoryPoint[] = timeSeries
             .map((item: any) => ({
@@ -68,16 +57,8 @@ export function useHistoryBackfill(
             .filter(p => !isNaN(p.ts) && !isNaN(p.value))
 
           if (history.length > 0) {
-            console.log(`[useHistoryBackfill] ${field.id}: ${history.length} points backfilled`, {
-              first: history[0],
-              last: history[history.length - 1]
-            })
             pushHistory(field.id, history)
-          } else {
-            console.warn(`[useHistoryBackfill] ${field.id}: normalized history is empty`)
           }
-        } else {
-          console.warn(`[useHistoryBackfill] ${field.id}: history api returned no array data`, res)
         }
       } catch (e) {
         console.warn(`[useHistoryBackfill] Failed to fetch history for ${field.id}:`, e)

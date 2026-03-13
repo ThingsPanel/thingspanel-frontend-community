@@ -34,19 +34,9 @@ function normalizeNodeBindings(node: any) {
 
   node.data = node.data.map((binding: any) => {
     if (!HISTORY_TARGET_PROPS.has(binding?.targetProp)) return binding
-    const nextExpression = normalizeHistoryExpression(binding.expression)
-    if (nextExpression !== binding.expression) {
-      console.log('[normalizeThingsVisHistoryBindings] migrated chart binding', {
-        widgetType,
-        nodeId: node?.id,
-        targetProp: binding?.targetProp,
-        from: binding.expression,
-        to: nextExpression,
-      })
-    }
     return {
       ...binding,
-      expression: nextExpression
+      expression: normalizeHistoryExpression(binding.expression)
     }
   })
 }
