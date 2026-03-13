@@ -219,32 +219,6 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
     mode="viewer"
     class="h-full w-full"
   />
-
-  <!--
- <div v-else>
-
-
-  </div> 
--->
-  <CardRender
-    v-else-if="layoutFetched"
-    ref="cr"
-    class="home-panel"
-    :layout="layout"
-    :is-preview="true"
-    :col-num="12"
-    :default-card-col="4"
-    :row-height="85"
-    :theme="theme"
-    @update:layout="
-      data => {
-        nextTick(() => {
-          layout = data
-        })
-      }
-    "
-    @breakpoint-changed="breakpointChanged"
-  />
 </template>
 
 <style scoped>
