@@ -38,7 +38,7 @@ export function useHistoryBackfill(
           device_id: deviceId.value,
           key: field.id,
           time_range: 'custom',
-          start_time: Date.now() - 36000 * 1000, // 最近 1 小时
+          start_time: Date.now() - 24 * 3600 * 1000, // 最近 24 小时
           end_time: Date.now(),
           aggregate_window: '1m', // 1分钟聚合
           aggregate_function: 'avg' // 平均值
