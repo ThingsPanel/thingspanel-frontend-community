@@ -313,10 +313,8 @@ function normalizeTenantGrowthHistory(records: any[]): HistoryPoint[] {
       ts
     })
   })
-
   return points
 }
-
 function normalizeSystemMetricHistory(records: any[], metricKey: 'cpu' | 'memory' | 'disk'): HistoryPoint[] {
   return records
     .map((item: any) => ({
