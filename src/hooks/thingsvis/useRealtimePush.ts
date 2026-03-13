@@ -1,7 +1,7 @@
 /**
  * useRealtimePush — tp-03
  * 使用 WebSocket 订阅设备遥测实时数据并推送到 ThingsVis。
- * 若 WebSocket 连接失败或断开则自动回退到轮询。
+ * 仅走 WS 通道；连接异常时自动重连。
  *
  * WS 端点：/api/v1/telemetry/datas/current/ws
  * 协议流程：
@@ -16,33 +16,60 @@
 import { type Ref, ref } from 'vue'
 import type { PlatformField } from '@/utils/thingsvis/types'
 import { localStg } from '@/utils/storage'
+import { getWebsocketServerUrl } from '@/utils/common/tool'
 
-/** ping 间隔，需 < 60s 以保持连接 */
-const PING_INTERVAL_MS = 25_000
-const POLLING_FALLBACK_INTERVAL_MS = 5000
+/** ping 间隔。服务端心跳窗口较短，需与现有稳定模块保持一致（8s）。 */
+const PING_INTERVAL_MS = 8_000
 const WS_RECONNECT_DELAY_MS = 3000
 
 /**
  * 构建遥测 WebSocket URL
  *
- * 开发环境：走 Vite 的 /proxy-default 代理（需在 proxy.ts 中配置 ws:true）
- *   例如 ws://localhost:5002/proxy-default/telemetry/datas/current/ws
- *   代理会去掉 /proxy-default 前缀并转发到后端
- *
- * 生产环境：前端与 API 同域（nginx 反代），直接使用 /api/v1 路径
- *   例如 wss://example.com/api/v1/telemetry/datas/current/ws
+ * 统一复用项目已有的 websocket 基地址，避免与 request/baseURL、代理前缀不一致。
  */
 function buildTelemetryWsUrl(): string {
-  const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
-  const host = window.location.host
+  return `${getWebsocketServerUrl()}/telemetry/datas/current/ws`
+}
 
-  // 开发环境走 Vite 代理 — 代理配置会 rewrite 掉 /proxy-default 前缀
-  if (import.meta.env.DEV) {
-    return `${proto}://${host}/proxy-default/telemetry/datas/current/ws`
+function extractFields(payload: unknown): Record<string, unknown> {
+  const normalizeFlatObject = (obj: Record<string, unknown>) => {
+    const fields: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(obj)) {
+      if (k === 'systime') continue
+      fields[k] = v
+    }
+    return fields
   }
 
-  // 生产环境直连
-  return `${proto}://${host}/api/v1/telemetry/datas/current/ws`
+  if (!payload) return {}
+
+  if (Array.isArray(payload)) {
+    const fields: Record<string, unknown> = {}
+    payload.forEach(item => {
+      if (!item || typeof item !== 'object') return
+      const key = (item as any).key ?? (item as any).label
+      if (!key || key === 'systime') return
+      if ((item as any).value !== undefined) fields[key] = (item as any).value
+    })
+    return fields
+  }
+
+  if (typeof payload !== 'object') return {}
+  const obj = payload as Record<string, unknown>
+
+  if (obj.fields && typeof obj.fields === 'object' && !Array.isArray(obj.fields)) {
+    return normalizeFlatObject(obj.fields as Record<string, unknown>)
+  }
+
+  if (obj.data !== undefined) {
+    return extractFields(obj.data)
+  }
+
+  if (obj.payload !== undefined) {
+    return extractFields(obj.payload)
+  }
+
+  return normalizeFlatObject(obj)
 }
 
 export function useRealtimePush(
@@ -50,28 +77,56 @@ export function useRealtimePush(
   platformFields: Ref<PlatformField[]>,
   /** 推送单批次字段值到 ThingsVis */
   pushData: (fields: Record<string, unknown>) => void,
-  /** 轮询回退时调用此函数获取最新状态 */
+  /** 建连后拉一帧当前值，避免等待下一条 WS 才更新 */
   fetchLatest: () => Promise<void>
 ) {
   let ws: WebSocket | null = null
   let pingTimer: ReturnType<typeof setInterval> | null = null
-  let pollTimer: ReturnType<typeof setInterval> | null = null
+  let reconnectTimer: ReturnType<typeof setTimeout> | null = null
   let destroyed = false
+  let loggedFirstBusinessFrame = false
+  let warnedUnmappedPayload = false
+  let businessFrameCount = 0
   const usingWebSocket = ref(false)
 
-  const stopPolling = () => {
-    if (pollTimer) {
-      clearInterval(pollTimer)
-      pollTimer = null
+  const mapToPlatformFieldIds = (rawFields: Record<string, unknown>): { fields: Record<string, unknown>; matched: boolean } => {
+    const mapped: Record<string, unknown> = {}
+    const fields = platformFields.value || []
+    if (fields.length === 0) {
+      return { fields: rawFields, matched: false }
+    }
+
+    fields.forEach(field => {
+      const idVal = rawFields[field.id]
+      const nameVal = rawFields[field.name]
+      if (idVal !== undefined) {
+        mapped[field.id] = idVal
+      } else if (nameVal !== undefined) {
+        mapped[field.id] = nameVal
+      }
+    })
+
+    // Fallback: if no mapping matched, keep the original payload to avoid dropping data.
+    if (Object.keys(mapped).length === 0) {
+      return { fields: rawFields, matched: false }
+    }
+    return { fields: mapped, matched: true }
+  }
+
+  const clearReconnectTimer = () => {
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer)
+      reconnectTimer = null
     }
   }
 
-  const startPolling = () => {
-    stopPolling()
-    usingWebSocket.value = false
-    console.warn('[useRealtimePush] WebSocket unavailable — falling back to polling')
-    fetchLatest().catch(console.error)
-    pollTimer = setInterval(() => fetchLatest().catch(console.error), POLLING_FALLBACK_INTERVAL_MS)
+  const scheduleReconnect = () => {
+    clearReconnectTimer()
+    reconnectTimer = setTimeout(() => {
+      if (!destroyed) {
+        startWebSocket()
+      }
+    }, WS_RECONNECT_DELAY_MS)
   }
 
   const stopWebSocket = () => {
@@ -79,8 +134,9 @@ export function useRealtimePush(
       clearInterval(pingTimer)
       pingTimer = null
     }
+    clearReconnectTimer()
     if (ws) {
-      ws.onclose = null // 阻止 onclose 触发回退逻辑（主动关闭时）
+      ws.onclose = null
       ws.close()
       ws = null
     }
@@ -90,11 +146,12 @@ export function useRealtimePush(
   const startWebSocket = () => {
     if (destroyed) return
     stopWebSocket()
+    clearReconnectTimer()
 
     const token = localStg.get('token') as string | undefined
     if (!token) {
-      console.warn('[useRealtimePush] No auth token, falling back to polling')
-      startPolling()
+      console.warn('[useRealtimePush] No auth token, retrying websocket later')
+      scheduleReconnect()
       return
     }
 
@@ -102,15 +159,19 @@ export function useRealtimePush(
       const wsUrl = buildTelemetryWsUrl()
       ws = new WebSocket(wsUrl)
     } catch (err) {
-      console.warn('[useRealtimePush] WebSocket init failed, falling back to polling:', err)
-      startPolling()
+      console.warn('[useRealtimePush] WebSocket init failed, retrying:', err)
+      scheduleReconnect()
       return
     }
 
     ws.onopen = () => {
       if (!ws) return
       usingWebSocket.value = true
-      stopPolling()
+      clearReconnectTimer()
+      loggedFirstBusinessFrame = false
+      warnedUnmappedPayload = false
+      businessFrameCount = 0
+      console.info('[useRealtimePush] Telemetry WS connected', { deviceId: deviceId.value, url: ws.url })
 
       // 连接后发送认证消息：device_id + token
       ws.send(
@@ -119,6 +180,7 @@ export function useRealtimePush(
           token
         })
       )
+      fetchLatest().catch(console.error)
 
       // 保持连接：ping 间隔 < 60s
       pingTimer = setInterval(() => {
@@ -132,50 +194,65 @@ export function useRealtimePush(
       if (typeof event.data !== 'string' || event.data === 'pong') return
       try {
         const msg = JSON.parse(event.data)
-        // 服务端返回扁平对象：{"humidity":5,"systime":"...","temperature":16.27}
-        // 过滤 systime 后推送所有字段
-        if (typeof msg === 'object' && msg !== null && !Array.isArray(msg)) {
-          const fields: Record<string, unknown> = {}
-          for (const [k, v] of Object.entries(msg)) {
-            if (k === 'systime') continue
-            fields[k] = v
+        const rawFields = extractFields(msg)
+        if (Object.keys(rawFields).length > 0) {
+          businessFrameCount += 1
+          const { fields: mappedFields, matched } = mapToPlatformFieldIds(rawFields)
+          if (!loggedFirstBusinessFrame) {
+            loggedFirstBusinessFrame = true
+            console.info('[useRealtimePush] First telemetry frame received', {
+              rawKeys: Object.keys(rawFields).slice(0, 12),
+              mappedKeys: Object.keys(mappedFields).slice(0, 12)
+            })
           }
-          if (Object.keys(fields).length > 0) {
-            pushData(fields)
+          if (import.meta.env.DEV && businessFrameCount % 10 === 0) {
+            console.info('[useRealtimePush] Telemetry frame progress', {
+              count: businessFrameCount,
+              lastRawKeys: Object.keys(rawFields).slice(0, 12),
+              lastMappedKeys: Object.keys(mappedFields).slice(0, 12)
+            })
           }
+          if (!warnedUnmappedPayload && !matched) {
+            warnedUnmappedPayload = true
+            console.warn('[useRealtimePush] Telemetry payload did not map to platformFields', {
+              rawKeys: Object.keys(rawFields).slice(0, 12),
+              fieldIds: platformFields.value.map(f => f.id).slice(0, 12),
+              fieldNames: platformFields.value.map(f => f.name).slice(0, 12)
+            })
+          }
+          pushData(mappedFields)
         }
       } catch {
         // 非 JSON 帧，忽略
       }
     }
 
-    ws.onerror = () => {
-      console.warn('[useRealtimePush] WebSocket error')
+    ws.onerror = (event) => {
+      console.warn('[useRealtimePush] WebSocket error:', event)
     }
 
-    ws.onclose = () => {
+    ws.onclose = event => {
       if (destroyed) return
       usingWebSocket.value = false
       if (pingTimer) {
         clearInterval(pingTimer)
         pingTimer = null
       }
-      // WS 断开后回退到轮询
-      setTimeout(() => {
-        if (!destroyed) startPolling()
-      }, WS_RECONNECT_DELAY_MS)
+      console.warn('[useRealtimePush] WebSocket closed:', { code: event.code, reason: event.reason })
+      scheduleReconnect()
     }
   }
 
   const start = () => {
     destroyed = false
+    clearReconnectTimer()
     startWebSocket()
   }
 
   const stop = () => {
     destroyed = true
+    clearReconnectTimer()
     stopWebSocket()
-    stopPolling()
   }
 
   return { start, stop, usingWebSocket }
