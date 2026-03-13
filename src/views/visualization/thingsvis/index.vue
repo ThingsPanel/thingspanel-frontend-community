@@ -15,7 +15,6 @@ import {
   useMessage
 } from 'naive-ui'
 import { useRouterPush } from '@/hooks/common/router'
-import { $t } from '@/locales'
 import {
   getThingsVisProjects,
   createThingsVisProject,

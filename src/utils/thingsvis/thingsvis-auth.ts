@@ -6,6 +6,7 @@
 import { localStg } from '@/utils/storage'
 import type { SSOExchangeRequest, SSOExchangeResponse } from './types'
 import { THINGSVIS_API_PROXY_PATH } from './constants'
+import { resolveThingsVisSpaceId } from './space'
 
 /**
  * ThingsVis SSO 认证服务类
@@ -48,7 +49,7 @@ export class ThingsVisAuthService {
           id: userInfo.userId || userInfo.id || '',
           email: userInfo.email || `${userInfo.userName}@thingspanel.local`,
           name: userInfo.userName || 'ThingsPanel User',
-          tenantId: userInfo.tenantId || 'default'
+          tenantId: resolveThingsVisSpaceId(userInfo)
         }
       }
 
