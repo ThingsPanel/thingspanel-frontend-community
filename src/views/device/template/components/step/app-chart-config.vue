@@ -4,7 +4,7 @@
  * 显示预览，点击编辑按钮打开ThingsVis编辑器弹窗
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { NButton, NModal, NCard, NEmpty, NSelect, NSpace, NSpin } from 'naive-ui'
 import { $t } from '@/locales'
 import { getTemplat, putTemplat, telemetryApi, attributesApi } from '@/service/api'
@@ -42,6 +42,18 @@ const HISTORY_SEED_WINDOW_MS = CHART_EDITOR_BUFFER_SIZE * 60_000
 const HISTORY_AGGREGATE_WINDOW = '1m'
 
 // 状态
+// 将当前模板字段包装为一个虚拟设备条目，供 Field Picker 的「Device Fields」选项使用
+const platformDevices = computed(() => {
+  if (!platformFields.value.length) return []
+  return [{
+    deviceId: '__template__',
+    deviceName: '当前设备模板',
+    groupName: '当前设备模板',
+    fields: platformFields.value,
+    presets: []
+  }]
+})
+
 const loading = ref(true)
 const saving = ref(false)
 const showEditorModal = ref(false)
@@ -104,7 +116,7 @@ const seedEditorHistory = async () => {
             (p: { x: number; y: unknown }) => ({ value: p.y, ts: p.x })
           )
           if (records.length > 0) {
-            editorRef.value?.pushHistory(field.id, records)
+            editorRef.value?.pushHistory(field.id, records, '__template__')
           }
         } catch (e) {
           console.error('[app-chart-config] seedEditorHistory failed for field:', field.id, e)
@@ -135,10 +147,23 @@ const handleSave = async (payload: any) => {
     // 获取当前模板数据
     const res = await getTemplat(props.deviceTemplateId)
 
+    // ⚠️ CRITICAL: 清理 PLATFORM_FIELD datasource 中的 deviceId
+    // 这些 ID 在编辑时是模板/虚拟设备 ID，不应该被保存到配置中
+    // 运行时会根据真实设备ID动态注入
+    const cleanedPayload = JSON.parse(JSON.stringify(payload))
+    if (cleanedPayload.dataSources && Array.isArray(cleanedPayload.dataSources)) {
+      cleanedPayload.dataSources.forEach((ds: any) => {
+        if (ds.type === 'PLATFORM_FIELD' && ds.config) {
+          // ✅ 移除编辑时的虚拟 deviceId，让运行时注入真实设备 ID
+          delete ds.config.deviceId
+        }
+      })
+    }
+
     // 保存到 app_chart_config 字段
     // 将刷新频率合并到配置中
     const configToSave = {
-      ...payload,
+      ...cleanedPayload,
       refreshInterval: refreshInterval.value
     }
 
@@ -289,7 +314,8 @@ onMounted(() => {
           ref="editorRef"
           mode="editor"
           :config="initialConfig"
-          :platform-fields="platformFields"
+          :platform-fields="[]"
+          :platform-devices="platformDevices"
           :buffer-size="CHART_EDITOR_BUFFER_SIZE"
           height="calc(90vh - 160px)"
           @save="handleSave"

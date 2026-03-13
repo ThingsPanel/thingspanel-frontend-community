@@ -62,6 +62,16 @@ const cardMargin = ref(15)
 const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
 const currentData = ref<Record<string, any>>({})
+const viewerPlatformDevices = computed(() => {
+  if (!d_id || platformFields.value.length === 0) return []
+  return [
+    {
+      deviceId: d_id as string,
+      deviceName: deviceData.value?.name || device_number.value || 'Device',
+      fields: platformFields.value
+    }
+  ]
+})
 
 // ThingsVis Widget ref
 const visWidgetRef = ref<InstanceType<typeof ThingsVisWidget> | null>(null)
@@ -76,11 +86,16 @@ const historyBackfill = ref<ReturnType<typeof useHistoryBackfill> | null>(null)
 
 // 推送实时数据到 ThingsVis
 const pushDataToVis = (fields: Record<string, unknown>) => {
-  visWidgetRef.value?.pushPlatformData(fields)
+  if (Object.keys(fields).length === 0) return
+  currentData.value = {
+    ...currentData.value,
+    ...fields
+  }
+  visWidgetRef.value?.pushPlatformData(fields, d_id as string)
 }
 
 const pushHistoryToVis = (fieldId: string, history: Array<{ value: unknown; ts: number }>) => {
-  visWidgetRef.value?.pushHistory(fieldId, history)
+  visWidgetRef.value?.pushHistory(fieldId, history, d_id as string)
 }
 
 const getDeviceDetail = async () => {
@@ -131,6 +146,19 @@ const getDeviceDetail = async () => {
         if (res.data.app_chart_config) {
           try {
             const configJson = JSON.parse(res.data.app_chart_config)
+            
+            // ⚠️ CRITICAL: 为所有 PLATFORM_FIELD datasource 注入真实设备 ID
+            // 编辑器保存时不含 deviceId（防止误导和冗余）
+            // 运行时需要根据当前设备动态注入
+            if (configJson.dataSources && Array.isArray(configJson.dataSources)) {
+              configJson.dataSources.forEach((ds: any) => {
+                if (ds.type === 'PLATFORM_FIELD') {
+                  ds.config = ds.config || {}
+                  ds.config.deviceId = d_id as string
+                }
+              })
+            }
+            
             initialConfig.value = configJson
             showAppChart.value = true
 
@@ -190,28 +218,30 @@ const fetchDeviceData = async () => {
 
     const kvMap: Record<string, any> = {}
     const processItem = (item: any) => {
-      if (item?.key !== undefined) kvMap[item.key] = item.value
-      if (item?.label) kvMap[item.label] = item.value
+      if (item?.key !== undefined) {
+        kvMap[item.key] = item.value
+      } else if (item?.label !== undefined) {
+        if (!kvMap[item.label]) kvMap[item.label] = item.value
+      }
     }
 
     if (Array.isArray(telemetryList)) telemetryList.forEach(processItem)
     if (Array.isArray(attributeList)) attributeList.forEach(processItem)
 
-    console.log('[DeviceDetailsApp] kvMap:', JSON.stringify(kvMap))
-    console.log('[DeviceDetailsApp] platformFields:', platformFields.value.map(f => `${f.id}/${f.name}`))
-
     const dataMap: Record<string, any> = {}
     platformFields.value.forEach(field => {
       const val = kvMap[field.id] ?? kvMap[field.name]
-      if (val !== undefined) dataMap[field.id] = val
+      if (val !== undefined) {
+        dataMap[field.id] = val
+      }
     })
 
-    console.log('[DeviceDetailsApp] dataMap to push:', JSON.stringify(dataMap))
-
     if (Object.keys(dataMap).length > 0) {
+      currentData.value = {
+        ...currentData.value,
+        ...dataMap
+      }
       pushDataToVis(dataMap)
-    } else {
-      console.warn('[DeviceDetailsApp] dataMap is empty — field IDs may not match API keys')
     }
   } catch (error) {
     console.error('[DeviceDetailsApp] 获取设备数据失败:', error)
@@ -222,7 +252,6 @@ const fetchDeviceData = async () => {
  * ThingsVis ready 回调
  */
 const onVisReady = async () => {
-  console.log('[DeviceDetailsApp] onVisReady fired')
   // tp-02: 历史数据回填
   if (historyBackfill.value) await historyBackfill.value.backfill()
   // tp-04: 告警历史回填
@@ -288,7 +317,9 @@ onBeforeUnmount(() => {
         ref="visWidgetRef"
         mode="viewer"
         :config="initialConfig"
+        :data="currentData"
         :platform-fields="platformFields"
+        :platform-devices="viewerPlatformDevices"
         height="calc(100vh - 250px)"
         :buffer-size="100"
         :device-id="d_id as string"

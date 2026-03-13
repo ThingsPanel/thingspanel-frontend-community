@@ -45,6 +45,11 @@ export interface WidgetLoadOptions {
    *       array — required by line / area chart widgets that render historical trends.
    */
   platformBufferSize?: number;
+  /**
+   * Optional list of platform device entries (same shape as ThingsVisAppFrame platformDevices).
+   * When provided, the Field Picker inside the editor shows a "Device Fields" option.
+   */
+  platformDevices?: any[];
 }
 
 export type MessageHandler = (payload: any) => void
@@ -56,6 +61,8 @@ export class ThingsVisClient {
   public ready: boolean = false
   private messageHandlers: Map<string, MessageHandler[]> = new Map()
   private pendingQueue: Array<() => void> = []
+  private lastInitPayload: any = null
+  private platformPushCount = 0
 
   constructor(options: ThingsVisOptions) {
     this.options = options
@@ -129,7 +136,12 @@ export class ThingsVisClient {
 
     // 3. Handle re-init request from Guest (e.g. after bootstrap re-run)
     if (type === TV_MSG.REQUEST_INIT) {
-      this.emit('ready', {})
+      if (this.lastInitPayload) {
+        console.log('[SDK] Guest requested init replay, resending cached init payload')
+        this.send(TV_MSG.INIT, this.lastInitPayload)
+      } else {
+        this.emit('ready', {})
+      }
     }
 
     // 4. 其他可能的事件
@@ -230,6 +242,8 @@ export class ThingsVisClient {
     ]
 
     const payload = {
+      // platformDevices at the top level so EmbedPage.tsx can read msg.platformDevices
+      platformDevices: options?.platformDevices ?? [],
       data: {
         meta: safeConfig.meta || { id: 'widget', name: 'Widget' },
         canvas: safeCanvas,
@@ -243,6 +257,7 @@ export class ThingsVisClient {
       }
     }
 
+    this.lastInitPayload = payload
     console.log('[SDK] Sending init payload:', payload)
     this.send(TV_MSG.INIT, payload)
   }
@@ -267,8 +282,16 @@ export class ThingsVisClient {
    *
    * @param fields - Map of fieldId to current value, e.g. { temperature: 25.3 }
    */
-  public pushPlatformFieldData(fields: Record<string, unknown>): void {
-    this.send('tv:platform-data', { fields })
+  public pushPlatformFieldData(fields: Record<string, unknown>, deviceId?: string): void {
+    this.platformPushCount += 1
+    if (import.meta.env.DEV && this.platformPushCount % 20 === 0) {
+      console.info('[SDK] tv:platform-data send progress', {
+        count: this.platformPushCount,
+        deviceId,
+        keys: Object.keys(fields).slice(0, 12),
+      })
+    }
+    this.send('tv:platform-data', { fields, deviceId })
   }
 
   /**
@@ -283,8 +306,9 @@ export class ThingsVisClient {
   public pushFieldHistory(
     fieldId: string,
     history: Array<{ value: unknown; ts: number }>,
+    deviceId?: string,
   ): void {
-    this.send('tv:platform-history', { fieldId, history })
+    this.send('tv:platform-history', { fieldId, history, deviceId })
   }
 
   /**
@@ -369,6 +393,7 @@ export class ThingsVisClient {
     }
     this.messageHandlers.clear()
     this.pendingQueue = []
+    this.lastInitPayload = null
     this.ready = false
   }
 }

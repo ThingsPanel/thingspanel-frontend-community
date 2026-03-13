@@ -14,6 +14,8 @@ const props = defineProps<{
   data?: Record<string, any>
   /** Optional: platform field schema forwarded to the ThingsVis editor */
   platformFields?: any[]
+  /** Optional: device entries forwarded to the ThingsVis editor (enables Device Fields in Field Picker) */
+  platformDevices?: any[]
   /** Optional: iframe height */
   height?: string
   /** Render mode: 'viewer' (read-only preview) | 'editor' (visual editor) */
@@ -36,6 +38,11 @@ const emit = defineEmits<{
 
 const container = ref<HTMLElement | null>(null)
 let client: ThingsVisClient | null = null
+
+const getLoadOptions = () => ({
+  platformBufferSize: props.bufferSize ?? 0,
+  platformDevices: clone(props.platformDevices || [])
+})
 
 /**
  * Handle tv:platform-write messages posted by the embedded ThingsVis iframe.
@@ -86,7 +93,12 @@ onMounted(async () => {
   if (hashIdx !== -1) baseUrl = baseUrl.substring(0, hashIdx)
 
   // 获取 Token 以便 URL 优先鉴权
-  const token = await getThingsVisToken()
+  let token = ''
+  try {
+    token = (await getThingsVisToken()) || ''
+  } catch (error) {
+    console.error('[ThingsVisWidget] getThingsVisToken failed, continuing without URL token:', error)
+  }
   const tokenParams = token ? `&token=${token}` : ''
 
   // 追加 saveTarget=host，告知 Editor 进入宿主托管模式
@@ -113,10 +125,10 @@ onMounted(async () => {
     if (props.config) client?.loadWidgetConfig(
       clone(props.config),
       clone(props.platformFields || []),
-      { platformBufferSize: props.bufferSize ?? 0 }
+      getLoadOptions()
     )
     if (props.platformFields) client?.updateSchema(clone(props.platformFields))
-    if (props.data) client?.pushData(clone(props.data))
+    if (props.data) client?.pushPlatformFieldData(clone(props.data), props.deviceId)
     emit('ready')
   })
 
@@ -136,7 +148,7 @@ watch(
   () => props.config,
   newVal => {
     if (client?.ready && newVal) {
-      client.loadWidgetConfig(clone(newVal), clone(props.platformFields || []))
+      client.loadWidgetConfig(clone(newVal), clone(props.platformFields || []), getLoadOptions())
     }
   },
   { deep: true }
@@ -147,7 +159,7 @@ watch(
   () => props.data,
   newVal => {
     if (client?.ready && newVal) {
-      client.pushPlatformFieldData(clone(newVal))
+      client.pushPlatformFieldData(clone(newVal), props.deviceId)
     }
   },
   { deep: true }
@@ -173,8 +185,8 @@ const triggerSave = () => {
  * Bulk-fill the ring buffer for one platform field with historical records.
  * Delegates to ThingsVisClient.pushFieldHistory(); no-op when client is not ready.
  */
-const pushHistory = (fieldId: string, history: Array<{ value: unknown; ts: number }>) => {
-  client?.pushFieldHistory(fieldId, history)
+const pushHistory = (fieldId: string, history: Array<{ value: unknown; ts: number }>, deviceId?: string) => {
+  client?.pushFieldHistory(fieldId, history, deviceId)
 }
 
 /**
@@ -182,8 +194,8 @@ const pushHistory = (fieldId: string, history: Array<{ value: unknown; ts: numbe
  * Uses closure reference to `client` so it always reflects the live instance,
  * unlike the exposed `client` property which is snapshotted as null at setup time.
  */
-const pushPlatformData = (fields: Record<string, unknown>) => {
-  client?.pushPlatformFieldData(fields)
+const pushPlatformData = (fields: Record<string, unknown>, deviceId?: string) => {
+  client?.pushPlatformFieldData(fields, deviceId)
 }
 
 onBeforeUnmount(() => {

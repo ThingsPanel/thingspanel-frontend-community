@@ -42,6 +42,18 @@ const HISTORY_SEED_WINDOW_MS = CHART_EDITOR_BUFFER_SIZE * 60_000
 const HISTORY_AGGREGATE_WINDOW = '1m'
 
 // 状态
+// 将当前模板字段包装为一个虚拟设备条目，供 Field Picker 的「Device Fields」选项使用
+const platformDevices = computed(() => {
+  if (!platformFields.value.length) return []
+  return [{
+    deviceId: '__template__',
+    deviceName: '当前设备模板',
+    groupName: '当前设备模板',
+    fields: platformFields.value,
+    presets: []
+  }]
+})
+
 const loading = ref(true)
 const saving = ref(false)
 const widgetKey = ref(0)
@@ -110,7 +122,7 @@ const seedEditorHistory = async () => {
             (p: { x: number; y: unknown }) => ({ value: p.y, ts: p.x })
           )
           if (records.length > 0) {
-            editorRef.value?.pushHistory(field.id, records)
+            editorRef.value?.pushHistory(field.id, records, '__template__')
           }
         } catch (e) {
           console.error('[web-chart-config] seedEditorHistory failed for field:', field.id, e)
@@ -134,25 +146,32 @@ const next = () => {
 
 // 处理保存
 const handleSave = async (payload: any) => {
-  console.log('[web-chart-config] handleSave 被调用:', payload)
-
   if (saving.value) {
-    console.log('[web-chart-config] 正在保存中，跳过')
     return
   }
 
   saving.value = true
   try {
-    console.log('[web-chart-config] 开始保存，deviceTemplateId:', props.deviceTemplateId)
-
     // 获取当前模板数据
     const res = await getTemplat(props.deviceTemplateId)
-    console.log('[web-chart-config] 获取模板成功:', res.data)
+
+    // ⚠️ CRITICAL: 清理 PLATFORM_FIELD datasource 中的 deviceId
+    // 这些 ID 在编辑时是模板/虚拟设备 ID，不应该被保存到配置中
+    // 运行时会根据真实设备ID动态注入
+    const cleanedPayload = JSON.parse(JSON.stringify(payload))
+    if (cleanedPayload.dataSources && Array.isArray(cleanedPayload.dataSources)) {
+      cleanedPayload.dataSources.forEach((ds: any) => {
+        if (ds.type === 'PLATFORM_FIELD' && ds.config) {
+          // ✅ 移除编辑时的虚拟 deviceId，让运行时注入真实设备 ID
+          delete ds.config.deviceId
+        }
+      })
+    }
 
     // 只保存到 web_chart_config 字段
     // 将刷新频率合并到配置中
     const configToSave = {
-      ...payload,
+      ...cleanedPayload,
       refreshInterval: refreshInterval.value
     }
     const configStr = JSON.stringify(configToSave)
@@ -160,7 +179,6 @@ const handleSave = async (payload: any) => {
       ...res.data,
       web_chart_config: configStr
     })
-    console.log('[web-chart-config] 保存成功 (web)')
 
     window.$message?.success($t('common.saveSuccess'))
 
@@ -172,7 +190,7 @@ const handleSave = async (payload: any) => {
     // 关闭弹窗
     showEditorModal.value = false
   } catch (error) {
-    console.error('[web-chart-config] 保存失败:', error)
+    console.error('保存 Web 图表配置失败:', error)
     window.$message?.error($t('common.saveFailed'))
   } finally {
     saving.value = false
@@ -181,11 +199,9 @@ const handleSave = async (payload: any) => {
 
 // 加载模板数据
 const loadTemplateData = async () => {
-  console.log('[web-chart-config] 🔄 开始加载模板数据, deviceTemplateId:', props.deviceTemplateId)
   loading.value = true
   try {
     const res = await getTemplat(props.deviceTemplateId)
-    console.log('[web-chart-config] 📦 模板数据获取成功:', res.data)
 
     if (res.data) {
       // Fetch all platform field types from model APIs: telemetry, attributes, events, commands.
@@ -229,11 +245,9 @@ const loadTemplateData = async () => {
 
       const extractedFields = extractPlatformFields(platformSource)
       platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)
-      console.log('[web-chart-config] 🏷️ 平台字段提取完成:', platformFields.value.length, '个字段')
 
       // 加载已有配置
       if (res.data.web_chart_config) {
-        console.log('[web-chart-config] 📄 发现 web_chart_config 字段')
         try {
           const config = JSON.parse(res.data.web_chart_config)
           initialConfig.value = config
@@ -242,29 +256,22 @@ const loadTemplateData = async () => {
           if (config.refreshInterval !== undefined) {
             refreshInterval.value = config.refreshInterval
           }
-
-          // 🔍 详细日志
-          console.log('[web-chart-config] ✅ 配置解析成功')
         } catch (e) {
-          console.warn('[web-chart-config] ❌ 解析 web_chart_config 失败', e)
+          console.warn('解析 web_chart_config 失败', e)
           initialConfig.value = null
           hasConfig.value = false
         }
-      } else {
-        console.log('[web-chart-config] ℹ️ 没有找到 web_chart_config，这是新配置')
       }
     }
   } catch (error) {
-    console.error('[web-chart-config] ❌ 加载模板数据失败:', error)
+    console.error('加载模板数据失败:', error)
     window.$message?.error($t('common.fetchDataFailed'))
   } finally {
     loading.value = false
-    console.log('[web-chart-config] ✅ 数据加载完成')
   }
 }
 
 onMounted(() => {
-  console.log('[web-chart-config] 🚀 组件已挂载')
   loadTemplateData()
 })
 </script>
@@ -333,7 +340,8 @@ onMounted(() => {
           ref="editorRef"
           mode="editor"
           :config="initialConfig"
-          :platform-fields="platformFields"
+          :platform-fields="[]"
+          :platform-devices="platformDevices"
           :buffer-size="CHART_EDITOR_BUFFER_SIZE"
           height="calc(90vh - 160px)"
           @save="handleSave"

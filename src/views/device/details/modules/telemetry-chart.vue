@@ -59,6 +59,16 @@ const visWidgetRef = ref<InstanceType<typeof ThingsVisWidget> | null>(null)
 
 // 当前数据（轮询回退使用）
 const currentData = ref<Record<string, any>>({})
+const viewerPlatformDevices = computed(() => {
+  if (!props.id || platformFields.value.length === 0) return []
+  return [
+    {
+      deviceId: props.id,
+      deviceName: props.deviceData?.name || 'Device',
+      fields: platformFields.value
+    }
+  ]
+})
 
 const deviceIdRef = computed(() => props.id)
 
@@ -96,7 +106,10 @@ const fetchAndUpdateData = async () => {
     })
 
     if (Object.keys(dataMap).length > 0) {
-      currentData.value = dataMap
+      currentData.value = {
+        ...currentData.value,
+        ...dataMap
+      }
       pushDataToVis(dataMap)
     }
   } catch (err) {
@@ -106,12 +119,17 @@ const fetchAndUpdateData = async () => {
 
 // WebSocket 推送数据到 ThingsVis
 const pushDataToVis = (fields: Record<string, unknown>) => {
-  visWidgetRef.value?.pushPlatformData(fields)
+  if (Object.keys(fields).length === 0) return
+  currentData.value = {
+    ...currentData.value,
+    ...fields
+  }
+  visWidgetRef.value?.pushPlatformData(fields, props.id)
 }
 
 // 历史推送方法
 const pushHistoryToVis = (fieldId: string, history: Array<{ value: unknown; ts: number }>) => {
-  visWidgetRef.value?.pushHistory(fieldId, history)
+  visWidgetRef.value?.pushHistory(fieldId, history, props.id)
 }
 
 const realtimePush = ref<ReturnType<typeof useRealtimePush> | null>(null)
@@ -163,7 +181,16 @@ const initTemplateData = async (deviceTemplateId: string) => {
 
       if (res.data.web_chart_config) {
         try {
-          initialConfig.value = JSON.parse(res.data.web_chart_config)
+          const configJson = JSON.parse(res.data.web_chart_config)
+          if (Array.isArray(configJson?.dataSources)) {
+            configJson.dataSources.forEach((ds: any) => {
+              if (ds?.type === 'PLATFORM_FIELD') {
+                ds.config = ds.config || {}
+                ds.config.deviceId = props.id
+              }
+            })
+          }
+          initialConfig.value = configJson
           hasTemplate.value = true
         } catch (e) {
           console.warn('[TelemetryChart] 解析 web_chart_config 失败', e)
@@ -270,7 +297,9 @@ onBeforeUnmount(() => {
         ref="visWidgetRef"
         mode="viewer"
         :config="initialConfig"
+        :data="currentData"
         :platform-fields="platformFields"
+        :platform-devices="viewerPlatformDevices"
         :height="chartHeight"
         :buffer-size="100"
         :device-id="props.id"
