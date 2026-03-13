@@ -1,6 +1,13 @@
-  <template>
+<template>
   <div class="thingsvis-frame-container">
-    <iframe ref="iframeRef" v-if="url && token" :src="url" class="thingsvis-frame" frameborder="0" allowfullscreen></iframe>
+    <iframe
+      v-if="url && token"
+      ref="iframeRef"
+      :src="url"
+      class="thingsvis-frame"
+      frameborder="0"
+      allowfullscreen
+    ></iframe>
     <div v-else class="loading-placeholder">正在连接可视化引擎...</div>
   </div>
 </template>
@@ -39,7 +46,19 @@ interface DeviceWsEntry {
   device: { deviceId: string; fields: Array<{ id?: string; name?: string }> }
 }
 
+type PlatformDeviceEntry = {
+  deviceId: string
+  deviceName: string
+  groupName: string
+  fields: Array<{ id?: string; name?: string }>
+  presets: any[]
+}
+
 const deviceWsMap = new Map<string, DeviceWsEntry>()
+const activePlatformDevices = new Map<string, { deviceId: string; fields: Array<{ id?: string; name?: string }> }>()
+const templateEntryCache = new Map<string, Awaited<ReturnType<typeof loadTemplateEntry>>>()
+let platformDevicesCache: PlatformDeviceEntry[] | null = null
+let platformDevicesCachePromise: Promise<PlatformDeviceEntry[]> | null = null
 
 /** Extract flat key→value map from various WS response shapes. */
 function extractWsFields(payload: unknown): Record<string, unknown> {
@@ -179,6 +198,15 @@ function connectDeviceWs(device: { deviceId: string; fields: Array<{ id?: string
   openWs()
 }
 
+function ensureDeviceWs(deviceId?: string) {
+  if (!deviceId) return
+  const device = activePlatformDevices.get(deviceId)
+  if (!device) return
+  const existing = deviceWsMap.get(deviceId)
+  if (existing && !existing.destroyed) return
+  connectDeviceWs(device)
+}
+
 /** Disconnect and clean up all device WebSocket connections. */
 function disconnectAllDeviceWs() {
   for (const entry of deviceWsMap.values()) {
@@ -246,13 +274,24 @@ function parsePresetMap(rawConfig: unknown): Record<string, unknown[]> | null {
 }
 
 async function loadTemplateEntry(templateId: string | number) {
-  const [detailRes, telemetryRes, attributesRes, eventsRes, commandsRes] = await Promise.all([
-    deviceTemplateDetail({ id: templateId }),
-    telemetryApi({ page: 1, page_size: 1000, device_template_id: templateId }),
-    attributesApi({ page: 1, page_size: 1000, device_template_id: templateId }),
-    eventsApi({ page: 1, page_size: 1000, device_template_id: templateId }),
-    commandsApi({ page: 1, page_size: 1000, device_template_id: templateId })
-  ])
+  const cacheKey = String(templateId)
+  const cached = templateEntryCache.get(cacheKey)
+  if (cached) return cached
+
+  const [detailResult, telemetryResult, attributesResult, eventsResult, commandsResult] =
+    await Promise.allSettled([
+      deviceTemplateDetail({ id: templateId }),
+      telemetryApi({ page: 1, page_size: 1000, device_template_id: templateId }),
+      attributesApi({ page: 1, page_size: 1000, device_template_id: templateId }),
+      eventsApi({ page: 1, page_size: 1000, device_template_id: templateId }),
+      commandsApi({ page: 1, page_size: 1000, device_template_id: templateId })
+    ])
+
+  const detailRes = detailResult.status === 'fulfilled' ? detailResult.value : null
+  const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
+  const attributesRes = attributesResult.status === 'fulfilled' ? attributesResult.value : null
+  const eventsRes = eventsResult.status === 'fulfilled' ? eventsResult.value : null
+  const commandsRes = commandsResult.status === 'fulfilled' ? commandsResult.value : null
 
   const detail = detailRes?.data || {}
   const platformSource = {
@@ -264,11 +303,14 @@ async function loadTemplateEntry(templateId: string | number) {
   const extractedFields = extractPlatformFields(platformSource)
   const fallbackFields = extractPlatformFields(detail)
 
-  return {
+  const entry = {
     groupName: detail?.name || detail?.template_name || '设备字段',
     fields: extractedFields.length > 0 ? extractedFields : fallbackFields,
     presetsMap: parsePresetMap(detail?.web_chart_config)
   }
+
+  templateEntryCache.set(cacheKey, entry)
+  return entry
 }
 
 async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): Promise<RequestedFieldResult> {
@@ -289,10 +331,13 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
     const result: RequestedFieldResult = { fields: {}, histories: [] }
 
     if (currentFieldIds.length > 0) {
-      const [telemetryRes, attributeRes] = await Promise.all([
+      const [telemetryResult, attributeResult] = await Promise.allSettled([
         telemetryDataCurrent(deviceId),
         getAttributeDataSet({ device_id: deviceId })
       ])
+
+      const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
+      const attributeRes = attributeResult.status === 'fulfilled' ? attributeResult.value : null
 
       const kvMap: Record<string, unknown> = {}
       const collect = (item: any) => {
@@ -374,102 +419,112 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   return result
 }
 
-async function buildPlatformDevices() {
-  try {
-    const [devRes, confRes] = await Promise.all([
-      deviceList({ page: 1, page_size: 1000 }),
-      getDeviceConfigList({ page: 1, page_size: 1000 })
-    ])
+async function buildPlatformDevices(): Promise<{
+  devices: PlatformDeviceEntry[]
+  debug: Record<string, unknown>
+}> {
+  if (platformDevicesCache) {
+    return { devices: platformDevicesCache, debug: { cached: true, assembledCount: platformDevicesCache.length } }
+  }
 
-    const devices = unwrapList(devRes?.data)
-    const configs = unwrapList(confRes?.data)
+  if (platformDevicesCachePromise) {
+    const devices = await platformDevicesCachePromise
+    return { devices, debug: { cached: true, assembledCount: devices.length } }
+  }
 
-    // Build config → template map (only configs that actually have a template)
-    const configTemplateMap = new Map<string, string>()
-    for (const config of configs) {
-      if (config.id && config.device_template_id) {
-        configTemplateMap.set(String(config.id), String(config.device_template_id))
+  platformDevicesCachePromise = (async () => {
+    try {
+      const [devRes, confRes] = await Promise.all([
+        deviceList({ page: 1, page_size: 1000 }),
+        getDeviceConfigList({ page: 1, page_size: 1000 })
+      ])
+
+      const devices = unwrapList(devRes?.data)
+      const configs = unwrapList(confRes?.data)
+
+      // Build config → template map (only configs that actually have a template)
+      const configTemplateMap = new Map<string, string>()
+      for (const config of configs) {
+        if (config.id && config.device_template_id) {
+          configTemplateMap.set(String(config.id), String(config.device_template_id))
+        }
       }
-    }
-    // Collect template IDs from configs directly (more reliable than going through
-    // devices, which may not have device_config_id populated in every list response)
-    const templateIdSet = new Set<string>()
-    for (const config of configs) {
-      if (config.device_template_id) templateIdSet.add(String(config.device_template_id))
-    }
-    // Also pick up any template IDs embedded directly on device objects (some API versions
-    // return the full device_config object inside the list item)
-    for (const device of devices) {
-      const tid = device?.device_config?.device_template_id
-      if (tid) templateIdSet.add(String(tid))
-    }
-
-    const templateIds = Array.from(templateIdSet)
-
-    if (templateIds.length === 0) {
-      return { devices: [], debug: { noTemplates: true } }
-    }
-
-    const templateEntries = new Map<string, Awaited<ReturnType<typeof loadTemplateEntry>>>()
-    const templateResults = await Promise.allSettled(
-      templateIds.map(async (templateId) => {
-        const entry = await loadTemplateEntry(templateId)
-        templateEntries.set(templateId, entry)
-      })
-    )
-
-    templateResults.forEach((result, index) => {
-      if (result.status === 'rejected') {
-        console.warn('[AppFrame] Failed to load template fields:', templateIds[index], result.reason)
+      // Collect template IDs from configs directly (more reliable than going through
+      // devices, which may not have device_config_id populated in every list response)
+      const templateIdSet = new Set<string>()
+      for (const config of configs) {
+        if (config.device_template_id) templateIdSet.add(String(config.device_template_id))
       }
-    })
+      // Also pick up any template IDs embedded directly on device objects (some API versions
+      // return the full device_config object inside the list item)
+      for (const device of devices) {
+        const tid = device?.device_config?.device_template_id
+        if (tid) templateIdSet.add(String(tid))
+      }
 
-    const platformDevices = devices
-      .map((device: any) => {
-        // Prefer embedded device_config (device-detail style response), otherwise look up via configTemplateMap
-        const templateId =
-          (device?.device_config?.device_template_id
-            ? String(device.device_config.device_template_id)
-            : null) ||
-          (device?.device_config_id ? configTemplateMap.get(String(device.device_config_id)) : null)
+      const templateIds = Array.from(templateIdSet)
 
-        if (!templateId) return null
+      if (templateIds.length === 0) {
+        platformDevicesCache = []
+        return []
+      }
 
-        const templateEntry = templateEntries.get(templateId)
-        if (!templateEntry) return null
-
-        const presets: any[] = []
-        Object.values(templateEntry.presetsMap || {}).forEach((arr: any) => {
-          if (Array.isArray(arr)) presets.push(...arr)
+      const templateEntries = new Map<string, Awaited<ReturnType<typeof loadTemplateEntry>>>()
+      const templateResults = await Promise.allSettled(
+        templateIds.map(async templateId => {
+          const entry = await loadTemplateEntry(templateId)
+          templateEntries.set(templateId, entry)
         })
+      )
 
-        // Include the device even when fields are empty — the UI can still show
-        // the device in the picker, and live data will populate fields at runtime
-        return {
-          deviceId: device.id,
-          deviceName: device.name || device.device_number,
-          groupName: templateEntry.groupName,
-          fields: templateEntry.fields,
-          presets
+      templateResults.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.warn('[AppFrame] Failed to load template fields:', templateIds[index], result.reason)
         }
       })
-      .filter((item): item is NonNullable<typeof item> => Boolean(item))
-    return {
-      devices: platformDevices,
-      debug: {
-        devicesCount: devices.length,
-        configsCount: configs.length,
-        configTemplateMapSize: configTemplateMap.size,
-        templateIds,
-        firstRawConfig: configs[0] ? { ...configs[0] } : null,
-        firstRawDevice: devices[0] ? { id: devices[0].id, name: devices[0].name, device_config_id: devices[0].device_config_id } : null,
-        assembledCount: platformDevices.length
-      }
+
+      const platformDevices = devices
+        .map((device: any): PlatformDeviceEntry | null => {
+          // Prefer embedded device_config (device-detail style response), otherwise look up via configTemplateMap
+          const templateId =
+            (device?.device_config?.device_template_id
+              ? String(device.device_config.device_template_id)
+              : null) ||
+            (device?.device_config_id ? configTemplateMap.get(String(device.device_config_id)) : null)
+
+          if (!templateId || !device?.id) return null
+
+          const templateEntry = templateEntries.get(templateId)
+          if (!templateEntry) return null
+
+          const presets: any[] = []
+          Object.values(templateEntry.presetsMap || {}).forEach((arr: any) => {
+            if (Array.isArray(arr)) presets.push(...arr)
+          })
+
+          return {
+            deviceId: String(device.id),
+            deviceName: String(device.name || device.device_number || device.id),
+            groupName: templateEntry.groupName,
+            fields: Array.isArray(templateEntry.fields) ? templateEntry.fields : [],
+            presets
+          }
+        })
+        .filter((item): item is PlatformDeviceEntry => Boolean(item))
+
+      platformDevicesCache = platformDevices
+      return platformDevices
+    } catch (err) {
+      console.error('[AppFrame] Failed to assemble platformDevices', err)
+      platformDevicesCache = []
+      return []
+    } finally {
+      platformDevicesCachePromise = null
     }
-  } catch (err) {
-    console.error('[AppFrame] Failed to assemble platformDevices', err)
-    return { devices: [], debug: { error: String(err) } }
-  }
+  })()
+
+  const devices = await platformDevicesCachePromise
+  return { devices, debug: { assembledCount: devices.length } }
 }
 
 /** Full init sequence triggered once per tv:ready (debounced). */
@@ -478,13 +533,22 @@ async function doInit() {
 
   const apiBaseUrl = window.location.origin + '/thingsvis-api'
 
-  const { devices: platformDevices, debug: _debugInfo } = await buildPlatformDevices()
+  const { devices: platformDevices } = await buildPlatformDevices()
+
+  activePlatformDevices.clear()
+  for (const device of platformDevices) {
+    if (device?.deviceId) {
+      activePlatformDevices.set(device.deviceId, {
+        deviceId: device.deviceId,
+        fields: Array.isArray(device.fields) ? device.fields : []
+      })
+    }
+  }
 
   iframeRef.value.contentWindow.postMessage(
     {
       type: 'tv:init',
       platformDevices,
-      _debug: _debugInfo,
       data: { meta: { id: props.id } },
       config: {
         mode: 'app',
@@ -496,44 +560,10 @@ async function doInit() {
     '*'
   )
 
-  // Open real-time telemetry WebSocket for each device.
-  // WS sends current values immediately on connect, covering the initial-data
-  // case (value-card and other widgets) before REST prefetch completes.
+  // Do not eagerly connect/prefetch every device in editor mode.
+  // A large device fleet can make the editor unstable and generate many failing
+  // requests for devices that are never actually selected or bound.
   disconnectAllDeviceWs()
-  if (Array.isArray(platformDevices)) {
-    for (const device of platformDevices) {
-      if (device?.deviceId) connectDeviceWs(device)
-    }
-  }
-
-  // Prefetch current device field values and push immediately after tv:init.
-  if (Array.isArray(platformDevices) && platformDevices.length > 0) {
-    for (const device of platformDevices) {
-      if (!device?.deviceId) continue
-      try {
-        const fieldIds = Array.isArray(device.fields)
-          ? (device.fields as Array<{ id?: unknown }>)
-              .map(f => f?.id)
-              .filter((id): id is string => typeof id === 'string')
-          : []
-        const prefetchResult = await buildRequestedFieldData(fieldIds, device.deviceId)
-        if (Object.keys(prefetchResult.fields).length > 0 && iframeRef.value?.contentWindow) {
-          const win = iframeRef.value.contentWindow
-          win.postMessage(
-            { type: 'tv:platform-data', payload: { deviceId: device.deviceId, fields: prefetchResult.fields } },
-            '*'
-          )
-          // Also push to global __platform__ for "当前设备模板" bindings
-          win.postMessage(
-            { type: 'tv:platform-data', payload: { fields: prefetchResult.fields } },
-            '*'
-          )
-        }
-      } catch (err) {
-        // Best effort only: live WS will populate runtime values when prefetch fails.
-      }
-    }
-  }
 }
 
 const handleMessage = async (event: MessageEvent) => {
@@ -546,6 +576,7 @@ const handleMessage = async (event: MessageEvent) => {
     if (!iframeRef.value?.contentWindow) return
 
     try {
+      ensureDeviceWs(payload.deviceId)
       const result = await buildRequestedFieldData(payload.fieldIds, payload.deviceId)
       if (Object.keys(result.fields).length > 0) {
         iframeRef.value.contentWindow.postMessage(
@@ -558,6 +589,17 @@ const handleMessage = async (event: MessageEvent) => {
           },
           '*'
         )
+        if (payload.deviceId) {
+          iframeRef.value.contentWindow.postMessage(
+            {
+              type: 'tv:platform-data',
+              payload: {
+                fields: result.fields
+              }
+            },
+            '*'
+          )
+        }
       }
 
       result.histories.forEach((item) => {
@@ -573,7 +615,7 @@ const handleMessage = async (event: MessageEvent) => {
           '*'
         )
       })
-    } catch (err) {
+    } catch {
       // Best effort only: ignore transient field-request failures to avoid console noise.
     }
     return
@@ -648,6 +690,10 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener('message', handleMessage)
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
+  activePlatformDevices.clear()
+  platformDevicesCache = null
+  platformDevicesCachePromise = null
+  templateEntryCache.clear()
   disconnectAllDeviceWs()
 })
 </script>
