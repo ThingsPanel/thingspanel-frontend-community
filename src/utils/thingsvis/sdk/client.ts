@@ -275,32 +275,43 @@ export class ThingsVisClient {
     }
     const safeNodes = safeConfig.nodes || []
 
-    // Merge __platform__ (with correct bufferSize) with any custom data sources in the saved config.
+    // Apply bufferSize to all platform data sources in the saved config.
     const existingDataSources: any[] = safeConfig.dataSources ?? []
-    // Preserve any deviceId injected into the existing __platform__ entry by the host
-    // (e.g. device-details-app injects the real device id at runtime so that strict
-    // adapter routing matches push messages that carry the same deviceId).
-    const existingPlatformDs = existingDataSources.find((ds: any) => ds.id === '__platform__')
+    const mergedDataSources = existingDataSources.map((ds: any) => {
+      const typeStr = typeof ds.type === 'string' ? ds.type.toUpperCase() : ''
+      if (typeStr === 'PLATFORM_FIELD' || typeStr === 'PLATFORM') {
+        const config = ds.config || {}
+        return {
+          ...ds,
+          config: {
+            ...config,
+            // A non-zero bufferSize activates the rolling history buffer in PlatformFieldAdapter,
+            // which exposes `{fieldId}__history` arrays needed by line/area chart widgets.
+            bufferSize: Math.max(config.bufferSize ?? 0, options?.platformBufferSize ?? 0),
+          }
+        }
+      }
+      return ds
+    })
 
-    // Build the __platform__ data source entry, honouring the caller-provided bufferSize.
-    // A non-zero bufferSize activates the rolling history buffer in PlatformFieldAdapter,
-    // which exposes `{fieldId}__history` arrays needed by line/area chart widgets.
-    const platformDs = {
-      id: '__platform__',
-      name: 'System Platform',
-      type: 'PLATFORM_FIELD',
-      config: {
-        source: 'platform',
-        fieldMappings: existingPlatformDs?.config?.fieldMappings ?? {},
-        bufferSize: options?.platformBufferSize ?? 0,
-        ...(existingPlatformDs?.config?.deviceId ? { deviceId: existingPlatformDs.config.deviceId } : {}),
-      },
+    // Fallback for backwards compatibility: ensure at least one platform data source exists
+    const hasPlatformDs = mergedDataSources.some((ds: any) => {
+      const typeStr = typeof ds.type === 'string' ? ds.type.toUpperCase() : ''
+      return typeStr === 'PLATFORM_FIELD' || typeStr === 'PLATFORM'
+    })
+
+    if (!hasPlatformDs) {
+      mergedDataSources.unshift({
+        id: '__platform__',
+        name: 'System Platform',
+        type: 'PLATFORM_FIELD',
+        config: {
+          source: 'platform',
+          fieldMappings: {},
+          bufferSize: options?.platformBufferSize ?? 0,
+        },
+      })
     }
-
-    const mergedDataSources = [
-      platformDs,
-      ...existingDataSources.filter((ds: any) => ds.id !== '__platform__'),
-    ]
 
     const payload = {
       // platformDevices at the top level so EmbedPage.tsx can read msg.platformDevices

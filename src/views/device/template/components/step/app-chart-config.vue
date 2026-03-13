@@ -12,6 +12,7 @@ import { getTemplat, putTemplat, telemetryApi, attributesApi } from '@/service/a
 import { telemetryDataHistoryList } from '@/service/api/device'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
+import { normalizeThingsVisHistoryBindings } from '@/utils/thingsvis/normalize-history-bindings'
 import type { PlatformField } from '@/utils/thingsvis/types'
 
 const emit = defineEmits(['update:stepCurrent', 'update:modalVisible'])
@@ -166,7 +167,7 @@ const handleSave = async (payload: any) => {
     // ⚠️ CRITICAL: 清理 PLATFORM_FIELD datasource 中的 deviceId
     // 这些 ID 在编辑时是模板/虚拟设备 ID，不应该被保存到配置中
     // 运行时会根据真实设备ID动态注入
-    const cleanedPayload = JSON.parse(JSON.stringify(payload))
+    const cleanedPayload = normalizeThingsVisHistoryBindings(JSON.parse(JSON.stringify(payload)))
     if (cleanedPayload.dataSources && Array.isArray(cleanedPayload.dataSources)) {
       cleanedPayload.dataSources.forEach((ds: any) => {
         if (ds.type === 'PLATFORM_FIELD' && ds.config) {
@@ -191,7 +192,7 @@ const handleSave = async (payload: any) => {
     window.$message?.success($t('common.saveSuccess'))
 
     // 更新状态
-    initialConfig.value = payload
+    initialConfig.value = configToSave
     hasConfig.value = true
 
     // 关闭弹窗
@@ -244,7 +245,7 @@ const loadTemplateData = async () => {
       // 加载已有配置
       if (res.data.app_chart_config) {
         try {
-          const config = JSON.parse(res.data.app_chart_config)
+          const config = normalizeThingsVisHistoryBindings(JSON.parse(res.data.app_chart_config))
           initialConfig.value = config
           hasConfig.value = true
           // 恢复刷新频率配置

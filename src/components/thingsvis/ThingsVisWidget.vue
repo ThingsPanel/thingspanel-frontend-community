@@ -62,8 +62,19 @@ const pushFieldHistoryCompat = (
 ) => {
   if (!client) return
   const payload = clone(history) || []
+    console.log('[ThingsVisWidget] pushFieldHistoryCompat', {
+      fieldId,
+      deviceId,
+      count: payload.length,
+      first: payload[0],
+      last: payload[payload.length - 1]
+    })
   client.pushFieldHistory(fieldId, payload, deviceId)
   if (deviceId) {
+      console.log('[ThingsVisWidget] pushFieldHistoryCompat global replay', {
+        fieldId,
+        count: payload.length
+      })
     client.pushFieldHistory(fieldId, payload)
   }
 }

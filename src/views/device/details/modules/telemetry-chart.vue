@@ -14,6 +14,7 @@ import { onMounted, onBeforeUnmount, ref, watch, computed } from 'vue'
 import { NEmpty, NCard, NSkeleton } from 'naive-ui'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
+import { normalizeThingsVisHistoryBindings } from '@/utils/thingsvis/normalize-history-bindings'
 import { deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
 import { telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api'
 import type { PlatformField } from '@/utils/thingsvis/types'
@@ -181,7 +182,7 @@ const initTemplateData = async (deviceTemplateId: string) => {
 
       if (res.data.web_chart_config) {
         try {
-          const configJson = JSON.parse(res.data.web_chart_config)
+          const configJson = normalizeThingsVisHistoryBindings(JSON.parse(res.data.web_chart_config))
           if (Array.isArray(configJson?.dataSources)) {
             configJson.dataSources.forEach((ds: any) => {
               if (ds?.type === 'PLATFORM_FIELD') {
