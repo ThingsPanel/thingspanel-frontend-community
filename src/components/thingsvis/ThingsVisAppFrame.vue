@@ -17,16 +17,17 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { getThingsVisToken } from '@/utils/thingsvis'
 import {
   deviceList,
-  deviceTemplateDetail,
   getDeviceConfigList,
   telemetryDataCurrent,
   getAttributeDataSet,
   telemetryDataHistoryList
 } from '@/service/api/device'
-import { attributesApi, commandsApi, eventsApi, getOnlineDeviceTrend, telemetryApi } from '@/service/api'
+import { attributesApi, getOnlineDeviceTrend, telemetryApi } from '@/service/api'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
+
+const EDITOR_TEMPLATE_FIELD_PAGE_SIZE = 1000
 
 const props = defineProps<{
   id: string
@@ -54,9 +55,13 @@ type PlatformDeviceEntry = {
   presets: any[]
 }
 
+type TemplateEntry = {
+  fields: Array<{ id?: string; name?: string }>
+}
+
 const deviceWsMap = new Map<string, DeviceWsEntry>()
 const activePlatformDevices = new Map<string, { deviceId: string; fields: Array<{ id?: string; name?: string }> }>()
-const templateEntryCache = new Map<string, Awaited<ReturnType<typeof loadTemplateEntry>>>()
+const templateEntryCache = new Map<string, TemplateEntry>()
 let platformDevicesCache: PlatformDeviceEntry[] | null = null
 let platformDevicesCachePromise: Promise<PlatformDeviceEntry[]> | null = null
 
@@ -261,52 +266,28 @@ function unwrapList(payload: any): any[] {
   return []
 }
 
-function parsePresetMap(rawConfig: unknown): Record<string, unknown[]> | null {
-  if (!rawConfig) return null
-  try {
-    const parsed = typeof rawConfig === 'string' ? JSON.parse(rawConfig) : rawConfig
-    return parsed?.device_widget_presets && typeof parsed.device_widget_presets === 'object'
-      ? parsed.device_widget_presets
-      : null
-  } catch {
-    return null
-  }
-}
-
 async function loadTemplateEntry(templateId: string | number) {
   const cacheKey = String(templateId)
   const cached = templateEntryCache.get(cacheKey)
   if (cached) return cached
 
-  const [detailResult, telemetryResult, attributesResult, eventsResult, commandsResult] =
+  const [telemetryResult, attributesResult] =
     await Promise.allSettled([
-      deviceTemplateDetail({ id: templateId }),
-      telemetryApi({ page: 1, page_size: 1000, device_template_id: templateId }),
-      attributesApi({ page: 1, page_size: 1000, device_template_id: templateId }),
-      eventsApi({ page: 1, page_size: 1000, device_template_id: templateId }),
-      commandsApi({ page: 1, page_size: 1000, device_template_id: templateId })
+      telemetryApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
+      attributesApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId })
     ])
 
-  const detailRes = detailResult.status === 'fulfilled' ? detailResult.value : null
   const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
   const attributesRes = attributesResult.status === 'fulfilled' ? attributesResult.value : null
-  const eventsRes = eventsResult.status === 'fulfilled' ? eventsResult.value : null
-  const commandsRes = commandsResult.status === 'fulfilled' ? commandsResult.value : null
 
-  const detail = detailRes?.data || {}
   const platformSource = {
     telemetry: unwrapList(telemetryRes?.data),
-    attributes: unwrapList(attributesRes?.data),
-    events: unwrapList(eventsRes?.data),
-    commands: unwrapList(commandsRes?.data)
+    attributes: unwrapList(attributesRes?.data)
   }
   const extractedFields = extractPlatformFields(platformSource)
-  const fallbackFields = extractPlatformFields(detail)
 
-  const entry = {
-    groupName: detail?.name || detail?.template_name || '设备字段',
-    fields: extractedFields.length > 0 ? extractedFields : fallbackFields,
-    presetsMap: parsePresetMap(detail?.web_chart_config)
+  const entry: TemplateEntry = {
+    fields: extractedFields
   }
 
   templateEntryCache.set(cacheKey, entry)
@@ -403,7 +384,8 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
 
   if (historyFieldIds.some((fieldId) => fieldId === 'device_online' || fieldId === 'device_offline')) {
     const trendRes = await getOnlineDeviceTrend()
-    const points = Array.isArray(trendRes?.data?.points) ? trendRes.data.points : []
+    const trendData = trendRes?.data as { points?: unknown[] } | undefined
+    const points = Array.isArray(trendData?.points) ? trendData.points : []
 
     if (historyFieldIds.includes('device_online')) {
       const history = normalizeHistory(points, 'device_online')
@@ -469,7 +451,7 @@ async function buildPlatformDevices(): Promise<{
         return []
       }
 
-      const templateEntries = new Map<string, Awaited<ReturnType<typeof loadTemplateEntry>>>()
+      const templateEntries = new Map<string, TemplateEntry>()
       const templateResults = await Promise.allSettled(
         templateIds.map(async templateId => {
           const entry = await loadTemplateEntry(templateId)
@@ -497,17 +479,15 @@ async function buildPlatformDevices(): Promise<{
           const templateEntry = templateEntries.get(templateId)
           if (!templateEntry) return null
 
-          const presets: any[] = []
-          Object.values(templateEntry.presetsMap || {}).forEach((arr: any) => {
-            if (Array.isArray(arr)) presets.push(...arr)
-          })
+          const groupName =
+            String(device?.device_config?.name || device?.device_config_name || '').trim() || '设备字段'
 
           return {
             deviceId: String(device.id),
             deviceName: String(device.name || device.device_number || device.id),
-            groupName: templateEntry.groupName,
+            groupName,
             fields: Array.isArray(templateEntry.fields) ? templateEntry.fields : [],
-            presets
+            presets: []
           }
         })
         .filter((item): item is PlatformDeviceEntry => Boolean(item))
