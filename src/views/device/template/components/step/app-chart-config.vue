@@ -102,6 +102,8 @@ const editorWidgetHeight = computed(() =>
   isEditorFullscreen.value ? 'calc(100vh - 170px)' : 'calc(min(92vh, 1120px) - 170px)'
 )
 
+const previewHeight = computed(() => 'min(68vh, 720px)')
+
 /**
  * Pre-fill the editor widget ring buffer with historical telemetry records so that
  * line/area chart widgets render immediately instead of starting from an empty buffer.
@@ -302,7 +304,14 @@ watch(showEditorModal, visible => {
       <NSpin :show="loading" description="加载中...">
         <!-- 有配置时显示预览 -->
         <div v-if="hasConfig && initialConfig" class="preview-area">
-          <ThingsVisWidget mode="viewer" :config="initialConfig" :platform-fields="platformFields" height="400px" />
+          <ThingsVisWidget
+            mode="viewer"
+            :config="initialConfig"
+            :platform-fields="platformFields"
+            :platform-devices="platformDevices"
+            device-id="__template__"
+            :height="previewHeight"
+          />
         </div>
 
         <!-- 无配置时提示 -->
@@ -392,6 +401,7 @@ watch(showEditorModal, visible => {
 
 .preview-area {
   width: 100%;
+  min-height: min(68vh, 720px);
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   overflow: hidden;

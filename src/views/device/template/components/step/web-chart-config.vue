@@ -327,6 +327,8 @@ watch(showEditorModal, visible => {
             mode="viewer"
             :config="initialConfig"
             :platform-fields="platformFields"
+            :platform-devices="platformDevices"
+            device-id="__template__"
             :height="previewHeight"
           />
         </div>

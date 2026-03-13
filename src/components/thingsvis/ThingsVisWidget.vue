@@ -39,6 +39,110 @@ const emit = defineEmits<{
 const container = ref<HTMLElement | null>(null)
 let client: ThingsVisClient | null = null
 
+const getPreviewDeviceId = () => {
+  if (typeof props.deviceId === 'string' && props.deviceId.trim()) return props.deviceId
+
+  if (props.platformDevices?.length === 1) {
+    const deviceId = props.platformDevices[0]?.deviceId
+    if (typeof deviceId === 'string' && deviceId.trim()) return deviceId
+  }
+
+  return undefined
+}
+
+const isPlatformFieldDataSource = (dataSource: any) => {
+  const type = typeof dataSource?.type === 'string' ? dataSource.type.toUpperCase() : ''
+  return type === 'PLATFORM_FIELD' || type === 'PLATFORM'
+}
+
+const normalizeViewerPlatformDataSources = (config: any) => {
+  if (!config || props.mode !== 'viewer' || !Array.isArray(config.dataSources)) return config
+
+  const previewDeviceId = getPreviewDeviceId()
+  if (!previewDeviceId) return config
+
+  return {
+    ...config,
+    dataSources: config.dataSources.map((dataSource: any) => {
+      if (!isPlatformFieldDataSource(dataSource)) return dataSource
+      if (dataSource?.config?.deviceId) return dataSource
+
+      return {
+        ...dataSource,
+        config: {
+          ...(dataSource.config || {}),
+          deviceId: previewDeviceId
+        }
+      }
+    })
+  }
+}
+
+const buildRequestedFieldData = (fieldIds: string[]) => {
+  const currentData = props.data
+  if (!fieldIds.length || !currentData) return {}
+
+  return fieldIds.reduce<Record<string, unknown>>((acc, fieldId) => {
+    if (Object.prototype.hasOwnProperty.call(currentData, fieldId)) {
+      acc[fieldId] = currentData[fieldId]
+    }
+    return acc
+  }, {})
+}
+
+function normalizeViewerConfig(config: any) {
+  if (!config || props.mode !== 'viewer') return config
+
+  const platformNormalizedConfig = normalizeViewerPlatformDataSources(config)
+
+  const canvas = platformNormalizedConfig.canvas || platformNormalizedConfig.canvasConfig
+  if (!canvas || canvas.mode !== 'infinite') return platformNormalizedConfig
+
+  const nodes = Array.isArray(platformNormalizedConfig.nodes) ? platformNormalizedConfig.nodes : []
+  const positionedNodes = nodes.filter((node: any) => {
+    return [node?.x, node?.y, node?.width, node?.height].every((value) => typeof value === 'number')
+  })
+
+  if (positionedNodes.length === 0) {
+    return {
+      ...platformNormalizedConfig,
+      canvas: {
+        ...canvas,
+        scaleMode: canvas.scaleMode || 'fit-min'
+      }
+    }
+  }
+
+  const padding = 48
+  const minX = Math.min(...positionedNodes.map((node: any) => node.x))
+  const minY = Math.min(...positionedNodes.map((node: any) => node.y))
+  const maxX = Math.max(...positionedNodes.map((node: any) => node.x + node.width))
+  const maxY = Math.max(...positionedNodes.map((node: any) => node.y + node.height))
+
+  const offsetX = padding - minX
+  const offsetY = padding - minY
+
+  return {
+    ...platformNormalizedConfig,
+    canvas: {
+      ...canvas,
+      width: Math.max(canvas.width || 0, Math.ceil(maxX - minX + padding * 2)),
+      height: Math.max(canvas.height || 0, Math.ceil(maxY - minY + padding * 2)),
+      scaleMode: canvas.scaleMode || 'fit-min'
+    },
+    nodes: nodes.map((node: any) => {
+      if ([node?.x, node?.y].every((value) => typeof value === 'number')) {
+        return {
+          ...node,
+          x: node.x + offsetX,
+          y: node.y + offsetY
+        }
+      }
+      return node
+    })
+  }
+}
+
 const getLoadOptions = () => ({
   platformBufferSize: props.bufferSize ?? 0,
   platformDevices: clone(props.platformDevices || [])
@@ -90,6 +194,22 @@ const handlePlatformWrite = async (event: MessageEvent) => {
   }
 }
 
+const handleFieldDataRequest = (event: MessageEvent) => {
+  if (event.data?.type !== 'thingsvis:requestFieldData') return
+
+  const payload = event.data?.payload as { deviceId?: string; fieldIds?: string[] } | undefined
+  const fieldIds = Array.isArray(payload?.fieldIds) ? payload.fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string') : []
+  if (fieldIds.length === 0) return
+
+  const previewDeviceId = getPreviewDeviceId()
+  if (payload?.deviceId && previewDeviceId && payload.deviceId !== previewDeviceId) return
+
+  const fields = buildRequestedFieldData(fieldIds)
+  if (Object.keys(fields).length === 0) return
+
+  pushPlatformFieldDataCompat(fields, payload?.deviceId || previewDeviceId)
+}
+
 // 辅助函数: 深拷贝以去除 Vue Proxy，防止 DataCloneError
 const clone = (obj: any) => {
   if (!obj) return null
@@ -109,6 +229,7 @@ onMounted(async () => {
 
   // Register platform-write listener for the lifetime of this component instance.
   window.addEventListener('message', handlePlatformWrite)
+  window.addEventListener('message', handleFieldDataRequest)
 
   // 从环境变量读取 ThingsVis Studio URL
   let baseUrl = import.meta.env.VITE_THINGSVIS_STUDIO_URL || 'http://localhost:3000/main'
@@ -147,7 +268,7 @@ onMounted(async () => {
   // is already being set up in the iframe (tv:init triggers datasource registration).
   client.on('ready', () => {
     if (props.config) client?.loadWidgetConfig(
-      clone(props.config),
+      normalizeViewerConfig(clone(props.config)),
       clone(props.platformFields || []),
       getLoadOptions()
     )
@@ -172,7 +293,11 @@ watch(
   () => props.config,
   newVal => {
     if (client?.ready && newVal) {
-      client.loadWidgetConfig(clone(newVal), clone(props.platformFields || []), getLoadOptions())
+      client.loadWidgetConfig(
+        normalizeViewerConfig(clone(newVal)),
+        clone(props.platformFields || []),
+        getLoadOptions()
+      )
     }
   },
   { deep: true }
@@ -224,6 +349,7 @@ const pushPlatformData = (fields: Record<string, unknown>, deviceId?: string) =>
 
 onBeforeUnmount(() => {
   window.removeEventListener('message', handlePlatformWrite)
+  window.removeEventListener('message', handleFieldDataRequest)
   if (client) {
     client.destroy()
     client = null

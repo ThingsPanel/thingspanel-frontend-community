@@ -4,9 +4,10 @@ import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
+import { normalizeThingsVisHistoryBindings } from '@/utils/thingsvis/normalize-history-bindings'
 import { $t, setLocale } from '@/locales'
 import { deviceDetail, deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
-import { telemetryApi, attributesApi } from '@/service/api'
+import { telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api'
 import { formatDateTime } from '@/utils/common/datetime'
 import { localStg } from '@/utils/storage'
 import type { PlatformField } from '@/utils/thingsvis/types'
@@ -116,10 +117,12 @@ const getDeviceDetail = async () => {
       const templateId = data.device_config.device_template_id
       const res = await deviceTemplateDetail({ id: templateId })
       if (res.data) {
-        // 从物模型接口获取平台字段（与 telemetry-chart.vue 保持一致）
-        const [telemetryRes, attributesRes] = await Promise.all([
+        // 与设备详情图表 Tab 保持一致，运行时字段必须包含 telemetry/attributes/events/commands。
+        const [telemetryRes, attributesRes, eventsRes, commandsRes] = await Promise.all([
           telemetryApi({ page: 1, page_size: 1000, device_template_id: templateId }),
-          attributesApi({ page: 1, page_size: 1000, device_template_id: templateId })
+          attributesApi({ page: 1, page_size: 1000, device_template_id: templateId }),
+          eventsApi({ page: 1, page_size: 1000, device_template_id: templateId }),
+          commandsApi({ page: 1, page_size: 1000, device_template_id: templateId })
         ])
 
         const telemetryList = Array.isArray(telemetryRes?.data?.list)
@@ -134,9 +137,23 @@ const getDeviceDetail = async () => {
             ? attributesRes.data
             : []
 
+        const eventsList = Array.isArray(eventsRes?.data?.list)
+          ? eventsRes.data.list
+          : Array.isArray(eventsRes?.data)
+            ? eventsRes.data
+            : []
+
+        const commandsList = Array.isArray(commandsRes?.data?.list)
+          ? commandsRes.data.list
+          : Array.isArray(commandsRes?.data)
+            ? commandsRes.data
+            : []
+
         const platformSource = {
           telemetry: telemetryList,
-          attributes: attributesList
+          attributes: attributesList,
+          events: eventsList,
+          commands: commandsList
         }
 
         const extractedFields = extractPlatformFields(platformSource)
@@ -145,8 +162,8 @@ const getDeviceDetail = async () => {
         // 加载 app_chart_config
         if (res.data.app_chart_config) {
           try {
-            const configJson = JSON.parse(res.data.app_chart_config)
-            
+            const configJson = normalizeThingsVisHistoryBindings(JSON.parse(res.data.app_chart_config))
+
             // ⚠️ CRITICAL: 为所有 PLATFORM_FIELD datasource 注入真实设备 ID
             // 编辑器保存时不含 deviceId（防止误导和冗余）
             // 运行时需要根据当前设备动态注入
@@ -158,7 +175,7 @@ const getDeviceDetail = async () => {
                 }
               })
             }
-            
+
             initialConfig.value = configJson
             showAppChart.value = true
 
