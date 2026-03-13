@@ -4,8 +4,9 @@
  * 显示预览，点击编辑按钮打开ThingsVis编辑器弹窗
  */
 
-import { ref, computed, onMounted } from 'vue'
-import { NButton, NModal, NCard, NEmpty, NSelect, NSpace, NSpin } from 'naive-ui'
+import { ref, computed, onMounted, watch } from 'vue'
+import { NButton, NModal, NCard, NEmpty, NSelect, NSpace, NSpin, NIcon } from 'naive-ui'
+import { ExpandOutline, ContractOutline, CloseOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
 import { getTemplat, putTemplat, telemetryApi, attributesApi } from '@/service/api'
 import { telemetryDataHistoryList } from '@/service/api/device'
@@ -57,6 +58,7 @@ const platformDevices = computed(() => {
 const loading = ref(true)
 const saving = ref(false)
 const showEditorModal = ref(false)
+const isEditorFullscreen = ref(false)
 const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
 const hasConfig = ref(false)
@@ -82,8 +84,22 @@ const back: () => void = () => {
 
 // 打开编辑器
 const openEditor = () => {
+  isEditorFullscreen.value = false
   showEditorModal.value = true
 }
+
+const toggleEditorFullscreen = () => {
+  isEditorFullscreen.value = !isEditorFullscreen.value
+}
+
+const editorCardStyle = computed(() => ({
+  width: isEditorFullscreen.value ? '100vw' : 'min(94vw, 1800px)',
+  height: isEditorFullscreen.value ? '100vh' : 'min(92vh, 1120px)'
+}))
+
+const editorWidgetHeight = computed(() =>
+  isEditorFullscreen.value ? 'calc(100vh - 170px)' : 'calc(min(92vh, 1120px) - 170px)'
+)
 
 /**
  * Pre-fill the editor widget ring buffer with historical telemetry records so that
@@ -253,6 +269,12 @@ const loadTemplateData = async () => {
 onMounted(() => {
   loadTemplateData()
 })
+
+watch(showEditorModal, visible => {
+  if (!visible) {
+    isEditorFullscreen.value = false
+  }
+})
 </script>
 
 <template>
@@ -302,33 +324,56 @@ onMounted(() => {
     </div>
 
     <!-- 编辑器弹窗 -->
-    <NModal
-      v-model:show="showEditorModal"
-      preset="card"
-      title="编辑 App 图表配置"
-      :style="{ width: '90vw', height: '90vh' }"
-      :segmented="{ content: 'soft' }"
-    >
-      <div class="editor-modal-content" style="overflow: hidden">
-        <ThingsVisWidget
-          ref="editorRef"
-          mode="editor"
-          :config="initialConfig"
-          :platform-fields="[]"
-          :platform-devices="platformDevices"
-          :buffer-size="CHART_EDITOR_BUFFER_SIZE"
-          height="calc(90vh - 160px)"
-          @save="handleSave"
-          @ready="handleEditorReady"
-        />
-      </div>
+    <NModal v-model:show="showEditorModal" :mask-closable="false">
+      <div class="chart-editor-shell" :class="{ 'chart-editor-shell--fullscreen': isEditorFullscreen }">
+        <NCard
+          title="编辑 App 图表配置"
+          :bordered="false"
+          :class="['chart-editor-card', { 'chart-editor-card--fullscreen': isEditorFullscreen }]"
+          :style="editorCardStyle"
+        >
+          <template #header-extra>
+            <NSpace align="center" size="small">
+              <NButton quaternary circle @click="toggleEditorFullscreen">
+                <template #icon>
+                  <NIcon>
+                    <ContractOutline v-if="isEditorFullscreen" />
+                    <ExpandOutline v-else />
+                  </NIcon>
+                </template>
+              </NButton>
+              <NButton quaternary circle @click="showEditorModal = false">
+                <template #icon>
+                  <NIcon>
+                    <CloseOutline />
+                  </NIcon>
+                </template>
+              </NButton>
+            </NSpace>
+          </template>
 
-      <template #footer>
-        <div class="modal-footer">
-          <NButton @click="showEditorModal = false">取消</NButton>
-          <NButton type="primary" :loading="saving" @click="editorRef?.triggerSave()">保存配置</NButton>
-        </div>
-      </template>
+          <div class="editor-modal-content">
+            <ThingsVisWidget
+              ref="editorRef"
+              mode="editor"
+              :config="initialConfig"
+              :platform-fields="[]"
+              :platform-devices="platformDevices"
+              :buffer-size="CHART_EDITOR_BUFFER_SIZE"
+              :height="editorWidgetHeight"
+              @save="handleSave"
+              @ready="handleEditorReady"
+            />
+          </div>
+
+          <template #footer>
+            <div class="modal-footer">
+              <NButton @click="showEditorModal = false">取消</NButton>
+              <NButton type="primary" :loading="saving" @click="editorRef?.triggerSave()">保存配置</NButton>
+            </div>
+          </template>
+        </NCard>
+      </div>
     </NModal>
   </div>
 </template>
@@ -360,13 +405,64 @@ onMounted(() => {
 
 .editor-modal-content {
   width: 100%;
-  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
+  display: flex;
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+:deep(.chart-editor-shell) {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+:deep(.chart-editor-shell--fullscreen) {
+  padding: 0;
+}
+
+:deep(.chart-editor-card) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+:deep(.chart-editor-card .n-card-header) {
+  flex: 0 0 auto;
+}
+
+:deep(.chart-editor-card .n-card__content) {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-top: 12px;
+  display: flex;
+  overflow: hidden;
+}
+
+:deep(.chart-editor-card .n-card__footer) {
+  flex: 0 0 auto;
+}
+
+:deep(.chart-editor-card--fullscreen) {
+  border-radius: 0;
+}
+
+:deep(.chart-editor-card--fullscreen .n-card__content) {
+  padding-bottom: 12px;
+}
+
+:deep(.editor-modal-content .thingsvis-widget-container) {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 </style>
