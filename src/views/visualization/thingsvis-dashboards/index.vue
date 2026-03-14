@@ -15,6 +15,7 @@ import {
   NPopconfirm,
   NEmpty,
   NSpin,
+  NSwitch,
   NTag,
   NInputNumber,
   NTooltip,
@@ -31,7 +32,9 @@ import {
   type DashboardListItem,
   type ThingsVisProject
 } from '@/service/api/thingsvis'
+import { deleteDashboardMenuConfig, saveDashboardMenuConfig } from '@/service/api/dashboard-menu'
 import { clearThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
+import { refreshAuthRoutes } from '@/utils/router/refresh-auth-routes'
 
 const route = useRoute()
 const { routerPushByKey } = useRouterPush()
@@ -52,7 +55,10 @@ const formData = ref({
   name: '',
   canvasMode: 'fixed' as 'fixed' | 'grid' | 'infinite',
   canvasWidth: 1920,
-  canvasHeight: 1080
+  canvasHeight: 1080,
+  menuEnabled: false,
+  menuName: '',
+  menuSort: 1
 })
 
 /** 加载项目信息 */
@@ -155,7 +161,10 @@ const openCreateModal = () => {
     name: '',
     canvasMode: 'fixed',
     canvasWidth: 1920,
-    canvasHeight: 1080
+    canvasHeight: 1080,
+    menuEnabled: false,
+    menuName: '',
+    menuSort: 1
   }
   showModal.value = true
 }
@@ -168,7 +177,7 @@ const handleCreateDashboard = async () => {
   }
 
   try {
-    const { error } = await createThingsVisDashboard({
+    const { data, error } = await createThingsVisDashboard({
       name: formData.value.name,
       projectId: projectId.value,
       canvasConfig: {
@@ -182,13 +191,34 @@ const handleCreateDashboard = async () => {
     })
 
     if (!error) {
+      let menuBindingFailed = false
+      if (formData.value.menuEnabled && data?.id) {
+        const { error: menuError } = await saveDashboardMenuConfig(data.id, {
+          menu_name: formData.value.menuName.trim() || formData.value.name.trim(),
+          dashboard_name: formData.value.name.trim(),
+          sort: formData.value.menuSort,
+          enabled: true
+        })
+        menuBindingFailed = Boolean(menuError)
+
+        if (!menuError) {
+          await refreshAuthRoutes(route.fullPath)
+        }
+      }
+
       message.success('创建成功')
+      if (menuBindingFailed) {
+        message.warning('仪表盘已创建，但系统菜单绑定失败，请进入编辑页重新保存菜单配置')
+      }
       showModal.value = false
       formData.value = {
         name: '',
         canvasMode: 'fixed',
         canvasWidth: 1920,
-        canvasHeight: 1080
+        canvasHeight: 1080,
+        menuEnabled: false,
+        menuName: '',
+        menuSort: 1
       }
       await fetchDashboards()
     } else {
@@ -205,6 +235,8 @@ const handleDeleteDashboard = async (id: string, name: string) => {
   try {
     const { error } = await deleteThingsVisDashboard(id)
     if (!error) {
+      await deleteDashboardMenuConfig(id)
+      await refreshAuthRoutes(route.fullPath)
       clearThingsVisHomeCache()
       message.success(`已删除仪表盘: ${name}`)
       await fetchDashboards()
@@ -439,6 +471,31 @@ onMounted(async () => {
           <NInput
             v-model:value="formData.name"
             placeholder="请输入仪表盘名称"
+            maxlength="50"
+            show-count
+            @update:value="
+              value => {
+                if (!formData.menuName) formData.menuName = value
+              }
+            "
+          />
+        </NFormItem>
+
+        <NFormItem label="设为系统菜单">
+          <NSwitch
+            v-model:value="formData.menuEnabled"
+            @update:value="
+              value => {
+                if (value && !formData.menuName) formData.menuName = formData.name
+              }
+            "
+          />
+        </NFormItem>
+
+        <NFormItem v-if="formData.menuEnabled" label="菜单名称">
+          <NInput
+            v-model:value="formData.menuName"
+            placeholder="请输入菜单名称"
             maxlength="50"
             show-count
           />

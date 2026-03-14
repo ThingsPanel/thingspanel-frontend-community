@@ -123,7 +123,7 @@ declare namespace Api {
       /** 描述 */
       remark: string
       /** 组件地址 */
-      route_path: string
+      route_path: string | null
       /** 子节点 */
       children: MenuRoute[]
     }

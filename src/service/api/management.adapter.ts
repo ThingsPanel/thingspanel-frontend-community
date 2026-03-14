@@ -50,6 +50,44 @@ function transformLayoutAndPageToComponent(layout: string, page: any) {
   return ''
 }
 
+function getRouteComponent(item: Api.Route.MenuRoute) {
+  const explicitComponent = item.route_path?.trim()
+  if (explicitComponent) {
+    return explicitComponent
+  }
+
+  const homeRoutePath = getRouteName(item.param1)
+
+  if (item.parent_id === '0') {
+    return transformLayoutAndPageToComponent('base', item.element_type === 1 ? '' : homeRoutePath)
+  }
+
+  return transformLayoutAndPageToComponent(
+    item.element_type === 1 ? 'base' : '',
+    item.element_type === 1 ? '' : homeRoutePath
+  )
+}
+
+function createHomeDefaultChild(item: Api.Route.MenuRoute): ElegantRoute {
+  return {
+    name: 'home_overview',
+    path: '',
+    component: 'view.home',
+    meta: {
+      title: item.description,
+      i18nKey: item.multilingual,
+      requiresAuth: true,
+      permissions: [],
+      roles: [],
+      icon: item.param2,
+      order: item.orders,
+      hideInMenu: true,
+      activeMenu: 'home',
+      remark: item.remark || ''
+    }
+  } as unknown as ElegantRoute
+}
+
 /** 递归处理数据 */
 function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
   return data.map((item: any): ElegantRoute => {
@@ -65,16 +103,7 @@ function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
     // if (item.route_path === 'layout.base' && item.children.length === 0) {
     //   item.route_path += '$home';
     // }
-    const homeRoutePath = getRouteName(item.param1)
-    let component = ''
-    if (item.parent_id === '0') {
-      component = transformLayoutAndPageToComponent('base', item.element_type === 1 ? '' : homeRoutePath)
-    } else {
-      component = transformLayoutAndPageToComponent(
-        item.element_type === 1 ? 'base' : '',
-        item.element_type === 1 ? '' : homeRoutePath
-      )
-    }
+    const component = getRouteComponent(item)
     const route: Partial<ElegantRoute> = {
       // id: item.id,
       // parentId: item.parent_id,
@@ -99,6 +128,12 @@ function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
       },
       children: item.children?.length ? replaceKeys(item.children) : []
     }
+
+    if (item.element_code === 'home' && item.children?.length) {
+      route.component = 'layout.base'
+      route.children = [createHomeDefaultChild(item), ...(route.children || [])]
+    }
+
     return route as unknown as ElegantRoute
   })
 }

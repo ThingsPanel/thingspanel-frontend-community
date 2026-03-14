@@ -60,6 +60,9 @@ const props = defineProps<{
     dataSources?: unknown[]
   } | null
 }>()
+const emit = defineEmits<{
+  hostSaveSuccess: [payload: { id: string; name?: string }]
+}>()
 
 const router = useRouter()
 
@@ -1075,6 +1078,11 @@ async function handleHostSave(payload: Record<string, unknown>) {
   if ((window as any).$message) {
     ;(window as any).$message.success('保存成功')
   }
+
+  emit('hostSaveSuccess', {
+    id: props.id,
+    name: typeof updatePayload.name === 'string' ? updatePayload.name : undefined
+  })
 }
 
 async function loadDeviceConfigTemplateMap(): Promise<Map<string, string>> {

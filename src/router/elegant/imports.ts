@@ -84,6 +84,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "user-center": () => import("@/views/user-center/index.vue"),
   "visualization_thingsvis-dashboards": () => import("@/views/visualization/thingsvis-dashboards/index.vue"),
   "visualization_thingsvis-editor": () => import("@/views/visualization/thingsvis-editor/index.vue"),
+  "visualization_thingsvis-menu-dashboard": () => import("@/views/visualization/thingsvis-menu-dashboard/index.vue"),
   "visualization_thingsvis-preview": () => import("@/views/visualization/thingsvis-preview/index.vue"),
   visualization_thingsvis: () => import("@/views/visualization/thingsvis/index.vue"),
 };
