@@ -22,7 +22,6 @@ import {
   deleteThingsVisProject,
   type ProjectListItem
 } from '@/service/api/thingsvis'
-import { clearThingsVisToken } from '@/utils/thingsvis'
 
 const { routerPushByKey } = useRouterPush()
 const message = useMessage()
@@ -142,7 +141,6 @@ const enterProject = (projectId: string) => {
 }
 
 onMounted(() => {
-  clearThingsVisToken()
   fetchProjects()
 })
 </script>

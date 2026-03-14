@@ -16,13 +16,53 @@ export class ThingsVisAuthService {
   private tokenExpiry: number = 0
   private cachedIdentityKey: string | null = null
   private thingsvisApiUrl: string
+  private readonly thingsvisApiTarget: string
+  private readonly networkFailureCooldownMs = 30_000
+  private lastNetworkFailureAt: number = 0
+  private lastNetworkFailureReason: string | null = null
 
   constructor() {
     // SSO API 地址
-    // 使用代理路径 /thingsvis-api 避免 CORS 问题
-    // 代理会将 /thingsvis-api 重写为 localhost:3001/api/v1
-    // 注意：这里不需要 /api/v1 后缀，因为代理会自动添加
+    // 前端固定请求代理路径 /thingsvis-api 以避免 CORS。
+    // Vite 会将其重写为 `${VITE_THINGSVIS_API_URL}/api/v1/*`。
     this.thingsvisApiUrl = THINGSVIS_API_PROXY_PATH
+    this.thingsvisApiTarget = import.meta.env.VITE_THINGSVIS_API_URL || 'http://localhost:8000'
+  }
+
+  private getFailureCooldownRemaining(): number {
+    if (!this.lastNetworkFailureAt) return 0
+
+    return Math.max(0, this.networkFailureCooldownMs - (Date.now() - this.lastNetworkFailureAt))
+  }
+
+  private markNetworkFailure(reason: string): Error {
+    this.lastNetworkFailureAt = Date.now()
+    this.lastNetworkFailureReason = reason
+
+    return new Error(`ThingsVis SSO backend unavailable: ${this.thingsvisApiTarget} (${reason})`)
+  }
+
+  private clearNetworkFailure(): void {
+    this.lastNetworkFailureAt = 0
+    this.lastNetworkFailureReason = null
+  }
+
+  private isNetworkError(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error || '')
+    const normalized = message.toLowerCase()
+
+    return (
+      normalized.includes('failed to fetch') ||
+      normalized.includes('networkerror') ||
+      normalized.includes('load failed') ||
+      normalized.includes('econnrefused')
+    )
+  }
+
+  private shouldTreatResponseAsUnavailable(status: number, errorText: string): boolean {
+    if ([502, 503, 504].includes(status)) return true
+
+    return errorText.toLowerCase().includes('econnrefused')
   }
 
   /**
@@ -30,6 +70,15 @@ export class ThingsVisAuthService {
    */
   async exchangeToken(): Promise<string> {
     try {
+      const cooldownRemaining = this.getFailureCooldownRemaining()
+      if (cooldownRemaining > 0) {
+        const retryAfterSeconds = Math.ceil(cooldownRemaining / 1000)
+        const reason = this.lastNetworkFailureReason || 'recent network failure'
+        throw new Error(
+          `ThingsVis SSO backend unavailable: ${this.thingsvisApiTarget} (${reason}; retry in ${retryAfterSeconds}s)`
+        )
+      }
+
       // 1. 获取当前 ThingsPanel 用户信息
       const tpToken = localStg.get('token')
       const userInfo = localStg.get('userInfo')
@@ -58,9 +107,10 @@ export class ThingsVisAuthService {
       }
 
       // 3. 调用 ThingsVis SSO API (通过代理)
-      // /thingsvis-api/auth/sso -> localhost:3001/api/v1/auth/sso
+      // /thingsvis-api/auth/sso -> ${VITE_THINGSVIS_API_URL}/api/v1/auth/sso
       const ssoUrl = `${this.thingsvisApiUrl}/auth/sso`
       console.log('[SSO] 📡 调用 SSO API:', ssoUrl)
+      console.log('[SSO] 请求目标:', this.thingsvisApiTarget)
       console.log('[SSO] 请求数据:', { platform: request.platform, userEmail: request.userInfo.email })
 
       const response = await fetch(ssoUrl, {
@@ -76,10 +126,14 @@ export class ThingsVisAuthService {
       if (!response.ok) {
         const errorText = await response.text()
         console.error('[SSO] 响应错误:', errorText)
+        if (this.shouldTreatResponseAsUnavailable(response.status, errorText)) {
+          throw this.markNetworkFailure(`HTTP ${response.status}: ${errorText || 'proxy unavailable'}`)
+        }
         throw new Error(`Token exchange failed: ${response.status} - ${errorText}`)
       }
 
       const data: SSOExchangeResponse = await response.json()
+      this.clearNetworkFailure()
 
       // 4. 缓存 Token
       this.cachedToken = data.accessToken
@@ -89,11 +143,18 @@ export class ThingsVisAuthService {
 
       return data.accessToken
     } catch (error) {
-      console.error('❌ SSO Token exchange failed:', error)
       // 清除缓存的 token
       this.cachedToken = null
       this.tokenExpiry = 0
       this.cachedIdentityKey = null
+
+      if (this.isNetworkError(error)) {
+        const unavailableError = this.markNetworkFailure(error instanceof Error ? error.message : String(error))
+        console.error('❌ SSO Token exchange failed:', unavailableError)
+        throw unavailableError
+      }
+
+      console.error('❌ SSO Token exchange failed:', error)
       throw error
     }
   }

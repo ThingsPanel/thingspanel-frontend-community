@@ -17,6 +17,8 @@ describe('global-platform-fields', () => {
     const fieldIds = getGlobalPlatformFields('tenant').map(field => field.id)
 
     expect(fieldIds).toContain('device_total')
+    expect(fieldIds).toContain('device_total__history')
+    expect(fieldIds).toContain('device_activity__history')
     expect(fieldIds).toContain('alarm_device_total')
     expect(fieldIds).not.toContain('tenant_total')
     expect(fieldIds).not.toContain('cpu_usage')

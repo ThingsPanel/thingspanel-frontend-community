@@ -31,7 +31,7 @@ import {
   type DashboardListItem,
   type ThingsVisProject
 } from '@/service/api/thingsvis'
-import { clearThingsVisToken } from '@/utils/thingsvis'
+import { clearThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
 
 const route = useRoute()
 const { routerPushByKey } = useRouterPush()
@@ -205,6 +205,7 @@ const handleDeleteDashboard = async (id: string, name: string) => {
   try {
     const { error } = await deleteThingsVisDashboard(id)
     if (!error) {
+      clearThingsVisHomeCache()
       message.success(`已删除仪表盘: ${name}`)
       await fetchDashboards()
     } else {
@@ -221,6 +222,7 @@ const handleSetAsHomepage = async (dashboard: DashboardListItem) => {
   try {
     const { error } = await setHomeThingsVisDashboard(dashboard.id)
     if (!error) {
+      clearThingsVisHomeCache()
       message.success(`已将"${dashboard.name}"设为首页`)
       await fetchDashboards()
     } else {
@@ -254,7 +256,6 @@ const goBackToProjects = () => {
 }
 
 onMounted(async () => {
-  clearThingsVisToken()
   const projectLoaded = await loadProject()
   if (projectLoaded) {
     await fetchDashboards()

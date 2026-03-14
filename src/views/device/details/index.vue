@@ -361,15 +361,23 @@ const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance()
   return proxy.getPlatform()
 })
+
+const isEmbeddedHost = computed(() => {
+  try {
+    return window.self !== window.top
+  } catch {
+    return true
+  }
+})
 </script>
 
 <template>
-  <div>
-    <n-card>
-      <div class="mb-4">
-        <div style="display: flex; margin-top: -5px">
-          <span style="margin-right: 20px; font-size:18px">{{ name || '--' }}</span>
-          <NButton v-show="true" type="primary" style="margin-top: -5px" @click="editConfig">
+  <div class="device-details-page" :class="{ 'device-details-page--embedded': isEmbeddedHost }">
+    <section class="device-details-shell">
+      <div class="device-details-header">
+        <div class="device-details-title-row">
+          <span class="device-details-title">{{ name || '--' }}</span>
+          <NButton v-show="true" type="primary" @click="editConfig">
             {{ $t('common.edit') }}
           </NButton>
         </div>
@@ -410,28 +418,31 @@ const getPlatform = computed(() => {
           :device-id="getDeviceId()"
         />
 
-        <NFlex style="margin-top: 8px">
-          <div class="mr-4">
-            <span class="mr-2">ID:</span>
+        <NFlex class="device-details-meta">
+          <div class="device-details-meta-item">
+            <span class="device-details-meta-label">ID:</span>
             <span>{{ getDeviceId() || '--' }}</span>
           </div>
-          <div class="mr-4">
-            <span class="mr-2">{{ $t('custom.devicePage.configTemplate') }} :</span>
-            <span v-if="deviceData?.device_config_name" style="color: blue; cursor: pointer" @click="clickConfig">
+          <div class="device-details-meta-item">
+            <span class="device-details-meta-label">{{ $t('custom.devicePage.configTemplate') }} :</span>
+            <span
+              v-if="deviceData?.device_config_name"
+              class="device-details-link"
+              @click="clickConfig"
+            >
               {{ deviceData?.device_config_name }}
             </span>
             <span v-else>--</span>
           </div>
-          <div v-if="device_type === '3'" class="mr-4">
-            <span class="mr-2">{{ $t('generate.gateway') }}:</span>
-            <span style="color: blue; cursor: pointer" @click="clickGateway">
+          <div v-if="device_type === '3'" class="device-details-meta-item">
+            <span class="device-details-meta-label">{{ $t('generate.gateway') }}:</span>
+            <span class="device-details-link" @click="clickGateway">
               {{ deviceData?.gateway_device_name || '--' }}
             </span>
           </div>
           <!-- 在线/离线，弹窗展示详情 -->
           <div
-            class="mr-4"
-            style="display: flex; cursor: pointer; align-items: center;"
+            class="device-details-status"
             @click="showStatusHistoryDialog = true"
           >
             <!-- <span class="mr-2">{{ $t('generate.status') }}:</span> -->
@@ -456,7 +467,7 @@ const getPlatform = computed(() => {
               class="text-18px text-primary"
             />
           </div>
-          <div class="mr-4" style="display: flex">
+          <div class="device-details-status device-details-status--alarm">
             <template v-if="alarmStatus === true">
               <SvgIcon
                 local-icon="AlertFilled"
@@ -478,10 +489,17 @@ const getPlatform = computed(() => {
           </div>
         </NFlex>
       </div>
-      <div>
-        <n-tabs :key="tabsRenderKey" v-model:value="tabValue" animated type="line" @update:value="changeTabs">
+      <div class="device-details-content">
+        <n-tabs
+          :key="tabsRenderKey"
+          v-model:value="tabValue"
+          class="device-details-tabs"
+          animated
+          type="line"
+          @update:value="changeTabs"
+        >
           <n-tab-pane v-for="component in components" :key="component.key" :tab="component.name()" :name="component.key">
-            <n-spin size="small" :show="loading">
+            <n-spin class="device-details-tab-body" size="small" :show="loading">
               <component
                 :is="component.component"
                 :id="getDeviceId()"
@@ -496,8 +514,118 @@ const getPlatform = computed(() => {
           </n-tab-pane>
         </n-tabs>
       </div>
-    </n-card>
+    </section>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.device-details-page {
+  padding: 12px;
+}
+
+.device-details-page--embedded {
+  padding: 8px;
+}
+
+.device-details-shell {
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.device-details-page--embedded .device-details-shell {
+  border-radius: 10px;
+}
+
+.device-details-header {
+  padding: 18px 20px 8px;
+}
+
+.device-details-page--embedded .device-details-header {
+  padding: 16px 18px 6px;
+}
+
+.device-details-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.device-details-title {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: inherit;
+}
+
+.device-details-meta {
+  margin-top: 10px;
+  gap: 10px 16px;
+  color: inherit;
+}
+
+.device-details-meta-item {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+}
+
+.device-details-meta-label {
+  margin-right: 8px;
+  color: #666;
+}
+
+.device-details-link {
+  color: blue;
+  cursor: pointer;
+}
+
+.device-details-status {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.device-details-status--alarm {
+  cursor: default;
+}
+
+.device-details-content {
+  padding-bottom: 8px;
+}
+
+.device-details-page--embedded .device-details-content {
+  padding-bottom: 8px;
+}
+
+.device-details-tab-body {
+  padding: 10px 14px 14px;
+}
+
+.device-details-page--embedded .device-details-tab-body {
+  padding: 10px 12px 12px;
+}
+
+:deep(.device-details-tabs .n-tabs-nav) {
+  padding: 0 20px;
+}
+
+:deep(.device-details-page--embedded .device-details-tabs .n-tabs-nav) {
+  padding: 0 18px;
+}
+
+:deep(.device-details-tabs .n-tabs-nav::before) {
+  border-bottom-color: #e5e7eb;
+}
+
+:deep(.device-details-tabs .n-tabs-tab) {
+  padding-bottom: 12px;
+  font-weight: 500;
+}
+
+:deep(.device-details-tabs .n-tab-pane) {
+  padding-top: 0;
+}
+</style>

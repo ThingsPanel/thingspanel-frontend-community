@@ -10,7 +10,7 @@ import { localStg } from '@/utils/storage'
 import { $t } from '@/locales'
 import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
 import { useAuthStore } from '@/store/modules/auth'
-import { clearThingsVisToken } from '@/utils/thingsvis'
+import { readThingsVisHomeCache, writeThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
 import { isSysAdminUser } from '@/utils/thingsvis/space'
 
 const layoutFetched = ref(false)
@@ -29,55 +29,7 @@ const isSysAdmin = computed(() => isSysAdminUser(authStore.userInfo))
 const thingsVisHome = ref<ThingsVisHomeDashboard | null>(null)
 const useThingsVis = ref(false)
 
-const getLayout = async () => {
-  isError.value = false
-  showSysAdminSetup.value = false
-  useThingsVis.value = false
-  thingsVisHome.value = null
-  layoutFetched.value = false
-  layout.value = []
-  theme.value = ''
-
-  // 先检查 ThingsVis 是否有设为首页的仪表盘
-  try {
-    clearThingsVisToken()
-    console.log('[Home] 尝试获取 ThingsVis 首页...')
-    const thingsVisResult = await getThingsVisHomeDashboard()
-    const homeNotConfigured = !thingsVisResult.data?.data && (!thingsVisResult.error || thingsVisResult.error.status === 404)
-    console.log('[Home] ThingsVis 响应:', thingsVisResult)
-    if (!thingsVisResult.error && thingsVisResult.data?.data) {
-      console.log('[Home] 使用 ThingsVis 首页:', thingsVisResult.data.data)
-      thingsVisHome.value = thingsVisResult.data.data
-      useThingsVis.value = true
-      layoutFetched.value = true
-      return
-    }
-
-    if (isSysAdmin.value) {
-      if (!homeNotConfigured && thingsVisResult.error) {
-        isError.value = true
-        layoutFetched.value = true
-        return
-      }
-
-      console.log('[Home] 超管空间暂无首页，显示超管首页配置引导')
-      showSysAdminSetup.value = true
-      layoutFetched.value = true
-      return
-    }
-
-    console.log('[Home] ThingsVis 没有设置首页，使用原看板')
-  } catch (e) {
-    // ThingsVis 服务不可用，继续使用原来的看板
-    console.log('[Home] ThingsVis 服务错误，使用原看板:', e)
-    if (isSysAdmin.value) {
-      isError.value = true
-      layoutFetched.value = true
-      return
-    }
-  }
-
-  // 使用原来的看板首页
+const loadLegacyHome = async () => {
   const { data, error } = await fetchHomeData({})
 
   isError.value = (error || !(data && data.config)) as boolean
@@ -99,6 +51,81 @@ const getLayout = async () => {
       }
     }
   }
+}
+
+const getLayout = async () => {
+  isError.value = false
+  showSysAdminSetup.value = false
+  useThingsVis.value = false
+  thingsVisHome.value = null
+  layoutFetched.value = false
+  layout.value = []
+  theme.value = ''
+
+  const cachedHome = readThingsVisHomeCache()
+  if (cachedHome?.state === 'thingsvis' && cachedHome.dashboard) {
+    thingsVisHome.value = cachedHome.dashboard
+    useThingsVis.value = true
+    layoutFetched.value = true
+    return
+  }
+
+  if (cachedHome?.state === 'sysadmin-setup' && isSysAdmin.value) {
+    showSysAdminSetup.value = true
+    layoutFetched.value = true
+    return
+  }
+
+  if (cachedHome?.state === 'classic' && !isSysAdmin.value) {
+    await loadLegacyHome()
+    return
+  }
+
+  // 先检查 ThingsVis 是否有设为首页的仪表盘
+  try {
+    console.log('[Home] 尝试获取 ThingsVis 首页...')
+    const thingsVisResult = await getThingsVisHomeDashboard()
+    const homeNotConfigured = !thingsVisResult.data?.data && (!thingsVisResult.error || thingsVisResult.error.status === 404)
+    console.log('[Home] ThingsVis 响应:', thingsVisResult)
+    if (!thingsVisResult.error && thingsVisResult.data?.data) {
+      console.log('[Home] 使用 ThingsVis 首页:', thingsVisResult.data.data)
+      thingsVisHome.value = thingsVisResult.data.data
+      useThingsVis.value = true
+      layoutFetched.value = true
+      writeThingsVisHomeCache('thingsvis', thingsVisResult.data.data)
+      return
+    }
+
+    if (isSysAdmin.value) {
+      if (!homeNotConfigured && thingsVisResult.error) {
+        isError.value = true
+        layoutFetched.value = true
+        return
+      }
+
+      console.log('[Home] 超管空间暂无首页，显示超管首页配置引导')
+      showSysAdminSetup.value = true
+      layoutFetched.value = true
+      writeThingsVisHomeCache('sysadmin-setup')
+      return
+    }
+
+    console.log('[Home] ThingsVis 没有设置首页，使用原看板')
+    if (homeNotConfigured) {
+      writeThingsVisHomeCache('classic')
+    }
+  } catch (e) {
+    // ThingsVis 服务不可用，继续使用原来的看板
+    console.log('[Home] ThingsVis 服务错误，使用原看板:', e)
+    if (isSysAdmin.value) {
+      isError.value = true
+      layoutFetched.value = true
+      return
+    }
+  }
+
+  // 使用原来的看板首页
+  await loadLegacyHome()
 }
 
 onMounted(getLayout)

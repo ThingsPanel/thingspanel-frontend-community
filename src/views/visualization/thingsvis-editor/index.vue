@@ -1,29 +1,42 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { NBreadcrumb, NBreadcrumbItem } from 'naive-ui'
 import { $t } from '@/locales'
 import { useRouterPush } from '@/hooks/common/router'
-import { getThingsVisDashboard } from '@/service/api/thingsvis'
+import { getThingsVisDashboard, type ThingsVisDashboard } from '@/service/api/thingsvis'
 import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
-import { clearThingsVisToken } from '@/utils/thingsvis'
 
 const route = useRoute()
 const { routerPushByKey } = useRouterPush()
 
-const dashboardId = route.query.id as string
+const dashboardId = computed(() => String(route.query.id || '').trim())
 const projectTitle = ref('')
+const dashboardSchema = ref<ThingsVisDashboard | null>(null)
 
 /** 加载标题 (仅用于面包屑显示) */
 const loadDashboardInfo = async () => {
+  if (!dashboardId.value) {
+    projectTitle.value = ''
+    dashboardSchema.value = null
+    return
+  }
+
   try {
-    clearThingsVisToken()
-    const { data } = await getThingsVisDashboard(dashboardId)
+    let result = await getThingsVisDashboard(dashboardId.value)
+
+    if (result.error?.status === 401) {
+      result = await getThingsVisDashboard(dashboardId.value)
+    }
+
+    const { data } = result
     if (data) {
       projectTitle.value = data.name
+      dashboardSchema.value = data
     }
   } catch (e) {
     console.warn('获取项目标题失败', e)
+    dashboardSchema.value = null
   }
 }
 
@@ -31,9 +44,13 @@ const goBack = () => {
   routerPushByKey('visualization_thingsvis')
 }
 
-onMounted(() => {
-  loadDashboardInfo()
-})
+watch(
+  dashboardId,
+  () => {
+    loadDashboardInfo()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -56,7 +73,7 @@ onMounted(() => {
 
     <!-- 编辑器区域 (全屏 Iframe) -->
     <div class="flex-1 overflow-hidden bg-white relative">
-      <ThingsVisAppFrame :id="dashboardId" mode="editor" />
+      <ThingsVisAppFrame v-if="dashboardId" :id="dashboardId" :schema="dashboardSchema" mode="editor" />
     </div>
   </div>
 </template>

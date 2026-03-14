@@ -14,11 +14,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { clearThingsVisToken, getThingsVisToken } from '@/utils/thingsvis'
 import {
+  deviceGroupTree,
   deviceList,
+  deviceListByGroup,
   getDeviceConfigList,
   telemetryDataCurrent,
   getAttributeDataSet,
@@ -37,10 +39,13 @@ import {
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import { getGlobalPlatformFields, resolveGlobalPlatformFieldScope } from '@/utils/thingsvis/global-platform-fields'
+import { normalizeThingsVisHistoryBindings } from '@/utils/thingsvis/normalize-history-bindings'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
 
 const EDITOR_TEMPLATE_FIELD_PAGE_SIZE = 1000
+const EDITOR_DEVICE_CONFIG_PAGE_SIZE = 1000
+const EDITOR_GROUP_DEVICE_PAGE_SIZE = 1000
 const DEFAULT_PLATFORM_BUFFER_SIZE = 100
 
 const props = defineProps<{
@@ -74,10 +79,18 @@ interface DeviceWsEntry {
 type PlatformDeviceEntry = {
   deviceId: string
   deviceName: string
+  groupId: string
   groupName: string
   templateId?: string
   fields: Array<{ id?: string; name?: string }>
   presets: any[]
+}
+
+type PlatformDeviceGroupEntry = {
+  groupId: string
+  groupName: string
+  deviceCount?: number
+  parentId?: string | null
 }
 
 type TemplateEntry = {
@@ -87,8 +100,12 @@ type TemplateEntry = {
 const deviceWsMap = new Map<string, DeviceWsEntry>()
 const activePlatformDevices = new Map<string, { deviceId: string; fields: Array<{ id?: string; name?: string }> }>()
 const templateEntryCache = new Map<string, TemplateEntry>()
-let platformDevicesCache: PlatformDeviceEntry[] | null = null
-let platformDevicesCachePromise: Promise<PlatformDeviceEntry[]> | null = null
+let platformDeviceGroupsCache: PlatformDeviceGroupEntry[] | null = null
+let platformDeviceGroupsCachePromise: Promise<PlatformDeviceGroupEntry[]> | null = null
+let deviceConfigTemplateMapCache: Map<string, string> | null = null
+let deviceConfigTemplateMapPromise: Promise<Map<string, string>> | null = null
+const platformDevicesByGroupCache = new Map<string, PlatformDeviceEntry[]>()
+const platformDevicesByGroupPromise = new Map<string, Promise<PlatformDeviceEntry[]>>()
 const SILENT_REQUEST_CONFIG = { silentError: true } as const
 
 function isIgnorablePlatformRequestError(error: unknown): boolean {
@@ -272,7 +289,7 @@ function disconnectAllDeviceWs() {
 /**
  * Guard against concurrent tv:ready re-inits.
  * Studio sends tv:ready twice (once on load, once after bootstrap completes).
- * Both trigger buildPlatformDevices() which takes ~1s. Without a guard,
+ * Both trigger editor/viewer bootstrap work. Without a guard,
  * the second call tears down WS while the first is still completing.
  */
 let initInProgress = false
@@ -294,10 +311,23 @@ const url = ref('')
 const iframeRef = ref<HTMLIFrameElement>()
 let viewerHydrationTimers: Array<ReturnType<typeof setTimeout>> = []
 let initRetryTimers: Array<ReturnType<typeof setTimeout>> = []
+let viewerHydrationInFlight = false
+let viewerHydrationDone = false
 
 let viewerDashboardConfigCache: Record<string, unknown> | null = null
 let viewerDashboardConfigPromise: Promise<Record<string, unknown> | null> | null = null
 let viewerDashboardConfigCacheId: string | null = null
+
+async function fetchDashboardWithRetry(id: string) {
+  let result = await getThingsVisDashboard(id)
+
+  if (result.error?.status === 401) {
+    clearThingsVisToken()
+    result = await getThingsVisDashboard(id)
+  }
+
+  return result
+}
 
 function getCurrentUserInfo() {
   return localStg.get('userInfo') as Api.Auth.UserInfo | null
@@ -311,22 +341,96 @@ function getCurrentGlobalPlatformFields() {
   return getGlobalPlatformFields(getCurrentPlatformFieldScope())
 }
 
+function cloneDashboardConfig<T>(config: T): T {
+  if (!config || typeof config !== 'object') return config
+  return JSON.parse(JSON.stringify(config))
+}
+
+function normalizeDashboardConfig<T>(config: T): T {
+  const cloned = cloneDashboardConfig(config)
+  return normalizeThingsVisHistoryBindings(cloned)
+}
+
+function normalizeEditorGroupId(groupId?: unknown, fallbackName?: unknown): string {
+  const normalized = String(groupId || fallbackName || '__ungrouped__').trim()
+  return normalized || '__ungrouped__'
+}
+
+function normalizeEditorGroupName(groupName?: unknown, fallbackId?: unknown): string {
+  const normalized = String(groupName || fallbackId || 'Ungrouped').trim()
+  return normalized || 'Ungrouped'
+}
+
 function normalizeCanvasBackground(background: unknown): Record<string, unknown> {
   if (background && typeof background === 'object' && !Array.isArray(background)) {
     return background as Record<string, unknown>
   }
 
-  const color =
-    typeof background === 'string' && background.trim().length > 0
-      ? background
-      : 'transparent'
+  const color = typeof background === 'string' && background.trim().length > 0 ? background : 'transparent'
 
   return { color }
+}
+
+function registerActivePlatformDevices(devices: PlatformDeviceEntry[]) {
+  devices.forEach(device => {
+    if (!device?.deviceId) return
+    const existing = activePlatformDevices.get(device.deviceId)
+    activePlatformDevices.set(device.deviceId, {
+      deviceId: device.deviceId,
+      fields: Array.isArray(existing?.fields) && existing.fields.length > 0 ? existing.fields : device.fields || []
+    })
+  })
+}
+
+function updateActivePlatformDeviceFields(deviceId: string, fields: Array<{ id?: string; name?: string }>) {
+  const normalizedFields = Array.isArray(fields) ? fields : []
+  activePlatformDevices.set(deviceId, { deviceId, fields: normalizedFields })
+
+  const wsEntry = deviceWsMap.get(deviceId)
+  if (wsEntry) {
+    wsEntry.device.fields = normalizedFields
+  }
+}
+
+function flattenDeviceGroupTree(
+  nodes: unknown[],
+  groups = new Map<string, PlatformDeviceGroupEntry>()
+): PlatformDeviceGroupEntry[] {
+  nodes.forEach(node => {
+    if (!node || typeof node !== 'object') return
+    const treeNode = node as {
+      group?: { id?: unknown; name?: unknown; parent_id?: unknown; parentId?: unknown }
+      children?: unknown[]
+      device_count?: unknown
+      deviceCount?: unknown
+    }
+    const groupId = normalizeEditorGroupId(treeNode.group?.id, treeNode.group?.name)
+    groups.set(groupId, {
+      groupId,
+      groupName: normalizeEditorGroupName(treeNode.group?.name, groupId),
+      ...(typeof treeNode.deviceCount === 'number' ? { deviceCount: treeNode.deviceCount } : {}),
+      ...(typeof treeNode.device_count === 'number' ? { deviceCount: treeNode.device_count } : {}),
+      ...(treeNode.group?.parent_id !== undefined ? { parentId: String(treeNode.group.parent_id) } : {}),
+      ...(treeNode.group?.parentId !== undefined ? { parentId: String(treeNode.group.parentId) } : {})
+    })
+
+    if (Array.isArray(treeNode.children) && treeNode.children.length > 0) {
+      flattenDeviceGroupTree(treeNode.children, groups)
+    }
+  })
+
+  return Array.from(groups.values()).sort((a, b) => a.groupName.localeCompare(b.groupName))
 }
 
 function clearViewerHydrationTimers() {
   viewerHydrationTimers.forEach(timer => clearTimeout(timer))
   viewerHydrationTimers = []
+}
+
+function resetViewerHydrationState() {
+  clearViewerHydrationTimers()
+  viewerHydrationInFlight = false
+  viewerHydrationDone = false
 }
 
 function clearInitRetryTimers() {
@@ -434,6 +538,19 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
     })
 }
 
+function syncActivePlatformDevicesFromConfig(config: any) {
+  activePlatformDevices.clear()
+
+  collectPlatformSourceDescriptors(config).forEach(descriptor => {
+    if (!descriptor.deviceId || activePlatformDevices.has(descriptor.deviceId)) return
+
+    activePlatformDevices.set(descriptor.deviceId, {
+      deviceId: descriptor.deviceId,
+      fields: []
+    })
+  })
+}
+
 async function fetchAllCurrentFieldsForDevice(deviceId: string): Promise<Record<string, unknown>> {
   const [telemetryResult, attributeResult] = await Promise.allSettled([
     telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
@@ -458,30 +575,30 @@ async function fetchAllCurrentFieldsForDevice(deviceId: string): Promise<Record<
 async function loadViewerDashboardConfig(): Promise<Record<string, unknown> | null> {
   if (props.mode !== 'viewer') return null
   if (props.schema) {
-    return {
+    return normalizeDashboardConfig({
       id: props.schema.id || props.id,
       name: props.schema.name,
       canvas: props.schema.canvasConfig,
       nodes: Array.isArray(props.schema.nodes) ? props.schema.nodes : [],
       dataSources: Array.isArray(props.schema.dataSources) ? props.schema.dataSources : []
-    }
+    })
   }
   if (viewerDashboardConfigCache && viewerDashboardConfigCacheId === props.id) return viewerDashboardConfigCache
   if (viewerDashboardConfigPromise) return viewerDashboardConfigPromise
 
   viewerDashboardConfigPromise = (async () => {
     try {
-      const { data, error } = await getThingsVisDashboard(props.id)
+      const { data, error } = await fetchDashboardWithRetry(props.id)
       if (error || !data) return null
 
       viewerDashboardConfigCacheId = props.id
-      viewerDashboardConfigCache = {
+      viewerDashboardConfigCache = normalizeDashboardConfig({
         id: data.id,
         name: data.name,
         canvas: data.canvasConfig,
         nodes: Array.isArray(data.nodes) ? data.nodes : [],
         dataSources: Array.isArray(data.dataSources) ? data.dataSources : []
-      }
+      })
       return viewerDashboardConfigCache
     } catch (error) {
       console.warn('[AppFrame] Failed to load viewer dashboard config for hydration:', props.id, error)
@@ -548,6 +665,16 @@ function normalizeTenantGrowthHistory(records: any[]): HistoryPoint[] {
   })
   return points
 }
+
+function normalizeDeviceTotalHistory(records: any[]): HistoryPoint[] {
+  return records
+    .map((item: any) => ({
+      value: normalizeMetricValue(item?.device_online) + normalizeMetricValue(item?.device_offline),
+      ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
+    }))
+    .filter(point => !Number.isNaN(point.ts))
+}
+
 function normalizeSystemMetricHistory(records: any[], metricKey: 'cpu' | 'memory' | 'disk'): HistoryPoint[] {
   return records
     .map((item: any) => ({
@@ -685,7 +812,10 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
     getCurrentPlatformFieldScope() === 'super-admin' &&
     ['cpu_usage', 'memory_usage', 'disk_usage'].some(fieldId => requestedHistoryFieldSet.has(fieldId))
   const requiresDeviceTrend =
-    requestedHistoryFieldSet.has('device_online') || requestedHistoryFieldSet.has('device_offline')
+    requestedHistoryFieldSet.has('device_online') ||
+    requestedHistoryFieldSet.has('device_offline') ||
+    requestedHistoryFieldSet.has('device_total') ||
+    requestedHistoryFieldSet.has('device_activity')
 
   const [
     deviceListResult,
@@ -753,6 +883,16 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
       const history = normalizeHistory(points, 'device_offline')
       if (history.length > 0) result.histories.push({ fieldId: 'device_offline', history })
     }
+
+    if (historyFieldIds.includes('device_total')) {
+      const history = normalizeDeviceTotalHistory(points)
+      if (history.length > 0) result.histories.push({ fieldId: 'device_total', history })
+    }
+
+    if (historyFieldIds.includes('device_activity')) {
+      const history = normalizeHistory(points, 'device_online')
+      if (history.length > 0) result.histories.push({ fieldId: 'device_activity', history })
+    }
   }
 
   if (requiresTenantHistory && tenantResult.status === 'fulfilled') {
@@ -786,12 +926,12 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   return result
 }
 
-async function hydrateConfiguredPlatformSources() {
+async function hydrateConfiguredPlatformSources(): Promise<boolean> {
   const config = await loadViewerDashboardConfig()
-  if (!config) return
+  if (!config) return false
 
   const descriptors = collectPlatformSourceDescriptors(config)
-  if (descriptors.length === 0) return
+  if (descriptors.length === 0) return true
 
   const handledDeviceIds = new Set<string>()
   let globalHydrated = false
@@ -803,17 +943,11 @@ async function hydrateConfiguredPlatformSources() {
       if (handledDeviceIds.has(descriptor.deviceId)) continue
       handledDeviceIds.add(descriptor.deviceId)
 
+      if (requestedFields.length === 0) continue
+
       ensureDeviceWs(descriptor.deviceId)
 
-      let result: RequestedFieldResult
-      if (requestedFields.length > 0) {
-        result = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
-      } else {
-        result = {
-          fields: await fetchAllCurrentFieldsForDevice(descriptor.deviceId),
-          histories: []
-        }
-      }
+      const result = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
 
       postPlatformData(result.fields, descriptor.deviceId)
       result.histories.forEach(item => {
@@ -825,30 +959,39 @@ async function hydrateConfiguredPlatformSources() {
     if (globalHydrated) continue
     globalHydrated = true
 
-    const fallbackGlobalFields =
-      requestedFields.length > 0
-        ? requestedFields
-        : getCurrentGlobalPlatformFields()
-            .map(field => field.id)
-            .filter((fieldId): fieldId is string => typeof fieldId === 'string' && fieldId.length > 0)
-    const result = await buildRequestedFieldData(fallbackGlobalFields)
+    if (requestedFields.length === 0) continue
+
+    const result = await buildRequestedFieldData(requestedFields)
     postPlatformData(result.fields)
     result.histories.forEach(item => {
       postPlatformHistory(item.fieldId, item.history)
     })
   }
+
+  return true
 }
 
 function scheduleViewerHydration() {
   if (props.mode !== 'viewer') return
+  if (viewerHydrationDone || viewerHydrationInFlight) return
 
   clearViewerHydrationTimers()
-  ;[0, 300, 1200, 3000, 6000, 10000, 15000].forEach(delay => {
-    const timer = setTimeout(() => {
-      void hydrateConfiguredPlatformSources()
-    }, delay)
-    viewerHydrationTimers.push(timer)
-  })
+
+  const timer = setTimeout(async () => {
+    if (viewerHydrationDone || viewerHydrationInFlight) return
+
+    viewerHydrationInFlight = true
+    try {
+      const hasConfig = await hydrateConfiguredPlatformSources()
+      if (hasConfig) {
+        viewerHydrationDone = true
+      }
+    } finally {
+      viewerHydrationInFlight = false
+    }
+  }, 200)
+
+  viewerHydrationTimers.push(timer)
 }
 
 function resolveWriteDeviceId(payload: Record<string, unknown>): string | undefined {
@@ -879,7 +1022,8 @@ async function handlePlatformWrite(payload: Record<string, unknown>) {
 }
 
 async function handleHostSave(payload: Record<string, unknown>) {
-  const config = payload.config && typeof payload.config === 'object' ? payload.config : payload
+  const rawConfig = payload.config && typeof payload.config === 'object' ? payload.config : payload
+  const config = normalizeDashboardConfig(rawConfig)
   const meta = (config.meta as Record<string, unknown> | undefined) || {}
   const canvas = config.canvas
   const updatePayload: UpdateDashboardData = {}
@@ -915,7 +1059,7 @@ async function handleHostSave(payload: Record<string, unknown>) {
 
   let result = await updateThingsVisDashboard(props.id, updatePayload)
 
-  if (result.error?.status === 401 || result.error?.status === 404) {
+  if (result.error?.status === 401) {
     clearThingsVisToken()
     result = await updateThingsVisDashboard(props.id, updatePayload)
   }
@@ -923,7 +1067,7 @@ async function handleHostSave(payload: Record<string, unknown>) {
   if (result.error) {
     console.error('[AppFrame] Failed to save dashboard via host bridge:', result.error)
     if ((window as any).$message) {
-      ;(window as any).$message.error('保存失败')
+      ;(window as any).$message.error(`保存失败: ${result.error.status} ${result.error.message || '未知错误'}`)
     }
     return
   }
@@ -933,70 +1077,105 @@ async function handleHostSave(payload: Record<string, unknown>) {
   }
 }
 
-async function buildPlatformDevices(): Promise<{
-  devices: PlatformDeviceEntry[]
-  debug: Record<string, unknown>
-}> {
-  if (platformDevicesCache) {
-    return { devices: platformDevicesCache, debug: { cached: true, assembledCount: platformDevicesCache.length } }
+async function loadDeviceConfigTemplateMap(): Promise<Map<string, string>> {
+  if (deviceConfigTemplateMapCache) {
+    return deviceConfigTemplateMapCache
   }
 
-  if (platformDevicesCachePromise) {
-    const devices = await platformDevicesCachePromise
-    return { devices, debug: { cached: true, assembledCount: devices.length } }
+  if (deviceConfigTemplateMapPromise) {
+    return deviceConfigTemplateMapPromise
   }
 
-  platformDevicesCachePromise = (async () => {
+  deviceConfigTemplateMapPromise = (async () => {
     try {
-      const [devRes, confRes] = await Promise.all([
-        deviceList({ page: 1, page_size: 1000 }),
-        getDeviceConfigList({ page: 1, page_size: 1000 })
-      ])
-
-      const devices = unwrapList(devRes?.data)
+      const confRes = await getDeviceConfigList({ page: 1, page_size: EDITOR_DEVICE_CONFIG_PAGE_SIZE })
       const configs = unwrapList(confRes?.data)
-
-      // Build config → template map (only configs that actually have a template)
       const configTemplateMap = new Map<string, string>()
-      for (const config of configs) {
-        if (config.id && config.device_template_id) {
+
+      configs.forEach((config: any) => {
+        if (config?.id && config?.device_template_id) {
           configTemplateMap.set(String(config.id), String(config.device_template_id))
         }
-      }
-      // Collect template IDs from configs directly (more reliable than going through
-      // devices, which may not have device_config_id populated in every list response)
-      const templateIdSet = new Set<string>()
-      for (const config of configs) {
-        if (config.device_template_id) templateIdSet.add(String(config.device_template_id))
-      }
-      // Also pick up any template IDs embedded directly on device objects (some API versions
-      // return the full device_config object inside the list item)
-      for (const device of devices) {
-        const tid = device?.device_config?.device_template_id
-        if (tid) templateIdSet.add(String(tid))
-      }
+      })
 
-      const templateIds = Array.from(templateIdSet)
+      deviceConfigTemplateMapCache = configTemplateMap
+      return configTemplateMap
+    } catch (err) {
+      console.error('[AppFrame] Failed to load device config template map', err)
+      deviceConfigTemplateMapCache = new Map()
+      return deviceConfigTemplateMapCache
+    } finally {
+      deviceConfigTemplateMapPromise = null
+    }
+  })()
 
-      if (templateIds.length === 0) {
-        platformDevicesCache = []
-        return []
-      }
+  return deviceConfigTemplateMapPromise
+}
 
-      const platformDevices = devices
+async function buildPlatformDeviceGroups(): Promise<PlatformDeviceGroupEntry[]> {
+  if (platformDeviceGroupsCache) {
+    return platformDeviceGroupsCache
+  }
+
+  if (platformDeviceGroupsCachePromise) {
+    return platformDeviceGroupsCachePromise
+  }
+
+  platformDeviceGroupsCachePromise = (async () => {
+    try {
+      const res = await deviceGroupTree({})
+      const groups = flattenDeviceGroupTree(Array.isArray(res?.data) ? res.data : [])
+      platformDeviceGroupsCache = groups
+      return groups
+    } catch (err) {
+      console.error('[AppFrame] Failed to load platform device groups', err)
+      platformDeviceGroupsCache = []
+      return []
+    } finally {
+      platformDeviceGroupsCachePromise = null
+    }
+  })()
+
+  return platformDeviceGroupsCachePromise
+}
+
+async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDeviceEntry[]> {
+  const normalizedGroupId = normalizeEditorGroupId(groupId)
+
+  const cached = platformDevicesByGroupCache.get(normalizedGroupId)
+  if (cached) {
+    return cached
+  }
+
+  const pending = platformDevicesByGroupPromise.get(normalizedGroupId)
+  if (pending) {
+    return pending
+  }
+
+  const promise = (async () => {
+    try {
+      const [deviceRes, configTemplateMap, groups] = await Promise.all([
+        deviceListByGroup({ group_id: normalizedGroupId, page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE }),
+        loadDeviceConfigTemplateMap(),
+        buildPlatformDeviceGroups()
+      ])
+
+      const groupName =
+        groups.find(group => group.groupId === normalizedGroupId)?.groupName ||
+        normalizeEditorGroupName(undefined, normalizedGroupId)
+
+      const devices = unwrapList(deviceRes?.data)
         .map((device: any): PlatformDeviceEntry | null => {
-          // Prefer embedded device_config (device-detail style response), otherwise look up via configTemplateMap
           const templateId =
             (device?.device_config?.device_template_id ? String(device.device_config.device_template_id) : null) ||
             (device?.device_config_id ? configTemplateMap.get(String(device.device_config_id)) : null)
 
           if (!templateId || !device?.id) return null
 
-          const groupName = String(device?.device_config?.name || device?.device_config_name || '').trim() || '设备字段'
-
           return {
             deviceId: String(device.id),
             deviceName: String(device.name || device.device_number || device.id),
+            groupId: normalizedGroupId,
             groupName,
             templateId,
             fields: [],
@@ -1005,24 +1184,24 @@ async function buildPlatformDevices(): Promise<{
         })
         .filter((item): item is PlatformDeviceEntry => Boolean(item))
 
-      platformDevicesCache = platformDevices
-      return platformDevices
+      platformDevicesByGroupCache.set(normalizedGroupId, devices)
+      return devices
     } catch (err) {
-      console.error('[AppFrame] Failed to assemble platformDevices', err)
-      platformDevicesCache = []
+      console.error('[AppFrame] Failed to assemble platformDevices for group', normalizedGroupId, err)
+      platformDevicesByGroupCache.set(normalizedGroupId, [])
       return []
     } finally {
-      platformDevicesCachePromise = null
+      platformDevicesByGroupPromise.delete(normalizedGroupId)
     }
   })()
 
-  const devices = await platformDevicesCachePromise
-  return { devices, debug: { assembledCount: devices.length } }
+  platformDevicesByGroupPromise.set(normalizedGroupId, promise)
+  return promise
 }
 
 /** Full init sequence triggered once per tv:ready (debounced). */
 async function doInit() {
-  if (!iframeRef.value?.contentWindow || !token.value) return
+  if (!iframeRef.value?.contentWindow || !token.value || !props.id) return
 
   const apiBaseUrl = window.location.origin + '/thingsvis-api'
 
@@ -1039,10 +1218,10 @@ async function doInit() {
           dataSources: props.schema.dataSources
         }
       : null
-    const fetched = dashboardData ? { data: dashboardData, error: null } : await getThingsVisDashboard(props.id)
+    const fetched = dashboardData ? { data: dashboardData, error: null } : await fetchDashboardWithRetry(props.id)
     const { data, error } = fetched
     if (!error && data) {
-      dashboardPayload = {
+      dashboardPayload = normalizeDashboardConfig({
         meta: {
           id: data.id,
           name: data.name,
@@ -1051,26 +1230,31 @@ async function doInit() {
         canvas: data.canvasConfig,
         nodes: Array.isArray(data.nodes) ? data.nodes : [],
         dataSources: Array.isArray(data.dataSources) ? data.dataSources : []
-      }
+      })
+    } else if (!dashboardData) {
+      console.warn('[AppFrame] Dashboard preload unavailable, deferring init:', props.id, error)
+      return
     }
   } catch (error) {
     console.warn('[AppFrame] Failed to preload dashboard schema for embed init:', props.id, error)
+    return
   }
 
-  const { devices: platformDevices } = await buildPlatformDevices()
+  let platformDeviceGroups: PlatformDeviceGroupEntry[] = []
+
+  if (props.mode === 'editor') {
+    platformDeviceGroups = await buildPlatformDeviceGroups()
+  }
+
   const platformBufferSize = Math.max(
     DEFAULT_PLATFORM_BUFFER_SIZE,
     resolvePlatformBufferSize(dashboardPayload.dataSources)
   )
 
-  activePlatformDevices.clear()
-  for (const device of platformDevices) {
-    if (device?.deviceId) {
-      activePlatformDevices.set(device.deviceId, {
-        deviceId: device.deviceId,
-        fields: Array.isArray(device.fields) ? device.fields : []
-      })
-    }
+  if (props.mode === 'viewer') {
+    syncActivePlatformDevicesFromConfig(dashboardPayload)
+  } else {
+    activePlatformDevices.clear()
   }
 
   iframeRef.value.contentWindow.postMessage(
@@ -1080,7 +1264,8 @@ async function doInit() {
         platformFields: getCurrentGlobalPlatformFields(),
         platformBufferSize,
         platformFieldScope: getCurrentPlatformFieldScope(),
-        platformDevices,
+        platformDeviceGroups,
+        platformDevices: [],
         data: dashboardPayload,
         config: {
           mode: 'app',
@@ -1101,7 +1286,7 @@ async function doInit() {
 }
 
 function scheduleInit() {
-  if (!iframeRef.value?.contentWindow || !token.value) return
+  if (!iframeRef.value?.contentWindow || !token.value || !props.id) return
 
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
   clearInitRetryTimers()
@@ -1153,14 +1338,33 @@ const handleMessage = async (event: MessageEvent) => {
     if (!iframeRef.value?.contentWindow) return
 
     try {
-      ensureDeviceWs((payload as any).deviceId)
-      const result = await buildRequestedFieldData((payload as any).fieldIds, (payload as any).deviceId)
-      postPlatformData(result.fields, (payload as any).deviceId)
+      const deviceId = typeof (payload as any).deviceId === 'string' ? (payload as any).deviceId : undefined
+      if (deviceId && !activePlatformDevices.has(deviceId)) {
+        activePlatformDevices.set(deviceId, { deviceId, fields: [] })
+      }
+      ensureDeviceWs(deviceId)
+      const result = await buildRequestedFieldData((payload as any).fieldIds, deviceId)
+      postPlatformData(result.fields, deviceId)
       result.histories.forEach(item => {
         postPlatformHistory(item.fieldId, item.history, item.deviceId)
       })
     } catch {
       // Best effort only: ignore transient field-request failures to avoid console noise.
+    }
+    return
+  }
+
+  if (type === 'thingsvis:requestDevicesByGroup') {
+    const groupId = typeof (payload as any).groupId === 'string' ? (payload as any).groupId : undefined
+    if (!groupId) return
+
+    try {
+      const devices = await buildPlatformDevicesByGroup(groupId)
+      registerActivePlatformDevices(devices)
+      postToThingsVis('tv:devices-by-group', { groupId, devices })
+    } catch (error) {
+      console.warn('[AppFrame] Failed to load requested device group:', groupId, error)
+      postToThingsVis('tv:devices-by-group', { groupId, devices: [] })
     }
     return
   }
@@ -1179,6 +1383,7 @@ const handleMessage = async (event: MessageEvent) => {
 
     try {
       const entry = await loadTemplateEntry(templateId)
+      updateActivePlatformDeviceFields(deviceId, Array.isArray(entry.fields) ? entry.fields : [])
       postToThingsVis('tv:device-fields', {
         deviceId,
         templateId,
@@ -1231,7 +1436,6 @@ onMounted(async () => {
   window.addEventListener('message', handleMessage)
 
   try {
-    clearThingsVisToken()
     const tokenStr = await getThingsVisToken()
     if (tokenStr) {
       token.value = tokenStr
@@ -1244,14 +1448,27 @@ onMounted(async () => {
   }
 })
 
+watch(
+  () => props.id,
+  nextId => {
+    resetViewerHydrationState()
+    if (!nextId || !token.value) return
+    scheduleInit()
+  }
+)
+
 onBeforeUnmount(() => {
   window.removeEventListener('message', handleMessage)
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
   clearInitRetryTimers()
-  clearViewerHydrationTimers()
+  resetViewerHydrationState()
   activePlatformDevices.clear()
-  platformDevicesCache = null
-  platformDevicesCachePromise = null
+  platformDeviceGroupsCache = null
+  platformDeviceGroupsCachePromise = null
+  deviceConfigTemplateMapCache = null
+  deviceConfigTemplateMapPromise = null
+  platformDevicesByGroupCache.clear()
+  platformDevicesByGroupPromise.clear()
   viewerDashboardConfigCache = null
   viewerDashboardConfigCacheId = null
   viewerDashboardConfigPromise = null
@@ -1264,6 +1481,7 @@ onBeforeUnmount(() => {
 .thingsvis-frame-container {
   width: 100%;
   height: 100%;
+  min-height: clamp(320px, 48vh, 560px);
   position: relative;
 }
 
@@ -1278,6 +1496,8 @@ onBeforeUnmount(() => {
   justify-content: center;
   align-items: center;
   height: 100%;
+  min-height: inherit;
+  padding: 24px 0;
   color: #888;
 }
 </style>

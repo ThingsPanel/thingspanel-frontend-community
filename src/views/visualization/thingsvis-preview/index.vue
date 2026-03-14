@@ -56,6 +56,7 @@ onMounted(() => {
     <ThingsVisAppFrame
       v-else-if="hasDashboard"
       :id="dashboardId"
+      :schema="dashboardData"
       mode="viewer"
     />
 

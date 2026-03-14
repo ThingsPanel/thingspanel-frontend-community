@@ -292,57 +292,73 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-md rounded-3xl bg-gray-50 p-6 shadow-lg">
-    <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl text-gray-900 font-semibold">{{ deviceData?.name || '--' }}</h1>
-      <div class="flex items-center">
-        <SvgIcon
-          local-icon="CellTowerRound"
-          style="margin-right: 5px"
-          class="color-ccc text-20px text-primary"
-          :stroke="icon_type"
+  <div class="device-details-app">
+    <section class="device-details-app__shell">
+      <n-card class="device-details-app__panel" content-style="padding: 0;">
+        <div class="device-details-app__header">
+          <div>
+            <div class="device-details-app__eyebrow">ThingsPanel Device</div>
+            <h1 class="device-details-app__title">{{ deviceData?.name || '--' }}</h1>
+          </div>
+          <div class="device-details-app__status">
+            <SvgIcon
+              local-icon="CellTowerRound"
+              style="margin-right: 5px"
+              class="color-ccc text-20px text-primary"
+              :stroke="icon_type"
+            />
+            <span class="text-sm text-blue-500 font-medium">
+              {{ deviceData?.is_online === 1 ? $t('custom.device_details.online') : $t('custom.device_details.offline') }}
+            </span>
+            <template v-if="deviceData?.alarmStatus === true">
+              <SvgIcon
+                local-icon="AlertFilled"
+                style="color: #ee0808; margin-right: 5px"
+                class="text-20px text-primary"
+                :stroke="icon_type"
+              />
+              <span style="color: #ee0808">{{ $t('custom.device_details.alarm') }}</span>
+            </template>
+          </div>
+        </div>
+
+        <div class="device-details-app__meta">
+          <div class="device-details-app__meta-pill">
+            <span>ID</span>
+            <strong>{{ d_id || '--' }}</strong>
+          </div>
+          <div class="device-details-app__meta-pill">
+            <span>{{ $t('custom.device_details.lastUpdate') }}</span>
+            <strong>{{ formatDateTime(deviceData?.ts) || '--' }}</strong>
+          </div>
+        </div>
+
+        <div class="device-details-app__divider"></div>
+      </n-card>
+
+      <div class="device-details-app__content">
+        <TelemetryDataCards
+          v-if="showDefaultCards"
+          :id="d_id as string"
+          :card-height="cardHeight"
+          :card-margin="cardMargin"
         />
-        <span class="text-sm text-blue-500 font-medium">
-          {{ deviceData?.is_online === 1 ? $t('custom.device_details.online') : $t('custom.device_details.offline') }}
-        </span>
-        <template v-if="deviceData?.alarmStatus === true">
-          <SvgIcon
-            local-icon="AlertFilled"
-            style="color: #ee0808; margin-right: 5px"
-            class="text-20px text-primary"
-            :stroke="icon_type"
+        <n-card v-if="showAppChart" class="device-details-app__viewer" content-style="padding: 0;">
+          <ThingsVisWidget
+            ref="visWidgetRef"
+            mode="viewer"
+            :config="initialConfig"
+            :data="currentData"
+            :platform-fields="platformFields"
+            :platform-devices="viewerPlatformDevices"
+            height="calc(100vh - 220px)"
+            :buffer-size="100"
+            :device-id="d_id as string"
+            @ready="onVisReady"
           />
-          <span style="color: #ee0808">{{ $t('custom.device_details.alarm') }}</span>
-        </template>
+        </n-card>
       </div>
-    </div>
-
-    <div class="mb-6 text-sm text-gray-500">
-      {{ $t('custom.device_details.lastUpdate') }}: {{ formatDateTime(deviceData?.ts) || '--' }}
-    </div>
-
-    <n-divider title-placement="left"></n-divider>
-
-    <TelemetryDataCards
-      v-if="showDefaultCards"
-      :id="d_id as string"
-      :card-height="cardHeight"
-      :card-margin="cardMargin"
-    />
-    <div v-if="showAppChart">
-      <ThingsVisWidget
-        ref="visWidgetRef"
-        mode="viewer"
-        :config="initialConfig"
-        :data="currentData"
-        :platform-fields="platformFields"
-        :platform-devices="viewerPlatformDevices"
-        height="calc(100vh - 250px)"
-        :buffer-size="100"
-        :device-id="d_id as string"
-        @ready="onVisReady"
-      />
-    </div>
+    </section>
   </div>
 </template>
 
@@ -350,12 +366,131 @@ onBeforeUnmount(() => {
 .color-ccc {
   color: #ccc;
 }
-:root {
-  --n-padding-left: 0px;
-  --n-padding-right: 0px;
+
+.device-details-app {
+  min-height: 100vh;
+  padding: 24px;
+  background: transparent;
+  box-sizing: border-box;
 }
-:deep(.n-card__content) {
-  padding-left: 5px !important;
-  padding-right: 5px !important;
+
+.device-details-app__shell {
+  min-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.device-details-app__panel {
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.device-details-app__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px 10px;
+  flex-wrap: wrap;
+}
+
+.device-details-app__eyebrow {
+  display: none;
+}
+
+.device-details-app__title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: inherit;
+}
+
+.device-details-app__status {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+}
+
+.device-details-app__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0 18px 14px;
+}
+
+.device-details-app__meta-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  color: #666;
+}
+
+.device-details-app__meta-pill strong {
+  color: inherit;
+  font-weight: 600;
+}
+
+.device-details-app__divider {
+  height: 1px;
+  margin: 0 18px;
+  background: #e5e7eb;
+}
+
+.device-details-app__content {
+  padding: 0;
+}
+
+.device-details-app__viewer {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .device-details-app {
+    padding: 16px;
+  }
+
+  .device-details-app__shell {
+    min-height: calc(100vh - 32px);
+    gap: 12px;
+  }
+
+  .device-details-app__panel {
+    border-radius: 14px;
+  }
+
+  .device-details-app__header {
+    padding: 14px 16px 8px;
+  }
+
+  .device-details-app__title {
+    font-size: 24px;
+  }
+
+  .device-details-app__meta {
+    padding: 0 16px 12px;
+  }
+
+  .device-details-app__divider {
+    margin: 0 16px;
+  }
+
+  .device-details-app__content {
+    padding: 0;
+  }
+
+  .device-details-app__viewer {
+    border-radius: 14px;
+  }
 }
 </style>

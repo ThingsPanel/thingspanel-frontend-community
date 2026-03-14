@@ -41,6 +41,13 @@ const SHARED_GLOBAL_PLATFORM_FIELDS: PlatformField[] = [
     description: '当前处于告警状态的设备数'
   },
   {
+    id: 'device_total__history',
+    name: '设备总数趋势',
+    type: 'json',
+    dataType: 'telemetry',
+    description: '设备总数历史趋势'
+  },
+  {
     id: 'device_online__history',
     name: '在线设备趋势',
     type: 'json',
@@ -53,6 +60,13 @@ const SHARED_GLOBAL_PLATFORM_FIELDS: PlatformField[] = [
     type: 'json',
     dataType: 'telemetry',
     description: '离线设备历史趋势'
+  },
+  {
+    id: 'device_activity__history',
+    name: '激活设备趋势',
+    type: 'json',
+    dataType: 'telemetry',
+    description: '激活设备历史趋势'
   }
 ]
 

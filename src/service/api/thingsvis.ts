@@ -184,11 +184,22 @@ async function wrapRequest<T>(request: Promise<{ data: T }>): Promise<ThingsVisR
     const response = await request
     return { data: response.data, error: null }
   } catch (error: unknown) {
-    const err = error as { response?: { status: number }; message: string }
+    const err = error as {
+      response?: { status: number; data?: { error?: unknown; message?: unknown; details?: unknown } }
+      message: string
+    }
+    const responseData = err.response?.data
+    const detailText =
+      typeof responseData?.error === 'string'
+        ? responseData.error
+        : typeof responseData?.message === 'string'
+          ? responseData.message
+          : err.message || 'Unknown error'
+
     return {
       data: null,
       error: {
-        message: err.message || 'Unknown error',
+        message: detailText,
         status: err.response?.status || 500
       }
     }

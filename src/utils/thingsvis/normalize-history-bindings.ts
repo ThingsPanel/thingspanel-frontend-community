@@ -12,11 +12,15 @@ function normalizeHistoryExpression(expression: unknown): unknown {
 
   const dataSourceId = match[1]
   const fieldPath = match[2]
-  if (!dataSourceId || !fieldPath || fieldPath.endsWith(HISTORY_SUFFIX)) {
+  if (!dataSourceId || !fieldPath) {
     return expression
   }
 
-  return `{{ ds.${dataSourceId}.data.${fieldPath}${HISTORY_SUFFIX} }}`
+  const rootField = fieldPath.split(/[.[\]]/).filter(Boolean)[0]
+  if (!rootField) return expression
+
+  const historyField = rootField.endsWith(HISTORY_SUFFIX) ? rootField : `${rootField}${HISTORY_SUFFIX}`
+  return `{{ ds.${dataSourceId}.data.${historyField} }}`
 }
 
 function isHistoryChartWidgetType(widgetType: unknown): boolean {

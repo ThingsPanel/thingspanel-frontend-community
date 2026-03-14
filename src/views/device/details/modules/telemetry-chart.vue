@@ -283,14 +283,23 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <NCard ref="chartCardRef" class="w-full h-full">
+  <NCard
+    ref="chartCardRef"
+    class="device-chart-panel w-full h-full"
+    :bordered="false"
+    content-style="padding: 0;"
+  >
     <template v-if="chartLoading">
-      <NSkeleton text :repeat="3" />
-      <NSkeleton height="180px" class="mt-12px" />
+      <div class="device-chart-panel__state">
+        <NSkeleton text :repeat="3" />
+        <NSkeleton height="180px" class="mt-12px" />
+      </div>
     </template>
 
     <template v-else-if="!hasTemplate">
-      <NEmpty description="未配置图表数据或设备未绑定模板" />
+      <div class="device-chart-panel__state">
+        <NEmpty description="未配置图表数据或设备未绑定模板" />
+      </div>
     </template>
 
     <template v-else>
@@ -309,3 +318,16 @@ onBeforeUnmount(() => {
     </template>
   </NCard>
 </template>
+
+<style scoped>
+.device-chart-panel {
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.device-chart-panel__state {
+  padding: 18px 20px;
+}
+</style>

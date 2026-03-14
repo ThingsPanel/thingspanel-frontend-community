@@ -76,6 +76,15 @@ function normalizeHistory(records: any[], valueKey: string): HistoryPoint[] {
     .filter((point) => !Number.isNaN(point.ts))
 }
 
+function normalizeDeviceTotalHistory(records: any[]): HistoryPoint[] {
+  return records
+    .map((item: any) => ({
+      value: Number(item?.device_online ?? 0) + Number(item?.device_offline ?? 0),
+      ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
+    }))
+    .filter((point) => !Number.isNaN(point.ts))
+}
+
 function extractWsFields(payload: unknown): Record<string, unknown> {
   if (!payload || typeof payload !== 'object') return {}
   const obj = payload as Record<string, unknown>
@@ -447,7 +456,7 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
     if (aggregateValues[fieldId] !== undefined) result.fields[fieldId] = aggregateValues[fieldId]
   })
 
-  if (historyFieldIds.some((fieldId) => fieldId === 'device_online' || fieldId === 'device_offline')) {
+  if (historyFieldIds.some((fieldId) => ['device_online', 'device_offline', 'device_total'].includes(fieldId))) {
     const trendRes = await getOnlineDeviceTrend()
     const trendData = trendRes?.data as { points?: unknown[] } | undefined
     const points = Array.isArray(trendData?.points) ? trendData.points : []
@@ -460,6 +469,11 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
     if (historyFieldIds.includes('device_offline')) {
       const history = normalizeHistory(points, 'device_offline')
       if (history.length > 0) result.histories.push({ fieldId: 'device_offline', history })
+    }
+
+    if (historyFieldIds.includes('device_total')) {
+      const history = normalizeDeviceTotalHistory(points)
+      if (history.length > 0) result.histories.push({ fieldId: 'device_total', history })
     }
   }
 
