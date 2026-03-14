@@ -87,58 +87,58 @@ const SUPER_ADMIN_GLOBAL_PLATFORM_FIELDS: PlatformField[] = [
   },
   {
     id: 'cpu_usage',
-    name: 'CPU 使用率',
+    name: 'CPU 占用率',
     type: 'number',
     dataType: 'telemetry',
     unit: '%',
-    description: '系统 CPU 使用率'
+    description: '系统 CPU 占用率'
   },
   {
     id: 'memory_usage',
-    name: '内存使用率',
+    name: '内存占用率',
     type: 'number',
     dataType: 'telemetry',
     unit: '%',
-    description: '系统内存使用率'
+    description: '系统内存占用率'
   },
   {
     id: 'disk_usage',
-    name: '磁盘使用率',
+    name: '磁盘占用率',
     type: 'number',
     dataType: 'telemetry',
     unit: '%',
-    description: '系统磁盘使用率'
+    description: '系统磁盘占用率'
   },
   {
     id: 'cpu_usage__history',
-    name: 'CPU 趋势',
+    name: 'CPU 占用趋势',
     type: 'json',
     dataType: 'telemetry',
-    description: 'CPU 使用率历史趋势'
+    description: 'CPU 占用率历史趋势'
   },
   {
     id: 'memory_usage__history',
-    name: '内存趋势',
+    name: '内存占用趋势',
     type: 'json',
     dataType: 'telemetry',
-    description: '内存使用率历史趋势'
+    description: '内存占用率历史趋势'
   },
   {
     id: 'disk_usage__history',
-    name: '磁盘趋势',
+    name: '磁盘占用趋势',
     type: 'json',
     dataType: 'telemetry',
-    description: '磁盘使用率历史趋势'
+    description: '磁盘占用率历史趋势'
   }
 ]
 
-export function resolveGlobalPlatformFieldScope(userInfo?: {
-  authority?: string
-  roles?: string[]
-} | null): PlatformFieldScope {
-  return userInfo?.authority === SYS_ADMIN_ROLE || userInfo?.roles?.includes(SYS_ADMIN_ROLE)
-    ? 'super-admin'
-    : 'tenant'
+export function resolveGlobalPlatformFieldScope(
+  userInfo?: {
+    authority?: string
+    roles?: string[]
+  } | null
+): PlatformFieldScope {
+  return userInfo?.authority === SYS_ADMIN_ROLE || userInfo?.roles?.includes(SYS_ADMIN_ROLE) ? 'super-admin' : 'tenant'
 }
 
 export function getGlobalPlatformFields(scope: PlatformFieldScope): PlatformField[] {
