@@ -253,9 +253,9 @@ export const dataScriptDel = async (params: any) => {
 
 /** 设备遥测当前值查询 * */
 
-export const telemetryDataCurrent = async (id: any) => {
+export const telemetryDataCurrent = async (id: any, requestConfig: Record<string, unknown> = {}) => {
   const url = `/telemetry/datas/current/${id}`
-  return await request.get<DeviceManagement.telemetryCurrent | any>(url)
+  return await request.get<DeviceManagement.telemetryCurrent | any>(url, requestConfig as any)
 }
 
 /**
@@ -271,8 +271,11 @@ export const telemetryDataCurrentKeys = async (params: any) => {
  *   aggregate_function: string, time_range: string }
  * @returns
  */
-export const telemetryDataHistoryList = async (params: any) => {
-  return await request.get<any>('/telemetry/datas/statistic', { params })
+export const telemetryDataHistoryList = async (
+  params: any,
+  requestConfig: Record<string, unknown> = {}
+) => {
+  return await request.get<any>('/telemetry/datas/statistic', { ...(requestConfig as any), params })
 }
 
 /** 遥测删除数据处理 */
@@ -302,8 +305,11 @@ export const expectMessageList = async (params: any) => {
 export const expectMessageDelete = async (params: any) => {
   return await request.delete<any>(`/expected/data/${params}`)
 }
-export const getAttributeDataSet = async (params: any) => {
-  return await request.get<any>(`attribute/datas/${params.device_id}`)
+export const getAttributeDataSet = async (
+  params: any,
+  requestConfig: Record<string, unknown> = {}
+) => {
+  return await request.get<any>(`attribute/datas/${params.device_id}`, requestConfig as any)
 }
 
 export const deleteAttributeDataSet = async (params: any) => {

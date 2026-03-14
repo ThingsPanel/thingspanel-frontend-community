@@ -119,6 +119,10 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
         return
       }
 
+      if ((error as any)?.config?.silentError) {
+        return
+      }
+
       let message = error.message
       if (error.response?.status === 404) {
         window.$message?.destroyAll()

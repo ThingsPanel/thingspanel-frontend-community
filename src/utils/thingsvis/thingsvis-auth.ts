@@ -14,6 +14,7 @@ import { resolveThingsVisSpaceId } from './space'
 export class ThingsVisAuthService {
   private cachedToken: string | null = null
   private tokenExpiry: number = 0
+  private cachedIdentityKey: string | null = null
   private thingsvisApiUrl: string
 
   constructor() {
@@ -41,6 +42,9 @@ export class ThingsVisAuthService {
         throw new Error('User info not found')
       }
 
+      const resolvedSpaceId = resolveThingsVisSpaceId(userInfo)
+      this.cachedIdentityKey = `${userInfo.userId || userInfo.id || ''}::${resolvedSpaceId}`
+
       // 2. 构建 SSO 请求
       const request: SSOExchangeRequest = {
         platform: 'thingspanel',
@@ -49,7 +53,7 @@ export class ThingsVisAuthService {
           id: userInfo.userId || userInfo.id || '',
           email: userInfo.email || `${userInfo.userName}@thingspanel.local`,
           name: userInfo.userName || 'ThingsPanel User',
-          tenantId: resolveThingsVisSpaceId(userInfo)
+          tenantId: resolvedSpaceId
         }
       }
 
@@ -89,6 +93,7 @@ export class ThingsVisAuthService {
       // 清除缓存的 token
       this.cachedToken = null
       this.tokenExpiry = 0
+      this.cachedIdentityKey = null
       throw error
     }
   }
@@ -97,6 +102,15 @@ export class ThingsVisAuthService {
    * 获取有效的 ThingsVis Token (自动刷新)
    */
   async getValidToken(): Promise<string> {
+    const userInfo = localStg.get('userInfo')
+    const identityKey = userInfo
+      ? `${userInfo.userId || userInfo.id || ''}::${resolveThingsVisSpaceId(userInfo)}`
+      : null
+
+    if (this.cachedIdentityKey && identityKey && this.cachedIdentityKey !== identityKey) {
+      this.clearToken()
+    }
+
     // Token 未过期，直接返回
     if (this.cachedToken && Date.now() < this.tokenExpiry) {
       console.log('🔄 Using cached ThingsVis token')
@@ -114,6 +128,7 @@ export class ThingsVisAuthService {
   clearToken(): void {
     this.cachedToken = null
     this.tokenExpiry = 0
+    this.cachedIdentityKey = null
   }
 
   /**

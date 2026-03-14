@@ -70,6 +70,7 @@ export interface ProjectListItem {
   name: string
   description: string | null
   thumbnail: string | null
+  tenantId?: string
   createdAt: string
   updatedAt: string
   _count?: {
@@ -108,7 +109,7 @@ export interface ThingsVisDashboard {
     mode: string
     width: number
     height: number
-    background: string
+    background: string | Record<string, unknown> | null
   }
   nodes: unknown[]
   dataSources: unknown[]
@@ -148,7 +149,7 @@ export interface CreateDashboardData {
     mode?: string
     width?: number
     height?: number
-    background?: string
+    background?: string | Record<string, unknown>
   }
 }
 
@@ -158,6 +159,7 @@ export interface UpdateDashboardData {
   canvasConfig?: unknown
   nodes?: unknown[]
   dataSources?: unknown[]
+  variables?: unknown[]
 }
 
 export interface DashboardListResponse {

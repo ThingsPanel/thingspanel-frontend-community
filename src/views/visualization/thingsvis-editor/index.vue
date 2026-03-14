@@ -6,6 +6,7 @@ import { $t } from '@/locales'
 import { useRouterPush } from '@/hooks/common/router'
 import { getThingsVisDashboard } from '@/service/api/thingsvis'
 import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
+import { clearThingsVisToken } from '@/utils/thingsvis'
 
 const route = useRoute()
 const { routerPushByKey } = useRouterPush()
@@ -16,6 +17,7 @@ const projectTitle = ref('')
 /** 加载标题 (仅用于面包屑显示) */
 const loadDashboardInfo = async () => {
   try {
+    clearThingsVisToken()
     const { data } = await getThingsVisDashboard(dashboardId)
     if (data) {
       projectTitle.value = data.name

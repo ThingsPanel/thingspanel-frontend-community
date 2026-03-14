@@ -24,7 +24,7 @@ export function resolveThingsVisSpaceId(userInfo?: UserInfoLike | null): string 
     return SYS_ADMIN_SPACE_ID
   }
 
-  const tenantId = userInfo?.tenantId || userInfo?.tenant_id
+  const tenantId = String(userInfo?.tenantId || userInfo?.tenant_id || '').trim()
   return tenantId || 'default'
 }
 

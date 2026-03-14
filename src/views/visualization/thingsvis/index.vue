@@ -22,6 +22,7 @@ import {
   deleteThingsVisProject,
   type ProjectListItem
 } from '@/service/api/thingsvis'
+import { clearThingsVisToken } from '@/utils/thingsvis'
 
 const { routerPushByKey } = useRouterPush()
 const message = useMessage()
@@ -45,7 +46,6 @@ const fetchProjects = async () => {
   try {
     const { data, error } = await getThingsVisProjects({ page: 1, limit: 100 })
     if (!error && data) {
-      // 客户端搜索过滤
       let list = data.data
       if (searchKeyword.value) {
         list = list.filter(item =>
@@ -142,6 +142,7 @@ const enterProject = (projectId: string) => {
 }
 
 onMounted(() => {
+  clearThingsVisToken()
   fetchProjects()
 })
 </script>

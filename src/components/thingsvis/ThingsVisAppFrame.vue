@@ -7,6 +7,7 @@
       class="thingsvis-frame"
       frameborder="0"
       allowfullscreen
+      @load="handleIframeLoad"
     ></iframe>
     <div v-else class="loading-placeholder">正在连接可视化引擎...</div>
   </div>
@@ -15,13 +16,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
-import { getThingsVisToken } from '@/utils/thingsvis'
+import { clearThingsVisToken, getThingsVisToken } from '@/utils/thingsvis'
 import {
   deviceList,
   getDeviceConfigList,
   telemetryDataCurrent,
   getAttributeDataSet,
-  telemetryDataHistoryList
+  telemetryDataHistoryList,
+  telemetryDataPub
 } from '@/service/api/device'
 import {
   attributesApi,
@@ -32,20 +34,26 @@ import {
   telemetryApi,
   tenant
 } from '@/service/api'
-import { getThingsVisDashboard } from '@/service/api/thingsvis'
+import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
-import {
-  getGlobalPlatformFields,
-  resolveGlobalPlatformFieldScope
-} from '@/utils/thingsvis/global-platform-fields'
+import { getGlobalPlatformFields, resolveGlobalPlatformFieldScope } from '@/utils/thingsvis/global-platform-fields'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
 
 const EDITOR_TEMPLATE_FIELD_PAGE_SIZE = 1000
+const DEFAULT_PLATFORM_BUFFER_SIZE = 100
 
 const props = defineProps<{
   id: string
   mode?: string
+  schema?: {
+    id?: string
+    name?: string
+    thumbnail?: string | null
+    canvasConfig?: Record<string, unknown>
+    nodes?: unknown[]
+    dataSources?: unknown[]
+  } | null
 }>()
 
 const router = useRouter()
@@ -81,6 +89,31 @@ const activePlatformDevices = new Map<string, { deviceId: string; fields: Array<
 const templateEntryCache = new Map<string, TemplateEntry>()
 let platformDevicesCache: PlatformDeviceEntry[] | null = null
 let platformDevicesCachePromise: Promise<PlatformDeviceEntry[]> | null = null
+const SILENT_REQUEST_CONFIG = { silentError: true } as const
+
+function isIgnorablePlatformRequestError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const err = error as {
+    message?: unknown
+    response?: { status?: unknown; data?: { message?: unknown } }
+  }
+  const message = String(err.response?.data?.message || err.message || '').toLowerCase()
+  const status = Number(err.response?.status ?? NaN)
+  return status === 404 || message.includes('record not found')
+}
+
+function resolvePlatformBufferSize(dataSources: unknown): number {
+  if (!Array.isArray(dataSources)) return 0
+  return Math.max(
+    0,
+    ...dataSources.map((dataSource: any) => {
+      const normalizedType = typeof dataSource?.type === 'string' ? dataSource.type.toUpperCase() : ''
+      if (normalizedType !== 'PLATFORM_FIELD' && normalizedType !== 'PLATFORM') return 0
+      const bufferSize = dataSource?.config?.bufferSize
+      return typeof bufferSize === 'number' && Number.isFinite(bufferSize) ? Math.max(0, Math.trunc(bufferSize)) : 0
+    })
+  )
+}
 
 /** Extract flat key→value map from various WS response shapes. */
 function extractWsFields(payload: unknown): Record<string, unknown> {
@@ -190,13 +223,7 @@ function connectDeviceWs(device: { deviceId: string; fields: Array<{ id?: string
         const rawFields = extractWsFields(msg)
         if (Object.keys(rawFields).length === 0) return
         const fields = mapFieldIds(rawFields, device.fields)
-        const win = iframeRef.value?.contentWindow
-        if (!win) return
-        // Fan-out to both channels:
-        // 1. Device-scoped  → __platform_deviceId__  (bindings configured with a specific device)
-        // 2. Global channel → __platform__            (bindings configured with "当前设备模板")
-        win.postMessage({ type: 'tv:platform-data', payload: { deviceId, fields } }, '*')
-        win.postMessage({ type: 'tv:platform-data', payload: { fields } }, '*')
+        postPlatformData(fields, deviceId)
       } catch {
         // ignore non-JSON frames
       }
@@ -256,14 +283,216 @@ type RequestedFieldResult = {
   fields: Record<string, unknown>
   histories: Array<{ fieldId: string; history: HistoryPoint[]; deviceId?: string }>
 }
+type PlatformSourceDescriptor = {
+  id: string
+  deviceId?: string
+  requestedFields: string[]
+}
 
 const token = ref('')
 const url = ref('')
 const iframeRef = ref<HTMLIFrameElement>()
+let viewerHydrationTimers: Array<ReturnType<typeof setTimeout>> = []
+let initRetryTimers: Array<ReturnType<typeof setTimeout>> = []
 
-const currentUserInfo = localStg.get('userInfo') as Api.Auth.UserInfo | null
-const globalPlatformFieldScope = resolveGlobalPlatformFieldScope(currentUserInfo)
-const globalPlatformFields = getGlobalPlatformFields(globalPlatformFieldScope)
+let viewerDashboardConfigCache: Record<string, unknown> | null = null
+let viewerDashboardConfigPromise: Promise<Record<string, unknown> | null> | null = null
+let viewerDashboardConfigCacheId: string | null = null
+
+function getCurrentUserInfo() {
+  return localStg.get('userInfo') as Api.Auth.UserInfo | null
+}
+
+function getCurrentPlatformFieldScope() {
+  return resolveGlobalPlatformFieldScope(getCurrentUserInfo())
+}
+
+function getCurrentGlobalPlatformFields() {
+  return getGlobalPlatformFields(getCurrentPlatformFieldScope())
+}
+
+function normalizeCanvasBackground(background: unknown): Record<string, unknown> {
+  if (background && typeof background === 'object' && !Array.isArray(background)) {
+    return background as Record<string, unknown>
+  }
+
+  const color =
+    typeof background === 'string' && background.trim().length > 0
+      ? background
+      : 'transparent'
+
+  return { color }
+}
+
+function clearViewerHydrationTimers() {
+  viewerHydrationTimers.forEach(timer => clearTimeout(timer))
+  viewerHydrationTimers = []
+}
+
+function clearInitRetryTimers() {
+  initRetryTimers.forEach(timer => clearTimeout(timer))
+  initRetryTimers = []
+}
+
+function getThingsVisTargetOrigin(): string {
+  try {
+    return new URL(getStudioBase()).origin
+  } catch {
+    return window.location.origin
+  }
+}
+
+function postToThingsVis(type: string, payload: Record<string, unknown>) {
+  const win = iframeRef.value?.contentWindow
+  if (!win) return
+  win.postMessage({ type, payload }, getThingsVisTargetOrigin())
+}
+
+function postPlatformData(fields: Record<string, unknown>, deviceId?: string) {
+  if (Object.keys(fields).length === 0) return
+
+  postToThingsVis('tv:platform-data', {
+    deviceId,
+    fields
+  })
+
+  if (deviceId) {
+    postToThingsVis('tv:platform-data', { fields })
+  }
+}
+
+function postPlatformHistory(fieldId: string, history: HistoryPoint[], deviceId?: string) {
+  if (history.length === 0) return
+
+  postToThingsVis('tv:platform-history', {
+    deviceId,
+    fieldId,
+    history
+  })
+}
+
+const FIELD_BINDING_EXPR_RE = /\{\{\s*ds\.([^.\s}]+)\.([^}]+?)\s*\}\}/g
+
+function collectRequestedFieldsFromValue(value: unknown, requests: Map<string, Set<string>>) {
+  if (typeof value === 'string') {
+    let match: RegExpExecArray | null = null
+    FIELD_BINDING_EXPR_RE.lastIndex = 0
+    while ((match = FIELD_BINDING_EXPR_RE.exec(value)) !== null) {
+      const dataSourceId = match[1]
+      const fieldPath = match[2]?.trim()
+      if (!dataSourceId || !fieldPath) continue
+      const fieldId = fieldPath.split(/[.[\]]/).filter(Boolean)[0]
+      if (!fieldId) continue
+      const fields = requests.get(dataSourceId) ?? new Set<string>()
+      fields.add(fieldId)
+      requests.set(dataSourceId, fields)
+    }
+    return
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach(item => collectRequestedFieldsFromValue(item, requests))
+    return
+  }
+
+  if (!value || typeof value !== 'object') return
+
+  Object.values(value as Record<string, unknown>).forEach(item => {
+    collectRequestedFieldsFromValue(item, requests)
+  })
+}
+
+function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor[] {
+  const requests = new Map<string, Set<string>>()
+  collectRequestedFieldsFromValue(config?.nodes, requests)
+
+  const dataSources = Array.isArray(config?.dataSources) ? config.dataSources : []
+
+  return dataSources
+    .filter((dataSource: any) => {
+      const typeStr = typeof dataSource?.type === 'string' ? dataSource.type.toUpperCase() : ''
+      return typeStr === 'PLATFORM_FIELD' || typeStr === 'PLATFORM'
+    })
+    .map((dataSource: any) => {
+      const requestedFields = new Set<string>(
+        Array.isArray(dataSource?.config?.requestedFields)
+          ? dataSource.config.requestedFields.filter(
+              (fieldId: unknown): fieldId is string => typeof fieldId === 'string'
+            )
+          : []
+      )
+      const bindingFields = requests.get(String(dataSource.id))
+      if (bindingFields) {
+        bindingFields.forEach(fieldId => requestedFields.add(fieldId))
+      }
+
+      return {
+        id: String(dataSource.id),
+        deviceId: typeof dataSource?.config?.deviceId === 'string' ? dataSource.config.deviceId : undefined,
+        requestedFields: Array.from(requestedFields)
+      }
+    })
+}
+
+async function fetchAllCurrentFieldsForDevice(deviceId: string): Promise<Record<string, unknown>> {
+  const [telemetryResult, attributeResult] = await Promise.allSettled([
+    telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
+    getAttributeDataSet({ device_id: deviceId }, SILENT_REQUEST_CONFIG)
+  ])
+
+  const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
+  const attributeRes = attributeResult.status === 'fulfilled' ? attributeResult.value : null
+
+  const kvMap: Record<string, unknown> = {}
+  const collect = (item: any) => {
+    if (item?.key !== undefined) kvMap[item.key] = item.value
+    if (item?.label) kvMap[item.label] = item.value
+  }
+
+  if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
+  if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
+
+  return kvMap
+}
+
+async function loadViewerDashboardConfig(): Promise<Record<string, unknown> | null> {
+  if (props.mode !== 'viewer') return null
+  if (props.schema) {
+    return {
+      id: props.schema.id || props.id,
+      name: props.schema.name,
+      canvas: props.schema.canvasConfig,
+      nodes: Array.isArray(props.schema.nodes) ? props.schema.nodes : [],
+      dataSources: Array.isArray(props.schema.dataSources) ? props.schema.dataSources : []
+    }
+  }
+  if (viewerDashboardConfigCache && viewerDashboardConfigCacheId === props.id) return viewerDashboardConfigCache
+  if (viewerDashboardConfigPromise) return viewerDashboardConfigPromise
+
+  viewerDashboardConfigPromise = (async () => {
+    try {
+      const { data, error } = await getThingsVisDashboard(props.id)
+      if (error || !data) return null
+
+      viewerDashboardConfigCacheId = props.id
+      viewerDashboardConfigCache = {
+        id: data.id,
+        name: data.name,
+        canvas: data.canvasConfig,
+        nodes: Array.isArray(data.nodes) ? data.nodes : [],
+        dataSources: Array.isArray(data.dataSources) ? data.dataSources : []
+      }
+      return viewerDashboardConfigCache
+    } catch (error) {
+      console.warn('[AppFrame] Failed to load viewer dashboard config for hydration:', props.id, error)
+      return null
+    } finally {
+      viewerDashboardConfigPromise = null
+    }
+  })()
+
+  return viewerDashboardConfigPromise
+}
 
 /** Strip any hash fragment and return the bare Studio HTML base URL. */
 function getStudioBase(): string {
@@ -274,12 +503,16 @@ function getStudioBase(): string {
 
 function buildThingsVisFrameUrl(thingsVisToken: string): string {
   const apiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
+  const platformFieldScope = encodeURIComponent(getCurrentPlatformFieldScope())
+  const platformFields = encodeURIComponent(JSON.stringify(getCurrentGlobalPlatformFields()))
+  const saveTarget = 'host'
+  const dashboardId = encodeURIComponent(props.id)
 
   if (props.mode === 'viewer') {
-    return `${getStudioBase()}#/embed?id=${encodeURIComponent(props.id)}&token=${thingsVisToken}&mode=embedded&apiBaseUrl=${apiBaseUrl}`
+    return `${getStudioBase()}#/embed?mode=embedded&saveTarget=${saveTarget}&id=${dashboardId}&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}&platformFieldScope=${platformFieldScope}&platformFields=${platformFields}`
   }
 
-  return `${getStudioBase()}#/editor/${encodeURIComponent(props.id)}?mode=embedded&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}`
+  return `${getStudioBase()}#/editor?mode=embedded&saveTarget=${saveTarget}&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}&platformFieldScope=${platformFieldScope}&platformFields=${platformFields}`
 }
 
 function normalizeHistory(records: any[], valueKey: string): HistoryPoint[] {
@@ -321,7 +554,7 @@ function normalizeSystemMetricHistory(records: any[], metricKey: 'cpu' | 'memory
       value: normalizeMetricValue(item?.[`${metricKey}_usage`] ?? item?.[metricKey]),
       ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
     }))
-    .filter((point) => !Number.isNaN(point.ts))
+    .filter(point => !Number.isNaN(point.ts))
 }
 
 function unwrapList(payload: any): any[] {
@@ -376,8 +609,8 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
 
     if (currentFieldIds.length > 0) {
       const [telemetryResult, attributeResult] = await Promise.allSettled([
-        telemetryDataCurrent(deviceId),
-        getAttributeDataSet({ device_id: deviceId })
+        telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
+        getAttributeDataSet({ device_id: deviceId }, SILENT_REQUEST_CONFIG)
       ])
 
       const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
@@ -400,15 +633,18 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
     if (historyFieldIds.length > 0) {
       const historyResults = await Promise.allSettled(
         historyFieldIds.map(async fieldId => {
-          const historyRes = await telemetryDataHistoryList({
-            device_id: deviceId,
-            key: fieldId,
-            time_range: 'custom',
-            start_time: Date.now() - 3600 * 1000,
-            end_time: Date.now(),
-            aggregate_window: '1m',
-            aggregate_function: 'avg'
-          })
+          const historyRes = await telemetryDataHistoryList(
+            {
+              device_id: deviceId,
+              key: fieldId,
+              time_range: 'custom',
+              start_time: Date.now() - 3600 * 1000,
+              end_time: Date.now(),
+              aggregate_window: '1m',
+              aggregate_function: 'avg'
+            },
+            SILENT_REQUEST_CONFIG
+          )
           const list = Array.isArray(historyRes?.data?.list) ? historyRes.data.list : []
           const history = normalizeHistory(list, 'value')
           if (history.length > 0) {
@@ -418,7 +654,7 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
       )
 
       historyResults.forEach(item => {
-        if (item.status === 'rejected') {
+        if (item.status === 'rejected' && !isIgnorablePlatformRequestError(item.reason)) {
           console.warn('[AppFrame] Device history fetch failed:', item.reason)
         }
       })
@@ -436,17 +672,17 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   )
   const requiresAlarmSummary = requestedCurrentFieldSet.has('alarm_device_total')
   const requiresTenantSummary =
-    globalPlatformFieldScope === 'super-admin' &&
+    getCurrentPlatformFieldScope() === 'super-admin' &&
     ['tenant_added_yesterday', 'tenant_added_month', 'tenant_total'].some(fieldId =>
       requestedCurrentFieldSet.has(fieldId)
     )
   const requiresTenantHistory =
-    globalPlatformFieldScope === 'super-admin' && requestedHistoryFieldSet.has('tenant_growth')
+    getCurrentPlatformFieldScope() === 'super-admin' && requestedHistoryFieldSet.has('tenant_growth')
   const requiresMetricSummary =
-    globalPlatformFieldScope === 'super-admin' &&
+    getCurrentPlatformFieldScope() === 'super-admin' &&
     ['cpu_usage', 'memory_usage', 'disk_usage'].some(fieldId => requestedCurrentFieldSet.has(fieldId))
   const requiresMetricHistory =
-    globalPlatformFieldScope === 'super-admin' &&
+    getCurrentPlatformFieldScope() === 'super-admin' &&
     ['cpu_usage', 'memory_usage', 'disk_usage'].some(fieldId => requestedHistoryFieldSet.has(fieldId))
   const requiresDeviceTrend =
     requestedHistoryFieldSet.has('device_online') || requestedHistoryFieldSet.has('device_offline')
@@ -483,30 +719,22 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   }
 
   if (alarmCountResult.status === 'fulfilled') {
-    aggregateValues.alarm_device_total = normalizeMetricValue(
-      alarmCountResult.value?.data?.alarm_device_total
-    )
+    aggregateValues.alarm_device_total = normalizeMetricValue(alarmCountResult.value?.data?.alarm_device_total)
   }
 
   if (tenantResult.status === 'fulfilled') {
     aggregateValues.tenant_total = normalizeMetricValue(tenantResult.value?.data?.user_total)
-    aggregateValues.tenant_added_yesterday = normalizeMetricValue(
-      tenantResult.value?.data?.user_added_yesterday
-    )
-    aggregateValues.tenant_added_month = normalizeMetricValue(
-      tenantResult.value?.data?.user_added_month
-    )
+    aggregateValues.tenant_added_yesterday = normalizeMetricValue(tenantResult.value?.data?.user_added_yesterday)
+    aggregateValues.tenant_added_month = normalizeMetricValue(tenantResult.value?.data?.user_added_month)
   }
 
   if (systemMetricsCurrentResult.status === 'fulfilled') {
     aggregateValues.cpu_usage = normalizeMetricValue(systemMetricsCurrentResult.value?.data?.cpu_usage)
-    aggregateValues.memory_usage = normalizeMetricValue(
-      systemMetricsCurrentResult.value?.data?.memory_usage
-    )
+    aggregateValues.memory_usage = normalizeMetricValue(systemMetricsCurrentResult.value?.data?.memory_usage)
     aggregateValues.disk_usage = normalizeMetricValue(systemMetricsCurrentResult.value?.data?.disk_usage)
   }
 
-  currentFieldIds.forEach((fieldId) => {
+  currentFieldIds.forEach(fieldId => {
     if (aggregateValues[fieldId] !== undefined) result.fields[fieldId] = aggregateValues[fieldId]
   })
 
@@ -535,11 +763,12 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   }
 
   if (requiresMetricHistory && systemMetricsHistoryResult.status === 'fulfilled') {
-    const records = Array.isArray(systemMetricsHistoryResult.value?.data)
-      ? systemMetricsHistoryResult.value.data
-      : []
+    const records = Array.isArray(systemMetricsHistoryResult.value?.data) ? systemMetricsHistoryResult.value.data : []
 
-    const metricFieldMap: Array<{ fieldId: 'cpu_usage' | 'memory_usage' | 'disk_usage'; source: 'cpu' | 'memory' | 'disk' }> = [
+    const metricFieldMap: Array<{
+      fieldId: 'cpu_usage' | 'memory_usage' | 'disk_usage'
+      source: 'cpu' | 'memory' | 'disk'
+    }> = [
       { fieldId: 'cpu_usage', source: 'cpu' },
       { fieldId: 'memory_usage', source: 'memory' },
       { fieldId: 'disk_usage', source: 'disk' }
@@ -555,6 +784,153 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   }
 
   return result
+}
+
+async function hydrateConfiguredPlatformSources() {
+  const config = await loadViewerDashboardConfig()
+  if (!config) return
+
+  const descriptors = collectPlatformSourceDescriptors(config)
+  if (descriptors.length === 0) return
+
+  const handledDeviceIds = new Set<string>()
+  let globalHydrated = false
+
+  for (const descriptor of descriptors) {
+    const requestedFields = descriptor.requestedFields
+
+    if (descriptor.deviceId) {
+      if (handledDeviceIds.has(descriptor.deviceId)) continue
+      handledDeviceIds.add(descriptor.deviceId)
+
+      ensureDeviceWs(descriptor.deviceId)
+
+      let result: RequestedFieldResult
+      if (requestedFields.length > 0) {
+        result = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
+      } else {
+        result = {
+          fields: await fetchAllCurrentFieldsForDevice(descriptor.deviceId),
+          histories: []
+        }
+      }
+
+      postPlatformData(result.fields, descriptor.deviceId)
+      result.histories.forEach(item => {
+        postPlatformHistory(item.fieldId, item.history, item.deviceId)
+      })
+      continue
+    }
+
+    if (globalHydrated) continue
+    globalHydrated = true
+
+    const fallbackGlobalFields =
+      requestedFields.length > 0
+        ? requestedFields
+        : getCurrentGlobalPlatformFields()
+            .map(field => field.id)
+            .filter((fieldId): fieldId is string => typeof fieldId === 'string' && fieldId.length > 0)
+    const result = await buildRequestedFieldData(fallbackGlobalFields)
+    postPlatformData(result.fields)
+    result.histories.forEach(item => {
+      postPlatformHistory(item.fieldId, item.history)
+    })
+  }
+}
+
+function scheduleViewerHydration() {
+  if (props.mode !== 'viewer') return
+
+  clearViewerHydrationTimers()
+  ;[0, 300, 1200, 3000, 6000, 10000, 15000].forEach(delay => {
+    const timer = setTimeout(() => {
+      void hydrateConfiguredPlatformSources()
+    }, delay)
+    viewerHydrationTimers.push(timer)
+  })
+}
+
+function resolveWriteDeviceId(payload: Record<string, unknown>): string | undefined {
+  if (typeof payload.deviceId === 'string' && payload.deviceId) {
+    return payload.deviceId
+  }
+
+  const dataSourceId = typeof payload.dataSourceId === 'string' ? payload.dataSourceId : ''
+  const match = dataSourceId.match(/^__platform_(.+)__$/)
+  if (match?.[1]) {
+    return match[1]
+  }
+
+  return undefined
+}
+
+async function handlePlatformWrite(payload: Record<string, unknown>) {
+  const deviceId = resolveWriteDeviceId(payload)
+  const data = payload.data
+  if (!deviceId || data === undefined) return
+
+  try {
+    const value = typeof data === 'string' ? data : JSON.stringify(data)
+    await telemetryDataPub({ device_id: deviceId, value })
+  } catch (error) {
+    console.error('[AppFrame] Failed to publish platform write:', error)
+  }
+}
+
+async function handleHostSave(payload: Record<string, unknown>) {
+  const config = payload.config && typeof payload.config === 'object' ? payload.config : payload
+  const meta = (config.meta as Record<string, unknown> | undefined) || {}
+  const canvas = config.canvas
+  const updatePayload: UpdateDashboardData = {}
+
+  if (typeof meta.name === 'string') {
+    updatePayload.name = meta.name
+  }
+  if (canvas && typeof canvas === 'object') {
+    const normalizedCanvas = { ...(canvas as Record<string, unknown>) }
+    normalizedCanvas.background = normalizeCanvasBackground(normalizedCanvas.background)
+    updatePayload.canvasConfig = normalizedCanvas
+  }
+  if (Array.isArray(config.nodes)) {
+    updatePayload.nodes = config.nodes
+  }
+  if (Array.isArray(config.dataSources)) {
+    updatePayload.dataSources = config.dataSources
+  }
+  if (config.variables !== undefined) {
+    updatePayload.variables = config.variables as unknown[]
+  }
+
+  const thumbnail =
+    typeof meta.thumbnail === 'string'
+      ? meta.thumbnail
+      : typeof payload.thumbnail === 'string'
+        ? payload.thumbnail
+        : undefined
+
+  if (thumbnail !== undefined) {
+    updatePayload.thumbnail = thumbnail
+  }
+
+  let result = await updateThingsVisDashboard(props.id, updatePayload)
+
+  if (result.error?.status === 401 || result.error?.status === 404) {
+    clearThingsVisToken()
+    result = await updateThingsVisDashboard(props.id, updatePayload)
+  }
+
+  if (result.error) {
+    console.error('[AppFrame] Failed to save dashboard via host bridge:', result.error)
+    if ((window as any).$message) {
+      ;(window as any).$message.error('保存失败')
+    }
+    return
+  }
+
+  if ((window as any).$message) {
+    ;(window as any).$message.success('保存成功')
+  }
 }
 
 async function buildPlatformDevices(): Promise<{
@@ -653,7 +1029,18 @@ async function doInit() {
   let dashboardPayload: Record<string, unknown> = { meta: { id: props.id } }
 
   try {
-    const { data, error } = await getThingsVisDashboard(props.id)
+    const dashboardData = props.schema
+      ? {
+          id: props.schema.id || props.id,
+          name: props.schema.name,
+          thumbnail: props.schema.thumbnail ?? null,
+          canvasConfig: props.schema.canvasConfig,
+          nodes: props.schema.nodes,
+          dataSources: props.schema.dataSources
+        }
+      : null
+    const fetched = dashboardData ? { data: dashboardData, error: null } : await getThingsVisDashboard(props.id)
+    const { data, error } = fetched
     if (!error && data) {
       dashboardPayload = {
         meta: {
@@ -671,6 +1058,10 @@ async function doInit() {
   }
 
   const { devices: platformDevices } = await buildPlatformDevices()
+  const platformBufferSize = Math.max(
+    DEFAULT_PLATFORM_BUFFER_SIZE,
+    resolvePlatformBufferSize(dashboardPayload.dataSources)
+  )
 
   activePlatformDevices.clear()
   for (const device of platformDevices) {
@@ -685,74 +1076,88 @@ async function doInit() {
   iframeRef.value.contentWindow.postMessage(
     {
       type: 'tv:init',
-      platformFields: globalPlatformFields,
-      platformFieldScope: globalPlatformFieldScope,
-      platformDevices,
-      data: dashboardPayload,
-      config: {
-        mode: 'app',
-        saveTarget: 'self',
-        token: token.value,
-        apiBaseUrl
+      payload: {
+        platformFields: getCurrentGlobalPlatformFields(),
+        platformBufferSize,
+        platformFieldScope: getCurrentPlatformFieldScope(),
+        platformDevices,
+        data: dashboardPayload,
+        config: {
+          mode: 'app',
+          saveTarget: 'host',
+          token: token.value,
+          apiBaseUrl
+        }
       }
     },
-    '*'
+    getThingsVisTargetOrigin()
   )
 
-  // Do not eagerly connect/prefetch every device in editor mode.
-  // A large device fleet can make the editor unstable and generate many failing
-  // requests for devices that are never actually selected or bound.
-  disconnectAllDeviceWs()
+  if (props.mode === 'viewer') {
+    scheduleViewerHydration()
+  } else {
+    disconnectAllDeviceWs()
+  }
+}
+
+function scheduleInit() {
+  if (!iframeRef.value?.contentWindow || !token.value) return
+
+  if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
+  clearInitRetryTimers()
+
+  const runInit = async () => {
+    if (initInProgress) return
+    initInProgress = true
+    try {
+      await doInit()
+    } finally {
+      initInProgress = false
+    }
+  }
+
+  pendingInitDebounceTimer = setTimeout(() => {
+    pendingInitDebounceTimer = null
+    void runInit()
+  }, 150)
+  ;[600, 1500, 3000].forEach(delay => {
+    const timer = setTimeout(() => {
+      void runInit()
+    }, delay)
+    initRetryTimers.push(timer)
+  })
+}
+
+function handleIframeLoad() {
+  scheduleInit()
 }
 
 const handleMessage = async (event: MessageEvent) => {
   if (!event.data || typeof event.data !== 'object') return
+  if (event.origin !== getThingsVisTargetOrigin()) return
 
   const { type, projectId } = event.data
+  const payload = event.data?.payload && typeof event.data.payload === 'object' ? event.data.payload : {}
+
+  if (type === 'tv:save') {
+    await handleHostSave(payload)
+    return
+  }
+
+  if (type === 'tv:platform-write') {
+    await handlePlatformWrite(payload)
+    return
+  }
 
   if (type === 'thingsvis:requestFieldData') {
-    const payload = event.data?.payload || {}
     if (!iframeRef.value?.contentWindow) return
 
     try {
-      ensureDeviceWs(payload.deviceId)
-      const result = await buildRequestedFieldData(payload.fieldIds, payload.deviceId)
-      if (Object.keys(result.fields).length > 0) {
-        iframeRef.value.contentWindow.postMessage(
-          {
-            type: 'tv:platform-data',
-            payload: {
-              deviceId: payload.deviceId,
-              fields: result.fields
-            }
-          },
-          '*'
-        )
-        if (payload.deviceId) {
-          iframeRef.value.contentWindow.postMessage(
-            {
-              type: 'tv:platform-data',
-              payload: {
-                fields: result.fields
-              }
-            },
-            '*'
-          )
-        }
-      }
-
+      ensureDeviceWs((payload as any).deviceId)
+      const result = await buildRequestedFieldData((payload as any).fieldIds, (payload as any).deviceId)
+      postPlatformData(result.fields, (payload as any).deviceId)
       result.histories.forEach(item => {
-        iframeRef.value?.contentWindow?.postMessage(
-          {
-            type: 'tv:platform-history',
-            payload: {
-              deviceId: item.deviceId,
-              fieldId: item.fieldId,
-              history: item.history
-            }
-          },
-          '*'
-        )
+        postPlatformHistory(item.fieldId, item.history, item.deviceId)
       })
     } catch {
       // Best effort only: ignore transient field-request failures to avoid console noise.
@@ -760,25 +1165,25 @@ const handleMessage = async (event: MessageEvent) => {
     return
   }
 
+  if (type === 'LOADED') {
+    if (props.mode === 'viewer') {
+      scheduleViewerHydration()
+    }
+    return
+  }
+
   if (type === 'thingsvis:requestDeviceFields') {
-    const payload = event.data?.payload || {}
-    const deviceId = typeof payload.deviceId === 'string' ? payload.deviceId : undefined
-    const templateId = typeof payload.templateId === 'string' ? payload.templateId : undefined
+    const deviceId = typeof (payload as any).deviceId === 'string' ? (payload as any).deviceId : undefined
+    const templateId = typeof (payload as any).templateId === 'string' ? (payload as any).templateId : undefined
     if (!iframeRef.value?.contentWindow || !deviceId || !templateId) return
 
     try {
       const entry = await loadTemplateEntry(templateId)
-      iframeRef.value.contentWindow.postMessage(
-        {
-          type: 'tv:device-fields',
-          payload: {
-            deviceId,
-            templateId,
-            fields: Array.isArray(entry.fields) ? entry.fields : []
-          }
-        },
-        '*'
-      )
+      postToThingsVis('tv:device-fields', {
+        deviceId,
+        templateId,
+        fields: Array.isArray(entry.fields) ? entry.fields : []
+      })
     } catch (error) {
       console.warn('[AppFrame] Failed to load requested device fields:', deviceId, templateId, error)
     }
@@ -786,27 +1191,8 @@ const handleMessage = async (event: MessageEvent) => {
   }
 
   if (type === 'tv:ready' || type === 'READY') {
-    if (props.mode === 'viewer') {
-      return
-    }
-
-    if (iframeRef.value?.contentWindow && token.value) {
-      // Debounce: studio sends tv:ready both on initial load and after bootstrap.
-      // Coalesce rapid signals into a single init run.
-      if (pendingInitDebounceTimer) {
-        clearTimeout(pendingInitDebounceTimer)
-      }
-      pendingInitDebounceTimer = setTimeout(async () => {
-        pendingInitDebounceTimer = null
-        if (initInProgress) return
-        initInProgress = true
-        try {
-          await doInit()
-        } finally {
-          initInProgress = false
-        }
-      }, 300)
-    }
+    scheduleInit()
+    return
   }
 
   if (type === 'tv:preview') {
@@ -815,6 +1201,7 @@ const handleMessage = async (event: MessageEvent) => {
       query: { id: projectId || props.id }
     })
     window.open(target.href, '_blank')
+    return
   }
 
   if (type === 'tv:publish') {
@@ -844,6 +1231,7 @@ onMounted(async () => {
   window.addEventListener('message', handleMessage)
 
   try {
+    clearThingsVisToken()
     const tokenStr = await getThingsVisToken()
     if (tokenStr) {
       token.value = tokenStr
@@ -859,9 +1247,14 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener('message', handleMessage)
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
+  clearInitRetryTimers()
+  clearViewerHydrationTimers()
   activePlatformDevices.clear()
   platformDevicesCache = null
   platformDevicesCachePromise = null
+  viewerDashboardConfigCache = null
+  viewerDashboardConfigCacheId = null
+  viewerDashboardConfigPromise = null
   templateEntryCache.clear()
   disconnectAllDeviceWs()
 })

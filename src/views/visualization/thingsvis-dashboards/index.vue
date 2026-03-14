@@ -31,6 +31,7 @@ import {
   type DashboardListItem,
   type ThingsVisProject
 } from '@/service/api/thingsvis'
+import { clearThingsVisToken } from '@/utils/thingsvis'
 
 const route = useRoute()
 const { routerPushByKey } = useRouterPush()
@@ -58,17 +59,20 @@ const formData = ref({
 const loadProject = async () => {
   if (!projectId.value) {
     message.error('缺少项目ID')
-    return
+    return false
   }
 
   try {
     const { data, error } = await getThingsVisProject(projectId.value)
     if (!error && data) {
       project.value = data
+      return true
     }
   } catch (e) {
     console.error('加载项目失败:', e)
   }
+
+  return false
 }
 
 /** 加载 Dashboard 列表 */
@@ -171,7 +175,9 @@ const handleCreateDashboard = async () => {
         mode: formData.value.canvasMode,
         width: formData.value.canvasWidth,
         height: formData.value.canvasHeight,
-        background: '#f5f5f5'
+        background: {
+          color: 'transparent'
+        }
       }
     })
 
@@ -248,8 +254,11 @@ const goBackToProjects = () => {
 }
 
 onMounted(async () => {
-  await loadProject()
-  await fetchDashboards()
+  clearThingsVisToken()
+  const projectLoaded = await loadProject()
+  if (projectLoaded) {
+    await fetchDashboards()
+  }
 })
 </script>
 
