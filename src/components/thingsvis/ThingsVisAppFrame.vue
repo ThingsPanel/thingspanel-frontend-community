@@ -276,6 +276,7 @@ function disconnectAllDeviceWs() {
  * the second call tears down WS while the first is still completing.
  */
 let initInProgress = false
+let initSucceeded = false
 let pendingInitDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
 type HistoryPoint = { value: unknown; ts: number }
@@ -293,6 +294,8 @@ const token = ref('')
 const url = ref('')
 const iframeRef = ref<HTMLIFrameElement>()
 let viewerHydrationTimers: Array<ReturnType<typeof setTimeout>> = []
+let viewerHydrationInFlight = false
+let viewerHydrationCompleted = false
 let initRetryTimers: Array<ReturnType<typeof setTimeout>> = []
 
 let viewerDashboardConfigCache: Record<string, unknown> | null = null
@@ -434,27 +437,6 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
     })
 }
 
-async function fetchAllCurrentFieldsForDevice(deviceId: string): Promise<Record<string, unknown>> {
-  const [telemetryResult, attributeResult] = await Promise.allSettled([
-    telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
-    getAttributeDataSet({ device_id: deviceId }, SILENT_REQUEST_CONFIG)
-  ])
-
-  const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
-  const attributeRes = attributeResult.status === 'fulfilled' ? attributeResult.value : null
-
-  const kvMap: Record<string, unknown> = {}
-  const collect = (item: any) => {
-    if (item?.key !== undefined) kvMap[item.key] = item.value
-    if (item?.label) kvMap[item.label] = item.value
-  }
-
-  if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
-  if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
-
-  return kvMap
-}
-
 async function loadViewerDashboardConfig(): Promise<Record<string, unknown> | null> {
   if (props.mode !== 'viewer') return null
   if (props.schema) {
@@ -522,6 +504,29 @@ function normalizeHistory(records: any[], valueKey: string): HistoryPoint[] {
       ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
     }))
     .filter(point => !Number.isNaN(point.ts))
+}
+
+function normalizeDerivedHistory(records: any[], resolver: (item: any) => unknown): HistoryPoint[] {
+  return records
+    .map((item: any) => ({
+      value: normalizeMetricValue(resolver(item)),
+      ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
+    }))
+    .filter(point => !Number.isNaN(point.ts))
+}
+
+function buildFlatHistory(value: unknown, timestamps: number[]): HistoryPoint[] {
+  const normalizedValue = normalizeMetricValue(value)
+  const uniqueTimestamps = Array.from(new Set(timestamps.filter(ts => Number.isFinite(ts))))
+  if (uniqueTimestamps.length > 0) {
+    return uniqueTimestamps.map(ts => ({ value: normalizedValue, ts }))
+  }
+
+  const now = Date.now()
+  return [
+    { value: normalizedValue, ts: now - 60 * 60 * 1000 },
+    { value: normalizedValue, ts: now }
+  ]
 }
 
 function normalizeMetricValue(value: unknown): number {
@@ -667,10 +672,11 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   const requestedCurrentFieldSet = new Set(currentFieldIds)
   const requestedHistoryFieldSet = new Set(historyFieldIds)
 
-  const requiresDeviceSummary = ['device_total', 'device_online', 'device_offline', 'device_activity'].some(fieldId =>
-    requestedCurrentFieldSet.has(fieldId)
+  const requiresDeviceSummary = ['device_total', 'device_online', 'device_offline', 'device_activity'].some(
+    fieldId => requestedCurrentFieldSet.has(fieldId) || requestedHistoryFieldSet.has(fieldId)
   )
-  const requiresAlarmSummary = requestedCurrentFieldSet.has('alarm_device_total')
+  const requiresAlarmSummary =
+    requestedCurrentFieldSet.has('alarm_device_total') || requestedHistoryFieldSet.has('alarm_device_total')
   const requiresTenantSummary =
     getCurrentPlatformFieldScope() === 'super-admin' &&
     ['tenant_added_yesterday', 'tenant_added_month', 'tenant_total'].some(fieldId =>
@@ -684,8 +690,9 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   const requiresMetricHistory =
     getCurrentPlatformFieldScope() === 'super-admin' &&
     ['cpu_usage', 'memory_usage', 'disk_usage'].some(fieldId => requestedHistoryFieldSet.has(fieldId))
-  const requiresDeviceTrend =
-    requestedHistoryFieldSet.has('device_online') || requestedHistoryFieldSet.has('device_offline')
+  const requiresDeviceTrend = ['device_total', 'device_online', 'device_offline', 'device_activity'].some(
+    fieldId => requestedHistoryFieldSet.has(fieldId)
+  )
 
   const [
     deviceListResult,
@@ -743,6 +750,9 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
       deviceTrendResult.status === 'fulfilled' && Array.isArray(deviceTrendResult.value?.data?.points)
         ? deviceTrendResult.value.data.points
         : []
+    const trendTimestamps = points
+      .map((item: any) => new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime())
+      .filter((ts: number) => !Number.isNaN(ts))
 
     if (historyFieldIds.includes('device_online')) {
       const history = normalizeHistory(points, 'device_online')
@@ -753,6 +763,33 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
       const history = normalizeHistory(points, 'device_offline')
       if (history.length > 0) result.histories.push({ fieldId: 'device_offline', history })
     }
+
+    if (historyFieldIds.includes('device_total')) {
+      const history = normalizeDerivedHistory(
+        points,
+        (item: any) => normalizeMetricValue(item?.device_online) + normalizeMetricValue(item?.device_offline)
+      )
+      if (history.length > 0) result.histories.push({ fieldId: 'device_total', history })
+    }
+
+    if (historyFieldIds.includes('device_activity')) {
+      const history = normalizeDerivedHistory(points, (item: any) => item?.device_online)
+      if (history.length > 0) result.histories.push({ fieldId: 'device_activity', history })
+    }
+
+    if (historyFieldIds.includes('alarm_device_total')) {
+      const history = buildFlatHistory(aggregateValues.alarm_device_total, trendTimestamps)
+      if (history.length > 0) result.histories.push({ fieldId: 'alarm_device_total', history })
+    }
+  }
+
+  if (
+    !requiresDeviceTrend &&
+    historyFieldIds.includes('alarm_device_total') &&
+    aggregateValues.alarm_device_total !== undefined
+  ) {
+    const history = buildFlatHistory(aggregateValues.alarm_device_total, [])
+    if (history.length > 0) result.histories.push({ fieldId: 'alarm_device_total', history })
   }
 
   if (requiresTenantHistory && tenantResult.status === 'fulfilled') {
@@ -800,21 +837,13 @@ async function hydrateConfiguredPlatformSources() {
     const requestedFields = descriptor.requestedFields
 
     if (descriptor.deviceId) {
+      if (requestedFields.length === 0) continue
       if (handledDeviceIds.has(descriptor.deviceId)) continue
       handledDeviceIds.add(descriptor.deviceId)
 
       ensureDeviceWs(descriptor.deviceId)
 
-      let result: RequestedFieldResult
-      if (requestedFields.length > 0) {
-        result = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
-      } else {
-        result = {
-          fields: await fetchAllCurrentFieldsForDevice(descriptor.deviceId),
-          histories: []
-        }
-      }
-
+      const result = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
       postPlatformData(result.fields, descriptor.deviceId)
       result.histories.forEach(item => {
         postPlatformHistory(item.fieldId, item.history, item.deviceId)
@@ -843,12 +872,19 @@ function scheduleViewerHydration() {
   if (props.mode !== 'viewer') return
 
   clearViewerHydrationTimers()
-  ;[0, 300, 1200, 3000, 6000, 10000, 15000].forEach(delay => {
-    const timer = setTimeout(() => {
-      void hydrateConfiguredPlatformSources()
-    }, delay)
-    viewerHydrationTimers.push(timer)
-  })
+  if (viewerHydrationCompleted || viewerHydrationInFlight) return
+
+  const timer = setTimeout(async () => {
+    if (viewerHydrationCompleted || viewerHydrationInFlight) return
+    viewerHydrationInFlight = true
+    try {
+      await hydrateConfiguredPlatformSources()
+      viewerHydrationCompleted = true
+    } finally {
+      viewerHydrationInFlight = false
+    }
+  }, 0)
+  viewerHydrationTimers.push(timer)
 }
 
 function resolveWriteDeviceId(payload: Record<string, unknown>): string | undefined {
@@ -1057,11 +1093,37 @@ async function doInit() {
     console.warn('[AppFrame] Failed to preload dashboard schema for embed init:', props.id, error)
   }
 
-  const { devices: platformDevices } = await buildPlatformDevices()
+  const viewerDeviceDescriptors =
+    props.mode === 'viewer'
+      ? collectPlatformSourceDescriptors(dashboardPayload).filter(
+          descriptor => descriptor.deviceId && descriptor.requestedFields.length > 0
+        )
+      : []
+  const requiredViewerDeviceIds = new Set(
+    viewerDeviceDescriptors
+      .map(descriptor => descriptor.deviceId)
+      .filter((deviceId): deviceId is string => typeof deviceId === 'string' && deviceId.length > 0)
+  )
+  const shouldBuildPlatformDevices =
+    props.mode !== 'viewer' || requiredViewerDeviceIds.size > 0
+  const { devices: loadedPlatformDevices } = shouldBuildPlatformDevices
+    ? await buildPlatformDevices()
+    : { devices: [] }
+  const platformDevices =
+    props.mode === 'viewer' && requiredViewerDeviceIds.size > 0
+      ? loadedPlatformDevices.filter(device => requiredViewerDeviceIds.has(device.deviceId))
+      : loadedPlatformDevices
   const platformBufferSize = Math.max(
     DEFAULT_PLATFORM_BUFFER_SIZE,
     resolvePlatformBufferSize(dashboardPayload.dataSources)
   )
+
+  if (props.mode === 'viewer') {
+    viewerHydrationCompleted = false
+    viewerHydrationInFlight = false
+    clearViewerHydrationTimers()
+    disconnectAllDeviceWs()
+  }
 
   activePlatformDevices.clear()
   for (const device of platformDevices) {
@@ -1093,9 +1155,15 @@ async function doInit() {
     getThingsVisTargetOrigin()
   )
 
-  if (props.mode === 'viewer') {
-    scheduleViewerHydration()
-  } else {
+  // Mark init as succeeded and cancel remaining retry timers (FIX-H1)
+  initSucceeded = true
+  clearInitRetryTimers()
+  if (pendingInitDebounceTimer) {
+    clearTimeout(pendingInitDebounceTimer)
+    pendingInitDebounceTimer = null
+  }
+
+  if (props.mode !== 'viewer') {
     disconnectAllDeviceWs()
   }
 }
@@ -1103,11 +1171,14 @@ async function doInit() {
 function scheduleInit() {
   if (!iframeRef.value?.contentWindow || !token.value) return
 
+  // Reset success flag so retry timers can fire for this new schedule cycle
+  initSucceeded = false
+
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
   clearInitRetryTimers()
 
   const runInit = async () => {
-    if (initInProgress) return
+    if (initInProgress || initSucceeded) return
     initInProgress = true
     try {
       await doInit()
@@ -1191,7 +1262,9 @@ const handleMessage = async (event: MessageEvent) => {
   }
 
   if (type === 'tv:ready' || type === 'READY') {
-    scheduleInit()
+    if (!initSucceeded) {
+      scheduleInit()
+    }
     return
   }
 
@@ -1249,6 +1322,9 @@ onBeforeUnmount(() => {
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
   clearInitRetryTimers()
   clearViewerHydrationTimers()
+  viewerHydrationCompleted = false
+  viewerHydrationInFlight = false
+  initSucceeded = false
   activePlatformDevices.clear()
   platformDevicesCache = null
   platformDevicesCachePromise = null
