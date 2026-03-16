@@ -7,6 +7,8 @@
     "market.loginFailed": "登录失败",
     "market.loginRequired": "请先登录市场",
     "market.tokenExpired": "市场登录已过期，请重新登录",
+    "market.noAccount": "没有账号？",
+    "market.goToRegister": "去注册",
     "market.searchPlaceholder": "搜索模板名称、品牌、型号...",
     "market.allCategories": "全部类别",
     "market.sortLatest": "最新发布",
