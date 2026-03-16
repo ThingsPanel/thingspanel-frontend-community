@@ -1135,8 +1135,10 @@ async function doInit() {
     }
   }
 
-  iframeRef.value.contentWindow.postMessage(
-    {
+  // JSON round-trip strips Vue reactive Proxy wrappers (from schema prop) so
+  // postMessage's structured-clone algorithm can serialize the payload.
+  const initMessage = JSON.parse(
+    JSON.stringify({
       type: 'tv:init',
       payload: {
         platformFields: getCurrentGlobalPlatformFields(),
@@ -1151,9 +1153,9 @@ async function doInit() {
           apiBaseUrl
         }
       }
-    },
-    getThingsVisTargetOrigin()
+    })
   )
+  iframeRef.value.contentWindow.postMessage(initMessage, getThingsVisTargetOrigin())
 
   // Mark init as succeeded and cancel remaining retry timers (FIX-H1)
   initSucceeded = true
