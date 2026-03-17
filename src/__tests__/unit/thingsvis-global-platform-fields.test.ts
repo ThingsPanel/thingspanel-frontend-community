@@ -18,6 +18,8 @@ describe('global-platform-fields', () => {
 
     expect(fieldIds).toContain('device_total')
     expect(fieldIds).toContain('alarm_device_total')
+    expect(fieldIds).toContain('home_alarm_items')
+    expect(fieldIds).toContain('home_latest_report_rows')
     expect(fieldIds).not.toContain('tenant_total')
     expect(fieldIds).not.toContain('cpu_usage')
   })

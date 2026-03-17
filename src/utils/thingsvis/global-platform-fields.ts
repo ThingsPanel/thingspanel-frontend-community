@@ -74,6 +74,20 @@ const SHARED_GLOBAL_PLATFORM_FIELDS: PlatformField[] = [
     type: 'json',
     dataType: 'telemetry',
     description: '离线设备历史趋势'
+  },
+  {
+    id: 'home_alarm_items',
+    name: '首页告警列表',
+    type: 'json',
+    dataType: 'telemetry',
+    description: '首页告警信息列表'
+  },
+  {
+    id: 'home_latest_report_rows',
+    name: '首页最新上报数据',
+    type: 'json',
+    dataType: 'telemetry',
+    description: '首页最新上报数据表格数据'
   }
 ]
 

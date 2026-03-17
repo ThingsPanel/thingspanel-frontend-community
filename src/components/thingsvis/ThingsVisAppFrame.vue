@@ -28,12 +28,14 @@ import {
 import {
   attributesApi,
   getAlarmCount,
+  getLatestTelemetryData,
   getOnlineDeviceTrend,
   getSystemMetricsCurrent,
   getSystemMetricsHistory,
   telemetryApi,
   tenant
 } from '@/service/api'
+import { alarmHistory } from '@/service/api/alarm'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import { getGlobalPlatformFields, resolveGlobalPlatformFieldScope } from '@/utils/thingsvis/global-platform-fields'
@@ -568,6 +570,52 @@ function normalizeSystemMetricHistory(records: any[], metricKey: 'cpu' | 'memory
     .filter(point => !Number.isNaN(point.ts))
 }
 
+function normalizeHomeAlarmItems(payload: any): Array<Record<string, unknown>> {
+  const list = Array.isArray(payload?.list) ? payload.list : Array.isArray(payload?.data?.list) ? payload.data.list : []
+
+  return list.slice(0, 10).map((item: any) => ({
+    level:
+      item?.alarm_status === 'H'
+        ? 'critical'
+        : item?.alarm_status === 'M'
+          ? 'warning'
+          : item?.alarm_status === 'L'
+            ? 'info'
+            : 'success',
+    title: item?.name ?? '-',
+    detail: item?.content ?? '-',
+    source: item?.device_name ?? item?.group_name ?? '',
+    time: item?.create_at ?? item?.created_at ?? item?.time ?? ''
+  }))
+}
+
+function normalizeLatestReportRows(payload: any): Array<Record<string, unknown>> {
+  const devices = Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : []
+  const rows: Array<Record<string, unknown>> = []
+
+  devices.slice(0, 6).forEach((device: any) => {
+    const telemetry = Array.isArray(device?.telemetry_data) ? device.telemetry_data : []
+    telemetry.slice(0, 3).forEach((item: any) => {
+      const rawValue = item?.value
+      const valueText =
+        rawValue === null || rawValue === undefined
+          ? '-'
+          : item?.unit
+            ? `${rawValue}${item.unit}`
+            : String(rawValue)
+
+      rows.push({
+        device: device?.device_name ?? '-',
+        metric: item?.label || item?.key || '-',
+        value: valueText,
+        time: device?.last_push_time ?? device?.update_time ?? ''
+      })
+    })
+  })
+
+  return rows
+}
+
 function unwrapList(payload: any): any[] {
   if (Array.isArray(payload?.list)) return payload.list
   if (Array.isArray(payload)) return payload
@@ -699,10 +747,14 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   const requiresDeviceTrend = ['device_total', 'device_online', 'device_offline', 'device_activity'].some(
     fieldId => requestedHistoryFieldSet.has(fieldId)
   )
+  const requiresHomeAlarmItems = requestedCurrentFieldSet.has('home_alarm_items')
+  const requiresLatestReportRows = requestedCurrentFieldSet.has('home_latest_report_rows')
 
   const [
     deviceListResult,
     alarmCountResult,
+    alarmHistoryResult,
+    latestReportResult,
     tenantResult,
     systemMetricsCurrentResult,
     systemMetricsHistoryResult,
@@ -710,6 +762,16 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   ] = await Promise.allSettled([
     requiresDeviceSummary ? deviceList({ page: 1, page_size: 1000 }) : Promise.resolve(null),
     requiresAlarmSummary ? getAlarmCount() : Promise.resolve(null),
+    requiresHomeAlarmItems
+      ? alarmHistory({
+          page: 1,
+          page_size: 10,
+          alarm_status: '',
+          start_time: '',
+          end_time: ''
+        })
+      : Promise.resolve(null),
+    requiresLatestReportRows ? getLatestTelemetryData() : Promise.resolve(null),
     requiresTenantSummary || requiresTenantHistory ? tenant() : Promise.resolve(null),
     requiresMetricSummary ? getSystemMetricsCurrent() : Promise.resolve(null),
     requiresMetricHistory ? getSystemMetricsHistory({}) : Promise.resolve(null),
@@ -733,6 +795,14 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
 
   if (alarmCountResult.status === 'fulfilled') {
     aggregateValues.alarm_device_total = normalizeMetricValue(alarmCountResult.value?.data?.alarm_device_total)
+  }
+
+  if (requiresHomeAlarmItems && alarmHistoryResult.status === 'fulfilled') {
+    aggregateValues.home_alarm_items = normalizeHomeAlarmItems(alarmHistoryResult.value?.data)
+  }
+
+  if (requiresLatestReportRows && latestReportResult.status === 'fulfilled') {
+    aggregateValues.home_latest_report_rows = normalizeLatestReportRows(latestReportResult.value?.data)
   }
 
   if (tenantResult.status === 'fulfilled') {
