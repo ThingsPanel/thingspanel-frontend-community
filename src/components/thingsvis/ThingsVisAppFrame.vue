@@ -374,7 +374,13 @@ function postPlatformHistory(fieldId: string, history: HistoryPoint[], deviceId?
   })
 }
 
-const FIELD_BINDING_EXPR_RE = /\{\{\s*ds\.([^.\s}]+)\.([^}]+?)\s*\}\}/g
+const FIELD_BINDING_EXPR_RE = /\{\{\s*ds\.([^.\s}]+)\.(?:data\.)?([^}]+?)\s*\}\}/g
+
+function getRequestedFieldRoot(fieldPath?: string): string | null {
+  if (!fieldPath) return null
+  const [root] = fieldPath.split(/[.[\]]/).filter(Boolean)
+  return root?.trim() ? root.trim() : null
+}
 
 function collectRequestedFieldsFromValue(value: unknown, requests: Map<string, Set<string>>) {
   if (typeof value === 'string') {
@@ -384,7 +390,7 @@ function collectRequestedFieldsFromValue(value: unknown, requests: Map<string, S
       const dataSourceId = match[1]
       const fieldPath = match[2]?.trim()
       if (!dataSourceId || !fieldPath) continue
-      const fieldId = fieldPath.split(/[.[\]]/).filter(Boolean)[0]
+      const fieldId = getRequestedFieldRoot(fieldPath)
       if (!fieldId) continue
       const fields = requests.get(dataSourceId) ?? new Set<string>()
       fields.add(fieldId)
@@ -1109,10 +1115,7 @@ async function doInit() {
   const { devices: loadedPlatformDevices } = shouldBuildPlatformDevices
     ? await buildPlatformDevices()
     : { devices: [] }
-  const platformDevices =
-    props.mode === 'viewer' && requiredViewerDeviceIds.size > 0
-      ? loadedPlatformDevices.filter(device => requiredViewerDeviceIds.has(device.deviceId))
-      : loadedPlatformDevices
+  const platformDevices = loadedPlatformDevices
   const platformBufferSize = Math.max(
     DEFAULT_PLATFORM_BUFFER_SIZE,
     resolvePlatformBufferSize(dashboardPayload.dataSources)

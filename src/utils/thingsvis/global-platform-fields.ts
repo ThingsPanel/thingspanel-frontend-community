@@ -41,6 +41,27 @@ const SHARED_GLOBAL_PLATFORM_FIELDS: PlatformField[] = [
     description: '当前处于告警状态的设备数'
   },
   {
+    id: 'device_total__history',
+    name: 'Total Devices Trend',
+    type: 'json',
+    dataType: 'telemetry',
+    description: 'Aggregate history trend for total devices'
+  },
+  {
+    id: 'device_activity__history',
+    name: 'Active Devices Trend',
+    type: 'json',
+    dataType: 'telemetry',
+    description: 'Aggregate history trend for active devices'
+  },
+  {
+    id: 'alarm_device_total__history',
+    name: 'Alarm Devices Trend',
+    type: 'json',
+    dataType: 'telemetry',
+    description: 'Aggregate history trend for alarm devices'
+  },
+  {
     id: 'device_online__history',
     name: '在线设备趋势',
     type: 'json',
