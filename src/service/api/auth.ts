@@ -106,3 +106,17 @@ export function registerByEmail(data: {
     }
   })
 }
+
+/** 检查是否存在超管 */
+export function fetchHasAdmin() {
+  return request.get<{ has_admin: boolean }>('/tenant/has-admin')
+}
+
+/** 超管注册（联动市场） */
+export function fetchMarketRegister(data: { email: string; password: string }) {
+  return request.post('/tenant/market-register', data, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+}
