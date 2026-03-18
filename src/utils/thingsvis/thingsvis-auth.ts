@@ -15,6 +15,7 @@ export class ThingsVisAuthService {
   private cachedToken: string | null = null
   private tokenExpiry: number = 0
   private cachedIdentityKey: string | null = null
+  private exchangePromise: Promise<string> | null = null
   private thingsvisApiUrl: string
 
   constructor() {
@@ -117,9 +118,17 @@ export class ThingsVisAuthService {
       return this.cachedToken
     }
 
+    if (this.exchangePromise) {
+      console.log('🔄 Waiting for in-flight ThingsVis token exchange...')
+      return this.exchangePromise
+    }
+
     // Token 过期或不存在，重新交换
     console.log('🔄 Token expired or not found, exchanging...')
-    return await this.exchangeToken()
+    this.exchangePromise = this.exchangeToken().finally(() => {
+      this.exchangePromise = null
+    })
+    return await this.exchangePromise
   }
 
   /**
@@ -129,6 +138,7 @@ export class ThingsVisAuthService {
     this.cachedToken = null
     this.tokenExpiry = 0
     this.cachedIdentityKey = null
+    this.exchangePromise = null
   }
 
   /**

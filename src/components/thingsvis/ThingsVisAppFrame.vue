@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
-import { clearThingsVisToken, getThingsVisToken } from '@/utils/thingsvis'
+import { getThingsVisToken } from '@/utils/thingsvis'
 import {
   deviceList,
   getDeviceConfigList,
@@ -1379,7 +1379,6 @@ onMounted(async () => {
   window.addEventListener('message', handleMessage)
 
   try {
-    clearThingsVisToken()
     const tokenStr = await getThingsVisToken()
     if (tokenStr) {
       token.value = tokenStr

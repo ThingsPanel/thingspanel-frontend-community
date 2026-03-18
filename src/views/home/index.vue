@@ -10,7 +10,6 @@ import { localStg } from '@/utils/storage'
 import { $t } from '@/locales'
 import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
 import { useAuthStore } from '@/store/modules/auth'
-import { clearThingsVisToken } from '@/utils/thingsvis'
 import { isSysAdminUser } from '@/utils/thingsvis/space'
 
 const layoutFetched = ref(false)
@@ -40,7 +39,6 @@ const getLayout = async () => {
 
   // 先检查 ThingsVis 是否有设为首页的仪表盘
   try {
-    clearThingsVisToken()
     console.log('[Home] 尝试获取 ThingsVis 首页...')
     const thingsVisResult = await getThingsVisHomeDashboard()
     const homeNotConfigured = !thingsVisResult.data?.data && (!thingsVisResult.error || thingsVisResult.error.status === 404)
