@@ -167,8 +167,8 @@
   "device_template.inputMarketName": "Please enter template name",
   "device_template.inputBrand": "Please enter brand",
   "device_template.inputModelNumber": "Please enter model",
-  "device_template.category": "Category",
-  "device_template.selectCategory": "Please select category",
+  "device_template.category": "Market category",
+  "device_template.selectCategory": "Please select a market category",
   "device_template.inputVersion": "Please enter version",
   "device_template.inputAuthor": "Please enter author",
   "device_template.inputDescription": "Please enter description",
@@ -185,5 +185,10 @@
   "device_template.catSensor": "Sensor",
   "device_template.catModule": "Module",
   "device_template.catOther": "Other",
+  "device_template.marketCatIoT": "IoT",
+  "device_template.marketCatIndustrial": "Industrial",
+  "device_template.marketCatAgriculture": "Agriculture",
+  "device_template.marketCatSmartCity": "Smart City",
+  "device_template.marketCatOther": "Other",
   "device_template.requireThingModelBeforePublish": "Please define a thing model before publishing"
 }

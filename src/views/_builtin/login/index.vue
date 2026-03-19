@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import type { Component } from 'vue'
 import { useTitle } from '@vueuse/core'
-import { NEllipsis } from 'naive-ui'
+import { NEllipsis, NSpin } from 'naive-ui'
 import { $t } from '@/locales'
 import { useAppStore } from '@/store/modules/app'
 import { useThemeStore } from '@/store/modules/theme'
 import { loginModuleRecord } from '@/constants/app'
 import { useSysSettingStore } from '@/store/modules/sys-setting'
+import { fetchHasAdmin } from '@/service/api/auth'
 import PwdLogin from './modules/pwd-login.vue'
 import CodeLogin from './modules/code-login.vue'
 import Register from './modules/register.vue'
 import RegisterByEmail from './modules/register-email.vue'
+import RegisterSuperAdmin from './modules/register-super-admin.vue'
 import ResetPwd from './modules/reset-pwd.vue'
 import BindWechat from './modules/bind-wechat.vue'
 import LoginBg from './modules/login-bg.vue'
@@ -29,6 +31,10 @@ const appStore = useAppStore()
 const themeStore = useThemeStore()
 const sysSetting = useSysSettingStore()
 
+// 是否有超管
+const hasAdmin = ref(true)
+const loading = ref(true)
+
 interface LoginModule {
   key: UnionKey.LoginModule
   label: string
@@ -40,22 +46,56 @@ const modules: LoginModule[] = [
   { key: 'code-login', label: loginModuleRecord['code-login'], component: CodeLogin },
   { key: 'register', label: loginModuleRecord.register, component: Register },
   { key: 'register-email', label: loginModuleRecord.register, component: RegisterByEmail },
+  { key: 'register-super-admin', label: loginModuleRecord.register, component: RegisterSuperAdmin },
   { key: 'reset-pwd', label: loginModuleRecord['reset-pwd'], component: ResetPwd },
   { key: 'bind-wechat', label: loginModuleRecord['bind-wechat'], component: BindWechat }
 ]
 
+// 检查是否有超管
+const checkHasAdmin = async () => {
+  try {
+    const res = await fetchHasAdmin()
+    hasAdmin.value = res.data?.has_admin ?? true
+  } catch {
+    hasAdmin.value = true
+  } finally {
+    loading.value = false
+  }
+}
+
+// 初始检查
+onMounted(() => {
+  checkHasAdmin()
+})
+
+// 默认显示的模块
+const defaultModule = computed(() => {
+  if (loading.value) return 'pwd-login'
+  return hasAdmin.value ? 'pwd-login' : 'register-super-admin'
+})
+
+// 实际使用的 module（支持 props 覆盖）
+const effectiveModule = computed(() => {
+  if (props.module && props.module !== 'pwd-login') {
+    return props.module
+  }
+  return defaultModule.value
+})
+
 const activeModule = computed(() => {
-  const findItem = modules.find(item => item.key === props.module)
+  const findItem = modules.find(item => item.key === effectiveModule.value)
   return findItem || modules[0]
 })
 
 // 计算当前模块的标题
 const moduleTitle = computed(() => {
-  switch (props.module) {
+  switch (effectiveModule.value) {
     case 'pwd-login':
       return $t('page.login.pwdLogin.title')
     case 'register-email':
       return $t('page.login.register.title')
+    case 'register-super-admin':
+      return '创建超管账号'
     case 'reset-pwd':
       return $t('page.login.resetPwd.title')
     case 'code-login':
@@ -107,8 +147,14 @@ watch(moduleTitle, newTitle => {
       <div class="bg-animation-inner" :class="{ 'dark-theme': themeStore.darkMode }"></div>
     </div>
 
+    <!-- Loading 状态 -->
+    <div v-if="loading" class="flex-center">
+      <n-spin size="large" />
+    </div>
+
     <!-- 登录卡片 -->
     <div
+      v-if="!loading"
       class="relative z-10 w-full max-w-md mx-4 p-8 rounded-2xl shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom-4 duration-500"
       :style="{
         width: '380px',
@@ -201,6 +247,12 @@ watch(moduleTitle, newTitle => {
 </template>
 
 <style scoped>
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 /* 背景动画效果 */
 .bg-animation {
   position: absolute;

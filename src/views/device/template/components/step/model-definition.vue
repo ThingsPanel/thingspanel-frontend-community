@@ -191,10 +191,6 @@ const columnsList: any = reactive([
               <NButton quaternary type="primary" size={'small'} onClick={() => edit(row)}>
                 {$t('common.edit')}
               </NButton>
-              {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
-              <NButton quaternary type="primary" size={'small'} onClick={() => configPreset(row, 'telemetry')}>
-                配置预设
-              </NButton>
               <NPopconfirm onPositiveClick={() => del(row.id)}>
                 {{
                   default: () => $t('common.confirmDelete'),
@@ -231,10 +227,6 @@ const columnsList: any = reactive([
             <NSpace justify={'center'}>
               <NButton quaternary type="primary" size={'small'} onClick={() => edit(row)}>
                 {$t('common.edit')}
-              </NButton>
-              {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
-              <NButton quaternary type="primary" size={'small'} onClick={() => configPreset(row, 'attributes')}>
-                配置预设
               </NButton>
               <NPopconfirm onPositiveClick={() => del(row.id)}>
                 {{
