@@ -42,11 +42,13 @@ const rules: FormRules = {
   description: [{ required: true, message: () => $t('device_template.requireDescription'), trigger: 'blur' }]
 }
 
+// 与门户市场 (portal market)、市场列表筛选使用同一套分类取值，写入 DB 的 category 字段
 const categoryOptions = [
-  { label: () => $t('device_template.catGateway'), value: 'gateway' },
-  { label: () => $t('device_template.catSensor'), value: 'sensor' },
-  { label: () => $t('device_template.catModule'), value: 'module' },
-  { label: () => $t('device_template.catOther'), value: 'other' }
+  { label: () => $t('device_template.marketCatIoT'), value: 'IoT' },
+  { label: () => $t('device_template.marketCatIndustrial'), value: '工业' },
+  { label: () => $t('device_template.marketCatAgriculture'), value: '农业' },
+  { label: () => $t('device_template.marketCatSmartCity'), value: '智慧城市' },
+  { label: () => $t('device_template.marketCatOther'), value: '其他' }
 ]
 
 const open = async (templateId: string, defaultName?: string) => {
