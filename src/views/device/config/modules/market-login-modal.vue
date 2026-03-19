@@ -72,9 +72,9 @@ defineExpose({ open })
       </NFormItem>
     </NForm>
     <div style="margin-top: 10px; text-align: right">
-      <span>{{ $t('market.noAccount') || '没有账号？' }}</span>
-      <NButton text type="primary" @click="handleGoToRegister">
-        {{ $t('market.goToRegister') || '去注册' }}
+      <span>{{ $t('market.noAccount') }}</span>
+      <NButton text type="primary" style="margin-left: 4px" @click="handleGoToRegister">
+        {{ $t('market.goToRegister') }}
       </NButton>
     </div>
     <template #action>

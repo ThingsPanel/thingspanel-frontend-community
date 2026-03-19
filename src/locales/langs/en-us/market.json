@@ -6,6 +6,8 @@
     "market.loginSuccess": "Login successful",
     "market.loginFailed": "Login failed",
     "market.loginRequired": "Please login to the market first",
+    "market.noAccount": "Don't have an account?",
+    "market.goToRegister": "Register",
     "market.tokenExpired": "Market session expired, please login again",
     "market.searchPlaceholder": "Search templates by name, brand, model...",
     "market.allCategories": "All Categories",
