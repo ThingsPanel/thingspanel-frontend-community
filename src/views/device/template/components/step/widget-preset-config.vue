@@ -5,6 +5,13 @@ import { $t } from '@/locales'
 import { getTemplat, putTemplat } from '@/service/api'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import type { PlatformField } from '@/utils/thingsvis/types'
+import {
+  buildPresetEditorConfig,
+  extractFirstNodeFromWidgetConfig,
+  getTemplatePresetEntries,
+  getTemplatePresetKey,
+  parseTemplateChartConfig
+} from '@/utils/thingsvis/template-presets'
 
 const emit = defineEmits(['update:presetModalVisible'])
 
@@ -53,21 +60,15 @@ const loadPresetData = async () => {
       ]
 
       // 2. Parse existing config
-      const rawConfig = res.data.web_chart_config ? JSON.parse(res.data.web_chart_config) : {}
-      const presets = rawConfig.device_widget_presets || {}
-      
-      const presetKey = `${props.propertyType}_${props.property.identifier}`
-      const presetArr = presets[presetKey]
+      const presetArr = getTemplatePresetEntries(
+        res.data.web_chart_config,
+        props.propertyType,
+        props.property.identifier
+      )
 
       // 3. Build a minimal ThingsVis dashboard config from the snippet
       if (presetArr && presetArr.length > 0) {
-        const snippet = presetArr[0].widget
-        initialConfig.value = {
-          layers: [{ id: 'preset-layer', name: 'Preset Layer', nodeIds: [snippet.id], isLocked: false, isHidden: false }],
-          nodesById: {
-            [snippet.id]: snippet
-          }
-        }
+        initialConfig.value = buildPresetEditorConfig(presetArr[0]?.widget)
       } else {
         // Empty canvas ready for configuration
         initialConfig.value = null
@@ -100,21 +101,20 @@ const handleSave = async (payload: any) => {
   try {
     // 1. Get current template data
     const res = await getTemplat(props.deviceTemplateId)
-    const rawConfig = res.data.web_chart_config ? JSON.parse(res.data.web_chart_config) : {}
+    const rawConfig = parseTemplateChartConfig(res.data.web_chart_config)
     const presets = rawConfig.device_widget_presets || {}
-    
-    // 2. Extract the first widget from the payload nodes
-    const nodes = Object.values(payload.nodesById || {})
-    const presetKey = `${props.propertyType}_${props.property.identifier}`
 
-    if (nodes.length > 0) {
+    // 2. Extract the first widget from the payload
+    const firstNode = extractFirstNodeFromWidgetConfig(payload)
+    const presetKey = getTemplatePresetKey(props.propertyType, props.property.identifier)
+
+    if (firstNode) {
       // Create or update preset
-      const snippet = nodes[0] // take the first node as the preset
       presets[presetKey] = [
         {
           id: `preset_${presetKey}`,
           name: `${props.property.name}卡片预设`,
-          widget: snippet
+          widget: firstNode
         }
       ]
     } else {

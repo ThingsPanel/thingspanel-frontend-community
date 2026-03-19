@@ -39,8 +39,13 @@ vite.config.ts.timestamp-*-*.mjs
 pnpm-lock.yaml
 src/typings/components.d.ts
 
-
-
+# Documentation and scripts
+*.md
+!README.md
+!README_ZH.md
+scripts/
+iteration-log.md
+project-context.md
 
 项目介绍.txt
 .env.development

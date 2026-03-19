@@ -79,7 +79,7 @@ const loadMenuConfig = async () => {
   menuSort.value = 1
 }
 
-const persistMenuConfig = async (successMessage: string) => {
+const persistMenuConfig = async (successMessage?: string) => {
   if (!dashboardId.value) return false
 
   if (menuEnabled.value && !menuName.value.trim()) {
@@ -110,7 +110,9 @@ const persistMenuConfig = async (successMessage: string) => {
     }
 
     await refreshAuthRoutes(route.fullPath)
-    message.success(successMessage)
+    if (successMessage) {
+      message.success(successMessage)
+    }
     return true
   } finally {
     menuSaving.value = false
@@ -126,7 +128,7 @@ const handleHostSaveSuccess = async () => {
     return
   }
 
-  await persistMenuConfig('看板和菜单配置已同步保存')
+  await persistMenuConfig()
 }
 
 const goBack = () => {
