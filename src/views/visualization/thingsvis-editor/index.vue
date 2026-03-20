@@ -124,6 +124,8 @@ const handleSaveMenuConfig = async () => {
 }
 
 const handleHostSaveSuccess = async () => {
+  await loadDashboardInfo()
+
   if (!menuEnabled.value && !menuName.value.trim()) {
     return
   }
