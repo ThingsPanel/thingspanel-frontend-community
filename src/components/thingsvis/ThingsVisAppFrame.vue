@@ -36,6 +36,7 @@ import {
   telemetryApi,
   tenant
 } from '@/service/api'
+import { getTemplat } from '@/service/api/system-data'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import { getGlobalPlatformFields, resolveGlobalPlatformFieldScope } from '@/utils/thingsvis/global-platform-fields'
@@ -103,6 +104,8 @@ type TemplateEntry = {
 const deviceWsMap = new Map<string, DeviceWsEntry>()
 const activePlatformDevices = new Map<string, { deviceId: string; fields: Array<{ id?: string; name?: string }> }>()
 const templateEntryCache = new Map<string, TemplateEntry>()
+const templatePresetCache = new Map<string, any[]>()
+const templatePresetPromise = new Map<string, Promise<any[]>>()
 let platformDeviceGroupsCache: PlatformDeviceGroupEntry[] | null = null
 let platformDeviceGroupsCachePromise: Promise<PlatformDeviceGroupEntry[]> | null = null
 let deviceConfigTemplateMapCache: Map<string, string> | null = null
@@ -693,6 +696,111 @@ function unwrapList(payload: any): any[] {
   return []
 }
 
+function parseTemplateChartConfig(rawConfig: unknown): Record<string, unknown> | null {
+  if (typeof rawConfig === 'string') {
+    if (!rawConfig.trim()) return null
+    try {
+      const parsed = JSON.parse(rawConfig)
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : null
+    } catch (error) {
+      console.warn('[AppFrame] Failed to parse template chart config', error)
+      return null
+    }
+  }
+
+  if (rawConfig && typeof rawConfig === 'object' && !Array.isArray(rawConfig)) {
+    return rawConfig as Record<string, unknown>
+  }
+
+  return null
+}
+
+function extractPresetSchema(config: Record<string, unknown> | null) {
+  if (!config) return null
+
+  const nodes = Array.isArray(config.nodes)
+    ? config.nodes.filter(
+        (node): node is Record<string, unknown> => Boolean(node) && typeof node === 'object' && !Array.isArray(node)
+      )
+    : []
+
+  if (nodes.length === 0) return null
+
+  return {
+    ...(config.canvas && typeof config.canvas === 'object' && !Array.isArray(config.canvas)
+      ? { canvas: config.canvas as Record<string, unknown> }
+      : {}),
+    nodes,
+    ...(Array.isArray(config.dataSources) ? { dataSources: config.dataSources } : {})
+  }
+}
+
+function extractFirstPresetWidget(config: Record<string, unknown> | null): Record<string, unknown> | null {
+  if (!config) return null
+
+  if (Array.isArray(config.nodes)) {
+    const firstNode = config.nodes.find(
+      (node): node is Record<string, unknown> => Boolean(node) && typeof node === 'object' && !Array.isArray(node)
+    )
+    if (firstNode) return firstNode
+  }
+
+  if (config.nodesById && typeof config.nodesById === 'object' && !Array.isArray(config.nodesById)) {
+    const firstNode = Object.values(config.nodesById).find(
+      (node): node is Record<string, unknown> => Boolean(node) && typeof node === 'object' && !Array.isArray(node)
+    )
+    if (firstNode) return firstNode
+  }
+
+  return null
+}
+
+function buildDeviceChartPreset(templateId: string, presetId: 'web' | 'app', label: string, rawConfig: unknown) {
+  const config = parseTemplateChartConfig(rawConfig)
+  const schema = extractPresetSchema(config)
+  const widget = extractFirstPresetWidget(config)
+  if (!widget && !schema) return null
+
+  return {
+    id: `${templateId}-${presetId}-chart`,
+    name: label,
+    ...(widget ? { widget } : {}),
+    ...(schema ? { schema } : {})
+  }
+}
+
+async function loadTemplatePresets(templateId: string | number): Promise<any[]> {
+  const cacheKey = String(templateId)
+  const cached = templatePresetCache.get(cacheKey)
+  if (cached) return cached
+
+  const pending = templatePresetPromise.get(cacheKey)
+  if (pending) return pending
+
+  const promise = (async () => {
+    try {
+      const res = await getTemplat(templateId)
+      const template = res?.data || {}
+      const presets = [
+        buildDeviceChartPreset(cacheKey, 'web', 'Web图表', template?.web_chart_config),
+        buildDeviceChartPreset(cacheKey, 'app', 'App图表', template?.app_chart_config)
+      ].filter(Boolean)
+
+      templatePresetCache.set(cacheKey, presets)
+      return presets
+    } catch (error) {
+      console.error('[AppFrame] Failed to load template presets', templateId, error)
+      templatePresetCache.set(cacheKey, [])
+      return []
+    } finally {
+      templatePresetPromise.delete(cacheKey)
+    }
+  })()
+
+  templatePresetPromise.set(cacheKey, promise)
+  return promise
+}
+
 async function loadTemplateEntry(templateId: string | number) {
   const cacheKey = String(templateId)
   const cached = templateEntryCache.get(cacheKey)
@@ -1172,7 +1280,24 @@ async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDev
         groups.find(group => group.groupId === normalizedGroupId)?.groupName ||
         normalizeEditorGroupName(undefined, normalizedGroupId)
 
-      const devices = unwrapList(deviceRes?.data)
+      const rawDevices = unwrapList(deviceRes?.data)
+      const templateIds = Array.from(
+        new Set(
+          rawDevices
+            .map(
+              (device: any) =>
+                (device?.device_config?.device_template_id ? String(device.device_config.device_template_id) : null) ||
+                (device?.device_config_id ? configTemplateMap.get(String(device.device_config_id)) : null)
+            )
+            .filter((templateId): templateId is string => Boolean(templateId))
+        )
+      )
+      const presetEntries = await Promise.all(
+        templateIds.map(async templateId => [templateId, await loadTemplatePresets(templateId)] as const)
+      )
+      const presetsByTemplateId = new Map<string, any[]>(presetEntries)
+
+      const devices = rawDevices
         .map((device: any): PlatformDeviceEntry | null => {
           const templateId =
             (device?.device_config?.device_template_id ? String(device.device_config.device_template_id) : null) ||
@@ -1187,7 +1312,7 @@ async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDev
             groupName,
             templateId,
             fields: [],
-            presets: []
+            presets: presetsByTemplateId.get(templateId) || []
           }
         })
         .filter((item): item is PlatformDeviceEntry => Boolean(item))
@@ -1481,6 +1606,8 @@ onBeforeUnmount(() => {
   viewerDashboardConfigCacheId = null
   viewerDashboardConfigPromise = null
   templateEntryCache.clear()
+  templatePresetCache.clear()
+  templatePresetPromise.clear()
   disconnectAllDeviceWs()
 })
 </script>
