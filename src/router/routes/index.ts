@@ -83,7 +83,7 @@ const customRoutes: CustomRoute[] = [
 // 使用 as any 绕过类型检查，因为这是新增的路由
 const thingsvisPreviewRoute = {
   name: 'thingsvis-preview-standalone',
-  path: '/thingsvis-preview',
+  path: '/tv-preview',
   component: 'layout.blank$view.visualization_thingsvis-preview',
   meta: {
     title: 'thingsvis-preview',

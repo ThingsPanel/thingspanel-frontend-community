@@ -276,6 +276,9 @@ const getThumbnailUrl = (thumbnail: string | null | undefined): string | null =>
   return `data:image/png;base64,${thumbnail}`
 }
 
+/** 浏览页地址 */
+const getViewerHref = (dashboardId: string) => `/tv-preview?id=${encodeURIComponent(dashboardId)}`
+
 /** 打开编辑器 */
 const openEditor = (dashboardId: string) => {
   routerPushByKey('visualization_thingsvis-editor', { query: { id: dashboardId } })
@@ -362,55 +365,61 @@ onMounted(async () => {
         <NGrid v-else x-gap="24" y-gap="24" cols="1 s:2 m:3 l:4" responsive="screen">
           <NGridItem v-for="dashboard in dashboards" :key="dashboard.id">
             <!-- Dashboard 卡片 -->
-            <div
-              class="group relative cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-primary hover:shadow-lg"
-              @click="openEditor(dashboard.id)"
-            >
-              <!-- 缩略图区域 -->
-              <div class="relative h-40 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden">
-                <img
-                  v-if="dashboard.thumbnail"
-                  :src="getThumbnailUrl(dashboard.thumbnail)"
-                  class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  alt="thumbnail"
-                />
-                <icon-mdi:chart-box v-else class="text-64px text-primary/40" />
+            <div class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-primary hover:shadow-lg">
+              <a
+                class="block cursor-pointer no-underline"
+                :href="getViewerHref(dashboard.id)"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <!-- 缩略图区域 -->
+                <div class="relative h-40 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden">
+                  <img
+                    v-if="dashboard.thumbnail"
+                    :src="getThumbnailUrl(dashboard.thumbnail)"
+                    class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    alt="thumbnail"
+                  />
+                  <icon-mdi:chart-box v-else class="text-64px text-primary/40" />
 
-                <!-- 右上角首页图标 -->
-                <div
-                  v-if="dashboard.homeFlag"
-                  class="absolute top-2 right-2 h-24px w-24px border-2 border-red-500 rounded-full text-center text-12px text-red-500 font-600 flex items-center justify-center bg-white"
-                >
-                  首
-                </div>
-              </div>
-
-              <!-- 卡片内容 -->
-              <div class="p-4">
-                <!-- 看板名称和状态 -->
-                <div class="mb-2 flex items-start justify-between gap-1">
-                  <h3 class="flex-1 truncate font-semibold">
-                    {{ dashboard.name }}
-                  </h3>
-                  <NTag v-if="dashboard.isPublished" size="small" type="success">
-                    已发布
-                  </NTag>
-                </div>
-
-                <!-- 底部信息 -->
-                <div class="flex items-center justify-between text-xs text-gray-400">
-                  <div class="flex items-center gap-1">
-                    <icon-mdi:tag-outline />
-                    <span>v{{ dashboard.version }}</span>
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <icon-mdi:clock-outline />
-                    <span>{{ new Date(dashboard.updatedAt).toLocaleDateString() }}</span>
+                  <!-- 右上角首页图标 -->
+                  <div
+                    v-if="dashboard.homeFlag"
+                    class="absolute top-2 right-2 h-24px w-24px border-2 border-red-500 rounded-full text-center text-12px text-red-500 font-600 flex items-center justify-center bg-white"
+                  >
+                    首
                   </div>
                 </div>
 
-                <!-- 操作按钮(始终显示) -->
-                <div class="mt-3 flex gap-2 border-t border-gray-100 pt-3">
+                <!-- 卡片内容 -->
+                <div class="p-4">
+                  <!-- 看板名称和状态 -->
+                  <div class="mb-2 flex items-start justify-between gap-1">
+                    <h3 class="flex-1 truncate font-semibold text-gray-900">
+                      {{ dashboard.name }}
+                    </h3>
+                    <NTag v-if="dashboard.isPublished" size="small" type="success">
+                      已发布
+                    </NTag>
+                  </div>
+
+                  <!-- 底部信息 -->
+                  <div class="flex items-center justify-between text-xs text-gray-400">
+                    <div class="flex items-center gap-1">
+                      <icon-mdi:tag-outline />
+                      <span>v{{ dashboard.version }}</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <icon-mdi:clock-outline />
+                      <span>{{ new Date(dashboard.updatedAt).toLocaleDateString() }}</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+
+              <!-- 操作按钮(始终显示) -->
+              <div class="px-4 pb-4">
+                <div class="flex gap-2 border-t border-gray-100 pt-3">
                   <NButton size="small" secondary class="flex-1" @click.stop="openEditor(dashboard.id)">
                     <template #icon>
                       <icon-mdi:pencil />
