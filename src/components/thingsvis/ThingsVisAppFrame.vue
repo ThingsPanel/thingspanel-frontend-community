@@ -347,6 +347,22 @@ function getCurrentGlobalPlatformFields() {
   return getGlobalPlatformFields(getCurrentPlatformFieldScope())
 }
 
+function shouldTreatPlatformRequestAsGlobal(fieldIds: unknown[]): boolean {
+  const requestedFields = Array.isArray(fieldIds)
+    ? fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string')
+    : []
+
+  if (requestedFields.length === 0) return false
+
+  const globalFieldIds = new Set(
+    getCurrentGlobalPlatformFields()
+      .map(field => (typeof field?.id === 'string' ? field.id : ''))
+      .filter(Boolean)
+  )
+
+  return requestedFields.every(fieldId => globalFieldIds.has(fieldId))
+}
+
 function cloneDashboardConfig<T>(config: T): T {
   if (!config || typeof config !== 'object') return config
   return JSON.parse(JSON.stringify(config))
@@ -491,7 +507,8 @@ function collectRequestedFieldsFromValue(value: unknown, requests: Map<string, S
       const dataSourceId = match[1]
       const fieldPath = match[2]?.trim()
       if (!dataSourceId || !fieldPath) continue
-      const fieldId = fieldPath.split(/[.[\]]/).filter(Boolean)[0]
+      const normalizedPath = fieldPath.replace(/^data(?:\.|\[)/, '')
+      const fieldId = normalizedPath.split(/[.[\]]/).filter(Boolean)[0]
       if (!fieldId) continue
       const fields = requests.get(dataSourceId) ?? new Set<string>()
       fields.add(fieldId)
@@ -517,8 +534,7 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
   collectRequestedFieldsFromValue(config?.nodes, requests)
 
   const dataSources = Array.isArray(config?.dataSources) ? config.dataSources : []
-
-  return dataSources
+  const descriptors = dataSources
     .filter((dataSource: any) => {
       const typeStr = typeof dataSource?.type === 'string' ? dataSource.type.toUpperCase() : ''
       return typeStr === 'PLATFORM_FIELD' || typeStr === 'PLATFORM'
@@ -536,12 +552,32 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
         bindingFields.forEach(fieldId => requestedFields.add(fieldId))
       }
 
+      const normalizedRequestedFields = Array.from(requestedFields)
+      const configuredDeviceId =
+        typeof dataSource?.config?.deviceId === 'string' ? dataSource.config.deviceId : undefined
+      const deviceId = shouldTreatPlatformRequestAsGlobal(normalizedRequestedFields) ? undefined : configuredDeviceId
+
       return {
         id: String(dataSource.id),
-        deviceId: typeof dataSource?.config?.deviceId === 'string' ? dataSource.config.deviceId : undefined,
-        requestedFields: Array.from(requestedFields)
+        deviceId,
+        requestedFields: normalizedRequestedFields
       }
     })
+
+  const hasGlobalDescriptor = descriptors.some(descriptor => !descriptor.deviceId)
+  const implicitGlobalFields = Array.from(requests.get('__platform__') ?? [])
+
+  // Older dashboards can bind ds.__platform__.data.* while only persisting
+  // device-scoped PLATFORM_FIELD sources. Synthesize the missing global source
+  // so host-side hydration still fetches aggregate platform metrics.
+  if (!hasGlobalDescriptor && implicitGlobalFields.length > 0) {
+    descriptors.push({
+      id: '__platform__',
+      requestedFields: implicitGlobalFields
+    })
+  }
+
+  return descriptors
 }
 
 function syncActivePlatformDevicesFromConfig(config: any) {
@@ -1070,9 +1106,11 @@ async function hydrateConfiguredPlatformSources(): Promise<boolean> {
     if (globalHydrated) continue
     globalHydrated = true
 
-    if (requestedFields.length === 0) continue
-
-    const result = await buildRequestedFieldData(requestedFields)
+    const fallbackGlobalFields =
+      requestedFields.length > 0
+        ? requestedFields
+        : ['device_total', 'device_online', 'device_offline', 'device_activity']
+    const result = await buildRequestedFieldData(fallbackGlobalFields)
     postPlatformData(result.fields)
     result.histories.forEach(item => {
       postPlatformHistory(item.fieldId, item.history)
@@ -1471,12 +1509,15 @@ const handleMessage = async (event: MessageEvent) => {
     if (!iframeRef.value?.contentWindow) return
 
     try {
-      const deviceId = typeof (payload as any).deviceId === 'string' ? (payload as any).deviceId : undefined
+      const fieldIds = Array.isArray((payload as any).fieldIds) ? (payload as any).fieldIds : []
+      const requestedDeviceId = typeof (payload as any).deviceId === 'string' ? (payload as any).deviceId : undefined
+      const deviceId = shouldTreatPlatformRequestAsGlobal(fieldIds) ? undefined : requestedDeviceId
+
       if (deviceId && !activePlatformDevices.has(deviceId)) {
         activePlatformDevices.set(deviceId, { deviceId, fields: [] })
       }
       ensureDeviceWs(deviceId)
-      const result = await buildRequestedFieldData((payload as any).fieldIds, deviceId)
+      const result = await buildRequestedFieldData(fieldIds, deviceId)
       postPlatformData(result.fields, deviceId)
       result.histories.forEach(item => {
         postPlatformHistory(item.fieldId, item.history, item.deviceId)
