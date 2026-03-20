@@ -229,7 +229,7 @@ onMounted(() => {
       >
         {{ $t('route.login') }}
       </NButton>
-      <n-divider title-placement="center" style="padding: 0px; margin: 0px">
+      <n-divider  v-if="showZc" title-placement="center" style="padding: 0px; margin: 0px">
         {{ $t('generate.or') }}
       </n-divider>
       <div class="flex-y-center justify-between gap-12px mt--4">
