@@ -9,6 +9,7 @@ import { $t } from '@/locales'
 import { yesOrNoRecord } from '@/constants/common'
 import { enableStatusRecord, menuTypeRecord } from '@/constants/business'
 import SvgIcon from '@/components/custom/svg-icon.vue'
+import { resolveRouteLabel } from '@/utils/router/resolve-route-label'
 import MenuOperateDrawer, { type OperateType } from './modules/menu-operate-drawer.vue'
 
 const appStore = useAppStore()
@@ -68,7 +69,7 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
       render: row => {
         const { i18nKey, menuName } = row
 
-        const label = i18nKey ? $t(i18nKey) : menuName
+        const label = resolveRouteLabel(i18nKey, menuName)
 
         return <span>{label}</span>
       }
