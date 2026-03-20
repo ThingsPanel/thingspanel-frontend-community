@@ -90,6 +90,7 @@
   "route.visualization-thingsvis": "看板",
   "route.visualization-thingsvis-dashboards": "仪表盘列表",
   "route.visualization-thingsvis-editor": "可视化编辑器",
+  "route.visualization-thingsvis-preview": "看板浏览",
   "route.visualization_panel-preview": "看板预览",
   "route.visualization_big-screen": "大屏",
   "route.automation": "自动化",

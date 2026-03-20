@@ -1,66 +1,57 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { NSpin, useMessage } from 'naive-ui'
 import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
-import { getThingsVisDashboard } from '@/service/api/thingsvis'
+import { getThingsVisDashboard, type ThingsVisDashboard } from '@/service/api/thingsvis'
 
 const route = useRoute()
-const message = useMessage()
 
-const dashboardId = route.query.id as string
-const loading = ref(true)
-const dashboardData = ref<any>(null)
+const dashboardSchema = ref<ThingsVisDashboard | null>(null)
 
-const hasDashboard = computed(() => Boolean(dashboardData.value?.id))
+const dashboardId = computed(() => {
+  const queryValue = route.query.id
+  if (typeof queryValue === 'string' && queryValue.trim()) {
+    return queryValue.trim()
+  }
 
-/** 加载 Dashboard 数据 */
-const loadDashboard = async () => {
-  if (!dashboardId) {
-    message.error('未指定仪表盘ID')
+  const paramValue = route.params.dashboardId
+  if (typeof paramValue === 'string' && paramValue.trim()) {
+    return paramValue.trim()
+  }
+
+  return ''
+})
+
+async function loadDashboard() {
+  if (!dashboardId.value) {
+    dashboardSchema.value = null
     return
   }
 
   try {
-    loading.value = true
-    const { data, error } = await getThingsVisDashboard(dashboardId)
-
-    if (!error && data) {
-      dashboardData.value = data
-      // 设置页面标题
-      document.title = `${data.name} - 预览`
-    } else {
-      message.error('加载失败')
-    }
-  } catch (e) {
-    console.error('加载失败:', e)
-    message.error('加载异常')
-  } finally {
-    loading.value = false
+    const { data } = await getThingsVisDashboard(dashboardId.value)
+    dashboardSchema.value = data
+    document.title = `${data?.name || '仪表盘'} - 浏览`
+  } catch (error) {
+    console.warn('加载预览仪表盘失败', error)
+    dashboardSchema.value = null
   }
 }
 
-onMounted(() => {
-  loadDashboard()
-})
+watch(
+  dashboardId,
+  () => {
+    void loadDashboard()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
-  <div class="h-full w-full bg-gray-100 dark:bg-gray-900">
-    <!-- 加载中 -->
-    <div v-if="loading" class="flex h-full items-center justify-center">
-      <NSpin size="large" />
+  <div class="h-full w-full bg-white">
+    <div v-if="dashboardId" class="h-full w-full overflow-hidden bg-white">
+      <ThingsVisAppFrame :id="dashboardId" :schema="dashboardSchema" mode="viewer" class="h-full w-full" />
     </div>
-
-    <!-- 预览器 - 复用宿主桥接，保证平台数据请求仍由 ThingsPanel 响应 -->
-    <ThingsVisAppFrame
-      v-else-if="hasDashboard"
-      :id="dashboardId"
-      :schema="dashboardData"
-      mode="viewer"
-    />
-
-    <!-- 错误/空状态 -->
     <div v-else class="flex h-full items-center justify-center text-gray-400">
       <div class="text-center">
         <p class="text-lg">无法加载仪表盘</p>
@@ -72,7 +63,8 @@ onMounted(() => {
 
 <style scoped>
 /* 确保容器占满全屏 */
-:global(body), :global(#app) {
+:global(body),
+:global(#app) {
   height: 100vh;
   margin: 0;
   padding: 0;
