@@ -18,6 +18,10 @@ const { routerPushByKey } = useRouterPush()
 const message = useMessage()
 
 const dashboardId = computed(() => String(route.query.id || '').trim())
+const currentProjectId = computed(() => {
+  const routeProjectId = String(route.query.projectId || '').trim()
+  return routeProjectId || dashboardSchema.value?.projectId || ''
+})
 const projectTitle = ref('')
 const dashboardSchema = ref<ThingsVisDashboard | null>(null)
 const menuSaving = ref(false)
@@ -134,6 +138,13 @@ const handleHostSaveSuccess = async () => {
 }
 
 const goBack = () => {
+  if (currentProjectId.value) {
+    routerPushByKey('visualization_thingsvis-dashboards', {
+      query: { projectId: currentProjectId.value }
+    })
+    return
+  }
+
   routerPushByKey('visualization_thingsvis')
 }
 
@@ -152,9 +163,7 @@ watch(
     <!-- 顶部导航栏 -->
     <div class="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 py-2 min-h-12">
       <NBreadcrumb>
-        <NBreadcrumbItem class="cursor-pointer" @click="routerPushByKey('visualization_thingsvis')">
-          {{ $t('route.visualization-thingsvis') }}
-        </NBreadcrumbItem>
+        <NBreadcrumbItem class="cursor-pointer" @click="goBack">仪表盘列表</NBreadcrumbItem>
         <NBreadcrumbItem>
           {{ projectTitle || $t('common.loading') }}
         </NBreadcrumbItem>
@@ -166,9 +175,7 @@ watch(
     </div>
 
     <div class="flex items-center justify-between gap-4 border-b border-gray-100 bg-white px-4 py-2">
-      <div class="text-sm text-gray-500">
-        系统菜单配置
-      </div>
+      <div class="text-sm text-gray-500">系统菜单配置</div>
 
       <NSpace align="center" :size="12">
         <span class="text-sm text-gray-500">设为系统菜单</span>
