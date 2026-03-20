@@ -1067,17 +1067,17 @@ async function handleHostSave(payload: Record<string, unknown>) {
     result = await updateThingsVisDashboard(props.id, updatePayload)
   }
 
-  if (result.error) {
-    console.error('[AppFrame] Failed to save dashboard via host bridge:', result.error)
-    if ((window as any).$message) {
-      ;(window as any).$message.error(`保存失败: ${result.error.status} ${result.error.message || '未知错误'}`)
-    }
-    return
-  }
+  // if (result.error) {
+  //   console.error('[AppFrame] Failed to save dashboard via host bridge:', result.error)
+  //   if ((window as any).$message) {
+  //     ;(window as any).$message.error(`保存失败: ${result.error.status} ${result.error.message || '未知错误'}`)
+  //   }
+  //   return
+  // }
 
-  if ((window as any).$message) {
-    ;(window as any).$message.success('保存成功')
-  }
+  // if ((window as any).$message) {
+  //   ;(window as any).$message.success('保存成功')
+  // }
 
   emit('hostSaveSuccess', {
     id: props.id,
