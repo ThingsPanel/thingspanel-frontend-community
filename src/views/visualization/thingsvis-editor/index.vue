@@ -62,17 +62,17 @@ const loadMenuConfig = async () => {
     return
   }
 
-  const { data, error } = await fetchDashboardMenuConfig(dashboardId.value)
-  if (error) {
-    return
-  }
+  // const { data, error } = await fetchDashboardMenuConfig(dashboardId.value)
+  // if (error) {
+  //   return
+  // }
 
-  if (data) {
-    menuEnabled.value = Boolean(data.enabled)
-    menuName.value = data.menu_name || projectTitle.value
-    menuSort.value = data.sort || 1
-    return
-  }
+  // if (data) {
+  //   menuEnabled.value = Boolean(data.enabled)
+  //   menuName.value = data.menu_name || projectTitle.value
+  //   menuSort.value = data.sort || 1
+  //   return
+  // }
 
   menuEnabled.value = false
   menuName.value = projectTitle.value
@@ -91,28 +91,28 @@ const persistMenuConfig = async (successMessage?: string) => {
   try {
     let resultError: string | null = null
 
-    if (menuEnabled.value) {
-      const { error } = await saveDashboardMenuConfig(dashboardId.value, {
-        menu_name: menuName.value.trim(),
-        dashboard_name: projectTitle.value || dashboardSchema.value?.name || menuName.value.trim(),
-        sort: menuSort.value,
-        enabled: true
-      })
-      resultError = error?.message || null
-    } else {
-      const { error } = await deleteDashboardMenuConfig(dashboardId.value)
-      resultError = error?.message || null
-    }
+    // if (menuEnabled.value) {
+    //   const { error } = await saveDashboardMenuConfig(dashboardId.value, {
+    //     menu_name: menuName.value.trim(),
+    //     dashboard_name: projectTitle.value || dashboardSchema.value?.name || menuName.value.trim(),
+    //     sort: menuSort.value,
+    //     enabled: true
+    //   })
+    //   resultError = error?.message || null
+    // } else {
+    //   const { error } = await deleteDashboardMenuConfig(dashboardId.value)
+    //   resultError = error?.message || null
+    // }
 
-    if (resultError) {
-      message.error(`菜单配置保存失败: ${resultError}`)
-      return false
-    }
+    // if (resultError) {
+    //   message.error(`菜单配置保存失败: ${resultError}`)
+    //   return false
+    // }
 
-    await refreshAuthRoutes(route.fullPath)
-    if (successMessage) {
-      message.success(successMessage)
-    }
+    // await refreshAuthRoutes(route.fullPath)
+    // if (successMessage) {
+    //   message.success(successMessage)
+    // }
     return true
   } finally {
     menuSaving.value = false

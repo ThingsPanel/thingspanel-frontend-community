@@ -191,25 +191,25 @@ const handleCreateDashboard = async () => {
     })
 
     if (!error) {
-      let menuBindingFailed = false
-      if (formData.value.menuEnabled && data?.id) {
-        const { error: menuError } = await saveDashboardMenuConfig(data.id, {
-          menu_name: formData.value.menuName.trim() || formData.value.name.trim(),
-          dashboard_name: formData.value.name.trim(),
-          sort: formData.value.menuSort,
-          enabled: true
-        })
-        menuBindingFailed = Boolean(menuError)
+      // let menuBindingFailed = false
+      // if (formData.value.menuEnabled && data?.id) {
+      //   const { error: menuError } = await saveDashboardMenuConfig(data.id, {
+      //     menu_name: formData.value.menuName.trim() || formData.value.name.trim(),
+      //     dashboard_name: formData.value.name.trim(),
+      //     sort: formData.value.menuSort,
+      //     enabled: true
+      //   })
+      //   menuBindingFailed = Boolean(menuError)
 
-        if (!menuError) {
-          await refreshAuthRoutes(route.fullPath)
-        }
-      }
+      //   if (!menuError) {
+      //     await refreshAuthRoutes(route.fullPath)
+      //   }
+      // }
 
-      message.success('创建成功')
-      if (menuBindingFailed) {
-        message.warning('仪表盘已创建，但系统菜单绑定失败，请进入编辑页重新保存菜单配置')
-      }
+      // message.success('创建成功')
+      // if (menuBindingFailed) {
+      //   message.warning('仪表盘已创建，但系统菜单绑定失败，请进入编辑页重新保存菜单配置')
+      // }
       showModal.value = false
       formData.value = {
         name: '',
@@ -235,10 +235,9 @@ const handleDeleteDashboard = async (id: string, name: string) => {
   try {
     const { error } = await deleteThingsVisDashboard(id)
     if (!error) {
-      await deleteDashboardMenuConfig(id)
+      // await deleteDashboardMenuConfig(id)
       await refreshAuthRoutes(route.fullPath)
       clearThingsVisHomeCache()
-      message.success(`已删除仪表盘: ${name}`)
       await fetchDashboards()
     } else {
       message.error('删除失败')
