@@ -281,7 +281,12 @@ const getViewerHref = (dashboardId: string) => `/tv-preview?id=${encodeURICompon
 
 /** 打开编辑器 */
 const openEditor = (dashboardId: string) => {
-  routerPushByKey('visualization_thingsvis-editor', { query: { id: dashboardId } })
+  routerPushByKey('visualization_thingsvis-editor', {
+    query: {
+      id: dashboardId,
+      projectId: projectId.value
+    }
+  })
 }
 
 /** 返回项目列表 */
