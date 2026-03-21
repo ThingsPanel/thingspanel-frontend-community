@@ -20,10 +20,12 @@ import DeviceDiagnosis from '@/views/device/details/modules/device-diagnosis.vue
 import { $t } from '@/locales'
 import { useAppStore } from '@/store/modules/app'
 import { deviceAlarmStatus, deviceDetail, deviceUpdate } from '@/service/api/device'
+import { getTemplat } from '@/service/api/system-data'
 import { localStg } from '@/utils/storage'
 import { useRouterPush } from '@/hooks/common/router'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
 import { createLogger } from '@/utils/logger'
+import { hasThingsVisChartContent } from '@/utils/thingsvis/template-presets'
 import { message } from '@/utils/common/discrete'
 const logger = createLogger('Detail')
 const route = useRoute()
@@ -124,6 +126,8 @@ const baseComponents: TabComponent[] = [
     refreshKey: 0
   }
 ]
+
+const templateChartAvailabilityCache = new Map<string, boolean>()
 
 const components = ref<TabComponent[]>([])
 
@@ -238,6 +242,7 @@ const getDeviceDetail = async () => {
 
     // 构建过滤后的组件列表（一次性赋值，避免多次触发响应式更新）
     let filtered = baseComponents.map(item => ({ ...item }))
+    let hasTemplateChart = false
 
     if (data?.device_config) {
       device_type.value = data.device_config.device_type
@@ -247,7 +252,10 @@ const getDeviceDetail = async () => {
       if (device_type.value === '3') {
           filtered = filtered.filter(item => item.key !== 'join')
       }
-      if (!data.device_config.device_template_id) {
+      if (data.device_config.device_template_id) {
+          hasTemplateChart = await resolveTemplateHasChartContent(data.device_config.device_template_id)
+      }
+      if (!data.device_config.device_template_id || !hasTemplateChart) {
           filtered = filtered.filter(item => item.key !== 'chart')
       }
     } else if (!data?.device_config_name) {
@@ -276,6 +284,30 @@ const getDeviceDetail = async () => {
         token: localStg.get('token')
       })
     )
+  }
+}
+
+const resolveTemplateHasChartContent = async (templateId?: string | number) => {
+  const normalizedTemplateId = String(templateId || '').trim()
+  if (!normalizedTemplateId) return false
+
+  if (templateChartAvailabilityCache.has(normalizedTemplateId)) {
+    return templateChartAvailabilityCache.get(normalizedTemplateId) || false
+  }
+
+  try {
+    const res = await getTemplat(normalizedTemplateId)
+    const template = res?.data || {}
+    const hasChart =
+      hasThingsVisChartContent(template?.web_chart_config) ||
+      hasThingsVisChartContent(template?.app_chart_config)
+
+    templateChartAvailabilityCache.set(normalizedTemplateId, hasChart)
+    return hasChart
+  } catch (err) {
+    console.warn('[DeviceDetail] 加载模板图表标签失败', normalizedTemplateId, err)
+    templateChartAvailabilityCache.set(normalizedTemplateId, false)
+    return false
   }
 }
 const closeModal = async () => {
