@@ -1293,6 +1293,74 @@ async function buildPlatformDeviceGroups(): Promise<PlatformDeviceGroupEntry[]> 
   return platformDeviceGroupsCachePromise
 }
 
+async function mapPlatformDevicesForGroup(
+  rawDevices: any[],
+  normalizedGroupId: string,
+  groupName: string,
+  configTemplateMap: Map<string, string>
+): Promise<PlatformDeviceEntry[]> {
+  const templateIds = Array.from(
+    new Set(
+      rawDevices
+        .map(
+          (device: any) =>
+            (device?.device_config?.device_template_id ? String(device.device_config.device_template_id) : null) ||
+            (device?.device_config_id ? configTemplateMap.get(String(device.device_config_id)) : null)
+        )
+        .filter((templateId): templateId is string => Boolean(templateId))
+    )
+  )
+  const presetEntries = await Promise.all(
+    templateIds.map(async templateId => [templateId, await loadTemplatePresets(templateId)] as const)
+  )
+  const presetsByTemplateId = new Map<string, any[]>(presetEntries)
+
+  return rawDevices
+    .map((device: any): PlatformDeviceEntry | null => {
+      const templateId =
+        (device?.device_config?.device_template_id ? String(device.device_config.device_template_id) : null) ||
+        (device?.device_config_id ? configTemplateMap.get(String(device.device_config_id)) : null)
+
+      if (!templateId || !device?.id) return null
+
+      return {
+        deviceId: String(device.id),
+        deviceName: String(device.name || device.device_number || device.id),
+        groupId: normalizedGroupId,
+        groupName,
+        templateId,
+        fields: [],
+        presets: presetsByTemplateId.get(templateId) || []
+      }
+    })
+    .filter((item): item is PlatformDeviceEntry => Boolean(item))
+}
+
+async function buildFallbackPlatformDevicesForDefaultGroup(
+  normalizedGroupId: string,
+  groupName: string,
+  groups: PlatformDeviceGroupEntry[],
+  configTemplateMap: Map<string, string>
+): Promise<PlatformDeviceEntry[]> {
+  const rootGroups = groups.filter(group => !group.parentId || String(group.parentId) === '0')
+  if (rootGroups.length !== 1 || rootGroups[0]?.groupId !== normalizedGroupId) {
+    return []
+  }
+
+  const deviceRes = await deviceList({ page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE })
+  const rawDevices = unwrapList(deviceRes?.data)
+
+  return mapPlatformDevicesForGroup(rawDevices, normalizedGroupId, groupName, configTemplateMap)
+}
+
+async function buildUngroupedPlatformDevices(): Promise<PlatformDeviceEntry[]> {
+  const configTemplateMap = await loadDeviceConfigTemplateMap()
+  const deviceRes = await deviceList({ page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE })
+  const rawDevices = unwrapList(deviceRes?.data)
+
+  return mapPlatformDevicesForGroup(rawDevices, '__ungrouped__', '未分组设备', configTemplateMap)
+}
+
 async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDeviceEntry[]> {
   const normalizedGroupId = normalizeEditorGroupId(groupId)
 
@@ -1318,42 +1386,11 @@ async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDev
         groups.find(group => group.groupId === normalizedGroupId)?.groupName ||
         normalizeEditorGroupName(undefined, normalizedGroupId)
 
-      const rawDevices = unwrapList(deviceRes?.data)
-      const templateIds = Array.from(
-        new Set(
-          rawDevices
-            .map(
-              (device: any) =>
-                (device?.device_config?.device_template_id ? String(device.device_config.device_template_id) : null) ||
-                (device?.device_config_id ? configTemplateMap.get(String(device.device_config_id)) : null)
-            )
-            .filter((templateId): templateId is string => Boolean(templateId))
-        )
-      )
-      const presetEntries = await Promise.all(
-        templateIds.map(async templateId => [templateId, await loadTemplatePresets(templateId)] as const)
-      )
-      const presetsByTemplateId = new Map<string, any[]>(presetEntries)
-
-      const devices = rawDevices
-        .map((device: any): PlatformDeviceEntry | null => {
-          const templateId =
-            (device?.device_config?.device_template_id ? String(device.device_config.device_template_id) : null) ||
-            (device?.device_config_id ? configTemplateMap.get(String(device.device_config_id)) : null)
-
-          if (!templateId || !device?.id) return null
-
-          return {
-            deviceId: String(device.id),
-            deviceName: String(device.name || device.device_number || device.id),
-            groupId: normalizedGroupId,
-            groupName,
-            templateId,
-            fields: [],
-            presets: presetsByTemplateId.get(templateId) || []
-          }
-        })
-        .filter((item): item is PlatformDeviceEntry => Boolean(item))
+      const relationDevices = unwrapList(deviceRes?.data)
+      const devices =
+        relationDevices.length > 0
+          ? await mapPlatformDevicesForGroup(relationDevices, normalizedGroupId, groupName, configTemplateMap)
+          : await buildFallbackPlatformDevicesForDefaultGroup(normalizedGroupId, groupName, groups, configTemplateMap)
 
       platformDevicesByGroupCache.set(normalizedGroupId, devices)
       return devices
@@ -1412,9 +1449,13 @@ async function doInit() {
   }
 
   let platformDeviceGroups: PlatformDeviceGroupEntry[] = []
+  let platformDevices: PlatformDeviceEntry[] = []
 
   if (props.mode === 'editor') {
     platformDeviceGroups = await buildPlatformDeviceGroups()
+    if (platformDeviceGroups.length === 0) {
+      platformDevices = await buildUngroupedPlatformDevices()
+    }
   }
 
   const platformBufferSize = Math.max(
@@ -1436,7 +1477,7 @@ async function doInit() {
         platformBufferSize,
         platformFieldScope: getCurrentPlatformFieldScope(),
         platformDeviceGroups,
-        platformDevices: [],
+        platformDevices,
         data: dashboardPayload,
         config: {
           mode: 'app',
