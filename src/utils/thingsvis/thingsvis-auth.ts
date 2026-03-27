@@ -107,12 +107,31 @@ export class ThingsVisAuthService {
         }
       }
 
+      // 3. 映射 ThingsPanel authority → ThingsVis role，用于注册时初始化默认看板
+      const authority = userInfo.authority
+      let role: SSOExchangeRequest['role']
+
+      if (authority === 'SYS_ADMIN') {
+        role = 'SUPER_ADMIN'
+      } else if (authority === 'TENANT_ADMIN') {
+        role = 'TENANT_ADMIN'
+      } else {
+        role = 'EDITOR'
+      }
+
+      request.role = role
+      console.log('[SSO] 角色映射:', { authority, role })
+
       // 3. 调用 ThingsVis SSO API (通过代理)
       // /thingsvis-api/auth/sso -> ${VITE_THINGSVIS_API_URL}/api/v1/auth/sso
       const ssoUrl = `${this.thingsvisApiUrl}/auth/sso`
       console.log('[SSO] 📡 调用 SSO API:', ssoUrl)
       console.log('[SSO] 请求目标:', this.thingsvisApiTarget)
-      console.log('[SSO] 请求数据:', { platform: request.platform, userEmail: request.userInfo.email })
+      console.log('[SSO] 请求数据:', {
+        platform: request.platform,
+        userEmail: request.userInfo.email,
+        role: request.role
+      })
 
       const response = await fetch(ssoUrl, {
         method: 'POST',
