@@ -91,19 +91,19 @@ const goToDetail = (id: string) => {
   router.push({ path: '/device/config-detail', query: { id } })
 }
 
-// 处理发布到市场
-const handlePublishToMarket = (deviceTemplateId: string, defaultName?: string) => {
-  if (!deviceTemplateId) {
+// 处理发布到市场（以 device_config_id 为发布单位）
+const handlePublishToMarket = (deviceConfigId: string, defaultName?: string) => {
+  if (!deviceConfigId) {
     window.$message?.warning($t('device_template.requireThingModelBeforePublish'))
     return
   }
   const token = sessionStorage.getItem('market_token')
   if (!token) {
-    pendingPublishId.value = deviceTemplateId
+    pendingPublishId.value = deviceConfigId
     pendingPublishName.value = defaultName || ''
     marketLoginRef.value?.open()
   } else {
-    publishConfirmRef.value?.open(deviceTemplateId, defaultName)
+    publishConfirmRef.value?.open(deviceConfigId, defaultName)
   }
 }
 
@@ -186,7 +186,7 @@ const columns = computed(() => [
                       size: 'small',
                       type: 'info',
                       disabled: !row.device_template_id,
-                      onClick: () => handlePublishToMarket(row.device_template_id, row.name)
+                      onClick: () => handlePublishToMarket(row.id, row.name)
                     },
                     { default: () => $t('device_template.publishToMarket') }
                   ),
@@ -349,7 +349,7 @@ const availableViews = [
                         @select="
                           key => {
                             if (key === 'edit') handleEdit(item.id)
-                            if (key === 'publish') handlePublishToMarket(item.device_template_id, item.name)
+                            if (key === 'publish') handlePublishToMarket(item.id, item.name)
                           }
                         "
                       >

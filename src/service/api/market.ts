@@ -5,8 +5,18 @@ export const marketLogin = async (data: { username: string; password: string }) 
   return await request.post<{ token: string }>('/device/template/market/login', data)
 }
 
-/** 发布模板到市场 */
-export const publishToMarket = async (data: { device_template_id: string; market_token: string }) => {
+/** 发布设备配置到市场（同时发布 DeviceConfig 凭证协议 + DeviceTemplate 物模型+面板） */
+export const publishToMarket = async (data: {
+  device_config_id: string
+  market_token: string
+  market_name?: string
+  brand?: string
+  model?: string
+  category?: string
+  version?: string
+  author?: string
+  description?: string
+}) => {
   return await request.post<{ market_template_id: string }>('/device/template/market/publish', data)
 }
 

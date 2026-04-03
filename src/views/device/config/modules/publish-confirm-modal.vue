@@ -3,14 +3,15 @@ import { ref, reactive } from 'vue'
 import { NModal, NForm, NFormItem, NInput, NButton, NAlert, NSelect, FormInst, FormRules } from 'naive-ui'
 import { $t } from '@/locales'
 import { publishToMarket } from '@/service/api/market'
-import { getDeviceTemplateDetail } from '@/service/api/device-template-model'
+import { deviceConfigInfo } from '@/service/api/device'
 
 const emit = defineEmits(['publish-success'])
 
 const visible = ref(false)
 const loading = ref(false)
 const formRef = ref<FormInst | null>(null)
-const templateIdValue = ref('')
+// 传入的是 device_config_id（发布单位）
+const deviceConfigIdValue = ref('')
 
 const formModel = reactive({
   market_name: '',
@@ -42,7 +43,6 @@ const rules: FormRules = {
   description: [{ required: true, message: () => $t('device_template.requireDescription'), trigger: 'blur' }]
 }
 
-// 与门户市场 (portal market)、市场列表筛选使用同一套分类取值，写入 DB 的 category 字段
 const categoryOptions = [
   { label: () => $t('device_template.marketCatIoT'), value: 'IoT' },
   { label: () => $t('device_template.marketCatIndustrial'), value: '工业' },
@@ -51,8 +51,9 @@ const categoryOptions = [
   { label: () => $t('device_template.marketCatOther'), value: '其他' }
 ]
 
-const open = async (templateId: string, defaultName?: string) => {
-  templateIdValue.value = templateId
+// open 接收 device_config_id，而非 device_template_id
+const open = async (deviceConfigId: string, defaultName?: string) => {
+  deviceConfigIdValue.value = deviceConfigId
 
   formModel.market_name = defaultName || ''
   formModel.brand = ''
@@ -62,20 +63,23 @@ const open = async (templateId: string, defaultName?: string) => {
   formModel.author = ''
   formModel.description = ''
 
+  // 获取设备配置详情（包含 device_template_id），再获取模板详情填充表单
   try {
-    const res: any = await getDeviceTemplateDetail(templateId)
-    if (!res.error && res.data) {
+    const dcRes: any = await deviceConfigInfo({ id: deviceConfigId })
+    if (!dcRes.error && dcRes.data) {
+      const dc = dcRes.data
+      // 自动填充设备配置名称（如果没有默认名）
       if (!formModel.market_name) {
-        formModel.market_name = res.data.name || ''
+        formModel.market_name = dc.name || ''
       }
-      formModel.brand = res.data.brand || ''
-      formModel.model = res.data.model_number || ''
-      formModel.version = res.data.version || '1.0.0'
-      formModel.author = res.data.author || ''
-      formModel.description = res.data.description || ''
+      formModel.brand = dc.brand || ''
+      formModel.model = dc.model_number || dc.product_model || ''
+      formModel.version = dc.version || '1.0.0'
+      formModel.author = dc.author || ''
+      formModel.description = dc.description || ''
     }
   } catch (e) {
-    console.error('Failed to get template detail', e)
+    console.error('Failed to get device config detail', e)
   }
   visible.value = true
 }
@@ -97,7 +101,7 @@ const handlePublish = async () => {
   loading.value = true
   try {
     const res: any = await publishToMarket({
-      device_template_id: templateIdValue.value,
+      device_config_id: deviceConfigIdValue.value,
       market_token: token,
       market_name: formModel.market_name,
       brand: formModel.brand,
