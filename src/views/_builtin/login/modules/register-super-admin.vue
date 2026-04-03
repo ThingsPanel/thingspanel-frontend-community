@@ -112,9 +112,9 @@ async function handleSubmit() {
     const msg = error.response?.data?.message
     // 200055：邮箱未在市场注册（勿用 200050，与功能模板删除等业务码冲突）
     if (code === 200055) {
-      window.$message.warning(msg || '该邮箱未在市场注册，请先点击下方链接去市场注册')
+      window.$message.warning(msg || $t('market.unregisteredTip'))
     } else {
-      window.$message.error(msg || error?.message || '注册失败')
+      window.$message.error(msg || error?.message || $t('page.login.register.registerError'))
       console.error('Registration failed:', error)
     }
   }
@@ -170,8 +170,8 @@ function goToMarketRegister() {
       </NButton>
 
       <div class="market-tip">
-        <span>请使用已在市场注册的邮箱；没有市场账号？</span>
-        <NButton text type="primary" @click="goToMarketRegister">去市场注册</NButton>
+        <span>{{ $t('market.noAccount') }}</span>
+        <NButton text type="primary" @click="goToMarketRegister">{{ $t('market.goToRegister') }}</NButton>
       </div>
 
       <NButton size="large" round block @click="toggleLoginModule('pwd-login')">
