@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, nextTick, onBeforeMount, reactive, ref, watch } from 'vue'
+import { computed, getCurrentInstance, markRaw, nextTick, onBeforeMount, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLoading } from '@sa/hooks'
 import { useWebSocket } from '@vueuse/core'
@@ -50,79 +50,79 @@ const baseComponents: TabComponent[] = [
   {
     key: 'chart',
     name: () => $t('custom.device_details.chart'),
-    component: TelemetryChart,
+    component: markRaw(TelemetryChart),
     refreshKey: 0
   },
   {
     key: 'telemetry',
     name: () => $t('custom.device_details.telemetry'),
-    component: Telemetry,
+    component: markRaw(Telemetry),
     refreshKey: 0
   },
   {
     key: 'join',
     name: () => $t('custom.device_details.join'),
-    component: Join,
+    component: markRaw(Join),
     refreshKey: 0
   },
   {
     key: 'device-analysis',
     name: () => $t('custom.device_details.subdevice'),
-    component: DeviceAnalysis,
+    component: markRaw(DeviceAnalysis),
     refreshKey: 0
   },
   {
     key: 'message',
     name: () => $t('custom.device_details.AdditionalDetails'),
-    component: Message,
+    component: markRaw(Message),
     refreshKey: 0
   },
   {
     key: 'stats',
     name: () => $t('custom.device_details.attributes'),
-    component: Stats,
+    component: markRaw(Stats),
     refreshKey: 0
   },
   {
     key: 'event-report',
     name: () => $t('custom.device_details.eventReport'),
-    component: EventReport,
+    component: markRaw(EventReport),
     refreshKey: 0
   },
   {
     key: 'command-delivery',
     name: () => $t('custom.device_details.commandDelivery'),
-    component: CommandDelivery,
+    component: markRaw(CommandDelivery),
     refreshKey: 0
   },
   {
     key: 'expect-message',
     name: () => $t('custom.device_details.expectMessage'),
-    component: ExpectMessage,
+    component: markRaw(ExpectMessage),
     refreshKey: 0
   },
   {
     key: 'automate',
     name: () => $t('custom.device_details.automate'),
-    component: Automate,
+    component: markRaw(Automate),
     refreshKey: 0
   },
   {
     key: 'give-an-alarm',
     name: () => $t('custom.device_details.giveAnAlarm'),
-    component: GiveAnAlarm,
+    component: markRaw(GiveAnAlarm),
     refreshKey: 0
   },
   {
     key: 'device-diagnosis',
     name: () => $t('custom.device_details.deviceDiagnosis'),
-    component: DeviceDiagnosis,
+    component: markRaw(DeviceDiagnosis),
     refreshKey: 0
   },
   {
     key: 'settings',
     name: () => $t('custom.device_details.settings'),
-    component: Settings,
+    component: markRaw(Settings),
     refreshKey: 0
   }
 ]
@@ -182,7 +182,6 @@ const { send } = useWebSocket(wsUrl, {
     pongTimeout: 3000
   },
   onMessage(ws: WebSocket, event: MessageEvent) {
-    logger.info(ws)
     if (event.data && event.data !== 'pong') {
       const info = JSON.parse(event.data)
       device_is_online.value = info.is_online

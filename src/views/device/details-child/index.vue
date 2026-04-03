@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { markRaw, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLoading } from '@sa/hooks'
 import { useDeviceDataStore } from '@/store/modules/device'
@@ -26,17 +26,17 @@ const { d_id } = query
 const { loading, startLoading, endLoading } = useLoading()
 const deviceDataStore = useDeviceDataStore()
 let components = [
-  { key: 'telemetry', name: () => $t('custom.device_details.telemetry'), component: Telemetry },
-  { key: 'join', name: () => $t('custom.device_details.join'), component: Join },
-  { key: 'device-analysis', name: () => $t('custom.device_details.subdevice'), component: DeviceAnalysis },
-  { key: 'message', name: () => $t('custom.device_details.AdditionalDetails'), component: Message },
-  { key: 'stats', name: () => $t('custom.device_details.attributes'), component: Stats },
-  { key: 'event-report', name: () => $t('custom.device_details.eventReport'), component: EventReport },
-  { key: 'command-delivery', name: () => $t('custom.device_details.commandDelivery'), component: CommandDelivery },
-  { key: 'automate', name: () => $t('custom.device_details.automate'), component: Automate },
-  { key: 'give-an-alarm', name: () => $t('custom.device_details.giveAnAlarm'), component: GiveAnAlarm },
-  { key: 'user', name: () => $t('custom.device_details.user'), component: User },
-  { key: 'settings', name: () => $t('custom.device_details.settings'), component: Settings }
+  { key: 'telemetry', name: () => $t('custom.device_details.telemetry'), component: markRaw(Telemetry) },
+  { key: 'join', name: () => $t('custom.device_details.join'), component: markRaw(Join) },
+  { key: 'device-analysis', name: () => $t('custom.device_details.subdevice'), component: markRaw(DeviceAnalysis) },
+  { key: 'message', name: () => $t('custom.device_details.AdditionalDetails'), component: markRaw(Message) },
+  { key: 'stats', name: () => $t('custom.device_details.attributes'), component: markRaw(Stats) },
+  { key: 'event-report', name: () => $t('custom.device_details.eventReport'), component: markRaw(EventReport) },
+  { key: 'command-delivery', name: () => $t('custom.device_details.commandDelivery'), component: markRaw(CommandDelivery) },
+  { key: 'automate', name: () => $t('custom.device_details.automate'), component: markRaw(Automate) },
+  { key: 'give-an-alarm', name: () => $t('custom.device_details.giveAnAlarm'), component: markRaw(GiveAnAlarm) },
+  { key: 'user', name: () => $t('custom.device_details.user'), component: markRaw(User) },
+  { key: 'settings', name: () => $t('custom.device_details.settings'), component: markRaw(Settings) }
 ]
 
 const tabValue = ref<any>('telemetry')
