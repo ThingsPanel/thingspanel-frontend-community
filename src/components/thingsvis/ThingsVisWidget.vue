@@ -5,7 +5,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { ThingsVisClient } from '@/utils/thingsvis/sdk/client'
-import { telemetryDataPub } from '@/service/api/device'
+import { attributeDataPub, telemetryDataPub } from '@/service/api/device'
+
+const FIELD_BINDING_EXPR_RE = /^\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}$/
 
 const props = defineProps<{
   /** Initial configuration (JSON page schema) */
@@ -53,6 +55,82 @@ const getPreviewDeviceId = () => {
 const isPlatformFieldDataSource = (dataSource: any) => {
   const type = typeof dataSource?.type === 'string' ? dataSource.type.toUpperCase() : ''
   return type === 'PLATFORM_FIELD' || type === 'PLATFORM'
+}
+
+const getFieldTypeMap = () => {
+  return (props.platformFields || []).reduce<Record<string, string>>((acc, field) => {
+    const fieldId = typeof field?.id === 'string' ? field.id : ''
+    if (fieldId) {
+      acc[fieldId] = typeof field?.dataType === 'string' ? field.dataType : ''
+    }
+    return acc
+  }, {})
+}
+
+const parseFieldBindingExpression = (expression: unknown) => {
+  if (typeof expression !== 'string') return null
+  const match = FIELD_BINDING_EXPR_RE.exec(expression.trim())
+  if (!match?.[1] || !match?.[2]) return null
+
+  return {
+    dataSourceId: match[1],
+    fieldPath: match[2]
+  }
+}
+
+const collectConfiguredWriteFields = () => {
+  const fieldIdsByDataSourceId = new Map<string, Set<string>>()
+  const nodes = Array.isArray(props.config?.nodes) ? props.config.nodes : []
+
+  nodes.forEach((node: any) => {
+    if (node?.type !== 'interaction/basic-switch') return
+
+    const bindings = Array.isArray(node?.data) ? node.data : []
+    const valueBinding = bindings.find((binding: any) => binding?.targetProp === 'value')
+    const parsed =
+      parseFieldBindingExpression(valueBinding?.expression) ||
+      parseFieldBindingExpression(node?.props?.value)
+
+    if (!parsed) return
+
+    const fieldSet = fieldIdsByDataSourceId.get(parsed.dataSourceId) || new Set<string>()
+    fieldSet.add(parsed.fieldPath)
+    fieldIdsByDataSourceId.set(parsed.dataSourceId, fieldSet)
+  })
+
+  const dataSources = Array.isArray(props.config?.dataSources) ? props.config.dataSources : []
+  dataSources.forEach((dataSource: any) => {
+    const dataSourceId = typeof dataSource?.id === 'string' ? dataSource.id : ''
+    if (!dataSourceId) return
+
+    const configuredFields = Array.isArray(dataSource?.config?.requestedFields)
+      ? dataSource.config.requestedFields.filter((fieldId: unknown): fieldId is string => typeof fieldId === 'string' && !!fieldId)
+      : []
+
+    if (configuredFields.length !== 1) return
+
+    const fieldSet = fieldIdsByDataSourceId.get(dataSourceId) || new Set<string>()
+    fieldSet.add(configuredFields[0]!)
+    fieldIdsByDataSourceId.set(dataSourceId, fieldSet)
+  })
+
+  return fieldIdsByDataSourceId
+}
+
+const normalizeWriteData = (dataSourceId: string, data: unknown) => {
+  if (data !== null && typeof data === 'object') {
+    return data as Record<string, unknown>
+  }
+
+  const configuredFields = collectConfiguredWriteFields().get(dataSourceId)
+  if (!configuredFields || configuredFields.size !== 1) return data
+
+  const fieldId = Array.from(configuredFields)[0]
+  if (!fieldId) return data
+
+  return {
+    [fieldId]: data
+  }
 }
 
 const normalizeViewerPlatformDataSources = (config: any) => {
@@ -178,17 +256,31 @@ const pushFieldHistoryCompat = (
  */
 const handlePlatformWrite = async (event: MessageEvent) => {
   if (event.data?.type !== 'tv:platform-write') return
-  const writePayload = event.data?.payload as { dataSourceId?: string; data?: unknown } | undefined
-  const { dataSourceId, data } = writePayload ?? {}
+  const writePayload = event.data?.payload as { dataSourceId?: string; data?: unknown; deviceId?: string } | undefined
+  const { dataSourceId, data, deviceId } = writePayload ?? {}
   if (!dataSourceId || data === undefined) return
-  if (!props.deviceId) {
+  const targetDeviceId = deviceId || props.deviceId
+  if (!targetDeviceId) {
     console.warn('[ThingsVisWidget] tv:platform-write received but deviceId prop is not set')
     return
   }
   try {
-    // API expects `value` as a JSON string, not a raw object under `datas`.
-    const valueStr = typeof data === 'string' ? data : JSON.stringify(data)
-    await telemetryDataPub({ device_id: props.deviceId, value: valueStr })
+    const normalizedData = normalizeWriteData(dataSourceId, data)
+    const dataObject = normalizedData !== null && typeof normalizedData === 'object'
+      ? normalizedData as Record<string, unknown>
+      : null
+    const fieldEntries = dataObject ? Object.entries(dataObject) : []
+    const fieldId = fieldEntries.length === 1 ? fieldEntries[0]?.[0] : undefined
+    const fieldTypeMap = getFieldTypeMap()
+    const fieldType = fieldId ? fieldTypeMap[fieldId] : undefined
+    const valueStr = typeof normalizedData === 'string' ? normalizedData : JSON.stringify(normalizedData)
+
+    if (fieldType === 'attribute') {
+      await attributeDataPub({ device_id: targetDeviceId, value: valueStr })
+      return
+    }
+
+    await telemetryDataPub({ device_id: targetDeviceId, value: valueStr })
   } catch (e) {
     console.error('[ThingsVisWidget] telemetryDataPub failed for tv:platform-write:', e)
   }

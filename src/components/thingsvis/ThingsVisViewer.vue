@@ -57,6 +57,17 @@ type PlatformSourceDescriptor = {
   requestedFields: string[]
 }
 
+/** 组件 timeRangePreset → API time_range + aggregate_window 映射 */
+const PRESET_TO_API_PARAMS: Record<string, { time_range: string; aggregate_window: string }> = {
+  '1h':  { time_range: 'last_1h',  aggregate_window: '1m' },
+  '6h':  { time_range: 'last_6h',  aggregate_window: '2m' },
+  '24h': { time_range: 'last_24h', aggregate_window: '5m' },
+  '7d':  { time_range: 'last_7d',  aggregate_window: '30m' },
+  '30d': { time_range: 'last_30d', aggregate_window: '3h' },
+}
+
+const DEFAULT_HISTORY_API_PARAMS = PRESET_TO_API_PARAMS['1h']!
+
 const FIELD_BINDING_EXPR_RE = /^\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}$/
 
 // iframe 引用
@@ -262,6 +273,27 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
     })
 }
 
+/**
+ * 从仪表板节点中提取最宽的 timeRangePreset，用于决定历史查询范围。
+ * 优先级: 30d > 7d > 24h > 6h > 1h > all(默认 1h)
+ */
+const PRESET_PRIORITY: string[] = ['1h', '6h', '24h', '7d', '30d']
+
+function extractWidestTimeRangePreset(config: any): string {
+  const nodes = config?.nodes
+  if (!Array.isArray(nodes)) return 'all'
+
+  let widestIdx = -1
+  for (const node of nodes) {
+    const preset = node?.props?.timeRangePreset
+    if (typeof preset === 'string') {
+      const idx = PRESET_PRIORITY.indexOf(preset)
+      if (idx > widestIdx) widestIdx = idx
+    }
+  }
+  return widestIdx >= 0 ? PRESET_PRIORITY[widestIdx]! : 'all'
+}
+
 async function fetchAllCurrentFieldsForDevice(deviceId: string): Promise<Record<string, unknown>> {
   const [telemetryResult, attributeResult] = await Promise.allSettled([
     telemetryDataCurrent(deviceId),
@@ -290,6 +322,8 @@ async function hydrateConfiguredPlatformSources() {
   const descriptors = collectPlatformSourceDescriptors(props.config)
   if (descriptors.length === 0) return
 
+  const widestPreset = extractWidestTimeRangePreset(props.config)
+
   const handledDeviceIds = new Set<string>()
   let globalHydrated = false
 
@@ -304,7 +338,7 @@ async function hydrateConfiguredPlatformSources() {
 
       let result: RequestedFieldResult
       if (requestedFields.length > 0) {
-        result = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
+        result = await buildRequestedFieldData(requestedFields, descriptor.deviceId, widestPreset)
       } else {
         result = {
           fields: await fetchAllCurrentFieldsForDevice(descriptor.deviceId),
@@ -345,7 +379,7 @@ async function hydrateConfiguredPlatformSources() {
     const fallbackGlobalFields = requestedFields.length > 0
       ? requestedFields
       : ['device_total', 'device_online', 'device_offline', 'device_activity']
-    const result = await buildRequestedFieldData(fallbackGlobalFields)
+    const result = await buildRequestedFieldData(fallbackGlobalFields, undefined, widestPreset)
     if (Object.keys(result.fields).length > 0) {
       win.postMessage(
         { type: 'tv:platform-data', payload: { fields: result.fields } },
@@ -368,7 +402,7 @@ async function hydrateConfiguredPlatformSources() {
   }
 }
 
-async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): Promise<RequestedFieldResult> {
+async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string, timeRangePreset?: string): Promise<RequestedFieldResult> {
   const requestedFields = Array.isArray(fieldIds)
     ? fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string')
     : []
@@ -409,18 +443,18 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
     }
 
     if (historyFieldIds.length > 0) {
+      const apiParams = (timeRangePreset && PRESET_TO_API_PARAMS[timeRangePreset]) || DEFAULT_HISTORY_API_PARAMS
       const historyResults = await Promise.allSettled(
         historyFieldIds.map(async (fieldId) => {
           const historyRes = await telemetryDataHistoryList({
             device_id: deviceId,
             key: fieldId,
-            time_range: 'custom',
-            start_time: Date.now() - 3600 * 1000,
-            end_time: Date.now(),
-            aggregate_window: '1m',
+            time_range: apiParams.time_range,
+            aggregate_window: apiParams.aggregate_window,
             aggregate_function: 'avg'
           })
-          const list = Array.isArray(historyRes?.data?.list) ? historyRes.data.list : []
+          const rawList = historyRes?.data?.time_series ?? historyRes?.data?.list ?? []
+          const list = Array.isArray(rawList) ? rawList : []
           const history = normalizeHistory(list, 'value')
           if (history.length > 0) {
             result.histories.push({ fieldId, history, deviceId })
@@ -517,7 +551,8 @@ const handleMessage = (event: MessageEvent) => {
     const payload = data.payload || {}
     ensureDeviceWs(payload.deviceId)
 
-    void buildRequestedFieldData(payload.fieldIds, payload.deviceId)
+    const widestPreset = extractWidestTimeRangePreset(props.config)
+    void buildRequestedFieldData(payload.fieldIds, payload.deviceId, widestPreset)
       .then((result) => {
         const win = iframeRef.value?.contentWindow
         if (!win) return

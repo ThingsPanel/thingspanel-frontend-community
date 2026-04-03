@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue';
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields';
 import { normalizeThingsVisHistoryBindings } from '@/utils/thingsvis/normalize-history-bindings';
+import { normalizeInteractiveWriteBindings } from '@/utils/thingsvis/normalize-interactive-write-bindings';
 import { $t, setLocale } from '@/locales';
 import { deviceDetail, deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device';
 import { telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api';
@@ -202,7 +203,9 @@ const getDeviceDetail = async () => {
   }
 
   try {
-    const configJson = normalizeThingsVisHistoryBindings(JSON.parse(res.data.app_chart_config));
+    const configJson = normalizeInteractiveWriteBindings(
+      normalizeThingsVisHistoryBindings(JSON.parse(res.data.app_chart_config))
+    );
 
     if (configJson.dataSources && Array.isArray(configJson.dataSources)) {
       configJson.dataSources.forEach((ds: any) => {

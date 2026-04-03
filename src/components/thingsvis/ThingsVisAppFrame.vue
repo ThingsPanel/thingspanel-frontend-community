@@ -970,15 +970,14 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
             {
               device_id: deviceId,
               key: fieldId,
-              time_range: 'custom',
-              start_time: Date.now() - 3600 * 1000,
-              end_time: Date.now(),
+              time_range: 'last_1h',
               aggregate_window: '1m',
               aggregate_function: 'avg'
             },
             SILENT_REQUEST_CONFIG
           )
-          const list = Array.isArray(historyRes?.data?.list) ? historyRes.data.list : []
+          const rawList = historyRes?.data?.time_series ?? historyRes?.data?.list ?? []
+          const list = Array.isArray(rawList) ? rawList : []
           const history = normalizeHistory(list, 'value')
           if (history.length > 0) {
             result.histories.push({ fieldId, history, deviceId })
