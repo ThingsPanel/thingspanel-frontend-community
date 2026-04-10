@@ -67,6 +67,31 @@ export class ThingsVisAuthService {
   }
 
   /**
+   * 等待 userInfo 就绪（处理首次登录时的竞态条件）
+   * 当 loginByToken 还未完成 localStg.set('userInfo') 时，首页组件可能已挂载
+   */
+  private async waitForUserInfo(
+    maxRetries: number = 5,
+    intervalMs: number = 200
+  ): Promise<typeof localStg extends { get: (key: 'userInfo') => infer R } ? R : null> {
+    let userInfo = localStg.get('userInfo')
+    let retries = 0
+
+    while (!userInfo && retries < maxRetries) {
+      retries++
+      console.log(`[SSO] 等待 userInfo 就绪... (${retries}/${maxRetries})`)
+      await new Promise(resolve => setTimeout(resolve, intervalMs))
+      userInfo = localStg.get('userInfo')
+    }
+
+    if (!userInfo) {
+      console.warn(`[SSO] userInfo 仍未就绪，共尝试 ${retries} 次`)
+    }
+
+    return userInfo
+  }
+
+  /**
    * 交换 ThingsPanel Token -> ThingsVis Token
    */
   async exchangeToken(): Promise<string> {
@@ -81,8 +106,10 @@ export class ThingsVisAuthService {
       }
 
       // 1. 获取当前 ThingsPanel 用户信息
+      // 注意：首次登录时，userInfo 可能尚未写入 localStorage（竞态条件）
+      // 需要等待 userInfo 就绪
       const tpToken = localStg.get('token')
-      const userInfo = localStg.get('userInfo')
+      const userInfo = await this.waitForUserInfo()
 
       if (!tpToken) {
         throw new Error('ThingsPanel token not found')
@@ -183,7 +210,9 @@ export class ThingsVisAuthService {
    * 获取有效的 ThingsVis Token (自动刷新)
    */
   async getValidToken(): Promise<string> {
-    const userInfo = localStg.get('userInfo')
+    // 注意：首次登录时，userInfo 可能尚未写入 localStorage
+    // identityKey 检查需要等待 userInfo 就绪
+    let userInfo = await this.waitForUserInfo(3, 100)
     const identityKey = userInfo
       ? `${userInfo.userId || userInfo.id || ''}::${resolveThingsVisSpaceId(userInfo)}`
       : null

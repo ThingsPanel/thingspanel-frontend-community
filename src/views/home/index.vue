@@ -28,6 +28,11 @@ const isSysAdmin = computed(() => isSysAdminUser(authStore.userInfo))
 // ThingsVis 首页相关
 const thingsVisHome = ref<ThingsVisHomeDashboard | null>(null)
 const useThingsVis = ref(false)
+const isThingsVisLoading = ref(false)
+
+// ThingsVis 请求失败时的重试状态（针对超管首次登录场景）
+const thingsVisRetryCount = ref(0)
+const MAX_THINGSVIS_RETRY = 5 // 增加到 5 次重试
 
 const loadLegacyHome = async () => {
   const { data, error } = await fetchHomeData({})
@@ -53,7 +58,7 @@ const loadLegacyHome = async () => {
   }
 }
 
-const getLayout = async () => {
+const getLayout = async (retryCount = 0) => {
   isError.value = false
   showSysAdminSetup.value = false
   useThingsVis.value = false
@@ -81,19 +86,34 @@ const getLayout = async () => {
     return
   }
 
-  // 先检查 ThingsVis 是否有设为首页的仪表盘
+  // 先检查 ThingsVis 是否有首页的仪表盘
   try {
     console.log('[Home] 尝试获取 ThingsVis 首页...')
+    isThingsVisLoading.value = true
     const thingsVisResult = await getThingsVisHomeDashboard()
-    const homeNotConfigured = !thingsVisResult.data?.data && (!thingsVisResult.error || thingsVisResult.error.status === 404)
+    isThingsVisLoading.value = false
+    const homeNotConfigured =
+      !thingsVisResult.data?.data && (!thingsVisResult.error || thingsVisResult.error.status === 404)
     console.log('[Home] ThingsVis 响应:', thingsVisResult)
     if (!thingsVisResult.error && thingsVisResult.data?.data) {
       console.log('[Home] 使用 ThingsVis 首页:', thingsVisResult.data.data)
       thingsVisHome.value = thingsVisResult.data.data
       useThingsVis.value = true
       layoutFetched.value = true
+      thingsVisRetryCount.value = 0
       writeThingsVisHomeCache('thingsvis', thingsVisResult.data.data)
       return
+    }
+
+    // ThingsVis 请求成功但没有数据，可能是首次登录看板尚未创建
+    // 等待一下再重试
+    if (homeNotConfigured && isSysAdmin.value && retryCount < MAX_THINGSVIS_RETRY) {
+      thingsVisRetryCount.value = retryCount + 1
+      console.log(
+        `[Home] 超管首页未配置，等待 ${500 * (retryCount + 1)}ms 后重试... (${retryCount + 1}/${MAX_THINGSVIS_RETRY})`
+      )
+      await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1)))
+      return getLayout(retryCount + 1)
     }
 
     if (isSysAdmin.value) {
@@ -106,6 +126,7 @@ const getLayout = async () => {
       console.log('[Home] 超管空间暂无首页，显示超管首页配置引导')
       showSysAdminSetup.value = true
       layoutFetched.value = true
+      thingsVisRetryCount.value = 0
       writeThingsVisHomeCache('sysadmin-setup')
       return
     }
@@ -117,6 +138,7 @@ const getLayout = async () => {
   } catch (e) {
     // ThingsVis 服务不可用，继续使用原来的看板
     console.log('[Home] ThingsVis 服务错误，使用原看板:', e)
+    isThingsVisLoading.value = false
     if (isSysAdmin.value) {
       isError.value = true
       layoutFetched.value = true

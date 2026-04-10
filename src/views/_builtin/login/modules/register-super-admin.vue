@@ -102,9 +102,24 @@ async function handleSubmit() {
         localStg.set('token', resp.data.token)
         const expires_in = Date.now() + (resp.data.expires_in || 360000) * 1000
         localStg.set('token_expires_in', expires_in.toString())
+
+        // 注册成功后，需要获取并保存 userInfo
+        // 这样 ThingsVis SSO 才能正常获取用户信息
+        try {
+          const { fetchGetUserInfo } = await import('@/service/api')
+          const userInfoResp = await fetchGetUserInfo()
+          if (userInfoResp.data) {
+            userInfoResp.data.roles = [userInfoResp.data.authority]
+            localStg.set('userInfo', userInfoResp.data)
+            console.log('[SuperAdminRegister] userInfo 已保存:', userInfoResp.data)
+          }
+        } catch (userInfoError) {
+          console.warn('[SuperAdminRegister] 获取 userInfo 失败:', userInfoError)
+        }
+
         setTimeout(() => {
           window.location.href = '/'
-        }, 1500)
+        }, 500)
       }
     }
   } catch (error: any) {
