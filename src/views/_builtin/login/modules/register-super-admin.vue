@@ -3,7 +3,6 @@ import { computed, reactive } from 'vue'
 import { NAutoComplete, NButton, NForm, NFormItem, NInput, NSpace } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { $t } from '@/locales'
-import { useRouterPush } from '@/hooks/common/router'
 import { useFormRules, useNaiveForm } from '@/hooks/common/form'
 import { useAuthStore } from '@/store/modules/auth'
 import { fetchMarketRegister } from '@/service/api/auth'
@@ -15,7 +14,6 @@ defineOptions({
 
 const { locale } = useI18n()
 const auth = useAuthStore()
-const { toggleLoginModule } = useRouterPush()
 const { formRef, validate } = useNaiveForm()
 
 /** 超管注册：仅邮箱+密码（市场已注册邮箱），不要 IoT 邮箱验证码 */
@@ -136,7 +134,8 @@ async function handleSubmit() {
 }
 
 function goToMarketRegister() {
-  window.open(`${marketUrl}/register`, '_blank')
+  const callback = encodeURIComponent(window.location.href)
+  window.open(`${marketUrl}/register?callback=${callback}`, '_blank')
 }
 </script>
 
@@ -188,10 +187,6 @@ function goToMarketRegister() {
         <span>{{ $t('market.noAccount') }}</span>
         <NButton text type="primary" @click="goToMarketRegister">{{ $t('market.goToRegister') }}</NButton>
       </div>
-
-      <NButton size="large" round block @click="toggleLoginModule('pwd-login')">
-        {{ $t('page.login.common.back') }}
-      </NButton>
     </NSpace>
   </NForm>
 </template>
