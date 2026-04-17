@@ -102,21 +102,21 @@ export class DataSourceBindingConfig {
     this.registerBindingRule({
       propertyPath: 'base.metricsList',
       paramName: 'metrics',
-      transform: (value: any[]) => Array.isArray(value) ? value.join(',') : value,
+      transform: (value: any[]) => (Array.isArray(value) ? value.join(',') : value),
       description: '指标列表 - 默认规则，可修改或删除'
     })
 
     this.registerBindingRule({
       propertyPath: 'component.startTime',
       paramName: 'startTime',
-      transform: (value: any) => value instanceof Date ? value.toISOString() : value,
+      transform: (value: any) => (value instanceof Date ? value.toISOString() : value),
       description: '开始时间 - 默认规则，可修改或删除'
     })
 
     this.registerBindingRule({
       propertyPath: 'component.endTime',
       paramName: 'endTime',
-      transform: (value: any) => value instanceof Date ? value.toISOString() : value,
+      transform: (value: any) => (value instanceof Date ? value.toISOString() : value),
       description: '结束时间 - 默认规则，可修改或删除'
     })
 
@@ -385,8 +385,9 @@ export class DataSourceBindingConfig {
     const includeProperties = autoBindConfig.includeProperties || []
 
     // 只处理指定的属性
-    const bindingRules = this.getAllBindingRules(componentType)
-      .filter(rule => includeProperties.includes(rule.propertyPath))
+    const bindingRules = this.getAllBindingRules(componentType).filter(rule =>
+      includeProperties.includes(rule.propertyPath)
+    )
 
     for (const rule of bindingRules) {
       const [section, property] = rule.propertyPath.split('.')
@@ -422,8 +423,9 @@ export class DataSourceBindingConfig {
     const excludeProperties = autoBindConfig.excludeProperties || []
 
     // 处理所有属性，排除指定属性
-    const bindingRules = this.getAllBindingRules(componentType)
-      .filter(rule => !excludeProperties.includes(rule.propertyPath))
+    const bindingRules = this.getAllBindingRules(componentType).filter(
+      rule => !excludeProperties.includes(rule.propertyPath)
+    )
 
     for (const rule of bindingRules) {
       const [section, property] = rule.propertyPath.split('.')
@@ -492,7 +494,6 @@ export class DataSourceBindingConfig {
     } else {
       this.customBindingRules.push(rule)
     }
-
   }
 
   /**
@@ -506,7 +507,6 @@ export class DataSourceBindingConfig {
     } else {
       this.customTriggerRules.push(rule)
     }
-
   }
 
   /**
@@ -514,7 +514,6 @@ export class DataSourceBindingConfig {
    */
   setComponentConfig(componentType: string, config: ComponentBindingConfig): void {
     this.componentConfigs.set(componentType, config)
-
   }
 
   /**
@@ -577,5 +576,5 @@ export const dataSourceBindingConfig = new DataSourceBindingConfig()
 
 // 全局暴露，供调试使用
 if (typeof globalThis !== 'undefined') {
-  (globalThis as any).__dataSourceBindingConfig = dataSourceBindingConfig
+  ;(globalThis as any).__dataSourceBindingConfig = dataSourceBindingConfig
 }

@@ -121,7 +121,7 @@ const submit = async () => {
 
     let parms
     const params: any = {}
-    
+
     // 处理可视化配置页签的参数
     if (activeTab.value === 'visual') {
       if (props.isCommand && paramsData.value.length > 0) {
@@ -211,7 +211,6 @@ const getOptions = async show => {
   }
 }
 
-
 // 新增：处理命令标识符输入（支持输入和选择）
 const handleCommandInput = (value: string) => {
   formModel.commandValue = value
@@ -229,7 +228,6 @@ const handleCommandInput = (value: string) => {
     paramsData.value = []
   }
 }
-
 
 const commandList = ref()
 
@@ -261,8 +259,7 @@ const inputFeedback = computed(() => {
 
 const hasAttributeSelection = computed(() => attributeList.value.some(item => item.checked))
 const selectAllAttributes = computed({
-  get: () =>
-    attributeList.value.length > 0 && attributeList.value.every((item: any) => item.checked),
+  get: () => attributeList.value.length > 0 && attributeList.value.every((item: any) => item.checked),
   set: value => {
     attributeList.value.forEach(item => {
       item.checked = value
@@ -289,9 +286,7 @@ const isSubmitDisabled = computed(() => {
 const visualTabLabel = computed(() =>
   props.isCommand ? $t('generate.visual-config') : $t('generate.attribute-config')
 )
-const customTabLabel = computed(() =>
-  props.isCommand ? $t('generate.command-line') : $t('generate.custom-attribute')
-)
+const customTabLabel = computed(() => (props.isCommand ? $t('generate.command-line') : $t('generate.custom-attribute')))
 
 const formatAttributeValue = (value: any) => {
   if (value === null || value === undefined) return ''
@@ -321,8 +316,7 @@ const loadAttributeList = async () => {
   try {
     const { data, error } = await getAttributeDataSet({ device_id: props.id })
     if (!error) {
-      const list =
-        data?.value || data?.list || (Array.isArray(data) ? data : []) || []
+      const list = data?.value || data?.list || (Array.isArray(data) ? data : []) || []
       attributeList.value = list.map((item: any) => normalizeAttributeItem(item))
     } else {
       attributeList.value = []
@@ -463,7 +457,13 @@ const buildAttributePayload = () => {
               </div>
             </NFormItem>
           </div>
-          <NFormItem v-if="isCommand" path="commandValue" :label="$t('generate.command-identifier')" required class="command-selector">
+          <NFormItem
+            v-if="isCommand"
+            path="commandValue"
+            :label="$t('generate.command-identifier')"
+            required
+            class="command-selector"
+          >
             <NSelect
               v-model:value="formModel.commandValue"
               label-field="data_name"
@@ -477,7 +477,7 @@ const buildAttributePayload = () => {
               @update:value="handleCommandInput"
             />
           </NFormItem>
-          
+
           <!-- 切换页签：可视化配置和命令行 -->
           <NTabs v-model:value="activeTab" type="line" animated>
             <NTabPane name="visual" :tab="visualTabLabel">
@@ -487,7 +487,10 @@ const buildAttributePayload = () => {
                     <div class="form_table">
                       <NFormItem :label="item.data_name" label-placement="left" label-width="80px" label-align="left">
                         <NInput v-if="item.param_type === 'string'" v-model:value="item[item.data_identifier]" />
-                        <n-input-number v-else-if="item.param_type === 'Number'" v-model:value="item[item.data_identifier]" />
+                        <n-input-number
+                          v-else-if="item.param_type === 'Number'"
+                          v-model:value="item[item.data_identifier]"
+                        />
                         <n-select
                           v-else-if="item.param_type === 'Boolean'"
                           v-model:value="item[item.data_identifier]"
@@ -507,7 +510,9 @@ const buildAttributePayload = () => {
                           :placeholder="$t('generate.please-select')"
                         />
                         <div class="description">
-                          {{ $t('generate.description-label') }}：{{ getDescriptionText(item) || $t('generate.description-empty') }}
+                          {{ $t('generate.description-label') }}：{{
+                            getDescriptionText(item) || $t('generate.description-empty')
+                          }}
                         </div>
                       </NFormItem>
                     </div>
@@ -526,10 +531,7 @@ const buildAttributePayload = () => {
                 </div>
                 <div v-else-if="attributeList.length">
                   <div class="attribute-toolbar">
-                    <NCheckbox
-                      v-model:checked="selectAllAttributes"
-                      :indeterminate="isAttributeIndeterminate"
-                    >
+                    <NCheckbox v-model:checked="selectAllAttributes" :indeterminate="isAttributeIndeterminate">
                       {{ $t('generate.select-all') }}
                     </NCheckbox>
                   </div>
@@ -653,7 +655,7 @@ const buildAttributePayload = () => {
   text-align: center;
   padding: 20px 16px;
   color: #999;
-  
+
   p {
     margin: 0;
     font-size: 13px;

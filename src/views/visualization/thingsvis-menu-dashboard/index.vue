@@ -58,17 +58,13 @@ watch(
   <div class="h-full w-full flex flex-col bg-[var(--layout-content-bg)]">
     <div class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 h-12">
       <NBreadcrumb>
-        <NBreadcrumbItem class="cursor-pointer" @click="routerPushByKey('home')">
-          首页
-        </NBreadcrumbItem>
+        <NBreadcrumbItem class="cursor-pointer" @click="routerPushByKey('home')">首页</NBreadcrumbItem>
         <NBreadcrumbItem>
           {{ dashboardTitle || '仪表盘' }}
         </NBreadcrumbItem>
       </NBreadcrumb>
 
-      <NButton text @click="routerPushByKey('home')">
-        返回首页
-      </NButton>
+      <NButton text @click="routerPushByKey('home')">返回首页</NButton>
     </div>
 
     <div class="flex-1 overflow-hidden bg-white">

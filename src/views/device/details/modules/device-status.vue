@@ -104,10 +104,7 @@ const columns: DataTableColumns<StatusHistoryItem> = [
     render: (row: StatusHistoryItem) => {
       const isOnline = row.status === 1
       const text = isOnline ? $t('custom.device_details.online') : $t('custom.device_details.offline')
-      return h(
-        'span',
-        text
-      )
+      return h('span', text)
     }
   },
   {
@@ -131,7 +128,7 @@ const fetchData = async () => {
       page: queryParams.page,
       page_size: queryParams.page_size
     }
-    
+
     if (queryParams.start_time) {
       params.start_time = queryParams.start_time
     }
@@ -142,9 +139,9 @@ const fetchData = async () => {
       params.status = queryParams.status
     }
 
-    const response = await deviceStatusHistory(params) as StatusHistoryResponse
+    const response = (await deviceStatusHistory(params)) as StatusHistoryResponse
     const { data, error } = response
-    
+
     if (!error && data) {
       tableData.value = data.list ?? []
       total.value = data.total ?? 0
@@ -187,12 +184,12 @@ const handleDateRangeChange = (value: [number, number] | null) => {
 
 const showModal = computed({
   get: () => props.visible,
-  set: (value) => emit('update:visible', value)
+  set: value => emit('update:visible', value)
 })
 
 watch(
   () => props.visible,
-  (newVal) => {
+  newVal => {
     if (newVal && props.deviceId) {
       queryParams.device_id = props.deviceId
       queryParams.page = 1
@@ -205,7 +202,7 @@ watch(
 
 watch(
   () => props.deviceId,
-  (newVal) => {
+  newVal => {
     if (newVal && props.visible) {
       queryParams.device_id = newVal
       queryParams.page = 1
@@ -217,8 +214,13 @@ watch(
 </script>
 
 <template>
-  <NModal v-model:show="showModal" preset="dialog" :showIcon="false"
-    :title="$t('common.deviceActiveTime')" :style="{ minWidth: '600px', maxHeight: '90vh' }">
+  <NModal
+    v-model:show="showModal"
+    preset="dialog"
+    :showIcon="false"
+    :title="$t('common.deviceActiveTime')"
+    :style="{ minWidth: '600px', maxHeight: '90vh' }"
+  >
     <NCard>
       <NForm :model="queryParams" :show-feedback="false" label-placement="left" label-width="100px" label-align="left">
         <NFlex :vertical="false" :gap="8" class="mb-4">
@@ -269,5 +271,3 @@ watch(
   overflow: hidden;
 }
 </style>
-
-

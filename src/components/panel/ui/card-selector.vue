@@ -201,7 +201,7 @@ onMounted(() => {
           @update:value="handleTabUpdate"
         >
           <NTabPane v-for="item1 in tabList" :key="item1.type" class="h-full" :name="item1.type" :tab="item1.tab">
-            {{  }}
+            {{}}
             <div v-if="item1.tab === '设备'">
               <NSelect
                 v-model:value="deviceSelectId"

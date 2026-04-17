@@ -1,11 +1,11 @@
 <template>
   <div class="grid-v2-wrapper">
-    <div class="grid-stack" ref="gridEl" :class="props.containerClass" :style="gridStyle">
+    <div ref="gridEl" class="grid-stack" :class="props.containerClass" :style="gridStyle">
       <div
         v-for="item in props.layout"
+        :id="itemKey(item)"
         :key="itemKey(item)"
         class="grid-stack-item"
-        :id="itemKey(item)"
         :gs-id="itemKey(item)"
         :gs-x="item.x"
         :gs-y="item.y"
@@ -58,7 +58,7 @@ const gridStyle = computed(() => {
   const minRowsFromConfig = Number(props.config?.minRows) || 0
   const minHeightFromConfig = Number(props.config?.minH) || 0
   const layoutRows = props.layout.length
-    ? Math.max(...props.layout.map((item) => Number(item.y) + Number(item.h) || 0))
+    ? Math.max(...props.layout.map(item => Number(item.y) + Number(item.h) || 0))
     : 0
   const rows = Math.max(layoutRows, minRowsFromConfig, 1)
   const totalHeight = rows * cellHeight + Math.max(rows - 1, 0) * verticalGap
@@ -79,7 +79,7 @@ function itemKey(item: GridLayoutPlusItem): string {
 
 function hashLayout(layout: GridLayoutPlusItem[]): string {
   return JSON.stringify(
-    layout.map((item) => ({
+    layout.map(item => ({
       i: itemKey(item),
       x: Number(item.x) || 0,
       y: Number(item.y) || 0,
@@ -132,9 +132,9 @@ function createOptions(resolved: ReturnType<typeof resolveConfig>): GridStackOpt
     'rawConfig.staticGrid': rawConfig.staticGrid,
     'rawConfig.isDraggable': rawConfig.isDraggable,
     'rawConfig.isResizable': rawConfig.isResizable,
-    'isStatic': isStatic,
-    'disableDrag': disableDrag,
-    'disableResize': disableResize
+    isStatic: isStatic,
+    disableDrag: disableDrag,
+    disableResize: disableResize
   })
 
   return {
@@ -162,11 +162,15 @@ function ensureColumnStyles(column: number): void {
     const lines: string[] = []
     for (let i = 1; i <= column; i++) {
       const width = ((i / column) * 100).toFixed(4)
-      lines.push(`.grid-stack.grid-stack-${column} > .grid-stack-item[gs-w="${i}"], .grid-stack.gs-${column} > .grid-stack-item[gs-w="${i}"] { width: ${width}% }`)
+      lines.push(
+        `.grid-stack.grid-stack-${column} > .grid-stack-item[gs-w="${i}"], .grid-stack.gs-${column} > .grid-stack-item[gs-w="${i}"] { width: ${width}% }`
+      )
     }
     for (let x = 0; x < column; x++) {
       const left = ((x / column) * 100).toFixed(4)
-      lines.push(`.grid-stack.grid-stack-${column} > .grid-stack-item[gs-x="${x}"], .grid-stack.gs-${column} > .grid-stack-item[gs-x="${x}"] { left: ${left}% }`)
+      lines.push(
+        `.grid-stack.grid-stack-${column} > .grid-stack-item[gs-x="${x}"], .grid-stack.gs-${column} > .grid-stack-item[gs-x="${x}"] { left: ${left}% }`
+      )
     }
     text = lines.join('\n')
   }
@@ -200,7 +204,7 @@ function runAutoArrange(): void {
 }
 
 function normalizeLayout(layout: GridLayoutPlusItem[]): GridStackNode[] {
-  return layout.map((item) => ({
+  return layout.map(item => ({
     x: Number(item.x) || 0,
     y: Number(item.y) || 0,
     w: Math.max(1, Number(item.w) || 1),
@@ -275,7 +279,7 @@ function applyLayoutInternal(layout: GridLayoutPlusItem[]): void {
         noMove: node?.noMove,
         noResize: node?.noResize,
         locked: node?.locked,
-        '所有class': el.className
+        所有class: el.className
       })
     })
 
@@ -317,7 +321,7 @@ function initializeGrid(): void {
       noMove: node?.noMove,
       noResize: node?.noResize,
       locked: node?.locked,
-      '所有class': el.className
+      所有class: el.className
     })
   })
 
@@ -328,7 +332,7 @@ function collectLayoutFromGrid(): GridLayoutPlusItem[] {
   if (!grid) return []
   return grid
     .getGridItems()
-    .map((el) => {
+    .map(el => {
       const node = el.gridstackNode
       if (!node) return null
       const id = String(node.id ?? el.getAttribute('gs-id') ?? el.id)
@@ -398,7 +402,7 @@ onBeforeUnmount(() => destroyGrid())
 
 watch(
   () => props.layout,
-  (layout) => {
+  layout => {
     console.log('👀 [GridV2] props.layout 变化检测到，isReady:', isReady)
     if (!isReady) {
       console.log('❌ [GridV2] GridStack 未就绪，跳过处理')
@@ -423,7 +427,7 @@ watch(
 
 watch(
   () => props.config?.colNum,
-  (col) => updateColumns(Number(col))
+  col => updateColumns(Number(col))
 )
 
 watch(

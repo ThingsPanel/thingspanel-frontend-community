@@ -30,7 +30,7 @@
 
     <!-- 调试信息 -->
     <div v-if="isDevelopment" class="debug-info">
-      <div style="font-size: 12px; color: #999; margin-top: 8px;">
+      <div style="font-size: 12px; color: #999; margin-top: 8px">
         <div>DEBUG - 组件数量: {{ componentOptions.length }}</div>
         <div>DEBUG - 属性数量: {{ propertyOptions.length }}</div>
         <div>DEBUG - 选中路径: {{ selectedPropertyPath }}</div>
@@ -82,17 +82,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 // 黑名单配置 - 排除敏感和内部属性
-const PROPERTY_BLACKLIST = [
-  'metadata',
-  'password',
-  'token',
-  'secret',
-  'key',
-  'auth',
-  'credential',
-  '_internal',
-  '__'
-]
+const PROPERTY_BLACKLIST = ['metadata', 'password', 'token', 'secret', 'key', 'auth', 'credential', '_internal', '__']
 
 // 内部状态
 const selectedComponentId = ref<string>('')
@@ -107,7 +97,7 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 // 监听外部 modelValue 变化
 watch(
   () => props.modelValue,
-  (newValue) => {
+  newValue => {
     if (newValue && newValue !== selectedPropertyPath.value) {
       parseBindingPath(newValue)
     } else if (!newValue) {
@@ -216,11 +206,9 @@ const getWhitelistedProperties = async (componentId: string) => {
         // 兼容性：如果 base 层没有，从其他层获取
         else if (config?.component?.[propertyName] !== undefined) {
           currentValue = config.component[propertyName]
-        }
-        else if (config?.customize?.[propertyName] !== undefined) {
+        } else if (config?.customize?.[propertyName] !== undefined) {
           currentValue = config.customize[propertyName]
-        }
-        else if (config?.[propertyName] !== undefined) {
+        } else if (config?.[propertyName] !== undefined) {
           currentValue = config[propertyName]
         }
       } else {
@@ -239,7 +227,6 @@ const getWhitelistedProperties = async (componentId: string) => {
         }
       }
 
-
       const accessResult = propertyExposureManager.getExposedProperty(
         componentType,
         componentId,
@@ -253,7 +240,6 @@ const getWhitelistedProperties = async (componentId: string) => {
         const isGlobalBaseProperty = exposedName === 'deviceId' || exposedName === 'metricsList'
         const propertyLayer = isGlobalBaseProperty ? 'base' : 'component'
         const propertyPath = `${componentId}.${propertyLayer}.${exposedName}`
-
 
         options.push({
           label: `🔒 [安全] ${propConfig.description || exposedName} (${propConfig.type})${isGlobalBaseProperty ? ' - 全局基础属性' : ''}`,
@@ -274,7 +260,6 @@ const getWhitelistedProperties = async (componentId: string) => {
         })
       }
     }
-
 
     return options
   } catch (error) {
@@ -306,7 +291,6 @@ const updatePropertyOptions = async () => {
     return
   }
 
-
   try {
     // 🔒 获取白名单属性
     const whitelistOptions = await getWhitelistedProperties(selectedComponentId.value)
@@ -319,14 +303,10 @@ const updatePropertyOptions = async () => {
     const mandatoryOptions: any[] = []
 
     // 检查白名单中是否已经有 deviceId
-    const hasDeviceIdInWhitelist = whitelistOptions.some(opt =>
-      opt.propertyInfo?.propertyName === 'deviceId'
-    )
+    const hasDeviceIdInWhitelist = whitelistOptions.some(opt => opt.propertyInfo?.propertyName === 'deviceId')
 
     // 检查白名单中是否已经有 metricsList
-    const hasMetricsListInWhitelist = whitelistOptions.some(opt =>
-      opt.propertyInfo?.propertyName === 'metricsList'
-    )
+    const hasMetricsListInWhitelist = whitelistOptions.some(opt => opt.propertyInfo?.propertyName === 'metricsList')
 
     // 🔥 修复：只要白名单中不存在，就强制添加，不检查 config 中是否有值
     if (!hasDeviceIdInWhitelist) {
@@ -402,7 +382,6 @@ const updatePropertyOptions = async () => {
     ]
 
     propertyOptions.value = basicSafeOptions
-
   } catch (error) {
     console.error(`❌ [ComponentPropertySelector] 属性获取失败:`, error)
     propertyOptions.value = []
@@ -448,7 +427,8 @@ const onPropertyChange = (propertyPath: string | null) => {
   // 🔥 关键修复：严格验证绑定路径格式，防止错误值传递
   if (propertyPath) {
     // 验证绑定路径格式：必须是 componentId.layer.propertyName 格式
-    const isValidBindingPath = typeof propertyPath === 'string' &&
+    const isValidBindingPath =
+      typeof propertyPath === 'string' &&
       propertyPath.includes('.') &&
       propertyPath.split('.').length >= 3 &&
       propertyPath.length > 10 && // 绑定路径通常较长
@@ -474,7 +454,6 @@ const onPropertyChange = (propertyPath: string | null) => {
     // 从选项中找到对应的属性信息
     const selectedOption = propertyOptions.value.find(opt => opt.value === propertyPath)
     const propertyInfo = selectedOption?.propertyInfo || null
-
 
     emit('change', propertyPath, propertyInfo)
   } else {

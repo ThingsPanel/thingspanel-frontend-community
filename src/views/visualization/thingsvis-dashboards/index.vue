@@ -97,9 +97,7 @@ const fetchDashboards = async () => {
       // 客户端搜索过滤
       let list = data.data
       if (searchKeyword.value) {
-        list = list.filter(item =>
-          item.name.toLowerCase().includes(searchKeyword.value.toLowerCase())
-        )
+        list = list.filter(item => item.name.toLowerCase().includes(searchKeyword.value.toLowerCase()))
       }
       dashboards.value = list
 
@@ -123,32 +121,36 @@ const loadThumbnails = async (list: DashboardListItem[]) => {
   const processQueue = async () => {
     while (queue.length > 0) {
       const batch = queue.splice(0, CONCURRENCY)
-      await Promise.all(batch.map(async (item) => {
-        // 检查是否已有有效的缩略图（处理 null、undefined、空字符串）
-        const hasValidThumbnail = item.thumbnail && item.thumbnail.trim().startsWith('data:')
-        console.log(`[loadThumbnails] 检查 ${item.id}: hasValidThumbnail=${hasValidThumbnail}, thumbnail=${item.thumbnail?.substring(0, 50)}...`)
-        if (hasValidThumbnail) return
+      await Promise.all(
+        batch.map(async item => {
+          // 检查是否已有有效的缩略图（处理 null、undefined、空字符串）
+          const hasValidThumbnail = item.thumbnail && item.thumbnail.trim().startsWith('data:')
+          console.log(
+            `[loadThumbnails] 检查 ${item.id}: hasValidThumbnail=${hasValidThumbnail}, thumbnail=${item.thumbnail?.substring(0, 50)}...`
+          )
+          if (hasValidThumbnail) return
 
-        try {
-          console.log(`[loadThumbnails] 请求缩略图 API: ${item.id}`)
-          const result = await getThingsVisDashboardThumbnail(item.id)
-          console.log(`[loadThumbnails] API 返回 ${item.id} 完整数据:`, result)
-          // 处理可能的嵌套数据结构
-          const thumbnail = result.data?.thumbnail || result.data?.data?.thumbnail
-          if (thumbnail) {
-            // 更新响应式数据
-            const target = dashboards.value.find(d => d.id === item.id)
-            if (target) {
-              target.thumbnail = thumbnail
-              console.log(`[loadThumbnails] 已更新缩略图: ${item.id}, 长度: ${thumbnail.length}`)
+          try {
+            console.log(`[loadThumbnails] 请求缩略图 API: ${item.id}`)
+            const result = await getThingsVisDashboardThumbnail(item.id)
+            console.log(`[loadThumbnails] API 返回 ${item.id} 完整数据:`, result)
+            // 处理可能的嵌套数据结构
+            const thumbnail = result.data?.thumbnail || result.data?.data?.thumbnail
+            if (thumbnail) {
+              // 更新响应式数据
+              const target = dashboards.value.find(d => d.id === item.id)
+              if (target) {
+                target.thumbnail = thumbnail
+                console.log(`[loadThumbnails] 已更新缩略图: ${item.id}, 长度: ${thumbnail.length}`)
+              }
+            } else {
+              console.log(`[loadThumbnails] 没有找到缩略图数据: ${item.id}`)
             }
-          } else {
-            console.log(`[loadThumbnails] 没有找到缩略图数据: ${item.id}`)
+          } catch (e) {
+            console.error(`[loadThumbnails] 加载缩略图失败 ${item.id}:`, e)
           }
-        } catch (e) {
-          console.error(`[loadThumbnails] 加载缩略图失败 ${item.id}:`, e)
-        }
-      }))
+        })
+      )
     }
   }
 
@@ -370,7 +372,9 @@ onMounted(async () => {
         <NGrid v-else x-gap="24" y-gap="24" cols="1 s:2 m:3 l:4" responsive="screen">
           <NGridItem v-for="dashboard in dashboards" :key="dashboard.id">
             <!-- Dashboard 卡片 -->
-            <div class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-primary hover:shadow-lg">
+            <div
+              class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-primary hover:shadow-lg"
+            >
               <a
                 class="block cursor-pointer no-underline"
                 :href="getViewerHref(dashboard.id)"
@@ -378,7 +382,9 @@ onMounted(async () => {
                 rel="noopener noreferrer"
               >
                 <!-- 缩略图区域 -->
-                <div class="relative h-40 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden">
+                <div
+                  class="relative h-40 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden"
+                >
                   <img
                     v-if="dashboard.thumbnail"
                     :src="getThumbnailUrl(dashboard.thumbnail)"
@@ -403,9 +409,7 @@ onMounted(async () => {
                     <h3 class="flex-1 truncate font-semibold text-gray-900">
                       {{ dashboard.name }}
                     </h3>
-                    <NTag v-if="dashboard.isPublished" size="small" type="success">
-                      已发布
-                    </NTag>
+                    <NTag v-if="dashboard.isPublished" size="small" type="success">已发布</NTag>
                   </div>
 
                   <!-- 底部信息 -->
@@ -450,7 +454,7 @@ onMounted(async () => {
                   </NTooltip>
                   <NTooltip v-else>
                     <template #trigger>
-                      <NButton size="small" type="primary" secondary @click.stop disabled>
+                      <NButton size="small" type="primary" secondary disabled @click.stop>
                         <template #icon>
                           <icon-mdi:home />
                         </template>
@@ -506,12 +510,7 @@ onMounted(async () => {
         </NFormItem>
 
         <NFormItem v-if="formData.menuEnabled" label="菜单名称">
-          <NInput
-            v-model:value="formData.menuName"
-            placeholder="请输入菜单名称"
-            maxlength="50"
-            show-count
-          />
+          <NInput v-model:value="formData.menuName" placeholder="请输入菜单名称" maxlength="50" show-count />
         </NFormItem>
 
         <NFormItem label="画布模式">
@@ -554,9 +553,7 @@ onMounted(async () => {
             />
             <span class="text-sm text-gray-400">px</span>
           </div>
-          <div class="mt-2 text-xs text-gray-400">
-            常用尺寸: 1920×1080(大屏) / 1366×768(普通显示器)
-          </div>
+          <div class="mt-2 text-xs text-gray-400">常用尺寸: 1920×1080(大屏) / 1366×768(普通显示器)</div>
         </NFormItem>
       </NForm>
 

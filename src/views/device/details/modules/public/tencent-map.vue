@@ -31,7 +31,8 @@ async function renderMap() {
   // 使用传入的经纬度或默认坐标作为地图中心点
   const lat = Number(props.latitude) || 39.98412
   const lng = Number(props.longitude) || 116.307484
-  const hasValidCoords = props.latitude && props.longitude && props.latitude !== '' && props.longitude !== '' && isValidCoordinate(lat, lng)
+  const hasValidCoords =
+    props.latitude && props.longitude && props.latitude !== '' && props.longitude !== '' && isValidCoordinate(lat, lng)
 
   const center = new TMap.LatLng(lat, lng)
 
@@ -92,7 +93,9 @@ function addCurrentLocationMarker(lat: number, lng: number) {
     height: 40,
     anchor: { x: 15, y: 40 },
     // 使用红色标记图标
-    src: 'data:image/svg+xml;base64,' + btoa(`
+    src:
+      'data:image/svg+xml;base64,' +
+      btoa(`
       <svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 30 40">
         <path d="M15 0C6.716 0 0 6.716 0 15c0 8.284 15 25 15 25s15-16.716 15-25C30 6.716 23.284 0 15 0z" fill="#ff4444"/>
         <circle cx="15" cy="15" r="8" fill="white"/>
@@ -107,11 +110,13 @@ function addCurrentLocationMarker(lat: number, lng: number) {
     styles: {
       'current-location': markerStyle
     },
-    geometries: [{
-      id: 'current-position',
-      styleId: 'current-location',
-      position
-    }]
+    geometries: [
+      {
+        id: 'current-position',
+        styleId: 'current-location',
+        position
+      }
+    ]
   })
 }
 

@@ -83,7 +83,7 @@ const loadPresetData = async () => {
 
 watch(
   () => props.presetModalVisible,
-  (visible) => {
+  visible => {
     if (visible && props.deviceTemplateId && props.property.identifier) {
       loadPresetData()
     } else {
@@ -97,7 +97,7 @@ watch(
 const handleSave = async (payload: any) => {
   if (saving.value) return
   saving.value = true
-  
+
   try {
     // 1. Get current template data
     const res = await getTemplat(props.deviceTemplateId)
@@ -121,14 +121,14 @@ const handleSave = async (payload: any) => {
       // Empty canvas = clear preset
       delete presets[presetKey]
     }
-    
+
     // 3. Update the template
     rawConfig.device_widget_presets = presets
     await putTemplat({
       ...res.data,
       web_chart_config: JSON.stringify(rawConfig)
     })
-    
+
     window.$message?.success($t('common.saveSuccess'))
     emit('update:presetModalVisible', false)
   } catch (error) {
@@ -153,7 +153,7 @@ const close = () => {
     :segmented="{ content: 'soft' }"
     @update:show="close"
   >
-    <div class="preset-editor-content" v-if="presetModalVisible">
+    <div v-if="presetModalVisible" class="preset-editor-content">
       <ThingsVisWidget
         v-if="!loading"
         ref="editorRef"

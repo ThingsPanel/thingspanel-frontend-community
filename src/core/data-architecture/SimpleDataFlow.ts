@@ -18,7 +18,7 @@ import { dataSourceBindingConfig, type ComponentBindingConfig } from './DataSour
  */
 export interface PropertyChangeEvent {
   componentId: string
-  propertyPath: string  // 如 'base.deviceId' 或 'component.startTime'
+  propertyPath: string // 如 'base.deviceId' 或 'component.startTime'
   oldValue: any
   newValue: any
   timestamp: number
@@ -105,12 +105,7 @@ export class SimpleDataFlow {
   /**
    * 检查属性变更并触发数据源（如果需要）
    */
-  private checkAndTriggerDataSource(
-    componentId: string,
-    section: string,
-    oldConfig: any,
-    newConfig: any
-  ): void {
+  private checkAndTriggerDataSource(componentId: string, section: string, oldConfig: any, newConfig: any): void {
     const changedProperties: PropertyChangeEvent[] = []
 
     // 检测具体的属性变更
@@ -254,7 +249,6 @@ export class SimpleDataFlow {
         componentId,
         success: !!result
       })
-
     } catch (error) {
       console.error(`❌ [SimpleDataFlow] 数据源执行失败:`, {
         componentId,
@@ -457,5 +451,5 @@ export const simpleDataFlow = SimpleDataFlow.getInstance()
 
 // 全局暴露，供调试使用
 if (typeof globalThis !== 'undefined') {
-  (globalThis as any).__simpleDataFlow = simpleDataFlow
+  ;(globalThis as any).__simpleDataFlow = simpleDataFlow
 }

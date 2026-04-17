@@ -28,7 +28,7 @@ export const rsaConfig = {
   /** 哈希算法 */
   hashAlgorithm: 'SHA-256',
   /** 是否启用环境变量覆盖 */
-  enableEnvOverride: true,
+  enableEnvOverride: true
 } as const
 
 /**
@@ -41,7 +41,7 @@ export function getRSAPublicKey(): string {
   if (rsaConfig.enableEnvOverride && import.meta.env.VITE_RSA_PUBLIC_KEY) {
     return import.meta.env.VITE_RSA_PUBLIC_KEY
   }
-  
+
   return rsaPublicKey
 }
 
@@ -52,7 +52,5 @@ export function getRSAPublicKey(): string {
  * @returns 是否为有效的 RSA 公钥格式
  */
 export function validateRSAPublicKey(key: string): boolean {
-  return key.includes('-----BEGIN PUBLIC KEY-----') && 
-         key.includes('-----END PUBLIC KEY-----') &&
-         key.length > 100
+  return key.includes('-----BEGIN PUBLIC KEY-----') && key.includes('-----END PUBLIC KEY-----') && key.length > 100
 }

@@ -14,7 +14,11 @@ const { currentVersion, latestVersion } = useVersionInfo()
 <template>
   <DarkModeContainer class="h-full flex-center">
     <div class="flex flex-wrap items-center justify-center gap-x-2 text-center text-xs text-[var(--n-text-color)]">
-      <a href="https://github.com/ThingsPanel/thingspanel-ui/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">
+      <a
+        href="https://github.com/ThingsPanel/thingspanel-ui/blob/main/LICENSE"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         Copyright &copy; 2024 {{ sysSettingStore.system_name }}
       </a>
       <span>|</span>

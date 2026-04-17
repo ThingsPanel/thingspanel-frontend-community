@@ -38,13 +38,15 @@ const editorRef = ref<InstanceType<typeof ThingsVisWidget>>()
 // 将当前模板字段包装为一个虚拟设备条目，供 Field Picker 的「Device Fields」选项使用
 const platformDevices = computed(() => {
   if (!platformFields.value.length) return []
-  return [{
-    deviceId: '__template__',
-    deviceName: '当前设备模板',
-    groupName: '当前设备模板',
-    fields: platformFields.value,
-    presets: []
-  }]
+  return [
+    {
+      deviceId: '__template__',
+      deviceName: '当前设备模板',
+      groupName: '当前设备模板',
+      fields: platformFields.value,
+      presets: []
+    }
+  ]
 })
 
 const loading = ref(true)

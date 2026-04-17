@@ -3,14 +3,18 @@
  * 提供运行时动态配置绑定规则的完整API
  */
 
-import { dataSourceBindingConfig, type BindingRule, type TriggerRule, type AutoBindConfig } from './DataSourceBindingConfig'
+import {
+  dataSourceBindingConfig,
+  type BindingRule,
+  type TriggerRule,
+  type AutoBindConfig
+} from './DataSourceBindingConfig'
 
 /**
  * 🚀 动态绑定管理器 - 消除所有硬编码
  * 这个API证明系统完全没有硬编码，任何属性都可以动态配置
  */
 export class DynamicBindingAPI {
-
   /**
    * 🔥 完全清空默认规则，从零开始自定义
    * 证明系统没有任何硬编码依赖
@@ -78,20 +82,23 @@ export class DynamicBindingAPI {
    * 🚀 批量配置自定义组件的绑定规则
    * 演示如何为特殊组件配置完全不同的绑定规则
    */
-  static configureCustomComponent(componentType: string, config: {
-    bindings: Array<{
-      propertyPath: string
-      paramName: string
-      transform?: (value: any) => any
-      required?: boolean
-    }>
-    triggers: Array<{
-      propertyPath: string
-      enabled?: boolean
-      debounceMs?: number
-    }>
-    autoBind?: AutoBindConfig
-  }): void {
+  static configureCustomComponent(
+    componentType: string,
+    config: {
+      bindings: Array<{
+        propertyPath: string
+        paramName: string
+        transform?: (value: any) => any
+        required?: boolean
+      }>
+      triggers: Array<{
+        propertyPath: string
+        enabled?: boolean
+        debounceMs?: number
+      }>
+      autoBind?: AutoBindConfig
+    }
+  ): void {
     // 设置组件特定配置
     dataSourceBindingConfig.setComponentConfig(componentType, {
       componentType,
@@ -205,7 +212,7 @@ export class DynamicBindingAPI {
     this.addCustomBinding({
       propertyPath: 'component.timeRange',
       paramName: 'time_range',
-      transform: (range: { start: Date, end: Date }) => ({
+      transform: (range: { start: Date; end: Date }) => ({
         start: range.start.toISOString(),
         end: range.end.toISOString()
       }),
@@ -314,7 +321,6 @@ export class DynamicBindingAPI {
  * 🚀 使用示例和测试用例
  */
 export class DynamicBindingExamples {
-
   /**
    * 示例1: 完全自定义的电商组件
    */
@@ -329,7 +335,7 @@ export class DynamicBindingExamples {
         {
           propertyPath: 'component.priceRange',
           paramName: 'price_filter',
-          transform: (range: { min: number, max: number }) => `${range.min}-${range.max}`
+          transform: (range: { min: number; max: number }) => `${range.min}-${range.max}`
         },
         {
           propertyPath: 'component.sortBy',
@@ -441,8 +447,8 @@ export class DynamicBindingExamples {
 
 // 全局暴露API，供调试和配置使用
 if (typeof globalThis !== 'undefined') {
-  (globalThis as any).__dynamicBindingAPI = DynamicBindingAPI
-  (globalThis as any).__dynamicBindingExamples = DynamicBindingExamples
+  ;(globalThis as any).__dynamicBindingAPI = DynamicBindingAPI(globalThis as any).__dynamicBindingExamples =
+    DynamicBindingExamples
 }
 
 export { DynamicBindingAPI, DynamicBindingExamples }

@@ -246,20 +246,20 @@ const getDeviceDetail = async () => {
     if (data?.device_config) {
       device_type.value = data.device_config.device_type
       if (device_type.value !== '2' || !data?.device_config_name) {
-          filtered = filtered.filter(item => item.key !== 'device-analysis')
+        filtered = filtered.filter(item => item.key !== 'device-analysis')
       }
       if (device_type.value === '3') {
-          filtered = filtered.filter(item => item.key !== 'join')
+        filtered = filtered.filter(item => item.key !== 'join')
       }
       if (data.device_config.device_template_id) {
-          hasTemplateChart = await resolveTemplateHasChartContent(data.device_config.device_template_id)
+        hasTemplateChart = await resolveTemplateHasChartContent(data.device_config.device_template_id)
       }
       if (!data.device_config.device_template_id || !hasTemplateChart) {
-          filtered = filtered.filter(item => item.key !== 'chart')
+        filtered = filtered.filter(item => item.key !== 'chart')
       }
     } else if (!data?.device_config_name) {
-        filtered = filtered.filter(item => item.key !== 'device-analysis')
-        filtered = filtered.filter(item => item.key !== 'chart')
+      filtered = filtered.filter(item => item.key !== 'device-analysis')
+      filtered = filtered.filter(item => item.key !== 'chart')
     }
 
     // 一次性赋值
@@ -298,8 +298,7 @@ const resolveTemplateHasChartContent = async (templateId?: string | number) => {
     const res = await getTemplat(normalizedTemplateId)
     const template = res?.data || {}
     const hasChart =
-      hasThingsVisChartContent(template?.web_chart_config) ||
-      hasThingsVisChartContent(template?.app_chart_config)
+      hasThingsVisChartContent(template?.web_chart_config) || hasThingsVisChartContent(template?.app_chart_config)
 
     templateChartAvailabilityCache.set(normalizedTemplateId, hasChart)
     return hasChart
@@ -444,10 +443,7 @@ const isEmbeddedHost = computed(() => {
           </n-card>
         </n-modal>
 
-        <DeviceStatusHistory
-          v-model:visible="showStatusHistoryDialog"
-          :device-id="getDeviceId()"
-        />
+        <DeviceStatusHistory v-model:visible="showStatusHistoryDialog" :device-id="getDeviceId()" />
 
         <NFlex class="device-details-meta">
           <div class="device-details-meta-item">
@@ -456,11 +452,7 @@ const isEmbeddedHost = computed(() => {
           </div>
           <div class="device-details-meta-item">
             <span class="device-details-meta-label">{{ $t('custom.devicePage.configTemplate') }} :</span>
-            <span
-              v-if="deviceData?.device_config_name"
-              class="device-details-link"
-              @click="clickConfig"
-            >
+            <span v-if="deviceData?.device_config_name" class="device-details-link" @click="clickConfig">
               {{ deviceData?.device_config_name }}
             </span>
             <span v-else>--</span>
@@ -472,10 +464,7 @@ const isEmbeddedHost = computed(() => {
             </span>
           </div>
           <!-- 在线/离线，弹窗展示详情 -->
-          <div
-            class="device-details-status"
-            @click="showStatusHistoryDialog = true"
-          >
+          <div class="device-details-status" @click="showStatusHistoryDialog = true">
             <!-- <span class="mr-2">{{ $t('generate.status') }}:</span> -->
             <SvgIcon
               local-icon="CellTowerRound"
@@ -492,11 +481,7 @@ const isEmbeddedHost = computed(() => {
             </span>
 
             <!-- 历史记录 -->
-            <SvgIcon
-              local-icon="history"
-              style="margin-left: 5px;"
-              class="text-18px text-primary"
-            />
+            <SvgIcon local-icon="history" style="margin-left: 5px" class="text-18px text-primary" />
           </div>
           <div class="device-details-status device-details-status--alarm">
             <template v-if="alarmStatus === true">
@@ -529,7 +514,12 @@ const isEmbeddedHost = computed(() => {
           type="line"
           @update:value="changeTabs"
         >
-          <n-tab-pane v-for="component in components" :key="component.key" :tab="component.name()" :name="component.key">
+          <n-tab-pane
+            v-for="component in components"
+            :key="component.key"
+            :tab="component.name()"
+            :name="component.key"
+          >
             <n-spin class="device-details-tab-body" size="small" :show="loading">
               <component
                 :is="component.component"

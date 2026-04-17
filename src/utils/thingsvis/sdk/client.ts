@@ -44,12 +44,12 @@ export interface WidgetLoadOptions {
    * > 0 = keep the last N values; exposes `{fieldId}__history` as a rolling time-series
    *       array — required by line / area chart widgets that render historical trends.
    */
-  platformBufferSize?: number;
+  platformBufferSize?: number
   /**
    * Optional list of platform device entries (same shape as ThingsVisAppFrame platformDevices).
    * When provided, the Field Picker inside the editor shows a "Device Fields" option.
    */
-  platformDevices?: any[];
+  platformDevices?: any[]
 }
 
 export type MessageHandler = (payload: any) => void
@@ -287,7 +287,7 @@ export class ThingsVisClient {
             ...config,
             // A non-zero bufferSize activates the rolling history buffer in PlatformFieldAdapter,
             // which exposes `{fieldId}__history` arrays needed by line/area chart widgets.
-            bufferSize: Math.max(config.bufferSize ?? 0, options?.platformBufferSize ?? 0),
+            bufferSize: Math.max(config.bufferSize ?? 0, options?.platformBufferSize ?? 0)
           }
         }
       }
@@ -308,8 +308,8 @@ export class ThingsVisClient {
         config: {
           source: 'platform',
           fieldMappings: {},
-          bufferSize: options?.platformBufferSize ?? 0,
-        },
+          bufferSize: options?.platformBufferSize ?? 0
+        }
       })
     }
 
@@ -374,11 +374,7 @@ export class ThingsVisClient {
    * @param fieldId - Platform field identifier, e.g. 'temperature'
    * @param history - Time-ordered records (oldest first); format: { value, ts: unix_ms }
    */
-  public pushFieldHistory(
-    fieldId: string,
-    history: Array<{ value: unknown; ts: number }>,
-    deviceId?: string,
-  ): void {
+  public pushFieldHistory(fieldId: string, history: Array<{ value: unknown; ts: number }>, deviceId?: string): void {
     // Must wait until LOADED for the same reason as pushPlatformFieldData.
     this.sendWhenLoaded('tv:platform-history', { fieldId, history, deviceId })
   }

@@ -23,7 +23,7 @@ interface FormModel {
   email: string
   phone: string
   code: string
-  pwd: string,
+  pwd: string
   country_code: string
 }
 
@@ -231,15 +231,18 @@ const countryCodeOptions = [
     </NFormItem>
     <NFormItem path="phone">
       <div class="flex gap-2">
-            <NSelect
-              v-model:value="model.country_code"
-              :options="countryCodeOptions"
-              class="w-32"
-              :placeholder="$t('page.login.common.countryCodePlaceholder')"
-            />
-            <NInput v-model:value="model.phone" :placeholder="$t('page.login.common.phonePlaceholder')" autocomplete="off" />
-          </div>
-
+        <NSelect
+          v-model:value="model.country_code"
+          :options="countryCodeOptions"
+          class="w-32"
+          :placeholder="$t('page.login.common.countryCodePlaceholder')"
+        />
+        <NInput
+          v-model:value="model.phone"
+          :placeholder="$t('page.login.common.phonePlaceholder')"
+          autocomplete="off"
+        />
+      </div>
     </NFormItem>
 
     <NFormItem path="pwd">

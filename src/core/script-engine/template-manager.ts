@@ -3,7 +3,12 @@
  * 管理脚本模板的创建、更新、删除和代码生成
  */
 
-import type { IScriptTemplateManager, ScriptTemplate, ScriptTemplateParameter, TemplateCategory } from '@/core/script-engine/types'
+import type {
+  IScriptTemplateManager,
+  ScriptTemplate,
+  ScriptTemplateParameter,
+  TemplateCategory
+} from '@/core/script-engine/types'
 import { nanoid } from 'nanoid'
 
 /**

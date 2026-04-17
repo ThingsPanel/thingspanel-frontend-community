@@ -15,10 +15,18 @@ export {
 } from './DataItemFetcher'
 
 // 第二层：数据项处理器
-export { DataItemProcessor, type IDataItemProcessor, type ProcessingConfig } from '@/core/data-architecture/executors/DataItemProcessor'
+export {
+  DataItemProcessor,
+  type IDataItemProcessor,
+  type ProcessingConfig
+} from '@/core/data-architecture/executors/DataItemProcessor'
 
 // 第三层：数据源合并器
-export { DataSourceMerger, type IDataSourceMerger, type MergeStrategy } from '@/core/data-architecture/executors/DataSourceMerger'
+export {
+  DataSourceMerger,
+  type IDataSourceMerger,
+  type MergeStrategy
+} from '@/core/data-architecture/executors/DataSourceMerger'
 
 // 第四层：多源整合器
 export {

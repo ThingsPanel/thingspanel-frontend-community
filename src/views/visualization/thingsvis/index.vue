@@ -47,9 +47,7 @@ const fetchProjects = async () => {
     if (!error && data) {
       let list = data.data
       if (searchKeyword.value) {
-        list = list.filter(item =>
-          item.name.toLowerCase().includes(searchKeyword.value.toLowerCase())
-        )
+        list = list.filter(item => item.name.toLowerCase().includes(searchKeyword.value.toLowerCase()))
       }
       projects.value = list
     } else if (error) {
@@ -211,20 +209,13 @@ onMounted(() => {
 
                   <!-- 操作按钮(悬停显示) -->
                   <div class="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                    <NButton
-                      size="small"
-                      quaternary
-                      circle
-                      @click.stop="openEditModal(project)"
-                    >
+                    <NButton size="small" quaternary circle @click.stop="openEditModal(project)">
                       <template #icon>
                         <icon-mdi:pencil class="text-16px" />
                       </template>
                     </NButton>
 
-                    <NPopconfirm
-                      @positive-click.stop="handleDeleteProject(project.id, project.name)"
-                    >
+                    <NPopconfirm @positive-click.stop="handleDeleteProject(project.id, project.name)">
                       <template #trigger>
                         <NButton size="small" quaternary circle @click.stop>
                           <template #icon>
@@ -266,20 +257,10 @@ onMounted(() => {
     </NCard>
 
     <!-- 新建/编辑弹窗 -->
-    <NModal
-      v-model:show="showModal"
-      preset="card"
-      :title="editingProject ? '编辑项目' : '新建项目'"
-      class="w-500px"
-    >
+    <NModal v-model:show="showModal" preset="card" :title="editingProject ? '编辑项目' : '新建项目'" class="w-500px">
       <NForm :model="formData">
         <NFormItem label="项目名称" path="name">
-          <NInput
-            v-model:value="formData.name"
-            placeholder="请输入项目名称"
-            maxlength="50"
-            show-count
-          />
+          <NInput v-model:value="formData.name" placeholder="请输入项目名称" maxlength="50" show-count />
         </NFormItem>
 
         <NFormItem label="项目描述">

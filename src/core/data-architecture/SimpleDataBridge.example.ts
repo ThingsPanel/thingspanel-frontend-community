@@ -81,8 +81,7 @@ export function configConversionExample() {
     }
 
     // 使用转换后的配置执行数据获取
-    simpleDataBridge.executeComponent(requirement).then(result => {
-    })
+    simpleDataBridge.executeComponent(requirement).then(result => {})
   } else {
     if (process.env.NODE_ENV === 'development') {
     }

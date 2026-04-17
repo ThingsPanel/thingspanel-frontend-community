@@ -28,7 +28,11 @@ export {
 } from './executors/example-usage'
 
 // 简易配置系统 (SUBTASK-010)
-export { ConfigurationManager, configurationManager, type ConfigurationTemplate } from '@/core/data-architecture/services/ConfigurationManager'
+export {
+  ConfigurationManager,
+  configurationManager,
+  type ConfigurationTemplate
+} from '@/core/data-architecture/services/ConfigurationManager'
 
 // 简易配置编辑器组件
 export { default as SimpleConfigurationEditor } from '@/core/data-architecture/components/SimpleConfigurationEditor.vue'

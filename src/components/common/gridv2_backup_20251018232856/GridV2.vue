@@ -7,12 +7,12 @@
   -->
   <div class="grid-v2-wrapper">
     <!-- GridStack 容器：必须具有 .grid-stack 类名 -->
-    <div class="grid-stack" ref="gridEl" :class="props.containerClass" :style="gridContainerInlineStyle">
+    <div ref="gridEl" class="grid-stack" :class="props.containerClass" :style="gridContainerInlineStyle">
       <div
         v-for="item in props.layout"
+        :id="getItemId(item)"
         :key="getItemId(item)"
         class="grid-stack-item"
-        :id="getItemId(item)"
         :gs-id="getItemId(item)"
         :gs-x="item.x"
         :gs-y="item.y"
@@ -43,7 +43,7 @@
 <script setup lang="ts">
 /**
  * GridV2 - 优化版本
- * 
+ *
  * 🔥 修复拖拽卡顿问题：
  * 1. 移除过度的CSS !important规则
  * 2. 简化widget管理逻辑
@@ -57,14 +57,18 @@ import 'gridstack/dist/dd-gridstack'
 import 'gridstack/dist/gridstack.min.css'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { GridStack, type GridStackNode, type GridItemHTMLElement, type GridStackOptions } from 'gridstack'
-import type { GridLayoutPlusProps, GridLayoutPlusEmits, GridLayoutPlusItem } from '@/components/common/grid/gridLayoutPlusTypes'
+import type {
+  GridLayoutPlusProps,
+  GridLayoutPlusEmits,
+  GridLayoutPlusItem
+} from '@/components/common/grid/gridLayoutPlusTypes'
 
 // 复用 GridLayoutPlus 的 props / emits 协议
 const props = defineProps<GridLayoutPlusProps>()
 const emit = defineEmits<GridLayoutPlusEmits>()
 
 // Grid 容器与实例
-const gridEl = ref<HTMLDivElement | null>(null)// 状态管理
+const gridEl = ref<HTMLDivElement | null>(null) // 状态管理
 let grid: GridStack | null = null
 let isInitialized = false
 let pendingLayoutUpdate = false
@@ -83,8 +87,7 @@ let lastLayoutHash = ''
 const COLUMN_STYLE_PREFIX = 'gridstack-column-style'
 
 /** 统一调试输出 */
-function debugLog(...args: unknown[]): void {
-}
+function debugLog(...args: unknown[]): void {}
 
 // 统一获取条目唯一 ID
 const idKey = computed<string>(() => (props.idKey && props.idKey.length > 0 ? props.idKey : 'i'))
@@ -130,14 +133,14 @@ function handleChange(_event: Event, changed: GridStackNode[] | undefined): void
 
   changeEventTimer = window.setTimeout(() => {
     isProcessingChange = true
-    
+
     try {
       // 基于当前 props.layout 生成新的布局
-      const newLayout: GridLayoutPlusItem[] = props.layout.map((it) => ({ ...it }))
+      const newLayout: GridLayoutPlusItem[] = props.layout.map(it => ({ ...it }))
 
-      changed.forEach((node) => {
+      changed.forEach(node => {
         const id = String(node.id)
-        const idx = newLayout.findIndex((it) => getItemId(it) === id)
+        const idx = newLayout.findIndex(it => getItemId(it) === id)
         if (idx >= 0) {
           if (typeof node.x === 'number') newLayout[idx].x = node.x
           if (typeof node.y === 'number') newLayout[idx].y = node.y
@@ -150,7 +153,7 @@ function handleChange(_event: Event, changed: GridStackNode[] | undefined): void
       emit('layout-change', newLayout)
       emit('update:layout', newLayout)
       emit('layout-updated', newLayout)
-      
+
       debugLog('布局更新完成，节点数量:', newLayout.length)
     } catch (err) {
       console.error('[GridV2] 布局更新失败:', err)
@@ -225,7 +228,7 @@ function ensureNewWidgetsRegistered(): void {
       let newWidgetCount = 0
       const newWidgets: HTMLElement[] = []
 
-      props.layout.forEach((item) => {
+      props.layout.forEach(item => {
         const id = getItemId(item)
         const el = gridEl.value?.querySelector<HTMLElement>(`#${CSS.escape(id)}`) as GridItemHTMLElement | null
 
@@ -252,14 +255,13 @@ function ensureNewWidgetsRegistered(): void {
         const shouldCompact = props.config?.verticalCompact !== false
         if (shouldCompact) {
           debugLog('触发自动重排（填充删除后的空隙）')
-          grid.compact()  // ✅ 一行代码搞定，GridStack 内置的优化算法
+          grid.compact() // ✅ 一行代码搞定，GridStack 内置的优化算法
         }
 
         // ❌ 已删除 80+ 行自定义重排算法代码
         // ❌ 已删除所有手动设置 left/top 的代码
         // GridStack 的 compact() 方法已经正确处理了布局！
       }
-
 
       debugLog(`Widget管理完成，新增: ${newWidgetCount}，当前总数: ${grid.getGridItems().length}`)
     } catch (err) {
@@ -287,7 +289,9 @@ function ensureColumnStyles(columnCount: number): void {
     const widthPercent = ((i / columnCount) * 100).toFixed(4)
     rules.push(`.grid-stack.grid-stack-${columnCount} > .grid-stack-item[gs-w="${i}"] { width: ${widthPercent}% }`)
     rules.push(`.grid-stack.gs-${columnCount} > .grid-stack-item[gs-w="${i}"] { width: ${widthPercent}% }`)
-    rules.push(`.grid-stack.grid-stack-${columnCount} > .grid-stack-item[data-gs-width="${i}"] { width: ${widthPercent}% }`)
+    rules.push(
+      `.grid-stack.grid-stack-${columnCount} > .grid-stack-item[data-gs-width="${i}"] { width: ${widthPercent}% }`
+    )
     rules.push(`.grid-stack.gs-${columnCount} > .grid-stack-item[data-gs-width="${i}"] { width: ${widthPercent}% }`)
   }
 
@@ -366,11 +370,11 @@ function createOptionsFromProps(): GridStackOptions {
 
     removable: false, // 禁用移除功能，减少事件监听
     acceptWidgets: false, // 禁用外部拖入，减少复杂度
-    
+
     // 🔥 性能优化：动画和样式配置
     animate: false, // 禁用动画以提高拖拽流畅度
     alwaysShowResizeHandle: false, // 只在悬停时显示缩放手柄
-    
+
     // 🔥 性能优化：拖拽配置
     draggable: {
       // 限制拖拽区域，防止无限滚动
@@ -380,13 +384,13 @@ function createOptionsFromProps(): GridStackOptions {
       // 优化拖拽手柄
       handle: '.grid-stack-item-content'
     },
-    
+
     // 🔥 性能优化：缩放配置
     resizable: {
       // 限制缩放手柄数量，提高性能
       handles: 'se'
     },
-    
+
     // 其他配置
     rtl: config.isMirrored || false,
     oneColumnModeDomSort: true,
@@ -430,7 +434,7 @@ function initGrid(): void {
   if (!gridEl.value || isInitialized) return
 
   debugLog('初始化GridStack')
-  
+
   // 清理旧实例
   if (grid) {
     grid.destroy(false)
@@ -662,7 +666,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   debugLog('组件销毁，清理GridStack实例和定时器')
-  
+
   // 🔥 清理所有定时器，避免内存泄漏
   if (changeEventTimer) {
     clearTimeout(changeEventTimer)
@@ -672,13 +676,13 @@ onBeforeUnmount(() => {
     clearTimeout(widgetRegistrationTimer)
     widgetRegistrationTimer = null
   }
-  
+
   // 清理GridStack实例
   if (grid) {
     grid.destroy(false)
     grid = null
   }
-  
+
   // 重置状态
   isInitialized = false
   isProcessingChange = false
@@ -688,7 +692,7 @@ onBeforeUnmount(() => {
 // 🔥 监听布局变化（带循环防护）
 watch(
   () => props.layout,
-  (newLayout) => {
+  newLayout => {
     if (!isInitialized) return
 
     // 🔥 关键修复：计算 layout 的 hash，避免相同数据重复处理
@@ -760,12 +764,12 @@ watch(
   () => [props.config?.isDraggable, props.config?.isResizable, props.readonly],
   () => {
     if (!grid) return
-    
+
     const isDraggable = !props.readonly && props.config?.isDraggable !== false
     const isResizable = !props.readonly && props.config?.isResizable !== false
-    
+
     debugLog('更新交互状态:', { isDraggable, isResizable })
-    
+
     // 使用GridStack内置方法更新状态
     grid.enableMove(isDraggable)
     grid.enableResize(isResizable)
@@ -836,5 +840,3 @@ watch(
   z-index: 1000;
 }
 </style>
-
-

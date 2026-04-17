@@ -99,14 +99,13 @@ export function createRoutes() {
 
   // 添加独立的常量路由
   constantRoutes.push(thingsvisPreviewRoute)
-
-    ;[...customRoutes, ...generatedRoutes].forEach(item => {
-      if (item.meta?.constant) {
-        constantRoutes.push(item)
-      } else {
-        authRoutes.push(item)
-      }
-    })
+  ;[...customRoutes, ...generatedRoutes].forEach(item => {
+    if (item.meta?.constant) {
+      constantRoutes.push(item)
+    } else {
+      authRoutes.push(item)
+    }
+  })
 
   const constantVueRoutes = transformElegantRoutesToVueRoutes(constantRoutes, layouts, views)
 

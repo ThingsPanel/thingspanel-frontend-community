@@ -235,11 +235,7 @@ onMounted(getConfigInfo)
                   :options="item.options || []"
                   :placeholder="`榛樿鍊? ${item.default_value || ''}`"
                 />
-                <NInput
-                  v-else
-                  v-model:value="item.value"
-                  :placeholder="`榛樿鍊? ${item.default_value || ''}`"
-                />
+                <NInput v-else v-model:value="item.value" :placeholder="`榛樿鍊? ${item.default_value || ''}`" />
               </div>
             </div>
           </div>

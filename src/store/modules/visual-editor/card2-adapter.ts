@@ -5,7 +5,11 @@
 
 import { useUnifiedEditorStore } from '@/store/modules/visual-editor/unified-editor'
 import { useDataFlowManager } from '@/store/modules/visual-editor/data-flow-manager'
-import type { WidgetDefinition, DataSourceConfiguration, ComponentConfiguration } from '@/store/modules/visual-editor/unified-editor'
+import type {
+  WidgetDefinition,
+  DataSourceConfiguration,
+  ComponentConfiguration
+} from '@/store/modules/visual-editor/unified-editor'
 
 // Card 2.1 相关类型定义
 export interface ComponentDefinition {

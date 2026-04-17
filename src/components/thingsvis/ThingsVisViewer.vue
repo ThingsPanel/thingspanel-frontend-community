@@ -8,12 +8,7 @@
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { NSpin } from 'naive-ui'
 import { getThingsVisToken } from '@/utils/thingsvis'
-import {
-  deviceList,
-  telemetryDataCurrent,
-  getAttributeDataSet,
-  telemetryDataHistoryList
-} from '@/service/api/device'
+import { deviceList, telemetryDataCurrent, getAttributeDataSet, telemetryDataHistoryList } from '@/service/api/device'
 import { getOnlineDeviceTrend } from '@/service/api'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
@@ -59,11 +54,11 @@ type PlatformSourceDescriptor = {
 
 /** 组件 timeRangePreset → API time_range + aggregate_window 映射 */
 const PRESET_TO_API_PARAMS: Record<string, { time_range: string; aggregate_window: string }> = {
-  '1h':  { time_range: 'last_1h',  aggregate_window: '1m' },
-  '6h':  { time_range: 'last_6h',  aggregate_window: '2m' },
+  '1h': { time_range: 'last_1h', aggregate_window: '1m' },
+  '6h': { time_range: 'last_6h', aggregate_window: '2m' },
   '24h': { time_range: 'last_24h', aggregate_window: '5m' },
-  '7d':  { time_range: 'last_7d',  aggregate_window: '30m' },
-  '30d': { time_range: 'last_30d', aggregate_window: '3h' },
+  '7d': { time_range: 'last_7d', aggregate_window: '30m' },
+  '30d': { time_range: 'last_30d', aggregate_window: '3h' }
 }
 
 const DEFAULT_HISTORY_API_PARAMS = PRESET_TO_API_PARAMS['1h']!
@@ -84,7 +79,7 @@ function normalizeHistory(records: any[], valueKey: string): HistoryPoint[] {
       value: item?.[valueKey] ?? item?.value ?? item?.avg ?? item?.y ?? 0,
       ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
     }))
-    .filter((point) => !Number.isNaN(point.ts))
+    .filter(point => !Number.isNaN(point.ts))
 }
 
 function normalizeDeviceTotalHistory(records: any[]): HistoryPoint[] {
@@ -93,7 +88,7 @@ function normalizeDeviceTotalHistory(records: any[]): HistoryPoint[] {
       value: Number(item?.device_online ?? 0) + Number(item?.device_offline ?? 0),
       ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
     }))
-    .filter((point) => !Number.isNaN(point.ts))
+    .filter(point => !Number.isNaN(point.ts))
 }
 
 function extractWsFields(payload: unknown): Record<string, unknown> {
@@ -215,10 +210,7 @@ function disconnectAllDeviceWs() {
   deviceWsMap.clear()
 }
 
-function collectRequestedFieldsFromValue(
-  value: unknown,
-  requests: Map<string, Set<string>>
-) {
+function collectRequestedFieldsFromValue(value: unknown, requests: Map<string, Set<string>>) {
   if (typeof value === 'string') {
     const match = value.match(FIELD_BINDING_EXPR_RE)
     const dataSourceId = match?.[1]
@@ -257,7 +249,9 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
     .map((dataSource: any) => {
       const requestedFields = new Set<string>(
         Array.isArray(dataSource?.config?.requestedFields)
-          ? dataSource.config.requestedFields.filter((fieldId: unknown): fieldId is string => typeof fieldId === 'string')
+          ? dataSource.config.requestedFields.filter(
+              (fieldId: unknown): fieldId is string => typeof fieldId === 'string'
+            )
           : []
       )
       const bindingFields = requests.get(String(dataSource.id))
@@ -351,13 +345,10 @@ async function hydrateConfiguredPlatformSources() {
           { type: 'tv:platform-data', payload: { deviceId: descriptor.deviceId, fields: result.fields } },
           '*'
         )
-        win.postMessage(
-          { type: 'tv:platform-data', payload: { fields: result.fields } },
-          '*'
-        )
+        win.postMessage({ type: 'tv:platform-data', payload: { fields: result.fields } }, '*')
       }
 
-      result.histories.forEach((item) => {
+      result.histories.forEach(item => {
         win.postMessage(
           {
             type: 'tv:platform-history',
@@ -376,18 +367,16 @@ async function hydrateConfiguredPlatformSources() {
     if (globalHydrated) continue
     globalHydrated = true
 
-    const fallbackGlobalFields = requestedFields.length > 0
-      ? requestedFields
-      : ['device_total', 'device_online', 'device_offline', 'device_activity']
+    const fallbackGlobalFields =
+      requestedFields.length > 0
+        ? requestedFields
+        : ['device_total', 'device_online', 'device_offline', 'device_activity']
     const result = await buildRequestedFieldData(fallbackGlobalFields, undefined, widestPreset)
     if (Object.keys(result.fields).length > 0) {
-      win.postMessage(
-        { type: 'tv:platform-data', payload: { fields: result.fields } },
-        '*'
-      )
+      win.postMessage({ type: 'tv:platform-data', payload: { fields: result.fields } }, '*')
     }
 
-    result.histories.forEach((item) => {
+    result.histories.forEach(item => {
       win.postMessage(
         {
           type: 'tv:platform-history',
@@ -402,7 +391,11 @@ async function hydrateConfiguredPlatformSources() {
   }
 }
 
-async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string, timeRangePreset?: string): Promise<RequestedFieldResult> {
+async function buildRequestedFieldData(
+  fieldIds: unknown[],
+  deviceId?: string,
+  timeRangePreset?: string
+): Promise<RequestedFieldResult> {
   const requestedFields = Array.isArray(fieldIds)
     ? fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string')
     : []
@@ -411,10 +404,10 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string, t
     return { fields: {}, histories: [] }
   }
 
-  const currentFieldIds = requestedFields.filter((fieldId) => !fieldId.endsWith('__history'))
+  const currentFieldIds = requestedFields.filter(fieldId => !fieldId.endsWith('__history'))
   const historyFieldIds = requestedFields
-    .filter((fieldId) => fieldId.endsWith('__history'))
-    .map((fieldId) => fieldId.replace(/__history$/, ''))
+    .filter(fieldId => fieldId.endsWith('__history'))
+    .map(fieldId => fieldId.replace(/__history$/, ''))
 
   if (deviceId) {
     const result: RequestedFieldResult = { fields: {}, histories: [] }
@@ -437,7 +430,7 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string, t
       if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
       if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
 
-      currentFieldIds.forEach((fieldId) => {
+      currentFieldIds.forEach(fieldId => {
         if (kvMap[fieldId] !== undefined) result.fields[fieldId] = kvMap[fieldId]
       })
     }
@@ -445,7 +438,7 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string, t
     if (historyFieldIds.length > 0) {
       const apiParams = (timeRangePreset && PRESET_TO_API_PARAMS[timeRangePreset]) || DEFAULT_HISTORY_API_PARAMS
       const historyResults = await Promise.allSettled(
-        historyFieldIds.map(async (fieldId) => {
+        historyFieldIds.map(async fieldId => {
           const historyRes = await telemetryDataHistoryList({
             device_id: deviceId,
             key: fieldId,
@@ -462,7 +455,7 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string, t
         })
       )
 
-      historyResults.forEach((item) => {
+      historyResults.forEach(item => {
         if (item.status === 'rejected') {
           console.warn('[ThingsVisViewer] Device history fetch failed:', item.reason)
         }
@@ -486,11 +479,11 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string, t
     device_activity: deviceOnline
   }
 
-  currentFieldIds.forEach((fieldId) => {
+  currentFieldIds.forEach(fieldId => {
     if (aggregateValues[fieldId] !== undefined) result.fields[fieldId] = aggregateValues[fieldId]
   })
 
-  if (historyFieldIds.some((fieldId) => ['device_online', 'device_offline', 'device_total'].includes(fieldId))) {
+  if (historyFieldIds.some(fieldId => ['device_online', 'device_offline', 'device_total'].includes(fieldId))) {
     const trendRes = await getOnlineDeviceTrend()
     const trendData = trendRes?.data as { points?: unknown[] } | undefined
     const points = Array.isArray(trendData?.points) ? trendData.points : []
@@ -553,7 +546,7 @@ const handleMessage = (event: MessageEvent) => {
 
     const widestPreset = extractWidestTimeRangePreset(props.config)
     void buildRequestedFieldData(payload.fieldIds, payload.deviceId, widestPreset)
-      .then((result) => {
+      .then(result => {
         const win = iframeRef.value?.contentWindow
         if (!win) return
 
@@ -581,7 +574,7 @@ const handleMessage = (event: MessageEvent) => {
           }
         }
 
-        result.histories.forEach((item) => {
+        result.histories.forEach(item => {
           win.postMessage(
             {
               type: 'tv:platform-history',
@@ -640,21 +633,24 @@ const sendConfig = () => {
     const pureConfig = JSON.parse(JSON.stringify(props.config))
     const apiBaseUrl = window.location.origin + '/thingsvis-api'
 
-    iframeRef.value.contentWindow.postMessage({
-      type: 'tv:init',
-      data: {
-        meta: { id: pureConfig.id, name: pureConfig.name },
-        canvas: pureConfig.canvas || pureConfig.canvasConfig,
-        nodes: pureConfig.nodes,
-        dataSources: pureConfig.dataSources
+    iframeRef.value.contentWindow.postMessage(
+      {
+        type: 'tv:init',
+        data: {
+          meta: { id: pureConfig.id, name: pureConfig.name },
+          canvas: pureConfig.canvas || pureConfig.canvasConfig,
+          nodes: pureConfig.nodes,
+          dataSources: pureConfig.dataSources
+        },
+        config: {
+          token: token.value,
+          apiBaseUrl: apiBaseUrl,
+          mode: 'viewer',
+          saveTarget: 'host'
+        }
       },
-      config: {
-        token: token.value,
-        apiBaseUrl: apiBaseUrl,
-        mode: 'viewer',
-        saveTarget: 'host'
-      }
-    }, '*')
+      '*'
+    )
   } catch (e) {
     console.error('[ThingsVisViewer] 配置序列化失败:', e)
     error.value = '配置数据无效'
@@ -673,7 +669,7 @@ const handleIframeLoad = () => {
 // 监听配置变化，重新发送
 watch(
   () => props.config,
-  (newConfig) => {
+  newConfig => {
     if (newConfig && ready.value) {
       sendConfig()
     }

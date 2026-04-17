@@ -283,7 +283,10 @@ import {
   singleDataSourceExporter,
   singleDataSourceImporter
 } from '../../utils/ConfigurationImportExport'
-import type { ImportPreview, SingleDataSourceImportPreview } from '@/core/data-architecture/utils/ConfigurationImportExport'
+import type {
+  ImportPreview,
+  SingleDataSourceImportPreview
+} from '@/core/data-architecture/utils/ConfigurationImportExport'
 
 // Props定义
 interface Props {

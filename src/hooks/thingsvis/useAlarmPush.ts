@@ -34,9 +34,7 @@ export function useAlarmPush(
 
       const alarmFields: Record<string, unknown> = {}
       fields.forEach(field => {
-        const alarm = (res.data as any[]).find(
-          (a: any) => a.alarm_name === field.id || a.key === field.id
-        )
+        const alarm = (res.data as any[]).find((a: any) => a.alarm_name === field.id || a.key === field.id)
         if (alarm) {
           alarmFields[field.id] = {
             active: alarm.is_active ?? false,

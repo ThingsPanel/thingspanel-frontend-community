@@ -287,11 +287,7 @@ const TELEMETRY_TIME_RANGE_MS: Record<string, number> = {
 
 function shouldFallbackTelemetryHistory(error: any) {
   const message = error?.error?.message || error?.message || ''
-  return (
-    typeof message === 'string' &&
-    message.includes('failed to encode args[2]') &&
-    message.includes('OID 25')
-  )
+  return typeof message === 'string' && message.includes('failed to encode args[2]') && message.includes('OID 25')
 }
 
 function resolveTelemetryHistoryRange(params: any) {
@@ -334,10 +330,7 @@ function normalizeTelemetryHistoryPageData(payload: any) {
  *   aggregate_function: string, time_range: string }
  * @returns
  */
-export const telemetryDataHistoryList = async (
-  params: any,
-  requestConfig: Record<string, unknown> = {}
-) => {
+export const telemetryDataHistoryList = async (params: any, requestConfig: Record<string, unknown> = {}) => {
   const normalized = { ...params }
   let statisticResponse: any
   try {
@@ -409,10 +402,7 @@ export const expectMessageList = async (params: any) => {
 export const expectMessageDelete = async (params: any) => {
   return await request.delete<any>(`/expected/data/${params}`)
 }
-export const getAttributeDataSet = async (
-  params: any,
-  requestConfig: Record<string, unknown> = {}
-) => {
+export const getAttributeDataSet = async (params: any, requestConfig: Record<string, unknown> = {}) => {
   return await request.get<any>(`attribute/datas/${params.device_id}`, requestConfig as any)
 }
 
@@ -464,10 +454,7 @@ export const deviceTemplateSelect = async () => {
   return await request.get<any>(url)
 }
 
-export const telemetryHistoryData = async (
-  params: any,
-  requestConfig: Record<string, unknown> = {}
-) => {
+export const telemetryHistoryData = async (params: any, requestConfig: Record<string, unknown> = {}) => {
   return await request.get<any>(`/telemetry/datas/history/page`, {
     ...(requestConfig as any),
     params
@@ -554,11 +541,7 @@ export interface TopicMappingPayload {
   enabled?: boolean
 }
 
-export const getTopicMappingList = async (params: {
-  device_config_id: string
-  page?: number
-  page_size?: number
-}) => {
+export const getTopicMappingList = async (params: { device_config_id: string; page?: number; page_size?: number }) => {
   return await request.get<any>(`/device/topic-mappings`, { params })
 }
 
@@ -566,10 +549,7 @@ export const createTopicMapping = async (data: TopicMappingPayload) => {
   return await request.post<any>(`/device/topic-mappings`, data)
 }
 
-export const updateTopicMapping = async (
-  id: string | number,
-  data: Partial<TopicMappingPayload>
-) => {
+export const updateTopicMapping = async (id: string | number, data: Partial<TopicMappingPayload>) => {
   return await request.put<any>(`/device/topic-mappings/${id}`, data)
 }
 

@@ -532,7 +532,12 @@ const handleWarningClick = (item: DeviceItem) => {
                 </template>
                 <template #footer-icon>
                   <div class="footer-icon-container">
-                    <img v-if="item.image_url" :src="getConfigImageUrl(item.image_url)" alt="config image" class="config-image" />
+                    <img
+                      v-if="item.image_url"
+                      :src="getConfigImageUrl(item.image_url)"
+                      alt="config image"
+                      class="config-image"
+                    />
                     <SvgIcon v-else local-icon="defaultdevice" class="config-image" />
                   </div>
                 </template>

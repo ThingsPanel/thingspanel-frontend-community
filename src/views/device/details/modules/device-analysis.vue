@@ -175,26 +175,26 @@ onMounted(() => {})
       :showIcon="false"
       :mask-closable="false"
     >
-        <n-form class="mt-6" label-placement="left" label-width="auto">
-          <n-form-item :label="$t('generate.select-sub-device')">
-              <n-select
-                v-model:value="selectChild"
-                multiple
-                max-tag-count="responsive"
-                :options="sOptions"
-                :virtual-scroll="false"
-                @update:value="selectConfig"
-              >
-                <template #header>{{ $t('page.irrigation.group.deviceName') }}</template>
-              </n-select>
-          </n-form-item>
-        </n-form>
-        <template #action>
-          <div class="modal-footer">
-            <NButton @click="showAddDialog = false">{{ $t('generate.cancel') }}</NButton>
-            <NButton type="primary" @click="addChildDeviceSure">{{ $t('page.login.common.confirm') }}</NButton>
-          </div>
-        </template>
+      <n-form class="mt-6" label-placement="left" label-width="auto">
+        <n-form-item :label="$t('generate.select-sub-device')">
+          <n-select
+            v-model:value="selectChild"
+            multiple
+            max-tag-count="responsive"
+            :options="sOptions"
+            :virtual-scroll="false"
+            @update:value="selectConfig"
+          >
+            <template #header>{{ $t('page.irrigation.group.deviceName') }}</template>
+          </n-select>
+        </n-form-item>
+      </n-form>
+      <template #action>
+        <div class="modal-footer">
+          <NButton @click="showAddDialog = false">{{ $t('generate.cancel') }}</NButton>
+          <NButton type="primary" @click="addChildDeviceSure">{{ $t('page.login.common.confirm') }}</NButton>
+        </div>
+      </template>
     </n-modal>
     <n-modal v-model:show="showSetDialog" :title="$t('generate.issue-attribute')" class="w-[400px]">
       <n-card>

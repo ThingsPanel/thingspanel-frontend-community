@@ -136,7 +136,7 @@ const toServiceClick = () => {
       </n-descriptions-item>
     </n-descriptions>
 
-    <NCard v-if="deviceDataStore?.deviceData?.access_way !== 'B'"  class="mb-6 mt-6">
+    <NCard v-if="deviceDataStore?.deviceData?.access_way !== 'B'" class="mb-6 mt-6">
       <NForm ref="formRef" :rules="formRules" :model="formData">
         <template v-for="element in formElements" :key="element.dataKey">
           <div v-if="element.type === 'input'" class="form-item">

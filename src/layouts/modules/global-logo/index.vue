@@ -22,7 +22,10 @@ withDefaults(defineProps<Props>(), {
     <div class="logo-box">
       <SystemLogo width="32" />
       <div v-show="showTitle" class="pl-8px">
-        <n-ellipsis style="max-width: 150px" class="text-16px text-primary font-bold transition duration-300 ease-in-out">
+        <n-ellipsis
+          style="max-width: 150px"
+          class="text-16px text-primary font-bold transition duration-300 ease-in-out"
+        >
           {{ sysSettingStore.system_name === '' ? $t('title') : sysSettingStore.system_name }}
         </n-ellipsis>
       </div>
@@ -31,8 +34,8 @@ withDefaults(defineProps<Props>(), {
 </template>
 
 <style scoped>
-  .logo-box {
-    display: flex;
-    align-items: center;
-  }
+.logo-box {
+  display: flex;
+  align-items: center;
+}
 </style>

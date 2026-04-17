@@ -46,7 +46,10 @@ import { smartDeepClone } from '@/utils/deep-clone'
 // 导入导出面板组件
 import ConfigurationImportExportPanel from '@/core/data-architecture/components/common/ConfigurationImportExportPanel.vue'
 // 单数据源导入导出功能
-import { singleDataSourceExporter, singleDataSourceImporter } from '@/core/data-architecture/utils/ConfigurationImportExport'
+import {
+  singleDataSourceExporter,
+  singleDataSourceImporter
+} from '@/core/data-architecture/utils/ConfigurationImportExport'
 import type { SingleDataSourceImportPreview } from '@/core/data-architecture/utils/ConfigurationImportExport'
 
 // 🚀 导入Card2.1 Core响应式数据管理器
@@ -125,7 +128,13 @@ const isInitializing = ref(true)
  */
 const componentInfo = computed(() => {
   // 优先使用直接传递的props（只有当dataSources有内容时才使用）
-  if (props.componentId && props.componentType && props.dataSources && Array.isArray(props.dataSources) && props.dataSources.length > 0) {
+  if (
+    props.componentId &&
+    props.componentType &&
+    props.dataSources &&
+    Array.isArray(props.dataSources) &&
+    props.dataSources.length > 0
+  ) {
     return {
       componentId: props.componentId,
       componentType: props.componentType,
@@ -383,7 +392,6 @@ const handleDataItemConfirm = async (dataItemConfig: any) => {
       componentInfo.value.componentType,
       dataSourceConfig
     )
-
 
     // 🔥 关键修复：强制清除DataWarehouse的合并数据缓存，确保组件获取最新数据
     const { dataWarehouse } = await import('@/core/data-architecture/DataWarehouse')
@@ -672,7 +680,6 @@ const checkCard2CoreReactiveSupport = () => {
   const dataSourceKeys = ComponentRegistry.getDataSourceKeys(componentInfo.value.componentType)
   const supportsReactiveData = isRegistered && dataSourceKeys.length > 0
 
-
   useCard2CoreReactiveData.value = supportsReactiveData
   return supportsReactiveData
 }
@@ -686,7 +693,6 @@ const initializeCard2CoreReactiveData = async () => {
   }
 
   try {
-
     // 获取数据源配置
     const dataSourceConfig = configurationManager.getConfiguration(componentInfo.value.componentId)?.dataSource
 
@@ -697,16 +703,14 @@ const initializeCard2CoreReactiveData = async () => {
     // 创建响应式数据订阅
     const subscriptionId = reactiveDataManager.subscribe(
       componentInfo.value.componentId, // 使用组件ID作为数据源ID
-      (newData) => {
-      },
+      newData => {},
       {
         updateStrategy: 'polling', // 使用轮询策略
-        interval: 30000, // 30秒轮询间隔
+        interval: 30000 // 30秒轮询间隔
       }
     )
 
     card2CoreDataSubscription.value = subscriptionId
-
   } catch (error) {
     console.error(`❌ [SimpleConfigurationEditor] Card2.1 Core响应式数据初始化失败:`, error)
   }
@@ -814,7 +818,6 @@ const handleComponentPollingConfigChange = (pollingConfig: any) => {
   }
 }
 
-
 /**
  * 删除数据项 - 集成配置驱动架构
  */
@@ -877,7 +880,9 @@ const restoreDataItemsFromConfig = () => {
 
     // ✅ 优化1：只查询一次 ConfigurationManager
     const latestConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
-    let dataSourceConfig: DataSourceConfiguration | undefined = latestConfig?.dataSource as DataSourceConfiguration | undefined
+    let dataSourceConfig: DataSourceConfiguration | undefined = latestConfig?.dataSource as
+      | DataSourceConfiguration
+      | undefined
 
     // ✅ 优化2：简化回退逻辑，减少复杂判断
     if (!dataSourceConfig && editorContext?.getNodeById) {
@@ -922,7 +927,10 @@ const restoreDataItemsFromConfig = () => {
               const displayItem = convertConfigItemToDisplay(
                 configItem && typeof configItem === 'object' && 'item' in configItem
                   ? configItem
-                  : { item: configItem, processing: { filterPath: '$', customScript: undefined, defaultValue: undefined } },
+                  : {
+                      item: configItem,
+                      processing: { filterPath: '$', customScript: undefined, defaultValue: undefined }
+                    },
                 index
               )
               tempItems[sourceId].push(displayItem)
@@ -961,7 +969,10 @@ const restoreDataItemsFromConfig = () => {
               const displayItem = convertConfigItemToDisplay(
                 configItem && typeof configItem === 'object' && 'item' in configItem
                   ? configItem
-                  : { item: configItem, processing: { filterPath: '$', customScript: undefined, defaultValue: undefined } },
+                  : {
+                      item: configItem,
+                      processing: { filterPath: '$', customScript: undefined, defaultValue: undefined }
+                    },
                 index
               )
               tempItems[sourceId].push(displayItem)
@@ -980,10 +991,11 @@ const restoreDataItemsFromConfig = () => {
       Object.assign(mergeStrategies, tempStrategies)
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`⚡ [Perf] 配置恢复(异步分片): ${(performance.now() - perfStart).toFixed(2)}ms, 处理: ${processedItems}/${totalItems}`)
+        console.log(
+          `⚡ [Perf] 配置恢复(异步分片): ${(performance.now() - perfStart).toFixed(2)}ms, 处理: ${processedItems}/${totalItems}`
+        )
       }
     }
-
   } catch (error) {
     console.error('❌ [restoreDataItemsFromConfig] 恢复配置失败:', error)
   }
@@ -1122,20 +1134,22 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
           params: item.config.params
             ? // 如果是数组格式（新格式），直接使用并保持原有的isDynamic状态
               Array.isArray(item.config.params)
-              ? protectParameterBindingPaths(item.config.params.map((param: any) => ({
-                  key: param.key || '',
-                  value: param.value || '',
-                  enabled: param.enabled !== undefined ? param.enabled : true,
-                  // 关键修复：智能检测并修正isDynamic状态
-                  isDynamic: detectIsDynamicParameter(param),
-                  dataType: param.dataType || 'string',
-                  variableName: param.variableName || '',
-                  description: param.description || '',
-                  // 保持组件属性绑定相关字段
-                  valueMode: param.valueMode || 'manual',
-                  selectedTemplate: param.selectedTemplate || 'manual',
-                  defaultValue: param.defaultValue
-                })))
+              ? protectParameterBindingPaths(
+                  item.config.params.map((param: any) => ({
+                    key: param.key || '',
+                    value: param.value || '',
+                    enabled: param.enabled !== undefined ? param.enabled : true,
+                    // 关键修复：智能检测并修正isDynamic状态
+                    isDynamic: detectIsDynamicParameter(param),
+                    dataType: param.dataType || 'string',
+                    variableName: param.variableName || '',
+                    description: param.description || '',
+                    // 保持组件属性绑定相关字段
+                    valueMode: param.valueMode || 'manual',
+                    selectedTemplate: param.selectedTemplate || 'manual',
+                    defaultValue: param.defaultValue
+                  }))
+                )
               : // 如果是对象格式（旧格式），转换为数组，默认为静态参数
                 Object.entries(item.config.params).map(([key, value]) => ({
                   key,
@@ -1166,10 +1180,12 @@ const convertConfigItemToDisplay = (configItem: any, index: number) => {
           enableParams: item.config.enableParams || false,
           // 修复：pathParams也应用智能检测和保护机制
           pathParams: item.config.pathParams
-            ? protectParameterBindingPaths(item.config.pathParams.map((param: any) => ({
-                ...param,
-                isDynamic: detectIsDynamicParameter(param)
-              })))
+            ? protectParameterBindingPaths(
+                item.config.pathParams.map((param: any) => ({
+                  ...param,
+                  isDynamic: detectIsDynamicParameter(param)
+                }))
+              )
             : [],
           // 修复：pathParameter也应用智能检测和保护机制
           pathParameter: item.config.pathParameter
@@ -1238,9 +1254,11 @@ onMounted(async () => {
       if (existingConfig && (!existingConfig.dataSource || Object.keys(existingConfig.dataSource).length === 0)) {
         if (editorContext?.getNodeById) {
           const realNode = editorContext.getNodeById(componentInfo.value.componentId)
-          if (realNode?.metadata?.unifiedConfig?.dataSource &&
-              typeof realNode.metadata.unifiedConfig.dataSource === 'object' &&
-              Object.keys(realNode.metadata.unifiedConfig.dataSource).length > 0) {
+          if (
+            realNode?.metadata?.unifiedConfig?.dataSource &&
+            typeof realNode.metadata.unifiedConfig.dataSource === 'object' &&
+            Object.keys(realNode.metadata.unifiedConfig.dataSource).length > 0
+          ) {
             configurationManager.updateConfiguration(
               componentInfo.value.componentId,
               'dataSource',
@@ -1292,7 +1310,6 @@ onMounted(async () => {
     } else {
       setTimeout(delayedInitialization, 200)
     }
-
   } catch (error) {
     console.error('❌ [SimpleConfigurationEditor] 初始化失败:', error)
     // 降级处理
@@ -1841,10 +1858,9 @@ const readFileAsText = (file: File): Promise<string> => {
  */
 const refreshConfigurationData = async (): Promise<void> => {
   try {
-    
     // 关键修复：强制清理数据缓存，确保获取最新配置
     simpleDataBridge.clearComponentCache(componentInfo.value.componentId)
-    
+
     // 修复：强制清空当前显示的数据项，然后重新恢复
     Object.keys(dataSourceItems).forEach(key => {
       delete dataSourceItems[key]
@@ -1852,16 +1868,16 @@ const refreshConfigurationData = async (): Promise<void> => {
     Object.keys(mergeStrategies).forEach(key => {
       delete mergeStrategies[key]
     })
-    
+
     // 等待Vue响应式更新完成
     await nextTick()
-    
+
     // 重要：强制触发配置恢复
     restoreDataItemsFromConfig()
-    
+
     // 再次等待Vue响应式更新
     await nextTick()
-    
+
     // 额外：如果有编辑器上下文，同步最新状态
     if (editorContext?.updateNode) {
       const latestConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
@@ -1881,10 +1897,10 @@ const refreshConfigurationData = async (): Promise<void> => {
         }
       }
     }
-    
+
     // 强制验证恢复结果
     const totalItems = Object.values(dataSourceItems).reduce((sum, items) => sum + items.length, 0)
-    
+
     // 如果还是没有数据，强制日志输出配置状态
     if (totalItems === 0) {
       const latestConfig = configurationManager.getConfiguration(componentInfo.value.componentId)
@@ -1895,7 +1911,6 @@ const refreshConfigurationData = async (): Promise<void> => {
         dataSourcesContent: latestConfig?.dataSource?.dataSources
       })
     }
-    
   } catch (error) {
     console.error('❌ [SimpleConfigurationEditor] 配置数据刷新失败:', error)
   }
@@ -1917,7 +1932,9 @@ defineExpose({
     <div class="config-toolbar">
       <div class="toolbar-title">
         <span>{{ componentInfo.componentType || '组件' }}配置</span>
-        <n-tag v-if="componentInfo.componentId" size="small" type="info">{{ componentInfo.componentId.slice(0, 8) }}...</n-tag>
+        <n-tag v-if="componentInfo.componentId" size="small" type="info">
+          {{ componentInfo.componentId.slice(0, 8) }}...
+        </n-tag>
       </div>
 
       <n-space>
@@ -1978,8 +1995,8 @@ defineExpose({
                     size="tiny"
                     text
                     type="primary"
-                    @click="copyDataSourceExampleToClipboard(dataSourceOption)"
                     class="copy-button"
+                    @click="copyDataSourceExampleToClipboard(dataSourceOption)"
                   >
                     <template #icon>
                       <n-icon size="14">
@@ -2186,13 +2203,7 @@ defineExpose({
                     </n-icon>
                     示例数据
                   </div>
-                  <n-button
-                    size="tiny"
-                    text
-                    type="primary"
-                    @click="copyExampleDataToClipboard"
-                    class="copy-button"
-                  >
+                  <n-button size="tiny" text type="primary" class="copy-button" @click="copyExampleDataToClipboard">
                     <template #icon>
                       <n-icon size="14">
                         <CopyOutlined />
@@ -2287,7 +2298,7 @@ defineExpose({
 
             <div v-if="singleDataSourceImportPreview.conflicts.length > 0" style="margin-top: 12px">
               <n-alert type="warning" title="检测到冲突" size="small">
-                <ul style="margin: 4px 0; padding-left: 20px;">
+                <ul style="margin: 4px 0; padding-left: 20px">
                   <li v-for="conflict in singleDataSourceImportPreview.conflicts" :key="conflict">
                     {{ conflict }}
                   </li>
@@ -2314,8 +2325,8 @@ defineExpose({
       <template #action>
         <n-space>
           <n-button @click="showSingleDataSourceImportModal = false">取消</n-button>
-          <n-button 
-            type="primary" 
+          <n-button
+            type="primary"
             :disabled="singleDataSourceImportPreview?.conflicts.length > 0"
             :loading="isProcessing"
             @click="handleSingleDataSourceImport"
@@ -2505,7 +2516,9 @@ defineExpose({
 .example-data-icon-in-title {
   flex-shrink: 0;
   opacity: 0.7;
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
 }
 
 .example-data-icon-in-title:hover {

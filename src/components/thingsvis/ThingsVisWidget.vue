@@ -1,5 +1,5 @@
 <template>
-  <div class="thingsvis-widget-container" ref="container"></div>
+  <div ref="container" class="thingsvis-widget-container"></div>
 </template>
 
 <script setup lang="ts">
@@ -88,8 +88,7 @@ const collectConfiguredWriteFields = () => {
     const bindings = Array.isArray(node?.data) ? node.data : []
     const valueBinding = bindings.find((binding: any) => binding?.targetProp === 'value')
     const parsed =
-      parseFieldBindingExpression(valueBinding?.expression) ||
-      parseFieldBindingExpression(node?.props?.value)
+      parseFieldBindingExpression(valueBinding?.expression) || parseFieldBindingExpression(node?.props?.value)
 
     if (!parsed) return
 
@@ -104,7 +103,9 @@ const collectConfiguredWriteFields = () => {
     if (!dataSourceId) return
 
     const configuredFields = Array.isArray(dataSource?.config?.requestedFields)
-      ? dataSource.config.requestedFields.filter((fieldId: unknown): fieldId is string => typeof fieldId === 'string' && !!fieldId)
+      ? dataSource.config.requestedFields.filter(
+          (fieldId: unknown): fieldId is string => typeof fieldId === 'string' && !!fieldId
+        )
       : []
 
     if (configuredFields.length !== 1) return
@@ -178,7 +179,7 @@ function normalizeViewerConfig(config: any) {
 
   const nodes = Array.isArray(platformNormalizedConfig.nodes) ? platformNormalizedConfig.nodes : []
   const positionedNodes = nodes.filter((node: any) => {
-    return [node?.x, node?.y, node?.width, node?.height].every((value) => typeof value === 'number')
+    return [node?.x, node?.y, node?.width, node?.height].every(value => typeof value === 'number')
   })
 
   if (positionedNodes.length === 0) {
@@ -209,7 +210,7 @@ function normalizeViewerConfig(config: any) {
       scaleMode: canvas.scaleMode || 'fit-min'
     },
     nodes: nodes.map((node: any) => {
-      if ([node?.x, node?.y].every((value) => typeof value === 'number')) {
+      if ([node?.x, node?.y].every(value => typeof value === 'number')) {
         return {
           ...node,
           x: node.x + offsetX,
@@ -237,11 +238,7 @@ const pushPlatformFieldDataCompat = (fields: Record<string, unknown>, deviceId?:
   }
 }
 
-const pushFieldHistoryCompat = (
-  fieldId: string,
-  history: Array<{ value: unknown; ts: number }>,
-  deviceId?: string
-) => {
+const pushFieldHistoryCompat = (fieldId: string, history: Array<{ value: unknown; ts: number }>, deviceId?: string) => {
   if (!client) return
   const payload = clone(history) || []
   client.pushFieldHistory(fieldId, payload, deviceId)
@@ -266,9 +263,8 @@ const handlePlatformWrite = async (event: MessageEvent) => {
   }
   try {
     const normalizedData = normalizeWriteData(dataSourceId, data)
-    const dataObject = normalizedData !== null && typeof normalizedData === 'object'
-      ? normalizedData as Record<string, unknown>
-      : null
+    const dataObject =
+      normalizedData !== null && typeof normalizedData === 'object' ? (normalizedData as Record<string, unknown>) : null
     const fieldEntries = dataObject ? Object.entries(dataObject) : []
     const fieldId = fieldEntries.length === 1 ? fieldEntries[0]?.[0] : undefined
     const fieldTypeMap = getFieldTypeMap()
@@ -290,7 +286,9 @@ const handleFieldDataRequest = (event: MessageEvent) => {
   if (event.data?.type !== 'thingsvis:requestFieldData') return
 
   const payload = event.data?.payload as { deviceId?: string; fieldIds?: string[] } | undefined
-  const fieldIds = Array.isArray(payload?.fieldIds) ? payload.fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string') : []
+  const fieldIds = Array.isArray(payload?.fieldIds)
+    ? payload.fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string')
+    : []
   if (fieldIds.length === 0) return
 
   const previewDeviceId = getPreviewDeviceId()
@@ -359,11 +357,12 @@ onMounted(async () => {
   // when the parent's onVisReady fires and pushes platform-data, the PlatformFieldAdapter
   // is already being set up in the iframe (tv:init triggers datasource registration).
   client.on('ready', () => {
-    if (props.config) client?.loadWidgetConfig(
-      normalizeViewerConfig(clone(props.config)),
-      clone(props.platformFields || []),
-      getLoadOptions()
-    )
+    if (props.config)
+      client?.loadWidgetConfig(
+        normalizeViewerConfig(clone(props.config)),
+        clone(props.platformFields || []),
+        getLoadOptions()
+      )
     if (props.platformFields) client?.updateSchema(clone(props.platformFields))
     if (props.data) pushPlatformFieldDataCompat(props.data, props.deviceId)
     emit('ready')
@@ -385,11 +384,7 @@ watch(
   () => props.config,
   newVal => {
     if (client?.ready && newVal) {
-      client.loadWidgetConfig(
-        normalizeViewerConfig(clone(newVal)),
-        clone(props.platformFields || []),
-        getLoadOptions()
-      )
+      client.loadWidgetConfig(normalizeViewerConfig(clone(newVal)), clone(props.platformFields || []), getLoadOptions())
     }
   },
   { deep: true }
@@ -452,7 +447,7 @@ defineExpose({
   triggerSave,
   client,
   pushHistory,
-  pushPlatformData,
+  pushPlatformData
 })
 </script>
 

@@ -4,8 +4,8 @@ import { NDatePicker, NSelect, NSpace } from 'naive-ui'
 import { useFullscreen } from '@vueuse/core'
 import dayjs from 'dayjs'
 import { telemetryDataHistoryList } from '@/service/api/device'
-import { $t } from '@/locales';
-import { message } from '@/utils/common/discrete';
+import { $t } from '@/locales'
+import { message } from '@/utils/common/discrete'
 import ChartComponent from './ChartComponent.vue'
 import { useLoading } from '~/packages/hooks'
 

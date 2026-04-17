@@ -538,7 +538,6 @@ export class SystemInitializer {
       return
     }
 
-
     for (const systemName of failedSystems) {
       const config = this.subSystemConfigs.get(systemName)
       if (config) {

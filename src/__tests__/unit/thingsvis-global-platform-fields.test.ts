@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  getGlobalPlatformFields,
-  resolveGlobalPlatformFieldScope
-} from '@/utils/thingsvis/global-platform-fields'
+import { getGlobalPlatformFields, resolveGlobalPlatformFieldScope } from '@/utils/thingsvis/global-platform-fields'
 
 describe('global-platform-fields', () => {
   it('returns tenant-only field scope for non-sys-admin users', () => {

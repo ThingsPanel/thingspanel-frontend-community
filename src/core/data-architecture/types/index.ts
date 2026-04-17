@@ -102,7 +102,11 @@ export type {
 } from './simple-types'
 
 // ==================== 类型守卫和工具导出 ====================
-export { isEnhancedConfiguration, isGenericDataItemConfig, isEnhancedHttpConfig } from '@/core/data-architecture/types/enhanced-types'
+export {
+  isEnhancedConfiguration,
+  isGenericDataItemConfig,
+  isEnhancedHttpConfig
+} from '@/core/data-architecture/types/enhanced-types'
 
 // ==================== 默认配置导出 ====================
 export { DEFAULT_ENHANCED_FEATURES, ConfigurationVersionEnum } from '@/core/data-architecture/types/enhanced-types'

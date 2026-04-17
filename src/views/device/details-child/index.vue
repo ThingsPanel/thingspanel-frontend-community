@@ -32,7 +32,11 @@ let components = [
   { key: 'message', name: () => $t('custom.device_details.AdditionalDetails'), component: markRaw(Message) },
   { key: 'stats', name: () => $t('custom.device_details.attributes'), component: markRaw(Stats) },
   { key: 'event-report', name: () => $t('custom.device_details.eventReport'), component: markRaw(EventReport) },
-  { key: 'command-delivery', name: () => $t('custom.device_details.commandDelivery'), component: markRaw(CommandDelivery) },
+  {
+    key: 'command-delivery',
+    name: () => $t('custom.device_details.commandDelivery'),
+    component: markRaw(CommandDelivery)
+  },
   { key: 'automate', name: () => $t('custom.device_details.automate'), component: markRaw(Automate) },
   { key: 'give-an-alarm', name: () => $t('custom.device_details.giveAnAlarm'), component: markRaw(GiveAnAlarm) },
   { key: 'user', name: () => $t('custom.device_details.user'), component: markRaw(User) },

@@ -27,22 +27,10 @@ import {
   telemetryDataHistoryList,
   telemetryDataPub
 } from '@/service/api/device'
-import {
-  attributesApi,
-  getAlarmCount,
-  getLatestTelemetryData,
-  getOnlineDeviceTrend,
-  getSystemMetricsCurrent,
-  getSystemMetricsHistory,
-  telemetryApi,
-  tenant
-} from '@/service/api'
-import { alarmHistory } from '@/service/api/alarm'
+import { attributesApi, telemetryApi } from '@/service/api'
 import { getTemplat } from '@/service/api/system-data'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
-import { getGlobalPlatformFields, resolveGlobalPlatformFieldScope } from '@/utils/thingsvis/global-platform-fields'
-import { normalizeThingsVisHistoryBindings } from '@/utils/thingsvis/normalize-history-bindings'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
 
@@ -341,38 +329,9 @@ function getCurrentUserInfo() {
   return localStg.get('userInfo') as Api.Auth.UserInfo | null
 }
 
-function getCurrentPlatformFieldScope() {
-  return resolveGlobalPlatformFieldScope(getCurrentUserInfo())
-}
-
-function getCurrentGlobalPlatformFields() {
-  return getGlobalPlatformFields(getCurrentPlatformFieldScope())
-}
-
-function shouldTreatPlatformRequestAsGlobal(fieldIds: unknown[]): boolean {
-  const requestedFields = Array.isArray(fieldIds)
-    ? fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string')
-    : []
-
-  if (requestedFields.length === 0) return false
-
-  const globalFieldIds = new Set(
-    getCurrentGlobalPlatformFields()
-      .map(field => (typeof field?.id === 'string' ? field.id : ''))
-      .filter(Boolean)
-  )
-
-  return requestedFields.every(fieldId => globalFieldIds.has(fieldId))
-}
-
 function cloneDashboardConfig<T>(config: T): T {
   if (!config || typeof config !== 'object') return config
   return JSON.parse(JSON.stringify(config))
-}
-
-function normalizeDashboardConfig<T>(config: T): T {
-  const cloned = cloneDashboardConfig(config)
-  return normalizeThingsVisHistoryBindings(cloned)
 }
 
 function normalizeEditorGroupId(groupId?: unknown, fallbackName?: unknown): string {
@@ -483,10 +442,6 @@ function postPlatformData(fields: Record<string, unknown>, deviceId?: string) {
     deviceId,
     fields
   })
-
-  if (deviceId) {
-    postToThingsVis('tv:platform-data', { fields })
-  }
 }
 
 function postPlatformHistory(fieldId: string, history: HistoryPoint[], deviceId?: string) {
@@ -685,79 +640,6 @@ function normalizeHistory(records: any[], valueKey: string): HistoryPoint[] {
     .filter(point => !Number.isNaN(point.ts))
 }
 
-function normalizeMetricValue(value: unknown): number {
-  const num = Number(value)
-  return Number.isFinite(num) ? num : 0
-}
-
-function normalizeTenantGrowthHistory(records: any[]): HistoryPoint[] {
-  const currentYear = new Date().getFullYear()
-
-  const points: HistoryPoint[] = []
-
-  records.forEach((item: any) => {
-    const month = Number(item?.mon)
-    if (!Number.isFinite(month) || month < 1 || month > 12) return
-
-    const ts = new Date(currentYear, month - 1, 1).getTime()
-    if (Number.isNaN(ts)) return
-
-    points.push({
-      value: normalizeMetricValue(item?.num),
-      ts
-    })
-  })
-  return points
-}
-
-function normalizeDeviceTotalHistory(records: any[]): HistoryPoint[] {
-  return records
-    .map((item: any) => ({
-      value: normalizeMetricValue(item?.device_online) + normalizeMetricValue(item?.device_offline),
-      ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
-    }))
-    .filter(point => !Number.isNaN(point.ts))
-}
-
-function normalizeSystemMetricHistory(records: any[], metricKey: 'cpu' | 'memory' | 'disk'): HistoryPoint[] {
-  return records
-    .map((item: any) => ({
-      value: normalizeMetricValue(item?.[`${metricKey}_usage`] ?? item?.[metricKey]),
-      ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
-    }))
-    .filter(point => !Number.isNaN(point.ts))
-}
-
-function normalizeHomeAlarmItems(payload: any): Array<Record<string, unknown>> {
-  const list = Array.isArray(payload?.list) ? payload.list : Array.isArray(payload?.data?.list) ? payload.data.list : []
-
-  return list.slice(0, 10).map((item: any) => ({
-    level:
-      item?.alarm_status === 'H'
-        ? 'critical'
-        : item?.alarm_status === 'M'
-          ? 'warning'
-          : item?.alarm_status === 'L'
-            ? 'info'
-            : 'success',
-    title: item?.name ?? '-',
-    detail: item?.content ?? '-',
-    source: item?.device_name ?? item?.group_name ?? '',
-    time: item?.create_at ?? item?.created_at ?? item?.time ?? ''
-  }))
-}
-
-function formatDateTime(value: unknown): string {
-  if (!value) return ''
-
-  const date = new Date(String(value))
-  if (Number.isNaN(date.getTime())) return String(value)
-
-  const pad = (num: number) => String(num).padStart(2, '0')
-
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
-}
-
 function normalizeLatestReportRows(payload: any): Array<Record<string, unknown>> {
   const devices = Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : []
   const rows: Array<Record<string, unknown>> = []
@@ -767,11 +649,15 @@ function normalizeLatestReportRows(payload: any): Array<Record<string, unknown>>
     telemetry.slice(0, 3).forEach((item: any) => {
       const rawValue = item?.value
       const valueText =
-        rawValue === null || rawValue === undefined
-          ? '-'
-          : item?.unit
-            ? `${rawValue}${item.unit}`
-            : String(rawValue)
+        rawValue === null || rawValue === undefined ? '-' : item?.unit ? `${rawValue}${item.unit}` : String(rawValue)
+
+      const formatDateTime = (value: unknown): string => {
+        if (!value) return ''
+        const date = new Date(String(value))
+        if (Number.isNaN(date.getTime())) return String(value)
+        const pad = (num: number) => String(num).padStart(2, '0')
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+      }
 
       rows.push({
         device: device?.device_name ?? '-',
@@ -937,215 +823,61 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
     .filter(fieldId => fieldId.endsWith('__history'))
     .map(fieldId => fieldId.replace(/__history$/, ''))
 
-  if (deviceId) {
-    const result: RequestedFieldResult = { fields: {}, histories: [] }
-
-    if (currentFieldIds.length > 0) {
-      const [telemetryResult, attributeResult] = await Promise.allSettled([
-        telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
-        getAttributeDataSet({ device_id: deviceId }, SILENT_REQUEST_CONFIG)
-      ])
-
-      const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
-      const attributeRes = attributeResult.status === 'fulfilled' ? attributeResult.value : null
-
-      const kvMap: Record<string, unknown> = {}
-      const collect = (item: any) => {
-        if (item?.key !== undefined) kvMap[item.key] = item.value
-        if (item?.label) kvMap[item.label] = item.value
-      }
-
-      if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
-      if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
-
-      currentFieldIds.forEach(fieldId => {
-        if (kvMap[fieldId] !== undefined) result.fields[fieldId] = kvMap[fieldId]
-      })
-    }
-
-    if (historyFieldIds.length > 0) {
-      const historyResults = await Promise.allSettled(
-        historyFieldIds.map(async fieldId => {
-          const historyRes = await telemetryDataHistoryList(
-            {
-              device_id: deviceId,
-              key: fieldId,
-              time_range: 'last_1h',
-              aggregate_window: '1m',
-              aggregate_function: 'avg'
-            },
-            SILENT_REQUEST_CONFIG
-          )
-          const rawList = historyRes?.data?.time_series ?? historyRes?.data?.list ?? []
-          const list = Array.isArray(rawList) ? rawList : []
-          const history = normalizeHistory(list, 'value')
-          if (history.length > 0) {
-            result.histories.push({ fieldId, history, deviceId })
-          }
-        })
-      )
-
-      historyResults.forEach(item => {
-        if (item.status === 'rejected' && !isIgnorablePlatformRequestError(item.reason)) {
-          console.warn('[AppFrame] Device history fetch failed:', item.reason)
-        }
-      })
-    }
-
-    return result
+  if (!deviceId) {
+    console.warn('[AppFrame] buildRequestedFieldData called without deviceId - global fields no longer supported')
+    return { fields: {}, histories: [] }
   }
 
   const result: RequestedFieldResult = { fields: {}, histories: [] }
-  const requestedCurrentFieldSet = new Set(currentFieldIds)
-  const requestedHistoryFieldSet = new Set(historyFieldIds)
 
-  const requiresDeviceSummary = ['device_total', 'device_online', 'device_offline', 'device_activity'].some(fieldId =>
-    requestedCurrentFieldSet.has(fieldId)
-  )
-  const requiresAlarmSummary = requestedCurrentFieldSet.has('alarm_device_total')
-  const requiresHomeAlarmItems = requestedCurrentFieldSet.has('home_alarm_items')
-  const requiresLatestReportRows = requestedCurrentFieldSet.has('home_latest_report_rows')
-  const requiresTenantSummary =
-    getCurrentPlatformFieldScope() === 'super-admin' &&
-    ['tenant_added_yesterday', 'tenant_added_month', 'tenant_total'].some(fieldId =>
-      requestedCurrentFieldSet.has(fieldId)
+  if (currentFieldIds.length > 0) {
+    const [telemetryResult, attributeResult] = await Promise.allSettled([
+      telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
+      getAttributeDataSet({ device_id: deviceId }, SILENT_REQUEST_CONFIG)
+    ])
+
+    const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
+    const attributeRes = attributeResult.status === 'fulfilled' ? attributeResult.value : null
+
+    const kvMap: Record<string, unknown> = {}
+    const collect = (item: any) => {
+      if (item?.key !== undefined) kvMap[item.key] = item.value
+      if (item?.label) kvMap[item.label] = item.value
+    }
+
+    if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
+    if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
+
+    currentFieldIds.forEach(fieldId => {
+      if (kvMap[fieldId] !== undefined) result.fields[fieldId] = kvMap[fieldId]
+    })
+  }
+
+  if (historyFieldIds.length > 0) {
+    const historyResults = await Promise.allSettled(
+      historyFieldIds.map(async fieldId => {
+        const historyRes = await telemetryDataHistoryList(
+          {
+            device_id: deviceId,
+            key: fieldId,
+            time_range: 'last_1h',
+            aggregate_window: '1m',
+            aggregate_function: 'avg'
+          },
+          SILENT_REQUEST_CONFIG
+        )
+        const rawList = historyRes?.data?.time_series ?? historyRes?.data?.list ?? []
+        const list = Array.isArray(rawList) ? rawList : []
+        const history = normalizeHistory(list, 'value')
+        if (history.length > 0) {
+          result.histories.push({ fieldId, history, deviceId })
+        }
+      })
     )
-  const requiresTenantHistory =
-    getCurrentPlatformFieldScope() === 'super-admin' && requestedHistoryFieldSet.has('tenant_growth')
-  const requiresMetricSummary =
-    getCurrentPlatformFieldScope() === 'super-admin' &&
-    ['cpu_usage', 'memory_usage', 'disk_usage'].some(fieldId => requestedCurrentFieldSet.has(fieldId))
-  const requiresMetricHistory =
-    getCurrentPlatformFieldScope() === 'super-admin' &&
-    ['cpu_usage', 'memory_usage', 'disk_usage'].some(fieldId => requestedHistoryFieldSet.has(fieldId))
-  const requiresDeviceTrend =
-    requestedHistoryFieldSet.has('device_online') ||
-    requestedHistoryFieldSet.has('device_offline') ||
-    requestedHistoryFieldSet.has('device_total') ||
-    requestedHistoryFieldSet.has('device_activity')
 
-  const [
-    deviceListResult,
-    alarmCountResult,
-    alarmHistoryResult,
-    latestReportResult,
-    tenantResult,
-    systemMetricsCurrentResult,
-    systemMetricsHistoryResult,
-    deviceTrendResult
-  ] = await Promise.allSettled([
-    requiresDeviceSummary ? deviceList({ page: 1, page_size: 1000 }) : Promise.resolve(null),
-    requiresAlarmSummary ? getAlarmCount() : Promise.resolve(null),
-    requiresHomeAlarmItems
-      ? alarmHistory({
-          page: 1,
-          page_size: 10,
-          alarm_status: '',
-          start_time: '',
-          end_time: ''
-        })
-      : Promise.resolve(null),
-    requiresLatestReportRows ? getLatestTelemetryData() : Promise.resolve(null),
-    requiresTenantSummary || requiresTenantHistory ? tenant() : Promise.resolve(null),
-    requiresMetricSummary ? getSystemMetricsCurrent() : Promise.resolve(null),
-    requiresMetricHistory ? getSystemMetricsHistory({}) : Promise.resolve(null),
-    requiresDeviceTrend ? getOnlineDeviceTrend() : Promise.resolve(null)
-  ])
-
-  const devices =
-    deviceListResult.status === 'fulfilled'
-      ? deviceListResult.value?.data?.list || deviceListResult.value?.data || []
-      : []
-  const deviceTotal = Array.isArray(devices) ? devices.length : 0
-  const deviceOnline = Array.isArray(devices)
-    ? devices.filter((device: any) => Number(device?.is_online || 0) !== 0).length
-    : 0
-  const aggregateValues: Record<string, unknown> = {
-    device_total: deviceTotal,
-    device_online: deviceOnline,
-    device_offline: Math.max(0, deviceTotal - deviceOnline),
-    device_activity: deviceOnline
-  }
-
-  if (alarmCountResult.status === 'fulfilled') {
-    aggregateValues.alarm_device_total = normalizeMetricValue(alarmCountResult.value?.data?.alarm_device_total)
-  }
-
-  if (requiresHomeAlarmItems && alarmHistoryResult.status === 'fulfilled') {
-    aggregateValues.home_alarm_items = normalizeHomeAlarmItems(alarmHistoryResult.value?.data)
-  }
-
-  if (requiresLatestReportRows && latestReportResult.status === 'fulfilled') {
-    aggregateValues.home_latest_report_rows = normalizeLatestReportRows(latestReportResult.value?.data)
-  }
-
-  if (tenantResult.status === 'fulfilled') {
-    aggregateValues.tenant_total = normalizeMetricValue(tenantResult.value?.data?.user_total)
-    aggregateValues.tenant_added_yesterday = normalizeMetricValue(tenantResult.value?.data?.user_added_yesterday)
-    aggregateValues.tenant_added_month = normalizeMetricValue(tenantResult.value?.data?.user_added_month)
-  }
-
-  if (systemMetricsCurrentResult.status === 'fulfilled') {
-    aggregateValues.cpu_usage = normalizeMetricValue(systemMetricsCurrentResult.value?.data?.cpu_usage)
-    aggregateValues.memory_usage = normalizeMetricValue(systemMetricsCurrentResult.value?.data?.memory_usage)
-    aggregateValues.disk_usage = normalizeMetricValue(systemMetricsCurrentResult.value?.data?.disk_usage)
-  }
-
-  currentFieldIds.forEach(fieldId => {
-    if (aggregateValues[fieldId] !== undefined) result.fields[fieldId] = aggregateValues[fieldId]
-  })
-
-  if (requiresDeviceTrend) {
-    const points =
-      deviceTrendResult.status === 'fulfilled' && Array.isArray(deviceTrendResult.value?.data?.points)
-        ? deviceTrendResult.value.data.points
-        : []
-
-    if (historyFieldIds.includes('device_online')) {
-      const history = normalizeHistory(points, 'device_online')
-      if (history.length > 0) result.histories.push({ fieldId: 'device_online', history })
-    }
-
-    if (historyFieldIds.includes('device_offline')) {
-      const history = normalizeHistory(points, 'device_offline')
-      if (history.length > 0) result.histories.push({ fieldId: 'device_offline', history })
-    }
-
-    if (historyFieldIds.includes('device_total')) {
-      const history = normalizeDeviceTotalHistory(points)
-      if (history.length > 0) result.histories.push({ fieldId: 'device_total', history })
-    }
-
-    if (historyFieldIds.includes('device_activity')) {
-      const history = normalizeHistory(points, 'device_online')
-      if (history.length > 0) result.histories.push({ fieldId: 'device_activity', history })
-    }
-  }
-
-  if (requiresTenantHistory && tenantResult.status === 'fulfilled') {
-    const growthHistory = normalizeTenantGrowthHistory(tenantResult.value?.data?.user_list_month || [])
-    if (growthHistory.length > 0) {
-      result.histories.push({ fieldId: 'tenant_growth', history: growthHistory })
-    }
-  }
-
-  if (requiresMetricHistory && systemMetricsHistoryResult.status === 'fulfilled') {
-    const records = Array.isArray(systemMetricsHistoryResult.value?.data) ? systemMetricsHistoryResult.value.data : []
-
-    const metricFieldMap: Array<{
-      fieldId: 'cpu_usage' | 'memory_usage' | 'disk_usage'
-      source: 'cpu' | 'memory' | 'disk'
-    }> = [
-      { fieldId: 'cpu_usage', source: 'cpu' },
-      { fieldId: 'memory_usage', source: 'memory' },
-      { fieldId: 'disk_usage', source: 'disk' }
-    ]
-
-    metricFieldMap.forEach(({ fieldId, source }) => {
-      if (!historyFieldIds.includes(fieldId)) return
-      const history = normalizeSystemMetricHistory(records, source)
-      if (history.length > 0) {
-        result.histories.push({ fieldId, history })
+    historyResults.forEach(item => {
+      if (item.status === 'rejected' && !isIgnorablePlatformRequestError(item.reason)) {
+        console.warn('[AppFrame] Device history fetch failed:', item.reason)
       }
     })
   }
@@ -1161,39 +893,27 @@ async function hydrateConfiguredPlatformSources(): Promise<boolean> {
   if (descriptors.length === 0) return true
 
   const handledDeviceIds = new Set<string>()
-  let globalHydrated = false
 
   for (const descriptor of descriptors) {
     const requestedFields = descriptor.requestedFields
 
-    if (descriptor.deviceId) {
-      if (handledDeviceIds.has(descriptor.deviceId)) continue
-      handledDeviceIds.add(descriptor.deviceId)
-
-      if (requestedFields.length === 0) continue
-
-      ensureDeviceWs(descriptor.deviceId)
-
-      const result = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
-
-      postPlatformData(result.fields, descriptor.deviceId)
-      result.histories.forEach(item => {
-        postPlatformHistory(item.fieldId, item.history, item.deviceId)
-      })
+    if (!descriptor.deviceId) {
+      console.warn('[AppFrame] Platform source without deviceId - global fields no longer supported')
       continue
     }
 
-    if (globalHydrated) continue
-    globalHydrated = true
+    if (handledDeviceIds.has(descriptor.deviceId)) continue
+    handledDeviceIds.add(descriptor.deviceId)
 
-    const fallbackGlobalFields =
-      requestedFields.length > 0
-        ? requestedFields
-        : ['device_total', 'device_online', 'device_offline', 'device_activity']
-    const result = await buildRequestedFieldData(fallbackGlobalFields)
-    postPlatformData(result.fields)
+    if (requestedFields.length === 0) continue
+
+    ensureDeviceWs(descriptor.deviceId)
+
+    const result = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
+
+    postPlatformData(result.fields, descriptor.deviceId)
     result.histories.forEach(item => {
-      postPlatformHistory(item.fieldId, item.history)
+      postPlatformHistory(item.fieldId, item.history, item.deviceId)
     })
   }
 

@@ -140,8 +140,11 @@ const dismissRecommend = () => {
 
       <n-space vertical size="small">
         <n-text depth="3">
-          接口 "<n-text type="success" strong>{{ currentApiInfo?.label }}</n-text>" 包含
-          <n-text type="success" strong>{{ queryParamTemplates.length }}</n-text> 个预制查询参数
+          接口 "
+          <n-text type="success" strong>{{ currentApiInfo?.label }}</n-text>
+          " 包含
+          <n-text type="success" strong>{{ queryParamTemplates.length }}</n-text>
+          个预制查询参数
         </n-text>
 
         <n-space size="small" style="flex-wrap: wrap">
@@ -192,7 +195,8 @@ const dismissRecommend = () => {
     <!-- 提示信息 -->
     <div style="margin-top: 16px; padding: 12px; background: var(--info-color-suppl); border-radius: 6px">
       <n-text depth="3" style="font-size: 12px">
-        💡 提示：选择内部接口后，如果有预制参数会自动显示推荐卡片。也可在"添加查询参数"下拉菜单中选择"✨ 应用接口模板"导入
+        💡 提示：选择内部接口后，如果有预制参数会自动显示推荐卡片。也可在"添加查询参数"下拉菜单中选择"✨
+        应用接口模板"导入
       </n-text>
     </div>
   </div>

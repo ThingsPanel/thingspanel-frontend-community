@@ -21,8 +21,7 @@ const colors = {
   bold: '\x1b[1m'
 }
 
-function log(message, color = 'reset') {
-}
+function log(message, color = 'reset') {}
 
 function logSection(title) {
   log(`\n${colors.bold}${colors.cyan}${'='.repeat(60)}`, 'cyan')

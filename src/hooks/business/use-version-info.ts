@@ -29,14 +29,10 @@ async function fetchVersionInfo(): Promise<VersionInfoSnapshot> {
   ])
     .then(([currentResult, latestResult]) => {
       const currentVersion =
-        currentResult.status === 'fulfilled'
-          ? normalizeVersion(currentResult.value?.data?.version)
-          : DEFAULT_VERSION
+        currentResult.status === 'fulfilled' ? normalizeVersion(currentResult.value?.data?.version) : DEFAULT_VERSION
 
       const latestVersion =
-        latestResult.status === 'fulfilled'
-          ? normalizeVersion(latestResult.value?.data?.[0]?.name)
-          : DEFAULT_VERSION
+        latestResult.status === 'fulfilled' ? normalizeVersion(latestResult.value?.data?.[0]?.name) : DEFAULT_VERSION
 
       versionInfoCache = {
         currentVersion,

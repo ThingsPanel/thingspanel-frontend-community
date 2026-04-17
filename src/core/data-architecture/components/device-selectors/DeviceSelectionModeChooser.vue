@@ -15,7 +15,10 @@ import {
   BarChartOutline as MetricIcon,
   RadioOutline as TelemetryIcon
 } from '@vicons/ionicons5'
-import type { DeviceParameterSourceType, DeviceSelectionMode } from '@/core/data-architecture/types/device-parameter-group'
+import type {
+  DeviceParameterSourceType,
+  DeviceSelectionMode
+} from '@/core/data-architecture/types/device-parameter-group'
 
 interface Props {
   /** 预选择的模式（编辑时使用） */

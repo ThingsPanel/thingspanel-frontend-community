@@ -84,7 +84,6 @@ export function createInteractionEngine() {
         throw new Error('缺少目标组件ID或属性名')
       }
 
-
       // 找到目标组件节点
       const targetNode = editorStore.nodes.find(node => node.id === targetComponentId)
       if (!targetNode) {
@@ -130,7 +129,6 @@ export function createInteractionEngine() {
       }
 
       message.success(`属性已更新: ${targetProperty} = ${updateValue}`)
-
     } catch (error) {
       console.error('🔥 [InteractionEngine] 属性修改失败:', error)
       message.error(`属性修改失败: ${error.message}`)
@@ -141,7 +139,6 @@ export function createInteractionEngine() {
    * 🔥 执行单个交互动作
    */
   const executeAction = (action: InteractionAction) => {
-
     switch (action.action) {
       case 'jump':
       case 'navigateToUrl':
@@ -166,7 +163,6 @@ export function createInteractionEngine() {
     if (!interaction.enabled) {
       return
     }
-
 
     // 检查条件是否满足（用于dataChange事件）
     if (interaction.event === 'dataChange' && interaction.condition && triggerData !== undefined) {
@@ -302,7 +298,6 @@ export function createInteractionEngine() {
         const unwatch = (targetElement as any).__vueParentComponent.exposed.watchProperty(
           propertyName,
           (newValue: any, oldValue: any) => {
-
             // 执行相关的交互
             interactions.forEach(interaction => {
               if (interaction.event === 'dataChange' && interaction.watchedProperty === propertyName) {

@@ -18,7 +18,13 @@ const telemetryApis: InternalApiItem[] = [
     hasPathParams: true,
     pathParamNames: ['id'],
     commonParams: [
-      { name: 'id', type: 'string', required: true, description: '设备ID（路径参数）', example: '5fd9b168-9e2a-d91c-a7c3-9c1f4d4b5137' }
+      {
+        name: 'id',
+        type: 'string',
+        required: true,
+        description: '设备ID（路径参数）',
+        example: '5fd9b168-9e2a-d91c-a7c3-9c1f4d4b5137'
+      }
     ],
     module: 'telemetry',
     functionName: 'telemetryDataCurrent'
@@ -51,13 +57,37 @@ const telemetryApis: InternalApiItem[] = [
     description: '设备历史数值查询，时间最多限一个月。不送分页支持全部返回，该接口不反回消息总数，只能上一页下一页操作',
     hasPathParams: false,
     commonParams: [
-      { name: 'device_id', type: 'string', required: true, description: '设备ID', example: '5fd9b168-9e2a-d91c-a7c3-9c1f4d4b5137' },
+      {
+        name: 'device_id',
+        type: 'string',
+        required: true,
+        description: '设备ID',
+        example: '5fd9b168-9e2a-d91c-a7c3-9c1f4d4b5137'
+      },
       { name: 'key', type: 'string', required: true, description: '指标key', example: 'temperature' },
-      { name: 'start_time', type: 'number', required: true, description: '起始时间（毫秒时间戳）', example: 1742780418369 },
-      { name: 'end_time', type: 'number', required: true, description: '结束时间（毫秒时间戳）', example: 1711656000000 },
+      {
+        name: 'start_time',
+        type: 'number',
+        required: true,
+        description: '起始时间（毫秒时间戳）',
+        example: 1742780418369
+      },
+      {
+        name: 'end_time',
+        type: 'number',
+        required: true,
+        description: '结束时间（毫秒时间戳）',
+        example: 1711656000000
+      },
       { name: 'page', type: 'string', required: false, description: '页码', example: '1' },
       { name: 'page_size', type: 'string', required: false, description: '每页数量', example: '100' },
-      { name: 'export_excel', type: 'string', required: false, description: '导出到excel标志(true/false)', example: 'false' }
+      {
+        name: 'export_excel',
+        type: 'string',
+        required: false,
+        description: '导出到excel标志(true/false)',
+        example: 'false'
+      }
     ],
     module: 'telemetry',
     functionName: 'telemetryDataHistoryPagination'
@@ -70,7 +100,13 @@ const telemetryApis: InternalApiItem[] = [
     description: '查询遥测数据的聚合统计信息，支持多种时间范围和聚合方式',
     hasPathParams: false,
     commonParams: [
-      { name: 'device_id', type: 'string', required: true, description: '设备ID', example: 'f3625aae-1283-1afc-259e-f43a58ba7070' },
+      {
+        name: 'device_id',
+        type: 'string',
+        required: true,
+        description: '设备ID',
+        example: 'f3625aae-1283-1afc-259e-f43a58ba7070'
+      },
       { name: 'key', type: 'string', required: true, description: '指标key', example: 'temperature' },
       {
         name: 'time_range',
@@ -123,8 +159,20 @@ const telemetryApis: InternalApiItem[] = [
     description: '批量查询多个设备的遥测统计数据，只有diff支持数字型字符串',
     hasPathParams: false,
     commonParams: [
-      { name: 'device_ids', type: 'object', required: true, description: '设备ID数组', example: ['device-001', 'device-002'] },
-      { name: 'keys', type: 'object', required: true, description: '遥测key数组', example: ['temperature', 'humidity'] },
+      {
+        name: 'device_ids',
+        type: 'object',
+        required: true,
+        description: '设备ID数组',
+        example: ['device-001', 'device-002']
+      },
+      {
+        name: 'keys',
+        type: 'object',
+        required: true,
+        description: '遥测key数组',
+        example: ['temperature', 'humidity']
+      },
       {
         name: 'time_type',
         type: 'string',
@@ -159,7 +207,13 @@ const deviceApis: InternalApiItem[] = [
     hasPathParams: true,
     pathParamNames: ['id'],
     commonParams: [
-      { name: 'id', type: 'string', required: true, description: '设备ID（路径参数）', example: 'ca33926c-5ee5-3e9f-147e-94e188fde65b' }
+      {
+        name: 'id',
+        type: 'string',
+        required: true,
+        description: '设备ID（路径参数）',
+        example: 'ca33926c-5ee5-3e9f-147e-94e188fde65b'
+      }
     ],
     module: 'device',
     functionName: 'deviceMapTelemetry'
@@ -172,7 +226,13 @@ const deviceApis: InternalApiItem[] = [
     description: '查询设备最新数据和历史数据',
     hasPathParams: false,
     commonParams: [
-      { name: 'device_id', type: 'string', required: true, description: '设备ID', example: 'af13ac2c-3a9e-5ab9-cd31-0cf01f984b3c' },
+      {
+        name: 'device_id',
+        type: 'string',
+        required: true,
+        description: '设备ID',
+        example: 'af13ac2c-3a9e-5ab9-cd31-0cf01f984b3c'
+      },
       {
         name: 'data_type',
         type: 'string',
@@ -263,7 +323,13 @@ const attributeApis: InternalApiItem[] = [
     hasPathParams: true,
     pathParamNames: ['id'],
     commonParams: [
-      { name: 'id', type: 'string', required: true, description: '设备ID（路径参数）', example: 'ca33926c-5ee5-3e9f-147e-94e188fde65b' }
+      {
+        name: 'id',
+        type: 'string',
+        required: true,
+        description: '设备ID（路径参数）',
+        example: 'ca33926c-5ee5-3e9f-147e-94e188fde65b'
+      }
     ],
     module: 'attribute',
     functionName: 'attributeDataList'
@@ -282,7 +348,13 @@ const eventApis: InternalApiItem[] = [
     description: '事件数据查询（分页）',
     hasPathParams: false,
     commonParams: [
-      { name: 'device_id', type: 'string', required: true, description: '设备ID', example: 'ca33926c-5ee5-3e9f-147e-94e188fde65b' },
+      {
+        name: 'device_id',
+        type: 'string',
+        required: true,
+        description: '设备ID',
+        example: 'ca33926c-5ee5-3e9f-147e-94e188fde65b'
+      },
       { name: 'page', type: 'number', required: true, description: '页码', example: 1 },
       { name: 'page_size', type: 'number', required: true, description: '每页数量', example: 10 },
       { name: 'identify', type: 'string', required: false, description: '事件标识符', example: 'event_001' }
@@ -317,7 +389,13 @@ const alarmApis: InternalApiItem[] = [
     description: '获取指定设备的告警状态',
     hasPathParams: false,
     commonParams: [
-      { name: 'device_id', type: 'string', required: true, description: '设备ID', example: '41b44d60-305f-f559-1d8d-61c040b63b1e' }
+      {
+        name: 'device_id',
+        type: 'string',
+        required: true,
+        description: '设备ID',
+        example: '41b44d60-305f-f559-1d8d-61c040b63b1e'
+      }
     ],
     module: 'alarm',
     functionName: 'alarmInfoHistoryDevice'
@@ -332,7 +410,13 @@ const alarmApis: InternalApiItem[] = [
     commonParams: [
       { name: 'page', type: 'number', required: true, description: '页码', example: 1 },
       { name: 'page_size', type: 'number', required: true, description: '每页数量', example: 10 },
-      { name: 'device_id', type: 'string', required: false, description: '设备ID（筛选条件）', example: '41b44d60-305f-f559-1d8d-61c040b63b1e' },
+      {
+        name: 'device_id',
+        type: 'string',
+        required: false,
+        description: '设备ID（筛选条件）',
+        example: '41b44d60-305f-f559-1d8d-61c040b63b1e'
+      },
       { name: 'alarm_status', type: 'string', required: false, description: '告警状态（筛选条件）', example: '' },
       { name: 'start_time', type: 'string', required: false, description: '开始时间（筛选条件）', example: '' },
       { name: 'end_time', type: 'string', required: false, description: '结束时间（筛选条件）', example: '' }

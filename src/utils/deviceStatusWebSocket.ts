@@ -26,12 +26,12 @@ export class DeviceStatusWebSocket {
   private wsUrl: string
   private onStatusChangeCallback?: (deviceId: string, isOnline: boolean) => void
   private isConnecting = false // 新增：标记正在连接中
-  
+
   constructor() {
     // 动态获取 WebSocket 服务器地址
     this.wsUrl = `${getWebsocketServerUrl()}/device/online/status/ws/batch`
   }
-  
+
   /**
    * 连接 WebSocket 并订阅设备状态
    * @param deviceIds 设备ID列表
@@ -61,14 +61,12 @@ export class DeviceStatusWebSocket {
     }
 
     // 如果已连接且设备列表未变化，不需要重新连接
-    if (this.ws && this.wsStatus.value === 'OPEN' && 
-        this.arraysEqual(this.currentDeviceIds, deviceIds)) {
+    if (this.ws && this.wsStatus.value === 'OPEN' && this.arraysEqual(this.currentDeviceIds, deviceIds)) {
       return
     }
 
     // 如果已连接但设备列表变化了（分页切换），关闭旧连接重新建立
-    if (this.ws && this.wsStatus.value === 'OPEN' && 
-        !this.arraysEqual(this.currentDeviceIds, deviceIds)) {
+    if (this.ws && this.wsStatus.value === 'OPEN' && !this.arraysEqual(this.currentDeviceIds, deviceIds)) {
       this.disconnect()
     }
 
@@ -98,7 +96,7 @@ export class DeviceStatusWebSocket {
       onConnected: (ws: WebSocket) => {
         this.reconnectAttempts = 0
         this.isConnecting = false // 连接成功，清除连接中标记
-        
+
         // 发送订阅消息
         const subscriptionMessage: SubscriptionParams = {
           device_ids: deviceIds,
@@ -109,7 +107,7 @@ export class DeviceStatusWebSocket {
       onMessage: (ws: WebSocket, event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data)
-          
+
           // 支持批量消息格式（数组）
           if (Array.isArray(data)) {
             data.forEach((item: any) => {
@@ -119,7 +117,7 @@ export class DeviceStatusWebSocket {
                 }
               }
             })
-          } 
+          }
           // 支持单条消息格式（对象）
           else if (data.device_id && typeof data.is_online === 'number') {
             if (this.onStatusChangeCallback) {
@@ -210,7 +208,7 @@ export class DeviceStatusWebSocket {
  */
 export function useDeviceStatusWebSocket() {
   const wsManager = new DeviceStatusWebSocket()
-  
+
   return {
     connect: wsManager.connect.bind(wsManager),
     updateSubscription: wsManager.updateSubscription.bind(wsManager),

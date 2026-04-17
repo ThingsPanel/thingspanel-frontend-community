@@ -39,7 +39,7 @@ export function parseTemplateChartConfig(rawConfig: unknown): TemplateChartConfi
     if (!rawConfig.trim()) return {}
     try {
       const parsed = JSON.parse(rawConfig)
-      return isRecord(parsed) ? parsed as TemplateChartConfig : {}
+      return isRecord(parsed) ? (parsed as TemplateChartConfig) : {}
     } catch (error) {
       console.warn('[template-presets] Failed to parse chart config:', error)
       return {}
@@ -69,7 +69,7 @@ export function getTemplatePresetEntries(
 ): TemplatePresetEntry[] {
   const presets = getTemplatePresetMap(rawConfig)
   const entries = presets[getTemplatePresetKey(propertyType, fieldId)]
-  return Array.isArray(entries) ? entries.filter(isRecord) as TemplatePresetEntry[] : []
+  return Array.isArray(entries) ? (entries.filter(isRecord) as TemplatePresetEntry[]) : []
 }
 
 export function buildPresetEditorConfig(widget?: TemplatePresetWidget | null) {
@@ -101,7 +101,11 @@ export function extractFirstNodeFromWidgetConfig(payload: unknown): TemplatePres
   return null
 }
 
-function resolvePresetFieldMeta(fieldId: string, propertyType: TemplatePresetPropertyType, fieldMap: Map<string, PlatformField>) {
+function resolvePresetFieldMeta(
+  fieldId: string,
+  propertyType: TemplatePresetPropertyType,
+  fieldMap: Map<string, PlatformField>
+) {
   const field = fieldMap.get(fieldId)
 
   return {
@@ -127,13 +131,15 @@ export function buildTemplateDevicePresets(rawConfig: unknown, fields: PlatformF
     return entries.flatMap((entry, index) => {
       if (!isRecord(entry?.widget)) return []
 
-      return [{
-        id: String(entry.id || `${presetKey}_${index}`),
-        name: String(entry.name || `${fieldMeta.fieldName}卡片预设`),
-        widget: entry.widget,
-        thumbnail: typeof entry.thumbnail === 'string' ? entry.thumbnail : undefined,
-        ...fieldMeta
-      }]
+      return [
+        {
+          id: String(entry.id || `${presetKey}_${index}`),
+          name: String(entry.name || `${fieldMeta.fieldName}卡片预设`),
+          widget: entry.widget,
+          thumbnail: typeof entry.thumbnail === 'string' ? entry.thumbnail : undefined,
+          ...fieldMeta
+        }
+      ]
     })
   })
 }
