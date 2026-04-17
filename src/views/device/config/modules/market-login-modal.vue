@@ -3,6 +3,9 @@ import { ref, reactive } from 'vue'
 import { NModal, NForm, NFormItem, NInput, NButton } from 'naive-ui'
 import { $t } from '@/locales'
 import { marketLogin } from '@/service/api/market'
+import { useMarketAuth } from '../composables/use-market-auth'
+
+const { setToken } = useMarketAuth()
 
 const emit = defineEmits(['login-success'])
 
@@ -32,7 +35,7 @@ const handleLogin = async () => {
   try {
     const res: any = await marketLogin({ username: loginForm.username, password: loginForm.password })
     if (!res.error && res.data?.token) {
-      sessionStorage.setItem('market_token', res.data.token)
+      setToken(res.data.token)
       window.$message?.success($t('market.loginSuccess'))
       visible.value = false
       emit('login-success', res.data.token)

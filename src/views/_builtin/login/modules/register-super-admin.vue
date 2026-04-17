@@ -29,7 +29,7 @@ const model: FormModel = reactive({
   confirmPwd: ''
 })
 
-const marketUrl = import.meta.env.VITE_MARKET_URL || 'http://r.thingspanel.cn'
+const marketUrl = import.meta.env.VITE_MARKET_URL || 'http://localhost:5173'
 
 const canSubmit = computed(() => {
   return model.email.trim() !== '' && model.pwd.trim() !== '' && model.pwd.length >= 6 && model.confirmPwd === model.pwd
