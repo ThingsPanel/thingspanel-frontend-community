@@ -34,16 +34,15 @@ const handleLogin = async () => {
   loading.value = true
   try {
     const res: any = await marketLogin({ username: loginForm.username, password: loginForm.password })
-    if (!res.error && res.data?.token) {
-      setToken(res.data.token)
+    const token = res?.token || res?.data?.token
+    if (token) {
+      setToken(token)
       window.$message?.success($t('market.loginSuccess'))
       visible.value = false
-      emit('login-success', res.data.token)
-    } else {
-      window.$message?.error($t('market.loginFailed'))
+      emit('login-success', token)
     }
   } catch (e: any) {
-    window.$message?.error($t('market.loginFailed') + ': ' + (e?.message || ''))
+    // error toast 已由 axios 拦截器 onError 统一处理，无需重复弹窗
   } finally {
     loading.value = false
   }
