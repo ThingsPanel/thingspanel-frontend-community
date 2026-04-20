@@ -11,7 +11,6 @@ import { $t } from '@/locales'
 import { getTemplat, putTemplat, telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
-import { normalizeThingsVisHistoryBindings } from '@/utils/thingsvis/normalize-history-bindings'
 import type { PlatformField } from '@/utils/thingsvis/types'
 
 const emit = defineEmits(['update:stepCurrent', 'update:modalVisible'])
@@ -40,8 +39,9 @@ const platformDevices = computed(() => {
   if (!platformFields.value.length) return []
   return [{
     deviceId: '__template__',
-    deviceName: '当前设备模板',
-    groupName: '当前设备模板',
+    deviceName: '当前物模型',
+    groupId: '__template__',
+    groupName: '物模型字段',
     fields: platformFields.value,
     presets: []
   }]
@@ -56,6 +56,15 @@ const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
 const hasConfig = ref(false)
 const refreshInterval = ref(5000)
+
+const unwrapApiList = (payload: unknown): any[] => {
+  const data = payload as { data?: unknown }
+  const body = data?.data as { list?: unknown } | unknown
+  if (body && typeof body === 'object' && !Array.isArray(body) && Array.isArray((body as { list?: unknown }).list)) {
+    return (body as { list: any[] }).list
+  }
+  return Array.isArray(body) ? body : []
+}
 
 const refreshOptions = [
   { label: '手动刷新', value: 0 },
@@ -118,7 +127,7 @@ const handleSave = async (payload: any) => {
     // ⚠️ CRITICAL: 清理 PLATFORM_FIELD datasource 中的 deviceId
     // 这些 ID 在编辑时是模板/虚拟设备 ID，不应该被保存到配置中
     // 运行时会根据真实设备ID动态注入
-    const cleanedPayload = normalizeThingsVisHistoryBindings(JSON.parse(JSON.stringify(payload)))
+    const cleanedPayload = JSON.parse(JSON.stringify(payload))
     if (cleanedPayload.dataSources && Array.isArray(cleanedPayload.dataSources)) {
       cleanedPayload.dataSources.forEach((ds: any) => {
         if (ds.type === 'PLATFORM_FIELD' && ds.config) {
@@ -172,29 +181,10 @@ const loadTemplateData = async () => {
         commandsApi({ page: 1, page_size: 1000, device_template_id: props.deviceTemplateId })
       ])
 
-      const telemetryList = Array.isArray(telemetryRes?.data?.list)
-        ? telemetryRes.data.list
-        : Array.isArray(telemetryRes?.data)
-          ? telemetryRes.data
-          : []
-
-      const attributesList = Array.isArray(attributesRes?.data?.list)
-        ? attributesRes.data.list
-        : Array.isArray(attributesRes?.data)
-          ? attributesRes.data
-          : []
-
-      const eventsList = Array.isArray(eventsRes?.data?.list)
-        ? eventsRes.data.list
-        : Array.isArray(eventsRes?.data)
-          ? eventsRes.data
-          : []
-
-      const commandsList = Array.isArray(commandsRes?.data?.list)
-        ? commandsRes.data.list
-        : Array.isArray(commandsRes?.data)
-          ? commandsRes.data
-          : []
+      const telemetryList = unwrapApiList(telemetryRes)
+      const attributesList = unwrapApiList(attributesRes)
+      const eventsList = unwrapApiList(eventsRes)
+      const commandsList = unwrapApiList(commandsRes)
 
       const platformSource = {
         telemetry: telemetryList,
@@ -209,7 +199,7 @@ const loadTemplateData = async () => {
       // 加载已有配置
       if (res.data.web_chart_config) {
         try {
-          const config = normalizeThingsVisHistoryBindings(JSON.parse(res.data.web_chart_config))
+          const config = JSON.parse(res.data.web_chart_config)
           initialConfig.value = config
           hasConfig.value = true
           // 恢复刷新频率配置

@@ -68,12 +68,9 @@ export async function buildThingsVisUrl(options: ThingsVisUrlOptions): Promise<s
     saveTarget: options.saveTarget || 'host'
   })
 
-  // Pass the API base URL so the embedded ThingsVis knows which proxy path to use.
-  // getThingsVisApiBase() = window.location.origin + THINGSVIS_API_PROXY_PATH (env-aware)
-  const apiBaseUrl = getThingsVisApiBase()
-  params.set('apiBaseUrl', apiBaseUrl)
-  params.set('apiUrl', apiBaseUrl) // 兼容不同的参数名
-  params.set('backendUrl', apiBaseUrl) // 再加一个可能的参数名
+  const thingsvisApiBaseUrl = getThingsVisApiBase()
+  params.set('thingsvisApiBaseUrl', thingsvisApiBaseUrl)
+  params.set('platformApiBaseUrl', window.location.origin)
 
   // 1. SSO Token 交换 (关键实现)
   try {

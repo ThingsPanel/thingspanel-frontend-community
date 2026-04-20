@@ -1,20 +1,20 @@
-/**
+﻿/**
  * ThingsVis Embed SDK Client
  *
- * 核心功能:
- * - Iframe 生命周期管理
- * - PostMessage 通信封装 (适配 ThingsVis Studio embed-mode 协议)
- * - 严格区分 Widget Mode 和 App Mode
+ * 鏍稿績鍔熻兘:
+ * - Iframe 鐢熷懡鍛ㄦ湡绠＄悊
+ * - PostMessage 閫氫俊灏佽 (閫傞厤 ThingsVis Studio embed-mode 鍗忚)
+ * - 涓ユ牸鍖哄垎 Widget Mode 鍜?App Mode
  */
 
-// ─── Message Type Constants (aligned with Guest MSG_TYPES) ───
+// 鈹€鈹€鈹€ Message Type Constants (aligned with Guest MSG_TYPES) 鈹€鈹€鈹€
 const TV_MSG = {
-  // Host → Guest
+  // Host 鈫?Guest
   INIT: 'tv:init',
   TRIGGER_SAVE: 'tv:trigger-save',
   REQUEST_SAVE: 'tv:request-save',
   EVENT: 'tv:event',
-  // Guest → Host
+  // Guest 鈫?Host
   SAVE: 'tv:save',
   READY: 'tv:ready',
   REQUEST_INIT: 'tv:request-init',
@@ -23,33 +23,26 @@ const TV_MSG = {
 } as const
 
 export interface ThingsVisOptions {
-  /** 挂载的容器 DOM */
+  /** 鎸傝浇鐨勫鍣?DOM */
   container: HTMLElement
   /**
-   * 集成模式
-   * - widget: 物模型/小组件模式 (Host-Managed Data, saveTarget='host')
-   * - app: 完整编辑器模式 (Self-Managed Data, saveTarget='self')
+   * 闆嗘垚妯″紡
+   * - widget: 鐗╂ā鍨?灏忕粍浠舵ā寮?(Host-Managed Data, saveTarget='host')
+   * - app: 瀹屾暣缂栬緫鍣ㄦā寮?(Self-Managed Data, saveTarget='self')
    */
   mode: 'widget' | 'app'
-  /** Iframe URL (例如 http://localhost:3000/#/embed 或 #/editor) */
+  /** Iframe URL (渚嬪 http://localhost:3000/#/embed 鎴?#/editor) */
   url: string
-  /** 可选: Iframe 样式 */
+  /** 鍙€? Iframe 鏍峰紡 */
   style?: Partial<CSSStyleDeclaration>
 }
 
 export interface WidgetLoadOptions {
-  /**
-   * Ring buffer capacity for the __platform__ data source.
-   * 0 = keep only the latest single value (default, suitable for gauge / status widgets).
-   * > 0 = keep the last N values; exposes `{fieldId}__history` as a rolling time-series
-   *       array — required by line / area chart widgets that render historical trends.
-   */
   platformBufferSize?: number;
-  /**
-   * Optional list of platform device entries (same shape as ThingsVisAppFrame platformDevices).
-   * When provided, the Field Picker inside the editor shows a "Device Fields" option.
-   */
   platformDevices?: any[];
+  deviceId?: string;
+  thingsvisApiBaseUrl?: string;
+  platformApiBaseUrl?: string;
 }
 
 export type MessageHandler = (payload: any) => void
@@ -61,13 +54,13 @@ export class ThingsVisClient {
   public ready: boolean = false
   /**
    * Set to true when the guest sends LOADED (after registerAndLoad finishes).
-   * platform-data / platform-history messages must wait until this is true,
+   * platform-data messages must wait until this is true,
    * otherwise they arrive before PlatformFieldAdapter is connected and are dropped.
    */
   private loaded: boolean = false
   private messageHandlers: Map<string, MessageHandler[]> = new Map()
   private pendingQueue: Array<() => void> = []
-  /** Queue for tv:platform-data / tv:platform-history — flushed on LOADED. */
+  /** Queue for tv:platform-data  鈥?flushed on LOADED. */
   private postLoadQueue: Array<() => void> = []
   /** Last real-time value payload by scope, replayed after guest re-init. */
   private latestPlatformDataByScope: Map<string, { fields: Record<string, unknown>; deviceId?: string }> = new Map()
@@ -83,26 +76,26 @@ export class ThingsVisClient {
   }
 
   private initIframe() {
-    // 自动追加 embedded=1 参数，确保 Guest 端进入嵌入模式
+    // 鑷姩杩藉姞 embedded=1 鍙傛暟锛岀‘淇?Guest 绔繘鍏ュ祵鍏ユā寮?
     const separator = this.options.url.includes('?') ? '&' : '?'
     const modeParam = 'mode=embedded&showTopLeft=0&showTopRight=0'
     const finalUrl = `${this.options.url}${separator}${modeParam}`
 
     this.iframe.src = finalUrl
-    // 默认样式
+    // 榛樿鏍峰紡
     this.iframe.style.width = '100%'
     this.iframe.style.height = '100%'
     this.iframe.style.border = 'none'
     this.iframe.style.display = 'block'
 
-    // 应用自定义样式
+    // 搴旂敤鑷畾涔夋牱寮?
     if (this.options.style) {
       Object.assign(this.iframe.style, this.options.style)
     }
 
     this.container.appendChild(this.iframe)
 
-    // 监听加载完成
+    // 鐩戝惉鍔犺浇瀹屾垚
     this.iframe.onload = () => {
       // Iframe onload doesn't guarantee React app is hydrated.
       // We rely on 'READY' message from Guest, but keep this hook for future use.
@@ -114,18 +107,18 @@ export class ThingsVisClient {
   }
 
   private handleMessage = (event: MessageEvent) => {
-    // 安全检查: 确保消息来自我们的 iframe
-    // Note: 在某些跨域场景下 contentWindow 比较可能受限，但在 localhost 开发和标准 iframe 场景下通常可行
+    // 瀹夊叏妫€鏌? 纭繚娑堟伅鏉ヨ嚜鎴戜滑鐨?iframe
+    // Note: 鍦ㄦ煇浜涜法鍩熷満鏅笅 contentWindow 姣旇緝鍙兘鍙楅檺锛屼絾鍦?localhost 寮€鍙戝拰鏍囧噯 iframe 鍦烘櫙涓嬮€氬父鍙
     if (event.source !== this.iframe.contentWindow) return
 
     const { type, payload } = event.data || {}
     if (!type) return
 
-    // 协议适配: 仅仅接收我们关心的消息
+    // 鍗忚閫傞厤: 浠呬粎鎺ユ敹鎴戜滑鍏冲績鐨勬秷鎭?
 
     // 1. Host Save (Guest -> Host)
     if (type === TV_MSG.SAVE) {
-      this.emit(TV_MSG.SAVE_CONFIG, payload) // 转发为 SDK 标准事件
+      this.emit(TV_MSG.SAVE_CONFIG, payload) // 杞彂涓?SDK 鏍囧噯浜嬩欢
     }
 
     // 2. Ready Signal (Guest -> Host)
@@ -139,7 +132,7 @@ export class ThingsVisClient {
         // clearing an already-buffered data payload.
         this.emit('ready', {})
         this.flushPendingQueue()
-        // NOTE: do NOT flush postLoadQueue here — platform data must wait for LOADED.
+        // NOTE: do NOT flush postLoadQueue here 鈥?platform data must wait for LOADED.
       }
     }
 
@@ -163,12 +156,12 @@ export class ThingsVisClient {
       }
     }
 
-    // 4. 其他可能的事件
+    // 4. 鍏朵粬鍙兘鐨勪簨浠?
     this.emit(type, payload)
   }
 
   /**
-   * 触发内部事件处理
+   * 瑙﹀彂鍐呴儴浜嬩欢澶勭悊
    */
   private emit(type: string, payload: any) {
     const handlers = this.messageHandlers.get(type)
@@ -178,17 +171,17 @@ export class ThingsVisClient {
   }
 
   /**
-   * 发送消息给 Iframe
-   * 如果 Iframe 未就绪，会自动放入队列等待
+   * 鍙戦€佹秷鎭粰 Iframe
+   * 濡傛灉 Iframe 鏈氨缁紝浼氳嚜鍔ㄦ斁鍏ラ槦鍒楃瓑寰?
    */
   private send(type: string, payload: any = {}) {
-    // 包装成 Guest 端期望的 { type, ...payload } 格式?
-    // 查看 embed-mode.ts:
+    // 鍖呰鎴?Guest 绔湡鏈涚殑 { type, ...payload } 鏍煎紡?
+    // 鏌ョ湅 embed-mode.ts:
     // type EmbedEventMessage =
     //   | { type: 'thingsvis:editor-init'; payload?: any }
     //   | { type: 'thingsvis:editor-trigger-save'; payload?: any }
 
-    // 看起来 Guest 期望的是 { type: '...', payload: ... }
+    // 鐪嬭捣鏉?Guest 鏈熸湜鐨勬槸 { type: '...', payload: ... }
     const message = { type, payload }
 
     const action = () => {
@@ -250,14 +243,14 @@ export class ThingsVisClient {
   // ===========================
 
   /**
-   * [Widget Mode] 加载/更新组件配置 (JSON)
+   * [Widget Mode] 鍔犺浇/鏇存柊缁勪欢閰嶇疆 (JSON)
    * Host -> Guest
-   * 对应协议: thingsvis:editor-init
+   * 瀵瑰簲鍗忚: thingsvis:editor-init
    */
   /**
-   * [Widget Mode] 加载/更新组件配置 (JSON)
+   * [Widget Mode] 鍔犺浇/鏇存柊缁勪欢閰嶇疆 (JSON)
    * Host -> Guest
-   * 对应协议: thingsvis:editor-init
+   * 瀵瑰簲鍗忚: thingsvis:editor-init
    */
   public loadWidgetConfig(config: any, platformFields?: any[], options?: WidgetLoadOptions) {
     this.loaded = false
@@ -285,33 +278,12 @@ export class ThingsVisClient {
           ...ds,
           config: {
             ...config,
-            // A non-zero bufferSize activates the rolling history buffer in PlatformFieldAdapter,
-            // which exposes `{fieldId}__history` arrays needed by line/area chart widgets.
             bufferSize: Math.max(config.bufferSize ?? 0, options?.platformBufferSize ?? 0),
           }
         }
       }
       return ds
     })
-
-    // Fallback for backwards compatibility: ensure at least one platform data source exists
-    const hasPlatformDs = mergedDataSources.some((ds: any) => {
-      const typeStr = typeof ds.type === 'string' ? ds.type.toUpperCase() : ''
-      return typeStr === 'PLATFORM_FIELD' || typeStr === 'PLATFORM'
-    })
-
-    if (!hasPlatformDs) {
-      mergedDataSources.unshift({
-        id: '__platform__',
-        name: 'System Platform',
-        type: 'PLATFORM_FIELD',
-        config: {
-          source: 'platform',
-          fieldMappings: {},
-          bufferSize: options?.platformBufferSize ?? 0,
-        },
-      })
-    }
 
     const payload = {
       // platformDevices at the top level so EmbedPage.tsx can read msg.platformDevices
@@ -325,7 +297,9 @@ export class ThingsVisClient {
       },
       config: {
         saveTarget: 'host',
-        apiBaseUrl: window.location.origin + '/thingsvis-api'
+        thingsvisApiBaseUrl: options?.thingsvisApiBaseUrl ?? `${window.location.origin}/thingsvis-api`,
+        platformApiBaseUrl: options?.platformApiBaseUrl ?? window.location.origin,
+        ...(options?.deviceId ? { deviceId: options.deviceId } : {})
       }
     }
 
@@ -334,16 +308,16 @@ export class ThingsVisClient {
   }
 
   /**
-   * [Widget Mode] 更新平台字段定义 (用于选择数据源)
+   * [Widget Mode] 鏇存柊骞冲彴瀛楁瀹氫箟 (鐢ㄤ簬閫夋嫨鏁版嵁婧?
    * Host -> Guest
    *
-   * 注意: Guest 端目前没有专门的 'update-schema' 监听器。
-   * 我们通常只能通过 init 传递 platformFields。
-   * 除非 Guest 端后续增加了支持。
-   * 暂时通过 'thingsvis:editor-event' 尝试发送，看 Guest 是否扩展了支持。
+   * 娉ㄦ剰: Guest 绔洰鍓嶆病鏈変笓闂ㄧ殑 'update-schema' 鐩戝惉鍣ㄣ€?
+   * 鎴戜滑閫氬父鍙兘閫氳繃 init 浼犻€?platformFields銆?
+   * 闄ら潪 Guest 绔悗缁鍔犱簡鏀寔銆?
+   * 鏆傛椂閫氳繃 'thingsvis:editor-event' 灏濊瘯鍙戦€侊紝鐪?Guest 鏄惁鎵╁睍浜嗘敮鎸併€?
    */
   public updateSchema(fields: any[]) {
-    // 尝试发送通用事件 (需 Guest 端配合支持)
+    // 灏濊瘯鍙戦€侀€氱敤浜嬩欢 (闇€ Guest 绔厤鍚堟敮鎸?
     this.send(TV_MSG.EVENT, { event: 'updateSchema', payload: fields })
   }
 
@@ -366,24 +340,6 @@ export class ThingsVisClient {
   }
 
   /**
-   * [Widget Mode] Bulk-fill the ring buffer for a single platform field with historical records.
-   * Sends a tv:platform-history message consumed by PlatformFieldAdapter.
-   * Call once after widget ready to seed line/area chart widgets with existing data.
-   * Has no effect when the widget's bufferSize is 0.
-   *
-   * @param fieldId - Platform field identifier, e.g. 'temperature'
-   * @param history - Time-ordered records (oldest first); format: { value, ts: unix_ms }
-   */
-  public pushFieldHistory(
-    fieldId: string,
-    history: Array<{ value: unknown; ts: number }>,
-    deviceId?: string,
-  ): void {
-    // Must wait until LOADED for the same reason as pushPlatformFieldData.
-    this.sendWhenLoaded('tv:platform-history', { fieldId, history, deviceId })
-  }
-
-  /**
    * @deprecated Use pushPlatformFieldData() instead.
    * This method sends a tv:event message which is NOT handled by PlatformFieldAdapter
    * and therefore never reaches the ring buffer.
@@ -393,22 +349,22 @@ export class ThingsVisClient {
   }
 
   /**
-   * [Widget Mode] 触发保存 (如果 Host 想主动保存)
+   * [Widget Mode] 瑙﹀彂淇濆瓨 (濡傛灉 Host 鎯充富鍔ㄤ繚瀛?
    * Host -> Guest -> Host(thingsvis:host-save)
-   * 对应协议: thingsvis:editor-trigger-save
+   * 瀵瑰簲鍗忚: thingsvis:editor-trigger-save
    */
   public triggerSave() {
     this.send(TV_MSG.TRIGGER_SAVE)
   }
 
   /**
-   * [Widget Mode] 监听保存回调
+   * [Widget Mode] 鐩戝惉淇濆瓨鍥炶皟
    * Guest -> Host
    */
   public onWidgetSave(callback: (config: any) => void) {
-    // 我们在 handleMessage 里把 'thingsvis:host-save' 转发为了 'thingsvis:save-config'
+    // 鎴戜滑鍦?handleMessage 閲屾妸 'thingsvis:host-save' 杞彂涓轰簡 'thingsvis:save-config'
     this.on(TV_MSG.SAVE_CONFIG, payload => {
-      // Payload 里的结构可能是 { canvas:..., nodes:..., dataBindings:... }
+      // Payload 閲岀殑缁撴瀯鍙兘鏄?{ canvas:..., nodes:..., dataBindings:... }
       callback(payload)
     })
   }
@@ -418,8 +374,8 @@ export class ThingsVisClient {
   // ===========================
 
   /**
-   * [Widget Mode] 主动请求保存
-   * 触发 Editor 的 saveNow()，随后会通过 onWidgetSave 回调返回数据
+   * [Widget Mode] 涓诲姩璇锋眰淇濆瓨
+   * 瑙﹀彂 Editor 鐨?saveNow()锛岄殢鍚庝細閫氳繃 onWidgetSave 鍥炶皟杩斿洖鏁版嵁
    */
   public requestSave() {
     console.log('[SDK] Client requesting save from Editor...')
@@ -428,10 +384,10 @@ export class ThingsVisClient {
   }
 
   /**
-   * [App Mode] 注入 Token
+   * [App Mode] 娉ㄥ叆 Token
    * Host -> Guest
    *
-   * App Mode 主要靠 URL 参数传 token，但在 PostMessage 里也可以更新。
+   * App Mode 涓昏闈?URL 鍙傛暟浼?token锛屼絾鍦?PostMessage 閲屼篃鍙互鏇存柊銆?
    */
   public updateToken(token: string) {
     this.send(TV_MSG.EVENT, { event: 'updateToken', payload: { token } })

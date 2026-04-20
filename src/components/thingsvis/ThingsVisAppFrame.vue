@@ -24,27 +24,17 @@ import {
   getDeviceConfigList,
   telemetryDataCurrent,
   getAttributeDataSet,
-  telemetryDataHistoryList,
   telemetryDataPub
 } from '@/service/api/device'
 import {
   attributesApi,
-  getAlarmCount,
-  getLatestTelemetryData,
-  getOnlineDeviceTrend,
-  getSystemMetricsCurrent,
-  getSystemMetricsHistory,
-  telemetryApi,
-  tenant
+  telemetryApi
 } from '@/service/api'
-import { alarmHistory } from '@/service/api/alarm'
 import { getTemplat } from '@/service/api/system-data'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
-import { getGlobalPlatformFields, resolveGlobalPlatformFieldScope } from '@/utils/thingsvis/global-platform-fields'
-import { normalizeThingsVisHistoryBindings } from '@/utils/thingsvis/normalize-history-bindings'
 import { localStg } from '@/utils/storage'
-import { getWebsocketServerUrl } from '@/utils/common/tool'
+import { getDemoServerUrl, getWebsocketServerUrl } from '@/utils/common/tool'
 
 const EDITOR_TEMPLATE_FIELD_PAGE_SIZE = 1000
 const EDITOR_DEVICE_CONFIG_PAGE_SIZE = 1000
@@ -115,17 +105,6 @@ let deviceConfigTemplateMapPromise: Promise<Map<string, string>> | null = null
 const platformDevicesByGroupCache = new Map<string, PlatformDeviceEntry[]>()
 const platformDevicesByGroupPromise = new Map<string, Promise<PlatformDeviceEntry[]>>()
 const SILENT_REQUEST_CONFIG = { silentError: true } as const
-
-function isIgnorablePlatformRequestError(error: unknown): boolean {
-  if (!error || typeof error !== 'object') return false
-  const err = error as {
-    message?: unknown
-    response?: { status?: unknown; data?: { message?: unknown } }
-  }
-  const message = String(err.response?.data?.message || err.message || '').toLowerCase()
-  const status = Number(err.response?.status ?? NaN)
-  return status === 404 || message.includes('record not found')
-}
 
 function resolvePlatformBufferSize(dataSources: unknown): number {
   if (!Array.isArray(dataSources)) return 0
@@ -303,11 +282,6 @@ function disconnectAllDeviceWs() {
 let initInProgress = false
 let pendingInitDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
-type HistoryPoint = { value: unknown; ts: number }
-type RequestedFieldResult = {
-  fields: Record<string, unknown>
-  histories: Array<{ fieldId: string; history: HistoryPoint[]; deviceId?: string }>
-}
 type PlatformSourceDescriptor = {
   id: string
   deviceId?: string
@@ -337,42 +311,13 @@ async function fetchDashboardWithRetry(id: string) {
   return result
 }
 
-function getCurrentUserInfo() {
-  return localStg.get('userInfo') as Api.Auth.UserInfo | null
-}
-
-function getCurrentPlatformFieldScope() {
-  return resolveGlobalPlatformFieldScope(getCurrentUserInfo())
-}
-
-function getCurrentGlobalPlatformFields() {
-  return getGlobalPlatformFields(getCurrentPlatformFieldScope())
-}
-
-function shouldTreatPlatformRequestAsGlobal(fieldIds: unknown[]): boolean {
-  const requestedFields = Array.isArray(fieldIds)
-    ? fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string')
-    : []
-
-  if (requestedFields.length === 0) return false
-
-  const globalFieldIds = new Set(
-    getCurrentGlobalPlatformFields()
-      .map(field => (typeof field?.id === 'string' ? field.id : ''))
-      .filter(Boolean)
-  )
-
-  return requestedFields.every(fieldId => globalFieldIds.has(fieldId))
-}
-
 function cloneDashboardConfig<T>(config: T): T {
   if (!config || typeof config !== 'object') return config
   return JSON.parse(JSON.stringify(config))
 }
 
 function normalizeDashboardConfig<T>(config: T): T {
-  const cloned = cloneDashboardConfig(config)
-  return normalizeThingsVisHistoryBindings(cloned)
+  return cloneDashboardConfig(config)
 }
 
 function normalizeEditorGroupId(groupId?: unknown, fallbackName?: unknown): string {
@@ -383,6 +328,30 @@ function normalizeEditorGroupId(groupId?: unknown, fallbackName?: unknown): stri
 function normalizeEditorGroupName(groupName?: unknown, fallbackId?: unknown): string {
   const normalized = String(groupName || fallbackId || 'Ungrouped').trim()
   return normalized || 'Ungrouped'
+}
+
+function firstString(...values: unknown[]): string | undefined {
+  for (const value of values) {
+    if (value === undefined || value === null) continue
+    const normalized = String(value).trim()
+    if (normalized) return normalized
+  }
+  return undefined
+}
+
+function firstNumber(...values: unknown[]): number | undefined {
+  for (const value of values) {
+    if (typeof value === 'number' && Number.isFinite(value)) return value
+    if (typeof value === 'string' && value.trim()) {
+      const parsed = Number(value)
+      if (Number.isFinite(parsed)) return parsed
+    }
+  }
+  return undefined
+}
+
+function asRecord(value: unknown): Record<string, any> {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, any>) : {}
 }
 
 function normalizeCanvasBackground(background: unknown): Record<string, unknown> {
@@ -422,24 +391,35 @@ function flattenDeviceGroupTree(
 ): PlatformDeviceGroupEntry[] {
   nodes.forEach(node => {
     if (!node || typeof node !== 'object') return
-    const treeNode = node as {
-      group?: { id?: unknown; name?: unknown; parent_id?: unknown; parentId?: unknown }
-      children?: unknown[]
-      device_count?: unknown
-      deviceCount?: unknown
-    }
-    const groupId = normalizeEditorGroupId(treeNode.group?.id, treeNode.group?.name)
+    const treeNode = asRecord(node)
+    const rawGroup = asRecord(treeNode.group || treeNode.data || treeNode)
+    const groupId = normalizeEditorGroupId(
+      firstString(rawGroup.id, rawGroup.group_id, rawGroup.groupId, rawGroup.value, treeNode.id, treeNode.group_id),
+      firstString(rawGroup.name, rawGroup.group_name, rawGroup.groupName, rawGroup.label, treeNode.name, treeNode.label)
+    )
+    const groupName = normalizeEditorGroupName(
+      firstString(rawGroup.name, rawGroup.group_name, rawGroup.groupName, rawGroup.label, treeNode.name, treeNode.label),
+      groupId
+    )
+    const parentId = firstString(rawGroup.parent_id, rawGroup.parentId, treeNode.parent_id, treeNode.parentId)
+    const deviceCount = firstNumber(treeNode.deviceCount, treeNode.device_count, rawGroup.deviceCount, rawGroup.device_count)
     groups.set(groupId, {
       groupId,
-      groupName: normalizeEditorGroupName(treeNode.group?.name, groupId),
-      ...(typeof treeNode.deviceCount === 'number' ? { deviceCount: treeNode.deviceCount } : {}),
-      ...(typeof treeNode.device_count === 'number' ? { deviceCount: treeNode.device_count } : {}),
-      ...(treeNode.group?.parent_id !== undefined ? { parentId: String(treeNode.group.parent_id) } : {}),
-      ...(treeNode.group?.parentId !== undefined ? { parentId: String(treeNode.group.parentId) } : {})
+      groupName,
+      ...(deviceCount !== undefined ? { deviceCount } : {}),
+      ...(parentId !== undefined ? { parentId } : {})
     })
 
-    if (Array.isArray(treeNode.children) && treeNode.children.length > 0) {
-      flattenDeviceGroupTree(treeNode.children, groups)
+    const children = Array.isArray(treeNode.children)
+      ? treeNode.children
+      : Array.isArray(treeNode.child)
+        ? treeNode.child
+        : Array.isArray(treeNode.list)
+          ? treeNode.list
+          : []
+
+    if (children.length > 0) {
+      flattenDeviceGroupTree(children, groups)
     }
   })
 
@@ -487,16 +467,6 @@ function postPlatformData(fields: Record<string, unknown>, deviceId?: string) {
   if (deviceId) {
     postToThingsVis('tv:platform-data', { fields })
   }
-}
-
-function postPlatformHistory(fieldId: string, history: HistoryPoint[], deviceId?: string) {
-  if (history.length === 0) return
-
-  postToThingsVis('tv:platform-history', {
-    deviceId,
-    fieldId,
-    history
-  })
 }
 
 const FIELD_BINDING_EXPR_RE = /\{\{\s*ds\.([^.\s}]+)\.([^}]+?)\s*\}\}/g
@@ -557,27 +527,13 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
       const normalizedRequestedFields = Array.from(requestedFields)
       const configuredDeviceId =
         typeof dataSource?.config?.deviceId === 'string' ? dataSource.config.deviceId : undefined
-      const deviceId = shouldTreatPlatformRequestAsGlobal(normalizedRequestedFields) ? undefined : configuredDeviceId
 
       return {
         id: String(dataSource.id),
-        deviceId,
+        deviceId: configuredDeviceId,
         requestedFields: normalizedRequestedFields
       }
     })
-
-  const hasGlobalDescriptor = descriptors.some(descriptor => !descriptor.deviceId)
-  const implicitGlobalFields = Array.from(requests.get('__platform__') ?? [])
-
-  // Older dashboards can bind ds.__platform__.data.* while only persisting
-  // device-scoped PLATFORM_FIELD sources. Synthesize the missing global source
-  // so host-side hydration still fetches aggregate platform metrics.
-  if (!hasGlobalDescriptor && implicitGlobalFields.length > 0) {
-    descriptors.push({
-      id: '__platform__',
-      requestedFields: implicitGlobalFields
-    })
-  }
 
   return descriptors
 }
@@ -593,27 +549,6 @@ function syncActivePlatformDevicesFromConfig(config: any) {
       fields: []
     })
   })
-}
-
-async function fetchAllCurrentFieldsForDevice(deviceId: string): Promise<Record<string, unknown>> {
-  const [telemetryResult, attributeResult] = await Promise.allSettled([
-    telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
-    getAttributeDataSet({ device_id: deviceId }, SILENT_REQUEST_CONFIG)
-  ])
-
-  const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
-  const attributeRes = attributeResult.status === 'fulfilled' ? attributeResult.value : null
-
-  const kvMap: Record<string, unknown> = {}
-  const collect = (item: any) => {
-    if (item?.key !== undefined) kvMap[item.key] = item.value
-    if (item?.label) kvMap[item.label] = item.value
-  }
-
-  if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
-  if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
-
-  return kvMap
 }
 
 async function loadViewerDashboardConfig(): Promise<Record<string, unknown> | null> {
@@ -663,126 +598,16 @@ function getStudioBase(): string {
 }
 
 function buildThingsVisFrameUrl(thingsVisToken: string): string {
-  const apiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
-  const platformFieldScope = encodeURIComponent(getCurrentPlatformFieldScope())
-  const platformFields = encodeURIComponent(JSON.stringify(getCurrentGlobalPlatformFields()))
+  const thingsvisApiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
+  const platformApiBaseUrl = encodeURIComponent(getDemoServerUrl())
   const saveTarget = 'host'
   const dashboardId = encodeURIComponent(props.id)
 
   if (props.mode === 'viewer') {
-    return `${getStudioBase()}#/embed?mode=embedded&saveTarget=${saveTarget}&id=${dashboardId}&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}&platformFieldScope=${platformFieldScope}&platformFields=${platformFields}`
+    return `${getStudioBase()}#/embed?mode=embedded&saveTarget=${saveTarget}&id=${dashboardId}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
   }
 
-  return `${getStudioBase()}#/editor?mode=embedded&saveTarget=${saveTarget}&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}&platformFieldScope=${platformFieldScope}&platformFields=${platformFields}`
-}
-
-function normalizeHistory(records: any[], valueKey: string): HistoryPoint[] {
-  return records
-    .map((item: any) => ({
-      value: item?.[valueKey] ?? item?.value ?? item?.avg ?? item?.y ?? 0,
-      ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
-    }))
-    .filter(point => !Number.isNaN(point.ts))
-}
-
-function normalizeMetricValue(value: unknown): number {
-  const num = Number(value)
-  return Number.isFinite(num) ? num : 0
-}
-
-function normalizeTenantGrowthHistory(records: any[]): HistoryPoint[] {
-  const currentYear = new Date().getFullYear()
-
-  const points: HistoryPoint[] = []
-
-  records.forEach((item: any) => {
-    const month = Number(item?.mon)
-    if (!Number.isFinite(month) || month < 1 || month > 12) return
-
-    const ts = new Date(currentYear, month - 1, 1).getTime()
-    if (Number.isNaN(ts)) return
-
-    points.push({
-      value: normalizeMetricValue(item?.num),
-      ts
-    })
-  })
-  return points
-}
-
-function normalizeDeviceTotalHistory(records: any[]): HistoryPoint[] {
-  return records
-    .map((item: any) => ({
-      value: normalizeMetricValue(item?.device_online) + normalizeMetricValue(item?.device_offline),
-      ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
-    }))
-    .filter(point => !Number.isNaN(point.ts))
-}
-
-function normalizeSystemMetricHistory(records: any[], metricKey: 'cpu' | 'memory' | 'disk'): HistoryPoint[] {
-  return records
-    .map((item: any) => ({
-      value: normalizeMetricValue(item?.[`${metricKey}_usage`] ?? item?.[metricKey]),
-      ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
-    }))
-    .filter(point => !Number.isNaN(point.ts))
-}
-
-function normalizeHomeAlarmItems(payload: any): Array<Record<string, unknown>> {
-  const list = Array.isArray(payload?.list) ? payload.list : Array.isArray(payload?.data?.list) ? payload.data.list : []
-
-  return list.slice(0, 10).map((item: any) => ({
-    level:
-      item?.alarm_status === 'H'
-        ? 'critical'
-        : item?.alarm_status === 'M'
-          ? 'warning'
-          : item?.alarm_status === 'L'
-            ? 'info'
-            : 'success',
-    title: item?.name ?? '-',
-    detail: item?.content ?? '-',
-    source: item?.device_name ?? item?.group_name ?? '',
-    time: item?.create_at ?? item?.created_at ?? item?.time ?? ''
-  }))
-}
-
-function formatDateTime(value: unknown): string {
-  if (!value) return ''
-
-  const date = new Date(String(value))
-  if (Number.isNaN(date.getTime())) return String(value)
-
-  const pad = (num: number) => String(num).padStart(2, '0')
-
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
-}
-
-function normalizeLatestReportRows(payload: any): Array<Record<string, unknown>> {
-  const devices = Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : []
-  const rows: Array<Record<string, unknown>> = []
-
-  devices.slice(0, 6).forEach((device: any) => {
-    const telemetry = Array.isArray(device?.telemetry_data) ? device.telemetry_data : []
-    telemetry.slice(0, 3).forEach((item: any) => {
-      const rawValue = item?.value
-      const valueText =
-        rawValue === null || rawValue === undefined
-          ? '-'
-          : item?.unit
-            ? `${rawValue}${item.unit}`
-            : String(rawValue)
-
-      rows.push({
-        device: device?.device_name ?? '-',
-        metric: item?.label || item?.key || '-',
-        value: valueText,
-        time: formatDateTime(device?.last_push_time ?? device?.update_time ?? '')
-      })
-    })
-  })
-
-  return rows
+  return `${getStudioBase()}#/editor?mode=embedded&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
 }
 
 function unwrapList(payload: any): any[] {
@@ -923,233 +748,37 @@ async function loadTemplateEntry(templateId: string | number) {
   return entry
 }
 
-async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): Promise<RequestedFieldResult> {
+async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): Promise<Record<string, unknown>> {
   const requestedFields = Array.isArray(fieldIds)
     ? fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string')
     : []
 
-  if (requestedFields.length === 0) {
-    return { fields: {}, histories: [] }
-  }
+  if (!deviceId || requestedFields.length === 0) return {}
 
   const currentFieldIds = requestedFields.filter(fieldId => !fieldId.endsWith('__history'))
-  const historyFieldIds = requestedFields
-    .filter(fieldId => fieldId.endsWith('__history'))
-    .map(fieldId => fieldId.replace(/__history$/, ''))
+  if (currentFieldIds.length === 0) return {}
 
-  if (deviceId) {
-    const result: RequestedFieldResult = { fields: {}, histories: [] }
-
-    if (currentFieldIds.length > 0) {
-      const [telemetryResult, attributeResult] = await Promise.allSettled([
-        telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
-        getAttributeDataSet({ device_id: deviceId }, SILENT_REQUEST_CONFIG)
-      ])
-
-      const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
-      const attributeRes = attributeResult.status === 'fulfilled' ? attributeResult.value : null
-
-      const kvMap: Record<string, unknown> = {}
-      const collect = (item: any) => {
-        if (item?.key !== undefined) kvMap[item.key] = item.value
-        if (item?.label) kvMap[item.label] = item.value
-      }
-
-      if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
-      if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
-
-      currentFieldIds.forEach(fieldId => {
-        if (kvMap[fieldId] !== undefined) result.fields[fieldId] = kvMap[fieldId]
-      })
-    }
-
-    if (historyFieldIds.length > 0) {
-      const historyResults = await Promise.allSettled(
-        historyFieldIds.map(async fieldId => {
-          const historyRes = await telemetryDataHistoryList(
-            {
-              device_id: deviceId,
-              key: fieldId,
-              time_range: 'last_1h',
-              aggregate_window: '1m',
-              aggregate_function: 'avg'
-            },
-            SILENT_REQUEST_CONFIG
-          )
-          const rawList = historyRes?.data?.time_series ?? historyRes?.data?.list ?? []
-          const list = Array.isArray(rawList) ? rawList : []
-          const history = normalizeHistory(list, 'value')
-          if (history.length > 0) {
-            result.histories.push({ fieldId, history, deviceId })
-          }
-        })
-      )
-
-      historyResults.forEach(item => {
-        if (item.status === 'rejected' && !isIgnorablePlatformRequestError(item.reason)) {
-          console.warn('[AppFrame] Device history fetch failed:', item.reason)
-        }
-      })
-    }
-
-    return result
-  }
-
-  const result: RequestedFieldResult = { fields: {}, histories: [] }
-  const requestedCurrentFieldSet = new Set(currentFieldIds)
-  const requestedHistoryFieldSet = new Set(historyFieldIds)
-
-  const requiresDeviceSummary = ['device_total', 'device_online', 'device_offline', 'device_activity'].some(fieldId =>
-    requestedCurrentFieldSet.has(fieldId)
-  )
-  const requiresAlarmSummary = requestedCurrentFieldSet.has('alarm_device_total')
-  const requiresHomeAlarmItems = requestedCurrentFieldSet.has('home_alarm_items')
-  const requiresLatestReportRows = requestedCurrentFieldSet.has('home_latest_report_rows')
-  const requiresTenantSummary =
-    getCurrentPlatformFieldScope() === 'super-admin' &&
-    ['tenant_added_yesterday', 'tenant_added_month', 'tenant_total'].some(fieldId =>
-      requestedCurrentFieldSet.has(fieldId)
-    )
-  const requiresTenantHistory =
-    getCurrentPlatformFieldScope() === 'super-admin' && requestedHistoryFieldSet.has('tenant_growth')
-  const requiresMetricSummary =
-    getCurrentPlatformFieldScope() === 'super-admin' &&
-    ['cpu_usage', 'memory_usage', 'disk_usage'].some(fieldId => requestedCurrentFieldSet.has(fieldId))
-  const requiresMetricHistory =
-    getCurrentPlatformFieldScope() === 'super-admin' &&
-    ['cpu_usage', 'memory_usage', 'disk_usage'].some(fieldId => requestedHistoryFieldSet.has(fieldId))
-  const requiresDeviceTrend =
-    requestedHistoryFieldSet.has('device_online') ||
-    requestedHistoryFieldSet.has('device_offline') ||
-    requestedHistoryFieldSet.has('device_total') ||
-    requestedHistoryFieldSet.has('device_activity')
-
-  const [
-    deviceListResult,
-    alarmCountResult,
-    alarmHistoryResult,
-    latestReportResult,
-    tenantResult,
-    systemMetricsCurrentResult,
-    systemMetricsHistoryResult,
-    deviceTrendResult
-  ] = await Promise.allSettled([
-    requiresDeviceSummary ? deviceList({ page: 1, page_size: 1000 }) : Promise.resolve(null),
-    requiresAlarmSummary ? getAlarmCount() : Promise.resolve(null),
-    requiresHomeAlarmItems
-      ? alarmHistory({
-          page: 1,
-          page_size: 10,
-          alarm_status: '',
-          start_time: '',
-          end_time: ''
-        })
-      : Promise.resolve(null),
-    requiresLatestReportRows ? getLatestTelemetryData() : Promise.resolve(null),
-    requiresTenantSummary || requiresTenantHistory ? tenant() : Promise.resolve(null),
-    requiresMetricSummary ? getSystemMetricsCurrent() : Promise.resolve(null),
-    requiresMetricHistory ? getSystemMetricsHistory({}) : Promise.resolve(null),
-    requiresDeviceTrend ? getOnlineDeviceTrend() : Promise.resolve(null)
+  const [telemetryResult, attributeResult] = await Promise.allSettled([
+    telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
+    getAttributeDataSet({ device_id: deviceId }, SILENT_REQUEST_CONFIG)
   ])
 
-  const devices =
-    deviceListResult.status === 'fulfilled'
-      ? deviceListResult.value?.data?.list || deviceListResult.value?.data || []
-      : []
-  const deviceTotal = Array.isArray(devices) ? devices.length : 0
-  const deviceOnline = Array.isArray(devices)
-    ? devices.filter((device: any) => Number(device?.is_online || 0) !== 0).length
-    : 0
-  const aggregateValues: Record<string, unknown> = {
-    device_total: deviceTotal,
-    device_online: deviceOnline,
-    device_offline: Math.max(0, deviceTotal - deviceOnline),
-    device_activity: deviceOnline
+  const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
+  const attributeRes = attributeResult.status === 'fulfilled' ? attributeResult.value : null
+
+  const kvMap: Record<string, unknown> = {}
+  const collect = (item: any) => {
+    if (item?.key !== undefined) kvMap[item.key] = item.value
+    if (item?.label) kvMap[item.label] = item.value
   }
 
-  if (alarmCountResult.status === 'fulfilled') {
-    aggregateValues.alarm_device_total = normalizeMetricValue(alarmCountResult.value?.data?.alarm_device_total)
-  }
+  if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
+  if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
 
-  if (requiresHomeAlarmItems && alarmHistoryResult.status === 'fulfilled') {
-    aggregateValues.home_alarm_items = normalizeHomeAlarmItems(alarmHistoryResult.value?.data)
-  }
-
-  if (requiresLatestReportRows && latestReportResult.status === 'fulfilled') {
-    aggregateValues.home_latest_report_rows = normalizeLatestReportRows(latestReportResult.value?.data)
-  }
-
-  if (tenantResult.status === 'fulfilled') {
-    aggregateValues.tenant_total = normalizeMetricValue(tenantResult.value?.data?.user_total)
-    aggregateValues.tenant_added_yesterday = normalizeMetricValue(tenantResult.value?.data?.user_added_yesterday)
-    aggregateValues.tenant_added_month = normalizeMetricValue(tenantResult.value?.data?.user_added_month)
-  }
-
-  if (systemMetricsCurrentResult.status === 'fulfilled') {
-    aggregateValues.cpu_usage = normalizeMetricValue(systemMetricsCurrentResult.value?.data?.cpu_usage)
-    aggregateValues.memory_usage = normalizeMetricValue(systemMetricsCurrentResult.value?.data?.memory_usage)
-    aggregateValues.disk_usage = normalizeMetricValue(systemMetricsCurrentResult.value?.data?.disk_usage)
-  }
-
+  const result: Record<string, unknown> = {}
   currentFieldIds.forEach(fieldId => {
-    if (aggregateValues[fieldId] !== undefined) result.fields[fieldId] = aggregateValues[fieldId]
+    if (kvMap[fieldId] !== undefined) result[fieldId] = kvMap[fieldId]
   })
-
-  if (requiresDeviceTrend) {
-    const points =
-      deviceTrendResult.status === 'fulfilled' && Array.isArray(deviceTrendResult.value?.data?.points)
-        ? deviceTrendResult.value.data.points
-        : []
-
-    if (historyFieldIds.includes('device_online')) {
-      const history = normalizeHistory(points, 'device_online')
-      if (history.length > 0) result.histories.push({ fieldId: 'device_online', history })
-    }
-
-    if (historyFieldIds.includes('device_offline')) {
-      const history = normalizeHistory(points, 'device_offline')
-      if (history.length > 0) result.histories.push({ fieldId: 'device_offline', history })
-    }
-
-    if (historyFieldIds.includes('device_total')) {
-      const history = normalizeDeviceTotalHistory(points)
-      if (history.length > 0) result.histories.push({ fieldId: 'device_total', history })
-    }
-
-    if (historyFieldIds.includes('device_activity')) {
-      const history = normalizeHistory(points, 'device_online')
-      if (history.length > 0) result.histories.push({ fieldId: 'device_activity', history })
-    }
-  }
-
-  if (requiresTenantHistory && tenantResult.status === 'fulfilled') {
-    const growthHistory = normalizeTenantGrowthHistory(tenantResult.value?.data?.user_list_month || [])
-    if (growthHistory.length > 0) {
-      result.histories.push({ fieldId: 'tenant_growth', history: growthHistory })
-    }
-  }
-
-  if (requiresMetricHistory && systemMetricsHistoryResult.status === 'fulfilled') {
-    const records = Array.isArray(systemMetricsHistoryResult.value?.data) ? systemMetricsHistoryResult.value.data : []
-
-    const metricFieldMap: Array<{
-      fieldId: 'cpu_usage' | 'memory_usage' | 'disk_usage'
-      source: 'cpu' | 'memory' | 'disk'
-    }> = [
-      { fieldId: 'cpu_usage', source: 'cpu' },
-      { fieldId: 'memory_usage', source: 'memory' },
-      { fieldId: 'disk_usage', source: 'disk' }
-    ]
-
-    metricFieldMap.forEach(({ fieldId, source }) => {
-      if (!historyFieldIds.includes(fieldId)) return
-      const history = normalizeSystemMetricHistory(records, source)
-      if (history.length > 0) {
-        result.histories.push({ fieldId, history })
-      }
-    })
-  }
-
   return result
 }
 
@@ -1161,40 +790,20 @@ async function hydrateConfiguredPlatformSources(): Promise<boolean> {
   if (descriptors.length === 0) return true
 
   const handledDeviceIds = new Set<string>()
-  let globalHydrated = false
 
   for (const descriptor of descriptors) {
     const requestedFields = descriptor.requestedFields
+    if (!descriptor.deviceId) continue
 
-    if (descriptor.deviceId) {
-      if (handledDeviceIds.has(descriptor.deviceId)) continue
-      handledDeviceIds.add(descriptor.deviceId)
+    if (handledDeviceIds.has(descriptor.deviceId)) continue
+    handledDeviceIds.add(descriptor.deviceId)
 
-      if (requestedFields.length === 0) continue
+    if (requestedFields.length === 0) continue
 
-      ensureDeviceWs(descriptor.deviceId)
+    ensureDeviceWs(descriptor.deviceId)
 
-      const result = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
-
-      postPlatformData(result.fields, descriptor.deviceId)
-      result.histories.forEach(item => {
-        postPlatformHistory(item.fieldId, item.history, item.deviceId)
-      })
-      continue
-    }
-
-    if (globalHydrated) continue
-    globalHydrated = true
-
-    const fallbackGlobalFields =
-      requestedFields.length > 0
-        ? requestedFields
-        : ['device_total', 'device_online', 'device_offline', 'device_activity']
-    const result = await buildRequestedFieldData(fallbackGlobalFields)
-    postPlatformData(result.fields)
-    result.histories.forEach(item => {
-      postPlatformHistory(item.fieldId, item.history)
-    })
+    const fields = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
+    postPlatformData(fields, descriptor.deviceId)
   }
 
   return true
@@ -1237,22 +846,51 @@ function resolveWriteDeviceId(payload: Record<string, unknown>): string | undefi
   return undefined
 }
 
-async function handlePlatformWrite(payload: Record<string, unknown>) {
+function postPlatformWriteResult(requestId: string | undefined, payload: Record<string, unknown>) {
+  if (!requestId) return
+  const win = iframeRef.value?.contentWindow
+  if (!win) return
+  win.postMessage(
+    {
+      type: 'tv:platform-write-result',
+      requestId,
+      ...payload
+    },
+    getThingsVisTargetOrigin()
+  )
+}
+
+async function handlePlatformWrite(payload: Record<string, unknown>, requestId?: string) {
   const deviceId = resolveWriteDeviceId(payload)
   const data = payload.data
-  if (!deviceId || data === undefined) return
+  if (!deviceId || data === undefined) {
+    postPlatformWriteResult(requestId, {
+      success: false,
+      error: 'Missing deviceId or data'
+    })
+    return
+  }
 
   try {
     const value = typeof data === 'string' ? data : JSON.stringify(data)
-    await telemetryDataPub({ device_id: deviceId, value })
+    const result = await telemetryDataPub({ device_id: deviceId, value })
+    postPlatformWriteResult(requestId, {
+      success: true,
+      echo: result?.data ?? data
+    })
   } catch (error) {
     console.error('[AppFrame] Failed to publish platform write:', error)
+    const message = error instanceof Error ? error.message : String(error || 'Platform write failed')
+    postPlatformWriteResult(requestId, {
+      success: false,
+      error: message
+    })
   }
 }
 
 async function handleHostSave(payload: Record<string, unknown>) {
   const rawConfig = payload.config && typeof payload.config === 'object' ? payload.config : payload
-  const config = normalizeDashboardConfig(rawConfig)
+  const config = normalizeDashboardConfig(rawConfig) as Record<string, unknown>
   const meta = (config.meta as Record<string, unknown> | undefined) || {}
   const canvas = config.canvas
   const updatePayload: UpdateDashboardData = {}
@@ -1327,8 +965,15 @@ async function loadDeviceConfigTemplateMap(): Promise<Map<string, string>> {
       const configTemplateMap = new Map<string, string>()
 
       configs.forEach((config: any) => {
-        if (config?.id && config?.device_template_id) {
-          configTemplateMap.set(String(config.id), String(config.device_template_id))
+        const configId = firstString(config?.id, config?.device_config_id, config?.deviceConfigId)
+        const templateId = firstString(
+          config?.device_template_id,
+          config?.deviceTemplateId,
+          config?.template_id,
+          config?.templateId
+        )
+        if (configId && templateId) {
+          configTemplateMap.set(configId, templateId)
         }
       })
 
@@ -1373,6 +1018,60 @@ async function buildPlatformDeviceGroups(): Promise<PlatformDeviceGroupEntry[]> 
   return platformDeviceGroupsCachePromise
 }
 
+function unwrapDeviceRow(row: any): Record<string, any> {
+  return asRecord(row?.device || row?.device_info || row?.deviceInfo || row?.device_data || row?.deviceData || row)
+}
+
+function resolveDeviceId(row: any): string | undefined {
+  const nestedDevice = row?.device || row?.device_info || row?.deviceInfo || row?.device_data || row?.deviceData
+  if (nestedDevice && typeof nestedDevice === 'object') {
+    const device = asRecord(nestedDevice)
+    return firstString(device.id, device.device_id, device.deviceId)
+  }
+
+  return firstString(row?.device_id, row?.deviceId, row?.id)
+}
+
+function resolveDeviceName(row: any, deviceId: string): string {
+  const device = unwrapDeviceRow(row)
+  return firstString(
+    device.name,
+    device.device_name,
+    device.deviceName,
+    device.device_number,
+    device.deviceNumber,
+    row?.device_name,
+    row?.deviceName,
+    row?.device_number,
+    row?.deviceNumber,
+    deviceId
+  ) as string
+}
+
+function resolveDeviceTemplateId(row: any, configTemplateMap: Map<string, string>): string | undefined {
+  const device = unwrapDeviceRow(row)
+  const configId = firstString(
+    device.device_config_id,
+    device.deviceConfigId,
+    row?.device_config_id,
+    row?.deviceConfigId,
+    device.device_config?.id,
+    row?.device_config?.id
+  )
+
+  return firstString(
+    device.device_config?.device_template_id,
+    device.device_config?.deviceTemplateId,
+    row?.device_config?.device_template_id,
+    row?.device_config?.deviceTemplateId,
+    device.device_template_id,
+    device.deviceTemplateId,
+    row?.device_template_id,
+    row?.deviceTemplateId,
+    configId ? configTemplateMap.get(configId) : undefined
+  )
+}
+
 async function mapPlatformDevicesForGroup(
   rawDevices: any[],
   normalizedGroupId: string,
@@ -1382,11 +1081,7 @@ async function mapPlatformDevicesForGroup(
   const templateIds = Array.from(
     new Set(
       rawDevices
-        .map(
-          (device: any) =>
-            (device?.device_config?.device_template_id ? String(device.device_config.device_template_id) : null) ||
-            (device?.device_config_id ? configTemplateMap.get(String(device.device_config_id)) : null)
-        )
+        .map((device: any) => resolveDeviceTemplateId(device, configTemplateMap))
         .filter((templateId): templateId is string => Boolean(templateId))
     )
   )
@@ -1396,21 +1091,19 @@ async function mapPlatformDevicesForGroup(
   const presetsByTemplateId = new Map<string, any[]>(presetEntries)
 
   return rawDevices
-    .map((device: any): PlatformDeviceEntry | null => {
-      const templateId =
-        (device?.device_config?.device_template_id ? String(device.device_config.device_template_id) : null) ||
-        (device?.device_config_id ? configTemplateMap.get(String(device.device_config_id)) : null)
-
-      if (!templateId || !device?.id) return null
+    .map((row: any): PlatformDeviceEntry | null => {
+      const deviceId = resolveDeviceId(row)
+      if (!deviceId) return null
+      const templateId = resolveDeviceTemplateId(row, configTemplateMap)
 
       return {
-        deviceId: String(device.id),
-        deviceName: String(device.name || device.device_number || device.id),
+        deviceId,
+        deviceName: resolveDeviceName(row, deviceId),
         groupId: normalizedGroupId,
         groupName,
-        templateId,
+        ...(templateId ? { templateId } : {}),
         fields: [],
-        presets: presetsByTemplateId.get(templateId) || []
+        presets: templateId ? presetsByTemplateId.get(templateId) || [] : []
       }
     })
     .filter((item): item is PlatformDeviceEntry => Boolean(item))
@@ -1491,7 +1184,9 @@ async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDev
 async function doInit() {
   if (!iframeRef.value?.contentWindow || !token.value || !props.id) return
 
-  const apiBaseUrl = window.location.origin + '/thingsvis-api'
+  const thingsvisApiBaseUrl = window.location.origin + '/thingsvis-api'
+  const platformApiBaseUrl = getDemoServerUrl()
+  const platformToken = localStg.get('token') as string | undefined
 
   let dashboardPayload: Record<string, unknown> = { meta: { id: props.id } }
 
@@ -1548,14 +1243,14 @@ async function doInit() {
   } else {
     activePlatformDevices.clear()
   }
+  const runtimeDeviceId =
+    activePlatformDevices.size === 1 ? Array.from(activePlatformDevices.keys())[0] : undefined
 
   iframeRef.value.contentWindow.postMessage(
     {
       type: 'tv:init',
       payload: {
-        platformFields: getCurrentGlobalPlatformFields(),
         platformBufferSize,
-        platformFieldScope: getCurrentPlatformFieldScope(),
         platformDeviceGroups,
         platformDevices,
         data: dashboardPayload,
@@ -1563,7 +1258,10 @@ async function doInit() {
           mode: 'app',
           saveTarget: 'host',
           token: token.value,
-          apiBaseUrl
+          ...(platformToken ? { platformToken } : {}),
+          thingsvisApiBaseUrl,
+          platformApiBaseUrl,
+          ...(runtimeDeviceId ? { deviceId: runtimeDeviceId } : {})
         }
       }
     },
@@ -1614,6 +1312,7 @@ const handleMessage = async (event: MessageEvent) => {
   if (event.origin !== getThingsVisTargetOrigin()) return
 
   const { type, projectId } = event.data
+  const requestId = typeof event.data.requestId === 'string' ? event.data.requestId : undefined
   const payload = event.data?.payload && typeof event.data.payload === 'object' ? event.data.payload : {}
 
   if (type === 'tv:save') {
@@ -1622,7 +1321,7 @@ const handleMessage = async (event: MessageEvent) => {
   }
 
   if (type === 'tv:platform-write') {
-    await handlePlatformWrite(payload)
+    await handlePlatformWrite(payload, requestId)
     return
   }
 
@@ -1632,17 +1331,14 @@ const handleMessage = async (event: MessageEvent) => {
     try {
       const fieldIds = Array.isArray((payload as any).fieldIds) ? (payload as any).fieldIds : []
       const requestedDeviceId = typeof (payload as any).deviceId === 'string' ? (payload as any).deviceId : undefined
-      const deviceId = shouldTreatPlatformRequestAsGlobal(fieldIds) ? undefined : requestedDeviceId
+      const deviceId = requestedDeviceId
 
       if (deviceId && !activePlatformDevices.has(deviceId)) {
         activePlatformDevices.set(deviceId, { deviceId, fields: [] })
       }
       ensureDeviceWs(deviceId)
-      const result = await buildRequestedFieldData(fieldIds, deviceId)
-      postPlatformData(result.fields, deviceId)
-      result.histories.forEach(item => {
-        postPlatformHistory(item.fieldId, item.history, item.deviceId)
-      })
+      const fields = await buildRequestedFieldData(fieldIds, deviceId)
+      postPlatformData(fields, deviceId)
     } catch {
       // Best effort only: ignore transient field-request failures to avoid console noise.
     }

@@ -24,11 +24,7 @@ const props = defineProps<{
   mode?: 'viewer' | 'editor'
   /** Optional: current device ID — used to route tv:platform-write back to the platform API */
   deviceId?: string
-  /**
-   * Optional: ring buffer capacity for the __platform__ data source.
-   * 0 = keep only the latest value (default, suitable for gauge / status widgets).
-   * > 0 = keep the last N values and expose `{fieldId}__history` for line / area chart widgets.
-   */
+  /** Optional: ring buffer capacity for current device platform data. */
   bufferSize?: number
 }>()
 
@@ -223,31 +219,33 @@ function normalizeViewerConfig(config: any) {
 
 const getLoadOptions = () => ({
   platformBufferSize: props.bufferSize ?? 0,
-  platformDevices: clone(props.platformDevices || [])
+  platformDevices: clone(props.platformDevices || []),
+  deviceId: props.deviceId || getPreviewDeviceId(),
+  thingsvisApiBaseUrl: `${window.location.origin}/thingsvis-api`,
+  platformApiBaseUrl: window.location.origin
 })
 
-const pushPlatformFieldDataCompat = (fields: Record<string, unknown>, deviceId?: string) => {
+const pushPlatformFieldData = (fields: Record<string, unknown>, deviceId?: string) => {
   if (!client) return
+  if (!deviceId) return
   const payload = clone(fields) || {}
   client.pushPlatformFieldData(payload, deviceId)
-  // Backward compatibility: some saved templates still bind to the global __platform__
-  // datasource, which only accepts messages without deviceId.
-  if (deviceId) {
-    client.pushPlatformFieldData(payload)
-  }
 }
 
-const pushFieldHistoryCompat = (
-  fieldId: string,
-  history: Array<{ value: unknown; ts: number }>,
-  deviceId?: string
+const postPlatformWriteResult = (
+  requestId: string | undefined,
+  source: MessageEventSource | null,
+  payload: Record<string, unknown>
 ) => {
-  if (!client) return
-  const payload = clone(history) || []
-  client.pushFieldHistory(fieldId, payload, deviceId)
-  if (deviceId) {
-    client.pushFieldHistory(fieldId, payload)
-  }
+  if (!requestId || !source || !('postMessage' in source)) return
+  ;(source as Window).postMessage(
+    {
+      type: 'tv:platform-write-result',
+      requestId,
+      ...payload
+    },
+    '*'
+  )
 }
 
 /**
@@ -256,12 +254,23 @@ const pushFieldHistoryCompat = (
  */
 const handlePlatformWrite = async (event: MessageEvent) => {
   if (event.data?.type !== 'tv:platform-write') return
+  const requestId = typeof event.data?.requestId === 'string' ? event.data.requestId : undefined
   const writePayload = event.data?.payload as { dataSourceId?: string; data?: unknown; deviceId?: string } | undefined
   const { dataSourceId, data, deviceId } = writePayload ?? {}
-  if (!dataSourceId || data === undefined) return
+  if (!dataSourceId || data === undefined) {
+    postPlatformWriteResult(requestId, event.source, {
+      success: false,
+      error: 'Missing dataSourceId or data'
+    })
+    return
+  }
   const targetDeviceId = deviceId || props.deviceId
   if (!targetDeviceId) {
     console.warn('[ThingsVisWidget] tv:platform-write received but deviceId prop is not set')
+    postPlatformWriteResult(requestId, event.source, {
+      success: false,
+      error: 'Missing deviceId'
+    })
     return
   }
   try {
@@ -276,13 +285,26 @@ const handlePlatformWrite = async (event: MessageEvent) => {
     const valueStr = typeof normalizedData === 'string' ? normalizedData : JSON.stringify(normalizedData)
 
     if (fieldType === 'attribute') {
-      await attributeDataPub({ device_id: targetDeviceId, value: valueStr })
+      const result = await attributeDataPub({ device_id: targetDeviceId, value: valueStr })
+      postPlatformWriteResult(requestId, event.source, {
+        success: true,
+        echo: result?.data ?? normalizedData
+      })
       return
     }
 
-    await telemetryDataPub({ device_id: targetDeviceId, value: valueStr })
+    const result = await telemetryDataPub({ device_id: targetDeviceId, value: valueStr })
+    postPlatformWriteResult(requestId, event.source, {
+      success: true,
+      echo: result?.data ?? normalizedData
+    })
   } catch (e) {
     console.error('[ThingsVisWidget] telemetryDataPub failed for tv:platform-write:', e)
+    const message = e instanceof Error ? e.message : String(e || 'Platform write failed')
+    postPlatformWriteResult(requestId, event.source, {
+      success: false,
+      error: message
+    })
   }
 }
 
@@ -299,7 +321,7 @@ const handleFieldDataRequest = (event: MessageEvent) => {
   const fields = buildRequestedFieldData(fieldIds)
   if (Object.keys(fields).length === 0) return
 
-  pushPlatformFieldDataCompat(fields, payload?.deviceId || previewDeviceId)
+  pushPlatformFieldData(fields, payload?.deviceId || previewDeviceId)
 }
 
 // 辅助函数: 深拷贝以去除 Vue Proxy，防止 DataCloneError
@@ -337,12 +359,15 @@ onMounted(async () => {
     console.error('[ThingsVisWidget] getThingsVisToken failed, continuing without URL token:', error)
   }
   const tokenParams = token ? `&token=${token}` : ''
+  const thingsvisApiBaseUrl = encodeURIComponent(`${window.location.origin}/thingsvis-api`)
+  const platformApiBaseUrl = encodeURIComponent(window.location.origin)
+  const runtimeParams = `&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
 
   // 追加 saveTarget=host，告知 Editor 进入宿主托管模式
   const targetUrl =
     props.mode === 'editor'
-      ? `${baseUrl}#/editor?mode=embedded&saveTarget=host${tokenParams}`
-      : `${baseUrl}#/embed?mode=embedded&saveTarget=host${tokenParams}`
+      ? `${baseUrl}#/editor?mode=embedded&saveTarget=host${tokenParams}${runtimeParams}`
+      : `${baseUrl}#/embed?mode=embedded&saveTarget=host${tokenParams}${runtimeParams}`
 
   client = new ThingsVisClient({
     container: container.value,
@@ -365,7 +390,7 @@ onMounted(async () => {
       getLoadOptions()
     )
     if (props.platformFields) client?.updateSchema(clone(props.platformFields))
-    if (props.data) pushPlatformFieldDataCompat(props.data, props.deviceId)
+    if (props.data) pushPlatformFieldData(props.data, props.deviceId || getPreviewDeviceId())
     emit('ready')
   })
 
@@ -400,7 +425,7 @@ watch(
   () => props.data,
   newVal => {
     if (client?.ready && newVal) {
-      pushPlatformFieldDataCompat(newVal, props.deviceId)
+      pushPlatformFieldData(newVal, props.deviceId || getPreviewDeviceId())
     }
   },
   { deep: true }
@@ -423,20 +448,12 @@ const triggerSave = () => {
 }
 
 /**
- * Bulk-fill the ring buffer for one platform field with historical records.
- * Delegates to ThingsVisClient.pushFieldHistory(); no-op when client is not ready.
- */
-const pushHistory = (fieldId: string, history: Array<{ value: unknown; ts: number }>, deviceId?: string) => {
-  pushFieldHistoryCompat(fieldId, history, deviceId)
-}
-
-/**
  * Forward a real-time field value batch to the embedded ThingsVis widget.
  * Uses closure reference to `client` so it always reflects the live instance,
  * unlike the exposed `client` property which is snapshotted as null at setup time.
  */
 const pushPlatformData = (fields: Record<string, unknown>, deviceId?: string) => {
-  pushPlatformFieldDataCompat(fields, deviceId)
+  pushPlatformFieldData(fields, deviceId)
 }
 
 onBeforeUnmount(() => {
@@ -451,7 +468,6 @@ onBeforeUnmount(() => {
 defineExpose({
   triggerSave,
   client,
-  pushHistory,
   pushPlatformData,
 })
 </script>
