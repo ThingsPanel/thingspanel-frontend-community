@@ -8,7 +8,7 @@ import { useAppStore } from '@/store/modules/app'
 import { useThemeStore } from '@/store/modules/theme'
 import { loginModuleRecord } from '@/constants/app'
 import { useSysSettingStore } from '@/store/modules/sys-setting'
-import { fetchHasAdmin } from '@/service/api/auth'
+import { fetchTenantSetupState } from '@/service/api/auth'
 import PwdLogin from './modules/pwd-login.vue'
 import CodeLogin from './modules/code-login.vue'
 import Register from './modules/register.vue'
@@ -30,10 +30,20 @@ const props = withDefaults(defineProps<Props>(), {
 const appStore = useAppStore()
 const themeStore = useThemeStore()
 const sysSetting = useSysSettingStore()
+const searchParams = new URLSearchParams(window.location.search)
 
-// 是否有超管
-const hasAdmin = ref(true)
+// 首次安装/注册状态
+const setupState = ref<{
+  has_admin: boolean
+  entry: 'login' | 'register'
+  market_base_url?: string
+  market_register_url?: string
+} | null>(null)
 const loading = ref(true)
+const redirectingToMarket = ref(false)
+const returnedFromMarket = computed(() => searchParams.get('market_registered') === '1')
+const marketEmail = computed(() => searchParams.get('market_email')?.trim() || '')
+const marketSource = computed(() => searchParams.get('market_source')?.trim() || 'horizon')
 
 interface LoginModule {
   key: UnionKey.LoginModule
@@ -51,27 +61,76 @@ const modules: LoginModule[] = [
   { key: 'bind-wechat', label: loginModuleRecord['bind-wechat'], component: BindWechat }
 ]
 
-// 检查是否有超管
-const checkHasAdmin = async () => {
+const fallbackMarketUrl = import.meta.env.VITE_MARKET_URL || 'https://r.thingspanel.cn'
+
+const normalizeMarketUrl = (baseUrl?: string) => {
+  const url = baseUrl?.trim()
+  if (!url) return fallbackMarketUrl
+  if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes('0.0.0.0')) {
+    return fallbackMarketUrl
+  }
+  return url
+}
+
+// 检查首次安装状态
+const loadSetupState = async () => {
   try {
-    const res = await fetchHasAdmin()
-    hasAdmin.value = res.data?.has_admin ?? true
+    const res = await fetchTenantSetupState()
+    setupState.value = res.data ?? {
+      has_admin: true,
+      entry: 'login'
+    }
   } catch {
-    hasAdmin.value = true
+    setupState.value = {
+      has_admin: true,
+      entry: 'login'
+    }
   } finally {
-    loading.value = false
+    if (setupState.value && !setupState.value.has_admin) {
+      if (returnedFromMarket.value) {
+        loading.value = false
+      } else {
+        redirectToMarketRegister()
+      }
+    } else {
+      loading.value = false
+    }
   }
 }
 
 // 初始检查
 onMounted(() => {
-  checkHasAdmin()
+  loadSetupState()
 })
+
+const marketRegisterUrl = computed(() =>
+  normalizeMarketUrl(setupState.value?.market_register_url || setupState.value?.market_base_url)
+)
+
+const buildMarketRegisterUrl = () => {
+  const base = marketRegisterUrl.value
+  const url = base.endsWith('/register') ? new URL(base) : new URL('/register', base)
+  url.searchParams.set('callback', window.location.href)
+  url.searchParams.set('return_to', window.location.href)
+  return url.toString()
+}
+
+const redirectToMarketRegister = () => {
+  if (redirectingToMarket.value) return
+
+  try {
+    redirectingToMarket.value = true
+    window.location.replace(buildMarketRegisterUrl())
+  } catch (error) {
+    console.error('Failed to redirect to market register:', error)
+    redirectingToMarket.value = false
+    loading.value = false
+  }
+}
 
 // 默认显示的模块
 const defaultModule = computed(() => {
-  if (loading.value) return 'pwd-login'
-  return hasAdmin.value ? 'pwd-login' : 'register-super-admin'
+  return 'pwd-login'
 })
 
 // 实际使用的 module（支持 props 覆盖）
@@ -79,12 +138,28 @@ const effectiveModule = computed(() => {
   if (props.module && props.module !== 'pwd-login') {
     return props.module
   }
+  if (setupState.value && !setupState.value.has_admin && returnedFromMarket.value) {
+    return 'register-super-admin'
+  }
   return defaultModule.value
 })
 
 const activeModule = computed(() => {
   const findItem = modules.find(item => item.key === effectiveModule.value)
   return findItem || modules[0]
+})
+
+const activeModuleProps = computed(() => {
+  if (activeModule.value.key === 'register-super-admin') {
+    return {
+      marketUrl: normalizeMarketUrl(setupState.value?.market_register_url || setupState.value?.market_base_url),
+      marketEmail: marketEmail.value,
+      marketRegistered: returnedFromMarket.value,
+      marketSource: marketSource.value
+    }
+  }
+
+  return {}
 })
 
 // 计算当前模块的标题
@@ -95,7 +170,7 @@ const moduleTitle = computed(() => {
     case 'register-email':
       return $t('page.login.register.title')
     case 'register-super-admin':
-      return '创建超管账号'
+      return '完成初始化'
     case 'reset-pwd':
       return $t('page.login.resetPwd.title')
     case 'code-login':
@@ -147,8 +222,8 @@ watch(moduleTitle, newTitle => {
       <div class="bg-animation-inner" :class="{ 'dark-theme': themeStore.darkMode }"></div>
     </div>
 
-    <!-- Loading 状态 -->
-    <div v-if="loading" class="flex-center">
+    <!-- Loading / redirect 状态 -->
+    <div v-if="loading || redirectingToMarket" class="flex-center">
       <n-spin size="large" />
     </div>
 
@@ -238,7 +313,7 @@ watch(moduleTitle, newTitle => {
 
         <div class="transition-all duration-300">
           <Transition :name="themeStore.page.animateMode" mode="out-in" appear>
-            <component :is="activeModule.component" />
+            <component :is="activeModule.component" v-bind="activeModuleProps" />
           </Transition>
         </div>
       </div>
