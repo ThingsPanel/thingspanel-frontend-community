@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, onMounted, reactive, watch, toRefs } from 'vue'
 import { NAutoComplete, NButton, NForm, NFormItem, NInput, NSpace } from 'naive-ui'
 import { $t } from '@/locales'
 import { useFormRules, useNaiveForm } from '@/hooks/common/form'
 import { useAuthStore } from '@/store/modules/auth'
 import { fetchSuperAdminInit } from '@/service/api/auth'
-import { localStg } from '@/utils/storage'
+import { getConfirmPwdRule } from '@/utils/form/rule'
 
 defineOptions({
   name: 'SuperAdminRegisterPage'
@@ -32,11 +32,13 @@ const fallbackMarketUrl = import.meta.env.VITE_MARKET_URL || 'https://r.thingspa
 interface FormModel {
   email: string
   pwd: string
+  confirmPwd: string
 }
 
 const model: FormModel = reactive({
   email: props.marketEmail || '',
-  pwd: ''
+  pwd: '',
+  confirmPwd: ''
 })
 
 const marketUrl = computed(() => {
@@ -51,7 +53,7 @@ const marketUrl = computed(() => {
 const emailLocked = computed(() => props.marketEmail.trim() !== '')
 
 const canSubmit = computed(() => {
-  return model.email.trim() !== '' && model.pwd.trim() !== '' && model.pwd.length >= 6
+  return model.email.trim() !== '' && model.pwd.trim() !== '' && model.confirmPwd.trim() !== '' && model.pwd.length >= 6
 })
 
 const commonDomains = ['qq.com', '163.com', 'gmail.com', 'outlook.com', 'sina.com', 'hotmail.com', 'yahoo.com']
@@ -89,7 +91,8 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
         message: () => $t('form.pwd.tip'),
         trigger: ['input', 'blur']
       }
-    ]
+    ],
+    confirmPwd: getConfirmPwdRule(toRefs(model).pwd)
   }
 })
 
@@ -128,12 +131,18 @@ async function handleSubmit() {
     if (!resp.error) {
       window.$message?.success('本地初始化成功')
       if (resp.data && resp.data.token) {
-        localStg.set('token', resp.data.token)
-        const expiresIn = Date.now() + (resp.data.expires_in || 360000) * 1000
-        localStg.set('token_expires_in', expiresIn.toString())
+        // 通过 loginByToken 完成登录流程，确保 userInfo 被正确存储到 localStorage
+        // 这样 thingsvisAuthService.waitForUserInfo() 能正确获取用户信息
+        const loginToken: Api.Auth.LoginToken = {
+          token: resp.data.token,
+          refreshToken: resp.data.refreshToken || '',
+          expires_in: resp.data.expires_in || 3600
+        }
+        await auth.loginByToken(loginToken)
+
         setTimeout(() => {
           window.location.href = '/'
-        }, 1500)
+        }, 500)
       }
     }
   } catch (error: any) {
@@ -185,6 +194,15 @@ onMounted(() => {
         type="password"
         show-password-on="click"
         :placeholder="$t('page.login.common.passwordPlaceholder')"
+        autocomplete="new-password"
+      />
+    </NFormItem>
+    <NFormItem path="confirmPwd">
+      <NInput
+        v-model:value="model.confirmPwd"
+        type="password"
+        show-password-on="click"
+        :placeholder="$t('page.login.common.confirmPasswordPlaceholder')"
         autocomplete="new-password"
       />
     </NFormItem>
