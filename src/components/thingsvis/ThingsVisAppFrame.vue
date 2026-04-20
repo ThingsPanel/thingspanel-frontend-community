@@ -24,15 +24,15 @@ import {
   getDeviceConfigList,
   telemetryDataCurrent,
   getAttributeDataSet,
-  telemetryDataPub
+  telemetryDataPub,
+  attributeDataPub,
+  commandDataPub
 } from '@/service/api/device'
-import {
-  attributesApi,
-  telemetryApi
-} from '@/service/api'
+import { attributesApi, telemetryApi, commandsApi } from '@/service/api'
 import { getTemplat } from '@/service/api/system-data'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
+import type { PlatformField } from '@/utils/thingsvis/types'
 import { localStg } from '@/utils/storage'
 import { getDemoServerUrl, getWebsocketServerUrl } from '@/utils/common/tool'
 
@@ -59,7 +59,7 @@ const emit = defineEmits<{
 
 const router = useRouter()
 
-// ─── Device WebSocket management ─────────────────────────────────────────────
+// Device WebSocket management
 
 const PING_INTERVAL_MS = 8_000
 const WS_RECONNECT_DELAY_MS = 3_000
@@ -69,8 +69,18 @@ interface DeviceWsEntry {
   pingTimer: ReturnType<typeof setInterval> | null
   reconnectTimer: ReturnType<typeof setTimeout> | null
   destroyed: boolean
-  device: { deviceId: string; fields: Array<{ id?: string; name?: string }> }
+  device: { deviceId: string; fields: PlatformDeviceField[] }
 }
+
+interface DeviceStatusWsEntry {
+  ws: WebSocket | null
+  pingTimer: ReturnType<typeof setInterval> | null
+  reconnectTimer: ReturnType<typeof setTimeout> | null
+  destroyed: boolean
+  deviceId: string
+}
+
+type PlatformDeviceField = Pick<PlatformField, 'id' | 'name' | 'dataType'>
 
 type PlatformDeviceEntry = {
   deviceId: string
@@ -78,7 +88,7 @@ type PlatformDeviceEntry = {
   groupId: string
   groupName: string
   templateId?: string
-  fields: Array<{ id?: string; name?: string }>
+  fields: PlatformDeviceField[]
   presets: any[]
 }
 
@@ -90,11 +100,12 @@ type PlatformDeviceGroupEntry = {
 }
 
 type TemplateEntry = {
-  fields: Array<{ id?: string; name?: string }>
+  fields: PlatformDeviceField[]
 }
 
 const deviceWsMap = new Map<string, DeviceWsEntry>()
-const activePlatformDevices = new Map<string, { deviceId: string; fields: Array<{ id?: string; name?: string }> }>()
+const deviceStatusWsMap = new Map<string, DeviceStatusWsEntry>()
+const activePlatformDevices = new Map<string, { deviceId: string; fields: PlatformDeviceField[] }>()
 const templateEntryCache = new Map<string, TemplateEntry>()
 const templatePresetCache = new Map<string, any[]>()
 const templatePresetPromise = new Map<string, Promise<any[]>>()
@@ -119,7 +130,7 @@ function resolvePlatformBufferSize(dataSources: unknown): number {
   )
 }
 
-/** Extract flat key→value map from various WS response shapes. */
+/** Extract flat key-value map from various WS response shapes. */
 function extractWsFields(payload: unknown): Record<string, unknown> {
   if (!payload || typeof payload !== 'object') return {}
   const obj = payload as Record<string, unknown>
@@ -156,10 +167,7 @@ function extractWsFields(payload: unknown): Record<string, unknown> {
  * Tries field.id first, then field.name as fallback.
  * Falls back to the raw payload when nothing maps.
  */
-function mapFieldIds(
-  rawFields: Record<string, unknown>,
-  deviceFields: Array<{ id?: string; name?: string }>
-): Record<string, unknown> {
+function mapFieldIds(rawFields: Record<string, unknown>, deviceFields: PlatformDeviceField[]): Record<string, unknown> {
   if (deviceFields.length === 0) return rawFields
   const mapped: Record<string, unknown> = {}
   for (const field of deviceFields) {
@@ -173,7 +181,7 @@ function mapFieldIds(
 }
 
 /** Open (or re-open) a telemetry WebSocket for one device. */
-function connectDeviceWs(device: { deviceId: string; fields: Array<{ id?: string; name?: string }> }) {
+function connectDeviceWs(device: { deviceId: string; fields: PlatformDeviceField[] }) {
   const { deviceId } = device
 
   // Tear down any existing connection for this device
@@ -243,7 +251,85 @@ function connectDeviceWs(device: { deviceId: string; fields: Array<{ id?: string
         clearInterval(entry.pingTimer)
         entry.pingTimer = null
       }
-      console.warn('[AppFrame] WS closed for device', deviceId, '— scheduling reconnect')
+      console.warn('[AppFrame] WS closed for device', deviceId, '- scheduling reconnect')
+      entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
+    }
+  }
+
+  openWs()
+}
+
+function connectDeviceStatusWs(deviceId: string) {
+  const prev = deviceStatusWsMap.get(deviceId)
+  if (prev) {
+    prev.destroyed = true
+    if (prev.pingTimer) clearInterval(prev.pingTimer)
+    if (prev.reconnectTimer) clearTimeout(prev.reconnectTimer)
+    prev.ws?.close()
+  }
+
+  const entry: DeviceStatusWsEntry = {
+    ws: null,
+    pingTimer: null,
+    reconnectTimer: null,
+    destroyed: false,
+    deviceId
+  }
+  deviceStatusWsMap.set(deviceId, entry)
+
+  function openWs() {
+    if (entry.destroyed) return
+
+    const token = localStg.get('token') as string | undefined
+    if (!token) {
+      entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
+      return
+    }
+
+    try {
+      entry.ws = new WebSocket(`${getWebsocketServerUrl()}/device/online/status/ws`)
+    } catch (err) {
+      console.warn('[AppFrame] Status WS init failed for device', deviceId, err)
+      entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
+      return
+    }
+
+    entry.ws.onopen = () => {
+      if (!entry.ws) return
+      entry.ws.send(JSON.stringify({ device_id: deviceId, token }))
+      entry.pingTimer = setInterval(() => {
+        if (entry.ws?.readyState === WebSocket.OPEN) entry.ws.send('ping')
+      }, PING_INTERVAL_MS)
+    }
+
+    entry.ws.onmessage = evt => {
+      if (typeof evt.data !== 'string' || evt.data === 'pong') return
+      try {
+        const msg = JSON.parse(evt.data) as Record<string, unknown>
+        if (typeof msg.is_online !== 'number') return
+        postPlatformData(
+          {
+            is_online: msg.is_online,
+            online_text: msg.is_online === 1 ? '在线' : '离线',
+            online_status_updated_at: Date.now()
+          },
+          deviceId
+        )
+      } catch {
+        // ignore non-JSON frames
+      }
+    }
+
+    entry.ws.onerror = () => {
+      /* reconnect handled by onclose */
+    }
+
+    entry.ws.onclose = () => {
+      if (entry.destroyed) return
+      if (entry.pingTimer) {
+        clearInterval(entry.pingTimer)
+        entry.pingTimer = null
+      }
       entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
     }
   }
@@ -260,6 +346,13 @@ function ensureDeviceWs(deviceId?: string) {
   connectDeviceWs(device)
 }
 
+function ensureDeviceStatusWs(deviceId?: string) {
+  if (!deviceId) return
+  const existing = deviceStatusWsMap.get(deviceId)
+  if (existing && !existing.destroyed) return
+  connectDeviceStatusWs(deviceId)
+}
+
 /** Disconnect and clean up all device WebSocket connections. */
 function disconnectAllDeviceWs() {
   for (const entry of deviceWsMap.values()) {
@@ -269,9 +362,17 @@ function disconnectAllDeviceWs() {
     entry.ws?.close()
   }
   deviceWsMap.clear()
+
+  for (const entry of deviceStatusWsMap.values()) {
+    entry.destroyed = true
+    if (entry.pingTimer) clearInterval(entry.pingTimer)
+    if (entry.reconnectTimer) clearTimeout(entry.reconnectTimer)
+    entry.ws?.close()
+  }
+  deviceStatusWsMap.clear()
 }
 
-// ─── End WS management ───────────────────────────────────────────────────────
+// End WebSocket management
 
 /**
  * Guard against concurrent tv:ready re-inits.
@@ -281,6 +382,7 @@ function disconnectAllDeviceWs() {
  */
 let initInProgress = false
 let pendingInitDebounceTimer: ReturnType<typeof setTimeout> | null = null
+let lastInitCompletedSignature = ''
 
 type PlatformSourceDescriptor = {
   id: string
@@ -292,7 +394,6 @@ const token = ref('')
 const url = ref('')
 const iframeRef = ref<HTMLIFrameElement>()
 let viewerHydrationTimers: Array<ReturnType<typeof setTimeout>> = []
-let initRetryTimers: Array<ReturnType<typeof setTimeout>> = []
 let viewerHydrationInFlight = false
 let viewerHydrationDone = false
 
@@ -375,7 +476,7 @@ function registerActivePlatformDevices(devices: PlatformDeviceEntry[]) {
   })
 }
 
-function updateActivePlatformDeviceFields(deviceId: string, fields: Array<{ id?: string; name?: string }>) {
+function updateActivePlatformDeviceFields(deviceId: string, fields: PlatformDeviceField[]) {
   const normalizedFields = Array.isArray(fields) ? fields : []
   activePlatformDevices.set(deviceId, { deviceId, fields: normalizedFields })
 
@@ -398,11 +499,23 @@ function flattenDeviceGroupTree(
       firstString(rawGroup.name, rawGroup.group_name, rawGroup.groupName, rawGroup.label, treeNode.name, treeNode.label)
     )
     const groupName = normalizeEditorGroupName(
-      firstString(rawGroup.name, rawGroup.group_name, rawGroup.groupName, rawGroup.label, treeNode.name, treeNode.label),
+      firstString(
+        rawGroup.name,
+        rawGroup.group_name,
+        rawGroup.groupName,
+        rawGroup.label,
+        treeNode.name,
+        treeNode.label
+      ),
       groupId
     )
     const parentId = firstString(rawGroup.parent_id, rawGroup.parentId, treeNode.parent_id, treeNode.parentId)
-    const deviceCount = firstNumber(treeNode.deviceCount, treeNode.device_count, rawGroup.deviceCount, rawGroup.device_count)
+    const deviceCount = firstNumber(
+      treeNode.deviceCount,
+      treeNode.device_count,
+      rawGroup.deviceCount,
+      rawGroup.device_count
+    )
     groups.set(groupId, {
       groupId,
       groupName,
@@ -435,11 +548,6 @@ function resetViewerHydrationState() {
   clearViewerHydrationTimers()
   viewerHydrationInFlight = false
   viewerHydrationDone = false
-}
-
-function clearInitRetryTimers() {
-  initRetryTimers.forEach(timer => clearTimeout(timer))
-  initRetryTimers = []
 }
 
 function getThingsVisTargetOrigin(): string {
@@ -601,13 +709,12 @@ function buildThingsVisFrameUrl(thingsVisToken: string): string {
   const thingsvisApiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
   const platformApiBaseUrl = encodeURIComponent(getDemoServerUrl())
   const saveTarget = 'host'
-  const dashboardId = encodeURIComponent(props.id)
 
   if (props.mode === 'viewer') {
-    return `${getStudioBase()}#/embed?mode=embedded&saveTarget=${saveTarget}&id=${dashboardId}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
+    return `${getStudioBase()}#/embed?mode=embedded&provider=thingspanel&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
   }
 
-  return `${getStudioBase()}#/editor?mode=embedded&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
+  return `${getStudioBase()}#/editor?mode=embedded&provider=thingspanel&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
 }
 
 function unwrapList(payload: any): any[] {
@@ -726,17 +833,20 @@ async function loadTemplateEntry(templateId: string | number) {
   const cached = templateEntryCache.get(cacheKey)
   if (cached) return cached
 
-  const [telemetryResult, attributesResult] = await Promise.allSettled([
+  const [telemetryResult, attributesResult, commandsResult] = await Promise.allSettled([
     telemetryApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
-    attributesApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId })
+    attributesApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
+    commandsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId })
   ])
 
   const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
   const attributesRes = attributesResult.status === 'fulfilled' ? attributesResult.value : null
+  const commandsRes = commandsResult.status === 'fulfilled' ? commandsResult.value : null
 
   const platformSource = {
     telemetry: unwrapList(telemetryRes?.data),
-    attributes: unwrapList(attributesRes?.data)
+    attributes: unwrapList(attributesRes?.data),
+    commands: unwrapList(commandsRes?.data)
   }
   const extractedFields = extractPlatformFields(platformSource)
 
@@ -801,6 +911,7 @@ async function hydrateConfiguredPlatformSources(): Promise<boolean> {
     if (requestedFields.length === 0) continue
 
     ensureDeviceWs(descriptor.deviceId)
+    ensureDeviceStatusWs(descriptor.deviceId)
 
     const fields = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
     postPlatformData(fields, descriptor.deviceId)
@@ -846,6 +957,19 @@ function resolveWriteDeviceId(payload: Record<string, unknown>): string | undefi
   return undefined
 }
 
+function resolveWriteFieldId(data: unknown): string | undefined {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return undefined
+  const keys = Object.keys(data as Record<string, unknown>)
+  return keys.length === 1 ? keys[0] : undefined
+}
+
+function resolveWriteFieldType(deviceId: string, fieldId?: string): PlatformField['dataType'] | undefined {
+  if (!fieldId) return undefined
+  const device = activePlatformDevices.get(deviceId)
+  const field = device?.fields.find(item => item.id === fieldId || item.name === fieldId)
+  return field?.dataType
+}
+
 function postPlatformWriteResult(requestId: string | undefined, payload: Record<string, unknown>) {
   if (!requestId) return
   const win = iframeRef.value?.contentWindow
@@ -873,7 +997,31 @@ async function handlePlatformWrite(payload: Record<string, unknown>, requestId?:
 
   try {
     const value = typeof data === 'string' ? data : JSON.stringify(data)
-    const result = await telemetryDataPub({ device_id: deviceId, value })
+    const fieldId = resolveWriteFieldId(data)
+    const fieldType = resolveWriteFieldType(deviceId, fieldId)
+    let result: any
+
+    if (fieldType === 'attribute') {
+      result = await attributeDataPub({ device_id: deviceId, value })
+    } else if (fieldType === 'command') {
+      result = await commandDataPub({ device_id: deviceId, value })
+    } else if (fieldType === 'telemetry' || fieldType === undefined) {
+      if (fieldType === undefined && fieldId) {
+        postPlatformWriteResult(requestId, {
+          success: false,
+          error: `Unable to resolve write field type for '${fieldId}'`
+        })
+        return
+      }
+      result = await telemetryDataPub({ device_id: deviceId, value })
+    } else {
+      postPlatformWriteResult(requestId, {
+        success: false,
+        error: `Unsupported write field type '${fieldType}'`
+      })
+      return
+    }
+
     postPlatformWriteResult(requestId, {
       success: true,
       echo: result?.data ?? data
@@ -1184,6 +1332,13 @@ async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDev
 async function doInit() {
   if (!iframeRef.value?.contentWindow || !token.value || !props.id) return
 
+  const initSignature = JSON.stringify({
+    id: props.id,
+    mode: props.mode,
+    token: token.value,
+    url: url.value
+  })
+
   const thingsvisApiBaseUrl = window.location.origin + '/thingsvis-api'
   const platformApiBaseUrl = getDemoServerUrl()
   const platformToken = localStg.get('token') as string | undefined
@@ -1243,8 +1398,7 @@ async function doInit() {
   } else {
     activePlatformDevices.clear()
   }
-  const runtimeDeviceId =
-    activePlatformDevices.size === 1 ? Array.from(activePlatformDevices.keys())[0] : undefined
+  const runtimeDeviceId = activePlatformDevices.size === 1 ? Array.from(activePlatformDevices.keys())[0] : undefined
 
   iframeRef.value.contentWindow.postMessage(
     {
@@ -1273,16 +1427,29 @@ async function doInit() {
   } else {
     disconnectAllDeviceWs()
   }
+
+  lastInitCompletedSignature = initSignature
 }
 
 function scheduleInit() {
   if (!iframeRef.value?.contentWindow || !token.value || !props.id) return
 
+  const nextSignature = JSON.stringify({
+    id: props.id,
+    mode: props.mode,
+    token: token.value,
+    url: url.value
+  })
+
+  if (!initInProgress && nextSignature === lastInitCompletedSignature) {
+    return
+  }
+
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
-  clearInitRetryTimers()
 
   const runInit = async () => {
     if (initInProgress) return
+    if (nextSignature === lastInitCompletedSignature) return
     initInProgress = true
     try {
       await doInit()
@@ -1295,16 +1462,15 @@ function scheduleInit() {
     pendingInitDebounceTimer = null
     void runInit()
   }, 150)
-  ;[600, 1500, 3000].forEach(delay => {
-    const timer = setTimeout(() => {
-      void runInit()
-    }, delay)
-    initRetryTimers.push(timer)
-  })
 }
 
 function handleIframeLoad() {
-  scheduleInit()
+  if (pendingInitDebounceTimer) {
+    clearTimeout(pendingInitDebounceTimer)
+    pendingInitDebounceTimer = null
+  }
+  initInProgress = false
+  lastInitCompletedSignature = ''
 }
 
 const handleMessage = async (event: MessageEvent) => {
@@ -1337,6 +1503,7 @@ const handleMessage = async (event: MessageEvent) => {
         activePlatformDevices.set(deviceId, { deviceId, fields: [] })
       }
       ensureDeviceWs(deviceId)
+      ensureDeviceStatusWs(deviceId)
       const fields = await buildRequestedFieldData(fieldIds, deviceId)
       postPlatformData(fields, deviceId)
     } catch {
@@ -1451,8 +1618,8 @@ watch(
 onBeforeUnmount(() => {
   window.removeEventListener('message', handleMessage)
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
-  clearInitRetryTimers()
   resetViewerHydrationState()
+  lastInitCompletedSignature = ''
   activePlatformDevices.clear()
   platformDeviceGroupsCache = null
   platformDeviceGroupsCachePromise = null

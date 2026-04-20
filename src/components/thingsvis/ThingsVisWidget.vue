@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { ThingsVisClient } from '@/utils/thingsvis/sdk/client'
-import { attributeDataPub, telemetryDataPub } from '@/service/api/device'
+import { attributeDataPub, commandDataPub, telemetryDataPub } from '@/service/api/device'
 
 const FIELD_BINDING_EXPR_RE = /^\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}$/
 
@@ -293,6 +293,15 @@ const handlePlatformWrite = async (event: MessageEvent) => {
       return
     }
 
+    if (fieldType === 'command') {
+      const result = await commandDataPub({ device_id: targetDeviceId, value: valueStr })
+      postPlatformWriteResult(requestId, event.source, {
+        success: true,
+        echo: result?.data ?? normalizedData
+      })
+      return
+    }
+
     const result = await telemetryDataPub({ device_id: targetDeviceId, value: valueStr })
     postPlatformWriteResult(requestId, event.source, {
       success: true,
@@ -366,8 +375,8 @@ onMounted(async () => {
   // 追加 saveTarget=host，告知 Editor 进入宿主托管模式
   const targetUrl =
     props.mode === 'editor'
-      ? `${baseUrl}#/editor?mode=embedded&saveTarget=host${tokenParams}${runtimeParams}`
-      : `${baseUrl}#/embed?mode=embedded&saveTarget=host${tokenParams}${runtimeParams}`
+      ? `${baseUrl}#/editor?mode=embedded&provider=thingspanel&saveTarget=host${tokenParams}${runtimeParams}`
+      : `${baseUrl}#/embed?mode=embedded&provider=thingspanel&saveTarget=host${tokenParams}${runtimeParams}`
 
   client = new ThingsVisClient({
     container: container.value,

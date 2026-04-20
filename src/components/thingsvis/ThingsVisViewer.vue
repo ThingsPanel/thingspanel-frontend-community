@@ -42,6 +42,14 @@ interface DeviceWsEntry {
   deviceId: string
 }
 
+interface DeviceStatusWsEntry {
+  ws: WebSocket | null
+  pingTimer: ReturnType<typeof setInterval> | null
+  reconnectTimer: ReturnType<typeof setTimeout> | null
+  destroyed: boolean
+  deviceId: string
+}
+
 type PlatformSourceDescriptor = {
   id: string
   deviceId?: string
@@ -58,6 +66,7 @@ const ready = ref(false)
 const error = ref<string | null>(null)
 const token = ref<string | null>(null)
 const deviceWsMap = new Map<string, DeviceWsEntry>()
+const deviceStatusWsMap = new Map<string, DeviceStatusWsEntry>()
 
 function extractWsFields(payload: unknown): Record<string, unknown> {
   if (!payload || typeof payload !== 'object') return {}
@@ -160,11 +169,104 @@ function connectDeviceWs(deviceId: string) {
   openWs()
 }
 
+function connectDeviceStatusWs(deviceId: string) {
+  const prev = deviceStatusWsMap.get(deviceId)
+  if (prev) {
+    prev.destroyed = true
+    if (prev.pingTimer) clearInterval(prev.pingTimer)
+    if (prev.reconnectTimer) clearTimeout(prev.reconnectTimer)
+    prev.ws?.close()
+  }
+
+  const entry: DeviceStatusWsEntry = {
+    ws: null,
+    pingTimer: null,
+    reconnectTimer: null,
+    destroyed: false,
+    deviceId
+  }
+  deviceStatusWsMap.set(deviceId, entry)
+
+  function openWs() {
+    if (entry.destroyed) return
+
+    const accessToken = localStg.get('token') as string | undefined
+    if (!accessToken) {
+      entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
+      return
+    }
+
+    try {
+      entry.ws = new WebSocket(`${getWebsocketServerUrl()}/device/online/status/ws`)
+    } catch (err) {
+      console.warn('[ThingsVisViewer] Status WS init failed for device', deviceId, err)
+      entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
+      return
+    }
+
+    entry.ws.onopen = () => {
+      if (!entry.ws) return
+      entry.ws.send(JSON.stringify({ device_id: deviceId, token: accessToken }))
+      entry.pingTimer = setInterval(() => {
+        if (entry.ws?.readyState === WebSocket.OPEN) entry.ws.send('ping')
+      }, PING_INTERVAL_MS)
+    }
+
+    entry.ws.onmessage = evt => {
+      if (typeof evt.data !== 'string' || evt.data === 'pong') return
+      try {
+        const msg = JSON.parse(evt.data) as Record<string, unknown>
+        if (typeof msg.is_online !== 'number') return
+        const win = iframeRef.value?.contentWindow
+        if (!win) return
+        win.postMessage(
+          {
+            type: 'tv:platform-data',
+            payload: {
+              deviceId,
+              fields: {
+                is_online: msg.is_online,
+                online_text: msg.is_online === 1 ? '在线' : '离线',
+                online_status_updated_at: Date.now()
+              }
+            }
+          },
+          '*'
+        )
+      } catch {
+        // ignore non-JSON frames
+      }
+    }
+
+    entry.ws.onerror = () => {
+      /* reconnect handled by onclose */
+    }
+
+    entry.ws.onclose = () => {
+      if (entry.destroyed) return
+      if (entry.pingTimer) {
+        clearInterval(entry.pingTimer)
+        entry.pingTimer = null
+      }
+      entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
+    }
+  }
+
+  openWs()
+}
+
 function ensureDeviceWs(deviceId?: string) {
   if (!deviceId) return
   const existing = deviceWsMap.get(deviceId)
   if (existing && !existing.destroyed) return
   connectDeviceWs(deviceId)
+}
+
+function ensureDeviceStatusWs(deviceId?: string) {
+  if (!deviceId) return
+  const existing = deviceStatusWsMap.get(deviceId)
+  if (existing && !existing.destroyed) return
+  connectDeviceStatusWs(deviceId)
 }
 
 function disconnectAllDeviceWs() {
@@ -175,6 +277,14 @@ function disconnectAllDeviceWs() {
     entry.ws?.close()
   }
   deviceWsMap.clear()
+
+  for (const entry of deviceStatusWsMap.values()) {
+    entry.destroyed = true
+    if (entry.pingTimer) clearInterval(entry.pingTimer)
+    if (entry.reconnectTimer) clearTimeout(entry.reconnectTimer)
+    entry.ws?.close()
+  }
+  deviceStatusWsMap.clear()
 }
 
 function collectRequestedFieldsFromValue(
@@ -277,6 +387,7 @@ async function hydrateConfiguredPlatformSources() {
     handledDeviceIds.add(descriptor.deviceId)
 
     ensureDeviceWs(descriptor.deviceId)
+    ensureDeviceStatusWs(descriptor.deviceId)
 
     const fields = requestedFields.length > 0
       ? await buildRequestedFieldData(requestedFields, descriptor.deviceId)
@@ -339,7 +450,7 @@ const embedUrl = computed(() => {
 
   const thingsvisApiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
   const platformApiBaseUrl = encodeURIComponent(window.location.origin)
-  return `${htmlBase}#/embed?thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
+  return `${htmlBase}#/embed?mode=embedded&provider=thingspanel&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
 })
 
 /**
@@ -355,6 +466,7 @@ const handleMessage = (event: MessageEvent) => {
 
     const payload = data.payload || {}
     ensureDeviceWs(payload.deviceId)
+    ensureDeviceStatusWs(payload.deviceId)
 
     void buildRequestedFieldData(payload.fieldIds, payload.deviceId)
       .then((fields) => {
