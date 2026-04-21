@@ -43,6 +43,7 @@ export interface WidgetLoadOptions {
   deviceId?: string;
   thingsvisApiBaseUrl?: string;
   platformApiBaseUrl?: string;
+  platformToken?: string;
 }
 
 export type MessageHandler = (payload: any) => void
@@ -64,6 +65,8 @@ export class ThingsVisClient {
   private postLoadQueue: Array<() => void> = []
   /** Last real-time value payload by scope, replayed after guest re-init. */
   private latestPlatformDataByScope: Map<string, { fields: Record<string, unknown>; deviceId?: string }> = new Map()
+  /** Last history payloads by scope/field, replayed after guest re-init. */
+  private latestPlatformHistoryByScope: Map<string, { fieldId: string; history: Array<{ value: unknown; ts: number }>; deviceId?: string }> = new Map()
   private lastInitPayload: any = null
   private platformPushCount = 0
 
@@ -231,10 +234,12 @@ export class ThingsVisClient {
   }
 
   private replayLatestPlatformData() {
-    if (this.latestPlatformDataByScope.size === 0) return
-
     for (const { fields, deviceId } of this.latestPlatformDataByScope.values()) {
       this.sendWhenLoaded('tv:platform-data', { fields, deviceId })
+    }
+
+    for (const { fieldId, history, deviceId } of this.latestPlatformHistoryByScope.values()) {
+      this.sendWhenLoaded('tv:platform-history', { fieldId, history, deviceId })
     }
   }
 
@@ -299,6 +304,7 @@ export class ThingsVisClient {
         saveTarget: 'host',
         thingsvisApiBaseUrl: options?.thingsvisApiBaseUrl ?? `${window.location.origin}/thingsvis-api`,
         platformApiBaseUrl: options?.platformApiBaseUrl ?? window.location.origin,
+        ...(options?.platformToken ? { platformToken: options.platformToken } : {}),
         ...(options?.deviceId ? { deviceId: options.deviceId } : {})
       }
     }
@@ -337,6 +343,22 @@ export class ThingsVisClient {
     // Must wait until LOADED: PlatformFieldAdapter's messageListener isn't set up
     // until registerAndLoad finishes, which happens after tv:init is processed.
     this.sendWhenLoaded('tv:platform-data', { fields, deviceId })
+  }
+
+  public pushPlatformFieldHistory(
+    fieldId: string,
+    history: Array<{ value: unknown; ts: number }>,
+    deviceId?: string
+  ): void {
+    if (!fieldId || !Array.isArray(history)) return
+
+    const scopeKey = `${deviceId ?? '__global__'}:${fieldId}`
+    this.latestPlatformHistoryByScope.set(scopeKey, {
+      fieldId,
+      history: history.map(item => ({ value: item.value, ts: item.ts })),
+      ...(deviceId ? { deviceId } : {})
+    })
+    this.sendWhenLoaded('tv:platform-history', { fieldId, history, deviceId })
   }
 
   /**

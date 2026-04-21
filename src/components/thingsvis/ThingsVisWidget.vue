@@ -5,9 +5,22 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { ThingsVisClient } from '@/utils/thingsvis/sdk/client'
-import { attributeDataPub, commandDataPub, telemetryDataPub } from '@/service/api/device'
+import { attributeDataPub, commandDataPub, telemetryDataHistoryList, telemetryDataPub } from '@/service/api/device'
+import { localStg } from '@/utils/storage'
+import { getDemoServerUrl } from '@/utils/common/tool'
 
 const FIELD_BINDING_EXPR_RE = /^\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}$/
+const FIELD_BINDING_EXPR_GLOBAL_RE = /\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}/g
+const HISTORY_FIELD_SUFFIX = '__history'
+const TEMPLATE_DEVICE_ID = '__template__'
+const RUNTIME_STATUS_FIELD_IDS = new Set(['is_online', 'online_text', 'online_status_updated_at'])
+const DEFAULT_WRITE_EVENT_BY_COMPONENT: Record<string, string> = {
+  'interaction/basic-switch': 'change',
+  'interaction/basic-slider': 'change',
+  'interaction/basic-select': 'change',
+  'interaction/basic-input': 'submit'
+}
+const AUTO_WRITE_MARKER = 'field-binding'
 
 const props = defineProps<{
   /** Initial configuration (JSON page schema) */
@@ -48,16 +61,16 @@ const getPreviewDeviceId = () => {
   return undefined
 }
 
-const getEmbeddedContext = () => (props.deviceId === '__template__' ? 'device-template' : 'dashboard')
+const getEmbeddedContext = () => (props.deviceId === TEMPLATE_DEVICE_ID ? 'device-template' : 'dashboard')
 
 const getPlatformDevices = () => {
   if (Array.isArray(props.platformDevices) && props.platformDevices.length > 0) return clone(props.platformDevices)
   if (getEmbeddedContext() !== 'device-template') return []
   return [
     {
-      deviceId: '__template__',
+      deviceId: TEMPLATE_DEVICE_ID,
       deviceName: '物模型字段',
-      groupId: '__template__',
+      groupId: TEMPLATE_DEVICE_ID,
       groupName: '物模型字段',
       fields: clone(props.platformFields || [])
     }
@@ -70,6 +83,16 @@ const isPlatformFieldDataSource = (dataSource: any) => {
 }
 
 const getFieldTypeMap = () => {
+  return (props.platformFields || []).reduce<Record<string, string>>((acc, field) => {
+    const fieldId = typeof field?.id === 'string' ? field.id : ''
+    if (fieldId) {
+      acc[fieldId] = typeof field?.dataType === 'string' ? field.dataType : ''
+    }
+    return acc
+  }, {})
+}
+
+const getFieldDataTypeMap = () => {
   return (props.platformFields || []).reduce<Record<string, string>>((acc, field) => {
     const fieldId = typeof field?.id === 'string' ? field.id : ''
     if (fieldId) {
@@ -168,22 +191,206 @@ const normalizeViewerPlatformDataSources = (config: any) => {
   }
 }
 
-const buildRequestedFieldData = (fieldIds: string[]) => {
-  const currentData = props.data
-  if (!fieldIds.length || !currentData) return {}
+const normalizeTelemetryHistoryRows = (payload: any) => {
+  const source = payload?.data !== undefined ? payload.data : payload
+  const rows = Array.isArray(source)
+    ? source
+    : Array.isArray(source?.list)
+      ? source.list
+      : Array.isArray(source?.data)
+        ? source.data
+        : []
 
-  return fieldIds.reduce<Record<string, unknown>>((acc, fieldId) => {
-    if (Object.prototype.hasOwnProperty.call(currentData, fieldId)) {
-      acc[fieldId] = currentData[fieldId]
+  return rows
+    .map((item: any) => {
+      const timestamp = item?.timestamp ?? item?.time ?? item?.ts ?? item?.x
+      const value = item?.value ?? item?.y ?? item?.avg
+      const ts =
+        typeof timestamp === 'number'
+          ? timestamp
+          : typeof timestamp === 'string'
+            ? Date.parse(timestamp)
+            : Number(timestamp)
+      return { timestamp, ts, value: Number(value) }
+    })
+    .filter((item: any) => Number.isFinite(item.ts) && Number.isFinite(item.value))
+}
+
+const ensureInteractiveWriteEvents = (config: any) => {
+  if (!config || !Array.isArray(config.nodes)) return config
+
+  return {
+    ...config,
+    nodes: config.nodes.map((node: any) => {
+      const eventName = DEFAULT_WRITE_EVENT_BY_COMPONENT[node?.type]
+      if (!eventName) return node
+
+      const bindings = Array.isArray(node?.data) ? node.data : []
+      const valueBinding = bindings.find((binding: any) => binding?.targetProp === 'value')
+      const parsed =
+        parseFieldBindingExpression(valueBinding?.expression) ||
+        parseFieldBindingExpression(node?.props?.value)
+      if (!parsed?.dataSourceId || !parsed.fieldPath) return node
+
+      const fieldId = getFieldRoot(parsed.fieldPath)
+      if (!fieldId) return node
+
+      const events = Array.isArray(node?.events) ? node.events : []
+      const autoAction = {
+        type: 'callWrite',
+        dataSourceId: parsed.dataSourceId,
+        payload: `({ ${JSON.stringify(fieldId)}: payload })`,
+        __thingsvisAutoWrite: AUTO_WRITE_MARKER
+      }
+
+      let found = false
+      const nextEvents = events.map((handler: any) => {
+        if (handler?.event !== eventName) return handler
+        found = true
+
+        const actions = Array.isArray(handler?.actions) ? handler.actions : []
+        const manualActions = actions.filter((action: any) => action?.__thingsvisAutoWrite !== AUTO_WRITE_MARKER)
+        return {
+          ...handler,
+          actions: [...manualActions, autoAction]
+        }
+      })
+
+      if (!found) {
+        nextEvents.push({
+          event: eventName,
+          actions: [autoAction]
+        })
+      }
+
+      return {
+        ...node,
+        events: nextEvents
+      }
+    })
+  }
+}
+
+const fetchTelemetryHistoryField = async (deviceId: string, fieldId: string) => {
+  if (!deviceId || deviceId === TEMPLATE_DEVICE_ID || !fieldId) return []
+  if (RUNTIME_STATUS_FIELD_IDS.has(fieldId)) return []
+
+  const fieldDataTypeMap = getFieldDataTypeMap()
+  if (fieldDataTypeMap[fieldId] && fieldDataTypeMap[fieldId] !== 'telemetry') return []
+
+  try {
+    const response = await telemetryDataHistoryList(
+      {
+        device_id: deviceId,
+        key: fieldId,
+        time_range: 'last_30d',
+        aggregate_window: 'no_aggregate'
+      },
+      { silentError: true } as any
+    )
+    if (response?.error) return []
+    return normalizeTelemetryHistoryRows(response)
+  } catch (error) {
+    console.warn('[ThingsVisWidget] telemetry history request failed:', fieldId, error)
+    return []
+  }
+}
+
+const getFieldRoot = (fieldPath?: string) => {
+  if (!fieldPath) return ''
+  return fieldPath.split(/[.[\]]/).filter(Boolean)[0] || ''
+}
+
+const visitStringLeaves = (value: unknown, visitor: (input: string) => void) => {
+  if (typeof value === 'string') {
+    visitor(value)
+    return
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach(item => visitStringLeaves(item, visitor))
+    return
+  }
+
+  if (value && typeof value === 'object') {
+    Object.values(value).forEach(item => visitStringLeaves(item, visitor))
+  }
+}
+
+const collectConfiguredHistoryFields = (dataSourceId?: string) => {
+  const fieldIds = new Set<string>()
+  const nodes = Array.isArray(props.config?.nodes) ? props.config.nodes : []
+
+  nodes.forEach((node: any) => {
+    visitStringLeaves(node, input => {
+      FIELD_BINDING_EXPR_GLOBAL_RE.lastIndex = 0
+
+      let match: RegExpExecArray | null
+      while ((match = FIELD_BINDING_EXPR_GLOBAL_RE.exec(input)) !== null) {
+        const matchedDataSourceId = match[1]
+        if (!matchedDataSourceId || (dataSourceId && matchedDataSourceId !== dataSourceId)) continue
+
+        const fieldRoot = getFieldRoot(match[2])
+        if (!fieldRoot.endsWith(HISTORY_FIELD_SUFFIX)) continue
+
+        const sourceFieldId = fieldRoot.slice(0, -HISTORY_FIELD_SUFFIX.length)
+        if (sourceFieldId) fieldIds.add(sourceFieldId)
+      }
+    })
+  })
+
+  return fieldIds
+}
+
+const getConfiguredPlatformDataSource = (dataSourceId?: string) => {
+  if (!dataSourceId) return null
+  const dataSources = Array.isArray(props.config?.dataSources) ? props.config.dataSources : []
+  return dataSources.find((dataSource: any) => dataSource?.id === dataSourceId) || null
+}
+
+const shouldPrefillHistoryForDataSource = (dataSourceId?: string) => {
+  const dataSource = getConfiguredPlatformDataSource(dataSourceId)
+  const bufferSize = dataSource?.config?.bufferSize
+  return typeof bufferSize === 'number' && Number.isFinite(bufferSize) && bufferSize > 0
+}
+
+const buildRequestedFieldData = async (fieldIds: string[], deviceId?: string) => {
+  const currentData = props.data
+  if (!fieldIds.length) return {}
+
+  const result: Record<string, unknown> = {}
+  const historyFields: string[] = []
+
+  fieldIds.forEach(fieldId => {
+    if (fieldId.endsWith(HISTORY_FIELD_SUFFIX)) {
+      historyFields.push(fieldId)
+      return
     }
-    return acc
-  }, {})
+    if (currentData && Object.prototype.hasOwnProperty.call(currentData, fieldId)) {
+      result[fieldId] = currentData[fieldId]
+    }
+  })
+
+  if (historyFields.length > 0 && deviceId) {
+    const historyEntries = await Promise.all(
+      historyFields.map(async historyFieldId => {
+        const sourceFieldId = historyFieldId.slice(0, -HISTORY_FIELD_SUFFIX.length)
+        const rows = await fetchTelemetryHistoryField(deviceId, sourceFieldId)
+        return [historyFieldId, rows] as const
+      })
+    )
+    historyEntries.forEach(([historyFieldId, rows]) => {
+      result[historyFieldId] = rows
+    })
+  }
+
+  return result
 }
 
 function normalizeViewerConfig(config: any) {
   if (!config || props.mode !== 'viewer') return config
 
-  const platformNormalizedConfig = normalizeViewerPlatformDataSources(config)
+  const platformNormalizedConfig = normalizeViewerPlatformDataSources(ensureInteractiveWriteEvents(config))
 
   const canvas = platformNormalizedConfig.canvas || platformNormalizedConfig.canvasConfig
   if (!canvas || canvas.mode !== 'infinite') return platformNormalizedConfig
@@ -238,7 +445,8 @@ const getLoadOptions = () => ({
   platformDevices: getPlatformDevices(),
   deviceId: props.deviceId || getPreviewDeviceId(),
   thingsvisApiBaseUrl: `${window.location.origin}/thingsvis-api`,
-  platformApiBaseUrl: window.location.origin
+  platformApiBaseUrl: getDemoServerUrl(),
+  platformToken: localStg.get('token') as string | undefined
 })
 
 const pushPlatformFieldData = (fields: Record<string, unknown>, deviceId?: string) => {
@@ -246,6 +454,21 @@ const pushPlatformFieldData = (fields: Record<string, unknown>, deviceId?: strin
   if (!deviceId) return
   const payload = clone(fields) || {}
   client.pushPlatformFieldData(payload, deviceId)
+}
+
+function normalizeLoadConfig(config: any) {
+  const writeNormalizedConfig = ensureInteractiveWriteEvents(config)
+  return normalizeViewerConfig(writeNormalizedConfig)
+}
+
+const pushPlatformFieldHistory = (
+  fieldId: string,
+  history: Array<{ value: unknown; ts: number }>,
+  deviceId?: string
+) => {
+  if (!client) return
+  if (!deviceId) return
+  client.pushPlatformFieldHistory(fieldId, clone(history) || [], deviceId)
 }
 
 const postPlatformWriteResult = (
@@ -333,20 +556,62 @@ const handlePlatformWrite = async (event: MessageEvent) => {
   }
 }
 
-const handleFieldDataRequest = (event: MessageEvent) => {
+const handleFieldDataRequest = async (event: MessageEvent) => {
   if (event.data?.type !== 'thingsvis:requestFieldData') return
 
-  const payload = event.data?.payload as { deviceId?: string; fieldIds?: string[] } | undefined
+  const payload = event.data?.payload as { dataSourceId?: string; deviceId?: string; fieldIds?: string[] } | undefined
   const fieldIds = Array.isArray(payload?.fieldIds) ? payload.fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string') : []
   if (fieldIds.length === 0) return
 
   const previewDeviceId = getPreviewDeviceId()
   if (payload?.deviceId && previewDeviceId && payload.deviceId !== previewDeviceId) return
+  const targetDeviceId = payload?.deviceId || previewDeviceId
 
-  const fields = buildRequestedFieldData(fieldIds)
+  const currentFieldIds: string[] = []
+  const explicitHistoryFieldIds: string[] = []
+  const historySourceFieldIds = new Set<string>()
+
+  fieldIds.forEach(fieldId => {
+    if (fieldId.endsWith(HISTORY_FIELD_SUFFIX)) {
+      explicitHistoryFieldIds.push(fieldId)
+      const sourceFieldId = fieldId.slice(0, -HISTORY_FIELD_SUFFIX.length)
+      if (sourceFieldId) historySourceFieldIds.add(sourceFieldId)
+      return
+    }
+
+    currentFieldIds.push(fieldId)
+    if (shouldPrefillHistoryForDataSource(payload?.dataSourceId)) {
+      historySourceFieldIds.add(fieldId)
+    }
+  })
+
+  collectConfiguredHistoryFields(payload?.dataSourceId).forEach(fieldId => {
+    historySourceFieldIds.add(fieldId)
+  })
+
+  const fields = await buildRequestedFieldData(currentFieldIds, targetDeviceId)
+
+  if (historySourceFieldIds.size > 0 && targetDeviceId) {
+    const historyEntries = await Promise.all(
+      Array.from(historySourceFieldIds).map(async fieldId => {
+        const rows = await fetchTelemetryHistoryField(targetDeviceId, fieldId)
+        return [fieldId, rows] as const
+      })
+    )
+
+    historyEntries.forEach(([fieldId, rows]) => {
+      if (rows.length > 0) {
+        pushPlatformFieldHistory(fieldId, rows, targetDeviceId)
+      }
+      if (explicitHistoryFieldIds.includes(`${fieldId}${HISTORY_FIELD_SUFFIX}`)) {
+        fields[`${fieldId}${HISTORY_FIELD_SUFFIX}`] = rows
+      }
+    })
+  }
+
   if (Object.keys(fields).length === 0) return
 
-  pushPlatformFieldData(fields, payload?.deviceId || previewDeviceId)
+  pushPlatformFieldData(fields, targetDeviceId)
 }
 
 // 辅助函数: 深拷贝以去除 Vue Proxy，防止 DataCloneError
@@ -385,7 +650,7 @@ onMounted(async () => {
   }
   const tokenParams = token ? `&token=${token}` : ''
   const thingsvisApiBaseUrl = encodeURIComponent(`${window.location.origin}/thingsvis-api`)
-  const platformApiBaseUrl = encodeURIComponent(window.location.origin)
+  const platformApiBaseUrl = encodeURIComponent(getDemoServerUrl())
   const embeddedContext = getEmbeddedContext()
   const runtimeParams = `&context=${embeddedContext}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
 
@@ -411,7 +676,7 @@ onMounted(async () => {
   // is already being set up in the iframe (tv:init triggers datasource registration).
   client.on('ready', () => {
     if (props.config) client?.loadWidgetConfig(
-      normalizeViewerConfig(clone(props.config)),
+      normalizeLoadConfig(clone(props.config)),
       clone(props.platformFields || []),
       getLoadOptions()
     )
@@ -437,7 +702,7 @@ watch(
   newVal => {
     if (client?.ready && newVal) {
       client.loadWidgetConfig(
-        normalizeViewerConfig(clone(newVal)),
+        normalizeLoadConfig(clone(newVal)),
         clone(props.platformFields || []),
         getLoadOptions()
       )
