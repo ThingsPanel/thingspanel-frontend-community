@@ -132,6 +132,12 @@ const getDeviceDetail = async () => {
   deviceData.value = data;
   device_number.value = data.device_number;
   icon_type.value = data.is_online !== 0 ? 'rgb(2,153,52)' : '#ccc';
+  currentData.value = {
+    ...currentData.value,
+    is_online: data.is_online,
+    online_text: data.is_online === 1 ? '在线' : '离线',
+    online_status_updated_at: typeof data.ts === 'number' ? data.ts : Date.now()
+  };
   showDefaultCards.value = false;
   showAppChart.value = false;
   initialConfig.value = null;

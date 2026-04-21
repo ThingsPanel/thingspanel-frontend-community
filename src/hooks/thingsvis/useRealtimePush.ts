@@ -31,6 +31,10 @@ function buildTelemetryWsUrl(): string {
   return `${getWebsocketServerUrl()}/telemetry/datas/current/ws`
 }
 
+function buildDeviceStatusWsUrl(): string {
+  return `${getWebsocketServerUrl()}/device/online/status/ws`
+}
+
 function extractFields(payload: unknown): Record<string, unknown> {
   const normalizeFlatObject = (obj: Record<string, unknown>) => {
     const fields: Record<string, unknown> = {}
@@ -81,10 +85,14 @@ export function useRealtimePush(
   fetchLatest: () => Promise<void>
 ) {
   let ws: WebSocket | null = null
+  let statusWs: WebSocket | null = null
   let pingTimer: ReturnType<typeof setInterval> | null = null
+  let statusPingTimer: ReturnType<typeof setInterval> | null = null
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+  let statusReconnectTimer: ReturnType<typeof setTimeout> | null = null
   let destroyed = false
   let loggedFirstBusinessFrame = false
+  let loggedFirstStatusFrame = false
   let warnedUnmappedPayload = false
   let businessFrameCount = 0
   const usingWebSocket = ref(false)
@@ -118,6 +126,10 @@ export function useRealtimePush(
       clearTimeout(reconnectTimer)
       reconnectTimer = null
     }
+    if (statusReconnectTimer) {
+      clearTimeout(statusReconnectTimer)
+      statusReconnectTimer = null
+    }
   }
 
   const scheduleReconnect = () => {
@@ -127,6 +139,11 @@ export function useRealtimePush(
         startWebSocket()
       }
     }, WS_RECONNECT_DELAY_MS)
+    statusReconnectTimer = setTimeout(() => {
+      if (!destroyed) {
+        startStatusWebSocket()
+      }
+    }, WS_RECONNECT_DELAY_MS)
   }
 
   const stopWebSocket = () => {
@@ -134,11 +151,20 @@ export function useRealtimePush(
       clearInterval(pingTimer)
       pingTimer = null
     }
+    if (statusPingTimer) {
+      clearInterval(statusPingTimer)
+      statusPingTimer = null
+    }
     clearReconnectTimer()
     if (ws) {
       ws.onclose = null
       ws.close()
       ws = null
+    }
+    if (statusWs) {
+      statusWs.onclose = null
+      statusWs.close()
+      statusWs = null
     }
     usingWebSocket.value = false
   }
@@ -243,10 +269,86 @@ export function useRealtimePush(
     }
   }
 
+  const startStatusWebSocket = () => {
+    if (destroyed) return
+
+    const token = localStg.get('token') as string | undefined
+    if (!token) {
+      console.warn('[useRealtimePush] No auth token for status websocket, retrying later')
+      scheduleReconnect()
+      return
+    }
+
+    try {
+      const wsUrl = buildDeviceStatusWsUrl()
+      statusWs = new WebSocket(wsUrl)
+    } catch (err) {
+      console.warn('[useRealtimePush] Status WebSocket init failed, retrying:', err)
+      scheduleReconnect()
+      return
+    }
+
+    statusWs.onopen = () => {
+      if (!statusWs) return
+      clearReconnectTimer()
+      loggedFirstStatusFrame = false
+      console.info('[useRealtimePush] Device status WS connected', { deviceId: deviceId.value, url: statusWs.url })
+
+      statusWs.send(
+        JSON.stringify({
+          device_id: deviceId.value,
+          token
+        })
+      )
+
+      statusPingTimer = setInterval(() => {
+        if (statusWs?.readyState === WebSocket.OPEN) {
+          statusWs.send('ping')
+        }
+      }, PING_INTERVAL_MS)
+    }
+
+    statusWs.onmessage = event => {
+      if (typeof event.data !== 'string' || event.data === 'pong') return
+      try {
+        const msg = JSON.parse(event.data) as Record<string, unknown>
+        if (typeof msg.is_online !== 'number') return
+
+        if (!loggedFirstStatusFrame) {
+          loggedFirstStatusFrame = true
+          console.info('[useRealtimePush] First device status frame received', { is_online: msg.is_online })
+        }
+
+        pushData({
+          is_online: msg.is_online,
+          online_text: msg.is_online === 1 ? '在线' : '离线',
+          online_status_updated_at: Date.now()
+        })
+      } catch {
+        // ignore non-JSON frames
+      }
+    }
+
+    statusWs.onerror = (event) => {
+      console.warn('[useRealtimePush] Device status WebSocket error:', event)
+    }
+
+    statusWs.onclose = event => {
+      if (destroyed) return
+      if (statusPingTimer) {
+        clearInterval(statusPingTimer)
+        statusPingTimer = null
+      }
+      console.warn('[useRealtimePush] Device status WebSocket closed:', { code: event.code, reason: event.reason })
+      scheduleReconnect()
+    }
+  }
+
   const start = () => {
     destroyed = false
     clearReconnectTimer()
     startWebSocket()
+    startStatusWebSocket()
   }
 
   const stop = () => {
