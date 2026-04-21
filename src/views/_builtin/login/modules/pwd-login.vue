@@ -165,6 +165,15 @@ async function loadAutoLoginCredentials() {
   }
 }
 
+// 从市场登录页返回时预填邮箱
+function loadMarketEmail() {
+  const urlParams = new URLSearchParams(window.location.search)
+  const marketEmailFromUrl = urlParams.get('market_email')?.trim()
+  if (marketEmailFromUrl) {
+    model.userName = marketEmailFromUrl
+  }
+}
+
 onMounted(() => {
   const is_remember_rath = localStorage.getItem('isRememberPath')
   if (is_remember_rath === '0' || is_remember_rath === '1') {
@@ -173,6 +182,7 @@ onMounted(() => {
   getFunctionOption()
   loadSavedCredentials()
   loadAutoLoginCredentials()
+  loadMarketEmail()
 })
 </script>
 
@@ -229,7 +239,7 @@ onMounted(() => {
       >
         {{ $t('route.login') }}
       </NButton>
-      <n-divider  v-if="showZc" title-placement="center" style="padding: 0px; margin: 0px">
+      <n-divider v-if="showZc" title-placement="center" style="padding: 0px; margin: 0px">
         {{ $t('generate.or') }}
       </n-divider>
       <div class="flex-y-center justify-between gap-12px mt--4">

@@ -19,7 +19,7 @@ const loginForm = reactive({
 })
 
 const loginRules = {
-  username: { required: true, message: $t('market.username'), trigger: 'blur' },
+  username: { required: true, message: () => $t('market.usernamePlaceholder'), trigger: 'blur' },
   password: { required: true, message: $t('market.password'), trigger: 'blur' }
 }
 
@@ -62,7 +62,7 @@ defineExpose({ open })
   <NModal v-model:show="visible" preset="dialog" :title="$t('market.loginTitle')" style="width: 420px">
     <NForm ref="formRef" :model="loginForm" :rules="loginRules" label-placement="left" label-width="80">
       <NFormItem :label="$t('market.username')" path="username">
-        <NInput v-model:value="loginForm.username" :placeholder="$t('market.username')" />
+        <NInput v-model:value="loginForm.username" :placeholder="$t('market.usernamePlaceholder')" />
       </NFormItem>
       <NFormItem :label="$t('market.password')" path="password">
         <NInput

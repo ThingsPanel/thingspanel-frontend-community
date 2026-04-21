@@ -41,7 +41,9 @@ const setupState = ref<{
 } | null>(null)
 const loading = ref(true)
 const redirectingToMarket = ref(false)
-const returnedFromMarket = computed(() => searchParams.get('market_registered') === '1')
+const returnedFromMarket = computed(() => {
+  return searchParams.get('market_registered') === '1' || searchParams.get('market_logged_in') === '1'
+})
 const marketEmail = computed(() => searchParams.get('market_email')?.trim() || '')
 const marketSource = computed(() => searchParams.get('market_source')?.trim() || 'horizon')
 
