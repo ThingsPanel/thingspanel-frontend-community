@@ -312,6 +312,7 @@ watch(showEditorModal, visible => {
               :config="initialConfig"
               :platform-fields="platformFields"
               :platform-devices="platformDevices"
+              device-id="__template__"
               :height="editorWidgetHeight"
               @save="handleSave"
             />

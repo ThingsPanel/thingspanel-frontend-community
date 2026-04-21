@@ -450,7 +450,7 @@ const embedUrl = computed(() => {
 
   const thingsvisApiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
   const platformApiBaseUrl = encodeURIComponent(window.location.origin)
-  return `${htmlBase}#/embed?mode=embedded&provider=thingspanel&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
+  return `${htmlBase}#/embed?mode=embedded&provider=thingspanel&context=dashboard&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
 })
 
 /**

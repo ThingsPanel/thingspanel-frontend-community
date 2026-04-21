@@ -711,10 +711,10 @@ function buildThingsVisFrameUrl(thingsVisToken: string): string {
   const saveTarget = 'host'
 
   if (props.mode === 'viewer') {
-    return `${getStudioBase()}#/embed?mode=embedded&provider=thingspanel&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
+    return `${getStudioBase()}#/embed?mode=embedded&provider=thingspanel&context=dashboard&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
   }
 
-  return `${getStudioBase()}#/editor?mode=embedded&provider=thingspanel&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
+  return `${getStudioBase()}#/editor?mode=embedded&provider=thingspanel&context=dashboard&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
 }
 
 function unwrapList(payload: any): any[] {
@@ -1382,10 +1382,7 @@ async function doInit() {
   let platformDevices: PlatformDeviceEntry[] = []
 
   if (props.mode === 'editor') {
-    platformDeviceGroups = await buildPlatformDeviceGroups()
-    if (platformDeviceGroups.length === 0) {
-      platformDevices = await buildUngroupedPlatformDevices()
-    }
+    platformDevices = await buildUngroupedPlatformDevices()
   }
 
   const platformBufferSize = Math.max(

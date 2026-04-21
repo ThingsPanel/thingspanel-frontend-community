@@ -48,6 +48,22 @@ const getPreviewDeviceId = () => {
   return undefined
 }
 
+const getEmbeddedContext = () => (props.deviceId === '__template__' ? 'device-template' : 'dashboard')
+
+const getPlatformDevices = () => {
+  if (Array.isArray(props.platformDevices) && props.platformDevices.length > 0) return clone(props.platformDevices)
+  if (getEmbeddedContext() !== 'device-template') return []
+  return [
+    {
+      deviceId: '__template__',
+      deviceName: '物模型字段',
+      groupId: '__template__',
+      groupName: '物模型字段',
+      fields: clone(props.platformFields || [])
+    }
+  ]
+}
+
 const isPlatformFieldDataSource = (dataSource: any) => {
   const type = typeof dataSource?.type === 'string' ? dataSource.type.toUpperCase() : ''
   return type === 'PLATFORM_FIELD' || type === 'PLATFORM'
@@ -219,7 +235,7 @@ function normalizeViewerConfig(config: any) {
 
 const getLoadOptions = () => ({
   platformBufferSize: props.bufferSize ?? 0,
-  platformDevices: clone(props.platformDevices || []),
+  platformDevices: getPlatformDevices(),
   deviceId: props.deviceId || getPreviewDeviceId(),
   thingsvisApiBaseUrl: `${window.location.origin}/thingsvis-api`,
   platformApiBaseUrl: window.location.origin
@@ -370,7 +386,8 @@ onMounted(async () => {
   const tokenParams = token ? `&token=${token}` : ''
   const thingsvisApiBaseUrl = encodeURIComponent(`${window.location.origin}/thingsvis-api`)
   const platformApiBaseUrl = encodeURIComponent(window.location.origin)
-  const runtimeParams = `&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
+  const embeddedContext = getEmbeddedContext()
+  const runtimeParams = `&context=${embeddedContext}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
 
   // 追加 saveTarget=host，告知 Editor 进入宿主托管模式
   const targetUrl =
