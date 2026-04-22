@@ -83,8 +83,6 @@ const collectConfiguredWriteFields = () => {
   const nodes = Array.isArray(props.config?.nodes) ? props.config.nodes : []
 
   nodes.forEach((node: any) => {
-    if (node?.type !== 'interaction/basic-switch') return
-
     const bindings = Array.isArray(node?.data) ? node.data : []
     const valueBinding = bindings.find((binding: any) => binding?.targetProp === 'value')
     const parsed =
@@ -277,10 +275,12 @@ const handlePlatformWrite = async (event: MessageEvent) => {
 
     if (fieldType === 'attribute') {
       await attributeDataPub({ device_id: targetDeviceId, value: valueStr })
+      if (dataObject) pushPlatformFieldDataCompat(dataObject, targetDeviceId)
       return
     }
 
     await telemetryDataPub({ device_id: targetDeviceId, value: valueStr })
+    if (dataObject) pushPlatformFieldDataCompat(dataObject, targetDeviceId)
   } catch (e) {
     console.error('[ThingsVisWidget] telemetryDataPub failed for tv:platform-write:', e)
   }

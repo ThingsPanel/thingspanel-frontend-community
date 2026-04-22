@@ -237,10 +237,9 @@ const onVisReady = async () => {
   if (alarmPush.value) {
     await alarmPush.value.backfillAlarmHistory()
   }
-  // Push current snapshot so widgets show real values immediately after ready
-  if (!hasLoadedInitialSnapshot.value) {
-    await fetchAndUpdateData()
-  }
+  // REST current values are authoritative after the iframe is ready. The
+  // websocket handshake frame may contain an older snapshot and overwrite data.
+  await fetchAndUpdateData()
 }
 
 // ─── 监听模板ID变化重新加载 ───────────────────────────────────────────────────
