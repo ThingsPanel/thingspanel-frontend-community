@@ -1,4 +1,3 @@
-
 <script setup lang="tsx">
 /**
  * 设备详情 - 图表Tab
@@ -16,12 +15,13 @@ import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import { normalizeThingsVisHistoryBindings } from '@/utils/thingsvis/normalize-history-bindings'
 import { normalizeInteractiveWriteBindings } from '@/utils/thingsvis/normalize-interactive-write-bindings'
-import { deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
+import { telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
 import { telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api'
 import type { PlatformField } from '@/utils/thingsvis/types'
 import { useHistoryBackfill } from '@/hooks/thingsvis/useHistoryBackfill'
 import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush'
 import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush'
+import { getCachedDeviceTemplateDetail } from '@/utils/thingsvis/template-detail-cache'
 
 const props = defineProps<{
   /** 设备ID */
@@ -61,6 +61,7 @@ const visWidgetRef = ref<InstanceType<typeof ThingsVisWidget> | null>(null)
 
 // 当前数据（轮询回退使用）
 const currentData = ref<Record<string, any>>({})
+const currentDataDeviceId = ref('')
 const viewerPlatformDevices = computed(() => {
   if (!props.id || platformFields.value.length === 0) return []
   return [
@@ -73,11 +74,14 @@ const viewerPlatformDevices = computed(() => {
 })
 
 const deviceIdRef = computed(() => props.id)
+const hasLoadedInitialSnapshot = computed(() => {
+  return currentDataDeviceId.value === props.id && Object.keys(currentData.value).length > 0
+})
 
 // ─── tp-03: 实时 WebSocket 推送 ──────────────────────────────────────────────
 
 const fetchAndUpdateData = async () => {
-  if (!props.id || !hasTemplate.value) return
+  if (!props.id || platformFields.value.length === 0) return
 
   try {
     const hasAttributes = platformFields.value.some(f => f.dataType === 'attribute')
@@ -112,6 +116,7 @@ const fetchAndUpdateData = async () => {
         ...currentData.value,
         ...dataMap
       }
+      currentDataDeviceId.value = props.id
       pushDataToVis(dataMap)
     }
   } catch (err) {
@@ -148,7 +153,7 @@ const initTemplateData = async (deviceTemplateId: string) => {
   }
 
   try {
-    const res = await deviceTemplateDetail({ id: deviceTemplateId })
+    const res = await getCachedDeviceTemplateDetail(deviceTemplateId)
 
     if (res.data) {
       const [telemetryRes, attributesRes, eventsRes, commandsRes] = await Promise.all([
@@ -160,16 +165,24 @@ const initTemplateData = async (deviceTemplateId: string) => {
 
       const telemetryList = Array.isArray(telemetryRes?.data?.list)
         ? telemetryRes.data.list
-        : Array.isArray(telemetryRes?.data) ? telemetryRes.data : []
+        : Array.isArray(telemetryRes?.data)
+          ? telemetryRes.data
+          : []
       const attributesList = Array.isArray(attributesRes?.data?.list)
         ? attributesRes.data.list
-        : Array.isArray(attributesRes?.data) ? attributesRes.data : []
+        : Array.isArray(attributesRes?.data)
+          ? attributesRes.data
+          : []
       const eventsList = Array.isArray(eventsRes?.data?.list)
         ? eventsRes.data.list
-        : Array.isArray(eventsRes?.data) ? eventsRes.data : []
+        : Array.isArray(eventsRes?.data)
+          ? eventsRes.data
+          : []
       const commandsList = Array.isArray(commandsRes?.data?.list)
         ? commandsRes.data.list
-        : Array.isArray(commandsRes?.data) ? commandsRes.data : []
+        : Array.isArray(commandsRes?.data)
+          ? commandsRes.data
+          : []
 
       const platformSource = {
         telemetry: telemetryList,
@@ -196,6 +209,7 @@ const initTemplateData = async (deviceTemplateId: string) => {
           }
           initialConfig.value = configJson
           hasTemplate.value = true
+          await fetchAndUpdateData()
         } catch (e) {
           console.warn('[TelemetryChart] 解析 web_chart_config 失败', e)
           hasTemplate.value = false
@@ -224,48 +238,46 @@ const onVisReady = async () => {
     await alarmPush.value.backfillAlarmHistory()
   }
   // Push current snapshot so widgets show real values immediately after ready
-  await fetchAndUpdateData()
+  if (!hasLoadedInitialSnapshot.value) {
+    await fetchAndUpdateData()
+  }
 }
 
 // ─── 监听模板ID变化重新加载 ───────────────────────────────────────────────────
 
-watch(() => props.deviceTemplateId, async (newVal) => {
-  // 先停止旧的推送
-  realtimePush.value?.stop()
-  alarmPush.value?.stop()
+watch(
+  () => props.deviceTemplateId,
+  async newVal => {
+    // 先停止旧的推送
+    realtimePush.value?.stop()
+    alarmPush.value?.stop()
+    currentData.value = {}
+    currentDataDeviceId.value = ''
 
-  if (newVal) {
-    await initTemplateData(newVal)
+    if (newVal) {
+      await initTemplateData(newVal)
 
-    if (hasTemplate.value) {
-      // 初始化 composables
-      historyBackfill.value = useHistoryBackfill(
-        deviceIdRef,
-        platformFields,
-        pushHistoryToVis
-      )
+      if (hasTemplate.value) {
+        // 初始化 composables
+        historyBackfill.value = useHistoryBackfill(deviceIdRef, platformFields, pushHistoryToVis)
 
-      realtimePush.value = useRealtimePush(
-        deviceIdRef,
-        platformFields,
-        pushDataToVis,
-        fetchAndUpdateData
-      )
+        realtimePush.value = useRealtimePush(deviceIdRef, platformFields, pushDataToVis, async () => {
+          if (!hasLoadedInitialSnapshot.value) {
+            await fetchAndUpdateData()
+          }
+        })
 
-      alarmPush.value = useAlarmPush(
-        deviceIdRef,
-        platformFields,
-        pushDataToVis,
-        pushHistoryToVis
-      )
+        alarmPush.value = useAlarmPush(deviceIdRef, platformFields, pushDataToVis, pushHistoryToVis)
 
-      // 启动实时推送
-      realtimePush.value?.start()
-      // 启动告警轮询
-      alarmPush.value?.start()
+        // 启动实时推送
+        realtimePush.value?.start()
+        // 启动告警轮询
+        alarmPush.value?.start()
+      }
     }
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   const el = chartCardRef.value?.$el as HTMLElement | undefined
@@ -286,12 +298,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <NCard
-    ref="chartCardRef"
-    class="device-chart-panel w-full h-full"
-    :bordered="false"
-    content-style="padding: 0;"
-  >
+  <NCard ref="chartCardRef" class="device-chart-panel w-full h-full" :bordered="false" content-style="padding: 0;">
     <template v-if="chartLoading">
       <div class="device-chart-panel__state">
         <NSkeleton text :repeat="3" />

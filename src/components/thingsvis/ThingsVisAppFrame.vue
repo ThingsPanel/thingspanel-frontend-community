@@ -302,6 +302,7 @@ function disconnectAllDeviceWs() {
  */
 let initInProgress = false
 let pendingInitDebounceTimer: ReturnType<typeof setTimeout> | null = null
+let lastInitCompletedSignature = ''
 
 type HistoryPoint = { value: unknown; ts: number }
 type RequestedFieldResult = {
@@ -667,10 +668,9 @@ function buildThingsVisFrameUrl(thingsVisToken: string): string {
   const platformFieldScope = encodeURIComponent(getCurrentPlatformFieldScope())
   const platformFields = encodeURIComponent(JSON.stringify(getCurrentGlobalPlatformFields()))
   const saveTarget = 'host'
-  const dashboardId = encodeURIComponent(props.id)
 
   if (props.mode === 'viewer') {
-    return `${getStudioBase()}#/embed?mode=embedded&saveTarget=${saveTarget}&id=${dashboardId}&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}&platformFieldScope=${platformFieldScope}&platformFields=${platformFields}`
+    return `${getStudioBase()}#/embed?mode=embedded&saveTarget=${saveTarget}&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}&platformFieldScope=${platformFieldScope}&platformFields=${platformFields}`
   }
 
   return `${getStudioBase()}#/editor?mode=embedded&saveTarget=${saveTarget}&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}&platformFieldScope=${platformFieldScope}&platformFields=${platformFields}`
@@ -1491,6 +1491,13 @@ async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDev
 async function doInit() {
   if (!iframeRef.value?.contentWindow || !token.value || !props.id) return
 
+  const initSignature = JSON.stringify({
+    id: props.id,
+    mode: props.mode,
+    token: token.value,
+    url: url.value
+  })
+
   const apiBaseUrl = window.location.origin + '/thingsvis-api'
 
   let dashboardPayload: Record<string, unknown> = { meta: { id: props.id } }
@@ -1575,16 +1582,30 @@ async function doInit() {
   } else {
     disconnectAllDeviceWs()
   }
+
+  lastInitCompletedSignature = initSignature
 }
 
 function scheduleInit() {
   if (!iframeRef.value?.contentWindow || !token.value || !props.id) return
+
+  const nextSignature = JSON.stringify({
+    id: props.id,
+    mode: props.mode,
+    token: token.value,
+    url: url.value
+  })
+
+  if (!initInProgress && nextSignature === lastInitCompletedSignature) {
+    return
+  }
 
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
   clearInitRetryTimers()
 
   const runInit = async () => {
     if (initInProgress) return
+    if (nextSignature === lastInitCompletedSignature) return
     initInProgress = true
     try {
       await doInit()
@@ -1606,7 +1627,10 @@ function scheduleInit() {
 }
 
 function handleIframeLoad() {
-  scheduleInit()
+  lastInitCompletedSignature = ''
+  if (props.mode === 'editor') {
+    scheduleInit()
+  }
 }
 
 const handleMessage = async (event: MessageEvent) => {
@@ -1757,6 +1781,7 @@ onBeforeUnmount(() => {
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
   clearInitRetryTimers()
   resetViewerHydrationState()
+  lastInitCompletedSignature = ''
   activePlatformDevices.clear()
   platformDeviceGroupsCache = null
   platformDeviceGroupsCachePromise = null
