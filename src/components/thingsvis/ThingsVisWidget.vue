@@ -14,6 +14,21 @@ const FIELD_BINDING_EXPR_GLOBAL_RE = /\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\
 const HISTORY_FIELD_SUFFIX = '__history'
 const TEMPLATE_DEVICE_ID = '__template__'
 const RUNTIME_STATUS_FIELD_IDS = new Set(['is_online', 'online_text', 'online_status_updated_at'])
+const HISTORY_TIME_RANGE_BY_PRESET: Record<string, string> = {
+  '1h': 'last_1h',
+  '6h': 'last_6h',
+  '24h': 'last_24h',
+  '7d': 'last_7d',
+  '30d': 'last_30d',
+  all: 'last_30d'
+}
+const HISTORY_TIME_RANGE_WEIGHT: Record<string, number> = {
+  last_1h: 1,
+  last_6h: 2,
+  last_24h: 3,
+  last_7d: 4,
+  last_30d: 5
+}
 const DEFAULT_WRITE_EVENT_BY_COMPONENT: Record<string, string> = {
   'interaction/basic-switch': 'change',
   'interaction/basic-slider': 'change',
@@ -92,6 +107,16 @@ const getFieldTypeMap = () => {
   }, {})
 }
 
+const getFieldValueTypeMap = () => {
+  return (props.platformFields || []).reduce<Record<string, string>>((acc, field) => {
+    const fieldId = typeof field?.id === 'string' ? field.id : ''
+    if (fieldId) {
+      acc[fieldId] = typeof field?.type === 'string' ? field.type : ''
+    }
+    return acc
+  }, {})
+}
+
 const getFieldDataTypeMap = () => {
   return (props.platformFields || []).reduce<Record<string, string>>((acc, field) => {
     const fieldId = typeof field?.id === 'string' ? field.id : ''
@@ -152,9 +177,37 @@ const collectConfiguredWriteFields = () => {
   return fieldIdsByDataSourceId
 }
 
+const normalizeBooleanValue = (value: unknown) => {
+  if (typeof value === 'boolean') return value
+  if (value === 'true' || value === '1' || value === 1) return true
+  if (value === 'false' || value === '0' || value === 0) return false
+  return value
+}
+
+const normalizeNumberValue = (value: unknown) => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : value
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return value
+}
+
+const normalizeFieldWriteValue = (fieldId: string, value: unknown) => {
+  const fieldValueType = getFieldValueTypeMap()[fieldId]
+  if (!fieldValueType) return value
+
+  if (fieldValueType === 'boolean') return normalizeBooleanValue(value)
+  if (fieldValueType === 'number') return normalizeNumberValue(value)
+  return value
+}
+
 const normalizeWriteData = (dataSourceId: string, data: unknown) => {
   if (data !== null && typeof data === 'object') {
-    return data as Record<string, unknown>
+    return Object.entries(data as Record<string, unknown>).reduce<Record<string, unknown>>((acc, [fieldId, value]) => {
+      acc[fieldId] = normalizeFieldWriteValue(fieldId, value)
+      return acc
+    }, {})
   }
 
   const configuredFields = collectConfiguredWriteFields().get(dataSourceId)
@@ -164,7 +217,7 @@ const normalizeWriteData = (dataSourceId: string, data: unknown) => {
   if (!fieldId) return data
 
   return {
-    [fieldId]: data
+    [fieldId]: normalizeFieldWriteValue(fieldId, data)
   }
 }
 
@@ -271,7 +324,37 @@ const ensureInteractiveWriteEvents = (config: any) => {
   }
 }
 
-const fetchTelemetryHistoryField = async (deviceId: string, fieldId: string) => {
+const normalizeHistoryTimeRange = (value: unknown) => {
+  if (typeof value !== 'string') return 'last_30d'
+  return HISTORY_TIME_RANGE_BY_PRESET[value] || 'last_30d'
+}
+
+const mergeHistoryTimeRange = (current: string | undefined, next: string) => {
+  if (!current) return next
+  const currentWeight = HISTORY_TIME_RANGE_WEIGHT[current] ?? 0
+  const nextWeight = HISTORY_TIME_RANGE_WEIGHT[next] ?? 0
+  return nextWeight > currentWeight ? next : current
+}
+
+const registerHistoryTimeRange = (
+  requests: Map<string, string | undefined>,
+  fieldId: string,
+  timeRange?: string
+) => {
+  const current = requests.get(fieldId)
+  if (!timeRange) {
+    if (!requests.has(fieldId)) requests.set(fieldId, current)
+    return
+  }
+
+  requests.set(fieldId, mergeHistoryTimeRange(current, timeRange))
+}
+
+const resolveNodeHistoryTimeRange = (node: any) => {
+  return normalizeHistoryTimeRange(node?.props?.timeRangePreset)
+}
+
+const fetchTelemetryHistoryField = async (deviceId: string, fieldId: string, timeRange = 'last_30d') => {
   if (!deviceId || deviceId === TEMPLATE_DEVICE_ID || !fieldId) return []
   if (RUNTIME_STATUS_FIELD_IDS.has(fieldId)) return []
 
@@ -283,7 +366,7 @@ const fetchTelemetryHistoryField = async (deviceId: string, fieldId: string) => 
       {
         device_id: deviceId,
         key: fieldId,
-        time_range: 'last_30d',
+        time_range: timeRange,
         aggregate_window: 'no_aggregate'
       },
       { silentError: true } as any
@@ -318,10 +401,11 @@ const visitStringLeaves = (value: unknown, visitor: (input: string) => void) => 
 }
 
 const collectConfiguredHistoryFields = (dataSourceId?: string) => {
-  const fieldIds = new Set<string>()
+  const requests = new Map<string, string>()
   const nodes = Array.isArray(props.config?.nodes) ? props.config.nodes : []
 
   nodes.forEach((node: any) => {
+    const historyTimeRange = resolveNodeHistoryTimeRange(node)
     visitStringLeaves(node, input => {
       FIELD_BINDING_EXPR_GLOBAL_RE.lastIndex = 0
 
@@ -334,12 +418,14 @@ const collectConfiguredHistoryFields = (dataSourceId?: string) => {
         if (!fieldRoot.endsWith(HISTORY_FIELD_SUFFIX)) continue
 
         const sourceFieldId = fieldRoot.slice(0, -HISTORY_FIELD_SUFFIX.length)
-        if (sourceFieldId) fieldIds.add(sourceFieldId)
+        if (!sourceFieldId) continue
+
+        requests.set(sourceFieldId, mergeHistoryTimeRange(requests.get(sourceFieldId), historyTimeRange))
       }
     })
   })
 
-  return fieldIds
+  return requests
 }
 
 const getConfiguredPlatformDataSource = (dataSourceId?: string) => {
@@ -359,30 +445,13 @@ const buildRequestedFieldData = async (fieldIds: string[], deviceId?: string) =>
   if (!fieldIds.length) return {}
 
   const result: Record<string, unknown> = {}
-  const historyFields: string[] = []
 
   fieldIds.forEach(fieldId => {
-    if (fieldId.endsWith(HISTORY_FIELD_SUFFIX)) {
-      historyFields.push(fieldId)
-      return
-    }
+    if (fieldId.endsWith(HISTORY_FIELD_SUFFIX)) return
     if (currentData && Object.prototype.hasOwnProperty.call(currentData, fieldId)) {
       result[fieldId] = currentData[fieldId]
     }
   })
-
-  if (historyFields.length > 0 && deviceId) {
-    const historyEntries = await Promise.all(
-      historyFields.map(async historyFieldId => {
-        const sourceFieldId = historyFieldId.slice(0, -HISTORY_FIELD_SUFFIX.length)
-        const rows = await fetchTelemetryHistoryField(deviceId, sourceFieldId)
-        return [historyFieldId, rows] as const
-      })
-    )
-    historyEntries.forEach(([historyFieldId, rows]) => {
-      result[historyFieldId] = rows
-    })
-  }
 
   return result
 }
@@ -569,32 +638,47 @@ const handleFieldDataRequest = async (event: MessageEvent) => {
 
   const currentFieldIds: string[] = []
   const explicitHistoryFieldIds: string[] = []
-  const historySourceFieldIds = new Set<string>()
+  const explicitHistorySourceFieldIds = new Set<string>()
+  const historyRequests = new Map<string, string | undefined>()
 
   fieldIds.forEach(fieldId => {
     if (fieldId.endsWith(HISTORY_FIELD_SUFFIX)) {
       explicitHistoryFieldIds.push(fieldId)
       const sourceFieldId = fieldId.slice(0, -HISTORY_FIELD_SUFFIX.length)
-      if (sourceFieldId) historySourceFieldIds.add(sourceFieldId)
+      if (sourceFieldId) {
+        explicitHistorySourceFieldIds.add(sourceFieldId)
+        registerHistoryTimeRange(historyRequests, sourceFieldId)
+      }
       return
     }
 
     currentFieldIds.push(fieldId)
-    if (shouldPrefillHistoryForDataSource(payload?.dataSourceId)) {
-      historySourceFieldIds.add(fieldId)
-    }
   })
 
-  collectConfiguredHistoryFields(payload?.dataSourceId).forEach(fieldId => {
-    historySourceFieldIds.add(fieldId)
+  const configuredHistoryFields = collectConfiguredHistoryFields(payload?.dataSourceId)
+
+  if (shouldPrefillHistoryForDataSource(payload?.dataSourceId)) {
+    const historyBoundFieldIds = new Set<string>([
+      ...explicitHistorySourceFieldIds,
+      ...Array.from(configuredHistoryFields.keys())
+    ])
+
+    const prefillFieldIds = historyBoundFieldIds.size > 0 ? currentFieldIds.filter(fieldId => historyBoundFieldIds.has(fieldId)) : currentFieldIds
+    prefillFieldIds.forEach(fieldId => {
+      registerHistoryTimeRange(historyRequests, fieldId)
+    })
+  }
+
+  configuredHistoryFields.forEach((timeRange, fieldId) => {
+    registerHistoryTimeRange(historyRequests, fieldId, timeRange)
   })
 
   const fields = await buildRequestedFieldData(currentFieldIds, targetDeviceId)
 
-  if (historySourceFieldIds.size > 0 && targetDeviceId) {
+  if (historyRequests.size > 0 && targetDeviceId) {
     const historyEntries = await Promise.all(
-      Array.from(historySourceFieldIds).map(async fieldId => {
-        const rows = await fetchTelemetryHistoryField(targetDeviceId, fieldId)
+      Array.from(historyRequests.entries()).map(async ([fieldId, timeRange]) => {
+        const rows = await fetchTelemetryHistoryField(targetDeviceId, fieldId, timeRange || 'last_30d')
         return [fieldId, rows] as const
       })
     )

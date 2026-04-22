@@ -20,12 +20,12 @@ import DeviceDiagnosis from '@/views/device/details/modules/device-diagnosis.vue
 import { $t } from '@/locales'
 import { useAppStore } from '@/store/modules/app'
 import { deviceAlarmStatus, deviceDetail, deviceUpdate } from '@/service/api/device'
-import { getTemplat } from '@/service/api/system-data'
 import { localStg } from '@/utils/storage'
 import { useRouterPush } from '@/hooks/common/router'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
 import { createLogger } from '@/utils/logger'
 import { hasThingsVisChartContent } from '@/utils/thingsvis/template-presets'
+import { getCachedDeviceTemplateDetail } from '@/utils/thingsvis/template-detail-cache'
 import { message } from '@/utils/common/discrete'
 const logger = createLogger('Detail')
 const route = useRoute()
@@ -295,7 +295,7 @@ const resolveTemplateHasChartContent = async (templateId?: string | number) => {
   }
 
   try {
-    const res = await getTemplat(normalizedTemplateId)
+    const res = await getCachedDeviceTemplateDetail(normalizedTemplateId)
     const template = res?.data || {}
     const hasChart =
       hasThingsVisChartContent(template?.web_chart_config) ||
