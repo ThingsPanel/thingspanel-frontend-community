@@ -667,13 +667,15 @@ function buildThingsVisFrameUrl(thingsVisToken: string): string {
   const apiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
   const platformFieldScope = encodeURIComponent(getCurrentPlatformFieldScope())
   const platformFields = encodeURIComponent(JSON.stringify(getCurrentGlobalPlatformFields()))
+  const provider = 'thingspanel'
+  const context = 'dashboard'
   const saveTarget = 'host'
 
   if (props.mode === 'viewer') {
-    return `${getStudioBase()}#/embed?mode=embedded&saveTarget=${saveTarget}&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}&platformFieldScope=${platformFieldScope}&platformFields=${platformFields}`
+    return `${getStudioBase()}#/embed?mode=embedded&provider=${provider}&context=${context}&saveTarget=${saveTarget}&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}&platformFieldScope=${platformFieldScope}&platformFields=${platformFields}`
   }
 
-  return `${getStudioBase()}#/editor?mode=embedded&saveTarget=${saveTarget}&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}&platformFieldScope=${platformFieldScope}&platformFields=${platformFields}`
+  return `${getStudioBase()}#/editor?mode=embedded&provider=${provider}&context=${context}&saveTarget=${saveTarget}&token=${thingsVisToken}&apiBaseUrl=${apiBaseUrl}&platformFieldScope=${platformFieldScope}&platformFields=${platformFields}`
 }
 
 function normalizeHistory(records: any[], valueKey: string): HistoryPoint[] {
