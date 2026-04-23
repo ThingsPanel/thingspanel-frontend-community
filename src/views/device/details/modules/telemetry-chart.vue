@@ -263,7 +263,8 @@ watch(() => props.deviceTemplateId, async (newVal) => {
       // 启动告警轮询
       alarmPush.value?.start()
     }
-  },
+  }
+},
   { immediate: true }
 )
 
