@@ -40,6 +40,8 @@ const EDITOR_TEMPLATE_FIELD_PAGE_SIZE = 1000
 const EDITOR_DEVICE_CONFIG_PAGE_SIZE = 1000
 const EDITOR_GROUP_DEVICE_PAGE_SIZE = 1000
 const DEFAULT_PLATFORM_BUFFER_SIZE = 100
+const GENERATED_HOST_DATA_SOURCE_ID_RE = /^(?:__platform_.+__|thingspanel_.+)$/
+const DATA_SOURCE_EXPRESSION_RE = /ds\.([^\s.}]+)\./g
 
 const props = defineProps<{
   id: string
@@ -87,6 +89,7 @@ type PlatformDeviceEntry = {
   deviceName: string
   groupId: string
   groupName: string
+  deviceConfigId?: string
   templateId?: string
   fields: PlatformDeviceField[]
   presets: any[]
@@ -984,6 +987,44 @@ function postPlatformWriteResult(requestId: string | undefined, payload: Record<
   )
 }
 
+function collectReferencedDataSourceIds(value: unknown, referencedIds = new Set<string>()): Set<string> {
+  if (typeof value === 'string') {
+    DATA_SOURCE_EXPRESSION_RE.lastIndex = 0
+    let match: RegExpExecArray | null
+    while ((match = DATA_SOURCE_EXPRESSION_RE.exec(value))) {
+      if (match[1]) referencedIds.add(match[1])
+    }
+    return referencedIds
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach(item => collectReferencedDataSourceIds(item, referencedIds))
+    return referencedIds
+  }
+
+  if (value && typeof value === 'object') {
+    Object.entries(value as Record<string, unknown>).forEach(([key, item]) => {
+      if (key === 'dataSourceId' && typeof item === 'string') {
+        referencedIds.add(item)
+      }
+      collectReferencedDataSourceIds(item, referencedIds)
+    })
+  }
+
+  return referencedIds
+}
+
+function sanitizeDataSourcesForHostSave(nodes: unknown, dataSources: unknown): unknown[] {
+  if (!Array.isArray(dataSources)) return []
+
+  const referencedIds = collectReferencedDataSourceIds(nodes)
+  return dataSources.filter((dataSource: any) => {
+    const id = typeof dataSource?.id === 'string' ? dataSource.id : ''
+    if (!GENERATED_HOST_DATA_SOURCE_ID_RE.test(id)) return true
+    return referencedIds.has(id)
+  })
+}
+
 async function handlePlatformWrite(payload: Record<string, unknown>, requestId?: string) {
   const deviceId = resolveWriteDeviceId(payload)
   const data = payload.data
@@ -1055,7 +1096,7 @@ async function handleHostSave(payload: Record<string, unknown>) {
     updatePayload.nodes = config.nodes
   }
   if (Array.isArray(config.dataSources)) {
-    updatePayload.dataSources = config.dataSources
+    updatePayload.dataSources = sanitizeDataSourcesForHostSave(config.nodes, config.dataSources)
   }
   if (config.variables !== undefined) {
     updatePayload.variables = config.variables as unknown[]
@@ -1196,9 +1237,9 @@ function resolveDeviceName(row: any, deviceId: string): string {
   ) as string
 }
 
-function resolveDeviceTemplateId(row: any, configTemplateMap: Map<string, string>): string | undefined {
+function resolveDeviceConfigId(row: any): string | undefined {
   const device = unwrapDeviceRow(row)
-  const configId = firstString(
+  return firstString(
     device.device_config_id,
     device.deviceConfigId,
     row?.device_config_id,
@@ -1206,7 +1247,11 @@ function resolveDeviceTemplateId(row: any, configTemplateMap: Map<string, string
     device.device_config?.id,
     row?.device_config?.id
   )
+}
 
+function resolveDeviceTemplateId(row: any, configTemplateMap: Map<string, string> = new Map()): string | undefined {
+  const device = unwrapDeviceRow(row)
+  const configId = resolveDeviceConfigId(row)
   return firstString(
     device.device_config?.device_template_id,
     device.device_config?.deviceTemplateId,
@@ -1223,35 +1268,24 @@ function resolveDeviceTemplateId(row: any, configTemplateMap: Map<string, string
 async function mapPlatformDevicesForGroup(
   rawDevices: any[],
   normalizedGroupId: string,
-  groupName: string,
-  configTemplateMap: Map<string, string>
+  groupName: string
 ): Promise<PlatformDeviceEntry[]> {
-  const templateIds = Array.from(
-    new Set(
-      rawDevices
-        .map((device: any) => resolveDeviceTemplateId(device, configTemplateMap))
-        .filter((templateId): templateId is string => Boolean(templateId))
-    )
-  )
-  const presetEntries = await Promise.all(
-    templateIds.map(async templateId => [templateId, await loadTemplatePresets(templateId)] as const)
-  )
-  const presetsByTemplateId = new Map<string, any[]>(presetEntries)
-
   return rawDevices
     .map((row: any): PlatformDeviceEntry | null => {
       const deviceId = resolveDeviceId(row)
       if (!deviceId) return null
-      const templateId = resolveDeviceTemplateId(row, configTemplateMap)
+      const deviceConfigId = resolveDeviceConfigId(row)
+      const templateId = resolveDeviceTemplateId(row)
 
       return {
         deviceId,
         deviceName: resolveDeviceName(row, deviceId),
         groupId: normalizedGroupId,
         groupName,
+        ...(deviceConfigId ? { deviceConfigId } : {}),
         ...(templateId ? { templateId } : {}),
         fields: [],
-        presets: templateId ? presetsByTemplateId.get(templateId) || [] : []
+        presets: []
       }
     })
     .filter((item): item is PlatformDeviceEntry => Boolean(item))
@@ -1260,8 +1294,7 @@ async function mapPlatformDevicesForGroup(
 async function buildFallbackPlatformDevicesForDefaultGroup(
   normalizedGroupId: string,
   groupName: string,
-  groups: PlatformDeviceGroupEntry[],
-  configTemplateMap: Map<string, string>
+  groups: PlatformDeviceGroupEntry[]
 ): Promise<PlatformDeviceEntry[]> {
   const rootGroups = groups.filter(group => !group.parentId || String(group.parentId) === '0')
   if (rootGroups.length !== 1 || rootGroups[0]?.groupId !== normalizedGroupId) {
@@ -1271,15 +1304,14 @@ async function buildFallbackPlatformDevicesForDefaultGroup(
   const deviceRes = await deviceList({ page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE })
   const rawDevices = unwrapList(deviceRes?.data)
 
-  return mapPlatformDevicesForGroup(rawDevices, normalizedGroupId, groupName, configTemplateMap)
+  return mapPlatformDevicesForGroup(rawDevices, normalizedGroupId, groupName)
 }
 
 async function buildUngroupedPlatformDevices(): Promise<PlatformDeviceEntry[]> {
-  const configTemplateMap = await loadDeviceConfigTemplateMap()
   const deviceRes = await deviceList({ page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE })
   const rawDevices = unwrapList(deviceRes?.data)
 
-  return mapPlatformDevicesForGroup(rawDevices, '__ungrouped__', '未分组设备', configTemplateMap)
+  return mapPlatformDevicesForGroup(rawDevices, '__ungrouped__', '未分组设备')
 }
 
 async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDeviceEntry[]> {
@@ -1297,9 +1329,8 @@ async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDev
 
   const promise = (async () => {
     try {
-      const [deviceRes, configTemplateMap, groups] = await Promise.all([
+      const [deviceRes, groups] = await Promise.all([
         deviceListByGroup({ group_id: normalizedGroupId, page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE }),
-        loadDeviceConfigTemplateMap(),
         buildPlatformDeviceGroups()
       ])
 
@@ -1310,8 +1341,8 @@ async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDev
       const relationDevices = unwrapList(deviceRes?.data)
       const devices =
         relationDevices.length > 0
-          ? await mapPlatformDevicesForGroup(relationDevices, normalizedGroupId, groupName, configTemplateMap)
-          : await buildFallbackPlatformDevicesForDefaultGroup(normalizedGroupId, groupName, groups, configTemplateMap)
+          ? await mapPlatformDevicesForGroup(relationDevices, normalizedGroupId, groupName)
+          : await buildFallbackPlatformDevicesForDefaultGroup(normalizedGroupId, groupName, groups)
 
       platformDevicesByGroupCache.set(normalizedGroupId, devices)
       return devices
@@ -1359,6 +1390,7 @@ async function doInit() {
     const fetched = dashboardData ? { data: dashboardData, error: null } : await fetchDashboardWithRetry(props.id)
     const { data, error } = fetched
     if (!error && data) {
+      const nodes = Array.isArray(data.nodes) ? data.nodes : []
       dashboardPayload = normalizeDashboardConfig({
         meta: {
           id: data.id,
@@ -1366,8 +1398,8 @@ async function doInit() {
           thumbnail: data.thumbnail
         },
         canvas: data.canvasConfig,
-        nodes: Array.isArray(data.nodes) ? data.nodes : [],
-        dataSources: Array.isArray(data.dataSources) ? data.dataSources : []
+        nodes,
+        dataSources: sanitizeDataSourcesForHostSave(nodes, data.dataSources)
       })
     } else if (!dashboardData) {
       console.warn('[AppFrame] Dashboard preload unavailable, deferring init:', props.id, error)
@@ -1376,13 +1408,6 @@ async function doInit() {
   } catch (error) {
     console.warn('[AppFrame] Failed to preload dashboard schema for embed init:', props.id, error)
     return
-  }
-
-  let platformDeviceGroups: PlatformDeviceGroupEntry[] = []
-  let platformDevices: PlatformDeviceEntry[] = []
-
-  if (props.mode === 'editor') {
-    platformDevices = await buildUngroupedPlatformDevices()
   }
 
   const platformBufferSize = Math.max(
@@ -1402,8 +1427,6 @@ async function doInit() {
       type: 'tv:init',
       payload: {
         platformBufferSize,
-        platformDeviceGroups,
-        platformDevices,
         data: dashboardPayload,
         config: {
           mode: 'app',
@@ -1509,6 +1532,17 @@ const handleMessage = async (event: MessageEvent) => {
     return
   }
 
+  if (type === 'thingsvis:requestDeviceGroups') {
+    try {
+      const groups = await buildPlatformDeviceGroups()
+      postToThingsVis('tv:device-groups', { groups })
+    } catch (error) {
+      console.warn('[AppFrame] Failed to load requested device groups:', error)
+      postToThingsVis('tv:device-groups', { groups: [] })
+    }
+    return
+  }
+
   if (type === 'thingsvis:requestDevicesByGroup') {
     const groupId = typeof (payload as any).groupId === 'string' ? (payload as any).groupId : undefined
     if (!groupId) return
@@ -1533,10 +1567,24 @@ const handleMessage = async (event: MessageEvent) => {
 
   if (type === 'thingsvis:requestDeviceFields') {
     const deviceId = typeof (payload as any).deviceId === 'string' ? (payload as any).deviceId : undefined
-    const templateId = typeof (payload as any).templateId === 'string' ? (payload as any).templateId : undefined
-    if (!iframeRef.value?.contentWindow || !deviceId || !templateId) return
+    const directTemplateId = typeof (payload as any).templateId === 'string' ? (payload as any).templateId : undefined
+    const deviceConfigId = typeof (payload as any).deviceConfigId === 'string' ? (payload as any).deviceConfigId : undefined
+    if (!iframeRef.value?.contentWindow || !deviceId) return
 
     try {
+      let templateId = directTemplateId
+      if (!templateId && deviceConfigId) {
+        templateId = (await loadDeviceConfigTemplateMap()).get(deviceConfigId)
+      }
+      if (!templateId) {
+        postToThingsVis('tv:device-fields', {
+          deviceId,
+          templateId: '',
+          fields: []
+        })
+        return
+      }
+
       const entry = await loadTemplateEntry(templateId)
       updateActivePlatformDeviceFields(deviceId, Array.isArray(entry.fields) ? entry.fields : [])
       postToThingsVis('tv:device-fields', {
