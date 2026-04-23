@@ -1,9 +1,8 @@
 import { computed, reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { createDiscreteApi } from 'naive-ui'
-import { useLoading } from '@sa/hooks'
 import moment from 'moment'
 import { SetupStoreId } from '@/enum'
+import { useLoading } from '@sa/hooks'
 import { useRouterPush } from '@/hooks/common/router'
 import { fetchGetUserInfo, fetchLogin, logout } from '@/service/api'
 import { transformUser } from '@/service/api/auth'
@@ -13,12 +12,11 @@ import { encryptDataByRsa, generateRandomHexString, validPassword } from '@/util
 import { useRouteStore } from '../route'
 import { useTabStore } from '../tab'
 import { clearAuthStorage, getToken, getUserInfo } from './shared'
-
-const { dialog } = createDiscreteApi(['dialog'])
+import { clearThingsVisToken } from '@/utils/thingsvis'
 
 export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   const routeStore = useRouteStore()
-  const { route, toLogin, redirectFromLogin, routerPush } = useRouterPush(false)
+  const { route, toLogin, redirectFromLogin } = useRouterPush(false)
   const { loading: loginLoading, startLoading, endLoading } = useLoading()
 
   const token = ref(getToken())
@@ -32,6 +30,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     const authStore = useAuthStore()
 
     clearAuthStorage()
+    clearThingsVisToken()
 
     authStore.$reset()
 
@@ -52,25 +51,25 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     startLoading()
     try {
       let newP = password
-      const data = localStorage.getItem('enableZcAndYzm') ? JSON.parse(localStorage.getItem('enableZcAndYzm')) : []
+      const data = localStorage.getItem('enableZcAndYzm') ? JSON.parse(localStorage.getItem('enableZcAndYzm')!) : []
       let salt: string | null = null
       if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
         salt = generateRandomHexString(16)
         newP = encryptDataByRsa(password + salt)
       }
 
-      const { data: loginToken } = await fetchLogin(userName, newP, salt)
+      const { data: loginToken } = await fetchLogin(userName, newP, salt ?? null)
       if (!loginToken) {
         await resetStore()
         return
       }
 
       const { loop, info } = await loginByToken(loginToken)
-      if (loop) {
+      if (loop && info) {
         const password_last_updated = info.password_last_updated
         const now = new Date()
         const cha = moment(now).diff(password_last_updated, 'days')
-        const tipFunc = async str => {
+        const tipFunc = async () => {
           // dialog.warning({
           //   content: str,
           //   positiveText: $t('common.confirm'),
@@ -93,15 +92,15 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
         }
 
         if (!validPassword(password)) {
-          tipFunc($t('card.pwdRuleReset'))
+          tipFunc()
         } else if (!info.password_last_updated || cha > 90) {
-          tipFunc($t('card.resetPwd'))
+          tipFunc()
         } else {
           await routeStore.initAuthRoute()
           await redirectFromLogin()
         }
       }
-    } catch (_error) {
+    } catch {
       await resetStore()
     } finally {
       endLoading()
@@ -161,6 +160,9 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       token.value = loginToken.token
       Object.assign(userInfo, info)
 
+      // 4. 清除 ThingsVis token 缓存，确保使用新用户身份重新交换 SSO token
+      clearThingsVisToken()
+
       return { loop: true, info }
     }
 
@@ -179,6 +181,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     resetStore,
     login,
     enter,
-    requestLogout
+    requestLogout,
+    loginByToken
   }
 })

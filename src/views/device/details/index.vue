@@ -23,11 +23,9 @@ import { deviceAlarmStatus, deviceDetail, deviceUpdate } from '@/service/api/dev
 import { localStg } from '@/utils/storage'
 import { useRouterPush } from '@/hooks/common/router'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
-import { createLogger } from '@/utils/logger'
 import { hasThingsVisChartContent } from '@/utils/thingsvis/template-presets'
 import { getCachedDeviceTemplateDetail } from '@/utils/thingsvis/template-detail-cache'
 import { message } from '@/utils/common/discrete'
-const logger = createLogger('Detail')
 const route = useRoute()
 const { query } = useRoute()
 const appStore = useAppStore()
@@ -181,7 +179,7 @@ const { send } = useWebSocket(wsUrl, {
     interval: 8000,
     pongTimeout: 3000
   },
-  onMessage(ws: WebSocket, event: MessageEvent) {
+  onMessage(event: MessageEvent) {
     if (event.data && event.data !== 'pong') {
       const info = JSON.parse(event.data)
       device_is_online.value = info.is_online

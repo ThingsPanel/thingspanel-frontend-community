@@ -1,6 +1,8 @@
 {
     "market.loginTitle": "登录设备模板市场",
-    "market.username": "用户名",
+    "market.username": "账号",
+    "market.usernamePlaceholder": "请输入用户名/邮箱",
+    "market.usernameTip": "用户名至少需要6个字符",
     "market.password": "密码",
     "market.login": "登录",
     "market.loginSuccess": "登录成功",

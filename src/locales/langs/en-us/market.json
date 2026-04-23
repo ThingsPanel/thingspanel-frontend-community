@@ -1,6 +1,8 @@
 {
     "market.loginTitle": "Login to Template Market",
     "market.username": "Username",
+    "market.usernamePlaceholder": "Please enter username/email",
+    "market.usernameTip": "Username must be at least 6 characters",
     "market.password": "Password",
     "market.login": "Login",
     "market.loginSuccess": "Login successful",

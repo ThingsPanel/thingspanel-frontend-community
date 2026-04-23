@@ -1,4 +1,3 @@
-
 <script setup lang="tsx">
 /**
  * 设备详情 - 图表Tab
@@ -158,16 +157,24 @@ const initTemplateData = async (deviceTemplateId: string) => {
 
       const telemetryList = Array.isArray(telemetryRes?.data?.list)
         ? telemetryRes.data.list
-        : Array.isArray(telemetryRes?.data) ? telemetryRes.data : []
+        : Array.isArray(telemetryRes?.data)
+          ? telemetryRes.data
+          : []
       const attributesList = Array.isArray(attributesRes?.data?.list)
         ? attributesRes.data.list
-        : Array.isArray(attributesRes?.data) ? attributesRes.data : []
+        : Array.isArray(attributesRes?.data)
+          ? attributesRes.data
+          : []
       const eventsList = Array.isArray(eventsRes?.data?.list)
         ? eventsRes.data.list
-        : Array.isArray(eventsRes?.data) ? eventsRes.data : []
+        : Array.isArray(eventsRes?.data)
+          ? eventsRes.data
+          : []
       const commandsList = Array.isArray(commandsRes?.data?.list)
         ? commandsRes.data.list
-        : Array.isArray(commandsRes?.data) ? commandsRes.data : []
+        : Array.isArray(commandsRes?.data)
+          ? commandsRes.data
+          : []
 
       const platformSource = {
         telemetry: telemetryList,
@@ -256,8 +263,9 @@ watch(() => props.deviceTemplateId, async (newVal) => {
       // 启动告警轮询
       alarmPush.value?.start()
     }
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   const el = chartCardRef.value?.$el as HTMLElement | undefined
@@ -278,12 +286,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <NCard
-    ref="chartCardRef"
-    class="device-chart-panel w-full h-full"
-    :bordered="false"
-    content-style="padding: 0;"
-  >
+  <NCard ref="chartCardRef" class="device-chart-panel w-full h-full" :bordered="false" content-style="padding: 0;">
     <template v-if="chartLoading">
       <div class="device-chart-panel__state">
         <NSkeleton text :repeat="3" />

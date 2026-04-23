@@ -112,8 +112,53 @@ export function fetchHasAdmin() {
   return request.get<{ has_admin: boolean }>('/tenant/has-admin')
 }
 
-/** 超管注册（联动市场） */
-export function fetchMarketRegister(data: { email: string; password: string }) {
+/** 获取首次安装状态 */
+export function fetchTenantSetupState() {
+  return request.get<{
+    has_admin: boolean
+    entry: 'login' | 'register'
+    market_base_url?: string
+    market_register_url?: string
+  }>('/tenant/setup-state')
+}
+
+export interface SuperAdminInitPayload {
+  email: string
+  password: string
+  market_registered?: boolean
+  market_email?: string
+  market_source?: string
+}
+
+/** 首次安装超管初始化（语义化新接口） */
+export async function fetchSuperAdminInit(data: SuperAdminInitPayload) {
+  try {
+    return await request.post('/tenant/super-admin/init', data, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  } catch (error: any) {
+    const status = error?.response?.status
+    const code = error?.response?.data?.code
+    if (status === 404 || code === 100404) {
+      return request.post('/tenant/market-register', data, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    }
+    throw error
+  }
+}
+
+/** 兼容旧命名：超管注册（联动市场） */
+export function fetchMarketRegister(data: SuperAdminInitPayload) {
+  return fetchSuperAdminInit(data)
+}
+
+/** 旧接口直连（仅兼容场景需要时使用） */
+export function fetchMarketRegisterLegacy(data: SuperAdminInitPayload) {
   return request.post('/tenant/market-register', data, {
     headers: {
       'Content-Type': 'application/json'

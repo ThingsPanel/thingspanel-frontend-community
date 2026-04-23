@@ -1,22 +1,34 @@
 <script setup lang="ts">
-import { computed, reactive } from 'vue'
+import { computed, onMounted, reactive, watch, toRefs } from 'vue'
 import { NAutoComplete, NButton, NForm, NFormItem, NInput, NSpace } from 'naive-ui'
-import { useI18n } from 'vue-i18n'
 import { $t } from '@/locales'
 import { useFormRules, useNaiveForm } from '@/hooks/common/form'
 import { useAuthStore } from '@/store/modules/auth'
-import { fetchMarketRegister } from '@/service/api/auth'
-import { localStg } from '@/utils/storage'
+import { fetchSuperAdminInit } from '@/service/api/auth'
+import { getConfirmPwdRule } from '@/utils/form/rule'
 
 defineOptions({
   name: 'SuperAdminRegisterPage'
 })
 
-const { locale } = useI18n()
+interface Props {
+  marketUrl?: string
+  marketEmail?: string
+  marketRegistered?: boolean
+  marketSource?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  marketUrl: '',
+  marketEmail: '',
+  marketRegistered: false,
+  marketSource: ''
+})
+
 const auth = useAuthStore()
 const { formRef, validate } = useNaiveForm()
+const fallbackMarketUrl = import.meta.env.VITE_MARKET_URL || 'https://r.thingspanel.cn'
 
-/** 超管注册：仅邮箱+密码（市场已注册邮箱），不要 IoT 邮箱验证码 */
 interface FormModel {
   email: string
   pwd: string
@@ -24,16 +36,24 @@ interface FormModel {
 }
 
 const model: FormModel = reactive({
-  email: '',
+  email: props.marketEmail || '',
   pwd: '',
   confirmPwd: ''
 })
 
-// const marketUrl = import.meta.env.VITE_MARKET_URL || 'http://localhost:5173'
-const marketUrl = import.meta.env.VITE_MARKET_URL || 'http://r.thingspanel.cn'
+const marketUrl = computed(() => {
+  const configured = (props.marketUrl || fallbackMarketUrl).trim()
+  if (!configured) return fallbackMarketUrl
+  if (configured.includes('localhost') || configured.includes('127.0.0.1') || configured.includes('0.0.0.0')) {
+    return fallbackMarketUrl
+  }
+  return configured
+})
+
+const emailLocked = computed(() => props.marketEmail.trim() !== '')
 
 const canSubmit = computed(() => {
-  return model.email.trim() !== '' && model.pwd.trim() !== '' && model.pwd.length >= 6 && model.confirmPwd === model.pwd
+  return model.email.trim() !== '' && model.pwd.trim() !== '' && model.confirmPwd.trim() !== '' && model.pwd.length >= 6
 })
 
 const commonDomains = ['qq.com', '163.com', 'gmail.com', 'outlook.com', 'sina.com', 'hotmail.com', 'yahoo.com']
@@ -72,74 +92,95 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
         trigger: ['input', 'blur']
       }
     ],
-    confirmPwd: [
-      {
-        validator: (_rule, value) => {
-          if (value !== model.pwd) {
-            return Promise.reject(new Error('两次输入密码不一致'))
-          }
-          return Promise.resolve()
-        },
-        message: '两次输入密码不一致',
-        trigger: 'blur'
-      }
-    ]
+    confirmPwd: getConfirmPwdRule(toRefs(model).pwd)
   }
 })
+
+function buildMarketRegisterUrl() {
+  const base = marketUrl.value
+  const url = base.endsWith('/register') ? new URL(base) : new URL('/register', base)
+  url.searchParams.set('callback', window.location.href)
+  url.searchParams.set('return_to', window.location.href)
+  return url.toString()
+}
+
+function goToMarketRegister() {
+  window.location.href = buildMarketRegisterUrl()
+}
 
 async function handleSubmit() {
   try {
     await validate()
-    const resp = (await fetchMarketRegister({
-      email: model.email,
-      password: model.pwd
+    const resp = (await fetchSuperAdminInit({
+      email: model.email.trim(),
+      password: model.pwd,
+      market_registered: props.marketRegistered,
+      market_email: props.marketEmail.trim() || model.email.trim(),
+      market_source: props.marketSource || 'horizon'
     })) as any
 
-    if (!resp.error && resp.data && resp.data.token) {
-      localStg.set('token', resp.data.token)
-      const expires_in = Date.now() + (resp.data.expires_in || 360000) * 1000
-      localStg.set('token_expires_in', expires_in.toString())
-
-      // 注册成功后，需要获取并保存 userInfo
-      // 这样 ThingsVis SSO 才能正常获取用户信息
-      try {
-        const { fetchGetUserInfo } = await import('@/service/api')
-        const userInfoResp = await fetchGetUserInfo()
-        if (userInfoResp.data) {
-          userInfoResp.data.roles = [userInfoResp.data.authority]
-          localStg.set('userInfo', userInfoResp.data)
-          console.log('[SuperAdminRegister] userInfo 已保存:', userInfoResp.data)
-        }
-      } catch (userInfoError) {
-        console.warn('[SuperAdminRegister] 获取 userInfo 失败:', userInfoError)
+    if (resp?.error) {
+      const code = resp?.error?.code ?? resp?.code
+      if (code === 200055) {
+        window.$message?.warning('该邮箱尚未完成市场注册，无法继续初始化')
+        goToMarketRegister()
+        return
       }
+    }
 
-      window.location.href = '/'
+    if (!resp.error) {
+      window.$message?.success('本地初始化成功')
+      if (resp.data && resp.data.token) {
+        // 通过 loginByToken 完成登录流程，确保 userInfo 被正确存储到 localStorage
+        // 这样 thingsvisAuthService.waitForUserInfo() 能正确获取用户信息
+        const loginToken: Api.Auth.LoginToken = {
+          token: resp.data.token,
+          refreshToken: resp.data.refreshToken || '',
+          expires_in: resp.data.expires_in || 3600
+        }
+        await auth.loginByToken(loginToken)
+
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 500)
+      }
     }
   } catch (error: any) {
     const code = error.response?.data?.code
     const msg = error.response?.data?.message
-    // 200055：邮箱未在市场注册（勿用 200050，与功能模板删除等业务码冲突）
     if (code === 200055) {
-      window.$message.warning(msg || $t('market.unregisteredTip'))
+      window.$message.warning(msg || '该邮箱尚未完成市场注册，无法继续初始化')
+      goToMarketRegister()
     } else {
-      window.$message.error(msg || error?.message || $t('page.login.register.registerError'))
-      console.error('Registration failed:', error)
+      window.$message.error(msg || error?.message || '本地初始化失败，请检查邮箱和密码后重试')
+      console.error('Initialization failed:', error)
     }
   }
 }
 
-function goToMarketRegister() {
-  const callback = encodeURIComponent(window.location.href)
-  window.open(`${marketUrl}/register?callback=${callback}`, '_blank')
-}
+watch(
+  () => props.marketEmail,
+  value => {
+    if (value) {
+      model.email = value
+    }
+  },
+  { immediate: true }
+)
+
+onMounted(() => {
+  if (props.marketEmail) {
+    model.email = props.marketEmail
+  }
+})
 </script>
 
 <template>
-  <NForm ref="formRef" :key="locale" :model="model" :rules="rules" size="large" :show-label="false" autocomplete="off">
+  <NForm ref="formRef" :model="model" :rules="rules" size="large" :show-label="false" autocomplete="off">
     <NFormItem path="email">
       <NAutoComplete
         v-model:value="model.email"
+        :disabled="emailLocked"
         :options="emailOptions"
         :placeholder="$t('page.login.register.emailPlaceholder')"
         clearable
@@ -161,7 +202,7 @@ function goToMarketRegister() {
         v-model:value="model.confirmPwd"
         type="password"
         show-password-on="click"
-        placeholder="请再次输入密码"
+        :placeholder="$t('page.login.common.confirmPasswordPlaceholder')"
         autocomplete="new-password"
       />
     </NFormItem>
@@ -178,11 +219,6 @@ function goToMarketRegister() {
       >
         {{ $t('common.confirm') }}
       </NButton>
-
-      <div class="market-tip">
-        <span>{{ $t('market.noAccount') }}</span>
-        <NButton text type="primary" @click="goToMarketRegister">{{ $t('market.goToRegister') }}</NButton>
-      </div>
     </NSpace>
   </NForm>
 </template>
@@ -190,13 +226,6 @@ function goToMarketRegister() {
 <style scoped>
 .w-full {
   width: 100%;
-}
-
-.market-tip {
-  text-align: center;
-  color: #999;
-  font-size: 13px;
-  line-height: 1.5;
 }
 
 input:-webkit-autofill,

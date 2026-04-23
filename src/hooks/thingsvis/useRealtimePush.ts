@@ -230,6 +230,7 @@ export function useRealtimePush(
               rawKeys: Object.keys(rawFields).slice(0, 12),
               mappedKeys: Object.keys(mappedFields).slice(0, 12)
             })
+            fetchLatest().catch(console.error)
           }
           if (import.meta.env.DEV && businessFrameCount % 10 === 0) {
             console.info('[useRealtimePush] Telemetry frame progress', {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, toRefs } from 'vue'
 import { NAutoComplete, NButton, NForm, NFormItem, NInput, NSpace } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { $t } from '@/locales'
@@ -8,7 +8,7 @@ import { useFormRules, useNaiveForm } from '@/hooks/common/form'
 import useSmsCode from '@/hooks/business/use-sms-code'
 import { useAuthStore } from '@/store/modules/auth'
 import { fetchEmailCode, registerByEmail } from '@/service/api/auth'
-import { localStg } from '@/utils/storage'
+import { getConfirmPwdRule } from '@/utils/form/rule'
 
 defineOptions({
   name: 'RegisterPage'
@@ -23,7 +23,8 @@ interface FormModel {
   email: string
   phone: string
   code: string
-  pwd: string,
+  pwd: string
+  confirmPwd: string
   country_code: string
 }
 
@@ -32,13 +33,20 @@ const model: FormModel = reactive({
   phone: '',
   code: '',
   pwd: '',
+  confirmPwd: '',
   country_code: '+86'
 })
 const { label, isCounting, loading: smsLoading, start } = useSmsCode()
 
 // 判断表单是否可以提交
 const canSubmit = computed(() => {
-  return model.email.trim() !== '' && model.code.trim() !== '' && model.pwd.trim() !== '' && model.pwd.length >= 6
+  return (
+    model.email.trim() !== '' &&
+    model.code.trim() !== '' &&
+    model.pwd.trim() !== '' &&
+    model.confirmPwd.trim() !== '' &&
+    model.pwd.length >= 6
+  )
 })
 
 // 常用邮箱后缀列表
@@ -89,7 +97,8 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
         message: () => $t('form.pwd.tip'),
         trigger: ['input', 'blur']
       }
-    ]
+    ],
+    confirmPwd: getConfirmPwdRule(toRefs(model).pwd)
   }
 })
 
@@ -97,8 +106,6 @@ function handleSmsCode() {
   // 调用 fetchEmailCode 函数获取验证码
   fetchEmailCode(model.email)
     .then((res: any) => {
-      if (process.env.NODE_ENV === 'development') {
-      }
       const { error } = res
       if (!error) {
         start() // 开始计时
@@ -128,30 +135,29 @@ async function handleSubmit() {
       phone_number: model.phone
     })) as any
 
-    // 只在注册成功时显示消息并处理后续操作
     if (!resp.error) {
       window.$message?.success($t('page.login.register.registerSuccess'))
 
-      // 如果响应中有 token，直接使用它进行登录
       if (resp.data && resp.data.token) {
-        // 存储 token 和过期时间
-        localStg.set('token', resp.data.token)
-        const expires_in = Date.now() + (resp.data.expires_in || 360000) * 1000
-        localStg.set('token_expires_in', expires_in.toString())
+        // 通过 loginByToken 完成登录流程，确保 userInfo 被正确存储到 localStorage
+        // 这样 thingsvisAuthService.waitForUserInfo() 能正确获取用户信息
+        const loginToken: Api.Auth.LoginToken = {
+          token: resp.data.token,
+          refreshToken: resp.data.refreshToken || '',
+          expires_in: resp.data.expires_in || 3600
+        }
+        await auth.loginByToken(loginToken)
 
-        // 重载页面以应用新 token
         setTimeout(() => {
           window.location.href = '/'
-        }, 1500)
+        }, 500)
       } else {
-        // 如果没有 token，则跳转到登录页面
         setTimeout(() => {
           toggleLoginModule('pwd-login')
         }, 1500)
       }
     }
   } catch (error: any) {
-    // 不显示错误消息，静默失败
     console.error('Registration failed:', error)
   }
 }
@@ -231,15 +237,18 @@ const countryCodeOptions = [
     </NFormItem>
     <NFormItem path="phone">
       <div class="flex gap-2">
-            <NSelect
-              v-model:value="model.country_code"
-              :options="countryCodeOptions"
-              class="w-32"
-              :placeholder="$t('page.login.common.countryCodePlaceholder')"
-            />
-            <NInput v-model:value="model.phone" :placeholder="$t('page.login.common.phonePlaceholder')" autocomplete="off" />
-          </div>
-
+        <NSelect
+          v-model:value="model.country_code"
+          :options="countryCodeOptions"
+          class="w-32"
+          :placeholder="$t('page.login.common.countryCodePlaceholder')"
+        />
+        <NInput
+          v-model:value="model.phone"
+          :placeholder="$t('page.login.common.phonePlaceholder')"
+          autocomplete="off"
+        />
+      </div>
     </NFormItem>
 
     <NFormItem path="pwd">
@@ -248,6 +257,15 @@ const countryCodeOptions = [
         type="password"
         show-password-on="click"
         :placeholder="$t('page.login.common.passwordPlaceholder')"
+        autocomplete="new-password"
+      />
+    </NFormItem>
+    <NFormItem path="confirmPwd">
+      <NInput
+        v-model:value="model.confirmPwd"
+        type="password"
+        show-password-on="click"
+        :placeholder="$t('page.login.common.confirmPasswordPlaceholder')"
         autocomplete="new-password"
       />
     </NFormItem>

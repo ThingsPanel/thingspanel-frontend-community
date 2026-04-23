@@ -143,8 +143,6 @@ const collectConfiguredWriteFields = () => {
   const nodes = Array.isArray(props.config?.nodes) ? props.config.nodes : []
 
   nodes.forEach((node: any) => {
-    if (node?.type !== 'interaction/basic-switch') return
-
     const bindings = Array.isArray(node?.data) ? node.data : []
     const valueBinding = bindings.find((binding: any) => binding?.targetProp === 'value')
     const parsed =
