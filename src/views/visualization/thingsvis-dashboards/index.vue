@@ -32,7 +32,12 @@ import {
   type DashboardListItem,
   type ThingsVisProject
 } from '@/service/api/thingsvis'
-import { deleteDashboardMenuConfig, saveDashboardMenuConfig } from '@/service/api/dashboard-menu'
+import {
+  deleteDashboardMenuConfig,
+  fetchDashboardMenuConfig,
+  saveDashboardMenuConfig,
+  type DashboardMenuConfig
+} from '@/service/api/dashboard-menu'
 import { clearThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
 import { refreshAuthRoutes } from '@/utils/router/refresh-auth-routes'
 
@@ -46,19 +51,34 @@ const projectId = computed(() => route.query.projectId as string)
 // 状态
 const loading = ref(false)
 const project = ref<ThingsVisProject | null>(null)
-const dashboards = ref<DashboardListItem[]>([])
+const allDashboards = ref<DashboardListItem[]>([])
 const showModal = ref(false)
 const searchKeyword = ref('')
+const menuConfigs = ref<Record<string, DashboardMenuConfig | null>>({})
+const menuConfigLoadSeq = ref(0)
+const showMenuModal = ref(false)
+const menuSaving = ref(false)
+const menuForm = ref({
+  dashboardId: '',
+  dashboardName: '',
+  enabled: false,
+  menuName: '',
+  menuSort: 1
+})
 
 // 表单数据
 const formData = ref({
   name: '',
   canvasMode: 'fixed' as 'fixed' | 'grid' | 'infinite',
   canvasWidth: 1920,
-  canvasHeight: 1080,
-  menuEnabled: false,
-  menuName: '',
-  menuSort: 1
+  canvasHeight: 1080
+})
+
+const dashboards = computed(() => {
+  const keyword = searchKeyword.value.trim().toLowerCase()
+  if (!keyword) return allDashboards.value
+
+  return allDashboards.value.filter(item => item.name.toLowerCase().includes(keyword))
 })
 
 /** 加载项目信息 */
@@ -94,17 +114,12 @@ const fetchDashboards = async () => {
     })
 
     if (!error && data) {
-      // 客户端搜索过滤
-      let list = data.data
-      if (searchKeyword.value) {
-        list = list.filter(item =>
-          item.name.toLowerCase().includes(searchKeyword.value.toLowerCase())
-        )
-      }
-      dashboards.value = list
+      const list = data.data
+      allDashboards.value = list
 
-      // 延迟加载缩略图
-      loadThumbnails(list)
+      // 延迟加载缩略图和菜单配置
+      void loadThumbnails(list)
+      void loadMenuConfigs(list)
     } else if (error) {
       message.error('加载仪表盘失败')
     }
@@ -113,9 +128,27 @@ const fetchDashboards = async () => {
   }
 }
 
+/** 加载每个仪表盘的系统菜单配置 */
+const loadMenuConfigs = async (list: DashboardListItem[]) => {
+  const loadSeq = menuConfigLoadSeq.value + 1
+  menuConfigLoadSeq.value = loadSeq
+  const entries = await Promise.all(
+    list.map(async item => {
+      const { data, error } = await fetchDashboardMenuConfig(item.id)
+      return [item.id, error ? menuConfigs.value[item.id] ?? null : data ?? null] as const
+    })
+  )
+
+  if (loadSeq !== menuConfigLoadSeq.value) return
+
+  menuConfigs.value = {
+    ...menuConfigs.value,
+    ...Object.fromEntries(entries)
+  }
+}
+
 /** 懒加载缩略图 */
 const loadThumbnails = async (list: DashboardListItem[]) => {
-  console.log('[loadThumbnails] 开始加载缩略图, 数量:', list.length)
   // 并发控制，每次请求 5 个
   const CONCURRENCY = 5
   const queue = [...list]
@@ -126,24 +159,21 @@ const loadThumbnails = async (list: DashboardListItem[]) => {
       await Promise.all(batch.map(async (item) => {
         // 检查是否已有有效的缩略图（处理 null、undefined、空字符串）
         const hasValidThumbnail = item.thumbnail && item.thumbnail.trim().startsWith('data:')
-        console.log(`[loadThumbnails] 检查 ${item.id}: hasValidThumbnail=${hasValidThumbnail}, thumbnail=${item.thumbnail?.substring(0, 50)}...`)
         if (hasValidThumbnail) return
 
         try {
-          console.log(`[loadThumbnails] 请求缩略图 API: ${item.id}`)
           const result = await getThingsVisDashboardThumbnail(item.id)
-          console.log(`[loadThumbnails] API 返回 ${item.id} 完整数据:`, result)
           // 处理可能的嵌套数据结构
-          const thumbnail = result.data?.thumbnail || result.data?.data?.thumbnail
+          const resultData = result.data as
+            | { thumbnail?: string | null; data?: { thumbnail?: string | null } }
+            | null
+          const thumbnail = resultData?.thumbnail || resultData?.data?.thumbnail
           if (thumbnail) {
             // 更新响应式数据
-            const target = dashboards.value.find(d => d.id === item.id)
+            const target = allDashboards.value.find(d => d.id === item.id)
             if (target) {
               target.thumbnail = thumbnail
-              console.log(`[loadThumbnails] 已更新缩略图: ${item.id}, 长度: ${thumbnail.length}`)
             }
-          } else {
-            console.log(`[loadThumbnails] 没有找到缩略图数据: ${item.id}`)
           }
         } catch (e) {
           console.error(`[loadThumbnails] 加载缩略图失败 ${item.id}:`, e)
@@ -161,10 +191,7 @@ const openCreateModal = () => {
     name: '',
     canvasMode: 'fixed',
     canvasWidth: 1920,
-    canvasHeight: 1080,
-    menuEnabled: false,
-    menuName: '',
-    menuSort: 1
+    canvasHeight: 1080
   }
   showModal.value = true
 }
@@ -191,36 +218,21 @@ const handleCreateDashboard = async () => {
     })
 
     if (!error) {
-      let menuBindingFailed = false
-      if (formData.value.menuEnabled && data?.id) {
-        const { error: menuError } = await saveDashboardMenuConfig(data.id, {
-          menu_name: formData.value.menuName.trim() || formData.value.name.trim(),
-          dashboard_name: formData.value.name.trim(),
-          sort: formData.value.menuSort,
-          enabled: true
-        })
-        menuBindingFailed = Boolean(menuError)
-
-        if (!menuError) {
-          await refreshAuthRoutes(route.fullPath)
-        }
-      }
-
       message.success('创建成功')
-      if (menuBindingFailed) {
-        message.warning('仪表盘已创建，但系统菜单绑定失败，请进入编辑页重新保存菜单配置')
-      }
       showModal.value = false
       formData.value = {
         name: '',
         canvasMode: 'fixed',
         canvasWidth: 1920,
-        canvasHeight: 1080,
-        menuEnabled: false,
-        menuName: '',
-        menuSort: 1
+        canvasHeight: 1080
       }
       await fetchDashboards()
+      if (data?.id) {
+        openMenuConfig({
+          ...data,
+          homeFlag: false
+        } as DashboardListItem)
+      }
     } else {
       message.error('创建失败')
     }
@@ -231,7 +243,7 @@ const handleCreateDashboard = async () => {
 }
 
 /** 删除 Dashboard */
-const handleDeleteDashboard = async (id: string, name: string) => {
+const handleDeleteDashboard = async (id: string) => {
   try {
     const { error } = await deleteThingsVisDashboard(id)
     if (!error) {
@@ -262,6 +274,71 @@ const handleSetAsHomepage = async (dashboard: DashboardListItem) => {
   } catch (e) {
     message.error('设置首页失败')
     console.error(e)
+  }
+}
+
+/** 打开系统菜单配置 */
+const openMenuConfig = (dashboard: DashboardListItem) => {
+  const config = menuConfigs.value[dashboard.id]
+  menuForm.value = {
+    dashboardId: dashboard.id,
+    dashboardName: dashboard.name,
+    enabled: Boolean(config?.enabled),
+    menuName: config?.menu_name || dashboard.name,
+    menuSort: config?.sort || 1
+  }
+  showMenuModal.value = true
+}
+
+/** 保存系统菜单配置 */
+const handleSaveMenuConfig = async () => {
+  if (!menuForm.value.dashboardId) return
+
+  if (menuForm.value.enabled && !menuForm.value.menuName.trim()) {
+    message.error('请输入菜单名称')
+    return
+  }
+
+  menuConfigLoadSeq.value += 1
+  menuSaving.value = true
+  try {
+    let resultError: string | null = null
+
+    if (menuForm.value.enabled) {
+      const { data, error } = await saveDashboardMenuConfig(menuForm.value.dashboardId, {
+        menu_name: menuForm.value.menuName.trim(),
+        dashboard_name: menuForm.value.dashboardName,
+        sort: menuForm.value.menuSort,
+        enabled: true
+      })
+      resultError = error?.message || null
+      if (!resultError) {
+        menuConfigs.value = {
+          ...menuConfigs.value,
+          [menuForm.value.dashboardId]: data
+        }
+      }
+    } else {
+      const { error } = await deleteDashboardMenuConfig(menuForm.value.dashboardId)
+      resultError = error?.message || null
+      if (!resultError) {
+        menuConfigs.value = {
+          ...menuConfigs.value,
+          [menuForm.value.dashboardId]: null
+        }
+      }
+    }
+
+    if (resultError) {
+      message.error(`菜单配置保存失败: ${resultError}`)
+      return
+    }
+
+    await refreshAuthRoutes(route.fullPath)
+    showMenuModal.value = false
+    message.success('菜单配置已保存')
+  } finally {
+    menuSaving.value = false
   }
 }
 
@@ -320,7 +397,9 @@ onMounted(async () => {
       <div class="mb-5 flex items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <h2 class="text-xl font-bold">{{ project?.name }}</h2>
-          <span class="text-gray-400">{{ dashboards.length }} 个仪表盘</span>
+          <span class="text-gray-400">
+            {{ searchKeyword ? `${dashboards.length} / ${allDashboards.length}` : dashboards.length }} 个仪表盘
+          </span>
         </div>
 
         <div class="flex items-center gap-3">
@@ -330,8 +409,6 @@ onMounted(async () => {
             clearable
             placeholder="搜索仪表盘名称..."
             style="width: 240px"
-            @update:value="fetchDashboards"
-            @clear="fetchDashboards"
           >
             <template #prefix>
               <icon-mdi:magnify />
@@ -358,7 +435,7 @@ onMounted(async () => {
         <!-- 空状态 -->
         <NEmpty
           v-if="!loading && dashboards.length === 0"
-          description="暂无仪表盘，点击上方按钮创建第一个仪表盘"
+          :description="allDashboards.length === 0 ? '暂无仪表盘，点击上方按钮创建第一个仪表盘' : '没有匹配的仪表盘'"
           class="py-20"
         >
           <template #icon>
@@ -390,7 +467,7 @@ onMounted(async () => {
                   <!-- 右上角首页图标 -->
                   <div
                     v-if="dashboard.homeFlag"
-                    class="absolute top-2 right-2 h-24px w-24px border-2 border-red-500 rounded-full text-center text-12px text-red-500 font-600 flex items-center justify-center bg-white"
+                    class="absolute top-2 right-2 h-24px w-24px border-2 border-red-500 rounded-full text-center text-12px text-red-500 font-600 flex items-center justify-center bg-white shadow-sm"
                   >
                     首
                   </div>
@@ -405,6 +482,9 @@ onMounted(async () => {
                     </h3>
                     <NTag v-if="dashboard.isPublished" size="small" type="success">
                       已发布
+                    </NTag>
+                    <NTag v-if="menuConfigs[dashboard.id]?.enabled" size="small" type="info">
+                      系统菜单
                     </NTag>
                   </div>
 
@@ -431,6 +511,22 @@ onMounted(async () => {
                     </template>
                     编辑
                   </NButton>
+
+                  <NTooltip>
+                    <template #trigger>
+                      <NButton
+                        size="small"
+                        :type="menuConfigs[dashboard.id]?.enabled ? 'info' : 'default'"
+                        secondary
+                        @click.stop="openMenuConfig(dashboard)"
+                      >
+                        <template #icon>
+                          <icon-mdi:menu />
+                        </template>
+                      </NButton>
+                    </template>
+                    {{ menuConfigs[dashboard.id]?.enabled ? '编辑系统菜单' : '设为系统菜单' }}
+                  </NTooltip>
 
                   <!-- 设为首页按钮 -->
                   <NTooltip v-if="!dashboard.homeFlag">
@@ -459,7 +555,7 @@ onMounted(async () => {
                     当前首页
                   </NTooltip>
 
-                  <NPopconfirm @positive-click.stop="handleDeleteDashboard(dashboard.id, dashboard.name)">
+                  <NPopconfirm @positive-click.stop="handleDeleteDashboard(dashboard.id)">
                     <template #trigger>
                       <NButton size="small" secondary type="error" @click.stop>
                         <template #icon>
@@ -484,31 +580,6 @@ onMounted(async () => {
           <NInput
             v-model:value="formData.name"
             placeholder="请输入仪表盘名称"
-            maxlength="50"
-            show-count
-            @update:value="
-              value => {
-                if (!formData.menuName) formData.menuName = value
-              }
-            "
-          />
-        </NFormItem>
-
-        <NFormItem label="设为系统菜单">
-          <NSwitch
-            v-model:value="formData.menuEnabled"
-            @update:value="
-              value => {
-                if (value && !formData.menuName) formData.menuName = formData.name
-              }
-            "
-          />
-        </NFormItem>
-
-        <NFormItem v-if="formData.menuEnabled" label="菜单名称">
-          <NInput
-            v-model:value="formData.menuName"
-            placeholder="请输入菜单名称"
             maxlength="50"
             show-count
           />
@@ -564,6 +635,54 @@ onMounted(async () => {
         <div class="flex justify-end gap-2">
           <NButton @click="showModal = false">取消</NButton>
           <NButton type="primary" @click="handleCreateDashboard">创建</NButton>
+        </div>
+      </template>
+    </NModal>
+
+    <!-- 系统菜单配置 -->
+    <NModal v-model:show="showMenuModal" preset="card" title="系统菜单配置" class="w-500px">
+      <NForm :model="menuForm">
+        <NFormItem label="仪表盘">
+          <NInput :value="menuForm.dashboardName" disabled />
+        </NFormItem>
+
+        <NFormItem label="设为系统菜单">
+          <NSwitch
+            v-model:value="menuForm.enabled"
+            @update:value="
+              value => {
+                if (value && !menuForm.menuName) menuForm.menuName = menuForm.dashboardName
+              }
+            "
+          />
+        </NFormItem>
+
+        <NFormItem v-if="menuForm.enabled" label="菜单名称">
+          <NInput
+            v-model:value="menuForm.menuName"
+            placeholder="请输入菜单名称"
+            maxlength="50"
+            show-count
+          />
+        </NFormItem>
+
+        <NFormItem v-if="menuForm.enabled" label="菜单排序">
+          <NInputNumber
+            v-model:value="menuForm.menuSort"
+            :min="1"
+            :precision="0"
+            placeholder="排序值"
+            style="width: 160px"
+          />
+        </NFormItem>
+      </NForm>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <NButton @click="showMenuModal = false">取消</NButton>
+          <NButton type="primary" :loading="menuSaving" @click="handleSaveMenuConfig">
+            保存菜单
+          </NButton>
         </div>
       </template>
     </NModal>
