@@ -1,27 +1,24 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 /**
  * ThingsVis Viewer Component
- * 纯预览组件，直接嵌入 ThingsVis 的 /embed 路由
- * 不含任何编辑器 UI，只渲染仪表板
+ * 绾瑙堢粍浠讹紝鐩存帴宓屽叆 ThingsVis 鐨?/embed 璺敱
+ * 涓嶅惈浠讳綍缂栬緫鍣?UI锛屽彧娓叉煋浠〃鏉?
  */
 
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { NSpin } from 'naive-ui'
 import { getThingsVisToken } from '@/utils/thingsvis'
 import {
-  deviceList,
   telemetryDataCurrent,
-  getAttributeDataSet,
-  telemetryDataHistoryList
+  getAttributeDataSet
 } from '@/service/api/device'
-import { getOnlineDeviceTrend } from '@/service/api'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
 
 interface Props {
-  /** 仪表板配置数据 */
+  /** 浠〃鏉块厤缃暟鎹?*/
   config: any
-  /** iframe高度 */
+  /** iframe楂樺害 */
   height?: string
 }
 
@@ -37,13 +34,15 @@ const emit = defineEmits<{
 const PING_INTERVAL_MS = 8_000
 const WS_RECONNECT_DELAY_MS = 3_000
 
-type HistoryPoint = { value: unknown; ts: number }
-type RequestedFieldResult = {
-  fields: Record<string, unknown>
-  histories: Array<{ fieldId: string; history: HistoryPoint[]; deviceId?: string }>
+interface DeviceWsEntry {
+  ws: WebSocket | null
+  pingTimer: ReturnType<typeof setInterval> | null
+  reconnectTimer: ReturnType<typeof setTimeout> | null
+  destroyed: boolean
+  deviceId: string
 }
 
-interface DeviceWsEntry {
+interface DeviceStatusWsEntry {
   ws: WebSocket | null
   pingTimer: ReturnType<typeof setInterval> | null
   reconnectTimer: ReturnType<typeof setTimeout> | null
@@ -57,44 +56,17 @@ type PlatformSourceDescriptor = {
   requestedFields: string[]
 }
 
-/** 组件 timeRangePreset → API time_range + aggregate_window 映射 */
-const PRESET_TO_API_PARAMS: Record<string, { time_range: string; aggregate_window: string }> = {
-  '1h':  { time_range: 'last_1h',  aggregate_window: '1m' },
-  '6h':  { time_range: 'last_6h',  aggregate_window: '2m' },
-  '24h': { time_range: 'last_24h', aggregate_window: '5m' },
-  '7d':  { time_range: 'last_7d',  aggregate_window: '30m' },
-  '30d': { time_range: 'last_30d', aggregate_window: '3h' },
-}
-
-const DEFAULT_HISTORY_API_PARAMS = PRESET_TO_API_PARAMS['1h']!
-
+/** 缁勪欢 timeRangePreset 鈫?API time_range + aggregate_window 鏄犲皠 */
 const FIELD_BINDING_EXPR_RE = /^\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}$/
 
-// iframe 引用
+// iframe 寮曠敤
 const iframeRef = ref<HTMLIFrameElement>()
 const loading = ref(true)
 const ready = ref(false)
 const error = ref<string | null>(null)
 const token = ref<string | null>(null)
 const deviceWsMap = new Map<string, DeviceWsEntry>()
-
-function normalizeHistory(records: any[], valueKey: string): HistoryPoint[] {
-  return records
-    .map((item: any) => ({
-      value: item?.[valueKey] ?? item?.value ?? item?.avg ?? item?.y ?? 0,
-      ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
-    }))
-    .filter((point) => !Number.isNaN(point.ts))
-}
-
-function normalizeDeviceTotalHistory(records: any[]): HistoryPoint[] {
-  return records
-    .map((item: any) => ({
-      value: Number(item?.device_online ?? 0) + Number(item?.device_offline ?? 0),
-      ts: new Date(item?.timestamp || item?.time || item?.x || item?.ts || Date.now()).getTime()
-    }))
-    .filter((point) => !Number.isNaN(point.ts))
-}
+const deviceStatusWsMap = new Map<string, DeviceStatusWsEntry>()
 
 function extractWsFields(payload: unknown): Record<string, unknown> {
   if (!payload || typeof payload !== 'object') return {}
@@ -175,7 +147,92 @@ function connectDeviceWs(deviceId: string) {
         const win = iframeRef.value?.contentWindow
         if (!win) return
         win.postMessage({ type: 'tv:platform-data', payload: { deviceId, fields: rawFields } }, '*')
-        win.postMessage({ type: 'tv:platform-data', payload: { fields: rawFields } }, '*')
+      } catch {
+        // ignore non-JSON frames
+      }
+    }
+
+    entry.ws.onerror = () => {
+      /* reconnect handled by onclose */
+    }
+
+    entry.ws.onclose = () => {
+      if (entry.destroyed) return
+      if (entry.pingTimer) {
+        clearInterval(entry.pingTimer)
+        entry.pingTimer = null
+      }
+      entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
+    }
+  }
+
+  openWs()
+}
+
+function connectDeviceStatusWs(deviceId: string) {
+  const prev = deviceStatusWsMap.get(deviceId)
+  if (prev) {
+    prev.destroyed = true
+    if (prev.pingTimer) clearInterval(prev.pingTimer)
+    if (prev.reconnectTimer) clearTimeout(prev.reconnectTimer)
+    prev.ws?.close()
+  }
+
+  const entry: DeviceStatusWsEntry = {
+    ws: null,
+    pingTimer: null,
+    reconnectTimer: null,
+    destroyed: false,
+    deviceId
+  }
+  deviceStatusWsMap.set(deviceId, entry)
+
+  function openWs() {
+    if (entry.destroyed) return
+
+    const accessToken = localStg.get('token') as string | undefined
+    if (!accessToken) {
+      entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
+      return
+    }
+
+    try {
+      entry.ws = new WebSocket(`${getWebsocketServerUrl()}/device/online/status/ws`)
+    } catch (err) {
+      console.warn('[ThingsVisViewer] Status WS init failed for device', deviceId, err)
+      entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
+      return
+    }
+
+    entry.ws.onopen = () => {
+      if (!entry.ws) return
+      entry.ws.send(JSON.stringify({ device_id: deviceId, token: accessToken }))
+      entry.pingTimer = setInterval(() => {
+        if (entry.ws?.readyState === WebSocket.OPEN) entry.ws.send('ping')
+      }, PING_INTERVAL_MS)
+    }
+
+    entry.ws.onmessage = evt => {
+      if (typeof evt.data !== 'string' || evt.data === 'pong') return
+      try {
+        const msg = JSON.parse(evt.data) as Record<string, unknown>
+        if (typeof msg.is_online !== 'number') return
+        const win = iframeRef.value?.contentWindow
+        if (!win) return
+        win.postMessage(
+          {
+            type: 'tv:platform-data',
+            payload: {
+              deviceId,
+              fields: {
+                is_online: msg.is_online,
+                online_text: msg.is_online === 1 ? '在线' : '离线',
+                online_status_updated_at: Date.now()
+              }
+            }
+          },
+          '*'
+        )
       } catch {
         // ignore non-JSON frames
       }
@@ -205,6 +262,13 @@ function ensureDeviceWs(deviceId?: string) {
   connectDeviceWs(deviceId)
 }
 
+function ensureDeviceStatusWs(deviceId?: string) {
+  if (!deviceId) return
+  const existing = deviceStatusWsMap.get(deviceId)
+  if (existing && !existing.destroyed) return
+  connectDeviceStatusWs(deviceId)
+}
+
 function disconnectAllDeviceWs() {
   for (const entry of deviceWsMap.values()) {
     entry.destroyed = true
@@ -213,6 +277,14 @@ function disconnectAllDeviceWs() {
     entry.ws?.close()
   }
   deviceWsMap.clear()
+
+  for (const entry of deviceStatusWsMap.values()) {
+    entry.destroyed = true
+    if (entry.pingTimer) clearInterval(entry.pingTimer)
+    if (entry.reconnectTimer) clearTimeout(entry.reconnectTimer)
+    entry.ws?.close()
+  }
+  deviceStatusWsMap.clear()
 }
 
 function collectRequestedFieldsFromValue(
@@ -274,26 +346,9 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
 }
 
 /**
- * 从仪表板节点中提取最宽的 timeRangePreset，用于决定历史查询范围。
- * 优先级: 30d > 7d > 24h > 6h > 1h > all(默认 1h)
+ * 浠庝华琛ㄦ澘鑺傜偣涓彁鍙栨渶瀹界殑 timeRangePreset锛岀敤浜庡喅瀹氬巻鍙叉煡璇㈣寖鍥淬€?
+ * 浼樺厛绾? 30d > 7d > 24h > 6h > 1h > all(榛樿 1h)
  */
-const PRESET_PRIORITY: string[] = ['1h', '6h', '24h', '7d', '30d']
-
-function extractWidestTimeRangePreset(config: any): string {
-  const nodes = config?.nodes
-  if (!Array.isArray(nodes)) return 'all'
-
-  let widestIdx = -1
-  for (const node of nodes) {
-    const preset = node?.props?.timeRangePreset
-    if (typeof preset === 'string') {
-      const idx = PRESET_PRIORITY.indexOf(preset)
-      if (idx > widestIdx) widestIdx = idx
-    }
-  }
-  return widestIdx >= 0 ? PRESET_PRIORITY[widestIdx]! : 'all'
-}
-
 async function fetchAllCurrentFieldsForDevice(deviceId: string): Promise<Record<string, unknown>> {
   const [telemetryResult, attributeResult] = await Promise.allSettled([
     telemetryDataCurrent(deviceId),
@@ -322,223 +377,84 @@ async function hydrateConfiguredPlatformSources() {
   const descriptors = collectPlatformSourceDescriptors(props.config)
   if (descriptors.length === 0) return
 
-  const widestPreset = extractWidestTimeRangePreset(props.config)
-
   const handledDeviceIds = new Set<string>()
-  let globalHydrated = false
 
   for (const descriptor of descriptors) {
     const requestedFields = descriptor.requestedFields
+    if (!descriptor.deviceId) continue
 
-    if (descriptor.deviceId) {
-      if (handledDeviceIds.has(descriptor.deviceId)) continue
-      handledDeviceIds.add(descriptor.deviceId)
+    if (handledDeviceIds.has(descriptor.deviceId)) continue
+    handledDeviceIds.add(descriptor.deviceId)
 
-      ensureDeviceWs(descriptor.deviceId)
+    ensureDeviceWs(descriptor.deviceId)
+    ensureDeviceStatusWs(descriptor.deviceId)
 
-      let result: RequestedFieldResult
-      if (requestedFields.length > 0) {
-        result = await buildRequestedFieldData(requestedFields, descriptor.deviceId, widestPreset)
-      } else {
-        result = {
-          fields: await fetchAllCurrentFieldsForDevice(descriptor.deviceId),
-          histories: []
-        }
-      }
+    const fields = requestedFields.length > 0
+      ? await buildRequestedFieldData(requestedFields, descriptor.deviceId)
+      : await fetchAllCurrentFieldsForDevice(descriptor.deviceId)
+    if (Object.keys(fields).length === 0) continue
 
-      if (Object.keys(result.fields).length > 0) {
-        win.postMessage(
-          { type: 'tv:platform-data', payload: { deviceId: descriptor.deviceId, fields: result.fields } },
-          '*'
-        )
-        win.postMessage(
-          { type: 'tv:platform-data', payload: { fields: result.fields } },
-          '*'
-        )
-      }
-
-      result.histories.forEach((item) => {
-        win.postMessage(
-          {
-            type: 'tv:platform-history',
-            payload: {
-              deviceId: item.deviceId,
-              fieldId: item.fieldId,
-              history: item.history
-            }
-          },
-          '*'
-        )
-      })
-      continue
-    }
-
-    if (globalHydrated) continue
-    globalHydrated = true
-
-    const fallbackGlobalFields = requestedFields.length > 0
-      ? requestedFields
-      : ['device_total', 'device_online', 'device_offline', 'device_activity']
-    const result = await buildRequestedFieldData(fallbackGlobalFields, undefined, widestPreset)
-    if (Object.keys(result.fields).length > 0) {
-      win.postMessage(
-        { type: 'tv:platform-data', payload: { fields: result.fields } },
-        '*'
-      )
-    }
-
-    result.histories.forEach((item) => {
-      win.postMessage(
-        {
-          type: 'tv:platform-history',
-          payload: {
-            fieldId: item.fieldId,
-            history: item.history
-          }
-        },
-        '*'
-      )
-    })
+    win.postMessage(
+      { type: 'tv:platform-data', payload: { deviceId: descriptor.deviceId, fields } },
+      '*'
+    )
   }
 }
 
-async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string, timeRangePreset?: string): Promise<RequestedFieldResult> {
+async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): Promise<Record<string, unknown>> {
   const requestedFields = Array.isArray(fieldIds)
     ? fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string')
     : []
 
-  if (requestedFields.length === 0) {
-    return { fields: {}, histories: [] }
-  }
+  if (!deviceId || requestedFields.length === 0) return {}
 
   const currentFieldIds = requestedFields.filter((fieldId) => !fieldId.endsWith('__history'))
-  const historyFieldIds = requestedFields
-    .filter((fieldId) => fieldId.endsWith('__history'))
-    .map((fieldId) => fieldId.replace(/__history$/, ''))
+  if (currentFieldIds.length === 0) return {}
 
-  if (deviceId) {
-    const result: RequestedFieldResult = { fields: {}, histories: [] }
+  const [telemetryResult, attributeResult] = await Promise.allSettled([
+    telemetryDataCurrent(deviceId),
+    getAttributeDataSet({ device_id: deviceId })
+  ])
 
-    if (currentFieldIds.length > 0) {
-      const [telemetryResult, attributeResult] = await Promise.allSettled([
-        telemetryDataCurrent(deviceId),
-        getAttributeDataSet({ device_id: deviceId })
-      ])
+  const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
+  const attributeRes = attributeResult.status === 'fulfilled' ? attributeResult.value : null
 
-      const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
-      const attributeRes = attributeResult.status === 'fulfilled' ? attributeResult.value : null
-
-      const kvMap: Record<string, unknown> = {}
-      const collect = (item: any) => {
-        if (item?.key !== undefined) kvMap[item.key] = item.value
-        if (item?.label) kvMap[item.label] = item.value
-      }
-
-      if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
-      if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
-
-      currentFieldIds.forEach((fieldId) => {
-        if (kvMap[fieldId] !== undefined) result.fields[fieldId] = kvMap[fieldId]
-      })
-    }
-
-    if (historyFieldIds.length > 0) {
-      const apiParams = (timeRangePreset && PRESET_TO_API_PARAMS[timeRangePreset]) || DEFAULT_HISTORY_API_PARAMS
-      const historyResults = await Promise.allSettled(
-        historyFieldIds.map(async (fieldId) => {
-          const historyRes = await telemetryDataHistoryList({
-            device_id: deviceId,
-            key: fieldId,
-            time_range: apiParams.time_range,
-            aggregate_window: apiParams.aggregate_window,
-            aggregate_function: 'avg'
-          })
-          const rawList = historyRes?.data?.time_series ?? historyRes?.data?.list ?? []
-          const list = Array.isArray(rawList) ? rawList : []
-          const history = normalizeHistory(list, 'value')
-          if (history.length > 0) {
-            result.histories.push({ fieldId, history, deviceId })
-          }
-        })
-      )
-
-      historyResults.forEach((item) => {
-        if (item.status === 'rejected') {
-          console.warn('[ThingsVisViewer] Device history fetch failed:', item.reason)
-        }
-      })
-    }
-
-    return result
+  const kvMap: Record<string, unknown> = {}
+  const collect = (item: any) => {
+    if (item?.key !== undefined) kvMap[item.key] = item.value
+    if (item?.label) kvMap[item.label] = item.value
   }
 
-  const result: RequestedFieldResult = { fields: {}, histories: [] }
-  const devRes = await deviceList({ page: 1, page_size: 1000 })
-  const devices = devRes?.data?.list || devRes?.data || []
-  const deviceTotal = Array.isArray(devices) ? devices.length : 0
-  const deviceOnline = Array.isArray(devices)
-    ? devices.filter((device: any) => Number(device?.is_online || 0) !== 0).length
-    : 0
-  const aggregateValues: Record<string, unknown> = {
-    device_total: deviceTotal,
-    device_online: deviceOnline,
-    device_offline: Math.max(0, deviceTotal - deviceOnline),
-    device_activity: deviceOnline
-  }
+  if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
+  if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
 
+  const result: Record<string, unknown> = {}
   currentFieldIds.forEach((fieldId) => {
-    if (aggregateValues[fieldId] !== undefined) result.fields[fieldId] = aggregateValues[fieldId]
+    if (kvMap[fieldId] !== undefined) result[fieldId] = kvMap[fieldId]
   })
-
-  if (historyFieldIds.some((fieldId) => ['device_online', 'device_offline', 'device_total'].includes(fieldId))) {
-    const trendRes = await getOnlineDeviceTrend()
-    const trendData = trendRes?.data as { points?: unknown[] } | undefined
-    const points = Array.isArray(trendData?.points) ? trendData.points : []
-
-    if (historyFieldIds.includes('device_online')) {
-      const history = normalizeHistory(points, 'device_online')
-      if (history.length > 0) result.histories.push({ fieldId: 'device_online', history })
-    }
-
-    if (historyFieldIds.includes('device_offline')) {
-      const history = normalizeHistory(points, 'device_offline')
-      if (history.length > 0) result.histories.push({ fieldId: 'device_offline', history })
-    }
-
-    if (historyFieldIds.includes('device_total')) {
-      const history = normalizeDeviceTotalHistory(points)
-      if (history.length > 0) result.histories.push({ fieldId: 'device_total', history })
-    }
-  }
-
   return result
 }
-
-/**
- * 获取 ThingsVis Embed URL
- */
 const embedUrl = computed(() => {
-  // 基础 URL - 直接指向 /embed 路由
+  // 鍩虹 URL - 鐩存帴鎸囧悜 /embed 璺敱
   const baseUrl = import.meta.env.VITE_THINGSVIS_STUDIO_URL || 'http://localhost:3000/main.html'
 
-  // 移除可能存在的 hash 部分
+  // 绉婚櫎鍙兘瀛樺湪鐨?hash 閮ㄥ垎
   const cleanBase = baseUrl.split('#')[0]
 
-  // 确保以 .html 结尾
+  // 纭繚浠?.html 缁撳熬
   const htmlBase = cleanBase.endsWith('.html')
     ? cleanBase
     : cleanBase.endsWith('/main')
       ? cleanBase + '.html'
       : cleanBase
 
-  // 构建 embed URL
-  // apiBaseUrl 必须写入 URL，以便 Studio 在 postMessage 到达前就能路由 API 请求
-  const apiBase = encodeURIComponent(window.location.origin + '/thingsvis-api')
-  return `${htmlBase}#/embed?apiBaseUrl=${apiBase}`
+  const thingsvisApiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
+  const platformApiBaseUrl = encodeURIComponent(window.location.origin)
+  return `${htmlBase}#/embed?mode=embedded&provider=thingspanel&context=dashboard&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
 })
 
 /**
- * 处理来自 iframe 的消息
+ * 澶勭悊鏉ヨ嚜 iframe 鐨勬秷鎭?
  */
 const handleMessage = (event: MessageEvent) => {
   const { data } = event
@@ -550,50 +466,23 @@ const handleMessage = (event: MessageEvent) => {
 
     const payload = data.payload || {}
     ensureDeviceWs(payload.deviceId)
+    ensureDeviceStatusWs(payload.deviceId)
 
-    const widestPreset = extractWidestTimeRangePreset(props.config)
-    void buildRequestedFieldData(payload.fieldIds, payload.deviceId, widestPreset)
-      .then((result) => {
+    void buildRequestedFieldData(payload.fieldIds, payload.deviceId)
+      .then((fields) => {
         const win = iframeRef.value?.contentWindow
-        if (!win) return
+        if (!win || Object.keys(fields).length === 0) return
 
-        if (Object.keys(result.fields).length > 0) {
-          win.postMessage(
-            {
-              type: 'tv:platform-data',
-              payload: {
-                deviceId: payload.deviceId,
-                fields: result.fields
-              }
-            },
-            '*'
-          )
-          if (payload.deviceId) {
-            win.postMessage(
-              {
-                type: 'tv:platform-data',
-                payload: {
-                  fields: result.fields
-                }
-              },
-              '*'
-            )
-          }
-        }
-
-        result.histories.forEach((item) => {
-          win.postMessage(
-            {
-              type: 'tv:platform-history',
-              payload: {
-                deviceId: item.deviceId,
-                fieldId: item.fieldId,
-                history: item.history
-              }
-            },
-            '*'
-          )
-        })
+        win.postMessage(
+          {
+            type: 'tv:platform-data',
+            payload: {
+              deviceId: payload.deviceId,
+              fields
+            }
+          },
+          '*'
+        )
       })
       .catch(() => {
         // Best effort only.
@@ -601,44 +490,45 @@ const handleMessage = (event: MessageEvent) => {
     return
   }
 
-  // EmbedPage 就绪
+  // EmbedPage 灏辩华
   if (data.type === 'READY') {
-    console.log('[ThingsVisViewer] EmbedPage 已就绪')
+    console.log('[ThingsVisViewer] EmbedPage ready')
     ready.value = true
     loading.value = false
 
-    // 2. 发送仪表板数据
+    // 2. 鍙戦€佷华琛ㄦ澘鏁版嵁
     sendConfig()
     emit('ready')
   }
 
-  // 加载完成
+  // 鍔犺浇瀹屾垚
   if (data.type === 'LOADED') {
-    console.log('[ThingsVisViewer] 仪表板加载完成:', data.payload)
+    console.log('[ThingsVisViewer] 浠〃鏉垮姞杞藉畬鎴?', data.payload)
     void hydrateConfiguredPlatformSources()
   }
 
-  // 加载错误
+  // 鍔犺浇閿欒
   if (data.type === 'ERROR') {
-    console.error('[ThingsVisViewer] 加载错误:', data.payload)
+    console.error('[ThingsVisViewer] 鍔犺浇閿欒:', data.payload)
     error.value = data.payload
     emit('error', data.payload)
   }
 }
 
 /**
- * 发送配置到 EmbedPage
+ * 鍙戦€侀厤缃埌 EmbedPage
  */
 const sendConfig = () => {
   if (!iframeRef.value?.contentWindow || !props.config) {
-    console.warn('[ThingsVisViewer] 无法发送配置: iframe 或 config 不可用')
+    console.warn('[ThingsVisViewer] Cannot send config: iframe or config unavailable')
     return
   }
 
   try {
-    // 深拷贝避免响应式数据问题
+    // 娣辨嫹璐濋伩鍏嶅搷搴斿紡鏁版嵁闂
     const pureConfig = JSON.parse(JSON.stringify(props.config))
-    const apiBaseUrl = window.location.origin + '/thingsvis-api'
+    const thingsvisApiBaseUrl = window.location.origin + '/thingsvis-api'
+    const platformApiBaseUrl = window.location.origin
 
     iframeRef.value.contentWindow.postMessage({
       type: 'tv:init',
@@ -650,27 +540,28 @@ const sendConfig = () => {
       },
       config: {
         token: token.value,
-        apiBaseUrl: apiBaseUrl,
+        thingsvisApiBaseUrl,
+        platformApiBaseUrl,
         mode: 'viewer',
         saveTarget: 'host'
       }
     }, '*')
   } catch (e) {
-    console.error('[ThingsVisViewer] 配置序列化失败:', e)
-    error.value = '配置数据无效'
-    emit('error', '配置数据无效')
+    console.error('[ThingsVisViewer] 閰嶇疆搴忓垪鍖栧け璐?', e)
+    error.value = '閰嶇疆鏁版嵁鏃犳晥'
+    emit('error', '閰嶇疆鏁版嵁鏃犳晥')
   }
 }
 
 /**
- * iframe 加载完成
+ * iframe 鍔犺浇瀹屾垚
  */
 const handleIframeLoad = () => {
   console.log('[ThingsVisViewer] iframe onload')
-  // 等待 READY 消息
+  // 绛夊緟 READY 娑堟伅
 }
 
-// 监听配置变化，重新发送
+// 鐩戝惉閰嶇疆鍙樺寲锛岄噸鏂板彂閫?
 watch(
   () => props.config,
   (newConfig) => {
@@ -684,18 +575,18 @@ watch(
 onMounted(async () => {
   window.addEventListener('message', handleMessage)
 
-  // 获取 Token
+  // 鑾峰彇 Token
   try {
     token.value = await getThingsVisToken()
   } catch (e) {
-    console.warn('[ThingsVisViewer] Token 获取失败', e)
+    console.warn('[ThingsVisViewer] Token 鑾峰彇澶辫触', e)
   }
 
-  // 增加连接超时检测
+  // 澧炲姞杩炴帴瓒呮椂妫€娴?
   setTimeout(() => {
     if (loading.value && !ready.value) {
       console.warn('[ThingsVisViewer] Editor connection timeout')
-      error.value = '连接编辑器超时，请检查服务是否启动'
+      error.value = 'Editor connection timeout'
       loading.value = false
     }
   }, 15000)
@@ -712,7 +603,7 @@ onBeforeUnmount(() => {
     <NSpin :show="loading">
       <!-- Error state -->
       <div v-if="error" class="error-state">
-        <p class="error-message">⚠️ {{ error }}</p>
+        <p class="error-message">鈿狅笍 {{ error }}</p>
       </div>
 
       <!-- Viewer iframe -->

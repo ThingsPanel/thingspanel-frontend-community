@@ -13,12 +13,9 @@ import { onMounted, onBeforeUnmount, ref, watch, computed } from 'vue'
 import { NEmpty, NCard, NSkeleton } from 'naive-ui'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
-import { normalizeThingsVisHistoryBindings } from '@/utils/thingsvis/normalize-history-bindings'
-import { normalizeInteractiveWriteBindings } from '@/utils/thingsvis/normalize-interactive-write-bindings'
 import { telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
 import { telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api'
 import type { PlatformField } from '@/utils/thingsvis/types'
-import { useHistoryBackfill } from '@/hooks/thingsvis/useHistoryBackfill'
 import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush'
 import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush'
 import { getCachedDeviceTemplateDetail } from '@/utils/thingsvis/template-detail-cache'
@@ -135,13 +132,8 @@ const pushDataToVis = (fields: Record<string, unknown>) => {
 }
 
 // 历史推送方法
-const pushHistoryToVis = (fieldId: string, history: Array<{ value: unknown; ts: number }>) => {
-  visWidgetRef.value?.pushHistory(fieldId, history, props.id)
-}
-
 const realtimePush = ref<ReturnType<typeof useRealtimePush> | null>(null)
 const alarmPush = ref<ReturnType<typeof useAlarmPush> | null>(null)
-const historyBackfill = ref<ReturnType<typeof useHistoryBackfill> | null>(null)
 
 // ─── 加载模板和配置 ───────────────────────────────────────────────────────────
 
@@ -196,9 +188,7 @@ const initTemplateData = async (deviceTemplateId: string) => {
 
       if (res.data.web_chart_config) {
         try {
-          const configJson = normalizeInteractiveWriteBindings(
-            normalizeThingsVisHistoryBindings(JSON.parse(res.data.web_chart_config))
-          )
+          const configJson = JSON.parse(res.data.web_chart_config)
           if (Array.isArray(configJson?.dataSources)) {
             configJson.dataSources.forEach((ds: any) => {
               if (ds?.type === 'PLATFORM_FIELD') {
@@ -230,49 +220,48 @@ const initTemplateData = async (deviceTemplateId: string) => {
 
 const onVisReady = async () => {
   // tp-02: 历史数据回填
-  if (historyBackfill.value) {
-    await historyBackfill.value.backfill()
-  }
   // tp-04: 告警历史回填
-  if (alarmPush.value) {
-    await alarmPush.value.backfillAlarmHistory()
+  // Push current snapshot so widgets show real values immediately after ready
+  if (!hasLoadedInitialSnapshot.value) {
+    await fetchAndUpdateData()
   }
-  // REST current values are authoritative after the iframe is ready. The
-  // websocket handshake frame may contain an older snapshot and overwrite data.
-  await fetchAndUpdateData()
 }
 
 // ─── 监听模板ID变化重新加载 ───────────────────────────────────────────────────
 
-watch(
-  () => props.deviceTemplateId,
-  async newVal => {
-    // 先停止旧的推送
-    realtimePush.value?.stop()
-    alarmPush.value?.stop()
-    currentData.value = {}
-    currentDataDeviceId.value = ''
+watch(() => props.deviceTemplateId, async (newVal) => {
+  // 先停止旧的推送
+  realtimePush.value?.stop()
+  alarmPush.value?.stop()
+  currentData.value = {}
+  currentDataDeviceId.value = ''
 
-    if (newVal) {
-      await initTemplateData(newVal)
+  if (newVal) {
+    await initTemplateData(newVal)
 
-      if (hasTemplate.value) {
-        // 初始化 composables
-        historyBackfill.value = useHistoryBackfill(deviceIdRef, platformFields, pushHistoryToVis)
-
-        realtimePush.value = useRealtimePush(deviceIdRef, platformFields, pushDataToVis, async () => {
+    if (hasTemplate.value) {
+      // 初始化 composables
+      realtimePush.value = useRealtimePush(
+        deviceIdRef,
+        platformFields,
+        pushDataToVis,
+        async () => {
           if (!hasLoadedInitialSnapshot.value) {
             await fetchAndUpdateData()
           }
-        })
+        }
+      )
 
-        alarmPush.value = useAlarmPush(deviceIdRef, platformFields, pushDataToVis, pushHistoryToVis)
+      alarmPush.value = useAlarmPush(
+        deviceIdRef,
+        platformFields,
+        pushDataToVis
+      )
 
-        // 启动实时推送
-        realtimePush.value?.start()
-        // 启动告警轮询
-        alarmPush.value?.start()
-      }
+      // 启动实时推送
+      realtimePush.value?.start()
+      // 启动告警轮询
+      alarmPush.value?.start()
     }
   },
   { immediate: true }

@@ -160,6 +160,7 @@ const close = () => {
         mode="editor"
         :config="initialConfig"
         :platform-fields="platformFields"
+        device-id="__template__"
         height="calc(90vh - 160px)"
         @save="handleSave"
       />

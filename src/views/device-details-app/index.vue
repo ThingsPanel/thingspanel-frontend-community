@@ -3,8 +3,6 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue';
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields';
-import { normalizeThingsVisHistoryBindings } from '@/utils/thingsvis/normalize-history-bindings';
-import { normalizeInteractiveWriteBindings } from '@/utils/thingsvis/normalize-interactive-write-bindings';
 import { $t, setLocale } from '@/locales';
 import { deviceDetail, deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device';
 import { telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api';
@@ -12,7 +10,6 @@ import { formatDateTime } from '@/utils/common/datetime';
 import { localStg } from '@/utils/storage';
 import type { PlatformField } from '@/utils/thingsvis/types';
 import TelemetryDataCards from './telemetryDataCards.vue';
-import { useHistoryBackfill } from '@/hooks/thingsvis/useHistoryBackfill';
 import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush';
 import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush';
 
@@ -72,7 +69,6 @@ const deviceIdRef = computed(() => d_id as string);
 
 const realtimePush = ref<ReturnType<typeof useRealtimePush> | null>(null);
 const alarmPush = ref<ReturnType<typeof useAlarmPush> | null>(null);
-const historyBackfill = ref<ReturnType<typeof useHistoryBackfill> | null>(null);
 
 const pushDataToVis = (fields: Record<string, unknown>) => {
   if (Object.keys(fields).length === 0) return;
@@ -81,10 +77,6 @@ const pushDataToVis = (fields: Record<string, unknown>) => {
     ...fields
   };
   visWidgetRef.value?.pushPlatformData(fields, d_id as string);
-};
-
-const pushHistoryToVis = (fieldId: string, history: Array<{ value: unknown; ts: number }>) => {
-  visWidgetRef.value?.pushHistory(fieldId, history, d_id as string);
 };
 
 const fetchDeviceData = async () => {
@@ -140,6 +132,12 @@ const getDeviceDetail = async () => {
   deviceData.value = data;
   device_number.value = data.device_number;
   icon_type.value = data.is_online !== 0 ? 'rgb(2,153,52)' : '#ccc';
+  currentData.value = {
+    ...currentData.value,
+    is_online: data.is_online,
+    online_text: data.is_online === 1 ? '在线' : '离线',
+    online_status_updated_at: typeof data.ts === 'number' ? data.ts : Date.now()
+  };
   showDefaultCards.value = false;
   showAppChart.value = false;
   initialConfig.value = null;
@@ -203,9 +201,7 @@ const getDeviceDetail = async () => {
   }
 
   try {
-    const configJson = normalizeInteractiveWriteBindings(
-      normalizeThingsVisHistoryBindings(JSON.parse(res.data.app_chart_config))
-    );
+    const configJson = JSON.parse(res.data.app_chart_config);
 
     if (configJson.dataSources && Array.isArray(configJson.dataSources)) {
       configJson.dataSources.forEach((ds: any) => {
@@ -223,11 +219,10 @@ const getDeviceDetail = async () => {
     alarmPush.value?.stop();
 
     realtimePush.value = useRealtimePush(deviceIdRef, platformFields, pushDataToVis, fetchDeviceData);
-    alarmPush.value = useAlarmPush(deviceIdRef, platformFields, pushDataToVis, pushHistoryToVis);
-    historyBackfill.value = useHistoryBackfill(deviceIdRef, platformFields, pushHistoryToVis);
+    alarmPush.value = useAlarmPush(deviceIdRef, platformFields, pushDataToVis);
 
-    realtimePush.value.start();
-    alarmPush.value.start();
+    realtimePush.value?.start();
+    alarmPush.value?.start();
   } catch (e) {
     console.warn('解析 app_chart_config 失败', e);
     showDefaultCards.value = true;
@@ -235,9 +230,6 @@ const getDeviceDetail = async () => {
 };
 
 const onVisReady = async () => {
-  if (historyBackfill.value) await historyBackfill.value.backfill();
-  if (alarmPush.value) await alarmPush.value.backfillAlarmHistory();
-
   setTimeout(async () => {
     await fetchDeviceData();
   }, 500);
