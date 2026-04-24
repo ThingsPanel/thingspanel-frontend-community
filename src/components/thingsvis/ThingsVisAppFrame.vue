@@ -1034,7 +1034,7 @@ function sanitizeDataSourcesForHostSave(nodes: unknown, dataSources: unknown): u
   const referencedIds = collectReferencedDataSourceIds(nodes)
   return dataSources.filter((dataSource: any) => {
     const id = typeof dataSource?.id === 'string' ? dataSource.id : ''
-    if (props.mode === 'editor' && /^thingspanel_.+$/.test(id)) return false
+    if (props.mode === 'editor' && /^thingspanel_.+$/.test(id)) return true
     if (!GENERATED_HOST_DATA_SOURCE_ID_RE.test(id)) return true
     return referencedIds.has(id)
   }).map((dataSource: any) => {

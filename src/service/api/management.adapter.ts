@@ -238,8 +238,8 @@ function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
   })
 }
 
-export function adapterOfFetchUserRouterList(data: ElegantConstRoute[]): ElegantConstRoute[] {
-  if (!data.length) return []
+export function adapterOfFetchUserRouterList(data: ElegantConstRoute[] | null | undefined): ElegantConstRoute[] {
+  if (!data?.length) return []
 
   return replaceKeys(data).map((item: ElegantConstRoute): ElegantConstRoute => {
     if (!item.children || !item.children.length) {
