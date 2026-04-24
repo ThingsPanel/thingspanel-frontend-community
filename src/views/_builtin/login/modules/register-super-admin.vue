@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, watch, toRefs } from 'vue'
-import { NAutoComplete, NButton, NForm, NFormItem, NInput, NSpace } from 'naive-ui'
+import { computed, onMounted, reactive, watch } from 'vue'
+import { NAutoComplete, NButton, NForm, NFormItem, NInput } from 'naive-ui'
 import { $t } from '@/locales'
 import { useFormRules, useNaiveForm } from '@/hooks/common/form'
 import { useAuthStore } from '@/store/modules/auth'
 import { fetchSuperAdminInit } from '@/service/api/auth'
-import { getConfirmPwdRule } from '@/utils/form/rule'
 
 defineOptions({
   name: 'SuperAdminRegisterPage'
@@ -32,13 +31,11 @@ const fallbackMarketUrl = import.meta.env.VITE_MARKET_URL || 'https://r.thingspa
 interface FormModel {
   email: string
   pwd: string
-  confirmPwd: string
 }
 
 const model: FormModel = reactive({
   email: props.marketEmail || '',
-  pwd: '',
-  confirmPwd: ''
+  pwd: ''
 })
 
 const marketUrl = computed(() => {
@@ -53,7 +50,7 @@ const marketUrl = computed(() => {
 const emailLocked = computed(() => props.marketEmail.trim() !== '')
 
 const canSubmit = computed(() => {
-  return model.email.trim() !== '' && model.pwd.trim() !== '' && model.confirmPwd.trim() !== '' && model.pwd.length >= 6
+  return model.email.trim() !== '' && model.pwd.trim() !== '' && model.pwd.length >= 6
 })
 
 const commonDomains = ['qq.com', '163.com', 'gmail.com', 'outlook.com', 'sina.com', 'hotmail.com', 'yahoo.com']
@@ -91,8 +88,7 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
         message: () => $t('form.pwd.tip'),
         trigger: ['input', 'blur']
       }
-    ],
-    confirmPwd: getConfirmPwdRule(toRefs(model).pwd)
+    ]
   }
 })
 
@@ -197,37 +193,22 @@ onMounted(() => {
         autocomplete="new-password"
       />
     </NFormItem>
-    <NFormItem path="confirmPwd">
-      <NInput
-        v-model:value="model.confirmPwd"
-        type="password"
-        show-password-on="click"
-        :placeholder="$t('page.login.common.confirmPasswordPlaceholder')"
-        autocomplete="new-password"
-      />
-    </NFormItem>
 
-    <NSpace vertical :size="18" class="w-full">
-      <NButton
-        type="primary"
-        size="large"
-        round
-        block
-        :loading="auth.loginLoading"
-        :disabled="!canSubmit"
-        @click="handleSubmit"
-      >
-        {{ $t('common.confirm') }}
-      </NButton>
-    </NSpace>
+    <NButton
+      type="primary"
+      size="large"
+      round
+      block
+      :loading="auth.loginLoading"
+      :disabled="!canSubmit"
+      @click="handleSubmit"
+    >
+      {{ $t('common.confirm') }}
+    </NButton>
   </NForm>
 </template>
 
 <style scoped>
-.w-full {
-  width: 100%;
-}
-
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
