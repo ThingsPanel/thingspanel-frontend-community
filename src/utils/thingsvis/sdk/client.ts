@@ -274,6 +274,7 @@ export class ThingsVisClient {
       gridGap: 5
     }
     const safeNodes = safeConfig.nodes || []
+    const safeVariables = Array.isArray(safeConfig.variables) ? safeConfig.variables : []
 
     // Apply bufferSize to all platform data sources in the saved config.
     const existingDataSources: any[] = safeConfig.dataSources ?? []
@@ -300,6 +301,7 @@ export class ThingsVisClient {
         canvas: safeCanvas,
         nodes: safeNodes,
         dataSources: mergedDataSources,
+        variables: safeVariables,
         platformFields: platformFields
       },
       config: {
