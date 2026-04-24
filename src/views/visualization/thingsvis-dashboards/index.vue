@@ -23,6 +23,7 @@ import {
 import { useRouterPush } from '@/hooks/common/router'
 import {
   getThingsVisDashboards,
+  getThingsVisHomeDashboard,
   getThingsVisProject,
   createThingsVisDashboard,
   deleteThingsVisDashboard,
@@ -325,6 +326,7 @@ const handleSaveMenuConfig = async () => {
     let resultError: string | null = null
 
     if (menuForm.value.enabled) {
+      // 启用菜单：先保存当前仪表盘的菜单配置
       const { data, error } = await saveDashboardMenuConfig(menuForm.value.dashboardId, {
         menu_name: menuForm.value.menuName.trim(),
         dashboard_name: menuForm.value.dashboardName,
@@ -337,8 +339,42 @@ const handleSaveMenuConfig = async () => {
           ...menuConfigs.value,
           [menuForm.value.dashboardId]: data
         }
+      } else {
+        message.error(`菜单配置保存失败: ${resultError}`)
+        return
       }
+
+      // 检查这是否是第一个加入菜单的仪表盘
+      // 第一个加入时，自动把首页仪表盘也追加到菜单里（避免 home 节点变成展开式）
+      const currentMenuEntries = Object.entries(menuConfigs.value).filter(([, cfg]) => cfg?.enabled)
+      if (currentMenuEntries.length === 1) {
+        // 第一个加入时，从 API 查首页仪表盘（可能不在 allDashboards 里，因为可能属于其他项目）
+        const { data: homeResult } = await getThingsVisHomeDashboard()
+        const homeDashboard = homeResult?.data
+        if (homeDashboard && homeDashboard.id !== menuForm.value.dashboardId) {
+          // 首页仪表盘存在且不是当前正要保存的这个，才追加
+          const alreadyInMenu = Object.keys(menuConfigs.value).some(
+            id => id === homeDashboard.id && menuConfigs.value[id]?.enabled
+          )
+          if (!alreadyInMenu) {
+            const { error: homeError } = await saveDashboardMenuConfig(homeDashboard.id, {
+              menu_name: homeDashboard.name,
+              dashboard_name: homeDashboard.name,
+              sort: (menuForm.value.menuSort || 1) - 1,
+              enabled: true
+            })
+            if (!homeError) {
+              message.success(`已将首页仪表盘"${homeDashboard.name}"也添加到菜单`)
+            }
+          }
+        }
+      }
+
+      await refreshAuthRoutes(route.fullPath)
+      showMenuModal.value = false
+      message.success('菜单配置已保存')
     } else {
+      // 禁用菜单
       const { error } = await deleteDashboardMenuConfig(menuForm.value.dashboardId)
       resultError = error?.message || null
       if (!resultError) {
@@ -346,17 +382,13 @@ const handleSaveMenuConfig = async () => {
           ...menuConfigs.value,
           [menuForm.value.dashboardId]: null
         }
+        await refreshAuthRoutes(route.fullPath)
+        showMenuModal.value = false
+        message.success('菜单配置已保存')
+      } else {
+        message.error(`菜单配置保存失败: ${resultError}`)
       }
     }
-
-    if (resultError) {
-      message.error(`菜单配置保存失败: ${resultError}`)
-      return
-    }
-
-    await refreshAuthRoutes(route.fullPath)
-    showMenuModal.value = false
-    message.success('菜单配置已保存')
   } finally {
     menuSaving.value = false
   }
