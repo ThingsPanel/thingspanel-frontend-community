@@ -1,37 +1,33 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import {
-  NButton,
-  NCard,
-  NGrid,
-  NGridItem,
-  NInput,
-  NModal,
-  NForm,
-  NFormItem,
-  NPopconfirm,
-  NEmpty,
-  NSpin,
-  useMessage
-} from 'naive-ui'
+import { useRoute } from 'vue-router'
+import { NButton, NCard, NGrid, NGridItem, NInput, NModal, NForm, NFormItem, NEmpty, NSpin, useMessage } from 'naive-ui'
 import { useRouterPush } from '@/hooks/common/router'
 import {
   getThingsVisProjects,
+  getThingsVisDashboards,
   createThingsVisProject,
   updateThingsVisProject,
   deleteThingsVisProject,
   type ProjectListItem
 } from '@/service/api/thingsvis'
+import { deleteDashboardMenuConfig } from '@/service/api/dashboard-menu'
+import { refreshAuthRoutes } from '@/utils/router/refresh-auth-routes'
+import { clearThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
 
 const { routerPushByKey } = useRouterPush()
 const message = useMessage()
+const route = useRoute()
 
 // 状态
 const loading = ref(false)
+const deletingId = ref<string | null>(null)
 const projects = ref<ProjectListItem[]>([])
 const showModal = ref(false)
 const editingProject = ref<ProjectListItem | null>(null)
 const searchKeyword = ref('')
+const deleteConfirmModal = ref(false)
+const pendingDeleteProject = ref<{ id: string; name: string } | null>(null)
 
 // 表单数据
 const formData = ref({
@@ -47,9 +43,7 @@ const fetchProjects = async () => {
     if (!error && data) {
       let list = data.data
       if (searchKeyword.value) {
-        list = list.filter(item =>
-          item.name.toLowerCase().includes(searchKeyword.value.toLowerCase())
-        )
+        list = list.filter(item => item.name.toLowerCase().includes(searchKeyword.value.toLowerCase()))
       }
       projects.value = list
     } else if (error) {
@@ -120,18 +114,49 @@ const handleSaveProject = async () => {
 }
 
 /** 删除项目 */
-const handleDeleteProject = async (id: string, name: string) => {
+const openDeleteConfirm = (id: string, name: string) => {
+  pendingDeleteProject.value = { id, name }
+  deleteConfirmModal.value = true
+}
+
+const handleDeleteProject = async () => {
+  if (!pendingDeleteProject.value || deletingId.value) return
+  deletingId.value = pendingDeleteProject.value.id
   try {
+    const { id } = pendingDeleteProject.value
+    const { data: dashboardsData } = await getThingsVisDashboards({
+      projectId: id,
+      page: 1,
+      limit: 1000
+    })
+    const dashboardIds = (dashboardsData?.data || []).map((d: { id: string }) => d.id)
+
+    for (const did of dashboardIds) {
+      const { error } = await deleteDashboardMenuConfig(did)
+      if (error) {
+        message.error('删除失败：无法清理部分关联菜单')
+        return
+      }
+    }
+
     const { error } = await deleteThingsVisProject(id)
     if (!error) {
-      message.success(`已删除项目: ${name}`)
+      const deletedName = pendingDeleteProject.value?.name || ''
+      deleteConfirmModal.value = false
+      pendingDeleteProject.value = null
+      await refreshAuthRoutes(route.fullPath)
+      clearThingsVisHomeCache()
+      message.success(`已删除项目: ${deletedName}`)
       await fetchProjects()
     } else {
+      console.warn(`[handleDeleteProject] 项目 ${id} 删除失败`)
       message.error('删除失败')
     }
   } catch (e) {
     message.error('删除失败')
     console.error(e)
+  } finally {
+    deletingId.value = null
   }
 }
 
@@ -211,29 +236,17 @@ onMounted(() => {
 
                   <!-- 操作按钮(悬停显示) -->
                   <div class="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                    <NButton
-                      size="small"
-                      quaternary
-                      circle
-                      @click.stop="openEditModal(project)"
-                    >
+                    <NButton size="small" quaternary circle @click.stop="openEditModal(project)">
                       <template #icon>
                         <icon-mdi:pencil class="text-16px" />
                       </template>
                     </NButton>
 
-                    <NPopconfirm
-                      @positive-click.stop="handleDeleteProject(project.id, project.name)"
-                    >
-                      <template #trigger>
-                        <NButton size="small" quaternary circle @click.stop>
-                          <template #icon>
-                            <icon-mdi:delete class="text-16px" />
-                          </template>
-                        </NButton>
+                    <NButton size="small" quaternary circle @click.stop="openDeleteConfirm(project.id, project.name)">
+                      <template #icon>
+                        <icon-mdi:delete class="text-16px" />
                       </template>
-                      确定删除项目"{{ project.name }}"吗？
-                    </NPopconfirm>
+                    </NButton>
                   </div>
                 </div>
 
@@ -266,20 +279,10 @@ onMounted(() => {
     </NCard>
 
     <!-- 新建/编辑弹窗 -->
-    <NModal
-      v-model:show="showModal"
-      preset="card"
-      :title="editingProject ? '编辑项目' : '新建项目'"
-      class="w-500px"
-    >
+    <NModal v-model:show="showModal" preset="card" :title="editingProject ? '编辑项目' : '新建项目'" class="w-500px">
       <NForm :model="formData">
         <NFormItem label="项目名称" path="name">
-          <NInput
-            v-model:value="formData.name"
-            placeholder="请输入项目名称"
-            maxlength="50"
-            show-count
-          />
+          <NInput v-model:value="formData.name" placeholder="请输入项目名称" maxlength="50" show-count />
         </NFormItem>
 
         <NFormItem label="项目描述">
@@ -301,6 +304,24 @@ onMounted(() => {
             {{ editingProject ? '更新' : '创建' }}
           </NButton>
         </div>
+      </template>
+    </NModal>
+
+    <!-- 删除项目确认弹窗 -->
+    <NModal
+      v-model:show="deleteConfirmModal"
+      preset="dialog"
+      type="warning"
+      title="确认删除"
+      :action-style="{ gap: '8px' }"
+    >
+      <template #icon>
+        <icon-mdi:alert-circle class="text-24px text-orange-400" />
+      </template>
+      <template #default>确定删除项目"{{ pendingDeleteProject?.name }}"吗？该操作不可恢复。</template>
+      <template #action>
+        <NButton :disabled="!!deletingId" @click="deleteConfirmModal = false">取消</NButton>
+        <NButton type="error" :loading="!!deletingId" @click="handleDeleteProject">确认删除</NButton>
       </template>
     </NModal>
   </div>

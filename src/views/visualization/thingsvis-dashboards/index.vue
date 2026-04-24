@@ -12,7 +12,6 @@ import {
   NModal,
   NForm,
   NFormItem,
-  NPopconfirm,
   NEmpty,
   NSpin,
   NSwitch,
@@ -50,6 +49,7 @@ const projectId = computed(() => route.query.projectId as string)
 
 // 状态
 const loading = ref(false)
+const deletingId = ref<string | null>(null)
 const project = ref<ThingsVisProject | null>(null)
 const allDashboards = ref<DashboardListItem[]>([])
 const showModal = ref(false)
@@ -58,6 +58,8 @@ const menuConfigs = ref<Record<string, DashboardMenuConfig | null>>({})
 const menuConfigLoadSeq = ref(0)
 const showMenuModal = ref(false)
 const menuSaving = ref(false)
+const deleteConfirmModal = ref(false)
+const pendingDeleteDashboard = ref<{ id: string; name: string } | null>(null)
 const menuForm = ref({
   dashboardId: '',
   dashboardName: '',
@@ -135,7 +137,7 @@ const loadMenuConfigs = async (list: DashboardListItem[]) => {
   const entries = await Promise.all(
     list.map(async item => {
       const { data, error } = await fetchDashboardMenuConfig(item.id)
-      return [item.id, error ? menuConfigs.value[item.id] ?? null : data ?? null] as const
+      return [item.id, error ? (menuConfigs.value[item.id] ?? null) : (data ?? null)] as const
     })
   )
 
@@ -156,29 +158,29 @@ const loadThumbnails = async (list: DashboardListItem[]) => {
   const processQueue = async () => {
     while (queue.length > 0) {
       const batch = queue.splice(0, CONCURRENCY)
-      await Promise.all(batch.map(async (item) => {
-        // 检查是否已有有效的缩略图（处理 null、undefined、空字符串）
-        const hasValidThumbnail = item.thumbnail && item.thumbnail.trim().startsWith('data:')
-        if (hasValidThumbnail) return
+      await Promise.all(
+        batch.map(async item => {
+          // 检查是否已有有效的缩略图（处理 null、undefined、空字符串）
+          const hasValidThumbnail = item.thumbnail && item.thumbnail.trim().startsWith('data:')
+          if (hasValidThumbnail) return
 
-        try {
-          const result = await getThingsVisDashboardThumbnail(item.id)
-          // 处理可能的嵌套数据结构
-          const resultData = result.data as
-            | { thumbnail?: string | null; data?: { thumbnail?: string | null } }
-            | null
-          const thumbnail = resultData?.thumbnail || resultData?.data?.thumbnail
-          if (thumbnail) {
-            // 更新响应式数据
-            const target = allDashboards.value.find(d => d.id === item.id)
-            if (target) {
-              target.thumbnail = thumbnail
+          try {
+            const result = await getThingsVisDashboardThumbnail(item.id)
+            // 处理可能的嵌套数据结构
+            const resultData = result.data as { thumbnail?: string | null; data?: { thumbnail?: string | null } } | null
+            const thumbnail = resultData?.thumbnail || resultData?.data?.thumbnail
+            if (thumbnail) {
+              // 更新响应式数据
+              const target = allDashboards.value.find(d => d.id === item.id)
+              if (target) {
+                target.thumbnail = thumbnail
+              }
             }
+          } catch (e) {
+            console.error(`[loadThumbnails] 加载缩略图失败 ${item.id}:`, e)
           }
-        } catch (e) {
-          console.error(`[loadThumbnails] 加载缩略图失败 ${item.id}:`, e)
-        }
-      }))
+        })
+      )
     }
   }
 
@@ -243,20 +245,38 @@ const handleCreateDashboard = async () => {
 }
 
 /** 删除 Dashboard */
-const handleDeleteDashboard = async (id: string) => {
+const openDeleteConfirm = (id: string, name: string) => {
+  pendingDeleteDashboard.value = { id, name }
+  deleteConfirmModal.value = true
+}
+
+const handleDeleteDashboard = async () => {
+  if (!pendingDeleteDashboard.value || deletingId.value) return
+  deletingId.value = pendingDeleteDashboard.value.id
   try {
+    const { id } = pendingDeleteDashboard.value
+    const { error: menuError } = await deleteDashboardMenuConfig(id)
+    if (menuError) {
+      message.error('删除失败：无法清理关联菜单')
+      return
+    }
+
     const { error } = await deleteThingsVisDashboard(id)
     if (!error) {
-      await deleteDashboardMenuConfig(id)
+      deleteConfirmModal.value = false
+      pendingDeleteDashboard.value = null
       await refreshAuthRoutes(route.fullPath)
       clearThingsVisHomeCache()
       await fetchDashboards()
     } else {
+      console.warn(`[handleDeleteDashboard] 菜单 ${id} 已删除，但 ThingsVis 仪表盘删除失败`)
       message.error('删除失败')
     }
   } catch (e) {
     message.error('删除失败')
     console.error(e)
+  } finally {
+    deletingId.value = null
   }
 }
 
@@ -404,12 +424,7 @@ onMounted(async () => {
 
         <div class="flex items-center gap-3">
           <!-- 搜索框 -->
-          <NInput
-            v-model:value="searchKeyword"
-            clearable
-            placeholder="搜索仪表盘名称..."
-            style="width: 240px"
-          >
+          <NInput v-model:value="searchKeyword" clearable placeholder="搜索仪表盘名称..." style="width: 240px">
             <template #prefix>
               <icon-mdi:magnify />
             </template>
@@ -447,7 +462,9 @@ onMounted(async () => {
         <NGrid v-else x-gap="24" y-gap="24" cols="1 s:2 m:3 l:4" responsive="screen">
           <NGridItem v-for="dashboard in dashboards" :key="dashboard.id">
             <!-- Dashboard 卡片 -->
-            <div class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-primary hover:shadow-lg">
+            <div
+              class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-primary hover:shadow-lg"
+            >
               <a
                 class="block cursor-pointer no-underline"
                 :href="getViewerHref(dashboard.id)"
@@ -455,7 +472,9 @@ onMounted(async () => {
                 rel="noopener noreferrer"
               >
                 <!-- 缩略图区域 -->
-                <div class="relative h-40 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden">
+                <div
+                  class="relative h-40 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden"
+                >
                   <img
                     v-if="dashboard.thumbnail"
                     :src="getThumbnailUrl(dashboard.thumbnail)"
@@ -480,12 +499,8 @@ onMounted(async () => {
                     <h3 class="flex-1 truncate font-semibold text-gray-900">
                       {{ dashboard.name }}
                     </h3>
-                    <NTag v-if="dashboard.isPublished" size="small" type="success">
-                      已发布
-                    </NTag>
-                    <NTag v-if="menuConfigs[dashboard.id]?.enabled" size="small" type="info">
-                      系统菜单
-                    </NTag>
+                    <NTag v-if="dashboard.isPublished" size="small" type="success">已发布</NTag>
+                    <NTag v-if="menuConfigs[dashboard.id]?.enabled" size="small" type="info">系统菜单</NTag>
                   </div>
 
                   <!-- 底部信息 -->
@@ -546,7 +561,7 @@ onMounted(async () => {
                   </NTooltip>
                   <NTooltip v-else>
                     <template #trigger>
-                      <NButton size="small" type="primary" secondary @click.stop disabled>
+                      <NButton size="small" type="primary" secondary disabled @click.stop>
                         <template #icon>
                           <icon-mdi:home />
                         </template>
@@ -555,16 +570,16 @@ onMounted(async () => {
                     当前首页
                   </NTooltip>
 
-                  <NPopconfirm @positive-click.stop="handleDeleteDashboard(dashboard.id)">
-                    <template #trigger>
-                      <NButton size="small" secondary type="error" @click.stop>
-                        <template #icon>
-                          <icon-mdi:delete />
-                        </template>
-                      </NButton>
+                  <NButton
+                    size="small"
+                    secondary
+                    type="error"
+                    @click.stop="openDeleteConfirm(dashboard.id, dashboard.name)"
+                  >
+                    <template #icon>
+                      <icon-mdi:delete />
                     </template>
-                    确定删除仪表盘"{{ dashboard.name }}"吗？
-                  </NPopconfirm>
+                  </NButton>
                 </div>
               </div>
             </div>
@@ -577,12 +592,7 @@ onMounted(async () => {
     <NModal v-model:show="showModal" preset="card" title="新建仪表盘" class="w-500px">
       <NForm :model="formData">
         <NFormItem label="仪表盘名称" path="name">
-          <NInput
-            v-model:value="formData.name"
-            placeholder="请输入仪表盘名称"
-            maxlength="50"
-            show-count
-          />
+          <NInput v-model:value="formData.name" placeholder="请输入仪表盘名称" maxlength="50" show-count />
         </NFormItem>
 
         <NFormItem label="画布模式">
@@ -625,9 +635,7 @@ onMounted(async () => {
             />
             <span class="text-sm text-gray-400">px</span>
           </div>
-          <div class="mt-2 text-xs text-gray-400">
-            常用尺寸: 1920×1080(大屏) / 1366×768(普通显示器)
-          </div>
+          <div class="mt-2 text-xs text-gray-400">常用尺寸: 1920×1080(大屏) / 1366×768(普通显示器)</div>
         </NFormItem>
       </NForm>
 
@@ -658,12 +666,7 @@ onMounted(async () => {
         </NFormItem>
 
         <NFormItem v-if="menuForm.enabled" label="菜单名称">
-          <NInput
-            v-model:value="menuForm.menuName"
-            placeholder="请输入菜单名称"
-            maxlength="50"
-            show-count
-          />
+          <NInput v-model:value="menuForm.menuName" placeholder="请输入菜单名称" maxlength="50" show-count />
         </NFormItem>
 
         <NFormItem v-if="menuForm.enabled" label="菜单排序">
@@ -680,10 +683,26 @@ onMounted(async () => {
       <template #footer>
         <div class="flex justify-end gap-2">
           <NButton @click="showMenuModal = false">取消</NButton>
-          <NButton type="primary" :loading="menuSaving" @click="handleSaveMenuConfig">
-            保存菜单
-          </NButton>
+          <NButton type="primary" :loading="menuSaving" @click="handleSaveMenuConfig">保存菜单</NButton>
         </div>
+      </template>
+    </NModal>
+
+    <!-- 删除仪表盘确认弹窗 -->
+    <NModal
+      v-model:show="deleteConfirmModal"
+      preset="dialog"
+      type="warning"
+      title="确认删除"
+      :action-style="{ gap: '8px' }"
+    >
+      <template #icon>
+        <icon-mdi:alert-circle class="text-24px text-orange-400" />
+      </template>
+      <template #default>确定删除仪表盘"{{ pendingDeleteDashboard?.name }}"吗？该操作不可恢复。</template>
+      <template #action>
+        <NButton :disabled="!!deletingId" @click="deleteConfirmModal = false">取消</NButton>
+        <NButton type="error" :loading="!!deletingId" @click="handleDeleteDashboard">确认删除</NButton>
       </template>
     </NModal>
   </div>
