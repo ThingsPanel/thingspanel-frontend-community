@@ -6,8 +6,8 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { ThingsVisClient } from '@/utils/thingsvis/sdk/client'
 import { attributeDataPub, commandDataPub, telemetryDataHistoryList, telemetryDataPub } from '@/service/api/device'
+import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
 import { localStg } from '@/utils/storage'
-import { getDemoServerUrl } from '@/utils/common/tool'
 
 const FIELD_BINDING_EXPR_RE = /^\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}$/
 const FIELD_BINDING_EXPR_GLOBAL_RE = /\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}/g
@@ -511,8 +511,8 @@ const getLoadOptions = () => ({
   platformBufferSize: props.bufferSize ?? 0,
   platformDevices: getPlatformDevices(),
   deviceId: props.deviceId || getPreviewDeviceId(),
-  thingsvisApiBaseUrl: `${window.location.origin}/thingsvis-api`,
-  platformApiBaseUrl: getDemoServerUrl(),
+  thingsvisApiBaseUrl: getThingsVisApiBase(),
+  platformApiBaseUrl: getPlatformApiBase(),
   platformToken: localStg.get('token') as string | undefined
 })
 
@@ -731,8 +731,8 @@ onMounted(async () => {
     console.error('[ThingsVisWidget] getThingsVisToken failed, continuing without URL token:', error)
   }
   const tokenParams = token ? `&token=${token}` : ''
-  const thingsvisApiBaseUrl = encodeURIComponent(`${window.location.origin}/thingsvis-api`)
-  const platformApiBaseUrl = encodeURIComponent(getDemoServerUrl())
+  const thingsvisApiBaseUrl = encodeURIComponent(getThingsVisApiBase())
+  const platformApiBaseUrl = encodeURIComponent(getPlatformApiBase())
   const embeddedContext = getEmbeddedContext()
   const runtimeParams = `&context=${embeddedContext}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
 

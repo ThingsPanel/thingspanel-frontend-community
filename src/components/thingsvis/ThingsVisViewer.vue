@@ -8,6 +8,7 @@
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { NSpin } from 'naive-ui'
 import { getThingsVisToken } from '@/utils/thingsvis'
+import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
 import {
   telemetryDataCurrent,
   getAttributeDataSet
@@ -448,8 +449,8 @@ const embedUrl = computed(() => {
       ? cleanBase + '.html'
       : cleanBase
 
-  const thingsvisApiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
-  const platformApiBaseUrl = encodeURIComponent(window.location.origin)
+  const thingsvisApiBaseUrl = encodeURIComponent(getThingsVisApiBase())
+  const platformApiBaseUrl = encodeURIComponent(getPlatformApiBase())
   return `${htmlBase}#/embed?mode=embedded&provider=thingspanel&context=dashboard&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
 })
 
@@ -527,8 +528,8 @@ const sendConfig = () => {
   try {
     // 娣辨嫹璐濋伩鍏嶅搷搴斿紡鏁版嵁闂
     const pureConfig = JSON.parse(JSON.stringify(props.config))
-    const thingsvisApiBaseUrl = window.location.origin + '/thingsvis-api'
-    const platformApiBaseUrl = window.location.origin
+    const thingsvisApiBaseUrl = getThingsVisApiBase()
+    const platformApiBaseUrl = getPlatformApiBase()
 
     iframeRef.value.contentWindow.postMessage({
       type: 'tv:init',

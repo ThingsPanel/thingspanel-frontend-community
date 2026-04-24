@@ -5,7 +5,7 @@
 
 import type { PlatformField } from './types'
 import { localStg } from '@/utils/storage'
-import { getThingsVisApiBase } from './constants'
+import { getPlatformApiBase, getThingsVisApiBase } from './constants'
 
 /** URL 构建选项 */
 export interface ThingsVisUrlOptions {
@@ -70,7 +70,7 @@ export async function buildThingsVisUrl(options: ThingsVisUrlOptions): Promise<s
 
   const thingsvisApiBaseUrl = getThingsVisApiBase()
   params.set('thingsvisApiBaseUrl', thingsvisApiBaseUrl)
-  params.set('platformApiBaseUrl', window.location.origin)
+  params.set('platformApiBaseUrl', getPlatformApiBase())
 
   // 1. SSO Token 交换 (关键实现)
   try {

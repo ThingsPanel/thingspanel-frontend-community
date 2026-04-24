@@ -7,6 +7,8 @@
  * - 涓ユ牸鍖哄垎 Widget Mode 鍜?App Mode
  */
 
+import { getPlatformApiBase } from '@/utils/thingsvis/constants'
+
 // 鈹€鈹€鈹€ Message Type Constants (aligned with Guest MSG_TYPES) 鈹€鈹€鈹€
 const TV_MSG = {
   // Host 鈫?Guest
@@ -303,7 +305,7 @@ export class ThingsVisClient {
       config: {
         saveTarget: 'host',
         thingsvisApiBaseUrl: options?.thingsvisApiBaseUrl ?? `${window.location.origin}/thingsvis-api`,
-        platformApiBaseUrl: options?.platformApiBaseUrl ?? window.location.origin,
+        platformApiBaseUrl: options?.platformApiBaseUrl ?? getPlatformApiBase(),
         ...(options?.platformToken ? { platformToken: options.platformToken } : {}),
         ...(options?.deviceId ? { deviceId: options.deviceId } : {})
       }

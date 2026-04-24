@@ -30,10 +30,11 @@ import {
 import { attributesApi, telemetryApi, commandsApi } from '@/service/api'
 import { getTemplat } from '@/service/api/system-data'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
+import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import type { PlatformField } from '@/utils/thingsvis/types'
 import { localStg } from '@/utils/storage'
-import { getDemoServerUrl, getWebsocketServerUrl } from '@/utils/common/tool'
+import { getWebsocketServerUrl } from '@/utils/common/tool'
 
 const EDITOR_TEMPLATE_FIELD_PAGE_SIZE = 1000
 const EDITOR_DEVICE_CONFIG_PAGE_SIZE = 1000
@@ -723,8 +724,8 @@ function getStudioBase(): string {
 }
 
 function buildThingsVisFrameUrl(thingsVisToken: string): string {
-  const thingsvisApiBaseUrl = encodeURIComponent(window.location.origin + '/thingsvis-api')
-  const platformApiBaseUrl = encodeURIComponent(getDemoServerUrl())
+  const thingsvisApiBaseUrl = encodeURIComponent(getThingsVisApiBase())
+  const platformApiBaseUrl = encodeURIComponent(getPlatformApiBase())
   const saveTarget = 'host'
 
   if (props.mode === 'viewer') {
@@ -1389,8 +1390,8 @@ async function doInit(): Promise<boolean> {
     url: url.value
   })
 
-  const thingsvisApiBaseUrl = window.location.origin + '/thingsvis-api'
-  const platformApiBaseUrl = getDemoServerUrl()
+  const thingsvisApiBaseUrl = getThingsVisApiBase()
+  const platformApiBaseUrl = getPlatformApiBase()
   const platformToken = localStg.get('token') as string | undefined
 
   let dashboardPayload: Record<string, unknown> = { meta: { id: props.id } }
