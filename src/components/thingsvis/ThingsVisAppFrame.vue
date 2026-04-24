@@ -1,7 +1,7 @@
 <template>
   <div class="thingsvis-frame-container">
     <iframe
-      v-if="url && token"
+      v-if="url"
       ref="iframeRef"
       :src="url"
       class="thingsvis-frame"
@@ -9,7 +9,6 @@
       allowfullscreen
       @load="handleIframeLoad"
     ></iframe>
-    <div v-else class="loading-placeholder">正在连接可视化引擎...</div>
   </div>
 </template>
 
@@ -385,7 +384,9 @@ function disconnectAllDeviceWs() {
  */
 let initInProgress = false
 let pendingInitDebounceTimer: ReturnType<typeof setTimeout> | null = null
+let pendingInitRetryTimer: ReturnType<typeof setTimeout> | null = null
 let lastInitCompletedSignature = ''
+let initRetryAttempt = 0
 
 type PlatformSourceDescriptor = {
   id: string
@@ -422,6 +423,19 @@ function cloneDashboardConfig<T>(config: T): T {
 
 function normalizeDashboardConfig<T>(config: T): T {
   return cloneDashboardConfig(config)
+}
+
+function hasCompleteDashboardSchema(
+  schema?: {
+    canvasConfig?: Record<string, unknown>
+    nodes?: unknown[]
+    dataSources?: unknown[]
+  } | null
+): boolean {
+  if (!schema || !schema.canvasConfig || typeof schema.canvasConfig !== 'object') return false
+  if (!Array.isArray(schema.nodes)) return false
+  if (!Array.isArray(schema.dataSources)) return false
+  return true
 }
 
 function normalizeEditorGroupId(groupId?: unknown, fallbackName?: unknown): string {
@@ -1365,8 +1379,8 @@ async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDev
 }
 
 /** Full init sequence triggered once per tv:ready (debounced). */
-async function doInit() {
-  if (!iframeRef.value?.contentWindow || !token.value || !props.id) return
+async function doInit(): Promise<boolean> {
+  if (!iframeRef.value?.contentWindow || !token.value || !props.id) return false
 
   const initSignature = JSON.stringify({
     id: props.id,
@@ -1382,7 +1396,7 @@ async function doInit() {
   let dashboardPayload: Record<string, unknown> = { meta: { id: props.id } }
 
   try {
-    const dashboardData = props.schema
+    const dashboardData = hasCompleteDashboardSchema(props.schema)
       ? {
           id: props.schema.id || props.id,
           name: props.schema.name,
@@ -1408,11 +1422,11 @@ async function doInit() {
       })
     } else if (!dashboardData) {
       console.warn('[AppFrame] Dashboard preload unavailable, deferring init:', props.id, error)
-      return
+      return false
     }
   } catch (error) {
     console.warn('[AppFrame] Failed to preload dashboard schema for embed init:', props.id, error)
-    return
+    return false
   }
 
   const platformBufferSize = Math.max(
@@ -1454,9 +1468,15 @@ async function doInit() {
   }
 
   lastInitCompletedSignature = initSignature
+  initRetryAttempt = 0
+  if (pendingInitRetryTimer) {
+    clearTimeout(pendingInitRetryTimer)
+    pendingInitRetryTimer = null
+  }
+  return true
 }
 
-function scheduleInit() {
+function scheduleInit(delay = 150) {
   if (!iframeRef.value?.contentWindow || !token.value || !props.id) return
 
   const nextSignature = JSON.stringify({
@@ -1477,7 +1497,16 @@ function scheduleInit() {
     if (nextSignature === lastInitCompletedSignature) return
     initInProgress = true
     try {
-      await doInit()
+      const initialized = await doInit()
+      if (!initialized && iframeRef.value?.contentWindow && token.value && props.id) {
+        const retryDelay = Math.min(4000, 400 * 2 ** initRetryAttempt)
+        initRetryAttempt += 1
+        if (pendingInitRetryTimer) clearTimeout(pendingInitRetryTimer)
+        pendingInitRetryTimer = setTimeout(() => {
+          pendingInitRetryTimer = null
+          scheduleInit(retryDelay)
+        }, retryDelay)
+      }
     } finally {
       initInProgress = false
     }
@@ -1486,16 +1515,13 @@ function scheduleInit() {
   pendingInitDebounceTimer = setTimeout(() => {
     pendingInitDebounceTimer = null
     void runInit()
-  }, 150)
+  }, delay)
 }
 
 function handleIframeLoad() {
-  if (pendingInitDebounceTimer) {
-    clearTimeout(pendingInitDebounceTimer)
-    pendingInitDebounceTimer = null
-  }
   initInProgress = false
   lastInitCompletedSignature = ''
+  initRetryAttempt = 0
 }
 
 const handleMessage = async (event: MessageEvent) => {
@@ -1668,6 +1694,7 @@ watch(
 onBeforeUnmount(() => {
   window.removeEventListener('message', handleMessage)
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
+  if (pendingInitRetryTimer) clearTimeout(pendingInitRetryTimer)
   resetViewerHydrationState()
   lastInitCompletedSignature = ''
   activePlatformDevices.clear()
@@ -1701,13 +1728,4 @@ onBeforeUnmount(() => {
   display: block;
 }
 
-.loading-placeholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  min-height: inherit;
-  padding: 24px 0;
-  color: #888;
-}
 </style>

@@ -10,7 +10,7 @@ import { localStg } from '@/utils/storage'
 import { $t } from '@/locales'
 import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
 import { useAuthStore } from '@/store/modules/auth'
-import { readThingsVisHomeCache, writeThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
+import { clearThingsVisHomeCache, readThingsVisHomeCache, writeThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
 import { isSysAdminUser } from '@/utils/thingsvis/space'
 
 const layoutFetched = ref(false)
@@ -29,6 +29,14 @@ const isSysAdmin = computed(() => isSysAdminUser(authStore.userInfo))
 const thingsVisHome = ref<ThingsVisHomeDashboard | null>(null)
 const useThingsVis = ref(false)
 const isThingsVisLoading = ref(false)
+const isHomeResolving = computed(() => !layoutFetched.value || isThingsVisLoading.value)
+
+function isCompleteThingsVisDashboard(dashboard?: ThingsVisHomeDashboard | null): boolean {
+  if (!dashboard || !dashboard.canvasConfig || typeof dashboard.canvasConfig !== 'object') return false
+  if (!Array.isArray(dashboard.nodes)) return false
+  if (!Array.isArray(dashboard.dataSources)) return false
+  return true
+}
 
 // ThingsVis 请求失败时的重试状态（针对超管首次登录场景）
 const thingsVisRetryCount = ref(0)
@@ -38,8 +46,12 @@ const loadLegacyHome = async () => {
   const { data, error } = await fetchHomeData({})
 
   isError.value = (error || !(data && data.config)) as boolean
+  if (isError.value) {
+    layoutFetched.value = true
+    return
+  }
 
-  if (!isError.value && data) {
+  if (data) {
     const configJson = JSON.parse(data.config)
     if (Array.isArray(configJson)) {
       updateConfigData(configJson)
@@ -68,11 +80,14 @@ const getLayout = async (retryCount = 0) => {
   theme.value = ''
 
   const cachedHome = readThingsVisHomeCache()
-  if (cachedHome?.state === 'thingsvis' && cachedHome.dashboard) {
+  if (cachedHome?.state === 'thingsvis' && isCompleteThingsVisDashboard(cachedHome.dashboard)) {
     thingsVisHome.value = cachedHome.dashboard
     useThingsVis.value = true
     layoutFetched.value = true
     return
+  }
+  if (cachedHome?.state === 'thingsvis') {
+    clearThingsVisHomeCache()
   }
 
   if (cachedHome?.state === 'sysadmin-setup' && isSysAdmin.value) {
@@ -206,7 +221,11 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
 </script>
 
 <template>
-  <div v-if="isError && !useThingsVis" class="h-full w-full flex-center">
+  <div v-if="isHomeResolving" class="h-full w-full flex-center px-16px">
+    <div class="h-full w-full"></div>
+  </div>
+
+  <div v-else-if="isError && !useThingsVis" class="h-full w-full flex-center">
     <n-result status="418" :title="$t('custom.home.title')" :description="$t('custom.home.description')">
       <template #footer>
         <n-button

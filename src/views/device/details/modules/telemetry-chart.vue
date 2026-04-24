@@ -71,6 +71,9 @@ const viewerPlatformDevices = computed(() => {
 })
 
 const deviceIdRef = computed(() => props.id)
+const templateContextResolved = computed(() => {
+  return Boolean(props.deviceData) || Boolean(props.deviceTemplateId)
+})
 const hasLoadedInitialSnapshot = computed(() => {
   return currentDataDeviceId.value === props.id && Object.keys(currentData.value).length > 0
 })
@@ -134,6 +137,7 @@ const pushDataToVis = (fields: Record<string, unknown>) => {
 // 历史推送方法
 const realtimePush = ref<ReturnType<typeof useRealtimePush> | null>(null)
 const alarmPush = ref<ReturnType<typeof useAlarmPush> | null>(null)
+let initSequence = 0
 
 // ─── 加载模板和配置 ───────────────────────────────────────────────────────────
 
@@ -229,41 +233,60 @@ const onVisReady = async () => {
 
 // ─── 监听模板ID变化重新加载 ───────────────────────────────────────────────────
 
-watch(() => props.deviceTemplateId, async (newVal) => {
+watch([() => props.deviceTemplateId, templateContextResolved, () => props.id], async ([newVal]) => {
+  const currentSequence = ++initSequence
+
   // 先停止旧的推送
   realtimePush.value?.stop()
   alarmPush.value?.stop()
+  realtimePush.value = null
+  alarmPush.value = null
   currentData.value = {}
   currentDataDeviceId.value = ''
+  platformFields.value = []
+  initialConfig.value = null
+  hasTemplate.value = false
 
-  if (newVal) {
-    await initTemplateData(newVal)
-
-    if (hasTemplate.value) {
-      // 初始化 composables
-      realtimePush.value = useRealtimePush(
-        deviceIdRef,
-        platformFields,
-        pushDataToVis,
-        async () => {
-          if (!hasLoadedInitialSnapshot.value) {
-            await fetchAndUpdateData()
-          }
-        }
-      )
-
-      alarmPush.value = useAlarmPush(
-        deviceIdRef,
-        platformFields,
-        pushDataToVis
-      )
-
-      // 启动实时推送
-      realtimePush.value?.start()
-      // 启动告警轮询
-      alarmPush.value?.start()
-    }
+  if (!templateContextResolved.value) {
+    chartLoading.value = true
+    return
   }
+
+  if (!newVal) {
+    chartLoading.value = false
+    return
+  }
+
+  chartLoading.value = true
+
+  await initTemplateData(newVal)
+
+  if (currentSequence !== initSequence || !hasTemplate.value) {
+    return
+  }
+
+  // 初始化 composables
+  realtimePush.value = useRealtimePush(
+    deviceIdRef,
+    platformFields,
+    pushDataToVis,
+    async () => {
+      if (!hasLoadedInitialSnapshot.value) {
+        await fetchAndUpdateData()
+      }
+    }
+  )
+
+  alarmPush.value = useAlarmPush(
+    deviceIdRef,
+    platformFields,
+    pushDataToVis
+  )
+
+  // 启动实时推送
+  realtimePush.value?.start()
+  // 启动告警轮询
+  alarmPush.value?.start()
 },
   { immediate: true }
 )
