@@ -53,6 +53,7 @@ const props = defineProps<{
     canvasConfig?: Record<string, unknown>
     nodes?: unknown[]
     dataSources?: unknown[]
+    variables?: unknown[]
   } | null
 }>()
 const emit = defineEmits<{
@@ -431,6 +432,7 @@ function hasCompleteDashboardSchema(
     canvasConfig?: Record<string, unknown>
     nodes?: unknown[]
     dataSources?: unknown[]
+    variables?: unknown[]
   } | null
 ): boolean {
   if (!schema || !schema.canvasConfig || typeof schema.canvasConfig !== 'object') return false
@@ -685,7 +687,8 @@ async function loadViewerDashboardConfig(): Promise<Record<string, unknown> | nu
       name: props.schema.name,
       canvas: props.schema.canvasConfig,
       nodes: Array.isArray(props.schema.nodes) ? props.schema.nodes : [],
-      dataSources: Array.isArray(props.schema.dataSources) ? props.schema.dataSources : []
+      dataSources: Array.isArray(props.schema.dataSources) ? props.schema.dataSources : [],
+      variables: Array.isArray(props.schema.variables) ? props.schema.variables : []
     })
   }
   if (viewerDashboardConfigCache && viewerDashboardConfigCacheId === props.id) return viewerDashboardConfigCache
@@ -702,7 +705,8 @@ async function loadViewerDashboardConfig(): Promise<Record<string, unknown> | nu
         name: data.name,
         canvas: data.canvasConfig,
         nodes: Array.isArray(data.nodes) ? data.nodes : [],
-        dataSources: Array.isArray(data.dataSources) ? data.dataSources : []
+        dataSources: Array.isArray(data.dataSources) ? data.dataSources : [],
+        variables: Array.isArray(data.variables) ? data.variables : []
       })
       return viewerDashboardConfigCache
     } catch (error) {
@@ -776,7 +780,8 @@ function extractPresetSchema(config: Record<string, unknown> | null) {
       ? { canvas: config.canvas as Record<string, unknown> }
       : {}),
     nodes,
-    ...(Array.isArray(config.dataSources) ? { dataSources: config.dataSources } : {})
+    ...(Array.isArray(config.dataSources) ? { dataSources: config.dataSources } : {}),
+    ...(Array.isArray(config.variables) ? { variables: config.variables } : {})
   }
 }
 
@@ -1404,7 +1409,8 @@ async function doInit(): Promise<boolean> {
           thumbnail: props.schema.thumbnail ?? null,
           canvasConfig: props.schema.canvasConfig,
           nodes: props.schema.nodes,
-          dataSources: props.schema.dataSources
+          dataSources: props.schema.dataSources,
+          variables: props.schema.variables
         }
       : null
     const fetched = dashboardData ? { data: dashboardData, error: null } : await fetchDashboardWithRetry(props.id)
@@ -1419,7 +1425,8 @@ async function doInit(): Promise<boolean> {
         },
         canvas: data.canvasConfig,
         nodes,
-        dataSources: sanitizeDataSourcesForHostSave(nodes, data.dataSources)
+        dataSources: sanitizeDataSourcesForHostSave(nodes, data.dataSources),
+        variables: Array.isArray(data.variables) ? data.variables : []
       })
     } else if (!dashboardData) {
       console.warn('[AppFrame] Dashboard preload unavailable, deferring init:', props.id, error)

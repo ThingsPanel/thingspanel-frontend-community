@@ -537,7 +537,8 @@ const sendConfig = () => {
         meta: { id: pureConfig.id, name: pureConfig.name },
         canvas: pureConfig.canvas || pureConfig.canvasConfig,
         nodes: pureConfig.nodes,
-        dataSources: pureConfig.dataSources
+        dataSources: pureConfig.dataSources,
+        variables: Array.isArray(pureConfig.variables) ? pureConfig.variables : []
       },
       config: {
         token: token.value,

@@ -113,6 +113,7 @@ export interface ThingsVisDashboard {
   }
   nodes: unknown[]
   dataSources: unknown[]
+  variables?: unknown[]
   isPublished: boolean
   publishedAt: string | null
   shareToken: string | null
