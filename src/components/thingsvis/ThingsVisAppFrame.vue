@@ -1218,6 +1218,11 @@ async function buildPlatformDeviceGroups(): Promise<PlatformDeviceGroupEntry[]> 
     try {
       const res = await deviceGroupTree({})
       const groups = flattenDeviceGroupTree(Array.isArray(res?.data) ? res.data : [])
+      groups.unshift({
+        groupId: '__all__',
+        groupName: '全部设备',
+        parentId: null
+      })
       platformDeviceGroupsCache = groups
       return groups
     } catch (err) {
@@ -1593,6 +1598,50 @@ const handleMessage = async (event: MessageEvent) => {
     } catch (error) {
       console.warn('[AppFrame] Failed to load requested device group:', groupId, error)
       postToThingsVis('tv:devices-by-group', { groupId, devices: [] })
+    }
+    return
+  }
+
+  if (type === 'thingsvis:searchDevicesPaged') {
+    const keyword = typeof (payload as any).keyword === 'string' ? (payload as any).keyword : ''
+    const groupId = typeof (payload as any).groupId === 'string' ? (payload as any).groupId : '__all__'
+    const page = typeof (payload as any).page === 'number' ? (payload as any).page : 1
+    const pageSize = typeof (payload as any).pageSize === 'number' ? (payload as any).pageSize : 10
+    const reqId = typeof (payload as any).reqId === 'string' ? (payload as any).reqId : ''
+    const searchParams: Record<string, unknown> = {
+      page,
+      page_size: pageSize,
+      search: keyword
+    }
+
+    if (groupId && groupId !== '__all__') {
+      searchParams.group_id = groupId
+    }
+
+    try {
+      const res = await deviceList(searchParams)
+      const groups = await buildPlatformDeviceGroups()
+      const groupName =
+        groups.find(group => group.groupId === groupId)?.groupName ||
+        normalizeEditorGroupName(undefined, groupId)
+      const devices = await mapPlatformDevicesForGroup(unwrapList(res?.data), groupId, groupName)
+      registerActivePlatformDevices(devices)
+      postToThingsVis('tv:search-devices-paged-result', {
+        reqId,
+        devices,
+        total: res?.data?.total || 0,
+        page,
+        pageSize
+      })
+    } catch (error) {
+      console.warn('[AppFrame] Failed to search devices:', error)
+      postToThingsVis('tv:search-devices-paged-result', {
+        reqId,
+        devices: [],
+        total: 0,
+        page,
+        pageSize
+      })
     }
     return
   }
