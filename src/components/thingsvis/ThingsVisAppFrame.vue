@@ -20,6 +20,8 @@ import {
   deviceGroupTree,
   deviceList,
   deviceListByGroup,
+  deviceAlarmStatus,
+  deviceDictProtocolServiceFirstLevel,
   getDeviceConfigList,
   telemetryDataCurrent,
   getAttributeDataSet,
@@ -38,6 +40,14 @@ import { getWebsocketServerUrl } from '@/utils/common/tool'
 
 const EDITOR_TEMPLATE_FIELD_PAGE_SIZE = 1000
 const EDITOR_DEVICE_CONFIG_PAGE_SIZE = 1000
+const DEVICE_ALARM_STATUS_FIELD_IDS = new Set([
+  'device_alarm_active',
+  'device_alarm_count',
+  'device_alarm_highest_level',
+  'latest_device_alarm_title',
+  'latest_device_alarm_level',
+  'latest_device_alarm_time'
+])
 const EDITOR_GROUP_DEVICE_PAGE_SIZE = 1000
 const DEFAULT_PLATFORM_BUFFER_SIZE = 100
 const GENERATED_HOST_DATA_SOURCE_ID_RE = /^(?:__platform_.+__|thingspanel_.+)$/
@@ -91,6 +101,13 @@ type PlatformDeviceEntry = {
   groupId: string
   groupName: string
   deviceConfigId?: string
+  deviceConfigName?: string
+  isOnline?: number | string | boolean
+  warnStatus?: string
+  deviceType?: string
+  accessWay?: string
+  protocolType?: string
+  lastPushTime?: string
   templateId?: string
   fields: PlatformDeviceField[]
   presets: any[]
@@ -101,6 +118,11 @@ type PlatformDeviceGroupEntry = {
   groupName: string
   deviceCount?: number
   parentId?: string | null
+}
+
+type DeviceFilterOption = {
+  value: string
+  label: string
 }
 
 type TemplateEntry = {
@@ -149,7 +171,7 @@ function extractWsFields(payload: unknown): Record<string, unknown> {
   // Array of { key, value } items
   if (Array.isArray(payload)) {
     const fields: Record<string, unknown> = {}
-    ;(payload as Array<{ key?: string; label?: string; value?: unknown }>).forEach(item => {
+    ;(payload as Array<{ key?: string; label?: string; value?: unknown }>).forEach((item) => {
       if (!item) return
       const k = item.key ?? item.label
       if (!k || k === 'systime') return
@@ -232,7 +254,7 @@ function connectDeviceWs(device: { deviceId: string; fields: PlatformDeviceField
       }, PING_INTERVAL_MS)
     }
 
-    entry.ws.onmessage = evt => {
+    entry.ws.onmessage = (evt) => {
       if (typeof evt.data !== 'string' || evt.data === 'pong') return
       try {
         const msg = JSON.parse(evt.data)
@@ -306,7 +328,7 @@ function connectDeviceStatusWs(deviceId: string) {
       }, PING_INTERVAL_MS)
     }
 
-    entry.ws.onmessage = evt => {
+    entry.ws.onmessage = (evt) => {
       if (typeof evt.data !== 'string' || evt.data === 'pong') return
       try {
         const msg = JSON.parse(evt.data) as Record<string, unknown>
@@ -486,7 +508,7 @@ function normalizeCanvasBackground(background: unknown): Record<string, unknown>
 }
 
 function registerActivePlatformDevices(devices: PlatformDeviceEntry[]) {
-  devices.forEach(device => {
+  devices.forEach((device) => {
     if (!device?.deviceId) return
     const existing = activePlatformDevices.get(device.deviceId)
     activePlatformDevices.set(device.deviceId, {
@@ -510,7 +532,7 @@ function flattenDeviceGroupTree(
   nodes: unknown[],
   groups = new Map<string, PlatformDeviceGroupEntry>()
 ): PlatformDeviceGroupEntry[] {
-  nodes.forEach(node => {
+  nodes.forEach((node) => {
     if (!node || typeof node !== 'object') return
     const treeNode = asRecord(node)
     const rawGroup = asRecord(treeNode.group || treeNode.data || treeNode)
@@ -560,7 +582,7 @@ function flattenDeviceGroupTree(
 }
 
 function clearViewerHydrationTimers() {
-  viewerHydrationTimers.forEach(timer => clearTimeout(timer))
+  viewerHydrationTimers.forEach((timer) => clearTimeout(timer))
   viewerHydrationTimers = []
 }
 
@@ -618,13 +640,13 @@ function collectRequestedFieldsFromValue(value: unknown, requests: Map<string, S
   }
 
   if (Array.isArray(value)) {
-    value.forEach(item => collectRequestedFieldsFromValue(item, requests))
+    value.forEach((item) => collectRequestedFieldsFromValue(item, requests))
     return
   }
 
   if (!value || typeof value !== 'object') return
 
-  Object.values(value as Record<string, unknown>).forEach(item => {
+  Object.values(value as Record<string, unknown>).forEach((item) => {
     collectRequestedFieldsFromValue(item, requests)
   })
 }
@@ -649,7 +671,7 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
       )
       const bindingFields = requests.get(String(dataSource.id))
       if (bindingFields) {
-        bindingFields.forEach(fieldId => requestedFields.add(fieldId))
+        bindingFields.forEach((fieldId) => requestedFields.add(fieldId))
       }
 
       const normalizedRequestedFields = Array.from(requestedFields)
@@ -669,7 +691,7 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
 function syncActivePlatformDevicesFromConfig(config: any) {
   activePlatformDevices.clear()
 
-  collectPlatformSourceDescriptors(config).forEach(descriptor => {
+  collectPlatformSourceDescriptors(config).forEach((descriptor) => {
     if (!descriptor.deviceId || activePlatformDevices.has(descriptor.deviceId)) return
 
     activePlatformDevices.set(descriptor.deviceId, {
@@ -888,8 +910,17 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
 
   if (!deviceId || requestedFields.length === 0) return {}
 
-  const currentFieldIds = requestedFields.filter(fieldId => !fieldId.endsWith('__history'))
-  if (currentFieldIds.length === 0) return {}
+  const alarmFieldIds = requestedFields.filter((fieldId) => DEVICE_ALARM_STATUS_FIELD_IDS.has(fieldId))
+  const currentFieldIds = requestedFields.filter(
+    (fieldId) => !fieldId.endsWith('__history') && !DEVICE_ALARM_STATUS_FIELD_IDS.has(fieldId)
+  )
+  const result: Record<string, unknown> = {}
+
+  if (alarmFieldIds.length > 0) {
+    Object.assign(result, await buildRequestedAlarmStatusData(alarmFieldIds, deviceId))
+  }
+
+  if (currentFieldIds.length === 0) return result
 
   const [telemetryResult, attributeResult] = await Promise.allSettled([
     telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
@@ -908,11 +939,64 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
   if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
 
-  const result: Record<string, unknown> = {}
-  currentFieldIds.forEach(fieldId => {
+  currentFieldIds.forEach((fieldId) => {
     if (kvMap[fieldId] !== undefined) result[fieldId] = kvMap[fieldId]
   })
   return result
+}
+
+function normalizeAlarmLevel(raw: unknown) {
+  const value = String(raw ?? '')
+    .toLowerCase()
+    .trim()
+  if (value === '1' || value === 'critical' || value === 'high' || value === 'serious') return 'critical'
+  if (value === '2' || value === 'warning' || value === 'medium' || value === 'warn') return 'warning'
+  if (value === '3' || value === 'info' || value === 'low') return 'info'
+  return value || ''
+}
+
+function normalizeAlarmTime(row: any) {
+  return row?.last_trigger_time ?? row?.create_time ?? row?.created_at ?? row?.time ?? ''
+}
+
+function isActiveAlarm(row: any) {
+  const raw = String(row?.alarm_status ?? row?.status ?? row?.is_active ?? '').toLowerCase()
+  return row?.is_active === true || raw === '1' || raw === 'active' || raw === 'triggered' || raw === 'a'
+}
+
+async function buildRequestedAlarmStatusData(fieldIds: string[], deviceId?: string): Promise<Record<string, unknown>> {
+  if (!deviceId || fieldIds.length === 0) return {}
+
+  try {
+    const response = await deviceAlarmStatus({ device_id: deviceId, page: 1, page_size: 20 })
+    const payload = response?.data ?? response
+    const rows = Array.isArray(payload?.list)
+      ? payload.list
+      : Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload)
+          ? payload
+          : []
+    const activeRows = rows.filter(isActiveAlarm)
+    const latest = rows[0] ?? null
+    const highest = activeRows[0] ?? latest
+    const allFields: Record<string, unknown> = {
+      device_alarm_active: activeRows.length > 0 ? 1 : 0,
+      device_alarm_count: Number(payload?.total ?? activeRows.length ?? 0),
+      device_alarm_highest_level: normalizeAlarmLevel(highest?.alarm_level ?? highest?.level),
+      latest_device_alarm_title: String(latest?.alarm_name ?? latest?.name ?? latest?.title ?? ''),
+      latest_device_alarm_level: normalizeAlarmLevel(latest?.alarm_level ?? latest?.level),
+      latest_device_alarm_time: latest ? normalizeAlarmTime(latest) : ''
+    }
+
+    return fieldIds.reduce<Record<string, unknown>>((acc, fieldId) => {
+      acc[fieldId] = allFields[fieldId]
+      return acc
+    }, {})
+  } catch (error) {
+    console.warn('[AppFrame] Failed to load requested device alarm status:', deviceId, error)
+    return {}
+  }
 }
 
 async function hydrateConfiguredPlatformSources(): Promise<boolean> {
@@ -989,7 +1073,7 @@ function resolveWriteFieldId(data: unknown): string | undefined {
 function resolveWriteFieldType(deviceId: string, fieldId?: string): PlatformField['dataType'] | undefined {
   if (!fieldId) return undefined
   const device = activePlatformDevices.get(deviceId)
-  const field = device?.fields.find(item => item.id === fieldId || item.name === fieldId)
+  const field = device?.fields.find((item) => item.id === fieldId || item.name === fieldId)
   return field?.dataType
 }
 
@@ -1018,7 +1102,7 @@ function collectReferencedDataSourceIds(value: unknown, referencedIds = new Set<
   }
 
   if (Array.isArray(value)) {
-    value.forEach(item => collectReferencedDataSourceIds(item, referencedIds))
+    value.forEach((item) => collectReferencedDataSourceIds(item, referencedIds))
     return referencedIds
   }
 
@@ -1038,16 +1122,18 @@ function sanitizeDataSourcesForHostSave(nodes: unknown, dataSources: unknown): u
   if (!Array.isArray(dataSources)) return []
 
   const referencedIds = collectReferencedDataSourceIds(nodes)
-  return dataSources.filter((dataSource: any) => {
-    const id = typeof dataSource?.id === 'string' ? dataSource.id : ''
-    if (props.mode === 'editor' && /^thingspanel_.+$/.test(id)) return true
-    if (!GENERATED_HOST_DATA_SOURCE_ID_RE.test(id)) return true
-    return referencedIds.has(id)
-  }).map((dataSource: any) => {
-    if (!dataSource?.__editorAutoManual) return dataSource
-    const { __editorAutoManual: _editorAutoManual, mode: _mode, ...rest } = dataSource
-    return rest
-  })
+  return dataSources
+    .filter((dataSource: any) => {
+      const id = typeof dataSource?.id === 'string' ? dataSource.id : ''
+      if (props.mode === 'editor' && /^thingspanel_.+$/.test(id)) return true
+      if (!GENERATED_HOST_DATA_SOURCE_ID_RE.test(id)) return true
+      return referencedIds.has(id)
+    })
+    .map((dataSource: any) => {
+      if (!dataSource?.__editorAutoManual) return dataSource
+      const { __editorAutoManual: _editorAutoManual, mode: _mode, ...rest } = dataSource
+      return rest
+    })
 }
 
 async function handlePlatformWrite(payload: Record<string, unknown>, requestId?: string) {
@@ -1205,6 +1291,64 @@ async function loadDeviceConfigTemplateMap(): Promise<Map<string, string>> {
   return deviceConfigTemplateMapPromise
 }
 
+function resolveDeviceConfigName(config: any, configId: string): string {
+  return (
+    firstString(
+      config?.name,
+      config?.device_config_name,
+      config?.deviceConfigName,
+      config?.config_name,
+      config?.configName,
+      configId
+    ) || configId
+  )
+}
+
+async function buildDeviceFilterOptions(): Promise<{
+  deviceConfigs: DeviceFilterOption[]
+  serviceOptions: DeviceFilterOption[]
+}> {
+  const [configRes, serviceRes] = await Promise.allSettled([
+    getDeviceConfigList({ page: 1, page_size: EDITOR_DEVICE_CONFIG_PAGE_SIZE }),
+    deviceDictProtocolServiceFirstLevel({ language_code: localStg.get('lang') })
+  ])
+
+  const deviceConfigs =
+    configRes.status === 'fulfilled'
+      ? unwrapList(configRes.value?.data)
+          .map((config: any): DeviceFilterOption | null => {
+            const configId = firstString(config?.id, config?.device_config_id, config?.deviceConfigId)
+            if (!configId) return null
+            return {
+              value: configId,
+              label: resolveDeviceConfigName(config, configId)
+            }
+          })
+          .filter((item): item is DeviceFilterOption => Boolean(item))
+      : []
+
+  const serviceData = serviceRes.status === 'fulfilled' ? asRecord(serviceRes.value?.data) : {}
+  const protocolOptions = Array.isArray(serviceData.protocol)
+    ? serviceData.protocol.map((item: any): DeviceFilterOption | null => {
+        const value = firstString(item?.service_identifier, item?.serviceIdentifier, item?.id)
+        const label = firstString(item?.name, item?.label, value)
+        return value && label ? { value, label: `协议：${label}` } : null
+      })
+    : []
+  const serviceOptions = Array.isArray(serviceData.service)
+    ? serviceData.service.map((item: any): DeviceFilterOption | null => {
+        const value = firstString(item?.service_identifier, item?.serviceIdentifier, item?.id)
+        const label = firstString(item?.name, item?.label, value)
+        return value && label ? { value, label: `服务：${label}` } : null
+      })
+    : []
+
+  return {
+    deviceConfigs,
+    serviceOptions: [...protocolOptions, ...serviceOptions].filter((item): item is DeviceFilterOption => Boolean(item))
+  }
+}
+
 async function buildPlatformDeviceGroups(): Promise<PlatformDeviceGroupEntry[]> {
   if (platformDeviceGroupsCache) {
     return platformDeviceGroupsCache
@@ -1220,7 +1364,7 @@ async function buildPlatformDeviceGroups(): Promise<PlatformDeviceGroupEntry[]> 
       const groups = flattenDeviceGroupTree(Array.isArray(res?.data) ? res.data : [])
       groups.unshift({
         groupId: '__all__',
-        groupName: '全部设备',
+        groupName: '不限设备分组',
         parentId: null
       })
       platformDeviceGroupsCache = groups
@@ -1254,13 +1398,14 @@ function resolveDeviceId(row: any): string | undefined {
 function resolveDeviceName(row: any, deviceId: string): string {
   const device = unwrapDeviceRow(row)
   return firstString(
-    device.name,
     device.device_name,
     device.deviceName,
-    device.device_number,
-    device.deviceNumber,
     row?.device_name,
     row?.deviceName,
+    device.name,
+    row?.name,
+    device.device_number,
+    device.deviceNumber,
     row?.device_number,
     row?.deviceNumber,
     deviceId
@@ -1276,6 +1421,59 @@ function resolveDeviceConfigId(row: any): string | undefined {
     row?.deviceConfigId,
     device.device_config?.id,
     row?.device_config?.id
+  )
+}
+
+function resolveDeviceConfigDisplayName(row: any): string | undefined {
+  const device = unwrapDeviceRow(row)
+  return firstString(
+    device.device_config_name,
+    device.deviceConfigName,
+    row?.device_config_name,
+    row?.deviceConfigName,
+    device.device_config?.name,
+    row?.device_config?.name
+  )
+}
+
+function resolveDeviceOnlineStatus(row: any): number | string | boolean | undefined {
+  const device = unwrapDeviceRow(row)
+  return (
+    firstNumber(device.is_online, device.isOnline, row?.is_online, row?.isOnline) ??
+    (typeof device.is_online === 'boolean' ? device.is_online : undefined) ??
+    (typeof row?.is_online === 'boolean' ? row.is_online : undefined)
+  )
+}
+
+function resolveDeviceWarnStatus(row: any): string | undefined {
+  const device = unwrapDeviceRow(row)
+  return firstString(device.warn_status, device.warnStatus, row?.warn_status, row?.warnStatus)
+}
+
+function resolveDeviceType(row: any): string | undefined {
+  const device = unwrapDeviceRow(row)
+  return firstString(device.device_type, device.deviceType, row?.device_type, row?.deviceType)
+}
+
+function resolveDeviceAccessWay(row: any): string | undefined {
+  const device = unwrapDeviceRow(row)
+  return firstString(device.access_way, device.accessWay, row?.access_way, row?.accessWay)
+}
+
+function resolveDeviceProtocolType(row: any): string | undefined {
+  const device = unwrapDeviceRow(row)
+  return firstString(device.protocol_type, device.protocolType, row?.protocol_type, row?.protocolType)
+}
+
+function resolveDeviceLastPushTime(row: any): string | undefined {
+  const device = unwrapDeviceRow(row)
+  return firstString(
+    device.ts,
+    row?.ts,
+    device.last_push_time,
+    device.lastPushTime,
+    row?.last_push_time,
+    row?.lastPushTime
   )
 }
 
@@ -1295,24 +1493,69 @@ function resolveDeviceTemplateId(row: any, configTemplateMap: Map<string, string
   )
 }
 
+function resolveDeviceGroupId(row: any): string | undefined {
+  const device = unwrapDeviceRow(row)
+  return firstString(
+    device.group_id,
+    device.groupId,
+    row?.group_id,
+    row?.groupId,
+    device.device_group_id,
+    device.deviceGroupId,
+    row?.device_group_id,
+    row?.deviceGroupId,
+    device.group?.id,
+    row?.group?.id
+  )
+}
+
+function resolveDeviceGroupName(row: any): string | undefined {
+  const device = unwrapDeviceRow(row)
+  return firstString(
+    device.group_name,
+    device.groupName,
+    row?.group_name,
+    row?.groupName,
+    device.device_group_name,
+    device.deviceGroupName,
+    row?.device_group_name,
+    row?.deviceGroupName,
+    device.group?.name,
+    row?.group?.name
+  )
+}
+
 async function mapPlatformDevicesForGroup(
   rawDevices: any[],
-  normalizedGroupId: string,
-  groupName: string
+  fallbackGroupId = '',
+  fallbackGroupName = '',
+  groups: PlatformDeviceGroupEntry[] = []
 ): Promise<PlatformDeviceEntry[]> {
+  const groupNameById = new Map(groups.map((group) => [group.groupId, group.groupName]))
   return rawDevices
     .map((row: any): PlatformDeviceEntry | null => {
       const deviceId = resolveDeviceId(row)
       if (!deviceId) return null
       const deviceConfigId = resolveDeviceConfigId(row)
+      const deviceConfigName = resolveDeviceConfigDisplayName(row)
       const templateId = resolveDeviceTemplateId(row)
+      const rowGroupId = resolveDeviceGroupId(row) || fallbackGroupId
+      const rowGroupName =
+        resolveDeviceGroupName(row) || (rowGroupId ? groupNameById.get(rowGroupId) : undefined) || fallbackGroupName
 
       return {
         deviceId,
         deviceName: resolveDeviceName(row, deviceId),
-        groupId: normalizedGroupId,
-        groupName,
+        groupId: rowGroupId,
+        groupName: rowGroupName,
         ...(deviceConfigId ? { deviceConfigId } : {}),
+        ...(deviceConfigName ? { deviceConfigName } : {}),
+        ...(resolveDeviceOnlineStatus(row) !== undefined ? { isOnline: resolveDeviceOnlineStatus(row) } : {}),
+        ...(resolveDeviceWarnStatus(row) ? { warnStatus: resolveDeviceWarnStatus(row) } : {}),
+        ...(resolveDeviceType(row) ? { deviceType: resolveDeviceType(row) } : {}),
+        ...(resolveDeviceAccessWay(row) ? { accessWay: resolveDeviceAccessWay(row) } : {}),
+        ...(resolveDeviceProtocolType(row) ? { protocolType: resolveDeviceProtocolType(row) } : {}),
+        ...(resolveDeviceLastPushTime(row) ? { lastPushTime: resolveDeviceLastPushTime(row) } : {}),
         ...(templateId ? { templateId } : {}),
         fields: [],
         presets: []
@@ -1326,7 +1569,7 @@ async function buildFallbackPlatformDevicesForDefaultGroup(
   groupName: string,
   groups: PlatformDeviceGroupEntry[]
 ): Promise<PlatformDeviceEntry[]> {
-  const rootGroups = groups.filter(group => !group.parentId || String(group.parentId) === '0')
+  const rootGroups = groups.filter((group) => !group.parentId || String(group.parentId) === '0')
   if (rootGroups.length !== 1 || rootGroups[0]?.groupId !== normalizedGroupId) {
     return []
   }
@@ -1334,14 +1577,14 @@ async function buildFallbackPlatformDevicesForDefaultGroup(
   const deviceRes = await deviceList({ page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE })
   const rawDevices = unwrapList(deviceRes?.data)
 
-  return mapPlatformDevicesForGroup(rawDevices, normalizedGroupId, groupName)
+  return mapPlatformDevicesForGroup(rawDevices, normalizedGroupId, groupName, groups)
 }
 
 async function buildUngroupedPlatformDevices(): Promise<PlatformDeviceEntry[]> {
   const deviceRes = await deviceList({ page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE })
   const rawDevices = unwrapList(deviceRes?.data)
 
-  return mapPlatformDevicesForGroup(rawDevices, '__ungrouped__', '未分组设备')
+  return mapPlatformDevicesForGroup(rawDevices, '', '')
 }
 
 async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDeviceEntry[]> {
@@ -1365,13 +1608,13 @@ async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDev
       ])
 
       const groupName =
-        groups.find(group => group.groupId === normalizedGroupId)?.groupName ||
+        groups.find((group) => group.groupId === normalizedGroupId)?.groupName ||
         normalizeEditorGroupName(undefined, normalizedGroupId)
 
       const relationDevices = unwrapList(deviceRes?.data)
       const devices =
         relationDevices.length > 0
-          ? await mapPlatformDevicesForGroup(relationDevices, normalizedGroupId, groupName)
+          ? await mapPlatformDevicesForGroup(relationDevices, normalizedGroupId, groupName, groups)
           : await buildFallbackPlatformDevicesForDefaultGroup(normalizedGroupId, groupName, groups)
 
       platformDevicesByGroupCache.set(normalizedGroupId, devices)
@@ -1587,6 +1830,26 @@ const handleMessage = async (event: MessageEvent) => {
     return
   }
 
+  if (type === 'thingsvis:requestDeviceFilterOptions') {
+    const reqId = typeof (payload as any).reqId === 'string' ? (payload as any).reqId : ''
+
+    try {
+      const options = await buildDeviceFilterOptions()
+      postToThingsVis('tv:device-filter-options', {
+        reqId,
+        ...options
+      })
+    } catch (error) {
+      console.warn('[AppFrame] Failed to load requested device filter options:', error)
+      postToThingsVis('tv:device-filter-options', {
+        reqId,
+        deviceConfigs: [],
+        serviceOptions: []
+      })
+    }
+    return
+  }
+
   if (type === 'thingsvis:requestDevicesByGroup') {
     const groupId = typeof (payload as any).groupId === 'string' ? (payload as any).groupId : undefined
     if (!groupId) return
@@ -1605,6 +1868,13 @@ const handleMessage = async (event: MessageEvent) => {
   if (type === 'thingsvis:searchDevicesPaged') {
     const keyword = typeof (payload as any).keyword === 'string' ? (payload as any).keyword : ''
     const groupId = typeof (payload as any).groupId === 'string' ? (payload as any).groupId : '__all__'
+    const deviceConfigId = typeof (payload as any).deviceConfigId === 'string' ? (payload as any).deviceConfigId : ''
+    const isOnline = typeof (payload as any).isOnline === 'string' ? (payload as any).isOnline : ''
+    const warnStatus = typeof (payload as any).warnStatus === 'string' ? (payload as any).warnStatus : ''
+    const deviceType = typeof (payload as any).deviceType === 'string' ? (payload as any).deviceType : ''
+    const serviceIdentifier =
+      typeof (payload as any).serviceIdentifier === 'string' ? (payload as any).serviceIdentifier : ''
+    const label = typeof (payload as any).label === 'string' ? (payload as any).label : ''
     const page = typeof (payload as any).page === 'number' ? (payload as any).page : 1
     const pageSize = typeof (payload as any).pageSize === 'number' ? (payload as any).pageSize : 10
     const reqId = typeof (payload as any).reqId === 'string' ? (payload as any).reqId : ''
@@ -1617,14 +1887,26 @@ const handleMessage = async (event: MessageEvent) => {
     if (groupId && groupId !== '__all__') {
       searchParams.group_id = groupId
     }
+    if (deviceConfigId) searchParams.device_config_id = deviceConfigId
+    if (isOnline) searchParams.is_online = Number(isOnline)
+    if (warnStatus) searchParams.warn_status = warnStatus
+    if (deviceType) searchParams.device_type = deviceType
+    if (serviceIdentifier) searchParams.service_identifier = serviceIdentifier
+    if (label) searchParams.label = label
 
     try {
       const res = await deviceList(searchParams)
       const groups = await buildPlatformDeviceGroups()
-      const groupName =
-        groups.find(group => group.groupId === groupId)?.groupName ||
-        normalizeEditorGroupName(undefined, groupId)
-      const devices = await mapPlatformDevicesForGroup(unwrapList(res?.data), groupId, groupName)
+      const fallbackGroupName =
+        groupId && groupId !== '__all__'
+          ? groups.find((group) => group.groupId === groupId)?.groupName || normalizeEditorGroupName(undefined, groupId)
+          : ''
+      const devices = await mapPlatformDevicesForGroup(
+        unwrapList(res?.data),
+        groupId === '__all__' ? '' : groupId,
+        fallbackGroupName,
+        groups
+      )
       registerActivePlatformDevices(devices)
       postToThingsVis('tv:search-devices-paged-result', {
         reqId,
@@ -1656,7 +1938,8 @@ const handleMessage = async (event: MessageEvent) => {
   if (type === 'thingsvis:requestDeviceFields') {
     const deviceId = typeof (payload as any).deviceId === 'string' ? (payload as any).deviceId : undefined
     const directTemplateId = typeof (payload as any).templateId === 'string' ? (payload as any).templateId : undefined
-    const deviceConfigId = typeof (payload as any).deviceConfigId === 'string' ? (payload as any).deviceConfigId : undefined
+    const deviceConfigId =
+      typeof (payload as any).deviceConfigId === 'string' ? (payload as any).deviceConfigId : undefined
     if (!iframeRef.value?.contentWindow || !deviceId) return
 
     try {
@@ -1741,7 +2024,7 @@ onMounted(async () => {
 
 watch(
   () => props.id,
-  nextId => {
+  (nextId) => {
     resetViewerHydrationState()
     if (!nextId || !token.value) return
     scheduleInit()
@@ -1784,5 +2067,4 @@ onBeforeUnmount(() => {
   height: 100%;
   display: block;
 }
-
 </style>

@@ -5,7 +5,13 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { ThingsVisClient } from '@/utils/thingsvis/sdk/client'
-import { attributeDataPub, commandDataPub, telemetryDataHistoryList, telemetryDataPub } from '@/service/api/device'
+import {
+  attributeDataPub,
+  commandDataPub,
+  deviceAlarmStatus,
+  telemetryDataHistoryList,
+  telemetryDataPub
+} from '@/service/api/device'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
 import { localStg } from '@/utils/storage'
 
@@ -14,6 +20,14 @@ const FIELD_BINDING_EXPR_GLOBAL_RE = /\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\
 const HISTORY_FIELD_SUFFIX = '__history'
 const TEMPLATE_DEVICE_ID = '__template__'
 const RUNTIME_STATUS_FIELD_IDS = new Set(['is_online', 'online_text', 'online_status_updated_at'])
+const DEVICE_ALARM_STATUS_FIELD_IDS = new Set([
+  'device_alarm_active',
+  'device_alarm_count',
+  'device_alarm_highest_level',
+  'latest_device_alarm_title',
+  'latest_device_alarm_level',
+  'latest_device_alarm_time'
+])
 const HISTORY_TIME_RANGE_BY_PRESET: Record<string, string> = {
   '1h': 'last_1h',
   '6h': 'last_6h',
@@ -146,8 +160,7 @@ const collectConfiguredWriteFields = () => {
     const bindings = Array.isArray(node?.data) ? node.data : []
     const valueBinding = bindings.find((binding: any) => binding?.targetProp === 'value')
     const parsed =
-      parseFieldBindingExpression(valueBinding?.expression) ||
-      parseFieldBindingExpression(node?.props?.value)
+      parseFieldBindingExpression(valueBinding?.expression) || parseFieldBindingExpression(node?.props?.value)
 
     if (!parsed) return
 
@@ -162,7 +175,9 @@ const collectConfiguredWriteFields = () => {
     if (!dataSourceId) return
 
     const configuredFields = Array.isArray(dataSource?.config?.requestedFields)
-      ? dataSource.config.requestedFields.filter((fieldId: unknown): fieldId is string => typeof fieldId === 'string' && !!fieldId)
+      ? dataSource.config.requestedFields.filter(
+          (fieldId: unknown): fieldId is string => typeof fieldId === 'string' && !!fieldId
+        )
       : []
 
     if (configuredFields.length !== 1) return
@@ -279,8 +294,7 @@ const ensureInteractiveWriteEvents = (config: any) => {
       const bindings = Array.isArray(node?.data) ? node.data : []
       const valueBinding = bindings.find((binding: any) => binding?.targetProp === 'value')
       const parsed =
-        parseFieldBindingExpression(valueBinding?.expression) ||
-        parseFieldBindingExpression(node?.props?.value)
+        parseFieldBindingExpression(valueBinding?.expression) || parseFieldBindingExpression(node?.props?.value)
       if (!parsed?.dataSourceId || !parsed.fieldPath) return node
 
       const fieldId = getFieldRoot(parsed.fieldPath)
@@ -324,6 +338,7 @@ const ensureInteractiveWriteEvents = (config: any) => {
 
 const normalizeHistoryTimeRange = (value: unknown) => {
   if (typeof value !== 'string') return 'last_30d'
+  if (value.startsWith('last_')) return value
   return HISTORY_TIME_RANGE_BY_PRESET[value] || 'last_30d'
 }
 
@@ -334,11 +349,7 @@ const mergeHistoryTimeRange = (current: string | undefined, next: string) => {
   return nextWeight > currentWeight ? next : current
 }
 
-const registerHistoryTimeRange = (
-  requests: Map<string, string | undefined>,
-  fieldId: string,
-  timeRange?: string
-) => {
+const registerHistoryTimeRange = (requests: Map<string, string | undefined>, fieldId: string, timeRange?: string) => {
   const current = requests.get(fieldId)
   if (!timeRange) {
     if (!requests.has(fieldId)) requests.set(fieldId, current)
@@ -348,11 +359,23 @@ const registerHistoryTimeRange = (
   requests.set(fieldId, mergeHistoryTimeRange(current, timeRange))
 }
 
+type HistoryRequestConfig = {
+  timeRange?: string
+  aggFunction?: string
+  aggWindow?: string
+}
+
+const normalizeHistoryConfig = (config?: HistoryRequestConfig): Required<HistoryRequestConfig> => ({
+  timeRange: normalizeHistoryTimeRange(config?.timeRange),
+  aggFunction: config?.aggFunction || 'NONE_RAW',
+  aggWindow: config?.aggWindow || 'no_aggregate'
+})
+
 const resolveNodeHistoryTimeRange = (node: any) => {
   return normalizeHistoryTimeRange(node?.props?.timeRangePreset)
 }
 
-const fetchTelemetryHistoryField = async (deviceId: string, fieldId: string, timeRange = 'last_30d') => {
+const fetchTelemetryHistoryField = async (deviceId: string, fieldId: string, config?: HistoryRequestConfig) => {
   if (!deviceId || deviceId === TEMPLATE_DEVICE_ID || !fieldId) return []
   if (RUNTIME_STATUS_FIELD_IDS.has(fieldId)) return []
 
@@ -360,12 +383,14 @@ const fetchTelemetryHistoryField = async (deviceId: string, fieldId: string, tim
   if (fieldDataTypeMap[fieldId] && fieldDataTypeMap[fieldId] !== 'telemetry') return []
 
   try {
+    const historyConfig = normalizeHistoryConfig(config)
     const response = await telemetryDataHistoryList(
       {
         device_id: deviceId,
         key: fieldId,
-        time_range: timeRange,
-        aggregate_window: 'no_aggregate'
+        time_range: historyConfig.timeRange,
+        aggregate_window: historyConfig.aggWindow,
+        aggregate_function: historyConfig.aggFunction
       },
       { silentError: true } as any
     )
@@ -389,12 +414,12 @@ const visitStringLeaves = (value: unknown, visitor: (input: string) => void) => 
   }
 
   if (Array.isArray(value)) {
-    value.forEach(item => visitStringLeaves(item, visitor))
+    value.forEach((item) => visitStringLeaves(item, visitor))
     return
   }
 
   if (value && typeof value === 'object') {
-    Object.values(value).forEach(item => visitStringLeaves(item, visitor))
+    Object.values(value).forEach((item) => visitStringLeaves(item, visitor))
   }
 }
 
@@ -404,7 +429,22 @@ const collectConfiguredHistoryFields = (dataSourceId?: string) => {
 
   nodes.forEach((node: any) => {
     const historyTimeRange = resolveNodeHistoryTimeRange(node)
-    visitStringLeaves(node, input => {
+    const bindings = Array.isArray(node?.data) ? node.data : []
+    bindings.forEach((binding: any) => {
+      const parsed = parseFieldBindingExpression(binding?.expression)
+      if (!parsed || (dataSourceId && parsed.dataSourceId !== dataSourceId)) return
+
+      const fieldRoot = getFieldRoot(parsed.fieldPath)
+      if (!fieldRoot.endsWith(HISTORY_FIELD_SUFFIX)) return
+
+      const sourceFieldId = fieldRoot.slice(0, -HISTORY_FIELD_SUFFIX.length)
+      if (!sourceFieldId) return
+
+      const bindingTimeRange = normalizeHistoryTimeRange(binding?.historyConfig?.timeRange)
+      requests.set(sourceFieldId, mergeHistoryTimeRange(requests.get(sourceFieldId), bindingTimeRange))
+    })
+
+    visitStringLeaves(node, (input) => {
       FIELD_BINDING_EXPR_GLOBAL_RE.lastIndex = 0
 
       let match: RegExpExecArray | null
@@ -444,7 +484,7 @@ const buildRequestedFieldData = async (fieldIds: string[], deviceId?: string) =>
 
   const result: Record<string, unknown> = {}
 
-  fieldIds.forEach(fieldId => {
+  fieldIds.forEach((fieldId) => {
     if (fieldId.endsWith(HISTORY_FIELD_SUFFIX)) return
     if (currentData && Object.prototype.hasOwnProperty.call(currentData, fieldId)) {
       result[fieldId] = currentData[fieldId]
@@ -452,6 +492,60 @@ const buildRequestedFieldData = async (fieldIds: string[], deviceId?: string) =>
   })
 
   return result
+}
+
+const normalizeAlarmLevel = (raw: unknown) => {
+  const value = String(raw ?? '')
+    .toLowerCase()
+    .trim()
+  if (value === '1' || value === 'critical' || value === 'high' || value === 'serious') return 'critical'
+  if (value === '2' || value === 'warning' || value === 'medium' || value === 'warn') return 'warning'
+  if (value === '3' || value === 'info' || value === 'low') return 'info'
+  return value || ''
+}
+
+const normalizeAlarmTime = (row: any) =>
+  row?.last_trigger_time ?? row?.create_time ?? row?.created_at ?? row?.time ?? ''
+
+const isActiveAlarm = (row: any) => {
+  const raw = String(row?.alarm_status ?? row?.status ?? row?.is_active ?? '').toLowerCase()
+  return row?.is_active === true || raw === '1' || raw === 'active' || raw === 'triggered' || raw === 'a'
+}
+
+const buildRequestedAlarmStatusData = async (fieldIds: string[], deviceId?: string) => {
+  const requestedAlarmFields = fieldIds.filter((fieldId) => DEVICE_ALARM_STATUS_FIELD_IDS.has(fieldId))
+  if (!deviceId || deviceId === TEMPLATE_DEVICE_ID || requestedAlarmFields.length === 0) return {}
+
+  try {
+    const response = await deviceAlarmStatus({ device_id: deviceId, page: 1, page_size: 20 })
+    const payload = response?.data ?? response
+    const rows = Array.isArray(payload?.list)
+      ? payload.list
+      : Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload)
+          ? payload
+          : []
+    const activeRows = rows.filter(isActiveAlarm)
+    const latest = rows[0] ?? null
+    const highest = activeRows[0] ?? latest
+    const allFields: Record<string, unknown> = {
+      device_alarm_active: activeRows.length > 0 ? 1 : 0,
+      device_alarm_count: Number(payload?.total ?? activeRows.length ?? 0),
+      device_alarm_highest_level: normalizeAlarmLevel(highest?.alarm_level ?? highest?.level),
+      latest_device_alarm_title: String(latest?.alarm_name ?? latest?.name ?? latest?.title ?? ''),
+      latest_device_alarm_level: normalizeAlarmLevel(latest?.alarm_level ?? latest?.level),
+      latest_device_alarm_time: latest ? normalizeAlarmTime(latest) : ''
+    }
+
+    return requestedAlarmFields.reduce<Record<string, unknown>>((acc, fieldId) => {
+      acc[fieldId] = allFields[fieldId]
+      return acc
+    }, {})
+  } catch (error) {
+    console.warn('[ThingsVisWidget] device alarm status request failed:', deviceId, error)
+    return {}
+  }
 }
 
 function normalizeViewerConfig(config: any) {
@@ -581,9 +675,8 @@ const handlePlatformWrite = async (event: MessageEvent) => {
   }
   try {
     const normalizedData = normalizeWriteData(dataSourceId, data)
-    const dataObject = normalizedData !== null && typeof normalizedData === 'object'
-      ? normalizedData as Record<string, unknown>
-      : null
+    const dataObject =
+      normalizedData !== null && typeof normalizedData === 'object' ? (normalizedData as Record<string, unknown>) : null
     const fieldEntries = dataObject ? Object.entries(dataObject) : []
     const fieldId = fieldEntries.length === 1 ? fieldEntries[0]?.[0] : undefined
     const fieldTypeMap = getFieldTypeMap()
@@ -626,8 +719,17 @@ const handlePlatformWrite = async (event: MessageEvent) => {
 const handleFieldDataRequest = async (event: MessageEvent) => {
   if (event.data?.type !== 'thingsvis:requestFieldData') return
 
-  const payload = event.data?.payload as { dataSourceId?: string; deviceId?: string; fieldIds?: string[] } | undefined
-  const fieldIds = Array.isArray(payload?.fieldIds) ? payload.fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string') : []
+  const payload = event.data?.payload as
+    | {
+        dataSourceId?: string
+        deviceId?: string
+        fieldIds?: string[]
+        historyConfig?: HistoryRequestConfig
+      }
+    | undefined
+  const fieldIds = Array.isArray(payload?.fieldIds)
+    ? payload.fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string')
+    : []
   if (fieldIds.length === 0) return
 
   const previewDeviceId = getPreviewDeviceId()
@@ -639,7 +741,7 @@ const handleFieldDataRequest = async (event: MessageEvent) => {
   const explicitHistorySourceFieldIds = new Set<string>()
   const historyRequests = new Map<string, string | undefined>()
 
-  fieldIds.forEach(fieldId => {
+  fieldIds.forEach((fieldId) => {
     if (fieldId.endsWith(HISTORY_FIELD_SUFFIX)) {
       explicitHistoryFieldIds.push(fieldId)
       const sourceFieldId = fieldId.slice(0, -HISTORY_FIELD_SUFFIX.length)
@@ -661,8 +763,11 @@ const handleFieldDataRequest = async (event: MessageEvent) => {
       ...Array.from(configuredHistoryFields.keys())
     ])
 
-    const prefillFieldIds = historyBoundFieldIds.size > 0 ? currentFieldIds.filter(fieldId => historyBoundFieldIds.has(fieldId)) : currentFieldIds
-    prefillFieldIds.forEach(fieldId => {
+    const prefillFieldIds =
+      historyBoundFieldIds.size > 0
+        ? currentFieldIds.filter((fieldId) => historyBoundFieldIds.has(fieldId))
+        : currentFieldIds
+    prefillFieldIds.forEach((fieldId) => {
       registerHistoryTimeRange(historyRequests, fieldId)
     })
   }
@@ -671,12 +776,18 @@ const handleFieldDataRequest = async (event: MessageEvent) => {
     registerHistoryTimeRange(historyRequests, fieldId, timeRange)
   })
 
-  const fields = await buildRequestedFieldData(currentFieldIds, targetDeviceId)
+  const fields = {
+    ...(await buildRequestedFieldData(currentFieldIds, targetDeviceId)),
+    ...(await buildRequestedAlarmStatusData(currentFieldIds, targetDeviceId))
+  }
 
   if (historyRequests.size > 0 && targetDeviceId) {
     const historyEntries = await Promise.all(
       Array.from(historyRequests.entries()).map(async ([fieldId, timeRange]) => {
-        const rows = await fetchTelemetryHistoryField(targetDeviceId, fieldId, timeRange || 'last_30d')
+        const rows = await fetchTelemetryHistoryField(targetDeviceId, fieldId, {
+          ...(payload?.historyConfig || {}),
+          timeRange: payload?.historyConfig?.timeRange || timeRange || 'last_30d'
+        })
         return [fieldId, rows] as const
       })
     )
@@ -757,11 +868,12 @@ onMounted(async () => {
   // when the parent's onVisReady fires and pushes platform-data, the PlatformFieldAdapter
   // is already being set up in the iframe (tv:init triggers datasource registration).
   client.on('ready', () => {
-    if (props.config) client?.loadWidgetConfig(
-      normalizeLoadConfig(clone(props.config)),
-      clone(props.platformFields || []),
-      getLoadOptions()
-    )
+    if (props.config)
+      client?.loadWidgetConfig(
+        normalizeLoadConfig(clone(props.config)),
+        clone(props.platformFields || []),
+        getLoadOptions()
+      )
     if (props.platformFields) client?.updateSchema(clone(props.platformFields))
     if (props.data) pushPlatformFieldData(props.data, props.deviceId || getPreviewDeviceId())
     emit('ready')
@@ -781,13 +893,9 @@ onMounted(async () => {
 // 响应式监听配置变化
 watch(
   () => props.config,
-  newVal => {
+  (newVal) => {
     if (client?.ready && newVal) {
-      client.loadWidgetConfig(
-        normalizeLoadConfig(clone(newVal)),
-        clone(props.platformFields || []),
-        getLoadOptions()
-      )
+      client.loadWidgetConfig(normalizeLoadConfig(clone(newVal)), clone(props.platformFields || []), getLoadOptions())
     }
   },
   { deep: true }
@@ -796,7 +904,7 @@ watch(
 // 响应式监听数据变化
 watch(
   () => props.data,
-  newVal => {
+  (newVal) => {
     if (client?.ready && newVal) {
       pushPlatformFieldData(newVal, props.deviceId || getPreviewDeviceId())
     }
@@ -807,7 +915,7 @@ watch(
 // 响应式监听 Schema 变化
 watch(
   () => props.platformFields,
-  newVal => {
+  (newVal) => {
     if (client?.ready && newVal) {
       client.updateSchema(clone(newVal))
     }
@@ -841,7 +949,7 @@ onBeforeUnmount(() => {
 defineExpose({
   triggerSave,
   client,
-  pushPlatformData,
+  pushPlatformData
 })
 </script>
 
