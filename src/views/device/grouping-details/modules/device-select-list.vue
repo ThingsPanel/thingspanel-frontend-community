@@ -17,16 +17,21 @@ interface TProps {
 const props = defineProps<TProps>()
 const data = ref<DeviceManagement.DeviceData[]>([])
 const checkedRowKeysRef = ref<DataTableRowKey[]>([])
+const searchKeyword = ref('')
 
-const queryParams = reactive<{ page: number; page_size: number }>({
+const queryParams = reactive<{ page: number; page_size: number; search?: string }>({
   page: 1,
   page_size: 5
 })
 const getDeviceList = async () => {
+  queryParams.search = searchKeyword.value.trim() || undefined
   const res = await deviceList(queryParams)
-  data.value = res.data?.list.filter(item => item.group_id !== props.group_id) as DeviceManagement.DeviceData[]
+  const rows = Array.isArray(res.data?.list) ? res.data.list : []
+  data.value = rows.filter(item => item.group_id !== props.group_id) as DeviceManagement.DeviceData[]
   if (res?.data?.total) {
     pagination.pageCount = Math.ceil(res?.data?.total / 5)
+  } else {
+    pagination.pageCount = 1
   }
 }
 const pagination = reactive<PaginationProps>({
@@ -44,6 +49,18 @@ const deviceColumns: DataTableColumns<DeviceManagement.DeviceData> = createDevic
 
 function handleCheck(rowKeys: DataTableRowKey[]) {
   checkedRowKeysRef.value = rowKeys
+}
+
+const handleSearch = () => {
+  pagination.page = 1
+  queryParams.page = 1
+  checkedRowKeysRef.value = []
+  getDeviceList()
+}
+
+const handleReset = () => {
+  searchKeyword.value = ''
+  handleSearch()
 }
 
 // 定义 emit 函数，指定可能发出的事件类型
@@ -76,11 +93,29 @@ onMounted(getDeviceList)
 </script>
 
 <template>
+  <NFlex justify="space-between" align="center" class="mb-4">
+    <NInput
+      v-model:value.trim="searchKeyword"
+      clearable
+      :placeholder="$t('custom.devicePage.deviceNameOrNumber')"
+      style="max-width: 320px"
+      @keyup.enter="handleSearch"
+    >
+      <template #prefix>
+        <SvgIcon icon="material-symbols:search" />
+      </template>
+    </NInput>
+    <NFlex align="center">
+      <NButton type="primary" @click="handleSearch">{{ $t('common.search') }}</NButton>
+      <NButton quaternary @click="handleReset">{{ $t('common.reset') }}</NButton>
+    </NFlex>
+  </NFlex>
   <NDataTable
     size="small"
     :columns="deviceColumns"
     :data="data"
     :row-key="rowKey"
+    :checked-row-keys="checkedRowKeysRef"
     class="h-auto"
     @update:checked-row-keys="handleCheck"
   />

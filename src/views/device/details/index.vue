@@ -173,16 +173,50 @@ const device_loop = ref(false)
 let wsUrl = getWebsocketServerUrl()
 
 wsUrl += `/device/online/status/ws`
+const normalizeOnlineStatus = (payload: unknown): number | null => {
+  if (Array.isArray(payload)) {
+    for (const item of payload) {
+      const status = normalizeOnlineStatus(item)
+      if (status !== null) return status
+    }
+    return null
+  }
+  if (!payload || typeof payload !== 'object') return null
+  const info = payload as Record<string, unknown>
+  if (info.data !== undefined) return normalizeOnlineStatus(info.data)
+  if (info.payload !== undefined) return normalizeOnlineStatus(info.payload)
+
+  const targetDeviceId = getDeviceId()
+  const frameDeviceId = info.device_id ?? info.deviceId
+  if (frameDeviceId && String(frameDeviceId) !== String(targetDeviceId)) return null
+
+  const rawStatus = info.is_online ?? info.isOnline
+  if (typeof rawStatus === 'boolean') return rawStatus ? 1 : 0
+  if (typeof rawStatus === 'number') return rawStatus === 1 ? 1 : 0
+  if (typeof rawStatus === 'string') {
+    const normalized = rawStatus.trim().toLowerCase()
+    if (normalized === '1' || normalized === 'true' || normalized === 'online') return 1
+    if (normalized === '0' || normalized === 'false' || normalized === 'offline') return 0
+  }
+
+  return null
+}
 const { send } = useWebSocket(wsUrl, {
   heartbeat: {
     message: 'ping',
     interval: 8000,
     pongTimeout: 3000
   },
-  onMessage(event: MessageEvent) {
+  onMessage(_ws: WebSocket, event: MessageEvent) {
     if (event.data && event.data !== 'pong') {
-      const info = JSON.parse(event.data)
-      device_is_online.value = info.is_online
+      try {
+        const status = normalizeOnlineStatus(JSON.parse(event.data))
+        if (status !== null) {
+          device_is_online.value = status
+        }
+      } catch {
+        // ignore non-JSON frames
+      }
     }
   }
 })
