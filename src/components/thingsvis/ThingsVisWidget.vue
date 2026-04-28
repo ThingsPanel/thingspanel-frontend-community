@@ -868,12 +868,11 @@ onMounted(async () => {
   // when the parent's onVisReady fires and pushes platform-data, the PlatformFieldAdapter
   // is already being set up in the iframe (tv:init triggers datasource registration).
   client.on('ready', () => {
-    if (props.config)
-      client?.loadWidgetConfig(
-        normalizeLoadConfig(clone(props.config)),
-        clone(props.platformFields || []),
-        getLoadOptions()
-      )
+    client?.loadWidgetConfig(
+      normalizeLoadConfig(clone(props.config || {})),
+      clone(props.platformFields || []),
+      getLoadOptions()
+    )
     if (props.platformFields) client?.updateSchema(clone(props.platformFields))
     if (props.data) pushPlatformFieldData(props.data, props.deviceId || getPreviewDeviceId())
     emit('ready')
