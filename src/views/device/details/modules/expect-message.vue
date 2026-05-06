@@ -174,7 +174,6 @@ const handleReset = () => {
             :placeholder="$t('page.expect.send')"
             class="input-style w-200px"
             clearable
-            @update:value="handleSearch"
           />
         </NFormItem>
         <NFormItem>
@@ -184,7 +183,6 @@ const handleReset = () => {
             :placeholder="$t('page.expect.selectCommandTypePlease')"
             class="input-style w-200px"
             clearable
-            @update:value="handleSearch"
           />
         </NFormItem>
         <NFormItem>
@@ -192,11 +190,11 @@ const handleReset = () => {
             v-model:value="query.label"
             :placeholder="$t('page.expect.inputLabelPlease')"
             class="input-style w-200px"
-            @input="handleSearch"
           />
         </NFormItem>
         <NFormItem>
-          <NButton class="ml-20px w-72px" type="primary" @click="handleReset">{{ $t('common.reset') }}</NButton>
+          <NButton type="primary" @click="handleSearch">{{ $t('common.search') }}</NButton>
+          <NButton class="ml-12px" @click="handleReset">{{ $t('common.reset') }}</NButton>
         </NFormItem>
       </NForm>
     </div>

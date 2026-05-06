@@ -85,7 +85,7 @@ const handleSave = async () => {
     if (latitude.value && longitude.value) {
       const error = getCoordinateStringValidationError(latitude.value, longitude.value)
       if (error) {
-        message.error(`缁忕含搴︽棤鏁? ${error}`)
+        message.error(`${$t('generate.invalidCoordinates')} ${error}`)
         return
       }
     }
@@ -112,7 +112,7 @@ const handleSave = async () => {
       message.success($t('common.modifySuccess'))
     }
   } catch {
-    message.error('淇濆瓨澶辫触')
+    message.error($t('common.saveFailed'))
   }
 }
 
@@ -126,7 +126,7 @@ const openMapAndGetPosition = () => {
   if (latitude.value && longitude.value) {
     const error = getCoordinateStringValidationError(latitude.value, longitude.value)
     if (error) {
-      window.$message?.error(`褰撳墠缁忕含搴︽棤鏁? ${error}`)
+      window.$message?.error(`${$t('generate.currentCoordinatesInvalid')} ${error}`)
       return
     }
   }
@@ -193,20 +193,13 @@ onMounted(getConfigInfo)
                 <span class="truncate" :title="item.name">{{ item.name }}</span>
                 <NTooltip trigger="hover">
                   <template #trigger>
-                    <NIcon size="14" class="text-gray-400 cursor-help">
-                      <svg viewBox="0 0 24 24">
-                        <path
-                          fill="currentColor"
-                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41c0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
-                        />
-                      </svg>
-                    </NIcon>
+                    <SvgIcon icon="mdi:help-circle" class="text-14px text-gray-400 cursor-help" />
                   </template>
                   <div class="max-w-xs">
-                    <div class="text-sm font-medium mb-1">鍚嶇О: {{ item.name }}</div>
-                    <div class="text-sm font-medium mb-1">绫诲瀷: {{ item.type }}</div>
-                    <div class="text-sm mb-1">榛樿鍊? {{ item.default_value }}</div>
-                    <div class="text-sm text-gray-600">{{ item.desc || '鏃犳弿杩?' }}</div>
+                    <div class="text-sm font-medium mb-1">{{ $t('generate.extensionFieldName') }}: {{ item.name }}</div>
+                    <div class="text-sm font-medium mb-1">{{ $t('generate.extensionFieldType') }}: {{ item.type }}</div>
+                    <div class="text-sm mb-1">{{ $t('generate.extensionFieldDefault') }}: {{ item.default_value }}</div>
+                    <div class="text-sm text-gray-600">{{ item.desc || $t('generate.extensionNoDesc') }}</div>
                   </div>
                 </NTooltip>
               </div>
@@ -215,12 +208,12 @@ onMounted(getConfigInfo)
                 <NInput
                   v-if="item.type === 'String'"
                   v-model:value="item.value"
-                  :placeholder="`榛樿鍊? ${item.default_value || ''}`"
+                  :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
                 />
                 <NInputNumber
                   v-else-if="item.type === 'Number'"
                   v-model:value="item.value"
-                  :placeholder="`榛樿鍊? ${item.default_value || ''}`"
+                  :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
                   class="w-full"
                 />
                 <NSwitch
@@ -233,12 +226,12 @@ onMounted(getConfigInfo)
                   v-else-if="item.type === 'Enum'"
                   v-model:value="item.value"
                   :options="item.options || []"
-                  :placeholder="`榛樿鍊? ${item.default_value || ''}`"
+                  :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
                 />
                 <NInput
                   v-else
                   v-model:value="item.value"
-                  :placeholder="`榛樿鍊? ${item.default_value || ''}`"
+                  :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
                 />
               </div>
             </div>

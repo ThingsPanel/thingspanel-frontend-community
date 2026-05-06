@@ -37,8 +37,10 @@ export const test: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
     key: 'description',
     minWidth: '100px',
+    maxWidth: '200px',
     title: $t('device_template.table_header.description'),
-    align: 'center'
+    align: 'center',
+    ellipsis: { tooltip: true }
   }
 ])
 
@@ -76,8 +78,10 @@ export const attribute: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
     key: 'description',
     minWidth: '100px',
+    maxWidth: '200px',
     title: $t('device_template.table_header.description'),
-    align: 'center'
+    align: 'center',
+    ellipsis: { tooltip: true }
   }
 ])
 
@@ -103,8 +107,10 @@ export const events: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
     key: 'description',
     minWidth: '100px',
+    maxWidth: '200px',
     title: $t('device_template.table_header.description'),
-    align: 'center'
+    align: 'center',
+    ellipsis: { tooltip: true }
   }
 ])
 
@@ -130,7 +136,9 @@ export const command: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
     key: 'description',
     minWidth: '100px',
+    maxWidth: '200px',
     title: $t('device_template.table_header.description'),
-    align: 'center'
+    align: 'center',
+    ellipsis: { tooltip: true }
   }
 ])

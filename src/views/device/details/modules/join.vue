@@ -72,7 +72,10 @@ const getPlugininfoByServiceReq = async str => {
 
 onMounted(async () => {
   await deviceDataStore.fetchData(props.id)
-  const service_identifier = deviceDataStore?.deviceData?.device_config?.protocol_type
+  let service_identifier = deviceDataStore?.deviceData?.device_config?.protocol_type
+  if (!service_identifier || typeof service_identifier === 'object') {
+    service_identifier = 'MQTT'
+  }
   if (service_identifier) {
     getPlugininfoByServiceReq({ service_identifier })
   }

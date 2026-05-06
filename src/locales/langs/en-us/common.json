@@ -335,5 +335,6 @@
   "common.thingModel": "Thing Model",
   "common.viewCard": "Card View",
   "common.viewList": "List View",
-  "common.viewMap": "Map View"
+  "common.viewMap": "Map View",
+  "common.confirmSend": "Are you sure you want to send the command?"
 }

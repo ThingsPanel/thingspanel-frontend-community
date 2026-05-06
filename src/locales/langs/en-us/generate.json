@@ -566,5 +566,14 @@
   "generate.topicMapping.validation.direction": "Please select the data direction",
   "generate.topicMapping.validation.originalTopic": "Please enter the Device Topic",
   "generate.topicMapping.validation.targetTopic": "Please select the System Topic",
-  "generate.topicMapping.validation.dataIdentifier": "Please enter the command identifier"
+  "generate.topicMapping.validation.dataIdentifier": "Please enter the command identifier",
+  "generate.timeoutHeartbeatHint": "Only one of timeout and heartbeat can be set. Setting one will disable the other.",
+  "generate.invalidCoordinates": "Invalid coordinates:",
+  "generate.currentCoordinatesInvalid": "Current coordinates are invalid:",
+  "generate.extensionFieldName": "Name",
+  "generate.extensionFieldType": "Type",
+  "generate.extensionFieldDefault": "Default Value",
+  "generate.extensionNoDesc": "No description",
+  "generate.extensionPlaceholderDefault": "Default:",
+  "generate.mosquittoInstallHint": "You need to install the mosquitto client tool locally before running the following command"
 }

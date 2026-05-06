@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import type { Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { NButton, NPopconfirm, NSpace } from 'naive-ui'
@@ -26,12 +26,31 @@ const deviceSetId = ref()
 const tableData = ref([])
 const total = ref(0)
 const log_page = ref(1)
+const page_size = ref(10)
 const selectChild = ref<string[]>([])
 const sOptions = ref<any[]>([])
+
+const pagination = computed(() => ({
+  page: log_page.value,
+  pageSize: page_size.value,
+  showSizePicker: true,
+  pageSizes: [10, 15, 20, 25, 30],
+  itemCount: total.value,
+  onChange: (page: number) => {
+    log_page.value = page
+    getData()
+  },
+  onUpdatePageSize: (pageSize: number) => {
+    page_size.value = pageSize
+    log_page.value = 1
+    getData()
+  }
+}))
+
 const getData = async () => {
   const res = await childDeviceTableList({
     page: log_page.value,
-    page_size: 5,
+    page_size: page_size.value,
     id: props.id
   })
   tableData.value = res.data.list || []
@@ -210,20 +229,7 @@ onMounted(() => {})
       </n-card>
     </n-modal>
 
-    <n-data-table :columns="columns" :data="tableData" class="mt-4" />
-    <div class="mt-4 w-full flex justify-end">
-      <n-pagination
-        :item-count="total"
-        :page-size="5"
-        @update:page="
-          page => {
-            log_page = page
-            log_page = page
-            getData()
-          }
-        "
-      />
-    </div>
+    <n-data-table :columns="columns" :data="tableData" class="mt-4" :pagination="pagination" :remote="true" />
   </n-card>
 </template>
 

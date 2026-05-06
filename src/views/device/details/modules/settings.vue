@@ -171,11 +171,11 @@ onMounted(() => {
   deviceConfigList('')
 })
 
-const selectConfig = v => {
+const selectConfig = async v => {
   selectedValues.value = v
-  deviceUpdateConfig({ device_id: props.id, device_config_id: v })
-  deviceDataStore.fetchData(props.id)
-  initData()
+  await deviceUpdateConfig({ device_id: props.id, device_config_id: v })
+  await deviceDataStore.fetchData(props.id)
+  await initData()
   emit('change')
 }
 

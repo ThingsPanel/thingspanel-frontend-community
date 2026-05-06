@@ -68,22 +68,22 @@ const SwitchCom = computed<any>(() => {
 const queryParams: any = reactive([
   {
     page: 1,
-    page_size: 5,
+    page_size: 10,
     device_template_id: props.deviceTemplateId
   },
   {
     page: 1,
-    page_size: 5,
+    page_size: 10,
     device_template_id: props.deviceTemplateId
   },
   {
     page: 1,
-    page_size: 5,
+    page_size: 10,
     device_template_id: props.deviceTemplateId
   },
   {
     page: 1,
-    page_size: 5,
+    page_size: 10,
     device_template_id: props.deviceTemplateId
   }
 ])
@@ -92,27 +92,24 @@ const checkedTabs: (value: string | number) => void = value => {
   tabsCurrent.value = value
 }
 
-// 分页参数
-const pagination: PaginationProps = reactive({
-  page: 1,
-  pageSize: 1,
-  showSizePicker: true,
-  pageSizes: [10, 15, 20, 25, 30],
-  onChange: (page: number) => {
-    pagination.page = page
-    queryParams.page = page
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getTableData()
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize
-    pagination.page = 1
-    queryParams.page = 1
-    queryParams.page_size = pageSize
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getTableData()
+const getPagination = (index: number) => {
+  return {
+    page: queryParams[index].page,
+    pageSize: queryParams[index].page_size,
+    itemCount: columnsList[index].total,
+    showSizePicker: true,
+    pageSizes: [10, 15, 20, 25, 30],
+    onChange: (page: number) => {
+      queryParams[index].page = page
+      getTableData(columnsList[index].name)
+    },
+    onUpdatePageSize: (pageSize: number) => {
+      queryParams[index].page_size = pageSize
+      queryParams[index].page = 1
+      getTableData(columnsList[index].name)
+    }
   }
-})
+}
 
 // 编辑
 let objItem = reactive<any>({})
@@ -324,7 +321,7 @@ const columnsList: any = reactive([
 
 const updateAttributesData = (data: any) => {
   columnsList[1].data = data?.list ?? []
-  columnsList[1].total = Math.ceil(data?.total / 5)
+  columnsList[1].total = data?.total || 0
   columnsList[1].data?.forEach((item: any) => {
     if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读') {
       item.read_write_flag = $t('device_template.table_header.readOnly')
@@ -351,7 +348,7 @@ const handleParamsOfEventsAndcommands = data => {
 // Helper functions to update data
 const updateTelemetryData = (data: any) => {
   columnsList[0].data = data?.list ?? []
-  columnsList[0].total = Math.ceil(data?.total / 5)
+  columnsList[0].total = data?.total || 0
   columnsList[0].data.forEach((item: any) => {
     if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读') {
       item.read_write_flag = $t('device_template.table_header.readOnly')
@@ -363,12 +360,12 @@ const updateTelemetryData = (data: any) => {
 
 const updateEventsData = (data: any) => {
   columnsList[2].data = handleParamsOfEventsAndcommands(data?.list ?? [])
-  columnsList[2].total = Math.ceil(data?.total / 5)
+  columnsList[2].total = data?.total || 0
 }
 
 const updateCommandsData = (data: any) => {
   columnsList[3].data = handleParamsOfEventsAndcommands(data?.list ?? [])
-  columnsList[3].total = Math.ceil(data?.total / 5)
+  columnsList[3].total = data?.total || 0
 }
 const getTableData: (value?: string) => Promise<void> = async value => {
   startLoading()
@@ -422,7 +419,14 @@ getTableData()
           </template>
           {{ $t('device_template.add') }}
         </NButton>
-        <n-data-table :columns="item.col" :data="item.data" :loading="loading" class="m-t9 flex-1-hidden" />
+        <n-data-table
+          :columns="item.col"
+          :data="item.data"
+          :loading="loading"
+          :pagination="getPagination(index)"
+          :remote="true"
+          class="m-t9 flex-1-hidden"
+        />
 
         <div class="mt-4 w-full flex justify-end">
           <n-pagination

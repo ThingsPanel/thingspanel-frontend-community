@@ -43,12 +43,15 @@ const pagination: PaginationProps = reactive({
   pageSize: 10,
   showSizePicker: true,
   pageSizes: [10, 15, 20, 25, 30],
+  itemCount: 0,
   onChange: (page: number) => {
     pagination.page = page
+    getTableData()
   },
   onUpdatePageSize: (pageSize: number) => {
     pagination.pageSize = pageSize
     pagination.page = 1
+    getTableData()
   }
 })
 
@@ -65,7 +68,7 @@ const getTableData = async () => {
   const res = await getNotificationHistoryList(prams)
   if (res?.data) {
     setTableData(res?.data.list || [])
-    total.value = res.data.total || 0
+    pagination.itemCount = res.data.total || 0
   }
   endLoading()
 }
@@ -108,8 +111,20 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
 ]) as Ref<DataTableColumns<DataService.Data>>
 
 function handleQuery() {
+  pickerChange()
+  pagination.page = 1
   getTableData()
 }
+
+const handleReset = () => {
+  range.value = [moment().subtract(1, 'months').valueOf(), moment().valueOf()]
+  queryParams.notification_type = ''
+  queryParams.send_target = ''
+  pickerChange()
+  pagination.page = 1
+  getTableData()
+}
+
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance()
   return proxy.getPlatform()
@@ -143,12 +158,12 @@ getTableData()
           <NFormItem path="send_target">
             <NInput v-model:value="queryParams.send_target" clearable :placeholder="$t('generate.recipient')" />
           </NFormItem>
-          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+          <NFormItem>
+            <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+            <NButton class="ml-12px" @click="handleReset">{{ $t('common.reset') }}</NButton>
+          </NFormItem>
         </NForm>
-        <NDataTable :columns="columns" :data="tableData" :loading="loading" class="flex-1-hidden" />
-        <div class="pagination-box">
-          <NPagination v-model:page="pagination.page" :item-count="total" @update:page="getTableData" />
-        </div>
+        <NDataTable :columns="columns" :data="tableData" :loading="loading" :pagination="pagination" :remote="true" class="flex-1-hidden mt-4" />
       </div>
     </NCard>
   </div>

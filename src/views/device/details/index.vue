@@ -19,7 +19,7 @@ import DeviceStatusHistory from '@/views/device/details/modules/device-status.vu
 import DeviceDiagnosis from '@/views/device/details/modules/device-diagnosis.vue'
 import { $t } from '@/locales'
 import { useAppStore } from '@/store/modules/app'
-import { deviceAlarmStatus, deviceDetail, deviceUpdate } from '@/service/api/device'
+import { deviceDetail, deviceUpdate } from '@/service/api/device'
 import { localStg } from '@/utils/storage'
 import { useRouterPush } from '@/hooks/common/router'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
@@ -131,6 +131,7 @@ const components = ref<TabComponent[]>([])
 
 const tabsRenderKey = ref(0)
 let lastTabsSig = ''
+let lastConfigId = ''
 
 function getPreferredTabKey() {
   const keys = components.value.map(item => item.key)
@@ -300,13 +301,19 @@ const getDeviceDetail = async () => {
     ensureActiveTab()
 
     const nextSig = components.value.map(item => item.key).join('|')
-    if (nextSig !== lastTabsSig) {
+    const currentConfigId = data?.device_config_id || ''
+
+    if (nextSig !== lastTabsSig || (lastConfigId && lastConfigId !== currentConfigId)) {
       const isFirstRender = lastTabsSig === ''
       lastTabsSig = nextSig
+      lastConfigId = currentConfigId
       if (!isFirstRender) {
         await nextTick()
         tabsRenderKey.value += 1
       }
+    } else {
+      lastTabsSig = nextSig
+      lastConfigId = currentConfigId
     }
 
     send(
@@ -360,15 +367,16 @@ const clickGateway = () => {
     }
   })
 }
-const alarmStatus = ref(false)
-const getAlarmStatus = async () => {
-  const { data } = await deviceAlarmStatus({ device_id: getDeviceId() })
-  alarmStatus.value = data.alarm
+const clickAlarmHistory = () => {
+  routerPushByKey('alarm_warning-message', {
+    query: {
+      device_id: getDeviceId()
+    }
+  })
 }
 
 onBeforeMount(() => {
   getDeviceDetail()
-  getAlarmStatus()
 })
 
 watch(
@@ -377,7 +385,6 @@ watch(
     d_id = newVal
     await getDeviceDetail()
     bumpRefreshKey(tabValue.value)
-    await getAlarmStatus()
   },
   { deep: true }
 )
@@ -530,25 +537,13 @@ const isEmbeddedHost = computed(() => {
               class="text-18px text-primary"
             />
           </div>
-          <div class="device-details-status device-details-status--alarm">
-            <template v-if="alarmStatus === true">
-              <SvgIcon
-                local-icon="AlertFilled"
-                style="color: #ee0808; margin-right: 5px"
-                class="text-20px text-primary"
-                :stroke="icon_type"
-              />
-              <span style="color: #ee0808">{{ $t('custom.device_details.alarm') }}</span>
-            </template>
-            <template v-if="alarmStatus === false">
-              <SvgIcon
-                local-icon="AlertFilled"
-                style="color: #ccc; margin-right: 5px"
-                class="text-20px text-primary"
-                :stroke="icon_type"
-              />
-              <span style="color: #ccc">{{ $t('custom.device_details.noAlarm') }}</span>
-            </template>
+          <div class="device-details-status device-details-status--alarm" @click="clickAlarmHistory">
+            <SvgIcon
+              local-icon="AlertFilled"
+              style="color: #ee0808; margin-right: 5px"
+              class="text-20px text-primary"
+            />
+            <span style="color: #ee0808">{{ $t('generate.alarmHistory') }}</span>
           </div>
         </NFlex>
       </div>
@@ -652,7 +647,7 @@ const isEmbeddedHost = computed(() => {
 }
 
 .device-details-status--alarm {
-  cursor: default;
+  cursor: pointer;
 }
 
 .device-details-content {

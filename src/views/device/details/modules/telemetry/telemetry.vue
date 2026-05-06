@@ -86,6 +86,7 @@ const { status, send, close } = useWebSocket(wsUrl, {
   // eslint-disable-next-line
   onMessage(ws: WebSocket, event: MessageEvent) {
     if (event.data && event.data !== 'pong') {
+      if (!isJSON(event.data)) return
       const info = JSON.parse(event.data)
       const currTelemetryKey = telemetryData.value
         .map(item => {
@@ -463,19 +464,7 @@ const inputFeedback = computed(() => {
                 </NIcon>
                 <NDivider vertical />
                 <n-dropdown trigger="click" :options="options" @select="handleSelect($event, i)">
-                  <svg
-                    style="width: 20px"
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    viewBox="0 0 16 16"
-                  >
-                    <g fill="none">
-                      <path
-                        d="M5 8a1 1 0 1 1-2 0a1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0a1 1 0 0 1 2 0zm3 1a1 1 0 1 0 0-2a1 1 0 0 0 0 2z"
-                        fill="currentColor"
-                      ></path>
-                    </g>
-                  </svg>
+                  <SvgIcon icon="mdi:dots-horizontal" class="text-20px cursor-pointer" />
                 </n-dropdown>
               </div>
             </template>
@@ -513,10 +502,11 @@ const inputFeedback = computed(() => {
     <n-modal v-model:show="showLogDialog" :title="$t('generate.report-data')" :class="getPlatform ? 'w-90%' : 'w-40%'">
       <n-card>
         <n-form>
-          <div class="m-b-20px" :class="getPlatform ? ' flex-col ' : ' flex'">
-            <span class="flex-1">{{ $t('generate.mqtt') }}</span>
-            <span class="flex-1">{{ $t('generate.copy-commands-to-local') }}</span>
-          </div>
+          <n-alert type="info" class="m-b-15px" :show-icon="true">
+            {{ $t('generate.mosquittoInstallHint') }}
+          </n-alert>
+          <div class="m-b-10px font-600">{{ $t('generate.mqtt') }}</div>
+          <div class="m-b-10px text-gray-500">{{ $t('generate.copy-commands-to-local') }}</div>
           <div class="flex items-center gap-15px">
             <n-input v-model:value="device_order" type="textarea" class="flex-1" @click="copy" />
 
@@ -524,25 +514,19 @@ const inputFeedback = computed(() => {
               {{ $t('generate.send') }}
             </n-button>
           </div>
-          <div v-if="showError" class="w-100% flex" style="border: 2px solid #eee; border-radius: 5px">
+          <div v-if="showError" class="mt-10px w-100% flex items-center gap-5px" style="border: 1px solid #e88080; border-radius: 5px; padding: 8px; background: #fff2f0">
             <SvgIcon
               local-icon="AlertFilled"
-              style="margin-left: 5px; color: red; margin-right: 5px; margin-top: 5px; margin-bottom: 5px"
-              class="text-20px text-primary"
+              style="color: red; flex-shrink: 0"
+              class="text-20px"
             />
             <span
               style="
                 display: inline-block;
-                margin-top: 5px;
-                margin-bottom: 5px;
-                width: 300px;
-                wite-space: nowrap;
-                overflow: hidden;
-                overflow: hidden;
-                text-overflow: ellipsis;
+                word-break: break-all;
               "
             >
-              {{ erroMessage }}99999
+              {{ erroMessage }}
             </span>
           </div>
         </n-form>
@@ -558,19 +542,7 @@ const inputFeedback = computed(() => {
                   {{ $t('generate.expectedMessage') }}
                   <n-popover trigger="hover">
                     <template #trigger>
-                      <svg
-                        style="width: 20px"
-                        xmlns="http://www.w3.org/2000/svg"
-                        xmlns:xlink="http://www.w3.org/1999/xlink"
-                        viewBox="0 0 20 20"
-                      >
-                        <g fill="none">
-                          <path
-                            d="M10 2a8 8 0 1 1-3.613 15.14l-.121-.065l-3.645.91a.5.5 0 0 1-.62-.441v-.082l.014-.083l.91-3.644l-.063-.12a7.95 7.95 0 0 1-.83-2.887l-.025-.382L2 10a8 8 0 0 1 8-8zm0 1a7 7 0 0 0-6.106 10.425a.5.5 0 0 1 .063.272l-.014.094l-.756 3.021l3.024-.754a.502.502 0 0 1 .188-.01l.091.021l.087.039A7 7 0 1 0 10 3zm0 2.5a.5.5 0 0 1 .5.5v5.5a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm0 9a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5z"
-                            fill="currentColor"
-                          ></path>
-                        </g>
-                      </svg>
+                      <SvgIcon icon="mdi:help-circle-outline" class="text-20px" />
                     </template>
                     <span>{{ $t('generate.expectedMessageTip') }}</span>
                   </n-popover>
@@ -598,7 +570,7 @@ const inputFeedback = computed(() => {
                   {{ $t('generate.send') }}
                 </n-button>
               </template>
-              确定发送指令吗
+              {{ $t('common.confirmSend') }}
             </n-popconfirm>
           </n-space>
         </n-form>

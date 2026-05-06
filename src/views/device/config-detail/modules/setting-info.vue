@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, reactive, ref, watch } from 'vue'
 import { NButton, useDialog, useMessage } from 'naive-ui'
 import { useRoute } from 'vue-router'
 import ClipboardJS from 'clipboard'
@@ -49,6 +49,10 @@ const onlinejson = reactive({
   online_timeout: 0,
   heartbeat: 0
 })
+
+// BUG-25: Mutual exclusion — only one of timeout / heartbeat can be set
+const isTimeoutDisabled = computed(() => onlinejson.heartbeat > 0)
+const isHeartbeatDisabled = computed(() => onlinejson.online_timeout > 0)
 
 // 图片上传相关
 const demoUrl = getDemoServerUrl()
@@ -262,18 +266,31 @@ onMounted(() => {
         </dl>
       </template>
       <template v-else>
+        <n-alert type="info" class="m-b-15px" :show-icon="true">
+          {{ $t('generate.timeoutHeartbeatHint') }}
+        </n-alert>
         <dl class="m-b-20px flex-col">
           <dt class="m-b-5px font-900">{{ $t('generate.timeoutMinutes') }}</dt>
           <dd class="m-b-10px">
             {{ $t('generate.timeoutThreshold') }}
           </dd>
           <dd class="m-b-20px max-w-220px">
-            <n-input-number v-model:value="onlinejson.online_timeout" placeholder=""></n-input-number>
+            <n-input-number
+              v-model:value="onlinejson.online_timeout"
+              :disabled="isTimeoutDisabled"
+              :min="0"
+              placeholder=""
+            ></n-input-number>
           </dd>
           <dt class="m-b-5px font-900">{{ $t('generate.heartbeatIntervalSeconds') }}</dt>
           <dd class="m-b-10px">{{ $t('generate.heartbeatThreshold') }}</dd>
           <dd class="max-w-220px">
-            <n-input-number v-model:value="onlinejson.heartbeat" type="text" placeholder=""></n-input-number>
+            <n-input-number
+              v-model:value="onlinejson.heartbeat"
+              :disabled="isHeartbeatDisabled"
+              :min="0"
+              placeholder=""
+            ></n-input-number>
           </dd>
         </dl>
       </template>

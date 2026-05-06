@@ -586,5 +586,14 @@
   "generate.topicMapping.validation.direction": "请选择数据方向",
   "generate.topicMapping.validation.originalTopic": "请输入设备主题",
   "generate.topicMapping.validation.targetTopic": "请选择系统主题",
-  "generate.topicMapping.validation.dataIdentifier": "请输入命令标识符"
+  "generate.topicMapping.validation.dataIdentifier": "请输入命令标识符",
+  "generate.timeoutHeartbeatHint": "超时时间和心跳判断只能设置其中一个，设置一项后另一项将被禁用",
+  "generate.invalidCoordinates": "经纬度无效:",
+  "generate.currentCoordinatesInvalid": "当前经纬度无效:",
+  "generate.extensionFieldName": "名称",
+  "generate.extensionFieldType": "类型",
+  "generate.extensionFieldDefault": "默认值",
+  "generate.extensionNoDesc": "无描述",
+  "generate.extensionPlaceholderDefault": "默认值:",
+  "generate.mosquittoInstallHint": "需先在本地安装 mosquitto 客户端工具，才能执行以下命令"
 }

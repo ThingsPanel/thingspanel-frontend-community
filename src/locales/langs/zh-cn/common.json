@@ -441,5 +441,6 @@
   "common.thingModel": "物模型",
   "common.viewCard": "卡片视图",
   "common.viewList": "列表视图",
-  "common.viewMap": "地图视图"
+  "common.viewMap": "地图视图",
+  "common.confirmSend": "确定发送指令吗？"
 }

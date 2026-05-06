@@ -145,11 +145,7 @@ const getAlarmHistory = async () => {
     loading.value = false
   }
 }
-const resetQuery = () => {
-  pagination.page = 1
-  getAlarmHistory()
-}
-function pickerChange() {
+const handleSearch = () => {
   if (range.value && range.value.length > 0) {
     queryData.value.start_time = moment(range.value[0]).format('YYYY-MM-DDTHH:mm:ssZ')
     queryData.value.end_time = moment(range.value[1]).format('YYYY-MM-DDTHH:mm:ssZ')
@@ -157,7 +153,14 @@ function pickerChange() {
     queryData.value.start_time = ''
     queryData.value.end_time = ''
   }
-  resetQuery()
+  pagination.page = 1
+  getAlarmHistory()
+}
+
+const resetData = () => {
+  range.value = [moment().subtract(1, 'months').valueOf(), moment().valueOf()]
+  queryData.value.alarm_status = ''
+  handleSearch()
 }
 
 onMounted(() => {
@@ -235,7 +238,6 @@ const submitCallback = async () => {
           type="datetimerange"
           :clearable="false"
           separator="-"
-          @update:value="pickerChange"
         />
       </NFormItem>
       <NFormItem :label="$t('generate.alarm-level')" path="status">
@@ -244,8 +246,11 @@ const submitCallback = async () => {
           :clearable="false"
           class="w-200px"
           :options="alarmStatusOptions"
-          @update:value="resetQuery"
         />
+      </NFormItem>
+      <NFormItem>
+        <NButton type="primary" @click="handleSearch">{{ $t('common.search') }}</NButton>
+        <NButton class="ml-12px" @click="resetData">{{ $t('common.reset') }}</NButton>
       </NFormItem>
     </NForm>
     <n-data-table

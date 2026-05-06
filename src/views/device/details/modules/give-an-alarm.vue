@@ -191,15 +191,15 @@ onMounted(() => {
           :clearable="false"
           separator="-"
           class="w-400px"
-          @update:value="resetQuery"
         />
         <n-select
           v-model:value="queryParams.alarm_status"
           :options="alarmStatusOptions"
           class="w-150px"
           :clearable="false"
-          @update:value="resetQuery"
         />
+        <NButton type="primary" @click="resetQuery">{{ $t('common.search') }}</NButton>
+        <NButton @click="refresh">{{ $t('common.reset') }}</NButton>
         <NButton :bordered="false" class="justify-end" @click="refresh">
           <NIcon size="18">
             <Refresh />

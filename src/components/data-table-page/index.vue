@@ -1,6 +1,6 @@
 <script lang="tsx" setup>
 import type { VueElement } from 'vue'
-import { computed, defineProps, ref, watch, watchEffect } from 'vue'
+import { computed, defineProps, ref, watch, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { NButton, NDataTable, NDatePicker, NInput, NSelect, NSpace, NPagination, NSpin } from 'naive-ui'
 import type { TreeSelectOption } from 'naive-ui'
@@ -194,20 +194,7 @@ const onUpdatePageSize = newPageSize => {
   getData() // 更新数据
 }
 
-// 添加对 searchCriteria 的监听
-watch(
-  searchCriteria,
-  (newVal, oldVal) => {
-    // 检查是否真的发生了变化
-    if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-      currentPage.value = 1 // 重置到第一页
-      getData() // 重新获取数据
-    }
-  },
-  { deep: true } // 深度监听对象的变化
-)
-
-// 观察分页和搜索条件的变化，自动重新获取数据
+// 观察搜索条件的变化以更新扩展参数，不自动获取数据
 watchEffect(() => {
   searchConfigs.map((item: any) => {
     const vals = searchCriteria.value[item.key]
@@ -221,7 +208,6 @@ watchEffect(() => {
       })
     }
   })
-  getData()
 })
 
 // 搜索和重置按钮的逻辑
@@ -316,10 +302,13 @@ const loadOptionsOnMount2 = async () => {
 loadOptionsOnMount('')
 loadOptionsOnMount2()
 
+onMounted(() => {
+  getData()
+})
+
 // 为 input 类型添加专门的处理函数
 const handleInputChange = () => {
   currentPage.value = 1
-  getData()
 }
 
 // 修复 NSelect 的 filter 函数类型错误
