@@ -40,12 +40,12 @@ export interface ThingsVisOptions {
 }
 
 export interface WidgetLoadOptions {
-  platformBufferSize?: number;
-  platformDevices?: any[];
-  deviceId?: string;
-  thingsvisApiBaseUrl?: string;
-  platformApiBaseUrl?: string;
-  platformToken?: string;
+  platformBufferSize?: number
+  platformDevices?: any[]
+  deviceId?: string
+  thingsvisApiBaseUrl?: string
+  platformApiBaseUrl?: string
+  platformToken?: string
 }
 
 export type MessageHandler = (payload: any) => void
@@ -68,7 +68,10 @@ export class ThingsVisClient {
   /** Last real-time value payload by scope, replayed after guest re-init. */
   private latestPlatformDataByScope: Map<string, { fields: Record<string, unknown>; deviceId?: string }> = new Map()
   /** Last history payloads by scope/field, replayed after guest re-init. */
-  private latestPlatformHistoryByScope: Map<string, { fieldId: string; history: Array<{ value: unknown; ts: number }>; deviceId?: string }> = new Map()
+  private latestPlatformHistoryByScope: Map<
+    string,
+    { fieldId: string; history: Array<{ value: unknown; ts: number }>; deviceId?: string }
+  > = new Map()
   private lastInitPayload: any = null
   private platformPushCount = 0
 
@@ -87,6 +90,8 @@ export class ThingsVisClient {
     const finalUrl = `${this.options.url}${separator}${modeParam}`
 
     this.iframe.src = finalUrl
+    this.iframe.allowFullscreen = true
+    this.iframe.allow = 'fullscreen; autoplay; clipboard-write'
     // 榛樿鏍峰紡
     this.iframe.style.width = '100%'
     this.iframe.style.height = '100%'
@@ -171,7 +176,7 @@ export class ThingsVisClient {
   private emit(type: string, payload: any) {
     const handlers = this.messageHandlers.get(type)
     if (handlers) {
-      handlers.forEach(handler => handler(payload))
+      handlers.forEach((handler) => handler(payload))
     }
   }
 
@@ -286,7 +291,7 @@ export class ThingsVisClient {
           ...ds,
           config: {
             ...config,
-            bufferSize: Math.max(config.bufferSize ?? 0, options?.platformBufferSize ?? 0),
+            bufferSize: Math.max(config.bufferSize ?? 0, options?.platformBufferSize ?? 0)
           }
         }
       }
@@ -359,7 +364,7 @@ export class ThingsVisClient {
     const scopeKey = `${deviceId ?? '__global__'}:${fieldId}`
     this.latestPlatformHistoryByScope.set(scopeKey, {
       fieldId,
-      history: history.map(item => ({ value: item.value, ts: item.ts })),
+      history: history.map((item) => ({ value: item.value, ts: item.ts })),
       ...(deviceId ? { deviceId } : {})
     })
     this.sendWhenLoaded('tv:platform-history', { fieldId, history, deviceId })
@@ -389,7 +394,7 @@ export class ThingsVisClient {
    */
   public onWidgetSave(callback: (config: any) => void) {
     // 鎴戜滑鍦?handleMessage 閲屾妸 'thingsvis:host-save' 杞彂涓轰簡 'thingsvis:save-config'
-    this.on(TV_MSG.SAVE_CONFIG, payload => {
+    this.on(TV_MSG.SAVE_CONFIG, (payload) => {
       // Payload 閲岀殑缁撴瀯鍙兘鏄?{ canvas:..., nodes:..., dataBindings:... }
       callback(payload)
     })
