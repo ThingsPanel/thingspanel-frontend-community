@@ -81,7 +81,7 @@ const dashboards = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase()
   if (!keyword) return allDashboards.value
 
-  return allDashboards.value.filter(item => item.name.toLowerCase().includes(keyword))
+  return allDashboards.value.filter((item) => item.name.toLowerCase().includes(keyword))
 })
 
 /** 加载项目信息 */
@@ -136,7 +136,7 @@ const loadMenuConfigs = async (list: DashboardListItem[]) => {
   const loadSeq = menuConfigLoadSeq.value + 1
   menuConfigLoadSeq.value = loadSeq
   const entries = await Promise.all(
-    list.map(async item => {
+    list.map(async (item) => {
       const { data, error } = await fetchDashboardMenuConfig(item.id)
       return [item.id, error ? (menuConfigs.value[item.id] ?? null) : (data ?? null)] as const
     })
@@ -160,7 +160,7 @@ const loadThumbnails = async (list: DashboardListItem[]) => {
     while (queue.length > 0) {
       const batch = queue.splice(0, CONCURRENCY)
       await Promise.all(
-        batch.map(async item => {
+        batch.map(async (item) => {
           // 检查是否已有有效的缩略图（处理 null、undefined、空字符串）
           const hasValidThumbnail = item.thumbnail && item.thumbnail.trim().startsWith('data:')
           if (hasValidThumbnail) return
@@ -172,7 +172,7 @@ const loadThumbnails = async (list: DashboardListItem[]) => {
             const thumbnail = resultData?.thumbnail || resultData?.data?.thumbnail
             if (thumbnail) {
               // 更新响应式数据
-              const target = allDashboards.value.find(d => d.id === item.id)
+              const target = allDashboards.value.find((d) => d.id === item.id)
               if (target) {
                 target.thumbnail = thumbnail
               }
@@ -207,7 +207,7 @@ const handleCreateDashboard = async () => {
   }
 
   try {
-    const { data, error } = await createThingsVisDashboard({
+    const { error } = await createThingsVisDashboard({
       name: formData.value.name,
       projectId: projectId.value,
       canvasConfig: {
@@ -230,12 +230,6 @@ const handleCreateDashboard = async () => {
         canvasHeight: 1080
       }
       await fetchDashboards()
-      if (data?.id) {
-        openMenuConfig({
-          ...data,
-          homeFlag: false
-        } as DashboardListItem)
-      }
     } else {
       message.error('创建失败')
     }
@@ -354,7 +348,7 @@ const handleSaveMenuConfig = async () => {
         if (homeDashboard && homeDashboard.id !== menuForm.value.dashboardId) {
           // 首页仪表盘存在且不是当前正要保存的这个，才追加
           const alreadyInMenu = Object.keys(menuConfigs.value).some(
-            id => id === homeDashboard.id && menuConfigs.value[id]?.enabled
+            (id) => id === homeDashboard.id && menuConfigs.value[id]?.enabled
           )
           if (!alreadyInMenu) {
             const { error: homeError } = await saveDashboardMenuConfig(homeDashboard.id, {
@@ -690,7 +684,7 @@ onMounted(async () => {
           <NSwitch
             v-model:value="menuForm.enabled"
             @update:value="
-              value => {
+              (value) => {
                 if (value && !menuForm.menuName) menuForm.menuName = menuForm.dashboardName
               }
             "

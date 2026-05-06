@@ -43,7 +43,7 @@ const fetchProjects = async () => {
     if (!error && data) {
       let list = data.data
       if (searchKeyword.value) {
-        list = list.filter(item => item.name.toLowerCase().includes(searchKeyword.value.toLowerCase()))
+        list = list.filter((item) => item.name.toLowerCase().includes(searchKeyword.value.toLowerCase()))
       }
       projects.value = list
     } else if (error) {
@@ -115,6 +115,12 @@ const handleSaveProject = async () => {
 
 /** 删除项目 */
 const openDeleteConfirm = (id: string, name: string) => {
+  const project = projects.value.find((item) => item.id === id)
+  if ((project?._count?.dashboards || 0) > 0) {
+    message.warning('该项目下有仪表盘，无法删除。请先删除所有仪表盘。')
+    return
+  }
+
   pendingDeleteProject.value = { id, name }
   deleteConfirmModal.value = true
 }
