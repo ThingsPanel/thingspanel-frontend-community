@@ -9,10 +9,7 @@ import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { NSpin } from 'naive-ui'
 import { getThingsVisToken } from '@/utils/thingsvis'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
-import {
-  telemetryDataCurrent,
-  getAttributeDataSet
-} from '@/service/api/device'
+import { telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
 
@@ -81,7 +78,7 @@ function extractWsFields(payload: unknown): Record<string, unknown> {
 
   if (Array.isArray(payload)) {
     const fields: Record<string, unknown> = {}
-    ;(payload as Array<{ key?: string; label?: string; value?: unknown }>).forEach(item => {
+    ;(payload as Array<{ key?: string; label?: string; value?: unknown }>).forEach((item) => {
       if (!item) return
       const key = item.key ?? item.label
       if (!key || key === 'systime') return
@@ -140,7 +137,7 @@ function connectDeviceWs(deviceId: string) {
       }, PING_INTERVAL_MS)
     }
 
-    entry.ws.onmessage = evt => {
+    entry.ws.onmessage = (evt) => {
       if (typeof evt.data !== 'string' || evt.data === 'pong') return
       try {
         const rawFields = extractWsFields(JSON.parse(evt.data))
@@ -213,7 +210,7 @@ function connectDeviceStatusWs(deviceId: string) {
       }, PING_INTERVAL_MS)
     }
 
-    entry.ws.onmessage = evt => {
+    entry.ws.onmessage = (evt) => {
       if (typeof evt.data !== 'string' || evt.data === 'pong') return
       try {
         const msg = JSON.parse(evt.data) as Record<string, unknown>
@@ -288,10 +285,7 @@ function disconnectAllDeviceWs() {
   deviceStatusWsMap.clear()
 }
 
-function collectRequestedFieldsFromValue(
-  value: unknown,
-  requests: Map<string, Set<string>>
-) {
+function collectRequestedFieldsFromValue(value: unknown, requests: Map<string, Set<string>>) {
   if (typeof value === 'string') {
     const match = value.match(FIELD_BINDING_EXPR_RE)
     const dataSourceId = match?.[1]
@@ -305,13 +299,13 @@ function collectRequestedFieldsFromValue(
   }
 
   if (Array.isArray(value)) {
-    value.forEach(item => collectRequestedFieldsFromValue(item, requests))
+    value.forEach((item) => collectRequestedFieldsFromValue(item, requests))
     return
   }
 
   if (!value || typeof value !== 'object') return
 
-  Object.values(value as Record<string, unknown>).forEach(item => {
+  Object.values(value as Record<string, unknown>).forEach((item) => {
     collectRequestedFieldsFromValue(item, requests)
   })
 }
@@ -330,12 +324,14 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
     .map((dataSource: any) => {
       const requestedFields = new Set<string>(
         Array.isArray(dataSource?.config?.requestedFields)
-          ? dataSource.config.requestedFields.filter((fieldId: unknown): fieldId is string => typeof fieldId === 'string')
+          ? dataSource.config.requestedFields.filter(
+              (fieldId: unknown): fieldId is string => typeof fieldId === 'string'
+            )
           : []
       )
       const bindingFields = requests.get(String(dataSource.id))
       if (bindingFields) {
-        bindingFields.forEach(fieldId => requestedFields.add(fieldId))
+        bindingFields.forEach((fieldId) => requestedFields.add(fieldId))
       }
 
       return {
@@ -390,15 +386,13 @@ async function hydrateConfiguredPlatformSources() {
     ensureDeviceWs(descriptor.deviceId)
     ensureDeviceStatusWs(descriptor.deviceId)
 
-    const fields = requestedFields.length > 0
-      ? await buildRequestedFieldData(requestedFields, descriptor.deviceId)
-      : await fetchAllCurrentFieldsForDevice(descriptor.deviceId)
+    const fields =
+      requestedFields.length > 0
+        ? await buildRequestedFieldData(requestedFields, descriptor.deviceId)
+        : await fetchAllCurrentFieldsForDevice(descriptor.deviceId)
     if (Object.keys(fields).length === 0) continue
 
-    win.postMessage(
-      { type: 'tv:platform-data', payload: { deviceId: descriptor.deviceId, fields } },
-      '*'
-    )
+    win.postMessage({ type: 'tv:platform-data', payload: { deviceId: descriptor.deviceId, fields } }, '*')
   }
 }
 
@@ -531,23 +525,26 @@ const sendConfig = () => {
     const thingsvisApiBaseUrl = getThingsVisApiBase()
     const platformApiBaseUrl = getPlatformApiBase()
 
-    iframeRef.value.contentWindow.postMessage({
-      type: 'tv:init',
-      data: {
-        meta: { id: pureConfig.id, name: pureConfig.name },
-        canvas: pureConfig.canvas || pureConfig.canvasConfig,
-        nodes: pureConfig.nodes,
-        dataSources: pureConfig.dataSources,
-        variables: Array.isArray(pureConfig.variables) ? pureConfig.variables : []
+    iframeRef.value.contentWindow.postMessage(
+      {
+        type: 'tv:init',
+        data: {
+          meta: { id: pureConfig.id, name: pureConfig.name },
+          canvas: pureConfig.canvas || pureConfig.canvasConfig,
+          nodes: pureConfig.nodes,
+          dataSources: pureConfig.dataSources,
+          variables: Array.isArray(pureConfig.variables) ? pureConfig.variables : []
+        },
+        config: {
+          token: token.value,
+          thingsvisApiBaseUrl,
+          platformApiBaseUrl,
+          mode: 'viewer',
+          saveTarget: 'host'
+        }
       },
-      config: {
-        token: token.value,
-        thingsvisApiBaseUrl,
-        platformApiBaseUrl,
-        mode: 'viewer',
-        saveTarget: 'host'
-      }
-    }, '*')
+      '*'
+    )
   } catch (e) {
     console.error('[ThingsVisViewer] 閰嶇疆搴忓垪鍖栧け璐?', e)
     error.value = '閰嶇疆鏁版嵁鏃犳晥'
@@ -617,6 +614,8 @@ onBeforeUnmount(() => {
         :class="{ visible: ready }"
         :style="{ height }"
         frameborder="0"
+        allow="fullscreen; autoplay; clipboard-write"
+        allowfullscreen
         @load="handleIframeLoad"
       />
     </NSpin>

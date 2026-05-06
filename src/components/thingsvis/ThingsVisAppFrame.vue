@@ -6,6 +6,7 @@
       :src="url"
       class="thingsvis-frame"
       frameborder="0"
+      allow="fullscreen; autoplay; clipboard-write"
       allowfullscreen
       @load="handleIframeLoad"
     ></iframe>
