@@ -428,18 +428,6 @@ getTableData()
           class="m-t9 flex-1-hidden"
         />
 
-        <div class="mt-4 w-full flex justify-end">
-          <n-pagination
-            :page-count="item.total"
-            :page-size="5"
-            @update:page="
-              page => {
-                queryParams[index].page = page
-                getTableData(item.name)
-              }
-            "
-          />
-        </div>
         <CustomControls v-if="item.name === 'telemetry'" :id="deviceTemplateId"></CustomControls>
         <CustomCommands v-if="item.name === 'command'" :id="deviceTemplateId"></CustomCommands>
       </n-tab-pane>
