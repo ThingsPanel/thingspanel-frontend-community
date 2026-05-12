@@ -368,6 +368,7 @@ function handleDeviceTypeChange(newValue: string | number) {
           <n-radio-group
             v-model:value="configForm.device_type"
             name="device_type"
+            :disabled="isEdit"
             @update:value="handleDeviceTypeChange"
           >
             <n-space>
