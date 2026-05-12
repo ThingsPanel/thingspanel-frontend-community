@@ -90,7 +90,11 @@ const getPreviewDeviceId = () => {
   return undefined
 }
 
-const getEmbeddedContext = () => (props.deviceId === TEMPLATE_DEVICE_ID ? 'device-template' : 'dashboard')
+const getEmbeddedContext = () => {
+  if (props.deviceId === TEMPLATE_DEVICE_ID) return 'device-template'
+  if (getPreviewDeviceId()) return 'current-device'
+  return 'dashboard'
+}
 
 const getPlatformDevices = () => {
   if (Array.isArray(props.platformDevices) && props.platformDevices.length > 0) return clone(props.platformDevices)
