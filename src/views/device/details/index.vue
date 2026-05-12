@@ -552,6 +552,7 @@ const isEmbeddedHost = computed(() => {
           :key="tabsRenderKey"
           v-model:value="tabValue"
           class="device-details-tabs"
+          :class="{ 'device-details-tabs--chart-active': tabValue === 'chart' }"
           animated
           type="line"
           @update:value="changeTabs"
@@ -676,6 +677,11 @@ const isEmbeddedHost = computed(() => {
 
 :deep(.device-details-tabs .n-tabs-nav::before) {
   border-bottom-color: #e5e7eb;
+}
+
+/* Web 图表 Tab：与内容区视觉连续，不显示标签栏底部分隔线 */
+:deep(.device-details-tabs.device-details-tabs--chart-active .n-tabs-nav::before) {
+  border-bottom: none;
 }
 
 :deep(.device-details-tabs .n-tabs-tab) {

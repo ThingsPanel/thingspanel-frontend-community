@@ -345,7 +345,6 @@ onBeforeUnmount(() => {
 .device-chart-panel {
   overflow: hidden;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
   background: #fff;
 }
 
