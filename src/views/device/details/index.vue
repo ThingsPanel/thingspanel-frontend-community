@@ -172,6 +172,8 @@ const device_number = ref('')
 const device_is_online = ref(0)
 const device_loop = ref(false)
 let wsUrl = getWebsocketServerUrl()
+const DEVICE_STATUS_INACTIVE_COLOR = '#ccc'
+const DEVICE_ALARM_ACTIVE_COLOR = '#ee0808'
 
 wsUrl += `/device/online/status/ws`
 const normalizeOnlineStatus = (payload: unknown): number | null => {
@@ -221,6 +223,47 @@ const { send } = useWebSocket(wsUrl, {
     }
   }
 })
+
+const normalizeAlarmActive = (raw: unknown): boolean => {
+  if (typeof raw === 'boolean') return raw
+  if (typeof raw === 'number') return raw > 0
+  if (typeof raw === 'string') {
+    const normalized = raw.trim().toLowerCase()
+    if (
+      !normalized ||
+      normalized === '0' ||
+      normalized === 'false' ||
+      normalized === 'off' ||
+      normalized === 'no' ||
+      normalized === 'n'
+    ) {
+      return false
+    }
+    if (
+      normalized === '1' ||
+      normalized === 'true' ||
+      normalized === 'on' ||
+      normalized === 'yes' ||
+      normalized === 'y'
+    ) {
+      return true
+    }
+  }
+  return Boolean(raw)
+}
+
+const deviceAlarmActive = computed(() =>
+  normalizeAlarmActive(
+    deviceData.value?.warn_status ??
+      deviceData.value?.warnStatus ??
+      deviceData.value?.alarm_status ??
+      deviceData.value?.alarmStatus
+  )
+)
+
+const deviceAlarmColor = computed(() =>
+  deviceAlarmActive.value ? DEVICE_ALARM_ACTIVE_COLOR : DEVICE_STATUS_INACTIVE_COLOR
+)
 
 const queryParams = reactive({
   label: '',
@@ -518,13 +561,13 @@ const isEmbeddedHost = computed(() => {
             <!-- <span class="mr-2">{{ $t('generate.status') }}:</span> -->
             <SvgIcon
               local-icon="CellTowerRound"
-              style="color: #ccc; margin-right: 5px"
+              :style="{ color: DEVICE_STATUS_INACTIVE_COLOR, marginRight: '5px' }"
               class="text-20px text-primary"
-              :stroke="device_is_online === 1 ? 'rgb(2,153,52)' : '#ccc'"
+              :stroke="device_is_online === 1 ? 'rgb(2,153,52)' : DEVICE_STATUS_INACTIVE_COLOR"
             />
             <span
               :style="{
-                color: device_is_online === 1 ? 'rgb(2,153,52)' : '#ccc'
+                color: device_is_online === 1 ? 'rgb(2,153,52)' : DEVICE_STATUS_INACTIVE_COLOR
               }"
             >
               {{ device_is_online === 1 ? $t('custom.device_details.online') : $t('custom.device_details.offline') }}
@@ -537,13 +580,17 @@ const isEmbeddedHost = computed(() => {
               class="text-18px text-primary"
             />
           </div>
-          <div class="device-details-status device-details-status--alarm" @click="clickAlarmHistory">
+          <div
+            class="device-details-status"
+            :class="{ 'device-details-status--alarm': deviceAlarmActive }"
+            @click="clickAlarmHistory"
+          >
             <SvgIcon
               local-icon="AlertFilled"
-              style="color: #ee0808; margin-right: 5px"
+              :style="{ color: deviceAlarmColor, marginRight: '5px' }"
               class="text-20px text-primary"
             />
-            <span style="color: #ee0808">{{ $t('generate.alarmHistory') }}</span>
+            <span :style="{ color: deviceAlarmColor }">{{ $t('generate.alarmHistory') }}</span>
           </div>
         </NFlex>
       </div>
