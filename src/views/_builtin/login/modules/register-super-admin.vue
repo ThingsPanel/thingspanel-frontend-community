@@ -50,7 +50,7 @@ const marketUrl = computed(() => {
 const emailLocked = computed(() => props.marketEmail.trim() !== '')
 
 const canSubmit = computed(() => {
-  return model.email.trim() !== '' && model.pwd.trim() !== '' && model.pwd.length >= 6
+  return model.email.trim() !== '' && model.pwd.trim() !== ''
 })
 
 const commonDomains = ['qq.com', '163.com', 'gmail.com', 'outlook.com', 'sina.com', 'hotmail.com', 'yahoo.com']
@@ -76,16 +76,8 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
     email: formRules.email,
     pwd: [
       {
-        validator: (_rule, value) => {
-          if (value.length < 6) {
-            return Promise.reject(new Error($t('form.pwd.tip')))
-          }
-          if (!/[a-z]/.test(value)) {
-            return Promise.reject(new Error($t('form.pwd.tip')))
-          }
-          return Promise.resolve()
-        },
-        message: () => $t('form.pwd.tip'),
+        required: true,
+        message: () => $t('form.pwd.required'),
         trigger: ['input', 'blur']
       }
     ]

@@ -8,11 +8,9 @@ export const REG_PHONE = /^1((3[0-9])|(4[01456789])|(5[012356789])|(6[2567])|(7[
 export const REG_PHONE_WITH_COUNTRY_CODE = /^\d{7,15}$/
 
 /**
- * Password reg
- *
- * At least 6 characters
+ * Password reg: non-empty only (any character, length ≥ 1)
  */
-export const REG_PWD = /^.{6,}$/
+export const REG_PWD = /^[\s\S]+$/
 
 /** Email reg */
 export const REG_EMAIL = /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/

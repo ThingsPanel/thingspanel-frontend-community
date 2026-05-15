@@ -61,8 +61,7 @@ const canSubmit = computed(() => {
   return (
     model.email.trim() !== '' &&
     model.verify_code.trim() !== '' &&
-    model.password.trim() !== '' &&
-    model.password.length >= 6
+    model.password.trim() !== ''
   )
 })
 
@@ -74,16 +73,8 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
     verify_code: formRules.code,
     password: [
       {
-        validator: (rule, value) => {
-          if (value.length < 6) {
-            return Promise.reject(rule.message)
-          }
-          if (!/[a-z]/.test(value)) {
-            return Promise.reject(rule.message)
-          }
-          return Promise.resolve()
-        },
-        message: $t('form.pwd.tip'),
+        required: true,
+        message: () => $t('form.pwd.required'),
         trigger: ['input', 'blur']
       }
     ]

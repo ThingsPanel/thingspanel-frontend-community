@@ -94,11 +94,6 @@ const emailOptions = computed(() => {
 })
 
 async function handleSubmit() {
-  // 先判断密码长度
-  if (model.password.length < 6) {
-    return // 仍然阻止提交
-  }
-
   await validate()
   await authStore.login(model.userName.trim(), model.password)
 

@@ -117,15 +117,9 @@ export function isJSON(str: string): boolean {
   return false
 }
 
-// 校验密码强度
+/** 登录后弱密码提示用：仅要求非空（与登录表单一致，不做复杂度校验） */
 export function validPassword(str: string): boolean {
-  if (str.length < 8) {
-    return false
-  }
-  if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}/.test(str)) {
-    return false
-  }
-  return true
+  return typeof str === 'string' && str.length > 0
 }
 
 function getRandomBytes(length) {
@@ -209,15 +203,7 @@ export function validName(str) {
   return true
 }
 
-export function validPasswordByExp(str) {
-  if (!str || str.length < 6) {
-    return false
-  }
-
-  // 检查是否包含小写字母
-  if (!/[a-z]/.test(str)) {
-    return false
-  }
-
-  return true
+/** 注册/改密等表单：仅要求非空（不做长度与字符种类限制） */
+export function validPasswordByExp(str: string) {
+  return typeof str === 'string' && str.trim().length > 0
 }
