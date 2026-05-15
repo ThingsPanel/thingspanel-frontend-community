@@ -464,7 +464,9 @@ const inputFeedback = computed(() => {
                 </NIcon>
                 <NDivider vertical />
                 <n-dropdown trigger="click" :options="options" @select="handleSelect($event, i)">
-                  <SvgIcon icon="mdi:dots-horizontal" class="text-20px cursor-pointer" />
+                  <span class="inline-flex cursor-pointer items-center justify-center">
+                    <SvgIcon icon="mdi:dots-horizontal" class="text-20px" />
+                  </span>
                 </n-dropdown>
               </div>
             </template>
