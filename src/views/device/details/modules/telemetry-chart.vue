@@ -20,6 +20,143 @@ import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush'
 import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush'
 import { getCachedDeviceTemplateDetail } from '@/utils/thingsvis/template-detail-cache'
 
+const TEMPLATE_PLATFORM_SOURCE_ID = '__platform___template____'
+const RUNTIME_PLATFORM_FIELD_IDS = new Set(['is_online', 'online_text', 'online_status_updated_at'])
+
+function getRuntimePlatformSourceId(deviceId: string) {
+  return `__platform_${deviceId}__`
+}
+
+function isValidRequestedFieldId(fieldId: string, availableFieldIds: Set<string>) {
+  if (!fieldId) return false
+  if (availableFieldIds.has(fieldId) || RUNTIME_PLATFORM_FIELD_IDS.has(fieldId)) return true
+  if (fieldId.endsWith('__history')) {
+    const root = fieldId.slice(0, -'__history'.length)
+    return availableFieldIds.has(root)
+  }
+  return false
+}
+
+function rewriteTemplateBindingExpression(
+  expression: unknown,
+  runtimeDataSourceId: string
+): unknown {
+  if (typeof expression !== 'string') return expression
+
+  const directFieldMatch = expression.match(
+    /^\{\{\s*ds\.__platform___template____\.data\.([A-Za-z0-9_-]+)\s*\}\}$/
+  )
+  if (directFieldMatch?.[1]) {
+    return `{{ ds.${runtimeDataSourceId}.data.${directFieldMatch[1]} }}`
+  }
+
+  const booleanSelectMatch = expression.match(
+    /^\{\{\s*ds\.__platform___template____\.data\.([A-Za-z0-9_-]+)\s*\?\s*'1'\s*:\s*'0'\s*\}\}$/
+  )
+  if (booleanSelectMatch?.[1]) {
+    return `{{ ds.${runtimeDataSourceId}.data.${booleanSelectMatch[1]} }}`
+  }
+
+  return expression.split(TEMPLATE_PLATFORM_SOURCE_ID).join(runtimeDataSourceId)
+}
+
+function normalizeTemplateChartConfig(
+  rawConfig: any,
+  deviceId: string,
+  availableFieldIds: Set<string>
+) {
+  if (!rawConfig || typeof rawConfig !== 'object') return rawConfig
+
+  const runtimeDataSourceId = getRuntimePlatformSourceId(deviceId)
+  const config = JSON.parse(JSON.stringify(rawConfig))
+
+  if (Array.isArray(config.dataSources)) {
+    config.dataSources = config.dataSources.map((dataSource: any) => {
+      const isPlatformField = dataSource?.type === 'PLATFORM_FIELD'
+      if (!isPlatformField) return dataSource
+
+      const nextId =
+        dataSource?.id === TEMPLATE_PLATFORM_SOURCE_ID ? runtimeDataSourceId : dataSource?.id
+      const requestedFields = Array.isArray(dataSource?.config?.requestedFields)
+        ? dataSource.config.requestedFields.filter(
+            (fieldId: unknown): fieldId is string =>
+              typeof fieldId === 'string' && isValidRequestedFieldId(fieldId, availableFieldIds)
+          )
+        : []
+
+      return {
+        ...dataSource,
+        id: nextId,
+        config: {
+          ...(dataSource?.config || {}),
+          deviceId,
+          requestedFields
+        }
+      }
+    })
+  }
+
+  if (Array.isArray(config.nodes)) {
+    config.nodes = config.nodes.map((node: any) => {
+      const nextNode = { ...node }
+
+      if (Array.isArray(nextNode.data)) {
+        nextNode.data = nextNode.data.map((binding: any) => {
+          const nextBinding = { ...binding }
+          const rewrittenExpression = rewriteTemplateBindingExpression(
+            nextBinding?.expression,
+            runtimeDataSourceId
+          )
+          nextBinding.expression = rewrittenExpression
+
+          const booleanSelectMatch =
+            typeof binding?.expression === 'string'
+              ? binding.expression.match(
+                  /^\{\{\s*ds\.__platform___template____\.data\.([A-Za-z0-9_-]+)\s*\?\s*'1'\s*:\s*'0'\s*\}\}$/
+                )
+              : null
+          if (booleanSelectMatch?.[1]) {
+            nextBinding.transform = `value ? '1' : '0'`
+          }
+
+          return nextBinding
+        })
+      }
+
+      if (nextNode.props && typeof nextNode.props === 'object') {
+        Object.entries(nextNode.props).forEach(([key, value]) => {
+          nextNode.props[key] = rewriteTemplateBindingExpression(value, runtimeDataSourceId)
+        })
+      }
+
+      if (Array.isArray(nextNode.events)) {
+        nextNode.events = nextNode.events.map((handler: any) => ({
+          ...handler,
+          actions: Array.isArray(handler?.actions)
+            ? handler.actions.map((action: any) => {
+                const nextAction = { ...action }
+                if (nextAction?.dataSourceId === TEMPLATE_PLATFORM_SOURCE_ID) {
+                  nextAction.dataSourceId = runtimeDataSourceId
+                }
+                if (typeof nextAction?.payload === 'string') {
+                  nextAction.payload = nextAction.payload.replace(
+                    /"([A-Za-z0-9_-]+)\s*\?\s*'1'\s*:\s*'0'"/g,
+                    '"$1"'
+                  )
+                }
+                return nextAction
+              })
+            : handler?.actions
+        }))
+      }
+
+      return nextNode
+    })
+  }
+
+  return config
+}
+
 const props = defineProps<{
   /** 设备ID */
   id: string
@@ -189,18 +326,19 @@ const initTemplateData = async (deviceTemplateId: string) => {
 
       const extractedFields = extractPlatformFields(platformSource)
       platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)
+      const availableFieldIds = new Set(
+        platformFields.value
+          .map(field => field?.id)
+          .filter((fieldId): fieldId is string => typeof fieldId === 'string' && fieldId.length > 0)
+      )
 
       if (res.data.web_chart_config) {
         try {
-          const configJson = JSON.parse(res.data.web_chart_config)
-          if (Array.isArray(configJson?.dataSources)) {
-            configJson.dataSources.forEach((ds: any) => {
-              if (ds?.type === 'PLATFORM_FIELD') {
-                ds.config = ds.config || {}
-                ds.config.deviceId = props.id
-              }
-            })
-          }
+          const configJson = normalizeTemplateChartConfig(
+            JSON.parse(res.data.web_chart_config),
+            props.id,
+            availableFieldIds
+          )
           initialConfig.value = configJson
           hasTemplate.value = true
           await fetchAndUpdateData()
