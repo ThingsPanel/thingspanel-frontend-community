@@ -53,6 +53,23 @@ const cardMargin = ref(15);
 const initialConfig = ref<any>(null);
 const platformFields = ref<PlatformField[]>([]);
 const currentData = ref<Record<string, any>>({});
+const viewerHeight = computed(() => {
+  const config = initialConfig.value;
+  if (!config) return '400px';
+
+  const canvas = config.canvas || config.canvasConfig || {};
+  const nodes = Array.isArray(config.nodes) ? config.nodes : [];
+  const nodeBottom = nodes.reduce((max: number, node: any) => {
+    const y = typeof node?.y === 'number' ? node.y : node?.position?.y;
+    const height = typeof node?.height === 'number' ? node.height : node?.size?.height;
+    if (typeof y !== 'number' || typeof height !== 'number') return max;
+    return Math.max(max, y + height);
+  }, 0);
+
+  const canvasHeight = typeof canvas.height === 'number' ? canvas.height : 0;
+  const expandedHeight = Math.max(canvasHeight, nodeBottom + 96, 400);
+  return `${Math.ceil(expandedHeight)}px`;
+});
 const viewerPlatformDevices = computed(() => {
   if (!d_id || platformFields.value.length === 0) return [];
   return [
@@ -246,7 +263,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-md rounded-3xl bg-gray-50 p-6 shadow-lg">
+  <div class="device-details-app bg-gray-50">
     <div class="mb-6 flex items-center justify-between">
       <h1 class="text-2xl text-gray-900 font-semibold">{{ deviceData?.name || '--' }}</h1>
       <div class="flex items-center">
@@ -291,7 +308,7 @@ onBeforeUnmount(() => {
         :data="currentData"
         :platform-fields="platformFields"
         :platform-devices="viewerPlatformDevices"
-        height="min(620px, calc(100vh - 220px))"
+        :height="viewerHeight"
         :buffer-size="100"
         :device-id="d_id as string"
         @ready="onVisReady"
@@ -305,15 +322,25 @@ onBeforeUnmount(() => {
   color: #ccc;
 }
 
+.device-details-app {
+  width: 100%;
+  min-height: 100vh;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
 .device-details-app__viewer {
-  width: calc(100% + 20px);
-  margin-left: -10px;
-  border-radius: 20px;
-  overflow: hidden;
+  width: 100%;
+  overflow: visible;
 }
 
 .device-details-app__viewer :deep(.thingsvis-widget-container) {
-  min-height: 420px;
+  min-height: 400px;
+  overflow: visible;
+}
+
+:deep(.device-details-app__viewer iframe) {
+  overflow: hidden;
 }
 
 :root {
