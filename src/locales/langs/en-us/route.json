@@ -71,6 +71,7 @@
   "route.management_user": "Tenant Management",
   "route.management_ordinary-user": "User Management",
   "route.management_route": "Route Management",
+  "route.management_setting": "System Setting",
   "route.device": "Devices",
   "route.device_access": "Service Access",
   "route.device_grouping": "Group Management",

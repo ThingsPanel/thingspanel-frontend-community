@@ -185,6 +185,7 @@
   "custom.home.refresh": "Refresh",
   "custom.visualization.onlyOneHomepage": "Only one homepage is allowed",
   "custom.management.uploadFailed": "Upload failed",
+  "custom.management.configSetting": "Configuration Settings",
   "custom.management.lastAccessTime": "Last Access Time",
   "custom.personalCenter.modifyBasicInfo": "Modify Basic Information",
   "custom.personalCenter.changePassword": "Change Password",

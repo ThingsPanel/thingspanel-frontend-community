@@ -70,6 +70,7 @@
   "route.management_api": "API keys",
   "route.management_ordinary-user": "用户管理",
   "route.management_route": "路由管理",
+  "route.management_setting": "系统设置",
   "route.device": "设备接入",
   "route.device_service_access": "三方接入",
   "route.device_service_details": "三方接入详情",

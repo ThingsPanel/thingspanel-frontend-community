@@ -609,6 +609,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'management_setting',
+        path: '/management/setting',
+        component: 'view.management_setting',
+        meta: {
+          title: 'management_setting',
+          i18nKey: 'route.management_setting'
+        }
+      },
+      {
         name: 'management_user',
         path: '/management/user',
         component: 'view.management_user',
