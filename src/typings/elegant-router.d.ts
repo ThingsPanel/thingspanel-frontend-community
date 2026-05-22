@@ -81,7 +81,6 @@ declare module "@elegant-router/types" {
     "management_notification": "/management/notification";
     "management_role": "/management/role";
     "management_route": "/management/route";
-    "management_setting": "/management/setting";
     "management_user": "/management/user";
     "multi-menu": "/multi-menu";
     "multi-menu_first": "/multi-menu/first";
@@ -238,7 +237,6 @@ declare module "@elegant-router/types" {
     | "management_notification"
     | "management_role"
     | "management_route"
-    | "management_setting"
     | "management_user"
     | "multi-menu_first_child"
     | "multi-menu_second_child_home"

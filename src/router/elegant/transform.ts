@@ -225,7 +225,6 @@ const routeMap: RouteMap = {
   "management_notification": "/management/notification",
   "management_role": "/management/role",
   "management_route": "/management/route",
-  "management_setting": "/management/setting",
   "management_user": "/management/user",
   "multi-menu": "/multi-menu",
   "multi-menu_first": "/multi-menu/first",
