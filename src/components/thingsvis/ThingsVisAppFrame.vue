@@ -608,10 +608,11 @@ function postToThingsVis(type: string, payload: Record<string, unknown>) {
   win.postMessage({ type, payload }, getThingsVisTargetOrigin())
 }
 
-function postPlatformData(fields: Record<string, unknown>, deviceId?: string) {
+function postPlatformData(fields: Record<string, unknown>, deviceId?: string, dataSourceId?: string) {
   if (Object.keys(fields).length === 0) return
 
   postToThingsVis('tv:platform-data', {
+    dataSourceId,
     deviceId,
     fields
   })
@@ -1029,7 +1030,7 @@ async function hydrateConfiguredPlatformSources(): Promise<boolean> {
     ensureDeviceStatusWs(descriptor.deviceId)
 
     const fields = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
-    postPlatformData(fields, descriptor.deviceId)
+    postPlatformData(fields, descriptor.deviceId, descriptor.id)
   }
 
   return true
@@ -1780,11 +1781,14 @@ async function doInit(): Promise<boolean> {
     scheduleViewerHydration()
   } else {
     disconnectAllDeviceWs()
-    // Proactively prefetch device metadata for all referenced devices and push them
-    // to the studio so FieldPicker can hydrate device names/fields immediately on open.
+    // Proactively prefetch device metadata AND current telemetry for all referenced devices.
+    // Phase 1 – metadata: populates platformDeviceStore so FieldPicker can echo saved bindings.
+    // Phase 2 – data:     pushes current telemetry so canvas widgets show real values (not 0).
     void (async () => {
       const descriptors = collectPlatformSourceDescriptors(dashboardPayload)
       const deviceIds = [...new Set(descriptors.map((d) => d.deviceId).filter(Boolean))]
+
+      // Phase 1: device metadata
       for (const deviceId of deviceIds) {
         try {
           const device = await buildPlatformDeviceById(deviceId as string)
@@ -1796,6 +1800,20 @@ async function doInit(): Promise<boolean> {
               device,
             })
           }
+        } catch {
+          // best effort — ignore per-device failures
+        }
+      }
+
+      // Phase 2: one-time telemetry snapshot (no WebSocket) so canvas shows real values
+      const handledDeviceIds = new Set<string>()
+      for (const descriptor of descriptors) {
+        if (!descriptor.deviceId || descriptor.requestedFields.length === 0) continue
+        if (handledDeviceIds.has(descriptor.deviceId)) continue
+        handledDeviceIds.add(descriptor.deviceId)
+        try {
+          const fields = await buildRequestedFieldData(descriptor.requestedFields, descriptor.deviceId)
+          postPlatformData(fields, descriptor.deviceId)
         } catch {
           // best effort — ignore per-device failures
         }
@@ -1884,6 +1902,7 @@ const handleMessage = async (event: MessageEvent) => {
     try {
       const fieldIds = Array.isArray((payload as any).fieldIds) ? (payload as any).fieldIds : []
       const requestedDeviceId = typeof (payload as any).deviceId === 'string' ? (payload as any).deviceId : undefined
+      const dataSourceId = typeof (payload as any).dataSourceId === 'string' ? (payload as any).dataSourceId : undefined
       const deviceId = requestedDeviceId
 
       if (deviceId && !activePlatformDevices.has(deviceId)) {
@@ -1892,7 +1911,7 @@ const handleMessage = async (event: MessageEvent) => {
       ensureDeviceWs(deviceId)
       ensureDeviceStatusWs(deviceId)
       const fields = await buildRequestedFieldData(fieldIds, deviceId)
-      postPlatformData(fields, deviceId)
+      postPlatformData(fields, deviceId, dataSourceId)
     } catch {
       // Best effort only: ignore transient field-request failures to avoid console noise.
     }
