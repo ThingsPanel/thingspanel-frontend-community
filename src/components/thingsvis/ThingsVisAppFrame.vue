@@ -631,7 +631,7 @@ function collectRequestedFieldsFromValue(value: unknown, requests: Map<string, S
       const fieldPath = match[2]?.trim()
       if (!dataSourceId || !fieldPath) continue
       const normalizedPath = fieldPath.replace(/^data(?:\.|\[)/, '')
-      const fieldId = normalizedPath.split(/[.[\]]/).filter(Boolean)[0]
+      const fieldId = normalizedPath.split(/[.[\]\s?:+\-*/=!<>&|(),]/).filter(Boolean)[0]
       if (!fieldId) continue
       const fields = requests.get(dataSourceId) ?? new Set<string>()
       fields.add(fieldId)
@@ -787,59 +787,62 @@ function parseTemplateChartConfig(rawConfig: unknown): Record<string, unknown> |
   return null
 }
 
-function extractPresetSchema(config: Record<string, unknown> | null) {
-  if (!config) return null
-
-  const nodes = Array.isArray(config.nodes)
+function buildDeviceWidgetPresets(templateId: string, rawConfig: unknown): any[] {
+  const config = parseTemplateChartConfig(rawConfig)
+  const nodes = Array.isArray(config?.nodes)
     ? config.nodes.filter(
         (node): node is Record<string, unknown> => Boolean(node) && typeof node === 'object' && !Array.isArray(node)
       )
-    : []
+    : config?.nodesById && typeof config.nodesById === 'object' && !Array.isArray(config.nodesById)
+      ? Object.values(config.nodesById).filter(
+          (node): node is Record<string, unknown> => Boolean(node) && typeof node === 'object' && !Array.isArray(node)
+        )
+      : []
 
-  if (nodes.length === 0) return null
+  const resolveNodePresetName = (node: Record<string, unknown>, index: number) => {
+    const props = node.props && typeof node.props === 'object' && !Array.isArray(node.props)
+      ? (node.props as Record<string, unknown>)
+      : {}
 
-  return {
-    ...(config.canvas && typeof config.canvas === 'object' && !Array.isArray(config.canvas)
-      ? { canvas: config.canvas as Record<string, unknown> }
-      : {}),
-    nodes,
-    ...(Array.isArray(config.dataSources) ? { dataSources: config.dataSources } : {}),
-    ...(Array.isArray(config.variables) ? { variables: config.variables } : {})
-  }
-}
-
-function extractFirstPresetWidget(config: Record<string, unknown> | null): Record<string, unknown> | null {
-  if (!config) return null
-
-  if (Array.isArray(config.nodes)) {
-    const firstNode = config.nodes.find(
-      (node): node is Record<string, unknown> => Boolean(node) && typeof node === 'object' && !Array.isArray(node)
+    return String(
+      node.name ||
+        props.title ||
+        props.label ||
+        props.text ||
+        props.placeholder ||
+        node.type ||
+        `组件 ${index + 1}`
     )
-    if (firstNode) return firstNode
   }
 
-  if (config.nodesById && typeof config.nodesById === 'object' && !Array.isArray(config.nodesById)) {
-    const firstNode = Object.values(config.nodesById).find(
-      (node): node is Record<string, unknown> => Boolean(node) && typeof node === 'object' && !Array.isArray(node)
-    )
-    if (firstNode) return firstNode
-  }
+  const nodePresets = nodes.map((node, index) => ({
+    id: `${templateId}-web-node-${String(node.id || index)}`,
+    name: resolveNodePresetName(node, index),
+    widget: node,
+    ...(typeof node.thumbnail === 'string' ? { thumbnail: node.thumbnail } : {})
+  }))
 
-  return null
-}
+  const presetMap = config?.device_widget_presets
+  if (!presetMap || typeof presetMap !== 'object' || Array.isArray(presetMap)) return nodePresets
 
-function buildDeviceChartPreset(templateId: string, presetId: 'web' | 'app', label: string, rawConfig: unknown) {
-  const config = parseTemplateChartConfig(rawConfig)
-  const schema = extractPresetSchema(config)
-  const widget = extractFirstPresetWidget(config)
-  if (!widget && !schema) return null
+  const storedPresets = Object.entries(presetMap).flatMap(([presetKey, entries]) => {
+    if (!Array.isArray(entries)) return []
 
-  return {
-    id: `${templateId}-${presetId}-chart`,
-    name: label,
-    ...(widget ? { widget } : {}),
-    ...(schema ? { schema } : {})
-  }
+    return entries.flatMap((entry: any, index) => {
+      if (!entry?.widget || typeof entry.widget !== 'object' || Array.isArray(entry.widget)) return []
+
+      return [
+        {
+          id: `${templateId}-stored-${String(entry.id || `${presetKey}-${index}`)}`,
+          name: String(entry.name || '组件预设'),
+          widget: entry.widget,
+          ...(typeof entry.thumbnail === 'string' ? { thumbnail: entry.thumbnail } : {})
+        }
+      ]
+    })
+  })
+
+  return [...nodePresets, ...storedPresets]
 }
 
 async function loadTemplatePresets(templateId: string | number): Promise<any[]> {
@@ -854,10 +857,7 @@ async function loadTemplatePresets(templateId: string | number): Promise<any[]> 
     try {
       const res = await getTemplat(templateId)
       const template = res?.data || {}
-      const presets = [
-        buildDeviceChartPreset(cacheKey, 'web', 'Web图表', template?.web_chart_config),
-        buildDeviceChartPreset(cacheKey, 'app', 'App图表', template?.app_chart_config)
-      ].filter(Boolean)
+      const presets = buildDeviceWidgetPresets(cacheKey, template?.web_chart_config)
 
       templatePresetCache.set(cacheKey, presets)
       return presets
@@ -1159,13 +1159,6 @@ async function handlePlatformWrite(payload: Record<string, unknown>, requestId?:
     } else if (fieldType === 'command') {
       result = await commandDataPub({ device_id: deviceId, value })
     } else if (fieldType === 'telemetry' || fieldType === undefined) {
-      if (fieldType === undefined && fieldId) {
-        postPlatformWriteResult(requestId, {
-          success: false,
-          error: `Unable to resolve write field type for '${fieldId}'`
-        })
-        return
-      }
       result = await telemetryDataPub({ device_id: deviceId, value })
     } else {
       postPlatformWriteResult(requestId, {
@@ -1267,6 +1260,7 @@ async function loadDeviceConfigTemplateMap(): Promise<Map<string, string>> {
 
       configs.forEach((config: any) => {
         const configId = firstString(config?.id, config?.device_config_id, config?.deviceConfigId)
+        const configName = firstString(config?.name, config?.device_config_name, config?.deviceConfigName)
         const templateId = firstString(
           config?.device_template_id,
           config?.deviceTemplateId,
@@ -1275,6 +1269,9 @@ async function loadDeviceConfigTemplateMap(): Promise<Map<string, string>> {
         )
         if (configId && templateId) {
           configTemplateMap.set(configId, templateId)
+        }
+        if (configName && templateId) {
+          configTemplateMap.set(configName, templateId)
         }
       })
 
@@ -1481,6 +1478,7 @@ function resolveDeviceLastPushTime(row: any): string | undefined {
 function resolveDeviceTemplateId(row: any, configTemplateMap: Map<string, string> = new Map()): string | undefined {
   const device = unwrapDeviceRow(row)
   const configId = resolveDeviceConfigId(row)
+  const configName = resolveDeviceConfigDisplayName(row)
   return firstString(
     device.device_config?.device_template_id,
     device.device_config?.deviceTemplateId,
@@ -1490,7 +1488,8 @@ function resolveDeviceTemplateId(row: any, configTemplateMap: Map<string, string
     device.deviceTemplateId,
     row?.device_template_id,
     row?.deviceTemplateId,
-    configId ? configTemplateMap.get(configId) : undefined
+    configId ? configTemplateMap.get(configId) : undefined,
+    configName ? configTemplateMap.get(configName) : undefined
   )
 }
 
@@ -1533,13 +1532,14 @@ async function mapPlatformDevicesForGroup(
   groups: PlatformDeviceGroupEntry[] = []
 ): Promise<PlatformDeviceEntry[]> {
   const groupNameById = new Map(groups.map((group) => [group.groupId, group.groupName]))
-  return rawDevices
+  const configTemplateMap = await loadDeviceConfigTemplateMap()
+  const devices = rawDevices
     .map((row: any): PlatformDeviceEntry | null => {
       const deviceId = resolveDeviceId(row)
       if (!deviceId) return null
       const deviceConfigId = resolveDeviceConfigId(row)
       const deviceConfigName = resolveDeviceConfigDisplayName(row)
-      const templateId = resolveDeviceTemplateId(row)
+      const templateId = resolveDeviceTemplateId(row, configTemplateMap)
       const rowGroupId = resolveDeviceGroupId(row) || fallbackGroupId
       const rowGroupName =
         resolveDeviceGroupName(row) || (rowGroupId ? groupNameById.get(rowGroupId) : undefined) || fallbackGroupName
@@ -1563,6 +1563,29 @@ async function mapPlatformDevicesForGroup(
       }
     })
     .filter((item): item is PlatformDeviceEntry => Boolean(item))
+
+  const presetsByTemplateId = new Map<string, any[]>()
+  const templateIds = Array.from(
+    new Set(
+      devices.map((device) => device.templateId).filter((templateId): templateId is string => Boolean(templateId))
+    )
+  )
+
+  for (const templateId of templateIds) {
+    presetsByTemplateId.set(templateId, await loadTemplatePresets(templateId))
+  }
+
+  const fieldsByTemplateId = new Map<string, PlatformDeviceField[]>()
+  for (const templateId of templateIds) {
+    const entry = await loadTemplateEntry(templateId)
+    fieldsByTemplateId.set(templateId, Array.isArray(entry.fields) ? entry.fields : [])
+  }
+
+  return devices.map((device) => ({
+    ...device,
+    fields: device.templateId ? fieldsByTemplateId.get(device.templateId) || [] : device.fields,
+    presets: device.templateId ? presetsByTemplateId.get(device.templateId) || [] : []
+  }))
 }
 
 async function buildFallbackPlatformDevicesForDefaultGroup(
