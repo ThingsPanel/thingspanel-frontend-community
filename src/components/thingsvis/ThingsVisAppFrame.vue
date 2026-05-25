@@ -53,6 +53,7 @@ const EDITOR_GROUP_DEVICE_PAGE_SIZE = 1000
 const DEFAULT_PLATFORM_BUFFER_SIZE = 100
 const GENERATED_HOST_DATA_SOURCE_ID_RE = /^(?:__platform_.+__|thingspanel_.+)$/
 const DATA_SOURCE_EXPRESSION_RE = /ds\.([^\s.}]+)\./g
+const PLATFORM_DEVICE_DATA_SOURCE_ID_RE = /^__platform_(.+)__$/
 
 const props = defineProps<{
   id: string
@@ -620,6 +621,12 @@ function postPlatformData(fields: Record<string, unknown>, deviceId?: string) {
   }
 }
 
+function parsePlatformDeviceIdFromDataSourceId(dataSourceId: unknown): string | undefined {
+  if (typeof dataSourceId !== 'string') return undefined
+  const matched = PLATFORM_DEVICE_DATA_SOURCE_ID_RE.exec(dataSourceId)
+  return firstString(matched?.[1])
+}
+
 const FIELD_BINDING_EXPR_RE = /\{\{\s*ds\.([^.\s}]+)\.([^}]+?)\s*\}\}/g
 
 function collectRequestedFieldsFromValue(value: unknown, requests: Map<string, Set<string>>) {
@@ -681,7 +688,7 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
 
       return {
         id: String(dataSource.id),
-        deviceId: configuredDeviceId,
+        deviceId: configuredDeviceId || parsePlatformDeviceIdFromDataSourceId(dataSource.id),
         requestedFields: normalizedRequestedFields
       }
     })
@@ -1611,6 +1618,34 @@ async function buildUngroupedPlatformDevices(): Promise<PlatformDeviceEntry[]> {
   return mapPlatformDevicesForGroup(rawDevices, '', '')
 }
 
+async function buildPlatformDeviceById(deviceId: string): Promise<PlatformDeviceEntry | null> {
+  const normalizedDeviceId = firstString(deviceId)
+  if (!normalizedDeviceId) return null
+
+  const groups = await buildPlatformDeviceGroups()
+
+  const findDevice = async (rawDevices: any[], fallbackGroupId = '', fallbackGroupName = '') => {
+    const devices = await mapPlatformDevicesForGroup(rawDevices, fallbackGroupId, fallbackGroupName, groups)
+    return devices.find((device) => device.deviceId === normalizedDeviceId) || null
+  }
+
+  const searchRes = await deviceList({ page: 1, page_size: 20, search: normalizedDeviceId })
+  const searched = await findDevice(unwrapList(searchRes?.data))
+  if (searched) return searched
+
+  const listRes = await deviceList({ page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE })
+  const listed = await findDevice(unwrapList(listRes?.data))
+  if (listed) return listed
+
+  for (const group of groups) {
+    const devices = await buildPlatformDevicesByGroup(group.groupId)
+    const matched = devices.find((device) => device.deviceId === normalizedDeviceId)
+    if (matched) return matched
+  }
+
+  return null
+}
+
 async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDeviceEntry[]> {
   const normalizedGroupId = normalizeEditorGroupId(groupId)
 
@@ -1745,6 +1780,27 @@ async function doInit(): Promise<boolean> {
     scheduleViewerHydration()
   } else {
     disconnectAllDeviceWs()
+    // Proactively prefetch device metadata for all referenced devices and push them
+    // to the studio so FieldPicker can hydrate device names/fields immediately on open.
+    void (async () => {
+      const descriptors = collectPlatformSourceDescriptors(dashboardPayload)
+      const deviceIds = [...new Set(descriptors.map((d) => d.deviceId).filter(Boolean))]
+      for (const deviceId of deviceIds) {
+        try {
+          const device = await buildPlatformDeviceById(deviceId as string)
+          if (device) {
+            registerActivePlatformDevices([device])
+            postToThingsVis('tv:device-by-id', {
+              reqId: `__prefetch__${deviceId}`,
+              deviceId,
+              device,
+            })
+          }
+        } catch {
+          // best effort — ignore per-device failures
+        }
+      }
+    })()
   }
 
   lastInitCompletedSignature = initSignature
@@ -1869,6 +1925,30 @@ const handleMessage = async (event: MessageEvent) => {
         reqId,
         deviceConfigs: [],
         serviceOptions: []
+      })
+    }
+    return
+  }
+
+  if (type === 'thingsvis:requestDeviceById') {
+    const reqId = typeof (payload as any).reqId === 'string' ? (payload as any).reqId : ''
+    const deviceId = typeof (payload as any).deviceId === 'string' ? (payload as any).deviceId : ''
+    if (!deviceId) return
+
+    try {
+      const device = await buildPlatformDeviceById(deviceId)
+      if (device) registerActivePlatformDevices([device])
+      postToThingsVis('tv:device-by-id', {
+        reqId,
+        deviceId,
+        device
+      })
+    } catch (error) {
+      console.warn('[AppFrame] Failed to load requested device by id:', deviceId, error)
+      postToThingsVis('tv:device-by-id', {
+        reqId,
+        deviceId,
+        device: null
       })
     }
     return
