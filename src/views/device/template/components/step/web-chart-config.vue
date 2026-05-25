@@ -238,14 +238,6 @@ watch(showEditorModal, visible => {
     <NCard title="Web 图表配置" class="preview-card">
       <template #header-extra>
         <NSpace align="center">
-          <span>刷新频率：</span>
-          <NSelect
-            v-model:value="refreshInterval"
-            :options="refreshOptions"
-            size="small"
-            style="width: 120px"
-            placeholder="刷新频率"
-          />
           <NButton type="primary" size="small" @click="openEditor">
             {{ hasConfig ? '编辑配置' : '创建配置' }}
           </NButton>
