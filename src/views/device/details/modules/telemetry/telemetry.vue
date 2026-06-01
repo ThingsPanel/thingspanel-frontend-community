@@ -9,9 +9,9 @@ import { MovingNumbers } from 'moving-numbers-vue3'
 import moment from 'moment'
 import {
   expectMessageAdd,
-  getSimulation,
+  getSimulationInit,
   getTelemetryLogList,
-  sendSimulation,
+  sendSimulationData,
   telemetryDataCurrent,
   telemetryDataDel,
   telemetryDataPub
@@ -56,7 +56,6 @@ const nowTime = ref<any>()
 const { loading, startLoading, endLoading } = useLoading()
 const total = ref(0)
 const showLog = ref(false)
-const device_order = ref('')
 const operationOptions = [
   { label: $t('custom.device_details.whole'), value: '' },
   { label: $t('custom.device_details.manualOperation'), value: '1' },
@@ -74,6 +73,20 @@ const cardMargin = ref(15) // 卡片的间距
 const log_page = ref(1)
 const showError = ref(false)
 const erroMessage = ref('')
+const showAdvanced = ref(false)
+const simulationForm = reactive({
+  username: '',
+  password: '',
+  client_id: '',
+  server: '',
+  port: 1883,
+  topic: 'devices/telemetry',
+  topic_options: [] as { label: string; value: string }[],
+  default_data: '{"_data1": 25.5, "_data2": 60}',
+  event_default_data: '{"method":"FindAnimal","params":{"count":2,"animalType":"cat"}}',
+  normal_default_data: '{"_data1": 25.5, "_data2": 60}'
+})
+const simulationLoading = ref(false)
 
 const token = localStg.get('token')
 
@@ -152,12 +165,27 @@ const columns = [
     render: row => (row.status === '1' ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
   }
 ]
-const requestSimulationList = async () => {
-  const { data, error } = await getSimulation({
+const requestSimulationInit = async () => {
+  const defaultData = '{"_data1": 25.5, "_data2": 60}'
+  const eventDefaultData = '{"method":"FindAnimal","params":{"count":2,"animalType":"cat"}}'
+  const { data, error } = await getSimulationInit({
     device_id: props.id
   })
-  if (!error) {
-    device_order.value = data
+  if (!error && data) {
+    simulationForm.username = data.username || ''
+    simulationForm.password = data.password || ''
+    simulationForm.client_id = data.client_id || ''
+    simulationForm.server = data.server || ''
+    simulationForm.port = data.port || 1883
+    simulationForm.topic = data.topic || 'devices/telemetry'
+    simulationForm.topic_options = data.topic_options || []
+    simulationForm.default_data = data.default_data || defaultData
+    simulationForm.event_default_data = data.event_default_data || eventDefaultData
+    simulationForm.normal_default_data = data.default_data || defaultData
+  } else {
+    simulationForm.default_data = defaultData
+    simulationForm.event_default_data = eventDefaultData
+    simulationForm.normal_default_data = defaultData
   }
 }
 
@@ -170,23 +198,35 @@ const openDialog = () => {
 const openUpLog = () => {
   showError.value = false
   showLogDialog.value = true
-  requestSimulationList()
+  showAdvanced.value = false
+  requestSimulationInit()
 }
 
-const sendSimulationList = async () => {
-  if (!device_order.value) {
+const sendSimulationDataByForm = async () => {
+  if (!simulationForm.default_data) {
     window.$message?.error($t('custom.device_details.sendInputData'))
     return
   }
-  const { error } = await sendSimulation({
-    command: device_order.value
+  if (!isJSON(simulationForm.default_data)) {
+    window.$message?.error($t('generate.inputRightJson'))
+    return
+  }
+  simulationLoading.value = true
+  const { error } = await sendSimulationData({
+    device_id: props.id,
+    data: simulationForm.default_data,
+    server: simulationForm.server,
+    port: simulationForm.port,
+    topic: simulationForm.topic
   })
+  simulationLoading.value = false
   if (!error) {
     showLogDialog.value = false
     showError.value = false
+    window.$message?.success($t('custom.devicePage.success'))
   } else {
     showError.value = true
-    erroMessage.value = error?.response?.data?.message
+    erroMessage.value = error?.response?.data?.message || error?.message || ''
   }
 }
 const fetchData = async () => {
@@ -339,6 +379,19 @@ watch(
   val => {
     if (!val) return
     getControlList()
+  }
+)
+
+// 监听 Topic 变化，自动切换对应格式的数据
+watch(
+  () => simulationForm.topic,
+  val => {
+    if (!val) return
+    if (val.includes('/event/')) {
+      simulationForm.default_data = simulationForm.event_default_data
+    } else {
+      simulationForm.default_data = simulationForm.normal_default_data
+    }
   }
 )
 onMounted(() => {
@@ -501,33 +554,102 @@ const inputFeedback = computed(() => {
         "
       />
     </div>
-    <n-modal v-model:show="showLogDialog" :title="$t('generate.report-data')" :class="getPlatform ? 'w-90%' : 'w-40%'">
+    <n-modal v-model:show="showLogDialog" :title="'模拟上报数据'" :class="getPlatform ? 'w-90%' : 'w-40%'">
       <n-card>
-        <n-form>
+        <n-form label-placement="left">
+          <!-- 提示信息 -->
           <n-alert type="info" class="m-b-15px" :show-icon="true">
-            {{ $t('generate.mosquittoInstallHint') }}
+            填写模拟数据并发送，平台将模拟设备上报数据，用于测试数据流、自动化规则、告警通知等。
           </n-alert>
-          <div class="m-b-10px font-600">{{ $t('generate.mqtt') }}</div>
-          <div class="m-b-10px text-gray-500">{{ $t('generate.copy-commands-to-local') }}</div>
-          <div class="flex items-center gap-15px">
-            <n-input v-model:value="device_order" type="textarea" class="flex-1" @click="copy" />
 
-            <n-button type="primary" @click="sendSimulationList">
-              {{ $t('generate.send') }}
-            </n-button>
+          <!-- 认证信息（三列并排，只读展示） -->
+          <div class="m-b-15px">
+            <div class="m-b-8px font-600">认证信息（自动填充，无需修改）</div>
+            <n-grid :cols="3" :x-gap="12" responsive="screen" :screen="{ s: 1 }">
+              <n-gi>
+                <n-form-item label="用户名" :show-feedback="false">
+                  <n-input :value="simulationForm.username" readonly class="bg-gray-50" />
+                </n-form-item>
+              </n-gi>
+              <n-gi>
+                <n-form-item label="密码" :show-feedback="false">
+                  <n-input :value="simulationForm.password ? '••••••••' : ''" readonly class="bg-gray-50" />
+                </n-form-item>
+              </n-gi>
+              <n-gi>
+                <n-form-item label="客户端ID" :show-feedback="false">
+                  <n-input :value="simulationForm.client_id" readonly class="bg-gray-50" />
+                </n-form-item>
+              </n-gi>
+            </n-grid>
           </div>
-          <div v-if="showError" class="mt-10px w-100% flex items-center gap-5px" style="border: 1px solid #e88080; border-radius: 5px; padding: 8px; background: #fff2f0">
-            <SvgIcon
-              local-icon="AlertFilled"
-              style="color: red; flex-shrink: 0"
-              class="text-20px"
-            />
-            <span
-              style="
-                display: inline-block;
-                word-break: break-all;
+
+          <!-- 上报数据 -->
+          <div class="m-b-15px">
+            <div class="m-b-8px font-600">数据</div>
+            <n-form-item
+              :validation-status="
+                simulationForm.default_data && !isJSON(simulationForm.default_data) ? 'error' : undefined
+              "
+              :feedback="
+                simulationForm.default_data && !isJSON(simulationForm.default_data) ? $t('generate.inputRightJson') : ''
               "
             >
+              <n-input v-model:value="simulationForm.default_data" type="textarea" :rows="3" />
+            </n-form-item>
+          </div>
+
+          <!-- 高级选项 -->
+          <div class="m-b-15px">
+            <div
+              class="cursor-pointer flex items-center gap-8px m-b-8px font-600"
+              @click="showAdvanced = !showAdvanced"
+            >
+              <span>高级选项</span>
+              <n-icon>
+                <svg viewBox="0 0 16 16" width="16" height="16">
+                  <path
+                    :d="showAdvanced ? 'M4 10l4-4 4 4' : 'M4 6l4 4 4-4'"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </n-icon>
+            </div>
+            <n-collapse-transition :show="showAdvanced">
+              <div class="flex flex-col gap-12px">
+                <n-form-item label="服务器" :show-feedback="false">
+                  <n-input v-model:value="simulationForm.server" />
+                </n-form-item>
+                <n-form-item label="端口" :show-feedback="false">
+                  <n-input-number v-model:value="simulationForm.port" :min="1" :max="65535" />
+                </n-form-item>
+                <n-form-item :label="`Topic（${simulationForm.topic}）`" :show-feedback="false">
+                  <n-select
+                    v-model:value="simulationForm.topic"
+                    :options="simulationForm.topic_options"
+                    placeholder="选择 Topic"
+                  />
+                </n-form-item>
+              </div>
+            </n-collapse-transition>
+          </div>
+
+          <!-- 操作按钮 -->
+          <n-space justify="end">
+            <n-button @click="showLogDialog = false">{{ $t('generate.cancel') }}</n-button>
+            <n-button type="primary" :loading="simulationLoading" @click="sendSimulationDataByForm">
+              {{ $t('generate.send') }}
+            </n-button>
+          </n-space>
+
+          <!-- 错误信息 -->
+          <div v-if="showError" class="mt-10px w-100% flex items-center gap-5px simulation-error">
+            <SvgIcon local-icon="AlertFilled" style="color: red; flex-shrink: 0" class="text-20px" />
+            <span style="display: inline-block; word-break: break-all">
               {{ erroMessage }}
             </span>
           </div>
