@@ -22,6 +22,10 @@ const [DefineBreadcrumbContent, BreadcrumbContent] = createReusableTemplate<Brea
 function handleClickMenu(key: RouteKey) {
   routerPushByKey(key)
 }
+
+function canClickBreadcrumb(index: number) {
+  return index < routeStore.breadcrumbs.length - 1
+}
 </script>
 
 <template>
@@ -35,11 +39,17 @@ function handleClickMenu(key: RouteKey) {
     </DefineBreadcrumbContent>
     <!-- define component: BreadcrumbContent -->
 
-    <NBreadcrumbItem v-for="item in routeStore.breadcrumbs" :key="item.key">
+    <NBreadcrumbItem v-for="(item, index) in routeStore.breadcrumbs" :key="item.key">
       <NDropdown v-if="item.options?.length" :options="item.options" @select="handleClickMenu">
         <BreadcrumbContent :breadcrumb="item" />
       </NDropdown>
-      <BreadcrumbContent v-else :breadcrumb="item" />
+      <div
+        v-else
+        :class="canClickBreadcrumb(index) ? 'cursor-pointer transition-opacity hover:opacity-80' : ''"
+        @click="canClickBreadcrumb(index) && handleClickMenu(item.routeKey)"
+      >
+        <BreadcrumbContent :breadcrumb="item" />
+      </div>
     </NBreadcrumbItem>
   </NBreadcrumb>
 </template>

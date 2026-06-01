@@ -22,36 +22,53 @@ const pageData = ref<any>({
 const queryInfo = ref<any>({
   service_plugin_id: service_plugin_id.value,
   page: 1,
-  page_size: 10,
-  total: 0,
+  pageSize: 10, // camelCase — NDataTable pagination prop
+  itemCount: 0, // NDataTable remote pagination total
   pageSizes: [10, 15, 20, 25, 30],
-  onChange: (page: number) => {
+  showSizePicker: true,
+  prefix({ itemCount }) {
+    return `${$t('common.total')}: ${itemCount}`
+  },
+  onUpdatePage: (page: number) => {
+    // NDataTable fires onUpdatePage, not onChange
     queryInfo.value.page = page
     getList()
   },
   onUpdatePageSize: (pageSize: number) => {
-    queryInfo.value.page_size = pageSize
+    queryInfo.value.pageSize = pageSize
     queryInfo.value.page = 1
     getList()
   }
 })
 
 const getList: () => void = async () => {
-  const { data }: { data: any } = await getServiceAccess(queryInfo.value)
-  pageData.value.tableData = data.list
-  queryInfo.value.itemCount = data.total
+  pageData.value.loading = true
+  try {
+    const { data }: { data: any } = await getServiceAccess({
+      service_plugin_id: queryInfo.value.service_plugin_id,
+      page: queryInfo.value.page,
+      page_size: queryInfo.value.pageSize // backend expects snake_case
+    })
+    pageData.value.tableData = data?.list ?? []
+    queryInfo.value.itemCount = data?.total ?? 0
+  } finally {
+    pageData.value.loading = false
+  }
 }
 
-const see: (row: any) => void = row => {
+const see = (row: any) => {
   router.push(
     `/device/manage?service_identifier=${route.query.service_identifier}&device_name=${row.name}&service_access_id=${row.id}`
   )
 }
-const del: (row: any) => void = async row => {
+const del = async (row: any) => {
   await delServiceAccess(row)
   getList()
 }
-const config: (row: any) => void = async row => {
+const config = async (row: any) => {
+  serviceModalRef.value.openModal(service_plugin_id.value, row)
+}
+const reopenAccessPointConfig = (row: any) => {
   serviceModalRef.value.openModal(service_plugin_id.value, row)
 }
 const columns: any = ref([
@@ -114,26 +131,13 @@ const columns: any = ref([
   }
 ])
 
-const addData: () => void = () => {
+const addData = () => {
   serviceModalRef.value.openModal(service_plugin_id.value)
 }
 
-const isEdit: (val: any, row: any, edit: any) => void = (val, row, edit) => {
-  if (edit) {
-    if (row && row.auth_type === 'auto') {
-      const adaptedRow = {
-        ...row,
-        mode: 'automatic'
-      }
-      serviceConfigModalRef.value.openModal(val, adaptedRow, edit)
-    } else {
-      serviceConfigModalRef.value.openModal(val, row, edit)
-    }
-    getList()
-  } else {
-    serviceConfigModalRef.value.openModal(val, row)
-    getList()
-  }
+const isEdit = (val: any, row: any, edit: any) => {
+  serviceConfigModalRef.value.openModal(val, row, edit)
+  getList()
 }
 watch(
   () => queryInfo.value.service_type,
@@ -163,7 +167,11 @@ getList()
         />
       </div>
     </NCard>
-    <serviceConfigModal ref="serviceConfigModalRef" @get-list="getList"></serviceConfigModal>
+    <serviceConfigModal
+      ref="serviceConfigModalRef"
+      @get-list="getList"
+      @go-back="reopenAccessPointConfig"
+    ></serviceConfigModal>
     <serviceModal ref="serviceModalRef" @is-edit="isEdit"></serviceModal>
   </div>
 </template>

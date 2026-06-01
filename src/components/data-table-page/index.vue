@@ -483,7 +483,7 @@ const handleWarningClick = (item: DeviceItem) => {
 
     <!-- 卡片视图 - 使用铃铛图标插槽 -->
     <template #card-view>
-      <n-scrollbar style="height: calc(100vh - 442px)" :size="1">
+      <div class="paged-view-shell">
         <n-spin :show="loading">
           <NGrid x-gap="20px" y-gap="20px" cols="1 s:2 m:3 l:4" responsive="screen">
             <NGridItem v-for="(item, index) in dataList" :key="item.id">
@@ -529,12 +529,12 @@ const handleWarningClick = (item: DeviceItem) => {
             </NGridItem>
           </NGrid>
         </n-spin>
-      </n-scrollbar>
+      </div>
     </template>
 
     <!-- 列表视图 -->
     <template #list-view>
-      <n-scrollbar style="height: calc(100vh - 442px)" :size="1">
+      <div class="paged-view-shell">
         <NDataTable
           size="small"
           :row-props="rowProps"
@@ -543,7 +543,7 @@ const handleWarningClick = (item: DeviceItem) => {
           :data="dataList"
           class="w-full"
         />
-      </n-scrollbar>
+      </div>
     </template>
 
     <!-- 地图视图 -->
@@ -612,6 +612,10 @@ const handleWarningClick = (item: DeviceItem) => {
   height: 100%;
   object-fit: cover;
   object-position: center;
+}
+
+.paged-view-shell {
+  min-height: 0;
 }
 
 .map-view-container {

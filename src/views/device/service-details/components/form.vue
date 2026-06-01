@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import type { SelectMixedOption } from 'naive-ui/es/select/src/interface'
 
 const rules = ref({})
@@ -11,16 +11,41 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const visibleElements = computed(() => {
+  if (!Array.isArray(props.formElements)) return []
+  return props.formElements.filter((element: any) => isRenderableElement(element) && isElementVisible(element))
+})
+
+const isRenderableElement = (element: any) => {
+  return !!element && typeof element === 'object' && !!element.dataKey && !!element.type
+}
+
+const isElementVisible = (element: any) => {
+  const condition = element?.visibleWhen || element?.showWhen
+  if (!condition) return true
+  const key = condition.key || condition.field || condition.dataKey
+  if (!key) return true
+  const currentValue = protocol_config.value?.[key]
+  if (Array.isArray(condition.values)) {
+    return condition.values.includes(currentValue)
+  }
+  if (Object.prototype.hasOwnProperty.call(condition, 'value')) {
+    return currentValue === condition.value
+  }
+  return true
+}
+
 watchEffect(() => {
   const str = '{}'
   const thejson = JSON.parse(str)
-  if (props.formElements) {
+  if (Array.isArray(props.formElements)) {
     props.formElements.forEach(element => {
+      if (!isRenderableElement(element)) return
       if (element.type === 'table') {
         protocol_config.value[element.dataKey] ??= thejson[element.dataKey] || []
       } else {
         rules.value[element.dataKey] = element.validate || {}
-        protocol_config.value[element.dataKey] ??= thejson[element.dataKey] || ''
+        protocol_config.value[element.dataKey] ??= element.default ?? thejson[element.dataKey] ?? ''
       }
     })
   }
@@ -29,13 +54,22 @@ watchEffect(() => {
 const onCreate = () => {
   return {}
 }
+
+const tableItemPath = (parentKey: string, rowIndex: number, childKey: string) => {
+  return `${parentKey}[${rowIndex}]${childKey}`
+}
+
+const normalizeSelectOptions = (options: unknown): SelectMixedOption[] => {
+  if (!Array.isArray(options)) return []
+  return options.filter((option): option is SelectMixedOption => !!option && typeof option === 'object')
+}
 </script>
 
 <template>
   <div class="connection-box">
     <NForm :model="protocol_config" :rules="rules" label-placement="top" class="w-full">
       <div class="w-full">
-        <template v-for="element in props.formElements" :key="element.dataKey">
+        <template v-for="element in visibleElements" :key="element.dataKey">
           <div v-if="element.type === 'input'">
             <NFormItem :label="element.label" :path="element.dataKey">
               <NInputNumber
@@ -43,14 +77,20 @@ const onCreate = () => {
                 v-model:value="protocol_config[element.dataKey]"
                 :placeholder="element.placeholder"
               />
-              <NInput v-else v-model:value="protocol_config[element.dataKey]" :placeholder="element.placeholder" />
+              <NInput
+                v-else
+                v-model:value="protocol_config[element.dataKey]"
+                :placeholder="element.placeholder"
+                :type="element.inputType === 'password' ? 'password' : 'text'"
+                show-password-on="click"
+              />
             </NFormItem>
           </div>
           <div v-if="element.type === 'select'">
             <NFormItem :label="element.label" :path="element.dataKey">
               <NSelect
                 v-model:value="protocol_config[element.dataKey]"
-                :options="element.options as SelectMixedOption[]"
+                :options="normalizeSelectOptions(element.options)"
               />
             </NFormItem>
           </div>
@@ -80,7 +120,7 @@ const onCreate = () => {
                       ignore-path-change
                       :show-label="false"
                       :label="subElement.label"
-                      :path="`${element.dataKey}[${index}]${subElement.dataKey}`"
+                      :path="tableItemPath(element.dataKey, index, subElement.dataKey)"
                       :rule="element.validate"
                     >
                       <NInputNumber
@@ -103,12 +143,12 @@ const onCreate = () => {
                       ignore-path-change
                       :show-label="false"
                       :label="subElement.label"
-                      :path="`${element.dataKey}[${index}]${subElement.dataKey}`"
+                      :path="tableItemPath(element.dataKey, index, subElement.dataKey)"
                       :rule="element.validate"
                     >
                       <NSelect
                         v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
-                        :options="subElement.options as SelectMixedOption[]"
+                        :options="normalizeSelectOptions(subElement.options)"
                       />
                     </n-form-item>
                   </template>

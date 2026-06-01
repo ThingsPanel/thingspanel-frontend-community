@@ -14,37 +14,46 @@ const currentStep = ref(1)
 
 const service_plugin_id = ref<any>('')
 const formElements = ref<any>([])
-const defaultForm = {
+const createDefaultForm = () => ({
   name: '',
   service_plugin_id: '',
-  voucher: {},
-  vouchers: {},
-  auth_type: 'manual' // 添加模式字段，默认为手动
-}
-const form = ref<any>({ ...defaultForm })
+  voucher: '',
+  vouchers: {}
+})
+const form = ref<any>(createDefaultForm())
 const rules = ref<any>({
   name: {
     required: true,
     trigger: ['blur', 'input'],
     message: '请输入接入点名称'
-  },
-  auth_type: {
-    required: true,
-    trigger: ['change'],
-    message: '请选择模式'
   }
 })
-const openModal: (id: any, row?: any) => void = async (id, row) => {
+
+const resetForm = () => {
+  form.value = createDefaultForm()
+}
+
+const parseVoucher = (value: unknown) => {
+  if (!value) return {}
+  if (typeof value === 'object') return { ...(value as Record<string, unknown>) }
+  if (typeof value !== 'string') return {}
+  try {
+    const parsed = JSON.parse(value)
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+const openModal = async (id: any, row?: any) => {
+  resetForm()
+  formElements.value = []
   if (row) {
     // 编辑模式：设置 isEdit 为 true 并填充表单数据
     isEdit.value = true
     Object.assign(form.value, row)
-    const voucherData = JSON.parse(row.voucher)
+    const voucherData = parseVoucher(row.voucher)
     Object.assign(form.value.vouchers, voucherData)
-    // 从 voucher 解析的数据中回显 auth_type 到选择模式字段
-    if (voucherData.auth_type) {
-      form.value.auth_type = voucherData.auth_type
-    }
   } else {
     // 新增模式：重置 isEdit 为 false
     isEdit.value = false
@@ -61,8 +70,7 @@ const openModal: (id: any, row?: any) => void = async (id, row) => {
 }
 const close: () => void = () => {
   serviceModals.value = false
-  form.value = { ...defaultForm }
-  form.value.vouchers = {}
+  resetForm()
   currentStep.value = 1
   // 重置编辑状态
   isEdit.value = false
@@ -72,48 +80,50 @@ const submitSevice: () => void = async () => {
   formRef.value?.validate(async errors => {
     if (errors) return
 
-    // 无论是手动还是自动模式，都先调用接口创建/更新服务
-    // 在 vouchers 中添加 auth_type 字段
-    form.value.vouchers.auth_type = form.value.auth_type
-    form.value.voucher = JSON.stringify(form.value.vouchers)
-    const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value)
-    serviceModals.value = false
+    try {
+      form.value.voucher = JSON.stringify(form.value.vouchers)
+      const response: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value)
+      const accessPointId = form.value.id || response?.data?.id
 
-    if (form.value.auth_type === 'auto') {
-      // 自动模式，调用设备列表接口（与手动模式一样）
+      if (!accessPointId) {
+        window.$message?.error('接入点保存成功状态未知，请刷新列表后重试')
+        emit('getList')
+        serviceModals.value = false
+        return
+      }
+
       try {
         await getServiceListDrop({
           voucher: form.value.voucher,
-          service_type: '', // 可能需要根据实际情况调整
+          service_type: '',
           page: 1,
           page_size: 10
         })
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-        }
+      } catch (error: any) {
+        const message =
+          error?.response?.data?.message || error?.message || '接入点已保存，但设备发现失败，请检查凭据或上游连接后再试'
+        window.$message?.error(message)
+        emit('getList')
+        serviceModals.value = false
+        return
       }
-      
-      // 关闭当前弹窗，并打开配置弹窗
-      const id = isEdit.value ? form.value.id : data.data.id
+
+      serviceModals.value = false
       emit(
         'isEdit',
         form.value.voucher,
         {
-          id: id,
-          auth_type: form.value.auth_type,
+          id: accessPointId,
           name: form.value.name
         },
-        true
+        isEdit.value
       )
-    } else {
-      // 手动模式处理
-      const id = isEdit.value ? form.value.id : data.data.id
-      emit('isEdit', form.value.voucher, id, isEdit.value)
-    }
 
-    // 重置表单
-    form.value = { ...defaultForm }
-    form.value.vouchers = {}
+      resetForm()
+    } catch (error: any) {
+      const message = error?.response?.data?.message || error?.message || '保存接入点失败'
+      window.$message?.error(message)
+    }
   })
 }
 
@@ -138,12 +148,6 @@ defineExpose({ openModal })
     >
       <n-form-item :label="$t('card.accessPointName')" path="name">
         <n-input v-model:value="form.name" placeholder="请输入接入点名称" />
-      </n-form-item>
-      <n-form-item :label="$t('common.selectionMode')" path="auth_type">
-        <n-radio-group v-model:value="form.auth_type">
-          <n-radio value="manual">{{ $t('common.manual') }}</n-radio>
-          <n-radio value="auto">{{ $t('common.automatic') }}</n-radio>
-        </n-radio-group>
       </n-form-item>
     </n-form>
     <div class="box">
