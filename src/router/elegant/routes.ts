@@ -387,6 +387,26 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'device-template',
+    path: '/device-template',
+    component: 'layout.base',
+    meta: {
+      title: 'device-template',
+      i18nKey: 'route.device-template'
+    },
+    children: [
+      {
+        name: 'device-template_detail',
+        path: '/device-template/detail',
+        component: 'view.device-template_detail',
+        meta: {
+          title: 'device-template_detail',
+          i18nKey: 'route.device-template_detail'
+        }
+      }
+    ]
+  },
+  {
     name: 'function',
     path: '/function',
     component: 'layout.base',
@@ -848,6 +868,55 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       }
     ]
+  },
+  {
+    name: 'thing-model',
+    path: '/thing-model',
+    component: 'layout.base',
+    meta: {
+      title: 'thing-model',
+      i18nKey: 'route.thing-model'
+    },
+    children: [
+      {
+        name: 'thing-model_detail',
+        path: '/thing-model/detail',
+        component: 'view.thing-model_detail',
+        meta: {
+          title: 'thing-model_detail',
+          i18nKey: 'route.thing-model_detail'
+        }
+      }
+    ]
+  },
+  {
+    name: 'tm-device',
+    path: '/tm-device',
+    component: 'layout.base',
+    meta: {
+      title: 'tm-device',
+      i18nKey: 'route.tm-device'
+    },
+    children: [
+      {
+        name: 'tm-device_detail',
+        path: '/tm-device/detail',
+        component: 'view.tm-device_detail',
+        meta: {
+          title: 'tm-device_detail',
+          i18nKey: 'route.tm-device_detail'
+        }
+      }
+    ]
+  },
+  {
+    name: 'tm-product',
+    path: '/tm-product',
+    component: 'layout.base$view.tm-product',
+    meta: {
+      title: 'tm-product',
+      i18nKey: 'route.tm-product'
+    }
   },
   {
     name: 'user-center',
