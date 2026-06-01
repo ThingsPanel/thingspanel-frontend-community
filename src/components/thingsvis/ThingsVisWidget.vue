@@ -238,6 +238,15 @@ const normalizeWriteData = (dataSourceId: string, data: unknown) => {
   }
 }
 
+const resolveCommandWrite = (data: unknown, fieldId?: string): { identify: string; value: string } | null => {
+  if (!fieldId || data === null || typeof data !== 'object' || Array.isArray(data)) return null
+  const params = (data as Record<string, unknown>)[fieldId]
+  return {
+    identify: fieldId,
+    value: JSON.stringify(params ?? {})
+  }
+}
+
 const normalizeViewerPlatformDataSources = (config: any) => {
   if (!config || props.mode !== 'viewer' || !Array.isArray(config.dataSources)) return config
 
@@ -654,7 +663,7 @@ const postPlatformWriteResult = (
 
 /**
  * Handle tv:platform-write messages posted by the embedded ThingsVis iframe.
- * Routes the write payload to the ThingsPanel telemetry publish API.
+ * Routes the write payload to the matching ThingsPanel model API.
  */
 const handlePlatformWrite = async (event: MessageEvent) => {
   if (event.data?.type !== 'tv:platform-write') return
@@ -697,7 +706,19 @@ const handlePlatformWrite = async (event: MessageEvent) => {
     }
 
     if (fieldType === 'command') {
-      const result = await commandDataPub({ device_id: targetDeviceId, value: valueStr })
+      const commandWrite = resolveCommandWrite(normalizedData, fieldId)
+      if (!commandWrite) {
+        postPlatformWriteResult(requestId, event.source, {
+          success: false,
+          error: 'Command write requires a single command field payload'
+        })
+        return
+      }
+      const result = await commandDataPub({
+        device_id: targetDeviceId,
+        identify: commandWrite.identify,
+        value: commandWrite.value
+      })
       postPlatformWriteResult(requestId, event.source, {
         success: true,
         echo: result?.data ?? normalizedData

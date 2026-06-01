@@ -30,7 +30,7 @@ import {
   attributeDataPub,
   commandDataPub
 } from '@/service/api/device'
-import { attributesApi, telemetryApi, commandsApi } from '@/service/api'
+import { attributesApi, telemetryApi, commandsApi, eventsApi } from '@/service/api'
 import { getTemplat } from '@/service/api/system-data'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
@@ -887,20 +887,23 @@ async function loadTemplateEntry(templateId: string | number) {
   const cached = templateEntryCache.get(cacheKey)
   if (cached) return cached
 
-  const [telemetryResult, attributesResult, commandsResult] = await Promise.allSettled([
+  const [telemetryResult, attributesResult, commandsResult, eventsResult] = await Promise.allSettled([
     telemetryApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
     attributesApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
-    commandsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId })
+    commandsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
+    eventsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId })
   ])
 
   const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
   const attributesRes = attributesResult.status === 'fulfilled' ? attributesResult.value : null
   const commandsRes = commandsResult.status === 'fulfilled' ? commandsResult.value : null
+  const eventsRes = eventsResult.status === 'fulfilled' ? eventsResult.value : null
 
   const platformSource = {
     telemetry: unwrapList(telemetryRes?.data),
     attributes: unwrapList(attributesRes?.data),
-    commands: unwrapList(commandsRes?.data)
+    commands: unwrapList(commandsRes?.data),
+    events: unwrapList(eventsRes?.data)
   }
   const extractedFields = extractPlatformFields(platformSource)
 
@@ -1086,6 +1089,15 @@ function resolveWriteFieldType(deviceId: string, fieldId?: string): PlatformFiel
   return field?.dataType
 }
 
+function resolveCommandWrite(data: unknown, fieldId?: string): { identify: string; value: string } | null {
+  if (!fieldId || !data || typeof data !== 'object' || Array.isArray(data)) return null
+  const params = (data as Record<string, unknown>)[fieldId]
+  return {
+    identify: fieldId,
+    value: JSON.stringify(params ?? {})
+  }
+}
+
 function postPlatformWriteResult(requestId: string | undefined, payload: Record<string, unknown>) {
   if (!requestId) return
   const win = iframeRef.value?.contentWindow
@@ -1165,7 +1177,15 @@ async function handlePlatformWrite(payload: Record<string, unknown>, requestId?:
     if (fieldType === 'attribute') {
       result = await attributeDataPub({ device_id: deviceId, value })
     } else if (fieldType === 'command') {
-      result = await commandDataPub({ device_id: deviceId, value })
+      const commandWrite = resolveCommandWrite(data, fieldId)
+      if (!commandWrite) {
+        postPlatformWriteResult(requestId, {
+          success: false,
+          error: 'Command write requires a single command field payload'
+        })
+        return
+      }
+      result = await commandDataPub({ device_id: deviceId, identify: commandWrite.identify, value: commandWrite.value })
     } else if (fieldType === 'telemetry' || fieldType === undefined) {
       result = await telemetryDataPub({ device_id: deviceId, value })
     } else {
