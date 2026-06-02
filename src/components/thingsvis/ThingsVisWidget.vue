@@ -202,6 +202,7 @@ const normalizeBooleanValue = (value: unknown) => {
 }
 
 const normalizeNumberValue = (value: unknown) => {
+  if (typeof value === 'boolean') return value ? 1 : 0
   if (typeof value === 'number') return Number.isFinite(value) ? value : value
   if (typeof value === 'string' && value.trim()) {
     const parsed = Number(value)
@@ -312,13 +313,17 @@ const ensureInteractiveWriteEvents = (config: any) => {
 
       const fieldId = getFieldRoot(parsed.fieldPath)
       if (!fieldId) return node
+      const fieldValueType = getFieldValueTypeMap()[fieldId]
 
       const events = Array.isArray(node?.events) ? node.events : []
       const autoAction = {
         type: 'callWrite',
         dataSourceId: parsed.dataSourceId,
-        payload: `({ ${JSON.stringify(fieldId)}: payload })`,
-        __thingsvisAutoWrite: AUTO_WRITE_MARKER
+        payload: `({ ${JSON.stringify(fieldId)}: ${fieldValueType === 'number' ? 'payload ? 1 : 0' : 'payload'} })`,
+        __thingsvisAutoWrite: AUTO_WRITE_MARKER,
+        ...(fieldValueType === 'number' || fieldValueType === 'boolean'
+          ? { __thingsvisAutoWriteValueType: fieldValueType }
+          : {})
       }
 
       let found = false
