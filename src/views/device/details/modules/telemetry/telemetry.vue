@@ -102,11 +102,11 @@ const { status, send, close } = useWebSocket(wsUrl, {
       if (!isJSON(event.data)) return
       const info = JSON.parse(event.data)
       const currTelemetryKey = telemetryData.value
-        .map(item => {
+        .map((item) => {
           return item.key === 'systime' ? false : item.key
         })
-        .filter(item => Boolean(item))
-      const newData = telemetryData.value.map(item => {
+        .filter((item) => Boolean(item))
+      const newData = telemetryData.value.map((item) => {
         return {
           ...item,
           value:
@@ -144,25 +144,26 @@ const columns = [
     title: $t('custom.device_details.operationType'),
     key: 'operation_type',
     minWidth: '140px',
-    render: row => (row.operation_type === '1' ? $t('custom.device_details.manualOperation') : $t('card.triggerAction'))
+    render: (row) =>
+      row.operation_type === '1' ? $t('custom.device_details.manualOperation') : $t('card.triggerAction')
   },
   {
     title: $t('custom.device_details.operationUsers'),
     minWidth: '140px',
     key: 'username',
-    render: row => (row.operation_type === '1' ? row.username : $t('generate.system'))
+    render: (row) => (row.operation_type === '1' ? row.username : $t('generate.system'))
   },
   {
     title: $t('custom.device_details.operationTime'),
     key: 'created_at',
     minWidth: '140px',
-    render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
+    render: (row) => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
   },
   {
     title: $t('custom.device_details.sendResults'),
     minWidth: '140px',
     key: 'status',
-    render: row => (row.status === '1' ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
+    render: (row) => (row.status === '1' ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
   }
 ]
 const requestSimulationInit = async () => {
@@ -207,10 +208,6 @@ const sendSimulationDataByForm = async () => {
     window.$message?.error($t('custom.device_details.sendInputData'))
     return
   }
-  if (!isJSON(simulationForm.default_data)) {
-    window.$message?.error($t('generate.inputRightJson'))
-    return
-  }
   simulationLoading.value = true
   const { error } = await sendSimulationData({
     device_id: props.id,
@@ -228,6 +225,29 @@ const sendSimulationDataByForm = async () => {
     showError.value = true
     erroMessage.value = error?.response?.data?.message || error?.message || ''
   }
+}
+
+const copySimulationData = async () => {
+  if (!simulationForm.default_data) return
+  try {
+    await navigator.clipboard.writeText(simulationForm.default_data)
+    window.$message?.success('复制成功')
+  } catch {
+    window.$message?.error('复制失败')
+  }
+}
+
+const formatSimulationData = () => {
+  if (!simulationForm.default_data) return
+  if (!isJSON(simulationForm.default_data)) {
+    window.$message?.warning('当前内容不是 JSON，无需格式化')
+    return
+  }
+  simulationForm.default_data = JSON.stringify(JSON.parse(simulationForm.default_data), null, 2)
+}
+
+const clearSimulationData = () => {
+  simulationForm.default_data = ''
 }
 const fetchData = async () => {
   startLoading()
@@ -260,7 +280,7 @@ const fetchTelemetry = async () => {
     send(JSON.stringify(dataw))
   }
 }
-const setItemRef = el => {
+const setItemRef = (el) => {
   if (el) {
     const index = el.$attrs['data-index']
     numberAnimationInstRef.value[index] = el
@@ -308,7 +328,7 @@ const handleSelect = (key, item) => {
     handleDeleteTable()
   }
 }
-const copy = event => {
+const copy = (event) => {
   const input = event.target
   input.select()
   document.execCommand('copy')
@@ -376,7 +396,7 @@ const getControlList = () => {
 
 watch(
   () => props.deviceTemplateId,
-  val => {
+  (val) => {
     if (!val) return
     getControlList()
   }
@@ -385,7 +405,7 @@ watch(
 // 监听 Topic 变化，自动切换对应格式的数据
 watch(
   () => simulationForm.topic,
-  val => {
+  (val) => {
     if (!val) return
     if (val.includes('/event/')) {
       simulationForm.default_data = simulationForm.event_default_data
@@ -547,23 +567,27 @@ const inputFeedback = computed(() => {
         :page-count="total"
         :page-size="5"
         @update:page="
-          page => {
+          (page) => {
             log_page = page
             fetchData()
           }
         "
       />
     </div>
-    <n-modal v-model:show="showLogDialog" :title="'模拟上报数据'" :class="getPlatform ? 'w-90%' : 'w-40%'">
-      <n-card>
-        <n-form label-placement="left">
+    <n-modal
+      v-model:show="showLogDialog"
+      :title="'模拟上报数据'"
+      :class="getPlatform ? 'simulation-layout-modal simulation-layout-modal--platform' : 'simulation-layout-modal'"
+    >
+      <n-card class="simulation-layout-card">
+        <n-form class="simulation-layout-form" label-placement="left">
           <!-- 提示信息 -->
           <n-alert type="info" class="m-b-15px" :show-icon="true">
             填写模拟数据并发送，平台将模拟设备上报数据，用于测试数据流、自动化规则、告警通知等。
           </n-alert>
 
           <!-- 认证信息（三列并排，只读展示） -->
-          <div class="m-b-15px">
+          <div class="simulation-layout-section">
             <div class="m-b-8px font-600">认证信息（自动填充，无需修改）</div>
             <n-grid :cols="3" :x-gap="12" responsive="screen" :screen="{ s: 1 }">
               <n-gi>
@@ -585,22 +609,33 @@ const inputFeedback = computed(() => {
           </div>
 
           <!-- 上报数据 -->
-          <div class="m-b-15px">
-            <div class="m-b-8px font-600">数据</div>
-            <n-form-item
-              :validation-status="
-                simulationForm.default_data && !isJSON(simulationForm.default_data) ? 'error' : undefined
-              "
-              :feedback="
-                simulationForm.default_data && !isJSON(simulationForm.default_data) ? $t('generate.inputRightJson') : ''
-              "
-            >
-              <n-input v-model:value="simulationForm.default_data" type="textarea" :rows="3" />
+          <div class="simulation-layout-section">
+            <div class="simulation-data-header m-b-8px">
+              <div class="font-600">数据</div>
+              <n-space :size="8">
+                <n-button size="small" secondary :disabled="!simulationForm.default_data" @click="copySimulationData">
+                  复制
+                </n-button>
+                <n-button size="small" secondary :disabled="!simulationForm.default_data" @click="formatSimulationData">
+                  格式化
+                </n-button>
+                <n-button size="small" secondary :disabled="!simulationForm.default_data" @click="clearSimulationData">
+                  清空
+                </n-button>
+              </n-space>
+            </div>
+            <n-form-item>
+              <n-input
+                v-model:value="simulationForm.default_data"
+                type="textarea"
+                :rows="5"
+                class="simulation-data-input"
+              />
             </n-form-item>
           </div>
 
           <!-- 高级选项 -->
-          <div class="m-b-15px">
+          <div class="simulation-layout-section simulation-advanced-section">
             <div
               class="cursor-pointer flex items-center gap-8px m-b-8px font-600"
               @click="showAdvanced = !showAdvanced"
@@ -620,14 +655,14 @@ const inputFeedback = computed(() => {
               </n-icon>
             </div>
             <n-collapse-transition :show="showAdvanced">
-              <div class="flex flex-col gap-12px">
-                <n-form-item label="服务器" :show-feedback="false">
+              <div class="simulation-advanced-fields flex flex-col gap-12px">
+                <n-form-item label="服务器" label-align="left" :show-feedback="false">
                   <n-input v-model:value="simulationForm.server" />
                 </n-form-item>
-                <n-form-item label="端口" :show-feedback="false">
+                <n-form-item label="端口" label-align="left" :show-feedback="false">
                   <n-input-number v-model:value="simulationForm.port" :min="1" :max="65535" />
                 </n-form-item>
-                <n-form-item :label="`Topic（${simulationForm.topic}）`" :show-feedback="false">
+                <n-form-item label-align="left" :label="`Topic（${simulationForm.topic}）`" :show-feedback="false">
                   <n-select
                     v-model:value="simulationForm.topic"
                     :options="simulationForm.topic_options"
@@ -639,7 +674,7 @@ const inputFeedback = computed(() => {
           </div>
 
           <!-- 操作按钮 -->
-          <n-space justify="end">
+          <n-space class="simulation-layout-actions" justify="end">
             <n-button @click="showLogDialog = false">{{ $t('generate.cancel') }}</n-button>
             <n-button type="primary" :loading="simulationLoading" @click="sendSimulationDataByForm">
               {{ $t('generate.send') }}
@@ -721,7 +756,7 @@ const inputFeedback = computed(() => {
   </n-card>
 </template>
 
-<style lang="scss" oped>
+<style lang="scss">
 .line1 {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -772,5 +807,121 @@ const inputFeedback = computed(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-all; /* Or 'break-word' if preferred */
+}
+
+.simulation-layout-modal {
+  width: min(920px, calc(100vw - 48px));
+}
+
+.simulation-layout-modal--platform {
+  width: min(1040px, 90vw);
+}
+
+.simulation-layout-card {
+  max-height: min(82vh, 760px);
+  display: flex;
+  flex-direction: column;
+}
+
+.simulation-layout-card > .n-card__content {
+  min-height: 0;
+  padding: 20px 24px 18px;
+  overflow: auto;
+}
+
+.simulation-layout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.simulation-layout-form .n-alert {
+  margin-bottom: 0;
+}
+
+.simulation-layout-section {
+  margin-bottom: 0;
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.simulation-layout-section .n-form-item:last-child {
+  margin-bottom: 0;
+}
+
+.simulation-data-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.simulation-data-input .n-input__textarea-el {
+  min-height: 150px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.simulation-advanced-section {
+  padding-block: 12px;
+}
+
+.simulation-advanced-section .n-collapse-transition {
+  margin-top: 12px;
+}
+
+.simulation-advanced-fields .n-form-item {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 12px;
+}
+
+.simulation-advanced-fields .n-form-item-label {
+  width: 100%;
+  justify-content: flex-start;
+  padding-right: 0;
+  white-space: nowrap;
+}
+
+.simulation-advanced-fields .n-form-item-blank,
+.simulation-advanced-fields .n-input-number {
+  width: 100%;
+}
+
+.simulation-layout-actions {
+  padding-top: 2px;
+}
+
+.simulation-error {
+  margin-top: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(208, 48, 80, 0.22);
+  border-radius: 6px;
+  background: rgba(208, 48, 80, 0.06);
+}
+
+@media (max-width: 768px) {
+  .simulation-layout-modal,
+  .simulation-layout-modal--platform {
+    width: calc(100vw - 24px);
+  }
+
+  .simulation-layout-card > .n-card__content {
+    padding: 16px;
+  }
+
+  .simulation-data-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .simulation-advanced-fields .n-form-item {
+    grid-template-columns: 1fr;
+    row-gap: 6px;
+  }
 }
 </style>
