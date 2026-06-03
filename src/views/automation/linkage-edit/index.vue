@@ -286,6 +286,7 @@ const echoIfData = (ifData: any) => {
       if (ifItem.trigger_conditions_type === '10' || ifItem.trigger_conditions_type === '11') {
         ifItem.ifType = '1'
         if (ifItem.trigger_param_type === 'event') {
+          ifItem.eventParamConditions = []
           try {
             const eventMatchConfig = JSON.parse(ifItem.trigger_value || '{}')
             if (eventMatchConfig.match_mode === 'field') {
@@ -302,7 +303,7 @@ const echoIfData = (ifData: any) => {
               }))
             }
           } catch {
-            ifItem.eventParamConditions = []
+            // 旧版完整 JSON 或空值不按字段级规则回显，保持空条件表示仅按事件名触发。
           }
         } else if (ifItem.trigger_operator === 'between') {
           ifItem.minValue = ifItem.trigger_value.split('-')[0]

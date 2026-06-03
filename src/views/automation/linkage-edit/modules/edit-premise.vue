@@ -300,6 +300,7 @@ const getDeviceConfig = async (name: string) => {
 const loadTriggerParamOptions = async (ifItem: any) => {
   // 避免重复加载，如果选项已存在则不重新加载
   if (ifItem.triggerParamOptions && ifItem.triggerParamOptions.length > 0) {
+    syncSelectedEventParams(ifItem)
     return
   }
 
@@ -635,8 +636,7 @@ const getEventParamOptions = (ifItem: any) => {
   if (ifItem.eventParamOptions?.length) {
     return ifItem.eventParamOptions
   }
-  ifItem.eventParamOptions = parseEventParamOptions(ifItem.eventParamsRaw)
-  return ifItem.eventParamOptions
+  return parseEventParamOptions(ifItem.eventParamsRaw)
 }
 
 const syncSelectedEventParams = (ifItem: any) => {
@@ -823,6 +823,16 @@ defineExpose({
 })
 
 const triggerParamChange = (ifItem: any, data: any) => {
+  if (!Array.isArray(data) || data.length < 2) {
+    ifItem.trigger_param_type = null
+    ifItem.trigger_param = null
+    ifItem.trigger_operator = null
+    ifItem.trigger_value = null
+    ifItem.eventParamsRaw = null
+    ifItem.eventParamOptions = []
+    ifItem.eventParamConditions = []
+    return
+  }
   ifItem.trigger_param_type = data[0].value
   ifItem.trigger_param = data[1].key
   ifItem.trigger_operator = null
@@ -848,6 +858,24 @@ const props = withDefaults(defineProps<Props>(), {
   device_config_id: ''
 })
 
+const normalizeIfItemForEcho = (ifItem: any) => {
+  if (!Array.isArray(ifItem.triggerParamOptions)) {
+    ifItem.triggerParamOptions = []
+  }
+  if (ifItem.trigger_param_type === 'event') {
+    ifItem.eventParamsRaw = ifItem.eventParamsRaw || null
+    ifItem.eventParamOptions = Array.isArray(ifItem.eventParamOptions) ? ifItem.eventParamOptions : []
+    ifItem.eventParamConditions = Array.isArray(ifItem.eventParamConditions) ? ifItem.eventParamConditions : []
+  }
+  if (
+    (ifItem.trigger_conditions_type === '10' || ifItem.trigger_conditions_type === '11') &&
+    ifItem.trigger_param_type &&
+    ifItem.trigger_param
+  ) {
+    ifItem.trigger_param_key = `${ifItem.trigger_param_type}/${ifItem.trigger_param}`
+  }
+}
+
 const onTapInput = (item: any, ifIndex: number) => {
   if (item.group_id || item.device_name) {
     getDevice(item.group_id, item.device_name)
@@ -866,6 +894,7 @@ watch(
       premiseForm.value.ifGroups.forEach(ifGroup => {
         if (Array.isArray(ifGroup)) {
           ifGroup.forEach(ifItem => {
+            normalizeIfItemForEcho(ifItem)
             // Call the function defined earlier to load options
             loadTriggerParamOptions(ifItem)
           })
@@ -873,7 +902,7 @@ watch(
       })
     }
   },
-  { deep: true } // Options object
+  { immediate: true } // Options object
 )
 const configId = ref(route.query.id || null)
 onMounted(() => {
@@ -902,7 +931,8 @@ onMounted(() => {
 watch(locale, () => {
   // 遍历所有ifGroups中的ifItems，更新其triggerParamOptions中的statusData
   premiseForm.value.ifGroups.forEach((ifGroup: any) => {
-    ifGroup.ifItems.forEach((ifItem: any) => {
+    const ifItems = Array.isArray(ifGroup) ? ifGroup : ifGroup.ifItems || []
+    ifItems.forEach((ifItem: any) => {
       if (ifItem.triggerParamOptions && Array.isArray(ifItem.triggerParamOptions)) {
         // 找到并更新statusData项
         const statusIndex = ifItem.triggerParamOptions.findIndex((opt: any) => opt.value === 'status')
@@ -914,14 +944,6 @@ watch(locale, () => {
     })
   })
 })
-
-watch(
-  premiseForm.value.ifGroups,
-  () => {
-    // selectInstRef.value = false;
-  },
-  { deep: true }
-)
 </script>
 
 <template>

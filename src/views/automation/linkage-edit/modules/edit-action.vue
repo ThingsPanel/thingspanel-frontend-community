@@ -51,18 +51,7 @@ watch(
 watch(
   () => props.actionData,
   newValue => {
-    if (newValue) {
-      actionForm.value.actionGroups = []
-      actionForm.value.actionGroups = JSON.parse(JSON.stringify(props.actionData))
-      actionForm.value.actionGroups.map((item: any) => {
-        if (item.actionType === '1') {
-          item.actionInstructList.map(instructItem => {
-            instructItem.actionParamOptions = []
-            actionParamShow(instructItem)
-          })
-        }
-      })
-    }
+    applyActionData(newValue)
   }
 )
 
@@ -321,6 +310,22 @@ const actionParamShow = async (instructItem: any) => {
     }
   }
 }
+
+const applyActionData = (actionData: any) => {
+  if (!Array.isArray(actionData)) {
+    return
+  }
+  actionForm.value.actionGroups = JSON.parse(JSON.stringify(actionData))
+  actionForm.value.actionGroups.forEach((item: any) => {
+    if (item.actionType === '1' && Array.isArray(item.actionInstructList)) {
+      item.actionInstructList.forEach(instructItem => {
+        instructItem.actionParamOptions = []
+        actionParamShow(instructItem)
+      })
+    }
+  })
+}
+
 const placeholderMap = {
   telemetry: '20',
   attributes: 'on-line',
@@ -491,6 +496,8 @@ onMounted(() => {
   getSceneList('')
   if (!configId.value) {
     addActionGroupItem()
+  } else {
+    applyActionData(props.actionData)
   }
 })
 </script>
