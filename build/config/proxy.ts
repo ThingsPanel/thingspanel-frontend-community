@@ -44,6 +44,12 @@ export function createViteProxy(env: Env.ImportMeta) {
     rewrite: path => path.replace(/^\/thingsvis-api/, '/api/v1')
   }
 
+  // ThingsVis uploaded assets (GLB/images) are stored on the ThingsVis server under /uploads.
+  proxy['/uploads'] = {
+    target: thingsvisApiUrl,
+    changeOrigin: true
+  }
+
   // Important: ThingsVis 前端代理 (新增)
   // 将 /thingsvis/* 请求转发到本地开发的 Studio 服务
   // 这解决了 "Iframe 加载 ThingsPanel 自身页面" 的问题
