@@ -16,13 +16,16 @@ const props = withDefaults(defineProps<Props>(), {
   configInfo: null
 })
 
-const plugList = ref([{ name: $t('generate.unbind'), id: '' }])
+const unbindOption = () => ({ name: $t('generate.unbind'), id: '' })
+
+const plugList = ref([unbindOption()])
 
 const selectValue = ref()
 
-const getTableData = async name => {
-  const res = await deviceConfigMenu({ device_config_name: name })
-  plugList.value = plugList.value.concat(res.data)
+const getTableData = async (name: string) => {
+  const res = await deviceConfigMenu({ name })
+  const list = Array.isArray(res.data) ? res.data : []
+  plugList.value = [unbindOption(), ...list]
 }
 const searchPlug = v => {
   getTableData(v)
