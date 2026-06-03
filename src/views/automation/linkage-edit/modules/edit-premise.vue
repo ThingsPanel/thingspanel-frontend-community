@@ -180,6 +180,9 @@ const triggerConditionsTypeChange = (ifItem: any, data: any) => {
   ifItem.trigger_value = null
   ifItem.minValue = null
   ifItem.maxValue = null
+  ifItem.eventParamsRaw = null
+  ifItem.eventParamOptions = []
+  ifItem.eventParamConditions = []
   deviceConfigDisabled.value = false
 
   if (data === '11') {
@@ -243,6 +246,9 @@ const triggerSourceChange = (ifItem: any, ifIndex: number) => {
   ifItem.trigger_value = null
   ifItem.minValue = null
   ifItem.maxValue = null
+  ifItem.eventParamsRaw = null
+  ifItem.eventParamOptions = []
+  ifItem.eventParamConditions = []
   selectInstRef.value[ifIndex] = false
   // ifItem.action_param_type = null;
   // ifItem.action_param = null;
@@ -334,6 +340,7 @@ const loadTriggerParamOptions = async (ifItem: any) => {
       if (!ifItem.triggerParamOptions.some(opt => opt.value === 'status')) {
         ifItem.triggerParamOptions.push(statusData.value)
       }
+      syncSelectedEventParams(ifItem)
     }
   }
 }
@@ -585,6 +592,102 @@ const determineOptions = computed(() => [
     value: 'in'
   }
 ])
+
+const eventExistsOptions = computed(() => [
+  {
+    label: '存在',
+    value: true
+  },
+  {
+    label: '不存在',
+    value: false
+  }
+])
+
+const createEventParamCondition = () => ({
+  field: null,
+  operator: '=',
+  value: null,
+  minValue: null,
+  maxValue: null
+})
+
+const parseEventParamOptions = (params: any) => {
+  if (!params) {
+    return []
+  }
+  try {
+    const list = typeof params === 'string' ? JSON.parse(params) : params
+    if (!Array.isArray(list)) {
+      return []
+    }
+    return list.map((item: any) => ({
+      label: `${item.data_identifier}${item.data_name ? `(${item.data_name})` : ''}`,
+      value: item.data_identifier,
+      dataType: item.read_write_flag || item.param_type || item.data_type || 'String'
+    }))
+  } catch {
+    return []
+  }
+}
+
+const getEventParamOptions = (ifItem: any) => {
+  if (ifItem.eventParamOptions?.length) {
+    return ifItem.eventParamOptions
+  }
+  ifItem.eventParamOptions = parseEventParamOptions(ifItem.eventParamsRaw)
+  return ifItem.eventParamOptions
+}
+
+const syncSelectedEventParams = (ifItem: any) => {
+  if (ifItem.trigger_param_type !== 'event' || !ifItem.trigger_param || !Array.isArray(ifItem.triggerParamOptions)) {
+    return
+  }
+  const eventGroup = ifItem.triggerParamOptions.find((item: any) => item.value === 'event')
+  const selectedEvent = eventGroup?.options?.find((item: any) => item.key === ifItem.trigger_param)
+  if (selectedEvent?.params) {
+    ifItem.eventParamsRaw = selectedEvent.params
+    ifItem.eventParamOptions = parseEventParamOptions(selectedEvent.params)
+  }
+}
+
+const getEventParamType = (ifItem: any, field: string) => {
+  const option = getEventParamOptions(ifItem).find((item: any) => item.value === field)
+  return String(option?.dataType || 'String').toLowerCase()
+}
+
+const getEventOperatorOptions = (ifItem: any, condition: any) => {
+  const dataType = getEventParamType(ifItem, condition.field)
+  const options = determineOptions.value
+  if (dataType === 'number') {
+    return [...options, { label: '存在判断', value: 'exists' }]
+  }
+  if (dataType === 'boolean') {
+    return options
+      .filter(item => item.value === '=' || item.value === '!=')
+      .concat({ label: '存在判断', value: 'exists' })
+  }
+  return options
+    .filter(item => item.value === '=' || item.value === '!=' || item.value === 'in')
+    .concat({ label: '存在判断', value: 'exists' })
+}
+
+const addEventParamCondition = (ifItem: any) => {
+  if (!Array.isArray(ifItem.eventParamConditions)) {
+    ifItem.eventParamConditions = []
+  }
+  ifItem.eventParamConditions.push(createEventParamCondition())
+}
+
+const deleteEventParamCondition = (ifItem: any, conditionIndex: number) => {
+  ifItem.eventParamConditions.splice(conditionIndex, 1)
+}
+
+const eventConditionOperatorChange = (condition: any) => {
+  condition.value = condition.operator === 'exists' ? true : null
+  condition.minValue = null
+  condition.maxValue = null
+}
 // 过期时间选项
 const expirationTimeOptions = computed(() => [
   {
@@ -644,7 +747,10 @@ const judgeItem = ref({
   maxValue: null, // 最大
   weatherValue: null, // 天气值
   deviceGroupId: null, // 设备分组id
-  triggerParamOptions: [] // 动作标识菜单下拉列表数据选项
+  triggerParamOptions: [], // 动作标识菜单下拉列表数据选项
+  eventParamsRaw: null,
+  eventParamOptions: [],
+  eventParamConditions: []
 })
 // interface JudgeItem {
 //   ifType: string; // 第一条件类型
@@ -719,6 +825,11 @@ defineExpose({
 const triggerParamChange = (ifItem: any, data: any) => {
   ifItem.trigger_param_type = data[0].value
   ifItem.trigger_param = data[1].key
+  ifItem.trigger_operator = null
+  ifItem.trigger_value = null
+  ifItem.eventParamsRaw = data[1].params || null
+  ifItem.eventParamOptions = parseEventParamOptions(ifItem.eventParamsRaw)
+  ifItem.eventParamConditions = ifItem.trigger_param_type === 'event' ? [createEventParamCondition()] : []
 }
 
 interface Props {
@@ -1034,21 +1145,66 @@ watch(
                   <!--                    </NFormItem>-->
                   <!--                  </template>-->
                   <template v-if="ifItem.trigger_param_type === 'event'">
-                    <!--          设备条件下->单个设备/单类设备>-设备ID/选择设备类ID>触发消息标识符是事件->输入参数 --->
-                    <NFormItem
-                      :show-label="false"
-                      :path="`ifGroups[${ifGroupIndex}][${ifIndex}].trigger_value`"
-                      :rule="premiseFormRules.trigger_value"
-                      :validation-status="ifItem.inputValidationStatus"
-                      :feedback="ifItem.inputFeedback"
-                      class="max-w-40 w-full"
-                    >
-                      <NInput
-                        v-model:value="ifItem.trigger_value"
-                        :placeholder="`${$t('common.param')},${$t('common.as')}:{&quot;param1&quot;:1}`"
-                        @blur="actionValueChange(ifItem)"
-                      />
-                    </NFormItem>
+                    <NFlex vertical class="event-param-condition-panel">
+                      <NFlex
+                        v-for="(condition, conditionIndex) in ifItem.eventParamConditions"
+                        :key="conditionIndex"
+                        align="center"
+                        class="event-param-condition-row"
+                      >
+                        <NFormItem :show-label="false" class="max-w-40 w-full">
+                          <NSelect
+                            v-model:value="condition.field"
+                            :options="getEventParamOptions(ifItem)"
+                            filterable
+                            tag
+                            clearable
+                            :placeholder="$t('common.param')"
+                          />
+                        </NFormItem>
+                        <NFormItem :show-label="false" class="max-w-35 w-full">
+                          <NSelect
+                            v-model:value="condition.operator"
+                            :options="getEventOperatorOptions(ifItem, condition)"
+                            @update:value="() => eventConditionOperatorChange(condition)"
+                          />
+                        </NFormItem>
+                        <template v-if="condition.operator === 'exists'">
+                          <NFormItem :show-label="false" class="max-w-30 w-full">
+                            <NSelect v-model:value="condition.value" :options="eventExistsOptions" />
+                          </NFormItem>
+                        </template>
+                        <template v-else-if="condition.operator === 'between'">
+                          <NFormItem :show-label="false" class="max-w-30 w-full">
+                            <NInput v-model:value="condition.minValue" :placeholder="$t('generate.min-value')" />
+                          </NFormItem>
+                          <NFormItem :show-label="false" class="max-w-30 w-full">
+                            <NInput v-model:value="condition.maxValue" :placeholder="$t('generate.max-value')" />
+                          </NFormItem>
+                        </template>
+                        <template v-else>
+                          <NFormItem :show-label="false" class="max-w-40 w-full">
+                            <NInput
+                              v-model:value="condition.value"
+                              :placeholder="
+                                condition.operator === 'in' ? $t('generate.separated-by-commas') : $t('generate.value')
+                              "
+                            />
+                          </NFormItem>
+                        </template>
+                        <NButton quaternary type="error" @click="deleteEventParamCondition(ifItem, conditionIndex)">
+                          {{ $t('common.delete') }}
+                        </NButton>
+                      </NFlex>
+                      <NFlex align="center">
+                        <NButton dashed size="small" @click="addEventParamCondition(ifItem)">
+                          {{ $t('common.add') }}{{ $t('common.param') }}
+                        </NButton>
+                        <NTag v-if="!ifItem.eventParamConditions?.length" type="warning" size="small">
+                          任意该事件均触发
+                        </NTag>
+                      </NFlex>
+                    </NFlex>
                   </template>
                   <template v-if="ifItem.trigger_param_type === 'status'">
                     <!--          设备条件下->单个设备/单类设备>-设备ID/选择设备类ID>触发消息标识符是状态-> --->
@@ -1467,5 +1623,10 @@ watch(
     position: absolute;
     top: 20px;
   }
+}
+
+.event-param-condition-panel,
+.event-param-condition-row {
+  width: 100%;
 }
 </style>
