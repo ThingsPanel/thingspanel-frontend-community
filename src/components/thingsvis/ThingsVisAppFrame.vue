@@ -30,7 +30,7 @@ import {
   attributeDataPub,
   commandDataPub
 } from '@/service/api/device'
-import { attributesApi, telemetryApi, commandsApi } from '@/service/api'
+import { attributesApi, telemetryApi, commandsApi, eventsApi } from '@/service/api'
 import { getTemplat } from '@/service/api/system-data'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
@@ -608,10 +608,11 @@ function postToThingsVis(type: string, payload: Record<string, unknown>) {
   win.postMessage({ type, payload }, getThingsVisTargetOrigin())
 }
 
-function postPlatformData(fields: Record<string, unknown>, deviceId?: string) {
+function postPlatformData(fields: Record<string, unknown>, deviceId?: string, dataSourceId?: string) {
   if (Object.keys(fields).length === 0) return
 
   postToThingsVis('tv:platform-data', {
+    dataSourceId,
     deviceId,
     fields
   })
@@ -886,20 +887,23 @@ async function loadTemplateEntry(templateId: string | number) {
   const cached = templateEntryCache.get(cacheKey)
   if (cached) return cached
 
-  const [telemetryResult, attributesResult, commandsResult] = await Promise.allSettled([
+  const [telemetryResult, attributesResult, commandsResult, eventsResult] = await Promise.allSettled([
     telemetryApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
     attributesApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
-    commandsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId })
+    commandsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
+    eventsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId })
   ])
 
   const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
   const attributesRes = attributesResult.status === 'fulfilled' ? attributesResult.value : null
   const commandsRes = commandsResult.status === 'fulfilled' ? commandsResult.value : null
+  const eventsRes = eventsResult.status === 'fulfilled' ? eventsResult.value : null
 
   const platformSource = {
     telemetry: unwrapList(telemetryRes?.data),
     attributes: unwrapList(attributesRes?.data),
-    commands: unwrapList(commandsRes?.data)
+    commands: unwrapList(commandsRes?.data),
+    events: unwrapList(eventsRes?.data)
   }
   const extractedFields = extractPlatformFields(platformSource)
 
@@ -1029,7 +1033,7 @@ async function hydrateConfiguredPlatformSources(): Promise<boolean> {
     ensureDeviceStatusWs(descriptor.deviceId)
 
     const fields = await buildRequestedFieldData(requestedFields, descriptor.deviceId)
-    postPlatformData(fields, descriptor.deviceId)
+    postPlatformData(fields, descriptor.deviceId, descriptor.id)
   }
 
   return true
@@ -1083,6 +1087,15 @@ function resolveWriteFieldType(deviceId: string, fieldId?: string): PlatformFiel
   const device = activePlatformDevices.get(deviceId)
   const field = device?.fields.find((item) => item.id === fieldId || item.name === fieldId)
   return field?.dataType
+}
+
+function resolveCommandWrite(data: unknown, fieldId?: string): { identify: string; value: string } | null {
+  if (!fieldId || !data || typeof data !== 'object' || Array.isArray(data)) return null
+  const params = (data as Record<string, unknown>)[fieldId]
+  return {
+    identify: fieldId,
+    value: JSON.stringify(params ?? {})
+  }
 }
 
 function postPlatformWriteResult(requestId: string | undefined, payload: Record<string, unknown>) {
@@ -1164,7 +1177,15 @@ async function handlePlatformWrite(payload: Record<string, unknown>, requestId?:
     if (fieldType === 'attribute') {
       result = await attributeDataPub({ device_id: deviceId, value })
     } else if (fieldType === 'command') {
-      result = await commandDataPub({ device_id: deviceId, value })
+      const commandWrite = resolveCommandWrite(data, fieldId)
+      if (!commandWrite) {
+        postPlatformWriteResult(requestId, {
+          success: false,
+          error: 'Command write requires a single command field payload'
+        })
+        return
+      }
+      result = await commandDataPub({ device_id: deviceId, identify: commandWrite.identify, value: commandWrite.value })
     } else if (fieldType === 'telemetry' || fieldType === undefined) {
       result = await telemetryDataPub({ device_id: deviceId, value })
     } else {
@@ -1780,11 +1801,14 @@ async function doInit(): Promise<boolean> {
     scheduleViewerHydration()
   } else {
     disconnectAllDeviceWs()
-    // Proactively prefetch device metadata for all referenced devices and push them
-    // to the studio so FieldPicker can hydrate device names/fields immediately on open.
+    // Proactively prefetch device metadata AND current telemetry for all referenced devices.
+    // Phase 1 – metadata: populates platformDeviceStore so FieldPicker can echo saved bindings.
+    // Phase 2 – data:     pushes current telemetry so canvas widgets show real values (not 0).
     void (async () => {
       const descriptors = collectPlatformSourceDescriptors(dashboardPayload)
       const deviceIds = [...new Set(descriptors.map((d) => d.deviceId).filter(Boolean))]
+
+      // Phase 1: device metadata
       for (const deviceId of deviceIds) {
         try {
           const device = await buildPlatformDeviceById(deviceId as string)
@@ -1796,6 +1820,20 @@ async function doInit(): Promise<boolean> {
               device,
             })
           }
+        } catch {
+          // best effort — ignore per-device failures
+        }
+      }
+
+      // Phase 2: one-time telemetry snapshot (no WebSocket) so canvas shows real values
+      const handledDeviceIds = new Set<string>()
+      for (const descriptor of descriptors) {
+        if (!descriptor.deviceId || descriptor.requestedFields.length === 0) continue
+        if (handledDeviceIds.has(descriptor.deviceId)) continue
+        handledDeviceIds.add(descriptor.deviceId)
+        try {
+          const fields = await buildRequestedFieldData(descriptor.requestedFields, descriptor.deviceId)
+          postPlatformData(fields, descriptor.deviceId)
         } catch {
           // best effort — ignore per-device failures
         }
@@ -1884,6 +1922,7 @@ const handleMessage = async (event: MessageEvent) => {
     try {
       const fieldIds = Array.isArray((payload as any).fieldIds) ? (payload as any).fieldIds : []
       const requestedDeviceId = typeof (payload as any).deviceId === 'string' ? (payload as any).deviceId : undefined
+      const dataSourceId = typeof (payload as any).dataSourceId === 'string' ? (payload as any).dataSourceId : undefined
       const deviceId = requestedDeviceId
 
       if (deviceId && !activePlatformDevices.has(deviceId)) {
@@ -1892,7 +1931,7 @@ const handleMessage = async (event: MessageEvent) => {
       ensureDeviceWs(deviceId)
       ensureDeviceStatusWs(deviceId)
       const fields = await buildRequestedFieldData(fieldIds, deviceId)
-      postPlatformData(fields, deviceId)
+      postPlatformData(fields, deviceId, dataSourceId)
     } catch {
       // Best effort only: ignore transient field-request failures to avoid console noise.
     }

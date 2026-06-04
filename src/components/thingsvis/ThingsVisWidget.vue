@@ -202,6 +202,7 @@ const normalizeBooleanValue = (value: unknown) => {
 }
 
 const normalizeNumberValue = (value: unknown) => {
+  if (typeof value === 'boolean') return value ? 1 : 0
   if (typeof value === 'number') return Number.isFinite(value) ? value : value
   if (typeof value === 'string' && value.trim()) {
     const parsed = Number(value)
@@ -235,6 +236,15 @@ const normalizeWriteData = (dataSourceId: string, data: unknown) => {
 
   return {
     [fieldId]: normalizeFieldWriteValue(fieldId, data)
+  }
+}
+
+const resolveCommandWrite = (data: unknown, fieldId?: string): { identify: string; value: string } | null => {
+  if (!fieldId || data === null || typeof data !== 'object' || Array.isArray(data)) return null
+  const params = (data as Record<string, unknown>)[fieldId]
+  return {
+    identify: fieldId,
+    value: JSON.stringify(params ?? {})
   }
 }
 
@@ -303,13 +313,17 @@ const ensureInteractiveWriteEvents = (config: any) => {
 
       const fieldId = getFieldRoot(parsed.fieldPath)
       if (!fieldId) return node
+      const fieldValueType = getFieldValueTypeMap()[fieldId]
 
       const events = Array.isArray(node?.events) ? node.events : []
       const autoAction = {
         type: 'callWrite',
         dataSourceId: parsed.dataSourceId,
-        payload: `({ ${JSON.stringify(fieldId)}: payload })`,
-        __thingsvisAutoWrite: AUTO_WRITE_MARKER
+        payload: `({ ${JSON.stringify(fieldId)}: ${fieldValueType === 'number' ? 'payload ? 1 : 0' : 'payload'} })`,
+        __thingsvisAutoWrite: AUTO_WRITE_MARKER,
+        ...(fieldValueType === 'number' || fieldValueType === 'boolean'
+          ? { __thingsvisAutoWriteValueType: fieldValueType }
+          : {})
       }
 
       let found = false
@@ -654,7 +668,7 @@ const postPlatformWriteResult = (
 
 /**
  * Handle tv:platform-write messages posted by the embedded ThingsVis iframe.
- * Routes the write payload to the ThingsPanel telemetry publish API.
+ * Routes the write payload to the matching ThingsPanel model API.
  */
 const handlePlatformWrite = async (event: MessageEvent) => {
   if (event.data?.type !== 'tv:platform-write') return
@@ -697,7 +711,19 @@ const handlePlatformWrite = async (event: MessageEvent) => {
     }
 
     if (fieldType === 'command') {
-      const result = await commandDataPub({ device_id: targetDeviceId, value: valueStr })
+      const commandWrite = resolveCommandWrite(normalizedData, fieldId)
+      if (!commandWrite) {
+        postPlatformWriteResult(requestId, event.source, {
+          success: false,
+          error: 'Command write requires a single command field payload'
+        })
+        return
+      }
+      const result = await commandDataPub({
+        device_id: targetDeviceId,
+        identify: commandWrite.identify,
+        value: commandWrite.value
+      })
       postPlatformWriteResult(requestId, event.source, {
         success: true,
         echo: result?.data ?? normalizedData

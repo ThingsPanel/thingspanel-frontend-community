@@ -595,5 +595,14 @@
   "generate.extensionFieldDefault": "默认值",
   "generate.extensionNoDesc": "无描述",
   "generate.extensionPlaceholderDefault": "默认值:",
-  "generate.mosquittoInstallHint": "需先在本地安装 mosquitto 客户端工具，才能执行以下命令"
+  "generate.mosquittoInstallHint": "需先在本地安装 mosquitto 客户端工具，才能执行以下命令",
+  "generate.simulationTip": "填写模拟数据并发送，平台将模拟设备上报数据，用于测试数据流、自动化规则、告警通知等。",
+  "generate.authInfo": "认证信息（自动填充，不可编辑）",
+  "generate.reportData": "上报数据",
+  "generate.advancedOptions": "高级选项",
+  "generate.originalTopic": "原始 Topic",
+  "generate.clientId": "客户端 ID",
+  "generate.mqttServer": "服务器地址",
+  "generate.mqttPort": "端口",
+  "generate.selectTopic": "请选择 Topic"
 }

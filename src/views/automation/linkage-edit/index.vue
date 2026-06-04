@@ -143,8 +143,6 @@ const getSceneAutomationsInfo = async () => {
     configForm.value = res.data
     // 条件数据回显
     conditionData.value = echoIfData(automationsInfo.value.trigger_condition_groups)
-    if (process.env.NODE_ENV === 'development') {
-    }
     // 动作数据回显
     actionData.value = echoActionData(automationsInfo.value.actions)
   }
@@ -163,7 +161,35 @@ const handleIfData = () => {
     ifGroupItem.map((ifItem: any) => {
       // ifItem.expiration_time = moment().format();
       if (ifItem.trigger_conditions_type === '10' || ifItem.trigger_conditions_type === '11') {
-        if (ifItem.trigger_operator === 'between') {
+        if (ifItem.trigger_param_type === 'event') {
+          ifItem.trigger_operator = '='
+          ifItem.trigger_value = JSON.stringify({
+            match_mode: 'field',
+            conditions: (ifItem.eventParamConditions || [])
+              .filter((condition: any) => condition.field)
+              .map((condition: any) => {
+                const operator = condition.operator || '='
+                let value = condition.value
+                if (operator === 'between') {
+                  value = [condition.minValue, condition.maxValue]
+                } else if (operator === 'in') {
+                  value = Array.isArray(condition.value)
+                    ? condition.value
+                    : String(condition.value || '')
+                        .split(',')
+                        .map(item => item.trim())
+                        .filter(Boolean)
+                } else if (operator === 'exists') {
+                  value = condition.value !== false
+                }
+                return {
+                  field: condition.field,
+                  operator,
+                  value
+                }
+              })
+          })
+        } else if (ifItem.trigger_operator === 'between') {
           ifItem.trigger_value = `${ifItem.minValue}-${ifItem.maxValue}`
         }
       }
@@ -259,7 +285,27 @@ const echoIfData = (ifData: any) => {
     item.map((ifItem: any) => {
       if (ifItem.trigger_conditions_type === '10' || ifItem.trigger_conditions_type === '11') {
         ifItem.ifType = '1'
-        if (ifItem.trigger_operator === 'between') {
+        if (ifItem.trigger_param_type === 'event') {
+          ifItem.eventParamConditions = []
+          try {
+            const eventMatchConfig = JSON.parse(ifItem.trigger_value || '{}')
+            if (eventMatchConfig.match_mode === 'field') {
+              ifItem.eventParamConditions = (eventMatchConfig.conditions || []).map((condition: any) => ({
+                field: condition.field,
+                operator: condition.operator || '=',
+                value:
+                  condition.operator === 'in' && Array.isArray(condition.value)
+                    ? condition.value.join(',')
+                    : condition.value,
+                minValue:
+                  condition.operator === 'between' && Array.isArray(condition.value) ? condition.value[0] : null,
+                maxValue: condition.operator === 'between' && Array.isArray(condition.value) ? condition.value[1] : null
+              }))
+            }
+          } catch {
+            // 旧版完整 JSON 或空值不按字段级规则回显，保持空条件表示仅按事件名触发。
+          }
+        } else if (ifItem.trigger_operator === 'between') {
           ifItem.minValue = ifItem.trigger_value.split('-')[0]
           ifItem.maxValue = ifItem.trigger_value.split('-')[1]
         }
