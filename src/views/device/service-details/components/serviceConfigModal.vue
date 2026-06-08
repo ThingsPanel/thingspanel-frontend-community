@@ -2,7 +2,7 @@
 <script setup lang="tsx">
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { NAlert, NSelect } from 'naive-ui'
+import { NAlert, NInput, NSelect } from 'naive-ui'
 import { batchAddServiceMenuList, getSelectServiceMenuList, getServiceListDrop } from '@/service/api/plugin'
 import { deviceConfigMenu } from '@/service/api/device'
 import { $t } from '@/locales'
@@ -103,6 +103,11 @@ const getLists: () => void = async () => {
 
     list.forEach((item: any) => {
       item.options = options
+      // Auto-fill device_name from device_number when empty so the user always
+      // sees a meaningful default and can still edit it inline.
+      if (!item.device_name && item.device_number) {
+        item.device_name = item.device_number
+      }
       if (item.is_bind) {
         boundDeviceKeys.value.add(item.device_number)
         selectedDeviceDrafts.value.set(item.device_number, { ...item })
@@ -111,6 +116,9 @@ const getLists: () => void = async () => {
       if (cached) {
         if (cached.device_config_id) {
           item.device_config_id = cached.device_config_id
+        }
+        if (cached.device_name) {
+          item.device_name = cached.device_name
         }
         selectedDeviceDrafts.value.set(item.device_number, { ...cached, ...item })
       }
@@ -145,7 +153,25 @@ const columns: any = ref([
   {
     title: $t('generate.device-name'),
     key: 'device_name',
-    minWidth: '200px'
+    minWidth: '200px',
+    render: (row: any) => {
+      return (
+        <NInput
+          value={row.device_name}
+          placeholder={row.device_number || $t('generate.device-name')}
+          disabled={row.is_bind}
+          onUpdateValue={(val: string) => {
+            row.device_name = val
+            const cached = selectedDeviceDrafts.value.get(row.device_number)
+            if (cached) {
+              selectedDeviceDrafts.value.set(row.device_number, { ...cached, device_name: val })
+            } else if (checkedRowKeys.value.includes(row.device_number)) {
+              selectedDeviceDrafts.value.set(row.device_number, { ...row, device_name: val })
+            }
+          }}
+        />
+      )
+    }
   },
   {
     title: $t('generate.device-number'),
