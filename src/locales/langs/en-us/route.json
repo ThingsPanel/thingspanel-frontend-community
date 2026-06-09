@@ -138,5 +138,9 @@
   "route.device_new-device-template_template-details": "Model Details (New)",
   "route.device_new-device-template_template-details_editor": "Edit Model (New)",
   "route.device_new-device-template_template-details_viewer": "View Model (New)",
-  "route.test_category-test": "Category Test"
+  "route.test_category-test": "Category Test",
+  "route.thing-model": "Thing Model (New)",
+  "route.thing-model_detail": "Thing Model Detail",
+  "route.tm-device": "Devices (New)",
+  "route.tm-device_detail": "Device Detail"
 }

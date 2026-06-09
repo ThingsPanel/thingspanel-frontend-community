@@ -1,9 +1,13 @@
 import { chromium } from '@playwright/test'
 import * as fs from 'fs'
+import { fileURLToPath } from 'url'
+import { join, dirname } from 'path'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default async function globalSetup() {
   // Ensure auth.json exists as an empty file so the config doesn't crash before auth.setup runs
-  const authPath = 'e2e/auth.json'
+  const authPath = join(__dirname, 'auth.json')
   if (!fs.existsSync(authPath)) {
     fs.writeFileSync(authPath, JSON.stringify({ cookies: [], origins: [] }))
   }

@@ -23,6 +23,7 @@ import { thingModelApi } from '@/service/thingmodel/thing-model'
 import type { ThingModel } from '@/service/thingmodel/types'
 import { $t } from '@/locales'
 import ItemList from '@/components/thing-model/ItemList.vue'
+import CustomControlsTab from '@/components/thing-model/CustomControlsTab.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -274,6 +275,15 @@ onMounted(() => {
           <!-- Fields -->
           <NTabPane name="fields" :tab="$t('thingModel.tabFields')">
             <ItemList v-if="id" :thing-model-id="id" :status="model.status || 'DRAFT'" />
+          </NTabPane>
+
+          <!-- Custom Controls -->
+          <NTabPane name="custom-controls" :tab="$t('thingModel.tabCustomControls')">
+            <CustomControlsTab
+              v-if="id"
+              :thing-model-id="id"
+              :readonly="model.status === 'PUBLISHED' || model.status === 'ARCHIVED'"
+            />
           </NTabPane>
 
           <!-- Versions -->

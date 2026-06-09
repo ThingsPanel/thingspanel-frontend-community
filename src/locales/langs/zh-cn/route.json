@@ -127,5 +127,9 @@
   "route.device_access": "服务访问",
   "route.walarm_arning-message": "警告消息",
   "route.test_panel-editor-v2": "新看板测试",
-  "route.iot-visualization-platform": "物联网可视化平台"
+  "route.iot-visualization-platform": "物联网可视化平台",
+  "route.thing-model": "物模型(新)",
+  "route.thing-model_detail": "物模型详情",
+  "route.tm-device": "设备(新架构)",
+  "route.tm-device_detail": "设备详情"
 }

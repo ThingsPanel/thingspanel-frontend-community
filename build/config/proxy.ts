@@ -77,5 +77,14 @@ export function createViteProxy(env: Env.ImportMeta) {
     rewrite: path => path.replace(/^\/api\/account/, '/api/account')
   }
 
+  // encore (物模型新后端) 代理
+  // 请求: /proxy-thingmodel/* → http://localhost:4000/*
+  const encoreUrl = (env as any).VITE_ENCORE_URL || 'http://localhost:4000'
+  proxy['/proxy-thingmodel'] = {
+    target: encoreUrl,
+    changeOrigin: true,
+    rewrite: path => path.replace(/^\/proxy-thingmodel/, '')
+  }
+
   return proxy
 }

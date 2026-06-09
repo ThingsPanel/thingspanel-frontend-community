@@ -19,6 +19,7 @@ import { thingModelItemApi } from '@/service/thingmodel/thing-model-item'
 import { validateApi } from '@/service/thingmodel/validate'
 import type { ThingModelItem } from '@/service/thingmodel/types'
 import { $t } from '@/locales'
+import ChartConfigEditor from './ChartConfigEditor.vue'
 
 const props = defineProps<{
   show: boolean
@@ -59,7 +60,10 @@ const form = reactive({
   // Access
   accessRead: true,
   accessWrite: false,
-  accessObserve: true
+  accessObserve: true,
+  // Chart configs (PROPERTY only)
+  webChartConfig: { default_widgets: [] } as { default_widgets: any[] },
+  appChartConfig: { default_widgets: [] } as { default_widgets: any[] }
 })
 
 const isEdit = computed(() => !!props.item)
@@ -183,6 +187,8 @@ function loadItem(item: ThingModelItem) {
   form.accessWrite = item.access?.write ?? false
   form.accessObserve = item.access?.observe ?? true
   form.storePolicy = parseStorePolicy(item.meta_items as any[] | undefined)
+  form.webChartConfig = item.web_chart_config as any || { default_widgets: [] }
+  form.appChartConfig = item.app_chart_config as any || { default_widgets: [] }
 }
 
 watch(
@@ -209,6 +215,8 @@ watch(
       form.accessRead = true
       form.accessWrite = false
       form.accessObserve = true
+      form.webChartConfig = { default_widgets: [] }
+      form.appChartConfig = { default_widgets: [] }
     }
   },
   { immediate: true }
@@ -238,6 +246,15 @@ function buildPayload(): ThingModelItem {
       observe: form.accessObserve
     },
     meta_items: form.type === 'PROPERTY' ? [{ key: 'store_policy', value: form.storePolicy, scope: 'STORAGE' }] : []
+  }
+
+  if (form.type === 'PROPERTY') {
+    if (form.webChartConfig.default_widgets.length > 0) {
+      payload.web_chart_config = form.webChartConfig
+    }
+    if (form.appChartConfig.default_widgets.length > 0) {
+      payload.app_chart_config = form.appChartConfig
+    }
   }
 
   // Keep existing persisted order when editing. New items rely on backend auto ordering.
@@ -420,6 +437,17 @@ async function handleSave() {
         <NFormItem :label="$t('thingModel.access.observe')">
           <NCheckbox v-model:checked="form.accessObserve" :disabled="accessObserveDisabled" />
         </NFormItem>
+
+        <!-- Chart configs (PROPERTY only) -->
+        <template v-if="form.type === 'PROPERTY'">
+          <NDivider />
+          <NFormItem :label="$t('thingModel.webChart')">
+            <ChartConfigEditor v-model="form.webChartConfig" platform="WEB" />
+          </NFormItem>
+          <NFormItem :label="$t('thingModel.appChart')">
+            <ChartConfigEditor v-model="form.appChartConfig" platform="APP" />
+          </NFormItem>
+        </template>
       </NForm>
 
       <template #footer>

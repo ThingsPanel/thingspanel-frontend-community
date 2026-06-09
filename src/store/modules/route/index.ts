@@ -173,6 +173,35 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     return true // Indicate success
   }
 
+  /** Encore thing-model parallel menu routes (always inject alongside backend routes) */
+  const ENCORE_PARALLEL_ROUTES: ElegantConstRoute[] = [
+    {
+      name: 'thing-model',
+      path: '/thing-model',
+      component: 'layout.base',
+      meta: {
+        title: 'thing-model',
+        i18nKey: 'route.thing-model',
+        icon: 'material-symbols:schema',
+        order: 45,
+        requiresAuth: true
+      },
+      children: [
+        {
+          name: 'thing-model_detail',
+          path: '/thing-model/detail',
+          component: 'view.thing-model_detail',
+          meta: {
+            title: 'thing-model_detail',
+            i18nKey: 'route.thing-model_detail',
+            hideInMenu: true,
+            requiresAuth: true
+          }
+        }
+      ]
+    }
+  ]
+
   /** Init dynamic auth route */
   async function initDynamicAuthRoute(): Promise<boolean> {
     const { data, error } = await fetchGetUserRoutes()
@@ -180,7 +209,12 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     if (!error) {
       const routes = data?.list
 
-      handleAuthRoutes(routes)
+      // Inject encore parallel routes if not already returned by backend
+      const existingNames = new Set((routes || []).map((r: ElegantConstRoute) => r.name))
+      const toInject = ENCORE_PARALLEL_ROUTES.filter(r => !existingNames.has(r.name))
+      const mergedRoutes = [...(routes || []), ...toInject]
+
+      handleAuthRoutes(mergedRoutes)
 
       setRouteHome('home')
 
