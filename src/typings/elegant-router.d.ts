@@ -49,7 +49,7 @@ declare module "@elegant-router/types" {
     "data-service": "/data-service";
     "data-service_rule-engine": "/data-service/rule-engine";
     "device": "/device";
-    "device_config": "/device/config";
+    "device_config": "/device/template";
     "device_config-detail": "/device/config-detail";
     "device_config-edit": "/device/config-edit";
     "device_details": "/device/details";
@@ -59,7 +59,7 @@ declare module "@elegant-router/types" {
     "device_manage": "/device/manage";
     "device_service-access": "/device/service-access";
     "device_service-details": "/device/service-details";
-    "device_template": "/device/template";
+    "device_template": "/device/thingsmodel";
     "device-details-app": "/device-details-app";
     "device-template": "/device-template";
     "device-template_detail": "/device-template/detail";

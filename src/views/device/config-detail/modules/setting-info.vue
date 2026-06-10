@@ -22,7 +22,7 @@ const dialog = useDialog()
 const message = useMessage()
 const route = useRoute()
 const tabStore = useTabStore()
-const { routerPush } = useRouterPush()
+const { routerPushByKey } = useRouterPush()
 const deleteConfig = () => {
   dialog.warning({
     title: $t('common.tip'),
@@ -35,7 +35,7 @@ const deleteConfig = () => {
       if (!res || !res.error) {
         message.success($t('custom.grouping_details.operationSuccess'))
         await tabStore.removeTab(route.path)
-        await routerPush({ path: '/device/config' })
+        await routerPushByKey('device_config')
       }
     }
   })

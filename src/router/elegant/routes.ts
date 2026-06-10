@@ -277,7 +277,7 @@ export const generatedRoutes: GeneratedRoute[] = [
     children: [
       {
         name: 'device_config',
-        path: '/device/config',
+        path: '/device/template',
         component: 'view.device_config',
         meta: {
           title: 'device_config',
@@ -368,7 +368,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       },
       {
         name: 'device_template',
-        path: '/device/template',
+        path: '/device/thingsmodel',
         component: 'view.device_template',
         meta: {
           title: 'device_template',
