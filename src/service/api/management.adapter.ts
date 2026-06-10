@@ -31,6 +31,18 @@ const LAYOUT_PREFIX = 'layout.'
 const VIEW_PREFIX = 'view.'
 const FIRST_LEVEL_ROUTE_COMPONENT_SPLIT = '$'
 
+/** 浏览器显示路径，与 build/plugins/router.ts 的 routePathTransformer 保持一致 */
+const ROUTE_DISPLAY_PATH_MAP: Record<string, string> = {
+  device_config: '/device/template',
+  device_template: '/device/thingsmodel'
+}
+
+/** 后台 param1 仍可能使用旧路径，用于组件解析 */
+const LEGACY_PATH_TO_ROUTE: Record<string, string> = {
+  '/device/config': 'device_config',
+  '/device/template': 'device_template'
+}
+
 function transformLayoutAndPageToComponent(layout: string, page: string | null) {
   const hasLayout = Boolean(layout)
   const hasPage = Boolean(page)
@@ -134,6 +146,12 @@ function resolveViewNameByPath(path?: string | null) {
 
   if (!normalizedPath) return null
 
+  const legacyRouteName = LEGACY_PATH_TO_ROUTE[normalizedPath]
+
+  if (legacyRouteName && isKnownView(legacyRouteName)) {
+    return legacyRouteName
+  }
+
   const exactMatch = getRouteName(normalizedPath as never)
 
   if (isKnownView(exactMatch)) {
@@ -197,10 +215,11 @@ function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
   return data.flatMap((item: any): ElegantRoute[] => {
     const component = getRouteComponent(item)
     const children = item.children?.length ? replaceKeys(item.children) : []
-    const path = normalizePath(item.param1)
+    const elementCode = item.element_code.trim().replace(/\s/g, '_')
+    const path = ROUTE_DISPLAY_PATH_MAP[elementCode] ?? normalizePath(item.param1)
 
     const route: Partial<ElegantRoute> = {
-      name: item.element_code.trim().replace(/\s/g, '_'),
+      name: elementCode,
       path,
       ...(component && { component }),
       meta: {

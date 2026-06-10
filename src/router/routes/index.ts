@@ -16,6 +16,15 @@ export const ROOT_ROUTE: CustomRoute = {
 const customRoutes: CustomRoute[] = [
   ROOT_ROUTE,
   {
+    name: 'device-config-legacy-redirect',
+    path: '/device/config',
+    redirect: '/device/template',
+    meta: {
+      title: 'device-config-legacy-redirect',
+      constant: true
+    }
+  },
+  {
     name: 'not-found',
     path: '/:pathMatch(.*)*',
     component: 'layout.blank$view.404',

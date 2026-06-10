@@ -25,6 +25,10 @@ export function setupElegantRouter() {
         return `/login/:module(${moduleReg})?`
       }
 
+      // 设备模板、物模型：修正浏览器 URL，route name 保持与后台 element_code 一致
+      if (key === 'device_config') return '/device/template'
+      if (key === 'device_template') return '/device/thingsmodel'
+
       return routePath
     },
     onRouteMetaGen(routeName) {
