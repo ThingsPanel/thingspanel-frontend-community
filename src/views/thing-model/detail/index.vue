@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, h } from 'vue'
+import { ref, computed, onMounted, watch, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   NButton,
@@ -23,7 +23,7 @@ import { thingModelApi } from '@/service/thingmodel/thing-model'
 import type { ThingModel } from '@/service/thingmodel/types'
 import { $t } from '@/locales'
 import ItemList from '@/components/thing-model/ItemList.vue'
-import CustomControlsTab from '@/components/thing-model/CustomControlsTab.vue'
+import ThingModelChartConfigTab from '@/components/thing-model/ThingModelChartConfigTab.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -170,6 +170,22 @@ function onTabChange(tab: string) {
   }
 }
 
+async function handleRollback(targetVersion: number) {
+  acting.value = true
+  try {
+    await thingModelApi.rollback(id.value, { target_version: targetVersion })
+    window.$message?.success($t('thingModel.rollback'))
+    // Rollback keeps same model ID but updates items + creates new snapshot
+    versions.value = []
+    await fetchModel()
+    await fetchVersions()
+  } catch {
+    window.$message?.error($t('common.error'))
+  } finally {
+    acting.value = false
+  }
+}
+
 const versionColumns: DataTableColumns<any> = [
   {
     title: $t('thingModel.version'),
@@ -185,8 +201,26 @@ const versionColumns: DataTableColumns<any> = [
     title: $t('thingModel.createdAt'),
     key: 'created_at',
     render: (row) => (row.created_at ? new Date(row.created_at).toLocaleString() : '--')
+  },
+  {
+    title: $t('common.actions'),
+    key: 'actions',
+    render: (row) => h(NPopconfirm, {
+      onPositiveClick: () => handleRollback(row.version)
+    }, {
+      default: () => $t('thingModel.rollback') + '?',
+      trigger: () => h(NButton, { size: 'small' }, { default: () => $t('thingModel.rollback') })
+    })
   }
 ]
+
+watch(id, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    model.value = { name: '', description_i18n: { default: '' } }
+    versions.value = []
+    fetchModel()
+  }
+})
 
 onMounted(() => {
   fetchModel()
@@ -272,17 +306,28 @@ onMounted(() => {
             </NForm>
           </NTabPane>
 
-          <!-- Fields -->
+          <!-- Fields (属性/事件/命令/自定义控制 are subtabs inside ItemList) -->
           <NTabPane name="fields" :tab="$t('thingModel.tabFields')">
             <ItemList v-if="id" :thing-model-id="id" :status="model.status || 'DRAFT'" />
           </NTabPane>
 
-          <!-- Custom Controls -->
-          <NTabPane name="custom-controls" :tab="$t('thingModel.tabCustomControls')">
-            <CustomControlsTab
+          <!-- Web Chart Config -->
+          <NTabPane name="web-chart" :tab="$t('thingModel.tabWebChart')">
+            <ThingModelChartConfigTab
               v-if="id"
               :thing-model-id="id"
-              :readonly="model.status === 'PUBLISHED' || model.status === 'ARCHIVED'"
+              type="web"
+              :readonly="model.status !== 'DRAFT' && !!model.status"
+            />
+          </NTabPane>
+
+          <!-- App Chart Config -->
+          <NTabPane name="app-chart" :tab="$t('thingModel.tabAppChart')">
+            <ThingModelChartConfigTab
+              v-if="id"
+              :thing-model-id="id"
+              type="app"
+              :readonly="model.status !== 'DRAFT' && !!model.status"
             />
           </NTabPane>
 

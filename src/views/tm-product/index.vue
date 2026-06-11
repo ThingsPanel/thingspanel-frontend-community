@@ -4,21 +4,29 @@ import {
   NButton,
   NDataTable,
   NInput,
+  NResult,
+  NEmpty,
   NSelect,
   NModal,
   NForm,
   NFormItem,
   NSpace,
   NPopconfirm,
-  NPagination
+  NPagination,
+  NSpin,
+  NCard,
+  NText
 } from 'naive-ui'
 import type { DataTableColumns, FormInst, SelectOption } from 'naive-ui'
 import { $t } from '@/locales'
 import { productApi } from '@/service/thingmodel/product'
 import { deviceTemplateApi } from '@/service/thingmodel/device-template'
 import type { Product, DeviceTemplate } from '@/service/thingmodel/types'
+import { checkThingmodelAvailability } from '@/service/thingmodel/client'
 
 // ─── State ───────────────────────────────────────────────────────────────────
+
+const serviceAvailable = ref<boolean | null>(null)
 
 const tableData = ref<Product[]>([])
 const total = ref(0)
@@ -222,6 +230,7 @@ const columns = computed<DataTableColumns<Product>>(() => [
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
 onMounted(() => {
+  checkThingmodelAvailability().then(ok => { serviceAvailable.value = ok })
   loadTemplates()
   loadList()
 })
@@ -229,41 +238,56 @@ onMounted(() => {
 
 <template>
   <div class="p-4">
-    <div class="mb-4 flex items-center justify-between gap-2">
-      <NInput
-        v-model:value="searchText"
-        :placeholder="$t('tmProduct.searchPlaceholder')"
-        clearable
-        style="max-width: 280px"
-      />
-      <NButton type="primary" @click="openCreate">{{ $t('tmProduct.create') }}</NButton>
-    </div>
-
-    <NDataTable
-      :columns="columns"
-      :data="tableData"
-      :loading="loading"
-      :row-key="(row: Product) => row.id!"
-      size="small"
+    <NResult
+      v-if="serviceAvailable === false"
+      status="warning"
+      title="新物模型服务未部署"
+      description="thingmodel-api 服务不可达，请参考部署文档配置后重试。"
+      style="margin: 40px auto; max-width: 500px"
     />
+    <NCard v-else :title="$t('tmProduct.list')">
+      <template #header-extra>
+        <NButton type="primary" @click="openCreate">{{ $t('tmProduct.create') }}</NButton>
+      </template>
 
-    <div class="mt-4 flex justify-end">
-      <NPagination
-        v-model:page="page"
-        :page-count="Math.ceil(total / pageSize)"
-        :page-size="pageSize"
-        @update:page="handlePageChange"
-      />
-    </div>
+      <div class="mb-4 flex flex-wrap items-center gap-3">
+        <NInput
+          v-model:value="searchText"
+          :placeholder="$t('tmProduct.searchPlaceholder')"
+          clearable
+          style="width: 240px"
+        />
+        <NButton @click="loadList">{{ $t('common.search') }}</NButton>
+      </div>
 
-    <!-- Create / Edit Modal -->
-    <NModal
-      v-model:show="modalVisible"
-      preset="card"
-      :title="modalTitle"
-      style="width: 520px"
-      :mask-closable="false"
-    >
+      <NSpin :show="loading">
+        <NDataTable
+          :columns="columns"
+          :data="tableData"
+          :row-key="(row: Product) => row.id!"
+          :min-height="200"
+          size="small"
+        />
+        <NEmpty v-if="!loading && tableData.length === 0" :description="$t('common.nodata')" class="my-8" />
+        <div class="mt-4 flex items-center justify-between">
+          <NText depth="3" class="text-sm">{{ $t('common.total') }}: {{ total }}</NText>
+          <NPagination
+            v-model:page="page"
+            :page-count="Math.ceil(total / pageSize) || 1"
+            :page-size="pageSize"
+            @update:page="handlePageChange"
+          />
+        </div>
+      </NSpin>
+
+      <!-- Create / Edit Modal -->
+      <NModal
+        v-model:show="modalVisible"
+        preset="card"
+        :title="modalTitle"
+        style="width: 520px"
+        :mask-closable="false"
+      >
       <NForm
         ref="formRef"
         :model="formModel"
@@ -287,7 +311,7 @@ onMounted(() => {
         <NFormItem :label="$t('tmProduct.productKey')" path="product_key">
           <NInput
             v-model:value="formModel.product_key"
-            :placeholder="$t('common.input') + $t('tmProduct.productKey')"
+            :placeholder="$t('tmProduct.productKey')"
           />
         </NFormItem>
 
@@ -313,5 +337,6 @@ onMounted(() => {
         </NSpace>
       </template>
     </NModal>
+    </NCard>
   </div>
 </template>

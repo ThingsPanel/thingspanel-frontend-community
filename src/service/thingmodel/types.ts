@@ -23,6 +23,8 @@ export interface ThingModel {
   category?: string
   status?: string
   current_snapshot_id?: string
+  web_chart_config?: Record<string, any> | null
+  app_chart_config?: Record<string, any> | null
   created_at?: string
   updated_at?: string
 }

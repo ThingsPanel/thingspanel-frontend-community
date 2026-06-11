@@ -6,6 +6,8 @@ import {
   NDataTable,
   NInput,
   NSelect,
+  NResult,
+  NEmpty,
   NTag,
   NSpace,
   NModal,
@@ -15,15 +17,17 @@ import {
   NPopconfirm,
   NSpin,
   NCard,
-  NGrid,
-  NGi
+  NText
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { thingModelApi } from '@/service/thingmodel/thing-model'
 import type { ThingModel } from '@/service/thingmodel/types'
+import { checkThingmodelAvailability } from '@/service/thingmodel/client'
 import { $t } from '@/locales'
 
 const router = useRouter()
+
+const serviceAvailable = ref<boolean | null>(null)
 
 // List state
 const loading = ref(false)
@@ -151,13 +155,14 @@ const columns: DataTableColumns<ThingModel> = [
   {
     title: $t('common._edit'),
     key: 'actions',
+    align: 'right' as const,
     render: (row) =>
-      h(NSpace, {}, {
+      h(NSpace, { justify: 'end' }, {
         default: () => [
           h(
             NButton,
             { size: 'small', onClick: () => goDetail(row.id!) },
-            { default: () => $t('thingModel.detail') }
+            { default: () => $t('common._edit') }
           ),
           h(
             NPopconfirm,
@@ -176,43 +181,49 @@ const columns: DataTableColumns<ThingModel> = [
 ]
 
 onMounted(() => {
+  checkThingmodelAvailability().then(ok => { serviceAvailable.value = ok })
   fetchList()
 })
 </script>
 
 <template>
   <div class="p-4">
-    <NCard :title="$t('thingModel.list')">
+    <NResult
+      v-if="serviceAvailable === false"
+      status="warning"
+      title="新物模型服务未部署"
+      description="thingmodel-api 服务不可达，请参考部署文档配置后重试。"
+      style="margin: 40px auto; max-width: 500px"
+    />
+    <NCard v-else :title="$t('thingModel.list')">
       <template #header-extra>
         <NButton type="primary" @click="showCreate = true">{{ $t('thingModel.create') }}</NButton>
       </template>
 
-      <NGrid :cols="24" :x-gap="12" class="mb-4">
-        <NGi :span="10">
-          <NInput
-            v-model:value="search"
-            :placeholder="$t('thingModel.searchPlaceholder')"
-            clearable
-            @keyup.enter="handleSearch"
-          />
-        </NGi>
-        <NGi :span="6">
-          <NSelect
-            v-model:value="statusFilter"
-            :options="statusOptions"
-            :placeholder="$t('thingModel.status')"
-            clearable
-            @update:value="handleSearch"
-          />
-        </NGi>
-        <NGi :span="4">
-          <NButton @click="handleSearch">{{ $t('common._confirm') }}</NButton>
-        </NGi>
-      </NGrid>
+      <div class="mb-4 flex flex-wrap items-center gap-3">
+        <NInput
+          v-model:value="search"
+          :placeholder="$t('thingModel.searchPlaceholder')"
+          clearable
+          style="width: 240px"
+          @keyup.enter="handleSearch"
+        />
+        <NSelect
+          v-model:value="statusFilter"
+          :options="statusOptions"
+          :placeholder="$t('thingModel.status')"
+          clearable
+          style="width: 160px"
+          @update:value="handleSearch"
+        />
+        <NButton @click="handleSearch">{{ $t('common.search') }}</NButton>
+      </div>
 
       <NSpin :show="loading">
-        <NDataTable :columns="columns" :data="list" :bordered="false" />
-        <div class="mt-4 flex justify-end">
+        <NDataTable :columns="columns" :data="list" :bordered="false" :min-height="200" />
+        <NEmpty v-if="!loading && list.length === 0" :description="$t('common.nodata')" class="my-8" />
+        <div class="mt-4 flex items-center justify-between">
+          <NText depth="3" class="text-sm">{{ $t('common.total') }}: {{ total }}</NText>
           <NPagination
             :page="pagination.page"
             :page-size="pagination.page_size"

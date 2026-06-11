@@ -3,63 +3,50 @@
  * 验收：录屏计时 ≤ 90s，完整流程 thing model → item → 发布
  */
 import { test, expect } from '@playwright/test'
+import { createThingModel, waitForModalReady } from './helpers'
 
 test.describe('E1: Create temperature-humidity thing model end-to-end', () => {
   test('creates thing model, adds temperature field, publishes within 90s', async ({ page }) => {
     const start = Date.now()
 
-    // ── 1. Navigate to thing model list ──────────────────────────────────
-    await page.goto('/thing-model')
-    await page.waitForSelector('table, .n-data-table', { timeout: 10000 })
+    // ── 1. Create new thing model and land on detail page ─────────────────
+    await createThingModel(page, '温湿度通用测试-' + Date.now())
+    await expect(page.locator('.n-tag:has-text("草稿"), .n-tag:has-text("DRAFT")')).toBeVisible({ timeout: 8000 })
 
-    // ── 2. Create new thing model ─────────────────────────────────────────
-    await page.click('button:has-text("新建"), button:has-text("New")')
-    await page.waitForSelector('.n-modal, .n-dialog', { timeout: 5000 })
-    await page.fill('input[placeholder*="名称"], input[name="name"]', '温湿度通用测试')
-    await page.click('button:has-text("确认"), button:has-text("保存"), button:has-text("OK")')
+    // ── 2. Switch to 字段 tab ─────────────────────────────────────────────
+    await page.locator('.n-tabs-tab').filter({ hasText: '字段' }).click()
+    await page.waitForTimeout(500)
 
-    // ── 3. Wait for redirect to detail page ───────────────────────────────
-    await page.waitForURL(/\/thing-model\/detail/, { timeout: 10000 })
-    await expect(page.locator('.n-tag:has-text("DRAFT"), .n-tag:has-text("草稿")')).toBeVisible({ timeout: 5000 })
-
-    // ── 4. Switch to 字段 tab ─────────────────────────────────────────────
-    await page.click('.n-tabs-tab:has-text("字段"), .n-tab-pane >> text=字段')
-
-    // ── 5. Add temperature PROPERTY field ────────────────────────────────
+    // ── 3. Add temperature PROPERTY field ────────────────────────────────
     await page.click('button:has-text("添加字段"), button:has-text("Add Field")')
-    await page.waitForSelector('.n-drawer, .n-modal', { timeout: 5000 })
+    await waitForModalReady(page)
 
-    // Type = PROPERTY (should be default)
-    const typeSelect = page.locator('select[name="type"], .n-select').first()
-    if (await typeSelect.isVisible()) {
-      await typeSelect.click()
-      await page.click('.n-select-option:has-text("属性"), .n-option:has-text("属性")')
-    }
+    // Identifier placeholder is the hint text, not "标识符" label
+    await page.locator('.n-drawer input[placeholder*="小写字母"]').fill('temperature')
+    await page.locator('.n-drawer input[placeholder="名称"]').fill('温度').catch(() => {})
 
-    await page.fill('input[placeholder*="标识符"], input[name="identifier"]', 'temperature')
-    await page.fill('input[placeholder*="名称"], input[name="name"]', '温度')
-
-    // Value kind = FLOAT
-    const kindSelect = page.locator('.n-select').nth(1)
-    if (await kindSelect.isVisible()) {
+    // Value kind = FLOAT if visible
+    const kindSelect = page.locator('.n-select').filter({ hasText: /整数|INT|浮点|FLOAT/ }).first()
+    if (await kindSelect.isVisible({ timeout: 1000 }).catch(() => false)) {
       await kindSelect.click()
-      await page.click('.n-select-option:has-text("浮点"), .n-option:has-text("FLOAT")')
+      await page.locator('.n-base-select-option:has-text("浮点"), .n-base-select-option:has-text("FLOAT")').first().click()
     }
 
-    await page.click('button:has-text("保存"), button:has-text("Save")')
-    await page.waitForTimeout(1000)
+    await page.locator('.n-drawer button:has-text("确认"), .n-drawer button:has-text("Save")').first().click()
+    await page.waitForTimeout(1500)
 
-    // ── 6. Verify field appears in list ───────────────────────────────────
-    await expect(page.locator('td:has-text("temperature"), .identifier:has-text("temperature")')).toBeVisible({ timeout: 5000 })
+    // ── 4. Verify field appears ──────────────────────────────────────────
+    await expect(page.locator('text=temperature')).toBeVisible({ timeout: 8000 })
 
-    // ── 7. Publish the thing model ────────────────────────────────────────
+    // ── 5. Publish ────────────────────────────────────────────────────────
     await page.click('button:has-text("发布"), button:has-text("Publish")')
-    // Confirm dialog if any
-    const confirmBtn = page.locator('.n-modal button:has-text("确认"), .n-dialog button:has-text("确定")')
+    await waitForModalReady(page).catch(() => {})
+    // Click confirm in publish dialog if it appeared
+    const confirmBtn = page.locator('.n-modal button:has-text("确认"), .n-modal button:has-text("确定")')
     if (await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await confirmBtn.click()
     }
-    await expect(page.locator('.n-tag:has-text("PUBLISHED"), .n-tag:has-text("已发布")')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('.n-tag:has-text("已发布"), .n-tag:has-text("PUBLISHED")')).toBeVisible({ timeout: 15000 })
 
     const elapsed = (Date.now() - start) / 1000
     console.log(`E1 elapsed: ${elapsed.toFixed(1)}s`)

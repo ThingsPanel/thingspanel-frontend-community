@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h, watch } from 'vue'
-import { NButton, NDataTable, NTabs, NTabPane, NTag, NSpace, NPopconfirm, NSpin, NAlert } from 'naive-ui'
+import { NButton, NDataTable, NTabs, NTabPane, NTag, NSpace, NPopconfirm, NSpin, NAlert, NDivider } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { thingModelItemApi } from '@/service/thingmodel/thing-model-item'
 import type { ThingModelItem } from '@/service/thingmodel/types'
 import { $t } from '@/locales'
 import ItemEditDrawer from './ItemEditDrawer.vue'
+import CustomControlsTab from './CustomControlsTab.vue'
 
 const props = defineProps<{
   thingModelId: string
@@ -181,6 +182,11 @@ onMounted(() => {
     <NSpin :show="loading">
       <NDataTable :columns="columns" :data="filteredItems" :bordered="false" size="small" />
     </NSpin>
+
+    <!-- 自定义命令：仅在命令 Tab 下展示 -->
+    <template v-if="typeFilter === 'COMMAND' || typeFilter === 'ALL'">
+      <NDivider v-if="typeFilter === 'COMMAND'" class="mt-4">{{ $t('thingModel.tabCustomControls') }}</NDivider>
+      <CustomControlsTab :thing-model-id="thingModelId" :readonly="!isDraft" /></template>
 
     <ItemEditDrawer
       v-if="showDrawer"

@@ -23,7 +23,7 @@ const getTemplate = async () => {
   }
 }
 const back: () => void = async () => {
-  emit('update:stepCurrent', 4)
+  emit('update:stepCurrent', 5)
 }
 const copyText = (): void => {
   const textElement = document.getElementById('text-to-copy')

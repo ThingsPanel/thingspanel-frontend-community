@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { FormInst } from 'naive-ui'
 import { useMessage } from 'naive-ui'
-import { deviceAdd } from '@/service/api/device'
+import { deviceAdd, deviceConfigInfo, deviceTemplateDetail } from '@/service/api/device'
+import { checkThingmodelAvailability, thingModelApi } from '@/service/thingmodel'
+import { extractLegacyThingModelBinding } from '@/views/device/template/thing-model-binding'
 import { $t } from '@/locales'
 
 const props = defineProps<{
@@ -17,6 +19,14 @@ const formValue = ref({
   label: [],
   device_config_id: ''
 })
+
+const thingModelInfo = ref<{
+  name: string
+  status?: string
+  snapshotId?: string
+} | null>(null)
+const thingModelInfoLoading = ref(false)
+
 const rules = {
   name: {
     required: true,
@@ -24,6 +34,56 @@ const rules = {
     trigger: 'blur'
   }
 }
+
+async function resolveThingModelInfo(configId: string) {
+  if (!configId) {
+    thingModelInfo.value = null
+    return
+  }
+
+  thingModelInfoLoading.value = true
+  thingModelInfo.value = null
+
+  try {
+    const encoreAvailable = await checkThingmodelAvailability()
+    if (!encoreAvailable) return
+
+    let templateId = props.configOptions.find(option => option.id === configId)?.device_template_id
+
+    if (!templateId) {
+      const configRes = await deviceConfigInfo({ id: configId })
+      templateId = configRes.data?.device_template_id
+    }
+
+    if (!templateId) return
+
+    const templateRes = await deviceTemplateDetail({ id: templateId })
+    const binding = extractLegacyThingModelBinding(templateRes.data)
+    if (!binding?.thingModelId) return
+
+    const thingModelRes = await thingModelApi.get(binding.thingModelId)
+    const thingModel = (thingModelRes as any).data ?? thingModelRes
+
+    if (!thingModel?.name) return
+
+    thingModelInfo.value = {
+      name: thingModel.name,
+      status: thingModel.status,
+      snapshotId: binding.thingModelSnapshotId || thingModel.current_snapshot_id
+    }
+  } catch {
+    thingModelInfo.value = null
+  } finally {
+    thingModelInfoLoading.value = false
+  }
+}
+
+watch(
+  () => formValue.value.device_config_id,
+  configId => {
+    resolveThingModelInfo(configId)
+  }
+)
 
 function handleValidateClick(e: MouseEvent) {
   e.preventDefault()
@@ -61,6 +121,19 @@ function handleValidateClick(e: MouseEvent) {
             filterable
           />
         </n-form-item>
+        <n-form-item v-if="thingModelInfoLoading || thingModelInfo" :label="$t('generate.linked-thing-model')">
+          <n-spin :show="thingModelInfoLoading" size="small">
+            <div v-if="thingModelInfo" class="thing-model-info">
+              <span>{{ thingModelInfo.name }}</span>
+              <span v-if="thingModelInfo.status" class="info-meta">
+                · {{ $t('generate.thing-model-status') }}: {{ thingModelInfo.status }}
+              </span>
+              <span v-if="thingModelInfo.snapshotId" class="info-meta">
+                · snapshot: {{ thingModelInfo.snapshotId.slice(0, 8) }}
+              </span>
+            </div>
+          </n-spin>
+        </n-form-item>
         <n-form-item>
           <n-button type="primary" attr-type="button" @click="handleValidateClick">
             {{ $t('custom.devicePage.saveAndNext') }}
@@ -71,4 +144,13 @@ function handleValidateClick(e: MouseEvent) {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.thing-model-info {
+  font-size: 13px;
+  color: #666;
+}
+
+.info-meta {
+  color: #999;
+}
+</style>

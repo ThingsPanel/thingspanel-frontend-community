@@ -141,6 +141,8 @@
   "route.test_category-test": "Category Test",
   "route.thing-model": "Thing Model (New)",
   "route.thing-model_detail": "Thing Model Detail",
+  "route.device-template": "Device Template (New)",
+  "route.device-template_detail": "Device Template Detail (New)",
   "route.tm-device": "Devices (New)",
   "route.tm-device_detail": "Device Detail"
 }

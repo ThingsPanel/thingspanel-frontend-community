@@ -76,8 +76,11 @@ async function fetchList(page = state.page) {
     state.list = data?.items || data?.list || []
     state.total = data?.total || 0
     state.page = page
-  } catch {
-    window.$message?.error($t('common.loadFailure'))
+  } catch (e: any) {
+    // silently ignore if endpoint not yet implemented on backend
+    if (e?.code !== 'not_found' && e?.message !== 'endpoint not found') {
+      window.$message?.error($t('common.loadFailure'))
+    }
   } finally {
     loading.value = false
   }

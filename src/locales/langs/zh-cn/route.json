@@ -130,6 +130,8 @@
   "route.iot-visualization-platform": "物联网可视化平台",
   "route.thing-model": "物模型(新)",
   "route.thing-model_detail": "物模型详情",
+  "route.device-template": "设备模板(新)",
+  "route.device-template_detail": "设备模板详情(新)",
   "route.tm-device": "设备(新架构)",
   "route.tm-device_detail": "设备详情"
 }

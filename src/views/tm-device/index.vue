@@ -4,6 +4,8 @@ import {
   NButton,
   NDataTable,
   NInput,
+  NResult,
+  NEmpty,
   NSelect,
   NModal,
   NForm,
@@ -11,6 +13,9 @@ import {
   NSpace,
   NPopconfirm,
   NPagination,
+  NSpin,
+  NCard,
+  NText,
   NTag
 } from 'naive-ui'
 import type { DataTableColumns, FormInst, SelectOption } from 'naive-ui'
@@ -20,12 +25,15 @@ import { deviceApi } from '@/service/thingmodel/device'
 import { deviceTemplateApi } from '@/service/thingmodel/device-template'
 import { productApi } from '@/service/thingmodel/product'
 import type { Device, DeviceTemplate, Product } from '@/service/thingmodel/types'
+import { checkThingmodelAvailability } from '@/service/thingmodel/client'
 
 // ─── Router ───────────────────────────────────────────────────────────────────
 
 const router = useRouter()
 
 // ─── State ───────────────────────────────────────────────────────────────────
+
+const serviceAvailable = ref<boolean | null>(null)
 
 const tableData = ref<Device[]>([])
 const total = ref(0)
@@ -214,7 +222,7 @@ const columns = computed<DataTableColumns<Device>>(() => [
     key: 'sn'
   },
   {
-    title: 'Status',
+    title: $t('tmDevice.status'),
     key: 'status',
     render: row => {
       const s = getOnlineStatus(row)
@@ -266,6 +274,7 @@ const columns = computed<DataTableColumns<Device>>(() => [
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
 onMounted(() => {
+  checkThingmodelAvailability().then(ok => { serviceAvailable.value = ok })
   loadTemplates()
   loadProducts()
   loadList()
@@ -274,8 +283,19 @@ onMounted(() => {
 
 <template>
   <div class="p-4">
-    <div class="mb-4 flex flex-wrap items-center gap-2 justify-between">
-      <NSpace>
+    <NResult
+      v-if="serviceAvailable === false"
+      status="warning"
+      title="新物模型服务未部署"
+      description="thingmodel-api 服务不可达，请参考部署文档配置后重试。"
+      style="margin: 40px auto; max-width: 500px"
+    />
+    <NCard v-else :title="$t('tmDevice.list')">
+      <template #header-extra>
+        <NButton type="primary" @click="openRegister">{{ $t('tmDevice.register') }}</NButton>
+      </template>
+
+      <div class="mb-4 flex flex-wrap items-center gap-3">
         <NInput
           v-model:value="searchSn"
           :placeholder="$t('tmDevice.searchSnPlaceholder')"
@@ -293,77 +313,79 @@ onMounted(() => {
           @update:value="handleSearch"
         />
         <NButton @click="handleSearch">{{ $t('common.search') }}</NButton>
-      </NSpace>
-      <NButton type="primary" @click="openRegister">{{ $t('tmDevice.register') }}</NButton>
-    </div>
+      </div>
 
-    <NDataTable
-      :columns="columns"
-      :data="tableData"
-      :loading="loading"
-      :row-key="(row: Device) => row.id!"
-      size="small"
-    />
+      <NSpin :show="loading">
+        <NDataTable
+          :columns="columns"
+          :data="tableData"
+          :row-key="(row: Device) => row.id!"
+          :min-height="200"
+          size="small"
+        />
+        <NEmpty v-if="!loading && tableData.length === 0" :description="$t('common.nodata')" class="my-8" />
+        <div class="mt-4 flex items-center justify-between">
+          <NText depth="3" class="text-sm">{{ $t('common.total') }}: {{ total }}</NText>
+          <NPagination
+            v-model:page="page"
+            :page-count="Math.ceil(total / pageSize) || 1"
+            :page-size="pageSize"
+            @update:page="handlePageChange"
+          />
+        </div>
+      </NSpin>
 
-    <div class="mt-4 flex justify-end">
-      <NPagination
-        v-model:page="page"
-        :page-count="Math.ceil(total / pageSize) || 1"
-        :page-size="pageSize"
-        @update:page="handlePageChange"
-      />
-    </div>
-
-    <!-- Register Modal -->
-    <NModal
-      v-model:show="modalVisible"
-      preset="card"
-      :title="$t('tmDevice.register')"
-      style="width: 520px"
-      :mask-closable="false"
-    >
-      <NForm
-        ref="formRef"
-        :model="formModel"
-        :rules="formRules"
-        label-placement="left"
-        label-width="100px"
+      <!-- Register Modal -->
+      <NModal
+        v-model:show="modalVisible"
+        preset="card"
+        :title="$t('tmDevice.register')"
+        style="width: 520px"
+        :mask-closable="false"
       >
-        <NFormItem :label="$t('tmDevice.sn')" path="sn">
-          <NInput v-model:value="formModel.sn" />
-        </NFormItem>
+        <NForm
+          ref="formRef"
+          :model="formModel"
+          :rules="formRules"
+          label-placement="left"
+          label-width="100px"
+        >
+          <NFormItem :label="$t('tmDevice.sn')" path="sn">
+            <NInput v-model:value="formModel.sn" />
+          </NFormItem>
 
-        <NFormItem :label="$t('tmDevice.template')" path="device_template_id">
-          <NSelect
-            v-model:value="formModel.device_template_id"
-            :options="templateOptions"
-            filterable
-            @update:value="onTemplateChange"
-          />
-        </NFormItem>
+          <NFormItem :label="$t('tmDevice.template')" path="device_template_id">
+            <NSelect
+              v-model:value="formModel.device_template_id"
+              :options="templateOptions"
+              filterable
+              @update:value="onTemplateChange"
+            />
+          </NFormItem>
 
-        <NFormItem :label="$t('tmDevice.product')" path="product_id">
-          <NSelect
-            v-model:value="formModel.product_id"
-            :options="filteredProductOptions"
-            filterable
-            clearable
-          />
-        </NFormItem>
+          <NFormItem :label="$t('tmDevice.product')" path="product_id">
+            <NSelect
+              v-model:value="formModel.product_id"
+              :options="filteredProductOptions"
+              filterable
+              clearable
+            />
+          </NFormItem>
 
-        <NFormItem label="Voucher" path="voucher">
-          <NInput v-model:value="formModel.voucher" />
-        </NFormItem>
-      </NForm>
+          <NFormItem label="Voucher" path="voucher">
+            <NInput v-model:value="formModel.voucher" />
+          </NFormItem>
+        </NForm>
 
-      <template #footer>
-        <NSpace justify="end">
-          <NButton @click="modalVisible = false">{{ $t('common.cancel') }}</NButton>
-          <NButton type="primary" :loading="submitting" @click="handleSubmit">
-            {{ $t('common.confirm') }}
-          </NButton>
-        </NSpace>
-      </template>
-    </NModal>
+        <template #footer>
+          <NSpace justify="end">
+            <NButton @click="modalVisible = false">{{ $t('common.cancel') }}</NButton>
+            <NButton type="primary" :loading="submitting" @click="handleSubmit">
+              {{ $t('common.confirm') }}
+            </NButton>
+          </NSpace>
+        </template>
+      </NModal>
+    </NCard>
   </div>
 </template>

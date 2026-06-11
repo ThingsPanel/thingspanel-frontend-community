@@ -173,48 +173,111 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     return true // Indicate success
   }
 
-  /** Encore thing-model parallel menu routes (always inject alongside backend routes) */
-  const ENCORE_PARALLEL_ROUTES: ElegantConstRoute[] = [
-    {
-      name: 'thing-model',
-      path: '/thing-model',
-      component: 'layout.base',
-      meta: {
-        title: 'thing-model',
-        i18nKey: 'route.thing-model',
-        icon: 'material-symbols:schema',
-        order: 45,
-        requiresAuth: true
-      },
-      children: [
-        {
-          name: 'thing-model_detail',
-          path: '/thing-model/detail',
-          component: 'view.thing-model_detail',
-          meta: {
-            title: 'thing-model_detail',
-            i18nKey: 'route.thing-model_detail',
-            hideInMenu: true,
-            requiresAuth: true
-          }
-        }
-      ]
+  /**
+   * Inject thing-model list + detail as non-first-level children of the 'device' route.
+   * Using names with '_' makes elegant-router treat them as view-only (no extra layout wrapper),
+   * so they render inside device's single layout.base correctly.
+   * order 1126.5 slots the list entry between device_config (1126) and device_template (1127).
+   */
+  const THING_MODEL_LIST_ENTRY = {
+    name: 'device_thing-model' as any,
+    path: '/thing-model',
+    component: 'view.thing-model' as any,
+    meta: {
+      title: 'thing-model',
+      i18nKey: 'route.thing-model' as any,
+      icon: 'material-symbols:schema',
+      order: 1126.5,
+      requiresAuth: true
     }
-  ]
+  } as ElegantConstRoute
+
+  const THING_MODEL_DETAIL_ENTRY = {
+    name: 'device_thing-model_detail' as any,
+    path: '/thing-model/detail',
+    component: 'view.thing-model_detail' as any,
+    meta: {
+      title: 'thing-model_detail',
+      i18nKey: 'route.thing-model_detail' as any,
+      hideInMenu: true,
+      requiresAuth: true
+    }
+  } as ElegantConstRoute
+
+  const DEVICE_TEMPLATE_LIST_ENTRY = {
+    name: 'device_device-template' as any,
+    path: '/device-template',
+    component: 'view.device-template' as any,
+    meta: {
+      title: 'device-template',
+      i18nKey: 'route.device-template' as any,
+      icon: 'mdi:file-document-outline',
+      order: 1127.5,
+      requiresAuth: true,
+      hideInMenu: true
+    }
+  } as ElegantConstRoute
+
+  const DEVICE_TEMPLATE_DETAIL_ENTRY = {
+    name: 'device_device-template_detail' as any,
+    path: '/device-template/detail',
+    component: 'view.device-template_detail' as any,
+    meta: {
+      title: 'device-template_detail',
+      i18nKey: 'route.device-template_detail' as any,
+      hideInMenu: true,
+      requiresAuth: true
+    }
+  } as ElegantConstRoute
+
+  const TM_DEVICE_LIST_ENTRY = {
+    name: 'device_tm-device' as any,
+    path: '/tm-device',
+    component: 'view.tm-device' as any,
+    meta: {
+      title: 'tm-device',
+      i18nKey: 'route.tm-device' as any,
+      icon: 'mdi:chip',
+      order: 1128.5,
+      requiresAuth: true,
+      hideInMenu: true
+    }
+  } as ElegantConstRoute
+
+  const TM_DEVICE_DETAIL_ENTRY = {
+    name: 'device_tm-device_detail' as any,
+    path: '/tm-device/detail',
+    component: 'view.tm-device_detail' as any,
+    meta: {
+      title: 'tm-device_detail',
+      i18nKey: 'route.tm-device_detail' as any,
+      hideInMenu: true,
+      requiresAuth: true
+    }
+  } as ElegantConstRoute
 
   /** Init dynamic auth route */
   async function initDynamicAuthRoute(): Promise<boolean> {
     const { data, error } = await fetchGetUserRoutes()
 
     if (!error) {
-      const routes = data?.list
+      const routes = data?.list as ElegantConstRoute[]
 
-      // Inject encore parallel routes if not already returned by backend
-      const existingNames = new Set((routes || []).map((r: ElegantConstRoute) => r.name))
-      const toInject = ENCORE_PARALLEL_ROUTES.filter(r => !existingNames.has(r.name))
-      const mergedRoutes = [...(routes || []), ...toInject]
+      // Inject thing-model list+detail into the 'device' route children (设备接入 section)
+      const deviceRoute = (routes || []).find((r: ElegantConstRoute) => r.name === 'device')
+      if (deviceRoute?.children) {
+        const alreadyInjected = deviceRoute.children.some((c: ElegantConstRoute) => (c as any).name === 'device_thing-model')
+        if (!alreadyInjected) {
+          deviceRoute.children = [
+            ...deviceRoute.children,
+            THING_MODEL_LIST_ENTRY, THING_MODEL_DETAIL_ENTRY,
+            DEVICE_TEMPLATE_LIST_ENTRY, DEVICE_TEMPLATE_DETAIL_ENTRY,
+            TM_DEVICE_LIST_ENTRY, TM_DEVICE_DETAIL_ENTRY
+          ]
+        }
+      }
 
-      handleAuthRoutes(mergedRoutes)
+      handleAuthRoutes(routes || [])
 
       setRouteHome('home')
 

@@ -19,18 +19,18 @@ export interface CustomControlPage {
 
 export const customControlApi = {
   list: (thingModelId: string, page = 1, pageSize = 100) =>
-    thingmodelClient.get<CustomControlPage>('/v1/custom-command-controls', {
+    thingmodelClient.get<CustomControlPage>('/api/custom-command-controls', {
       thing_model_id: thingModelId,
       page,
       page_size: pageSize
     }),
 
   create: (payload: CustomControl) =>
-    thingmodelClient.post<CustomControl>('/v1/custom-command-controls', payload),
+    thingmodelClient.post<CustomControl>('/api/custom-command-controls', payload),
 
   update: (payload: CustomControl) =>
-    thingmodelClient.put<CustomControl>('/v1/custom-command-controls', payload),
+    thingmodelClient.put<CustomControl>('/api/custom-command-controls', payload),
 
   delete: (id: string) =>
-    thingmodelClient.delete<void>(`/v1/custom-command-controls/${id}`)
+    thingmodelClient.delete<void>(`/api/custom-command-controls/${id}`)
 }

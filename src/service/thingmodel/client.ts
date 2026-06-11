@@ -1,6 +1,13 @@
 import axios from 'axios'
 import { localStg } from '@/utils/storage'
 
+function handleAuthExpiry() {
+  localStg.remove('token')
+  localStg.remove('refreshToken')
+  localStg.remove('userInfo')
+  window.location.reload()
+}
+
 export class ApiError extends Error {
   code: string
   details?: unknown
@@ -24,89 +31,30 @@ export function localizeError(error: unknown) {
 }
 
 const THINGMODEL_PROXY_PATH = '/proxy-thingmodel'
-const THINGMODEL_BASE_URL = 'http://127.0.0.1:4000'
 const thingmodelRequest = axios.create({
   timeout: 30000
 })
 
-type LegacyJwtClaims = {
-  id?: string
-  user_id?: string
-  tenant_id?: string
-  authority?: string
-}
-
-function isUuid(value: string) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
-}
-
-function toUuidFromHex(hexValue: string) {
-  const hex = hexValue.toLowerCase().padEnd(32, '0').slice(0, 32)
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`
-}
-
-function normalizeTenantId(tenantId: string) {
-  const raw = tenantId.trim()
-  if (!raw) return ''
-  if (isUuid(raw)) return raw
-
-  const compactHex = raw.replace(/[^0-9a-f]/gi, '')
-  if (compactHex) {
-    return toUuidFromHex(compactHex)
+// Clear session and reload on 401 — matches the legacy backend client behaviour
+thingmodelRequest.interceptors.response.use(
+  response => response,
+  error => {
+    if (error?.response?.status === 401) {
+      handleAuthExpiry()
+    }
+    return Promise.reject(error)
   }
-
-  const encoded = Array.from(raw)
-    .map(char => char.charCodeAt(0).toString(16).padStart(2, '0'))
-    .join('')
-
-  return toUuidFromHex(encoded)
-}
-
-function decodeBase64Url(value: string) {
-  const normalized = value.replace(/-/g, '+').replace(/_/g, '/')
-  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=')
-  return atob(padded)
-}
-
-function buildDevTokenFromLegacyJwt(token: string | null) {
-  if (!token) return ''
-
-  try {
-    const [, payload] = token.split('.')
-    if (!payload) return ''
-
-    const claims = JSON.parse(decodeBase64Url(payload)) as LegacyJwtClaims
-    const userId = claims.id || claims.user_id || ''
-    const tenantId = normalizeTenantId(claims.tenant_id || '')
-    const role = claims.authority || 'TENANT_ADMIN'
-
-    if (!userId || !tenantId) return ''
-
-    return `${userId}:${tenantId}:${role}:*`
-  } catch {
-    return ''
-  }
-}
+)
 
 function buildThingmodelUrl(path: string) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
-
-  if (import.meta.env.VITE_HTTP_PROXY === 'Y') {
-    return `${THINGMODEL_PROXY_PATH}${normalizedPath}`
-  }
-
-  return new URL(normalizedPath, THINGMODEL_BASE_URL).toString()
+  return `${THINGMODEL_PROXY_PATH}${normalizedPath}`
 }
 
 function buildThingmodelHeaders() {
-  const legacyToken = localStg.get('token')
-  const devToken = buildDevTokenFromLegacyJwt(legacyToken)
-
-  if (!devToken) return undefined
-
-  return {
-    Authorization: `Bearer ${devToken}`
-  }
+  const token = localStg.get('token')
+  if (!token) return undefined
+  return { Authorization: `Bearer ${token}` }
 }
 
 async function wrap<T>(promise: Promise<T>): Promise<T> {
@@ -130,6 +78,21 @@ function withDataAlias<T>(payload: T): T {
   return {
     data: payload
   } as T
+}
+
+/**
+ * Probe whether the thingmodel backend is reachable.
+ * Result is cached for the lifetime of the page so it only hits the network once.
+ */
+let _availabilityCache: Promise<boolean> | null = null
+
+export function checkThingmodelAvailability(): Promise<boolean> {
+  if (_availabilityCache !== null) return _availabilityCache
+  _availabilityCache = thingmodelRequest
+    .get(`${THINGMODEL_PROXY_PATH}/api/device-metadata/healthz`, { timeout: 4000 })
+    .then(() => true)
+    .catch(() => false)
+  return _availabilityCache
 }
 
 export const thingmodelClient = {

@@ -66,6 +66,12 @@ const selectedThingModelId = ref<string>('')
 const selectedVersion = ref<number | null>(null)
 const showVersionWarning = ref(false)
 
+const selectedThingModelIsDraft = computed(() => {
+  if (!selectedThingModelId.value) return false
+  const m = publishedThingModels.value.find(x => x.id === selectedThingModelId.value)
+  return m?.status === 'DRAFT'
+})
+
 // Devices list (read-only)
 const devices = ref<Device[]>([])
 const devicesTotal = ref(0)
@@ -100,11 +106,12 @@ function syncJsonFields() {
   extrasText.value = jsonTextFromObj(template.extras)
 }
 
-// ThingModel selector options
+// ThingModel selector options — show all (PUBLISHED first, DRAFT labeled)
 const thingModelOptions = computed(() =>
   publishedThingModels.value.map(m => ({
-    label: m.name,
-    value: m.id!
+    label: m.status === 'PUBLISHED' ? m.name : `${m.name} [${$t('thingModel.status.DRAFT')}]`,
+    value: m.id!,
+    disabled: false
   }))
 )
 
@@ -132,7 +139,12 @@ async function fetchThingModels() {
   try {
     const res = await thingModelApi.list({ page: 1, page_size: 500 })
     if (res.data) {
-      publishedThingModels.value = (res.data.items || []).filter((m: ThingModel) => m.status === 'PUBLISHED')
+      const all = res.data.items || []
+      // Published first, then drafts
+      publishedThingModels.value = [
+        ...all.filter((m: ThingModel) => m.status === 'PUBLISHED'),
+        ...all.filter((m: ThingModel) => m.status === 'DRAFT')
+      ]
     }
   } catch {
     // ignore
@@ -317,6 +329,12 @@ const statusType = computed(() => {
   }
 })
 
+watch(id, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    fetchTemplate()
+  }
+})
+
 onMounted(async () => {
   await fetchThingModels()
   if (!isNew.value) {
@@ -435,6 +453,9 @@ onMounted(async () => {
 
               <NAlert v-if="showVersionWarning" type="warning" class="mb-4" closable @close="showVersionWarning = false">
                 {{ $t('deviceTemplate.versionChangeWarning') }}
+              </NAlert>
+              <NAlert v-if="selectedThingModelIsDraft" type="info" class="mb-4">
+                {{ $t('deviceTemplate.thingModelDraftHint') }}
               </NAlert>
 
               <NGrid :cols="2" :x-gap="24">

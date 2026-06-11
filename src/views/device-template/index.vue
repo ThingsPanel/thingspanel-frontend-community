@@ -5,6 +5,8 @@ import {
   NButton,
   NDataTable,
   NInput,
+  NResult,
+  NEmpty,
   NSelect,
   NTag,
   NSpace,
@@ -15,16 +17,18 @@ import {
   NPopconfirm,
   NSpin,
   NCard,
-  NGrid,
-  NGi
+  NText
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { deviceTemplateApi } from '@/service/thingmodel/device-template'
 import { thingModelApi } from '@/service/thingmodel/thing-model'
 import type { DeviceTemplate, ThingModel } from '@/service/thingmodel/types'
+import { checkThingmodelAvailability } from '@/service/thingmodel/client'
 import { $t } from '@/locales'
 
 const router = useRouter()
+
+const serviceAvailable = ref<boolean | null>(null)
 
 // List state
 const loading = ref(false)
@@ -41,10 +45,14 @@ const thingModelOptions = ref<{ label: string; value: string }[]>([])
 // Create modal state
 const showCreate = ref(false)
 const creating = ref(false)
-const createForm = reactive<{ name: string; thing_model_id: string }>({
+const createForm = reactive<{ name: string; thing_model_id: string; thing_model_snapshot_id: string }>({
   name: '',
-  thing_model_id: ''
+  thing_model_id: '',
+  thing_model_snapshot_id: ''
 })
+
+// map thing_model_id → current_snapshot_id for use in create
+const thingModelSnapshotMap = ref<Record<string, string>>({})
 
 const statusOptions = [
   { label: $t('common.allStatus'), value: null as string | null },
@@ -69,9 +77,11 @@ async function fetchThingModels() {
     const res = await thingModelApi.list({ page: 1, page_size: 200 })
     if (res.data) {
       const items: ThingModel[] = res.data.items || []
-      thingModelOptions.value = items
-        .filter(m => m.status === 'PUBLISHED')
-        .map(m => ({ label: m.name, value: m.id! }))
+      const published = items.filter(m => m.status === 'PUBLISHED')
+      thingModelOptions.value = published.map(m => ({ label: m.name, value: m.id! }))
+      thingModelSnapshotMap.value = Object.fromEntries(
+        published.filter(m => m.current_snapshot_id).map(m => [m.id!, m.current_snapshot_id!])
+      )
     }
   } catch {
     // ignore
@@ -134,15 +144,27 @@ async function handleCreate() {
   }
   creating.value = true
   try {
+    if (!createForm.thing_model_id) {
+      window.$message?.error($t('deviceTemplate.thingModelRef') + ' ' + $t('common.error'))
+      creating.value = false
+      return
+    }
+    const snapshotId = createForm.thing_model_snapshot_id || thingModelSnapshotMap.value[createForm.thing_model_id] || ''
+    if (!snapshotId) {
+      window.$message?.error($t('deviceTemplate.thingModelRef') + ': no published snapshot')
+      creating.value = false
+      return
+    }
     const res = await deviceTemplateApi.create({
       name: createForm.name,
-      thing_model_id: createForm.thing_model_id || '',
-      thing_model_snapshot_id: ''
+      thing_model_id: createForm.thing_model_id,
+      thing_model_snapshot_id: snapshotId
     } as DeviceTemplate)
     window.$message?.success($t('common.addSuccess'))
     showCreate.value = false
     createForm.name = ''
     createForm.thing_model_id = ''
+    createForm.thing_model_snapshot_id = ''
     if (res.data?.id) {
       goDetail(res.data.id)
     } else {
@@ -215,6 +237,7 @@ const columns: DataTableColumns<DeviceTemplate> = [
 ]
 
 onMounted(async () => {
+  checkThingmodelAvailability().then(ok => { serviceAvailable.value = ok })
   await fetchThingModels()
   fetchList()
 })
@@ -222,41 +245,46 @@ onMounted(async () => {
 
 <template>
   <div class="p-4">
-    <NCard :title="$t('deviceTemplate.list')">
+    <NResult
+      v-if="serviceAvailable === false"
+      status="warning"
+      title="新物模型服务未部署"
+      description="thingmodel-api 服务不可达，请参考部署文档配置后重试。"
+      style="margin: 40px auto; max-width: 500px"
+    />
+    <NCard v-else :title="$t('deviceTemplate.list')">
       <template #header-extra>
         <NButton type="primary" @click="showCreate = true">
           {{ $t('deviceTemplate.create') }}
         </NButton>
       </template>
 
-      <NGrid :cols="24" :x-gap="12" class="mb-4">
-        <NGi :span="8">
-          <NSelect
-            v-model:value="statusFilter"
-            :options="statusOptions"
-            :placeholder="$t('deviceTemplate.status')"
-            clearable
-            @update:value="handleSearch"
-          />
-        </NGi>
-        <NGi :span="8">
-          <NSelect
-            v-model:value="thingModelFilter"
-            :options="thingModelOptions"
-            :placeholder="$t('deviceTemplate.thingModelRef')"
-            clearable
-            filterable
-            @update:value="handleSearch"
-          />
-        </NGi>
-        <NGi :span="4">
-          <NButton @click="handleSearch">{{ $t('common._confirm') }}</NButton>
-        </NGi>
-      </NGrid>
+      <div class="mb-4 flex flex-wrap items-center gap-3">
+        <NSelect
+          v-model:value="statusFilter"
+          :options="statusOptions"
+          :placeholder="$t('deviceTemplate.status')"
+          clearable
+          style="width: 160px"
+          @update:value="handleSearch"
+        />
+        <NSelect
+          v-model:value="thingModelFilter"
+          :options="thingModelOptions"
+          :placeholder="$t('deviceTemplate.thingModelRef')"
+          clearable
+          filterable
+          style="width: 220px"
+          @update:value="handleSearch"
+        />
+        <NButton @click="handleSearch">{{ $t('common.search') }}</NButton>
+      </div>
 
       <NSpin :show="loading">
-        <NDataTable :columns="columns" :data="list" :bordered="false" />
-        <div class="mt-4 flex justify-end">
+        <NDataTable :columns="columns" :data="list" :bordered="false" :min-height="200" />
+        <NEmpty v-if="!loading && list.length === 0" :description="$t('common.nodata')" class="my-8" />
+        <div class="mt-4 flex items-center justify-between">
+          <NText depth="3" class="text-sm">{{ $t('common.total') }}: {{ total }}</NText>
           <NPagination
             :page="pagination.page"
             :page-size="pagination.page_size"
@@ -272,6 +300,16 @@ onMounted(async () => {
       <NForm :model="createForm" label-placement="left" label-width="100px">
         <NFormItem :label="$t('deviceTemplate.name')" required>
           <NInput v-model:value="createForm.name" :placeholder="$t('deviceTemplate.namePlaceholder')" />
+        </NFormItem>
+        <NFormItem :label="$t('deviceTemplate.thingModelRef')" required>
+          <NSelect
+            v-model:value="createForm.thing_model_id"
+            :options="thingModelOptions"
+            :placeholder="$t('deviceTemplate.thingModelRef')"
+            filterable
+            clearable
+            @update:value="v => { createForm.thing_model_id = v || ''; createForm.thing_model_snapshot_id = v ? (thingModelSnapshotMap[v] || '') : '' }"
+          />
         </NFormItem>
       </NForm>
       <template #footer>
