@@ -1,6 +1,7 @@
 <script lang="tsx" setup>
 import type { VueElement } from 'vue'
-import { computed, defineProps, ref, watch, watchEffect, onMounted } from 'vue'
+import { computed, defineProps, ref, watch, watchEffect, onMounted, onUnmounted } from 'vue'
+import _ from 'lodash'
 import { useRouter } from 'vue-router'
 import { NButton, NDataTable, NDatePicker, NInput, NSelect, NSpace, NPagination, NSpin } from 'naive-ui'
 import type { TreeSelectOption } from 'naive-ui'
@@ -265,6 +266,7 @@ defineExpose({
 const handleTreeSelectUpdate = (value, key) => {
   currentPage.value = 1
   searchCriteria.value[key] = value
+  getData()
 }
 
 // 用于加载动态选项的函数，适用于select和tree-select类型的搜索配置
@@ -306,10 +308,23 @@ onMounted(() => {
   getData()
 })
 
-// 为 input 类型添加专门的处理函数
-const handleInputChange = () => {
+const debouncedInputSearch = _.debounce(() => {
   currentPage.value = 1
+  getData()
+}, 400)
+
+const handleInputChange = () => {
+  debouncedInputSearch()
 }
+
+const handleSelectChange = () => {
+  currentPage.value = 1
+  getData()
+}
+
+onUnmounted(() => {
+  debouncedInputSearch.cancel()
+})
 
 // 修复 NSelect 的 filter 函数类型错误
 const filterSelectOption = (pattern: string, option: any) => {
@@ -437,7 +452,7 @@ const handleWarningClick = (item: DeviceItem) => {
               :render-tag="config.renderTag"
               :placeholder="$t(config.label)"
               class="input-style"
-              @update:value="currentPage = 1"
+              @update:value="handleSelectChange"
             />
           </template>
           <template v-else-if="config.type === 'date'">
