@@ -49,6 +49,9 @@ const DEFAULT_WRITE_EVENT_BY_COMPONENT: Record<string, string> = {
   'interaction/basic-select': 'change',
   'interaction/basic-input': 'submit'
 }
+const EZUIKIT_PLAYBACK_COMMAND = 'playback'
+/** Default cloud-recording spaceId for EZVIZ 云录制 playback (direct fill, not from telemetry). */
+const EZUIKIT_DEFAULT_SPACE_ID = '361254'
 const AUTO_WRITE_MARKER = 'field-binding'
 
 const props = defineProps<{
@@ -354,6 +357,89 @@ const ensureInteractiveWriteEvents = (config: any) => {
   }
 }
 
+const resolvePlatformDataSourceId = (config: any): string | undefined => {
+  const dataSources = Array.isArray(config?.dataSources) ? config.dataSources : []
+  const platformDs = dataSources.find((dataSource: any) => isPlatformFieldDataSource(dataSource))
+  return typeof platformDs?.id === 'string' ? platformDs.id : undefined
+}
+
+const ensureEzuikitPlaybackEvents = (config: any) => {
+  if (!config || !Array.isArray(config.nodes)) return config
+
+  const dataSourceId = resolvePlatformDataSourceId(config)
+  if (!dataSourceId) return config
+
+  const upsertEvent = (events: any[], eventName: string, payload: string) => {
+    const nextEvents = [...events]
+    const index = nextEvents.findIndex((handler) => handler?.event === eventName)
+    const action = {
+      type: 'callWrite',
+      dataSourceId,
+      payload
+    }
+
+    if (index >= 0) {
+      const existing = nextEvents[index]
+      const actions = Array.isArray(existing?.actions) ? existing.actions : []
+      if (actions.length === 0) {
+        nextEvents[index] = { ...existing, actions: [action] }
+      }
+      return nextEvents
+    }
+
+    nextEvents.push({ event: eventName, actions: [action] })
+    return nextEvents
+  }
+
+  return {
+    ...config,
+    nodes: config.nodes.map((node: any) => {
+      if (node?.type !== 'media/ezuikit-player') return node
+      const events = Array.isArray(node?.events) ? node.events : []
+      let nextEvents = upsertEvent(
+        events,
+        'playbackRequest',
+        `({ ${JSON.stringify(EZUIKIT_PLAYBACK_COMMAND)}: payload })`
+      )
+      nextEvents = upsertEvent(
+        nextEvents,
+        'liveRequest',
+        `({ ${JSON.stringify(EZUIKIT_PLAYBACK_COMMAND)}: { type: "live" } })`
+      )
+
+      const props = { ...(node.props || {}) }
+      delete props.ezopenUrl
+      delete props.playbackBegin
+      delete props.playbackEnd
+      delete props.streamSuffix
+      delete props.playbackParamsUrl
+      if (!String(props.spaceId ?? '').trim()) {
+        props.spaceId = EZUIKIT_DEFAULT_SPACE_ID
+      }
+      if (!String(props.busType ?? '').trim()) {
+        props.busType = '7'
+      }
+
+      const data = (Array.isArray(node?.data) ? node.data : []).filter(
+        (binding: any) =>
+          !['ezopenUrl', 'playbackParamsUrl', 'spaceId', 'busType'].includes(binding?.targetProp),
+      )
+      const ensureBinding = (targetProp: string, fieldId: string) => {
+        if (data.some((binding: any) => binding?.targetProp === targetProp)) return
+        data.push({
+          targetProp,
+          expression: `{{ ds.${dataSourceId}.data.${fieldId} }}`
+        })
+      }
+      ensureBinding('accessToken', 'ys7_playback_access_token')
+      ensureBinding('deviceSerial', 'ys7_device_serial')
+      ensureBinding('channelNo', 'ys7_channel_no')
+
+      return { ...node, props, data, events: nextEvents }
+    })
+  }
+}
+
 const normalizeHistoryTimeRange = (value: unknown) => {
   if (typeof value !== 'string') return 'last_30d'
   if (value.startsWith('last_')) return value
@@ -569,7 +655,9 @@ const buildRequestedAlarmStatusData = async (fieldIds: string[], deviceId?: stri
 function normalizeViewerConfig(config: any) {
   if (!config || props.mode !== 'viewer') return config
 
-  const platformNormalizedConfig = normalizeViewerPlatformDataSources(ensureInteractiveWriteEvents(config))
+  const platformNormalizedConfig = normalizeViewerPlatformDataSources(
+    ensureEzuikitPlaybackEvents(ensureInteractiveWriteEvents(config))
+  )
 
   const canvas = platformNormalizedConfig.canvas || platformNormalizedConfig.canvasConfig
   if (!canvas || canvas.mode !== 'infinite') return platformNormalizedConfig
@@ -636,7 +724,7 @@ const pushPlatformFieldData = (fields: Record<string, unknown>, deviceId?: strin
 }
 
 function normalizeLoadConfig(config: any) {
-  const writeNormalizedConfig = ensureInteractiveWriteEvents(config)
+  const writeNormalizedConfig = ensureInteractiveWriteEvents(ensureEzuikitPlaybackEvents(config))
   return normalizeViewerConfig(writeNormalizedConfig)
 }
 
