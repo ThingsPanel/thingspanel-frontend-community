@@ -1,5 +1,5 @@
 <template>
-  <div class="thingsvis-frame-container">
+  <div class="thingsvis-frame-container" :class="{ 'thingsvis-frame-container--auto-height': autoHeight }">
     <iframe
       v-if="url"
       ref="iframeRef"
@@ -15,6 +15,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { debounce } from 'lodash'
 import { useRouter } from 'vue-router'
 import { clearThingsVisToken, getThingsVisToken } from '@/utils/thingsvis'
 import {
@@ -58,6 +59,8 @@ const PLATFORM_DEVICE_DATA_SOURCE_ID_RE = /^__platform_(.+)__$/
 const props = defineProps<{
   id: string
   mode?: string
+  /** Resize iframe to reported content height (home embed uses outer page scroll) */
+  autoHeight?: boolean
   schema?: {
     id?: string
     name?: string
@@ -423,6 +426,47 @@ type PlatformSourceDescriptor = {
 const token = ref('')
 const url = ref('')
 const iframeRef = ref<HTMLIFrameElement>()
+let reportedIframeHeight = 0
+
+function computeGridEmbedHeightFromSchema(
+  schema?: {
+    canvasConfig?: Record<string, unknown>
+    nodes?: unknown[]
+  } | null
+): number | null {
+  const canvas = schema?.canvasConfig
+  const nodes = schema?.nodes
+  if (!canvas || !Array.isArray(nodes)) return null
+
+  const mode = typeof canvas.mode === 'string' ? canvas.mode : ''
+  const hasGrid =
+    mode === 'grid' ||
+    typeof canvas.gridRowHeight === 'number' ||
+    typeof canvas.gridCols === 'number'
+  if (!hasGrid) return null
+
+  const rowHeight = typeof canvas.gridRowHeight === 'number' ? canvas.gridRowHeight : 50
+  const gap = typeof canvas.gap === 'number' ? canvas.gap : 10
+  let maxRow = 0
+
+  nodes.forEach((node) => {
+    const grid = (node as { grid?: { y?: number; h?: number } })?.grid
+    if (grid && typeof grid.y === 'number' && typeof grid.h === 'number') {
+      maxRow = Math.max(maxRow, grid.y + grid.h)
+    }
+  })
+
+  if (maxRow <= 0) return null
+  return maxRow * (rowHeight + gap) - gap
+}
+
+const applyIframeHeight = debounce((height: number) => {
+  if (!iframeRef.value || !Number.isFinite(height) || height <= 0) return
+  const next = Math.ceil(height)
+  if (Math.abs(next - reportedIframeHeight) < 2) return
+  reportedIframeHeight = next
+  iframeRef.value.style.height = `${next}px`
+}, 80)
 let viewerHydrationTimers: Array<ReturnType<typeof setTimeout>> = []
 let viewerHydrationInFlight = false
 let viewerHydrationDone = false
@@ -2078,6 +2122,12 @@ const handleMessage = async (event: MessageEvent) => {
     return
   }
 
+  if (type === 'tv:content-height' && props.autoHeight) {
+    const height = Number((payload as { height?: unknown }).height)
+    applyIframeHeight(height)
+    return
+  }
+
   if (type === 'thingsvis:requestDeviceFields') {
     const deviceId = typeof (payload as any).deviceId === 'string' ? (payload as any).deviceId : undefined
     const directTemplateId = typeof (payload as any).templateId === 'string' ? (payload as any).templateId : undefined
@@ -2166,6 +2216,16 @@ onMounted(async () => {
 })
 
 watch(
+  () => [props.autoHeight, props.schema] as const,
+  () => {
+    if (!props.autoHeight) return
+    const initialHeight = computeGridEmbedHeightFromSchema(props.schema)
+    if (initialHeight) applyIframeHeight(initialHeight)
+  },
+  { immediate: true, deep: true }
+)
+
+watch(
   () => props.id,
   (nextId) => {
     resetViewerHydrationState()
@@ -2175,6 +2235,7 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  applyIframeHeight.cancel()
   window.removeEventListener('message', handleMessage)
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
   if (pendingInitRetryTimer) clearTimeout(pendingInitRetryTimer)
@@ -2203,6 +2264,17 @@ onBeforeUnmount(() => {
   height: 100%;
   min-height: clamp(320px, 48vh, 560px);
   position: relative;
+}
+
+.thingsvis-frame-container.thingsvis-frame-container--auto-height {
+  height: auto;
+  min-height: 0;
+}
+
+.thingsvis-frame-container--auto-height .thingsvis-frame {
+  height: 0;
+  min-height: 0;
+  border: 0;
 }
 
 .thingsvis-frame {

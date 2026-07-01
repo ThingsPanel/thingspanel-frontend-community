@@ -282,17 +282,39 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
     </n-result>
   </div>
 
-  <!-- ThingsVis 首页 -->
-  <ThingsVisAppFrame
-    v-else-if="useThingsVis && thingsVisHome"
-    :id="thingsVisHome.id"
-    :schema="thingsVisHome"
-    mode="viewer"
-    class="h-full w-full"
-  />
+  <!-- ThingsVis 首页：无 layout 内边距，由外层 layout 滚动 -->
+  <div v-else-if="useThingsVis && thingsVisHome" class="thingsvis-home-embed">
+    <ThingsVisAppFrame
+      :id="thingsVisHome.id"
+      :schema="thingsVisHome"
+      mode="viewer"
+      auto-height
+      class="w-full"
+    />
+  </div>
 </template>
 
 <style scoped>
+.thingsvis-home-embed {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 !important;
+  margin: 0;
+}
+
+.thingsvis-home-embed :deep(.thingsvis-frame-container) {
+  min-height: 0;
+  height: auto;
+}
+
+.thingsvis-home-embed :deep(.thingsvis-frame) {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  overflow: hidden;
+}
+
 .home-panel {
   overflow-y: auto;
   overflow-x: hidden;

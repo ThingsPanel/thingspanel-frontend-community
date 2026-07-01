@@ -38,7 +38,7 @@ const routeStore = useRouteStore()
         :is="Component"
         v-if="appStore.reloadFlag"
         :key="route.path"
-        :class="{ 'p-16px': showPadding }"
+        :class="{ 'p-16px': showPadding && route.meta.contentPadding !== false }"
         class="flex-grow bg-layout transition-300"
       />
     </KeepAlive>

@@ -60,6 +60,8 @@ declare module 'vue-router' {
     multiTab?: boolean
     /** If set, the route will be fixed in tabs, and the value is the order of fixed tabs */
     fixedIndexInTab?: number
+    /** Disable GlobalContent default p-16px padding (e.g. full-bleed ThingsVis home embed) */
+    contentPadding?: boolean
     remark?: string
   }
 }
