@@ -6,6 +6,7 @@
       :src="url"
       class="thingsvis-frame"
       frameborder="0"
+      scrolling="no"
       allow="fullscreen; autoplay; clipboard-write"
       allowfullscreen
       @load="handleIframeLoad"
@@ -15,7 +16,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
-import { debounce } from 'lodash'
 import { useRouter } from 'vue-router'
 import { clearThingsVisToken, getThingsVisToken } from '@/utils/thingsvis'
 import {
@@ -445,8 +445,19 @@ function computeGridEmbedHeightFromSchema(
     typeof canvas.gridCols === 'number'
   if (!hasGrid) return null
 
-  const rowHeight = typeof canvas.gridRowHeight === 'number' ? canvas.gridRowHeight : 50
-  const gap = typeof canvas.gap === 'number' ? canvas.gap : 10
+  const rowHeight =
+    typeof canvas.gridRowHeight === 'number'
+      ? canvas.gridRowHeight
+      : typeof canvas.rowHeight === 'number'
+        ? canvas.rowHeight
+        : 50
+  const gap =
+    typeof canvas.gridGap === 'number'
+      ? canvas.gridGap
+      : typeof canvas.gap === 'number'
+        ? canvas.gap
+        : 10
+  const padding = typeof canvas.padding === 'number' ? canvas.padding : 0
   let maxRow = 0
 
   nodes.forEach((node) => {
@@ -457,16 +468,26 @@ function computeGridEmbedHeightFromSchema(
   })
 
   if (maxRow <= 0) return null
-  return maxRow * (rowHeight + gap) - gap
+  return maxRow * (rowHeight + gap) - gap + padding * 2
 }
 
-const applyIframeHeight = debounce((height: number) => {
+let pendingIframeHeightRaf = 0
+
+function applyIframeHeight(height: number) {
   if (!iframeRef.value || !Number.isFinite(height) || height <= 0) return
   const next = Math.ceil(height)
   if (Math.abs(next - reportedIframeHeight) < 2) return
-  reportedIframeHeight = next
-  iframeRef.value.style.height = `${next}px`
-}, 80)
+
+  if (pendingIframeHeightRaf) cancelAnimationFrame(pendingIframeHeightRaf)
+  pendingIframeHeightRaf = requestAnimationFrame(() => {
+    pendingIframeHeightRaf = 0
+    if (!iframeRef.value) return
+    reportedIframeHeight = next
+    iframeRef.value.style.height = `${next}px`
+    const container = iframeRef.value.parentElement as HTMLElement | null
+    if (container) container.style.height = `${next}px`
+  })
+}
 let viewerHydrationTimers: Array<ReturnType<typeof setTimeout>> = []
 let viewerHydrationInFlight = false
 let viewerHydrationDone = false
@@ -2128,6 +2149,17 @@ const handleMessage = async (event: MessageEvent) => {
     return
   }
 
+  if (type === 'tv:embed-wheel' && props.autoHeight) {
+    const deltaY = Number((payload as { deltaY?: unknown }).deltaY)
+    const deltaX = Number((payload as { deltaX?: unknown }).deltaX)
+    const scrollEl = document.getElementById('__SCROLL_EL_ID__')
+    if (scrollEl) {
+      if (Number.isFinite(deltaY)) scrollEl.scrollTop += deltaY
+      if (Number.isFinite(deltaX)) scrollEl.scrollLeft += deltaX
+    }
+    return
+  }
+
   if (type === 'thingsvis:requestDeviceFields') {
     const deviceId = typeof (payload as any).deviceId === 'string' ? (payload as any).deviceId : undefined
     const directTemplateId = typeof (payload as any).templateId === 'string' ? (payload as any).templateId : undefined
@@ -2228,6 +2260,12 @@ watch(
 watch(
   () => props.id,
   (nextId) => {
+    reportedIframeHeight = 0
+    if (iframeRef.value) {
+      iframeRef.value.style.height = ''
+      const container = iframeRef.value.parentElement as HTMLElement | null
+      if (container) container.style.height = ''
+    }
     resetViewerHydrationState()
     if (!nextId || !token.value) return
     scheduleInit()
@@ -2235,7 +2273,7 @@ watch(
 )
 
 onBeforeUnmount(() => {
-  applyIframeHeight.cancel()
+  if (pendingIframeHeightRaf) cancelAnimationFrame(pendingIframeHeightRaf)
   window.removeEventListener('message', handleMessage)
   if (pendingInitDebounceTimer) clearTimeout(pendingInitDebounceTimer)
   if (pendingInitRetryTimer) clearTimeout(pendingInitRetryTimer)
@@ -2272,9 +2310,10 @@ onBeforeUnmount(() => {
 }
 
 .thingsvis-frame-container--auto-height .thingsvis-frame {
-  height: 0;
+  height: auto;
   min-height: 0;
   border: 0;
+  overflow: hidden;
 }
 
 .thingsvis-frame {

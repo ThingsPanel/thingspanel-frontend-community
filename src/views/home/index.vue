@@ -300,11 +300,13 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
   max-width: 100%;
   padding: 0 !important;
   margin: 0;
+  overflow: visible;
 }
 
 .thingsvis-home-embed :deep(.thingsvis-frame-container) {
   min-height: 0;
   height: auto;
+  overflow: visible;
 }
 
 .thingsvis-home-embed :deep(.thingsvis-frame) {
@@ -313,6 +315,7 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
   min-height: 0;
   border: 0;
   overflow: hidden;
+  vertical-align: top;
 }
 
 .home-panel {
