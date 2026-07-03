@@ -827,12 +827,13 @@ function buildThingsVisFrameUrl(thingsVisToken: string): string {
   const thingsvisApiBaseUrl = encodeURIComponent(getThingsVisApiBase())
   const platformApiBaseUrl = encodeURIComponent(getPlatformApiBase())
   const saveTarget = 'host'
+  const embedSizing = props.autoHeight ? '&embedSizing=content' : ''
 
   if (props.mode === 'viewer') {
-    return `${getStudioBase()}#/embed?mode=embedded&provider=thingspanel&context=dashboard&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
+    return `${getStudioBase()}#/embed?mode=embedded&provider=thingspanel&context=dashboard&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}${embedSizing}`
   }
 
-  return `${getStudioBase()}#/editor?mode=embedded&provider=thingspanel&context=dashboard&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
+  return `${getStudioBase()}#/editor?mode=embedded&provider=thingspanel&context=dashboard&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}${embedSizing}`
 }
 
 function unwrapList(payload: any): any[] {
