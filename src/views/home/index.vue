@@ -38,6 +38,42 @@ function isCompleteThingsVisDashboard(dashboard?: ThingsVisHomeDashboard | null)
   return true
 }
 
+function inferThingsVisCanvasMode(
+  canvas: Record<string, unknown> | null | undefined,
+  nodes: unknown[] = []
+): 'fixed' | 'infinite' | 'grid' {
+  const mode = typeof canvas?.mode === 'string' ? canvas.mode : ''
+  if (mode === 'fixed' || mode === 'infinite' || mode === 'grid') {
+    return mode
+  }
+  if (mode === 'reflow') return 'infinite'
+  if (typeof canvas?.gridCols === 'number' || typeof canvas?.gridRowHeight === 'number') {
+    return 'grid'
+  }
+  if (
+    nodes.some(node => {
+      const grid = (node as { grid?: { x?: number; y?: number; w?: number; h?: number } })?.grid
+      return (
+        grid &&
+        typeof grid.x === 'number' &&
+        typeof grid.y === 'number' &&
+        typeof grid.w === 'number' &&
+        typeof grid.h === 'number'
+      )
+    })
+  ) {
+    return 'grid'
+  }
+  return 'infinite'
+}
+
+/** Grid home uses content-sized iframe; fixed/infinite need a full-height viewport for ScaleScreen. */
+const useThingsVisGridAutoHeight = computed(() => {
+  const dashboard = thingsVisHome.value
+  if (!dashboard) return false
+  return inferThingsVisCanvasMode(dashboard.canvasConfig, dashboard.nodes) === 'grid'
+})
+
 // ThingsVis 请求失败时的重试状态（针对超管首次登录场景）
 const thingsVisRetryCount = ref(0)
 const MAX_THINGSVIS_RETRY = 5 // 增加到 5 次重试
@@ -282,14 +318,18 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
     </n-result>
   </div>
 
-  <!-- ThingsVis 首页：无 layout 内边距，由外层 layout 滚动 -->
-  <div v-else-if="useThingsVis && thingsVisHome" class="thingsvis-home-embed">
+  <!-- Grid: content-sized iframe + outer scroll. Fixed/infinite: fill viewport for ScaleScreen. -->
+  <div
+    v-else-if="useThingsVis && thingsVisHome"
+    class="thingsvis-home-embed"
+    :class="useThingsVisGridAutoHeight ? 'thingsvis-home-embed--grid' : 'thingsvis-home-embed--fixed h-full'"
+  >
     <ThingsVisAppFrame
       :id="thingsVisHome.id"
       :schema="thingsVisHome"
       mode="viewer"
-      auto-height
-      class="w-full"
+      :auto-height="useThingsVisGridAutoHeight"
+      :class="useThingsVisGridAutoHeight ? 'w-full' : 'h-full w-full'"
     />
   </div>
 </template>
@@ -300,22 +340,35 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
   max-width: 100%;
   padding: 0 !important;
   margin: 0;
+}
+
+.thingsvis-home-embed--grid {
   overflow: visible;
 }
 
-.thingsvis-home-embed :deep(.thingsvis-frame-container) {
+.thingsvis-home-embed--grid :deep(.thingsvis-frame-container) {
   min-height: 0;
   height: auto;
   overflow: visible;
 }
 
-.thingsvis-home-embed :deep(.thingsvis-frame) {
+.thingsvis-home-embed--grid :deep(.thingsvis-frame) {
   display: block;
   width: 100%;
   min-height: 0;
   border: 0;
   overflow: hidden;
   vertical-align: top;
+}
+
+.thingsvis-home-embed--fixed {
+  overflow: hidden;
+}
+
+.thingsvis-home-embed--fixed :deep(.thingsvis-frame-container),
+.thingsvis-home-embed--fixed :deep(.thingsvis-frame) {
+  height: 100%;
+  min-height: 0;
 }
 
 .home-panel {
