@@ -1,33 +1,17 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {
-  NButton,
-  NEmpty,
-  NForm,
-  NFormItem,
-  NGrid,
-  NGridItem,
-  NInput,
-  NModal,
-  NSpin,
-  useMessage
-} from 'naive-ui'
+import { NEmpty, NInput, NSpin, useMessage } from 'naive-ui'
 import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
 import { bootstrapAppEmbedSession } from '@/utils/app-embed-auth'
 import {
-  createThingsVisProject,
-  deleteThingsVisProject,
   getThingsVisDashboard,
   getThingsVisDashboards,
   getThingsVisProjects,
-  updateThingsVisProject,
   type DashboardListItem,
   type ProjectListItem,
   type ThingsVisDashboard
 } from '@/service/api/thingsvis'
-import { deleteDashboardMenuConfig } from '@/service/api/dashboard-menu'
-import { clearThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
 
 type AppView = 'projects' | 'dashboards' | 'preview'
 
@@ -43,34 +27,31 @@ const searchKeyword = ref('')
 const dashboards = ref<DashboardListItem[]>([])
 const selectedProject = ref<ProjectListItem | null>(null)
 const selectedDashboardId = ref('')
+const selectedDashboardName = ref('')
 const dashboardSchema = ref<ThingsVisDashboard | null>(null)
-const showModal = ref(false)
-const editingProject = ref<ProjectListItem | null>(null)
-const deleteConfirmModal = ref(false)
-const pendingDeleteProject = ref<{ id: string; name: string } | null>(null)
-const deletingId = ref<string | null>(null)
-
-const formData = ref({
-  name: '',
-  description: ''
-})
 
 const filteredProjects = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase()
   if (!keyword) return projects.value
-
   return projects.value.filter(item => item.name.toLowerCase().includes(keyword))
 })
 
-const subPageTitle = computed(() => {
+const navTitle = computed(() => {
   if (currentView.value === 'preview') {
-    return dashboardSchema.value?.name || '看板预览'
+    return selectedDashboardName.value || dashboardSchema.value?.name || '看板预览'
   }
   if (currentView.value === 'dashboards') {
     return selectedProject.value?.name || '看板列表'
   }
   return ''
 })
+
+const showSubNav = computed(() => currentView.value !== 'projects')
+
+function pushViewState(view: AppView) {
+  if (typeof window === 'undefined' || typeof window.history?.pushState !== 'function') return
+  window.history.pushState({ view }, '')
+}
 
 async function fetchProjects() {
   loading.value = true
@@ -94,7 +75,6 @@ async function fetchDashboards(projectId: string) {
       page: 1,
       limit: 100
     })
-
     dashboards.value = !error && data ? data.data : []
   } finally {
     loading.value = false
@@ -119,131 +99,59 @@ async function loadDashboardSchema(dashboardId: string) {
 function openProject(project: ProjectListItem) {
   selectedProject.value = project
   currentView.value = 'dashboards'
+  pushViewState('dashboards')
   void fetchDashboards(project.id)
 }
 
 function openDashboard(dashboard: DashboardListItem) {
   selectedDashboardId.value = dashboard.id
+  selectedDashboardName.value = dashboard.name
   currentView.value = 'preview'
+  pushViewState('preview')
 }
 
-function openCreateModal() {
-  editingProject.value = null
-  formData.value = { name: '', description: '' }
-  showModal.value = true
+function resetToProjects() {
+  currentView.value = 'projects'
+  selectedProject.value = null
+  selectedDashboardId.value = ''
+  selectedDashboardName.value = ''
+  dashboardSchema.value = null
+  dashboards.value = []
 }
 
-function openEditModal(project: ProjectListItem) {
-  editingProject.value = project
-  formData.value = {
-    name: project.name,
-    description: project.description || ''
-  }
-  showModal.value = true
-}
-
-async function handleSaveProject() {
-  if (!formData.value.name.trim()) {
-    message.error('请输入项目名称')
-    return
-  }
-
-  try {
-    if (editingProject.value) {
-      const { error } = await updateThingsVisProject(editingProject.value.id, {
-        name: formData.value.name,
-        description: formData.value.description || null
-      })
-      if (!error) {
-        message.success('更新成功')
-        showModal.value = false
-        await fetchProjects()
-      } else {
-        message.error('更新失败')
-      }
-      return
-    }
-
-    const { error } = await createThingsVisProject({
-      name: formData.value.name,
-      description: formData.value.description || undefined
-    })
-    if (!error) {
-      message.success('创建成功')
-      showModal.value = false
-      formData.value = { name: '', description: '' }
-      await fetchProjects()
-    } else {
-      message.error('创建失败')
-    }
-  } catch (error) {
-    message.error('操作失败')
-    console.error(error)
-  }
-}
-
-function openDeleteConfirm(id: string, name: string) {
-  const project = projects.value.find(item => item.id === id)
-  if ((project?._count?.dashboards || 0) > 0) {
-    message.warning('该项目下有仪表盘，无法删除。请先删除所有仪表盘。')
-    return
-  }
-
-  pendingDeleteProject.value = { id, name }
-  deleteConfirmModal.value = true
-}
-
-async function handleDeleteProject() {
-  if (!pendingDeleteProject.value || deletingId.value) return
-
-  deletingId.value = pendingDeleteProject.value.id
-  try {
-    const { id } = pendingDeleteProject.value
-    const { data: dashboardsData } = await getThingsVisDashboards({
-      projectId: id,
-      page: 1,
-      limit: 1000
-    })
-    const dashboardIds = (dashboardsData?.data || []).map((item: { id: string }) => item.id)
-
-    for (const dashboardId of dashboardIds) {
-      const { error } = await deleteDashboardMenuConfig(dashboardId)
-      if (error) {
-        message.error('删除失败：无法清理部分关联菜单')
-        return
-      }
-    }
-
-    const { error } = await deleteThingsVisProject(id)
-    if (!error) {
-      deleteConfirmModal.value = false
-      pendingDeleteProject.value = null
-      clearThingsVisHomeCache()
-      message.success('删除成功')
-      await fetchProjects()
-    } else {
-      message.error('删除失败')
-    }
-  } catch (error) {
-    message.error('删除失败')
-    console.error(error)
-  } finally {
-    deletingId.value = null
-  }
+function resetToDashboards() {
+  currentView.value = 'dashboards'
+  selectedDashboardId.value = ''
+  selectedDashboardName.value = ''
+  dashboardSchema.value = null
 }
 
 function goBack() {
+  if (typeof window !== 'undefined' && window.history.length > 1) {
+    window.history.back()
+    return
+  }
+
   if (currentView.value === 'preview') {
-    currentView.value = selectedProject.value ? 'dashboards' : 'projects'
-    selectedDashboardId.value = ''
-    dashboardSchema.value = null
+    resetToDashboards()
     return
   }
 
   if (currentView.value === 'dashboards') {
-    currentView.value = 'projects'
-    selectedProject.value = null
-    dashboards.value = []
+    resetToProjects()
+  }
+}
+
+function handlePopState(event: PopStateEvent) {
+  const stateView = (event.state as { view?: AppView } | null)?.view
+
+  if (stateView === 'dashboards' && currentView.value === 'preview') {
+    resetToDashboards()
+    return
+  }
+
+  if ((stateView === 'projects' || !stateView) && currentView.value !== 'projects') {
+    resetToProjects()
   }
 }
 
@@ -258,6 +166,8 @@ watch(
 )
 
 onMounted(async () => {
+  window.addEventListener('popstate', handlePopState)
+
   const authenticated = await bootstrapAppEmbedSession({
     token: route.query.token,
     lang: route.query.lang
@@ -271,30 +181,27 @@ onMounted(async () => {
   authReady.value = true
   await fetchProjects()
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('popstate', handlePopState)
+})
 </script>
 
 <template>
   <div class="visualization-app">
-    <header v-if="currentView !== 'projects'" class="visualization-app__header">
-      <button type="button" class="visualization-app__back" @click="goBack">返回</button>
-      <h1 class="visualization-app__title">{{ subPageTitle }}</h1>
+    <header v-if="showSubNav" class="mobile-nav-bar">
+      <button type="button" class="mobile-nav-bar__back" aria-label="返回" @click="goBack">
+        <icon-mdi:chevron-left class="mobile-nav-bar__back-icon" />
+      </button>
+      <h1 class="mobile-nav-bar__title">{{ navTitle }}</h1>
     </header>
 
-    <main class="visualization-app__main">
+    <main class="visualization-app__main" :class="{ 'visualization-app__main--sub': showSubNav }">
       <NSpin :show="loading || !authReady">
         <section v-if="authReady && currentView === 'projects'" class="visualization-app__section">
           <div class="visualization-app__toolbar">
-            <div class="visualization-app__toolbar-left">
-              <h2 class="visualization-app__section-title">可视化项目</h2>
-              <span class="visualization-app__count">{{ filteredProjects.length }} 个项目</span>
-            </div>
-
-            <NButton type="primary" size="small" @click="openCreateModal">
-              <template #icon>
-                <icon-mdi:plus />
-              </template>
-              新建项目
-            </NButton>
+            <h2 class="visualization-app__section-title">可视化项目</h2>
+            <span class="visualization-app__count">{{ filteredProjects.length }} 个项目</span>
           </div>
 
           <NInput
@@ -310,7 +217,7 @@ onMounted(async () => {
 
           <NEmpty
             v-if="!loading && filteredProjects.length === 0"
-            description="暂无项目，点击上方按钮创建第一个项目"
+            description="暂无可视化项目"
             class="py-16"
           >
             <template #icon>
@@ -318,46 +225,25 @@ onMounted(async () => {
             </template>
           </NEmpty>
 
-          <NGrid v-else x-gap="16" y-gap="16" cols="1">
-            <NGridItem v-for="project in filteredProjects" :key="project.id">
-              <div class="visualization-app__project-card" @click="openProject(project)">
-                <div class="visualization-app__project-top">
-                  <div class="visualization-app__project-icon">
-                    <icon-mdi:folder class="text-24px text-primary" />
-                  </div>
-
-                  <div class="visualization-app__project-actions">
-                    <NButton size="tiny" quaternary circle @click.stop="openEditModal(project)">
-                      <template #icon>
-                        <icon-mdi:pencil class="text-16px" />
-                      </template>
-                    </NButton>
-                    <NButton size="tiny" quaternary circle @click.stop="openDeleteConfirm(project.id, project.name)">
-                      <template #icon>
-                        <icon-mdi:delete class="text-16px" />
-                      </template>
-                    </NButton>
-                  </div>
-                </div>
-
-                <h3 class="visualization-app__project-name">{{ project.name }}</h3>
-                <p class="visualization-app__project-desc">
-                  {{ project.description || '暂无描述' }}
-                </p>
-
-                <div class="visualization-app__project-meta">
-                  <span>
-                    <icon-mdi:chart-box-outline />
-                    {{ project._count?.dashboards || 0 }} 个仪表盘
-                  </span>
-                  <span>
-                    <icon-mdi:clock-outline />
-                    {{ new Date(project.updatedAt).toLocaleDateString() }}
-                  </span>
-                </div>
+          <div v-else class="visualization-app__list">
+            <button
+              v-for="project in filteredProjects"
+              :key="project.id"
+              type="button"
+              class="visualization-app__item-card"
+              @click="openProject(project)"
+            >
+              <div class="visualization-app__item-icon">
+                <icon-mdi:folder class="text-22px text-primary" />
               </div>
-            </NGridItem>
-          </NGrid>
+              <div class="visualization-app__item-body">
+                <strong>{{ project.name }}</strong>
+                <span>{{ project._count?.dashboards || 0 }} 个看板</span>
+                <p v-if="project.description">{{ project.description }}</p>
+              </div>
+              <icon-mdi:chevron-right class="visualization-app__item-arrow" />
+            </button>
+          </div>
         </section>
 
         <section v-else-if="authReady && currentView === 'dashboards'" class="visualization-app__section">
@@ -368,11 +254,14 @@ onMounted(async () => {
               v-for="dashboard in dashboards"
               :key="dashboard.id"
               type="button"
-              class="visualization-app__card"
+              class="visualization-app__item-card visualization-app__item-card--compact"
               @click="openDashboard(dashboard)"
             >
-              <strong>{{ dashboard.name }}</strong>
-              <span>{{ dashboard.updatedAt ? new Date(dashboard.updatedAt).toLocaleDateString() : '' }}</span>
+              <div class="visualization-app__item-body">
+                <strong>{{ dashboard.name }}</strong>
+                <span>{{ dashboard.updatedAt ? new Date(dashboard.updatedAt).toLocaleDateString() : '' }}</span>
+              </div>
+              <icon-mdi:chevron-right class="visualization-app__item-arrow" />
             </button>
           </div>
         </section>
@@ -386,58 +275,10 @@ onMounted(async () => {
             auto-height
             class="visualization-app__frame"
           />
-          <div v-else class="visualization-app__empty-preview">
-            <p>无法加载看板</p>
-            <NButton type="primary" @click="goBack">返回</NButton>
-          </div>
+          <NEmpty v-else description="无法加载看板" class="py-16" />
         </section>
       </NSpin>
     </main>
-
-    <NModal v-model:show="showModal" preset="card" :title="editingProject ? '编辑项目' : '新建项目'" class="w-500px">
-      <NForm :model="formData">
-        <NFormItem label="项目名称" path="name">
-          <NInput v-model:value="formData.name" placeholder="请输入项目名称" maxlength="50" show-count />
-        </NFormItem>
-
-        <NFormItem label="项目描述">
-          <NInput
-            v-model:value="formData.description"
-            type="textarea"
-            placeholder="请输入项目描述(可选)"
-            :rows="4"
-            maxlength="200"
-            show-count
-          />
-        </NFormItem>
-      </NForm>
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <NButton @click="showModal = false">取消</NButton>
-          <NButton type="primary" @click="handleSaveProject">
-            {{ editingProject ? '更新' : '创建' }}
-          </NButton>
-        </div>
-      </template>
-    </NModal>
-
-    <NModal
-      v-model:show="deleteConfirmModal"
-      preset="dialog"
-      type="warning"
-      title="确认删除"
-      :action-style="{ gap: '8px' }"
-    >
-      <template #icon>
-        <icon-mdi:alert-circle class="text-24px text-orange-400" />
-      </template>
-      <template #default>确定删除项目"{{ pendingDeleteProject?.name }}"吗？该操作不可恢复。</template>
-      <template #action>
-        <NButton :disabled="!!deletingId" @click="deleteConfirmModal = false">取消</NButton>
-        <NButton type="error" :loading="!!deletingId" @click="handleDeleteProject">确认删除</NButton>
-      </template>
-    </NModal>
   </div>
 </template>
 
@@ -447,34 +288,56 @@ onMounted(async () => {
   background: #f5f7fb;
 }
 
-.visualization-app__header {
+.mobile-nav-bar {
   position: sticky;
   top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  z-index: 20;
+  height: 44px;
   background: #fff;
-  border-bottom: 1px solid #eef0f4;
+  border-bottom: 1px solid #eee;
 }
 
-.visualization-app__back {
+.mobile-nav-bar__back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   border: none;
   background: transparent;
-  color: #646cff;
-  font-size: 14px;
 }
 
-.visualization-app__title {
+.mobile-nav-bar__back-icon {
+  font-size: 28px;
+  color: #111;
+}
+
+.mobile-nav-bar__title {
+  display: flex;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
   margin: 0;
-  font-size: 16px;
+  padding: 0 52px;
+  overflow: hidden;
+  color: #111;
+  font-size: 17px;
   font-weight: 600;
-  color: #1f2937;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .visualization-app__main {
   padding: 16px;
+}
+
+.visualization-app__main--sub {
+  padding-top: 12px;
 }
 
 .visualization-app__section,
@@ -484,17 +347,9 @@ onMounted(async () => {
 
 .visualization-app__toolbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.visualization-app__toolbar-left {
-  display: flex;
   align-items: baseline;
   gap: 8px;
-  min-width: 0;
+  margin-bottom: 12px;
 }
 
 .visualization-app__section-title {
@@ -507,76 +362,10 @@ onMounted(async () => {
 .visualization-app__count {
   color: #9ca3af;
   font-size: 13px;
-  white-space: nowrap;
 }
 
 .visualization-app__search {
   margin-bottom: 16px;
-}
-
-.visualization-app__project-card {
-  padding: 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #fff;
-}
-
-.visualization-app__project-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.visualization-app__project-icon {
-  display: flex;
-  width: 48px;
-  height: 48px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: rgb(100 108 255 / 10%);
-}
-
-.visualization-app__project-actions {
-  display: flex;
-  gap: 4px;
-}
-
-.visualization-app__project-name {
-  margin: 0 0 8px;
-  overflow: hidden;
-  color: #111827;
-  font-size: 16px;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.visualization-app__project-desc {
-  display: -webkit-box;
-  min-height: 40px;
-  margin: 0 0 12px;
-  overflow: hidden;
-  color: #6b7280;
-  font-size: 13px;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.visualization-app__project-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  color: #9ca3af;
-  font-size: 12px;
-}
-
-.visualization-app__project-meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
 }
 
 .visualization-app__list {
@@ -585,38 +374,71 @@ onMounted(async () => {
   gap: 12px;
 }
 
-.visualization-app__card {
+.visualization-app__item-card {
+  display: flex;
   width: 100%;
+  align-items: center;
+  gap: 12px;
   padding: 16px;
-  border: 1px solid #e5e7eb;
+  border: none;
   border-radius: 12px;
   background: #fff;
   text-align: left;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
 }
 
-.visualization-app__card strong {
+.visualization-app__item-card--compact {
+  align-items: center;
+}
+
+.visualization-app__item-icon {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgb(100 108 255 / 10%);
+}
+
+.visualization-app__item-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.visualization-app__item-body strong {
   display: block;
-  margin-bottom: 6px;
+  overflow: hidden;
+  margin-bottom: 4px;
   color: #111827;
   font-size: 16px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.visualization-app__card span {
+.visualization-app__item-body span,
+.visualization-app__item-body p {
   color: #6b7280;
   font-size: 13px;
 }
 
-.visualization-app__frame {
-  width: 100%;
+.visualization-app__item-body p {
+  display: -webkit-box;
+  margin: 6px 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
-.visualization-app__empty-preview {
-  display: flex;
-  min-height: 240px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: #9ca3af;
+.visualization-app__item-arrow {
+  flex-shrink: 0;
+  font-size: 20px;
+  color: #c4c4c4;
+}
+
+.visualization-app__frame {
+  width: 100%;
 }
 </style>
