@@ -257,7 +257,9 @@ const routeMap: RouteMap = {
   "visualization_thingsvis-editor": "/visualization/thingsvis-editor",
   "visualization_thingsvis-menu-dashboard": "/visualization/thingsvis-menu-dashboard",
   "visualization_thingsvis-preview": "/visualization/thingsvis-preview",
-  "visualization-app": "/visualization-app"
+  "visualization-app": "/visualization-app",
+  "visualization-app-dashboards": "/visualization-app-dashboards",
+  "visualization-app-preview": "/visualization-app-preview"
 };
 
 /**

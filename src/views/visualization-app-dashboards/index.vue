@@ -9,7 +9,7 @@ import {
   getThingsVisDashboardThumbnail,
   type DashboardListItem
 } from '@/service/api/thingsvis'
-import { buildVisualizationAppUrl, getThumbnailUrl } from './shared'
+import { buildVisualizationAppUrl, getThumbnailUrl } from '@/views/visualization-app/shared'
 
 const route = useRoute()
 const router = useRouter()
@@ -147,4 +147,4 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped src="./styles.css"></style>
+<style scoped src="@/views/visualization-app/styles.css"></style>

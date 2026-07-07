@@ -927,5 +927,23 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'visualization-app',
       i18nKey: 'route.visualization-app'
     }
+  },
+  {
+    name: 'visualization-app-dashboards',
+    path: '/visualization-app-dashboards',
+    component: 'layout.base$view.visualization-app-dashboards',
+    meta: {
+      title: 'visualization-app-dashboards',
+      i18nKey: 'route.visualization-app-dashboards'
+    }
+  },
+  {
+    name: 'visualization-app-preview',
+    path: '/visualization-app-preview',
+    component: 'layout.base$view.visualization-app-preview',
+    meta: {
+      title: 'visualization-app-preview',
+      i18nKey: 'route.visualization-app-preview'
+    }
   }
 ];

@@ -73,4 +73,4 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped src="./styles.css"></style>
+<style scoped src="@/views/visualization-app/styles.css"></style>

@@ -1,7 +1,15 @@
 import type { CustomRoute, ElegantConstRoute, ElegantRoute } from '@elegant-router/types'
+import type { RouteComponent } from 'vue-router'
 import { generatedRoutes } from '../elegant/routes'
 import { layouts, views } from '../elegant/imports'
 import { transformElegantRoutesToVueRoutes } from '../elegant/transform'
+
+/** App 嵌入页视图：elegant-router 需独立目录 page，此处兜底注册避免 watcher 覆盖后找不到组件 */
+const appEmbedViews: Record<string, RouteComponent | (() => Promise<RouteComponent>)> = {
+  ...views,
+  'visualization-app-dashboards': () => import('@/views/visualization-app-dashboards/index.vue'),
+  'visualization-app-preview': () => import('@/views/visualization-app-preview/index.vue')
+}
 
 export const ROOT_ROUTE: CustomRoute = {
   name: 'root',
@@ -136,10 +144,21 @@ export function createRoutes() {
 
   const authRoutes: ElegantRoute[] = []
 
+  const appEmbedRouteNames = new Set([
+    'visualization-app',
+    'visualization-app-dashboards',
+    'visualization-app-preview'
+  ])
+
   // 添加独立的常量路由
   constantRoutes.push(thingsvisPreviewRoute)
 
     ;[...customRoutes, ...generatedRoutes].forEach(item => {
+      // App 嵌入页已在 customRoutes 中以 blank + constant 注册，跳过 generated 重复项
+      if (appEmbedRouteNames.has(item.name) && !item.meta?.constant) {
+        return
+      }
+
       if (item.meta?.constant) {
         constantRoutes.push(item)
       } else {
@@ -147,7 +166,7 @@ export function createRoutes() {
       }
     })
 
-  const constantVueRoutes = transformElegantRoutesToVueRoutes(constantRoutes, layouts, views)
+  const constantVueRoutes = transformElegantRoutesToVueRoutes(constantRoutes, layouts, appEmbedViews)
 
   return {
     constantVueRoutes,
@@ -161,5 +180,5 @@ export function createRoutes() {
  * @param routes Elegant routes
  */
 export function getAuthVueRoutes(routes: ElegantConstRoute[]) {
-  return transformElegantRoutesToVueRoutes(routes, layouts, views)
+  return transformElegantRoutesToVueRoutes(routes, layouts, appEmbedViews)
 }
