@@ -8,6 +8,7 @@ import { syncAppNativeNav } from '@/utils/app-webview-bridge'
 import {
   getThingsVisDashboard,
   getThingsVisDashboards,
+  getThingsVisDashboardThumbnail,
   getThingsVisProjects,
   type DashboardListItem,
   type ProjectListItem,
@@ -81,8 +82,51 @@ async function fetchDashboards(projectId: string) {
       limit: 100
     })
     dashboards.value = !error && data ? data.data : []
+    if (dashboards.value.length > 0) {
+      void loadThumbnails(dashboards.value)
+    }
   } finally {
     loading.value = false
+  }
+}
+
+/** 处理缩略图 URL，与 PC 端保持一致 */
+function getThumbnailUrl(thumbnail: string | null | undefined): string | null {
+  if (!thumbnail) return null
+  if (thumbnail.startsWith('data:')) return thumbnail
+  if (thumbnail.startsWith('http')) return thumbnail
+  return `data:image/png;base64,${thumbnail}`
+}
+
+/** 懒加载看板缩略图 */
+async function loadThumbnails(list: DashboardListItem[]) {
+  const CONCURRENCY = 5
+  const queue = [...list]
+
+  while (queue.length > 0) {
+    const batch = queue.splice(0, CONCURRENCY)
+    await Promise.all(
+      batch.map(async item => {
+        const hasValidThumbnail = item.thumbnail && item.thumbnail.trim().startsWith('data:')
+        if (hasValidThumbnail) return
+
+        try {
+          const result = await getThingsVisDashboardThumbnail(item.id)
+          const resultData = result.data as
+            | { thumbnail?: string | null; data?: { thumbnail?: string | null } }
+            | null
+          const thumbnail = resultData?.thumbnail || resultData?.data?.thumbnail
+          if (!thumbnail) return
+
+          const target = dashboards.value.find(dashboard => dashboard.id === item.id)
+          if (target) {
+            target.thumbnail = thumbnail
+          }
+        } catch (error) {
+          console.warn('[visualization-app] 加载缩略图失败', item.id, error)
+        }
+      })
+    )
   }
 }
 
@@ -261,19 +305,29 @@ onBeforeUnmount(() => {
         <section v-else-if="authReady && currentView === 'dashboards'" class="visualization-app__section">
           <NEmpty v-if="!loading && dashboards.length === 0" description="该项目暂无看板" class="py-16" />
 
-          <div v-else class="visualization-app__list">
+          <div v-else class="visualization-app__dashboard-list">
             <button
               v-for="dashboard in dashboards"
               :key="dashboard.id"
               type="button"
-              class="visualization-app__item-card visualization-app__item-card--compact"
+              class="visualization-app__dashboard-card"
               @click="openDashboard(dashboard)"
             >
-              <div class="visualization-app__item-body">
+              <div class="visualization-app__dashboard-thumb">
+                <img
+                  v-if="getThumbnailUrl(dashboard.thumbnail)"
+                  :src="getThumbnailUrl(dashboard.thumbnail) || undefined"
+                  class="visualization-app__dashboard-image"
+                  alt="看板预览"
+                />
+                <icon-mdi:chart-box v-else class="visualization-app__dashboard-placeholder" />
+                <span v-if="dashboard.homeFlag" class="visualization-app__dashboard-home">首</span>
+              </div>
+
+              <div class="visualization-app__dashboard-info">
                 <strong>{{ dashboard.name }}</strong>
                 <span>{{ dashboard.updatedAt ? new Date(dashboard.updatedAt).toLocaleDateString() : '' }}</span>
               </div>
-              <icon-mdi:chevron-right class="visualization-app__item-arrow" />
             </button>
           </div>
         </section>
@@ -450,6 +504,82 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
   font-size: 20px;
   color: #c4c4c4;
+}
+
+.visualization-app__dashboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.visualization-app__dashboard-card {
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+}
+
+.visualization-app__dashboard-thumb {
+  position: relative;
+  display: flex;
+  height: 140px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgb(100 108 255 / 20%), rgb(100 108 255 / 5%));
+}
+
+.visualization-app__dashboard-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.visualization-app__dashboard-placeholder {
+  font-size: 56px;
+  color: rgb(100 108 255 / 40%);
+}
+
+.visualization-app__dashboard-home {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ef4444;
+  border-radius: 999px;
+  background: #fff;
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 8%);
+}
+
+.visualization-app__dashboard-info {
+  padding: 14px 16px 16px;
+}
+
+.visualization-app__dashboard-info strong {
+  display: block;
+  overflow: hidden;
+  margin-bottom: 6px;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.visualization-app__dashboard-info span {
+  color: #9ca3af;
+  font-size: 12px;
 }
 
 .visualization-app__frame {
