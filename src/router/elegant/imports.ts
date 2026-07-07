@@ -82,6 +82,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "rule-engine": () => import("@/views/rule-engine/index.vue"),
   "system-management-user_system-log": () => import("@/views/system-management-user/system-log/index.vue"),
   "user-center": () => import("@/views/user-center/index.vue"),
+  "visualization-app": () => import("@/views/visualization-app/index.vue"),
   "visualization_thingsvis-dashboards": () => import("@/views/visualization/thingsvis-dashboards/index.vue"),
   "visualization_thingsvis-editor": () => import("@/views/visualization/thingsvis-editor/index.vue"),
   "visualization_thingsvis-menu-dashboard": () => import("@/views/visualization/thingsvis-menu-dashboard/index.vue"),

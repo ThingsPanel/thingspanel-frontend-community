@@ -125,6 +125,7 @@
   "route.data-services_data-forward": "Data Forwarding",
   "route.data-services_forward-config": "Forwarding Configuration",
   "route.device-details-app": "Device Details App",
+  "route.visualization-app": "App Visualization",
   "route.alarm_warning-message": "Alert Center",
   "route.personal-center": "Personal Center",
   "route.apply_plugin": "Apply Plugin",

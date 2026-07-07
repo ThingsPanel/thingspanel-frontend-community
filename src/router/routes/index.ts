@@ -85,6 +85,16 @@ const customRoutes: CustomRoute[] = [
       i18nKey: 'route.device-details-app',
       constant: true
     }
+  },
+  {
+    name: 'visualization-app',
+    path: '/visualization-app',
+    component: 'layout.blank$view.visualization-app',
+    meta: {
+      title: 'visualization-app',
+      i18nKey: 'route.visualization-app',
+      constant: true
+    }
   }
 ]
 

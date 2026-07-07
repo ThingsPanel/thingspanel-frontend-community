@@ -477,7 +477,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.home',
       icon: 'mdi:monitor-dashboard',
       order: 1,
-      contentPadding: false,
+      contentPadding: false
     }
   },
   {
@@ -918,5 +918,14 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       }
     ]
+  },
+  {
+    name: 'visualization-app',
+    path: '/visualization-app',
+    component: 'layout.base$view.visualization-app',
+    meta: {
+      title: 'visualization-app',
+      i18nKey: 'route.visualization-app'
+    }
   }
 ];
