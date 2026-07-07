@@ -3,45 +3,20 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue';
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields';
-import { $t, setLocale } from '@/locales';
+import { $t } from '@/locales';
 import { deviceDetail, deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device';
 import { telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api';
 import { formatDateTime } from '@/utils/common/datetime';
-import { localStg } from '@/utils/storage';
 import type { PlatformField } from '@/utils/thingsvis/types';
 import TelemetryDataCards from './telemetryDataCards.vue';
 import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush';
 import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush';
+import { bootstrapAppEmbedSession } from '@/utils/app-embed-auth';
 
 const route = useRoute();
 const router = useRouter();
 const { d_id, token, lang } = route.query;
 const deviceData: any = ref({});
-
-if (token) {
-  localStg.set('token', token as string);
-
-  const hash = window.location.hash;
-  if (hash.includes('token=')) {
-    const [path, queryStr] = hash.split('?');
-    if (queryStr) {
-      const params = new URLSearchParams(queryStr);
-      params.delete('token');
-      const newQuery = params.toString();
-      const newHash = path + (newQuery ? `?${newQuery}` : '');
-      const newUrl = window.location.href.replace(hash, newHash);
-      window.history.replaceState({}, '', newUrl);
-    }
-  }
-}
-
-if (!localStg.get('token')) {
-  router.push({ name: 'login' });
-}
-
-if (lang) {
-  setLocale(lang as App.I18n.LangType);
-}
 
 const icon_type = ref('');
 const device_number = ref('');
@@ -252,8 +227,14 @@ const onVisReady = async () => {
   }, 500);
 };
 
-onMounted(() => {
-  getDeviceDetail();
+onMounted(async () => {
+  const authenticated = await bootstrapAppEmbedSession({ token, lang });
+  if (!authenticated) {
+    await router.push({ name: 'login' });
+    return;
+  }
+
+  await getDeviceDetail();
 });
 
 onBeforeUnmount(() => {
