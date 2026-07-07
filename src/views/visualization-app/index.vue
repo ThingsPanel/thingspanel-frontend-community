@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { NEmpty, NInput, NSpin, useMessage } from 'naive-ui'
 import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
 import { bootstrapAppEmbedSession } from '@/utils/app-embed-auth'
+import { syncAppNativeNav } from '@/utils/app-webview-bridge'
 import {
   getThingsVisDashboard,
   getThingsVisDashboards,
@@ -47,6 +48,10 @@ const navTitle = computed(() => {
 })
 
 const showSubNav = computed(() => currentView.value !== 'projects')
+
+function updateNativeNav() {
+  void syncAppNativeNav(currentView.value === 'projects')
+}
 
 function pushViewState(view: AppView) {
   if (typeof window === 'undefined' || typeof window.history?.pushState !== 'function') return
@@ -100,6 +105,7 @@ function openProject(project: ProjectListItem) {
   selectedProject.value = project
   currentView.value = 'dashboards'
   pushViewState('dashboards')
+  updateNativeNav()
   void fetchDashboards(project.id)
 }
 
@@ -108,6 +114,7 @@ function openDashboard(dashboard: DashboardListItem) {
   selectedDashboardName.value = dashboard.name
   currentView.value = 'preview'
   pushViewState('preview')
+  updateNativeNav()
 }
 
 function resetToProjects() {
@@ -117,6 +124,7 @@ function resetToProjects() {
   selectedDashboardName.value = ''
   dashboardSchema.value = null
   dashboards.value = []
+  updateNativeNav()
 }
 
 function resetToDashboards() {
@@ -124,6 +132,7 @@ function resetToDashboards() {
   selectedDashboardId.value = ''
   selectedDashboardName.value = ''
   dashboardSchema.value = null
+  updateNativeNav()
 }
 
 function goBack() {
@@ -167,6 +176,7 @@ watch(
 
 onMounted(async () => {
   window.addEventListener('popstate', handlePopState)
+  ;(window as Window & { __getVisualizationView?: () => AppView }).__getVisualizationView = () => currentView.value
 
   const authenticated = await bootstrapAppEmbedSession({
     token: route.query.token,
@@ -179,11 +189,13 @@ onMounted(async () => {
   }
 
   authReady.value = true
+  updateNativeNav()
   await fetchProjects()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('popstate', handlePopState)
+  delete (window as Window & { __getVisualizationView?: () => AppView }).__getVisualizationView
 })
 </script>
 
@@ -292,14 +304,15 @@ onBeforeUnmount(() => {
   position: sticky;
   top: 0;
   z-index: 20;
-  height: 44px;
+  height: calc(44px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
   background: #fff;
   border-bottom: 1px solid #eee;
 }
 
 .mobile-nav-bar__back {
   position: absolute;
-  top: 0;
+  top: env(safe-area-inset-top, 0px);
   left: 0;
   display: flex;
   width: 44px;
@@ -322,6 +335,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   margin: 0;
+  margin-top: env(safe-area-inset-top, 0px);
   padding: 0 52px;
   overflow: hidden;
   color: #111;
