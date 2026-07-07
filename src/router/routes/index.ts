@@ -95,6 +95,26 @@ const customRoutes: CustomRoute[] = [
       i18nKey: 'route.visualization-app',
       constant: true
     }
+  },
+  {
+    name: 'visualization-app-dashboards',
+    path: '/visualization-app/dashboards',
+    component: 'layout.blank$view.visualization-app-dashboards',
+    meta: {
+      title: 'visualization-app-dashboards',
+      i18nKey: 'route.visualization-app-dashboards',
+      constant: true
+    }
+  },
+  {
+    name: 'visualization-app-preview',
+    path: '/visualization-app/preview',
+    component: 'layout.blank$view.visualization-app-preview',
+    meta: {
+      title: 'visualization-app-preview',
+      i18nKey: 'route.visualization-app-preview',
+      constant: true
+    }
   }
 ]
 

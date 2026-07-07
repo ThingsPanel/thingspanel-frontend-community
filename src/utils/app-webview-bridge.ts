@@ -4,11 +4,11 @@ export function ensureUniWebviewBridge(): Promise<void> {
   if (typeof window === 'undefined') return Promise.resolve()
 
   const win = window as Window & {
-    uni?: { postMessage?: (options: { data: unknown }) => void; navigateTo?: (options: { url: string }) => void }
+    uni?: { navigateTo?: (options: { url: string }) => void }
     __uniWebviewLoaded?: boolean
   }
 
-  if (win.uni?.postMessage || win.__uniWebviewLoaded) {
+  if (win.uni?.navigateTo || win.__uniWebviewLoaded) {
     return Promise.resolve()
   }
 
@@ -39,14 +39,28 @@ export function ensureUniWebviewBridge(): Promise<void> {
   return bridgeReady
 }
 
-export async function syncAppNativeNav(show: boolean) {
+/** App 内打开独立 WebView 子页，使用原生返回栏（同设备详情） */
+export async function openAppWebViewPage(
+  pageUrl: string,
+  title?: string,
+  fallback?: () => void
+): Promise<boolean> {
   await ensureUniWebviewBridge()
 
-  const uniBridge = (window as Window & { uni?: { postMessage?: (options: { data: unknown }) => void } }).uni
-  uniBridge?.postMessage?.({
-    data: {
-      type: 'nativeNav',
-      show
-    }
+  const uniBridge = (window as Window & { uni?: { navigateTo?: (options: { url: string }) => void } }).uni
+  if (!uniBridge?.navigateTo) {
+    fallback?.()
+    return false
+  }
+
+  const query = [`url=${encodeURIComponent(pageUrl)}`]
+  if (title) {
+    query.push(`title=${encodeURIComponent(title)}`)
+  }
+
+  uniBridge.navigateTo({
+    url: `/pages/webViewPage/webViewPage?${query.join('&')}`
   })
+
+  return true
 }
