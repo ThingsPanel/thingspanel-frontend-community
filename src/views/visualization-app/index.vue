@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { NEmpty, NInput, NSpin, useMessage } from 'naive-ui'
 import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
 import { bootstrapAppEmbedSession } from '@/utils/app-embed-auth'
+import { syncAppNativeNav } from '@/utils/app-webview-bridge'
 import {
   getThingsVisDashboard,
   getThingsVisDashboards,
@@ -49,7 +50,9 @@ const navTitle = computed(() => {
 
 const showSubNav = computed(() => currentView.value !== 'projects')
 
-const headerTitle = computed(() => (showSubNav.value ? navTitle.value : '可视化'))
+function updateNativeNav() {
+  void syncAppNativeNav(currentView.value === 'projects')
+}
 
 function pushViewState(view: AppView) {
   if (typeof window === 'undefined' || typeof window.history?.pushState !== 'function') return
@@ -146,6 +149,7 @@ function openProject(project: ProjectListItem) {
   selectedProject.value = project
   currentView.value = 'dashboards'
   pushViewState('dashboards')
+  updateNativeNav()
   void fetchDashboards(project.id)
 }
 
@@ -154,6 +158,7 @@ function openDashboard(dashboard: DashboardListItem) {
   selectedDashboardName.value = dashboard.name
   currentView.value = 'preview'
   pushViewState('preview')
+  updateNativeNav()
 }
 
 function resetToProjects() {
@@ -163,6 +168,7 @@ function resetToProjects() {
   selectedDashboardName.value = ''
   dashboardSchema.value = null
   dashboards.value = []
+  updateNativeNav()
 }
 
 function resetToDashboards() {
@@ -170,6 +176,7 @@ function resetToDashboards() {
   selectedDashboardId.value = ''
   selectedDashboardName.value = ''
   dashboardSchema.value = null
+  updateNativeNav()
 }
 
 function goBack() {
@@ -213,6 +220,7 @@ watch(
 
 onMounted(async () => {
   window.addEventListener('popstate', handlePopState)
+  ;(window as Window & { __getVisualizationView?: () => AppView }).__getVisualizationView = () => currentView.value
 
   const authenticated = await bootstrapAppEmbedSession({
     token: route.query.token,
@@ -225,30 +233,26 @@ onMounted(async () => {
   }
 
   authReady.value = true
+  updateNativeNav()
   await fetchProjects()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('popstate', handlePopState)
+  delete (window as Window & { __getVisualizationView?: () => AppView }).__getVisualizationView
 })
 </script>
 
 <template>
   <div class="visualization-app">
-    <header class="mobile-nav-bar" :class="{ 'mobile-nav-bar--root': !showSubNav }">
-      <button
-        v-if="showSubNav"
-        type="button"
-        class="mobile-nav-bar__back"
-        aria-label="返回"
-        @click="goBack"
-      >
+    <header v-if="showSubNav" class="mobile-nav-bar">
+      <button type="button" class="mobile-nav-bar__back" aria-label="返回" @click="goBack">
         <icon-mdi:chevron-left class="mobile-nav-bar__back-icon" />
       </button>
-      <h1 class="mobile-nav-bar__title">{{ headerTitle }}</h1>
+      <h1 class="mobile-nav-bar__title">{{ navTitle }}</h1>
     </header>
 
-    <main class="visualization-app__main visualization-app__main--sub">
+    <main class="visualization-app__main" :class="{ 'visualization-app__main--sub': showSubNav }">
       <NSpin :show="loading || !authReady">
         <section v-if="authReady && currentView === 'projects'" class="visualization-app__section">
           <div class="visualization-app__toolbar">
@@ -394,10 +398,6 @@ onBeforeUnmount(() => {
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.mobile-nav-bar--root .mobile-nav-bar__title {
-  padding: 0 16px;
 }
 
 .visualization-app__main {
