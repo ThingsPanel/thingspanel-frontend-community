@@ -165,3 +165,42 @@
 .visualization-app__frame {
   width: 100%;
 }
+
+.visualization-app__embed-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  height: 44px;
+  align-items: center;
+  padding: 0 8px;
+  border-bottom: 1px solid #eef0f4;
+  background: #fff;
+}
+
+.visualization-app__embed-nav-back {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #111827;
+  font-size: 28px;
+}
+
+.visualization-app__embed-nav-title {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  padding-right: 40px;
+  color: #111827;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

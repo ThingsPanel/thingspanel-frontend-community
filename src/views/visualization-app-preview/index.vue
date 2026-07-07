@@ -5,6 +5,7 @@ import { NEmpty, NSpin } from 'naive-ui'
 import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
 import { bootstrapAppEmbedSession } from '@/utils/app-embed-auth'
 import { getThingsVisDashboard, type ThingsVisDashboard } from '@/service/api/thingsvis'
+import EmbedNavBar from '@/views/visualization-app/EmbedNavBar.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,6 +15,9 @@ const authReady = ref(false)
 const dashboardSchema = ref<ThingsVisDashboard | null>(null)
 
 const dashboardId = computed(() => String(route.query.dashboardId || ''))
+const pageTitle = computed(
+  () => dashboardSchema.value?.name || String(route.query.dashboardName || '看板预览')
+)
 
 async function loadDashboardSchema() {
   if (!dashboardId.value) {
@@ -55,6 +59,7 @@ onMounted(async () => {
 
 <template>
   <div class="visualization-app">
+    <EmbedNavBar :title="pageTitle" />
     <main class="visualization-app__main visualization-app__main--flat">
       <NSpin :show="loading || !authReady">
         <section v-if="authReady" class="visualization-app__preview">

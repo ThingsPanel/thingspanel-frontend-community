@@ -10,6 +10,7 @@ import {
   type DashboardListItem
 } from '@/service/api/thingsvis'
 import { buildVisualizationAppUrl, getThumbnailUrl } from '@/views/visualization-app/shared'
+import EmbedNavBar from '@/views/visualization-app/EmbedNavBar.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,6 +21,7 @@ const authReady = ref(false)
 const dashboards = ref<DashboardListItem[]>([])
 
 const projectId = computed(() => String(route.query.projectId || ''))
+const pageTitle = computed(() => String(route.query.projectName || '看板列表'))
 
 async function fetchDashboards() {
   if (!projectId.value) {
@@ -77,7 +79,8 @@ async function loadThumbnails(list: DashboardListItem[]) {
 async function openDashboard(dashboard: DashboardListItem) {
   const pageUrl = buildVisualizationAppUrl('/visualization-app/preview', {
     dashboardId: dashboard.id,
-    projectId: projectId.value
+    projectId: projectId.value,
+    dashboardName: dashboard.name
   })
 
   await openAppWebViewPage(pageUrl, dashboard.name, () => {
@@ -86,6 +89,7 @@ async function openDashboard(dashboard: DashboardListItem) {
       query: {
         dashboardId: dashboard.id,
         projectId: projectId.value,
+        dashboardName: dashboard.name,
         token: route.query.token as string,
         lang: route.query.lang as string
       }
@@ -111,6 +115,7 @@ onMounted(async () => {
 
 <template>
   <div class="visualization-app">
+    <EmbedNavBar :title="pageTitle" />
     <main class="visualization-app__main">
       <NSpin :show="loading || !authReady">
         <section v-if="authReady" class="visualization-app__section">

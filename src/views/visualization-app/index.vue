@@ -38,7 +38,8 @@ async function fetchProjects() {
 
 async function openProject(project: ProjectListItem) {
   const pageUrl = buildVisualizationAppUrl('/visualization-app/dashboards', {
-    projectId: project.id
+    projectId: project.id,
+    projectName: project.name
   })
 
   await openAppWebViewPage(pageUrl, project.name, () => {
@@ -46,6 +47,7 @@ async function openProject(project: ProjectListItem) {
       path: '/visualization-app/dashboards',
       query: {
         projectId: project.id,
+        projectName: project.name,
         token: route.query.token as string,
         lang: route.query.lang as string
       }
