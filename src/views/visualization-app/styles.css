@@ -19,10 +19,12 @@
   width: 100%;
 }
 
-.visualization-app__main--flat .n-spin-container,
-.visualization-app__main--flat .n-spin-content,
+.visualization-app__main--flat :deep(.n-spin-container),
+.visualization-app__main--flat :deep(.n-spin-content),
 .visualization-app__preview,
-.visualization-app__frame {
+.visualization-app__frame,
+.visualization-app__frame :deep(.thingsvis-frame),
+.visualization-app__frame :deep(iframe) {
   height: 100%;
   min-height: 0;
 }
