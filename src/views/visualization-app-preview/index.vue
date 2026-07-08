@@ -58,7 +58,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="visualization-app">
+  <div class="visualization-app visualization-app--embed">
     <EmbedNavBar :title="pageTitle" />
     <main class="visualization-app__main visualization-app__main--flat">
       <NSpin :show="loading || !authReady">

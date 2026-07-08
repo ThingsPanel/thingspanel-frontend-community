@@ -3,12 +3,16 @@
   background: #f5f7fb;
 }
 
+.visualization-app--embed {
+  background: transparent;
+}
+
 .visualization-app__main {
   padding: 16px;
 }
 
 .visualization-app__main--flat {
-  padding-top: 0;
+  padding: 0;
   height: calc(100vh - 44px);
   min-height: 0;
   overflow: hidden;
