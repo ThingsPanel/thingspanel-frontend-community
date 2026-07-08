@@ -9,11 +9,22 @@
 
 .visualization-app__main--flat {
   padding-top: 0;
+  height: calc(100vh - 44px);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .visualization-app__section,
 .visualization-app__preview {
   width: 100%;
+}
+
+.visualization-app__main--flat .n-spin-container,
+.visualization-app__main--flat .n-spin-content,
+.visualization-app__preview,
+.visualization-app__frame {
+  height: 100%;
+  min-height: 0;
 }
 
 .visualization-app__search {

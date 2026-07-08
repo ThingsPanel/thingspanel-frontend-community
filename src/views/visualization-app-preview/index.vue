@@ -68,7 +68,6 @@ onMounted(async () => {
             :id="dashboardId"
             :schema="dashboardSchema"
             mode="viewer"
-            auto-height
             class="visualization-app__frame"
           />
           <NEmpty v-else description="无法加载看板" class="py-16" />
