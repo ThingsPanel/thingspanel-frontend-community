@@ -981,6 +981,49 @@ async function loadTemplateEntry(templateId: string | number) {
   return entry
 }
 
+function inferCurrentDeviceFieldType(value: unknown): PlatformField['type'] {
+  if (typeof value === 'number' && Number.isFinite(value)) return 'number'
+  if (typeof value === 'boolean') return 'boolean'
+  if (value !== null && typeof value === 'object') return 'json'
+  return 'string'
+}
+
+function buildCurrentDeviceFields(
+  telemetryItems: unknown[],
+  attributeItems: unknown[]
+): PlatformField[] {
+  const fieldsById = new Map<string, PlatformField>()
+  const collect = (item: any, dataType: 'telemetry' | 'attribute') => {
+    const rawId = item?.key ?? item?.label
+    if (typeof rawId !== 'string' && typeof rawId !== 'number') return
+    const id = String(rawId).trim()
+    if (!id || fieldsById.has(id)) return
+    const label = typeof item?.label === 'string' ? item.label.trim() : ''
+    fieldsById.set(id, {
+      id,
+      name: label || id,
+      type: inferCurrentDeviceFieldType(item?.value),
+      dataType
+    })
+  }
+
+  telemetryItems.forEach((item) => collect(item, 'telemetry'))
+  attributeItems.forEach((item) => collect(item, 'attribute'))
+  return Array.from(fieldsById.values())
+}
+
+async function loadCurrentDeviceFields(deviceId: string): Promise<PlatformField[]> {
+  const [telemetryResult, attributeResult] = await Promise.allSettled([
+    telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
+    getAttributeDataSet({ device_id: deviceId }, SILENT_REQUEST_CONFIG)
+  ])
+  const telemetryItems =
+    telemetryResult.status === 'fulfilled' ? unwrapList(telemetryResult.value?.data) : []
+  const attributeItems =
+    attributeResult.status === 'fulfilled' ? unwrapList(attributeResult.value?.data) : []
+  return buildCurrentDeviceFields(telemetryItems, attributeItems)
+}
+
 async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): Promise<Record<string, unknown>> {
   const requestedFields = Array.isArray(fieldIds)
     ? fieldIds.filter((fieldId): fieldId is string => typeof fieldId === 'string')
@@ -2174,10 +2217,12 @@ const handleMessage = async (event: MessageEvent) => {
         templateId = (await loadDeviceConfigTemplateMap()).get(deviceConfigId)
       }
       if (!templateId) {
+        const fields = await loadCurrentDeviceFields(deviceId)
+        updateActivePlatformDeviceFields(deviceId, fields)
         postToThingsVis('tv:device-fields', {
           deviceId,
           templateId: '',
-          fields: []
+          fields
         })
         return
       }
