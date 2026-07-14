@@ -247,7 +247,7 @@ onBeforeUnmount(() => {
   <div class="device-details-app bg-gray-50">
     <div class="mb-6 flex items-center justify-between">
       <h1 class="text-2xl text-gray-900 font-semibold">{{ deviceData?.name || '--' }}</h1>
-      <div class="flex items-center">
+      <div class="flex items-center" style="min-width:60px">
         <SvgIcon
           local-icon="CellTowerRound"
           style="margin-right: 5px"

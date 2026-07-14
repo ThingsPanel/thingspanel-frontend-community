@@ -11,6 +11,7 @@ import { $t } from '@/locales'
 import { getTemplat, putTemplat, telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
+import { initializeAppChartConfigOnce } from '@/utils/thingsvis/chart-config-initialization'
 import type { PlatformField } from '@/utils/thingsvis/types'
 
 const emit = defineEmits(['update:stepCurrent', 'update:modalVisible'])
@@ -146,7 +147,8 @@ const handleSave = async (payload: any) => {
     const configStr = JSON.stringify(configToSave)
     await putTemplat({
       ...res.data,
-      web_chart_config: configStr
+      web_chart_config: configStr,
+      app_chart_config: initializeAppChartConfigOnce(res.data.app_chart_config, configStr)
     })
 
     window.$message?.success($t('common.saveSuccess'))
