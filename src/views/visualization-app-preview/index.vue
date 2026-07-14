@@ -28,7 +28,16 @@ async function loadDashboardSchema() {
   loading.value = true
   try {
     const { data, error } = await getThingsVisDashboard(dashboardId.value)
-    dashboardSchema.value = !error ? data : null
+    dashboardSchema.value =
+      !error && data
+        ? {
+            ...data,
+            canvasConfig: {
+              ...data.canvasConfig,
+              previewAlignY: 'top'
+            }
+          }
+        : null
   } catch (error) {
     console.warn('[visualization-app] 加载看板失败', error)
     dashboardSchema.value = null
