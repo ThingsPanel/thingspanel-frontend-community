@@ -46,6 +46,15 @@ const isColor = (i: any) => {
   return '';
 };
 
+const getValueClass = (value: unknown) => {
+  const length = String(value ?? '').length;
+  return {
+    'index-style': true,
+    'index-style--medium': length > 16 && length <= 48,
+    'index-style--long': length > 48
+  };
+};
+
 const onTapTableTools = (i: any) => {
   if (typeof i.value === 'number') {
     modelType.value = $t('custom.device_details.sequential');
@@ -64,9 +73,14 @@ onMounted(() => {
 <template>
   <n-grid :x-gap="cardMargin" :y-gap="cardMargin" cols="1 600:2 900:3 1200:4">
     <n-gi v-for="(i, index) in telemetryData" :key="i.tenant_id">
-      <n-card header-class="border-b h-36px" hoverable :style="{ height: cardHeight + 'px' }">
+      <n-card
+        class="telemetry-card"
+        header-class="border-b h-36px"
+        hoverable
+        :style="{ minHeight: cardHeight + 'px' }"
+      >
         <div class="card-body">
-          <span v-if="isColor(i)" class="index-style">{{ i.value }}</span>
+          <span v-if="isColor(i)" :class="getValueClass(i.value)">{{ i.value }}</span>
           <MovingNumbers
             v-else
             :ref="setItemRef"
@@ -89,12 +103,12 @@ onMounted(() => {
           </div>
         </template>
         <template #footer>
-          <div class="flex justify-end">
+          <div class="telemetry-card__time">
             {{ i.ts ? dayjs(i.ts).format('YYYY-MM-DD HH:mm:ss') : nowTime }}
           </div>
         </template>
         <template #header-extra>
-          <div class="h-24px w-120px flex items-center justify-end">
+          <div class="h-24px w-96px flex items-center justify-end">
             <NIcon
               size="24"
               @click="
@@ -149,20 +163,61 @@ onMounted(() => {
 }
 
 .card-body {
-  padding: 10px 0 10px;
+  min-width: 0;
+  padding: 12px 0;
   display: flex;
-  align-items: end;
-  gap: 4px;
-
-  span {
-    &:first-child {
-      font-size: 32px;
-      line-height: 1;
-    }
-  }
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .index-style {
-  font-size: 24px;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 28px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.index-style--medium {
+  font-size: 20px;
+  line-height: 1.45;
+}
+
+.index-style--long {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.c1 {
+  font-size: 28px;
+  line-height: 1.35;
+}
+
+.telemetry-card {
+  height: auto !important;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+}
+
+.telemetry-card :deep(.n-card__content) {
+  flex: 1;
+  min-width: 0;
+}
+
+.telemetry-card :deep(.n-card__footer) {
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.telemetry-card__time {
+  color: #8a8f99;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: right;
+  white-space: nowrap;
 }
 </style>
