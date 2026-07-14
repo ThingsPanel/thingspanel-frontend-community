@@ -164,7 +164,7 @@ onMounted(() => {
 
 .card-body {
   min-width: 0;
-  padding: 12px 0;
+  padding: 12px 22px;
   display: flex;
   align-items: flex-start;
   gap: 6px;
