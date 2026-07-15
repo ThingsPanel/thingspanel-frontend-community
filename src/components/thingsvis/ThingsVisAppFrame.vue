@@ -137,9 +137,15 @@ type TemplateEntry = {
 const deviceWsMap = new Map<string, DeviceWsEntry>()
 const deviceStatusWsMap = new Map<string, DeviceStatusWsEntry>()
 const activePlatformDevices = new Map<string, { deviceId: string; fields: PlatformDeviceField[] }>()
+const platformDeviceByIdCache = new Map<string, PlatformDeviceEntry | null>()
+const platformDeviceByIdPromise = new Map<string, Promise<PlatformDeviceEntry | null>>()
 const templateEntryCache = new Map<string, TemplateEntry>()
+const templateEntryPromise = new Map<string, Promise<TemplateEntry>>()
 const templatePresetCache = new Map<string, any[]>()
 const templatePresetPromise = new Map<string, Promise<any[]>>()
+const currentDeviceFieldsCache = new Map<string, PlatformField[]>()
+const currentDeviceFieldsPromise = new Map<string, Promise<PlatformField[]>>()
+const requestedFieldDataPromise = new Map<string, Promise<Record<string, unknown>>>()
 let platformDeviceGroupsCache: PlatformDeviceGroupEntry[] | null = null
 let platformDeviceGroupsCachePromise: Promise<PlatformDeviceGroupEntry[]> | null = null
 let deviceConfigTemplateMapCache: Map<string, string> | null = null
@@ -289,6 +295,14 @@ function connectDeviceWs(device: { deviceId: string; fields: PlatformDeviceField
 
   openWs()
 }
+function ensureDeviceWs(deviceId?: string) {
+  if (!deviceId) return
+  const device = activePlatformDevices.get(deviceId)
+  if (!device) return
+  const existing = deviceWsMap.get(deviceId)
+  if (existing && !existing.destroyed) return
+  connectDeviceWs(device)
+}
 
 function connectDeviceStatusWs(deviceId: string) {
   const prev = deviceStatusWsMap.get(deviceId)
@@ -310,13 +324,11 @@ function connectDeviceStatusWs(deviceId: string) {
 
   function openWs() {
     if (entry.destroyed) return
-
     const token = localStg.get('token') as string | undefined
     if (!token) {
       entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
       return
     }
-
     try {
       entry.ws = new WebSocket(`${getWebsocketServerUrl()}/device/online/status/ws`)
     } catch (err) {
@@ -324,7 +336,6 @@ function connectDeviceStatusWs(deviceId: string) {
       entry.reconnectTimer = setTimeout(openWs, WS_RECONNECT_DELAY_MS)
       return
     }
-
     entry.ws.onopen = () => {
       if (!entry.ws) return
       entry.ws.send(JSON.stringify({ device_id: deviceId, token }))
@@ -332,7 +343,6 @@ function connectDeviceStatusWs(deviceId: string) {
         if (entry.ws?.readyState === WebSocket.OPEN) entry.ws.send('ping')
       }, PING_INTERVAL_MS)
     }
-
     entry.ws.onmessage = (evt) => {
       if (typeof evt.data !== 'string' || evt.data === 'pong') return
       try {
@@ -350,11 +360,9 @@ function connectDeviceStatusWs(deviceId: string) {
         // ignore non-JSON frames
       }
     }
-
     entry.ws.onerror = () => {
       /* reconnect handled by onclose */
     }
-
     entry.ws.onclose = () => {
       if (entry.destroyed) return
       if (entry.pingTimer) {
@@ -366,15 +374,6 @@ function connectDeviceStatusWs(deviceId: string) {
   }
 
   openWs()
-}
-
-function ensureDeviceWs(deviceId?: string) {
-  if (!deviceId) return
-  const device = activePlatformDevices.get(deviceId)
-  if (!device) return
-  const existing = deviceWsMap.get(deviceId)
-  if (existing && !existing.destroyed) return
-  connectDeviceWs(device)
 }
 
 function ensureDeviceStatusWs(deviceId?: string) {
@@ -415,6 +414,9 @@ let initInProgress = false
 let pendingInitDebounceTimer: ReturnType<typeof setTimeout> | null = null
 let pendingInitRetryTimer: ReturnType<typeof setTimeout> | null = null
 let lastInitCompletedSignature = ''
+let lastHostSaveSignature = ''
+let pendingHostSaveSignature = ''
+let pendingHostSavePromise: Promise<void> | null = null
 let initRetryAttempt = 0
 
 type PlatformSourceDescriptor = {
@@ -953,32 +955,40 @@ async function loadTemplateEntry(templateId: string | number) {
   const cached = templateEntryCache.get(cacheKey)
   if (cached) return cached
 
-  const [telemetryResult, attributesResult, commandsResult, eventsResult] = await Promise.allSettled([
-    telemetryApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
-    attributesApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
-    commandsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
-    eventsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId })
-  ])
+  const pending = templateEntryPromise.get(cacheKey)
+  if (pending) return pending
 
-  const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
-  const attributesRes = attributesResult.status === 'fulfilled' ? attributesResult.value : null
-  const commandsRes = commandsResult.status === 'fulfilled' ? commandsResult.value : null
-  const eventsRes = eventsResult.status === 'fulfilled' ? eventsResult.value : null
+  const promise = (async () => {
+    const [telemetryResult, attributesResult, commandsResult, eventsResult] = await Promise.allSettled([
+      telemetryApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
+      attributesApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
+      commandsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
+      eventsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId })
+    ])
 
-  const platformSource = {
-    telemetry: unwrapList(telemetryRes?.data),
-    attributes: unwrapList(attributesRes?.data),
-    commands: unwrapList(commandsRes?.data),
-    events: unwrapList(eventsRes?.data)
-  }
-  const extractedFields = extractPlatformFields(platformSource)
+    const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
+    const attributesRes = attributesResult.status === 'fulfilled' ? attributesResult.value : null
+    const commandsRes = commandsResult.status === 'fulfilled' ? commandsResult.value : null
+    const eventsRes = eventsResult.status === 'fulfilled' ? eventsResult.value : null
 
-  const entry: TemplateEntry = {
-    fields: extractedFields
-  }
+    const entry: TemplateEntry = {
+      fields: extractPlatformFields({
+        telemetry: unwrapList(telemetryRes?.data),
+        attributes: unwrapList(attributesRes?.data),
+        commands: unwrapList(commandsRes?.data),
+        events: unwrapList(eventsRes?.data)
+      })
+    }
+    templateEntryCache.set(cacheKey, entry)
+    return entry
+  })()
 
-  templateEntryCache.set(cacheKey, entry)
-  return entry
+  templateEntryPromise.set(cacheKey, promise)
+  promise.then(
+    () => templateEntryPromise.delete(cacheKey),
+    () => templateEntryPromise.delete(cacheKey)
+  )
+  return promise
 }
 
 function inferCurrentDeviceFieldType(value: unknown): PlatformField['type'] {
@@ -1013,15 +1023,31 @@ function buildCurrentDeviceFields(
 }
 
 async function loadCurrentDeviceFields(deviceId: string): Promise<PlatformField[]> {
-  const [telemetryResult, attributeResult] = await Promise.allSettled([
-    telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
-    getAttributeDataSet({ device_id: deviceId }, SILENT_REQUEST_CONFIG)
-  ])
-  const telemetryItems =
-    telemetryResult.status === 'fulfilled' ? unwrapList(telemetryResult.value?.data) : []
-  const attributeItems =
-    attributeResult.status === 'fulfilled' ? unwrapList(attributeResult.value?.data) : []
-  return buildCurrentDeviceFields(telemetryItems, attributeItems)
+  const cached = currentDeviceFieldsCache.get(deviceId)
+  if (cached) return cached
+
+  const pending = currentDeviceFieldsPromise.get(deviceId)
+  if (pending) return pending
+
+  const promise = (async () => {
+    const [telemetryResult, attributeResult] = await Promise.allSettled([
+      telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
+      getAttributeDataSet({ device_id: deviceId }, SILENT_REQUEST_CONFIG)
+    ])
+    const fields = buildCurrentDeviceFields(
+      telemetryResult.status === 'fulfilled' ? unwrapList(telemetryResult.value?.data) : [],
+      attributeResult.status === 'fulfilled' ? unwrapList(attributeResult.value?.data) : []
+    )
+    currentDeviceFieldsCache.set(deviceId, fields)
+    return fields
+  })()
+
+  currentDeviceFieldsPromise.set(deviceId, promise)
+  promise.then(
+    () => currentDeviceFieldsPromise.delete(deviceId),
+    () => currentDeviceFieldsPromise.delete(deviceId)
+  )
+  return promise
 }
 
 async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): Promise<Record<string, unknown>> {
@@ -1030,6 +1056,24 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
     : []
 
   if (!deviceId || requestedFields.length === 0) return {}
+
+  const requestKey = `${deviceId}:${[...new Set(requestedFields)].sort().join(',')}`
+  const pending = requestedFieldDataPromise.get(requestKey)
+  if (pending) return pending
+
+  const promise = buildRequestedFieldDataUncached(requestedFields, deviceId)
+  requestedFieldDataPromise.set(requestKey, promise)
+  promise.then(
+    () => requestedFieldDataPromise.delete(requestKey),
+    () => requestedFieldDataPromise.delete(requestKey)
+  )
+  return promise
+}
+
+async function buildRequestedFieldDataUncached(
+  requestedFields: string[],
+  deviceId: string
+): Promise<Record<string, unknown>> {
 
   const alarmFieldIds = requestedFields.filter((fieldId) => DEVICE_ALARM_STATUS_FIELD_IDS.has(fieldId))
   const currentFieldIds = requestedFields.filter(
@@ -1355,12 +1399,25 @@ async function handleHostSave(payload: Record<string, unknown>) {
     updatePayload.thumbnail = thumbnail
   }
 
-  let result = await updateThingsVisDashboard(props.id, updatePayload)
-
-  if (result.error?.status === 401) {
-    clearThingsVisToken()
-    result = await updateThingsVisDashboard(props.id, updatePayload)
+  const saveSignature = JSON.stringify({ id: props.id, payload: updatePayload })
+  if (saveSignature === lastHostSaveSignature) return
+  if (saveSignature === pendingHostSaveSignature && pendingHostSavePromise) {
+    await pendingHostSavePromise
+    return
   }
+
+  pendingHostSaveSignature = saveSignature
+  pendingHostSavePromise = (async () => {
+    let result = await updateThingsVisDashboard(props.id, updatePayload)
+
+    if (result.error?.status === 401) {
+      clearThingsVisToken()
+      result = await updateThingsVisDashboard(props.id, updatePayload)
+    }
+
+    if (!result.error) {
+      lastHostSaveSignature = saveSignature
+    }
 
   // if (result.error) {
   //   console.error('[AppFrame] Failed to save dashboard via host bridge:', result.error)
@@ -1374,10 +1431,18 @@ async function handleHostSave(payload: Record<string, unknown>) {
   //   ;(window as any).$message.success('保存成功')
   // }
 
-  emit('hostSaveSuccess', {
-    id: props.id,
-    name: typeof updatePayload.name === 'string' ? updatePayload.name : undefined
+    emit('hostSaveSuccess', {
+      id: props.id,
+      name: typeof updatePayload.name === 'string' ? updatePayload.name : undefined
+    })
+  })().finally(() => {
+    if (pendingHostSaveSignature === saveSignature) {
+      pendingHostSaveSignature = ''
+      pendingHostSavePromise = null
+    }
   })
+
+  await pendingHostSavePromise
 }
 
 async function loadDeviceConfigTemplateMap(): Promise<Map<string, string>> {
@@ -1752,28 +1817,44 @@ async function buildPlatformDeviceById(deviceId: string): Promise<PlatformDevice
   const normalizedDeviceId = firstString(deviceId)
   if (!normalizedDeviceId) return null
 
-  const groups = await buildPlatformDeviceGroups()
+  if (platformDeviceByIdCache.has(normalizedDeviceId)) {
+    return platformDeviceByIdCache.get(normalizedDeviceId) ?? null
+  }
+
+  const pending = platformDeviceByIdPromise.get(normalizedDeviceId)
+  if (pending) return pending
+
+  const promise = (async () => {
+    const groups = await buildPlatformDeviceGroups()
 
   const findDevice = async (rawDevices: any[], fallbackGroupId = '', fallbackGroupName = '') => {
     const devices = await mapPlatformDevicesForGroup(rawDevices, fallbackGroupId, fallbackGroupName, groups)
     return devices.find((device) => device.deviceId === normalizedDeviceId) || null
   }
 
-  const searchRes = await deviceList({ page: 1, page_size: 20, search: normalizedDeviceId })
-  const searched = await findDevice(unwrapList(searchRes?.data))
-  if (searched) return searched
+    const searchRes = await deviceList({ page: 1, page_size: 20, search: normalizedDeviceId })
+    const searched = await findDevice(unwrapList(searchRes?.data))
+    if (searched) return searched
 
-  const listRes = await deviceList({ page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE })
-  const listed = await findDevice(unwrapList(listRes?.data))
-  if (listed) return listed
+    const listRes = await deviceList({ page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE })
+    const listed = await findDevice(unwrapList(listRes?.data))
+    if (listed) return listed
 
-  for (const group of groups) {
-    const devices = await buildPlatformDevicesByGroup(group.groupId)
-    const matched = devices.find((device) => device.deviceId === normalizedDeviceId)
-    if (matched) return matched
-  }
+    for (const group of groups) {
+      const devices = await buildPlatformDevicesByGroup(group.groupId)
+      const matched = devices.find((device) => device.deviceId === normalizedDeviceId)
+      if (matched) return matched
+    }
 
-  return null
+    return null
+  })()
+  platformDeviceByIdPromise.set(normalizedDeviceId, promise)
+  promise.then((device) => platformDeviceByIdCache.set(normalizedDeviceId, device))
+  promise.then(
+    () => platformDeviceByIdPromise.delete(normalizedDeviceId),
+    () => platformDeviceByIdPromise.delete(normalizedDeviceId)
+  )
+  return promise
 }
 
 async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDeviceEntry[]> {
@@ -1910,46 +1991,7 @@ async function doInit(): Promise<boolean> {
     scheduleViewerHydration()
   } else {
     disconnectAllDeviceWs()
-    // Proactively prefetch device metadata AND current telemetry for all referenced devices.
-    // Phase 1 – metadata: populates platformDeviceStore so FieldPicker can echo saved bindings.
-    // Phase 2 – data:     pushes current telemetry so canvas widgets show real values (not 0).
-    void (async () => {
-      const descriptors = collectPlatformSourceDescriptors(dashboardPayload)
-      const deviceIds = [...new Set(descriptors.map((d) => d.deviceId).filter(Boolean))]
-
-      // Phase 1: device metadata
-      for (const deviceId of deviceIds) {
-        try {
-          const device = await buildPlatformDeviceById(deviceId as string)
-          if (device) {
-            registerActivePlatformDevices([device])
-            postToThingsVis('tv:device-by-id', {
-              reqId: `__prefetch__${deviceId}`,
-              deviceId,
-              device,
-            })
-          }
-        } catch {
-          // best effort — ignore per-device failures
-        }
-      }
-
-      // Phase 2: one-time telemetry snapshot (no WebSocket) so canvas shows real values
-      const handledDeviceIds = new Set<string>()
-      for (const descriptor of descriptors) {
-        if (!descriptor.deviceId || descriptor.requestedFields.length === 0) continue
-        if (handledDeviceIds.has(descriptor.deviceId)) continue
-        handledDeviceIds.add(descriptor.deviceId)
-        try {
-          const fields = await buildRequestedFieldData(descriptor.requestedFields, descriptor.deviceId)
-          postPlatformData(fields, descriptor.deviceId)
-        } catch {
-          // best effort — ignore per-device failures
-        }
-      }
-    })()
   }
-
   lastInitCompletedSignature = initSignature
   initRetryAttempt = 0
   if (pendingInitRetryTimer) {
@@ -2332,12 +2374,18 @@ onBeforeUnmount(() => {
   deviceConfigTemplateMapPromise = null
   platformDevicesByGroupCache.clear()
   platformDevicesByGroupPromise.clear()
+  platformDeviceByIdCache.clear()
+  platformDeviceByIdPromise.clear()
   viewerDashboardConfigCache = null
   viewerDashboardConfigCacheId = null
   viewerDashboardConfigPromise = null
   templateEntryCache.clear()
+  templateEntryPromise.clear()
   templatePresetCache.clear()
   templatePresetPromise.clear()
+  currentDeviceFieldsCache.clear()
+  currentDeviceFieldsPromise.clear()
+  requestedFieldDataPromise.clear()
   disconnectAllDeviceWs()
 })
 </script>
