@@ -39,6 +39,7 @@ import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import type { PlatformField } from '@/utils/thingsvis/types'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
+import { resolveHostPreviewUrl } from '@/utils/thingsvis/share-url'
 
 const EDITOR_TEMPLATE_FIELD_PAGE_SIZE = 1000
 const EDITOR_DEVICE_CONFIG_PAGE_SIZE = 1000
@@ -830,12 +831,16 @@ function buildThingsVisFrameUrl(thingsVisToken: string): string {
   const platformApiBaseUrl = encodeURIComponent(getPlatformApiBase())
   const saveTarget = 'host'
   const embedSizing = props.autoHeight ? '&embedSizing=content' : ''
+  const hostPreviewUrl = encodeURIComponent(
+    resolveHostPreviewUrl(router.resolve({ path: '/tv-preview', query: { id: props.id } }).href, window.location.href)
+  )
+  const hostShare = `&hostPreviewUrl=${hostPreviewUrl}`
 
   if (props.mode === 'viewer') {
-    return `${getStudioBase()}#/embed?mode=embedded&provider=thingspanel&context=dashboard&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}${embedSizing}`
+    return `${getStudioBase()}#/embed?mode=embedded&provider=thingspanel&context=dashboard&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}${embedSizing}${hostShare}`
   }
 
-  return `${getStudioBase()}#/editor?mode=embedded&provider=thingspanel&context=dashboard&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}${embedSizing}`
+  return `${getStudioBase()}#/editor?mode=embedded&provider=thingspanel&context=dashboard&saveTarget=${saveTarget}&token=${thingsVisToken}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}${embedSizing}${hostShare}`
 }
 
 function unwrapList(payload: any): any[] {
