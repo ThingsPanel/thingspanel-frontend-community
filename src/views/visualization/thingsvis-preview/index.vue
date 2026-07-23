@@ -2,11 +2,17 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ThingsVisAppFrame from '@/components/thingsvis/ThingsVisAppFrame.vue'
+import ThingsVisSharedFrame from '@/components/thingsvis/ThingsVisSharedFrame.vue'
 import { getThingsVisDashboard, type ThingsVisDashboard } from '@/service/api/thingsvis'
 
 const route = useRoute()
 
 const dashboardSchema = ref<ThingsVisDashboard | null>(null)
+
+const shareToken = computed(() => {
+  const queryValue = route.query.shareToken
+  return typeof queryValue === 'string' ? queryValue.trim() : ''
+})
 
 const dashboardId = computed(() => {
   const queryValue = route.query.id
@@ -23,6 +29,11 @@ const dashboardId = computed(() => {
 })
 
 async function loadDashboard() {
+  if (shareToken.value) {
+    dashboardSchema.value = null
+    return
+  }
+
   if (!dashboardId.value) {
     dashboardSchema.value = null
     return
@@ -39,7 +50,7 @@ async function loadDashboard() {
 }
 
 watch(
-  dashboardId,
+  [dashboardId, shareToken],
   () => {
     void loadDashboard()
   },
@@ -50,7 +61,8 @@ watch(
 <template>
   <div class="h-full w-full bg-white">
     <div v-if="dashboardId" class="h-full w-full overflow-hidden bg-white">
-      <ThingsVisAppFrame :id="dashboardId" :schema="dashboardSchema" mode="viewer" class="h-full w-full" />
+      <ThingsVisSharedFrame v-if="shareToken" :id="dashboardId" :share-token="shareToken" class="h-full w-full" />
+      <ThingsVisAppFrame v-else :id="dashboardId" :schema="dashboardSchema" mode="viewer" class="h-full w-full" />
     </div>
     <div v-else class="flex h-full items-center justify-center text-gray-400">
       <div class="text-center">
