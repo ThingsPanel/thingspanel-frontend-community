@@ -34,7 +34,7 @@ interface ServiceIds {
 
 const addKey = ref()
 const deviceNumber = ref()
-const configOptions = ref()
+const configOptions = ref<any[]>([])
 const deviceId = ref()
 const deviceObj = ref()
 const configId = ref()
@@ -63,9 +63,7 @@ const updateDeviceStatusInTable = (deviceId: string, isOnline: boolean) => {
   try {
     // 更新表格中的设备状态
     if (tablePageRef.value?.dataList && Array.isArray(tablePageRef.value.dataList)) {
-      const deviceIndex = tablePageRef.value.dataList.findIndex(
-        device => device.id === deviceId
-      )
+      const deviceIndex = tablePageRef.value.dataList.findIndex(device => device.id === deviceId)
 
       if (deviceIndex !== -1) {
         tablePageRef.value.dataList[deviceIndex].is_online = isOnline ? 1 : 0
@@ -82,7 +80,7 @@ const updateDeviceStatusInTable = (deviceId: string, isOnline: boolean) => {
 const subscribeDeviceStatus = () => {
   // 获取当前页面的设备ID列表
   const deviceIds = tablePageRef.value?.dataList?.map((device: any) => device.id) || []
-  
+
   if (deviceIds.length > 0) {
     // 连接并订阅（第一次会建立连接，后续会更新订阅）
     deviceStatusWS.connect(deviceIds, updateDeviceStatusInTable)
@@ -133,9 +131,6 @@ const getDeviceGroupOptions = async () => {
 }
 
 const getDeviceConfigOptions = async () => {
-  if (process.env.NODE_ENV === 'development') {
-  }
-
   const res = await getDeviceConfigList({
     page: 1,
     page_size: 99
@@ -517,7 +512,7 @@ const current = ref<number>(1)
 const currentStatus = ref<StepsProps['status']>('process')
 const currentServer = ref<number>(1)
 const currentServerStatus = ref<StepsProps['status']>('process')
-const activate = (place: DrawerPlacement, key: string | number) => {
+const activate = async (place: DrawerPlacement, key: string | number) => {
   if (key === 'server') {
     router.push('/device/service-access')
   } else {
@@ -526,6 +521,9 @@ const activate = (place: DrawerPlacement, key: string | number) => {
     active.value = true
     addKey.value = key
     placement.value = place
+    if (key === 'hands') {
+      await getDeviceConfigOptions()
+    }
   }
 }
 
@@ -539,14 +537,11 @@ const completeAdd = async () => {
 }
 
 const completeHandAdd = () => {
-  if (process.env.NODE_ENV === 'development') {
-  }
-
   tablePageRef.value?.handleSearch()
 }
 
-function handleSelect(key: string | number) {
-  activate('bottom', key)
+async function handleSelect(key: string | number) {
+  await activate('bottom', key)
 }
 
 const messageStyle = ref({
@@ -580,13 +575,13 @@ watch(
 const fetchData = async (params: Record<string, any>) => {
   setCache(params)
   const result = await deviceList(params)
-  
+
   // 数据加载完成后，订阅当前页面的设备状态
   // 使用 nextTick 确保 tablePageRef.value.dataList 已更新
   setTimeout(() => {
     subscribeDeviceStatus()
   }, 100)
-  
+
   return result
 }
 </script>
