@@ -1,14 +1,9 @@
 <script setup lang="tsx">
 import { onMounted, ref } from 'vue';
 import { MovingNumbers } from 'moving-numbers-vue3';
-import { Activity } from '@vicons/tabler';
-import { DocumentOnePage24Regular } from '@vicons/fluent';
 import dayjs from 'dayjs';
-import { $t } from '@/locales';
 import { telemetryDataCurrent } from '@/service/api/device'; // 假设此路径正确
 import { createLogger } from '@/utils/logger';
-import HistoryData from '../device/details/modules/telemetry/modules/history-data.vue';
-import TimeSeriesData from '../device/details/modules/telemetry/modules/time-series-data.vue';
 const logger = createLogger('TelemetryData');
 
 const props = defineProps<{
@@ -20,11 +15,6 @@ const props = defineProps<{
 const telemetryData = ref<any[]>([]);
 const initTelemetryData = ref<any>();
 const nowTime = ref(dayjs(new Date().getTime()).format('YYYY-MM-DD HH:mm:ss'));
-
-const showHistory = ref(false);
-const telemetryId = ref();
-const telemetryKey = ref();
-const modelType = ref<string>('');
 
 const fetchTelemetry = async () => {
   const { data, error } = await telemetryDataCurrent(props.id);
@@ -53,15 +43,6 @@ const getValueClass = (value: unknown) => {
     'index-style--medium': length > 16 && length <= 48,
     'index-style--long': length > 48
   };
-};
-
-const onTapTableTools = (i: any) => {
-  if (typeof i.value === 'number') {
-    modelType.value = $t('custom.device_details.sequential');
-    telemetryKey.value = i.key;
-    telemetryId.value = i.device_id;
-    showHistory.value = true;
-  }
 };
 
 // 在组件挂载时调用 fetchTelemetry 获取数据
@@ -107,45 +88,9 @@ onMounted(() => {
             {{ i.ts ? dayjs(i.ts).format('YYYY-MM-DD HH:mm:ss') : nowTime }}
           </div>
         </template>
-        <template #header-extra>
-          <div class="h-24px w-96px flex items-center justify-end">
-            <NIcon
-              size="24"
-              @click="
-                () => {
-                  modelType = $t('custom.device_details.history');
-                  telemetryKey = i.key;
-                  telemetryId = i.device_id;
-                  showHistory = true;
-                }
-              "
-            >
-              <DocumentOnePage24Regular />
-            </NIcon>
-            <NDivider vertical />
-            <NIcon size="24" :color="isColor(i)" @click="onTapTableTools(i)">
-              <Activity />
-            </NIcon>
-            <NDivider vertical />
-          </div>
-        </template>
       </n-card>
     </n-gi>
   </n-grid>
-  <n-modal v-model:show="showHistory" :title="$t('generate.telemetry-history-data')" class="w-90%">
-    <NCard>
-      <HistoryData
-        v-if="modelType === $t('custom.device_details.history')"
-        :device-id="telemetryId"
-        :the-key="telemetryKey"
-      />
-      <TimeSeriesData
-        v-if="modelType === $t('custom.device_details.sequential')"
-        :device-id="telemetryId"
-        :the-key="telemetryKey"
-      />
-    </NCard>
-  </n-modal>
 </template>
 
 <style lang="scss" scoped>
