@@ -68,7 +68,7 @@ onMounted(async () => {
 
 <template>
   <div class="visualization-app visualization-app--embed">
-    <EmbedNavBar :title="pageTitle" />
+    <EmbedNavBar :title="pageTitle" rotatable />
     <main class="visualization-app__main visualization-app__main--flat">
       <NSpin :show="loading || !authReady">
         <section v-if="authReady" class="visualization-app__preview">

@@ -5,6 +5,7 @@ import { NEmpty, NInput, NSpin, useMessage } from 'naive-ui'
 import { bootstrapAppEmbedSession } from '@/utils/app-embed-auth'
 import { openAppWebViewPage } from '@/utils/app-webview-bridge'
 import { getThingsVisProjects, type ProjectListItem } from '@/service/api/thingsvis'
+import EmbedNavBar from '@/views/visualization-app/EmbedNavBar.vue'
 import { buildVisualizationAppUrl } from './shared'
 
 const route = useRoute()
@@ -73,6 +74,7 @@ onMounted(async () => {
 
 <template>
   <div class="visualization-app">
+    <EmbedNavBar title="看板" :show-back="false" />
     <main class="visualization-app__main">
       <NSpin :show="loading || !authReady">
         <section v-if="authReady" class="visualization-app__section">
