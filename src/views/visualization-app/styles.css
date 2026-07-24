@@ -218,15 +218,15 @@
 
 .visualization-app__embed-nav-rotate {
   position: absolute;
-  right: 12px;
-  top: 50%;
-  width: 40px;
-  height: 40px;
+  right: 10px;
+  top: calc(var(--app-status-bar-height, 0px) + 22px);
+  width: 36px;
+  height: 36px;
   border: 0;
   border-radius: 10px;
   background: transparent;
   color: #111827;
-  font-size: 26px;
+  font-size: 20px;
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
