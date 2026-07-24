@@ -91,7 +91,8 @@ async function openDashboard(dashboard: DashboardListItem) {
         projectId: projectId.value,
         dashboardName: dashboard.name,
         token: route.query.token as string,
-        lang: route.query.lang as string
+        lang: route.query.lang as string,
+        statusBarHeight: route.query.statusBarHeight as string
       }
     })
   })

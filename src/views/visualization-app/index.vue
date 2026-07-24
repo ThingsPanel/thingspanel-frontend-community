@@ -50,7 +50,8 @@ async function openProject(project: ProjectListItem) {
         projectId: project.id,
         projectName: project.name,
         token: route.query.token as string,
-        lang: route.query.lang as string
+        lang: route.query.lang as string,
+        statusBarHeight: route.query.statusBarHeight as string
       }
     })
   })
