@@ -188,9 +188,10 @@
   top: 0;
   z-index: 20;
   display: flex;
-  height: 44px;
+  height: calc(44px + var(--app-status-bar-height, 0px));
   align-items: center;
-  padding: 0 8px;
+  padding: var(--app-status-bar-height, 0px) 8px 0;
+  box-sizing: border-box;
   border-bottom: 1px solid #eef0f4;
   background: #fff;
 }

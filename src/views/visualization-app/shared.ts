@@ -14,11 +14,13 @@ export function buildVisualizationAppUrl(
   const base = typeof window !== 'undefined' ? window.location.origin : ''
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
   const token = localStg.get('token') || ''
-  const lang =
-    (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('lang') : null) || ''
+  const currentQuery =
+    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams()
+  const lang = currentQuery.get('lang') || ''
+  const statusBarHeight = currentQuery.get('statusBarHeight') || ''
 
   const query = new URLSearchParams()
-  Object.entries({ ...params, token, lang }).forEach(([key, value]) => {
+  Object.entries({ ...params, token, lang, statusBarHeight }).forEach(([key, value]) => {
     if (value) query.set(key, value)
   })
 

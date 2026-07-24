@@ -16,6 +16,13 @@ withDefaults(
 
 const showEmbedNav = !isStandaloneEmbedPage()
 const isLandscape = ref(false)
+const statusBarHeight = Math.min(
+  60,
+  Math.max(0, Number(new URLSearchParams(window.location.search).get('statusBarHeight')) || 0)
+)
+const navStyle = {
+  '--app-status-bar-height': `${statusBarHeight}px`
+}
 
 type PlusScreen = {
   lockOrientation: (orientation: 'landscape-primary' | 'portrait-primary') => void
@@ -66,7 +73,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header v-if="showEmbedNav" class="visualization-app__embed-nav">
+  <header v-if="showEmbedNav" class="visualization-app__embed-nav" :style="navStyle">
     <button
       v-if="showBack"
       type="button"
