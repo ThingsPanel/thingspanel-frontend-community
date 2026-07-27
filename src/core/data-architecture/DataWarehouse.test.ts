@@ -3,7 +3,12 @@
  * 测试多数据源隔离、性能优化、内存管理等功能
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { dataWarehouse, EnhancedDataWarehouse, type DataStorageItem, type PerformanceMetrics } from '@/core/data-architecture/DataWarehouse'
+import {
+  dataWarehouse,
+  EnhancedDataWarehouse,
+  type DataStorageItem,
+  type PerformanceMetrics
+} from '@/core/data-architecture/DataWarehouse'
 
 describe('EnhancedDataWarehouse', () => {
   let warehouse: EnhancedDataWarehouse

@@ -4,7 +4,11 @@
  */
 
 // 编辑器大数据管理
-export type { IEditorDataManager, EditorData, EditorDataChangeEvent } from '@/core/data-architecture/interfaces/IEditorDataManager'
+export type {
+  IEditorDataManager,
+  EditorData,
+  EditorDataChangeEvent
+} from '@/core/data-architecture/interfaces/IEditorDataManager'
 
 // 组件配置管理
 export type {
@@ -49,7 +53,11 @@ export {
 } from '../ConfigToSimpleDataAdapter'
 
 // Visual Editor 桥接器
-export { visualEditorBridge, VisualEditorBridge, getVisualEditorBridge } from '@/core/data-architecture/VisualEditorBridge'
+export {
+  visualEditorBridge,
+  VisualEditorBridge,
+  getVisualEditorBridge
+} from '@/core/data-architecture/VisualEditorBridge'
 
 /**
  * 数据架构设计原则：

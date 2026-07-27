@@ -332,8 +332,8 @@ export function moveItemWithCollisionHandling(
   // 解决新添加项（坐标为 'auto' 或 undefined）无法参与碰撞检测的核心问题。
   const workingLayout = cloneLayout(layout).map(item => {
     // 检查x和y坐标是否为无效值（非数字、NaN、'auto'等）。
-    const isInvalidX = typeof item.x !== 'number' || isNaN(item.x);
-    const isInvalidY = typeof item.y !== 'number' || isNaN(item.y);
+    const isInvalidX = typeof item.x !== 'number' || isNaN(item.x)
+    const isInvalidY = typeof item.y !== 'number' || isNaN(item.y)
 
     // 为无效坐标提供一个临时的、可预测的初始位置。
     // 如果y坐标无效，则假定其在顶部（y=0）。
@@ -342,64 +342,64 @@ export function moveItemWithCollisionHandling(
     return {
       ...item,
       x: isInvalidX ? 0 : item.x,
-      y: isInvalidY ? 0 : item.y,
-    };
-  });
+      y: isInvalidY ? 0 : item.y
+    }
+  })
 
   // 步骤2: 更新移动项的位置
   // 在净化后的工作布局中找到正在移动的项。
-  const movingItemInLayout = workingLayout.find(item => item.i === movingItem.i);
+  const movingItemInLayout = workingLayout.find(item => item.i === movingItem.i)
   // 如果找不到（理论上不应发生），则返回原始布局以保证安全。
   if (!movingItemInLayout) {
-    return layout;
+    return layout
   }
 
   // 将移动项的位置更新为拖拽操作提供的新坐标。
-  movingItemInLayout.x = newX;
-  movingItemInLayout.y = newY;
+  movingItemInLayout.x = newX
+  movingItemInLayout.y = newY
 
   // 步骤3: 连锁碰撞处理 (BFS)
   // 使用广度优先搜索（BFS）来处理由移动项引起的连锁碰撞。
-  const queue: GridLayoutPlusItem[] = [movingItemInLayout];
+  const queue: GridLayoutPlusItem[] = [movingItemInLayout]
   // `movedItems` 用于跟踪在此次操作中已经移动过的项，防止在同一次连锁反应中被重复处理，避免无限循环。
-  const movedItems = new Set<string>([movingItemInLayout.i]);
+  const movedItems = new Set<string>([movingItemInLayout.i])
 
   // 设置最大迭代次数，作为防止无限循环的安全阀。
-  let iterations = 0;
-  const maxIterations = workingLayout.length * workingLayout.length;
+  let iterations = 0
+  const maxIterations = workingLayout.length * workingLayout.length
 
   while (queue.length > 0) {
-    iterations++;
+    iterations++
     if (iterations > maxIterations) {
-      console.error('moveItemWithCollisionHandling: Max iterations reached, aborting.');
-      return layout; // 检测到可能的无限循环，返回原始布局以避免应用冻结。
+      console.error('moveItemWithCollisionHandling: Max iterations reached, aborting.')
+      return layout // 检测到可能的无限循环，返回原始布局以避免应用冻结。
     }
 
-    const currentItem = queue.shift()!;
+    const currentItem = queue.shift()!
 
     // 遍历布局中的所有其他项以检测与当前项的碰撞。
     for (const other of workingLayout) {
-      if (other.i === currentItem.i) continue;
+      if (other.i === currentItem.i) continue
 
       if (collides(currentItem, other)) {
         // 如果与静态项（static=true）发生碰撞，则认为此次移动无效，立即返回原始布局。
         if (other.static) {
-          return layout;
+          return layout
         }
 
         // 计算将 'other' 项向下推到的新y坐标。
-        const pushToY = currentItem.y + currentItem.h;
+        const pushToY = currentItem.y + currentItem.h
 
         // 只有当 'other' 项当前位置在推挤目标位置之上时，才执行推挤。
         // 这可以防止不必要的移动和潜在的循环。
         if (other.y < pushToY) {
-          other.y = pushToY;
+          other.y = pushToY
 
           // 如果 'other' 项是第一次在此操作中被移动，则将其加入队列。
           // 这确保了它引发的后续碰撞也会被处理。
           if (!movedItems.has(other.i)) {
-            movedItems.add(other.i);
-            queue.push(other);
+            movedItems.add(other.i)
+            queue.push(other)
           }
         }
       }
@@ -408,7 +408,7 @@ export function moveItemWithCollisionHandling(
 
   // 步骤4: 布局紧凑化
   // 在所有碰撞处理完成后，对布局进行紧凑化，移除因推挤而产生的垂直间隙。
-  return compactLayout(workingLayout, cols);
+  return compactLayout(workingLayout, cols)
 }
 
 /**
@@ -417,7 +417,7 @@ export function moveItemWithCollisionHandling(
  * @returns 返回一个新的布局数组，与原始布局完全独立。
  */
 function cloneLayout(layout: GridLayoutPlusItem[]): GridLayoutPlusItem[] {
-  return JSON.parse(JSON.stringify(layout));
+  return JSON.parse(JSON.stringify(layout))
 }
 
 /**
@@ -427,10 +427,10 @@ function cloneLayout(layout: GridLayoutPlusItem[]): GridLayoutPlusItem[] {
  * @returns 如果两项重叠，则返回 true，否则返回 false。
  */
 function collides(item1: GridLayoutPlusItem, item2: GridLayoutPlusItem): boolean {
-  if (item1.i === item2.i) return false;
-  if (item1.x + item1.w <= item2.x) return false;
-  if (item1.x >= item2.x + item2.w) return false;
-  if (item1.y + item1.h <= item2.y) return false;
-  if (item1.y >= item2.y + item2.h) return false;
-  return true;
+  if (item1.i === item2.i) return false
+  if (item1.x + item1.w <= item2.x) return false
+  if (item1.x >= item2.x + item2.w) return false
+  if (item1.y + item1.h <= item2.y) return false
+  if (item1.y >= item2.y + item2.h) return false
+  return true
 }

@@ -69,9 +69,9 @@ onMounted(() => {
           v-for="(option, index) in iconOptions"
           :key="index"
           class="icon-cell"
-          :class="{ 'selected': selectedIconName === option.name }"
-          @click="selectIcon(option)"
+          :class="{ selected: selectedIconName === option.name }"
           :title="option.name"
+          @click="selectIcon(option)"
         >
           <NIcon size="24" :component="option.component" />
         </div>
@@ -225,17 +225,17 @@ onMounted(() => {
 }
 
 /* 暗主题适配 */
-[data-theme="dark"] .icon-cell {
+[data-theme='dark'] .icon-cell {
   background: var(--input-color);
   border-color: var(--border-color);
 }
 
-[data-theme="dark"] .icon-cell:hover {
+[data-theme='dark'] .icon-cell:hover {
   background: var(--primary-color-hover);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-[data-theme="dark"] .icon-picker-dialog {
+[data-theme='dark'] .icon-picker-dialog {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 </style>

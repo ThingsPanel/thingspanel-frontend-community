@@ -439,7 +439,7 @@ const debouncePreview = (() => {
  */
 watch(
   () => formState.selectedMethod,
-  (newMethod) => {
+  newMethod => {
     previewData.value = null
     processingPreviewData.value = null
     // 通知父组件录入方式已改变
@@ -510,17 +510,21 @@ watch(
 const resetFormState = () => {
   // 重置表单数据
   formState.selectedMethod = 'json'
-  
+
   // 如果有组件示例数据就用，否则用通用数据
   if (props.exampleData) {
     formState.jsonData = JSON.stringify(props.exampleData, null, 2)
   } else {
-    formState.jsonData = JSON.stringify({
-      value: 45,
-      unit: '%',
-      metricsName: '湿度',
-      timestamp: new Date().toISOString()
-    }, null, 2)
+    formState.jsonData = JSON.stringify(
+      {
+        value: 45,
+        unit: '%',
+        metricsName: '湿度',
+        timestamp: new Date().toISOString()
+      },
+      null,
+      2
+    )
   }
   formState.httpUrl = 'https://api.example.com/data'
   formState.httpMethod = 'GET'
@@ -562,9 +566,7 @@ const loadExampleData = (showMessage = false) => {
  * 获取示例按钮的提示文本
  */
 const getExampleButtonTitle = () => {
-  return formState.selectedMethod === 'json' 
-    ? '加载组件示例数据（用于调试）' 
-    : '示例数据仅在JSON模式下可用'
+  return formState.selectedMethod === 'json' ? '加载组件示例数据（用于调试）' : '示例数据仅在JSON模式下可用'
 }
 
 /**
@@ -759,24 +761,24 @@ defineExpose({
                 </n-space>
 
                 <!-- 按钮组 -->
-              <n-space size="small">
-                <!-- 使用示例数据按钮 -->
-                <n-button
-                  v-if="props.exampleData"
-                  type="info"
-                  size="small"
-                  :disabled="!props.exampleData"
-                  @click="() => loadExampleData(true)"
-                  :title="getExampleButtonTitle()"
-                >
-                  使用示例数据
-                </n-button>
-                
-                <!-- 预览按钮 -->
-                <n-button type="primary" size="small" :loading="previewLoading" @click="executePreview">
-                  预览数据
-                </n-button>
-              </n-space>
+                <n-space size="small">
+                  <!-- 使用示例数据按钮 -->
+                  <n-button
+                    v-if="props.exampleData"
+                    type="info"
+                    size="small"
+                    :disabled="!props.exampleData"
+                    :title="getExampleButtonTitle()"
+                    @click="() => loadExampleData(true)"
+                  >
+                    使用示例数据
+                  </n-button>
+
+                  <!-- 预览按钮 -->
+                  <n-button type="primary" size="small" :loading="previewLoading" @click="executePreview">
+                    预览数据
+                  </n-button>
+                </n-space>
               </n-space>
 
               <!-- JSON数据录入 -->

@@ -4,7 +4,11 @@
  * 替代原有的 ComponentExecutorManager 直接依赖
  */
 
-import { simpleDataBridge, type ComponentDataRequirement, type DataResult } from '@/core/data-architecture/SimpleDataBridge'
+import {
+  simpleDataBridge,
+  type ComponentDataRequirement,
+  type DataResult
+} from '@/core/data-architecture/SimpleDataBridge'
 import type { DataSourceDefinition } from '@/core/data-architecture/interfaces/IComponentDataManager'
 import { dataSourceBindingConfig, type AutoBindConfig } from '@/core/data-architecture/DataSourceBindingConfig'
 
@@ -26,18 +30,12 @@ export class VisualEditorBridge {
    * @param config 数据源配置
    */
   async updateComponentExecutor(componentId: string, componentType: string, config: any): Promise<DataResult> {
-
-
     // 🔥 添加详细的配置结构调试
-  
 
     // 将旧配置格式转换为新的数据需求格式
     const requirement = this.convertConfigToRequirement(componentId, componentType, config)
 
-
-
     const result = await simpleDataBridge.executeComponent(requirement)
-
 
     // 通知数据更新回调
     this.notifyDataUpdate(componentId, result.data)
@@ -119,8 +117,6 @@ export class VisualEditorBridge {
           ...(config.dataSource || {})
         }
 
-
-
         // 🔥 新增：将基础配置注入到HTTP参数中，确保参数绑定使用最新值
         resolvedConfig = this.injectBaseConfigToDataSource(resolvedConfig, baseConfig)
       }
@@ -129,7 +125,6 @@ export class VisualEditorBridge {
     // 处理配置中的数据源
     if (resolvedConfig && typeof resolvedConfig === 'object') {
       // 🔥 新增：详细的配置结构调试日志
-    
 
       // 🆕 处理新的 DataSourceConfiguration 格式
       if (resolvedConfig.dataSources && Array.isArray(resolvedConfig.dataSources)) {
@@ -253,13 +248,11 @@ export class VisualEditorBridge {
       return dataSourceConfig
     }
 
-
     // 创建增强的配置对象
     const enhanced = JSON.parse(JSON.stringify(dataSourceConfig)) // 深拷贝
 
     // 🚀 关键扩展：不仅注入基础配置，还要处理所有绑定表达式替换
     this.processBindingReplacements(enhanced, baseConfig)
-
 
     return enhanced
   }
@@ -270,7 +263,6 @@ export class VisualEditorBridge {
    * ⚠️ 关键警告：此方法修改传入的配置对象，确保传入的是克隆对象！
    */
   private processBindingReplacements(config: any, baseConfig: any): void {
-
     // 🚀 新增：检查是否启用autoBind
     const autoBindConfig = this.getAutoBindConfigFromDataSource(config)
 
@@ -297,11 +289,7 @@ export class VisualEditorBridge {
     }
 
     // 使用autoBind生成HTTP参数
-    const autoBindParams = dataSourceBindingConfig.buildAutoBindParams(
-      fullConfig,
-      autoBindConfig,
-      config.componentType
-    )
+    const autoBindParams = dataSourceBindingConfig.buildAutoBindParams(fullConfig, autoBindConfig, config.componentType)
 
     // 将autoBind参数注入到HTTP配置中
     if (config.type === 'http' && config.config) {
@@ -350,7 +338,9 @@ export class VisualEditorBridge {
    * @param dataSourceConfig 数据源配置
    * @returns autoBind配置或null
    */
-  private getAutoBindConfigFromDataSource(dataSourceConfig: any): import('./DataSourceBindingConfig').AutoBindConfig | null {
+  private getAutoBindConfigFromDataSource(
+    dataSourceConfig: any
+  ): import('./DataSourceBindingConfig').AutoBindConfig | null {
     // 检查数据源配置中的autoBind设置
     if (dataSourceConfig.autoBind) {
       return dataSourceConfig.autoBind
@@ -374,14 +364,12 @@ export class VisualEditorBridge {
       return
     }
 
-
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
         const val = obj[key]
         const currentPath = `${path}.${key}`
 
         if (typeof val === 'string') {
-
           // 🔥 关键修复：检查多种绑定表达式格式
           // 格式1: componentId.component.propertyName （标准组件属性绑定）
           const componentBindingMatch = val.match(/^([^.]+)\.component\.(.+)$/)
@@ -468,7 +456,6 @@ export class VisualEditorBridge {
       // TODO: 在需要时重新实现此功能
       return undefined
 
-
       // 1. 优先从component层直接获取属性
       if (fullConfig?.component?.[propertyName] !== undefined) {
         const value = fullConfig.component[propertyName]
@@ -518,7 +505,6 @@ export class VisualEditorBridge {
       // TODO: 在需要时重新实现此功能
       return undefined
 
-
       // 🔥 关键修复：优先从component层获取，然后检查customize层（兼容不同组件结构）
       let value = undefined
       if (config?.component?.[propertyName] !== undefined) {
@@ -546,7 +532,6 @@ export class VisualEditorBridge {
       // 方法2: 从编辑器节点获取（第二优先级）
       const editorStore = useEditorStore()
       const node = editorStore.nodes?.find((n: any) => n.id === componentId)
-
 
       if (node?.properties?.[propertyName] !== undefined) {
         value = node.properties[propertyName]

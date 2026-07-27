@@ -4,9 +4,18 @@
  */
 
 import { DataItemFetcher, DataItem, IDataItemFetcher } from '@/core/data-architecture/executors/DataItemFetcher'
-import { DataItemProcessor, ProcessingConfig, IDataItemProcessor } from '@/core/data-architecture/executors/DataItemProcessor'
+import {
+  DataItemProcessor,
+  ProcessingConfig,
+  IDataItemProcessor
+} from '@/core/data-architecture/executors/DataItemProcessor'
 import { DataSourceMerger, MergeStrategy, IDataSourceMerger } from '@/core/data-architecture/executors/DataSourceMerger'
-import { MultiSourceIntegrator, ComponentData, DataSourceResult, IMultiSourceIntegrator } from '@/core/data-architecture/executors/MultiSourceIntegrator'
+import {
+  MultiSourceIntegrator,
+  ComponentData,
+  DataSourceResult,
+  IMultiSourceIntegrator
+} from '@/core/data-architecture/executors/MultiSourceIntegrator'
 
 /**
  * 数据源配置结构
@@ -131,9 +140,7 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
         }
 
         try {
-
           const sourceResult = await this.processDataSource(dataSourceConfig, executionState, config.componentId)
-
 
           // 🔥 移除循环打印日志
 
@@ -214,7 +221,6 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
 
     // 🔥 关键调试：记录processDataSource的入口参数
 
-
     try {
       const processedItems: any[] = []
 
@@ -227,20 +233,16 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
         })
       }
 
-
       // 处理每个数据项
       for (let i = 0; i < dataSourceConfig.dataItems.length; i++) {
-
         const { item, processing } = dataSourceConfig.dataItems[i]
         const itemId = `${dataSourceConfig.sourceId}_item_${i}`
-
 
         try {
           // 🔍 调试：检查传递给fetchData的item对象
 
           // 🔥 特别检查HTTP类型的配置
           if (item.type === 'http' && item.config) {
-
             // 🚨 检查HTTP参数中是否有损坏的绑定路径
             const allParams = [
               ...(item.config.params || []),
@@ -271,7 +273,6 @@ export class MultiLayerExecutorChain implements IMultiLayerExecutorChain {
           // 🔥 第一层：数据项获取 - 即将调用DataItemFetcher.fetchData
 
           const rawData = await this.dataItemFetcher.fetchData(item)
-
 
           // 更新调试状态
           if (executionState) {

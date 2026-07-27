@@ -3,8 +3,8 @@ import { onMounted, ref } from 'vue'
 import { TimeOutline } from '@vicons/ionicons5'
 import { Circle24Regular, Target20Regular } from '@vicons/fluent'
 import { addYears, differenceInDays, differenceInHours, differenceInMonths } from 'date-fns'
-import { $t } from '@/locales';
-import { message } from '@/utils/common/discrete';
+import { $t } from '@/locales'
+import { message } from '@/utils/common/discrete'
 const emit = defineEmits<{
   (event: 'update:value', value): void
 }>()

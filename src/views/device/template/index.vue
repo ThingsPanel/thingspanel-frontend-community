@@ -12,7 +12,8 @@ import {
   NEmpty,
   NGrid,
   NGi,
-  NPopconfirm
+  NPopconfirm,
+  useMessage
 } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { ListOutline, GridOutline } from '@vicons/ionicons5'
@@ -21,16 +22,25 @@ import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import ItemCard from '@/components/dev-card-item/index.vue'
 import TemplateModal from './components/template-modal.vue'
+import MarketPublishEntry from '@/views/device/config/MarketPublishEntry.vue'
+import MarketLoginModal from '@/views/device/config/modules/market-login-modal.vue'
+import { useMarketAuth } from '@/views/device/config/composables/use-market-auth'
 import { useBoolean, useLoading } from '~/packages/hooks/src'
 // 导入SvgIcon组件，使用项目标准图标系统
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { getDemoServerUrl } from '@/utils/common/tool'
 
 const route = useRoute()
+const message = useMessage()
+const { isLoggedIn } = useMarketAuth()
 const { startLoading, endLoading, loading } = useLoading(false)
 const { bool: visible, setTrue: openModal } = useBoolean()
 const demoUrl = getDemoServerUrl()
 const url: any = ref(demoUrl)
+
+// 发布向导 ref
+const publishEntryRef = ref<InstanceType<typeof MarketPublishEntry> | null>(null)
+const showLoginModal = ref(false)
 
 // 查询参数
 const queryParams = reactive({
@@ -109,6 +119,34 @@ const handleRemove = async (id: string) => {
   }
 }
 
+// 发布到市场
+const handlePublishToMarket = (templateId: string) => {
+  if (!isLoggedIn()) {
+    showLoginModal.value = true
+    return
+  }
+  publishEntryRef.value?.openPublish({ deviceTemplateIds: [templateId] })
+}
+
+// 发布成功处理
+const handlePublishSuccess = () => {
+  message.success($t('market.publish.publishSuccessTitle'))
+}
+
+// 发布失败处理
+const handlePublishError = (error: string) => {
+  message.error(error)
+}
+
+// 登录成功后打开发布向导
+const handleLoginSuccess = () => {
+  showLoginModal.value = false
+  // 延迟打开发布向导
+  setTimeout(() => {
+    publishEntryRef.value?.openPublish()
+  }, 100)
+}
+
 // 表格列定义
 const columns = computed(() => [
   {
@@ -163,7 +201,7 @@ const columns = computed(() => [
   {
     title: $t('common.actions'),
     key: 'actions',
-    width: 150,
+    width: 220,
     render: (row: any) => {
       return h(
         NSpace,
@@ -178,6 +216,15 @@ const columns = computed(() => [
                 onClick: () => handleEdit(row.id)
               },
               { default: () => $t('common.edit') }
+            ),
+            h(
+              NButton,
+              {
+                size: 'small',
+                type: 'info',
+                onClick: () => handlePublishToMarket(row.id)
+              },
+              { default: () => $t('market.publish.publishToMarket') }
             ),
             h(
               NPopconfirm,
@@ -275,6 +322,11 @@ onMounted(() => {
       <template #header-left>
         <div class="flex gap-2">
           <NButton type="primary" @click="handleAddNew">+ {{ $t('generate.add-device-function-template') }}</NButton>
+          <MarketPublishEntry
+            ref="publishEntryRef"
+            @published="handlePublishSuccess"
+            @publish-error="handlePublishError"
+          />
         </div>
       </template>
 
@@ -386,6 +438,13 @@ onMounted(() => {
 
     <!-- 模板弹窗 -->
     <TemplateModal v-model:visible="visible" :type="modalType" :template-id="templateId" :get-table-data="getData" />
+
+    <!-- 市场登录弹窗 -->
+    <MarketLoginModal
+      :visible="showLoginModal"
+      @update:visible="showLoginModal = $event"
+      @login-success="handleLoginSuccess"
+    />
   </div>
 </template>
 

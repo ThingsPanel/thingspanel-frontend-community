@@ -9,7 +9,6 @@ import prettierPlugin from 'eslint-plugin-prettier/recommended'
  * ESLint Flat Config 配置
  */
 export default [
-
   // 指定 ESLint 应该忽略的文件和目录
   {
     ignores: [

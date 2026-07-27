@@ -58,11 +58,7 @@ const { label, isCounting, loading: smsLoading, start, isValidEmail } = useSmsCo
 
 // 判断表单是否可以提交
 const canSubmit = computed(() => {
-  return (
-    model.email.trim() !== '' &&
-    model.verify_code.trim() !== '' &&
-    model.password.trim() !== ''
-  )
+  return model.email.trim() !== '' && model.verify_code.trim() !== '' && model.password.trim() !== ''
 })
 
 const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {

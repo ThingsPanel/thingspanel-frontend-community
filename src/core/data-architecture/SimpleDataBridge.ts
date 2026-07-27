@@ -105,7 +105,11 @@ export class SimpleDataBridge {
   /**
    * 实际的组件执行逻辑（从executeComponent中提取）
    */
-  private async doExecuteComponent(requirement: ComponentDataRequirement, startTime: number, callerInfo: string): Promise<DataResult> {
+  private async doExecuteComponent(
+    requirement: ComponentDataRequirement,
+    startTime: number,
+    callerInfo: string
+  ): Promise<DataResult> {
     const executionId = `${requirement.componentId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
     try {
@@ -129,7 +133,6 @@ export class SimpleDataBridge {
       if (isDataSourceConfigFormat) {
         dataSourceConfig = requirement as any
       } else {
-
         // 🔥 修复：检查是否是双层嵌套结构
         if (requirement.dataSources?.[0]?.dataSources) {
           // 双层嵌套：取内层的真正配置
@@ -153,14 +156,12 @@ export class SimpleDataBridge {
 
       // 🔥 使用多层执行器链执行完整的数据处理管道
 
-
       const executionResult: ExecutionResult = await this.executorChain.executeDataProcessingChain(
         enhancedDataSourceConfig,
         true
       )
 
       if (executionResult.success && executionResult.componentData) {
-
         // 🎯 用户要求的打印这几个字 - 阶段1：SimpleDataBridge数据执行完成
 
         // 🔥 修复：为每个数据源分别存储数据，并存储合并后的完整数据
@@ -172,12 +173,7 @@ export class SimpleDataBridge {
 
           // 存储各个数据源的数据
           Object.entries(executionResult.componentData).forEach(([sourceId, sourceData]) => {
-            this.warehouse.storeComponentData(
-              requirement.componentId,
-              sourceId,
-              sourceData,
-              'multi-source'
-            )
+            this.warehouse.storeComponentData(requirement.componentId, sourceId, sourceData, 'multi-source')
           })
 
           // 同时存储完整的合并数据作为备份
@@ -387,9 +383,7 @@ export class SimpleDataBridge {
    * 🔥 新增：在执行前验证配置完整性，特别检查HTTP参数绑定路径
    */
   private validateConfigBeforeExecution(config: DataSourceConfiguration): void {
-
     config.dataSources.forEach((dataSource, dsIndex) => {
-
       dataSource.dataItems.forEach((dataItem, itemIndex) => {
         const { item } = dataItem
 
@@ -405,7 +399,6 @@ export class SimpleDataBridge {
           ]
 
           allParams.forEach(({ source, param }, paramIndex) => {
-
             // 🚨 检测损坏的绑定路径
             if (param.value && typeof param.value === 'string') {
               const isSuspiciousPath = !param.value.includes('.') && param.value.length < 10 && param.variableName
@@ -429,16 +422,20 @@ export class SimpleDataBridge {
         }
       })
     })
-
   }
 
   /**
    * 🔥 新增：捕获配置快照，确保执行时使用一致的配置
    */
-  private async captureConfigurationSnapshot(componentId: string, executionId: string): Promise<{ config: any; timestamp: number } | null> {
+  private async captureConfigurationSnapshot(
+    componentId: string,
+    executionId: string
+  ): Promise<{ config: any; timestamp: number } | null> {
     try {
       // 🔥 修复：使用动态导入替代require
-      const { configurationIntegrationBridge } = await import('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
+      const { configurationIntegrationBridge } = await import(
+        '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
+      )
       const config = configurationIntegrationBridge.getConfiguration(componentId)
 
       if (config) {
@@ -492,7 +489,7 @@ export class SimpleDataBridge {
       let hash = 0
       for (let i = 0; i < configString.length; i++) {
         const char = configString.charCodeAt(i)
-        hash = ((hash << 5) - hash) + char
+        hash = (hash << 5) - hash + char
         hash = hash & hash // 转换为32位整数
       }
       return Math.abs(hash).toString(36)

@@ -9,10 +9,10 @@
  */
 
 export interface LoopDetectionConfig {
-  maxDepth: number         // 最大递归深度
-  timeWindow: number       // 时间窗口 (ms)
+  maxDepth: number // 最大递归深度
+  timeWindow: number // 时间窗口 (ms)
   maxCallsInWindow: number // 时间窗口内最大调用次数
-  enableDebug: boolean     // 是否启用调试输出
+  enableDebug: boolean // 是否启用调试输出
 }
 
 export interface CallRecord {
@@ -29,7 +29,7 @@ class LoopProtectionManager {
   // 配置
   private config: LoopDetectionConfig = {
     maxDepth: 10,
-    timeWindow: 5000,     // 5秒
+    timeWindow: 5000, // 5秒
     maxCallsInWindow: 50, // 5秒内最多50次调用
     enableDebug: process.env.NODE_ENV === 'development'
   }
@@ -68,12 +68,7 @@ class LoopProtectionManager {
   /**
    * 🔥 核心方法：检查函数调用是否应该被允许
    */
-  public shouldAllowCall(
-    functionName: string,
-    componentId?: string,
-    action?: string,
-    source = 'unknown'
-  ): boolean {
+  public shouldAllowCall(functionName: string, componentId?: string, action?: string, source = 'unknown'): boolean {
     const callKey = componentId ? `${functionName}:${componentId}` : functionName
 
     // 1. 检查黑名单
@@ -160,9 +155,7 @@ class LoopProtectionManager {
     const history = this.callHistory.get(callKey) || []
 
     // 清理过期的历史记录
-    const validHistory = history.filter(record =>
-      now - record.timestamp <= this.config.timeWindow
-    )
+    const validHistory = history.filter(record => now - record.timestamp <= this.config.timeWindow)
     this.callHistory.set(callKey, validHistory)
 
     return validHistory.length >= this.config.maxCallsInWindow
@@ -254,7 +247,7 @@ class LoopProtectionManager {
   private setupGlobalErrorHandling(): void {
     // 监听未捕获的异常，可能是循环调用导致的栈溢出
     if (typeof window !== 'undefined') {
-      window.addEventListener('error', (event) => {
+      window.addEventListener('error', event => {
         if (event.error && event.error.message.includes('Maximum call stack size exceeded')) {
           console.error('🚫 [LoopProtection] 检测到栈溢出，可能存在无限递归')
           this.performanceStats.totalLoopsDetected++
@@ -274,8 +267,7 @@ class LoopProtectionManager {
     setInterval(() => {
       const now = Date.now()
       const timeDiff = now - this.performanceStats.lastResetTime
-      const totalCalls = Array.from(this.callHistory.values())
-        .reduce((sum, history) => sum + history.length, 0)
+      const totalCalls = Array.from(this.callHistory.values()).reduce((sum, history) => sum + history.length, 0)
 
       this.performanceStats.averageCallsPerSecond = totalCalls / (timeDiff / 1000)
       this.performanceStats.lastResetTime = now
@@ -294,8 +286,8 @@ class LoopProtectionManager {
   private cleanupExpiredHistory(): void {
     const now = Date.now()
     for (const [callKey, history] of this.callHistory.entries()) {
-      const validHistory = history.filter(record =>
-        now - record.timestamp <= this.config.timeWindow * 2 // 保留2倍时间窗口的历史
+      const validHistory = history.filter(
+        record => now - record.timestamp <= this.config.timeWindow * 2 // 保留2倍时间窗口的历史
       )
       if (validHistory.length !== history.length) {
         this.callHistory.set(callKey, validHistory)
@@ -343,7 +335,6 @@ class LoopProtectionManager {
       averageCallsPerSecond: 0,
       lastResetTime: Date.now()
     }
-
   }
 
   /**

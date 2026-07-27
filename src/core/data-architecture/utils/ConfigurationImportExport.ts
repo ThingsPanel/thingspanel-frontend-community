@@ -1181,17 +1181,16 @@ export class SingleDataSourceImporter {
       param.selectedTemplate === 'component-property-binding' ||
       // 特征3：value值看起来像绑定路径（包含.且格式正确）
       (typeof param.value === 'string' &&
-       param.value.includes('.') &&
-       param.value.split('.').length >= 3 &&
-       param.value.length > 15) ||
+        param.value.includes('.') &&
+        param.value.split('.').length >= 3 &&
+        param.value.length > 15) ||
       // 特征4：有variableName且包含组件ID格式
       (param.variableName && param.variableName.includes('_') && param.variableName.length > 5) ||
       // 特征5：description包含"绑定"关键词
-      (param.description && (
-        param.description.includes('绑定') ||
-        param.description.includes('属性') ||
-        param.description.includes('component')
-      ))
+      (param.description &&
+        (param.description.includes('绑定') ||
+          param.description.includes('属性') ||
+          param.description.includes('component')))
 
     // 如果检测到绑定特征，直接返回true，忽略原始isDynamic设置
     if (hasBindingFeatures) {
@@ -1216,7 +1215,8 @@ export class SingleDataSourceImporter {
       }
 
       // 检测绑定路径是否被损坏
-      const isBindingCorrupted = param.value &&
+      const isBindingCorrupted =
+        param.value &&
         typeof param.value === 'string' &&
         !param.value.includes('.') &&
         param.value.length < 10 &&
@@ -1269,8 +1269,11 @@ export class SingleDataSourceImporter {
           const processedItem = processValue(item)
 
           // 检测数组中的HTTP参数并修正isDynamic字段
-          if (processedItem && typeof processedItem === 'object' &&
-              ('valueMode' in processedItem || 'selectedTemplate' in processedItem)) {
+          if (
+            processedItem &&
+            typeof processedItem === 'object' &&
+            ('valueMode' in processedItem || 'selectedTemplate' in processedItem)
+          ) {
             const correctedIsDynamic = this.detectIsDynamicParameter(processedItem)
             return {
               ...processedItem,

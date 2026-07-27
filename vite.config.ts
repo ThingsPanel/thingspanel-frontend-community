@@ -46,7 +46,7 @@ export default defineConfig(configEnv => {
     },
     build: {
       // 提高块大小警告阈值
-      chunkSizeWarningLimit: 4000, 
+      chunkSizeWarningLimit: 4000,
       sourcemap: false,
       reportCompressedSize: false,
       // sourcemap: viteEnv.VITE_SOURCE_MAP === 'Y',

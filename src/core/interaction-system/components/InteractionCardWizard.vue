@@ -252,8 +252,7 @@ const editingIndex = ref(-1)
 // 🔥 关键修复：监听外部传入的modelValue变化，确保组件内部数据同步
 watch(
   () => props.modelValue,
-  (newValue) => {
-    
+  newValue => {
     if (newValue) {
       interactions.value = [...newValue] // 🔥 使用展开语法确保响应式更新
     }
@@ -338,23 +337,24 @@ const componentOptions = computed(() => {
 
       return {
         label: displayName,
-        value: comp.id,  // 🔥 直接使用实际组件ID，移除 "self" 概念
+        value: comp.id, // 🔥 直接使用实际组件ID，移除 "self" 概念
         componentType: comp.type,
         isCurrentComponent
       }
     })
 
-
     return options
   } catch (error) {
     console.error(`🔥 [InteractionCardWizard] componentOptions 生成失败:`, error)
     // 失败时至少返回当前组件
-    return [{
-      label: `📍 ${props.componentType || 'unknown'} (当前组件)`,
-      value: props.componentId || 'unknown',
-      componentType: props.componentType || 'unknown',
-      isCurrentComponent: true
-    }]
+    return [
+      {
+        label: `📍 ${props.componentType || 'unknown'} (当前组件)`,
+        value: props.componentId || 'unknown',
+        componentType: props.componentType || 'unknown',
+        isCurrentComponent: true
+      }
+    ]
   }
 })
 
@@ -500,7 +500,6 @@ watch(
 
 // 🔥 可用属性选项 - 直接基于当前组件ID获取配置属性（与ComponentPropertySelector逻辑一致）
 const availablePropertyOptions = computed(() => {
-
   if (!props.componentId) {
     console.error(`🚨 [InteractionCardWizard] 监听属性选择器：缺少componentId!`, {
       props: props,
@@ -509,7 +508,6 @@ const availablePropertyOptions = computed(() => {
     })
     return []
   }
-
 
   // 🔥 直接从配置管理器获取当前组件配置
   const config = configurationIntegrationBridge.getConfiguration(props.componentId)
@@ -547,7 +545,6 @@ const availablePropertyOptions = computed(() => {
     { path: 'metricsList', displayPath: '指标列表', type: 'array' }
   ]
 
-
   // 添加所有标准基础属性
   standardBaseProperties.forEach(prop => {
     const currentValue = config?.base?.[prop.path] // 🔥 使用可选链，即使config为空也不报错
@@ -571,7 +568,6 @@ const availablePropertyOptions = computed(() => {
     { path: 'behavior', displayPath: '组件行为', type: 'object' }
   ]
 
-
   standardComponentProperties.forEach(prop => {
     const currentValue = config?.component?.[prop.path] // 🔥 使用可选链，即使config为空也不报错
     const option = {
@@ -586,7 +582,6 @@ const availablePropertyOptions = computed(() => {
     }
     options.push(option)
   })
-
 
   return options
 })
@@ -718,11 +713,9 @@ const getWhitelistedProperties = async (targetComponent: any, groups: Record<str
 
   try {
     // 获取组件的白名单属性配置
-    const whitelistedProperties = propertyExposureManager.getWhitelistedProperties(
-      targetComponent.type,
-      'public',
-      { source: 'interaction' }
-    )
+    const whitelistedProperties = propertyExposureManager.getWhitelistedProperties(targetComponent.type, 'public', {
+      source: 'interaction'
+    })
 
     if (Object.keys(whitelistedProperties).length === 0) {
       return
@@ -772,7 +765,6 @@ const getWhitelistedProperties = async (targetComponent: any, groups: Record<str
         })
       }
     }
-
   } catch (error) {
     console.error(`❌ [InteractionCardWizard] 获取白名单属性失败: ${targetComponent.type}`, error)
   }
@@ -934,7 +926,6 @@ const handleWatchedPropertyChange = (bindingPath: string, propertyInfo?: any) =>
 const handleTargetPropertyChange = (bindingPath: string, propertyInfo?: any) => {
   currentTargetPropertyBinding.value = bindingPath
   currentTargetPropertyInfo.value = propertyInfo
-
 
   // 解析绑定路径更新原有字段（向后兼容）
   if (bindingPath && propertyInfo) {
@@ -1099,7 +1090,6 @@ const saveInteraction = () => {
       // 使用新的绑定路径信息
       targetComponentId = currentTargetPropertyInfo.value.componentId
       targetProperty = `${currentTargetPropertyInfo.value.layer}.${currentTargetPropertyInfo.value.propertyName}`
-
     }
 
     // 生成新的修改配置格式

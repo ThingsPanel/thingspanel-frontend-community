@@ -41,10 +41,7 @@ const { label, isCounting, loading: smsLoading, start } = useSmsCode()
 // 判断表单是否可以提交
 const canSubmit = computed(() => {
   return (
-    model.email.trim() !== '' &&
-    model.code.trim() !== '' &&
-    model.pwd.trim() !== '' &&
-    model.confirmPwd.trim() !== ''
+    model.email.trim() !== '' && model.code.trim() !== '' && model.pwd.trim() !== '' && model.confirmPwd.trim() !== ''
   )
 })
 

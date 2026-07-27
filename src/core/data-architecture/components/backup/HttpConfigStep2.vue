@@ -64,12 +64,8 @@ const updateHeaders = (headers: EnhancedParameter[]) => {
         </n-text>
 
         <n-space>
-          <n-button type="primary" size="small" @click="applyDefaultHeaders">
-            添加默认请求头
-          </n-button>
-          <n-button size="small" @click="dismissAlert">
-            手动配置
-          </n-button>
+          <n-button type="primary" size="small" @click="applyDefaultHeaders">添加默认请求头</n-button>
+          <n-button size="small" @click="dismissAlert">手动配置</n-button>
         </n-space>
       </n-space>
     </n-alert>

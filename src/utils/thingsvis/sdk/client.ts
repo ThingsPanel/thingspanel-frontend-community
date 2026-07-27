@@ -176,7 +176,7 @@ export class ThingsVisClient {
   private emit(type: string, payload: any) {
     const handlers = this.messageHandlers.get(type)
     if (handlers) {
-      handlers.forEach((handler) => handler(payload))
+      handlers.forEach(handler => handler(payload))
     }
   }
 
@@ -364,7 +364,7 @@ export class ThingsVisClient {
     const scopeKey = `${deviceId ?? '__global__'}:${fieldId}`
     this.latestPlatformHistoryByScope.set(scopeKey, {
       fieldId,
-      history: history.map((item) => ({ value: item.value, ts: item.ts })),
+      history: history.map(item => ({ value: item.value, ts: item.ts })),
       ...(deviceId ? { deviceId } : {})
     })
     this.sendWhenLoaded('tv:platform-history', { fieldId, history, deviceId })
@@ -394,7 +394,7 @@ export class ThingsVisClient {
    */
   public onWidgetSave(callback: (config: any) => void) {
     // 鎴戜滑鍦?handleMessage 閲屾妸 'thingsvis:host-save' 杞彂涓轰簡 'thingsvis:save-config'
-    this.on(TV_MSG.SAVE_CONFIG, (payload) => {
+    this.on(TV_MSG.SAVE_CONFIG, payload => {
       // Payload 閲岀殑缁撴瀯鍙兘鏄?{ canvas:..., nodes:..., dataBindings:... }
       callback(payload)
     })

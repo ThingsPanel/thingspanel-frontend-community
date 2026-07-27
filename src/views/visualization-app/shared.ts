@@ -7,15 +7,11 @@ export function getThumbnailUrl(thumbnail: string | null | undefined): string | 
   return `data:image/png;base64,${thumbnail}`
 }
 
-export function buildVisualizationAppUrl(
-  path: string,
-  params: Record<string, string | undefined> = {}
-): string {
+export function buildVisualizationAppUrl(path: string, params: Record<string, string | undefined> = {}): string {
   const base = typeof window !== 'undefined' ? window.location.origin : ''
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
   const token = localStg.get('token') || ''
-  const lang =
-    (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('lang') : null) || ''
+  const lang = (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('lang') : null) || ''
 
   const query = new URLSearchParams()
   Object.entries({ ...params, token, lang }).forEach(([key, value]) => {

@@ -202,7 +202,6 @@ export class EnhancedDataWarehouse {
       return
     }
 
-
     // 🔥 临时调试：详细记录存储过程，包含执行追踪
     ;(window as any).debugLastStorage = {
       componentId,
@@ -266,7 +265,6 @@ export class EnhancedDataWarehouse {
 
     // 更新组件的最新数据版本
     this.updateLatestDataVersion(componentId, dataVersion)
-
 
     // 🔥 临时调试：验证存储结果，包含数据值追踪
     const verification = this.componentStorage.get(componentId)
@@ -343,7 +341,6 @@ export class EnhancedDataWarehouse {
     const componentData: Record<string, any> = {}
     let hasValidData = false
 
-
     for (const [sourceId, item] of componentStorage.dataSources) {
       if (!this.isExpired(item)) {
         componentData[sourceId] = item.data
@@ -385,7 +382,7 @@ export class EnhancedDataWarehouse {
 
     // 🔥 关键修复：缓存最终解包后的数据，而不是原始包装数据
     componentStorage.mergedData = {
-      data: finalData,  // 缓存解包后的最终数据
+      data: finalData, // 缓存解包后的最终数据
       timestamp: Date.now(),
       expiresAt: Date.now() + this.config.defaultCacheExpiry,
       source: {
@@ -456,7 +453,7 @@ export class EnhancedDataWarehouse {
       let hash = 0
       for (let i = 0; i < dataString.length; i++) {
         const char = dataString.charCodeAt(i)
-        hash = ((hash << 5) - hash) + char
+        hash = (hash << 5) - hash + char
         hash = hash & hash // 转换为32位整数
       }
       return Math.abs(hash).toString(36)
@@ -548,7 +545,6 @@ export class EnhancedDataWarehouse {
       // 🔥 关键修复：无条件清除合并缓存，解决并发时序问题
       const hadCache = !!componentStorage.mergedData
       componentStorage.mergedData = undefined
-
 
       // 🔥 关键：无论是否有缓存都触发响应式更新，确保组件重新获取数据
       let componentNotifier = this.componentChangeNotifiers.get(componentId)

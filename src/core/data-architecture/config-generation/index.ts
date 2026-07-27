@@ -4,7 +4,10 @@
  */
 
 // 配置生成器
-export { SimpleConfigGenerator, simpleConfigGenerator } from '@/core/data-architecture/config-generation/SimpleConfigGenerator'
+export {
+  SimpleConfigGenerator,
+  simpleConfigGenerator
+} from '@/core/data-architecture/config-generation/SimpleConfigGenerator'
 
 // 向后兼容的别名导出
 export { simpleConfigGenerator as configGenerator } from '@/core/data-architecture/config-generation/SimpleConfigGenerator'

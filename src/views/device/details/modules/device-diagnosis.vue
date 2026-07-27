@@ -126,7 +126,7 @@ const columns: DataTableColumns<FailureRecord> = [
 // 获取诊断数据
 const fetchDiagnostics = async () => {
   try {
-    const response = await deviceDiagnostics(props.id) as DiagnosticsResponse
+    const response = (await deviceDiagnostics(props.id)) as DiagnosticsResponse
     const data = response?.data || (response as unknown as DiagnosticsData)
 
     if (data && data.stats) {
@@ -151,7 +151,7 @@ const fetchDiagnostics = async () => {
 
       // 更新失败记录
       if (Array.isArray(data.recent_failures)) {
-        failureRecords.value = data.recent_failures.map((failure) => ({
+        failureRecords.value = data.recent_failures.map(failure => ({
           timestamp: String(failure.timestamp ?? ''),
           direction: (failure.direction ?? 'uplink') as 'uplink' | 'downlink',
           stage: failure.stage ?? '',
@@ -161,8 +161,7 @@ const fetchDiagnostics = async () => {
         failureRecords.value = []
       }
     }
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 // 刷新数据
@@ -211,14 +210,14 @@ const fetchLogs = async () => {
       const list = res.data.list.reverse()
       debugLogs.value = list.map((item: any) => {
          const time = item.ts ? dayjs(item.ts).format('YYYY-MM-DD HH:mm:ss.SSS') : '' // eslint-disable-line
-         return `[${time}] ${JSON.stringify(item)}`
+        return `[${time}] ${JSON.stringify(item)}`
       })
-      
+
       // 自动滚动到底部
       nextTick(() => {
         if (logContainerRef.value) {
-            // 如果用户没有向上滚动太多，才自动滚动
-            // 这里简单处理，总是滚动到底部
+          // 如果用户没有向上滚动太多，才自动滚动
+          // 这里简单处理，总是滚动到底部
           logContainerRef.value.scrollTop = logContainerRef.value.scrollHeight
         }
       })
@@ -345,10 +344,12 @@ onUnmounted(() => {
         ref="logContainerRef"
         class="bg-[#1e1e1e] text-[#d4d4d4] font-mono p-4 rounded h-[400px] overflow-auto whitespace-pre-wrap break-all text-xs"
       >
-        <div v-if="debugLogs.length === 0" class="text-center text-gray-500 py-10">
-          暂无日志...
-        </div>
-        <div v-for="(log, index) in debugLogs" :key="index" class="mb-1 border-b border-gray-700/50 pb-1 last:border-0 hover:bg-[#2a2d2e]">
+        <div v-if="debugLogs.length === 0" class="text-center text-gray-500 py-10">暂无日志...</div>
+        <div
+          v-for="(log, index) in debugLogs"
+          :key="index"
+          class="mb-1 border-b border-gray-700/50 pb-1 last:border-0 hover:bg-[#2a2d2e]"
+        >
           {{ log }}
         </div>
       </div>
@@ -361,4 +362,3 @@ onUnmounted(() => {
   font-size: 16px;
 }
 </style>
-

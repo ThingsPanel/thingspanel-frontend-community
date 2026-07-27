@@ -92,7 +92,7 @@ const submitSevice: () => void = async () => {
         if (process.env.NODE_ENV === 'development') {
         }
       }
-      
+
       // 关闭当前弹窗，并打开配置弹窗
       const id = isEdit.value ? form.value.id : data.data.id
       emit(

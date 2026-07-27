@@ -22,7 +22,6 @@ const STORAGE_KEYS_TO_CLEAN = [
  * 清理指定的localStorage项
  */
 export function cleanupLocalStorage(): void {
-
   const cleanedKeys: string[] = []
   const skippedKeys: string[] = []
 
@@ -32,7 +31,6 @@ export function cleanupLocalStorage(): void {
       if (value !== null) {
         localStorage.removeItem(key)
         cleanedKeys.push(key)
-
       } else {
         skippedKeys.push(key)
       }
@@ -40,8 +38,6 @@ export function cleanupLocalStorage(): void {
       console.error(`❌ 清理失败: ${key}`, error)
     }
   })
-
-
 }
 
 /**
@@ -51,7 +47,6 @@ export function clearAllLocalStorage(): void {
   console.error('⚠️ 正在清理所有localStorage...')
 
   const allKeys = Object.keys(localStorage)
-
 
   try {
     localStorage.clear()
@@ -64,27 +59,22 @@ export function clearAllLocalStorage(): void {
  * 检查localStorage使用情况
  */
 export function inspectLocalStorage(): void {
-
-
   const keys = Object.keys(localStorage)
   keys.forEach(key => {
     try {
       const value = localStorage.getItem(key)
       const size = value ? new Blob([value]).size : 0
-
     } catch (error) {
       console.error(`无法读取 ${key}:`, error)
     }
   })
-
 }
 
 // 开发环境下自动暴露到全局
 if (import.meta.env.DEV) {
-  (window as any).storageCleanup = {
+  ;(window as any).storageCleanup = {
     clean: cleanupLocalStorage,
     clearAll: clearAllLocalStorage,
     inspect: inspectLocalStorage
   }
-
 }

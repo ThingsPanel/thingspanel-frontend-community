@@ -14,5 +14,5 @@ export const configInfo = {
   version: '1.0.0',
   description: 'ThingsPanel Frontend Configuration Module',
   modules: ['security'],
-  lastUpdated: new Date().toISOString(),
+  lastUpdated: new Date().toISOString()
 } as const

@@ -21,8 +21,8 @@ import GlobalContent from '../modules/global-content/index.vue'
 import GlobalFooter from '../modules/global-footer/index.vue'
 import ThemeDrawer from '../modules/theme-drawer/index.vue'
 import { setupMixMenuContext } from '../hooks/use-mix-menu'
-import onlineAlert  from '@/assets/audio/online2.wav'
-import offLineAlert  from '@/assets/audio/offline.wav'
+import onlineAlert from '@/assets/audio/online2.wav'
+import offLineAlert from '@/assets/audio/offline.wav'
 const logger = createLogger('Layout')
 
 const { routerPushByKey } = useRouterPush()
@@ -126,13 +126,13 @@ setupMixMenuContext()
  * ===========================================
  * 物联网设备状态实时监控系统 (SSE)
  * ===========================================
- * 
+ *
  * 功能说明：
  * 1. 通过Server-Sent Events与后端建立长连接
  * 2. 实时接收设备上线/下线状态变化通知
  * 3. 在全局范围内显示设备状态变化通知
  * 4. 播放音效提醒用户注意设备状态变化
- * 
+ *
  * 技术实现：
  * - 使用EventSourcePolyfill确保浏览器兼容性
  * - 自动重连机制处理网络中断
@@ -239,7 +239,7 @@ const createEventSource = () => {
         'x-token': token // 传递用户认证token
       }
     })
-    
+
     /**
      * 连接成功回调
      * 重置重连计数器，记录连接成功状态
@@ -249,7 +249,7 @@ const createEventSource = () => {
       reconnectAttempts = 0
       logger.info('设备状态监控SSE连接建立成功')
     }
-    
+
     /**
      * 监听设备在线状态变化事件
      * 当设备上线或下线时，服务器会推送'device_online'事件
@@ -263,16 +263,16 @@ const createEventSource = () => {
             logger.warn('接收到空的设备状态事件数据')
             return
           }
-          
+
           // 解析JSON格式的设备状态数据
           const data = JSON.parse(event.data)
-          
+
           // 验证设备数据的必要字段
           if (!data.device_name || typeof data.device_name !== 'string') {
             logger.warn('设备状态事件数据无效，缺少有效的设备名称:', data)
             return
           }
-          
+
           /**
            * 根据设备状态显示不同类型的通知
            * is_online: true = 设备上线，false = 设备下线
@@ -328,20 +328,19 @@ const createEventSource = () => {
                 )
             })
           }
-          
+
           /**
            * 播放设备状态变化提示音
            * 使用异步播放，避免阻塞UI线程
            * 处理浏览器自动播放策略限制
            */
           try {
-
             // 上下线区分提示音
             const audio = new Audio(data.is_online ? onlineAlert : offLineAlert)
             // 设置音频属性以符合浏览器策略
             audio.volume = 0.5 // 设置适中的音量
             audio.preload = 'auto' // 预加载音频
-            
+
             audio.play().catch(audioError => {
               // 静默处理自动播放被阻止的情况，这是正常的浏览器行为
               if (audioError.name === 'NotAllowedError') {
@@ -353,18 +352,17 @@ const createEventSource = () => {
           } catch (audioError) {
             logger.warn('创建音频对象失败:', audioError)
           }
-          
         } catch (parseError) {
           logger.error('解析设备状态事件数据失败:', parseError, '原始数据:', event.data)
         }
       },
       false
     )
-    
+
     /**
      * 错误处理和智能重连机制
      */
-    eventSource.onerror = (error) => {
+    eventSource.onerror = error => {
       isConnecting = false
       logErrorThrottled('EventSource连接错误:', error)
 
@@ -378,7 +376,7 @@ const createEventSource = () => {
       if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
         reconnectAttempts += 1
         const delay = RECONNECT_DELAYS[Math.min(reconnectAttempts - 1, RECONNECT_DELAYS.length - 1)]
-        
+
         reconnectTimer = setTimeout(() => {
           if (checkNetworkStatus()) {
             createEventSource()
@@ -391,13 +389,15 @@ const createEventSource = () => {
         }, delay)
       } else {
         // 达到最大重连次数后，每5分钟尝试一次
-        reconnectTimer = setTimeout(() => {
-          reconnectAttempts = 0 // 重置计数器
-          createEventSource()
-        }, 5 * 60 * 1000)
+        reconnectTimer = setTimeout(
+          () => {
+            reconnectAttempts = 0 // 重置计数器
+            createEventSource()
+          },
+          5 * 60 * 1000
+        )
       }
     }
-    
   } catch (error) {
     isConnecting = false
     logger.error('创建设备状态监控EventSource连接失败:', error)
@@ -415,13 +415,13 @@ const cleanupEventSource = () => {
     eventSource = null
     logger.info('设备状态监控SSE连接已清理')
   }
-  
+
   // 清理重连定时器
   if (reconnectTimer) {
     clearTimeout(reconnectTimer)
     reconnectTimer = null
   }
-  
+
   // 重置状态
   isConnecting = false
   reconnectAttempts = 0
@@ -450,16 +450,12 @@ onUnmounted(() => {
     <!-- iOS风格头部 -->
     <header v-if="0" class="ios-header">
       <!-- 返回按钮 -->
-      <div 
-        v-if="showBackButton" 
-        class="ios-back-btn" 
-        @click="handleBack"
-      >
+      <div v-if="showBackButton" class="ios-back-btn" @click="handleBack">
         <NIcon size="20">
           <ArrowBack />
         </NIcon>
       </div>
-      
+
       <!-- 标题 -->
       <h1 class="ios-title">{{ mobileTitle }}</h1>
     </header>
@@ -534,7 +530,7 @@ onUnmounted(() => {
     width: 44px;
     background: none;
     border: none;
-    color: #007AFF;
+    color: #007aff;
     cursor: pointer;
     padding: 0;
     z-index: 10;
@@ -583,11 +579,11 @@ onUnmounted(() => {
   .ios-header {
     background: rgba(0, 0, 0, 0.8);
     border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-    
+
     .ios-back-btn {
-      color: #0A84FF;
+      color: #0a84ff;
     }
-    
+
     .ios-title {
       color: #fff;
     }

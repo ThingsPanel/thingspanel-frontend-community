@@ -1,64 +1,64 @@
 <script setup lang="tsx">
-import { onMounted, ref } from 'vue';
-import { MovingNumbers } from 'moving-numbers-vue3';
-import { Activity } from '@vicons/tabler';
-import { DocumentOnePage24Regular } from '@vicons/fluent';
-import dayjs from 'dayjs';
-import { $t } from '@/locales';
-import { telemetryDataCurrent } from '@/service/api/device'; // 假设此路径正确
-import { createLogger } from '@/utils/logger';
-import HistoryData from '../device/details/modules/telemetry/modules/history-data.vue';
-import TimeSeriesData from '../device/details/modules/telemetry/modules/time-series-data.vue';
-const logger = createLogger('TelemetryData');
+import { onMounted, ref } from 'vue'
+import { MovingNumbers } from 'moving-numbers-vue3'
+import { Activity } from '@vicons/tabler'
+import { DocumentOnePage24Regular } from '@vicons/fluent'
+import dayjs from 'dayjs'
+import { $t } from '@/locales'
+import { telemetryDataCurrent } from '@/service/api/device' // 假设此路径正确
+import { createLogger } from '@/utils/logger'
+import HistoryData from '../device/details/modules/telemetry/modules/history-data.vue'
+import TimeSeriesData from '../device/details/modules/telemetry/modules/time-series-data.vue'
+const logger = createLogger('TelemetryData')
 
 const props = defineProps<{
-  id: string;
-  cardHeight: number;
-  cardMargin: number;
-}>();
+  id: string
+  cardHeight: number
+  cardMargin: number
+}>()
 
-const telemetryData = ref<any[]>([]);
-const initTelemetryData = ref<any>();
-const nowTime = ref(dayjs(new Date().getTime()).format('YYYY-MM-DD HH:mm:ss'));
+const telemetryData = ref<any[]>([])
+const initTelemetryData = ref<any>()
+const nowTime = ref(dayjs(new Date().getTime()).format('YYYY-MM-DD HH:mm:ss'))
 
-const showHistory = ref(false);
-const telemetryId = ref();
-const telemetryKey = ref();
-const modelType = ref<string>('');
+const showHistory = ref(false)
+const telemetryId = ref()
+const telemetryKey = ref()
+const modelType = ref<string>('')
 
 const fetchTelemetry = async () => {
-  const { data, error } = await telemetryDataCurrent(props.id);
+  const { data, error } = await telemetryDataCurrent(props.id)
   if (!error && data) {
-    telemetryData.value = data;
-    initTelemetryData.value = data[0] || {};
-    initTelemetryData.value.device_id = props.id;
+    telemetryData.value = data
+    initTelemetryData.value = data[0] || {}
+    initTelemetryData.value.device_id = props.id
   }
-};
+}
 
 const setItemRef = (el: any) => {
-  logger.info(el);
-};
+  logger.info(el)
+}
 
 const isColor = (i: any) => {
   if (typeof i.value === 'string') {
-    return '#cccccc';
+    return '#cccccc'
   }
-  return '';
-};
+  return ''
+}
 
 const onTapTableTools = (i: any) => {
   if (typeof i.value === 'number') {
-    modelType.value = $t('custom.device_details.sequential');
-    telemetryKey.value = i.key;
-    telemetryId.value = i.device_id;
-    showHistory.value = true;
+    modelType.value = $t('custom.device_details.sequential')
+    telemetryKey.value = i.key
+    telemetryId.value = i.device_id
+    showHistory.value = true
   }
-};
+}
 
 // 在组件挂载时调用 fetchTelemetry 获取数据
 onMounted(() => {
-  fetchTelemetry();
-});
+  fetchTelemetry()
+})
 </script>
 
 <template>
@@ -99,10 +99,10 @@ onMounted(() => {
               size="24"
               @click="
                 () => {
-                  modelType = $t('custom.device_details.history');
-                  telemetryKey = i.key;
-                  telemetryId = i.device_id;
-                  showHistory = true;
+                  modelType = $t('custom.device_details.history')
+                  telemetryKey = i.key
+                  telemetryId = i.device_id
+                  showHistory = true
                 }
               "
             >

@@ -82,12 +82,7 @@ watch(
 
     <!-- 编辑器区域 (全屏 Iframe) -->
     <div class="flex-1 overflow-hidden bg-white relative">
-      <ThingsVisAppFrame
-        v-if="dashboardId"
-        :id="dashboardId"
-        :schema="dashboardSchema"
-        mode="editor"
-      />
+      <ThingsVisAppFrame v-if="dashboardId" :id="dashboardId" :schema="dashboardSchema" mode="editor" />
     </div>
   </div>
 </template>

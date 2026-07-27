@@ -176,7 +176,7 @@ function extractWsFields(payload: unknown): Record<string, unknown> {
   // Array of { key, value } items
   if (Array.isArray(payload)) {
     const fields: Record<string, unknown> = {}
-    ;(payload as Array<{ key?: string; label?: string; value?: unknown }>).forEach((item) => {
+    ;(payload as Array<{ key?: string; label?: string; value?: unknown }>).forEach(item => {
       if (!item) return
       const k = item.key ?? item.label
       if (!k || k === 'systime') return
@@ -259,7 +259,7 @@ function connectDeviceWs(device: { deviceId: string; fields: PlatformDeviceField
       }, PING_INTERVAL_MS)
     }
 
-    entry.ws.onmessage = (evt) => {
+    entry.ws.onmessage = evt => {
       if (typeof evt.data !== 'string' || evt.data === 'pong') return
       try {
         const msg = JSON.parse(evt.data)
@@ -333,7 +333,7 @@ function connectDeviceStatusWs(deviceId: string) {
       }, PING_INTERVAL_MS)
     }
 
-    entry.ws.onmessage = (evt) => {
+    entry.ws.onmessage = evt => {
       if (typeof evt.data !== 'string' || evt.data === 'pong') return
       try {
         const msg = JSON.parse(evt.data) as Record<string, unknown>
@@ -439,10 +439,7 @@ function computeGridEmbedHeightFromSchema(
   if (!canvas || !Array.isArray(nodes)) return null
 
   const mode = typeof canvas.mode === 'string' ? canvas.mode : ''
-  const hasGrid =
-    mode === 'grid' ||
-    typeof canvas.gridRowHeight === 'number' ||
-    typeof canvas.gridCols === 'number'
+  const hasGrid = mode === 'grid' || typeof canvas.gridRowHeight === 'number' || typeof canvas.gridCols === 'number'
   if (!hasGrid) return null
 
   const rowHeight =
@@ -451,16 +448,11 @@ function computeGridEmbedHeightFromSchema(
       : typeof canvas.rowHeight === 'number'
         ? canvas.rowHeight
         : 50
-  const gap =
-    typeof canvas.gridGap === 'number'
-      ? canvas.gridGap
-      : typeof canvas.gap === 'number'
-        ? canvas.gap
-        : 10
+  const gap = typeof canvas.gridGap === 'number' ? canvas.gridGap : typeof canvas.gap === 'number' ? canvas.gap : 10
   const padding = typeof canvas.padding === 'number' ? canvas.padding : 0
   let maxRow = 0
 
-  nodes.forEach((node) => {
+  nodes.forEach(node => {
     const grid = (node as { grid?: { y?: number; h?: number } })?.grid
     if (grid && typeof grid.y === 'number' && typeof grid.h === 'number') {
       maxRow = Math.max(maxRow, grid.y + grid.h)
@@ -575,7 +567,7 @@ function normalizeCanvasBackground(background: unknown): Record<string, unknown>
 }
 
 function registerActivePlatformDevices(devices: PlatformDeviceEntry[]) {
-  devices.forEach((device) => {
+  devices.forEach(device => {
     if (!device?.deviceId) return
     const existing = activePlatformDevices.get(device.deviceId)
     activePlatformDevices.set(device.deviceId, {
@@ -599,7 +591,7 @@ function flattenDeviceGroupTree(
   nodes: unknown[],
   groups = new Map<string, PlatformDeviceGroupEntry>()
 ): PlatformDeviceGroupEntry[] {
-  nodes.forEach((node) => {
+  nodes.forEach(node => {
     if (!node || typeof node !== 'object') return
     const treeNode = asRecord(node)
     const rawGroup = asRecord(treeNode.group || treeNode.data || treeNode)
@@ -649,7 +641,7 @@ function flattenDeviceGroupTree(
 }
 
 function clearViewerHydrationTimers() {
-  viewerHydrationTimers.forEach((timer) => clearTimeout(timer))
+  viewerHydrationTimers.forEach(timer => clearTimeout(timer))
   viewerHydrationTimers = []
 }
 
@@ -714,13 +706,13 @@ function collectRequestedFieldsFromValue(value: unknown, requests: Map<string, S
   }
 
   if (Array.isArray(value)) {
-    value.forEach((item) => collectRequestedFieldsFromValue(item, requests))
+    value.forEach(item => collectRequestedFieldsFromValue(item, requests))
     return
   }
 
   if (!value || typeof value !== 'object') return
 
-  Object.values(value as Record<string, unknown>).forEach((item) => {
+  Object.values(value as Record<string, unknown>).forEach(item => {
     collectRequestedFieldsFromValue(item, requests)
   })
 }
@@ -745,7 +737,7 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
       )
       const bindingFields = requests.get(String(dataSource.id))
       if (bindingFields) {
-        bindingFields.forEach((fieldId) => requestedFields.add(fieldId))
+        bindingFields.forEach(fieldId => requestedFields.add(fieldId))
       }
 
       const normalizedRequestedFields = Array.from(requestedFields)
@@ -765,7 +757,7 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
 function syncActivePlatformDevicesFromConfig(config: any) {
   activePlatformDevices.clear()
 
-  collectPlatformSourceDescriptors(config).forEach((descriptor) => {
+  collectPlatformSourceDescriptors(config).forEach(descriptor => {
     if (!descriptor.deviceId || activePlatformDevices.has(descriptor.deviceId)) return
 
     activePlatformDevices.set(descriptor.deviceId, {
@@ -874,18 +866,13 @@ function buildDeviceWidgetPresets(templateId: string, rawConfig: unknown): any[]
       : []
 
   const resolveNodePresetName = (node: Record<string, unknown>, index: number) => {
-    const props = node.props && typeof node.props === 'object' && !Array.isArray(node.props)
-      ? (node.props as Record<string, unknown>)
-      : {}
+    const props =
+      node.props && typeof node.props === 'object' && !Array.isArray(node.props)
+        ? (node.props as Record<string, unknown>)
+        : {}
 
     return String(
-      node.name ||
-        props.title ||
-        props.label ||
-        props.text ||
-        props.placeholder ||
-        node.type ||
-        `组件 ${index + 1}`
+      node.name || props.title || props.label || props.text || props.placeholder || node.type || `组件 ${index + 1}`
     )
   }
 
@@ -988,9 +975,9 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
 
   if (!deviceId || requestedFields.length === 0) return {}
 
-  const alarmFieldIds = requestedFields.filter((fieldId) => DEVICE_ALARM_STATUS_FIELD_IDS.has(fieldId))
+  const alarmFieldIds = requestedFields.filter(fieldId => DEVICE_ALARM_STATUS_FIELD_IDS.has(fieldId))
   const currentFieldIds = requestedFields.filter(
-    (fieldId) => !fieldId.endsWith('__history') && !DEVICE_ALARM_STATUS_FIELD_IDS.has(fieldId)
+    fieldId => !fieldId.endsWith('__history') && !DEVICE_ALARM_STATUS_FIELD_IDS.has(fieldId)
   )
   const result: Record<string, unknown> = {}
 
@@ -1017,7 +1004,7 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   if (Array.isArray(telemetryRes?.data)) telemetryRes.data.forEach(collect)
   if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
 
-  currentFieldIds.forEach((fieldId) => {
+  currentFieldIds.forEach(fieldId => {
     if (kvMap[fieldId] !== undefined) result[fieldId] = kvMap[fieldId]
   })
   return result
@@ -1151,7 +1138,7 @@ function resolveWriteFieldId(data: unknown): string | undefined {
 function resolveWriteFieldType(deviceId: string, fieldId?: string): PlatformField['dataType'] | undefined {
   if (!fieldId) return undefined
   const device = activePlatformDevices.get(deviceId)
-  const field = device?.fields.find((item) => item.id === fieldId || item.name === fieldId)
+  const field = device?.fields.find(item => item.id === fieldId || item.name === fieldId)
   return field?.dataType
 }
 
@@ -1189,7 +1176,7 @@ function collectReferencedDataSourceIds(value: unknown, referencedIds = new Set<
   }
 
   if (Array.isArray(value)) {
-    value.forEach((item) => collectReferencedDataSourceIds(item, referencedIds))
+    value.forEach(item => collectReferencedDataSourceIds(item, referencedIds))
     return referencedIds
   }
 
@@ -1625,7 +1612,7 @@ async function mapPlatformDevicesForGroup(
   fallbackGroupName = '',
   groups: PlatformDeviceGroupEntry[] = []
 ): Promise<PlatformDeviceEntry[]> {
-  const groupNameById = new Map(groups.map((group) => [group.groupId, group.groupName]))
+  const groupNameById = new Map(groups.map(group => [group.groupId, group.groupName]))
   const configTemplateMap = await loadDeviceConfigTemplateMap()
   const devices = rawDevices
     .map((row: any): PlatformDeviceEntry | null => {
@@ -1660,9 +1647,7 @@ async function mapPlatformDevicesForGroup(
 
   const presetsByTemplateId = new Map<string, any[]>()
   const templateIds = Array.from(
-    new Set(
-      devices.map((device) => device.templateId).filter((templateId): templateId is string => Boolean(templateId))
-    )
+    new Set(devices.map(device => device.templateId).filter((templateId): templateId is string => Boolean(templateId)))
   )
 
   for (const templateId of templateIds) {
@@ -1675,7 +1660,7 @@ async function mapPlatformDevicesForGroup(
     fieldsByTemplateId.set(templateId, Array.isArray(entry.fields) ? entry.fields : [])
   }
 
-  return devices.map((device) => ({
+  return devices.map(device => ({
     ...device,
     fields: device.templateId ? fieldsByTemplateId.get(device.templateId) || [] : device.fields,
     presets: device.templateId ? presetsByTemplateId.get(device.templateId) || [] : []
@@ -1687,7 +1672,7 @@ async function buildFallbackPlatformDevicesForDefaultGroup(
   groupName: string,
   groups: PlatformDeviceGroupEntry[]
 ): Promise<PlatformDeviceEntry[]> {
-  const rootGroups = groups.filter((group) => !group.parentId || String(group.parentId) === '0')
+  const rootGroups = groups.filter(group => !group.parentId || String(group.parentId) === '0')
   if (rootGroups.length !== 1 || rootGroups[0]?.groupId !== normalizedGroupId) {
     return []
   }
@@ -1713,7 +1698,7 @@ async function buildPlatformDeviceById(deviceId: string): Promise<PlatformDevice
 
   const findDevice = async (rawDevices: any[], fallbackGroupId = '', fallbackGroupName = '') => {
     const devices = await mapPlatformDevicesForGroup(rawDevices, fallbackGroupId, fallbackGroupName, groups)
-    return devices.find((device) => device.deviceId === normalizedDeviceId) || null
+    return devices.find(device => device.deviceId === normalizedDeviceId) || null
   }
 
   const searchRes = await deviceList({ page: 1, page_size: 20, search: normalizedDeviceId })
@@ -1726,7 +1711,7 @@ async function buildPlatformDeviceById(deviceId: string): Promise<PlatformDevice
 
   for (const group of groups) {
     const devices = await buildPlatformDevicesByGroup(group.groupId)
-    const matched = devices.find((device) => device.deviceId === normalizedDeviceId)
+    const matched = devices.find(device => device.deviceId === normalizedDeviceId)
     if (matched) return matched
   }
 
@@ -1754,7 +1739,7 @@ async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDev
       ])
 
       const groupName =
-        groups.find((group) => group.groupId === normalizedGroupId)?.groupName ||
+        groups.find(group => group.groupId === normalizedGroupId)?.groupName ||
         normalizeEditorGroupName(undefined, normalizedGroupId)
 
       const relationDevices = unwrapList(deviceRes?.data)
@@ -1872,7 +1857,7 @@ async function doInit(): Promise<boolean> {
     // Phase 2 – data:     pushes current telemetry so canvas widgets show real values (not 0).
     void (async () => {
       const descriptors = collectPlatformSourceDescriptors(dashboardPayload)
-      const deviceIds = [...new Set(descriptors.map((d) => d.deviceId).filter(Boolean))]
+      const deviceIds = [...new Set(descriptors.map(d => d.deviceId).filter(Boolean))]
 
       // Phase 1: device metadata
       for (const deviceId of deviceIds) {
@@ -1883,7 +1868,7 @@ async function doInit(): Promise<boolean> {
             postToThingsVis('tv:device-by-id', {
               reqId: `__prefetch__${deviceId}`,
               deviceId,
-              device,
+              device
             })
           }
         } catch {
@@ -2108,7 +2093,7 @@ const handleMessage = async (event: MessageEvent) => {
       const groups = await buildPlatformDeviceGroups()
       const fallbackGroupName =
         groupId && groupId !== '__all__'
-          ? groups.find((group) => group.groupId === groupId)?.groupName || normalizeEditorGroupName(undefined, groupId)
+          ? groups.find(group => group.groupId === groupId)?.groupName || normalizeEditorGroupName(undefined, groupId)
           : ''
       const devices = await mapPlatformDevicesForGroup(
         unwrapList(res?.data),
@@ -2260,7 +2245,7 @@ watch(
 
 watch(
   () => props.id,
-  (nextId) => {
+  nextId => {
     reportedIframeHeight = 0
     if (iframeRef.value) {
       iframeRef.value.style.height = ''

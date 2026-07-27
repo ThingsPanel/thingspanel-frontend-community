@@ -11,7 +11,13 @@
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
-import type { HttpHeader, HttpParam, HttpPathParam, HttpConfig, PathParameter } from '@/core/data-architecture/types/http-config'
+import type {
+  HttpHeader,
+  HttpParam,
+  HttpPathParam,
+  HttpConfig,
+  PathParameter
+} from '@/core/data-architecture/types/http-config'
 import { extractPathParamsFromUrl } from '@/core/data-architecture/types/http-config'
 // 导入分步配置组件
 import HttpConfigStep1 from '@/core/data-architecture/components/common/HttpConfigStep1.vue'

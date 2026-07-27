@@ -37,15 +37,10 @@ function isValidRequestedFieldId(fieldId: string, availableFieldIds: Set<string>
   return false
 }
 
-function rewriteTemplateBindingExpression(
-  expression: unknown,
-  runtimeDataSourceId: string
-): unknown {
+function rewriteTemplateBindingExpression(expression: unknown, runtimeDataSourceId: string): unknown {
   if (typeof expression !== 'string') return expression
 
-  const directFieldMatch = expression.match(
-    /^\{\{\s*ds\.__platform___template____\.data\.([A-Za-z0-9_-]+)\s*\}\}$/
-  )
+  const directFieldMatch = expression.match(/^\{\{\s*ds\.__platform___template____\.data\.([A-Za-z0-9_-]+)\s*\}\}$/)
   if (directFieldMatch?.[1]) {
     return `{{ ds.${runtimeDataSourceId}.data.${directFieldMatch[1]} }}`
   }
@@ -60,11 +55,7 @@ function rewriteTemplateBindingExpression(
   return expression.split(TEMPLATE_PLATFORM_SOURCE_ID).join(runtimeDataSourceId)
 }
 
-function normalizeTemplateChartConfig(
-  rawConfig: any,
-  deviceId: string,
-  availableFieldIds: Set<string>
-) {
+function normalizeTemplateChartConfig(rawConfig: any, deviceId: string, availableFieldIds: Set<string>) {
   if (!rawConfig || typeof rawConfig !== 'object') return rawConfig
 
   const runtimeDataSourceId = getRuntimePlatformSourceId(deviceId)
@@ -75,8 +66,7 @@ function normalizeTemplateChartConfig(
       const isPlatformField = dataSource?.type === 'PLATFORM_FIELD'
       if (!isPlatformField) return dataSource
 
-      const nextId =
-        dataSource?.id === TEMPLATE_PLATFORM_SOURCE_ID ? runtimeDataSourceId : dataSource?.id
+      const nextId = dataSource?.id === TEMPLATE_PLATFORM_SOURCE_ID ? runtimeDataSourceId : dataSource?.id
       const requestedFields = Array.isArray(dataSource?.config?.requestedFields)
         ? dataSource.config.requestedFields.filter(
             (fieldId: unknown): fieldId is string =>
@@ -103,10 +93,7 @@ function normalizeTemplateChartConfig(
       if (Array.isArray(nextNode.data)) {
         nextNode.data = nextNode.data.map((binding: any) => {
           const nextBinding = { ...binding }
-          const rewrittenExpression = rewriteTemplateBindingExpression(
-            nextBinding?.expression,
-            runtimeDataSourceId
-          )
+          const rewrittenExpression = rewriteTemplateBindingExpression(nextBinding?.expression, runtimeDataSourceId)
           nextBinding.expression = rewrittenExpression
 
           const booleanSelectMatch =
@@ -139,10 +126,7 @@ function normalizeTemplateChartConfig(
                   nextAction.dataSourceId = runtimeDataSourceId
                 }
                 if (typeof nextAction?.payload === 'string') {
-                  nextAction.payload = nextAction.payload.replace(
-                    /"([A-Za-z0-9_-]+)\s*\?\s*'1'\s*:\s*'0'"/g,
-                    '"$1"'
-                  )
+                  nextAction.payload = nextAction.payload.replace(/"([A-Za-z0-9_-]+)\s*\?\s*'1'\s*:\s*'0'"/g, '"$1"')
                 }
                 return nextAction
               })
@@ -371,61 +355,54 @@ const onVisReady = async () => {
 
 // ─── 监听模板ID变化重新加载 ───────────────────────────────────────────────────
 
-watch([() => props.deviceTemplateId, templateContextResolved, () => props.id], async ([newVal]) => {
-  const currentSequence = ++initSequence
+watch(
+  [() => props.deviceTemplateId, templateContextResolved, () => props.id],
+  async ([newVal]) => {
+    const currentSequence = ++initSequence
 
-  // 先停止旧的推送
-  realtimePush.value?.stop()
-  alarmPush.value?.stop()
-  realtimePush.value = null
-  alarmPush.value = null
-  currentData.value = {}
-  currentDataDeviceId.value = ''
-  platformFields.value = []
-  initialConfig.value = null
-  hasTemplate.value = false
+    // 先停止旧的推送
+    realtimePush.value?.stop()
+    alarmPush.value?.stop()
+    realtimePush.value = null
+    alarmPush.value = null
+    currentData.value = {}
+    currentDataDeviceId.value = ''
+    platformFields.value = []
+    initialConfig.value = null
+    hasTemplate.value = false
 
-  if (!templateContextResolved.value) {
+    if (!templateContextResolved.value) {
+      chartLoading.value = true
+      return
+    }
+
+    if (!newVal) {
+      chartLoading.value = false
+      return
+    }
+
     chartLoading.value = true
-    return
-  }
 
-  if (!newVal) {
-    chartLoading.value = false
-    return
-  }
+    await initTemplateData(newVal)
 
-  chartLoading.value = true
+    if (currentSequence !== initSequence || !hasTemplate.value) {
+      return
+    }
 
-  await initTemplateData(newVal)
-
-  if (currentSequence !== initSequence || !hasTemplate.value) {
-    return
-  }
-
-  // 初始化 composables
-  realtimePush.value = useRealtimePush(
-    deviceIdRef,
-    platformFields,
-    pushDataToVis,
-    async () => {
+    // 初始化 composables
+    realtimePush.value = useRealtimePush(deviceIdRef, platformFields, pushDataToVis, async () => {
       if (!hasLoadedInitialSnapshot.value) {
         await fetchAndUpdateData()
       }
-    }
-  )
+    })
 
-  alarmPush.value = useAlarmPush(
-    deviceIdRef,
-    platformFields,
-    pushDataToVis
-  )
+    alarmPush.value = useAlarmPush(deviceIdRef, platformFields, pushDataToVis)
 
-  // 启动实时推送
-  realtimePush.value?.start()
-  // 启动告警轮询
-  alarmPush.value?.start()
-},
+    // 启动实时推送
+    realtimePush.value?.start()
+    // 启动告警轮询
+    alarmPush.value?.start()
+  },
   { immediate: true }
 )
 

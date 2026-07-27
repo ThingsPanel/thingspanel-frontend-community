@@ -15,9 +15,7 @@ const authReady = ref(false)
 const dashboardSchema = ref<ThingsVisDashboard | null>(null)
 
 const dashboardId = computed(() => String(route.query.dashboardId || ''))
-const pageTitle = computed(
-  () => dashboardSchema.value?.name || String(route.query.dashboardName || '看板预览')
-)
+const pageTitle = computed(() => dashboardSchema.value?.name || String(route.query.dashboardName || '看板预览'))
 
 async function loadDashboardSchema() {
   if (!dashboardId.value) {

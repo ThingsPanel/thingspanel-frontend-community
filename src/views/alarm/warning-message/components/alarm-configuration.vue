@@ -233,12 +233,7 @@ const submitCallback = async () => {
   <div class="h-full flex-col">
     <NForm ref="queryFormRef" :inline="!getPlatform" label-placement="left" :model="queryData">
       <NFormItem path="status">
-        <n-date-picker
-          v-model:value="range"
-          type="datetimerange"
-          :clearable="false"
-          separator="-"
-        />
+        <n-date-picker v-model:value="range" type="datetimerange" :clearable="false" separator="-" />
       </NFormItem>
       <NFormItem :label="$t('generate.alarm-level')" path="status">
         <NSelect

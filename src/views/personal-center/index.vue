@@ -499,7 +499,9 @@ onMounted(async () => {
               </div>
               <n-divider style="margin: 12px 0" />
               <div class="flex justify-start">
-                <div class="w-120px text-14px text-#666 dark:text-gray-600">{{ $t('page.manage.user.organization') }}</div>
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">
+                  {{ $t('page.manage.user.organization') }}
+                </div>
                 <div>{{ userInfoData.organization || $t('common.notSet') }}</div>
               </div>
               <n-divider style="margin: 12px 0" />
@@ -509,17 +511,27 @@ onMounted(async () => {
               </div>
               <n-divider style="margin: 12px 0" />
               <div class="flex justify-start">
-                <div class="w-120px text-14px text-#666 dark:text-gray-600">{{ $t('page.manage.user.defaultLanguage') }}</div>
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">
+                  {{ $t('page.manage.user.defaultLanguage') }}
+                </div>
                 <div>{{ userInfoData.default_language || $t('common.notSet') }}</div>
               </div>
               <n-divider style="margin: 12px 0" />
               <div class="flex justify-start">
                 <div class="w-120px text-14px text-#666 dark:text-gray-600">{{ $t('page.manage.user.address') }}</div>
-                <div>{{ [userInfoData.address.province, userInfoData.address.city, userInfoData.address.district].filter(Boolean).join(' / ') || $t('common.notSet') }}</div>
+                <div>
+                  {{
+                    [userInfoData.address.province, userInfoData.address.city, userInfoData.address.district]
+                      .filter(Boolean)
+                      .join(' / ') || $t('common.notSet')
+                  }}
+                </div>
               </div>
               <n-divider style="margin: 12px 0" />
               <div class="flex justify-start">
-                <div class="w-120px text-14px text-#666 dark:text-gray-600">{{ $t('page.manage.user.detailedAddress') }}</div>
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">
+                  {{ $t('page.manage.user.detailedAddress') }}
+                </div>
                 <div>{{ userInfoData.address.detailed_address || $t('common.notSet') }}</div>
               </div>
               <n-divider style="margin: 12px 0" />
@@ -547,11 +559,7 @@ onMounted(async () => {
                       :options="countryCodeOptions"
                       :placeholder="'区号'"
                     />
-                    <NInput
-                      v-model:value="userInfoData.phone_only"
-                      class="flex-1"
-                      placeholder="请输入手机号码"
-                    />
+                    <NInput v-model:value="userInfoData.phone_only" class="flex-1" placeholder="请输入手机号码" />
                   </div>
                 </NFormItem>
 
@@ -560,15 +568,26 @@ onMounted(async () => {
                 </NFormItem>
 
                 <NFormItem path="organization" :label="$t('page.manage.user.organization')">
-                  <NInput v-model:value="userInfoData.organization" :placeholder="$t('page.manage.user.form.organization')" />
+                  <NInput
+                    v-model:value="userInfoData.organization"
+                    :placeholder="$t('page.manage.user.form.organization')"
+                  />
                 </NFormItem>
 
                 <NFormItem path="timezone" :label="$t('page.manage.user.timezone')">
-                  <NSelect v-model:value="userInfoData.timezone" :options="timezoneOptions" :placeholder="$t('page.manage.user.form.timezone')" />
+                  <NSelect
+                    v-model:value="userInfoData.timezone"
+                    :options="timezoneOptions"
+                    :placeholder="$t('page.manage.user.form.timezone')"
+                  />
                 </NFormItem>
 
                 <NFormItem path="default_language" :label="$t('page.manage.user.defaultLanguage')">
-                  <NSelect v-model:value="userInfoData.default_language" :options="languageOptions" :placeholder="$t('page.manage.user.form.defaultLanguage')" />
+                  <NSelect
+                    v-model:value="userInfoData.default_language"
+                    :options="languageOptions"
+                    :placeholder="$t('page.manage.user.form.defaultLanguage')"
+                  />
                 </NFormItem>
 
                 <NFormItem path="address.province" :label="$t('page.manage.user.address')">
@@ -581,7 +600,10 @@ onMounted(async () => {
                 </NFormItem>
 
                 <NFormItem path="address.detailed_address" :label="$t('page.manage.user.detailedAddress')">
-                  <NInput v-model:value="userInfoData.address.detailed_address" :placeholder="$t('page.manage.user.form.detailedAddress')" />
+                  <NInput
+                    v-model:value="userInfoData.address.detailed_address"
+                    :placeholder="$t('page.manage.user.form.detailedAddress')"
+                  />
                 </NFormItem>
               </NForm>
               <n-divider style="margin: 12px 0" />

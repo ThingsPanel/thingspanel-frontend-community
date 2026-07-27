@@ -26,7 +26,7 @@ import { $t } from '~/src/locales'
 </template>
 
 <style lang="scss" scoped>
-  .pannel-content {
-    padding-top: 16px !important;
-  }
+.pannel-content {
+  padding-top: 16px !important;
+}
 </style>
