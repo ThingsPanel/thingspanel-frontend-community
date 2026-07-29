@@ -349,6 +349,25 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'device_market',
+        path: '/device/market',
+        meta: {
+          title: 'device_market',
+          i18nKey: 'route.device_market'
+        },
+        children: [
+          {
+            name: 'device_market_installed-detail',
+            path: '/device/market/installed-detail/:id',
+            component: 'view.device_market_installed-detail',
+            meta: {
+              title: 'device_market_installed-detail',
+              i18nKey: 'route.device_market_installed-detail'
+            }
+          }
+        ]
+      },
+      {
         name: 'device_service-access',
         path: '/device/service-access',
         component: 'view.device_service-access',

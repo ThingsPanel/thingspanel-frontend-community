@@ -48,6 +48,7 @@ import {
   getErrorDisplayMessage,
   type MarketApiError
 } from '@/service/api/market-bundle'
+import { useMarketAuth } from '@/views/device/config/composables/use-market-auth'
 
 // ========== Types ==========
 
@@ -95,6 +96,7 @@ const emit = defineEmits<{
 const router = useRouter()
 const message = useMessage()
 const dialog = useDialog()
+const { getToken } = useMarketAuth()
 
 // ========== Composable ==========
 
@@ -103,7 +105,7 @@ const {
   isLoading: isLoadingDevices,
   loadAllCompatibleDevices,
   initializeBindings,
-  generateDashboardSelections,
+  generateBindingsRequest,
   reset: resetBindings
 } = useDeviceBinding()
 
@@ -336,14 +338,27 @@ async function startInstallation() {
   installError.value = null
 
   try {
-    // 生成看板选择数据
-    const dashboardSelections = generateDashboardSelections()
+    const marketToken = getToken()
+    if (!marketToken) {
+      installError.value = {
+        code: 'UNAUTHORIZED',
+        message: '请先登录市场',
+        httpStatus: 401
+      }
+      step.value = 'result'
+      return
+    }
 
-    // 调用安装 API
+    const deviceBindings = generateBindingsRequest().map(item => ({
+      bindingKey: item.bindingKey,
+      localDeviceId: item.deviceId
+    }))
+
     const result = await installBundle({
       bundleKey: bundleDetail.value.bundleKey,
       version: selectedVersion.value,
-      dashboardSelections: dashboardSelections.length > 0 ? dashboardSelections : undefined
+      marketToken,
+      deviceBindings: deviceBindings.length > 0 ? deviceBindings : undefined
     })
 
     if (result.error) {

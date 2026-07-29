@@ -225,7 +225,7 @@ export function useDeviceBinding() {
       bindingKey: def.bindingKey,
       displayName: def.displayName,
       description: def.description,
-      required: def.required,
+      required: def.required !== false,
       selectedDeviceId: null,
       selectedDevice: null,
       compatibleDevices: [],
