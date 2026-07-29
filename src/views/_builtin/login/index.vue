@@ -39,6 +39,7 @@ const setupState = ref<{
   market_register_url?: string
 } | null>(null)
 const loading = ref(true)
+const setupStateError = ref(false)
 
 interface LoginModule {
   key: UnionKey.LoginModule
@@ -58,17 +59,17 @@ const modules: LoginModule[] = [
 
 // 检查首次安装状态
 const loadSetupState = async () => {
+  loading.value = true
+  setupStateError.value = false
   try {
-    const res = await fetchTenantSetupState()
-    setupState.value = res.data ?? {
-      has_admin: true,
-      entry: 'login'
+    const { data, error } = await fetchTenantSetupState()
+    if (error || !data) {
+      throw error || new Error('Failed to load tenant setup state')
     }
+    setupState.value = data
   } catch {
-    setupState.value = {
-      has_admin: true,
-      entry: 'login'
-    }
+    setupState.value = null
+    setupStateError.value = true
   } finally {
     loading.value = false
   }
@@ -86,11 +87,12 @@ const defaultModule = computed(() => {
 
 // 实际使用的 module（支持 props 覆盖）
 const effectiveModule = computed(() => {
-  if (props.module && props.module !== 'pwd-login') {
-    return props.module
-  }
+  // 首次安装优先级最高，不允许 URL 中的其他登录模块覆盖超管初始化页。
   if (setupState.value && !setupState.value.has_admin) {
     return 'register-super-admin'
+  }
+  if (props.module && props.module !== 'pwd-login') {
+    return props.module
   }
   return defaultModule.value
 })
@@ -165,9 +167,22 @@ watch(moduleTitle, newTitle => {
       <n-spin size="large" />
     </div>
 
+    <div
+      v-else-if="setupStateError"
+      class="relative z-10 w-full max-w-md mx-4 p-8 rounded-2xl shadow-2xl backdrop-blur-xl text-center"
+      :style="{
+        width: '380px',
+        background: cardBgColor,
+        border: `1px solid ${borderColor}`
+      }"
+    >
+      <div class="mb-5 text-base">无法获取系统初始化状态，请确认后端服务正常后重试</div>
+      <NButton type="primary" round block @click="loadSetupState">重新检测</NButton>
+    </div>
+
     <!-- 登录卡片 -->
     <div
-      v-if="!loading"
+      v-else
       class="relative z-10 w-full max-w-md mx-4 p-8 rounded-2xl shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom-4 duration-500"
       :style="{
         width: '380px',

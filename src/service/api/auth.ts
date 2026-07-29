@@ -125,6 +125,7 @@ export function fetchTenantSetupState() {
 export interface SuperAdminInitPayload {
   email: string
   password: string
+  confirm_password: string
 }
 
 /** 首次安装超管初始化（语义化新接口） */
