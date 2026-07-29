@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, reactive } from 'vue'
 import { NAutoComplete, NButton, NForm, NFormItem, NInput } from 'naive-ui'
 import { $t } from '@/locales'
 import { useFormRules, useNaiveForm } from '@/hooks/common/form'
@@ -10,23 +10,8 @@ defineOptions({
   name: 'SuperAdminRegisterPage'
 })
 
-interface Props {
-  marketUrl?: string
-  marketEmail?: string
-  marketRegistered?: boolean
-  marketSource?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  marketUrl: '',
-  marketEmail: '',
-  marketRegistered: false,
-  marketSource: ''
-})
-
 const auth = useAuthStore()
 const { formRef, validate } = useNaiveForm()
-const fallbackMarketUrl = import.meta.env.VITE_MARKET_URL || 'https://r.thingspanel.cn'
 
 interface FormModel {
   email: string
@@ -34,20 +19,9 @@ interface FormModel {
 }
 
 const model: FormModel = reactive({
-  email: props.marketEmail || '',
+  email: '',
   pwd: ''
 })
-
-const marketUrl = computed(() => {
-  const configured = (props.marketUrl || fallbackMarketUrl).trim()
-  if (!configured) return fallbackMarketUrl
-  if (configured.includes('localhost') || configured.includes('127.0.0.1') || configured.includes('0.0.0.0')) {
-    return fallbackMarketUrl
-  }
-  return configured
-})
-
-const emailLocked = computed(() => props.marketEmail.trim() !== '')
 
 const canSubmit = computed(() => {
   return model.email.trim() !== '' && model.pwd.trim() !== ''
@@ -84,36 +58,17 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
   }
 })
 
-function buildMarketRegisterUrl() {
-  const base = marketUrl.value
-  const url = base.endsWith('/register') ? new URL(base) : new URL('/register', base)
-  url.searchParams.set('callback', window.location.href)
-  url.searchParams.set('return_to', window.location.href)
-  return url.toString()
-}
-
-function goToMarketRegister() {
-  window.location.href = buildMarketRegisterUrl()
-}
-
 async function handleSubmit() {
   try {
     await validate()
     const resp = (await fetchSuperAdminInit({
       email: model.email.trim(),
-      password: model.pwd,
-      market_registered: props.marketRegistered,
-      market_email: props.marketEmail.trim() || model.email.trim(),
-      market_source: props.marketSource || 'horizon'
+      password: model.pwd
     })) as any
 
     if (resp?.error) {
-      const code = resp?.error?.code ?? resp?.code
-      if (code === 200055) {
-        window.$message?.warning('该邮箱尚未完成市场注册，无法继续初始化')
-        goToMarketRegister()
-        return
-      }
+      window.$message?.error(resp.error?.msg || resp.error?.message || '本地初始化失败，请检查邮箱和密码后重试')
+      return
     }
 
     if (!resp.error) {
@@ -134,33 +89,11 @@ async function handleSubmit() {
       }
     }
   } catch (error: any) {
-    const code = error.response?.data?.code
     const msg = error.response?.data?.message
-    if (code === 200055) {
-      window.$message.warning(msg || '该邮箱尚未完成市场注册，无法继续初始化')
-      goToMarketRegister()
-    } else {
-      window.$message.error(msg || error?.message || '本地初始化失败，请检查邮箱和密码后重试')
-      console.error('Initialization failed:', error)
-    }
+    window.$message.error(msg || error?.message || '本地初始化失败，请检查邮箱和密码后重试')
+    console.error('Initialization failed:', error)
   }
 }
-
-watch(
-  () => props.marketEmail,
-  value => {
-    if (value) {
-      model.email = value
-    }
-  },
-  { immediate: true }
-)
-
-onMounted(() => {
-  if (props.marketEmail) {
-    model.email = props.marketEmail
-  }
-})
 </script>
 
 <template>
@@ -168,7 +101,6 @@ onMounted(() => {
     <NFormItem path="email">
       <NAutoComplete
         v-model:value="model.email"
-        :disabled="emailLocked"
         :options="emailOptions"
         :placeholder="$t('page.login.register.emailPlaceholder')"
         clearable

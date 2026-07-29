@@ -30,7 +30,6 @@ const props = withDefaults(defineProps<Props>(), {
 const appStore = useAppStore()
 const themeStore = useThemeStore()
 const sysSetting = useSysSettingStore()
-const searchParams = new URLSearchParams(window.location.search)
 
 // 首次安装/注册状态
 const setupState = ref<{
@@ -40,12 +39,6 @@ const setupState = ref<{
   market_register_url?: string
 } | null>(null)
 const loading = ref(true)
-const redirectingToMarket = ref(false)
-const returnedFromMarket = computed(() => {
-  return searchParams.get('market_registered') === '1' || searchParams.get('market_logged_in') === '1'
-})
-const marketEmail = computed(() => searchParams.get('market_email')?.trim() || '')
-const marketSource = computed(() => searchParams.get('market_source')?.trim() || 'horizon')
 
 interface LoginModule {
   key: UnionKey.LoginModule
@@ -63,17 +56,6 @@ const modules: LoginModule[] = [
   { key: 'bind-wechat', label: loginModuleRecord['bind-wechat'], component: BindWechat }
 ]
 
-const fallbackMarketUrl = import.meta.env.VITE_MARKET_URL || 'https://r.thingspanel.cn'
-
-const normalizeMarketUrl = (baseUrl?: string) => {
-  const url = baseUrl?.trim()
-  if (!url) return fallbackMarketUrl
-  if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes('0.0.0.0')) {
-    return fallbackMarketUrl
-  }
-  return url
-}
-
 // 检查首次安装状态
 const loadSetupState = async () => {
   try {
@@ -88,15 +70,7 @@ const loadSetupState = async () => {
       entry: 'login'
     }
   } finally {
-    if (setupState.value && !setupState.value.has_admin) {
-      if (returnedFromMarket.value) {
-        loading.value = false
-      } else {
-        redirectToMarketRegister()
-      }
-    } else {
-      loading.value = false
-    }
+    loading.value = false
   }
 }
 
@@ -104,31 +78,6 @@ const loadSetupState = async () => {
 onMounted(() => {
   loadSetupState()
 })
-
-const marketRegisterUrl = computed(() =>
-  normalizeMarketUrl(setupState.value?.market_register_url || setupState.value?.market_base_url)
-)
-
-const buildMarketRegisterUrl = () => {
-  const base = marketRegisterUrl.value
-  const url = base.endsWith('/register') ? new URL(base) : new URL('/register', base)
-  url.searchParams.set('callback', window.location.href)
-  url.searchParams.set('return_to', window.location.href)
-  return url.toString()
-}
-
-const redirectToMarketRegister = () => {
-  if (redirectingToMarket.value) return
-
-  try {
-    redirectingToMarket.value = true
-    window.location.replace(buildMarketRegisterUrl())
-  } catch (error) {
-    console.error('Failed to redirect to market register:', error)
-    redirectingToMarket.value = false
-    loading.value = false
-  }
-}
 
 // 默认显示的模块
 const defaultModule = computed(() => {
@@ -140,7 +89,7 @@ const effectiveModule = computed(() => {
   if (props.module && props.module !== 'pwd-login') {
     return props.module
   }
-  if (setupState.value && !setupState.value.has_admin && returnedFromMarket.value) {
+  if (setupState.value && !setupState.value.has_admin) {
     return 'register-super-admin'
   }
   return defaultModule.value
@@ -149,19 +98,6 @@ const effectiveModule = computed(() => {
 const activeModule = computed(() => {
   const findItem = modules.find(item => item.key === effectiveModule.value)
   return findItem || modules[0]
-})
-
-const activeModuleProps = computed(() => {
-  if (activeModule.value.key === 'register-super-admin') {
-    return {
-      marketUrl: normalizeMarketUrl(setupState.value?.market_register_url || setupState.value?.market_base_url),
-      marketEmail: marketEmail.value,
-      marketRegistered: returnedFromMarket.value,
-      marketSource: marketSource.value
-    }
-  }
-
-  return {}
 })
 
 // 计算当前模块的标题
@@ -224,8 +160,8 @@ watch(moduleTitle, newTitle => {
       <div class="bg-animation-inner" :class="{ 'dark-theme': themeStore.darkMode }"></div>
     </div>
 
-    <!-- Loading / redirect 状态 -->
-    <div v-if="loading || redirectingToMarket" class="flex-center">
+    <!-- Loading 状态 -->
+    <div v-if="loading" class="flex-center">
       <n-spin size="large" />
     </div>
 
@@ -315,7 +251,7 @@ watch(moduleTitle, newTitle => {
 
         <div class="transition-all duration-300">
           <Transition :name="themeStore.page.animateMode" mode="out-in" appear>
-            <component :is="activeModule.component" v-bind="activeModuleProps" />
+            <component :is="activeModule.component" />
           </Transition>
         </div>
       </div>

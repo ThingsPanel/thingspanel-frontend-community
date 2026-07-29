@@ -125,9 +125,6 @@ export function fetchTenantSetupState() {
 export interface SuperAdminInitPayload {
   email: string
   password: string
-  market_registered?: boolean
-  market_email?: string
-  market_source?: string
 }
 
 /** 首次安装超管初始化（语义化新接口） */
@@ -152,7 +149,7 @@ export async function fetchSuperAdminInit(data: SuperAdminInitPayload) {
   }
 }
 
-/** 兼容旧命名：超管注册（联动市场） */
+/** 兼容旧命名：本地超管初始化 */
 export function fetchMarketRegister(data: SuperAdminInitPayload) {
   return fetchSuperAdminInit(data)
 }
