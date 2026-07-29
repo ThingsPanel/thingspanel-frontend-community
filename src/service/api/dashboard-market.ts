@@ -1,4 +1,5 @@
 import { request } from '../request'
+import { getThingsVisToken } from '@/utils/thingsvis'
 
 export interface DashboardBundleThingModelField {
   kind: 'telemetry' | 'attribute' | 'command' | 'event'
@@ -49,12 +50,23 @@ export interface PublishDashboardBundleResponse {
   status: 'pending_review' | string
 }
 
-export function analyzeDashboardBundle(dashboardId: string) {
-  return request.post<AnalyzeDashboardBundleResponse>('/device/market/dashboard-bundles/analyze', {
-    dashboardId
-  })
+async function getThingsVisAuthorization() {
+  const token = await getThingsVisToken()
+  return `Bearer ${token}`
 }
 
-export function publishDashboardBundle(payload: PublishDashboardBundleRequest) {
-  return request.post<PublishDashboardBundleResponse>('/device/market/dashboard-bundles', payload)
+export async function analyzeDashboardBundle(dashboardId: string) {
+  const authorization = await getThingsVisAuthorization()
+  return request.post<AnalyzeDashboardBundleResponse>(
+    '/device/market/dashboard-bundles/analyze',
+    { dashboardId },
+    { headers: { Authorization: authorization } }
+  )
+}
+
+export async function publishDashboardBundle(payload: PublishDashboardBundleRequest) {
+  const authorization = await getThingsVisAuthorization()
+  return request.post<PublishDashboardBundleResponse>('/device/market/dashboard-bundles', payload, {
+    headers: { Authorization: authorization }
+  })
 }
