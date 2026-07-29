@@ -418,7 +418,7 @@ defineExpose({
                     size="small"
                   >
                     <template #prefix>
-                      <NIcon><SearchOutline /></NIcon></NIcon>
+                      <NIcon><SearchOutline /></NIcon>
                     </template>
                   </NInput>
                 </div>
