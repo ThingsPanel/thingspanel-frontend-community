@@ -4,7 +4,7 @@
  */
 import { computed } from 'vue'
 import { NAlert, NList, NListItem, NThing, NTag, NIcon, NTooltip } from 'naive-ui'
-import { useI18n } from '@/locales'
+import { useI18n } from 'vue-i18n'
 import type { PrecheckDisplayItem } from '../../composables/use-market-bundle'
 
 const props = defineProps<{

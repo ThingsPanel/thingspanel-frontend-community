@@ -9,7 +9,7 @@
  */
 import { ref, computed } from 'vue'
 import { NButton, NIcon, NPopover } from 'naive-ui'
-import { useI18n } from '@/locales'
+import { useI18n } from 'vue-i18n'
 import PublishWizard from './PublishWizard.vue'
 import MarketLoginModal from './modules/market-login-modal.vue'
 import { useMarketAuth } from './composables/use-market-auth'
