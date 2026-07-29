@@ -207,7 +207,7 @@ async function openBindingWizard() {
   const bindingDefs = installation.value.bindings.map(b => ({
     bindingKey: b.bindingKey,
     displayName: b.displayName,
-    required: b.required,
+    required: b.required !== false,
     deviceTemplateKey: undefined,
     deviceTemplateName: undefined
   }))

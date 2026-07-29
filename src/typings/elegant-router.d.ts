@@ -57,9 +57,14 @@ declare module "@elegant-router/types" {
     "device_grouping": "/device/grouping";
     "device_grouping-details": "/device/grouping-details";
     "device_manage": "/device/manage";
+    "device_market": "/device/market";
+    "device_market_installed-detail": "/device/market/installed-detail/:id";
     "device_service-access": "/device/service-access";
     "device_service-details": "/device/service-details";
     "device_template": "/device/thingsmodel";
+    "device_market-browse": "/device/market/browse";
+    "device_market-installed": "/device/market/installed";
+    "device_market-installed-detail": "/device/market/installed/:id";
     "device-details-app": "/device-details-app";
     "function": "/function";
     "function_hide-child": "/function/hide-child";
@@ -226,9 +231,13 @@ declare module "@elegant-router/types" {
     | "device_grouping-details"
     | "device_grouping"
     | "device_manage"
+    | "device_market_installed-detail"
     | "device_service-access"
     | "device_service-details"
     | "device_template"
+    | "device_market-browse"
+    | "device_market-installed"
+    | "device_market-installed-detail"
     | "function_hide-child_one"
     | "function_hide-child_three"
     | "function_hide-child_two"

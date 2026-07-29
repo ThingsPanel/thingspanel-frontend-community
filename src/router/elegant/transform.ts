@@ -201,6 +201,8 @@ const routeMap: RouteMap = {
   "device_grouping": "/device/grouping",
   "device_grouping-details": "/device/grouping-details",
   "device_manage": "/device/manage",
+  "device_market": "/device/market",
+  "device_market_installed-detail": "/device/market/installed-detail/:id",
   "device_service-access": "/device/service-access",
   "device_service-details": "/device/service-details",
   "device_template": "/device/thingsmodel",
