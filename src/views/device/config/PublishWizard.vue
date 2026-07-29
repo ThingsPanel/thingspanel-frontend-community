@@ -1,312 +1,191 @@
 <script setup lang="ts">
-/**
- * PublishWizard - 市场解决方案包发布向导
- *
- * 多步骤发布流程:
- * 1. 选择资源 (设备模板/看板)
- * 2. 填写元数据 (名称/分类/描述)
- * 3. 预检结果
- * 4. 确认发布
- * 5. 发布结果
- */
-import { ref, reactive, computed, watch } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import {
-  NModal,
-  NCard,
-  NSteps,
-  NStep,
+  NAlert,
   NButton,
+  NCard,
+  NDescriptions,
+  NDescriptionsItem,
   NForm,
   NFormItem,
   NInput,
+  NModal,
   NSelect,
-  NGrid,
-  NGi,
-  NAlert,
+  NSpace,
   NSpin,
-  useMessage,
-  useDialog
+  NStep,
+  NSteps,
+  NTag,
+  useMessage
 } from 'naive-ui'
-import { useI18n } from '@/locales'
-import ResourceSelector from './components/market/ResourceSelector.vue'
-import PrecheckResultDisplay from './components/market/PrecheckResultDisplay.vue'
-import PublishResultCard from './components/market/PublishResultCard.vue'
-import { useMarketBundle, formatPrecheckResults } from './composables/use-market-bundle'
+import {
+  analyzeDashboardBundle,
+  publishDashboardBundle,
+  type AnalyzeDashboardBundleResponse,
+  type DashboardBundleRole,
+  type PublishDashboardBundleResponse
+} from '@/service/api/dashboard-market'
 import { useMarketAuth } from './composables/use-market-auth'
-import type { Locale } from '@/locales/locale'
 
-// ========== Props & Emits ==========
+export interface OpenParams {
+  dashboardIds?: string[]
+}
 
 export interface PublishWizardExpose {
   open: (params?: OpenParams) => void
   close: () => void
 }
 
-export interface OpenParams {
-  /** 预选的设备模板 ID */
-  deviceTemplateIds?: string[]
-  /** 预选的看板 ID */
-  dashboardIds?: string[]
-}
-
-const props = defineProps<{
-  /** 是否显示 */
-  modelValue: boolean
-}>()
-
+const props = defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  published: [result: unknown]
+  published: [result: PublishDashboardBundleResponse]
 }>()
 
-// ========== Composable ==========
-
-const { t, locale } = useI18n()
 const message = useMessage()
-const dialog = useDialog()
-const { isLoggedIn } = useMarketAuth()
-
-const {
-  wizardState,
-  canProceedFromMetadata,
-  canConfirmPublish,
-  precheckErrors,
-  precheckWarnings,
-  precheckPasses,
-  hasBlockingErrors,
-  resetWizard,
-  setSelectedResources,
-  updateMetadata,
-  createDraft,
-  confirmPublishAction,
-  cancelCurrentDraft
-} = useMarketBundle()
-
-// ========== Local State ==========
+const { getToken } = useMarketAuth()
 
 const visible = computed({
   get: () => props.modelValue,
-  set: val => emit('update:modelValue', val)
+  set: value => emit('update:modelValue', value)
 })
 
-// 步骤索引
-const stepIndex = computed(() => {
-  const steps = ['select-resources', 'metadata', 'precheck', 'confirm', 'result']
-  return steps.indexOf(wizardState.step)
-})
+const step = ref(1)
+const analyzing = ref(false)
+const submitting = ref(false)
+const analysis = ref<AnalyzeDashboardBundleResponse | null>(null)
+const roles = ref<DashboardBundleRole[]>([])
+const result = ref<PublishDashboardBundleResponse | null>(null)
 
-// 元数据表单
-const metadataForm = reactive({
+const form = reactive({
+  bundleKey: '',
+  version: '1.0.0',
   name: '',
-  category: '',
-  description: '',
-  tags: '',
-  author: '',
-  contact: ''
+  category: 'other',
+  description: ''
 })
 
-// 类别选项
 const categoryOptions = [
-  { label: () => t('market.category.smartHome'), value: 'smart-home' },
-  { label: () => t('market.category.industrial'), value: 'industrial' },
-  { label: () => t('market.category.agriculture'), value: 'agriculture' },
-  { label: () => t('market.category.smartCity'), value: 'smart-city' },
-  { label: () => t('market.category.energy'), value: 'energy' },
-  { label: () => t('market.category.healthcare'), value: 'healthcare' },
-  { label: () => t('market.category.retail'), value: 'retail' },
-  { label: () => t('market.category.other'), value: 'other' }
+  { label: '工业', value: 'industrial' },
+  { label: '智慧农业', value: 'agriculture' },
+  { label: '智慧城市', value: 'smart-city' },
+  { label: '能源', value: 'energy' },
+  { label: '智能家居', value: 'smart-home' },
+  { label: '其他', value: 'other' }
 ]
 
-// 选中的资源
-const selectedDeviceTemplateIds = ref<string[]>([])
-const selectedDashboardIds = ref<string[]>([])
+const bindingKeyPattern = /^[a-z][a-z0-9_]{2,63}$/
+const bundleKeyPattern = /^[a-z][a-z0-9-]{2,63}$/
+const versionPattern = /^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$/
 
-// 预检结果格式化
-const formattedResults = computed(() => {
-  if (!wizardState.precheckResults) return []
-  return formatPrecheckResults(wizardState.precheckResults.checks, locale.value as Locale)
+const rolesValid = computed(() => {
+  if (roles.value.length === 0) return false
+  const keys = new Set<string>()
+  return roles.value.every(role => {
+    const valid =
+      role.displayName.trim() !== '' && bindingKeyPattern.test(role.bindingKey) && !keys.has(role.bindingKey)
+    keys.add(role.bindingKey)
+    return valid
+  })
 })
 
-const formattedErrors = computed(() => formattedResults.value.filter(r => r.level === 'error'))
-const formattedWarnings = computed(() => formattedResults.value.filter(r => r.level === 'warning'))
-const formattedPasses = computed(() => formattedResults.value.filter(r => r.level === 'success' || r.level === 'info'))
-
-// Bundle 预览
-const bundlePreview = computed(() => wizardState.precheckResults?.bundlePreview)
-
-// ========== Watch ==========
-
-watch(
-  () => props.modelValue,
-  newVal => {
-    if (!newVal) {
-      resetWizard()
-    }
-  }
+const metadataValid = computed(
+  () =>
+    bundleKeyPattern.test(form.bundleKey) &&
+    versionPattern.test(form.version) &&
+    form.name.trim() !== '' &&
+    form.category !== ''
 )
 
-// 同步 metadataForm 到 wizardState
-watch(metadataForm, newVal => {
-  updateMetadata({
-    name: newVal.name,
-    category: newVal.category,
-    description: newVal.description,
-    tags: newVal.tags
-      ? newVal.tags
-          .split(',')
-          .map(t => t.trim())
-          .filter(Boolean)
-      : [],
-    author: newVal.author,
-    contact: newVal.contact
-  })
-})
-
-// ========== Methods ==========
-
-/**
- * 打开向导
- */
-function open(params?: OpenParams) {
-  resetWizard()
-  if (params?.deviceTemplateIds) {
-    selectedDeviceTemplateIds.value = params.deviceTemplateIds
-  }
-  if (params?.dashboardIds) {
-    selectedDashboardIds.value = params.dashboardIds
-  }
-  visible.value = true
+function reset() {
+  step.value = 1
+  analysis.value = null
+  roles.value = []
+  result.value = null
+  form.bundleKey = ''
+  form.version = '1.0.0'
+  form.name = ''
+  form.category = 'other'
+  form.description = ''
 }
 
-/**
- * 关闭向导
- */
+function suggestBundleKey(dashboardId: string) {
+  const normalized = dashboardId
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return /^[a-z]/.test(normalized) && normalized.length >= 3
+    ? normalized.slice(0, 64)
+    : `dashboard-${normalized}`.slice(0, 64)
+}
+
+async function open(params?: OpenParams) {
+  reset()
+  visible.value = true
+
+  const dashboardIds = params?.dashboardIds ?? []
+  if (dashboardIds.length !== 1) {
+    message.warning('请从具体看板的操作菜单中选择“发布市场”')
+    return
+  }
+
+  analyzing.value = true
+  const { data, error } = await analyzeDashboardBundle(dashboardIds[0])
+  analyzing.value = false
+  if (error || !data) return
+
+  analysis.value = data
+  form.name = data.dashboardName
+  form.bundleKey = suggestBundleKey(data.dashboardId)
+  roles.value = data.deviceReferences.map(reference => ({
+    sourceDeviceId: reference.sourceDeviceId,
+    bindingKey: reference.suggestedBindingKey,
+    displayName: reference.sourceDeviceName || reference.suggestedBindingKey
+  }))
+
+  if (roles.value.length === 0) {
+    message.warning('该看板没有引用设备，当前不能发布为看板 Bundle')
+  }
+}
+
 function close() {
   visible.value = false
-  resetWizard()
+  reset()
 }
 
-/**
- * 处理资源选择完成
- */
-function handleResourceSelectionConfirm(deviceTemplateIds: string[], dashboardIds: string[]) {
-  setSelectedResources({ deviceTemplateIds, dashboardIds })
-  wizardState.step = 'metadata'
-}
+async function submit() {
+  if (!analysis.value || !rolesValid.value || !metadataValid.value) return
 
-/**
- * 处理元数据下一步
- */
-function handleMetadataNext() {
-  if (!canProceedFromMetadata.value) {
-    message.warning(t('market.publish.fillRequiredFields'))
-    return
-  }
-  wizardState.step = 'precheck'
-  void runPrecheck()
-}
-
-/**
- * 运行预检
- */
-async function runPrecheck() {
-  wizardState.isLoading = true
-  const success = await createDraft(locale.value as Locale)
-  if (!success && wizardState.error) {
-    message.error(wizardState.error.message)
-  }
-  wizardState.isLoading = false
-}
-
-/**
- * 处理确认发布
- */
-async function handleConfirmPublish() {
-  if (!canConfirmPublish.value) {
-    message.warning(t('market.publish.cannotPublishWithErrors'))
+  const marketToken = getToken()
+  if (!marketToken) {
+    message.error('市场登录已失效，请关闭窗口后重新登录')
     return
   }
 
-  // 确认对话框
-  dialog.warning({
-    title: t('market.publish.confirmPublishTitle'),
-    content: t('market.publish.confirmPublishMessage'),
-    positiveText: t('common.confirm'),
-    negativeText: t('common.cancel'),
-    onPositiveClick: async () => {
-      wizardState.isSubmitting = true
-      const success = await confirmPublishAction(locale.value as Locale)
-      if (success) {
-        message.success(t('market.publish.publishInitiated'))
-        emit('published', wizardState.publishResult)
-      } else if (wizardState.error) {
-        message.error(wizardState.error.message)
-      }
-      wizardState.isSubmitting = false
-    }
+  submitting.value = true
+  const { data, error } = await publishDashboardBundle({
+    dashboardId: analysis.value.dashboardId,
+    bundleKey: form.bundleKey,
+    version: form.version,
+    name: form.name.trim(),
+    category: form.category,
+    description: form.description.trim(),
+    marketToken,
+    deviceRoles: roles.value.map(role => ({
+      sourceDeviceId: role.sourceDeviceId,
+      bindingKey: role.bindingKey,
+      displayName: role.displayName.trim()
+    }))
   })
+  submitting.value = false
+
+  if (error || !data) return
+  result.value = data
+  step.value = 3
+  emit('published', data)
+  message.success('已提交市场审核')
 }
 
-/**
- * 处理发布另一个
- */
-function handlePublishAnother() {
-  resetWizard()
-  metadataForm.name = ''
-  metadataForm.category = ''
-  metadataForm.description = ''
-  metadataForm.tags = ''
-  metadataForm.author = ''
-  metadataForm.contact = ''
-  selectedDeviceTemplateIds.value = []
-  selectedDashboardIds.value = []
-}
-
-/**
- * 处理取消
- */
-async function handleCancel() {
-  if (wizardState.draftId && wizardState.step !== 'result') {
-    const confirmed = await new Promise<boolean>(resolve => {
-      dialog.warning({
-        title: t('market.publish.confirmCancel'),
-        content: t('market.publish.confirmCancelMessage'),
-        positiveText: t('common.confirm'),
-        negativeText: t('common.cancel'),
-        onPositiveClick: () => resolve(true),
-        onNegativeClick: () => resolve(false)
-      })
-    })
-    if (confirmed) {
-      await cancelCurrentDraft()
-      close()
-    }
-  } else {
-    close()
-  }
-}
-
-/**
- * 获取步骤标题
- */
-function getStepTitle(step: string): string {
-  switch (step) {
-    case 'select-resources':
-      return t('market.publish.stepSelectResources')
-    case 'metadata':
-      return t('market.publish.stepMetadata')
-    case 'precheck':
-      return t('market.publish.stepPrecheck')
-    case 'confirm':
-      return t('market.publish.stepConfirm')
-    case 'result':
-      return t('market.publish.stepResult')
-    default:
-      return step
-  }
-}
-
-// 暴露方法
 defineExpose({ open, close } as PublishWizardExpose)
 </script>
 
@@ -314,211 +193,134 @@ defineExpose({ open, close } as PublishWizardExpose)
   <NModal
     v-model:show="visible"
     preset="card"
-    :title="t('market.publish.wizardTitle')"
-    class="publish-wizard-modal"
+    title="发布看板到市场"
     :mask-closable="false"
-    :closable="true"
-    style="width: 800px; max-width: 90vw"
-    :trap-focus="true"
+    style="width: 860px; max-width: 92vw"
   >
-    <div class="publish-wizard">
-      <!-- 步骤指示器 (非结果页面显示) -->
-      <NSteps v-if="wizardState.step !== 'result'" :current="stepIndex" class="mb-6" status="process">
-        <NStep :title="t('market.publish.stepSelectResources')" />
-        <NStep :title="t('market.publish.stepMetadata')" />
-        <NStep :title="t('market.publish.stepPrecheck')" />
-        <NStep :title="t('market.publish.stepConfirm')" />
-      </NSteps>
+    <NSteps :current="step" class="mb-6">
+      <NStep title="确认设备角色" />
+      <NStep title="填写商品信息" />
+      <NStep title="提交结果" />
+    </NSteps>
 
-      <!-- Step 1: 选择资源 -->
-      <div v-if="wizardState.step === 'select-resources'" class="step-content">
+    <NSpin :show="analyzing">
+      <template v-if="step === 1">
         <NAlert type="info" class="mb-4">
-          {{ t('market.publish.selectResourcesTip') }}
+          系统已分析该看板实际引用的设备。这里确认的是安装时要绑定的“设备角色”，不会把发布者的真实设备 ID 上传到市场。
         </NAlert>
-        <ResourceSelector
-          :device-templates="[]"
-          :dashboards="[]"
-          :selected-device-template-ids="selectedDeviceTemplateIds"
-          :selected-dashboard-ids="selectedDashboardIds"
-          @update:selected-device-template-ids="selectedDeviceTemplateIds = $event"
-          @update:selected-dashboard-ids="selectedDashboardIds = $event"
-          @confirm="handleResourceSelectionConfirm"
-        />
-        <div class="step-actions">
-          <NButton @click="handleCancel">{{ t('common.cancel') }}</NButton>
-          <NButton
-            type="primary"
-            :disabled="selectedDeviceTemplateIds.length === 0 && selectedDashboardIds.length === 0"
-            @click="handleResourceSelectionConfirm(selectedDeviceTemplateIds, selectedDashboardIds)"
+
+        <NAlert v-if="!analysis && !analyzing" type="warning" class="mb-4">
+          尚未选择具体看板，请关闭窗口后从看板列表的操作菜单进入。
+        </NAlert>
+
+        <template v-if="analysis">
+          <NDescriptions bordered :column="2" class="mb-4">
+            <NDescriptionsItem label="看板">{{ analysis.dashboardName }}</NDescriptionsItem>
+            <NDescriptionsItem label="设备角色数">{{ roles.length }}</NDescriptionsItem>
+          </NDescriptions>
+
+          <NCard
+            v-for="(reference, index) in analysis.deviceReferences"
+            :key="reference.sourceDeviceId"
+            size="small"
+            class="mb-3"
           >
-            {{ t('common.nextStep') }}
-          </NButton>
-        </div>
-      </div>
+            <template #header>
+              {{ reference.sourceDeviceName || reference.sourceDeviceId }}
+            </template>
+            <NForm label-placement="left" label-width="110">
+              <NFormItem label="角色名称" required>
+                <NInput v-model:value="roles[index].displayName" placeholder="例如：客厅温湿度设备" />
+              </NFormItem>
+              <NFormItem label="bindingKey" required>
+                <NInput v-model:value="roles[index].bindingKey" placeholder="例如：living_room_sensor" />
+              </NFormItem>
+              <NFormItem label="设备模板">
+                <span>{{ reference.deviceTemplateId }}</span>
+              </NFormItem>
+              <NFormItem label="看板所需字段">
+                <NSpace>
+                  <NTag
+                    v-for="field in reference.requiredFields"
+                    :key="`${field.kind}:${field.identifier}`"
+                    size="small"
+                  >
+                    {{ field.name || field.identifier }}（{{ field.kind }}）
+                  </NTag>
+                </NSpace>
+              </NFormItem>
+            </NForm>
+          </NCard>
 
-      <!-- Step 2: 填写元数据 -->
-      <div v-else-if="wizardState.step === 'metadata'" class="step-content">
+          <NAlert v-if="roles.length === 0" type="error">
+            当前看板没有可发布的设备引用，不能形成安装时的绑定向导。
+          </NAlert>
+          <NAlert v-else-if="!rolesValid" type="warning">
+            bindingKey 必须以小写字母开头，只能包含小写字母、数字、下划线，长度 3～64，并且不能重复。
+          </NAlert>
+        </template>
+
+        <div class="step-actions">
+          <NButton @click="close">取消</NButton>
+          <NButton type="primary" :disabled="!analysis || !rolesValid" @click="step = 2">下一步</NButton>
+        </div>
+      </template>
+
+      <template v-else-if="step === 2">
         <NAlert type="info" class="mb-4">
-          {{ t('market.publish.metadataTip') }}
+          一个 Bundle 对应一个看板。提交后进入人工审核，审核通过后安装者才能在市场看到。
         </NAlert>
-        <NForm :model="metadataForm" label-placement="left" label-width="100">
-          <NGrid :cols="2" :x-gap="16">
-            <NGi>
-              <NFormItem :label="t('market.publish.bundleName')" path="name" required>
-                <NInput
-                  v-model:value="metadataForm.name"
-                  :placeholder="t('market.publish.bundleNamePlaceholder')"
-                  maxlength="50"
-                  show-count
-                />
-              </NFormItem>
-            </NGi>
-            <NGi>
-              <NFormItem :label="t('market.publish.category')" path="category" required>
-                <NSelect
-                  v-model:value="metadataForm.category"
-                  :options="categoryOptions"
-                  :placeholder="t('market.publish.categoryPlaceholder')"
-                />
-              </NFormItem>
-            </NGi>
-          </NGrid>
-          <NFormItem :label="t('market.publish.description')" path="description">
+        <NForm :model="form" label-placement="left" label-width="110">
+          <NFormItem label="商品名称" required>
+            <NInput v-model:value="form.name" maxlength="100" show-count />
+          </NFormItem>
+          <NFormItem label="Bundle Key" required>
+            <NInput v-model:value="form.bundleKey" placeholder="例如：factory-energy-dashboard" />
+          </NFormItem>
+          <NFormItem label="版本" required>
+            <NInput v-model:value="form.version" placeholder="例如：1.0.0" />
+          </NFormItem>
+          <NFormItem label="分类" required>
+            <NSelect v-model:value="form.category" :options="categoryOptions" />
+          </NFormItem>
+          <NFormItem label="描述">
             <NInput
-              v-model:value="metadataForm.description"
+              v-model:value="form.description"
               type="textarea"
-              :placeholder="t('market.publish.descriptionPlaceholder')"
-              :autosize="{ minRows: 3, maxRows: 5 }"
-              maxlength="500"
+              :autosize="{ minRows: 3, maxRows: 6 }"
+              maxlength="2000"
               show-count
             />
           </NFormItem>
-          <NGrid :cols="2" :x-gap="16">
-            <NGi>
-              <NFormItem :label="t('market.publish.tags')" path="tags">
-                <NInput v-model:value="metadataForm.tags" :placeholder="t('market.publish.tagsPlaceholder')" />
-              </NFormItem>
-            </NGi>
-            <NGi>
-              <NFormItem :label="t('market.publish.author')" path="author">
-                <NInput v-model:value="metadataForm.author" :placeholder="t('market.publish.authorPlaceholder')" />
-              </NFormItem>
-            </NGi>
-          </NGrid>
-          <NFormItem :label="t('market.publish.contact')" path="contact">
-            <NInput v-model:value="metadataForm.contact" :placeholder="t('market.publish.contactPlaceholder')" />
-          </NFormItem>
         </NForm>
-        <div class="step-actions">
-          <NButton @click="wizardState.step = 'select-resources'">
-            {{ t('common.back') }}
-          </NButton>
-          <NButton type="primary" :disabled="!canProceedFromMetadata" @click="handleMetadataNext">
-            {{ t('market.publish.runPrecheck') }}
-          </NButton>
-        </div>
-      </div>
-
-      <!-- Step 3: 预检结果 -->
-      <div v-else-if="wizardState.step === 'precheck'" class="step-content">
-        <NSpin :show="wizardState.isLoading">
-          <PrecheckResultDisplay
-            :results="formattedResults"
-            :errors="formattedErrors"
-            :warnings="formattedWarnings"
-            :passes="formattedPasses"
-            :loading="wizardState.isLoading"
-          >
-            <!-- Bundle 预览插槽 -->
-            <template v-if="bundlePreview" #bundle-preview>
-              <NCard :title="t('market.publish.bundlePreview')" size="small" class="mt-4">
-                <div class="preview-grid">
-                  <div class="preview-item">
-                    <span class="preview-label">{{ t('market.publish.deviceTemplateCount') }}:</span>
-                    <span class="preview-value">{{ bundlePreview.deviceTemplateCount }}</span>
-                  </div>
-                  <div class="preview-item">
-                    <span class="preview-label">{{ t('market.publish.dashboardCount') }}:</span>
-                    <span class="preview-value">{{ bundlePreview.dashboardCount }}</span>
-                  </div>
-                  <div class="preview-item">
-                    <span class="preview-label">{{ t('market.publish.containsSecrets') }}:</span>
-                    <span :class="['preview-value', bundlePreview.containsSecrets ? 'text-error' : 'text-success']">
-                      {{ bundlePreview.containsSecrets ? t('common.yes') : t('common.no') }}
-                    </span>
-                  </div>
-                  <div class="preview-item">
-                    <span class="preview-label">{{ t('market.publish.contentSize') }}:</span>
-                    <span class="preview-value">{{ (bundlePreview.contentSize / 1024).toFixed(2) }} KB</span>
-                  </div>
-                </div>
-              </NCard>
-            </template>
-          </PrecheckResultDisplay>
-        </NSpin>
-        <div class="step-actions">
-          <NButton @click="wizardState.step = 'metadata'">
-            {{ t('common.back') }}
-          </NButton>
-          <NButton
-            type="primary"
-            :disabled="!canConfirmPublish"
-            :loading="wizardState.isSubmitting"
-            @click="handleConfirmPublish"
-          >
-            {{ t('market.publish.confirmPublish') }}
-          </NButton>
-        </div>
-      </div>
-
-      <!-- Step 4: 确认发布 (简化版，主要在 Step 3 处理) -->
-      <div v-else-if="wizardState.step === 'confirm'" class="step-content">
-        <NAlert type="info">
-          {{ t('market.publish.confirmTip') }}
+        <NAlert v-if="!metadataValid" type="warning">
+          Bundle Key 只能使用小写字母、数字和短横线并以字母开头；版本必须符合 1.0.0 格式。
         </NAlert>
         <div class="step-actions">
-          <NButton @click="wizardState.step = 'precheck'">
-            {{ t('common.back') }}
-          </NButton>
-          <NButton type="primary" :disabled="!canConfirmPublish" @click="handleConfirmPublish">
-            {{ t('market.publish.confirmPublish') }}
-          </NButton>
+          <NButton @click="step = 1">上一步</NButton>
+          <NButton type="primary" :disabled="!metadataValid" :loading="submitting" @click="submit">提交审核</NButton>
         </div>
-      </div>
+      </template>
 
-      <!-- Step 5: 发布结果 -->
-      <div v-else-if="wizardState.step === 'result'" class="step-content">
-        <PublishResultCard
-          :result="wizardState.publishResult"
-          :error="wizardState.error?.message"
-          @close="close"
-          @publish-another="handlePublishAnother"
-        />
-      </div>
-    </div>
+      <template v-else>
+        <NAlert type="success" title="已提交人工审核" class="mb-4">
+          这不代表已经上架。审核通过后，安装者才会在市场列表中看到这个看板 Bundle。
+        </NAlert>
+        <NDescriptions v-if="result" bordered :column="1">
+          <NDescriptionsItem label="Bundle Key">{{ result.bundleKey }}</NDescriptionsItem>
+          <NDescriptionsItem label="版本">{{ result.version }}</NDescriptionsItem>
+          <NDescriptionsItem label="状态">{{ result.status }}</NDescriptionsItem>
+          <NDescriptionsItem label="内容哈希">{{ result.contentHash }}</NDescriptionsItem>
+        </NDescriptions>
+        <div class="step-actions end">
+          <NButton type="primary" @click="close">完成</NButton>
+        </div>
+      </template>
+    </NSpin>
   </NModal>
 </template>
 
 <style scoped>
-.publish-wizard {
-  min-height: 400px;
-}
-
-.step-content {
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .step-actions {
   display: flex;
   justify-content: space-between;
@@ -527,38 +329,7 @@ defineExpose({ open, close } as PublishWizardExpose)
   border-top: 1px solid var(--n-border-color);
 }
 
-.step-actions-right {
-  display: flex;
-  gap: 12px;
-}
-
-.preview-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.preview-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.preview-label {
-  color: var(--n-text-color-3);
-  font-size: 14px;
-}
-
-.preview-value {
-  color: var(--n-text-color);
-  font-size: 14px;
-}
-
-.text-error {
-  color: #f87171;
-}
-
-.text-success {
-  color: #22c55e;
+.step-actions.end {
+  justify-content: flex-end;
 }
 </style>

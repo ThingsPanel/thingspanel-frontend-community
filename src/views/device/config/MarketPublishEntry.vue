@@ -57,7 +57,8 @@ const { t } = useI18n()
 const { isLoggedIn } = useMarketAuth()
 
 const showWizard = ref(false)
-const showLoginModal = ref(false)
+const loginModalRef = ref<InstanceType<typeof MarketLoginModal> | null>(null)
+const pendingParams = ref<PublishEntryParams | undefined>()
 
 // 计算按钮文本
 const buttonText = computed(() => {
@@ -69,8 +70,9 @@ const buttonText = computed(() => {
  * 打开发布向导
  */
 function openPublish(params?: PublishEntryParams) {
+  pendingParams.value = params
   if (!isLoggedIn()) {
-    showLoginModal.value = true
+    loginModalRef.value?.open()
     return
   }
   showWizard.value = true
@@ -78,6 +80,7 @@ function openPublish(params?: PublishEntryParams) {
   if (params?.deviceTemplateIds?.length || params?.dashboardIds?.length) {
     setTimeout(() => {
       wizardRef.value?.open(params)
+      pendingParams.value = undefined
     }, 50)
   }
 }
@@ -86,10 +89,10 @@ function openPublish(params?: PublishEntryParams) {
  * 处理登录成功
  */
 function handleLoginSuccess() {
-  showLoginModal.value = false
   showWizard.value = true
   setTimeout(() => {
-    wizardRef.value?.open()
+    wizardRef.value?.open(pendingParams.value)
+    pendingParams.value = undefined
   }, 50)
 }
 
@@ -97,7 +100,6 @@ function handleLoginSuccess() {
  * 处理发布成功
  */
 function handlePublished() {
-  showWizard.value = false
   emit('published')
 }
 

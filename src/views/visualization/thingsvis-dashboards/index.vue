@@ -41,17 +41,13 @@ import {
 import { clearThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
 import { refreshAuthRoutes } from '@/utils/router/refresh-auth-routes'
 import MarketPublishEntry from '@/views/device/config/MarketPublishEntry.vue'
-import MarketLoginModal from '@/views/device/config/modules/market-login-modal.vue'
-import { useMarketAuth } from '@/views/device/config/composables/use-market-auth'
 
 const route = useRoute()
 const { routerPushByKey } = useRouterPush()
 const message = useMessage()
-const { isLoggedIn } = useMarketAuth()
 
 // 发布向导 ref
 const publishEntryRef = ref<InstanceType<typeof MarketPublishEntry> | null>(null)
-const showLoginModal = ref(false)
 
 // 从路由获取项目ID
 const projectId = computed(() => route.query.projectId as string)
@@ -422,16 +418,12 @@ const openEditor = (dashboardId: string) => {
 
 // 发布到市场
 const handlePublishToMarket = (dashboardId: string) => {
-  if (!isLoggedIn()) {
-    showLoginModal.value = true
-    return
-  }
   publishEntryRef.value?.openPublish({ dashboardIds: [dashboardId] })
 }
 
 // 发布成功处理
 const handlePublishSuccess = () => {
-  message.success('发布成功')
+  message.success('已提交市场审核')
 }
 
 // 发布失败处理
@@ -440,12 +432,6 @@ const handlePublishError = (error: string) => {
 }
 
 // 登录成功后打开发布向导
-const handleLoginSuccess = () => {
-  showLoginModal.value = false
-  setTimeout(() => {
-    publishEntryRef.value?.openPublish()
-  }, 100)
-}
 
 /** 返回项目列表 */
 const goBackToProjects = () => {
@@ -775,11 +761,11 @@ onMounted(async () => {
       </template>
     </NModal>
 
-    <!-- 市场登录弹窗 -->
-    <MarketLoginModal
-      :visible="showLoginModal"
-      @update:visible="showLoginModal = $event"
-      @login-success="handleLoginSuccess"
+    <MarketPublishEntry
+      ref="publishEntryRef"
+      style="display: none"
+      @published="handlePublishSuccess"
+      @publish-error="handlePublishError"
     />
   </div>
 </template>
