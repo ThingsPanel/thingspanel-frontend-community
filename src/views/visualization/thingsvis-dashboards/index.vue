@@ -40,10 +40,18 @@ import {
 } from '@/service/api/dashboard-menu'
 import { clearThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
 import { refreshAuthRoutes } from '@/utils/router/refresh-auth-routes'
+import MarketPublishEntry from '@/views/device/config/MarketPublishEntry.vue'
+import MarketLoginModal from '@/views/device/config/modules/market-login-modal.vue'
+import { useMarketAuth } from '@/views/device/config/composables/use-market-auth'
 
 const route = useRoute()
 const { routerPushByKey } = useRouterPush()
 const message = useMessage()
+const { isLoggedIn } = useMarketAuth()
+
+// 发布向导 ref
+const publishEntryRef = ref<InstanceType<typeof MarketPublishEntry> | null>(null)
+const showLoginModal = ref(false)
 
 // 从路由获取项目ID
 const projectId = computed(() => route.query.projectId as string)
@@ -81,7 +89,7 @@ const dashboards = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase()
   if (!keyword) return allDashboards.value
 
-  return allDashboards.value.filter((item) => item.name.toLowerCase().includes(keyword))
+  return allDashboards.value.filter(item => item.name.toLowerCase().includes(keyword))
 })
 
 /** 加载项目信息 */
@@ -136,7 +144,7 @@ const loadMenuConfigs = async (list: DashboardListItem[]) => {
   const loadSeq = menuConfigLoadSeq.value + 1
   menuConfigLoadSeq.value = loadSeq
   const entries = await Promise.all(
-    list.map(async (item) => {
+    list.map(async item => {
       const { data, error } = await fetchDashboardMenuConfig(item.id)
       return [item.id, error ? (menuConfigs.value[item.id] ?? null) : (data ?? null)] as const
     })
@@ -160,7 +168,7 @@ const loadThumbnails = async (list: DashboardListItem[]) => {
     while (queue.length > 0) {
       const batch = queue.splice(0, CONCURRENCY)
       await Promise.all(
-        batch.map(async (item) => {
+        batch.map(async item => {
           // 检查是否已有有效的缩略图（处理 null、undefined、空字符串）
           const hasValidThumbnail = item.thumbnail && item.thumbnail.trim().startsWith('data:')
           if (hasValidThumbnail) return
@@ -172,7 +180,7 @@ const loadThumbnails = async (list: DashboardListItem[]) => {
             const thumbnail = resultData?.thumbnail || resultData?.data?.thumbnail
             if (thumbnail) {
               // 更新响应式数据
-              const target = allDashboards.value.find((d) => d.id === item.id)
+              const target = allDashboards.value.find(d => d.id === item.id)
               if (target) {
                 target.thumbnail = thumbnail
               }
@@ -348,7 +356,7 @@ const handleSaveMenuConfig = async () => {
         if (homeDashboard && homeDashboard.id !== menuForm.value.dashboardId) {
           // 首页仪表盘存在且不是当前正要保存的这个，才追加
           const alreadyInMenu = Object.keys(menuConfigs.value).some(
-            (id) => id === homeDashboard.id && menuConfigs.value[id]?.enabled
+            id => id === homeDashboard.id && menuConfigs.value[id]?.enabled
           )
           if (!alreadyInMenu) {
             const { error: homeError } = await saveDashboardMenuConfig(homeDashboard.id, {
@@ -410,6 +418,33 @@ const openEditor = (dashboardId: string) => {
       projectId: projectId.value
     }
   })
+}
+
+// 发布到市场
+const handlePublishToMarket = (dashboardId: string) => {
+  if (!isLoggedIn()) {
+    showLoginModal.value = true
+    return
+  }
+  publishEntryRef.value?.openPublish({ dashboardIds: [dashboardId] })
+}
+
+// 发布成功处理
+const handlePublishSuccess = () => {
+  message.success('发布成功')
+}
+
+// 发布失败处理
+const handlePublishError = (error: string) => {
+  message.error(error)
+}
+
+// 登录成功后打开发布向导
+const handleLoginSuccess = () => {
+  showLoginModal.value = false
+  setTimeout(() => {
+    publishEntryRef.value?.openPublish()
+  }, 100)
 }
 
 /** 返回项目列表 */
@@ -553,6 +588,14 @@ onMounted(async () => {
                     编辑
                   </NButton>
 
+                  <!-- 发布到市场按钮 -->
+                  <NButton size="small" secondary type="success" @click.stop="handlePublishToMarket(dashboard.id)">
+                    <template #icon>
+                      <icon-mdi:cloud-upload />
+                    </template>
+                    发布
+                  </NButton>
+
                   <NTooltip>
                     <template #trigger>
                       <NButton
@@ -684,7 +727,7 @@ onMounted(async () => {
           <NSwitch
             v-model:value="menuForm.enabled"
             @update:value="
-              (value) => {
+              value => {
                 if (value && !menuForm.menuName) menuForm.menuName = menuForm.dashboardName
               }
             "
@@ -731,5 +774,12 @@ onMounted(async () => {
         <NButton type="error" :loading="!!deletingId" @click="handleDeleteDashboard">确认删除</NButton>
       </template>
     </NModal>
+
+    <!-- 市场登录弹窗 -->
+    <MarketLoginModal
+      :visible="showLoginModal"
+      @update:visible="showLoginModal = $event"
+      @login-success="handleLoginSuccess"
+    />
   </div>
 </template>

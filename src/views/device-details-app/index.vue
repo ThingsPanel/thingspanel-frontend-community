@@ -1,149 +1,149 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue';
-import { extractPlatformFields } from '@/utils/thingsvis/platform-fields';
-import { $t } from '@/locales';
-import { deviceDetail, deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device';
-import { telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api';
-import { formatDateTime } from '@/utils/common/datetime';
-import type { PlatformField } from '@/utils/thingsvis/types';
-import TelemetryDataCards from './telemetryDataCards.vue';
-import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush';
-import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush';
-import { bootstrapAppEmbedSession } from '@/utils/app-embed-auth';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
+import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
+import { $t } from '@/locales'
+import { deviceDetail, deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
+import { telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api'
+import { formatDateTime } from '@/utils/common/datetime'
+import type { PlatformField } from '@/utils/thingsvis/types'
+import TelemetryDataCards from './telemetryDataCards.vue'
+import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush'
+import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush'
+import { bootstrapAppEmbedSession } from '@/utils/app-embed-auth'
 
-const route = useRoute();
-const router = useRouter();
-const { d_id, token, lang } = route.query;
-const deviceData: any = ref({});
+const route = useRoute()
+const router = useRouter()
+const { d_id, token, lang } = route.query
+const deviceData: any = ref({})
 
-const icon_type = ref('');
-const device_number = ref('');
-const showDefaultCards = ref(false);
-const showAppChart = ref(false);
-const cardHeight = ref(160);
-const cardMargin = ref(15);
+const icon_type = ref('')
+const device_number = ref('')
+const showDefaultCards = ref(false)
+const showAppChart = ref(false)
+const cardHeight = ref(160)
+const cardMargin = ref(15)
 
-const initialConfig = ref<any>(null);
-const platformFields = ref<PlatformField[]>([]);
-const currentData = ref<Record<string, any>>({});
+const initialConfig = ref<any>(null)
+const platformFields = ref<PlatformField[]>([])
+const currentData = ref<Record<string, any>>({})
 const viewerHeight = computed(() => {
-  const config = initialConfig.value;
-  if (!config) return '400px';
+  const config = initialConfig.value
+  if (!config) return '400px'
 
-  const canvas = config.canvas || config.canvasConfig || {};
-  const nodes = Array.isArray(config.nodes) ? config.nodes : [];
+  const canvas = config.canvas || config.canvasConfig || {}
+  const nodes = Array.isArray(config.nodes) ? config.nodes : []
   const nodeBottom = nodes.reduce((max: number, node: any) => {
-    const y = typeof node?.y === 'number' ? node.y : node?.position?.y;
-    const height = typeof node?.height === 'number' ? node.height : node?.size?.height;
-    if (typeof y !== 'number' || typeof height !== 'number') return max;
-    return Math.max(max, y + height);
-  }, 0);
+    const y = typeof node?.y === 'number' ? node.y : node?.position?.y
+    const height = typeof node?.height === 'number' ? node.height : node?.size?.height
+    if (typeof y !== 'number' || typeof height !== 'number') return max
+    return Math.max(max, y + height)
+  }, 0)
 
-  const canvasHeight = typeof canvas.height === 'number' ? canvas.height : 0;
-  const expandedHeight = Math.max(canvasHeight, nodeBottom + 96, 400);
-  return `${Math.ceil(expandedHeight)}px`;
-});
+  const canvasHeight = typeof canvas.height === 'number' ? canvas.height : 0
+  const expandedHeight = Math.max(canvasHeight, nodeBottom + 96, 400)
+  return `${Math.ceil(expandedHeight)}px`
+})
 const viewerPlatformDevices = computed(() => {
-  if (!d_id || platformFields.value.length === 0) return [];
+  if (!d_id || platformFields.value.length === 0) return []
   return [
     {
       deviceId: d_id as string,
       deviceName: deviceData.value?.name || device_number.value || 'Device',
       fields: platformFields.value
     }
-  ];
-});
+  ]
+})
 
-const visWidgetRef = ref<InstanceType<typeof ThingsVisWidget> | null>(null);
-const deviceIdRef = computed(() => d_id as string);
+const visWidgetRef = ref<InstanceType<typeof ThingsVisWidget> | null>(null)
+const deviceIdRef = computed(() => d_id as string)
 
-const realtimePush = ref<ReturnType<typeof useRealtimePush> | null>(null);
-const alarmPush = ref<ReturnType<typeof useAlarmPush> | null>(null);
+const realtimePush = ref<ReturnType<typeof useRealtimePush> | null>(null)
+const alarmPush = ref<ReturnType<typeof useAlarmPush> | null>(null)
 
 const pushDataToVis = (fields: Record<string, unknown>) => {
-  if (Object.keys(fields).length === 0) return;
+  if (Object.keys(fields).length === 0) return
   currentData.value = {
     ...currentData.value,
     ...fields
-  };
-  visWidgetRef.value?.pushPlatformData(fields, d_id as string);
-};
+  }
+  visWidgetRef.value?.pushPlatformData(fields, d_id as string)
+}
 
 const fetchDeviceData = async () => {
-  if (!showAppChart.value) return;
+  if (!showAppChart.value) return
 
   try {
-    const hasAttributes = platformFields.value.some(f => f.dataType === 'attribute');
+    const hasAttributes = platformFields.value.some(f => f.dataType === 'attribute')
 
     const [telemetryRes, attributeRes] = await Promise.all([
       telemetryDataCurrent(d_id as string),
       hasAttributes ? getAttributeDataSet({ device_id: d_id as string }) : Promise.resolve({ data: [] })
-    ]);
+    ])
 
-    const telemetryList = telemetryRes?.data || [];
-    const attributeList = attributeRes?.data || [];
+    const telemetryList = telemetryRes?.data || []
+    const attributeList = attributeRes?.data || []
 
-    const kvMap: Record<string, any> = {};
+    const kvMap: Record<string, any> = {}
     const processItem = (item: any) => {
       if (item?.key !== undefined) {
-        kvMap[item.key] = item.value;
+        kvMap[item.key] = item.value
       } else if (item?.label !== undefined) {
-        if (!kvMap[item.label]) kvMap[item.label] = item.value;
+        if (!kvMap[item.label]) kvMap[item.label] = item.value
       }
-    };
+    }
 
-    if (Array.isArray(telemetryList)) telemetryList.forEach(processItem);
-    if (Array.isArray(attributeList)) attributeList.forEach(processItem);
+    if (Array.isArray(telemetryList)) telemetryList.forEach(processItem)
+    if (Array.isArray(attributeList)) attributeList.forEach(processItem)
 
-    const dataMap: Record<string, any> = {};
+    const dataMap: Record<string, any> = {}
     platformFields.value.forEach(field => {
-      const val = kvMap[field.id] ?? kvMap[field.name];
+      const val = kvMap[field.id] ?? kvMap[field.name]
       if (val !== undefined) {
-        dataMap[field.id] = val;
+        dataMap[field.id] = val
       }
-    });
+    })
 
     if (Object.keys(dataMap).length > 0) {
       currentData.value = {
         ...currentData.value,
         ...dataMap
-      };
-      pushDataToVis(dataMap);
+      }
+      pushDataToVis(dataMap)
     }
   } catch (error) {
-    console.error('[DeviceDetailsApp] 获取设备数据失败:', error);
+    console.error('[DeviceDetailsApp] 获取设备数据失败:', error)
   }
-};
+}
 
 const getDeviceDetail = async () => {
-  const { data, error } = await deviceDetail(d_id);
-  if (error) return;
+  const { data, error } = await deviceDetail(d_id)
+  if (error) return
 
-  deviceData.value = data;
-  device_number.value = data.device_number;
-  icon_type.value = data.is_online !== 0 ? 'rgb(2,153,52)' : '#ccc';
+  deviceData.value = data
+  device_number.value = data.device_number
+  icon_type.value = data.is_online !== 0 ? 'rgb(2,153,52)' : '#ccc'
   currentData.value = {
     ...currentData.value,
     is_online: data.is_online,
     online_text: data.is_online === 1 ? '在线' : '离线',
     online_status_updated_at: typeof data.ts === 'number' ? data.ts : Date.now()
-  };
-  showDefaultCards.value = false;
-  showAppChart.value = false;
-  initialConfig.value = null;
+  }
+  showDefaultCards.value = false
+  showAppChart.value = false
+  initialConfig.value = null
 
   if (!data.device_config?.device_template_id) {
-    showDefaultCards.value = true;
-    return;
+    showDefaultCards.value = true
+    return
   }
 
-  const templateId = data.device_config.device_template_id;
-  const res = await deviceTemplateDetail({ id: templateId });
+  const templateId = data.device_config.device_template_id
+  const res = await deviceTemplateDetail({ id: templateId })
   if (!res.data) {
-    showDefaultCards.value = true;
-    return;
+    showDefaultCards.value = true
+    return
   }
 
   const [telemetryRes, attributesRes, eventsRes, commandsRes] = await Promise.all([
@@ -151,96 +151,96 @@ const getDeviceDetail = async () => {
     attributesApi({ page: 1, page_size: 1000, device_template_id: templateId }),
     eventsApi({ page: 1, page_size: 1000, device_template_id: templateId }),
     commandsApi({ page: 1, page_size: 1000, device_template_id: templateId })
-  ]);
+  ])
 
   const telemetryList = Array.isArray(telemetryRes?.data?.list)
     ? telemetryRes.data.list
     : Array.isArray(telemetryRes?.data)
       ? telemetryRes.data
-      : [];
+      : []
 
   const attributesList = Array.isArray(attributesRes?.data?.list)
     ? attributesRes.data.list
     : Array.isArray(attributesRes?.data)
       ? attributesRes.data
-      : [];
+      : []
 
   const eventsList = Array.isArray(eventsRes?.data?.list)
     ? eventsRes.data.list
     : Array.isArray(eventsRes?.data)
       ? eventsRes.data
-      : [];
+      : []
 
   const commandsList = Array.isArray(commandsRes?.data?.list)
     ? commandsRes.data.list
     : Array.isArray(commandsRes?.data)
       ? commandsRes.data
-      : [];
+      : []
 
   const platformSource = {
     telemetry: telemetryList,
     attributes: attributesList,
     events: eventsList,
     commands: commandsList
-  };
+  }
 
-  const extractedFields = extractPlatformFields(platformSource);
-  platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data);
+  const extractedFields = extractPlatformFields(platformSource)
+  platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)
 
   if (!res.data.app_chart_config) {
-    showDefaultCards.value = true;
-    return;
+    showDefaultCards.value = true
+    return
   }
 
   try {
-    const configJson = JSON.parse(res.data.app_chart_config);
+    const configJson = JSON.parse(res.data.app_chart_config)
 
     if (configJson.dataSources && Array.isArray(configJson.dataSources)) {
       configJson.dataSources.forEach((ds: any) => {
         if (ds.type === 'PLATFORM_FIELD') {
-          ds.config = ds.config || {};
-          ds.config.deviceId = d_id as string;
+          ds.config = ds.config || {}
+          ds.config.deviceId = d_id as string
         }
-      });
+      })
     }
 
-    initialConfig.value = configJson;
-    showAppChart.value = true;
+    initialConfig.value = configJson
+    showAppChart.value = true
 
-    realtimePush.value?.stop();
-    alarmPush.value?.stop();
+    realtimePush.value?.stop()
+    alarmPush.value?.stop()
 
-    realtimePush.value = useRealtimePush(deviceIdRef, platformFields, pushDataToVis, fetchDeviceData);
-    alarmPush.value = useAlarmPush(deviceIdRef, platformFields, pushDataToVis);
+    realtimePush.value = useRealtimePush(deviceIdRef, platformFields, pushDataToVis, fetchDeviceData)
+    alarmPush.value = useAlarmPush(deviceIdRef, platformFields, pushDataToVis)
 
-    realtimePush.value?.start();
-    alarmPush.value?.start();
+    realtimePush.value?.start()
+    alarmPush.value?.start()
   } catch (e) {
-    console.warn('解析 app_chart_config 失败', e);
-    showDefaultCards.value = true;
+    console.warn('解析 app_chart_config 失败', e)
+    showDefaultCards.value = true
   }
-};
+}
 
 const onVisReady = async () => {
   setTimeout(async () => {
-    await fetchDeviceData();
-  }, 500);
-};
+    await fetchDeviceData()
+  }, 500)
+}
 
 onMounted(async () => {
-  const authenticated = await bootstrapAppEmbedSession({ token, lang });
+  const authenticated = await bootstrapAppEmbedSession({ token, lang })
   if (!authenticated) {
-    await router.push({ name: 'login' });
-    return;
+    await router.push({ name: 'login' })
+    return
   }
 
-  await getDeviceDetail();
-});
+  await getDeviceDetail()
+})
 
 onBeforeUnmount(() => {
-  realtimePush.value?.stop();
-  alarmPush.value?.stop();
-});
+  realtimePush.value?.stop()
+  alarmPush.value?.stop()
+})
 </script>
 
 <template>

@@ -102,11 +102,11 @@ const { status, send, close } = useWebSocket(wsUrl, {
       if (!isJSON(event.data)) return
       const info = JSON.parse(event.data)
       const currTelemetryKey = telemetryData.value
-        .map((item) => {
+        .map(item => {
           return item.key === 'systime' ? false : item.key
         })
-        .filter((item) => Boolean(item))
-      const newData = telemetryData.value.map((item) => {
+        .filter(item => Boolean(item))
+      const newData = telemetryData.value.map(item => {
         return {
           ...item,
           value:
@@ -144,26 +144,25 @@ const columns = [
     title: $t('custom.device_details.operationType'),
     key: 'operation_type',
     minWidth: '140px',
-    render: (row) =>
-      row.operation_type === '1' ? $t('custom.device_details.manualOperation') : $t('card.triggerAction')
+    render: row => (row.operation_type === '1' ? $t('custom.device_details.manualOperation') : $t('card.triggerAction'))
   },
   {
     title: $t('custom.device_details.operationUsers'),
     minWidth: '140px',
     key: 'username',
-    render: (row) => (row.operation_type === '1' ? row.username : $t('generate.system'))
+    render: row => (row.operation_type === '1' ? row.username : $t('generate.system'))
   },
   {
     title: $t('custom.device_details.operationTime'),
     key: 'created_at',
     minWidth: '140px',
-    render: (row) => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
+    render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
   },
   {
     title: $t('custom.device_details.sendResults'),
     minWidth: '140px',
     key: 'status',
-    render: (row) => (row.status === '1' ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
+    render: row => (row.status === '1' ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
   }
 ]
 const requestSimulationInit = async () => {
@@ -280,7 +279,7 @@ const fetchTelemetry = async () => {
     send(JSON.stringify(dataw))
   }
 }
-const setItemRef = (el) => {
+const setItemRef = el => {
   if (el) {
     const index = el.$attrs['data-index']
     numberAnimationInstRef.value[index] = el
@@ -328,7 +327,7 @@ const handleSelect = (key, item) => {
     handleDeleteTable()
   }
 }
-const copy = (event) => {
+const copy = event => {
   const input = event.target
   input.select()
   document.execCommand('copy')
@@ -396,7 +395,7 @@ const getControlList = () => {
 
 watch(
   () => props.deviceTemplateId,
-  (val) => {
+  val => {
     if (!val) return
     getControlList()
   }
@@ -405,7 +404,7 @@ watch(
 // 监听 Topic 变化，自动切换对应格式的数据
 watch(
   () => simulationForm.topic,
-  (val) => {
+  val => {
     if (!val) return
     if (val.includes('/event/')) {
       simulationForm.default_data = simulationForm.event_default_data
@@ -567,7 +566,7 @@ const inputFeedback = computed(() => {
         :page-count="total"
         :page-size="5"
         @update:page="
-          (page) => {
+          page => {
             log_page = page
             fetchData()
           }

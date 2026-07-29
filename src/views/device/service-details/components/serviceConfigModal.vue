@@ -212,9 +212,7 @@ const submitSevice: () => void = async () => {
   }
 
   // 1. Get all selected device numbers
-  const selectedDeviceNumbers = checkedRowKeys.value.filter(
-    key => key && !boundDeviceKeys.value.has(String(key))
-  )
+  const selectedDeviceNumbers = checkedRowKeys.value.filter(key => key && !boundDeviceKeys.value.has(String(key)))
 
   if (!selectedDeviceNumbers || selectedDeviceNumbers.length === 0) {
     window.$message?.success('接入点配置已保存')

@@ -14,7 +14,13 @@
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
-import type { HttpHeader, HttpParam, HttpPathParam, HttpConfig, PathParameter } from '@/core/data-architecture/types/http-config'
+import type {
+  HttpHeader,
+  HttpParam,
+  HttpPathParam,
+  HttpConfig,
+  PathParameter
+} from '@/core/data-architecture/types/http-config'
 import { extractPathParamsFromUrl } from '@/core/data-architecture/types/http-config'
 // 导入分步配置组件
 import HttpConfigStep1 from '@/core/data-architecture/components/common/HttpConfigStep1.vue'
@@ -475,7 +481,9 @@ watch(() => props.modelValue, syncPropsToLocal, { deep: true, immediate: true })
                 <n-space :size="4" align="center">
                   <n-icon v-if="!isBasicConfigValid" size="14"><lock-icon /></n-icon>
                   <span>请求脚本</span>
-                  <n-tag v-if="localConfig.preRequestScript" type="warning" size="small" :bordered="false">已配置</n-tag>
+                  <n-tag v-if="localConfig.preRequestScript" type="warning" size="small" :bordered="false">
+                    已配置
+                  </n-tag>
                 </n-space>
               </template>
               请先完成基础配置（URL和请求方法）

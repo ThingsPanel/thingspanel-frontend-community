@@ -78,7 +78,7 @@ function extractWsFields(payload: unknown): Record<string, unknown> {
 
   if (Array.isArray(payload)) {
     const fields: Record<string, unknown> = {}
-    ;(payload as Array<{ key?: string; label?: string; value?: unknown }>).forEach((item) => {
+    ;(payload as Array<{ key?: string; label?: string; value?: unknown }>).forEach(item => {
       if (!item) return
       const key = item.key ?? item.label
       if (!key || key === 'systime') return
@@ -137,7 +137,7 @@ function connectDeviceWs(deviceId: string) {
       }, PING_INTERVAL_MS)
     }
 
-    entry.ws.onmessage = (evt) => {
+    entry.ws.onmessage = evt => {
       if (typeof evt.data !== 'string' || evt.data === 'pong') return
       try {
         const rawFields = extractWsFields(JSON.parse(evt.data))
@@ -210,7 +210,7 @@ function connectDeviceStatusWs(deviceId: string) {
       }, PING_INTERVAL_MS)
     }
 
-    entry.ws.onmessage = (evt) => {
+    entry.ws.onmessage = evt => {
       if (typeof evt.data !== 'string' || evt.data === 'pong') return
       try {
         const msg = JSON.parse(evt.data) as Record<string, unknown>
@@ -299,13 +299,13 @@ function collectRequestedFieldsFromValue(value: unknown, requests: Map<string, S
   }
 
   if (Array.isArray(value)) {
-    value.forEach((item) => collectRequestedFieldsFromValue(item, requests))
+    value.forEach(item => collectRequestedFieldsFromValue(item, requests))
     return
   }
 
   if (!value || typeof value !== 'object') return
 
-  Object.values(value as Record<string, unknown>).forEach((item) => {
+  Object.values(value as Record<string, unknown>).forEach(item => {
     collectRequestedFieldsFromValue(item, requests)
   })
 }
@@ -331,7 +331,7 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
       )
       const bindingFields = requests.get(String(dataSource.id))
       if (bindingFields) {
-        bindingFields.forEach((fieldId) => requestedFields.add(fieldId))
+        bindingFields.forEach(fieldId => requestedFields.add(fieldId))
       }
 
       return {
@@ -403,7 +403,7 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
 
   if (!deviceId || requestedFields.length === 0) return {}
 
-  const currentFieldIds = requestedFields.filter((fieldId) => !fieldId.endsWith('__history'))
+  const currentFieldIds = requestedFields.filter(fieldId => !fieldId.endsWith('__history'))
   if (currentFieldIds.length === 0) return {}
 
   const [telemetryResult, attributeResult] = await Promise.allSettled([
@@ -424,7 +424,7 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   if (Array.isArray(attributeRes?.data)) attributeRes.data.forEach(collect)
 
   const result: Record<string, unknown> = {}
-  currentFieldIds.forEach((fieldId) => {
+  currentFieldIds.forEach(fieldId => {
     if (kvMap[fieldId] !== undefined) result[fieldId] = kvMap[fieldId]
   })
   return result
@@ -464,7 +464,7 @@ const handleMessage = (event: MessageEvent) => {
     ensureDeviceStatusWs(payload.deviceId)
 
     void buildRequestedFieldData(payload.fieldIds, payload.deviceId)
-      .then((fields) => {
+      .then(fields => {
         const win = iframeRef.value?.contentWindow
         if (!win || Object.keys(fields).length === 0) return
 
@@ -563,7 +563,7 @@ const handleIframeLoad = () => {
 // 鐩戝惉閰嶇疆鍙樺寲锛岄噸鏂板彂閫?
 watch(
   () => props.config,
-  (newConfig) => {
+  newConfig => {
     if (newConfig && ready.value) {
       sendConfig()
     }

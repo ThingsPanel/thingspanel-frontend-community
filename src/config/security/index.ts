@@ -4,12 +4,7 @@
  */
 
 // 导出 RSA 配置
-export { 
-  rsaPublicKey, 
-  rsaConfig, 
-  getRSAPublicKey, 
-  validateRSAPublicKey 
-} from './rsa'
+export { rsaPublicKey, rsaConfig, getRSAPublicKey, validateRSAPublicKey } from './rsa'
 
 // 导出类型定义
 export type {
@@ -31,7 +26,7 @@ export const securityConfig = {
     keySize: 2048,
     algorithm: 'RSA-OAEP',
     hashAlgorithm: 'SHA-256',
-    enableEnvOverride: true,
+    enableEnvOverride: true
   }
 } as const
 
@@ -47,7 +42,7 @@ export function getSecurityConfig() {
       keySize: rsaConfig.keySize,
       algorithm: rsaConfig.algorithm,
       hashAlgorithm: rsaConfig.hashAlgorithm,
-      enableEnvOverride: rsaConfig.enableEnvOverride,
+      enableEnvOverride: rsaConfig.enableEnvOverride
     }
   }
 }

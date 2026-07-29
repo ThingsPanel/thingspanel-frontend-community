@@ -30,7 +30,11 @@ import {
 } from 'naive-ui'
 import { type EnhancedParameter } from '@/core/data-architecture/types/parameter-editor'
 import { generateVariableName } from '@/core/data-architecture/types/http-config'
-import { getRecommendedTemplates, getTemplateById, ParameterTemplateType } from '@/core/data-architecture/components/common/templates/index'
+import {
+  getRecommendedTemplates,
+  getTemplateById,
+  ParameterTemplateType
+} from '@/core/data-architecture/components/common/templates/index'
 
 // 导入组件模板使用的组件（简化版）
 import DeviceMetricsSelector from '@/components/device-selectors/DeviceMetricsSelector.vue'
@@ -691,7 +695,6 @@ const updateParameter = (param: EnhancedParameter, index: number) => {
   const updatedParams = [...props.modelValue]
   updatedParams[index] = { ...param }
 
-
   emit('update:modelValue', updatedParams)
 }
 
@@ -745,15 +748,16 @@ const ensureParameterHasId = (param: EnhancedParameter, index: number): Enhanced
     return {
       ...param,
       // 🔥 关键修复：确保isDynamic字段有正确的值
-      isDynamic: param.isDynamic !== undefined
-        ? param.isDynamic
-        : (param.valueMode === 'component' ||
-           param.selectedTemplate === 'component-property-binding' ||
-           // 检测绑定路径格式
-           (typeof param.value === 'string' &&
-            param.value.includes('.') &&
-            param.value.split('.').length >= 3 &&
-            param.value.length > 10)),
+      isDynamic:
+        param.isDynamic !== undefined
+          ? param.isDynamic
+          : param.valueMode === 'component' ||
+            param.selectedTemplate === 'component-property-binding' ||
+            // 检测绑定路径格式
+            (typeof param.value === 'string' &&
+              param.value.includes('.') &&
+              param.value.split('.').length >= 3 &&
+              param.value.length > 10),
       _id: `param_legacy_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 6)}`
     }
   }
@@ -842,23 +846,22 @@ const openComponentDrawer = (param: EnhancedParameter) => {
  * 当用户在组件属性选择器中选择了属性时调用
  */
 const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) => {
-
   if (!drawerParam.value) {
     console.warn(`⚠️ [DynamicParameterEditor] drawerParam 为空，忽略属性变更`)
     return
   }
 
   // 🔥 增强的绑定路径验证：更严格的格式检查
-  const isValidBindingPath = bindingPath === '' || (
-    typeof bindingPath === 'string' &&
-    bindingPath.includes('.') &&
-    bindingPath.split('.').length >= 3 && // 至少包含组件ID.layer.property
-    bindingPath.length > 10 && // 绑定路径通常较长
-    !/^\d{1,4}$/.test(bindingPath) && // 拒绝短数字字符串（如"12"、"789"）
-    !bindingPath.includes('undefined') && // 拒绝包含undefined的路径
-    !bindingPath.includes('null') && // 拒绝包含null的路径
-    /^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_.-]+$/.test(bindingPath) // 基本格式验证
-  )
+  const isValidBindingPath =
+    bindingPath === '' ||
+    (typeof bindingPath === 'string' &&
+      bindingPath.includes('.') &&
+      bindingPath.split('.').length >= 3 && // 至少包含组件ID.layer.property
+      bindingPath.length > 10 && // 绑定路径通常较长
+      !/^\d{1,4}$/.test(bindingPath) && // 拒绝短数字字符串（如"12"、"789"）
+      !bindingPath.includes('undefined') && // 拒绝包含undefined的路径
+      !bindingPath.includes('null') && // 拒绝包含null的路径
+      /^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_.-]+$/.test(bindingPath)) // 基本格式验证
 
   if (!isValidBindingPath && bindingPath !== '') {
     console.error(`❌ [DynamicParameterEditor] 检测到无效的bindingPath格式，执行自动恢复:`, {
@@ -880,7 +883,6 @@ const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) 
         const componentId = drawerParam.value.variableName.substring(0, lastUnderscoreIndex)
         const propertyName = drawerParam.value.variableName.substring(lastUnderscoreIndex + 1)
         const recoveredPath = `${componentId}.base.${propertyName}`
-
 
         // 使用恢复的路径替代错误的输入
         bindingPath = recoveredPath
@@ -905,13 +907,11 @@ const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) 
   if (propertyInfo && bindingPath) {
     drawerParam.value.description = `绑定到组件属性: ${propertyInfo.componentName} -> ${propertyInfo.propertyLabel}`
     drawerParam.value.variableName = `${propertyInfo.componentId}_${propertyInfo.propertyName}`
-
   } else if (bindingPath === '') {
     // 清空绑定时，也清理相关字段
     drawerParam.value.description = ''
     drawerParam.value.variableName = ''
   }
-
 }
 
 /**
@@ -919,7 +919,6 @@ const handleComponentPropertyChange = (bindingPath: string, propertyInfo?: any) 
  */
 const saveDrawerChanges = () => {
   if (drawerParam.value && editingIndex.value !== -1) {
-
     updateParameter(drawerParam.value, editingIndex.value)
   }
   isDrawerVisible.value = false
@@ -970,14 +969,15 @@ const getComponentTemplate = (param: EnhancedParameter | null) => {
   // 🔥 关键修复：为ComponentPropertySelector动态注入currentComponentId
   let enhancedProps = { ...config.props }
 
-  if (config.component === 'ComponentPropertySelector' ||
-      (typeof config.component === 'string' && config.component === 'ComponentPropertySelector')) {
+  if (
+    config.component === 'ComponentPropertySelector' ||
+    (typeof config.component === 'string' && config.component === 'ComponentPropertySelector')
+  ) {
     enhancedProps = {
       ...enhancedProps,
       currentComponentId: props.currentComponentId, // 🔥 传递当前组件ID
       autoDetectComponentId: true // 🔥 保持自动检测功能
     }
-
   }
 
   return {

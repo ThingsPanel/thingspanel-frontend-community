@@ -196,10 +196,13 @@ onMounted(getConfigInfo)
                     <SvgIcon icon="mdi:help-circle" class="text-14px text-gray-400 cursor-help" />
                   </template>
                   <div class="max-w-xs">
-                    <div class="text-sm font-medium mb-1">{{ $t('generate.extensionFieldName') }}: {{ item.name }}</div>
-                    <div class="text-sm font-medium mb-1">{{ $t('generate.extensionFieldType') }}: {{ item.type }}</div>
-                    <div class="text-sm mb-1">{{ $t('generate.extensionFieldDefault') }}: {{ item.default_value }}</div>
-                    <div class="text-sm text-gray-600">{{ item.desc || $t('generate.extensionNoDesc') }}</div>
+                    <div class="text-sm font-medium mb-1">{{ $t('generate.extensionFieldName') }}: {{ item.name }}</div>
+
+                    <div class="text-sm font-medium mb-1">{{ $t('generate.extensionFieldType') }}: {{ item.type }}</div>
+
+                    <div class="text-sm mb-1">{{ $t('generate.extensionFieldDefault') }}: {{ item.default_value }}</div>
+
+                    <div class="text-sm text-gray-600">{{ item.desc || $t('generate.extensionNoDesc') }}</div>
                   </div>
                 </NTooltip>
               </div>
@@ -208,12 +211,12 @@ onMounted(getConfigInfo)
                 <NInput
                   v-if="item.type === 'String'"
                   v-model:value="item.value"
-                  :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
+                  :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
                 />
                 <NInputNumber
                   v-else-if="item.type === 'Number'"
                   v-model:value="item.value"
-                  :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
+                  :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
                   class="w-full"
                 />
                 <NSwitch
@@ -226,12 +229,12 @@ onMounted(getConfigInfo)
                   v-else-if="item.type === 'Enum'"
                   v-model:value="item.value"
                   :options="item.options || []"
-                  :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
+                  :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
                 />
                 <NInput
                   v-else
                   v-model:value="item.value"
-                  :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
+                  :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
                 />
               </div>
             </div>

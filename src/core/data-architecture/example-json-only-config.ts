@@ -419,8 +419,7 @@ export function demonstratePureJsonConfig() {
         const keys = Object.keys(parsedData).slice(0, 3) // 只显示前3个键
         if (process.env.NODE_ENV === 'development') {
         }
-      } catch (e) {
-      }
+      } catch (e) {}
     })
   })
 

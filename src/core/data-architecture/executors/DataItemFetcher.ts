@@ -126,11 +126,11 @@ export class DataItemFetcher implements IDataItemFetcher {
       param.selectedTemplate === 'component-property-binding' ||
       // 特征3：value值看起来像绑定路径（包含.且格式正确）
       (typeof param.value === 'string' &&
-       param.value.includes('.') &&
-       param.value.split('.').length >= 3 &&
-       param.value.length > 10 &&
-       // 确保不是错误的短数字值
-       !/^\d{1,4}$/.test(param.value)) ||
+        param.value.includes('.') &&
+        param.value.split('.').length >= 3 &&
+        param.value.length > 10 &&
+        // 确保不是错误的短数字值
+        !/^\d{1,4}$/.test(param.value)) ||
       // 特征4：有variableName且包含组件ID格式
       (param.variableName && param.variableName.includes('_') && param.variableName.length > 5)
 
@@ -143,8 +143,6 @@ export class DataItemFetcher implements IDataItemFetcher {
    * @returns 组件属性的实际值
    */
   private async getComponentPropertyValue(bindingPath: string): Promise<any> {
-
-
     try {
       if (!bindingPath || typeof bindingPath !== 'string' || !bindingPath.includes('.')) {
         return undefined
@@ -166,7 +164,9 @@ export class DataItemFetcher implements IDataItemFetcher {
       // 优先从ConfigurationIntegrationBridge获取最新配置
       try {
         // 使用直接导入替代动态require，避免循环依赖问题
-        const { configurationIntegrationBridge } = await import('@/components/visual-editor/configuration/ConfigurationIntegrationBridge')
+        const { configurationIntegrationBridge } = await import(
+          '@/components/visual-editor/configuration/ConfigurationIntegrationBridge'
+        )
 
         // 智能组件ID映射：如果原始组件ID无法找到配置，尝试使用当前上下文组件ID
         let targetComponentId = componentId
@@ -249,8 +249,8 @@ export class DataItemFetcher implements IDataItemFetcher {
 
       if (!targetComponent) {
         // 尝试模糊匹配：查找包含componentId的组件
-        targetComponent = editorStore.nodes?.find(node =>
-          node.id.includes(componentId) || componentId.includes(node.id)
+        targetComponent = editorStore.nodes?.find(
+          node => node.id.includes(componentId) || componentId.includes(node.id)
         )
       }
 
@@ -311,7 +311,7 @@ export class DataItemFetcher implements IDataItemFetcher {
       let hash = 0
       for (let i = 0; i < str.length; i++) {
         const char = str.charCodeAt(i)
-        hash = ((hash << 5) - hash) + char
+        hash = (hash << 5) - hash + char
         hash = hash & hash // 转换为32位整数
       }
 
@@ -326,7 +326,6 @@ export class DataItemFetcher implements IDataItemFetcher {
    * 用于详细记录HTTP请求中所有参数的生命周期
    */
   private logHttpParametersLifecycle(config: HttpDataItemConfig, stage: string): void {
-
     const allParams: Array<{ source: string; param: HttpParameter; index: number }> = []
 
     // 收集所有参数源
@@ -354,7 +353,6 @@ export class DataItemFetcher implements IDataItemFetcher {
 
     // 详细记录每个参数
     allParams.forEach(({ source, param, index }) => {
-
       // 🔥 特别关注疑似损坏的绑定路径
       if (param.value && typeof param.value === 'string') {
         const isSuspiciousPath = !param.value.includes('.') && param.value.length < 10 && param.variableName
@@ -369,7 +367,6 @@ export class DataItemFetcher implements IDataItemFetcher {
         }
       }
     })
-
   }
 
   /**
@@ -393,7 +390,8 @@ export class DataItemFetcher implements IDataItemFetcher {
       let bindingPath = param.value
 
       // 🔥 检测绑定路径损坏的情况
-      const isBindingPathCorrupted = bindingPath &&
+      const isBindingPathCorrupted =
+        bindingPath &&
         typeof bindingPath === 'string' &&
         !bindingPath.includes('.') &&
         bindingPath.length < 10 && // 绑定路径通常很长
@@ -475,7 +473,6 @@ export class DataItemFetcher implements IDataItemFetcher {
    * 根据类型分支处理数据获取
    */
   async fetchData(item: DataItem): Promise<any> {
-
     try {
       let result
       switch (item.type) {
@@ -494,7 +491,6 @@ export class DataItemFetcher implements IDataItemFetcher {
         default:
           result = {}
       }
-
 
       return result
     } catch (error) {
@@ -538,7 +534,6 @@ export class DataItemFetcher implements IDataItemFetcher {
   private async fetchHttpData(config: HttpDataItemConfig): Promise<any> {
     // 🔥 步骤1：生成请求唯一标识符，用于去重
     const requestKey = await this.generateRequestKey(config)
-
 
     // 🔥 步骤2：检查是否有进行中的相同请求
     const existingRequest = this.requestCache.get(requestKey)
@@ -604,11 +599,8 @@ export class DataItemFetcher implements IDataItemFetcher {
       // 统一处理路径参数
       // 优先使用新格式 pathParams，如果不存在则回退到旧格式 pathParameter
       if (config.pathParams && config.pathParams.length > 0) {
-
         for (const p of config.pathParams.filter(p => p.enabled)) {
-
           const resolvedValue = await this.resolveParameterValue(p)
-
 
           if (resolvedValue !== null) {
             // 修复：路径参数key为空时，自动匹配URL中的第一个占位符
@@ -654,11 +646,8 @@ export class DataItemFetcher implements IDataItemFetcher {
 
       // 处理查询参数
       if (config.params && config.params.length > 0) {
-
         for (const p of config.params.filter(p => p.enabled && p.key)) {
-
           const resolvedValue = await this.resolveParameterValue(p)
-
 
           if (resolvedValue !== null) {
             queryParams[p.key] = resolvedValue
@@ -708,7 +697,6 @@ export class DataItemFetcher implements IDataItemFetcher {
       // 🔥 第四步：HTTP请求发送前的最终状态记录
       this.logHttpParametersLifecycle(config, 'HTTP请求发送前')
 
-
       // 🔥 发起HTTP请求 - 关键调试
 
       let response
@@ -731,7 +719,6 @@ export class DataItemFetcher implements IDataItemFetcher {
         default:
           throw new Error(`不支持的HTTP方法: ${config.method}`)
       }
-
 
       // 第三步：处理响应后脚本
       let finalResponse = response
@@ -814,10 +801,7 @@ export class DataItemFetcher implements IDataItemFetcher {
    */
   private async generateRequestKey(config: HttpDataItemConfig): Promise<string> {
     // 收集所有影响请求的关键参数
-    const keyComponents = [
-      config.method || 'GET',
-      config.url || '',
-    ]
+    const keyComponents = [config.method || 'GET', config.url || '']
 
     // 添加路径参数
     if (config.pathParams && config.pathParams.length > 0) {
@@ -879,7 +863,7 @@ export class DataItemFetcher implements IDataItemFetcher {
 
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // 转换为32位整数
     }
 

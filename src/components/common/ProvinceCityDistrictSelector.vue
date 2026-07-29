@@ -10,7 +10,7 @@
       class="selector-item"
       @update:value="handleProvinceChange"
     />
-    
+
     <!-- 城市选择 -->
     <n-select
       v-model:value="selectedCity"
@@ -22,7 +22,7 @@
       class="selector-item"
       @update:value="handleCityChange"
     />
-    
+
     <!-- 区县选择 - 直辖市时隐藏 -->
     <n-select
       v-if="!isMunicipality"
@@ -81,10 +81,10 @@ const provinceOptions = computed(() => {
 // 城市选项
 const cityOptions = computed(() => {
   if (!selectedProvince.value) return []
-  
+
   const province = pwData.find(p => p.name === selectedProvince.value)
   if (!province || !province.children) return []
-  
+
   if (isMunicipality.value) {
     // 直辖市：跳过"市辖区"层级，直接返回区县作为城市选项
     const cityDistricts = province.children.find(city => city.name === '市辖区')
@@ -95,7 +95,7 @@ const cityOptions = computed(() => {
       }))
     }
   }
-  
+
   // 普通省份：返回正常的城市列表
   return province.children.map(city => ({
     label: city.name,
@@ -112,19 +112,19 @@ const isMunicipality = computed(() => {
 // 区县选项
 const districtOptions = computed(() => {
   if (!selectedProvince.value || !selectedCity.value) return []
-  
+
   const province = pwData.find(p => p.name === selectedProvince.value)
   if (!province || !province.children) return []
-  
+
   // 直辖市不显示区县选择器
   if (isMunicipality.value) {
     return []
   }
-  
+
   // 普通省份：查找对应城市的区县
   const city = province.children.find(c => c.name === selectedCity.value)
   if (!city || !city.children) return []
-  
+
   return city.children.map(district => ({
     label: district.name,
     value: district.name
@@ -157,13 +157,13 @@ const emitChange = () => {
   let province = selectedProvince.value
   let city = selectedCity.value
   let district = selectedDistrict.value
-  
+
   if (isMunicipality.value) {
     // 直辖市：城市就是省份，区县就是选择的"城市"
     city = selectedProvince.value
     district = selectedCity.value
   }
-  
+
   emit('change', {
     province,
     city,
@@ -176,11 +176,11 @@ watch(
   () => [props.province, props.city, props.district],
   ([newProvince, newCity, newDistrict]) => {
     selectedProvince.value = newProvince || ''
-    
+
     // 处理直辖市的回显逻辑
     const municipalities = ['北京市', '天津市', '上海市', '重庆市']
     const isCurrentMunicipality = municipalities.includes(newProvince || '')
-    
+
     if (isCurrentMunicipality) {
       // 直辖市：城市选择器显示的是区县
       selectedCity.value = newDistrict || ''
@@ -201,7 +201,6 @@ onMounted(() => {
     emitChange()
   }
 })
-
 </script>
 
 <style scoped>
@@ -228,7 +227,7 @@ onMounted(() => {
     align-items: stretch;
     gap: 8px;
   }
-  
+
   .selector-item {
     min-width: unset;
     max-width: unset;

@@ -148,8 +148,11 @@ const updateHeaders = (headers: EnhancedParameter[]) => {
 
       <n-space vertical size="small">
         <n-text depth="3">
-          接口 "<n-text type="success" strong>{{ currentApiInfo?.label }}</n-text>" 包含
-          <n-text type="success" strong>{{ headerTemplateParams.length }}</n-text> 个预制请求头参数
+          接口 "
+          <n-text type="success" strong>{{ currentApiInfo?.label }}</n-text>
+          " 包含
+          <n-text type="success" strong>{{ headerTemplateParams.length }}</n-text>
+          个预制请求头参数
         </n-text>
 
         <n-space size="small">

@@ -325,7 +325,7 @@ watch(
           direction: 'down',
           original_topic: '',
           target_topic: '',
-        data_identifier: '',
+          data_identifier: '',
           description: '',
           priority: 0,
           enabled: true
@@ -373,16 +373,13 @@ const formatMarkdown = (text: string): string => {
   result = result.replace(/\n/g, '<br>')
   // 恢复代码块
   codeBlocks.forEach((code, index) => {
-    result = result.replace(
-      `${codeBlockPlaceholder}${index}`,
-      `<pre class="code-block"><code>${code}</code></pre>`
-    )
+    result = result.replace(`${codeBlockPlaceholder}${index}`, `<pre class="code-block"><code>${code}</code></pre>`)
   })
   return result
 }
 
 // 渲染系统主题标签（下拉选项中的显示）
-const renderTopicLabel: SelectRenderLabel = (option) => {
+const renderTopicLabel: SelectRenderLabel = option => {
   const topicOption = option as { label: string; value: string; description: string }
   return h(
     'div',
@@ -427,9 +424,7 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
         alignItems: 'center'
       }
     },
-    [
-      h('div', { style: { fontSize: '14px' } }, topicOption.label as string)
-    ]
+    [h('div', { style: { fontSize: '14px' } }, topicOption.label as string)]
   )
 }
 </script>
@@ -472,7 +467,8 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
             <NPopover trigger="click">
               <template #trigger>
                 <NButton text size="small" class="text-primary">
-                  {{ t('generate.topicMapping.viewGuide') }}</NButton>
+                  {{ t('generate.topicMapping.viewGuide') }}
+                </NButton>
               </template>
               <div class="detailed-tip">
                 <template v-if="formData.direction === 'up'">
@@ -480,16 +476,28 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
                   <div class="tip-content">
                     <div class="tip-section">
                       <div class="tip-label">{{ t('generate.topicMapping.tips.definitionLabel') }}</div>
-                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.uplink.definition'))"></div>
+                      <div
+                        class="tip-text"
+                        v-html="formatMarkdown(t('generate.topicMapping.tips.uplink.definition'))"
+                      ></div>
                     </div>
                     <div class="tip-section">
                       <div class="tip-label">{{ t('generate.topicMapping.tips.exampleLabel') }}</div>
-                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.uplink.example'))"></div>
+                      <div
+                        class="tip-text"
+                        v-html="formatMarkdown(t('generate.topicMapping.tips.uplink.example'))"
+                      ></div>
                     </div>
                     <div class="tip-section">
                       <div class="tip-label">{{ t('generate.topicMapping.tips.messageIdLabel') }}</div>
-                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.uplink.messageIdLine1'))"></div>
-                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.uplink.messageIdLine2'))"></div>
+                      <div
+                        class="tip-text"
+                        v-html="formatMarkdown(t('generate.topicMapping.tips.uplink.messageIdLine1'))"
+                      ></div>
+                      <div
+                        class="tip-text"
+                        v-html="formatMarkdown(t('generate.topicMapping.tips.uplink.messageIdLine2'))"
+                      ></div>
                     </div>
                   </div>
                 </template>
@@ -498,17 +506,32 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
                   <div class="tip-content">
                     <div class="tip-section">
                       <div class="tip-label">{{ t('generate.topicMapping.tips.definitionLabel') }}</div>
-                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.definition'))"></div>
+                      <div
+                        class="tip-text"
+                        v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.definition'))"
+                      ></div>
                     </div>
                     <div class="tip-section">
                       <div class="tip-label">{{ t('generate.topicMapping.tips.exampleLabel') }}</div>
-                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.example'))"></div>
+                      <div
+                        class="tip-text"
+                        v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.example'))"
+                      ></div>
                     </div>
                     <div class="tip-section">
                       <div class="tip-label">{{ t('generate.topicMapping.tips.multiMappingLabel') }}</div>
-                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.multiMapping'))"></div>
-                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.multiMappingConfig'))"></div>
-                      <div class="tip-text" v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.multiMappingProcess'))"></div>
+                      <div
+                        class="tip-text"
+                        v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.multiMapping'))"
+                      ></div>
+                      <div
+                        class="tip-text"
+                        v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.multiMappingConfig'))"
+                      ></div>
+                      <div
+                        class="tip-text"
+                        v-html="formatMarkdown(t('generate.topicMapping.tips.downlink.multiMappingProcess'))"
+                      ></div>
                     </div>
                   </div>
                 </template>
@@ -665,4 +688,3 @@ const renderTopicTag: SelectRenderTag = ({ option }) => {
   }
 }
 </style>
-

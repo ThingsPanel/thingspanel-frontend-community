@@ -1,5 +1,5 @@
 <template>
-  <div class="thingsvis-widget-container" ref="container"></div>
+  <div ref="container" class="thingsvis-widget-container"></div>
 </template>
 
 <script setup lang="ts">
@@ -371,7 +371,7 @@ const ensureEzuikitPlaybackEvents = (config: any) => {
 
   const upsertEvent = (events: any[], eventName: string, payload: string) => {
     const nextEvents = [...events]
-    const index = nextEvents.findIndex((handler) => handler?.event === eventName)
+    const index = nextEvents.findIndex(handler => handler?.event === eventName)
     const action = {
       type: 'callWrite',
       dataSourceId,
@@ -421,8 +421,7 @@ const ensureEzuikitPlaybackEvents = (config: any) => {
       }
 
       const data = (Array.isArray(node?.data) ? node.data : []).filter(
-        (binding: any) =>
-          !['ezopenUrl', 'playbackParamsUrl', 'spaceId', 'busType'].includes(binding?.targetProp),
+        (binding: any) => !['ezopenUrl', 'playbackParamsUrl', 'spaceId', 'busType'].includes(binding?.targetProp)
       )
       const ensureBinding = (targetProp: string, fieldId: string) => {
         if (data.some((binding: any) => binding?.targetProp === targetProp)) return
@@ -518,12 +517,12 @@ const visitStringLeaves = (value: unknown, visitor: (input: string) => void) => 
   }
 
   if (Array.isArray(value)) {
-    value.forEach((item) => visitStringLeaves(item, visitor))
+    value.forEach(item => visitStringLeaves(item, visitor))
     return
   }
 
   if (value && typeof value === 'object') {
-    Object.values(value).forEach((item) => visitStringLeaves(item, visitor))
+    Object.values(value).forEach(item => visitStringLeaves(item, visitor))
   }
 }
 
@@ -548,7 +547,7 @@ const collectConfiguredHistoryFields = (dataSourceId?: string) => {
       requests.set(sourceFieldId, mergeHistoryTimeRange(requests.get(sourceFieldId), bindingTimeRange))
     })
 
-    visitStringLeaves(node, (input) => {
+    visitStringLeaves(node, input => {
       FIELD_BINDING_EXPR_GLOBAL_RE.lastIndex = 0
 
       let match: RegExpExecArray | null
@@ -588,7 +587,7 @@ const buildRequestedFieldData = async (fieldIds: string[], deviceId?: string) =>
 
   const result: Record<string, unknown> = {}
 
-  fieldIds.forEach((fieldId) => {
+  fieldIds.forEach(fieldId => {
     if (fieldId.endsWith(HISTORY_FIELD_SUFFIX)) return
     if (currentData && Object.prototype.hasOwnProperty.call(currentData, fieldId)) {
       result[fieldId] = currentData[fieldId]
@@ -617,7 +616,7 @@ const isActiveAlarm = (row: any) => {
 }
 
 const buildRequestedAlarmStatusData = async (fieldIds: string[], deviceId?: string) => {
-  const requestedAlarmFields = fieldIds.filter((fieldId) => DEVICE_ALARM_STATUS_FIELD_IDS.has(fieldId))
+  const requestedAlarmFields = fieldIds.filter(fieldId => DEVICE_ALARM_STATUS_FIELD_IDS.has(fieldId))
   if (!deviceId || deviceId === TEMPLATE_DEVICE_ID || requestedAlarmFields.length === 0) return {}
 
   try {
@@ -664,7 +663,7 @@ function normalizeViewerConfig(config: any) {
 
   const nodes = Array.isArray(platformNormalizedConfig.nodes) ? platformNormalizedConfig.nodes : []
   const positionedNodes = nodes.filter((node: any) => {
-    return [node?.x, node?.y, node?.width, node?.height].every((value) => typeof value === 'number')
+    return [node?.x, node?.y, node?.width, node?.height].every(value => typeof value === 'number')
   })
 
   if (positionedNodes.length === 0) {
@@ -695,7 +694,7 @@ function normalizeViewerConfig(config: any) {
       scaleMode: canvas.scaleMode || 'fit-min'
     },
     nodes: nodes.map((node: any) => {
-      if ([node?.x, node?.y].every((value) => typeof value === 'number')) {
+      if ([node?.x, node?.y].every(value => typeof value === 'number')) {
         return {
           ...node,
           x: node.x + offsetX,
@@ -859,7 +858,7 @@ const handleFieldDataRequest = async (event: MessageEvent) => {
   const explicitHistorySourceFieldIds = new Set<string>()
   const historyRequests = new Map<string, string | undefined>()
 
-  fieldIds.forEach((fieldId) => {
+  fieldIds.forEach(fieldId => {
     if (fieldId.endsWith(HISTORY_FIELD_SUFFIX)) {
       explicitHistoryFieldIds.push(fieldId)
       const sourceFieldId = fieldId.slice(0, -HISTORY_FIELD_SUFFIX.length)
@@ -883,9 +882,9 @@ const handleFieldDataRequest = async (event: MessageEvent) => {
 
     const prefillFieldIds =
       historyBoundFieldIds.size > 0
-        ? currentFieldIds.filter((fieldId) => historyBoundFieldIds.has(fieldId))
+        ? currentFieldIds.filter(fieldId => historyBoundFieldIds.has(fieldId))
         : currentFieldIds
-    prefillFieldIds.forEach((fieldId) => {
+    prefillFieldIds.forEach(fieldId => {
       registerHistoryTimeRange(historyRequests, fieldId)
     })
   }
@@ -1010,7 +1009,7 @@ onMounted(async () => {
 // 响应式监听配置变化
 watch(
   () => props.config,
-  (newVal) => {
+  newVal => {
     if (client?.ready && newVal) {
       client.loadWidgetConfig(normalizeLoadConfig(clone(newVal)), clone(props.platformFields || []), getLoadOptions())
     }
@@ -1021,7 +1020,7 @@ watch(
 // 响应式监听数据变化
 watch(
   () => props.data,
-  (newVal) => {
+  newVal => {
     if (client?.ready && newVal) {
       pushPlatformFieldData(newVal, props.deviceId || getPreviewDeviceId())
     }
@@ -1032,7 +1031,7 @@ watch(
 // 响应式监听 Schema 变化
 watch(
   () => props.platformFields,
-  (newVal) => {
+  newVal => {
     if (client?.ready && newVal) {
       client.updateSchema(clone(newVal))
     }

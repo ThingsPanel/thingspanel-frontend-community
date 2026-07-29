@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  isSysAdminUser,
-  resolveThingsVisSpaceId,
-  SYS_ADMIN_SPACE_ID
-} from '@/utils/thingsvis/space'
+import { isSysAdminUser, resolveThingsVisSpaceId, SYS_ADMIN_SPACE_ID } from '@/utils/thingsvis/space'
 
 describe('thingsvis space helpers', () => {
   it('maps sys admin to the dedicated ThingsVis space', () => {

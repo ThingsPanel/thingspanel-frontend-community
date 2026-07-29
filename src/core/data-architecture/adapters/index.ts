@@ -4,7 +4,11 @@
  */
 
 // ==================== 主要适配器类导出 ====================
-export { ConfigurationAdapter, createConfigurationAdapter, type ConversionResult } from '@/core/data-architecture/adapters/ConfigurationAdapter'
+export {
+  ConfigurationAdapter,
+  createConfigurationAdapter,
+  type ConversionResult
+} from '@/core/data-architecture/adapters/ConfigurationAdapter'
 
 // ==================== 便捷函数导出 ====================
 export { detectConfigVersion, upgradeToV2, downgradeToV1 } from '@/core/data-architecture/adapters/ConfigurationAdapter'

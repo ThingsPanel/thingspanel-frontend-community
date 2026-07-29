@@ -75,9 +75,7 @@ const filteredOptions = computed(() => {
   }
   const keyword = searchKeyword.value.toLowerCase().trim()
   return props.options.filter(
-    option =>
-      option.device_name.toLowerCase().includes(keyword) ||
-      option.device_id.toLowerCase().includes(keyword)
+    option => option.device_name.toLowerCase().includes(keyword) || option.device_id.toLowerCase().includes(keyword)
   )
 })
 
@@ -187,11 +185,7 @@ const handleClear = () => {
 
     <!-- Popover 内容 -->
     <div class="device-select-popover-content">
-      <NInfiniteScroll
-        class="options-scroll-container"
-        :distance="10"
-        @load="handleLoadMore"
-      >
+      <NInfiniteScroll class="options-scroll-container" :distance="10" @load="handleLoadMore">
         <div v-if="filteredOptions && filteredOptions.length > 0" class="options-list">
           <div
             v-for="option in filteredOptions"

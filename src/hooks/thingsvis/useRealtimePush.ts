@@ -97,7 +97,9 @@ export function useRealtimePush(
   let businessFrameCount = 0
   const usingWebSocket = ref(false)
 
-  const mapToPlatformFieldIds = (rawFields: Record<string, unknown>): { fields: Record<string, unknown>; matched: boolean } => {
+  const mapToPlatformFieldIds = (
+    rawFields: Record<string, unknown>
+  ): { fields: Record<string, unknown>; matched: boolean } => {
     const mapped: Record<string, unknown> = {}
     const fields = platformFields.value || []
     if (fields.length === 0) {
@@ -254,7 +256,7 @@ export function useRealtimePush(
       }
     }
 
-    ws.onerror = (event) => {
+    ws.onerror = event => {
       console.warn('[useRealtimePush] WebSocket error:', event)
     }
 
@@ -330,7 +332,7 @@ export function useRealtimePush(
       }
     }
 
-    statusWs.onerror = (event) => {
+    statusWs.onerror = event => {
       console.warn('[useRealtimePush] Device status WebSocket error:', event)
     }
 

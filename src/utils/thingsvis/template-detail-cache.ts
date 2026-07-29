@@ -21,11 +21,10 @@ export function getCachedDeviceTemplateDetail(templateId?: string | number) {
   const cached = templateDetailCache.get(normalizedTemplateId)
   if (cached) return cached
 
-  const request = deviceTemplateDetail({ id: normalizedTemplateId })
-    .catch(error => {
-      templateDetailCache.delete(normalizedTemplateId)
-      throw error
-    })
+  const request = deviceTemplateDetail({ id: normalizedTemplateId }).catch(error => {
+    templateDetailCache.delete(normalizedTemplateId)
+    throw error
+  })
 
   templateDetailCache.set(normalizedTemplateId, request)
   return request

@@ -105,7 +105,6 @@ export class ConfigEventBus {
   async emitConfigChange(event: ConfigChangeEvent): Promise<void> {
     // 🔄[DeviceID-HTTP-Debug] 配置变更事件发出开始
 
-
     this.statistics.eventsEmitted++
 
     // 应用全局过滤器
@@ -117,7 +116,6 @@ export class ConfigEventBus {
 
     // 确定要触发的事件类型
     const eventTypesToTrigger = this.determineEventTypes(event)
-
 
     // 并行执行所有相关事件类型的处理器
     const handlerPromises: Promise<void>[] = []
@@ -345,7 +343,6 @@ configEventBus.onConfigChange('base-config-changed', async event => {
 
 // 🔥 专门监听数据源配置变更事件
 configEventBus.onConfigChange('data-source-changed', async event => {
-
   // 数据源配置变更通常都需要触发数据重新执行
   if (!event.context) {
     event.context = {}

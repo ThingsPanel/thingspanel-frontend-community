@@ -119,39 +119,43 @@ const topicMappingColumns = computed<DataTableColumns<TopicMapping>>(() => [
     align: 'center',
     width: 150,
     render: row => {
-      return h(NSpace, { justify: 'center' }, {
-        default: () => [
-          h(
-            NButton,
-            {
-              type: 'primary',
-              size: 'small',
-              text: true,
-              onClick: () => handleEditTopicMapping(row)
-            },
-            { default: () => t('common.edit') }
-          ),
-          h(
-            NPopconfirm,
-            {
-              onPositiveClick: () => handleDeleteTopicMapping(row)
-            },
-            {
-              default: () => t('common.confirmDelete'),
-              trigger: () =>
-                h(
-                  NButton,
-                  {
-                    type: 'error',
-                    size: 'small',
-                    text: true
-                  },
-                  { default: () => t('common.delete') }
-                )
-            }
-          )
-        ]
-      })
+      return h(
+        NSpace,
+        { justify: 'center' },
+        {
+          default: () => [
+            h(
+              NButton,
+              {
+                type: 'primary',
+                size: 'small',
+                text: true,
+                onClick: () => handleEditTopicMapping(row)
+              },
+              { default: () => t('common.edit') }
+            ),
+            h(
+              NPopconfirm,
+              {
+                onPositiveClick: () => handleDeleteTopicMapping(row)
+              },
+              {
+                default: () => t('common.confirmDelete'),
+                trigger: () =>
+                  h(
+                    NButton,
+                    {
+                      type: 'error',
+                      size: 'small',
+                      text: true
+                    },
+                    { default: () => t('common.delete') }
+                  )
+              }
+            )
+          ]
+        }
+      )
     }
   }
 ])
@@ -199,9 +203,7 @@ const fetchTopicMappings = async () => {
       device_config_id: props.configInfo.id
     })
     const list = res.data.list
-    topicMappingList.value = list.map((item: any) =>
-      normalizeTopicMapping(item)
-    )
+    topicMappingList.value = list.map((item: any) => normalizeTopicMapping(item))
   } catch (error) {
     message.error(t('generate.topicMapping.message.fetchFailed'))
   } finally {
@@ -402,7 +404,6 @@ watch(
 
 <style scoped lang="scss">
 .connection-box {
-
   .connection-title {
     font-size: 15px;
     font-weight: bold;

@@ -163,7 +163,14 @@ getTableData()
             <NButton class="ml-12px" @click="handleReset">{{ $t('common.reset') }}</NButton>
           </NFormItem>
         </NForm>
-        <NDataTable :columns="columns" :data="tableData" :loading="loading" :pagination="pagination" :remote="true" class="flex-1-hidden mt-4" />
+        <NDataTable
+          :columns="columns"
+          :data="tableData"
+          :loading="loading"
+          :pagination="pagination"
+          :remote="true"
+          class="flex-1-hidden mt-4"
+        />
       </div>
     </NCard>
   </div>

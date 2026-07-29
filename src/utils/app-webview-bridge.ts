@@ -116,11 +116,7 @@ export function isStandaloneEmbedPage(): boolean {
 }
 
 /** App 内打开独立 WebView 子页，使用原生返回栏（同设备详情） */
-export async function openAppWebViewPage(
-  pageUrl: string,
-  title?: string,
-  fallback?: () => void
-): Promise<boolean> {
+export async function openAppWebViewPage(pageUrl: string, title?: string, fallback?: () => void): Promise<boolean> {
   await ensureUniWebviewBridge()
 
   const finalPageUrl = appendStandaloneFlag(pageUrl)

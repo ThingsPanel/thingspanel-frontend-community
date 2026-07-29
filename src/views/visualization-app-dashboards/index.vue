@@ -4,11 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { NEmpty, NSpin, useMessage } from 'naive-ui'
 import { bootstrapAppEmbedSession } from '@/utils/app-embed-auth'
 import { openAppWebViewPage } from '@/utils/app-webview-bridge'
-import {
-  getThingsVisDashboards,
-  getThingsVisDashboardThumbnail,
-  type DashboardListItem
-} from '@/service/api/thingsvis'
+import { getThingsVisDashboards, getThingsVisDashboardThumbnail, type DashboardListItem } from '@/service/api/thingsvis'
 import { buildVisualizationAppUrl, getThumbnailUrl } from '@/views/visualization-app/shared'
 import EmbedNavBar from '@/views/visualization-app/EmbedNavBar.vue'
 
@@ -60,9 +56,7 @@ async function loadThumbnails(list: DashboardListItem[]) {
 
         try {
           const result = await getThingsVisDashboardThumbnail(item.id)
-          const resultData = result.data as
-            | { thumbnail?: string | null; data?: { thumbnail?: string | null } }
-            | null
+          const resultData = result.data as { thumbnail?: string | null; data?: { thumbnail?: string | null } } | null
           const thumbnail = resultData?.thumbnail || resultData?.data?.thumbnail
           if (!thumbnail) return
 

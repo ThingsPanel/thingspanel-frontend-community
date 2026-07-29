@@ -144,27 +144,22 @@ export function createRoutes() {
 
   const authRoutes: ElegantRoute[] = []
 
-  const appEmbedRouteNames = new Set([
-    'visualization-app',
-    'visualization-app-dashboards',
-    'visualization-app-preview'
-  ])
+  const appEmbedRouteNames = new Set(['visualization-app', 'visualization-app-dashboards', 'visualization-app-preview'])
 
   // 添加独立的常量路由
   constantRoutes.push(thingsvisPreviewRoute)
+  ;[...customRoutes, ...generatedRoutes].forEach(item => {
+    // App 嵌入页已在 customRoutes 中以 blank + constant 注册，跳过 generated 重复项
+    if (appEmbedRouteNames.has(item.name) && !item.meta?.constant) {
+      return
+    }
 
-    ;[...customRoutes, ...generatedRoutes].forEach(item => {
-      // App 嵌入页已在 customRoutes 中以 blank + constant 注册，跳过 generated 重复项
-      if (appEmbedRouteNames.has(item.name) && !item.meta?.constant) {
-        return
-      }
-
-      if (item.meta?.constant) {
-        constantRoutes.push(item)
-      } else {
-        authRoutes.push(item)
-      }
-    })
+    if (item.meta?.constant) {
+      constantRoutes.push(item)
+    } else {
+      authRoutes.push(item)
+    }
+  })
 
   const constantVueRoutes = transformElegantRoutesToVueRoutes(constantRoutes, layouts, appEmbedViews)
 

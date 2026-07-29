@@ -292,7 +292,6 @@ async function testIntegrationBridgeCompatibility() {
  * 主测试函数
  */
 export async function runNewConfigSystemTests() {
-
   try {
     await testContentHashDeduplication()
     await testSectionUpdateCircularDetection()
