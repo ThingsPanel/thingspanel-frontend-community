@@ -5,7 +5,7 @@
  */
 import { computed, h } from 'vue'
 import { NCard, NButton, NTag, NEmpty, NSpin, NCheckbox, NCheckboxGroup, NSpace, NGrid, NGi } from 'naive-ui'
-import { useI18n } from '@/locales'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   deviceTemplates: Array<{

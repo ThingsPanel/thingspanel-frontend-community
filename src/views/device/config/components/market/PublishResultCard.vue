@@ -4,7 +4,7 @@
  */
 import { computed } from 'vue'
 import { NCard, NTag, NButton, NAlert, NSpace, NResult } from 'naive-ui'
-import { useI18n } from '@/locales'
+import { useI18n } from 'vue-i18n'
 import type { PublishedBundle } from '@/service/api/market-bundle'
 
 const props = defineProps<{

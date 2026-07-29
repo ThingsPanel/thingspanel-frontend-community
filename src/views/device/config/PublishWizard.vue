@@ -27,7 +27,7 @@ import {
   useMessage,
   useDialog
 } from 'naive-ui'
-import { useI18n } from '@/locales'
+import { useI18n } from 'vue-i18n'
 import ResourceSelector from './components/market/ResourceSelector.vue'
 import PrecheckResultDisplay from './components/market/PrecheckResultDisplay.vue'
 import PublishResultCard from './components/market/PublishResultCard.vue'
