@@ -47,17 +47,12 @@ import {
   getErrorDisplayMessage
 } from '@/service/api/market-bundle'
 import DeviceBindingWizard from './DeviceBindingWizard.vue'
-import { useDeviceBinding, type LocalDevice, type DeviceBinding } from './composables/use-device-binding'
+import type { BindingDefinition } from './composables/use-device-binding'
 
 // ========== Router ==========
 
 const router = useRouter()
 const message = useMessage()
-
-// ========== Composable ==========
-
-const { bindings, isLoading, loadAllCompatibleDevices, initializeBindings, generateBindingsRequest } =
-  useDeviceBinding()
 
 // ========== State ==========
 
@@ -72,6 +67,23 @@ const installationId = ref('')
 
 /** 绑定向导可见性 */
 const bindingWizardVisible = ref(false)
+
+const bindingDefinitions = computed<BindingDefinition[]>(() =>
+  (installation.value?.bindings ?? []).map(binding => ({
+    bindingKey: binding.bindingKey,
+    displayName: binding.displayName,
+    required: binding.required !== false
+  }))
+)
+
+const initialDeviceBindings = computed(() =>
+  (installation.value?.bindings ?? [])
+    .filter(binding => Boolean(binding.deviceId))
+    .map(binding => ({
+      bindingKey: binding.bindingKey,
+      deviceId: binding.deviceId!
+    }))
+)
 
 /** 是否正在更新 */
 const isUpdating = ref(false)
@@ -138,12 +150,12 @@ const bindingList = computed(() => {
 
 /** 未绑定的必填项 */
 const unboundRequiredCount = computed(() => {
-  return bindingList.value.filter((b) => b.required && !b.deviceId).length
+  return bindingList.value.filter(b => b.required && !b.deviceId).length
 })
 
 // ========== Watch ==========
 
-watch(installationId, (id) => {
+watch(installationId, id => {
   if (id) {
     void fetchInstallationDetail(id)
   }
@@ -196,39 +208,8 @@ function goToTemplate(templateId: string) {
 /**
  * 打开绑定向导
  */
-async function openBindingWizard() {
+function openBindingWizard() {
   if (!installation.value) return
-
-  // 初始化绑定
-  const bindingDefs = installation.value.bindings.map((b) => ({
-    bindingKey: b.bindingKey,
-    displayName: b.displayName,
-    required: b.required !== false,
-    deviceTemplateKey: undefined,
-    deviceTemplateName: undefined
-  }))
-
-  initializeBindings(bindingDefs)
-
-  // 设置当前绑定的设备
-  for (const binding of installation.value.bindings) {
-    if (binding.deviceId) {
-      const bindingItem = bindings.value.find((b) => b.bindingKey === binding.bindingKey)
-      if (bindingItem) {
-        bindingItem.selectedDeviceId = binding.deviceId
-        bindingItem.selectedDevice = {
-          id: binding.deviceId,
-          name: binding.deviceName || binding.deviceId,
-          templateId: '',
-          templateName: '',
-          online: false
-        }
-      }
-    }
-  }
-
-  // 加载兼容设备
-  await loadAllCompatibleDevices()
 
   bindingWizardVisible.value = true
 }
@@ -243,8 +224,8 @@ async function handleBindingUpdateComplete(completedBindings: Array<{ bindingKey
 
   try {
     // 构建更新请求
-    const updateBindings = installation.value.bindings.map((b) => {
-      const completedBinding = completedBindings.find((cb) => cb.bindingKey === b.bindingKey)
+    const updateBindings = installation.value.bindings.map(b => {
+      const completedBinding = completedBindings.find(cb => cb.bindingKey === b.bindingKey)
       return {
         bindingKey: b.bindingKey,
         deviceId: completedBinding?.deviceId || null
@@ -415,9 +396,7 @@ defineExpose({
           <NGi>
             <NCard size="small">
               <div class="stat-card">
-                <div class="stat-value">
-                  {{ bindingList.filter((b) => b.deviceId).length }}/{{ bindingList.length }}
-                </div>
+                <div class="stat-value">{{ bindingList.filter(b => b.deviceId).length }}/{{ bindingList.length }}</div>
                 <div class="stat-label">{{ $t('market.install.bindings') }}</div>
               </div>
             </NCard>
@@ -571,6 +550,8 @@ defineExpose({
     <DeviceBindingWizard
       v-model:model-value="bindingWizardVisible"
       :allow-skip="false"
+      :binding-definitions="bindingDefinitions"
+      :initial-bindings="initialDeviceBindings"
       @complete="handleBindingUpdateComplete"
       @cancel="bindingWizardVisible = false"
     />

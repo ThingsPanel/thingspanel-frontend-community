@@ -37,7 +37,7 @@ import {
   ArrowBackOutline
 } from '@vicons/ionicons5'
 import { $t } from '@/locales'
-import { useDeviceBinding, type DashboardBindingInfo, type DeviceBinding } from './composables/use-device-binding'
+import type { DashboardBindingInfo } from './composables/use-device-binding'
 import DeviceBindingWizard from './DeviceBindingWizard.vue'
 import {
   installBundle,
@@ -102,17 +102,6 @@ const message = useMessage()
 const dialog = useDialog()
 const { getToken, clearToken } = useMarketAuth()
 
-// ========== Composable ==========
-
-const {
-  bindings,
-  isLoading: isLoadingDevices,
-  loadAllCompatibleDevices,
-  initializeBindings,
-  generateBindingsRequest,
-  reset: resetBindings
-} = useDeviceBinding()
-
 // ========== Local State ==========
 
 const visible = computed({
@@ -128,6 +117,8 @@ const bundleDetail = ref<MarketBundleDetail | null>(null)
 
 /** 选择的版本 */
 const selectedVersion = ref('')
+const selectedDeviceBindings = ref<Array<{ bindingKey: string; deviceId: string }>>([])
+const preserveStateWhenHidden = ref(false)
 
 /** 看板绑定预览 */
 const dashboardBindings = ref<DashboardBindingInfo[]>([])
@@ -199,16 +190,7 @@ const hasBindings = computed(() => {
   return dashboardBindings.value.some(d => d.bindings.length > 0)
 })
 
-/** 已绑定的数量 */
-const boundCount = computed(() => {
-  return bindings.value.filter(b => b.selectedDeviceId !== null).length
-})
-
-/** 是否可以开始安装 */
-const canStartInstall = computed(() => {
-  if (!hasBindings.value) return true
-  return bindings.value.every(binding => !binding.required || Boolean(binding.selectedDeviceId))
-})
+const bindingDefinitions = computed(() => dashboardBindings.value.flatMap(dashboard => dashboard.bindings))
 
 /** 看板列表 */
 const dashboardList = computed(() => {
@@ -233,6 +215,10 @@ watch(
   () => props.modelValue,
   newVal => {
     if (!newVal) {
+      if (preserveStateWhenHidden.value) {
+        preserveStateWhenHidden.value = false
+        return
+      }
       handleClose()
     }
   }
@@ -248,11 +234,8 @@ function open(params: InstallParams) {
   selectedVersion.value = params.version
   dashboardBindings.value = params.dashboardBindings
   step.value = 'confirm'
+  selectedDeviceBindings.value = []
   visible.value = true
-
-  // 初始化绑定
-  const allBindings = dashboardBindings.value.flatMap(d => d.bindings)
-  initializeBindings(allBindings)
 }
 
 /**
@@ -271,11 +254,11 @@ function resetState() {
   step.value = 'confirm'
   bundleDetail.value = null
   selectedVersion.value = ''
+  selectedDeviceBindings.value = []
   dashboardBindings.value = []
   isInstalling.value = false
   installResult.value = null
   installError.value = null
-  resetBindings()
 }
 
 /**
@@ -294,7 +277,6 @@ async function loadPrecheckInfo() {
       // 更新绑定预览
       if (result.data.bindingPreview) {
         dashboardBindings.value = result.data.bindingPreview
-        initializeBindings(result.data.bindingPreview.flatMap(d => d.bindings))
       }
     }
   } catch (err) {
@@ -309,9 +291,6 @@ async function loadPrecheckInfo() {
  */
 async function goToBinding() {
   step.value = 'binding'
-
-  // 加载兼容设备
-  await loadAllCompatibleDevices()
   bindingWizardVisible.value = true
 }
 
@@ -326,6 +305,7 @@ function goBackToConfirm() {
  * 处理绑定完成
  */
 function handleBindingComplete(completedBindings: Array<{ bindingKey: string; deviceId: string }>) {
+  selectedDeviceBindings.value = completedBindings
   bindingWizardVisible.value = false
   step.value = 'installing'
 
@@ -346,18 +326,35 @@ function handleBindingCancel() {
 async function startInstallation() {
   if (!bundleDetail.value) return
 
+  const requiredBindingKeys = new Set(
+    dashboardBindings.value
+      .flatMap(dashboard => dashboard.bindings)
+      .filter(binding => binding.required !== false)
+      .map(binding => binding.bindingKey)
+  )
+  const selectedBindingKeys = new Set(selectedDeviceBindings.value.map(binding => binding.bindingKey))
+  const hasMissingRequiredBinding = [...requiredBindingKeys].some(bindingKey => !selectedBindingKeys.has(bindingKey))
+
+  if (hasMissingRequiredBinding) {
+    step.value = 'binding'
+    bindingWizardVisible.value = true
+    message.error($t('market.install.requiredBindingsNotBound'))
+    return
+  }
+
   isInstalling.value = true
   installError.value = null
 
   try {
     const marketToken = getToken()
     if (!marketToken) {
+      preserveStateWhenHidden.value = true
       clearToken()
       emit('authentication-required')
       return
     }
 
-    const deviceBindings = generateBindingsRequest().map(item => ({
+    const deviceBindings = selectedDeviceBindings.value.map(item => ({
       bindingKey: item.bindingKey,
       localDeviceId: item.deviceId
     }))
@@ -371,6 +368,7 @@ async function startInstallation() {
 
     if (result.error) {
       if (isMarketAuthenticationError(result.error)) {
+        preserveStateWhenHidden.value = true
         clearToken()
         emit('authentication-required')
         return
@@ -685,11 +683,11 @@ defineExpose({
             <span class="summary-label">{{ $t('market.install.dashboardCount') }}</span>
           </div>
           <div class="summary-item">
-            <span class="summary-value">{{ bindings.length }}</span>
+            <span class="summary-value">{{ bindingDefinitions.length }}</span>
             <span class="summary-label">{{ $t('market.install.totalBindings') }}</span>
           </div>
           <div class="summary-item">
-            <span class="summary-value">{{ bindings.filter(b => b.required).length }}</span>
+            <span class="summary-value">{{ bindingDefinitions.filter(binding => binding.required).length }}</span>
             <span class="summary-label">{{ $t('market.install.requiredBindings') }}</span>
           </div>
         </div>
@@ -817,6 +815,7 @@ defineExpose({
     <!-- 设备绑定向导 -->
     <DeviceBindingWizard
       v-model:model-value="bindingWizardVisible"
+      :binding-definitions="bindingDefinitions"
       @complete="handleBindingComplete"
       @cancel="handleBindingCancel"
     />
