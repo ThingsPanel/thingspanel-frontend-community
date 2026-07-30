@@ -32,7 +32,7 @@ import {
   NAlert
 } from 'naive-ui'
 import {
-  IosSearch,
+  SearchOutline,
   CloudDownloadOutline,
   EyeOutline,
   TimerOutline,
@@ -55,6 +55,15 @@ import InstallWizard from './InstallWizard.vue'
 import MarketBundleDetailDrawer from './MarketBundleDetailDrawer.vue'
 import MarketLoginModal from '@/views/device/config/modules/market-login-modal.vue'
 
+const props = withDefaults(
+  defineProps<{
+    embedded?: boolean
+  }>(),
+  {
+    embedded: false
+  }
+)
+
 // ========== Auth ==========
 
 const { isLoggedIn } = useMarketAuth()
@@ -74,7 +83,7 @@ const total = ref(0)
 const searchParams = reactive({
   keyword: '',
   category: null as string | null,
-  sort_by: 'latest' as 'latest' | 'hottest' | 'rating',
+  sort_by: 'latest' as 'latest' | 'hottest',
   page: 1,
   page_size: 12
 })
@@ -95,8 +104,7 @@ const categoryOptions = [
 /** 排序选项 */
 const sortOptions = [
   { label: () => $t('market.sortLatest'), value: 'latest' },
-  { label: () => $t('market.sortHottest'), value: 'hottest' },
-  { label: () => $t('market.sortRating'), value: 'rating' }
+  { label: () => $t('market.sortHottest'), value: 'hottest' }
 ]
 
 /** 详情抽屉可见性 */
@@ -165,6 +173,12 @@ function handleSearch() {
   void fetchBundleList()
 }
 
+function clearFilters() {
+  searchParams.keyword = ''
+  searchParams.category = null
+  handleSearch()
+}
+
 /**
  * 防抖搜索
  */
@@ -216,8 +230,6 @@ async function handleViewDetail(item: MarketBundleListItem) {
 
     if (result.error) {
       window.$message?.error(result.error.message)
-      bundleList.value = []
-      total.value = 0
     } else if (result.data) {
       currentDetail.value = result.data
       currentVersion.value = item.latestVersion
@@ -231,9 +243,9 @@ async function handleViewDetail(item: MarketBundleListItem) {
         currentBindings.value = precheckResult.data.bindingPreview
       } else {
         // 从版本信息中提取绑定
-        const versionInfo = result.data.versions.find((v) => v.version === item.latestVersion)
+        const versionInfo = result.data.versions.find(v => v.version === item.latestVersion)
         currentBindings.value =
-          versionInfo?.deviceBindings.map((b) => ({
+          versionInfo?.deviceBindings.map(b => ({
             dashboardKey: '',
             dashboardName: '',
             bindings: [b]
@@ -354,9 +366,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="market-browse">
+  <div :class="['market-browse', { 'is-embedded': props.embedded }]">
     <!-- 页面标题 -->
-    <div class="page-header">
+    <div v-if="!props.embedded" class="page-header">
       <h1 class="page-title">{{ $t('market.browse.title') }}</h1>
       <p class="page-subtitle">{{ $t('market.browse.subtitle') }}</p>
     </div>
@@ -371,7 +383,7 @@ onMounted(() => {
         @keyup.enter="handleSearch"
       >
         <template #prefix>
-          <NIcon><IosSearch /></NIcon>
+          <NIcon><SearchOutline /></NIcon>
         </template>
       </NInput>
 
@@ -397,13 +409,7 @@ onMounted(() => {
       <div v-if="!loading && bundleList.length === 0" class="empty-state">
         <NEmpty :description="$t('market.browse.noBundles')">
           <template #extra>
-            <NButton
-              type="primary"
-              @click="
-                searchParams.keyword = ''
-                handleSearch()
-              "
-            >
+            <NButton type="primary" @click="clearFilters">
               {{ $t('market.browse.clearFilters') }}
             </NButton>
           </template>
@@ -516,6 +522,11 @@ onMounted(() => {
 .market-browse {
   padding: 24px;
   min-height: calc(100vh - 120px);
+
+  &.is-embedded {
+    padding: 16px 0 0;
+    min-height: 480px;
+  }
 }
 
 .page-header {

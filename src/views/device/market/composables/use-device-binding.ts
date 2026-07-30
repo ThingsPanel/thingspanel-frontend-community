@@ -44,6 +44,8 @@ export interface DeviceBinding {
   displayName: string
   description?: string
   required: boolean
+  deviceTemplateKey?: string
+  deviceTemplateName?: string
   selectedDeviceId: string | null
   selectedDevice: LocalDevice | null
   compatibleDevices: LocalDevice[]
@@ -226,6 +228,8 @@ export function useDeviceBinding() {
       displayName: def.displayName,
       description: def.description,
       required: def.required !== false,
+      deviceTemplateKey: def.deviceTemplateKey,
+      deviceTemplateName: def.deviceTemplateName,
       selectedDeviceId: null,
       selectedDevice: null,
       compatibleDevices: [],
@@ -237,7 +241,7 @@ export function useDeviceBinding() {
   /**
    * 为绑定项加载兼容设备
    */
-  async function loadCompatibleDevices(bindingKey: string, templateKey?: string): Promise<void> {
+  async function loadCompatibleDevices(bindingKey: string, templateKey?: string, templateName?: string): Promise<void> {
     const binding = bindings.value.find(b => b.bindingKey === bindingKey)
     if (!binding) return
 
@@ -246,22 +250,19 @@ export function useDeviceBinding() {
     try {
       let devices: LocalDevice[]
 
-      if (templateKey) {
+      if (templateKey || templateName) {
+        const normalizedTemplateName = templateName?.trim().toLowerCase()
+        const isCompatible = (device: LocalDevice) =>
+          (templateKey !== undefined && device.templateId === templateKey) ||
+          (normalizedTemplateName !== undefined && device.templateName.trim().toLowerCase() === normalizedTemplateName)
+
         // 按模板过滤设备
-        devices = localDevices.value.filter(d => {
-          // 匹配模板标识
-          const match = d.templateId === templateKey || d.templateName.toLowerCase().includes(templateKey.toLowerCase())
-          return match
-        })
+        devices = localDevices.value.filter(isCompatible)
 
         // 如果本地设备列表为空，先加载
         if (localDevices.value.length === 0) {
           await loadLocalDevices()
-          devices = localDevices.value.filter(d => {
-            const match =
-              d.templateId === templateKey || d.templateName.toLowerCase().includes(templateKey.toLowerCase())
-            return match
-          })
+          devices = localDevices.value.filter(isCompatible)
         }
       } else {
         // 不限制模板，返回所有设备
@@ -272,6 +273,9 @@ export function useDeviceBinding() {
       }
 
       binding.compatibleDevices = devices
+      if (devices.length === 1) {
+        selectDevice(bindingKey, devices[0].id)
+      }
     } finally {
       isLoading.value = false
     }
@@ -282,10 +286,16 @@ export function useDeviceBinding() {
    */
   async function loadAllCompatibleDevices(): Promise<void> {
     for (const binding of bindings.value) {
-      if (binding.deviceTemplateKey) {
-        await loadCompatibleDevices(binding.bindingKey, binding.deviceTemplateKey)
+      if (binding.deviceTemplateKey || binding.deviceTemplateName) {
+        await loadCompatibleDevices(binding.bindingKey, binding.deviceTemplateKey, binding.deviceTemplateName)
       } else {
+        if (localDevices.value.length === 0) {
+          await loadLocalDevices()
+        }
         binding.compatibleDevices = [...localDevices.value]
+        if (binding.compatibleDevices.length === 1) {
+          selectDevice(binding.bindingKey, binding.compatibleDevices[0].id)
+        }
       }
     }
   }

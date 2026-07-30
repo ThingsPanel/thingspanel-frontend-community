@@ -1,28 +1,19 @@
 <script setup lang="ts">
 /**
  * DeviceBindingWizard - 设备绑定向导组件
- * 
+ *
  * 用于在安装市场解决方案包时，将 bundle 中的设备绑定映射到本地设备
  */
 import { ref, computed, watch } from 'vue'
-import {
-  NCard,
-  NAlert,
-  NButton,
-  
-  NInput,
-  NIcon,
-  NSpin,
-  NEmpty,
-  NSpace,
-  NTag,
-  
-  
-  
-} from 'naive-ui'
+import { NCard, NAlert, NButton, NInput, NIcon, NSpin, NEmpty, NSpace, NTag } from 'naive-ui'
 import { SearchOutline, LinkOutline, AlertCircleOutline, CheckmarkCircleOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
-import { useDeviceBinding, type LocalDevice, type DeviceBinding, type DashboardSelection } from './composables/use-device-binding'
+import {
+  useDeviceBinding,
+  type LocalDevice,
+  type DeviceBinding,
+  type DashboardSelection
+} from './composables/use-device-binding'
 
 // ========== Props & Emits ==========
 
@@ -42,16 +33,20 @@ export interface BindingWizardParams {
   onCancel?: () => void
 }
 
-const props = withDefaults(defineProps<{
-  modelValue: boolean
-}>(), {
-  allowSkip: true
-})
+const props = withDefaults(
+  defineProps<{
+    modelValue: boolean
+    allowSkip?: boolean
+  }>(),
+  {
+    allowSkip: true
+  }
+)
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  'complete': [bindings: Array<{ bindingKey: string; deviceId: string }>]
-  'cancel': []
+  complete: [bindings: Array<{ bindingKey: string; deviceId: string }>]
+  cancel: []
 }>()
 
 // ========== Composable ==========
@@ -79,7 +74,7 @@ const {
 
 const visible = computed({
   get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val)
+  set: val => emit('update:modelValue', val)
 })
 
 /** 搜索关键词 */
@@ -116,7 +111,7 @@ const canComplete = computed(() => {
 
 watch(
   () => props.modelValue,
-  async (newVal) => {
+  async newVal => {
     if (newVal) {
       isInitialized.value = true
       await loadAllCompatibleDevices()
@@ -135,11 +130,11 @@ watch(
 function initializeSelections() {
   selectedDeviceIds.value = {}
   searchKeywords.value = {}
-  
+
   for (const binding of bindings.value) {
     selectedDeviceIds.value[binding.bindingKey] = binding.selectedDeviceId
     searchKeywords.value[binding.bindingKey] = ''
-    
+
     // 默认展开第一个看板
     if (expandedDashboards.value.length === 0 && binding.compatibleDevices.length > 0) {
       const dashboard = bindings.value.find(b => b.bindingKey === binding.bindingKey)
@@ -170,12 +165,10 @@ function getFilteredDevices(binding: DeviceBinding): LocalDevice[] {
   if (!keyword) {
     return binding.compatibleDevices
   }
-  
+
   const lowerKeyword = keyword.toLowerCase()
   return binding.compatibleDevices.filter(
-    (d) =>
-      d.name.toLowerCase().includes(lowerKeyword) ||
-      d.templateName.toLowerCase().includes(lowerKeyword)
+    d => d.name.toLowerCase().includes(lowerKeyword) || d.templateName.toLowerCase().includes(lowerKeyword)
   )
 }
 
@@ -192,7 +185,7 @@ function handleDeviceSelect(bindingKey: string, deviceId: string | null) {
  */
 function handleSkip(binding: DeviceBinding) {
   if (binding.required) return
-  
+
   const reason = $t('market.install.skipBindingReason') || 'Skipped by user'
   const success = skipBinding(binding.bindingKey, reason)
   if (success) {
@@ -212,12 +205,12 @@ function handleUnskip(binding: DeviceBinding) {
  */
 function handleComplete() {
   const validation = validateBindings()
-  
+
   if (!validation.isValid) {
     window.$message?.error($t('market.install.requiredBindingsNotBound'))
     return
   }
-  
+
   const bindingsRequest = generateBindingsRequest()
   emit('complete', bindingsRequest)
   handleClose()
@@ -262,7 +255,7 @@ function getDeviceStatusText(online: boolean): string {
  */
 function getDeviceOptions(binding: DeviceBinding) {
   const devices = getFilteredDevices(binding)
-  return devices.map((device) => ({
+  return devices.map(device => ({
     label: device.name,
     value: device.id,
     disabled: false
@@ -314,9 +307,7 @@ defineExpose({
       <div class="binding-progress">
         <div class="progress-info">
           <span class="progress-label">{{ $t('market.install.bindingProgress') }}</span>
-          <span class="progress-value">
-            {{ boundCount + skippedCount }} / {{ bindings.length }}
-          </span>
+          <span class="progress-value">{{ boundCount + skippedCount }} / {{ bindings.length }}</span>
         </div>
         <div class="progress-bar">
           <div class="progress-fill" :style="{ width: `${bindingProgress}%` }"></div>
@@ -362,36 +353,22 @@ defineExpose({
                 </div>
                 <div v-if="binding.compatibleDevices.length > 0" class="binding-hint">
                   <NIcon size="12"><LinkOutline /></NIcon>
-                  <span>{{ $t('market.install.templateCompatibleTip', { template: binding.deviceTemplateName || 'Any' }) }}</span>
+                  <span>
+                    {{ $t('market.install.templateCompatibleTip', { template: binding.deviceTemplateName || 'Any' }) }}
+                  </span>
                 </div>
               </div>
               <div class="binding-status">
-                <NTag
-                  v-if="binding.skipped"
-                  type="warning"
-                  size="small"
-                >
+                <NTag v-if="binding.skipped" type="warning" size="small">
                   {{ $t('market.install.skipped') }}
                 </NTag>
-                <NTag
-                  v-else-if="binding.selectedDeviceId"
-                  type="success"
-                  size="small"
-                >
+                <NTag v-else-if="binding.selectedDeviceId" type="success" size="small">
                   {{ $t('market.install.bound') }}
                 </NTag>
-                <NTag
-                  v-else-if="binding.required"
-                  type="error"
-                  size="small"
-                >
+                <NTag v-else-if="binding.required" type="error" size="small">
                   {{ $t('market.install.unbound') }}
                 </NTag>
-                <NTag
-                  v-else
-                  type="default"
-                  size="small"
-                >
+                <NTag v-else type="default" size="small">
                   {{ $t('market.install.optional') }}
                 </NTag>
               </div>
@@ -407,7 +384,7 @@ defineExpose({
                   </NButton>
                 </div>
               </template>
-              
+
               <template v-else>
                 <!-- 搜索框 -->
                 <div v-if="binding.compatibleDevices.length > 0" class="device-search">
@@ -428,10 +405,7 @@ defineExpose({
                   <div
                     v-for="device in getFilteredDevices(binding)"
                     :key="device.id"
-                    :class="[
-                      'device-item',
-                      { 'is-selected': selectedDeviceIds[binding.bindingKey] === device.id }
-                    ]"
+                    :class="['device-item', { 'is-selected': selectedDeviceIds[binding.bindingKey] === device.id }]"
                     @click="handleDeviceSelect(binding.bindingKey, device.id)"
                   >
                     <div class="device-info">
@@ -450,7 +424,10 @@ defineExpose({
                     </div>
                   </div>
 
-                  <div v-if="getFilteredDevices(binding).length === 0 && searchKeywords[binding.bindingKey]" class="no-results">
+                  <div
+                    v-if="getFilteredDevices(binding).length === 0 && searchKeywords[binding.bindingKey]"
+                    class="no-results"
+                  >
                     {{ $t('market.install.noDeviceFound') }}
                   </div>
                 </div>
@@ -459,7 +436,7 @@ defineExpose({
                 <div v-else-if="binding.compatibleDevices.length === 0" class="no-devices">
                   <NEmpty size="small" :description="$t('market.install.noCompatibleDevice')">
                     <template #extra>
-                      <NSpace v-if="allowSkip && !binding.required" :size="12">
+                      <NSpace v-if="props.allowSkip && !binding.required" :size="12">
                         <NButton size="small" @click="handleSkip(binding)">
                           {{ $t('market.install.skipForNow') }}
                         </NButton>
@@ -469,7 +446,10 @@ defineExpose({
                 </div>
 
                 <!-- 操作按钮 -->
-                <div v-if="binding.compatibleDevices.length > 0 && allowSkip && !binding.required" class="binding-actions">
+                <div
+                  v-if="binding.compatibleDevices.length > 0 && props.allowSkip && !binding.required"
+                  class="binding-actions"
+                >
                   <NButton
                     v-if="selectedDeviceIds[binding.bindingKey]"
                     size="small"
@@ -478,12 +458,7 @@ defineExpose({
                   >
                     {{ $t('market.install.clearSelection') }}
                   </NButton>
-                  <NButton
-                    v-else
-                    size="small"
-                    quaternary
-                    @click="handleSkip(binding)"
-                  >
+                  <NButton v-else size="small" quaternary @click="handleSkip(binding)">
                     {{ $t('market.install.skipForNow') }}
                   </NButton>
                 </div>

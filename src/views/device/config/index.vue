@@ -26,6 +26,7 @@ import ItemCard from '@/components/dev-card-item/index.vue'
 import MarketLoginModal from './modules/market-login-modal.vue'
 import PublishConfirmModal from './modules/publish-confirm-modal.vue'
 import MarketTemplateList from './modules/market-template-list.vue'
+import MarketBrowse from '../market/MarketBrowse.vue'
 
 const router = useRouter()
 const { routerPushByKey } = useRouterPush()
@@ -36,6 +37,7 @@ const publishConfirmRef = ref<InstanceType<typeof PublishConfirmModal>>()
 const pendingPublishId = ref('')
 const pendingPublishName = ref('')
 const activeTab = ref('local')
+const marketResourceTab = ref('device-template')
 
 const handleInstalled = () => {
   activeTab.value = 'local'
@@ -417,7 +419,14 @@ const availableViews = [
       </NTabPane>
 
       <NTabPane name="market" :tab="$t('device_template.marketTemplates')">
-        <MarketTemplateList @installed="handleInstalled" />
+        <NTabs v-model:value="marketResourceTab" type="segment" animated class="market-resource-tabs">
+          <NTabPane name="device-template" :tab="$t('market.resource.deviceTemplates')">
+            <MarketTemplateList @installed="handleInstalled" />
+          </NTabPane>
+          <NTabPane name="dashboard-template" :tab="$t('market.resource.dashboardTemplates')">
+            <MarketBrowse embedded />
+          </NTabPane>
+        </NTabs>
       </NTabPane>
     </NTabs>
 
@@ -429,6 +438,10 @@ const availableViews = [
 </template>
 
 <style scoped lang="scss">
+.market-resource-tabs {
+  margin-top: 8px;
+}
+
 .empty-state {
   display: flex;
   align-items: center;

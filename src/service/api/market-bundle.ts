@@ -239,7 +239,7 @@ async function marketApiCall<T>(fn: () => Promise<T>): Promise<{ data: T | null;
 
 function computeBindingStatus(bindings: InstalledBundle['bindings']): InstalledBundle['bindingStatus'] {
   if (!bindings.length) return 'UNBOUND'
-  const bound = bindings.filter((b) => b.deviceId).length
+  const bound = bindings.filter(b => b.deviceId).length
   if (bound === 0) return 'UNBOUND'
   if (bound === bindings.length) return 'BOUND'
   return 'PARTIAL'
@@ -249,8 +249,8 @@ function computeBindingStatus(bindings: InstalledBundle['bindings']): InstalledB
 export function mapInstallResponseToInstalledBundle(resp: InstallResult, installedAt?: string): InstalledBundle {
   const deviceTemplates =
     resp.resourceMappings
-      ?.filter((m) => m.resourceType === 'device_template')
-      .map((m) => ({
+      ?.filter(m => m.resourceType === 'device_template')
+      .map(m => ({
         resourceKey: m.marketResourceKey,
         localId: m.localId,
         name: m.localName || m.marketResourceKey
@@ -258,15 +258,15 @@ export function mapInstallResponseToInstalledBundle(resp: InstallResult, install
 
   const dashboards =
     resp.resourceMappings
-      ?.filter((m) => m.resourceType === 'dashboard')
-      .map((m) => ({
+      ?.filter(m => m.resourceType === 'dashboard')
+      .map(m => ({
         resourceKey: m.marketResourceKey,
         localId: m.localId,
         name: m.localName || m.marketResourceKey
       })) ?? []
 
   const bindings =
-    resp.bindingStatus?.map((b) => ({
+    resp.bindingStatus?.map(b => ({
       bindingKey: b.bindingKey,
       displayName: b.bindingKey,
       dashboardKey: '',
@@ -292,13 +292,13 @@ export function mapInstallResponseToInstalledBundle(resp: InstallResult, install
 /** 将后端预检报告转为展示项 */
 export function mapPrecheckReportToResults(report: PublishDraftPrecheckReport): PrecheckResult[] {
   const results: PrecheckResult[] = []
-  report.errors?.forEach((item) => {
+  report.errors?.forEach(item => {
     results.push({ code: item.code, level: 'FAIL', message: item.message })
   })
-  report.warnings?.forEach((item) => {
+  report.warnings?.forEach(item => {
     results.push({ code: item.code, level: 'WARN', message: item.message })
   })
-  report.suggestions?.forEach((item) => {
+  report.suggestions?.forEach(item => {
     results.push({ code: item.code, level: 'INFO', message: item.message })
   })
   if (report.passed && results.length === 0) {
@@ -313,9 +313,7 @@ export function mapPrecheckReportToResults(report: PublishDraftPrecheckReport): 
  * 发布 Bundle 到市场（单步：publish-draft 直接完成发布）
  * POST /device/market/bundles/publish-draft
  */
-export async function createPublishDraft(
-  params: PublishDraftRequest
-): Promise<{
+export async function createPublishDraft(params: PublishDraftRequest): Promise<{
   data: PublishDraftResponse | null
   error: MarketApiError | null
   precheckReport?: PublishDraftPrecheckReport
@@ -452,7 +450,7 @@ export async function getInstalledBundles(params?: {
     return { data: null, error: result.error }
   }
 
-  const list: InstalledBundle[] = (result.data.data || []).map((item) => ({
+  const list: InstalledBundle[] = (result.data.data || []).map(item => ({
     installationId: item.id,
     bundleKey: item.bundleKey,
     bundleName: item.bundleKey,
@@ -476,7 +474,7 @@ export async function updateInstallationBindings(
   installationId: string,
   bindings: Array<{ bindingKey: string; deviceId: string | null }>
 ): Promise<{ data: InstalledBundle | null; error: MarketApiError | null }> {
-  const toUpdate = bindings.filter((b) => b.deviceId)
+  const toUpdate = bindings.filter(b => b.deviceId)
 
   for (const binding of toUpdate) {
     const result = await marketApiCall(() =>
@@ -510,7 +508,7 @@ export async function compensateInstallation(
 export async function browseMarketBundles(params?: {
   keyword?: string
   category?: string
-  sort_by?: 'latest' | 'hottest' | 'rating'
+  sort_by?: 'latest' | 'hottest'
   page?: number
   page_size?: number
 }): Promise<{ data: { list: MarketBundleListItem[]; total: number } | null; error: MarketApiError | null }> {
@@ -671,7 +669,7 @@ export function isBlockingResult(result: PrecheckResult): boolean {
 }
 
 export function canPublish(precheckResults: PrecheckResult[]): boolean {
-  return precheckResults.every((r) => r.level !== 'FAIL')
+  return precheckResults.every(r => r.level !== 'FAIL')
 }
 
 export function categorizePrecheckResults(results: PrecheckResult[]): {
@@ -680,8 +678,8 @@ export function categorizePrecheckResults(results: PrecheckResult[]): {
   passes: PrecheckResult[]
 } {
   return {
-    errors: results.filter((r) => r.level === 'FAIL'),
-    warnings: results.filter((r) => r.level === 'WARN'),
-    passes: results.filter((r) => r.level === 'PASS' || r.level === 'INFO')
+    errors: results.filter(r => r.level === 'FAIL'),
+    warnings: results.filter(r => r.level === 'WARN'),
+    passes: results.filter(r => r.level === 'PASS' || r.level === 'INFO')
   }
 }
