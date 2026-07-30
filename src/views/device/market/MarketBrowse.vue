@@ -15,8 +15,6 @@ import {
   NSelect,
   NSpace,
   NSpin,
-  NGrid,
-  NGi,
   NEmpty,
   NPagination,
   NIcon,
@@ -416,8 +414,8 @@ onMounted(() => {
         </NEmpty>
       </div>
 
-      <NGrid v-else cols="1 s:2 m:3 l:4" x-gap="16" y-gap="16" responsive="screen">
-        <NGi v-for="item in bundleList" :key="item.bundleKey">
+      <div v-else class="bundle-grid">
+        <div v-for="item in bundleList" :key="item.bundleKey" class="bundle-grid-item">
           <NCard class="bundle-card" hoverable @click="handleViewDetail(item)">
             <!-- 卡片头部 -->
             <div class="bundle-header">
@@ -485,8 +483,8 @@ onMounted(() => {
               </div>
             </div>
           </NCard>
-        </NGi>
-      </NGrid>
+        </div>
+      </div>
     </NSpin>
 
     <!-- 分页 -->
@@ -558,8 +556,20 @@ onMounted(() => {
   text-align: center;
 }
 
+.bundle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.bundle-grid-item {
+  min-width: 0;
+}
+
 .bundle-card {
   height: 100%;
+  min-width: 0;
+  width: 100%;
   cursor: pointer;
   transition: all 0.2s ease;
 

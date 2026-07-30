@@ -66,6 +66,8 @@ const emit = defineEmits(['install', 'view-detail'])
 <style scoped lang="scss">
 .market-card {
   overflow: hidden;
+  min-width: 0;
+  width: 100%;
   transition: box-shadow 0.2s;
   &:hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);

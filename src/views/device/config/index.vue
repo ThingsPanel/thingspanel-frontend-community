@@ -419,7 +419,7 @@ const availableViews = [
       </NTabPane>
 
       <NTabPane name="market" :tab="$t('device_template.marketTemplates')">
-        <NTabs v-model:value="marketResourceTab" type="segment" animated class="market-resource-tabs">
+        <NTabs v-model:value="marketResourceTab" type="segment" class="market-resource-tabs">
           <NTabPane name="device-template" :tab="$t('market.resource.deviceTemplates')">
             <MarketTemplateList @installed="handleInstalled" />
           </NTabPane>
