@@ -422,8 +422,8 @@ const handlePublishToMarket = (dashboardId: string) => {
 }
 
 // 发布成功处理
-const handlePublishSuccess = () => {
-  message.success('已提交市场审核')
+const handlePublishSuccess = async () => {
+  await fetchDashboards()
 }
 
 // 发布失败处理
