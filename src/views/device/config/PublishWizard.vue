@@ -74,7 +74,7 @@ const categoryOptions = [
   { label: '其他', value: 'other' }
 ]
 
-const bindingKeyPattern = /^[a-z][a-z0-9-]{2,63}$/
+const bindingKeyPattern = /^[a-z][a-z0-9_]{2,63}$/
 const bundleKeyPattern = /^[a-z][a-z0-9-]{2,63}$/
 const versionPattern = /^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$/
 
@@ -139,7 +139,7 @@ async function open(params?: OpenParams) {
   form.bundleKey = suggestBundleKey(data.dashboardId)
   roles.value = data.deviceReferences.map(reference => ({
     sourceDeviceId: reference.sourceDeviceId,
-    bindingKey: reference.suggestedBindingKey.replace(/_/g, '-'),
+    bindingKey: reference.suggestedBindingKey,
     displayName: reference.sourceDeviceName || reference.suggestedBindingKey.replace(/_/g, '-')
   }))
 
@@ -233,7 +233,7 @@ defineExpose({ open, close } as PublishWizardExpose)
                 <NInput v-model:value="roles[index].displayName" placeholder="例如：客厅温湿度设备" />
               </NFormItem>
               <NFormItem label="bindingKey" required>
-                <NInput v-model:value="roles[index].bindingKey" placeholder="例如：living-room-sensor" />
+                <NInput v-model:value="roles[index].bindingKey" placeholder="例如：living_room_sensor" />
               </NFormItem>
               <NFormItem label="设备模板">
                 <span>{{ reference.deviceTemplateId }}</span>
@@ -256,7 +256,7 @@ defineExpose({ open, close } as PublishWizardExpose)
             当前看板没有可发布的设备引用，不能形成安装时的绑定向导。
           </NAlert>
           <NAlert v-else-if="!rolesValid" type="warning">
-            bindingKey 必须以小写字母开头，只能包含小写字母、数字、短横线，长度 3～64，并且不能重复。
+            bindingKey 必须以小写字母开头，只能包含小写字母、数字、下划线，长度 3～64，并且不能重复。
           </NAlert>
         </template>
 
