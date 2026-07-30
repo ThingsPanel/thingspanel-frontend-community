@@ -30,18 +30,11 @@ import {
   RefreshOutline,
   OpenOutline,
   LinkOutline,
-  TrashOutline,
   CloudDownloadOutline,
   EllipsisHorizontal
 } from '@vicons/ionicons5'
 import { $t } from '@/locales'
-import {
-  getInstalledBundles,
-  uninstallBundle,
-  type InstalledBundle,
-  type MarketApiError
-} from '@/service/api/market-bundle'
-import MarketNav from './MarketNav.vue'
+import { getInstalledBundles, type InstalledBundle, type MarketApiError } from '@/service/api/market-bundle'
 import MarketBrowse from './MarketBrowse.vue'
 
 // ========== Router ==========
@@ -150,7 +143,7 @@ const columns = computed(() => [
     key: 'bindings',
     width: 100,
     render: (row: InstalledBundle) => {
-      const boundCount = row.bindings?.filter(b => b.deviceId).length || 0
+      const boundCount = row.bindings?.filter((b) => b.deviceId).length || 0
       const totalCount = row.bindings?.length || 0
       return h(
         NTooltip,
@@ -188,15 +181,6 @@ const columns = computed(() => [
           key: 'binding',
           icon: () => h(NIcon, {}, { default: () => h(LinkOutline) }),
           disabled: row.bindingStatus === 'BOUND'
-        },
-        {
-          type: 'divider',
-          key: 'd1'
-        },
-        {
-          label: $t('market.install.uninstall'),
-          key: 'uninstall',
-          icon: () => h(NIcon, {}, { default: () => h(TrashOutline) })
         }
       ]
 
@@ -239,7 +223,7 @@ const columns = computed(() => [
 
 // ========== Watch ==========
 
-watch(activeTab, tab => {
+watch(activeTab, (tab) => {
   if (tab === 'installed') {
     void fetchInstalledList()
   }
@@ -315,37 +299,7 @@ async function handleAction(key: string, row: InstalledBundle) {
     case 'binding':
       goToDetail(row.installationId)
       break
-    case 'uninstall':
-      await handleUninstall(row)
-      break
   }
-}
-
-/**
- * 卸载
- */
-async function handleUninstall(row: InstalledBundle) {
-  window.$dialog?.warning({
-    title: $t('market.install.uninstallConfirmTitle'),
-    content: $t('market.install.uninstallConfirmMessage'),
-    positiveText: $t('common.confirm'),
-    negativeText: $t('common.cancel'),
-    onPositiveClick: async () => {
-      try {
-        const result = await uninstallBundle(row.installationId)
-
-        if (result.error) {
-          window.$message?.error(result.error.message)
-          return
-        }
-
-        window.$message?.success($t('market.install.uninstallSuccess'))
-        await refresh()
-      } catch (err: any) {
-        window.$message?.error(err.message || 'Failed to uninstall')
-      }
-    }
-  })
 }
 
 /**
@@ -371,8 +325,6 @@ onMounted(() => {
 
 <template>
   <div class="installed-bundles">
-    <MarketNav />
-
     <div class="page-content">
       <!-- 标签页 -->
       <div class="tabs-header">

@@ -228,6 +228,7 @@ declare module "@elegant-router/types" {
     | "device_grouping-details"
     | "device_grouping"
     | "device_manage"
+    | "device_market"
     | "device_market_installed-detail"
     | "device_service-access"
     | "device_service-details"

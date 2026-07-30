@@ -237,11 +237,9 @@ async function marketApiCall<T>(fn: () => Promise<T>): Promise<{ data: T | null;
   }
 }
 
-function computeBindingStatus(
-  bindings: InstalledBundle['bindings']
-): InstalledBundle['bindingStatus'] {
+function computeBindingStatus(bindings: InstalledBundle['bindings']): InstalledBundle['bindingStatus'] {
   if (!bindings.length) return 'UNBOUND'
-  const bound = bindings.filter(b => b.deviceId).length
+  const bound = bindings.filter((b) => b.deviceId).length
   if (bound === 0) return 'UNBOUND'
   if (bound === bindings.length) return 'BOUND'
   return 'PARTIAL'
@@ -251,8 +249,8 @@ function computeBindingStatus(
 export function mapInstallResponseToInstalledBundle(resp: InstallResult, installedAt?: string): InstalledBundle {
   const deviceTemplates =
     resp.resourceMappings
-      ?.filter(m => m.resourceType === 'device_template')
-      .map(m => ({
+      ?.filter((m) => m.resourceType === 'device_template')
+      .map((m) => ({
         resourceKey: m.marketResourceKey,
         localId: m.localId,
         name: m.localName || m.marketResourceKey
@@ -260,15 +258,15 @@ export function mapInstallResponseToInstalledBundle(resp: InstallResult, install
 
   const dashboards =
     resp.resourceMappings
-      ?.filter(m => m.resourceType === 'dashboard')
-      .map(m => ({
+      ?.filter((m) => m.resourceType === 'dashboard')
+      .map((m) => ({
         resourceKey: m.marketResourceKey,
         localId: m.localId,
         name: m.localName || m.marketResourceKey
       })) ?? []
 
   const bindings =
-    resp.bindingStatus?.map(b => ({
+    resp.bindingStatus?.map((b) => ({
       bindingKey: b.bindingKey,
       displayName: b.bindingKey,
       dashboardKey: '',
@@ -294,13 +292,13 @@ export function mapInstallResponseToInstalledBundle(resp: InstallResult, install
 /** 将后端预检报告转为展示项 */
 export function mapPrecheckReportToResults(report: PublishDraftPrecheckReport): PrecheckResult[] {
   const results: PrecheckResult[] = []
-  report.errors?.forEach(item => {
+  report.errors?.forEach((item) => {
     results.push({ code: item.code, level: 'FAIL', message: item.message })
   })
-  report.warnings?.forEach(item => {
+  report.warnings?.forEach((item) => {
     results.push({ code: item.code, level: 'WARN', message: item.message })
   })
-  report.suggestions?.forEach(item => {
+  report.suggestions?.forEach((item) => {
     results.push({ code: item.code, level: 'INFO', message: item.message })
   })
   if (report.passed && results.length === 0) {
@@ -317,14 +315,18 @@ export function mapPrecheckReportToResults(report: PublishDraftPrecheckReport): 
  */
 export async function createPublishDraft(
   params: PublishDraftRequest
-): Promise<{ data: PublishDraftResponse | null; error: MarketApiError | null; precheckReport?: PublishDraftPrecheckReport }> {
+): Promise<{
+  data: PublishDraftResponse | null
+  error: MarketApiError | null
+  precheckReport?: PublishDraftPrecheckReport
+}> {
   try {
     const data = await request.post<PublishDraftResponse>('/device/market/bundles/publish-draft', params)
     return { data, error: null, precheckReport: data.precheckReport }
   } catch (err) {
     const error = parseMarketError(err)
-    const body = (err as { response?: { data?: { data?: { precheckReport?: PublishDraftPrecheckReport } } } })
-      .response?.data
+    const body = (err as { response?: { data?: { data?: { precheckReport?: PublishDraftPrecheckReport } } } }).response
+      ?.data
     const precheckReport = body?.data?.precheckReport
     if (precheckReport) {
       return { data: null, error, precheckReport }
@@ -346,19 +348,24 @@ export async function cancelDraft(_draftId: string): Promise<{ data: null; error
   return { data: null, error: NOT_IMPLEMENTED }
 }
 
-/** @deprecated 后端无 versions 列表路由 */
 export async function getBundleVersions(
-  _bundleKey: string,
-  _params?: { page?: number; pageSize?: number }
+  bundleKey: string,
+  params?: { page?: number; pageSize?: number }
 ): Promise<{ data: PublishedBundle[] | null; error: MarketApiError | null }> {
-  return { data: null, error: NOT_IMPLEMENTED }
+  return marketApiCall(() =>
+    request.get<PublishedBundle[]>(`/device/market/bundles/${encodeURIComponent(bundleKey)}/versions`, {
+      params
+    })
+  )
 }
 
 /**
  * 从市场安装 Bundle
  * POST /device/market/bundles/install
  */
-export async function installBundle(params: InstallBundleRequest): Promise<{ data: InstallResult | null; error: MarketApiError | null }> {
+export async function installBundle(
+  params: InstallBundleRequest
+): Promise<{ data: InstallResult | null; error: MarketApiError | null }> {
   return marketApiCall(() =>
     request.post<InstallResult>('/device/market/bundles/install', {
       bundleKey: params.bundleKey,
@@ -445,7 +452,7 @@ export async function getInstalledBundles(params?: {
     return { data: null, error: result.error }
   }
 
-  const list: InstalledBundle[] = (result.data.data || []).map(item => ({
+  const list: InstalledBundle[] = (result.data.data || []).map((item) => ({
     installationId: item.id,
     bundleKey: item.bundleKey,
     bundleName: item.bundleKey,
@@ -469,7 +476,7 @@ export async function updateInstallationBindings(
   installationId: string,
   bindings: Array<{ bindingKey: string; deviceId: string | null }>
 ): Promise<{ data: InstalledBundle | null; error: MarketApiError | null }> {
-  const toUpdate = bindings.filter(b => b.deviceId)
+  const toUpdate = bindings.filter((b) => b.deviceId)
 
   for (const binding of toUpdate) {
     const result = await marketApiCall(() =>
@@ -486,34 +493,48 @@ export async function updateInstallationBindings(
   return getInstallationDetail(installationId)
 }
 
-/** @deprecated 后端无卸载路由 */
-export async function uninstallBundle(_installationId: string): Promise<{ data: null; error: MarketApiError | null }> {
-  return { data: null, error: NOT_IMPLEMENTED }
+export async function retryInstallation(
+  installationId: string
+): Promise<{ data: InstallResult | null; error: MarketApiError | null }> {
+  return marketApiCall(() => request.post<InstallResult>(`/device/market/bundles/install/${installationId}/retry`, {}))
 }
 
-/** @deprecated 后端无 browse 代理路由 */
-export async function browseMarketBundles(_params?: {
+export async function compensateInstallation(
+  installationId: string
+): Promise<{ data: null | { message: string }; error: MarketApiError | null }> {
+  return marketApiCall(() =>
+    request.post<{ message: string }>(`/device/market/bundles/install/${installationId}/compensate`, {})
+  )
+}
+
+export async function browseMarketBundles(params?: {
   keyword?: string
   category?: string
   sort_by?: 'latest' | 'hottest' | 'rating'
   page?: number
   page_size?: number
 }): Promise<{ data: { list: MarketBundleListItem[]; total: number } | null; error: MarketApiError | null }> {
-  return { data: { list: [], total: 0 }, error: NOT_IMPLEMENTED }
+  return marketApiCall(() =>
+    request.get<{ list: MarketBundleListItem[]; total: number }>('/device/market/bundles', {
+      params
+    })
+  )
 }
 
-/** @deprecated 后端无 bundle 详情代理路由 */
 export async function getMarketBundleDetail(
-  _bundleKey: string,
-  _params?: { version?: string }
+  bundleKey: string,
+  params?: { version?: string }
 ): Promise<{ data: MarketBundleDetail | null; error: MarketApiError | null }> {
-  return { data: null, error: NOT_IMPLEMENTED }
+  return marketApiCall(() =>
+    request.get<MarketBundleDetail>(`/device/market/bundles/${encodeURIComponent(bundleKey)}`, {
+      params
+    })
+  )
 }
 
-/** @deprecated 后端无 precheck 代理路由 */
 export async function getBundlePrecheckInfo(
-  _bundleKey: string,
-  _params?: { version?: string }
+  bundleKey: string,
+  params?: { version?: string }
 ): Promise<{
   data: {
     warnings: string[]
@@ -522,7 +543,11 @@ export async function getBundlePrecheckInfo(
   } | null
   error: MarketApiError | null
 }> {
-  return { data: null, error: NOT_IMPLEMENTED }
+  return marketApiCall(() =>
+    request.get(`/device/market/bundles/${encodeURIComponent(bundleKey)}/precheck`, {
+      params
+    })
+  )
 }
 
 // ========== Error Handling ==========
@@ -646,7 +671,7 @@ export function isBlockingResult(result: PrecheckResult): boolean {
 }
 
 export function canPublish(precheckResults: PrecheckResult[]): boolean {
-  return precheckResults.every(r => r.level !== 'FAIL')
+  return precheckResults.every((r) => r.level !== 'FAIL')
 }
 
 export function categorizePrecheckResults(results: PrecheckResult[]): {
@@ -655,8 +680,8 @@ export function categorizePrecheckResults(results: PrecheckResult[]): {
   passes: PrecheckResult[]
 } {
   return {
-    errors: results.filter(r => r.level === 'FAIL'),
-    warnings: results.filter(r => r.level === 'WARN'),
-    passes: results.filter(r => r.level === 'PASS' || r.level === 'INFO')
+    errors: results.filter((r) => r.level === 'FAIL'),
+    warnings: results.filter((r) => r.level === 'WARN'),
+    passes: results.filter((r) => r.level === 'PASS' || r.level === 'INFO')
   }
 }

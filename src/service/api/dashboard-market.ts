@@ -52,6 +52,9 @@ export interface PublishDashboardBundleResponse {
 
 async function getThingsVisAuthorization() {
   const token = await getThingsVisToken()
+  if (!token) {
+    throw new Error('ThingsVis 登录已失效，请刷新页面后重试')
+  }
   return `Bearer ${token}`
 }
 

@@ -42,6 +42,7 @@ import DeviceBindingWizard from './DeviceBindingWizard.vue'
 import {
   installBundle,
   pollInstallationStatus,
+  getInstallationDetail,
   getBundlePrecheckInfo,
   type MarketBundleDetail,
   type InstallResult,
@@ -113,7 +114,7 @@ const {
 
 const visible = computed({
   get: () => props.modelValue,
-  set: val => emit('update:modelValue', val)
+  set: (val) => emit('update:modelValue', val)
 })
 
 /** 向导步骤 */
@@ -157,7 +158,7 @@ const stepIndex = computed(() => {
 /** 当前版本信息 */
 const currentVersionInfo = computed(() => {
   if (!bundleDetail.value || !selectedVersion.value) return null
-  return bundleDetail.value.versions.find(v => v.version === selectedVersion.value)
+  return bundleDetail.value.versions.find((v) => v.version === selectedVersion.value)
 })
 
 /** 安装状态列表 */
@@ -192,34 +193,42 @@ const installStatusList = computed((): StatusInfo[] => {
 
 /** 是否显示绑定步骤 */
 const hasBindings = computed(() => {
-  return dashboardBindings.value.some(d => d.bindings.length > 0)
+  return dashboardBindings.value.some((d) => d.bindings.length > 0)
 })
 
 /** 已绑定的数量 */
 const boundCount = computed(() => {
-  return bindings.value.filter(b => b.selectedDeviceId !== null).length
+  return bindings.value.filter((b) => b.selectedDeviceId !== null).length
 })
 
 /** 是否可以开始安装 */
 const canStartInstall = computed(() => {
   if (!hasBindings.value) return true
-  return boundCount.value > 0
+  return bindings.value.every((binding) => !binding.required || Boolean(binding.selectedDeviceId))
 })
 
 /** 看板列表 */
 const dashboardList = computed(() => {
-  return dashboardBindings.value.map(d => ({
+  return dashboardBindings.value.map((d) => ({
     key: d.dashboardKey,
     name: d.dashboardName,
     bindingCount: d.bindings.length
   }))
 })
 
+const installedDeviceTemplates = computed(
+  () => installResult.value?.resourceMappings?.filter((item) => item.resourceType === 'device_template') ?? []
+)
+
+const installedDashboards = computed(
+  () => installResult.value?.resourceMappings?.filter((item) => item.resourceType === 'dashboard') ?? []
+)
+
 // ========== Watch ==========
 
 watch(
   () => props.modelValue,
-  newVal => {
+  (newVal) => {
     if (!newVal) {
       handleClose()
     }
@@ -239,7 +248,7 @@ function open(params: InstallParams) {
   visible.value = true
 
   // 初始化绑定
-  const allBindings = dashboardBindings.value.flatMap(d => d.bindings)
+  const allBindings = dashboardBindings.value.flatMap((d) => d.bindings)
   initializeBindings(allBindings)
 }
 
@@ -282,7 +291,7 @@ async function loadPrecheckInfo() {
       // 更新绑定预览
       if (result.data.bindingPreview) {
         dashboardBindings.value = result.data.bindingPreview
-        initializeBindings(result.data.bindingPreview.flatMap(d => d.bindings))
+        initializeBindings(result.data.bindingPreview.flatMap((d) => d.bindings))
       }
     }
   } catch (err) {
@@ -349,7 +358,7 @@ async function startInstallation() {
       return
     }
 
-    const deviceBindings = generateBindingsRequest().map(item => ({
+    const deviceBindings = generateBindingsRequest().map((item) => ({
       bindingKey: item.bindingKey,
       localDeviceId: item.deviceId
     }))
@@ -417,11 +426,36 @@ function startPolling(installationId: string) {
         // 更新状态
         if (result.data.status === 'COMPLETED') {
           stopPolling()
-          // 获取完整结果
-          installResult.value = {
-            ...(installResult.value || {}),
-            status: 'COMPLETED'
-          } as InstallResult
+          const detail = await getInstallationDetail(installationId)
+          if (detail.data) {
+            installResult.value = {
+              installationId: detail.data.installationId,
+              bundleKey: detail.data.bundleKey,
+              version: detail.data.version,
+              status: detail.data.status,
+              resourceMappings: [
+                ...detail.data.deviceTemplates.map((item) => ({
+                  resourceType: 'device_template',
+                  marketResourceKey: item.resourceKey,
+                  localId: item.localId,
+                  localName: item.name,
+                  status: 'CREATED'
+                })),
+                ...detail.data.dashboards.map((item) => ({
+                  resourceType: 'dashboard',
+                  marketResourceKey: item.resourceKey,
+                  localId: item.localId,
+                  localName: item.name,
+                  status: 'CREATED'
+                }))
+              ]
+            }
+          } else {
+            installResult.value = {
+              ...(installResult.value || {}),
+              status: 'COMPLETED'
+            } as InstallResult
+          }
           step.value = 'result'
           emit('installed', installResult.value!)
         } else if (result.data.status === 'FAILED' || result.data.status === 'WAITING_FOR_BINDINGS') {
@@ -461,10 +495,7 @@ function stopPolling() {
  */
 function goToDashboard(dashboardId: string) {
   handleClose()
-  router.push({
-    name: 'visualization_thingsvis',
-    query: { id: dashboardId }
-  })
+  window.open(`/tv-preview?id=${encodeURIComponent(dashboardId)}`, '_blank', 'noopener,noreferrer')
 }
 
 /**
@@ -490,8 +521,8 @@ function continueBinding() {
  * 打开看板
  */
 function openDashboard() {
-  if (installResult.value?.resourceMap?.dashboards?.[0]) {
-    goToDashboard(installResult.value.resourceMap.dashboards[0].localId)
+  if (installedDashboards.value[0]) {
+    goToDashboard(installedDashboards.value[0].localId)
   }
 }
 
@@ -500,7 +531,7 @@ function openDashboard() {
  */
 function viewInstalledList() {
   handleClose()
-  router.push({ name: 'device_market-installed' })
+  router.push({ name: 'device_market' })
 }
 
 /**
@@ -653,7 +684,7 @@ defineExpose({
             <span class="summary-label">{{ $t('market.install.totalBindings') }}</span>
           </div>
           <div class="summary-item">
-            <span class="summary-value">{{ bindings.filter(b => b.required).length }}</span>
+            <span class="summary-value">{{ bindings.filter((b) => b.required).length }}</span>
             <span class="summary-label">{{ $t('market.install.requiredBindings') }}</span>
           </div>
         </div>
@@ -697,21 +728,25 @@ defineExpose({
           <div class="result-subtitle">{{ $t('market.install.installSuccessDesc') }}</div>
 
           <!-- 资源映射 -->
-          <NCard v-if="installResult.resourceMap" :title="$t('market.install.installedResources')" class="mt-4">
+          <NCard
+            v-if="installedDeviceTemplates.length || installedDashboards.length"
+            :title="$t('market.install.installedResources')"
+            class="mt-4"
+          >
             <div class="resource-map">
-              <div v-if="installResult.resourceMap.deviceTemplates.length > 0" class="resource-section">
+              <div v-if="installedDeviceTemplates.length > 0" class="resource-section">
                 <div class="section-title">{{ $t('market.install.deviceTemplates') }}</div>
-                <div v-for="t in installResult.resourceMap.deviceTemplates" :key="t.resourceKey" class="resource-item">
-                  <span class="resource-name">{{ t.resourceKey }}</span>
+                <div v-for="t in installedDeviceTemplates" :key="t.marketResourceKey" class="resource-item">
+                  <span class="resource-name">{{ t.localName || t.marketResourceKey }}</span>
                   <NButton size="tiny" quaternary @click="goToTemplate(t.localId)">
                     {{ $t('market.install.viewTemplate') }}
                   </NButton>
                 </div>
               </div>
-              <div v-if="installResult.resourceMap.dashboards.length > 0" class="resource-section">
+              <div v-if="installedDashboards.length > 0" class="resource-section">
                 <div class="section-title">{{ $t('market.install.dashboards') }}</div>
-                <div v-for="d in installResult.resourceMap.dashboards" :key="d.resourceKey" class="resource-item">
-                  <span class="resource-name">{{ d.resourceKey }}</span>
+                <div v-for="d in installedDashboards" :key="d.marketResourceKey" class="resource-item">
+                  <span class="resource-name">{{ d.localName || d.marketResourceKey }}</span>
                   <NButton size="tiny" type="primary" @click="goToDashboard(d.localId)">
                     {{ $t('market.install.openDashboard') }}
                   </NButton>
@@ -722,7 +757,7 @@ defineExpose({
 
           <div class="result-actions">
             <NButton @click="viewInstalledList">{{ $t('market.install.viewInstalledList') }}</NButton>
-            <NButton v-if="installResult.resourceMap?.dashboards?.[0]" type="primary" @click="openDashboard">
+            <NButton v-if="installedDashboards[0]" type="primary" @click="openDashboard">
               <template #icon>
                 <NIcon><OpenOutline /></NIcon>
               </template>

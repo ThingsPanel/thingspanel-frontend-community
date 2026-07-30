@@ -351,6 +351,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       {
         name: 'device_market',
         path: '/device/market',
+        component: 'view.device_market',
         meta: {
           title: 'device_market',
           i18nKey: 'route.device_market'

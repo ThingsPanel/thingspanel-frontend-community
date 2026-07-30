@@ -8,7 +8,7 @@
  * - 多个资源组合发布
  */
 import { ref, computed } from 'vue'
-import { NButton, NIcon, NPopover } from 'naive-ui'
+import { NButton, NIcon, NPopover, useMessage } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import PublishWizard from './PublishWizard.vue'
 import MarketLoginModal from './modules/market-login-modal.vue'
@@ -55,6 +55,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { isLoggedIn } = useMarketAuth()
+const message = useMessage()
 
 const showWizard = ref(false)
 const loginModalRef = ref<InstanceType<typeof MarketLoginModal> | null>(null)
@@ -70,6 +71,10 @@ const buttonText = computed(() => {
  * 打开发布向导
  */
 function openPublish(params?: PublishEntryParams) {
+  if (params?.dashboardIds?.length !== 1) {
+    message.warning('请在要发布的看板卡片上点击“发布”')
+    return
+  }
   pendingParams.value = params
   if (!isLoggedIn()) {
     loginModalRef.value?.open()

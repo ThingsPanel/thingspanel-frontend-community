@@ -128,15 +128,17 @@ const customRoutes: CustomRoute[] = [
 
 // ThingsVis 预览页面 - 独立的常量路由，无需登录
 // 使用 as any 绕过类型检查，因为这是新增的路由
-const thingsvisPreviewRoute = {
-  name: 'thingsvis-preview-standalone',
-  path: '/tv-preview',
-  component: 'layout.blank$view.visualization_thingsvis-preview',
-  meta: {
-    title: 'thingsvis-preview',
-    constant: true
-  }
-} as any
+function createThingsvisPreviewRoute() {
+  return {
+    name: 'thingsvis-preview-standalone',
+    path: '/tv-preview',
+    component: 'layout.blank$view.visualization_thingsvis-preview',
+    meta: {
+      title: 'thingsvis-preview',
+      constant: true
+    }
+  } as any
+}
 
 /** Create routes */
 export function createRoutes() {
@@ -147,7 +149,7 @@ export function createRoutes() {
   const appEmbedRouteNames = new Set(['visualization-app', 'visualization-app-dashboards', 'visualization-app-preview'])
 
   // 添加独立的常量路由
-  constantRoutes.push(thingsvisPreviewRoute)
+  constantRoutes.push(createThingsvisPreviewRoute())
   ;[...customRoutes, ...generatedRoutes].forEach(item => {
     // App 嵌入页已在 customRoutes 中以 blank + constant 注册，跳过 generated 重复项
     if (appEmbedRouteNames.has(item.name) && !item.meta?.constant) {

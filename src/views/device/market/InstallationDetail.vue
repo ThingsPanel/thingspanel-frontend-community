@@ -25,8 +25,7 @@ import {
   NDescriptionsItem,
   NDivider,
   NTooltip,
-  useMessage,
-  useDialog
+  useMessage
 } from 'naive-ui'
 import {
   ArrowBackOutline,
@@ -41,7 +40,8 @@ import { $t } from '@/locales'
 import {
   getInstallationDetail,
   updateInstallationBindings,
-  uninstallBundle,
+  retryInstallation,
+  compensateInstallation,
   type InstalledBundle,
   type MarketApiError,
   getErrorDisplayMessage
@@ -53,7 +53,6 @@ import { useDeviceBinding, type LocalDevice, type DeviceBinding } from './compos
 
 const router = useRouter()
 const message = useMessage()
-const dialog = useDialog()
 
 // ========== Composable ==========
 
@@ -139,12 +138,12 @@ const bindingList = computed(() => {
 
 /** 未绑定的必填项 */
 const unboundRequiredCount = computed(() => {
-  return bindingList.value.filter(b => b.required && !b.deviceId).length
+  return bindingList.value.filter((b) => b.required && !b.deviceId).length
 })
 
 // ========== Watch ==========
 
-watch(installationId, id => {
+watch(installationId, (id) => {
   if (id) {
     void fetchInstallationDetail(id)
   }
@@ -181,10 +180,7 @@ async function fetchInstallationDetail(id: string) {
  * 跳转到看板
  */
 function goToDashboard(dashboardId: string) {
-  router.push({
-    name: 'visualization_thingsvis',
-    query: { id: dashboardId }
-  })
+  window.open(`/tv-preview?id=${encodeURIComponent(dashboardId)}`, '_blank', 'noopener,noreferrer')
 }
 
 /**
@@ -204,7 +200,7 @@ async function openBindingWizard() {
   if (!installation.value) return
 
   // 初始化绑定
-  const bindingDefs = installation.value.bindings.map(b => ({
+  const bindingDefs = installation.value.bindings.map((b) => ({
     bindingKey: b.bindingKey,
     displayName: b.displayName,
     required: b.required !== false,
@@ -217,7 +213,7 @@ async function openBindingWizard() {
   // 设置当前绑定的设备
   for (const binding of installation.value.bindings) {
     if (binding.deviceId) {
-      const bindingItem = bindings.value.find(b => b.bindingKey === binding.bindingKey)
+      const bindingItem = bindings.value.find((b) => b.bindingKey === binding.bindingKey)
       if (bindingItem) {
         bindingItem.selectedDeviceId = binding.deviceId
         bindingItem.selectedDevice = {
@@ -247,8 +243,8 @@ async function handleBindingUpdateComplete(completedBindings: Array<{ bindingKey
 
   try {
     // 构建更新请求
-    const updateBindings = installation.value.bindings.map(b => {
-      const completedBinding = completedBindings.find(cb => cb.bindingKey === b.bindingKey)
+    const updateBindings = installation.value.bindings.map((b) => {
+      const completedBinding = completedBindings.find((cb) => cb.bindingKey === b.bindingKey)
       return {
         bindingKey: b.bindingKey,
         deviceId: completedBinding?.deviceId || null
@@ -272,40 +268,33 @@ async function handleBindingUpdateComplete(completedBindings: Array<{ bindingKey
   }
 }
 
-/**
- * 处理卸载
- */
-function handleUninstall() {
+async function handleRetry() {
   if (!installation.value) return
+  const result = await retryInstallation(installation.value.installationId)
+  if (result.error) {
+    message.error(result.error.message)
+    return
+  }
+  message.success('已重新提交安装')
+  await refresh()
+}
 
-  dialog.warning({
-    title: $t('market.install.uninstallConfirmTitle'),
-    content: $t('market.install.uninstallConfirmMessage'),
-    positiveText: $t('common.confirm'),
-    negativeText: $t('common.cancel'),
-    onPositiveClick: async () => {
-      try {
-        const result = await uninstallBundle(installation.value!.installationId)
-
-        if (result.error) {
-          message.error(result.error.message)
-          return
-        }
-
-        message.success($t('market.install.uninstallSuccess'))
-        router.push({ name: 'device_market-installed' })
-      } catch (err: any) {
-        message.error(err.message || 'Failed to uninstall')
-      }
-    }
-  })
+async function handleCompensate() {
+  if (!installation.value) return
+  const result = await compensateInstallation(installation.value.installationId)
+  if (result.error) {
+    message.error(result.error.message)
+    return
+  }
+  message.success('残留资源清理完成')
+  await refresh()
 }
 
 /**
  * 返回列表
  */
 function goBack() {
-  router.push({ name: 'device_market-installed' })
+  router.push({ name: 'device_market' })
 }
 
 /**
@@ -426,7 +415,9 @@ defineExpose({
           <NGi>
             <NCard size="small">
               <div class="stat-card">
-                <div class="stat-value">{{ bindingList.filter(b => b.deviceId).length }}/{{ bindingList.length }}</div>
+                <div class="stat-value">
+                  {{ bindingList.filter((b) => b.deviceId).length }}/{{ bindingList.length }}
+                </div>
                 <div class="stat-label">{{ $t('market.install.bindings') }}</div>
               </div>
             </NCard>
@@ -552,8 +543,15 @@ defineExpose({
 
         <!-- 底部操作 -->
         <div class="page-actions">
-          <NButton type="error" quaternary @click="handleUninstall">
-            {{ $t('market.install.uninstall') }}
+          <NButton
+            v-if="installation.status === 'FAILED' || installation.status === 'COMPENSATION_REQUIRED'"
+            type="primary"
+            @click="handleRetry"
+          >
+            重试安装
+          </NButton>
+          <NButton v-if="installation.status === 'COMPENSATION_REQUIRED'" type="warning" @click="handleCompensate">
+            清理残留资源
           </NButton>
         </div>
       </div>

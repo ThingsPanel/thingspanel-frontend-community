@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * MarketBrowse - 市场解决方案包浏览页面
- * 
+ *
  * 功能：
  * - 浏览市场中的解决方案包
  * - 搜索和筛选
@@ -9,7 +9,6 @@
  * - 发起安装
  */
 import { ref, reactive, computed, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useDebounceFn } from '@vueuse/core'
 import {
   NInput,
@@ -53,11 +52,8 @@ import {
 } from '@/service/api/market-bundle'
 import { useMarketAuth } from '@/views/device/config/composables/use-market-auth'
 import InstallWizard from './InstallWizard.vue'
+import MarketBundleDetailDrawer from './MarketBundleDetailDrawer.vue'
 import MarketLoginModal from '@/views/device/config/modules/market-login-modal.vue'
-
-// ========== Router ==========
-
-const router = useRouter()
 
 // ========== Auth ==========
 
@@ -114,10 +110,11 @@ const loadingDetail = ref(false)
 
 /** 安装向导 */
 const installWizardRef = ref<InstanceType<typeof InstallWizard>>()
+const installWizardVisible = ref(false)
 
 /** 登录弹窗 */
 const marketLoginRef = ref<InstanceType<typeof MarketLoginModal>>()
-const pendingInstallBundle = ref<MarketBundleDetail | null>(null)
+const pendingInstallBundle = ref<{ bundleKey: string; version: string } | null>(null)
 
 // ========== Computed ==========
 
@@ -131,24 +128,24 @@ const hasMore = computed(() => total.value > searchParams.page_size)
  */
 async function fetchBundleList() {
   loading.value = true
-  
+
   try {
     const params: any = {
       page: searchParams.page,
       page_size: searchParams.page_size,
       sort_by: searchParams.sort_by
     }
-    
+
     if (searchParams.keyword) {
       params.keyword = searchParams.keyword
     }
-    
+
     if (searchParams.category) {
       params.category = searchParams.category
     }
-    
+
     const result = await browseMarketBundles(params)
-    
+
     if (result.data) {
       bundleList.value = result.data.list || []
       total.value = result.data.total || 0
@@ -213,33 +210,39 @@ function handlePageChange(page: number) {
 async function handleViewDetail(item: MarketBundleListItem) {
   loadingDetail.value = true
   detailDrawerVisible.value = true
-  
+
   try {
     const result = await getMarketBundleDetail(item.bundleKey)
-    
-    if (result.data) {
+
+    if (result.error) {
+      window.$message?.error(result.error.message)
+      bundleList.value = []
+      total.value = 0
+    } else if (result.data) {
       currentDetail.value = result.data
       currentVersion.value = item.latestVersion
-      
+
       // 获取预检信息以获取绑定预览
       const precheckResult = await getBundlePrecheckInfo(item.bundleKey, {
         version: item.latestVersion
       })
-      
+
       if (precheckResult.data?.bindingPreview) {
         currentBindings.value = precheckResult.data.bindingPreview
       } else {
         // 从版本信息中提取绑定
-        const versionInfo = result.data.versions.find(v => v.version === item.latestVersion)
-        currentBindings.value = versionInfo?.deviceBindings.map(b => ({
-          dashboardKey: '',
-          dashboardName: '',
-          bindings: [b]
-        })) || []
+        const versionInfo = result.data.versions.find((v) => v.version === item.latestVersion)
+        currentBindings.value =
+          versionInfo?.deviceBindings.map((b) => ({
+            dashboardKey: '',
+            dashboardName: '',
+            bindings: [b]
+          })) || []
       }
     }
   } catch (err) {
     console.error('Failed to fetch bundle detail:', err)
+    window.$message?.error('加载商品详情失败')
   } finally {
     loadingDetail.value = false
   }
@@ -250,16 +253,14 @@ async function handleViewDetail(item: MarketBundleListItem) {
  */
 async function handleInstall(item: MarketBundleListItem) {
   if (!isLoggedIn()) {
-    pendingInstallBundle.value = null
-    // 先获取详情
-    const result = await getMarketBundleDetail(item.bundleKey)
-    if (result.data) {
-      pendingInstallBundle.value = result.data
+    pendingInstallBundle.value = {
+      bundleKey: item.bundleKey,
+      version: item.latestVersion
     }
     marketLoginRef.value?.open()
     return
   }
-  
+
   await openInstallWizard(item.bundleKey, item.latestVersion)
 }
 
@@ -269,7 +270,7 @@ async function handleInstall(item: MarketBundleListItem) {
 function onMarketLoginSuccess() {
   if (pendingInstallBundle.value) {
     const bundle = pendingInstallBundle.value
-    void openInstallWizard(bundle.bundleKey, currentVersion.value)
+    void openInstallWizard(bundle.bundleKey, bundle.version)
     pendingInstallBundle.value = null
   }
 }
@@ -279,25 +280,28 @@ function onMarketLoginSuccess() {
  */
 async function openInstallWizard(bundleKey: string, version: string) {
   loadingDetail.value = true
-  
+
   try {
     // 获取完整详情
     const result = await getMarketBundleDetail(bundleKey)
-    
+
     if (result.data) {
       // 获取绑定预览
       const precheckResult = await getBundlePrecheckInfo(bundleKey, { version })
-      
+
       let bindings: DashboardBindingSpec[] = []
       if (precheckResult.data?.bindingPreview) {
         bindings = precheckResult.data.bindingPreview
       }
-      
+
       installWizardRef.value?.open({
         bundle: result.data,
         version,
         dashboardBindings: bindings
       })
+      installWizardVisible.value = true
+    } else if (result.error) {
+      window.$message?.error(result.error.message)
     }
   } catch (err) {
     console.error('Failed to open install wizard:', err)
@@ -331,13 +335,13 @@ function formatInstallCount(count: number): string {
 function getCategoryTagType(category: string): 'success' | 'info' | 'warning' | 'error' {
   const typeMap: Record<string, 'success' | 'info' | 'warning' | 'error'> = {
     'smart-home': 'success',
-    'industrial': 'info',
-    'agriculture': 'warning',
+    industrial: 'info',
+    agriculture: 'warning',
     'smart-city': 'info',
-    'energy': 'success',
-    'healthcare': 'error',
-    'retail': 'warning',
-    'other': 'default'
+    energy: 'success',
+    healthcare: 'error',
+    retail: 'warning',
+    other: 'default'
   }
   return typeMap[category] || 'default'
 }
@@ -367,10 +371,10 @@ onMounted(() => {
         @keyup.enter="handleSearch"
       >
         <template #prefix>
-          <NIcon><IosSearch /></NIcon></NIcon>
+          <NIcon><IosSearch /></NIcon>
         </template>
       </NInput>
-      
+
       <NSelect
         v-model:value="searchParams.category"
         :options="categoryOptions"
@@ -379,7 +383,7 @@ onMounted(() => {
         style="width: 160px"
         @update:value="handleCategoryChange"
       />
-      
+
       <NSelect
         v-model:value="searchParams.sort_by"
         :options="sortOptions"
@@ -393,7 +397,13 @@ onMounted(() => {
       <div v-if="!loading && bundleList.length === 0" class="empty-state">
         <NEmpty :description="$t('market.browse.noBundles')">
           <template #extra>
-            <NButton type="primary" @click="searchParams.keyword = ''; handleSearch()">
+            <NButton
+              type="primary"
+              @click="
+                searchParams.keyword = ''
+                handleSearch()
+              "
+            >
               {{ $t('market.browse.clearFilters') }}
             </NButton>
           </template>
@@ -405,12 +415,7 @@ onMounted(() => {
           <NCard class="bundle-card" hoverable @click="handleViewDetail(item)">
             <!-- 卡片头部 -->
             <div class="bundle-header">
-              <NAvatar
-                :src="item.thumbnail"
-                :size="48"
-                round
-                class="bundle-avatar"
-              >
+              <NAvatar :src="item.thumbnail" :size="48" round class="bundle-avatar">
                 {{ item.name?.charAt(0) || 'B' }}
               </NAvatar>
               <NTag :type="getCategoryTagType(item.category)" size="small" class="bundle-category">
@@ -436,7 +441,7 @@ onMounted(() => {
                   </template>
                   {{ $t('market.browse.version') }}: {{ item.latestVersion }}
                 </NTooltip>
-                
+
                 <NTooltip>
                   <template #trigger>
                     <span class="meta-item">
@@ -446,7 +451,7 @@ onMounted(() => {
                   </template>
                   {{ $t('market.browse.installs') }}: {{ item.installCount }}
                 </NTooltip>
-                
+
                 <NTooltip v-if="item.author">
                   <template #trigger>
                     <span class="meta-item">
@@ -460,11 +465,15 @@ onMounted(() => {
 
               <div class="bundle-actions" @click.stop>
                 <NButton size="small" quaternary @click="handleViewDetail(item)">
-                  <template #icon><NIcon><EyeOutline /></NIcon></template>
+                  <template #icon>
+                    <NIcon><EyeOutline /></NIcon>
+                  </template>
                   {{ $t('market.viewDetail') }}
                 </NButton>
                 <NButton type="primary" size="small" @click="handleInstall(item)">
-                  <template #icon><NIcon><CloudDownloadOutline /></NIcon></template>
+                  <template #icon>
+                    <NIcon><CloudDownloadOutline /></NIcon>
+                  </template>
                   {{ $t('market.install') }}
                 </NButton>
               </div>
@@ -487,6 +496,7 @@ onMounted(() => {
     <!-- 详情抽屉 -->
     <MarketBundleDetailDrawer
       v-model:visible="detailDrawerVisible"
+      v-model:version="currentVersion"
       :bundle="currentDetail"
       :version="currentVersion"
       :bindings="currentBindings"
@@ -498,13 +508,9 @@ onMounted(() => {
     <MarketLoginModal ref="marketLoginRef" @login-success="onMarketLoginSuccess" />
 
     <!-- 安装向导 -->
-    <InstallWizard
-      ref="installWizardRef"
-      @installed="onInstallComplete"
-    />
+    <InstallWizard ref="installWizardRef" v-model="installWizardVisible" @installed="onInstallComplete" />
   </div>
 </template>
-
 
 <style scoped lang="scss">
 .market-browse {
