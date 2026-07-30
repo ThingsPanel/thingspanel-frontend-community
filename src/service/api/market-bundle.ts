@@ -239,6 +239,17 @@ function parseMarketError(err: unknown): MarketApiError {
   }
 }
 
+export function isMarketAuthenticationError(error: MarketApiError | null): boolean {
+  if (!error) return false
+  if (error.httpStatus === 401 || error.code === '401' || error.code === 'UNAUTHORIZED') return true
+
+  const upstreamError = error.details?.error
+  return (
+    typeof upstreamError === 'string' &&
+    /Horizon .*status 401:.*(?:invalid|missing) authentication/i.test(upstreamError)
+  )
+}
+
 async function marketApiCall<T>(
   fn: () => Promise<{ data: T | null; error: unknown | null }>
 ): Promise<{ data: T | null; error: MarketApiError | null }> {
