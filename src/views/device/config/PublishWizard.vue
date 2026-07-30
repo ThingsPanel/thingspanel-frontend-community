@@ -70,7 +70,7 @@ const categoryOptions = [
   { label: '其他', value: 'other' }
 ]
 
-const bindingKeyPattern = /^[a-z][a-z0-9_]{2,63}$/
+const bindingKeyPattern = /^[a-z][a-z0-9-]{2,63}$/
 const bundleKeyPattern = /^[a-z][a-z0-9-]{2,63}$/
 const versionPattern = /^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$/
 
@@ -142,7 +142,7 @@ async function open(params?: OpenParams) {
     roles.value = data.deviceReferences.map((reference) => ({
       sourceDeviceId: reference.sourceDeviceId,
       bindingKey: reference.suggestedBindingKey,
-      displayName: reference.sourceDeviceName || reference.suggestedBindingKey.replace(/_/g, '-')
+      displayName: reference.sourceDeviceName || reference.suggestedBindingKey
     }))
 
   } catch (error) {
