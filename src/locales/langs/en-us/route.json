@@ -6,6 +6,7 @@
   "route.home": "Home",
   "route.user-center": "User Center",
   "route.about": "About",
+  "route.resource-hub": "Resource Hub",
   "route.function": "System Function",
   "route.function_tab": "Tab",
   "route.function_multi-tab": "Multi Tab",

@@ -842,6 +842,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'resource-hub',
+    path: '/resource-hub',
+    component: 'layout.base$view.resource-hub',
+    meta: {
+      title: 'resource-hub',
+      i18nKey: 'route.resource-hub'
+    }
+  },
+  {
     name: 'rule-engine',
     path: '/rule-engine',
     component: 'layout.base$view.rule-engine',

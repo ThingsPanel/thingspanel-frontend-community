@@ -105,6 +105,7 @@ declare module "@elegant-router/types" {
     "plugin_print": "/plugin/print";
     "plugin_swiper": "/plugin/swiper";
     "plugin_video": "/plugin/video";
+    "resource-hub": "/resource-hub";
     "rule-engine": "/rule-engine";
     "system-management-user": "/system-management-user";
     "system-management-user_system-log": "/system-management-user/system-log";
@@ -174,6 +175,7 @@ declare module "@elegant-router/types" {
     | "multi-menu"
     | "personal-center"
     | "plugin"
+    | "resource-hub"
     | "rule-engine"
     | "system-management-user"
     | "user-center"
@@ -264,6 +266,7 @@ declare module "@elegant-router/types" {
     | "plugin_print"
     | "plugin_swiper"
     | "plugin_video"
+    | "resource-hub"
     | "rule-engine"
     | "system-management-user_system-log"
     | "user-center"

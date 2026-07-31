@@ -249,6 +249,7 @@ const routeMap: RouteMap = {
   "plugin_print": "/plugin/print",
   "plugin_swiper": "/plugin/swiper",
   "plugin_video": "/plugin/video",
+  "resource-hub": "/resource-hub",
   "rule-engine": "/rule-engine",
   "system-management-user": "/system-management-user",
   "system-management-user_system-log": "/system-management-user/system-log",
