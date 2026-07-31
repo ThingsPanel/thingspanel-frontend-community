@@ -219,24 +219,46 @@ function generateIdempotencyKey(): string {
 function parseMarketError(err: unknown): MarketApiError {
   const axiosError = err as {
     response?: { status?: number; data?: { code?: number | string; message?: string; data?: unknown } }
+    error?: {
+      status?: number
+      code?: number | string
+      message?: string
+      data?: { code?: number | string; message?: string; data?: unknown }
+    }
     message?: string
   }
 
-  const status = axiosError.response?.status || 500
-  const body = axiosError.response?.data
+  const status = axiosError.error?.status || axiosError.response?.status || 500
+  const body = axiosError.error?.data || axiosError.response?.data
 
   return {
-    code: String(body?.code ?? `HTTP_${status}`),
-    message: body?.message || axiosError.message || '请求失败',
+    code: String(body?.code ?? axiosError.error?.code ?? `HTTP_${status}`),
+    message: body?.message || axiosError.error?.message || axiosError.message || '请求失败',
     details: body?.data as Record<string, unknown> | undefined,
     httpStatus: status
   }
 }
 
-async function marketApiCall<T>(fn: () => Promise<T>): Promise<{ data: T | null; error: MarketApiError | null }> {
+export function isMarketAuthenticationError(error: MarketApiError | null): boolean {
+  if (!error) return false
+  if (error.httpStatus === 401 || error.code === '401' || error.code === 'UNAUTHORIZED') return true
+
+  const upstreamError = error.details?.error
+  return (
+    typeof upstreamError === 'string' &&
+    /Horizon .*status 401:.*(?:invalid|missing) authentication/i.test(upstreamError)
+  )
+}
+
+async function marketApiCall<T>(
+  fn: () => Promise<{ data: T | null; error: unknown | null }>
+): Promise<{ data: T | null; error: MarketApiError | null }> {
   try {
-    const data = await fn()
-    return { data, error: null }
+    const result = await fn()
+    if (result.error) {
+      return { data: null, error: parseMarketError({ error: result.error }) }
+    }
+    return { data: result.data, error: null }
   } catch (err) {
     return { data: null, error: parseMarketError(err) }
   }
@@ -553,12 +575,21 @@ export async function browseMarketBundles(params?: {
   page?: number
   page_size?: number
 }): Promise<{ data: MarketBundleListResult | null; error: MarketApiError | null }> {
-  return marketApiCall(async () => {
-    const payload = await request.get<unknown>('/device/market/bundles', {
+  const result = await marketApiCall(() =>
+    request.get<unknown>('/device/market/bundles', {
       params
     })
-    return normalizeMarketBundleList(payload)
-  })
+  )
+
+  if (result.error) {
+    return { data: null, error: result.error }
+  }
+
+  try {
+    return { data: normalizeMarketBundleList(result.data), error: null }
+  } catch (err) {
+    return { data: null, error: parseMarketError(err) }
+  }
 }
 
 export async function getMarketBundleDetail(
