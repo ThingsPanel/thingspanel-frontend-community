@@ -356,6 +356,11 @@ defineExpose({ open, close } as PublishWizardExpose)
                 </NCard>
               </div>
             </NFormItem>
+            <NFormItem v-else label="设备依赖">
+              <NAlert type="warning" :show-icon="true" class="dependency-free-alert">
+                该看板不引用具体设备，将作为无设备依赖的通用看板发布，安装后无需绑定设备。如果看板调用了租户或系统级接口，安装账号需具备对应权限。
+              </NAlert>
+            </NFormItem>
           </NForm>
 
           <NAlert v-if="roles.length > 0 && !rolesValid" type="warning" class="mb-4">
@@ -430,5 +435,9 @@ defineExpose({ open, close } as PublishWizardExpose)
 
 .field-tags {
   margin-top: 10px;
+}
+
+.dependency-free-alert {
+  width: 100%;
 }
 </style>
