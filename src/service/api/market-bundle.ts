@@ -598,8 +598,9 @@ export async function getMarketBundleDetail(
 ): Promise<{ data: MarketBundleDetail | null; error: MarketApiError | null }> {
   return marketApiCall(() =>
     request.get<MarketBundleDetail>(`/device/market/bundles/${encodeURIComponent(bundleKey)}`, {
-      params
-    })
+      params,
+      silentError: true
+    } as any)
   )
 }
 
