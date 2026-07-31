@@ -7,6 +7,8 @@
   "route.user-center": "User Center",
   "route.about": "About",
   "route.resource-hub": "Resource Hub",
+  "route.resource-hub_dashboard": "Dashboard Templates",
+  "route.resource-hub_device": "Device Templates",
   "route.function": "System Function",
   "route.function_tab": "Tab",
   "route.function_multi-tab": "Multi Tab",

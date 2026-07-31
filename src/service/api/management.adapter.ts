@@ -34,7 +34,9 @@ const FIRST_LEVEL_ROUTE_COMPONENT_SPLIT = '$'
 /** 浏览器显示路径，与 build/plugins/router.ts 的 routePathTransformer 保持一致 */
 const ROUTE_DISPLAY_PATH_MAP: Record<string, string> = {
   device_config: '/device/template',
-  device_template: '/device/thingsmodel'
+  device_template: '/device/thingsmodel',
+  'resource-hub_device': '/resource-hub/device-template',
+  'resource-hub_dashboard': '/resource-hub/dashboard-template'
 }
 
 /** 后台 param1 仍可能使用旧路径，用于组件解析 */

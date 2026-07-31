@@ -11,8 +11,6 @@ import {
   NSpace,
   NEmpty,
   NDropdown,
-  NTabs,
-  NTabPane,
   NTooltip
 } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
@@ -25,8 +23,6 @@ import ItemCard from '@/components/dev-card-item/index.vue'
 // Import Publish Components
 import MarketLoginModal from './modules/market-login-modal.vue'
 import PublishConfirmModal from './modules/publish-confirm-modal.vue'
-import MarketTemplateList from './modules/market-template-list.vue'
-import MarketBrowse from '../market/MarketBrowse.vue'
 
 const router = useRouter()
 const { routerPushByKey } = useRouterPush()
@@ -36,13 +32,6 @@ const marketLoginRef = ref<InstanceType<typeof MarketLoginModal>>()
 const publishConfirmRef = ref<InstanceType<typeof PublishConfirmModal>>()
 const pendingPublishId = ref('')
 const pendingPublishName = ref('')
-const activeTab = ref('local')
-const marketResourceTab = ref('device-template')
-
-const handleInstalled = () => {
-  activeTab.value = 'local'
-  getData()
-}
 
 // 查询参数
 const queryData = ref({
@@ -276,159 +265,144 @@ const availableViews = [
 
 <template>
   <div class="p-4">
-    <NTabs v-model:value="activeTab" type="line" animated>
-      <NTabPane name="local" :tab="$t('device_template.localTemplates')">
-        <AdvancedListLayout
-          :loading="loading"
-          :show-query-button="false"
-          :show-reset-button="false"
-          :available-views="availableViews"
-          @add-new="handleAddNew"
-          @query="handleQuery"
-          @reset="handleReset"
-          @refresh="handleRefresh"
-        >
-          <template #header-left>
-            <div class="flex gap-2">
-              <n-button type="primary" @click="handleAddNew">{{ $t('generate.createDeviceConfig') }}</n-button>
-            </div>
-          </template>
-          <!-- 搜索表单内容 -->
-          <template #search-form-content>
-            <div class="flex gap-4">
-              <NInput
-                v-model:value="queryData.name"
-                :placeholder="$t('generate.enter-config-name')"
-                type="text"
-                clearable
-                style="width: 210px"
-                @clear="handleReset"
-                @keydown.enter="handleQuery"
+    <AdvancedListLayout
+      :loading="loading"
+      :show-query-button="false"
+      :show-reset-button="false"
+      :available-views="availableViews"
+      @add-new="handleAddNew"
+      @query="handleQuery"
+      @reset="handleReset"
+      @refresh="handleRefresh"
+    >
+      <template #header-left>
+        <div class="flex gap-2">
+          <n-button type="primary" @click="handleAddNew">{{ $t('generate.createDeviceConfig') }}</n-button>
+        </div>
+      </template>
+      <!-- 搜索表单内容 -->
+      <template #search-form-content>
+        <div class="flex gap-4">
+          <NInput
+            v-model:value="queryData.name"
+            :placeholder="$t('generate.enter-config-name')"
+            type="text"
+            clearable
+            style="width: 210px"
+            @clear="handleReset"
+            @keydown.enter="handleQuery"
+          >
+            <template #prefix>
+              <NIcon>
+                <IosSearch />
+              </NIcon>
+            </template>
+          </NInput>
+          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+        </div>
+      </template>
+
+      <!-- 卡片视图 -->
+      <template #card-view>
+        <n-spin :show="loading">
+          <div v-if="deviceConfigList.length === 0 && !loading" class="empty-state">
+            <NEmpty size="huge" :description="$t('common.nodata')" class="min-h-60" />
+          </div>
+          <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
+            <n-gi v-for="item in deviceConfigList" :key="item.id">
+              <ItemCard
+                :title="item.name"
+                :footer-text="`${item.device_count} ${$t('generate.individual')} ${$t('generate.device')}`"
+                :subtitle="deviceTypeMap[item.device_type as keyof typeof deviceTypeMap]"
+                :device-config-id="item.id"
+                :isStatus="false"
+                @click-card="goToDetail(item.id)"
               >
-                <template #prefix>
-                  <NIcon>
-                    <IosSearch />
-                  </NIcon>
+                <template #subtitle-icon>
+                  <SvgIcon :local-icon="getDeviceIconName(item.device_type)" class="image-icon" />
                 </template>
-              </NInput>
-              <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-            </div>
-          </template>
 
-          <!-- 卡片视图 -->
-          <template #card-view>
-            <n-spin :show="loading">
-              <div v-if="deviceConfigList.length === 0 && !loading" class="empty-state">
-                <NEmpty size="huge" :description="$t('common.nodata')" class="min-h-60" />
-              </div>
-              <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
-                <n-gi v-for="item in deviceConfigList" :key="item.id">
-                  <ItemCard
-                    :title="item.name"
-                    :footer-text="`${item.device_count} ${$t('generate.individual')} ${$t('generate.device')}`"
-                    :subtitle="deviceTypeMap[item.device_type as keyof typeof deviceTypeMap]"
-                    :device-config-id="item.id"
-                    :isStatus="false"
-                    @click-card="goToDetail(item.id)"
+                <!-- 右上角操作按钮 -->
+                <template #top-right-icon>
+                  <NDropdown
+                    placement="bottom-end"
+                    trigger="hover"
+                    :options="[
+                      { label: $t('common.edit'), key: 'edit' },
+                      {
+                        label: $t('device_template.publishToMarket'),
+                        key: 'publish',
+                        disabled: !item.device_template_id
+                      }
+                    ]"
+                    @select="
+                      key => {
+                        if (key === 'edit') handleEdit(item.id)
+                        if (key === 'publish') handlePublishToMarket(item.id, item.name)
+                      }
+                    "
                   >
-                    <template #subtitle-icon>
-                      <SvgIcon :local-icon="getDeviceIconName(item.device_type)" class="image-icon" />
-                    </template>
-
-                    <!-- 右上角操作按钮 -->
-                    <template #top-right-icon>
-                      <NDropdown
-                        placement="bottom-end"
-                        trigger="hover"
-                        :options="[
-                          { label: $t('common.edit'), key: 'edit' },
-                          {
-                            label: $t('device_template.publishToMarket'),
-                            key: 'publish',
-                            disabled: !item.device_template_id
-                          }
-                        ]"
-                        @select="
-                          key => {
-                            if (key === 'edit') handleEdit(item.id)
-                            if (key === 'publish') handlePublishToMarket(item.id, item.name)
-                          }
-                        "
-                      >
-                        <NTooltip :disabled="!!item.device_template_id" trigger="hover">
-                          <template #trigger>
-                            <NButton size="tiny" quaternary circle>
-                              <template #icon>
-                                <NIcon><EllipsisHorizontal /></NIcon>
-                              </template>
-                            </NButton>
+                    <NTooltip :disabled="!!item.device_template_id" trigger="hover">
+                      <template #trigger>
+                        <NButton size="tiny" quaternary circle>
+                          <template #icon>
+                            <NIcon><EllipsisHorizontal /></NIcon>
                           </template>
-                          {{ $t('device_template.requireThingModelBeforePublish') }}
-                        </NTooltip>
-                      </NDropdown>
-                    </template>
+                        </NButton>
+                      </template>
+                      {{ $t('device_template.requireThingModelBeforePublish') }}
+                    </NTooltip>
+                  </NDropdown>
+                </template>
 
-                    <!-- 底部图标 - 左下角显示配置图片 -->
-                    <template #footer-icon>
-                      <div class="footer-icon-container">
-                        <img
-                          v-if="item.image_url"
-                          :src="getConfigImageUrl(item.image_url)"
-                          alt="config image"
-                          class="config-image"
-                        />
-                        <SvgIcon v-else local-icon="default-config" class="config-image" />
-                      </div>
-                    </template>
+                <!-- 底部图标 - 左下角显示配置图片 -->
+                <template #footer-icon>
+                  <div class="footer-icon-container">
+                    <img
+                      v-if="item.image_url"
+                      :src="getConfigImageUrl(item.image_url)"
+                      alt="config image"
+                      class="config-image"
+                    />
+                    <SvgIcon v-else local-icon="default-config" class="config-image" />
+                  </div>
+                </template>
 
-                    <!-- 卡片内容区域可以显示更多信息 -->
-                  </ItemCard>
-                </n-gi>
-              </n-grid>
-            </n-spin>
-          </template>
+                <!-- 卡片内容区域可以显示更多信息 -->
+              </ItemCard>
+            </n-gi>
+          </n-grid>
+        </n-spin>
+      </template>
 
-          <!-- 表格视图 -->
-          <template #list-view>
-            <NDataTable
-              :columns="columns"
-              :data="deviceConfigList"
-              :loading="loading"
-              size="small"
-              :pagination="false"
-              :bordered="false"
-              :single-line="false"
-              striped
-              @update:sorter="handleSorterChange"
-            />
-          </template>
+      <!-- 表格视图 -->
+      <template #list-view>
+        <NDataTable
+          :columns="columns"
+          :data="deviceConfigList"
+          :loading="loading"
+          size="small"
+          :pagination="false"
+          :bordered="false"
+          :single-line="false"
+          striped
+          @update:sorter="handleSorterChange"
+        />
+      </template>
 
-          <!-- 底部分页 -->
-          <template #footer>
-            <NPagination
-              v-model:page="queryData.page"
-              :page-size="queryData.page_size"
-              :item-count="dataTotal"
-              show-size-picker
-              :page-sizes="[10, 20, 30, 50]"
-              @update:page="handlePageChange"
-              @update:page-size="handlePageSizeChange"
-            />
-          </template>
-        </AdvancedListLayout>
-      </NTabPane>
-
-      <NTabPane name="market" :tab="$t('device_template.marketTemplates')">
-        <NTabs v-model:value="marketResourceTab" type="segment" class="market-resource-tabs">
-          <NTabPane name="device-template" :tab="$t('market.resource.deviceTemplates')">
-            <MarketTemplateList @installed="handleInstalled" />
-          </NTabPane>
-          <NTabPane name="dashboard-template" :tab="$t('market.resource.dashboardTemplates')">
-            <MarketBrowse embedded />
-          </NTabPane>
-        </NTabs>
-      </NTabPane>
-    </NTabs>
+      <!-- 底部分页 -->
+      <template #footer>
+        <NPagination
+          v-model:page="queryData.page"
+          :page-size="queryData.page_size"
+          :item-count="dataTotal"
+          show-size-picker
+          :page-sizes="[10, 20, 30, 50]"
+          @update:page="handlePageChange"
+          @update:page-size="handlePageSizeChange"
+        />
+      </template>
+    </AdvancedListLayout>
 
     <!-- 市场登录弹窗 -->
     <MarketLoginModal ref="marketLoginRef" @login-success="onMarketLoginSuccess" />
@@ -438,10 +412,6 @@ const availableViews = [
 </template>
 
 <style scoped lang="scss">
-.market-resource-tabs {
-  margin-top: 8px;
-}
-
 .empty-state {
   display: flex;
   align-items: center;

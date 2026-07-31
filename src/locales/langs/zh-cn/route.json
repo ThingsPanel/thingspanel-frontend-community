@@ -7,6 +7,8 @@
   "route.user-center": "个人中心",
   "route.about": "关于",
   "route.resource-hub": "资源中心",
+  "route.resource-hub_dashboard": "看板模板",
+  "route.resource-hub_device": "设备模板",
   "route.function": "系统功能",
   "route.function_tab": "标签页",
   "route.function_multi-tab": "多标签页",
