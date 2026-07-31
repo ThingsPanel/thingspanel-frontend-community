@@ -936,6 +936,15 @@ export const generatedRoutes: GeneratedRoute[] = [
           i18nKey: 'route.visualization-thingsvis-preview',
           constant: true
         }
+      },
+      {
+        name: 'visualization_thingsvis-template',
+        path: '/visualization/thingsvis-template',
+        component: 'view.visualization_thingsvis-template',
+        meta: {
+          title: 'visualization_thingsvis-template',
+          i18nKey: 'route.visualization-thingsvis-template'
+        }
       }
     ]
   },

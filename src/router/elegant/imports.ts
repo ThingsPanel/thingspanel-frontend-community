@@ -91,5 +91,6 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "visualization_thingsvis-editor": () => import("@/views/visualization/thingsvis-editor/index.vue"),
   "visualization_thingsvis-menu-dashboard": () => import("@/views/visualization/thingsvis-menu-dashboard/index.vue"),
   "visualization_thingsvis-preview": () => import("@/views/visualization/thingsvis-preview/index.vue"),
+  "visualization_thingsvis-template": () => import("@/views/visualization/thingsvis-template/index.vue"),
   visualization_thingsvis: () => import("@/views/visualization/thingsvis/index.vue"),
 };

@@ -115,6 +115,7 @@ declare module "@elegant-router/types" {
     "visualization_thingsvis-editor": "/visualization/thingsvis-editor";
     "visualization_thingsvis-menu-dashboard": "/visualization/thingsvis-menu-dashboard";
     "visualization_thingsvis-preview": "/visualization/thingsvis-preview";
+    "visualization_thingsvis-template": "/visualization/thingsvis-template";
     "visualization-app": "/visualization-app";
     "visualization-app-dashboards": "/visualization-app-dashboards";
     "visualization-app-preview": "/visualization-app-preview";
@@ -273,6 +274,7 @@ declare module "@elegant-router/types" {
     | "visualization_thingsvis-editor"
     | "visualization_thingsvis-menu-dashboard"
     | "visualization_thingsvis-preview"
+    | "visualization_thingsvis-template"
     | "visualization_thingsvis"
   >;
 
