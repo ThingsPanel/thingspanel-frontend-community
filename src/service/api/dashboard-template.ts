@@ -1,4 +1,5 @@
 import { request } from '../request'
+import { getThingsVisToken } from '@/utils/thingsvis'
 
 export type LocalDashboardTemplateStatus = 'READY' | 'MISSING_DEVICE' | 'DISABLED'
 
@@ -138,5 +139,15 @@ export function createDashboardFromTemplate(
     deviceBindings: Array<{ bindingKey: string; localDeviceId: string }>
   }
 ): ApiResult<DashboardTemplateInstance> {
-  return callApi(() => request.post(`/device/dashboard-templates/${encodeURIComponent(templateId)}/instances`, params))
+  return callApi(async () => {
+    const token = await getThingsVisToken()
+    if (!token) {
+      throw new Error('ThingsVis 登录已失效，请刷新页面后重试')
+    }
+    return request.post(`/device/dashboard-templates/${encodeURIComponent(templateId)}/instances`, params, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+  })
 }
