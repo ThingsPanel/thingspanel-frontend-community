@@ -6,14 +6,14 @@
  * - 浏览市场中的解决方案包
  * - 搜索和筛选
  * - 查看详情
- * - 发起安装
+ * - 下载模板到本地模板库
  */
-import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useDebounceFn } from '@vueuse/core'
 import {
   NInput,
   NSelect,
-  NSpace,
   NSpin,
   NEmpty,
   NPagination,
@@ -22,23 +22,11 @@ import {
   NCard,
   NTag,
   NAvatar,
-  NRate,
   NTooltip,
-  NDrawer,
-  NDrawerContent,
-  NDivider,
-  NAlert
+  useDialog,
+  useMessage
 } from 'naive-ui'
-import {
-  SearchOutline,
-  CloudDownloadOutline,
-  EyeOutline,
-  TimerOutline,
-  PersonOutline,
-  StarOutline,
-  OpenOutline,
-  LinkOutline
-} from '@vicons/ionicons5'
+import { SearchOutline, CloudDownloadOutline, EyeOutline, TimerOutline, PersonOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
 import {
   browseMarketBundles,
@@ -48,8 +36,8 @@ import {
   type MarketBundleDetail,
   type DashboardBindingSpec
 } from '@/service/api/market-bundle'
+import { downloadMarketDashboardTemplate } from '@/service/api/dashboard-template'
 import { useMarketAuth } from '@/views/device/config/composables/use-market-auth'
-import InstallWizard from './InstallWizard.vue'
 import MarketBundleDetailDrawer from './MarketBundleDetailDrawer.vue'
 import MarketLoginModal from '@/views/device/config/modules/market-login-modal.vue'
 
@@ -64,7 +52,10 @@ const props = withDefaults(
 
 // ========== Auth ==========
 
-const { isLoggedIn } = useMarketAuth()
+const router = useRouter()
+const dialog = useDialog()
+const message = useMessage()
+const { isLoggedIn, getToken, clearToken } = useMarketAuth()
 
 // ========== State ==========
 
@@ -114,14 +105,10 @@ const currentVersion = ref('')
 const currentBindings = ref<DashboardBindingSpec[]>([])
 const loadingDetail = ref(false)
 
-/** 安装向导 */
-const installWizardRef = ref<InstanceType<typeof InstallWizard>>()
-const installWizardVisible = ref(false)
-
 /** 登录弹窗 */
 const marketLoginRef = ref<InstanceType<typeof MarketLoginModal>>()
-const pendingInstallBundle = ref<{ bundleKey: string; version: string } | null>(null)
-const resumeInstallAfterLogin = ref(false)
+const pendingDownloadBundle = ref<MarketBundleListItem | null>(null)
+const downloadingBundleKey = ref('')
 
 // ========== Computed ==========
 
@@ -260,90 +247,80 @@ async function handleViewDetail(item: MarketBundleListItem) {
 }
 
 /**
- * 处理安装
+ * 下载模板到本地模板库
  */
-async function handleInstall(item: MarketBundleListItem) {
+async function handleDownload(item: MarketBundleListItem) {
   if (!isLoggedIn()) {
-    pendingInstallBundle.value = {
-      bundleKey: item.bundleKey,
-      version: item.latestVersion
-    }
+    pendingDownloadBundle.value = item
     marketLoginRef.value?.open()
     return
   }
 
-  await openInstallWizard(item.bundleKey, item.latestVersion)
+  dialog.warning({
+    title: '下载看板模板',
+    content: `将“${item.name}”及其依赖的设备模板、物模型下载到本地模板库。下载阶段不会绑定真实设备，也不会创建运行看板。`,
+    positiveText: '确认下载',
+    negativeText: '取消',
+    onPositiveClick: () => performDownload(item)
+  })
 }
 
 /**
  * 登录成功回调
  */
 function onMarketLoginSuccess() {
-  if (resumeInstallAfterLogin.value) {
-    resumeInstallAfterLogin.value = false
-    installWizardVisible.value = true
-    void nextTick(() => {
-      void installWizardRef.value?.retryInstallation()
-    })
+  if (pendingDownloadBundle.value) {
+    const bundle = pendingDownloadBundle.value
+    pendingDownloadBundle.value = null
+    void handleDownload(bundle)
+  }
+}
+
+async function performDownload(item: MarketBundleListItem) {
+  const marketToken = getToken()
+  if (!marketToken) {
+    pendingDownloadBundle.value = item
+    marketLoginRef.value?.open()
     return
   }
 
-  if (pendingInstallBundle.value) {
-    const bundle = pendingInstallBundle.value
-    void openInstallWizard(bundle.bundleKey, bundle.version)
-    pendingInstallBundle.value = null
-  }
-}
-
-function onMarketAuthenticationRequired() {
-  resumeInstallAfterLogin.value = true
-  installWizardVisible.value = false
-  window.$message?.warning($t('market.tokenExpired'))
-  marketLoginRef.value?.open()
-}
-
-/**
- * 打开安装向导
- */
-async function openInstallWizard(bundleKey: string, version: string) {
-  loadingDetail.value = true
-
+  downloadingBundleKey.value = item.bundleKey
   try {
-    // 获取完整详情
-    const result = await getMarketBundleDetail(bundleKey)
-
-    if (result.data) {
-      // 获取绑定预览
-      const precheckResult = await getBundlePrecheckInfo(bundleKey, { version })
-
-      let bindings: DashboardBindingSpec[] = []
-      if (precheckResult.data?.bindingPreview) {
-        bindings = precheckResult.data.bindingPreview
+    const result = await downloadMarketDashboardTemplate({
+      bundleKey: item.bundleKey,
+      version: item.latestVersion,
+      marketToken
+    })
+    if (result.error) {
+      const errorDetails = result.error.details as { error?: unknown } | undefined
+      const upstreamError = typeof errorDetails?.error === 'string' ? errorDetails.error : ''
+      if (
+        result.error.httpStatus === 401 ||
+        result.error.code === '401' ||
+        /(?:invalid|missing) authentication/i.test(upstreamError)
+      ) {
+        clearToken()
+        pendingDownloadBundle.value = item
+        message.warning($t('market.tokenExpired'))
+        marketLoginRef.value?.open()
+        return
       }
-
-      installWizardRef.value?.open({
-        bundle: result.data,
-        version,
-        dashboardBindings: bindings
-      })
-      installWizardVisible.value = true
-    } else if (result.error) {
-      window.$message?.error(result.error.message)
+      message.error(result.error.message)
+      return
     }
-  } catch (err) {
-    console.error('Failed to open install wizard:', err)
-    window.$message?.error($t('market.install.loadBundleFailed'))
-  } finally {
-    loadingDetail.value = false
-  }
-}
 
-/**
- * 安装完成回调
- */
-function onInstallComplete() {
-  detailDrawerVisible.value = false
-  void fetchBundleList()
+    detailDrawerVisible.value = false
+    dialog.success({
+      title: '模板下载完成',
+      content: '看板模板和依赖资源已保存到本地。请在“看板模板”中选择真实设备并创建看板。',
+      positiveText: '查看本地模板',
+      negativeText: '继续浏览',
+      onPositiveClick: () => router.push({ name: 'visualization_thingsvis-template' })
+    })
+    void fetchBundleList()
+  } finally {
+    downloadingBundleKey.value = ''
+  }
 }
 
 /**
@@ -491,11 +468,16 @@ onMounted(() => {
                   </template>
                   {{ $t('market.viewDetail') }}
                 </NButton>
-                <NButton type="primary" size="small" @click="handleInstall(item)">
+                <NButton
+                  type="primary"
+                  size="small"
+                  :loading="downloadingBundleKey === item.bundleKey"
+                  @click="handleDownload(item)"
+                >
                   <template #icon>
                     <NIcon><CloudDownloadOutline /></NIcon>
                   </template>
-                  {{ $t('market.install') }}
+                  下载模板
                 </NButton>
               </div>
             </div>
@@ -522,19 +504,11 @@ onMounted(() => {
       :version="currentVersion"
       :bindings="currentBindings"
       :loading="loadingDetail"
-      @install="handleInstall"
+      @download="handleDownload"
     />
 
     <!-- 登录弹窗 -->
     <MarketLoginModal ref="marketLoginRef" @login-success="onMarketLoginSuccess" />
-
-    <!-- 安装向导 -->
-    <InstallWizard
-      ref="installWizardRef"
-      v-model="installWizardVisible"
-      @installed="onInstallComplete"
-      @authentication-required="onMarketAuthenticationRequired"
-    />
   </div>
 </template>
 

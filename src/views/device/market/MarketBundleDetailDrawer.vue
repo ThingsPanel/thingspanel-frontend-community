@@ -26,18 +26,18 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:visible': [value: boolean]
   'update:version': [value: string]
-  install: [bundle: MarketBundleListItem]
+  download: [bundle: MarketBundleListItem]
 }>()
 
 const versionOptions = computed(
-  () => props.bundle?.versions.map((item) => ({ label: item.version, value: item.version })) ?? []
+  () => props.bundle?.versions.map(item => ({ label: item.version, value: item.version })) ?? []
 )
 
-const selectedVersion = computed(() => props.bundle?.versions.find((item) => item.version === props.version))
+const selectedVersion = computed(() => props.bundle?.versions.find(item => item.version === props.version))
 
-function install() {
+function download() {
   if (!props.bundle || !props.version) return
-  emit('install', {
+  emit('download', {
     bundleKey: props.bundle.bundleKey,
     name: props.bundle.name,
     description: props.bundle.description,
@@ -61,7 +61,7 @@ function install() {
           <NDescriptions bordered :column="1">
             <NDescriptionsItem label="分类">{{ bundle.category }}</NDescriptionsItem>
             <NDescriptionsItem label="作者">{{ bundle.author || '-' }}</NDescriptionsItem>
-            <NDescriptionsItem label="安装量">{{ bundle.totalInstalls }}</NDescriptionsItem>
+            <NDescriptionsItem label="下载量">{{ bundle.totalInstalls }}</NDescriptionsItem>
             <NDescriptionsItem label="版本">
               <NSelect :value="version" :options="versionOptions" @update:value="emit('update:version', $event)" />
             </NDescriptionsItem>
@@ -69,13 +69,13 @@ function install() {
 
           <p class="description">{{ bundle.description || '暂无说明' }}</p>
 
-          <NAlert v-if="selectedVersion" type="info" title="安装内容">
+          <NAlert v-if="selectedVersion" type="info" title="下载内容">
             设备模板 {{ selectedVersion.deviceTemplateCount }} 个，看板 {{ selectedVersion.dashboardCount }} 个。
           </NAlert>
 
           <div class="bindings">
-            <h3>安装时需要绑定的设备</h3>
-            <NEmpty v-if="bindings.length === 0" description="该方案无需绑定设备" />
+            <h3>创建看板时需要绑定的设备角色</h3>
+            <NEmpty v-if="bindings.length === 0" description="该模板无需绑定设备" />
             <NSpace v-else vertical>
               <div v-for="dashboard in bindings" :key="dashboard.dashboardKey" class="binding-card">
                 <strong>{{ dashboard.dashboardName || 'ThingsVis 看板' }}</strong>
@@ -92,7 +92,7 @@ function install() {
       </NSpin>
 
       <template #footer>
-        <NButton type="primary" :disabled="!bundle || !version" @click="install">安装此版本</NButton>
+        <NButton type="primary" :disabled="!bundle || !version" @click="download">下载此版本</NButton>
       </template>
     </NDrawerContent>
   </NDrawer>
