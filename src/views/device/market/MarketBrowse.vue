@@ -8,7 +8,7 @@
  * - 查看详情
  * - 发起安装
  */
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import {
   NInput,
@@ -123,6 +123,7 @@ const installWizardVisible = ref(false)
 /** 登录弹窗 */
 const marketLoginRef = ref<InstanceType<typeof MarketLoginModal>>()
 const pendingInstallBundle = ref<{ bundleKey: string; version: string } | null>(null)
+const resumeInstallAfterLogin = ref(false)
 
 // ========== Computed ==========
 
@@ -280,11 +281,27 @@ async function handleInstall(item: MarketBundleListItem) {
  * 登录成功回调
  */
 function onMarketLoginSuccess() {
+  if (resumeInstallAfterLogin.value) {
+    resumeInstallAfterLogin.value = false
+    installWizardVisible.value = true
+    void nextTick(() => {
+      void installWizardRef.value?.retryInstallation()
+    })
+    return
+  }
+
   if (pendingInstallBundle.value) {
     const bundle = pendingInstallBundle.value
     void openInstallWizard(bundle.bundleKey, bundle.version)
     pendingInstallBundle.value = null
   }
+}
+
+function onMarketAuthenticationRequired() {
+  resumeInstallAfterLogin.value = true
+  installWizardVisible.value = false
+  window.$message?.warning($t('market.tokenExpired'))
+  marketLoginRef.value?.open()
 }
 
 /**
@@ -514,7 +531,12 @@ onMounted(() => {
     <MarketLoginModal ref="marketLoginRef" @login-success="onMarketLoginSuccess" />
 
     <!-- 安装向导 -->
-    <InstallWizard ref="installWizardRef" v-model="installWizardVisible" @installed="onInstallComplete" />
+    <InstallWizard
+      ref="installWizardRef"
+      v-model="installWizardVisible"
+      @installed="onInstallComplete"
+      @authentication-required="onMarketAuthenticationRequired"
+    />
   </div>
 </template>
 
