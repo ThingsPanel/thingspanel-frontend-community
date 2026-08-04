@@ -133,10 +133,23 @@ async function openCreate(template: LocalDashboardTemplate) {
 
 function goCreateDevice(binding: CompatibleDeviceBinding) {
   createVisible.value = false
+
+  if (!binding.localDeviceConfigId) {
+    void router.push({
+      name: 'device_config-edit',
+      query: {
+        deviceTemplateId: binding.localDeviceTemplateId,
+        from: 'dashboard-template',
+        dashboardTemplateId: selectedTemplate.value?.id
+      }
+    })
+    return
+  }
+
   void router.push({
     name: 'device_manage',
     query: {
-      deviceTemplateId: binding.localDeviceTemplateId,
+      deviceConfigId: binding.localDeviceConfigId,
       from: 'dashboard-template',
       dashboardTemplateId: selectedTemplate.value?.id
     }

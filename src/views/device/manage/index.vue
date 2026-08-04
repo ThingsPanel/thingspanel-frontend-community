@@ -45,6 +45,7 @@ const showMessage = ref(false)
 const messageColor = ref('')
 const route: any = useRoute()
 const router: any = useRouter()
+const initialDeviceConfigId = ref(typeof route.query.deviceConfigId === 'string' ? route.query.deviceConfigId : '')
 
 const secondLevelOptions = ref<DeviceManagement.ServiceData[]>([])
 const selectedFirstLevel = ref<string | null>(null)
@@ -483,6 +484,9 @@ onBeforeMount(async () => {
  */
 onMounted(() => {
   // 不需要在这里初始化，等待 fetchData 完成后自动订阅
+  if (initialDeviceConfigId.value) {
+    void activate('bottom', 'hands')
+  }
 })
 
 /**
@@ -616,6 +620,7 @@ const fetchData = async (params: Record<string, any>) => {
             <AddDevicesStep1
               :set-id-callback="setUpId"
               :config-options="configOptions"
+              :initial-config-id="initialDeviceConfigId"
               :next-callback="
                 () => {
                   current += 1

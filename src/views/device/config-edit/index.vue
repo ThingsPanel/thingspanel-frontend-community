@@ -22,6 +22,9 @@ const message = useMessage()
 
 const route = useRoute()
 const configId = ref(route.query.id || null)
+const initialDeviceTemplateId = ref(
+  typeof route.query.deviceTemplateId === 'string' ? route.query.deviceTemplateId : ''
+)
 const modalTitle = ref('generate.add')
 
 let loading = ref(false)
@@ -115,16 +118,15 @@ const queryTemplate = ref({
 })
 const deviceTemplateOptions = ref([{ name: () => $t('generate.unbind'), id: '' }])
 
-const getDeviceTemplate = () => {
-  deviceTemplate(queryTemplate.value)
-    .then(res => {
-      deviceTemplateOptions.value = deviceTemplateOptions.value.concat(res.data.list)
-      queryTemplate.value.total = res.data.total
-    })
-    .catch(error => {
-      console.error('Failed to get device templates:', error)
-      message.error($t('generate.failedToLoadDeviceTemplates'))
-    })
+const getDeviceTemplate = async () => {
+  try {
+    const res = await deviceTemplate(queryTemplate.value)
+    deviceTemplateOptions.value = deviceTemplateOptions.value.concat(res.data.list)
+    queryTemplate.value.total = res.data.total
+  } catch (error) {
+    console.error('Failed to get device templates:', error)
+    message.error($t('generate.failedToLoadDeviceTemplates'))
+  }
 }
 
 const deviceTemplateScroll = (e: Event) => {
@@ -312,10 +314,10 @@ onMounted(async () => {
     isEdit.value = false
     modalTitle.value = 'generate.create'
   }
-  getDeviceTemplate()
-  if (process.env.NODE_ENV === 'development') {
+  await getDeviceTemplate()
+  if (!configId.value && initialDeviceTemplateId.value) {
+    configForm.value.device_template_id = initialDeviceTemplateId.value
   }
-
   await getProtocolList(configForm?.value.device_type || '1')
 
   if (configForm.value.protocol_type) {

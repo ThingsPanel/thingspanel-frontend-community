@@ -45,6 +45,7 @@ export interface CompatibleDeviceBinding {
   required: boolean
   localDeviceTemplateId: string
   localDeviceTemplateName: string
+  localDeviceConfigId?: string
   devices: CompatibleDevice[]
 }
 

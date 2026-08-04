@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import type { FormInst } from 'naive-ui'
 import { useDialog, useMessage } from 'naive-ui'
 import { deviceAdd } from '@/service/api/device'
@@ -10,6 +10,7 @@ import { useMarketAuth } from '../../config/composables/use-market-auth'
 
 const props = defineProps<{
   configOptions: any[]
+  initialConfigId?: string
   nextCallback: () => void
   setIdCallback: (dId, cId, dobj) => void
 }>()
@@ -112,6 +113,16 @@ const applyLocalSelection = (value: string) => {
   selectedTemplateValue.value = value
   formValue.value.device_config_id = value.startsWith('local:') ? value.slice('local:'.length) : ''
 }
+
+function applyInitialConfigSelection() {
+  const configId = props.initialConfigId
+  if (!configId || formValue.value.device_config_id || !localOptions.value.some(option => option.id === configId)) {
+    return
+  }
+  applyLocalSelection(`local:${configId}`)
+}
+
+watch([() => props.initialConfigId, localOptions], applyInitialConfigSelection, { immediate: true })
 
 const showMissingPlugins = (plugins: any[]) => {
   if (!plugins?.length) return
