@@ -105,6 +105,9 @@ declare module "@elegant-router/types" {
     "plugin_print": "/plugin/print";
     "plugin_swiper": "/plugin/swiper";
     "plugin_video": "/plugin/video";
+    "resource-hub": "/resource-hub";
+    "resource-hub_dashboard": "/resource-hub/dashboard-template";
+    "resource-hub_device": "/resource-hub/device-template";
     "rule-engine": "/rule-engine";
     "system-management-user": "/system-management-user";
     "system-management-user_system-log": "/system-management-user/system-log";
@@ -115,6 +118,7 @@ declare module "@elegant-router/types" {
     "visualization_thingsvis-editor": "/visualization/thingsvis-editor";
     "visualization_thingsvis-menu-dashboard": "/visualization/thingsvis-menu-dashboard";
     "visualization_thingsvis-preview": "/visualization/thingsvis-preview";
+    "visualization_thingsvis-template": "/visualization/thingsvis-template";
     "visualization-app": "/visualization-app";
     "visualization-app-dashboards": "/visualization-app-dashboards";
     "visualization-app-preview": "/visualization-app-preview";
@@ -173,6 +177,7 @@ declare module "@elegant-router/types" {
     | "multi-menu"
     | "personal-center"
     | "plugin"
+    | "resource-hub"
     | "rule-engine"
     | "system-management-user"
     | "user-center"
@@ -263,6 +268,8 @@ declare module "@elegant-router/types" {
     | "plugin_print"
     | "plugin_swiper"
     | "plugin_video"
+    | "resource-hub_dashboard"
+    | "resource-hub_device"
     | "rule-engine"
     | "system-management-user_system-log"
     | "user-center"
@@ -273,6 +280,7 @@ declare module "@elegant-router/types" {
     | "visualization_thingsvis-editor"
     | "visualization_thingsvis-menu-dashboard"
     | "visualization_thingsvis-preview"
+    | "visualization_thingsvis-template"
     | "visualization_thingsvis"
   >;
 

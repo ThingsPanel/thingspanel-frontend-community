@@ -842,6 +842,35 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'resource-hub',
+    path: '/resource-hub',
+    component: 'layout.base',
+    meta: {
+      title: 'resource-hub',
+      i18nKey: 'route.resource-hub'
+    },
+    children: [
+      {
+        name: 'resource-hub_dashboard',
+        path: '/resource-hub/dashboard-template',
+        component: 'view.resource-hub_dashboard',
+        meta: {
+          title: 'resource-hub_dashboard',
+          i18nKey: 'route.resource-hub_dashboard'
+        }
+      },
+      {
+        name: 'resource-hub_device',
+        path: '/resource-hub/device-template',
+        component: 'view.resource-hub_device',
+        meta: {
+          title: 'resource-hub_device',
+          i18nKey: 'route.resource-hub_device'
+        }
+      }
+    ]
+  },
+  {
     name: 'rule-engine',
     path: '/rule-engine',
     component: 'layout.base$view.rule-engine',
@@ -935,6 +964,15 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'visualization_thingsvis-preview',
           i18nKey: 'route.visualization-thingsvis-preview',
           constant: true
+        }
+      },
+      {
+        name: 'visualization_thingsvis-template',
+        path: '/visualization/thingsvis-template',
+        component: 'view.visualization_thingsvis-template',
+        meta: {
+          title: 'visualization_thingsvis-template',
+          i18nKey: 'route.visualization-thingsvis-template'
         }
       }
     ]

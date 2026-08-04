@@ -12,6 +12,7 @@ import {
   useDeviceBinding,
   type LocalDevice,
   type DeviceBinding,
+  type BindingDefinition,
   type DashboardSelection
 } from './composables/use-device-binding'
 
@@ -37,9 +38,13 @@ const props = withDefaults(
   defineProps<{
     modelValue: boolean
     allowSkip?: boolean
+    bindingDefinitions: BindingDefinition[]
+    initialBindings?: Array<{ bindingKey: string; deviceId: string }>
   }>(),
   {
-    allowSkip: true
+    allowSkip: true,
+    bindingDefinitions: () => [],
+    initialBindings: () => []
   }
 )
 
@@ -67,6 +72,7 @@ const {
   unskipBinding,
   validateBindings,
   generateBindingsRequest,
+  initializeBindings,
   reset
 } = useDeviceBinding()
 
@@ -113,8 +119,13 @@ watch(
   () => props.modelValue,
   async newVal => {
     if (newVal) {
+      reset()
+      initializeBindings(props.bindingDefinitions)
       isInitialized.value = true
       await loadAllCompatibleDevices()
+      for (const binding of props.initialBindings) {
+        selectDevice(binding.bindingKey, binding.deviceId)
+      }
       initializeSelections()
     } else {
       handleClose()

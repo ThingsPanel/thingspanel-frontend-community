@@ -81,6 +81,8 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   plugin_print: () => import("@/views/plugin/print/index.vue"),
   plugin_swiper: () => import("@/views/plugin/swiper/index.vue"),
   plugin_video: () => import("@/views/plugin/video/index.vue"),
+  "resource-hub_dashboard": () => import("@/views/resource-hub/dashboard/index.vue"),
+  "resource-hub_device": () => import("@/views/resource-hub/device/index.vue"),
   "rule-engine": () => import("@/views/rule-engine/index.vue"),
   "system-management-user_system-log": () => import("@/views/system-management-user/system-log/index.vue"),
   "user-center": () => import("@/views/user-center/index.vue"),
@@ -91,5 +93,6 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "visualization_thingsvis-editor": () => import("@/views/visualization/thingsvis-editor/index.vue"),
   "visualization_thingsvis-menu-dashboard": () => import("@/views/visualization/thingsvis-menu-dashboard/index.vue"),
   "visualization_thingsvis-preview": () => import("@/views/visualization/thingsvis-preview/index.vue"),
+  "visualization_thingsvis-template": () => import("@/views/visualization/thingsvis-template/index.vue"),
   visualization_thingsvis: () => import("@/views/visualization/thingsvis/index.vue"),
 };

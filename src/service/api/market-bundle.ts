@@ -172,6 +172,11 @@ export interface MarketBundleListItem {
   rating?: number
 }
 
+export interface MarketBundleListResult {
+  list: MarketBundleListItem[]
+  total: number
+}
+
 /** Bundle 详情（browse API 尚未接通后端，保留类型） */
 export interface MarketBundleDetail {
   bundleKey: string
@@ -214,15 +219,21 @@ function generateIdempotencyKey(): string {
 function parseMarketError(err: unknown): MarketApiError {
   const axiosError = err as {
     response?: { status?: number; data?: { code?: number | string; message?: string; data?: unknown } }
+    error?: {
+      status?: number
+      code?: number | string
+      message?: string
+      data?: { code?: number | string; message?: string; data?: unknown }
+    }
     message?: string
   }
 
-  const status = axiosError.response?.status || 500
-  const body = axiosError.response?.data
+  const status = axiosError.error?.status || axiosError.response?.status || 500
+  const body = axiosError.error?.data || axiosError.response?.data
 
   return {
-    code: String(body?.code ?? `HTTP_${status}`),
-    message: body?.message || axiosError.message || '请求失败',
+    code: String(body?.code ?? axiosError.error?.code ?? `HTTP_${status}`),
+    message: body?.message || axiosError.error?.message || axiosError.message || '请求失败',
     details: body?.data as Record<string, unknown> | undefined,
     httpStatus: status
   }
@@ -239,13 +250,54 @@ export function isMarketAuthenticationError(error: MarketApiError | null): boole
   )
 }
 
-async function marketApiCall<T>(fn: () => Promise<T>): Promise<{ data: T | null; error: MarketApiError | null }> {
+async function marketApiCall<T>(
+  fn: () => Promise<{ data: T | null; error: unknown | null }>
+): Promise<{ data: T | null; error: MarketApiError | null }> {
   try {
-    const data = await fn()
-    return { data, error: null }
+    const result = await fn()
+    if (result.error) {
+      return { data: null, error: parseMarketError({ error: result.error }) }
+    }
+    return { data: result.data, error: null }
   } catch (err) {
     return { data: null, error: parseMarketError(err) }
   }
+}
+
+/**
+ * Normalize the catalog response during the API contract transition.
+ *
+ * The shared request client already unwraps the outer `{ code, data }` envelope.
+ * Newer ThingsPanel backends return `{ list, total }`, while older deployments
+ * and direct Horizon proxies can still return the list array itself.
+ */
+export function normalizeMarketBundleList(payload: unknown): MarketBundleListResult {
+  if (Array.isArray(payload)) {
+    return {
+      list: payload as MarketBundleListItem[],
+      total: payload.length
+    }
+  }
+
+  if (payload && typeof payload === 'object') {
+    const result = payload as Record<string, unknown>
+
+    if (Array.isArray(result.list)) {
+      return {
+        list: result.list as MarketBundleListItem[],
+        total: typeof result.total === 'number' ? result.total : result.list.length
+      }
+    }
+
+    if (Array.isArray(result.data)) {
+      return {
+        list: result.data as MarketBundleListItem[],
+        total: typeof result.total === 'number' ? result.total : result.data.length
+      }
+    }
+  }
+
+  throw new Error('Invalid dashboard market list response')
 }
 
 function computeBindingStatus(bindings: InstalledBundle['bindings']): InstalledBundle['bindingStatus'] {
@@ -522,12 +574,22 @@ export async function browseMarketBundles(params?: {
   sort_by?: 'latest' | 'hottest'
   page?: number
   page_size?: number
-}): Promise<{ data: { list: MarketBundleListItem[]; total: number } | null; error: MarketApiError | null }> {
-  return marketApiCall(() =>
-    request.get<{ list: MarketBundleListItem[]; total: number }>('/device/market/bundles', {
+}): Promise<{ data: MarketBundleListResult | null; error: MarketApiError | null }> {
+  const result = await marketApiCall(() =>
+    request.get<unknown>('/device/market/bundles', {
       params
     })
   )
+
+  if (result.error) {
+    return { data: null, error: result.error }
+  }
+
+  try {
+    return { data: normalizeMarketBundleList(result.data), error: null }
+  } catch (err) {
+    return { data: null, error: parseMarketError(err) }
+  }
 }
 
 export async function getMarketBundleDetail(
@@ -536,8 +598,9 @@ export async function getMarketBundleDetail(
 ): Promise<{ data: MarketBundleDetail | null; error: MarketApiError | null }> {
   return marketApiCall(() =>
     request.get<MarketBundleDetail>(`/device/market/bundles/${encodeURIComponent(bundleKey)}`, {
-      params
-    })
+      params,
+      silentError: true
+    } as any)
   )
 }
 

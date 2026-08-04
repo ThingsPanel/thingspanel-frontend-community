@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
-import { NInput, NSelect, NSpace, NSpin, NGrid, NGi, NEmpty, NPagination, NIcon } from 'naive-ui'
+import { NInput, NSelect, NSpace, NSpin, NEmpty, NPagination, NIcon } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { $t } from '@/locales'
 import { getMarketTemplates, installFromMarket } from '@/service/api/market'
@@ -194,11 +194,15 @@ onMounted(() => {
     <!-- 模板卡片网格 -->
     <NSpin :show="loading">
       <NEmpty v-if="!loading && !templateList.length" :description="$t('market.noTemplates')" style="padding: 80px 0" />
-      <NGrid v-else cols="1 s:2 m:3 l:4" x-gap="16" y-gap="16" responsive="screen">
-        <NGi v-for="item in templateList" :key="item.id">
-          <MarketTemplateCard :template="item" @install="handleInstall" @view-detail="handleViewDetail" />
-        </NGi>
-      </NGrid>
+      <div v-else class="template-grid">
+        <MarketTemplateCard
+          v-for="item in templateList"
+          :key="item.id"
+          :template="item"
+          @install="handleInstall"
+          @view-detail="handleViewDetail"
+        />
+      </div>
     </NSpin>
 
     <!-- 分页 -->
@@ -218,3 +222,11 @@ onMounted(() => {
     <MarketLoginModal ref="marketLoginRef" @login-success="onMarketLoginSuccess" />
   </div>
 </template>
+
+<style scoped lang="scss">
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+</style>

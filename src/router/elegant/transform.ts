@@ -249,6 +249,9 @@ const routeMap: RouteMap = {
   "plugin_print": "/plugin/print",
   "plugin_swiper": "/plugin/swiper",
   "plugin_video": "/plugin/video",
+  "resource-hub": "/resource-hub",
+  "resource-hub_dashboard": "/resource-hub/dashboard-template",
+  "resource-hub_device": "/resource-hub/device-template",
   "rule-engine": "/rule-engine",
   "system-management-user": "/system-management-user",
   "system-management-user_system-log": "/system-management-user/system-log",
@@ -259,6 +262,7 @@ const routeMap: RouteMap = {
   "visualization_thingsvis-editor": "/visualization/thingsvis-editor",
   "visualization_thingsvis-menu-dashboard": "/visualization/thingsvis-menu-dashboard",
   "visualization_thingsvis-preview": "/visualization/thingsvis-preview",
+  "visualization_thingsvis-template": "/visualization/thingsvis-template",
   "visualization-app": "/visualization-app",
   "visualization-app-dashboards": "/visualization-app-dashboards",
   "visualization-app-preview": "/visualization-app-preview"
