@@ -65,7 +65,7 @@ const handleClose = () => {
           <!-- 封面 -->
           <div class="drawer-cover">
             <img v-if="detail.cover_url" :src="detail.cover_url" :alt="detail.name" />
-            <img v-else :src="defaultCover" :alt="detail.name" class="opacity-60" />
+            <img v-else :src="defaultCover" :alt="detail.name" />
           </div>
 
           <!-- 基本信息 -->
