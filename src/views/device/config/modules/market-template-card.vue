@@ -50,8 +50,12 @@ const coverSrc = computed(() => props.template.cover_url || defaultCover)
 <template>
   <!-- 网格卡片 -->
   <NCard v-if="mode === 'grid'" hoverable class="market-card" :content-style="{ padding: '0' }">
-    <div class="card-cover">
-      <img :src="coverSrc" :alt="template.name" class="cover-img" />
+    <div
+      class="card-cover"
+      role="img"
+      :aria-label="template.name"
+      :style="{ backgroundImage: `url(${coverSrc})` }"
+    >
       <span v-if="template.category" class="category-badge" :style="{ color: categoryColor }">
         {{ template.category }}
       </span>
@@ -86,9 +90,12 @@ const coverSrc = computed(() => props.template.cover_url || defaultCover)
 
   <!-- 列表行 -->
   <div v-else class="market-list-row" @click="emit('view-detail', template.id)">
-    <div class="list-cover">
-      <img :src="coverSrc" :alt="template.name" class="cover-img" />
-    </div>
+    <div
+      class="list-cover"
+      role="img"
+      :aria-label="template.name"
+      :style="{ backgroundImage: `url(${coverSrc})` }"
+    />
 
     <div class="list-main">
       <div class="card-name">
@@ -122,6 +129,12 @@ const coverSrc = computed(() => props.template.cover_url || defaultCover)
   width: 100%;
   border-radius: 12px;
   transition: box-shadow 0.2s;
+
+  :deep(.n-card__content) {
+    display: flex;
+    flex-direction: column;
+  }
+
   &:hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   }
@@ -129,18 +142,14 @@ const coverSrc = computed(() => props.template.cover_url || defaultCover)
 
 .card-cover {
   position: relative;
-  height: 160px;
-  background: #f1f5f9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.cover-img {
+  flex-shrink: 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  aspect-ratio: 16 / 9;
+  background-color: #f1f5f9;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
 }
 
 .category-badge {
@@ -239,11 +248,14 @@ const coverSrc = computed(() => props.template.cover_url || defaultCover)
 
 .list-cover {
   flex-shrink: 0;
-  width: 72px;
-  height: 54px;
+  width: 96px;
+  aspect-ratio: 16 / 9;
   border-radius: 8px;
   overflow: hidden;
-  background: #f1f5f9;
+  background-color: #f1f5f9;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .list-main {

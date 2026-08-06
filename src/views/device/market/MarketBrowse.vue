@@ -19,14 +19,13 @@ import {
   NPagination,
   NIcon,
   NButton,
+  NButtonGroup,
   NCard,
-  NTag,
-  NAvatar,
-  NTooltip,
+  NEllipsis,
   useDialog,
   useMessage
 } from 'naive-ui'
-import { SearchOutline, CloudDownloadOutline, EyeOutline, TimerOutline, PersonOutline } from '@vicons/ionicons5'
+import { SearchOutline, CloudDownloadOutline, GridOutline, ListOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
 import {
   browseMarketBundles,
@@ -40,6 +39,7 @@ import { downloadMarketDashboardTemplate } from '@/service/api/dashboard-templat
 import { useMarketAuth } from '@/views/device/config/composables/use-market-auth'
 import MarketBundleDetailDrawer from './MarketBundleDetailDrawer.vue'
 import MarketLoginModal from '@/views/device/config/modules/market-login-modal.vue'
+import defaultDashboardCover from '@/assets/imgs/default_dashboard_cover.png'
 
 const props = withDefaults(
   defineProps<{
@@ -68,6 +68,9 @@ const bundleList = ref<MarketBundleListItem[]>([])
 /** 总数 */
 const total = ref(0)
 
+/** 视图模式：网格 / 列表 */
+const viewMode = ref<'grid' | 'list'>('grid')
+
 /** 搜索参数 */
 const searchParams = reactive({
   keyword: '',
@@ -89,6 +92,18 @@ const categoryOptions = [
   { label: () => $t('market.category.retail'), value: 'retail' },
   { label: () => $t('market.category.other'), value: 'other' }
 ]
+
+/** 分类 value → i18n key 映射 */
+const categoryLabelMap: Record<string, string> = {
+  'smart-home': 'market.category.smartHome',
+  industrial: 'market.category.industrial',
+  agriculture: 'market.category.agriculture',
+  'smart-city': 'market.category.smartCity',
+  energy: 'market.category.energy',
+  healthcare: 'market.category.healthcare',
+  retail: 'market.category.retail',
+  other: 'market.category.other'
+}
 
 /** 排序选项 */
 const sortOptions = [
@@ -334,20 +349,34 @@ function formatInstallCount(count: number): string {
 }
 
 /**
- * 获取类别标签类型
+ * 封面：优先 thumbnail，否则默认图1
  */
-function getCategoryTagType(category: string): 'success' | 'info' | 'warning' | 'error' {
-  const typeMap: Record<string, 'success' | 'info' | 'warning' | 'error'> = {
-    'smart-home': 'success',
-    industrial: 'info',
-    agriculture: 'warning',
-    'smart-city': 'info',
-    energy: 'success',
-    healthcare: 'error',
-    retail: 'warning',
-    other: 'default'
-  }
-  return typeMap[category] || 'default'
+function getCoverSrc(item: MarketBundleListItem): string {
+  return item.thumbnail || defaultDashboardCover
+}
+
+/**
+ * 分类标签文案
+ */
+function getCategoryLabel(category: string): string {
+  const key = categoryLabelMap[category]
+  return key ? $t(key) : category
+}
+
+/**
+ * 分类标签文字色（对齐设备模板页颜色映射思路）
+ */
+function getCategoryColor(category: string): string {
+  const value = (category || '').toLowerCase()
+  if (value.includes('agriculture') || value.includes('农业')) return '#7c3aed'
+  if (value.includes('industrial') || value.includes('工业')) return '#0d9488'
+  if (value.includes('other') || value.includes('其他')) return '#ea580c'
+  if (value.includes('smart-home') || value.includes('家居')) return '#dc2626'
+  if (value.includes('smart-city') || value.includes('城市')) return '#2563eb'
+  if (value.includes('energy') || value.includes('能源')) return '#16a34a'
+  if (value.includes('healthcare') || value.includes('医疗')) return '#e11d48'
+  if (value.includes('retail') || value.includes('零售')) return '#ea580c'
+  return 'var(--primary-color, #6366f1)'
 }
 
 // ========== Lifecycle ==========
@@ -359,41 +388,67 @@ onMounted(() => {
 
 <template>
   <div :class="['market-browse', { 'is-embedded': props.embedded }]">
-    <!-- 页面标题 -->
+    <!-- 页头（非 embedded） -->
     <div v-if="!props.embedded" class="page-header">
-      <h1 class="page-title">{{ $t('market.browse.title') }}</h1>
-      <p class="page-subtitle">{{ $t('market.browse.subtitle') }}</p>
+      <div class="page-header-left">
+        <h2 class="page-title">{{ $t('market.browse.title') }}</h2>
+        <p class="page-subtitle">{{ $t('market.browse.subtitle') }}</p>
+      </div>
+      <div class="page-header-right">{{ $t('market.browse.totalBundles', { n: total }) }}</div>
     </div>
 
-    <!-- 筛选区域 -->
-    <div class="filter-section">
-      <NInput
-        v-model:value="searchParams.keyword"
-        :placeholder="$t('market.browse.searchPlaceholder')"
-        clearable
-        style="width: 300px"
-        @keyup.enter="handleSearch"
-      >
-        <template #prefix>
-          <NIcon><SearchOutline /></NIcon>
-        </template>
-      </NInput>
+    <!-- 筛选工具栏 -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <NInput
+          v-model:value="searchParams.keyword"
+          :placeholder="$t('market.browse.searchPlaceholder')"
+          clearable
+          class="search-input"
+          @keyup.enter="handleSearch"
+        >
+          <template #prefix>
+            <NIcon><SearchOutline /></NIcon>
+          </template>
+        </NInput>
 
-      <NSelect
-        v-model:value="searchParams.category"
-        :options="categoryOptions"
-        :placeholder="$t('market.browse.allCategories')"
-        clearable
-        style="width: 160px"
-        @update:value="handleCategoryChange"
-      />
+        <NSelect
+          v-model:value="searchParams.category"
+          :options="categoryOptions"
+          :placeholder="$t('market.browse.allCategories')"
+          clearable
+          class="filter-select"
+          @update:value="handleCategoryChange"
+        />
 
-      <NSelect
-        v-model:value="searchParams.sort_by"
-        :options="sortOptions"
-        style="width: 140px"
-        @update:value="handleSortChange"
-      />
+        <NSelect
+          v-model:value="searchParams.sort_by"
+          :options="sortOptions"
+          class="sort-select"
+          @update:value="handleSortChange"
+        />
+      </div>
+
+      <NButtonGroup class="view-toggle">
+        <NButton
+          :class="{ 'view-active': viewMode === 'grid' }"
+          :title="$t('market.viewGrid')"
+          @click="viewMode = 'grid'"
+        >
+          <template #icon>
+            <NIcon><GridOutline /></NIcon>
+          </template>
+        </NButton>
+        <NButton
+          :class="{ 'view-active': viewMode === 'list' }"
+          :title="$t('market.viewList')"
+          @click="viewMode = 'list'"
+        >
+          <template #icon>
+            <NIcon><ListOutline /></NIcon>
+          </template>
+        </NButton>
+      </NButtonGroup>
     </div>
 
     <!-- Bundle 列表 -->
@@ -408,80 +463,93 @@ onMounted(() => {
         </NEmpty>
       </div>
 
-      <div v-else class="bundle-grid">
+      <!-- 网格视图 -->
+      <div v-else-if="viewMode === 'grid'" class="bundle-grid">
         <div v-for="item in bundleList" :key="item.bundleKey" class="bundle-grid-item">
-          <NCard class="bundle-card" hoverable @click="handleViewDetail(item)">
-            <!-- 卡片头部 -->
-            <div class="bundle-header">
-              <NAvatar :src="item.thumbnail" :size="48" round class="bundle-avatar">
-                {{ item.name?.charAt(0) || 'B' }}
-              </NAvatar>
-              <NTag :type="getCategoryTagType(item.category)" size="small" class="bundle-category">
-                {{ $t(`market.category.${item.category}`) || item.category }}
-              </NTag>
+          <NCard class="bundle-card" hoverable :content-style="{ padding: '0' }" @click="handleViewDetail(item)">
+            <div
+              class="card-cover"
+              role="img"
+              :aria-label="item.name"
+              :style="{ backgroundImage: `url(${getCoverSrc(item)})` }"
+            >
+              <span v-if="item.category" class="category-badge" :style="{ color: getCategoryColor(item.category) }">
+                {{ getCategoryLabel(item.category) }}
+              </span>
             </div>
 
-            <!-- 卡片内容 -->
-            <div class="bundle-content">
-              <h3 class="bundle-name">{{ item.name }}</h3>
-              <p class="bundle-description">{{ item.description }}</p>
-            </div>
-
-            <!-- 卡片底部 -->
-            <div class="bundle-footer">
-              <div class="bundle-meta">
-                <NTooltip>
-                  <template #trigger>
-                    <span class="meta-item">
-                      <NIcon size="14"><TimerOutline /></NIcon>
-                      {{ item.latestVersion }}
-                    </span>
-                  </template>
-                  {{ $t('market.browse.version') }}: {{ item.latestVersion }}
-                </NTooltip>
-
-                <NTooltip>
-                  <template #trigger>
-                    <span class="meta-item">
-                      <NIcon size="14"><CloudDownloadOutline /></NIcon>
-                      {{ formatInstallCount(item.installCount) }}
-                    </span>
-                  </template>
-                  {{ $t('market.browse.installs') }}: {{ item.installCount }}
-                </NTooltip>
-
-                <NTooltip v-if="item.author">
-                  <template #trigger>
-                    <span class="meta-item">
-                      <NIcon size="14"><PersonOutline /></NIcon>
-                      {{ item.author }}
-                    </span>
-                  </template>
-                  {{ $t('market.browse.author') }}: {{ item.author }}
-                </NTooltip>
+            <div class="card-body">
+              <div class="card-name">
+                <NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis>
               </div>
 
-              <div class="bundle-actions" @click.stop>
-                <NButton size="small" quaternary @click="handleViewDetail(item)">
-                  <template #icon>
-                    <NIcon><EyeOutline /></NIcon>
-                  </template>
+              <div class="card-meta">
+                <span v-if="item.latestVersion" class="version-badge">v{{ item.latestVersion }}</span>
+                <span class="install-stat">
+                  <NIcon size="14" class="install-icon"><CloudDownloadOutline /></NIcon>
+                  {{ formatInstallCount(item.installCount) }}
+                </span>
+                <span v-if="item.author" class="author-name">{{ item.author }}</span>
+              </div>
+
+              <div class="card-actions" @click.stop>
+                <NButton class="action-btn" size="small" @click="handleViewDetail(item)">
                   {{ $t('market.viewDetail') }}
                 </NButton>
                 <NButton
+                  class="action-btn"
                   type="primary"
                   size="small"
                   :loading="downloadingBundleKey === item.bundleKey"
                   @click="handleDownload(item)"
                 >
-                  <template #icon>
-                    <NIcon><CloudDownloadOutline /></NIcon>
-                  </template>
-                  下载模板
+                  {{ $t('market.browse.downloadTemplate') }}
                 </NButton>
               </div>
             </div>
           </NCard>
+        </div>
+      </div>
+
+      <!-- 列表视图 -->
+      <div v-else class="bundle-list">
+        <div v-for="item in bundleList" :key="item.bundleKey" class="bundle-list-row" @click="handleViewDetail(item)">
+          <div
+            class="list-cover"
+            role="img"
+            :aria-label="item.name"
+            :style="{ backgroundImage: `url(${getCoverSrc(item)})` }"
+          />
+
+          <div class="list-main">
+            <div class="card-name">
+              <NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis>
+            </div>
+            <div class="list-sub">
+              <span v-if="item.category" class="list-category" :style="{ color: getCategoryColor(item.category) }">
+                {{ getCategoryLabel(item.category) }}
+              </span>
+              <span v-if="item.latestVersion" class="version-badge">v{{ item.latestVersion }}</span>
+            </div>
+          </div>
+
+          <div class="list-right">
+            <span class="install-stat">
+              <NIcon size="14" class="install-icon"><CloudDownloadOutline /></NIcon>
+              {{ formatInstallCount(item.installCount) }}
+            </span>
+            <div class="list-actions" @click.stop>
+              <NButton size="small" @click="handleViewDetail(item)">{{ $t('market.viewDetail') }}</NButton>
+              <NButton
+                size="small"
+                type="primary"
+                :loading="downloadingBundleKey === item.bundleKey"
+                @click="handleDownload(item)"
+              >
+                {{ $t('market.browse.downloadTemplate') }}
+              </NButton>
+            </div>
+          </div>
         </div>
       </div>
     </NSpin>
@@ -514,37 +582,107 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .market-browse {
-  padding: 24px;
-  min-height: calc(100vh - 120px);
+  padding: 20px 24px;
+  background: #f5f6f8;
+  min-height: 100%;
+  border-radius: 8px;
 
   &.is-embedded {
     padding: 16px 0 0;
+    background: transparent;
     min-height: 480px;
+    border-radius: 0;
   }
 }
 
 .page-header {
-  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.page-header-left {
+  min-width: 0;
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 8px 0;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.3;
 }
 
 .page-subtitle {
-  font-size: 14px;
-  color: #666;
-  margin: 0;
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #8b8fa3;
+  line-height: 1.4;
 }
 
-.filter-section {
+.page-header-right {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #8b8fa3;
+  padding-top: 6px;
+}
+
+.toolbar {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  margin-bottom: 24px;
+  padding: 12px 16px;
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
   flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 180px;
+  max-width: 360px;
+}
+
+.filter-select {
+  width: 140px;
+}
+
+.sort-select {
+  width: 120px;
+}
+
+.view-toggle {
+  flex-shrink: 0;
+
+  :deep(.n-button) {
+    --n-border: 1px solid #e5e7eb;
+    --n-border-hover: 1px solid #c7d2fe;
+  }
+
+  .view-active {
+    --n-color: #eef2ff !important;
+    --n-color-hover: #e0e7ff !important;
+    --n-color-pressed: #e0e7ff !important;
+    --n-border: 1px solid #a5b4fc !important;
+    --n-border-hover: 1px solid #a5b4fc !important;
+    --n-text-color: #4f46e5 !important;
+    --n-text-color-hover: #4f46e5 !important;
+    background: #eef2ff;
+    color: #4f46e5;
+  }
 }
 
 .empty-state {
@@ -563,186 +701,179 @@ onMounted(() => {
 }
 
 .bundle-card {
-  height: 100%;
+  overflow: hidden;
   min-width: 0;
   width: 100%;
+  height: 100%;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: box-shadow 0.2s;
+
+  :deep(.n-card__content) {
+    display: flex;
+    flex-direction: column;
+  }
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   }
 }
 
-.bundle-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-.bundle-avatar {
-  background: linear-gradient(135deg, #18a058, #36ad6a);
-  font-size: 20px;
-  font-weight: 600;
-  color: #fff;
-}
-
-.bundle-category {
+.card-cover {
+  position: relative;
   flex-shrink: 0;
-}
-
-.bundle-content {
-  margin-bottom: 12px;
-}
-
-.bundle-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 8px 0;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: #0f172a;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.bundle-description {
-  font-size: 13px;
-  color: #666;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.category-badge {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(4px);
   line-height: 1.5;
-  height: 3em;
 }
 
-.bundle-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
+.card-body {
+  padding: 12px 16px 16px;
 }
 
-.bundle-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+.card-name {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a1a2e;
 }
 
-.meta-item {
+.card-meta {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.author-name {
+  color: #666;
+}
+
+.version-badge {
+  background: #ede9fe;
+  color: #4f46e5;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.install-stat {
+  display: inline-flex;
+  align-items: center;
   gap: 4px;
-  font-size: 12px;
   color: #999;
 }
 
-.bundle-actions {
+.install-icon {
+  color: #999;
+}
+
+.card-actions {
   display: flex;
   gap: 8px;
-  justify-content: flex-end;
+  width: 100%;
+}
+
+.action-btn {
+  flex: 1;
+  width: 100%;
+}
+
+/* 列表模式 */
+.bundle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bundle-list-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eef0f4;
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
+
+  &:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border-color: #e0e4ef;
+  }
+}
+
+.list-cover {
+  flex-shrink: 0;
+  width: 96px;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #0f172a;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.list-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.list-sub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.list-category {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid #eee;
+}
+
+.list-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.list-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .pagination-wrapper {
   display: flex;
-  justify-content: center;
-  margin-top: 24px;
-}
-
-.mb-4 {
-  margin-bottom: 16px;
-}
-
-.drawer-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.detail-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.info-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.info-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  .label {
-    flex-shrink: 0;
-    color: #666;
-    min-width: 100px;
-  }
-
-  .value {
-    color: #333;
-  }
-}
-
-.section-title {
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.description {
-  .label {
-    font-size: 13px;
-    color: #666;
-    margin-bottom: 4px;
-  }
-
-  p {
-    margin: 0;
-    font-size: 14px;
-    color: #333;
-    line-height: 1.6;
-  }
-}
-
-.binding-preview {
-  margin-bottom: 12px;
-  padding: 8px;
-  background: #f5f5f5;
-  border-radius: 4px;
-}
-
-.binding-dashboard {
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.binding-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.required-mark {
-  color: #d03050;
-  margin-left: 2px;
-}
-
-.version-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.version-date {
-  font-size: 12px;
-  color: #999;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 </style>
