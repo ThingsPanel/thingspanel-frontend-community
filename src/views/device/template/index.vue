@@ -10,16 +10,15 @@ import {
   NTag,
   NSpace,
   NEmpty,
-  NGrid,
-  NGi,
-  NPopconfirm
+  NPopconfirm,
+  NCard,
+  NEllipsis
 } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { ListOutline, GridOutline } from '@vicons/ionicons5'
 import { deleteDeviceTemplate, deviceTemplate } from '@/service/api/device-template-model'
 import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
-import ItemCard from '@/components/dev-card-item/index.vue'
 import TemplateModal from './components/template-modal.vue'
 import { useBoolean, useLoading } from '~/packages/hooks/src'
 // 导入SvgIcon组件，使用项目标准图标系统
@@ -237,13 +236,23 @@ const getTagArray = (labelStr: string) => {
     .map((tag) => tag.trim())
 }
 
-// 获取显示的标签（最多显示3个）
+// 获取显示的标签（最多 4 个：≤4 全显示，>4 则 3 个 +N）
 const getDisplayTags = (labelStr: string) => {
   const tags = getTagArray(labelStr)
+  const maxVisible = 4
+
+  if (tags.length <= maxVisible) {
+    return {
+      displayTags: tags,
+      hasMore: false,
+      moreCount: 0
+    }
+  }
+
   return {
-    displayTags: tags.slice(0, 3),
-    hasMore: tags.length > 3,
-    moreCount: tags.length - 3
+    displayTags: tags.slice(0, maxVisible - 1),
+    hasMore: true,
+    moreCount: tags.length - (maxVisible - 1)
   }
 }
 
@@ -308,49 +317,48 @@ onMounted(() => {
           <div v-if="deviceTemplateList.length === 0 && !loading" class="empty-state">
             <NEmpty size="huge" :description="$t('common.nodata')" />
           </div>
-          <div v-else>
-            <NGrid cols="1 s:2 m:3 l:4 xl:5 2xl:6" x-gap="20" y-gap="20" responsive="screen">
-              <NGi v-for="item in deviceTemplateList" :key="item.id">
-                <ItemCard
-                  :isStatus="false"
-                  :title="item.name"
-                  :subtitle="item.description || '--'"
-                  @click="handleEdit(item.id)"
-                >
-                  <!-- 底部内容 - 标签靠右显示 -->
-                  <template #footer>
-                    <div class="card-footer-content">
-                      <div class="tags-section">
-                        <div class="tags-container">
-                          <template v-if="item.label">
-                            <NTag
-                              v-for="tag in getDisplayTags(item.label).displayTags"
-                              :key="tag"
-                              size="small"
-                              class="tag-item"
-                            >
-                              {{ tag }}
-                            </NTag>
-                            <NTag v-if="getDisplayTags(item.label).hasMore" size="small" type="info" class="more-tag">
-                              +{{ getDisplayTags(item.label).moreCount }}
-                            </NTag>
-                          </template>
-                          <span v-else class="no-tags">--</span>
-                        </div>
-                      </div>
-                    </div>
-                  </template>
+          <div v-else class="template-grid">
+            <NCard
+              v-for="item in deviceTemplateList"
+              :key="item.id"
+              hoverable
+              class="template-card"
+              :content-style="{ padding: '0' }"
+              @click="handleEdit(item.id)"
+            >
+              <div class="card-body">
+                <div class="card-name">
+                  <NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis>
+                </div>
 
-                  <!-- 底部图标 - 固定40x40正方形 -->
-                  <template #footer-icon>
-                    <div class="footer-icon-container">
-                      <img v-if="item.path" :src="getPath(item.path)" alt="device type icon" class="template-image" />
-                      <SvgIcon v-else local-icon="default-template" class="template-image" />
-                    </div>
-                  </template>
-                </ItemCard>
-              </NGi>
-            </NGrid>
+                <div class="card-desc">
+                  <NEllipsis :line-clamp="2">{{ item.description || '--' }}</NEllipsis>
+                </div>
+
+                <div class="card-meta">
+                  <div class="card-icon">
+                    <img v-if="item.path" :src="getPath(item.path)" alt="" class="template-image" />
+                    <SvgIcon v-else local-icon="default-template" class="template-image svg-icon" />
+                  </div>
+
+                  <div v-if="item.label" class="tags-row">
+                    <NTag
+                      v-for="tag in getDisplayTags(item.label).displayTags"
+                      :key="tag"
+                      size="small"
+                      :bordered="false"
+                      class="tag-item"
+                    >
+                      {{ tag }}
+                    </NTag>
+                    <NTag v-if="getDisplayTags(item.label).hasMore" size="small" :bordered="false" class="more-tag">
+                      +{{ getDisplayTags(item.label).moreCount }}
+                    </NTag>
+                  </div>
+                  <span v-else class="no-tags">--</span>
+                </div>
+              </div>
+            </NCard>
           </div>
         </n-spin>
       </template>
@@ -397,105 +405,120 @@ onMounted(() => {
   min-height: 300px;
 }
 
-// 新的footer样式 - 标签靠右对齐
-.card-footer-content {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
 }
 
-.tags-section {
+.template-card {
+  cursor: pointer;
+  border-radius: 12px;
+  border: 1px solid #e8ebf0;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+
+  &:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.card-body {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  gap: 8px;
+  padding: 14px 16px 16px;
+  min-height: 148px;
 }
 
-.tags-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  align-items: center;
-  justify-content: flex-end;
-  min-height: 20px;
+.card-name {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #1a1a2e;
 }
 
-.tag-item,
-.more-tag {
-  margin: 0;
+.card-desc {
+  flex: 1;
+  min-height: 36px;
   font-size: 12px;
+  line-height: 1.5;
+  color: #888;
 }
 
-.no-tags {
-  color: #9ca3af;
-  font-size: 13px;
-  font-style: italic;
+.card-meta {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 4px;
 }
 
-// 图标容器 - 固定40x40正方形
-.footer-icon-container {
-  width: 40px;
-  height: 40px;
+.card-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 6px;
+  border-radius: 8px;
+  background: #f1f5f9;
 }
 
 .template-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
-}
 
-// 保留原有的卡片样式
-.card-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  margin-top: 12px;
-}
-
-.card-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.template-icon {
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-}
-
-.footer-template-icon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  border-radius: 4px;
-}
-
-// 优化卡片在不同屏幕下的显示
-
-// 响应式优化
-@media (max-width: 640px) {
-  .tag-item,
-  .more-tag {
-    font-size: 11px;
+  &.svg-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
   }
+}
 
-  .no-tags {
+.tags-row {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.tag-item {
+  margin: 0;
+
+  :deep(.n-tag) {
+    border-radius: 6px;
+    background: #f8f9fc;
+    color: #5b6478;
+    border: 1px solid #eef0f4;
     font-size: 12px;
   }
 }
 
-@media (min-width: 1920px) {
-  :deep(.n-grid) {
-    gap: 24px;
+.more-tag {
+  margin: 0;
+
+  :deep(.n-tag) {
+    border-radius: 10px;
+    background: #ede9fe;
+    color: #4f46e5;
+    font-weight: 600;
+    font-size: 11px;
   }
+}
+
+.no-tags {
+  margin-left: auto;
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 36px;
 }
 </style>
