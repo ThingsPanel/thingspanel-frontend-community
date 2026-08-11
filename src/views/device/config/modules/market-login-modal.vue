@@ -34,9 +34,10 @@ const handleLogin = async () => {
   loading.value = true
   try {
     const res: any = await marketLogin({ username: loginForm.username, password: loginForm.password })
-    const token = res?.token || res?.data?.token
+    const auth = res?.data || res
+    const token = auth?.token
     if (token) {
-      setToken(token)
+      setToken(token, auth.refresh_token, auth.expires_in, auth.expires_at)
       window.$message?.success($t('market.loginSuccess'))
       visible.value = false
       emit('login-success', token)

@@ -10,7 +10,7 @@ import { localStg } from '@/utils/storage'
 import { useMarketAuth } from '../composables/use-market-auth'
 
 const emit = defineEmits(['publish-success'])
-const { getToken, clearToken } = useMarketAuth()
+const { getToken, clearToken, refreshAccessToken } = useMarketAuth()
 
 const visible = ref(false)
 const loading = ref(false)
@@ -69,6 +69,12 @@ const handleCoverUpload = ({ event }: { file: UploadFileInfo; event?: ProgressEv
   formModel.cover_url = `${uploadUrl.replace(/\/api\/v1$/, '')}/${String(path).replace(/^\.\//, '')}`
 }
 
+const resolveConfigCoverUrl = (imageUrl?: string) => {
+  if (!imageUrl) return ''
+  if (/^https?:\/\//i.test(imageUrl)) return imageUrl
+  return `${uploadUrl.replace(/\/api\/v1$/, '')}/${String(imageUrl).replace(/^\.\//, '').replace(/^\//, '')}`
+}
+
 // open 接收 device_config_id，而非 device_template_id
 const open = async (deviceConfigId: string, defaultName?: string) => {
   deviceConfigIdValue.value = deviceConfigId
@@ -96,9 +102,8 @@ const open = async (deviceConfigId: string, defaultName?: string) => {
       formModel.version = dc.version || '1.0.0'
       formModel.author = dc.author || ''
       formModel.description = dc.description || ''
-      const coverPath = dc.path || dc.device_template?.path || ''
-      if (coverPath) {
-        formModel.cover_url = `${window.location.origin}/${String(coverPath).replace(/^\.\//, '')}`
+      if (dc.image_url) {
+        formModel.cover_url = resolveConfigCoverUrl(dc.image_url)
       }
     }
   } catch (e) {
@@ -114,7 +119,8 @@ const handlePublish = async () => {
     return
   }
 
-  const token = getToken()
+  let token = getToken()
+  if (!token) token = await refreshAccessToken()
   if (!token) {
     window.$message?.error($t('market.loginRequired'))
     visible.value = false
@@ -166,7 +172,7 @@ defineExpose({ open })
     v-model:show="visible"
     preset="dialog"
     :title="$t('device_template.publishConfirmTitle')"
-    style="width: 550px"
+    style="width: 680px; max-width: 92vw"
   >
     <div style="margin-top: 20px">
       <NForm
@@ -186,6 +192,7 @@ defineExpose({ open })
             clearable
           />
         </NFormItem>
+        <div class="market-form-grid">
         <NFormItem :label="$t('device_template.brand')" path="brand">
           <NInput v-model:value="formModel.brand" :placeholder="$t('device_template.inputBrand')" clearable />
         </NFormItem>
@@ -206,6 +213,7 @@ defineExpose({ open })
         <NFormItem :label="$t('device_template.author')" path="author">
           <NInput v-model:value="formModel.author" :placeholder="$t('device_template.inputAuthor')" clearable />
         </NFormItem>
+        </div>
         <NFormItem :label="$t('generate.description')" path="description">
           <NInput
             v-model:value="formModel.description"
@@ -215,7 +223,7 @@ defineExpose({ open })
             clearable
           />
         </NFormItem>
-        <NFormItem label="市场封面">
+        <NFormItem label="市场封面" class="cover-form-item">
           <NUpload
             :action="`${uploadUrl}/file/up`"
             :headers="{ 'x-token': localStg.get('token') || '' }"
@@ -224,12 +232,12 @@ defineExpose({ open })
             :show-file-list="false"
             @finish="handleCoverUpload"
           >
-            <NUploadDragger style="width: 220px; height: 130px">
+            <NUploadDragger class="cover-uploader">
               <img
                 v-if="formModel.cover_url"
                 :src="formModel.cover_url"
                 alt="市场封面"
-                style="width: 100%; height: 100%; object-fit: cover"
+                class="cover-preview"
               />
               <span v-else>点击或拖拽上传封面</span>
             </NUploadDragger>
@@ -251,4 +259,41 @@ defineExpose({ open })
   </NModal>
 </template>
 
-<style scoped></style>
+<style scoped>
+.market-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 24px;
+}
+
+.cover-form-item :deep(.n-form-item-blank) {
+  align-items: flex-start;
+}
+
+.cover-uploader {
+  width: 300px;
+  height: 150px;
+}
+
+.cover-uploader :deep(.n-upload-dragger) {
+  padding: 0;
+}
+
+.cover-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+@media (max-width: 640px) {
+  .market-form-grid {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+
+  .cover-uploader {
+    width: 100%;
+  }
+}
+</style>

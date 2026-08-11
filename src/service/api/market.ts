@@ -1,8 +1,19 @@
 import { request } from '../request'
 
 /** 市场登录 */
+export interface MarketAuthResponse {
+  token: string
+  refresh_token?: string
+  expires_in?: number
+  expires_at?: number
+}
+
 export const marketLogin = async (data: { username: string; password: string }) => {
-  return await request.post<{ token: string }>('/device/template/market/login', data)
+  return await request.post<MarketAuthResponse>('/device/template/market/login', data)
+}
+
+export const marketRefresh = async (refresh_token: string) => {
+  return await request.post<MarketAuthResponse>('/device/template/market/refresh', { refresh_token })
 }
 
 /** 发布设备配置到市场（同时发布 DeviceConfig 凭证协议 + DeviceTemplate 物模型+面板） */
