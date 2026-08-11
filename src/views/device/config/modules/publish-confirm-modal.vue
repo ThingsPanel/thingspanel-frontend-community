@@ -8,9 +8,11 @@ import { deviceConfigInfo } from '@/service/api/device'
 import { getDemoServerUrl } from '@/utils/common/tool'
 import { localStg } from '@/utils/storage'
 import { useMarketAuth } from '../composables/use-market-auth'
+import { useAuthStore } from '@/store/modules/auth'
 
 const emit = defineEmits(['publish-success'])
 const { getToken, clearToken, refreshAccessToken } = useMarketAuth()
+const authStore = useAuthStore()
 
 const visible = ref(false)
 const loading = ref(false)
@@ -46,7 +48,7 @@ const rules: FormRules = {
       trigger: 'blur'
     }
   ],
-  author: [],
+  author: [{ required: true, message: () => $t('device_template.requireAuthor'), trigger: 'blur' }],
   description: []
 }
 
@@ -84,7 +86,7 @@ const open = async (deviceConfigId: string, defaultName?: string) => {
   formModel.model = ''
   formModel.category = categoryOptions[0].value
   formModel.version = '1.0.0'
-  formModel.author = ''
+  formModel.author = authStore.userInfo.userName || authStore.userInfo.name || ''
   formModel.description = ''
   formModel.cover_url = ''
 
@@ -100,7 +102,6 @@ const open = async (deviceConfigId: string, defaultName?: string) => {
       formModel.brand = dc.brand || ''
       formModel.model = dc.model_number || dc.product_model || ''
       formModel.version = dc.version || '1.0.0'
-      formModel.author = dc.author || ''
       formModel.description = dc.description || ''
       if (dc.image_url) {
         formModel.cover_url = resolveConfigCoverUrl(dc.image_url)
@@ -171,7 +172,7 @@ defineExpose({ open })
   <NModal
     v-model:show="visible"
     preset="dialog"
-    :title="$t('device_template.publishConfirmTitle')"
+    :title="$t('device_template.uploadResourceConfirmTitle')"
     style="width: 680px; max-width: 92vw"
   >
     <div style="margin-top: 20px">
@@ -183,7 +184,7 @@ defineExpose({ open })
         label-width="110"
         require-mark-placement="right-hanging"
       >
-        <NFormItem :label="$t('device_template.marketName')" path="market_name">
+        <NFormItem :label="$t('device_template.resourceName')" path="market_name">
           <NInput
             v-model:value="formModel.market_name"
             :placeholder="$t('device_template.inputMarketName')"
@@ -223,7 +224,7 @@ defineExpose({ open })
             clearable
           />
         </NFormItem>
-        <NFormItem label="市场封面" class="cover-form-item">
+        <NFormItem :label="$t('device_template.resourceCover')" class="cover-form-item">
           <NUpload
             :action="`${uploadUrl}/file/up`"
             :headers="{ 'x-token': localStg.get('token') || '' }"
@@ -236,7 +237,7 @@ defineExpose({ open })
               <img
                 v-if="formModel.cover_url"
                 :src="formModel.cover_url"
-                alt="市场封面"
+                :alt="$t('device_template.resourceCover')"
                 class="cover-preview"
               />
               <span v-else>点击或拖拽上传封面</span>
@@ -253,7 +254,7 @@ defineExpose({ open })
     <template #action>
       <NButton @click="handleCancel">{{ $t('common.cancel') }}</NButton>
       <NButton type="primary" :loading="loading" @click="handlePublish">
-        {{ $t('device_template.confirmPublish') }}
+        {{ $t('device_template.confirmUpload') }}
       </NButton>
     </template>
   </NModal>
@@ -273,10 +274,15 @@ defineExpose({ open })
 .cover-uploader {
   width: 300px;
   height: 150px;
+  padding: 0;
+  margin: 0;
 }
 
 .cover-uploader :deep(.n-upload-dragger) {
   padding: 0;
+  margin: 0;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .cover-preview {

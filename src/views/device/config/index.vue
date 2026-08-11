@@ -1,7 +1,7 @@
 <script lang="tsx" setup>
 import { onMounted, ref, computed, h, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
-import { NButton, NInput, NIcon, NPagination, NDataTable, NTag, NSpace, NEmpty, NDropdown, NTooltip } from 'naive-ui'
+import { NButton, NInput, NIcon, NPagination, NDataTable, NTag, NSpace, NEmpty, NTooltip } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { deviceConfig } from '@/service/api/device'
 import { useRouterPush } from '@/hooks/common/router'
@@ -218,7 +218,7 @@ onMounted(() => {
 onActivated(() => {
   getData()
 })
-import { ListOutline, GridOutline as CardIcon, EllipsisHorizontal } from '@vicons/ionicons5'
+import { CreateOutline, CloudUploadOutline, ListOutline, GridOutline as CardIcon } from '@vicons/ionicons5'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { getDemoServerUrl } from '@/utils/common/tool'
 
@@ -312,37 +312,40 @@ const availableViews = [
                   <SvgIcon :local-icon="getDeviceIconName(item.device_type)" class="image-icon" />
                 </template>
 
-                <!-- 右上角操作按钮 -->
+                <!-- 高频图标操作固定在右上角 -->
                 <template #top-right-icon>
-                  <NDropdown
-                    placement="bottom-end"
-                    trigger="hover"
-                    :options="[
-                      { label: $t('common.edit'), key: 'edit' },
-                      {
-                        label: $t('device_template.publishToMarket'),
-                        key: 'publish',
-                        disabled: !item.device_template_id
-                      }
-                    ]"
-                    @select="
-                      key => {
-                        if (key === 'edit') handleEdit(item.id)
-                        if (key === 'publish') handlePublishToMarket(item.id, item.name)
-                      }
-                    "
-                  >
-                    <NTooltip :disabled="!!item.device_template_id" trigger="hover">
+                  <NSpace :size="2" class="card-actions">
+                    <NTooltip trigger="hover">
                       <template #trigger>
-                        <NButton size="tiny" quaternary circle>
+                        <NButton size="small" quaternary circle type="primary" @click.stop="handleEdit(item.id)">
                           <template #icon>
-                            <NIcon><EllipsisHorizontal /></NIcon>
+                            <NIcon><CreateOutline /></NIcon>
                           </template>
                         </NButton>
                       </template>
-                      {{ $t('device_template.requireThingModelBeforePublish') }}
+                      {{ $t('common.edit') }}
                     </NTooltip>
-                  </NDropdown>
+                    <NTooltip trigger="hover">
+                      <template #trigger>
+                        <NButton
+                          size="small"
+                          quaternary
+                          type="info"
+                          :disabled="!item.device_template_id"
+                          @click.stop="handlePublishToMarket(item.id, item.name)"
+                        >
+                          <template #icon>
+                            <NIcon><CloudUploadOutline /></NIcon>
+                          </template>
+                        </NButton>
+                      </template>
+                      {{
+                        item.device_template_id
+                          ? $t('device_template.uploadToResourceCenter')
+                          : $t('device_template.requireThingModelBeforePublish')
+                      }}
+                    </NTooltip>
+                  </NSpace>
                 </template>
 
                 <!-- 底部图标 - 左下角显示配置图片 -->
@@ -358,7 +361,6 @@ const availableViews = [
                   </div>
                 </template>
 
-                <!-- 卡片内容区域可以显示更多信息 -->
               </ItemCard>
             </n-gi>
           </n-grid>
@@ -400,6 +402,26 @@ const availableViews = [
     <PublishConfirmModal ref="publishConfirmRef" @publish-success="getData" />
   </div>
 </template>
+
+<style scoped>
+:deep(.card-actions) {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+:deep(.card-actions .n-icon) {
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:deep(.card-actions .n-button) {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+</style>
 
 <style scoped lang="scss">
 .empty-state {

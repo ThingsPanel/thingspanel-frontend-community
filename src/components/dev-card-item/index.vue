@@ -349,8 +349,12 @@ const handleTopRightIconClick = () => {
 .top-right-icon-container {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 24px;
+  justify-content: flex-end;
+  width: auto;
+  min-width: 24px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  flex-wrap: nowrap;
   height: 24px;
   border-radius: 6px;
   transition:
