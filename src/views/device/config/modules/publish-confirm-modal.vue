@@ -61,7 +61,7 @@ const open = async (deviceConfigId: string, defaultName?: string) => {
   formModel.market_name = defaultName || ''
   formModel.brand = ''
   formModel.model = ''
-  formModel.category = ''
+  formModel.category = categoryOptions[0].value
   formModel.version = '1.0.0'
   formModel.author = ''
   formModel.description = ''
