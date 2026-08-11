@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { $t } from '@/locales'
 import { useRouterPush } from '@/hooks/common/router'
 import { useAuthStore } from '@/store/modules/auth'
-import { useMarketAuth } from '@/views/device/config/composables/use-market-auth'
 
 defineOptions({ name: 'ExceptionBase' })
 
@@ -32,7 +31,6 @@ const icon = computed(() => iconMap[props.type])
 
 const { toLogin } = useRouterPush()
 const authStore = useAuthStore()
-const { clearToken: clearMarketToken } = useMarketAuth()
 
 function logout() {
   window.$dialog?.info({
@@ -41,7 +39,6 @@ function logout() {
     positiveText: $t('common.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: () => {
-      clearMarketToken()
       authStore.resetStore()
       toLogin()
     }

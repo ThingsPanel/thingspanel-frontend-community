@@ -6,7 +6,6 @@ import { useSvgIconRender } from '@sa/hooks'
 import { useAuthStore } from '@/store/modules/auth'
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
-import { useMarketAuth } from '@/views/device/config/composables/use-market-auth'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 defineOptions({
   name: 'UserAvatar'
@@ -15,7 +14,6 @@ defineOptions({
 const authStore = useAuthStore()
 const { routerPushByKey, toLogin } = useRouterPush()
 const { SvgIconVNode } = useSvgIconRender(SvgIcon)
-const { clearToken: clearMarketToken } = useMarketAuth()
 const router = useRouter()
 function loginOrRegister() {
   toLogin()
@@ -62,7 +60,6 @@ function logout() {
     positiveText: $t('common.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: () => {
-      clearMarketToken()
       authStore.requestLogout()
     }
   })
