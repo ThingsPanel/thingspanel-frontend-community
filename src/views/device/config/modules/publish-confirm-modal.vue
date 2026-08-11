@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { NModal, NForm, NFormItem, NInput, NButton, NAlert, NSelect, FormInst, FormRules } from 'naive-ui'
+import { NModal, NForm, NFormItem, NInput, NButton, NAlert, NSelect, NUpload, NUploadDragger, FormInst, FormRules } from 'naive-ui'
+import type { UploadFileInfo } from 'naive-ui'
 import { $t } from '@/locales'
 import { publishToMarket } from '@/service/api/market'
 import { deviceConfigInfo } from '@/service/api/device'
+import { getDemoServerUrl } from '@/utils/common/tool'
+import { localStg } from '@/utils/storage'
 import { useMarketAuth } from '../composables/use-market-auth'
 
 const emit = defineEmits(['publish-success'])
@@ -14,6 +17,7 @@ const loading = ref(false)
 const formRef = ref<FormInst | null>(null)
 // 传入的是 device_config_id（发布单位）
 const deviceConfigIdValue = ref('')
+const uploadUrl = getDemoServerUrl()
 
 const formModel = reactive({
   market_name: '',
@@ -53,6 +57,17 @@ const categoryOptions = [
   { label: () => $t('device_template.marketCatSmartCity'), value: '智慧城市' },
   { label: () => $t('device_template.marketCatOther'), value: '其他' }
 ]
+
+const handleCoverUpload = ({ event }: { file: UploadFileInfo; event?: ProgressEvent }) => {
+  if (!event?.target) return
+  const response = JSON.parse((event.target as XMLHttpRequest).response)
+  const path = response?.data?.path
+  if (!path) {
+    window.$message?.error('封面上传失败')
+    return
+  }
+  formModel.cover_url = `${uploadUrl.replace(/\/api\/v1$/, '')}/${String(path).replace(/^\.\//, '')}`
+}
 
 // open 接收 device_config_id，而非 device_template_id
 const open = async (deviceConfigId: string, defaultName?: string) => {
@@ -200,8 +215,25 @@ defineExpose({ open })
             clearable
           />
         </NFormItem>
-        <NFormItem v-if="formModel.cover_url" label="市场封面">
-          <img :src="formModel.cover_url" alt="市场封面" style="width: 180px; height: 100px; object-fit: cover; border-radius: 6px" />
+        <NFormItem label="市场封面">
+          <NUpload
+            :action="`${uploadUrl}/file/up`"
+            :headers="{ 'x-token': localStg.get('token') || '' }"
+            :data="{ type: 'image' }"
+            accept="image/png, image/jpeg, image/jpg, image/webp"
+            :show-file-list="false"
+            @finish="handleCoverUpload"
+          >
+            <NUploadDragger style="width: 220px; height: 130px">
+              <img
+                v-if="formModel.cover_url"
+                :src="formModel.cover_url"
+                alt="市场封面"
+                style="width: 100%; height: 100%; object-fit: cover"
+              />
+              <span v-else>点击或拖拽上传封面</span>
+            </NUploadDragger>
+          </NUpload>
         </NFormItem>
       </NForm>
 
