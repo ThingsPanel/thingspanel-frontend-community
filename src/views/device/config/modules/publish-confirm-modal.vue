@@ -62,13 +62,22 @@ const categoryOptions = [
 
 const handleCoverUpload = ({ event }: { file: UploadFileInfo; event?: ProgressEvent }) => {
   if (!event?.target) return
-  const response = JSON.parse((event.target as XMLHttpRequest).response)
-  const path = response?.data?.path
+  let response: any
+  try {
+    response = JSON.parse((event.target as XMLHttpRequest).response)
+  } catch {
+    window.$message?.error('封面上传失败')
+    return
+  }
+  const path = response?.data?.path || response?.path || response?.data?.data?.path
   if (!path) {
     window.$message?.error('封面上传失败')
     return
   }
-  formModel.cover_url = `${uploadUrl.replace(/\/api\/v1$/, '')}/${String(path).replace(/^\.\//, '')}`
+  const normalizedPath = String(path).replace(/^\.\//, '').replace(/^\//, '')
+  formModel.cover_url = /^https?:\/\//i.test(normalizedPath)
+    ? normalizedPath
+    : `${uploadUrl.replace(/\/api\/v1$/, '')}/${normalizedPath}`
 }
 
 const resolveConfigCoverUrl = (imageUrl?: string) => {

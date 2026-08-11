@@ -712,6 +712,10 @@ onMounted(() => {
   :deep(.n-card__content) {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
   &:hover {
@@ -745,10 +749,15 @@ onMounted(() => {
 }
 
 .card-body {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 12px 16px 16px;
 }
 
 .card-name {
+  width: 100%;
+  min-width: 0;
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 8px;
@@ -756,6 +765,8 @@ onMounted(() => {
 }
 
 .card-meta {
+  width: 100%;
+  min-width: 0;
   font-size: 12px;
   color: #888;
   margin-bottom: 12px;
@@ -793,10 +804,12 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   width: 100%;
+  min-width: 0;
 }
 
 .action-btn {
   flex: 1;
+  min-width: 0;
   width: 100%;
 }
 
