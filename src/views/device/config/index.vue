@@ -12,9 +12,11 @@ import ItemCard from '@/components/dev-card-item/index.vue'
 // Import Publish Components
 import MarketLoginModal from './modules/market-login-modal.vue'
 import PublishConfirmModal from './modules/publish-confirm-modal.vue'
+import { useMarketAuth } from './composables/use-market-auth'
 
 const router = useRouter()
 const { routerPushByKey } = useRouterPush()
+const { isLoggedIn } = useMarketAuth()
 
 // Refs for Modals
 const marketLoginRef = ref<InstanceType<typeof MarketLoginModal>>()
@@ -77,8 +79,7 @@ const handlePublishToMarket = (deviceConfigId: string, defaultName?: string) => 
     window.$message?.warning($t('device_template.requireThingModelBeforePublish'))
     return
   }
-  const token = sessionStorage.getItem('market_token')
-  if (!token) {
+  if (!isLoggedIn()) {
     pendingPublishId.value = deviceConfigId
     pendingPublishName.value = defaultName || ''
     marketLoginRef.value?.open()

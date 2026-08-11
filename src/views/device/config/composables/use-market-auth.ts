@@ -3,7 +3,13 @@ import { ref } from 'vue'
 const MARKET_TOKEN_STORAGE_KEY = 'market_token'
 const TOKEN_EXPIRY_SKEW_SECONDS = 30
 
-const marketToken = ref<string | null>(sessionStorage.getItem(MARKET_TOKEN_STORAGE_KEY))
+// 市场登录需要跨页面、跨浏览器重启保持；旧版本的 sessionStorage token 兼容迁移一次。
+const storedToken = localStorage.getItem(MARKET_TOKEN_STORAGE_KEY) || sessionStorage.getItem(MARKET_TOKEN_STORAGE_KEY)
+if (storedToken && !localStorage.getItem(MARKET_TOKEN_STORAGE_KEY)) {
+  localStorage.setItem(MARKET_TOKEN_STORAGE_KEY, storedToken)
+  sessionStorage.removeItem(MARKET_TOKEN_STORAGE_KEY)
+}
+const marketToken = ref<string | null>(storedToken)
 
 function decodeTokenExpiry(token: string): number | null {
   const parts = token.split('.')
@@ -24,11 +30,13 @@ function decodeTokenExpiry(token: string): number | null {
 export function useMarketAuth() {
   const setToken = (token: string) => {
     marketToken.value = token
-    sessionStorage.setItem(MARKET_TOKEN_STORAGE_KEY, token)
+    localStorage.setItem(MARKET_TOKEN_STORAGE_KEY, token)
+    sessionStorage.removeItem(MARKET_TOKEN_STORAGE_KEY)
   }
 
   const clearToken = () => {
     marketToken.value = null
+    localStorage.removeItem(MARKET_TOKEN_STORAGE_KEY)
     sessionStorage.removeItem(MARKET_TOKEN_STORAGE_KEY)
   }
 

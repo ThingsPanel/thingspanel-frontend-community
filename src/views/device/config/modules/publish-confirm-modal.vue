@@ -4,8 +4,10 @@ import { NModal, NForm, NFormItem, NInput, NButton, NAlert, NSelect, FormInst, F
 import { $t } from '@/locales'
 import { publishToMarket } from '@/service/api/market'
 import { deviceConfigInfo } from '@/service/api/device'
+import { useMarketAuth } from '../composables/use-market-auth'
 
 const emit = defineEmits(['publish-success'])
+const { getToken, clearToken } = useMarketAuth()
 
 const visible = ref(false)
 const loading = ref(false)
@@ -91,7 +93,7 @@ const handlePublish = async () => {
     return
   }
 
-  const token = sessionStorage.getItem('market_token')
+  const token = getToken()
   if (!token) {
     window.$message?.error($t('market.loginRequired'))
     visible.value = false
@@ -120,7 +122,7 @@ const handlePublish = async () => {
     }
   } catch (e: any) {
     if (e?.response?.status === 401) {
-      sessionStorage.removeItem('market_token')
+      clearToken()
       window.$message?.error($t('market.tokenExpired'))
     } else {
       window.$message?.error($t('device_template.publishFailed') + ': ' + (e?.message || ''))
