@@ -16,6 +16,7 @@ export const publishToMarket = async (data: {
   version?: string
   author?: string
   description?: string
+  cover_url?: string
 }) => {
   return await request.post<{ market_template_id: string }>('/device/template/market/publish', data)
 }

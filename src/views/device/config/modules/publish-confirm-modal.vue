@@ -22,7 +22,8 @@ const formModel = reactive({
   category: '',
   version: '1.0.0',
   author: '',
-  description: ''
+  description: '',
+  cover_url: ''
 })
 
 const rules: FormRules = {
@@ -30,9 +31,9 @@ const rules: FormRules = {
     { required: true, message: () => $t('device_template.requireName'), trigger: 'blur' },
     { max: 50, message: () => $t('common.maxLength', { length: 50 }), trigger: 'blur' }
   ],
-  brand: [{ required: true, message: () => $t('device_template.requireBrand'), trigger: 'blur' }],
-  model: [{ required: true, message: () => $t('device_template.requireModel'), trigger: 'blur' }],
-  category: [{ required: true, message: () => $t('device_template.requireCategory'), trigger: ['blur', 'change'] }],
+  brand: [],
+  model: [],
+  category: [],
   version: [
     { required: true, message: () => $t('device_template.requireVersion'), trigger: 'blur' },
     {
@@ -41,8 +42,8 @@ const rules: FormRules = {
       trigger: 'blur'
     }
   ],
-  author: [{ required: true, message: () => $t('device_template.requireAuthor'), trigger: 'blur' }],
-  description: [{ required: true, message: () => $t('device_template.requireDescription'), trigger: 'blur' }]
+  author: [],
+  description: []
 }
 
 const categoryOptions = [
@@ -64,6 +65,7 @@ const open = async (deviceConfigId: string, defaultName?: string) => {
   formModel.version = '1.0.0'
   formModel.author = ''
   formModel.description = ''
+  formModel.cover_url = ''
 
   // 获取设备配置详情（包含 device_template_id），再获取模板详情填充表单
   try {
@@ -79,6 +81,10 @@ const open = async (deviceConfigId: string, defaultName?: string) => {
       formModel.version = dc.version || '1.0.0'
       formModel.author = dc.author || ''
       formModel.description = dc.description || ''
+      const coverPath = dc.path || dc.device_template?.path || ''
+      if (coverPath) {
+        formModel.cover_url = `${window.location.origin}/${String(coverPath).replace(/^\.\//, '')}`
+      }
     }
   } catch (e) {
     console.error('Failed to get device config detail', e)
@@ -111,7 +117,8 @@ const handlePublish = async () => {
       category: formModel.category,
       version: formModel.version,
       author: formModel.author,
-      description: formModel.description
+      description: formModel.description,
+      cover_url: formModel.cover_url
     })
     if (!res.error) {
       window.$message?.success($t('device_template.publishSuccess'))
@@ -192,6 +199,9 @@ defineExpose({ open })
             :placeholder="$t('device_template.inputDescription')"
             clearable
           />
+        </NFormItem>
+        <NFormItem v-if="formModel.cover_url" label="市场封面">
+          <img :src="formModel.cover_url" alt="市场封面" style="width: 180px; height: 100px; object-fit: cover; border-radius: 6px" />
         </NFormItem>
       </NForm>
 
