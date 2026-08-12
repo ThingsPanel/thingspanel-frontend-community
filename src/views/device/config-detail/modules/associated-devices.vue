@@ -300,15 +300,25 @@ onMounted(async () => {
         label-width="auto"
       >
         <NFormItem :label="$t('page.irrigation.rotation.chooseDevice')" path="device_ids">
-          <DeviceSelectWithScroll
-            v-model:modelValue="associatedForm.device_ids"
-            :options="deviceOptions"
-            :loading="loadingMore"
-            :has-more="hasMoreDevices"
-            :placeholder="$t('page.irrigation.rotation.chooseDevice') || '请选择设备'"
-            @load-more="handleLoadMoreDevices"
-            @initial-load="handleInitialLoadDevices"
-          />
+          <NFlex align="center" :wrap="false" class="device-select-row">
+            <DeviceSelectWithScroll
+              v-model:modelValue="associatedForm.device_ids"
+              :options="deviceOptions"
+              :loading="loadingMore"
+              :has-more="hasMoreDevices"
+              :placeholder="$t('page.irrigation.rotation.chooseDevice') || '请选择设备'"
+              @load-more="handleLoadMoreDevices"
+              @initial-load="handleInitialLoadDevices"
+            />
+            <NButton
+              quaternary
+              type="primary"
+              class="create-device-button"
+              @click="routerPushByKey('device_manage', { query: { deviceConfigId: props.deviceConfigId } })"
+            >
+              + 创建设备
+            </NButton>
+          </NFlex>
         </NFormItem>
         <NFlex justify="flex-end">
           <NButton @click="handleClose">{{ $t('generate.cancel') }}</NButton>
@@ -338,5 +348,20 @@ onMounted(async () => {
 .table-class {
   margin: 10px;
   height: 50%;
+}
+
+.device-select-row {
+  width: 100%;
+}
+
+.device-select-row :deep(.n-select),
+.device-select-row :deep(.n-base-selection) {
+  flex: 1;
+  min-width: 0;
+}
+
+.create-device-button {
+  flex: none;
+  padding: 0 4px;
 }
 </style>
