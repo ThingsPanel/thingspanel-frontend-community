@@ -676,13 +676,13 @@ const ERROR_CODE_MESSAGES: Record<string, { zh: string; en: string; isBlocking: 
     isBlocking: false
   },
   MARKET_SESSION_EXPIRED: {
-    zh: '市场登录已过期，请重新登录',
+    zh: '资源中心登录已过期，请重新登录',
     en: 'Market session expired, please login again',
     isBlocking: true
   },
   UNAUTHORIZED: {
-    zh: '未授权，请先登录市场',
-    en: 'Unauthorized, please login to market first',
+    zh: '未授权，请先登录资源中心',
+    en: 'Unauthorized, please login to the resource center first',
     isBlocking: true
   },
   RATE_LIMITED: {
@@ -712,7 +712,7 @@ export function getErrorDisplayMessage(
   if (error.httpStatus === 401) {
     return {
       title: 'UNAUTHORIZED',
-      description: locale === 'zh' ? '未授权，请先登录市场' : 'Unauthorized, please login to market first',
+      description: locale === 'zh' ? '未授权，请先登录资源中心' : 'Unauthorized, please login to the resource center first',
       isBlocking: true
     }
   }

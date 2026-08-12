@@ -241,7 +241,7 @@ async function submit() {
 
   const marketToken = getToken()
   if (!marketToken) {
-    message.error('市场登录已失效，请关闭窗口后重新登录')
+    message.error('资源中心登录已失效，请关闭窗口后重新登录')
     return
   }
 

@@ -137,7 +137,7 @@ export function useMarketBundle() {
     if (!marketToken) {
       wizardState.error = {
         code: 'UNAUTHORIZED',
-        message: locale === 'zh' ? '请先登录市场' : 'Please login to market first',
+        message: locale === 'zh' ? '请先登录资源中心' : 'Please login to the resource center first',
         httpStatus: 401
       }
       return false
@@ -215,7 +215,7 @@ export function useMarketBundle() {
         result: null,
         error: {
           code: 'UNAUTHORIZED',
-          message: locale === 'zh' ? '请先登录市场' : 'Please login to market first',
+          message: locale === 'zh' ? '请先登录资源中心' : 'Please login to the resource center first',
           httpStatus: 401
         } as MarketApiError
       }
