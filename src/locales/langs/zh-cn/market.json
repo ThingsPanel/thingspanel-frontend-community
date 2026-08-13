@@ -1,9 +1,11 @@
 {
     "market.loginTitle": "登录资源中心",
+    "market.loginSubtitle": "登录后即可获取并使用市场资源",
     "market.username": "账号",
     "market.usernamePlaceholder": "请输入用户名/邮箱",
     "market.usernameTip": "用户名至少需要6个字符",
     "market.password": "密码",
+    "market.passwordPlaceholder": "请输入密码",
     "market.login": "登录",
     "market.loginSuccess": "登录成功",
     "market.loginFailed": "登录失败",

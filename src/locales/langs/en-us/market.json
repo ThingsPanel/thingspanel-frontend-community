@@ -1,9 +1,11 @@
 {
     "market.loginTitle": "Login to Resource Center",
+    "market.loginSubtitle": "Sign in to access and use marketplace resources",
     "market.username": "Username",
     "market.usernamePlaceholder": "Please enter username/email",
     "market.usernameTip": "Username must be at least 6 characters",
     "market.password": "Password",
+    "market.passwordPlaceholder": "Enter your password",
     "market.login": "Login",
     "market.loginSuccess": "Login successful",
     "market.loginFailed": "Login failed",
