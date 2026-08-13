@@ -962,7 +962,14 @@ onMounted(async () => {
   const thingsvisApiBaseUrl = encodeURIComponent(getThingsVisApiBase())
   const platformApiBaseUrl = encodeURIComponent(getPlatformApiBase())
   const embeddedContext = getEmbeddedContext()
-  const runtimeParams = `&context=${embeddedContext}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}`
+  const initialZoom = props.mode === 'editor' && embeddedContext === 'device-template'
+    ? Math.max(0.1, Math.min(
+        0.5,
+        ((window.innerWidth * 0.94) - 680) / 1920,
+        ((window.innerHeight * 0.92) - 170) / 1080
+      ))
+    : undefined
+  const runtimeParams = `&context=${embeddedContext}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}${initialZoom ? `&initialZoom=${initialZoom}` : ''}`
 
   // 追加 saveTarget=host，告知 Editor 进入宿主托管模式
   const targetUrl =
