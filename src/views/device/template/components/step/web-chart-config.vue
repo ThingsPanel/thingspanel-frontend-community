@@ -4,7 +4,7 @@
  * 显示预览，点击编辑按钮打开ThingsVis编辑器弹窗
  */
 
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { NButton, NModal, NCard, NEmpty, NSelect, NSpace, NSpin, NIcon } from 'naive-ui'
 import { ExpandOutline, ContractOutline, CloseOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
@@ -33,6 +33,7 @@ const props = defineProps({
 
 // 编辑器引用
 const editorRef = ref<InstanceType<typeof ThingsVisWidget>>()
+const editorContentRef = ref<HTMLElement | null>(null)
 
 // 状态
 // 将当前模板字段包装为一个虚拟设备条目，供 Field Picker 的「Device Fields」选项使用
@@ -98,17 +99,29 @@ const openEditor = () => {
   showEditorModal.value = true
 }
 
-const toggleEditorFullscreen = () => {
-  isEditorFullscreen.value = !isEditorFullscreen.value
+const toggleEditorFullscreen = async () => {
+  try {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen()
+    } else {
+      await editorContentRef.value?.requestFullscreen()
+    }
+  } catch (error) {
+    console.error('切换编辑器全屏失败:', error)
+  }
+}
+
+const handleFullscreenChange = () => {
+  isEditorFullscreen.value = document.fullscreenElement === editorContentRef.value
 }
 
 const editorCardStyle = computed(() => ({
-  width: isEditorFullscreen.value ? '100vw' : 'min(94vw, 1800px)',
-  height: isEditorFullscreen.value ? '100vh' : 'min(92vh, 1120px)'
+  width: 'min(94vw, 1800px)',
+  height: 'min(92vh, 1120px)'
 }))
 
 const editorWidgetHeight = computed(() =>
-  isEditorFullscreen.value ? 'calc(100vh - 170px)' : 'calc(min(92vh, 1120px) - 170px)'
+  isEditorFullscreen.value ? '100vh' : 'calc(min(92vh, 1120px) - 170px)'
 )
 
 // 下一步 (直接跳过，不强制编辑)
@@ -227,6 +240,11 @@ const loadTemplateData = async () => {
 
 onMounted(() => {
   loadTemplateData()
+  document.addEventListener('fullscreenchange', handleFullscreenChange)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('fullscreenchange', handleFullscreenChange)
 })
 
 watch(showEditorModal, visible => {
@@ -310,7 +328,7 @@ watch(showEditorModal, visible => {
             </NSpace>
           </template>
 
-          <div class="editor-modal-content">
+          <div ref="editorContentRef" class="editor-modal-content">
             <ThingsVisWidget
               ref="editorRef"
               mode="editor"
@@ -423,5 +441,29 @@ watch(showEditorModal, visible => {
 :deep(.editor-modal-content .thingsvis-widget-container) {
   flex: 1 1 auto;
   min-height: 0;
+}
+
+:deep(.editor-modal-content:fullscreen) {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  display: block;
+  overflow: hidden;
+  background: var(--n-color);
+}
+
+:deep(.editor-modal-content:fullscreen .thingsvis-widget-container) {
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  overflow: hidden !important;
+}
+
+:deep(.editor-modal-content:fullscreen iframe) {
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
 }
 </style>
