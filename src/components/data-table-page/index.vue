@@ -2,7 +2,6 @@
 import type { VueElement } from 'vue'
 import { computed, defineProps, ref, watch, watchEffect, onMounted, onUnmounted } from 'vue'
 import _ from 'lodash'
-import { useRouter } from 'vue-router'
 import { NButton, NDataTable, NDatePicker, NInput, NSelect, NSpace, NPagination, NSpin } from 'naive-ui'
 import type { TreeSelectOption } from 'naive-ui'
 import { useLoading } from '@sa/hooks'
@@ -392,19 +391,6 @@ const availableViews = [
   { key: 'map', icon: MapOutline, label: 'common.viewMap' }
 ]
 const formSize = ref(undefined)
-const router = useRouter()
-// 处理告警铃铛图标点击事件
-const handleWarningClick = (item: DeviceItem) => {
-  // 根据设备信息跳转到相应的告警页面
-  // 可以传递设备ID等参数
-  if (item.warn_status === 'Y') {
-    // 有告警时跳转到具体设备的告警详情
-    router.push(`/alarm/warning-message?device_id=${item.id}`)
-  } else {
-    // 无告警时可能跳转到告警管理页面
-    router.push('/alarm/warning-message')
-  }
-}
 </script>
 
 <template>
@@ -507,10 +493,7 @@ const handleWarningClick = (item: DeviceItem) => {
                 :status-active="item.is_online === 1"
                 :subtitle="item.device_config_name || '--'"
                 :footer-text="(item.ts ? formatDateTime(item.ts) : null) ?? '--'"
-                :warn-status="item.warn_status"
-                :device-id="item.id"
                 @click-card="() => props.rowClick && props.rowClick(item)"
-                @click-top-right-icon="handleWarningClick(item)"
               >
                 <template #subtitle-icon>
                   <SvgIcon
@@ -519,21 +502,6 @@ const handleWarningClick = (item: DeviceItem) => {
                   />
                 </template>
 
-                <!-- 右上角铃铛图标插槽 -->
-                <template #top-right-icon>
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    :fill="item.warn_status === 'Y' ? '#ff4d4f' : '#d9d9d9'"
-                    class="bell-icon"
-                  >
-                    <!-- 铃铛图标 SVG 路径 -->
-                    <path
-                      d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
-                    />
-                  </svg>
-                </template>
                 <template #footer-icon>
                   <div class="footer-icon-container">
                     <img
@@ -608,10 +576,6 @@ const handleWarningClick = (item: DeviceItem) => {
   width: 24px;
   height: 24px;
   object-fit: contain;
-}
-
-.bell-icon {
-  transition: fill 0.3s ease;
 }
 
 // 底部图标容器 - 固定40x40正方形
