@@ -195,6 +195,12 @@ const getDeviceDetail = async () => {
   try {
     const configJson = JSON.parse(res.data.app_chart_config)
 
+    // App 详情页使用保存时的固定手机网格，不按运行容器宽度再次响应式重排。
+    configJson.canvas = {
+      ...(configJson.canvas || {}),
+      responsive: false
+    }
+
     if (configJson.dataSources && Array.isArray(configJson.dataSources)) {
       configJson.dataSources.forEach((ds: any) => {
         if (ds.type === 'PLATFORM_FIELD') {

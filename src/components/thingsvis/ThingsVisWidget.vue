@@ -962,11 +962,14 @@ onMounted(async () => {
   const thingsvisApiBaseUrl = encodeURIComponent(getThingsVisApiBase())
   const platformApiBaseUrl = encodeURIComponent(getPlatformApiBase())
   const embeddedContext = getEmbeddedContext()
+  const canvas = props.config?.canvas || {}
+  const canvasWidth = Number(canvas.width) || 1920
+  const canvasHeight = Number(canvas.height) || 1080
   const initialZoom = props.mode === 'editor' && embeddedContext === 'device-template'
     ? Math.max(0.1, Math.min(
-        0.5,
-        ((window.innerWidth * 0.94) - 680) / 1920,
-        ((window.innerHeight * 0.92) - 170) / 1080
+        1,
+        ((window.innerWidth * 0.94) - 680) / canvasWidth,
+        ((window.innerHeight * 0.92) - 170) / canvasHeight
       ))
     : undefined
   const runtimeParams = `&context=${embeddedContext}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}${initialZoom ? `&initialZoom=${initialZoom}` : ''}`

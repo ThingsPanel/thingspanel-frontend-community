@@ -100,11 +100,70 @@ const editorCardStyle = computed(() => ({
   height: isEditorFullscreen.value ? '100vh' : 'min(92vh, 1120px)'
 }))
 
+// App 设计默认以手机竖屏作为设计基准；已有配置必须保持原画布尺寸不变。
+const editorInitialConfig = computed(() => {
+  if (initialConfig.value) {
+    return {
+      ...initialConfig.value,
+      canvas: {
+        ...initialConfig.value.canvas,
+        responsive: false
+      }
+    }
+  }
+
+  return {
+    canvas: {
+      mode: 'grid',
+      width: 375,
+      height: 844,
+      gridCols: 4,
+      gridRowHeight: 50,
+      gridGap: 5,
+      padding: 0,
+      responsive: false
+    }
+  }
+})
+
+const previewConfig = computed(() => editorInitialConfig.value)
+
 const editorWidgetHeight = computed(() =>
   isEditorFullscreen.value ? 'calc(100vh - 170px)' : 'calc(min(92vh, 1120px) - 170px)'
 )
 
-const previewHeight = computed(() => 'min(68vh, 720px)')
+const previewHeight = computed(() => {
+  const nodes = Array.isArray(initialConfig.value?.nodes) ? initialConfig.value.nodes : []
+  const rowHeight = Number(initialConfig.value?.canvas?.gridRowHeight) || 50
+  const gridGap = Number(initialConfig.value?.canvas?.gridGap) || 5
+  const maxRow = nodes.reduce((max: number, node: any) => {
+    const grid = node?.grid
+    if (!grid) return max
+    return Math.max(max, (Number(grid.y) || 0) + (Number(grid.h) || 1))
+  }, 0)
+  const contentHeight = maxRow > 0 ? maxRow * (rowHeight + gridGap) + 20 : 844
+  return `${Math.max(844, contentHeight)}px`
+})
+
+const migrateLegacyAppCanvas = (config: any) => {
+  const canvas = config?.canvas
+  const isLegacyDefaultCanvas =
+    canvas &&
+    ((canvas.width === 1920 && canvas.height === 1080) ||
+      (canvas.width === 800 && canvas.height === 844 && canvas.gridCols === 4))
+  if (!isLegacyDefaultCanvas) return config
+
+  return {
+    ...config,
+    canvas: {
+      ...canvas,
+      width: 375,
+      height: 844,
+      gridCols: canvas.gridCols === 24 ? 4 : canvas.gridCols,
+      responsive: false
+    }
+  }
+}
 
 // 下一步 (完成)
 const next = () => {
@@ -193,7 +252,7 @@ const loadTemplateData = async () => {
       if (res.data.app_chart_config) {
         try {
           const config = JSON.parse(res.data.app_chart_config)
-          initialConfig.value = config
+          initialConfig.value = migrateLegacyAppCanvas(config)
           hasConfig.value = true
           // 恢复刷新频率配置
           if (config.refreshInterval !== undefined) {
@@ -251,7 +310,7 @@ watch(showEditorModal, visible => {
         <div v-if="hasConfig && initialConfig" class="preview-area">
           <ThingsVisWidget
             mode="viewer"
-            :config="initialConfig"
+            :config="previewConfig"
             :platform-fields="platformFields"
             :platform-devices="platformDevices"
             device-id="__template__"
@@ -311,7 +370,7 @@ watch(showEditorModal, visible => {
             <ThingsVisWidget
               ref="editorRef"
               mode="editor"
-              :config="initialConfig"
+              :config="editorInitialConfig"
               :platform-fields="platformFields"
               :platform-devices="platformDevices"
               device-id="__template__"
@@ -344,11 +403,29 @@ watch(showEditorModal, visible => {
 }
 
 .preview-area {
-  width: 100%;
-  min-height: min(68vh, 720px);
+  width: 390px;
+  max-width: 100%;
+  margin: 0 auto;
+  height: min(844px, calc(100vh - 350px));
+  min-height: 390px;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   overflow: hidden;
+  background: #f5f6f8;
+}
+
+:deep(.preview-area .thingsvis-widget-container) {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+:deep(.preview-area iframe) {
+  display: block;
+  width: 390px !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  overflow: auto;
 }
 
 .actions-bar {
