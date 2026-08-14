@@ -16,6 +16,7 @@ const emit = defineEmits(['installed'])
 const { isLoggedIn, getToken, clearToken } = useMarketAuth()
 
 const loading = ref(false)
+const installingId = ref('')
 const templateList = ref<any[]>([])
 const total = ref(0)
 const viewMode = ref<'grid' | 'list'>('grid')
@@ -93,7 +94,7 @@ const handleViewDetail = (id: string) => {
   drawerVisible.value = true
 }
 
-const handleInstall = async (id: string) => {
+const startInstall = async (id: string) => {
   if (!isLoggedIn()) {
     pendingInstallId.value = id
     marketLoginRef.value?.open()
@@ -102,10 +103,30 @@ const handleInstall = async (id: string) => {
   await doInstall(id)
 }
 
+const handleInstall = (id: string) => {
+  if (installingId.value) return
+
+  const templateName = templateList.value.find(item => item.id === id)?.name || '该模板'
+  const dialog = window.$dialog
+  if (!dialog) {
+    startInstall(id)
+    return
+  }
+
+  dialog.warning({
+    title: '确认下载模板',
+    content: `确认将“${templateName}”下载并安装到当前租户吗？完成后会创建对应的设备配置、设备模板和物模型。`,
+    positiveText: '确认下载',
+    negativeText: '取消',
+    onPositiveClick: () => startInstall(id)
+  })
+}
+
 const doInstall = async (id: string) => {
   const token = getToken()
   if (!token) return
 
+  installingId.value = id
   try {
     const res: any = await installFromMarket({
       market_template_id: id,
@@ -147,6 +168,8 @@ const doInstall = async (id: string) => {
     } else {
       window.$message?.error($t('market.installFailed') + ': ' + (e?.message || ''))
     }
+  } finally {
+    installingId.value = ''
   }
 }
 
@@ -225,7 +248,10 @@ onMounted(() => {
     </div>
 
     <!-- 模板列表 -->
-    <NSpin :show="loading">
+    <NSpin
+      :show="loading || Boolean(installingId)"
+      :description="installingId ? '模板下载并安装中，请稍候…' : undefined"
+    >
       <NEmpty v-if="!loading && !templateList.length" :description="$t('market.noTemplates')" style="padding: 80px 0" />
       <div v-else-if="viewMode === 'grid'" class="template-grid">
         <MarketTemplateCard
