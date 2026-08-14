@@ -12,10 +12,11 @@ import {
   NEmpty,
   NPopconfirm,
   NCard,
-  NEllipsis
+  NEllipsis,
+  NDropdown
 } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
-import { ListOutline, GridOutline } from '@vicons/ionicons5'
+import { EllipsisHorizontal, ListOutline, GridOutline } from '@vicons/ionicons5'
 import { deleteDeviceTemplate, deviceTemplate } from '@/service/api/device-template-model'
 import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
@@ -107,6 +108,20 @@ const handleRemove = async (id: string) => {
     window.$message?.error($t('common.deleteFailed'))
   }
 }
+
+const handleCardMenuSelect = (key: string, item: any) => {
+  if (key !== 'delete') return
+
+  window.$dialog?.warning({
+    title: $t('common.deletePrompt'),
+    content: `${$t('common.confirmDelete')} ${item.name}`,
+    positiveText: $t('common.delete'),
+    negativeText: $t('common.cancel'),
+    onPositiveClick: () => handleRemove(item.id)
+  })
+}
+
+const cardMenuOptions = [{ label: $t('common.delete'), key: 'delete' }]
 
 // 表格列定义
 const columns = computed(() => [
@@ -327,8 +342,22 @@ onMounted(() => {
               @click="handleEdit(item.id)"
             >
               <div class="card-body">
-                <div class="card-name">
-                  <NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis>
+                <div class="card-header">
+                  <div class="card-name">
+                    <NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis>
+                  </div>
+                  <NDropdown
+                    :options="cardMenuOptions"
+                    trigger="click"
+                    placement="bottom-end"
+                    @select="key => handleCardMenuSelect(key, item)"
+                  >
+                    <NButton quaternary circle size="small" @click.stop>
+                      <template #icon>
+                        <NIcon><EllipsisHorizontal /></NIcon>
+                      </template>
+                    </NButton>
+                  </NDropdown>
                 </div>
 
                 <div class="card-desc">
@@ -434,10 +463,18 @@ onMounted(() => {
 }
 
 .card-name {
+  flex: 1;
+  min-width: 0;
   font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
   color: #1a1a2e;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .card-desc {
