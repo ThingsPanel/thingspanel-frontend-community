@@ -100,6 +100,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
+          provenance: false
           tags: |
             thingspanel/thingspanel-vue:${{ env.VERSION }}
             ghcr.io/${{ env.OWNER_LC }}/thingspanel-vue:${{ env.VERSION }}
