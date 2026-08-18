@@ -26,6 +26,8 @@ import {
   getThingsVisHomeDashboard,
   getThingsVisProject,
   createThingsVisDashboard,
+  duplicateThingsVisDashboard,
+  applySuperAdminHomeTemplate,
   deleteThingsVisDashboard,
   setHomeThingsVisDashboard,
   getThingsVisDashboardThumbnail,
@@ -416,6 +418,26 @@ const openEditor = (dashboardId: string) => {
   })
 }
 
+const handleDuplicate = async (dashboard: DashboardListItem) => {
+  const { error } = await duplicateThingsVisDashboard(dashboard.id)
+  if (error) {
+    message.error(`复制仪表盘失败: ${error.message}`)
+    return
+  }
+  message.success(`已复制 ${dashboard.name}`)
+  await fetchDashboards()
+}
+
+const handleApplySuperAdminTemplate = async (dashboard: DashboardListItem) => {
+  const { error } = await applySuperAdminHomeTemplate(dashboard.id)
+  if (error) {
+    message.error(`应用超管首页模板失败: ${error.message}`)
+    return
+  }
+  message.success('超管首页布局已应用')
+  await fetchDashboards()
+}
+
 // 发布到市场
 const handlePublishToMarket = (dashboardId: string) => {
   publishEntryRef.value?.openPublish({ dashboardIds: [dashboardId] })
@@ -581,6 +603,28 @@ onMounted(async () => {
                     </template>
                     发布
                   </NButton>
+
+                  <NTooltip>
+                    <template #trigger>
+                      <NButton size="small" secondary @click.stop="handleDuplicate(dashboard)">
+                        <template #icon>
+                          <icon-mdi:content-copy />
+                        </template>
+                      </NButton>
+                    </template>
+                    复制仪表盘
+                  </NTooltip>
+
+                  <NTooltip v-if="dashboard.name === '超管首页v2'">
+                    <template #trigger>
+                      <NButton size="small" secondary type="primary" @click.stop="handleApplySuperAdminTemplate(dashboard)">
+                        <template #icon>
+                          <icon-mdi:view-dashboard-edit-outline />
+                        </template>
+                      </NButton>
+                    </template>
+                    应用超管首页布局
+                  </NTooltip>
 
                   <NTooltip>
                     <template #trigger>

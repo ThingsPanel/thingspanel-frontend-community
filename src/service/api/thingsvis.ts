@@ -303,6 +303,12 @@ export function duplicateThingsVisDashboard(id: string) {
   return wrapRequest<ThingsVisDashboard>(thingsVisRequest.post(`/dashboards/${id}/duplicate`))
 }
 
+export function applySuperAdminHomeTemplate(id: string) {
+  return wrapRequest<{ id: string; name: string; version: number }>(
+    thingsVisRequest.post(`/dashboards/${id}/apply-super-admin-home`)
+  )
+}
+
 /**
  * 设为首页
  */
