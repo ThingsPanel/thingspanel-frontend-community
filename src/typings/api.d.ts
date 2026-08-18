@@ -389,6 +389,33 @@ declare namespace Api {
     }
   }
   namespace UserManagement {
+    type TenantActivityScope = 'today' | 'last_7_days' | 'last_30_days' | 'inactive_over_30_days'
+
+    interface TenantStatisticsSummary {
+      total: number
+      active_today: number
+      active_last_7_days: number
+      active_last_30_days: number
+      inactive_over_30_days: number
+    }
+
+    interface TenantRevisitStatistics {
+      revisited: number
+      not_revisited: number
+    }
+
+    interface TenantDailyGrowth {
+      date: string
+      new_total: number
+      cumulative_total: number
+    }
+
+    interface TenantStatistics {
+      summary: TenantStatisticsSummary
+      revisit: TenantRevisitStatistics
+      trend: TenantDailyGrowth[]
+    }
+
     interface User {
       /** 用户id */
       id: string

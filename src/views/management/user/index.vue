@@ -6,17 +6,24 @@ import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import { useBoolean, useLoading } from '@sa/hooks'
 import dayjs from 'dayjs'
 import { userStatusOptions } from '@/constants/business'
-import { delUser, fetchUserList } from '@/service/api/auth'
+import { delUser, fetchTenantStatistics, fetchUserList } from '@/service/api/auth'
 import { useAuthStore } from '@/store/modules/auth'
 import { $t } from '@/locales'
 import TableActionModal from './components/table-action-modal.vue'
 import EditPasswordModal from './components/edit-password-modal.vue'
+import TenantStatisticsOverview from './components/tenant-statistics-overview.vue'
+import TenantGrowthCharts from './components/tenant-growth-charts.vue'
 import type { ModalType } from './components/table-action-modal.vue'
 import pwData from './components/pw.json'
 // import ColumnSetting from './components/column-setting.vue'
 
 const authStore = useAuthStore()
 const { loading, startLoading, endLoading } = useLoading(false)
+const {
+  loading: statisticsLoading,
+  startLoading: startStatisticsLoading,
+  endLoading: endStatisticsLoading
+} = useLoading(false)
 const { bool: visible, setTrue: openModal } = useBoolean()
 const { bool: editPwdVisible, setTrue: openEditPwdModal } = useBoolean()
 const showEmpty = ref(false)
@@ -107,6 +114,7 @@ type QueryFormModel = Pick<UserManagement.User, 'email' | 'name' | 'status'> & {
   organization: string | null
   timezone: string | null
   default_language: string | null
+  activity_scope: Api.UserManagement.TenantActivityScope | null
   address: {
     province: string | null
     city: string | null
@@ -125,6 +133,7 @@ const queryParams = reactive<QueryFormModel>({
   organization: null,
   timezone: null,
   default_language: null,
+  activity_scope: null,
   address: {
     province: null,
     city: null,
@@ -155,6 +164,7 @@ const pagination: PaginationProps = reactive({
 })
 
 const tableData = ref<UserManagement.User[]>([])
+const tenantStatistics = ref<Api.UserManagement.TenantStatistics | null>(null)
 
 function setTableData(data: UserManagement.User[]) {
   if (data === null) {
@@ -167,12 +177,25 @@ function setTableData(data: UserManagement.User[]) {
 
 async function getTableData() {
   startLoading()
-  const { data } = await fetchUserList(queryParams)
-  if (data) {
-    const list: UserManagement.User[] = data.list
-    pagination.itemCount = data.total
-    setTableData(list)
+  try {
+    const { data } = await fetchUserList(queryParams)
+    if (data) {
+      const list: UserManagement.User[] = data.list
+      pagination.itemCount = data.total
+      setTableData(list)
+    }
+  } finally {
     endLoading()
+  }
+}
+
+async function getTenantStatistics() {
+  startStatisticsLoading()
+  try {
+    const { data } = await fetchTenantStatistics()
+    tenantStatistics.value = data ?? null
+  } finally {
+    endStatisticsLoading()
   }
 }
 
@@ -340,13 +363,29 @@ async function handleDeleteTable(rowId: string) {
   const data = await delUser(rowId)
   if (!data.error) {
     window.$message?.success($t('common.deleteSuccess'))
-    getTableData()
+    await Promise.all([getTableData(), getTenantStatistics()])
   }
+}
+
+function handleActivityScopeChange(scope: Api.UserManagement.TenantActivityScope | null) {
+  queryParams.activity_scope = scope
+  queryParams.page = 1
+  pagination.page = 1
+  getTableData()
+}
+
+function handleTenantChanged() {
+  if (modalType.value === 'add') {
+    Promise.all([getTableData(), getTenantStatistics()])
+    return
+  }
+  getTableData()
 }
 
 function handleQuery() {
   queryParams.page = 1
-  init()
+  pagination.page = 1
+  getTableData()
 }
 
 function handleReset() {
@@ -358,6 +397,7 @@ function handleReset() {
     organization: null,
     timezone: null,
     default_language: null,
+    activity_scope: null,
     address: {
       province: null,
       city: null,
@@ -370,7 +410,7 @@ function handleReset() {
 }
 
 function init() {
-  getTableData()
+  Promise.all([getTableData(), getTenantStatistics()])
 }
 
 // 初始化
@@ -385,6 +425,16 @@ const getPlatform = computed(() => {
   <div>
     <NCard :title="$t('route.management_user')" :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="h-full flex-col">
+        <TenantStatisticsOverview
+          :statistics="tenantStatistics"
+          :loading="statisticsLoading"
+          :selected-scope="queryParams.activity_scope"
+          @select-scope="handleActivityScopeChange"
+        />
+        <TenantGrowthCharts :trend="tenantStatistics?.trend ?? []" :loading="statisticsLoading" />
+
+        <div class="mb-12px mt-20px text-16px font-600">{{ $t('page.manage.user.statistics.listTitle') }}</div>
+
         <NForm :inline="!getPlatform" label-placement="left" :model="queryParams">
           <div class="flex flex-wrap">
             <NFormItem :label="$t('page.manage.user.userEmail')" path="email">
@@ -466,7 +516,12 @@ const getPlatform = computed(() => {
           <n-empty :description="$t('common.nodata')"></n-empty>
         </div>
 
-        <TableActionModal v-model:visible="visible" :type="modalType" :edit-data="editData" @success="getTableData" />
+        <TableActionModal
+          v-model:visible="visible"
+          :type="modalType"
+          :edit-data="editData"
+          @success="handleTenantChanged"
+        />
         <EditPasswordModal
           v-model:visible="editPwdVisible"
           :edit-data="editData"

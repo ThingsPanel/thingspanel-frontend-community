@@ -56,6 +56,11 @@ export const fetchUserList = async (params: any) => {
   return data
 }
 
+/** 获取租户数据概览 */
+export const fetchTenantStatistics = async () => {
+  return request.get<Api.UserManagement.TenantStatistics>('/user/tenant/statistics')
+}
+
 /** 添加用户 */
 export const addUser = async (params: any) => {
   const data = await request.post<Api.BaseApi.Data>('/user', params)
