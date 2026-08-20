@@ -52,7 +52,7 @@ const instanceName = ref('')
 const selectedDevices = ref<Record<string, string | null>>({})
 
 const sourceOptions = [
-  { label: '市场下载', value: 'MARKET' },
+  { label: '资源中心下载', value: 'MARKET' },
   { label: '本地创建', value: 'LOCAL' }
 ]
 
@@ -212,7 +212,7 @@ onMounted(() => {
       <div class="page-header">
         <div>
           <h2>本地看板模板</h2>
-          <p>管理从市场下载或本地创建的模板，绑定真实设备后创建可运行看板。</p>
+          <p>管理从资源中心下载或本地创建的模板，绑定真实设备后创建可运行看板。</p>
         </div>
         <NTag type="info" :bordered="false">共 {{ total }} 个模板</NTag>
       </div>
@@ -250,11 +250,11 @@ onMounted(() => {
       <NSpin :show="loading">
         <NEmpty
           v-if="!loading && templates.length === 0"
-          description="暂无本地看板模板，请先从看板市场下载"
+          description="暂无本地看板模板，请先从资源中心下载"
           class="empty"
         >
           <template #extra>
-            <NButton type="primary" @click="router.push({ name: 'device_market' })">前往看板市场</NButton>
+            <NButton type="primary" @click="router.push({ name: 'resource-hub_dashboard' })">前往资源中心</NButton>
           </template>
         </NEmpty>
 
@@ -273,7 +273,7 @@ onMounted(() => {
                 </NTooltip>
                 <NSpace size="small">
                   <NTag size="small" :type="template.source === 'MARKET' ? 'info' : 'default'">
-                    {{ template.source === 'MARKET' ? '市场下载' : '本地创建' }}
+                    {{ template.source === 'MARKET' ? '资源中心下载' : '本地创建' }}
                   </NTag>
                   <NTag size="small" :type="statusType(template.status)">
                     {{ statusLabel(template.status) }}

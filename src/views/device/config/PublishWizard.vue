@@ -276,7 +276,7 @@ async function submit() {
   result.value = data
   step.value = 2
   emit('published', data)
-  message.success('已提交市场审核')
+  message.success('已提交审核')
 }
 
 defineExpose({ open, close } as PublishWizardExpose)
@@ -377,7 +377,9 @@ defineExpose({ open, close } as PublishWizardExpose)
       </template>
 
       <template v-else>
-        <NAlert type="success" title="已提交审核" class="mb-4">审核通过后，这份看板模板会出现在市场中。</NAlert>
+        <NAlert type="success" title="已提交审核" class="mb-4">
+          审核通过后，这份看板模板会出现在资源中心。
+        </NAlert>
         <NDescriptions v-if="result" bordered :column="1">
           <NDescriptionsItem label="模板名称">{{ form.name }}</NDescriptionsItem>
           <NDescriptionsItem label="发布版本">{{ result.version }}</NDescriptionsItem>
