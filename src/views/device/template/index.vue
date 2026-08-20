@@ -332,7 +332,7 @@ onMounted(() => {
           <div v-if="deviceTemplateList.length === 0 && !loading" class="empty-state">
             <NEmpty size="huge" :description="$t('common.nodata')" />
           </div>
-          <div v-else class="template-grid">
+          <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
             <NCard
               v-for="item in deviceTemplateList"
               :key="item.id"
@@ -350,7 +350,7 @@ onMounted(() => {
                     :options="cardMenuOptions"
                     trigger="click"
                     placement="bottom-end"
-                    @select="key => handleCardMenuSelect(key, item)"
+                    @select="(key) => handleCardMenuSelect(key, item)"
                   >
                     <NButton quaternary circle size="small" @click.stop>
                       <template #icon>
@@ -432,12 +432,6 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   min-height: 300px;
-}
-
-.template-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
 }
 
 .template-card {

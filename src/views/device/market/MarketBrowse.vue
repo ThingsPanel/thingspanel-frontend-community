@@ -19,7 +19,6 @@ import {
   NPagination,
   NIcon,
   NButton,
-  NButtonGroup,
   NCard,
   NEllipsis,
   useDialog,
@@ -40,6 +39,7 @@ import { useMarketAuth } from '@/views/device/config/composables/use-market-auth
 import MarketBundleDetailDrawer from './MarketBundleDetailDrawer.vue'
 import MarketLoginModal from '@/views/device/config/modules/market-login-modal.vue'
 import defaultDashboardCover from '@/assets/imgs/default_dashboard_cover.png'
+import AdvancedListLayout from '@/components/list-page/index.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -69,7 +69,10 @@ const bundleList = ref<MarketBundleListItem[]>([])
 const total = ref(0)
 
 /** 视图模式：网格 / 列表 */
-const viewMode = ref<'grid' | 'list'>('grid')
+const availableViews = [
+  { key: 'card', icon: GridOutline, label: 'market.viewGrid' },
+  { key: 'list', icon: ListOutline, label: 'market.viewList' }
+]
 
 /** 搜索参数 */
 const searchParams = reactive({
@@ -244,9 +247,9 @@ async function handleViewDetail(item: MarketBundleListItem) {
         currentBindings.value = precheckResult.data.bindingPreview
       } else {
         // 从版本信息中提取绑定
-        const versionInfo = result.data.versions.find(v => v.version === item.latestVersion)
+        const versionInfo = result.data.versions.find((v) => v.version === item.latestVersion)
         currentBindings.value =
-          versionInfo?.deviceBindings.map(b => ({
+          versionInfo?.deviceBindings.map((b) => ({
             dashboardKey: '',
             dashboardName: '',
             bindings: [b]
@@ -387,182 +390,185 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :class="['market-browse', { 'is-embedded': props.embedded }]">
-    <!-- 页头（非 embedded） -->
-    <div v-if="!props.embedded" class="page-header">
-      <div class="page-header-left">
-        <h2 class="page-title">{{ $t('market.browse.title') }}</h2>
-        <p class="page-subtitle">{{ $t('market.browse.subtitle') }}</p>
-      </div>
-      <div class="page-header-right">{{ $t('market.browse.totalBundles', { n: total }) }}</div>
-    </div>
+  <div :class="props.embedded ? 'h-full' : 'h-full p-4'">
+    <AdvancedListLayout
+      initial-view="card"
+      :available-views="availableViews"
+      :show-add-button="false"
+      :show-query-button="false"
+      :show-reset-button="false"
+      memory-key="resource-hub-dashboard-view"
+      use-view-memory
+      @refresh="fetchBundleList"
+    >
+      <template #search-form-content>
+        <div class="flex flex-wrap items-center gap-3">
+          <NInput
+            v-model:value="searchParams.keyword"
+            :placeholder="$t('market.browse.searchPlaceholder')"
+            clearable
+            class="w-90"
+            @keyup.enter="handleSearch"
+          >
+            <template #prefix>
+              <NIcon><SearchOutline /></NIcon>
+            </template>
+          </NInput>
+          <NSelect
+            v-model:value="searchParams.category"
+            :options="categoryOptions"
+            :placeholder="$t('market.browse.allCategories')"
+            clearable
+            class="w-35"
+            @update:value="handleCategoryChange"
+          />
+          <NSelect
+            v-model:value="searchParams.sort_by"
+            :options="sortOptions"
+            class="w-30"
+            @update:value="handleSortChange"
+          />
+        </div>
+      </template>
 
-    <!-- 筛选工具栏 -->
-    <div class="toolbar">
-      <div class="toolbar-left">
-        <NInput
-          v-model:value="searchParams.keyword"
-          :placeholder="$t('market.browse.searchPlaceholder')"
-          clearable
-          class="search-input"
-          @keyup.enter="handleSearch"
-        >
-          <template #prefix>
-            <NIcon><SearchOutline /></NIcon>
-          </template>
-        </NInput>
+      <template #header-left>
+        <span class="text-14px text-gray-500">{{ $t('market.browse.totalBundles', { n: total }) }}</span>
+      </template>
 
-        <NSelect
-          v-model:value="searchParams.category"
-          :options="categoryOptions"
-          :placeholder="$t('market.browse.allCategories')"
-          clearable
-          class="filter-select"
-          @update:value="handleCategoryChange"
-        />
+      <template #card-view>
+        <NSpin :show="loading">
+          <div v-if="!loading && bundleList.length === 0" class="empty-state">
+            <NEmpty :description="$t('market.browse.noBundles')">
+              <template #extra>
+                <NButton type="primary" @click="clearFilters">
+                  {{ $t('market.browse.clearFilters') }}
+                </NButton>
+              </template>
+            </NEmpty>
+          </div>
 
-        <NSelect
-          v-model:value="searchParams.sort_by"
-          :options="sortOptions"
-          class="sort-select"
-          @update:value="handleSortChange"
-        />
-      </div>
+          <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+            <div v-for="item in bundleList" :key="item.bundleKey" class="min-w-0">
+              <NCard
+                class="bundle-card"
+                hoverable
+                :content-style="{
+                  padding: '0',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  width: '100%',
+                  minWidth: '0'
+                }"
+                @click="handleViewDetail(item)"
+              >
+                <div
+                  class="card-cover"
+                  role="img"
+                  :aria-label="item.name"
+                  :style="{ backgroundImage: `url(${getCoverSrc(item)})` }"
+                >
+                  <span v-if="item.category" class="category-badge" :style="{ color: getCategoryColor(item.category) }">
+                    {{ getCategoryLabel(item.category) }}
+                  </span>
+                </div>
 
-      <NButtonGroup class="view-toggle">
-        <NButton
-          :class="{ 'view-active': viewMode === 'grid' }"
-          :title="$t('market.viewGrid')"
-          @click="viewMode = 'grid'"
-        >
-          <template #icon>
-            <NIcon><GridOutline /></NIcon>
-          </template>
-        </NButton>
-        <NButton
-          :class="{ 'view-active': viewMode === 'list' }"
-          :title="$t('market.viewList')"
-          @click="viewMode = 'list'"
-        >
-          <template #icon>
-            <NIcon><ListOutline /></NIcon>
-          </template>
-        </NButton>
-      </NButtonGroup>
-    </div>
+                <div class="card-body w-full min-w-0 box-border">
+                  <div class="card-name">
+                    <NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis>
+                  </div>
 
-    <!-- Bundle 列表 -->
-    <NSpin :show="loading">
-      <div v-if="!loading && bundleList.length === 0" class="empty-state">
-        <NEmpty :description="$t('market.browse.noBundles')">
-          <template #extra>
-            <NButton type="primary" @click="clearFilters">
-              {{ $t('market.browse.clearFilters') }}
-            </NButton>
-          </template>
-        </NEmpty>
-      </div>
+                  <div class="card-meta">
+                    <span v-if="item.latestVersion" class="version-badge">v{{ item.latestVersion }}</span>
+                    <span class="install-stat">
+                      <NIcon size="14" class="install-icon"><CloudDownloadOutline /></NIcon>
+                      {{ formatInstallCount(item.installCount) }}
+                    </span>
+                    <span v-if="item.author" class="author-name">{{ item.author }}</span>
+                  </div>
 
-      <!-- 网格视图 -->
-      <div v-else-if="viewMode === 'grid'" class="bundle-grid">
-        <div v-for="item in bundleList" :key="item.bundleKey" class="bundle-grid-item">
-          <NCard class="bundle-card" hoverable :content-style="{ padding: '0' }" @click="handleViewDetail(item)">
-            <div
-              class="card-cover"
-              role="img"
-              :aria-label="item.name"
-              :style="{ backgroundImage: `url(${getCoverSrc(item)})` }"
-            >
-              <span v-if="item.category" class="category-badge" :style="{ color: getCategoryColor(item.category) }">
-                {{ getCategoryLabel(item.category) }}
-              </span>
+                  <div class="card-actions" @click.stop>
+                    <NButton class="action-btn" size="small" @click="handleViewDetail(item)">
+                      {{ $t('market.viewDetail') }}
+                    </NButton>
+                    <NButton
+                      class="action-btn"
+                      type="primary"
+                      size="small"
+                      :loading="downloadingBundleKey === item.bundleKey"
+                      @click="handleDownload(item)"
+                    >
+                      {{ $t('market.browse.downloadTemplate') }}
+                    </NButton>
+                  </div>
+                </div>
+              </NCard>
             </div>
+          </div>
+        </NSpin>
+      </template>
 
-            <div class="card-body">
-              <div class="card-name">
-                <NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis>
+      <template #list-view>
+        <NSpin :show="loading">
+          <div v-if="!loading && bundleList.length === 0" class="empty-state">
+            <NEmpty :description="$t('market.browse.noBundles')" />
+          </div>
+          <div v-else class="bundle-list">
+            <div
+              v-for="item in bundleList"
+              :key="item.bundleKey"
+              class="bundle-list-row"
+              @click="handleViewDetail(item)"
+            >
+              <div
+                class="list-cover"
+                role="img"
+                :aria-label="item.name"
+                :style="{ backgroundImage: `url(${getCoverSrc(item)})` }"
+              />
+
+              <div class="list-main">
+                <div class="card-name">
+                  <NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis>
+                </div>
+                <div class="list-sub">
+                  <span v-if="item.category" class="list-category" :style="{ color: getCategoryColor(item.category) }">
+                    {{ getCategoryLabel(item.category) }}
+                  </span>
+                  <span v-if="item.latestVersion" class="version-badge">v{{ item.latestVersion }}</span>
+                </div>
               </div>
 
-              <div class="card-meta">
-                <span v-if="item.latestVersion" class="version-badge">v{{ item.latestVersion }}</span>
+              <div class="list-right">
                 <span class="install-stat">
                   <NIcon size="14" class="install-icon"><CloudDownloadOutline /></NIcon>
                   {{ formatInstallCount(item.installCount) }}
                 </span>
-                <span v-if="item.author" class="author-name">{{ item.author }}</span>
-              </div>
-
-              <div class="card-actions" @click.stop>
-                <NButton class="action-btn" size="small" @click="handleViewDetail(item)">
-                  {{ $t('market.viewDetail') }}
-                </NButton>
-                <NButton
-                  class="action-btn"
-                  type="primary"
-                  size="small"
-                  :loading="downloadingBundleKey === item.bundleKey"
-                  @click="handleDownload(item)"
-                >
-                  {{ $t('market.browse.downloadTemplate') }}
-                </NButton>
+                <div class="list-actions" @click.stop>
+                  <NButton size="small" @click="handleViewDetail(item)">{{ $t('market.viewDetail') }}</NButton>
+                  <NButton
+                    size="small"
+                    type="primary"
+                    :loading="downloadingBundleKey === item.bundleKey"
+                    @click="handleDownload(item)"
+                  >
+                    {{ $t('market.browse.downloadTemplate') }}
+                  </NButton>
+                </div>
               </div>
             </div>
-          </NCard>
-        </div>
-      </div>
-
-      <!-- 列表视图 -->
-      <div v-else class="bundle-list">
-        <div v-for="item in bundleList" :key="item.bundleKey" class="bundle-list-row" @click="handleViewDetail(item)">
-          <div
-            class="list-cover"
-            role="img"
-            :aria-label="item.name"
-            :style="{ backgroundImage: `url(${getCoverSrc(item)})` }"
-          />
-
-          <div class="list-main">
-            <div class="card-name">
-              <NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis>
-            </div>
-            <div class="list-sub">
-              <span v-if="item.category" class="list-category" :style="{ color: getCategoryColor(item.category) }">
-                {{ getCategoryLabel(item.category) }}
-              </span>
-              <span v-if="item.latestVersion" class="version-badge">v{{ item.latestVersion }}</span>
-            </div>
           </div>
+        </NSpin>
+      </template>
 
-          <div class="list-right">
-            <span class="install-stat">
-              <NIcon size="14" class="install-icon"><CloudDownloadOutline /></NIcon>
-              {{ formatInstallCount(item.installCount) }}
-            </span>
-            <div class="list-actions" @click.stop>
-              <NButton size="small" @click="handleViewDetail(item)">{{ $t('market.viewDetail') }}</NButton>
-              <NButton
-                size="small"
-                type="primary"
-                :loading="downloadingBundleKey === item.bundleKey"
-                @click="handleDownload(item)"
-              >
-                {{ $t('market.browse.downloadTemplate') }}
-              </NButton>
-            </div>
-          </div>
-        </div>
-      </div>
-    </NSpin>
-
-    <!-- 分页 -->
-    <div v-if="hasMore" class="pagination-wrapper">
-      <NPagination
-        v-model:page="searchParams.page"
-        :page-size="searchParams.page_size"
-        :item-count="total"
-        @update:page="handlePageChange"
-      />
-    </div>
+      <template v-if="hasMore" #footer>
+        <NPagination
+          v-model:page="searchParams.page"
+          :page-size="searchParams.page_size"
+          :item-count="total"
+          @update:page="handlePageChange"
+        />
+      </template>
+    </AdvancedListLayout>
 
     <!-- 详情抽屉 -->
     <MarketBundleDetailDrawer
@@ -581,123 +587,9 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-.market-browse {
-  padding: 20px 24px;
-  background: #f5f6f8;
-  min-height: 100%;
-  border-radius: 8px;
-
-  &.is-embedded {
-    padding: 16px 0 0;
-    background: transparent;
-    min-height: 480px;
-    border-radius: 0;
-  }
-}
-
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  gap: 16px;
-}
-
-.page-header-left {
-  min-width: 0;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: #1a1a2e;
-  line-height: 1.3;
-}
-
-.page-subtitle {
-  margin: 6px 0 0;
-  font-size: 13px;
-  color: #8b8fa3;
-  line-height: 1.4;
-}
-
-.page-header-right {
-  flex-shrink: 0;
-  font-size: 13px;
-  color: #8b8fa3;
-  padding-top: 6px;
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #fff;
-  border-radius: 12px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-.toolbar-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
-  flex-wrap: wrap;
-}
-
-.search-input {
-  flex: 1;
-  min-width: 180px;
-  max-width: 360px;
-}
-
-.filter-select {
-  width: 140px;
-}
-
-.sort-select {
-  width: 120px;
-}
-
-.view-toggle {
-  flex-shrink: 0;
-
-  :deep(.n-button) {
-    --n-border: 1px solid #e5e7eb;
-    --n-border-hover: 1px solid #c7d2fe;
-  }
-
-  .view-active {
-    --n-color: #eef2ff !important;
-    --n-color-hover: #e0e7ff !important;
-    --n-color-pressed: #e0e7ff !important;
-    --n-border: 1px solid #a5b4fc !important;
-    --n-border-hover: 1px solid #a5b4fc !important;
-    --n-text-color: #4f46e5 !important;
-    --n-text-color-hover: #4f46e5 !important;
-    background: #eef2ff;
-    color: #4f46e5;
-  }
-}
-
 .empty-state {
   padding: 80px 0;
   text-align: center;
-}
-
-.bundle-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
-}
-
-.bundle-grid-item {
-  min-width: 0;
 }
 
 .bundle-card {
@@ -708,15 +600,6 @@ onMounted(() => {
   border-radius: 12px;
   cursor: pointer;
   transition: box-shadow 0.2s;
-
-  :deep(.n-card__content) {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-  }
 
   &:hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);

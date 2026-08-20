@@ -49,19 +49,19 @@ const coverSrc = computed(() => props.template.cover_url || defaultCover)
 
 <template>
   <!-- 网格卡片 -->
-  <NCard v-if="mode === 'grid'" hoverable class="market-card" :content-style="{ padding: '0' }">
-    <div
-      class="card-cover"
-      role="img"
-      :aria-label="template.name"
-      :style="{ backgroundImage: `url(${coverSrc})` }"
-    >
+  <NCard
+    v-if="mode === 'grid'"
+    hoverable
+    class="market-card"
+    :content-style="{ padding: '0', display: 'flex', flexDirection: 'column', width: '100%', minWidth: '0' }"
+  >
+    <div class="card-cover" role="img" :aria-label="template.name" :style="{ backgroundImage: `url(${coverSrc})` }">
       <span v-if="template.category" class="category-badge" :style="{ color: categoryColor }">
         {{ template.category }}
       </span>
     </div>
 
-    <div class="card-body">
+    <div class="card-body w-full min-w-0 box-border">
       <div class="card-name">
         <NEllipsis :line-clamp="1">{{ template.name }}</NEllipsis>
       </div>
@@ -90,12 +90,7 @@ const coverSrc = computed(() => props.template.cover_url || defaultCover)
 
   <!-- 列表行 -->
   <div v-else class="market-list-row" @click="emit('view-detail', template.id)">
-    <div
-      class="list-cover"
-      role="img"
-      :aria-label="template.name"
-      :style="{ backgroundImage: `url(${coverSrc})` }"
-    />
+    <div class="list-cover" role="img" :aria-label="template.name" :style="{ backgroundImage: `url(${coverSrc})` }" />
 
     <div class="list-main">
       <div class="card-name">
@@ -129,11 +124,6 @@ const coverSrc = computed(() => props.template.cover_url || defaultCover)
   width: 100%;
   border-radius: 12px;
   transition: box-shadow 0.2s;
-
-  :deep(.n-card__content) {
-    display: flex;
-    flex-direction: column;
-  }
 
   &:hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
