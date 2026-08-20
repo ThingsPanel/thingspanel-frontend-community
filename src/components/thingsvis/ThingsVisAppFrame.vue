@@ -868,8 +868,13 @@ function parseTemplateChartConfig(rawConfig: unknown): Record<string, unknown> |
   return null
 }
 
-function buildDeviceWidgetPresets(templateId: string, rawConfig: unknown): any[] {
+function buildDeviceWidgetPresets(
+  templateId: string,
+  rawConfig: unknown,
+  fields: PlatformDeviceField[] = []
+): any[] {
   const config = parseTemplateChartConfig(rawConfig)
+  const fieldMap = new Map(fields.map((field) => [field.id, field]))
   const nodes = Array.isArray(config?.nodes)
     ? config.nodes.filter(
         (node): node is Record<string, unknown> => Boolean(node) && typeof node === 'object' && !Array.isArray(node)
@@ -896,10 +901,19 @@ function buildDeviceWidgetPresets(templateId: string, rawConfig: unknown): any[]
     )
   }
 
+  const resolveBoundField = (widget: Record<string, unknown>) => {
+    const match = /\{\{\s*ds\.[^.\s}]+\.data\.([^.[\]\s}]+)/.exec(JSON.stringify(widget))
+    const fieldId = match?.[1]
+    if (!fieldId) return {}
+    const field = fieldMap.get(fieldId)
+    return { fieldId, fieldName: field?.name || fieldId }
+  }
+
   const nodePresets = nodes.map((node, index) => ({
     id: `${templateId}-web-node-${String(node.id || index)}`,
     name: resolveNodePresetName(node, index),
     widget: node,
+    ...resolveBoundField(node),
     ...(typeof node.thumbnail === 'string' ? { thumbnail: node.thumbnail } : {})
   }))
 
@@ -912,11 +926,18 @@ function buildDeviceWidgetPresets(templateId: string, rawConfig: unknown): any[]
     return entries.flatMap((entry: any, index) => {
       if (!entry?.widget || typeof entry.widget !== 'object' || Array.isArray(entry.widget)) return []
 
+      const presetKeyMatch = /^(?:telemetry|attributes)_(.+)$/.exec(presetKey)
+      const fieldId = presetKeyMatch?.[1]
+      const field = fieldId ? fieldMap.get(fieldId) : undefined
+
       return [
         {
           id: `${templateId}-stored-${String(entry.id || `${presetKey}-${index}`)}`,
           name: String(entry.name || '组件预设'),
           widget: entry.widget,
+          ...(fieldId
+            ? { fieldId, fieldName: field?.name || fieldId }
+            : resolveBoundField(entry.widget)),
           ...(typeof entry.thumbnail === 'string' ? { thumbnail: entry.thumbnail } : {})
         }
       ]
@@ -938,7 +959,8 @@ async function loadTemplatePresets(templateId: string | number): Promise<any[]> 
     try {
       const res = await getTemplat(templateId)
       const template = res?.data || {}
-      const presets = buildDeviceWidgetPresets(cacheKey, template?.web_chart_config)
+      const { fields } = await loadTemplateEntry(templateId)
+      const presets = buildDeviceWidgetPresets(cacheKey, template?.web_chart_config, fields)
 
       templatePresetCache.set(cacheKey, presets)
       return presets
