@@ -1,7 +1,7 @@
 <script lang="tsx" setup>
 import type { VueElement } from 'vue'
 import { computed, defineProps, ref, watch, watchEffect, onMounted, onUnmounted } from 'vue'
-import _ from 'lodash'
+import _ from 'lodash-es'
 import { NButton, NDataTable, NDatePicker, NInput, NSelect, NSpace, NPagination, NSpin } from 'naive-ui'
 import type { TreeSelectOption } from 'naive-ui'
 import { useLoading } from '@sa/hooks'
@@ -178,6 +178,31 @@ const generatedColumns = computed(() => {
         }
       }
     })
+    if (props.tableActions.length > 0) {
+      columns.push({
+        key: 'actions',
+        title: $t('common.actions'),
+        align: 'center',
+        render: row => (
+          <NSpace justify="center">
+            {props.tableActions.map(action => (
+              <NButton
+                key={String(action.theKey || action.label)}
+                type="error"
+                size="small"
+                tertiary
+                onClick={event => {
+                  event.stopPropagation()
+                  action.callback(row)
+                }}
+              >
+                {typeof action.label === 'function' ? action.label() : action.label}
+              </NButton>
+            ))}
+          </NSpace>
+        )
+      })
+    }
   }
 
   return columns || []
@@ -512,6 +537,18 @@ const formSize = ref(undefined)
                     />
                     <SvgIcon v-else local-icon="defaultdevice" class="config-image" />
                   </div>
+                </template>
+                <template #top-right-icon>
+                  <n-button
+                    v-for="action in tableActions"
+                    :key="String(action.theKey || action.label)"
+                    type="error"
+                    size="tiny"
+                    tertiary
+                    @click.stop="action.callback(item)"
+                  >
+                    {{ typeof action.label === 'function' ? action.label() : action.label }}
+                  </n-button>
                 </template>
               </DevCardItem>
             </NGridItem>
