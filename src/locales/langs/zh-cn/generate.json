@@ -469,7 +469,7 @@
   "generate.expectedMessage": "期望消息",
   "generate.expirationTime": "过期时间",
   "generate.hour": "小时",
-  "generate.expectedMessageTip": "开启后，如果设备不在线，会缓存消息，等设备上线后再发送",
+  "generate.expectedMessageTip": "提交期望消息后，系统会立即记录，并在设备联网时自动下发执行",
   "generate.curveWidth": "曲线宽度",
   "generate.stateOnIcon": "状态开图标",
   "generate.stateOnColor": "状态开颜色",

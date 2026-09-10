@@ -264,6 +264,7 @@
   "common.createUser": "Create New User",
   "common.addRelatedUser": "Create Related User",
   "common.removeRelatedUser": "Remove Related User",
+  "common.confirmRemove": "Are you sure you want to remove the selected related users?",
   "common.loginName": "Login Name",
   "common.lastLoginTime": "Last Login Time",
   "common.userName": "User Name",

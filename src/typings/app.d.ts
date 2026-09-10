@@ -493,6 +493,7 @@ declare namespace App {
         createUser: string
         addRelatedUser: string
         removeRelatedUser: string
+        confirmRemove: string
         loginName: string
         lastLoginTime: string
         userName: string

@@ -264,6 +264,7 @@
   "common.createUser": "创建新用户",
   "common.addRelatedUser": "添加关联用户",
   "common.removeRelatedUser": "移除关联用户",
+  "common.confirmRemove": "确定要移除选中的关联用户吗？",
   "common.loginName": "登录名",
   "common.lastLoginTime": "最后访问时间",
   "common.userName": "用户名称",

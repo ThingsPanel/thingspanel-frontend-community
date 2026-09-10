@@ -467,7 +467,7 @@
   "generate.expectedMessage": "Expected Message",
   "generate.expirationTime": "Expiration Time",
   "generate.hour": "Hour",
-  "generate.expectedMessageTip": "The device is expected to send a message within the expiration time after the command is issued",
+  "generate.expectedMessageTip": "After an expected message is submitted, the system records it immediately and automatically sends it for execution when the device comes online",
   "generate.curveWidth": "Curve Width",
   "generate.stateOnIcon": "State On Icon",
   "generate.stateOnColor": "State On Color",

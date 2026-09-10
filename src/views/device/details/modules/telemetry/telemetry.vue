@@ -725,7 +725,7 @@ const inputFeedback = computed(() => {
               <template #label>
                 <div class="flex-ai-c flex">
                   {{ $t('generate.expectedMessage') }}
-                  <n-popover trigger="hover">
+                  <n-popover trigger="click">
                     <template #trigger>
                       <SvgIcon icon="mdi:help-circle-outline" class="text-20px" />
                     </template>
@@ -901,8 +901,9 @@ const inputFeedback = computed(() => {
 
 .simulation-advanced-fields .n-form-item {
   display: grid;
-  grid-template-columns: 210px minmax(0, 1fr);
+  grid-template-columns: 280px minmax(0, 480px);
   align-items: center;
+  justify-content: start;
   column-gap: 12px;
 }
 
@@ -910,7 +911,8 @@ const inputFeedback = computed(() => {
   width: 100%;
   justify-content: flex-start;
   padding-right: 0;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .simulation-advanced-fields .n-form-item-blank,
