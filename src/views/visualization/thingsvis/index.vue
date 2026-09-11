@@ -259,7 +259,7 @@ onMounted(() => {
           <NInput
             v-model:value="searchKeyword"
             clearable
-            placeholder="搜索项目名称..."
+            placeholder="搜索项目或看板..."
             style="width: 240px"
             @update:value="fetchProjects"
             @clear="fetchProjects"
@@ -270,15 +270,15 @@ onMounted(() => {
           </NInput>
 
           <!-- 新建按钮 -->
-          <NButton type="primary" @click="openCreateModal">
+          <NButton type="primary" @click="openCreateDashboardModal">
             <template #icon>
               <icon-mdi:plus />
             </template>
-            新建项目
-          </NButton>
-          <NButton type="primary" secondary @click="openCreateDashboardModal">
-            <template #icon><icon-mdi:plus /></template>
             新建看板
+          </NButton>
+          <NButton secondary @click="openCreateModal">
+            <template #icon><icon-mdi:plus /></template>
+            新建项目
           </NButton>
         </div>
       </div>
@@ -287,8 +287,8 @@ onMounted(() => {
       <NSpin :show="loading">
         <!-- 空状态 -->
         <NEmpty
-          v-if="!loading && projects.length === 0"
-          description="暂无项目，点击上方按钮创建第一个项目"
+          v-if="!loading && !searchKeyword.trim() && projects.length === 0"
+          description="暂无项目，可直接新建看板并保存到默认项目"
           class="py-20"
         >
           <template #icon>
@@ -296,8 +296,36 @@ onMounted(() => {
           </template>
         </NEmpty>
 
+        <template v-if="searchKeyword.trim()">
+          <div class="mb-4 flex items-center gap-3">
+            <h3 class="text-lg font-semibold">匹配的看板</h3>
+            <span class="text-gray-400">{{ matchedDashboards.length }} 个</span>
+          </div>
+          <NEmpty v-if="matchedDashboards.length === 0" description="没有匹配的看板" class="py-8" />
+          <NGrid v-else x-gap="16" y-gap="16" cols="1 s:2 m:3 l:4" responsive="screen">
+            <NGridItem v-for="dashboard in matchedDashboards" :key="dashboard.id">
+              <div
+                class="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 hover:border-primary hover:shadow"
+                @click="openDashboard(dashboard)"
+              >
+                <div class="mb-2 flex items-center justify-between gap-2">
+                  <h3 class="truncate font-semibold">{{ dashboard.name }}</h3>
+                  <NTag size="small" :bordered="false">看板</NTag>
+                </div>
+                <div class="truncate text-sm text-gray-500">所属项目：{{ dashboard.project?.name || '默认项目' }}</div>
+              </div>
+            </NGridItem>
+          </NGrid>
+
+          <div class="mb-4 mt-6 flex items-center gap-3 border-t border-gray-100 pt-5">
+            <h3 class="text-lg font-semibold">匹配的项目</h3>
+            <span class="text-gray-400">{{ projects.length }} 个</span>
+          </div>
+          <NEmpty v-if="projects.length === 0" description="没有匹配的项目" class="py-8" />
+        </template>
+
         <!-- 项目网格 -->
-        <NGrid v-else x-gap="24" y-gap="24" cols="1 s:2 m:3 l:4" responsive="screen">
+        <NGrid v-if="projects.length > 0" x-gap="24" y-gap="24" cols="1 s:2 m:3 l:4" responsive="screen">
           <NGridItem v-for="project in projects" :key="project.id">
             <!-- 项目卡片 -->
             <div
@@ -358,28 +386,6 @@ onMounted(() => {
           </NGridItem>
         </NGrid>
       </NSpin>
-
-      <div v-if="searchKeyword.trim()" class="mt-6 border-t border-gray-100 pt-5">
-        <div class="mb-4 flex items-center gap-3">
-          <h3 class="text-lg font-semibold">匹配的看板</h3>
-          <span class="text-gray-400">{{ matchedDashboards.length }} 个</span>
-        </div>
-        <NEmpty v-if="matchedDashboards.length === 0" description="没有匹配的看板" class="py-8" />
-        <NGrid v-else x-gap="16" y-gap="16" cols="1 s:2 m:3 l:4" responsive="screen">
-          <NGridItem v-for="dashboard in matchedDashboards" :key="dashboard.id">
-            <div
-              class="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 hover:border-primary hover:shadow"
-              @click="openDashboard(dashboard)"
-            >
-              <div class="mb-2 flex items-center justify-between gap-2">
-                <h3 class="truncate font-semibold">{{ dashboard.name }}</h3>
-                <NTag size="small" :bordered="false">看板</NTag>
-              </div>
-              <div class="truncate text-sm text-gray-500">所属项目：{{ dashboard.project?.name || '默认项目' }}</div>
-            </div>
-          </NGridItem>
-        </NGrid>
-      </div>
     </NCard>
 
     <!-- 新建/编辑弹窗 -->
