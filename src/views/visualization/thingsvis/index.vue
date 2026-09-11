@@ -56,6 +56,8 @@ const formData = ref({
 })
 const dashboardForm = ref({ name: '', projectId: null as string | null })
 const projectOptions = computed(() => allProjects.value.map(project => ({ label: project.name, value: project.id })))
+const isDefaultProjectItem = (project: ProjectListItem) =>
+  project.isDefault || project.name === '默认项目' || project.name === 'Default Project'
 
 /** 获取项目列表 */
 const fetchProjects = async () => {
@@ -342,7 +344,7 @@ onMounted(() => {
 
                   <!-- 操作按钮(悬停显示) -->
                   <div
-                    v-if="!project.isDefault"
+                    v-if="!isDefaultProjectItem(project)"
                     class="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100"
                   >
                     <NButton size="small" quaternary circle @click.stop="openEditModal(project)">
@@ -362,7 +364,7 @@ onMounted(() => {
                 <!-- 项目名称 -->
                 <h3 class="mb-2 truncate text-lg font-semibold">
                   {{ project.name }}
-                  <NTag v-if="project.isDefault" size="small" type="info" :bordered="false">默认</NTag>
+                  <NTag v-if="isDefaultProjectItem(project)" size="small" type="info" :bordered="false">默认</NTag>
                 </h3>
 
                 <!-- 项目描述 -->
