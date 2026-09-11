@@ -1,7 +1,21 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { NButton, NCard, NGrid, NGridItem, NInput, NModal, NForm, NFormItem, NEmpty, NSpin, useMessage } from 'naive-ui'
+import {
+  NButton,
+  NCard,
+  NGrid,
+  NGridItem,
+  NInput,
+  NModal,
+  NForm,
+  NFormItem,
+  NEmpty,
+  NSpin,
+  NSelect,
+  NTag,
+  useMessage
+} from 'naive-ui'
 import { useRouterPush } from '@/hooks/common/router'
 import {
   getThingsVisProjects,
@@ -9,7 +23,9 @@ import {
   createThingsVisProject,
   updateThingsVisProject,
   deleteThingsVisProject,
-  type ProjectListItem
+  createThingsVisDashboard,
+  type ProjectListItem,
+  type DashboardListItem
 } from '@/service/api/thingsvis'
 import { deleteDashboardMenuConfig } from '@/service/api/dashboard-menu'
 import { refreshAuthRoutes } from '@/utils/router/refresh-auth-routes'
@@ -22,10 +38,14 @@ const route = useRoute()
 // 状态
 const loading = ref(false)
 const deletingId = ref<string | null>(null)
+const allProjects = ref<ProjectListItem[]>([])
 const projects = ref<ProjectListItem[]>([])
 const showModal = ref(false)
 const editingProject = ref<ProjectListItem | null>(null)
 const searchKeyword = ref('')
+const matchedDashboards = ref<DashboardListItem[]>([])
+const showDashboardModal = ref(false)
+const dashboardCreating = ref(false)
 const deleteConfirmModal = ref(false)
 const pendingDeleteProject = ref<{ id: string; name: string } | null>(null)
 
@@ -34,6 +54,8 @@ const formData = ref({
   name: '',
   description: ''
 })
+const dashboardForm = ref({ name: '', projectId: null as string | null })
+const projectOptions = computed(() => allProjects.value.map(project => ({ label: project.name, value: project.id })))
 
 /** 获取项目列表 */
 const fetchProjects = async () => {
@@ -41,17 +63,63 @@ const fetchProjects = async () => {
   try {
     const { data, error } = await getThingsVisProjects({ page: 1, limit: 100 })
     if (!error && data) {
-      let list = data.data
+      allProjects.value = data.data
+      let list = allProjects.value
       if (searchKeyword.value) {
         list = list.filter(item => item.name.toLowerCase().includes(searchKeyword.value.toLowerCase()))
       }
       projects.value = list
+      const keyword = searchKeyword.value.trim()
+      if (keyword) {
+        const dashboardResult = await getThingsVisDashboards({ keyword, page: 1, limit: 100 })
+        matchedDashboards.value = dashboardResult.data?.data || []
+      } else {
+        matchedDashboards.value = []
+      }
     } else if (error) {
       message.error('加载项目失败')
     }
   } finally {
     loading.value = false
   }
+}
+
+const openCreateDashboardModal = () => {
+  dashboardForm.value = { name: '', projectId: null }
+  showDashboardModal.value = true
+}
+
+const handleCreateDashboard = async () => {
+  const name = dashboardForm.value.name.trim()
+  if (!name) {
+    message.error('请输入看板名称')
+    return
+  }
+
+  dashboardCreating.value = true
+  try {
+    const { data, error } = await createThingsVisDashboard({
+      name,
+      projectId: dashboardForm.value.projectId || undefined
+    })
+    if (error || !data) {
+      message.error(error?.message || '创建看板失败')
+      return
+    }
+    showDashboardModal.value = false
+    await fetchProjects()
+    routerPushByKey('visualization_thingsvis-editor', {
+      query: { id: data.id, projectId: data.projectId }
+    })
+  } finally {
+    dashboardCreating.value = false
+  }
+}
+
+const openDashboard = (dashboard: DashboardListItem) => {
+  routerPushByKey('visualization_thingsvis-editor', {
+    query: { id: dashboard.id, projectId: dashboard.projectId }
+  })
 }
 
 /** 打开新建弹窗 */
@@ -208,6 +276,10 @@ onMounted(() => {
             </template>
             新建项目
           </NButton>
+          <NButton type="primary" secondary @click="openCreateDashboardModal">
+            <template #icon><icon-mdi:plus /></template>
+            新建看板
+          </NButton>
         </div>
       </div>
 
@@ -241,7 +313,10 @@ onMounted(() => {
                   </div>
 
                   <!-- 操作按钮(悬停显示) -->
-                  <div class="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  <div
+                    v-if="project.systemKey !== 'DEFAULT'"
+                    class="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                  >
                     <NButton size="small" quaternary circle @click.stop="openEditModal(project)">
                       <template #icon>
                         <icon-mdi:pencil class="text-16px" />
@@ -259,6 +334,7 @@ onMounted(() => {
                 <!-- 项目名称 -->
                 <h3 class="mb-2 truncate text-lg font-semibold">
                   {{ project.name }}
+                  <NTag v-if="project.systemKey === 'DEFAULT'" size="small" type="info" :bordered="false">默认</NTag>
                 </h3>
 
                 <!-- 项目描述 -->
@@ -282,6 +358,28 @@ onMounted(() => {
           </NGridItem>
         </NGrid>
       </NSpin>
+
+      <div v-if="searchKeyword.trim()" class="mt-6 border-t border-gray-100 pt-5">
+        <div class="mb-4 flex items-center gap-3">
+          <h3 class="text-lg font-semibold">匹配的看板</h3>
+          <span class="text-gray-400">{{ matchedDashboards.length }} 个</span>
+        </div>
+        <NEmpty v-if="matchedDashboards.length === 0" description="没有匹配的看板" class="py-8" />
+        <NGrid v-else x-gap="16" y-gap="16" cols="1 s:2 m:3 l:4" responsive="screen">
+          <NGridItem v-for="dashboard in matchedDashboards" :key="dashboard.id">
+            <div
+              class="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 hover:border-primary hover:shadow"
+              @click="openDashboard(dashboard)"
+            >
+              <div class="mb-2 flex items-center justify-between gap-2">
+                <h3 class="truncate font-semibold">{{ dashboard.name }}</h3>
+                <NTag size="small" :bordered="false">看板</NTag>
+              </div>
+              <div class="truncate text-sm text-gray-500">所属项目：{{ dashboard.project?.name || '默认项目' }}</div>
+            </div>
+          </NGridItem>
+        </NGrid>
+      </div>
     </NCard>
 
     <!-- 新建/编辑弹窗 -->
@@ -309,6 +407,28 @@ onMounted(() => {
           <NButton type="primary" @click="handleSaveProject">
             {{ editingProject ? '更新' : '创建' }}
           </NButton>
+        </div>
+      </template>
+    </NModal>
+
+    <NModal v-model:show="showDashboardModal" preset="card" title="新建看板" class="w-500px">
+      <NForm :model="dashboardForm">
+        <NFormItem label="看板名称" path="name">
+          <NInput v-model:value="dashboardForm.name" placeholder="请输入看板名称" maxlength="50" show-count />
+        </NFormItem>
+        <NFormItem label="所属项目（可选）">
+          <NSelect
+            v-model:value="dashboardForm.projectId"
+            clearable
+            :options="projectOptions"
+            placeholder="不选择时保存到默认项目"
+          />
+        </NFormItem>
+      </NForm>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <NButton @click="showDashboardModal = false">取消</NButton>
+          <NButton type="primary" :loading="dashboardCreating" @click="handleCreateDashboard">创建并编辑</NButton>
         </div>
       </template>
     </NModal>

@@ -60,6 +60,7 @@ export interface ThingsVisProject {
   createdById: string
   createdAt: string
   updatedAt: string
+  systemKey?: string | null
   _count?: {
     dashboards: number
   }
@@ -73,6 +74,7 @@ export interface ProjectListItem {
   tenantId?: string
   createdAt: string
   updatedAt: string
+  systemKey?: string | null
   _count?: {
     dashboards: number
   }
@@ -145,7 +147,7 @@ export interface DashboardListItem {
 
 export interface CreateDashboardData {
   name: string
-  projectId: string
+  projectId?: string
   canvasConfig?: {
     mode?: string
     width?: number
@@ -248,9 +250,14 @@ export function deleteThingsVisProject(id: string) {
 
 /**
  * 获取 Dashboard 列表
- * @param params.projectId - 项目ID,必填
+ * @param params.projectId - 项目ID；不传时查询当前租户全部看板
  */
-export function getThingsVisDashboards(params: { projectId: string; page?: number; limit?: number }) {
+export function getThingsVisDashboards(params?: {
+  projectId?: string
+  keyword?: string
+  page?: number
+  limit?: number
+}) {
   return wrapRequest<DashboardListResponse>(thingsVisRequest.get('/dashboards', { params }))
 }
 
