@@ -60,7 +60,7 @@ export interface ThingsVisProject {
   createdById: string
   createdAt: string
   updatedAt: string
-  systemKey?: string | null
+  isDefault?: boolean
   _count?: {
     dashboards: number
   }
@@ -74,7 +74,7 @@ export interface ProjectListItem {
   tenantId?: string
   createdAt: string
   updatedAt: string
-  systemKey?: string | null
+  isDefault?: boolean
   _count?: {
     dashboards: number
   }

@@ -314,7 +314,7 @@ onMounted(() => {
 
                   <!-- 操作按钮(悬停显示) -->
                   <div
-                    v-if="project.systemKey !== 'DEFAULT'"
+                    v-if="!project.isDefault"
                     class="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100"
                   >
                     <NButton size="small" quaternary circle @click.stop="openEditModal(project)">
@@ -334,7 +334,7 @@ onMounted(() => {
                 <!-- 项目名称 -->
                 <h3 class="mb-2 truncate text-lg font-semibold">
                   {{ project.name }}
-                  <NTag v-if="project.systemKey === 'DEFAULT'" size="small" type="info" :bordered="false">默认</NTag>
+                  <NTag v-if="project.isDefault" size="small" type="info" :bordered="false">默认</NTag>
                 </h3>
 
                 <!-- 项目描述 -->
