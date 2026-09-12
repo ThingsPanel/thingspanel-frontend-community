@@ -123,6 +123,15 @@ export function normalizePlatformWriteValue(field: Partial<PlatformField>, value
   return option?.value ?? value
 }
 
+/** Resolve a field by either its stable identifier or its display/name alias. */
+export function findPlatformField(fields: unknown[], fieldId: string): PlatformField | undefined {
+  return fields.find((field): field is PlatformField => {
+    if (!field || typeof field !== 'object') return false
+    const candidate = field as Partial<PlatformField>
+    return candidate.id === fieldId || candidate.name === fieldId
+  })
+}
+
 function parseAdditionalInfo(value: unknown): Record<string, any> {
   if (value && typeof value === 'object' && !Array.isArray(value)) return value as Record<string, any>
   if (typeof value !== 'string' || !value.trim()) return {}

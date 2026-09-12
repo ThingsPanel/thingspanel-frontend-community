@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { extractPlatformFields } from './platform-fields'
+import { extractPlatformFields, findPlatformField } from './platform-fields'
 import {
   canHydrateThingsVisPreview,
   canonicalizeThingsVisConfig,
@@ -88,6 +88,10 @@ test('platform fields keep stable identifiers and expose labels and enum options
     property: 'fan_mode',
     payloadType: 'string'
   })
+  assert.equal(
+    findPlatformField([{ id: 'command-db-id', name: 'fan_mode', dataType: 'command' }], 'fan_mode')?.dataType,
+    'command'
+  )
 })
 
 test('generated write binding preserves field id and creates an explicit platform request', () => {

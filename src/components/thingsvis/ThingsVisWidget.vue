@@ -14,7 +14,7 @@ import {
 } from '@/service/api/device'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
 import { canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-normalizer'
-import { normalizePlatformWriteValue } from '@/utils/thingsvis/platform-fields'
+import { findPlatformField, normalizePlatformWriteValue } from '@/utils/thingsvis/platform-fields'
 import { localStg } from '@/utils/storage'
 
 const FIELD_BINDING_EXPR_RE = /^\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}$/
@@ -121,33 +121,50 @@ const isPlatformFieldDataSource = (dataSource: any) => {
 }
 
 const getFieldTypeMap = () => {
-  return (props.platformFields || []).reduce<Record<string, string>>((acc, field) => {
-    const fieldId = typeof field?.id === 'string' ? field.id : ''
-    if (fieldId) {
-      acc[fieldId] = typeof field?.dataType === 'string' ? field.dataType : ''
+  return getPlatformFields().reduce<Record<string, string>>((acc, field) => {
+    const fieldType = typeof field?.dataType === 'string' ? field.dataType : ''
+    for (const key of [field?.id, field?.name]) {
+      if (typeof key === 'string' && key.trim()) acc[key] = fieldType
     }
     return acc
   }, {})
 }
 
 const getFieldValueTypeMap = () => {
-  return (props.platformFields || []).reduce<Record<string, string>>((acc, field) => {
-    const fieldId = typeof field?.id === 'string' ? field.id : ''
-    if (fieldId) {
-      acc[fieldId] = typeof field?.type === 'string' ? field.type : ''
+  return getPlatformFields().reduce<Record<string, string>>((acc, field) => {
+    const fieldValueType = typeof field?.type === 'string' ? field.type : ''
+    for (const key of [field?.id, field?.name]) {
+      if (typeof key === 'string' && key.trim()) acc[key] = fieldValueType
     }
     return acc
   }, {})
 }
 
 const getFieldDataTypeMap = () => {
-  return (props.platformFields || []).reduce<Record<string, string>>((acc, field) => {
-    const fieldId = typeof field?.id === 'string' ? field.id : ''
-    if (fieldId) {
-      acc[fieldId] = typeof field?.dataType === 'string' ? field.dataType : ''
+  return getPlatformFields().reduce<Record<string, string>>((acc, field) => {
+    const fieldDataType = typeof field?.dataType === 'string' ? field.dataType : ''
+    for (const key of [field?.id, field?.name]) {
+      if (typeof key === 'string' && key.trim()) acc[key] = fieldDataType
     }
     return acc
   }, {})
+}
+
+const getPlatformFields = () => {
+  const candidates = [
+    ...(Array.isArray(props.platformFields) ? props.platformFields : []),
+    ...(Array.isArray(props.config?.platformFields) ? props.config.platformFields : []),
+    ...(Array.isArray(props.platformDevices)
+      ? props.platformDevices.flatMap((device: any) => (Array.isArray(device?.fields) ? device.fields : []))
+      : [])
+  ]
+  const seen = new Set<string>()
+  return candidates.filter(field => {
+    const identity = `${String(field?.id || '')}\u0000${String(field?.name || '')}`
+    if (!field || seen.has(identity)) return false
+    seen.add(identity)
+    return true
+  })
 }
 
 const parseFieldBindingExpression = (expression: unknown) => {
@@ -217,7 +234,7 @@ const normalizeNumberValue = (value: unknown) => {
 }
 
 const normalizeFieldWriteValue = (fieldId: string, value: unknown) => {
-  const field = (props.platformFields || []).find((item: any) => item?.id === fieldId)
+  const field = findPlatformField(getPlatformFields(), fieldId)
   if (field) return normalizePlatformWriteValue(field, value)
   const fieldValueType = getFieldValueTypeMap()[fieldId]
   if (fieldValueType === 'boolean') return normalizeBooleanValue(value)
