@@ -14,6 +14,7 @@ import {
 } from '@/service/api/device'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
 import { canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-normalizer'
+import { normalizePlatformWriteValue } from '@/utils/thingsvis/platform-fields'
 import { localStg } from '@/utils/storage'
 
 const FIELD_BINDING_EXPR_RE = /^\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}$/
@@ -216,9 +217,9 @@ const normalizeNumberValue = (value: unknown) => {
 }
 
 const normalizeFieldWriteValue = (fieldId: string, value: unknown) => {
+  const field = (props.platformFields || []).find((item: any) => item?.id === fieldId)
+  if (field) return normalizePlatformWriteValue(field, value)
   const fieldValueType = getFieldValueTypeMap()[fieldId]
-  if (!fieldValueType) return value
-
   if (fieldValueType === 'boolean') return normalizeBooleanValue(value)
   if (fieldValueType === 'number') return normalizeNumberValue(value)
   return value
@@ -323,7 +324,7 @@ const ensureInteractiveWriteEvents = (config: any) => {
       const autoAction = {
         type: 'callWrite',
         dataSourceId: parsed.dataSourceId,
-        payload: `({ ${JSON.stringify(fieldId)}: ${fieldValueType === 'number' ? 'payload ? 1 : 0' : 'payload'} })`,
+        payload: `({ ${JSON.stringify(fieldId)}: payload })`,
         __thingsvisAutoWrite: AUTO_WRITE_MARKER,
         ...(fieldValueType === 'number' || fieldValueType === 'boolean'
           ? { __thingsvisAutoWriteValueType: fieldValueType }

@@ -35,8 +35,12 @@ import { attributesApi, telemetryApi, commandsApi, eventsApi } from '@/service/a
 import { getTemplat } from '@/service/api/system-data'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
-import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
-import { canHydrateThingsVisPreview, canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-normalizer'
+import { extractPlatformFields, normalizePlatformWriteValue } from '@/utils/thingsvis/platform-fields'
+import {
+  canHydrateThingsVisPreview,
+  canonicalizeThingsVisConfig,
+  ensureInteractiveWriteEvents
+} from '@/utils/thingsvis/chart-config-normalizer'
 import type { PlatformField } from '@/utils/thingsvis/types'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
@@ -100,7 +104,7 @@ interface DeviceStatusWsEntry {
   deviceId: string
 }
 
-type PlatformDeviceField = Pick<PlatformField, 'id' | 'name' | 'dataType'>
+type PlatformDeviceField = Pick<PlatformField, 'id' | 'name' | 'dataType' | 'type' | 'options'>
 
 type PlatformDeviceEntry = {
   deviceId: string
@@ -512,7 +516,7 @@ function cloneDashboardConfig<T>(config: T): T {
 }
 
 function normalizeDashboardConfig<T>(config: T): T {
-  return canonicalizeThingsVisConfig(cloneDashboardConfig(config)) as T
+  return ensureInteractiveWriteEvents(canonicalizeThingsVisConfig(cloneDashboardConfig(config))) as T
 }
 
 function hasCompleteDashboardSchema(
@@ -1247,11 +1251,26 @@ function resolveWriteFieldId(data: unknown): string | undefined {
   return keys.length === 1 ? keys[0] : undefined
 }
 
-function resolveWriteFieldType(deviceId: string, fieldId?: string): PlatformField['dataType'] | undefined {
+async function resolveWriteField(deviceId: string, fieldId?: string): Promise<PlatformDeviceField | undefined> {
   if (!fieldId) return undefined
-  const device = activePlatformDevices.get(deviceId)
-  const field = device?.fields.find(item => item.id === fieldId || item.name === fieldId)
-  return field?.dataType
+  const activeDevice = activePlatformDevices.get(deviceId)
+  const activeField = activeDevice?.fields.find(item => item.id === fieldId || item.name === fieldId)
+  if (activeField) return activeField
+
+  const loadedDevice = await buildPlatformDeviceById(deviceId)
+  if (loadedDevice) {
+    registerActivePlatformDevices([loadedDevice])
+    return loadedDevice.fields.find(item => item.id === fieldId || item.name === fieldId)
+  }
+  return undefined
+}
+
+function normalizePlatformWriteData(field: PlatformDeviceField | undefined, data: unknown): unknown {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return data
+  const entries = Object.entries(data as Record<string, unknown>)
+  if (entries.length !== 1) return data
+  const [fieldId, value] = entries[0]!
+  return field ? { [fieldId]: normalizePlatformWriteValue(field, value) } : data
 }
 
 function resolveCommandWrite(data: unknown, fieldId?: string): { identify: string; value: string } | null {
@@ -1323,8 +1342,8 @@ function sanitizeDataSourcesForHostSave(nodes: unknown, dataSources: unknown): u
 
 async function handlePlatformWrite(payload: Record<string, unknown>, requestId?: string) {
   const deviceId = resolveWriteDeviceId(payload)
-  const data = payload.data
-  if (!deviceId || data === undefined) {
+  const fieldId = resolveWriteFieldId(payload.data)
+  if (!deviceId || payload.data === undefined) {
     postPlatformWriteResult(requestId, {
       success: false,
       error: 'Missing deviceId or data'
@@ -1333,9 +1352,10 @@ async function handlePlatformWrite(payload: Record<string, unknown>, requestId?:
   }
 
   try {
+    const field = await resolveWriteField(deviceId, fieldId)
+    const data = normalizePlatformWriteData(field, payload.data)
     const value = typeof data === 'string' ? data : JSON.stringify(data)
-    const fieldId = resolveWriteFieldId(data)
-    const fieldType = resolveWriteFieldType(deviceId, fieldId)
+    const fieldType = field?.dataType
     let result: any
 
     if (fieldType === 'attribute') {

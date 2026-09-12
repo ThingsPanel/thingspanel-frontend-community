@@ -111,6 +111,18 @@ export function extractPlatformFields(template: any): PlatformField[] {
   return fields
 }
 
+/** Preserve model enum values when a widget emits a boolean presentation value. */
+export function normalizePlatformWriteValue(field: Partial<PlatformField>, value: unknown): unknown {
+  if (typeof value !== 'boolean' || field.type !== 'string' || !Array.isArray(field.options)) return value
+  const expected = value ? ['on', 'true', '1'] : ['off', 'false', '0']
+  const option = field.options.find(item => {
+    const optionValue = String(item.value).toLowerCase()
+    const optionLabel = String(item.label).toLowerCase()
+    return expected.includes(optionValue) || expected.includes(optionLabel)
+  })
+  return option?.value ?? value
+}
+
 function parseAdditionalInfo(value: unknown): Record<string, any> {
   if (value && typeof value === 'object' && !Array.isArray(value)) return value as Record<string, any>
   if (typeof value !== 'string' || !value.trim()) return {}

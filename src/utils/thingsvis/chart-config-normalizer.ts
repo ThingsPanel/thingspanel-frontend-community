@@ -135,6 +135,62 @@ function normalizeBindings(raw: unknown, node: Record<string, any>, defaultDataS
   })
 }
 
+const INTERACTIVE_WRITE_EVENT_BY_COMPONENT: Record<string, string> = {
+  'interaction/basic-switch': 'change',
+  'interaction/basic-slider': 'change',
+  'interaction/basic-select': 'change',
+  'interaction/basic-input': 'submit'
+}
+const INTERACTIVE_WRITE_MARKER = 'field-binding'
+
+/** Add the default platform write action to bound interactive widgets. */
+export function ensureInteractiveWriteEvents(config: CanonicalChartConfig): CanonicalChartConfig {
+  if (!config || !Array.isArray(config.nodes)) return config
+
+  return {
+    ...config,
+    nodes: config.nodes.map((node: any) => {
+      const eventName = INTERACTIVE_WRITE_EVENT_BY_COMPONENT[node?.type]
+      if (!eventName) return node
+
+      const bindings = Array.isArray(node?.data) ? node.data : []
+      const valueBinding = bindings.find((binding: any) => binding?.targetProp === 'value')
+      const expression = bindingExpression(valueBinding?.expression ?? node?.props?.value)
+      const match =
+        typeof expression === 'string' ? expression.match(/^\{\{\s*ds\.([^\s.]+)\.data(?:\.(.+?))?\s*\}\}$/) : null
+      if (!match?.[1] || !match[2]) return node
+
+      const fieldId = getFieldId(match[2].split(/[.[\]\s?:+\-*/=!<>&|(),]/).filter(Boolean)[0])
+      if (!fieldId) return node
+
+      const autoAction = {
+        type: 'callWrite',
+        dataSourceId: match[1],
+        // Keep the widget payload type; the host applies enum normalization.
+        payload: `({ ${JSON.stringify(fieldId)}: payload })`,
+        __thingsvisAutoWrite: INTERACTIVE_WRITE_MARKER
+      }
+      const events = Array.isArray(node?.events) ? node.events : []
+      let found = false
+      const nextEvents = events.map((handler: any) => {
+        if (handler?.event !== eventName) return handler
+        found = true
+        const actions = Array.isArray(handler?.actions) ? handler.actions : []
+        return {
+          ...handler,
+          actions: [
+            ...actions.filter((action: any) => action?.__thingsvisAutoWrite !== INTERACTIVE_WRITE_MARKER),
+            autoAction
+          ]
+        }
+      })
+
+      if (!found) nextEvents.push({ event: eventName, actions: [autoAction] })
+      return { ...node, events: nextEvents }
+    })
+  }
+}
+
 function normalizeGrid(
   node: Record<string, any>,
   canvas: Record<string, any>,

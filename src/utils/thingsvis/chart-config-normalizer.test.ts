@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { extractPlatformFields } from './platform-fields'
-import { canHydrateThingsVisPreview, canonicalizeThingsVisConfig } from './chart-config-normalizer'
+import {
+  canHydrateThingsVisPreview,
+  canonicalizeThingsVisConfig,
+  ensureInteractiveWriteEvents
+} from './chart-config-normalizer'
+import { normalizePlatformWriteValue } from './platform-fields'
 
 test('legacy API payload is converted to the ThingsVis canonical node schema', () => {
   const config = canonicalizeThingsVisConfig({
@@ -112,4 +117,44 @@ test('viewer hydration is blocked until both ready and loaded signals arrive', (
   assert.equal(canHydrateThingsVisPreview({ ready: true, loaded: false }), false)
   assert.equal(canHydrateThingsVisPreview({ ready: false, loaded: true }), false)
   assert.equal(canHydrateThingsVisPreview({ ready: true, loaded: true }), true)
+})
+
+test('select change creates a platform callWrite command request without coercing payload types', () => {
+  const config = ensureInteractiveWriteEvents(
+    canonicalizeThingsVisConfig({
+      canvas: { mode: 'grid', width: 375, height: 844, gridCols: 4 },
+      nodes: [
+        {
+          id: 'fan-mode',
+          type: 'interaction/basic-select',
+          x: 0,
+          y: 0,
+          w: 4,
+          h: 2,
+          data: [{ targetProp: 'value', expression: '{{ ds.__platform_ac-1__.data.fan_mode }}' }]
+        }
+      ],
+      dataSources: [{ id: '__platform_ac-1__', type: 'PLATFORM_FIELD', config: {} }]
+    })
+  )
+
+  const action = config.nodes[0].events.find((handler: any) => handler.event === 'change').actions[0]
+  assert.equal(action.type, 'callWrite')
+  assert.equal(action.dataSourceId, '__platform_ac-1__')
+  assert.equal(action.payload, '({ "fan_mode": payload })')
+  assert.equal(
+    normalizePlatformWriteValue(
+      {
+        id: 'ha_state',
+        type: 'string',
+        options: [
+          { label: 'on', value: 'on' },
+          { label: 'off', value: 'off' }
+        ]
+      },
+      true
+    ),
+    'on'
+  )
+  assert.equal(normalizePlatformWriteValue({ id: 'target_temp', type: 'number' }, 23.5), 23.5)
 })
