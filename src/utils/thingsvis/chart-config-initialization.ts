@@ -1,10 +1,9 @@
+import { canonicalizeThingsVisConfig } from './chart-config-normalizer'
+
 /**
  * Web 图表首次保存时初始化 App 图表；App 已有独立配置后保持原值。
  */
-export function initializeAppChartConfigOnce(
-  currentAppConfig: unknown,
-  webConfig: string
-): string {
+export function initializeAppChartConfigOnce(currentAppConfig: unknown, webConfig: string): string {
   const hasAppConfig =
     currentAppConfig !== null &&
     currentAppConfig !== undefined &&
@@ -15,7 +14,7 @@ export function initializeAppChartConfigOnce(
   }
 
   try {
-    const parsed = JSON.parse(webConfig)
+    const parsed = canonicalizeThingsVisConfig(webConfig)
     const appGridCols = 4
     let cursorX = 0
     let cursorY = 0
@@ -25,7 +24,7 @@ export function initializeAppChartConfigOnce(
           const sourceGrid = node?.grid
           if (!sourceGrid) return node
 
-          const width = Math.min(appGridCols, Math.max(1, Math.ceil((sourceGrid.w || 1) * appGridCols / 24)))
+          const width = Math.min(appGridCols, Math.max(1, Math.ceil(((sourceGrid.w || 1) * appGridCols) / 24)))
           const height = Math.max(1, sourceGrid.h || 1)
           if (cursorX + width > appGridCols) {
             cursorX = 0

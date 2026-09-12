@@ -13,6 +13,7 @@ import {
   telemetryDataPub
 } from '@/service/api/device'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
+import { canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-normalizer'
 import { localStg } from '@/utils/storage'
 
 const FIELD_BINDING_EXPR_RE = /^\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}$/
@@ -725,7 +726,8 @@ const pushPlatformFieldData = (fields: Record<string, unknown>, deviceId?: strin
 }
 
 function normalizeLoadConfig(config: any) {
-  const writeNormalizedConfig = ensureInteractiveWriteEvents(ensureEzuikitPlaybackEvents(config))
+  const canonicalConfig = canonicalizeThingsVisConfig(config)
+  const writeNormalizedConfig = ensureInteractiveWriteEvents(ensureEzuikitPlaybackEvents(canonicalConfig))
   return normalizeViewerConfig(writeNormalizedConfig)
 }
 
@@ -967,13 +969,13 @@ onMounted(async () => {
   const canvas = props.config?.canvas || {}
   const canvasWidth = Number(canvas.width) || 1920
   const canvasHeight = Number(canvas.height) || 1080
-  const initialZoom = props.mode === 'editor' && embeddedContext === 'device-template'
-    ? Math.max(0.1, Math.min(
-        1,
-        ((window.innerWidth * 0.94) - 680) / canvasWidth,
-        ((window.innerHeight * 0.92) - 170) / canvasHeight
-      ))
-    : undefined
+  const initialZoom =
+    props.mode === 'editor' && embeddedContext === 'device-template'
+      ? Math.max(
+          0.1,
+          Math.min(1, (window.innerWidth * 0.94 - 680) / canvasWidth, (window.innerHeight * 0.92 - 170) / canvasHeight)
+        )
+      : undefined
   const runtimeParams = `&context=${embeddedContext}&thingsvisApiBaseUrl=${thingsvisApiBaseUrl}&platformApiBaseUrl=${platformApiBaseUrl}${initialZoom ? `&initialZoom=${initialZoom}` : ''}`
 
   // 追加 saveTarget=host，告知 Editor 进入宿主托管模式

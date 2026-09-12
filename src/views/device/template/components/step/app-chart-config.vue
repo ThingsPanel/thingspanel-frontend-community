@@ -11,6 +11,7 @@ import { $t } from '@/locales'
 import { getTemplat, putTemplat, telemetryApi, attributesApi } from '@/service/api'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
+import { canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-normalizer'
 import type { PlatformField } from '@/utils/thingsvis/types'
 
 const emit = defineEmits(['update:stepCurrent', 'update:modalVisible'])
@@ -182,7 +183,7 @@ const handleSave = async (payload: any) => {
     // ⚠️ CRITICAL: 清理 PLATFORM_FIELD datasource 中的 deviceId
     // 这些 ID 在编辑时是模板/虚拟设备 ID，不应该被保存到配置中
     // 运行时会根据真实设备ID动态注入
-    const cleanedPayload = JSON.parse(JSON.stringify(payload))
+    const cleanedPayload = canonicalizeThingsVisConfig(payload)
     if (cleanedPayload.dataSources && Array.isArray(cleanedPayload.dataSources)) {
       cleanedPayload.dataSources.forEach((ds: any) => {
         if (ds.type === 'PLATFORM_FIELD' && ds.config) {
@@ -243,15 +244,17 @@ const loadTemplateData = async () => {
 
       const extractedFields = extractPlatformFields(platformSource)
       // Filter out command-type fields — only telemetry and attributes are relevant for charts.
-      const filtered = (extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)).filter(
-        (f: PlatformField) => f.dataType !== 'command'
-      )
-      platformFields.value = filtered
+      // Controls also need command metadata (fan_mode, brightness, temperature,
+      // etc.).  Read-only chart rendering can ignore it, but the field picker
+      // must receive the complete model contract.
+      platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)
 
       // 加载已有配置
       if (res.data.app_chart_config) {
         try {
-          const config = JSON.parse(res.data.app_chart_config)
+          const config = canonicalizeThingsVisConfig(res.data.app_chart_config, {
+            defaultCanvas: { mode: 'grid', width: 375, height: 844, gridCols: 4, gridRowHeight: 50, gridGap: 5 }
+          })
           initialConfig.value = migrateLegacyAppCanvas(config)
           hasConfig.value = true
           // 恢复刷新频率配置

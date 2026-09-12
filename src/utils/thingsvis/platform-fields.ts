@@ -18,17 +18,41 @@ export function extractPlatformFields(template: any): PlatformField[] {
   // 解析模板中的字段定义
   try {
     const normalizeField = (item: any, dataType: PlatformField['dataType']): PlatformField | null => {
-      const id = item?.key || item?.data_identifier || item?.identifier || item?.id
-      const name = item?.name || item?.data_name || item?.label || id
+      // data_identifier is the model contract. Runtime telemetry keys/DB ids are
+      // only fallbacks so generated bindings remain stable across API response shapes.
+      const id = item?.data_identifier || item?.identifier || item?.key || item?.id
+      const name = item?.data_name || item?.name || item?.label || id
       if (!id) return null
 
+      const additionalInfo = parseAdditionalInfo(item?.additional_info)
+      const valueSchema = parseAdditionalInfo(additionalInfo?.value_schema || additionalInfo?.valueSchema)
+      const options = normalizeOptions(item, valueSchema)
+      const payloadType = mapDataType(item?.data_type || item?.type || valueSchema?.type)
+      const writable =
+        dataType === 'command' ||
+        item?.writable === true ||
+        String(item?.read_write_flag || item?.access || '')
+          .toUpperCase()
+          .includes('W')
+
       return {
-        id,
-        name: name || id,
-        type: mapDataType(item?.data_type || item?.type),
+        id: String(id),
+        name: String(name || id),
+        type: payloadType,
         dataType,
         unit: item?.unit,
-        description: item?.description || item?.define
+        description: item?.description || item?.define,
+        ...(options.length > 0 ? { options } : {}),
+        writable,
+        ...(writable
+          ? {
+              write: {
+                target: dataType === 'command' ? 'command' : dataType,
+                property: String(id),
+                payloadType
+              }
+            }
+          : {})
       }
     }
 
@@ -85,6 +109,45 @@ export function extractPlatformFields(template: any): PlatformField[] {
   }
 
   return fields
+}
+
+function parseAdditionalInfo(value: unknown): Record<string, any> {
+  if (value && typeof value === 'object' && !Array.isArray(value)) return value as Record<string, any>
+  if (typeof value !== 'string' || !value.trim()) return {}
+  try {
+    const parsed = JSON.parse(value)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+function normalizeOptions(
+  item: any,
+  valueSchema: Record<string, any>
+): Array<{ label: string; value: string | number | boolean }> {
+  const params = parseAdditionalInfo(item?.params)
+  const parameterSchema = Object.values(params).find(
+    (value): value is Record<string, any> => Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+  )
+  const raw =
+    item?.enum_config ||
+    item?.enumConfig ||
+    valueSchema?.enum ||
+    valueSchema?.options ||
+    parameterSchema?.enum ||
+    parameterSchema?.options
+  if (!Array.isArray(raw)) return []
+
+  return raw.flatMap((option: any) => {
+    const value = option && typeof option === 'object' && !Array.isArray(option) ? option.value : option
+    if (value === undefined || value === null) return []
+    const label =
+      option && typeof option === 'object'
+        ? option.label || option.desc || option.description || option.name || String(value)
+        : String(value)
+    return [{ label: String(label), value: value as string | number | boolean }]
+  })
 }
 
 /**

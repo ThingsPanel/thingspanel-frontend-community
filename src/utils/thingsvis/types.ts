@@ -16,6 +16,16 @@ export interface PlatformField {
   unit?: string
   /** 描述(可选) */
   description?: string
+  /** 枚举字段的稳定选项值与展示标签 */
+  options?: Array<{ label: string; value: string | number | boolean }>
+  /** 字段是否可写 */
+  writable?: boolean
+  /** 平台写入合同，供宿主和生成器保持一致 */
+  write?: {
+    target: 'attribute' | 'command' | 'telemetry'
+    property: string
+    payloadType: 'number' | 'string' | 'boolean' | 'json'
+  }
 }
 
 /** ThingsVis 项目配置 */

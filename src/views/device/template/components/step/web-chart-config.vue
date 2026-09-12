@@ -12,6 +12,7 @@ import { getTemplat, putTemplat, telemetryApi, attributesApi, eventsApi, command
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import { initializeAppChartConfigOnce } from '@/utils/thingsvis/chart-config-initialization'
+import { canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-normalizer'
 import type { PlatformField } from '@/utils/thingsvis/types'
 
 const emit = defineEmits(['update:stepCurrent', 'update:modalVisible'])
@@ -120,9 +121,7 @@ const editorCardStyle = computed(() => ({
   height: 'min(92vh, 1120px)'
 }))
 
-const editorWidgetHeight = computed(() =>
-  isEditorFullscreen.value ? '100vh' : 'calc(min(92vh, 1120px) - 170px)'
-)
+const editorWidgetHeight = computed(() => (isEditorFullscreen.value ? '100vh' : 'calc(min(92vh, 1120px) - 170px)'))
 
 // 下一步 (直接跳过，不强制编辑)
 const next = () => {
@@ -143,7 +142,7 @@ const handleSave = async (payload: any) => {
     // ⚠️ CRITICAL: 清理 PLATFORM_FIELD datasource 中的 deviceId
     // 这些 ID 在编辑时是模板/虚拟设备 ID，不应该被保存到配置中
     // 运行时会根据真实设备ID动态注入
-    const cleanedPayload = JSON.parse(JSON.stringify(payload))
+    const cleanedPayload = canonicalizeThingsVisConfig(payload)
     if (cleanedPayload.dataSources && Array.isArray(cleanedPayload.dataSources)) {
       cleanedPayload.dataSources.forEach((ds: any) => {
         if (ds.type === 'PLATFORM_FIELD' && ds.config) {
@@ -216,7 +215,7 @@ const loadTemplateData = async () => {
       // 加载已有配置
       if (res.data.web_chart_config) {
         try {
-          const config = JSON.parse(res.data.web_chart_config)
+          const config = canonicalizeThingsVisConfig(res.data.web_chart_config)
           initialConfig.value = config
           hasConfig.value = true
           // 恢复刷新频率配置
