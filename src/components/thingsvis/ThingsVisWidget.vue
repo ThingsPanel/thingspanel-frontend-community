@@ -543,11 +543,13 @@ const collectConfiguredHistoryFields = (dataSourceId?: string) => {
       const sourceFieldId = fieldRoot.slice(0, -HISTORY_FIELD_SUFFIX.length)
       if (!sourceFieldId) return
 
-      const bindingTimeRange = normalizeHistoryTimeRange(binding?.historyConfig?.timeRange)
+      const bindingTimeRange = normalizeHistoryTimeRange(binding?.historyConfig?.timeRange || node?.props?.timeRangePreset)
       requests.set(sourceFieldId, mergeHistoryTimeRange(requests.get(sourceFieldId), bindingTimeRange))
     })
 
-    visitStringLeaves(node, input => {
+    // data 绑定已按自身的 historyConfig 处理，不能再次用图表的 all（30 天）覆盖。
+    const { data: _bindings, ...nonBindingConfig } = node
+    visitStringLeaves(nonBindingConfig, input => {
       FIELD_BINDING_EXPR_GLOBAL_RE.lastIndex = 0
 
       let match: RegExpExecArray | null
