@@ -3,8 +3,8 @@ import { computed, h, nextTick, reactive, ref, watch } from 'vue'
 import { useLoading } from '@sa/hooks'
 import { deviceStatusHistory } from '@/service/api/device'
 import { $t } from '@/locales'
-import dayjs from 'dayjs'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
+import { formatDateTime } from '@/utils/common/datetime'
 
 /**
  * 设备状态历史记录类型定义
@@ -113,7 +113,7 @@ const columns: DataTableColumns<StatusHistoryItem> = [
     width: 200,
     render: (row: StatusHistoryItem) => {
       if (row.change_time) {
-        return dayjs(row.change_time).format('YYYY-MM-DD HH:mm:ss')
+        return formatDateTime(row.change_time) || '--'
       }
       return '--'
     }

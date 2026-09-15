@@ -3,9 +3,9 @@ import { reactive, ref } from 'vue'
 import type { Ref } from 'vue'
 import type { PaginationProps } from 'naive-ui'
 import { NButton, NPopconfirm } from 'naive-ui'
-import moment from 'moment'
 import { expectMessageDelete, expectMessageList } from '@/service/api'
 import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
 const props = defineProps<{
   id: string
 }>()
@@ -73,7 +73,7 @@ const columns: Ref<any> = ref([
     minWidth: '200px',
     title: () => $t('page.expect.createTime'),
     render: row => {
-      return row.created_at ? moment(row.created_at).format('YYYY-MM-DD hh:mm:ss') : ''
+      return formatDateTime(row.created_at) || ''
     }
   },
   {
@@ -99,7 +99,7 @@ const columns: Ref<any> = ref([
     minWidth: '200px',
     title: () => $t('page.expect.expireTime'),
     render: row => {
-      return row.expiry_time ? moment(row.expiry_time).format('YYYY-MM-DD hh:mm:ss') : ''
+      return formatDateTime(row.expiry_time) || ''
     }
   },
   {
@@ -120,7 +120,7 @@ const columns: Ref<any> = ref([
     minWidth: '200px',
     title: () => $t('page.expect.dealTime'),
     render: row => {
-      return row.send_time ? moment(row.send_time).format('YYYY-MM-DD hh:mm:ss') : ''
+      return formatDateTime(row.send_time) || ''
     }
   },
   {

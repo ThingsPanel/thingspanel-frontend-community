@@ -3,10 +3,10 @@ import type { Ref } from 'vue'
 import { computed, getCurrentInstance, h, onMounted, ref } from 'vue'
 import type { DataTableColumns, FormInst } from 'naive-ui'
 import { NButton, NDataTable, NFlex, NForm, NFormItem, NModal, NPagination, NPopconfirm, useMessage } from 'naive-ui'
-import moment from 'moment/moment'
 import { deviceConfigBatch, deviceDelete, deviceList, getDeviceListForSelect } from '@/service/api'
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
 import DeviceSelectWithScroll from './DeviceSelectWithScroll.vue'
 
 const message = useMessage()
@@ -205,7 +205,7 @@ const columnsData: Ref<DataTableColumns<any>> = ref([
     title: $t('custom.devicePage.pushTime'),
     render: row => {
       if (row.ts) {
-        return moment(row.ts).format('YYYY-MM-DD HH:mm:ss')
+        return formatDateTime(row.ts) || '--'
       }
       return ''
     }

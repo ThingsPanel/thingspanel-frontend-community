@@ -54,7 +54,7 @@
   "generate.errorMessage": "错误信息",
   "generate.returnSuccess": "返回成功",
   "generate.returnFail": "返回失败",
-  "generate.sendingSuccess": "发送成功",
+  "generate.sendingSuccess": "已发布，等待设备确认",
   "generate.sendingFail": "发送失败",
   "generate.code": "代码",
   "generate.name": "姓名",

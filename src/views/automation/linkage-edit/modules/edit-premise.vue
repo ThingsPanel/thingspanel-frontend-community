@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router'
 import { NButton, NFlex, useMessage } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
 import { IosAlert, IosRefresh } from '@vicons/ionicons4'
-import { repeat } from 'seemly'
 import { deviceGroupTree } from '@/service/api'
 import {
   configMetricsConditionMenu,
@@ -713,7 +712,7 @@ const expirationTimeOptions = computed(() => [
 ])
 
 // 月份范围选项
-const mouthRangeOptions = repeat(31, undefined).map((_, i) => ({
+const mouthRangeOptions = Array.from({ length: 31 }).map((_, i) => ({
   label: String(i + 1),
   value: i + 1
 }))

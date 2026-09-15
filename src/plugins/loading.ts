@@ -2,7 +2,8 @@
 import { getRgbOfColor } from '@sa/utils'
 import { $t } from '@/locales'
 import { localStg } from '@/utils/storage'
-import systemLogo from '@/assets/svg-icon/logo.svg?raw'
+
+const defaultLogo = `${import.meta.env.BASE_URL}brand/ygsoul-cloud-logo-v2.png`
 
 export function setupLoading() {
   const app = document.getElementById('app')
@@ -13,7 +14,10 @@ export function setupLoading() {
   if ((app as any).__vue_app__) return
 
   const themeColor = localStg.get('themeColor') || '#646cff'
-  const logoLoading = localStg.get('logoLoading') || ''
+  const configuredLogo = localStg.get('logoLoading') || ''
+  const logoLoading = configuredLogo || defaultLogo
+  const storedSystemName = localStg.get('systemName') || ''
+  const systemName = storedSystemName === 'ThingsPanel' || !storedSystemName ? '幽光云（YGCloud）' : storedSystemName
 
   const { r, g, b } = getRgbOfColor(themeColor)
 
@@ -26,9 +30,7 @@ export function setupLoading() {
     'right-0 bottom-0 animate-delay-1500'
   ]
 
-  const logoWithClass = logoLoading
-    ? `<img src="${logoLoading}" style="max-width: 88px; height: auto">`
-    : systemLogo.replace('<svg', `<svg class="size-128px text-primary"`)
+  const logoWithClass = `<img src="${logoLoading}" style="max-width: 88px; height: auto">`
 
   const dot = loadingClasses
     .map(item => {
@@ -44,7 +46,7 @@ export function setupLoading() {
       ${dot}
     </div>
   </div>
-  <h2 class="text-28px text-center font-500 text-#646464">${localStg.get('systemName') || $t('title')}</h2>
+  <h2 class="text-28px text-center font-500 text-#646464">${systemName || $t('title')}</h2>
 </div>`
 
   app.innerHTML = loading

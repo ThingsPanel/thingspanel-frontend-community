@@ -1,8 +1,8 @@
 <script setup lang="tsx">
 import { onMounted, ref } from 'vue';
 import { MovingNumbers } from 'moving-numbers-vue3';
-import dayjs from 'dayjs';
 import { telemetryDataCurrent } from '@/service/api/device'; // 假设此路径正确
+import { formatDateTime } from '@/utils/common/datetime';
 import { createLogger } from '@/utils/logger';
 const logger = createLogger('TelemetryData');
 
@@ -14,7 +14,7 @@ const props = defineProps<{
 
 const telemetryData = ref<any[]>([]);
 const initTelemetryData = ref<any>();
-const nowTime = ref(dayjs(new Date().getTime()).format('YYYY-MM-DD HH:mm:ss'));
+const nowTime = ref(formatDateTime(new Date()));
 
 const fetchTelemetry = async () => {
   const { data, error } = await telemetryDataCurrent(props.id);
@@ -68,7 +68,7 @@ onMounted(() => {
             :data-index="index"
             class="c1"
             :m-num="i.value"
-            :quantile-show="true"
+            :quantile-show="false"
           ></MovingNumbers>
           <span v-if="i.unit">{{ i.unit }}</span>
         </div>
@@ -85,7 +85,7 @@ onMounted(() => {
         </template>
         <template #footer>
           <div class="telemetry-card__time">
-            {{ i.ts ? dayjs(i.ts).format('YYYY-MM-DD HH:mm:ss') : nowTime }}
+            {{ i.ts ? formatDateTime(i.ts) : nowTime }}
           </div>
         </template>
       </n-card>

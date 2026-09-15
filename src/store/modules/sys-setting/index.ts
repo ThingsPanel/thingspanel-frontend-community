@@ -2,9 +2,10 @@ import { defineStore } from 'pinia'
 import { fetchThemeSetting } from '@/service/api/setting'
 import { localStg } from '@/utils/storage'
 import { createServiceConfig } from '~/env.config'
+import { resolveBackendAbsoluteUrl } from './resolve-backend-url'
 
 const { otherBaseURL } = createServiceConfig(import.meta.env)
-const url = new URL(otherBaseURL.demo ? otherBaseURL.demo : `${window.location.origin}/api/v1`)
+const url = resolveBackendAbsoluteUrl(otherBaseURL.demo)
 
 type SysSetting = Omit<Api.GeneralSetting.ThemeSetting, 'id'>
 export const useSysSettingStore = defineStore('sys-setting', {
@@ -23,6 +24,7 @@ export const useSysSettingStore = defineStore('sys-setting', {
         const list: Api.GeneralSetting.ThemeSetting[] = data.list
         if (list.length) {
           const setting: Api.GeneralSetting.ThemeSetting = list[0]
+          setting.system_name = !setting.system_name || setting.system_name === 'ThingsPanel' ? '幽光云' : setting.system_name
           setting.logo_background = setting.logo_background ? url.origin + setting.logo_background.slice(1) : ''
           setting.logo_loading = setting.logo_loading ? url.origin + setting.logo_loading.slice(1) : ''
           setting.logo_cache = setting.logo_cache ? url.origin + setting.logo_cache.slice(1) : ''

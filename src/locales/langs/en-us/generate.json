@@ -54,7 +54,7 @@
   "generate.errorMessage": "Error Message",
   "generate.returnSuccess": "Return Success",
   "generate.returnFail": "Return Fail",
-  "generate.sendingSuccess": "Sending Success",
+  "generate.sendingSuccess": "Published, awaiting device confirmation",
   "generate.sendingFail": "Sending Fail",
   "generate.code": "Code",
   "generate.name": "Name",

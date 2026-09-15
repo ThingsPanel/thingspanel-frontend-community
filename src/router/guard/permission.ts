@@ -130,11 +130,16 @@ async function createAuthRouteGuard(
   // 5. init auth route
   const initSuccess = await routeStore.initAuthRoute()
 
-  // If init failed, reset store (which likely redirects to login) and stop navigation
+  // If init failed, clear the stale token and finish THIS navigation.
+  // resetStore() also calls toLogin() without next(), which deadlocks
+  // router.isReady() and leaves #app empty.
   if (!initSuccess) {
-    const authStore = useAuthStore()
-    await authStore.resetStore() // This typically handles redirection to login
-
+    localStg.remove('token')
+    localStg.remove('refreshToken')
+    localStg.remove('userInfo')
+    localStg.remove('token_expires_in')
+    const loginRoute: RouteKey = 'login'
+    next({ name: loginRoute, query: { redirect: to.fullPath }, replace: true })
     return false
   }
 

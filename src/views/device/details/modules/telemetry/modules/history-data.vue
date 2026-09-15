@@ -2,10 +2,10 @@
 import { defineProps, onMounted, reactive, ref } from 'vue'
 import { useMessage } from 'naive-ui'
 import dayjs from 'dayjs'
-import { addMonths } from 'date-fns'
 import { telemetryHistoryData } from '@/service/api'
 import { $t } from '@/locales'
 import { getBaseServerUrl } from '@/utils/common/tool'
+import { formatDateTime } from '@/utils/common/datetime'
 import { useLoading } from '~/packages/hooks'
 
 interface Created {
@@ -104,7 +104,7 @@ const columns = [
   {
     title: $t('common.time'),
     key: 'time',
-    render: (row: HistoryData) => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss')
+    render: (row: HistoryData) => formatDateTime(row.ts) || '--'
   },
   {
     title: $t('device_template.table_header.dataIdentifier'),
@@ -120,7 +120,7 @@ const columns = [
 const checkDateRange = value => {
   const [start, end] = value
 
-  if (start && end && addMonths(start, 1) < end) {
+  if (start && end && dayjs(start).add(1, 'month').isBefore(dayjs(end))) {
     dateRange.value = null
     message.error($t('common.withinOneMonth'))
   } else {

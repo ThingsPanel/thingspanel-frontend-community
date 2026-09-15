@@ -6,7 +6,7 @@ import { NButton } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { useBoolean, useLoading } from '@sa/hooks';
 import { $t } from '@/locales';
-import { exportDevice, getPreProductList } from '@/service/product/list';
+import { activatePreRegister, exportDevice, getPreProductList } from '@/service/product/list';
 import { formatDateTime } from '@/utils/common/datetime';
 import TableDeviceModal from './table-device-modal.vue';
 import type { ModalType } from './table-action-modal.vue';
@@ -128,6 +128,22 @@ const columns: Ref<DataTableColumns<PreproductDeviceRecord>> = ref([
     render: row => {
       return row.activate_at ? formatDateTime(row.activate_at) : '-';
     }
+  },
+  {
+    key: 'actions',
+    minWidth: '100px',
+    title: $t('page.product.list.operate'),
+    align: 'center',
+    render: row => {
+      if (row.activate_flag === 'active') {
+        return '-';
+      }
+      return (
+        <NButton size="small" type="primary" onClick={() => handleActivate(row)}>
+          {$t('page.product.list.activate')}
+        </NButton>
+      );
+    }
   }
 ]) as Ref<DataTableColumns<PreproductDeviceRecord>>;
 
@@ -143,6 +159,14 @@ function handleAddTable() {
   editData.value = null;
   openModal();
   setModalType('add');
+}
+
+async function handleActivate(row: PreproductDeviceRecord) {
+  const { error } = await activatePreRegister({ id: row.id });
+  if (!error) {
+    window.$message?.success($t('page.product.list.success'));
+    getTableData();
+  }
 }
 
 // function handleEditPwd(rowId: string) {

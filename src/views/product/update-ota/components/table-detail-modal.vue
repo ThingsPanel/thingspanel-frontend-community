@@ -1,11 +1,11 @@
 <script setup lang="tsx">
 import { computed, reactive, ref, watch } from 'vue';
 import type { Ref } from 'vue';
-import { NButton } from 'naive-ui';
+import { NButton, NDataTable, NModal, NSpace } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { useLoading } from '@sa/hooks';
 import { $t } from '@/locales';
-import { editOtaTaskDetail, getOtaTaskDetail } from '@/service/product/update-ota';
+import { editOtaTaskDetail, getOtaProgressLogs, getOtaTaskDetail } from '@/service/product/update-ota';
 import { formatDateTime } from '@/utils/common/datetime';
 import ColumnSetting from './column-setting.vue';
 
@@ -159,6 +159,46 @@ const toUpdate = async ({ id }, action: number) => {
   }
 };
 
+const logVisible = ref(false);
+const logLoading = ref(false);
+const logRows = ref<any[]>([]);
+const logTitle = ref('上报记录');
+const statusText = (status: number) =>
+  ({
+    1: $t('page.product.update-ota.pendingTask'),
+    2: $t('page.product.update-ota.pushTask'),
+    3: $t('page.product.update-ota.upgradingTask'),
+    4: $t('page.product.update-ota.completeTask'),
+    5: $t('page.product.update-ota.failTask'),
+    6: $t('page.product.update-ota.cancelTask')
+  })[status] || String(status);
+
+async function openLogs(row: UpgradeTaskDetail) {
+  logTitle.value = `${row.name || row.device_number || ''} 上报记录`;
+  logVisible.value = true;
+  logLoading.value = true;
+  const { data } = await getOtaProgressLogs(row.id);
+  logRows.value = Array.isArray(data) ? data : [];
+  logLoading.value = false;
+}
+
+const logColumns = [
+  {
+    key: 'created_at',
+    title: '上报时间',
+    minWidth: '180px',
+    render: (row: any) => formatDateTime(row.created_at) || '-'
+  },
+  { key: 'steps', title: '进度', width: 80 },
+  {
+    key: 'status',
+    title: '状态',
+    width: 100,
+    render: (row: any) => statusText(row.status)
+  },
+  { key: 'description', title: '描述', minWidth: '160px' }
+];
+
 const columns: Ref<DataTableColumns<UpgradeTaskDetail>> = ref([
   {
     key: 'device_number',
@@ -223,40 +263,51 @@ const columns: Ref<DataTableColumns<UpgradeTaskDetail>> = ref([
   {
     key: 'actions',
     minWidth: '140px',
-    title: $t('common.action'),
+    title: $t('common.actions'),
     align: 'center',
     render: row => {
-      if (row.status === 5) {
+      const logsBtn = (
+        <NButton size="small" onClick={() => openLogs(row)}>
+          上报记录
+        </NButton>
+      );
+      if (row.status === 5 || row.status === 6) {
         return (
-          <NButton
-            size="small"
-            type="primary"
-            onClick={() => {
-              toUpdate(row, 1);
-            }}
-          >
-            {/* {'重升级'} */}
-            {$t('page.product.update-ota.retryTask')}
-          </NButton>
-        );
-      } else if (row.status === 6) {
-        return <NButton size="small">{$t('page.product.update-ota.cancelTask')}</NButton>;
-      } else if (row.status === 4) {
-        return (
-          <NButton size="small" type="success">
-            {$t('page.product.update-ota.completeTask')}
-            {/* {'升级成功'} */}
-          </NButton>
-        );
-      } else if (row.status === 1 || row.status === 2 || row.status === 3) {
-        return (
-          <NButton size={'small'} type="primary" onClick={() => toUpdate(row, 6)}>
-            {$t('page.product.update-ota.cancelMakeTask')}
-            {/* {'取消升级'} */}
-          </NButton>
+          <NSpace size={8} justify="center">
+            {logsBtn}
+            <NButton
+              size="small"
+              type="primary"
+              onClick={() => {
+                toUpdate(row, 1);
+              }}
+            >
+              {$t('page.product.update-ota.retryTask')}
+            </NButton>
+          </NSpace>
         );
       }
-      return null;
+      if (row.status === 4) {
+        return (
+          <NSpace size={8} justify="center">
+            {logsBtn}
+            <NButton size="small" type="success">
+              {$t('page.product.update-ota.completeTask')}
+            </NButton>
+          </NSpace>
+        );
+      }
+      if (row.status === 1 || row.status === 2 || row.status === 3) {
+        return (
+          <NSpace size={8} justify="center">
+            {logsBtn}
+            <NButton size={'small'} type="primary" onClick={() => toUpdate(row, 6)}>
+              {$t('page.product.update-ota.cancelMakeTask')}
+            </NButton>
+          </NSpace>
+        );
+      }
+      return logsBtn;
     }
   }
 ]) as Ref<DataTableColumns<UpgradeTaskDetail>>;
@@ -357,6 +408,9 @@ function init() {
         />
       </div>
     </div>
+  </NModal>
+  <NModal v-model:show="logVisible" preset="card" :title="logTitle" style="width: 720px">
+    <NDataTable size="small" :columns="logColumns" :data="logRows" :loading="logLoading" :bordered="true" />
   </NModal>
 </template>
 

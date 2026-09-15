@@ -105,6 +105,10 @@ declare module "@elegant-router/types" {
     "plugin_print": "/plugin/print";
     "plugin_swiper": "/plugin/swiper";
     "plugin_video": "/plugin/video";
+    "product": "/product";
+    "product_list": "/product/list";
+    "product_update-ota": "/product/update-ota";
+    "product_update-package": "/product/update-package";
     "resource-hub": "/resource-hub";
     "resource-hub_dashboard": "/resource-hub/dashboard-template";
     "resource-hub_device": "/resource-hub/device-template";
@@ -177,6 +181,7 @@ declare module "@elegant-router/types" {
     | "multi-menu"
     | "personal-center"
     | "plugin"
+    | "product"
     | "resource-hub"
     | "rule-engine"
     | "system-management-user"
@@ -268,6 +273,9 @@ declare module "@elegant-router/types" {
     | "plugin_print"
     | "plugin_swiper"
     | "plugin_video"
+    | "product_list"
+    | "product_update-ota"
+    | "product_update-package"
     | "resource-hub_dashboard"
     | "resource-hub_device"
     | "rule-engine"

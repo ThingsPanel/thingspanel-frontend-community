@@ -1,8 +1,8 @@
 <script setup lang="tsx">
 import { ref } from 'vue'
 import { NButton, NPopconfirm } from 'naive-ui'
-import dayjs from 'dayjs'
 import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
 import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue'
 import {
   attributeDataPub,
@@ -36,7 +36,7 @@ const columns0 = [
     title: $t('device_template.table_header.updateTime'),
     minWidth: '140px',
     key: 'ts',
-    render: row => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss')
+    render: row => formatDateTime(row.ts) || '--'
   },
   {
     title: $t('common.actions'),
@@ -94,7 +94,7 @@ const columns = [
     title: $t('custom.device_details.attributeDistributionTime'),
     minWidth: '140px',
     key: 'created_at',
-    render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
+    render: row => formatDateTime(row.created_at) || '--'
   },
   {
     title: $t('custom.device_details.messageId'),

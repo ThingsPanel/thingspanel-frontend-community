@@ -1,13 +1,13 @@
 <script setup lang="tsx">
 import { computed, getCurrentInstance, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
-import { NButton, NSpace } from 'naive-ui';
+import { NButton, NPopconfirm, NSpace } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { useBoolean, useLoading } from '@sa/hooks';
 import { $t } from '@/locales';
 import { formatDateTime } from '@/utils/common/datetime';
 import { getStaticUrl } from '@/utils/common/tool';
-import { getOtaTaskList } from '@/service/product/update-ota';
+import { deleteOtaTask, getOtaTaskList } from '@/service/product/update-ota';
 import TableDeviceModal from './table-device-modal.vue';
 import TableDetailModal from './table-detail-modal.vue';
 import type { ModalType } from './table-action-modal.vue';
@@ -104,7 +104,7 @@ const columns: Ref<DataTableColumns<productDeviceRecord>> = ref([
   {
     key: 'actions',
     minWidth: '140px',
-    title: $t('common.action'),
+    title: $t('common.actions'),
     align: 'center',
     render: (row: any) => {
       return (
@@ -112,6 +112,12 @@ const columns: Ref<DataTableColumns<productDeviceRecord>> = ref([
           <NButton size={'small'} type="primary" onClick={() => handleEditTable(row)}>
             {$t('page.product.update-ota.taskDetail')}
           </NButton>
+          <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
+            {{
+              default: () => $t('common.confirmDelete'),
+              trigger: () => <NButton size={'small'} type="error">{$t('common.delete')}</NButton>
+            }}
+          </NPopconfirm>
         </NSpace>
       );
     }
@@ -143,6 +149,11 @@ function handleEditTable(row) {
   rowData.value = row;
   setModalType('edit');
   openTable();
+}
+
+async function handleDeleteTable(rowId: string) {
+  const { error } = await deleteOtaTask(rowId);
+  if (!error) getTableData();
 }
 
 function init() {

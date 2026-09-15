@@ -7,6 +7,7 @@ import Heart from '@vicons/fa/Heart'
 import HeartBroken from '@vicons/fa/HeartBroken'
 import { Edit } from '@vicons/carbon'
 import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
 import { deviceAlarmHistory, deviceAlarmHistoryPut, deviceAlarmHistoryDelete } from '@/service/api'
 import { useRouterPush } from '@/hooks/common/router'
 import alarmDataList from '@/views/automation/scene-linkage/modules/dataList.vue'
@@ -217,7 +218,7 @@ onMounted(() => {
           <div class="alarm-time">
             <div class="line-style"></div>
             <span class="alarm-icon" :class="[item['alarm_status'] !== 'N' ? 'color-ye-bg' : 'color-gre-bg']"></span>
-            <span>{{ moment(item['create_at']).format('YYYY-MM-DD HH:mm:ss') }}</span>
+            <span>{{ formatDateTime(item['create_at']) || '--' }}</span>
           </div>
           <div
             class="alarm-item-content"
@@ -283,7 +284,7 @@ onMounted(() => {
             {{ infoData['alarm_config_name'] }}
           </n-form-item>
           <n-form-item label-placement="left" :show-feedback="false" :label="`${$t('common.alarm_time')}:`">
-            {{ moment(infoData['create_at']).format('YYYY-MM-DD HH:mm:ss') }}
+            {{ formatDateTime(infoData['create_at']) || '--' }}
           </n-form-item>
           <n-form-item label-placement="left" :show-feedback="false" :label="`${$t('generate.alarmStatus')}:`">
             {{ alarmStatusOptions.find(data => data.value === infoData['alarm_status'])?.label || '' }}

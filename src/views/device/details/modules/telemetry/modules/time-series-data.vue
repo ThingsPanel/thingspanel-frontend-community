@@ -6,6 +6,7 @@ import dayjs from 'dayjs'
 import { telemetryDataHistoryList } from '@/service/api/device'
 import { $t } from '@/locales'
 import { message } from '@/utils/common/discrete'
+import { formatDateTime } from '@/utils/common/datetime'
 import ChartComponent from './ChartComponent.vue'
 import { useLoading } from '~/packages/hooks'
 
@@ -39,7 +40,7 @@ const columns = [
   {
     title: $t('common.time'),
     key: 'x',
-    render: row => dayjs(row.x).format('YYYY-MM-DD HH:mm:ss')
+    render: row => formatDateTime(row.x) || '--'
   },
   {
     title: (props.theName ? props.theName : props.theKey) + (props.theUnit ? `(${props.theUnit})` : ''),
@@ -63,7 +64,7 @@ const initialOptions = ref({
   tooltip: {
     trigger: 'axis',
     formatter(params) {
-      let result = `${dayjs(params[0].value[0]).format('YYYY-MM-DD HH:mm:ss')}<br/>`
+      let result = `${formatDateTime(params[0].value[0]) || '--'}<br/>`
       params.forEach(param => {
         result += `${param.marker} ${props.theName ? props.theName : props.theKey}: ${param.value[1]}${
           props.theUnit ? props.theUnit : ''
@@ -448,7 +449,7 @@ const initData = () => {
 const exportData = () => {
   const excelData = [
     ['时间', (props.theName ? props.theName : props.theKey) + (props.theUnit ? `(${props.theUnit})` : '')], // 表头
-    ...tableData.value.map(item => [dayjs(item.x).format('YYYY-MM-DD HH:mm:ss'), item.y])
+    ...tableData.value.map(item => [formatDateTime(item.x) || '--', item.y])
   ]
   // save as csv
   const csvContent = excelData.map(row => row.join(',')).join('\n')

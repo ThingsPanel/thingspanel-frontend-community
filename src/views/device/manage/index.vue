@@ -4,7 +4,7 @@ import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { DrawerPlacement, StepsProps } from 'naive-ui'
 import { NSpace, NTag, NButton } from 'naive-ui'
-import _ from 'lodash'
+import _ from 'lodash-es'
 import type { TreeSelectOption } from 'naive-ui/es/tree-select/src/interface'
 import { localStg } from '@/utils/storage'
 import { useDeviceStatusWebSocket } from '@/utils/deviceStatusWebSocket'
@@ -14,6 +14,7 @@ import {
   deviceDictProtocolServiceFirstLevel,
   deviceDictProtocolServiceSecondLevel,
   deviceGroupTree,
+  deleteDevice,
   deviceList,
   getDeviceConfigList,
   putDeviceActive
@@ -25,6 +26,7 @@ import AddDevicesStep3 from '@/views/device/manage/modules/add-devices-step3.vue
 import AddDevicesServer1 from '@/views/device/manage/modules/add-devices-server1.vue'
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
 import { usePageCache } from '../../../utils/usePageCache'
 
 interface ServiceIds {
@@ -238,7 +240,8 @@ const columns_to_show: Ref<any> = ref([
   {
     key: 'ts',
     minWidth: '140px',
-    label: () => $t('custom.devicePage.lastPushTime')
+    label: () => $t('custom.devicePage.lastPushTime'),
+    render: row => formatDateTime(row.ts) || '--'
   }
 ]) as Ref<any>
 
@@ -250,7 +253,23 @@ const goDeviceDetails = row => {
     }
   })
 }
-const actions = []
+const deleteDeviceItem = (device: { id: string }) => {
+  window.$dialog?.warning({
+    title: $t('common.delete'),
+    content: $t('common.confirmDelete'),
+    positiveText: $t('common.confirm'),
+    negativeText: $t('common.cancel'),
+    onPositiveClick: async () => {
+      const { error } = await deleteDevice({ id: device.id })
+      if (!error) {
+        window.$message?.success($t('common.deleteSuccess'))
+        tablePageRef.value?.handleSearch()
+      }
+    }
+  })
+}
+
+const actions = [{ label: () => $t('common.delete'), callback: deleteDeviceItem }]
 
 const searchConfigs = ref<SearchConfig[]>([
   {

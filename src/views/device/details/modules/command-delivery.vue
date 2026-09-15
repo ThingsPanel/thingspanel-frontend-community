@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import dayjs from 'dayjs'
 import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue'
 import { commandDataPub, expectMessageAdd, getCommandDataSetLogs } from '@/service/api'
 import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
 defineProps<{
   id: string
 }>()
@@ -36,7 +36,7 @@ const columns = [
     title: $t('generate.commandIssuanceTime'),
     minWidth: '140px',
     key: 'created_at',
-    render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
+    render: row => formatDateTime(row.created_at) || '--'
   },
   {
     title: $t('generate.status'),

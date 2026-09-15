@@ -3,9 +3,9 @@
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NButton, NPopconfirm, NSpace } from 'naive-ui'
-import dayjs from 'dayjs'
 import { delServiceAccess, getServiceAccess } from '@/service/api/plugin.ts'
 import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
 import serviceModal from './components/serviceModal.vue'
 import serviceConfigModal from './components/serviceConfigModal.vue'
 
@@ -66,7 +66,7 @@ const columns: any = ref([
     minWidth: '200px',
     render: row => {
       if (row.create_at) {
-        return <span>{dayjs(row.create_at).format('YYYY-MM-DD HH:mm:ss')}</span>
+        return <span>{formatDateTime(row.create_at) || '--'}</span>
       }
       return <span></span>
     }

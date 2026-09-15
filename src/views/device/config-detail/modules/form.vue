@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue'
 import type { SelectMixedOption } from 'naive-ui/es/select/src/interface'
-import { find } from 'lodash'
+import { find } from 'lodash-es'
 import { $t } from '@/locales'
 const rules = ref({})
 

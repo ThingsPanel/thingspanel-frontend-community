@@ -5,11 +5,10 @@
  */
 export function createServiceConfig(env: Env.ImportMeta) {
   const mockURL = 'https://mock.apifox.com/m1/4080832-0-default'
-  const devURL = 'http://c.thingspanel.cn/api/v1'
-  // const devURL = 'http://127.0.0.1:9999/api/v1'
+  const devURL = 'http://127.0.0.1:9999/api/v1'
 
   const testURL = ''
-  const prodURL = ''
+  const prodURL = `${env.VITE_BASE_URL || '/'}api/v1`
 
   const serviceConfigMap: App.Service.ServiceConfigMap = {
     dev: {

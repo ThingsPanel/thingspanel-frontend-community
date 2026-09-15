@@ -135,8 +135,8 @@ export const signModeOptions = [
     value: 'MD5'
   },
   {
-    label: 'HAS256',
-    value: 'HAS256'
+    label: 'SHA256',
+    value: 'SHA256'
   }
 ]
 

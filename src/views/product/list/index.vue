@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { computed, getCurrentInstance, reactive, ref, watch } from 'vue';
 import type { Ref } from 'vue';
-import { NButton, NPopconfirm, NSpace } from 'naive-ui';
+import { NButton, NImage, NPopconfirm, NSpace } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import moment from 'moment';
 import { useBoolean, useLoading } from '@sa/hooks';
@@ -31,6 +31,12 @@ const queryParams = reactive<QueryFormModel>({
 const tableData = ref<productRecord[]>([]);
 function setTableData(data: productRecord[]) {
   tableData.value = data;
+}
+
+function resolveProductImageUrl(imageUrl?: string | null) {
+  if (!imageUrl) return '';
+  if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
+  return imageUrl.replace('.', '');
 }
 
 const pagination: PaginationProps = reactive({
@@ -98,6 +104,12 @@ const columns: Ref<DataTableColumns<productRecord>> = ref([
     key: 'product_model',
     minWidth: '140px',
     title: $t('page.product.list.productNumber')
+  },
+  {
+    key: 'image_url',
+    minWidth: '100px',
+    title: $t('page.product.list.productImage'),
+    render: row => row.image_url ? <NImage width={48} height={48} src={resolveProductImageUrl(row.image_url)} /> : '--'
   },
   {
     key: 'device_config_name',

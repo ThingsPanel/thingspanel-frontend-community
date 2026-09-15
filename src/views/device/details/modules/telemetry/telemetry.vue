@@ -20,6 +20,7 @@ import { localStg } from '@/utils/storage'
 import { deviceDetail } from '@/service/api/device'
 import { $t } from '@/locales'
 import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool'
+import { formatDateTime } from '@/utils/common/datetime'
 import { deviceCustomControlList } from '@/service/api/system-data'
 import HistoryData from './modules/history-data.vue'
 import TimeSeriesData from './modules/time-series-data.vue'
@@ -156,7 +157,7 @@ const columns = [
     title: $t('custom.device_details.operationTime'),
     key: 'created_at',
     minWidth: '140px',
-    render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
+    render: row => formatDateTime(row.created_at) || '--'
   },
   {
     title: $t('custom.device_details.sendResults'),
@@ -493,7 +494,7 @@ const inputFeedback = computed(() => {
                 :ref="setItemRef"
                 :data-index="index"
                 :m-num="i.value"
-                :quantile-show="true"
+                :quantile-show="false"
               ></MovingNumbers>
               <span v-if="i.unit">{{ i.unit }}</span>
             </div>
@@ -510,7 +511,7 @@ const inputFeedback = computed(() => {
             </template>
             <template #footer>
               <div class="flex justify-end">
-                {{ i.ts ? dayjs(i.ts).format('YYYY-MM-DD HH:mm:ss') : nowTime }}
+                {{ formatDateTime(i.ts) || nowTime }}
               </div>
             </template>
             <template #header-extra>

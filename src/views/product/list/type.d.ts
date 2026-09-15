@@ -3,6 +3,7 @@ type productAdd = {
   description?: string;
   device_type?: string;
   image_url?: string | null;
+  tos_image_url?: string | null;
   image?: any[];
   name: string;
   product_model?: string;

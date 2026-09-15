@@ -5,9 +5,10 @@ import type { UploadFileInfo } from 'naive-ui';
 import { generateUUID, getDemoServerUrl, getFileName } from '@/utils/common/tool';
 import { localStg } from '@/utils/storage';
 import { STATIC_BASE_URL } from '@/constants/common';
+import { resolveBackendAbsoluteUrl } from '@/store/modules/sys-setting/resolve-backend-url';
 import { $t } from '~/src/locales';
 
-const url = ref(new URL(getDemoServerUrl()));
+const url = ref(resolveBackendAbsoluteUrl(getDemoServerUrl()));
 defineOptions({ name: 'UploadFile' });
 
 enum SourceType {
@@ -32,7 +33,7 @@ const props = withDefaults(defineProps<Props>(), {
   accept: 'file',
   text: $t('page.product.update-package.package'),
   sourceType: SourceType.image,
-  fileType: () => ['exe', 'apk', 'zip', 'ipa']
+  fileType: () => ['bin', 'exe', 'apk', 'zip', 'ipa']
 });
 const dataList = computed((): UploadFileInfo[] => {
   if (!props.value) {
@@ -103,6 +104,6 @@ function handleError({ event }: { event?: ProgressEvent }) {
     @finish="handleFinish"
     @error="handleError"
   >
-    <NButton>{{ props.text }}</NButton>
+    <NButton class="select-upgrade-package-button" type="default">{{ props.text }}</NButton>
   </NUpload>
 </template>

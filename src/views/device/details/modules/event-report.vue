@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import dayjs from 'dayjs'
 import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue'
 import { getEventDataSet } from '@/service/api'
 import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
 defineProps<{
   id: string
 }>()
@@ -14,7 +14,7 @@ const columns = [
     title: $t('device_template.table_header.eventReportingTime'),
     minWidth: '140px',
     key: 'ts',
-    render: row => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss')
+    render: row => formatDateTime(row.ts) || '--'
   },
   { title: $t('device_template.table_header.eventContent'), minWidth: '140px', key: 'data' },
   { title: $t('generate.errorMessage'), minWidth: '140px', key: 'error_message' }

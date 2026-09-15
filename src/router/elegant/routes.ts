@@ -842,6 +842,44 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'product',
+    path: '/product',
+    component: 'layout.base',
+    meta: {
+      title: 'product',
+      i18nKey: 'route.product'
+    },
+    children: [
+      {
+        name: 'product_list',
+        path: '/product/list',
+        component: 'view.product_list',
+        meta: {
+          title: 'product_list',
+          i18nKey: 'route.product_list'
+        }
+      },
+      {
+        name: 'product_update-ota',
+        path: '/product/update-ota',
+        component: 'view.product_update-ota',
+        meta: {
+          title: 'product_update-ota',
+          i18nKey: 'route.product_update-ota'
+        }
+      },
+      {
+        name: 'product_update-package',
+        path: '/product/update-package',
+        component: 'view.product_update-package',
+        meta: {
+          title: 'product_update-package',
+          i18nKey: 'route.product_update-package'
+        }
+      }
+    ]
+  },
+  {
     name: 'resource-hub',
     path: '/resource-hub',
     component: 'layout.base',

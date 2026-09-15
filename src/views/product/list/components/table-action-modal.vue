@@ -85,6 +85,7 @@ function createDefaultFormModel() {
     additional_info: undefined,
     description: undefined,
     image_url: undefined,
+    tos_image_url: undefined,
     product_model: undefined,
     product_type: undefined,
     remark: undefined,
@@ -217,9 +218,11 @@ const getPlatform = computed(() => {
       <NFormItem class="w-100%" :label="$t('page.product.list.productImage')" path="image_url">
         <UploadCard
           v-model:value="formModel.image_url"
+          v-model:tos-value="formModel.tos_image_url"
           accept="image/png, image/jpeg, image/jpg"
           class="mt-10px"
           :file-type="['jpg', 'png', 'jpeg']"
+          source-type="product-image"
         ></UploadCard>
       </NFormItem>
       <NFormItem class="w-100%" :label="$t('page.product.list.productDesc')" path="description">

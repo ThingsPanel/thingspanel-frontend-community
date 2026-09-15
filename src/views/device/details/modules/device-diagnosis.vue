@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { h, onMounted, onUnmounted, nextTick, ref } from 'vue'
-import dayjs from 'dayjs'
-
 import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
 import { Refresh, HelpCircleOutline } from '@vicons/ionicons5'
 import type { DataTableColumns } from 'naive-ui'
 import { deviceDiagnostics, getDeviceDebugStatus, setDeviceDebugStatus, getDeviceDebugLogs } from '@/service/api'
@@ -94,7 +93,7 @@ const columns: DataTableColumns<FailureRecord> = [
     width: 200,
     render: (row: FailureRecord) => {
       if (row.timestamp) {
-        return dayjs(row.timestamp).format('YYYY-MM-DD HH:mm:ss')
+        return formatDateTime(row.timestamp) || '--'
       }
       return '--'
     }
@@ -209,7 +208,7 @@ const fetchLogs = async () => {
       // 倒序排列，最新的在下面，符合控制台习惯
       const list = res.data.list.reverse()
       debugLogs.value = list.map((item: any) => {
-         const time = item.ts ? dayjs(item.ts).format('YYYY-MM-DD HH:mm:ss.SSS') : '' // eslint-disable-line
+         const time = item.ts ? formatDateTime(item.ts) || '' : '' // eslint-disable-line
         return `[${time}] ${JSON.stringify(item)}`
       })
 

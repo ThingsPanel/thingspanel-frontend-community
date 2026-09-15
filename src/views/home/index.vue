@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, ref, watch, computed } from 'vue'
-import { debounce } from 'lodash'
+import { debounce } from 'lodash-es'
 import { router } from '@/router'
 import { useWebsocketUtil } from '@/utils/websocketUtil'
 import { fetchHomeData } from '@/service/api'

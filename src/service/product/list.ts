@@ -8,6 +8,7 @@ export const editProduct = (data: any): Promise<any> => request.put('/product', 
 export const deleteProduct = (id: string): Promise<any> => request.delete(`/product/${id}`)
 // /device/Reeegiprrst;
 export const addDevice = (data: any): Promise<any> => request.post('/device/preRegister', data)
+export const activatePreRegister = (data: { id: string }): Promise<any> => request.put('/device/preRegister/activate', data)
 // /device/preRegister/export
 export const exportDevice = (params: any): Promise<any> => request.get('/device/preRegister/export', { params })
 // /device_config/{ id };
