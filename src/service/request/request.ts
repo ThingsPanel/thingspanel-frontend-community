@@ -5,13 +5,12 @@ import { createProxyPattern, createServiceConfig } from '~/env.config'
 const { otherBaseURL } = createServiceConfig(import.meta.env)
 const isHttpProxy = import.meta.env.VITE_HTTP_PROXY === 'Y'
 const demoUrl = otherBaseURL.demo ? otherBaseURL.demo : `${window.location.origin}/api/v1`
+const apifoxToken = import.meta.env.VITE_APIFOX_TOKEN
 
 export const request = createFlatRequest<App.Service.DEVResponse>(
   {
     baseURL: isHttpProxy ? createProxyPattern() : demoUrl,
-    headers: {
-      apifoxToken: 'XL299LiMEDZ0H5h3A29PxwQXdMJqWyY2'
-    }
+    headers: apifoxToken ? { apifoxToken } : {}
   },
   {
     async onRequest(config) {
@@ -19,8 +18,9 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
       // set token
       const token = localStg.get('token')
       const userLanguage = localStg.get('lang')
-      // const Authorization = token ? `Bearer ${token}` : null;
-      const headersWithToken = token ? { 'x-token': token } : {}
+      const headersWithToken: Record<string, string> = token
+        ? { Authorization: `Bearer ${token}`, 'x-token': token }
+        : {}
       if (userLanguage) {
         headersWithToken['Accept-Language'] = userLanguage
       }
@@ -66,17 +66,16 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
           const { useAuthStore } = await import('@/store/modules/auth')
           const authStore = useAuthStore()
           const refreshTokenFn = (authStore as any).refreshToken
-          const refreshSuccess = typeof refreshTokenFn === 'function'
-            ? await refreshTokenFn.call(authStore)
-            : false
+          const refreshSuccess = typeof refreshTokenFn === 'function' ? await refreshTokenFn.call(authStore) : false
 
           if (refreshSuccess) {
             // 刷新成功，重试原请求
             const originalRequest = error.config
             if (originalRequest && !(originalRequest as any)._retry) {
-              (originalRequest as any)._retry = true;
+              ;(originalRequest as any)._retry = true
               const newToken = localStg.get('token')
               if (newToken) {
+                originalRequest.headers.Authorization = `Bearer ${newToken}`
                 originalRequest.headers['x-token'] = newToken
                 return request(originalRequest)
               }
@@ -150,8 +149,9 @@ export const mockRequest = createFlatRequest<App.Service.DEVResponse>(
 
       // set token
       const token = localStg.get('token')
-      const XToken = token || null
-      Object.assign(headers, { 'x-token': XToken })
+      if (token) {
+        Object.assign(headers, { Authorization: `Bearer ${token}`, 'x-token': token })
+      }
 
       return config
     },

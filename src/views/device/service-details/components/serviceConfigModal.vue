@@ -4,7 +4,7 @@ import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { NAlert, NInput, NSelect } from 'naive-ui'
 import { batchAddServiceMenuList, getSelectServiceMenuList, getServiceListDrop } from '@/service/api/plugin'
-import { deviceConfigMenu } from '@/service/api/device'
+import { getDeviceConfigList } from '@/service/api/device'
 import { $t } from '@/locales'
 
 const emit = defineEmits(['getList', 'go-back'])
@@ -91,10 +91,13 @@ const getLists: () => void = async () => {
         if (protocolScopedOptions.length > 0) {
           return { data: protocolScopedOptions }
         }
-        const fallback = await deviceConfigMenu({
-          name: ''
-        })
-        return { data: normalizeTemplateOptions(fallback?.data) }
+        // Never fall back to /device/template/menu here: that endpoint returns
+        // device-template IDs, while this form submits device_config_id.
+        // Mixing the two IDs caused foreign-key failures for connectors whose
+        // protocol-specific config list was empty.
+        const fallback = await getDeviceConfigList({ page: 1, page_size: 200 })
+        const fallbackItems = Array.isArray(fallback?.data?.list) ? fallback.data.list : fallback?.data
+        return { data: normalizeTemplateOptions(fallbackItems) }
       })()
     ])
 
@@ -212,9 +215,7 @@ const submitSevice: () => void = async () => {
   }
 
   // 1. Get all selected device numbers
-  const selectedDeviceNumbers = checkedRowKeys.value.filter(
-    key => key && !boundDeviceKeys.value.has(String(key))
-  )
+  const selectedDeviceNumbers = checkedRowKeys.value.filter(key => key && !boundDeviceKeys.value.has(String(key)))
 
   if (!selectedDeviceNumbers || selectedDeviceNumbers.length === 0) {
     window.$message?.success('接入点配置已保存')

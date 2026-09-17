@@ -11,7 +11,6 @@ export const requestTs = createFlatRequest<App.Service.DEVResponse>(
     baseURL: isHttpProxy ? createProxyPattern() : otherBaseURL.demo,
 
     headers: {
-      apifoxToken: 'XL299LiMEDZ0H5h3A29PxwQXdMJqWyY2'
     }
   },
   {
