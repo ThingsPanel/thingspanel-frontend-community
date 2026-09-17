@@ -202,6 +202,11 @@ async function getTenantStatistics() {
   }
 }
 
+function refreshTenantStatistics() {
+  if (!isTenantAdmin.value) return getTenantStatistics()
+  return Promise.resolve()
+}
+
 const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
   {
     key: 'email',
@@ -375,7 +380,7 @@ async function handleDeleteTable(rowId: string) {
   const data = await delUser(rowId)
   if (!data.error) {
     window.$message?.success($t('common.deleteSuccess'))
-    await Promise.all([getTableData(), getTenantStatistics()])
+    await Promise.all([getTableData(), refreshTenantStatistics()])
   }
 }
 
@@ -388,7 +393,7 @@ function handleActivityScopeChange(scope: Api.UserManagement.TenantActivityScope
 
 function handleTenantChanged() {
   if (modalType.value === 'add') {
-    Promise.all([getTableData(), getTenantStatistics()])
+    Promise.all([getTableData(), refreshTenantStatistics()])
     return
   }
   getTableData()
@@ -422,7 +427,7 @@ function handleReset() {
 }
 
 function init() {
-  Promise.all([getTableData(), getTenantStatistics()])
+  Promise.all([getTableData(), refreshTenantStatistics()])
 }
 
 // 初始化
