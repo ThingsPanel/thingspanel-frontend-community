@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/modules/auth'
 import { $t } from '@/locales'
 import TableActionModal from './components/table-action-modal.vue'
 import EditPasswordModal from './components/edit-password-modal.vue'
+import DevicePermissionModal from './components/device-permission-modal.vue'
 import TenantStatisticsOverview from './components/tenant-statistics-overview.vue'
 import TenantGrowthCharts from './components/tenant-growth-charts.vue'
 import type { ModalType } from './components/table-action-modal.vue'
@@ -26,6 +27,7 @@ const {
 } = useLoading(false)
 const { bool: visible, setTrue: openModal } = useBoolean()
 const { bool: editPwdVisible, setTrue: openEditPwdModal } = useBoolean()
+const { bool: devicePermissionVisible, setTrue: openDevicePermissionModal } = useBoolean()
 const showEmpty = ref(false)
 
 const customUserStatusOptions = computed(() => {
@@ -300,6 +302,9 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
           <NButton type="primary" size={'small'} onClick={() => handleEditTable(row.id)}>
             {$t('common.edit')}
           </NButton>
+          <NButton type="info" size={'small'} onClick={() => handleEditDevicePermission(row.id)}>
+            设备权限
+          </NButton>
           <NPopconfirm
             negative-text={$t('common.cancel')}
             positive-text={$t('common.confirm')}
@@ -357,6 +362,12 @@ function handleEditTable(rowId: string) {
   }
   setModalType('edit')
   openModal()
+}
+
+function handleEditDevicePermission(rowId: string) {
+  const findItem = tableData.value.find(item => item.id === rowId)
+  if (findItem) setEditData(findItem)
+  openDevicePermissionModal()
 }
 
 async function handleDeleteTable(rowId: string) {
@@ -527,6 +538,7 @@ const getPlatform = computed(() => {
           :edit-data="editData"
           @success="getTableData"
         ></EditPasswordModal>
+        <DevicePermissionModal v-model:visible="devicePermissionVisible" :user="editData" @success="getTableData" />
       </div>
     </NCard>
   </div>
