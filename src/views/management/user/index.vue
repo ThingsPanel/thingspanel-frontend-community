@@ -19,6 +19,7 @@ import pwData from './components/pw.json'
 // import ColumnSetting from './components/column-setting.vue'
 
 const authStore = useAuthStore()
+const isTenantAdmin = computed(() => authStore.userInfo.authority === 'TENANT_ADMIN')
 const { loading, startLoading, endLoading } = useLoading(false)
 const {
   loading: statisticsLoading,
@@ -437,14 +438,17 @@ const getPlatform = computed(() => {
     <NCard :title="$t('route.management_user')" :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="h-full flex-col">
         <TenantStatisticsOverview
+          v-if="!isTenantAdmin"
           :statistics="tenantStatistics"
           :loading="statisticsLoading"
           :selected-scope="queryParams.activity_scope"
           @select-scope="handleActivityScopeChange"
         />
-        <TenantGrowthCharts :trend="tenantStatistics?.trend ?? []" :loading="statisticsLoading" />
+        <TenantGrowthCharts v-if="!isTenantAdmin" :trend="tenantStatistics?.trend ?? []" :loading="statisticsLoading" />
 
-        <div class="mb-12px mt-20px text-16px font-600">{{ $t('page.manage.user.statistics.listTitle') }}</div>
+        <div class="mb-12px mt-20px text-16px font-600">
+          {{ isTenantAdmin ? $t('page.manage.user.title') : $t('page.manage.user.statistics.listTitle') }}
+        </div>
 
         <NForm :inline="!getPlatform" label-placement="left" :model="queryParams">
           <div class="flex flex-wrap">
