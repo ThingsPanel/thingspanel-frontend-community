@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
+import { onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { DrawerPlacement, StepsProps } from 'naive-ui'
@@ -26,7 +26,6 @@ import AddDevicesServer1 from '@/views/device/manage/modules/add-devices-server1
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
 import { usePageCache } from '../../../utils/usePageCache'
-import { useAuthStore } from '@/store/modules/auth'
 
 interface ServiceIds {
   service_identifier: string
@@ -47,7 +46,6 @@ const messageColor = ref('')
 const route: any = useRoute()
 const router: any = useRouter()
 const initialDeviceConfigId = ref(typeof route.query.deviceConfigId === 'string' ? route.query.deviceConfigId : '')
-const authStore = useAuthStore()
 
 const secondLevelOptions = ref<DeviceManagement.ServiceData[]>([])
 const selectedFirstLevel = ref<string | null>(null)
@@ -498,18 +496,15 @@ onUnmounted(() => {
   deviceStatusWS.disconnect()
 })
 
-const topActions = computed(() => {
-  if (!['TENANT_ADMIN', 'SYS_ADMIN'].includes(authStore.userInfo.authority)) return []
-  return [
-    {
-      element: () => (
-        <n-dropdown options={dropOption} trigger="hover" onSelect={handleSelect}>
-          <n-button type="primary">+{$t('custom.devicePage.addDevice')}</n-button>
-        </n-dropdown>
-      )
-    }
-  ]
-})
+const topActions = [
+  {
+    element: () => (
+      <n-dropdown options={dropOption} trigger="hover" onSelect={handleSelect}>
+        <n-button type="primary">+{$t('custom.devicePage.addDevice')}</n-button>
+      </n-dropdown>
+    )
+  }
+]
 const active = ref(false)
 const isSuccess = ref(false)
 

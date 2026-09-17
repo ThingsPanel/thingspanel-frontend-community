@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import type { Ref } from 'vue'
 import { NButton, NCard, NFlex, NPagination, NPopconfirm, NSpace, useDialog, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
@@ -9,13 +9,10 @@ import { sceneActive, sceneDel, sceneGet, sceneLog } from '@/service/api/automat
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
 import { formatDateTime } from '@/utils/common/datetime'
-import { useAuthStore } from '@/store/modules/auth'
 
 const dialog = useDialog()
 const message = useMessage()
 const { routerPushByKey } = useRouterPush()
-const authStore = useAuthStore()
-const canManageAutomation = computed(() => ['SYS_ADMIN', 'TENANT_ADMIN'].includes(authStore.userInfo.authority))
 const showLog = ref(false)
 const logDataTotal = ref(0)
 const logData = ref([])
@@ -62,10 +59,9 @@ const queryData = ref({
 const dataTotal = ref(0)
 
 const getData = async () => {
-  const res = await sceneGet(queryData.value)
-  if (res.error || !res.data) return
-  tableData.value = res.data.list
-  dataTotal.value = res.data.total
+  const { data } = await sceneGet(queryData.value)
+  tableData.value = data.list
+  dataTotal.value = data.total
 }
 const handleQuery = async () => {
   queryData.value.page = 1
@@ -218,7 +214,7 @@ getData()
   <div class="h-full w-full">
     <NCard>
       <NFlex justify="space-between" class="mb-4">
-        <NButton v-if="canManageAutomation" type="primary" @click="sceneAdd()">{{ $t('generate.+add-scene') }}</NButton>
+        <NButton type="primary" @click="sceneAdd()">{{ $t('generate.+add-scene') }}</NButton>
         <NFlex align="center" justify="flex-end" :wrap="false">
           <NInput
             v-model:value="queryData.name"

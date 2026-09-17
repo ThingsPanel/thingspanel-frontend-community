@@ -80,24 +80,6 @@ export const delUser = async (id: string) => {
   return data
 }
 
-export interface UserDevicePermissionItem {
-  device_id: string
-  device_name: string
-  device_number: string
-  access_level: '' | 'read' | 'manage'
-}
-
-export function fetchUserDevicePermissions(userId: string) {
-  return request.get<{ user_id: string; devices: UserDevicePermissionItem[] }>(`/user/${userId}/device-permissions`)
-}
-
-export function updateUserDevicePermissions(
-  userId: string,
-  assignments: Array<{ device_id: string; access_level: 'read' | 'manage' }>
-) {
-  return request.put<Api.BaseApi.Data>(`/user/${userId}/device-permissions`, { assignments })
-}
-
 /** 切换用户 */
 export const transformUser = async (params: any) => {
   const data = await request.post<Api.Auth.LoginToken>(`/user/transform`, params)

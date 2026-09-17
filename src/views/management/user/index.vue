@@ -11,7 +11,6 @@ import { useAuthStore } from '@/store/modules/auth'
 import { $t } from '@/locales'
 import TableActionModal from './components/table-action-modal.vue'
 import EditPasswordModal from './components/edit-password-modal.vue'
-import DevicePermissionModal from './components/device-permission-modal.vue'
 import TenantStatisticsOverview from './components/tenant-statistics-overview.vue'
 import TenantGrowthCharts from './components/tenant-growth-charts.vue'
 import type { ModalType } from './components/table-action-modal.vue'
@@ -19,7 +18,6 @@ import pwData from './components/pw.json'
 // import ColumnSetting from './components/column-setting.vue'
 
 const authStore = useAuthStore()
-const isTenantAdmin = computed(() => authStore.userInfo.authority === 'TENANT_ADMIN')
 const { loading, startLoading, endLoading } = useLoading(false)
 const {
   loading: statisticsLoading,
@@ -28,7 +26,6 @@ const {
 } = useLoading(false)
 const { bool: visible, setTrue: openModal } = useBoolean()
 const { bool: editPwdVisible, setTrue: openEditPwdModal } = useBoolean()
-const { bool: devicePermissionVisible, setTrue: openDevicePermissionModal } = useBoolean()
 const showEmpty = ref(false)
 
 const customUserStatusOptions = computed(() => {
@@ -202,11 +199,6 @@ async function getTenantStatistics() {
   }
 }
 
-function refreshTenantStatistics() {
-  if (!isTenantAdmin.value) return getTenantStatistics()
-  return Promise.resolve()
-}
-
 const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
   {
     key: 'email',
@@ -308,9 +300,6 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
           <NButton type="primary" size={'small'} onClick={() => handleEditTable(row.id)}>
             {$t('common.edit')}
           </NButton>
-          <NButton type="info" size={'small'} onClick={() => handleEditDevicePermission(row.id)}>
-            设备权限
-          </NButton>
           <NPopconfirm
             negative-text={$t('common.cancel')}
             positive-text={$t('common.confirm')}
@@ -370,17 +359,11 @@ function handleEditTable(rowId: string) {
   openModal()
 }
 
-function handleEditDevicePermission(rowId: string) {
-  const findItem = tableData.value.find(item => item.id === rowId)
-  if (findItem) setEditData(findItem)
-  openDevicePermissionModal()
-}
-
 async function handleDeleteTable(rowId: string) {
   const data = await delUser(rowId)
   if (!data.error) {
     window.$message?.success($t('common.deleteSuccess'))
-    await Promise.all([getTableData(), refreshTenantStatistics()])
+    await Promise.all([getTableData(), getTenantStatistics()])
   }
 }
 
@@ -393,7 +376,7 @@ function handleActivityScopeChange(scope: Api.UserManagement.TenantActivityScope
 
 function handleTenantChanged() {
   if (modalType.value === 'add') {
-    Promise.all([getTableData(), refreshTenantStatistics()])
+    Promise.all([getTableData(), getTenantStatistics()])
     return
   }
   getTableData()
@@ -427,7 +410,7 @@ function handleReset() {
 }
 
 function init() {
-  Promise.all([getTableData(), refreshTenantStatistics()])
+  Promise.all([getTableData(), getTenantStatistics()])
 }
 
 // 初始化
@@ -443,17 +426,14 @@ const getPlatform = computed(() => {
     <NCard :title="$t('route.management_user')" :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="h-full flex-col">
         <TenantStatisticsOverview
-          v-if="!isTenantAdmin"
           :statistics="tenantStatistics"
           :loading="statisticsLoading"
           :selected-scope="queryParams.activity_scope"
           @select-scope="handleActivityScopeChange"
         />
-        <TenantGrowthCharts v-if="!isTenantAdmin" :trend="tenantStatistics?.trend ?? []" :loading="statisticsLoading" />
+        <TenantGrowthCharts :trend="tenantStatistics?.trend ?? []" :loading="statisticsLoading" />
 
-        <div class="mb-12px mt-20px text-16px font-600">
-          {{ isTenantAdmin ? $t('page.manage.user.title') : $t('page.manage.user.statistics.listTitle') }}
-        </div>
+        <div class="mb-12px mt-20px text-16px font-600">{{ $t('page.manage.user.statistics.listTitle') }}</div>
 
         <NForm :inline="!getPlatform" label-placement="left" :model="queryParams">
           <div class="flex flex-wrap">
@@ -547,7 +527,6 @@ const getPlatform = computed(() => {
           :edit-data="editData"
           @success="getTableData"
         ></EditPasswordModal>
-        <DevicePermissionModal v-model:visible="devicePermissionVisible" :user="editData" @success="getTableData" />
       </div>
     </NCard>
   </div>
