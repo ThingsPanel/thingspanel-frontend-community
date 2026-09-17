@@ -97,9 +97,11 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
             {$t('custom.devicePage.details')}
           </NButton>
           {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
-          <NButton type="warning" size={'small'} onClick={() => maintenance(row)}>
-            {$t('common.maintenance')}
-          </NButton>
+          {row.can_manage !== false ? (
+            <NButton type="warning" size={'small'} onClick={() => maintenance(row)}>
+              {$t('common.maintenance')}
+            </NButton>
+          ) : null}
         </div>
       )
     }

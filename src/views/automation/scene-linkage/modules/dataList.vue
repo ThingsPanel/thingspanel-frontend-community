@@ -15,9 +15,12 @@ import {
 } from '@/service/api/automation'
 import { $t } from '@/locales'
 import { deviceAlarmList } from '@/service/api'
+import { useAuthStore } from '@/store/modules/auth'
 const dialog = useDialog()
 // const router = useRouter();
 const { routerPushByKey } = useRouterPush()
+const authStore = useAuthStore()
+const canManageAutomation = computed(() => ['SYS_ADMIN', 'TENANT_ADMIN'].includes(authStore.userInfo.authority))
 
 interface Props {
   // eslint-disable-next-line vue/prop-name-casing,prettier/prettier
@@ -182,7 +185,9 @@ getData()
 <template>
   <NCard class="w-full">
     <NFlex v-if="!isAlarm" justify="space-between" class="mb-4">
-      <NButton type="primary" @click="linkAdd()">{{ $t('generate.+add-scene-linkage') }}</NButton>
+      <NButton v-if="canManageAutomation" type="primary" @click="linkAdd()">
+        {{ $t('generate.+add-scene-linkage') }}
+      </NButton>
       <NFlex align="center" justify="flex-end" :wrap="false">
         <NInput
           v-model:value="queryData.name"
@@ -214,6 +219,7 @@ getData()
           <!-- 右上角开关 -->
           <template #top-right-icon>
             <n-switch
+              v-if="canManageAutomation"
               v-model:value="item.enabled"
               checked-value="Y"
               unchecked-value="N"
@@ -226,7 +232,7 @@ getData()
             <div class="flex items-center gap-2 w-full justify-between">
               <NTooltip trigger="hover">
                 <template #trigger>
-                  <NButton size="small" quaternary circle @click="linkEdit(item)">
+                  <NButton v-if="canManageAutomation" size="small" quaternary circle @click="linkEdit(item)">
                     <template #icon>
                       <n-icon color="#888">
                         <editIcon />
@@ -250,7 +256,7 @@ getData()
               </NTooltip>
               <NTooltip trigger="hover">
                 <template #trigger>
-                  <NButton size="small" quaternary circle @click="deleteLink(item)">
+                  <NButton v-if="canManageAutomation" size="small" quaternary circle @click="deleteLink(item)">
                     <template #icon>
                       <n-icon color="#888">
                         <trashIcon />
