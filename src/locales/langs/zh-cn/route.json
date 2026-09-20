@@ -132,9 +132,9 @@
   "route.device_market-installed-detail": "安装详情",
   "route.personal-center": "个人中心",
   "route.apply_plugin": "应用插件",
-  "route.device_service-access": "三方接入",
+  "route.device_integration": "三方集成",
   "route.device_service-details": "三方接入详情",
-  "route.device_access": "服务访问",
+  "route.device_access": "三方集成",
   "route.walarm_arning-message": "警告消息",
   "route.test_panel-editor-v2": "新看板测试",
   "route.iot-visualization-platform": "物联网可视化平台"

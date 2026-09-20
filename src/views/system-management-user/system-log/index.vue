@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import type { Ref } from 'vue'
 import { NButton, NSelect } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
@@ -206,10 +206,6 @@ function pickerChange(value: [number, number] | null) {
     queryParams.end_time = ''
   }
 }
-const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance()
-  return proxy.getPlatform()
-})
 onMounted(() => {
   void getTableData()
 })
@@ -217,32 +213,41 @@ onMounted(() => {
 
 <template>
   <div>
-    <NCard :title="$t('generate.system-log')">
-      <NForm class="mb-20px align-end" :inline="!getPlatform" label-placement="left" :model="queryParams">
-        <view class="flex flex-wrap">
-          <NFormItem class="w-200px" :label="$t('generate.username')" path="name">
-            <NInput v-model:value="queryParams.username" />
-          </NFormItem>
-          <NFormItem path="selected_time">
-            <NDatePicker
-              v-model:value="range"
-              type="datetimerange"
-              clearable
-              separator="-"
-              @update:value="pickerChange"
-            />
-          </NFormItem>
-          <NFormItem :label="$t('generate.requestMethod')" path="method">
-            <NSelect v-model:value="queryParams.method" class="w-200px" :options="requestMethodOptions"></NSelect>
-          </NFormItem>
-          <NFormItem :label="$t('generate.ipAddress')" path="ip">
-            <NInput v-model:value="queryParams.ip" />
-          </NFormItem>
+    <NCard>
+      <div class="system-log-header">
+        <h2 class="system-log-heading">{{ $t('generate.system-log') }}</h2>
+        <NForm label-placement="left" :model="queryParams">
+          <NGrid responsive="screen" item-responsive x-gap="12" y-gap="12" class="search-form-grid">
+            <NFormItemGi span="24 s:12 m:6" :label="$t('generate.username')" path="name">
+              <NInput v-model:value="queryParams.username" />
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" path="selected_time">
+              <NDatePicker
+                v-model:value="range"
+                type="datetimerange"
+                clearable
+                separator="-"
+                @update:value="pickerChange"
+              />
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="$t('generate.requestMethod')" path="method">
+              <NSelect v-model:value="queryParams.method" :options="requestMethodOptions"></NSelect>
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="$t('generate.ipAddress')" path="ip">
+              <NInput v-model:value="queryParams.ip" />
+            </NFormItemGi>
 
-          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('generate.search') }}</NButton>
-          <NButton class="ml-15px w-72px" type="primary" @click="handleReset">{{ $t('generate.reset') }}</NButton>
-        </view>
-      </NForm>
+            <NFormItemGi span="24 s:12 m:6" class="search-form-actions">
+              <NSpace class="w-full" justify="end">
+                <NButton class="search-form-button" type="primary" @click="handleQuery">
+                  {{ $t('generate.search') }}
+                </NButton>
+                <NButton class="search-form-button" @click="handleReset">{{ $t('generate.reset') }}</NButton>
+              </NSpace>
+            </NFormItemGi>
+          </NGrid>
+        </NForm>
+      </div>
       <NDataTable
         size="medium"
         :theme-overrides="tableThemeOverrides"
@@ -330,7 +335,73 @@ onMounted(() => {
   justify-content: flex-end;
 }
 
-.align-end {
-  align-items: flex-end;
+.system-log-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.system-log-heading {
+  flex: 0 0 auto;
+  margin: 4px 0 0;
+  color: var(--text-color);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.search-form-grid {
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+
+  :deep(.n-form-item-gi) {
+    flex: 0 0 auto;
+    width: auto !important;
+    min-width: 220px;
+    max-width: 360px;
+  }
+
+  :deep(.n-input),
+  :deep(.n-base-selection),
+  :deep(.n-date-picker) {
+    width: 100%;
+    max-width: 320px;
+    min-height: 36px;
+    border-radius: 8px;
+  }
+
+  :deep(.n-button) {
+    height: 36px;
+    border-radius: 8px;
+  }
+}
+
+.search-form-actions {
+  min-width: max-content !important;
+  max-width: none !important;
+
+  :deep(.n-space) {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .system-log-header {
+    flex-direction: column;
+  }
+
+  .search-form-actions {
+    :deep(.n-space) {
+      justify-content: stretch;
+    }
+
+    :deep(.n-button) {
+      flex: 1;
+    }
+  }
 }
 </style>

@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 // Import UI components from Naive UI
 import { useRouter } from 'vue-router'
-import { NButton, NDataTable, NEmpty, NFlex, NPagination } from 'naive-ui'
+import { NButton, NCard, NDataTable, NEmpty, NIcon, NInput, NPagination } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { debounce } from 'lodash'
 import { deleteDeviceGroup, getDeviceGroup } from '@/service/api/device'
@@ -69,6 +69,13 @@ const debouncedSearch = debounce(async () => {
 const handleInput = () => {
   debouncedSearch()
 }
+
+const handleReset = () => {
+  debouncedSearch.cancel()
+  searchValue.value = ''
+  currentPage.value = 1
+  getDevice()
+}
 // Async function to fetch device groups from the backend
 // Function to delete a device group
 const deleteItem = async (rid: string) => {
@@ -95,26 +102,31 @@ onMounted(getDevice) // Fetch device groups on component mount
     <!-- Add or edit device modal component with props for edit mode and data -->
     <AddOrEditDevices ref="the_modal" :is-edit="false" :refresh-data="getDevice" />
     <NCard>
-      <NFlex justify="start">
+      <div class="device-filter-toolbar">
         <!-- Button to trigger modal for creating a new device group -->
-        <NButton type="primary" @click="showModal">{{ $t('custom.groupPage.createGroupButton') }}</NButton>
+        <div class="device-filter-action-primary">
+          <NButton type="primary" @click="showModal">{{ $t('custom.groupPage.createGroupButton') }}</NButton>
+        </div>
         <!-- Input for search functionality -->
-        <NInput
-          v-model:value="searchValue"
-          :disabled="isRequestPending"
-          autosize
-          :placeholder="$t('custom.groupPage.deviceGroupPlaceholder')"
-          class="min-w-240px"
-          type="text"
-          @input="handleInput"
-        >
-          <template #prefix>
-            <NIcon>
-              <IosSearch />
-            </NIcon>
-          </template>
-        </NInput>
-      </NFlex>
+        <div class="device-filter-field device-filter-field--search">
+          <NInput
+            v-model:value="searchValue"
+            :disabled="isRequestPending"
+            :placeholder="$t('custom.groupPage.deviceGroupPlaceholder')"
+            type="text"
+            @input="handleInput"
+          >
+            <template #prefix>
+              <NIcon>
+                <IosSearch />
+              </NIcon>
+            </template>
+          </NInput>
+        </div>
+        <div class="device-filter-actions">
+          <NButton quaternary @click="handleReset">{{ $t('generate.reset') }}</NButton>
+        </div>
+      </div>
       <div class="mt-20px">
         <!-- Data table to display device groups -->
         <NDataTable
@@ -155,6 +167,66 @@ onMounted(getDevice) // Fetch device groups on component mount
 </template>
 
 <style scoped lang="scss">
+.device-filter-toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(220px, 360px) auto;
+  gap: 10px;
+  align-items: center;
+  justify-content: end;
+}
+
+.device-filter-field {
+  min-width: 0;
+}
+
+.device-filter-field--search {
+  min-width: 220px;
+}
+
+.device-filter-toolbar :deep(.n-input) {
+  min-height: 36px;
+  border-radius: 8px;
+  background: var(--card-color);
+}
+
+.device-filter-toolbar :deep(.n-input:hover) {
+  border-color: var(--primary-color);
+}
+
+.device-filter-action-primary :deep(.n-button),
+.device-filter-actions :deep(.n-button) {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+}
+
+.device-filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+@media (max-width: 768px) {
+  .device-filter-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .device-filter-field--search {
+    min-width: 0;
+  }
+
+  .device-filter-action-primary,
+  .device-filter-actions {
+    width: 100%;
+  }
+
+  .device-filter-action-primary :deep(.n-button),
+  .device-filter-actions :deep(.n-button) {
+    width: 100%;
+  }
+}
+
 .device-data-table {
   min-width: 100%;
   overflow: hidden;

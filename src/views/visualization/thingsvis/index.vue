@@ -59,6 +59,11 @@ const projectOptions = computed(() => allProjects.value.map(project => ({ label:
 const isDefaultProjectItem = (project: ProjectListItem) =>
   project.isDefault || project.name === '默认项目' || project.name === 'Default Project'
 
+const resetSearch = () => {
+  searchKeyword.value = ''
+  void fetchProjects()
+}
+
 /** 获取项目列表 */
 const fetchProjects = async () => {
   loading.value = true
@@ -250,19 +255,19 @@ onMounted(() => {
   <div class="h-full">
     <NCard>
       <!-- 头部工具栏 -->
-      <div class="mb-5 flex items-center justify-between gap-4">
+      <div class="visualization-page-header mb-5 flex items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <h2 class="text-xl font-bold">可视化项目</h2>
           <span class="text-gray-400">{{ projects.length }} 个项目</span>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="visualization-filter-toolbar">
           <!-- 搜索框 -->
           <NInput
             v-model:value="searchKeyword"
             clearable
             placeholder="搜索项目或看板..."
-            style="width: 240px"
+            class="visualization-filter-control visualization-filter-control--search"
             @update:value="fetchProjects"
             @clear="fetchProjects"
           >
@@ -271,14 +276,16 @@ onMounted(() => {
             </template>
           </NInput>
 
+          <NButton class="visualization-filter-button" @click="resetSearch">重置</NButton>
+
           <!-- 新建按钮 -->
-          <NButton type="primary" @click="openCreateDashboardModal">
+          <NButton class="visualization-filter-button" type="primary" @click="openCreateDashboardModal">
             <template #icon>
               <icon-mdi:plus />
             </template>
             新建看板
           </NButton>
-          <NButton secondary @click="openCreateModal">
+          <NButton class="visualization-filter-button" secondary @click="openCreateModal">
             <template #icon><icon-mdi:plus /></template>
             新建项目
           </NButton>
@@ -460,3 +467,62 @@ onMounted(() => {
     </NModal>
   </div>
 </template>
+
+<style scoped lang="scss">
+.visualization-page-header {
+  align-items: flex-start;
+}
+
+.visualization-filter-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 360px) auto auto auto;
+  gap: 10px;
+  align-items: center;
+  justify-content: end;
+  min-width: min(100%, 640px);
+}
+
+.visualization-filter-control {
+  min-width: 0;
+
+  &--search {
+    min-width: 220px;
+    width: 100%;
+  }
+}
+
+.visualization-filter-toolbar :deep(.n-input),
+.visualization-filter-toolbar :deep(.n-button) {
+  height: 36px;
+  border-radius: 8px;
+}
+
+.visualization-filter-toolbar :deep(.n-input) {
+  min-height: 36px;
+}
+
+@media (max-width: 1024px) {
+  .visualization-page-header {
+    flex-direction: column;
+  }
+
+  .visualization-filter-toolbar {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .visualization-filter-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .visualization-filter-control--search {
+    min-width: 0;
+  }
+
+  .visualization-filter-toolbar :deep(.n-button) {
+    width: 100%;
+  }
+}
+</style>

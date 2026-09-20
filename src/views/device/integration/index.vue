@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { PaginationProps } from 'naive-ui'
+import _ from 'lodash'
 import { getServiceList } from '@/service/api/device'
 import DevCardItem from '@/components/dev-card-item/index.vue'
 import AdvancedListLayout from '@/components/list-page/index.vue'
-import { GridOutline as CardIcon } from '@vicons/ionicons5'
+import { GridOutline as CardIcon, SearchOutline } from '@vicons/ionicons5'
 const loading = ref(false)
 const router = useRouter()
 const pagination: PaginationProps = reactive({
@@ -15,25 +16,43 @@ const pagination: PaginationProps = reactive({
 })
 const queryParams = reactive({
   page_size: 15,
-  service_type: 2
+  service_type: 2,
+  search: ''
 })
 const deviceTemplateList = ref([] as any[])
 
 const getData = async () => {
   loading.value = true
-  const res = await getServiceList({
-    page: pagination.page as number,
-    ...queryParams
-  })
-  if (!res.error) {
-    deviceTemplateList.value = res.data.list
-    // eslint-disable-next-line require-atomic-updates
-    pagination.pageCount = Math.ceil(res.data.total / 12)
+  try {
+    const res = await getServiceList({
+      page: pagination.page as number,
+      ...queryParams
+    })
+    if (!res.error) {
+      deviceTemplateList.value = res.data.list
+      pagination.pageCount = Math.max(1, Math.ceil(res.data.total / Number(queryParams.page_size)))
+    }
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 
 getData()
+
+const debouncedSearch = _.debounce(() => {
+  pagination.page = 1
+  getData()
+}, 400)
+
+const handleSearchInput = () => {
+  debouncedSearch()
+}
+
+const handleReset = () => {
+  queryParams.search = ''
+  pagination.page = 1
+  getData()
+}
 
 const clickDevice = async row => {
   router.push(
@@ -44,6 +63,10 @@ const clickDevice = async row => {
 const handleRefresh = () => {
   getData()
 }
+
+onUnmounted(() => {
+  debouncedSearch.cancel()
+})
 </script>
 
 <template>
@@ -55,6 +78,27 @@ const handleRefresh = () => {
       :showAddButton="false"
       @refresh="handleRefresh"
     >
+      <template #search-form-content>
+        <div class="integration-filter-area">
+          <div class="integration-filter-toolbar">
+            <n-input
+              v-model:value="queryParams.search"
+              clearable
+              :placeholder="$t('custom.devicePage.searchIntegration')"
+              class="integration-search-input"
+              @update:value="handleSearchInput"
+            >
+              <template #prefix>
+                <n-icon :size="16">
+                  <SearchOutline />
+                </n-icon>
+              </template>
+            </n-input>
+            <n-button quaternary size="small" @click="handleReset">{{ $t('generate.reset') }}</n-button>
+          </div>
+        </div>
+      </template>
+
       <!-- 卡片视图 -->
       <template #card-view>
         <n-spin :show="loading">
@@ -124,5 +168,53 @@ const handleRefresh = () => {
   align-items: center;
   justify-content: center;
   border-radius: 6px;
+}
+
+.integration-filter-area {
+  width: 100%;
+  padding: 2px 0 0;
+}
+
+.integration-filter-toolbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.integration-search-input {
+  width: min(360px, 100%);
+}
+
+.integration-filter-toolbar :deep(.n-input) {
+  min-height: 36px;
+  border-radius: 8px;
+  background: var(--card-color);
+}
+
+.integration-filter-toolbar :deep(.n-input:hover) {
+  border-color: var(--primary-color);
+}
+
+.integration-filter-toolbar :deep(.n-button) {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .integration-filter-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .integration-search-input {
+    width: 100%;
+  }
+
+  .integration-filter-toolbar :deep(.n-button) {
+    align-self: flex-start;
+  }
 }
 </style>

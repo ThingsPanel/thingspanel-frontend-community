@@ -171,8 +171,11 @@ const handleTopRightIconClick = () => {
         </div>
       </div>
 
-      <!-- 卡片内容区域：自定义内容插槽 - 这个区域会自动填充剩余空间 -->
-      <div class="card-content">
+      <!-- 卡片内容区域：设备卡片可以使用专用预览区，其他卡片继续使用文本内容区 -->
+      <div v-if="$slots['card-preview']" class="card-preview">
+        <slot name="card-preview" />
+      </div>
+      <div v-else class="card-content">
         <NEllipsis v-if="$slots.default" :line-clamp="2" :tooltip="true">
           <slot />
         </NEllipsis>
@@ -373,6 +376,11 @@ const handleTopRightIconClick = () => {
 
 .card-content {
   flex: 1;
+}
+
+.card-preview {
+  flex: 1;
+  min-height: 0;
 }
 
 .card-footer {

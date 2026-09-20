@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NEmpty, NInput, NSpin, useMessage } from 'naive-ui'
+import { NButton, NEmpty, NInput, NSpin, useMessage } from 'naive-ui'
 import { bootstrapAppEmbedSession } from '@/utils/app-embed-auth'
 import { openAppWebViewPage } from '@/utils/app-webview-bridge'
 import { getThingsVisProjects, type ProjectListItem } from '@/service/api/thingsvis'
@@ -22,6 +22,10 @@ const filteredProjects = computed(() => {
   if (!keyword) return projects.value
   return projects.value.filter(item => item.name.toLowerCase().includes(keyword))
 })
+
+const resetSearch = () => {
+  searchKeyword.value = ''
+}
 
 async function fetchProjects() {
   loading.value = true
@@ -79,16 +83,19 @@ onMounted(async () => {
     <main class="visualization-app__main">
       <NSpin :show="loading || !authReady">
         <section v-if="authReady" class="visualization-app__section">
-          <NInput
-            v-model:value="searchKeyword"
-            clearable
-            placeholder="搜索项目名称..."
-            class="visualization-app__search"
-          >
-            <template #prefix>
-              <icon-mdi:magnify />
-            </template>
-          </NInput>
+          <div class="visualization-app__filter-toolbar">
+            <NInput
+              v-model:value="searchKeyword"
+              clearable
+              placeholder="搜索项目名称..."
+              class="visualization-app__search visualization-app__search--primary"
+            >
+              <template #prefix>
+                <icon-mdi:magnify />
+              </template>
+            </NInput>
+            <NButton class="visualization-app__filter-button" @click="resetSearch">重置</NButton>
+          </div>
 
           <NEmpty v-if="!loading && filteredProjects.length === 0" description="暂无可视化项目" class="py-16">
             <template #icon>
@@ -122,3 +129,45 @@ onMounted(async () => {
 </template>
 
 <style scoped src="./styles.css"></style>
+
+<style scoped>
+.visualization-app__filter-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 360px) auto;
+  gap: 10px;
+  align-items: center;
+  justify-content: end;
+}
+
+.visualization-app__search {
+  margin-bottom: 0;
+}
+
+.visualization-app__search--primary {
+  min-width: 220px;
+}
+
+.visualization-app__filter-toolbar :deep(.n-input),
+.visualization-app__filter-toolbar :deep(.n-button) {
+  height: 36px;
+  border-radius: 8px;
+}
+
+.visualization-app__filter-toolbar :deep(.n-input) {
+  min-height: 36px;
+}
+
+@media (max-width: 768px) {
+  .visualization-app__filter-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .visualization-app__search--primary {
+    min-width: 0;
+  }
+
+  .visualization-app__filter-button {
+    width: 100%;
+  }
+}
+</style>

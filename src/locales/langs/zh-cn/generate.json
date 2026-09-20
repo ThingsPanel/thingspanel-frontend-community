@@ -317,7 +317,7 @@
   "generate.confirm-password": "确认密码",
   "generate.username": "用户名",
   "generate.requestMethod": "请求方法",
-  "generate.ipAddress": "ip地址",
+  "generate.ipAddress": "IP地址",
   "generate.change-password": "修改密码",
   "generate.notification-record": "通知记录",
   "generate.add-chart": "添加图表",

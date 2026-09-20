@@ -595,7 +595,7 @@ declare namespace App {
         'alarm_warning-message': string
         'personal-center': string
         apply_plugin: string
-        'device_service-access': string
+        device_integration: string
         'device_service-details': string
       } & Record<I18nRouteKey, string>
       page: {

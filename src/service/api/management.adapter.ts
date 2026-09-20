@@ -39,6 +39,20 @@ const ROUTE_DISPLAY_PATH_MAP: Record<string, string> = {
   'resource-hub_dashboard': '/resource-hub/dashboard-template'
 }
 
+/** 已有数据库中的旧命名，升级期间统一映射到新的集成路由。 */
+const LEGACY_ROUTE_KEY_MAP: Record<string, string> = {
+  'device_service-access': 'device_integration'
+}
+
+const LEGACY_ROUTE_PATH_MAP: Record<string, string> = {
+  '/device/service-access': '/device/integration'
+}
+
+const LEGACY_ROUTE_I18N_MAP: Record<string, string> = {
+  'route.device_service_access': 'route.device_integration',
+  'route.device_service-access': 'route.device_integration'
+}
+
 /** 后台 param1 仍可能使用旧路径，用于组件解析 */
 const LEGACY_PATH_TO_ROUTE: Record<string, string> = {
   '/device/config': 'device_config',
@@ -217,8 +231,11 @@ function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
   return data.flatMap((item: any): ElegantRoute[] => {
     const component = getRouteComponent(item)
     const children = item.children?.length ? replaceKeys(item.children) : []
-    const elementCode = item.element_code.trim().replace(/\s/g, '_')
-    const path = ROUTE_DISPLAY_PATH_MAP[elementCode] ?? normalizePath(item.param1)
+    const rawElementCode = item.element_code.trim().replace(/\s/g, '_')
+    const elementCode = LEGACY_ROUTE_KEY_MAP[rawElementCode] ?? rawElementCode
+    const rawPath = normalizePath(item.param1)
+    const path = ROUTE_DISPLAY_PATH_MAP[elementCode] ?? LEGACY_ROUTE_PATH_MAP[rawPath] ?? rawPath
+    const i18nKey = LEGACY_ROUTE_I18N_MAP[item.multilingual] ?? item.multilingual
 
     const route: Partial<ElegantRoute> = {
       name: elementCode,
@@ -226,7 +243,7 @@ function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
       ...(component && { component }),
       meta: {
         title: item.description,
-        i18nKey: item.multilingual,
+        i18nKey,
         requiresAuth: true,
         permissions: [],
         roles: [],

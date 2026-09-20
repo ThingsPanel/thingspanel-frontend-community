@@ -289,23 +289,27 @@ const availableViews = [
       </template>
       <!-- 搜索表单内容 -->
       <template #search-form-content>
-        <div class="flex gap-4">
-          <NInput
-            v-model:value="queryData.name"
-            :placeholder="$t('generate.enter-config-name')"
-            type="text"
-            clearable
-            style="width: 210px"
-            @clear="handleReset"
-            @keydown.enter="handleQuery"
-          >
-            <template #prefix>
-              <NIcon>
-                <IosSearch />
-              </NIcon>
-            </template>
-          </NInput>
-          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+        <div class="device-filter-toolbar">
+          <div class="device-filter-field device-filter-field--search">
+            <NInput
+              v-model:value="queryData.name"
+              :placeholder="$t('generate.enter-config-name')"
+              type="text"
+              clearable
+              @clear="handleReset"
+              @keydown.enter="handleQuery"
+            >
+              <template #prefix>
+                <NIcon>
+                  <IosSearch />
+                </NIcon>
+              </template>
+            </NInput>
+          </div>
+          <div class="device-filter-actions">
+            <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+            <NButton quaternary @click="handleReset">{{ $t('generate.reset') }}</NButton>
+          </div>
         </div>
       </template>
 
@@ -377,7 +381,6 @@ const availableViews = [
                     <SvgIcon v-else local-icon="default-config" class="config-image" />
                   </div>
                 </template>
-
               </ItemCard>
             </n-gi>
           </n-grid>
@@ -430,6 +433,63 @@ const availableViews = [
 </template>
 
 <style scoped>
+.device-filter-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 360px) auto;
+  gap: 10px;
+  align-items: center;
+  justify-content: end;
+}
+
+.device-filter-field {
+  min-width: 0;
+}
+
+.device-filter-field--search {
+  min-width: 220px;
+}
+
+.device-filter-toolbar :deep(.n-input) {
+  min-height: 36px;
+  border-radius: 8px;
+  background: var(--card-color);
+}
+
+.device-filter-toolbar :deep(.n-input:hover) {
+  border-color: var(--primary-color);
+}
+
+.device-filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.device-filter-actions :deep(.n-button) {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .device-filter-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .device-filter-field--search {
+    min-width: 0;
+  }
+
+  .device-filter-actions {
+    justify-content: stretch;
+  }
+
+  .device-filter-actions :deep(.n-button) {
+    flex: 1;
+  }
+}
+
 :deep(.card-actions) {
   flex-wrap: nowrap;
   white-space: nowrap;

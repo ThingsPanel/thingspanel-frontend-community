@@ -90,6 +90,10 @@ const dashboards = computed(() => {
   return allDashboards.value.filter(item => item.name.toLowerCase().includes(keyword))
 })
 
+const resetSearch = () => {
+  searchKeyword.value = ''
+}
+
 /** 加载项目信息 */
 const loadProject = async () => {
   if (!projectId.value) {
@@ -483,7 +487,7 @@ onMounted(async () => {
       </NBreadcrumb>
 
       <!-- 头部工具栏 -->
-      <div class="mb-5 flex items-center justify-between gap-4">
+      <div class="visualization-page-header mb-5 flex items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <h2 class="text-xl font-bold">{{ project?.name }}</h2>
           <span class="text-gray-400">
@@ -491,16 +495,23 @@ onMounted(async () => {
           </span>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="visualization-filter-toolbar">
           <!-- 搜索框 -->
-          <NInput v-model:value="searchKeyword" clearable placeholder="搜索仪表盘名称..." style="width: 240px">
+          <NInput
+            v-model:value="searchKeyword"
+            clearable
+            placeholder="搜索仪表盘名称..."
+            class="visualization-filter-control visualization-filter-control--search"
+          >
             <template #prefix>
               <icon-mdi:magnify />
             </template>
           </NInput>
 
+          <NButton class="visualization-filter-button" @click="resetSearch">重置</NButton>
+
           <!-- 新建按钮 -->
-          <NButton type="primary" @click="openCreateModal">
+          <NButton class="visualization-filter-button" type="primary" @click="openCreateModal">
             <template #icon>
               <icon-mdi:plus />
             </template>
@@ -617,7 +628,12 @@ onMounted(async () => {
 
                   <NTooltip v-if="dashboard.name === '超管首页v2'">
                     <template #trigger>
-                      <NButton size="small" secondary type="primary" @click.stop="handleApplySuperAdminTemplate(dashboard)">
+                      <NButton
+                        size="small"
+                        secondary
+                        type="primary"
+                        @click.stop="handleApplySuperAdminTemplate(dashboard)"
+                      >
                         <template #icon>
                           <icon-mdi:view-dashboard-edit-outline />
                         </template>
@@ -813,3 +829,62 @@ onMounted(async () => {
     />
   </div>
 </template>
+
+<style scoped lang="scss">
+.visualization-page-header {
+  align-items: flex-start;
+}
+
+.visualization-filter-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 360px) auto auto;
+  gap: 10px;
+  align-items: center;
+  justify-content: end;
+  min-width: min(100%, 480px);
+}
+
+.visualization-filter-control {
+  min-width: 0;
+
+  &--search {
+    min-width: 220px;
+    width: 100%;
+  }
+}
+
+.visualization-filter-toolbar :deep(.n-input),
+.visualization-filter-toolbar :deep(.n-button) {
+  height: 36px;
+  border-radius: 8px;
+}
+
+.visualization-filter-toolbar :deep(.n-input) {
+  min-height: 36px;
+}
+
+@media (max-width: 1024px) {
+  .visualization-page-header {
+    flex-direction: column;
+  }
+
+  .visualization-filter-toolbar {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .visualization-filter-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .visualization-filter-control--search {
+    min-width: 0;
+  }
+
+  .visualization-filter-toolbar :deep(.n-button) {
+    width: 100%;
+  }
+}
+</style>

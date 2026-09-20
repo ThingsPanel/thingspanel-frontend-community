@@ -69,6 +69,11 @@ const handleQuery = async () => {
   queryData.value.page = 1
   await getData()
 }
+const handleReset = async () => {
+  queryData.value.name = ''
+  queryData.value.page = 1
+  await getData()
+}
 const logQuery = ref({
   id: '',
   page: 1,
@@ -215,13 +220,13 @@ getData()
 <template>
   <div class="h-full w-full">
     <NCard>
-      <NFlex justify="space-between" class="mb-4">
+      <div class="search-toolbar mb-4">
         <NButton type="primary" @click="sceneAdd()">{{ $t('generate.+add-scene') }}</NButton>
-        <NFlex align="center" justify="flex-end" :wrap="false">
+        <div class="search-fields">
           <NInput
             v-model:value="queryData.name"
             :placeholder="$t('generate.enterSceneName')"
-            class="search-input"
+            class="search-field"
             type="text"
             clearable
           >
@@ -231,9 +236,12 @@ getData()
               </NIcon>
             </template>
           </NInput>
-          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-        </NFlex>
-      </NFlex>
+          <div class="search-actions">
+            <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+            <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+          </div>
+        </div>
+      </div>
       <n-data-table
         class="thingspanel-data-table mt-4"
         size="medium"
@@ -355,6 +363,53 @@ getData()
     box-shadow:
       inset 0 1px 0 rgb(191 219 254 / 60%),
       inset 0 -1px 0 rgb(191 219 254 / 60%);
+  }
+}
+
+.search-toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(280px, 360px);
+  gap: 12px;
+  align-items: center;
+  justify-content: end;
+}
+
+.search-fields {
+  display: grid;
+  grid-template-columns: minmax(180px, 280px) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.search-field {
+  min-width: 0;
+}
+
+.search-toolbar :deep(.n-input),
+.search-toolbar :deep(.n-button) {
+  height: 36px;
+  border-radius: 8px;
+}
+
+.search-actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .search-toolbar,
+  .search-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .search-toolbar > :deep(.n-button),
+  .search-actions :deep(.n-button) {
+    width: 100%;
+  }
+
+  .search-actions :deep(.n-button) {
+    flex: 1;
   }
 }
 </style>

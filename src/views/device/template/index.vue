@@ -266,7 +266,7 @@ const getTagArray = (labelStr: string) => {
   return labelStr
     .split(',')
     .filter(Boolean)
-    .map((tag) => tag.trim())
+    .map(tag => tag.trim())
 }
 
 // 获取显示的标签（最多 4 个：≤4 全显示，>4 则 3 个 +N）
@@ -322,25 +322,29 @@ onMounted(() => {
 
       <!-- 搜索表单内容 -->
       <template #search-form-content>
-        <div class="flex gap-4 items-center">
-          <NInput
-            v-model:value="queryParams.name"
-            :placeholder="$t('generate.enter-template-name')"
-            type="text"
-            clearable
-            style="width: 240px"
-            @clear="handleReset"
-            @keydown.enter="handleQuery"
-          >
-            <template #prefix>
-              <NIcon>
-                <IosSearch />
-              </NIcon>
-            </template>
-          </NInput>
-          <NButton type="primary" @click="handleQuery">
-            {{ $t('common.search') }}
-          </NButton>
+        <div class="device-filter-toolbar">
+          <div class="device-filter-field device-filter-field--search">
+            <NInput
+              v-model:value="queryParams.name"
+              :placeholder="$t('generate.enter-template-name')"
+              type="text"
+              clearable
+              @clear="handleReset"
+              @keydown.enter="handleQuery"
+            >
+              <template #prefix>
+                <NIcon>
+                  <IosSearch />
+                </NIcon>
+              </template>
+            </NInput>
+          </div>
+          <div class="device-filter-actions">
+            <NButton type="primary" @click="handleQuery">
+              {{ $t('common.search') }}
+            </NButton>
+            <NButton quaternary @click="handleReset">{{ $t('generate.reset') }}</NButton>
+          </div>
         </div>
       </template>
 
@@ -368,7 +372,7 @@ onMounted(() => {
                     :options="cardMenuOptions"
                     trigger="click"
                     placement="bottom-end"
-                    @select="(key) => handleCardMenuSelect(key, item)"
+                    @select="key => handleCardMenuSelect(key, item)"
                   >
                     <NButton quaternary circle size="small" @click.stop>
                       <template #icon>
@@ -456,6 +460,63 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+.device-filter-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 360px) auto;
+  gap: 10px;
+  align-items: center;
+  justify-content: end;
+}
+
+.device-filter-field {
+  min-width: 0;
+}
+
+.device-filter-field--search {
+  min-width: 220px;
+}
+
+.device-filter-toolbar :deep(.n-input) {
+  min-height: 36px;
+  border-radius: 8px;
+  background: var(--card-color);
+}
+
+.device-filter-toolbar :deep(.n-input:hover) {
+  border-color: var(--primary-color);
+}
+
+.device-filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.device-filter-actions :deep(.n-button) {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .device-filter-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .device-filter-field--search {
+    min-width: 0;
+  }
+
+  .device-filter-actions {
+    justify-content: stretch;
+  }
+
+  .device-filter-actions :deep(.n-button) {
+    flex: 1;
+  }
+}
+
 .empty-state {
   display: flex;
   align-items: center;

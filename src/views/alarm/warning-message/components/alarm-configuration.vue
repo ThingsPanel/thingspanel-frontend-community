@@ -232,23 +232,36 @@ const submitCallback = async () => {
 
 <template>
   <div class="h-full flex-col">
-    <NForm ref="queryFormRef" :inline="!getPlatform" label-placement="left" :model="queryData">
-      <NFormItem path="status">
-        <n-date-picker v-model:value="range" type="datetimerange" :clearable="false" separator="-" />
-      </NFormItem>
-      <NFormItem :label="$t('generate.alarm-level')" path="status">
-        <NSelect
-          v-model:value="queryData.alarm_status"
-          :clearable="false"
-          class="w-200px"
-          :options="alarmStatusOptions"
-        />
-      </NFormItem>
-      <NFormItem>
-        <NButton type="primary" @click="handleSearch">{{ $t('common.search') }}</NButton>
-        <NButton class="ml-12px" @click="resetData">{{ $t('common.reset') }}</NButton>
-      </NFormItem>
-    </NForm>
+    <div class="alarm-filter-header">
+      <h3 class="alarm-filter-heading">{{ $t('generate.alarmInfo') }}</h3>
+      <NForm
+        ref="queryFormRef"
+        class="alarm-filter-toolbar"
+        :inline="!getPlatform"
+        label-placement="left"
+        :model="queryData"
+      >
+        <NFormItem class="alarm-filter-field alarm-filter-field--date" path="status">
+          <n-date-picker v-model:value="range" type="datetimerange" :clearable="false" separator="-" />
+        </NFormItem>
+        <NFormItem
+          class="alarm-filter-field alarm-filter-field--level"
+          :label="$t('generate.alarm-level')"
+          path="status"
+        >
+          <NSelect
+            v-model:value="queryData.alarm_status"
+            :clearable="false"
+            class="w-200px"
+            :options="alarmStatusOptions"
+          />
+        </NFormItem>
+        <NFormItem class="alarm-filter-actions">
+          <NButton type="primary" @click="handleSearch">{{ $t('common.search') }}</NButton>
+          <NButton class="ml-12px" @click="resetData">{{ $t('common.reset') }}</NButton>
+        </NFormItem>
+      </NForm>
+    </div>
     <n-data-table
       class="thingspanel-data-table w-full"
       size="medium"
@@ -378,6 +391,85 @@ const submitCallback = async () => {
     box-shadow:
       inset 0 1px 0 rgb(191 219 254 / 60%),
       inset 0 -1px 0 rgb(191 219 254 / 60%);
+  }
+}
+
+.alarm-filter-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  :deep(.n-form-item) {
+    margin-bottom: 0;
+  }
+
+  :deep(.n-date-picker),
+  :deep(.n-base-selection) {
+    width: 100%;
+    min-height: 36px;
+    border-radius: 8px;
+  }
+
+  :deep(.n-button) {
+    height: 36px;
+    border-radius: 8px;
+  }
+}
+
+.alarm-filter-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.alarm-filter-heading {
+  flex: 0 0 auto;
+  margin: 4px 0 0;
+  color: var(--text-color);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.alarm-filter-field--date {
+  width: min(320px, 100%);
+}
+
+.alarm-filter-field--level {
+  width: 200px;
+}
+
+.alarm-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .alarm-filter-header {
+    flex-direction: column;
+  }
+
+  .alarm-filter-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .alarm-filter-field--date,
+  .alarm-filter-field--level,
+  .alarm-filter-actions {
+    width: 100%;
+  }
+
+  .alarm-filter-actions {
+    :deep(.n-button) {
+      flex: 1;
+    }
   }
 }
 </style>

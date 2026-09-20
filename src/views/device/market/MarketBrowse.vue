@@ -11,20 +11,8 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDebounceFn } from '@vueuse/core'
-import {
-  NInput,
-  NSelect,
-  NSpin,
-  NEmpty,
-  NPagination,
-  NIcon,
-  NButton,
-  NCard,
-  NEllipsis,
-  useDialog,
-  useMessage
-} from 'naive-ui'
-import { SearchOutline, CloudDownloadOutline, GridOutline, ListOutline } from '@vicons/ionicons5'
+import { NSpin, NEmpty, NPagination, NIcon, NButton, NCard, NEllipsis, useDialog, useMessage } from 'naive-ui'
+import { CloudDownloadOutline, GridOutline, ListOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
 import {
   browseMarketBundles,
@@ -40,6 +28,7 @@ import MarketBundleDetailDrawer from './MarketBundleDetailDrawer.vue'
 import MarketLoginModal from '@/views/device/config/modules/market-login-modal.vue'
 import defaultDashboardCover from '@/assets/imgs/default_dashboard_cover.png'
 import AdvancedListLayout from '@/components/list-page/index.vue'
+import MarketFilterBar from './MarketFilterBar.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -180,6 +169,7 @@ function handleSearch() {
 function clearFilters() {
   searchParams.keyword = ''
   searchParams.category = null
+  searchParams.sort_by = 'latest'
   handleSearch()
 }
 
@@ -205,12 +195,22 @@ function handleCategoryChange() {
   void fetchBundleList()
 }
 
+function updateCategory(value: string | null) {
+  searchParams.category = value
+  handleCategoryChange()
+}
+
 /**
  * 排序变化
  */
 function handleSortChange() {
   searchParams.page = 1
   void fetchBundleList()
+}
+
+function updateSort(value: string) {
+  searchParams.sort_by = value as 'latest' | 'hottest'
+  handleSortChange()
 }
 
 /**
@@ -247,9 +247,9 @@ async function handleViewDetail(item: MarketBundleListItem) {
         currentBindings.value = precheckResult.data.bindingPreview
       } else {
         // 从版本信息中提取绑定
-        const versionInfo = result.data.versions.find((v) => v.version === item.latestVersion)
+        const versionInfo = result.data.versions.find(v => v.version === item.latestVersion)
         currentBindings.value =
-          versionInfo?.deviceBindings.map((b) => ({
+          versionInfo?.deviceBindings.map(b => ({
             dashboardKey: '',
             dashboardName: '',
             bindings: [b]
@@ -402,33 +402,19 @@ onMounted(() => {
       @refresh="fetchBundleList"
     >
       <template #search-form-content>
-        <div class="flex flex-wrap items-center gap-3">
-          <NInput
-            v-model:value="searchParams.keyword"
-            :placeholder="$t('market.browse.searchPlaceholder')"
-            clearable
-            class="w-90"
-            @keyup.enter="handleSearch"
-          >
-            <template #prefix>
-              <NIcon><SearchOutline /></NIcon>
-            </template>
-          </NInput>
-          <NSelect
-            v-model:value="searchParams.category"
-            :options="categoryOptions"
-            :placeholder="$t('market.browse.allCategories')"
-            clearable
-            class="w-35"
-            @update:value="handleCategoryChange"
-          />
-          <NSelect
-            v-model:value="searchParams.sort_by"
-            :options="sortOptions"
-            class="w-30"
-            @update:value="handleSortChange"
-          />
-        </div>
+        <MarketFilterBar
+          :keyword="searchParams.keyword"
+          :category="searchParams.category"
+          :sort-by="searchParams.sort_by"
+          :category-options="categoryOptions"
+          :sort-options="sortOptions"
+          :keyword-placeholder="$t('market.browse.searchPlaceholder')"
+          :category-placeholder="$t('market.browse.allCategories')"
+          @update:keyword="searchParams.keyword = $event"
+          @update:category="updateCategory"
+          @update:sort-by="updateSort"
+          @reset="clearFilters"
+        />
       </template>
 
       <template #header-left>

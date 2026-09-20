@@ -1,5 +1,5 @@
 <script lang="tsx" setup>
-import type { VueElement } from 'vue'
+import type { VNode, VueElement } from 'vue'
 import { computed, defineProps, ref, watchEffect, onMounted, onUnmounted } from 'vue'
 import _ from 'lodash'
 import {
@@ -12,7 +12,6 @@ import {
   NIcon,
   NInput,
   NSelect,
-  NSpace,
   NPagination,
   NSpin,
   NTag
@@ -61,6 +60,12 @@ interface DeviceItem {
   key?: string // DevCardItem 可能用到的备用字段
 }
 
+// These parameter names document the callback contract; the ESLint rules do not inspect type-only signatures correctly.
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+type FetchData = (params: Record<string, any>) => Promise<any>
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+type RowClick = (row: DeviceItem) => void
+
 const logger = createLogger('TablePage')
 
 // 定义搜索配置项的类型，支持多种输入类型：纯文本、日期选择器、日期范围选择器、下拉选择和树形选择器
@@ -97,7 +102,7 @@ export type SearchConfig =
 
 // 通过props从父组件接收参数
 const props = defineProps<{
-  fetchData: () => Promise<any> // 数据获取函数
+  fetchData: FetchData // 数据获取函数
   columnsToShow: // 表格列配置
   | {
         key: string
@@ -112,8 +117,8 @@ const props = defineProps<{
     label: theLabel // 按钮文本
     callback: any // 点击回调
   }>
-  topActions: { element: () => JSX.Element }[] // 顶部操作组件列表
-  rowClick?: () => void // 表格行点击回调
+  topActions: { element: () => VNode }[] // 顶部操作组件列表
+  rowClick?: RowClick // 表格行点击回调
   initPage?: number
   initPageSize?: number
   primarySearchKeys?: string[] // 主筛选栏中保留的高频筛选项
@@ -472,6 +477,13 @@ const getDeviceIconName = (deviceType: string, deviceConfigName?: string): strin
   return deviceTypeIcons[deviceType] || deviceTypeIcons.default
 }
 
+const getDeviceTypeLabel = (deviceType: string): string => {
+  if (deviceType === '1') return $t('custom.devicePage.directConnectedDevices')
+  if (deviceType === '2') return $t('custom.devicePage.gateway')
+  if (deviceType === '3') return $t('custom.devicePage.gatewaySubEquipment')
+  return $t('generate.device-type')
+}
+
 // 获取配置图片URL的函数
 const getConfigImageUrl = (imagePath: string | undefined): string => {
   logger.info('imagePath:', imagePath)
@@ -685,38 +697,50 @@ const formSize = ref(undefined)
 
     <!-- 卡片视图 - 使用铃铛图标插槽 -->
     <template #card-view>
-      <n-scrollbar style="height: calc(100vh - 442px)" :size="1">
+      <n-scrollbar class="device-card-scroll" :size="1">
         <n-spin :show="loading">
-          <NGrid x-gap="20px" y-gap="20px" cols="1 s:2 m:3 l:4" responsive="screen">
-            <NGridItem v-for="(item, index) in dataList" :key="item.id">
+          <div class="device-card-grid">
+            <div v-for="item in dataList" :key="item.id" class="device-card-grid__item">
               <DevCardItem
+                class="device-card"
                 :title="item.name || 'N/A'"
                 :status-active="item.is_online === 1"
                 :subtitle="item.device_config_name || '--'"
-                :footer-text="(item.ts ? formatDateTime(item.ts) : null) ?? '--'"
+                :hide-footer-left="true"
                 @click-card="() => props.rowClick && props.rowClick(item)"
               >
                 <template #subtitle-icon>
-                  <SvgIcon
-                    :local-icon="getDeviceIconName(item.device_type, item.device_config_name)"
-                    class="image-icon"
-                  />
+                  <span
+                    class="device-type-icon"
+                    :title="getDeviceTypeLabel(item.device_type)"
+                    :aria-label="getDeviceTypeLabel(item.device_type)"
+                  >
+                    <SvgIcon
+                      :local-icon="getDeviceIconName(item.device_type, item.device_config_name)"
+                      class="image-icon"
+                    />
+                  </span>
                 </template>
 
-                <template #footer-icon>
-                  <div class="footer-icon-container">
-                    <img
-                      v-if="item.image_url"
-                      :src="getConfigImageUrl(item.image_url)"
-                      alt="config image"
-                      class="config-image"
-                    />
-                    <SvgIcon v-else local-icon="defaultdevice" class="config-image" />
+                <template #card-preview>
+                  <div class="device-card-preview">
+                    <div class="config-image-frame">
+                      <img
+                        v-if="item.image_url"
+                        :src="getConfigImageUrl(item.image_url)"
+                        :alt="`${item.name || '设备'}默认图片`"
+                        class="config-image"
+                      />
+                      <SvgIcon v-else local-icon="defaultdevice" class="config-image config-image--default" />
+                    </div>
+                    <span class="device-report-time">
+                      {{ item.ts ? formatDateTime(item.ts) : '--' }}
+                    </span>
                   </div>
                 </template>
               </DevCardItem>
-            </NGridItem>
-          </NGrid>
+            </div>
+          </div>
         </n-spin>
       </n-scrollbar>
     </template>
@@ -783,13 +807,14 @@ const formSize = ref(undefined)
 
 .device-filter-toolbar {
   display: grid;
-  grid-template-columns: minmax(220px, 1.45fr) repeat(4, minmax(140px, 1fr)) auto;
+  grid-template-columns: minmax(220px, 360px) repeat(4, minmax(140px, 1fr)) auto;
   gap: 10px;
   align-items: center;
+  justify-content: end;
 }
 
 .device-filter-toolbar:has(.device-group-filter-toggle) {
-  grid-template-columns: auto minmax(220px, 1.45fr) repeat(3, minmax(140px, 1fr)) auto;
+  grid-template-columns: auto minmax(220px, 360px) repeat(3, minmax(140px, 1fr)) auto;
 }
 
 .device-filter-field {
@@ -893,7 +918,7 @@ const formSize = ref(undefined)
 
 @media (max-width: 1440px) {
   .device-filter-toolbar {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(220px, 360px) repeat(2, minmax(140px, 1fr)) auto;
   }
 
   .device-filter-field--search {
@@ -905,7 +930,7 @@ const formSize = ref(undefined)
   }
 
   .device-filter-toolbar:has(.device-group-filter-toggle) {
-    grid-template-columns: auto minmax(220px, 1.45fr) repeat(3, minmax(0, 1fr)) auto;
+    grid-template-columns: auto minmax(220px, 360px) repeat(2, minmax(140px, 1fr)) auto;
   }
 
   .device-filter-toolbar:has(.device-group-filter-toggle) .device-filter-field--search {
@@ -946,6 +971,53 @@ const formSize = ref(undefined)
   padding: 16px;
 }
 
+// 桌面端保持四列，避免卡片过宽导致内部留白被拉散；窄屏再逐级收缩列数。
+.device-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+@media (max-width: 1360px) {
+  .device-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .device-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .device-card-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.device-card-grid__item {
+  min-width: 0;
+}
+
+.device-card-scroll {
+  height: 100%;
+  min-height: 0;
+}
+
+.device-type-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border: 1px solid rgb(var(--primary-color) / 14%);
+  border-radius: 8px;
+  background: rgb(var(--primary-color) / 6%);
+}
+
 .image-icon {
   max-width: 100%;
   max-height: 100%;
@@ -954,24 +1026,128 @@ const formSize = ref(undefined)
   object-fit: contain;
 }
 
-// 底部图标容器 - 固定40x40正方形
-.footer-icon-container {
-  width: 40px;
-  height: 40px;
+.device-card-preview {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 56px minmax(0, 1fr);
+  column-gap: 14px;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 60px;
+  margin: 6px 0 4px;
+  padding: 0;
+  overflow: visible;
+}
+
+.config-image-frame {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 56px;
+  height: 56px;
   overflow: hidden;
-  border-radius: 6px;
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--n-border-color);
+  border-radius: 12px;
+  background: var(--n-color);
 }
 
 .config-image {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  padding: 4px;
+  object-fit: contain;
   object-position: center;
+}
+
+.config-image--default {
+  padding: 3px;
+  opacity: 0.82;
+}
+
+.device-report-time {
+  grid-column: 2;
+  justify-self: end;
+  color: var(--n-text-color);
+  font-size: 12px;
+  line-height: 1.35;
+  opacity: 0.62;
+  text-align: right;
+  white-space: nowrap;
+}
+
+:deep(.item-card.device-card) {
+  height: 190px;
+  border: 1px solid var(--n-border-color);
+  border-radius: 14px;
+  background: var(--n-color);
+  box-shadow: 0 6px 18px rgb(15 23 42 / 4%);
+}
+
+:deep(.item-card.device-card:hover) {
+  border-color: rgb(var(--primary-color) / 58%);
+  box-shadow: 0 10px 22px rgb(var(--primary-color) / 12%);
+}
+
+:deep(.item-card.device-card .card-container) {
+  padding: 15px 16px 12px;
+}
+
+:deep(.item-card.device-card .title-row) {
+  margin-bottom: 6px;
+}
+
+:deep(.item-card.device-card .card-title) {
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+:deep(.item-card.device-card .status-dot) {
+  width: 7px;
+  height: 7px;
+  box-shadow: 0 0 0 3px rgb(var(--primary-color) / 12%);
+}
+
+:deep(.item-card.device-card .subtitle-row) {
+  gap: 8px;
+  color: var(--n-text-color);
+}
+
+:deep(.item-card.device-card .subtitle-text-container) {
+  overflow: hidden;
+  color: var(--n-text-color);
+  opacity: 0.72;
+  font-size: 12px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:deep(.item-card.device-card .card-preview) {
+  display: flex;
+  align-items: center;
+  flex: 0 0 72px;
+  min-height: 72px;
+  margin-top: auto;
+}
+
+:deep(.item-card.device-card .card-footer) {
+  justify-content: flex-end;
+  padding-top: 2px;
+}
+
+:deep(.item-card.device-card .footer-right) {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+:deep(.item-card.device-card .footer-text) {
+  max-width: 100%;
+  color: var(--n-text-color);
+  opacity: 0.62;
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .map-view-container {

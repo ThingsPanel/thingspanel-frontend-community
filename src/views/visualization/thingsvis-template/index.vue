@@ -222,7 +222,7 @@ onMounted(() => {
           v-model:value="filters.keyword"
           clearable
           placeholder="搜索模板名称..."
-          style="width: 280px"
+          class="filter-control filter-control--search"
           @keyup.enter="search"
           @clear="search"
         >
@@ -233,7 +233,7 @@ onMounted(() => {
           clearable
           placeholder="全部来源"
           :options="sourceOptions"
-          style="width: 150px"
+          class="filter-control"
           @update:value="search"
         />
         <NSelect
@@ -241,10 +241,10 @@ onMounted(() => {
           clearable
           placeholder="全部状态"
           :options="statusOptions"
-          style="width: 160px"
+          class="filter-control"
           @update:value="search"
         />
-        <NButton @click="clearFilters">重置</NButton>
+        <NButton class="filter-button" @click="clearFilters">重置</NButton>
       </div>
 
       <NSpin :show="loading">
@@ -428,9 +428,29 @@ onMounted(() => {
 }
 
 .filters {
-  flex-wrap: wrap;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) repeat(2, minmax(160px, 200px)) auto;
+  gap: 10px;
+  align-items: center;
+  justify-content: end;
   margin-bottom: 20px;
+}
+
+.filter-control {
+  min-width: 0;
+
+  &--search {
+    min-width: 220px;
+    width: 100%;
+  }
+}
+
+.filters :deep(.n-input),
+.filters :deep(.n-base-selection),
+.filters :deep(.n-button) {
+  height: 36px;
+  min-height: 36px;
+  border-radius: 8px;
 }
 
 .empty {
@@ -562,6 +582,18 @@ onMounted(() => {
 }
 
 @media (max-width: 640px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-control--search {
+    min-width: 0;
+  }
+
+  .filters :deep(.n-button) {
+    width: 100%;
+  }
+
   .page-header,
   .binding-row {
     align-items: stretch;

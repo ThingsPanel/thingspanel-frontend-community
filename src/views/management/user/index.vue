@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { computed, reactive, getCurrentInstance, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import type { Ref } from 'vue'
 import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
@@ -427,10 +427,6 @@ function init() {
 
 // 初始化
 init()
-const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance()
-  return proxy.getPlatform()
-})
 </script>
 
 <template>
@@ -445,64 +441,60 @@ const getPlatform = computed(() => {
         />
         <div class="mb-12px mt-20px text-16px font-600">{{ $t('page.manage.user.statistics.listTitle') }}</div>
 
-        <NForm :inline="!getPlatform" label-placement="left" :model="queryParams">
-          <div class="flex flex-wrap">
-            <NFormItem :label="$t('page.manage.user.userEmail')" path="email">
+        <NForm label-placement="left" :model="queryParams">
+          <NGrid responsive="screen" item-responsive x-gap="12" y-gap="12" class="search-form-grid">
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userEmail')" path="email">
               <NInput v-model:value="queryParams.email" />
-            </NFormItem>
-            <NFormItem :label="$t('page.manage.user.userName')" path="name">
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userName')" path="name">
               <NInput v-model:value="queryParams.name" />
-            </NFormItem>
-            <NFormItem :label="$t('page.manage.user.userStatus')" path="status">
-              <NSelect
-                v-model:value="queryParams.status"
-                clearable
-                class="w-200px"
-                :options="customUserStatusOptions"
-              />
-            </NFormItem>
-            <NFormItem :label="'组织'" path="organization">
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userStatus')" path="status">
+              <NSelect v-model:value="queryParams.status" clearable :options="customUserStatusOptions" />
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="'组织'" path="organization">
               <NInput v-model:value="queryParams.organization" placeholder="请输入组织名称" />
-            </NFormItem>
-            <NFormItem :label="'省市区'" path="address.province">
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="'省市区'" path="address.province">
               <NCascader
                 v-model:value="queryParams.address.cascaderValue"
                 :options="provinceCityData"
                 placeholder="请选择省市区（三级联动）"
                 clearable
-                class="w-300px"
                 :show-path="true"
                 :filterable="true"
                 :filter="filterCascader"
                 @update:value="handleAddressChange"
               />
-            </NFormItem>
-            <NFormItem :label="'详细地址'" path="address.detailed_address">
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="'详细地址'" path="address.detailed_address">
               <NInput v-model:value="queryParams.address.detailed_address" placeholder="请输入详细地址" />
-            </NFormItem>
-            <NFormItem :label="'时区'" path="timezone">
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="'时区'" path="timezone">
               <NSelect
                 v-model:value="queryParams.timezone"
                 clearable
-                class="w-200px"
                 :options="timezoneOptions"
                 placeholder="请选择时区"
               />
-            </NFormItem>
-            <NFormItem :label="'默认语言'" path="default_language">
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" :label="'默认语言'" path="default_language">
               <NSelect
                 v-model:value="queryParams.default_language"
                 clearable
-                class="w-200px"
                 :options="languageOptions"
                 placeholder="请选择默认语言"
               />
-            </NFormItem>
-            <NFormItem>
-              <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-              <NButton class="ml-20px w-72px" type="primary" @click="handleReset">{{ $t('common.reset') }}</NButton>
-            </NFormItem>
-          </div>
+            </NFormItemGi>
+            <NFormItemGi span="24 s:12 m:6" class="search-form-actions">
+              <NSpace class="w-full" justify="end">
+                <NButton class="search-form-button" type="primary" @click="handleQuery">
+                  {{ $t('common.search') }}
+                </NButton>
+                <NButton class="search-form-button" @click="handleReset">{{ $t('common.reset') }}</NButton>
+              </NSpace>
+            </NFormItemGi>
+          </NGrid>
         </NForm>
 
         <NSpace class="pb-12px" justify="space-between">
@@ -513,6 +505,7 @@ const getPlatform = computed(() => {
         </NSpace>
 
         <NDataTable
+          v-if="!showEmpty"
           size="medium"
           :theme-overrides="tableThemeOverrides"
           :bordered="true"
@@ -521,7 +514,6 @@ const getPlatform = computed(() => {
           :single-line="true"
           :striped="false"
           :scroll-x="1280"
-          v-if="!showEmpty"
           :row-key="row => row.id"
           :remote="true"
           flex-height
@@ -583,17 +575,55 @@ const getPlatform = computed(() => {
     font-weight: 400;
     line-height: 1.5;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
-    transition: background-color 180ms ease, box-shadow 180ms ease;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
   }
 
   :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
     background: rgb(239 246 255) !important;
-    box-shadow: inset 0 1px 0 rgb(191 219 254 / 60%), inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
   }
 
   :deep(.n-data-table-td--last-col),
   :deep(.n-data-table-th--last-col) {
     padding-right: 20px;
+  }
+}
+
+.search-form-grid {
+  :deep(.n-input),
+  :deep(.n-base-selection),
+  :deep(.n-cascader),
+  :deep(.n-date-picker) {
+    width: 100%;
+    min-height: 36px;
+    border-radius: 8px;
+  }
+
+  :deep(.n-button) {
+    height: 36px;
+    border-radius: 8px;
+  }
+}
+
+.search-form-actions {
+  :deep(.n-space) {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-form-actions {
+    :deep(.n-space) {
+      justify-content: stretch;
+    }
+
+    :deep(.n-button) {
+      flex: 1;
+    }
   }
 }
 </style>

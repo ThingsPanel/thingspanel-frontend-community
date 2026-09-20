@@ -95,6 +95,11 @@ const handleQuery = async () => {
   queryData.value.page = 1
   await getData()
 }
+const handleReset = async () => {
+  queryData.value.name = ''
+  queryData.value.page = 1
+  await getData()
+}
 const bodyStyle = ref({
   width: '1000px'
 })
@@ -181,19 +186,22 @@ getData()
 
 <template>
   <NCard class="w-full">
-    <NFlex v-if="!isAlarm" justify="space-between" class="mb-4">
+    <div v-if="!isAlarm" class="search-toolbar mb-4">
       <NButton type="primary" @click="linkAdd()">{{ $t('generate.+add-scene-linkage') }}</NButton>
-      <NFlex align="center" justify="flex-end" :wrap="false">
+      <div class="search-fields">
         <NInput
           v-model:value="queryData.name"
           :placeholder="$t('generate.enter-scene-linkage-name')"
-          class="search-input"
+          class="search-field"
           type="text"
           clearable
         ></NInput>
-        <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-      </NFlex>
-    </NFlex>
+        <div class="search-actions">
+          <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+          <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+        </div>
+      </div>
+    </div>
     <n-empty
       v-if="sceneLinkageList.length === 0"
       size="huge"
@@ -442,8 +450,51 @@ getData()
   justify-content: flex-end;
 }
 
-.search-input {
-  width: 200px;
+.search-toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(280px, 360px);
+  gap: 12px;
+  align-items: center;
+  justify-content: end;
+}
+
+.search-fields {
+  display: grid;
+  grid-template-columns: minmax(180px, 280px) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.search-field {
+  min-width: 0;
+}
+
+.search-toolbar :deep(.n-input),
+.search-toolbar :deep(.n-button) {
+  height: 36px;
+  border-radius: 8px;
+}
+
+.search-actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .search-toolbar,
+  .search-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .search-toolbar > :deep(.n-button),
+  .search-actions :deep(.n-button) {
+    width: 100%;
+  }
+
+  .search-actions :deep(.n-button) {
+    flex: 1;
+  }
 }
 
 .log-card {

@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import type { Ref } from 'vue'
 import { NButton, NEmpty } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
@@ -128,44 +128,44 @@ const handleReset = () => {
   getTableData()
 }
 
-const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance()
-  return proxy.getPlatform()
-})
 getTableData()
 </script>
 
 <template>
   <div>
-    <NCard :title="$t('generate.notification-record')">
+    <NCard>
       <div class="h-full flex-col">
-        <NForm label-placement="left" :inline="!getPlatform" :model="queryParams">
-          <NFormItem path="name" :label="$t('generate.notification-type')">
-            <n-select
-              v-model:value="queryParams.notification_type"
-              :options="notificationOptions"
-              :placeholder="$t('generate.notification-type')"
-              class="input-style min-w-160px"
-              clearable
-            />
-          </NFormItem>
-          <NFormItem path="selected_time">
-            <NDatePicker
-              v-model:value="range"
-              type="datetimerange"
-              clearable
-              separator="-"
-              @update:value="pickerChange"
-            />
-          </NFormItem>
-          <NFormItem path="send_target">
-            <NInput v-model:value="queryParams.send_target" clearable :placeholder="$t('generate.recipient')" />
-          </NFormItem>
-          <NFormItem>
-            <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-            <NButton class="ml-12px" @click="handleReset">{{ $t('common.reset') }}</NButton>
-          </NFormItem>
-        </NForm>
+        <div class="search-toolbar">
+          <h3 class="search-context">{{ $t('generate.notification-record') }}</h3>
+          <div class="search-fields">
+            <div class="search-field">
+              <n-select
+                v-model:value="queryParams.notification_type"
+                :options="notificationOptions"
+                :placeholder="$t('generate.notification-type')"
+                class="input-style"
+                clearable
+              />
+            </div>
+            <div class="search-field search-field--date">
+              <NDatePicker
+                v-model:value="range"
+                type="datetimerange"
+                class="input-style"
+                clearable
+                separator="-"
+                @update:value="pickerChange"
+              />
+            </div>
+            <div class="search-field">
+              <NInput v-model:value="queryParams.send_target" clearable :placeholder="$t('generate.recipient')" />
+            </div>
+            <div class="search-actions">
+              <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+              <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+            </div>
+          </div>
+        </div>
         <NDataTable
           class="thingspanel-data-table mt-4"
           size="medium"
@@ -197,5 +197,94 @@ getTableData()
   margin-top: 12px;
   display: flex;
   justify-content: flex-end;
+}
+
+.search-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search-context {
+  flex: 0 0 auto;
+  margin: 0;
+  color: var(--text-color);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 36px;
+}
+
+.search-fields {
+  display: grid;
+  grid-template-columns: minmax(160px, 200px) minmax(260px, 320px) minmax(160px, 260px) auto;
+  gap: 10px;
+  align-items: center;
+  justify-content: end;
+}
+
+.search-field {
+  min-width: 0;
+}
+
+.search-field--date {
+  min-width: 260px;
+}
+
+.search-fields :deep(.n-input),
+.search-fields :deep(.n-base-selection),
+.search-fields :deep(.n-date-picker) {
+  width: 100%;
+  min-height: 36px;
+  border-radius: 8px;
+}
+
+.search-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.search-actions :deep(.n-button) {
+  height: 36px;
+  border-radius: 8px;
+}
+
+@media (max-width: 900px) {
+  .search-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-field--date {
+    min-width: 0;
+  }
+
+  .search-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .search-context,
+  .search-fields {
+    width: 100%;
+  }
+
+  .search-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .search-actions {
+    grid-column: auto;
+  }
+
+  .search-actions :deep(.n-button) {
+    flex: 1;
+  }
 }
 </style>

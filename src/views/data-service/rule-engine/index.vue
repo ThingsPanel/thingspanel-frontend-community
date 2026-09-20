@@ -203,6 +203,12 @@ function handleQuery() {
   init()
 }
 
+function handleReset() {
+  queryParams.name = ''
+  queryParams.status = null
+  init()
+}
+
 function init() {
   getTableData()
 }
@@ -213,22 +219,31 @@ init()
 
 <template>
   <div>
-    <NCard :title="$t('generate.rule-engine')" :bordered="false" class="h-full rounded-8px shadow-sm">
-      <template #header-extra>
-        <NButton type="primary" @click="handleAddTable">{{ $t('device_template.add') }}</NButton>
-      </template>
+    <NCard :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="h-full flex-col">
-        <NForm ref="queryFormRef" inline label-placement="left" :model="queryParams">
-          <NFormItem :label="$t('generate.rule-name')" path="name">
-            <NInput v-model:value="queryParams.name" />
-          </NFormItem>
-          <NFormItem :label="$t('generate.signature-method')" path="status">
-            <NSelect v-model:value="queryParams.status" clearable class="w-200px" :options="dataServiceStatusOptions" />
-          </NFormItem>
-          <NFormItem>
-            <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-          </NFormItem>
-        </NForm>
+        <div class="search-toolbar">
+          <h3 class="search-context">{{ $t('generate.rule-engine') }}</h3>
+          <div class="search-fields">
+            <NInput
+              v-model:value="queryParams.name"
+              class="search-field"
+              :placeholder="$t('generate.rule-name')"
+              clearable
+            />
+            <NSelect
+              v-model:value="queryParams.status"
+              class="search-field"
+              clearable
+              :placeholder="$t('generate.signature-method')"
+              :options="dataServiceStatusOptions"
+            />
+            <div class="search-actions">
+              <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+              <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+              <NButton type="primary" @click="handleAddTable">{{ $t('device_template.add') }}</NButton>
+            </div>
+          </div>
+        </div>
         <NDataTable
           class="table-standard flex-1-hidden"
           size="medium"
@@ -305,6 +320,68 @@ init()
   :deep(.n-data-table-td--last-col),
   :deep(.n-data-table-th--last-col) {
     padding-right: 20px;
+  }
+}
+
+.search-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.search-context {
+  flex: 0 0 auto;
+  margin: 0;
+  color: var(--text-color);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 36px;
+}
+
+.search-fields {
+  display: grid;
+  grid-template-columns: minmax(180px, 280px) minmax(180px, 280px) auto;
+  gap: 10px;
+  align-items: center;
+  justify-content: end;
+}
+
+.search-field {
+  min-width: 0;
+}
+
+.search-fields :deep(.n-input),
+.search-fields :deep(.n-base-selection),
+.search-fields :deep(.n-button) {
+  min-height: 36px;
+  border-radius: 8px;
+}
+
+.search-actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .search-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .search-context,
+  .search-fields {
+    width: 100%;
+  }
+
+  .search-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .search-actions :deep(.n-button) {
+    flex: 1;
   }
 }
 </style>

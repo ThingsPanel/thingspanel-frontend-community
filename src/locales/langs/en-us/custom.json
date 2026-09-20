@@ -6,6 +6,7 @@
   "custom.devicePage.offline": "Offline",
   "custom.devicePage.deviceName": "Device Name",
   "custom.devicePage.deviceNameOrNumber": "Device Name or Number",
+  "custom.devicePage.searchIntegration": "Search integration name",
   "custom.devicePage.moreFilters": "More filters",
   "custom.devicePage.advancedFilters": "More filter conditions",
   "custom.devicePage.activeFilters": "Active filters",

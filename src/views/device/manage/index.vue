@@ -522,7 +522,7 @@ const currentServer = ref<number>(1)
 const currentServerStatus = ref<StepsProps['status']>('process')
 const activate = async (place: DrawerPlacement, key: string | number) => {
   if (key === 'server') {
-    router.push('/device/service-access')
+    router.push('/device/integration')
   } else {
     current.value = 1
     currentServer.value = 1

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
-import { NInput, NSelect, NSpin, NEmpty, NPagination, NIcon } from 'naive-ui'
-import { IosSearch } from '@vicons/ionicons4'
+import { NSpin, NEmpty, NPagination } from 'naive-ui'
 import { GridOutline, ListOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
+import MarketFilterBar from '@/views/device/market/MarketFilterBar.vue'
 import { getMarketTemplates, installFromMarket } from '@/service/api/market'
 import { useMarketAuth } from '../composables/use-market-auth'
 import MarketTemplateCard from './market-template-card.vue'
@@ -82,6 +82,23 @@ const handleSearch = () => {
   fetchMarketTemplates()
 }
 
+const updateCategory = (value: string | null) => {
+  searchParams.category = value
+  handleSearch()
+}
+
+const updateSort = (value: string) => {
+  searchParams.sort_by = value
+  handleSearch()
+}
+
+const clearFilters = () => {
+  searchParams.keyword = ''
+  searchParams.category = null
+  searchParams.sort_by = 'latest'
+  handleSearch()
+}
+
 const debouncedSearch = useDebounceFn(() => {
   handleSearch()
 }, 500)
@@ -110,7 +127,7 @@ const startInstall = async (id: string) => {
 const handleInstall = (id: string) => {
   if (installingId.value) return
 
-  const templateName = templateList.value.find((item) => item.id === id)?.name || '该模板'
+  const templateName = templateList.value.find(item => item.id === id)?.name || '该模板'
   const dialog = window.$dialog
   if (!dialog) {
     startInstall(id)
@@ -202,33 +219,19 @@ onMounted(() => {
       @refresh="fetchMarketTemplates"
     >
       <template #search-form-content>
-        <div class="flex flex-wrap items-center gap-3">
-          <NInput
-            v-model:value="searchParams.keyword"
-            :placeholder="$t('market.searchPlaceholder')"
-            clearable
-            class="w-90"
-            @keyup.enter="handleSearch"
-          >
-            <template #prefix>
-              <NIcon><IosSearch /></NIcon>
-            </template>
-          </NInput>
-          <NSelect
-            v-model:value="searchParams.category"
-            :options="categoryOptions"
-            :placeholder="$t('market.allCategories')"
-            clearable
-            class="w-35"
-            @update:value="handleSearch"
-          />
-          <NSelect
-            v-model:value="searchParams.sort_by"
-            :options="sortOptions"
-            class="w-30"
-            @update:value="handleSearch"
-          />
-        </div>
+        <MarketFilterBar
+          :keyword="searchParams.keyword"
+          :category="searchParams.category"
+          :sort-by="searchParams.sort_by"
+          :category-options="categoryOptions"
+          :sort-options="sortOptions"
+          :keyword-placeholder="$t('market.searchPlaceholder')"
+          :category-placeholder="$t('market.allCategories')"
+          @update:keyword="searchParams.keyword = $event"
+          @update:category="updateCategory"
+          @update:sort-by="updateSort"
+          @reset="clearFilters"
+        />
       </template>
 
       <template #header-left>
