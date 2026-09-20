@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, reactive, ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
 import type { Ref } from 'vue'
 import { NButton, NSelect } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
@@ -54,6 +54,7 @@ const queryParams = reactive({
   ip: ''
 })
 const total = ref(0)
+const requestId = ref(0)
 
 const tableData = ref<Api.SystemManage.SystemLogList[]>([])
 
@@ -65,29 +66,40 @@ const pagination: PaginationProps = reactive({
   page: 1,
   pageSize: 10,
   showSizePicker: true,
-  pageSizes: [10, 15, 20, 25, 30],
-  onChange: (page: number) => {
-    pagination.page = page
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize
-    pagination.page = 1
-  }
+  pageSizes: [10, 15, 20, 25, 30]
 })
 
 const getTableData = async () => {
+  const currentRequestId = ++requestId.value
   startLoading()
-  const prams = {
+  const params = {
     page: pagination.page || 1,
     page_size: pagination.pageSize || 10,
     ...queryParams
   }
-  const res = await getSystemLogList(prams)
-  if (res?.data) {
-    setTableData(res?.data.list || [])
-    total.value = res.data.total || 0
+
+  try {
+    const res = await getSystemLogList(params)
+    // 翻页连续点击时，旧请求不能覆盖最后一次请求的结果。
+    if (currentRequestId !== requestId.value) return
+
+    const data = res?.data
+    setTableData(Array.isArray(data?.list) ? data.list : [])
+    total.value = Number(data?.total) || 0
+  } finally {
+    if (currentRequestId === requestId.value) endLoading()
   }
-  endLoading()
+}
+
+function handlePageChange(page: number) {
+  pagination.page = page
+  void getTableData()
+}
+
+function handlePageSizeChange(pageSize: number) {
+  pagination.pageSize = pageSize
+  pagination.page = 1
+  void getTableData()
 }
 const detailModalRef = ref<any>(null)
 const handleDetail = item => {
@@ -150,7 +162,8 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
 ]) as Ref<DataTableColumns<DataService.Data>>
 
 function handleQuery() {
-  getTableData()
+  pagination.page = 1
+  void getTableData()
 }
 function handleReset() {
   queryParams.start_time = ''
@@ -167,9 +180,6 @@ function pickerChange(value: [number, number] | null) {
   if (value && value.length === 2) {
     const startDate = moment(value[0])
     const endDateMoment = moment(value[1])
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     // 检查用户是否可能只选了日期（时间部分为 00:00:00）
     // 如果是，则将结束时间调整到 23:59:59.999
     // 如果用户明确选择了时间，则尊重用户的选择
@@ -181,19 +191,12 @@ function pickerChange(value: [number, number] | null) {
       endDateMoment.millisecond() === 0
     ) {
       adjustedEndDateMoment = endDateMoment.endOf('day')
-      if (process.env.NODE_ENV === 'development') {
-      }
     } else {
       adjustedEndDateMoment = endDateMoment // 用户选择了具体时间，保持不变
-      if (process.env.NODE_ENV === 'development') {
-      }
     }
 
     queryParams.start_time = startDate.format('YYYY-MM-DDTHH:mm:ssZ')
     queryParams.end_time = adjustedEndDateMoment.format('YYYY-MM-DDTHH:mm:ssZ')
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     // 尝试更新 range ref 本身以改变输入框显示
     // 注意：这可能会触发组件更新，需要测试
     // @ts-ignore // 忽略类型检查，因为我们在可变元组中修改元素
@@ -201,15 +204,15 @@ function pickerChange(value: [number, number] | null) {
   } else {
     queryParams.start_time = ''
     queryParams.end_time = ''
-    if (process.env.NODE_ENV === 'development') {
-    }
   }
 }
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance()
   return proxy.getPlatform()
 })
-getTableData()
+onMounted(() => {
+  void getTableData()
+})
 </script>
 
 <template>
@@ -250,7 +253,6 @@ getTableData()
         :striped="false"
         :scroll-x="980"
         :row-key="row => row.id || `${row.created_at}-${row.username}-${row.path}`"
-        flex-height
         :columns="columns"
         :data="tableData"
         :loading="loading"
@@ -261,7 +263,15 @@ getTableData()
         </template>
       </NDataTable>
       <div class="pagination-box">
-        <NPagination v-model:page="pagination.page" :item-count="total" @update:page="getTableData" />
+        <NPagination
+          v-model:page="pagination.page"
+          v-model:page-size="pagination.pageSize"
+          :item-count="total"
+          :page-sizes="pagination.pageSizes"
+          :show-size-picker="pagination.showSizePicker"
+          @update:page="handlePageChange"
+          @update:page-size="handlePageSizeChange"
+        />
       </div>
     </NCard>
     <DetailModal ref="detailModalRef"></DetailModal>
@@ -296,12 +306,16 @@ getTableData()
     font-weight: 400;
     line-height: 1.5;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
-    transition: background-color 180ms ease, box-shadow 180ms ease;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
   }
 
   :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
     background: rgb(239 246 255) !important;
-    box-shadow: inset 0 1px 0 rgb(191 219 254 / 60%), inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
   }
 
   :deep(.n-data-table-td--last-col),

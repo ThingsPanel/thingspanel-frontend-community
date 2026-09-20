@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, reactive, ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
 import type { Ref } from 'vue'
 import { NButton, NPopconfirm, NSpace, NSwitch, NTag } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
@@ -27,34 +27,41 @@ const tableThemeOverrides = {
   thPaddingMedium: '12px',
   tdPaddingMedium: '13px 12px'
 }
-type QueryFormModel = Pick<UserManagement.UserKey, 'name' | 'status'> & {
-  page: number
-  page_size: number
-}
+type QueryFormModel = Pick<UserManagement.UserKey, 'name' | 'status'>
 
 const queryParams = reactive<QueryFormModel>({
   name: null,
-  status: null,
-  page: 1,
-  page_size: 10
+  status: null
 })
 
 const tableData = ref<UserManagement.UserKey[]>([])
+const requestId = ref(0)
 
-function setTableData(data: UserManagement.UserKey[]) {
-  tableData.value = data
+function setTableData(data: UserManagement.UserKey[] | null | undefined) {
+  tableData.value = Array.isArray(data) ? data : []
   tableData.value.forEach(item => {
     item.show = false
   })
 }
 
 async function getTableData() {
+  const currentRequestId = ++requestId.value
   startLoading()
-  const { data } = await fetchKeyList(queryParams)
-  if (data) {
-    const list: UserManagement.UserKey[] = data.list
-    setTableData(list)
-    endLoading()
+
+  try {
+    const { page = 1, pageSize = 10 } = pagination
+    const { data } = await fetchKeyList({
+      ...queryParams,
+      page,
+      page_size: pageSize
+    })
+    // 翻页连续点击时，旧请求不能覆盖最后一次请求的结果。
+    if (currentRequestId !== requestId.value) return
+
+    pagination.itemCount = Number(data?.total) || 0
+    setTableData(data?.list)
+  } finally {
+    if (currentRequestId === requestId.value) endLoading()
   }
 }
 
@@ -202,8 +209,6 @@ async function handleCopyKey(key: string) {
   }
 
   // 尝试后备方法 document.execCommand('copy')
-  if (process.env.NODE_ENV === 'development') {
-  }
   const textArea = document.createElement('textarea')
   textArea.value = key
   // 防止在屏幕上显示
@@ -271,31 +276,27 @@ async function handleDeleteTable(rowId: string) {
 const pagination: PaginationProps = reactive({
   page: 1,
   pageSize: 10,
+  itemCount: 0,
   showSizePicker: true,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
     pagination.page = page
-    queryParams.page = page
-    getTableData()
+    void getTableData()
   },
   onUpdatePageSize: (pageSize: number) => {
     pagination.pageSize = pageSize
     pagination.page = 1
-    queryParams.page = 1
-    queryParams.page_size = pageSize
-    getTableData()
+    void getTableData()
   }
 })
 
-function init() {
-  getTableData()
-}
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance()
   return proxy.getPlatform()
 })
-// 初始化
-init()
+onMounted(() => {
+  void getTableData()
+})
 </script>
 
 <template>
@@ -318,7 +319,6 @@ init()
           :striped="false"
           :scroll-x="900"
           :row-key="row => row.id"
-          flex-height
           :columns="columns"
           :data="tableData"
           :loading="loading"
@@ -369,12 +369,16 @@ init()
     font-weight: 400;
     line-height: 1.5;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
-    transition: background-color 180ms ease, box-shadow 180ms ease;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
   }
 
   :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
     background: rgb(239 246 255) !important;
-    box-shadow: inset 0 1px 0 rgb(191 219 254 / 60%), inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
   }
 
   :deep(.n-data-table-td--last-col),
