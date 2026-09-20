@@ -1,4 +1,4 @@
-import type { DeviceTemplate, ListData } from './types'
+import type { DeviceRuntimeBinding, DeviceTemplate, ListData } from './types'
 import { thingmodelClient } from './client'
 
 export const deviceTemplateApi = {
@@ -12,5 +12,6 @@ export const deviceTemplateApi = {
   archive: (id: string) => thingmodelClient.post<void>(`/api/device-templates/${id}/archive`),
   deriveDraft: (id: string) => thingmodelClient.post<DeviceTemplate>(`/api/device-templates/${id}/derive-draft`),
   bindThingModel: (id: string, thing_model_snapshot_id: string) =>
-    thingmodelClient.post<DeviceTemplate>(`/api/device-templates/${id}/bind-thing-model`, { thing_model_snapshot_id })
+    thingmodelClient.post<DeviceTemplate>(`/api/device-templates/${id}/bind-thing-model`, { thing_model_snapshot_id }),
+  projectRuntime: (id: string) => thingmodelClient.post<DeviceRuntimeBinding>(`/api/device-templates/${id}/runtime-projection`)
 }

@@ -87,6 +87,29 @@ export interface Device {
   parent_device_id?: string
 }
 
+export interface DeviceGroup {
+  id?: string
+  tenant_id?: string
+  parent_id?: string
+  name: string
+  description_i18n?: I18nString
+  sort_order?: number
+  children?: DeviceGroup[]
+}
+
+export interface DeviceRuntimeBinding {
+  id: string
+  tenant_id: string
+  device_template_id: string
+  device_id?: string
+  legacy_device_template_id: string
+  legacy_device_config_id: string
+  legacy_device_id?: string
+  status: 'PENDING' | 'READY' | 'FAILED'
+  error_message?: string
+  last_projected_at?: string
+}
+
 export interface MetaItemKey {
   id: string
   key: string

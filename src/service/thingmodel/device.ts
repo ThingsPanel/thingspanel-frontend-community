@@ -1,4 +1,4 @@
-import type { Device, ListData } from './types'
+import type { Device, DeviceRuntimeBinding, ListData } from './types'
 import { thingmodelClient } from './client'
 
 export const deviceApi = {
@@ -12,5 +12,7 @@ export const deviceApi = {
     return resp.values || {}
   },
   actuate: (id: string, body: { msgId?: string; identifier: string; params: Record<string, any> }) =>
-    thingmodelClient.post(`/api/devices/${id}/actuate`, body)
+    thingmodelClient.post(`/api/devices/${id}/actuate`, body),
+  projectRuntime: (id: string) => thingmodelClient.post<DeviceRuntimeBinding>(`/api/devices/${id}/runtime-projection`),
+  runtimeBinding: (id: string) => thingmodelClient.get<DeviceRuntimeBinding>(`/api/devices/${id}/runtime-projection`)
 }
