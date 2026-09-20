@@ -136,7 +136,7 @@ getTableData()
     <NCard>
       <div class="h-full flex-col">
         <div class="search-toolbar">
-          <h3 class="search-context">{{ $t('generate.notification-record') }}</h3>
+          <div class="search-context">{{ $t('generate.notification-record') }}</div>
           <div class="search-fields">
             <div class="search-field">
               <n-select
@@ -200,28 +200,26 @@ getTableData()
 }
 
 .search-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  justify-content: space-between;
+  display: block;
 }
 
 .search-context {
-  flex: 0 0 auto;
   margin: 0;
   color: var(--text-color);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 36px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
 }
 
 .search-fields {
-  display: grid;
-  grid-template-columns: minmax(160px, 200px) minmax(260px, 320px) minmax(160px, 260px) auto;
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
   gap: 10px;
   align-items: center;
-  justify-content: end;
+  justify-content: flex-end;
+  min-width: 0;
+  margin-top: 12px;
 }
 
 .search-field {
@@ -229,7 +227,7 @@ getTableData()
 }
 
 .search-field--date {
-  min-width: 260px;
+  min-width: 220px;
 }
 
 .search-fields :deep(.n-input),
@@ -250,20 +248,6 @@ getTableData()
   border-radius: 8px;
 }
 
-@media (max-width: 900px) {
-  .search-fields {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .search-field--date {
-    min-width: 0;
-  }
-
-  .search-actions {
-    grid-column: 1 / -1;
-  }
-}
-
 @media (max-width: 768px) {
   .search-toolbar {
     align-items: stretch;
@@ -276,7 +260,8 @@ getTableData()
   }
 
   .search-fields {
-    grid-template-columns: 1fr;
+    align-items: stretch;
+    justify-content: stretch;
   }
 
   .search-actions {

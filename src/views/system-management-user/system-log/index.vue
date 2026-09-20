@@ -216,37 +216,39 @@ onMounted(() => {
     <NCard>
       <div class="system-log-header">
         <h2 class="system-log-heading">{{ $t('generate.system-log') }}</h2>
-        <NForm label-placement="left" :model="queryParams">
-          <NGrid responsive="screen" item-responsive x-gap="12" y-gap="12" class="search-form-grid">
-            <NFormItemGi span="24 s:12 m:6" :label="$t('generate.username')" path="name">
-              <NInput v-model:value="queryParams.username" />
-            </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" path="selected_time">
-              <NDatePicker
-                v-model:value="range"
-                type="datetimerange"
-                clearable
-                separator="-"
-                @update:value="pickerChange"
-              />
-            </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('generate.requestMethod')" path="method">
-              <NSelect v-model:value="queryParams.method" :options="requestMethodOptions"></NSelect>
-            </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="$t('generate.ipAddress')" path="ip">
-              <NInput v-model:value="queryParams.ip" />
-            </NFormItemGi>
+        <div class="system-log-toolbar">
+          <NForm label-placement="left" :model="queryParams">
+            <NGrid responsive="screen" item-responsive x-gap="12" y-gap="12" class="search-form-grid">
+              <NFormItemGi span="24 s:12 m:6" :label="$t('generate.username')" path="name">
+                <NInput v-model:value="queryParams.username" />
+              </NFormItemGi>
+              <NFormItemGi span="24 s:12 m:6" path="selected_time">
+                <NDatePicker
+                  v-model:value="range"
+                  type="datetimerange"
+                  clearable
+                  separator="-"
+                  @update:value="pickerChange"
+                />
+              </NFormItemGi>
+              <NFormItemGi span="24 s:12 m:6" :label="$t('generate.requestMethod')" path="method">
+                <NSelect v-model:value="queryParams.method" :options="requestMethodOptions"></NSelect>
+              </NFormItemGi>
+              <NFormItemGi span="24 s:12 m:6" :label="$t('generate.ipAddress')" path="ip">
+                <NInput v-model:value="queryParams.ip" />
+              </NFormItemGi>
 
-            <NFormItemGi span="24 s:12 m:6" class="search-form-actions">
-              <NSpace class="w-full" justify="end">
-                <NButton class="search-form-button" type="primary" @click="handleQuery">
-                  {{ $t('generate.search') }}
-                </NButton>
-                <NButton class="search-form-button" @click="handleReset">{{ $t('generate.reset') }}</NButton>
-              </NSpace>
-            </NFormItemGi>
-          </NGrid>
-        </NForm>
+              <NFormItemGi span="24 s:12 m:6" class="search-form-actions">
+                <NSpace class="w-full" justify="end">
+                  <NButton class="search-form-button" type="primary" @click="handleQuery">
+                    {{ $t('generate.search') }}
+                  </NButton>
+                  <NButton class="search-form-button" @click="handleReset">{{ $t('generate.reset') }}</NButton>
+                </NSpace>
+              </NFormItemGi>
+            </NGrid>
+          </NForm>
+        </div>
       </div>
       <NDataTable
         size="medium"
@@ -336,20 +338,21 @@ onMounted(() => {
 }
 
 .system-log-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+  display: block;
   margin-bottom: 20px;
 }
 
 .system-log-heading {
-  flex: 0 0 auto;
-  margin: 4px 0 0;
+  margin: 0;
   color: var(--text-color);
   font-size: 18px;
   font-weight: 600;
   line-height: 28px;
+}
+
+.system-log-toolbar {
+  width: 100%;
+  margin-top: 12px;
 }
 
 .search-form-grid {
@@ -391,7 +394,7 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .system-log-header {
-    flex-direction: column;
+    display: block;
   }
 
   .search-form-actions {

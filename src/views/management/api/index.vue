@@ -303,12 +303,15 @@ onMounted(() => {
   <div>
     <n-card>
       <div class="h-full flex-col gap-15px">
-        <NSpace>
-          <NButton type="primary" @click="handleAddTable">
-            <icon-ic-round-plus class="mr-4px text-20px" />
-            {{ $t('page.manage.api.addApiKey') }}
-          </NButton>
-        </NSpace>
+        <div class="api-page-header">
+          <div class="api-page-title">{{ $t('page.manage.api.title') }}</div>
+          <div class="api-page-toolbar">
+            <NButton type="primary" @click="handleAddTable">
+              <icon-ic-round-plus class="mr-4px text-20px" />
+              {{ $t('page.manage.api.addApiKey') }}
+            </NButton>
+          </div>
+        </div>
         <NDataTable
           size="medium"
           :theme-overrides="tableThemeOverrides"
@@ -342,6 +345,26 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+.api-page-header {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.api-page-title {
+  color: var(--text-color);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.api-page-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 36px;
+  margin-top: 12px;
+}
+
 .standard-table {
   min-width: 100%;
   overflow: hidden;

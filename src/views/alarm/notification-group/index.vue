@@ -149,10 +149,13 @@ getTableData()
 
 <template>
   <div>
-    <NCard :title="$t('generate.notification-group')">
-      <template #header-extra>
-        <NButton type="primary" @click="handleAddTable">+{{ $t('device_template.add') }}</NButton>
-      </template>
+    <NCard>
+      <div class="notification-group-header">
+        <div class="notification-group-title">{{ $t('generate.notification-group') }}</div>
+        <div class="notification-group-toolbar">
+          <NButton type="primary" @click="handleAddTable">+{{ $t('device_template.add') }}</NButton>
+        </div>
+      </div>
       <div class="h-full flex-col">
         <NDataTable
           class="thingspanel-data-table"
@@ -189,6 +192,26 @@ getTableData()
 </template>
 
 <style scoped>
+.notification-group-header {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.notification-group-title {
+  color: var(--text-color);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.notification-group-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 36px;
+  margin-top: 12px;
+}
+
 .pagination-box {
   margin-top: 12px;
   display: flex;
