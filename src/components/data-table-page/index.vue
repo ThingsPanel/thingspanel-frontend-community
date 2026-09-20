@@ -2,13 +2,28 @@
 import type { VueElement } from 'vue'
 import { computed, defineProps, ref, watchEffect, onMounted, onUnmounted } from 'vue'
 import _ from 'lodash'
-import { NButton, NDataTable, NDatePicker, NEmpty, NInput, NSelect, NSpace, NPagination, NSpin } from 'naive-ui'
+import {
+  NButton,
+  NDataTable,
+  NDatePicker,
+  NDrawer,
+  NDrawerContent,
+  NEmpty,
+  NIcon,
+  NInput,
+  NSelect,
+  NSpace,
+  NPagination,
+  NSpin,
+  NTag
+} from 'naive-ui'
 import type { TreeSelectOption } from 'naive-ui'
 import { useLoading } from '@sa/hooks'
 import { $t } from '@/locales'
 import { formatDateTime } from '@/utils/common/datetime'
 import { createLogger } from '@/utils/logger'
 import { getDemoServerUrl } from '@/utils/common/tool'
+import { FilterOutline } from '@vicons/ionicons5'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import TencentMap from './modules/tencent-map.vue'
 import DevCardItem from '@/components/dev-card-item/index.vue'
@@ -101,6 +116,11 @@ const props = defineProps<{
   rowClick?: () => void // 表格行点击回调
   initPage?: number
   initPageSize?: number
+  primarySearchKeys?: string[] // 主筛选栏中保留的高频筛选项
+}>()
+
+const emit = defineEmits<{
+  reset: []
 }>()
 
 const { loading, startLoading, endLoading } = useLoading()
@@ -113,6 +133,67 @@ const currentPage = ref(props.initPage || 1) // 当前页码
 const pageSize = ref(props.initPageSize || 10) // 每页显示数量
 const searchCriteria: any = ref(Object.fromEntries(searchConfigs.map(item => [item.key, item.initValue]))) // 搜索条件
 const tableScrollX = 920
+const advancedFilterVisible = ref(false)
+
+const primaryFilterKeys = computed(() =>
+  props.primarySearchKeys?.length ? props.primarySearchKeys : searchConfigs.map(item => item.key)
+)
+
+const primarySearchConfigs = computed(() =>
+  primaryFilterKeys.value.map(key => searchConfigs.find(config => config.key === key)).filter(Boolean)
+)
+
+const advancedSearchConfigs = computed(() =>
+  searchConfigs.filter(config => !primaryFilterKeys.value.includes(config.key))
+)
+
+const getSearchLabel = (config: any) => {
+  if (!config?.label) return config?.key || ''
+  return typeof config.label === 'function' ? config.label() : $t(config.label)
+}
+
+const getOptionLabel = (option: any) => {
+  if (!option) return ''
+  if (typeof option.label === 'function') return option.label()
+  return option.label ?? option.name ?? option.key ?? option.value ?? ''
+}
+
+const findOption = (options: any[] = [], value: any): any => {
+  for (const option of options) {
+    if (option.value === value || option.key === value || option.id === value) return option
+    if (option.children) {
+      const nestedOption = findOption(option.children, value)
+      if (nestedOption) return nestedOption
+    }
+  }
+  return undefined
+}
+
+const isFilterActive = (config: any) => {
+  const value = searchCriteria.value[config.key]
+  return Array.isArray(value) ? value.length > 0 : value !== undefined && value !== null && value !== ''
+}
+
+const getFilterDisplayValue = (config: any) => {
+  const value = searchCriteria.value[config.key]
+  if (Array.isArray(value)) {
+    return value.map(item => getOptionLabel(findOption(config.options, item)) || item).join(', ')
+  }
+  return getOptionLabel(findOption(config.options, value)) || String(value)
+}
+
+const activeFilters = computed(() =>
+  searchConfigs
+    .filter(config => isFilterActive(config))
+    .map(config => ({
+      key: config.key,
+      text: `${getSearchLabel(config)}: ${getFilterDisplayValue(config)}`
+    }))
+)
+
+const activeAdvancedFilterCount = computed(
+  () => advancedSearchConfigs.value.filter(config => isFilterActive(config)).length
+)
 // 添加当前视图状态管理
 const currentViewType = ref('list') // 默认为列表视图
 
@@ -217,31 +298,46 @@ const handleSearch = () => {
   getData()
 }
 
+const resetSearchConfig = (config: any) => {
+  if (config.type === 'date-range') {
+    searchCriteria.value[config.key] = []
+  } else if (config.type === 'tree-select') {
+    searchCriteria.value[config.key] = config.multiple ? [] : null
+  } else if (config.type === 'select') {
+    searchCriteria.value[config.key] = null
+  } else {
+    searchCriteria.value[config.key] = ''
+  }
+}
+
 const handleReset = () => {
   // 重置搜索条件为初始值
   Object.keys(searchCriteria.value).forEach(key => {
     const config = searchConfigs.find(item => item.key === key)
     if (config) {
-      // 如果是日期范围选择器，设置为空数组
-      if (config.type === 'date-range') {
-        searchCriteria.value[key] = []
-      }
-      // 如果是树形选择器，根据 multiple 属性设置空值
-      else if (config.type === 'tree-select') {
-        searchCriteria.value[key] = config.multiple ? [] : null
-      }
-      // 如果是下拉选择框，设置为 null 以显示占位符
-      else if (config.type === 'select') {
-        searchCriteria.value[key] = null
-      }
-      // 其他类型设置为空字符串
-      else {
-        searchCriteria.value[key] = ''
-      }
+      resetSearchConfig(config)
     }
   })
 
+  emit('reset')
   handleSearch() // 重置后重新获取数据
+}
+
+const handleAdvancedReset = () => {
+  advancedSearchConfigs.value.forEach(config => resetSearchConfig(config))
+  handleSearch()
+}
+
+const handleClearFilter = (key: string) => {
+  const config = searchConfigs.find(item => item.key === key)
+  if (!config) return
+  resetSearchConfig(config)
+  handleSearch()
+}
+
+const handleAdvancedApply = () => {
+  advancedFilterVisible.value = false
+  handleSearch()
 }
 
 // 强制更新指定参数并刷新数据
@@ -408,79 +504,181 @@ const formSize = ref(undefined)
   >
     <!-- 搜索表单内容 -->
     <template #search-form-content>
-      <n-grid cols="1 s:2 m:3 l:4 xl:6 2xl:8" x-gap="18" y-gap="18" responsive="screen">
-        <n-gi v-for="config in searchConfigs" :key="config.key">
-          <template v-if="config.type === 'input'">
-            <NInput
-              v-model:value="searchCriteria[config.key]"
-              :size="formSize"
-              :placeholder="$t(config.label)"
-              class="input-style"
-              @update:value="handleInputChange"
-            />
-          </template>
-          <template v-else-if="config.type === 'date-range'">
-            <NDatePicker
-              v-model:value="searchCriteria[config.key]"
-              :size="formSize"
-              type="daterange"
-              :placeholder="$t(config.label)"
-              class="input-style"
-            />
-          </template>
-          <template v-else-if="config.type === 'select'">
-            <NSelect
-              v-model:value="searchCriteria[config.key]"
-              :value-field="config.valueField"
-              :label-field="config.labelField"
-              :size="formSize"
-              filterable
-              :filter="filterSelectOption"
-              :options="config.options"
-              :render-label="config.renderLabel"
-              :render-tag="config.renderTag"
-              :placeholder="$t(config.label)"
-              class="input-style"
-              @update:value="handleSelectChange"
-            />
-          </template>
-          <template v-else-if="config.type === 'date'">
-            <NDatePicker
-              v-model:value="searchCriteria[config.key]"
-              :size="formSize"
-              type="date"
-              :placeholder="$t(config.label)"
-              class="input-style"
-            />
-          </template>
-          <template v-else-if="config.type === 'tree-select'">
-            <n-tree-select
-              v-model:value="searchCriteria[config.key]"
-              :size="formSize"
-              filterable
-              :options="config.options"
-              :multiple="config.multiple"
-              class="input-style"
-              @update:value="value => handleTreeSelectUpdate(value, config.key)"
-            />
-          </template>
-        </n-gi>
-        <n-gi>
-          <n-space>
-            <n-button type="primary" :size="formSize" @click="handleSearch">
-              {{ $t('generate.query') }}
+      <div class="device-filter-area">
+        <div class="device-filter-toolbar">
+          <slot name="search-toolbar-before" />
+          <div
+            v-for="config in primarySearchConfigs"
+            :key="config.key"
+            class="device-filter-field"
+            :class="{ 'device-filter-field--search': config.key === 'search' }"
+          >
+            <template v-if="config.type === 'input'">
+              <NInput
+                v-model:value="searchCriteria[config.key]"
+                :size="formSize"
+                :placeholder="$t(config.label)"
+                class="input-style"
+                @update:value="handleInputChange"
+              />
+            </template>
+            <template v-else-if="config.type === 'date-range'">
+              <NDatePicker
+                v-model:value="searchCriteria[config.key]"
+                :size="formSize"
+                type="daterange"
+                :placeholder="$t(config.label)"
+                class="input-style"
+              />
+            </template>
+            <template v-else-if="config.type === 'select'">
+              <NSelect
+                v-model:value="searchCriteria[config.key]"
+                :value-field="config.valueField"
+                :label-field="config.labelField"
+                :size="formSize"
+                filterable
+                :filter="filterSelectOption"
+                :options="config.options"
+                :render-label="config.renderLabel"
+                :render-tag="config.renderTag"
+                :placeholder="$t(config.label)"
+                class="input-style"
+                @update:value="handleSelectChange"
+              />
+            </template>
+            <template v-else-if="config.type === 'date'">
+              <NDatePicker
+                v-model:value="searchCriteria[config.key]"
+                :size="formSize"
+                type="date"
+                :placeholder="$t(config.label)"
+                class="input-style"
+              />
+            </template>
+            <template v-else-if="config.type === 'tree-select'">
+              <n-tree-select
+                v-model:value="searchCriteria[config.key]"
+                :size="formSize"
+                filterable
+                :options="config.options"
+                :multiple="config.multiple"
+                :placeholder="$t(config.label)"
+                class="input-style"
+                @update:value="value => handleTreeSelectUpdate(value, config.key)"
+              />
+            </template>
+          </div>
+
+          <div class="device-filter-actions">
+            <n-button secondary :size="formSize" @click="advancedFilterVisible = true">
+              <template #icon>
+                <NIcon><FilterOutline /></NIcon>
+              </template>
+              {{ $t('custom.devicePage.moreFilters') }}
+              <span v-if="activeAdvancedFilterCount" class="device-filter-count">
+                {{ activeAdvancedFilterCount }}
+              </span>
             </n-button>
-            <n-button type="default" :size="formSize" @click="handleReset">
+            <n-button quaternary :size="formSize" @click="handleReset">
               {{ $t('generate.reset') }}
             </n-button>
-          </n-space>
-        </n-gi>
-      </n-grid>
+          </div>
+        </div>
+
+        <div v-if="activeFilters.length" class="device-active-filters">
+          <span class="device-active-filters__label">{{ $t('custom.devicePage.activeFilters') }}</span>
+          <NTag
+            v-for="filter in activeFilters"
+            :key="filter.key"
+            size="small"
+            closable
+            type="info"
+            @close="handleClearFilter(filter.key)"
+          >
+            {{ filter.text }}
+          </NTag>
+          <n-button text size="small" @click="handleReset">
+            {{ $t('custom.devicePage.clearFilters') }}
+          </n-button>
+          <span class="device-filter-result-count">{{ total }} {{ $t('custom.devicePage.resultCount') }}</span>
+        </div>
+      </div>
+
+      <NDrawer v-model:show="advancedFilterVisible" :width="380" placement="right">
+        <NDrawerContent :title="$t('custom.devicePage.advancedFilters')" closable>
+          <div class="advanced-filter-form">
+            <div v-for="config in advancedSearchConfigs" :key="config.key" class="advanced-filter-field">
+              <div class="advanced-filter-field__label">{{ getSearchLabel(config) }}</div>
+              <template v-if="config.type === 'input'">
+                <NInput
+                  v-model:value="searchCriteria[config.key]"
+                  :placeholder="$t(config.label)"
+                  clearable
+                  class="input-style"
+                />
+              </template>
+              <template v-else-if="config.type === 'date-range'">
+                <NDatePicker
+                  v-model:value="searchCriteria[config.key]"
+                  type="daterange"
+                  :placeholder="$t(config.label)"
+                  clearable
+                  class="input-style"
+                />
+              </template>
+              <template v-else-if="config.type === 'select'">
+                <NSelect
+                  v-model:value="searchCriteria[config.key]"
+                  :value-field="config.valueField"
+                  :label-field="config.labelField"
+                  filterable
+                  :filter="filterSelectOption"
+                  :options="config.options"
+                  :render-label="config.renderLabel"
+                  :render-tag="config.renderTag"
+                  :placeholder="$t(config.label)"
+                  clearable
+                  class="input-style"
+                />
+              </template>
+              <template v-else-if="config.type === 'date'">
+                <NDatePicker
+                  v-model:value="searchCriteria[config.key]"
+                  type="date"
+                  :placeholder="$t(config.label)"
+                  clearable
+                  class="input-style"
+                />
+              </template>
+              <template v-else-if="config.type === 'tree-select'">
+                <n-tree-select
+                  v-model:value="searchCriteria[config.key]"
+                  filterable
+                  :options="config.options"
+                  :multiple="config.multiple"
+                  :placeholder="$t(config.label)"
+                  clearable
+                  class="input-style"
+                />
+              </template>
+            </div>
+          </div>
+
+          <template #footer>
+            <div class="advanced-filter-footer">
+              <n-button quaternary @click="handleAdvancedReset">{{ $t('generate.reset') }}</n-button>
+              <n-button type="primary" @click="handleAdvancedApply">{{ $t('generate.query') }}</n-button>
+            </div>
+          </template>
+        </NDrawerContent>
+      </NDrawer>
     </template>
 
     <!-- 头部左侧操作区域 -->
     <template #header-left>
       <div class="flex gap-2">
+        <slot name="header-left-before" />
         <component :is="action.element" v-for="(action, index) in topActions" :key="index"></component>
       </div>
     </template>
@@ -577,6 +775,169 @@ const formSize = ref(undefined)
 <style scoped lang="scss">
 .btn-style {
   @apply hover:bg-[var(--color-primary-hover)] rounded-md shadow;
+}
+
+.device-filter-area {
+  padding: 2px 0 0;
+}
+
+.device-filter-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.45fr) repeat(4, minmax(140px, 1fr)) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.device-filter-toolbar:has(.device-group-filter-toggle) {
+  grid-template-columns: auto minmax(220px, 1.45fr) repeat(3, minmax(140px, 1fr)) auto;
+}
+
+.device-filter-field {
+  min-width: 0;
+}
+
+.device-filter-field--search {
+  min-width: 220px;
+}
+
+.device-filter-toolbar {
+  :deep(.n-input),
+  :deep(.n-base-selection) {
+    min-height: 36px;
+    border-radius: 8px;
+    background: var(--card-color);
+  }
+
+  :deep(.n-input:hover),
+  :deep(.n-base-selection:hover) {
+    border-color: var(--primary-color);
+  }
+
+  :deep(.n-button) {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 8px;
+  }
+}
+
+.device-filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  height: 100%;
+}
+
+.device-filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  padding: 0 5px;
+  color: var(--primary-color);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  border-radius: 9px;
+  background: var(--primary-color-suppl);
+}
+
+.device-active-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 30px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+
+.device-active-filters__label {
+  color: var(--text-color-3);
+  font-size: 12px;
+}
+
+.device-filter-result-count {
+  margin-left: auto;
+  color: var(--text-color-3);
+  font-size: 12px;
+}
+
+.advanced-filter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.advanced-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.advanced-filter-field__label {
+  color: var(--text-color);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.advanced-filter-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 1440px) {
+  .device-filter-toolbar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .device-filter-field--search {
+    grid-column: span 2;
+  }
+
+  .device-filter-actions {
+    justify-content: flex-start;
+  }
+
+  .device-filter-toolbar:has(.device-group-filter-toggle) {
+    grid-template-columns: auto minmax(220px, 1.45fr) repeat(3, minmax(0, 1fr)) auto;
+  }
+
+  .device-filter-toolbar:has(.device-group-filter-toggle) .device-filter-field--search {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .device-filter-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .device-filter-field--search {
+    grid-column: auto;
+  }
+
+  .device-filter-actions {
+    justify-content: stretch;
+
+    :deep(.n-button) {
+      flex: 1;
+    }
+  }
+
+  .device-filter-result-count {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .device-filter-toolbar:has(.device-group-filter-toggle) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .card-wrapper {

@@ -1,11 +1,12 @@
 <script setup lang="tsx">
-import { onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { DrawerPlacement, StepsProps } from 'naive-ui'
-import { NTag, NButton } from 'naive-ui'
+import { NIcon, NTag, NButton } from 'naive-ui'
 import _ from 'lodash'
 import type { TreeSelectOption } from 'naive-ui/es/tree-select/src/interface'
+import { LayersOutline } from '@vicons/ionicons5'
 import { localStg } from '@/utils/storage'
 import { useDeviceStatusWebSocket } from '@/utils/deviceStatusWebSocket'
 import {
@@ -53,6 +54,10 @@ const serviceIds = ref<ServiceIds[]>([])
 const queryOfServiceIdentifier = ref(route.query.service_identifier)
 const queryOfServiceAccessId = ref(route.query.service_access_id)
 const { cache: query, setCache } = usePageCache()
+const groupOptions = ref<TreeSelectOption[]>([])
+const groupTreeLoading = ref(false)
+const selectedGroupId = ref(query.group_id ? String(query.group_id) : '')
+const groupPanelVisible = ref(false)
 
 // 初始化设备状态 WebSocket 管理器
 const deviceStatusWS = useDeviceStatusWebSocket()
@@ -108,7 +113,7 @@ const getDeviceGroupOptions = async () => {
     const { group, children } = treeNode
     const targetNode: TreeSelectOption = {
       label: group.name,
-      key: group.id
+      key: String(group.id)
     }
 
     if (children && children.length > 0) {
@@ -312,6 +317,9 @@ const searchConfigs = ref<SearchConfig[]>([
     type: 'input'
   }
 ])
+
+const deviceSearchConfigs = computed(() => searchConfigs.value.filter(item => item.key !== 'group_id'))
+const selectedGroupKeys = computed(() => (selectedGroupId.value ? [selectedGroupId.value] : []))
 const dropOption = [
   {
     label: () => $t('custom.devicePage.manualAdd'),
@@ -375,6 +383,18 @@ const fetchFirstLevelOptions = async () => {
     }
     return item
   })
+}
+
+const loadGroupOptions = async () => {
+  groupTreeLoading.value = true
+  try {
+    groupOptions.value = await getDeviceGroupOptions()
+  } catch (error) {
+    console.error('加载设备分组失败:', error)
+    groupOptions.value = []
+  } finally {
+    groupTreeLoading.value = false
+  }
 }
 
 const fetchSecondLevelOptions = async (firstLevelValue, page = 1) => {
@@ -459,7 +479,7 @@ const setServiceParams = () => {
 }
 
 onBeforeMount(async () => {
-  await fetchFirstLevelOptions()
+  await Promise.all([fetchFirstLevelOptions(), loadGroupOptions()])
   setServiceParams()
 })
 
@@ -561,8 +581,12 @@ watch(
   }, 500)
 )
 const fetchData = async (params: Record<string, any>) => {
-  setCache(params)
-  const result = await deviceList(params)
+  const requestParams = {
+    ...params,
+    ...(selectedGroupId.value ? { group_id: selectedGroupId.value } : {})
+  }
+  setCache(requestParams)
+  const result = await deviceList(requestParams)
 
   // 数据加载完成后，订阅当前页面的设备状态
   // 使用 nextTick 确保 tablePageRef.value.dataList 已更新
@@ -572,22 +596,95 @@ const fetchData = async (params: Record<string, any>) => {
 
   return result
 }
+
+const handleGroupSelect = (keys: Array<string | number>) => {
+  selectedGroupId.value = keys.length ? String(keys[0]) : ''
+  tablePageRef.value?.handleSearch()
+}
+
+const handleAllGroups = () => {
+  if (!selectedGroupId.value) return
+  selectedGroupId.value = ''
+  tablePageRef.value?.handleSearch()
+}
+
+const handleFilterReset = () => {
+  selectedGroupId.value = ''
+}
+
+const toggleGroupPanel = () => {
+  groupPanelVisible.value = !groupPanelVisible.value
+}
 </script>
 
 <template>
-  <div>
-    <data-table-page
-      ref="tablePageRef"
-      :fetch-data="fetchData"
-      :columns-to-show="columns_to_show"
-      :table-actions="actions"
-      :search-configs="searchConfigs"
-      :top-actions="topActions"
-      :init-page="query.page"
-      :init-page-size="query.page_size"
-      :row-click="goDeviceDetails"
-      @params-update="paramsUpdateHandle"
-    />
+  <div class="device-manage-page">
+    <div class="device-manage-layout" :class="{ 'device-manage-layout--with-group': groupPanelVisible }">
+      <aside v-if="groupPanelVisible" id="device-group-sidebar" class="device-group-sidebar">
+        <div class="device-group-sidebar__header">
+          <span>设备分组</span>
+        </div>
+        <button
+          type="button"
+          class="device-group-all"
+          :class="{ 'device-group-all--active': !selectedGroupId }"
+          @click="handleAllGroups"
+        >
+          <span class="device-group-all__dot" aria-hidden="true"></span>
+          <span>全部设备</span>
+        </button>
+        <div class="device-group-tree">
+          <n-spin :show="groupTreeLoading">
+            <n-tree
+              v-if="groupOptions.length"
+              block-line
+              selectable
+              :data="groupOptions"
+              :selected-keys="selectedGroupKeys"
+              :default-expand-all="true"
+              key-field="key"
+              label-field="label"
+              children-field="children"
+              @update:selected-keys="handleGroupSelect"
+            />
+            <n-empty v-else size="small" description="暂无设备分组" />
+          </n-spin>
+        </div>
+      </aside>
+
+      <main class="device-manage-content">
+        <data-table-page
+          ref="tablePageRef"
+          :fetch-data="fetchData"
+          :columns-to-show="columns_to_show"
+          :table-actions="actions"
+          :search-configs="deviceSearchConfigs"
+          :primary-search-keys="['search', 'device_config_id', 'is_online', 'warn_status']"
+          :top-actions="topActions"
+          :init-page="query.page"
+          :init-page-size="query.page_size"
+          :row-click="goDeviceDetails"
+          @params-update="paramsUpdateHandle"
+          @reset="handleFilterReset"
+        >
+          <template #search-toolbar-before>
+            <n-button
+              class="device-group-filter-toggle"
+              :type="groupPanelVisible || selectedGroupId ? 'primary' : 'default'"
+              size="small"
+              :aria-expanded="groupPanelVisible"
+              aria-controls="device-group-sidebar"
+              @click="toggleGroupPanel"
+            >
+              <template #icon>
+                <NIcon><LayersOutline /></NIcon>
+              </template>
+              分组
+            </n-button>
+          </template>
+        </data-table-page>
+      </main>
+    </div>
     <n-drawer v-model:show="active" :height="720" :placement="placement" @after-leave="completeHandAdd">
       <n-drawer-content
         v-if="addKey === 'hands'"
@@ -700,3 +797,160 @@ const fetchData = async (params: Record<string, any>) => {
     </n-drawer>
   </div>
 </template>
+
+<style scoped lang="scss">
+.device-manage-page {
+  height: 100%;
+  min-height: 0;
+}
+
+.device-manage-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.device-manage-layout--with-group {
+  grid-template-columns: 220px minmax(0, 1fr);
+}
+
+.device-group-sidebar {
+  min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 18px 12px;
+  overflow: auto;
+  background: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.device-group-sidebar__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 8px 12px;
+  color: var(--text-color);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.device-group-all {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  color: var(--text-color-2);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.device-group-all:hover {
+  color: var(--primary-color);
+  background: var(--primary-color-suppl);
+}
+
+.device-group-all--active {
+  color: var(--primary-color);
+  font-weight: 600;
+  background: var(--primary-color-suppl);
+}
+
+.device-group-all__dot {
+  width: 6px;
+  height: 6px;
+  margin-right: 10px;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+.device-group-tree {
+  margin-top: 6px;
+}
+
+.device-group-tree :deep(.n-tree-node-content) {
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: 8px;
+}
+
+.device-group-tree :deep(.n-tree-node-content:hover) {
+  background: var(--primary-color-suppl);
+}
+
+.device-group-tree :deep(.n-tree-node-content--selected) {
+  color: var(--primary-color);
+  font-weight: 600;
+  background: var(--primary-color-suppl);
+}
+
+.device-manage-content {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.device-group-filter-toggle {
+  flex-shrink: 0;
+  height: 36px;
+  min-width: 72px;
+  border-radius: 8px;
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.device-group-filter-toggle:not(.n-button--primary):hover {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+@media (max-width: 900px) {
+  .device-manage-layout {
+    grid-template-columns: 188px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .device-manage-layout:not(.device-manage-layout--with-group) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .device-manage-page {
+    height: auto;
+  }
+
+  .device-manage-layout {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+
+  .device-group-sidebar {
+    height: auto;
+    max-height: 240px;
+    margin-bottom: 12px;
+  }
+
+  .device-manage-content {
+    height: auto;
+    overflow: visible;
+  }
+}
+</style>
