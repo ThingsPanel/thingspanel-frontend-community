@@ -8,6 +8,7 @@ import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import ItemCard from '@/components/dev-card-item/index.vue'
+import CardGrid from '@/components/card-grid/index.vue'
 
 // Import Publish Components
 import MarketLoginModal from './modules/market-login-modal.vue'
@@ -274,6 +275,7 @@ const availableViews = [
   <div class="p-4">
     <AdvancedListLayout
       :loading="loading"
+      :inline-header="true"
       :show-query-button="false"
       :show-reset-button="false"
       :available-views="availableViews"
@@ -282,9 +284,13 @@ const availableViews = [
       @reset="handleReset"
       @refresh="handleRefresh"
     >
-      <template #header-left>
-        <div class="flex gap-2">
-          <n-button type="primary" @click="handleAddNew">{{ $t('generate.createDeviceConfig') }}</n-button>
+      <template #header-title>
+        <div class="device-template-header">
+          <div class="flex items-center gap-3">
+            <h2 class="text-xl font-bold">设备模板</h2>
+            <span class="text-gray-400">{{ dataTotal }} 个模板</span>
+          </div>
+          <NButton type="primary" @click="handleAddNew">{{ $t('generate.createDeviceConfig') }}</NButton>
         </div>
       </template>
       <!-- 搜索表单内容 -->
@@ -319,8 +325,8 @@ const availableViews = [
           <div v-if="deviceConfigList.length === 0 && !loading" class="empty-state">
             <NEmpty size="huge" :description="$t('common.nodata')" class="min-h-60" />
           </div>
-          <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
-            <n-gi v-for="item in deviceConfigList" :key="item.id">
+          <CardGrid>
+            <div v-for="item in deviceConfigList" :key="item.id">
               <ItemCard
                 :title="item.name"
                 :footer-text="`${item.device_count} ${$t('generate.individual')} ${$t('generate.device')}`"
@@ -382,8 +388,8 @@ const availableViews = [
                   </div>
                 </template>
               </ItemCard>
-            </n-gi>
-          </n-grid>
+            </div>
+          </CardGrid>
         </n-spin>
       </template>
 
@@ -433,12 +439,21 @@ const availableViews = [
 </template>
 
 <style scoped>
+.device-template-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: max-content;
+}
+
 .device-filter-toolbar {
   display: grid;
-  grid-template-columns: minmax(220px, 360px) auto;
+  grid-template-columns: minmax(160px, 220px) auto;
   gap: 10px;
   align-items: center;
   justify-content: end;
+  max-width: 100%;
 }
 
 .device-filter-field {
@@ -446,7 +461,7 @@ const availableViews = [
 }
 
 .device-filter-field--search {
-  min-width: 220px;
+  min-width: 160px;
 }
 
 .device-filter-toolbar :deep(.n-input) {
@@ -517,17 +532,6 @@ const availableViews = [
   min-height: 300px;
 }
 
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 0 4px;
-}
-
-.card-item {
-  min-height: 200px;
-}
-
 .card-extra-info {
   display: flex;
   flex-direction: column;
@@ -577,25 +581,5 @@ const availableViews = [
   height: 100%;
   object-fit: cover;
   object-position: center;
-}
-
-// 响应式设计
-@media (max-width: 768px) {
-  .card-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 1200px) {
-  .card-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  }
-}
-
-@media (min-width: 1201px) {
-  .card-grid {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  }
 }
 </style>

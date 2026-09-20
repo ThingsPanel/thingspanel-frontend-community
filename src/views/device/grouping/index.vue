@@ -17,6 +17,7 @@ const data = ref([])
 const loading = ref(false)
 const currentPage = ref(1)
 const totalPages = ref(0) // 假设总页数为 5，实际应从后端获取
+const totalGroups = ref(0)
 const tableThemeOverrides = {
   borderColor: 'var(--border-color)',
   borderRadius: '10px',
@@ -41,6 +42,7 @@ const getDevice = async () => {
     parent_id: 0
   })
   data.value = res.data.list
+  totalGroups.value = res.data.total
   totalPages.value = Math.ceil(res.data.total / 10)
   loading.value = false
 }
@@ -59,6 +61,7 @@ const debouncedSearch = debounce(async () => {
     name: searchValue.value.trim() || undefined
   })
   data.value = res.data.list
+  totalGroups.value = res.data.total
   totalPages.value = Math.ceil(res.data.total / 10)
   loading.value = false
   // eslint-disable-next-line require-atomic-updates
@@ -102,29 +105,35 @@ onMounted(getDevice) // Fetch device groups on component mount
     <!-- Add or edit device modal component with props for edit mode and data -->
     <AddOrEditDevices ref="the_modal" :is-edit="false" :refresh-data="getDevice" />
     <NCard>
-      <div class="device-filter-toolbar">
-        <!-- Button to trigger modal for creating a new device group -->
-        <div class="device-filter-action-primary">
-          <NButton type="primary" @click="showModal">{{ $t('custom.groupPage.createGroupButton') }}</NButton>
+      <div class="group-page-header">
+        <div class="group-page-heading">
+          <h2 class="group-page-title">分组管理</h2>
+          <span class="group-page-count">{{ totalGroups }} 个分组</span>
         </div>
-        <!-- Input for search functionality -->
-        <div class="device-filter-field device-filter-field--search">
-          <NInput
-            v-model:value="searchValue"
-            :disabled="isRequestPending"
-            :placeholder="$t('custom.groupPage.deviceGroupPlaceholder')"
-            type="text"
-            @input="handleInput"
-          >
-            <template #prefix>
-              <NIcon>
-                <IosSearch />
-              </NIcon>
-            </template>
-          </NInput>
-        </div>
-        <div class="device-filter-actions">
-          <NButton quaternary @click="handleReset">{{ $t('generate.reset') }}</NButton>
+
+        <div class="device-filter-toolbar">
+          <div class="device-filter-leading">
+            <NButton type="primary" @click="showModal">{{ $t('custom.groupPage.createGroupButton') }}</NButton>
+          </div>
+          <div class="device-filter-actions">
+            <!-- Input for search functionality -->
+            <div class="device-filter-field device-filter-field--search">
+              <NInput
+                v-model:value="searchValue"
+                :disabled="isRequestPending"
+                :placeholder="$t('custom.groupPage.deviceGroupPlaceholder')"
+                type="text"
+                @input="handleInput"
+              >
+                <template #prefix>
+                  <NIcon>
+                    <IosSearch />
+                  </NIcon>
+                </template>
+              </NInput>
+            </div>
+            <NButton quaternary @click="handleReset">{{ $t('generate.reset') }}</NButton>
+          </div>
         </div>
       </div>
       <div class="mt-20px">
@@ -168,11 +177,41 @@ onMounted(getDevice) // Fetch device groups on component mount
 
 <style scoped lang="scss">
 .device-filter-toolbar {
-  display: grid;
-  grid-template-columns: auto minmax(220px, 360px) auto;
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  justify-content: end;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.group-page-header {
+  display: block;
+  min-width: 0;
+}
+
+.group-page-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: baseline;
+  min-width: 0;
+  padding-bottom: 12px;
+}
+
+.group-page-title {
+  margin: 0;
+  color: var(--text-color);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.group-page-count {
+  color: var(--text-color-3);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .device-filter-field {
@@ -180,7 +219,8 @@ onMounted(getDevice) // Fetch device groups on component mount
 }
 
 .device-filter-field--search {
-  min-width: 220px;
+  width: 220px;
+  min-width: 0;
 }
 
 .device-filter-toolbar :deep(.n-input) {
@@ -193,7 +233,6 @@ onMounted(getDevice) // Fetch device groups on component mount
   border-color: var(--primary-color);
 }
 
-.device-filter-action-primary :deep(.n-button),
 .device-filter-actions :deep(.n-button) {
   height: 36px;
   padding: 0 16px;
@@ -202,28 +241,50 @@ onMounted(getDevice) // Fetch device groups on component mount
 
 .device-filter-actions {
   display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
 }
 
+.device-filter-leading {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
 @media (max-width: 768px) {
   .device-filter-toolbar {
-    grid-template-columns: 1fr;
+    justify-content: stretch;
   }
 
   .device-filter-field--search {
+    width: 100%;
     min-width: 0;
   }
 
-  .device-filter-action-primary,
-  .device-filter-actions {
+  .device-filter-leading {
     width: 100%;
   }
 
-  .device-filter-action-primary :deep(.n-button),
-  .device-filter-actions :deep(.n-button) {
+  .device-filter-actions {
     width: 100%;
+    justify-content: flex-end;
+  }
+
+  .device-filter-actions :deep(.n-button) {
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .device-filter-actions {
+    justify-content: stretch;
+  }
+
+  .device-filter-actions :deep(.n-button) {
+    flex-basis: 100%;
   }
 }
 

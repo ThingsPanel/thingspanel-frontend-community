@@ -20,6 +20,7 @@ import { EllipsisHorizontal, ListOutline, GridOutline } from '@vicons/ionicons5'
 import { deleteDeviceTemplate, deviceTemplate } from '@/service/api/device-template-model'
 import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
+import CardGrid from '@/components/card-grid/index.vue'
 import TemplateModal from './components/template-modal.vue'
 import { useBoolean, useLoading } from '~/packages/hooks/src'
 // 导入SvgIcon组件，使用项目标准图标系统
@@ -308,41 +309,45 @@ onMounted(() => {
     <AdvancedListLayout
       :initial-view="'card'"
       :available-views="availableViews"
+      :inline-header="true"
+      :stacked-header="true"
       :show-query-button="false"
       :show-reset-button="false"
       @add-new="handleAddNew"
       @refresh="handleRefresh"
     >
-      <!-- 左侧操作按钮 -->
-      <template #header-left>
-        <div class="flex gap-2">
-          <NButton type="primary" @click="handleAddNew">+ {{ $t('generate.add-device-function-template') }}</NButton>
+      <!-- 标题行 -->
+      <template #header-title>
+        <div class="flex items-center gap-3">
+          <h2 class="text-xl font-bold">物模型</h2>
+          <span class="text-gray-400">{{ dataTotal }} 个物模型</span>
         </div>
       </template>
 
       <!-- 搜索表单内容 -->
       <template #search-form-content>
         <div class="device-filter-toolbar">
-          <div class="device-filter-field device-filter-field--search">
-            <NInput
-              v-model:value="queryParams.name"
-              :placeholder="$t('generate.enter-template-name')"
-              type="text"
-              clearable
-              @clear="handleReset"
-              @keydown.enter="handleQuery"
-            >
-              <template #prefix>
-                <NIcon>
-                  <IosSearch />
-                </NIcon>
-              </template>
-            </NInput>
+          <div class="device-filter-leading">
+            <NButton type="primary" @click="handleAddNew">+ {{ $t('generate.add-device-function-template') }}</NButton>
           </div>
           <div class="device-filter-actions">
-            <NButton type="primary" @click="handleQuery">
-              {{ $t('common.search') }}
-            </NButton>
+            <div class="device-filter-field device-filter-field--search">
+              <NInput
+                v-model:value="queryParams.name"
+                :placeholder="$t('generate.enter-template-name')"
+                type="text"
+                clearable
+                @clear="handleReset"
+                @keydown.enter="handleQuery"
+              >
+                <template #prefix>
+                  <NIcon>
+                    <IosSearch />
+                  </NIcon>
+                </template>
+              </NInput>
+            </div>
+            <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
             <NButton quaternary @click="handleReset">{{ $t('generate.reset') }}</NButton>
           </div>
         </div>
@@ -354,7 +359,7 @@ onMounted(() => {
           <div v-if="deviceTemplateList.length === 0 && !loading" class="empty-state">
             <NEmpty size="huge" :description="$t('common.nodata')" />
           </div>
-          <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+          <CardGrid v-else>
             <NCard
               v-for="item in deviceTemplateList"
               :key="item.id"
@@ -410,7 +415,7 @@ onMounted(() => {
                 </div>
               </div>
             </NCard>
-          </div>
+          </CardGrid>
         </n-spin>
       </template>
 
@@ -461,11 +466,18 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .device-filter-toolbar {
-  display: grid;
-  grid-template-columns: minmax(220px, 360px) auto;
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  justify-content: end;
+  justify-content: space-between;
+}
+
+.device-filter-leading {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
 }
 
 .device-filter-field {
@@ -473,7 +485,8 @@ onMounted(() => {
 }
 
 .device-filter-field--search {
-  min-width: 220px;
+  width: 220px;
+  min-width: 0;
 }
 
 .device-filter-toolbar :deep(.n-input) {
@@ -488,6 +501,8 @@ onMounted(() => {
 
 .device-filter-actions {
   display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
@@ -501,11 +516,16 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .device-filter-toolbar {
-    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .device-filter-leading,
+  .device-filter-actions {
+    width: 100%;
   }
 
   .device-filter-field--search {
-    min-width: 0;
+    width: 100%;
   }
 
   .device-filter-actions {
@@ -543,7 +563,7 @@ onMounted(() => {
   flex-direction: column;
   gap: 8px;
   padding: 14px 16px 16px;
-  min-height: 148px;
+  min-height: 158px;
 }
 
 .card-name {

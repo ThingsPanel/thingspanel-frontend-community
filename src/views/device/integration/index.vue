@@ -6,6 +6,7 @@ import _ from 'lodash'
 import { getServiceList } from '@/service/api/device'
 import DevCardItem from '@/components/dev-card-item/index.vue'
 import AdvancedListLayout from '@/components/list-page/index.vue'
+import CardGrid from '@/components/card-grid/index.vue'
 import { GridOutline as CardIcon, SearchOutline } from '@vicons/ionicons5'
 const loading = ref(false)
 const router = useRouter()
@@ -20,6 +21,7 @@ const queryParams = reactive({
   search: ''
 })
 const deviceTemplateList = ref([] as any[])
+const dataTotal = ref(0)
 
 const getData = async () => {
   loading.value = true
@@ -30,6 +32,7 @@ const getData = async () => {
     })
     if (!res.error) {
       deviceTemplateList.value = res.data.list
+      dataTotal.value = res.data.total
       pagination.pageCount = Math.max(1, Math.ceil(res.data.total / Number(queryParams.page_size)))
     }
   } finally {
@@ -73,11 +76,18 @@ onUnmounted(() => {
   <div>
     <AdvancedListLayout
       :available-views="[{ key: 'card', icon: CardIcon, label: 'common.viewCard' }]"
+      :inline-header="true"
       :showQueryButton="false"
       :showResetButton="false"
       :showAddButton="false"
       @refresh="handleRefresh"
     >
+      <template #header-title>
+        <div class="flex items-center gap-3">
+          <h2 class="text-xl font-bold">三方集成</h2>
+          <span class="text-gray-400">{{ dataTotal }} 个集成</span>
+        </div>
+      </template>
       <template #search-form-content>
         <div class="integration-filter-area">
           <div class="integration-filter-toolbar">
@@ -102,8 +112,8 @@ onUnmounted(() => {
       <!-- 卡片视图 -->
       <template #card-view>
         <n-spin :show="loading">
-          <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
-            <n-gi v-for="item in deviceTemplateList" :key="item.id">
+          <CardGrid>
+            <div v-for="item in deviceTemplateList" :key="item.id">
               <DevCardItem
                 :isStatus="false"
                 :title="item.name"
@@ -138,8 +148,8 @@ onUnmounted(() => {
                   </div>
                 </template>
               </DevCardItem>
-            </n-gi>
-          </n-grid>
+            </div>
+          </CardGrid>
         </n-spin>
       </template>
 
