@@ -12,7 +12,6 @@ import { $t } from '@/locales'
 import TableActionModal from './components/table-action-modal.vue'
 import EditPasswordModal from './components/edit-password-modal.vue'
 import TenantStatisticsOverview from './components/tenant-statistics-overview.vue'
-import TenantGrowthCharts from './components/tenant-growth-charts.vue'
 import type { ModalType } from './components/table-action-modal.vue'
 import pwData from './components/pw.json'
 // import ColumnSetting from './components/column-setting.vue'
@@ -444,8 +443,6 @@ const getPlatform = computed(() => {
           :selected-scope="queryParams.activity_scope"
           @select-scope="handleActivityScopeChange"
         />
-        <TenantGrowthCharts :trend="tenantStatistics?.trend ?? []" :loading="statisticsLoading" />
-
         <div class="mb-12px mt-20px text-16px font-600">{{ $t('page.manage.user.statistics.listTitle') }}</div>
 
         <NForm :inline="!getPlatform" label-placement="left" :model="queryParams">

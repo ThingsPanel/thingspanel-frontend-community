@@ -43,6 +43,7 @@ src/typings/components.d.ts
 *.md
 !README.md
 !README_ZH.md
+!docs/table-standard-audit-and-replacement-plan.md
 scripts/
 iteration-log.md
 project-context.md

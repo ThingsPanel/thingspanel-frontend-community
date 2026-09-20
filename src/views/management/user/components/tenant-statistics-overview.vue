@@ -28,14 +28,6 @@ const summary = computed<Api.UserManagement.TenantStatisticsSummary>(
     }
 )
 
-const revisit = computed<Api.UserManagement.TenantRevisitStatistics>(
-  () =>
-    props.statistics?.revisit ?? {
-      revisited: 0,
-      not_revisited: 0
-    }
-)
-
 function percentage(value: number) {
   if (summary.value.total === 0) return 0
   return Number(((value / summary.value.total) * 100).toFixed(1))
@@ -126,32 +118,6 @@ function selectCard(scope: Api.UserManagement.TenantActivityScope | null) {
         </NGridItem>
       </NGrid>
 
-      <NCard class="mt-12px" size="small" :bordered="true">
-        <template #header>
-          <span class="text-14px font-600">{{ $t('page.manage.user.statistics.revisitTitle') }}</span>
-        </template>
-        <NGrid cols="1 m:2" :x-gap="24" :y-gap="16" responsive="screen">
-          <NGridItem>
-            <div class="mb-8px flex items-center justify-between">
-              <span>{{ $t('page.manage.user.statistics.revisited') }}</span>
-              <span class="font-600">{{ revisit.revisited }} · {{ percentage(revisit.revisited) }}%</span>
-            </div>
-            <NProgress type="line" :percentage="percentage(revisit.revisited)" :show-indicator="false" />
-          </NGridItem>
-          <NGridItem>
-            <div class="mb-8px flex items-center justify-between">
-              <span>{{ $t('page.manage.user.statistics.notRevisited') }}</span>
-              <span class="font-600">{{ revisit.not_revisited }} · {{ percentage(revisit.not_revisited) }}%</span>
-            </div>
-            <NProgress
-              type="line"
-              status="warning"
-              :percentage="percentage(revisit.not_revisited)"
-              :show-indicator="false"
-            />
-          </NGridItem>
-        </NGrid>
-      </NCard>
     </NSpin>
   </section>
 </template>

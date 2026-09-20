@@ -644,7 +644,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.management_user',
         meta: {
           title: 'management_user',
-          i18nKey: 'route.management_user'
+          i18nKey: 'route.management_user',
+          roles: ['SYS_ADMIN']
         }
       }
     ]
@@ -847,7 +848,8 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base',
     meta: {
       title: 'resource-hub',
-      i18nKey: 'route.resource-hub'
+      i18nKey: 'route.resource-hub',
+      hideInMenu: true
     },
     children: [
       {
@@ -856,7 +858,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.resource-hub_dashboard',
         meta: {
           title: 'resource-hub_dashboard',
-          i18nKey: 'route.resource-hub_dashboard'
+          i18nKey: 'route.resource-hub_dashboard',
+          hideInMenu: true
         }
       },
       {
@@ -865,7 +868,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.resource-hub_device',
         meta: {
           title: 'resource-hub_device',
-          i18nKey: 'route.resource-hub_device'
+          i18nKey: 'route.resource-hub_device',
+          hideInMenu: true
         }
       }
     ]
@@ -972,7 +976,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.visualization_thingsvis-template',
         meta: {
           title: 'visualization_thingsvis-template',
-          i18nKey: 'route.visualization-thingsvis-template'
+          i18nKey: 'route.visualization-thingsvis-template',
+          hideInMenu: true
         }
       }
     ]
