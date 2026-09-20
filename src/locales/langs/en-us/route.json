@@ -86,7 +86,7 @@
   "route.device_details": "Device Details",
   "route.device_details-child": "Child Device Details",
   "route.device_config": "Device Template",
-  "route.device_config-detail": "Device Template Detail",
+  "route.device_config-detail": "Device Template Details",
   "route.device_config-edit": "Edit the device",
   "route.system-management-user": "Tenant Management",
   "route.system-management-user_system-log": "System Log",

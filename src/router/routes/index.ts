@@ -33,6 +33,15 @@ const customRoutes: CustomRoute[] = [
     }
   },
   {
+    name: 'device-config-detail-legacy-redirect',
+    path: '/device/config-detail',
+    redirect: '/device/template/detail',
+    meta: {
+      title: 'device-config-detail-legacy-redirect',
+      constant: true
+    }
+  },
+  {
     name: 'not-found',
     path: '/:pathMatch(.*)*',
     component: 'layout.blank$view.404',

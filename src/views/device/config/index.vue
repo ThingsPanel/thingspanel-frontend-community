@@ -88,7 +88,7 @@ const handleAddNew = () => {
 
 // 页面跳转
 const goToDetail = (id: string) => {
-  router.push({ path: '/device/config-detail', query: { id } })
+  router.push({ path: '/device/template/detail', query: { id } })
 }
 
 // 处理发布到市场（以 device_config_id 为发布单位）

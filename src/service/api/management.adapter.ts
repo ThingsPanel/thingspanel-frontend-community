@@ -47,7 +47,8 @@ const LEGACY_ROUTE_KEY_MAP: Record<string, string> = {
 }
 
 const LEGACY_ROUTE_PATH_MAP: Record<string, string> = {
-  '/device/service-access': '/device/integration'
+  '/device/service-access': '/device/integration',
+  '/device/config-detail': '/device/template/detail'
 }
 
 const LEGACY_ROUTE_I18N_MAP: Record<string, string> = {
@@ -60,7 +61,8 @@ const HIDDEN_LEGACY_ROUTE_KEYS = new Set(['visualization_thingsvis-template'])
 
 /** 后台 param1 仍可能使用旧路径，用于组件解析 */
 const LEGACY_PATH_TO_ROUTE: Record<string, string> = {
-  ...DEVICE_ROUTE_NAME_BY_PATH
+  ...DEVICE_ROUTE_NAME_BY_PATH,
+  '/device/config-detail': 'device_config-detail'
 }
 
 function transformLayoutAndPageToComponent(layout: string, page: string | null) {

@@ -104,7 +104,7 @@ const submitData = async () => {
           if (backType.value === 'device') {
             router.replace({ path: '/device/details', query: { d_id: propsData.value.device_id } })
           } else if (backType.value === 'config') {
-            router.replace({ path: '/device/config-detail', query: { id: propsData.value.device_config_id } })
+            router.replace({ path: '/device/template/detail', query: { id: propsData.value.device_config_id } })
           } else {
             router.replace({ path: '/automation/scene-linkage' })
           }
@@ -116,7 +116,7 @@ const submitData = async () => {
           if (backType.value === 'device') {
             router.replace({ path: '/device/details', query: { d_id: propsData.value.device_id } })
           } else if (backType.value === 'config') {
-            router.replace({ path: '/device/config-detail', query: { id: propsData.value.device_config_id } })
+            router.replace({ path: '/device/template/detail', query: { id: propsData.value.device_config_id } })
           } else {
             router.replace({ path: '/automation/scene-linkage' })
           }
