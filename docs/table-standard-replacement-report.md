@@ -133,3 +133,9 @@
 - 为其余已改造的 `.standard-table` 容器补齐设备基线的轻量阴影，避免同类页面视觉退化。
 
 补充验证：`pnpm run typecheck`、`pnpm run build`、`git diff --check` 均通过；构建仅保留既有 UnoCSS 图标 warning。定向 ESLint 仍受仓库既有 `no-empty` 错误阻断，未修改无关数据流逻辑。
+
+## 11. 二次页面复查后的主题修复
+
+用户使用租户账号复查时发现告警页仍保留旧表头背景/线框。根因是告警、场景、插件、服务和规则等 `.table-standard` 表格只补了局部 CSS，没有复用设备列表通过 `theme-overrides` 注入的 Naive UI 表格主题，默认主题层仍会覆盖视觉结果。
+
+本次将设备列表主题配置抽取为 `src/utils/table-theme.ts`，并复用于设备列表及全部 `.table-standard` 远程表格。已在 5003 正确工作区登录后人工复查告警信息、通知记录、通知组、场景管理和设备分组页面，表头背景、外框和行 hover 已与设备列表基线一致。`pnpm run typecheck`、`pnpm run build`、`git diff --check` 均通过。

@@ -16,6 +16,7 @@ import moment from 'moment'
 import { alarmHistory } from '@/service/api/alarm'
 import { $t } from '@/locales'
 import { deviceAlarmHistoryPut } from '@/service/api'
+import { tableThemeOverrides } from '@/utils/table-theme'
 
 const loading = ref(false)
 const rowKey = (row: DeviceManagement.DeviceData) => row.id
@@ -251,6 +252,7 @@ const submitCallback = async () => {
     <n-data-table
       class="table-standard w-100% flex-1-hidden"
       size="medium"
+      :theme-overrides="tableThemeOverrides"
       remote
       :bordered="true"
       :bottom-bordered="true"

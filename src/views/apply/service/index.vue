@@ -7,6 +7,7 @@ import { useBoolean, useLoading } from '@sa/hooks'
 import { serviceManagementDeviceTypeLabels } from '@/constants/business'
 import { delProtocolPlugin, fetchProtocolPluginList } from '@/service/api'
 import { $t } from '@/locales'
+import { tableThemeOverrides } from '@/utils/table-theme'
 import type { ModalType } from './components/table-action-modal.vue'
 import TableActionModal from './components/table-action-modal.vue'
 
@@ -190,6 +191,7 @@ init()
         <NDataTable
           class="table-standard flex-1-hidden"
           size="medium"
+          :theme-overrides="tableThemeOverrides"
           :bordered="true"
           :bottom-bordered="true"
           :single-column="false"

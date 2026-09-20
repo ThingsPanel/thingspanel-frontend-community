@@ -7,6 +7,7 @@ import { dataServiceFlagOptions, dataServiceSignModeOptions } from '@/constants/
 import { createRequiredFormRule } from '@/utils/form/rule'
 import { $t } from '@/locales'
 import { createLogger } from '@/utils/logger'
+import { tableThemeOverrides } from '@/utils/table-theme'
 const logger = createLogger('TableAction')
 export interface Props {
   /** 弹窗可见性 */
@@ -197,6 +198,7 @@ watch(
             <NDataTable
               class="table-standard mt-20px flex-1-hidden"
               size="medium"
+              :theme-overrides="tableThemeOverrides"
               :bordered="true"
               :bottom-bordered="true"
               :single-column="false"

@@ -4,6 +4,7 @@ import { ref, watch } from 'vue'
 import { NButton, NEmpty, NPopconfirm, NSpace, NTag } from 'naive-ui'
 import { delRegisterService, getServices } from '@/service/api/plugin'
 import { $t } from '@/locales'
+import { tableThemeOverrides } from '@/utils/table-theme'
 import serviceConfigModal from './components/serviceConfigModal.vue'
 import serviceModal from './components/serviceModal.vue'
 const serviceModalRef = ref<any>(null)
@@ -177,6 +178,7 @@ getList()
         <NDataTable
           class="table-standard flex-1-hidden"
           size="medium"
+          :theme-overrides="tableThemeOverrides"
           :bordered="true"
           :bottom-bordered="true"
           :single-column="false"

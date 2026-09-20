@@ -12,6 +12,7 @@ import {
 import { fetchDataServiceList } from '@/service/api_demo/management'
 import { $t } from '@/locales'
 import { formatDateTime } from '@/utils/common/datetime'
+import { tableThemeOverrides } from '@/utils/table-theme'
 import type { ModalType } from './components/table-action-modal.vue'
 import TableActionModal from './components/table-action-modal.vue'
 import SecretKeyModal from './components/secret-key-modal.vue'
@@ -231,6 +232,7 @@ init()
         <NDataTable
           class="table-standard flex-1-hidden"
           size="medium"
+          :theme-overrides="tableThemeOverrides"
           :bordered="true"
           :bottom-bordered="true"
           :single-column="false"

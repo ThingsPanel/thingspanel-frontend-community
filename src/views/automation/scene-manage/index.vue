@@ -9,6 +9,7 @@ import { sceneActive, sceneDel, sceneGet, sceneLog } from '@/service/api/automat
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
 import { formatDateTime } from '@/utils/common/datetime'
+import { tableThemeOverrides } from '@/utils/table-theme'
 
 const dialog = useDialog()
 const message = useMessage()
@@ -236,6 +237,7 @@ getData()
       <n-data-table
         class="table-standard mt-4"
         size="medium"
+        :theme-overrides="tableThemeOverrides"
         :bordered="true"
         :bottom-bordered="true"
         :single-column="false"

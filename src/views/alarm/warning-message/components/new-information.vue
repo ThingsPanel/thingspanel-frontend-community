@@ -15,6 +15,7 @@ import { getNotificationGroupList } from '@/service/api/notification'
 import { delInfo, editInfo, warningMessageList } from '@/service/api/alarm'
 import { $t } from '@/locales'
 import { createLogger } from '@/utils/logger'
+import { tableThemeOverrides } from '@/utils/table-theme'
 import type { ModalType } from './pop-up.vue'
 import popUp from './pop-up.vue'
 import { useBoolean } from '~/packages/hooks'
@@ -283,6 +284,7 @@ const getPlatform = computed(() => {
     <NDataTable
       class="table-standard w-full flex-1-hidden"
       size="medium"
+      :theme-overrides="tableThemeOverrides"
       remote
       :bordered="true"
       :bottom-bordered="true"

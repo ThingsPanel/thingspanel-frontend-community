@@ -11,6 +11,7 @@ import {
 } from '@/service/api/notification'
 import { notificationOptions } from '@/constants/business'
 import { $t } from '@/locales'
+import { tableThemeOverrides } from '@/utils/table-theme'
 import type { ModalType } from './components/table-action-modal.vue'
 import TableActionModal from './components/table-action-modal.vue'
 import { useBoolean, useLoading } from '~/packages/hooks'
@@ -156,6 +157,7 @@ getTableData()
         <NDataTable
           class="table-standard"
           size="medium"
+          :theme-overrides="tableThemeOverrides"
           :bordered="true"
           :bottom-bordered="true"
           :single-column="false"
