@@ -3,7 +3,7 @@ import { onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { DrawerPlacement, StepsProps } from 'naive-ui'
-import { NSpace, NTag, NButton } from 'naive-ui'
+import { NTag, NButton } from 'naive-ui'
 import _ from 'lodash'
 import type { TreeSelectOption } from 'naive-ui/es/tree-select/src/interface'
 import { localStg } from '@/utils/storage'
@@ -153,9 +153,15 @@ const columns_to_show: Ref<any> = ref([
     label: () => $t('custom.devicePage.deviceName'),
     render: (row: any) => {
       return (
-        <NButton type="primary" text onClick={() => goDeviceDetails(row)}>
-          {row.name}
-        </NButton>
+        <div class="device-name-cell">
+          <span
+            class={['device-status-dot', row?.is_online === 1 ? 'device-status-dot--online' : null]}
+            aria-hidden="true"
+          />
+          <NButton class="device-name-button" type="primary" text onClick={() => goDeviceDetails(row)}>
+            {row.name}
+          </NButton>
+        </div>
       )
     }
   },
@@ -166,19 +172,9 @@ const columns_to_show: Ref<any> = ref([
     label: () => $t('custom.devicePage.onlineStatus'),
     render: row => {
       if (row?.is_online === 1) {
-        return (
-          <NSpace>
-            <NTag type="success">{$t('custom.devicePage.online')}</NTag>
-          </NSpace>
-        )
+        return <NTag type="success">{$t('custom.devicePage.online')}</NTag>
       }
-      return (
-        <NSpace>
-          <NTag type="default" style="color: #999;">
-            {$t('custom.devicePage.offline')}
-          </NTag>
-        </NSpace>
-      )
+      return <NTag type="default">{$t('custom.devicePage.offline')}</NTag>
     }
   },
   {
@@ -187,21 +183,9 @@ const columns_to_show: Ref<any> = ref([
     label: () => $t('custom.devicePage.alarmStatus'),
     render: row => {
       if (row?.warn_status === 'Y') {
-        return (
-          <NSpace>
-            <NTag type="warning" style="color: #ff9900;">
-              {$t('custom.devicePage.alarmed')}
-            </NTag>
-          </NSpace>
-        )
+        return <NTag type="warning">{$t('custom.devicePage.alarmed')}</NTag>
       }
-      return (
-        <NSpace>
-          <NTag type="default" style="color: #999;">
-            {$t('custom.devicePage.notAlarmed')}
-          </NTag>
-        </NSpace>
-      )
+      return <NTag type="default">{$t('custom.devicePage.notAlarmed')}</NTag>
     }
   },
   {
@@ -225,7 +209,7 @@ const columns_to_show: Ref<any> = ref([
     label: () => $t('custom.devicePage.deviceConfig')
   },
   {
-    key: 'device_type',
+    key: 'access_way',
     minWidth: '160px',
     label: () => $t('custom.devicePage.accessServiceProtocol'),
     render: row => {

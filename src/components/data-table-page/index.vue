@@ -1,8 +1,8 @@
 <script lang="tsx" setup>
 import type { VueElement } from 'vue'
-import { computed, defineProps, ref, watch, watchEffect, onMounted, onUnmounted } from 'vue'
+import { computed, defineProps, ref, watchEffect, onMounted, onUnmounted } from 'vue'
 import _ from 'lodash'
-import { NButton, NDataTable, NDatePicker, NInput, NSelect, NSpace, NPagination, NSpin } from 'naive-ui'
+import { NButton, NDataTable, NDatePicker, NEmpty, NInput, NSelect, NSpace, NPagination, NSpin } from 'naive-ui'
 import type { TreeSelectOption } from 'naive-ui'
 import { useLoading } from '@sa/hooks'
 import { $t } from '@/locales'
@@ -111,6 +111,23 @@ const total = ref(0) // 数据总数
 const currentPage = ref(props.initPage || 1) // 当前页码
 const pageSize = ref(props.initPageSize || 10) // 每页显示数量
 const searchCriteria: any = ref(Object.fromEntries(searchConfigs.map(item => [item.key, item.initValue]))) // 搜索条件
+const tableScrollX = 920
+const deviceTableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
 
 // 添加当前视图状态管理
 const currentViewType = ref('list') // 默认为列表视图
@@ -289,6 +306,8 @@ const rowProps = row => {
   }
   return {}
 }
+
+const rowKey = (row: DeviceItem) => row.id
 
 const loadOptionsOnMount2 = async () => {
   for (const config of searchConfigs) {
@@ -522,15 +541,27 @@ const formSize = ref(undefined)
 
     <!-- 列表视图 -->
     <template #list-view>
-      <n-scrollbar style="height: calc(100vh - 442px)" :size="1">
+      <n-scrollbar class="device-table-scroll" :size="1">
         <NDataTable
-          size="small"
+          class="device-data-table"
+          size="medium"
+          :theme-overrides="deviceTableThemeOverrides"
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :striped="false"
+          :scroll-x="tableScrollX"
+          :row-key="rowKey"
           :row-props="rowProps"
           :loading="loading"
           :columns="generatedColumns"
           :data="dataList"
-          class="w-full"
-        />
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </NDataTable>
       </n-scrollbar>
     </template>
 
@@ -601,5 +632,92 @@ const formSize = ref(undefined)
 .map-view-container {
   height: calc(100vh - 442px);
   min-height: 360px;
+}
+
+.device-table-scroll {
+  height: 100%;
+  min-height: 220px;
+}
+
+.device-data-table {
+  min-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+
+  :deep(.n-data-table-th) {
+    height: 44px;
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
+
+  :deep(.device-name-cell) {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  :deep(.device-name-button) {
+    max-width: 240px;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  :deep(.device-status-dot) {
+    position: absolute;
+    top: 50%;
+    left: -10px;
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    background: var(--text-color-3);
+    transform: translateY(-50%);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--text-color-3) 12%, transparent);
+  }
+
+  :deep(.device-status-dot--online) {
+    background: var(--success-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--success-color) 14%, transparent);
+  }
 }
 </style>
