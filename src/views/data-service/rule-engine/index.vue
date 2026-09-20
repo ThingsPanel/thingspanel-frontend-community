@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { reactive, ref } from 'vue'
 import type { Ref } from 'vue'
-import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui'
+import { NButton, NEmpty, NPopconfirm, NSpace, NTag } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import {
   dataServiceFlagLabels,
@@ -27,6 +27,7 @@ const queryParams = reactive({
 })
 
 const tableData = ref<DataService.Data[]>([])
+const rowKey = (row: DataService.Data) => row.id
 
 function setTableData(data: DataService.Data[]) {
   tableData.value = data
@@ -228,13 +229,25 @@ init()
           </NFormItem>
         </NForm>
         <NDataTable
+          class="table-standard flex-1-hidden"
+          size="medium"
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :striped="false"
           :scroll-x="1088"
+          :row-key="rowKey"
+          :flex-height="true"
           :columns="columns"
           :data="tableData"
           :loading="loading"
           :pagination="pagination"
-          class="flex-1-hidden"
-        />
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </NDataTable>
         <TableActionModal
           v-model:visible="visible"
           :type="modalType"
@@ -247,4 +260,46 @@ init()
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.table-standard {
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  :deep(.n-data-table-th) {
+    height: 44px;
+    color: var(--text-color);
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
+}
+</style>

@@ -6,8 +6,20 @@
       :data="pageData.tableData"
       :loading="pageData.loading"
       :pagination="pagination"
+      size="medium"
+      :theme-overrides="tableThemeOverrides"
+      :bottom-bordered="true"
+      :single-column="false"
+      :single-line="true"
+      :scroll-x="720"
+      :row-key="deviceConfigRowKey"
+      :flex-height="true"
       :bordered="true"
-    />
+    >
+      <template #empty>
+        <NEmpty size="small" :description="$t('common.noData')" />
+      </template>
+    </n-data-table>
   </div>
 </template>
 
@@ -15,7 +27,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { $t } from '@/locales'
-import { NDataTable, useMessage } from 'naive-ui'
+import { NDataTable, NEmpty, useMessage } from 'naive-ui'
 import { deviceConfig } from '@/service/api/device'
 
 const message = useMessage()
@@ -25,6 +37,25 @@ const pageData = ref({
   loading: false,
   tableData: []
 })
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const deviceConfigRowKey = (row: any) => row.id
 
 const pagination = ref({
   page: 1,

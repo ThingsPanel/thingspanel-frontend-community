@@ -11,6 +11,19 @@ import DetailModal from './components/detail-modal.vue'
 import { useLoading } from '~/packages/hooks'
 
 const { loading, startLoading, endLoading } = useLoading(false)
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
 
 const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()])
 // POST PUT DELETE
@@ -122,7 +135,7 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
     align: 'left'
   },
   {
-    key: '',
+    key: 'actions',
     title: '操作',
     minWidth: '140px',
     align: 'left',
@@ -227,7 +240,26 @@ getTableData()
           <NButton class="ml-15px w-72px" type="primary" @click="handleReset">{{ $t('generate.reset') }}</NButton>
         </view>
       </NForm>
-      <NDataTable :columns="columns" :data="tableData" :loading="loading" class="flex-1-hidden" />
+      <NDataTable
+        size="medium"
+        :theme-overrides="tableThemeOverrides"
+        :bordered="true"
+        :bottom-bordered="true"
+        :single-column="false"
+        :single-line="true"
+        :striped="false"
+        :scroll-x="980"
+        :row-key="row => row.id || `${row.created_at}-${row.username}-${row.path}`"
+        flex-height
+        :columns="columns"
+        :data="tableData"
+        :loading="loading"
+        class="standard-table flex-1-hidden"
+      >
+        <template #empty>
+          <NEmpty size="small" :description="$t('common.nodata')" />
+        </template>
+      </NDataTable>
       <div class="pagination-box">
         <NPagination v-model:page="pagination.page" :item-count="total" @update:page="getTableData" />
       </div>
@@ -236,7 +268,47 @@ getTableData()
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+.standard-table {
+  min-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  :deep(.n-data-table-th) {
+    height: 44px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-td) {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+    transition: background-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow: inset 0 1px 0 rgb(191 219 254 / 60%), inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
+}
+
 .pagination-box {
   margin-top: 12px;
   display: flex;

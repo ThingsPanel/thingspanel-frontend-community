@@ -2,7 +2,7 @@
 <script setup lang="tsx">
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NButton, NPopconfirm, NSpace } from 'naive-ui'
+import { NButton, NDataTable, NEmpty, NPopconfirm, NSpace } from 'naive-ui'
 import dayjs from 'dayjs'
 import { delServiceAccess, getServiceAccess } from '@/service/api/plugin.ts'
 import { $t } from '@/locales'
@@ -18,6 +18,25 @@ const pageData = ref<any>({
   loading: false,
   tableData: []
 })
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const serviceAccessRowKey = (row: any) => row.id
 
 const queryInfo = ref<any>({
   service_plugin_id: service_plugin_id.value,
@@ -159,8 +178,21 @@ getList()
           :data="pageData.tableData"
           :loading="pageData.loading"
           :pagination="queryInfo"
+          size="medium"
+          :theme-overrides="tableThemeOverrides"
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :scroll-x="920"
+          :flex-height="true"
+          :row-key="serviceAccessRowKey"
           class="flex-1-hidden"
-        />
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </NDataTable>
       </div>
     </NCard>
     <serviceConfigModal ref="serviceConfigModalRef" @get-list="getList"></serviceConfigModal>

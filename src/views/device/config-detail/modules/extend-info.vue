@@ -2,7 +2,7 @@
 import type { Ref } from 'vue'
 import { computed, getCurrentInstance, onMounted, ref } from 'vue'
 import type { DataTableColumns, FormInst } from 'naive-ui'
-import { NButton, NPopconfirm, NSpace, NSwitch, useMessage } from 'naive-ui'
+import { NButton, NDataTable, NEmpty, NPopconfirm, NSpace, NSwitch, useMessage } from 'naive-ui'
 import { deviceConfigEdit } from '@/service/api/device'
 import { $t } from '@/locales'
 
@@ -50,6 +50,25 @@ const extendFormRules = ref({
   }
 })
 const extendInfoList = ref([] as any[])
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const extendInfoRowKey = (row: any) => `${row.name ?? ''}-${row.type ?? ''}-${row.default_value ?? ''}-${row.desc ?? ''}`
 const typeOptions = ref([
   {
     label: 'String',
@@ -219,7 +238,23 @@ onMounted(() => {
 <template>
   <div class="extend-box">
     <NButton type="primary" @click="addDevice()">{{ $t('generate.add-extension-info') }}</NButton>
-    <NDataTable :columns="columns" :data="extendInfoList" size="small" class="m-tb-10" />
+    <NDataTable
+      :columns="columns"
+      :data="extendInfoList"
+      size="medium"
+      :theme-overrides="tableThemeOverrides"
+      :bordered="true"
+      :bottom-bordered="true"
+      :single-column="false"
+      :single-line="true"
+      :scroll-x="920"
+      :row-key="extendInfoRowKey"
+      class="m-tb-10"
+    >
+      <template #empty>
+        <NEmpty size="small" :description="$t('common.noData')" />
+      </template>
+    </NDataTable>
     <!--    <div class="pagination-box">-->
     <!--      &lt;!&ndash; Data table to display device groups &ndash;&gt;-->
     <!--      &lt;!&ndash; Pagination component &ndash;&gt;-->

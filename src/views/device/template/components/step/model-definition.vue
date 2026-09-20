@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { computed, reactive, ref } from 'vue'
 import type { PaginationProps } from 'naive-ui'
-import { NButton, NPopconfirm, NSpace } from 'naive-ui'
+import { NButton, NEmpty, NPopconfirm, NSpace } from 'naive-ui'
 import { useLoading } from '@sa/hooks'
 import { $t } from '@/locales'
 import {
@@ -87,6 +87,24 @@ const queryParams: any = reactive([
     device_template_id: props.deviceTemplateId
   }
 ])
+
+const modelTableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const modelTableRowKey = (row: any) => row.id ?? row.data_identifier ?? row.identifier ?? row.data_name
 
 const checkedTabs: (value: string | number) => void = value => {
   tabsCurrent.value = value
@@ -423,10 +441,24 @@ getTableData()
           :columns="item.col"
           :data="item.data"
           :loading="loading"
+          class="model-definition-table m-t9 flex-1-hidden"
+          size="medium"
+          :theme-overrides="modelTableThemeOverrides"
           :pagination="getPagination(index)"
           :remote="true"
-          class="m-t9 flex-1-hidden"
-        />
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :striped="false"
+          :scroll-x="1120"
+          :row-key="modelTableRowKey"
+          flex-height
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </n-data-table>
 
         <CustomControls v-if="item.name === 'telemetry'" :id="deviceTemplateId"></CustomControls>
         <CustomCommands v-if="item.name === 'command'" :id="deviceTemplateId"></CustomCommands>
@@ -475,5 +507,40 @@ getTableData()
 .box1 {
   display: flex;
   flex-direction: row-reverse;
+}
+
+.model-definition-table {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
 }
 </style>

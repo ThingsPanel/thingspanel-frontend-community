@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import type { PropType } from 'vue'
 import { reactive } from 'vue'
-import { NButton, NSelect, NSpace } from 'naive-ui'
+import { NButton, NEmpty, NSelect, NSpace } from 'naive-ui'
 import { $t } from '@/locales'
 import { enumDataTypeOption } from '@/constants/business'
 
@@ -45,6 +45,31 @@ const onDel: (rowIndex: number) => void = rowIndex => {
   const additionalInfo = [...props.additionalInfo]
   additionalInfo.splice(rowIndex, 1)
   emit('updateAdditionalInfo', additionalInfo)
+}
+
+const enumTableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const enumRowKeys = new WeakMap<object, number>()
+let nextEnumRowKey = 0
+const enumTableRowKey = (row: object) => {
+  if (!enumRowKeys.has(row)) {
+    enumRowKeys.set(row, nextEnumRowKey++)
+  }
+  return enumRowKeys.get(row) as number
 }
 
 const columns: any = [
@@ -109,7 +134,24 @@ const columns: any = [
 
 <template>
   <div>{{ $t('device_template.table_header.setEnum') }}</div>
-  <n-data-table :columns="columns" :data="props.additionalInfo" class="enum-table m-b2 m-t2" />
+  <n-data-table
+    :columns="columns"
+    :data="props.additionalInfo"
+    class="enum-table m-b2 m-t2"
+    size="medium"
+    :theme-overrides="enumTableThemeOverrides"
+    :bordered="true"
+    :bottom-bordered="true"
+    :single-column="false"
+    :single-line="true"
+    :striped="false"
+    :scroll-x="520"
+    :row-key="enumTableRowKey"
+  >
+    <template #empty>
+      <NEmpty size="small" :description="$t('common.noData')" />
+    </template>
+  </n-data-table>
   <NButton class="add-button" @click="onAdd">
     <template #icon>
       <SvgIcon local-icon="add" />
@@ -121,6 +163,41 @@ const columns: any = [
 <style lang="scss" scoped>
 .add-button {
   margin-bottom: 1rem;
+}
+
+.enum-table {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
 }
 </style>
 

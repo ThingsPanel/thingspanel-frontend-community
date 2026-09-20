@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineProps, onMounted, reactive, ref } from 'vue'
-import { useMessage } from 'naive-ui'
+import { NDataTable, NEmpty, useMessage } from 'naive-ui'
 import dayjs from 'dayjs'
 import { addMonths } from 'date-fns'
 import { telemetryHistoryData } from '@/service/api'
@@ -48,6 +48,25 @@ const params = reactive<Params>({
 })
 
 const tableData = ref<HistoryData[]>([])
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const historyRowKey = (row: HistoryData) => `${row.ts}-${row.key}`
 
 const pagination = reactive({
   page: 1,
@@ -169,7 +188,23 @@ onMounted(getTelemetryHistoryData)
     </n-flex>
     <div class="mt-4">
       <n-text v-if="!dateRange" depth="3">{{ $t('generate.hour-24') }}</n-text>
-      <n-data-table :loading="loading" :columns="columns" :data="tableData" />
+      <NDataTable
+        :loading="loading"
+        :columns="columns"
+        :data="tableData"
+        size="medium"
+        :theme-overrides="tableThemeOverrides"
+        :bordered="true"
+        :bottom-bordered="true"
+        :single-column="false"
+        :single-line="true"
+        :scroll-x="720"
+        :row-key="historyRowKey"
+      >
+        <template #empty>
+          <NEmpty size="small" :description="$t('common.noData')" />
+        </template>
+      </NDataTable>
       <div class="mt-4 flex justify-end">
         <n-pagination
           v-model:page="pagination.page"

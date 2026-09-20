@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { computed, getCurrentInstance, reactive, ref } from 'vue'
 import type { Ref } from 'vue'
-import { NButton } from 'naive-ui'
+import { NButton, NEmpty } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import moment from 'moment'
 import { getNotificationHistoryList } from '@/service/api/notification'
@@ -24,6 +24,8 @@ const queryParams = reactive({
 const total = ref(0)
 
 const tableData = ref<Api.Alarm.NotificationHistoryList[]>([])
+const rowKey = (row: any) =>
+  `${row.send_time ?? ''}-${row.send_target ?? ''}-${row.notification_type ?? ''}-${row.send_content ?? ''}`
 
 function setTableData(data: Api.Alarm.NotificationHistoryList[] | []) {
   tableData.value = data || []
@@ -164,13 +166,26 @@ getTableData()
           </NFormItem>
         </NForm>
         <NDataTable
+          class="table-standard flex-1-hidden mt-4"
+          size="medium"
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :striped="false"
+          :scroll-x="980"
+          :row-key="rowKey"
+          :flex-height="true"
           :columns="columns"
           :data="tableData"
           :loading="loading"
           :pagination="pagination"
           :remote="true"
-          class="flex-1-hidden mt-4"
-        />
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </NDataTable>
       </div>
     </NCard>
   </div>
@@ -181,5 +196,47 @@ getTableData()
   margin-top: 12px;
   display: flex;
   justify-content: flex-end;
+}
+
+.table-standard {
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  :deep(.n-data-table-th) {
+    height: 44px;
+    color: var(--text-color);
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
 }
 </style>

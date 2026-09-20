@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { computed, getCurrentInstance, reactive, ref } from 'vue'
 import type { Ref } from 'vue'
-import { NButton, NPopconfirm, NSpace, NSwitch } from 'naive-ui'
+import { NButton, NEmpty, NPopconfirm, NSpace, NSwitch } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import {
   deleteNotificationGroup,
@@ -19,6 +19,7 @@ const { loading, startLoading, endLoading } = useLoading(false)
 const { bool: visible, setTrue: openModal } = useBoolean()
 const tableData = ref<Api.Alarm.NotificationGroupList[]>([])
 const total = ref(0)
+const rowKey = (row: Api.Alarm.NotificationGroupList) => row.id
 
 function setTableData(data: Api.Alarm.NotificationGroupList[]) {
   tableData.value = data
@@ -152,7 +153,24 @@ getTableData()
         <NButton type="primary" @click="handleAddTable">+{{ $t('device_template.add') }}</NButton>
       </template>
       <div class="h-full flex-col">
-        <NDataTable :columns="columns" :data="tableData" :loading="loading" />
+        <NDataTable
+          class="table-standard"
+          size="medium"
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :striped="false"
+          :scroll-x="880"
+          :row-key="rowKey"
+          :columns="columns"
+          :data="tableData"
+          :loading="loading"
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </NDataTable>
         <div class="pagination-box">
           <NPagination v-model:page="pagination.page" :item-count="total" @update:page="getTableData" />
         </div>
@@ -173,5 +191,47 @@ getTableData()
   margin-top: 12px;
   display: flex;
   justify-content: flex-end;
+}
+
+.table-standard {
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  :deep(.n-data-table-th) {
+    height: 44px;
+    color: var(--text-color);
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
 }
 </style>

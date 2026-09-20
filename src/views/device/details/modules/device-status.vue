@@ -4,6 +4,7 @@ import { useLoading } from '@sa/hooks'
 import { deviceStatusHistory } from '@/service/api/device'
 import { $t } from '@/locales'
 import dayjs from 'dayjs'
+import { NDataTable, NEmpty, NTag } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 
 /**
@@ -51,6 +52,25 @@ const emit = defineEmits<{
 const { loading, startLoading, endLoading } = useLoading()
 const tableData = ref<StatusHistoryItem[]>([])
 const total = ref(0)
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const statusRowKey = (row: StatusHistoryItem) => `${row.change_time ?? ''}-${row.status}`
 
 const queryParams = reactive({
   device_id: '',
@@ -104,7 +124,7 @@ const columns: DataTableColumns<StatusHistoryItem> = [
     render: (row: StatusHistoryItem) => {
       const isOnline = row.status === 1
       const text = isOnline ? $t('custom.device_details.online') : $t('custom.device_details.offline')
-      return h('span', text)
+      return h(NTag, { type: isOnline ? 'success' : 'default', size: 'small' }, { default: () => text })
     }
   },
   {
@@ -255,10 +275,21 @@ watch(
           :data="tableData"
           :loading="loading"
           :pagination="pagination"
-          :bordered="false"
+          size="medium"
+          :theme-overrides="tableThemeOverrides"
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :scroll-x="560"
+          :row-key="statusRowKey"
           :max-height="350"
           remote
-        />
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </NDataTable>
       </div>
     </NCard>
   </NModal>

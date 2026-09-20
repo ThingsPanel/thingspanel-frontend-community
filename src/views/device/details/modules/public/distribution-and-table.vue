@@ -7,6 +7,7 @@ import {
   NCard,
   NCheckbox,
   NDataTable,
+  NEmpty,
   NFlex,
   NForm,
   NFormItem,
@@ -32,6 +33,25 @@ import { $t } from '@/locales'
 import { isJSON } from '@/utils/common/tool'
 import { createLogger } from '@/utils/logger'
 const logger = createLogger('Table')
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const commandDataRowKey = (row: any) => row.id ?? row.key ?? row.data_identifier ?? row.data_name
 const props = defineProps<{
   id: string
   noRefresh?: boolean
@@ -409,7 +429,24 @@ const buildAttributePayload = () => {
         </NButton>
       </NGridItem>
     </NGrid>
-    <NDataTable class="mb-4 mt-4" :loading="loading" :columns="tableColumns" :data="tableData" />
+    <NDataTable
+      class="mb-4 mt-4"
+      :loading="loading"
+      :columns="tableColumns"
+      :data="tableData"
+      size="medium"
+      :theme-overrides="tableThemeOverrides"
+      :bordered="true"
+      :bottom-bordered="true"
+      :single-column="false"
+      :single-line="true"
+      :scroll-x="920"
+      :row-key="commandDataRowKey"
+    >
+      <template #empty>
+        <NEmpty size="small" :description="$t('common.noData')" />
+      </template>
+    </NDataTable>
     <div class="flex flex-justify-end">
       <NPagination
         v-if="!noRefresh"

@@ -123,6 +123,24 @@ const handleCardMenuSelect = (key: string, item: any) => {
 
 const cardMenuOptions = [{ label: $t('common.delete'), key: 'delete' }]
 
+const templateTableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const templateTableRowKey = (row: any) => row.id
+
 // 表格列定义
 const columns = computed(() => [
   {
@@ -395,15 +413,26 @@ onMounted(() => {
       <!-- 列表视图 -->
       <template #list-view>
         <NDataTable
+          class="template-data-table"
           :columns="columns"
           :data="deviceTemplateList"
           :loading="loading"
-          size="small"
+          size="medium"
+          :theme-overrides="templateTableThemeOverrides"
           :pagination="false"
-          :bordered="false"
-          :single-line="false"
-          striped
-        />
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :striped="false"
+          :scroll-x="1060"
+          :row-key="templateTableRowKey"
+          flex-height
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </NDataTable>
       </template>
 
       <!-- 底部分页 -->
@@ -551,5 +580,47 @@ onMounted(() => {
   font-size: 12px;
   color: #9ca3af;
   line-height: 36px;
+}
+
+.template-data-table {
+  min-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
 }
 </style>

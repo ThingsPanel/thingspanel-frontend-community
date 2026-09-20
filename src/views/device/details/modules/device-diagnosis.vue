@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 
 import { $t } from '@/locales'
 import { Refresh, HelpCircleOutline } from '@vicons/ionicons5'
+import { NDataTable, NEmpty, NTag } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { deviceDiagnostics, getDeviceDebugStatus, setDeviceDebugStatus, getDeviceDebugLogs } from '@/service/api'
 
@@ -86,6 +87,25 @@ const statistics = ref<Statistics>({
 // 失败记录表格数据
 const failureRecords = ref<FailureRecord[]>([])
 
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const failureRecordRowKey = (row: FailureRecord) => `${row.timestamp}-${row.direction}-${row.stage}-${row.error}`
+
 // 表格列定义
 const columns: DataTableColumns<FailureRecord> = [
   {
@@ -106,7 +126,7 @@ const columns: DataTableColumns<FailureRecord> = [
     render: (row: FailureRecord) => {
       const direction =
         row.direction === 'uplink' ? $t('custom.device_details.uplink') : $t('custom.device_details.downlink')
-      return h('span', {}, { default: () => direction })
+      return h(NTag, { type: row.direction === 'uplink' ? 'info' : 'warning', size: 'small' }, { default: () => direction })
     }
   },
   {
@@ -317,7 +337,24 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <NDataTable :columns="columns" :data="failureRecords" :max-height="350" remote />
+      <NDataTable
+        :columns="columns"
+        :data="failureRecords"
+        size="medium"
+        :theme-overrides="tableThemeOverrides"
+        :bordered="true"
+        :bottom-bordered="true"
+        :single-column="false"
+        :single-line="true"
+        :scroll-x="720"
+        :row-key="failureRecordRowKey"
+        :max-height="350"
+        remote
+      >
+        <template #empty>
+          <NEmpty size="small" :description="$t('common.noData')" />
+        </template>
+      </NDataTable>
     </div>
 
     <!-- 设备调试日志部分 -->

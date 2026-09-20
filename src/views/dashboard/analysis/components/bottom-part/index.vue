@@ -44,6 +44,20 @@ const timelines: TimelineData[] = [
   { type: 'info', title: $t('card.info'), content: $t('card.yes'), time: '2021-10-10 20:46' }
 ]
 
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
 const columns = [
   {
     title: 'Name',
@@ -144,10 +158,69 @@ const tableData: TableData[] = [
     </NGridItem>
     <NGridItem span="0:24 640:24 1024:16">
       <NCard :title="$t('generate.table')" :bordered="false" class="h-full rounded-8px shadow-sm">
-        <NDataTable size="small" :columns="columns" :data="tableData" />
+        <NDataTable
+          size="medium"
+          :theme-overrides="tableThemeOverrides"
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :striped="false"
+          :scroll-x="720"
+          :row-key="row => row.key"
+          :columns="columns"
+          :data="tableData"
+          class="standard-table"
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.nodata')" />
+          </template>
+        </NDataTable>
       </NCard>
     </NGridItem>
   </NGrid>
 </template>
 
-<style scoped></style>
+<style scoped lang="scss">
+.standard-table {
+  min-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  :deep(.n-data-table-th) {
+    height: 44px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-td) {
+    max-width: 260px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    white-space: nowrap;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+    transition: background-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow: inset 0 1px 0 rgb(191 219 254 / 60%), inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
+}
+</style>

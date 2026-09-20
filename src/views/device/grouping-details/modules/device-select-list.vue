@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { defineEmits, onMounted, reactive, ref } from 'vue'
 import type { DataTableColumns, DataTableRowKey, PaginationProps } from 'naive-ui'
-import { NDataTable } from 'naive-ui'
+import { NDataTable, NEmpty } from 'naive-ui'
 import { deviceGroupRelation, deviceList } from '@/service/api/device'
 import { createDeviceColumns } from '@/views/device/modules/all-columns'
 import { $t } from '@/locales'
@@ -44,6 +44,23 @@ const pagination = reactive<PaginationProps>({
   }
 })
 const rowKey = (row: DeviceManagement.DeviceData) => row.id
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
 
 const deviceColumns: DataTableColumns<DeviceManagement.DeviceData> = createDeviceColumns()
 
@@ -111,14 +128,24 @@ onMounted(getDeviceList)
     </NFlex>
   </NFlex>
   <NDataTable
-    size="small"
+    size="medium"
+    :theme-overrides="tableThemeOverrides"
+    :bordered="true"
+    :bottom-bordered="true"
+    :single-column="false"
+    :single-line="true"
+    :scroll-x="920"
     :columns="deviceColumns"
     :data="data"
     :row-key="rowKey"
     :checked-row-keys="checkedRowKeysRef"
     class="h-auto"
     @update:checked-row-keys="handleCheck"
-  />
+  >
+    <template #empty>
+      <NEmpty size="small" :description="$t('common.noData')" />
+    </template>
+  </NDataTable>
   <NFlex justify="end" class="mt-4">
     <NPagination
       v-model:page="pagination.page"

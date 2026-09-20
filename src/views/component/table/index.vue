@@ -13,6 +13,19 @@ interface DataSource {
 }
 
 const { loading, startLoading, endLoading, empty, setEmpty } = useLoadingEmpty()
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
 
 const columns: DataTableColumn<DataSource>[] = [
   {
@@ -115,11 +128,69 @@ onMounted(() => {
           <NButton @click="getEmptyDataSource">{{ $t('generate.no-data') }}</NButton>
         </NSpace>
         <LoadingEmptyWrapper class="h-480px" :loading="loading" :empty="empty">
-          <NDataTable :columns="columns" :data="dataSource" :flex-height="true" class="h-480px" />
+          <NDataTable
+            size="medium"
+            :theme-overrides="tableThemeOverrides"
+            :bordered="true"
+            :bottom-bordered="true"
+            :single-column="false"
+            :single-line="true"
+            :striped="false"
+            :scroll-x="720"
+            :row-key="row => row.name"
+            :flex-height="true"
+            :columns="columns"
+            :data="dataSource"
+            class="standard-table h-480px"
+          >
+            <template #empty>
+              <NEmpty size="small" :description="$t('common.nodata')" />
+            </template>
+          </NDataTable>
         </LoadingEmptyWrapper>
       </NSpace>
     </NCard>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped lang="scss">
+.standard-table {
+  min-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  :deep(.n-data-table-th) {
+    height: 44px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-td) {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+    transition: background-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow: inset 0 1px 0 rgb(191 219 254 / 60%), inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
+}
+</style>

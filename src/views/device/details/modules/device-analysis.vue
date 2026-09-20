@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import type { Ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { NButton, NPopconfirm, NSpace } from 'naive-ui'
+import { NButton, NDataTable, NEmpty, NPopconfirm, NSpace } from 'naive-ui'
 import {
   addChildDevice,
   childDeviceSelectList,
@@ -29,6 +29,23 @@ const log_page = ref(1)
 const page_size = ref(10)
 const selectChild = ref<string[]>([])
 const sOptions = ref<any[]>([])
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
 
 const pagination = computed(() => ({
   page: log_page.value,
@@ -229,7 +246,25 @@ onMounted(() => {})
       </n-card>
     </n-modal>
 
-    <n-data-table :columns="columns" :data="tableData" class="mt-4" :pagination="pagination" :remote="true" />
+    <NDataTable
+      :columns="columns"
+      :data="tableData"
+      class="mt-4"
+      size="medium"
+      :theme-overrides="tableThemeOverrides"
+      :bordered="true"
+      :bottom-bordered="true"
+      :single-column="false"
+      :single-line="true"
+      :scroll-x="720"
+      :row-key="row => row.id"
+      :pagination="pagination"
+      :remote="true"
+    >
+      <template #empty>
+        <NEmpty size="small" :description="$t('common.noData')" />
+      </template>
+    </NDataTable>
   </n-card>
 </template>
 

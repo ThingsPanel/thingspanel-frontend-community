@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 // Import UI components from Naive UI
 import { useRouter } from 'vue-router'
-import { NButton, NDataTable, NFlex, NPagination } from 'naive-ui'
+import { NButton, NDataTable, NEmpty, NFlex, NPagination } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { debounce } from 'lodash'
 import { deleteDeviceGroup, getDeviceGroup } from '@/service/api/device'
@@ -17,6 +17,22 @@ const data = ref([])
 const loading = ref(false)
 const currentPage = ref(1)
 const totalPages = ref(0) // 假设总页数为 5，实际应从后端获取
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
 const getDevice = async () => {
   loading.value = true
   const res = await getDeviceGroup({
@@ -113,10 +129,21 @@ onMounted(getDevice) // Fetch device groups on component mount
             }
           "
           scroll-x="100%"
+          size="medium"
+          :theme-overrides="tableThemeOverrides"
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :row-key="row => row.id"
           :columns="columns"
           :data="data"
           :loading="loading"
-        ></NDataTable>
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </NDataTable>
         <!-- Pagination component -->
         <div class="flex flex-justify-end">
           <NPagination v-model:page="currentPage" :page-count="totalPages" class="mt-20px" @update:page="getDevice" />

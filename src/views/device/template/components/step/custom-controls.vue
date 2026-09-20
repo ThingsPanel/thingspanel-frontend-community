@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { computed, defineProps, getCurrentInstance, nextTick, onMounted, reactive, ref } from 'vue'
-import { NButton, NDataTable, NForm, NFormItem, NInput, NModal, NPagination, NPopconfirm, NTag } from 'naive-ui'
+import { NButton, NDataTable, NEmpty, NForm, NFormItem, NInput, NModal, NPagination, NPopconfirm, NTag } from 'naive-ui'
 import CodeMirror from 'vue-codemirror6'
 import { javascript } from '@codemirror/lang-javascript'
 import { $t } from '@/locales'
@@ -77,6 +77,24 @@ const handleEditTable = (row: any) => {
   openCommandDialog()
   commandjson.formjson = row
 }
+const customControlTableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const customControlTableRowKey = (row: any) => row.id
+
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance()
   return proxy.getPlatform()
@@ -98,9 +116,17 @@ const columns: any = [
     title: $t('generate.enableStatus'),
     render: row => {
       if (row?.enable_status === 'enable') {
-        return <NTag type="success">{$t('page.manage.common.status.enable')}</NTag>
+        return (
+          <NTag type="success" size="small">
+            {$t('page.manage.common.status.enable')}
+          </NTag>
+        )
       }
-      return <NTag type="warning">{$t('page.manage.common.status.disable')}</NTag>
+      return (
+        <NTag type="warning" size="small">
+          {$t('page.manage.common.status.disable')}
+        </NTag>
+      )
     }
   },
   {
@@ -177,7 +203,24 @@ const inputFeedback = computed(() => {
         {{ $t('generate.addCustomCommand') }}
       </NButton>
     </div>
-    <NDataTable :columns="columns" :data="commandjson.listData" class="flex-1-hidden" />
+    <NDataTable
+      :columns="columns"
+      :data="commandjson.listData"
+      class="custom-control-table flex-1-hidden"
+      size="medium"
+      :theme-overrides="customControlTableThemeOverrides"
+      :bordered="true"
+      :bottom-bordered="true"
+      :single-column="false"
+      :single-line="true"
+      :striped="false"
+      :scroll-x="760"
+      :row-key="customControlTableRowKey"
+    >
+      <template #empty>
+        <NEmpty size="small" :description="$t('common.noData')" />
+      </template>
+    </NDataTable>
 
     <div class="w-full flex justify-end">
       <NPagination
@@ -260,5 +303,40 @@ const inputFeedback = computed(() => {
 .custom-control-modal {
   width: 800px;
   min-width: 600px;
+}
+
+.custom-control-table {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
 }
 </style>
