@@ -2,7 +2,7 @@
 import type { Ref } from 'vue'
 import { reactive, ref, watch } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
-import { NButton, NPopconfirm, NSpace } from 'naive-ui'
+import { NButton, NEmpty, NPopconfirm, NSpace } from 'naive-ui'
 import { $t } from '@/locales'
 import { addEvents, putEvents } from '@/service/api/system-data'
 
@@ -74,6 +74,24 @@ const del: (id: string) => void = async id => {
   const index: number = eventsData.findIndex(item => item.id === id)
   eventsData.splice(index, 1)
 }
+
+const stepTableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const stepTableRowKey = (row: any) => row.id
 
 // 表格配置
 const col: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
@@ -278,7 +296,24 @@ const parameterSubmit: () => void = async () => {
         </template>
         {{ $t('device_template.table_header.addParameters') }}
       </NButton>
-      <n-data-table :columns="col" :data="eventsData" class="m-b4 flex-1-hidden" />
+      <n-data-table
+        :columns="col"
+        :data="eventsData"
+        class="step-data-table m-b4 flex-1-hidden"
+        size="medium"
+        :theme-overrides="stepTableThemeOverrides"
+        :bordered="true"
+        :bottom-bordered="true"
+        :single-column="false"
+        :single-line="true"
+        :striped="false"
+        :scroll-x="860"
+        :row-key="stepTableRowKey"
+      >
+        <template #empty>
+          <NEmpty size="small" :description="$t('common.noData')" />
+        </template>
+      </n-data-table>
     </div>
     <n-form-item :label="$t('device_template.table_header.eventDescription')">
       <n-input
@@ -358,5 +393,40 @@ const parameterSubmit: () => void = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.step-data-table {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
 }
 </style>

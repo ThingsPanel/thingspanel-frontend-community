@@ -14,7 +14,7 @@ import {
 import { $t } from '@/locales'
 import FormInput from './form.vue'
 import TopicMappingModal from './components/topic-mapping-modal.vue'
-import { NButton, NPopconfirm, NSpace, NDataTable, useMessage } from 'naive-ui'
+import { NButton, NEmpty, NPopconfirm, NSpace, NDataTable, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 
@@ -86,6 +86,25 @@ const currentEditTopicMapping = ref<TopicMapping | null>(null)
 const topicMappingLoading = ref(false)
 const message = useMessage()
 const { t } = useI18n()
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const topicMappingRowKey = (row: TopicMapping) => row.id ?? `${row.mapping_name}-${row.original_topic}`
 
 const topicMappingColumns = computed<DataTableColumns<TopicMapping>>(() => [
   {
@@ -377,10 +396,21 @@ watch(
           <NDataTable
             :columns="topicMappingColumns"
             :data="topicMappingList"
-            :bordered="false"
+            size="medium"
+            :theme-overrides="tableThemeOverrides"
+            :bordered="true"
+            :bottom-bordered="true"
+            :single-column="false"
+            :single-line="true"
+            :scroll-x="920"
+            :row-key="topicMappingRowKey"
             :loading="topicMappingLoading"
             class="topic-mapping-table"
-          />
+          >
+            <template #empty>
+              <NEmpty size="small" :description="$t('common.noData')" />
+            </template>
+          </NDataTable>
         </div>
       </NFormItem>
       <NFormItem>

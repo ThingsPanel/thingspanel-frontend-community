@@ -36,6 +36,23 @@ const deviceConfigList = ref([] as any[])
 const dataTotal = ref(0)
 const loading = ref(false)
 
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
 // 获取数据
 const getData = async () => {
   loading.value = true
@@ -373,13 +390,22 @@ const availableViews = [
           :columns="columns"
           :data="deviceConfigList"
           :loading="loading"
-          size="small"
+          size="medium"
+          :theme-overrides="tableThemeOverrides"
           :pagination="false"
-          :bordered="false"
-          :single-line="false"
-          striped
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :striped="false"
+          :scroll-x="920"
+          :row-key="row => row.id"
           @update:sorter="handleSorterChange"
-        />
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </NDataTable>
       </template>
 
       <!-- 底部分页 -->

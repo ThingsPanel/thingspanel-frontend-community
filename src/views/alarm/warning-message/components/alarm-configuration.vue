@@ -9,7 +9,7 @@
 <script setup lang="tsx">
 import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
 import type { Ref } from 'vue'
-import { NButton, NCard, NFlex, NInput } from 'naive-ui'
+import { NButton, NCard, NEmpty, NFlex, NInput } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import dayjs from 'dayjs'
 import moment from 'moment'
@@ -249,14 +249,26 @@ const submitCallback = async () => {
       </NFormItem>
     </NForm>
     <n-data-table
+      class="table-standard w-100% flex-1-hidden"
+      size="medium"
       remote
+      :bordered="true"
+      :bottom-bordered="true"
+      :single-column="false"
+      :single-line="true"
+      :striped="false"
+      :scroll-x="1040"
       :loading="loading"
       :columns="columns"
       :data="tableData"
       :pagination="pagination"
       :row-key="rowKey"
-      class="w-100% flex-1-hidden"
-    />
+      :flex-height="true"
+    >
+      <template #empty>
+        <NEmpty size="small" :description="$t('common.noData')" />
+      </template>
+    </n-data-table>
     <!--    <div class="flex gap-20px">-->
     <!--      <NButton @click="handleBatch">{{ $t('generate.batch-process') }}</NButton>-->
     <!--      <NButton @click="handleIgnore">{{ $t('generate.batch-ignore') }}</NButton>-->
@@ -324,6 +336,48 @@ const submitCallback = async () => {
 <style scoped lang="scss">
 .pop-up {
   display: flex;
+}
+
+.table-standard {
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  :deep(.n-data-table-th) {
+    height: 44px;
+    color: var(--text-color);
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
 }
 
 .pop-up-content {

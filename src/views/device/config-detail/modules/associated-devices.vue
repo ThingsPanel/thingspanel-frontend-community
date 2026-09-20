@@ -2,7 +2,7 @@
 import type { Ref } from 'vue'
 import { computed, getCurrentInstance, h, onMounted, ref } from 'vue'
 import type { DataTableColumns, FormInst } from 'naive-ui'
-import { NButton, NDataTable, NFlex, NForm, NFormItem, NModal, NPagination, NPopconfirm, useMessage } from 'naive-ui'
+import { NButton, NDataTable, NEmpty, NFlex, NForm, NFormItem, NModal, NPagination, NPopconfirm, useMessage } from 'naive-ui'
 import moment from 'moment/moment'
 import { deviceConfigBatch, deviceDelete, deviceList, getDeviceListForSelect } from '@/service/api'
 import { useRouterPush } from '@/hooks/common/router'
@@ -29,6 +29,23 @@ const associatedForm = ref<AssociatedFormType>(defaultAssociatedForm())
 const deviceOptions = ref<Api.Device.DeviceSelectItem[]>([])
 const hasMoreDevices = ref(true)
 const loadingMore = ref(false)
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
 
 const queryDevice = ref({
   page: 1,
@@ -270,11 +287,21 @@ onMounted(async () => {
     <n-data-table
       :columns="columnsData"
       :data="configDevice"
-      size="small"
+      size="medium"
+      :theme-overrides="tableThemeOverrides"
+      :bordered="true"
+      :bottom-bordered="true"
+      :single-column="false"
+      :single-line="true"
+      :scroll-x="920"
       :row-key="item => item.id"
       class="table-class"
       :row-props="rowProps"
-    />
+    >
+      <template #empty>
+        <NEmpty size="small" :description="$t('common.noData')" />
+      </template>
+    </n-data-table>
 
     <div class="pagination-box">
       <NPagination

@@ -1,5 +1,6 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, getCurrentInstance, h, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { NDataTable, NEmpty, NTag } from 'naive-ui'
 import type { NumberAnimationInst } from 'naive-ui'
 import dayjs from 'dayjs'
 import { Activity } from '@vicons/tabler'
@@ -48,6 +49,25 @@ const form = reactive({
 const operationType = ref('')
 const sendResult = ref('')
 const tableData = ref([])
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const telemetryLogRowKey = (row: any) => `${row.created_at}-${row.data}-${row.username ?? ''}`
 
 const telemetryData = ref<DeviceManagement.telemetryData[]>([])
 const initTelemetryData = ref<any>()
@@ -162,7 +182,12 @@ const columns = [
     title: $t('custom.device_details.sendResults'),
     minWidth: '140px',
     key: 'status',
-    render: row => (row.status === '1' ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
+    render: row => {
+      const success = row.status === '1'
+      return h(NTag, { type: success ? 'success' : 'error', size: 'small' }, {
+        default: () => (success ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
+      })
+    }
   }
 ]
 const requestSimulationInit = async () => {
@@ -587,7 +612,25 @@ const inputFeedback = computed(() => {
 
     <!-- 第四行 -->
 
-    <n-data-table :loading="loading" class="mt-4" :columns="columns" :data="tableData" :pagination="false" />
+    <NDataTable
+      :loading="loading"
+      class="mt-4"
+      :columns="columns"
+      :data="tableData"
+      size="medium"
+      :theme-overrides="tableThemeOverrides"
+      :bordered="true"
+      :bottom-bordered="true"
+      :single-column="false"
+      :single-line="true"
+      :scroll-x="920"
+      :row-key="telemetryLogRowKey"
+      :pagination="false"
+    >
+      <template #empty>
+        <NEmpty size="small" :description="$t('common.noData')" />
+      </template>
+    </NDataTable>
     <div class="mt-4 w-full flex justify-end">
       <n-pagination
         :page-count="total"

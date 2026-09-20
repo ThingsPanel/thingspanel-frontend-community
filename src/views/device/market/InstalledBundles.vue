@@ -58,6 +58,22 @@ const pagination = reactive({
   pageSize: 10
 })
 
+const installedTableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
 /** 当前激活的标签页 */
 const activeTab = ref<'installed' | 'browse'>('installed')
 
@@ -378,9 +394,12 @@ onMounted(() => {
 
         <NDataTable
           v-else
+          class="installed-bundles-table"
           :columns="columns"
           :data="installedList"
           :loading="loading"
+          size="medium"
+          :theme-overrides="installedTableThemeOverrides"
           :pagination="{
             page: pagination.page,
             pageSize: pagination.pageSize,
@@ -389,10 +408,19 @@ onMounted(() => {
             showQuickJumper: true
           }"
           :row-key="(row: InstalledBundle) => row.installationId"
-          striped
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :striped="false"
+          :scroll-x="1160"
           @update:page="handlePageChange"
           @update:page-size="handlePageSizeChange"
-        />
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </NDataTable>
       </div>
 
       <!-- 市场浏览 -->
@@ -480,5 +508,45 @@ onMounted(() => {
 .empty-state {
   padding: 64px 0;
   text-align: center;
+}
+
+.installed-bundles-table {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
 }
 </style>

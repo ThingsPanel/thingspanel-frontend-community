@@ -1,8 +1,8 @@
 <script setup lang="tsx">
-import { reactive, ref } from 'vue'
+import { h, reactive, ref } from 'vue'
 import type { Ref } from 'vue'
 import type { PaginationProps } from 'naive-ui'
-import { NButton, NPopconfirm } from 'naive-ui'
+import { NButton, NDataTable, NEmpty, NPopconfirm, NTag } from 'naive-ui'
 import moment from 'moment'
 import { expectMessageDelete, expectMessageList } from '@/service/api'
 import { $t } from '@/locales'
@@ -11,6 +11,25 @@ const props = defineProps<{
 }>()
 
 const tableData = ref([])
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const expectedMessageRowKey = (row: any) => row.id
 const statusOptions = ref([
   { label: $t('page.expect.pending'), value: 'pending' },
   { label: $t('page.expect.send'), value: 'sent' },
@@ -107,7 +126,12 @@ const columns: Ref<any> = ref([
     minWidth: '100px',
     title: () => $t('page.expect.status'),
     render: row => {
-      return statusOptions.value.find(v => v.value === row.status)?.label
+      const label = statusOptions.value.find(v => v.value === row.status)?.label
+      return h(
+        NTag,
+        { type: row.status === 'sent' ? 'success' : row.status === 'expired' ? 'error' : 'warning', size: 'small' },
+        { default: () => label }
+      )
     }
   },
   {
@@ -199,5 +223,22 @@ const handleReset = () => {
       </NForm>
     </div>
   </div>
-  <n-data-table :columns="columns" :data="tableData" :pagination="pagination" :remote="true" />
+  <NDataTable
+    :columns="columns"
+    :data="tableData"
+    size="medium"
+    :theme-overrides="tableThemeOverrides"
+    :bordered="true"
+    :bottom-bordered="true"
+    :single-column="false"
+    :single-line="true"
+    :scroll-x="1180"
+    :row-key="expectedMessageRowKey"
+    :pagination="pagination"
+    :remote="true"
+  >
+    <template #empty>
+      <NEmpty size="small" :description="$t('common.noData')" />
+    </template>
+  </NDataTable>
 </template>

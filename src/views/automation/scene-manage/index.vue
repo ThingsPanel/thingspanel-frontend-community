@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { ref } from 'vue'
 import type { Ref } from 'vue'
-import { NButton, NCard, NFlex, NPagination, NPopconfirm, NSpace, useDialog, useMessage } from 'naive-ui'
+import { NButton, NCard, NEmpty, NFlex, NPagination, NPopconfirm, NSpace, useDialog, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import moment from 'moment'
@@ -57,6 +57,7 @@ const queryData = ref({
   page_size: 10
 })
 const dataTotal = ref(0)
+const rowKey = (row: { id: string }) => row.id
 
 const getData = async () => {
   const { data } = await sceneGet(queryData.value)
@@ -232,7 +233,23 @@ getData()
           <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
         </NFlex>
       </NFlex>
-      <n-data-table :columns="columns" :data="tableData" class="mt-4" />
+      <n-data-table
+        class="table-standard mt-4"
+        size="medium"
+        :bordered="true"
+        :bottom-bordered="true"
+        :single-column="false"
+        :single-line="true"
+        :striped="false"
+        :scroll-x="1120"
+        :row-key="rowKey"
+        :columns="columns"
+        :data="tableData"
+      >
+        <template #empty>
+          <NEmpty size="small" :description="$t('common.noData')" />
+        </template>
+      </n-data-table>
       <NFlex justify="flex-end" class="mt-4">
         <NPagination
           v-model:page="queryData.page"
@@ -303,4 +320,46 @@ getData()
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.table-standard {
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  :deep(.n-data-table-th) {
+    height: 44px;
+    color: var(--text-color);
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
+}
+</style>

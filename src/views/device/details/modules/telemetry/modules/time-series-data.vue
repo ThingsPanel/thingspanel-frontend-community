@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineProps, onMounted, reactive, ref, watch } from 'vue'
-import { NDatePicker, NSelect, NSpace } from 'naive-ui'
+import { NDataTable, NDatePicker, NEmpty, NSelect, NSpace } from 'naive-ui'
 import { useFullscreen } from '@vueuse/core'
 import dayjs from 'dayjs'
 import { telemetryDataHistoryList } from '@/service/api/device'
@@ -10,6 +10,25 @@ import ChartComponent from './ChartComponent.vue'
 import { useLoading } from '~/packages/hooks'
 
 const tableData = ref<any[]>([])
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const timeSeriesRowKey = (row: any) => `${row.x}-${row.y}`
 const chartRef = ref()
 const { isFullscreen, toggle } = useFullscreen(chartRef)
 const datePickerValue = ref<[number, number] | null>(null)
@@ -529,13 +548,25 @@ onMounted(() => {
       </div>
     </div>
     <div class="container-table-chart">
-      <n-data-table
+      <NDataTable
         class="telemetry-table"
         :loading="loading"
         :columns="columns"
         :data="tableData"
+        size="medium"
+        :theme-overrides="tableThemeOverrides"
+        :bordered="true"
+        :bottom-bordered="true"
+        :single-column="false"
+        :single-line="true"
+        :scroll-x="720"
+        :row-key="timeSeriesRowKey"
         :pagination="pagination"
-      />
+      >
+        <template #empty>
+          <NEmpty size="small" :description="$t('common.noData')" />
+        </template>
+      </NDataTable>
       <div ref="chartRef" class="telemetry-chart relative m-0 p-0">
         <div :class="`${isFullscreen ? 'h-full' : 'chart-height'} p-2`">
           <ChartComponent :initial-options="initialOptions" />

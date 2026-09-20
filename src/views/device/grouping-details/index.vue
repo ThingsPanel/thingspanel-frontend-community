@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { type DataTableColumns, NButton, NDataTable, type PaginationProps, useMessage } from 'naive-ui'
+import { type DataTableColumns, NButton, NDataTable, NEmpty, type PaginationProps, useMessage } from 'naive-ui'
 import {
   deleteDeviceGroup,
   deleteDeviceGroupRelation,
@@ -19,6 +19,26 @@ import { useRouterPush } from '@/hooks/common/router'
 
 const group_data = ref([])
 const device_data = ref<DeviceManagement.DeviceData[]>([])
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
+
+const groupRowKey = (row: any) => row.id
+const deviceRowKey = (row: DeviceManagement.DeviceData) => row.id
 
 const { loading, startLoading, endLoading } = useLoadingEmpty(false)
 const route = useRoute()
@@ -252,10 +272,22 @@ watch(
                 :columns="group_column"
                 :data="group_data"
                 :loading="loading"
+                size="medium"
+                :theme-overrides="tableThemeOverrides"
+                :bordered="true"
+                :bottom-bordered="true"
+                :single-column="false"
+                :single-line="true"
+                :scroll-x="920"
+                :row-key="groupRowKey"
                 remote
                 :pagination="group_pagination"
                 class="h-auto"
-              ></NDataTable>
+              >
+                <template #empty>
+                  <NEmpty size="small" :description="$t('common.noData')" />
+                </template>
+              </NDataTable>
             </NSpace>
             <AddOrEditDevices
               ref="the_modal1"
@@ -277,7 +309,24 @@ watch(
               </NButton>
             </NSpace>
 
-            <NDataTable :columns="deviceColumns" :data="device_data" :loading="loading" class="h-auto"></NDataTable>
+            <NDataTable
+              :columns="deviceColumns"
+              :data="device_data"
+              :loading="loading"
+              size="medium"
+              :theme-overrides="tableThemeOverrides"
+              :bordered="true"
+              :bottom-bordered="true"
+              :single-column="false"
+              :single-line="true"
+              :scroll-x="920"
+              :row-key="deviceRowKey"
+              class="h-auto"
+            >
+              <template #empty>
+                <NEmpty size="small" :description="$t('common.noData')" />
+              </template>
+            </NDataTable>
             <NFlex justify="end" class="mt-4">
               <NPagination
                 v-model:page="devicePagination.page"

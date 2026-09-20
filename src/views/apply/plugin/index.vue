@@ -1,13 +1,14 @@
 <!-- eslint-disable require-atomic-updates -->
 <script setup lang="tsx">
 import { ref, watch } from 'vue'
-import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui'
+import { NButton, NEmpty, NPopconfirm, NSpace, NTag } from 'naive-ui'
 import { delRegisterService, getServices } from '@/service/api/plugin'
 import { $t } from '@/locales'
 import serviceConfigModal from './components/serviceConfigModal.vue'
 import serviceModal from './components/serviceModal.vue'
 const serviceModalRef = ref<any>(null)
 const serviceConfigModalRef = ref<any>(null)
+const rowKey = (row: { id: string }) => row.id
 
 const pageData = ref<any>({
   loading: false,
@@ -174,13 +175,25 @@ getList()
       </div>
       <div class="h">
         <NDataTable
+          class="table-standard flex-1-hidden"
+          size="medium"
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :striped="false"
+          :scroll-x="1160"
+          :row-key="rowKey"
           :remote="true"
           :columns="columns"
           :data="pageData.tableData"
           :loading="pageData.loading"
           :pagination="queryInfo"
-          class="flex-1-hidden"
-        />
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </NDataTable>
       </div>
     </NCard>
     <serviceModal ref="serviceModalRef" @get-list="getList"></serviceModal>
@@ -203,5 +216,47 @@ getList()
 }
 .h {
   height: max-content;
+}
+
+.table-standard {
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  :deep(.n-data-table-th) {
+    height: 44px;
+    color: var(--text-color);
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
 }
 </style>

@@ -2,7 +2,7 @@
 <script setup lang="tsx">
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { NAlert, NInput, NSelect } from 'naive-ui'
+import { NAlert, NDataTable, NEmpty, NInput, NSelect } from 'naive-ui'
 import { batchAddServiceMenuList, getSelectServiceMenuList, getServiceListDrop } from '@/service/api/plugin'
 import { getDeviceConfigList } from '@/service/api/device'
 import { $t } from '@/locales'
@@ -28,6 +28,23 @@ const pageData = ref<any>({
   loading: false,
   tableData: []
 })
+
+const tableThemeOverrides = {
+  borderColor: 'var(--border-color)',
+  borderRadius: '10px',
+  fontSizeMedium: '14px',
+  lineHeight: '1.5',
+  thColor: 'var(--body-color)',
+  thColorHover: 'var(--body-color)',
+  thFontWeight: '400',
+  thTextColor: 'var(--text-color)',
+  tdColor: 'var(--card-color)',
+  tdColorHover: 'var(--primary-color-suppl)',
+  tdColorSorting: 'var(--primary-color-suppl)',
+  tdTextColor: 'var(--text-color)',
+  thPaddingMedium: '12px',
+  tdPaddingMedium: '13px 12px'
+}
 
 const normalizeTemplateOptions = (options: unknown) => {
   if (!Array.isArray(options)) return []
@@ -387,10 +404,22 @@ const safeParseJSON = (value: any) => {
           :data="pageData.tableData"
           :loading="pageData.loading"
           :pagination="queryInfo"
+          size="medium"
+          :theme-overrides="tableThemeOverrides"
+          :bordered="true"
+          :bottom-bordered="true"
+          :single-column="false"
+          :single-line="true"
+          :scroll-x="920"
+          :flex-height="true"
           :row-key="row => row.device_number"
           class="flex-1-hidden"
           @update:checked-row-keys="handleCheck"
-        />
+        >
+          <template #empty>
+            <NEmpty size="small" :description="$t('common.noData')" />
+          </template>
+        </NDataTable>
       </div>
       <div class="footer">
         <NButton type="primary" class="btn" @click="submitSevice">{{ $t('common.confirm') }}</NButton>
