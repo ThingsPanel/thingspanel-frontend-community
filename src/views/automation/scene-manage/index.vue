@@ -220,25 +220,33 @@ getData()
 <template>
   <div class="h-full w-full">
     <NCard>
-      <div class="search-toolbar mb-4">
-        <NButton type="primary" @click="sceneAdd()">{{ $t('generate.+add-scene') }}</NButton>
-        <div class="search-fields">
-          <NInput
-            v-model:value="queryData.name"
-            :placeholder="$t('generate.enterSceneName')"
-            class="search-field"
-            type="text"
-            clearable
-          >
-            <template #prefix>
-              <NIcon>
-                <IosSearch />
-              </NIcon>
-            </template>
-          </NInput>
-          <div class="search-actions">
-            <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-            <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+      <div class="content-header mb-5">
+        <div class="content-header__title">
+          <h2>{{ $t('route.automation_scene-manage') }}</h2>
+          <span>{{ dataTotal }} 个场景</span>
+        </div>
+        <div class="content-header__toolbar">
+          <div class="content-header__leading">
+            <NButton type="primary" @click="sceneAdd()">{{ $t('generate.+add-scene') }}</NButton>
+          </div>
+          <div class="content-header__actions">
+            <NInput
+              v-model:value="queryData.name"
+              :placeholder="$t('generate.enterSceneName')"
+              class="search-field"
+              type="text"
+              clearable
+            >
+              <template #prefix>
+                <NIcon>
+                  <IosSearch />
+                </NIcon>
+              </template>
+            </NInput>
+            <div class="search-actions">
+              <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+              <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+            </div>
           </div>
         </div>
       </div>
@@ -366,28 +374,62 @@ getData()
   }
 }
 
-.search-toolbar {
-  display: grid;
-  grid-template-columns: auto minmax(280px, 360px);
-  gap: 12px;
-  align-items: center;
-  justify-content: end;
+.content-header {
+  display: block;
 }
 
-.search-fields {
-  display: grid;
-  grid-template-columns: minmax(180px, 280px) auto;
+.content-header__title {
+  display: flex;
+  align-items: baseline;
   gap: 10px;
-  align-items: center;
   min-width: 0;
+
+  h2 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.35;
+    white-space: nowrap;
+  }
+
+  span {
+    color: var(--text-color-3);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+}
+
+.content-header__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.content-header__toolbar {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.content-header__leading {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
 }
 
 .search-field {
   min-width: 0;
 }
 
-.search-toolbar :deep(.n-input),
-.search-toolbar :deep(.n-button) {
+.content-header :deep(.n-input),
+.content-header :deep(.n-button) {
   height: 36px;
   border-radius: 8px;
 }
@@ -398,13 +440,17 @@ getData()
 }
 
 @media (max-width: 768px) {
-  .search-toolbar,
-  .search-fields {
+  .content-header,
+  .content-header__toolbar,
+  .content-header__actions {
     grid-template-columns: 1fr;
+    align-items: stretch;
+    flex-direction: column;
   }
 
-  .search-toolbar > :deep(.n-button),
-  .search-actions :deep(.n-button) {
+  .content-header__actions,
+  .content-header__actions :deep(.n-input),
+  .content-header__actions :deep(.n-button) {
     width: 100%;
   }
 

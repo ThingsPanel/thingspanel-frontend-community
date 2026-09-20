@@ -1,12 +1,13 @@
 <script lang="tsx" setup>
 import { computed, getCurrentInstance, ref } from 'vue'
 // import { useRouter } from 'vue-router';
-import { NButton, NCard, NFlex, NGrid, NGridItem, NPagination, useDialog } from 'naive-ui'
+import { NButton, NCard, NFlex, NPagination, useDialog } from 'naive-ui'
 import { PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5'
 import { DocumentOnePage24Regular } from '@vicons/fluent'
 import moment from 'moment'
 import { useRouterPush } from '@/hooks/common/router'
 import ItemCard from '@/components/dev-card-item/index.vue'
+import CardGrid from '@/components/card-grid/index.vue'
 import {
   sceneAutomationsDel,
   sceneAutomationsGet,
@@ -186,19 +187,29 @@ getData()
 
 <template>
   <NCard class="w-full">
-    <div v-if="!isAlarm" class="search-toolbar mb-4">
-      <NButton type="primary" @click="linkAdd()">{{ $t('generate.+add-scene-linkage') }}</NButton>
-      <div class="search-fields">
-        <NInput
-          v-model:value="queryData.name"
-          :placeholder="$t('generate.enter-scene-linkage-name')"
-          class="search-field"
-          type="text"
-          clearable
-        ></NInput>
-        <div class="search-actions">
-          <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-          <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+    <div class="content-header mb-5">
+      <div class="content-header__title">
+        <h2>{{ isAlarm ? '告警记录' : $t('route.automation_scene-linkage') }}</h2>
+        <span>{{ dataTotal }} {{ isAlarm ? '条记录' : '个场景联动' }}</span>
+      </div>
+      <div class="content-header__toolbar">
+        <div class="content-header__leading">
+          <NButton v-if="!isAlarm" type="primary" @click="linkAdd()">
+            {{ $t('generate.+add-scene-linkage') }}
+          </NButton>
+        </div>
+        <div class="content-header__actions">
+          <NInput
+            v-model:value="queryData.name"
+            :placeholder="$t('generate.enter-scene-linkage-name')"
+            class="search-field"
+            type="text"
+            clearable
+          ></NInput>
+          <div class="search-actions">
+            <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+            <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+          </div>
         </div>
       </div>
     </div>
@@ -208,8 +219,8 @@ getData()
       :description="$t('common.nodata')"
       class="min-h-60 justify-center"
     ></n-empty>
-    <NGrid v-else x-gap="20px" y-gap="20px" cols="1 s:2 m:3 l:4" responsive="screen">
-      <NGridItem v-for="(item, index) in sceneLinkageList" :key="index">
+    <CardGrid v-else>
+      <div v-for="(item, index) in sceneLinkageList" :key="index">
         <ItemCard
           :title="item.name"
           :status-active="true"
@@ -327,8 +338,8 @@ getData()
             </NTooltip>
           </NFlex>
         </NCard> -->
-      </NGridItem>
-    </NGrid>
+      </div>
+    </CardGrid>
     <NFlex justify="flex-end" class="mt-4">
       <NPagination
         v-model:page="queryData.page"
@@ -450,28 +461,62 @@ getData()
   justify-content: flex-end;
 }
 
-.search-toolbar {
-  display: grid;
-  grid-template-columns: auto minmax(280px, 360px);
-  gap: 12px;
-  align-items: center;
-  justify-content: end;
+.content-header {
+  display: block;
 }
 
-.search-fields {
-  display: grid;
-  grid-template-columns: minmax(180px, 280px) auto;
+.content-header__title {
+  display: flex;
+  align-items: baseline;
   gap: 10px;
-  align-items: center;
   min-width: 0;
+
+  h2 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.35;
+    white-space: nowrap;
+  }
+
+  span {
+    color: var(--text-color-3);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+}
+
+.content-header__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.content-header__toolbar {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.content-header__leading {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
 }
 
 .search-field {
   min-width: 0;
 }
 
-.search-toolbar :deep(.n-input),
-.search-toolbar :deep(.n-button) {
+.content-header :deep(.n-input),
+.content-header :deep(.n-button) {
   height: 36px;
   border-radius: 8px;
 }
@@ -482,13 +527,17 @@ getData()
 }
 
 @media (max-width: 768px) {
-  .search-toolbar,
-  .search-fields {
+  .content-header,
+  .content-header__toolbar,
+  .content-header__actions {
     grid-template-columns: 1fr;
+    align-items: stretch;
+    flex-direction: column;
   }
 
-  .search-toolbar > :deep(.n-button),
-  .search-actions :deep(.n-button) {
+  .content-header__actions,
+  .content-header__actions :deep(.n-input),
+  .content-header__actions :deep(.n-button) {
     width: 100%;
   }
 
