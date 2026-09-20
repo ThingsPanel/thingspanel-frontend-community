@@ -565,6 +565,7 @@ const getPlatform = computed(() => {
   border: 1px solid var(--border-color);
   border-radius: 10px;
   background: var(--card-color);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
 
   :deep(.n-data-table-th),
   :deep(.n-data-table-td) {

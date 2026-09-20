@@ -203,6 +203,7 @@ getTableData()
   border: 1px solid var(--border-color);
   border-radius: 10px;
   background: var(--card-color);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
 
   :deep(.n-data-table-th),
   :deep(.n-data-table-td) {
@@ -216,11 +217,13 @@ getTableData()
   :deep(.n-data-table-th) {
     height: 44px;
     color: var(--text-color);
+    background: var(--body-color) !important;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
   }
 
   :deep(.n-data-table-td) {
     color: var(--text-color);
+    background: var(--card-color) !important;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
     transition:
       background-color 180ms ease,
