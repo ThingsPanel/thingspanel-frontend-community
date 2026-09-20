@@ -2,6 +2,7 @@ import type { ElegantRoute } from '@elegant-router/types'
 import type { ElegantConstRoute } from '@elegant-router/vue'
 import { layouts, views } from '@/router/elegant/imports'
 import { getRouteName } from '@/router/elegant/transform'
+import { DEVICE_ROUTE_NAME_BY_PATH, DEVICE_ROUTE_PATHS } from '@/router/device-route-mapping'
 
 /**
  * 递归处理菜单树数据
@@ -33,8 +34,9 @@ const FIRST_LEVEL_ROUTE_COMPONENT_SPLIT = '$'
 
 /** 浏览器显示路径，与 build/plugins/router.ts 的 routePathTransformer 保持一致 */
 const ROUTE_DISPLAY_PATH_MAP: Record<string, string> = {
-  device_config: '/device/template',
-  device_template: '/device/thingsmodel',
+  device_config: DEVICE_ROUTE_PATHS.device_config,
+  device_template: DEVICE_ROUTE_PATHS.device_template,
+  device_integration: DEVICE_ROUTE_PATHS.device_integration,
   'resource-hub_device': '/resource-hub/device-template',
   'resource-hub_dashboard': '/resource-hub/dashboard-template'
 }
@@ -53,10 +55,12 @@ const LEGACY_ROUTE_I18N_MAP: Record<string, string> = {
   'route.device_service-access': 'route.device_integration'
 }
 
+/** 已迁移到资源中心的旧入口：保留路由兼容，但不再显示在可视化菜单中。 */
+const HIDDEN_LEGACY_ROUTE_KEYS = new Set(['visualization_thingsvis-template'])
+
 /** 后台 param1 仍可能使用旧路径，用于组件解析 */
 const LEGACY_PATH_TO_ROUTE: Record<string, string> = {
-  '/device/config': 'device_config',
-  '/device/template': 'device_template'
+  ...DEVICE_ROUTE_NAME_BY_PATH
 }
 
 function transformLayoutAndPageToComponent(layout: string, page: string | null) {
@@ -249,7 +253,7 @@ function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
         roles: [],
         icon: item.param2,
         order: item.orders,
-        hideInMenu: item.param3 === '1',
+        hideInMenu: item.param3 === '1' || HIDDEN_LEGACY_ROUTE_KEYS.has(elementCode),
         remark: item.remark || ''
       },
       children
