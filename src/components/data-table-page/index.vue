@@ -26,6 +26,7 @@ import { FilterOutline } from '@vicons/ionicons5'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import TencentMap from './modules/tencent-map.vue'
 import DevCardItem from '@/components/dev-card-item/index.vue'
+import CardGrid from '@/components/card-grid/index.vue'
 import { tableThemeOverrides } from '@/utils/table-theme'
 
 // 新增 DeviceItem 接口定义
@@ -699,8 +700,8 @@ const formSize = ref(undefined)
     <template #card-view>
       <n-scrollbar class="device-card-scroll" :size="1">
         <n-spin :show="loading">
-          <div class="device-card-grid">
-            <div v-for="item in dataList" :key="item.id" class="device-card-grid__item">
+          <CardGrid>
+            <div v-for="item in dataList" :key="item.id">
               <DevCardItem
                 class="device-card"
                 :title="item.name || 'N/A'"
@@ -740,7 +741,7 @@ const formSize = ref(undefined)
                 </template>
               </DevCardItem>
             </div>
-          </div>
+          </CardGrid>
         </n-spin>
       </n-scrollbar>
     </template>
@@ -971,36 +972,6 @@ const formSize = ref(undefined)
   padding: 16px;
 }
 
-// 桌面端保持四列，避免卡片过宽导致内部留白被拉散；窄屏再逐级收缩列数。
-.device-card-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  align-items: stretch;
-}
-
-@media (max-width: 1360px) {
-  .device-card-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 980px) {
-  .device-card-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 640px) {
-  .device-card-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.device-card-grid__item {
-  min-width: 0;
-}
-
 .device-card-scroll {
   height: 100%;
   min-height: 0;
@@ -1028,14 +999,15 @@ const formSize = ref(undefined)
 
 .device-card-preview {
   display: grid;
-  align-items: center;
-  grid-template-columns: 56px minmax(0, 1fr);
-  column-gap: 14px;
-  flex: 1 1 auto;
+  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-items: start;
   width: 100%;
-  min-height: 60px;
-  margin: 6px 0 4px;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
   padding: 0;
+  column-gap: 16px;
   overflow: visible;
 }
 
@@ -1090,11 +1062,24 @@ const formSize = ref(undefined)
 }
 
 :deep(.item-card.device-card .card-container) {
-  padding: 15px 16px 12px;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  column-gap: 16px;
+  box-sizing: border-box;
+  padding: 16px;
+}
+
+:deep(.item-card.device-card .card-header) {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  min-width: 0;
+  z-index: 1;
 }
 
 :deep(.item-card.device-card .title-row) {
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 :deep(.item-card.device-card .card-title) {
@@ -1125,11 +1110,31 @@ const formSize = ref(undefined)
 }
 
 :deep(.item-card.device-card .card-preview) {
-  display: flex;
-  align-items: center;
-  flex: 0 0 72px;
-  min-height: 72px;
-  margin-top: auto;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+:deep(.item-card.device-card .config-image-frame) {
+  grid-column: 1;
+  grid-row: 1;
+  width: 88px;
+  height: 88px;
+  border-radius: 14px;
+}
+
+:deep(.item-card.device-card .device-report-time) {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+  align-self: end;
+  max-width: 100%;
+  margin-top: 10px;
 }
 
 :deep(.item-card.device-card .card-footer) {
