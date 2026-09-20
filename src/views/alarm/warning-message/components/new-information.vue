@@ -93,45 +93,30 @@ const tableData = ref<ColumnsData[]>([])
 /** 告警信息列表 */
 async function list() {
   loading.value = true
-  const innerparams = { page: pagination.page, page_size: pagination.pageSize }
-  const { data } = await warningMessageList(innerparams)
+  try {
+    const innerparams = { page: pagination.page, page_size: pagination.pageSize }
+    const { data } = await warningMessageList(innerparams)
 
-  if (data) {
-    setTimeout(() => {
-      loading.value = false
-      tableData.value = data.list
+    if (data) {
       const operatorBtn: { btnName: string; type: string; color: string }[] = [
-        {
-          btnName: $t('common.edit'),
-          type: 'edit',
-          color: 'info'
-        },
-        {
-          btnName: $t('page.manage.common.status.disable'),
-          type: 'enable',
-          color: 'warning'
-        },
-        {
-          btnName: $t('common.delete'),
-          type: 'delete',
-          color: 'error'
-        }
+        { btnName: $t('common.edit'), type: 'edit', color: 'info' },
+        { btnName: $t('page.manage.common.status.disable'), type: 'enable', color: 'warning' },
+        { btnName: $t('common.delete'), type: 'delete', color: 'error' }
       ]
       const operatorBtns: { btnName: string; type: string; color: string }[] = [
         { btnName: $t('common.edit'), type: 'edit', color: 'info' },
         { btnName: $t('page.manage.common.status.enable'), type: 'enable', color: 'success' },
         { btnName: $t('common.delete'), type: 'delete', color: 'error' }
       ]
-      // eslint-disable-next-line array-callback-return
-      tableData.value.map(item => {
-        if (item.enabled === 'Y') {
-          item.operatorBtn = operatorBtn
-        } else {
-          item.operatorBtn = operatorBtns
-        }
-      })
-      pagination.itemCount = data.total
-    }, 1000)
+
+      tableData.value = (data.list || []).map(item => ({
+        ...item,
+        operatorBtn: item.enabled === 'Y' ? operatorBtn : operatorBtns
+      }))
+      pagination.itemCount = data.total || 0
+    }
+  } finally {
+    loading.value = false
   }
 }
 
@@ -282,7 +267,7 @@ const getPlatform = computed(() => {
   </div>
   <div class="h-full flex-col">
     <NDataTable
-      class="table-standard w-full flex-1-hidden"
+      class="thingspanel-data-table w-full"
       size="medium"
       :theme-overrides="tableThemeOverrides"
       remote
@@ -297,7 +282,6 @@ const getPlatform = computed(() => {
       :columns="columns"
       :data="tableData"
       :pagination="pagination"
-      :flex-height="true"
     >
       <template #empty>
         <NEmpty size="small" :description="$t('common.noData')" />
@@ -318,50 +302,5 @@ const getPlatform = computed(() => {
 :deep(.n-button) {
   cursor: pointer;
   margin-left: 10px;
-}
-
-.table-standard {
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  background: var(--card-color);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
-
-  :deep(.n-data-table-th),
-  :deep(.n-data-table-td) {
-    padding-left: 12px;
-    padding-right: 12px;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.5;
-  }
-
-  :deep(.n-data-table-th) {
-    height: 44px;
-    color: var(--text-color);
-    background: var(--body-color) !important;
-    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
-  }
-
-  :deep(.n-data-table-td) {
-    color: var(--text-color);
-    background: var(--card-color) !important;
-    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
-    transition:
-      background-color 180ms ease,
-      box-shadow 180ms ease;
-  }
-
-  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
-    background: rgb(239 246 255) !important;
-    box-shadow:
-      inset 0 1px 0 rgb(191 219 254 / 60%),
-      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
-  }
-
-  :deep(.n-data-table-td--last-col),
-  :deep(.n-data-table-th--last-col) {
-    padding-right: 20px;
-  }
 }
 </style>

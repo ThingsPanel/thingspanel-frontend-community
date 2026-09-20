@@ -527,7 +527,7 @@ const formSize = ref(undefined)
     <template #list-view>
       <n-scrollbar class="device-table-scroll" :size="1">
         <NDataTable
-          class="device-data-table"
+          class="device-data-table thingspanel-data-table"
           size="medium"
           :theme-overrides="tableThemeOverrides"
           :bordered="true"
