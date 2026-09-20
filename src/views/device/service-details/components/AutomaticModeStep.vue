@@ -66,7 +66,7 @@ const pagination = ref({
   prefix({ itemCount }) {
     return `${$t('common.total')}: ${itemCount}`
   },
-  onUpdatePage: page => {
+  onChange: page => {
     pagination.value.page = page
     loadDeviceConfigs()
   },

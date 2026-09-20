@@ -72,7 +72,7 @@ const getPlugininfoByServiceReq = async str => {
 
 onMounted(async () => {
   await deviceDataStore.fetchData(props.id)
-  let service_identifier = deviceDataStore?.deviceData?.device_config?.protocol_type || deviceDataStore?.deviceData?.service_identifier
+  let service_identifier = deviceDataStore?.deviceData?.device_config?.protocol_type
   if (!service_identifier || typeof service_identifier === 'object') {
     service_identifier = 'MQTT'
   }
@@ -127,13 +127,6 @@ const toServiceClick = () => {
     )
   }
 }
-
-const serviceAccessLabel = () => {
-  if (deviceDataStore?.deviceData?.access_way === 'B') {
-    return deviceDataStore?.deviceData?.service_access_name || deviceDataStore?.deviceData?.service_identifier || '--'
-  }
-  return deviceDataStore?.deviceData?.device_config?.protocol_type || '--'
-}
 </script>
 
 <template>
@@ -141,7 +134,7 @@ const serviceAccessLabel = () => {
     <n-descriptions label-placement="left" :column="1" class="mt-6">
       <n-descriptions-item :label="$t('generate.access-method-service')">
         <div :class="deviceDataStore?.deviceData?.access_way === 'B' ? 'blue-text' : ''" @click="toServiceClick">
-          {{ serviceAccessLabel() }}
+          {{ deviceDataStore?.deviceData?.device_config?.protocol_type || '--' }}
         </div>
       </n-descriptions-item>
     </n-descriptions>

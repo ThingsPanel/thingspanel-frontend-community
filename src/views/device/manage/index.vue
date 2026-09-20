@@ -214,10 +214,9 @@ const columns_to_show: Ref<any> = ref([
     label: () => $t('custom.devicePage.accessServiceProtocol'),
     render: row => {
       if (row?.access_way === '') return '-'
-      const connectorLabel = row?.service_identifier || row?.protocol_type || '-'
       return row?.access_way === 'A'
         ? `${$t('custom.devicePage.byProtocol')}(${row?.protocol_type || '-'})`
-        : `${$t('custom.devicePage.byService')}(${connectorLabel})`
+        : `${$t('custom.devicePage.byService')}(${row?.protocol_type || '-'})`
     }
   },
   {
