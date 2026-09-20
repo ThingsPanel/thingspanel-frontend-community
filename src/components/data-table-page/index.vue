@@ -119,6 +119,8 @@ const props = defineProps<{
     callback: any // 点击回调
   }>
   topActions: { element: () => VNode }[] // 顶部操作组件列表
+  pageTitle?: string
+  pageCountLabel?: string
   rowClick?: RowClick // 表格行点击回调
   initPage?: number
   initPageSize?: number
@@ -509,17 +511,36 @@ const formSize = ref(undefined)
   <AdvancedListLayout
     :initial-view="'card'"
     :available-views="availableViews"
+    :inline-header="true"
+    :stacked-header="true"
+    :show-query-button="false"
+    :show-reset-button="false"
+    :show-add-button="false"
     @query="handleLayoutQuery"
     @reset="handleLayoutReset"
     @add-new="handleAddNew"
     @view-change="handleViewChange"
     @refresh="handleRefresh"
   >
-    <!-- 搜索表单内容 -->
+    <!-- 内容区头部：标题独占一行，下面是完整工具栏 -->
+    <template #header-title>
+      <div class="data-table-page-header">
+        <div class="data-table-page-header__title">
+          <h2>{{ props.pageTitle }}</h2>
+          <span>{{ total }} {{ props.pageCountLabel || '条' }}</span>
+        </div>
+      </div>
+    </template>
+
     <template #search-form-content>
       <div class="device-filter-area">
         <div class="device-filter-toolbar">
-          <slot name="search-toolbar-before" />
+          <div class="device-filter-primary-actions">
+            <slot name="header-left-before" />
+            <component :is="action.element" v-for="(action, index) in topActions" :key="index"></component>
+            <slot name="search-toolbar-before" />
+          </div>
+
           <div
             v-for="config in primarySearchConfigs"
             :key="config.key"
@@ -688,14 +709,6 @@ const formSize = ref(undefined)
       </NDrawer>
     </template>
 
-    <!-- 头部左侧操作区域 -->
-    <template #header-left>
-      <div class="flex gap-2">
-        <slot name="header-left-before" />
-        <component :is="action.element" v-for="(action, index) in topActions" :key="index"></component>
-      </div>
-    </template>
-
     <!-- 卡片视图 - 使用铃铛图标插槽 -->
     <template #card-view>
       <n-scrollbar class="device-card-scroll" :size="1">
@@ -798,32 +811,88 @@ const formSize = ref(undefined)
 </template>
 
 <style scoped lang="scss">
+.data-table-page-header {
+  width: 100%;
+  min-width: 0;
+}
+
+.data-table-page-header__main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 36px;
+}
+
+.data-table-page-header__title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+
+  h2 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.35;
+    white-space: nowrap;
+  }
+
+  span {
+    color: var(--text-color-3);
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+}
+
+:deep(.list-content-header) {
+  align-items: flex-start;
+}
+
+:deep(.list-content-header-left) {
+  flex: 1;
+  min-width: 0;
+}
+
+:deep(.list-content-header-right) {
+  padding-top: 2px;
+}
+
 .btn-style {
   @apply hover:bg-[var(--color-primary-hover)] rounded-md shadow;
 }
 
 .device-filter-area {
+  width: 100%;
+  min-width: 0;
   padding: 2px 0 0;
 }
 
 .device-filter-toolbar {
-  display: grid;
-  grid-template-columns: minmax(220px, 360px) repeat(4, minmax(140px, 1fr)) auto;
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  justify-content: end;
+  justify-content: start;
+  width: 100%;
 }
 
-.device-filter-toolbar:has(.device-group-filter-toggle) {
-  grid-template-columns: auto minmax(220px, 360px) repeat(3, minmax(140px, 1fr)) auto;
+.device-filter-primary-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
 }
 
 .device-filter-field {
-  min-width: 0;
+  flex: 0 1 168px;
+  min-width: 148px;
 }
 
 .device-filter-field--search {
-  min-width: 220px;
+  flex-basis: 210px;
+  min-width: 180px;
 }
 
 .device-filter-toolbar {
@@ -919,33 +988,28 @@ const formSize = ref(undefined)
 
 @media (max-width: 1440px) {
   .device-filter-toolbar {
-    grid-template-columns: minmax(220px, 360px) repeat(2, minmax(140px, 1fr)) auto;
-  }
-
-  .device-filter-field--search {
-    grid-column: span 2;
+    gap: 8px;
   }
 
   .device-filter-actions {
     justify-content: flex-start;
   }
-
-  .device-filter-toolbar:has(.device-group-filter-toggle) {
-    grid-template-columns: auto minmax(220px, 360px) repeat(2, minmax(140px, 1fr)) auto;
-  }
-
-  .device-filter-toolbar:has(.device-group-filter-toggle) .device-filter-field--search {
-    grid-column: auto;
-  }
 }
 
 @media (max-width: 768px) {
   .device-filter-toolbar {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .device-filter-primary-actions,
+  .device-filter-field,
+  .device-filter-actions {
+    width: 100%;
   }
 
   .device-filter-field--search {
-    grid-column: auto;
+    min-width: 0;
   }
 
   .device-filter-actions {
@@ -959,10 +1023,6 @@ const formSize = ref(undefined)
   .device-filter-result-count {
     width: 100%;
     margin-left: 0;
-  }
-
-  .device-filter-toolbar:has(.device-group-filter-toggle) {
-    grid-template-columns: 1fr;
   }
 }
 

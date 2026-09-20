@@ -255,8 +255,8 @@ const searchConfigs = ref<SearchConfig[]>([
     key: 'device_config_id',
     label: 'custom.devicePage.unlimitedDeviceConfig',
     type: 'select',
-    options: [],
     initValue: query.device_config_id,
+    options: [],
     labelField: 'name',
     valueField: 'id',
     loadOptions: getDeviceConfigOptions
@@ -655,11 +655,13 @@ const toggleGroupPanel = () => {
       <main class="device-manage-content">
         <data-table-page
           ref="tablePageRef"
+          page-title="设备管理"
+          page-count-label="个设备"
           :fetch-data="fetchData"
           :columns-to-show="columns_to_show"
           :table-actions="actions"
           :search-configs="deviceSearchConfigs"
-          :primary-search-keys="['search', 'device_config_id', 'is_online', 'warn_status']"
+          :primary-search-keys="['search', 'is_online', 'warn_status', 'device_type', 'service_identifier']"
           :top-actions="topActions"
           :init-page="query.page"
           :init-page-size="query.page_size"

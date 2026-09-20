@@ -3,16 +3,104 @@
     <n-card class="full-height-card" footer-style="padding-top: 0px; padding-bottom: 0px;">
       <div class="advanced-list-layout">
         <!-- 搜索区域 -->
-        <div v-if="shouldShowSearchArea" class="search">
+        <div v-if="!inlineHeader && shouldShowSearchArea" class="search">
           <div class="search-form-content">
             <slot name="search-form-content" />
           </div>
         </div>
-        <n-divider v-if="showAddButton" style="margin-top: 10px; margin-bottom: 10px" />
+        <n-divider v-if="!inlineHeader && showAddButton" style="margin-top: 10px; margin-bottom: 10px" />
         <!-- 内容区域 -->
         <div class="list-content">
           <!-- 内容头部 -->
-          <div class="list-content-header">
+          <div v-if="inlineHeader && stackedHeader" class="list-content-header list-content-header--stacked">
+            <div class="list-content-header-title-row">
+              <div class="list-content-header-left">
+                <slot name="header-title">
+                  <slot name="header-left">
+                    <slot name="add-button">
+                      <n-button v-if="showAddButton" type="primary" size="small" @click="handleAddNew">
+                        <template #icon>
+                          <n-icon><plus-icon /></n-icon>
+                        </template>
+                        {{ getAddButtonText() }}
+                      </n-button>
+                    </slot>
+                  </slot>
+                </slot>
+              </div>
+            </div>
+            <div class="list-content-header-toolbar-row">
+              <div v-if="shouldShowSearchArea" class="list-content-header-toolbar-search">
+                <slot name="search-form-content" />
+              </div>
+              <div class="list-content-header-toolbar-right">
+                <slot name="header-right">
+                  <n-space v-if="shouldShowViewSwitcher || hasRefreshButton" align="center">
+                    <n-button-group v-if="shouldShowViewSwitcher">
+                      <n-button
+                        v-for="view in getAvailableViewsWithSlots()"
+                        :key="view.key"
+                        :type="currentView === view.key ? 'primary' : 'default'"
+                        size="small"
+                        :title="view.label ? $t(view.label) : view.key"
+                        @click="handleViewChange(view.key)"
+                      >
+                        <n-icon size="14">
+                          <component :is="view.icon" />
+                        </n-icon>
+                      </n-button>
+                    </n-button-group>
+                    <n-button size="small" :title="$t('buttons.refresh')" @click="handleRefresh">
+                      <n-icon size="14"><refresh-icon /></n-icon>
+                    </n-button>
+                  </n-space>
+                </slot>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="inlineHeader" class="list-content-header list-content-header--inline">
+            <div class="list-content-header-left">
+              <slot name="header-title">
+                <slot name="header-left">
+                  <slot name="add-button">
+                    <n-button v-if="showAddButton" type="primary" size="small" @click="handleAddNew">
+                      <template #icon>
+                        <n-icon><plus-icon /></n-icon>
+                      </template>
+                      {{ getAddButtonText() }}
+                    </n-button>
+                  </slot>
+                </slot>
+              </slot>
+            </div>
+            <div class="list-content-header-right list-content-header-right--inline">
+              <div v-if="shouldShowSearchArea" class="inline-search-form">
+                <slot name="search-form-content" />
+              </div>
+              <slot name="header-right">
+                <n-space v-if="shouldShowViewSwitcher || hasRefreshButton" align="center">
+                  <n-button-group v-if="shouldShowViewSwitcher">
+                    <n-button
+                      v-for="view in getAvailableViewsWithSlots()"
+                      :key="view.key"
+                      :type="currentView === view.key ? 'primary' : 'default'"
+                      size="small"
+                      :title="view.label ? $t(view.label) : view.key"
+                      @click="handleViewChange(view.key)"
+                    >
+                      <n-icon size="14">
+                        <component :is="view.icon" />
+                      </n-icon>
+                    </n-button>
+                  </n-button-group>
+                  <n-button size="small" :title="$t('buttons.refresh')" @click="handleRefresh">
+                    <n-icon size="14"><refresh-icon /></n-icon>
+                  </n-button>
+                </n-space>
+              </slot>
+            </div>
+          </div>
+          <div v-else class="list-content-header">
             <!-- 左侧操作区域 -->
             <div class="list-content-header-left">
               <slot name="header-left">
@@ -55,7 +143,7 @@
 
           <!-- 内容主体 -->
 
-          <div class="list-content-body">
+          <div class="list-content-body" :class="{ 'list-content-body--inline': inlineHeader }">
             <div v-if="currentView === 'card' && hasSlot('card-view')" class="view-wrapper">
               <slot name="card-view"></slot>
             </div>
@@ -115,6 +203,8 @@ interface Props {
   showQueryButton?: boolean
   showResetButton?: boolean
   showAddButton?: boolean
+  inlineHeader?: boolean // 是否将标题、搜索和操作合并到同一行
+  stackedHeader?: boolean // 是否将标题单独置于工具栏上方
   mobileBreakpoint?: number // 移动端断点，默认768px
   useViewMemory?: boolean // 是否启用视图记忆功能
   memoryKey?: string // 视图记忆的唯一键
@@ -132,6 +222,8 @@ const props = withDefaults(defineProps<Props>(), {
   showQueryButton: true,
   showResetButton: true,
   showAddButton: true,
+  inlineHeader: false,
+  stackedHeader: false,
   mobileBreakpoint: 768,
   useViewMemory: false,
   memoryKey: 'advanced-list-view'
@@ -172,7 +264,7 @@ const shouldShowViewSwitcher = computed(() => {
 const hasRefreshButton = computed(() => true) // 刷新按钮始终显示
 
 const getAvailableViewsWithSlots = () => {
-  return props.availableViews.filter((view) => hasSlot(`${view.key}-view`))
+  return props.availableViews.filter(view => hasSlot(`${view.key}-view`))
 }
 
 // 方法
@@ -208,11 +300,11 @@ const initializeView = () => {
   let initial = ''
 
   // 优先从 memory storage 中获取
-  if (props.useViewMemory && storageView.value && available.some((v) => v.key === storageView.value)) {
+  if (props.useViewMemory && storageView.value && available.some(v => v.key === storageView.value)) {
     initial = storageView.value
   }
   // 其次使用 initialView prop
-  else if (props.initialView && available.some((v) => v.key === props.initialView)) {
+  else if (props.initialView && available.some(v => v.key === props.initialView)) {
     initial = props.initialView
   }
   // 最后使用第一个可用的视图
@@ -365,12 +457,73 @@ onUnmounted(() => {
         display: flex;
         align-items: center;
       }
+
+      &--inline {
+        align-items: flex-start;
+        padding: 0 0 20px;
+
+        .list-content-header-left {
+          min-height: 36px;
+        }
+
+        .list-content-header-right--inline {
+          flex: 1;
+          min-width: 0;
+          justify-content: flex-end;
+          gap: 10px;
+        }
+
+        .inline-search-form {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          justify-content: flex-end;
+        }
+      }
+
+      &--stacked {
+        display: block;
+        padding: 0 0 20px;
+
+        .list-content-header-title-row {
+          display: flex;
+          align-items: flex-start;
+          min-height: 36px;
+          padding-bottom: 12px;
+        }
+
+        .list-content-header-toolbar-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          width: 100%;
+          min-width: 0;
+        }
+
+        .list-content-header-toolbar-search {
+          flex: 1;
+          display: block;
+          min-width: 0;
+          width: 100%;
+        }
+
+        .list-content-header-toolbar-right {
+          display: flex;
+          flex-shrink: 0;
+          align-items: center;
+          min-height: 36px;
+        }
+      }
     }
 
     /* 内容主体：可滚动区域 */
     .list-content-body {
       height: 100%;
       margin-top: 20px;
+
+      &--inline {
+        margin-top: 0;
+      }
 
       /* 视图包装器：确保内容正确显示 */
       .view-wrapper {
@@ -379,6 +532,45 @@ onUnmounted(() => {
       }
     }
   }
+}
+
+/* 堆叠头部使用平级选择器，避免被嵌套样式规则覆盖 */
+.list-content-header--stacked {
+  display: block !important;
+  padding: 0 0 20px;
+}
+
+.advanced-list-layout .list-content-header--stacked {
+  display: block !important;
+}
+
+.list-content-header--stacked .list-content-header-title-row {
+  display: flex;
+  align-items: flex-start;
+  min-height: 36px;
+  padding-bottom: 12px;
+}
+
+.list-content-header--stacked .list-content-header-toolbar-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+.list-content-header--stacked .list-content-header-toolbar-search {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+.list-content-header--stacked .list-content-header-toolbar-right {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  min-height: 36px;
 }
 
 /* 底部区域：固定高度 */
@@ -408,6 +600,35 @@ onUnmounted(() => {
       .n-button {
         flex: 1 !important;
       }
+    }
+  }
+
+  .list-content-header--inline {
+    flex-wrap: wrap;
+
+    .list-content-header-left,
+    .list-content-header-right--inline {
+      width: 100%;
+    }
+
+    .list-content-header-right--inline {
+      flex-wrap: wrap;
+    }
+
+    .inline-search-form {
+      width: 100%;
+      flex-basis: 100%;
+    }
+  }
+
+  .list-content-header--stacked {
+    .list-content-header-toolbar-row {
+      flex-wrap: wrap;
+    }
+
+    .list-content-header-toolbar-search,
+    .list-content-header-toolbar-right {
+      width: 100%;
     }
   }
 }
