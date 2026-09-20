@@ -41,7 +41,10 @@
     "update-pkg": "sa update-pkg",
     "quality-check": "node scripts/dev-quality-check.js",
     "pre-commit-check": "npm run quality-check",
-    "clean-console": "node scripts/remove-console-logs.js"
+    "clean-console": "node scripts/remove-console-logs.js",
+    "test:e2e": "playwright test --config=e2e/playwright.config.ts",
+    "test:e2e:ui": "playwright test --config=e2e/playwright.config.ts --ui",
+    "test:e2e:report": "playwright show-report e2e-report"
   },
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
@@ -117,6 +120,7 @@
     "@eslint/js": "^9.27.0",
     "@iconify/json": "2.2.188",
     "@iconify/vue": "4.1.1",
+    "@playwright/test": "^1.60.0",
     "@sa/scripts": "workspace:*",
     "@sa/uno-preset": "workspace:*",
     "@soybeanjs/cli": "0.7.4",

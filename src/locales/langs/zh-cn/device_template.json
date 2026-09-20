@@ -1,4 +1,12 @@
 {
+  "device_template.thingModelBind": "关联物模型",
+  "device_template.thingModelBindStepDesc": "绑定新版物模型（可选）",
+  "device_template.thingModelBindDesc": "选择一个已发布的物模型，将其绑定到本模板，实现绞杀者迁移。",
+  "device_template.bindThingModel": "关联物模型",
+  "device_template.selectThingModel": "请选择物模型",
+  "device_template.boundModel": "已绑定",
+  "device_template.snapshotId": "快照ID",
+  "device_template.noPublishedThingModels": "暂无已发布的物模型",
   "device_template.selectServices": "选择服务",
   "device_template.stepOneDescribe": "选择你需要的设备接入服务",
   "device_template.serviceConfig": "服务配置",

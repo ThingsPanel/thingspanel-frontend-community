@@ -30,7 +30,8 @@ export default defineConfig(configEnv => {
     plugins: [...setupVitePlugins(viteEnv), svgLoader()],
     server: {
       host: '0.0.0.0',
-      port: 5002,
+      // VITE_PORT can override the default port for a separate developer worktree.
+      port: Number(viteEnv.VITE_PORT || 5002),
       open: true,
       proxy: createViteProxy(viteEnv),
       fs: {

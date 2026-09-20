@@ -1,8 +1,51 @@
-import type { RouteLocationNormalizedLoaded, RouteRecordRaw, _RouteRecordBase } from 'vue-router'
+import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
 import type { ElegantConstRoute, LastLevelRouteKey, RouteKey, RouteMap } from '@elegant-router/types'
 import { useSvgIconRender } from '@sa/hooks'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { resolveRouteLabel } from '@/utils/router/resolve-route-label'
+
+type BreadcrumbRouteConfig = {
+  activeMenu: RouteKey
+  labelQueryKey?: string
+  fallbackI18nKey?: string
+  fallbackLabel?: string
+}
+
+const breadcrumbRouteConfigMap: Partial<Record<string, BreadcrumbRouteConfig>> = {
+  'device_service-details': {
+    activeMenu: 'device_service-access',
+    labelQueryKey: 'service_name',
+    fallbackI18nKey: 'route.device_service-details'
+  },
+  device_details: {
+    activeMenu: 'device_manage',
+    fallbackI18nKey: 'route.device_details'
+  },
+  'device_details-child': {
+    activeMenu: 'device_manage',
+    fallbackI18nKey: 'route.device_details-child'
+  },
+  'device_config-detail': {
+    activeMenu: 'device_manage',
+    fallbackI18nKey: 'route.device_config-detail'
+  },
+  'device_grouping-details': {
+    activeMenu: 'device_grouping',
+    fallbackI18nKey: 'route.device_grouping-details'
+  },
+  'visualization_thingsvis-dashboards': {
+    activeMenu: 'visualization_thingsvis',
+    fallbackLabel: '项目'
+  },
+  'visualization_thingsvis-editor': {
+    activeMenu: 'visualization_thingsvis',
+    fallbackLabel: '仪表盘编辑'
+  },
+  'visualization_thingsvis-menu-dashboard': {
+    activeMenu: 'visualization_thingsvis',
+    fallbackLabel: '仪表盘'
+  }
+}
 
 /**
  * Filter auth routes by roles
@@ -148,6 +191,54 @@ function getGlobalMenuByBaseRoute(route: RouteLocationNormalizedLoaded | Elegant
   return menu
 }
 
+function getCurrentRouteBreadcrumb(route: RouteLocationNormalizedLoaded): App.Global.Breadcrumb {
+  const breadcrumb = transformMenuToBreadcrumb(getGlobalMenuByBaseRoute(route))
+  const routeConfig = breadcrumbRouteConfigMap[route.name as string]
+  const labelQueryKey = routeConfig?.labelQueryKey
+
+  if (labelQueryKey) {
+    const queryLabel = route.query[labelQueryKey]
+    const normalizedQueryLabel = Array.isArray(queryLabel) ? queryLabel[0] : queryLabel
+
+    if (typeof normalizedQueryLabel === 'string' && normalizedQueryLabel.trim()) {
+      breadcrumb.label = normalizedQueryLabel.trim()
+      return breadcrumb
+    }
+  }
+
+  if (routeConfig?.fallbackI18nKey || routeConfig?.fallbackLabel) {
+    breadcrumb.label = resolveRouteLabel(routeConfig.fallbackI18nKey, routeConfig.fallbackLabel || breadcrumb.label)
+  }
+
+  return breadcrumb
+}
+
+function findMenuPathByKey(targetKey: string, menus: App.Global.Menu[]) {
+  for (const menu of menus) {
+    const path = findMenuPath(targetKey, menu)
+
+    if (path?.length) {
+      return path
+    }
+  }
+
+  return null
+}
+
+function findMenuByKeyPath(keyPath: string[], menus: App.Global.Menu[]) {
+  if (!keyPath.length) {
+    return null
+  }
+
+  let currentMenu = menus.find(menu => menu.key === keyPath[0]) || null
+
+  for (let index = 1; index < keyPath.length && currentMenu; index += 1) {
+    currentMenu = currentMenu.children?.find(child => child.key === keyPath[index]) || null
+  }
+
+  return currentMenu
+}
+
 /**
  * Get cache route names
  *
@@ -288,9 +379,26 @@ export function getBreadcrumbsByRoute(
   menus: App.Global.Menu[]
 ): App.Global.Breadcrumb[] {
   const key = route.name as string
-  const activeKey = route.meta?.activeMenu
+  const activeKey = route.meta?.activeMenu || breadcrumbRouteConfigMap[key]?.activeMenu
 
   const menuKey = activeKey || key
+
+  if (activeKey && activeKey !== key) {
+    const activeMenuPath = findMenuPathByKey(menuKey, menus)
+
+    if (activeMenuPath?.length) {
+      const breadcrumbs = activeMenuPath
+        .map(pathKey => {
+          const currentMenuPath = findMenuPathByKey(pathKey, menus)
+          const currentMenu = currentMenuPath ? findMenuByKeyPath(currentMenuPath, menus) : null
+
+          return currentMenu ? transformMenuToBreadcrumb(currentMenu) : null
+        })
+        .filter(Boolean) as App.Global.Breadcrumb[]
+
+      return [...breadcrumbs, getCurrentRouteBreadcrumb(route)]
+    }
+  }
 
   for (const menu of menus) {
     if (menu.key === menuKey) {

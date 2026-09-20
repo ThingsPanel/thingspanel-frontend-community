@@ -1,4 +1,12 @@
 {
+  "device_template.thingModelBind": "Bind Thing Model",
+  "device_template.thingModelBindStepDesc": "Bind new thing model (optional)",
+  "device_template.thingModelBindDesc": "Select a published thing model to bind to this template for strangler-fig migration.",
+  "device_template.bindThingModel": "Thing Model",
+  "device_template.selectThingModel": "Select a thing model",
+  "device_template.boundModel": "Bound",
+  "device_template.snapshotId": "Snapshot ID",
+  "device_template.noPublishedThingModels": "No published thing models available",
   "device_template.selectServices": "Select Services",
   "device_template.stepOneDescribe": "Select the device access services you need",
   "device_template.serviceConfig": "Service Configuration",

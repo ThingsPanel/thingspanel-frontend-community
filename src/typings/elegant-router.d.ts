@@ -63,6 +63,8 @@ declare module "@elegant-router/types" {
     "device_service-details": "/device/service-details";
     "device_template": "/device/thingsmodel";
     "device-details-app": "/device-details-app";
+    "device-template": "/device-template";
+    "device-template_detail": "/device-template/detail";
     "function": "/function";
     "function_hide-child": "/function/hide-child";
     "function_hide-child_one": "/function/hide-child/one";
@@ -111,6 +113,11 @@ declare module "@elegant-router/types" {
     "rule-engine": "/rule-engine";
     "system-management-user": "/system-management-user";
     "system-management-user_system-log": "/system-management-user/system-log";
+    "thing-model": "/thing-model";
+    "thing-model_detail": "/thing-model/detail";
+    "tm-device": "/tm-device";
+    "tm-device_detail": "/tm-device/detail";
+    "tm-product": "/tm-product";
     "user-center": "/user-center";
     "visualization": "/visualization";
     "visualization_thingsvis": "/visualization/thingsvis";
@@ -169,6 +176,7 @@ declare module "@elegant-router/types" {
     | "data-service"
     | "device"
     | "device-details-app"
+    | "device-template"
     | "function"
     | "home"
     | "login"
@@ -180,6 +188,9 @@ declare module "@elegant-router/types" {
     | "resource-hub"
     | "rule-engine"
     | "system-management-user"
+    | "thing-model"
+    | "tm-device"
+    | "tm-product"
     | "user-center"
     | "visualization"
     | "visualization-app"
@@ -225,6 +236,8 @@ declare module "@elegant-router/types" {
     | "dashboard_workbench"
     | "data-service_rule-engine"
     | "device-details-app"
+    | "device-template_detail"
+    | "device-template"
     | "device_config-detail"
     | "device_config-edit"
     | "device_config"
@@ -272,6 +285,11 @@ declare module "@elegant-router/types" {
     | "resource-hub_device"
     | "rule-engine"
     | "system-management-user_system-log"
+    | "thing-model_detail"
+    | "thing-model"
+    | "tm-device_detail"
+    | "tm-device"
+    | "tm-product"
     | "user-center"
     | "visualization-app-dashboards"
     | "visualization-app-preview"

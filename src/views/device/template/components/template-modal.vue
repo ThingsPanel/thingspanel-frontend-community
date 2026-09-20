@@ -6,6 +6,7 @@ import AddInfo from './step/add-info.vue'
 import ModelDefinition from './step/model-definition.vue'
 import WebChartConfig from './step/web-chart-config.vue'
 import AppChartConfig from './step/app-chart-config.vue'
+import ThingModelBind from './step/thing-model-bind.vue'
 import Complete from './step/complete.vue'
 
 export interface Props {
@@ -27,7 +28,8 @@ const componentsList: { id: number; components: any }[] = [
   { id: 2, components: ModelDefinition },
   { id: 3, components: WebChartConfig },
   { id: 4, components: AppChartConfig },
-  { id: 5, components: Complete }
+  { id: 5, components: ThingModelBind },
+  { id: 6, components: Complete }
 ]
 const SwitchComponents = computed<any>(() => {
   return componentsList.find(item => item.id === stepCurrent.value)?.components
@@ -96,6 +98,10 @@ defineOptions({ name: 'TableActionModal' })
       <n-step
         :title="$t('device_template.appChartConfiguration')"
         :description="$t('device_template.editAppDetailsPage')"
+      />
+      <n-step
+        :title="$t('device_template.thingModelBind')"
+        :description="$t('device_template.thingModelBindStepDesc')"
       />
       <n-step :title="$t('device_template.release')" :description="$t('device_template.releaseAppStore')" />
     </n-steps>
