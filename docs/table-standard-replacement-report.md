@@ -121,3 +121,21 @@
 推荐先按第 6 节完成浏览器人工逐页验收，优先检查组合 row-key、硬编码 scroll-x 和 flex-height 三类风险；验收通过后提交本轮视觉替换。数据流治理另立任务，继续处理分页回调、异常收口、请求重复和通用 composable，避免把视觉替换退化成接口重构。
 
 经验教训建议写入项目记忆：ThingsPanel 表格改造应分层管理，采用“设备列表视觉基线 + 远程列表数据流治理 + 内嵌表格轻量规范”；批量替换阶段只改展示属性，数据流问题单独排期。本报告未自动写入共享记忆。
+
+## 10. 用户复查后的补充修复
+
+用户抽查发现上一轮“近似统一”仍有遗漏：插件管理、场景管理和告警相关页面的默认表头背景/线框仍可能覆盖局部样式，设备分组缺少设备列表同款容器阴影和整行 hover，部分详情弹窗中的原生 `NTable` 也未统一。补充修复已完成：
+
+- 为 8 个告警/插件/服务/规则表格补充设备基线的表头与内容背景覆盖、容器阴影和 hover 优先级。
+- 为设备分组列表与分组详情两张表补齐 `device-data-table` 容器、阴影、表头/内容背景和整行 hover。
+- 为告警详情、场景管理、场景联动、设备告警详情的静态 `NTable` 增加明确包装、表头、行线、hover 和阴影。
+- 为 `src/views/manage/menu/index.vue`、`src/views/manage/role/index.vue`、`src/views/manage/user/index.vue` 补齐 medium、主题覆盖、空态、行线和 hover；这 3 个页面此前作为旧参考实例遗漏在批量改造之外。
+- 为其余已改造的 `.standard-table` 容器补齐设备基线的轻量阴影，避免同类页面视觉退化。
+
+补充验证：`pnpm run typecheck`、`pnpm run build`、`git diff --check` 均通过；构建仅保留既有 UnoCSS 图标 warning。定向 ESLint 仍受仓库既有 `no-empty` 错误阻断，未修改无关数据流逻辑。
+
+## 11. 二次页面复查后的主题修复
+
+用户使用租户账号复查时发现告警页仍保留旧表头背景/线框。根因是告警、场景、插件、服务和规则等 `.table-standard` 表格只补了局部 CSS，没有复用设备列表通过 `theme-overrides` 注入的 Naive UI 表格主题，默认主题层仍会覆盖视觉结果。
+
+本次将设备列表主题配置抽取为 `src/utils/table-theme.ts`，并复用于设备列表及全部 `.table-standard` 远程表格。已在 5003 正确工作区登录后人工复查告警信息、通知记录、通知组、场景管理和设备分组页面，表头背景、外框和行 hover 已与设备列表基线一致。`pnpm run typecheck`、`pnpm run build`、`git diff --check` 均通过。

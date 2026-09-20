@@ -9,6 +9,7 @@ import { sceneActive, sceneDel, sceneGet, sceneLog } from '@/service/api/automat
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
 import { formatDateTime } from '@/utils/common/datetime'
+import { tableThemeOverrides } from '@/utils/table-theme'
 
 const dialog = useDialog()
 const message = useMessage()
@@ -236,6 +237,7 @@ getData()
       <n-data-table
         class="table-standard mt-4"
         size="medium"
+        :theme-overrides="tableThemeOverrides"
         :bordered="true"
         :bottom-bordered="true"
         :single-column="false"
@@ -286,7 +288,7 @@ getData()
         class="min-h-60 justify-center"
       ></n-empty>
       <template v-else>
-        <NTable size="small" :bordered="false" :single-line="false" class="mb-6">
+        <NTable size="small" :bordered="false" :single-line="false" class="detail-table mb-6">
           <thead>
             <tr>
               <th>{{ $t('generate.order-number') }}</th>
@@ -326,6 +328,7 @@ getData()
   border: 1px solid var(--border-color);
   border-radius: 10px;
   background: var(--card-color);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
 
   :deep(.n-data-table-th),
   :deep(.n-data-table-td) {
@@ -339,11 +342,13 @@ getData()
   :deep(.n-data-table-th) {
     height: 44px;
     color: var(--text-color);
+    background: var(--body-color) !important;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
   }
 
   :deep(.n-data-table-td) {
     color: var(--text-color);
+    background: var(--card-color) !important;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
     transition:
       background-color 180ms ease,
@@ -360,6 +365,41 @@ getData()
   :deep(.n-data-table-td--last-col),
   :deep(.n-data-table-th--last-col) {
     padding-right: 20px;
+  }
+}
+
+.detail-table {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+
+  :deep(th),
+  :deep(td) {
+    padding: 12px;
+    color: var(--text-color);
+    font-size: 14px;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%);
+  }
+
+  :deep(th) {
+    height: 44px;
+    background: var(--body-color);
+    font-weight: 400;
+  }
+
+  :deep(td) {
+    background: var(--card-color);
+  }
+
+  :deep(tbody tr:hover > td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%);
   }
 }
 </style>

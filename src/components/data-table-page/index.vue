@@ -12,6 +12,7 @@ import { getDemoServerUrl } from '@/utils/common/tool'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import TencentMap from './modules/tencent-map.vue'
 import DevCardItem from '@/components/dev-card-item/index.vue'
+import { tableThemeOverrides } from '@/utils/table-theme'
 
 // 新增 DeviceItem 接口定义
 interface DeviceItem {
@@ -112,23 +113,6 @@ const currentPage = ref(props.initPage || 1) // 当前页码
 const pageSize = ref(props.initPageSize || 10) // 每页显示数量
 const searchCriteria: any = ref(Object.fromEntries(searchConfigs.map(item => [item.key, item.initValue]))) // 搜索条件
 const tableScrollX = 920
-const deviceTableThemeOverrides = {
-  borderColor: 'var(--border-color)',
-  borderRadius: '10px',
-  fontSizeMedium: '14px',
-  lineHeight: '1.5',
-  thColor: 'var(--body-color)',
-  thColorHover: 'var(--body-color)',
-  thFontWeight: '400',
-  thTextColor: 'var(--text-color)',
-  tdColor: 'var(--card-color)',
-  tdColorHover: 'var(--primary-color-suppl)',
-  tdColorSorting: 'var(--primary-color-suppl)',
-  tdTextColor: 'var(--text-color)',
-  thPaddingMedium: '12px',
-  tdPaddingMedium: '13px 12px'
-}
-
 // 添加当前视图状态管理
 const currentViewType = ref('list') // 默认为列表视图
 
@@ -545,7 +529,7 @@ const formSize = ref(undefined)
         <NDataTable
           class="device-data-table"
           size="medium"
-          :theme-overrides="deviceTableThemeOverrides"
+          :theme-overrides="tableThemeOverrides"
           :bordered="true"
           :bottom-bordered="true"
           :single-column="false"

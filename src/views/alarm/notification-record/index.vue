@@ -8,6 +8,7 @@ import { getNotificationHistoryList } from '@/service/api/notification'
 import { notificationOptions } from '@/constants/business'
 import { $t } from '@/locales'
 import { formatDateTime } from '@/utils/common/datetime'
+import { tableThemeOverrides } from '@/utils/table-theme'
 import { useLoading } from '~/packages/hooks'
 
 const { loading, startLoading, endLoading } = useLoading(false)
@@ -168,6 +169,7 @@ getTableData()
         <NDataTable
           class="table-standard flex-1-hidden mt-4"
           size="medium"
+          :theme-overrides="tableThemeOverrides"
           :bordered="true"
           :bottom-bordered="true"
           :single-column="false"
@@ -203,6 +205,7 @@ getTableData()
   border: 1px solid var(--border-color);
   border-radius: 10px;
   background: var(--card-color);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
 
   :deep(.n-data-table-th),
   :deep(.n-data-table-td) {
@@ -216,11 +219,13 @@ getTableData()
   :deep(.n-data-table-th) {
     height: 44px;
     color: var(--text-color);
+    background: var(--body-color) !important;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
   }
 
   :deep(.n-data-table-td) {
     color: var(--text-color);
+    background: var(--card-color) !important;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
     transition:
       background-color 180ms ease,

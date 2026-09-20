@@ -118,6 +118,7 @@ onMounted(getDevice) // Fetch device groups on component mount
       <div class="mt-20px">
         <!-- Data table to display device groups -->
         <NDataTable
+          class="device-data-table"
           :row-props="
             row => {
               return {
@@ -128,7 +129,7 @@ onMounted(getDevice) // Fetch device groups on component mount
               }
             }
           "
-          scroll-x="100%"
+          :scroll-x="920"
           size="medium"
           :theme-overrides="tableThemeOverrides"
           :bordered="true"
@@ -152,3 +153,54 @@ onMounted(getDevice) // Fetch device groups on component mount
     </NCard>
   </div>
 </template>
+
+<style scoped lang="scss">
+.device-data-table {
+  min-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+
+  :deep(.n-data-table-th) {
+    height: 44px;
+    color: var(--text-color);
+    background: var(--body-color) !important;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    background: var(--card-color) !important;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+  }
+}
+</style>
