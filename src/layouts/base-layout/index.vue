@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, h, onMounted, onUnmounted } from 'vue'
-import { NButton, NIcon } from 'naive-ui'
-import { ArrowBack } from '@vicons/ionicons5'
+import { computed, h, onMounted, onUnmounted, ref } from 'vue'
+import { NButton } from 'naive-ui'
 import { AdminLayout, LAYOUT_SCROLL_EL_ID } from '@sa/materials'
 import type { LayoutMode } from '@sa/materials'
 import { EventSourcePolyfill } from 'event-source-polyfill'
@@ -10,7 +9,7 @@ import { useThemeStore } from '@/store/modules/theme'
 import { useRouteStore } from '@/store/modules/route'
 import { localStg } from '@/utils/storage'
 import { useRouterPush } from '@/hooks/common/router'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { createLogger } from '@/utils/logger'
 import { $t } from '@/locales'
 import { getSSEEndpoint } from '~/env.config'
@@ -20,6 +19,8 @@ import GlobalTab from '../modules/global-tab/index.vue'
 import GlobalContent from '../modules/global-content/index.vue'
 import GlobalFooter from '../modules/global-footer/index.vue'
 import ThemeDrawer from '../modules/theme-drawer/index.vue'
+import BaseMenu from '../modules/global-menu/base-menu.vue'
+import GlobalBreadcrumb from '../modules/global-breadcrumb/index.vue'
 import { setupMixMenuContext } from '../hooks/use-mix-menu'
 import onlineAlert from '@/assets/audio/online2.wav'
 import offLineAlert from '@/assets/audio/offline.wav'
@@ -33,8 +34,8 @@ defineOptions({
 const appStore = useAppStore()
 const themeStore = useThemeStore()
 const routeStore = useRouteStore()
-const router = useRouter()
 const route = useRoute()
+const mobileMenuVisible = ref(false)
 
 const layoutMode = computed(() => {
   const vertical: LayoutMode = 'vertical'
@@ -108,16 +109,8 @@ const mobileTitle = computed(() => {
   return 'ThingsPanel'
 })
 
-// 是否显示返回按钮
-const showBackButton = computed(() => {
-  // 首页不显示返回按钮
-  const noBackRoutes = ['home', 'root', 'login']
-  return !noBackRoutes.includes(route.name as string)
-})
-
-// 返回功能
-function handleBack() {
-  router.go(-1)
+function closeMobileMenu() {
+  mobileMenuVisible.value = false
 }
 
 setupMixMenuContext()
@@ -447,17 +440,30 @@ onUnmounted(() => {
 <template>
   <!-- 移动端布局 -->
   <div v-if="appStore.isMobile" class="mobile-layout">
-    <!-- iOS风格头部 -->
-    <header v-if="0" class="ios-header">
-      <!-- 返回按钮 -->
-      <div v-if="showBackButton" class="ios-back-btn" @click="handleBack">
-        <NIcon size="20">
-          <ArrowBack />
-        </NIcon>
-      </div>
+    <!-- 移动端头部：提供菜单入口，避免登录后无法进入其他功能 -->
+    <header class="mobile-header">
+      <NButton
+        quaternary
+        circle
+        size="large"
+        aria-label="打开菜单"
+        class="mobile-menu-button"
+        @click="mobileMenuVisible = true"
+      >
+        <template #icon>
+          <SvgIcon icon="line-md:menu" />
+        </template>
+      </NButton>
 
-      <!-- 标题 -->
-      <h1 class="ios-title">{{ mobileTitle }}</h1>
+      <GlobalBreadcrumb class="mobile-breadcrumb" />
+
+      <h1 v-if="!routeStore.breadcrumbs.length" class="mobile-title">{{ mobileTitle }}</h1>
+
+      <NDrawer v-model:show="mobileMenuVisible" placement="left" :width="280" display-directive="show">
+        <NDrawerContent title="菜单" :native-scrollbar="false" closable>
+          <BaseMenu :menus="routeStore.menus" :collapsed="false" @select="closeMobileMenu" />
+        </NDrawerContent>
+      </NDrawer>
     </header>
 
     <!-- 主内容区域 -->
@@ -516,77 +522,47 @@ onUnmounted(() => {
   @apply h-screen flex flex-col bg-layout;
 }
 
-// iOS风格头部
-.ios-header {
-  @apply fixed top-0 left-0 right-0 z-50 relative;
-  height: 44px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+.mobile-header {
+  @apply fixed top-0 left-0 right-0 z-50 flex items-center;
+  height: 56px;
+  padding: 0 12px;
+  background: rgb(var(--container-bg-color));
+  border-bottom: 1px solid var(--un-default-border-color, #e5e7eb);
 
-  .ios-back-btn {
-    @apply absolute left-0 top-0 h-full flex items-center justify-center;
-    width: 44px;
-    background: none;
-    border: none;
-    color: #007aff;
-    cursor: pointer;
-    padding: 0;
-    z-index: 10;
-    pointer-events: auto;
-    transition: opacity 0.2s;
-
-    &:hover {
-      opacity: 0.6;
-    }
-
-    &:active {
-      opacity: 0.3;
-    }
-
-    // 确保触摸区域足够大
-    &::before {
-      content: '';
-      position: absolute;
-      top: -10px;
-      left: -10px;
-      right: -10px;
-      bottom: -10px;
-      background: transparent;
-    }
+  .mobile-menu-button {
+    flex: 0 0 auto;
   }
 
-  .ios-title {
-    @apply absolute inset-0 flex items-center justify-center;
-    font-size: 17px;
+  .mobile-breadcrumb {
+    min-width: 0;
+    margin-left: 8px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .mobile-title {
+    margin: 0 0 0 8px;
+    overflow: hidden;
+    color: var(--text-color);
+    font-size: 16px;
     font-weight: 600;
-    color: #000;
-    margin: 0;
-    // 为返回按钮留出空间
-    padding: 0 44px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
 .mobile-main {
   @apply flex-1 overflow-auto;
+  padding-top: 56px;
 
   @include scrollbar();
 }
 
 // 深色模式支持
 [data-theme='dark'] {
-  .ios-header {
-    background: rgba(0, 0, 0, 0.8);
-    border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-
-    .ios-back-btn {
-      color: #0a84ff;
-    }
-
-    .ios-title {
-      color: #fff;
-    }
+  .mobile-header {
+    background: rgb(var(--container-bg-color));
+    border-bottom-color: #333;
   }
 }
 </style>

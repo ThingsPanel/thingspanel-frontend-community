@@ -19,6 +19,8 @@ interface Props {
   darkTheme?: boolean
   mode?: MenuProps['mode']
   menus: App.Global.Menu[]
+  /** Force the menu to stay expanded, such as inside the mobile drawer */
+  collapsed?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -30,12 +32,17 @@ const appStore = useAppStore()
 const themeStore = useThemeStore()
 const routeStore = useRouteStore()
 const { routerPushByKey } = useRouterPush()
+const emit = defineEmits<{
+  select: [key: RouteKey]
+}>()
 
 const naiveMenus = computed(() => props.menus as unknown as MentionOption[])
 
 const isHorizontal = computed(() => props.mode === 'horizontal')
 
-const siderCollapse = computed(() => themeStore.layout.mode === 'vertical' && appStore.siderCollapse)
+const siderCollapse = computed(
+  () => props.collapsed ?? (themeStore.layout.mode === 'vertical' && appStore.siderCollapse)
+)
 
 const headerHeight = computed(() => `${themeStore.header.height}px`)
 
@@ -64,6 +71,7 @@ function updateExpandedKeys() {
 }
 
 function handleClickMenu(key: RouteKey) {
+  emit('select', key)
   // const { query } = routeStore.getSelectedMenuMetaByKey(key) || {};
   routerPushByKey(key)
 }
