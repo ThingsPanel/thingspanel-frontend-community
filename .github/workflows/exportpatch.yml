@@ -9,7 +9,7 @@ on:
 
 jobs:
   export_and_apply_patches:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       SOURCE_REPO: "ThingsPanel/thingspanel-frontend-community"
       SOURCE_BRANCH: "master"
