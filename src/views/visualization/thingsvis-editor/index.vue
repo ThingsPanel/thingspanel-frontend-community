@@ -11,10 +11,6 @@ const route = useRoute()
 const { routerPushByKey } = useRouterPush()
 
 const dashboardId = computed(() => String(route.query.id || '').trim())
-const currentProjectId = computed(() => {
-  const routeProjectId = String(route.query.projectId || '').trim()
-  return routeProjectId || dashboardSchema.value?.projectId || ''
-})
 const projectTitle = ref('')
 const dashboardSchema = ref<ThingsVisDashboard | null>(null)
 
@@ -39,19 +35,12 @@ const loadDashboardInfo = async () => {
       dashboardSchema.value = data
     }
   } catch (e) {
-    console.warn('获取项目标题失败', e)
+    console.warn('获取看板标题失败', e)
     dashboardSchema.value = null
   }
 }
 
 const goBack = () => {
-  if (currentProjectId.value) {
-    routerPushByKey('visualization_thingsvis-dashboards', {
-      query: { projectId: currentProjectId.value }
-    })
-    return
-  }
-
   routerPushByKey('visualization_thingsvis')
 }
 
@@ -69,7 +58,7 @@ watch(
     <!-- 顶部导航栏 -->
     <div class="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 py-2 min-h-12">
       <NBreadcrumb>
-        <NBreadcrumbItem class="cursor-pointer" @click="goBack">仪表盘列表</NBreadcrumbItem>
+        <NBreadcrumbItem class="cursor-pointer" @click="goBack">看板列表</NBreadcrumbItem>
         <NBreadcrumbItem>
           {{ projectTitle || $t('common.loading') }}
         </NBreadcrumbItem>

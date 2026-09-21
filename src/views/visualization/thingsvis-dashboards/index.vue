@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   NButton,
   NCard,
-  NBreadcrumb,
-  NBreadcrumbItem,
   NInput,
   NModal,
   NForm,
@@ -16,6 +14,7 @@ import {
   NTag,
   NInputNumber,
   NTooltip,
+  NPagination,
   useMessage
 } from 'naive-ui'
 import { useRouterPush } from '@/hooks/common/router'
@@ -23,15 +22,13 @@ import { $t } from '@/locales'
 import {
   getThingsVisDashboards,
   getThingsVisHomeDashboard,
-  getThingsVisProject,
   createThingsVisDashboard,
   duplicateThingsVisDashboard,
   applySuperAdminHomeTemplate,
   deleteThingsVisDashboard,
   setHomeThingsVisDashboard,
   getThingsVisDashboardThumbnail,
-  type DashboardListItem,
-  type ThingsVisProject
+  type DashboardListItem
 } from '@/service/api/thingsvis'
 import {
   deleteDashboardMenuConfig,
@@ -51,16 +48,21 @@ const message = useMessage()
 // 发布向导 ref
 const publishEntryRef = ref<InstanceType<typeof MarketPublishEntry> | null>(null)
 
-// 从路由获取项目ID
-const projectId = computed(() => route.query.projectId as string)
+// Legacy project URLs intentionally show the same tenant-wide list.
 
 // 状态
 const loading = ref(false)
 const deletingId = ref<string | null>(null)
-const project = ref<ThingsVisProject | null>(null)
 const allDashboards = ref<DashboardListItem[]>([])
 const showModal = ref(false)
 const searchKeyword = ref('')
+const page = ref(1)
+const pageSize = 20
+const total = ref(0)
+const loadError = ref('')
+let listRequest = 0
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+let disposed = false
 const menuConfigs = ref<Record<string, DashboardMenuConfig | null>>({})
 const menuConfigLoadSeq = ref(0)
 const showMenuModal = ref(false)
@@ -83,70 +85,64 @@ const formData = ref({
   canvasHeight: 1080
 })
 
-const dashboards = computed(() => {
-  const keyword = searchKeyword.value.trim().toLowerCase()
-  if (!keyword) return allDashboards.value
-
-  return allDashboards.value.filter(item => item.name.toLowerCase().includes(keyword))
-})
-
 const resetSearch = () => {
   searchKeyword.value = ''
 }
 
-/** 加载项目信息 */
-const loadProject = async () => {
-  if (!projectId.value) {
-    message.error('缺少项目ID')
-    return false
-  }
-
-  try {
-    const { data, error } = await getThingsVisProject(projectId.value)
-    if (!error && data) {
-      project.value = data
-      return true
-    }
-  } catch (e) {
-    console.error('加载项目失败:', e)
-  }
-
-  return false
-}
-
-/** 加载 Dashboard 列表 */
+/** Query all dashboards in the current tenant; never filter by a legacy project URL. */
 const fetchDashboards = async () => {
-  if (!projectId.value) return
-
+  const request = ++listRequest
+  clearTimeout(searchTimer)
   loading.value = true
+  loadError.value = ''
   try {
     const { data, error } = await getThingsVisDashboards({
-      projectId: projectId.value,
-      page: 1,
-      limit: 100
+      keyword: searchKeyword.value.trim() || undefined,
+      page: page.value,
+      limit: pageSize
     })
+    if (disposed || request !== listRequest) return
+    if (error || !data) throw new Error(error?.message || '加载看板失败')
 
-    if (!error && data) {
-      const list = data.data
-      allDashboards.value = list
-
-      // 延迟加载缩略图和菜单配置
-      void loadThumbnails(list)
-      void loadMenuConfigs(list)
-    } else if (error) {
-      message.error('加载仪表盘失败')
+    total.value = data.meta.total
+    const lastPage = Math.max(1, data.meta.totalPages)
+    if (page.value > lastPage) {
+      page.value = lastPage
+      await fetchDashboards()
+      return
     }
+    allDashboards.value = data.data
+    void loadThumbnails(data.data, request)
+    void loadMenuConfigs(data.data)
+  } catch (error) {
+    if (disposed || request !== listRequest) return
+    allDashboards.value = []
+    loadError.value = error instanceof Error ? error.message : '加载看板失败'
   } finally {
-    loading.value = false
+    if (!disposed && request === listRequest) loading.value = false
   }
 }
 
-/** 加载每个仪表盘的系统菜单配置 */
+watch(searchKeyword, () => {
+  ++listRequest
+  clearTimeout(searchTimer)
+  page.value = 1
+  loading.value = true
+  allDashboards.value = []
+  searchTimer = setTimeout(() => void fetchDashboards(), 300)
+})
+
+const changePage = (value: number) => {
+  page.value = value
+  void fetchDashboards()
+}
+
+/** 加载每个看板的系统菜单配置 */
 const loadMenuConfigs = async (list: DashboardListItem[]) => {
   const loadSeq = menuConfigLoadSeq.value + 1
   menuConfigLoadSeq.value = loadSeq
   const entries = await Promise.all(
-    list.map(async item => {
+    list.map(async (item) => {
       const { data, error } = await fetchDashboardMenuConfig(item.id)
       return [item.id, error ? (menuConfigs.value[item.id] ?? null) : (data ?? null)] as const
     })
@@ -161,16 +157,16 @@ const loadMenuConfigs = async (list: DashboardListItem[]) => {
 }
 
 /** 懒加载缩略图 */
-const loadThumbnails = async (list: DashboardListItem[]) => {
+const loadThumbnails = async (list: DashboardListItem[], request: number) => {
   // 并发控制，每次请求 5 个
   const CONCURRENCY = 5
   const queue = [...list]
 
   const processQueue = async () => {
-    while (queue.length > 0) {
+    while (queue.length > 0 && !disposed && request === listRequest) {
       const batch = queue.splice(0, CONCURRENCY)
       await Promise.all(
-        batch.map(async item => {
+        batch.map(async (item) => {
           // 检查是否已有有效的缩略图（处理 null、undefined、空字符串）
           const hasValidThumbnail = item.thumbnail && item.thumbnail.trim().startsWith('data:')
           if (hasValidThumbnail) return
@@ -180,9 +176,9 @@ const loadThumbnails = async (list: DashboardListItem[]) => {
             // 处理可能的嵌套数据结构
             const resultData = result.data as { thumbnail?: string | null; data?: { thumbnail?: string | null } } | null
             const thumbnail = resultData?.thumbnail || resultData?.data?.thumbnail
-            if (thumbnail) {
+            if (thumbnail && !disposed && request === listRequest) {
               // 更新响应式数据
-              const target = allDashboards.value.find(d => d.id === item.id)
+              const target = allDashboards.value.find((d) => d.id === item.id)
               if (target) {
                 target.thumbnail = thumbnail
               }
@@ -212,14 +208,13 @@ const openCreateModal = () => {
 /** 创建 Dashboard */
 const handleCreateDashboard = async () => {
   if (!formData.value.name.trim()) {
-    message.error('请输入仪表盘名称')
+    message.error('请输入看板名称')
     return
   }
 
   try {
     const { error } = await createThingsVisDashboard({
       name: formData.value.name,
-      projectId: projectId.value,
       canvasConfig: {
         mode: formData.value.canvasMode,
         width: formData.value.canvasWidth,
@@ -239,6 +234,8 @@ const handleCreateDashboard = async () => {
         canvasWidth: 1920,
         canvasHeight: 1080
       }
+      page.value = 1
+      searchKeyword.value = ''
       await fetchDashboards()
     } else {
       message.error($t('generate.createFailed'))
@@ -274,7 +271,7 @@ const handleDeleteDashboard = async () => {
       clearThingsVisHomeCache()
       await fetchDashboards()
     } else {
-      console.warn(`[handleDeleteDashboard] 菜单 ${id} 已删除，但 ThingsVis 仪表盘删除失败`)
+      console.warn(`[handleDeleteDashboard] 菜单 ${id} 已删除，但 ThingsVis 看板删除失败`)
       message.error('删除失败')
     }
   } catch (e) {
@@ -330,7 +327,7 @@ const handleSaveMenuConfig = async () => {
     let resultError: string | null = null
 
     if (menuForm.value.enabled) {
-      // 启用菜单：先保存当前仪表盘的菜单配置
+      // 启用菜单：先保存当前看板的菜单配置
       const { data, error } = await saveDashboardMenuConfig(menuForm.value.dashboardId, {
         menu_name: menuForm.value.menuName.trim(),
         dashboard_name: menuForm.value.dashboardName,
@@ -348,17 +345,17 @@ const handleSaveMenuConfig = async () => {
         return
       }
 
-      // 检查这是否是第一个加入菜单的仪表盘
-      // 第一个加入时，自动把首页仪表盘也追加到菜单里（避免 home 节点变成展开式）
+      // 检查这是否是第一个加入菜单的看板
+      // 第一个加入时，自动把首页看板也追加到菜单里（避免 home 节点变成展开式）
       const currentMenuEntries = Object.entries(menuConfigs.value).filter(([, cfg]) => cfg?.enabled)
       if (currentMenuEntries.length === 1) {
-        // 第一个加入时，从 API 查首页仪表盘（可能不在 allDashboards 里，因为可能属于其他项目）
+        // 第一个加入时，从 API 查首页看板（可能不在 allDashboards 里，因为可能属于其他项目）
         const { data: homeResult } = await getThingsVisHomeDashboard()
         const homeDashboard = homeResult?.data
         if (homeDashboard && homeDashboard.id !== menuForm.value.dashboardId) {
-          // 首页仪表盘存在且不是当前正要保存的这个，才追加
+          // 首页看板存在且不是当前正要保存的这个，才追加
           const alreadyInMenu = Object.keys(menuConfigs.value).some(
-            id => id === homeDashboard.id && menuConfigs.value[id]?.enabled
+            (id) => id === homeDashboard.id && menuConfigs.value[id]?.enabled
           )
           if (!alreadyInMenu) {
             const { error: homeError } = await saveDashboardMenuConfig(homeDashboard.id, {
@@ -368,7 +365,7 @@ const handleSaveMenuConfig = async () => {
               enabled: true
             })
             if (!homeError) {
-              message.success(`已将首页仪表盘"${homeDashboard.name}"也添加到菜单`)
+              message.success(`已将首页看板"${homeDashboard.name}"也添加到菜单`)
             }
           }
         }
@@ -416,8 +413,7 @@ const getViewerHref = (dashboardId: string) => `/tv-preview?id=${encodeURICompon
 const openEditor = (dashboardId: string) => {
   routerPushByKey('visualization_thingsvis-editor', {
     query: {
-      id: dashboardId,
-      projectId: projectId.value
+      id: dashboardId
     }
   })
 }
@@ -425,7 +421,7 @@ const openEditor = (dashboardId: string) => {
 const handleDuplicate = async (dashboard: DashboardListItem) => {
   const { error } = await duplicateThingsVisDashboard(dashboard.id)
   if (error) {
-    message.error(`复制仪表盘失败: ${error.message}`)
+    message.error(`复制看板失败: ${error.message}`)
     return
   }
   message.success(`已复制 ${dashboard.name}`)
@@ -459,54 +455,35 @@ const handlePublishError = (error: string) => {
 
 // 登录成功后打开发布向导
 
-/** 返回项目列表 */
-const goBackToProjects = () => {
-  routerPushByKey('visualization_thingsvis')
-}
-
-onMounted(async () => {
-  const projectLoaded = await loadProject()
-  if (projectLoaded) {
-    await fetchDashboards()
-  }
+onMounted(() => void fetchDashboards())
+onBeforeUnmount(() => {
+  disposed = true
+  ++listRequest
+  ++menuConfigLoadSeq.value
+  clearTimeout(searchTimer)
 })
 </script>
 
 <template>
   <div class="h-full">
     <NCard>
-      <!-- 面包屑导航 -->
-      <NBreadcrumb class="mb-4">
-        <NBreadcrumbItem class="cursor-pointer" @click="goBackToProjects">
-          <div class="flex items-center gap-1">
-            <icon-mdi:chevron-left />
-            可视化项目
-          </div>
-        </NBreadcrumbItem>
-        <NBreadcrumbItem>{{ project?.name || '加载中...' }}</NBreadcrumbItem>
-      </NBreadcrumb>
-
       <!-- 头部工具栏 -->
       <div class="visualization-page-header mb-5">
         <div class="visualization-page-heading flex items-center gap-3">
-          <h2 class="text-xl font-bold">{{ project?.name }}</h2>
-          <span class="text-gray-400">
-            {{ searchKeyword ? `${dashboards.length} / ${allDashboards.length}` : dashboards.length }} 个仪表盘
-          </span>
+          <h2 class="text-xl font-bold">看板</h2>
+          <span class="text-gray-400">{{ total }} 个看板</span>
         </div>
 
         <div class="visualization-filter-toolbar">
           <div class="visualization-toolbar-leading">
-            <NButton class="visualization-filter-button" type="primary" @click="openCreateModal">
-              {{ $t('generate.create-dashboard') }}
-            </NButton>
+            <NButton class="visualization-filter-button" type="primary" @click="openCreateModal">新建看板</NButton>
           </div>
           <div class="visualization-toolbar-actions">
             <!-- 搜索框 -->
             <NInput
               v-model:value="searchKeyword"
               clearable
-              placeholder="搜索仪表盘名称..."
+              placeholder="搜索看板名称..."
               class="visualization-filter-control visualization-filter-control--search"
             >
               <template #prefix>
@@ -518,17 +495,15 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- 项目描述 -->
-      <div v-if="project?.description" class="mb-4 text-sm text-gray-500">
-        {{ project.description }}
-      </div>
-
       <!-- 加载状态 -->
       <NSpin :show="loading">
+        <NEmpty v-if="loadError && !loading" :description="loadError" class="py-20">
+          <template #extra><NButton @click="fetchDashboards">重试</NButton></template>
+        </NEmpty>
         <!-- 空状态 -->
         <NEmpty
-          v-if="!loading && dashboards.length === 0"
-          :description="allDashboards.length === 0 ? $t('generate.no-dashboard-create-first') : '没有匹配的仪表盘'"
+          v-else-if="!loading && allDashboards.length === 0"
+          :description="searchKeyword.trim() ? '没有匹配的看板' : '暂无看板，点击新建看板开始'"
           class="py-20"
         >
           <template #icon>
@@ -538,7 +513,7 @@ onMounted(async () => {
 
         <!-- Dashboard 网格 -->
         <CardGrid v-else variant="rich">
-          <div v-for="dashboard in dashboards" :key="dashboard.id">
+          <div v-for="dashboard in allDashboards" :key="dashboard.id">
             <!-- Dashboard 卡片 -->
             <div
               class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-primary hover:shadow-lg"
@@ -555,7 +530,7 @@ onMounted(async () => {
                 >
                   <img
                     v-if="dashboard.thumbnail"
-                    :src="getThumbnailUrl(dashboard.thumbnail)"
+                    :src="getThumbnailUrl(dashboard.thumbnail) || undefined"
                     class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     alt="thumbnail"
                   />
@@ -597,7 +572,7 @@ onMounted(async () => {
 
               <!-- 操作按钮(始终显示) -->
               <div class="px-4 pb-4">
-                <div class="flex gap-2 border-t border-gray-100 pt-3">
+                <div class="flex flex-wrap gap-2 border-t border-gray-100 pt-3">
                   <NButton size="small" secondary class="flex-1" @click.stop="openEditor(dashboard.id)">
                     <template #icon>
                       <icon-mdi:pencil />
@@ -615,13 +590,13 @@ onMounted(async () => {
 
                   <NTooltip>
                     <template #trigger>
-                      <NButton size="small" secondary @click.stop="handleDuplicate(dashboard)">
+                      <NButton size="small" secondary aria-label="复制看板" @click.stop="handleDuplicate(dashboard)">
                         <template #icon>
                           <icon-mdi:content-copy />
                         </template>
                       </NButton>
                     </template>
-                    复制仪表盘
+                    复制看板
                   </NTooltip>
 
                   <NTooltip v-if="dashboard.name === '超管首页v2'">
@@ -645,6 +620,7 @@ onMounted(async () => {
                       <NButton
                         size="small"
                         :type="menuConfigs[dashboard.id]?.enabled ? 'info' : 'default'"
+                        aria-label="系统菜单设置"
                         secondary
                         @click.stop="openMenuConfig(dashboard)"
                       >
@@ -661,13 +637,13 @@ onMounted(async () => {
                     <template #trigger>
                       <NPopconfirm @positive-click.stop="handleSetAsHomepage(dashboard)">
                         <template #trigger>
-                          <NButton size="small" secondary @click.stop>
+                          <NButton size="small" secondary aria-label="设为首页" @click.stop>
                             <template #icon>
                               <icon-mdi:home-outline />
                             </template>
                           </NButton>
                         </template>
-                        设为首页后，其他仪表盘的首页标记将被取消
+                        设为首页后，其他看板的首页标记将被取消
                       </NPopconfirm>
                     </template>
                     设为首页
@@ -687,6 +663,7 @@ onMounted(async () => {
                     size="small"
                     secondary
                     type="error"
+                    aria-label="删除看板"
                     @click.stop="openDeleteConfirm(dashboard.id, dashboard.name)"
                   >
                     <template #icon>
@@ -699,13 +676,22 @@ onMounted(async () => {
           </div>
         </CardGrid>
       </NSpin>
+      <div v-if="total > pageSize && !loadError" class="mt-6 flex justify-center">
+        <NPagination
+          :page="page"
+          :page-size="pageSize"
+          :item-count="total"
+          :disabled="loading"
+          @update:page="changePage"
+        />
+      </div>
     </NCard>
 
     <!-- 新建弹窗 -->
-    <NModal v-model:show="showModal" preset="card" :title="$t('generate.create-dashboard')" class="w-500px">
+    <NModal v-model:show="showModal" preset="card" title="新建看板" class="w-500px">
       <NForm :model="formData">
-        <NFormItem label="仪表盘名称" path="name">
-          <NInput v-model:value="formData.name" placeholder="请输入仪表盘名称" maxlength="50" show-count />
+        <NFormItem label="看板名称" path="name">
+          <NInput v-model:value="formData.name" placeholder="请输入看板名称" maxlength="50" show-count />
         </NFormItem>
 
         <NFormItem label="画布模式">
@@ -763,7 +749,7 @@ onMounted(async () => {
     <!-- 系统菜单配置 -->
     <NModal v-model:show="showMenuModal" preset="card" title="系统菜单配置" class="w-500px">
       <NForm :model="menuForm">
-        <NFormItem label="仪表盘">
+        <NFormItem label="看板">
           <NInput :value="menuForm.dashboardName" disabled />
         </NFormItem>
 
@@ -771,7 +757,7 @@ onMounted(async () => {
           <NSwitch
             v-model:value="menuForm.enabled"
             @update:value="
-              value => {
+              (value) => {
                 if (value && !menuForm.menuName) menuForm.menuName = menuForm.dashboardName
               }
             "
@@ -801,7 +787,7 @@ onMounted(async () => {
       </template>
     </NModal>
 
-    <!-- 删除仪表盘确认弹窗 -->
+    <!-- 删除看板确认弹窗 -->
     <NModal
       v-model:show="deleteConfirmModal"
       preset="dialog"
@@ -812,7 +798,7 @@ onMounted(async () => {
       <template #icon>
         <icon-mdi:alert-circle class="text-24px text-orange-400" />
       </template>
-      <template #default>确定删除仪表盘"{{ pendingDeleteDashboard?.name }}"吗？该操作不可恢复。</template>
+      <template #default>确定删除看板"{{ pendingDeleteDashboard?.name }}"吗？该操作不可恢复。</template>
       <template #action>
         <NButton :disabled="!!deletingId" @click="deleteConfirmModal = false">取消</NButton>
         <NButton type="error" :loading="!!deletingId" @click="handleDeleteDashboard">确认删除</NButton>

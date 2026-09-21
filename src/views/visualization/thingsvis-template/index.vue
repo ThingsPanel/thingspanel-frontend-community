@@ -187,8 +187,7 @@ async function createDashboard() {
     await router.push({
       name: 'visualization_thingsvis-editor',
       query: {
-        id: result.data.dashboardId,
-        projectId: result.data.projectId
+        id: result.data.dashboardId
       }
     })
   } finally {
