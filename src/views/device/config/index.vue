@@ -9,6 +9,7 @@ import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import ItemCard from '@/components/dev-card-item/index.vue'
 import CardGrid from '@/components/card-grid/index.vue'
+import { tableThemeOverrides } from '@/utils/table-theme'
 
 // Import Publish Components
 import MarketLoginModal from './modules/market-login-modal.vue'
@@ -36,23 +37,6 @@ const queryData = ref({
 const deviceConfigList = ref([] as any[])
 const dataTotal = ref(0)
 const loading = ref(false)
-
-const tableThemeOverrides = {
-  borderColor: 'var(--border-color)',
-  borderRadius: '10px',
-  fontSizeMedium: '14px',
-  lineHeight: '1.5',
-  thColor: 'var(--body-color)',
-  thColorHover: 'var(--body-color)',
-  thFontWeight: '400',
-  thTextColor: 'var(--text-color)',
-  tdColor: 'var(--card-color)',
-  tdColorHover: 'var(--primary-color-suppl)',
-  tdColorSorting: 'var(--primary-color-suppl)',
-  tdTextColor: 'var(--text-color)',
-  thPaddingMedium: '12px',
-  tdPaddingMedium: '13px 12px'
-}
 
 // 获取数据
 const getData = async () => {
@@ -127,6 +111,7 @@ const columns = computed(() => [
   {
     title: $t('device_template.templateName'),
     key: 'name',
+    minWidth: 280,
     ellipsis: {
       tooltip: true
     },
@@ -145,6 +130,7 @@ const columns = computed(() => [
   {
     title: $t('generate.device-type'),
     key: 'device_type',
+    width: 220,
     render: (row: any) => {
       const typeText = deviceTypeMap[row.device_type as keyof typeof deviceTypeMap] || row.device_type
       const type = row.device_type === '1' ? 'info' : row.device_type === '2' ? 'success' : 'warning'
@@ -154,16 +140,17 @@ const columns = computed(() => [
   {
     title: $t('generate.device-count'),
     key: 'device_count',
+    width: 180,
     render: (row: any) => `${row.device_count} ${$t('generate.individual')}`
   },
   {
     title: $t('common.actions'),
     key: 'actions',
-    width: 200,
+    width: 240,
     render: (row: any) => {
       return h(
         NSpace,
-        {},
+        { size: 'small', wrap: false },
         {
           default: () => [
             h(
@@ -395,26 +382,29 @@ const availableViews = [
 
       <!-- 表格视图 -->
       <template #list-view>
-        <NDataTable
-          :columns="columns"
-          :data="deviceConfigList"
-          :loading="loading"
-          size="medium"
-          :theme-overrides="tableThemeOverrides"
-          :pagination="false"
-          :bordered="true"
-          :bottom-bordered="true"
-          :single-column="false"
-          :single-line="true"
-          :striped="false"
-          :scroll-x="920"
-          :row-key="row => row.id"
-          @update:sorter="handleSorterChange"
-        >
-          <template #empty>
-            <NEmpty size="small" :description="$t('common.noData')" />
-          </template>
-        </NDataTable>
+        <n-scrollbar class="device-table-scroll" :size="1">
+          <NDataTable
+            class="device-data-table thingspanel-data-table device-config-data-table"
+            :columns="columns"
+            :data="deviceConfigList"
+            :loading="loading"
+            size="medium"
+            :theme-overrides="tableThemeOverrides"
+            :pagination="false"
+            :bordered="true"
+            :bottom-bordered="true"
+            :single-column="false"
+            :single-line="true"
+            :striped="false"
+            :scroll-x="920"
+            :row-key="row => row.id"
+            @update:sorter="handleSorterChange"
+          >
+            <template #empty>
+              <NEmpty size="small" :description="$t('common.noData')" />
+            </template>
+          </NDataTable>
+        </n-scrollbar>
       </template>
 
       <!-- 底部分页 -->
@@ -485,6 +475,60 @@ const availableViews = [
   height: 36px;
   padding: 0 16px;
   border-radius: 8px;
+}
+
+.device-config-data-table {
+  min-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-color);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+
+  :deep(.n-data-table-th) {
+    height: 44px;
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+  }
+
+  :deep(.n-data-table-th),
+  :deep(.n-data-table-td) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  :deep(.n-data-table-td) {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
+    background: rgb(239 246 255) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+  }
+
+  :deep(.n-data-table-td--last-col),
+  :deep(.n-data-table-th--last-col) {
+    padding-right: 20px;
+    white-space: nowrap;
+  }
+}
+
+.device-table-scroll {
+  height: 100%;
+  min-height: 220px;
 }
 
 @media (max-width: 768px) {
