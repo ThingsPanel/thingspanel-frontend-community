@@ -46,3 +46,38 @@
     padding-right: 20px;
   }
 }
+
+/* Shared device-name cell used by device management and device detail tables. */
+.device-name-cell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.device-name-button {
+  max-width: 240px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.device-status-dot {
+  position: absolute;
+  top: 50%;
+  left: -10px;
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: var(--text-color-3);
+  transform: translateY(-50%);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--text-color-3) 12%, transparent);
+}
+
+.device-status-dot--online {
+  background: var(--success-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--success-color) 14%, transparent);
+}

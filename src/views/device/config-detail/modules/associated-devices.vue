@@ -2,11 +2,24 @@
 import type { Ref } from 'vue'
 import { computed, getCurrentInstance, h, onMounted, ref } from 'vue'
 import type { DataTableColumns, FormInst } from 'naive-ui'
-import { NButton, NDataTable, NEmpty, NFlex, NForm, NFormItem, NModal, NPagination, NPopconfirm, useMessage } from 'naive-ui'
+import {
+  NButton,
+  NDataTable,
+  NEmpty,
+  NFlex,
+  NForm,
+  NFormItem,
+  NModal,
+  NPagination,
+  NPopconfirm,
+  NTag,
+  useMessage
+} from 'naive-ui'
 import moment from 'moment/moment'
 import { deviceConfigBatch, deviceDelete, deviceList, getDeviceListForSelect } from '@/service/api'
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
+import { tableThemeOverrides } from '@/utils/table-theme'
 import DeviceSelectWithScroll from './DeviceSelectWithScroll.vue'
 
 const message = useMessage()
@@ -29,23 +42,6 @@ const associatedForm = ref<AssociatedFormType>(defaultAssociatedForm())
 const deviceOptions = ref<Api.Device.DeviceSelectItem[]>([])
 const hasMoreDevices = ref(true)
 const loadingMore = ref(false)
-
-const tableThemeOverrides = {
-  borderColor: 'var(--border-color)',
-  borderRadius: '10px',
-  fontSizeMedium: '14px',
-  lineHeight: '1.5',
-  thColor: 'var(--body-color)',
-  thColorHover: 'var(--body-color)',
-  thFontWeight: '400',
-  thTextColor: 'var(--text-color)',
-  tdColor: 'var(--card-color)',
-  tdColorHover: 'var(--primary-color-suppl)',
-  tdColorSorting: 'var(--primary-color-suppl)',
-  tdTextColor: 'var(--text-color)',
-  thPaddingMedium: '12px',
-  tdPaddingMedium: '13px 12px'
-}
 
 const queryDevice = ref({
   page: 1,
@@ -178,9 +174,6 @@ const getDeviceList = async () => {
   queryData.value.device_config_id = props.deviceConfigId
   const { data, error } = await deviceList(queryData.value)
   if (!error && data?.list) {
-    data.list.forEach(sitem => {
-      sitem.activate_flag = sitem.is_online === 0 ? $t('custom.devicePage.offline') : $t('custom.devicePage.online')
-    })
     configDevice.value = data.list || []
     configDeviceTotal.value = data.total || 0
   } else {
@@ -203,18 +196,47 @@ const handleDelete = async row => {
 const columnsData: Ref<DataTableColumns<any>> = ref([
   {
     key: 'name',
-    minWidth: '140px',
-    title: $t('custom.devicePage.deviceName')
+    minWidth: '180px',
+    title: $t('custom.devicePage.deviceName'),
+    render: row => {
+      return h('div', { class: 'device-name-cell' }, [
+        h('span', {
+          class: ['device-status-dot', row?.is_online === 1 ? 'device-status-dot--online' : null],
+          'aria-hidden': 'true'
+        }),
+        h(
+          NButton,
+          {
+            class: 'device-name-button',
+            type: 'primary',
+            text: true,
+            onClick: event => {
+              event.stopPropagation()
+              routerPushByKey('device_details', { query: { d_id: row.id } })
+            }
+          },
+          { default: () => row.name || '-' }
+        )
+      ])
+    }
   },
   {
     key: 'device_number',
-    minWidth: '140px',
-    title: $t('page.irrigation.group.deviceCode')
+    minWidth: '180px',
+    title: $t('page.irrigation.group.deviceCode'),
+    render: row => row.device_number || '-'
   },
   {
-    key: 'activate_flag',
+    key: 'is_online',
     minWidth: '140px',
-    title: $t('custom.devicePage.onlineStatus')
+    title: $t('custom.devicePage.onlineStatus'),
+    render: row => {
+      return h(
+        NTag,
+        { type: row?.is_online === 1 ? 'success' : 'default' },
+        { default: () => (row?.is_online === 1 ? $t('custom.devicePage.online') : $t('custom.devicePage.offline')) }
+      )
+    }
   },
   {
     key: 'ts',
@@ -295,7 +317,7 @@ onMounted(async () => {
       :single-line="true"
       :scroll-x="920"
       :row-key="item => item.id"
-      class="table-class"
+      class="table-class thingspanel-data-table"
       :row-props="rowProps"
     >
       <template #empty>
@@ -373,8 +395,7 @@ onMounted(async () => {
 }
 
 .table-class {
-  margin: 10px;
-  height: 50%;
+  margin-top: 12px;
 }
 
 .device-select-row {
