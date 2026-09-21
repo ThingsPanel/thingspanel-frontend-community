@@ -12,6 +12,7 @@ import {
 } from '@/service/api/device'
 // import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales'
+import { demoChildDevices, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 
 const router = useRouter()
 // const { routerPushByKey } = useRouterPush();
@@ -70,8 +71,9 @@ const getData = async () => {
     page_size: page_size.value,
     id: props.id
   })
-  tableData.value = res.data.list || []
-  total.value = res.data.total
+  const list = res.data?.list || []
+  tableData.value = list.length > 0 || !isDeviceDetailDemo(props.id) ? list : demoChildDevices()
+  total.value = res.data?.total || tableData.value.length
 }
 const selectConfig = v => {
   selectChild.value = v
@@ -116,10 +118,20 @@ const columns: Ref<any> = ref([
     render: row => {
       return (
         <NSpace>
-          <NButton type="primary" size="small" onClick={() => handleLook(row.id)}>
+          <NButton
+            type="primary"
+            size="small"
+            disabled={isDeviceDetailDemo(props.id)}
+            onClick={() => handleLook(row.id)}
+          >
             {$t('generate.view')}
           </NButton>
-          <NButton type="success" size="small" onClick={() => handleSetAddress(row.id, row.subDeviceAddr)}>
+          <NButton
+            type="success"
+            size="small"
+            disabled={isDeviceDetailDemo(props.id)}
+            onClick={() => handleSetAddress(row.id, row.subDeviceAddr)}
+          >
             {$t('generate.setSubDevices')}
           </NButton>
           <NPopconfirm
@@ -130,7 +142,7 @@ const columns: Ref<any> = ref([
             {{
               default: () => $t('common.confirmDelete'),
               trigger: () => (
-                <NButton type="error" size={'small'}>
+                <NButton type="error" size={'small'} disabled={isDeviceDetailDemo(props.id)}>
                   {$t('common.delete')}
                 </NButton>
               )
@@ -247,9 +259,9 @@ onMounted(() => {})
     </n-modal>
 
     <NDataTable
+      class="device-detail-table mt-4"
       :columns="columns"
       :data="tableData"
-      class="mt-4"
       size="medium"
       :theme-overrides="tableThemeOverrides"
       :bordered="true"

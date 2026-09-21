@@ -7,6 +7,7 @@ import { Refresh, HelpCircleOutline } from '@vicons/ionicons5'
 import { NDataTable, NEmpty, NTag } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { deviceDiagnostics, getDeviceDebugStatus, setDeviceDebugStatus, getDeviceDebugLogs } from '@/service/api'
+import { demoDebugLogs, demoDiagnostics, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 
 // 类型定义
 interface StatisticsItem {
@@ -126,7 +127,11 @@ const columns: DataTableColumns<FailureRecord> = [
     render: (row: FailureRecord) => {
       const direction =
         row.direction === 'uplink' ? $t('custom.device_details.uplink') : $t('custom.device_details.downlink')
-      return h(NTag, { type: row.direction === 'uplink' ? 'info' : 'warning', size: 'small' }, { default: () => direction })
+      return h(
+        NTag,
+        { type: row.direction === 'uplink' ? 'info' : 'warning', size: 'small' },
+        { default: () => direction }
+      )
     }
   },
   {
@@ -148,30 +153,32 @@ const fetchDiagnostics = async () => {
   try {
     const response = (await deviceDiagnostics(props.id)) as DiagnosticsResponse
     const data = response?.data || (response as unknown as DiagnosticsData)
+    const demo = isDeviceDetailDemo(props.id) && !data?.recent_failures?.length
+    const displayData = demo ? demoDiagnostics() : data
 
-    if (data && data.stats) {
+    if (displayData && displayData.stats) {
       // 更新统计数据
       statistics.value = {
         uplink: {
-          success: data.stats.uplink?.success ?? 0,
-          total: data.stats.uplink?.total ?? 0,
-          rate: data.stats.uplink?.success_rate ?? 0
+          success: displayData.stats.uplink?.success ?? 0,
+          total: displayData.stats.uplink?.total ?? 0,
+          rate: displayData.stats.uplink?.success_rate ?? 0
         },
         downlink: {
-          success: data.stats.downlink?.success ?? 0,
-          total: data.stats.downlink?.total ?? 0,
-          rate: data.stats.downlink?.success_rate ?? 0
+          success: displayData.stats.downlink?.success ?? 0,
+          total: displayData.stats.downlink?.total ?? 0,
+          rate: displayData.stats.downlink?.success_rate ?? 0
         },
         storage: {
-          success: data.stats.storage?.success ?? 0,
-          total: data.stats.storage?.total ?? 0,
-          rate: data.stats.storage?.success_rate ?? 0
+          success: displayData.stats.storage?.success ?? 0,
+          total: displayData.stats.storage?.total ?? 0,
+          rate: displayData.stats.storage?.success_rate ?? 0
         }
       }
 
       // 更新失败记录
-      if (Array.isArray(data.recent_failures)) {
-        failureRecords.value = data.recent_failures.map(failure => ({
+      if (Array.isArray(displayData.recent_failures)) {
+        failureRecords.value = displayData.recent_failures.map(failure => ({
           timestamp: String(failure.timestamp ?? ''),
           direction: (failure.direction ?? 'uplink') as 'uplink' | 'downlink',
           stage: failure.stage ?? '',
@@ -181,7 +188,9 @@ const fetchDiagnostics = async () => {
         failureRecords.value = []
       }
     }
-  } catch (error) {}
+  } catch (error) {
+    // Keep the existing empty-state behavior when the diagnostics endpoint is unavailable.
+  }
 }
 
 // 刷新数据
@@ -224,24 +233,28 @@ const handleLogSwitch = async (value: boolean) => {
 const fetchLogs = async () => {
   try {
     const res = await getDeviceDebugLogs(props.id, { limit: 100 })
-    if (res.data && res.data.list) {
+    if (res.data?.list?.length) {
       // 格式化日志展示
       // 倒序排列，最新的在下面，符合控制台习惯
       const list = res.data.list.reverse()
       debugLogs.value = list.map((item: any) => {
-         const time = item.ts ? dayjs(item.ts).format('YYYY-MM-DD HH:mm:ss.SSS') : '' // eslint-disable-line
+        const time = item.ts ? dayjs(item.ts).format('YYYY-MM-DD HH:mm:ss.SSS') : '' // eslint-disable-line
         return `[${time}] ${JSON.stringify(item)}`
       })
-
-      // 自动滚动到底部
-      nextTick(() => {
-        if (logContainerRef.value) {
-          // 如果用户没有向上滚动太多，才自动滚动
-          // 这里简单处理，总是滚动到底部
-          logContainerRef.value.scrollTop = logContainerRef.value.scrollHeight
-        }
-      })
+    } else if (isDeviceDetailDemo(props.id)) {
+      debugLogs.value = demoDebugLogs().map(
+        item => `[${dayjs(item.ts).format('YYYY-MM-DD HH:mm:ss.SSS')}] ${item.level} ${item.message}`
+      )
     }
+
+    // 自动滚动到底部
+    nextTick(() => {
+      if (logContainerRef.value) {
+        // 如果用户没有向上滚动太多，才自动滚动
+        // 这里简单处理，总是滚动到底部
+        logContainerRef.value.scrollTop = logContainerRef.value.scrollHeight
+      }
+    })
   } catch (e) {
     console.error(e)
   }
@@ -338,6 +351,7 @@ onUnmounted(() => {
       </div>
 
       <NDataTable
+        class="device-detail-table"
         :columns="columns"
         :data="failureRecords"
         size="medium"

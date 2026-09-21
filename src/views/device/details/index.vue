@@ -22,6 +22,7 @@ import { getWebsocketServerUrl } from '@/utils/common/tool'
 import { hasThingsVisChartContent } from '@/utils/thingsvis/template-presets'
 import { getCachedDeviceTemplateDetail } from '@/utils/thingsvis/template-detail-cache'
 import { message } from '@/utils/common/discrete'
+import { isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 const route = useRoute()
 const { query } = useRoute()
 const appStore = useAppStore()
@@ -30,6 +31,8 @@ let { d_id } = query
 const getDeviceId = () => {
   return (Array.isArray(d_id) ? d_id[0] : d_id) || ''
 }
+
+const isDemoDevice = computed(() => isDeviceDetailDemo(getDeviceId()))
 
 const { loading, startLoading, endLoading } = useLoading()
 
@@ -338,7 +341,7 @@ const getDeviceDetail = async () => {
     if (data?.device_config) {
       device_type.value = data.device_config.device_type
       if (device_type.value !== '2' || !data?.device_config_name) {
-        filtered = filtered.filter((item) => item.key !== 'device-analysis')
+        filtered = filtered.filter(item => item.key !== 'device-analysis')
       }
       if (device_type.value === '3') {
         filtered = filtered.filter(item => item.key !== 'join')
@@ -352,7 +355,7 @@ const getDeviceDetail = async () => {
 
     ensureActiveTab()
 
-    const nextSig = components.value.map((item) => item.key).join('|')
+    const nextSig = components.value.map(item => item.key).join('|')
     const currentConfigId = data?.device_config_id || ''
 
     if (nextSig !== lastTabsSig || (lastConfigId && lastConfigId !== currentConfigId)) {
@@ -517,6 +520,7 @@ const isEmbeddedHost = computed(() => {
       <div class="device-details-header">
         <div class="device-details-title-row">
           <span class="device-details-title">{{ name || '--' }}</span>
+          <NTag v-if="isDemoDevice" size="small" type="warning" :bordered="false">演示数据</NTag>
           <NButton v-show="true" type="primary" @click="editConfig">
             {{ $t('common.edit') }}
           </NButton>
@@ -756,5 +760,81 @@ const isEmbeddedHost = computed(() => {
 
 :deep(.device-details-tabs .n-tab-pane) {
   padding-top: 0;
+}
+
+/* 详情页所有列表统一使用同一套表头、边框、密度和悬浮反馈。 */
+:deep(.device-detail-table) {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+:deep(.device-detail-table .n-data-table-th) {
+  height: 44px;
+  padding: 0 14px;
+  background: #f7f8fa;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+:deep(.device-detail-table .n-data-table-td) {
+  height: 48px;
+  padding: 0 14px;
+  color: #374151;
+  font-variant-numeric: tabular-nums;
+}
+
+:deep(.device-detail-table .n-data-table-tr:hover .n-data-table-td) {
+  background: #f8fbff;
+}
+
+:deep(.device-detail-table .n-data-table-th--last-col),
+:deep(.device-detail-table .n-data-table-td--last-col) {
+  border-right: 0;
+}
+
+:deep(.device-detail-table .n-data-table-tr:last-child .n-data-table-td) {
+  border-bottom: 0;
+}
+
+:deep(.device-detail-table .n-data-table-empty) {
+  min-height: 132px;
+}
+
+:deep(.device-detail-table.detail-table) {
+  border: 0;
+}
+
+:deep(.detail-table) {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+:deep(.detail-table th),
+:deep(.detail-table td) {
+  height: 48px;
+  padding: 0 14px;
+  border-bottom: 1px solid #edf0f3;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+:deep(.detail-table th) {
+  height: 44px;
+  background: #f7f8fa;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+:deep(.detail-table tbody tr:hover > td) {
+  background: #f8fbff;
 }
 </style>

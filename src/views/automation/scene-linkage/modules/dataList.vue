@@ -16,6 +16,7 @@ import {
 } from '@/service/api/automation'
 import { $t } from '@/locales'
 import { deviceAlarmList } from '@/service/api'
+import { demoAutomationLogs, demoAutomations, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 const dialog = useDialog()
 // const router = useRouter();
 const { routerPushByKey } = useRouterPush()
@@ -88,8 +89,9 @@ const getData = async () => {
     res = await sceneAutomationsGet(queryData.value)
   }
   if (res && !res.error) {
-    sceneLinkageList.value = res.data.list || []
-    dataTotal.value = res.data.total
+    const list = res.data?.list || []
+    sceneLinkageList.value = list.length > 0 || !isDeviceDetailDemo(props.device_id) ? list : demoAutomations()
+    dataTotal.value = res.data?.total || sceneLinkageList.value.length
   }
 }
 const handleQuery = async () => {
@@ -140,8 +142,9 @@ const getLogList = async () => {
     logQuery.value.execution_end_time = moment(logQuery.value.queryTime[1]).format()
   }
   const res = await sceneAutomationsLog(logQuery.value)
-  logData.value = res.data.list
-  logDataTotal.value = res.data.total
+  const list = res.data?.list || []
+  logData.value = list.length > 0 || !isDeviceDetailDemo(props.device_id) ? list : demoAutomationLogs()
+  logDataTotal.value = res.data?.total || logData.value.length
 }
 
 // 查看日志

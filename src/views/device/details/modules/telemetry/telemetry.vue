@@ -21,6 +21,7 @@ import { localStg } from '@/utils/storage'
 import { $t } from '@/locales'
 import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool'
 import { deviceCustomControlList } from '@/service/api/system-data'
+import { demoTelemetry, demoTelemetryLogs, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 import HistoryData from './modules/history-data.vue'
 import TimeSeriesData from './modules/time-series-data.vue'
 import { useLoading } from '~/packages/hooks'
@@ -188,9 +189,13 @@ const columns = [
     key: 'status',
     render: row => {
       const success = row.status === '1'
-      return h(NTag, { type: success ? 'success' : 'error', size: 'small' }, {
-        default: () => (success ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
-      })
+      return h(
+        NTag,
+        { type: success ? 'success' : 'error', size: 'small' },
+        {
+          default: () => (success ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
+        }
+      )
     }
   }
 ]
@@ -287,8 +292,9 @@ const fetchData = async () => {
     status: sendResult.value
   })
   if (!error) {
-    tableData.value = data?.value || data.list
-    total.value = Math.ceil(data.count / 5)
+    const list = data?.value || data?.list || []
+    tableData.value = list.length > 0 || !isDeviceDetailDemo(props.id) ? list : demoTelemetryLogs()
+    total.value = Math.max(1, Math.ceil((data?.count || tableData.value.length) / 5))
     endLoading()
   }
 }
@@ -296,8 +302,8 @@ const fetchData = async () => {
 const fetchTelemetry = async () => {
   const { data, error } = await telemetryDataCurrent(props.id)
   if (!error && data) {
-    telemetryData.value = data
-    initTelemetryData.value = data[0] || {} // 存储一份模板
+    telemetryData.value = data.length > 0 || !isDeviceDetailDemo(props.id) ? data : demoTelemetry()
+    initTelemetryData.value = telemetryData.value[0] || {} // 存储一份模板
     initTelemetryData.value.device_id = props.id
     const dataw = {
       // eslint-disable-next-line no-constant-binary-expression
@@ -601,8 +607,8 @@ const inputFeedback = computed(() => {
     <!-- 第四行 -->
 
     <NDataTable
+      class="device-detail-table mt-4"
       :loading="loading"
-      class="mt-4"
       :columns="columns"
       :data="tableData"
       size="medium"

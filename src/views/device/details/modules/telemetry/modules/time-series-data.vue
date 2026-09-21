@@ -8,6 +8,7 @@ import { $t } from '@/locales'
 import { message } from '@/utils/common/discrete'
 import ChartComponent from './ChartComponent.vue'
 import { useLoading } from '~/packages/hooks'
+import { demoTimeSeries, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 
 const tableData = ref<any[]>([])
 
@@ -334,15 +335,16 @@ watch(
     })
     if (!error && data && initialOptions.value.series) {
       // 对数据进行排序，确保最新的数据在前面
-      const sortedData = data.sort((a, b) => {
+      const sourceData = data.length > 0 || !isDeviceDetailDemo(props.deviceId) ? data : demoTimeSeries(props.theKey)
+      const sortedData = sourceData.sort((a, b) => {
         return b.x - a.x
       })
       tableData.value = sortedData
-      if (data.length > 0) {
+      if (sourceData.length > 0) {
         let sumValue = 0
-        minValue.value = data[0].y || Number.NEGATIVE_INFINITY
-        maxValue.value = data[0].y || Number.POSITIVE_INFINITY
-        data.forEach(item => {
+        minValue.value = sourceData[0].y || Number.NEGATIVE_INFINITY
+        maxValue.value = sourceData[0].y || Number.POSITIVE_INFINITY
+        sourceData.forEach(item => {
           if (item.y) {
             sumValue += item.y
             if (item.y < minValue.value) {
@@ -353,11 +355,11 @@ watch(
             }
           }
         })
-        avgValue.value = sumValue / data.length
+        avgValue.value = sumValue / sourceData.length
         // 这里是当 通过接口改变 initialOptions的数据
 
         initialOptions.value.series.forEach(series => {
-          series.data = data.map(item => {
+          series.data = sourceData.map(item => {
             return [item.x, item.y]
           })
         })
@@ -549,7 +551,7 @@ onMounted(() => {
     </div>
     <div class="container-table-chart">
       <NDataTable
-        class="telemetry-table"
+        class="telemetry-table device-detail-table"
         :loading="loading"
         :columns="columns"
         :data="tableData"

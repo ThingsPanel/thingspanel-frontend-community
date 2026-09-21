@@ -7,6 +7,7 @@ import { telemetryHistoryData } from '@/service/api'
 import { $t } from '@/locales'
 import { getBaseServerUrl } from '@/utils/common/tool'
 import { useLoading } from '~/packages/hooks'
+import { demoHistory, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 
 interface Created {
   deviceId: string
@@ -107,8 +108,9 @@ const getTelemetryHistoryData = async () => {
   }
 
   if (!error && !params.export_excel) {
-    tableData.value = data.list || []
-    pagination.itemCount = data.total || 0
+    const list = data?.list || []
+    tableData.value = list.length > 0 || !isDeviceDetailDemo(props.deviceId) ? list : demoHistory(props.theKey)
+    pagination.itemCount = data?.total || tableData.value.length
     endLoading()
   }
 }
@@ -189,6 +191,7 @@ onMounted(getTelemetryHistoryData)
     <div class="mt-4">
       <n-text v-if="!dateRange" depth="3">{{ $t('generate.hour-24') }}</n-text>
       <NDataTable
+        class="device-detail-table"
         :loading="loading"
         :columns="columns"
         :data="tableData"

@@ -10,6 +10,7 @@ import { $t } from '@/locales'
 import { deviceAlarmHistory, deviceAlarmHistoryPut, deviceAlarmHistoryDelete } from '@/service/api'
 import { useRouterPush } from '@/hooks/common/router'
 import alarmDataList from '@/views/automation/scene-linkage/modules/dataList.vue'
+import { demoAlarmHistory, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 
 const { routerPushByKey } = useRouterPush()
 
@@ -81,8 +82,10 @@ const getAlarmHistory = async () => {
     queryParams.value.end_time = ''
   }
   const res = await deviceAlarmHistory(queryParams.value)
-  alarmHistory.value.push(...(res.data.list || []))
-  alarmHistoryTotal.value = res.data.total
+  const list = res.data?.list || []
+  const displayList = list.length > 0 || !isDeviceDetailDemo(props.id) ? list : demoAlarmHistory()
+  alarmHistory.value.push(...displayList)
+  alarmHistoryTotal.value = res.data?.total || displayList.length
   loading.value = false
   if (alarmHistory.value.length === alarmHistoryTotal.value) {
     noMore.value = true
@@ -115,6 +118,7 @@ const showDescModal = (item: any) => {
   description.value = infoData.value.description
 }
 const submitCallback = async () => {
+  if (isDeviceDetailDemo(props.id)) return
   if (description.value === '') {
     window.$message?.error($t('common.enterAlarmDesc'))
     return
@@ -133,6 +137,7 @@ const submitCallback = async () => {
   // await getAlarmHistory();
 }
 const handleDelete = async (item: any) => {
+  if (isDeviceDetailDemo(props.id)) return
   window.$dialog?.warning({
     title: $t('common.deletePrompt'),
     content: $t('common.sceneLinkageInfo'),
@@ -295,7 +300,7 @@ onMounted(() => {
             {{ infoData.description }}
           </n-form-item>
           <n-form-item label-placement="top" :show-feedback="false" :label="`${$t('generate.alarmDevices')}:`">
-            <NTable size="small" :bordered="false" :single-line="false" class="detail-table mb-6">
+            <NTable size="small" :bordered="false" :single-line="false" class="device-detail-table detail-table mb-6">
               <thead>
                 <tr>
                   <th>{{ $t('generate.order-number') }}</th>

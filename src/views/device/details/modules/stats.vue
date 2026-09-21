@@ -11,7 +11,8 @@ import {
   getAttributeDataSet,
   getAttributeDataSetLogs
 } from '@/service/api'
-defineProps<{
+import { isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
+const props = defineProps<{
   id: string
 }>()
 const attributeRef = ref()
@@ -51,7 +52,7 @@ const columns0 = [
       >
         {{
           trigger: () => (
-            <NButton text size="small">
+            <NButton text size="small" disabled={isDeviceDetailDemo(props.id)}>
               {$t('common.delete')}
             </NButton>
           ),

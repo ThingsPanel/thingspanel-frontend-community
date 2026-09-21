@@ -6,6 +6,7 @@ import { NButton, NDataTable, NEmpty, NPopconfirm, NTag } from 'naive-ui'
 import moment from 'moment'
 import { expectMessageDelete, expectMessageList } from '@/service/api'
 import { $t } from '@/locales'
+import { demoExpectedMessages, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 const props = defineProps<{
   id: string
 }>()
@@ -73,13 +74,14 @@ async function getTableData() {
     ...query
   })
   if (!error) {
-    const list: any = data.list || []
-    tableData.value = list
-    pagination.itemCount = data.total || 0
+    const list: any = data?.list || []
+    tableData.value = list.length > 0 || !isDeviceDetailDemo(props.id) ? list : demoExpectedMessages()
+    pagination.itemCount = data?.total || tableData.value.length
   }
 }
 
 const handleDeleteTable = async id => {
+  if (isDeviceDetailDemo(props.id)) return
   const { error } = await expectMessageDelete(id)
   if (!error) {
     window.$message?.success($t('common.deleteSuccess'))
@@ -161,7 +163,7 @@ const columns: Ref<any> = ref([
           {{
             default: () => $t('common.confirm'),
             trigger: () => (
-              <NButton type="error" size={'small'}>
+              <NButton type="error" size={'small'} disabled={isDeviceDetailDemo(props.id)}>
                 {$t('common.delete')}
               </NButton>
             )
@@ -224,6 +226,7 @@ const handleReset = () => {
     </div>
   </div>
   <NDataTable
+    class="device-detail-table"
     :columns="columns"
     :data="tableData"
     size="medium"

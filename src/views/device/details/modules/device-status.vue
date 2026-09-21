@@ -6,6 +6,7 @@ import { $t } from '@/locales'
 import dayjs from 'dayjs'
 import { NDataTable, NEmpty, NTag } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
+import { demoStatusHistory, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 
 /**
  * 设备状态历史记录类型定义
@@ -163,11 +164,13 @@ const fetchData = async () => {
     const { data, error } = response
 
     if (!error && data) {
-      tableData.value = data.list ?? []
-      total.value = data.total ?? 0
+      const list = data.list ?? []
+      tableData.value = list.length > 0 || !isDeviceDetailDemo(props.deviceId) ? list : demoStatusHistory()
+      total.value = data.total ?? tableData.value.length
       pagination.itemCount = total.value
     }
   } catch (error) {
+    // Keep the existing empty-state behavior when the status history endpoint is unavailable.
   } finally {
     endLoading()
   }
@@ -271,6 +274,7 @@ watch(
 
       <div class="table-container">
         <NDataTable
+          class="device-detail-table"
           :columns="columns"
           :data="tableData"
           :loading="loading"

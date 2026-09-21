@@ -32,6 +32,13 @@ import { commandDataById, commandDataPub, deviceCustomCommandsIdList, getAttribu
 import { $t } from '@/locales'
 import { isJSON } from '@/utils/common/tool'
 import { createLogger } from '@/utils/logger'
+import {
+  demoAttributeLogs,
+  demoAttributes,
+  demoCommands,
+  demoEvents,
+  isDeviceDetailDemo
+} from '@/utils/device-detail-demo-data'
 const logger = createLogger('Table')
 
 const tableThemeOverrides = {
@@ -107,7 +114,16 @@ const fetchDataFunction = async () => {
     device_id: props.id
   })
   if (!error) {
-    tableData.value = data?.value || data?.list || (Array.isArray(data) ? data : []) || []
+    const list = data?.value || data?.list || (Array.isArray(data) ? data : []) || []
+    if (list.length > 0 || !isDeviceDetailDemo(props.id)) {
+      tableData.value = list
+    } else if (props.tableColumns?.some(column => column.key === 'identify')) {
+      tableData.value = props.isCommand ? demoCommands() : demoEvents()
+    } else if (props.tableColumns?.some(column => column.key === 'message_id')) {
+      tableData.value = demoAttributeLogs()
+    } else {
+      tableData.value = demoAttributes()
+    }
     if (data?.count || data?.total) {
       page_coune.value = Math.ceil((data?.count || data?.total) / 4)
     }
@@ -430,7 +446,7 @@ const buildAttributePayload = () => {
       </NGridItem>
     </NGrid>
     <NDataTable
-      class="mb-4 mt-4"
+      class="device-detail-table mb-4 mt-4"
       :loading="loading"
       :columns="tableColumns"
       :data="tableData"
