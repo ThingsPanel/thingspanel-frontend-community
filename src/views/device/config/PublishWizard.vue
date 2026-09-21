@@ -24,6 +24,7 @@ import {
   type PublishDashboardBundleResponse
 } from '@/service/api/dashboard-market'
 import { getMarketBundleDetail } from '@/service/api/market-bundle'
+import { $t } from '@/locales'
 import { useMarketAuth } from './composables/use-market-auth'
 
 export interface OpenParams {
@@ -364,7 +365,7 @@ defineExpose({ open, close } as PublishWizardExpose)
           </NForm>
 
           <NAlert v-if="roles.length > 0 && !rolesValid" type="warning" class="mb-4">
-            看板中的设备配置不完整，请返回编辑器检查后再发布。
+            {{ $t('market.publish.deviceTemplateBindingsIncomplete') }}
           </NAlert>
 
           <div class="step-actions">

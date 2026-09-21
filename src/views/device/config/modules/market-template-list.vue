@@ -135,10 +135,10 @@ const handleInstall = (id: string) => {
   }
 
   dialog.warning({
-    title: '确认下载模板',
-    content: `确认将“${templateName}”下载并安装到当前租户吗？完成后会创建对应的设备配置、设备模板和物模型。`,
-    positiveText: '确认下载',
-    negativeText: '取消',
+    title: $t('market.browse.downloadConfirmTitle'),
+    content: $t('market.browse.downloadConfirmMessage', { name: templateName }),
+    positiveText: $t('market.browse.confirmDownload'),
+    negativeText: $t('common.cancel'),
     onPositiveClick: () => startInstall(id)
   })
 }

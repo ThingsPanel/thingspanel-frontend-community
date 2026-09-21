@@ -201,7 +201,7 @@
   "card.noMore": "No More",
   "card.configTemplate": "Device Template",
   "card.anyProtocolService": "Any Protocol/Service",
-  "card.deviceConfigTemplate": "Device Configuration Template",
+  "card.deviceConfigTemplate": "Device Template",
   "card.templateNotSet": "Template not set. Please set the template before checking this option.",
   "card.configDevice": "Configure Device",
   "card.addNewAccessPoint": "Add New Access Point",

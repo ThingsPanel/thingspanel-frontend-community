@@ -275,10 +275,10 @@ async function handleDownload(item: MarketBundleListItem) {
   }
 
   dialog.warning({
-    title: '下载看板模板',
-    content: `将“${item.name}”及其依赖的设备模板、物模型下载到本地模板库。下载阶段不会绑定真实设备，也不会创建运行看板。`,
-    positiveText: '确认下载',
-    negativeText: '取消',
+    title: $t('market.browse.dashboardDownloadTitle'),
+    content: $t('market.browse.dashboardDownloadMessage', { name: item.name }),
+    positiveText: $t('market.browse.confirmDownload'),
+    negativeText: $t('common.cancel'),
     onPositiveClick: () => performDownload(item)
   })
 }
