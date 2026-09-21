@@ -1,22 +1,18 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, markRaw, nextTick, onBeforeMount, reactive, ref, watch } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  getCurrentInstance,
+  markRaw,
+  nextTick,
+  onBeforeMount,
+  reactive,
+  ref,
+  watch
+} from 'vue'
 import { useRoute } from 'vue-router'
 import { useLoading } from '@sa/hooks'
 import { useWebSocket } from '@vueuse/core'
-import Telemetry from '@/views/device/details/modules/telemetry/telemetry.vue'
-import TelemetryChart from '@/views/device/details/modules/telemetry-chart.vue'
-import Join from '@/views/device/details/modules/join.vue'
-import DeviceAnalysis from '@/views/device/details/modules/device-analysis.vue'
-import Message from '@/views/device/details/modules/message.vue'
-import Stats from '@/views/device/details/modules/stats.vue'
-import EventReport from '@/views/device/details/modules/event-report.vue'
-import CommandDelivery from '@/views/device/details/modules/command-delivery.vue'
-import ExpectMessage from '@/views/device/details/modules/expect-message.vue'
-import Automate from '@/views/device/details/modules/automate.vue'
-import GiveAnAlarm from '@/views/device/details/modules/give-an-alarm.vue'
-import Settings from '@/views/device/details/modules/settings.vue'
-import DeviceStatusHistory from '@/views/device/details/modules/device-status.vue'
-import DeviceDiagnosis from '@/views/device/details/modules/device-diagnosis.vue'
 import { $t } from '@/locales'
 import { useAppStore } from '@/store/modules/app'
 import { deviceDetail, deviceUpdate } from '@/service/api/device'
@@ -36,6 +32,22 @@ const getDeviceId = () => {
 }
 
 const { loading, startLoading, endLoading } = useLoading()
+
+// 详情页 Tab 按需加载，避免首次进入时同步解析所有重型模块。
+const Telemetry = defineAsyncComponent(() => import('@/views/device/details/modules/telemetry/telemetry.vue'))
+const TelemetryChart = defineAsyncComponent(() => import('@/views/device/details/modules/telemetry-chart.vue'))
+const Join = defineAsyncComponent(() => import('@/views/device/details/modules/join.vue'))
+const DeviceAnalysis = defineAsyncComponent(() => import('@/views/device/details/modules/device-analysis.vue'))
+const Message = defineAsyncComponent(() => import('@/views/device/details/modules/message.vue'))
+const Stats = defineAsyncComponent(() => import('@/views/device/details/modules/stats.vue'))
+const EventReport = defineAsyncComponent(() => import('@/views/device/details/modules/event-report.vue'))
+const CommandDelivery = defineAsyncComponent(() => import('@/views/device/details/modules/command-delivery.vue'))
+const ExpectMessage = defineAsyncComponent(() => import('@/views/device/details/modules/expect-message.vue'))
+const Automate = defineAsyncComponent(() => import('@/views/device/details/modules/automate.vue'))
+const GiveAnAlarm = defineAsyncComponent(() => import('@/views/device/details/modules/give-an-alarm.vue'))
+const Settings = defineAsyncComponent(() => import('@/views/device/details/modules/settings.vue'))
+const DeviceStatusHistory = defineAsyncComponent(() => import('@/views/device/details/modules/device-status.vue'))
+const DeviceDiagnosis = defineAsyncComponent(() => import('@/views/device/details/modules/device-diagnosis.vue'))
 
 type TabComponent = {
   key: string
@@ -132,6 +144,7 @@ const components = ref<TabComponent[]>([])
 const tabsRenderKey = ref(0)
 let lastTabsSig = ''
 let lastConfigId = ''
+let detailRequestId = 0
 
 function getPreferredTabKey() {
   const keys = components.value.map(item => item.key)
@@ -297,8 +310,11 @@ const rules = {
   }
 }
 const getDeviceDetail = async () => {
+  const currentRequestId = ++detailRequestId
   device_loop.value = false
   const { error, data } = await deviceDetail(getDeviceId())
+  if (currentRequestId !== detailRequestId) return
+
   device_loop.value = true
   deviceData.value = data
   labels.value.length = 0
@@ -315,27 +331,20 @@ const getDeviceDetail = async () => {
     device_is_online.value = data.is_online
     name.value = data.name
 
-    // 构建过滤后的组件列表（一次性赋值，避免多次触发响应式更新）
+    // 先展示基础 Tab，模板图表判断放到后台执行，避免阻塞首屏。
     let filtered = baseComponents.map(item => ({ ...item }))
-    let hasTemplateChart = false
+    filtered = filtered.filter(item => item.key !== 'chart')
 
     if (data?.device_config) {
       device_type.value = data.device_config.device_type
       if (device_type.value !== '2' || !data?.device_config_name) {
-        filtered = filtered.filter(item => item.key !== 'device-analysis')
+        filtered = filtered.filter((item) => item.key !== 'device-analysis')
       }
       if (device_type.value === '3') {
         filtered = filtered.filter(item => item.key !== 'join')
       }
-      if (data.device_config.device_template_id) {
-        hasTemplateChart = await resolveTemplateHasChartContent(data.device_config.device_template_id)
-      }
-      if (!data.device_config.device_template_id || !hasTemplateChart) {
-        filtered = filtered.filter(item => item.key !== 'chart')
-      }
     } else if (!data?.device_config_name) {
       filtered = filtered.filter(item => item.key !== 'device-analysis')
-      filtered = filtered.filter(item => item.key !== 'chart')
     }
 
     // 一次性赋值
@@ -343,7 +352,7 @@ const getDeviceDetail = async () => {
 
     ensureActiveTab()
 
-    const nextSig = components.value.map(item => item.key).join('|')
+    const nextSig = components.value.map((item) => item.key).join('|')
     const currentConfigId = data?.device_config_id || ''
 
     if (nextSig !== lastTabsSig || (lastConfigId && lastConfigId !== currentConfigId)) {
@@ -365,6 +374,11 @@ const getDeviceDetail = async () => {
         token: localStg.get('token')
       })
     )
+
+    const templateId = data?.device_config?.device_template_id
+    if (templateId) {
+      void addChartTabWhenAvailable(templateId, currentRequestId)
+    }
   }
 }
 
@@ -389,6 +403,20 @@ const resolveTemplateHasChartContent = async (templateId?: string | number) => {
     templateChartAvailabilityCache.set(normalizedTemplateId, false)
     return false
   }
+}
+
+async function addChartTabWhenAvailable(templateId: string | number, requestId: number) {
+  const hasTemplateChart = await resolveTemplateHasChartContent(templateId)
+  if (!hasTemplateChart || requestId !== detailRequestId) return
+  if (components.value.some(item => item.key === 'chart')) return
+
+  const chartComponent = baseComponents.find(item => item.key === 'chart')
+  if (!chartComponent) return
+
+  // 图表可用时把它放到首位，并切换为默认 Tab；没有图表时保持遥测 Tab。
+  components.value = [{ ...chartComponent }, ...components.value]
+  lastTabsSig = components.value.map(item => item.key).join('|')
+  tabValue.value = 'chart'
 }
 const closeModal = async () => {
   await getDeviceDetail()

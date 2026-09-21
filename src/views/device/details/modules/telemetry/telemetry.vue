@@ -18,7 +18,6 @@ import {
   telemetryDataPub
 } from '@/service/api'
 import { localStg } from '@/utils/storage'
-import { deviceDetail } from '@/service/api/device'
 import { $t } from '@/locales'
 import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool'
 import { deviceCustomControlList } from '@/service/api/system-data'
@@ -28,6 +27,7 @@ import { useLoading } from '~/packages/hooks'
 const props = defineProps<{
   id: string
   deviceTemplateId: string
+  deviceData?: Record<string, any>
 }>()
 
 let wsUrl = getWebsocketServerUrl()
@@ -75,7 +75,11 @@ const numberAnimationInstRef = ref<NumberAnimationInst[] | []>([])
 const nowTime = ref<any>()
 const { loading, startLoading, endLoading } = useLoading()
 const total = ref(0)
-const showLog = ref(false)
+const showLog = computed(() => {
+  const data = props.deviceData
+  if (!data || Object.keys(data).length === 0) return false
+  return data.device_config ? data.device_config.protocol_type === 'MQTT' : true
+})
 const operationOptions = [
   { label: $t('custom.device_details.whole'), value: '' },
   { label: $t('custom.device_details.manualOperation'), value: '1' },
@@ -310,22 +314,6 @@ const setItemRef = el => {
     numberAnimationInstRef.value[index] = el
   }
 }
-const getDeviceDetail = async () => {
-  const { data, error } = await deviceDetail(props.id)
-  if (!error) {
-    if (data.device_config !== undefined) {
-      if (data.device_config.protocol_type === 'MQTT') {
-        showLog.value = true
-      } else {
-        showLog.value = false
-      }
-    } else {
-      showLog.value = true
-    }
-  }
-}
-getDeviceDetail()
-
 const options = ref([
   {
     label: $t('custom.device_details.deleteAttribute'),
