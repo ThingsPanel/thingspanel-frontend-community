@@ -929,7 +929,7 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.visualization_thingsvis',
         meta: {
           title: 'visualization_thingsvis',
-          i18nKey: 'route.visualization_thingsvis'
+          i18nKey: 'route.visualization-thingsvis'
         }
       },
       {
