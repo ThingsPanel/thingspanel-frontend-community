@@ -385,40 +385,34 @@ const updateCommandsData = (data: any) => {
   columnsList[3].data = handleParamsOfEventsAndcommands(data?.list ?? [])
   columnsList[3].total = data?.total || 0
 }
+const loadTabData = async (tabName: string) => {
+  try {
+    if (tabName === 'telemetry') {
+      const { data }: any = await telemetryApi(queryParams[0])
+      updateTelemetryData(data)
+    } else if (tabName === 'attributes') {
+      const { data }: any = await attributesApi(queryParams[1])
+      updateAttributesData(data)
+    } else if (tabName === 'events') {
+      const { data }: any = await eventsApi(queryParams[2])
+      updateEventsData(data)
+    } else if (tabName === 'command') {
+      const { data }: any = await commandsApi(queryParams[3])
+      updateCommandsData(data)
+    }
+  } catch (error) {
+    // Keep other tabs renderable when one model endpoint fails or is slow.
+    console.error(`Failed to fetch ${tabName} model data:`, error)
+  }
+}
+
 const getTableData: (value?: string) => Promise<void> = async value => {
   startLoading()
   try {
-    if (value) {
-      // Handle single tab data loading
-      if (value === 'telemetry') {
-        const { data: data0 }: any = await telemetryApi(queryParams[0])
-        updateTelemetryData(data0)
-      } else if (value === 'attributes') {
-        const { data: data1 }: any = await attributesApi(queryParams[1])
-        updateAttributesData(data1)
-      } else if (value === 'events') {
-        const { data: data2 }: any = await eventsApi(queryParams[2])
-        updateEventsData(data2)
-      } else {
-        const { data: data3 }: any = await commandsApi(queryParams[3])
-        updateCommandsData(data3)
-      }
-    } else {
-      // Load all tabs data concurrently
-      const [telemetryRes, attributesRes, eventsRes, commandsRes] = await Promise.all([
-        telemetryApi(queryParams[0]),
-        attributesApi(queryParams[1]),
-        eventsApi(queryParams[2]),
-        commandsApi(queryParams[3])
-      ])
-
-      updateTelemetryData(telemetryRes.data)
-      updateAttributesData(attributesRes.data)
-      updateEventsData(eventsRes.data)
-      updateCommandsData(commandsRes.data)
-    }
-  } catch (error) {
-    console.error('Error fetching data:', error)
+    const tabNames = value ? [value] : ['telemetry', 'attributes', 'events', 'command']
+    // Each request updates its own tab as soon as it resolves. A slow or failed
+    // endpoint must not prevent already available model data from appearing.
+    await Promise.all(tabNames.map(tabName => loadTabData(tabName)))
   } finally {
     endLoading()
   }
@@ -450,7 +444,6 @@ getTableData()
           :striped="false"
           :scroll-x="1120"
           :row-key="modelTableRowKey"
-          flex-height
         >
           <template #empty>
             <NEmpty size="small" :description="$t('common.noData')" />
