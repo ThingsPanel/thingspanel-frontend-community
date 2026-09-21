@@ -11,7 +11,11 @@
  * http address used by Vite at build-time), not the frontend path prefix.
  */
 export const THINGSVIS_API_PROXY_PATH = '/thingsvis-api'
-export const PLATFORM_API_BASE_PATH = '/api/v1'
+
+// In local proxy mode the platform API is mounted at /proxy-default. A direct
+// /api/v1 path is only valid when the browser talks to a deployed backend
+// without the Vite proxy.
+export const PLATFORM_API_BASE_PATH = import.meta.env.VITE_HTTP_PROXY === 'Y' ? '/proxy-default' : '/api/v1'
 
 /**
  * Returns the absolute ThingsVis API base URL suitable for cross-origin
