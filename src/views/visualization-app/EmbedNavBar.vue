@@ -74,13 +74,7 @@ onBeforeUnmount(() => {
 
 <template>
   <header v-if="showEmbedNav" class="visualization-app__embed-nav" :style="navStyle">
-    <button
-      v-if="showBack"
-      type="button"
-      class="visualization-app__embed-nav-back"
-      aria-label="返回"
-      @click="goBack"
-    >
+    <button v-if="showBack" type="button" class="visualization-app__embed-nav-back" aria-label="返回" @click="goBack">
       <icon-mdi:chevron-left />
     </button>
     <span v-else class="visualization-app__embed-nav-spacer" aria-hidden="true" />

@@ -1,22 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import {
-  NButton,
-  NCard,
-  NGrid,
-  NGridItem,
-  NInput,
-  NModal,
-  NForm,
-  NFormItem,
-  NEmpty,
-  NSpin,
-  NSelect,
-  NTag,
-  useMessage
-} from 'naive-ui'
+import { NButton, NCard, NInput, NModal, NForm, NFormItem, NEmpty, NSpin, NSelect, NTag, useMessage } from 'naive-ui'
 import { useRouterPush } from '@/hooks/common/router'
+import { $t } from '@/locales'
 import {
   getThingsVisProjects,
   getThingsVisDashboards,
@@ -30,6 +17,7 @@ import {
 import { deleteDashboardMenuConfig } from '@/service/api/dashboard-menu'
 import { refreshAuthRoutes } from '@/utils/router/refresh-auth-routes'
 import { clearThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
+import CardGrid from '@/components/card-grid/index.vue'
 
 const { routerPushByKey } = useRouterPush()
 const message = useMessage()
@@ -110,7 +98,7 @@ const handleCreateDashboard = async () => {
       projectId: dashboardForm.value.projectId || undefined
     })
     if (error || !data) {
-      message.error(error?.message || '创建看板失败')
+      message.error(error?.message || $t('generate.createFailed'))
       return
     }
     showDashboardModal.value = false
@@ -174,12 +162,12 @@ const handleSaveProject = async () => {
         description: formData.value.description || undefined
       })
       if (!error) {
-        message.success('创建成功')
+        message.success($t('generate.createSuccess'))
         showModal.value = false
         formData.value = { name: '', description: '' }
         await fetchProjects()
       } else {
-        message.error('创建失败')
+        message.error($t('generate.createFailed'))
       }
     }
   } catch (e) {
@@ -255,40 +243,37 @@ onMounted(() => {
   <div class="h-full">
     <NCard>
       <!-- 头部工具栏 -->
-      <div class="visualization-page-header mb-5 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
+      <div class="visualization-page-header mb-5">
+        <div class="visualization-page-heading flex items-center gap-3">
           <h2 class="text-xl font-bold">可视化项目</h2>
           <span class="text-gray-400">{{ projects.length }} 个项目</span>
         </div>
 
         <div class="visualization-filter-toolbar">
-          <!-- 搜索框 -->
-          <NInput
-            v-model:value="searchKeyword"
-            clearable
-            placeholder="搜索项目或看板..."
-            class="visualization-filter-control visualization-filter-control--search"
-            @update:value="fetchProjects"
-            @clear="fetchProjects"
-          >
-            <template #prefix>
-              <icon-mdi:magnify />
-            </template>
-          </NInput>
-
-          <NButton class="visualization-filter-button" @click="resetSearch">重置</NButton>
-
-          <!-- 新建按钮 -->
-          <NButton class="visualization-filter-button" type="primary" @click="openCreateDashboardModal">
-            <template #icon>
-              <icon-mdi:plus />
-            </template>
-            新建看板
-          </NButton>
-          <NButton class="visualization-filter-button" secondary @click="openCreateModal">
-            <template #icon><icon-mdi:plus /></template>
-            新建项目
-          </NButton>
+          <div class="visualization-toolbar-leading">
+            <NButton class="visualization-filter-button" type="primary" @click="openCreateDashboardModal">
+              {{ $t('generate.create-dashboard') }}
+            </NButton>
+            <NButton class="visualization-filter-button" secondary @click="openCreateModal">
+              {{ $t('generate.new-project') }}
+            </NButton>
+          </div>
+          <div class="visualization-toolbar-actions">
+            <!-- 搜索框 -->
+            <NInput
+              v-model:value="searchKeyword"
+              clearable
+              placeholder="搜索项目或看板..."
+              class="visualization-filter-control visualization-filter-control--search"
+              @update:value="fetchProjects"
+              @clear="fetchProjects"
+            >
+              <template #prefix>
+                <icon-mdi:magnify />
+              </template>
+            </NInput>
+            <NButton class="visualization-filter-button" @click="resetSearch">重置</NButton>
+          </div>
         </div>
       </div>
 
@@ -297,7 +282,7 @@ onMounted(() => {
         <!-- 空状态 -->
         <NEmpty
           v-if="!loading && !searchKeyword.trim() && projects.length === 0"
-          description="暂无项目，可直接新建看板并保存到默认项目"
+          :description="$t('generate.no-project-create-dashboard')"
           class="py-20"
         >
           <template #icon>
@@ -311,8 +296,8 @@ onMounted(() => {
             <span class="text-gray-400">{{ matchedDashboards.length }} 个</span>
           </div>
           <NEmpty v-if="matchedDashboards.length === 0" description="没有匹配的看板" class="py-8" />
-          <NGrid v-else x-gap="16" y-gap="16" cols="1 s:2 m:3 l:4" responsive="screen">
-            <NGridItem v-for="dashboard in matchedDashboards" :key="dashboard.id">
+          <CardGrid v-else>
+            <div v-for="dashboard in matchedDashboards" :key="dashboard.id">
               <div
                 class="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 hover:border-primary hover:shadow"
                 @click="openDashboard(dashboard)"
@@ -323,8 +308,8 @@ onMounted(() => {
                 </div>
                 <div class="truncate text-sm text-gray-500">所属项目：{{ dashboard.project?.name || '默认项目' }}</div>
               </div>
-            </NGridItem>
-          </NGrid>
+            </div>
+          </CardGrid>
 
           <div class="mb-4 mt-6 flex items-center gap-3 border-t border-gray-100 pt-5">
             <h3 class="text-lg font-semibold">匹配的项目</h3>
@@ -334,8 +319,8 @@ onMounted(() => {
         </template>
 
         <!-- 项目网格 -->
-        <NGrid v-if="projects.length > 0" x-gap="24" y-gap="24" cols="1 s:2 m:3 l:4" responsive="screen">
-          <NGridItem v-for="project in projects" :key="project.id">
+        <CardGrid v-if="projects.length > 0" variant="rich">
+          <div v-for="project in projects" :key="project.id">
             <!-- 项目卡片 -->
             <div
               class="group relative cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-primary hover:shadow-lg"
@@ -392,13 +377,18 @@ onMounted(() => {
                 </div>
               </div>
             </div>
-          </NGridItem>
-        </NGrid>
+          </div>
+        </CardGrid>
       </NSpin>
     </NCard>
 
     <!-- 新建/编辑弹窗 -->
-    <NModal v-model:show="showModal" preset="card" :title="editingProject ? '编辑项目' : '新建项目'" class="w-500px">
+    <NModal
+      v-model:show="showModal"
+      preset="card"
+      :title="editingProject ? '编辑项目' : $t('generate.new-project')"
+      class="w-500px"
+    >
       <NForm :model="formData">
         <NFormItem label="项目名称" path="name">
           <NInput v-model:value="formData.name" placeholder="请输入项目名称" maxlength="50" show-count />
@@ -420,13 +410,13 @@ onMounted(() => {
         <div class="flex justify-end gap-2">
           <NButton @click="showModal = false">取消</NButton>
           <NButton type="primary" @click="handleSaveProject">
-            {{ editingProject ? '更新' : '创建' }}
+            {{ editingProject ? '更新' : $t('generate.create') }}
           </NButton>
         </div>
       </template>
     </NModal>
 
-    <NModal v-model:show="showDashboardModal" preset="card" title="新建看板" class="w-500px">
+    <NModal v-model:show="showDashboardModal" preset="card" :title="$t('generate.create-dashboard')" class="w-500px">
       <NForm :model="dashboardForm">
         <NFormItem label="看板名称" path="name">
           <NInput v-model:value="dashboardForm.name" placeholder="请输入看板名称" maxlength="50" show-count />
@@ -443,7 +433,9 @@ onMounted(() => {
       <template #footer>
         <div class="flex justify-end gap-2">
           <NButton @click="showDashboardModal = false">取消</NButton>
-          <NButton type="primary" :loading="dashboardCreating" @click="handleCreateDashboard">创建并编辑</NButton>
+          <NButton type="primary" :loading="dashboardCreating" @click="handleCreateDashboard">
+            {{ $t('generate.create-and-edit') }}
+          </NButton>
         </div>
       </template>
     </NModal>
@@ -470,24 +462,38 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .visualization-page-header {
-  align-items: flex-start;
+  display: block;
 }
 
 .visualization-filter-toolbar {
-  display: grid;
-  grid-template-columns: minmax(220px, 360px) auto auto auto;
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  justify-content: end;
-  min-width: min(100%, 640px);
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.visualization-toolbar-leading,
+.visualization-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.visualization-toolbar-actions {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
 }
 
 .visualization-filter-control {
   min-width: 0;
 
   &--search {
+    width: 280px;
     min-width: 220px;
-    width: 100%;
   }
 }
 
@@ -503,7 +509,7 @@ onMounted(() => {
 
 @media (max-width: 1024px) {
   .visualization-page-header {
-    flex-direction: column;
+    display: block;
   }
 
   .visualization-filter-toolbar {
@@ -513,12 +519,14 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .visualization-filter-toolbar {
-    grid-template-columns: 1fr;
+  .visualization-toolbar-leading,
+  .visualization-toolbar-actions {
+    width: 100%;
   }
 
   .visualization-filter-control--search {
     min-width: 0;
+    flex: 1;
   }
 
   .visualization-filter-toolbar :deep(.n-button) {

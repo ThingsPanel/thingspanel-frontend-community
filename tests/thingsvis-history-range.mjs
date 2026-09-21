@@ -12,11 +12,19 @@ const compiled = ts.transpileModule(
   { compilerOptions: { target: ts.ScriptTarget.ES2022 } }
 ).outputText
 const collect = config => new Function('props', compiled + '\nreturn collectConfiguredHistoryFields;')({ config })
-const binding = range => ({ expression: '{{ ds.device.data.pm25__history }}', ...(range ? { historyConfig: { timeRange: range } } : {}) })
+const binding = range => ({
+  expression: '{{ ds.device.data.pm25__history }}',
+  ...(range ? { historyConfig: { timeRange: range } } : {})
+})
 const node = (range, preset = 'all') => ({ props: { timeRangePreset: preset }, data: [binding(range)] })
 assert.equal(collect({ nodes: [node('last_24h')] })('device').get('pm25'), 'last_24h')
 assert.equal(collect({ nodes: [node(undefined, '6h')] })('device').get('pm25'), 'last_6h')
 assert.equal(collect({ nodes: [node('last_24h'), node('last_7d')] })('device').get('pm25'), 'last_7d')
 assert.equal(collect({ nodes: [node('last_24h')] })('other').size, 0)
-assert.equal(collect({ nodes: [{ props: { timeRangePreset: '1h', data: '{{ ds.device.data.pm25__history }}' } }] })('device').get('pm25'), 'last_1h')
+assert.equal(
+  collect({ nodes: [{ props: { timeRangePreset: '1h', data: '{{ ds.device.data.pm25__history }}' } }] })('device').get(
+    'pm25'
+  ),
+  'last_1h'
+)
 console.log('ThingsVis host history ranges passed: binding priority, fallback, multiple charts and source isolation')

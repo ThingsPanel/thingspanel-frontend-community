@@ -562,7 +562,9 @@ const collectConfiguredHistoryFields = (dataSourceId?: string) => {
       const sourceFieldId = fieldRoot.slice(0, -HISTORY_FIELD_SUFFIX.length)
       if (!sourceFieldId) return
 
-      const bindingTimeRange = normalizeHistoryTimeRange(binding?.historyConfig?.timeRange || node?.props?.timeRangePreset)
+      const bindingTimeRange = normalizeHistoryTimeRange(
+        binding?.historyConfig?.timeRange || node?.props?.timeRangePreset
+      )
       requests.set(sourceFieldId, mergeHistoryTimeRange(requests.get(sourceFieldId), bindingTimeRange))
     })
 

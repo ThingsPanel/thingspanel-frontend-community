@@ -4,8 +4,6 @@ import { useRoute } from 'vue-router'
 import {
   NButton,
   NCard,
-  NGrid,
-  NGridItem,
   NBreadcrumb,
   NBreadcrumbItem,
   NInput,
@@ -21,6 +19,7 @@ import {
   useMessage
 } from 'naive-ui'
 import { useRouterPush } from '@/hooks/common/router'
+import { $t } from '@/locales'
 import {
   getThingsVisDashboards,
   getThingsVisHomeDashboard,
@@ -43,6 +42,7 @@ import {
 import { clearThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
 import { refreshAuthRoutes } from '@/utils/router/refresh-auth-routes'
 import MarketPublishEntry from '@/views/device/config/MarketPublishEntry.vue'
+import CardGrid from '@/components/card-grid/index.vue'
 
 const route = useRoute()
 const { routerPushByKey } = useRouterPush()
@@ -231,7 +231,7 @@ const handleCreateDashboard = async () => {
     })
 
     if (!error) {
-      message.success('创建成功')
+      message.success($t('generate.createSuccess'))
       showModal.value = false
       formData.value = {
         name: '',
@@ -241,10 +241,10 @@ const handleCreateDashboard = async () => {
       }
       await fetchDashboards()
     } else {
-      message.error('创建失败')
+      message.error($t('generate.createFailed'))
     }
   } catch (e) {
-    message.error('创建失败')
+    message.error($t('generate.createFailed'))
     console.error(e)
   }
 }
@@ -487,8 +487,8 @@ onMounted(async () => {
       </NBreadcrumb>
 
       <!-- 头部工具栏 -->
-      <div class="visualization-page-header mb-5 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
+      <div class="visualization-page-header mb-5">
+        <div class="visualization-page-heading flex items-center gap-3">
           <h2 class="text-xl font-bold">{{ project?.name }}</h2>
           <span class="text-gray-400">
             {{ searchKeyword ? `${dashboards.length} / ${allDashboards.length}` : dashboards.length }} 个仪表盘
@@ -496,27 +496,25 @@ onMounted(async () => {
         </div>
 
         <div class="visualization-filter-toolbar">
-          <!-- 搜索框 -->
-          <NInput
-            v-model:value="searchKeyword"
-            clearable
-            placeholder="搜索仪表盘名称..."
-            class="visualization-filter-control visualization-filter-control--search"
-          >
-            <template #prefix>
-              <icon-mdi:magnify />
-            </template>
-          </NInput>
-
-          <NButton class="visualization-filter-button" @click="resetSearch">重置</NButton>
-
-          <!-- 新建按钮 -->
-          <NButton class="visualization-filter-button" type="primary" @click="openCreateModal">
-            <template #icon>
-              <icon-mdi:plus />
-            </template>
-            新建仪表盘
-          </NButton>
+          <div class="visualization-toolbar-leading">
+            <NButton class="visualization-filter-button" type="primary" @click="openCreateModal">
+              {{ $t('generate.create-dashboard') }}
+            </NButton>
+          </div>
+          <div class="visualization-toolbar-actions">
+            <!-- 搜索框 -->
+            <NInput
+              v-model:value="searchKeyword"
+              clearable
+              placeholder="搜索仪表盘名称..."
+              class="visualization-filter-control visualization-filter-control--search"
+            >
+              <template #prefix>
+                <icon-mdi:magnify />
+              </template>
+            </NInput>
+            <NButton class="visualization-filter-button" @click="resetSearch">重置</NButton>
+          </div>
         </div>
       </div>
 
@@ -530,7 +528,7 @@ onMounted(async () => {
         <!-- 空状态 -->
         <NEmpty
           v-if="!loading && dashboards.length === 0"
-          :description="allDashboards.length === 0 ? '暂无仪表盘，点击上方按钮创建第一个仪表盘' : '没有匹配的仪表盘'"
+          :description="allDashboards.length === 0 ? $t('generate.no-dashboard-create-first') : '没有匹配的仪表盘'"
           class="py-20"
         >
           <template #icon>
@@ -539,8 +537,8 @@ onMounted(async () => {
         </NEmpty>
 
         <!-- Dashboard 网格 -->
-        <NGrid v-else x-gap="24" y-gap="24" cols="1 s:2 m:3 l:4" responsive="screen">
-          <NGridItem v-for="dashboard in dashboards" :key="dashboard.id">
+        <CardGrid v-else variant="rich">
+          <div v-for="dashboard in dashboards" :key="dashboard.id">
             <!-- Dashboard 卡片 -->
             <div
               class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-primary hover:shadow-lg"
@@ -698,13 +696,13 @@ onMounted(async () => {
                 </div>
               </div>
             </div>
-          </NGridItem>
-        </NGrid>
+          </div>
+        </CardGrid>
       </NSpin>
     </NCard>
 
     <!-- 新建弹窗 -->
-    <NModal v-model:show="showModal" preset="card" title="新建仪表盘" class="w-500px">
+    <NModal v-model:show="showModal" preset="card" :title="$t('generate.create-dashboard')" class="w-500px">
       <NForm :model="formData">
         <NFormItem label="仪表盘名称" path="name">
           <NInput v-model:value="formData.name" placeholder="请输入仪表盘名称" maxlength="50" show-count />
@@ -757,7 +755,7 @@ onMounted(async () => {
       <template #footer>
         <div class="flex justify-end gap-2">
           <NButton @click="showModal = false">取消</NButton>
-          <NButton type="primary" @click="handleCreateDashboard">创建</NButton>
+          <NButton type="primary" @click="handleCreateDashboard">{{ $t('generate.create') }}</NButton>
         </div>
       </template>
     </NModal>
@@ -832,24 +830,38 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .visualization-page-header {
-  align-items: flex-start;
+  display: block;
 }
 
 .visualization-filter-toolbar {
-  display: grid;
-  grid-template-columns: minmax(220px, 360px) auto auto;
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  justify-content: end;
-  min-width: min(100%, 480px);
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.visualization-toolbar-leading,
+.visualization-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.visualization-toolbar-actions {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
 }
 
 .visualization-filter-control {
   min-width: 0;
 
   &--search {
+    width: 280px;
     min-width: 220px;
-    width: 100%;
   }
 }
 
@@ -865,7 +877,7 @@ onMounted(async () => {
 
 @media (max-width: 1024px) {
   .visualization-page-header {
-    flex-direction: column;
+    display: block;
   }
 
   .visualization-filter-toolbar {
@@ -875,12 +887,14 @@ onMounted(async () => {
 }
 
 @media (max-width: 768px) {
-  .visualization-filter-toolbar {
-    grid-template-columns: 1fr;
+  .visualization-toolbar-leading,
+  .visualization-toolbar-actions {
+    width: 100%;
   }
 
   .visualization-filter-control--search {
     min-width: 0;
+    flex: 1;
   }
 
   .visualization-filter-toolbar :deep(.n-button) {
