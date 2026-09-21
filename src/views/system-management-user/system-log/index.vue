@@ -220,10 +220,19 @@ onMounted(() => {
         <div class="system-log-toolbar">
           <NForm label-placement="left" :model="queryParams">
             <NGrid responsive="screen" item-responsive x-gap="12" y-gap="12" class="search-form-grid">
-              <NFormItemGi span="24 s:12 m:6" :label="$t('generate.username')" path="name">
+              <NFormItemGi
+                span="24 s:12 m:6"
+                :label="$t('generate.username')"
+                path="name"
+                class="search-form-item search-form-item--username"
+              >
                 <NInput v-model:value="queryParams.username" />
               </NFormItemGi>
-              <NFormItemGi span="24 s:12 m:6" path="selected_time">
+              <NFormItemGi
+                span="24 s:12 m:6"
+                path="selected_time"
+                class="search-form-item search-form-item--date-range"
+              >
                 <NDatePicker
                   v-model:value="range"
                   type="datetimerange"
@@ -232,10 +241,20 @@ onMounted(() => {
                   @update:value="pickerChange"
                 />
               </NFormItemGi>
-              <NFormItemGi span="24 s:12 m:6" :label="$t('generate.requestMethod')" path="method">
+              <NFormItemGi
+                span="24 s:12 m:6"
+                :label="$t('generate.requestMethod')"
+                path="method"
+                class="search-form-item search-form-item--method"
+              >
                 <NSelect v-model:value="queryParams.method" :options="requestMethodOptions"></NSelect>
               </NFormItemGi>
-              <NFormItemGi span="24 s:12 m:6" :label="$t('generate.ipAddress')" path="ip">
+              <NFormItemGi
+                span="24 s:12 m:6"
+                :label="$t('generate.ipAddress')"
+                path="ip"
+                class="search-form-item search-form-item--ip"
+              >
                 <NInput v-model:value="queryParams.ip" />
               </NFormItemGi>
 
@@ -368,16 +387,29 @@ onMounted(() => {
   :deep(.n-form-item-gi) {
     flex: 0 0 auto;
     width: auto !important;
-    min-width: 220px;
-    max-width: 360px;
+    min-width: 0;
+    max-width: none;
     margin-bottom: 0;
+  }
+
+  .search-form-item--username,
+  .search-form-item--ip {
+    width: 230px !important;
+  }
+
+  .search-form-item--date-range {
+    width: 390px !important;
+  }
+
+  .search-form-item--method {
+    width: 200px !important;
   }
 
   :deep(.n-input),
   :deep(.n-base-selection),
   :deep(.n-date-picker) {
     width: 100%;
-    max-width: 320px;
+    max-width: none;
     min-height: 36px;
     border-radius: 8px;
   }
