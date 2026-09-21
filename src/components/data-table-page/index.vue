@@ -142,6 +142,8 @@ const pageSize = ref(props.initPageSize || 10) // 每页显示数量
 const searchCriteria: any = ref(Object.fromEntries(searchConfigs.map(item => [item.key, item.initValue]))) // 搜索条件
 const tableScrollX = 920
 const advancedFilterVisible = ref(false)
+const viewportWidth = ref(typeof window === 'undefined' ? 1024 : window.innerWidth)
+const paginationPageSlot = computed(() => (viewportWidth.value <= 768 ? 3 : 9))
 
 const primaryFilterKeys = computed(() =>
   props.primarySearchKeys?.length ? props.primarySearchKeys : searchConfigs.map(item => item.key)
@@ -412,7 +414,13 @@ loadOptionsOnMount2()
 
 onMounted(() => {
   getData()
+  viewportWidth.value = window.innerWidth
+  window.addEventListener('resize', handleViewportResize)
 })
+
+const handleViewportResize = () => {
+  viewportWidth.value = window.innerWidth
+}
 
 const debouncedInputSearch = _.debounce(() => {
   currentPage.value = 1
@@ -430,6 +438,7 @@ const handleSelectChange = () => {
 
 onUnmounted(() => {
   debouncedInputSearch.cancel()
+  window.removeEventListener('resize', handleViewportResize)
 })
 
 // 修复 NSelect 的 filter 函数类型错误
@@ -509,6 +518,7 @@ const formSize = ref(undefined)
 
 <template>
   <AdvancedListLayout
+    class="data-table-page-layout"
     :initial-view="'card'"
     :available-views="availableViews"
     :inline-header="true"
@@ -801,6 +811,7 @@ const formSize = ref(undefined)
         v-model:page-size="pageSize"
         class="justify-end"
         :item-count="total"
+        :page-slot="paginationPageSlot"
         :page-sizes="[10, 20, 30, 40, 50]"
         show-size-picker
         @update:page="onUpdatePage"
@@ -871,8 +882,8 @@ const formSize = ref(undefined)
 
 .device-filter-toolbar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-wrap: nowrap;
+  gap: 8px;
   align-items: center;
   justify-content: start;
   width: 100%;
@@ -886,13 +897,15 @@ const formSize = ref(undefined)
 }
 
 .device-filter-field {
-  flex: 0 1 168px;
-  min-width: 148px;
+  flex: 0 1 144px;
+  min-width: 120px;
+  max-width: 160px;
 }
 
 .device-filter-field--search {
-  flex-basis: 210px;
-  min-width: 180px;
+  flex-basis: 190px;
+  min-width: 160px;
+  max-width: 220px;
 }
 
 .device-filter-toolbar {
@@ -910,7 +923,7 @@ const formSize = ref(undefined)
 
   :deep(.n-button) {
     height: 36px;
-    padding: 0 16px;
+    padding: 0 12px;
     border-radius: 8px;
   }
 }
@@ -961,6 +974,10 @@ const formSize = ref(undefined)
   font-size: 12px;
 }
 
+.data-table-page-layout {
+  min-width: 0;
+}
+
 .advanced-filter-form {
   display: flex;
   flex-direction: column;
@@ -988,18 +1005,41 @@ const formSize = ref(undefined)
 
 @media (max-width: 1440px) {
   .device-filter-toolbar {
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
   }
 
   .device-filter-actions {
-    justify-content: flex-start;
+    flex-basis: 100%;
+    justify-content: flex-end;
   }
 }
 
 @media (max-width: 768px) {
+  .data-table-page-layout :deep(.full-height-card > .n-card__content) {
+    padding: 12px;
+  }
+
+  .data-table-page-layout :deep(.list-content-header--stacked) {
+    padding-bottom: 12px;
+  }
+
+  .data-table-page-header__title {
+    gap: 8px;
+
+    h2 {
+      font-size: 18px;
+    }
+
+    span {
+      font-size: 12px;
+    }
+  }
+
   .device-filter-toolbar {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
   }
 
   .device-filter-primary-actions,
@@ -1008,21 +1048,52 @@ const formSize = ref(undefined)
     width: 100%;
   }
 
+  .device-filter-primary-actions {
+    flex-wrap: wrap;
+  }
+
+  .device-filter-primary-actions > * {
+    min-width: 0;
+  }
+
+  .device-filter-field {
+    max-width: none;
+  }
+
   .device-filter-field--search {
     min-width: 0;
+    max-width: none;
   }
 
   .device-filter-actions {
     justify-content: stretch;
+    gap: 8px;
 
     :deep(.n-button) {
       flex: 1;
+      min-width: 0;
+      padding: 0 10px;
     }
+  }
+
+  .device-active-filters {
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
   }
 
   .device-filter-result-count {
     width: 100%;
     margin-left: 0;
+  }
+
+  .data-table-page-layout :deep(.list-content-footer) {
+    justify-content: center;
+    overflow-x: auto;
+  }
+
+  .data-table-page-layout :deep(.list-content-footer .n-pagination) {
+    min-width: max-content;
   }
 }
 
@@ -1213,6 +1284,38 @@ const formSize = ref(undefined)
   opacity: 0.62;
   font-size: 11px;
   line-height: 1.35;
+}
+
+@media (max-width: 640px) {
+  :deep(.item-card.device-card) {
+    height: 176px;
+  }
+
+  :deep(.item-card.device-card .card-container) {
+    grid-template-columns: 72px minmax(0, 1fr);
+    column-gap: 12px;
+    padding: 12px;
+  }
+
+  :deep(.item-card.device-card .card-preview),
+  :deep(.item-card.device-card .device-card-preview) {
+    grid-template-columns: 72px minmax(0, 1fr);
+    column-gap: 12px;
+  }
+
+  :deep(.item-card.device-card .config-image-frame) {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+  }
+
+  :deep(.item-card.device-card .card-title) {
+    font-size: 15px;
+  }
+
+  :deep(.item-card.device-card .device-report-time) {
+    font-size: 11px;
+  }
 }
 
 .map-view-container {
