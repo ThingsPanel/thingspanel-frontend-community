@@ -20,7 +20,7 @@ const tableThemeOverrides = {
   lineHeight: '1.5',
   thColor: 'var(--body-color)',
   thColorHover: 'var(--body-color)',
-  thFontWeight: '400',
+  thFontWeight: '600',
   thTextColor: 'var(--text-color)',
   tdColorHover: 'var(--primary-color-suppl)',
   tdTextColor: 'var(--text-color)',
@@ -382,7 +382,7 @@ onMounted(() => {
   :deep(.n-data-table-th) {
     height: 44px;
     font-size: 14px;
-    font-weight: 400;
+    font-weight: 600;
     line-height: 1.5;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
   }

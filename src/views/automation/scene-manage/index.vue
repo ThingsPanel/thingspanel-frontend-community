@@ -359,7 +359,7 @@ getData()
   :deep(th) {
     height: 44px;
     background: var(--body-color);
-    font-weight: 400;
+    font-weight: 600;
   }
 
   :deep(td) {

@@ -5,7 +5,7 @@ export const tableThemeOverrides = {
   lineHeight: '1.5',
   thColor: 'var(--body-color)',
   thColorHover: 'var(--body-color)',
-  thFontWeight: '400',
+  thFontWeight: '600',
   thTextColor: 'var(--text-color)',
   tdColor: 'var(--card-color)',
   tdColorHover: 'var(--primary-color-suppl)',

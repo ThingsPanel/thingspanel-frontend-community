@@ -25,7 +25,7 @@ const tableThemeOverrides = {
   lineHeight: '1.5',
   thColor: 'var(--body-color)',
   thColorHover: 'var(--body-color)',
-  thFontWeight: '400',
+  thFontWeight: '600',
   thTextColor: 'var(--text-color)',
   tdColor: 'var(--card-color)',
   tdColorHover: 'var(--primary-color-suppl)',
@@ -301,7 +301,7 @@ onMounted(getDevice) // Fetch device groups on component mount
     color: var(--text-color);
     background: var(--body-color) !important;
     font-size: 14px;
-    font-weight: 400;
+    font-weight: 600;
     line-height: 1.5;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
   }

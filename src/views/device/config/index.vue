@@ -489,7 +489,7 @@ const availableViews = [
     height: 44px;
     color: var(--text-color);
     font-size: 14px;
-    font-weight: 400;
+    font-weight: 600;
     line-height: 1.5;
     letter-spacing: 0.01em;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;

@@ -131,7 +131,7 @@ const templateTableThemeOverrides = {
   lineHeight: '1.5',
   thColor: 'var(--body-color)',
   thColorHover: 'var(--body-color)',
-  thFontWeight: '400',
+  thFontWeight: '600',
   thTextColor: 'var(--text-color)',
   tdColor: 'var(--card-color)',
   tdColorHover: 'var(--primary-color-suppl)',
@@ -436,7 +436,6 @@ onMounted(() => {
           :striped="false"
           :scroll-x="1060"
           :row-key="templateTableRowKey"
-          flex-height
         >
           <template #empty>
             <NEmpty size="small" :description="$t('common.noData')" />
@@ -673,7 +672,7 @@ onMounted(() => {
   :deep(.n-data-table-th) {
     color: var(--text-color);
     font-size: 14px;
-    font-weight: 400;
+    font-weight: 600;
     line-height: 1.5;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
   }
