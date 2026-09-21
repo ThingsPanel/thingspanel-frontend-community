@@ -291,9 +291,6 @@ const parameterSubmit: () => void = async () => {
     </n-form-item>
     <div class="box">
       <NButton class="box-btn" type="primary" @click="addParams">
-        <template #icon>
-          <SvgIcon local-icon="add" class="more" />
-        </template>
         {{ $t('device_template.table_header.addParameters') }}
       </NButton>
       <n-data-table

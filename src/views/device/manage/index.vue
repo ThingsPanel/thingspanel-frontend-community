@@ -516,7 +516,7 @@ const topActions = [
   {
     element: () => (
       <n-dropdown options={dropOption} trigger="hover" onSelect={handleSelect}>
-        <n-button type="primary">+{$t('custom.devicePage.addDevice')}</n-button>
+        <n-button type="primary">{$t('custom.devicePage.addDevice')}</n-button>
       </n-dropdown>
     )
   }

@@ -41,9 +41,6 @@ function refresh() {
 <template>
   <NSpace wrap justify="end" class="<sm:w-200px">
     <NButton size="small" ghost type="primary" @click="add">
-      <template #icon>
-        <IconIcRoundPlus class="text-icon" />
-      </template>
       {{ $t('common.add') }}
     </NButton>
     <NPopconfirm @positive-click="batchDelete">

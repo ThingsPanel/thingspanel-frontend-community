@@ -8,7 +8,7 @@
   "device_template.adoptDeviceAdd": "Add via Service",
   "device_template.templateInfo": "Template Information",
   "device_template.basicInfo": "Basic Information",
-  "device_template.addThingModel": "Add Thing Model",
+  "device_template.addThingModel": "New Thing Model",
   "device_template.editThingModel": "Edit Thing Model",
   "device_template.addDeviceInfo": "Enter Thing Model basic information",
   "device_template.modelDefinition": "Thing Model Definition",

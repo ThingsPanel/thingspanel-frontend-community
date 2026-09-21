@@ -184,7 +184,7 @@ init()
     <NCard :title="$t('route.apply_service')" :bordered="false" class="h-full rounded-8px shadow-sm">
       <template #header-extra>
         <NButton type="primary" @click="handleAddTable">
-          {{ $t('common.add') }}
+          {{ $t('generate.create') }}
         </NButton>
       </template>
       <div class="h-full flex-col">

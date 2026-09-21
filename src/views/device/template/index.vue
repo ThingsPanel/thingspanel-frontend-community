@@ -328,7 +328,7 @@ onMounted(() => {
       <template #search-form-content>
         <div class="device-filter-toolbar">
           <div class="device-filter-leading">
-            <NButton type="primary" @click="handleAddNew">+ {{ $t('generate.add-device-function-template') }}</NButton>
+            <NButton type="primary" @click="handleAddNew">{{ $t('generate.add-device-function-template') }}</NButton>
           </div>
           <div class="device-filter-actions">
             <div class="device-filter-field device-filter-field--search">

@@ -52,7 +52,7 @@ const closeModal = () => {
 
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
-    add: $t('common.add'),
+    add: $t('generate.create'),
     edit: $t('common.edit')
   }
   return titles[props.type]

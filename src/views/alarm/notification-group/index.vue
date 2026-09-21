@@ -153,7 +153,7 @@ getTableData()
       <div class="notification-group-header">
         <div class="notification-group-title">{{ $t('generate.notification-group') }}</div>
         <div class="notification-group-toolbar">
-          <NButton type="primary" @click="handleAddTable">+{{ $t('device_template.add') }}</NButton>
+          <NButton type="primary" @click="handleAddTable">{{ $t('common.createNotificationGroup') }}</NButton>
         </div>
       </div>
       <div class="h-full flex-col">

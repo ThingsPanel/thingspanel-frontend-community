@@ -432,9 +432,6 @@ getTableData()
     <n-tabs type="line" animated @update:value="checkedTabs">
       <n-tab-pane v-for="(item, index) in columnsList" :key="item.name" :name="item.name" :tab="item.text">
         <NButton type="primary" class="addBtn" @click="item.addBtn">
-          <template #icon>
-            <SvgIcon local-icon="add" class="more" />
-          </template>
           {{ $t('device_template.add') }}
         </NButton>
         <n-data-table

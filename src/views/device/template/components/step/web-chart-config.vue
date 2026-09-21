@@ -260,7 +260,7 @@ watch(showEditorModal, visible => {
       <template #header-extra>
         <NSpace align="center">
           <NButton type="primary" size="small" @click="openEditor">
-            {{ hasConfig ? '编辑配置' : '创建配置' }}
+            {{ hasConfig ? '编辑配置' : $t('generate.new-config') }}
           </NButton>
         </NSpace>
       </template>
@@ -280,7 +280,7 @@ watch(showEditorModal, visible => {
         </div>
 
         <!-- 无配置时提示 -->
-        <NEmpty v-else-if="!loading" description="暂无图表配置，点击上方按钮创建" />
+        <NEmpty v-else-if="!loading" :description="$t('generate.no-chart-config')" />
         <div v-else style="min-height: 200px" />
       </NSpin>
     </NCard>

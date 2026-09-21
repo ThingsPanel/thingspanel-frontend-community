@@ -240,7 +240,7 @@ init()
             <div class="search-actions">
               <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
               <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
-              <NButton type="primary" @click="handleAddTable">{{ $t('device_template.add') }}</NButton>
+              <NButton type="primary" @click="handleAddTable">{{ $t('generate.create-access-rule') }}</NButton>
             </div>
           </div>
         </div>

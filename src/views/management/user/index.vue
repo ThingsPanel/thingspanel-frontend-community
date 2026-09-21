@@ -499,8 +499,7 @@ init()
 
         <NSpace class="pb-12px" justify="space-between">
           <NButton type="primary" @click="handleAddTable">
-            <IconIcRoundPlus class="mr-4px text-20px" />
-            {{ $t('common.add') }}
+            {{ $t('generate.create') }}
           </NButton>
         </NSpace>
 

@@ -182,9 +182,6 @@ watchEffect(async () => {
         </n-tag>
         <n-tag v-if="!tageFlag" size="small" class="tag addTage" @click="addTags">
           {{ $t('device_template.addTage') }}
-          <template #icon>
-            <SvgIcon local-icon="add" class="more" />
-          </template>
         </n-tag>
         <n-input
           v-else

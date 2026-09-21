@@ -408,7 +408,7 @@
   "dataSource.pathMapping.addMapping": "添加映射",
   "dataSource.pathMapping.previewResult": "预览结果",
   "dataSource.pathMapping.noRules": "暂无映射规则",
-  "dataSource.pathMapping.createFirst": "创建第一个映射",
+  "dataSource.pathMapping.createFirst": "添加第一个映射",
   "dataSource.pathMapping.ruleNumber": "映射规则 {number}",
   "dataSource.pathMapping.ruleInvalid": "无效",
   "dataSource.pathMapping.ruleValid": "有效",

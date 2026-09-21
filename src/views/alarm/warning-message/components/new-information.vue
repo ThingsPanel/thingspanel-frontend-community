@@ -261,7 +261,6 @@ const getPlatform = computed(() => {
 <template>
   <div class="p-y-12px">
     <NButton type="primary" @click="addWarningMessageBut">
-      <IconIcRoundPlus class="mr-4px text-20px" />
       {{ $t('generate.addAlarm') }}
     </NButton>
   </div>

@@ -404,7 +404,7 @@ if (configId.value) {
   <div class="linkage-edit">
     <NCard
       :bordered="false"
-      :title="(configId ? $t('common.edit') : $t('common.add')) + $t('route.automation_scene-linkage')"
+      :title="(configId ? $t('common.edit') : $t('generate.create')) + $t('route.automation_scene-linkage')"
     >
       <NForm
         ref="configFormRef"

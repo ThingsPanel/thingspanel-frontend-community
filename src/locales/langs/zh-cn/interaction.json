@@ -192,7 +192,7 @@
   "interaction.editor.usageUpdateModes": "覆盖：直接替换原值；追加：添加到原值后面；前置：添加到原值前面",
   
   "interaction.settings.title": "交互配置",
-  "interaction.settings.addConfig": "创建第一个交互",
+  "interaction.settings.addConfig": "新建第一个交互",
   "interaction.settings.noConfigs": "暂无交互配置",
   "interaction.settings.responseActions": "响应动作",
   "interaction.settings.addAction": "添加动作",

@@ -192,7 +192,7 @@
   "interaction.editor.usageUpdateModes": "Replace: directly replace original value; Append: add to end of original value; Prepend: add to beginning of original value",
   
   "interaction.settings.title": "Interaction Configuration",
-  "interaction.settings.addConfig": "Create First Interaction",
+  "interaction.settings.addConfig": "New First Interaction",
   "interaction.settings.noConfigs": "No interaction configurations",
   "interaction.settings.responseActions": "Response Actions",
   "interaction.settings.addAction": "Add Action",

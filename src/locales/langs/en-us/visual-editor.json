@@ -310,7 +310,7 @@
   "dataSource.pathMapping.addMapping": "Add Mapping",
   "dataSource.pathMapping.previewResult": "Preview Result",
   "dataSource.pathMapping.noRules": "No mapping rules",
-  "dataSource.pathMapping.createFirst": "Create first mapping",
+  "dataSource.pathMapping.createFirst": "Add first mapping",
   "dataSource.pathMapping.ruleNumber": "Mapping Rule {number}",
   "dataSource.pathMapping.ruleInvalid": "Invalid",
   "dataSource.pathMapping.ruleValid": "Valid",

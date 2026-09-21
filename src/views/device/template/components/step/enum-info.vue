@@ -153,9 +153,6 @@ const columns: any = [
     </template>
   </n-data-table>
   <NButton class="add-button" @click="onAdd">
-    <template #icon>
-      <SvgIcon local-icon="add" />
-    </template>
     {{ $t('device_template.table_header.addEnum') }}
   </NButton>
 </template>

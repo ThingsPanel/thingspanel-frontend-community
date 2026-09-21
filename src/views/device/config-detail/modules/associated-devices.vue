@@ -365,7 +365,7 @@ onMounted(async () => {
               class="create-device-button"
               @click="routerPushByKey('device_manage', { query: { deviceConfigId: props.deviceConfigId } })"
             >
-              + 创建设备
+              新建设备
             </NButton>
           </NFlex>
         </NFormItem>
