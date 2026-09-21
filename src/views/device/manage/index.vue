@@ -55,7 +55,12 @@ const serviceIds = ref<ServiceIds[]>([])
 const queryOfServiceIdentifier = ref(route.query.service_identifier)
 const queryOfServiceAccessId = ref(route.query.service_access_id)
 const { cache: query, setCache } = usePageCache()
-const groupOptions = ref<TreeSelectOption[]>([])
+type DeviceGroupTreeOption = TreeSelectOption & {
+  deviceCount?: number
+  children?: DeviceGroupTreeOption[]
+}
+
+const groupOptions = ref<DeviceGroupTreeOption[]>([])
 const groupTreeLoading = ref(false)
 const selectedGroupId = ref(query.group_id ? String(query.group_id) : '')
 type GroupScope = 'all' | 'ungrouped' | 'group'
@@ -66,7 +71,7 @@ const allDeviceCount = ref<number | null>(null)
 const ungroupedDeviceCount = ref<number | null>(null)
 const groupPanelVisible = ref(false)
 
-const renderGroupPrefix = ({ option }: { option: TreeSelectOption }) =>
+const renderGroupPrefix = ({ option }: { option: DeviceGroupTreeOption }) =>
   h(
     NIcon,
     {
@@ -77,6 +82,12 @@ const renderGroupPrefix = ({ option }: { option: TreeSelectOption }) =>
       default: () => h(option.children?.length ? FolderOpenOutline : FolderOutline)
     }
   )
+
+const renderGroupLabel = ({ option }: { option: DeviceGroupTreeOption }) =>
+  h('span', { class: 'device-group-tree__label' }, [
+    h('span', { class: 'device-group-tree__label-text' }, option.label),
+    typeof option.deviceCount === 'number' ? h('span', { class: 'device-group-tree__count' }, option.deviceCount) : null
+  ])
 
 // 初始化设备状态 WebSocket 管理器
 const deviceStatusWS = useDeviceStatusWebSocket()
@@ -128,12 +139,12 @@ const setUpId = (dId, cId, dobj) => {
 }
 const getDeviceGroupOptions = async () => {
   // 将原始数据转换为树形结构
-  function convertTreeNodeToTarget(treeNode: DeviceManagement.TreeNode): TreeSelectOption {
+  function convertTreeNodeToTarget(treeNode: DeviceManagement.TreeNode): DeviceGroupTreeOption {
     const { group, children } = treeNode
-    const deviceCount = typeof group.device_count === 'number' ? ` (${group.device_count})` : ''
-    const targetNode: TreeSelectOption = {
-      label: `${group.name}${deviceCount}`,
-      key: String(group.id)
+    const targetNode: DeviceGroupTreeOption = {
+      label: group.name,
+      key: String(group.id),
+      deviceCount: group.device_count
     }
 
     if (children && children.length > 0) {
@@ -144,7 +155,7 @@ const getDeviceGroupOptions = async () => {
   }
 
   // 将 TreeNode 数组转换为目标数据结构的数组
-  function convertTreeNodesToTarget(treeNodes: DeviceManagement.TreeNode[]): TreeSelectOption[] {
+  function convertTreeNodesToTarget(treeNodes: DeviceManagement.TreeNode[]): DeviceGroupTreeOption[] {
     return treeNodes.map(convertTreeNodeToTarget)
   }
 
@@ -670,32 +681,38 @@ const toggleGroupPanel = () => {
   <div class="device-manage-page">
     <div class="device-manage-layout" :class="{ 'device-manage-layout--with-group': groupPanelVisible }">
       <aside v-if="groupPanelVisible" id="device-group-sidebar" class="device-group-sidebar">
-        <button
-          type="button"
-          class="device-group-system-item"
-          :class="{ 'device-group-system-item--active': selectedGroupScope === 'all' }"
-          @click="handleAllGroups"
-        >
-          <span class="device-group-system-item__icon" aria-hidden="true">
-            <NIcon size="16"><AppsOutline /></NIcon>
-          </span>
-          <span class="device-group-system-item__label">{{ $t('custom.devicePage.allDevices') }}</span>
-          <span v-if="allDeviceCount !== null" class="device-group-system-item__count">{{ allDeviceCount }}</span>
-        </button>
-        <button
-          type="button"
-          class="device-group-system-item"
-          :class="{ 'device-group-system-item--active': selectedGroupScope === 'ungrouped' }"
-          @click="handleUngroupedDevices"
-        >
-          <span class="device-group-system-item__icon" aria-hidden="true">
-            <NIcon size="16"><FolderOutline /></NIcon>
-          </span>
-          <span class="device-group-system-item__label">{{ $t('custom.devicePage.ungroupedDevices') }}</span>
-          <span v-if="ungroupedDeviceCount !== null" class="device-group-system-item__count">
-            {{ ungroupedDeviceCount }}
-          </span>
-        </button>
+        <div class="device-group-system">
+          <button
+            type="button"
+            class="device-group-system-item device-group-system-item--root"
+            :class="{ 'device-group-system-item--active': selectedGroupScope === 'all' }"
+            :aria-current="selectedGroupScope === 'all' ? 'page' : undefined"
+            @click="handleAllGroups"
+          >
+            <span class="device-group-system-item__icon" aria-hidden="true">
+              <NIcon size="16"><AppsOutline /></NIcon>
+            </span>
+            <span class="device-group-system-item__label">{{ $t('custom.devicePage.allDevices') }}</span>
+            <span v-if="allDeviceCount !== null" class="device-group-system-item__count">{{ allDeviceCount }}</span>
+          </button>
+          <div class="device-group-system__child">
+            <button
+              type="button"
+              class="device-group-system-item device-group-system-item--child"
+              :class="{ 'device-group-system-item--active': selectedGroupScope === 'ungrouped' }"
+              :aria-current="selectedGroupScope === 'ungrouped' ? 'page' : undefined"
+              @click="handleUngroupedDevices"
+            >
+              <span class="device-group-system-item__icon" aria-hidden="true">
+                <NIcon size="15"><FolderOutline /></NIcon>
+              </span>
+              <span class="device-group-system-item__label">{{ $t('custom.devicePage.ungroupedDevices') }}</span>
+              <span v-if="ungroupedDeviceCount !== null" class="device-group-system-item__count">
+                {{ ungroupedDeviceCount }}
+              </span>
+            </button>
+          </div>
+        </div>
         <div class="device-group-divider" aria-hidden="true" />
         <div class="device-group-tree">
           <n-spin :show="groupTreeLoading">
@@ -712,6 +729,7 @@ const toggleGroupPanel = () => {
               label-field="label"
               children-field="children"
               :render-prefix="renderGroupPrefix"
+              :render-label="renderGroupLabel"
               @update:selected-keys="handleGroupSelect"
             />
             <n-empty v-else size="small" :description="$t('custom.devicePage.noDeviceGroups')" />
@@ -892,46 +910,77 @@ const toggleGroupPanel = () => {
   min-width: 0;
   height: 100%;
   box-sizing: border-box;
-  padding: 0 10px 14px;
+  padding: 8px 10px 14px;
   overflow: auto;
-  background: linear-gradient(180deg, var(--card-color) 0%, rgb(var(--primary-color) / 2%) 100%);
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  box-shadow: 0 8px 22px rgb(15 23 42 / 4%);
+  background: rgb(var(--primary-color) / 2%);
+  border: 1px solid rgb(var(--primary-color) / 8%);
+  border-radius: 12px;
+}
+
+.device-group-system {
+  position: relative;
 }
 
 .device-group-system-item {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   width: 100%;
-  height: 40px;
-  margin-top: 8px;
-  padding: 0 12px;
+  height: 36px;
+  padding: 0 10px;
   color: var(--text-color-2);
   font-size: 13px;
   text-align: left;
   cursor: pointer;
   background: transparent;
   border: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   transition:
     color 0.18s ease,
     background-color 0.18s ease,
-    box-shadow 0.18s ease,
     transform 0.18s ease;
+}
+
+.device-group-system-item--root {
+  height: 40px;
+  font-weight: 550;
+}
+
+.device-group-system__child {
+  position: relative;
+  margin: 2px 0 0 14px;
+  padding-left: 12px;
+}
+
+.device-group-system__child::before {
+  position: absolute;
+  top: 0;
+  bottom: 17px;
+  left: 2px;
+  width: 1px;
+  content: '';
+  background: rgb(var(--primary-color) / 12%);
+}
+
+.device-group-system-item--child {
+  height: 34px;
+  padding: 0 8px;
+  color: var(--text-color-3);
+  font-size: 12px;
 }
 
 .device-group-system-item:hover {
   color: var(--primary-color);
-  background: var(--primary-color-suppl);
+  background: rgb(var(--primary-color) / 7%);
 }
 
 .device-group-system-item--active {
   color: var(--primary-color);
-  font-weight: 600;
-  background: var(--primary-color-suppl);
-  box-shadow: inset 3px 0 0 var(--primary-color);
+  background: rgb(var(--primary-color) / 10%);
+}
+
+.device-group-system-item--child.device-group-system-item--active {
+  background: rgb(var(--primary-color) / 8%);
 }
 
 .device-group-system-item:active {
@@ -942,11 +991,19 @@ const toggleGroupPanel = () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  color: var(--text-color-3);
+}
+
+.device-group-system-item--root .device-group-system-item__icon {
+  flex-basis: 24px;
   width: 24px;
   height: 24px;
-  color: currentColor;
+  color: var(--primary-color);
   background: rgb(var(--primary-color) / 8%);
-  border-radius: 7px;
+  border-radius: 6px;
 }
 
 .device-group-system-item__label {
@@ -965,46 +1022,73 @@ const toggleGroupPanel = () => {
   text-align: right;
 }
 
+.device-group-system-item--active .device-group-system-item__count {
+  color: var(--primary-color);
+}
+
 .device-group-divider {
   height: 1px;
-  margin: 10px 10px 8px;
-  background: var(--divider-color);
+  margin: 12px 8px 10px;
+  background: rgb(var(--primary-color) / 8%);
 }
 
 .device-group-tree {
-  margin-top: 8px;
-  padding: 0 2px;
+  padding: 0;
 }
 
 .device-group-tree :deep(.n-tree) {
-  --n-node-border-radius: 10px;
+  --n-node-border-radius: 8px;
 }
 
 .device-group-tree :deep(.n-tree-node-wrapper) {
-  padding: 2px 0;
+  padding: 1px 0;
 }
 
 .device-group-tree :deep(.n-tree-node-content) {
-  min-height: 38px;
-  padding: 0 10px 0 6px;
+  min-height: 36px;
+  padding: 0 8px 0 4px;
   color: var(--text-color-2);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .device-group-tree :deep(.n-tree-node-content__prefix) {
-  width: 24px;
-  margin-right: 7px;
+  width: 20px;
+  margin-right: 6px;
   color: rgb(var(--primary-color) / 68%);
 }
 
 .device-group-tree :deep(.n-tree-node-content__text) {
   min-width: 0;
+  flex: 1;
   overflow: hidden;
   font-size: 13px;
   font-weight: 450;
+}
+
+.device-group-tree :deep(.device-group-tree__label) {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  width: 100%;
   line-height: 20px;
+}
+
+.device-group-tree :deep(.device-group-tree__label-text) {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.device-group-tree :deep(.device-group-tree__count) {
+  flex: 0 0 auto;
+  min-width: 20px;
+  margin-left: auto;
+  padding-left: 8px;
+  color: var(--text-color-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .device-group-tree :deep(.n-tree-node-switcher) {
@@ -1023,8 +1107,7 @@ const toggleGroupPanel = () => {
 
 .device-group-tree :deep(.n-tree-node--selected) {
   color: var(--primary-color);
-  background: var(--primary-color-suppl);
-  box-shadow: inset 3px 0 0 var(--primary-color);
+  background: rgb(var(--primary-color) / 10%);
 }
 
 .device-group-tree :deep(.n-tree-node--selected .n-tree-node-content) {
