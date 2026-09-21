@@ -30,7 +30,13 @@ defineExpose({
 </script>
 
 <template>
-  <NModal v-model:show="modalVisible" preset="card" :title="$t('custom.management.logDetail')" class="w-80%">
+  <NModal
+    v-model:show="modalVisible"
+    preset="card"
+    :title="$t('custom.management.logDetail')"
+    :style="{ width: 'min(760px, calc(100vw - 24px))' }"
+    class="system-log-detail-modal"
+  >
     <NForm v-model="detailInfo" label-placement="left" label-align="left" label-width="80px">
       <NFormItem :label="$t('custom.management.account')">
         <div class="result">{{ detailInfo.email }}</div>
@@ -69,6 +75,11 @@ defineExpose({
 </template>
 
 <style scoped>
+.system-log-detail-modal :deep(.n-card__content) {
+  max-height: calc(100dvh - 160px);
+  overflow-y: auto;
+}
+
 .n-form-item .n-form-item-label {
   font-size: 14px;
   color: #101010;
@@ -76,5 +87,37 @@ defineExpose({
 .value {
   font-size: 14px;
   color: #101010;
+}
+
+.result {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.system-log-detail-modal :deep(.n-input__textarea-el) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 480px) {
+  .system-log-detail-modal :deep(.n-card__content) {
+    padding: 16px;
+  }
+
+  .system-log-detail-modal :deep(.n-form-item) {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .system-log-detail-modal :deep(.n-form-item-label) {
+    width: auto !important;
+    padding: 0;
+  }
+
+  .system-log-detail-modal :deep(.n-form-item-blank),
+  .system-log-detail-modal :deep(.n-form-item-feedback-wrapper) {
+    width: 100%;
+  }
 }
 </style>

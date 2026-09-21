@@ -149,7 +149,8 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   {
     key: 'actions',
     title: '操作',
-    minWidth: '140px',
+    minWidth: '96px',
+    fixed: 'right',
     align: 'left',
     render: row => {
       return (
@@ -287,7 +288,9 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .standard-table {
+  width: 100%;
   min-width: 100%;
+  max-width: 100%;
   overflow: hidden;
   border: 1px solid var(--border-color);
   border-radius: 10px;
@@ -332,6 +335,7 @@ onMounted(() => {
 }
 
 .pagination-box {
+  min-width: 0;
   margin-top: 12px;
   display: flex;
   justify-content: flex-end;
@@ -366,6 +370,7 @@ onMounted(() => {
     width: auto !important;
     min-width: 220px;
     max-width: 360px;
+    margin-bottom: 0;
   }
 
   :deep(.n-input),
@@ -395,15 +400,56 @@ onMounted(() => {
 @media (max-width: 768px) {
   .system-log-header {
     display: block;
+    margin-bottom: 16px;
+  }
+
+  .system-log-toolbar {
+    margin-top: 16px;
+  }
+
+  .search-form-grid {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+
+    :deep(.n-form-item-gi) {
+      width: 100% !important;
+      min-width: 0;
+      max-width: none;
+      flex: 1 1 auto;
+    }
+
+    :deep(.n-form-item-blank) {
+      min-width: 0;
+    }
+
+    :deep(.n-input),
+    :deep(.n-base-selection),
+    :deep(.n-date-picker) {
+      max-width: none;
+    }
   }
 
   .search-form-actions {
+    padding-top: 4px;
+
     :deep(.n-space) {
       justify-content: stretch;
     }
 
     :deep(.n-button) {
       flex: 1;
+    }
+  }
+
+  .pagination-box {
+    justify-content: center;
+
+    :deep(.n-pagination) {
+      max-width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
+      row-gap: 8px;
     }
   }
 }
