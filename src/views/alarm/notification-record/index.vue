@@ -22,11 +22,93 @@ const queryParams = reactive({
   send_time_start: '',
   send_time_end: ''
 })
-const total = ref(0)
-
 const tableData = ref<Api.Alarm.NotificationHistoryList[]>([])
 const rowKey = (row: any) =>
   `${row.send_time ?? ''}-${row.send_target ?? ''}-${row.notification_type ?? ''}-${row.send_content ?? ''}`
+
+const detailVisible = ref(false)
+const selectedRecord = ref<Api.Alarm.NotificationHistoryList | null>(null)
+
+type NotificationContent = {
+  content?: unknown
+  subject?: unknown
+}
+
+function parseNotificationContent(value: unknown) {
+  const raw = String(value ?? '').trim()
+
+  if (!raw) return null
+
+  try {
+    return JSON.parse(raw) as NotificationContent
+  } catch {
+    try {
+      return JSON.parse(raw.replace(/\r?\n/g, '\\n')) as NotificationContent
+    } catch {
+      return null
+    }
+  }
+}
+
+function extractContentField(value: unknown, field: 'content' | 'subject') {
+  const raw = String(value ?? '')
+  const match = raw.match(new RegExp(`"${field}"\\s*:\\s*"((?:\\\\.|[^"\\\\])*)"`))
+
+  if (!match) return undefined
+
+  try {
+    return JSON.parse(`"${match[1]}"`) as string
+  } catch {
+    return match[1].replace(/\\n/g, '\n')
+  }
+}
+
+function normalizePreview(value: unknown) {
+  return String(value ?? '')
+    .replace(/\\n|\r?\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function getNotificationSubject(value: unknown) {
+  const parsed = parseNotificationContent(value)
+  const subject = parsed?.subject || extractContentField(value, 'subject')
+
+  if (typeof subject === 'string' && subject.trim()) return subject.trim()
+
+  return normalizePreview(value).slice(0, 96) || '—'
+}
+
+function getNotificationPreview(value: unknown) {
+  const parsed = parseNotificationContent(value)
+  const content = parsed?.content || extractContentField(value, 'content')
+  const subject = parsed?.subject || extractContentField(value, 'subject')
+
+  if (content || subject) {
+    const preview = [content || subject]
+      .filter(item => typeof item === 'string' && item.trim())
+      .map(item => normalizePreview(item))
+      .join(' · ')
+
+    if (preview) return preview
+  }
+
+  return normalizePreview(value) || '—'
+}
+
+function formatNotificationContent(value: unknown) {
+  const raw = String(value ?? '').trim()
+  const parsed = parseNotificationContent(raw)
+
+  if (parsed) return JSON.stringify(parsed, null, 2)
+
+  return raw.replace(/\\n/g, '\n') || '—'
+}
+
+function openDetail(row: Api.Alarm.NotificationHistoryList) {
+  selectedRecord.value = row
+  detailVisible.value = true
+}
 
 function setTableData(data: Api.Alarm.NotificationHistoryList[] | []) {
   tableData.value = data || []
@@ -76,42 +158,57 @@ const getTableData = async () => {
   endLoading()
 }
 
-const columns: Ref<DataTableColumns<DataService.Data>> = ref([
+const columns: Ref<DataTableColumns<Api.Alarm.NotificationHistoryList>> = ref([
   {
     key: 'send_time',
     title: $t('custom.device_details.sendTime'),
     align: 'left',
-    minWidth: '180px',
+    width: 180,
+    minWidth: 180,
     render: (row: any) => {
       return formatDateTime(row.send_time)
     }
   },
   {
     key: 'send_content',
-    minWidth: '180px',
+    width: 560,
+    minWidth: 420,
     title: $t('custom.device_details.titleOrContent'),
-    align: 'left'
+    align: 'left',
+    render: row => {
+      return (
+        <div class="notification-content-cell">
+          <div class="notification-content-title">{getNotificationSubject(row.send_content)}</div>
+          <div class="notification-content-preview">{getNotificationPreview(row.send_content)}</div>
+          <NButton text type="primary" size="small" onClick={() => openDetail(row)}>
+            {$t('generate.details')}
+          </NButton>
+        </div>
+      )
+    }
   },
   {
     key: 'send_target',
-    minWidth: '100px',
+    width: 200,
+    minWidth: 180,
     title: $t('generate.recipient'),
-    align: 'left',
-    width: '200'
+    align: 'left'
   },
   {
     key: 'send_result',
     title: $t('custom.device_details.sendResults'),
-    minWidth: '140px',
+    minWidth: 140,
+    width: 140,
     align: 'left'
   },
   {
     key: 'notification_type',
     title: $t('generate.notification-type'),
-    minWidth: '140px',
+    minWidth: 140,
+    width: 140,
     align: 'left'
   }
-]) as Ref<DataTableColumns<DataService.Data>>
+]) as Ref<DataTableColumns<Api.Alarm.NotificationHistoryList>>
 
 function handleQuery() {
   pickerChange()
@@ -138,7 +235,7 @@ getTableData()
         <div class="search-toolbar">
           <div class="search-context">{{ $t('generate.notification-record') }}</div>
           <div class="search-fields">
-            <div class="search-field">
+            <div class="search-field search-field--type">
               <n-select
                 v-model:value="queryParams.notification_type"
                 :options="notificationOptions"
@@ -157,7 +254,7 @@ getTableData()
                 @update:value="pickerChange"
               />
             </div>
-            <div class="search-field">
+            <div class="search-field search-field--target">
               <NInput v-model:value="queryParams.send_target" clearable :placeholder="$t('generate.recipient')" />
             </div>
             <div class="search-actions">
@@ -175,7 +272,7 @@ getTableData()
           :single-column="false"
           :single-line="true"
           :striped="false"
-          :scroll-x="980"
+          :scroll-x="1220"
           :row-key="rowKey"
           :columns="columns"
           :data="tableData"
@@ -187,6 +284,23 @@ getTableData()
             <NEmpty size="small" :description="$t('common.noData')" />
           </template>
         </NDataTable>
+
+        <NModal
+          v-model:show="detailVisible"
+          preset="card"
+          :title="$t('generate.details')"
+          :style="{ width: 'min(900px, calc(100vw - 32px))' }"
+          class="notification-detail-modal"
+        >
+          <div v-if="selectedRecord" class="notification-detail-meta">
+            <span>{{ formatDateTime(selectedRecord.send_time) }}</span>
+            <span>{{ selectedRecord.send_target || '—' }}</span>
+            <span>{{ selectedRecord.notification_type || '—' }}</span>
+          </div>
+          <pre v-if="selectedRecord" class="notification-detail-text">{{
+            formatNotificationContent(selectedRecord.send_content)
+          }}</pre>
+        </NModal>
       </div>
     </NCard>
   </div>
@@ -212,10 +326,10 @@ getTableData()
 }
 
 .search-fields {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) minmax(360px, 1fr) minmax(180px, 220px) auto;
   width: 100%;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
   justify-content: flex-end;
   min-width: 0;
@@ -223,11 +337,17 @@ getTableData()
 }
 
 .search-field {
+  width: 100%;
   min-width: 0;
 }
 
 .search-field--date {
-  min-width: 220px;
+  min-width: 0;
+}
+
+.search-field--type,
+.search-field--target {
+  min-width: 0;
 }
 
 .search-fields :deep(.n-input),
@@ -240,12 +360,92 @@ getTableData()
 
 .search-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 8px;
 }
 
 .search-actions :deep(.n-button) {
   height: 36px;
   border-radius: 8px;
+}
+
+:deep(.notification-content-cell) {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  line-height: 1.45;
+}
+
+:deep(.notification-content-title) {
+  overflow: hidden;
+  color: var(--text-color);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:deep(.notification-content-preview) {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-color-2);
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+
+:deep(.notification-content-cell .n-button) {
+  justify-self: start;
+  height: auto;
+  padding: 0;
+  font-size: 13px;
+}
+
+.notification-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding-bottom: 14px;
+  color: var(--text-color-2);
+  font-size: 13px;
+}
+
+.notification-detail-text {
+  max-height: min(60vh, 560px);
+  margin: 0;
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--body-color);
+  color: var(--text-color);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+:deep(.n-data-table-table) {
+  table-layout: fixed !important;
+}
+
+:deep(.n-data-table-td) {
+  vertical-align: middle;
+}
+
+:deep(.n-data-table-td:nth-child(2)) {
+  white-space: normal;
+}
+
+@media (max-width: 1280px) {
+  .search-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-actions {
+    grid-column: 2;
+  }
 }
 
 @media (max-width: 768px) {
@@ -260,6 +460,7 @@ getTableData()
   }
 
   .search-fields {
+    grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
     justify-content: stretch;
   }

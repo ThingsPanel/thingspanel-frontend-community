@@ -604,12 +604,12 @@ declare namespace Api {
     }
 
     interface NotificationHistoryList {
-      page: number
-      page_size: number
-      notification_type: string
+      id?: string
+      send_time?: string
+      send_content?: string
       send_target?: string
-      send_time_start?: string
-      send_time_stop?: string
+      send_result?: string
+      notification_type?: string
     }
   }
   /** 灌溉计划 */
