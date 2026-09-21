@@ -581,12 +581,22 @@ onBeforeUnmount(() => {
                   </NButton>
 
                   <!-- 发布到市场按钮 -->
-                  <NButton size="small" secondary type="success" @click.stop="handlePublishToMarket(dashboard.id)">
-                    <template #icon>
-                      <icon-mdi:cloud-upload />
+                  <NTooltip>
+                    <template #trigger>
+                      <NButton
+                        size="small"
+                        secondary
+                        type="success"
+                        aria-label="发布到市场"
+                        @click.stop="handlePublishToMarket(dashboard.id)"
+                      >
+                        <template #icon>
+                          <icon-mdi:cloud-upload />
+                        </template>
+                      </NButton>
                     </template>
-                    发布
-                  </NButton>
+                    发布到市场
+                  </NTooltip>
 
                   <NTooltip>
                     <template #trigger>
