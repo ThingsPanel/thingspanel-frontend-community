@@ -37,8 +37,9 @@ export default defineConfig(configEnv => {
         cachedChecks: false
       },
       watch: {
-        // 开启轮询模式
-        usePolling: true
+        // macOS/Windows 使用原生文件监听，避免轮询大型工作区持续占用 CPU。
+        // 仅在 Docker、网络磁盘等原生事件不可用时，通过环境变量显式开启。
+        usePolling: viteEnv.VITE_FILE_WATCH_POLLING === 'Y'
       }
     },
     preview: {

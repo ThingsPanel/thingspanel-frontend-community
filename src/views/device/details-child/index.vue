@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { markRaw, onMounted, reactive, ref, watch } from 'vue'
+import { markRaw, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLoading } from '@sa/hooks'
 import { useDeviceDataStore } from '@/store/modules/device'
@@ -15,13 +15,11 @@ import GiveAnAlarm from '@/views/device/details/modules/give-an-alarm.vue'
 import User from '@/views/device/details/modules/user.vue'
 import Settings from '@/views/device/details/modules/settings.vue'
 import { $t } from '@/locales'
-import { useAppStore } from '@/store/modules/app'
 import { deviceDetail, deviceUpdate } from '@/service/api/device'
 import { useRouterPush } from '@/hooks/common/router'
 import { message } from '@/utils/common/discrete'
 
 const { query } = useRoute()
-const appStore = useAppStore()
 const { d_id } = query
 const { loading, startLoading, endLoading } = useLoading()
 const deviceDataStore = useDeviceDataStore()
@@ -145,18 +143,6 @@ onMounted(() => {
   getDeviceDetail()
   deviceDataStore.fetchData(d_id as string)
 })
-watch(
-  () => appStore.locale,
-  () => {
-    let temporary: any
-    // eslint-disable-next-line prefer-const
-    temporary = tabValue.value
-    tabValue.value = ''
-    setTimeout(() => {
-      tabValue.value = temporary
-    }, 50)
-  }
-)
 </script>
 
 <template>

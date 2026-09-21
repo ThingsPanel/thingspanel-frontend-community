@@ -14,7 +14,6 @@ import { useRoute } from 'vue-router'
 import { useLoading } from '@sa/hooks'
 import { useWebSocket } from '@vueuse/core'
 import { $t } from '@/locales'
-import { useAppStore } from '@/store/modules/app'
 import { deviceDetail, deviceUpdate } from '@/service/api/device'
 import { localStg } from '@/utils/storage'
 import { useRouterPush } from '@/hooks/common/router'
@@ -25,7 +24,6 @@ import { message } from '@/utils/common/discrete'
 import { isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 const route = useRoute()
 const { query } = useRoute()
-const appStore = useAppStore()
 let { d_id } = query
 
 const getDeviceId = () => {
@@ -488,18 +486,6 @@ const save = async () => {
     getDeviceDetail()
   }
 }
-watch(
-  () => appStore.locale,
-  () => {
-    let temporary: any
-    // eslint-disable-next-line prefer-const
-    temporary = tabValue.value
-    tabValue.value = ''
-    setTimeout(() => {
-      tabValue.value = temporary
-    }, 50)
-  }
-)
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance()
   return proxy.getPlatform()
