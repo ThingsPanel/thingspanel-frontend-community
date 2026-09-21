@@ -37,6 +37,11 @@ export const deviceDictProtocolServiceSecondLevel = async (params: any) => {
 export const deviceGroupTree = async (params: any) => {
   return await request.get<DeviceManagement.TreeStructure | any>('/device/group/tree', params)
 }
+
+/** 获取设备分组统计 */
+export const getDeviceGroupCounts = async () => {
+  return await request.get<DeviceManagement.DeviceGroupCounts>('/device/group/counts')
+}
 /** 新增设备分组 */
 export const deviceGroup = async (params: { id: string; parent_id: string; name: string; description: string }) => {
   return await request.post<Api.BaseApi.Data>('/device/group', params)

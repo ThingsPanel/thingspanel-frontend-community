@@ -14,6 +14,7 @@ import {
   devicCeonnectForm,
   deviceDictProtocolServiceFirstLevel,
   deviceDictProtocolServiceSecondLevel,
+  getDeviceGroupCounts,
   deviceGroupTree,
   deviceList,
   getDeviceConfigList,
@@ -57,6 +58,12 @@ const { cache: query, setCache } = usePageCache()
 const groupOptions = ref<TreeSelectOption[]>([])
 const groupTreeLoading = ref(false)
 const selectedGroupId = ref(query.group_id ? String(query.group_id) : '')
+type GroupScope = 'all' | 'ungrouped' | 'group'
+const selectedGroupScope = ref<GroupScope>(
+  query.group_scope === 'ungrouped' ? 'ungrouped' : query.group_id ? 'group' : 'all'
+)
+const allDeviceCount = ref<number | null>(null)
+const ungroupedDeviceCount = ref<number | null>(null)
 const groupPanelVisible = ref(false)
 
 const renderGroupPrefix = ({ option }: { option: TreeSelectOption }) =>
@@ -123,8 +130,9 @@ const getDeviceGroupOptions = async () => {
   // 将原始数据转换为树形结构
   function convertTreeNodeToTarget(treeNode: DeviceManagement.TreeNode): TreeSelectOption {
     const { group, children } = treeNode
+    const deviceCount = typeof group.device_count === 'number' ? ` (${group.device_count})` : ''
     const targetNode: TreeSelectOption = {
-      label: group.name,
+      label: `${group.name}${deviceCount}`,
       key: String(group.id)
     }
 
@@ -331,7 +339,9 @@ const searchConfigs = ref<SearchConfig[]>([
 ])
 
 const deviceSearchConfigs = computed(() => searchConfigs.value.filter(item => item.key !== 'group_id'))
-const selectedGroupKeys = computed(() => (selectedGroupId.value ? [selectedGroupId.value] : []))
+const selectedGroupKeys = computed(() =>
+  selectedGroupScope.value === 'group' && selectedGroupId.value ? [selectedGroupId.value] : []
+)
 const dropOption = [
   {
     label: () => $t('custom.devicePage.manualAdd'),
@@ -406,6 +416,20 @@ const loadGroupOptions = async () => {
     groupOptions.value = []
   } finally {
     groupTreeLoading.value = false
+  }
+}
+
+const loadDeviceGroupCounts = async () => {
+  try {
+    const res = await getDeviceGroupCounts()
+    if (res.data) {
+      allDeviceCount.value = Number(res.data.device_total ?? 0)
+      ungroupedDeviceCount.value = Number(res.data.ungrouped_total ?? 0)
+    }
+  } catch (error) {
+    console.error('加载设备分组统计失败:', error)
+    allDeviceCount.value = null
+    ungroupedDeviceCount.value = null
   }
 }
 
@@ -491,7 +515,7 @@ const setServiceParams = () => {
 }
 
 onBeforeMount(async () => {
-  await Promise.all([fetchFirstLevelOptions(), loadGroupOptions()])
+  await Promise.all([fetchFirstLevelOptions(), loadGroupOptions(), loadDeviceGroupCounts()])
   setServiceParams()
 })
 
@@ -558,6 +582,7 @@ const completeAdd = async () => {
 
 const completeHandAdd = () => {
   tablePageRef.value?.handleSearch()
+  void loadDeviceGroupCounts()
 }
 
 async function handleSelect(key: string | number) {
@@ -593,9 +618,13 @@ watch(
   }, 500)
 )
 const fetchData = async (params: Record<string, any>) => {
-  const requestParams = {
-    ...params,
-    ...(selectedGroupId.value ? { group_id: selectedGroupId.value } : {})
+  const requestParams = Object.fromEntries(
+    Object.entries(params).filter(([key]) => key !== 'group_id' && key !== 'group_scope')
+  )
+  if (selectedGroupScope.value === 'group' && selectedGroupId.value) {
+    requestParams.group_id = selectedGroupId.value
+  } else if (selectedGroupScope.value === 'ungrouped') {
+    requestParams.group_scope = 'ungrouped'
   }
   setCache(requestParams)
   const result = await deviceList(requestParams)
@@ -610,17 +639,25 @@ const fetchData = async (params: Record<string, any>) => {
 }
 
 const handleGroupSelect = (keys: Array<string | number>) => {
+  selectedGroupScope.value = keys.length ? 'group' : 'all'
   selectedGroupId.value = keys.length ? String(keys[0]) : ''
   tablePageRef.value?.handleSearch()
 }
 
 const handleAllGroups = () => {
-  if (!selectedGroupId.value) return
+  selectedGroupScope.value = 'all'
+  selectedGroupId.value = ''
+  tablePageRef.value?.handleSearch()
+}
+
+const handleUngroupedDevices = () => {
+  selectedGroupScope.value = 'ungrouped'
   selectedGroupId.value = ''
   tablePageRef.value?.handleSearch()
 }
 
 const handleFilterReset = () => {
+  selectedGroupScope.value = 'all'
   selectedGroupId.value = ''
 }
 
@@ -633,25 +670,33 @@ const toggleGroupPanel = () => {
   <div class="device-manage-page">
     <div class="device-manage-layout" :class="{ 'device-manage-layout--with-group': groupPanelVisible }">
       <aside v-if="groupPanelVisible" id="device-group-sidebar" class="device-group-sidebar">
-        <div class="device-group-sidebar__header">
-          <span class="device-group-sidebar__title">
-            <span class="device-group-sidebar__title-icon" aria-hidden="true">
-              <NIcon size="16"><LayersOutline /></NIcon>
-            </span>
-            <span>设备分组</span>
-          </span>
-        </div>
         <button
           type="button"
-          class="device-group-all"
-          :class="{ 'device-group-all--active': !selectedGroupId }"
+          class="device-group-system-item"
+          :class="{ 'device-group-system-item--active': selectedGroupScope === 'all' }"
           @click="handleAllGroups"
         >
-          <span class="device-group-all__icon" aria-hidden="true">
+          <span class="device-group-system-item__icon" aria-hidden="true">
             <NIcon size="16"><AppsOutline /></NIcon>
           </span>
-          <span>全部设备</span>
+          <span class="device-group-system-item__label">{{ $t('custom.devicePage.allDevices') }}</span>
+          <span v-if="allDeviceCount !== null" class="device-group-system-item__count">{{ allDeviceCount }}</span>
         </button>
+        <button
+          type="button"
+          class="device-group-system-item"
+          :class="{ 'device-group-system-item--active': selectedGroupScope === 'ungrouped' }"
+          @click="handleUngroupedDevices"
+        >
+          <span class="device-group-system-item__icon" aria-hidden="true">
+            <NIcon size="16"><FolderOutline /></NIcon>
+          </span>
+          <span class="device-group-system-item__label">{{ $t('custom.devicePage.ungroupedDevices') }}</span>
+          <span v-if="ungroupedDeviceCount !== null" class="device-group-system-item__count">
+            {{ ungroupedDeviceCount }}
+          </span>
+        </button>
+        <div class="device-group-divider" aria-hidden="true" />
         <div class="device-group-tree">
           <n-spin :show="groupTreeLoading">
             <n-tree
@@ -669,7 +714,7 @@ const toggleGroupPanel = () => {
               :render-prefix="renderGroupPrefix"
               @update:selected-keys="handleGroupSelect"
             />
-            <n-empty v-else size="small" description="暂无设备分组" />
+            <n-empty v-else size="small" :description="$t('custom.devicePage.noDeviceGroups')" />
           </n-spin>
         </div>
       </aside>
@@ -855,43 +900,13 @@ const toggleGroupPanel = () => {
   box-shadow: 0 8px 22px rgb(15 23 42 / 4%);
 }
 
-.device-group-sidebar__header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 58px;
-  padding: 0 10px;
-  color: var(--text-color);
-  font-size: 15px;
-  font-weight: 600;
-  border-bottom: 1px solid rgb(var(--primary-color) / 10%);
-}
-
-.device-group-sidebar__title {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-}
-
-.device-group-sidebar__title-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  color: var(--primary-color);
-  background: var(--primary-color-suppl);
-  border-radius: 8px;
-}
-
-.device-group-all {
+.device-group-system-item {
   display: flex;
   align-items: center;
   gap: 9px;
   width: 100%;
   height: 40px;
-  margin-top: 12px;
+  margin-top: 8px;
   padding: 0 12px;
   color: var(--text-color-2);
   font-size: 13px;
@@ -907,23 +922,23 @@ const toggleGroupPanel = () => {
     transform 0.18s ease;
 }
 
-.device-group-all:hover {
+.device-group-system-item:hover {
   color: var(--primary-color);
   background: var(--primary-color-suppl);
 }
 
-.device-group-all--active {
+.device-group-system-item--active {
   color: var(--primary-color);
   font-weight: 600;
   background: var(--primary-color-suppl);
   box-shadow: inset 3px 0 0 var(--primary-color);
 }
 
-.device-group-all:active {
+.device-group-system-item:active {
   transform: translateY(1px);
 }
 
-.device-group-all__icon {
+.device-group-system-item__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -932,6 +947,28 @@ const toggleGroupPanel = () => {
   color: currentColor;
   background: rgb(var(--primary-color) / 8%);
   border-radius: 7px;
+}
+
+.device-group-system-item__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.device-group-system-item__count {
+  min-width: 20px;
+  margin-left: auto;
+  color: var(--text-color-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.device-group-divider {
+  height: 1px;
+  margin: 10px 10px 8px;
+  background: var(--divider-color);
 }
 
 .device-group-tree {

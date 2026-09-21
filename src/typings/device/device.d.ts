@@ -9,6 +9,12 @@ declare namespace DeviceManagement {
     updated_at: string
     remark: string | null
     tenant_id: string
+    device_count?: number
+  }
+
+  interface DeviceGroupCounts {
+    device_total: number
+    ungrouped_total: number
   }
 
   interface TreeNode {
