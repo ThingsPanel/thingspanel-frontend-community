@@ -36,5 +36,10 @@ declare namespace StorageType {
     logoLoading: string
     /** system name cached for loading screen */
     systemName: string
+    /** Last selected device group on the device management page */
+    deviceManageGroupSelection: {
+      scope: 'all' | 'ungrouped' | 'group'
+      groupId: string
+    }
   }
 }

@@ -62,11 +62,25 @@ type DeviceGroupTreeOption = TreeSelectOption & {
 
 const groupOptions = ref<DeviceGroupTreeOption[]>([])
 const groupTreeLoading = ref(false)
-const selectedGroupId = ref(query.group_id ? String(query.group_id) : '')
 type GroupScope = 'all' | 'ungrouped' | 'group'
-const selectedGroupScope = ref<GroupScope>(
-  query.group_scope === 'ungrouped' ? 'ungrouped' : query.group_id ? 'group' : 'all'
-)
+type DeviceGroupSelection = {
+  scope: GroupScope
+  groupId: string
+}
+const savedGroupSelection = localStg.get('deviceManageGroupSelection') as DeviceGroupSelection | null
+const hasCachedGroupSelection = Boolean(query.group_id || query.group_scope)
+const initialGroupSelection: DeviceGroupSelection = hasCachedGroupSelection
+  ? {
+      scope: query.group_id ? 'group' : query.group_scope === 'ungrouped' ? 'ungrouped' : 'all',
+      groupId: query.group_id ? String(query.group_id) : ''
+    }
+  : savedGroupSelection?.scope === 'group' && savedGroupSelection.groupId
+    ? { scope: 'group', groupId: String(savedGroupSelection.groupId) }
+    : savedGroupSelection?.scope === 'ungrouped'
+      ? { scope: 'ungrouped', groupId: '' }
+      : { scope: 'all', groupId: '' }
+const selectedGroupId = ref(initialGroupSelection.groupId)
+const selectedGroupScope = ref<GroupScope>(initialGroupSelection.scope)
 const allDeviceCount = ref<number | null>(null)
 const ungroupedDeviceCount = ref<number | null>(null)
 const groupPanelVisible = ref(false)
@@ -637,7 +651,11 @@ const fetchData = async (params: Record<string, any>) => {
   } else if (selectedGroupScope.value === 'ungrouped') {
     requestParams.group_scope = 'ungrouped'
   }
-  setCache(requestParams)
+  setCache({
+    ...requestParams,
+    group_id: selectedGroupScope.value === 'group' ? selectedGroupId.value : '',
+    group_scope: selectedGroupScope.value
+  })
   const result = await deviceList(requestParams)
 
   // 数据加载完成后，订阅当前页面的设备状态
@@ -649,27 +667,43 @@ const fetchData = async (params: Record<string, any>) => {
   return result
 }
 
+const persistGroupSelection = () => {
+  const selection: DeviceGroupSelection = {
+    scope: selectedGroupScope.value,
+    groupId: selectedGroupScope.value === 'group' ? selectedGroupId.value : ''
+  }
+  localStg.set('deviceManageGroupSelection', selection)
+  setCache({
+    group_id: selection.groupId,
+    group_scope: selection.scope
+  })
+}
+
 const handleGroupSelect = (keys: Array<string | number>) => {
   selectedGroupScope.value = keys.length ? 'group' : 'all'
   selectedGroupId.value = keys.length ? String(keys[0]) : ''
+  persistGroupSelection()
   tablePageRef.value?.handleSearch()
 }
 
 const handleAllGroups = () => {
   selectedGroupScope.value = 'all'
   selectedGroupId.value = ''
+  persistGroupSelection()
   tablePageRef.value?.handleSearch()
 }
 
 const handleUngroupedDevices = () => {
   selectedGroupScope.value = 'ungrouped'
   selectedGroupId.value = ''
+  persistGroupSelection()
   tablePageRef.value?.handleSearch()
 }
 
 const handleFilterReset = () => {
   selectedGroupScope.value = 'all'
   selectedGroupId.value = ''
+  persistGroupSelection()
 }
 
 const toggleGroupPanel = () => {
