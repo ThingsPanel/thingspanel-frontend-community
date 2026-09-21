@@ -94,6 +94,7 @@
   "generate.activate": "激活",
   "generate.delete": "删除",
   "generate.add-row": "添加一行",
+  "generate.scene-action-hint": "选择设备后，再配置要下发的属性或指令",
   "generate.search": "搜索",
   "generate.delete-operation": "删除一个操作",
   "generate.enter": "请输入",

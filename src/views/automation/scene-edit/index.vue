@@ -84,6 +84,11 @@ const configFormRules = ref({
 // 下拉选择器加载状态
 const loadingSelect = ref(false)
 
+// 下拉菜单使用内容宽度，避免数据源/属性名称被截断
+const wideSelectMenuProps = {
+  class: 'scene-wide-select-menu'
+}
+
 // 动作选项
 const actionOptions = ref([
   {
@@ -220,7 +225,7 @@ const actionParamShow = async (instructItem: any) => {
     })
   }
   // eslint-disable-next-line array-callback-return
-  if (res.data) {
+  if (res?.data) {
     // eslint-disable-next-line array-callback-return
     res.data.map((item: any) => {
       item.value = item.data_source_type
@@ -435,41 +440,37 @@ const tabStore = useTabStore()
 // 表单提交
 const submitData = async () => {
   await configFormRef.value?.validate()
-  const actionsData = [] as any
-  // eslint-disable-next-line array-callback-return
-  configForm.value.actions.map((item: any) => {
+  const actionsData = configForm.value.actions.flatMap((item: any) => {
     if (item.actionType === '1') {
-      // eslint-disable-next-line array-callback-return
-      item.actionInstructList.map((instructItem: any) => {
+      return item.actionInstructList.map((instructItem: any) => {
+        const actionItem = { ...instructItem }
         // 如果是c_telemetry/c_attribute,那么action_value示例格式：{"c_telemetry":2}
         // 如果是c_command,那么action_value示例格式：{"method":"switch1","params":{"false":0}}
         if (
-          instructItem.action_param_type === 'c_telemetry' ||
-          instructItem.action_param_type === 'c_attribute' ||
-          instructItem.action_param_type === 'c_command'
+          actionItem.action_param_type === 'c_telemetry' ||
+          actionItem.action_param_type === 'c_attribute' ||
+          actionItem.action_param_type === 'c_command'
         ) {
-          instructItem.action_value = instructItem.actionValue
+          actionItem.action_value = actionItem.actionValue
         }
         // 如果是telemetry/attribute，那么 action_value示例格式：{"humidity":2}
-        if (instructItem.action_param_type === 'telemetry' || instructItem.action_param_type === 'attributes') {
+        if (actionItem.action_param_type === 'telemetry' || actionItem.action_param_type === 'attributes') {
           const action_value = {}
-          action_value[instructItem.action_param] = instructItem.actionValue
-          instructItem.action_value = JSON.stringify(action_value)
+          action_value[actionItem.action_param] = actionItem.actionValue
+          actionItem.action_value = JSON.stringify(action_value)
         }
         // 如果是command/c_command，那么 action_value示例格式:	{"method":"ReSet","params":{"switch":1,"light":"close"}}
-        if (instructItem.action_param_type === 'command') {
+        if (actionItem.action_param_type === 'command') {
           const action_value = {
-            method: instructItem.action_param,
-            params: JSON.stringify(JSON.parse(instructItem.actionValue))
+            method: actionItem.action_param,
+            params: JSON.stringify(JSON.parse(actionItem.actionValue))
           }
-          instructItem.action_value = JSON.stringify(action_value)
+          actionItem.action_value = JSON.stringify(action_value)
         }
-        actionsData.push(instructItem)
+        return actionItem
       })
-    } else {
-      item.action_type = item.actionType
-      actionsData.push(item)
     }
+    return [{ ...item, action_type: item.actionType }]
   })
   dialog.warning({
     title: $t('common.tip'),
@@ -586,32 +587,41 @@ onMounted(() => {
           />
         </NFormItem>
         <NFormItem :label="$t('generate.action')" required class="w-100%" :show-feedback="false">
-          <NFlex vertical class="mt-1 w-100%">
+          <NFlex vertical class="scene-actions mt-1 w-100%">
             <NFlex
               v-for="(actionGroupItem, actionGroupIndex) in configForm.actions"
               :key="actionGroupIndex"
-              class="mt-1 w-100%"
+              class="action-group mt-1 w-100%"
             >
               <NFormItem
                 :show-label="false"
                 :show-feedback="false"
                 :path="`actions[${actionGroupIndex}].actionType`"
                 :rule="configFormRules.actionType"
-                class="max-w-30 w-full"
+                class="action-group__type max-w-30 w-full"
               >
                 <NSelect
                   v-model:value="actionGroupItem.actionType"
                   :options="actionOptions"
+                  :placeholder="$t('common.select')"
+                  :consistent-menu-width="false"
+                  :menu-props="wideSelectMenuProps"
                   @update:value="data => actionChange(actionGroupItem, actionGroupIndex, data)"
                 />
               </NFormItem>
               <template v-if="actionGroupItem.actionType === '1'">
                 <!--          执行动作是操作设备->添加指令--->
-                <NCard class="flex-1">
+                <NCard class="action-instruction-card flex-1">
+                  <div class="action-instruction-card__header">
+                    <div>
+                      <div class="action-instruction-card__title">{{ $t('common.operateDevice') }}</div>
+                      <div class="action-instruction-card__hint">{{ $t('generate.scene-action-hint') }}</div>
+                    </div>
+                  </div>
                   <NFlex
                     v-for="(instructItem, instructIndex) in actionGroupItem.actionInstructList"
                     :key="instructIndex"
-                    class="mb-2 mr-30"
+                    class="action-instruction mb-2"
                   >
                     <NFormItem
                       :show-label="false"
@@ -623,6 +633,9 @@ onMounted(() => {
                       <NSelect
                         v-model:value="instructItem.action_type"
                         :options="actionTypeOptions"
+                        :placeholder="$t('common.select')"
+                        :consistent-menu-width="false"
+                        :menu-props="wideSelectMenuProps"
                         @update:value="data => actionTypeChange(instructItem, data)"
                       />
                     </NFormItem>
@@ -640,7 +653,9 @@ onMounted(() => {
                           value-field="id"
                           label-field="name"
                           :consistent-menu-width="false"
+                          :menu-props="wideSelectMenuProps"
                           :loading="loadingSelect"
+                          :placeholder="$t('generate.select-device')"
                           @update:value="() => actionTargetChange(instructItem)"
                         >
                           <template #header>
@@ -688,6 +703,8 @@ onMounted(() => {
                           label-field="name"
                           value-field="id"
                           :placeholder="$t('common.select')"
+                          :consistent-menu-width="false"
+                          :menu-props="wideSelectMenuProps"
                           remote
                           filterable
                           @search="getDeviceConfig"
@@ -706,6 +723,9 @@ onMounted(() => {
                         <NSelect
                           v-model:value="instructItem.action_param_type"
                           :options="instructItem.actionParamTypeOptions"
+                          :placeholder="$t('common.select')"
+                          :consistent-menu-width="false"
+                          :menu-props="wideSelectMenuProps"
                           @update:value="data => actionParamTypeChange(instructItem, data)"
                         />
 
@@ -732,6 +752,9 @@ onMounted(() => {
                         <NSelect
                           v-model:value="instructItem.action_param"
                           :options="instructItem.actionParamOptions"
+                          :placeholder="$t('common.select')"
+                          :consistent-menu-width="false"
+                          :menu-props="wideSelectMenuProps"
                           @update:value="data => actionParamChange(instructItem, data)"
                         />
                       </NFormItem>
@@ -791,7 +814,7 @@ onMounted(() => {
                     <NButton
                       v-if="instructIndex === 0"
                       type="primary"
-                      class="absolute right-5"
+                      class="action-instruction__add absolute right-5"
                       @click="addIfGroupsSubItem(actionGroupIndex)"
                     >
                       {{ $t('generate.add-row') }}
@@ -799,7 +822,7 @@ onMounted(() => {
                     <NButton
                       v-if="instructIndex !== 0"
                       type="error"
-                      class="absolute right-5"
+                      class="action-instruction__delete absolute right-5"
                       @click="deleteIfGroupsSubItem(actionGroupIndex, instructIndex)"
                     >
                       {{ $t('common.delete') }}
@@ -859,7 +882,13 @@ onMounted(() => {
                   </NButton>
                 </NFlex>
               </template>
-              <NButton v-if="actionGroupIndex > 0" type="error" @click="deleteActionGroupItem(actionGroupIndex)">
+              <NButton
+                v-if="actionGroupIndex > 0"
+                class="action-group__delete"
+                quaternary
+                type="error"
+                @click="deleteActionGroupItem(actionGroupIndex)"
+              >
                 {{ $t('generate.delete-execution-action') }}
               </NButton>
             </NFlex>
@@ -879,7 +908,133 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.scene-edit {
+  min-height: 100%;
+}
+
+:global(.scene-wide-select-menu) {
+  width: max-content !important;
+  min-width: 100%;
+  max-width: min(640px, calc(100vw - 24px));
+  overflow-x: auto;
+}
+
+:global(.scene-wide-select-menu .n-base-select-option__content) {
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
 :deep(.n-card__content) {
   padding: 10px 10px 4px 10px !important;
+}
+
+.scene-actions {
+  gap: 14px;
+}
+
+.action-group {
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--n-border-color);
+  border-radius: 8px;
+  background: var(--n-color-modal);
+}
+
+.action-group__type {
+  flex: 0 0 150px;
+  margin-top: 2px;
+}
+
+.action-instruction-card {
+  min-width: 0;
+  border: 1px solid var(--n-border-color);
+  background: var(--n-color);
+}
+
+.action-instruction-card :deep(.n-card__content) {
+  padding: 0 14px 8px !important;
+}
+
+.action-instruction-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 2px 10px;
+  border-bottom: 1px solid var(--n-divider-color);
+}
+
+.action-instruction-card__title {
+  color: var(--n-text-color-1);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.action-instruction-card__hint {
+  margin-top: 3px;
+  color: var(--n-text-color-3);
+  font-size: 12px;
+}
+
+.action-instruction {
+  position: relative;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 108px 4px 2px;
+}
+
+.action-instruction + .action-instruction {
+  border-top: 1px solid var(--n-divider-color);
+}
+
+.action-instruction :deep(.n-form-item) {
+  min-width: 130px;
+  margin-bottom: 0;
+}
+
+.action-instruction :deep(.n-form-item:nth-child(2)) {
+  min-width: 190px;
+}
+
+.action-instruction :deep(.n-form-item:nth-child(3)),
+.action-instruction :deep(.n-form-item:nth-child(4)) {
+  min-width: 150px;
+}
+
+.action-instruction :deep(.n-form-item:nth-child(5)) {
+  min-width: 210px;
+}
+
+.action-instruction__add,
+.action-instruction__delete {
+  top: 12px;
+  right: 8px;
+}
+
+.action-group__delete {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+@media (max-width: 900px) {
+  .action-group {
+    flex-wrap: wrap;
+  }
+
+  .action-group__type {
+    flex-basis: 100%;
+  }
+
+  .action-instruction-card {
+    width: 100%;
+  }
+
+  .action-group__delete {
+    margin-left: auto;
+  }
 }
 </style>

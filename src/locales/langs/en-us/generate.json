@@ -94,6 +94,7 @@
   "generate.activate": "Activate",
   "generate.delete": "Delete",
   "generate.add-row": "Add Row",
+  "generate.scene-action-hint": "Select a device, then configure the property or command to send",
   "generate.search": "Search",
   "generate.delete-operation": "Delete an operation",
   "generate.enter": "Please enter",
