@@ -50,7 +50,7 @@ declare module "@elegant-router/types" {
     "data-service_rule-engine": "/data-service/rule-engine";
     "device": "/device";
     "device_config": "/device/template";
-    "device_config-detail": "/device/template/detail";
+    "device_config-detail": "/device/config-detail";
     "device_config-edit": "/device/config-edit";
     "device_details": "/device/details";
     "device_details-child": "/device/details-child";

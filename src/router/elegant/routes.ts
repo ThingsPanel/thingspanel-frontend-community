@@ -287,7 +287,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       },
       {
         name: 'device_config-detail',
-        path: '/device/template/detail',
+        path: '/device/config-detail',
         alias: '/device/config-detail',
         component: 'view.device_config-detail',
         meta: {
