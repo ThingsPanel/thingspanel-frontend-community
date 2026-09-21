@@ -80,7 +80,7 @@ const menuForm = ref({
 // 表单数据
 const formData = ref({
   name: '',
-  canvasMode: 'fixed' as 'fixed' | 'grid' | 'infinite',
+  canvasMode: 'grid' as 'fixed' | 'grid' | 'infinite',
   canvasWidth: 1920,
   canvasHeight: 1080
 })
@@ -198,7 +198,7 @@ const loadThumbnails = async (list: DashboardListItem[], request: number) => {
 const openCreateModal = () => {
   formData.value = {
     name: '',
-    canvasMode: 'fixed',
+    canvasMode: 'grid',
     canvasWidth: 1920,
     canvasHeight: 1080
   }
@@ -230,7 +230,7 @@ const handleCreateDashboard = async () => {
       showModal.value = false
       formData.value = {
         name: '',
-        canvasMode: 'fixed',
+        canvasMode: 'grid',
         canvasWidth: 1920,
         canvasHeight: 1080
       }
@@ -707,16 +707,16 @@ onBeforeUnmount(() => {
         <NFormItem label="画布模式">
           <div class="flex gap-2">
             <NButton
-              :type="formData.canvasMode === 'fixed' ? 'primary' : 'default'"
-              @click="formData.canvasMode = 'fixed'"
-            >
-              固定尺寸
-            </NButton>
-            <NButton
               :type="formData.canvasMode === 'grid' ? 'primary' : 'default'"
               @click="formData.canvasMode = 'grid'"
             >
               网格布局
+            </NButton>
+            <NButton
+              :type="formData.canvasMode === 'fixed' ? 'primary' : 'default'"
+              @click="formData.canvasMode = 'fixed'"
+            >
+              固定尺寸
             </NButton>
             <NButton
               :type="formData.canvasMode === 'infinite' ? 'primary' : 'default'"
