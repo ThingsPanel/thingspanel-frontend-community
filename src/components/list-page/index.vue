@@ -431,6 +431,8 @@ onUnmounted(() => {
   .list-content {
     flex: 1;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     position: relative;
 
@@ -518,7 +520,8 @@ onUnmounted(() => {
 
     /* 内容主体：可滚动区域 */
     .list-content-body {
-      height: 100%;
+      flex: 1;
+      min-height: 0;
       margin-top: 20px;
 
       &--inline {
@@ -527,7 +530,8 @@ onUnmounted(() => {
 
       /* 视图包装器：确保内容正确显示 */
       .view-wrapper {
-        height: calc(100% - 66px); /* 减去padding */
+        height: 100%;
+        min-height: 0;
         overflow: auto;
       }
     }
@@ -635,7 +639,9 @@ onUnmounted(() => {
 
 /* 为了确保在 naive-ui 的 Card 组件中正确工作，需要覆盖一些默认样式 */
 :deep(.full-height-card > .n-card__content) {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  height: auto;
   display: flex;
   flex-direction: column;
   padding: 20px; /* 根据需要调整内边距 */

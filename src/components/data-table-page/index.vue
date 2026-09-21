@@ -787,7 +787,7 @@ const formSize = ref(undefined)
 
     <!-- 地图视图 -->
     <template #map-view>
-      <n-spin :show="loading">
+      <n-spin class="map-view-spin" :show="loading">
         <div class="map-view-container">
           <TencentMap :devices="dataList" />
         </div>
@@ -1216,8 +1216,13 @@ const formSize = ref(undefined)
 }
 
 .map-view-container {
-  height: calc(100vh - 442px);
-  min-height: 360px;
+  height: 100%;
+  min-height: 0;
+}
+
+:deep(.map-view-spin),
+:deep(.map-view-spin > .n-spin-content) {
+  height: 100%;
 }
 
 .device-table-scroll {
