@@ -4,7 +4,12 @@
 
 import { computed, reactive } from 'vue'
 import { useMarketAuth } from './use-market-auth'
-import type { PrecheckResult, PublishDraftResponse, PublishedBundle, InstallBundleRequest } from '@/service/api/market-bundle'
+import type {
+  PrecheckResult,
+  PublishDraftResponse,
+  PublishedBundle,
+  InstallBundleRequest
+} from '@/service/api/market-bundle'
 import {
   createPublishDraft,
   getErrorDisplayMessage,
@@ -84,7 +89,10 @@ export function useMarketBundle() {
   const hasBlockingErrors = computed(() => precheckErrors.value.some(isBlockingResult))
 
   function resetWizard() {
-    Object.assign(wizardState, { ...initialWizardState, selectedResources: { deviceTemplateIds: [], dashboardIds: [] } })
+    Object.assign(wizardState, {
+      ...initialWizardState,
+      selectedResources: { deviceTemplateIds: [], dashboardIds: [] }
+    })
   }
 
   function setSelectedResources(source: BundleSource) {

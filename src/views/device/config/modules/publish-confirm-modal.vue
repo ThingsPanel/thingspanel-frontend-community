@@ -1,6 +1,18 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { NModal, NForm, NFormItem, NInput, NButton, NAlert, NSelect, NUpload, NUploadDragger, FormInst, FormRules } from 'naive-ui'
+import {
+  NModal,
+  NForm,
+  NFormItem,
+  NInput,
+  NButton,
+  NAlert,
+  NSelect,
+  NUpload,
+  NUploadDragger,
+  FormInst,
+  FormRules
+} from 'naive-ui'
 import type { UploadFileInfo } from 'naive-ui'
 import { $t } from '@/locales'
 import { publishToMarket } from '@/service/api/market'
@@ -203,26 +215,26 @@ defineExpose({ open })
           />
         </NFormItem>
         <div class="market-form-grid">
-        <NFormItem :label="$t('device_template.brand')" path="brand">
-          <NInput v-model:value="formModel.brand" :placeholder="$t('device_template.inputBrand')" clearable />
-        </NFormItem>
-        <NFormItem :label="$t('device_template.modelNumber')" path="model">
-          <NInput v-model:value="formModel.model" :placeholder="$t('device_template.inputModelNumber')" clearable />
-        </NFormItem>
-        <NFormItem :label="$t('device_template.category')" path="category">
-          <NSelect
-            v-model:value="formModel.category"
-            :options="categoryOptions"
-            :placeholder="$t('device_template.selectCategory')"
-            clearable
-          />
-        </NFormItem>
-        <NFormItem :label="$t('device_template.version')" path="version">
-          <NInput v-model:value="formModel.version" :placeholder="$t('device_template.inputVersion')" clearable />
-        </NFormItem>
-        <NFormItem :label="$t('device_template.author')" path="author">
-          <NInput v-model:value="formModel.author" :placeholder="$t('device_template.inputAuthor')" clearable />
-        </NFormItem>
+          <NFormItem :label="$t('device_template.brand')" path="brand">
+            <NInput v-model:value="formModel.brand" :placeholder="$t('device_template.inputBrand')" clearable />
+          </NFormItem>
+          <NFormItem :label="$t('device_template.modelNumber')" path="model">
+            <NInput v-model:value="formModel.model" :placeholder="$t('device_template.inputModelNumber')" clearable />
+          </NFormItem>
+          <NFormItem :label="$t('device_template.category')" path="category">
+            <NSelect
+              v-model:value="formModel.category"
+              :options="categoryOptions"
+              :placeholder="$t('device_template.selectCategory')"
+              clearable
+            />
+          </NFormItem>
+          <NFormItem :label="$t('device_template.version')" path="version">
+            <NInput v-model:value="formModel.version" :placeholder="$t('device_template.inputVersion')" clearable />
+          </NFormItem>
+          <NFormItem :label="$t('device_template.author')" path="author">
+            <NInput v-model:value="formModel.author" :placeholder="$t('device_template.inputAuthor')" clearable />
+          </NFormItem>
         </div>
         <NFormItem :label="$t('generate.description')" path="description">
           <NInput

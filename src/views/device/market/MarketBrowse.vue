@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * MarketBrowse - 市场解决方案包浏览页面
+ * MarketBrowse - 资源中心解决方案包浏览页面
  *
  * 功能：
- * - 浏览市场中的解决方案包
+ * - 浏览资源中心中的解决方案包
  * - 搜索和筛选
  * - 查看详情
  * - 下载模板到本地模板库
@@ -28,6 +28,7 @@ import MarketBundleDetailDrawer from './MarketBundleDetailDrawer.vue'
 import MarketLoginModal from '@/views/device/config/modules/market-login-modal.vue'
 import defaultDashboardCover from '@/assets/imgs/default_dashboard_cover.png'
 import AdvancedListLayout from '@/components/list-page/index.vue'
+import CardGrid from '@/components/card-grid/index.vue'
 import MarketFilterBar from './MarketFilterBar.vue'
 
 const props = withDefaults(
@@ -333,7 +334,11 @@ async function performDownload(item: MarketBundleListItem) {
       content: '看板模板和依赖资源已保存到本地。请在“看板模板”中选择真实设备并创建看板。',
       positiveText: '查看本地模板',
       negativeText: '继续浏览',
-      onPositiveClick: () => router.push({ name: 'visualization_thingsvis-template' })
+      onPositiveClick: () =>
+        router.push({
+          name: 'resource-hub_dashboard',
+          query: { tab: 'local' }
+        })
     })
     void fetchBundleList()
   } finally {
@@ -392,8 +397,10 @@ onMounted(() => {
 <template>
   <div :class="props.embedded ? 'h-full' : 'h-full p-4'">
     <AdvancedListLayout
+      class="resource-market-layout"
       initial-view="card"
       :available-views="availableViews"
+      :inline-header="true"
       :show-add-button="false"
       :show-query-button="false"
       :show-reset-button="false"
@@ -401,6 +408,13 @@ onMounted(() => {
       use-view-memory
       @refresh="fetchBundleList"
     >
+      <template #header-title>
+        <div class="resource-market-title">
+          <h2 class="text-xl font-bold">看板模板</h2>
+          <span class="text-gray-400">{{ total }} 个模板</span>
+        </div>
+      </template>
+
       <template #search-form-content>
         <MarketFilterBar
           :keyword="searchParams.keyword"
@@ -417,10 +431,6 @@ onMounted(() => {
         />
       </template>
 
-      <template #header-left>
-        <span class="text-14px text-gray-500">{{ $t('market.browse.totalBundles', { n: total }) }}</span>
-      </template>
-
       <template #card-view>
         <NSpin :show="loading">
           <div v-if="!loading && bundleList.length === 0" class="empty-state">
@@ -433,7 +443,7 @@ onMounted(() => {
             </NEmpty>
           </div>
 
-          <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+          <CardGrid v-else variant="rich">
             <div v-for="item in bundleList" :key="item.bundleKey" class="min-w-0">
               <NCard
                 class="bundle-card"
@@ -489,7 +499,7 @@ onMounted(() => {
                 </div>
               </NCard>
             </div>
-          </div>
+          </CardGrid>
         </NSpin>
       </template>
 
@@ -573,6 +583,28 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+.resource-market-layout {
+  :deep(.inline-search-form),
+  :deep(.market-filter-area) {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.resource-market-title {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 1200px) {
+  .resource-market-layout :deep(.inline-search-form) {
+    width: 100%;
+  }
+}
+
 .empty-state {
   padding: 80px 0;
   text-align: center;

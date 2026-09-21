@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   NAlert,
   NAvatar,
@@ -28,9 +28,14 @@ import {
   type LocalDashboardTemplate,
   type LocalDashboardTemplateStatus
 } from '@/service/api/dashboard-template'
+import CardGrid from '@/components/card-grid/index.vue'
+import { $t } from '@/locales'
 
 const router = useRouter()
+const route = useRoute()
 const message = useMessage()
+
+const isLegacyRoute = computed(() => route.name === 'visualization_thingsvis-template')
 
 const loading = ref(false)
 const templates = ref<LocalDashboardTemplate[]>([])
@@ -53,11 +58,11 @@ const selectedDevices = ref<Record<string, string | null>>({})
 
 const sourceOptions = [
   { label: '资源中心下载', value: 'MARKET' },
-  { label: '本地创建', value: 'LOCAL' }
+  { label: '本地新建', value: 'LOCAL' }
 ]
 
 const statusOptions = [
-  { label: '可创建看板', value: 'READY' },
+  { label: '可新建看板', value: 'READY' },
   { label: '缺少真实设备', value: 'MISSING_DEVICE' },
   { label: '已停用', value: 'DISABLED' }
 ]
@@ -173,12 +178,12 @@ async function createDashboard() {
       deviceBindings
     })
     if (result.error || !result.data) {
-      message.error(result.error?.message || '创建看板失败')
+      message.error(result.error?.message || $t('generate.createFailed'))
       return
     }
 
     createVisible.value = false
-    message.success('看板创建成功')
+    message.success($t('generate.createSuccess'))
     await router.push({
       name: 'visualization_thingsvis-editor',
       query: {
@@ -202,6 +207,14 @@ function statusType(status: LocalDashboardTemplateStatus): 'success' | 'warning'
 }
 
 onMounted(() => {
+  if (isLegacyRoute.value) {
+    void router.replace({
+      name: 'resource-hub_dashboard',
+      query: { tab: 'local' }
+    })
+    return
+  }
+
   void fetchTemplates()
 })
 </script>
@@ -211,8 +224,8 @@ onMounted(() => {
     <NCard :bordered="false">
       <div class="page-header">
         <div>
-          <h2>本地看板模板</h2>
-          <p>管理从资源中心下载或本地创建的模板，绑定真实设备后创建可运行看板。</p>
+          <h2>我的看板模板</h2>
+          <p>管理从资源中心下载或本地新建的模板，绑定真实设备后新建可运行看板。</p>
         </div>
         <NTag type="info" :bordered="false">共 {{ total }} 个模板</NTag>
       </div>
@@ -250,15 +263,20 @@ onMounted(() => {
       <NSpin :show="loading">
         <NEmpty
           v-if="!loading && templates.length === 0"
-          description="暂无本地看板模板，请先从资源中心下载"
+          description="暂无本地看板模板，请先到资源中心获取"
           class="empty"
         >
           <template #extra>
-            <NButton type="primary" @click="router.push({ name: 'resource-hub_dashboard' })">前往资源中心</NButton>
+            <NButton
+              type="primary"
+              @click="router.push({ name: 'resource-hub_dashboard', query: { tab: 'resources' } })"
+            >
+              前往资源中心
+            </NButton>
           </template>
         </NEmpty>
 
-        <div v-else class="template-grid">
+        <CardGrid v-else variant="rich">
           <NCard v-for="template in templates" :key="template.id" hoverable class="template-card">
             <div class="template-heading">
               <NAvatar :src="template.thumbnail" :size="48" round>
@@ -273,7 +291,7 @@ onMounted(() => {
                 </NTooltip>
                 <NSpace size="small">
                   <NTag size="small" :type="template.source === 'MARKET' ? 'info' : 'default'">
-                    {{ template.source === 'MARKET' ? '资源中心下载' : '本地创建' }}
+                    {{ template.source === 'MARKET' ? '资源中心下载' : '本地新建' }}
                   </NTag>
                   <NTag size="small" :type="statusType(template.status)">
                     {{ statusLabel(template.status) }}
@@ -301,11 +319,11 @@ onMounted(() => {
 
             <div class="card-actions">
               <NButton type="primary" :disabled="template.status === 'DISABLED'" @click="openCreate(template)">
-                创建看板
+                {{ $t('generate.create-dashboard') }}
               </NButton>
             </div>
           </NCard>
-        </div>
+        </CardGrid>
       </NSpin>
 
       <div v-if="total > filters.pageSize" class="pagination">
@@ -321,7 +339,7 @@ onMounted(() => {
     <NModal
       v-model:show="createVisible"
       preset="card"
-      title="从模板创建看板"
+      :title="$t('generate.create-dashboard')"
       style="width: min(760px, calc(100vw - 32px))"
       :mask-closable="!creating"
     >
@@ -347,7 +365,7 @@ onMounted(() => {
             v-if="compatibleBindings.some(binding => binding.required && binding.devices.length === 0)"
             type="warning"
           >
-            部分必需设备模板暂无兼容设备。请先基于对应设备模板创建真实设备，再返回创建看板。
+            部分必需设备模板暂无兼容设备。请先基于对应设备模板新建设备，再返回新建看板。
           </NAlert>
 
           <div class="binding-list">
@@ -375,7 +393,7 @@ onMounted(() => {
                     :disabled="binding.devices.length === 0"
                   />
                   <NButton v-if="binding.devices.length === 0" text type="primary" @click="goCreateDevice(binding)">
-                    创建设备
+                    {{ $t('custom.devicePage.addDevice') }}
                   </NButton>
                 </div>
               </div>
@@ -387,7 +405,9 @@ onMounted(() => {
       <template #footer>
         <div class="modal-actions">
           <NButton :disabled="creating" @click="createVisible = false">取消</NButton>
-          <NButton type="primary" :loading="creating" :disabled="!canCreate" @click="createDashboard">创建看板</NButton>
+          <NButton type="primary" :loading="creating" :disabled="!canCreate" @click="createDashboard">
+            {{ $t('generate.create-dashboard') }}
+          </NButton>
         </div>
       </template>
     </NModal>
@@ -455,12 +475,6 @@ onMounted(() => {
 
 .empty {
   padding: 80px 0;
-}
-
-.template-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
 }
 
 .template-card {

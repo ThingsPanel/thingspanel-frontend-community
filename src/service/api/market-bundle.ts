@@ -712,7 +712,8 @@ export function getErrorDisplayMessage(
   if (error.httpStatus === 401) {
     return {
       title: 'UNAUTHORIZED',
-      description: locale === 'zh' ? '未授权，请先登录资源中心' : 'Unauthorized, please login to the resource center first',
+      description:
+        locale === 'zh' ? '未授权，请先登录资源中心' : 'Unauthorized, please login to the resource center first',
       isBlocking: true
     }
   }

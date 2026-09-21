@@ -5,6 +5,7 @@ import { NSpin, NEmpty, NPagination } from 'naive-ui'
 import { GridOutline, ListOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
+import CardGrid from '@/components/card-grid/index.vue'
 import MarketFilterBar from '@/views/device/market/MarketFilterBar.vue'
 import { getMarketTemplates, installFromMarket } from '@/service/api/market'
 import { useMarketAuth } from '../composables/use-market-auth'
@@ -209,8 +210,10 @@ onMounted(() => {
 <template>
   <div class="h-full p-4">
     <AdvancedListLayout
+      class="resource-market-layout"
       initial-view="card"
       :available-views="availableViews"
+      :inline-header="true"
       :show-add-button="false"
       :show-query-button="false"
       :show-reset-button="false"
@@ -218,6 +221,13 @@ onMounted(() => {
       use-view-memory
       @refresh="fetchMarketTemplates"
     >
+      <template #header-title>
+        <div class="resource-market-title">
+          <h2 class="text-xl font-bold">设备模板</h2>
+          <span class="text-gray-400">{{ total }} 个模板</span>
+        </div>
+      </template>
+
       <template #search-form-content>
         <MarketFilterBar
           :keyword="searchParams.keyword"
@@ -234,17 +244,13 @@ onMounted(() => {
         />
       </template>
 
-      <template #header-left>
-        <span class="text-14px text-gray-500">{{ $t('market.totalTemplates', { n: total }) }}</span>
-      </template>
-
       <template #card-view>
         <NSpin
           :show="loading || Boolean(installingId)"
           :description="installingId ? '模板下载并安装中，请稍候…' : undefined"
         >
           <NEmpty v-if="!loading && !templateList.length" :description="$t('market.noTemplates')" class="py-20" />
-          <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+          <CardGrid v-else variant="rich">
             <MarketTemplateCard
               v-for="item in templateList"
               :key="item.id"
@@ -253,7 +259,7 @@ onMounted(() => {
               @install="handleInstall"
               @view-detail="handleViewDetail"
             />
-          </div>
+          </CardGrid>
         </NSpin>
       </template>
 
@@ -286,7 +292,31 @@ onMounted(() => {
     <!-- 模板详情抽屉 -->
     <MarketTemplateDrawer v-model:visible="drawerVisible" :template-id="selectedTemplateId" @install="handleInstall" />
 
-    <!-- 市场登录弹窗 -->
+    <!-- 资源中心登录弹窗 -->
     <MarketLoginModal ref="marketLoginRef" @login-success="onMarketLoginSuccess" />
   </div>
 </template>
+
+<style scoped lang="scss">
+.resource-market-layout {
+  :deep(.inline-search-form),
+  :deep(.market-filter-area) {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.resource-market-title {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 1200px) {
+  .resource-market-layout :deep(.inline-search-form) {
+    width: 100%;
+  }
+}
+</style>

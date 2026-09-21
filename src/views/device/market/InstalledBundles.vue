@@ -159,7 +159,7 @@ const columns = computed(() => [
     key: 'bindings',
     width: 100,
     render: (row: InstalledBundle) => {
-      const boundCount = row.bindings?.filter((b) => b.deviceId).length || 0
+      const boundCount = row.bindings?.filter(b => b.deviceId).length || 0
       const totalCount = row.bindings?.length || 0
       return h(
         NTooltip,
@@ -239,7 +239,7 @@ const columns = computed(() => [
 
 // ========== Watch ==========
 
-watch(activeTab, (tab) => {
+watch(activeTab, tab => {
   if (tab === 'installed') {
     void fetchInstalledList()
   }
