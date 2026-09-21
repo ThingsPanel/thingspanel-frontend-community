@@ -1,12 +1,12 @@
 <script setup lang="tsx">
-import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, h, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { DrawerPlacement, StepsProps } from 'naive-ui'
 import { NIcon, NTag, NButton } from 'naive-ui'
 import _ from 'lodash'
 import type { TreeSelectOption } from 'naive-ui/es/tree-select/src/interface'
-import { LayersOutline } from '@vicons/ionicons5'
+import { AppsOutline, FolderOpenOutline, FolderOutline, LayersOutline } from '@vicons/ionicons5'
 import { localStg } from '@/utils/storage'
 import { useDeviceStatusWebSocket } from '@/utils/deviceStatusWebSocket'
 import {
@@ -58,6 +58,18 @@ const groupOptions = ref<TreeSelectOption[]>([])
 const groupTreeLoading = ref(false)
 const selectedGroupId = ref(query.group_id ? String(query.group_id) : '')
 const groupPanelVisible = ref(false)
+
+const renderGroupPrefix = ({ option }: { option: TreeSelectOption }) =>
+  h(
+    NIcon,
+    {
+      size: 16,
+      depth: option.children?.length ? 2 : 3
+    },
+    {
+      default: () => h(option.children?.length ? FolderOpenOutline : FolderOutline)
+    }
+  )
 
 // 初始化设备状态 WebSocket 管理器
 const deviceStatusWS = useDeviceStatusWebSocket()
@@ -622,7 +634,12 @@ const toggleGroupPanel = () => {
     <div class="device-manage-layout" :class="{ 'device-manage-layout--with-group': groupPanelVisible }">
       <aside v-if="groupPanelVisible" id="device-group-sidebar" class="device-group-sidebar">
         <div class="device-group-sidebar__header">
-          <span>设备分组</span>
+          <span class="device-group-sidebar__title">
+            <span class="device-group-sidebar__title-icon" aria-hidden="true">
+              <NIcon size="16"><LayersOutline /></NIcon>
+            </span>
+            <span>设备分组</span>
+          </span>
         </div>
         <button
           type="button"
@@ -630,7 +647,9 @@ const toggleGroupPanel = () => {
           :class="{ 'device-group-all--active': !selectedGroupId }"
           @click="handleAllGroups"
         >
-          <span class="device-group-all__dot" aria-hidden="true"></span>
+          <span class="device-group-all__icon" aria-hidden="true">
+            <NIcon size="16"><AppsOutline /></NIcon>
+          </span>
           <span>全部设备</span>
         </button>
         <div class="device-group-tree">
@@ -642,9 +661,12 @@ const toggleGroupPanel = () => {
               :data="groupOptions"
               :selected-keys="selectedGroupKeys"
               :default-expand-all="true"
+              :indent="18"
+              show-line
               key-field="key"
               label-field="label"
               children-field="children"
+              :render-prefix="renderGroupPrefix"
               @update:selected-keys="handleGroupSelect"
             />
             <n-empty v-else size="small" description="暂无设备分组" />
@@ -817,18 +839,20 @@ const toggleGroupPanel = () => {
 }
 
 .device-manage-layout--with-group {
-  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-columns: 236px minmax(0, 1fr);
 }
 
 .device-group-sidebar {
+  position: relative;
   min-width: 0;
   height: 100%;
   box-sizing: border-box;
-  padding: 18px 12px;
+  padding: 0 10px 14px;
   overflow: auto;
-  background: var(--card-color);
+  background: linear-gradient(180deg, var(--card-color) 0%, rgb(var(--primary-color) / 2%) 100%);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgb(15 23 42 / 4%);
 }
 
 .device-group-sidebar__header {
@@ -836,28 +860,51 @@ const toggleGroupPanel = () => {
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  padding: 0 8px 12px;
+  min-height: 58px;
+  padding: 0 10px;
   color: var(--text-color);
   font-size: 15px;
   font-weight: 600;
+  border-bottom: 1px solid rgb(var(--primary-color) / 10%);
+}
+
+.device-group-sidebar__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.device-group-sidebar__title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--primary-color);
+  background: var(--primary-color-suppl);
+  border-radius: 8px;
 }
 
 .device-group-all {
   display: flex;
   align-items: center;
+  gap: 9px;
   width: 100%;
-  height: 36px;
-  padding: 0 10px;
+  height: 40px;
+  margin-top: 12px;
+  padding: 0 12px;
   color: var(--text-color-2);
   font-size: 13px;
   text-align: left;
   cursor: pointer;
   background: transparent;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   transition:
     color 0.18s ease,
-    background-color 0.18s ease;
+    background-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
 }
 
 .device-group-all:hover {
@@ -869,34 +916,91 @@ const toggleGroupPanel = () => {
   color: var(--primary-color);
   font-weight: 600;
   background: var(--primary-color-suppl);
+  box-shadow: inset 3px 0 0 var(--primary-color);
 }
 
-.device-group-all__dot {
-  width: 6px;
-  height: 6px;
-  margin-right: 10px;
-  background: currentColor;
-  border-radius: 50%;
+.device-group-all:active {
+  transform: translateY(1px);
+}
+
+.device-group-all__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: currentColor;
+  background: rgb(var(--primary-color) / 8%);
+  border-radius: 7px;
 }
 
 .device-group-tree {
-  margin-top: 6px;
+  margin-top: 8px;
+  padding: 0 2px;
+}
+
+.device-group-tree :deep(.n-tree) {
+  --n-node-border-radius: 10px;
+}
+
+.device-group-tree :deep(.n-tree-node-wrapper) {
+  padding: 2px 0;
 }
 
 .device-group-tree :deep(.n-tree-node-content) {
-  min-height: 36px;
-  padding: 0 8px;
-  border-radius: 8px;
+  min-height: 38px;
+  padding: 0 10px 0 6px;
+  color: var(--text-color-2);
+  border-radius: 10px;
+}
+
+.device-group-tree :deep(.n-tree-node-content__prefix) {
+  width: 24px;
+  margin-right: 7px;
+  color: rgb(var(--primary-color) / 68%);
+}
+
+.device-group-tree :deep(.n-tree-node-content__text) {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 450;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.device-group-tree :deep(.n-tree-node-switcher) {
+  color: var(--text-color-3);
+}
+
+.device-group-tree :deep(.n-tree-node-indent::before),
+.device-group-tree :deep(.n-tree-node-indent::after) {
+  border-color: rgb(var(--primary-color) / 12%);
 }
 
 .device-group-tree :deep(.n-tree-node-content:hover) {
-  background: var(--primary-color-suppl);
+  color: var(--text-color);
+  background: rgb(var(--primary-color) / 7%);
 }
 
-.device-group-tree :deep(.n-tree-node-content--selected) {
+.device-group-tree :deep(.n-tree-node--selected) {
   color: var(--primary-color);
-  font-weight: 600;
   background: var(--primary-color-suppl);
+  box-shadow: inset 3px 0 0 var(--primary-color);
+}
+
+.device-group-tree :deep(.n-tree-node--selected .n-tree-node-content) {
+  color: var(--primary-color);
+}
+
+.device-group-tree :deep(.n-tree-node--selected .n-tree-node-content__text) {
+  font-weight: 600;
+}
+
+.device-group-tree :deep(.n-tree-node--selected .n-tree-node-content__prefix),
+.device-group-tree :deep(.n-tree-node--selected .n-tree-node-switcher) {
+  color: var(--primary-color);
 }
 
 .device-manage-content {
@@ -924,7 +1028,7 @@ const toggleGroupPanel = () => {
 
 @media (max-width: 900px) {
   .device-manage-layout {
-    grid-template-columns: 188px minmax(0, 1fr);
+    grid-template-columns: 204px minmax(0, 1fr);
     gap: 12px;
   }
 
