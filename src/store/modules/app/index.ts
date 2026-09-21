@@ -2,7 +2,6 @@ import { effectScope, onScopeDispose, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { breakpointsTailwind, useBreakpoints, useTitle } from '@vueuse/core'
 import { useBoolean } from '@sa/hooks'
-import { message } from '@/utils/common/discrete'
 import { router } from '@/router'
 import { SetupStoreId } from '@/enum'
 import { $t, setLocale } from '@/locales'
@@ -59,12 +58,11 @@ export const useAppStore = defineStore(SetupStoreId.App, () => {
   ]
 
   function changeLocale(lang: App.I18n.LangType) {
+    if (locale.value === lang) return
+
     locale.value = lang
     setLocale(lang)
     localStg.set('lang', lang)
-    message.success('语言切换成功')
-    // Force reload page to ensure all components update with new locale
-    reloadPage(100)
   }
 
   /** Update document title by locale */
