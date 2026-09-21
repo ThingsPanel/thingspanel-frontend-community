@@ -104,7 +104,7 @@ interface DeviceStatusWsEntry {
   deviceId: string
 }
 
-type PlatformDeviceField = Pick<PlatformField, 'id' | 'name' | 'dataType' | 'type' | 'options'>
+type PlatformDeviceField = Pick<PlatformField, 'id' | 'name' | 'dataType' | 'type' | 'unit' | 'options'>
 
 type PlatformDeviceEntry = {
   deviceId: string
@@ -1936,7 +1936,10 @@ async function doInit(): Promise<boolean> {
   if (!iframeRef.value?.contentWindow || !token.value || !props.id) return false
 
   thingsVisLoaded = false
-  thingsVisReady = false
+  // `tv:ready` is emitted before this host-side initialization is scheduled.
+  // Keep that lifecycle signal until the iframe actually reloads (handled in
+  // handleIframeLoad); otherwise viewer hydration sees `ready: false` after
+  // LOADED and drops every platform-data packet.
   resetViewerHydrationState()
 
   const initSignature = JSON.stringify({
