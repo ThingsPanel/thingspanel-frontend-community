@@ -68,7 +68,8 @@ const tableThemeOverrides = {
   tdPaddingMedium: '13px 12px'
 }
 
-const extendInfoRowKey = (row: any) => `${row.name ?? ''}-${row.type ?? ''}-${row.default_value ?? ''}-${row.desc ?? ''}`
+const extendInfoRowKey = (row: any) =>
+  `${row.name ?? ''}-${row.type ?? ''}-${row.default_value ?? ''}-${row.desc ?? ''}`
 const typeOptions = ref([
   {
     label: 'String',

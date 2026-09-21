@@ -299,12 +299,16 @@ init()
     font-weight: 400;
     line-height: 1.5;
     border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
-    transition: background-color 180ms ease, box-shadow 180ms ease;
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
   }
 
   :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
     background: rgb(239 246 255) !important;
-    box-shadow: inset 0 1px 0 rgb(191 219 254 / 60%), inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(191 219 254 / 60%),
+      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
   }
 
   :deep(.n-data-table-td--last-col),

@@ -254,8 +254,8 @@ async function handleDelete(id: number) {
         />
       </template>
       <NDataTable
-        class="device-data-table flex-1-hidden"
         v-model:checked-row-keys="checkedRowKeys"
+        class="device-data-table flex-1-hidden"
         :columns="columns"
         :data="data"
         size="medium"

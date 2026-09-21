@@ -117,7 +117,6 @@ function selectCard(scope: Api.UserManagement.TenantActivityScope | null) {
           </button>
         </NGridItem>
       </NGrid>
-
     </NSpin>
   </section>
 </template>

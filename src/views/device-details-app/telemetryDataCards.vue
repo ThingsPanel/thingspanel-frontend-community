@@ -1,65 +1,60 @@
 <script setup lang="tsx">
-import { onMounted, ref } from 'vue';
-import { MovingNumbers } from 'moving-numbers-vue3';
-import dayjs from 'dayjs';
-import { telemetryDataCurrent } from '@/service/api/device'; // 假设此路径正确
-import { createLogger } from '@/utils/logger';
-const logger = createLogger('TelemetryData');
+import { onMounted, ref } from 'vue'
+import { MovingNumbers } from 'moving-numbers-vue3'
+import dayjs from 'dayjs'
+import { telemetryDataCurrent } from '@/service/api/device' // 假设此路径正确
+import { createLogger } from '@/utils/logger'
+const logger = createLogger('TelemetryData')
 
 const props = defineProps<{
-  id: string;
-  cardHeight: number;
-  cardMargin: number;
-}>();
+  id: string
+  cardHeight: number
+  cardMargin: number
+}>()
 
-const telemetryData = ref<any[]>([]);
-const initTelemetryData = ref<any>();
-const nowTime = ref(dayjs(new Date().getTime()).format('YYYY-MM-DD HH:mm:ss'));
+const telemetryData = ref<any[]>([])
+const initTelemetryData = ref<any>()
+const nowTime = ref(dayjs(new Date().getTime()).format('YYYY-MM-DD HH:mm:ss'))
 
 const fetchTelemetry = async () => {
-  const { data, error } = await telemetryDataCurrent(props.id);
+  const { data, error } = await telemetryDataCurrent(props.id)
   if (!error && data) {
-    telemetryData.value = data;
-    initTelemetryData.value = data[0] || {};
-    initTelemetryData.value.device_id = props.id;
+    telemetryData.value = data
+    initTelemetryData.value = data[0] || {}
+    initTelemetryData.value.device_id = props.id
   }
-};
+}
 
 const setItemRef = (el: any) => {
-  logger.info(el);
-};
+  logger.info(el)
+}
 
 const isColor = (i: any) => {
   if (typeof i.value === 'string') {
-    return '#cccccc';
+    return '#cccccc'
   }
-  return '';
-};
+  return ''
+}
 
 const getValueClass = (value: unknown) => {
-  const length = String(value ?? '').length;
+  const length = String(value ?? '').length
   return {
     'index-style': true,
     'index-style--medium': length > 16 && length <= 48,
     'index-style--long': length > 48
-  };
-};
+  }
+}
 
 // 在组件挂载时调用 fetchTelemetry 获取数据
 onMounted(() => {
-  fetchTelemetry();
-});
+  fetchTelemetry()
+})
 </script>
 
 <template>
   <n-grid :x-gap="cardMargin" :y-gap="cardMargin" cols="1 600:2 900:3 1200:4">
     <n-gi v-for="(i, index) in telemetryData" :key="i.tenant_id">
-      <n-card
-        class="telemetry-card"
-        header-class="border-b h-36px"
-        hoverable
-        :style="{ minHeight: cardHeight + 'px' }"
-      >
+      <n-card class="telemetry-card" header-class="border-b h-36px" hoverable :style="{ minHeight: cardHeight + 'px' }">
         <div class="card-body">
           <span v-if="isColor(i)" :class="getValueClass(i.value)">{{ i.value }}</span>
           <MovingNumbers

@@ -7,7 +7,7 @@
  * @LastEditTime: 2024-03-24 16:04:26
 -->
 <script setup lang="tsx">
-import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import type { Ref } from 'vue'
 import { NButton, NCard, NEmpty, NFlex, NInput } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
@@ -168,11 +168,6 @@ onMounted(() => {
   getAlarmHistory()
 })
 
-const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance()
-  return proxy.getPlatform()
-})
-
 const alarmStatusOptions = ref([
   {
     label: $t('common.allStatus'),
@@ -232,36 +227,25 @@ const submitCallback = async () => {
 
 <template>
   <div class="h-full flex-col">
-    <div class="alarm-filter-header">
-      <h3 class="alarm-filter-heading">{{ $t('generate.alarmInfo') }}</h3>
-      <NForm
-        ref="queryFormRef"
-        class="alarm-filter-toolbar"
-        :inline="!getPlatform"
-        label-placement="left"
-        :model="queryData"
-      >
-        <NFormItem class="alarm-filter-field alarm-filter-field--date" path="status">
-          <n-date-picker v-model:value="range" type="datetimerange" :clearable="false" separator="-" />
-        </NFormItem>
-        <NFormItem
-          class="alarm-filter-field alarm-filter-field--level"
-          :label="$t('generate.alarm-level')"
-          path="status"
-        >
-          <NSelect
-            v-model:value="queryData.alarm_status"
-            :clearable="false"
-            class="w-200px"
-            :options="alarmStatusOptions"
-          />
-        </NFormItem>
-        <NFormItem class="alarm-filter-actions">
-          <NButton type="primary" @click="handleSearch">{{ $t('common.search') }}</NButton>
-          <NButton class="ml-12px" @click="resetData">{{ $t('common.reset') }}</NButton>
-        </NFormItem>
-      </NForm>
-    </div>
+    <NForm
+      ref="queryFormRef"
+      class="alarm-filter-toolbar"
+      inline
+      :show-feedback="false"
+      label-placement="left"
+      :model="queryData"
+    >
+      <NFormItem class="alarm-filter-field alarm-filter-field--date" path="status">
+        <n-date-picker v-model:value="range" type="datetimerange" :clearable="false" separator="-" />
+      </NFormItem>
+      <NFormItem class="alarm-filter-field alarm-filter-field--level" :label="$t('generate.alarm-level')" path="status">
+        <NSelect v-model:value="queryData.alarm_status" :clearable="false" :options="alarmStatusOptions" />
+      </NFormItem>
+      <NFormItem class="alarm-filter-actions">
+        <NButton type="primary" @click="handleSearch">{{ $t('common.search') }}</NButton>
+        <NButton @click="resetData">{{ $t('common.reset') }}</NButton>
+      </NFormItem>
+    </NForm>
     <n-data-table
       class="thingspanel-data-table w-full"
       size="medium"
@@ -396,10 +380,11 @@ const submitCallback = async () => {
 
 .alarm-filter-toolbar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
+  width: 100%;
   margin-bottom: 16px;
 
   :deep(.n-form-item) {
@@ -419,51 +404,37 @@ const submitCallback = async () => {
   }
 }
 
-.alarm-filter-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.alarm-filter-heading {
-  flex: 0 0 auto;
-  margin: 4px 0 0;
-  color: var(--text-color);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 28px;
-}
-
 .alarm-filter-field--date {
+  flex: 0 1 320px;
   width: min(320px, 100%);
+  min-width: 280px;
 }
 
 .alarm-filter-field--level {
+  flex: 0 0 200px;
   width: 200px;
 }
 
 .alarm-filter-actions {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 @media (max-width: 768px) {
-  .alarm-filter-header {
-    flex-direction: column;
-  }
-
   .alarm-filter-toolbar {
     align-items: stretch;
     flex-direction: column;
+    flex-wrap: nowrap;
   }
 
   .alarm-filter-field--date,
   .alarm-filter-field--level,
   .alarm-filter-actions {
     width: 100%;
+    min-width: 0;
+    flex-basis: auto;
   }
 
   .alarm-filter-actions {
