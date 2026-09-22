@@ -45,6 +45,28 @@ test('legacy API payload is converted to the ThingsVis canonical node schema', (
   assert.deepEqual(config.dataSources[0].config.requestedFields, ['fan_mode'])
 })
 
+test('grid layouts get usable outer spacing and keep edge-to-edge as an explicit opt-out', () => {
+  const normalized = canonicalizeThingsVisConfig({
+    canvas: { mode: 'grid', gridCols: 4 },
+    nodes: []
+  })
+
+  assert.equal(normalized.canvas.gridGap, 8)
+  assert.equal(normalized.canvas.padding, 16)
+
+  const migratedLegacy = canonicalizeThingsVisConfig({
+    canvas: { mode: 'grid', gridGap: 5, padding: 0 },
+    nodes: []
+  })
+  assert.equal(migratedLegacy.canvas.padding, 16)
+
+  const edgeToEdge = canonicalizeThingsVisConfig({
+    canvas: { mode: 'grid', padding: 0, applyMarginToSides: false },
+    nodes: []
+  })
+  assert.equal(edgeToEdge.canvas.padding, 0)
+})
+
 test('platform fields keep stable identifiers and expose labels and enum options', () => {
   const fields = extractPlatformFields({
     telemetry: [

@@ -112,6 +112,12 @@ export interface ThingsVisDashboard {
     width: number
     height: number
     background: string | Record<string, unknown> | null
+    gridCols?: number
+    gridRowHeight?: number
+    gridGap?: number
+    padding?: number
+    applyMarginToSides?: boolean
+    edgeToEdge?: boolean
   }
   nodes: unknown[]
   dataSources: unknown[]
@@ -153,6 +159,12 @@ export interface CreateDashboardData {
     width?: number
     height?: number
     background?: string | Record<string, unknown>
+    gridCols?: number
+    gridRowHeight?: number
+    gridGap?: number
+    padding?: number
+    applyMarginToSides?: boolean
+    edgeToEdge?: boolean
   }
 }
 

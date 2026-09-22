@@ -1,4 +1,5 @@
 import type { PlatformField } from './types'
+import { THINGSVIS_GRID_DEFAULTS } from './chart-config-normalizer'
 
 export type TemplatePresetPropertyType = 'telemetry' | 'attributes'
 
@@ -25,9 +26,10 @@ const DEFAULT_PRESET_CANVAS = {
   mode: 'grid',
   width: 1920,
   height: 1080,
-  gridCols: 24,
-  gridRowHeight: 50,
-  gridGap: 5
+  gridCols: THINGSVIS_GRID_DEFAULTS.cols,
+  gridRowHeight: THINGSVIS_GRID_DEFAULTS.rowHeight,
+  gridGap: THINGSVIS_GRID_DEFAULTS.gap,
+  padding: THINGSVIS_GRID_DEFAULTS.padding
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

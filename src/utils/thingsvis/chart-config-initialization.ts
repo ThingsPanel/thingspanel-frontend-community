@@ -1,4 +1,4 @@
-import { canonicalizeThingsVisConfig } from './chart-config-normalizer'
+import { canonicalizeThingsVisConfig, THINGSVIS_GRID_DEFAULTS } from './chart-config-normalizer'
 
 /**
  * Web 图表首次保存时初始化 App 图表；App 已有独立配置后保持原值。
@@ -57,9 +57,9 @@ export function initializeAppChartConfigOnce(currentAppConfig: unknown, webConfi
         width: 375,
         height: 844,
         gridCols: 4,
-        gridRowHeight: 50,
-        gridGap: 5,
-        padding: 0,
+        gridRowHeight: THINGSVIS_GRID_DEFAULTS.rowHeight,
+        gridGap: THINGSVIS_GRID_DEFAULTS.gap,
+        padding: THINGSVIS_GRID_DEFAULTS.padding,
         responsive: false
       }
     })

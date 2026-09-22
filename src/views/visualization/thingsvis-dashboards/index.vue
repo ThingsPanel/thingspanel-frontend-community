@@ -40,6 +40,7 @@ import { clearThingsVisHomeCache } from '@/utils/thingsvis/home-cache'
 import { refreshAuthRoutes } from '@/utils/router/refresh-auth-routes'
 import MarketPublishEntry from '@/views/device/config/MarketPublishEntry.vue'
 import CardGrid from '@/components/card-grid/index.vue'
+import { THINGSVIS_GRID_DEFAULTS } from '@/utils/thingsvis/chart-config-normalizer'
 
 const route = useRoute()
 const { routerPushByKey } = useRouterPush()
@@ -221,7 +222,15 @@ const handleCreateDashboard = async () => {
         height: formData.value.canvasHeight,
         background: {
           color: 'transparent'
-        }
+        },
+        ...(formData.value.canvasMode === 'grid'
+          ? {
+              gridCols: THINGSVIS_GRID_DEFAULTS.cols,
+              gridRowHeight: THINGSVIS_GRID_DEFAULTS.rowHeight,
+              gridGap: THINGSVIS_GRID_DEFAULTS.gap,
+              padding: THINGSVIS_GRID_DEFAULTS.padding
+            }
+          : {})
       }
     })
 

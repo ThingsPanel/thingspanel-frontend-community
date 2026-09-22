@@ -18,8 +18,8 @@ test('App 从未配置时使用 Web 配置初始化', () => {
       background: { color: 'transparent' },
       gridCols: 4,
       gridRowHeight: 50,
-      gridGap: 5,
-      padding: 0,
+      gridGap: 8,
+      padding: 16,
       responsive: false
     })
   }

@@ -1,5 +1,12 @@
 export type CanonicalChartConfig = Record<string, any>
 
+export const THINGSVIS_GRID_DEFAULTS = {
+  cols: 24,
+  rowHeight: 50,
+  gap: 8,
+  padding: 16
+} as const
+
 export interface ChartConfigNormalizerOptions {
   /** Used when an AI/API payload does not include a canvas. */
   defaultCanvas?: Partial<Record<string, unknown>>
@@ -67,10 +74,24 @@ function normalizeCanvas(raw: unknown, nodeInputs: Record<string, any>[], option
   }
 
   if (normalizedMode === 'grid') {
-    canvas.gridCols = Math.max(1, Math.round(positiveNumber(source.gridCols) ?? 24))
-    canvas.gridRowHeight = Math.max(1, Math.round(positiveNumber(source.gridRowHeight, source.rowHeight) ?? 50))
-    canvas.gridGap = Math.max(0, Math.round(finiteNumber(source.gridGap, source.gap) ?? 5))
-    canvas.padding = Math.max(0, Math.round(finiteNumber(source.padding) ?? 0))
+    canvas.gridCols = Math.max(1, Math.round(positiveNumber(source.gridCols) ?? THINGSVIS_GRID_DEFAULTS.cols))
+    canvas.gridRowHeight = Math.max(
+      1,
+      Math.round(positiveNumber(source.gridRowHeight, source.rowHeight) ?? THINGSVIS_GRID_DEFAULTS.rowHeight)
+    )
+    canvas.gridGap = Math.max(0, Math.round(finiteNumber(source.gridGap, source.gap) ?? THINGSVIS_GRID_DEFAULTS.gap))
+
+    // Keep the canvas breathing room in the shared schema so editor and viewer
+    // render the same first-row position. Legacy grid dashboards used 0 here;
+    // preserve edge-to-edge only when it is explicitly requested.
+    const configuredPadding = finiteNumber(source.padding)
+    const edgeToEdge = source.applyMarginToSides === false || source.edgeToEdge === true
+    const padding = edgeToEdge
+      ? (configuredPadding ?? 0)
+      : configuredPadding && configuredPadding > 0
+        ? configuredPadding
+        : THINGSVIS_GRID_DEFAULTS.padding
+    canvas.padding = Math.max(0, Math.round(padding))
   }
 
   return canvas

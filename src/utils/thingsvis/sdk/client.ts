@@ -8,6 +8,7 @@
  */
 
 import { getPlatformApiBase } from '@/utils/thingsvis/constants'
+import { THINGSVIS_GRID_DEFAULTS } from '@/utils/thingsvis/chart-config-normalizer'
 
 // 鈹€鈹€鈹€ Message Type Constants (aligned with Guest MSG_TYPES) 鈹€鈹€鈹€
 const TV_MSG = {
@@ -286,9 +287,10 @@ export class ThingsVisClient {
       mode: 'grid',
       width: 1920,
       height: 1080,
-      gridCols: 24,
-      gridRowHeight: 50,
-      gridGap: 5
+      gridCols: THINGSVIS_GRID_DEFAULTS.cols,
+      gridRowHeight: THINGSVIS_GRID_DEFAULTS.rowHeight,
+      gridGap: THINGSVIS_GRID_DEFAULTS.gap,
+      padding: THINGSVIS_GRID_DEFAULTS.padding
     }
     const safeNodes = safeConfig.nodes || []
     const safeVariables = Array.isArray(safeConfig.variables) ? safeConfig.variables : []
