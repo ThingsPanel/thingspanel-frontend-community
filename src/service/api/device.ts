@@ -40,7 +40,9 @@ export const deviceGroupTree = async (params: any) => {
 
 /** 获取设备分组统计 */
 export const getDeviceGroupCounts = async () => {
-  return await request.get<DeviceManagement.DeviceGroupCounts>('/device/group/counts')
+  return await request.get<DeviceManagement.DeviceGroupCounts>('/device/group/counts', {
+    silentError: true
+  })
 }
 /** 新增设备分组 */
 export const deviceGroup = async (params: { id: string; parent_id: string; name: string; description: string }) => {

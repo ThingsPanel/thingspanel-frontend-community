@@ -68,6 +68,8 @@ export type MappedType<R extends ResponseType, JsonType = any> = R extends keyof
 
 export type CustomAxiosRequestConfig<R extends ResponseType = 'json'> = Omit<AxiosRequestConfig, 'responseType'> & {
   responseType?: R
+  /** Suppress the global error message for optional or best-effort requests. */
+  silentError?: boolean
 }
 
 /** The requestTs instance */

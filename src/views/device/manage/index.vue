@@ -452,7 +452,11 @@ const loadDeviceGroupCounts = async () => {
       ungroupedDeviceCount.value = Number(res.data.ungrouped_total ?? 0)
     }
   } catch (error) {
-    console.error('加载设备分组统计失败:', error)
+    // The statistics endpoint was added after the community backend API. Keep the
+    // counters optional so older deployments can still use device management.
+    if (error?.error?.status !== 404) {
+      console.error('加载设备分组统计失败:', error)
+    }
     allDeviceCount.value = null
     ungroupedDeviceCount.value = null
   }
