@@ -878,6 +878,7 @@ const formSize = ref(undefined)
   width: 100%;
   min-width: 0;
   padding: 2px 0 0;
+  container-type: inline-size;
 }
 
 .device-filter-toolbar {
@@ -934,6 +935,8 @@ const formSize = ref(undefined)
   justify-content: flex-end;
   gap: 4px;
   height: 100%;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .device-filter-count {
@@ -1003,14 +1006,51 @@ const formSize = ref(undefined)
   gap: 8px;
 }
 
-@media (max-width: 1440px) {
+/*
+ * The available width is smaller than the viewport because this toolbar can
+ * share the page with the group sidebar and the view switcher. Use a local
+ * container query so the reset action responds to the space it actually has.
+ */
+@container (max-width: 1360px) {
+  .device-filter-field {
+    flex-basis: 120px;
+    min-width: 108px;
+    max-width: 132px;
+  }
+
+  .device-filter-field--search {
+    flex-basis: 160px;
+    min-width: 140px;
+    max-width: 180px;
+  }
+}
+
+@container (max-width: 1120px) {
+  .device-filter-field {
+    flex-basis: 108px;
+    min-width: 96px;
+    max-width: 120px;
+  }
+
+  .device-filter-field--search {
+    flex-basis: 144px;
+    min-width: 128px;
+    max-width: 160px;
+  }
+}
+
+@container (max-width: 960px) {
   .device-filter-toolbar {
     flex-wrap: wrap;
     gap: 6px;
   }
 
+  .device-filter-primary-actions {
+    flex-wrap: wrap;
+  }
+
   .device-filter-actions {
-    flex-basis: 100%;
+    flex: 0 0 100%;
     justify-content: flex-end;
   }
 }
