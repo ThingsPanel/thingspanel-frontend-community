@@ -1,4 +1,5 @@
 name: ssh deploy
+# 社区版前端部署到 c.thingspanel.cn，通过 Tailscale SSH
 on:
   push:
     branches: [ "master" ]
@@ -36,7 +37,7 @@ jobs:
       - name: Clean target directory via Tailscale SSH
         run: |
           set -euo pipefail
-          tailscale ssh root@100.126.67.60 'bash -s' <<'REMOTE_SCRIPT'
+          tailscale ssh root@100.94.106.71 'bash -s' <<'REMOTE_SCRIPT'
           set -euo pipefail
           cd /home/thingspanel/nginx/www
           rm -rf dist.tar.gz
@@ -46,11 +47,11 @@ jobs:
       - name: Upload via Tailscale SSH
         run: |
           set -euo pipefail
-          tailscale ssh root@100.126.67.60 'cat > /home/thingspanel/nginx/www/dist.tar.gz' < dist.tar.gz
+          tailscale ssh root@100.94.106.71 'cat > /home/thingspanel/nginx/www/dist.tar.gz' < dist.tar.gz
       - name: Deploy via Tailscale SSH
         run: |
           set -euo pipefail
-          tailscale ssh root@100.126.67.60 'bash -s' <<'REMOTE_SCRIPT'
+          tailscale ssh root@100.94.106.71 'bash -s' <<'REMOTE_SCRIPT'
           set -euo pipefail
           cd /home/thingspanel/nginx/www
           tar -xzf dist.tar.gz -C dist
