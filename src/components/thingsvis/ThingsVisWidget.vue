@@ -14,7 +14,11 @@ import {
 } from '@/service/api/device'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
 import { canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-normalizer'
-import { findPlatformField, normalizePlatformWriteValue } from '@/utils/thingsvis/platform-fields'
+import {
+  findPlatformField,
+  findPlatformWriteTarget,
+  normalizePlatformWriteValue
+} from '@/utils/thingsvis/platform-fields'
 import { localStg } from '@/utils/storage'
 
 const FIELD_BINDING_EXPR_RE = /^\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}$/
@@ -120,21 +124,11 @@ const isPlatformFieldDataSource = (dataSource: any) => {
   return type === 'PLATFORM_FIELD' || type === 'PLATFORM'
 }
 
-const getFieldTypeMap = () => {
-  return getPlatformFields().reduce<Record<string, string>>((acc, field) => {
-    const fieldType = typeof field?.dataType === 'string' ? field.dataType : ''
-    for (const key of [field?.id, field?.name]) {
-      if (typeof key === 'string' && key.trim()) acc[key] = fieldType
-    }
-    return acc
-  }, {})
-}
-
 const getFieldValueTypeMap = () => {
   return getPlatformFields().reduce<Record<string, string>>((acc, field) => {
     const fieldValueType = typeof field?.type === 'string' ? field.type : ''
     for (const key of [field?.id, field?.name]) {
-      if (typeof key === 'string' && key.trim()) acc[key] = fieldValueType
+      if (typeof key === 'string' && key.trim() && acc[key] === undefined) acc[key] = fieldValueType
     }
     return acc
   }, {})
@@ -144,7 +138,7 @@ const getFieldDataTypeMap = () => {
   return getPlatformFields().reduce<Record<string, string>>((acc, field) => {
     const fieldDataType = typeof field?.dataType === 'string' ? field.dataType : ''
     for (const key of [field?.id, field?.name]) {
-      if (typeof key === 'string' && key.trim()) acc[key] = fieldDataType
+      if (typeof key === 'string' && key.trim() && acc[key] === undefined) acc[key] = fieldDataType
     }
     return acc
   }, {})
@@ -160,7 +154,7 @@ const getPlatformFields = () => {
   ]
   const seen = new Set<string>()
   return candidates.filter(field => {
-    const identity = `${String(field?.id || '')}\u0000${String(field?.name || '')}`
+    const identity = `${String(field?.dataType || '')}\u0000${String(field?.id || '')}\u0000${String(field?.name || '')}`
     if (!field || seen.has(identity)) return false
     seen.add(identity)
     return true
@@ -234,7 +228,7 @@ const normalizeNumberValue = (value: unknown) => {
 }
 
 const normalizeFieldWriteValue = (fieldId: string, value: unknown) => {
-  const field = findPlatformField(getPlatformFields(), fieldId)
+  const field = findPlatformWriteTarget(getPlatformFields(), fieldId) || findPlatformField(getPlatformFields(), fieldId)
   if (field) return normalizePlatformWriteValue(field, value)
   const fieldValueType = getFieldValueTypeMap()[fieldId]
   if (fieldValueType === 'boolean') return normalizeBooleanValue(value)
@@ -827,6 +821,19 @@ const postPlatformWriteResult = (
   )
 }
 
+const isWriteSuccessful = (result: any) => result?.error == null && result?.success !== false
+
+/**
+ * The device may acknowledge a telemetry/attribute write without immediately
+ * publishing a new realtime sample. Keep the embedded widget in sync with the
+ * value that the platform accepted, while still waiting for the next device
+ * push to become the authoritative state.
+ */
+const pushAcceptedWrite = (data: Record<string, unknown> | null, deviceId: string, result: any) => {
+  if (!data || !isWriteSuccessful(result)) return
+  pushPlatformFieldData(data, deviceId)
+}
+
 /**
  * Handle tv:platform-write messages posted by the embedded ThingsVis iframe.
  * Routes the write payload to the matching ThingsPanel model API.
@@ -858,12 +865,20 @@ const handlePlatformWrite = async (event: MessageEvent) => {
       normalizedData !== null && typeof normalizedData === 'object' ? (normalizedData as Record<string, unknown>) : null
     const fieldEntries = dataObject ? Object.entries(dataObject) : []
     const fieldId = fieldEntries.length === 1 ? fieldEntries[0]?.[0] : undefined
-    const fieldTypeMap = getFieldTypeMap()
-    const fieldType = fieldId ? fieldTypeMap[fieldId] : undefined
+    const writeField = fieldId ? findPlatformWriteTarget(getPlatformFields(), fieldId) : undefined
+    const fieldType = writeField?.dataType
     const valueStr = typeof normalizedData === 'string' ? normalizedData : JSON.stringify(normalizedData)
 
     if (fieldType === 'attribute') {
       const result = await attributeDataPub({ device_id: targetDeviceId, value: valueStr })
+      if (!isWriteSuccessful(result)) {
+        postPlatformWriteResult(requestId, event.source, {
+          success: false,
+          error: result?.error || 'Attribute write failed'
+        })
+        return
+      }
+      pushAcceptedWrite(dataObject, targetDeviceId, result)
       postPlatformWriteResult(requestId, event.source, {
         success: true,
         echo: result?.data ?? normalizedData
@@ -885,6 +900,13 @@ const handlePlatformWrite = async (event: MessageEvent) => {
         identify: commandWrite.identify,
         value: commandWrite.value
       })
+      if (!isWriteSuccessful(result)) {
+        postPlatformWriteResult(requestId, event.source, {
+          success: false,
+          error: result?.error || 'Command write failed'
+        })
+        return
+      }
       postPlatformWriteResult(requestId, event.source, {
         success: true,
         echo: result?.data ?? normalizedData
@@ -893,6 +915,14 @@ const handlePlatformWrite = async (event: MessageEvent) => {
     }
 
     const result = await telemetryDataPub({ device_id: targetDeviceId, value: valueStr })
+    if (!isWriteSuccessful(result)) {
+      postPlatformWriteResult(requestId, event.source, {
+        success: false,
+        error: result?.error || 'Telemetry write failed'
+      })
+      return
+    }
+    pushAcceptedWrite(dataObject, targetDeviceId, result)
     postPlatformWriteResult(requestId, event.source, {
       success: true,
       echo: result?.data ?? normalizedData

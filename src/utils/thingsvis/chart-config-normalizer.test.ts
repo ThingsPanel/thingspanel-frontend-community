@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { extractPlatformFields, findPlatformField } from './platform-fields'
+import { extractPlatformFields, findPlatformField, findPlatformWriteTarget } from './platform-fields'
 import {
   canHydrateThingsVisPreview,
   canonicalizeThingsVisConfig,
@@ -112,6 +112,16 @@ test('platform fields keep stable identifiers and expose labels and enum options
   })
   assert.equal(
     findPlatformField([{ id: 'command-db-id', name: 'fan_mode', dataType: 'command' }], 'fan_mode')?.dataType,
+    'command'
+  )
+  assert.equal(
+    findPlatformWriteTarget(
+      [
+        { id: 'ha_state', name: '开关状态', type: 'boolean', dataType: 'telemetry' },
+        { id: 'ha_state', name: '开关', type: 'string', dataType: 'command', writable: true }
+      ],
+      'ha_state'
+    )?.dataType,
     'command'
   )
 })

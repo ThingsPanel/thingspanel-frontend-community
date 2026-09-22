@@ -132,6 +132,23 @@ export function findPlatformField(fields: unknown[], fieldId: string): PlatformF
   })
 }
 
+/**
+ * Resolve the transport target for a field-bound control.
+ *
+ * Device state is normally exposed as telemetry, while a same-named command
+ * performs the actual write. Prefer that command so a control does not send a
+ * synthetic telemetry downlink and mistake delivery for a device state change.
+ */
+export function findPlatformWriteTarget(fields: unknown[], fieldId: string): PlatformField | undefined {
+  const matches = fields.filter((field): field is PlatformField => {
+    if (!field || typeof field !== 'object') return false
+    const candidate = field as Partial<PlatformField>
+    return candidate.id === fieldId || candidate.name === fieldId
+  })
+
+  return matches.find(field => field.dataType === 'command') || matches[0]
+}
+
 function parseAdditionalInfo(value: unknown): Record<string, any> {
   if (value && typeof value === 'object' && !Array.isArray(value)) return value as Record<string, any>
   if (typeof value !== 'string' || !value.trim()) return {}

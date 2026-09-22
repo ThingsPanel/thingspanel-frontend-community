@@ -35,7 +35,11 @@ import { attributesApi, telemetryApi, commandsApi, eventsApi } from '@/service/a
 import { getTemplat } from '@/service/api/system-data'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
-import { extractPlatformFields, normalizePlatformWriteValue } from '@/utils/thingsvis/platform-fields'
+import {
+  extractPlatformFields,
+  findPlatformWriteTarget,
+  normalizePlatformWriteValue
+} from '@/utils/thingsvis/platform-fields'
 import {
   canHydrateThingsVisPreview,
   canonicalizeThingsVisConfig,
@@ -1254,15 +1258,15 @@ function resolveWriteFieldId(data: unknown): string | undefined {
 async function resolveWriteField(deviceId: string, fieldId?: string): Promise<PlatformDeviceField | undefined> {
   if (!fieldId) return undefined
   const activeDevice = activePlatformDevices.get(deviceId)
-  const activeField = activeDevice?.fields.find(item => item.id === fieldId || item.name === fieldId)
-  if (activeField) return activeField
+  const activeField = activeDevice ? findPlatformWriteTarget(activeDevice.fields, fieldId) : undefined
+  if (activeField?.dataType === 'command') return activeField
 
   const loadedDevice = await buildPlatformDeviceById(deviceId)
   if (loadedDevice) {
     registerActivePlatformDevices([loadedDevice])
-    return loadedDevice.fields.find(item => item.id === fieldId || item.name === fieldId)
+    return findPlatformWriteTarget(loadedDevice.fields, fieldId) || activeField
   }
-  return undefined
+  return activeField
 }
 
 function normalizePlatformWriteData(field: PlatformDeviceField | undefined, data: unknown): unknown {
@@ -1294,6 +1298,10 @@ function postPlatformWriteResult(requestId: string | undefined, payload: Record<
     },
     getThingsVisTargetOrigin()
   )
+}
+
+function isPlatformWriteSuccessful(result: any) {
+  return result?.error == null && result?.success !== false
 }
 
 function collectReferencedDataSourceIds(value: unknown, referencedIds = new Set<string>()): Set<string> {
@@ -1378,6 +1386,20 @@ async function handlePlatformWrite(payload: Record<string, unknown>, requestId?:
         error: `Unsupported write field type '${fieldType}'`
       })
       return
+    }
+
+    if (!isPlatformWriteSuccessful(result)) {
+      postPlatformWriteResult(requestId, {
+        success: false,
+        error: result?.error || 'Platform write failed'
+      })
+      return
+    }
+
+    // Keep the embedded editor preview in sync when the platform accepts a
+    // telemetry/attribute write but the device has not emitted a new sample yet.
+    if (fieldType !== 'command' && data && typeof data === 'object' && !Array.isArray(data)) {
+      postPlatformData(data as Record<string, unknown>, deviceId, payload.dataSourceId as string | undefined)
     }
 
     postPlatformWriteResult(requestId, {
