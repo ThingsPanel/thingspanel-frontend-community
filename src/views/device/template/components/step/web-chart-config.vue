@@ -11,7 +11,7 @@ import { $t } from '@/locales'
 import { getTemplat, putTemplat, telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
-import { initializeAppChartConfigOnce } from '@/utils/thingsvis/chart-config-initialization'
+import { syncAppChartConfigFromWeb } from '@/utils/thingsvis/chart-config-initialization'
 import { canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-normalizer'
 import type { PlatformField } from '@/utils/thingsvis/types'
 
@@ -162,7 +162,7 @@ const handleSave = async (payload: any) => {
     await putTemplat({
       ...res.data,
       web_chart_config: configStr,
-      app_chart_config: initializeAppChartConfigOnce(res.data.app_chart_config, configStr)
+      app_chart_config: syncAppChartConfigFromWeb(res.data.app_chart_config, configStr)
     })
 
     window.$message?.success($t('common.saveSuccess'))

@@ -12,6 +12,7 @@ import TelemetryDataCards from './telemetryDataCards.vue'
 import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush'
 import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush'
 import { bootstrapAppEmbedSession } from '@/utils/app-embed-auth'
+import { normalizeAppChartConfig } from '@/utils/thingsvis/chart-config-initialization'
 
 const route = useRoute()
 const router = useRouter()
@@ -176,7 +177,7 @@ const getDeviceDetail = async () => {
   }
 
   try {
-    const configJson = JSON.parse(res.data.app_chart_config)
+    const configJson = normalizeAppChartConfig(res.data.app_chart_config)
 
     // App 详情页使用保存时的固定手机网格，不按运行容器宽度再次响应式重排。
     configJson.canvas = {

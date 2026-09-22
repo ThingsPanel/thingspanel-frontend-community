@@ -12,6 +12,7 @@ import { getTemplat, putTemplat, telemetryApi, attributesApi } from '@/service/a
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
 import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import { canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-normalizer'
+import { normalizeAppChartConfig, prepareAppChartConfigForSave } from '@/utils/thingsvis/chart-config-initialization'
 import type { PlatformField } from '@/utils/thingsvis/types'
 
 const emit = defineEmits(['update:stepCurrent', 'update:modalVisible'])
@@ -101,30 +102,9 @@ const editorCardStyle = computed(() => ({
   height: isEditorFullscreen.value ? '100vh' : 'min(92vh, 1120px)'
 }))
 
-// App 设计默认以手机竖屏作为设计基准；已有配置必须保持原画布尺寸不变。
+// App 设计默认以手机竖屏作为设计基准；历史横向 App 配置在进入编辑器前先迁移。
 const editorInitialConfig = computed(() => {
-  if (initialConfig.value) {
-    return {
-      ...initialConfig.value,
-      canvas: {
-        ...initialConfig.value.canvas,
-        responsive: false
-      }
-    }
-  }
-
-  return {
-    canvas: {
-      mode: 'grid',
-      width: 375,
-      height: 844,
-      gridCols: 4,
-      gridRowHeight: 50,
-      gridGap: 5,
-      padding: 0,
-      responsive: false
-    }
-  }
+  return normalizeAppChartConfig(initialConfig.value || {})
 })
 
 const previewConfig = computed(() => editorInitialConfig.value)
@@ -136,7 +116,7 @@ const editorWidgetHeight = computed(() =>
 const previewHeight = computed(() => {
   const nodes = Array.isArray(initialConfig.value?.nodes) ? initialConfig.value.nodes : []
   const rowHeight = Number(initialConfig.value?.canvas?.gridRowHeight) || 50
-  const gridGap = Number(initialConfig.value?.canvas?.gridGap) || 5
+  const gridGap = Number(initialConfig.value?.canvas?.gridGap) || 8
   const maxRow = nodes.reduce((max: number, node: any) => {
     const grid = node?.grid
     if (!grid) return max
@@ -145,26 +125,6 @@ const previewHeight = computed(() => {
   const contentHeight = maxRow > 0 ? maxRow * (rowHeight + gridGap) + 20 : 844
   return `${Math.max(844, contentHeight)}px`
 })
-
-const migrateLegacyAppCanvas = (config: any) => {
-  const canvas = config?.canvas
-  const isLegacyDefaultCanvas =
-    canvas &&
-    ((canvas.width === 1920 && canvas.height === 1080) ||
-      (canvas.width === 800 && canvas.height === 844 && canvas.gridCols === 4))
-  if (!isLegacyDefaultCanvas) return config
-
-  return {
-    ...config,
-    canvas: {
-      ...canvas,
-      width: 375,
-      height: 844,
-      gridCols: canvas.gridCols === 24 ? 4 : canvas.gridCols,
-      responsive: false
-    }
-  }
-}
 
 // 下一步 (完成)
 const next = () => {
@@ -183,7 +143,7 @@ const handleSave = async (payload: any) => {
     // ⚠️ CRITICAL: 清理 PLATFORM_FIELD datasource 中的 deviceId
     // 这些 ID 在编辑时是模板/虚拟设备 ID，不应该被保存到配置中
     // 运行时会根据真实设备ID动态注入
-    const cleanedPayload = canonicalizeThingsVisConfig(payload)
+    const cleanedPayload = prepareAppChartConfigForSave(res.data.app_chart_config, canonicalizeThingsVisConfig(payload))
     if (cleanedPayload.dataSources && Array.isArray(cleanedPayload.dataSources)) {
       cleanedPayload.dataSources.forEach((ds: any) => {
         if (ds.type === 'PLATFORM_FIELD' && ds.config) {
@@ -252,10 +212,8 @@ const loadTemplateData = async () => {
       // 加载已有配置
       if (res.data.app_chart_config) {
         try {
-          const config = canonicalizeThingsVisConfig(res.data.app_chart_config, {
-            defaultCanvas: { mode: 'grid', width: 375, height: 844, gridCols: 4, gridRowHeight: 50, gridGap: 5 }
-          })
-          initialConfig.value = migrateLegacyAppCanvas(config)
+          const config = normalizeAppChartConfig(res.data.app_chart_config)
+          initialConfig.value = config
           hasConfig.value = true
           // 恢复刷新频率配置
           if (config.refreshInterval !== undefined) {
