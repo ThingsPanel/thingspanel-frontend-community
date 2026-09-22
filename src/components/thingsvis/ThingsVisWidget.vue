@@ -487,10 +487,60 @@ type HistoryRequestConfig = {
   aggWindow?: string
 }
 
+const HISTORY_AGGREGATE_WINDOW_BY_RANGE: Record<string, string> = {
+  last_5m: '30s',
+  last_15m: '30s',
+  last_30m: '30s',
+  last_1h: '30s',
+  last_3h: '30s',
+  last_6h: '1m',
+  last_12h: '2m',
+  last_24h: '5m',
+  last_3d: '10m',
+  last_7d: '30m',
+  last_15d: '1h',
+  last_30d: '3h',
+  last_60d: '6h',
+  last_90d: '1d',
+  last_6m: '7d',
+  last_1y: '1mo'
+}
+
+const HISTORY_AGGREGATE_WINDOW_WEIGHT: Record<string, number> = {
+  '30s': 1,
+  '1m': 2,
+  '2m': 3,
+  '5m': 4,
+  '10m': 5,
+  '30m': 6,
+  '1h': 7,
+  '3h': 8,
+  '6h': 9,
+  '1d': 10,
+  '7d': 11,
+  '1mo': 12
+}
+
+const normalizeHistoryAggregateFunction = (value: unknown) => {
+  const normalized = typeof value === 'string' ? value.trim().toLowerCase() : ''
+  return ['avg', 'max', 'min', 'sum', 'diff'].includes(normalized) ? normalized : 'avg'
+}
+
+const resolveHistoryAggregateWindow = (timeRange: string, requestedWindow?: string) => {
+  const minimumWindow = HISTORY_AGGREGATE_WINDOW_BY_RANGE[timeRange] || '30s'
+  const requestedWeight = requestedWindow ? HISTORY_AGGREGATE_WINDOW_WEIGHT[requestedWindow] : undefined
+  const minimumWeight = HISTORY_AGGREGATE_WINDOW_WEIGHT[minimumWindow] || 1
+
+  // Every history request uses the aggregate API path. This also upgrades old
+  // bindings that omitted aggWindow or explicitly persisted no_aggregate.
+  if (requestedWeight && requestedWeight >= minimumWeight) return requestedWindow
+  return minimumWindow
+}
+
 const normalizeHistoryConfig = (config?: HistoryRequestConfig): Required<HistoryRequestConfig> => ({
   timeRange: normalizeHistoryTimeRange(config?.timeRange),
-  aggFunction: config?.aggFunction || 'NONE_RAW',
-  aggWindow: config?.aggWindow || 'no_aggregate'
+  aggFunction: normalizeHistoryAggregateFunction(config?.aggFunction),
+  aggWindow: resolveHistoryAggregateWindow(normalizeHistoryTimeRange(config?.timeRange), config?.aggWindow)
 })
 
 const resolveNodeHistoryTimeRange = (node: any) => {

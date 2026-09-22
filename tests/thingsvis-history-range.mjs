@@ -11,7 +11,10 @@ const compiled = ts.transpileModule(
   section('const FIELD_BINDING_EXPR_RE', 'const DEFAULT_WRITE_EVENT_BY_COMPONENT') + parser + logic,
   { compilerOptions: { target: ts.ScriptTarget.ES2022 } }
 ).outputText
-const collect = config => new Function('props', compiled + '\nreturn collectConfiguredHistoryFields;')({ config })
+const helpers = config =>
+  new Function('props', compiled + '\nreturn { collectConfiguredHistoryFields, normalizeHistoryConfig };')({ config })
+const collect = config => helpers(config).collectConfiguredHistoryFields
+const normalizeHistoryConfig = config => helpers({ nodes: [] }).normalizeHistoryConfig(config)
 const binding = range => ({
   expression: '{{ ds.device.data.pm25__history }}',
   ...(range ? { historyConfig: { timeRange: range } } : {})
@@ -27,4 +30,22 @@ assert.equal(
   ),
   'last_1h'
 )
+assert.deepEqual(normalizeHistoryConfig({ timeRange: 'last_30d' }), {
+  timeRange: 'last_30d',
+  aggFunction: 'avg',
+  aggWindow: '3h'
+})
+assert.deepEqual(
+  normalizeHistoryConfig({ timeRange: 'last_24h', aggWindow: 'no_aggregate', aggFunction: 'NONE_RAW' }),
+  {
+    timeRange: 'last_24h',
+    aggFunction: 'avg',
+    aggWindow: '5m'
+  }
+)
+assert.deepEqual(normalizeHistoryConfig({ timeRange: 'last_30d', aggWindow: '1h', aggFunction: 'MAX' }), {
+  timeRange: 'last_30d',
+  aggFunction: 'max',
+  aggWindow: '3h'
+})
 console.log('ThingsVis host history ranges passed: binding priority, fallback, multiple charts and source isolation')
