@@ -125,7 +125,7 @@ const handleTopRightIconClick = () => {
       <div class="card-header">
         <!-- 左侧标题区域 -->
         <div class="title-section">
-          <!-- 主标题行：标题文本 + 状态点 -->
+          <!-- 主标题行 -->
           <div class="title-row" :class="{ clickable: shouldHandleTitleClick }" @click="handleTitleClick">
             <div class="title-content">
               <!-- 主标题，支持单行省略 -->
@@ -133,10 +133,6 @@ const handleTopRightIconClick = () => {
                 <template #tooltip>{{ title }}</template>
                 <span class="card-title">{{ title }}</span>
               </NEllipsis>
-
-              <!-- 状态点，紧跟标题显示 -->
-
-              <div v-if="isStatus" class="status-dot" :style="{ backgroundColor: statusColor }" />
             </div>
           </div>
 
@@ -160,7 +156,10 @@ const handleTopRightIconClick = () => {
 
         <!-- 右上角图标区域 - 支持插槽自定义 -->
         <div class="indicator-section">
+          <!-- 在线状态点固定在卡片右上角，避免干扰设备名称阅读 -->
+          <div v-if="isStatus" class="status-dot" :style="{ backgroundColor: statusColor }" />
           <div
+            v-if="$slots['top-right-icon'] || shouldHandleTopRightIconClick"
             class="top-right-icon-container"
             :class="{ clickable: shouldHandleTopRightIconClick }"
             @click="handleTopRightIconClick"
@@ -345,6 +344,9 @@ const handleTopRightIconClick = () => {
 }
 
 .indicator-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
   margin-left: 16px;
 }
