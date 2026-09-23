@@ -90,6 +90,16 @@ function normalizeTemplateChartConfig(rawConfig: any, deviceId: string, availabl
     config.nodes = config.nodes.map((node: any) => {
       const nextNode = { ...node }
 
+      if (nextNode.type === 'chart/realtime-history-curve') {
+        nextNode.props = {
+          ...(nextNode.props || {}),
+          config: {
+            ...(nextNode.props?.config || {}),
+            data: { ...(nextNode.props?.config?.data || {}), deviceId }
+          }
+        }
+      }
+
       if (Array.isArray(nextNode.data)) {
         nextNode.data = nextNode.data.map((binding: any) => {
           const nextBinding = { ...binding }

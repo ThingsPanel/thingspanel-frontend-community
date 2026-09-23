@@ -62,6 +62,26 @@ const platformFields = ref<PlatformField[]>([])
 const hasConfig = ref(false)
 const refreshInterval = ref(5000)
 
+const useTemplateDeviceForHistoryCurves = (config: any) => {
+  if (!Array.isArray(config?.nodes)) return config
+  return {
+    ...config,
+    nodes: config.nodes.map((node: any) => {
+      if (node?.type !== 'chart/realtime-history-curve') return node
+      return {
+        ...node,
+        props: {
+          ...(node.props || {}),
+          config: {
+            ...(node.props?.config || {}),
+            data: { ...(node.props?.config?.data || {}), deviceId: '__template__' }
+          }
+        }
+      }
+    })
+  }
+}
+
 const unwrapApiList = (payload: unknown): any[] => {
   const data = payload as { data?: unknown }
   const body = data?.data as { list?: unknown } | unknown
@@ -142,7 +162,7 @@ const handleSave = async (payload: any) => {
     // ⚠️ CRITICAL: 清理 PLATFORM_FIELD datasource 中的 deviceId
     // 这些 ID 在编辑时是模板/虚拟设备 ID，不应该被保存到配置中
     // 运行时会根据真实设备ID动态注入
-    const cleanedPayload = canonicalizeThingsVisConfig(payload)
+    const cleanedPayload = useTemplateDeviceForHistoryCurves(canonicalizeThingsVisConfig(payload))
     if (cleanedPayload.dataSources && Array.isArray(cleanedPayload.dataSources)) {
       cleanedPayload.dataSources.forEach((ds: any) => {
         if (ds.type === 'PLATFORM_FIELD' && ds.config) {
@@ -215,7 +235,7 @@ const loadTemplateData = async () => {
       // 加载已有配置
       if (res.data.web_chart_config) {
         try {
-          const config = canonicalizeThingsVisConfig(res.data.web_chart_config)
+          const config = useTemplateDeviceForHistoryCurves(canonicalizeThingsVisConfig(res.data.web_chart_config))
           initialConfig.value = config
           hasConfig.value = true
           // 恢复刷新频率配置
