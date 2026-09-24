@@ -318,6 +318,7 @@
   "generate.table": "Table",
   "generate.old-password": "Old Password",
   "generate.notification-type": "Notification Type",
+  "generate.select-notification-type": "Please select a notification type",
   "generate.search-by-name": "Search by Name",
   "generate.confirm-password": "Confirm Password",
   "generate.username": "Username",

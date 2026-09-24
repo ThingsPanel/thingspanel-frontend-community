@@ -16,7 +16,7 @@ const { loading, startLoading, endLoading } = useLoading(false)
 const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()])
 
 const queryParams = reactive({
-  notification_type: '',
+  notification_type: null as string | null,
   selected_time: null,
   send_target: '',
   send_time_start: '',
@@ -145,7 +145,7 @@ const getTableData = async () => {
   const prams = {
     page: pagination.page || 1,
     page_size: pagination.pageSize || 10,
-    notification_type: queryParams.notification_type,
+    notification_type: queryParams.notification_type || '',
     send_target: queryParams.send_target,
     send_time_start: queryParams.send_time_start,
     send_time_stop: queryParams.send_time_end
@@ -218,7 +218,7 @@ function handleQuery() {
 
 const handleReset = () => {
   range.value = [moment().subtract(1, 'months').valueOf(), moment().valueOf()]
-  queryParams.notification_type = ''
+  queryParams.notification_type = null
   queryParams.send_target = ''
   pickerChange()
   pagination.page = 1
@@ -236,15 +236,17 @@ getTableData()
           <div class="search-context">{{ $t('generate.notification-record') }}</div>
           <div class="search-fields">
             <div class="search-field search-field--type">
+              <div class="search-field-label">{{ $t('generate.notification-type') }}</div>
               <n-select
                 v-model:value="queryParams.notification_type"
                 :options="notificationOptions"
-                :placeholder="$t('generate.notification-type')"
+                :placeholder="$t('generate.select-notification-type')"
                 class="input-style"
                 clearable
               />
             </div>
             <div class="search-field search-field--date">
+              <div class="search-field-label">{{ $t('custom.device_details.sendTime') }}</div>
               <NDatePicker
                 v-model:value="range"
                 type="datetimerange"
@@ -255,6 +257,7 @@ getTableData()
               />
             </div>
             <div class="search-field search-field--target">
+              <div class="search-field-label">{{ $t('generate.recipient') }}</div>
               <NInput v-model:value="queryParams.send_target" clearable :placeholder="$t('generate.recipient')" />
             </div>
             <div class="search-actions">
@@ -314,10 +317,14 @@ getTableData()
 }
 
 .search-toolbar {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
 }
 
 .search-context {
+  flex: none;
   margin: 0;
   color: var(--text-color);
   font-size: 20px;
@@ -327,18 +334,31 @@ getTableData()
 
 .search-fields {
   display: grid;
-  grid-template-columns: minmax(180px, 220px) minmax(360px, 1fr) minmax(180px, 220px) auto;
+  grid-template-columns: minmax(260px, 1fr) minmax(420px, 1.5fr) minmax(250px, 1fr) auto;
+  flex: 1;
   width: 100%;
+  max-width: 1300px;
   gap: 12px;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: end;
   min-width: 0;
-  margin-top: 12px;
+  margin-top: 0;
 }
 
 .search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   min-width: 0;
+}
+
+.search-field-label {
+  flex: none;
+  color: var(--text-color-2);
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
 }
 
 .search-field--date {
@@ -356,6 +376,13 @@ getTableData()
   width: 100%;
   min-height: 36px;
   border-radius: 8px;
+}
+
+.search-field > :deep(.input-style),
+.search-field > :deep(.n-input) {
+  flex: 1 1 0%;
+  width: 0;
+  min-width: 0;
 }
 
 .search-actions {
@@ -438,7 +465,19 @@ getTableData()
   white-space: normal;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1600px) {
+  .search-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .search-fields {
+    max-width: none;
+  }
+}
+
+@media (max-width: 1320px) {
   .search-fields {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -450,8 +489,7 @@ getTableData()
 
 @media (max-width: 768px) {
   .search-toolbar {
-    align-items: stretch;
-    flex-direction: column;
+    display: block;
   }
 
   .search-context,

@@ -318,6 +318,7 @@
   "generate.table": "表格",
   "generate.old-password": " 原 密 码 ",
   "generate.notification-type": "通知类型",
+  "generate.select-notification-type": "请选择通知类型",
   "generate.search-by-name": "按名称搜索",
   "generate.confirm-password": "确认密码",
   "generate.username": "用户名",
