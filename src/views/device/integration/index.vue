@@ -79,7 +79,7 @@ onUnmounted(() => {
     >
       <template #header-title>
         <div class="flex items-center gap-3">
-          <h2 class="text-xl font-bold">三方集成</h2>
+          <h2 class="text-xl font-bold">三方接入</h2>
           <span class="text-gray-400">{{ dataTotal }} 个集成</span>
         </div>
       </template>
