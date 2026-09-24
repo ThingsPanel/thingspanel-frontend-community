@@ -406,7 +406,6 @@ onMounted(() => {
       :show-reset-button="false"
       memory-key="resource-hub-dashboard-view"
       use-view-memory
-      @refresh="fetchBundleList"
     >
       <template #header-title>
         <div class="resource-market-title">

@@ -209,11 +209,6 @@ const handleSorterChange = () => {
   // 根据需要实现排序逻辑
 }
 
-// 刷新数据
-const handleRefresh = () => {
-  getData()
-}
-
 // 组件挂载时获取数据
 onMounted(() => {
   getData()
@@ -269,7 +264,6 @@ const availableViews = [
       @add-new="handleAddNew"
       @query="handleQuery"
       @reset="handleReset"
-      @refresh="handleRefresh"
     >
       <template #header-title>
         <div class="device-template-header">

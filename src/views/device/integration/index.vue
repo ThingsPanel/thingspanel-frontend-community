@@ -63,10 +63,6 @@ const clickDevice = async row => {
   )
 }
 
-const handleRefresh = () => {
-  getData()
-}
-
 onUnmounted(() => {
   debouncedSearch.cancel()
 })
@@ -80,7 +76,6 @@ onUnmounted(() => {
       :showQueryButton="false"
       :showResetButton="false"
       :showAddButton="false"
-      @refresh="handleRefresh"
     >
       <template #header-title>
         <div class="flex items-center gap-3">

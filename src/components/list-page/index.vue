@@ -35,7 +35,7 @@
               </div>
               <div class="list-content-header-toolbar-right">
                 <slot name="header-right">
-                  <n-space v-if="shouldShowViewSwitcher || hasRefreshButton" align="center">
+                  <n-space v-if="shouldShowViewSwitcher" align="center">
                     <n-button-group v-if="shouldShowViewSwitcher">
                       <n-button
                         v-for="view in getAvailableViewsWithSlots()"
@@ -50,9 +50,6 @@
                         </n-icon>
                       </n-button>
                     </n-button-group>
-                    <n-button size="small" :title="$t('buttons.refresh')" @click="handleRefresh">
-                      <n-icon size="14"><refresh-icon /></n-icon>
-                    </n-button>
                   </n-space>
                 </slot>
               </div>
@@ -78,7 +75,7 @@
                 <slot name="search-form-content" />
               </div>
               <slot name="header-right">
-                <n-space v-if="shouldShowViewSwitcher || hasRefreshButton" align="center">
+                <n-space v-if="shouldShowViewSwitcher" align="center">
                   <n-button-group v-if="shouldShowViewSwitcher">
                     <n-button
                       v-for="view in getAvailableViewsWithSlots()"
@@ -93,9 +90,6 @@
                       </n-icon>
                     </n-button>
                   </n-button-group>
-                  <n-button size="small" :title="$t('buttons.refresh')" @click="handleRefresh">
-                    <n-icon size="14"><refresh-icon /></n-icon>
-                  </n-button>
                 </n-space>
               </slot>
             </div>
@@ -118,7 +112,7 @@
             <!-- 右侧操作区域 -->
             <div class="list-content-header-right">
               <slot name="header-right">
-                <n-space v-if="shouldShowViewSwitcher || hasRefreshButton" align="center">
+                <n-space v-if="shouldShowViewSwitcher" align="center">
                   <n-button-group v-if="shouldShowViewSwitcher">
                     <n-button
                       v-for="view in getAvailableViewsWithSlots()"
@@ -133,9 +127,6 @@
                       </n-icon>
                     </n-button>
                   </n-button-group>
-                  <n-button size="small" :title="$t('buttons.refresh')" @click="handleRefresh">
-                    <n-icon size="14"><refresh-icon /></n-icon>
-                  </n-button>
                 </n-space>
               </slot>
             </div>
@@ -177,7 +168,6 @@ import { NCard, NButton, NButtonGroup, NIcon, NSpace } from 'naive-ui'
 import { $t } from '@/locales'
 import {
   AddOutline as PlusIcon,
-  RefreshOutline as RefreshIcon,
   GridOutline as CardIcon,
   ListOutline as ListIcon,
   MapOutline as MapIcon
@@ -235,7 +225,6 @@ const emit = defineEmits<{
   reset: []
   'add-new': []
   'view-change': [{ viewType: string }]
-  refresh: []
 }>()
 
 // 获取插槽
@@ -260,8 +249,6 @@ const shouldShowViewSwitcher = computed(() => {
   const availableSlots = getAvailableViewsWithSlots()
   return availableSlots.length > 1
 })
-
-const hasRefreshButton = computed(() => true) // 刷新按钮始终显示
 
 const getAvailableViewsWithSlots = () => {
   return props.availableViews.filter(view => hasSlot(`${view.key}-view`))
@@ -341,10 +328,6 @@ const handleViewChange = (viewType: string) => {
     }
     emit('view-change', { viewType })
   }
-}
-
-const handleRefresh = () => {
-  emit('refresh')
 }
 
 // 生命周期

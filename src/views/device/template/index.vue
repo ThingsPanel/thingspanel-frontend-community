@@ -250,11 +250,6 @@ const handlePageSizeChange = (pageSize: number) => {
   getData()
 }
 
-// 刷新数据
-const handleRefresh = () => {
-  getData()
-}
-
 // 可用视图配置
 const availableViews = [
   { key: 'card', icon: GridOutline, label: 'common.viewCard' },
@@ -314,7 +309,6 @@ onMounted(() => {
       :show-query-button="false"
       :show-reset-button="false"
       @add-new="handleAddNew"
-      @refresh="handleRefresh"
     >
       <!-- 标题行 -->
       <template #header-title>

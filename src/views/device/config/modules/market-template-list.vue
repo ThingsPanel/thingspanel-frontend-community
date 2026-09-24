@@ -219,7 +219,6 @@ onMounted(() => {
       :show-reset-button="false"
       memory-key="resource-hub-device-view"
       use-view-memory
-      @refresh="fetchMarketTemplates"
     >
       <template #header-title>
         <div class="resource-market-title">

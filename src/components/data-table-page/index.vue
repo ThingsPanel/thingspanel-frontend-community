@@ -465,10 +465,6 @@ const handleViewChange = ({ viewType }: { viewType: string }) => {
   currentViewType.value = viewType
 }
 
-const handleRefresh = () => {
-  getData()
-}
-
 // 导入SvgIcon组件，使用项目标准图标系统
 import SvgIcon from '@/components/custom/svg-icon.vue'
 
@@ -530,7 +526,6 @@ const formSize = ref(undefined)
     @reset="handleLayoutReset"
     @add-new="handleAddNew"
     @view-change="handleViewChange"
-    @refresh="handleRefresh"
   >
     <!-- 内容区头部：标题独占一行，下面是完整工具栏 -->
     <template #header-title>
