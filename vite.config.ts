@@ -64,7 +64,6 @@ export default defineConfig(configEnv => {
             // 将大型第三方库分离
             'vendor-vue': ['vue', 'vue-router', 'pinia'],
             'vendor-ui': ['naive-ui'],
-            'vendor-charts': ['@antv/g2', '@antv/data-set'],
             'vendor-utils': ['dayjs', 'lodash-es']
           }
         }
