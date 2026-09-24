@@ -221,14 +221,6 @@ onMounted(() => {
 <template>
   <div class="dashboard-template-page">
     <NCard :bordered="false">
-      <div class="page-header">
-        <div>
-          <h2>我的看板模板</h2>
-          <p>管理从资源中心下载或本地新建的模板，绑定真实设备后新建可运行看板。</p>
-        </div>
-        <NTag type="info" :bordered="false">共 {{ total }} 个模板</NTag>
-      </div>
-
       <div class="filters">
         <NInput
           v-model:value="filters.keyword"
@@ -419,7 +411,6 @@ onMounted(() => {
   padding: 16px;
 }
 
-.page-header,
 .filters,
 .template-heading,
 .card-actions,
@@ -428,22 +419,6 @@ onMounted(() => {
 .modal-actions {
   display: flex;
   align-items: center;
-}
-
-.page-header {
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-
-  h2 {
-    margin: 0 0 6px;
-    font-size: 20px;
-  }
-
-  p {
-    margin: 0;
-    color: #909399;
-  }
 }
 
 .filters {
@@ -607,7 +582,6 @@ onMounted(() => {
     width: 100%;
   }
 
-  .page-header,
   .binding-row {
     align-items: stretch;
     flex-direction: column;
