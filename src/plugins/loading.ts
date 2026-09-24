@@ -1,6 +1,5 @@
 // @unocss-include
 import { getRgbOfColor } from '@sa/utils'
-import { $t } from '@/locales'
 import { localStg } from '@/utils/storage'
 import systemLogo from '@/assets/svg-icon/logo.svg?raw'
 
@@ -19,32 +18,17 @@ export function setupLoading() {
 
   const primaryColor = `--primary-color: ${r} ${g} ${b}`
 
-  const loadingClasses = [
-    'left-0 top-0',
-    'left-0 bottom-0 animate-delay-500',
-    'right-0 top-0 animate-delay-1000',
-    'right-0 bottom-0 animate-delay-1500'
-  ]
-
   const logoWithClass = logoLoading
-    ? `<img src="${logoLoading}" style="max-width: 88px; height: auto">`
-    : systemLogo.replace('<svg', `<svg class="size-128px text-primary"`)
-
-  const dot = loadingClasses
-    .map(item => {
-      return `<div class="absolute w-10px h-10px bg-primary rounded-8px animate-pulse ${item}"></div>`
-    })
-    .join('\n')
+    ? `<img src="${logoLoading}" alt="" style="display: block; max-width: 128px; max-height: 32px; width: auto; height: auto; object-fit: contain">`
+    : systemLogo.replace('<svg', `<svg class="block w-128px h-auto"`)
 
   const loading = `
-<div class="fixed-center flex-col" style="${primaryColor}">
+<div class="fixed-center flex items-center justify-center gap-20px" role="status" aria-label="正在加载" aria-busy="true" style="${primaryColor}">
   ${logoWithClass}
-  <div class="w-32px h-32px my-36px">
-    <div class="relative h-full animate-spin">
-      ${dot}
-    </div>
-  </div>
-  <h2 class="text-28px text-center font-500 text-#646464">${localStg.get('systemName') || $t('title')}</h2>
+  <svg class="block size-18px animate-spin text-primary" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.18" stroke-width="2.5" />
+    <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-linecap="round" stroke-width="2.5" />
+  </svg>
 </div>`
 
   app.innerHTML = loading
