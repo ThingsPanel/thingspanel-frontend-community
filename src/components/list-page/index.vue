@@ -144,6 +144,9 @@
             <div v-else-if="currentView === 'map' && hasSlot('map-view')" class="view-wrapper">
               <slot name="map-view"></slot>
             </div>
+            <div v-else-if="hasSlot(`${currentView}-view`)" class="view-wrapper">
+              <slot :name="`${currentView}-view`"></slot>
+            </div>
             <div v-else class="view-wrapper">
               <slot :name="getDefaultViewSlot()"></slot>
             </div>
@@ -309,11 +312,6 @@ const initializeView = () => {
   if (props.useViewMemory && !storageView.value) {
     storageView.value = initial
   }
-}
-
-const handleReset = () => {
-  // 触发重置事件，父组件负责清空表单和刷新数据
-  emit('reset')
 }
 
 const handleAddNew = () => {

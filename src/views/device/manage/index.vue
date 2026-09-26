@@ -25,6 +25,7 @@ import AddDevicesStep1 from '@/views/device/manage/modules/add-devices-step1.vue
 import AddDevicesStep2 from '@/views/device/manage/modules/add-devices-step2.vue'
 import AddDevicesStep3 from '@/views/device/manage/modules/add-devices-step3.vue'
 import AddDevicesServer1 from '@/views/device/manage/modules/add-devices-server1.vue'
+import DeviceReadingsCompact from '@/views/device/manage/modules/device-readings-compact.vue'
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
 import { usePageCache } from '../../../utils/usePageCache'
@@ -61,6 +62,21 @@ type DeviceGroupTreeOption = TreeSelectOption & {
 }
 
 const groupOptions = ref<DeviceGroupTreeOption[]>([])
+const selectedGroupName = computed(() => {
+  if (selectedGroupScope.value === 'ungrouped') return $t('custom.devicePage.ungroupedDevices')
+  if (selectedGroupScope.value !== 'group') return $t('custom.devicePage.allDevices')
+
+  const findGroupName = (groups: DeviceGroupTreeOption[]): string | undefined => {
+    for (const group of groups) {
+      if (String(group.key) === selectedGroupId.value) return String(group.label)
+      const nestedName = group.children ? findGroupName(group.children) : undefined
+      if (nestedName) return nestedName
+    }
+    return undefined
+  }
+
+  return findGroupName(groupOptions.value) || $t('custom.devicePage.group')
+})
 const groupTreeLoading = ref(false)
 type GroupScope = 'all' | 'ungrouped' | 'group'
 type DeviceGroupSelection = {
@@ -807,6 +823,15 @@ const toggleGroupPanel = () => {
               </template>
               分组
             </n-button>
+          </template>
+          <template #dense-view="{ filters }">
+            <DeviceReadingsCompact
+              :filters="filters"
+              :group-id="selectedGroupScope === 'group' ? selectedGroupId : ''"
+              :group-scope="selectedGroupScope"
+              :group-name="selectedGroupName"
+              @open-device="goDeviceDetails"
+            />
           </template>
         </data-table-page>
       </main>

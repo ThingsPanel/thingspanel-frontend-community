@@ -1,6 +1,6 @@
 <script lang="tsx" setup>
 import type { VNode, VueElement } from 'vue'
-import { computed, defineProps, ref, watchEffect, onMounted, onUnmounted } from 'vue'
+import { computed, defineProps, ref, watchEffect, onMounted, onUnmounted, useSlots } from 'vue'
 import _ from 'lodash'
 import {
   NButton,
@@ -206,7 +206,8 @@ const activeAdvancedFilterCount = computed(
   () => advancedSearchConfigs.value.filter(config => isFilterActive(config)).length
 )
 // 添加当前视图状态管理
-const currentViewType = ref('list') // 默认为列表视图
+const currentViewType = ref('card') // 默认为卡片视图，与 AdvancedListLayout 保持一致
+const slots = useSlots()
 
 // 添加图片URL相关变量
 const demoUrl = getDemoServerUrl()
@@ -505,11 +506,12 @@ const getConfigImageUrl = (imagePath: string | undefined): string => {
 import { ListOutline, MapOutline, GridOutline as CardIcon } from '@vicons/ionicons5'
 
 // 定义可用视图，修复图标引用
-const availableViews = [
+const availableViews = computed(() => [
   { key: 'card', icon: CardIcon, label: 'common.viewCard' },
   { key: 'list', icon: ListOutline, label: 'common.viewList' },
-  { key: 'map', icon: MapOutline, label: 'common.viewMap' }
-]
+  { key: 'map', icon: MapOutline, label: 'common.viewMap' },
+  ...(slots['dense-view'] ? [{ key: 'dense', icon: ListOutline, label: 'custom.devicePage.compactReadings' }] : [])
+])
 const formSize = ref(undefined)
 </script>
 
@@ -802,7 +804,7 @@ const formSize = ref(undefined)
     </template>
 
     <!-- 底部分页 -->
-    <template #footer>
+    <template v-if="currentViewType !== 'dense'" #footer>
       <NPagination
         v-model:page="currentPage"
         v-model:page-size="pageSize"
@@ -814,6 +816,10 @@ const formSize = ref(undefined)
         @update:page="onUpdatePage"
         @update:page-size="onUpdatePageSize"
       />
+    </template>
+
+    <template #dense-view>
+      <slot name="dense-view" :filters="searchCriteria" />
     </template>
   </AdvancedListLayout>
 </template>
