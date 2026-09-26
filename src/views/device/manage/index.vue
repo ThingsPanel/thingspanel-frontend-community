@@ -346,6 +346,7 @@ const searchConfigs = ref<SearchConfig[]>([
     key: 'service_identifier',
     label: 'card.anyProtocolService',
     type: 'select',
+    dropdownMinWidth: '240px',
     initValue: query.service_identifier,
     options: [{ label: $t('card.anyProtocolService'), value: '' }]
   },

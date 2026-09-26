@@ -411,9 +411,7 @@ const safeParseJSON = (value: any) => {
           :single-column="false"
           :single-line="true"
           :scroll-x="920"
-          :flex-height="true"
           :row-key="row => row.device_number"
-          class="flex-1-hidden"
           @update:checked-row-keys="handleCheck"
         >
           <template #empty>
@@ -434,14 +432,13 @@ const safeParseJSON = (value: any) => {
 .service-config-shell {
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 220px);
   min-height: 0;
 }
 
 .table-area {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
+  flex: 0 0 auto;
+  min-height: auto;
+  overflow: visible;
 }
 
 .selectType {
@@ -466,16 +463,20 @@ const safeParseJSON = (value: any) => {
 
 <style>
 .device_model {
-  width: 70% !important;
+  width: min(92vw, 1480px) !important;
 }
 
 .device_model .n-dialog {
-  max-height: calc(100vh - 80px);
+  max-height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .device_model .n-dialog__content {
-  overflow: hidden;
+  max-height: calc(100vh - 150px);
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 </style>

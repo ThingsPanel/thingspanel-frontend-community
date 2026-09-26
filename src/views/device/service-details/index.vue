@@ -185,7 +185,6 @@ getList()
           :single-column="false"
           :single-line="true"
           :scroll-x="920"
-          :flex-height="true"
           :row-key="serviceAccessRowKey"
           class="flex-1-hidden"
         >
@@ -196,7 +195,7 @@ getList()
       </div>
     </NCard>
     <serviceConfigModal ref="serviceConfigModalRef" @get-list="getList"></serviceConfigModal>
-    <serviceModal ref="serviceModalRef" @is-edit="isEdit"></serviceModal>
+    <serviceModal ref="serviceModalRef" @is-edit="isEdit" @get-list="getList"></serviceModal>
   </div>
 </template>
 
