@@ -28,12 +28,6 @@ const accounts: Account[] = [
     userName: 'hezhuo@hezhuo.cn',
     password: '123456'
   },
-  {
-    key: 'TENANT_USER',
-    label: userRoleLabels.TENANT_USER,
-    userName: 'User01',
-    password: 'user01123'
-  }
 ]
 
 function login(userName: string, password: string) {

@@ -143,7 +143,7 @@ export class ThingsVisAuthService {
       } else if (authority === 'TENANT_ADMIN') {
         role = 'TENANT_ADMIN'
       } else {
-        role = 'EDITOR'
+        throw new Error(`Unsupported ThingsPanel authority for the community edition: ${authority || 'unknown'}`)
       }
 
       request.role = role

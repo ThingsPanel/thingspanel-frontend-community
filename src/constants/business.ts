@@ -31,8 +31,7 @@ export const menuIconTypeOptions = transformRecordToOption(menuIconTypeRecord)
 
 export const userRoleLabels: Record<Api.Auth.RoleType, string> = {
   SYS_ADMIN: $t('page.login.pwdLogin.superAdmin'),
-  TENANT_ADMIN: $t('page.login.pwdLogin.admin'),
-  TENANT_USER: $t('page.login.pwdLogin.user')
+  TENANT_ADMIN: $t('page.login.pwdLogin.admin')
 }
 
 export const userRoleOptions = transformRecordToOption(userRoleLabels)

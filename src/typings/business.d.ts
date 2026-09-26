@@ -16,7 +16,6 @@ declare namespace CustomRoute {
    * 类型
    *
    * - SYS_ADMIN: 系统管理员
-   * - TENANT_USER: 租户用户
    * - TENANT_ADMIN: 租户管理员
    */
   type routerSysFlagKey = string

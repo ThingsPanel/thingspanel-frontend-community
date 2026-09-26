@@ -63,9 +63,8 @@ declare namespace Api {
      *
      * - SYS_ADMIN: 系统管理员(该权限具有所有路由数据)
      * - TENANT_ADMIN: 租户管理员
-     * - TENANT_USER: 用户
      */
-    type RoleType = 'SYS_ADMIN' | 'TENANT_ADMIN' | 'TENANT_USER'
+    type RoleType = 'SYS_ADMIN' | 'TENANT_ADMIN'
 
     interface LoginToken {
       token: string

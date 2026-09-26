@@ -23,13 +23,4 @@ describe('thingsvis space helpers', () => {
     expect(resolveThingsVisSpaceId(userInfo)).toBe('tenant-a')
   })
 
-  it('supports legacy tenant_id payloads', () => {
-    const userInfo = {
-      authority: 'TENANT_USER',
-      roles: ['TENANT_USER'],
-      tenant_id: 'tenant-b'
-    }
-
-    expect(resolveThingsVisSpaceId(userInfo)).toBe('tenant-b')
-  })
 })
