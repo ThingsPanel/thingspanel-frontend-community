@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 // import { useMessage } from "naive-ui";
-import { createServiceDrop, getServiceAccessForm, putServiceDrop, getServiceListDrop } from '@/service/api/plugin'
+import {
+  batchAddServiceMenuList,
+  createServiceDrop,
+  getServiceAccessForm,
+  putServiceDrop,
+  getServiceListDrop
+} from '@/service/api/plugin'
 import { $t } from '@/locales'
 import FormInput from './form.vue'
 
@@ -11,6 +17,7 @@ const emit = defineEmits(['getList', 'isEdit'])
 const serviceModals = ref<any>(false)
 const formRef = ref<any>(null)
 const currentStep = ref(1)
+const saving = ref(false)
 
 const service_plugin_id = ref<any>('')
 const formElements = ref<any>([])
@@ -70,50 +77,81 @@ const close: () => void = () => {
 
 const submitSevice: () => void = async () => {
   formRef.value?.validate(async errors => {
-    if (errors) return
+    if (errors || saving.value) return
+    saving.value = true
 
-    // 无论是手动还是自动模式，都先调用接口创建/更新服务
-    // 在 vouchers 中添加 auth_type 字段
-    form.value.vouchers.auth_type = form.value.auth_type
-    form.value.voucher = JSON.stringify(form.value.vouchers)
-    const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value)
-    serviceModals.value = false
+    try {
+      // 在 vouchers 中添加 auth_type 字段
+      form.value.vouchers.auth_type = form.value.auth_type
+      form.value.voucher = JSON.stringify(form.value.vouchers)
+      const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value)
+      const id = isEdit.value ? form.value.id : data?.data?.id
 
-    if (form.value.auth_type === 'auto') {
-      // 自动模式，调用设备列表接口（与手动模式一样）
-      try {
-        await getServiceListDrop({
-          voucher: form.value.voucher,
-          service_type: '', // 可能需要根据实际情况调整
-          page: 1,
-          page_size: 10
-        })
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
+      if (form.value.auth_type === 'auto') {
+        if (!id) throw new Error('接入点保存成功，但未返回接入点 ID，无法同步设备')
+        const pageSize = 100
+        const candidates: any[] = []
+        let page = 1
+        let total = Number.POSITIVE_INFINITY
+        while (candidates.length < total) {
+          const response: any = await getServiceListDrop({
+            voucher: form.value.voucher,
+            service_type: '',
+            page,
+            page_size: pageSize
+          })
+          const result = response?.data || {}
+          const items = Array.isArray(result.list) ? result.list : []
+          total =
+            result.total != null && Number.isFinite(Number(result.total))
+              ? Number(result.total)
+              : Number.POSITIVE_INFINITY
+          if (items.length === 0) break
+          candidates.push(...items)
+          if (items.length < pageSize && !Number.isFinite(total)) break
+          page += 1
         }
+
+        const chunkSize = 100
+        let imported = 0
+        for (let offset = 0; offset < candidates.length; offset += chunkSize) {
+          const deviceList = candidates.slice(offset, offset + chunkSize).map(item => ({
+            device_name: item.device_name || item.device_number,
+            device_number: item.device_number,
+            description: item.description,
+            protocol_config:
+              typeof item.protocol_config === 'string'
+                ? item.protocol_config
+                : JSON.stringify(item.protocol_config || {}),
+            additional_info:
+              typeof item.additional_info === 'string'
+                ? item.additional_info
+                : JSON.stringify(item.additional_info || {})
+          }))
+          const batch: any = await batchAddServiceMenuList({ service_access_id: id, device_list: deviceList })
+          imported += Array.isArray(batch?.data) ? batch.data.length : 0
+        }
+
+        window.$message?.success(
+          candidates.length === 0
+            ? '接入点已保存，未发现可同步的设备'
+            : `同步完成：发现 ${candidates.length} 项，本次新增 ${imported} 项，其余已存在`
+        )
+        serviceModals.value = false
+        emit('getList')
+      } else {
+        serviceModals.value = false
+        emit('isEdit', form.value.voucher, id, isEdit.value)
       }
 
-      // 关闭当前弹窗，并打开配置弹窗
-      const id = isEdit.value ? form.value.id : data.data.id
-      emit(
-        'isEdit',
-        form.value.voucher,
-        {
-          id: id,
-          auth_type: form.value.auth_type,
-          name: form.value.name
-        },
-        true
-      )
-    } else {
-      // 手动模式处理
-      const id = isEdit.value ? form.value.id : data.data.id
-      emit('isEdit', form.value.voucher, id, isEdit.value)
+      // 重置表单
+      form.value = { ...defaultForm }
+      form.value.vouchers = {}
+    } catch (error: any) {
+      window.$message?.error(error?.response?.data?.message || error?.message || '设备同步失败，请检查接入配置后重试')
+    } finally {
+      saving.value = false
     }
-
-    // 重置表单
-    form.value = { ...defaultForm }
-    form.value.vouchers = {}
   })
 }
 
@@ -150,7 +188,9 @@ defineExpose({ openModal })
       <FormInput v-model:protocol-config="form.vouchers" :form-elements="formElements"></FormInput>
     </div>
     <div class="footer">
-      <NButton type="primary" class="btn" @click="submitSevice">{{ $t('card.saveNext') }}</NButton>
+      <NButton type="primary" class="btn" :loading="saving" :disabled="saving" @click="submitSevice">
+        {{ $t('card.saveNext') }}
+      </NButton>
       <NButton @click="close">{{ $t('common.cancel') }}</NButton>
     </div>
   </n-modal>

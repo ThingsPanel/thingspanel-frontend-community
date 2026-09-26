@@ -86,6 +86,7 @@ export type SearchConfig =
       renderTag?: any
       initValue?: any
       extendParams?: object
+      dropdownMinWidth?: string
       options: { label: theLabel; value: any }[]
       labelField?: string
       valueField?: string
@@ -579,6 +580,7 @@ const formSize = ref(undefined)
                 filterable
                 :filter="filterSelectOption"
                 :options="config.options"
+                :menu-props="config.dropdownMinWidth ? { style: { minWidth: config.dropdownMinWidth } } : undefined"
                 :render-label="config.renderLabel"
                 :render-tag="config.renderTag"
                 :placeholder="$t(config.label)"
