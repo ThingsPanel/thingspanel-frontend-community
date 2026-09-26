@@ -2,19 +2,14 @@
 import { computed, ref, watch } from 'vue'
 import { NButton, NDrawer, NDrawerContent, NEmpty, NIcon, NSpin, NSwitch, NTag } from 'naive-ui'
 import { RefreshOutline, TimeOutline } from '@vicons/ionicons5'
-import {
-  commandDataPub,
-  deviceConfigInfo,
-  deviceList,
-  deviceTemplateDetail,
-  telemetryDataCurrent
-} from '@/service/api/device'
+import { commandDataPub, deviceConfigInfo, deviceList, telemetryDataCurrent } from '@/service/api/device'
+import { commandsApi as getTemplateCommands, telemetryApi as getTemplateTelemetry } from '@/service/api/system-data'
 import HistoryData from '@/views/device/details/modules/telemetry/modules/history-data.vue'
 import TimeSeriesData from '@/views/device/details/modules/telemetry/modules/time-series-data.vue'
 import { $t } from '@/locales'
 import {
   getCompactReadingDisplayValue,
-  isBooleanReading,
+  getReadingDisplayValue,
   isDisplayableReading,
   isNumericReading,
   resolveStandardBooleanCommand
@@ -44,6 +39,7 @@ const emit = defineEmits<{
 const devices = ref<DeviceRow[]>([])
 const readingsByDevice = ref<Record<string, Reading[]>>({})
 const commandsByDevice = ref<Record<string, unknown[]>>({})
+const booleanTelemetryKeysByDevice = ref<Record<string, string[]>>({})
 const pendingSwitches = ref<Record<string, boolean>>({})
 const listLoading = ref(false)
 const readingsLoading = ref(false)
@@ -120,21 +116,38 @@ async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
   if (sequence === requestSequence) readingsByDevice.value = results
 }
 
-function parseCommands(value: unknown): unknown[] {
-  if (Array.isArray(value)) return value
-  if (typeof value !== 'string') return []
-  try {
-    const parsed = JSON.parse(value)
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
+function parseBooleanTelemetryKeys(value: unknown) {
+  let model: unknown = value
+  if (typeof value === 'string') {
+    try {
+      model = JSON.parse(value)
+    } catch {
+      return []
+    }
   }
+  if (!Array.isArray(model)) return []
+  return model.flatMap((field: any) => {
+    const identifier = field?.data_identifier || field?.identifier || field?.key
+    return identifier &&
+      String(field?.data_type || '')
+        .trim()
+        .toLowerCase() === 'boolean'
+      ? [String(identifier)]
+      : []
+  })
+}
+
+function parseModelList(response: any) {
+  if (Array.isArray(response?.data?.list)) return response.data.list
+  if (Array.isArray(response?.data)) return response.data
+  return []
 }
 
 async function fetchDeviceCommands(deviceRows: DeviceRow[], sequence: number) {
-  const templateCommands = new Map<string, Promise<unknown[]>>()
+  const templateDetails = new Map<string, Promise<{ commands: unknown[]; telemetry: unknown[] }>>()
   const configTemplates = new Map<string, Promise<string>>()
   const results: Record<string, unknown[]> = {}
+  const booleanKeys: Record<string, string[]> = {}
   await Promise.all(
     deviceRows.map(async device => {
       try {
@@ -152,18 +165,30 @@ async function fetchDeviceCommands(deviceRows: DeviceRow[], sequence: number) {
         }
         if (!templateId) return
 
-        let request = templateCommands.get(templateId)
+        let request = templateDetails.get(templateId)
         if (!request) {
-          request = deviceTemplateDetail({ id: templateId }).then(response => parseCommands(response?.data?.commands))
-          templateCommands.set(templateId, request)
+          request = Promise.all([
+            getTemplateCommands({ page: 1, page_size: 1000, device_template_id: templateId }),
+            getTemplateTelemetry({ page: 1, page_size: 1000, device_template_id: templateId })
+          ]).then(([commandsResponse, telemetryResponse]) => ({
+            commands: parseModelList(commandsResponse),
+            telemetry: parseModelList(telemetryResponse)
+          }))
+          templateDetails.set(templateId, request)
         }
-        results[device.id] = await request
+        const template = await request
+        results[device.id] = template.commands
+        booleanKeys[device.id] = parseBooleanTelemetryKeys(template.telemetry)
       } catch {
         results[device.id] = []
+        booleanKeys[device.id] = []
       }
     })
   )
-  if (sequence === requestSequence) commandsByDevice.value = results
+  if (sequence === requestSequence) {
+    commandsByDevice.value = results
+    booleanTelemetryKeysByDevice.value = booleanKeys
+  }
 }
 
 async function loadReadings() {
@@ -174,6 +199,7 @@ async function loadReadings() {
   devices.value = []
   readingsByDevice.value = {}
   commandsByDevice.value = {}
+  booleanTelemetryKeysByDevice.value = {}
 
   try {
     const nextDevices = await fetchAllDevices(sequence)
@@ -193,12 +219,43 @@ async function loadReadings() {
   }
 }
 
+function isDeclaredBooleanReading(device: DeviceRow, reading: Reading) {
+  return booleanTelemetryKeysByDevice.value[device.id]?.includes(reading.key) || false
+}
+
+function getStandardBooleanReading(device: DeviceRow, reading: Reading) {
+  if (!isDeclaredBooleanReading(device, reading) || typeof reading.value !== 'boolean') return null
+  return { ...reading, data_type: 'boolean' }
+}
+
+function getSwitchCommandBinding(device: DeviceRow, reading: Reading) {
+  const standardReading = getStandardBooleanReading(device, reading)
+  return resolveStandardBooleanCommand(standardReading || reading, commandsByDevice.value[device.id] || [])
+}
+
+function isSwitchReading(device: DeviceRow, reading: Reading) {
+  return (
+    isDeclaredBooleanReading(device, reading) ||
+    reading.value === 'on' ||
+    reading.value === 'off' ||
+    Boolean(getSwitchCommandBinding(device, reading))
+  )
+}
+
+function getSwitchState(device: DeviceRow, reading: Reading): boolean | null {
+  const standardReading = getStandardBooleanReading(device, reading)
+  if (standardReading) return standardReading.value as boolean
+  if (reading.value === 'on') return true
+  if (reading.value === 'off') return false
+  return null
+}
+
 function switchPendingKey(device: DeviceRow, reading: Reading) {
   return `${device.id}:${reading.key}`
 }
 
 async function changeBooleanReading(device: DeviceRow, reading: Reading, value: boolean) {
-  const binding = resolveStandardBooleanCommand(reading, commandsByDevice.value[device.id] || [])
+  const binding = getSwitchCommandBinding(device, reading)
   const pendingKey = switchPendingKey(device, reading)
   if (!binding || pendingSwitches.value[pendingKey]) return
   pendingSwitches.value[pendingKey] = true
@@ -206,7 +263,10 @@ async function changeBooleanReading(device: DeviceRow, reading: Reading, value: 
     const response = await commandDataPub({
       device_id: device.id,
       identify: binding.identify,
-      value: JSON.stringify({ [binding.parameterIdentifier]: value })
+      value:
+        binding.payloadMode === 'mapped-command'
+          ? JSON.stringify({ [binding.parameterIdentifier!]: value ? binding.onValue : binding.offValue })
+          : JSON.stringify({ [binding.parameterIdentifier!]: value })
     })
     if (response?.error || response?.success === false) {
       window.$message?.error(response?.error?.message || response?.error || '命令发送失败')
@@ -277,6 +337,7 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => void loadR
               v-for="reading in readingsByDevice[device.id]"
               :key="`${device.id}:${reading.key}`"
               class="device-reading"
+              :class="{ 'device-reading--boolean': isSwitchReading(device, reading) }"
             >
               <button
                 type="button"
@@ -285,20 +346,39 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => void loadR
                 @click="openReadingHistory(device, reading)"
               >
                 <span class="device-reading__label">{{ reading.label || reading.key }}</span>
-                <span class="device-reading__value">
+                <span v-if="!isSwitchReading(device, reading)" class="device-reading__value">
                   {{ getCompactReadingDisplayValue(reading) }}
-                  <small v-if="!isBooleanReading(reading) && reading.unit">{{ reading.unit }}</small>
+                  <small v-if="reading.unit">{{ reading.unit }}</small>
                 </span>
-                <NIcon class="device-reading__history" size="14"><TimeOutline /></NIcon>
+                <NIcon v-if="!isSwitchReading(device, reading)" class="device-reading__history" size="14">
+                  <TimeOutline />
+                </NIcon>
+                <span
+                  v-else-if="getSwitchState(device, reading) === null"
+                  class="device-reading__raw-boolean"
+                  :title="'模板声明为 Boolean，但遥测值不是 JSON true/false'"
+                >
+                  {{ getReadingDisplayValue(reading) }}
+                </span>
               </button>
               <NSwitch
-                v-if="isBooleanReading(reading)"
-                :value="reading.value as boolean"
+                v-if="isSwitchReading(device, reading)"
+                :value="getSwitchState(device, reading)"
                 :loading="Boolean(pendingSwitches[switchPendingKey(device, reading)])"
                 :disabled="
-                  device.is_online !== 1 || !resolveStandardBooleanCommand(reading, commandsByDevice[device.id] || [])
+                  device.is_online !== 1 ||
+                  getSwitchState(device, reading) === null ||
+                  !getSwitchCommandBinding(device, reading)
                 "
-                :title="device.is_online !== 1 ? '设备离线' : '请在设备模板中配置同标识且只有一个 Boolean 参数的命令'"
+                :title="
+                  device.is_online !== 1
+                    ? '设备离线'
+                    : getSwitchState(device, reading) === null
+                      ? '遥测值必须是 JSON true/false，或模板明确配置 on/off 双态枚举'
+                      : !getSwitchCommandBinding(device, reading)
+                        ? '请在设备模板中配置同标识且只有一个 Boolean 参数的命令'
+                        : ''
+                "
                 size="small"
                 :aria-label="String(reading.label || reading.key)"
                 @update:value="value => changeBooleanReading(device, reading, value)"
@@ -485,6 +565,23 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => void loadR
 .device-reading__history {
   flex: 0 0 auto;
   color: var(--primary-color);
+}
+
+.device-reading--boolean {
+  flex: 1 1 250px;
+  justify-content: space-between;
+  min-width: 250px;
+  max-width: 360px;
+
+  .device-reading__history-trigger {
+    flex: 1;
+    justify-content: flex-start;
+  }
+}
+
+.device-reading__raw-boolean {
+  color: var(--warning-color, #d48806);
+  font-size: 11px;
 }
 
 .device-readings-row__placeholder {

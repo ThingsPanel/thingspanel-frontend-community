@@ -14,18 +14,25 @@ export interface DeviceReadingValue {
 
 export interface StandardBooleanCommandBinding {
   identify: string
-  parameterIdentifier: string
+  parameterIdentifier?: string
+  payloadMode: 'boolean-parameter' | 'mapped-command'
+  onValue?: string
+  offValue?: string
 }
 
 /**
- * Resolve only an explicit, one-Boolean-parameter command for a Boolean model
- * field. A switch must never guess command payloads from incoming telemetry.
+ * Resolve a strict Boolean command, or an exact on/off state backed by a
+ * same-identifier command whose model explicitly declares its two actions.
  */
 export function resolveStandardBooleanCommand(
   reading: DeviceReadingValue,
   commands: unknown[]
 ): StandardBooleanCommandBinding | null {
-  if (!reading.key || !isBooleanReading(reading)) return null
+  if (!reading.key) return null
+
+  const isCanonicalBoolean = isBooleanReading(reading)
+  const isExplicitOnOffState = reading.value === 'on' || reading.value === 'off'
+  if (!isCanonicalBoolean && !isExplicitOnOffState) return null
 
   for (const command of commands) {
     if (!command || typeof command !== 'object') continue
@@ -36,12 +43,42 @@ export function resolveStandardBooleanCommand(
     const rawParams = item.params ?? item.paramsOrigin
     let params: unknown = rawParams
     if (typeof rawParams === 'string') {
-      try {
-        params = JSON.parse(rawParams)
-      } catch {
-        return null
+      if (!rawParams.trim()) params = []
+      else {
+        try {
+          params = JSON.parse(rawParams)
+        } catch {
+          return null
+        }
       }
     }
+
+    const mapActionPair = (values: unknown[]): StandardBooleanCommandBinding | null => {
+      if (values.length !== 2 || !values.every(value => typeof value === 'string')) return null
+      const normalized = values.map(value => (value as string).trim().toLowerCase())
+      const onIndex = normalized.findIndex(value => value === 'on' || value === 'turn_on')
+      const offIndex = normalized.findIndex(value => value === 'off' || value === 'turn_off')
+      if (onIndex < 0 || offIndex < 0 || onIndex === offIndex) return null
+      return {
+        identify: reading.key!,
+        parameterIdentifier: 'command',
+        payloadMode: 'mapped-command',
+        onValue: values[onIndex] as string,
+        offValue: values[offIndex] as string
+      }
+    }
+
+    if (params && typeof params === 'object' && !Array.isArray(params)) {
+      const entries = Object.entries(params as Record<string, unknown>)
+      if (entries.length === 1 && Array.isArray(entries[0]?.[1])) {
+        const mappedCommand = mapActionPair(entries[0][1] as unknown[])
+        const parameterIdentifier = entries[0][0].trim()
+        if (mappedCommand && parameterIdentifier && (isCanonicalBoolean || isExplicitOnOffState)) {
+          return { ...mappedCommand, parameterIdentifier }
+        }
+      }
+    }
+
     const parameterList = Array.isArray(params)
       ? params
       : params && typeof params === 'object'
@@ -52,17 +89,41 @@ export function resolveStandardBooleanCommand(
     const parameter = parameterList[0]
     if (!parameter || typeof parameter !== 'object') return null
     const parameterItem = parameter as Record<string, unknown>
-    if (
-      String(parameterItem.param_type || parameterItem.data_type || '')
-        .trim()
-        .toLowerCase() !== 'boolean'
-    ) {
-      return null
+    const parameterType = String(parameterItem.param_type || parameterItem.data_type || '')
+      .trim()
+      .toLowerCase()
+    if (isCanonicalBoolean && parameterType !== 'boolean') return null
+    if (isExplicitOnOffState) {
+      const enumValues = Array.isArray(parameterItem.enum_config)
+        ? parameterItem.enum_config.map((option: any) => String(option?.value ?? '').toLowerCase())
+        : []
+      if (
+        parameterType !== 'enum' ||
+        enumValues.length !== 2 ||
+        !enumValues.includes('on') ||
+        !enumValues.includes('off')
+      ) {
+        return null
+      }
+      const parameterIdentifier = parameterItem.data_identifier || parameterItem.identifier || parameterItem.key
+      if (typeof parameterIdentifier !== 'string' || !parameterIdentifier.trim()) return null
+      return {
+        identify: reading.key,
+        parameterIdentifier,
+        payloadMode: 'mapped-command',
+        onValue: 'on',
+        offValue: 'off'
+      }
     }
     const parameterIdentifier = parameterItem.data_identifier || parameterItem.identifier || parameterItem.key
     if (typeof parameterIdentifier !== 'string' || !parameterIdentifier.trim()) return null
+    if (!isCanonicalBoolean) return null
 
-    return { identify: reading.key, parameterIdentifier }
+    return {
+      identify: reading.key,
+      parameterIdentifier,
+      payloadMode: 'boolean-parameter'
+    }
   }
 
   return null

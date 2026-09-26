@@ -69,7 +69,8 @@ describe('device compact readings', () => {
 
     expect(resolveStandardBooleanCommand(reading, [command])).toEqual({
       identify: 'power',
-      parameterIdentifier: 'enabled'
+      parameterIdentifier: 'enabled',
+      payloadMode: 'boolean-parameter'
     })
     expect(
       resolveStandardBooleanCommand(reading, [
@@ -82,5 +83,42 @@ describe('device compact readings', () => {
       ])
     ).toBe(null)
     expect(resolveStandardBooleanCommand({ ...reading, value: 'false' }, [command])).toBe(null)
+  })
+
+  it('supports the explicit Home Assistant on/off command contract only', () => {
+    const reading = { key: 'ha_state', value: 'off' }
+    expect(resolveStandardBooleanCommand(reading, [{ data_identifier: 'ha_state' }])).toBe(null)
+    expect(resolveStandardBooleanCommand({ ...reading, value: 'close' }, [{ data_identifier: 'ha_state' }])).toBe(null)
+    expect(resolveStandardBooleanCommand(reading, [{ data_identifier: 'other_command' }])).toBe(null)
+    expect(
+      resolveStandardBooleanCommand(reading, [
+        {
+          data_identifier: 'ha_state',
+          params: [{ data_identifier: 'state', param_type: 'Enum', enum_config: [{ value: 'on' }, { value: 'off' }] }]
+        }
+      ])
+    ).toEqual({
+      identify: 'ha_state',
+      parameterIdentifier: 'state',
+      payloadMode: 'mapped-command',
+      onValue: 'on',
+      offValue: 'off'
+    })
+    expect(
+      resolveStandardBooleanCommand(reading, [
+        { data_identifier: 'ha_state', params: '{"command":["turn_on","turn_off"]}' }
+      ])
+    ).toEqual({
+      identify: 'ha_state',
+      parameterIdentifier: 'command',
+      payloadMode: 'mapped-command',
+      onValue: 'turn_on',
+      offValue: 'turn_off'
+    })
+    expect(
+      resolveStandardBooleanCommand({ key: 'ha_state', value: 'close' }, [
+        { data_identifier: 'ha_state', params: '{"command":["open","close","stop"]}' }
+      ])
+    ).toBe(null)
   })
 })
