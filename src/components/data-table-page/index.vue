@@ -503,14 +503,16 @@ const getConfigImageUrl = (imagePath: string | undefined): string => {
 }
 
 // 导入图标组件（修复图标显示问题）
-import { ListOutline, MapOutline, GridOutline as CardIcon } from '@vicons/ionicons5'
+import { ListOutline, MapOutline, GridOutline as CardIcon, ReorderFourOutline } from '@vicons/ionicons5'
 
 // 定义可用视图，修复图标引用
 const availableViews = computed(() => [
   { key: 'card', icon: CardIcon, label: 'common.viewCard' },
   { key: 'list', icon: ListOutline, label: 'common.viewList' },
   { key: 'map', icon: MapOutline, label: 'common.viewMap' },
-  ...(slots['dense-view'] ? [{ key: 'dense', icon: ListOutline, label: 'custom.devicePage.compactReadings' }] : [])
+  ...(slots['dense-view']
+    ? [{ key: 'dense', icon: ReorderFourOutline, label: 'custom.devicePage.compactReadings' }]
+    : [])
 ])
 const formSize = ref(undefined)
 </script>

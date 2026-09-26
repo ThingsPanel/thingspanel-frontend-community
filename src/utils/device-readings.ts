@@ -12,6 +12,62 @@ export interface DeviceReadingValue {
   enum?: TelemetryEnumItem[]
 }
 
+export interface StandardBooleanCommandBinding {
+  identify: string
+  parameterIdentifier: string
+}
+
+/**
+ * Resolve only an explicit, one-Boolean-parameter command for a Boolean model
+ * field. A switch must never guess command payloads from incoming telemetry.
+ */
+export function resolveStandardBooleanCommand(
+  reading: DeviceReadingValue,
+  commands: unknown[]
+): StandardBooleanCommandBinding | null {
+  if (!reading.key || !isBooleanReading(reading)) return null
+
+  for (const command of commands) {
+    if (!command || typeof command !== 'object') continue
+    const item = command as Record<string, unknown>
+    const identifier = item.data_identifier || item.identifier || item.key
+    if (String(identifier || '') !== reading.key) continue
+
+    const rawParams = item.params ?? item.paramsOrigin
+    let params: unknown = rawParams
+    if (typeof rawParams === 'string') {
+      try {
+        params = JSON.parse(rawParams)
+      } catch {
+        return null
+      }
+    }
+    const parameterList = Array.isArray(params)
+      ? params
+      : params && typeof params === 'object'
+        ? Object.values(params as Record<string, unknown>)
+        : []
+    if (parameterList.length !== 1) return null
+
+    const parameter = parameterList[0]
+    if (!parameter || typeof parameter !== 'object') return null
+    const parameterItem = parameter as Record<string, unknown>
+    if (
+      String(parameterItem.param_type || parameterItem.data_type || '')
+        .trim()
+        .toLowerCase() !== 'boolean'
+    ) {
+      return null
+    }
+    const parameterIdentifier = parameterItem.data_identifier || parameterItem.identifier || parameterItem.key
+    if (typeof parameterIdentifier !== 'string' || !parameterIdentifier.trim()) return null
+
+    return { identify: reading.key, parameterIdentifier }
+  }
+
+  return null
+}
+
 function valuesMatch(option: TelemetryEnumItem, value: unknown) {
   switch (option.value_type?.toLowerCase()) {
     case 'number':
@@ -24,34 +80,11 @@ function valuesMatch(option: TelemetryEnumItem, value: unknown) {
 }
 
 export function isBooleanReading(reading: DeviceReadingValue) {
-  const dataType = reading.data_type?.toLowerCase() || ''
-  if (dataType.includes('bool')) return true
-  if (typeof reading.value === 'boolean') return true
-  if (
-    typeof reading.value === 'string' &&
-    ['on', 'off', 'open', 'opened', 'close', 'closed'].includes(reading.value.trim().toLowerCase())
-  ) {
-    return true
-  }
-
-  return Boolean(
-    reading.enum?.length === 2 && reading.enum.every(option => option.value_type?.toLowerCase() === 'boolean')
-  )
+  return reading.data_type?.trim().toLowerCase() === 'boolean' && typeof reading.value === 'boolean'
 }
 
 export function getBooleanReadingState(reading: DeviceReadingValue): boolean | null {
-  const value = reading.value
-  if (typeof value === 'boolean') return value
-  if (typeof value === 'number') {
-    if (value === 1) return true
-    if (value === 0) return false
-  }
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase()
-    if (['true', '1', 'on', 'yes', 'open', 'opened'].includes(normalized)) return true
-    if (['false', '0', 'off', 'no', 'close', 'closed'].includes(normalized)) return false
-  }
-  return null
+  return isBooleanReading(reading) ? (reading.value as boolean) : null
 }
 
 export function getReadingDisplayValue(reading: DeviceReadingValue) {
@@ -72,9 +105,7 @@ export function getCompactReadingDisplayValue(reading: DeviceReadingValue) {
 
 export function isNumericReading(reading: DeviceReadingValue) {
   if (isBooleanReading(reading)) {
-    if (typeof reading.value === 'boolean') return true
-    if (typeof reading.value === 'number') return reading.value === 0 || reading.value === 1
-    return typeof reading.value === 'string' && ['0', '1'].includes(reading.value.trim())
+    return false
   }
   const dataType = reading.data_type?.toLowerCase() || ''
   if (
