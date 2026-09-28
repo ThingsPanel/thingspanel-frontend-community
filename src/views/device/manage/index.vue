@@ -320,6 +320,7 @@ const searchConfigs = ref<SearchConfig[]>([
     options: [],
     labelField: 'name',
     valueField: 'id',
+    dropdownMinWidth: '320px',
     loadOptions: getDeviceConfigOptions
   },
   {
@@ -801,7 +802,7 @@ const toggleGroupPanel = () => {
           :columns-to-show="columns_to_show"
           :table-actions="actions"
           :search-configs="deviceSearchConfigs"
-          :primary-search-keys="['search', 'is_online', 'warn_status', 'device_type', 'service_identifier']"
+          :primary-search-keys="['search', 'is_online', 'warn_status', 'device_config_id']"
           :top-actions="topActions"
           :init-page="query.page"
           :init-page-size="query.page_size"
