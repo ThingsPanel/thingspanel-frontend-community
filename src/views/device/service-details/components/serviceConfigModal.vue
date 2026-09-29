@@ -6,6 +6,7 @@ import { NAlert, NDataTable, NEmpty, NInput, NSelect } from 'naive-ui'
 import { batchAddServiceMenuList, getSelectServiceMenuList, getServiceListDrop } from '@/service/api/plugin'
 import { getDeviceConfigList } from '@/service/api/device'
 import { $t } from '@/locales'
+import { buildServiceDeviceImportItem } from '@/utils/service-device-import'
 
 const emit = defineEmits(['getList', 'go-back'])
 
@@ -248,29 +249,18 @@ const submitSevice: () => void = async () => {
     checkedDevicesOnCurrentPageMap.set(item.device_number, item)
   })
 
-  // 3. Build device_list payload, attempting to include name and config_id if available on current page
-  const deviceListPayload = selectedDeviceNumbers.map(deviceNumber => {
-    const rowData = checkedDevicesOnCurrentPageMap.get(deviceNumber) || selectedDeviceDrafts.value.get(deviceNumber)
-    if (rowData) {
-      // Device is on the current page, include all details
-      return {
-        device_number: rowData.device_number,
-        device_name: rowData.device_name,
-        description: rowData.description,
-        device_config_id: rowData.device_config_id || undefined,
-        protocol_config: safeParseJSON(rowData.protocol_config),
-        additional_info: safeParseJSON(rowData.additional_info)
-      }
-    } else {
-      // Device was selected on another page, only send number
-      // Backend MUST handle this case (missing name/config_id)
-      return {
-        device_number: deviceNumber
-        // device_name: null, // Or omit entirely
-        // device_config_id: null // Or omit entirely
-      }
-    }
-  })
+  // 3. Build device_list payload. The device template stays optional; preserve
+  // connector-specific mapping fields and stop before the request on invalid JSON.
+  let deviceListPayload
+  try {
+    deviceListPayload = selectedDeviceNumbers.map(deviceNumber => {
+      const rowData = checkedDevicesOnCurrentPageMap.get(deviceNumber) || selectedDeviceDrafts.value.get(deviceNumber)
+      return buildServiceDeviceImportItem(String(deviceNumber), rowData)
+    })
+  } catch (error: any) {
+    window.$message?.error(error?.message || '设备通信配置无效，未提交设备')
+    return
+  }
 
   const params = {
     service_access_id: device_config_id.value,
@@ -378,22 +368,13 @@ const handleCheck = (rowKeys: any /*, rows: any, meta: any */) => {
 }
 
 defineExpose({ openModal })
-
-const safeParseJSON = (value: any) => {
-  if (!value || typeof value !== 'string') return undefined
-  try {
-    return JSON.parse(value)
-  } catch {
-    return undefined
-  }
-}
 </script>
 
 <template>
   <n-modal v-model:show="serviceModal" preset="dialog" :title="modalTitle" class="device_model">
     <div class="service-config-shell">
       <NAlert type="info" class="mb-12px">
-        设备模板现在是可选的。不选模板也可以绑定设备并查看原始遥测数据；选择模板后会带出中文名称、单位、图表和自定义面板。
+        设备模板包含型号的通信、物模型、自动化和告警配置。未选择模板也可以接入并收发原始数据；具体命令能力和格式由对应连接器支持的契约决定。
       </NAlert>
       <div class="table-area">
         <NDataTable
