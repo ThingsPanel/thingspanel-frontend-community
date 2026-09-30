@@ -212,11 +212,11 @@ function extractWsFields(payload: unknown): Record<string, unknown> {
 /**
  * Map raw WS field keys to canonical platform field IDs.
  * Tries field.id first, then field.name as fallback.
- * Falls back to the raw payload when nothing maps.
+ * Retains raw keys so fields absent from the thing model remain available.
  */
 function mapFieldIds(rawFields: Record<string, unknown>, deviceFields: PlatformDeviceField[]): Record<string, unknown> {
   if (deviceFields.length === 0) return rawFields
-  const mapped: Record<string, unknown> = {}
+  const mapped: Record<string, unknown> = { ...rawFields }
   for (const field of deviceFields) {
     if (!field.id) continue
     const byId = rawFields[field.id]
@@ -224,7 +224,7 @@ function mapFieldIds(rawFields: Record<string, unknown>, deviceFields: PlatformD
     if (byId !== undefined) mapped[field.id] = byId
     else if (byName !== undefined) mapped[field.id] = byName
   }
-  return Object.keys(mapped).length > 0 ? mapped : rawFields
+  return mapped
 }
 
 /** Open (or re-open) a telemetry WebSocket for one device. */
@@ -1069,6 +1069,13 @@ async function loadCurrentDeviceFields(deviceId: string): Promise<PlatformField[
     () => currentDeviceFieldsPromise.delete(deviceId)
   )
   return promise
+}
+
+function mergeDeviceFields(modelFields: PlatformDeviceField[], currentFields: PlatformDeviceField[]): PlatformDeviceField[] {
+  const fields = new Map(currentFields.map(field => [field.id, field]))
+  // The thing model owns the display name and declared type when IDs overlap.
+  modelFields.forEach(field => fields.set(field.id, field))
+  return Array.from(fields.values())
 }
 
 async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): Promise<Record<string, unknown>> {
@@ -2317,23 +2324,16 @@ const handleMessage = async (event: MessageEvent) => {
       if (!templateId && deviceConfigId) {
         templateId = (await loadDeviceConfigTemplateMap()).get(deviceConfigId)
       }
-      if (!templateId) {
-        const fields = await loadCurrentDeviceFields(deviceId)
-        updateActivePlatformDeviceFields(deviceId, fields)
-        postToThingsVis('tv:device-fields', {
-          deviceId,
-          templateId: '',
-          fields
-        })
-        return
-      }
-
-      const entry = await loadTemplateEntry(templateId)
-      updateActivePlatformDeviceFields(deviceId, Array.isArray(entry.fields) ? entry.fields : [])
+      const [currentFields, modelFields] = await Promise.all([
+        loadCurrentDeviceFields(deviceId),
+        templateId ? loadTemplateEntry(templateId).then(entry => entry.fields) : Promise.resolve([])
+      ])
+      const fields = mergeDeviceFields(Array.isArray(modelFields) ? modelFields : [], currentFields)
+      updateActivePlatformDeviceFields(deviceId, fields)
       postToThingsVis('tv:device-fields', {
         deviceId,
-        templateId,
-        fields: Array.isArray(entry.fields) ? entry.fields : []
+        templateId: templateId || '',
+        fields
       })
     } catch (error) {
       console.warn('[AppFrame] Failed to load requested device fields:', deviceId, templateId, error)
