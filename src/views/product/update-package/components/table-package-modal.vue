@@ -112,7 +112,7 @@ function handleUpdateFormModel(model: Partial<productPackageRecord>) {
   Object.assign(formModel, model);
 }
 
-function handlePackageUpload(file: { file?: File | null }, uploaded: { tosObjectKey: string; sha256: string; size: number }) {
+function handlePackageUpload(file: { file?: File | null }, uploaded: { tosObjectKey: string; sha256: string; size: number; tosReceipt: string }) {
   const size = uploaded.size || file.file?.size;
   if (typeof size !== 'number') return;
   const additionalInfo = createOtaAdditionalInfo(formModel.additional_info, size);
@@ -123,6 +123,7 @@ function handlePackageUpload(file: { file?: File | null }, uploaded: { tosObject
   const info = JSON.parse(additionalInfo);
   info.tosObjectKey = uploaded.tosObjectKey;
   info.sha256 = uploaded.sha256;
+  info.tosReceipt = uploaded.tosReceipt;
   formModel.additional_info = JSON.stringify(info, null, 2);
 }
 
