@@ -61,6 +61,7 @@
   "page.product.update-package.signMode": "Signing Algorithm",
   "page.product.update-package.package": "Select Upgrade Package",
   "page.product.update-package.customInfo": "Custom Push Information",
+  "page.product.update-package.customInfoHint": "Protocol, orchestration route, and file size are filled in after upload. You can edit them.",
   "page.product.update-package.packageNamePlaceholder": "Fill in the upgrade package name",
   "page.product.update-package.versionPlaceholder": "Fill in the target version for upgrade",
   "page.product.update-package.versionCodePlaceholder": "Fill in the upgrade package version code",

@@ -61,6 +61,7 @@
   "page.product.update-package.signMode": "签名算法",
   "page.product.update-package.package": "选择升级包",
   "page.product.update-package.customInfo": "推送的自定义信息",
+  "page.product.update-package.customInfoHint": "上传升级包后自动填入协议、编排路由和文件大小，可继续编辑。",
   "page.product.update-package.packageNamePlaceholder": "请填写升级包名称",
   "page.product.update-package.versionPlaceholder": "请填写待升级版本号",
   "page.product.update-package.versionCodePlaceholder": "请填写升级包版本号",
