@@ -1,7 +1,6 @@
 import { BACKEND_ERROR_CODE, createFlatRequest } from '@sa/axios'
 import { localStg } from '@/utils/storage'
 import { createProxyPattern, createServiceConfig } from '~/env.config'
-import { applyThingsPanelAuth, refreshThingsPanelAuth } from './auth-headers'
 
 const { otherBaseURL } = createServiceConfig(import.meta.env)
 const isHttpProxy = import.meta.env.VITE_HTTP_PROXY === 'Y'
@@ -19,10 +18,13 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
       // set token
       const token = localStg.get('token')
       const userLanguage = localStg.get('lang')
-      applyThingsPanelAuth(headers, token)
+      const headersWithToken: Record<string, string> = token
+        ? { Authorization: `Bearer ${token}`, 'x-token': token }
+        : {}
       if (userLanguage) {
-        headers['Accept-Language'] = userLanguage
+        headersWithToken['Accept-Language'] = userLanguage
       }
+      Object.assign(headers, headersWithToken)
       if (params && typeof params === 'object' && !Array.isArray(params)) {
         Object.keys(params).forEach(key => {
           if (params[key] === '') {
@@ -73,7 +75,8 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
               ;(originalRequest as any)._retry = true
               const newToken = localStg.get('token')
               if (newToken) {
-                refreshThingsPanelAuth(originalRequest.headers, newToken)
+                originalRequest.headers.Authorization = `Bearer ${newToken}`
+                originalRequest.headers['x-token'] = newToken
                 return request(originalRequest)
               }
             }
