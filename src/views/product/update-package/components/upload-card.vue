@@ -27,12 +27,14 @@ export interface Props {
   fileType: string[];
   value: string | null | undefined;
   sourceType?: string;
+  extraData?: Record<string, string>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   accept: 'file',
   text: $t('page.product.update-package.package'),
   sourceType: SourceType.image,
+  extraData: () => ({}),
   fileType: () => ['bin', 'exe', 'apk', 'zip', 'ipa']
 });
 const dataList = computed((): UploadFileInfo[] => {
@@ -51,12 +53,16 @@ const dataList = computed((): UploadFileInfo[] => {
 
 interface Emits {
   (e: 'update:value', val: string): void;
-  (e: 'success', file: UploadFileInfo): void;
+  (e: 'success', file: UploadFileInfo, response: any): void;
 }
 
 const emit = defineEmits<Emits>();
 
 async function beforeUpload(data: { file: UploadFileInfo; fileList: UploadFileInfo[] }) {
+  if (props.sourceType === SourceType.upgradePackage && (!props.extraData.productKey || !props.extraData.version)) {
+    window.$message?.error('请先选择固件产品并填写版本号');
+    return false;
+  }
   let isImg: boolean = false;
   if (props.fileType.length) {
     let fileExtension = '';
@@ -82,7 +88,7 @@ function handleFinish({ file, event }: { file: UploadFileInfo; event?: ProgressE
   const response = JSON.parse((event?.target as XMLHttpRequest).response);
   window.$message?.success(response.message);
   emit('update:value', response.data.path);
-  emit('success', file);
+  emit('success', file, response.data);
 }
 
 function handleError({ event }: { event?: ProgressEvent }) {
@@ -96,7 +102,7 @@ function handleError({ event }: { event?: ProgressEvent }) {
     :headers="{
       'x-token': localStg.get('token') || ''
     }"
-    :data="{ type: props.sourceType }"
+    :data="{ type: props.sourceType, ...props.extraData }"
     :default-file-list="dataList"
     :accept="accept"
     :max="1"

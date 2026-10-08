@@ -81,6 +81,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   plugin_print: () => import("@/views/plugin/print/index.vue"),
   plugin_swiper: () => import("@/views/plugin/swiper/index.vue"),
   plugin_video: () => import("@/views/plugin/video/index.vue"),
+  "product_factory-batches": () => import("@/views/product/factory-batches/index.vue"),
   product_list: () => import("@/views/product/list/index.vue"),
   "product_update-ota": () => import("@/views/product/update-ota/index.vue"),
   "product_update-package": () => import("@/views/product/update-package/index.vue"),

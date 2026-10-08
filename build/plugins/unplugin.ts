@@ -29,6 +29,7 @@ export function setupUnplugin(viteEnv: Env.ImportMeta) {
     }),
     Components({
       dts: 'src/typings/components.d.ts',
+      dirs: ['src/components', '!src/components/common/gridv2_backup_20251018232856'],
       types: [{ from: 'vue-router', names: ['RouterLink', 'RouterView'] }],
       resolvers: [
         AntDesignVueResolver({

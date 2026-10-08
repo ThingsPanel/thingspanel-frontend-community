@@ -1,5 +1,6 @@
 <script setup lang="tsx">
 import { computed, getCurrentInstance, reactive, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import type { Ref } from 'vue';
 import { NButton, NImage, NPopconfirm, NSpace } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
@@ -12,6 +13,12 @@ import TableActionModal from './components/table-action-modal.vue';
 import type { ModalType } from './components/table-action-modal.vue';
 import ColumnSetting from './components/column-setting.vue';
 import DeviceRegister from './components/device-register.vue';
+
+const router = useRouter();
+
+function openFactoryBatches(record: productRecord) {
+  router.push({ name: 'product_factory-batches', query: { productKey: record.product_key, productName: record.name } });
+}
 
 const { loading, startLoading, endLoading } = useLoading(false);
 const { bool: visible, setTrue: openModal } = useBoolean();
@@ -131,7 +138,7 @@ const columns: Ref<DataTableColumns<productRecord>> = ref([
   },
   {
     key: 'actions',
-    minWidth: '140px',
+    minWidth: '320px',
     title: $t('page.product.list.operate'),
     align: 'center',
     render: row => {
@@ -143,6 +150,11 @@ const columns: Ref<DataTableColumns<productRecord>> = ref([
           <NButton size={'small'} type="primary" onClick={() => handleRegisterConfig(row)}>
             {$t('page.product.list.register')}
           </NButton>
+          {row.product_key && (
+            <NButton size={'small'} type="primary" onClick={() => openFactoryBatches(row)}>
+              出厂预制
+            </NButton>
+          )}
           <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
             {{
               default: () => $t('common.confirmDelete'),

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { $t } from '@/locales'
+import CustomIconSelect from '@/components/custom/select-icon.vue'
 import { icons } from './icons'
 
 const selectValue = ref('')
@@ -20,14 +21,14 @@ const localIcons = ['custom-icon', 'activity', 'at-sign', 'cast', 'chrome', 'cop
       </div>
       <div class="mt-50px">
         <h1 class="mb-20px text-18px font-500">{{ $t('generate.icon-selector') }}</h1>
-        <IconSelect v-model:value="selectValue" :icons="icons" />
+        <CustomIconSelect v-model:value="selectValue" :icons="icons" />
       </div>
       <WebSiteLink :label="'iconify' + '地址' + '：'" link="https://icones.js.org/" class="mt-10px" />
     </NCard>
     <NCard :title="$t('generate.custom-icon-example')" :bordered="false" class="mt-10px rounded-8px shadow-sm">
       <div class="pb-12px text-16px">
-        在src/assets/svg-icon文件夹下的svg文件，通过在template里面以 icon-local-{文件名} 直接渲染,
-        其中icon-local为.env文件里的 VITE_ICON_LOCAL_PREFIX
+        src/assets/svg-icon中的SVG文件会根据文件名和本地图标前缀生成对应组件，
+        前缀由.env文件里的 VITE_ICON_LOCAL_PREFIX 配置
       </div>
       <div class="grid grid-cols-10">
         <div class="mt-5px flex-x-center">

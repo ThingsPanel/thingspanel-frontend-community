@@ -179,6 +179,12 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
 
     if (!error) {
       const routes = data?.list
+      const productRoute = routes?.find(route => route.name === 'product')
+      const generatedProduct = createRoutes().authRoutes.find(route => route.name === 'product')
+      const factoryRoute = generatedProduct?.children?.find(route => route.name === 'product_factory-batches')
+      if (productRoute && factoryRoute && !productRoute.children?.some(route => route.name === factoryRoute.name)) {
+        productRoute.children = [...(productRoute.children || []), factoryRoute]
+      }
 
       handleAuthRoutes(routes)
 

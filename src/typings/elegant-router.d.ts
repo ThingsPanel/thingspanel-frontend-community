@@ -106,6 +106,7 @@ declare module "@elegant-router/types" {
     "plugin_swiper": "/plugin/swiper";
     "plugin_video": "/plugin/video";
     "product": "/product";
+    "product_factory-batches": "/product/factory-batches";
     "product_list": "/product/list";
     "product_update-ota": "/product/update-ota";
     "product_update-package": "/product/update-package";
@@ -273,6 +274,7 @@ declare module "@elegant-router/types" {
     | "plugin_print"
     | "plugin_swiper"
     | "plugin_video"
+    | "product_factory-batches"
     | "product_list"
     | "product_update-ota"
     | "product_update-package"

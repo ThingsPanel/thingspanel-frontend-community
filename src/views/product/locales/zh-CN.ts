@@ -62,6 +62,8 @@ export const productLocaleZhCn: ProductLocal = {
     signMode: '签名算法',
     package: '选择升级包',
     customInfo: '推送的自定义信息',
+    customInfoHint: '上传升级包后自动填入协议、编排路由和文件大小，可继续编辑。',
+    customInfoInvalidJson: '自定义信息不是有效 JSON，原内容已保留，请修正后重新上传。',
     packageNamePlaceholder: '请填写升级包名称',
     versionPlaceholder: '请填写待升级版本号',
     versionCodePlaceholder: '请填写升级包版本号',

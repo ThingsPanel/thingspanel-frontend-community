@@ -32,7 +32,7 @@ declare module 'vue' {
     'IconMaterialSymbols:mapRounded': (typeof import('~icons/material-symbols/map-rounded'))['default']
     'IconMaterialSymbols:refresh': (typeof import('~icons/material-symbols/refresh'))['default']
     'IconMaterialSymbols:tableRowsNarrowOutlineSharp': (typeof import('~icons/material-symbols/table-rows-narrow-outline-sharp'))['default']
-    IconSelect: (typeof import('./../components/custom/icon-select.vue'))['default']
+    IconSelect: (typeof import('./../components/custom/select-icon.vue'))['default']
     ImageVerify: (typeof import('./../components/custom/image-verify.vue'))['default']
     JsonToForm: (typeof import('./../components/json-to-form/index.vue'))['default']
     LangSwitch: (typeof import('./../components/common/lang-switch.vue'))['default']

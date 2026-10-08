@@ -851,6 +851,17 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
+        name: 'product_factory-batches',
+        path: '/product/factory-batches',
+        component: 'view.product_factory-batches',
+        meta: {
+          title: 'product_factory-batches',
+          i18nKey: 'route.product_factory-batches',
+          hideInMenu: true,
+          activeMenu: 'product_list'
+        }
+      },
+      {
         name: 'product_list',
         path: '/product/list',
         component: 'view.product_list',

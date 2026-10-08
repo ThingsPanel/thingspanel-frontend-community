@@ -62,6 +62,8 @@ export const productLocaleEn: ProductLocal = {
     signMode: 'Signing Algorithm',
     package: 'Select Upgrade Package',
     customInfo: 'Custom Push Information',
+    customInfoHint: 'Protocol, orchestration route, and file size are filled in after upload. You can edit them.',
+    customInfoInvalidJson: 'Custom information is not valid JSON. The original content was kept; fix it before uploading again.',
     packageNamePlaceholder: 'Fill in the upgrade package name',
     versionPlaceholder: 'Fill in the target version for upgrade',
     versionCodePlaceholder: 'Fill in the upgrade package version code',

@@ -7,6 +7,7 @@ import { deepClone } from '@/utils/common/tool'
 import { createRequiredFormRule } from '@/utils/form/rule'
 import { icons } from '@/plugins/icon/icons'
 import { $t } from '@/locales'
+import CustomIconSelect from '@/components/custom/select-icon.vue'
 
 export interface Props {
   /** 弹窗可见性 */
@@ -204,7 +205,7 @@ watch(
         </NFormItemGridItem>
         -->
         <NFormItemGridItem :span="12" :label="$t('page.manage.menu.form.icon')" path="param2">
-          <IconSelect v-model:value="formModel.param2" :icons="icons" />
+          <CustomIconSelect v-model:value="formModel.param2" :icons="icons" />
         </NFormItemGridItem>
         <NFormItemGridItem :span="12" :label="$t('page.manage.menu.form.order')" path="orders">
           <NInputNumber v-model:value="formModel.orders" />

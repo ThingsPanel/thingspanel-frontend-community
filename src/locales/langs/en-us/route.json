@@ -51,6 +51,7 @@
   "route.data-service": "Data Services",
   "route.product": "Product Management",
   "route.product_list": "Product List",
+  "route.product_factory-batches": "Factory Provisioning",
   "route.product_update-ota": "OTA",
   "route.product_update-package": "Upgrade Package Management",
   "route.plugin": "Plugin Example",

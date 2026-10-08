@@ -46,6 +46,7 @@
   "route.data-service": "数据服务",
   "route.product": "产品管理",
   "route.product_list": "产品列表",
+  "route.product_factory-batches": "出厂预制管理",
   "route.product_update-ota": "OTA升级",
   "route.product_update-package": "升级包管理",
   "route.plugin": "插件示例",

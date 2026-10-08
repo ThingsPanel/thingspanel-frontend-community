@@ -4,6 +4,7 @@ import type { FormInst, FormItemRule } from 'naive-ui';
 import { createRequiredFormRule } from '@/utils/form/rule';
 import { getDeviceConfigList } from '@/service/api/device';
 import UploadCard from './upload-card.vue';
+import { createOtaAdditionalInfo } from './ota-additional-info.mjs';
 import { addOtaPackage, editOtaPackage } from '~/src/service/product/update-package';
 import { $t } from '~/src/locales';
 import { packageOptions, signModeOptions } from '~/src/constants/business';
@@ -16,7 +17,8 @@ const getOptions = async (name?: string) => {
   });
   if (!error && data) {
     productOptions.value = data?.list?.map(item => {
-      return { label: item.name, value: item.id };
+      const name = String(item.name || '').toLowerCase();
+      return { label: item.name, value: item.id, productKey: name.includes('a100') ? 'a100' : name.includes('esp32s3') ? 'esp32s3' : '' };
     });
   }
 };
@@ -109,6 +111,22 @@ function createDefaultFormModel(): productPackageRecord {
 function handleUpdateFormModel(model: Partial<productPackageRecord>) {
   Object.assign(formModel, model);
 }
+
+function handlePackageUpload(file: { file?: File | null }, uploaded: { tosObjectKey: string; sha256: string; size: number }) {
+  const size = uploaded.size || file.file?.size;
+  if (typeof size !== 'number') return;
+  const additionalInfo = createOtaAdditionalInfo(formModel.additional_info, size);
+  if (additionalInfo === null) {
+    window.$message?.error($t('page.product.update-package.customInfoInvalidJson'));
+    return;
+  }
+  const info = JSON.parse(additionalInfo);
+  info.tosObjectKey = uploaded.tosObjectKey;
+  info.sha256 = uploaded.sha256;
+  formModel.additional_info = JSON.stringify(info, null, 2);
+}
+
+const selectedProductKey = computed(() => productOptions.value?.find(item => item.value === formModel.device_config_id)?.productKey || '');
 
 function handleUpdateFormModelByModalType() {
   const handlers: Record<ModalType, () => void> = {
@@ -230,12 +248,17 @@ const getPlatform = computed(() => {
         <NSelect v-model:value="formModel.signature_type" :options="signModeOptions" />
       </NFormItem>
       <NFormItem class="w-100%" :label="$t('page.product.update-package.package')" path="package_url">
-        <UploadCard v-model:value="formModel.package_url" source-type="upgradePackage" />
+        <UploadCard v-model:value="formModel.package_url" source-type="upgradePackage" :extra-data="{ productKey: selectedProductKey, version: formModel.version }" @success="handlePackageUpload" />
       </NFormItem>
       <NFormItem class="w-100%" :label="$t('page.product.update-package.desc')" path="description">
         <NInput v-model:value="formModel.description" class="w-100%" type="textarea" />
       </NFormItem>
-      <NFormItem class="w-100%" :label="$t('page.product.update-package.customInfo')" path="additional_info">
+      <NFormItem
+        class="w-100%"
+        :label="$t('page.product.update-package.customInfo')"
+        :feedback="$t('page.product.update-package.customInfoHint')"
+        path="additional_info"
+      >
         <NInput v-model:value="formModel.additional_info" type="textarea" />
       </NFormItem>
       <NSpace class="w-full pt-16px" justify="end">

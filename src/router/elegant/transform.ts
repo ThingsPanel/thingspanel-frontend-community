@@ -250,6 +250,7 @@ const routeMap: RouteMap = {
   "plugin_swiper": "/plugin/swiper",
   "plugin_video": "/plugin/video",
   "product": "/product",
+  "product_factory-batches": "/product/factory-batches",
   "product_list": "/product/list",
   "product_update-ota": "/product/update-ota",
   "product_update-package": "/product/update-package",
