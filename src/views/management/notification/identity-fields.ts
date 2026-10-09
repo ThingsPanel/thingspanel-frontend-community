@@ -33,3 +33,15 @@ export function omitReadOnlyNotificationIdentityFields<T extends Record<string, 
 export function snapshotNotificationMutation<T extends object>(key: string, body: T) {
   return { key, body: JSON.parse(JSON.stringify(body)) as T }
 }
+
+interface NotificationMutationSender<TBody, TResult> {
+  // eslint-disable-next-line no-unused-vars
+  send(request: { body: TBody; key: string }): Promise<TResult>
+}
+
+export function sendNotificationMutationSnapshot<TBody, TResult>(
+  snapshot: { key: string; body: TBody },
+  sender: NotificationMutationSender<TBody, TResult>
+) {
+  return sender.send({ body: snapshot.body, key: snapshot.key })
+}

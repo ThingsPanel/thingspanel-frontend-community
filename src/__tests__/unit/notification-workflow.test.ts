@@ -11,6 +11,7 @@ import {
   editableNotificationSecretFields,
   isNotificationConfigFieldReadOnly,
   omitReadOnlyNotificationIdentityFields,
+  sendNotificationMutationSnapshot,
   snapshotNotificationMutation
 } from '@/views/management/notification/identity-fields'
 import {
@@ -177,6 +178,30 @@ describe('notification plugin identity fields', () => {
       config: { host: 'smtp.example.test' },
       secrets: { set: { password: 'fixture' } }
     })
+  })
+
+  it('retries an uncertain instance request with the identical saved body and idempotency key', async () => {
+    const pending = snapshotNotificationMutation('stable-key', {
+      name: 'smtp',
+      config: { host: 'smtp.example.test' },
+      secrets: { set: { password: 'fixture' } }
+    })
+    let attempt = 0
+    const send = vi.fn(async (request: { body: typeof pending.body; key: string }) => {
+      if (attempt++ === 0) throw new Error('response lost after commit')
+      return request
+    })
+    const sender = { send }
+
+    await expect(sendNotificationMutationSnapshot(pending, sender)).rejects.toThrow('response lost after commit')
+    await expect(sendNotificationMutationSnapshot(pending, sender)).resolves.toEqual({
+      body: pending.body,
+      key: 'stable-key'
+    })
+
+    expect(sender.send).toHaveBeenCalledTimes(2)
+    expect(sender.send.mock.calls[0]).toEqual([{ body: pending.body, key: 'stable-key' }])
+    expect(sender.send.mock.calls[1]).toEqual([{ body: pending.body, key: 'stable-key' }])
   })
 })
 

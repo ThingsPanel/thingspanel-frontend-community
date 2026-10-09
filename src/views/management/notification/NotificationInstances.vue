@@ -22,6 +22,7 @@ import {
   editableNotificationSecretFields,
   isNotificationConfigFieldReadOnly,
   omitReadOnlyNotificationIdentityFields,
+  sendNotificationMutationSnapshot,
   snapshotNotificationMutation
 } from './identity-fields'
 
@@ -405,9 +406,13 @@ async function saveInstance() {
     const pending = pendingInstanceSave.value
     if (!pending) return
     if (pending.kind === 'create') {
-      await notificationV2.createInstance(pending.body, pending.key)
+      await sendNotificationMutationSnapshot(pending, {
+        send: request => notificationV2.createInstance(request.body, request.key)
+      })
     } else {
-      await notificationV2.updateInstance(pending.instanceId, pending.body, pending.key)
+      await sendNotificationMutationSnapshot(pending, {
+        send: request => notificationV2.updateInstance(pending.instanceId, request.body, request.key)
+      })
     }
     pendingInstanceSave.value = null
     clearSecretsAndEditor()
