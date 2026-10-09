@@ -150,6 +150,21 @@ const SelectStub = defineComponent({
       )
   }
 })
+const SwitchStub = defineComponent({
+  props: ['value', 'disabled'],
+  emits: ['update:value'],
+  setup(props, { emit, attrs }) {
+    return () =>
+      h('button', {
+        ...attrs,
+        type: 'button',
+        role: 'switch',
+        'aria-checked': String(Boolean(props.value)),
+        disabled: props.disabled,
+        onClick: () => emit('update:value', !props.value)
+      })
+  }
+})
 const DataTableStub = defineComponent({
   props: ['columns', 'data'],
   setup(props) {
@@ -193,7 +208,7 @@ const stubs = {
   NAlert: SlotStub,
   NSpace: SlotStub,
   NDivider: SlotStub,
-  NSwitch: SlotStub,
+  NSwitch: SwitchStub,
   NInputNumber: SlotStub,
   NRadioGroup: SlotStub,
   NRadio: SlotStub,
@@ -339,6 +354,47 @@ describe('notification instance page submit boundaries', () => {
     expect(document.activeElement).toBe(document.getElementById('notification-instance-field-host'))
     expect(api.createInstance).not.toHaveBeenCalled()
     expect(api.testInstance).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('exposes boolean identity controls as disabled and ignores attempted updates', async () => {
+    const identityPlugin = {
+      ...plugin,
+      manifest: {
+        ...plugin.manifest,
+        identityFields: ['host', 'ssl'],
+        configSchema: {
+          type: 'object',
+          properties: {
+            host: { type: 'string' },
+            ssl: { type: 'boolean', title: 'SSL' }
+          },
+          required: ['host']
+        }
+      }
+    }
+    api.listPlugins.mockResolvedValue({ data: { items: [identityPlugin] } })
+    api.getInstance.mockResolvedValue({
+      data: {
+        ...instance,
+        config: { host: 'smtp.example.test', ssl: true }
+      }
+    })
+    const wrapper = mount(NotificationInstances, { attachTo: document.body, global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Configure')!
+      .trigger('click')
+    await flushPromises()
+
+    const sslSwitch = wrapper.get('[role="switch"]')
+    expect(sslSwitch.attributes('disabled')).toBeDefined()
+    expect(sslSwitch.attributes('aria-disabled')).toBe('true')
+    await wrapper.findComponent(SwitchStub).vm.$emit('update:value', false)
+    await flushPromises()
+    expect(wrapper.get('[role="switch"]').attributes('aria-checked')).toBe('true')
+    expect(api.updateInstance).not.toHaveBeenCalled()
     wrapper.unmount()
   })
 

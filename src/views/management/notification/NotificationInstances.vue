@@ -967,6 +967,7 @@ onMounted(loadInstances)
             :id="instanceFieldId(name)"
             :value="Boolean(configValues[name])"
             :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :aria-disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name) ? 'true' : undefined"
             :aria-label="schema.title || name"
             :aria-invalid="localFieldErrors[name] || validationErrorForField(name) ? 'true' : undefined"
             :aria-describedby="
@@ -978,6 +979,7 @@ onMounted(loadInstances)
             "
             @update:value="
               value => {
+                if (instanceSaveReadOnly || isIdentityFieldReadOnly(name)) return
                 configValues[name] = value
               }
             "
