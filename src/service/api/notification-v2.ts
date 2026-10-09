@@ -74,6 +74,20 @@ export function stripSecretConfig(config: Record<string, unknown>, secretFields:
   return Object.fromEntries(Object.entries(config).filter(([name]) => !secrets.has(name)))
 }
 
+export function parseNotificationIdentityFields(value: unknown): string[] | undefined {
+  if (value === undefined) return undefined
+  if (
+    !Array.isArray(value) ||
+    value.length < 1 ||
+    value.length > 64 ||
+    value.some(field => typeof field !== 'string' || field.length > 128 || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(field)) ||
+    new Set(value).size !== value.length
+  ) {
+    throw new Error('identity_fields must contain 1 to 64 unique valid field names.')
+  }
+  return value as string[]
+}
+
 const supportedSchemaKeys = new Set([
   'type',
   'title',

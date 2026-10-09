@@ -18,6 +18,11 @@ import {
   type NotificationPlugin
 } from '@/service/api/notification-v2'
 import type * as NotificationV2 from '@/service/api/notification-v2.types'
+import {
+  editableNotificationSecretFields,
+  isNotificationConfigFieldReadOnly,
+  omitReadOnlyNotificationIdentityFields
+} from './identity-fields'
 
 type SchemaField = {
   type?: string
@@ -45,6 +50,16 @@ const editorMode = ref<'create' | 'edit'>('create')
 const selectedPluginId = ref('')
 const selectedInstance = ref<NotificationInstance | null>(null)
 const selectedPlugin = computed(() => plugins.value.find(item => item.id === selectedPluginId.value) || null)
+const identityFields = computed(() => selectedPlugin.value?.manifest.identityFields)
+const legacyIdentityConfigFrozen = computed(
+  () => editorMode.value === 'edit' && selectedPlugin.value !== null && identityFields.value === undefined
+)
+const editableSecretFields = computed(() =>
+  editableNotificationSecretFields(secretFields.value, identityFields.value, editorMode.value === 'edit')
+)
+function isIdentityFieldReadOnly(name: string) {
+  return isNotificationConfigFieldReadOnly(name, identityFields.value, editorMode.value === 'edit')
+}
 const schemaFields = computed(() => {
   const properties = selectedPlugin.value?.manifest.configSchema?.properties
   if (!properties || typeof properties !== 'object' || Array.isArray(properties)) return []
@@ -239,20 +254,22 @@ function changedConfigPatch() {
   const patch: Record<string, unknown> = {}
   Object.entries(configValues.value).forEach(([name, value]) => {
     if (secretFields.value.includes(name)) return
+    if (isIdentityFieldReadOnly(name)) return
     if (JSON.stringify(value) !== JSON.stringify(originalConfig.value[name])) patch[name] = value
   })
-  return patch
+  return omitReadOnlyNotificationIdentityFields(patch, identityFields.value, editorMode.value === 'edit')
 }
 
 function secretOperation(): NotificationV2.SecretPatch | undefined {
   if (editorMode.value !== 'edit' || secretMode.value === 'keep') return undefined
   if (secretMode.value === 'set') {
     const set = Object.fromEntries(
-      secretFields.value.filter(name => secretDraft[name]).map(name => [name, secretDraft[name]])
+      editableSecretFields.value.filter(name => secretDraft[name]).map(name => [name, secretDraft[name]])
     )
     return Object.keys(set).length ? { set } : undefined
   }
-  return clearSecretFields.value.length ? { clear: [...clearSecretFields.value] } : undefined
+  const clear = clearSecretFields.value.filter(name => editableSecretFields.value.includes(name))
+  return clear.length ? { clear } : undefined
 }
 
 function parseProviderIdentity() {
@@ -275,13 +292,14 @@ function parseProviderIdentity() {
 function localValidation() {
   const errors: Record<string, string> = { ...localFieldErrors.value }
   if (!selectedPlugin.value) errors.pluginRegistrationId = tx('请选择已授权的插件。', 'Choose an authorized plugin.')
-  if (unsupportedSchemaFields.value.length)
+  if (unsupportedSchemaFields.value.length && !legacyIdentityConfigFrozen.value)
     errors.schema = tx(
       `插件清单包含暂不支持的配置字段：${unsupportedSchemaFields.value.join(', ')}`,
       `The plugin has unsupported config fields: ${unsupportedSchemaFields.value.join(', ')}`
     )
   if (!formName.value.trim()) errors.name = tx('实例名称不能为空。', 'Instance name is required.')
   requiredFields.value.forEach(name => {
+    if (isIdentityFieldReadOnly(name)) return
     if (secretFields.value.includes(name)) {
       if (editorMode.value === 'create' && !secretDraft[name])
         errors[name] = tx('此秘密字段必填。', 'This secret field is required.')
@@ -292,7 +310,7 @@ function localValidation() {
       errors[name] = tx('此字段必填。', 'This field is required.')
   })
   schemaFields.value.forEach(([name, schema]) => {
-    if (secretFields.value.includes(name) || localFieldErrors.value[name]) return
+    if (secretFields.value.includes(name) || isIdentityFieldReadOnly(name) || localFieldErrors.value[name]) return
     const value = configValues.value[name]
     if (value === undefined) return
     const validationError = validateNotificationConfigValue(value, schema, name)
@@ -652,6 +670,22 @@ onMounted(loadInstances)
       </NFormItem>
       <template v-if="selectedPlugin">
         <NDivider>{{ tx('插件配置', 'Plugin configuration') }}</NDivider>
+        <NAlert v-if="legacyIdentityConfigFrozen" type="warning" class="mb-12px">
+          {{
+            tx(
+              '此旧插件清单未声明 identity_fields。为避免账号身份被意外更换，现有实例的全部配置和秘密字段只能保持原值；如需更改，请创建新实例。实例名称和发送启用状态仍可修改。',
+              'This legacy plugin manifest has no identity_fields declaration. To avoid changing provider identity accidentally, keep all config and secret values unchanged on an existing instance; create a new instance to change them. The instance name and enabled state remain editable.'
+            )
+          }}
+        </NAlert>
+        <NAlert v-else-if="editorMode === 'edit' && identityFields?.length" type="warning" class="mb-12px">
+          {{
+            tx(
+              `以下身份字段不可在现有实例中修改：${identityFields.join(', ')}。如需更换账号、区域或身份 URL，请创建新实例；非身份配置和秘密字段仍可按需更新。`,
+              `These identity fields cannot change on an existing instance: ${identityFields.join(', ')}. Create a new instance to change the account, region, or identity URL; non-identity config and secrets remain editable.`
+            )
+          }}
+        </NAlert>
         <NAlert v-if="unsupportedSchemaFields.length" type="warning" class="mb-12px">
           {{
             tx(
@@ -664,6 +698,7 @@ onMounted(loadInstances)
           <NInput
             v-if="secretFields.includes(name)"
             v-model:value="secretDraft[name]"
+            :disabled="isIdentityFieldReadOnly(name)"
             type="password"
             show-password-on="click"
             autocomplete="new-password"
@@ -677,12 +712,14 @@ onMounted(loadInstances)
           <NSelect
             v-else-if="Array.isArray(schema.enum)"
             :value="enumSelection(name)"
+            :disabled="isIdentityFieldReadOnly(name)"
             :options="enumOptions(schema)"
             @update:value="value => updateEnum(name, schema, value)"
           />
           <NSwitch
             v-else-if="schema.type === 'boolean'"
             :value="Boolean(configValues[name])"
+            :disabled="isIdentityFieldReadOnly(name)"
             @update:value="
               value => {
                 configValues[name] = value
@@ -692,6 +729,7 @@ onMounted(loadInstances)
           <NInputNumber
             v-else-if="schema.type === 'integer' || schema.type === 'number'"
             :value="Number(configValues[name] ?? 0)"
+            :disabled="isIdentityFieldReadOnly(name)"
             :precision="schema.type === 'integer' ? 0 : undefined"
             @update:value="
               value => {
@@ -703,12 +741,14 @@ onMounted(loadInstances)
             v-else-if="schema.type === 'object' || schema.type === 'array'"
             type="textarea"
             :value="jsonDrafts[name] || ''"
+            :disabled="isIdentityFieldReadOnly(name)"
             :autosize="{ minRows: 3, maxRows: 8 }"
             @update:value="value => updateJsonField(name, value)"
           />
           <NInput
             v-else
             :value="String(configValues[name] ?? '')"
+            :disabled="isIdentityFieldReadOnly(name)"
             @update:value="
               value => {
                 configValues[name] = value
@@ -718,7 +758,10 @@ onMounted(loadInstances)
           <div v-if="requiredFields.includes(name)" class="mt-4px text-xs opacity-65">{{ tx('必填', 'Required') }}</div>
           <div v-if="localFieldErrors[name]" class="mt-4px text-xs text-red-600">{{ localFieldErrors[name] }}</div>
         </NFormItem>
-        <NFormItem v-if="secretFields.length && editorMode === 'edit'" :label="tx('秘密字段处理', 'Secret handling')">
+        <NFormItem
+          v-if="editableSecretFields.length && editorMode === 'edit'"
+          :label="tx('秘密字段处理', 'Secret handling')"
+        >
           <NRadioGroup v-model:value="secretMode">
             <NSpace>
               <NRadio value="keep">{{ tx('保持已配置值', 'Keep configured values') }}</NRadio>
@@ -729,7 +772,7 @@ onMounted(loadInstances)
           <NCheckboxGroup v-if="secretMode === 'clear'" v-model:value="clearSecretFields" class="mt-8px">
             <NSpace vertical>
               <NCheckbox
-                v-for="name in secretFields"
+                v-for="name in editableSecretFields"
                 :key="name"
                 :value="name"
                 :disabled="!selectedInstance?.secretState[name]"

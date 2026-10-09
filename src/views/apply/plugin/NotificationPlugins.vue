@@ -10,6 +10,7 @@ import {
   NotificationClientError,
   NotificationSessionChangedError,
   notificationV2,
+  parseNotificationIdentityFields,
   registerNotificationSessionCleanup,
   resolveNotificationPluginOrigin,
   type NotificationPlugin
@@ -336,6 +337,7 @@ function parseManifest(raw: unknown): NotificationPlugin['manifest'] {
   if (!Array.isArray(value.channels) || !Array.isArray(value.content_modes) || !Array.isArray(value.secret_fields)) {
     throw new Error(tx('清单能力字段格式无效。', 'The manifest capability fields are invalid.'))
   }
+  const identityFields = parseNotificationIdentityFields(value.identity_fields)
   if (
     !value.config_schema ||
     value.config_schema.type !== 'object' ||
@@ -354,6 +356,7 @@ function parseManifest(raw: unknown): NotificationPlugin['manifest'] {
     pluginId: value.plugin_id,
     name: value.name,
     pluginVersion: value.plugin_version,
+    ...(identityFields === undefined ? {} : { identityFields }),
     channels: value.channels,
     contentModes: value.content_modes,
     configSchema: value.config_schema,
@@ -581,6 +584,9 @@ onMounted(load)
         <div>pluginId: {{ manifest.pluginId }}</div>
         <div>{{ tx('渠道', 'Channels') }}: {{ manifest.channels.join(', ') }}</div>
         <div>{{ tx('内容模式', 'Content modes') }}: {{ manifest.contentModes.join(', ') }}</div>
+        <div v-if="manifest.identityFields?.length">
+          {{ tx('身份字段', 'Identity fields') }}: {{ manifest.identityFields.join(', ') }}
+        </div>
         <div>
           {{ tx('送达回执', 'Delivery receipts') }}:
           {{ manifest.capabilities.deliveryReceipts ? tx('支持', 'Supported') : tx('不支持', 'Unsupported') }}

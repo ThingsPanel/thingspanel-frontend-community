@@ -3,8 +3,14 @@ import type { DispatchStatus, DeliveryStatus } from '@/service/api/notification-
 import {
   getNotificationUiCapabilities,
   notificationV2,
+  parseNotificationIdentityFields,
   resolveNotificationPluginOrigin
 } from '@/service/api/notification-v2'
+import {
+  editableNotificationSecretFields,
+  isNotificationConfigFieldReadOnly,
+  omitReadOnlyNotificationIdentityFields
+} from '@/views/management/notification/identity-fields'
 import {
   describeDeliveryStatus,
   describeIntakeStatus,
@@ -102,6 +108,40 @@ describe('notification workflow status mapping', () => {
     expect(isNotificationMemberContactSupported('email', 'applicationUserId')).toBe(false)
     expect(isNotificationMemberContactSupported('webhook', 'email')).toBe(false)
     expect(isNotificationMemberContactSupported(undefined, 'applicationUserId')).toBe(false)
+  })
+})
+
+describe('notification plugin identity fields', () => {
+  it('preserves legacy omission and validates present identity declarations', () => {
+    expect(parseNotificationIdentityFields(undefined)).toBeUndefined()
+    expect(parseNotificationIdentityFields(['account_id', 'region'])).toEqual(['account_id', 'region'])
+    for (const invalid of [
+      [],
+      ['account_id', 'account_id'],
+      ['account-id'],
+      ['a'.repeat(129)],
+      Array(65).fill('field')
+    ]) {
+      expect(() => parseNotificationIdentityFields(invalid)).toThrow('identity_fields')
+    }
+  })
+
+  it('locks declared identity fields and all config/secrets for legacy edits but keeps create and name controls available', () => {
+    expect(isNotificationConfigFieldReadOnly('account_id', ['account_id'], true)).toBe(true)
+    expect(isNotificationConfigFieldReadOnly('region', ['account_id'], true)).toBe(false)
+    expect(isNotificationConfigFieldReadOnly('endpoint', undefined, true)).toBe(true)
+    expect(isNotificationConfigFieldReadOnly('endpoint', undefined, false)).toBe(false)
+    expect(editableNotificationSecretFields(['account_secret', 'api_password'], ['account_secret'], true)).toEqual([
+      'api_password'
+    ])
+    expect(editableNotificationSecretFields(['api_password'], undefined, true)).toEqual([])
+    expect(omitReadOnlyNotificationIdentityFields({ account_id: 'old', region: 'new' }, ['account_id'], true)).toEqual({
+      region: 'new'
+    })
+    expect(omitReadOnlyNotificationIdentityFields({ endpoint: 'changed' }, undefined, true)).toEqual({})
+    expect(omitReadOnlyNotificationIdentityFields({ account_id: 'new' }, ['account_id'], false)).toEqual({
+      account_id: 'new'
+    })
   })
 })
 
