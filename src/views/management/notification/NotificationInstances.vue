@@ -37,6 +37,7 @@ type SchemaField = {
 }
 type ContentMode = 'text' | 'template'
 
+const props = defineProps<{ targetTenantId?: string }>()
 const auth = useAuthStore()
 const { locale } = useI18n()
 const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
@@ -46,7 +47,11 @@ function notificationErrorMessage(error: unknown, zhFallback: string, enFallback
   return error instanceof Error ? error.message : tx(zhFallback, enFallback)
 }
 const capabilities = computed(() => getNotificationUiCapabilities())
-const hasTenantContext = computed(() => Boolean(String(auth.userInfo.tenant_id || '').trim()))
+const accountTarget = computed(() => (capabilities.value.canManageAccounts ? props.targetTenantId?.trim() : undefined))
+const hasTenantContext = computed(() =>
+  Boolean(capabilities.value.canManageAccounts ? accountTarget.value : String(auth.userInfo.tenant_id || '').trim())
+)
+const canEditAccounts = computed(() => capabilities.value.canManageAccounts && Boolean(accountTarget.value))
 const plugins = ref<NotificationPlugin[]>([])
 const instances = ref<NotificationInstance[]>([])
 const loading = ref(false)
@@ -194,6 +199,8 @@ function clearSecretsAndEditor() {
 }
 
 function clearSessionState() {
+  saving.value = false
+  loading.value = false
   plugins.value = []
   instances.value = []
   total.value = 0
@@ -216,6 +223,11 @@ watch(
     if (hasTenantContext.value) void loadInstances()
   }
 )
+watch(accountTarget, () => {
+  invalidateNotificationSession()
+  currentPage.value = 1
+  if (hasTenantContext.value) void loadInstances()
+})
 onBeforeUnmount(unregisterCleanup)
 
 async function loadInstances() {
@@ -232,8 +244,10 @@ async function loadInstances() {
   errorText.value = ''
   try {
     const [pluginResponse, instanceResponse] = await Promise.all([
-      notificationV2.listPlugins(),
-      notificationV2.listInstances({ page: currentPage.value, pageSize: pageSize.value })
+      accountTarget.value
+        ? notificationV2.listTenantPluginsForPlatform(accountTarget.value)
+        : notificationV2.listPlugins(),
+      notificationV2.listInstances({ page: currentPage.value, pageSize: pageSize.value }, accountTarget.value)
     ])
     if (generation !== viewGeneration.value) return
     plugins.value = pluginResponse.data.items
@@ -265,7 +279,7 @@ function setSchemaDefaults(config: Record<string, unknown>) {
 }
 
 function openCreate() {
-  if (!hasTenantContext.value) return
+  if (!canEditAccounts.value) return
   clearSecretsAndEditor()
   editorMode.value = 'create'
   selectedPluginId.value = ''
@@ -277,13 +291,17 @@ function openCreate() {
 }
 
 async function openEdit(row: NotificationInstance) {
-  if (!hasTenantContext.value) return
+  if (!canEditAccounts.value) return
+  const generation = viewGeneration.value
   errorText.value = ''
   try {
     const [instanceResponse, pluginResponse] = await Promise.all([
-      notificationV2.getInstance(row.id),
-      notificationV2.listPlugins()
+      notificationV2.getInstance(row.id, accountTarget.value),
+      accountTarget.value
+        ? notificationV2.listTenantPluginsForPlatform(accountTarget.value)
+        : notificationV2.listPlugins()
     ])
+    if (generation !== viewGeneration.value) return
     selectedInstance.value = instanceResponse.data
     pendingInstanceSave.value = null
     instanceVersionConflict.value = false
@@ -306,6 +324,7 @@ async function openEdit(row: NotificationInstance) {
     })
     modal.value = true
   } catch (error) {
+    if (generation !== viewGeneration.value || error instanceof NotificationSessionChangedError) return
     errorText.value = notificationErrorMessage(error, '读取实例失败。', 'Could not load the instance.')
   }
 }
@@ -430,7 +449,8 @@ watch(selectedPluginId, () => {
 })
 
 async function validateConfig() {
-  if (!hasTenantContext.value || instanceSaveReadOnly.value) return
+  if (!canEditAccounts.value || instanceSaveReadOnly.value) return
+  const generation = viewGeneration.value
   validationErrors.value = []
   errorText.value = ''
   if (!localValidation()) {
@@ -447,19 +467,22 @@ async function validateConfig() {
             expectedVersion: selectedInstance.value!.version,
             configPatch: config
           }
-    const result = await notificationV2.validateInstance(body)
+    const result = await notificationV2.validateInstance(body, accountTarget.value)
+    if (generation !== viewGeneration.value) return
     validationErrors.value = result.data.errors
     if (!result.data.valid && result.data.errors.length) focusFirstValidationError()
     successText.value = result.data.valid
       ? tx('配置校验通过；未发送通知。', 'Configuration is valid; no notification was sent.')
       : ''
   } catch (error) {
+    if (generation !== viewGeneration.value || error instanceof NotificationSessionChangedError) return
     errorText.value = notificationErrorMessage(error, '校验失败。', 'Validation failed.')
   }
 }
 
 async function saveInstance() {
-  if (!hasTenantContext.value || !capabilities.value.canManage || saving.value || instanceVersionConflict.value) return
+  if (!hasTenantContext.value || !canEditAccounts.value || saving.value || instanceVersionConflict.value) return
+  const generation = viewGeneration.value
   saving.value = true
   errorText.value = ''
   successText.value = ''
@@ -504,19 +527,22 @@ async function saveInstance() {
     if (!pending) return
     if (pending.kind === 'create') {
       await sendNotificationMutationSnapshot(pending, {
-        send: request => notificationV2.createInstance(request.body, request.key)
+        send: request => notificationV2.createInstance(request.body, request.key, accountTarget.value)
       })
     } else {
       await sendNotificationMutationSnapshot(pending, {
-        send: request => notificationV2.updateInstance(pending.instanceId, request.body, request.key)
+        send: request =>
+          notificationV2.updateInstance(pending.instanceId, request.body, request.key, accountTarget.value)
       })
     }
+    if (generation !== viewGeneration.value) return
     pendingInstanceSave.value = null
     clearSecretsAndEditor()
     modal.value = false
     successText.value = tx('实例已保存；不会自动发送测试通知。', 'Instance saved. No test notification was sent.')
     await loadInstances()
   } catch (error) {
+    if (generation !== viewGeneration.value || error instanceof NotificationSessionChangedError) return
     if (error instanceof NotificationClientError && error.outcomeUncertain) {
       errorText.value = tx(
         '保存结果未确认。表单已锁定；使用同一请求重试，不会创建第二个实例或版本。',
@@ -543,7 +569,7 @@ async function saveInstance() {
           )
         : notificationErrorMessage(error, '保存失败。', 'Save failed.')
   } finally {
-    saving.value = false
+    if (generation === viewGeneration.value) saving.value = false
   }
 }
 
@@ -584,7 +610,7 @@ function updateEnum(name: string, schema: SchemaField, selected: string | null) 
 }
 
 function openTest(row: NotificationInstance) {
-  if (!hasTenantContext.value) return
+  if (!hasTenantContext.value || capabilities.value.canManageAccounts || !capabilities.value.canSendTest) return
   if (pendingTest.value) {
     testStateText.value = tx(
       '上一次试发结果未知，请使用同一请求重试或查询状态。',
@@ -636,7 +662,7 @@ function makeTestBody(): NotificationV2.TestSendRequest {
 }
 
 async function submitTest() {
-  if (!hasTenantContext.value || !capabilities.value.canSendTest) return
+  if (!hasTenantContext.value || capabilities.value.canManageAccounts || !capabilities.value.canSendTest) return
   errorText.value = ''
   try {
     if (!pendingTest.value) {
@@ -738,16 +764,20 @@ const columns: DataTableColumns<NotificationInstance> = [
     minWidth: 240,
     render: row => (
       <NSpace>
-        <NButton size="small" disabled={!capabilities.value.canManage} onClick={() => openEdit(row)}>
-          {tx('配置', 'Configure')}
-        </NButton>
-        <NButton
-          size="small"
-          disabled={!capabilities.value.canSendTest || Boolean(pendingTest.value)}
-          onClick={() => openTest(row)}
-        >
-          {tx('发送测试', 'Send test')}
-        </NButton>
+        {canEditAccounts.value && (
+          <NButton size="small" onClick={() => openEdit(row)}>
+            {tx('配置', 'Configure')}
+          </NButton>
+        )}
+        {!capabilities.value.canManageAccounts && (
+          <NButton
+            size="small"
+            disabled={!capabilities.value.canSendTest || Boolean(pendingTest.value)}
+            onClick={() => openTest(row)}
+          >
+            {tx('发送测试', 'Send test')}
+          </NButton>
+        )}
       </NSpace>
     )
   }
@@ -763,8 +793,8 @@ onMounted(loadInstances)
         <span>
           {{
             tx(
-              '通知账号按租户管理。请先在“租户管理”中进入目标租户，再配置该租户的通知账号。',
-              'Notification accounts are managed per tenant. Enter the target tenant from Tenant management before configuring its accounts.'
+              '服务账号和密钥由超管管理。请先选择目标租户，再配置或校验服务账号。',
+              'Service accounts and credentials are managed by the system administrator. Select a target tenant before configuring or validating its accounts.'
             )
           }}
         </span>
@@ -778,14 +808,18 @@ onMounted(loadInstances)
         <div>
           {{
             tx(
-              '配置当前租户的通知账号；保存和校验不会发送通知。',
-              'Configure notification accounts for the current tenant. Saving and validation do not send notifications.'
+              canEditAccounts
+                ? '配置所选租户的服务账号和密钥；保存和校验不会发送通知。'
+                : '这些服务由超管配置。租户可查看、选择和使用，不能修改账号或密钥。',
+              canEditAccounts
+                ? 'Configure service accounts and credentials for the selected tenant. Saving and validation do not send notifications.'
+                : 'These services are configured by the system administrator. Tenants can view, select and use them; account or credential changes are not allowed.'
             )
           }}
         </div>
         <NSpace>
           <NButton @click="loadInstances">{{ tx('刷新', 'Refresh') }}</NButton>
-          <NButton v-if="capabilities.canManage" type="primary" @click="openCreate">
+          <NButton v-if="canEditAccounts" type="primary" @click="openCreate">
             {{ tx('创建实例', 'Create instance') }}
           </NButton>
         </NSpace>
@@ -1106,7 +1140,7 @@ onMounted(loadInstances)
           {{ tx('校验配置', 'Validate configuration') }}
         </NButton>
         <NButton
-          v-if="capabilities.canManage"
+          v-if="canEditAccounts"
           type="primary"
           :disabled="!selectedPlugin || instanceVersionConflict"
           :loading="saving"

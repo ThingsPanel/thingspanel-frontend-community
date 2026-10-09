@@ -8,6 +8,7 @@ import { useI18n } from 'vue-i18n'
 import { getNotificationUiCapabilities } from '@/service/api/notification-v2'
 import NotificationPlugins from '~/src/views/apply/plugin/NotificationPlugins.vue'
 import NotificationInstances from './NotificationInstances.vue'
+import NotificationPlatformAccounts from './NotificationPlatformAccounts.vue'
 
 const { locale } = useI18n()
 const capabilities = computed(() => getNotificationUiCapabilities())
@@ -28,10 +29,16 @@ const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('z
           >
             <NotificationPlugins />
           </NTabPane>
-          <NTabPane name="native" :tab="tx('通知实例', 'Notification instances')" class="pannel-content">
-            <NotificationInstances />
+          <NTabPane name="native" :tab="tx('服务账号', 'Service accounts')" class="pannel-content">
+            <NotificationPlatformAccounts v-if="capabilities.canManageAccounts" />
+            <NotificationInstances v-else />
           </NTabPane>
-          <NTabPane name="legacy" :tab="tx('旧通知配置', 'Legacy notification settings')" class="pannel-content">
+          <NTabPane
+            v-if="capabilities.canManageAccounts"
+            name="legacy"
+            :tab="tx('旧通知配置', 'Legacy notification settings')"
+            class="pannel-content"
+          >
             <NTabs type="line" animated>
               <NTabPane name="1" :tab="$t('page.manage.notification.email.title')" class="pannel-content">
                 <Email></Email>

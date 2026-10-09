@@ -10,6 +10,7 @@ describe('notification page compilation', () => {
     'alarm/notification-group/NotificationAvailablePlugins.vue',
     'alarm/notification-group/NotificationGroups.vue',
     'management/notification/NotificationInstances.vue',
+    'management/notification/NotificationPlatformAccounts.vue',
     'management/notification/index.vue',
     'apply/plugin/NotificationPlugins.vue'
   ]) {

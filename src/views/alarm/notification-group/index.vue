@@ -27,7 +27,7 @@ const activeTab = ref('policies')
       <NTabPane name="available-plugins" :tab="tx('可用通知插件', 'Available notification plugins')">
         <NotificationAvailablePlugins />
       </NTabPane>
-      <NTabPane name="accounts" :tab="tx('通知账号', 'Notification accounts')">
+      <NTabPane name="accounts" :tab="tx('可用服务', 'Available services')">
         <NotificationInstances />
       </NTabPane>
     </NTabs>

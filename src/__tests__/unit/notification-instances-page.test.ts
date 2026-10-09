@@ -23,15 +23,15 @@ const { api, authState } = vi.hoisted(() => ({
       id: 'fixture-user',
       userId: 'fixture-user',
       tenant_id: 'fixture-tenant',
-      authority: 'TENANT_ADMIN',
-      roles: ['TENANT_ADMIN']
+      authority: 'SYS_ADMIN',
+      roles: ['SYS_ADMIN']
     }
   }
 }))
 
 vi.mock('@/service/api/notification-v2', async importOriginal => {
   const original = await importOriginal<typeof import('@/service/api/notification-v2')>()
-  return { ...original, notificationV2: api }
+  return { ...original, notificationV2: { ...api, listTenantPluginsForPlatform: () => api.listPlugins() } }
 })
 vi.mock('@/store/modules/auth', async () => {
   const { reactive } = await import('vue')
@@ -231,7 +231,9 @@ describe('notification instance page submit boundaries', () => {
     api.getNotification.mockReset().mockResolvedValue({ data: { deliveries: [] } })
     api.createIdempotencyKey.mockReturnValue('fixture-idempotency-key')
     authState.token = 'fixture-session'
-    authState.userInfo.tenant_id = 'fixture-tenant'
+    authState.userInfo.tenant_id = ''
+    authState.userInfo.authority = 'SYS_ADMIN'
+    authState.userInfo.roles = ['SYS_ADMIN']
     ;(globalThis as { React?: unknown }).React = {
       createElement: (type: Parameters<typeof h>[0], props: Parameters<typeof h>[1], ...children: unknown[]) =>
         h(type, props, () => children)
@@ -239,7 +241,11 @@ describe('notification instance page submit boundaries', () => {
   })
 
   it('validates configuration on the real form without saving or sending', async () => {
-    const wrapper = mount(NotificationInstances, { attachTo: document.body, global: { stubs } })
+    const wrapper = mount(NotificationInstances, {
+      props: { targetTenantId: 'fixture-tenant' },
+      attachTo: document.body,
+      global: { stubs }
+    })
     await flushPromises()
     await wrapper
       .findAll('button')
@@ -264,23 +270,26 @@ describe('notification instance page submit boundaries', () => {
       .trigger('click')
     await flushPromises()
 
-    expect(api.validateInstance).toHaveBeenCalledWith({
-      draft: { pluginRegistrationId: 'registration-1', channel: 'email', config: { host: 'smtp.example.test' } }
-    })
+    expect(api.validateInstance).toHaveBeenCalledWith(
+      {
+        draft: { pluginRegistrationId: 'registration-1', channel: 'email', config: { host: 'smtp.example.test' } }
+      },
+      'fixture-tenant'
+    )
     expect(wrapper.text()).toContain('Configuration is valid; no notification was sent.')
     expect(api.createInstance).not.toHaveBeenCalled()
     expect(api.testInstance).not.toHaveBeenCalled()
     wrapper.unmount()
   })
 
-  it('shows the tenant switch path and does not request tenant data for a platform session', async () => {
+  it('requires an explicit tenant selection and does not request tenant data for a platform session', async () => {
     authState.userInfo.tenant_id = ''
     authState.userInfo.authority = 'SYS_ADMIN'
     authState.userInfo.roles = ['SYS_ADMIN']
     const wrapper = mount(NotificationInstances, { global: { stubs } })
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Notification accounts are managed per tenant.')
+    expect(wrapper.text()).toContain('Service accounts and credentials are managed by the system administrator.')
     expect(wrapper.get('a[href="/management/user"]').text()).toBe('Open Tenant management')
     expect(wrapper.findAll('button').map(button => button.text())).not.toContain('Create instance')
     expect(api.listPlugins).not.toHaveBeenCalled()
@@ -290,7 +299,11 @@ describe('notification instance page submit boundaries', () => {
   })
 
   it('associates the required config error with its control and focuses it', async () => {
-    const wrapper = mount(NotificationInstances, { attachTo: document.body, global: { stubs } })
+    const wrapper = mount(NotificationInstances, {
+      props: { targetTenantId: 'fixture-tenant' },
+      attachTo: document.body,
+      global: { stubs }
+    })
     await flushPromises()
     await wrapper
       .findAll('button')
@@ -330,7 +343,11 @@ describe('notification instance page submit boundaries', () => {
     api.validateInstance.mockResolvedValueOnce({
       data: { valid: false, errors: [{ field: 'config.host', reason: 'Host is not accepted.' }] }
     })
-    const wrapper = mount(NotificationInstances, { attachTo: document.body, global: { stubs } })
+    const wrapper = mount(NotificationInstances, {
+      props: { targetTenantId: 'fixture-tenant' },
+      attachTo: document.body,
+      global: { stubs }
+    })
     await flushPromises()
     await wrapper
       .findAll('button')
@@ -380,7 +397,11 @@ describe('notification instance page submit boundaries', () => {
         config: { host: 'smtp.example.test', ssl: true }
       }
     })
-    const wrapper = mount(NotificationInstances, { attachTo: document.body, global: { stubs } })
+    const wrapper = mount(NotificationInstances, {
+      props: { targetTenantId: 'fixture-tenant' },
+      attachTo: document.body,
+      global: { stubs }
+    })
     await flushPromises()
     await wrapper
       .findAll('button')
@@ -435,7 +456,7 @@ describe('notification instance page submit boundaries', () => {
       }
     }
     api.listPlugins.mockResolvedValue({ data: { items: [firstPlugin, secondPlugin] } })
-    const wrapper = mount(NotificationInstances, { global: { stubs } })
+    const wrapper = mount(NotificationInstances, { props: { targetTenantId: 'fixture-tenant' }, global: { stubs } })
     await flushPromises()
     await wrapper
       .findAll('button')
@@ -481,6 +502,9 @@ describe('notification instance page submit boundaries', () => {
   })
 
   it('keeps one stable test body and key across rapid confirmation clicks', async () => {
+    authState.userInfo.authority = 'TENANT_ADMIN'
+    authState.userInfo.roles = ['TENANT_ADMIN']
+    authState.userInfo.tenant_id = 'fixture-tenant'
     let release!: () => void
     let logicalSendCount = 0
     const seen = new Map<string, string>()
@@ -496,7 +520,7 @@ describe('notification instance page submit boundaries', () => {
         release = () => resolve({ data: { notificationId: 'notification-accepted-1' } })
       })
     })
-    const wrapper = mount(NotificationInstances, { global: { stubs } })
+    const wrapper = mount(NotificationInstances, { props: { targetTenantId: 'fixture-tenant' }, global: { stubs } })
     await flushPromises()
     await wrapper
       .findAll('button')
@@ -519,9 +543,54 @@ describe('notification instance page submit boundaries', () => {
     wrapper.unmount()
   })
 
+  it('lets tenants view and test services while hiding all credential management even with a forged target prop', async () => {
+    authState.userInfo.authority = 'TENANT_ADMIN'
+    authState.userInfo.roles = ['TENANT_ADMIN']
+    authState.userInfo.tenant_id = 'fixture-tenant'
+    const wrapper = mount(NotificationInstances, { props: { targetTenantId: 'another-tenant' }, global: { stubs } })
+    await flushPromises()
+    expect(api.listInstances).toHaveBeenCalledWith(expect.objectContaining({ page: 1 }), undefined)
+    const buttons = wrapper.findAll('button').map(button => button.text())
+    expect(buttons).toContain('Send test')
+    expect(buttons).not.toContain('Create instance')
+    expect(buttons).not.toContain('Configure')
+    expect(api.getInstance).not.toHaveBeenCalled()
+    expect(api.createInstance).not.toHaveBeenCalled()
+    expect(api.updateInstance).not.toHaveBeenCalled()
+    expect(api.validateInstance).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('discards an old tenant account response when the administrator switches tenants', async () => {
+    // eslint-disable-next-line no-unused-vars
+    let resolveOld!: (value: unknown) => void
+    api.getInstance.mockReturnValueOnce(
+      new Promise(resolve => {
+        resolveOld = resolve
+      })
+    )
+    const wrapper = mount(NotificationInstances, { props: { targetTenantId: 'fixture-tenant' }, global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Configure')!
+      .trigger('click')
+    await wrapper.setProps({ targetTenantId: 'second-tenant' })
+    await flushPromises()
+    resolveOld({ data: { ...instance, name: 'old-tenant-account' } })
+    await flushPromises()
+    expect(wrapper.find('.qa-modal').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('old-tenant-account')
+    expect(api.listInstances.mock.calls.at(-1)?.[1]).toBe('second-tenant')
+    expect(authState.userInfo.tenant_id).toBe('')
+    expect(api.updateInstance).not.toHaveBeenCalled()
+    expect(api.testInstance).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
   it('shows a configuration failure in the page without issuing notification mutations', async () => {
     api.listPlugins.mockRejectedValueOnce(new NotificationClientError('Notification API is not configured.', null))
-    const wrapper = mount(NotificationInstances, { global: { stubs } })
+    const wrapper = mount(NotificationInstances, { props: { targetTenantId: 'fixture-tenant' }, global: { stubs } })
     await flushPromises()
     expect(wrapper.text()).toContain('Notification API is not configured.')
     expect(api.validateInstance).not.toHaveBeenCalled()
@@ -535,7 +604,7 @@ describe('notification instance page submit boundaries', () => {
     [403, 'You do not have permission to manage notification instances.']
   ])('shows the server authorization message for HTTP %s without a mutation', async (_status, message) => {
     api.listPlugins.mockRejectedValueOnce(Object.assign(new Error(message), { httpStatus: _status }))
-    const wrapper = mount(NotificationInstances, { global: { stubs } })
+    const wrapper = mount(NotificationInstances, { props: { targetTenantId: 'fixture-tenant' }, global: { stubs } })
     await flushPromises()
     expect(wrapper.text()).toContain(message)
     expect(api.createInstance).not.toHaveBeenCalled()

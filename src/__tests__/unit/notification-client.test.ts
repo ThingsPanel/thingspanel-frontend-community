@@ -40,6 +40,29 @@ describe('notification v2 client', () => {
     resetStoreMock.mockReset()
     authState.token = 'session-token'
     authState.userInfo.tenant_id = 'tenant-1'
+    authState.userInfo.authority = 'TENANT_ADMIN'
+    authState.userInfo.roles = ['TENANT_ADMIN']
+  })
+
+  it('uses an explicit platform target with the original administrator bearer, without impersonating a tenant', async () => {
+    authState.userInfo.authority = 'SYS_ADMIN'
+    authState.userInfo.roles = ['SYS_ADMIN']
+    authState.userInfo.tenant_id = ''
+    requestMock.mockResolvedValue({ status: 200, data: envelope({ items: [], total: 0 }) })
+    await notificationV2.listInstances({ page: 1, pageSize: 10 }, 'target/tenant')
+    expect(requestMock.mock.calls[0][0]).toMatchObject({
+      url: '/api/v2/platform/notification-tenants/target%2Ftenant/notification-instances',
+      headers: { Authorization: 'Bearer session-token' }
+    })
+    expect(authState.userInfo.tenant_id).toBe('')
+    expect(authState.token).toBe('session-token')
+  })
+
+  it('rejects a tenant attempting the platform account route before an HTTP call', () => {
+    expect(() => notificationV2.listInstances({ page: 1, pageSize: 10 }, 'another-tenant')).toThrow(
+      'Only the system administrator can manage service accounts.'
+    )
+    expect(requestMock).not.toHaveBeenCalled()
   })
 
   it('preserves the 202 envelope and sends the stable test key with the session bearer', async () => {

@@ -964,8 +964,7 @@ onMounted(loadPage)
         <NCard v-for="(binding, index) in bindings" :key="binding.bindingId" size="small" class="mb-12px">
           <div class="flex flex-wrap items-center justify-between gap-8px mb-8px">
             <div class="font-600">
-              {{ tx(`绑定 ${index + 1}`, `Binding ${index + 1}`) }} ·
-              <code>{{ binding.bindingId }}</code>
+              {{ tx(`绑定 ${index + 1}`, `Binding ${index + 1}`) }}
             </div>
             <NButton size="tiny" type="error" :disabled="formReadOnly" @click="removeBinding(binding.bindingId)">
               {{ tx('移除', 'Remove') }}

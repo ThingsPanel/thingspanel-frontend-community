@@ -65,7 +65,8 @@ export function getNotificationUiCapabilities() {
     canRead: canManage || roles.has('TENANT_USER'),
     canManage,
     canSendTest: canManage,
-    canManagePlugins: roles.has('SYS_ADMIN')
+    canManagePlugins: roles.has('SYS_ADMIN'),
+    canManageAccounts: roles.has('SYS_ADMIN')
   }
 }
 
@@ -504,6 +505,17 @@ function key() {
   return Array.from(bytes, value => value.toString(16).padStart(2, '0')).join('')
 }
 
+function instanceCollectionPath(targetTenantId?: string) {
+  if (!targetTenantId) return '/api/v2/notification-instances'
+  if (!getNotificationUiCapabilities().canManageAccounts) {
+    throw new NotificationClientError('Only the system administrator can manage service accounts.', 403)
+  }
+  if (!targetTenantId.trim() || targetTenantId.length > 128) {
+    throw new NotificationClientError('Select a valid target tenant.', 400)
+  }
+  return `/api/v2/platform/notification-tenants/${encodeURIComponent(targetTenantId)}/notification-instances`
+}
+
 export const notificationV2 = {
   listPlugins() {
     return send<{ items: NotificationPlugin[] }>({ method: 'GET', url: '/api/v2/notification-plugins' }, [200])
@@ -573,11 +585,18 @@ export const notificationV2 = {
     if (!data) return invalidPluginGrantResponse(response.httpStatus, true)
     return { ...response, data }
   },
-  listInstances(params: { page: number; pageSize: number; pluginId?: string; channel?: NotificationV2.Channel }) {
+  listInstances(
+    params: { page: number; pageSize: number; pluginId?: string; channel?: NotificationV2.Channel },
+    targetTenantId?: string
+  ) {
     return send<NotificationPage<NotificationInstance>>(
-      { method: 'GET', url: '/api/v2/notification-instances', params },
+      { method: 'GET', url: instanceCollectionPath(targetTenantId), params },
       [200]
     )
+  },
+  listTenantPluginsForPlatform(targetTenantId: string) {
+    const path = instanceCollectionPath(targetTenantId).replace(/notification-instances$/, 'notification-plugins')
+    return send<NotificationPage<NotificationPlugin>>({ method: 'GET', url: path }, [200])
   },
   listGroups(params: { page: number; pageSize: number }, signal?: AbortSignal) {
     return send<NotificationV2.Page<NotificationV2.GroupView>>(
@@ -647,17 +666,17 @@ export const notificationV2 = {
       signal
     )
   },
-  getInstance(id: string) {
+  getInstance(id: string, targetTenantId?: string) {
     return send<NotificationInstance>(
-      { method: 'GET', url: `/api/v2/notification-instances/${encodeURIComponent(id)}` },
+      { method: 'GET', url: `${instanceCollectionPath(targetTenantId)}/${encodeURIComponent(id)}` },
       [200]
     )
   },
-  createInstance(body: NotificationV2.InstanceCreate, idempotencyKey = key()) {
+  createInstance(body: NotificationV2.InstanceCreate, idempotencyKey = key(), targetTenantId?: string) {
     return send<NotificationInstance>(
       {
         method: 'POST',
-        url: '/api/v2/notification-instances',
+        url: instanceCollectionPath(targetTenantId),
         data: body,
         headers: { 'Idempotency-Key': idempotencyKey }
       },
@@ -665,11 +684,11 @@ export const notificationV2 = {
       true
     )
   },
-  updateInstance(id: string, body: NotificationV2.InstanceUpdate, idempotencyKey = key()) {
+  updateInstance(id: string, body: NotificationV2.InstanceUpdate, idempotencyKey = key(), targetTenantId?: string) {
     return send<NotificationInstance>(
       {
         method: 'PUT',
-        url: `/api/v2/notification-instances/${encodeURIComponent(id)}`,
+        url: `${instanceCollectionPath(targetTenantId)}/${encodeURIComponent(id)}`,
         data: body,
         headers: { 'Idempotency-Key': idempotencyKey }
       },
@@ -677,9 +696,9 @@ export const notificationV2 = {
       true
     )
   },
-  validateInstance(body: NotificationV2.InstanceValidate) {
+  validateInstance(body: NotificationV2.InstanceValidate, targetTenantId?: string) {
     return send<NotificationV2.ValidationResult>(
-      { method: 'POST', url: '/api/v2/notification-instances/validate', data: body },
+      { method: 'POST', url: `${instanceCollectionPath(targetTenantId)}/validate`, data: body },
       [200]
     )
   },
