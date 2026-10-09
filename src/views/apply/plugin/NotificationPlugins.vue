@@ -10,6 +10,7 @@ import {
   NotificationClientError,
   notificationV2,
   registerNotificationSessionCleanup,
+  resolveNotificationPluginOrigin,
   type NotificationPlugin
 } from '@/service/api/notification-v2'
 import type * as NotificationV2 from '@/service/api/notification-v2.types'
@@ -133,25 +134,14 @@ async function readManifest() {
   successText.value = ''
   manifest.value = null
   manifestDigest.value = ''
-  let parsed: URL
+  let origin: string
   try {
-    parsed = new URL(form.origin)
-  } catch {
-    errorText.value = tx('请输入有效的插件 origin。', 'Enter a valid plugin origin.')
-    return
-  }
-  if (
-    parsed.protocol !== 'https:' ||
-    parsed.username ||
-    parsed.password ||
-    !['', '/'].includes(parsed.pathname) ||
-    parsed.search ||
-    parsed.hash
-  ) {
-    errorText.value = tx(
-      '插件 origin 必须是无路径的 HTTPS 地址。',
-      'The plugin origin must be an HTTPS origin without a path.'
-    )
+    origin = resolveNotificationPluginOrigin(form.origin)
+  } catch (error) {
+    errorText.value =
+      error instanceof Error
+        ? tx('插件 origin 无效。生产必须使用 HTTPS；仅显式开启的 Vite 开发环境允许 loopback HTTP。', error.message)
+        : tx('插件 origin 无效。', 'The plugin origin is invalid.')
     return
   }
   if (!form.authSecret.trim()) {
@@ -159,9 +149,9 @@ async function readManifest() {
     return
   }
   reading.value = true
-  form.origin = parsed.origin
+  form.origin = origin
   try {
-    const response = await fetch(`${parsed.origin}/v1/manifest`, {
+    const response = await fetch(`${origin}/v1/manifest`, {
       method: 'GET',
       headers: { Authorization: `Bearer ${form.authSecret}` },
       credentials: 'omit',

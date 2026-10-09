@@ -1,5 +1,6 @@
 <script setup lang="tsx">
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Ref } from 'vue'
 import { NButton, NEmpty } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
@@ -10,8 +11,12 @@ import { $t } from '@/locales'
 import { formatDateTime } from '@/utils/common/datetime'
 import { tableThemeOverrides } from '@/utils/table-theme'
 import { useLoading } from '~/packages/hooks'
+import NotificationDeliveries from './NotificationDeliveries.vue'
 
 const { loading, startLoading, endLoading } = useLoading(false)
+const { locale } = useI18n()
+const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
+const recordTab = ref('new')
 
 const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()])
 
@@ -225,87 +230,108 @@ const handleReset = () => {
   getTableData()
 }
 
-getTableData()
+watch(
+  recordTab,
+  tab => {
+    if (tab === 'legacy') void getTableData()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
   <div>
-    <NCard>
-      <div class="h-full flex-col">
-        <div class="search-toolbar">
-          <div class="search-context">{{ $t('generate.notification-record') }}</div>
-          <div class="search-fields">
-            <div class="search-field search-field--type">
-              <div class="search-field-label">{{ $t('generate.notification-type') }}</div>
-              <n-select
-                v-model:value="queryParams.notification_type"
-                :options="notificationOptions"
-                :placeholder="$t('generate.select-notification-type')"
-                class="input-style"
-                clearable
-              />
+    <NTabs v-model:value="recordTab" type="line">
+      <NTabPane name="new" :tab="tx('新投递', 'New deliveries')">
+        <NotificationDeliveries />
+      </NTabPane>
+      <NTabPane name="legacy" :tab="tx('旧历史记录', 'Legacy history')">
+        <NAlert type="info" class="mb-12px">
+          {{
+            tx(
+              '此页显示旧系统历史状态；SUCCESS/FAILURE 是历史字段，不代表送达回执。',
+              'This tab shows legacy history states; SUCCESS/FAILURE are historical labels, not delivery receipts.'
+            )
+          }}
+        </NAlert>
+        <NCard>
+          <div class="h-full flex-col">
+            <div class="search-toolbar">
+              <div class="search-context">{{ $t('generate.notification-record') }}</div>
+              <div class="search-fields">
+                <div class="search-field search-field--type">
+                  <div class="search-field-label">{{ $t('generate.notification-type') }}</div>
+                  <n-select
+                    v-model:value="queryParams.notification_type"
+                    :options="notificationOptions"
+                    :placeholder="$t('generate.select-notification-type')"
+                    class="input-style"
+                    clearable
+                  />
+                </div>
+                <div class="search-field search-field--date">
+                  <div class="search-field-label">{{ $t('custom.device_details.sendTime') }}</div>
+                  <NDatePicker
+                    v-model:value="range"
+                    type="datetimerange"
+                    class="input-style"
+                    clearable
+                    separator="-"
+                    @update:value="pickerChange"
+                  />
+                </div>
+                <div class="search-field search-field--target">
+                  <div class="search-field-label">{{ $t('generate.recipient') }}</div>
+                  <NInput v-model:value="queryParams.send_target" clearable :placeholder="$t('generate.recipient')" />
+                </div>
+                <div class="search-actions">
+                  <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+                  <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+                </div>
+              </div>
             </div>
-            <div class="search-field search-field--date">
-              <div class="search-field-label">{{ $t('custom.device_details.sendTime') }}</div>
-              <NDatePicker
-                v-model:value="range"
-                type="datetimerange"
-                class="input-style"
-                clearable
-                separator="-"
-                @update:value="pickerChange"
-              />
-            </div>
-            <div class="search-field search-field--target">
-              <div class="search-field-label">{{ $t('generate.recipient') }}</div>
-              <NInput v-model:value="queryParams.send_target" clearable :placeholder="$t('generate.recipient')" />
-            </div>
-            <div class="search-actions">
-              <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-              <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
-            </div>
-          </div>
-        </div>
-        <NDataTable
-          class="thingspanel-data-table mt-4"
-          size="medium"
-          :theme-overrides="tableThemeOverrides"
-          :bordered="true"
-          :bottom-bordered="true"
-          :single-column="false"
-          :single-line="true"
-          :striped="false"
-          :scroll-x="1220"
-          :row-key="rowKey"
-          :columns="columns"
-          :data="tableData"
-          :loading="loading"
-          :pagination="pagination"
-          :remote="true"
-        >
-          <template #empty>
-            <NEmpty size="small" :description="$t('common.noData')" />
-          </template>
-        </NDataTable>
+            <NDataTable
+              class="thingspanel-data-table mt-4"
+              size="medium"
+              :theme-overrides="tableThemeOverrides"
+              :bordered="true"
+              :bottom-bordered="true"
+              :single-column="false"
+              :single-line="true"
+              :striped="false"
+              :scroll-x="1220"
+              :row-key="rowKey"
+              :columns="columns"
+              :data="tableData"
+              :loading="loading"
+              :pagination="pagination"
+              :remote="true"
+            >
+              <template #empty>
+                <NEmpty size="small" :description="$t('common.noData')" />
+              </template>
+            </NDataTable>
 
-        <NModal
-          v-model:show="detailVisible"
-          preset="card"
-          :title="$t('generate.details')"
-          :style="{ width: 'min(900px, calc(100vw - 32px))' }"
-          class="notification-detail-modal"
-        >
-          <div v-if="selectedRecord" class="notification-detail-meta">
-            <span>{{ formatDateTime(selectedRecord.send_time) }}</span>
-            <span>{{ selectedRecord.send_target || '—' }}</span>
-            <span>{{ selectedRecord.notification_type || '—' }}</span>
+            <NModal
+              v-model:show="detailVisible"
+              preset="card"
+              :title="$t('generate.details')"
+              :style="{ width: 'min(900px, calc(100vw - 32px))' }"
+              class="notification-detail-modal"
+            >
+              <div v-if="selectedRecord" class="notification-detail-meta">
+                <span>{{ formatDateTime(selectedRecord.send_time) }}</span>
+                <span>{{ selectedRecord.send_target || '—' }}</span>
+                <span>{{ selectedRecord.notification_type || '—' }}</span>
+              </div>
+              <pre v-if="selectedRecord" class="notification-detail-text">{{
+                formatNotificationContent(selectedRecord.send_content)
+              }}</pre>
+            </NModal>
           </div>
-          <pre v-if="selectedRecord" class="notification-detail-text">{{
-            formatNotificationContent(selectedRecord.send_content)
-          }}</pre>
-        </NModal>
-      </div>
-    </NCard>
+        </NCard>
+      </NTabPane>
+    </NTabs>
   </div>
 </template>
 

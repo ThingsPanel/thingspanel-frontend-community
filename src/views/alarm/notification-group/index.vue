@@ -1,5 +1,6 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, reactive, ref } from 'vue'
+import { computed, getCurrentInstance, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Ref } from 'vue'
 import { NButton, NEmpty, NPopconfirm, NSpace, NSwitch } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
@@ -14,9 +15,12 @@ import { $t } from '@/locales'
 import { tableThemeOverrides } from '@/utils/table-theme'
 import type { ModalType } from './components/table-action-modal.vue'
 import TableActionModal from './components/table-action-modal.vue'
+import NotificationGroups from './NotificationGroups.vue'
 import { useBoolean, useLoading } from '~/packages/hooks'
 
 const { loading, startLoading, endLoading } = useLoading(false)
+const { locale } = useI18n()
+const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
 const { bool: visible, setTrue: openModal } = useBoolean()
 const tableData = ref<Api.Alarm.NotificationGroupList[]>([])
 const total = ref(0)
@@ -130,6 +134,7 @@ const columns = ref([
 ]) as Ref<DataTableColumns<DataService.Data>>
 
 const modalType = ref<ModalType>('add')
+const groupTab = ref('native')
 
 function setModalType(type: ModalType) {
   modalType.value = type
@@ -144,50 +149,71 @@ const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance()
   return proxy.getPlatform()
 })
-getTableData()
+watch(
+  groupTab,
+  tab => {
+    if (tab === 'legacy') void getTableData()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
   <div>
-    <NCard>
-      <div class="notification-group-header">
-        <div class="notification-group-title">{{ $t('generate.notification-group') }}</div>
-        <div class="notification-group-toolbar">
-          <NButton type="primary" @click="handleAddTable">{{ $t('common.createNotificationGroup') }}</NButton>
-        </div>
-      </div>
-      <div class="h-full flex-col">
-        <NDataTable
-          class="thingspanel-data-table"
-          size="medium"
-          :theme-overrides="tableThemeOverrides"
-          :bordered="true"
-          :bottom-bordered="true"
-          :single-column="false"
-          :single-line="true"
-          :striped="false"
-          :scroll-x="880"
-          :row-key="rowKey"
-          :columns="columns"
-          :data="tableData"
-          :loading="loading"
-        >
-          <template #empty>
-            <NEmpty size="small" :description="$t('common.noData')" />
-          </template>
-        </NDataTable>
-        <div class="pagination-box">
-          <NPagination v-model:page="pagination.page" :item-count="total" @update:page="getTableData" />
-        </div>
-        <TableActionModal
-          v-model:visible="visible"
-          :class="getPlatform ? 'w-90%' : 'w-600px'"
-          :type="modalType"
-          :edit-data="editData"
-          @get-table-data="getTableData"
-        />
-      </div>
-    </NCard>
+    <NTabs v-model:value="groupTab" type="line">
+      <NTabPane name="native" :tab="tx('新版通知组', 'Encore groups')">
+        <NotificationGroups />
+      </NTabPane>
+      <NTabPane name="legacy" :tab="tx('旧通知组（旧系统）', 'Legacy groups')">
+        <NAlert type="info" class="mb-12px">
+          {{
+            tx(
+              '旧组继续由旧告警流程和旧通知配置管理；请不要在此迁移新组。',
+              'Legacy groups remain managed by the existing alert flow and legacy notification config.'
+            )
+          }}
+        </NAlert>
+        <NCard>
+          <div class="notification-group-header">
+            <div class="notification-group-title">{{ $t('generate.notification-group') }}</div>
+            <div class="notification-group-toolbar">
+              <NButton type="primary" @click="handleAddTable">{{ $t('common.createNotificationGroup') }}</NButton>
+            </div>
+          </div>
+          <div class="h-full flex-col">
+            <NDataTable
+              class="thingspanel-data-table"
+              size="medium"
+              :theme-overrides="tableThemeOverrides"
+              :bordered="true"
+              :bottom-bordered="true"
+              :single-column="false"
+              :single-line="true"
+              :striped="false"
+              :scroll-x="880"
+              :row-key="rowKey"
+              :columns="columns"
+              :data="tableData"
+              :loading="loading"
+            >
+              <template #empty>
+                <NEmpty size="small" :description="$t('common.noData')" />
+              </template>
+            </NDataTable>
+            <div class="pagination-box">
+              <NPagination v-model:page="pagination.page" :item-count="total" @update:page="getTableData" />
+            </div>
+            <TableActionModal
+              v-model:visible="visible"
+              :class="getPlatform ? 'w-90%' : 'w-600px'"
+              :type="modalType"
+              :edit-data="editData"
+              @get-table-data="getTableData"
+            />
+          </div>
+        </NCard>
+      </NTabPane>
+    </NTabs>
   </div>
 </template>
 

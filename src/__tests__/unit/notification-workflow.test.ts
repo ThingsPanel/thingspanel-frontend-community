@@ -1,0 +1,212 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { DispatchStatus, DeliveryStatus } from '@/service/api/notification-v2.types'
+import { notificationV2, resolveNotificationPluginOrigin } from '@/service/api/notification-v2'
+import {
+  describeDeliveryStatus,
+  describeIntakeStatus,
+  getLegacyHistoryStatus
+} from '@/views/alarm/notification-record/workflow'
+import { canEnableNotificationGroup, isNotificationGroupEditable } from '@/views/alarm/notification-group/workflow'
+
+const { requestMock } = vi.hoisted(() => ({ requestMock: vi.fn() }))
+
+vi.mock('axios', () => ({
+  default: {
+    create: vi.fn(() => ({ request: requestMock })),
+    isAxiosError: (error: unknown) => Boolean((error as { isAxiosError?: boolean })?.isAxiosError)
+  }
+}))
+
+vi.mock('@/store/modules/auth', () => ({
+  useAuthStore: () => ({
+    token: 'fake-session',
+    userInfo: { id: 'user-1', tenant_id: 'tenant-1', authority: 'TENANT_ADMIN', roles: ['TENANT_ADMIN'] },
+    resetStore: vi.fn()
+  })
+}))
+
+describe('notification workflow status mapping', () => {
+  const dispatchStatuses: DispatchStatus[] = ['queued', 'sending', 'accepted', 'failed', 'unknown']
+  const deliveryStatuses: DeliveryStatus[] = ['unsupported', 'pending', 'delivered', 'failed', 'unknown']
+
+  it('maps every dispatch and delivery combination without treating failure as a pending receipt', () => {
+    const results = dispatchStatuses.flatMap(dispatch =>
+      deliveryStatuses.map(delivery => describeDeliveryStatus(dispatch, delivery))
+    )
+
+    expect(results.find(result => result.zh === '发送失败')).toMatchObject({ retryAllowed: false, polling: false })
+    expect(describeDeliveryStatus('failed', 'pending')).toMatchObject({
+      zh: '发送失败',
+      en: 'Sending failed',
+      retryAllowed: false,
+      polling: false
+    })
+    expect(describeDeliveryStatus('accepted', 'unsupported')).toMatchObject({
+      zh: '服务商已受理；此通道不提供送达回执',
+      retryAllowed: false
+    })
+    expect(describeDeliveryStatus('accepted', 'pending')).toMatchObject({
+      zh: '服务商已受理；等待送达回执',
+      polling: true,
+      retryAllowed: false
+    })
+    expect(describeDeliveryStatus('accepted', 'delivered').zh).toBe('服务商报告已送达；不代表已读')
+    expect(describeDeliveryStatus('accepted', 'failed').zh).toBe('服务商报告投递失败')
+    expect(describeDeliveryStatus('unknown', 'pending').zh).toContain('是否受理未知')
+    expect(results).toHaveLength(dispatchStatuses.length * deliveryStatuses.length)
+  })
+
+  it('keeps blocked intake separate from delivery status', () => {
+    expect(describeIntakeStatus('blocked', 'member.phone is missing')).toMatchObject({
+      zh: '配置/目标待处理，尚未发送',
+      reason: 'member.phone is missing',
+      retryAllowed: false
+    })
+    expect(describeIntakeStatus('ready')).toMatchObject({ zh: '请求已接收', retryAllowed: false })
+  })
+
+  it('preserves old SUCCESS and FAILURE as historical labels', () => {
+    expect(getLegacyHistoryStatus('SUCCESS')).toBe('旧历史 · SUCCESS')
+    expect(getLegacyHistoryStatus('FAILURE')).toBe('旧历史 · FAILURE')
+  })
+
+  it('allows edits and enabling only for native groups', () => {
+    expect(isNotificationGroupEditable('native')).toBe(true)
+    expect(canEnableNotificationGroup('native')).toBe(true)
+    expect(isNotificationGroupEditable('legacy_unmigrated')).toBe(false)
+    expect(canEnableNotificationGroup('legacy_unmigrated')).toBe(false)
+    expect(isNotificationGroupEditable('projection_pending')).toBe(false)
+    expect(canEnableNotificationGroup('projection_pending')).toBe(false)
+  })
+})
+
+describe('notification workflow API mapping', () => {
+  beforeEach(() => {
+    vi.stubEnv('VITE_NOTIFICATION_API_BASE_URL', 'https://encore.example.test')
+    requestMock.mockReset()
+  })
+
+  it('sends group create and update through frozen v2 routes with stable keys', async () => {
+    const group = {
+      id: 'group-1',
+      name: 'Cold room',
+      enabled: false,
+      bindings: [],
+      revision: 1,
+      version: 1,
+      migrationState: 'native'
+    }
+    requestMock.mockResolvedValueOnce({ status: 201, data: { code: 200, message: 'ok', requestId: 'r1', data: group } })
+    requestMock.mockResolvedValueOnce({ status: 200, data: { code: 200, message: 'ok', requestId: 'r2', data: group } })
+
+    await notificationV2.createGroup({ name: group.name, enabled: false, bindings: [] }, 'group-create-key')
+    await notificationV2.updateGroup(
+      'group-1',
+      { name: group.name, enabled: false, bindings: [], expectedVersion: 1 },
+      'group-update-key'
+    )
+
+    expect(
+      requestMock.mock.calls.map(([config]) => [config.method, config.url, config.headers['Idempotency-Key']])
+    ).toEqual([
+      ['POST', '/api/v2/notification-groups', 'group-create-key'],
+      ['PUT', '/api/v2/notification-groups/group-1', 'group-update-key']
+    ])
+    expect(requestMock.mock.calls[1][0].data).toMatchObject({ expectedVersion: 1 })
+  })
+
+  it('keeps delivery filters separate and allows request cancellation', async () => {
+    requestMock.mockResolvedValueOnce({
+      status: 200,
+      data: { code: 200, message: 'ok', requestId: 'r3', data: { items: [], page: 2, pageSize: 20, total: 0 } }
+    })
+    await notificationV2.listDeliveries({
+      page: 2,
+      pageSize: 20,
+      instanceId: 'instance-1',
+      sourceId: 'alarm-1',
+      dispatchStatus: 'accepted',
+      deliveryStatus: 'pending',
+      from: '2026-10-09T00:00:00Z',
+      to: '2026-10-09T23:59:59Z'
+    })
+    expect(requestMock.mock.calls[0][0]).toMatchObject({
+      method: 'GET',
+      url: '/api/v2/notification-deliveries',
+      params: {
+        page: 2,
+        pageSize: 20,
+        instanceId: 'instance-1',
+        sourceId: 'alarm-1',
+        dispatchStatus: 'accepted',
+        deliveryStatus: 'pending',
+        from: '2026-10-09T00:00:00Z',
+        to: '2026-10-09T23:59:59Z'
+      }
+    })
+
+    const controller = new AbortController()
+    requestMock.mockImplementationOnce(
+      (config: { signal: AbortSignal }) =>
+        new Promise((_, reject) => {
+          config.signal.addEventListener('abort', () =>
+            reject(Object.assign(new Error('canceled'), { isAxiosError: true }))
+          )
+        })
+    )
+    const pending = notificationV2.listDeliveries({ page: 1, pageSize: 10 }, controller.signal)
+    controller.abort()
+    await expect(pending).rejects.toMatchObject({ message: 'canceled' })
+  })
+
+  it('lists notification requests through the frozen task-query contract', async () => {
+    requestMock.mockResolvedValueOnce({
+      status: 200,
+      data: { code: 200, message: 'ok', requestId: 'r4', data: { items: [], page: 1, pageSize: 10, total: 0 } }
+    })
+    await notificationV2.listNotifications({
+      page: 1,
+      pageSize: 10,
+      sourceType: 'alarm',
+      sourceId: 'alarm-7',
+      intakeStatus: 'blocked',
+      from: '2026-10-09T00:00:00Z',
+      to: '2026-10-09T23:59:59Z'
+    })
+    expect(requestMock.mock.calls[0][0]).toMatchObject({
+      method: 'GET',
+      url: '/api/v2/notifications',
+      params: {
+        page: 1,
+        pageSize: 10,
+        sourceType: 'alarm',
+        sourceId: 'alarm-7',
+        intakeStatus: 'blocked',
+        from: '2026-10-09T00:00:00Z',
+        to: '2026-10-09T23:59:59Z'
+      }
+    })
+  })
+
+  it('allows insecure plugin origins only for explicitly opted-in Vite loopback development', () => {
+    expect(resolveNotificationPluginOrigin('https://plugin.example.test')).toBe('https://plugin.example.test')
+    expect(
+      resolveNotificationPluginOrigin('http://localhost:8811/', { development: true, allowInsecureLoopback: true })
+    ).toBe('http://localhost:8811')
+    expect(
+      resolveNotificationPluginOrigin('http://127.0.0.1:8811', { development: true, allowInsecureLoopback: true })
+    ).toBe('http://127.0.0.1:8811')
+    expect(() =>
+      resolveNotificationPluginOrigin('http://plugin.example.test', { development: true, allowInsecureLoopback: true })
+    ).toThrow(/HTTPS/)
+    expect(() =>
+      resolveNotificationPluginOrigin('http://localhost:8811', { development: false, allowInsecureLoopback: true })
+    ).toThrow(/HTTPS/)
+    expect(() =>
+      resolveNotificationPluginOrigin('http://localhost:8811?token=secret', {
+        development: true,
+        allowInsecureLoopback: true
+      })
+    ).toThrow(/HTTPS/)
+  })
+})

@@ -269,6 +269,38 @@ function apiBaseUrl() {
   return configured.replace(/\/+$/, '')
 }
 
+export function resolveNotificationPluginOrigin(
+  value: string,
+  options = {
+    development: import.meta.env.DEV,
+    allowInsecureLoopback: import.meta.env.VITE_NOTIFICATION_ALLOW_INSECURE_PLUGIN_ORIGIN === 'true'
+  }
+) {
+  let parsed: URL
+  try {
+    parsed = new URL(value)
+  } catch {
+    throw new Error('Enter a valid plugin origin.')
+  }
+  const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname.toLowerCase())
+  const secure = parsed.protocol === 'https:'
+  const optedInLoopback =
+    options.development && options.allowInsecureLoopback && parsed.protocol === 'http:' && loopback
+  if (
+    (!secure && !optedInLoopback) ||
+    parsed.username ||
+    parsed.password ||
+    !['', '/'].includes(parsed.pathname) ||
+    parsed.search ||
+    parsed.hash
+  ) {
+    throw new Error(
+      'The plugin origin must be HTTPS; HTTP is allowed only for opted-in Vite development loopback hosts.'
+    )
+  }
+  return parsed.origin
+}
+
 function createTransport(): AxiosInstance {
   return axios.create({ baseURL: apiBaseUrl(), timeout: 15000, withCredentials: true })
 }
@@ -306,13 +338,17 @@ function validateEnvelope<T>(response: AxiosResponse, session: SessionSnapshot, 
 async function send<T>(
   config: AxiosRequestConfig,
   expected: number[],
-  mutating = false
+  mutating = false,
+  signal?: AbortSignal
 ): Promise<NotificationV2.Envelope<T> & { httpStatus: number }> {
   const session = syncSessionScope()
   if (!session.token) throw new NotificationClientError('Please sign in again.', 401)
   let controller: AbortController | undefined
+  const abortRequest = () => controller?.abort()
   try {
     controller = new AbortController()
+    if (signal?.aborted) controller.abort()
+    else signal?.addEventListener('abort', abortRequest, { once: true })
     inflight.add(controller)
     const response = await createTransport().request({
       ...config,
@@ -322,6 +358,7 @@ async function send<T>(
     return validateEnvelope<T>(response, session, expected, mutating)
   } catch (error) {
     if (session.generation !== generation) throw new NotificationSessionChangedError()
+    if (signal?.aborted) throw error
     if (
       error instanceof NotificationClientError ||
       error instanceof NotificationSessionChangedError ||
@@ -333,6 +370,7 @@ async function send<T>(
     if (normalized.httpStatus === 401) void useAuthStore().resetStore()
     throw normalized
   } finally {
+    signal?.removeEventListener('abort', abortRequest)
     if (controller) inflight.delete(controller)
   }
 }
@@ -376,6 +414,74 @@ export const notificationV2 = {
     return send<NotificationPage<NotificationInstance>>(
       { method: 'GET', url: '/api/v2/notification-instances', params },
       [200]
+    )
+  },
+  listGroups(params: { page: number; pageSize: number }, signal?: AbortSignal) {
+    return send<NotificationV2.Page<NotificationV2.GroupView>>(
+      { method: 'GET', url: '/api/v2/notification-groups', params },
+      [200],
+      false,
+      signal
+    )
+  },
+  getGroup(id: string, signal?: AbortSignal) {
+    return send<NotificationV2.GroupView>(
+      { method: 'GET', url: `/api/v2/notification-groups/${encodeURIComponent(id)}` },
+      [200],
+      false,
+      signal
+    )
+  },
+  createGroup(body: NotificationV2.GroupCreate, idempotencyKey = key()) {
+    return send<NotificationV2.GroupView>(
+      {
+        method: 'POST',
+        url: '/api/v2/notification-groups',
+        data: body,
+        headers: { 'Idempotency-Key': idempotencyKey }
+      },
+      [201],
+      true
+    )
+  },
+  updateGroup(id: string, body: NotificationV2.GroupUpdate, idempotencyKey = key()) {
+    return send<NotificationV2.GroupView>(
+      {
+        method: 'PUT',
+        url: `/api/v2/notification-groups/${encodeURIComponent(id)}`,
+        data: body,
+        headers: { 'Idempotency-Key': idempotencyKey }
+      },
+      [200],
+      true
+    )
+  },
+  listDeliveries(
+    params: {
+      page: number
+      pageSize: number
+      instanceId?: string
+      sourceId?: string
+      dispatchStatus?: NotificationV2.DispatchStatus
+      deliveryStatus?: NotificationV2.DeliveryStatus
+      from?: string
+      to?: string
+    },
+    signal?: AbortSignal
+  ) {
+    return send<NotificationV2.Page<NotificationV2.DeliveryView>>(
+      { method: 'GET', url: '/api/v2/notification-deliveries', params },
+      [200],
+      false,
+      signal
+    )
+  },
+  getDelivery(id: string, signal?: AbortSignal) {
+    return send<NotificationV2.DeliveryView>(
+      { method: 'GET', url: `/api/v2/notification-deliveries/${encodeURIComponent(id)}` },
+      [200],
+      false,
+      signal
     )
   },
   getInstance(id: string) {
@@ -426,10 +532,20 @@ export const notificationV2 = {
       true
     )
   },
-  getNotification(id: string) {
+  getNotification(id: string, signal?: AbortSignal) {
     return send<NotificationV2.NotificationView>(
       { method: 'GET', url: `/api/v2/notifications/${encodeURIComponent(id)}` },
-      [200]
+      [200],
+      false,
+      signal
+    )
+  },
+  listNotifications(params: NotificationV2.NotificationListQuery, signal?: AbortSignal) {
+    return send<NotificationV2.Page<NotificationV2.NotificationView>>(
+      { method: 'GET', url: '/api/v2/notifications', params },
+      [200],
+      false,
+      signal
     )
   },
   createIdempotencyKey: key
