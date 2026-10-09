@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DataTableColumns } from 'naive-ui'
 import { NButton, NSpace } from 'naive-ui'
@@ -68,6 +68,63 @@ const editableSecretFields = computed(() =>
 )
 function isIdentityFieldReadOnly(name: string) {
   return isNotificationConfigFieldReadOnly(name, identityFields.value, editorMode.value === 'edit')
+}
+function instanceFieldId(name: string) {
+  return `notification-instance-field-${encodeURIComponent(name)}`
+}
+function instanceErrorId(name: string) {
+  return `${instanceFieldId(name)}-error`
+}
+function validationFieldErrorId(field: string) {
+  return instanceFieldId(`validation-${field}`)
+}
+function validationSummaryErrorId(field: string) {
+  return `notification-instance-validation-summary-${encodeURIComponent(field)}`
+}
+function validationErrorForField(name: string) {
+  return validationErrors.value.find(error => error.field === name || error.field === `config.${name}`)
+}
+function instanceFieldAriaProps(name: string) {
+  const validationError = validationErrorForField(name)
+  return {
+    'aria-label': String(schemaFields.value.find(([field]) => field === name)?.[1].title || name),
+    'aria-invalid': localFieldErrors.value[name] || validationError ? 'true' : undefined,
+    'aria-describedby': localFieldErrors.value[name]
+      ? instanceErrorId(name)
+      : validationError
+        ? validationFieldErrorId(validationError.field)
+        : undefined
+  }
+}
+function instanceInputProps(name: string) {
+  return { id: instanceFieldId(name), ...instanceFieldAriaProps(name) }
+}
+function focusInstanceField(name: string) {
+  void nextTick(() => {
+    const root = document.getElementById(instanceFieldId(name))
+    const control = root?.matches('input, select, textarea, button, [tabindex]')
+      ? root
+      : root?.querySelector<HTMLElement>('input, select, textarea, button, [tabindex]')
+    control?.focus()
+  })
+}
+function focusFirstInvalidInstanceField() {
+  const firstField = ['pluginRegistrationId', 'name', ...Object.keys(localFieldErrors.value)].find(
+    name => localFieldErrors.value[name]
+  )
+  if (!firstField) return
+  focusInstanceField(firstField === 'schema' ? schemaFields.value[0]?.[0] || 'pluginRegistrationId' : firstField)
+}
+function focusFirstValidationError() {
+  const field = validationErrors.value[0]?.field
+  if (!field) return
+  const name = field.startsWith('config.') ? field.slice('config.'.length).split('.')[0] : field
+  const knownField =
+    name === 'name' ||
+    name === 'pluginRegistrationId' ||
+    name === 'channel' ||
+    schemaFields.value.some(([schemaName]) => schemaName === name)
+  focusInstanceField(knownField ? name : 'pluginRegistrationId')
 }
 const schemaFields = computed(() => {
   const properties = selectedPlugin.value?.manifest.configSchema?.properties
@@ -299,7 +356,18 @@ function parseProviderIdentity() {
 }
 
 function localValidation() {
-  const errors: Record<string, string> = { ...localFieldErrors.value }
+  const errors: Record<string, string> = Object.fromEntries(
+    Object.entries(localFieldErrors.value).filter(([name]) => {
+      const schema = schemaFields.value.find(([field]) => field === name)?.[1]
+      if (!schema || (schema.type !== 'object' && schema.type !== 'array')) return false
+      try {
+        JSON.parse(jsonDrafts[name] || '')
+        return false
+      } catch {
+        return true
+      }
+    })
+  )
   if (!selectedPlugin.value) errors.pluginRegistrationId = tx('请选择已授权的插件。', 'Choose an authorized plugin.')
   if (unsupportedSchemaFields.value.length && !legacyIdentityConfigFrozen.value)
     errors.schema = tx(
@@ -343,7 +411,10 @@ async function validateConfig() {
   if (instanceSaveReadOnly.value) return
   validationErrors.value = []
   errorText.value = ''
-  if (!localValidation()) return
+  if (!localValidation()) {
+    focusFirstInvalidInstanceField()
+    return
+  }
   try {
     const config = mergeConfig(true)
     const body: NotificationV2.InstanceValidate =
@@ -356,6 +427,7 @@ async function validateConfig() {
           }
     const result = await notificationV2.validateInstance(body)
     validationErrors.value = result.data.errors
+    if (!result.data.valid && result.data.errors.length) focusFirstValidationError()
     successText.value = result.data.valid
       ? tx('配置校验通过；未发送通知。', 'Configuration is valid; no notification was sent.')
       : ''
@@ -371,7 +443,10 @@ async function saveInstance() {
   successText.value = ''
   try {
     if (!pendingInstanceSave.value) {
-      if (!localValidation()) return
+      if (!localValidation()) {
+        focusFirstInvalidInstanceField()
+        return
+      }
       if (editorMode.value === 'create') {
         const body: NotificationV2.InstanceCreate = {
           pluginRegistrationId: selectedPluginId.value,
@@ -719,12 +794,60 @@ onMounted(loadInstances)
   >
     <NForm label-placement="top" :disabled="instanceSaveReadOnly">
       <NFormItem :label="tx('实例名称', 'Instance name')">
-        <NInput v-model:value="formName" :disabled="instanceSaveReadOnly" />
+        <NInput
+          v-model:value="formName"
+          :disabled="instanceSaveReadOnly"
+          :input-props="{
+            id: instanceFieldId('name'),
+            'aria-label': tx('实例名称', 'Instance name'),
+            'aria-invalid': localFieldErrors.name || validationErrorForField('name') ? 'true' : undefined,
+            'aria-describedby': localFieldErrors.name
+              ? instanceErrorId('name')
+              : validationErrorForField('name')
+                ? validationFieldErrorId(validationErrorForField('name')!.field)
+                : undefined
+          }"
+        />
+        <div
+          v-if="localFieldErrors.name || validationErrorForField('name')"
+          :id="
+            localFieldErrors.name
+              ? instanceErrorId('name')
+              : validationFieldErrorId(validationErrorForField('name')!.field)
+          "
+          role="alert"
+          class="mt-4px text-xs text-red-600"
+        >
+          {{ localFieldErrors.name || validationErrorForField('name')?.reason }}
+        </div>
       </NFormItem>
       <NFormItem v-if="editorMode === 'create'" :label="tx('通知插件', 'Notification plugin')">
         <NSelect
+          :id="instanceFieldId('pluginRegistrationId')"
           v-model:value="selectedPluginId"
           :disabled="instanceSaveReadOnly"
+          :aria-label="tx('通知插件', 'Notification plugin')"
+          :input-props="{
+            'aria-label': tx('通知插件', 'Notification plugin'),
+            'aria-invalid': localFieldErrors.pluginRegistrationId || validationErrorForField('pluginRegistrationId') ? 'true' : undefined,
+            'aria-describedby': localFieldErrors.pluginRegistrationId
+              ? instanceErrorId('pluginRegistrationId')
+              : validationErrorForField('pluginRegistrationId')
+                ? validationFieldErrorId(validationErrorForField('pluginRegistrationId')!.field)
+                : undefined
+          }"
+          :aria-invalid="
+            localFieldErrors.pluginRegistrationId || validationErrorForField('pluginRegistrationId')
+              ? 'true'
+              : undefined
+          "
+          :aria-describedby="
+            localFieldErrors.pluginRegistrationId
+              ? instanceErrorId('pluginRegistrationId')
+              : validationErrorForField('pluginRegistrationId')
+                ? validationFieldErrorId(validationErrorForField('pluginRegistrationId')!.field)
+                : undefined
+          "
           :options="
             plugins
               .filter(plugin => plugin.enabled)
@@ -732,11 +855,26 @@ onMounted(loadInstances)
           "
           :placeholder="tx('选择已授权插件', 'Choose an authorized plugin')"
         />
+        <div
+          v-if="localFieldErrors.pluginRegistrationId || validationErrorForField('pluginRegistrationId')"
+          :id="
+            localFieldErrors.pluginRegistrationId
+              ? instanceErrorId('pluginRegistrationId')
+              : validationFieldErrorId(validationErrorForField('pluginRegistrationId')!.field)
+          "
+          role="alert"
+          class="mt-4px text-xs text-red-600"
+        >
+          {{ localFieldErrors.pluginRegistrationId || validationErrorForField('pluginRegistrationId')?.reason }}
+        </div>
       </NFormItem>
       <NFormItem v-if="editorMode === 'create' && selectedPlugin" :label="tx('渠道', 'Channel')">
         <NSelect
+          :id="instanceFieldId('channel')"
           v-model:value="selectedChannel"
           :disabled="instanceSaveReadOnly"
+          :aria-label="tx('渠道', 'Channel')"
+          :input-props="{ 'aria-label': tx('渠道', 'Channel') }"
           :options="selectedPlugin.manifest.channels.map(channel => ({ label: channel, value: channel }))"
         />
       </NFormItem>
@@ -771,6 +909,7 @@ onMounted(loadInstances)
             v-if="secretFields.includes(name)"
             v-model:value="secretDraft[name]"
             :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :input-props="instanceInputProps(name)"
             type="password"
             show-password-on="click"
             autocomplete="new-password"
@@ -783,15 +922,27 @@ onMounted(loadInstances)
           />
           <NSelect
             v-else-if="Array.isArray(schema.enum)"
+            :id="instanceFieldId(name)"
             :value="enumSelection(name)"
             :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :input-props="instanceFieldAriaProps(name)"
             :options="enumOptions(schema)"
             @update:value="value => updateEnum(name, schema, value)"
           />
           <NSwitch
             v-else-if="schema.type === 'boolean'"
+            :id="instanceFieldId(name)"
             :value="Boolean(configValues[name])"
             :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :aria-label="schema.title || name"
+            :aria-invalid="localFieldErrors[name] || validationErrorForField(name) ? 'true' : undefined"
+            :aria-describedby="
+              localFieldErrors[name]
+                ? instanceErrorId(name)
+                : validationErrorForField(name)
+                  ? validationFieldErrorId(validationErrorForField(name)!.field)
+                  : undefined
+            "
             @update:value="
               value => {
                 configValues[name] = value
@@ -800,8 +951,10 @@ onMounted(loadInstances)
           />
           <NInputNumber
             v-else-if="schema.type === 'integer' || schema.type === 'number'"
+            :id="instanceFieldId(name)"
             :value="Number(configValues[name] ?? 0)"
             :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :input-props="instanceInputProps(name)"
             :precision="schema.type === 'integer' ? 0 : undefined"
             @update:value="
               value => {
@@ -814,6 +967,7 @@ onMounted(loadInstances)
             type="textarea"
             :value="jsonDrafts[name] || ''"
             :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :input-props="instanceInputProps(name)"
             :autosize="{ minRows: 3, maxRows: 8 }"
             @update:value="value => updateJsonField(name, value)"
           />
@@ -821,6 +975,7 @@ onMounted(loadInstances)
             v-else
             :value="String(configValues[name] ?? '')"
             :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :input-props="instanceInputProps(name)"
             @update:value="
               value => {
                 configValues[name] = value
@@ -828,7 +983,18 @@ onMounted(loadInstances)
             "
           />
           <div v-if="requiredFields.includes(name)" class="mt-4px text-xs opacity-65">{{ tx('必填', 'Required') }}</div>
-          <div v-if="localFieldErrors[name]" class="mt-4px text-xs text-red-600">{{ localFieldErrors[name] }}</div>
+          <div
+            v-if="localFieldErrors[name] || validationErrorForField(name)"
+            :id="
+              localFieldErrors[name]
+                ? instanceErrorId(name)
+                : validationFieldErrorId(validationErrorForField(name)!.field)
+            "
+            role="alert"
+            class="mt-4px text-xs text-red-600"
+          >
+            {{ localFieldErrors[name] || validationErrorForField(name)?.reason }}
+          </div>
         </NFormItem>
         <NFormItem
           v-if="editableSecretFields.length && editorMode === 'edit'"
@@ -868,10 +1034,17 @@ onMounted(loadInstances)
             type="textarea"
             :autosize="{ minRows: 2, maxRows: 5 }"
             :disabled="instanceSaveReadOnly"
+            :input-props="{
+              'aria-label': tx('供应商账号身份（JSON 字符串映射）', 'Provider identity (JSON string map)')
+            }"
           />
         </NFormItem>
         <NFormItem v-if="editorMode === 'edit'" :label="tx('发送启用', 'Sending enabled')">
-          <NSwitch v-model:value="enabledValue" :disabled="instanceSaveReadOnly" />
+          <NSwitch
+            v-model:value="enabledValue"
+            :disabled="instanceSaveReadOnly"
+            :aria-label="tx('发送启用', 'Sending enabled')"
+          />
         </NFormItem>
       </template>
       <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
@@ -882,7 +1055,14 @@ onMounted(loadInstances)
         </NButton>
       </NAlert>
       <NAlert v-if="successText" type="success" class="mb-12px">{{ successText }}</NAlert>
-      <NAlert v-for="error in validationErrors" :key="`${error.field}:${error.reason}`" type="warning" class="mb-8px">
+      <NAlert
+        v-for="error in validationErrors"
+        :id="validationSummaryErrorId(error.field)"
+        :key="`${error.field}:${error.reason}`"
+        type="warning"
+        role="alert"
+        class="mb-8px"
+      >
         {{ error.field }}: {{ error.reason }}
       </NAlert>
       <NSpace justify="end">
@@ -919,22 +1099,35 @@ onMounted(loadInstances)
     </NAlert>
     <div v-if="selectedInstance" class="mb-12px">{{ selectedInstance.name }} · {{ selectedInstance.channel }}</div>
     <NForm label-placement="top">
-      <NFormItem :label="tx('接收目标', 'Recipient')"><NInput v-model:value="testRecipient" /></NFormItem>
+      <NFormItem :label="tx('接收目标', 'Recipient')">
+        <NInput v-model:value="testRecipient" :input-props="{ 'aria-label': tx('接收目标', 'Recipient') }" />
+      </NFormItem>
       <NFormItem :label="tx('内容模式', 'Content mode')">
         <NSelect
           v-model:value="testContentMode"
           :options="(selectedPlugin?.manifest.contentModes || ['text']).map(mode => ({ label: mode, value: mode }))"
+          :input-props="{ 'aria-label': tx('内容模式', 'Content mode') }"
         />
       </NFormItem>
-      <NFormItem :label="tx('标题（可选）', 'Title (optional)')"><NInput v-model:value="testTitle" /></NFormItem>
+      <NFormItem :label="tx('标题（可选）', 'Title (optional)')">
+        <NInput v-model:value="testTitle" :input-props="{ 'aria-label': tx('标题（可选）', 'Title (optional)') }" />
+      </NFormItem>
       <NFormItem v-if="testContentMode === 'text'" :label="tx('测试文本', 'Test text')">
-        <NInput v-model:value="testText" type="textarea" />
+        <NInput v-model:value="testText" type="textarea" :input-props="{ 'aria-label': tx('测试文本', 'Test text') }" />
       </NFormItem>
       <template v-else>
-        <NFormItem :label="tx('模板 ID', 'Template ID')"><NInput v-model:value="testTemplateId" /></NFormItem>
-        <NFormItem :label="tx('语言', 'Locale')"><NInput v-model:value="testLocale" /></NFormItem>
+        <NFormItem :label="tx('模板 ID', 'Template ID')">
+          <NInput v-model:value="testTemplateId" :input-props="{ 'aria-label': tx('模板 ID', 'Template ID') }" />
+        </NFormItem>
+        <NFormItem :label="tx('语言', 'Locale')">
+          <NInput v-model:value="testLocale" :input-props="{ 'aria-label': tx('语言', 'Locale') }" />
+        </NFormItem>
         <NFormItem :label="tx('模板参数 JSON', 'Template params JSON')">
-          <NInput v-model:value="testParamsText" type="textarea" />
+          <NInput
+            v-model:value="testParamsText"
+            type="textarea"
+            :input-props="{ 'aria-label': tx('模板参数 JSON', 'Template params JSON') }"
+          />
         </NFormItem>
       </template>
     </NForm>

@@ -282,6 +282,53 @@ describe('notification delivery page async lifecycle', () => {
     wrapper.unmount()
   })
 
+  it('renders every dispatch and delivery status combination with the correct two-axis wording', async () => {
+    const dispatchStatuses: NotificationV2.DispatchStatus[] = ['queued', 'sending', 'accepted', 'failed', 'unknown']
+    const deliveryStatuses: NotificationV2.DeliveryStatus[] = [
+      'unsupported',
+      'pending',
+      'delivered',
+      'failed',
+      'unknown'
+    ]
+    const rows = dispatchStatuses.flatMap(dispatchStatus =>
+      deliveryStatuses.map(deliveryStatus => ({
+        ...delivery(`${dispatchStatus}-${deliveryStatus}`),
+        dispatchStatus,
+        deliveryStatus
+      }))
+    )
+    api.listDeliveries.mockResolvedValue({ data: { items: rows, total: rows.length } })
+    const wrapper = mount(NotificationDeliveries, { global: { stubs } })
+    await flushPromises()
+
+    const table = tableWithDeliveries(wrapper)
+    const renderedRows = table.findAll('.qa-row')
+    expect(renderedRows).toHaveLength(25)
+    const acceptedCopy: Record<NotificationV2.DeliveryStatus, string> = {
+      unsupported: 'Provider accepted; this channel has no delivery receipt',
+      pending: 'Provider accepted; waiting for a delivery receipt',
+      delivered: 'Provider reports delivered; this does not mean read',
+      failed: 'Provider reports delivery failed',
+      unknown: 'Delivery status is unknown; the system will not retry automatically'
+    }
+    const dispatchCopy: Record<NotificationV2.DispatchStatus, string> = {
+      queued: 'Queued',
+      sending: 'Submitting',
+      accepted: '',
+      failed: 'Sending failed',
+      unknown: 'Acceptance is unknown; the system will not retry automatically'
+    }
+    for (const row of rows) {
+      const rendered = renderedRows.find(item => item.text().includes(`source-${row.deliveryId}`))
+      expect(rendered, `missing rendered row ${row.deliveryId}`).toBeDefined()
+      expect(rendered!.text()).toContain(row.dispatchStatus)
+      expect(rendered!.text()).toContain(dispatchCopy[row.dispatchStatus] || acceptedCopy[row.deliveryStatus])
+    }
+    expect(wrapper.findAll('button').some(button => /retry|resend/i.test(button.text()))).toBe(false)
+    wrapper.unmount()
+  })
+
   it('pauses detail polling while hidden, resumes while visible, and stops on unmount', async () => {
     vi.useFakeTimers()
     api.listDeliveries.mockResolvedValue({ data: { items: [delivery('polling')], total: 1 } })

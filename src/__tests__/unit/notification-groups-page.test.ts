@@ -74,13 +74,15 @@ const ButtonStub = defineComponent({
 
 const SelectStub = defineComponent({
   name: 'NSelect',
-  props: ['value', 'options', 'disabled', 'loading'],
+  props: ['value', 'options', 'disabled', 'loading', 'inputProps'],
   emits: ['update:value', 'search', 'focus'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     return () =>
       h(
         'select',
         {
+          ...attrs,
+          ...((props.inputProps || {}) as Record<string, unknown>),
           value: props.value ?? '',
           disabled: props.disabled,
           onChange: (event: Event) => emit('update:value', (event.target as HTMLSelectElement).value),
@@ -98,11 +100,13 @@ const SelectStub = defineComponent({
 
 const InputStub = defineComponent({
   name: 'NInput',
-  props: ['value', 'disabled', 'type'],
+  props: ['value', 'disabled', 'type', 'inputProps'],
   emits: ['update:value'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     return () =>
       h('input', {
+        ...attrs,
+        ...((props.inputProps || {}) as Record<string, unknown>),
         value: props.value ?? '',
         disabled: props.disabled,
         onInput: (event: Event) => emit('update:value', (event.target as HTMLInputElement).value)
@@ -146,6 +150,13 @@ const ModalStub = defineComponent({
   }
 })
 
+const CardStub = defineComponent({
+  inheritAttrs: true,
+  setup(_, { attrs, slots }) {
+    return () => h('div', { ...attrs, class: ['qa-card', attrs.class] }, slots.default?.())
+  }
+})
+
 const SlotStub = defineComponent({
   inheritAttrs: true,
   setup(_, { slots }) {
@@ -160,7 +171,7 @@ const stubs = {
   NDataTable: DataTableStub,
   NFormItem: FormItemStub,
   NModal: ModalStub,
-  NCard: SlotStub,
+  NCard: CardStub,
   NForm: SlotStub,
   NDivider: SlotStub,
   NAlert: SlotStub,
@@ -351,6 +362,72 @@ describe('notification group page failure and conflict flow', () => {
       'Another administrator changed this group. Refresh and review before saving again.'
     )
     expect(wrapper.findAll('button').some(button => button.text() === 'Refresh this group and review again')).toBe(true)
+    expect(api.testInstance).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('places validation errors on each matching binding in a multi-binding group', async () => {
+    const group = {
+      id: 'group-1',
+      name: 'Native group',
+      enabled: false,
+      bindings: ['binding-1', 'binding-2'].map((bindingId, index) => ({
+        bindingId,
+        instanceId: 'email-1',
+        recipientSource: {
+          kind: 'literal' as const,
+          recipient: { kind: 'email' as const, address: `member-${index + 1}@example.test` }
+        },
+        contentBinding: { kind: 'text' as const, title: '', text: `Fixture content ${index + 1}` }
+      })),
+      revision: 3,
+      version: 7,
+      migrationState: 'native' as const
+    }
+    api.listGroups.mockResolvedValue({ data: { items: [group], total: 1 } })
+    api.getGroup.mockResolvedValue({ data: group })
+    api.updateGroup.mockRejectedValue(
+      new NotificationClientError('group validation failed', 422, undefined, undefined, {
+        fields: [
+          { field: 'bindings[binding-1].recipientSource.recipient.address', reason: 'first binding rejected' },
+          { field: 'bindings[binding-2].contentBinding.text', reason: 'second binding rejected' }
+        ]
+      } as never)
+    )
+    const wrapper = mount(NotificationGroups, { attachTo: document.body, global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Edit')!
+      .trigger('click')
+    await flushPromises()
+    expect(wrapper.find('input').attributes('aria-label')).toBe('Group name')
+    await wrapper.find('input').setValue('Updated group')
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Save group')!
+      .trigger('click')
+    await flushPromises()
+
+    expect(api.updateGroup).toHaveBeenCalledTimes(1)
+    const bindingCards = wrapper.findAll('.qa-card').filter(card => card.find('code').exists())
+    const firstCard = bindingCards.find(
+      card => card.findAll('code').length === 1 && card.find('code').text() === 'binding-1'
+    )
+    const secondCard = bindingCards.find(
+      card => card.findAll('code').length === 1 && card.find('code').text() === 'binding-2'
+    )
+    expect(firstCard?.text()).toContain('first binding rejected')
+    expect(firstCard?.text()).not.toContain('second binding rejected')
+    expect(secondCard?.text()).toContain('second binding rejected')
+    expect(secondCard?.text()).not.toContain('first binding rejected')
+    const recipientInput = wrapper.get('#notification-group-binding-1-recipient-address')
+    expect(recipientInput.attributes('aria-invalid')).toBe('true')
+    expect(recipientInput.attributes('aria-describedby')).toBe('notification-group-binding-1-recipient-address-error')
+    expect(wrapper.get('#notification-group-binding-1-recipient-address-error').text()).toContain(
+      'first binding rejected'
+    )
+    expect(document.activeElement).toBe(recipientInput.element)
     expect(api.testInstance).not.toHaveBeenCalled()
     wrapper.unmount()
   })

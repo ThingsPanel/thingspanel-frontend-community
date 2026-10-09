@@ -104,26 +104,31 @@ const ButtonStub = defineComponent({
   }
 })
 const InputStub = defineComponent({
-  props: ['value', 'disabled', 'type', 'placeholder'],
+  props: ['value', 'disabled', 'type', 'placeholder', 'inputProps'],
   emits: ['update:value'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     return () =>
       h('input', {
+        ...attrs,
+        ...((props.inputProps || {}) as Record<string, unknown>),
         value: props.value ?? '',
         disabled: props.disabled,
+        type: props.type,
         placeholder: props.placeholder,
         onInput: (event: Event) => emit('update:value', (event.target as HTMLInputElement).value)
       })
   }
 })
 const SelectStub = defineComponent({
-  props: ['value', 'options', 'disabled'],
+  props: ['value', 'options', 'disabled', 'inputProps'],
   emits: ['update:value'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     return () =>
       h(
         'select',
         {
+          ...attrs,
+          ...((props.inputProps || {}) as Record<string, unknown>),
           value: props.value ?? '',
           disabled: props.disabled,
           onChange: (event: Event) => emit('update:value', (event.target as HTMLSelectElement).value)
@@ -207,7 +212,7 @@ describe('notification instance page submit boundaries', () => {
   })
 
   it('validates configuration on the real form without saving or sending', async () => {
-    const wrapper = mount(NotificationInstances, { global: { stubs } })
+    const wrapper = mount(NotificationInstances, { attachTo: document.body, global: { stubs } })
     await flushPromises()
     await wrapper
       .findAll('button')
@@ -216,6 +221,9 @@ describe('notification instance page submit boundaries', () => {
     await wrapper.findAll('input')[0].setValue('Fixture account')
     await wrapper.find('select').setValue('registration-1')
     await flushPromises()
+    expect(wrapper.findAll('input')[0].attributes('aria-label')).toBe('Instance name')
+    expect(wrapper.findAll('select')[0].attributes('aria-label')).toBe('Notification plugin')
+    expect(wrapper.findAll('input')[1].attributes('aria-label')).toBe('host')
     await wrapper.findAll('input')[1].setValue('smtp.example.test')
     await wrapper
       .findAll('button')
@@ -228,6 +236,147 @@ describe('notification instance page submit boundaries', () => {
     })
     expect(wrapper.text()).toContain('Configuration is valid; no notification was sent.')
     expect(api.createInstance).not.toHaveBeenCalled()
+    expect(api.testInstance).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('associates the required config error with its control and focuses it', async () => {
+    const wrapper = mount(NotificationInstances, { attachTo: document.body, global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Create instance')!
+      .trigger('click')
+    await wrapper.findAll('input')[0].setValue('Fixture account')
+    await wrapper.find('select').setValue('registration-1')
+    await flushPromises()
+    const hostInput = wrapper.findAll('input')[1]
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Validate configuration')!
+      .trigger('click')
+    await flushPromises()
+
+    expect(hostInput.attributes('aria-invalid')).toBe('true')
+    const errorId = hostInput.attributes('aria-describedby')
+    expect(errorId).toBe('notification-instance-field-host-error')
+    expect(wrapper.get(`#${errorId}`).text()).toContain('This field is required.')
+    expect(document.activeElement).toBe(hostInput.element)
+    expect(api.validateInstance).not.toHaveBeenCalled()
+    expect(api.createInstance).not.toHaveBeenCalled()
+    expect(api.testInstance).not.toHaveBeenCalled()
+    await hostInput.setValue('smtp.example.test')
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Validate configuration')!
+      .trigger('click')
+    await flushPromises()
+    expect(api.validateInstance).toHaveBeenCalledTimes(1)
+    expect(hostInput.attributes('aria-invalid')).toBeUndefined()
+    expect(wrapper.text()).toContain('Configuration is valid; no notification was sent.')
+    wrapper.unmount()
+  })
+
+  it('links a server validation reason to the matching config input and focuses it', async () => {
+    api.validateInstance.mockResolvedValueOnce({
+      data: { valid: false, errors: [{ field: 'config.host', reason: 'Host is not accepted.' }] }
+    })
+    const wrapper = mount(NotificationInstances, { attachTo: document.body, global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Create instance')!
+      .trigger('click')
+    await wrapper.findAll('input')[0].setValue('Fixture account')
+    await wrapper.find('select').setValue('registration-1')
+    await flushPromises()
+    const hostInput = wrapper.findAll('input')[1]
+    await hostInput.setValue('smtp.example.test')
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Validate configuration')!
+      .trigger('click')
+    await flushPromises()
+
+    expect(hostInput.attributes('aria-invalid')).toBe('true')
+    const errorId = hostInput.attributes('aria-describedby')
+    expect(document.getElementById(errorId)?.textContent).toContain('Host is not accepted.')
+    expect(document.activeElement).toBe(hostInput.element)
+    expect(api.createInstance).not.toHaveBeenCalled()
+    expect(api.testInstance).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('clears the first plugin config and secret draft when a create form switches plugins', async () => {
+    const firstPlugin = {
+      ...plugin,
+      manifest: {
+        ...plugin.manifest,
+        name: 'Fixture SMTP with secret',
+        configSchema: {
+          type: 'object',
+          properties: { host: { type: 'string' }, password: { type: 'string' } },
+          required: ['host', 'password']
+        },
+        secretFields: ['password']
+      }
+    }
+    const secondPlugin = {
+      ...plugin,
+      id: 'registration-2',
+      pluginId: 'fixture.chat',
+      manifest: {
+        ...plugin.manifest,
+        name: 'Fixture chat',
+        channels: ['im'],
+        configSchema: {
+          type: 'object',
+          properties: { account: { type: 'string' }, token: { type: 'string' } },
+          required: ['account', 'token']
+        },
+        secretFields: ['token']
+      }
+    }
+    api.listPlugins.mockResolvedValue({ data: { items: [firstPlugin, secondPlugin] } })
+    const wrapper = mount(NotificationInstances, { global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Create instance')!
+      .trigger('click')
+    await wrapper.findAll('input')[0].setValue('Fixture account')
+
+    const pluginSelect = wrapper.findAll('select')[0]
+    await pluginSelect.setValue('registration-1')
+    await flushPromises()
+    await wrapper.findAll('input')[1].setValue('smtp.private.example.test')
+    await wrapper.findAll('input')[2].setValue('sentinel-first-plugin-secret')
+    expect(wrapper.findAll('input').map(input => (input.element as HTMLInputElement).value)).toContain(
+      'sentinel-first-plugin-secret'
+    )
+
+    await pluginSelect.setValue('registration-2')
+    await flushPromises()
+    const switchedInputs = wrapper.findAll('input').map(input => (input.element as HTMLInputElement).value)
+    expect(switchedInputs).not.toContain('smtp.private.example.test')
+    expect(switchedInputs).not.toContain('sentinel-first-plugin-secret')
+    expect(wrapper.text()).not.toContain('sentinel-first-plugin-secret')
+    await wrapper.findAll('input')[1].setValue('fixture-chat-account')
+    await wrapper.findAll('input')[2].setValue('sentinel-second-plugin-secret')
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Save')!
+      .trigger('click')
+    await flushPromises()
+
+    expect(api.createInstance).toHaveBeenCalledTimes(1)
+    const body = api.createInstance.mock.calls[0][0]
+    expect(body).toMatchObject({
+      pluginRegistrationId: 'registration-2',
+      config: { account: 'fixture-chat-account', token: 'sentinel-second-plugin-secret' }
+    })
+    expect(body.config).not.toHaveProperty('host')
+    expect(body.config).not.toHaveProperty('password')
     expect(api.testInstance).not.toHaveBeenCalled()
     wrapper.unmount()
   })
