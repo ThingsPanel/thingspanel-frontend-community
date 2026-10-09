@@ -1,6 +1,6 @@
 import { defineComponent, h } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NotificationClientError } from '@/service/api/notification-v2'
 import NotificationInstances from '@/views/management/notification/NotificationInstances.vue'
 
@@ -192,6 +192,8 @@ const stubs = {
 }
 
 describe('notification instance page submit boundaries', () => {
+  afterEach(() => vi.restoreAllMocks())
+
   beforeEach(() => {
     vi.stubEnv('VITE_NOTIFICATION_API_BASE_URL', 'https://encore.example.test')
     api.listPlugins.mockReset().mockResolvedValue({ data: { items: [plugin] } })
@@ -308,6 +310,12 @@ describe('notification instance page submit boundaries', () => {
   })
 
   it('clears the first plugin config and secret draft when a create form switches plugins', async () => {
+    const consoleOutput: string[] = []
+    ;(['debug', 'info', 'log', 'warn', 'error'] as const).forEach(method => {
+      vi.spyOn(console, method).mockImplementation((...args) => {
+        consoleOutput.push(args.map(String).join(' '))
+      })
+    })
     const firstPlugin = {
       ...plugin,
       manifest: {
@@ -378,6 +386,8 @@ describe('notification instance page submit boundaries', () => {
     expect(body.config).not.toHaveProperty('host')
     expect(body.config).not.toHaveProperty('password')
     expect(api.testInstance).not.toHaveBeenCalled()
+    expect(consoleOutput.join('\n')).not.toContain('sentinel-first-plugin-secret')
+    expect(consoleOutput.join('\n')).not.toContain('sentinel-second-plugin-secret')
     wrapper.unmount()
   })
 
