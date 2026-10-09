@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/modules/auth'
 import {
   invalidateNotificationSession,
   notificationV2,
+  NotificationServiceUnavailableError,
   NotificationSessionChangedError,
   registerNotificationSessionCleanup,
   type NotificationInstance
@@ -19,6 +20,11 @@ const notificationApiConfigured = Boolean(import.meta.env.VITE_NOTIFICATION_API_
 const { locale } = useI18n()
 const isZh = computed(() => locale.value.toLowerCase().startsWith('zh'))
 const tx = (zh: string, en: string) => (isZh.value ? zh : en)
+function notificationErrorMessage(error: unknown, zhFallback: string, enFallback: string) {
+  if (error instanceof NotificationServiceUnavailableError)
+    return tx('通知服务暂不可用，请稍后重试。', 'The notification service is temporarily unavailable. Try again later.')
+  return error instanceof Error ? error.message : tx(zhFallback, enFallback)
+}
 const rows = ref<NotificationV2.DeliveryView[]>([])
 const requests = ref<NotificationV2.NotificationView[]>([])
 const instances = ref<NotificationInstance[]>([])
@@ -137,9 +143,7 @@ async function loadDeliveries() {
     errorText.value =
       status === 403
         ? tx('当前账号没有查看通知记录的权限。', 'Your account cannot read notification records.')
-        : error instanceof Error
-          ? error.message
-          : tx('无法读取新投递记录。', 'Could not load new deliveries.')
+        : notificationErrorMessage(error, '无法读取新投递记录。', 'Could not load new deliveries.')
   } finally {
     if (generation === viewGeneration.value) loading.value = false
   }
@@ -175,8 +179,7 @@ async function loadRequests() {
       error instanceof NotificationSessionChangedError
     )
       return
-    requestError.value =
-      error instanceof Error ? error.message : tx('无法读取通知请求。', 'Could not load notification requests.')
+    requestError.value = notificationErrorMessage(error, '无法读取通知请求。', 'Could not load notification requests.')
   } finally {
     if (generation === requestGeneration.value) requestLoading.value = false
   }
@@ -244,8 +247,7 @@ async function refreshSelectedDelivery(generation = detailGeneration.value) {
     } catch (error) {
       if (controller.signal.aborted || error instanceof NotificationSessionChangedError) return
       selectedNotification.value = null
-      detailError.value =
-        error instanceof Error ? error.message : tx('请求摘要暂不可用。', 'Notification summary is unavailable.')
+      detailError.value = notificationErrorMessage(error, '请求摘要暂不可用。', 'Notification summary is unavailable.')
     }
   } catch (error) {
     if (
@@ -254,8 +256,7 @@ async function refreshSelectedDelivery(generation = detailGeneration.value) {
       error instanceof NotificationSessionChangedError
     )
       return
-    detailError.value =
-      error instanceof Error ? error.message : tx('无法读取投递详情。', 'Could not load delivery details.')
+    detailError.value = notificationErrorMessage(error, '无法读取投递详情。', 'Could not load delivery details.')
   } finally {
     if (generation === detailGeneration.value) {
       detailLoading.value = false

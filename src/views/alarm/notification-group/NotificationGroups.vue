@@ -16,6 +16,7 @@ import {
   invalidateNotificationSession,
   notificationV2,
   NotificationClientError,
+  NotificationServiceUnavailableError,
   NotificationSessionChangedError,
   registerNotificationSessionCleanup,
   type NotificationInstance,
@@ -34,6 +35,11 @@ const auth = useAuthStore()
 const notificationApiConfigured = Boolean(import.meta.env.VITE_NOTIFICATION_API_BASE_URL)
 const { locale } = useI18n()
 const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
+function notificationErrorMessage(error: unknown, zhFallback: string, enFallback: string) {
+  if (error instanceof NotificationServiceUnavailableError)
+    return tx('通知服务暂不可用，请稍后重试。', 'The notification service is temporarily unavailable. Try again later.')
+  return error instanceof Error ? error.message : tx(zhFallback, enFallback)
+}
 const capabilities = computed(() => getNotificationUiCapabilities())
 const rows = ref<NotificationV2.GroupView[]>([])
 const instances = ref<NotificationInstance[]>([])
@@ -229,7 +235,7 @@ async function loadPage() {
       error instanceof NotificationSessionChangedError
     )
       return
-    errorText.value = error instanceof Error ? error.message : tx('加载失败。', 'Could not load notification groups.')
+    errorText.value = notificationErrorMessage(error, '加载通知组失败。', 'Could not load notification groups.')
   } finally {
     if (generation === viewGeneration.value) loading.value = false
   }
@@ -614,7 +620,7 @@ async function openEdit(row: NotificationV2.GroupView) {
     modal.value = true
   } catch (error) {
     if (!controller.signal.aborted && !(error instanceof NotificationSessionChangedError))
-      errorText.value = error instanceof Error ? error.message : tx('读取通知组失败。', 'Could not load the group.')
+      errorText.value = notificationErrorMessage(error, '读取通知组失败。', 'Could not load the group.')
   }
 }
 
@@ -663,8 +669,7 @@ async function saveGroup() {
         groupId: editorMode.value === 'edit' ? selectedGroup.value!.id : undefined
       }
     } catch (error) {
-      errorText.value =
-        error instanceof Error ? error.message : tx('组配置无效。', 'The group configuration is invalid.')
+      errorText.value = notificationErrorMessage(error, '组配置无效。', 'The group configuration is invalid.')
       return
     }
   }
@@ -695,8 +700,7 @@ async function saveGroup() {
       )
     } else {
       pendingSave.value = null
-      errorText.value =
-        error instanceof Error ? error.message : tx('保存通知组失败。', 'Could not save notification group.')
+      errorText.value = notificationErrorMessage(error, '保存通知组失败。', 'Could not save notification group.')
       if (error instanceof NotificationClientError) {
         const fields =
           (error.details as { fields?: Array<{ field: string; reason: string }> } | undefined)?.fields || []

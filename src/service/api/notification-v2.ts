@@ -367,7 +367,7 @@ export class NotificationSessionChangedError extends Error {
 
 export class NotificationServiceUnavailableError extends Error {
   constructor() {
-    super('Notification service is not enabled. Configure VITE_NOTIFICATION_API_BASE_URL.')
+    super('Notification service is temporarily unavailable.')
     this.name = 'NotificationServiceUnavailableError'
   }
 }

@@ -9,6 +9,7 @@ import {
   invalidateNotificationSession,
   notificationV2,
   NotificationClientError,
+  NotificationServiceUnavailableError,
   NotificationSessionChangedError,
   registerNotificationSessionCleanup,
   stripSecretConfig,
@@ -39,6 +40,11 @@ type ContentMode = 'text' | 'template'
 const auth = useAuthStore()
 const { locale } = useI18n()
 const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
+function notificationErrorMessage(error: unknown, zhFallback: string, enFallback: string) {
+  if (error instanceof NotificationServiceUnavailableError)
+    return tx('通知服务暂不可用，请稍后重试。', 'The notification service is temporarily unavailable. Try again later.')
+  return error instanceof Error ? error.message : tx(zhFallback, enFallback)
+}
 const capabilities = computed(() => getNotificationUiCapabilities())
 const hasTenantContext = computed(() => Boolean(String(auth.userInfo.tenant_id || '').trim()))
 const plugins = ref<NotificationPlugin[]>([])
@@ -235,7 +241,7 @@ async function loadInstances() {
     total.value = instanceResponse.data.total
   } catch (error) {
     if (generation !== viewGeneration.value || error instanceof NotificationSessionChangedError) return
-    errorText.value = error instanceof Error ? error.message : 'Request failed.'
+    errorText.value = notificationErrorMessage(error, '无法读取通知账号。', 'Could not load notification accounts.')
   } finally {
     if (generation === viewGeneration.value) loading.value = false
   }
@@ -300,7 +306,7 @@ async function openEdit(row: NotificationInstance) {
     })
     modal.value = true
   } catch (error) {
-    errorText.value = error instanceof Error ? error.message : tx('读取实例失败。', 'Could not load the instance.')
+    errorText.value = notificationErrorMessage(error, '读取实例失败。', 'Could not load the instance.')
   }
 }
 
@@ -448,7 +454,7 @@ async function validateConfig() {
       ? tx('配置校验通过；未发送通知。', 'Configuration is valid; no notification was sent.')
       : ''
   } catch (error) {
-    errorText.value = error instanceof Error ? error.message : tx('校验失败。', 'Validation failed.')
+    errorText.value = notificationErrorMessage(error, '校验失败。', 'Validation failed.')
   }
 }
 
@@ -535,9 +541,7 @@ async function saveInstance() {
             '现有实例的身份字段不可更改，请创建新实例。',
             'Provider identity cannot change on an existing instance. Create a new instance.'
           )
-        : error instanceof Error
-          ? error.message
-          : tx('保存失败。', 'Save failed.')
+        : notificationErrorMessage(error, '保存失败。', 'Save failed.')
   } finally {
     saving.value = false
   }
@@ -658,7 +662,7 @@ async function submitTest() {
     }
     if (error instanceof NotificationSessionChangedError) return
     pendingTest.value = null
-    errorText.value = error instanceof Error ? error.message : tx('试发失败。', 'Test send failed.')
+    errorText.value = notificationErrorMessage(error, '试发失败。', 'Test send failed.')
   }
 }
 
@@ -698,7 +702,7 @@ async function refreshTestStatus() {
     }
   } catch (error) {
     if (!(error instanceof NotificationSessionChangedError))
-      errorText.value = error instanceof Error ? error.message : 'Status query failed.'
+      errorText.value = notificationErrorMessage(error, '状态暂时无法读取。', 'Could not read the status right now.')
   }
 }
 

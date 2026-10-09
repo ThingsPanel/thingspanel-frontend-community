@@ -8,6 +8,7 @@ import {
   getNotificationUiCapabilities,
   invalidateNotificationSession,
   NotificationClientError,
+  NotificationServiceUnavailableError,
   NotificationSessionChangedError,
   notificationV2,
   parseNotificationIdentityFields,
@@ -20,6 +21,11 @@ import type * as NotificationV2 from '@/service/api/notification-v2.types'
 const auth = useAuthStore()
 const { locale } = useI18n()
 const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
+function notificationErrorMessage(error: unknown, zhFallback: string, enFallback: string) {
+  if (error instanceof NotificationServiceUnavailableError)
+    return tx('通知服务暂不可用，请稍后重试。', 'The notification service is temporarily unavailable. Try again later.')
+  return error instanceof Error ? error.message : tx(zhFallback, enFallback)
+}
 const capabilities = computed(() => getNotificationUiCapabilities())
 const rows = ref<NotificationPlugin[]>([])
 const loading = ref(false)
@@ -110,7 +116,7 @@ async function load() {
     if (generation === viewGeneration.value) rows.value = response.data.items
   } catch (error) {
     if (generation === viewGeneration.value)
-      errorText.value = error instanceof Error ? error.message : 'Request failed.'
+      errorText.value = notificationErrorMessage(error, '无法读取通知插件。', 'Could not load notification plugins.')
   } finally {
     if (generation === viewGeneration.value) loading.value = false
   }
@@ -460,7 +466,7 @@ async function register() {
     } else {
       registrationKey.value = ''
       registrationBody.value = null
-      errorText.value = error instanceof Error ? error.message : tx('登记失败。', 'Registration failed.')
+      errorText.value = notificationErrorMessage(error, '登记失败。', 'Registration failed.')
     }
   } finally {
     if (!preserveCredentialForRetry) form.authSecret = ''
@@ -475,7 +481,7 @@ async function toggle(row: NotificationPlugin) {
     const index = rows.value.findIndex(item => item.id === row.id)
     if (index >= 0) rows.value[index] = response.data
   } catch (error) {
-    errorText.value = error instanceof Error ? error.message : tx('更新失败。', 'Update failed.')
+    errorText.value = notificationErrorMessage(error, '更新失败。', 'Update failed.')
   }
 }
 
