@@ -1,4 +1,5 @@
 import { defineComponent, h } from 'vue'
+import type { VNodeChild } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { NotificationClientError } from '@/service/api/notification-v2'
@@ -74,7 +75,14 @@ const ButtonStub = defineComponent({
 
 const SelectStub = defineComponent({
   name: 'NSelect',
-  props: ['value', 'options', 'disabled', 'loading', 'inputProps'],
+  props: {
+    value: null,
+    options: null,
+    disabled: null,
+    loading: null,
+    inputProps: null,
+    filterable: { type: Boolean, default: false }
+  },
   emits: ['update:value', 'search', 'focus'],
   setup(props, { emit, attrs }) {
     return () =>
@@ -83,6 +91,7 @@ const SelectStub = defineComponent({
         {
           ...attrs,
           ...((props.inputProps || {}) as Record<string, unknown>),
+          'data-filterable': props.filterable ? 'true' : undefined,
           value: props.value ?? '',
           disabled: props.disabled,
           onChange: (event: Event) => emit('update:value', (event.target as HTMLSelectElement).value),
@@ -124,8 +133,10 @@ const DataTableStub = defineComponent({
         (props.data as Array<Record<string, unknown>>).map(row =>
           h(
             'div',
-            (props.columns as Array<{ key: string; render?: CallableFunction }>).map(column =>
-              column.render ? column.render.call(column.render, row) : String(row[column.key] ?? '')
+            (props.columns as Array<{ key: string; render?: unknown }>).map(column =>
+              typeof column.render === 'function'
+                ? (Reflect.apply(column.render, undefined, [row]) as VNodeChild)
+                : String(row[column.key] ?? '')
             )
           )
         )
@@ -223,6 +234,13 @@ describe('notification group page failure and conflict flow', () => {
       .find(button => button.text() === 'Add binding')!
       .trigger('click')
     const selects = wrapper.findAll('select')
+    const selectComponents = wrapper.findAllComponents(SelectStub)
+    expect(selectComponents.length).toBeGreaterThan(1)
+    for (const select of selectComponents) {
+      expect(select.props('filterable')).toBe(true)
+      expect((select.props('inputProps') as Record<string, unknown>).id).toContain('notification-group-')
+      expect((select.props('inputProps') as Record<string, unknown>)['aria-label']).toBeTruthy()
+    }
     await selects[0].setValue('email-1')
     await selects[1].setValue('member')
     await flushPromises()

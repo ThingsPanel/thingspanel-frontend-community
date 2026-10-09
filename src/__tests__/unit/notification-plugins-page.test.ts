@@ -1,4 +1,5 @@
 import { defineComponent, h } from 'vue'
+import type { VNodeChild } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { webcrypto } from 'node:crypto'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -93,8 +94,10 @@ const DataTableStub = defineComponent({
         (props.data as Array<Record<string, unknown>>).map(row =>
           h(
             'div',
-            (props.columns as Array<{ key: string; render?: CallableFunction }>).map(column =>
-              column.render ? column.render.call(column.render, row) : String(row[column.key] ?? '')
+            (props.columns as Array<{ key: string; render?: unknown }>).map(column =>
+              typeof column.render === 'function'
+                ? (Reflect.apply(column.render, undefined, [row]) as VNodeChild)
+                : String(row[column.key] ?? '')
             )
           )
         )

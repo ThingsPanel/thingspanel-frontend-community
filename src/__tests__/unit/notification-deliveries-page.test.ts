@@ -1,4 +1,5 @@
 import { defineComponent, h, nextTick } from 'vue'
+import type { VNodeChild } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type * as NotificationV2 from '@/service/api/notification-v2.types'
@@ -84,8 +85,10 @@ const DataTableStub = defineComponent({
           h(
             'div',
             { class: 'qa-row' },
-            (props.columns as Array<{ key: string; render?: CallableFunction }>).map(column =>
-              column.render ? column.render.call(column.render, row) : String(row[column.key] ?? '')
+            (props.columns as Array<{ key: string; render?: unknown }>).map(column =>
+              typeof column.render === 'function'
+                ? (Reflect.apply(column.render, undefined, [row]) as VNodeChild)
+                : String(row[column.key] ?? '')
             )
           )
         )
@@ -127,11 +130,11 @@ const SlotStub = defineComponent({
 })
 
 function deferred<T>() {
-  let resolve!: CallableFunction
+  let resolvePromise!: CallableFunction
   const promise = new Promise<T>(settle => {
-    resolve = settle
+    resolvePromise = settle
   })
-  return { promise, resolve: (value: T) => resolve.call(resolve, value) }
+  return { promise, resolve: (value: T) => Reflect.apply(resolvePromise, undefined, [value]) }
 }
 
 const stubs = {
@@ -159,7 +162,7 @@ function delivery(id: string): NotificationV2.DeliveryView {
     attemptCount: 1,
     dispatchStatus: 'accepted',
     deliveryStatus: 'pending',
-    error: null,
+    error: undefined,
     createdAt: '2026-10-09T00:00:00Z'
   }
 }

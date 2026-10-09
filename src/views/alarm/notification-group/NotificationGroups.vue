@@ -98,15 +98,17 @@ function groupFieldLabel(field: string) {
 function groupFieldAriaProps(field: string, bindingId?: string) {
   const error = bindingId ? bindingErrors.value[bindingId] : bindingErrors.value.name
   const errorField = bindingId ? bindingErrorFields.value[bindingId] : 'name'
+  const invalid = Boolean(error && (!bindingId || errorField === field)) || undefined
   return {
+    id: groupFieldId(field, bindingId),
     'aria-label': groupFieldLabel(field),
-    'aria-invalid': error && (!bindingId || errorField === field) ? 'true' : undefined,
+    'aria-invalid': invalid,
     'aria-describedby':
       error && (!bindingId || errorField === field) ? `${groupFieldId(field, bindingId)}-error` : undefined
   }
 }
 function groupInputProps(field: string, bindingId?: string) {
-  return { id: groupFieldId(field, bindingId), ...groupFieldAriaProps(field, bindingId) }
+  return groupFieldAriaProps(field, bindingId)
 }
 
 function bindingControlForErrorPath(path: string) {
@@ -711,7 +713,6 @@ onMounted(loadPage)
           </div>
           <NFormItem :label="tx('通知实例', 'Notification instance')">
             <NSelect
-              :id="groupFieldId('instance', binding.bindingId)"
               v-model:value="binding.instanceId"
               :options="instanceOptions"
               :disabled="formReadOnly"
@@ -728,7 +729,6 @@ onMounted(loadPage)
           </NFormItem>
           <NFormItem :label="tx('目标类型', 'Recipient source')">
             <NSelect
-              :id="groupFieldId('recipient-source', binding.bindingId)"
               :value="binding.recipientSource.kind"
               :options="recipientSourceOptions(binding)"
               :disabled="formReadOnly"
@@ -740,13 +740,13 @@ onMounted(loadPage)
                   : undefined
               "
               :input-props="groupFieldAriaProps('recipient-source', binding.bindingId)"
+              filterable
               @update:value="value => updateRecipientKind(binding, value as 'literal' | 'member')"
             />
           </NFormItem>
           <template v-if="binding.recipientSource.kind === 'literal'">
             <NFormItem :label="tx('接收地址类型', 'Recipient kind')">
               <NSelect
-                :id="groupFieldId('recipient-kind', binding.bindingId)"
                 v-model:value="binding.recipientSource.recipient.kind"
                 :options="[
                   { label: 'Email', value: 'email' },
@@ -764,6 +764,7 @@ onMounted(loadPage)
                     : undefined
                 "
                 :input-props="groupFieldAriaProps('recipient-kind', binding.bindingId)"
+                filterable
               />
             </NFormItem>
             <NFormItem :label="tx('接收地址', 'Recipient address')">
@@ -811,7 +812,6 @@ onMounted(loadPage)
             </NFormItem>
             <NFormItem :label="tx('联系字段', 'Contact field')">
               <NSelect
-                :id="groupFieldId('contact-field', binding.bindingId)"
                 v-model:value="binding.recipientSource.contactField"
                 :options="[
                   { label: 'Email', value: 'email' },
@@ -826,12 +826,12 @@ onMounted(loadPage)
                     : undefined
                 "
                 :input-props="groupFieldAriaProps('contact-field', binding.bindingId)"
+                filterable
               />
             </NFormItem>
           </template>
           <NFormItem :label="tx('内容模式', 'Content mode')">
             <NSelect
-              :id="groupFieldId('content-mode', binding.bindingId)"
               :value="binding.contentBinding.kind"
               :options="[
                 { label: tx('文本', 'Text'), value: 'text' },
@@ -846,6 +846,7 @@ onMounted(loadPage)
                   : undefined
               "
               :input-props="groupFieldAriaProps('content-mode', binding.bindingId)"
+              filterable
               @update:value="value => updateContentKind(binding, value as 'text' | 'template')"
             />
           </NFormItem>

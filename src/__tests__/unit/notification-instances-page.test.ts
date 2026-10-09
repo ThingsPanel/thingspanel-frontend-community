@@ -1,4 +1,5 @@
 import { defineComponent, h } from 'vue'
+import type { VNodeChild } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NotificationClientError } from '@/service/api/notification-v2'
@@ -120,7 +121,13 @@ const InputStub = defineComponent({
   }
 })
 const SelectStub = defineComponent({
-  props: ['value', 'options', 'disabled', 'inputProps'],
+  props: {
+    value: null,
+    options: null,
+    disabled: null,
+    inputProps: null,
+    filterable: { type: Boolean, default: false }
+  },
   emits: ['update:value'],
   setup(props, { emit, attrs }) {
     return () =>
@@ -129,6 +136,7 @@ const SelectStub = defineComponent({
         {
           ...attrs,
           ...((props.inputProps || {}) as Record<string, unknown>),
+          'data-filterable': props.filterable ? 'true' : undefined,
           value: props.value ?? '',
           disabled: props.disabled,
           onChange: (event: Event) => emit('update:value', (event.target as HTMLSelectElement).value)
@@ -151,8 +159,10 @@ const DataTableStub = defineComponent({
         (props.data as Array<Record<string, unknown>>).map(row =>
           h(
             'div',
-            (props.columns as Array<{ key: string; render?: CallableFunction }>).map(column =>
-              column.render ? column.render.call(column.render, row) : String(row[column.key] ?? '')
+            (props.columns as Array<{ key: string; render?: unknown }>).map(column =>
+              typeof column.render === 'function'
+                ? (Reflect.apply(column.render, undefined, [row]) as VNodeChild)
+                : String(row[column.key] ?? '')
             )
           )
         )
@@ -225,6 +235,12 @@ describe('notification instance page submit boundaries', () => {
     await flushPromises()
     expect(wrapper.findAll('input')[0].attributes('aria-label')).toBe('Instance name')
     expect(wrapper.findAll('select')[0].attributes('aria-label')).toBe('Notification plugin')
+    const pluginSelect = wrapper.findComponent(SelectStub)
+    expect(pluginSelect.props('filterable')).toBe(true)
+    expect(pluginSelect.props('inputProps')).toMatchObject({
+      id: 'notification-instance-field-pluginRegistrationId',
+      'aria-label': 'Notification plugin'
+    })
     expect(wrapper.findAll('input')[1].attributes('aria-label')).toBe('host')
     await wrapper.findAll('input')[1].setValue('smtp.example.test')
     await wrapper
@@ -263,7 +279,7 @@ describe('notification instance page submit boundaries', () => {
     const errorId = hostInput.attributes('aria-describedby')
     expect(errorId).toBe('notification-instance-field-host-error')
     expect(wrapper.get(`#${errorId}`).text()).toContain('This field is required.')
-    expect(document.activeElement).toBe(hostInput.element)
+    expect(document.activeElement).toBe(document.getElementById('notification-instance-field-host'))
     expect(api.validateInstance).not.toHaveBeenCalled()
     expect(api.createInstance).not.toHaveBeenCalled()
     expect(api.testInstance).not.toHaveBeenCalled()
@@ -302,8 +318,9 @@ describe('notification instance page submit boundaries', () => {
 
     expect(hostInput.attributes('aria-invalid')).toBe('true')
     const errorId = hostInput.attributes('aria-describedby')
-    expect(document.getElementById(errorId)?.textContent).toContain('Host is not accepted.')
-    expect(document.activeElement).toBe(hostInput.element)
+    expect(errorId).toBeDefined()
+    expect(document.getElementById(errorId!)?.textContent).toContain('Host is not accepted.')
+    expect(document.activeElement).toBe(document.getElementById('notification-instance-field-host'))
     expect(api.createInstance).not.toHaveBeenCalled()
     expect(api.testInstance).not.toHaveBeenCalled()
     wrapper.unmount()
@@ -431,7 +448,7 @@ describe('notification instance page submit boundaries', () => {
   })
 
   it('shows a configuration failure in the page without issuing notification mutations', async () => {
-    api.listPlugins.mockRejectedValueOnce(new NotificationClientError('Notification API is not configured.'))
+    api.listPlugins.mockRejectedValueOnce(new NotificationClientError('Notification API is not configured.', null))
     const wrapper = mount(NotificationInstances, { global: { stubs } })
     await flushPromises()
     expect(wrapper.text()).toContain('Notification API is not configured.')

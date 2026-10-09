@@ -86,9 +86,11 @@ function validationErrorForField(name: string) {
 }
 function instanceFieldAriaProps(name: string) {
   const validationError = validationErrorForField(name)
+  const invalid = localFieldErrors.value[name] || validationError ? true : undefined
   return {
+    id: instanceFieldId(name),
     'aria-label': String(schemaFields.value.find(([field]) => field === name)?.[1].title || name),
-    'aria-invalid': localFieldErrors.value[name] || validationError ? 'true' : undefined,
+    'aria-invalid': invalid,
     'aria-describedby': localFieldErrors.value[name]
       ? instanceErrorId(name)
       : validationError
@@ -97,7 +99,7 @@ function instanceFieldAriaProps(name: string) {
   }
 }
 function instanceInputProps(name: string) {
-  return { id: instanceFieldId(name), ...instanceFieldAriaProps(name) }
+  return instanceFieldAriaProps(name)
 }
 function focusInstanceField(name: string) {
   void nextTick(() => {
@@ -823,18 +825,12 @@ onMounted(loadInstances)
       </NFormItem>
       <NFormItem v-if="editorMode === 'create'" :label="tx('通知插件', 'Notification plugin')">
         <NSelect
-          :id="instanceFieldId('pluginRegistrationId')"
           v-model:value="selectedPluginId"
           :disabled="instanceSaveReadOnly"
           :aria-label="tx('通知插件', 'Notification plugin')"
           :input-props="{
-            'aria-label': tx('通知插件', 'Notification plugin'),
-            'aria-invalid': localFieldErrors.pluginRegistrationId || validationErrorForField('pluginRegistrationId') ? 'true' : undefined,
-            'aria-describedby': localFieldErrors.pluginRegistrationId
-              ? instanceErrorId('pluginRegistrationId')
-              : validationErrorForField('pluginRegistrationId')
-                ? validationFieldErrorId(validationErrorForField('pluginRegistrationId')!.field)
-                : undefined
+            ...instanceFieldAriaProps('pluginRegistrationId'),
+            'aria-label': tx('通知插件', 'Notification plugin')
           }"
           :aria-invalid="
             localFieldErrors.pluginRegistrationId || validationErrorForField('pluginRegistrationId')
@@ -854,6 +850,7 @@ onMounted(loadInstances)
               .map(plugin => ({ label: `${plugin.manifest.name} · ${plugin.pluginVersion}`, value: plugin.id }))
           "
           :placeholder="tx('选择已授权插件', 'Choose an authorized plugin')"
+          filterable
         />
         <div
           v-if="localFieldErrors.pluginRegistrationId || validationErrorForField('pluginRegistrationId')"
@@ -870,12 +867,12 @@ onMounted(loadInstances)
       </NFormItem>
       <NFormItem v-if="editorMode === 'create' && selectedPlugin" :label="tx('渠道', 'Channel')">
         <NSelect
-          :id="instanceFieldId('channel')"
           v-model:value="selectedChannel"
           :disabled="instanceSaveReadOnly"
           :aria-label="tx('渠道', 'Channel')"
-          :input-props="{ 'aria-label': tx('渠道', 'Channel') }"
+          :input-props="{ id: instanceFieldId('channel'), 'aria-label': tx('渠道', 'Channel') }"
           :options="selectedPlugin.manifest.channels.map(channel => ({ label: channel, value: channel }))"
+          filterable
         />
       </NFormItem>
       <template v-if="selectedPlugin">
@@ -922,10 +919,10 @@ onMounted(loadInstances)
           />
           <NSelect
             v-else-if="Array.isArray(schema.enum)"
-            :id="instanceFieldId(name)"
             :value="enumSelection(name)"
             :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
             :input-props="instanceFieldAriaProps(name)"
+            filterable
             :options="enumOptions(schema)"
             @update:value="value => updateEnum(name, schema, value)"
           />
@@ -1106,7 +1103,8 @@ onMounted(loadInstances)
         <NSelect
           v-model:value="testContentMode"
           :options="(selectedPlugin?.manifest.contentModes || ['text']).map(mode => ({ label: mode, value: mode }))"
-          :input-props="{ 'aria-label': tx('内容模式', 'Content mode') }"
+          :input-props="{ id: 'notification-instance-test-content-mode', 'aria-label': tx('内容模式', 'Content mode') }"
+          filterable
         />
       </NFormItem>
       <NFormItem :label="tx('标题（可选）', 'Title (optional)')">
