@@ -15,6 +15,7 @@ import type * as NotificationV2 from '@/service/api/notification-v2.types'
 import { describeDeliveryStatus, describeIntakeStatus } from './workflow'
 
 const auth = useAuthStore()
+const notificationApiConfigured = Boolean(import.meta.env.VITE_NOTIFICATION_API_BASE_URL)
 const { locale } = useI18n()
 const isZh = computed(() => locale.value.toLowerCase().startsWith('zh'))
 const tx = (zh: string, en: string) => (isZh.value ? zh : en)
@@ -450,7 +451,7 @@ onMounted(() => {
       </div>
     </div>
     <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
-    <NAlert v-if="!import.meta.env.VITE_NOTIFICATION_API_BASE_URL" type="info" class="mb-12px">
+    <NAlert v-if="!notificationApiConfigured" type="info" class="mb-12px">
       {{
         tx(
           '通知服务未启用；旧历史记录仍可在旧历史页查看。',

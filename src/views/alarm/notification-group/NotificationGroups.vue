@@ -24,6 +24,7 @@ import {
 } from './workflow'
 
 const auth = useAuthStore()
+const notificationApiConfigured = Boolean(import.meta.env.VITE_NOTIFICATION_API_BASE_URL)
 const { locale } = useI18n()
 const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
 const capabilities = computed(() => getNotificationUiCapabilities())
@@ -486,7 +487,7 @@ onMounted(loadPage)
     </div>
     <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
     <NAlert v-if="successText" type="success" class="mb-12px">{{ successText }}</NAlert>
-    <NAlert v-if="!import.meta.env.VITE_NOTIFICATION_API_BASE_URL" type="info" class="mb-12px">
+    <NAlert v-if="!notificationApiConfigured" type="info" class="mb-12px">
       {{
         tx(
           '通知服务未启用；旧组入口仍可使用。',

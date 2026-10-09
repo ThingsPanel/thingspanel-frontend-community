@@ -70,11 +70,8 @@ const schemaFields = computed(() => {
   })
 })
 const unsupportedSchemaFields = computed(() => {
-  const properties = selectedPlugin.value?.manifest.configSchema?.properties
-  if (!properties || typeof properties !== 'object' || Array.isArray(properties)) return []
-  return Object.entries(properties as Record<string, SchemaField>).flatMap(([name, schema]) =>
-    unsupportedNotificationSchemaPaths(schema).map(path => `${name}.${path}`)
-  )
+  const schema = selectedPlugin.value?.manifest.configSchema
+  return schema ? unsupportedNotificationSchemaPaths(schema) : []
 })
 const requiredFields = computed(() => {
   const required = selectedPlugin.value?.manifest.configSchema?.required
