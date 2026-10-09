@@ -16,6 +16,8 @@ import { tableThemeOverrides } from '@/utils/table-theme'
 import type { ModalType } from './components/table-action-modal.vue'
 import TableActionModal from './components/table-action-modal.vue'
 import NotificationGroups from './NotificationGroups.vue'
+import NotificationInstances from '~/src/views/management/notification/NotificationInstances.vue'
+import NotificationAvailablePlugins from './NotificationAvailablePlugins.vue'
 import { useBoolean, useLoading } from '~/packages/hooks'
 
 const { loading, startLoading, endLoading } = useLoading(false)
@@ -134,7 +136,7 @@ const columns = ref([
 ]) as Ref<DataTableColumns<DataService.Data>>
 
 const modalType = ref<ModalType>('add')
-const groupTab = ref('native')
+const groupTab = ref('accounts')
 
 function setModalType(type: ModalType) {
   modalType.value = type
@@ -152,7 +154,7 @@ const getPlatform = computed(() => {
 watch(
   groupTab,
   tab => {
-    if (tab === 'legacy') void getTableData()
+    if (tab === 'legacy-groups') void getTableData()
   },
   { immediate: true }
 )
@@ -161,10 +163,24 @@ watch(
 <template>
   <div>
     <NTabs v-model:value="groupTab" type="line">
-      <NTabPane name="native" :tab="tx('新版通知组', 'Encore groups')">
+      <NTabPane name="accounts" :tab="tx('通知账号', 'Notification accounts')">
+        <NAlert type="info" class="mb-12px">
+          {{
+            tx(
+              '使用顺序：先查看“可用通知插件”，再创建通知账号，然后创建新版通知组并绑定账号。旧版通知组继续由旧告警流程使用。',
+              'To get started, review available plugins, create a notification account, then create a new notification group and bind the account. Legacy groups remain with the existing alert flow.'
+            )
+          }}
+        </NAlert>
+        <NotificationInstances />
+      </NTabPane>
+      <NTabPane name="available-plugins" :tab="tx('可用通知插件', 'Available plugins')">
+        <NotificationAvailablePlugins />
+      </NTabPane>
+      <NTabPane name="native-groups" :tab="tx('新版通知组', 'New notification groups')">
         <NotificationGroups />
       </NTabPane>
-      <NTabPane name="legacy" :tab="tx('旧通知组（旧系统）', 'Legacy groups')">
+      <NTabPane name="legacy-groups" :tab="tx('旧通知组（旧系统）', 'Legacy groups')">
         <NAlert type="info" class="mb-12px">
           {{
             tx(
