@@ -27,6 +27,7 @@ const { bool: visible, setTrue: openModal } = useBoolean()
 const tableData = ref<Api.Alarm.NotificationGroupList[]>([])
 const total = ref(0)
 const rowKey = (row: Api.Alarm.NotificationGroupList) => row.id
+const isNativeAlertAlias = (row: Api.Alarm.NotificationGroupList) => row.notification_type === 'ENCORE'
 
 function setTableData(data: Api.Alarm.NotificationGroupList[]) {
   tableData.value = data
@@ -61,6 +62,7 @@ const getTableData = async () => {
 }
 
 const handleSwitchChange = async (row, value) => {
+  if (isNativeAlertAlias(row)) return
   row.status = value ? 'OPEN' : 'CLOSE'
   const id = row?.id || ''
   delete row.id
@@ -68,6 +70,7 @@ const handleSwitchChange = async (row, value) => {
   getTableData()
 }
 const handleDeleteTable = async (rowId: string) => {
+  if (tableData.value.some(row => row.id === rowId && isNativeAlertAlias(row))) return
   await deleteNotificationGroup({ id: rowId })
 
   window.$message?.info($t('generate.notificationGroup'))
@@ -75,6 +78,7 @@ const handleDeleteTable = async (rowId: string) => {
 }
 const editData = ref<Api.Alarm.NotificationGroupList | null>(null)
 const handleEditTable = async (rowId: string) => {
+  if (tableData.value.some(row => row.id === rowId && isNativeAlertAlias(row))) return
   const res = await getNotificationGroupDetail({ id: rowId })
   if (res?.data) {
     editData.value = res.data
@@ -95,6 +99,7 @@ const columns = ref([
     align: 'left',
     minWidth: '140px',
     render: (row: any) => {
+      if (isNativeAlertAlias(row)) return tx('ENCORE · 新版通知组入口', 'ENCORE · New notification group entry')
       const notificationType = notificationOptions.find(option => option.value === row.notification_type)?.label || ''
       return notificationType
     }
@@ -105,7 +110,13 @@ const columns = ref([
     align: 'left',
     minWidth: '140px',
     render: (row: any) => {
-      return <NSwitch value={row.status === 'OPEN'} onChange={value => handleSwitchChange(row, value)} />
+      return (
+        <NSwitch
+          value={row.status === 'OPEN'}
+          disabled={isNativeAlertAlias(row)}
+          onChange={value => handleSwitchChange(row, value)}
+        />
+      )
     }
   },
   {
@@ -114,6 +125,11 @@ const columns = ref([
     align: 'left',
     width: '200px',
     render: (row: any) => {
+      if (isNativeAlertAlias(row)) {
+        return (
+          <span class="text-xs text-secondary">{tx('请在新版通知组中维护', 'Manage in new notification groups')}</span>
+        )
+      }
       return (
         <NSpace justify={'start'}>
           <NButton size={'small'} type="primary" onClick={() => handleEditTable(row.id)}>
@@ -167,8 +183,8 @@ watch(
         <NAlert type="info" class="mb-12px">
           {{
             tx(
-              '使用顺序：先查看“可用通知插件”，再创建通知账号，然后创建新版通知组并绑定账号。旧版通知组继续由旧告警流程使用。',
-              'To get started, review available plugins, create a notification account, then create a new notification group and bind the account. Legacy groups remain with the existing alert flow.'
+              '使用顺序：先查看“可用通知插件”，再创建通知账号和新版通知组，点击“用于社区告警”，最后在告警规则中选择该入口。旧版通知组继续由旧告警流程使用。',
+              'To get started, review available plugins, create a notification account and group, publish it for community alerts, then select its entry in an alert rule. Legacy groups remain with the existing alert flow.'
             )
           }}
         </NAlert>

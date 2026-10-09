@@ -1,12 +1,17 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import Email from './components/email.vue'
 import ShortMessage from './components/short-message.vue'
 import PushNotification from './components/push-notification.vue'
 import { $t } from '~/src/locales'
 import { useI18n } from 'vue-i18n'
+import { getNotificationUiCapabilities } from '@/service/api/notification-v2'
+import NotificationPlugins from '~/src/views/apply/plugin/NotificationPlugins.vue'
 import NotificationInstances from './NotificationInstances.vue'
 
 const { locale } = useI18n()
+const capabilities = computed(() => getNotificationUiCapabilities())
+const activeTab = ref(capabilities.value.canManagePlugins ? 'plugins' : 'native')
 const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
 </script>
 
@@ -14,7 +19,15 @@ const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('z
   <div class="overflow-hidden">
     <NCard :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="h-full flex-col">
-        <NTabs type="line" animated>
+        <NTabs v-model:value="activeTab" type="line" animated>
+          <NTabPane
+            v-if="capabilities.canManagePlugins"
+            name="plugins"
+            :tab="tx('通知插件', 'Notification plugins')"
+            class="pannel-content"
+          >
+            <NotificationPlugins />
+          </NTabPane>
           <NTabPane name="native" :tab="tx('通知实例', 'Notification instances')" class="pannel-content">
             <NotificationInstances />
           </NTabPane>

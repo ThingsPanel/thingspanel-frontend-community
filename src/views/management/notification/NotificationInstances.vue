@@ -40,6 +40,7 @@ const auth = useAuthStore()
 const { locale } = useI18n()
 const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
 const capabilities = computed(() => getNotificationUiCapabilities())
+const hasTenantContext = computed(() => Boolean(String(auth.userInfo.tenant_id || '').trim()))
 const plugins = ref<NotificationPlugin[]>([])
 const instances = ref<NotificationInstance[]>([])
 const loading = ref(false)
@@ -204,11 +205,22 @@ function clearSessionState() {
 const unregisterCleanup = registerNotificationSessionCleanup(clearSessionState)
 watch(
   () => [auth.token, auth.userInfo.tenant_id, auth.userInfo.id, auth.userInfo.userId],
-  () => invalidateNotificationSession()
+  () => {
+    invalidateNotificationSession()
+    if (hasTenantContext.value) void loadInstances()
+  }
 )
 onBeforeUnmount(unregisterCleanup)
 
 async function loadInstances() {
+  if (!hasTenantContext.value) {
+    plugins.value = []
+    instances.value = []
+    total.value = 0
+    errorText.value = ''
+    loading.value = false
+    return
+  }
   const generation = ++viewGeneration.value
   loading.value = true
   errorText.value = ''
@@ -247,6 +259,7 @@ function setSchemaDefaults(config: Record<string, unknown>) {
 }
 
 function openCreate() {
+  if (!hasTenantContext.value) return
   clearSecretsAndEditor()
   editorMode.value = 'create'
   selectedPluginId.value = ''
@@ -258,6 +271,7 @@ function openCreate() {
 }
 
 async function openEdit(row: NotificationInstance) {
+  if (!hasTenantContext.value) return
   errorText.value = ''
   try {
     const [instanceResponse, pluginResponse] = await Promise.all([
@@ -410,7 +424,7 @@ watch(selectedPluginId, () => {
 })
 
 async function validateConfig() {
-  if (instanceSaveReadOnly.value) return
+  if (!hasTenantContext.value || instanceSaveReadOnly.value) return
   validationErrors.value = []
   errorText.value = ''
   if (!localValidation()) {
@@ -439,7 +453,7 @@ async function validateConfig() {
 }
 
 async function saveInstance() {
-  if (!capabilities.value.canManage || saving.value || instanceVersionConflict.value) return
+  if (!hasTenantContext.value || !capabilities.value.canManage || saving.value || instanceVersionConflict.value) return
   saving.value = true
   errorText.value = ''
   successText.value = ''
@@ -566,6 +580,7 @@ function updateEnum(name: string, schema: SchemaField, selected: string | null) 
 }
 
 function openTest(row: NotificationInstance) {
+  if (!hasTenantContext.value) return
   if (pendingTest.value) {
     testStateText.value = tx(
       '上一次试发结果未知，请使用同一请求重试或查询状态。',
@@ -617,7 +632,7 @@ function makeTestBody(): NotificationV2.TestSendRequest {
 }
 
 async function submitTest() {
-  if (!capabilities.value.canSendTest) return
+  if (!hasTenantContext.value || !capabilities.value.canSendTest) return
   errorText.value = ''
   try {
     if (!pendingTest.value) {
@@ -739,45 +754,62 @@ onMounted(loadInstances)
 
 <template>
   <NCard :bordered="false">
-    <div class="mb-12px flex flex-wrap items-center justify-between gap-12px">
-      <div>
-        {{
-          tx(
-            '账号实例属于当前登录租户；租户 ID 仅用于页面提示，由服务端从会话确定权限。',
-            'Instances belong to the signed-in tenant. Tenant identity is only a UI hint; the server derives authorization from the session.'
-          )
-        }}
+    <NAlert v-if="!hasTenantContext" type="info">
+      <div class="flex flex-wrap items-center gap-12px">
+        <span>
+          {{
+            tx(
+              '通知账号按租户管理。请先在“租户管理”中进入目标租户，再配置该租户的通知账号。',
+              'Notification accounts are managed per tenant. Enter the target tenant from Tenant management before configuring its accounts.'
+            )
+          }}
+        </span>
+        <a class="text-primary underline" href="/management/user">
+          {{ tx('打开租户管理', 'Open Tenant management') }}
+        </a>
       </div>
-      <NSpace>
-        <NButton @click="loadInstances">{{ tx('刷新', 'Refresh') }}</NButton>
-        <NButton v-if="capabilities.canManage" type="primary" @click="openCreate">
-          {{ tx('创建实例', 'Create instance') }}
-        </NButton>
-      </NSpace>
+    </NAlert>
+    <div v-else>
+      <div class="mb-12px flex flex-wrap items-center justify-between gap-12px">
+        <div>
+          {{
+            tx(
+              '账号实例属于当前登录租户；权限由服务端从会话确定。',
+              'Instances belong to the signed-in tenant; the server derives authorization from the session.'
+            )
+          }}
+        </div>
+        <NSpace>
+          <NButton @click="loadInstances">{{ tx('刷新', 'Refresh') }}</NButton>
+          <NButton v-if="capabilities.canManage" type="primary" @click="openCreate">
+            {{ tx('创建实例', 'Create instance') }}
+          </NButton>
+        </NSpace>
+      </div>
+      <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
+      <NAlert v-if="successText" type="success" class="mb-12px">{{ successText }}</NAlert>
+      <NDataTable
+        :columns="columns"
+        :data="instances"
+        :loading="loading"
+        :row-key="row => row.id"
+        :scroll-x="1000"
+        :pagination="{ page: currentPage, pageSize, itemCount: total, showSizePicker: true, pageSizes: [10, 20, 50] }"
+        @update:page="
+          page => {
+            currentPage = page
+            loadInstances()
+          }
+        "
+        @update:page-size="
+          size => {
+            pageSize = size
+            currentPage = 1
+            loadInstances()
+          }
+        "
+      />
     </div>
-    <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
-    <NAlert v-if="successText" type="success" class="mb-12px">{{ successText }}</NAlert>
-    <NDataTable
-      :columns="columns"
-      :data="instances"
-      :loading="loading"
-      :row-key="row => row.id"
-      :scroll-x="1000"
-      :pagination="{ page: currentPage, pageSize, itemCount: total, showSizePicker: true, pageSizes: [10, 20, 50] }"
-      @update:page="
-        page => {
-          currentPage = page
-          loadInstances()
-        }
-      "
-      @update:page-size="
-        size => {
-          pageSize = size
-          currentPage = 1
-          loadInstances()
-        }
-      "
-    />
   </NCard>
 
   <NModal

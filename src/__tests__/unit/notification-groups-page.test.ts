@@ -1,11 +1,11 @@
-import { defineComponent, h } from 'vue'
+import { defineComponent, Fragment, h } from 'vue'
 import type { VNodeChild } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { NotificationClientError } from '@/service/api/notification-v2'
 import NotificationGroups from '@/views/alarm/notification-group/NotificationGroups.vue'
 
-const { api, getUserListMock, authState } = vi.hoisted(() => ({
+const { api, getUserListMock, getPublishStatusMock, publishNativeGroupMock, authState } = vi.hoisted(() => ({
   api: {
     listGroups: vi.fn(),
     listInstances: vi.fn(),
@@ -17,6 +17,8 @@ const { api, getUserListMock, authState } = vi.hoisted(() => ({
     createIdempotencyKey: vi.fn(() => 'fixture-idempotency-key')
   },
   getUserListMock: vi.fn(),
+  getPublishStatusMock: vi.fn(),
+  publishNativeGroupMock: vi.fn(),
   authState: {
     token: 'fixture-session',
     userInfo: {
@@ -33,7 +35,11 @@ vi.mock('@/service/api/notification-v2', async importOriginal => {
   const original = await importOriginal<typeof import('@/service/api/notification-v2')>()
   return { ...original, notificationV2: api }
 })
-vi.mock('@/service/api/notification', () => ({ getUserList: getUserListMock }))
+vi.mock('@/service/api/notification', () => ({
+  getUserList: getUserListMock,
+  getNativeNotificationGroupPublishStatus: getPublishStatusMock,
+  publishNativeNotificationGroup: publishNativeGroupMock
+}))
 vi.mock('@/store/modules/auth', async () => {
   const { reactive: makeReactive } = await import('vue')
   const state = makeReactive(authState)
@@ -54,6 +60,12 @@ vi.mock('naive-ui', async () => {
             { ...attrs, disabled: props.disabled, onClick: (event: Event) => emit('click', event) },
             slots.default?.()
           )
+      }
+    }),
+    NSpace: define({
+      name: 'NSpace',
+      setup(_, { slots }) {
+        return () => createElement('div', slots.default?.())
       }
     })
   }
@@ -177,6 +189,7 @@ const SlotStub = defineComponent({
 
 const stubs = {
   NButton: ButtonStub,
+  NSpace: SlotStub,
   NSelect: SelectStub,
   NInput: InputStub,
   NDataTable: DataTableStub,
@@ -196,8 +209,9 @@ const stubs = {
 
 function installTsxShim() {
   ;(globalThis as { React?: unknown }).React = {
+    Fragment,
     createElement: (type: Parameters<typeof h>[0], props: Parameters<typeof h>[1], ...children: unknown[]) =>
-      h(type, props, () => children)
+      type === Fragment ? h(Fragment, props, children.flat(Infinity) as never) : h(type, props, () => children)
   }
 }
 
@@ -214,6 +228,8 @@ describe('notification group page failure and conflict flow', () => {
     api.updateGroup.mockReset()
     api.createIdempotencyKey.mockReturnValue('fixture-idempotency-key')
     getUserListMock.mockReset()
+    getPublishStatusMock.mockReset().mockResolvedValue({ published: false, routeVersion: 0 })
+    publishNativeGroupMock.mockReset()
     authState.token = 'fixture-session'
     authState.userInfo.tenant_id = 'fixture-tenant'
     installTsxShim()
@@ -381,6 +397,136 @@ describe('notification group page failure and conflict flow', () => {
     )
     expect(wrapper.findAll('button').some(button => button.text() === 'Refresh this group and review again')).toBe(true)
     expect(api.testInstance).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('retries an unconfirmed community alert publish with the same body and key', async () => {
+    const group = {
+      id: 'group-native-1',
+      name: 'Enabled native group',
+      enabled: true,
+      bindings: [],
+      revision: 3,
+      version: 5,
+      migrationState: 'native' as const
+    }
+    api.listGroups.mockResolvedValue({ data: { items: [group], total: 1 } })
+    publishNativeGroupMock.mockRejectedValueOnce(new Error('connection closed before response')).mockResolvedValueOnce({
+      published: true,
+      nativeGroupId: group.id,
+      legacyGroupId: 'legacy-alias-1',
+      groupRevision: group.revision,
+      routeVersion: 1,
+      name: group.name
+    })
+    getPublishStatusMock
+      .mockResolvedValueOnce({ published: false, routeVersion: 0 })
+      .mockResolvedValueOnce({ published: false, routeVersion: 0 })
+      .mockResolvedValue({
+        published: true,
+        nativeGroupId: group.id,
+        legacyGroupId: 'legacy-alias-1',
+        groupRevision: group.revision,
+        effectiveGroupRevision: group.revision,
+        routeVersion: 1,
+        name: group.name
+      })
+    const wrapper = mount(NotificationGroups, { global: { stubs } })
+    await flushPromises()
+
+    const publishButton = () =>
+      wrapper.findAll('button').find(button => /community alerts|same request/i.test(button.text()))!
+    await publishButton().trigger('click')
+    await flushPromises()
+
+    expect(publishNativeGroupMock).toHaveBeenCalledTimes(1)
+    expect(publishButton().text()).toContain('Result unconfirmed; retry the same request')
+    const firstCall = publishNativeGroupMock.mock.calls[0]
+
+    await publishButton().trigger('click')
+    await flushPromises()
+
+    expect(publishNativeGroupMock).toHaveBeenCalledTimes(2)
+    expect(publishNativeGroupMock.mock.calls[1]).toEqual(firstCall)
+    expect(firstCall).toEqual([
+      {
+        operation: 'publish',
+        nativeGroupId: group.id,
+        groupRevision: group.revision,
+        name: group.name,
+        expectedRouteVersion: 0
+      },
+      'fixture-idempotency-key'
+    ])
+    expect(wrapper.text()).toContain('Used by community alerts')
+    wrapper.unmount()
+  })
+
+  it('stops an alert route with a stable retry body and key', async () => {
+    const group = {
+      id: 'group-native-2',
+      name: 'Published group',
+      enabled: true,
+      bindings: [],
+      revision: 6,
+      version: 9,
+      migrationState: 'native' as const
+    }
+    const publishedStatus = {
+      published: true,
+      status: 'published',
+      nativeGroupId: group.id,
+      legacyGroupId: 'legacy-alias-2',
+      groupRevision: 6,
+      effectiveGroupRevision: 6,
+      routeVersion: 3,
+      engine: 'encore',
+      enabled: true,
+      name: group.name
+    }
+    const stoppedStatus = {
+      published: false,
+      status: 'stopped',
+      nativeGroupId: group.id,
+      legacyGroupId: 'legacy-alias-2',
+      groupRevision: 6,
+      effectiveGroupRevision: 0,
+      routeVersion: 4,
+      engine: 'legacy',
+      enabled: false,
+      name: group.name
+    }
+    api.listGroups.mockResolvedValue({ data: { items: [group], total: 1 } })
+    getPublishStatusMock
+      .mockResolvedValueOnce(publishedStatus)
+      .mockResolvedValueOnce(publishedStatus)
+      .mockResolvedValue(stoppedStatus)
+    publishNativeGroupMock
+      .mockRejectedValueOnce(new Error('connection closed before response'))
+      .mockResolvedValueOnce(stoppedStatus)
+    const wrapper = mount(NotificationGroups, { global: { stubs } })
+    await flushPromises()
+    const stopButton = () =>
+      wrapper.findAll('button').find(button => button.text() === 'Stop using for community alerts')!
+    await stopButton().trigger('click')
+    await flushPromises()
+
+    expect(publishNativeGroupMock).toHaveBeenCalledTimes(1)
+    const firstCall = publishNativeGroupMock.mock.calls[0]
+    expect(firstCall).toEqual([
+      { operation: 'unpublish', nativeGroupId: group.id, expectedRouteVersion: 3 },
+      'fixture-idempotency-key'
+    ])
+    expect(wrapper.text()).toContain('Result unconfirmed; retry the same request')
+
+    const retryButton = wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Result unconfirmed; retry the same request')!
+    await retryButton.trigger('click')
+    await flushPromises()
+    expect(publishNativeGroupMock).toHaveBeenCalledTimes(2)
+    expect(publishNativeGroupMock.mock.calls[1]).toEqual(firstCall)
+    expect(wrapper.findAll('button').some(button => button.text() === 'Stop using for community alerts')).toBe(false)
     wrapper.unmount()
   })
 

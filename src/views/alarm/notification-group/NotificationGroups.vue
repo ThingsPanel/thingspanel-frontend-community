@@ -1,9 +1,15 @@
 <script setup lang="tsx">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NButton } from 'naive-ui'
+import { NButton, NSpace } from 'naive-ui'
 import type { DataTableColumns, SelectOption } from 'naive-ui'
-import { getUserList } from '@/service/api/notification'
+import {
+  getNativeNotificationGroupPublishStatus,
+  getUserList,
+  publishNativeNotificationGroup,
+  type NativeNotificationGroupRouteRequest,
+  type NativeNotificationGroupPublishStatus
+} from '@/service/api/notification'
 import { useAuthStore } from '@/store/modules/auth'
 import {
   getNotificationUiCapabilities,
@@ -59,6 +65,11 @@ const pendingSave = ref<{
   body: NotificationV2.GroupCreate | NotificationV2.GroupUpdate
   groupId?: string
 } | null>(null)
+const publishStatuses = ref<Record<string, NativeNotificationGroupPublishStatus>>({})
+const publishErrors = ref<Record<string, string>>({})
+const publishLoading = ref<Record<string, boolean>>({})
+const pendingPublish = ref<{ key: string; body: NativeNotificationGroupRouteRequest; groupId: string } | null>(null)
+const publishSaving = ref(false)
 const versionConflict = ref(false)
 const templateMappings = reactive<Record<string, string>>({})
 const formReadOnly = computed(() => editorMode.value === 'view' || Boolean(pendingSave.value))
@@ -159,6 +170,11 @@ function clearSession() {
   total.value = 0
   modal.value = false
   pendingSave.value = null
+  publishStatuses.value = {}
+  publishErrors.value = {}
+  publishLoading.value = {}
+  pendingPublish.value = null
+  publishSaving.value = false
   errorText.value = ''
   successText.value = ''
   resetDraft()
@@ -203,6 +219,9 @@ async function loadPage() {
     total.value = groupResponse.data.total
     instances.value = instanceResponse.data.items
     plugins.value = pluginResponse.data.items
+    publishStatuses.value = {}
+    publishErrors.value = {}
+    void Promise.all(groupResponse.data.items.map(row => refreshPublishStatus(row, generation)))
   } catch (error) {
     if (
       generation !== viewGeneration.value ||
@@ -213,6 +232,189 @@ async function loadPage() {
     errorText.value = error instanceof Error ? error.message : tx('加载失败。', 'Could not load notification groups.')
   } finally {
     if (generation === viewGeneration.value) loading.value = false
+  }
+}
+
+const isTenantAdmin = computed(() => {
+  const roles = new Set([...(auth.userInfo.roles || []), auth.userInfo.authority].filter(Boolean))
+  return roles.has('TENANT_ADMIN')
+})
+
+async function refreshPublishStatus(row: NotificationV2.GroupView, generation = viewGeneration.value) {
+  publishLoading.value[row.id] = true
+  delete publishErrors.value[row.id]
+  try {
+    const status = await getNativeNotificationGroupPublishStatus(row.id)
+    if (generation !== viewGeneration.value) return
+    publishStatuses.value[row.id] = status
+  } catch (error) {
+    if (generation !== viewGeneration.value || error instanceof NotificationSessionChangedError) return
+    publishErrors.value[row.id] = tx(
+      '无法确认社区告警入口状态，请刷新后重试。',
+      'Could not confirm the community alert entry. Refresh and try again.'
+    )
+  } finally {
+    if (generation === viewGeneration.value) delete publishLoading.value[row.id]
+  }
+}
+
+function nativePublishLabel(row: NotificationV2.GroupView) {
+  if (pendingPublish.value?.groupId === row.id)
+    return tx('结果未确认，使用同一请求重试', 'Result unconfirmed; retry the same request')
+  const status = publishStatuses.value[row.id]
+  if (status?.published && status.effectiveGroupRevision === row.revision)
+    return tx('已用于社区告警', 'Used by community alerts')
+  if (status?.published || status?.status === 'stopped')
+    return tx('发布当前版本到社区告警', 'Publish current revision to community alerts')
+  if (publishErrors.value[row.id]) return tx('刷新告警入口状态', 'Refresh alert entry status')
+  return tx('用于社区告警', 'Use for community alerts')
+}
+
+function nativePublishSummary(row: NotificationV2.GroupView) {
+  const status = publishStatuses.value[row.id]
+  if (!status) return ''
+  if (status.published && status.legacyGroupId) {
+    const staleRevision = status.effectiveGroupRevision !== row.revision
+    return tx(
+      `旧告警组 ${status.legacyGroupId} · 已发布版本 ${status.effectiveGroupRevision}${staleRevision ? ` · 当前版本 ${row.revision} 尚未发布` : ''}`,
+      `Legacy alert group ${status.legacyGroupId} · published revision ${status.effectiveGroupRevision}${staleRevision ? ` · current revision ${row.revision} is not published` : ''}`
+    )
+  }
+  if (status.status === 'stopped')
+    return tx(
+      '社区告警已停止，后续事件不会使用此入口。',
+      'Community alerts are stopped; future events will not use this entry.'
+    )
+  return ''
+}
+
+function nativePublishErrorStatus(error: unknown) {
+  if (!error || typeof error !== 'object') return null
+  const value = error as { status?: unknown; response?: { status?: unknown } }
+  const nested = error as { error?: { status?: unknown } }
+  const status = value.status ?? value.response?.status ?? nested.error?.status
+  return typeof status === 'number' ? status : null
+}
+
+async function sendPendingPublish() {
+  const pending = pendingPublish.value
+  if (!pending || publishSaving.value) return
+  publishSaving.value = true
+  delete publishErrors.value[pending.groupId]
+  try {
+    const status = await publishNativeNotificationGroup(pending.body, pending.key)
+    publishStatuses.value[pending.groupId] = status
+    pendingPublish.value = null
+    await loadPage()
+    publishErrors.value[pending.groupId] =
+      pending.body.operation === 'unpublish'
+        ? tx(
+            '社区告警入口已停止。此操作只影响之后产生的事件。',
+            'The community alert entry is stopped. This affects future events only.'
+          )
+        : tx(
+            `已加入社区告警，旧告警组 ID：${status.legacyGroupId}`,
+            `Added to community alerts as legacy group ${status.legacyGroupId}`
+          )
+  } catch (error) {
+    const status = nativePublishErrorStatus(error)
+    if (status === 409) {
+      pendingPublish.value = null
+      const row = rows.value.find(item => item.id === pending.groupId)
+      if (row) await refreshPublishStatus(row)
+      publishErrors.value[pending.groupId] = tx(
+        '告警入口版本已变化，状态已刷新；请检查最新状态后再明确发布。',
+        'The alert entry version changed. Status was refreshed; review it before publishing again.'
+      )
+    } else if (status !== null && status >= 400 && status < 500) {
+      pendingPublish.value = null
+      publishErrors.value[pending.groupId] =
+        status === 401
+          ? tx('登录状态已失效，请重新登录。', 'Your session has expired. Sign in again.')
+          : status === 403
+            ? tx('当前账号无权发布到社区告警。', 'This account cannot publish to community alerts.')
+            : tx('请求未被接受，请检查通知组并重试。', 'The request was rejected. Review the group and try again.')
+    } else {
+      publishErrors.value[pending.groupId] = tx(
+        '发布结果未确认。请使用同一请求重试；不要新建另一条发布请求。',
+        'The publish result is unconfirmed. Retry the same request; do not create a new publish request.'
+      )
+    }
+  } finally {
+    publishSaving.value = false
+  }
+}
+
+async function publishForCommunityAlerts(row: NotificationV2.GroupView) {
+  if (!isTenantAdmin.value || !row.enabled || row.migrationState !== 'native' || publishSaving.value) return
+  if (pendingPublish.value) {
+    if (pendingPublish.value.groupId === row.id) await sendPendingPublish()
+    return
+  }
+  delete publishErrors.value[row.id]
+  publishLoading.value[row.id] = true
+  try {
+    const status = await getNativeNotificationGroupPublishStatus(row.id)
+    publishStatuses.value[row.id] = status
+    if (status.published && status.effectiveGroupRevision === row.revision) {
+      publishErrors.value[row.id] = tx(
+        `已用于社区告警，旧告警组 ID：${status.legacyGroupId}`,
+        `Already used by community alerts as legacy group ${status.legacyGroupId}`
+      )
+      return
+    }
+    pendingPublish.value = {
+      key: notificationV2.createIdempotencyKey(),
+      body: {
+        operation: 'publish',
+        nativeGroupId: row.id,
+        groupRevision: row.revision,
+        name: row.name,
+        expectedRouteVersion: status.routeVersion
+      },
+      groupId: row.id
+    }
+    await sendPendingPublish()
+  } catch (error) {
+    if (!(error instanceof NotificationSessionChangedError))
+      publishErrors.value[row.id] = tx(
+        '无法确认当前告警入口状态，本次未发起发布。请刷新后重试。',
+        'The current alert entry could not be confirmed. Nothing was published; refresh and try again.'
+      )
+  } finally {
+    delete publishLoading.value[row.id]
+  }
+}
+
+async function stopCommunityAlerts(row: NotificationV2.GroupView) {
+  if (!isTenantAdmin.value || publishSaving.value) return
+  if (pendingPublish.value) {
+    if (pendingPublish.value.groupId === row.id) await sendPendingPublish()
+    return
+  }
+  delete publishErrors.value[row.id]
+  publishLoading.value[row.id] = true
+  try {
+    const status = await getNativeNotificationGroupPublishStatus(row.id)
+    publishStatuses.value[row.id] = status
+    if (!status.published) {
+      publishErrors.value[row.id] = tx('当前社区告警入口已停止。', 'The community alert entry is already stopped.')
+      return
+    }
+    pendingPublish.value = {
+      key: notificationV2.createIdempotencyKey(),
+      body: { operation: 'unpublish', nativeGroupId: row.id, expectedRouteVersion: status.routeVersion },
+      groupId: row.id
+    }
+    await sendPendingPublish()
+  } catch (error) {
+    if (!(error instanceof NotificationSessionChangedError))
+      publishErrors.value[row.id] = tx(
+        '无法确认社区告警入口状态，本次未发起停止操作。请刷新后重试。',
+        'Could not confirm the community alert entry. Nothing was stopped; refresh and retry.'
+      )
+  } finally {
+    delete publishLoading.value[row.id]
   }
 }
 
@@ -547,13 +749,67 @@ const columns: DataTableColumns<NotificationV2.GroupView> = [
   {
     title: tx('操作', 'Actions'),
     key: 'actions',
-    width: 130,
+    width: 330,
     render: row => (
-      <NButton size="small" type="primary" disabled={!capabilities.value.canRead} onClick={() => openEdit(row)}>
-        {isNotificationGroupEditable(row.migrationState) && capabilities.value.canManage
-          ? tx('编辑', 'Edit')
-          : tx('只读查看', 'View only')}
-      </NButton>
+      <NSpace vertical size="small">
+        {row.migrationState === 'native' ? (
+          <>
+            <NButton
+              size="small"
+              disabled={!capabilities.value.canRead || Boolean(pendingPublish.value)}
+              onClick={() => openEdit(row)}
+            >
+              {isNotificationGroupEditable(row.migrationState) && capabilities.value.canManage
+                ? tx('编辑', 'Edit')
+                : tx('只读查看', 'View only')}
+            </NButton>
+            {isTenantAdmin.value ? (
+              <NButton
+                size="small"
+                type="primary"
+                disabled={
+                  !row.enabled ||
+                  Boolean(publishLoading.value[row.id]) ||
+                  Boolean(pendingPublish.value && pendingPublish.value.groupId !== row.id) ||
+                  publishSaving.value
+                }
+                loading={
+                  publishLoading.value[row.id] || (publishSaving.value && pendingPublish.value?.groupId === row.id)
+                }
+                onClick={() => publishForCommunityAlerts(row)}
+              >
+                {nativePublishLabel(row)}
+              </NButton>
+            ) : null}
+            {isTenantAdmin.value && publishStatuses.value[row.id]?.published ? (
+              <NButton
+                size="small"
+                type="warning"
+                disabled={Boolean(publishLoading.value[row.id]) || Boolean(pendingPublish.value) || publishSaving.value}
+                loading={
+                  publishLoading.value[row.id] || (publishSaving.value && pendingPublish.value?.groupId === row.id)
+                }
+                onClick={() => stopCommunityAlerts(row)}
+              >
+                {tx('停止用于社区告警', 'Stop using for community alerts')}
+              </NButton>
+            ) : null}
+            {nativePublishSummary(row) ? <div class="text-xs text-secondary">{nativePublishSummary(row)}</div> : null}
+            {publishErrors.value[row.id] ? (
+              <div class="text-xs" role="status">
+                {publishErrors.value[row.id]}
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <div class="text-xs text-secondary" role="status">
+            {tx(
+              '此行是新版通知组生成的告警入口，请在“新版通知组”中维护。',
+              'This is an alert entry generated from a new notification group. Manage it under “New notification groups”.'
+            )}
+          </div>
+        )}
+      </NSpace>
     )
   }
 ]

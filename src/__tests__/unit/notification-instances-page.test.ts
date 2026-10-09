@@ -258,6 +258,22 @@ describe('notification instance page submit boundaries', () => {
     wrapper.unmount()
   })
 
+  it('shows the tenant switch path and does not request tenant data for a platform session', async () => {
+    authState.userInfo.tenant_id = ''
+    authState.userInfo.authority = 'SYS_ADMIN'
+    authState.userInfo.roles = ['SYS_ADMIN']
+    const wrapper = mount(NotificationInstances, { global: { stubs } })
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Notification accounts are managed per tenant.')
+    expect(wrapper.get('a[href="/management/user"]').text()).toBe('Open Tenant management')
+    expect(wrapper.findAll('button').map(button => button.text())).not.toContain('Create instance')
+    expect(api.listPlugins).not.toHaveBeenCalled()
+    expect(api.listInstances).not.toHaveBeenCalled()
+    expect(api.createInstance).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
   it('associates the required config error with its control and focuses it', async () => {
     const wrapper = mount(NotificationInstances, { attachTo: document.body, global: { stubs } })
     await flushPromises()
