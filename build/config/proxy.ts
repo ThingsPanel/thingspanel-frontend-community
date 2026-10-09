@@ -24,6 +24,29 @@ export function createViteProxy(env: Env.ImportMeta) {
     }
   }
 
+  // Explicit development-only, same-origin route to a split Encore service.
+  // Credentials stay in the Authorization header; the target has no fallback.
+  const notificationTarget = env.VITE_NOTIFICATION_DEV_PROXY_TARGET?.trim()
+  if (notificationTarget) {
+    const target = new URL(notificationTarget)
+    const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)
+    if (
+      !['http:', 'https:'].includes(target.protocol) ||
+      (target.protocol === 'http:' && !loopback) ||
+      target.username ||
+      target.password ||
+      target.search ||
+      target.hash ||
+      !['', '/'].includes(target.pathname)
+    )
+      throw new Error('Notification development proxy requires an HTTPS origin or HTTP loopback origin.')
+    proxy['/notification-core'] = {
+      target: target.origin,
+      changeOrigin: true,
+      rewrite: path => path.replace(/^\/notification-core/, '')
+    }
+  }
+
   const otherURLEntries = Object.entries(otherBaseURL)
 
   for (const [key, url] of otherURLEntries) {

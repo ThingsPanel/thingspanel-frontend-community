@@ -104,6 +104,7 @@ const supportedSchemaKeys = new Set([
   'uniqueItems',
   'minLength',
   'maxLength',
+  'format',
   'pattern',
   'minimum',
   'maximum',
@@ -220,6 +221,9 @@ export function unsupportedNotificationSchemaPaths(schema: unknown, path = ''): 
   if (typeof schema.pattern === 'string' && !hasSafePattern(schema.pattern)) {
     unsupported.push(path ? `${path}.pattern` : 'pattern')
   }
+  if (schema.format !== undefined && !['email', 'uri'].includes(String(schema.format))) {
+    unsupported.push(path ? `${path}.format` : 'format')
+  }
   if (isRecord(schema.properties)) {
     Object.entries(schema.properties).forEach(([name, child]) => {
       unsupported.push(...unsupportedNotificationSchemaPaths(child, path ? `${path}.${name}` : name))
@@ -256,6 +260,15 @@ export function validateNotificationConfigValue(
     return `${path}: value is not allowed`
 
   if (typeof value === 'string') {
+    if (schema.format === 'email' && !/^[^\s@]+@[^\s@]+$/.test(value)) return `${path}: expected email address`
+    if (schema.format === 'uri') {
+      try {
+        const parsed = new URL(value)
+        if (!parsed.protocol) return `${path}: expected absolute URI`
+      } catch {
+        return `${path}: expected absolute URI`
+      }
+    }
     const length = Array.from(value).length
     if (typeof schema.minLength === 'number' && length < schema.minLength) return `${path}: value is too short`
     if (typeof schema.maxLength === 'number' && length > schema.maxLength) return `${path}: value is too long`

@@ -196,6 +196,20 @@ describe('notification v2 client', () => {
     expect(validateNotificationConfigValue({ template_allowlist: ['SMS_123'] }, configSchema)).toBeNull()
   })
 
+  it('accepts the bundled SMTP email and DingTalk/Webhook URI schemas while rejecting unknown formats', () => {
+    const email = { type: 'string', format: 'email' }
+    const uri = { type: 'string', format: 'uri' }
+    expect(unsupportedNotificationSchemaPaths(email, 'from_email')).toEqual([])
+    expect(unsupportedNotificationSchemaPaths(uri, 'webhook')).toEqual([])
+    expect(validateNotificationConfigValue('sender@example.test', email)).toBeNull()
+    expect(validateNotificationConfigValue('invalid-address', email)).toContain('expected email')
+    expect(validateNotificationConfigValue('https://oapi.dingtalk.com/robot/send?access_token=fixture', uri)).toBeNull()
+    expect(validateNotificationConfigValue('/relative-callback', uri)).toContain('expected absolute URI')
+    expect(unsupportedNotificationSchemaPaths({ type: 'string', format: 'custom-account' }, 'account')).toEqual([
+      'account.format'
+    ])
+  })
+
   it('keeps validation and instance saves on non-send endpoints', async () => {
     requestMock
       .mockResolvedValueOnce({ status: 200, data: envelope({ valid: true, errors: [] }) })
