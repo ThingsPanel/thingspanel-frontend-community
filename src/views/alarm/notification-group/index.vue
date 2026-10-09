@@ -168,8 +168,8 @@ watch(
         <NAlert type="info" class="mb-12px">
           {{
             tx(
-              '旧组继续由旧告警流程和旧通知配置管理；请不要在此迁移新组。',
-              'Legacy groups remain managed by the existing alert flow and legacy notification config.'
+              '旧 APP 通知组继续由旧告警流程和旧通知配置管理；请在此旧入口继续维护。新 Encore 组请使用“新版通知组”，两个入口不会自动转换。',
+              'Legacy APP groups remain managed by the existing alert flow and notification config. Maintain them here; use Encore groups for new groups. The two entries do not convert groups automatically.'
             )
           }}
         </NAlert>

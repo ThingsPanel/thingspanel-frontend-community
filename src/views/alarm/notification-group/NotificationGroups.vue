@@ -16,7 +16,12 @@ import {
   type NotificationPlugin
 } from '@/service/api/notification-v2'
 import type * as NotificationV2 from '@/service/api/notification-v2.types'
-import { canEnableNotificationGroup, isNotificationGroupEditable } from './workflow'
+import {
+  canEnableNotificationGroup,
+  isNotificationGroupEditable,
+  isNotificationMemberContactSupported,
+  supportsNotificationMemberTarget
+} from './workflow'
 
 const auth = useAuthStore()
 const { locale } = useI18n()
@@ -161,6 +166,24 @@ function updateContentKind(binding: NotificationV2.GroupBinding, kind: 'text' | 
   else delete templateMappings[binding.bindingId]
 }
 
+function isUnsupportedMemberTarget(binding: NotificationV2.GroupBinding) {
+  if (binding.recipientSource.kind !== 'member') return false
+  const instance = instances.value.find(item => item.id === binding.instanceId)
+  return instance?.channel === 'im' || binding.recipientSource.contactField === 'applicationUserId'
+}
+
+function recipientSourceOptions(binding: NotificationV2.GroupBinding): SelectOption[] {
+  const instance = instances.value.find(item => item.id === binding.instanceId)
+  return [
+    { label: tx('直接目标', 'Literal recipient'), value: 'literal' },
+    {
+      label: tx('应用成员（仅邮件/短信/语音）', 'Application member (email/SMS/voice only)'),
+      value: 'member',
+      disabled: Boolean(instance && !supportsNotificationMemberTarget(instance.channel))
+    }
+  ]
+}
+
 async function searchMembers(query = '') {
   memberLoading.value = true
   try {
@@ -200,19 +223,18 @@ function validateBindings() {
     }
     if (recipient.kind === 'member' && !recipient.userId)
       errors[binding.bindingId] = tx('请选择成员。', 'Choose a member.')
-    if (recipient.kind === 'member' && instance) {
-      const compatibleContact: Record<NotificationV2.Channel, string[]> = {
-        email: ['email'],
-        sms: ['phone'],
-        voice: ['phone'],
-        im: ['applicationUserId'],
-        webhook: []
-      }
-      if (!compatibleContact[instance.channel].includes(recipient.contactField))
+    if (recipient.kind === 'member') {
+      if (instance?.channel === 'im' || recipient.contactField === 'applicationUserId') {
+        errors[binding.bindingId] = tx(
+          '通知 v2 暂不支持 IM/APP 成员目标。旧 APP 组请继续使用旧告警流程；应用 userId 不会转换为服务商 user_id/chat_id。',
+          'Notification v2 does not support IM/APP member targets yet. Keep legacy APP groups in the legacy alert flow; application user IDs are never converted to provider user_id/chat_id.'
+        )
+      } else if (instance && !isNotificationMemberContactSupported(instance.channel, recipient.contactField)) {
         errors[binding.bindingId] = tx(
           '成员联系字段与实例通道不匹配。',
           'Member contact field does not match the instance channel.'
         )
+      }
     }
     const content = binding.contentBinding
     if (content.kind === 'text' && !content.text.trim())
@@ -452,8 +474,8 @@ onMounted(loadPage)
         <div class="text-sm opacity-70">
           {{
             tx(
-              '新组仅由通知 v2 管理；未迁移旧组仍使用旧入口。',
-              'Native groups use notification v2; unmigrated groups stay in the legacy entry.'
+              '新组由通知 v2 管理；旧 APP 组继续由旧告警流程和旧通知配置管理。',
+              'New groups use notification v2; legacy APP groups remain managed by the legacy alert flow and notification config.'
             )
           }}
         </div>
@@ -571,10 +593,7 @@ onMounted(loadPage)
           <NFormItem :label="tx('目标类型', 'Recipient source')">
             <NSelect
               :value="binding.recipientSource.kind"
-              :options="[
-                { label: tx('直接目标', 'Literal recipient'), value: 'literal' },
-                { label: tx('应用成员', 'Application member'), value: 'member' }
-              ]"
+              :options="recipientSourceOptions(binding)"
               :disabled="formReadOnly"
               @update:value="value => updateRecipientKind(binding, value as 'literal' | 'member')"
             />
@@ -598,6 +617,14 @@ onMounted(loadPage)
             </NFormItem>
           </template>
           <template v-else>
+            <NAlert v-if="isUnsupportedMemberTarget(binding)" type="warning" class="mb-12px">
+              {{
+                tx(
+                  '通知 v2 暂不支持 IM/APP 成员目标。旧 APP 组继续在“旧通知组”入口由旧告警流程管理；不会把应用 userId 转换成服务商 user_id/chat_id。',
+                  'Notification v2 does not support IM/APP member targets yet. Legacy APP groups remain in the Legacy groups entry; application user IDs are never converted to provider user_id/chat_id.'
+                )
+              }}
+            </NAlert>
             <NFormItem :label="tx('成员', 'Member')">
               <NSelect
                 v-model:value="binding.recipientSource.userId"
@@ -616,8 +643,7 @@ onMounted(loadPage)
                 v-model:value="binding.recipientSource.contactField"
                 :options="[
                   { label: 'Email', value: 'email' },
-                  { label: tx('手机号', 'Phone'), value: 'phone' },
-                  { label: 'Application user ID', value: 'applicationUserId' }
+                  { label: tx('手机号', 'Phone'), value: 'phone' }
                 ]"
                 :disabled="formReadOnly"
               />

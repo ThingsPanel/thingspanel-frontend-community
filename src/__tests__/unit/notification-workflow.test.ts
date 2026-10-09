@@ -6,7 +6,12 @@ import {
   describeIntakeStatus,
   getLegacyHistoryStatus
 } from '@/views/alarm/notification-record/workflow'
-import { canEnableNotificationGroup, isNotificationGroupEditable } from '@/views/alarm/notification-group/workflow'
+import {
+  canEnableNotificationGroup,
+  isNotificationGroupEditable,
+  isNotificationMemberContactSupported,
+  supportsNotificationMemberTarget
+} from '@/views/alarm/notification-group/workflow'
 
 const { requestMock } = vi.hoisted(() => ({ requestMock: vi.fn() }))
 
@@ -77,6 +82,22 @@ describe('notification workflow status mapping', () => {
     expect(canEnableNotificationGroup('legacy_unmigrated')).toBe(false)
     expect(isNotificationGroupEditable('projection_pending')).toBe(false)
     expect(canEnableNotificationGroup('projection_pending')).toBe(false)
+  })
+
+  it('allows only backend-resolvable member contact fields', () => {
+    expect(supportsNotificationMemberTarget('email')).toBe(true)
+    expect(supportsNotificationMemberTarget('sms')).toBe(true)
+    expect(supportsNotificationMemberTarget('voice')).toBe(true)
+    expect(supportsNotificationMemberTarget('im')).toBe(false)
+    expect(supportsNotificationMemberTarget('webhook')).toBe(false)
+    expect(isNotificationMemberContactSupported('email', 'email')).toBe(true)
+    expect(isNotificationMemberContactSupported('sms', 'phone')).toBe(true)
+    expect(isNotificationMemberContactSupported('voice', 'phone')).toBe(true)
+    expect(isNotificationMemberContactSupported('im', 'applicationUserId')).toBe(false)
+    expect(isNotificationMemberContactSupported('im', 'user_id')).toBe(false)
+    expect(isNotificationMemberContactSupported('email', 'applicationUserId')).toBe(false)
+    expect(isNotificationMemberContactSupported('webhook', 'email')).toBe(false)
+    expect(isNotificationMemberContactSupported(undefined, 'applicationUserId')).toBe(false)
   })
 })
 
