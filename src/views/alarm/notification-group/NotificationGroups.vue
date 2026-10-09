@@ -620,7 +620,7 @@ async function openEdit(row: NotificationV2.GroupView) {
     modal.value = true
   } catch (error) {
     if (!controller.signal.aborted && !(error instanceof NotificationSessionChangedError))
-      errorText.value = notificationErrorMessage(error, '读取通知组失败。', 'Could not load the group.')
+      errorText.value = notificationErrorMessage(error, '读取通知策略失败。', 'Could not load the group.')
   }
 }
 
@@ -683,7 +683,7 @@ async function saveGroup() {
     }
     pendingSave.value = null
     modal.value = false
-    successText.value = tx('通知组已保存。', 'Notification group saved.')
+    successText.value = tx('通知策略已保存。', 'Notification group saved.')
     await loadPage()
   } catch (error) {
     if (error instanceof NotificationClientError && error.outcomeUncertain) {
@@ -700,7 +700,7 @@ async function saveGroup() {
       )
     } else {
       pendingSave.value = null
-      errorText.value = notificationErrorMessage(error, '保存通知组失败。', 'Could not save notification group.')
+      errorText.value = notificationErrorMessage(error, '保存通知策略失败。', 'Could not save notification group.')
       if (error instanceof NotificationClientError) {
         const fields =
           (error.details as { fields?: Array<{ field: string; reason: string }> } | undefined)?.fields || []
@@ -808,7 +808,7 @@ const columns: DataTableColumns<NotificationV2.GroupView> = [
         ) : (
           <div class="text-xs text-secondary" role="status">
             {tx(
-              '此行是新版通知组生成的告警入口，请在“新版通知组”中维护。',
+              '此行是通知策略生成的告警入口，请在“通知策略”中维护。',
               'This is an alert entry generated from a new notification group. Manage it under “New notification groups”.'
             )}
           </div>
@@ -850,18 +850,18 @@ onMounted(loadPage)
   <NCard>
     <div class="flex flex-wrap items-center justify-between gap-12px mb-12px">
       <div>
-        <div class="text-lg font-600">{{ tx('Encore 通知组', 'Encore notification groups') }}</div>
+        <div class="text-lg font-600">{{ tx('通知策略', 'Notification policies') }}</div>
         <div class="text-sm opacity-70">
           {{
             tx(
-              '新组由通知 v2 管理；旧 APP 组继续由旧告警流程和旧通知配置管理。',
-              'New groups use notification v2; legacy APP groups remain managed by the legacy alert flow and notification config.'
+              '选择已开放的通知服务，配置接收目标和内容，再用于社区告警。旧通知组维护已停用，已有引用与历史保留。',
+              'Choose available services, configure recipients and content, then publish for community alerts. Legacy group management is retired; existing references and history are retained.'
             )
           }}
         </div>
       </div>
       <NButton type="primary" :disabled="!capabilities.canManage" @click="openCreate">
-        {{ tx('新建通知组', 'Create group') }}
+        {{ tx('新建通知策略', 'Create group') }}
       </NButton>
     </div>
     <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
@@ -869,8 +869,8 @@ onMounted(loadPage)
     <NAlert v-if="!notificationApiConfigured" type="info" class="mb-12px">
       {{
         tx(
-          '通知服务未启用；旧组入口仍可使用。',
-          'Notification service is not enabled; the legacy group entry remains available.'
+          '通知服务暂不可用，请联系管理员；旧历史记录仍可查看。',
+          'The notification service is unavailable. Contact an administrator; legacy history remains readable.'
         )
       }}
     </NAlert>
@@ -884,10 +884,10 @@ onMounted(loadPage)
       preset="card"
       :title="
         editorMode === 'create'
-          ? tx('新建通知组', 'Create notification group')
+          ? tx('新建通知策略', 'Create notification group')
           : editorMode === 'view'
-            ? tx('通知组只读详情', 'Read-only group details')
-            : tx('编辑通知组', 'Edit notification group')
+            ? tx('通知策略只读详情', 'Read-only group details')
+            : tx('编辑通知策略', 'Edit notification group')
       "
       :style="{ width: 'min(920px, calc(100vw - 24px))' }"
       :mask-closable="!pendingSave"
@@ -943,8 +943,8 @@ onMounted(loadPage)
         <NAlert v-if="selectedGroup?.migrationState === 'legacy_unmigrated'" type="info" class="mb-12px">
           {{
             tx(
-              '未迁移旧组保持只读；请关闭详情并切换到“旧通知组”入口编辑。',
-              'Unmigrated legacy groups are read-only here. Close this view and use the Legacy groups tab to edit.'
+              '未迁移旧组保持只读；旧维护入口已停用，请联系管理员安排迁移。',
+              'Unmigrated legacy groups are read-only. Legacy management is retired; contact an administrator to arrange migration.'
             )
           }}
         </NAlert>
@@ -1039,8 +1039,8 @@ onMounted(loadPage)
             <NAlert v-if="isUnsupportedMemberTarget(binding)" type="warning" class="mb-12px">
               {{
                 tx(
-                  '通知 v2 暂不支持 IM/APP 成员目标。旧 APP 组继续在“旧通知组”入口由旧告警流程管理；不会把应用 userId 转换成服务商 user_id/chat_id。',
-                  'Notification v2 does not support IM/APP member targets yet. Legacy APP groups remain in the Legacy groups entry; application user IDs are never converted to provider user_id/chat_id.'
+                  '站内通知尚未接入。请使用服务支持的直接接收目标；不能把应用用户编号当作服务商接收地址。',
+                  'In-app notifications are not integrated yet. Use direct recipients supported by the service; application user IDs are not provider recipient addresses.'
                 )
               }}
             </NAlert>
@@ -1182,7 +1182,7 @@ onMounted(loadPage)
             :loading="saving"
             @click="saveGroup"
           >
-            {{ pendingSave ? tx('使用同一请求重试', 'Retry same request') : tx('保存通知组', 'Save group') }}
+            {{ pendingSave ? tx('使用同一请求重试', 'Retry same request') : tx('保存通知策略', 'Save group') }}
           </NButton>
         </div>
       </NForm>

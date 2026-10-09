@@ -110,7 +110,7 @@
   "route.automation_linkage-edit": "Edit Automation",
   "route.automation": "Automations",
   "route.alarm": "Alerts",
-  "route.alarm_notification-group": "Alert Groups",
+  "route.alarm_notification-group": "Notification policies",
   "route.alarm_notification-record": "Notification Record",
   "route.walarm_arning-message": "Warning Message",
   "route.management_notification": "Notification  Configuration",
