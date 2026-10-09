@@ -261,6 +261,47 @@ describe('notification v2 client', () => {
     expect(resetStoreMock).toHaveBeenCalledOnce()
   })
 
+  it('distinguishes secret-clear 403/409 responses from an unconfigured Encore API', async () => {
+    const clearBody = { expectedVersion: 2, secrets: { clear: ['from_password'] } }
+    requestMock
+      .mockRejectedValueOnce(
+        Object.assign(new Error('forbidden'), {
+          isAxiosError: true,
+          response: { status: 403, data: { code: 403, message: 'clear permission required' } }
+        })
+      )
+      .mockRejectedValueOnce(
+        Object.assign(new Error('conflict'), {
+          isAxiosError: true,
+          response: { status: 409, data: { code: 409, message: 'instance version changed' } }
+        })
+      )
+
+    await expect(notificationV2.updateInstance('instance-1', clearBody, 'clear-key-403')).rejects.toMatchObject({
+      httpStatus: 403,
+      message: 'clear permission required',
+      outcomeUncertain: false
+    })
+    await expect(notificationV2.updateInstance('instance-1', clearBody, 'clear-key-409')).rejects.toMatchObject({
+      httpStatus: 409,
+      message: 'instance version changed',
+      outcomeUncertain: false
+    })
+
+    expect(
+      requestMock.mock.calls.map(([config]) => [config.url, config.data, config.headers['Idempotency-Key']])
+    ).toEqual([
+      ['/api/v2/notification-instances/instance-1', clearBody, 'clear-key-403'],
+      ['/api/v2/notification-instances/instance-1', clearBody, 'clear-key-409']
+    ])
+
+    vi.stubEnv('VITE_NOTIFICATION_API_BASE_URL', '')
+    await expect(
+      notificationV2.updateInstance('instance-1', clearBody, 'clear-key-unconfigured')
+    ).rejects.toBeInstanceOf(NotificationServiceUnavailableError)
+    expect(requestMock).toHaveBeenCalledTimes(2)
+  })
+
   it('rejects responses from a previous tenant session before exposing the result', async () => {
     let resolveRequest!: () => void
     let requestResult: unknown
