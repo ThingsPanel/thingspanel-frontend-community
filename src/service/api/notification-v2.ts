@@ -5,6 +5,7 @@ import type * as NotificationV2 from './notification-v2.types'
 export type NotificationPage<T> = NotificationV2.Page<T>
 export type NotificationPlugin = NotificationV2.PluginView
 export type NotificationInstance = NotificationV2.InstanceView
+export type NotificationPluginGrant = NotificationV2.PluginGrantView
 
 type SessionSnapshot = { token: string; tenantId: string; principalId: string; generation: number }
 type ErrorBody = {
@@ -101,6 +102,87 @@ type JsonSchema = Record<string, unknown>
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === 'object' && !Array.isArray(value))
+}
+
+function hasExactKeys(value: Record<string, unknown>, keys: string[]) {
+  return Object.keys(value).length === keys.length && keys.every(key => Object.hasOwn(value, key))
+}
+
+function safePluginGrantView(value: unknown): NotificationV2.PluginGrantView | null {
+  const keys = ['pluginRegistrationId', 'tenantId', 'enabled', 'version', 'createdAt', 'updatedAt']
+  if (!isRecord(value) || !hasExactKeys(value, keys)) return null
+  if (
+    typeof value.pluginRegistrationId !== 'string' ||
+    !value.pluginRegistrationId.trim() ||
+    typeof value.tenantId !== 'string' ||
+    !value.tenantId.trim() ||
+    value.tenantId.length > 128 ||
+    typeof value.enabled !== 'boolean' ||
+    !Number.isInteger(value.version) ||
+    (value.version as number) < 1 ||
+    typeof value.createdAt !== 'string' ||
+    !Number.isFinite(Date.parse(value.createdAt)) ||
+    typeof value.updatedAt !== 'string' ||
+    !Number.isFinite(Date.parse(value.updatedAt))
+  ) {
+    return null
+  }
+  return value as unknown as NotificationV2.PluginGrantView
+}
+
+function invalidPluginGrantResponse(httpStatus: number, mutating: boolean): never {
+  throw new NotificationClientError(
+    'The notification service returned an invalid plugin grant response.',
+    httpStatus,
+    undefined,
+    undefined,
+    undefined,
+    mutating
+  )
+}
+
+function safePluginGrantPage(value: unknown, httpStatus: number): NotificationV2.PluginGrantPage {
+  const keys = ['items', 'page', 'pageSize', 'total']
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, keys) ||
+    !Array.isArray(value.items) ||
+    !Number.isInteger(value.page) ||
+    (value.page as number) < 1 ||
+    !Number.isInteger(value.pageSize) ||
+    (value.pageSize as number) < 1 ||
+    (value.pageSize as number) > 100 ||
+    !Number.isInteger(value.total) ||
+    (value.total as number) < 0
+  ) {
+    return invalidPluginGrantResponse(httpStatus, false)
+  }
+  const items = value.items.map(safePluginGrantView)
+  if (items.some(item => item === null)) return invalidPluginGrantResponse(httpStatus, false)
+  return {
+    items: items as NotificationV2.PluginGrantView[],
+    page: value.page as number,
+    pageSize: value.pageSize as number,
+    total: value.total as number
+  }
+}
+
+function validatePluginGrantUpdate(body: NotificationV2.PluginGrantUpdate) {
+  const value = body as unknown as Record<string, unknown>
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, ['pluginRegistrationId', 'tenantId', 'enabled', 'expectedVersion']) ||
+    typeof value.pluginRegistrationId !== 'string' ||
+    !value.pluginRegistrationId.trim() ||
+    typeof value.tenantId !== 'string' ||
+    !value.tenantId.trim() ||
+    value.tenantId.length > 128 ||
+    typeof value.enabled !== 'boolean' ||
+    !Number.isInteger(value.expectedVersion) ||
+    (value.expectedVersion as number) < 0
+  ) {
+    throw new Error('The plugin grant update does not match the notification contract.')
+  }
 }
 
 function hasSafePattern(pattern: string) {
@@ -320,7 +402,20 @@ function normalizeError(response: AxiosResponse | undefined, fallback: string) {
 
 function validateEnvelope<T>(response: AxiosResponse, session: SessionSnapshot, expected: number[], mutating: boolean) {
   if (session.generation !== generation) throw new NotificationSessionChangedError()
-  if (!expected.includes(response.status)) throw normalizeError(response, `Unexpected HTTP status ${response.status}.`)
+  if (!expected.includes(response.status)) {
+    const error = normalizeError(response, `Unexpected HTTP status ${response.status}.`)
+    if (mutating && response.status >= 200 && response.status < 300) {
+      throw new NotificationClientError(
+        error.message,
+        error.httpStatus,
+        error.code,
+        error.requestId,
+        error.details,
+        true
+      )
+    }
+    throw error
+  }
   const body = response.data as Partial<NotificationV2.Envelope<T>> | undefined
   if (!body || body.code !== 200 || !('data' in body) || typeof body.requestId !== 'string') {
     throw new NotificationClientError(
@@ -409,6 +504,47 @@ export const notificationV2 = {
       [200],
       true
     )
+  },
+  async listPluginGrants(params: NotificationV2.PluginGrantListQuery, signal?: AbortSignal) {
+    const allowedKeys = ['pluginRegistrationId', 'page', 'pageSize']
+    if (
+      Object.keys(params).some(name => !allowedKeys.includes(name)) ||
+      !Number.isInteger(params.page) ||
+      params.page < 1 ||
+      !Number.isInteger(params.pageSize) ||
+      params.pageSize < 1 ||
+      params.pageSize > 100 ||
+      (params.pluginRegistrationId !== undefined &&
+        (typeof params.pluginRegistrationId !== 'string' || !params.pluginRegistrationId.trim()))
+    ) {
+      throw new Error('The plugin grant query does not match the notification contract.')
+    }
+    const response = await send<NotificationV2.PluginGrantPage>(
+      { method: 'GET', url: '/api/v2/notification-plugin-grants', params },
+      [200],
+      false,
+      signal
+    )
+    return { ...response, data: safePluginGrantPage(response.data, response.httpStatus) }
+  },
+  async setPluginGrant(body: NotificationV2.PluginGrantUpdate, idempotencyKey = key()) {
+    validatePluginGrantUpdate(body)
+    if (typeof idempotencyKey !== 'string' || !idempotencyKey.trim()) {
+      throw new Error('A non-empty Idempotency-Key is required for plugin grant updates.')
+    }
+    const response = await send<NotificationV2.PluginGrantView>(
+      {
+        method: 'PUT',
+        url: '/api/v2/notification-plugin-grants',
+        data: body,
+        headers: { 'Idempotency-Key': idempotencyKey }
+      },
+      [200, 201],
+      true
+    )
+    const data = safePluginGrantView(response.data)
+    if (!data) return invalidPluginGrantResponse(response.httpStatus, true)
+    return { ...response, data }
   },
   listInstances(params: { page: number; pageSize: number; pluginId?: string; channel?: NotificationV2.Channel }) {
     return send<NotificationPage<NotificationInstance>>(

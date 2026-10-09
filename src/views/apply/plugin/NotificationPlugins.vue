@@ -2,12 +2,13 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DataTableColumns } from 'naive-ui'
-import { NButton } from 'naive-ui'
+import { NButton, NSpace } from 'naive-ui'
 import { useAuthStore } from '@/store/modules/auth'
 import {
   getNotificationUiCapabilities,
   invalidateNotificationSession,
   NotificationClientError,
+  NotificationSessionChangedError,
   notificationV2,
   registerNotificationSessionCleanup,
   resolveNotificationPluginOrigin,
@@ -26,12 +27,27 @@ const reading = ref(false)
 const saving = ref(false)
 const errorText = ref('')
 const successText = ref('')
+const pageSuccessText = ref('')
 const manifest = ref<NotificationPlugin['manifest'] | null>(null)
 const manifestDigest = ref('')
 const registrationKey = ref('')
 const registrationBody = ref<NotificationV2.PluginRegistration | null>(null)
 const form = reactive({ origin: '', authSecret: '' })
 const viewGeneration = ref(0)
+const grantDrawer = ref(false)
+const grantPlugin = ref<NotificationPlugin | null>(null)
+const grantRows = ref<NotificationV2.PluginGrantView[]>([])
+const grantPage = ref(1)
+const grantTotal = ref(0)
+const grantLoading = ref(false)
+const grantSaving = ref(false)
+const grantError = ref('')
+const grantSuccess = ref('')
+const targetTenantId = ref('')
+const pendingGrant = ref<{ key: string; body: NotificationV2.PluginGrantUpdate } | null>(null)
+const grantGeneration = ref(0)
+const grantController = ref<AbortController | null>(null)
+const grantPageSize = 20
 
 function clearDraft() {
   form.origin = ''
@@ -45,9 +61,26 @@ function clearDraft() {
   modal.value = false
 }
 
+function clearGrantState() {
+  grantController.value?.abort()
+  grantController.value = null
+  grantRows.value = []
+  grantTotal.value = 0
+  grantPage.value = 1
+  grantDrawer.value = false
+  grantPlugin.value = null
+  targetTenantId.value = ''
+  pendingGrant.value = null
+  grantError.value = ''
+  grantSuccess.value = ''
+  grantGeneration.value += 1
+}
+
 const unregisterCleanup = registerNotificationSessionCleanup(() => {
   rows.value = []
   clearDraft()
+  clearGrantState()
+  pageSuccessText.value = ''
   viewGeneration.value += 1
 })
 
@@ -66,6 +99,7 @@ watch(
   }
 )
 onBeforeUnmount(unregisterCleanup)
+onBeforeUnmount(() => grantController.value?.abort())
 
 async function load() {
   const generation = ++viewGeneration.value
@@ -80,6 +114,206 @@ async function load() {
     if (generation === viewGeneration.value) loading.value = false
   }
 }
+
+function grantErrorMessage(error: unknown, context: 'load' | 'save') {
+  if (error instanceof NotificationSessionChangedError) return ''
+  const status = error instanceof NotificationClientError ? error.httpStatus : null
+  if (status === 401) return tx('登录状态已失效，请重新登录。', 'Your session has expired. Sign in again.')
+  if (status === 403)
+    return tx(
+      '只有平台系统管理员可以管理跨租户插件授权。',
+      'Only a platform SYS_ADMIN can manage tenant plugin grants.'
+    )
+  if (status === 404) {
+    return context === 'save'
+      ? tx(
+          '未找到目标租户或插件登记；本次授权没有确认成功。',
+          'The target tenant or plugin registration was not found; this grant was not confirmed.'
+        )
+      : tx(
+          '未找到插件登记；无法读取其租户授权。',
+          'The plugin registration was not found; its grants could not be loaded.'
+        )
+  }
+  if (status === 409)
+    return tx(
+      '授权版本已变化。已刷新列表，请核对当前版本后再操作。',
+      'The grant version changed. The list was refreshed; review the current version before changing it.'
+    )
+  if (status === 503) {
+    return context === 'save'
+      ? tx(
+          '授权结果暂时无法确认。请使用“重试同一请求”；系统会复用原请求键和内容。',
+          'The grant result cannot be confirmed yet. Retry the same request; the original key and body will be reused.'
+        )
+      : tx(
+          '当前无法确认授权列表，可能是租户目录或通知服务不可用。请稍后刷新。',
+          'The grant list cannot be confirmed. The tenant directory or notification service may be unavailable; refresh later.'
+        )
+  }
+  return context === 'save'
+    ? tx(
+        '授权请求结果未确认。请使用“重试同一请求”；系统会复用原请求键和内容。',
+        'The grant request result is unconfirmed. Retry the same request; the original key and body will be reused.'
+      )
+    : tx('无法确认当前授权状态，请稍后刷新。', 'The current grant state could not be confirmed. Refresh later.')
+}
+
+async function loadGrantPage() {
+  const plugin = grantPlugin.value
+  if (!plugin) return
+  const generation = ++grantGeneration.value
+  grantController.value?.abort()
+  const controller = new AbortController()
+  grantController.value = controller
+  grantLoading.value = true
+  grantError.value = ''
+  try {
+    const response = await notificationV2.listPluginGrants(
+      { pluginRegistrationId: plugin.id, page: grantPage.value, pageSize: grantPageSize },
+      controller.signal
+    )
+    if (generation !== grantGeneration.value) return
+    grantRows.value = response.data.items
+    grantTotal.value = response.data.total
+  } catch (error) {
+    if (generation !== grantGeneration.value || controller.signal.aborted) return
+    grantError.value = grantErrorMessage(error, 'load')
+  } finally {
+    if (generation === grantGeneration.value) grantLoading.value = false
+  }
+}
+
+function openGrantDrawer(plugin: NotificationPlugin) {
+  grantPlugin.value = plugin
+  grantPage.value = 1
+  grantRows.value = []
+  grantTotal.value = 0
+  targetTenantId.value = ''
+  pendingGrant.value = null
+  grantSuccess.value = ''
+  grantDrawer.value = true
+  void loadGrantPage()
+}
+
+function buildGrantUpdate(
+  tenantId: string,
+  enabled: boolean,
+  expectedVersion: number
+): NotificationV2.PluginGrantUpdate {
+  const plugin = grantPlugin.value
+  if (!plugin) throw new Error(tx('请先选择插件。', 'Select a plugin first.'))
+  if (!tenantId.trim() || tenantId.length > 128) {
+    throw new Error(tx('请输入 1 到 128 个字符的目标租户 ID。', 'Enter a target tenant ID from 1 to 128 characters.'))
+  }
+  return {
+    pluginRegistrationId: plugin.id,
+    tenantId,
+    enabled,
+    expectedVersion
+  }
+}
+
+async function saveGrant(body?: NotificationV2.PluginGrantUpdate) {
+  if (!capabilities.value.canManagePlugins || grantSaving.value) return
+  grantError.value = ''
+  grantSuccess.value = ''
+  if (!pendingGrant.value && body) {
+    pendingGrant.value = { key: notificationV2.createIdempotencyKey(), body: structuredClone(body) }
+  }
+  const pending = pendingGrant.value
+  if (!pending) return
+  grantSaving.value = true
+  try {
+    await notificationV2.setPluginGrant(pending.body, pending.key)
+    pendingGrant.value = null
+    targetTenantId.value = ''
+    grantSuccess.value = tx('授权状态已更新。', 'The grant state was updated.')
+    await loadGrantPage()
+  } catch (error) {
+    if (error instanceof NotificationSessionChangedError) return
+    if (error instanceof NotificationClientError && error.outcomeUncertain) {
+      grantError.value = grantErrorMessage(error, 'save')
+    } else {
+      pendingGrant.value = null
+      if (error instanceof NotificationClientError && error.httpStatus === 409) {
+        await loadGrantPage()
+        grantError.value = grantError.value
+          ? tx(
+              '授权版本冲突，且刷新列表失败；当前状态无法确认。请稍后重新打开。',
+              'The grant version conflicted and the list could not be refreshed; the current state is unconfirmed. Reopen later.'
+            )
+          : tx(
+              '授权版本已变化。列表已刷新，请核对当前版本后再操作。',
+              'The grant version changed. The list was refreshed; review the current version before changing it.'
+            )
+      } else {
+        grantError.value = grantErrorMessage(error, 'save')
+      }
+    }
+  } finally {
+    grantSaving.value = false
+  }
+}
+
+function authorizeTenant() {
+  if (!grantPlugin.value || pendingGrant.value) return
+  const tenantId = targetTenantId.value
+  const existing = grantRows.value.find(row => row.tenantId === tenantId)
+  if (existing) {
+    grantError.value = existing.enabled
+      ? tx('此租户已获授权。', 'This tenant is already authorized.')
+      : tx(
+          '此租户已有已撤销授权，请在列表中按当前版本重新启用。',
+          'This tenant has a revoked grant. Re-enable it from the list using its current version.'
+        )
+    return
+  }
+  try {
+    void saveGrant(buildGrantUpdate(tenantId, true, 0))
+  } catch (error) {
+    grantError.value =
+      error instanceof Error ? error.message : tx('目标租户 ID 无效。', 'The target tenant ID is invalid.')
+  }
+}
+
+function changeGrantPage(page: number) {
+  grantPage.value = page
+  void loadGrantPage()
+}
+
+const grantColumns: DataTableColumns<NotificationV2.PluginGrantView> = [
+  { title: tx('目标租户 ID', 'Target tenant ID'), key: 'tenantId', minWidth: 180, ellipsis: { tooltip: true } },
+  {
+    title: tx('已授权', 'Enabled'),
+    key: 'enabled',
+    width: 90,
+    render: row => (row.enabled ? tx('是', 'Yes') : tx('否', 'No'))
+  },
+  { title: tx('版本', 'Version'), key: 'version', width: 80 },
+  { title: tx('更新时间', 'Updated'), key: 'updatedAt', minWidth: 190 },
+  {
+    title: tx('操作', 'Actions'),
+    key: 'actions',
+    width: 120,
+    render: row => (
+      <NButton
+        size="small"
+        disabled={Boolean(pendingGrant.value) || grantSaving.value || !capabilities.value.canManagePlugins}
+        onClick={() => {
+          try {
+            void saveGrant(buildGrantUpdate(row.tenantId, !row.enabled, row.version))
+          } catch (error) {
+            grantError.value =
+              error instanceof Error ? error.message : tx('授权请求无效。', 'The grant request is invalid.')
+          }
+        }}
+      >
+        {row.enabled ? tx('撤销授权', 'Revoke') : tx('重新授权', 'Re-enable')}
+      </NButton>
+    )
+  }
+]
 
 function parseManifest(raw: unknown): NotificationPlugin['manifest'] {
   if (!raw || typeof raw !== 'object') throw new Error(tx('清单格式无效。', 'The manifest format is invalid.'))
@@ -208,6 +442,10 @@ async function register() {
   try {
     await notificationV2.registerPlugin(pendingBody, registrationKey.value)
     clearDraft()
+    pageSuccessText.value = tx(
+      '插件已登记到全局目录；登记不会自动授权任何租户。',
+      'The plugin is registered globally; registration does not grant access to any tenant.'
+    )
     await load()
   } catch (error) {
     if (error instanceof NotificationClientError && error.outcomeUncertain) {
@@ -259,11 +497,16 @@ const columns: DataTableColumns<NotificationPlugin> = [
   {
     title: tx('操作', 'Actions'),
     key: 'actions',
-    width: 110,
+    width: 240,
     render: row => (
-      <NButton size="small" disabled={!capabilities.value.canManagePlugins} onClick={() => toggle(row)}>
-        {row.enabled ? tx('停用', 'Disable') : tx('启用', 'Enable')}
-      </NButton>
+      <NSpace>
+        <NButton size="small" disabled={!capabilities.value.canManagePlugins} onClick={() => toggle(row)}>
+          {row.enabled ? tx('停用', 'Disable') : tx('启用', 'Enable')}
+        </NButton>
+        <NButton size="small" disabled={!capabilities.value.canManagePlugins} onClick={() => openGrantDrawer(row)}>
+          {tx('租户授权', 'Tenant grants')}
+        </NButton>
+      </NSpace>
     )
   }
 ]
@@ -286,6 +529,15 @@ onMounted(load)
         {{ tx('登记通知插件', 'Register notification plugin') }}
       </NButton>
     </div>
+    <NAlert type="info" class="mb-12px">
+      {{
+        tx(
+          '全局登记不会自动授权租户。请在插件行打开“租户授权”，明确输入目标租户 ID。平台登录凭据只访问平台 API，不会发送到插件服务。',
+          'Global registration does not grant any tenant access. Open “Tenant grants” on a plugin row and enter the target tenant ID explicitly. The platform session token is used only with the platform API and is never sent to the plugin service.'
+        )
+      }}
+    </NAlert>
+    <NAlert v-if="pageSuccessText" type="success" class="mb-12px">{{ pageSuccessText }}</NAlert>
     <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
     <NDataTable :columns="columns" :data="rows" :loading="loading" :row-key="row => row.id" :scroll-x="1050" />
   </NCard>
@@ -314,6 +566,14 @@ onMounted(load)
           autocomplete="new-password"
         />
       </NFormItem>
+      <NAlert type="info" class="mb-12px">
+        {{
+          tx(
+            '此凭据只会发送到上方插件 Origin 的清单端点（生产必须 HTTPS；仅显式开发 loopback 例外）；平台登录凭据不会发送到插件。',
+            'This credential is sent only to the manifest endpoint at the plugin origin above (HTTPS in production, with only the explicit development loopback exception). Your platform session token is never sent to the plugin.'
+          )
+        }}
+      </NAlert>
       <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
       <NAlert v-if="successText" type="success" class="mb-12px">{{ successText }}</NAlert>
       <div v-if="manifest" class="mb-16px rounded border p-12px">
@@ -343,4 +603,73 @@ onMounted(load)
       </NSpace>
     </NForm>
   </NModal>
+
+  <NDrawer
+    v-model:show="grantDrawer"
+    placement="right"
+    width="720"
+    :mask-closable="!pendingGrant"
+    :close-on-esc="!pendingGrant"
+  >
+    <NDrawerContent
+      :title="
+        grantPlugin
+          ? `${grantPlugin.manifest.name} · ${tx('租户授权', 'Tenant grants')}`
+          : tx('租户授权', 'Tenant grants')
+      "
+      :closable="!pendingGrant"
+    >
+      <NAlert type="info" class="mb-12px">
+        {{
+          tx(
+            '仅 SYS_ADMIN 可在这里为指定租户授权。租户 ID 是显式目标，不会切换或冒充该租户账号。新授权使用版本 0 创建；撤销和重新授权使用列表中的当前版本。',
+            'Only SYS_ADMIN can grant access to an explicitly selected tenant here. The tenant ID is a target value; this does not switch to or impersonate that tenant. New grants use expected version 0; revocation and re-enabling use the current listed version.'
+          )
+        }}
+      </NAlert>
+      <NAlert v-if="grantError" type="error" class="mb-12px">{{ grantError }}</NAlert>
+      <NAlert v-if="grantSuccess" type="success" class="mb-12px">{{ grantSuccess }}</NAlert>
+      <div class="mb-16px flex items-end gap-12px">
+        <NFormItem class="min-w-0 flex-1" :label="tx('目标租户 ID', 'Target tenant ID')">
+          <NInput
+            v-model:value="targetTenantId"
+            :disabled="Boolean(pendingGrant) || grantSaving"
+            maxlength="128"
+            autocomplete="off"
+            :placeholder="tx('输入租户 ID', 'Enter tenant ID')"
+          />
+        </NFormItem>
+        <NButton
+          type="primary"
+          class="mb-24px"
+          :disabled="Boolean(pendingGrant) || grantSaving || !capabilities.canManagePlugins"
+          :loading="grantSaving"
+          @click="authorizeTenant"
+        >
+          {{ tx('显式授权', 'Grant access') }}
+        </NButton>
+      </div>
+      <NDataTable
+        :columns="grantColumns"
+        :data="grantRows"
+        :loading="grantLoading"
+        :row-key="row => `${row.tenantId}:${row.version}`"
+        :scroll-x="680"
+      />
+      <div v-if="grantTotal > grantPageSize" class="mt-12px flex justify-end">
+        <NPagination
+          :page="grantPage"
+          :page-size="grantPageSize"
+          :item-count="grantTotal"
+          :disabled="Boolean(pendingGrant) || grantSaving"
+          @update:page="changeGrantPage"
+        />
+      </div>
+      <div v-if="pendingGrant" class="mt-16px flex justify-end">
+        <NButton type="warning" :loading="grantSaving" @click="saveGrant()">
+          {{ tx('重试同一请求', 'Retry same request') }}
+        </NButton>
+      </div>
+    </NDrawerContent>
+  </NDrawer>
 </template>

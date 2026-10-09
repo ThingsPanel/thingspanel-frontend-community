@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { DispatchStatus, DeliveryStatus } from '@/service/api/notification-v2.types'
-import { notificationV2, resolveNotificationPluginOrigin } from '@/service/api/notification-v2'
+import {
+  getNotificationUiCapabilities,
+  notificationV2,
+  resolveNotificationPluginOrigin
+} from '@/service/api/notification-v2'
 import {
   describeDeliveryStatus,
   describeIntakeStatus,
@@ -107,6 +111,10 @@ describe('notification workflow API mapping', () => {
     requestMock.mockReset()
   })
 
+  it('does not expose platform plugin grant management to tenant administrators', () => {
+    expect(getNotificationUiCapabilities().canManagePlugins).toBe(false)
+  })
+
   it('sends group create and update through frozen v2 routes with stable keys', async () => {
     const group = {
       id: 'group-1',
@@ -134,6 +142,164 @@ describe('notification workflow API mapping', () => {
       ['PUT', '/api/v2/notification-groups/group-1', 'group-update-key']
     ])
     expect(requestMock.mock.calls[1][0].data).toMatchObject({ expectedVersion: 1 })
+  })
+
+  it('lists safe .7 plugin grant DTOs using only the frozen query fields', async () => {
+    requestMock.mockResolvedValueOnce({
+      status: 200,
+      data: {
+        code: 200,
+        message: 'ok',
+        requestId: 'grant-list-1',
+        data: {
+          items: [
+            {
+              pluginRegistrationId: 'registration-1',
+              tenantId: 'opaque tenant/key',
+              enabled: false,
+              version: 3,
+              createdAt: '2026-10-09T12:00:00Z',
+              updatedAt: '2026-10-09T12:05:00Z'
+            }
+          ],
+          page: 1,
+          pageSize: 20,
+          total: 1
+        }
+      }
+    })
+
+    const response = await notificationV2.listPluginGrants({
+      pluginRegistrationId: 'registration-1',
+      page: 1,
+      pageSize: 20
+    })
+
+    expect(response.data.items[0]).toMatchObject({ tenantId: 'opaque tenant/key', enabled: false, version: 3 })
+    expect(requestMock.mock.calls[0][0]).toMatchObject({
+      method: 'GET',
+      url: '/api/v2/notification-plugin-grants',
+      params: { pluginRegistrationId: 'registration-1', page: 1, pageSize: 20 }
+    })
+  })
+
+  it('rejects extra .7 query and grant body fields before sending them', async () => {
+    await expect(
+      notificationV2.listPluginGrants({
+        pluginRegistrationId: 'registration-1',
+        page: 1,
+        pageSize: 20,
+        tenantId: 'must-not-be-a-filter'
+      } as unknown as Parameters<typeof notificationV2.listPluginGrants>[0])
+    ).rejects.toThrow('does not match the notification contract')
+    await expect(
+      notificationV2.setPluginGrant(
+        {
+          pluginRegistrationId: 'registration-1',
+          tenantId: 'tenant-opaque',
+          enabled: true,
+          expectedVersion: 0,
+          authSecret: 'fake-secret-must-not-cross-wire'
+        } as unknown as Parameters<typeof notificationV2.setPluginGrant>[0],
+        'invalid-grant-key'
+      )
+    ).rejects.toThrow('does not match the notification contract')
+    expect(requestMock).not.toHaveBeenCalled()
+  })
+
+  it('creates and CAS-updates explicit tenant grants with .7 status and stable idempotency keys', async () => {
+    const grant = {
+      pluginRegistrationId: 'registration-1',
+      tenantId: 'tenant-opaque',
+      enabled: true,
+      version: 1,
+      createdAt: '2026-10-09T12:00:00Z',
+      updatedAt: '2026-10-09T12:00:00Z'
+    }
+    requestMock.mockResolvedValueOnce({
+      status: 201,
+      data: { code: 200, message: 'ok', requestId: 'grant-create', data: grant }
+    })
+    requestMock.mockResolvedValueOnce({
+      status: 200,
+      data: { code: 200, message: 'ok', requestId: 'grant-revoke', data: { ...grant, enabled: false, version: 2 } }
+    })
+
+    await notificationV2.setPluginGrant(
+      {
+        pluginRegistrationId: grant.pluginRegistrationId,
+        tenantId: grant.tenantId,
+        enabled: true,
+        expectedVersion: 0
+      },
+      'grant-create-key'
+    )
+    await notificationV2.setPluginGrant(
+      {
+        pluginRegistrationId: grant.pluginRegistrationId,
+        tenantId: grant.tenantId,
+        enabled: false,
+        expectedVersion: 1
+      },
+      'grant-revoke-key'
+    )
+
+    expect(
+      requestMock.mock.calls.map(([config]) => [config.method, config.url, config.headers['Idempotency-Key']])
+    ).toEqual([
+      ['PUT', '/api/v2/notification-plugin-grants', 'grant-create-key'],
+      ['PUT', '/api/v2/notification-plugin-grants', 'grant-revoke-key']
+    ])
+    expect(requestMock.mock.calls[0][0].data).toMatchObject({
+      tenantId: grant.tenantId,
+      enabled: true,
+      expectedVersion: 0
+    })
+    expect(requestMock.mock.calls[1][0].data).toMatchObject({
+      tenantId: grant.tenantId,
+      enabled: false,
+      expectedVersion: 1
+    })
+  })
+
+  it('treats unexpected 2xx and unsafe grant DTO responses as unknown and permits same-body replay', async () => {
+    const body = {
+      pluginRegistrationId: 'registration-1',
+      tenantId: 'tenant-opaque',
+      enabled: true,
+      expectedVersion: 0
+    }
+    const grant = {
+      pluginRegistrationId: body.pluginRegistrationId,
+      tenantId: body.tenantId,
+      enabled: body.enabled,
+      version: 1,
+      createdAt: '2026-10-09T12:00:00Z',
+      updatedAt: '2026-10-09T12:00:00Z'
+    }
+    requestMock.mockResolvedValueOnce({ status: 202, data: { accepted: true } })
+    requestMock.mockResolvedValueOnce({
+      status: 201,
+      data: { code: 200, message: 'ok', requestId: 'replayed', data: grant }
+    })
+
+    await expect(notificationV2.setPluginGrant(body, 'same-grant-key')).rejects.toMatchObject({
+      httpStatus: 202,
+      outcomeUncertain: true
+    })
+    await notificationV2.setPluginGrant(body, 'same-grant-key')
+    expect(requestMock.mock.calls[0][0].headers['Idempotency-Key']).toBe('same-grant-key')
+    expect(requestMock.mock.calls[1][0].headers['Idempotency-Key']).toBe('same-grant-key')
+    expect(requestMock.mock.calls[1][0].data).toEqual(requestMock.mock.calls[0][0].data)
+
+    requestMock.mockResolvedValueOnce({
+      status: 201,
+      data: { code: 200, message: 'ok', requestId: 'unsafe', data: { ...grant, authSecret: 'fake-secret' } }
+    })
+    await expect(notificationV2.setPluginGrant(body, 'unsafe-grant-key')).rejects.toMatchObject({
+      httpStatus: 201,
+      outcomeUncertain: true
+    })
   })
 
   it('keeps delivery filters separate and allows request cancellation', async () => {
