@@ -718,10 +718,13 @@ onMounted(loadInstances)
     @after-leave="closeEditor"
   >
     <NForm label-placement="top" :disabled="instanceSaveReadOnly">
-      <NFormItem :label="tx('实例名称', 'Instance name')"><NInput v-model:value="formName" /></NFormItem>
+      <NFormItem :label="tx('实例名称', 'Instance name')">
+        <NInput v-model:value="formName" :disabled="instanceSaveReadOnly" />
+      </NFormItem>
       <NFormItem v-if="editorMode === 'create'" :label="tx('通知插件', 'Notification plugin')">
         <NSelect
           v-model:value="selectedPluginId"
+          :disabled="instanceSaveReadOnly"
           :options="
             plugins
               .filter(plugin => plugin.enabled)
@@ -733,6 +736,7 @@ onMounted(loadInstances)
       <NFormItem v-if="editorMode === 'create' && selectedPlugin" :label="tx('渠道', 'Channel')">
         <NSelect
           v-model:value="selectedChannel"
+          :disabled="instanceSaveReadOnly"
           :options="selectedPlugin.manifest.channels.map(channel => ({ label: channel, value: channel }))"
         />
       </NFormItem>
@@ -766,7 +770,7 @@ onMounted(loadInstances)
           <NInput
             v-if="secretFields.includes(name)"
             v-model:value="secretDraft[name]"
-            :disabled="isIdentityFieldReadOnly(name)"
+            :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
             type="password"
             show-password-on="click"
             autocomplete="new-password"
@@ -780,14 +784,14 @@ onMounted(loadInstances)
           <NSelect
             v-else-if="Array.isArray(schema.enum)"
             :value="enumSelection(name)"
-            :disabled="isIdentityFieldReadOnly(name)"
+            :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
             :options="enumOptions(schema)"
             @update:value="value => updateEnum(name, schema, value)"
           />
           <NSwitch
             v-else-if="schema.type === 'boolean'"
             :value="Boolean(configValues[name])"
-            :disabled="isIdentityFieldReadOnly(name)"
+            :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
             @update:value="
               value => {
                 configValues[name] = value
@@ -797,7 +801,7 @@ onMounted(loadInstances)
           <NInputNumber
             v-else-if="schema.type === 'integer' || schema.type === 'number'"
             :value="Number(configValues[name] ?? 0)"
-            :disabled="isIdentityFieldReadOnly(name)"
+            :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
             :precision="schema.type === 'integer' ? 0 : undefined"
             @update:value="
               value => {
@@ -809,14 +813,14 @@ onMounted(loadInstances)
             v-else-if="schema.type === 'object' || schema.type === 'array'"
             type="textarea"
             :value="jsonDrafts[name] || ''"
-            :disabled="isIdentityFieldReadOnly(name)"
+            :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
             :autosize="{ minRows: 3, maxRows: 8 }"
             @update:value="value => updateJsonField(name, value)"
           />
           <NInput
             v-else
             :value="String(configValues[name] ?? '')"
-            :disabled="isIdentityFieldReadOnly(name)"
+            :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
             @update:value="
               value => {
                 configValues[name] = value
@@ -830,20 +834,25 @@ onMounted(loadInstances)
           v-if="editableSecretFields.length && editorMode === 'edit'"
           :label="tx('秘密字段处理', 'Secret handling')"
         >
-          <NRadioGroup v-model:value="secretMode">
+          <NRadioGroup v-model:value="secretMode" :disabled="instanceSaveReadOnly">
             <NSpace>
               <NRadio value="keep">{{ tx('保持已配置值', 'Keep configured values') }}</NRadio>
               <NRadio value="set">{{ tx('替换', 'Replace') }}</NRadio>
               <NRadio value="clear">{{ tx('清除', 'Clear') }}</NRadio>
             </NSpace>
           </NRadioGroup>
-          <NCheckboxGroup v-if="secretMode === 'clear'" v-model:value="clearSecretFields" class="mt-8px">
+          <NCheckboxGroup
+            v-if="secretMode === 'clear'"
+            v-model:value="clearSecretFields"
+            class="mt-8px"
+            :disabled="instanceSaveReadOnly"
+          >
             <NSpace vertical>
               <NCheckbox
                 v-for="name in editableSecretFields"
                 :key="name"
                 :value="name"
-                :disabled="!selectedInstance?.secretState[name]"
+                :disabled="instanceSaveReadOnly || !selectedInstance?.secretState[name]"
               >
                 {{ name }}{{ selectedInstance?.secretState[name] ? '' : tx('（未配置）', ' (not configured)') }}
               </NCheckbox>
@@ -854,10 +863,15 @@ onMounted(loadInstances)
           v-if="editorMode === 'create'"
           :label="tx('供应商账号身份（JSON 字符串映射）', 'Provider identity (JSON string map)')"
         >
-          <NInput v-model:value="providerIdentityText" type="textarea" :autosize="{ minRows: 2, maxRows: 5 }" />
+          <NInput
+            v-model:value="providerIdentityText"
+            type="textarea"
+            :autosize="{ minRows: 2, maxRows: 5 }"
+            :disabled="instanceSaveReadOnly"
+          />
         </NFormItem>
         <NFormItem v-if="editorMode === 'edit'" :label="tx('发送启用', 'Sending enabled')">
-          <NSwitch v-model:value="enabledValue" />
+          <NSwitch v-model:value="enabledValue" :disabled="instanceSaveReadOnly" />
         </NFormItem>
       </template>
       <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
