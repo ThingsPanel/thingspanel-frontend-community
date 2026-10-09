@@ -76,6 +76,7 @@ export interface PluginView {
     pluginId: string;
     name: string;
     pluginVersion: string;
+    identityFields?: string[];
     channels: Channel[];
     contentModes: Array<"text" | "template">;
     configSchema: Record<string, unknown>;
