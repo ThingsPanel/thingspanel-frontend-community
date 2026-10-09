@@ -10,7 +10,8 @@ import {
 import {
   editableNotificationSecretFields,
   isNotificationConfigFieldReadOnly,
-  omitReadOnlyNotificationIdentityFields
+  omitReadOnlyNotificationIdentityFields,
+  snapshotNotificationMutation
 } from '@/views/management/notification/identity-fields'
 import {
   describeDeliveryStatus,
@@ -160,6 +161,21 @@ describe('notification plugin identity fields', () => {
     )
     expect(omitReadOnlyNotificationIdentityFields({ account_id: 'new' }, ['account_id'], false)).toEqual({
       account_id: 'new'
+    })
+  })
+
+  it('detaches an instance mutation snapshot so an uncertain retry reuses the same key and body', () => {
+    const draft = { name: 'smtp', config: { host: 'smtp.example.test' }, secrets: { set: { password: 'fixture' } } }
+    const pending = snapshotNotificationMutation('stable-key', draft)
+    draft.name = 'edited after timeout'
+    draft.config.host = 'changed.example.test'
+    draft.secrets.set.password = 'changed'
+
+    expect(pending.key).toBe('stable-key')
+    expect(pending.body).toEqual({
+      name: 'smtp',
+      config: { host: 'smtp.example.test' },
+      secrets: { set: { password: 'fixture' } }
     })
   })
 })

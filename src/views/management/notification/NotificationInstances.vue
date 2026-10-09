@@ -21,7 +21,8 @@ import type * as NotificationV2 from '@/service/api/notification-v2.types'
 import {
   editableNotificationSecretFields,
   isNotificationConfigFieldReadOnly,
-  omitReadOnlyNotificationIdentityFields
+  omitReadOnlyNotificationIdentityFields,
+  snapshotNotificationMutation
 } from './identity-fields'
 
 type SchemaField = {
@@ -49,6 +50,13 @@ const testModal = ref(false)
 const editorMode = ref<'create' | 'edit'>('create')
 const selectedPluginId = ref('')
 const selectedInstance = ref<NotificationInstance | null>(null)
+const pendingInstanceSave = ref<
+  | { kind: 'create'; key: string; body: NotificationV2.InstanceCreate }
+  | { kind: 'update'; key: string; instanceId: string; body: NotificationV2.InstanceUpdate }
+  | null
+>(null)
+const instanceVersionConflict = ref(false)
+const instanceSaveReadOnly = computed(() => Boolean(pendingInstanceSave.value) || instanceVersionConflict.value)
 const selectedPlugin = computed(() => plugins.value.find(item => item.id === selectedPluginId.value) || null)
 const identityFields = computed(() => selectedPlugin.value?.manifest.identityFields)
 const legacyIdentityConfigFrozen = computed(
@@ -104,6 +112,8 @@ const acceptedNotificationId = ref('')
 const testStateText = ref('')
 
 function clearSecretsAndEditor() {
+  pendingInstanceSave.value = null
+  instanceVersionConflict.value = false
   secretMode.value = 'keep'
   clearSecretFields.value = []
   Object.keys(secretDraft).forEach(key => delete secretDraft[key])
@@ -195,6 +205,8 @@ async function openEdit(row: NotificationInstance) {
       notificationV2.listPlugins()
     ])
     selectedInstance.value = instanceResponse.data
+    pendingInstanceSave.value = null
+    instanceVersionConflict.value = false
     plugins.value = pluginResponse.data.items
     selectedPluginId.value = instanceResponse.data.pluginRegistrationId
     editorMode.value = 'edit'
@@ -327,6 +339,7 @@ watch(selectedPluginId, () => {
 })
 
 async function validateConfig() {
+  if (instanceSaveReadOnly.value) return
   validationErrors.value = []
   errorText.value = ''
   if (!localValidation()) return
@@ -351,38 +364,75 @@ async function validateConfig() {
 }
 
 async function saveInstance() {
-  if (!capabilities.value.canManage || !localValidation()) return
+  if (!capabilities.value.canManage || saving.value || instanceVersionConflict.value) return
   saving.value = true
   errorText.value = ''
   successText.value = ''
   try {
-    if (editorMode.value === 'create') {
-      await notificationV2.createInstance({
-        pluginRegistrationId: selectedPluginId.value,
-        name: formName.value.trim(),
-        channel: selectedChannel.value!,
-        config: mergeConfig(true),
-        providerIdentity: parseProviderIdentity()
-      })
-    } else {
-      const patch: NotificationV2.InstanceUpdate = { expectedVersion: selectedInstance.value!.version }
-      if (formName.value.trim() !== selectedInstance.value!.name) patch.name = formName.value.trim()
-      if (Object.keys(changedConfigPatch()).length) patch.configPatch = changedConfigPatch()
-      if (enabledValue.value !== selectedInstance.value!.enabled) patch.enabled = enabledValue.value
-      const secrets = secretOperation()
-      if (secrets) patch.secrets = secrets
-      if (!patch.name && !patch.configPatch && patch.enabled === undefined && !patch.secrets) {
-        successText.value = tx('没有修改。', 'There are no changes to save.')
-        saving.value = false
-        return
+    if (!pendingInstanceSave.value) {
+      if (!localValidation()) return
+      if (editorMode.value === 'create') {
+        const body: NotificationV2.InstanceCreate = {
+          pluginRegistrationId: selectedPluginId.value,
+          name: formName.value.trim(),
+          channel: selectedChannel.value!,
+          config: mergeConfig(true),
+          providerIdentity: parseProviderIdentity()
+        }
+        pendingInstanceSave.value = {
+          kind: 'create',
+          ...snapshotNotificationMutation(notificationV2.createIdempotencyKey(), body)
+        }
+      } else {
+        const patch: NotificationV2.InstanceUpdate = { expectedVersion: selectedInstance.value!.version }
+        if (formName.value.trim() !== selectedInstance.value!.name) patch.name = formName.value.trim()
+        const configPatch = changedConfigPatch()
+        if (Object.keys(configPatch).length) patch.configPatch = configPatch
+        if (enabledValue.value !== selectedInstance.value!.enabled) patch.enabled = enabledValue.value
+        const secrets = secretOperation()
+        if (secrets) patch.secrets = secrets
+        if (!patch.name && !patch.configPatch && patch.enabled === undefined && !patch.secrets) {
+          successText.value = tx('没有修改。', 'There are no changes to save.')
+          return
+        }
+        pendingInstanceSave.value = {
+          kind: 'update',
+          instanceId: selectedInstance.value!.id,
+          ...snapshotNotificationMutation(notificationV2.createIdempotencyKey(), patch)
+        }
       }
-      await notificationV2.updateInstance(selectedInstance.value!.id, patch)
     }
+    const pending = pendingInstanceSave.value
+    if (!pending) return
+    if (pending.kind === 'create') {
+      await notificationV2.createInstance(pending.body, pending.key)
+    } else {
+      await notificationV2.updateInstance(pending.instanceId, pending.body, pending.key)
+    }
+    pendingInstanceSave.value = null
     clearSecretsAndEditor()
     modal.value = false
     successText.value = tx('实例已保存；不会自动发送测试通知。', 'Instance saved. No test notification was sent.')
     await loadInstances()
   } catch (error) {
+    if (error instanceof NotificationClientError && error.outcomeUncertain) {
+      errorText.value = tx(
+        '保存结果未确认。表单已锁定；使用同一请求重试，不会创建第二个实例或版本。',
+        'Save result is unknown. The form is locked; retry the same request so it cannot create a second instance or version.'
+      )
+      return
+    }
+    if (error instanceof NotificationSessionChangedError) return
+    const pending = pendingInstanceSave.value
+    pendingInstanceSave.value = null
+    if (error instanceof NotificationClientError && error.httpStatus === 409 && pending?.kind === 'update') {
+      instanceVersionConflict.value = true
+      errorText.value = tx(
+        '实例版本已被其他管理员修改。请刷新当前实例并重新确认后再保存。',
+        'Another administrator changed this instance. Reload it and review before saving again.'
+      )
+      return
+    }
     errorText.value =
       error instanceof Error && error.message === 'identity_change_requires_new_instance'
         ? tx(
@@ -397,7 +447,13 @@ async function saveInstance() {
   }
 }
 
+async function reloadConflictedInstance() {
+  if (!instanceVersionConflict.value || !selectedInstance.value) return
+  await openEdit(selectedInstance.value)
+}
+
 function closeEditor() {
+  if (pendingInstanceSave.value) return
   clearSecretsAndEditor()
   modal.value = false
   errorText.value = ''
@@ -646,6 +702,9 @@ onMounted(loadInstances)
     v-model:show="modal"
     preset="card"
     class="w-760px max-w-95vw"
+    :mask-closable="!pendingInstanceSave"
+    :close-on-esc="!pendingInstanceSave"
+    :closable="!pendingInstanceSave"
     :title="
       editorMode === 'create'
         ? tx('创建通知实例', 'Create notification instance')
@@ -653,7 +712,7 @@ onMounted(loadInstances)
     "
     @after-leave="closeEditor"
   >
-    <NForm label-placement="top">
+    <NForm label-placement="top" :disabled="instanceSaveReadOnly">
       <NFormItem :label="tx('实例名称', 'Instance name')"><NInput v-model:value="formName" /></NFormItem>
       <NFormItem v-if="editorMode === 'create'" :label="tx('通知插件', 'Notification plugin')">
         <NSelect
@@ -797,23 +856,29 @@ onMounted(loadInstances)
         </NFormItem>
       </template>
       <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
+      <NAlert v-if="instanceVersionConflict" type="warning" class="mb-12px">
+        {{ tx('保存前必须重新读取实例的最新版本。', 'Reload the latest instance version before saving.') }}
+        <NButton size="small" class="ml-8px" @click="reloadConflictedInstance">
+          {{ tx('刷新当前实例', 'Reload instance') }}
+        </NButton>
+      </NAlert>
       <NAlert v-if="successText" type="success" class="mb-12px">{{ successText }}</NAlert>
       <NAlert v-for="error in validationErrors" :key="`${error.field}:${error.reason}`" type="warning" class="mb-8px">
         {{ error.field }}: {{ error.reason }}
       </NAlert>
       <NSpace justify="end">
-        <NButton @click="closeEditor">{{ tx('取消', 'Cancel') }}</NButton>
-        <NButton :disabled="!selectedPlugin" @click="validateConfig">
+        <NButton :disabled="Boolean(pendingInstanceSave)" @click="closeEditor">{{ tx('取消', 'Cancel') }}</NButton>
+        <NButton :disabled="!selectedPlugin || instanceSaveReadOnly" @click="validateConfig">
           {{ tx('校验配置', 'Validate configuration') }}
         </NButton>
         <NButton
           v-if="capabilities.canManage"
           type="primary"
-          :disabled="!selectedPlugin"
+          :disabled="!selectedPlugin || instanceVersionConflict"
           :loading="saving"
           @click="saveInstance"
         >
-          {{ tx('保存', 'Save') }}
+          {{ pendingInstanceSave ? tx('使用同一请求重试', 'Retry same request') : tx('保存', 'Save') }}
         </NButton>
       </NSpace>
     </NForm>

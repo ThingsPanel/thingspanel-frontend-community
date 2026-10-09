@@ -29,3 +29,7 @@ export function omitReadOnlyNotificationIdentityFields<T extends Record<string, 
   if (changesIdentity) throw new Error('identity_change_requires_new_instance')
   return values
 }
+
+export function snapshotNotificationMutation<T extends object>(key: string, body: T) {
+  return { key, body: JSON.parse(JSON.stringify(body)) as T }
+}
