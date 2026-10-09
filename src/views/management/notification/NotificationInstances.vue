@@ -778,8 +778,8 @@ onMounted(loadInstances)
         <div>
           {{
             tx(
-              '账号实例属于当前登录租户；权限由服务端从会话确定。',
-              'Instances belong to the signed-in tenant; the server derives authorization from the session.'
+              '配置当前租户的通知账号；保存和校验不会发送通知。',
+              'Configure notification accounts for the current tenant. Saving and validation do not send notifications.'
             )
           }}
         </div>
