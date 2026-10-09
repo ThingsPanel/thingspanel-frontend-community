@@ -84,8 +84,8 @@ const DataTableStub = defineComponent({
           h(
             'div',
             { class: 'qa-row' },
-            (props.columns as Array<{ key: string; render?: (row: never) => unknown }>).map(column =>
-              column.render ? column.render(row as never) : String(row[column.key] ?? '')
+            (props.columns as Array<{ key: string; render?: CallableFunction }>).map(column =>
+              column.render ? column.render.call(column.render, row) : String(row[column.key] ?? '')
             )
           )
         )
@@ -125,6 +125,14 @@ const SlotStub = defineComponent({
     return () => h('div', slots.default?.())
   }
 })
+
+function deferred<T>() {
+  let resolve!: CallableFunction
+  const promise = new Promise<T>(settle => {
+    resolve = settle
+  })
+  return { promise, resolve: (value: T) => resolve.call(resolve, value) }
+}
 
 const stubs = {
   NCard: SlotStub,
@@ -182,12 +190,9 @@ describe('notification delivery page async lifecycle', () => {
   })
 
   it('does not let an older filter response replace the newest delivery page', async () => {
-    let resolveOld!: (_value: { data: { items: NotificationV2.DeliveryView[]; total: number } }) => void
-    const oldResponse = new Promise<{ data: { items: NotificationV2.DeliveryView[]; total: number } }>(resolve => {
-      resolveOld = resolve
-    })
+    const oldResponse = deferred<{ data: { items: NotificationV2.DeliveryView[]; total: number } }>()
     api.listDeliveries
-      .mockReturnValueOnce(oldResponse)
+      .mockReturnValueOnce(oldResponse.promise)
       .mockResolvedValueOnce({ data: { items: [delivery('new')], total: 1 } })
 
     const wrapper = mount(NotificationDeliveries, { global: { stubs } })
@@ -200,7 +205,7 @@ describe('notification delivery page async lifecycle', () => {
     await flushPromises()
     expect(tableWithDeliveries(wrapper).props('data')).toEqual([delivery('new')])
 
-    resolveOld({ data: { items: [delivery('old')], total: 1 } })
+    oldResponse.resolve({ data: { items: [delivery('old')], total: 1 } })
     await flushPromises()
     expect(tableWithDeliveries(wrapper).props('data')).toEqual([delivery('new')])
     expect(api.listDeliveries.mock.calls[1][0]).toMatchObject({ sourceId: 'new-source', page: 1 })
@@ -208,11 +213,8 @@ describe('notification delivery page async lifecycle', () => {
   })
 
   it('clears and rejects a delivery response that arrives after the tenant changes', async () => {
-    let resolveOld!: (_value: { data: { items: NotificationV2.DeliveryView[]; total: number } }) => void
-    const oldResponse = new Promise<{ data: { items: NotificationV2.DeliveryView[]; total: number } }>(resolve => {
-      resolveOld = resolve
-    })
-    api.listDeliveries.mockReturnValueOnce(oldResponse)
+    const oldResponse = deferred<{ data: { items: NotificationV2.DeliveryView[]; total: number } }>()
+    api.listDeliveries.mockReturnValueOnce(oldResponse.promise)
     const wrapper = mount(NotificationDeliveries, { global: { stubs } })
     await flushPromises()
     const originalSignal = api.listDeliveries.mock.calls[0][1] as AbortSignal
@@ -221,7 +223,7 @@ describe('notification delivery page async lifecycle', () => {
     auth.userInfo.tenant_id = 'other-tenant'
     await nextTick()
     expect(originalSignal.aborted).toBe(true)
-    resolveOld({ data: { items: [delivery('old-tenant')], total: 1 } })
+    oldResponse.resolve({ data: { items: [delivery('old-tenant')], total: 1 } })
     await flushPromises()
 
     const visibleDeliveries = wrapper
