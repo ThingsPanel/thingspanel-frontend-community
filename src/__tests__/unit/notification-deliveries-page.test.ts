@@ -164,6 +164,17 @@ function delivery(id: string): NotificationV2.DeliveryView {
   }
 }
 
+function blockedRequest(id: string): NotificationV2.NotificationView {
+  return {
+    id,
+    source: { type: 'alarm', id: `legacy-${id}` },
+    intakeStatus: 'blocked',
+    blockedReason: 'group_revision_unavailable',
+    createdAt: '2026-10-09T00:00:00Z',
+    deliveries: []
+  }
+}
+
 function tableWithDeliveries(wrapper: ReturnType<typeof mount>) {
   return wrapper
     .findAllComponents(DataTableStub)
@@ -230,6 +241,44 @@ describe('notification delivery page async lifecycle', () => {
       .findAllComponents(DataTableStub)
       .flatMap(table => (table.props('data') as Array<{ deliveryId?: string }>).filter(row => row.deliveryId))
     expect(visibleDeliveries).toEqual([])
+    wrapper.unmount()
+  })
+
+  it('shows a blocked request with zero deliveries as not sent and keeps the block reason', async () => {
+    api.listNotifications.mockResolvedValue({ data: { items: [blockedRequest('blocked-1')], total: 1 } })
+    const wrapper = mount(NotificationDeliveries, { global: { stubs } })
+    await flushPromises()
+
+    const requestTable = wrapper.findAllComponents(DataTableStub)[0]
+    expect(requestTable.props('data')).toEqual([blockedRequest('blocked-1')])
+    const viewButton = requestTable.find('button')
+    expect(viewButton.text()).toBe('View')
+    await viewButton.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Configuration/recipient needs attention; nothing was sent')
+    expect(wrapper.text()).toContain('group_revision_unavailable')
+    expect(wrapper.text()).toContain('No one-click resend is available when the outcome is unknown.')
+    expect(api.getDelivery).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('labels accepted-without-receipt and unknown delivery rows without offering a resend action', async () => {
+    const accepted = {
+      ...delivery('accepted-no-receipt'),
+      dispatchStatus: 'accepted' as const,
+      deliveryStatus: 'unsupported' as const
+    }
+    const unknown = { ...delivery('unknown'), dispatchStatus: 'unknown' as const, deliveryStatus: 'unknown' as const }
+    api.listDeliveries.mockResolvedValue({ data: { items: [accepted, unknown], total: 2 } })
+    const wrapper = mount(NotificationDeliveries, { global: { stubs } })
+    await flushPromises()
+
+    const deliveryTable = tableWithDeliveries(wrapper)
+    expect(deliveryTable.props('data')).toEqual([accepted, unknown])
+    expect(wrapper.text()).toContain('Provider accepted; this channel has no delivery receipt')
+    expect(wrapper.text()).toContain('Acceptance is unknown; the system will not retry automatically')
+    expect(wrapper.findAll('button').some(button => /retry|resend/i.test(button.text()))).toBe(false)
     wrapper.unmount()
   })
 

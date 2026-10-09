@@ -50,6 +50,8 @@ const draftEnabled = ref(false)
 const bindings = ref<NotificationV2.GroupBinding[]>([])
 const memberOptions = ref<SelectOption[]>([])
 const memberLoading = ref(false)
+const memberError = ref('')
+const memberSearchGeneration = ref(0)
 const bindingErrors = ref<Record<string, string>>({})
 const pendingSave = ref<{
   key: string
@@ -75,6 +77,10 @@ function clearSession() {
   rows.value = []
   instances.value = []
   plugins.value = []
+  memberOptions.value = []
+  memberError.value = ''
+  memberLoading.value = false
+  memberSearchGeneration.value += 1
   total.value = 0
   modal.value = false
   pendingSave.value = null
@@ -187,15 +193,23 @@ function recipientSourceOptions(binding: NotificationV2.GroupBinding): SelectOpt
 }
 
 async function searchMembers(query = '') {
+  const generation = ++memberSearchGeneration.value
+  memberError.value = ''
   memberLoading.value = true
   try {
     const response = await getUserList({ page: 1, page_size: 50, name: query })
+    if (generation !== memberSearchGeneration.value) return
     const users = response?.data?.list || []
     memberOptions.value = users.map(user => ({ label: `${user.name} · ${user.user_id}`, value: user.user_id }))
   } catch {
+    if (generation !== memberSearchGeneration.value) return
     memberOptions.value = []
+    memberError.value = tx(
+      '无法读取成员目录。请检查当前会话与成员服务，然后重试。',
+      'Could not load the member directory. Check the current session and member service, then retry.'
+    )
   } finally {
-    memberLoading.value = false
+    if (generation === memberSearchGeneration.value) memberLoading.value = false
   }
 }
 
@@ -628,6 +642,10 @@ onMounted(loadPage)
               }}
             </NAlert>
             <NFormItem :label="tx('成员', 'Member')">
+              <NAlert v-if="memberError" type="error" class="mb-8px">{{ memberError }}</NAlert>
+              <NButton v-if="memberError" size="small" :disabled="memberLoading" @click="searchMembers()">
+                {{ tx('重试读取成员', 'Retry member lookup') }}
+              </NButton>
               <NSelect
                 v-model:value="binding.recipientSource.userId"
                 :options="memberOptions"
