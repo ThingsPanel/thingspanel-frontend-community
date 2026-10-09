@@ -254,7 +254,6 @@ function changedConfigPatch() {
   const patch: Record<string, unknown> = {}
   Object.entries(configValues.value).forEach(([name, value]) => {
     if (secretFields.value.includes(name)) return
-    if (isIdentityFieldReadOnly(name)) return
     if (JSON.stringify(value) !== JSON.stringify(originalConfig.value[name])) patch[name] = value
   })
   return omitReadOnlyNotificationIdentityFields(patch, identityFields.value, editorMode.value === 'edit')
@@ -387,7 +386,15 @@ async function saveInstance() {
     successText.value = tx('实例已保存；不会自动发送测试通知。', 'Instance saved. No test notification was sent.')
     await loadInstances()
   } catch (error) {
-    errorText.value = error instanceof Error ? error.message : tx('保存失败。', 'Save failed.')
+    errorText.value =
+      error instanceof Error && error.message === 'identity_change_requires_new_instance'
+        ? tx(
+            '现有实例的身份字段不可更改，请创建新实例。',
+            'Provider identity cannot change on an existing instance. Create a new instance.'
+          )
+        : error instanceof Error
+          ? error.message
+          : tx('保存失败。', 'Save failed.')
   } finally {
     saving.value = false
   }

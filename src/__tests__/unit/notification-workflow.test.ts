@@ -135,10 +135,13 @@ describe('notification plugin identity fields', () => {
       'api_password'
     ])
     expect(editableNotificationSecretFields(['api_password'], undefined, true)).toEqual([])
-    expect(omitReadOnlyNotificationIdentityFields({ account_id: 'old', region: 'new' }, ['account_id'], true)).toEqual({
-      region: 'new'
-    })
-    expect(omitReadOnlyNotificationIdentityFields({ endpoint: 'changed' }, undefined, true)).toEqual({})
+    expect(omitReadOnlyNotificationIdentityFields({ region: 'new' }, ['account_id'], true)).toEqual({ region: 'new' })
+    expect(() => omitReadOnlyNotificationIdentityFields({ account_id: 'changed' }, ['account_id'], true)).toThrow(
+      'identity_change_requires_new_instance'
+    )
+    expect(() => omitReadOnlyNotificationIdentityFields({ endpoint: 'changed' }, undefined, true)).toThrow(
+      'identity_change_requires_new_instance'
+    )
     expect(omitReadOnlyNotificationIdentityFields({ account_id: 'new' }, ['account_id'], false)).toEqual({
       account_id: 'new'
     })

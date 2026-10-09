@@ -22,6 +22,10 @@ export function omitReadOnlyNotificationIdentityFields<T extends Record<string, 
   editingExistingInstance: boolean
 ): T {
   if (!editingExistingInstance) return values
-  if (identityFields === undefined) return {} as T
-  return Object.fromEntries(Object.entries(values).filter(([field]) => !identityFields.includes(field))) as T
+  const changesIdentity =
+    identityFields === undefined
+      ? Object.keys(values).length > 0
+      : Object.keys(values).some(field => identityFields.includes(field))
+  if (changesIdentity) throw new Error('identity_change_requires_new_instance')
+  return values
 }
