@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { reactive, ref } from 'vue'
 import type { DispatchStatus, DeliveryStatus } from '@/service/api/notification-v2.types'
 import {
   getNotificationUiCapabilities,
@@ -18,6 +19,7 @@ import {
 } from '@/views/alarm/notification-record/workflow'
 import {
   canEnableNotificationGroup,
+  cloneNotificationGroupBindings,
   isNotificationGroupEditable,
   isNotificationMemberContactSupported,
   supportsNotificationMemberTarget
@@ -41,6 +43,20 @@ vi.mock('@/store/modules/auth', () => ({
 }))
 
 describe('notification workflow status mapping', () => {
+  it('serializes nested reactive group bindings without mutating the editor draft', () => {
+    const binding = reactive({
+      bindingId: 'chat',
+      instanceId: 'instance',
+      recipientSource: { kind: 'literal' as const, recipient: { kind: 'chat_id' as const, address: 'default' } },
+      contentBinding: { kind: 'text' as const, title: '{{subject}}', text: '{{text}}' }
+    })
+    const draft = ref([binding])
+    const wire = cloneNotificationGroupBindings(draft.value)
+    expect(structuredClone(wire)).toEqual(wire)
+    wire[0].instanceId = 'other'
+    expect(draft.value[0].instanceId).toBe('instance')
+    expect(wire[0].recipientSource).toEqual(binding.recipientSource)
+  })
   const dispatchStatuses: DispatchStatus[] = ['queued', 'sending', 'accepted', 'failed', 'unknown']
   const deliveryStatuses: DeliveryStatus[] = ['unsupported', 'pending', 'delivered', 'failed', 'unknown']
 

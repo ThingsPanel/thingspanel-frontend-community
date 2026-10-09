@@ -1,4 +1,9 @@
-import type { Channel, GroupView } from '@/service/api/notification-v2.types'
+import type { Channel, GroupBinding, GroupView } from '@/service/api/notification-v2.types'
+
+export function cloneNotificationGroupBindings(bindings: GroupBinding[]): GroupBinding[] {
+  // Bindings are JSON wire data; serialization also removes nested Vue proxies.
+  return JSON.parse(JSON.stringify(bindings)) as GroupBinding[]
+}
 
 export function isNotificationGroupEditable(state: GroupView['migrationState']) {
   return state === 'native'

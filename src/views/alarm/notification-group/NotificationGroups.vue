@@ -18,6 +18,7 @@ import {
 import type * as NotificationV2 from '@/service/api/notification-v2.types'
 import {
   canEnableNotificationGroup,
+  cloneNotificationGroupBindings,
   isNotificationGroupEditable,
   isNotificationMemberContactSupported,
   supportsNotificationMemberTarget
@@ -291,7 +292,7 @@ async function openEdit(row: NotificationV2.GroupView) {
     pendingSave.value = null
     draftName.value = group.name
     draftEnabled.value = group.enabled
-    bindings.value = structuredClone(group.bindings)
+    bindings.value = cloneNotificationGroupBindings(group.bindings)
     bindings.value.forEach(binding => {
       if (binding.contentBinding.kind === 'template') {
         templateMappings[binding.bindingId] = JSON.stringify(binding.contentBinding.paramsMapping, null, 2)
@@ -306,7 +307,7 @@ async function openEdit(row: NotificationV2.GroupView) {
 
 function buildGroupBody(): NotificationV2.GroupCreate | NotificationV2.GroupUpdate {
   if (!validateBindings()) throw new Error(tx('请修正组配置中的错误。', 'Fix the group configuration errors.'))
-  const normalizedBindings = structuredClone(bindings.value)
+  const normalizedBindings = cloneNotificationGroupBindings(bindings.value)
   normalizedBindings.forEach(binding => {
     binding.instanceId = binding.instanceId.trim()
     if (binding.recipientSource.kind === 'literal')
