@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import NotificationGroups from './NotificationGroups.vue'
+import NotificationDefaultPolicy from './NotificationDefaultPolicy.vue'
 import NotificationInstances from '~/src/views/management/notification/NotificationInstances.vue'
 import NotificationAvailablePlugins from './NotificationAvailablePlugins.vue'
 
@@ -15,13 +16,14 @@ const activeTab = ref('policies')
     <NAlert type="info" class="mb-12px">
       {{
         tx(
-          '在通知策略中选择可用服务、接收目标和内容，再用于社区告警。旧通知组维护已停用；已有告警引用和历史记录保留。',
-          'Configure available services, recipients and content in a notification policy, then publish it for community alerts. Legacy group management is retired; existing alert references and history are retained.'
+          '为未单独指定策略的告警设置默认值；也可以在单条告警规则中明确选择策略。历史通知组不再支持修改，已有告警引用和历史记录保留。',
+          'Set a default for alerts without an explicit policy, or choose a policy on an individual alert rule. Historical notification groups are read only; existing alert references and records are retained.'
         )
       }}
     </NAlert>
     <NTabs v-model:value="activeTab" type="line">
       <NTabPane name="policies" :tab="tx('通知策略', 'Notification policies')">
+        <NotificationDefaultPolicy />
         <NotificationGroups />
       </NTabPane>
       <NTabPane name="available-plugins" :tab="tx('可用通知插件', 'Available notification plugins')">

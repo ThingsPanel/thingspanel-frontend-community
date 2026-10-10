@@ -242,15 +242,15 @@ watch(
 <template>
   <div>
     <NTabs v-model:value="recordTab" type="line">
-      <NTabPane name="new" :tab="tx('新投递', 'New deliveries')">
+      <NTabPane name="new" :tab="tx('发送记录', 'Send records')">
         <NotificationDeliveries />
       </NTabPane>
-      <NTabPane name="legacy" :tab="tx('旧历史记录', 'Legacy history')">
+      <NTabPane name="legacy" :tab="tx('历史记录', 'History')">
         <NAlert type="info" class="mb-12px">
           {{
             tx(
-              '此页显示旧系统历史状态；SUCCESS/FAILURE 是历史字段，不代表送达回执。',
-              'This tab shows legacy history states; SUCCESS/FAILURE are historical labels, not delivery receipts.'
+              'SUCCESS/FAILURE 是历史记录中的原始状态值，不代表送达回执。',
+              'SUCCESS/FAILURE are stored historical values, not delivery receipts.'
             )
           }}
         </NAlert>

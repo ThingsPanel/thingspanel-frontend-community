@@ -26,6 +26,12 @@ const SlotStub = defineComponent({
     return () => h('div', slots.default?.())
   }
 })
+const TabPaneStub = defineComponent({
+  props: ['tab'],
+  setup(props, { slots }) {
+    return () => h('section', [h('div', props.tab), slots.default?.()])
+  }
+})
 const ButtonStub = defineComponent({
   emits: ['click'],
   setup(_, { slots, emit, attrs }) {
@@ -79,7 +85,7 @@ describe('legacy notification record page status boundary', () => {
       global: {
         stubs: {
           NTabs: TabsStub,
-          NTabPane: SlotStub,
+          NTabPane: TabPaneStub,
           NButton: ButtonStub,
           NDataTable: DataTableStub,
           NAlert: SlotStub,
@@ -96,10 +102,10 @@ describe('legacy notification record page status boundary', () => {
     await wrapper.find('button').trigger('click')
     await flushPromises()
 
+    expect(wrapper.text()).toContain('Send records')
+    expect(wrapper.text()).toContain('History')
     expect(getHistoryMock).toHaveBeenCalledTimes(1)
-    expect(wrapper.text()).toContain(
-      'This tab shows legacy history states; SUCCESS/FAILURE are historical labels, not delivery receipts.'
-    )
+    expect(wrapper.text()).toContain('SUCCESS/FAILURE are stored historical values, not delivery receipts.')
     expect(wrapper.text()).toContain('SUCCESS')
     expect(wrapper.text()).not.toContain('Delivered')
     wrapper.unmount()

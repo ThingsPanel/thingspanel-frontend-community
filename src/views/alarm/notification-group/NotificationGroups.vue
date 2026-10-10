@@ -200,9 +200,9 @@ onBeforeUnmount(() => {
 
 const migrationLabel = (state: NotificationV2.GroupView['migrationState']) => {
   const labels = {
-    native: tx('Encore 原生', 'Encore native'),
-    legacy_unmigrated: tx('旧系统保留', 'Legacy system retained'),
-    projection_pending: tx('旧系统投影未完成', 'Legacy projection pending')
+    native: tx('可配置策略', 'Configurable policy'),
+    legacy_unmigrated: tx('历史配置（只读）', 'Historical configuration (read only)'),
+    projection_pending: tx('等待整理（只读）', 'Pending review (read only)')
   }
   return labels[state]
 }
@@ -268,12 +268,10 @@ function nativePublishLabel(row: NotificationV2.GroupView) {
   if (pendingPublish.value?.groupId === row.id)
     return tx('结果未确认，使用同一请求重试', 'Result unconfirmed; retry the same request')
   const status = publishStatuses.value[row.id]
-  if (status?.published && status.effectiveGroupRevision === row.revision)
-    return tx('已用于社区告警', 'Used by community alerts')
-  if (status?.published || status?.status === 'stopped')
-    return tx('发布当前版本到社区告警', 'Publish current revision to community alerts')
-  if (publishErrors.value[row.id]) return tx('刷新告警入口状态', 'Refresh alert entry status')
-  return tx('用于社区告警', 'Use for community alerts')
+  if (status?.published && status.effectiveGroupRevision === row.revision) return tx('已启用', 'Enabled')
+  if (status?.published || status?.status === 'stopped') return tx('启用策略', 'Enable policy')
+  if (publishErrors.value[row.id]) return tx('刷新策略状态', 'Refresh policy status')
+  return tx('启用策略', 'Enable policy')
 }
 
 function nativePublishSummary(row: NotificationV2.GroupView) {
@@ -282,15 +280,12 @@ function nativePublishSummary(row: NotificationV2.GroupView) {
   if (status.published && status.legacyGroupId) {
     const staleRevision = status.effectiveGroupRevision !== row.revision
     return tx(
-      `旧告警组 ${status.legacyGroupId} · 已发布版本 ${status.effectiveGroupRevision}${staleRevision ? ` · 当前版本 ${row.revision} 尚未发布` : ''}`,
-      `Legacy alert group ${status.legacyGroupId} · published revision ${status.effectiveGroupRevision}${staleRevision ? ` · current revision ${row.revision} is not published` : ''}`
+      `已启用版本 ${status.effectiveGroupRevision}${staleRevision ? ` · 当前版本 ${row.revision} 尚未启用` : ''}`,
+      `Enabled version ${status.effectiveGroupRevision}${staleRevision ? ` · current version ${row.revision} is not enabled` : ''}`
     )
   }
   if (status.status === 'stopped')
-    return tx(
-      '社区告警已停止，后续事件不会使用此入口。',
-      'Community alerts are stopped; future events will not use this entry.'
-    )
+    return tx('策略已停用，新告警不会使用此策略。', 'Policy is disabled; new alerts will not use it.')
   return ''
 }
 
@@ -314,14 +309,8 @@ async function sendPendingPublish() {
     await loadPage()
     publishErrors.value[pending.groupId] =
       pending.body.operation === 'unpublish'
-        ? tx(
-            '社区告警入口已停止。此操作只影响之后产生的事件。',
-            'The community alert entry is stopped. This affects future events only.'
-          )
-        : tx(
-            `已加入社区告警，旧告警组 ID：${status.legacyGroupId}`,
-            `Added to community alerts as legacy group ${status.legacyGroupId}`
-          )
+        ? tx('策略已停用。此操作只影响之后产生的告警。', 'The policy is disabled. This affects future alerts only.')
+        : tx('策略已启用，供后续告警使用。', 'Policy enabled for future alerts.')
   } catch (error) {
     const status = nativePublishErrorStatus(error)
     if (status === 409) {
@@ -329,8 +318,8 @@ async function sendPendingPublish() {
       const row = rows.value.find(item => item.id === pending.groupId)
       if (row) await refreshPublishStatus(row)
       publishErrors.value[pending.groupId] = tx(
-        '告警入口版本已变化，状态已刷新；请检查最新状态后再明确发布。',
-        'The alert entry version changed. Status was refreshed; review it before publishing again.'
+        '策略状态已变化并已刷新；请检查后再重试。',
+        'Policy status changed and was refreshed. Review it before trying again.'
       )
     } else if (status !== null && status >= 400 && status < 500) {
       pendingPublish.value = null
@@ -338,12 +327,12 @@ async function sendPendingPublish() {
         status === 401
           ? tx('登录状态已失效，请重新登录。', 'Your session has expired. Sign in again.')
           : status === 403
-            ? tx('当前账号无权发布到社区告警。', 'This account cannot publish to community alerts.')
-            : tx('请求未被接受，请检查通知组并重试。', 'The request was rejected. Review the group and try again.')
+            ? tx('当前账号无权启用此策略。', 'This account cannot enable this policy.')
+            : tx('请求未被接受，请检查策略并重试。', 'The request was rejected. Review the policy and try again.')
     } else {
       publishErrors.value[pending.groupId] = tx(
-        '发布结果未确认。请使用同一请求重试；不要新建另一条发布请求。',
-        'The publish result is unconfirmed. Retry the same request; do not create a new publish request.'
+        '启用结果未确认。刷新状态后再决定是否重试。',
+        'The enable result is unconfirmed. Refresh the status before deciding whether to retry.'
       )
     }
   } finally {
@@ -363,10 +352,7 @@ async function publishForCommunityAlerts(row: NotificationV2.GroupView) {
     const status = await getNativeNotificationGroupPublishStatus(row.id)
     publishStatuses.value[row.id] = status
     if (status.published && status.effectiveGroupRevision === row.revision) {
-      publishErrors.value[row.id] = tx(
-        `已用于社区告警，旧告警组 ID：${status.legacyGroupId}`,
-        `Already used by community alerts as legacy group ${status.legacyGroupId}`
-      )
+      publishErrors.value[row.id] = tx('策略已启用。', 'Policy is enabled.')
       return
     }
     pendingPublish.value = {
@@ -384,8 +370,8 @@ async function publishForCommunityAlerts(row: NotificationV2.GroupView) {
   } catch (error) {
     if (!(error instanceof NotificationSessionChangedError))
       publishErrors.value[row.id] = tx(
-        '无法确认当前告警入口状态，本次未发起发布。请刷新后重试。',
-        'The current alert entry could not be confirmed. Nothing was published; refresh and try again.'
+        '无法确认当前策略状态。请刷新后重试。',
+        'Could not confirm the current policy status. Refresh and try again.'
       )
   } finally {
     delete publishLoading.value[row.id]
@@ -404,7 +390,7 @@ async function stopCommunityAlerts(row: NotificationV2.GroupView) {
     const status = await getNativeNotificationGroupPublishStatus(row.id)
     publishStatuses.value[row.id] = status
     if (!status.published) {
-      publishErrors.value[row.id] = tx('当前社区告警入口已停止。', 'The community alert entry is already stopped.')
+      publishErrors.value[row.id] = tx('当前策略已停用。', 'This policy is already disabled.')
       return
     }
     pendingPublish.value = {
@@ -416,8 +402,8 @@ async function stopCommunityAlerts(row: NotificationV2.GroupView) {
   } catch (error) {
     if (!(error instanceof NotificationSessionChangedError))
       publishErrors.value[row.id] = tx(
-        '无法确认社区告警入口状态，本次未发起停止操作。请刷新后重试。',
-        'Could not confirm the community alert entry. Nothing was stopped; refresh and retry.'
+        '无法确认当前策略状态。请刷新后重试。',
+        'Could not confirm the current policy status. Refresh and try again.'
       )
   } finally {
     delete publishLoading.value[row.id]
@@ -503,7 +489,7 @@ function validateBindings() {
     errors[bindingId] = message
     errorFields[bindingId] = field
   }
-  if (!draftName.value.trim()) errors.name = tx('组名称不能为空。', 'Group name is required.')
+  if (!draftName.value.trim()) errors.name = tx('策略名称不能为空。', 'Policy name is required.')
   if (bindings.value.length === 0) errors.bindings = tx('至少添加一条绑定。', 'Add at least one binding.')
   bindings.value.forEach(binding => {
     const recipient = binding.recipientSource
@@ -539,8 +525,8 @@ function validateBindings() {
           binding.bindingId,
           'member',
           tx(
-            '通知 v2 暂不支持 IM/APP 成员目标。旧 APP 组请继续使用旧告警流程；应用 userId 不会转换为服务商 user_id/chat_id。',
-            'Notification v2 does not support IM/APP member targets yet. Keep legacy APP groups in the legacy alert flow; application user IDs are never converted to provider user_id/chat_id.'
+            'APP 成员目标暂不可用。请改用服务商支持的直接接收地址；应用用户编号不能当作服务商 user_id/chat_id。',
+            'APP member targets are not available yet. Use a direct recipient address supported by the service; application user IDs are not provider user_id/chat_id values.'
           )
         )
       } else if (instance && !isNotificationMemberContactSupported(instance.channel, recipient.contactField)) {
@@ -627,7 +613,7 @@ async function openEdit(row: NotificationV2.GroupView) {
 function buildGroupBody(): NotificationV2.GroupCreate | NotificationV2.GroupUpdate {
   if (!validateBindings()) {
     focusFirstInvalidGroupField()
-    throw new Error(tx('请修正组配置中的错误。', 'Fix the group configuration errors.'))
+    throw new Error(tx('请修正策略配置中的错误。', 'Fix the policy configuration errors.'))
   }
   const normalizedBindings = cloneNotificationGroupBindings(bindings.value)
   normalizedBindings.forEach(binding => {
@@ -659,9 +645,7 @@ async function saveGroup() {
         editorMode.value === 'edit' &&
         !canEnableNotificationGroup(selectedGroup.value!.migrationState)
       ) {
-        throw new Error(
-          tx('迁移投影未完成，不能启用此组。', 'The group cannot be enabled until migration projection is complete.')
-        )
+        throw new Error(tx('该策略尚未准备好，暂时不能启用。', 'This policy is not ready to be enabled yet.'))
       }
       pendingSave.value = {
         key: notificationV2.createIdempotencyKey(),
@@ -669,7 +653,7 @@ async function saveGroup() {
         groupId: editorMode.value === 'edit' ? selectedGroup.value!.id : undefined
       }
     } catch (error) {
-      errorText.value = notificationErrorMessage(error, '组配置无效。', 'The group configuration is invalid.')
+      errorText.value = notificationErrorMessage(error, '策略配置无效。', 'The policy configuration is invalid.')
       return
     }
   }
@@ -734,7 +718,7 @@ function closeEditor() {
 }
 
 const columns: DataTableColumns<NotificationV2.GroupView> = [
-  { title: tx('组名称', 'Group'), key: 'name', minWidth: 160 },
+  { title: tx('策略名称', 'Policy'), key: 'name', minWidth: 160 },
   {
     title: tx('状态', 'State'),
     key: 'migrationState',
@@ -795,7 +779,7 @@ const columns: DataTableColumns<NotificationV2.GroupView> = [
                 }
                 onClick={() => stopCommunityAlerts(row)}
               >
-                {tx('停止用于社区告警', 'Stop using for community alerts')}
+                {tx('停用策略', 'Disable policy')}
               </NButton>
             ) : null}
             {nativePublishSummary(row) ? <div class="text-xs text-secondary">{nativePublishSummary(row)}</div> : null}
@@ -854,14 +838,14 @@ onMounted(loadPage)
         <div class="text-sm opacity-70">
           {{
             tx(
-              '选择已开放的通知服务，配置接收目标和内容，再用于社区告警。旧通知组维护已停用，已有引用与历史保留。',
-              'Choose available services, configure recipients and content, then publish for community alerts. Legacy group management is retired; existing references and history are retained.'
+              '选择可用服务，设置接收目标和内容，然后启用策略供新告警使用。历史通知组不再支持修改，已有引用与记录保留。',
+              'Choose available services, set recipients and content, then enable the policy for new alerts. Historical notification groups are read only; existing references and records are retained.'
             )
           }}
         </div>
       </div>
       <NButton type="primary" :disabled="!capabilities.canManage" @click="openCreate">
-        {{ tx('新建通知策略', 'Create group') }}
+        {{ tx('新建通知策略', 'Create policy') }}
       </NButton>
     </div>
     <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
@@ -869,8 +853,8 @@ onMounted(loadPage)
     <NAlert v-if="!notificationApiConfigured" type="info" class="mb-12px">
       {{
         tx(
-          '通知服务暂不可用，请联系管理员；旧历史记录仍可查看。',
-          'The notification service is unavailable. Contact an administrator; legacy history remains readable.'
+          '通知服务暂不可用，请联系管理员；历史记录仍可查看。',
+          'The notification service is unavailable. Contact an administrator; historical records remain readable.'
         )
       }}
     </NAlert>
@@ -884,10 +868,10 @@ onMounted(loadPage)
       preset="card"
       :title="
         editorMode === 'create'
-          ? tx('新建通知策略', 'Create notification group')
+          ? tx('新建通知策略', 'Create notification policy')
           : editorMode === 'view'
             ? tx('通知策略只读详情', 'Read-only group details')
-            : tx('编辑通知策略', 'Edit notification group')
+            : tx('编辑通知策略', 'Edit notification policy')
       "
       :style="{ width: 'min(920px, calc(100vw - 24px))' }"
       :mask-closable="!pendingSave"
@@ -897,7 +881,7 @@ onMounted(loadPage)
     >
       <NForm label-placement="top">
         <NFormItem
-          :label="tx('组名称', 'Group name')"
+          :label="tx('策略名称', 'Policy name')"
           :validation-status="bindingErrors.name ? 'error' : undefined"
           :feedback="bindingErrors.name"
         >
@@ -935,30 +919,19 @@ onMounted(loadPage)
         >
           {{
             tx(
-              '旧告警组投影尚未完成；此组保持只读且不能启用。',
-              'Legacy group projection is pending; this group is read-only and cannot be enabled.'
+              '这项历史策略仍在整理中，目前只能查看，不能启用。',
+              'This historical policy is still being reviewed. It can be viewed but not enabled.'
             )
           }}
         </NAlert>
         <NAlert v-if="selectedGroup?.migrationState === 'legacy_unmigrated'" type="info" class="mb-12px">
           {{
             tx(
-              '未迁移旧组保持只读；旧维护入口已停用，请联系管理员安排迁移。',
-              'Unmigrated legacy groups are read-only. Legacy management is retired; contact an administrator to arrange migration.'
+              '这项历史配置仅供查看，暂不能作为新告警的策略。',
+              'This historical configuration is read only and cannot be used for new alerts.'
             )
           }}
         </NAlert>
-        <NCard v-if="selectedGroup?.sourceProjections?.length" size="small" class="mb-12px">
-          <div class="font-600 mb-8px">{{ tx('只读投影记录', 'Read-only source projections') }}</div>
-          <div
-            v-for="projection in selectedGroup.sourceProjections"
-            :key="`${projection.sourceDeploymentId}:${projection.legacyGroupId}:${projection.groupRevision}`"
-            class="text-xs break-all mb-4px"
-          >
-            {{ projection.sourceDeploymentId }} · {{ projection.tenantId }} · {{ projection.legacyGroupId }} → revision
-            {{ projection.groupRevision }}
-          </div>
-        </NCard>
         <NDivider>{{ tx('绑定', 'Bindings') }}</NDivider>
         <NAlert v-if="bindingErrors.bindings" type="error" class="mb-12px">{{ bindingErrors.bindings }}</NAlert>
         <NCard v-for="(binding, index) in bindings" :key="binding.bindingId" size="small" class="mb-12px">

@@ -1,5 +1,32 @@
 import { request } from '../request'
 
+export type NotificationDefaultPolicySummary = {
+  nativeGroupId: string
+  aliasGroupId: string
+  name: string
+  groupRevision: number
+  routeVersion: number
+  status: string
+  ready: boolean
+}
+
+export type NotificationDefaultPolicyView = {
+  version: number
+  selected: NotificationDefaultPolicySummary | null
+  availablePolicies: NotificationDefaultPolicySummary[]
+}
+
+export type NotificationDefaultPolicyUpdate = {
+  nativeGroupId: string
+  expectedVersion: number
+}
+
+export const getNotificationDefaultPolicy = async (signal?: AbortSignal) =>
+  request.get<NotificationDefaultPolicyView>('/notification-default-policy', { signal, silentError: true })
+
+export const putNotificationDefaultPolicy = async (body: NotificationDefaultPolicyUpdate, signal?: AbortSignal) =>
+  request.put<NotificationDefaultPolicyView>('/notification-default-policy', body, { signal, silentError: true })
+
 export type NativeNotificationGroupPublishRequest = {
   operation: 'publish'
   nativeGroupId: string

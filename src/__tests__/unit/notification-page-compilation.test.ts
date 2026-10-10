@@ -7,6 +7,7 @@ describe('notification page compilation', () => {
   for (const page of [
     'alarm/notification-record/NotificationDeliveries.vue',
     'alarm/notification-group/index.vue',
+    'alarm/notification-group/NotificationDefaultPolicy.vue',
     'alarm/notification-group/NotificationAvailablePlugins.vue',
     'alarm/notification-group/NotificationGroups.vue',
     'management/notification/NotificationInstances.vue',

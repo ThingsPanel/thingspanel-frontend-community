@@ -99,8 +99,8 @@ describe('notification workflow status mapping', () => {
   })
 
   it('preserves old SUCCESS and FAILURE as historical labels', () => {
-    expect(getLegacyHistoryStatus('SUCCESS')).toBe('旧历史 · SUCCESS')
-    expect(getLegacyHistoryStatus('FAILURE')).toBe('旧历史 · FAILURE')
+    expect(getLegacyHistoryStatus('SUCCESS')).toBe('历史记录 · SUCCESS')
+    expect(getLegacyHistoryStatus('FAILURE')).toBe('历史记录 · FAILURE')
   })
 
   it('allows edits and enabling only for native groups', () => {

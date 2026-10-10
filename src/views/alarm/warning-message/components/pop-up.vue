@@ -7,10 +7,13 @@
  * @LastEditTime: 2024-03-20 19:43:18
 -->
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
 import { addWarningMessage, editInfo } from '@/service/api/alarm'
-import { getNotificationGroupList } from '@/service/api/notification'
+import { getNotificationDefaultPolicy } from '@/service/api/notification'
+import type { NotificationDefaultPolicySummary } from '@/service/api/notification'
+import { useAuthStore } from '@/store/modules/auth'
 import { useNaiveForm } from '@/hooks/common/form'
 import { $t } from '@/locales'
 import { createLogger } from '@/utils/logger'
@@ -41,12 +44,14 @@ const title = computed(() => {
 })
 
 interface Emits {
-  (e: 'update:visible', visible: boolean): void
-
-  (e: 'newEdit'): void
+  'update:visible': [visible: boolean]
+  newEdit: []
 }
 
 const message = useMessage()
+const auth = useAuthStore()
+const { locale } = useI18n()
+const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
 const emit = defineEmits<Emits>()
 const { formRef } = useNaiveForm()
 const modalVisible = computed({
@@ -59,51 +64,103 @@ const modalVisible = computed({
 })
 
 const state = reactive({
-  generalOptions: [] as Array<{ id: string; name: string }>,
-  notificationGroupTotal: 0,
-  notificationGroupLoading: false,
-  notificationGroupPageNo: 1,
-  notificationGroupPageSize: 20,
-  notificationGroupHasMore: true
+  availablePolicies: [] as NotificationDefaultPolicySummary[],
+  defaultPolicy: null as NotificationDefaultPolicySummary | null,
+  loading: false,
+  error: ''
 })
-const loadMoreNotificationGroupData = async () => {
-  if (state.notificationGroupLoading || !state.notificationGroupHasMore) return
-  state.notificationGroupLoading = true
-  try {
-    const params = {
-      page: state.notificationGroupPageNo,
-      page_size: state.notificationGroupPageSize
-    }
-    const res = await getNotificationGroupList(params)
-    let list = res?.data?.list || []
-    // list = list.filter(item => item.status === 'OPEN'); // 只展示生效的通知组
-    const total = res?.data?.total || 0
-    state.generalOptions = [...state.generalOptions, ...list]
-
-    state.generalOptions = state.generalOptions.map((item: any) => {
-      if (process.env.NODE_ENV === 'development') {
-      }
-      return {
-        id: item.id,
-        name: item.name,
-        disabled: item?.status !== 'OPEN'
-      }
+const policyOptions = computed(() => {
+  const options: Array<{ label: string; value: string; disabled?: boolean }> = [
+    {
+      label: state.defaultPolicy
+        ? state.defaultPolicy.ready
+          ? tx(
+              `使用租户默认策略（${state.defaultPolicy.name}）`,
+              `Use tenant default policy (${state.defaultPolicy.name})`
+            )
+          : tx(
+              `使用租户默认策略（${state.defaultPolicy.name}当前不可用）`,
+              `Use tenant default policy (${state.defaultPolicy.name} is unavailable)`
+            )
+        : tx(
+            '使用租户默认策略（未设置时只记录告警）',
+            'Use tenant default policy (records only when no default is set)'
+          ),
+      value: ''
+    },
+    ...state.availablePolicies
+      .filter(policy => policy.ready)
+      .map(policy => ({
+        label: policy.name,
+        value: policy.aliasGroupId
+      }))
+  ]
+  const currentId = formData.value.notification_group_id
+  if (currentId && !options.some(option => option.value === currentId)) {
+    options.push({
+      label: tx(
+        '当前规则指定的策略不可用（保存时不会改为默认）',
+        'This rule’s explicit policy is unavailable (it will not fall back to the default)'
+      ),
+      value: currentId,
+      disabled: true
     })
-    state.notificationGroupTotal = total
-    state.notificationGroupPageNo += 1
-    state.notificationGroupHasMore = total > state.notificationGroupPageNo * state.notificationGroupPageSize
+  }
+  return options
+})
+function updateNotificationGroupId(value: string | null) {
+  formData.value.notification_group_id = value ?? ''
+}
+let policyLoadGeneration = 0
+let policyLoadController: AbortController | null = null
+const loadNotificationPolicies = async () => {
+  policyLoadGeneration += 1
+  const generation = policyLoadGeneration
+  policyLoadController?.abort()
+  policyLoadController = new AbortController()
+  const controller = policyLoadController
+  state.loading = true
+  state.error = ''
+  try {
+    const response = await getNotificationDefaultPolicy(controller.signal)
+    if (generation !== policyLoadGeneration || controller.signal.aborted) return
+    if (!response.data)
+      throw response.error ?? new Error(tx('可用策略响应为空。', 'Available policy response was empty.'))
+    const result = response.data
+    state.availablePolicies = result.availablePolicies
+    state.defaultPolicy = result.selected
+  } catch (error) {
+    if (generation !== policyLoadGeneration || controller.signal.aborted) return
+    state.error =
+      error instanceof Error ? error.message : tx('无法读取可用策略。', 'Could not load available policies.')
   } finally {
-    state.notificationGroupLoading = false
+    if (generation === policyLoadGeneration && !controller.signal.aborted) state.loading = false
   }
 }
-const notificationGroupHandleScroll = async e => {
-  const target = e.target
-  if (target.scrollTop + target.clientHeight >= target.scrollHeight) {
-    await loadMoreNotificationGroupData()
+
+watch(
+  () => props.visible,
+  visible => {
+    if (visible) void loadNotificationPolicies()
+  },
+  { immediate: true }
+)
+watch(
+  () => [auth.token, auth.userInfo.tenant_id, auth.userInfo.id, auth.userInfo.userId],
+  () => {
+    policyLoadGeneration += 1
+    policyLoadController?.abort()
+    policyLoadController = null
+    state.availablePolicies = []
+    state.defaultPolicy = null
+    state.loading = false
+    state.error = ''
+    if (props.visible && auth.token) void loadNotificationPolicies()
   }
-}
-onMounted(() => {
-  loadMoreNotificationGroupData()
+)
+onBeforeUnmount(() => {
+  policyLoadGeneration += 1
+  policyLoadController?.abort()
 })
 // const alarmRepeatTime = ref([
 //   {
@@ -286,16 +343,6 @@ async function editInfoText() {
 }
 
 function handleReset(e) {
-  Object.assign(formData, {
-    id: '',
-    name: '',
-    alarm_level: '',
-    alarm_repeat_time: '',
-    alarm_keep_time: '',
-    notification_group_id: '',
-    enabled: 'Y',
-    description: ''
-  })
   e.preventDefault()
   formRef.value?.validate(errors => {
     if (!errors) {
@@ -308,25 +355,32 @@ function handleReset(e) {
   })
 }
 
-watch(props, newValue => {
-  logger.info(newValue)
-  if (props.type === 'edit') {
-    formData.value = props.editData
-    formData.value.alarm_keep_time = String(formData.value.alarm_keep_time)
-    formData.value.alarm_repeat_time = String(formData.value.alarm_repeat_time)
-  } else {
-    formData.value = {
-      id: '',
-      name: '',
-      alarm_level: '',
-      alarm_repeat_time: '',
-      alarm_keep_time: '',
-      notification_group_id: '',
-      enabled: 'Y',
-      description: ''
+watch(
+  props,
+  newValue => {
+    logger.info(newValue)
+    if (props.type === 'edit') {
+      formData.value = {
+        ...props.editData,
+        notification_group_id: String(props.editData?.notification_group_id ?? '')
+      }
+      formData.value.alarm_keep_time = String(formData.value.alarm_keep_time)
+      formData.value.alarm_repeat_time = String(formData.value.alarm_repeat_time)
+    } else {
+      formData.value = {
+        id: '',
+        name: '',
+        alarm_level: '',
+        alarm_repeat_time: '',
+        alarm_keep_time: '',
+        notification_group_id: '',
+        enabled: 'Y',
+        description: ''
+      }
     }
-  }
-})
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -366,16 +420,25 @@ watch(props, newValue => {
       </n-form-item>
 -->
 
-      <n-form-item :label="$t('generate.notification-group')" path="selectValue">
+      <n-form-item :label="tx('通知策略', 'Notification policy')" path="notification_group_id">
         <n-select
-          v-model:value="formData.notification_group_id"
-          :placeholder="$t('generate.select-notification-group')"
-          :options="state.generalOptions"
-          label-field="name"
-          value-field="id"
-          :loading="state.notificationGroupLoading"
-          @scroll="notificationGroupHandleScroll"
+          :value="formData.notification_group_id"
+          :placeholder="tx('选择策略', 'Select a policy')"
+          :options="policyOptions"
+          :loading="state.loading"
+          @update:value="updateNotificationGroupId"
         />
+        <div class="mt-4px text-12px text-gray-500">
+          {{
+            tx(
+              '选择具体策略后优先使用该策略；选择“使用租户默认策略”时，如果没有可用默认策略，告警仍会记录但不会发送通知。保存规则不会发送通知。',
+              'An explicit policy takes priority. “Use tenant default policy” records the alert without sending when no usable default is set. Saving this rule does not send a notification.'
+            )
+          }}
+        </div>
+        <div v-if="state.error" class="mt-4px text-12px text-error">
+          {{ state.error }}
+        </div>
       </n-form-item>
 
       <NSpace class="w-full pt-16px" :size="24" justify="end">

@@ -143,7 +143,7 @@ async function loadDeliveries() {
     errorText.value =
       status === 403
         ? tx('当前账号没有查看通知记录的权限。', 'Your account cannot read notification records.')
-        : notificationErrorMessage(error, '无法读取新投递记录。', 'Could not load new deliveries.')
+        : notificationErrorMessage(error, '无法读取发送记录。', 'Could not load send records.')
   } finally {
     if (generation === viewGeneration.value) loading.value = false
   }
@@ -382,12 +382,12 @@ onMounted(() => {
   <NCard>
     <div class="flex flex-wrap items-center justify-between gap-12px mb-12px">
       <div>
-        <div class="text-lg font-600">{{ tx('新通知投递', 'New notification deliveries') }}</div>
+        <div class="text-lg font-600">{{ tx('发送记录', 'Send records') }}</div>
         <div class="text-sm opacity-70">
           {{
             tx(
-              '按稳定 deliveryId 分页；新投递与旧历史分开查询。',
-              'Paged by stable deliveryId; new deliveries and old history stay separate.'
+              '查看提交状态和服务商回执。服务商已受理不代表通知已送达。',
+              'Review dispatch and provider receipt status. Provider acceptance does not mean delivery.'
             )
           }}
         </div>
@@ -455,8 +455,8 @@ onMounted(() => {
     <NAlert v-if="!notificationApiConfigured" type="info" class="mb-12px">
       {{
         tx(
-          '通知服务未启用；旧历史记录仍可在旧历史页查看。',
-          'Notification service is not enabled; legacy history remains available in its tab.'
+          '通知服务未启用；历史记录仍可查看。',
+          'Notification service is not enabled; historical records remain available.'
         )
       }}
     </NAlert>

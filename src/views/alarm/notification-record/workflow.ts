@@ -71,5 +71,5 @@ export function describeIntakeStatus(intakeStatus: IntakeStatus, blockedReason?:
 }
 
 export function getLegacyHistoryStatus(status: string) {
-  return `旧历史 · ${status}`
+  return `历史记录 · ${status}`
 }

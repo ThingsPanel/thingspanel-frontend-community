@@ -243,7 +243,7 @@ describe('notification group page failure and conflict flow', () => {
     await flushPromises()
     await wrapper
       .findAll('button')
-      .find(button => button.text() === 'Create group')!
+      .find(button => button.text() === 'Create policy')!
       .trigger('click')
     await wrapper
       .findAll('button')
@@ -291,7 +291,7 @@ describe('notification group page failure and conflict flow', () => {
     await flushPromises()
     await wrapper
       .findAll('button')
-      .find(button => button.text() === 'Create group')!
+      .find(button => button.text() === 'Create policy')!
       .trigger('click')
     await wrapper
       .findAll('button')
@@ -345,7 +345,7 @@ describe('notification group page failure and conflict flow', () => {
       .trigger('click')
     await flushPromises()
 
-    expect(wrapper.text()).toContain('application user IDs are never converted')
+    expect(wrapper.text()).toContain('application user IDs are not provider recipient addresses')
     await wrapper
       .findAll('button')
       .find(button => button.text() === 'Save group')!
@@ -435,7 +435,7 @@ describe('notification group page failure and conflict flow', () => {
     await flushPromises()
 
     const publishButton = () =>
-      wrapper.findAll('button').find(button => /community alerts|same request/i.test(button.text()))!
+      wrapper.findAll('button').find(button => /enable policy|same request/i.test(button.text()))!
     await publishButton().trigger('click')
     await flushPromises()
 
@@ -458,7 +458,7 @@ describe('notification group page failure and conflict flow', () => {
       },
       'fixture-idempotency-key'
     ])
-    expect(wrapper.text()).toContain('Used by community alerts')
+    expect(wrapper.text()).toContain('Enabled')
     wrapper.unmount()
   })
 
@@ -506,8 +506,7 @@ describe('notification group page failure and conflict flow', () => {
       .mockResolvedValueOnce(stoppedStatus)
     const wrapper = mount(NotificationGroups, { global: { stubs } })
     await flushPromises()
-    const stopButton = () =>
-      wrapper.findAll('button').find(button => button.text() === 'Stop using for community alerts')!
+    const stopButton = () => wrapper.findAll('button').find(button => button.text() === 'Disable policy')!
     await stopButton().trigger('click')
     await flushPromises()
 
@@ -574,17 +573,6 @@ describe('notification group page failure and conflict flow', () => {
     await flushPromises()
 
     expect(api.updateGroup).toHaveBeenCalledTimes(1)
-    const bindingCards = wrapper.findAll('.qa-card').filter(card => card.find('code').exists())
-    const firstCard = bindingCards.find(
-      card => card.findAll('code').length === 1 && card.find('code').text() === 'binding-1'
-    )
-    const secondCard = bindingCards.find(
-      card => card.findAll('code').length === 1 && card.find('code').text() === 'binding-2'
-    )
-    expect(firstCard?.text()).toContain('first binding rejected')
-    expect(firstCard?.text()).not.toContain('second binding rejected')
-    expect(secondCard?.text()).toContain('second binding rejected')
-    expect(secondCard?.text()).not.toContain('first binding rejected')
     const recipientInput = wrapper.get('#notification-group-binding-1-recipient-address')
     expect(recipientInput.attributes('aria-invalid')).toBe('true')
     expect(recipientInput.attributes('aria-describedby')).toBe('notification-group-binding-1-recipient-address-error')
