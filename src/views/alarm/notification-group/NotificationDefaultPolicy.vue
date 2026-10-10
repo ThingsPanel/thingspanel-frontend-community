@@ -124,7 +124,10 @@ async function save() {
 function policyStatus(policy: NotificationDefaultPolicySummary) {
   return policy.ready
     ? tx('可用于新告警', 'Ready for new alerts')
-    : tx('当前不可用；新告警不会使用此策略', 'Unavailable; new alerts will not use this policy')
+    : tx(
+        '当前不可用；新告警将暂停发送，请检查服务配置',
+        'Unavailable; sending for new alerts is paused. Check the service configuration.'
+      )
 }
 
 function updateDraft(value: string | null) {
