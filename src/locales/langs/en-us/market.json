@@ -1,6 +1,6 @@
 {
     "market.loginTitle": "Login to Resource Center",
-    "market.loginSubtitle": "Sign in to access and use Resource Center resources",
+    "market.loginSubtitle": "Resource Center accounts require separate registration. ThingsPanel platform accounts cannot sign in directly.",
     "market.username": "Username",
     "market.usernamePlaceholder": "Please enter username/email",
     "market.usernameTip": "Username must be at least 6 characters",
@@ -10,7 +10,7 @@
     "market.loginSuccess": "Login successful",
     "market.loginFailed": "Login failed",
     "market.loginRequired": "Please login to the resource center first",
-    "market.noAccount": "Don't have an account?",
+    "market.noAccount": "Don't have a Resource Center account?",
     "market.goToRegister": "Register",
     "market.unregisteredTip": "Not registered. Click to register.",
     "market.tokenExpired": "Resource center session expired, please login again",
