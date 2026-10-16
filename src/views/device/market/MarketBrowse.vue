@@ -234,7 +234,7 @@ async function handleViewDetail(item: MarketBundleListItem) {
     const result = await getMarketBundleDetail(item.bundleKey)
 
     if (result.error) {
-      window.$message?.error(result.error.message)
+      message.error(result.error.message)
     } else if (result.data) {
       currentDetail.value = result.data
       currentVersion.value = item.latestVersion
@@ -259,7 +259,7 @@ async function handleViewDetail(item: MarketBundleListItem) {
     }
   } catch (err) {
     console.error('Failed to fetch bundle detail:', err)
-    window.$message?.error('加载商品详情失败')
+    message.error('加载商品详情失败')
   } finally {
     loadingDetail.value = false
   }

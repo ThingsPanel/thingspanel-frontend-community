@@ -5,7 +5,7 @@
  * 用于在安装市场解决方案包时，将 bundle 中的设备绑定映射到本地设备
  */
 import { ref, computed, watch } from 'vue'
-import { NCard, NAlert, NButton, NInput, NIcon, NSpin, NEmpty, NSpace, NTag } from 'naive-ui'
+import { NCard, NAlert, NButton, NInput, NIcon, NSpin, NEmpty, NSpace, NTag, useMessage } from 'naive-ui'
 import { SearchOutline, LinkOutline, AlertCircleOutline, CheckmarkCircleOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
 import {
@@ -53,6 +53,8 @@ const emit = defineEmits<{
   complete: [bindings: Array<{ bindingKey: string; deviceId: string }>]
   cancel: []
 }>()
+
+const message = useMessage()
 
 // ========== Composable ==========
 
@@ -218,7 +220,7 @@ function handleComplete() {
   const validation = validateBindings()
 
   if (!validation.isValid) {
-    window.$message?.error($t('market.install.requiredBindingsNotBound'))
+    message.error($t('market.install.requiredBindingsNotBound'))
     return
   }
 
