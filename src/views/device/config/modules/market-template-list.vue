@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
-import { NSpin, NEmpty, NPagination } from 'naive-ui'
+import { NSpin, NEmpty, NPagination, useMessage } from 'naive-ui'
 import { GridOutline, ListOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
@@ -14,6 +14,7 @@ import MarketTemplateDrawer from './market-template-drawer.vue'
 import MarketLoginModal from './market-login-modal.vue'
 
 const emit = defineEmits(['installed'])
+const message = useMessage()
 
 const { isLoggedIn, getToken, clearToken } = useMarketAuth()
 
@@ -171,24 +172,24 @@ const doInstall = async (id: string) => {
           positiveText: $t('common.confirm')
         })
       }
-      window.$message?.success($t('market.installSuccess'))
+      message.success($t('market.installSuccess'))
       emit('installed')
     } else {
       const msg = res.error?.msg || ''
       if (msg.includes('已存在') || msg.includes('duplicate')) {
-        window.$message?.warning($t('market.alreadyInstalled'))
+        message.warning($t('market.alreadyInstalled'))
       } else {
-        window.$message?.error($t('market.installFailed') + ': ' + msg)
+        message.error($t('market.installFailed') + ': ' + msg)
       }
     }
   } catch (e: any) {
     if (e?.response?.status === 401) {
       clearToken()
-      window.$message?.error($t('market.tokenExpired'))
+      message.error($t('market.tokenExpired'))
       pendingInstallId.value = id
       marketLoginRef.value?.open()
     } else {
-      window.$message?.error($t('market.installFailed') + ': ' + (e?.message || ''))
+      message.error($t('market.installFailed') + ': ' + (e?.message || ''))
     }
   } finally {
     installingId.value = ''
