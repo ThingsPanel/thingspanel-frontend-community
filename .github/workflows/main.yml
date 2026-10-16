@@ -1,52 +1,97 @@
-name: Batch Export and Apply Patches from Commit Range
+name: Sync community frontend changes to enterprise
 
 on:
   workflow_dispatch:
     inputs:
       commitRange:
-        description: 'Commit range like commit1..commit2 or -1 commit1'
+        description: 'Commit range like commit1..commit2'
         required: true
 
+permissions:
+  contents: read
+
+env:
+  SOURCE_REPO: ThingsPanel/thingspanel-frontend-community
+  SOURCE_BRANCH: master
+  TARGET_REPO: ThingsPanel/thingspanel-frontend-enterprise
+  TARGET_BRANCH: fromcommunity
+  COMMIT_RANGE: ${{ inputs.commitRange }}
+
 jobs:
-  export_and_apply_patches:
+  export-and-open-pr:
     runs-on: ubuntu-24.04
-    env:
-      SOURCE_REPO: "ThingsPanel/thingspanel-frontend-community"
-      SOURCE_BRANCH: "master"
-      TARGET_REPO: "ThingsPanel/thingspanel-frontend-enterprise"
-      TARGET_BRANCH: "fromcommunity"
     steps:
-    - name: Export Commits as Patches
-      run: |
-        # 排除 pnpm-lock.yaml 并限制补丁路径
-        git clone --depth=100 https://${{ secrets.PAT }}@github.com/$SOURCE_REPO.git source_repo
-        cd source_repo
-        git checkout $SOURCE_BRANCH
-        git format-patch -U10 ${{ github.event.inputs.commitRange }} -- . ":(exclude)pnpm-lock.yaml" -o ../patches/
+      - name: Checkout Community source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SOURCE_BRANCH }}
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
+          path: source_repo
 
-    - name: Clone Target Repo with Full History
-      run: |
-        git clone --depth=100 https://${{ secrets.PAT }}@github.com/$TARGET_REPO.git destination_repo
-        cd destination_repo
-        git checkout $TARGET_BRANCH
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-
-    - name: Apply Patches with git am
-      run: |
-        cd destination_repo
-        for patch in ../patches/*.patch; do
-          echo "Applying patch: $(basename "$patch")"
-          # 使用 git am 代替 git apply
-          if ! git am --ignore-whitespace --3way "$patch"; then
-            echo "::error::Failed to apply patch: $(basename "$patch")"
-            git am --abort
+      - name: Export selected commits as patches
+        working-directory: source_repo
+        run: |
+          set -euo pipefail
+          mkdir -p ../patches
+          git format-patch -U10 "$COMMIT_RANGE" -- . ':(exclude)pnpm-lock.yaml' -o ../patches/
+          shopt -s nullglob
+          patches=(../patches/*.patch)
+          if [ "${#patches[@]}" -eq 0 ]; then
+            echo "::error::The selected commit range produced no patches"
             exit 1
           fi
-        done
 
-    - name: Push Changes
-      if: success()
-      run: |
-        cd destination_repo
-        git push origin $TARGET_BRANCH
+      - name: Checkout Enterprise target
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TARGET_REPO }}
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
+          path: destination_repo
+
+      - name: Prepare sync branch
+        working-directory: destination_repo
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --heads origin "$TARGET_BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$TARGET_BRANCH:$TARGET_BRANCH"
+            git checkout "$TARGET_BRANCH"
+          else
+            git checkout -b "$TARGET_BRANCH" origin/main
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Apply patches
+        working-directory: destination_repo
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          patches=(../patches/*.patch)
+          for patch in "${patches[@]}"; do
+            echo "Applying $(basename "$patch")"
+            if ! git am --ignore-whitespace --3way "$patch"; then
+              git am --abort
+              echo "::error::Patch application failed; resolve the conflict before syncing this range"
+              exit 1
+            fi
+          done
+
+      - name: Push sync branch and open Enterprise PR
+        working-directory: destination_repo
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+        run: |
+          set -euo pipefail
+          git push origin "$TARGET_BRANCH"
+          open_pr=$(gh pr list --repo "$TARGET_REPO" --head "$TARGET_BRANCH" --base main --state open --json number --jq 'length')
+          if [ "$open_pr" -eq 0 ]; then
+            gh pr create \
+              --repo "$TARGET_REPO" \
+              --base main \
+              --head "$TARGET_BRANCH" \
+              --title "Sync community frontend changes" \
+              --body "Applies the selected Community frontend commits to Enterprise Demo. Merge after review to trigger the Demo deployment."
+          fi
