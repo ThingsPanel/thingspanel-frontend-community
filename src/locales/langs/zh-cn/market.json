@@ -1,6 +1,6 @@
 {
     "market.loginTitle": "登录资源中心",
-    "market.loginSubtitle": "登录后即可获取并使用资源中心内容",
+    "market.loginSubtitle": "资源中心需单独注册账号，ThingsPanel 平台账号不能直接登录。",
     "market.username": "账号",
     "market.usernamePlaceholder": "请输入用户名/邮箱",
     "market.usernameTip": "用户名至少需要6个字符",
@@ -10,7 +10,7 @@
     "market.loginSuccess": "登录成功",
     "market.loginFailed": "登录失败",
     "market.loginRequired": "请先登录资源中心",
-    "market.noAccount": "没有账号？",
+    "market.noAccount": "没有资源中心账号？",
     "market.goToRegister": "去注册",
     "market.unregisteredTip": "未注册，点击注册",
     "market.tokenExpired": "资源中心登录已过期，请重新登录",
