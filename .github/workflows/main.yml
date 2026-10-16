@@ -26,7 +26,7 @@ jobs:
         with:
           ref: ${{ env.SOURCE_BRANCH }}
           fetch-depth: 0
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.ACCESS_TOKEN }}
           path: source_repo
 
       - name: Export selected commits as patches
@@ -48,7 +48,7 @@ jobs:
           repository: ${{ env.TARGET_REPO }}
           ref: main
           fetch-depth: 0
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.ACCESS_TOKEN }}
           path: destination_repo
 
       - name: Prepare sync branch
@@ -82,7 +82,7 @@ jobs:
       - name: Push sync branch and open Enterprise PR
         working-directory: destination_repo
         env:
-          GH_TOKEN: ${{ secrets.PAT }}
+          GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         run: |
           set -euo pipefail
           git push origin "$TARGET_BRANCH"
