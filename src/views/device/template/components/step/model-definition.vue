@@ -432,7 +432,7 @@ getTableData()
           :columns="item.col"
           :data="item.data"
           :loading="loading"
-          class="model-definition-table m-t9 flex-1-hidden"
+          class="model-definition-table m-t9"
           size="medium"
           :theme-overrides="modelTableThemeOverrides"
           :pagination="getPagination(index)"
