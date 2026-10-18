@@ -104,8 +104,36 @@ test('network errors are surfaced safely, not retried, and key length is enforce
   assert.equal(seen.length, 1)
 })
 
-test('operation keys are UUIDs and malformed successful JSON is reported clearly', async () => {
-  assert.match(createOperationKey(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+test('operation keys use getRandomValues when randomUUID is unavailable', { concurrency: false }, async () => {
+  const cryptoObject = globalThis.crypto
+  assert.equal(typeof cryptoObject?.getRandomValues, 'function')
+  const randomUUIDDescriptor = Object.getOwnPropertyDescriptor(cryptoObject, 'randomUUID')
+  const getRandomValuesDescriptor = Object.getOwnPropertyDescriptor(cryptoObject, 'getRandomValues')
+  const secureRandomFill = cryptoObject.getRandomValues.bind(cryptoObject)
+  let randomFillCalls = 0
+  try {
+    Object.defineProperty(cryptoObject, 'randomUUID', { configurable: true, value: undefined })
+    Object.defineProperty(cryptoObject, 'getRandomValues', {
+      configurable: true,
+      value: (array: Uint8Array) => {
+        randomFillCalls += 1
+        return secureRandomFill(array)
+      },
+    })
+    assert.equal(typeof cryptoObject.randomUUID, 'undefined')
+    const firstKey = createOperationKey()
+    const secondKey = createOperationKey()
+    const uuidV4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    assert.match(firstKey, uuidV4)
+    assert.match(secondKey, uuidV4)
+    assert.notEqual(firstKey, secondKey)
+    assert.equal(randomFillCalls, 2)
+  } finally {
+    if (randomUUIDDescriptor) Object.defineProperty(cryptoObject, 'randomUUID', randomUUIDDescriptor)
+    else delete (cryptoObject as unknown as { randomUUID?: unknown }).randomUUID
+    if (getRandomValuesDescriptor) Object.defineProperty(cryptoObject, 'getRandomValues', getRandomValuesDescriptor)
+    else delete (cryptoObject as unknown as { getRandomValues?: unknown }).getRandomValues
+  }
   const { client } = makeClient(async () => new Response('{broken', { status: 200 }))
   await assert.rejects(client.list(), /invalid JSON response/)
 })

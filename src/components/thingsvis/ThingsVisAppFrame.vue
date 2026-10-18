@@ -25,18 +25,18 @@ import {
   deviceAlarmStatus,
   deviceDictProtocolServiceFirstLevel,
   getDeviceConfigList,
+  deviceConfigInfo,
   telemetryDataCurrent,
   getAttributeDataSet,
   telemetryDataPub,
   attributeDataPub,
   commandDataPub
 } from '@/service/api/device'
-import { attributesApi, telemetryApi, commandsApi, eventsApi } from '@/service/api'
-import { getTemplat } from '@/service/api/system-data'
+import { resolveDeviceNativeModel, hasNativeDeviceBinding } from '@/views/device/native-model-consumption'
+import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
 import {
-  extractPlatformFields,
   findPlatformWriteTarget,
   normalizePlatformWriteValue
 } from '@/utils/thingsvis/platform-fields'
@@ -47,10 +47,10 @@ import {
 } from '@/utils/thingsvis/chart-config-normalizer'
 import type { PlatformField } from '@/utils/thingsvis/types'
 import { localStg } from '@/utils/storage'
+import { getCurrentUserInfo, resolveThingsVisSpaceId } from '@/utils/thingsvis/space'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
 import { resolveHostPreviewUrl } from '@/utils/thingsvis/share-url'
 
-const EDITOR_TEMPLATE_FIELD_PAGE_SIZE = 1000
 const EDITOR_DEVICE_CONFIG_PAGE_SIZE = 1000
 const DEVICE_ALARM_STATUS_FIELD_IDS = new Set([
   'device_alarm_active',
@@ -123,7 +123,11 @@ type PlatformDeviceEntry = {
   accessWay?: string
   protocolType?: string
   lastPushTime?: string
-  templateId?: string
+  metadataError?: string
+  nativeModelID?: string
+  nativeSnapshotID?: string
+  nativeRevision?: number
+  nativeBindingRevision?: number
   fields: PlatformDeviceField[]
   presets: any[]
 }
@@ -140,29 +144,58 @@ type DeviceFilterOption = {
   label: string
 }
 
-type TemplateEntry = {
-  fields: PlatformDeviceField[]
-}
-
 const deviceWsMap = new Map<string, DeviceWsEntry>()
 const deviceStatusWsMap = new Map<string, DeviceStatusWsEntry>()
 const activePlatformDevices = new Map<string, { deviceId: string; fields: PlatformDeviceField[] }>()
-const platformDeviceByIdCache = new Map<string, PlatformDeviceEntry | null>()
 const platformDeviceByIdPromise = new Map<string, Promise<PlatformDeviceEntry | null>>()
-const templateEntryCache = new Map<string, TemplateEntry>()
-const templateEntryPromise = new Map<string, Promise<TemplateEntry>>()
-const templatePresetCache = new Map<string, any[]>()
-const templatePresetPromise = new Map<string, Promise<any[]>>()
 const currentDeviceFieldsCache = new Map<string, PlatformField[]>()
 const currentDeviceFieldsPromise = new Map<string, Promise<PlatformField[]>>()
 const requestedFieldDataPromise = new Map<string, Promise<Record<string, unknown>>>()
 let platformDeviceGroupsCache: PlatformDeviceGroupEntry[] | null = null
 let platformDeviceGroupsCachePromise: Promise<PlatformDeviceGroupEntry[]> | null = null
-let deviceConfigTemplateMapCache: Map<string, string> | null = null
-let deviceConfigTemplateMapPromise: Promise<Map<string, string>> | null = null
-const platformDevicesByGroupCache = new Map<string, PlatformDeviceEntry[]>()
 const platformDevicesByGroupPromise = new Map<string, Promise<PlatformDeviceEntry[]>>()
 const SILENT_REQUEST_CONFIG = { silentError: true } as const
+let lastPlatformCacheScope: string | null | undefined
+
+function resolvePlatformCacheScope(): string | null {
+  const user = getCurrentUserInfo()
+  const tenantId = String(user?.tenantId || user?.tenant_id || '').trim()
+  const userId = firstString(user?.id, (user as any)?.userId, (user as any)?.user_id)
+  if (!userId || (!tenantId && !user?.roles?.includes('SYS_ADMIN'))) return null
+  return `${resolveThingsVisSpaceId(user)}:${tenantId || 'sys-admin'}:${user.authority || ''}:${userId}`
+}
+
+function scopedPlatformCacheKey(key: string): string | null {
+  const scope = resolvePlatformCacheScope()
+  return scope ? `${scope}:${key}` : null
+}
+
+function assertPlatformCacheScope(scope: string | null) {
+  if (resolvePlatformCacheScope() !== scope) throw new Error('会话已切换')
+}
+
+function clearPlatformMetadataCaches() {
+  activePlatformDevices.clear()
+  disconnectAllDeviceWs()
+  deviceWsMap.clear()
+  deviceStatusWsMap.clear()
+  platformDeviceByIdPromise.clear()
+  platformDeviceGroupsCache = null
+  platformDeviceGroupsCachePromise = null
+  platformDevicesByGroupPromise.clear()
+  currentDeviceFieldsCache.clear()
+  currentDeviceFieldsPromise.clear()
+  requestedFieldDataPromise.clear()
+}
+
+function ensurePlatformCacheScope() {
+  const scope = resolvePlatformCacheScope()
+  if (lastPlatformCacheScope !== scope) {
+    clearPlatformMetadataCaches()
+    lastPlatformCacheScope = scope
+  }
+  return scope
+}
 
 function resolvePlatformBufferSize(dataSources: unknown): number {
   if (!Array.isArray(dataSources)) return 0
@@ -582,17 +615,18 @@ function normalizeCanvasBackground(background: unknown): Record<string, unknown>
 }
 
 function registerActivePlatformDevices(devices: PlatformDeviceEntry[]) {
+  ensurePlatformCacheScope()
   devices.forEach(device => {
     if (!device?.deviceId) return
-    const existing = activePlatformDevices.get(device.deviceId)
     activePlatformDevices.set(device.deviceId, {
       deviceId: device.deviceId,
-      fields: Array.isArray(existing?.fields) && existing.fields.length > 0 ? existing.fields : device.fields || []
+      fields: Array.isArray(device.fields) ? device.fields : []
     })
   })
 }
 
 function updateActivePlatformDeviceFields(deviceId: string, fields: PlatformDeviceField[]) {
+  ensurePlatformCacheScope()
   const normalizedFields = Array.isArray(fields) ? fields : []
   activePlatformDevices.set(deviceId, { deviceId, fields: normalizedFields })
 
@@ -774,6 +808,7 @@ function collectPlatformSourceDescriptors(config: any): PlatformSourceDescriptor
 }
 
 function syncActivePlatformDevicesFromConfig(config: any) {
+  ensurePlatformCacheScope()
   activePlatformDevices.clear()
 
   collectPlatformSourceDescriptors(config).forEach(descriptor => {
@@ -876,7 +911,7 @@ function parseTemplateChartConfig(rawConfig: unknown): Record<string, unknown> |
   return null
 }
 
-function buildDeviceWidgetPresets(templateId: string, rawConfig: unknown, fields: PlatformDeviceField[] = []): any[] {
+function buildDeviceWidgetPresets(sourceKey: string, rawConfig: unknown, fields: PlatformDeviceField[] = []): any[] {
   const config = parseTemplateChartConfig(rawConfig)
   const fieldMap = new Map(fields.map(field => [field.id, field]))
   const nodes = Array.isArray(config?.nodes)
@@ -909,7 +944,7 @@ function buildDeviceWidgetPresets(templateId: string, rawConfig: unknown, fields
   }
 
   const nodePresets = nodes.map((node, index) => ({
-    id: `${templateId}-web-node-${String(node.id || index)}`,
+    id: `${sourceKey}-web-node-${String(node.id || index)}`,
     name: resolveNodePresetName(node, index),
     widget: node,
     ...resolveBoundField(node),
@@ -931,7 +966,7 @@ function buildDeviceWidgetPresets(templateId: string, rawConfig: unknown, fields
 
       return [
         {
-          id: `${templateId}-stored-${String(entry.id || `${presetKey}-${index}`)}`,
+          id: `${sourceKey}-stored-${String(entry.id || `${presetKey}-${index}`)}`,
           name: String(entry.name || '组件预设'),
           widget: entry.widget,
           ...(fieldId ? { fieldId, fieldName: field?.name || fieldId } : resolveBoundField(entry.widget)),
@@ -944,75 +979,57 @@ function buildDeviceWidgetPresets(templateId: string, rawConfig: unknown, fields
   return [...nodePresets, ...storedPresets]
 }
 
-async function loadTemplatePresets(templateId: string | number): Promise<any[]> {
-  const cacheKey = String(templateId)
-  const cached = templatePresetCache.get(cacheKey)
-  if (cached) return cached
+async function loadDeviceFieldMetadata(deviceId: string, configId?: string, row?: any) {
+  let config = asRecord(row?.device_config || row?.deviceConfig || row)
+  if (configId) {
+    config = await loadDeviceConfigBinding(configId)
+  }
 
-  const pending = templatePresetPromise.get(cacheKey)
-  if (pending) return pending
-
-  const promise = (async () => {
+  const binding = { ...config, id: configId || String(config.id || '') } as DeviceConfigNativeBinding
+  if (hasNativeDeviceBinding(binding)) {
+    let resolved: Awaited<ReturnType<typeof resolveDeviceNativeModel>>
     try {
-      const res = await getTemplat(templateId)
-      const template = res?.data || {}
-      const { fields } = await loadTemplateEntry(templateId)
-      const presets = buildDeviceWidgetPresets(cacheKey, template?.web_chart_config, fields)
-
-      templatePresetCache.set(cacheKey, presets)
-      return presets
-    } catch (error) {
-      console.error('[AppFrame] Failed to load template presets', templateId, error)
-      templatePresetCache.set(cacheKey, [])
-      return []
-    } finally {
-      templatePresetPromise.delete(cacheKey)
+      resolved = await resolveDeviceNativeModel(binding)
+    } catch {
+      throw new Error('设备物模型配置不完整，请联系管理员检查')
     }
-  })()
+    if (!resolved) throw new Error('设备物模型配置不完整，请联系管理员检查')
+    const fields = resolved.platformFields as PlatformDeviceField[]
+    const sourceKey = `native-${configId || binding.id}-binding-${resolved.bindingRevision}`
+    return {
+      fields,
+      presets: buildDeviceWidgetPresets(sourceKey, resolved.snapshot.resources?.webChartConfig, fields),
+      nativeModelID: resolved.snapshot.modelID,
+      nativeSnapshotID: resolved.snapshot.snapshotID,
+      nativeRevision: resolved.snapshot.publishedRevision,
+      nativeBindingRevision: resolved.bindingRevision
+    }
+  }
 
-  templatePresetPromise.set(cacheKey, promise)
-  return promise
+  const legacyTemplateId = firstString(
+    config.device_template_id,
+    config.deviceTemplateId,
+    row?.device_template_id,
+    row?.device_config?.device_template_id,
+    row?.device_config?.deviceTemplateId
+  )
+  if (legacyTemplateId) {
+    return {
+      fields: [] as PlatformDeviceField[],
+      presets: [],
+      metadataError: '设备物模型配置不完整，请联系管理员检查'
+    }
+  }
+
+  return { fields: (await loadCurrentDeviceFields(deviceId)) as PlatformDeviceField[], presets: [] as any[] }
 }
 
-async function loadTemplateEntry(templateId: string | number) {
-  const cacheKey = String(templateId)
-  const cached = templateEntryCache.get(cacheKey)
-  if (cached) return cached
-
-  const pending = templateEntryPromise.get(cacheKey)
-  if (pending) return pending
-
-  const promise = (async () => {
-    const [telemetryResult, attributesResult, commandsResult, eventsResult] = await Promise.allSettled([
-      telemetryApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
-      attributesApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
-      commandsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId }),
-      eventsApi({ page: 1, page_size: EDITOR_TEMPLATE_FIELD_PAGE_SIZE, device_template_id: templateId })
-    ])
-
-    const telemetryRes = telemetryResult.status === 'fulfilled' ? telemetryResult.value : null
-    const attributesRes = attributesResult.status === 'fulfilled' ? attributesResult.value : null
-    const commandsRes = commandsResult.status === 'fulfilled' ? commandsResult.value : null
-    const eventsRes = eventsResult.status === 'fulfilled' ? eventsResult.value : null
-
-    const entry: TemplateEntry = {
-      fields: extractPlatformFields({
-        telemetry: unwrapList(telemetryRes?.data),
-        attributes: unwrapList(attributesRes?.data),
-        commands: unwrapList(commandsRes?.data),
-        events: unwrapList(eventsRes?.data)
-      })
-    }
-    templateEntryCache.set(cacheKey, entry)
-    return entry
-  })()
-
-  templateEntryPromise.set(cacheKey, promise)
-  promise.then(
-    () => templateEntryPromise.delete(cacheKey),
-    () => templateEntryPromise.delete(cacheKey)
-  )
-  return promise
+async function loadDeviceConfigBinding(configId: string): Promise<DeviceConfigNativeBinding> {
+  const response = await deviceConfigInfo({ id: configId })
+  if (response?.error || !response?.data || typeof response.data !== 'object' || Array.isArray(response.data)) {
+    throw new Error('设备物模型配置不完整，请联系管理员检查')
+  }
+  return { ...asRecord(response.data), id: configId } as DeviceConfigNativeBinding
 }
 
 function inferCurrentDeviceFieldType(value: unknown): PlatformField['type'] {
@@ -1044,10 +1061,12 @@ function buildCurrentDeviceFields(telemetryItems: unknown[], attributeItems: unk
 }
 
 async function loadCurrentDeviceFields(deviceId: string): Promise<PlatformField[]> {
-  const cached = currentDeviceFieldsCache.get(deviceId)
+  const cacheScope = resolvePlatformCacheScope()
+  const cacheKey = cacheScope ? `${cacheScope}:current-fields:${deviceId}` : null
+  const cached = cacheKey ? currentDeviceFieldsCache.get(cacheKey) : undefined
   if (cached) return cached
 
-  const pending = currentDeviceFieldsPromise.get(deviceId)
+  const pending = cacheKey ? currentDeviceFieldsPromise.get(cacheKey) : undefined
   if (pending) return pending
 
   const promise = (async () => {
@@ -1055,18 +1074,26 @@ async function loadCurrentDeviceFields(deviceId: string): Promise<PlatformField[
       telemetryDataCurrent(deviceId, SILENT_REQUEST_CONFIG),
       getAttributeDataSet({ device_id: deviceId }, SILENT_REQUEST_CONFIG)
     ])
+    if (
+      telemetryResult.status !== 'fulfilled' ||
+      telemetryResult.value?.error ||
+      attributeResult.status !== 'fulfilled' ||
+      attributeResult.value?.error
+    ) {
+      throw new Error('物模型字段读取失败')
+    }
     const fields = buildCurrentDeviceFields(
-      telemetryResult.status === 'fulfilled' ? unwrapList(telemetryResult.value?.data) : [],
-      attributeResult.status === 'fulfilled' ? unwrapList(attributeResult.value?.data) : []
+      unwrapList(telemetryResult.value.data),
+      unwrapList(attributeResult.value.data)
     )
-    currentDeviceFieldsCache.set(deviceId, fields)
+    if (cacheKey && resolvePlatformCacheScope() === cacheScope) currentDeviceFieldsCache.set(cacheKey, fields)
     return fields
   })()
 
-  currentDeviceFieldsPromise.set(deviceId, promise)
+  if (cacheKey) currentDeviceFieldsPromise.set(cacheKey, promise)
   promise.then(
-    () => currentDeviceFieldsPromise.delete(deviceId),
-    () => currentDeviceFieldsPromise.delete(deviceId)
+    () => { if (cacheKey) currentDeviceFieldsPromise.delete(cacheKey) },
+    () => { if (cacheKey) currentDeviceFieldsPromise.delete(cacheKey) }
   )
   return promise
 }
@@ -1078,15 +1105,15 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
 
   if (!deviceId || requestedFields.length === 0) return {}
 
-  const requestKey = `${deviceId}:${[...new Set(requestedFields)].sort().join(',')}`
-  const pending = requestedFieldDataPromise.get(requestKey)
+  const requestKey = scopedPlatformCacheKey(`${deviceId}:${[...new Set(requestedFields)].sort().join(',')}`)
+  const pending = requestKey ? requestedFieldDataPromise.get(requestKey) : undefined
   if (pending) return pending
 
   const promise = buildRequestedFieldDataUncached(requestedFields, deviceId)
-  requestedFieldDataPromise.set(requestKey, promise)
+  if (requestKey) requestedFieldDataPromise.set(requestKey, promise)
   promise.then(
-    () => requestedFieldDataPromise.delete(requestKey),
-    () => requestedFieldDataPromise.delete(requestKey)
+    () => { if (requestKey) requestedFieldDataPromise.delete(requestKey) },
+    () => { if (requestKey) requestedFieldDataPromise.delete(requestKey) }
   )
   return promise
 }
@@ -1498,52 +1525,6 @@ async function handleHostSave(payload: Record<string, unknown>) {
   await pendingHostSavePromise
 }
 
-async function loadDeviceConfigTemplateMap(): Promise<Map<string, string>> {
-  if (deviceConfigTemplateMapCache) {
-    return deviceConfigTemplateMapCache
-  }
-
-  if (deviceConfigTemplateMapPromise) {
-    return deviceConfigTemplateMapPromise
-  }
-
-  deviceConfigTemplateMapPromise = (async () => {
-    try {
-      const confRes = await getDeviceConfigList({ page: 1, page_size: EDITOR_DEVICE_CONFIG_PAGE_SIZE })
-      const configs = unwrapList(confRes?.data)
-      const configTemplateMap = new Map<string, string>()
-
-      configs.forEach((config: any) => {
-        const configId = firstString(config?.id, config?.device_config_id, config?.deviceConfigId)
-        const configName = firstString(config?.name, config?.device_config_name, config?.deviceConfigName)
-        const templateId = firstString(
-          config?.device_template_id,
-          config?.deviceTemplateId,
-          config?.template_id,
-          config?.templateId
-        )
-        if (configId && templateId) {
-          configTemplateMap.set(configId, templateId)
-        }
-        if (configName && templateId) {
-          configTemplateMap.set(configName, templateId)
-        }
-      })
-
-      deviceConfigTemplateMapCache = configTemplateMap
-      return configTemplateMap
-    } catch (err) {
-      console.error('[AppFrame] Failed to load device config template map', err)
-      deviceConfigTemplateMapCache = new Map()
-      return deviceConfigTemplateMapCache
-    } finally {
-      deviceConfigTemplateMapPromise = null
-    }
-  })()
-
-  return deviceConfigTemplateMapPromise
-}
-
 function resolveDeviceConfigName(config: any, configId: string): string {
   return (
     firstString(
@@ -1603,15 +1584,16 @@ async function buildDeviceFilterOptions(): Promise<{
 }
 
 async function buildPlatformDeviceGroups(): Promise<PlatformDeviceGroupEntry[]> {
-  if (platformDeviceGroupsCache) {
+  const cacheScope = ensurePlatformCacheScope()
+  if (cacheScope && platformDeviceGroupsCache) {
     return platformDeviceGroupsCache
   }
 
-  if (platformDeviceGroupsCachePromise) {
+  if (cacheScope && platformDeviceGroupsCachePromise) {
     return platformDeviceGroupsCachePromise
   }
 
-  platformDeviceGroupsCachePromise = (async () => {
+  const promise = (async () => {
     try {
       const res = await deviceGroupTree({})
       const groups = flattenDeviceGroupTree(Array.isArray(res?.data) ? res.data : [])
@@ -1620,18 +1602,23 @@ async function buildPlatformDeviceGroups(): Promise<PlatformDeviceGroupEntry[]> 
         groupName: '不限设备分组',
         parentId: null
       })
-      platformDeviceGroupsCache = groups
+      if (cacheScope && resolvePlatformCacheScope() === cacheScope) platformDeviceGroupsCache = groups
       return groups
     } catch (err) {
       console.error('[AppFrame] Failed to load platform device groups', err)
-      platformDeviceGroupsCache = []
-      return []
+      throw err
     } finally {
-      platformDeviceGroupsCachePromise = null
     }
   })()
 
-  return platformDeviceGroupsCachePromise
+  if (cacheScope) {
+    platformDeviceGroupsCachePromise = promise
+    promise.then(
+      () => { if (platformDeviceGroupsCachePromise === promise) platformDeviceGroupsCachePromise = null },
+      () => { if (platformDeviceGroupsCachePromise === promise) platformDeviceGroupsCachePromise = null }
+    )
+  }
+  return promise
 }
 
 function unwrapDeviceRow(row: any): Record<string, any> {
@@ -1730,24 +1717,6 @@ function resolveDeviceLastPushTime(row: any): string | undefined {
   )
 }
 
-function resolveDeviceTemplateId(row: any, configTemplateMap: Map<string, string> = new Map()): string | undefined {
-  const device = unwrapDeviceRow(row)
-  const configId = resolveDeviceConfigId(row)
-  const configName = resolveDeviceConfigDisplayName(row)
-  return firstString(
-    device.device_config?.device_template_id,
-    device.device_config?.deviceTemplateId,
-    row?.device_config?.device_template_id,
-    row?.device_config?.deviceTemplateId,
-    device.device_template_id,
-    device.deviceTemplateId,
-    row?.device_template_id,
-    row?.deviceTemplateId,
-    configId ? configTemplateMap.get(configId) : undefined,
-    configName ? configTemplateMap.get(configName) : undefined
-  )
-}
-
 function resolveDeviceGroupId(row: any): string | undefined {
   const device = unwrapDeviceRow(row)
   return firstString(
@@ -1786,15 +1755,14 @@ async function mapPlatformDevicesForGroup(
   fallbackGroupName = '',
   groups: PlatformDeviceGroupEntry[] = []
 ): Promise<PlatformDeviceEntry[]> {
+  const requestScope = resolvePlatformCacheScope()
   const groupNameById = new Map(groups.map(group => [group.groupId, group.groupName]))
-  const configTemplateMap = await loadDeviceConfigTemplateMap()
   const devices = rawDevices
     .map((row: any): PlatformDeviceEntry | null => {
       const deviceId = resolveDeviceId(row)
       if (!deviceId) return null
       const deviceConfigId = resolveDeviceConfigId(row)
       const deviceConfigName = resolveDeviceConfigDisplayName(row)
-      const templateId = resolveDeviceTemplateId(row, configTemplateMap)
       const rowGroupId = resolveDeviceGroupId(row) || fallbackGroupId
       const rowGroupName =
         resolveDeviceGroupName(row) || (rowGroupId ? groupNameById.get(rowGroupId) : undefined) || fallbackGroupName
@@ -1812,33 +1780,65 @@ async function mapPlatformDevicesForGroup(
         ...(resolveDeviceAccessWay(row) ? { accessWay: resolveDeviceAccessWay(row) } : {}),
         ...(resolveDeviceProtocolType(row) ? { protocolType: resolveDeviceProtocolType(row) } : {}),
         ...(resolveDeviceLastPushTime(row) ? { lastPushTime: resolveDeviceLastPushTime(row) } : {}),
-        ...(templateId ? { templateId } : {}),
         fields: [],
         presets: []
       }
     })
     .filter((item): item is PlatformDeviceEntry => Boolean(item))
 
-  const presetsByTemplateId = new Map<string, any[]>()
-  const templateIds = Array.from(
-    new Set(devices.map(device => device.templateId).filter((templateId): templateId is string => Boolean(templateId)))
-  )
+  const configBindingPromises = new Map<string, Promise<DeviceConfigNativeBinding>>()
+  const nativeMetadataPromises = new Map<string, Promise<Awaited<ReturnType<typeof loadDeviceFieldMetadata>>>>()
+  const mappedDevices: PlatformDeviceEntry[] = new Array(devices.length)
+  let nextIndex = 0
+  const workers = Array.from({ length: Math.min(4, devices.length) }, async () => {
+    while (nextIndex < devices.length) {
+      assertPlatformCacheScope(requestScope)
+      const index = nextIndex++
+      const device = devices[index]!
+      const row = rawDevices.find(candidate => resolveDeviceId(candidate) === device.deviceId)
+      let metadata: Awaited<ReturnType<typeof loadDeviceFieldMetadata>>
 
-  for (const templateId of templateIds) {
-    presetsByTemplateId.set(templateId, await loadTemplatePresets(templateId))
+      if (!device.deviceConfigId) {
+        metadata = await loadDeviceFieldMetadata(device.deviceId, undefined, row)
+      } else {
+        let bindingPromise = configBindingPromises.get(device.deviceConfigId)
+        if (!bindingPromise) {
+          bindingPromise = loadDeviceConfigBinding(device.deviceConfigId)
+          configBindingPromises.set(device.deviceConfigId, bindingPromise)
+        }
+        const binding = await bindingPromise
+        assertPlatformCacheScope(requestScope)
+        if (hasNativeDeviceBinding(binding) || firstString(binding.device_template_id)) {
+          let metadataPromise = nativeMetadataPromises.get(device.deviceConfigId)
+          if (!metadataPromise) {
+            metadataPromise = loadDeviceFieldMetadata(device.deviceId, undefined, binding)
+            nativeMetadataPromises.set(device.deviceConfigId, metadataPromise)
+          }
+          metadata = await metadataPromise
+        } else {
+          // Unbound devices need their own raw readings, even when they share a config ID.
+          metadata = await loadDeviceFieldMetadata(device.deviceId, undefined, binding)
+        }
+      }
+
+      mappedDevices[index] = {
+        ...device,
+        fields: metadata.fields,
+        presets: metadata.presets,
+        ...(metadata.metadataError ? { metadataError: metadata.metadataError } : {}),
+        ...(metadata.nativeModelID ? { nativeModelID: metadata.nativeModelID } : {}),
+        ...(metadata.nativeSnapshotID ? { nativeSnapshotID: metadata.nativeSnapshotID } : {}),
+        ...(metadata.nativeRevision ? { nativeRevision: metadata.nativeRevision } : {}),
+        ...(metadata.nativeBindingRevision ? { nativeBindingRevision: metadata.nativeBindingRevision } : {})
+      }
+    }
+  })
+  await Promise.all(workers)
+  assertPlatformCacheScope(requestScope)
+  if (mappedDevices.some(device => device.metadataError)) {
+    window.$message?.warning('部分设备物模型配置不完整，请联系管理员检查')
   }
-
-  const fieldsByTemplateId = new Map<string, PlatformDeviceField[]>()
-  for (const templateId of templateIds) {
-    const entry = await loadTemplateEntry(templateId)
-    fieldsByTemplateId.set(templateId, Array.isArray(entry.fields) ? entry.fields : [])
-  }
-
-  return devices.map(device => ({
-    ...device,
-    fields: device.templateId ? fieldsByTemplateId.get(device.templateId) || [] : device.fields,
-    presets: device.templateId ? presetsByTemplateId.get(device.templateId) || [] : []
-  }))
+  return mappedDevices
 }
 
 async function buildFallbackPlatformDevicesForDefaultGroup(
@@ -1865,18 +1865,17 @@ async function buildUngroupedPlatformDevices(): Promise<PlatformDeviceEntry[]> {
 }
 
 async function buildPlatformDeviceById(deviceId: string): Promise<PlatformDeviceEntry | null> {
+  const requestScope = ensurePlatformCacheScope()
   const normalizedDeviceId = firstString(deviceId)
   if (!normalizedDeviceId) return null
 
-  if (platformDeviceByIdCache.has(normalizedDeviceId)) {
-    return platformDeviceByIdCache.get(normalizedDeviceId) ?? null
-  }
-
-  const pending = platformDeviceByIdPromise.get(normalizedDeviceId)
+  const cacheKey = scopedPlatformCacheKey(`device:${normalizedDeviceId}`)
+  const pending = cacheKey ? platformDeviceByIdPromise.get(cacheKey) : undefined
   if (pending) return pending
 
   const promise = (async () => {
     const groups = await buildPlatformDeviceGroups()
+    assertPlatformCacheScope(requestScope)
 
     const findDevice = async (rawDevices: any[], fallbackGroupId = '', fallbackGroupName = '') => {
       const devices = await mapPlatformDevicesForGroup(rawDevices, fallbackGroupId, fallbackGroupName, groups)
@@ -1884,39 +1883,42 @@ async function buildPlatformDeviceById(deviceId: string): Promise<PlatformDevice
     }
 
     const searchRes = await deviceList({ page: 1, page_size: 20, search: normalizedDeviceId })
+    assertPlatformCacheScope(requestScope)
     const searched = await findDevice(unwrapList(searchRes?.data))
+    assertPlatformCacheScope(requestScope)
     if (searched) return searched
 
     const listRes = await deviceList({ page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE })
+    assertPlatformCacheScope(requestScope)
     const listed = await findDevice(unwrapList(listRes?.data))
+    assertPlatformCacheScope(requestScope)
     if (listed) return listed
 
     for (const group of groups) {
       const devices = await buildPlatformDevicesByGroup(group.groupId)
+      assertPlatformCacheScope(requestScope)
       const matched = devices.find(device => device.deviceId === normalizedDeviceId)
       if (matched) return matched
     }
 
     return null
   })()
-  platformDeviceByIdPromise.set(normalizedDeviceId, promise)
-  promise.then(device => platformDeviceByIdCache.set(normalizedDeviceId, device))
-  promise.then(
-    () => platformDeviceByIdPromise.delete(normalizedDeviceId),
-    () => platformDeviceByIdPromise.delete(normalizedDeviceId)
-  )
+  if (cacheKey) {
+    platformDeviceByIdPromise.set(cacheKey, promise)
+    promise.then(
+      () => platformDeviceByIdPromise.delete(cacheKey),
+      () => platformDeviceByIdPromise.delete(cacheKey)
+    )
+  }
   return promise
 }
 
 async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDeviceEntry[]> {
+  const requestScope = ensurePlatformCacheScope()
   const normalizedGroupId = normalizeEditorGroupId(groupId)
+  const cacheKey = scopedPlatformCacheKey(`group:${normalizedGroupId}`)
 
-  const cached = platformDevicesByGroupCache.get(normalizedGroupId)
-  if (cached) {
-    return cached
-  }
-
-  const pending = platformDevicesByGroupPromise.get(normalizedGroupId)
+  const pending = cacheKey ? platformDevicesByGroupPromise.get(cacheKey) : undefined
   if (pending) {
     return pending
   }
@@ -1938,18 +1940,20 @@ async function buildPlatformDevicesByGroup(groupId: string): Promise<PlatformDev
           ? await mapPlatformDevicesForGroup(relationDevices, normalizedGroupId, groupName, groups)
           : await buildFallbackPlatformDevicesForDefaultGroup(normalizedGroupId, groupName, groups)
 
-      platformDevicesByGroupCache.set(normalizedGroupId, devices)
+      assertPlatformCacheScope(requestScope)
       return devices
     } catch (err) {
       console.error('[AppFrame] Failed to assemble platformDevices for group', normalizedGroupId, err)
-      platformDevicesByGroupCache.set(normalizedGroupId, [])
+      if (resolvePlatformCacheScope() === requestScope) {
+        window.$message?.error(err instanceof Error ? err.message : '物模型字段读取失败')
+      }
       return []
     } finally {
-      platformDevicesByGroupPromise.delete(normalizedGroupId)
+      if (cacheKey) platformDevicesByGroupPromise.delete(cacheKey)
     }
   })()
 
-  platformDevicesByGroupPromise.set(normalizedGroupId, promise)
+  if (cacheKey) platformDevicesByGroupPromise.set(cacheKey, promise)
   return promise
 }
 
@@ -2312,31 +2316,52 @@ const handleMessage = async (event: MessageEvent) => {
       typeof (payload as any).deviceConfigId === 'string' ? (payload as any).deviceConfigId : undefined
     if (!iframeRef.value?.contentWindow || !deviceId) return
 
+    const requestScope = ensurePlatformCacheScope()
     try {
-      let templateId = directTemplateId
-      if (!templateId && deviceConfigId) {
-        templateId = (await loadDeviceConfigTemplateMap()).get(deviceConfigId)
-      }
-      if (!templateId) {
-        const fields = await loadCurrentDeviceFields(deviceId)
-        updateActivePlatformDeviceFields(deviceId, fields)
-        postToThingsVis('tv:device-fields', {
-          deviceId,
-          templateId: '',
-          fields
-        })
-        return
+      let metadata: Awaited<ReturnType<typeof loadDeviceFieldMetadata>> | null = null
+      if (deviceConfigId) {
+        metadata = await loadDeviceFieldMetadata(deviceId, deviceConfigId)
+      } else {
+        const platformDevice = await buildPlatformDeviceById(deviceId)
+        if (platformDevice) {
+          if (platformDevice.metadataError) {
+            throw new Error(platformDevice.metadataError)
+          }
+          metadata = {
+            fields: platformDevice.fields,
+            presets: platformDevice.presets,
+            nativeModelID: platformDevice.nativeModelID,
+            nativeSnapshotID: platformDevice.nativeSnapshotID,
+            nativeRevision: platformDevice.nativeRevision,
+            nativeBindingRevision: platformDevice.nativeBindingRevision
+          }
+        }
       }
 
-      const entry = await loadTemplateEntry(templateId)
-      updateActivePlatformDeviceFields(deviceId, Array.isArray(entry.fields) ? entry.fields : [])
+      if (!metadata) {
+        throw new Error(directTemplateId ? '设备物模型配置不完整，请联系管理员检查' : '未找到设备物模型配置')
+      }
+      assertPlatformCacheScope(requestScope)
+      if (metadata.metadataError) throw new Error(metadata.metadataError)
+      updateActivePlatformDeviceFields(deviceId, metadata.fields)
       postToThingsVis('tv:device-fields', {
         deviceId,
-        templateId,
-        fields: Array.isArray(entry.fields) ? entry.fields : []
+        templateId: '',
+        fields: metadata.fields,
+        ...(metadata.nativeModelID
+          ? {
+              modelID: metadata.nativeModelID,
+              snapshotID: metadata.nativeSnapshotID,
+              publishedRevision: metadata.nativeRevision,
+              bindingRevision: metadata.nativeBindingRevision
+            }
+          : {})
       })
     } catch (error) {
-      console.warn('[AppFrame] Failed to load requested device fields:', deviceId, templateId, error)
+      if (resolvePlatformCacheScope() !== requestScope) return
+      const message = error instanceof Error ? error.message : '读取设备字段失败'
+      if (message !== '会话已切换') window.$message?.error(message)
+      postToThingsVis('tv:device-fields', { deviceId, templateId: '', fields: [], error: message })
     }
     return
   }
@@ -2433,22 +2458,15 @@ onBeforeUnmount(() => {
   activePlatformDevices.clear()
   platformDeviceGroupsCache = null
   platformDeviceGroupsCachePromise = null
-  deviceConfigTemplateMapCache = null
-  deviceConfigTemplateMapPromise = null
-  platformDevicesByGroupCache.clear()
   platformDevicesByGroupPromise.clear()
-  platformDeviceByIdCache.clear()
   platformDeviceByIdPromise.clear()
   viewerDashboardConfigCache = null
   viewerDashboardConfigCacheId = null
   viewerDashboardConfigPromise = null
-  templateEntryCache.clear()
-  templateEntryPromise.clear()
-  templatePresetCache.clear()
-  templatePresetPromise.clear()
   currentDeviceFieldsCache.clear()
   currentDeviceFieldsPromise.clear()
   requestedFieldDataPromise.clear()
+  lastPlatformCacheScope = undefined
   disconnectAllDeviceWs()
 })
 </script>

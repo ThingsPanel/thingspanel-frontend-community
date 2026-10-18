@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid'
+
 export type ModelLifecycle = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
 export type FieldKind = 'TELEMETRY' | 'ATTRIBUTE' | 'EVENT' | 'COMMAND'
 export type ValueKind = 'INT' | 'FLOAT' | 'NUMBER' | 'BOOL' | 'STRING' | 'ENUM'
@@ -130,7 +132,9 @@ function requireKey(key: string): string {
 }
 
 export function createOperationKey(): string {
-  return globalThis.crypto.randomUUID()
+  const crypto = globalThis.crypto
+  if (!crypto?.getRandomValues) throw new Error('Secure random number generation is unavailable')
+  return uuidv4({ random: crypto.getRandomValues(new Uint8Array(16)) })
 }
 
 function queryString(values: Record<string, string | number | undefined>): string {
