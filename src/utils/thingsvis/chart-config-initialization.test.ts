@@ -65,7 +65,7 @@ test('App 已有配置时保留本地布局并自动追加 Web 新节点', () =>
   assert.equal(emptyAppResult.nodes[0].sync.source, 'web')
 })
 
-test('历史横向 App 配置迁移为竖向手机网格并重排节点', () => {
+test('横向网格按源像素宽度映射到手机列并向上取整保证可读', () => {
   const result = normalizeAppChartConfig({
     canvas: { mode: 'grid', width: 1200, height: 400, gridCols: 12, gridRowHeight: 50, gridGap: 10 },
     nodes: [
@@ -89,13 +89,91 @@ test('历史横向 App 配置迁移为竖向手机网格并重排节点', () => 
   assert.deepEqual(
     result.nodes.map((node: any) => ({ id: node.id, grid: node.grid })),
     [
-      { id: 'brightness', grid: { x: 0, y: 0, w: 2, h: 2, static: false, isDraggable: true, isResizable: true } },
-      { id: 'switch', grid: { x: 2, y: 0, w: 2, h: 2, static: false, isDraggable: true, isResizable: true } },
-      { id: 'slider', grid: { x: 0, y: 2, w: 4, h: 2, static: false, isDraggable: true, isResizable: true } }
+      { id: 'brightness', grid: { x: 0, y: 0, w: 4, h: 2, static: false, isDraggable: true, isResizable: true } },
+      { id: 'switch', grid: { x: 0, y: 2, w: 4, h: 2, static: false, isDraggable: true, isResizable: true } },
+      { id: 'slider', grid: { x: 0, y: 4, w: 4, h: 2, static: false, isDraggable: true, isResizable: true } }
     ]
   )
-  assert.equal(result.nodes[0].size.width, 187.5)
-  assert.equal(result.nodes[2].position.y, 100)
+  assert.equal(result.nodes[0].size.width, 343)
+  assert.equal(result.nodes[2].position.y, 200)
+})
+
+test('自动生成 App 网格时 320px Web Value 不会被缩成一列', () => {
+  const result = normalizeAppChartConfig({
+    canvas: { mode: 'fixed', width: 1920, height: 1080 },
+    nodes: [{ id: 'web-value-320', type: 'interaction/value-card', position: { x: 0, y: 0 }, size: { width: 320, height: 160 } }]
+  })
+
+  assert.deepEqual(
+    (({ x, y, w, h }: any) => ({ x, y, w, h }))(result.nodes[0].grid),
+    { x: 0, y: 0, w: 4, h: 3 }
+  )
+  assert.equal(result.nodes[0].size.width, 343)
+})
+
+test('手机网格按padding和gap计算可读span边界', () => {
+  const normalizeWidth = (width: number) => normalizeAppChartConfig({
+    canvas: { mode: 'fixed', width: 1920, height: 1080 },
+    nodes: [{ id: `web-value-${width}`, type: 'interaction/value-card', size: { width, height: 160 } }]
+  }).nodes[0]
+
+  const width160 = normalizeWidth(160)
+  const width187 = normalizeWidth(187)
+  assert.equal(width160.grid.w, 2)
+  assert.equal(width160.size.width, 167.5)
+  assert.equal(width187.grid.w, 3)
+  assert.equal(width187.size.width, 255.25)
+})
+
+test('自动重排先把源网格列宽换算成像素再映射手机列', () => {
+  const result = normalizeAppChartConfig({
+    canvas: { mode: 'grid', width: 1920, height: 1080, gridCols: 24 },
+    nodes: [{ id: 'web-grid-value', type: 'interaction/value-card', grid: { x: 0, y: 0, w: 4, h: 3 } }]
+  })
+
+  assert.equal(result.nodes[0].grid.w, 4)
+  assert.equal(result.nodes[0].size.width, 343)
+})
+
+test('后续 Web 新节点可读且不覆盖 App 自定义布局、两个本地节点或删除标记', () => {
+  const appConfig = {
+    canvas: { mode: 'grid', width: 375, height: 844, gridCols: 4 },
+    appSync: { version: 1, webNodeIds: ['overridden-web', 'deleted-web'], tombstones: ['deleted-web'], orphanedNodeIds: [] },
+    nodes: [
+      {
+        id: 'overridden-web', type: 'interaction/value-card', grid: { x: 2, y: 3, w: 2, h: 1 },
+        position: { x: 187.5, y: 150 }, size: { width: 187.5, height: 50 },
+        sync: { source: 'web', sourceNodeId: 'overridden-web', state: 'overridden' }
+      },
+      { id: 'app-local-a', type: 'basic/text', grid: { x: 0, y: 4, w: 2, h: 1 }, sync: { source: 'app', state: 'local' } },
+      { id: 'app-local-b', type: 'basic/text', grid: { x: 2, y: 5, w: 2, h: 1 }, sync: { source: 'app', state: 'local' } }
+    ]
+  }
+  const appBefore = structuredClone(appConfig)
+  const webConfig = JSON.stringify({
+    canvas: { mode: 'fixed', width: 1920, height: 1080 },
+    nodes: [
+      { id: 'overridden-web', type: 'interaction/value-card', size: { width: 320, height: 160 } },
+      { id: 'deleted-web', type: 'basic/text', size: { width: 320, height: 160 } },
+      { id: 'new-web-value', type: 'interaction/value-card', size: { width: 320, height: 160 } }
+    ]
+  })
+
+  const result = JSON.parse(syncAppChartConfigFromWeb(appConfig, webConfig))
+  const overridden = result.nodes.find((node: any) => node.id === 'overridden-web')
+  const localNodes = result.nodes.filter((node: any) => node.sync?.source === 'app')
+  const added = result.nodes.find((node: any) => node.id === 'new-web-value')
+  const gridGeometry = (grid: any) => ({ x: grid.x, y: grid.y, w: grid.w, h: grid.h })
+
+  assert.deepEqual(gridGeometry(overridden.grid), gridGeometry(appBefore.nodes[0].grid))
+  assert.equal(overridden.sync.state, 'overridden')
+  assert.deepEqual(localNodes.map((node: any) => node.id), ['app-local-a', 'app-local-b'])
+  assert.deepEqual(localNodes.map((node: any) => gridGeometry(node.grid)), appBefore.nodes.slice(1).map((node: any) => gridGeometry(node.grid)))
+  assert.equal(result.nodes.some((node: any) => node.id === 'deleted-web'), false)
+  assert.deepEqual(result.appSync.tombstones, ['deleted-web'])
+  assert.equal(added.grid.w, 4)
+  assert.equal(added.sync.source, 'web')
+  assert.deepEqual(appConfig, appBefore)
 })
 
 test('已有竖向 App 配置只关闭响应式，不重复重排', () => {
