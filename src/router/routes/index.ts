@@ -22,7 +22,24 @@ export const ROOT_ROUTE: CustomRoute = {
   }
 }
 
-const customRoutes: CustomRoute[] = [
+// These native model detail routes are registered at runtime, but are not
+// generated into RouteMap by elegant-router. Keep their route literals strict
+// and adapt only at the existing runtime registration boundary below.
+type AddedNativeDetailRoute =
+  | {
+      name: 'device-template-detail-reference'
+      path: '/device/template/detail'
+      component: 'layout.base$view.device_config-detail'
+      meta: { title: 'device_config-detail'; i18nKey: 'route.device_config-detail' }
+    }
+  | {
+      name: 'thingmodel-detail-custom'
+      path: '/device/thingsmodel/detail'
+      component: 'layout.base$view.thingmodel-detail'
+      meta: { title: 'device_template_detail'; i18nKey: 'route.device_thingsmodel_detail'; constant: true }
+    }
+
+const customRoutes: Array<CustomRoute | AddedNativeDetailRoute> = [
   ROOT_ROUTE,
   {
     name: 'device-config-legacy-redirect',
@@ -180,15 +197,19 @@ export function createRoutes() {
   // 添加独立的常量路由
   constantRoutes.push(createThingsvisPreviewRoute())
   ;[...customRoutes, ...generatedRoutes].forEach(item => {
+    // Dynamic native detail route literals are validated above, then adapted
+    // here because the generated RouteMap intentionally does not include them.
+    const route = item as ElegantRoute
+
     // App 嵌入页已在 customRoutes 中以 blank + constant 注册，跳过 generated 重复项
-    if (appEmbedRouteNames.has(item.name) && !item.meta?.constant) {
+    if (appEmbedRouteNames.has(route.name) && !route.meta?.constant) {
       return
     }
 
-    if (item.meta?.constant) {
-      constantRoutes.push(item)
+    if (route.meta?.constant) {
+      constantRoutes.push(route)
     } else {
-      authRoutes.push(item)
+      authRoutes.push(route)
     }
   })
 

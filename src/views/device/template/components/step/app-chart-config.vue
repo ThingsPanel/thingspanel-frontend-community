@@ -81,6 +81,21 @@ const unwrapApiList = (payload: unknown): any[] => {
   return Array.isArray(body) ? body : []
 }
 
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function stripTemplateDeviceIds(config: unknown) {
+  if (!isObjectRecord(config)) return
+  const dataSources = config.dataSources
+  if (!Array.isArray(dataSources)) return
+
+  for (const source of dataSources as unknown[]) {
+    if (!isObjectRecord(source) || source.type !== 'PLATFORM_FIELD' || !isObjectRecord(source.config)) continue
+    delete source.config.deviceId
+  }
+}
+
 const refreshOptions = [
   { label: '手动刷新', value: 0 },
   { label: '5秒', value: 5000 },
@@ -164,11 +179,7 @@ const handleSave = async (payload: any) => {
           current.appChartConfig,
           canonicalizeThingsVisConfig(payload)
         )
-        if (Array.isArray(cleanedPayload.dataSources)) {
-          cleanedPayload.dataSources.forEach((ds: any) => {
-            if (ds.type === 'PLATFORM_FIELD' && ds.config) delete ds.config.deviceId
-          })
-        }
+        stripTemplateDeviceIds(cleanedPayload)
         return {
           ...current,
           appChartConfig: { ...cleanedPayload, refreshInterval: refreshInterval.value }
@@ -189,14 +200,7 @@ const handleSave = async (payload: any) => {
     // 这些 ID 在编辑时是模板/虚拟设备 ID，不应该被保存到配置中
     // 运行时会根据真实设备ID动态注入
     const cleanedPayload = prepareAppChartConfigForSave(res.data.app_chart_config, canonicalizeThingsVisConfig(payload))
-    if (cleanedPayload.dataSources && Array.isArray(cleanedPayload.dataSources)) {
-      cleanedPayload.dataSources.forEach((ds: any) => {
-        if (ds.type === 'PLATFORM_FIELD' && ds.config) {
-          // ✅ 移除编辑时的虚拟 deviceId，让运行时注入真实设备 ID
-          delete ds.config.deviceId
-        }
-      })
-    }
+    stripTemplateDeviceIds(cleanedPayload)
 
     // 保存到 app_chart_config 字段
     // 将刷新频率合并到配置中

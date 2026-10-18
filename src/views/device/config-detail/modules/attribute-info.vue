@@ -108,7 +108,7 @@ async function saveBinding() {
   if (!props.configInfo) return
   saving.value = true
   try {
-    let selected = null
+    let selected: { modelID: string; snapshotID: string; publishedRevision: number } | null = null
     if (selectedModelID.value && selectedRevision.value != null) {
       const snapshot = await loadPublishedSnapshot(selectedModelID.value, selectedRevision.value)
       selected = { modelID: snapshot.modelID, snapshotID: snapshot.snapshotID, publishedRevision: snapshot.publishedRevision }

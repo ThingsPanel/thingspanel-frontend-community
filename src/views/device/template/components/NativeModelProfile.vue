@@ -40,7 +40,9 @@ const finishUpload = ({ event }: { file: UploadFileInfo; event?: ProgressEvent }
     window.$message?.error('封面上传失败。')
   }
 }
-const uploadError = () => window.$message?.error('封面上传失败，请检查网络后重试。')
+const uploadError = (): void => {
+  window.$message?.error('封面上传失败，请检查网络后重试。')
+}
 </script>
 
 <template>
