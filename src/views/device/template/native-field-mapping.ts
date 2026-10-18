@@ -11,7 +11,7 @@ import type {
 
 type LegacyRecord = Record<string, unknown>
 type ScalarType = 'INT' | 'FLOAT' | 'NUMBER' | 'BOOL' | 'STRING'
-type EnumBaseKind = 'STRING' | 'NUMBER' | 'BOOL'
+type EnumBaseKind = 'STRING' | 'NUMBER' | 'BOOLEAN'
 type Scalar = string | number | boolean
 
 const legacyKindByValue: Record<string, ScalarType> = {
@@ -77,14 +77,14 @@ function scalarKindFromLegacy(value: unknown, stored?: unknown): ScalarType {
 
 function enumBase(value: unknown): EnumBaseKind {
   if (value === 'Number') return 'NUMBER'
-  if (value === 'Boolean') return 'BOOL'
+  if (value === 'Boolean') return 'BOOLEAN'
   if (value === 'String') return 'STRING'
   return fail(`unsupported enum value_type ${JSON.stringify(value)}`)
 }
 
 function scalarMatches(base: EnumBaseKind, value: unknown): value is Scalar {
   if (base === 'NUMBER') return typeof value === 'number' && Number.isFinite(value)
-  if (base === 'BOOL') return typeof value === 'boolean'
+  if (base === 'BOOLEAN') return typeof value === 'boolean'
   return typeof value === 'string'
 }
 
@@ -96,7 +96,7 @@ function validateValueType(value: unknown, label: string): ValueType {
   }
   if (kind === 'ENUM') {
     if (candidate.constraint !== undefined) fail(`${label}.constraint is not allowed for ENUM`)
-    if (!['STRING', 'NUMBER', 'BOOL'].includes(String(candidate.baseKind))) fail(`${label}.baseKind is unsupported`)
+    if (!['STRING', 'NUMBER', 'BOOLEAN'].includes(String(candidate.baseKind))) fail(`${label}.baseKind is unsupported`)
     if (!Array.isArray(candidate.enumValues) || candidate.enumValues.length === 0) fail(`${label}.enumValues must be non-empty`)
     for (const [index, raw] of candidate.enumValues.entries()) {
       const option = record(raw, `${label}.enumValues[${index}]`)
@@ -238,7 +238,7 @@ function nativeParameterToForm(kind: FieldKind, item: Parameters['items'][number
     data_type: legacyType,
   }
   if (valueType.kind === 'ENUM') {
-    row.data_type = valueType.baseKind === 'NUMBER' ? 'Number' : valueType.baseKind === 'BOOL' ? 'Boolean' : 'String'
+    row.data_type = valueType.baseKind === 'NUMBER' ? 'Number' : valueType.baseKind === 'BOOLEAN' ? 'Boolean' : 'String'
     row.enum_config = valueType.enumValues.map(({ code, label }) => ({ value: code, desc: label.default, label: clone(label) }))
   }
   return row
@@ -320,7 +320,7 @@ export function toNativeFieldFromEditor(kind: FieldKind, editorForm: unknown): M
 function nativeEnumToLegacyRows(valueType: Extract<ValueType, { kind: 'ENUM' }>): LegacyRecord[] {
   return valueType.enumValues.map(({ code, label }) => {
     const row: LegacyRecord = {
-      value_type: valueType.baseKind === 'NUMBER' ? 'Number' : valueType.baseKind === 'BOOL' ? 'Boolean' : 'String',
+      value_type: valueType.baseKind === 'NUMBER' ? 'Number' : valueType.baseKind === 'BOOLEAN' ? 'Boolean' : 'String',
       value: code,
       description: label.default,
       label: clone(label),

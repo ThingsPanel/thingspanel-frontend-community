@@ -55,7 +55,7 @@ export function normalizeResourcesDocument(value: Partial<ResourcesDocument> | n
 function valueTypeFor(field: ModelField): PlatformField['type'] {
   if (!('valueType' in field) || !field.valueType) return 'json'
   const type = field.valueType
-  if (type.kind === 'ENUM') return type.baseKind === 'NUMBER' ? 'number' : type.baseKind === 'BOOL' ? 'boolean' : 'string'
+  if (type.kind === 'ENUM') return type.baseKind === 'NUMBER' ? 'number' : type.baseKind === 'BOOLEAN' ? 'boolean' : 'string'
   if (type.kind === 'INT' || type.kind === 'FLOAT' || type.kind === 'NUMBER') return 'number'
   if (type.kind === 'BOOL') return 'boolean'
   return 'string'

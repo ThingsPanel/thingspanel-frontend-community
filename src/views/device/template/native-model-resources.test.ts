@@ -26,7 +26,7 @@ test('native fields expose four model kinds, enum values, units, access, and com
     fields: [
       { kind: 'TELEMETRY', identifier: 'temp', nameI18n: { default: 'Temperature' }, descriptionI18n: { default: 'Room temperature' }, unit: '°C', access: { read: true, write: false, observe: true }, valueType: { kind: 'FLOAT', constraint: { min: -20 } } },
       { kind: 'ATTRIBUTE', identifier: 'mode', nameI18n: { default: 'Mode' }, access: { read: true, write: true, observe: false }, valueType: { kind: 'ENUM', baseKind: 'STRING', enumValues: [{ code: 'auto', label: { default: 'Automatic' } }, { code: 'manual', label: { default: 'Manual' } }] } },
-      { kind: 'ATTRIBUTE', identifier: 'enabled', nameI18n: { default: 'Enabled' }, access: { read: true, write: false, observe: false }, valueType: { kind: 'ENUM', baseKind: 'BOOL', enumValues: [{ code: true, label: { default: 'Yes' } }, { code: false, label: { default: 'No' } }] } },
+      { kind: 'ATTRIBUTE', identifier: 'enabled', nameI18n: { default: 'Enabled' }, access: { read: true, write: false, observe: false }, valueType: { kind: 'ENUM', baseKind: 'BOOLEAN', enumValues: [{ code: true, label: { default: 'Yes' } }, { code: false, label: { default: 'No' } }] } },
       { kind: 'EVENT', identifier: 'alarm', nameI18n: { default: 'Alarm' }, access: { read: false, write: false, observe: true }, parameters: { schemaVersion: 1, items: [] } },
       { kind: 'COMMAND', identifier: 'setMode', nameI18n: { default: 'Set mode' }, access: { read: false, write: true, observe: false }, parameters: { schemaVersion: 1, items: [{ identifier: 'mode', nameI18n: { default: 'Mode' }, valueType: { kind: 'STRING' } }] } }
     ]
