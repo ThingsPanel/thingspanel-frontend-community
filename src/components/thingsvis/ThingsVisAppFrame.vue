@@ -28,7 +28,6 @@ import {
   deviceConfigInfo,
   telemetryDataCurrent,
   getAttributeDataSet,
-  telemetryDataPub,
   attributeDataPub,
   commandDataPub
 } from '@/service/api/device'
@@ -1284,16 +1283,12 @@ function resolveWriteFieldId(data: unknown): string | undefined {
 
 async function resolveWriteField(deviceId: string, fieldId?: string): Promise<PlatformDeviceField | undefined> {
   if (!fieldId) return undefined
-  const activeDevice = activePlatformDevices.get(deviceId)
-  const activeField = activeDevice ? findPlatformWriteTarget(activeDevice.fields, fieldId) : undefined
-  if (activeField?.dataType === 'command') return activeField
-
   const loadedDevice = await buildPlatformDeviceById(deviceId)
   if (loadedDevice) {
     registerActivePlatformDevices([loadedDevice])
-    return findPlatformWriteTarget(loadedDevice.fields, fieldId) || activeField
+    return findPlatformWriteTarget(loadedDevice.fields, fieldId)
   }
-  return activeField
+  return undefined
 }
 
 function normalizePlatformWriteData(field: PlatformDeviceField | undefined, data: unknown): unknown {
@@ -1386,8 +1381,14 @@ async function handlePlatformWrite(payload: Record<string, unknown>, requestId?:
     return
   }
 
+  const requestScope = ensurePlatformCacheScope()
   try {
     const field = await resolveWriteField(deviceId, fieldId)
+    assertPlatformCacheScope(requestScope)
+    if (!field || field.writable !== true || !['attribute', 'command'].includes(field.dataType)) {
+      postPlatformWriteResult(requestId, { success: false, error: '该字段不能控制设备，请选择可写属性或命令' })
+      return
+    }
     const data = normalizePlatformWriteData(field, payload.data)
     const value = typeof data === 'string' ? data : JSON.stringify(data)
     const fieldType = field?.dataType
@@ -1405,8 +1406,6 @@ async function handlePlatformWrite(payload: Record<string, unknown>, requestId?:
         return
       }
       result = await commandDataPub({ device_id: deviceId, identify: commandWrite.identify, value: commandWrite.value })
-    } else if (fieldType === 'telemetry' || fieldType === undefined) {
-      result = await telemetryDataPub({ device_id: deviceId, value })
     } else {
       postPlatformWriteResult(requestId, {
         success: false,
@@ -1423,8 +1422,7 @@ async function handlePlatformWrite(payload: Record<string, unknown>, requestId?:
       return
     }
 
-    // Keep the embedded editor preview in sync when the platform accepts a
-    // telemetry/attribute write but the device has not emitted a new sample yet.
+    // Keep writable attribute previews in sync after the platform accepts the write.
     if (fieldType !== 'command' && data && typeof data === 'object' && !Array.isArray(data)) {
       postPlatformData(data as Record<string, unknown>, deviceId, payload.dataSourceId as string | undefined)
     }
