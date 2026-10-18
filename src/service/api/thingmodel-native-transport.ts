@@ -1,7 +1,7 @@
 export type ModelLifecycle = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
 export type FieldKind = 'TELEMETRY' | 'ATTRIBUTE' | 'EVENT' | 'COMMAND'
 export type ValueKind = 'INT' | 'FLOAT' | 'NUMBER' | 'BOOL' | 'STRING' | 'ENUM'
-export type EnumBaseKind = 'STRING' | 'NUMBER' | 'BOOLEAN'
+export type EnumBaseKind = 'STRING' | 'NUMBER' | 'BOOL'
 export interface NumericConstraint { min?: number; max?: number; step?: number; precision?: number }
 export interface StringConstraint { pattern?: string; maxLength?: number }
 export interface BooleanConstraint { trueText?: string; falseText?: string }

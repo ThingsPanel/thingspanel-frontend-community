@@ -41,11 +41,15 @@ test('enum codes preserve number and boolean JSON scalar types', () => {
   }
   const bool: ModelField = {
     kind: 'TELEMETRY', identifier: 'active', nameI18n: { default: 'Active' },
-    valueType: { kind: 'ENUM', baseKind: 'BOOLEAN', enumValues: [{ code: true, label: { default: 'On' } }, { code: false, label: { default: 'Off' } }] },
+    valueType: { kind: 'ENUM', baseKind: 'BOOL', enumValues: [{ code: true, label: { default: 'On' } }, { code: false, label: { default: 'Off' } }] },
     access: { read: true, write: false, observe: false },
   }
   for (const field of [numeric, bool]) {
     const form = fromNativeField(field)
+    if (field === bool) {
+      assert.equal((form.additional_info as Array<{ value_type: string }>)[0]?.value_type, 'Boolean')
+      assert.equal((form.additional_info as Array<{ value: unknown }>)[0]?.value, true)
+    }
     const roundTrip = toNativeField(field.kind, form)
     assert.deepEqual(roundTrip, field)
     const got = (roundTrip as Extract<ModelField, { kind: 'TELEMETRY' | 'ATTRIBUTE' }>).valueType as { kind: 'ENUM'; enumValues: Array<{ code: unknown }> }
@@ -58,15 +62,22 @@ test('event and command use versioned flat parameters with typed values and no p
   const event: ModelField = {
     kind: 'EVENT', identifier: 'reading.changed', nameI18n: localized,
     access: { read: false, write: false, observe: true },
-    parameters: { schemaVersion: 1, items: [{ identifier: 'reading', nameI18n: localized, descriptionI18n: { default: 'Current reading' }, valueType: { kind: 'FLOAT', constraint: { min: -5, step: 0.25 } } }] },
+    parameters: { schemaVersion: 1, items: [
+      { identifier: 'reading', nameI18n: localized, descriptionI18n: { default: 'Current reading' }, valueType: { kind: 'FLOAT', constraint: { min: -5, step: 0.25 } } },
+      { identifier: 'enabled', nameI18n: { default: 'Enabled' }, valueType: { kind: 'ENUM', baseKind: 'BOOL', enumValues: [{ code: true, label: { default: 'On' } }, { code: false, label: { default: 'Off' } }] } },
+    ] },
   }
   const command: ModelField = {
     kind: 'COMMAND', identifier: 'set.enabled', nameI18n: { default: 'Set enabled' },
     access: { read: false, write: true, observe: false },
-    parameters: { schemaVersion: 1, items: [{ identifier: 'enabled', nameI18n: { default: 'Enabled' }, valueType: { kind: 'ENUM', baseKind: 'BOOLEAN', enumValues: [{ code: true, label: { default: 'Enable' } }, { code: false, label: { default: 'Disable' } }] } }] },
+    parameters: { schemaVersion: 1, items: [{ identifier: 'enabled', nameI18n: { default: 'Enabled' }, valueType: { kind: 'ENUM', baseKind: 'BOOL', enumValues: [{ code: true, label: { default: 'Enable' } }, { code: false, label: { default: 'Disable' } }] } }] },
   }
   for (const field of [event, command]) {
     const form = fromNativeField(field)
+    const params = JSON.parse(form.params as string) as Array<{ data_type: string; enum_config?: Array<{ value: unknown }> }>
+    const booleanParam = params.find(row => row.data_type === 'Boolean')
+    assert.ok(booleanParam, `${field.kind} boolean enum parameter maps to the Boolean UI type`)
+    assert.deepEqual(booleanParam.enum_config?.map(row => row.value), [true, false])
     const roundTrip = toNativeField(field.kind, form)
     assert.deepEqual(roundTrip, field)
     assert.equal('valueType' in roundTrip, false)
@@ -128,7 +139,7 @@ test('actual new telemetry and command editor values map without leaking enum UI
 test('Vue reactive native fields and editor forms round trip without DataCloneError', () => {
   const field: ModelField = reactive({
     kind: 'ATTRIBUTE', identifier: 'mode', nameI18n: { default: 'Mode', locales: { 'zh-CN': '模式' } },
-    valueType: { kind: 'ENUM', baseKind: 'BOOLEAN', enumValues: [{ code: true, label: { default: 'On' } }, { code: false, label: { default: 'Off' } }] },
+    valueType: { kind: 'ENUM', baseKind: 'BOOL', enumValues: [{ code: true, label: { default: 'On' } }, { code: false, label: { default: 'Off' } }] },
     access: { read: true, write: true, observe: false }, sortOrder: 2,
   })
   const editorForm = reactive(fromNativeField(field))
@@ -136,6 +147,10 @@ test('Vue reactive native fields and editor forms round trip without DataCloneEr
 })
 
 test('unknown values and malformed data block conversion while supported event enums survive', () => {
+  assert.throws(() => fromNativeField({
+    kind: 'ATTRIBUTE', identifier: 'bad', nameI18n: { default: 'Bad' }, access: { read: true, write: false, observe: false },
+    valueType: { kind: 'ENUM', baseKind: 'BOOLEAN', enumValues: [{ code: true, label: { default: 'True' } }] },
+  } as unknown as ModelField), /baseKind is unsupported/)
   assert.throws(() => toNativeField('TELEMETRY', { data_name: 'x', data_identifier: 'x', data_type: 'Object', read_write_flag: 'R' }), /unsupported data_type/)
   assert.throws(() => toNativeField('TELEMETRY', {
     data_name: 'x', data_identifier: 'x', data_type: 'Enum', read_write_flag: 'R',
