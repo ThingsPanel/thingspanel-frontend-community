@@ -133,26 +133,34 @@ export const addTelemetry = async (params: any): Promise<any> => {
 }
 
 /** 删除遥测数据 */
-export const delTelemetry = async (id: string) => {
-  const data = await request.delete<Api.BaseApi.Data>(`/device/model/telemetry/${id}`)
+export const delTelemetry = async (id: string, templateId: string) => {
+  const data = await request.delete<Api.BaseApi.Data>(`/device/model/telemetry/${id}`, {
+    params: { device_template_id: templateId }
+  })
   return data
 }
 
 /** 删除属性数据 */
-export const delAttributes = async (id: string) => {
-  const data = await request.delete<Api.BaseApi.Data>(`/device/model/attributes/${id}`)
+export const delAttributes = async (id: string, templateId: string) => {
+  const data = await request.delete<Api.BaseApi.Data>(`/device/model/attributes/${id}`, {
+    params: { device_template_id: templateId }
+  })
   return data
 }
 
 /** 删除事件数据 */
-export const delEvents = async (id: string) => {
-  const data = await request.delete<Api.BaseApi.Data>(`/device/model/events/${id}`)
+export const delEvents = async (id: string, templateId: string) => {
+  const data = await request.delete<Api.BaseApi.Data>(`/device/model/events/${id}`, {
+    params: { device_template_id: templateId }
+  })
   return data
 }
 
 /** 删除命令数据 */
-export const delCommands = async (id: string) => {
-  const data = await request.delete<Api.BaseApi.Data>(`/device/model/commands/${id}`)
+export const delCommands = async (id: string, templateId: string) => {
+  const data = await request.delete<Api.BaseApi.Data>(`/device/model/commands/${id}`, {
+    params: { device_template_id: templateId }
+  })
   return data
 }
 

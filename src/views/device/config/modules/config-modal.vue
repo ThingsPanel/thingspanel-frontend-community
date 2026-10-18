@@ -3,7 +3,7 @@ import { ref, watch } from 'vue'
 import type { FormInst } from 'naive-ui'
 import { $t } from '@/locales'
 // import {useMessage} from 'naive-ui';
-import { deviceConfigAdd, deviceConfigEdit, deviceTemplate } from '@/service/api/device'
+import { deviceConfigAdd, deviceConfigEdit } from '@/service/api/device'
 
 // const message = useMessage();
 
@@ -51,17 +51,6 @@ const configFormRules = ref({
     trigger: 'change'
   }
 })
-const deviceTemplateOptions = ref([])
-const getDeviceTemplate = () => {
-  const paramsData = {
-    page: 1,
-    page_size: 100
-  }
-  deviceTemplate(paramsData).then(res => {
-    deviceTemplateOptions.value = res.data.list
-  })
-}
-
 interface Emits {
   (e: 'modalClose'): void
 
@@ -79,14 +68,12 @@ watch(
     } else {
       modalTitle.value = $t('common.edit')
     }
-    getDeviceTemplate()
   }
 )
 const modalClose = () => {
   emit('modalClose')
 }
 
-const deviceTemplateScroll = () => {}
 const configFormRef = ref<HTMLElement & FormInst>()
 const handleClose = () => {
   configFormRef.value?.restoreValidation()
@@ -120,14 +107,8 @@ const handleSubmit = async () => {
         <NFormItem :label="$t('generate.device-configuration-name')" path="name">
           <NInput v-model:value="configForm.name" :placeholder="$t('generate.enter-device-name')" />
         </NFormItem>
-        <NFormItem :label="$t('generate.select-device-function-template')" path="device_template_id">
-          <NSelect
-            v-model:value="configForm.device_template_id"
-            :options="deviceTemplateOptions"
-            label-field="name"
-            value-field="id"
-            @scroll="deviceTemplateScroll"
-          ></NSelect>
+        <NFormItem v-if="props.modalType === 'add'" label="物模型">
+          <span>创建后可在详情中绑定已发布的物模型版本。</span>
         </NFormItem>
         <NFormItem :label="$t('generate.device-access-type')" path="device_type">
           <n-radio-group v-model:value="configForm.device_type" name="device_type">

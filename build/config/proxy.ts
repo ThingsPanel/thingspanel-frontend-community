@@ -24,6 +24,12 @@ export function createViteProxy(env: Env.ImportMeta) {
     }
   }
 
+  // Native model commands use their Encore contract directly. Keep this
+  // separate from the Community /api/v1 proxy; no server-side DTO translation.
+  const thingModelNativeURL = env.VITE_THINGMODEL_NATIVE_URL || 'http://127.0.0.1:14210'
+  proxy['/api/v2/thing-models'] = { target: thingModelNativeURL, changeOrigin: true }
+  proxy['/api/v2/thing-model-commands'] = { target: thingModelNativeURL, changeOrigin: true }
+
   const otherURLEntries = Object.entries(otherBaseURL)
 
   for (const [key, url] of otherURLEntries) {

@@ -31,6 +31,8 @@ const loading = ref(false)
 const formRef = ref<FormInst | null>(null)
 // 传入的是 device_config_id（发布单位）
 const deviceConfigIdValue = ref('')
+const nativeBindingReady = ref(false)
+const nativeBindingSummary = ref('')
 const uploadUrl = getDemoServerUrl()
 
 const formModel = reactive({
@@ -110,12 +112,23 @@ const open = async (deviceConfigId: string, defaultName?: string) => {
   formModel.author = authStore.userInfo.userName || authStore.userInfo.name || ''
   formModel.description = ''
   formModel.cover_url = ''
+  nativeBindingReady.value = false
+  nativeBindingSummary.value = ''
 
   // 获取设备配置详情（包含 device_template_id），再获取模板详情填充表单
   try {
     const dcRes: any = await deviceConfigInfo({ id: deviceConfigId })
     if (!dcRes.error && dcRes.data) {
       const dc = dcRes.data
+      nativeBindingReady.value = Boolean(
+        dc.native_thing_model_id &&
+          dc.native_thing_model_snapshot_id &&
+          Number(dc.native_thing_model_revision) > 0 &&
+          !dc.device_template_id
+      )
+      if (nativeBindingReady.value) {
+        nativeBindingSummary.value = `${dc.native_thing_model_id} · ${dc.native_thing_model_revision} · ${dc.native_thing_model_snapshot_id}`
+      }
       // 自动填充设备配置名称（如果没有默认名）
       if (!formModel.market_name) {
         formModel.market_name = dc.name || ''
@@ -135,6 +148,10 @@ const open = async (deviceConfigId: string, defaultName?: string) => {
 }
 
 const handlePublish = async () => {
+  if (!nativeBindingReady.value) {
+    window.$message?.error($t('device_template.requireNativeModelBeforePublish'))
+    return
+  }
   try {
     await formRef.value?.validate()
   } catch {
@@ -267,14 +284,20 @@ defineExpose({ open })
         </NFormItem>
       </NForm>
 
-      <NAlert type="info" style="margin-top: 12px">
+      <NAlert v-if="!nativeBindingReady" type="warning" style="margin-top: 12px">
+        {{ $t('device_template.requireNativeModelBeforePublish') }}
+      </NAlert>
+      <NAlert v-else type="info" style="margin-top: 12px">
+        {{ $t('device_template.nativeMarketDependencyPinned', { binding: nativeBindingSummary }) }}
+      </NAlert>
+      <NAlert type="warning" style="margin-top: 12px">
         {{ $t('device_template.publishConfirmMessage') }}
       </NAlert>
     </div>
 
     <template #action>
       <NButton @click="handleCancel">{{ $t('common.cancel') }}</NButton>
-      <NButton type="primary" :loading="loading" @click="handlePublish">
+      <NButton type="primary" :loading="loading" :disabled="!nativeBindingReady" @click="handlePublish">
         {{ $t('device_template.confirmUpload') }}
       </NButton>
     </template>

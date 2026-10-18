@@ -37,6 +37,7 @@
   "route.component_table": "Table",
   "route.management_api": "API keys",
   "route.device_template": "Thing Model",
+  "route.device_thingsmodel_detail": "Thing Model Details",
   "route.device_market-browse": "Solution Market",
   "route.device_market-installed": "Installed Bundles",
   "route.device_market-installed-detail": "Installation Detail",

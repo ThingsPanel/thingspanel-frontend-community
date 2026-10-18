@@ -7,6 +7,7 @@ import { transformElegantRoutesToVueRoutes } from '../elegant/transform'
 /** App 嵌入页视图：elegant-router 需独立目录 page，此处兜底注册避免 watcher 覆盖后找不到组件 */
 const appEmbedViews: Record<string, RouteComponent | (() => Promise<RouteComponent>)> = {
   ...views,
+  'thingmodel-detail': () => import('@/components/thingmodel-detail.vue'),
   'visualization-app-dashboards': () => import('@/views/visualization-app-dashboards/index.vue'),
   'visualization-app-preview': () => import('@/views/visualization-app-preview/index.vue')
 }
@@ -38,6 +39,25 @@ const customRoutes: CustomRoute[] = [
     redirect: '/device/template/detail',
     meta: {
       title: 'device-config-detail-legacy-redirect',
+      constant: true
+    }
+  },
+  {
+    name: 'device-template-detail-reference',
+    path: '/device/template/detail',
+    component: 'layout.base$view.device_config-detail',
+    meta: {
+      title: 'device_config-detail',
+      i18nKey: 'route.device_config-detail'
+    }
+  },
+  {
+    name: 'thingmodel-detail-custom',
+    path: '/device/thingsmodel/detail',
+    component: 'layout.base$view.thingmodel-detail',
+    meta: {
+      title: 'device_template_detail',
+      i18nKey: 'route.device_thingsmodel_detail',
       constant: true
     }
   },

@@ -54,6 +54,7 @@ const selectedTemplateId = ref('')
 // Login modal
 const marketLoginRef = ref<InstanceType<typeof MarketLoginModal>>()
 const pendingInstallId = ref('')
+const pendingInstallVersion = ref('')
 
 const fetchMarketTemplates = async () => {
   loading.value = true
@@ -116,22 +117,37 @@ const handleViewDetail = (id: string) => {
   drawerVisible.value = true
 }
 
-const startInstall = async (id: string) => {
+const resolveInstallVersion = (id: string) => {
+  const template = templateList.value.find(item => item.id === id)
+  return String(template?.latest_version || template?.version || '')
+}
+
+const startInstall = async (id: string, selectedVersion = resolveInstallVersion(id)) => {
+  if (!selectedVersion) {
+    window.$message?.error($t('market.browse.versionUnavailable'))
+    return
+  }
   if (!isLoggedIn()) {
     pendingInstallId.value = id
+    pendingInstallVersion.value = selectedVersion
     marketLoginRef.value?.open()
     return
   }
-  await doInstall(id)
+  await doInstall(id, selectedVersion)
 }
 
 const handleInstall = (id: string) => {
   if (installingId.value) return
 
+  const selectedVersion = resolveInstallVersion(id)
+  if (!selectedVersion) {
+    window.$message?.error($t('market.browse.versionUnavailable'))
+    return
+  }
   const templateName = templateList.value.find(item => item.id === id)?.name || '该模板'
   const dialog = window.$dialog
   if (!dialog) {
-    startInstall(id)
+    startInstall(id, selectedVersion)
     return
   }
 
@@ -140,11 +156,11 @@ const handleInstall = (id: string) => {
     content: $t('market.browse.downloadConfirmMessage', { name: templateName }),
     positiveText: $t('market.browse.confirmDownload'),
     negativeText: $t('common.cancel'),
-    onPositiveClick: () => startInstall(id)
+    onPositiveClick: () => startInstall(id, selectedVersion)
   })
 }
 
-const doInstall = async (id: string) => {
+const doInstall = async (id: string, version: string) => {
   const token = getToken()
   if (!token) return
 
@@ -152,6 +168,7 @@ const doInstall = async (id: string) => {
   try {
     const res: any = await installFromMarket({
       market_template_id: id,
+      version,
       market_token: token
     })
     if (!res.error) {
@@ -186,6 +203,7 @@ const doInstall = async (id: string) => {
       clearToken()
       window.$message?.error($t('market.tokenExpired'))
       pendingInstallId.value = id
+      pendingInstallVersion.value = version
       marketLoginRef.value?.open()
     } else {
       window.$message?.error($t('market.installFailed') + ': ' + (e?.message || ''))
@@ -197,8 +215,9 @@ const doInstall = async (id: string) => {
 
 const onMarketLoginSuccess = () => {
   if (pendingInstallId.value) {
-    doInstall(pendingInstallId.value)
+    doInstall(pendingInstallId.value, pendingInstallVersion.value)
     pendingInstallId.value = ''
+    pendingInstallVersion.value = ''
   }
 }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineExpose, getCurrentInstance, onMounted, reactive, ref } from 'vue'
+import { computed, defineExpose, getCurrentInstance, reactive, ref, watch } from 'vue'
 import {
   type FormInst,
   type FormRules,
@@ -69,6 +69,8 @@ const props = defineProps<{
   submitApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
   expectApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
   fetchDataApi: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
+  nativeCommandOptions?: any[]
+  nativeCommandsResolved?: boolean
 }>()
 const tableData = ref<any[] | undefined>()
 const page_coune = ref(0)
@@ -82,6 +84,14 @@ const formModel = reactive({
   time: null as number | null
 })
 const options = ref()
+let commandDefinitionsRequestId = 0
+watch(
+  () => [props.nativeCommandsResolved, props.nativeCommandOptions],
+  () => {
+    options.value = props.nativeCommandsResolved ? props.nativeCommandOptions || [] : undefined
+  },
+  { deep: true }
+)
 const { loading, startLoading, endLoading } = useLoading()
 const paramsSelect = ref<any>([
   { label: 'true', value: true },
@@ -237,7 +247,13 @@ const refresh = () => {
 defineExpose({ refresh })
 const getOptions = async show => {
   if (show) {
+    if (props.nativeCommandsResolved) {
+      options.value = props.nativeCommandOptions || []
+      return
+    }
+    const requestId = commandDefinitionsRequestId
     const res = await commandDataById(props.id)
+    if (requestId !== commandDefinitionsRequestId || props.nativeCommandsResolved) return
 
     if (res && Array.isArray(res.data)) {
       options.value = res.data
@@ -267,14 +283,26 @@ const handleCommandInput = (value: string) => {
 
 const commandList = ref()
 
-const getListData = async () => {
+const getListData = async (requestId = commandDefinitionsRequestId) => {
+  if (props.nativeCommandsResolved) {
+    commandList.value = []
+    return
+  }
   const { data } = await deviceCustomCommandsIdList(props.id)
+  if (requestId !== commandDefinitionsRequestId || props.nativeCommandsResolved) return
   commandList.value = data
 }
-onMounted(() => {
-  props.isCommand && getListData()
-  fetchDataFunction()
-})
+watch(
+  () => [props.id, props.nativeCommandsResolved],
+  () => {
+    const requestId = ++commandDefinitionsRequestId
+    options.value = props.nativeCommandsResolved ? props.nativeCommandOptions || [] : undefined
+    commandList.value = []
+    if (props.isCommand && !props.nativeCommandsResolved) void getListData(requestId)
+    void fetchDataFunction()
+  },
+  { immediate: true }
+)
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance()
   return proxy.getPlatform()

@@ -4,12 +4,15 @@ import { MovingNumbers } from 'moving-numbers-vue3'
 import dayjs from 'dayjs'
 import { telemetryDataCurrent } from '@/service/api/device' // 假设此路径正确
 import { createLogger } from '@/utils/logger'
+import type { PlatformField } from '@/utils/thingsvis/types'
 const logger = createLogger('TelemetryData')
 
 const props = defineProps<{
   id: string
   cardHeight: number
   cardMargin: number
+  platformFields?: PlatformField[]
+  nativeModelExpected?: boolean
 }>()
 
 const telemetryData = ref<any[]>([])
@@ -19,7 +22,12 @@ const nowTime = ref(dayjs(new Date().getTime()).format('YYYY-MM-DD HH:mm:ss'))
 const fetchTelemetry = async () => {
   const { data, error } = await telemetryDataCurrent(props.id)
   if (!error && data) {
-    telemetryData.value = data
+    const fieldsById = new Map((props.platformFields || []).filter(field => field.dataType === 'telemetry').map(field => [field.id, field]))
+    telemetryData.value = data.map((row: any) => {
+      const field = fieldsById.get(row.key)
+      if (field) return { ...row, label: field.name, unit: field.unit || '' }
+      return props.nativeModelExpected ? { ...row, label: '', unit: '' } : row
+    })
     initTelemetryData.value = data[0] || {}
     initTelemetryData.value.device_id = props.id
   }

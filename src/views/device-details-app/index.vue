@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
-import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import { $t } from '@/locales'
-import { deviceDetail, deviceTemplateDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
-import { telemetryApi, attributesApi, eventsApi, commandsApi } from '@/service/api'
+import { deviceDetail, telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
 import { formatDateTime } from '@/utils/common/datetime'
 import type { PlatformField } from '@/utils/thingsvis/types'
 import TelemetryDataCards from './telemetryDataCards.vue'
@@ -13,27 +11,36 @@ import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush'
 import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush'
 import { bootstrapAppEmbedSession } from '@/utils/app-embed-auth'
 import { normalizeAppChartConfig } from '@/utils/thingsvis/chart-config-initialization'
+import { deviceBindingRequiresNativeModel, resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
 
 const route = useRoute()
 const router = useRouter()
-const { d_id, token, lang } = route.query
+const d_id = computed(() => {
+  const value = route.query.d_id
+  return Array.isArray(value) ? value[0] || '' : value || ''
+})
+const { token, lang } = route.query
 const deviceData: any = ref({})
 
 const icon_type = ref('')
 const device_number = ref('')
 const showDefaultCards = ref(false)
 const showAppChart = ref(false)
+const nativeBindingError = ref('')
 const cardHeight = ref(160)
 const cardMargin = ref(15)
 
 const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
 const currentData = ref<Record<string, any>>({})
+let deviceDetailRequestId = 0
+let appDataFetchRequestId = 0
+let sessionReady = false
 const viewerPlatformDevices = computed(() => {
-  if (!d_id || platformFields.value.length === 0) return []
+  if (!d_id.value || platformFields.value.length === 0) return []
   return [
     {
-      deviceId: d_id as string,
+      deviceId: d_id.value,
       deviceName: deviceData.value?.name || device_number.value || 'Device',
       fields: platformFields.value
     }
@@ -41,30 +48,33 @@ const viewerPlatformDevices = computed(() => {
 })
 
 const visWidgetRef = ref<InstanceType<typeof ThingsVisWidget> | null>(null)
-const deviceIdRef = computed(() => d_id as string)
+const deviceIdRef = computed(() => d_id.value)
 
 const realtimePush = ref<ReturnType<typeof useRealtimePush> | null>(null)
 const alarmPush = ref<ReturnType<typeof useAlarmPush> | null>(null)
 
-const pushDataToVis = (fields: Record<string, unknown>) => {
+const pushDataToVis = (fields: Record<string, unknown>, deviceId = d_id.value) => {
   if (Object.keys(fields).length === 0) return
   currentData.value = {
     ...currentData.value,
     ...fields
   }
-  visWidgetRef.value?.pushPlatformData(fields, d_id as string)
+  visWidgetRef.value?.pushPlatformData(fields, deviceId)
 }
 
 const fetchDeviceData = async () => {
   if (!showAppChart.value) return
+  const requestId = ++appDataFetchRequestId
+  const deviceId = d_id.value
 
   try {
     const hasAttributes = platformFields.value.some(f => f.dataType === 'attribute')
 
     const [telemetryRes, attributeRes] = await Promise.all([
-      telemetryDataCurrent(d_id as string),
-      hasAttributes ? getAttributeDataSet({ device_id: d_id as string }) : Promise.resolve({ data: [] })
+      telemetryDataCurrent(deviceId),
+      hasAttributes ? getAttributeDataSet({ device_id: deviceId }) : Promise.resolve({ data: [] })
     ])
+    if (requestId !== appDataFetchRequestId || deviceId !== d_id.value) return
 
     const telemetryList = telemetryRes?.data || []
     const attributeList = attributeRes?.data || []
@@ -94,7 +104,7 @@ const fetchDeviceData = async () => {
         ...currentData.value,
         ...dataMap
       }
-      pushDataToVis(dataMap)
+      pushDataToVis(dataMap, deviceId)
     }
   } catch (error) {
     console.error('[DeviceDetailsApp] 获取设备数据失败:', error)
@@ -102,7 +112,19 @@ const fetchDeviceData = async () => {
 }
 
 const getDeviceDetail = async () => {
-  const { data, error } = await deviceDetail(d_id)
+  const requestId = ++deviceDetailRequestId
+  appDataFetchRequestId += 1
+  const deviceId = d_id.value
+  realtimePush.value?.stop()
+  alarmPush.value?.stop()
+  platformFields.value = []
+  showDefaultCards.value = false
+  showAppChart.value = false
+  nativeBindingError.value = ''
+  initialConfig.value = null
+  currentData.value = {}
+  const { data, error } = await deviceDetail(deviceId)
+  if (requestId !== deviceDetailRequestId || deviceId !== d_id.value) return
   if (error) return
 
   deviceData.value = data
@@ -116,68 +138,35 @@ const getDeviceDetail = async () => {
   }
   showDefaultCards.value = false
   showAppChart.value = false
+  nativeBindingError.value = ''
   initialConfig.value = null
 
-  if (!data.device_config?.device_template_id) {
-    showDefaultCards.value = true
+  let resolved: Awaited<ReturnType<typeof resolveDeviceNativeModel>>
+  try {
+    resolved = await resolveDeviceNativeModel(data.device_config)
+  } catch (error) {
+    if (requestId !== deviceDetailRequestId || deviceId !== d_id.value) return
+    console.error('[DeviceDetailsApp] 加载绑定物模型快照失败:', error)
+    nativeBindingError.value = error instanceof Error ? error.message : '读取设备绑定的物模型失败'
     return
   }
-
-  const templateId = data.device_config.device_template_id
-  const res = await deviceTemplateDetail({ id: templateId })
-  if (!res.data) {
+  if (requestId !== deviceDetailRequestId || deviceId !== d_id.value) return
+  if (!resolved) {
     showDefaultCards.value = true
+    if (deviceBindingRequiresNativeModel(data.device_config)) {
+      nativeBindingError.value = '此设备模板尚未绑定固定版本的原生物模型，无法加载模型图表。'
+    }
     return
   }
-
-  const [telemetryRes, attributesRes, eventsRes, commandsRes] = await Promise.all([
-    telemetryApi({ page: 1, page_size: 1000, device_template_id: templateId }),
-    attributesApi({ page: 1, page_size: 1000, device_template_id: templateId }),
-    eventsApi({ page: 1, page_size: 1000, device_template_id: templateId }),
-    commandsApi({ page: 1, page_size: 1000, device_template_id: templateId })
-  ])
-
-  const telemetryList = Array.isArray(telemetryRes?.data?.list)
-    ? telemetryRes.data.list
-    : Array.isArray(telemetryRes?.data)
-      ? telemetryRes.data
-      : []
-
-  const attributesList = Array.isArray(attributesRes?.data?.list)
-    ? attributesRes.data.list
-    : Array.isArray(attributesRes?.data)
-      ? attributesRes.data
-      : []
-
-  const eventsList = Array.isArray(eventsRes?.data?.list)
-    ? eventsRes.data.list
-    : Array.isArray(eventsRes?.data)
-      ? eventsRes.data
-      : []
-
-  const commandsList = Array.isArray(commandsRes?.data?.list)
-    ? commandsRes.data.list
-    : Array.isArray(commandsRes?.data)
-      ? commandsRes.data
-      : []
-
-  const platformSource = {
-    telemetry: telemetryList,
-    attributes: attributesList,
-    events: eventsList,
-    commands: commandsList
-  }
-
-  const extractedFields = extractPlatformFields(platformSource)
-  platformFields.value = extractedFields.length > 0 ? extractedFields : extractPlatformFields(res.data)
-
-  if (!res.data.app_chart_config) {
+  platformFields.value = resolved.platformFields
+  const appChartConfig = resolved.snapshot.resources.appChartConfig
+  if (!appChartConfig) {
     showDefaultCards.value = true
     return
   }
 
   try {
-    const configJson = normalizeAppChartConfig(res.data.app_chart_config)
+    const configJson: any = normalizeAppChartConfig(appChartConfig)
 
     // App 详情页使用保存时的固定手机网格，不按运行容器宽度再次响应式重排。
     configJson.canvas = {
@@ -189,7 +178,7 @@ const getDeviceDetail = async () => {
       configJson.dataSources.forEach((ds: any) => {
         if (ds.type === 'PLATFORM_FIELD') {
           ds.config = ds.config || {}
-          ds.config.deviceId = d_id as string
+          ds.config.deviceId = deviceId
         }
       })
     }
@@ -224,10 +213,17 @@ onMounted(async () => {
     return
   }
 
+  sessionReady = true
   await getDeviceDetail()
 })
 
+watch(d_id, () => {
+  if (sessionReady) void getDeviceDetail()
+})
+
 onBeforeUnmount(() => {
+  deviceDetailRequestId += 1
+  appDataFetchRequestId += 1
   realtimePush.value?.stop()
   alarmPush.value?.stop()
 })
@@ -265,11 +261,17 @@ onBeforeUnmount(() => {
 
     <n-divider title-placement="left"></n-divider>
 
+    <n-alert v-if="nativeBindingError" type="error" :show-icon="false" class="mb-4">
+      {{ nativeBindingError }}
+    </n-alert>
+
     <TelemetryDataCards
       v-if="showDefaultCards"
-      :id="d_id as string"
+      :id="d_id"
       :card-height="cardHeight"
       :card-margin="cardMargin"
+      :platform-fields="platformFields"
+      :native-model-expected="deviceBindingRequiresNativeModel(deviceData?.device_config)"
     />
     <div v-if="showAppChart" class="device-details-app__viewer">
       <ThingsVisWidget
@@ -280,7 +282,7 @@ onBeforeUnmount(() => {
         :platform-fields="platformFields"
         :platform-devices="viewerPlatformDevices"
         :buffer-size="100"
-        :device-id="d_id as string"
+        :device-id="d_id"
         @ready="onVisReady"
       />
     </div>

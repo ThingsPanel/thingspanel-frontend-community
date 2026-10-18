@@ -20,6 +20,10 @@ const props = defineProps({
   deviceTemplateId: {
     type: String,
     required: true
+  },
+  isEditMode: {
+    type: Boolean,
+    default: false
   }
 })
 const deviceTemplateId = ref(props.deviceTemplateId)
@@ -108,6 +112,11 @@ const next: () => void = async () => {
   if (addFrom.id) {
     addFrom.label = addFrom.templateTage.join(',')
     const response: any = await putTemplat(addFrom)
+    if (props.isEditMode) {
+      window.$message?.success($t('common.saveSuccess'))
+      emit('update:deviceTemplateId', response.data.id)
+      return
+    }
     emit('update:stepCurrent', 2)
     emit('update:deviceTemplateId', response.data.id)
   } else {
@@ -242,8 +251,8 @@ watchEffect(async () => {
     </n-form>
   </div>
   <div class="box1 m-t2">
-    <n-button type="primary" @click="next">{{ $t('device_template.nextStep') }}</n-button>
-    <n-button class="m-r3" @click="cancellation">{{ $t('generate.cancel') }}</n-button>
+    <n-button type="primary" @click="next">{{ props.isEditMode ? $t('common.save') : $t('device_template.nextStep') }}</n-button>
+    <n-button v-if="!props.isEditMode" class="m-r3" @click="cancellation">{{ $t('generate.cancel') }}</n-button>
   </div>
 </template>
 

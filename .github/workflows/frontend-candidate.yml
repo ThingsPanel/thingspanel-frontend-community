@@ -1,0 +1,128 @@
+name: Frontend native model candidate
+
+on:
+  push:
+    branches:
+      - codex/thingmodel-dev-integration-20261018
+  pull_request:
+    branches:
+      - codex/thingmodel-dev-integration-20261018
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend-candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout candidate history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prepare evidence directory
+        run: mkdir -p "$RUNNER_TEMP/frontend-candidate-evidence"
+
+      - name: Set up project Node version
+        uses: actions/setup-node@v4
+        with:
+          # No .nvmrc exists. Node 20.11 is the exact version used by this
+          # frontend's existing deploy.yml and buildAndRelease.yml workflows.
+          node-version: 20.11.0
+
+      - name: Activate packageManager-pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.8.0 --activate
+          test "$(pnpm --version)" = "10.8.0"
+
+      - name: Install candidate dependencies once
+        id: dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Compare complete root vue-tsc diagnostics
+        id: typecheck
+        continue-on-error: true
+        shell: bash
+        env:
+          BASELINE_COMMIT: c6968c77662f41a642fba822ddc92bc308de9895
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/frontend-candidate-evidence"
+          baseline="$RUNNER_TEMP/frontend-baseline"
+          git worktree add --detach "$baseline" "$BASELINE_COMMIT"
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$baseline/node_modules"
+
+          baseline_status=0
+          (cd "$baseline" && ./node_modules/.bin/vue-tsc --noEmit --skipLibCheck) \
+            > "$evidence/baseline-vue-tsc.log" 2>&1 || baseline_status=$?
+
+          candidate_status=0
+          (cd "$GITHUB_WORKSPACE" && ./node_modules/.bin/vue-tsc --noEmit --skipLibCheck) \
+            > "$evidence/candidate-vue-tsc.log" 2>&1 || candidate_status=$?
+
+          export BASELINE_COMMIT CANDIDATE_COMMIT="$GITHUB_SHA" BASELINE_STATUS="$baseline_status" CANDIDATE_STATUS="$candidate_status"
+          python3 - "$evidence" <<'PY'
+          import json, os, pathlib, re, sys
+          root = pathlib.Path(sys.argv[1])
+          pattern = re.compile(r"\berror TS\d+\b")
+          def count(path):
+              return sum(1 for line in path.read_text(errors="replace").splitlines() if pattern.search(line))
+          baseline_count = count(root / "baseline-vue-tsc.log")
+          candidate_count = count(root / "candidate-vue-tsc.log")
+          result = {
+              "baseline_commit": os.environ["BASELINE_COMMIT"],
+              "candidate_commit": os.environ["CANDIDATE_COMMIT"],
+              "command": "vue-tsc --noEmit --skipLibCheck (root tsconfig.json)",
+              "baseline_exit_code": int(os.environ["BASELINE_STATUS"]),
+              "candidate_exit_code": int(os.environ["CANDIDATE_STATUS"]),
+              "baseline_error_diagnostic_count": baseline_count,
+              "candidate_error_diagnostic_count": candidate_count,
+              "candidate_minus_baseline_error_count": candidate_count - baseline_count,
+          }
+          (root / "typecheck-summary.json").write_text(json.dumps(result, indent=2) + "\n")
+          summary = pathlib.Path(os.environ["GITHUB_STEP_SUMMARY"])
+          summary.write_text(
+              "## Frontend typecheck comparison\n\n"
+              f"- Baseline `{result['baseline_commit']}`: exit {result['baseline_exit_code']}, "
+              f"{baseline_count} TypeScript error diagnostics\n"
+              f"- Candidate `{result['candidate_commit']}`: exit {result['candidate_exit_code']}, "
+              f"{candidate_count} TypeScript error diagnostics\n"
+              f"- Candidate minus baseline: {candidate_count - baseline_count}\n"
+              "- Full logs and machine-readable counts are attached as an artifact.\n"
+          )
+          PY
+
+          if [[ "$baseline_status" -ne 0 || "$candidate_status" -ne 0 ]]; then
+            echo "vue-tsc failed; inspect both preserved logs and the diagnostic-count summary artifact."
+            exit 1
+          fi
+
+      - name: Native adapter and field mapping tests
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm exec tsx --test src/service/api/thingmodel-native.test.ts src/service/api/native-template-binding-transport.test.ts src/views/device/template/native-field-mapping.test.ts src/views/device/template/native-model-resources.test.ts src/views/device/native-device-model-contract.test.ts
+
+      - name: Build production frontend bundle
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm exec cross-env NODE_OPTIONS=--max-old-space-size=8192 VITE_SERVICE_ENV=prod vite build
+
+      - name: Preserve typecheck evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-candidate-typecheck-${{ github.run_id }}
+          path: ${{ runner.temp }}/frontend-candidate-evidence/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Enforce complete typecheck gate
+        if: always()
+        env:
+          TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
+        run: test "$TYPECHECK_OUTCOME" = success

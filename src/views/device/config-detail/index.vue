@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { NButton } from 'naive-ui'
-import { deviceConfigInfo, deviceTemplateDetail } from '@/service/api/device'
+import { deviceConfigInfo } from '@/service/api/device'
 import SettingInfo from '@/views/device/config-detail/modules/setting-info.vue'
 import DataHandle from '@/views/device/config-detail/modules/data-handle.vue'
 import { useRouterPush } from '@/hooks/common/router'
@@ -18,13 +18,12 @@ const { routerPushByKey } = useRouterPush()
 const route = useRoute()
 const configId = ref<string>(typeof route.query.id === 'string' ? route.query.id : '')
 
-const configForm = ref({
+const configForm = ref<any>({
   id: typeof route.query.id === 'string' ? route.query.id : '',
   additional_info: null,
   description: null,
   device_conn_type: null,
   device_template_id: null,
-  device_template_name: '',
   device_type: '',
   name: '',
   protocol_config: null,
@@ -35,19 +34,9 @@ const configForm = ref({
 const editConfig = () => {
   routerPushByKey('device_config-edit', { query: { id: configId.value } })
 }
-const getTemplateDetail = async (templateId: string) => {
-  const res = await deviceTemplateDetail({ id: templateId })
-  if (res.data) {
-    configForm.value.device_template_name = res.data.name
-  }
-}
 const getConfig = async () => {
   const res = await deviceConfigInfo({ id: configId.value })
   configForm.value = res.data
-  if (configForm.value.device_template_id) {
-    configForm.value.device_template_name = ''
-    getTemplateDetail(String(configForm.value.device_template_id))
-  }
 }
 const tabKeys = {
   associatedDevices: 'associatedDevices',
@@ -65,13 +54,6 @@ if (configId.value) {
   getConfig()
   activeName.value = tabKeys.associatedDevices
 }
-const clickConfig: () => void = () => {
-  routerPushByKey('device_template', {
-    query: {
-      id: String(configForm.value.device_template_id || '')
-    }
-  })
-}
 </script>
 
 <template>
@@ -86,14 +68,12 @@ const clickConfig: () => void = () => {
         <template v-if="configForm.device_type === '2'">{{ $t('generate.gateway') }}</template>
         <template v-if="configForm.device_type === '3'">{{ $t('generate.gateway-sub-device') }}</template>
         <div class="ml-20">
-          {{ $t('route.device_template') }}：
-          <span style="color: blue; cursor: pointer" @click="clickConfig">
-            {{
-              configForm.device_template_name || configForm.device_template_name === ''
-                ? configForm.device_template_name
-                : $t('generate.unbound')
-            }}
+          物模型：
+          <span v-if="configForm.native_thing_model_id">
+            已绑定 · v{{ configForm.native_thing_model_revision }}
           </span>
+          <span v-else-if="configForm.device_template_id">已绑定（当前版本信息暂不可读取）</span>
+          <span v-else>未绑定</span>
         </div>
       </div>
 

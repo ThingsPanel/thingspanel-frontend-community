@@ -162,7 +162,7 @@
   "device_template.publishFailed": "发布失败",
   "device_template.publishConfirmTitle": "确认发布到资源中心",
   "device_template.uploadResourceConfirmTitle": "确认上传到资源中心",
-  "device_template.publishConfirmMessage": "发布后模板将对所有用户公开可见，确认发布？",
+  "device_template.publishConfirmMessage": "提交后将进入市场审核；审核通过后才会公开。发布内容包含当前设备配置和固定版本的原生物模型。",
   "device_template.localTemplates": "我的模板",
   "device_template.marketTemplates": "设备模板",
   "device_template.marketName": "模板名称",
@@ -195,5 +195,7 @@
   "device_template.marketCatAgriculture": "农业",
   "device_template.marketCatSmartCity": "智慧城市",
   "device_template.marketCatOther": "其他",
-  "device_template.requireThingModelBeforePublish": "请先定义物模型后再发布"
+  "device_template.requireThingModelBeforePublish": "请先定义物模型后再发布",
+  "device_template.requireNativeModelBeforePublish": "请先为设备配置绑定已发布的原生物模型快照",
+  "device_template.nativeMarketDependencyPinned": "将随包发布原生模型绑定：{binding}"
 }

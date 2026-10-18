@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/service/api/thingmodel-native-transport.ts",
+    "src/service/api/thingmodel-native.test.ts",
+    "src/views/device/template/native-field-mapping.ts",
+    "src/views/device/template/native-field-mapping.test.ts",
+    "src/views/device/template/NativeModelDefinition.vue",
+    "src/views/device/template/native-model-resources.ts",
+    "src/views/device/template/native-model-resources.test.ts",
+    "src/views/device/template/components/NativeModelProfile.vue"
+  ]
+}

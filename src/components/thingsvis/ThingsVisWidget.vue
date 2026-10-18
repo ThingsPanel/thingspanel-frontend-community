@@ -9,8 +9,7 @@ import {
   attributeDataPub,
   commandDataPub,
   deviceAlarmStatus,
-  telemetryDataHistoryList,
-  telemetryDataPub
+  telemetryDataHistoryList
 } from '@/service/api/device'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
 import { canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-normalizer'
@@ -257,7 +256,15 @@ const normalizeWriteData = (dataSourceId: string, data: unknown) => {
 
 const resolveCommandWrite = (data: unknown, fieldId?: string): { identify: string; value: string } | null => {
   if (!fieldId || data === null || typeof data !== 'object' || Array.isArray(data)) return null
+  const field = findPlatformWriteTarget(getPlatformFields(), fieldId)
+  if (field?.dataType !== 'command') return null
   const params = (data as Record<string, unknown>)[fieldId]
+  if (params !== undefined && params !== null && (typeof params !== 'object' || Array.isArray(params))) return null
+  const declaredParameters = (field.nativeSchema?.parameters as { items?: Array<{ identifier: string }> } | undefined)?.items
+  if (Array.isArray(declaredParameters) && params && typeof params === 'object') {
+    const allowed = new Set(declaredParameters.map(parameter => parameter.identifier))
+    if (Object.keys(params as Record<string, unknown>).some(identifier => !allowed.has(identifier))) return null
+  }
   return {
     identify: fieldId,
     value: JSON.stringify(params ?? {})
@@ -527,7 +534,7 @@ const resolveHistoryAggregateWindow = (timeRange: string, requestedWindow?: stri
 
   // Every history request uses the aggregate API path. This also upgrades old
   // bindings that omitted aggWindow or explicitly persisted no_aggregate.
-  if (requestedWeight && requestedWeight >= minimumWeight) return requestedWindow
+  if (requestedWeight && requestedWeight >= minimumWeight && requestedWindow) return requestedWindow
   return minimumWindow
 }
 
@@ -823,12 +830,7 @@ const postPlatformWriteResult = (
 
 const isWriteSuccessful = (result: any) => result?.error == null && result?.success !== false
 
-/**
- * The device may acknowledge a telemetry/attribute write without immediately
- * publishing a new realtime sample. Keep the embedded widget in sync with the
- * value that the platform accepted, while still waiting for the next device
- * push to become the authoritative state.
- */
+/** Keep an accepted attribute write visible while waiting for the next device push. */
 const pushAcceptedWrite = (data: Record<string, unknown> | null, deviceId: string, result: any) => {
   if (!data || !isWriteSuccessful(result)) return
   pushPlatformFieldData(data, deviceId)
@@ -866,7 +868,8 @@ const handlePlatformWrite = async (event: MessageEvent) => {
     const fieldEntries = dataObject ? Object.entries(dataObject) : []
     const fieldId = fieldEntries.length === 1 ? fieldEntries[0]?.[0] : undefined
     const writeField = fieldId ? findPlatformWriteTarget(getPlatformFields(), fieldId) : undefined
-    const fieldType = writeField?.dataType
+    const schemaField = fieldId ? findPlatformField(getPlatformFields(), fieldId) : undefined
+    const fieldType = writeField?.dataType || (schemaField?.dataType === 'telemetry' ? 'telemetry' : undefined)
     const valueStr = typeof normalizedData === 'string' ? normalizedData : JSON.stringify(normalizedData)
 
     if (fieldType === 'attribute') {
@@ -914,21 +917,15 @@ const handlePlatformWrite = async (event: MessageEvent) => {
       return
     }
 
-    const result = await telemetryDataPub({ device_id: targetDeviceId, value: valueStr })
-    if (!isWriteSuccessful(result)) {
-      postPlatformWriteResult(requestId, event.source, {
-        success: false,
-        error: result?.error || 'Telemetry write failed'
-      })
-      return
-    }
-    pushAcceptedWrite(dataObject, targetDeviceId, result)
     postPlatformWriteResult(requestId, event.source, {
-      success: true,
-      echo: result?.data ?? normalizedData
+      success: false,
+      error: fieldType === 'telemetry'
+        ? 'Telemetry fields are read-only; use a command field for device control'
+        : 'Only writable attributes and command fields can be sent'
     })
+    return
   } catch (e) {
-    console.error('[ThingsVisWidget] telemetryDataPub failed for tv:platform-write:', e)
+    console.error('[ThingsVisWidget] Failed to route tv:platform-write:', e)
     const message = e instanceof Error ? e.message : String(e || 'Platform write failed')
     postPlatformWriteResult(requestId, event.source, {
       success: false,
