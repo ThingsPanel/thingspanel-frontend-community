@@ -161,7 +161,7 @@ function resolvePlatformCacheScope(): string | null {
   const tenantId = String(user?.tenantId || user?.tenant_id || '').trim()
   const userId = firstString(user?.id, (user as any)?.userId, (user as any)?.user_id)
   if (!userId || (!tenantId && !user?.roles?.includes('SYS_ADMIN'))) return null
-  return `${resolveThingsVisSpaceId(user)}:${tenantId || 'sys-admin'}:${user.authority || ''}:${userId}`
+  return `${resolveThingsVisSpaceId(user)}:${tenantId || 'sys-admin'}:${user?.authority || ''}:${userId}`
 }
 
 function scopedPlatformCacheKey(key: string): string | null {
@@ -978,7 +978,10 @@ function buildDeviceWidgetPresets(sourceKey: string, rawConfig: unknown, fields:
   return [...nodePresets, ...storedPresets]
 }
 
-async function loadDeviceFieldMetadata(deviceId: string, configId?: string, row?: any) {
+type PlatformDeviceMetadata = Pick<PlatformDeviceEntry,
+  'fields' | 'presets' | 'metadataError' | 'nativeModelID' | 'nativeSnapshotID' | 'nativeRevision' | 'nativeBindingRevision'>
+
+async function loadDeviceFieldMetadata(deviceId: string, configId?: string, row?: any): Promise<PlatformDeviceMetadata> {
   let config = asRecord(row?.device_config || row?.deviceConfig || row)
   if (configId) {
     config = await loadDeviceConfigBinding(configId)
