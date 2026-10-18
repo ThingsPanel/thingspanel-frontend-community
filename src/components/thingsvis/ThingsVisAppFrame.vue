@@ -107,7 +107,7 @@ interface DeviceStatusWsEntry {
   deviceId: string
 }
 
-type PlatformDeviceField = Pick<PlatformField, 'id' | 'name' | 'dataType' | 'type' | 'unit' | 'options'>
+type PlatformDeviceField = Pick<PlatformField, 'id' | 'name' | 'dataType' | 'type' | 'unit' | 'options' | 'writable'>
 
 type PlatformDeviceEntry = {
   deviceId: string
