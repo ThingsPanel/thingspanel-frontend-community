@@ -5,9 +5,10 @@ import { nativeModelFieldsToPlatformFields } from './template/native-model-resou
 
 export function hasNativeDeviceBinding(binding: DeviceConfigNativeBinding | null | undefined) {
   return Boolean(
-    binding?.native_thing_model_id ||
-      binding?.native_thing_model_snapshot_id ||
-      Number(binding?.native_thing_model_revision) > 0
+    binding &&
+      (binding.native_thing_model_id != null ||
+        binding.native_thing_model_snapshot_id != null ||
+        binding.native_thing_model_revision != null)
   )
 }
 
@@ -44,9 +45,9 @@ export function assertDeviceSnapshotMatchesBinding(
 }
 
 export function nativeDevicePlatformFields(model: ModelDraft): PlatformField[] {
-  // Telemetry/events must never be routed through a write target, including old writable telemetry snapshots.
+  // Native device writes go through COMMAND; even writable ATTRIBUTE metadata is read-only here.
   return nativeModelFieldsToPlatformFields(model).map(field => {
-    if (field.dataType === 'attribute' || field.dataType === 'command') return field
+    if (field.dataType === 'command') return field
     const { writable: _writable, write: _write, ...readOnlyField } = field
     return { ...readOnlyField, writable: false }
   })
@@ -79,7 +80,7 @@ function clearRawFieldMetadata(row: Record<string, any>) {
 }
 
 function enumLabel(field: PlatformField, value: unknown) {
-  return field.options?.find(option => String(option.value) === String(value))?.label
+  return field.options?.find(option => option.value === value)?.label
 }
 
 /** Decorate raw attribute values only from the pinned native ATTRIBUTE fields. */
@@ -125,7 +126,7 @@ type NativeEventParameter = {
 function eventParameterLabel(parameter: NativeEventParameter, value: unknown) {
   const type = parameter.valueType
   if (type?.kind !== 'ENUM') return value
-  const match = type.enumValues?.find(option => String(option.code) === String(value))
+  const match = type.enumValues?.find(option => option.code === value)
   return match?.label?.default ?? value
 }
 
@@ -140,12 +141,21 @@ function formatNativeEventData(value: unknown, parameters: NativeEventParameter[
   }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return value
   const parameterMap = new Map(parameters.map(parameter => [parameter.identifier, parameter]))
-  const display = Object.fromEntries(
-    Object.entries(parsed as Record<string, unknown>).map(([key, item]) => {
-      const parameter = parameterMap.get(key)
-      return [parameter?.nameI18n?.default || key, parameter ? eventParameterLabel(parameter, item) : item]
-    })
-  )
+  const entries = Object.entries(parsed as Record<string, unknown>)
+  const inputKeys = new Set(entries.map(([key]) => key))
+  const usedKeys = new Set<string>()
+  const display: Record<string, unknown> = {}
+  for (const [key, item] of entries) {
+    const parameter = parameterMap.get(key)
+    const base = parameter ? `${parameter.nameI18n?.default || parameter.identifier} [${parameter.identifier}]` : key
+    let displayKey = base
+    let suffix = 2
+    while (usedKeys.has(displayKey) || (displayKey !== key && inputKeys.has(displayKey))) {
+      displayKey = `${base} #${suffix++}`
+    }
+    usedKeys.add(displayKey)
+    display[displayKey] = parameter ? eventParameterLabel(parameter, item) : item
+  }
   return JSON.stringify(display)
 }
 
