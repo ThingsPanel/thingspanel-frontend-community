@@ -86,6 +86,8 @@ const formModel = reactive({
 })
 const options = ref()
 let commandDefinitionsRequestId = 0
+let deviceDataRequestId = 0
+let lastDeviceDataId: string | undefined
 watch(
   () => [props.nativeCommandsResolved, props.nativeCommandOptions],
   () => {
@@ -117,16 +119,19 @@ const rules = computed<FormRules>(() => {
   return r
 })
 const fetchDataFunction = async () => {
+  const requestId = ++deviceDataRequestId
+  const deviceId = props.id
   startLoading()
+  try {
+    const { data, error } = await props.fetchDataApi({
+      page: !props.noRefresh ? the_page.value : undefined,
+      page_size: !props.noRefresh ? 4 : undefined,
+      device_id: deviceId
+    })
+    if (requestId !== deviceDataRequestId || deviceId !== props.id || error) return
 
-  const { data, error } = await props.fetchDataApi({
-    page: !props.noRefresh ? the_page.value : undefined,
-    page_size: !props.noRefresh ? 4 : undefined,
-    device_id: props.id
-  })
-  if (!error) {
     const list = data?.value || data?.list || (Array.isArray(data) ? data : []) || []
-    if (list.length > 0 || !isDeviceDetailDemo(props.id)) {
+    if (list.length > 0 || !isDeviceDetailDemo(deviceId)) {
       tableData.value = props.decorateRows ? props.decorateRows(list) : list
     } else if (props.tableColumns?.some(column => column.key === 'identify')) {
       const demoRows = props.isCommand ? demoCommands() : demoEvents()
@@ -137,10 +142,9 @@ const fetchDataFunction = async () => {
       const demoRows = demoAttributes()
       tableData.value = props.decorateRows ? props.decorateRows(demoRows) : demoRows
     }
-    if (data?.count || data?.total) {
-      page_coune.value = Math.ceil((data?.count || data?.total) / 4)
-    }
-    endLoading()
+    page_coune.value = Math.ceil(((data?.count || data?.total) ?? 0) / 4)
+  } finally {
+    if (requestId === deviceDataRequestId && deviceId === props.id) endLoading()
   }
 }
 
@@ -299,6 +303,11 @@ watch(
   () => [props.id, props.nativeCommandsResolved, props.decorateRows],
   () => {
     const requestId = ++commandDefinitionsRequestId
+    if (lastDeviceDataId !== props.id) {
+      tableData.value = undefined
+      page_coune.value = 0
+      lastDeviceDataId = props.id
+    }
     options.value = props.nativeCommandsResolved ? props.nativeCommandOptions || [] : undefined
     commandList.value = []
     if (props.isCommand && !props.nativeCommandsResolved) void getListData(requestId)

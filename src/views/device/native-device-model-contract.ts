@@ -13,7 +13,7 @@ export function hasNativeDeviceBinding(binding: DeviceConfigNativeBinding | null
 }
 
 export function deviceBindingRequiresNativeModel(binding: DeviceConfigNativeBinding | null | undefined) {
-  return hasNativeDeviceBinding(binding) || Boolean(binding?.device_template_id)
+  return hasNativeDeviceBinding(binding) || Boolean(binding?.device_template_id?.trim())
 }
 
 export function assertCompleteNativeDeviceBinding(binding: DeviceConfigNativeBinding | null | undefined) {
@@ -21,6 +21,9 @@ export function assertCompleteNativeDeviceBinding(binding: DeviceConfigNativeBin
   const snapshotID = binding?.native_thing_model_snapshot_id?.trim()
   const revision = Number(binding?.native_thing_model_revision)
   const bindingRevision = Number(binding?.native_binding_revision)
+  if (binding?.device_template_id?.trim()) {
+    throw new Error('Native thing model binding cannot be combined with a legacy device template')
+  }
   if (
     !modelID ||
     !snapshotID ||

@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { NAlert, NButton, NPopconfirm } from 'naive-ui'
 import dayjs from 'dayjs'
 import { $t } from '@/locales'
@@ -11,44 +11,20 @@ import {
   getAttributeDataSet,
   getAttributeDataSetLogs
 } from '@/service/api'
-import { isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
-import { hasNativeDeviceBinding, resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
-import { decorateNativeAttributeRows, formatNativeAttributeValue } from '@/views/device/native-device-model-contract'
-import type { PlatformField } from '@/utils/thingsvis/types'
+import { isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
+import { resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
+import { formatNativeAttributeValue } from '@/views/device/native-device-model-contract'
+import { useNativeDeviceMetadata } from '@/views/device/use-native-device-metadata'
 const props = defineProps<{
   id: string
   deviceData?: { device_config?: DeviceConfigNativeBinding | null }
 }>()
 const attributeRef = ref()
-const nativeFields = ref<PlatformField[]>([])
-const nativeMetadataFailed = ref(false)
-let nativeModelRequestId = 0
-const isNativeBound = computed(() => hasNativeDeviceBinding(props.deviceData?.device_config))
-const decorateRows = computed(() =>
-  isNativeBound.value
-    ? (rows: Record<string, any>[]) => decorateNativeAttributeRows(rows, nativeFields.value)
-    : undefined
-)
-
-watch(
-  () => props.deviceData?.device_config,
-  async binding => {
-    const requestId = ++nativeModelRequestId
-    nativeFields.value = []
-    nativeMetadataFailed.value = false
-    if (!hasNativeDeviceBinding(binding)) return
-    try {
-      const resolved = await resolveDeviceNativeModel(binding)
-      if (requestId !== nativeModelRequestId) return
-      nativeFields.value = (resolved?.platformFields || []).filter(field => field.dataType === 'attribute')
-    } catch (error) {
-      if (requestId !== nativeModelRequestId) return
-      nativeMetadataFailed.value = true
-      console.warn('[DeviceStats] Failed to read pinned native model metadata', error)
-    }
-  },
-  { immediate: true }
+const { isNativeBound, nativeMetadataFailed, decorateRows } = useNativeDeviceMetadata(
+  computed(() => props.deviceData?.device_config),
+  'attribute',
+  resolveDeviceNativeModel
 )
 const columns0 = [
   {

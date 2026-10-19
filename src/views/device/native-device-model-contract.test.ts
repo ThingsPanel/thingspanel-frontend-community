@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { computed, nextTick, ref } from 'vue'
 import type { DeviceConfigNativeBinding } from '../../service/api/native-template-binding'
 import type { ModelDraft, SnapshotDetail } from '../../service/api/thingmodel-native-transport'
 import {
@@ -11,6 +12,7 @@ import {
   nativeCommandOptions,
   nativeDevicePlatformFields
 } from './native-device-model-contract'
+import { useNativeDeviceMetadata } from './use-native-device-metadata'
 
 const binding: DeviceConfigNativeBinding = {
   id: 'config-1',
@@ -179,6 +181,11 @@ test('device binding requires the exact model, snapshot ID, and published revisi
     () => assertDeviceSnapshotMatchesBinding({ ...binding, native_thing_model_id: '' }, snapshot),
     /incomplete/
   )
+  assert.doesNotThrow(() => assertDeviceSnapshotMatchesBinding({ ...binding, device_template_id: '' }, snapshot))
+  assert.throws(
+    () => assertDeviceSnapshotMatchesBinding({ ...binding, device_template_id: 'legacy-template' }, snapshot),
+    /cannot be combined/
+  )
 })
 
 test('native device fields are writable only through commands', () => {
@@ -289,31 +296,32 @@ test('native event rows use pinned event and parameter labels, while unknown ide
 })
 
 test('native event display keeps duplicate names, raw collisions, and enum value types intact', () => {
+  const typedEventFields = metadataV3Model.fields.map(field =>
+    field.identifier === 'alarm'
+      ? {
+          ...field,
+          parameters: {
+            schemaVersion: 1,
+            items: [
+              { identifier: 'event_code', nameI18n: { default: 'Alarm code' }, valueType: { kind: 'INT' } },
+              { identifier: 'message', nameI18n: { default: 'Alarm code' }, valueType: { kind: 'STRING' } },
+              {
+                identifier: 'stage',
+                nameI18n: { default: 'Mode' },
+                valueType: {
+                  kind: 'ENUM',
+                  baseKind: 'STRING',
+                  enumValues: [{ code: '1', label: { default: 'One' } }]
+                }
+              }
+            ]
+          }
+        }
+      : field
+  ) as unknown as ModelDraft['fields']
   const typedEventModel: ModelDraft = {
     ...metadataV3Model,
-    fields: metadataV3Model.fields.map(field =>
-      field.identifier === 'alarm'
-        ? {
-            ...field,
-            parameters: {
-              schemaVersion: 1,
-              items: [
-                { identifier: 'event_code', nameI18n: { default: 'Alarm code' }, valueType: { kind: 'INT' } },
-                { identifier: 'message', nameI18n: { default: 'Alarm code' }, valueType: { kind: 'STRING' } },
-                {
-                  identifier: 'stage',
-                  nameI18n: { default: 'Mode' },
-                  valueType: {
-                    kind: 'ENUM',
-                    baseKind: 'STRING',
-                    enumValues: [{ code: '1', label: { default: 'One' } }]
-                  }
-                }
-              ]
-            }
-          }
-        : field
-    )
+    fields: typedEventFields
   }
   const rawData = '{"event_code":7,"message":"hot","stage":1,"Alarm code [event_code]":"raw"}'
   const [row] = decorateNativeEventRows(
@@ -327,4 +335,53 @@ test('native event display keeps duplicate names, raw collisions, and enum value
     'Mode [stage]': 1,
     'Alarm code [event_code]': 'raw'
   })
+})
+
+test('native metadata updates rows after async snapshot resolution and ignores stale binding responses', async () => {
+  const currentBinding = ref<DeviceConfigNativeBinding | null>(binding)
+  const pendingResolvers: Array<
+    (value: { platformFields: ReturnType<typeof nativeDevicePlatformFields> } | null) => void
+  > = []
+  const metadata = useNativeDeviceMetadata(
+    computed(() => currentBinding.value),
+    'attribute',
+    () =>
+      new Promise(resolve => {
+        pendingResolvers.push(resolve)
+      })
+  )
+  const rawRows = [{ key: 'battery', data_name: 'Stale template label', unit: 'V', value: 42 }]
+
+  await nextTick()
+  assert.equal(pendingResolvers.length, 1)
+  assert.equal(metadata.decorateRows.value?.(rawRows)[0].data_name, 'battery')
+
+  const modelTwo: ModelDraft = {
+    ...metadataV3Model,
+    fields: metadataV3Model.fields.map(field =>
+      field.identifier === 'battery' ? { ...field, nameI18n: { default: 'Current battery' } } : field
+    )
+  }
+  currentBinding.value = { ...binding, native_thing_model_id: 'model-2' }
+  await nextTick()
+  assert.equal(pendingResolvers.length, 2)
+  currentBinding.value = { ...binding, native_thing_model_id: 'model-3' }
+  await nextTick()
+  assert.equal(pendingResolvers.length, 3)
+
+  pendingResolvers[2]({ platformFields: nativeDevicePlatformFields(modelTwo) })
+  await nextTick()
+  assert.equal(metadata.decorateRows.value?.(rawRows)[0].data_name, 'Current battery')
+  pendingResolvers[1]({ platformFields: nativeDevicePlatformFields(metadataV3Model) })
+  await nextTick()
+  assert.equal(metadata.decorateRows.value?.(rawRows)[0].data_name, 'Current battery')
+
+  currentBinding.value = {
+    ...binding,
+    native_thing_model_id: null,
+    native_thing_model_snapshot_id: null,
+    native_thing_model_revision: null
+  }
+  await nextTick()
+  assert.equal(metadata.decorateRows.value, undefined)
 })
