@@ -71,6 +71,7 @@ const props = defineProps<{
   fetchDataApi: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
   nativeCommandOptions?: any[]
   nativeCommandsResolved?: boolean
+  decorateRows?: (rows: any[]) => any[]
 }>()
 const tableData = ref<any[] | undefined>()
 const page_coune = ref(0)
@@ -126,13 +127,15 @@ const fetchDataFunction = async () => {
   if (!error) {
     const list = data?.value || data?.list || (Array.isArray(data) ? data : []) || []
     if (list.length > 0 || !isDeviceDetailDemo(props.id)) {
-      tableData.value = list
+      tableData.value = props.decorateRows ? props.decorateRows(list) : list
     } else if (props.tableColumns?.some(column => column.key === 'identify')) {
-      tableData.value = props.isCommand ? demoCommands() : demoEvents()
+      const demoRows = props.isCommand ? demoCommands() : demoEvents()
+      tableData.value = props.decorateRows ? props.decorateRows(demoRows) : demoRows
     } else if (props.tableColumns?.some(column => column.key === 'message_id')) {
       tableData.value = demoAttributeLogs()
     } else {
-      tableData.value = demoAttributes()
+      const demoRows = demoAttributes()
+      tableData.value = props.decorateRows ? props.decorateRows(demoRows) : demoRows
     }
     if (data?.count || data?.total) {
       page_coune.value = Math.ceil((data?.count || data?.total) / 4)
@@ -293,7 +296,7 @@ const getListData = async (requestId = commandDefinitionsRequestId) => {
   commandList.value = data
 }
 watch(
-  () => [props.id, props.nativeCommandsResolved],
+  () => [props.id, props.nativeCommandsResolved, props.decorateRows],
   () => {
     const requestId = ++commandDefinitionsRequestId
     options.value = props.nativeCommandsResolved ? props.nativeCommandOptions || [] : undefined
