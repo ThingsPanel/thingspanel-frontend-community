@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { NButton, NDrawer, NDrawerContent, NEmpty, NIcon, NSpin, NSwitch, NTag } from 'naive-ui'
+import { NButton, NDrawer, NDrawerContent, NEmpty, NIcon, NSpin, NTag } from 'naive-ui'
 import { RefreshOutline, TimeOutline } from '@vicons/ionicons5'
-import { commandDataPub, deviceConfigInfo, deviceList, telemetryDataCurrent } from '@/service/api/device'
-import { commandsApi as getTemplateCommands, telemetryApi as getTemplateTelemetry } from '@/service/api/system-data'
+import { deviceConfigInfo, deviceList, telemetryDataCurrent } from '@/service/api/device'
+import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
+import { hasNativeDeviceBinding, resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
 import HistoryData from '@/views/device/details/modules/telemetry/modules/history-data.vue'
 import TimeSeriesData from '@/views/device/details/modules/telemetry/modules/time-series-data.vue'
 import { $t } from '@/locales'
 import {
   getCompactReadingDisplayValue,
-  getReadingDisplayValue,
   isDisplayableReading,
-  isNumericReading,
-  resolveStandardBooleanCommand
+  isNumericReading
 } from '@/utils/device-readings'
 
 type DeviceRow = {
@@ -20,6 +19,12 @@ type DeviceRow = {
   name?: string
   device_number?: string
   is_online?: number
+  device_config_id?: string
+  device_template_id?: string | null
+  native_thing_model_id?: string | null
+  native_thing_model_snapshot_id?: string | null
+  native_thing_model_revision?: number | null
+  native_binding_revision?: number
   [key: string]: unknown
 }
 
@@ -38,9 +43,7 @@ const emit = defineEmits<{
 
 const devices = ref<DeviceRow[]>([])
 const readingsByDevice = ref<Record<string, Reading[]>>({})
-const commandsByDevice = ref<Record<string, unknown[]>>({})
-const booleanTelemetryKeysByDevice = ref<Record<string, string[]>>({})
-const pendingSwitches = ref<Record<string, boolean>>({})
+const nativeMetadataErrorsByDevice = ref<Record<string, string>>({})
 const listLoading = ref(false)
 const readingsLoading = ref(false)
 const loadError = ref('')
@@ -102,93 +105,63 @@ async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
     while (nextIndex < deviceRows.length && sequence === requestSequence) {
       const device = deviceRows[nextIndex]
       nextIndex += 1
+      let rows: Reading[] = []
       try {
         const response = await telemetryDataCurrent(device.id)
-        const rows = Array.isArray(response?.data) ? response.data.filter(isDisplayableReading) : []
+        rows = Array.isArray(response?.data) ? response.data.filter(isDisplayableReading) : []
+      } catch {
+        if (sequence !== requestSequence) return
+        results[device.id] = []
+        continue
+      }
+      if (sequence !== requestSequence) return
+
+      try {
+        let binding: DeviceConfigNativeBinding = device
+        const configId = typeof device.device_config_id === 'string' ? device.device_config_id : ''
+        if (configId) {
+          const configResponse = await deviceConfigInfo({ id: configId })
+          if (sequence !== requestSequence) return
+          const configData = configResponse?.data
+          if (
+            configResponse?.error ||
+            !configData ||
+            typeof configData !== 'object' ||
+            Array.isArray(configData)
+          ) {
+            throw new Error('设备物模型配置不完整，请联系管理员检查')
+          }
+          binding = { ...device, ...configData, id: configId } as DeviceConfigNativeBinding
+        }
+
+        if (hasNativeDeviceBinding(binding)) {
+          const resolved = await resolveDeviceNativeModel(binding)
+          if (sequence !== requestSequence) return
+          if (!resolved) throw new Error('设备物模型配置不完整，请联系管理员检查')
+          const telemetryFields = resolved.platformFields.filter(field => field.dataType === 'telemetry')
+          const fieldById = new Map(telemetryFields.map(field => [field.id, field]))
+          rows = rows.map(reading => {
+            const field = fieldById.get(reading.key)
+            return field
+              ? { ...reading, label: field.name || reading.label, unit: field.unit ?? reading.unit, data_type: field.type }
+              : reading
+          })
+        } else if (binding.device_template_id || device.device_template_id) {
+          nativeMetadataErrorsByDevice.value[device.id] = '设备物模型配置不完整，请联系管理员检查'
+        } else {
+          delete nativeMetadataErrorsByDevice.value[device.id]
+        }
         results[device.id] = rows
       } catch {
-        results[device.id] = []
+        if (sequence !== requestSequence) return
+        nativeMetadataErrorsByDevice.value[device.id] = '物模型字段读取失败，请刷新后重试'
+        results[device.id] = rows
       }
     }
   })
 
   await Promise.all(workers)
   if (sequence === requestSequence) readingsByDevice.value = results
-}
-
-function parseBooleanTelemetryKeys(value: unknown) {
-  let model: unknown = value
-  if (typeof value === 'string') {
-    try {
-      model = JSON.parse(value)
-    } catch {
-      return []
-    }
-  }
-  if (!Array.isArray(model)) return []
-  return model.flatMap((field: any) => {
-    const identifier = field?.data_identifier || field?.identifier || field?.key
-    return identifier &&
-      String(field?.data_type || '')
-        .trim()
-        .toLowerCase() === 'boolean'
-      ? [String(identifier)]
-      : []
-  })
-}
-
-function parseModelList(response: any) {
-  if (Array.isArray(response?.data?.list)) return response.data.list
-  if (Array.isArray(response?.data)) return response.data
-  return []
-}
-
-async function fetchDeviceCommands(deviceRows: DeviceRow[], sequence: number) {
-  const templateDetails = new Map<string, Promise<{ commands: unknown[]; telemetry: unknown[] }>>()
-  const configTemplates = new Map<string, Promise<string>>()
-  const results: Record<string, unknown[]> = {}
-  const booleanKeys: Record<string, string[]> = {}
-  await Promise.all(
-    deviceRows.map(async device => {
-      try {
-        let templateId = typeof device.device_template_id === 'string' ? device.device_template_id : ''
-        if (!templateId && typeof device.device_config_id === 'string' && device.device_config_id) {
-          const configId = device.device_config_id
-          let configRequest = configTemplates.get(configId)
-          if (!configRequest) {
-            configRequest = deviceConfigInfo({ id: configId }).then(response =>
-              String(response?.data?.device_template_id || '')
-            )
-            configTemplates.set(configId, configRequest)
-          }
-          templateId = await configRequest
-        }
-        if (!templateId) return
-
-        let request = templateDetails.get(templateId)
-        if (!request) {
-          request = Promise.all([
-            getTemplateCommands({ page: 1, page_size: 1000, device_template_id: templateId }),
-            getTemplateTelemetry({ page: 1, page_size: 1000, device_template_id: templateId })
-          ]).then(([commandsResponse, telemetryResponse]) => ({
-            commands: parseModelList(commandsResponse),
-            telemetry: parseModelList(telemetryResponse)
-          }))
-          templateDetails.set(templateId, request)
-        }
-        const template = await request
-        results[device.id] = template.commands
-        booleanKeys[device.id] = parseBooleanTelemetryKeys(template.telemetry)
-      } catch {
-        results[device.id] = []
-        booleanKeys[device.id] = []
-      }
-    })
-  )
-  if (sequence === requestSequence) {
-    commandsByDevice.value = results
-    booleanTelemetryKeysByDevice.value = booleanKeys
-  }
 }
 
 async function loadReadings() {
@@ -198,8 +171,7 @@ async function loadReadings() {
   loadError.value = ''
   devices.value = []
   readingsByDevice.value = {}
-  commandsByDevice.value = {}
-  booleanTelemetryKeysByDevice.value = {}
+  nativeMetadataErrorsByDevice.value = {}
 
   try {
     const nextDevices = await fetchAllDevices(sequence)
@@ -207,7 +179,7 @@ async function loadReadings() {
     devices.value = nextDevices
     listLoading.value = false
     readingsLoading.value = nextDevices.length > 0
-    await Promise.all([fetchDeviceReadings(nextDevices, sequence), fetchDeviceCommands(nextDevices, sequence)])
+    await fetchDeviceReadings(nextDevices, sequence)
   } catch (error) {
     if (sequence !== requestSequence) return
     loadError.value = error instanceof Error ? error.message : $t('custom.devicePage.readingsLoadFailed')
@@ -216,70 +188,6 @@ async function loadReadings() {
       listLoading.value = false
       readingsLoading.value = false
     }
-  }
-}
-
-function isDeclaredBooleanReading(device: DeviceRow, reading: Reading) {
-  return booleanTelemetryKeysByDevice.value[device.id]?.includes(reading.key) || false
-}
-
-function getStandardBooleanReading(device: DeviceRow, reading: Reading) {
-  if (!isDeclaredBooleanReading(device, reading) || typeof reading.value !== 'boolean') return null
-  return { ...reading, data_type: 'boolean' }
-}
-
-function getSwitchCommandBinding(device: DeviceRow, reading: Reading) {
-  const standardReading = getStandardBooleanReading(device, reading)
-  return resolveStandardBooleanCommand(standardReading || reading, commandsByDevice.value[device.id] || [])
-}
-
-function isSwitchReading(device: DeviceRow, reading: Reading) {
-  return (
-    isDeclaredBooleanReading(device, reading) ||
-    reading.value === 'on' ||
-    reading.value === 'off' ||
-    Boolean(getSwitchCommandBinding(device, reading))
-  )
-}
-
-function getSwitchState(device: DeviceRow, reading: Reading): boolean | null {
-  const standardReading = getStandardBooleanReading(device, reading)
-  if (standardReading) return standardReading.value as boolean
-  if (reading.value === 'on') return true
-  if (reading.value === 'off') return false
-  return null
-}
-
-function switchPendingKey(device: DeviceRow, reading: Reading) {
-  return `${device.id}:${reading.key}`
-}
-
-async function changeBooleanReading(device: DeviceRow, reading: Reading, value: boolean) {
-  const binding = getSwitchCommandBinding(device, reading)
-  const pendingKey = switchPendingKey(device, reading)
-  if (!binding || pendingSwitches.value[pendingKey]) return
-  pendingSwitches.value[pendingKey] = true
-  try {
-    const response = await commandDataPub({
-      device_id: device.id,
-      identify: binding.identify,
-      value:
-        binding.payloadMode === 'mapped-command'
-          ? JSON.stringify({ [binding.parameterIdentifier!]: value ? binding.onValue : binding.offValue })
-          : JSON.stringify({ [binding.parameterIdentifier!]: value })
-    })
-    if (response?.error || response?.success === false) {
-      window.$message?.error(response?.error?.message || response?.error || '命令发送失败')
-      return
-    }
-    // Command acceptance is not proof that the physical device changed state.
-    // Keep the switch controlled by the authoritative telemetry sample.
-    const latest = await telemetryDataCurrent(device.id)
-    readingsByDevice.value[device.id] = Array.isArray(latest?.data) ? latest.data.filter(isDisplayableReading) : []
-  } catch (error) {
-    window.$message?.error(error instanceof Error ? error.message : '命令发送失败')
-  } finally {
-    delete pendingSwitches.value[pendingKey]
   }
 }
 
@@ -328,6 +236,9 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => void loadR
               {{ device.is_online === 1 ? $t('custom.devicePage.online') : $t('custom.devicePage.offline') }}
             </NTag>
           </div>
+          <p v-if="nativeMetadataErrorsByDevice[device.id]" class="device-readings-row__metadata-error">
+            {{ nativeMetadataErrorsByDevice[device.id] }}
+          </p>
 
           <div v-if="readingsLoading && !readingsByDevice[device.id]" class="device-readings-row__placeholder">
             {{ $t('custom.devicePage.loadingReadings') }}
@@ -337,7 +248,6 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => void loadR
               v-for="reading in readingsByDevice[device.id]"
               :key="`${device.id}:${reading.key}`"
               class="device-reading"
-              :class="{ 'device-reading--boolean': isSwitchReading(device, reading) }"
             >
               <button
                 type="button"
@@ -346,43 +256,14 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => void loadR
                 @click="openReadingHistory(device, reading)"
               >
                 <span class="device-reading__label">{{ reading.label || reading.key }}</span>
-                <span v-if="!isSwitchReading(device, reading)" class="device-reading__value">
+                <span class="device-reading__value">
                   {{ getCompactReadingDisplayValue(reading) }}
                   <small v-if="reading.unit">{{ reading.unit }}</small>
                 </span>
-                <NIcon v-if="!isSwitchReading(device, reading)" class="device-reading__history" size="14">
+                <NIcon class="device-reading__history" size="14">
                   <TimeOutline />
                 </NIcon>
-                <span
-                  v-else-if="getSwitchState(device, reading) === null"
-                  class="device-reading__raw-boolean"
-                  :title="'模板声明为 Boolean，但遥测值不是 JSON true/false'"
-                >
-                  {{ getReadingDisplayValue(reading) }}
-                </span>
               </button>
-              <NSwitch
-                v-if="isSwitchReading(device, reading)"
-                :value="getSwitchState(device, reading)"
-                :loading="Boolean(pendingSwitches[switchPendingKey(device, reading)])"
-                :disabled="
-                  device.is_online !== 1 ||
-                  getSwitchState(device, reading) === null ||
-                  !getSwitchCommandBinding(device, reading)
-                "
-                :title="
-                  device.is_online !== 1
-                    ? '设备离线'
-                    : getSwitchState(device, reading) === null
-                      ? '遥测值必须是 JSON true/false，或模板明确配置 on/off 双态枚举'
-                      : !getSwitchCommandBinding(device, reading)
-                        ? '请在设备模板中配置同标识且只有一个 Boolean 参数的命令'
-                        : ''
-                "
-                size="small"
-                :aria-label="String(reading.label || reading.key)"
-                @update:value="value => changeBooleanReading(device, reading, value)"
-              />
             </div>
           </div>
           <div v-else class="device-readings-row__placeholder">
@@ -448,6 +329,12 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => void loadR
     font-size: 12px;
     white-space: nowrap;
   }
+}
+
+.device-readings-row__metadata-error {
+  margin: 4px 0 0;
+  color: var(--error-color);
+  font-size: 12px;
 }
 
 .device-readings-compact__empty {
@@ -565,23 +452,6 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => void loadR
 .device-reading__history {
   flex: 0 0 auto;
   color: var(--primary-color);
-}
-
-.device-reading--boolean {
-  flex: 1 1 250px;
-  justify-content: space-between;
-  min-width: 250px;
-  max-width: 360px;
-
-  .device-reading__history-trigger {
-    flex: 1;
-    justify-content: flex-start;
-  }
-}
-
-.device-reading__raw-boolean {
-  color: var(--warning-color, #d48806);
-  font-size: 11px;
 }
 
 .device-readings-row__placeholder {

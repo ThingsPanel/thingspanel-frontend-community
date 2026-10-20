@@ -127,6 +127,7 @@
   "route.visualization-app-dashboards": "看板列表",
   "route.visualization-app-preview": "看板预览",
   "route.device_template": "物模型",
+  "route.device_thingsmodel_detail": "物模型详情",
   "route.device_market-browse": "看板模板",
   "route.device_market-installed": "已安装方案",
   "route.device_market-installed-detail": "安装详情",

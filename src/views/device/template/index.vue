@@ -1,700 +1,140 @@
 <script setup lang="ts">
-import { reactive, ref, computed, h, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import {
-  NButton,
-  NInput,
-  NIcon,
-  NPagination,
-  NDataTable,
-  NTag,
-  NSpace,
-  NEmpty,
-  NPopconfirm,
-  NCard,
-  NEllipsis,
-  NDropdown
-} from 'naive-ui'
+import { computed, h, onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { NButton, NCard, NDataTable, NEmpty, NEllipsis, NForm, NFormItem, NInput, NModal, NPagination, NSpace, NSpin, NTag } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
-import { EllipsisHorizontal, ListOutline, GridOutline } from '@vicons/ionicons5'
-import { deleteDeviceTemplate, deviceTemplate } from '@/service/api/device-template-model'
+import { GridOutline, ListOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import CardGrid from '@/components/card-grid/index.vue'
-import TemplateModal from './components/template-modal.vue'
-import { useBoolean, useLoading } from '~/packages/hooks/src'
-// 导入SvgIcon组件，使用项目标准图标系统
-import SvgIcon from '@/components/custom/svg-icon.vue'
-import { getDemoServerUrl } from '@/utils/common/tool'
+import { createOperationKey, thingModelNative, type ModelSummary, type NativeModelProfile } from '@/service/api/thingmodel-native'
+import NativeModelProfileForm from '@/views/device/template/components/NativeModelProfile.vue'
+import { EMPTY_NATIVE_RESOURCES, normalizeNativeProfile } from '@/views/device/template/native-model-resources'
 
-const route = useRoute()
-const { startLoading, endLoading, loading } = useLoading(false)
-const { bool: visible, setTrue: openModal } = useBoolean()
-const demoUrl = getDemoServerUrl()
-const url: any = ref(demoUrl)
+const router = useRouter()
+const loading = ref(false)
+const creating = ref(false)
+const createVisible = ref(false)
+const rows = ref<ModelSummary[]>([])
+const total = ref(0)
+const query = reactive({ page: 1, pageSize: 10, name: '' })
+const form = reactive({ name: '', description: '', category: '' })
+const profile = ref<NativeModelProfile>({ ...EMPTY_NATIVE_RESOURCES.profile, tags: [] })
+let pendingCreate: { fingerprint: string; key: string } | null = null
+let listSequence = 0
+const availableViews = [{ key: 'card', icon: GridOutline, label: 'common.viewCard' }, { key: 'list', icon: ListOutline, label: 'common.viewList' }]
 
-// 查询参数
-const queryParams = reactive({
-  page: 1,
-  page_size: 10,
-  name: ''
-})
-
-const getPath = (path: string) => {
-  if (!path) return ''
-  const relativePath = path.replace(/^\.\//, '')
-  return `${url.value.replace('api/v1', '') + relativePath}`
-}
-
-// 数据
-const deviceTemplateList = ref([] as any[])
-const dataTotal = ref(0)
-const modalType = ref<'add' | 'edit'>('add')
-const templateId = ref<string>('')
-
-// 获取数据
-const getData = async () => {
-  startLoading()
+const load = async () => {
+  const sequence = ++listSequence
+  loading.value = true
   try {
-    const res = await deviceTemplate({ page: queryParams.page, ...queryParams })
-    if (!res.error) {
-      deviceTemplateList.value = res.data.list
-      dataTotal.value = res.data.total
-    }
+    const result = await thingModelNative.list({ page: query.page, pageSize: query.pageSize, query: query.name || undefined })
+    if (sequence !== listSequence) return
+    rows.value = result.items
+    total.value = result.total
   } catch (error) {
-    console.error('Failed to fetch device template data:', error)
-    window.$message?.error($t('common.fetchDataFailed'))
+    console.error('Failed to load native thing models:', error)
+    if (sequence === listSequence) window.$message?.error($t('common.fetchDataFailed'))
   } finally {
-    endLoading()
+    if (sequence === listSequence) loading.value = false
   }
 }
-
-// 搜索处理
-const handleQuery = async () => {
-  queryParams.page = 1
-  await getData()
-}
-
-// 重置搜索
-const handleReset = async () => {
-  queryParams.page = 1
-  queryParams.name = ''
-  await getData()
-}
-
-// 新建模板
-const handleAddNew = () => {
-  modalType.value = 'add'
-  templateId.value = ''
-  openModal()
-}
-
-// 编辑模板
-const handleEdit = (id: string) => {
-  modalType.value = 'edit'
-  templateId.value = id
-  openModal()
-}
-
-// 删除模板
-const handleRemove = async (id: string) => {
+const edit = (id: string) => router.push({ path: '/device/thingsmodel/detail', query: { id } })
+const search = () => { query.page = 1; void load() }
+const reset = () => { query.page = 1; query.name = ''; void load() }
+const openCreate = () => { form.name = ''; form.description = ''; form.category = ''; profile.value = { ...EMPTY_NATIVE_RESOURCES.profile, tags: [] }; pendingCreate = null; createVisible.value = true }
+const create = async () => {
+  if (!form.name.trim() || creating.value) return
+  const request = {
+    model: { name: form.name.trim(), descriptionI18n: form.description.trim() ? { default: form.description.trim() } : undefined, category: form.category.trim() || undefined, fields: [] as never[] },
+    resources: { ...EMPTY_NATIVE_RESOURCES, profile: normalizeNativeProfile(profile.value), webChartConfig: null, appChartConfig: null }
+  }
+  const requestFingerprint = JSON.stringify(request)
+  if (!pendingCreate || pendingCreate.fingerprint !== requestFingerprint) pendingCreate = { fingerprint: requestFingerprint, key: createOperationKey() }
+  creating.value = true
   try {
-    const { error } = await deleteDeviceTemplate(id)
-    if (!error) {
-      window.$message?.success($t('common.templateDeleted'))
-      await getData()
-    }
+    const result = await thingModelNative.create(request, pendingCreate.key)
+    pendingCreate = null
+    createVisible.value = false
+    window.$message?.success($t('common.saveSuccess'))
+    await edit(result.modelID)
   } catch (error) {
-    console.error('Failed to delete template:', error)
-    window.$message?.error($t('common.deleteFailed'))
-  }
+    console.error('Failed to create native thing model:', error)
+    window.$message?.error(error instanceof Error ? error.message : $t('common.saveFailed'))
+  } finally { creating.value = false }
 }
 
-const handleCardMenuSelect = (key: string, item: any) => {
-  if (key !== 'delete') return
-
-  window.$dialog?.warning({
-    title: $t('common.deletePrompt'),
-    content: `${$t('common.confirmDelete')} ${item.name}`,
-    positiveText: $t('common.delete'),
-    negativeText: $t('common.cancel'),
-    onPositiveClick: () => handleRemove(item.id)
-  })
-}
-
-const cardMenuOptions = [{ label: $t('common.delete'), key: 'delete' }]
-
-const templateTableThemeOverrides = {
-  borderColor: 'var(--border-color)',
-  borderRadius: '10px',
-  fontSizeMedium: '14px',
-  lineHeight: '1.5',
-  thColor: 'var(--body-color)',
-  thColorHover: 'var(--body-color)',
-  thFontWeight: '600',
-  thTextColor: 'var(--text-color)',
-  tdColor: 'var(--card-color)',
-  tdColorHover: 'var(--primary-color-suppl)',
-  tdTextColor: 'var(--text-color)',
-  thPaddingMedium: '12px',
-  tdPaddingMedium: '13px 12px'
-}
-
-const templateTableRowKey = (row: any) => row.id
-
-// 表格列定义
+const lifecycleLabel = (lifecycle: ModelSummary['lifecycle']) => lifecycle === 'PUBLISHED' ? '已发布' : lifecycle === 'ARCHIVED' ? '已归档' : '草稿'
+const tagList = (model: ModelSummary) => [lifecycleLabel(model.lifecycle), model.publishedRevision ? `v${model.publishedRevision}` : '未发布']
 const columns = computed(() => [
-  {
-    title: $t('route.device_template'),
-    key: 'name',
-    ellipsis: {
-      tooltip: true
-    },
-    sorter: true
-  },
-  {
-    title: $t('generate.description'),
-    key: 'description',
-    ellipsis: {
-      tooltip: true
-    },
-    render: (row: any) => row.description || '--'
-  },
-  {
-    title: $t('generate.labels'),
-    key: 'label',
-    width: 200,
-    render: (row: any) => {
-      if (!row.label) return '--'
-      const tags = row.label.split(',').filter(Boolean)
-      return h(
-        NSpace,
-        { size: 'small', wrap: true },
-        {
-          default: () =>
-            tags
-              .slice(0, 2)
-              .map((tag: string) => h(NTag, { size: 'small', key: tag }, { default: () => tag.trim() }))
-              .concat(
-                tags.length > 2
-                  ? [h(NTag, { size: 'small', type: 'info' }, { default: () => `+${tags.length - 2}` })]
-                  : []
-              )
-        }
-      )
-    }
-  },
-  {
-    title: $t('common.creationTime'),
-    key: 'created_at',
-    width: 160,
-    sorter: true,
-    render: (row: any) => {
-      return row.created_at ? new Date(row.created_at).toLocaleDateString() : '--'
-    }
-  },
-  {
-    title: $t('common.actions'),
-    key: 'actions',
-    width: 220,
-    render: (row: any) => {
-      return h(
-        NSpace,
-        { size: 'small' },
-        {
-          default: () => [
-            h(
-              NButton,
-              {
-                size: 'small',
-                type: 'primary',
-                onClick: () => handleEdit(row.id)
-              },
-              { default: () => $t('common.edit') }
-            ),
-            h(
-              NPopconfirm,
-              {
-                onPositiveClick: () => handleRemove(row.id)
-              },
-              {
-                default: () => $t('common.confirmDelete'),
-                trigger: () =>
-                  h(
-                    NButton,
-                    {
-                      size: 'small',
-                      type: 'error'
-                    },
-                    { default: () => $t('common.delete') }
-                  )
-              }
-            )
-          ]
-        }
-      )
-    }
-  }
+  { title: '物模型名称', key: 'name', ellipsis: { tooltip: true } },
+  { title: '状态', key: 'lifecycle', render: (row: ModelSummary) => h(NTag, { size: 'small', type: row.lifecycle === 'PUBLISHED' ? 'success' : 'warning' }, { default: () => lifecycleLabel(row.lifecycle) }) },
+  { title: '更新时间', key: 'updatedAt', render: (row: ModelSummary) => row.updatedAt ? new Date(row.updatedAt).toLocaleString() : '--' },
+  { title: '操作', key: 'actions', render: (row: ModelSummary) => h(NButton, { size: 'small', type: 'primary', onClick: () => edit(row.modelID) }, { default: () => $t('common.edit') }) }
 ])
-
-// 分页处理
-const handlePageChange = (page: number) => {
-  queryParams.page = page
-  getData()
-}
-
-// 分页大小处理
-const handlePageSizeChange = (pageSize: number) => {
-  queryParams.page_size = pageSize
-  queryParams.page = 1
-  getData()
-}
-
-// 可用视图配置
-const availableViews = [
-  { key: 'card', icon: GridOutline, label: 'common.viewCard' },
-  { key: 'list', icon: ListOutline, label: 'common.viewList' }
-]
-
-// 处理标签数组
-const getTagArray = (labelStr: string) => {
-  if (!labelStr) return []
-  return labelStr
-    .split(',')
-    .filter(Boolean)
-    .map(tag => tag.trim())
-}
-
-// 获取显示的标签（最多 4 个：≤4 全显示，>4 则 3 个 +N）
-const getDisplayTags = (labelStr: string) => {
-  const tags = getTagArray(labelStr)
-  const maxVisible = 4
-
-  if (tags.length <= maxVisible) {
-    return {
-      displayTags: tags,
-      hasMore: false,
-      moreCount: 0
-    }
-  }
-
-  return {
-    displayTags: tags.slice(0, maxVisible - 1),
-    hasMore: true,
-    moreCount: tags.length - (maxVisible - 1)
-  }
-}
-
-// 组件挂载时获取数据
-onMounted(() => {
-  getData()
-
-  // 处理URL参数中的编辑请求
-  const idParam = route.query?.id
-  if (typeof idParam === 'string' && idParam) {
-    setTimeout(() => {
-      handleEdit(idParam)
-    }, 0)
-  }
-})
+onMounted(() => void load())
 </script>
 
 <template>
   <div>
-    <AdvancedListLayout
-      :initial-view="'card'"
-      :available-views="availableViews"
-      :inline-header="true"
-      :stacked-header="true"
-      :show-query-button="false"
-      :show-reset-button="false"
-      @add-new="handleAddNew"
-    >
-      <!-- 标题行 -->
+    <AdvancedListLayout :initial-view="'card'" :available-views="availableViews" :inline-header="true" :stacked-header="true" :show-query-button="false" :show-reset-button="false" @add-new="openCreate">
       <template #header-title>
-        <div class="flex items-center gap-3">
-          <h2 class="text-xl font-bold">物模型</h2>
-          <span class="text-gray-400">{{ dataTotal }} 个物模型</span>
-        </div>
+        <div class="flex items-center gap-3"><h2 class="text-xl font-bold">物模型</h2><span class="text-gray-400">{{ total }} 个物模型</span></div>
       </template>
-
-      <!-- 搜索表单内容 -->
       <template #search-form-content>
         <div class="device-filter-toolbar">
-          <div class="device-filter-leading">
-            <NButton type="primary" @click="handleAddNew">{{ $t('generate.add-device-function-template') }}</NButton>
-          </div>
+            <NButton type="primary" @click="openCreate">新建物模型</NButton>
           <div class="device-filter-actions">
-            <div class="device-filter-field device-filter-field--search">
-              <NInput
-                v-model:value="queryParams.name"
-                :placeholder="$t('generate.enter-template-name')"
-                type="text"
-                clearable
-                @clear="handleReset"
-                @keydown.enter="handleQuery"
-              >
-                <template #prefix>
-                  <NIcon>
-                    <IosSearch />
-                  </NIcon>
-                </template>
-              </NInput>
-            </div>
-            <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-            <NButton quaternary @click="handleReset">{{ $t('generate.reset') }}</NButton>
+            <NInput v-model:value="query.name" class="w-220px" placeholder="搜索物模型名称" clearable @keydown.enter="search">
+              <template #prefix><IosSearch /></template>
+            </NInput>
+            <NButton type="primary" @click="search">{{ $t('common.search') }}</NButton>
+            <NButton quaternary @click="reset">{{ $t('generate.reset') }}</NButton>
           </div>
         </div>
       </template>
-
-      <!-- 卡片视图 -->
       <template #card-view>
-        <n-spin :show="loading">
-          <div v-if="deviceTemplateList.length === 0 && !loading" class="empty-state">
-            <NEmpty size="huge" :description="$t('common.nodata')" />
-          </div>
+        <NSpin :show="loading">
+          <div v-if="rows.length === 0 && !loading" class="empty-state"><NEmpty size="huge" :description="$t('common.nodata')" /></div>
           <CardGrid v-else>
-            <NCard
-              v-for="item in deviceTemplateList"
-              :key="item.id"
-              hoverable
-              class="template-card"
-              :content-style="{ padding: '0' }"
-              @click="handleEdit(item.id)"
-            >
+            <NCard v-for="item in rows" :key="item.modelID" hoverable class="template-card" :content-style="{ padding: '0' }" @click="edit(item.modelID)">
               <div class="card-body">
-                <div class="card-header">
-                  <div class="card-name">
-                    <NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis>
-                  </div>
-                  <NDropdown
-                    :options="cardMenuOptions"
-                    trigger="click"
-                    placement="bottom-end"
-                    @select="key => handleCardMenuSelect(key, item)"
-                  >
-                    <NButton quaternary circle size="small" @click.stop>
-                      <template #icon>
-                        <NIcon><EllipsisHorizontal /></NIcon>
-                      </template>
-                    </NButton>
-                  </NDropdown>
-                </div>
-
-                <div class="card-desc">
-                  <NEllipsis :line-clamp="2">{{ item.description || '--' }}</NEllipsis>
-                </div>
-
-                <div class="card-meta">
-                  <div class="card-icon">
-                    <img v-if="item.path" :src="getPath(item.path)" alt="" class="template-image" />
-                    <SvgIcon v-else local-icon="default-template" class="template-image svg-icon" />
-                  </div>
-
-                  <div v-if="item.label" class="tags-row">
-                    <NTag
-                      v-for="tag in getDisplayTags(item.label).displayTags"
-                      :key="tag"
-                      size="small"
-                      :bordered="false"
-                      class="tag-item"
-                    >
-                      {{ tag }}
-                    </NTag>
-                    <NTag v-if="getDisplayTags(item.label).hasMore" size="small" :bordered="false" class="more-tag">
-                      +{{ getDisplayTags(item.label).moreCount }}
-                    </NTag>
-                  </div>
-                  <span v-else class="no-tags">--</span>
-                </div>
+                <div class="card-header"><div class="card-name"><NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis></div><NButton size="small" type="primary" @click.stop="edit(item.modelID)">{{ $t('common.edit') }}</NButton></div>
+                <div class="card-desc">草稿版本 {{ item.draftRevision }} · {{ new Date(item.updatedAt).toLocaleDateString() }}</div>
+                <div class="card-meta"><NTag v-for="tag in tagList(item)" :key="tag" size="small" :bordered="false" class="tag-item">{{ tag }}</NTag></div>
               </div>
             </NCard>
           </CardGrid>
-        </n-spin>
+        </NSpin>
       </template>
-
-      <!-- 列表视图 -->
       <template #list-view>
-        <NDataTable
-          class="template-data-table"
-          :columns="columns"
-          :data="deviceTemplateList"
-          :loading="loading"
-          size="medium"
-          :theme-overrides="templateTableThemeOverrides"
-          :pagination="false"
-          :bordered="true"
-          :bottom-bordered="true"
-          :single-column="false"
-          :single-line="true"
-          :striped="false"
-          :scroll-x="1060"
-          :row-key="templateTableRowKey"
-        >
-          <template #empty>
-            <NEmpty size="small" :description="$t('common.noData')" />
-          </template>
-        </NDataTable>
+        <NDataTable :columns="columns" :data="rows" :loading="loading" :pagination="false" :row-key="(row: ModelSummary) => row.modelID" />
       </template>
-
-      <!-- 底部分页 -->
       <template #footer>
-        <NPagination
-          v-model:page="queryParams.page"
-          :page-size="queryParams.page_size"
-          :item-count="dataTotal"
-          show-size-picker
-          :page-sizes="[10, 20, 50, 100]"
-          show-quick-jumper
-          @update:page="handlePageChange"
-          @update:page-size="handlePageSizeChange"
-        />
+        <NPagination v-model:page="query.page" :page-size="query.pageSize" :item-count="total" show-size-picker :page-sizes="[10, 20, 50, 100]" show-quick-jumper @update:page="load" @update:page-size="size => { query.pageSize = size; query.page = 1; load() }" />
       </template>
     </AdvancedListLayout>
-
-    <!-- 模板弹窗 -->
-    <TemplateModal v-model:visible="visible" :type="modalType" :template-id="templateId" :get-table-data="getData" />
+    <NModal v-model:show="createVisible" preset="card" title="新建物模型" class="w-600px" :mask-closable="!creating" :close-on-esc="!creating">
+      <NForm :model="form" label-placement="left" label-width="100">
+        <NFormItem label="名称" required><NInput v-model:value="form.name" maxlength="120" :input-props="{ 'aria-label': '名称' }" /></NFormItem>
+        <NFormItem label="描述"><NInput v-model:value="form.description" type="textarea" :input-props="{ 'aria-label': '描述' }" /></NFormItem>
+        <NFormItem label="分类"><NInput v-model:value="form.category" :input-props="{ 'aria-label': '分类' }" /></NFormItem>
+        <NativeModelProfileForm v-model="profile" :disabled="creating" />
+      </NForm>
+      <NSpace justify="end"><NButton :disabled="creating" @click="createVisible = false">{{ $t('common.cancel') }}</NButton><NButton type="primary" :loading="creating" :disabled="!form.name.trim()" @click="create">{{ $t('common.save') }}</NButton></NSpace>
+    </NModal>
   </div>
 </template>
 
 <style scoped lang="scss">
-.device-filter-toolbar {
-  display: flex;
-  width: 100%;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.device-filter-leading {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-}
-
-.device-filter-field {
-  min-width: 0;
-}
-
-.device-filter-field--search {
-  width: 220px;
-  min-width: 0;
-}
-
-.device-filter-toolbar :deep(.n-input) {
-  min-height: 36px;
-  border-radius: 8px;
-  background: var(--card-color);
-}
-
-.device-filter-toolbar :deep(.n-input:hover) {
-  border-color: var(--primary-color);
-}
-
-.device-filter-actions {
-  display: flex;
-  flex: 0 0 auto;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-}
-
-.device-filter-actions :deep(.n-button) {
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 8px;
-}
-
-@media (max-width: 768px) {
-  .device-filter-toolbar {
-    align-items: stretch;
-  }
-
-  .device-filter-leading,
-  .device-filter-actions {
-    width: 100%;
-  }
-
-  .device-filter-field--search {
-    width: 100%;
-  }
-
-  .device-filter-actions {
-    justify-content: stretch;
-  }
-
-  .device-filter-actions :deep(.n-button) {
-    flex: 1;
-  }
-}
-
-.empty-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-}
-
-.template-card {
-  cursor: pointer;
-  border-radius: 12px;
-  border: 1px solid #e8ebf0;
-  transition:
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
-
-  &:hover {
-    border-color: #c7d2fe;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  }
-}
-
-.card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 14px 16px 16px;
-  min-height: 158px;
-}
-
-.card-name {
-  flex: 1;
-  min-width: 0;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: #1a1a2e;
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.card-desc {
-  flex: 1;
-  min-height: 36px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #888;
-}
-
-.card-meta {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: auto;
-  padding-top: 4px;
-}
-
-.card-icon {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border-radius: 8px;
-  background: #f1f5f9;
-}
-
-.template-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-
-  &.svg-icon {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
-  }
-}
-
-.tags-row {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.tag-item {
-  margin: 0;
-
-  :deep(.n-tag) {
-    border-radius: 6px;
-    background: #f8f9fc;
-    color: #5b6478;
-    border: 1px solid #eef0f4;
-    font-size: 12px;
-  }
-}
-
-.more-tag {
-  margin: 0;
-
-  :deep(.n-tag) {
-    border-radius: 10px;
-    background: #ede9fe;
-    color: #4f46e5;
-    font-weight: 600;
-    font-size: 11px;
-  }
-}
-
-.no-tags {
-  margin-left: auto;
-  font-size: 12px;
-  color: #9ca3af;
-  line-height: 36px;
-}
-
-.template-data-table {
-  min-width: 100%;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  background: var(--card-color);
-
-  :deep(.n-data-table-th) {
-    color: var(--text-color);
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.5;
-    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
-  }
-
-  :deep(.n-data-table-th),
-  :deep(.n-data-table-td) {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  :deep(.n-data-table-td) {
-    color: var(--text-color);
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.5;
-    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
-  }
-
-  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
-    background: rgb(239 246 255) !important;
-    box-shadow:
-      inset 0 1px 0 rgb(191 219 254 / 60%),
-      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
-  }
-
-  :deep(.n-data-table-td--last-col),
-  :deep(.n-data-table-th--last-col) {
-    padding-right: 20px;
-  }
-}
+.device-filter-toolbar { display:flex; width:100%; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; }
+.device-filter-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:4px; }
+.empty-state { display:flex; align-items:center; justify-content:center; min-height:300px; }
+.template-card { cursor:pointer; border-radius:12px; border:1px solid #e8ebf0; transition:box-shadow .2s ease,border-color .2s ease; &:hover { border-color:#c7d2fe; box-shadow:0 4px 12px rgba(0,0,0,.06); } }
+.card-body { display:flex; flex-direction:column; gap:8px; padding:14px 16px 16px; min-height:130px; }
+.card-header { display:flex; align-items:center; gap:8px; }
+.card-name { flex:1; min-width:0; font-size:15px; font-weight:600; }
+.card-desc { flex:1; min-height:32px; font-size:12px; color:#888; }
+.card-meta { display:flex; align-items:center; gap:8px; margin-top:auto; }
+@media(max-width:768px) { .device-filter-actions { width:100%; justify-content:stretch; } }
 </style>

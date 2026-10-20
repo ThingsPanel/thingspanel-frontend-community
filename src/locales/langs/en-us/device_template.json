@@ -162,7 +162,7 @@
   "device_template.publishFailed": "Publish failed",
   "device_template.publishConfirmTitle": "Confirm Publish to Market",
   "device_template.uploadResourceConfirmTitle": "Confirm Upload to Resource Center",
-  "device_template.publishConfirmMessage": "Once published, the template will be publicly visible to all users. Confirm?",
+  "device_template.publishConfirmMessage": "Submission enters market review; it becomes public only after approval. The package includes this device configuration and its pinned native thing-model version.",
   "device_template.localTemplates": "My Templates",
   "device_template.marketTemplates": "Market Templates",
   "device_template.marketName": "Template Name",
@@ -195,5 +195,7 @@
   "device_template.marketCatAgriculture": "Agriculture",
   "device_template.marketCatSmartCity": "Smart City",
   "device_template.marketCatOther": "Other",
-  "device_template.requireThingModelBeforePublish": "Please define a thing model before publishing"
+  "device_template.requireThingModelBeforePublish": "Please define a thing model before publishing",
+  "device_template.requireNativeModelBeforePublish": "Bind a published native thing-model snapshot to this device configuration first",
+  "device_template.nativeMarketDependencyPinned": "Pinned native model included: {binding}"
 }

@@ -26,6 +26,12 @@ export interface PlatformField {
     property: string
     payloadType: 'number' | 'string' | 'boolean' | 'json'
   }
+  /** Native model metadata retained for field pickers that understand parameterized fields. */
+  nativeSchema?: {
+    kind: 'TELEMETRY' | 'ATTRIBUTE' | 'EVENT' | 'COMMAND'
+    valueType?: unknown
+    parameters?: unknown
+  }
 }
 
 /** ThingsVis 项目配置 */

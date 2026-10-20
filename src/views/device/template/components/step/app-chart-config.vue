@@ -5,6 +5,7 @@
  */
 
 import { ref, computed, onMounted, watch } from 'vue'
+import type { PropType } from 'vue'
 import { NButton, NModal, NCard, NEmpty, NSelect, NSpace, NSpin, NIcon } from 'naive-ui'
 import { ExpandOutline, ContractOutline, CloseOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
@@ -14,6 +15,8 @@ import { extractPlatformFields } from '@/utils/thingsvis/platform-fields'
 import { canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-normalizer'
 import { normalizeAppChartConfig, prepareAppChartConfigForSave } from '@/utils/thingsvis/chart-config-initialization'
 import type { PlatformField } from '@/utils/thingsvis/types'
+import type { NativeChartResourcesPort } from '@/views/device/template/native-chart-resource-port'
+import type { NativeChartUpdateOptions } from '@/views/device/template/native-chart-resource-port'
 
 const emit = defineEmits(['update:stepCurrent', 'update:modalVisible'])
 
@@ -29,7 +32,14 @@ const props = defineProps({
   deviceTemplateId: {
     type: String,
     required: true
-  }
+  },
+  isEditMode: {
+    type: Boolean,
+    default: false
+  },
+  nativeResourcePort: { type: Object as PropType<NativeChartResourcesPort>, default: undefined },
+  nativePlatformFields: { type: Array as PropType<PlatformField[]>, default: undefined },
+  nativeResourcesRevision: { type: Number, default: undefined }
 })
 
 // 编辑器引用
@@ -59,6 +69,8 @@ const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
 const hasConfig = ref(false)
 const refreshInterval = ref(5000)
+let nativeOpenedRevision: number | undefined
+let nativeOpenedConfig: unknown = null
 
 const unwrapApiList = (payload: unknown): any[] => {
   const data = payload as { data?: unknown }
@@ -67,6 +79,21 @@ const unwrapApiList = (payload: unknown): any[] => {
     return (body as { list: any[] }).list
   }
   return Array.isArray(body) ? body : []
+}
+
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function stripTemplateDeviceIds(config: unknown) {
+  if (!isObjectRecord(config)) return
+  const dataSources = config.dataSources
+  if (!Array.isArray(dataSources)) return
+
+  for (const source of dataSources as unknown[]) {
+    if (!isObjectRecord(source) || source.type !== 'PLATFORM_FIELD' || !isObjectRecord(source.config)) continue
+    delete source.config.deviceId
+  }
 }
 
 const refreshOptions = [
@@ -90,7 +117,11 @@ const back: () => void = () => {
 // 打开编辑器
 const openEditor = () => {
   isEditorFullscreen.value = false
-  showEditorModal.value = true
+  if (props.nativeResourcePort) {
+    void loadTemplateData().then(() => { showEditorModal.value = true })
+  } else {
+    showEditorModal.value = true
+  }
 }
 
 const toggleEditorFullscreen = () => {
@@ -137,6 +168,31 @@ const handleSave = async (payload: any) => {
 
   saving.value = true
   try {
+    if (props.nativeResourcePort) {
+      const updateOptions: NativeChartUpdateOptions | undefined = nativeOpenedRevision === undefined ? undefined : {
+        openedRevision: nativeOpenedRevision,
+        conflictKey: 'appChartConfig',
+        openedValue: nativeOpenedConfig
+      }
+      const updated = await props.nativeResourcePort.update(current => {
+        const cleanedPayload = prepareAppChartConfigForSave(
+          current.appChartConfig,
+          canonicalizeThingsVisConfig(payload)
+        )
+        stripTemplateDeviceIds(cleanedPayload)
+        return {
+          ...current,
+          appChartConfig: { ...cleanedPayload, refreshInterval: refreshInterval.value }
+        }
+      }, updateOptions)
+      nativeOpenedRevision = updated.revision
+      nativeOpenedConfig = updated.resources.appChartConfig
+      initialConfig.value = normalizeAppChartConfig(updated.resources.appChartConfig || {})
+      hasConfig.value = Boolean(updated.resources.appChartConfig)
+      showEditorModal.value = false
+      window.$message?.success($t('common.saveSuccess'))
+      return
+    }
     // 获取当前模板数据
     const res = await getTemplat(props.deviceTemplateId)
 
@@ -144,14 +200,7 @@ const handleSave = async (payload: any) => {
     // 这些 ID 在编辑时是模板/虚拟设备 ID，不应该被保存到配置中
     // 运行时会根据真实设备ID动态注入
     const cleanedPayload = prepareAppChartConfigForSave(res.data.app_chart_config, canonicalizeThingsVisConfig(payload))
-    if (cleanedPayload.dataSources && Array.isArray(cleanedPayload.dataSources)) {
-      cleanedPayload.dataSources.forEach((ds: any) => {
-        if (ds.type === 'PLATFORM_FIELD' && ds.config) {
-          // ✅ 移除编辑时的虚拟 deviceId，让运行时注入真实设备 ID
-          delete ds.config.deviceId
-        }
-      })
-    }
+    stripTemplateDeviceIds(cleanedPayload)
 
     // 保存到 app_chart_config 字段
     // 将刷新频率合并到配置中
@@ -185,6 +234,22 @@ const handleSave = async (payload: any) => {
 const loadTemplateData = async () => {
   loading.value = true
   try {
+    if (props.nativeResourcePort) {
+      const loaded = await props.nativeResourcePort.load()
+      nativeOpenedRevision = loaded.revision
+      nativeOpenedConfig = loaded.resources.appChartConfig
+      platformFields.value = props.nativePlatformFields || []
+      if (loaded.resources.appChartConfig) {
+        const config = normalizeAppChartConfig(loaded.resources.appChartConfig) as Record<string, any>
+        initialConfig.value = config
+        hasConfig.value = true
+        if (config.refreshInterval !== undefined) refreshInterval.value = config.refreshInterval
+      } else {
+        initialConfig.value = null
+        hasConfig.value = false
+      }
+      return
+    }
     const res = await getTemplat(props.deviceTemplateId)
 
     if (res.data) {
@@ -212,7 +277,7 @@ const loadTemplateData = async () => {
       // 加载已有配置
       if (res.data.app_chart_config) {
         try {
-          const config = normalizeAppChartConfig(res.data.app_chart_config)
+      const config = normalizeAppChartConfig(res.data.app_chart_config) as Record<string, any>
           initialConfig.value = config
           hasConfig.value = true
           // 恢复刷新频率配置
@@ -242,6 +307,10 @@ watch(showEditorModal, visible => {
   if (!visible) {
     isEditorFullscreen.value = false
   }
+})
+
+watch(() => props.nativeResourcesRevision, (revision, previous) => {
+  if (props.nativeResourcePort && revision !== undefined && previous !== undefined && revision !== previous) void loadTemplateData()
 })
 </script>
 
@@ -286,7 +355,7 @@ watch(showEditorModal, visible => {
     </NCard>
 
     <!-- 操作按钮 -->
-    <div class="actions-bar">
+    <div v-if="!props.isEditMode" class="actions-bar">
       <NButton type="primary" @click="next">
         {{ $t('device_template.nextStep') }}
       </NButton>

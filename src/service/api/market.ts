@@ -51,7 +51,7 @@ export const getMarketTemplateDetail = async (marketId: string) => {
 /** 从市场安装模板 */
 export const installFromMarket = async (data: {
   market_template_id: string
-  version?: string
+  version: string
   market_token: string
 }) => {
   return await request.post<any>('/device/template/market/install', data)

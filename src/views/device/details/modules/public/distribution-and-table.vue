@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineExpose, getCurrentInstance, onMounted, reactive, ref } from 'vue'
+import { computed, defineExpose, getCurrentInstance, reactive, ref, watch } from 'vue'
 import {
   type FormInst,
   type FormRules,
@@ -69,6 +69,9 @@ const props = defineProps<{
   submitApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
   expectApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
   fetchDataApi: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
+  nativeCommandOptions?: any[]
+  nativeCommandsResolved?: boolean
+  decorateRows?: (rows: any[]) => any[]
 }>()
 const tableData = ref<any[] | undefined>()
 const page_coune = ref(0)
@@ -82,6 +85,16 @@ const formModel = reactive({
   time: null as number | null
 })
 const options = ref()
+let commandDefinitionsRequestId = 0
+let deviceDataRequestId = 0
+let lastDeviceDataId: string | undefined
+watch(
+  () => [props.nativeCommandsResolved, props.nativeCommandOptions],
+  () => {
+    options.value = props.nativeCommandsResolved ? props.nativeCommandOptions || [] : undefined
+  },
+  { deep: true }
+)
 const { loading, startLoading, endLoading } = useLoading()
 const paramsSelect = ref<any>([
   { label: 'true', value: true },
@@ -106,28 +119,32 @@ const rules = computed<FormRules>(() => {
   return r
 })
 const fetchDataFunction = async () => {
+  const requestId = ++deviceDataRequestId
+  const deviceId = props.id
   startLoading()
+  try {
+    const { data, error } = await props.fetchDataApi({
+      page: !props.noRefresh ? the_page.value : undefined,
+      page_size: !props.noRefresh ? 4 : undefined,
+      device_id: deviceId
+    })
+    if (requestId !== deviceDataRequestId || deviceId !== props.id || error) return
 
-  const { data, error } = await props.fetchDataApi({
-    page: !props.noRefresh ? the_page.value : undefined,
-    page_size: !props.noRefresh ? 4 : undefined,
-    device_id: props.id
-  })
-  if (!error) {
     const list = data?.value || data?.list || (Array.isArray(data) ? data : []) || []
-    if (list.length > 0 || !isDeviceDetailDemo(props.id)) {
-      tableData.value = list
+    if (list.length > 0 || !isDeviceDetailDemo(deviceId)) {
+      tableData.value = props.decorateRows ? props.decorateRows(list) : list
     } else if (props.tableColumns?.some(column => column.key === 'identify')) {
-      tableData.value = props.isCommand ? demoCommands() : demoEvents()
+      const demoRows = props.isCommand ? demoCommands() : demoEvents()
+      tableData.value = props.decorateRows ? props.decorateRows(demoRows) : demoRows
     } else if (props.tableColumns?.some(column => column.key === 'message_id')) {
       tableData.value = demoAttributeLogs()
     } else {
-      tableData.value = demoAttributes()
+      const demoRows = demoAttributes()
+      tableData.value = props.decorateRows ? props.decorateRows(demoRows) : demoRows
     }
-    if (data?.count || data?.total) {
-      page_coune.value = Math.ceil((data?.count || data?.total) / 4)
-    }
-    endLoading()
+    page_coune.value = Math.ceil(((data?.count || data?.total) ?? 0) / 4)
+  } finally {
+    if (requestId === deviceDataRequestId && deviceId === props.id) endLoading()
   }
 }
 
@@ -237,7 +254,13 @@ const refresh = () => {
 defineExpose({ refresh })
 const getOptions = async show => {
   if (show) {
+    if (props.nativeCommandsResolved) {
+      options.value = props.nativeCommandOptions || []
+      return
+    }
+    const requestId = commandDefinitionsRequestId
     const res = await commandDataById(props.id)
+    if (requestId !== commandDefinitionsRequestId || props.nativeCommandsResolved) return
 
     if (res && Array.isArray(res.data)) {
       options.value = res.data
@@ -267,14 +290,31 @@ const handleCommandInput = (value: string) => {
 
 const commandList = ref()
 
-const getListData = async () => {
+const getListData = async (requestId = commandDefinitionsRequestId) => {
+  if (props.nativeCommandsResolved) {
+    commandList.value = []
+    return
+  }
   const { data } = await deviceCustomCommandsIdList(props.id)
+  if (requestId !== commandDefinitionsRequestId || props.nativeCommandsResolved) return
   commandList.value = data
 }
-onMounted(() => {
-  props.isCommand && getListData()
-  fetchDataFunction()
-})
+watch(
+  () => [props.id, props.nativeCommandsResolved, props.decorateRows],
+  () => {
+    const requestId = ++commandDefinitionsRequestId
+    if (lastDeviceDataId !== props.id) {
+      tableData.value = undefined
+      page_coune.value = 0
+      lastDeviceDataId = props.id
+    }
+    options.value = props.nativeCommandsResolved ? props.nativeCommandOptions || [] : undefined
+    commandList.value = []
+    if (props.isCommand && !props.nativeCommandsResolved) void getListData(requestId)
+    void fetchDataFunction()
+  },
+  { immediate: true }
+)
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance()
   return proxy.getPlatform()
