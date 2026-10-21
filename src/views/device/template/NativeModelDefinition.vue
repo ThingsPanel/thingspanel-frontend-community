@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, ref, watch } from 'vue'
+import { computed, h, ref } from 'vue'
 import { NButton, NPopconfirm } from 'naive-ui'
 import { fromNativeField, toNativeFieldFromEditor } from './native-field-mapping'
 import type { FieldKind, ModelDraft, ModelField } from '@/service/api/thingmodel-native-transport'
@@ -20,7 +20,6 @@ const activeKind = ref<FieldKind>('TELEMETRY')
 const editing = ref(false)
 const form = ref<FormRecord>({})
 const formError = ref('')
-const mappingError = ref('')
 const selectedKey = ref<string | null>(null)
 const params = ref<FormRecord[]>([])
 const booleanEnumOptions: any = [{ label: 'False', value: false }, { label: 'True', value: true }]
@@ -33,16 +32,6 @@ function displaySummary(field: ModelField): string {
   return 'valueType' in field && field.valueType ? field.valueType.kind : ''
 }
 const fieldKey = (field: ModelField) => field.fieldID || `${field.kind}:${field.identifier}`
-
-watch(() => props.model, () => {
-  // Validate all incoming native fields through the same loss-aware mapping used for editing.
-  mappingError.value = ''
-  try {
-    for (const field of props.model.fields) fromNativeField(field)
-  } catch (error) {
-    mappingError.value = error instanceof Error ? error.message : '部分原生字段超出现有编辑表单的表示范围'
-  }
-}, { immediate: true, deep: true })
 
 function openNew() {
   selectedKey.value = null
@@ -69,7 +58,8 @@ function openEdit(field: ModelField) {
     formError.value = ''
     editing.value = true
   } catch (error) {
-    formError.value = error instanceof Error ? error.message : '字段无法安全映射到编辑表单'
+    console.error('读取物模型字段失败:', error)
+    window.$message?.error('字段定义无法读取，请刷新后重试。')
   }
 }
 
@@ -135,7 +125,6 @@ function removeField(field: ModelField) {
 
 <template>
   <div class="native-model-definition">
-    <n-alert v-if="mappingError" type="warning" :show-icon="false" class="error">{{ mappingError }} 这些原始字段会保留；无法映射的字段不能在此编辑。</n-alert>
     <n-tabs v-model:value="activeKind" type="line">
       <n-tab-pane v-for="tab in tabs" :key="tab.kind" :name="tab.kind" :tab="tab.label">
         <div class="toolbar"><n-button type="primary" :disabled="saving" @click="openNew">新增{{ tab.label }}</n-button></div>

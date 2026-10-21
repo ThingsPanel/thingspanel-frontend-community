@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, h, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { NButton, NCard, NDataTable, NEmpty, NEllipsis, NForm, NFormItem, NInput, NModal, NPagination, NSpace, NSpin, NTag } from 'naive-ui'
+import { NButton, NCard, NDataTable, NEmpty, NEllipsis, NForm, NFormItem, NInput, NModal, NPagination, NPopconfirm, NSpace, NSpin, NTag } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { GridOutline, ListOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import CardGrid from '@/components/card-grid/index.vue'
-import { createOperationKey, thingModelNative, type ModelSummary, type NativeModelProfile } from '@/service/api/thingmodel-native'
+import { createOperationKey, thingModelNative, ThingModelNativeError, type ModelSummary, type NativeModelProfile } from '@/service/api/thingmodel-native'
 import NativeModelProfileForm from '@/views/device/template/components/NativeModelProfile.vue'
 import { EMPTY_NATIVE_RESOURCES, normalizeNativeProfile } from '@/views/device/template/native-model-resources'
 
@@ -17,6 +17,8 @@ const creating = ref(false)
 const createVisible = ref(false)
 const rows = ref<ModelSummary[]>([])
 const total = ref(0)
+const deleting = ref<string[]>([])
+const deleteOperations = new Map<string, { revision: number; key: string }>()
 const query = reactive({ page: 1, pageSize: 10, name: '' })
 const form = reactive({ name: '', description: '', category: '' })
 const profile = ref<NativeModelProfile>({ ...EMPTY_NATIVE_RESOURCES.profile, tags: [] })
@@ -64,13 +66,45 @@ const create = async () => {
   } finally { creating.value = false }
 }
 
+const deleteConfirmation = (model: ModelSummary) => `确认删除“${model.name}”？已绑定设备继续使用已发布版本。`
+const remove = async (model: ModelSummary) => {
+  if (deleting.value.includes(model.modelID)) return
+  let operation = deleteOperations.get(model.modelID)
+  if (!operation || operation.revision !== model.draftRevision) {
+    operation = { revision: model.draftRevision, key: createOperationKey() }
+    deleteOperations.set(model.modelID, operation)
+  }
+  deleting.value.push(model.modelID)
+  try {
+    const result = await thingModelNative.delete({ modelID: model.modelID, expectedDraftRevision: model.draftRevision }, operation.key)
+    if (result.status !== 'DELETED') throw new Error('删除未完成，请刷新后重试。')
+    deleteOperations.delete(model.modelID)
+    window.$message?.success('物模型已删除')
+    if (rows.value.length === 1 && query.page > 1) query.page -= 1
+    await load()
+  } catch (error) {
+    console.error('删除物模型失败:', error)
+    const conflict = error instanceof ThingModelNativeError && error.status === 409
+    window.$message?.error(conflict ? '物模型已被修改，请刷新列表后重新删除。' : '删除失败，请稍后重试。')
+    if (conflict) await load()
+  } finally {
+    deleting.value = deleting.value.filter(id => id !== model.modelID)
+  }
+}
+
 const lifecycleLabel = (lifecycle: ModelSummary['lifecycle']) => lifecycle === 'PUBLISHED' ? '已发布' : lifecycle === 'ARCHIVED' ? '已归档' : '草稿'
 const tagList = (model: ModelSummary) => [lifecycleLabel(model.lifecycle), model.publishedRevision ? `v${model.publishedRevision}` : '未发布']
 const columns = computed(() => [
   { title: '物模型名称', key: 'name', ellipsis: { tooltip: true } },
   { title: '状态', key: 'lifecycle', render: (row: ModelSummary) => h(NTag, { size: 'small', type: row.lifecycle === 'PUBLISHED' ? 'success' : 'warning' }, { default: () => lifecycleLabel(row.lifecycle) }) },
   { title: '更新时间', key: 'updatedAt', render: (row: ModelSummary) => row.updatedAt ? new Date(row.updatedAt).toLocaleString() : '--' },
-  { title: '操作', key: 'actions', render: (row: ModelSummary) => h(NButton, { size: 'small', type: 'primary', onClick: () => edit(row.modelID) }, { default: () => $t('common.edit') }) }
+  { title: '操作', key: 'actions', render: (row: ModelSummary) => h(NSpace, {}, { default: () => [
+    h(NButton, { size: 'small', type: 'primary', onClick: () => edit(row.modelID) }, { default: () => $t('common.edit') }),
+    h(NPopconfirm, { onPositiveClick: () => remove(row) }, {
+      default: () => deleteConfirmation(row),
+      trigger: () => h(NButton, { size: 'small', type: 'error', loading: deleting.value.includes(row.modelID) }, { default: () => $t('common.delete') })
+    })
+  ] }) }
 ])
 onMounted(() => void load())
 </script>
@@ -99,7 +133,16 @@ onMounted(() => void load())
           <CardGrid v-else>
             <NCard v-for="item in rows" :key="item.modelID" hoverable class="template-card" :content-style="{ padding: '0' }" @click="edit(item.modelID)">
               <div class="card-body">
-                <div class="card-header"><div class="card-name"><NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis></div><NButton size="small" type="primary" @click.stop="edit(item.modelID)">{{ $t('common.edit') }}</NButton></div>
+                <div class="card-header">
+                  <div class="card-name"><NEllipsis :line-clamp="1">{{ item.name }}</NEllipsis></div>
+                  <NSpace @click.stop>
+                    <NButton size="small" type="primary" @click="edit(item.modelID)">{{ $t('common.edit') }}</NButton>
+                    <NPopconfirm @positive-click="remove(item)">
+                      {{ deleteConfirmation(item) }}
+                      <template #trigger><NButton size="small" type="error" :loading="deleting.includes(item.modelID)">{{ $t('common.delete') }}</NButton></template>
+                    </NPopconfirm>
+                  </NSpace>
+                </div>
                 <div class="card-desc">草稿版本 {{ item.draftRevision }} · {{ new Date(item.updatedAt).toLocaleDateString() }}</div>
                 <div class="card-meta"><NTag v-for="tag in tagList(item)" :key="tag" size="small" :bordered="false" class="tag-item">{{ tag }}</NTag></div>
               </div>

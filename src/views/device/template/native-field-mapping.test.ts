@@ -172,3 +172,19 @@ test('unknown values and malformed data block conversion while supported event e
     data_type: 'String', read_write_flag: 'R',
   }), /locales values must be strings/)
 })
+
+
+test('event and command editing preserve native access flags without imposing old editor permissions', () => {
+  for (const kind of ['EVENT', 'COMMAND'] as const) {
+    for (const read of [true, false]) {
+      const field: ModelField = {
+        kind, identifier: 'test', nameI18n: { default: '测试' },
+        access: { read, write: kind === 'COMMAND', observe: kind === 'EVENT' },
+        parameters: { schemaVersion: 1, items: [] }
+      }
+      const form = fromNativeField(field)
+      form.data_name = '已编辑'
+      assert.deepEqual(toNativeFieldFromEditor(kind, form), { ...field, nameI18n: { default: '已编辑' } })
+    }
+  }
+})

@@ -137,3 +137,18 @@ test('operation keys use getRandomValues when randomUUID is unavailable', { conc
   const { client } = makeClient(async () => new Response('{broken', { status: 200 }))
   await assert.rejects(client.list(), /invalid JSON response/)
 })
+
+
+test('native deletion sends the selected revision and stable retry key', async () => {
+  const { client, seen } = makeClient(async () => new Response(JSON.stringify({ ...result, status: 'DELETED' }), { status: 200 }))
+  const body = { modelID: 'm1', expectedDraftRevision: 4 }
+  await client.delete(body, 'delete-operation-1')
+  await client.delete(body, 'delete-operation-1')
+  assert.equal(seen.length, 2)
+  for (const request of seen) {
+    assert.equal(request.path, '/api/v2/thing-model-commands/delete')
+    assert.equal(request.init.method, 'POST')
+    assert.deepEqual(JSON.parse(String(request.init.body)), body)
+    assert.equal(new Headers(request.init.headers).get('Idempotency-Key'), 'delete-operation-1')
+  }
+})

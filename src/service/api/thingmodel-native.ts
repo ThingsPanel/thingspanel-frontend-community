@@ -18,6 +18,7 @@ export type {
   APIError,
   BooleanConstraint,
   CreateModelRequest,
+  DeleteModelRequest,
   EnumBaseKind,
   EnumOption,
   FieldKind,

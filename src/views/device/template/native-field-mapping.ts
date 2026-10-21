@@ -64,6 +64,14 @@ function mergedI18n(existing: unknown, current: unknown, label: string): I18nStr
   return { ...(prior ?? {}), default: currentText }
 }
 
+function nativeAccess(value: unknown): Access {
+  const access = record(value, 'access')
+  if (['read', 'write', 'observe'].some(key => typeof access[key] !== 'boolean')) {
+    return fail('access.read, access.write and access.observe must be booleans')
+  }
+  return { read: access.read as boolean, write: access.write as boolean, observe: access.observe as boolean }
+}
+
 function scalarKindFromLegacy(value: unknown, stored?: unknown): ScalarType {
   const label = text(value, 'data_type')
   const storedKind = optionalRecord(stored)?.kind
@@ -269,15 +277,11 @@ export function toNativeField(kind: FieldKind, oldForm: unknown): ModelField {
   if (kind === 'EVENT' || kind === 'COMMAND') {
     if (form.data_type !== undefined && form.data_type !== '') return fail(`${kind} does not support scalar data_type`)
     if (form.additional_info !== undefined && arrayValue(form.additional_info, 'additional_info').length) return fail(`${kind} does not support scalar additional_info`)
-    const access: Access = kind === 'EVENT'
-      ? { read: false, write: false, observe: true }
-      : { read: false, write: true, observe: false }
-    if (form.access !== undefined) {
-      const supplied = record(form.access, 'access')
-      if (supplied.read !== access.read || supplied.write !== access.write || supplied.observe !== access.observe) {
-        return fail(`${kind} access does not match its native observe/write semantics`)
-      }
-    }
+    const access = form.access === undefined
+      ? kind === 'EVENT'
+        ? { read: false, write: false, observe: true }
+        : { read: false, write: true, observe: false }
+      : nativeAccess(form.access)
     return { ...nativeBase, kind, access, parameters: parametersFromForm(kind, form) }
   }
 
@@ -374,13 +378,7 @@ export function fromNativeField(fieldValue: ModelField): LegacyRecord {
   if (!field.parameters || field.parameters.schemaVersion !== 1 || !Array.isArray(field.parameters.items)) {
     return fail(`${kind} requires version 1 flat parameters`)
   }
-  const requiredAccess: Access = kind === 'EVENT'
-    ? { read: false, write: false, observe: true }
-    : { read: false, write: true, observe: false }
-  if (field.access.read !== requiredAccess.read || field.access.write !== requiredAccess.write || field.access.observe !== requiredAccess.observe) {
-    return fail(`${kind} access cannot be represented by the existing editor`)
-  }
-  form.access = clone(field.access)
+  form.access = nativeAccess(field.access)
   form.params = JSON.stringify(field.parameters.items.map((item, index) => nativeParameterToForm(kind, item, index)))
   form.paramsOrigin = form.params
   return form

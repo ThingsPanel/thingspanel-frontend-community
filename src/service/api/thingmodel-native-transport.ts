@@ -67,10 +67,11 @@ export interface UpdateModelRequest {
   resources?: ResourcesDocument
   expectedResourcesRevision?: number
 }
+export interface DeleteModelRequest { modelID: string; expectedDraftRevision: number }
 export interface UpdateResourcesRequest { modelID: string; expectedRevision: number; resources: ResourcesDocument }
 export interface PublishModelRequest { modelID: string; expectedDraftRevision: number; expectedResourcesRevision: number; changelog?: string }
 export type ConsumerState = 'NOT_REQUESTED' | 'PENDING' | 'APPLIED' | 'FAILED' | 'UNSUPPORTED_REFERENCE_AMBIGUITY'
-export type CommandStatus = 'SAVED' | 'PENDING_CONSUMER' | 'APPLIED' | 'FAILED' | 'CONFLICT'
+export type CommandStatus = 'DELETED' | 'SAVED' | 'PENDING_CONSUMER' | 'APPLIED' | 'FAILED' | 'CONFLICT'
 export interface ModelCommandResult {
   status: CommandStatus
   lifecycle: ModelLifecycle
@@ -110,6 +111,7 @@ export interface ThingModelNativeClient {
   create(request: CreateModelRequest, idempotencyKey: string): Promise<ModelCommandResult>
   update(request: UpdateModelRequest, idempotencyKey: string): Promise<ModelCommandResult>
   publish(request: PublishModelRequest, idempotencyKey: string): Promise<ModelCommandResult>
+  delete(request: DeleteModelRequest, idempotencyKey: string): Promise<ModelCommandResult>
   list(options?: { page?: number; pageSize?: number; query?: string; kind?: FieldKind; lifecycle?: ModelLifecycle }): Promise<PageModelSummary>
   get(modelID: string): Promise<ModelDetail>
   getResources(modelID: string): Promise<ModelResources>
@@ -193,6 +195,7 @@ export function createThingModelNativeClient(options: NativeClientOptions): Thin
     create: (body, key) => post('/api/v2/thing-model-commands/create', body, key),
     update: (body, key) => post('/api/v2/thing-model-commands/update', body, key),
     publish: (body, key) => post('/api/v2/thing-model-commands/publish', body, key),
+    delete: (body, key) => post('/api/v2/thing-model-commands/delete', body, key),
     list: (params = {}) => request(`/api/v2/thing-models${queryString(params)}`),
     get: (modelID) => request(`/api/v2/thing-models/${encodeURIComponent(modelID)}`),
     getResources: (modelID) => request(`/api/v2/thing-models/${encodeURIComponent(modelID)}/resources`),
