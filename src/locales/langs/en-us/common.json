@@ -75,7 +75,7 @@
   "common.copyFailed": "Copy failed",
   "common.validateFail": "Validation failed",
   "common.deleteFailed": "Delete failed",
-  "common.loadFailed": "Load failed",
+  "common.loadFailed": "Load Failed",
   "common.operationSuccess": "Operation successful",
   "common.halfYear": "Half a year",
   "common.lastYears1": "Last 1 years",
@@ -219,7 +219,6 @@
   "common.saveFailed": "Save Failed",
   "common.publishSuccess": "Publish Success",
   "common.publishFailed": "Publish Failed",
-  "common.loadFailed": "Load Failed",
   "common.loadFailedRetry": "Load failed, please go back and try again",
   "common.saveAndContinue": "Save & Continue",
   "common.saveAndClose": "Save & Close",
@@ -337,5 +336,6 @@
   "common.viewCard": "Card View",
   "common.viewList": "List View",
   "common.viewMap": "Map View",
-  "common.confirmSend": "Are you sure you want to send the command?"
+  "common.confirmSend": "Are you sure you want to send the command?",
+  "common.loadMore": "Load more"
 }

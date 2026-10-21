@@ -43,7 +43,7 @@
   "route.test_editor-integration": "编辑器集成测试",
   "route.rule-engine": "规则引擎",
   "route.data-service_rule-engine": "规则引擎",
-  "route.data-service": "数据服务",
+  "route.data-service": "数据转发",
   "route.product": "产品管理",
   "route.product_list": "产品列表",
   "route.product_update-ota": "OTA升级",
@@ -137,5 +137,6 @@
   "route.device_access": "三方集成",
   "route.walarm_arning-message": "警告消息",
   "route.test_panel-editor-v2": "新看板测试",
-  "route.iot-visualization-platform": "物联网可视化平台"
+  "route.iot-visualization-platform": "物联网可视化平台",
+  "route.data-service_northbound": "数据转发"
 }

@@ -219,7 +219,6 @@
   "common.saveFailed": "保存失败",
   "common.publishSuccess": "发布成功",
   "common.publishFailed": "发布失败",
-  "common.loadFailed": "加载失败",
   "common.loadFailedRetry": "加载失败，请返回重试",
   "common.saveAndContinue": "保存并继续",
   "common.saveAndClose": "保存并关闭",
@@ -303,7 +302,7 @@
   "common.format": "格式化",
   "common.validate": "验证",
   "common.compress": "压缩",
-  "common.clear": "清空",
+  "common.clear": "清除",
   "common.unvalidated": "未验证",
   "json.validation.pleaseInput": "请输入JSON数据进行验证",
   "json.validation.empty": "空数据",
@@ -329,7 +328,6 @@
   "common.undo": "撤销",
   "common.redo": "重做",
   "common.preview": "预览",
-  "common.clear": "清除",
   "common.updateFailed": "更新失败",
   "common.import": "导入",
   "common.notSpecified": "未指定",
@@ -443,5 +441,6 @@
   "common.viewCard": "卡片视图",
   "common.viewList": "列表视图",
   "common.viewMap": "地图视图",
-  "common.confirmSend": "确定发送指令吗？"
+  "common.confirmSend": "确定发送指令吗？",
+  "common.loadMore": "加载更多"
 }

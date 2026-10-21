@@ -263,6 +263,15 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'data-service_rule-engine',
           i18nKey: 'route.data-service_rule-engine'
         }
+      },
+      {
+        name: 'data-service_northbound',
+        path: '/data-service/northbound',
+        component: 'view.data-service_northbound',
+        meta: {
+          title: 'data-service_northbound',
+          i18nKey: 'route.data-service_northbound'
+        }
       }
     ]
   },
