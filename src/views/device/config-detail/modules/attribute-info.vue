@@ -149,6 +149,7 @@ onMounted(async () => {
 
 <template>
   <div class="attribute-box">
+    <p class="mb-4 text-gray-500">设备使用选定的已发布版本。修改物模型草稿不会更新当前绑定。</p>
     <div class="binding-row">
       <span>绑定物模型版本</span>
       <n-select

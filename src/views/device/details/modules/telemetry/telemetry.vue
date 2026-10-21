@@ -19,6 +19,8 @@ import { $t } from '@/locales'
 import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool'
 import { demoTelemetry, demoTelemetryLogs, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 import { deviceBindingRequiresNativeModel, resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
+import { decorateNativeTelemetryRows } from '@/views/device/native-device-model-contract'
+import { getReadingDisplayValue } from '@/utils/device-readings'
 import HistoryData from './modules/history-data.vue'
 import TimeSeriesData from './modules/time-series-data.vue'
 import { useLoading } from '~/packages/hooks'
@@ -347,23 +349,7 @@ const onTapTableTools = (i: any) => {
 const isEnumTelemetry = (item: DeviceManagement.telemetryData) =>
   item.data_type?.toLowerCase() === 'enum' && Array.isArray(item.enum)
 
-const isEnumValueMatched = (enumItem: DeviceManagement.telemetryEnumItem, value: unknown) => {
-  switch (enumItem.value_type?.toLowerCase()) {
-    case 'number':
-      return Number(enumItem.value) === Number(value)
-    case 'boolean':
-      return String(enumItem.value).toLowerCase() === String(value).toLowerCase()
-    default:
-      return String(enumItem.value) === String(value)
-  }
-}
-
-const getTelemetryDisplayValue = (item: DeviceManagement.telemetryData) => {
-  if (!isEnumTelemetry(item)) return item.value
-
-  const matchedItem = item.enum?.find(enumItem => isEnumValueMatched(enumItem, item.value))
-  return matchedItem?.description || item.value
-}
+const getTelemetryDisplayValue = getReadingDisplayValue
 
 const isTextTelemetry = (item: DeviceManagement.telemetryData) =>
   isEnumTelemetry(item) || typeof item.value !== 'number'
@@ -376,26 +362,8 @@ const isColor = (i: any) => {
 }
 
 function decorateTelemetry(rows: DeviceManagement.telemetryData[]) {
-  return rows.map(row => {
-    const field = nativeTelemetryFields.value.get(row.key)
-    if (!field) {
-      return deviceBindingRequiresNativeModel(props.deviceData?.device_config) ? { ...row, label: '', unit: '' } : row
-    }
-    const valueType = field.nativeSchema?.valueType
-    const enumValues = valueType?.kind === 'ENUM' ? valueType.enumValues : []
-    return {
-      ...row,
-      label: field.name,
-      unit: field.unit || '',
-      data_type: valueType?.kind === 'ENUM' ? 'Enum' : valueType?.kind === 'BOOL' ? 'Boolean' :
-        ['INT', 'FLOAT', 'NUMBER'].includes(valueType?.kind) ? 'Number' : 'String',
-      enum: enumValues.map((item: any) => ({
-        value: item.code,
-        value_type: valueType.baseKind,
-        description: item.label.default
-      }))
-    }
-  })
+  if (!deviceBindingRequiresNativeModel(props.deviceData?.device_config)) return rows
+  return decorateNativeTelemetryRows(rows, [...nativeTelemetryFields.value.values()])
 }
 
 async function loadNativeTelemetryMetadata() {

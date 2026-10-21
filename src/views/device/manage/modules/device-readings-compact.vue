@@ -5,6 +5,7 @@ import { RefreshOutline, TimeOutline } from '@vicons/ionicons5'
 import { deviceConfigInfo, deviceList, telemetryDataCurrent } from '@/service/api/device'
 import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
 import { hasNativeDeviceBinding, resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
+import { decorateNativeTelemetryRows } from '@/views/device/native-device-model-contract'
 import HistoryData from '@/views/device/details/modules/telemetry/modules/history-data.vue'
 import TimeSeriesData from '@/views/device/details/modules/telemetry/modules/time-series-data.vue'
 import { $t } from '@/locales'
@@ -108,7 +109,7 @@ async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
       let rows: Reading[] = []
       try {
         const response = await telemetryDataCurrent(device.id)
-        rows = Array.isArray(response?.data) ? response.data.filter(isDisplayableReading) : []
+        rows = Array.isArray(response?.data) ? response.data : []
       } catch {
         if (sequence !== requestSequence) return
         results[device.id] = []
@@ -138,24 +139,17 @@ async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
           const resolved = await resolveDeviceNativeModel(binding)
           if (sequence !== requestSequence) return
           if (!resolved) throw new Error('设备物模型配置不完整，请联系管理员检查')
-          const telemetryFields = resolved.platformFields.filter(field => field.dataType === 'telemetry')
-          const fieldById = new Map(telemetryFields.map(field => [field.id, field]))
-          rows = rows.map(reading => {
-            const field = fieldById.get(reading.key)
-            return field
-              ? { ...reading, label: field.name || reading.label, unit: field.unit ?? reading.unit, data_type: field.type }
-              : reading
-          })
+          rows = decorateNativeTelemetryRows(rows, resolved.platformFields)
         } else if (binding.device_template_id || device.device_template_id) {
-          nativeMetadataErrorsByDevice.value[device.id] = '设备物模型配置不完整，请联系管理员检查'
+          throw new Error('设备模板尚未绑定原生物模型发布版本')
         } else {
           delete nativeMetadataErrorsByDevice.value[device.id]
         }
-        results[device.id] = rows
+        results[device.id] = rows.filter(isDisplayableReading)
       } catch {
         if (sequence !== requestSequence) return
         nativeMetadataErrorsByDevice.value[device.id] = '物模型字段读取失败，请刷新后重试'
-        results[device.id] = rows
+        results[device.id] = []
       }
     }
   })

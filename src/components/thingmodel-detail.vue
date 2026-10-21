@@ -292,6 +292,7 @@ const goBack = () => router.push('/device/thingsmodel')
             <NButton type="primary" :disabled="!canPublish" @click="publishVisible = true">{{ $t('generate.publish') }}</NButton>
           </NSpace>
         </template>
+        <NAlert type="info" class="mb-4">保存只更新草稿。设备使用已绑定的发布版本；发布后需到设备模板更新绑定。</NAlert>
         <NAlert v-if="loadFailed" type="error" :title="$t('common.loadFailed')" class="mb-4">
           <div class="flex items-center gap-3"><span>{{ modelNotFound ? '找不到此物模型，或你没有访问权限，请返回列表选择。' : '读取物模型失败。' }}</span><NButton size="small" @click="modelNotFound ? goBack() : loadModel(modelID, true)">{{ modelNotFound ? $t('common.backToList') : $t('common.refresh') }}</NButton></div>
         </NAlert>

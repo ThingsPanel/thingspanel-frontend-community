@@ -290,15 +290,7 @@ const actionParamShow = async (instructItem: any) => {
         instructItem.actionParamOptions =
           instructItem.actionParamOptionsData.find(item => item.data_source_type === instructItem.action_param_type)
             ?.options || []
-        if (
-          instructItem.action_param_type === 'c_attribute' ||
-          instructItem.action_param_type === 'c_telemetry' ||
-          instructItem.action_param_type === 'c_command'
-        ) {
-          instructItem.showSubSelect = false
-        } else {
-          instructItem.showSubSelect = true
-        }
+        instructItem.showSubSelect = true
       }
       if (instructItem.action_param && instructItem.actionParamOptions.length > 0) {
         instructItem.actionParamData =
@@ -326,31 +318,15 @@ const applyActionData = (actionData: any) => {
   })
 }
 
-const placeholderMap = {
-  telemetry: '20',
-  attributes: 'on-line',
-  command: '{"param1":1}',
-  c_telemetry: '{"switch":1,"switch1":0}',
-  c_attribute: '{"addr":1,"port":0}',
-  c_command: '{"method":"switch1","params":{"false":0}}'
-}
 // 选择设备属性类型
 const actionParamTypeChange = (instructItem: any, data: any) => {
   instructItem.action_param = null
   instructItem.actionParamData = null
   instructItem.actionParamOptions =
     instructItem.actionParamOptionsData.find(item => item.data_source_type === data)?.options || []
-  instructItem.placeholder = placeholderMap[data]
+  instructItem.placeholder = '{"param1":1}'
   instructItem.actionValue = null
-  if (
-    instructItem.action_param_type === 'c_attribute' ||
-    instructItem.action_param_type === 'c_telemetry' ||
-    instructItem.action_param_type === 'c_command'
-  ) {
-    instructItem.showSubSelect = false
-  } else {
-    instructItem.showSubSelect = true
-  }
+  instructItem.showSubSelect = true
 }
 // 选择动作标识符
 const actionParamChange = (instructItem: any, data: any) => {
@@ -364,10 +340,7 @@ const message = useMessage()
 // 动作值标识
 const actionValueChange = (instructItem: any) => {
   if (
-    instructItem.action_param_type === 'command' ||
-    instructItem.action_param_type === 'c_attribute' ||
-    instructItem.action_param_type === 'c_telemetry' ||
-    instructItem.action_param_type === 'c_command'
+    instructItem.action_param_type === 'command'
   ) {
     try {
       JSON.parse(instructItem.actionValue)

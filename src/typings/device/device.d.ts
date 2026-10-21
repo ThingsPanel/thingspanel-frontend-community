@@ -111,6 +111,7 @@ declare namespace DeviceManagement {
     name: string
     data_type?: string
     enum?: telemetryEnumItem[]
+    nativeMetadataSource?: 'native'
   }
 
   interface telemetryCurrent {

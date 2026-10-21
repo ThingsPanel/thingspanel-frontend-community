@@ -62,8 +62,16 @@ function valueTypeFor(field: ModelField): PlatformField['type'] {
 }
 
 function optionsFor(field: ModelField): PlatformField['options'] {
-  if (!('valueType' in field) || !field.valueType || field.valueType.kind !== 'ENUM') return undefined
-  return field.valueType.enumValues.map(option => ({ label: option.label.default, value: option.code }))
+  const type = field.valueType
+  if (type?.kind === 'ENUM') return type.enumValues.map(option => ({ label: option.label.default, value: option.code }))
+  if (type?.kind === 'BOOL' && type.constraint) {
+    const { trueText, falseText } = type.constraint
+    return [
+      ...(trueText ? [{ label: trueText, value: true }] : []),
+      ...(falseText ? [{ label: falseText, value: false }] : [])
+    ]
+  }
+  return undefined
 }
 
 /** Build the complete ThingsVis field catalog directly from the native model draft. */

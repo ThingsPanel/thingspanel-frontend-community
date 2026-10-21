@@ -613,6 +613,12 @@ const createEventParamCondition = () => ({
   maxValue: null
 })
 
+const triggerEnumOptions = (ifItem: any) => {
+  const group = ifItem.triggerParamOptions?.find((item: any) => item.data_source_type === ifItem.trigger_param_type)
+  const field = group?.options.find((item: any) => item.key === ifItem.trigger_param)
+  return (field?.enum || []).map((item: any) => ({ label: item.description, value: String(item.value) }))
+}
+
 const parseEventParamOptions = (params: any) => {
   if (!params) {
     return []
@@ -1148,7 +1154,8 @@ watch(locale, () => {
                         :rule="premiseFormRules.trigger_value"
                         class="max-w-40 w-full"
                       >
-                        <NInput v-model:value="ifItem.trigger_value" :placeholder="$t('generate.value')" />
+                        <NSelect v-if="triggerEnumOptions(ifItem).length" v-model:value="ifItem.trigger_value" :options="triggerEnumOptions(ifItem)" />
+                        <NInput v-else v-model:value="ifItem.trigger_value" :placeholder="$t('generate.value')" />
                       </NFormItem>
                     </template>
                   </template>

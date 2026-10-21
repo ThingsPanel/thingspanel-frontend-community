@@ -72,7 +72,7 @@ function identifierFromRow(row: Record<string, any>, keys: string[]) {
   return ''
 }
 
-function clearRawFieldMetadata(row: Record<string, any>) {
+function clearRawFieldMetadata<T extends Record<string, any>>(row: T) {
   const decorated = { ...row }
   // These values may have come from legacy templates. A native-bound device
   // must never display them when its pinned snapshot has no matching field.
@@ -84,6 +84,27 @@ function clearRawFieldMetadata(row: Record<string, any>) {
 
 function enumLabel(field: PlatformField, value: unknown) {
   return field.options?.find(option => option.value === value)?.label
+}
+
+/** Keep raw values untouched; all three telemetry views share this metadata. */
+export function decorateNativeTelemetryRows<T extends Record<string, any>>(rows: T[], fields: PlatformField[]) {
+  const metadata = new Map(fields.filter(field => field.dataType === 'telemetry').map(field => [field.id, field]))
+  return rows.map(row => {
+    const field = metadata.get(row.key)
+    const options = field?.options || []
+    return {
+      ...clearRawFieldMetadata(row),
+      label: field ? field.name : `${row.key}（绑定版本未定义）`,
+      unit: field?.unit || '',
+      data_type: field ? fieldTypeName(field.type, options.length > 0) : '',
+      enum: options.map(option => ({
+        value_type: field?.type,
+        value: option.value,
+        description: option.label
+      })),
+      nativeMetadataSource: 'native' as const
+    }
+  })
 }
 
 /** Decorate raw attribute values only from the pinned native ATTRIBUTE fields. */

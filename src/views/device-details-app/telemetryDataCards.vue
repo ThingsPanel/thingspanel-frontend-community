@@ -1,8 +1,10 @@
 <script setup lang="tsx">
-import { onMounted, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { MovingNumbers } from 'moving-numbers-vue3'
 import dayjs from 'dayjs'
-import { telemetryDataCurrent } from '@/service/api/device' // 假设此路径正确
+import { telemetryDataCurrent } from '@/service/api/device'
+import { decorateNativeTelemetryRows } from '@/views/device/native-device-model-contract'
+import { getReadingDisplayValue } from '@/utils/device-readings'
 import { createLogger } from '@/utils/logger'
 import type { PlatformField } from '@/utils/thingsvis/types'
 const logger = createLogger('TelemetryData')
@@ -15,34 +17,25 @@ const props = defineProps<{
   nativeModelExpected?: boolean
 }>()
 
-const telemetryData = ref<any[]>([])
-const initTelemetryData = ref<any>()
-const nowTime = ref(dayjs(new Date().getTime()).format('YYYY-MM-DD HH:mm:ss'))
+const rawTelemetry = ref<DeviceManagement.telemetryData[]>([])
+const telemetryData = computed(() => props.nativeModelExpected
+  ? decorateNativeTelemetryRows(rawTelemetry.value, props.platformFields || [])
+  : rawTelemetry.value)
+const nowTime = ref(dayjs().format('YYYY-MM-DD HH:mm:ss'))
+let requestSequence = 0
 
-const fetchTelemetry = async () => {
-  const { data, error } = await telemetryDataCurrent(props.id)
-  if (!error && data) {
-    const fieldsById = new Map((props.platformFields || []).filter(field => field.dataType === 'telemetry').map(field => [field.id, field]))
-    telemetryData.value = data.map((row: any) => {
-      const field = fieldsById.get(row.key)
-      if (field) return { ...row, label: field.name, unit: field.unit || '' }
-      return props.nativeModelExpected ? { ...row, label: '', unit: '' } : row
-    })
-    initTelemetryData.value = data[0] || {}
-    initTelemetryData.value.device_id = props.id
-  }
-}
+watch(() => props.id, async id => {
+  const sequence = ++requestSequence
+  rawTelemetry.value = []
+  const { data, error } = await telemetryDataCurrent(id)
+  if (sequence === requestSequence && !error && data) rawTelemetry.value = data
+}, { immediate: true })
 
 const setItemRef = (el: any) => {
   logger.info(el)
 }
 
-const isColor = (i: any) => {
-  if (typeof i.value === 'string') {
-    return '#cccccc'
-  }
-  return ''
-}
+const isText = (item: DeviceManagement.telemetryData) => typeof item.value !== 'number' || Boolean(item.enum?.length)
 
 const getValueClass = (value: unknown) => {
   const length = String(value ?? '').length
@@ -53,18 +46,14 @@ const getValueClass = (value: unknown) => {
   }
 }
 
-// 在组件挂载时调用 fetchTelemetry 获取数据
-onMounted(() => {
-  fetchTelemetry()
-})
 </script>
 
 <template>
   <n-grid :x-gap="cardMargin" :y-gap="cardMargin" cols="1 600:2 900:3 1200:4">
-    <n-gi v-for="(i, index) in telemetryData" :key="i.tenant_id">
+    <n-gi v-for="(i, index) in telemetryData" :key="i.key">
       <n-card class="telemetry-card" header-class="border-b h-36px" hoverable :style="{ minHeight: cardHeight + 'px' }">
         <div class="card-body">
-          <span v-if="isColor(i)" :class="getValueClass(i.value)">{{ i.value }}</span>
+          <span v-if="isText(i)" :class="getValueClass(getReadingDisplayValue(i))">{{ getReadingDisplayValue(i) }}</span>
           <MovingNumbers
             v-else
             :ref="setItemRef"

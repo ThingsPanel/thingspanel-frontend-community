@@ -5,6 +5,7 @@ import type { DeviceConfigNativeBinding } from '../../service/api/native-templat
 import type { ModelDraft, SnapshotDetail } from '../../service/api/thingmodel-native-transport'
 import {
   assertDeviceSnapshotMatchesBinding,
+  decorateNativeTelemetryRows,
   decorateNativeAttributeRows,
   decorateNativeEventRows,
   formatNativeAttributeValue,
@@ -12,6 +13,7 @@ import {
   nativeCommandOptions,
   nativeDevicePlatformFields
 } from './native-device-model-contract'
+import { getReadingDisplayValue, getCompactReadingDisplayValue } from '../../utils/device-readings'
 import { useNativeDeviceMetadata } from './use-native-device-metadata'
 
 const binding: DeviceConfigNativeBinding = {
@@ -384,4 +386,59 @@ test('native metadata updates rows after async snapshot resolution and ignores s
   }
   await nextTick()
   assert.equal(metadata.decorateRows.value, undefined)
+})
+
+
+test('telemetry mapping preserves raw values, units, and typed enums across every reading view', () => {
+  const enumModel: ModelDraft = {
+    name: 'States',
+    fields: ['NUMBER', 'STRING', 'BOOLEAN'].map((baseKind, index) => ({
+      kind: 'TELEMETRY', identifier: `state${index}`, nameI18n: { default: `状态${index}` },
+      access: { read: true, write: false, observe: true }, unit: '台',
+      valueType: { kind: 'ENUM', baseKind, enumValues: [{ code: [1, '1', true][index], label: { default: '运行' } }] }
+    })) as ModelDraft['fields']
+  }
+  const rows = [1, '1', true].map((value, index) => ({ key: `state${index}`, value }))
+  const fields = nativeDevicePlatformFields(enumModel)
+  const mapped = decorateNativeTelemetryRows(rows, fields)
+  assert.deepEqual(mapped.map(row => row.value), [1, '1', true])
+  for (const row of mapped) {
+    assert.equal(row.unit, '台')
+    assert.equal(getReadingDisplayValue(row), '运行')
+    assert.equal(getCompactReadingDisplayValue(row), '运行')
+  }
+  assert.equal(getReadingDisplayValue({ ...mapped[0], value: '1' }), '1')
+  assert.equal(getReadingDisplayValue({ ...mapped[1], value: 1 }), '1')
+  assert.equal(getReadingDisplayValue({ ...mapped[2], value: 'true' }), 'true')
+})
+
+test('unpublished telemetry has no stale labels, unit, or enum from another definition', () => {
+  const row = { key: '_draft', value: 1, label: '旧名称', unit: '旧单位', data_type: 'Enum', enum: [{ value: 1, description: '旧标签' }] }
+  const [mapped] = decorateNativeTelemetryRows([row], nativeDevicePlatformFields(model))
+  assert.equal(mapped.label, '_draft（绑定版本未定义）')
+  assert.equal(mapped.unit, '')
+  assert.deepEqual(mapped.enum, [])
+  assert.equal(getReadingDisplayValue(mapped), '1')
+  assert.equal(row.label, '旧名称')
+})
+
+test('late metadata arrival updates App telemetry without fetching the reading again', () => {
+  const fields = ref<ReturnType<typeof nativeDevicePlatformFields>>([])
+  const rows = [{ key: 'temperature', value: 24 }]
+  const display = computed(() => decorateNativeTelemetryRows(rows, fields.value))
+  assert.equal(display.value[0].label, 'temperature（绑定版本未定义）')
+  fields.value = nativeDevicePlatformFields(model)
+  assert.equal(display.value[0].label, 'Temperature')
+  assert.equal(display.value[0].unit, '°C')
+})
+
+test('explicit BOOL labels map only actual boolean values', () => {
+  const boolModel: ModelDraft = { name: 'Bool', fields: [{
+    kind: 'TELEMETRY', identifier: 'power', nameI18n: { default: '电源' },
+    access: { read: true, write: false, observe: true },
+    valueType: { kind: 'BOOL', constraint: { trueText: '开启', falseText: '关闭' } }
+  }] }
+  const [row] = decorateNativeTelemetryRows([{ key: 'power', value: false }], nativeDevicePlatformFields(boolModel))
+  assert.equal(getCompactReadingDisplayValue(row), '关闭')
+  assert.equal(getReadingDisplayValue({ ...row, value: 0 }), '0')
 })
