@@ -48,7 +48,7 @@
   "route.test_editor-integration": "Editor Integration Test",
   "route.rule-engine": "Rule Engine",
   "route.data-service_rule-engine": "Rule Engine",
-  "route.data-service": "Data Forwarding",
+  "route.data-service": "Data Services",
   "route.product": "Product Management",
   "route.product_list": "Product List",
   "route.product_update-ota": "OTA",
@@ -149,5 +149,6 @@
   "route.device_new-device-template_template-details_editor": "Edit Model (New)",
   "route.device_new-device-template_template-details_viewer": "View Model (New)",
   "route.test_category-test": "Category Test",
-  "route.data-service_northbound": "Data Forwarding"
+  "route.data-forwarding": "Data Forwarding",
+  "route.data-forwarding_northbound": "Northbound Forwarding"
 }
