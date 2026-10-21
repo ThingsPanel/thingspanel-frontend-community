@@ -36,7 +36,7 @@ type AddedNativeDetailRoute =
       name: 'thingmodel-detail-custom'
       path: '/device/thingsmodel/detail'
       component: 'layout.base$view.thingmodel-detail'
-      meta: { title: 'device_template_detail'; i18nKey: 'route.device_thingsmodel_detail'; constant: true }
+      meta: { title: 'device_template_detail'; i18nKey: 'route.device_thingsmodel_detail' }
     }
 
 const customRoutes: Array<CustomRoute | AddedNativeDetailRoute> = [
@@ -74,8 +74,7 @@ const customRoutes: Array<CustomRoute | AddedNativeDetailRoute> = [
     component: 'layout.base$view.thingmodel-detail',
     meta: {
       title: 'device_template_detail',
-      i18nKey: 'route.device_thingsmodel_detail',
-      constant: true
+      i18nKey: 'route.device_thingsmodel_detail'
     }
   },
   {
@@ -206,7 +205,8 @@ export function createRoutes() {
       return
     }
 
-    if (route.meta?.constant) {
+    // Pre-register the detail URL without bypassing authenticated menu initialization.
+    if (route.meta?.constant || item.name === 'thingmodel-detail-custom') {
       constantRoutes.push(route)
     } else {
       authRoutes.push(route)
