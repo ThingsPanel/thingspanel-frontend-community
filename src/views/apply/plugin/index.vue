@@ -5,8 +5,12 @@ import { NButton, NEmpty, NPopconfirm, NSpace, NTag } from 'naive-ui'
 import { delRegisterService, getServices } from '@/service/api/plugin'
 import { $t } from '@/locales'
 import { tableThemeOverrides } from '@/utils/table-theme'
+import { useI18n } from 'vue-i18n'
 import serviceConfigModal from './components/serviceConfigModal.vue'
 import serviceModal from './components/serviceModal.vue'
+import NotificationPlugins from './NotificationPlugins.vue'
+const { locale } = useI18n()
+const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
 const serviceModalRef = ref<any>(null)
 const serviceConfigModalRef = ref<any>(null)
 const rowKey = (row: { id: string }) => row.id
@@ -163,44 +167,51 @@ getList()
 </script>
 
 <template>
-  <div>
-    <NCard :title="$t('route.apply_in')" :bordered="false" class="h-full rounded-8px shadow-sm">
-      <div class="header">
-        <n-select
-          v-model:value="queryInfo.service_type"
-          class="selectType"
-          :placeholder="$t('card.selectSong')"
-          :options="pageData.options"
-        />
-        <NButton type="primary" @click="addData">{{ $t('card.addNewPlugin') }}</NButton>
+  <NTabs type="line">
+    <NTabPane name="legacy" :tab="tx('设备插件', 'Device plugins')">
+      <div>
+        <NCard :title="$t('route.apply_in')" :bordered="false" class="h-full rounded-8px shadow-sm">
+          <div class="header">
+            <n-select
+              v-model:value="queryInfo.service_type"
+              class="selectType"
+              :placeholder="$t('card.selectSong')"
+              :options="pageData.options"
+            />
+            <NButton type="primary" @click="addData">{{ $t('card.addNewPlugin') }}</NButton>
+          </div>
+          <div class="h">
+            <NDataTable
+              class="table-standard flex-1-hidden"
+              size="medium"
+              :theme-overrides="tableThemeOverrides"
+              :bordered="true"
+              :bottom-bordered="true"
+              :single-column="false"
+              :single-line="true"
+              :striped="false"
+              :scroll-x="1160"
+              :row-key="rowKey"
+              :remote="true"
+              :columns="columns"
+              :data="pageData.tableData"
+              :loading="pageData.loading"
+              :pagination="queryInfo"
+            >
+              <template #empty>
+                <NEmpty size="small" :description="$t('common.noData')" />
+              </template>
+            </NDataTable>
+          </div>
+        </NCard>
+        <serviceModal ref="serviceModalRef" @get-list="getList"></serviceModal>
+        <serviceConfigModal ref="serviceConfigModalRef" @get-list="getList"></serviceConfigModal>
       </div>
-      <div class="h">
-        <NDataTable
-          class="table-standard flex-1-hidden"
-          size="medium"
-          :theme-overrides="tableThemeOverrides"
-          :bordered="true"
-          :bottom-bordered="true"
-          :single-column="false"
-          :single-line="true"
-          :striped="false"
-          :scroll-x="1160"
-          :row-key="rowKey"
-          :remote="true"
-          :columns="columns"
-          :data="pageData.tableData"
-          :loading="pageData.loading"
-          :pagination="queryInfo"
-        >
-          <template #empty>
-            <NEmpty size="small" :description="$t('common.noData')" />
-          </template>
-        </NDataTable>
-      </div>
-    </NCard>
-    <serviceModal ref="serviceModalRef" @get-list="getList"></serviceModal>
-    <serviceConfigModal ref="serviceConfigModalRef" @get-list="getList"></serviceConfigModal>
-  </div>
+    </NTabPane>
+    <NTabPane name="notification" :tab="tx('通知插件', 'Notification plugins')">
+      <NotificationPlugins />
+    </NTabPane>
+  </NTabs>
 </template>
 
 <style lang="scss" scoped>

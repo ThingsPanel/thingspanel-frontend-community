@@ -1,220 +1,37 @@
-<script setup lang="tsx">
-import { computed, getCurrentInstance, reactive, ref } from 'vue'
-import type { Ref } from 'vue'
-import { NButton, NEmpty, NPopconfirm, NSpace, NSwitch } from 'naive-ui'
-import type { DataTableColumns, PaginationProps } from 'naive-ui'
-import {
-  deleteNotificationGroup,
-  getNotificationGroupDetail,
-  getNotificationGroupList,
-  putNotificationGroup
-} from '@/service/api/notification'
-import { notificationOptions } from '@/constants/business'
-import { $t } from '@/locales'
-import { tableThemeOverrides } from '@/utils/table-theme'
-import type { ModalType } from './components/table-action-modal.vue'
-import TableActionModal from './components/table-action-modal.vue'
-import { useBoolean, useLoading } from '~/packages/hooks'
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import NotificationGroups from './NotificationGroups.vue'
+import NotificationDefaultPolicy from './NotificationDefaultPolicy.vue'
+import NotificationInstances from '~/src/views/management/notification/NotificationInstances.vue'
+import NotificationAvailablePlugins from './NotificationAvailablePlugins.vue'
 
-const { loading, startLoading, endLoading } = useLoading(false)
-const { bool: visible, setTrue: openModal } = useBoolean()
-const tableData = ref<Api.Alarm.NotificationGroupList[]>([])
-const total = ref(0)
-const rowKey = (row: Api.Alarm.NotificationGroupList) => row.id
-
-function setTableData(data: Api.Alarm.NotificationGroupList[]) {
-  tableData.value = data
-}
-
-const pagination: PaginationProps = reactive({
-  page: 1,
-  pageSize: 10,
-  showSizePicker: true,
-  pageSizes: [10, 15, 20, 25, 30],
-  onChange: (page: number) => {
-    pagination.page = page
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize
-    pagination.page = 1
-  }
-})
-
-const getTableData = async () => {
-  startLoading()
-  const prams = {
-    page: pagination.page || 1,
-    page_size: pagination.pageSize || 10
-  }
-  const res = await getNotificationGroupList(prams)
-  if (res?.data) {
-    setTableData(res?.data.list || [])
-    total.value = res.data.total || 0
-  }
-  endLoading()
-}
-
-const handleSwitchChange = async (row, value) => {
-  row.status = value ? 'OPEN' : 'CLOSE'
-  const id = row?.id || ''
-  delete row.id
-  await putNotificationGroup(row, id)
-  getTableData()
-}
-const handleDeleteTable = async (rowId: string) => {
-  await deleteNotificationGroup({ id: rowId })
-
-  window.$message?.info($t('generate.notificationGroup'))
-  getTableData()
-}
-const editData = ref<Api.Alarm.NotificationGroupList | null>(null)
-const handleEditTable = async (rowId: string) => {
-  const res = await getNotificationGroupDetail({ id: rowId })
-  if (res?.data) {
-    editData.value = res.data
-    setModalType('edit')
-    openModal()
-  }
-}
-const columns = ref([
-  {
-    key: 'name',
-    title: $t('generate.notification-group-name'),
-    minWidth: '140px',
-    align: 'left'
-  },
-  {
-    key: 'notification_type',
-    title: $t('generate.notification-type'),
-    align: 'left',
-    minWidth: '140px',
-    render: (row: any) => {
-      const notificationType = notificationOptions.find(option => option.value === row.notification_type)?.label || ''
-      return notificationType
-    }
-  },
-  {
-    key: 'status',
-    title: $t('generate.status'),
-    align: 'left',
-    minWidth: '140px',
-    render: (row: any) => {
-      return <NSwitch value={row.status === 'OPEN'} onChange={value => handleSwitchChange(row, value)} />
-    }
-  },
-  {
-    key: 'actions',
-    title: $t('common.actions'),
-    align: 'left',
-    width: '200px',
-    render: (row: any) => {
-      return (
-        <NSpace justify={'start'}>
-          <NButton size={'small'} type="primary" onClick={() => handleEditTable(row.id)}>
-            {$t('common.edit')}
-          </NButton>
-          <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
-            {{
-              default: () => $t('common.confirmDelete'),
-              trigger: () => (
-                <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
-                </NButton>
-              )
-            }}
-          </NPopconfirm>
-        </NSpace>
-      )
-    }
-  }
-]) as Ref<DataTableColumns<DataService.Data>>
-
-const modalType = ref<ModalType>('add')
-
-function setModalType(type: ModalType) {
-  modalType.value = type
-}
-
-function handleAddTable() {
-  openModal()
-  setModalType('add')
-}
-
-const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance()
-  return proxy.getPlatform()
-})
-getTableData()
+const { locale } = useI18n()
+const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
+const activeTab = ref('policies')
 </script>
 
 <template>
   <div>
-    <NCard>
-      <div class="notification-group-header">
-        <div class="notification-group-title">{{ $t('generate.notification-group') }}</div>
-        <div class="notification-group-toolbar">
-          <NButton type="primary" @click="handleAddTable">{{ $t('common.createNotificationGroup') }}</NButton>
-        </div>
-      </div>
-      <div class="h-full flex-col">
-        <NDataTable
-          class="thingspanel-data-table"
-          size="medium"
-          :theme-overrides="tableThemeOverrides"
-          :bordered="true"
-          :bottom-bordered="true"
-          :single-column="false"
-          :single-line="true"
-          :striped="false"
-          :scroll-x="880"
-          :row-key="rowKey"
-          :columns="columns"
-          :data="tableData"
-          :loading="loading"
-        >
-          <template #empty>
-            <NEmpty size="small" :description="$t('common.noData')" />
-          </template>
-        </NDataTable>
-        <div class="pagination-box">
-          <NPagination v-model:page="pagination.page" :item-count="total" @update:page="getTableData" />
-        </div>
-        <TableActionModal
-          v-model:visible="visible"
-          :class="getPlatform ? 'w-90%' : 'w-600px'"
-          :type="modalType"
-          :edit-data="editData"
-          @get-table-data="getTableData"
-        />
-      </div>
-    </NCard>
+    <NAlert type="info" class="mb-12px">
+      {{
+        tx(
+          '为未单独指定策略的告警设置默认值；也可以在单条告警规则中明确选择策略。历史通知组不再支持修改，已有告警引用和历史记录保留。',
+          'Set a default for alerts without an explicit policy, or choose a policy on an individual alert rule. Historical notification groups are read only; existing alert references and records are retained.'
+        )
+      }}
+    </NAlert>
+    <NTabs v-model:value="activeTab" type="line">
+      <NTabPane name="policies" :tab="tx('通知策略', 'Notification policies')">
+        <NotificationDefaultPolicy />
+        <NotificationGroups />
+      </NTabPane>
+      <NTabPane name="available-plugins" :tab="tx('可用通知插件', 'Available notification plugins')">
+        <NotificationAvailablePlugins />
+      </NTabPane>
+      <NTabPane name="accounts" :tab="tx('可用服务', 'Available services')">
+        <NotificationInstances />
+      </NTabPane>
+    </NTabs>
   </div>
 </template>
-
-<style scoped>
-.notification-group-header {
-  display: block;
-  margin-bottom: 20px;
-}
-
-.notification-group-title {
-  color: var(--text-color);
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 28px;
-}
-
-.notification-group-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 36px;
-  margin-top: 12px;
-}
-
-.pagination-box {
-  margin-top: 12px;
-  display: flex;
-  justify-content: flex-end;
-}
-</style>

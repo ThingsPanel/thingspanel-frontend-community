@@ -1,0 +1,1216 @@
+<script setup lang="tsx">
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { DataTableColumns } from 'naive-ui'
+import { NButton, NSpace } from 'naive-ui'
+import { useAuthStore } from '@/store/modules/auth'
+import {
+  getNotificationUiCapabilities,
+  invalidateNotificationSession,
+  notificationV2,
+  NotificationClientError,
+  NotificationServiceUnavailableError,
+  NotificationSessionChangedError,
+  registerNotificationSessionCleanup,
+  stripSecretConfig,
+  unsupportedNotificationSchemaPaths,
+  validateNotificationConfigValue,
+  type NotificationInstance,
+  type NotificationPlugin
+} from '@/service/api/notification-v2'
+import type * as NotificationV2 from '@/service/api/notification-v2.types'
+import {
+  editableNotificationSecretFields,
+  isNotificationConfigFieldReadOnly,
+  omitReadOnlyNotificationIdentityFields,
+  sendNotificationMutationSnapshot,
+  snapshotNotificationMutation
+} from './identity-fields'
+
+type SchemaField = {
+  type?: string
+  title?: string
+  description?: string
+  enum?: unknown[]
+  items?: Record<string, unknown>
+  [key: string]: unknown
+}
+type ContentMode = 'text' | 'template'
+
+const props = defineProps<{ targetTenantId?: string }>()
+const auth = useAuthStore()
+const { locale } = useI18n()
+const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
+function notificationErrorMessage(error: unknown, zhFallback: string, enFallback: string) {
+  if (error instanceof NotificationServiceUnavailableError)
+    return tx('通知服务暂不可用，请稍后重试。', 'The notification service is temporarily unavailable. Try again later.')
+  return error instanceof Error ? error.message : tx(zhFallback, enFallback)
+}
+const capabilities = computed(() => getNotificationUiCapabilities())
+const accountTarget = computed(() => (capabilities.value.canManageAccounts ? props.targetTenantId?.trim() : undefined))
+const hasTenantContext = computed(() =>
+  Boolean(capabilities.value.canManageAccounts ? accountTarget.value : String(auth.userInfo.tenant_id || '').trim())
+)
+const canEditAccounts = computed(() => capabilities.value.canManageAccounts && Boolean(accountTarget.value))
+const plugins = ref<NotificationPlugin[]>([])
+const instances = ref<NotificationInstance[]>([])
+const loading = ref(false)
+const saving = ref(false)
+const errorText = ref('')
+const successText = ref('')
+const modal = ref(false)
+const testModal = ref(false)
+const editorMode = ref<'create' | 'edit'>('create')
+const selectedPluginId = ref('')
+const selectedInstance = ref<NotificationInstance | null>(null)
+const pendingInstanceSave = ref<
+  | { kind: 'create'; key: string; body: NotificationV2.InstanceCreate }
+  | { kind: 'update'; key: string; instanceId: string; body: NotificationV2.InstanceUpdate }
+  | null
+>(null)
+const instanceVersionConflict = ref(false)
+const instanceSaveReadOnly = computed(() => Boolean(pendingInstanceSave.value) || instanceVersionConflict.value)
+const selectedPlugin = computed(() => plugins.value.find(item => item.id === selectedPluginId.value) || null)
+const identityFields = computed(() => selectedPlugin.value?.manifest.identityFields)
+const legacyIdentityConfigFrozen = computed(
+  () => editorMode.value === 'edit' && selectedPlugin.value !== null && identityFields.value === undefined
+)
+const editableSecretFields = computed(() =>
+  editableNotificationSecretFields(secretFields.value, identityFields.value, editorMode.value === 'edit')
+)
+function isIdentityFieldReadOnly(name: string) {
+  return isNotificationConfigFieldReadOnly(name, identityFields.value, editorMode.value === 'edit')
+}
+function instanceFieldId(name: string) {
+  return `notification-instance-field-${encodeURIComponent(name)}`
+}
+function instanceErrorId(name: string) {
+  return `${instanceFieldId(name)}-error`
+}
+function validationFieldErrorId(field: string) {
+  return instanceFieldId(`validation-${field}`)
+}
+function validationSummaryErrorId(field: string) {
+  return `notification-instance-validation-summary-${encodeURIComponent(field)}`
+}
+function validationErrorForField(name: string) {
+  return validationErrors.value.find(error => error.field === name || error.field === `config.${name}`)
+}
+function instanceFieldAriaProps(name: string) {
+  const validationError = validationErrorForField(name)
+  const invalid = localFieldErrors.value[name] || validationError ? true : undefined
+  return {
+    id: instanceFieldId(name),
+    'aria-label': String(schemaFields.value.find(([field]) => field === name)?.[1].title || name),
+    'aria-invalid': invalid,
+    'aria-describedby': localFieldErrors.value[name]
+      ? instanceErrorId(name)
+      : validationError
+        ? validationFieldErrorId(validationError.field)
+        : undefined
+  }
+}
+function instanceInputProps(name: string) {
+  return instanceFieldAriaProps(name)
+}
+function focusInstanceField(name: string) {
+  void nextTick(() => {
+    const root = document.getElementById(instanceFieldId(name))
+    const control = root?.matches('input, select, textarea, button, [tabindex]')
+      ? root
+      : root?.querySelector<HTMLElement>('input, select, textarea, button, [tabindex]')
+    control?.focus()
+  })
+}
+function focusFirstInvalidInstanceField() {
+  const firstField = ['pluginRegistrationId', 'name', ...Object.keys(localFieldErrors.value)].find(
+    name => localFieldErrors.value[name]
+  )
+  if (!firstField) return
+  focusInstanceField(firstField === 'schema' ? schemaFields.value[0]?.[0] || 'pluginRegistrationId' : firstField)
+}
+function focusFirstValidationError() {
+  const field = validationErrors.value[0]?.field
+  if (!field) return
+  const name = field.startsWith('config.') ? field.slice('config.'.length).split('.')[0] : field
+  const knownField =
+    name === 'name' ||
+    name === 'pluginRegistrationId' ||
+    name === 'channel' ||
+    schemaFields.value.some(([schemaName]) => schemaName === name)
+  focusInstanceField(knownField ? name : 'pluginRegistrationId')
+}
+const schemaFields = computed(() => {
+  const properties = selectedPlugin.value?.manifest.configSchema?.properties
+  if (!properties || typeof properties !== 'object' || Array.isArray(properties)) return []
+  return Object.entries(properties as Record<string, SchemaField>).filter(([, schema]) => {
+    return (
+      ['string', 'integer', 'number', 'boolean', 'object', 'array'].includes(String(schema.type)) && !('$ref' in schema)
+    )
+  })
+})
+const unsupportedSchemaFields = computed(() => {
+  const schema = selectedPlugin.value?.manifest.configSchema
+  return schema ? unsupportedNotificationSchemaPaths(schema) : []
+})
+const requiredFields = computed(() => {
+  const required = selectedPlugin.value?.manifest.configSchema?.required
+  return Array.isArray(required) ? required.map(String) : []
+})
+const secretFields = computed(() => selectedPlugin.value?.manifest.secretFields || [])
+const configValues = ref<Record<string, unknown>>({})
+const originalConfig = ref<Record<string, unknown>>({})
+const jsonDrafts = reactive<Record<string, string>>({})
+const providerIdentityText = ref('{}')
+const localFieldErrors = ref<Record<string, string>>({})
+const validationErrors = ref<Array<{ field: string; reason: string }>>([])
+const secretMode = ref<'keep' | 'set' | 'clear'>('keep')
+const secretDraft = reactive<Record<string, string>>({})
+const clearSecretFields = ref<string[]>([])
+const enabledValue = ref(true)
+const currentPage = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
+const viewGeneration = ref(0)
+const testRecipient = ref('')
+const testContentMode = ref<ContentMode>('text')
+const testTitle = ref('')
+const testText = ref('')
+const testTemplateId = ref('')
+const testLocale = ref('')
+const testParamsText = ref('{}')
+const pendingTest = ref<{ instanceId: string; key: string; body: NotificationV2.TestSendRequest } | null>(null)
+const acceptedNotificationId = ref('')
+const testStateText = ref('')
+
+function clearSecretsAndEditor() {
+  pendingInstanceSave.value = null
+  instanceVersionConflict.value = false
+  secretMode.value = 'keep'
+  clearSecretFields.value = []
+  Object.keys(secretDraft).forEach(key => delete secretDraft[key])
+  Object.keys(jsonDrafts).forEach(key => delete jsonDrafts[key])
+  configValues.value = {}
+  originalConfig.value = {}
+  localFieldErrors.value = {}
+  validationErrors.value = []
+  providerIdentityText.value = '{}'
+  selectedInstance.value = null
+}
+
+function clearSessionState() {
+  saving.value = false
+  loading.value = false
+  plugins.value = []
+  instances.value = []
+  total.value = 0
+  errorText.value = ''
+  successText.value = ''
+  pendingTest.value = null
+  acceptedNotificationId.value = ''
+  testStateText.value = ''
+  testModal.value = false
+  modal.value = false
+  clearSecretsAndEditor()
+  viewGeneration.value += 1
+}
+
+const unregisterCleanup = registerNotificationSessionCleanup(clearSessionState)
+watch(
+  () => [auth.token, auth.userInfo.tenant_id, auth.userInfo.id, auth.userInfo.userId],
+  () => {
+    invalidateNotificationSession()
+    if (hasTenantContext.value) void loadInstances()
+  }
+)
+watch(accountTarget, () => {
+  invalidateNotificationSession()
+  currentPage.value = 1
+  if (hasTenantContext.value) void loadInstances()
+})
+onBeforeUnmount(unregisterCleanup)
+
+async function loadInstances() {
+  if (!hasTenantContext.value) {
+    plugins.value = []
+    instances.value = []
+    total.value = 0
+    errorText.value = ''
+    loading.value = false
+    return
+  }
+  const generation = ++viewGeneration.value
+  loading.value = true
+  errorText.value = ''
+  try {
+    const [pluginResponse, instanceResponse] = await Promise.all([
+      accountTarget.value
+        ? notificationV2.listTenantPluginsForPlatform(accountTarget.value)
+        : notificationV2.listPlugins(),
+      notificationV2.listInstances({ page: currentPage.value, pageSize: pageSize.value }, accountTarget.value)
+    ])
+    if (generation !== viewGeneration.value) return
+    plugins.value = pluginResponse.data.items
+    instances.value = instanceResponse.data.items
+    total.value = instanceResponse.data.total
+  } catch (error) {
+    if (generation !== viewGeneration.value || error instanceof NotificationSessionChangedError) return
+    errorText.value = notificationErrorMessage(error, '无法读取通知账号。', 'Could not load notification accounts.')
+  } finally {
+    if (generation === viewGeneration.value) loading.value = false
+  }
+}
+
+function defaultValue(schema: SchemaField): unknown {
+  if ('default' in schema) return schema.default
+  if (schema.type === 'boolean') return false
+  if (schema.type === 'integer') return 0
+  if (schema.type === 'array') return []
+  if (schema.type === 'object') return {}
+  return ''
+}
+
+function setSchemaDefaults(config: Record<string, unknown>) {
+  schemaFields.value.forEach(([name, schema]) => {
+    if (secretFields.value.includes(name)) return
+    if (!(name in config)) config[name] = defaultValue(schema)
+    if (schema.type === 'object' || schema.type === 'array') jsonDrafts[name] = JSON.stringify(config[name], null, 2)
+  })
+}
+
+function openCreate() {
+  if (!canEditAccounts.value) return
+  clearSecretsAndEditor()
+  editorMode.value = 'create'
+  selectedPluginId.value = ''
+  selectedInstance.value = null
+  formName.value = ''
+  selectedChannel.value = null
+  enabledValue.value = true
+  modal.value = true
+}
+
+async function openEdit(row: NotificationInstance) {
+  if (!canEditAccounts.value) return
+  const generation = viewGeneration.value
+  errorText.value = ''
+  try {
+    const [instanceResponse, pluginResponse] = await Promise.all([
+      notificationV2.getInstance(row.id, accountTarget.value),
+      accountTarget.value
+        ? notificationV2.listTenantPluginsForPlatform(accountTarget.value)
+        : notificationV2.listPlugins()
+    ])
+    if (generation !== viewGeneration.value) return
+    selectedInstance.value = instanceResponse.data
+    pendingInstanceSave.value = null
+    instanceVersionConflict.value = false
+    plugins.value = pluginResponse.data.items
+    selectedPluginId.value = instanceResponse.data.pluginRegistrationId
+    editorMode.value = 'edit'
+    formName.value = instanceResponse.data.name
+    selectedChannel.value = instanceResponse.data.channel
+    const secretNames =
+      plugins.value.find(plugin => plugin.id === instanceResponse.data.pluginRegistrationId)?.manifest.secretFields ||
+      []
+    const safeConfig = stripSecretConfig(instanceResponse.data.config || {}, secretNames)
+    originalConfig.value = structuredClone(safeConfig)
+    configValues.value = structuredClone(safeConfig)
+    setSchemaDefaults(configValues.value)
+    providerIdentityText.value = JSON.stringify(instanceResponse.data.providerIdentity || {}, null, 2)
+    enabledValue.value = instanceResponse.data.enabled
+    secretFields.value.forEach(name => {
+      secretDraft[name] = ''
+    })
+    modal.value = true
+  } catch (error) {
+    if (generation !== viewGeneration.value || error instanceof NotificationSessionChangedError) return
+    errorText.value = notificationErrorMessage(error, '读取实例失败。', 'Could not load the instance.')
+  }
+}
+
+watch(selectedPluginId, (next, previous) => {
+  if (next === previous || editorMode.value !== 'create') return
+  clearSecretsAndEditor()
+  secretFields.value.forEach(name => {
+    secretDraft[name] = ''
+  })
+  if (selectedPlugin.value) setSchemaDefaults(configValues.value)
+})
+
+function updateJsonField(name: string, value: string) {
+  jsonDrafts[name] = value
+  try {
+    configValues.value[name] = JSON.parse(value)
+    delete localFieldErrors.value[name]
+  } catch {
+    localFieldErrors.value[name] = tx('请输入有效 JSON。', 'Enter valid JSON.')
+  }
+}
+
+function mergeConfig(includeSecrets: boolean) {
+  const result = { ...configValues.value }
+  if (includeSecrets) {
+    secretFields.value.forEach(name => {
+      if (secretDraft[name]) result[name] = secretDraft[name]
+    })
+  }
+  return result
+}
+
+function changedConfigPatch() {
+  const patch: Record<string, unknown> = {}
+  Object.entries(configValues.value).forEach(([name, value]) => {
+    if (secretFields.value.includes(name)) return
+    if (JSON.stringify(value) !== JSON.stringify(originalConfig.value[name])) patch[name] = value
+  })
+  return omitReadOnlyNotificationIdentityFields(patch, identityFields.value, editorMode.value === 'edit')
+}
+
+function secretOperation(): NotificationV2.SecretPatch | undefined {
+  if (editorMode.value !== 'edit' || secretMode.value === 'keep') return undefined
+  if (secretMode.value === 'set') {
+    const set = Object.fromEntries(
+      editableSecretFields.value.filter(name => secretDraft[name]).map(name => [name, secretDraft[name]])
+    )
+    return Object.keys(set).length ? { set } : undefined
+  }
+  const clear = clearSecretFields.value.filter(name => editableSecretFields.value.includes(name))
+  return clear.length ? { clear } : undefined
+}
+
+function parseProviderIdentity() {
+  try {
+    const value = JSON.parse(providerIdentityText.value)
+    if (
+      !value ||
+      typeof value !== 'object' ||
+      Array.isArray(value) ||
+      Object.values(value).some(item => typeof item !== 'string')
+    ) {
+      throw new Error(tx('账号身份必须是字符串键值对象。', 'Provider identity must be a string map.'))
+    }
+    return value as Record<string, string>
+  } catch (error) {
+    throw error instanceof Error ? error : new Error(tx('账号身份 JSON 无效。', 'Provider identity JSON is invalid.'))
+  }
+}
+
+function localValidation() {
+  const errors: Record<string, string> = Object.fromEntries(
+    Object.entries(localFieldErrors.value).filter(([name]) => {
+      const schema = schemaFields.value.find(([field]) => field === name)?.[1]
+      if (!schema || (schema.type !== 'object' && schema.type !== 'array')) return false
+      try {
+        JSON.parse(jsonDrafts[name] || '')
+        return false
+      } catch {
+        return true
+      }
+    })
+  )
+  if (!selectedPlugin.value) errors.pluginRegistrationId = tx('请选择已授权的插件。', 'Choose an authorized plugin.')
+  if (unsupportedSchemaFields.value.length && !legacyIdentityConfigFrozen.value)
+    errors.schema = tx(
+      `插件清单包含暂不支持的配置字段：${unsupportedSchemaFields.value.join(', ')}`,
+      `The plugin has unsupported config fields: ${unsupportedSchemaFields.value.join(', ')}`
+    )
+  if (!formName.value.trim()) errors.name = tx('实例名称不能为空。', 'Instance name is required.')
+  requiredFields.value.forEach(name => {
+    if (isIdentityFieldReadOnly(name)) return
+    if (secretFields.value.includes(name)) {
+      if (editorMode.value === 'create' && !secretDraft[name])
+        errors[name] = tx('此秘密字段必填。', 'This secret field is required.')
+      return
+    }
+    const value = configValues.value[name]
+    if (value === undefined || value === null || value === '')
+      errors[name] = tx('此字段必填。', 'This field is required.')
+  })
+  schemaFields.value.forEach(([name, schema]) => {
+    if (secretFields.value.includes(name) || isIdentityFieldReadOnly(name) || localFieldErrors.value[name]) return
+    const value = configValues.value[name]
+    if (value === undefined) return
+    const validationError = validateNotificationConfigValue(value, schema, name)
+    if (validationError) errors[name] = validationError
+  })
+  localFieldErrors.value = errors
+  const valid = Object.keys(errors).length === 0
+  errorText.value = valid ? '' : tx('请修正表单中的错误后继续。', 'Fix the form errors before continuing.')
+  return valid
+}
+
+const formName = ref('')
+const selectedChannel = ref<NotificationV2.Channel | null>(null)
+watch(selectedPluginId, () => {
+  if (editorMode.value === 'create') {
+    selectedChannel.value = selectedPlugin.value?.manifest.channels[0] || null
+  }
+})
+
+async function validateConfig() {
+  if (!canEditAccounts.value || instanceSaveReadOnly.value) return
+  const generation = viewGeneration.value
+  validationErrors.value = []
+  errorText.value = ''
+  if (!localValidation()) {
+    focusFirstInvalidInstanceField()
+    return
+  }
+  try {
+    const config = mergeConfig(true)
+    const body: NotificationV2.InstanceValidate =
+      editorMode.value === 'create'
+        ? { draft: { pluginRegistrationId: selectedPluginId.value, channel: selectedChannel.value!, config } }
+        : {
+            instanceId: selectedInstance.value!.id,
+            expectedVersion: selectedInstance.value!.version,
+            configPatch: config
+          }
+    const result = await notificationV2.validateInstance(body, accountTarget.value)
+    if (generation !== viewGeneration.value) return
+    validationErrors.value = result.data.errors
+    if (!result.data.valid && result.data.errors.length) focusFirstValidationError()
+    successText.value = result.data.valid
+      ? tx('配置校验通过；未发送通知。', 'Configuration is valid; no notification was sent.')
+      : ''
+  } catch (error) {
+    if (generation !== viewGeneration.value || error instanceof NotificationSessionChangedError) return
+    errorText.value = notificationErrorMessage(error, '校验失败。', 'Validation failed.')
+  }
+}
+
+async function saveInstance() {
+  if (!hasTenantContext.value || !canEditAccounts.value || saving.value || instanceVersionConflict.value) return
+  const generation = viewGeneration.value
+  saving.value = true
+  errorText.value = ''
+  successText.value = ''
+  try {
+    if (!pendingInstanceSave.value) {
+      if (!localValidation()) {
+        focusFirstInvalidInstanceField()
+        return
+      }
+      if (editorMode.value === 'create') {
+        const body: NotificationV2.InstanceCreate = {
+          pluginRegistrationId: selectedPluginId.value,
+          name: formName.value.trim(),
+          channel: selectedChannel.value!,
+          config: mergeConfig(true),
+          providerIdentity: parseProviderIdentity()
+        }
+        pendingInstanceSave.value = {
+          kind: 'create',
+          ...snapshotNotificationMutation(notificationV2.createIdempotencyKey(), body)
+        }
+      } else {
+        const patch: NotificationV2.InstanceUpdate = { expectedVersion: selectedInstance.value!.version }
+        if (formName.value.trim() !== selectedInstance.value!.name) patch.name = formName.value.trim()
+        const configPatch = changedConfigPatch()
+        if (Object.keys(configPatch).length) patch.configPatch = configPatch
+        if (enabledValue.value !== selectedInstance.value!.enabled) patch.enabled = enabledValue.value
+        const secrets = secretOperation()
+        if (secrets) patch.secrets = secrets
+        if (!patch.name && !patch.configPatch && patch.enabled === undefined && !patch.secrets) {
+          successText.value = tx('没有修改。', 'There are no changes to save.')
+          return
+        }
+        pendingInstanceSave.value = {
+          kind: 'update',
+          instanceId: selectedInstance.value!.id,
+          ...snapshotNotificationMutation(notificationV2.createIdempotencyKey(), patch)
+        }
+      }
+    }
+    const pending = pendingInstanceSave.value
+    if (!pending) return
+    if (pending.kind === 'create') {
+      await sendNotificationMutationSnapshot(pending, {
+        send: request => notificationV2.createInstance(request.body, request.key, accountTarget.value)
+      })
+    } else {
+      await sendNotificationMutationSnapshot(pending, {
+        send: request =>
+          notificationV2.updateInstance(pending.instanceId, request.body, request.key, accountTarget.value)
+      })
+    }
+    if (generation !== viewGeneration.value) return
+    pendingInstanceSave.value = null
+    clearSecretsAndEditor()
+    modal.value = false
+    successText.value = tx('实例已保存；不会自动发送测试通知。', 'Instance saved. No test notification was sent.')
+    await loadInstances()
+  } catch (error) {
+    if (generation !== viewGeneration.value || error instanceof NotificationSessionChangedError) return
+    if (error instanceof NotificationClientError && error.outcomeUncertain) {
+      errorText.value = tx(
+        '保存结果未确认。表单已锁定；使用同一请求重试，不会创建第二个实例或版本。',
+        'Save result is unknown. The form is locked; retry the same request so it cannot create a second instance or version.'
+      )
+      return
+    }
+    if (error instanceof NotificationSessionChangedError) return
+    const pending = pendingInstanceSave.value
+    pendingInstanceSave.value = null
+    if (error instanceof NotificationClientError && error.httpStatus === 409 && pending?.kind === 'update') {
+      instanceVersionConflict.value = true
+      errorText.value = tx(
+        '实例版本已被其他管理员修改。请刷新当前实例并重新确认后再保存。',
+        'Another administrator changed this instance. Reload it and review before saving again.'
+      )
+      return
+    }
+    errorText.value =
+      error instanceof Error && error.message === 'identity_change_requires_new_instance'
+        ? tx(
+            '现有实例的身份字段不可更改，请创建新实例。',
+            'Provider identity cannot change on an existing instance. Create a new instance.'
+          )
+        : notificationErrorMessage(error, '保存失败。', 'Save failed.')
+  } finally {
+    if (generation === viewGeneration.value) saving.value = false
+  }
+}
+
+async function reloadConflictedInstance() {
+  if (!instanceVersionConflict.value || !selectedInstance.value) return
+  await openEdit(selectedInstance.value)
+}
+
+function closeEditor() {
+  if (pendingInstanceSave.value) return
+  clearSecretsAndEditor()
+  modal.value = false
+  errorText.value = ''
+}
+
+function defaultRecipientKind(channel: NotificationV2.Channel): NotificationV2.Recipient['kind'] {
+  const mapping: Record<NotificationV2.Channel, NotificationV2.Recipient['kind']> = {
+    email: 'email',
+    sms: 'phone',
+    voice: 'phone',
+    im: 'chat_id',
+    webhook: 'webhook'
+  }
+  return mapping[channel]
+}
+
+function enumOptions(schema: SchemaField) {
+  return (schema.enum || []).map(value => ({ label: String(value), value: String(value) }))
+}
+
+function enumSelection(name: string) {
+  const value = configValues.value[name]
+  return value === undefined || value === null ? null : String(value)
+}
+
+function updateEnum(name: string, schema: SchemaField, selected: string | null) {
+  configValues.value[name] = schema.enum?.find(value => String(value) === selected)
+}
+
+function openTest(row: NotificationInstance) {
+  if (!hasTenantContext.value || capabilities.value.canManageAccounts || !capabilities.value.canSendTest) return
+  if (pendingTest.value) {
+    testStateText.value = tx(
+      '上一次试发结果未知，请使用同一请求重试或查询状态。',
+      'The previous test result is unknown. Retry the same request or query its status.'
+    )
+    testModal.value = true
+    return
+  }
+  selectedInstance.value = row
+  testRecipient.value = ''
+  testContentMode.value = 'text'
+  testTitle.value = ''
+  testText.value = ''
+  testTemplateId.value = ''
+  testLocale.value = ''
+  testParamsText.value = '{}'
+  testStateText.value = ''
+  acceptedNotificationId.value = ''
+  testModal.value = true
+}
+
+function makeTestBody(): NotificationV2.TestSendRequest {
+  const instance = selectedInstance.value
+  if (!instance || !testRecipient.value.trim()) throw new Error(tx('请填写接收目标。', 'Enter a recipient.'))
+  const recipient: NotificationV2.Recipient = {
+    kind: defaultRecipientKind(instance.channel),
+    address: testRecipient.value.trim()
+  }
+  let content: NotificationV2.Content
+  if (testContentMode.value === 'text') {
+    if (!testText.value.trim()) throw new Error(tx('请填写测试文本。', 'Enter the test text.'))
+    content = { kind: 'text', title: testTitle.value || undefined, text: testText.value }
+  } else {
+    if (!testTemplateId.value.trim()) throw new Error(tx('请填写模板 ID。', 'Enter a template ID.'))
+    let params: Record<string, unknown>
+    try {
+      params = JSON.parse(testParamsText.value)
+      if (!params || typeof params !== 'object' || Array.isArray(params)) throw new Error()
+    } catch {
+      throw new Error(tx('模板参数必须是 JSON 对象。', 'Template parameters must be a JSON object.'))
+    }
+    content = {
+      kind: 'template',
+      title: testTitle.value || undefined,
+      template: { id: testTemplateId.value.trim(), locale: testLocale.value || undefined, params }
+    }
+  }
+  return { recipient, content, expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString() }
+}
+
+async function submitTest() {
+  if (!hasTenantContext.value || capabilities.value.canManageAccounts || !capabilities.value.canSendTest) return
+  errorText.value = ''
+  try {
+    if (!pendingTest.value) {
+      const body = makeTestBody()
+      pendingTest.value = { instanceId: selectedInstance.value!.id, key: notificationV2.createIdempotencyKey(), body }
+    }
+    const pending = pendingTest.value
+    const response = await notificationV2.testInstance(pending.instanceId, pending.body, pending.key)
+    acceptedNotificationId.value = response.data.notificationId
+    pendingTest.value = null
+    testStateText.value = tx(
+      '已接收，正在处理。服务受理不代表已送达。',
+      'Accepted by the notification service and processing. Acceptance does not mean delivered.'
+    )
+    await refreshTestStatus()
+  } catch (error) {
+    if (error instanceof NotificationClientError && error.outcomeUncertain) {
+      testStateText.value = tx(
+        '结果未确认。不会自动重发；使用同一请求重试以安全查询受理结果。',
+        'Result not confirmed. No automatic retry was made. Retry the same request to recover the accepted result.'
+      )
+      return
+    }
+    if (error instanceof NotificationSessionChangedError) return
+    pendingTest.value = null
+    errorText.value = notificationErrorMessage(error, '试发失败。', 'Test send failed.')
+  }
+}
+
+async function refreshTestStatus() {
+  if (!acceptedNotificationId.value) return
+  try {
+    const response = await notificationV2.getNotification(acceptedNotificationId.value)
+    const delivery = response.data.deliveries[0]
+    if (!delivery) {
+      testStateText.value = tx('已接收，正在处理。', 'Accepted and processing.')
+      return
+    }
+    if (delivery.dispatchStatus === 'accepted' && delivery.deliveryStatus === 'delivered') {
+      testStateText.value = tx(
+        '服务商报告已送达；这不代表已读。',
+        'The provider reports delivered; this does not mean read.'
+      )
+    } else if (delivery.dispatchStatus === 'accepted' && delivery.deliveryStatus === 'unsupported') {
+      testStateText.value = tx(
+        '服务商已受理；此通道不提供送达回执。',
+        'The provider accepted the message; this channel has no delivery receipt.'
+      )
+    } else if (delivery.dispatchStatus === 'accepted' && delivery.deliveryStatus === 'pending') {
+      testStateText.value = tx(
+        '服务商已受理；等待送达回执。',
+        'The provider accepted the message; awaiting a delivery receipt.'
+      )
+    } else if (delivery.dispatchStatus === 'unknown' || delivery.deliveryStatus === 'unknown') {
+      testStateText.value = tx(
+        '是否受理未知；系统不会自动重发。',
+        'Acceptance is unknown; the system will not retry automatically.'
+      )
+    } else if (delivery.dispatchStatus === 'failed' || delivery.deliveryStatus === 'failed') {
+      testStateText.value = tx('服务商报告投递失败。', 'The provider reports delivery failure.')
+    } else {
+      testStateText.value = tx('已接收，正在处理。', 'Accepted and processing.')
+    }
+  } catch (error) {
+    if (!(error instanceof NotificationSessionChangedError))
+      errorText.value = notificationErrorMessage(error, '状态暂时无法读取。', 'Could not read the status right now.')
+  }
+}
+
+const columns: DataTableColumns<NotificationInstance> = [
+  { title: tx('实例名称', 'Instance'), key: 'name', minWidth: 150 },
+  {
+    title: tx('插件', 'Plugin'),
+    key: 'plugin',
+    minWidth: 180,
+    render: row =>
+      plugins.value.find(item => item.id === row.pluginRegistrationId)?.manifest.name || row.pluginRegistrationId
+  },
+  { title: tx('渠道', 'Channel'), key: 'channel', width: 100 },
+  {
+    title: tx('发送状态', 'Enabled'),
+    key: 'enabled',
+    width: 100,
+    render: row => (row.enabled ? tx('已启用', 'Enabled') : tx('已停用', 'Disabled'))
+  },
+  {
+    title: tx('回执能力', 'Delivery receipts'),
+    key: 'receipt',
+    width: 130,
+    render: row =>
+      plugins.value.find(item => item.id === row.pluginRegistrationId)?.manifest.capabilities.deliveryReceipts
+        ? tx('支持', 'Supported')
+        : tx('不支持', 'Unsupported')
+  },
+  { title: tx('配置版本', 'Config version'), key: 'configVersion', width: 110 },
+  {
+    title: tx('操作', 'Actions'),
+    key: 'actions',
+    minWidth: 240,
+    render: row => (
+      <NSpace>
+        {canEditAccounts.value && (
+          <NButton size="small" onClick={() => openEdit(row)}>
+            {tx('配置', 'Configure')}
+          </NButton>
+        )}
+        {!capabilities.value.canManageAccounts && (
+          <NButton
+            size="small"
+            disabled={!capabilities.value.canSendTest || Boolean(pendingTest.value)}
+            onClick={() => openTest(row)}
+          >
+            {tx('发送测试', 'Send test')}
+          </NButton>
+        )}
+      </NSpace>
+    )
+  }
+]
+
+onMounted(loadInstances)
+</script>
+
+<template>
+  <NCard :bordered="false">
+    <NAlert v-if="!hasTenantContext" type="info">
+      <div class="flex flex-wrap items-center gap-12px">
+        <span>
+          {{
+            tx(
+              '服务账号和密钥由超管管理。请先选择目标租户，再配置或校验服务账号。',
+              'Service accounts and credentials are managed by the system administrator. Select a target tenant before configuring or validating its accounts.'
+            )
+          }}
+        </span>
+        <a class="text-primary underline" href="/management/user">
+          {{ tx('打开租户管理', 'Open Tenant management') }}
+        </a>
+      </div>
+    </NAlert>
+    <div v-else>
+      <div class="mb-12px flex flex-wrap items-center justify-between gap-12px">
+        <div>
+          {{
+            tx(
+              canEditAccounts
+                ? '配置所选租户的服务账号和密钥；保存和校验不会发送通知。'
+                : '这些服务由超管配置。租户可查看、选择和使用，不能修改账号或密钥。',
+              canEditAccounts
+                ? 'Configure service accounts and credentials for the selected tenant. Saving and validation do not send notifications.'
+                : 'These services are configured by the system administrator. Tenants can view, select and use them; account or credential changes are not allowed.'
+            )
+          }}
+        </div>
+        <NSpace>
+          <NButton @click="loadInstances">{{ tx('刷新', 'Refresh') }}</NButton>
+          <NButton v-if="canEditAccounts" type="primary" @click="openCreate">
+            {{ tx('创建实例', 'Create instance') }}
+          </NButton>
+        </NSpace>
+      </div>
+      <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
+      <NAlert v-if="successText" type="success" class="mb-12px">{{ successText }}</NAlert>
+      <NDataTable
+        :columns="columns"
+        :data="instances"
+        :loading="loading"
+        :row-key="row => row.id"
+        :scroll-x="1000"
+        :pagination="{ page: currentPage, pageSize, itemCount: total, showSizePicker: true, pageSizes: [10, 20, 50] }"
+        @update:page="
+          page => {
+            currentPage = page
+            loadInstances()
+          }
+        "
+        @update:page-size="
+          size => {
+            pageSize = size
+            currentPage = 1
+            loadInstances()
+          }
+        "
+      />
+    </div>
+  </NCard>
+
+  <NModal
+    v-model:show="modal"
+    preset="card"
+    class="w-760px max-w-95vw"
+    :mask-closable="!pendingInstanceSave"
+    :close-on-esc="!pendingInstanceSave"
+    :closable="!pendingInstanceSave"
+    :title="
+      editorMode === 'create'
+        ? tx('创建通知实例', 'Create notification instance')
+        : tx('编辑通知实例', 'Edit notification instance')
+    "
+    @after-leave="closeEditor"
+  >
+    <NForm label-placement="top" :disabled="instanceSaveReadOnly">
+      <NFormItem :label="tx('实例名称', 'Instance name')">
+        <NInput
+          v-model:value="formName"
+          :disabled="instanceSaveReadOnly"
+          :input-props="{
+            id: instanceFieldId('name'),
+            'aria-label': tx('实例名称', 'Instance name'),
+            'aria-invalid': localFieldErrors.name || validationErrorForField('name') ? 'true' : undefined,
+            'aria-describedby': localFieldErrors.name
+              ? instanceErrorId('name')
+              : validationErrorForField('name')
+                ? validationFieldErrorId(validationErrorForField('name')!.field)
+                : undefined
+          }"
+        />
+        <div
+          v-if="localFieldErrors.name || validationErrorForField('name')"
+          :id="
+            localFieldErrors.name
+              ? instanceErrorId('name')
+              : validationFieldErrorId(validationErrorForField('name')!.field)
+          "
+          role="alert"
+          class="mt-4px text-xs text-red-600"
+        >
+          {{ localFieldErrors.name || validationErrorForField('name')?.reason }}
+        </div>
+      </NFormItem>
+      <NFormItem v-if="editorMode === 'create'" :label="tx('通知插件', 'Notification plugin')">
+        <NSelect
+          v-model:value="selectedPluginId"
+          :disabled="instanceSaveReadOnly"
+          :aria-label="tx('通知插件', 'Notification plugin')"
+          :input-props="{
+            ...instanceFieldAriaProps('pluginRegistrationId'),
+            'aria-label': tx('通知插件', 'Notification plugin')
+          }"
+          :aria-invalid="
+            localFieldErrors.pluginRegistrationId || validationErrorForField('pluginRegistrationId')
+              ? 'true'
+              : undefined
+          "
+          :aria-describedby="
+            localFieldErrors.pluginRegistrationId
+              ? instanceErrorId('pluginRegistrationId')
+              : validationErrorForField('pluginRegistrationId')
+                ? validationFieldErrorId(validationErrorForField('pluginRegistrationId')!.field)
+                : undefined
+          "
+          :options="
+            plugins
+              .filter(plugin => plugin.enabled)
+              .map(plugin => ({ label: `${plugin.manifest.name} · ${plugin.pluginVersion}`, value: plugin.id }))
+          "
+          :placeholder="tx('选择已授权插件', 'Choose an authorized plugin')"
+          filterable
+        />
+        <div
+          v-if="localFieldErrors.pluginRegistrationId || validationErrorForField('pluginRegistrationId')"
+          :id="
+            localFieldErrors.pluginRegistrationId
+              ? instanceErrorId('pluginRegistrationId')
+              : validationFieldErrorId(validationErrorForField('pluginRegistrationId')!.field)
+          "
+          role="alert"
+          class="mt-4px text-xs text-red-600"
+        >
+          {{ localFieldErrors.pluginRegistrationId || validationErrorForField('pluginRegistrationId')?.reason }}
+        </div>
+      </NFormItem>
+      <NFormItem v-if="editorMode === 'create' && selectedPlugin" :label="tx('渠道', 'Channel')">
+        <NSelect
+          v-model:value="selectedChannel"
+          :disabled="instanceSaveReadOnly"
+          :aria-label="tx('渠道', 'Channel')"
+          :input-props="{ id: instanceFieldId('channel'), 'aria-label': tx('渠道', 'Channel') }"
+          :options="selectedPlugin.manifest.channels.map(channel => ({ label: channel, value: channel }))"
+          filterable
+        />
+      </NFormItem>
+      <template v-if="selectedPlugin">
+        <NDivider>{{ tx('插件配置', 'Plugin configuration') }}</NDivider>
+        <NAlert v-if="legacyIdentityConfigFrozen" type="warning" class="mb-12px">
+          {{
+            tx(
+              '此旧插件清单未声明 identity_fields。为避免账号身份被意外更换，现有实例的全部配置和秘密字段只能保持原值；如需更改，请创建新实例。实例名称和发送启用状态仍可修改。',
+              'This legacy plugin manifest has no identity_fields declaration. To avoid changing provider identity accidentally, keep all config and secret values unchanged on an existing instance; create a new instance to change them. The instance name and enabled state remain editable.'
+            )
+          }}
+        </NAlert>
+        <NAlert v-else-if="editorMode === 'edit' && identityFields?.length" type="warning" class="mb-12px">
+          {{
+            tx(
+              `以下身份字段不可在现有实例中修改：${identityFields.join(', ')}。如需更换账号、区域或身份 URL，请创建新实例；非身份配置和秘密字段仍可按需更新。`,
+              `These identity fields cannot change on an existing instance: ${identityFields.join(', ')}. Create a new instance to change the account, region, or identity URL; non-identity config and secrets remain editable.`
+            )
+          }}
+        </NAlert>
+        <NAlert v-if="unsupportedSchemaFields.length" type="warning" class="mb-12px">
+          {{
+            tx(
+              `无法安全编辑这些配置字段：${unsupportedSchemaFields.join(', ')}。请使用支持的插件 schema。`,
+              `These config fields cannot be edited safely: ${unsupportedSchemaFields.join(', ')}. Use a plugin with a supported schema.`
+            )
+          }}
+        </NAlert>
+        <NFormItem v-for="[name, schema] in schemaFields" :key="name" :label="schema.title || name" :path="name">
+          <NInput
+            v-if="secretFields.includes(name)"
+            v-model:value="secretDraft[name]"
+            :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :input-props="instanceInputProps(name)"
+            type="password"
+            show-password-on="click"
+            autocomplete="new-password"
+            :placeholder="
+              editorMode === 'edit' && selectedInstance?.secretState[name]
+                ? tx('已配置；留空保持原值', 'Configured; leave blank to keep')
+                : tx('请输入秘密值', 'Enter secret value')
+            "
+            @update:value="secretMode = 'set'"
+          />
+          <NSelect
+            v-else-if="Array.isArray(schema.enum)"
+            :value="enumSelection(name)"
+            :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :input-props="instanceFieldAriaProps(name)"
+            filterable
+            :options="enumOptions(schema)"
+            @update:value="value => updateEnum(name, schema, value)"
+          />
+          <NSwitch
+            v-else-if="schema.type === 'boolean'"
+            :id="instanceFieldId(name)"
+            :value="Boolean(configValues[name])"
+            :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :aria-disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name) ? 'true' : undefined"
+            :aria-label="schema.title || name"
+            :aria-invalid="localFieldErrors[name] || validationErrorForField(name) ? 'true' : undefined"
+            :aria-describedby="
+              localFieldErrors[name]
+                ? instanceErrorId(name)
+                : validationErrorForField(name)
+                  ? validationFieldErrorId(validationErrorForField(name)!.field)
+                  : undefined
+            "
+            @update:value="
+              value => {
+                if (instanceSaveReadOnly || isIdentityFieldReadOnly(name)) return
+                configValues[name] = value
+              }
+            "
+          />
+          <NInputNumber
+            v-else-if="schema.type === 'integer' || schema.type === 'number'"
+            :id="instanceFieldId(name)"
+            :value="Number(configValues[name] ?? 0)"
+            :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :input-props="instanceInputProps(name)"
+            :precision="schema.type === 'integer' ? 0 : undefined"
+            @update:value="
+              value => {
+                configValues[name] = value ?? 0
+              }
+            "
+          />
+          <NInput
+            v-else-if="schema.type === 'object' || schema.type === 'array'"
+            type="textarea"
+            :value="jsonDrafts[name] || ''"
+            :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :input-props="instanceInputProps(name)"
+            :autosize="{ minRows: 3, maxRows: 8 }"
+            @update:value="value => updateJsonField(name, value)"
+          />
+          <NInput
+            v-else
+            :value="String(configValues[name] ?? '')"
+            :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
+            :input-props="instanceInputProps(name)"
+            @update:value="
+              value => {
+                configValues[name] = value
+              }
+            "
+          />
+          <div v-if="requiredFields.includes(name)" class="mt-4px text-xs opacity-65">{{ tx('必填', 'Required') }}</div>
+          <div
+            v-if="localFieldErrors[name] || validationErrorForField(name)"
+            :id="
+              localFieldErrors[name]
+                ? instanceErrorId(name)
+                : validationFieldErrorId(validationErrorForField(name)!.field)
+            "
+            role="alert"
+            class="mt-4px text-xs text-red-600"
+          >
+            {{ localFieldErrors[name] || validationErrorForField(name)?.reason }}
+          </div>
+        </NFormItem>
+        <NFormItem
+          v-if="editableSecretFields.length && editorMode === 'edit'"
+          :label="tx('秘密字段处理', 'Secret handling')"
+        >
+          <NRadioGroup v-model:value="secretMode" :disabled="instanceSaveReadOnly">
+            <NSpace>
+              <NRadio value="keep">{{ tx('保持已配置值', 'Keep configured values') }}</NRadio>
+              <NRadio value="set">{{ tx('替换', 'Replace') }}</NRadio>
+              <NRadio value="clear">{{ tx('清除', 'Clear') }}</NRadio>
+            </NSpace>
+          </NRadioGroup>
+          <NCheckboxGroup
+            v-if="secretMode === 'clear'"
+            v-model:value="clearSecretFields"
+            class="mt-8px"
+            :disabled="instanceSaveReadOnly"
+          >
+            <NSpace vertical>
+              <NCheckbox
+                v-for="name in editableSecretFields"
+                :key="name"
+                :value="name"
+                :disabled="instanceSaveReadOnly || !selectedInstance?.secretState[name]"
+              >
+                {{ name }}{{ selectedInstance?.secretState[name] ? '' : tx('（未配置）', ' (not configured)') }}
+              </NCheckbox>
+            </NSpace>
+          </NCheckboxGroup>
+        </NFormItem>
+        <NFormItem
+          v-if="editorMode === 'create'"
+          :label="tx('供应商账号身份（JSON 字符串映射）', 'Provider identity (JSON string map)')"
+        >
+          <NInput
+            v-model:value="providerIdentityText"
+            type="textarea"
+            :autosize="{ minRows: 2, maxRows: 5 }"
+            :disabled="instanceSaveReadOnly"
+            :input-props="{
+              'aria-label': tx('供应商账号身份（JSON 字符串映射）', 'Provider identity (JSON string map)')
+            }"
+          />
+        </NFormItem>
+        <NFormItem v-if="editorMode === 'edit'" :label="tx('发送启用', 'Sending enabled')">
+          <NSwitch
+            v-model:value="enabledValue"
+            :disabled="instanceSaveReadOnly"
+            :aria-label="tx('发送启用', 'Sending enabled')"
+          />
+        </NFormItem>
+      </template>
+      <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
+      <NAlert v-if="instanceVersionConflict" type="warning" class="mb-12px">
+        {{ tx('保存前必须重新读取实例的最新版本。', 'Reload the latest instance version before saving.') }}
+        <NButton size="small" class="ml-8px" @click="reloadConflictedInstance">
+          {{ tx('刷新当前实例', 'Reload instance') }}
+        </NButton>
+      </NAlert>
+      <NAlert v-if="successText" type="success" class="mb-12px">{{ successText }}</NAlert>
+      <NAlert
+        v-for="error in validationErrors"
+        :id="validationSummaryErrorId(error.field)"
+        :key="`${error.field}:${error.reason}`"
+        type="warning"
+        role="alert"
+        class="mb-8px"
+      >
+        {{ error.field }}: {{ error.reason }}
+      </NAlert>
+      <NSpace justify="end">
+        <NButton :disabled="Boolean(pendingInstanceSave)" @click="closeEditor">{{ tx('取消', 'Cancel') }}</NButton>
+        <NButton :disabled="!selectedPlugin || instanceSaveReadOnly" @click="validateConfig">
+          {{ tx('校验配置', 'Validate configuration') }}
+        </NButton>
+        <NButton
+          v-if="canEditAccounts"
+          type="primary"
+          :disabled="!selectedPlugin || instanceVersionConflict"
+          :loading="saving"
+          @click="saveInstance"
+        >
+          {{ pendingInstanceSave ? tx('使用同一请求重试', 'Retry same request') : tx('保存', 'Save') }}
+        </NButton>
+      </NSpace>
+    </NForm>
+  </NModal>
+
+  <NModal
+    v-model:show="testModal"
+    preset="card"
+    class="w-640px max-w-95vw"
+    :title="tx('发送测试通知', 'Send test notification')"
+  >
+    <NAlert type="warning" class="mb-12px">
+      {{
+        tx(
+          '本操作会联系所填目标，可能产生供应商费用。只有点击确认后才会提交。',
+          'This sends to the specified recipient and may incur provider charges. It is submitted only after confirmation.'
+        )
+      }}
+    </NAlert>
+    <div v-if="selectedInstance" class="mb-12px">{{ selectedInstance.name }} · {{ selectedInstance.channel }}</div>
+    <NForm label-placement="top">
+      <NFormItem :label="tx('接收目标', 'Recipient')">
+        <NInput v-model:value="testRecipient" :input-props="{ 'aria-label': tx('接收目标', 'Recipient') }" />
+      </NFormItem>
+      <NFormItem :label="tx('内容模式', 'Content mode')">
+        <NSelect
+          v-model:value="testContentMode"
+          :options="(selectedPlugin?.manifest.contentModes || ['text']).map(mode => ({ label: mode, value: mode }))"
+          :input-props="{ id: 'notification-instance-test-content-mode', 'aria-label': tx('内容模式', 'Content mode') }"
+          filterable
+        />
+      </NFormItem>
+      <NFormItem :label="tx('标题（可选）', 'Title (optional)')">
+        <NInput v-model:value="testTitle" :input-props="{ 'aria-label': tx('标题（可选）', 'Title (optional)') }" />
+      </NFormItem>
+      <NFormItem v-if="testContentMode === 'text'" :label="tx('测试文本', 'Test text')">
+        <NInput v-model:value="testText" type="textarea" :input-props="{ 'aria-label': tx('测试文本', 'Test text') }" />
+      </NFormItem>
+      <template v-else>
+        <NFormItem :label="tx('模板 ID', 'Template ID')">
+          <NInput v-model:value="testTemplateId" :input-props="{ 'aria-label': tx('模板 ID', 'Template ID') }" />
+        </NFormItem>
+        <NFormItem :label="tx('语言', 'Locale')">
+          <NInput v-model:value="testLocale" :input-props="{ 'aria-label': tx('语言', 'Locale') }" />
+        </NFormItem>
+        <NFormItem :label="tx('模板参数 JSON', 'Template params JSON')">
+          <NInput
+            v-model:value="testParamsText"
+            type="textarea"
+            :input-props="{ 'aria-label': tx('模板参数 JSON', 'Template params JSON') }"
+          />
+        </NFormItem>
+      </template>
+    </NForm>
+    <NAlert v-if="testStateText" type="info" class="mb-12px">{{ testStateText }}</NAlert>
+    <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
+    <div v-if="acceptedNotificationId" class="mb-12px">notificationId: {{ acceptedNotificationId }}</div>
+    <NSpace justify="end">
+      <NButton v-if="acceptedNotificationId" @click="refreshTestStatus">{{ tx('查询状态', 'Refresh status') }}</NButton>
+      <NButton :disabled="Boolean(acceptedNotificationId)" type="primary" @click="submitTest">
+        {{
+          pendingTest ? tx('使用同一请求重试', 'Retry same request') : tx('确认并提交一次', 'Confirm and submit once')
+        }}
+      </NButton>
+    </NSpace>
+  </NModal>
+</template>

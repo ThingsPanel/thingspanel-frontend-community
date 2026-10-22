@@ -102,7 +102,7 @@
   "route.automation_scene-linkage": "场景联动",
   "route.automation_linkage-edit": "联动编辑",
   "route.alarm": "告警",
-  "route.alarm_notification-group": "通知组",
+  "route.alarm_notification-group": "通知策略",
   "route.alarm_notification-record": "通知记录",
   "route.alarm_warning-message": "告警信息",
   "route.management_notification": "通知配置",
