@@ -429,11 +429,24 @@ function removeBinding(bindingId: string) {
   delete templateMappings[bindingId]
 }
 
+function isAppInstance(binding: NotificationV2.GroupBinding) {
+  const instance = instances.value.find(item => item.id === binding.instanceId)
+  const plugin = plugins.value.find(item => item.id === instance?.pluginRegistrationId)
+  return plugin?.pluginId === 'thingspanel.unipush' && plugin.pluginVersion === '2.0.0'
+}
+function useAppAlarm(binding: NotificationV2.GroupBinding) {
+  const userId = binding.recipientSource.kind === 'member' ? binding.recipientSource.userId : ''
+  binding.recipientSource = { kind: 'member', userId, contactField: 'appDevice' }
+  const paramsMapping = { title: 'subject', text: 'text', alarmId: 'alarmId', alarmKind: 'alarmKind' }
+  binding.contentBinding = { kind: 'template', templateId: 'device_alarm', locale: 'zh-CN', paramsMapping }
+  templateMappings[binding.bindingId] = JSON.stringify(paramsMapping, null, 2)
+}
+
 function updateRecipientKind(binding: NotificationV2.GroupBinding, kind: 'literal' | 'member') {
   binding.recipientSource =
     kind === 'literal'
       ? { kind, recipient: { kind: 'phone', address: '' } }
-      : { kind, userId: '', contactField: 'phone' }
+      : { kind, userId: '', contactField: isAppInstance(binding) ? 'appDevice' : 'phone' }
 }
 
 function updateContentKind(binding: NotificationV2.GroupBinding, kind: 'text' | 'template') {
@@ -446,7 +459,10 @@ function updateContentKind(binding: NotificationV2.GroupBinding, kind: 'text' | 
 function isUnsupportedMemberTarget(binding: NotificationV2.GroupBinding) {
   if (binding.recipientSource.kind !== 'member') return false
   const instance = instances.value.find(item => item.id === binding.instanceId)
-  return instance?.channel === 'im' || binding.recipientSource.contactField === 'applicationUserId'
+  return (
+    (instance?.channel === 'im' && !isAppInstance(binding)) ||
+    binding.recipientSource.contactField === 'applicationUserId'
+  )
 }
 
 function recipientSourceOptions(binding: NotificationV2.GroupBinding): SelectOption[] {
@@ -454,9 +470,9 @@ function recipientSourceOptions(binding: NotificationV2.GroupBinding): SelectOpt
   return [
     { label: tx('直接目标', 'Literal recipient'), value: 'literal' },
     {
-      label: tx('应用成员（仅邮件/短信/语音）', 'Application member (email/SMS/voice only)'),
+      label: tx('应用成员（App 支持多设备）', 'Application member (App supports multiple devices)'),
       value: 'member',
-      disabled: Boolean(instance && !supportsNotificationMemberTarget(instance.channel))
+      disabled: Boolean(instance && !supportsNotificationMemberTarget(instance.channel) && !isAppInstance(binding))
     }
   ]
 }
@@ -520,7 +536,7 @@ function validateBindings() {
     if (recipient.kind === 'member' && !recipient.userId)
       setBindingError(binding.bindingId, 'member', tx('请选择成员。', 'Choose a member.'))
     if (recipient.kind === 'member') {
-      if (instance?.channel === 'im' || recipient.contactField === 'applicationUserId') {
+      if ((instance?.channel === 'im' && !isAppInstance(binding)) || recipient.contactField === 'applicationUserId') {
         setBindingError(
           binding.bindingId,
           'member',
@@ -529,7 +545,11 @@ function validateBindings() {
             'APP member targets are not available yet. Use a direct recipient address supported by the service; application user IDs are not provider user_id/chat_id values.'
           )
         )
-      } else if (instance && !isNotificationMemberContactSupported(instance.channel, recipient.contactField)) {
+      } else if (
+        instance &&
+        !isNotificationMemberContactSupported(instance.channel, recipient.contactField) &&
+        !(isAppInstance(binding) && recipient.contactField === 'appDevice')
+      ) {
         setBindingError(
           binding.bindingId,
           'contact-field',
@@ -959,6 +979,14 @@ onMounted(loadPage)
               filterable
             />
           </NFormItem>
+          <NButton v-if="isAppInstance(binding)" class="mb-12px" :disabled="formReadOnly" @click="useAppAlarm(binding)">
+            {{
+              tx(
+                '使用设备告警通知（选择成员，自动发送到全部有效手机）',
+                'Use device alarm notification for all active phones'
+              )
+            }}
+          </NButton>
           <NFormItem :label="tx('目标类型', 'Recipient source')">
             <NSelect
               :value="binding.recipientSource.kind"
@@ -983,6 +1011,9 @@ onMounted(loadPage)
                 :options="[
                   { label: 'Email', value: 'email' },
                   { label: tx('手机号', 'Phone'), value: 'phone' },
+                  ...(isAppInstance(binding)
+                    ? [{ label: tx('App 全部有效手机', 'All active App devices'), value: 'appDevice' }]
+                    : []),
                   { label: 'chat_id', value: 'chat_id' },
                   { label: 'user_id', value: 'user_id' },
                   { label: 'Webhook', value: 'webhook' }
@@ -1047,7 +1078,10 @@ onMounted(loadPage)
                 v-model:value="binding.recipientSource.contactField"
                 :options="[
                   { label: 'Email', value: 'email' },
-                  { label: tx('手机号', 'Phone'), value: 'phone' }
+                  { label: tx('手机号', 'Phone'), value: 'phone' },
+                  ...(isAppInstance(binding)
+                    ? [{ label: tx('App 全部有效手机', 'All active App devices'), value: 'appDevice' }]
+                    : [])
                 ]"
                 :disabled="formReadOnly"
                 :aria-label="tx('联系字段', 'Contact field')"

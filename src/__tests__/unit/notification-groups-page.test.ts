@@ -210,7 +210,11 @@ const stubs = {
 function installTsxShim() {
   ;(globalThis as { React?: unknown }).React = {
     Fragment,
-    createElement: (type: Parameters<typeof h>[0] | typeof Fragment, props: Parameters<typeof h>[1], ...children: unknown[]) =>
+    createElement: (
+      type: Parameters<typeof h>[0] | typeof Fragment,
+      props: Parameters<typeof h>[1],
+      ...children: unknown[]
+    ) =>
       type === Fragment
         ? h(Fragment, props, children.flat(Infinity) as never)
         : h(type as Parameters<typeof h>[0], props, () => children)
@@ -235,6 +239,67 @@ describe('notification group page failure and conflict flow', () => {
     authState.token = 'fixture-session'
     authState.userInfo.tenant_id = 'fixture-tenant'
     installTsxShim()
+  })
+
+  it('saves an App member alarm policy without a literal CID', async () => {
+    const group = {
+      id: 'app-group',
+      name: 'App alarms',
+      enabled: true,
+      revision: 1,
+      version: 1,
+      migrationState: 'native',
+      bindings: [
+        {
+          bindingId: 'binding-app',
+          instanceId: 'app-instance',
+          recipientSource: { kind: 'member', userId: 'member-1', contactField: 'appDevice' },
+          contentBinding: { kind: 'text', title: 'Alarm', text: 'alarm' }
+        }
+      ]
+    }
+    api.listGroups.mockResolvedValue({ data: { items: [group], total: 1 } })
+    api.getGroup.mockResolvedValue({ data: group })
+    api.listInstances.mockResolvedValue({
+      data: {
+        items: [{ id: 'app-instance', name: 'App', channel: 'im', enabled: true, pluginRegistrationId: 'plugin-app' }]
+      }
+    })
+    api.listPlugins.mockResolvedValue({
+      data: {
+        items: [
+          { id: 'plugin-app', pluginId: 'thingspanel.unipush', pluginVersion: '2.0.0', manifest: { name: 'App' } }
+        ]
+      }
+    })
+    api.updateGroup.mockResolvedValue({ data: group })
+    const wrapper = mount(NotificationGroups, { global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Edit')!
+      .trigger('click')
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Use device alarm notification for all active phones')!
+      .trigger('click')
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Save group')!
+      .trigger('click')
+    await flushPromises()
+    expect(api.updateGroup).toHaveBeenCalled()
+    const saved = api.updateGroup.mock.calls[0][1].bindings[0]
+    expect(saved.recipientSource).toEqual({ kind: 'member', userId: 'member-1', contactField: 'appDevice' })
+    expect(saved.contentBinding).toEqual({
+      kind: 'template',
+      templateId: 'device_alarm',
+      locale: 'zh-CN',
+      paramsMapping: { title: 'subject', text: 'text', alarmId: 'alarmId', alarmKind: 'alarmKind' }
+    })
+    expect(api.testInstance).not.toHaveBeenCalled()
+    wrapper.unmount()
   })
 
   it('distinguishes a failed member-directory lookup from an empty list and retries it', async () => {
