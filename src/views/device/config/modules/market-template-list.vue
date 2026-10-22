@@ -7,7 +7,8 @@ import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import CardGrid from '@/components/card-grid/index.vue'
 import MarketFilterBar from '@/views/device/market/MarketFilterBar.vue'
-import { getMarketTemplates, installFromMarket } from '@/service/api/market'
+import { getMarketTemplates, getMarketTemplateDetail, installFromMarket } from '@/service/api/market'
+import { marketTemplateCompatibility } from '../market-template-compatibility'
 import { useMarketAuth } from '../composables/use-market-auth'
 import MarketTemplateCard from './market-template-card.vue'
 import MarketTemplateDrawer from './market-template-drawer.vue'
@@ -137,10 +138,10 @@ const startInstall = async (id: string, selectedVersion = resolveInstallVersion(
   await doInstall(id, selectedVersion)
 }
 
-const handleInstall = (id: string) => {
+const handleInstall = (id: string, version?: string) => {
   if (installingId.value) return
 
-  const selectedVersion = resolveInstallVersion(id)
+  const selectedVersion = version || resolveInstallVersion(id)
   if (!selectedVersion) {
     window.$message?.error($t('market.browse.versionUnavailable'))
     return
@@ -167,6 +168,13 @@ const doInstall = async (id: string, version: string) => {
 
   installingId.value = id
   try {
+    const detailRes: any = await getMarketTemplateDetail(id)
+    const compatibility = detailRes.error ? 'unavailable' : marketTemplateCompatibility(detailRes.data, version)
+    if (compatibility !== 'native') {
+      throw new Error(
+        $t(compatibility === 'legacy' ? 'market.compatibility.legacy' : 'market.compatibility.unavailable')
+      )
+    }
     const res: any = await installFromMarket({
       market_template_id: id,
       version,

@@ -1,4 +1,7 @@
 {
+    "market.compatibility.native": "原生物模型模板，可安装当前版本。",
+    "market.compatibility.legacy": "旧版模板仅可浏览，请发布者转换并发布原生版本后再安装。",
+    "market.compatibility.unavailable": "此版本暂无法确认兼容性，请刷新或联系管理员升级资源中心。",
     "market.loginTitle": "登录资源中心",
     "market.loginSubtitle": "资源中心需单独注册账号，ThingsPanel 平台账号不能直接登录。",
     "market.username": "账号",

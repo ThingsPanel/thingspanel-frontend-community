@@ -57,5 +57,7 @@ scripts/re.ps1
 src/views/test/panel-editor-v2/index.vue
 CLAUDE.md
 AGENTS.md
+# Keep the repository navigation guide under version control.
+!/AGENTS.md
 .claude/settings.local.json
 .claude/settings.local.json

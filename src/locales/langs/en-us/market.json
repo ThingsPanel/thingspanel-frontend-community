@@ -1,4 +1,7 @@
 {
+    "market.compatibility.native": "Native thing-model template. This version can be installed.",
+    "market.compatibility.legacy": "Legacy template is browse-only. Ask the publisher to convert and publish a native version.",
+    "market.compatibility.unavailable": "Compatibility is unavailable for this version. Refresh or ask an administrator to update the resource center.",
     "market.loginTitle": "Login to Resource Center",
     "market.loginSubtitle": "Resource Center accounts require separate registration. ThingsPanel platform accounts cannot sign in directly.",
     "market.username": "Username",
