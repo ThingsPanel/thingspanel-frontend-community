@@ -733,15 +733,27 @@ async function refreshTestStatus() {
 }
 
 const columns: DataTableColumns<NotificationInstance> = [
-  { title: tx('实例名称', 'Instance'), key: 'name', minWidth: 150 },
+  { title: tx('渠道名称', 'Instance'), key: 'name', minWidth: 150 },
   {
-    title: tx('插件', 'Plugin'),
+    title: tx('服务提供方', 'Plugin'),
     key: 'plugin',
     minWidth: 180,
     render: row =>
       plugins.value.find(item => item.id === row.pluginRegistrationId)?.manifest.name || row.pluginRegistrationId
   },
-  { title: tx('渠道', 'Channel'), key: 'channel', width: 100 },
+  {
+    title: tx('通知方式', 'Channel'),
+    key: 'channel',
+    width: 130,
+    render: row =>
+      ({
+        email: tx('邮件', 'Email'),
+        sms: tx('短信', 'SMS'),
+        voice: tx('语音', 'Voice'),
+        im: tx('即时消息 / 推送', 'Messaging / Push'),
+        webhook: 'Webhook'
+      })[row.channel]
+  },
   {
     title: tx('发送状态', 'Enabled'),
     key: 'enabled',
@@ -757,7 +769,7 @@ const columns: DataTableColumns<NotificationInstance> = [
         ? tx('支持', 'Supported')
         : tx('不支持', 'Unsupported')
   },
-  { title: tx('配置版本', 'Config version'), key: 'configVersion', width: 110 },
+
   {
     title: tx('操作', 'Actions'),
     key: 'actions',

@@ -31,6 +31,7 @@ import {
   supportsNotificationMemberTarget
 } from './workflow'
 
+const emit = defineEmits<{ published: [] }>()
 const auth = useAuthStore()
 const notificationApiConfigured = Boolean(import.meta.env.VITE_NOTIFICATION_API_BASE_URL)
 const { locale } = useI18n()
@@ -47,6 +48,7 @@ const plugins = ref<NotificationPlugin[]>([])
 const total = ref(0)
 const loading = ref(false)
 const saving = ref(false)
+const publishAfterSave = ref(false)
 const errorText = ref('')
 const successText = ref('')
 const modal = ref(false)
@@ -61,6 +63,8 @@ const draftName = ref('')
 const draftEnabled = ref(false)
 const bindings = ref<NotificationV2.GroupBinding[]>([])
 const memberOptions = ref<SelectOption[]>([])
+const memberSelections = reactive<Record<string, string[]>>({})
+const memberBindingIds = reactive<Record<string, Record<string, string>>>({})
 const memberLoading = ref(false)
 const memberError = ref('')
 const memberSearchGeneration = ref(0)
@@ -77,15 +81,19 @@ const publishLoading = ref<Record<string, boolean>>({})
 const pendingPublish = ref<{ key: string; body: NativeNotificationGroupRouteRequest; groupId: string } | null>(null)
 const publishSaving = ref(false)
 const versionConflict = ref(false)
+const advancedBindings = reactive<Record<string, boolean>>({})
 const templateMappings = reactive<Record<string, string>>({})
 const formReadOnly = computed(() => editorMode.value === 'view' || Boolean(pendingSave.value))
 
 function resetDraft() {
   draftName.value = ''
-  draftEnabled.value = false
+  draftEnabled.value = true
   bindings.value = []
   bindingErrors.value = {}
   bindingErrorFields.value = {}
+  Object.keys(memberSelections).forEach(key => delete memberSelections[key])
+  Object.keys(memberBindingIds).forEach(key => delete memberBindingIds[key])
+  Object.keys(advancedBindings).forEach(key => delete advancedBindings[key])
   Object.keys(templateMappings).forEach(key => delete templateMappings[key])
   selectedGroup.value = null
 }
@@ -268,25 +276,10 @@ function nativePublishLabel(row: NotificationV2.GroupView) {
   if (pendingPublish.value?.groupId === row.id)
     return tx('结果未确认，使用同一请求重试', 'Result unconfirmed; retry the same request')
   const status = publishStatuses.value[row.id]
-  if (status?.published && status.effectiveGroupRevision === row.revision) return tx('已启用', 'Enabled')
-  if (status?.published || status?.status === 'stopped') return tx('启用策略', 'Enable policy')
+  if (status?.published && status.effectiveGroupRevision === row.revision) return tx('已生效', 'Enabled')
+  if (status?.published || status?.status === 'stopped') return tx('发布生效', 'Enable policy')
   if (publishErrors.value[row.id]) return tx('刷新策略状态', 'Refresh policy status')
-  return tx('启用策略', 'Enable policy')
-}
-
-function nativePublishSummary(row: NotificationV2.GroupView) {
-  const status = publishStatuses.value[row.id]
-  if (!status) return ''
-  if (status.published && status.legacyGroupId) {
-    const staleRevision = status.effectiveGroupRevision !== row.revision
-    return tx(
-      `已启用版本 ${status.effectiveGroupRevision}${staleRevision ? ` · 当前版本 ${row.revision} 尚未启用` : ''}`,
-      `Enabled version ${status.effectiveGroupRevision}${staleRevision ? ` · current version ${row.revision} is not enabled` : ''}`
-    )
-  }
-  if (status.status === 'stopped')
-    return tx('策略已停用，新告警不会使用此策略。', 'Policy is disabled; new alerts will not use it.')
-  return ''
+  return tx('发布生效', 'Enable policy')
 }
 
 function nativePublishErrorStatus(error: unknown) {
@@ -306,6 +299,7 @@ async function sendPendingPublish() {
     const status = await publishNativeNotificationGroup(pending.body, pending.key)
     publishStatuses.value[pending.groupId] = status
     pendingPublish.value = null
+    emit('published')
     await loadPage()
     publishErrors.value[pending.groupId] =
       pending.body.operation === 'unpublish'
@@ -442,7 +436,87 @@ function useAppAlarm(binding: NotificationV2.GroupBinding) {
   templateMappings[binding.bindingId] = JSON.stringify(paramsMapping, null, 2)
 }
 
+function selectedMembers(binding: NotificationV2.GroupBinding): string[] {
+  return (
+    memberSelections[binding.bindingId] ??
+    (binding.recipientSource.kind === 'member' && binding.recipientSource.userId
+      ? [binding.recipientSource.userId]
+      : [])
+  )
+}
+
+function updateMembers(binding: NotificationV2.GroupBinding, values: string[] | null) {
+  const members = [...new Set(values || [])]
+  if (binding.recipientSource.kind !== 'member') return
+  const ids = (memberBindingIds[binding.bindingId] ??= {})
+  if (binding.recipientSource.userId && !ids[binding.recipientSource.userId])
+    ids[binding.recipientSource.userId] = binding.bindingId
+  members.forEach(userId => {
+    ids[userId] ??= notificationV2.createIdempotencyKey()
+  })
+  memberSelections[binding.bindingId] = members
+  binding.recipientSource.userId = members[0] || ''
+}
+
+function groupMemberBindings(items: NotificationV2.GroupBinding[]) {
+  const grouped: NotificationV2.GroupBinding[] = []
+  const representatives = new Map<string, NotificationV2.GroupBinding>()
+  items.forEach(binding => {
+    if (binding.recipientSource.kind !== 'member') {
+      grouped.push(binding)
+      return
+    }
+    const { userId, contactField } = binding.recipientSource
+    const key = JSON.stringify([binding.instanceId, contactField, binding.contentBinding])
+    const existing = representatives.get(key)
+    if (existing && !memberSelections[existing.bindingId].includes(userId)) {
+      memberSelections[existing.bindingId].push(userId)
+      memberBindingIds[existing.bindingId][userId] = binding.bindingId
+      return
+    }
+    grouped.push(binding)
+    representatives.set(key, binding)
+    memberSelections[binding.bindingId] = userId ? [userId] : []
+    memberBindingIds[binding.bindingId] = userId ? { [userId]: binding.bindingId } : {}
+  })
+  return grouped
+}
+
+function changeInstance(binding: NotificationV2.GroupBinding) {
+  if (isAppInstance(binding)) useAppAlarm(binding)
+}
+
+function isAppAlarmPreset(binding: NotificationV2.GroupBinding) {
+  if (
+    !isAppInstance(binding) ||
+    binding.recipientSource.kind !== 'member' ||
+    binding.recipientSource.contactField !== 'appDevice'
+  )
+    return false
+  const content = binding.contentBinding
+  const expected = { title: 'subject', text: 'text', alarmId: 'alarmId', alarmKind: 'alarmKind' }
+  return (
+    content.kind === 'template' &&
+    content.templateId === 'device_alarm' &&
+    content.locale === 'zh-CN' &&
+    Object.keys(content.paramsMapping).length === 4 &&
+    Object.entries(expected).every(([key, value]) => content.paramsMapping[key] === value)
+  )
+}
+
+function policyState(row: NotificationV2.GroupView) {
+  if (row.migrationState !== 'native') return migrationLabel(row.migrationState)
+  const status = publishStatuses.value[row.id]
+  if (!status) return publishErrors.value[row.id] ? tx('状态读取失败', 'Status unavailable') : tx('读取中', 'Loading')
+  if (status.published)
+    return status.effectiveGroupRevision === row.revision
+      ? tx('已生效', 'Active')
+      : tx('有未生效修改', 'Unpublished changes')
+  return status.status === 'stopped' ? tx('已停用', 'Stopped') : tx('未生效', 'Not published')
+}
+
 function updateRecipientKind(binding: NotificationV2.GroupBinding, kind: 'literal' | 'member') {
+  delete memberSelections[binding.bindingId]
   binding.recipientSource =
     kind === 'literal'
       ? { kind, recipient: { kind: 'phone', address: '' } }
@@ -468,7 +542,7 @@ function isUnsupportedMemberTarget(binding: NotificationV2.GroupBinding) {
 function recipientSourceOptions(binding: NotificationV2.GroupBinding): SelectOption[] {
   const instance = instances.value.find(item => item.id === binding.instanceId)
   return [
-    { label: tx('直接目标', 'Literal recipient'), value: 'literal' },
+    { label: tx('外部接收地址', 'Literal recipient'), value: 'literal' },
     {
       label: tx('应用成员（App 支持多设备）', 'Application member (App supports multiple devices)'),
       value: 'member',
@@ -485,7 +559,7 @@ async function searchMembers(query = '') {
     const response = await getUserList({ page: 1, page_size: 50, name: query })
     if (generation !== memberSearchGeneration.value) return
     const users = response?.data?.list || []
-    memberOptions.value = users.map(user => ({ label: `${user.name} · ${user.user_id}`, value: user.user_id }))
+    memberOptions.value = users.map(user => ({ label: user.name || user.user_id, value: user.user_id }))
   } catch {
     if (generation !== memberSearchGeneration.value) return
     memberOptions.value = []
@@ -617,13 +691,14 @@ async function openEdit(row: NotificationV2.GroupView) {
     pendingSave.value = null
     draftName.value = group.name
     draftEnabled.value = group.enabled
-    bindings.value = cloneNotificationGroupBindings(group.bindings)
+    bindings.value = groupMemberBindings(cloneNotificationGroupBindings(group.bindings))
     bindings.value.forEach(binding => {
       if (binding.contentBinding.kind === 'template') {
         templateMappings[binding.bindingId] = JSON.stringify(binding.contentBinding.paramsMapping, null, 2)
       }
     })
     modal.value = true
+    if (bindings.value.some(binding => binding.recipientSource.kind === 'member')) void searchMembers()
   } catch (error) {
     if (!controller.signal.aborted && !(error instanceof NotificationSessionChangedError))
       errorText.value = notificationErrorMessage(error, '读取通知策略失败。', 'Could not load the group.')
@@ -635,7 +710,15 @@ function buildGroupBody(): NotificationV2.GroupCreate | NotificationV2.GroupUpda
     focusFirstInvalidGroupField()
     throw new Error(tx('请修正策略配置中的错误。', 'Fix the policy configuration errors.'))
   }
-  const normalizedBindings = cloneNotificationGroupBindings(bindings.value)
+  const normalizedBindings = cloneNotificationGroupBindings(bindings.value).flatMap(binding => {
+    if (binding.recipientSource.kind !== 'member') return [binding]
+    const source = binding.recipientSource
+    return selectedMembers(binding).map(userId => ({
+      ...binding,
+      bindingId: memberBindingIds[binding.bindingId]?.[userId] || binding.bindingId,
+      recipientSource: { ...source, userId }
+    }))
+  })
   normalizedBindings.forEach(binding => {
     binding.instanceId = binding.instanceId.trim()
     if (binding.recipientSource.kind === 'literal')
@@ -650,6 +733,18 @@ function buildGroupBody(): NotificationV2.GroupCreate | NotificationV2.GroupUpda
   })
   const base = { name: draftName.value.trim(), enabled: draftEnabled.value, bindings: normalizedBindings }
   return editorMode.value === 'edit' ? { ...base, expectedVersion: selectedGroup.value!.version } : base
+}
+
+async function saveAndPublish() {
+  if (pendingSave.value || pendingPublish.value || saving.value) return
+  publishAfterSave.value = true
+  draftEnabled.value = true
+  await saveGroup()
+}
+
+async function saveDraft() {
+  if (!pendingSave.value) publishAfterSave.value = false
+  await saveGroup()
 }
 
 async function saveGroup() {
@@ -680,15 +775,25 @@ async function saveGroup() {
   saving.value = true
   const pending = pendingSave.value
   try {
-    if (pending.groupId) {
-      await notificationV2.updateGroup(pending.groupId, pending.body as NotificationV2.GroupUpdate, pending.key)
-    } else {
-      await notificationV2.createGroup(pending.body as NotificationV2.GroupCreate, pending.key)
-    }
+    const saved = pending.groupId
+      ? await notificationV2.updateGroup(pending.groupId, pending.body as NotificationV2.GroupUpdate, pending.key)
+      : await notificationV2.createGroup(pending.body as NotificationV2.GroupCreate, pending.key)
     pendingSave.value = null
     modal.value = false
-    successText.value = tx('通知策略已保存。', 'Notification group saved.')
+    successText.value = tx('通知策略已保存；请在列表发布当前版本后用于告警。', 'Notification group saved.')
     await loadPage()
+    if (publishAfterSave.value && saved?.data) {
+      successText.value = tx('配置已保存，正在发布。', 'Configuration saved. Publishing.')
+      await publishForCommunityAlerts(saved.data)
+      const status = publishStatuses.value[saved.data.id]
+      successText.value =
+        status?.published && status.effectiveGroupRevision === saved.data.revision
+          ? tx('通知策略已保存并生效。', 'Policy saved and published.')
+          : tx(
+              '配置已保存，但尚未确认生效。请查看该策略的发布状态；已有生效版本不会被本次保存替换。',
+              'Configuration saved, but publication is not confirmed. Review the policy status; saving does not replace the previously published version.'
+            )
+    }
   } catch (error) {
     if (error instanceof NotificationClientError && error.outcomeUncertain) {
       errorText.value = tx(
@@ -709,7 +814,11 @@ async function saveGroup() {
         const fields =
           (error.details as { fields?: Array<{ field: string; reason: string }> } | undefined)?.fields || []
         fields.forEach(field => {
-          const binding = bindings.value.find(item => field.field.includes(item.bindingId))
+          const binding = bindings.value.find(
+            item =>
+              field.field.includes(item.bindingId) ||
+              Object.values(memberBindingIds[item.bindingId] || {}).some(id => field.field.includes(id))
+          )
           if (binding) {
             bindingErrors.value[binding.bindingId] = field.reason
             bindingErrorFields.value[binding.bindingId] = bindingControlForErrorPath(field.field)
@@ -743,23 +852,30 @@ const columns: DataTableColumns<NotificationV2.GroupView> = [
     title: tx('状态', 'State'),
     key: 'migrationState',
     minWidth: 180,
-    render: row => migrationLabel(row.migrationState)
+    render: row => policyState(row)
   },
-  { title: 'Revision', key: 'revision', width: 100 },
-  { title: 'Version', key: 'version', width: 100 },
-  { title: tx('绑定数', 'Bindings'), key: 'bindings', width: 100, render: row => row.bindings.length },
   {
-    title: tx('已启用', 'Enabled'),
-    key: 'enabled',
-    width: 100,
-    render: row => (row.enabled ? tx('是', 'Yes') : tx('否', 'No'))
+    title: tx('通知渠道', 'Channels'),
+    key: 'channels',
+    minWidth: 180,
+    render: row =>
+      [
+        ...new Set(
+          row.bindings.map(
+            binding =>
+              instances.value.find(item => item.id === binding.instanceId)?.name ||
+              tx('渠道不可用', 'Unavailable channel')
+          )
+        )
+      ].join('、') || '—'
   },
+  { title: tx('发送项', 'Delivery items'), key: 'bindings', width: 100, render: row => row.bindings.length },
   {
     title: tx('操作', 'Actions'),
     key: 'actions',
     width: 330,
     render: row => (
-      <NSpace vertical size="small">
+      <NSpace size="small" align="center">
         {row.migrationState === 'native' ? (
           <>
             <NButton
@@ -777,6 +893,11 @@ const columns: DataTableColumns<NotificationV2.GroupView> = [
                 type="primary"
                 disabled={
                   !row.enabled ||
+                  Boolean(
+                    !pendingPublish.value &&
+                      publishStatuses.value[row.id]?.published &&
+                      publishStatuses.value[row.id]?.effectiveGroupRevision === row.revision
+                  ) ||
                   Boolean(publishLoading.value[row.id]) ||
                   Boolean(pendingPublish.value && pendingPublish.value.groupId !== row.id) ||
                   publishSaving.value
@@ -802,7 +923,6 @@ const columns: DataTableColumns<NotificationV2.GroupView> = [
                 {tx('停用策略', 'Disable policy')}
               </NButton>
             ) : null}
-            {nativePublishSummary(row) ? <div class="text-xs text-secondary">{nativePublishSummary(row)}</div> : null}
             {publishErrors.value[row.id] ? (
               <div class="text-xs" role="status">
                 {publishErrors.value[row.id]}
@@ -836,12 +956,21 @@ const previewText = computed(() =>
       const instance = instances.value.find(item => item.id === binding.instanceId)
       const recipient =
         binding.recipientSource.kind === 'member'
-          ? `member:${binding.recipientSource.userId || '—'} (${binding.recipientSource.contactField})`
+          ? `${selectedMembers(binding)
+              .map(
+                id =>
+                  memberOptions.value.find(option => option.value === id)?.label || tx('所选成员', 'Selected member')
+              )
+              .join(
+                '、'
+              )}${binding.recipientSource.contactField === 'appDevice' ? tx('的全部有效手机', ' — all active phones') : ''}`
           : `${binding.recipientSource.recipient.kind}:${binding.recipientSource.recipient.address || '—'}`
       const content =
         binding.contentBinding.kind === 'text'
           ? binding.contentBinding.text || '—'
-          : `${binding.contentBinding.templateId || '—'} · ${binding.contentBinding.locale || '—'}`
+          : isAppAlarmPreset(binding)
+            ? tx('告警标题 + 告警详情，点击查看对应告警', 'Alert title and details, with a link to the alert')
+            : `${binding.contentBinding.templateId || '—'} · ${binding.contentBinding.locale || '—'}`
       return `${index + 1}. ${instance?.name || binding.instanceId || '—'} → ${recipient} → ${content}`
     })
     .join('\n')
@@ -858,8 +987,8 @@ onMounted(loadPage)
         <div class="text-sm opacity-70">
           {{
             tx(
-              '选择可用服务，设置接收目标和内容，然后启用策略供新告警使用。历史通知组不再支持修改，已有引用与记录保留。',
-              'Choose available services, set recipients and content, then enable the policy for new alerts. Historical notification groups are read only; existing references and records are retained.'
+              '设置通知渠道、接收成员和消息内容。保存后发布，供告警规则使用。',
+              'Choose channels, recipients and content. Save and publish the policy for alert rules.'
             )
           }}
         </div>
@@ -886,6 +1015,7 @@ onMounted(loadPage)
     <NModal
       v-model:show="modal"
       preset="card"
+      class="notification-policy-editor"
       :title="
         editorMode === 'create'
           ? tx('新建通知策略', 'Create notification policy')
@@ -893,305 +1023,413 @@ onMounted(loadPage)
             ? tx('通知策略只读详情', 'Read-only group details')
             : tx('编辑通知策略', 'Edit notification policy')
       "
-      :style="{ width: 'min(920px, calc(100vw - 24px))' }"
+      :style="{ width: 'min(820px, calc(100vw - 32px))' }"
       :mask-closable="!pendingSave"
       :close-on-esc="!pendingSave"
       :closable="!pendingSave"
       @after-leave="closeEditor"
     >
-      <NForm label-placement="top">
-        <NFormItem
-          :label="tx('策略名称', 'Policy name')"
-          :validation-status="bindingErrors.name ? 'error' : undefined"
-          :feedback="bindingErrors.name"
-        >
-          <NInput v-model:value="draftName" :disabled="formReadOnly" :input-props="groupInputProps('name')" />
-          <div
-            v-if="bindingErrors.name"
-            :id="`${groupFieldId('name')}-error`"
-            role="alert"
-            class="mt-4px text-xs text-red-600"
+      <div class="policy-editor-scroll">
+        <NForm label-placement="top" :show-feedback="false" class="policy-form">
+          <NFormItem
+            :label="tx('策略名称', 'Policy name')"
+            :validation-status="bindingErrors.name ? 'error' : undefined"
+            :feedback="bindingErrors.name"
           >
-            {{ bindingErrors.name }}
-          </div>
-        </NFormItem>
-        <NFormItem :label="tx('启用', 'Enabled')">
-          <NSwitch
-            v-model:value="draftEnabled"
-            :aria-label="tx('启用', 'Enabled')"
-            :disabled="
-              formReadOnly || (selectedGroup ? !canEnableNotificationGroup(selectedGroup.migrationState) : false)
-            "
-          />
-        </NFormItem>
-        <NAlert v-if="selectedGroup" type="info" class="mb-12px">
-          {{
-            tx(
-              `revision ${selectedGroup.revision} · version ${selectedGroup.version} · ${migrationLabel(selectedGroup.migrationState)}`,
-              `revision ${selectedGroup.revision} · version ${selectedGroup.version} · ${migrationLabel(selectedGroup.migrationState)}`
-            )
-          }}
-        </NAlert>
-        <NAlert
-          v-if="selectedGroup && selectedGroup.migrationState === 'projection_pending'"
-          type="warning"
-          class="mb-12px"
-        >
-          {{
-            tx(
-              '这项历史策略仍在整理中，目前只能查看，不能启用。',
-              'This historical policy is still being reviewed. It can be viewed but not enabled.'
-            )
-          }}
-        </NAlert>
-        <NAlert v-if="selectedGroup?.migrationState === 'legacy_unmigrated'" type="info" class="mb-12px">
-          {{
-            tx(
-              '这项历史配置仅供查看，暂不能作为新告警的策略。',
-              'This historical configuration is read only and cannot be used for new alerts.'
-            )
-          }}
-        </NAlert>
-        <NDivider>{{ tx('绑定', 'Bindings') }}</NDivider>
-        <NAlert v-if="bindingErrors.bindings" type="error" class="mb-12px">{{ bindingErrors.bindings }}</NAlert>
-        <NCard v-for="(binding, index) in bindings" :key="binding.bindingId" size="small" class="mb-12px">
-          <div class="flex flex-wrap items-center justify-between gap-8px mb-8px">
-            <div class="font-600">
-              {{ tx(`绑定 ${index + 1}`, `Binding ${index + 1}`) }}
+            <NInput v-model:value="draftName" :disabled="formReadOnly" :input-props="groupInputProps('name')" />
+            <div
+              v-if="bindingErrors.name"
+              :id="`${groupFieldId('name')}-error`"
+              role="alert"
+              class="mt-4px text-xs text-red-600"
+            >
+              {{ bindingErrors.name }}
             </div>
-            <NButton size="tiny" type="error" :disabled="formReadOnly" @click="removeBinding(binding.bindingId)">
-              {{ tx('移除', 'Remove') }}
-            </NButton>
-          </div>
-          <NFormItem :label="tx('通知实例', 'Notification instance')">
-            <NSelect
-              v-model:value="binding.instanceId"
-              :options="instanceOptions"
-              :disabled="formReadOnly"
-              :aria-label="tx('通知实例', 'Notification instance')"
-              :aria-invalid="bindingErrorFields[binding.bindingId] === 'instance' ? 'true' : undefined"
-              :aria-describedby="
-                bindingErrors[binding.bindingId]
-                  ? `${groupFieldId(bindingErrorFields[binding.bindingId], binding.bindingId)}-error`
-                  : undefined
-              "
-              :input-props="groupFieldAriaProps('instance', binding.bindingId)"
-              filterable
-            />
           </NFormItem>
-          <NButton v-if="isAppInstance(binding)" class="mb-12px" :disabled="formReadOnly" @click="useAppAlarm(binding)">
+          <details v-if="selectedGroup" class="mb-12px text-secondary">
+            <summary>{{ tx('配置版本详情', 'Configuration version details') }}</summary>
             {{
               tx(
-                '使用设备告警通知（选择成员，自动发送到全部有效手机）',
-                'Use device alarm notification for all active phones'
+                `revision ${selectedGroup.revision} · version ${selectedGroup.version} · ${migrationLabel(selectedGroup.migrationState)}`,
+                `revision ${selectedGroup.revision} · version ${selectedGroup.version} · ${migrationLabel(selectedGroup.migrationState)}`
               )
             }}
-          </NButton>
-          <NFormItem :label="tx('目标类型', 'Recipient source')">
-            <NSelect
-              :value="binding.recipientSource.kind"
-              :options="recipientSourceOptions(binding)"
-              :disabled="formReadOnly"
-              :aria-label="tx('目标类型', 'Recipient source')"
-              :aria-invalid="bindingErrorFields[binding.bindingId] === 'recipient-source' ? 'true' : undefined"
-              :aria-describedby="
-                bindingErrorFields[binding.bindingId] === 'recipient-source'
-                  ? `${groupFieldId('recipient-source', binding.bindingId)}-error`
-                  : undefined
-              "
-              :input-props="groupFieldAriaProps('recipient-source', binding.bindingId)"
-              filterable
-              @update:value="value => updateRecipientKind(binding, value as 'literal' | 'member')"
-            />
-          </NFormItem>
-          <template v-if="binding.recipientSource.kind === 'literal'">
-            <NFormItem :label="tx('接收地址类型', 'Recipient kind')">
+          </details>
+          <NAlert
+            v-if="selectedGroup && selectedGroup.migrationState === 'projection_pending'"
+            type="warning"
+            class="mb-12px"
+          >
+            {{
+              tx(
+                '这项历史策略仍在整理中，目前只能查看，不能启用。',
+                'This historical policy is still being reviewed. It can be viewed but not enabled.'
+              )
+            }}
+          </NAlert>
+          <NAlert v-if="selectedGroup?.migrationState === 'legacy_unmigrated'" type="info" class="mb-12px">
+            {{
+              tx(
+                '这项历史配置仅供查看，暂不能作为新告警的策略。',
+                'This historical configuration is read only and cannot be used for new alerts.'
+              )
+            }}
+          </NAlert>
+          <div class="policy-section-title">{{ tx('发送设置', 'Delivery settings') }}</div>
+          <NAlert v-if="bindingErrors.bindings" type="error" class="mb-12px">{{ bindingErrors.bindings }}</NAlert>
+          <NCard
+            v-for="(binding, index) in bindings"
+            :key="binding.bindingId"
+            size="small"
+            class="mb-12px delivery-card"
+          >
+            <div class="flex flex-wrap items-center justify-between gap-8px mb-8px">
+              <div class="font-600">
+                {{ tx(`发送项 ${index + 1}`, `Delivery item ${index + 1}`) }}
+              </div>
+              <NButton size="small" quaternary :disabled="formReadOnly" @click="removeBinding(binding.bindingId)">
+                {{ tx('移除', 'Remove') }}
+              </NButton>
+            </div>
+            <NFormItem :label="tx('通知渠道', 'Notification channel')">
               <NSelect
-                v-model:value="binding.recipientSource.recipient.kind"
-                :options="[
-                  { label: 'Email', value: 'email' },
-                  { label: tx('手机号', 'Phone'), value: 'phone' },
-                  ...(isAppInstance(binding)
-                    ? [{ label: tx('App 全部有效手机', 'All active App devices'), value: 'appDevice' }]
-                    : []),
-                  { label: 'chat_id', value: 'chat_id' },
-                  { label: 'user_id', value: 'user_id' },
-                  { label: 'Webhook', value: 'webhook' }
-                ]"
+                v-model:value="binding.instanceId"
+                :options="instanceOptions"
                 :disabled="formReadOnly"
-                :aria-label="tx('接收地址类型', 'Recipient kind')"
-                :aria-invalid="bindingErrorFields[binding.bindingId] === 'recipient-kind' ? 'true' : undefined"
+                :aria-label="tx('通知渠道', 'Notification channel')"
+                :aria-invalid="bindingErrorFields[binding.bindingId] === 'instance' ? 'true' : undefined"
                 :aria-describedby="
-                  bindingErrorFields[binding.bindingId] === 'recipient-kind'
-                    ? `${groupFieldId('recipient-kind', binding.bindingId)}-error`
+                  bindingErrors[binding.bindingId]
+                    ? `${groupFieldId(bindingErrorFields[binding.bindingId], binding.bindingId)}-error`
                     : undefined
                 "
-                :input-props="groupFieldAriaProps('recipient-kind', binding.bindingId)"
+                :input-props="groupFieldAriaProps('instance', binding.bindingId)"
                 filterable
+                @update:value="changeInstance(binding)"
               />
             </NFormItem>
-            <NFormItem :label="tx('接收地址', 'Recipient address')">
-              <NInput
-                v-model:value="binding.recipientSource.recipient.address"
+            <div v-if="binding.instanceId" class="delivery-fields">
+              <NButton
+                v-if="isAppInstance(binding) && !isAppAlarmPreset(binding)"
+                class="mb-12px"
                 :disabled="formReadOnly"
-                :input-props="groupInputProps('recipient-address', binding.bindingId)"
-              />
-            </NFormItem>
-          </template>
-          <template v-else>
-            <NAlert v-if="isUnsupportedMemberTarget(binding)" type="warning" class="mb-12px">
+                @click="useAppAlarm(binding)"
+              >
+                {{
+                  tx(
+                    '使用设备告警通知（选择成员，自动发送到全部有效手机）',
+                    'Use device alarm notification for all active phones'
+                  )
+                }}
+              </NButton>
+              <NFormItem
+                v-if="!isAppAlarmPreset(binding) || advancedBindings[binding.bindingId]"
+                :label="tx('接收对象', 'Recipient source')"
+              >
+                <NSelect
+                  :value="binding.recipientSource.kind"
+                  :options="recipientSourceOptions(binding)"
+                  :disabled="formReadOnly"
+                  :aria-label="tx('接收对象', 'Recipient source')"
+                  :aria-invalid="bindingErrorFields[binding.bindingId] === 'recipient-source' ? 'true' : undefined"
+                  :aria-describedby="
+                    bindingErrorFields[binding.bindingId] === 'recipient-source'
+                      ? `${groupFieldId('recipient-source', binding.bindingId)}-error`
+                      : undefined
+                  "
+                  :input-props="groupFieldAriaProps('recipient-source', binding.bindingId)"
+                  filterable
+                  @update:value="value => updateRecipientKind(binding, value as 'literal' | 'member')"
+                />
+              </NFormItem>
+              <template v-if="binding.recipientSource.kind === 'literal'">
+                <NFormItem :label="tx('接收地址类型', 'Recipient kind')">
+                  <NSelect
+                    v-model:value="binding.recipientSource.recipient.kind"
+                    :options="[
+                      { label: 'Email', value: 'email' },
+                      { label: tx('手机号', 'Phone'), value: 'phone' },
+                      { label: 'chat_id', value: 'chat_id' },
+                      { label: 'user_id', value: 'user_id' },
+                      { label: 'Webhook', value: 'webhook' }
+                    ]"
+                    :disabled="formReadOnly"
+                    :aria-label="tx('接收地址类型', 'Recipient kind')"
+                    :aria-invalid="bindingErrorFields[binding.bindingId] === 'recipient-kind' ? 'true' : undefined"
+                    :aria-describedby="
+                      bindingErrorFields[binding.bindingId] === 'recipient-kind'
+                        ? `${groupFieldId('recipient-kind', binding.bindingId)}-error`
+                        : undefined
+                    "
+                    :input-props="groupFieldAriaProps('recipient-kind', binding.bindingId)"
+                    filterable
+                  />
+                </NFormItem>
+                <NFormItem :label="tx('接收地址', 'Recipient address')">
+                  <NInput
+                    v-model:value="binding.recipientSource.recipient.address"
+                    :disabled="formReadOnly"
+                    :input-props="groupInputProps('recipient-address', binding.bindingId)"
+                  />
+                </NFormItem>
+              </template>
+              <template v-else>
+                <NAlert v-if="isUnsupportedMemberTarget(binding)" type="warning" class="mb-12px">
+                  {{
+                    tx(
+                      '站内通知尚未接入。请使用服务支持的直接接收目标；不能把应用用户编号当作服务商接收地址。',
+                      'In-app notifications are not integrated yet. Use direct recipients supported by the service; application user IDs are not provider recipient addresses.'
+                    )
+                  }}
+                </NAlert>
+                <NFormItem :label="tx('接收成员（可多选）', 'Members (multiple)')">
+                  <NAlert v-if="memberError" type="error" class="mb-8px">{{ memberError }}</NAlert>
+                  <NButton v-if="memberError" size="small" :disabled="memberLoading" @click="searchMembers()">
+                    {{ tx('重试读取成员', 'Retry member lookup') }}
+                  </NButton>
+                  <NSelect
+                    :id="groupFieldId('member', binding.bindingId)"
+                    :value="selectedMembers(binding)"
+                    multiple
+                    :options="memberOptions"
+                    :loading="memberLoading"
+                    :disabled="formReadOnly"
+                    filterable
+                    remote
+                    clearable
+                    :aria-label="tx('成员', 'Member')"
+                    :aria-invalid="bindingErrorFields[binding.bindingId] === 'member' ? 'true' : undefined"
+                    :aria-describedby="
+                      bindingErrorFields[binding.bindingId] === 'member'
+                        ? `${groupFieldId('member', binding.bindingId)}-error`
+                        : undefined
+                    "
+                    :input-props="groupFieldAriaProps('member', binding.bindingId)"
+                    @update:value="value => updateMembers(binding, value)"
+                    @search="searchMembers"
+                    @focus="searchMembers()"
+                  />
+                </NFormItem>
+                <NFormItem
+                  v-if="!isAppAlarmPreset(binding) || advancedBindings[binding.bindingId]"
+                  :label="tx('联系字段', 'Contact field')"
+                >
+                  <NSelect
+                    v-model:value="binding.recipientSource.contactField"
+                    :options="[
+                      { label: 'Email', value: 'email' },
+                      { label: tx('手机号', 'Phone'), value: 'phone' },
+                      ...(isAppInstance(binding)
+                        ? [{ label: tx('App 全部有效手机', 'All active App devices'), value: 'appDevice' }]
+                        : [])
+                    ]"
+                    :disabled="formReadOnly"
+                    :aria-label="tx('联系字段', 'Contact field')"
+                    :aria-invalid="bindingErrorFields[binding.bindingId] === 'contact-field' ? 'true' : undefined"
+                    :aria-describedby="
+                      bindingErrorFields[binding.bindingId] === 'contact-field'
+                        ? `${groupFieldId('contact-field', binding.bindingId)}-error`
+                        : undefined
+                    "
+                    :input-props="groupFieldAriaProps('contact-field', binding.bindingId)"
+                    filterable
+                  />
+                </NFormItem>
+              </template>
+              <div v-if="isAppAlarmPreset(binding)" class="mb-16px rounded border border-solid border-gray-200 p-12px">
+                <div class="font-600">{{ tx('设备告警内容', 'Device alarm content') }}</div>
+                <div class="mt-4px text-secondary">
+                  {{
+                    tx(
+                      '自动填入告警标题和详情，通知所选账号下的全部有效手机。',
+                      'Uses the alert title and details. Sends to all active phones for the selected account.'
+                    )
+                  }}
+                </div>
+                <NButton
+                  text
+                  class="mt-8px"
+                  @click="advancedBindings[binding.bindingId] = !advancedBindings[binding.bindingId]"
+                >
+                  {{
+                    advancedBindings[binding.bindingId]
+                      ? tx('收起高级设置', 'Hide advanced settings')
+                      : tx('高级设置', 'Advanced settings')
+                  }}
+                </NButton>
+              </div>
+              <div v-if="!isAppAlarmPreset(binding) || advancedBindings[binding.bindingId]">
+                <NFormItem :label="tx('内容模式', 'Content mode')">
+                  <NSelect
+                    :value="binding.contentBinding.kind"
+                    :options="[
+                      { label: tx('文本', 'Text'), value: 'text' },
+                      { label: tx('供应商模板', 'Provider template'), value: 'template' }
+                    ]"
+                    :disabled="formReadOnly"
+                    :aria-label="tx('内容模式', 'Content mode')"
+                    :aria-invalid="bindingErrorFields[binding.bindingId] === 'content-mode' ? 'true' : undefined"
+                    :aria-describedby="
+                      bindingErrorFields[binding.bindingId] === 'content-mode'
+                        ? `${groupFieldId('content-mode', binding.bindingId)}-error`
+                        : undefined
+                    "
+                    :input-props="groupFieldAriaProps('content-mode', binding.bindingId)"
+                    filterable
+                    @update:value="value => updateContentKind(binding, value as 'text' | 'template')"
+                  />
+                </NFormItem>
+                <template v-if="binding.contentBinding.kind === 'text'">
+                  <NFormItem :label="tx('标题', 'Title')">
+                    <NInput
+                      v-model:value="binding.contentBinding.title"
+                      :disabled="formReadOnly"
+                      :input-props="groupInputProps('title', binding.bindingId)"
+                    />
+                  </NFormItem>
+                  <NFormItem :label="tx('文本', 'Text')">
+                    <NInput
+                      v-model:value="binding.contentBinding.text"
+                      type="textarea"
+                      :autosize="{ minRows: 3, maxRows: 8 }"
+                      :disabled="formReadOnly"
+                      :input-props="groupInputProps('text', binding.bindingId)"
+                    />
+                  </NFormItem>
+                </template>
+                <template v-else>
+                  <NFormItem :label="tx('模板 ID', 'Template ID')">
+                    <NInput
+                      v-model:value="binding.contentBinding.templateId"
+                      :disabled="formReadOnly"
+                      :input-props="groupInputProps('template-id', binding.bindingId)"
+                    />
+                  </NFormItem>
+                  <NFormItem :label="tx('语言', 'Locale')">
+                    <NInput
+                      v-model:value="binding.contentBinding.locale"
+                      :disabled="formReadOnly"
+                      :input-props="groupInputProps('locale', binding.bindingId)"
+                    />
+                  </NFormItem>
+                  <NFormItem :label="tx('参数映射 JSON', 'Parameter mapping JSON')">
+                    <NInput
+                      v-model:value="templateMappings[binding.bindingId]"
+                      type="textarea"
+                      :autosize="{ minRows: 2, maxRows: 6 }"
+                      :disabled="formReadOnly"
+                      :input-props="groupInputProps('params', binding.bindingId)"
+                    />
+                  </NFormItem>
+                </template>
+              </div>
+            </div>
+            <div v-else class="empty-channel-hint">
               {{
                 tx(
-                  '站内通知尚未接入。请使用服务支持的直接接收目标；不能把应用用户编号当作服务商接收地址。',
-                  'In-app notifications are not integrated yet. Use direct recipients supported by the service; application user IDs are not provider recipient addresses.'
+                  '先选择通知渠道，再设置接收人和消息内容。',
+                  'Choose a channel to configure recipients and message content.'
                 )
               }}
+            </div>
+            <NAlert
+              v-if="bindingErrors[binding.bindingId]"
+              :id="`${groupFieldId(bindingErrorFields[binding.bindingId], binding.bindingId)}-error`"
+              type="error"
+              role="alert"
+            >
+              {{ bindingErrors[binding.bindingId] }}
             </NAlert>
-            <NFormItem :label="tx('成员', 'Member')">
-              <NAlert v-if="memberError" type="error" class="mb-8px">{{ memberError }}</NAlert>
-              <NButton v-if="memberError" size="small" :disabled="memberLoading" @click="searchMembers()">
-                {{ tx('重试读取成员', 'Retry member lookup') }}
-              </NButton>
-              <NSelect
-                :id="groupFieldId('member', binding.bindingId)"
-                v-model:value="binding.recipientSource.userId"
-                :options="memberOptions"
-                :loading="memberLoading"
-                :disabled="formReadOnly"
-                filterable
-                remote
-                clearable
-                :aria-label="tx('成员', 'Member')"
-                :aria-invalid="bindingErrorFields[binding.bindingId] === 'member' ? 'true' : undefined"
-                :aria-describedby="
-                  bindingErrorFields[binding.bindingId] === 'member'
-                    ? `${groupFieldId('member', binding.bindingId)}-error`
-                    : undefined
-                "
-                :input-props="groupFieldAriaProps('member', binding.bindingId)"
-                @search="searchMembers"
-                @focus="searchMembers()"
-              />
-            </NFormItem>
-            <NFormItem :label="tx('联系字段', 'Contact field')">
-              <NSelect
-                v-model:value="binding.recipientSource.contactField"
-                :options="[
-                  { label: 'Email', value: 'email' },
-                  { label: tx('手机号', 'Phone'), value: 'phone' },
-                  ...(isAppInstance(binding)
-                    ? [{ label: tx('App 全部有效手机', 'All active App devices'), value: 'appDevice' }]
-                    : [])
-                ]"
-                :disabled="formReadOnly"
-                :aria-label="tx('联系字段', 'Contact field')"
-                :aria-invalid="bindingErrorFields[binding.bindingId] === 'contact-field' ? 'true' : undefined"
-                :aria-describedby="
-                  bindingErrorFields[binding.bindingId] === 'contact-field'
-                    ? `${groupFieldId('contact-field', binding.bindingId)}-error`
-                    : undefined
-                "
-                :input-props="groupFieldAriaProps('contact-field', binding.bindingId)"
-                filterable
-              />
-            </NFormItem>
-          </template>
-          <NFormItem :label="tx('内容模式', 'Content mode')">
-            <NSelect
-              :value="binding.contentBinding.kind"
-              :options="[
-                { label: tx('文本', 'Text'), value: 'text' },
-                { label: tx('供应商模板', 'Provider template'), value: 'template' }
-              ]"
-              :disabled="formReadOnly"
-              :aria-label="tx('内容模式', 'Content mode')"
-              :aria-invalid="bindingErrorFields[binding.bindingId] === 'content-mode' ? 'true' : undefined"
-              :aria-describedby="
-                bindingErrorFields[binding.bindingId] === 'content-mode'
-                  ? `${groupFieldId('content-mode', binding.bindingId)}-error`
-                  : undefined
-              "
-              :input-props="groupFieldAriaProps('content-mode', binding.bindingId)"
-              filterable
-              @update:value="value => updateContentKind(binding, value as 'text' | 'template')"
-            />
-          </NFormItem>
-          <template v-if="binding.contentBinding.kind === 'text'">
-            <NFormItem :label="tx('标题', 'Title')">
-              <NInput
-                v-model:value="binding.contentBinding.title"
-                :disabled="formReadOnly"
-                :input-props="groupInputProps('title', binding.bindingId)"
-              />
-            </NFormItem>
-            <NFormItem :label="tx('文本', 'Text')">
-              <NInput
-                v-model:value="binding.contentBinding.text"
-                type="textarea"
-                :autosize="{ minRows: 3, maxRows: 8 }"
-                :disabled="formReadOnly"
-                :input-props="groupInputProps('text', binding.bindingId)"
-              />
-            </NFormItem>
-          </template>
-          <template v-else>
-            <NFormItem :label="tx('模板 ID', 'Template ID')">
-              <NInput
-                v-model:value="binding.contentBinding.templateId"
-                :disabled="formReadOnly"
-                :input-props="groupInputProps('template-id', binding.bindingId)"
-              />
-            </NFormItem>
-            <NFormItem :label="tx('语言', 'Locale')">
-              <NInput
-                v-model:value="binding.contentBinding.locale"
-                :disabled="formReadOnly"
-                :input-props="groupInputProps('locale', binding.bindingId)"
-              />
-            </NFormItem>
-            <NFormItem :label="tx('参数映射 JSON', 'Parameter mapping JSON')">
-              <NInput
-                v-model:value="templateMappings[binding.bindingId]"
-                type="textarea"
-                :autosize="{ minRows: 2, maxRows: 6 }"
-                :disabled="formReadOnly"
-                :input-props="groupInputProps('params', binding.bindingId)"
-              />
-            </NFormItem>
-          </template>
-          <NAlert
-            v-if="bindingErrors[binding.bindingId]"
-            :id="`${groupFieldId(bindingErrorFields[binding.bindingId], binding.bindingId)}-error`"
-            type="error"
-            role="alert"
-          >
-            {{ bindingErrors[binding.bindingId] }}
-          </NAlert>
-        </NCard>
-        <NButton dashed :disabled="formReadOnly" @click="addBinding">
-          {{ tx('添加绑定', 'Add binding') }}
-        </NButton>
-        <NDivider>{{ tx('内容预览（不会发送）', 'Preview (does not send)') }}</NDivider>
-        <pre class="whitespace-pre-wrap break-all text-xs">{{ previewText || '—' }}</pre>
-        <NAlert v-if="errorText" type="error" class="mt-12px">{{ errorText }}</NAlert>
-        <NButton v-if="versionConflict" class="mt-12px" @click="reloadConflictedGroup">
-          {{ tx('刷新此组后重新确认', 'Refresh this group and review again') }}
-        </NButton>
+          </NCard>
+          <NButton dashed :disabled="formReadOnly" @click="addBinding">
+            {{ tx('添加发送项', 'Add binding') }}
+          </NButton>
+          <details v-if="bindings.some(binding => binding.instanceId)" class="policy-preview">
+            <summary>{{ tx('查看发送预览', 'Preview delivery') }}</summary>
+            <pre class="whitespace-pre-wrap break-words text-sm leading-relaxed">{{ previewText || '—' }}</pre>
+          </details>
+          <NAlert v-if="errorText" type="error" class="mt-12px">{{ errorText }}</NAlert>
+          <NButton v-if="versionConflict" class="mt-12px" @click="reloadConflictedGroup">
+            {{ tx('刷新此组后重新确认', 'Refresh this group and review again') }}
+          </NButton>
+        </NForm>
+      </div>
+      <template #footer>
         <div class="flex justify-end gap-8px mt-16px">
           <NButton :disabled="Boolean(pendingSave)" @click="closeEditor">
             {{ editorMode === 'view' ? tx('关闭', 'Close') : tx('取消', 'Cancel') }}
           </NButton>
           <NButton
             v-if="editorMode !== 'view'"
-            type="primary"
             :disabled="!capabilities.canManage"
-            :loading="saving"
-            @click="saveGroup"
+            :loading="saving && !publishAfterSave"
+            @click="saveDraft"
           >
-            {{ pendingSave ? tx('使用同一请求重试', 'Retry same request') : tx('保存通知策略', 'Save group') }}
+            {{ pendingSave ? tx('使用同一请求重试', 'Retry same request') : tx('仅保存配置', 'Save group') }}
+          </NButton>
+          <NButton
+            v-if="editorMode !== 'view' && isTenantAdmin"
+            type="primary"
+            :disabled="!capabilities.canManage || Boolean(pendingSave) || Boolean(pendingPublish)"
+            :loading="saving && publishAfterSave"
+            @click="saveAndPublish"
+          >
+            {{ tx('保存并生效', 'Save and publish') }}
           </NButton>
         </div>
-      </NForm>
+      </template>
     </NModal>
   </NCard>
 </template>
+
+<style scoped>
+.policy-editor-scroll {
+  max-height: min(65vh, 650px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+.policy-form :deep(.n-form-item) {
+  margin-bottom: 16px;
+}
+.policy-form :deep(.n-form-item-label) {
+  padding-bottom: 6px;
+}
+.policy-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 8px 0 12px;
+}
+.delivery-card {
+  border-radius: 8px;
+}
+.delivery-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+.delivery-fields > div:not(.n-form-item),
+.delivery-fields > button {
+  grid-column: 1 / -1;
+}
+.empty-channel-hint {
+  color: var(--n-text-color);
+  opacity: 0.6;
+  padding: 0 0 8px;
+  font-size: 13px;
+}
+.policy-preview {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 6px;
+  background: rgba(128, 128, 128, 0.06);
+}
+.policy-preview summary {
+  cursor: pointer;
+  font-size: 13px;
+}
+@media (max-width: 640px) {
+  .delivery-fields {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

@@ -318,7 +318,7 @@ const requestColumns: DataTableColumns<NotificationV2.NotificationView> = [
     render: row => `${row.source.type} · ${row.source.id}`
   },
   {
-    title: tx('入口状态', 'Intake status'),
+    title: tx('处理状态', 'Intake status'),
     key: 'intakeStatus',
     minWidth: 220,
     render: row => (isZh.value ? intakeLabel(row).zh : intakeLabel(row).en)
@@ -343,7 +343,7 @@ const columns: DataTableColumns<NotificationV2.DeliveryView> = [
     minWidth: 150,
     render: row => `${row.source.type} · ${row.source.id}`
   },
-  { title: tx('实例', 'Instance'), key: 'instanceId', minWidth: 180, ellipsis: { tooltip: true } },
+  { title: tx('通知渠道', 'Instance'), key: 'instanceId', minWidth: 180, ellipsis: { tooltip: true } },
   {
     title: tx('脱敏目标', 'Masked recipient'),
     key: 'recipient',
@@ -379,11 +379,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <NCard>
-    <div class="flex flex-wrap items-center justify-between gap-12px mb-12px">
+  <NCard class="notification-record-panel" :bordered="false">
+    <div class="record-heading">
       <div>
-        <div class="text-lg font-600">{{ tx('发送记录', 'Send records') }}</div>
-        <div class="text-sm opacity-70">
+        <div class="record-title">{{ tx('发送记录', 'Send records') }}</div>
+        <div class="record-description">
           {{
             tx(
               '查看提交状态和服务商回执。服务商已受理不代表通知已送达。',
@@ -392,28 +392,27 @@ onMounted(() => {
           }}
         </div>
       </div>
-      <NButton :loading="loading" @click="loadDeliveries">{{ tx('刷新', 'Refresh') }}</NButton>
     </div>
-    <NDivider>{{ tx('通知请求', 'Notification requests') }}</NDivider>
-    <div class="grid grid-cols-1 gap-12px lg:grid-cols-4 mb-12px">
+
+    <NForm class="record-filters" label-placement="left" :show-feedback="false">
       <NFormItem :label="tx('来源类型', 'Source type')">
         <NSelect v-model:value="requestQuery.sourceType" :options="sourceOptions" clearable />
       </NFormItem>
       <NFormItem :label="tx('来源 ID', 'Source ID')">
         <NInput v-model:value="requestQuery.sourceId" clearable />
       </NFormItem>
-      <NFormItem :label="tx('入口状态', 'Intake status')">
+      <NFormItem :label="tx('处理状态', 'Intake status')">
         <NSelect v-model:value="requestQuery.intakeStatus" :options="intakeOptions" clearable />
       </NFormItem>
-      <NFormItem :label="tx('请求时间范围', 'Request time range')">
+      <NFormItem class="filter-range" :label="tx('时间范围', 'Request time range')">
         <NDatePicker v-model:value="requestRange" type="datetimerange" clearable class="w-full" />
       </NFormItem>
-      <div class="flex items-center gap-8px">
-        <NButton type="primary" @click="handleRequestSearch">{{ tx('筛选请求', 'Filter requests') }}</NButton>
+      <div class="filter-actions">
+        <NButton type="primary" @click="handleRequestSearch">{{ tx('查询', 'Filter requests') }}</NButton>
         <NButton @click="handleRequestReset">{{ tx('重置', 'Reset') }}</NButton>
         <NButton :loading="requestLoading" @click="loadRequests">{{ tx('刷新', 'Refresh') }}</NButton>
       </div>
-    </div>
+    </NForm>
     <NAlert v-if="requestError" type="error" class="mb-12px">{{ requestError }}</NAlert>
     <NDataTable
       :columns="requestColumns"
@@ -431,47 +430,55 @@ onMounted(() => {
         @update:page="loadRequests"
       />
     </div>
-    <NDivider>{{ tx('投递明细', 'Delivery records') }}</NDivider>
-    <div class="grid grid-cols-1 gap-12px lg:grid-cols-3 mb-12px">
-      <NFormItem :label="tx('实例', 'Instance')">
-        <NSelect v-model:value="query.instanceId" :options="instanceOptions" clearable filterable />
-      </NFormItem>
-      <NFormItem :label="tx('来源 ID', 'Source ID')"><NInput v-model:value="query.sourceId" clearable /></NFormItem>
-      <NFormItem :label="tx('提交状态', 'Dispatch status')">
-        <NSelect v-model:value="query.dispatchStatus" :options="dispatchOptions" clearable />
-      </NFormItem>
-      <NFormItem :label="tx('送达状态', 'Delivery status')">
-        <NSelect v-model:value="query.deliveryStatus" :options="deliveryOptions" clearable />
-      </NFormItem>
-      <NFormItem :label="tx('时间范围', 'Time range')">
-        <NDatePicker v-model:value="range" type="datetimerange" clearable class="w-full" />
-      </NFormItem>
-      <div class="flex items-center gap-8px">
-        <NButton type="primary" @click="handleSearch">{{ tx('筛选', 'Filter') }}</NButton>
-        <NButton @click="handleReset">{{ tx('重置', 'Reset') }}</NButton>
+    <details class="delivery-section">
+      <summary class="delivery-section-title">
+        {{ tx('按接收目标查看投递明细', 'Delivery details by recipient') }}
+      </summary>
+      <NForm class="record-filters" label-placement="left" :show-feedback="false">
+        <NFormItem :label="tx('通知渠道', 'Instance')">
+          <NSelect v-model:value="query.instanceId" :options="instanceOptions" clearable filterable />
+        </NFormItem>
+        <NFormItem :label="tx('来源 ID', 'Source ID')"><NInput v-model:value="query.sourceId" clearable /></NFormItem>
+        <NFormItem :label="tx('提交状态', 'Dispatch status')">
+          <NSelect v-model:value="query.dispatchStatus" :options="dispatchOptions" clearable />
+        </NFormItem>
+        <NFormItem :label="tx('送达状态', 'Delivery status')">
+          <NSelect v-model:value="query.deliveryStatus" :options="deliveryOptions" clearable />
+        </NFormItem>
+        <NFormItem class="filter-range" :label="tx('时间范围', 'Time range')">
+          <NDatePicker v-model:value="range" type="datetimerange" clearable class="w-full" />
+        </NFormItem>
+        <div class="filter-actions">
+          <NButton type="primary" @click="handleSearch">{{ tx('查询', 'Filter') }}</NButton>
+          <NButton @click="handleReset">{{ tx('重置', 'Reset') }}</NButton>
+        </div>
+      </NForm>
+      <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
+      <NAlert v-if="!notificationApiConfigured" type="info" class="mb-12px">
+        {{
+          tx(
+            '通知服务未启用；历史记录仍可查看。',
+            'Notification service is not enabled; historical records remain available.'
+          )
+        }}
+      </NAlert>
+      <NDataTable
+        :columns="columns"
+        :data="rows"
+        :loading="loading"
+        :row-key="row => row.deliveryId"
+        :scroll-x="1200"
+        :remote="true"
+      />
+      <div class="flex justify-end mt-12px">
+        <NPagination
+          v-model:page="currentPage"
+          :page-size="pageSize"
+          :item-count="total"
+          @update:page="loadDeliveries"
+        />
       </div>
-    </div>
-    <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
-    <NAlert v-if="!notificationApiConfigured" type="info" class="mb-12px">
-      {{
-        tx(
-          '通知服务未启用；历史记录仍可查看。',
-          'Notification service is not enabled; historical records remain available.'
-        )
-      }}
-    </NAlert>
-    <NDataTable
-      :columns="columns"
-      :data="rows"
-      :loading="loading"
-      :row-key="row => row.deliveryId"
-      :scroll-x="1200"
-      :remote="true"
-    />
-    <div class="flex justify-end mt-12px">
-      <NPagination v-model:page="currentPage" :page-size="pageSize" :item-count="total" @update:page="loadDeliveries" />
-    </div>
-
+    </details>
     <NModal
       v-model:show="detailModal"
       preset="card"
@@ -556,3 +563,80 @@ onMounted(() => {
     </NModal>
   </NCard>
 </template>
+
+<style scoped>
+.record-heading {
+  margin-bottom: 20px;
+}
+.record-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+.record-description {
+  margin-top: 4px;
+  color: var(--n-text-color);
+  opacity: 0.65;
+  font-size: 13px;
+  line-height: 20px;
+}
+.record-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  padding: 0 0 18px;
+}
+.record-filters :deep(.n-form-item) {
+  width: 230px;
+  min-width: 0;
+  margin: 0;
+}
+.record-filters :deep(.n-form-item-label) {
+  font-size: 13px;
+  white-space: nowrap;
+  padding-right: 10px;
+}
+.record-filters :deep(.n-form-item-blank) {
+  min-width: 0;
+}
+.record-filters :deep(.n-form-item.filter-range) {
+  width: 410px;
+}
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.delivery-section {
+  margin-top: 24px;
+  border-top: 1px solid var(--n-border-color);
+  padding-top: 16px;
+}
+.delivery-section-title {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 24px;
+}
+.delivery-section[open] > .delivery-section-title {
+  margin-bottom: 16px;
+}
+@media (max-width: 760px) {
+  .record-filters {
+    gap: 12px;
+  }
+  .record-filters :deep(.n-form-item),
+  .record-filters :deep(.n-form-item.filter-range) {
+    width: 100%;
+  }
+  .record-filters :deep(.n-form-item-label) {
+    width: 80px;
+  }
+  .filter-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+</style>

@@ -169,7 +169,7 @@ const ModalStub = defineComponent({
   props: ['show'],
   emits: ['update:show', 'after-leave'],
   setup(props, { slots }) {
-    return () => (props.show ? h('div', { class: 'qa-modal' }, slots.default?.()) : null)
+    return () => (props.show ? h('div', { class: 'qa-modal' }, [slots.default?.(), slots.footer?.()]) : null)
   }
 })
 
@@ -239,6 +239,99 @@ describe('notification group page failure and conflict flow', () => {
     authState.token = 'fixture-session'
     authState.userInfo.tenant_id = 'fixture-tenant'
     installTsxShim()
+  })
+
+  it.each([true, false])('saves once and reports publication outcome (success=%s)', async succeeds => {
+    const group = {
+      id: 'publish-group',
+      name: 'Alarm policy',
+      enabled: true,
+      revision: 2,
+      version: 2,
+      migrationState: 'native',
+      bindings: [
+        {
+          bindingId: 'binding-1',
+          instanceId: 'email-1',
+          recipientSource: { kind: 'literal', recipient: { kind: 'email', address: 'test@example.test' } },
+          contentBinding: { kind: 'text', title: 'Alarm', text: 'Device alarm' }
+        }
+      ]
+    }
+    api.listGroups.mockResolvedValue({ data: { items: [group], total: 1 } })
+    api.getGroup.mockResolvedValue({ data: group })
+    api.updateGroup.mockResolvedValue({ data: group })
+    const published = { published: true, routeVersion: 1, effectiveGroupRevision: 2, legacyGroupId: 'alias' }
+    publishNativeGroupMock.mockImplementation(async () => {
+      if (!succeeds) throw new Error('network unavailable')
+      getPublishStatusMock.mockResolvedValue(published)
+      return published
+    })
+    const wrapper = mount(NotificationGroups, { global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Edit')!
+      .trigger('click')
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Save and publish')!
+      .trigger('click')
+    await flushPromises()
+    expect(api.updateGroup).toHaveBeenCalledTimes(1)
+    expect(publishNativeGroupMock).toHaveBeenCalledTimes(1)
+    expect(api.testInstance).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain(
+      succeeds ? 'Policy saved and published.' : 'Configuration saved, but publication is not confirmed.'
+    )
+    if (!succeeds) {
+      await wrapper
+        .findAll('button')
+        .find(button => button.text() === 'Result unconfirmed; retry the same request')!
+        .trigger('click')
+      await flushPromises()
+      expect(api.updateGroup).toHaveBeenCalledTimes(1)
+      expect(publishNativeGroupMock.mock.calls[1]).toEqual(publishNativeGroupMock.mock.calls[0])
+    }
+    wrapper.unmount()
+  })
+
+  it('groups members for editing and preserves each binding identity when saved', async () => {
+    const group = {
+      id: 'multi',
+      name: 'Team alerts',
+      enabled: true,
+      revision: 1,
+      version: 1,
+      migrationState: 'native',
+      bindings: ['one', 'two'].map(id => ({
+        bindingId: `binding-${id}`,
+        instanceId: 'email-1',
+        recipientSource: { kind: 'member', userId: id, contactField: 'email' },
+        contentBinding: { kind: 'text', title: 'Alarm', text: 'Device alarm' }
+      }))
+    }
+    api.listGroups.mockResolvedValue({ data: { items: [group], total: 1 } })
+    api.getGroup.mockResolvedValue({ data: group })
+    api.updateGroup.mockResolvedValue({ data: group })
+    getUserListMock.mockResolvedValue({ data: { list: [] } })
+    const wrapper = mount(NotificationGroups, { global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Edit')!
+      .trigger('click')
+    await flushPromises()
+    const member = wrapper.findAllComponents(SelectStub).find(select => select.attributes('aria-label') === 'Member')!
+    expect(member.props('value')).toEqual(['one', 'two'])
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Save group')!
+      .trigger('click')
+    await flushPromises()
+    expect(api.updateGroup.mock.calls[0][1].bindings).toEqual(group.bindings)
+    wrapper.unmount()
   })
 
   it('saves an App member alarm policy without a literal CID', async () => {
@@ -325,7 +418,11 @@ describe('notification group page failure and conflict flow', () => {
       expect((select.props('inputProps') as Record<string, unknown>)['aria-label']).toBeTruthy()
     }
     await selects[0].setValue('email-1')
-    await selects[1].setValue('member')
+    await wrapper
+      .findAllComponents(SelectStub)
+      .find(select => select.element.closest('label')?.textContent?.includes('Recipient source'))!
+      .get('select')
+      .setValue('member')
     await flushPromises()
 
     const memberSelect = wrapper

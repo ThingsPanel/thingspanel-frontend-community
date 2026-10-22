@@ -140,6 +140,7 @@ function deferred<T>() {
 const stubs = {
   NCard: SlotStub,
   NDivider: SlotStub,
+  NForm: SlotStub,
   NFormItem: SlotStub,
   NSelect: SlotStub,
   NInput: InputStub,

@@ -93,7 +93,7 @@ describe('legacy notification record page status boundary', () => {
           NEmpty: SlotStub,
           NDatePicker: SlotStub,
           NInput: SlotStub,
-          NSelect: SlotStub,
+          NSelect: TabsStub,
           NModal: SlotStub,
           NotificationDeliveries: true
         }
@@ -102,8 +102,7 @@ describe('legacy notification record page status boundary', () => {
     await wrapper.find('button').trigger('click')
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Send records')
-    expect(wrapper.text()).toContain('History')
+    expect(wrapper.text()).toContain('Record source')
     expect(getHistoryMock).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toContain('SUCCESS/FAILURE are stored historical values, not delivery receipts.')
     expect(wrapper.text()).toContain('SUCCESS')

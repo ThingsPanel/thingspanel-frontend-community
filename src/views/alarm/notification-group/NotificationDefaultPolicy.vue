@@ -160,11 +160,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <NCard class="mb-12px" :title="tx('租户默认通知策略', 'Tenant default policy')">
+  <NCard class="mb-12px" size="small" :bordered="false">
+    <div class="mb-8px font-600">{{ tx('默认通知策略', 'Default notification policy') }}</div>
     <div class="mb-12px text-13px text-gray-500">
       {{
         tx(
-          '未单独指定策略的告警会使用此默认值；没有默认值时，告警仍会记录，但不会发送通知。保存设置不会发送通知。',
+          '仅用于未指定策略的告警。不设置时，只记录告警，不发送通知。',
           'Alerts without an explicit policy use this default. Without a default, alerts are still recorded but no notification is sent. Saving this setting does not send a notification.'
         )
       }}
