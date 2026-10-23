@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import ExternalAuthPanel from '@/components/auth/external-auth-panel.vue'
 import { NAutoComplete } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { $t } from '@/locales'
@@ -256,6 +257,7 @@ onMounted(() => {
       </div>
     </NSpace>
   </NForm>
+  <ExternalAuthPanel />
 </template>
 
 <style scoped></style>

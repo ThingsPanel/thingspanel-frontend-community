@@ -7,6 +7,7 @@
  * @LastEditTime: 2024-03-20 17:23:40
 -->
 <script setup lang="ts">
+import IdentityBindings from '@/components/auth/identity-bindings.vue'
 import { computed, onMounted, ref, toRefs, watch } from 'vue'
 import { NButton } from 'naive-ui'
 import type { FormItemRule, FormRules } from 'naive-ui'
@@ -277,9 +278,6 @@ function closeEdit() {
 // 移除标签页切换逻辑，新设计不再需要
 /** 更新用户信息 */
 async function updataUserInfo() {
-  if (process.env.NODE_ENV === 'development') {
-  }
-
   const { error } = await changeInformation(getSubmitUserInfoData())
   if (!error) {
     window.$message?.success($t('custom.grouping_details.operationSuccess'))
@@ -679,6 +677,7 @@ onMounted(async () => {
         </div>
       </div>
     </n-card>
+    <IdentityBindings />
   </div>
 </template>
 
