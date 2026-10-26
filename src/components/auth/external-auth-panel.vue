@@ -3,7 +3,13 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { NAlert, NButton, NCard, NFormItem, NInput, NSpace, NSpin } from 'naive-ui'
-import { authEndpoint, externalAuth, type ExternalProvider, type ExternalResult } from '@/service/api/external-auth'
+import {
+  authEndpoint,
+  externalAuth,
+  getLoginOptions,
+  type ExternalProvider,
+  type ExternalResult
+} from '@/service/api/external-auth'
 import { fetchLogin } from '@/service/api/auth'
 import { useAuthStore } from '@/store/modules/auth'
 import { useRouteStore } from '@/store/modules/route'
@@ -109,12 +115,12 @@ async function link() {
 onMounted(async () => {
   if (!props.callback) {
     try {
-      providers.value = (await externalAuth<ExternalProvider[]>('/auth/external/providers')).filter(
-        p => p.kind !== 'wechat-mini'
-      )
+      const options = await getLoginOptions('web')
+      providers.value = options.external.enabled ? options.external.providers : []
     } catch {
       providers.value = []
-      error.value = t('unavailable')
+      // Optional discovery failure must not impersonate a password login failure.
+      console.warn('[auth] Optional sign-in options could not be loaded.')
     }
     return
   }
@@ -180,8 +186,8 @@ onMounted(async () => {
       <NButton block :disabled="busy" @click="router.replace('/login')">{{ t('cancel') }}</NButton>
     </NSpace>
   </NCard>
-  <NSpace v-else-if="providers.length || error" vertical :size="12" class="mt-16px">
-    <NAlert v-if="error" type="warning" role="status">{{ error }}</NAlert>
+  <NSpace v-else-if="providers.length" vertical :size="12" class="mt-16px">
+    <div class="text-center text-sm text-secondary">{{ t('title') }}</div>
     <NButton
       v-for="provider in providers"
       :key="provider.id"

@@ -101,7 +101,6 @@ async function handleSubmit() {
   if (rememberMe.value) {
     localStorage.setItem('rememberMe', 'true')
     localStorage.setItem('rememberedUserName', model.userName.trim())
-    localStorage.setItem('rememberedPassword', window.btoa(model.password))
   } else {
     localStorage.removeItem('rememberMe')
     localStorage.removeItem('rememberedUserName')
@@ -124,41 +123,13 @@ function loadSavedCredentials() {
   if (savedRememberMe === 'true') {
     rememberMe.value = true
     const savedUserName = localStorage.getItem('rememberedUserName')
-    const savedPassword = localStorage.getItem('rememberedPassword')
 
     if (savedUserName) {
       model.userName = savedUserName
     }
-
-    if (savedPassword) {
-      model.password = window.atob(savedPassword)
-    }
   }
-}
-
-// 从环境变量加载自动登录凭据
-async function loadAutoLoginCredentials() {
-  // 检查路由参数
-  const urlParams = new URLSearchParams(window.location.search)
-  const autoLogin = urlParams.get('auto') === 'true'
-  const urlUsername = urlParams.get('username')
-  const urlPassword = urlParams.get('password')
-
-  // 只要URL参数中有账号密码且auto=true就允许自动登录
-  if (autoLogin && urlUsername && urlPassword) {
-    // 设置表单数据
-    model.userName = urlUsername
-    model.password = urlPassword
-
-    // 延迟一下确保组件完全挂载
-    setTimeout(async () => {
-      try {
-        await authStore.login(model.userName.trim(), model.password)
-      } catch (error) {
-        window.$message?.error('自动登录失败，请手动输入账号密码')
-      }
-    }, 500)
-  }
+  // Remove the reversible password value written by earlier versions.
+  localStorage.removeItem('rememberedPassword')
 }
 
 // 从市场登录页返回时预填邮箱
@@ -177,7 +148,6 @@ onMounted(() => {
   }
   getFunctionOption()
   loadSavedCredentials()
-  loadAutoLoginCredentials()
   loadMarketEmail()
 })
 </script>
@@ -220,7 +190,9 @@ onMounted(() => {
     </NFormItem>
     <NSpace vertical :size="18">
       <div class="flex-y-center justify-between">
-        <NCheckbox v-model:checked="rememberMe">{{ $t('page.login.pwdLogin.rememberMe') }}</NCheckbox>
+        <NCheckbox v-model:checked="rememberMe">
+          {{ locale.toLowerCase().startsWith('zh') ? '记住账号' : 'Remember account' }}
+        </NCheckbox>
         <NButton quaternary @click="toggleLoginModule('reset-pwd')">
           {{ $t('page.login.pwdLogin.forgetPassword') }}
         </NButton>
