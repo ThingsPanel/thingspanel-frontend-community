@@ -133,6 +133,24 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'automation_rule-edit',
+        path: '/automation/rule-edit',
+        component: 'view.automation_rule-edit',
+        meta: {
+          title: 'automation_rule-edit',
+          i18nKey: 'route.automation_rule-edit'
+        }
+      },
+      {
+        name: 'automation_rule-manage',
+        path: '/automation/rule-manage',
+        component: 'view.automation_rule-manage',
+        meta: {
+          title: 'automation_rule-manage',
+          i18nKey: 'route.automation_rule-manage'
+        }
+      },
+      {
         name: 'automation_scene-edit',
         path: '/automation/scene-edit',
         component: 'view.automation_scene-edit',

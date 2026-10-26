@@ -40,6 +40,7 @@
     "typecheck": "set NODE_OPTIONS=--max-old-space-size=4096 vue-tsc --noEmit --skipLibCheck",
     "update-pkg": "sa update-pkg",
     "quality-check": "node scripts/dev-quality-check.js",
+    "check:automation-ui": "tsx src/__tests__/automation/check-automation-ui.ts",
     "pre-commit-check": "npm run quality-check",
     "clean-console": "node scripts/remove-console-logs.js"
   },
