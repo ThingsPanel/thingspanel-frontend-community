@@ -182,7 +182,9 @@ function goBack() {
     router.replace({ path: '/device/template/detail', query: { id: deviceConfigId.value } })
     return
   }
-  router.replace({ path: '/automation/rule-manage' })
+  // 独立的规则列表页已经下线，规则统一从"场景联动"进入。
+  // 这里退到场景联动，避免保存后跳到一个不存在的地址。
+  router.replace({ path: '/automation/scene-linkage' })
 }
 
 async function persist(options: { force?: boolean; previewToken?: string } = {}) {
