@@ -13,11 +13,12 @@ import { NButton, NCard, NEmpty, NFlex, NInput } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import dayjs from 'dayjs'
 import moment from 'moment'
-import { alarmHistory } from '@/service/api/alarm'
+import { alarmHistory, processingOperation } from '@/service/api/alarm-native'
 import { $t } from '@/locales'
-import { deviceAlarmHistoryPut } from '@/service/api'
 import { tableThemeOverrides } from '@/utils/table-theme'
+import { useAuthStore } from '@/store/modules/auth'
 
+const authStore = useAuthStore()
 const loading = ref(false)
 const rowKey = (row: DeviceManagement.DeviceData) => row.id
 
@@ -99,7 +100,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
           </NButton>
           {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
           <NButton type="warning" size={'small'} onClick={() => maintenance(row)}>
-            {$t('common.maintenance')}
+            {'确认处理'}
           </NButton>
         </div>
       )
@@ -202,6 +203,8 @@ const closeModal = () => {
 const showModal = ref(false)
 const description = ref('')
 const maintenance = row => {
+  // 旧动作是「写一段维护备注」。新模型里告警是一串不可改写的事实，
+  // 能做的动作是确认处理，所以这里改成确认。
   infoData.value = row
   description.value = row.description
   showModal.value = true
@@ -211,15 +214,12 @@ const cancelCallback = () => {
   showModal.value = false
 }
 const submitCallback = async () => {
-  if (description.value === '') {
-    window.$message?.error($t('common.enterAlarmDesc'))
-    return
-  }
-  const putData = {
-    id: infoData.value.id,
-    description: description.value
-  }
-  await deviceAlarmHistoryPut(putData)
+  // 处理人取当前登录用户；说明可以留空——确认处理是「我知道这条告警了」，
+  // 不应该因为没写备注就点不动。
+  const actor = authStore.userInfo?.userName || description.value || ''
+  const res = await processingOperation({ id: infoData.value.id, actor })
+  if (res.error) return
+  window.$message?.success('已确认处理')
   cancelCallback()
   await getAlarmHistory()
 }
@@ -319,7 +319,7 @@ const submitCallback = async () => {
     </n-modal>
     <n-modal v-model:show="showModal" class="max-w-[600px]">
       <NCard>
-        <n-form-item :show-feedback="false" :label="$t('generate.alarm-description')">
+        <n-form-item :show-feedback="false" label="处理说明（可选）">
           <NInput v-model:value="description" type="textarea" />
         </n-form-item>
         <NFlex justify="flex-end" class="mt-4">

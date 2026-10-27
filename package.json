@@ -42,7 +42,8 @@
     "quality-check": "node scripts/dev-quality-check.js",
     "check:automation-ui": "tsx src/__tests__/automation/check-automation-ui.ts",
     "pre-commit-check": "npm run quality-check",
-    "clean-console": "node scripts/remove-console-logs.js"
+    "clean-console": "node scripts/remove-console-logs.js",
+    "check:automation-mapping": "tsx src/__tests__/automation/check-automation-mapping.ts"
   },
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",

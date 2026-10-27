@@ -5,7 +5,7 @@ import { NButton, NCard, NEmpty, NFlex, NPagination, NPopconfirm, NSpace, useDia
 import type { DataTableColumns } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import moment from 'moment'
-import { sceneActive, sceneDel, sceneGet, sceneLog } from '@/service/api/automation'
+import { sceneActive, sceneDel, sceneGet, sceneLog } from '@/service/api/automation-native'
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
 import { formatDateTime } from '@/utils/common/datetime'

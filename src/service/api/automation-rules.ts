@@ -231,6 +231,8 @@ export interface RuleDefinition {
   kind: RuleKind
   mode: RunMode
   scope: 'device' | 'rule'
+  /** 旧控制台里写在场景/联动旁边的说明，新模型原样保留。 */
+  description?: string
   trigger: Trigger
   recovery?: Trigger
   freshness: Freshness
@@ -241,7 +243,7 @@ export interface RuleDefinition {
   budget?: { max_steps?: number; max_duration?: string }
   params?: RuleParam[]
   /** Present only on kind=alarm_policy; the form carries it through untouched. */
-  alarm?: { key?: string; sources: string[]; allowed_sources?: string[] }
+  alarm?: { key?: string; sources: string[]; allowed_sources?: string[]; level?: string }
 }
 
 export interface Rule {
@@ -482,6 +484,51 @@ export function listRuns(id: string, query: Query) {
 
 export function getRun(runId: string) {
   return call<Run>('get', `/v1/runs/${encodeURIComponent(runId)}`)
+}
+
+// ---------------------------------------------------------------------------
+// Alarms
+// ---------------------------------------------------------------------------
+
+/** 一条告警。state 是生命周期状态（active / acked / cleared），level 是等级。 */
+export interface Alarm {
+  id: string
+  policy_id: string
+  policy_key: string
+  subject_id: string
+  dimension?: string
+  state: string
+  level?: string
+  source?: string
+  revision: number
+  epoch: number
+  opened_at: string
+  first_seq: number
+  last_seq: number
+  sample_count: number
+  last_evidence?: string
+  acked_at?: string
+  acked_by?: string
+  cleared_at?: string
+}
+
+export interface ListAlarmsResponse {
+  alarms: Alarm[]
+}
+
+export function listAlarms(query: { policy_id?: string; subject_id?: string; state?: string; limit?: number }) {
+  return call<ListAlarmsResponse>('get', '/v1/alarms', { query })
+}
+
+export function getAlarm(id: string) {
+  return call<Alarm>('get', `/v1/alarms/${encodeURIComponent(id)}`)
+}
+
+export function ackAlarm(id: string, input: { actor?: string } = {}, idem?: string) {
+  return call<{ acknowledged: boolean }>('post', `/v1/alarms/${encodeURIComponent(id)}/ack`, {
+    body: input,
+    idempotencyKey: idem
+  })
 }
 
 // ---------------------------------------------------------------------------

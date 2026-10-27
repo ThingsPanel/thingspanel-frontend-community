@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useMessage } from 'naive-ui'
-import { addWarningMessage, editInfo } from '@/service/api/alarm'
+import { addWarningMessage, editInfo } from '@/service/api/alarm-native'
 import { getNotificationGroupList } from '@/service/api/notification'
 import { useNaiveForm } from '@/hooks/common/form'
 import { $t } from '@/locales'
@@ -80,15 +80,11 @@ const loadMoreNotificationGroupData = async () => {
     const total = res?.data?.total || 0
     state.generalOptions = [...state.generalOptions, ...list]
 
-    state.generalOptions = state.generalOptions.map((item: any) => {
-      if (process.env.NODE_ENV === 'development') {
-      }
-      return {
-        id: item.id,
-        name: item.name,
-        disabled: item?.status !== 'OPEN'
-      }
-    })
+    state.generalOptions = state.generalOptions.map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      disabled: item?.status !== 'OPEN'
+    }))
     state.notificationGroupTotal = total
     state.notificationGroupPageNo += 1
     state.notificationGroupHasMore = total > state.notificationGroupPageNo * state.notificationGroupPageSize

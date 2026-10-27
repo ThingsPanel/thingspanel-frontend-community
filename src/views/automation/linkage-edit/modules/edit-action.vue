@@ -3,7 +3,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { type FormInst, NButton, NCard, NFlex, useMessage } from 'naive-ui'
 import { deviceGroupTree } from '@/service/api'
-import { warningMessageList } from '@/service/api/alarm'
+import { warningMessageList } from '@/service/api/alarm-native'
 import PopUp from '@/views/alarm/warning-message/components/pop-up.vue'
 import {
   deviceConfigAll,
@@ -11,7 +11,7 @@ import {
   deviceListAll,
   deviceMetricsMenu,
   sceneGet
-} from '@/service/api/automation'
+} from '@/service/api/automation-native'
 import { $t } from '@/locales'
 
 const route = useRoute()
@@ -789,7 +789,7 @@ onMounted(() => {
         </NButton>
       </NFlex>
     </NForm>
-    <PopUp v-model:visible="popUpVisible" type="add" @new-edit="newEdit" />
+    <PopUp v-model:visible="popUpVisible" type="add" :edit-data="null" @new-edit="newEdit" />
   </div>
 </template>
 

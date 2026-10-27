@@ -13,7 +13,7 @@ import {
   sceneAutomationsGet,
   sceneAutomationsLog,
   sceneAutomationsSwitch
-} from '@/service/api/automation'
+} from '@/service/api/automation-native'
 import { $t } from '@/locales'
 import { deviceAlarmList } from '@/service/api'
 import { demoAutomationLogs, demoAutomations, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'

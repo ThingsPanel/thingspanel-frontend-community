@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { NButton, NCard, NFlex, useDialog, useMessage } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
 import { deviceGroupTree } from '@/service/api'
-import { warningMessageList } from '@/service/api/alarm'
+import { warningMessageList } from '@/service/api/alarm-native'
 import PopUp from '@/views/alarm/warning-message/components/pop-up.vue'
 import {
   deviceConfigAll,
@@ -15,7 +15,7 @@ import {
   sceneEdit,
   sceneGet,
   sceneInfo
-} from '@/service/api/automation'
+} from '@/service/api/automation-native'
 // import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales'
 import { useTabStore } from '@/store/modules/tab'
@@ -499,7 +499,7 @@ const submitData = async () => {
 }
 
 const getSceneInfo = async () => {
-  const res = await sceneInfo(configId.value)
+  const res = await sceneInfo(String(configId.value))
   configForm.value = { ...configForm.value, ...res.data.info }
   configForm.value.actions = res.data.actions
   dataEcho(configForm.value.actions)
@@ -903,7 +903,7 @@ onMounted(() => {
         <NButton type="primary" @click="submitData">{{ $t('generate.save-scene-configuration') }}</NButton>
       </NFlex>
     </NCard>
-    <PopUp v-model:visible="popUpVisible" type="add" @new-edit="newEdit" />
+    <PopUp v-model:visible="popUpVisible" type="add" :edit-data="null" @new-edit="newEdit" />
   </div>
 </template>
 
