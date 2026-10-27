@@ -66,7 +66,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
     minWidth: '120px',
     render(row: any) {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      return alarmStatusOptions.value.find(data => data.value === row.alarm_status)?.label || ''
+      return alarmStatusLabel(row)
     }
   },
   {
@@ -191,6 +191,18 @@ const alarmStatusOptions = ref([
     value: 'N'
   }
 ])
+// 新模型的告警没有旧表的等级字段，只有 active/acked/cleared 三态。
+// 直接沿用等级下拉会让空值命中「所有状态」，看起来像没状态，所以这里补一层回退。
+const alarmStateText: Record<string, string> = {
+  active: '未恢复',
+  acked: '已确认',
+  cleared: '已恢复'
+}
+function alarmStatusLabel(row: any) {
+  const level = alarmStatusOptions.value.find(data => data.value && data.value === row?.alarm_status)
+  if (level) return level.label
+  return alarmStateText[String(row?.state ?? '')] ?? ''
+}
 const showDialog = ref(false)
 const infoData = ref({} as any)
 function getInfo(data: any) {
@@ -286,7 +298,7 @@ const submitCallback = async () => {
           {{ moment(infoData['create_at']).format('YYYY-MM-DD HH:mm:ss') }}
         </n-form-item>
         <n-form-item label-placement="left" :show-feedback="false" :label="$t('generate.alarm-status') + ':'">
-          {{ alarmStatusOptions.find(data => data.value === infoData['alarm_status'])?.label || '' }}
+          {{ alarmStatusLabel(infoData) }}
         </n-form-item>
         <n-form-item label-placement="left" :show-feedback="false" :label="$t('generate.alarmReason') + ':'">
           {{ infoData.content }}

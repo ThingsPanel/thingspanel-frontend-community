@@ -277,7 +277,8 @@ const placeholderMap = {
   command: '{"param1":1}',
   c_telemetry: '{"switch":1,"switch1":0}',
   c_attribute: '{"addr":1,"port":0}',
-  c_command: '{"method":"switch1","params":{"false":0}}'
+  c_command: '{"method":"switch1","params":{"false":0}}',
+  event: '{"identify":"alarm","params":{}}'
 }
 // 选择设备属性类型
 const actionParamTypeChange = (instructItem: any, data: any) => {
@@ -773,7 +774,9 @@ onMounted(() => {
                         <NInput
                           v-if="instructItem.actionParamData.data_type === 'string'"
                           v-model:value="instructItem.actionValue"
-                          :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                          :placeholder="
+                            instructItem.placeholder ? $t('common.as') + '：' + instructItem.placeholder : ''
+                          "
                           class="w-full"
                           @blur="actionValueChange(instructItem)"
                         />
@@ -781,7 +784,9 @@ onMounted(() => {
                           v-if="instructItem.actionParamData.data_type === 'number'"
                           v-model:value="instructItem.actionValue"
                           class="w-full"
-                          :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                          :placeholder="
+                            instructItem.placeholder ? $t('common.as') + '：' + instructItem.placeholder : ''
+                          "
                           :show-button="false"
                         />
                         <n-radio-group
@@ -807,7 +812,9 @@ onMounted(() => {
                       >
                         <NInput
                           v-model:value="instructItem.actionValue"
-                          :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                          :placeholder="
+                            instructItem.placeholder ? $t('common.as') + '：' + instructItem.placeholder : ''
+                          "
                           class="w-full"
                           @blur="actionValueChange(instructItem)"
                         />
