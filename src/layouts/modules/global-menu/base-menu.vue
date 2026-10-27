@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, h, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { NTooltip } from 'naive-ui'
 import type { MentionOption, MenuProps } from 'naive-ui'
 import { SimpleScrollbar } from '@sa/materials'
 import type { RouteKey } from '@elegant-router/types'
@@ -9,7 +8,6 @@ import { useAppStore } from '@/store/modules/app'
 import { useThemeStore } from '@/store/modules/theme'
 import { useRouteStore } from '@/store/modules/route'
 import { useRouterPush } from '@/hooks/common/router'
-import { $t } from '@/locales'
 
 defineOptions({
   name: 'BaseMenu'
@@ -24,7 +22,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  mode: 'vertical'
+  mode: 'vertical',
+  collapsed: undefined
 })
 
 const route = useRoute()
@@ -93,6 +92,7 @@ watch(
   <SimpleScrollbar>
     <NMenu
       v-model:expanded-keys="expandedKeys"
+      :class="{ 'collapsed-sidebar-menu': siderCollapse && !isHorizontal }"
       :mode="mode"
       :value="selectedKey"
       :collapsed="siderCollapse"
@@ -111,5 +111,32 @@ watch(
 <style scoped>
 :deep(.n-menu--horizontal) {
   --n-item-height: v-bind(headerHeight) !important;
+}
+
+:deep(.collapsed-sidebar-menu) {
+  padding-block: 6px 12px;
+}
+
+:deep(.collapsed-sidebar-menu .n-menu-item) {
+  height: 44px;
+  margin-top: 6px;
+}
+
+:deep(.collapsed-sidebar-menu .n-menu-item-content::before) {
+  left: 10px;
+  right: 10px;
+  border-radius: 10px;
+}
+
+:deep(.collapsed-sidebar-menu .n-menu-item-content--child-active::before) {
+  background-color: var(--n-item-color-active-collapsed);
+}
+
+:deep(.collapsed-sidebar-menu .n-menu-item-content--child-active .n-menu-item-content__icon) {
+  color: var(--n-item-icon-color-child-active);
+}
+
+:deep(.collapsed-sidebar-menu .n-menu-item-content--selected .n-menu-item-content__icon) {
+  color: var(--n-item-icon-color-active);
 }
 </style>

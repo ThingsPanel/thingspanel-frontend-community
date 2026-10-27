@@ -18,7 +18,12 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <RouterLink to="/" class="w-full flex items-center nowrap-hidden ml-3">
+  <RouterLink
+    to="/"
+    class="global-logo w-full flex items-center nowrap-hidden"
+    :class="{ 'global-logo--collapsed': !showTitle }"
+    :aria-label="sysSettingStore.system_name || $t('title')"
+  >
     <div class="logo-box">
       <SystemLogo width="32" />
       <div v-show="showTitle" class="pl-8px">
@@ -34,6 +39,16 @@ withDefaults(defineProps<Props>(), {
 </template>
 
 <style scoped>
+.global-logo {
+  box-sizing: border-box;
+  padding-inline: 12px;
+}
+
+.global-logo--collapsed {
+  justify-content: center;
+  padding-inline: 0;
+}
+
 .logo-box {
   display: flex;
   align-items: center;
