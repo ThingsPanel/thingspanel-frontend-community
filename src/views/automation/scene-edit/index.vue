@@ -163,8 +163,10 @@ const deviceGroupOptions = ref([] as any)
 const getGroup = async () => {
   deviceGroupOptions.value = []
   const res = await deviceGroupTree({})
+  // 新装环境没有分组时接口返回 data:null，这里不兜住会整页抛异常，
+  // 「添加执行动作」就再也点不开了。
   // eslint-disable-next-line array-callback-return
-  res.data.map((item: any) => {
+  ;(res.data || []).map((item: any) => {
     deviceGroupOptions.value.push(item.group)
   })
 }
@@ -182,7 +184,7 @@ const getDevice = async (groupId: any, name: any) => {
   queryDevice.value.group_id = groupId || null
   queryDevice.value.device_name = name || null
   const res = await deviceListAll(queryDevice.value)
-  deviceOptions.value = res.data
+  deviceOptions.value = res.data || []
 }
 
 const queryDeviceName = ref([] as any)

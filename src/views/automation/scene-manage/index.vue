@@ -89,8 +89,8 @@ const getLogList = async () => {
     logQuery.value.execution_end_time = moment(logQuery.value.time[1]).format()
   }
   const res = await sceneLog(logQuery.value)
-  logData.value = res.data.list
-  logDataTotal.value = res.data.total
+  logData.value = res.data?.list || []
+  logDataTotal.value = res.data?.total || 0
 }
 // 查看日志
 const openLog = (item: any) => {
