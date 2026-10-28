@@ -1,8 +1,20 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { NDrawer, NDrawerContent, NButton, NDescriptions, NDescriptionsItem, NTag, NSpace, NSpin } from 'naive-ui'
+import { computed, ref, watch } from 'vue'
+import {
+  NDrawer,
+  NDrawerContent,
+  NButton,
+  NDescriptions,
+  NDescriptionsItem,
+  NTag,
+  NSpace,
+  NSpin,
+  NSelect,
+  NAlert
+} from 'naive-ui'
 import { $t } from '@/locales'
 import { getMarketTemplateDetail } from '@/service/api/market'
+import { marketTemplateCompatibility } from '../market-template-compatibility'
 import defaultCover from '@/assets/imgs/default_template_cover.png'
 
 const props = defineProps<{
@@ -15,41 +27,34 @@ const emit = defineEmits(['update:visible', 'install'])
 const loading = ref(false)
 const detail = ref<any>(null)
 
+const selectedVersion = ref('')
+const compatibility = computed(() => marketTemplateCompatibility(detail.value, selectedVersion.value))
+let requestSequence = 0
 watch(
-  () => props.templateId,
-  async id => {
-    if (!id || !props.visible) return
+  [() => props.visible, () => props.templateId],
+  async ([visible, id]) => {
+    const sequence = ++requestSequence
+    detail.value = null
+    selectedVersion.value = ''
+    if (!visible || !id) {
+      loading.value = false
+      return
+    }
     loading.value = true
     try {
       const res: any = await getMarketTemplateDetail(id)
+      if (sequence !== requestSequence) return
       if (!res.error) {
         detail.value = res.data
+        selectedVersion.value = String(res.data?.latest_version || res.data?.versions?.[0]?.version || '')
       }
-    } catch (e) {
-      console.error(e)
+    } catch {
+      if (sequence === requestSequence) window.$message?.error($t('market.compatibility.unavailable'))
     } finally {
-      loading.value = false
+      if (sequence === requestSequence) loading.value = false
     }
   },
   { immediate: true }
-)
-
-watch(
-  () => props.visible,
-  v => {
-    if (v && props.templateId) {
-      // Re-fetch on open
-      loading.value = true
-      getMarketTemplateDetail(props.templateId)
-        .then((res: any) => {
-          if (!res.error) detail.value = res.data
-        })
-        .catch(console.error)
-        .finally(() => {
-          loading.value = false
-        })
-    }
-  }
 )
 
 const handleClose = () => {
@@ -88,6 +93,24 @@ const handleClose = () => {
             <p class="desc-text">{{ detail.description }}</p>
           </div>
 
+          <div class="section">
+            <NSelect
+              v-model:value="selectedVersion"
+              :options="(detail.versions || []).map(v => ({ label: v.version, value: v.version }))"
+            />
+            <NAlert class="mt-2" :type="compatibility === 'native' ? 'success' : 'warning'">
+              {{
+                $t(
+                  compatibility === 'native'
+                    ? 'market.compatibility.native'
+                    : compatibility === 'legacy'
+                      ? 'market.compatibility.legacy'
+                      : 'market.compatibility.unavailable'
+                )
+              }}
+            </NAlert>
+          </div>
+
           <!-- 版本历史 -->
           <div v-if="detail.versions && detail.versions.length" class="section">
             <h4>{{ $t('market.versionHistory') }}</h4>
@@ -112,7 +135,12 @@ const handleClose = () => {
       </NSpin>
 
       <template #footer>
-        <NButton type="primary" block @click="emit('install', templateId)">
+        <NButton
+          type="primary"
+          block
+          :disabled="loading || compatibility !== 'native'"
+          @click="emit('install', templateId, selectedVersion)"
+        >
           {{ $t('market.install') }}
         </NButton>
       </template>

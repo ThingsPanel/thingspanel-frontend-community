@@ -129,17 +129,6 @@ export function resolveStandardBooleanCommand(
   return null
 }
 
-function valuesMatch(option: TelemetryEnumItem, value: unknown) {
-  switch (option.value_type?.toLowerCase()) {
-    case 'number':
-      return Number(option.value) === Number(value)
-    case 'boolean':
-      return String(option.value).toLowerCase() === String(value).toLowerCase()
-    default:
-      return String(option.value) === String(value)
-  }
-}
-
 export function isBooleanReading(reading: DeviceReadingValue) {
   return reading.data_type?.trim().toLowerCase() === 'boolean' && typeof reading.value === 'boolean'
 }
@@ -151,7 +140,7 @@ export function getBooleanReadingState(reading: DeviceReadingValue): boolean | n
 export function getReadingDisplayValue(reading: DeviceReadingValue) {
   if (reading.value === null || reading.value === undefined || reading.value === '') return '--'
   if (Array.isArray(reading.enum)) {
-    const matched = reading.enum.find(option => valuesMatch(option, reading.value))
+    const matched = reading.enum.find(option => option.value === reading.value)
     if (matched?.description) return matched.description
   }
   if (typeof reading.value === 'object') return JSON.stringify(reading.value)
@@ -159,7 +148,7 @@ export function getReadingDisplayValue(reading: DeviceReadingValue) {
 }
 
 export function getCompactReadingDisplayValue(reading: DeviceReadingValue) {
-  if (!isBooleanReading(reading)) return getReadingDisplayValue(reading)
+  if (reading.enum?.length || !isBooleanReading(reading)) return getReadingDisplayValue(reading)
   const state = getBooleanReadingState(reading)
   return state === null ? getReadingDisplayValue(reading) : state ? '1' : '0'
 }

@@ -1,4 +1,7 @@
 {
+    "market.compatibility.native": "原生物模型模板，可安装当前版本。",
+    "market.compatibility.legacy": "旧版模板仅可浏览，请发布者转换并发布原生版本后再安装。",
+    "market.compatibility.unavailable": "此版本暂无法确认兼容性，请刷新或联系管理员升级资源中心。",
     "market.loginTitle": "登录资源中心",
     "market.loginSubtitle": "资源中心需单独注册账号，ThingsPanel 平台账号不能直接登录。",
     "market.username": "账号",
@@ -135,7 +138,8 @@
     "market.browse.totalBundles": "共 {n} 个模板",
     "market.browse.downloadTemplate": "下载模板",
     "market.browse.downloadConfirmTitle": "确认下载模板",
-    "market.browse.downloadConfirmMessage": "确认将“{name}”下载并安装到当前租户吗？完成后会创建对应的设备模板和物模型。",
+    "market.browse.downloadConfirmMessage": "确认将“{name}”的指定版本下载并安装到当前租户吗？完成后会创建本地设备配置并导入固定版本的原生物模型。",
+    "market.browse.versionUnavailable": "市场列表未返回可安装的固定版本，请刷新列表后重试",
     "market.browse.confirmDownload": "确认下载",
     "market.browse.dashboardDownloadTitle": "下载看板模板",
     "market.browse.dashboardDownloadMessage": "将“{name}”及其依赖的设备模板、物模型下载到本地模板库。下载阶段不会绑定真实设备，也不会创建运行看板。",

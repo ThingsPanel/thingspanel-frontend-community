@@ -66,13 +66,17 @@ function reflowNodesToAppGrid(nodes: any[], sourceCanvas: Record<string, any>, r
     const sourceWidthInCols = positiveNumber(sourceGrid.w)
     const sourceHeightInRows = positiveNumber(sourceGrid.h)
     const hasSourceGrid = sourceWidthInCols !== undefined
-    const sourcePixelWidth = positiveNumber(nodeSize.width, node?.width) ?? 240
+    const sourcePixelWidth = hasSourceGrid
+      ? (sourceWidthInCols / sourceCols) * sourceWidth
+      : positiveNumber(nodeSize.width, node?.width) ?? 240
     const sourcePixelHeight = positiveNumber(nodeSize.height, node?.height) ?? 200
-    const width = clamp(
-      hasSourceGrid ? (sourceWidthInCols * appCols) / sourceCols : (sourcePixelWidth * appCols) / sourceWidth,
-      1,
-      appCols
-    )
+    const appGap = APP_CANVAS_DEFAULTS.gridGap
+    const appPadding = APP_CANVAS_DEFAULTS.padding
+    const appUsableWidth = APP_CANVAS_DEFAULTS.width - appPadding * 2
+    const appCellWidth = (appUsableWidth - appGap * (appCols - 1)) / appCols
+    const readablePixelWidth = Math.min(appUsableWidth, sourcePixelWidth)
+    const width = clamp(Math.ceil((readablePixelWidth + appGap) / (appCellWidth + appGap)), 1, appCols)
+    const appGridSpanWidth = width * appCellWidth + (width - 1) * appGap
     const height = Math.max(1, Math.round(sourceHeightInRows ?? sourcePixelHeight / 50))
 
     if (cursorX + width > appCols) {
@@ -97,7 +101,7 @@ function reflowNodesToAppGrid(nodes: any[], sourceCanvas: Record<string, any>, r
         y: cursorY * APP_CANVAS_DEFAULTS.gridRowHeight
       },
       size: {
-        width: hasSourceGrid ? width * cellWidth : Math.min(APP_CANVAS_DEFAULTS.width, sourcePixelWidth),
+        width: appGridSpanWidth,
         height: hasSourceGrid ? height * APP_CANVAS_DEFAULTS.gridRowHeight : sourcePixelHeight
       }
     }

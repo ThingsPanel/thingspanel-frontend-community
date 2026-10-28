@@ -12,7 +12,7 @@ import type { Ref } from 'vue'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import { NButton, NEmpty, NPopconfirm, useMessage } from 'naive-ui'
 import { getNotificationGroupList } from '@/service/api/notification'
-import { delInfo, editInfo, warningMessageList } from '@/service/api/alarm'
+import { delInfo, editInfo, warningMessageList } from '@/service/api/alarm-api'
 import { $t } from '@/locales'
 import { createLogger } from '@/utils/logger'
 import { tableThemeOverrides } from '@/utils/table-theme'
@@ -243,8 +243,10 @@ async function editInfos() {
 /** 删除告警 */
 
 async function deleteInfo() {
-  const { data } = await delInfo(deleteId.value)
-  if (!data) {
+  // 这里原来是反的：拿到 data 反而提示「删除失败」。删除成功时 data 是
+  // {deleted:true}，失败时 error 才有值，所以按 error 判断。
+  const { error } = await delInfo(deleteId.value)
+  if (!error) {
     message.success($t('common.deleteSuccess'))
   } else {
     message.error($t('common.deleteFail'))

@@ -1,4 +1,7 @@
 {
+    "market.compatibility.native": "Native thing-model template. This version can be installed.",
+    "market.compatibility.legacy": "Legacy template is browse-only. Ask the publisher to convert and publish a native version.",
+    "market.compatibility.unavailable": "Compatibility is unavailable for this version. Refresh or ask an administrator to update the resource center.",
     "market.loginTitle": "Login to Resource Center",
     "market.loginSubtitle": "Resource Center accounts require separate registration. ThingsPanel platform accounts cannot sign in directly.",
     "market.username": "Username",
@@ -135,7 +138,8 @@
     "market.browse.totalBundles": "{n} templates",
     "market.browse.downloadTemplate": "Download Template",
     "market.browse.downloadConfirmTitle": "Confirm Template Download",
-    "market.browse.downloadConfirmMessage": "Download and install “{name}” for the current tenant? This will create the corresponding device template and thing model.",
+    "market.browse.downloadConfirmMessage": "Download and install the selected version of “{name}” for the current tenant? This creates a local device configuration and imports its pinned native thing-model version.",
+    "market.browse.versionUnavailable": "The market list did not return an installable fixed version. Refresh the list and try again.",
     "market.browse.confirmDownload": "Confirm Download",
     "market.browse.dashboardDownloadTitle": "Download Dashboard Template",
     "market.browse.dashboardDownloadMessage": "Download “{name}” and its dependent device templates and thing model to the local template library. No real device binding or running dashboard will be created during download.",

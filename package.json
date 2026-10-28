@@ -37,11 +37,13 @@
     "release": "sa release",
     "start": "cross-env VITE_SERVICE_ENV=dev vite",
     "tsx": "tsx",
-    "typecheck": "set NODE_OPTIONS=--max-old-space-size=4096 vue-tsc --noEmit --skipLibCheck",
+    "typecheck": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vue-tsc --noEmit --skipLibCheck",
     "update-pkg": "sa update-pkg",
     "quality-check": "node scripts/dev-quality-check.js",
+    "check:automation-ui": "tsx src/__tests__/automation/check-automation-ui.ts",
     "pre-commit-check": "npm run quality-check",
-    "clean-console": "node scripts/remove-console-logs.js"
+    "clean-console": "node scripts/remove-console-logs.js",
+    "check:automation-mapping": "tsx src/__tests__/automation/check-automation-mapping.ts"
   },
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
@@ -150,11 +152,13 @@
     "@vitejs/plugin-vue": "^5.0.5",
     "@vitejs/plugin-vue-jsx": "3.1.0",
     "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/test-utils": "2.4.6",
     "cross-env": "7.0.3",
     "eslint": "8.57.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.4.0",
     "eslint-plugin-vue": "9.22.0",
+    "happy-dom": "15.11.7",
     "highlight.js": "^11.9.0",
     "lint-staged": "15.2.2",
     "mockjs": "1.1.0",
@@ -175,6 +179,7 @@
     "vite-plugin-svg-icons": "2.0.1",
     "vite-plugin-vue-devtools": "7.3.2",
     "vite-svg-loader": "^5.1.0",
+    "vitest": "2.1.9",
     "vue-eslint-parser": "9.4.2",
     "vue-tsc": "^2.0.21"
   },

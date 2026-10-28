@@ -6,7 +6,7 @@ import { NButton, NCard, useDialog } from 'naive-ui'
 import moment from 'moment'
 import EditAction from '@/views/automation/linkage-edit/modules/edit-action.vue'
 import EditPremise from '@/views/automation/linkage-edit/modules/edit-premise.vue'
-import { sceneAutomationsAdd, sceneAutomationsEdit, sceneAutomationsInfo } from '@/service/api/automation'
+import { sceneAutomationsAdd, sceneAutomationsEdit, sceneAutomationsInfo } from '@/service/api/automation-api'
 // import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales'
 // import {useRouteStore} from "@/store/modules/route";
@@ -38,7 +38,7 @@ const configFormRules = ref({
   }
 })
 const configFormRef = ref<HTMLElement & FormInst>()
-const configForm = ref(defaultConfigForm())
+const configForm = ref<any>(defaultConfigForm())
 
 const configId = ref(route.query.id || '')
 const propsData = ref({
@@ -137,7 +137,7 @@ const conditionData = ref([] as any)
 const actionData = ref([] as any)
 
 const getSceneAutomationsInfo = async () => {
-  const res = await sceneAutomationsInfo(configId.value)
+  const res = await sceneAutomationsInfo(String(configId.value))
   if (res.data) {
     automationsInfo.value = res.data
     configForm.value = res.data

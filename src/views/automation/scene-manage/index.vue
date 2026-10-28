@@ -5,7 +5,7 @@ import { NButton, NCard, NEmpty, NFlex, NPagination, NPopconfirm, NSpace, useDia
 import type { DataTableColumns } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import moment from 'moment'
-import { sceneActive, sceneDel, sceneGet, sceneLog } from '@/service/api/automation'
+import { sceneActive, sceneDel, sceneGet, sceneLog } from '@/service/api/automation-api'
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
 import { formatDateTime } from '@/utils/common/datetime'
@@ -89,8 +89,8 @@ const getLogList = async () => {
     logQuery.value.execution_end_time = moment(logQuery.value.time[1]).format()
   }
   const res = await sceneLog(logQuery.value)
-  logData.value = res.data.list
-  logDataTotal.value = res.data.total
+  logData.value = res.data?.list || []
+  logDataTotal.value = res.data?.total || 0
 }
 // 查看日志
 const openLog = (item: any) => {

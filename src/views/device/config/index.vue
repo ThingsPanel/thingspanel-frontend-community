@@ -26,6 +26,14 @@ const publishConfirmRef = ref<InstanceType<typeof PublishConfirmModal>>()
 const pendingPublishId = ref('')
 const pendingPublishName = ref('')
 
+const hasPinnedNativeModel = (row: any) =>
+  Boolean(
+    row?.native_thing_model_id &&
+      row?.native_thing_model_snapshot_id &&
+      Number(row?.native_thing_model_revision) > 0 &&
+      !row?.device_template_id
+  )
+
 // 查询参数
 const queryData = ref({
   page: 1,
@@ -163,7 +171,7 @@ const columns = computed(() => [
             ),
             h(
               NTooltip,
-              { trigger: 'hover', disabled: !!row.device_template_id },
+              { trigger: 'hover', disabled: hasPinnedNativeModel(row) },
               {
                 trigger: () =>
                   h(
@@ -171,12 +179,12 @@ const columns = computed(() => [
                     {
                       size: 'small',
                       type: 'info',
-                      disabled: !row.device_template_id,
+                      disabled: !hasPinnedNativeModel(row),
                       onClick: () => handlePublishToMarket(row.id, row.name)
                     },
                     { default: () => $t('device_template.publishToMarket') }
                   ),
-                default: () => $t('device_template.requireThingModelBeforePublish')
+                default: () => $t('device_template.requireNativeModelBeforePublish')
               }
             )
           ]
@@ -339,7 +347,7 @@ const availableViews = [
                           size="small"
                           quaternary
                           type="info"
-                          :disabled="!item.device_template_id"
+                          :disabled="!hasPinnedNativeModel(item)"
                           @click.stop="handlePublishToMarket(item.id, item.name)"
                         >
                           <template #icon>
@@ -348,9 +356,9 @@ const availableViews = [
                         </NButton>
                       </template>
                       {{
-                        item.device_template_id
+                        hasPinnedNativeModel(item)
                           ? $t('device_template.uploadToResourceCenter')
-                          : $t('device_template.requireThingModelBeforePublish')
+                          : $t('device_template.requireNativeModelBeforePublish')
                       }}
                     </NTooltip>
                   </NSpace>

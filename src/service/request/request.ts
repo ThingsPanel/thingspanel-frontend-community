@@ -1,4 +1,5 @@
 import { BACKEND_ERROR_CODE, createFlatRequest } from '@sa/axios'
+import type { FlatRequestInstance } from '@sa/axios'
 import { localStg } from '@/utils/storage'
 import { createProxyPattern, createServiceConfig } from '~/env.config'
 import { applyThingsPanelAuth, refreshThingsPanelAuth } from './auth-headers'
@@ -8,7 +9,7 @@ const isHttpProxy = import.meta.env.VITE_HTTP_PROXY === 'Y'
 const demoUrl = otherBaseURL.demo ? otherBaseURL.demo : `${window.location.origin}/api/v1`
 const apifoxToken = import.meta.env.VITE_APIFOX_TOKEN
 
-export const request = createFlatRequest<App.Service.DEVResponse>(
+export const request: FlatRequestInstance = createFlatRequest<App.Service.DEVResponse>(
   {
     baseURL: isHttpProxy ? createProxyPattern() : demoUrl,
     headers: apifoxToken ? { apifoxToken } : {}
@@ -74,7 +75,8 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
               const newToken = localStg.get('token')
               if (newToken) {
                 refreshThingsPanelAuth(originalRequest.headers, newToken)
-                return request(originalRequest)
+                await request(originalRequest)
+                return
               }
             }
           } else {

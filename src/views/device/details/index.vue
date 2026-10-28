@@ -15,11 +15,12 @@ import { useLoading } from '@sa/hooks'
 import { useWebSocket } from '@vueuse/core'
 import { $t } from '@/locales'
 import { deviceDetail, deviceUpdate } from '@/service/api/device'
+import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
 import { localStg } from '@/utils/storage'
 import { useRouterPush } from '@/hooks/common/router'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
 import { hasThingsVisChartContent } from '@/utils/thingsvis/template-presets'
-import { getCachedDeviceTemplateDetail } from '@/utils/thingsvis/template-detail-cache'
+import { resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
 import { message } from '@/utils/common/discrete'
 import { isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 const route = useRoute()
@@ -137,8 +138,6 @@ const baseComponents: TabComponent[] = [
     refreshKey: 0
   }
 ]
-
-const templateChartAvailabilityCache = new Map<string, boolean>()
 
 const components = ref<TabComponent[]>([])
 
@@ -376,38 +375,22 @@ const getDeviceDetail = async () => {
       })
     )
 
-    const templateId = data?.device_config?.device_template_id
-    if (templateId) {
-      void addChartTabWhenAvailable(templateId, currentRequestId)
-    }
+    void addChartTabWhenAvailable(data?.device_config as DeviceConfigNativeBinding | undefined, currentRequestId)
   }
 }
 
-const resolveTemplateHasChartContent = async (templateId?: string | number) => {
-  const normalizedTemplateId = String(templateId || '').trim()
-  if (!normalizedTemplateId) return false
-
-  if (templateChartAvailabilityCache.has(normalizedTemplateId)) {
-    return templateChartAvailabilityCache.get(normalizedTemplateId) || false
-  }
-
+const resolveTemplateHasChartContent = async (binding?: DeviceConfigNativeBinding) => {
   try {
-    const res = await getCachedDeviceTemplateDetail(normalizedTemplateId)
-    const template = res?.data || {}
-    const hasChart =
-      hasThingsVisChartContent(template?.web_chart_config) || hasThingsVisChartContent(template?.app_chart_config)
-
-    templateChartAvailabilityCache.set(normalizedTemplateId, hasChart)
-    return hasChart
+    const resolved = await resolveDeviceNativeModel(binding)
+    return Boolean(resolved && hasThingsVisChartContent(resolved.snapshot.resources.webChartConfig))
   } catch (err) {
-    console.warn('[DeviceDetail] 加载模板图表标签失败', normalizedTemplateId, err)
-    templateChartAvailabilityCache.set(normalizedTemplateId, false)
+    console.warn('[DeviceDetail] 加载绑定物模型图表标签失败', err)
     return false
   }
 }
 
-async function addChartTabWhenAvailable(templateId: string | number, requestId: number) {
-  const hasTemplateChart = await resolveTemplateHasChartContent(templateId)
+async function addChartTabWhenAvailable(binding: DeviceConfigNativeBinding | undefined, requestId: number) {
+  const hasTemplateChart = await resolveTemplateHasChartContent(binding)
   if (!hasTemplateChart || requestId !== detailRequestId) return
   if (components.value.some(item => item.key === 'chart')) return
 
@@ -621,7 +604,6 @@ const isEmbeddedHost = computed(() => {
                 :online="device_is_online"
                 :device-data="deviceData"
                 :device-config-id="deviceData?.device_config_id || ''"
-                :device-template-id="deviceData?.device_config?.device_template_id"
                 @change="getDeviceDetail"
               />
             </n-spin>

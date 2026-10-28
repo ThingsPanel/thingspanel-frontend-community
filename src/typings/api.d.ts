@@ -68,7 +68,7 @@ declare namespace Api {
 
     interface LoginToken {
       token: string
-      refreshToken: string
+      refreshToken?: string
       expires_in: number
     }
 

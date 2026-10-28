@@ -54,6 +54,7 @@
   "custom.devicePage.noDevicesInGroup": "当前分组没有匹配的设备",
   "custom.devicePage.noTelemetryReadings": "暂无遥测读数",
   "custom.devicePage.readingsLoadFailed": "设备或遥测数据加载失败，请重试",
+  "custom.devicePage.nativeMetadataLoadFailed": "固定版本的原生物模型元数据读取失败，当前显示原始字段标识符。",
   "custom.devicePage.telemetryHistory": "遥测历史",
   "custom.devicePage.openTelemetryHistory": "查看{name}的历史曲线",
   "custom.devicePage.selectGroup": "选择分组",

@@ -21,7 +21,16 @@ const { constantVueRoutes } = createRoutes()
 
 export const router = createRouter({
   history: historyCreatorMap[VITE_ROUTER_HISTORY_MODE](VITE_BASE_URL),
-  routes: constantVueRoutes
+  routes: [
+    ...constantVueRoutes,
+    {
+      path: '/auth-callback',
+      name: 'external-auth-callback',
+      component: () => import('@/components/auth/external-auth-panel.vue'),
+      props: { callback: true },
+      meta: { constant: true, title: 'Account sign-in' }
+    }
+  ]
 })
 
 /** Setup Vue Router */

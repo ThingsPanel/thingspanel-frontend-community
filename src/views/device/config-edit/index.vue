@@ -12,7 +12,6 @@ import {
   deviceConfigInfo,
   deviceConfigVoucherType,
   deviceProtocalServiceList,
-  deviceTemplate,
   protocolPluginConfigForm
 } from '@/service/api/device'
 import { $t } from '@/locales'
@@ -22,9 +21,6 @@ const message = useMessage()
 
 const route = useRoute()
 const configId = ref(route.query.id || null)
-const initialDeviceTemplateId = ref(
-  typeof route.query.deviceTemplateId === 'string' ? route.query.deviceTemplateId : ''
-)
 const modalTitle = ref('generate.add')
 
 let loading = ref(false)
@@ -50,7 +46,7 @@ function defaultConfigForm(): ConfigFormData {
     additional_info: null,
     description: null,
     device_conn_type: null,
-    device_template_id: '', // 默认值是空字符串
+    device_template_id: null,
     device_type: null,
     name: null,
     protocol_config: null, // 默认是 null
@@ -110,34 +106,6 @@ const configFormRules = ref<FormRules>({
     trigger: 'change'
   }
 })
-
-const queryTemplate = ref({
-  page: 1,
-  page_size: 20,
-  total: 0
-})
-const deviceTemplateOptions = ref([{ name: () => $t('generate.unbind'), id: '' }])
-
-const getDeviceTemplate = async () => {
-  try {
-    const res = await deviceTemplate(queryTemplate.value)
-    deviceTemplateOptions.value = deviceTemplateOptions.value.concat(res.data.list)
-    queryTemplate.value.total = res.data.total
-  } catch (error) {
-    console.error('Failed to get device templates:', error)
-    message.error($t('generate.failedToLoadDeviceTemplates'))
-  }
-}
-
-const deviceTemplateScroll = (e: Event) => {
-  const currentTarget = e.currentTarget as HTMLElement
-  if (currentTarget.scrollTop + currentTarget.offsetHeight >= currentTarget.scrollHeight) {
-    if (deviceTemplateOptions.value.length + 1 <= queryTemplate.value.total) {
-      queryTemplate.value.page += 1
-      getDeviceTemplate()
-    }
-  }
-}
 
 const configFormRef = ref<FormInst>()
 
@@ -314,10 +282,6 @@ onMounted(async () => {
     isEdit.value = false
     modalTitle.value = 'generate.create'
   }
-  await getDeviceTemplate()
-  if (!configId.value && initialDeviceTemplateId.value) {
-    configForm.value.device_template_id = initialDeviceTemplateId.value
-  }
   await getProtocolList(configForm?.value.device_type || '1')
 
   if (configForm.value.protocol_type) {
@@ -356,15 +320,8 @@ function handleDeviceTypeChange(newValue: string | number) {
         <NFormItem :label="$t('generate.device-configuration-name')" path="name" class="w-[600px]">
           <NInput v-model:value="configForm.name" :placeholder="$t('common.deviceConfigName')" />
         </NFormItem>
-        <NFormItem class="w-[600px]" :label="$t('generate.select-device-function-template')" path="device_template_id">
-          <NSelect
-            v-model:value="configForm.device_template_id"
-            :options="deviceTemplateOptions"
-            filterable
-            label-field="name"
-            value-field="id"
-            @scroll="deviceTemplateScroll"
-          ></NSelect>
+        <NFormItem v-if="!isEdit" class="w-[600px]" label="物模型">
+          <span>创建后可在详情中绑定已发布的物模型版本。</span>
         </NFormItem>
         <NFormItem :label="$t('generate.device-access-type')" path="device_type">
           <n-radio-group

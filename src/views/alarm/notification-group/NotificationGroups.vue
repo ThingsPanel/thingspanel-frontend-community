@@ -1,0 +1,1435 @@
+<script setup lang="tsx">
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { NButton, NSpace } from 'naive-ui'
+import type { DataTableColumns, SelectOption } from 'naive-ui'
+import {
+  getNativeNotificationGroupPublishStatus,
+  getUserList,
+  publishNativeNotificationGroup,
+  type NativeNotificationGroupRouteRequest,
+  type NativeNotificationGroupPublishStatus
+} from '@/service/api/notification'
+import { useAuthStore } from '@/store/modules/auth'
+import {
+  getNotificationUiCapabilities,
+  invalidateNotificationSession,
+  notificationV2,
+  NotificationClientError,
+  NotificationServiceUnavailableError,
+  NotificationSessionChangedError,
+  registerNotificationSessionCleanup,
+  type NotificationInstance,
+  type NotificationPlugin
+} from '@/service/api/notification-v2'
+import type * as NotificationV2 from '@/service/api/notification-v2.types'
+import {
+  canEnableNotificationGroup,
+  cloneNotificationGroupBindings,
+  isNotificationGroupEditable,
+  isNotificationMemberContactSupported,
+  supportsNotificationMemberTarget
+} from './workflow'
+
+const emit = defineEmits<{ published: [] }>()
+const auth = useAuthStore()
+const notificationApiConfigured = Boolean(import.meta.env.VITE_NOTIFICATION_API_BASE_URL)
+const { locale } = useI18n()
+const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
+function notificationErrorMessage(error: unknown, zhFallback: string, enFallback: string) {
+  if (error instanceof NotificationServiceUnavailableError)
+    return tx('通知服务暂不可用，请稍后重试。', 'The notification service is temporarily unavailable. Try again later.')
+  return error instanceof Error ? error.message : tx(zhFallback, enFallback)
+}
+const capabilities = computed(() => getNotificationUiCapabilities())
+const rows = ref<NotificationV2.GroupView[]>([])
+const instances = ref<NotificationInstance[]>([])
+const plugins = ref<NotificationPlugin[]>([])
+const total = ref(0)
+const loading = ref(false)
+const saving = ref(false)
+const publishAfterSave = ref(false)
+const errorText = ref('')
+const successText = ref('')
+const modal = ref(false)
+const editorMode = ref<'create' | 'edit' | 'view'>('create')
+const selectedGroup = ref<NotificationV2.GroupView | null>(null)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const viewGeneration = ref(0)
+const listController = ref<AbortController | null>(null)
+const detailController = ref<AbortController | null>(null)
+const draftName = ref('')
+const draftEnabled = ref(false)
+const bindings = ref<NotificationV2.GroupBinding[]>([])
+const memberOptions = ref<SelectOption[]>([])
+const memberSelections = reactive<Record<string, string[]>>({})
+const memberBindingIds = reactive<Record<string, Record<string, string>>>({})
+const memberLoading = ref(false)
+const memberError = ref('')
+const memberSearchGeneration = ref(0)
+const bindingErrors = ref<Record<string, string>>({})
+const bindingErrorFields = ref<Record<string, string>>({})
+const pendingSave = ref<{
+  key: string
+  body: NotificationV2.GroupCreate | NotificationV2.GroupUpdate
+  groupId?: string
+} | null>(null)
+const publishStatuses = ref<Record<string, NativeNotificationGroupPublishStatus>>({})
+const publishErrors = ref<Record<string, string>>({})
+const publishLoading = ref<Record<string, boolean>>({})
+const pendingPublish = ref<{ key: string; body: NativeNotificationGroupRouteRequest; groupId: string } | null>(null)
+const publishSaving = ref(false)
+const versionConflict = ref(false)
+const advancedBindings = reactive<Record<string, boolean>>({})
+const templateMappings = reactive<Record<string, string>>({})
+const formReadOnly = computed(() => editorMode.value === 'view' || Boolean(pendingSave.value))
+
+function resetDraft() {
+  draftName.value = ''
+  draftEnabled.value = true
+  bindings.value = []
+  bindingErrors.value = {}
+  bindingErrorFields.value = {}
+  Object.keys(memberSelections).forEach(key => delete memberSelections[key])
+  Object.keys(memberBindingIds).forEach(key => delete memberBindingIds[key])
+  Object.keys(advancedBindings).forEach(key => delete advancedBindings[key])
+  Object.keys(templateMappings).forEach(key => delete templateMappings[key])
+  selectedGroup.value = null
+}
+
+function groupFieldId(field: string, bindingId?: string) {
+  return `notification-group-${bindingId ? `${encodeURIComponent(bindingId)}-` : ''}${encodeURIComponent(field)}`
+}
+function groupFieldLabel(field: string) {
+  const labels: Record<string, [string, string]> = {
+    name: ['组名称', 'Group name'],
+    instance: ['通知实例', 'Notification instance'],
+    'recipient-source': ['目标类型', 'Recipient source'],
+    'recipient-kind': ['接收地址类型', 'Recipient kind'],
+    'recipient-address': ['接收地址', 'Recipient address'],
+    member: ['成员', 'Member'],
+    'contact-field': ['联系字段', 'Contact field'],
+    'content-mode': ['内容模式', 'Content mode'],
+    title: ['标题', 'Title'],
+    text: ['文本', 'Text'],
+    'template-id': ['模板 ID', 'Template ID'],
+    locale: ['语言', 'Locale'],
+    params: ['参数映射 JSON', 'Parameter mapping JSON']
+  }
+  const label = labels[field]
+  return label ? tx(label[0], label[1]) : field
+}
+function groupFieldAriaProps(field: string, bindingId?: string) {
+  const error = bindingId ? bindingErrors.value[bindingId] : bindingErrors.value.name
+  const errorField = bindingId ? bindingErrorFields.value[bindingId] : 'name'
+  const invalid = Boolean(error && (!bindingId || errorField === field)) || undefined
+  return {
+    id: groupFieldId(field, bindingId),
+    'aria-label': groupFieldLabel(field),
+    'aria-invalid': invalid,
+    'aria-describedby':
+      error && (!bindingId || errorField === field) ? `${groupFieldId(field, bindingId)}-error` : undefined
+  }
+}
+function groupInputProps(field: string, bindingId?: string) {
+  return groupFieldAriaProps(field, bindingId)
+}
+
+function bindingControlForErrorPath(path: string) {
+  if (path.includes('instanceId')) return 'instance'
+  if (path.includes('recipientSource.recipient.address')) return 'recipient-address'
+  if (path.includes('recipientSource.recipient.kind')) return 'recipient-kind'
+  if (path.includes('recipientSource.userId')) return 'member'
+  if (path.includes('recipientSource.contactField')) return 'contact-field'
+  if (path.includes('contentBinding.title')) return 'title'
+  if (path.includes('contentBinding.text')) return 'text'
+  if (path.includes('contentBinding.templateId')) return 'template-id'
+  if (path.includes('contentBinding.locale')) return 'locale'
+  if (path.includes('contentBinding.paramsMapping')) return 'params'
+  if (path.includes('recipientSource.kind')) return 'recipient-source'
+  if (path.includes('contentBinding.kind')) return 'content-mode'
+  return 'instance'
+}
+
+function focusFirstInvalidGroupField() {
+  const invalidField = bindingErrors.value.name
+    ? groupFieldId('name')
+    : bindings.value
+        .map(binding => {
+          const field = bindingErrorFields.value[binding.bindingId]
+          return field ? groupFieldId(field, binding.bindingId) : ''
+        })
+        .find(Boolean)
+  if (!invalidField) return
+  void nextTick(() => {
+    const root = document.getElementById(invalidField)
+    const control = root?.matches('input, select, textarea, button, [tabindex]')
+      ? root
+      : root?.querySelector<HTMLElement>('input, select, textarea, button, [tabindex]')
+    control?.focus()
+  })
+}
+
+function clearSession() {
+  listController.value?.abort()
+  detailController.value?.abort()
+  rows.value = []
+  instances.value = []
+  plugins.value = []
+  memberOptions.value = []
+  memberError.value = ''
+  memberLoading.value = false
+  memberSearchGeneration.value += 1
+  total.value = 0
+  modal.value = false
+  pendingSave.value = null
+  publishStatuses.value = {}
+  publishErrors.value = {}
+  publishLoading.value = {}
+  pendingPublish.value = null
+  publishSaving.value = false
+  errorText.value = ''
+  successText.value = ''
+  resetDraft()
+  viewGeneration.value += 1
+}
+
+const unregisterCleanup = registerNotificationSessionCleanup(clearSession)
+watch(
+  () => [auth.token, auth.userInfo.tenant_id, auth.userInfo.id, auth.userInfo.userId],
+  () => invalidateNotificationSession()
+)
+onBeforeUnmount(() => {
+  unregisterCleanup()
+  listController.value?.abort()
+  detailController.value?.abort()
+})
+
+const migrationLabel = (state: NotificationV2.GroupView['migrationState']) => {
+  const labels = {
+    native: tx('可配置策略', 'Configurable policy'),
+    legacy_unmigrated: tx('历史配置（只读）', 'Historical configuration (read only)'),
+    projection_pending: tx('等待整理（只读）', 'Pending review (read only)')
+  }
+  return labels[state]
+}
+
+async function loadPage() {
+  const generation = ++viewGeneration.value
+  listController.value?.abort()
+  const controller = new AbortController()
+  listController.value = controller
+  loading.value = true
+  errorText.value = ''
+  try {
+    const [groupResponse, instanceResponse, pluginResponse] = await Promise.all([
+      notificationV2.listGroups({ page: currentPage.value, pageSize: pageSize.value }, controller.signal),
+      notificationV2.listInstances({ page: 1, pageSize: 100 }),
+      notificationV2.listPlugins()
+    ])
+    if (generation !== viewGeneration.value) return
+    rows.value = groupResponse.data.items
+    total.value = groupResponse.data.total
+    instances.value = instanceResponse.data.items
+    plugins.value = pluginResponse.data.items
+    publishStatuses.value = {}
+    publishErrors.value = {}
+    void Promise.all(groupResponse.data.items.map(row => refreshPublishStatus(row, generation)))
+  } catch (error) {
+    if (
+      generation !== viewGeneration.value ||
+      controller.signal.aborted ||
+      error instanceof NotificationSessionChangedError
+    )
+      return
+    errorText.value = notificationErrorMessage(error, '加载通知组失败。', 'Could not load notification groups.')
+  } finally {
+    if (generation === viewGeneration.value) loading.value = false
+  }
+}
+
+const isTenantAdmin = computed(() => {
+  const roles = new Set([...(auth.userInfo.roles || []), auth.userInfo.authority].filter(Boolean))
+  return roles.has('TENANT_ADMIN')
+})
+
+async function refreshPublishStatus(row: NotificationV2.GroupView, generation = viewGeneration.value) {
+  publishLoading.value[row.id] = true
+  delete publishErrors.value[row.id]
+  try {
+    const status = await getNativeNotificationGroupPublishStatus(row.id)
+    if (generation !== viewGeneration.value) return
+    publishStatuses.value[row.id] = status
+  } catch (error) {
+    if (generation !== viewGeneration.value || error instanceof NotificationSessionChangedError) return
+    publishErrors.value[row.id] = tx(
+      '无法确认社区告警入口状态，请刷新后重试。',
+      'Could not confirm the community alert entry. Refresh and try again.'
+    )
+  } finally {
+    if (generation === viewGeneration.value) delete publishLoading.value[row.id]
+  }
+}
+
+function nativePublishLabel(row: NotificationV2.GroupView) {
+  if (pendingPublish.value?.groupId === row.id)
+    return tx('结果未确认，使用同一请求重试', 'Result unconfirmed; retry the same request')
+  const status = publishStatuses.value[row.id]
+  if (status?.published && status.effectiveGroupRevision === row.revision) return tx('已生效', 'Enabled')
+  if (status?.published || status?.status === 'stopped') return tx('发布生效', 'Enable policy')
+  if (publishErrors.value[row.id]) return tx('刷新策略状态', 'Refresh policy status')
+  return tx('发布生效', 'Enable policy')
+}
+
+function nativePublishErrorStatus(error: unknown) {
+  if (!error || typeof error !== 'object') return null
+  const value = error as { status?: unknown; response?: { status?: unknown } }
+  const nested = error as { error?: { status?: unknown } }
+  const status = value.status ?? value.response?.status ?? nested.error?.status
+  return typeof status === 'number' ? status : null
+}
+
+async function sendPendingPublish() {
+  const pending = pendingPublish.value
+  if (!pending || publishSaving.value) return
+  publishSaving.value = true
+  delete publishErrors.value[pending.groupId]
+  try {
+    const status = await publishNativeNotificationGroup(pending.body, pending.key)
+    publishStatuses.value[pending.groupId] = status
+    pendingPublish.value = null
+    emit('published')
+    await loadPage()
+    publishErrors.value[pending.groupId] =
+      pending.body.operation === 'unpublish'
+        ? tx('策略已停用。此操作只影响之后产生的告警。', 'The policy is disabled. This affects future alerts only.')
+        : tx('策略已启用，供后续告警使用。', 'Policy enabled for future alerts.')
+  } catch (error) {
+    const status = nativePublishErrorStatus(error)
+    if (status === 409) {
+      pendingPublish.value = null
+      const row = rows.value.find(item => item.id === pending.groupId)
+      if (row) await refreshPublishStatus(row)
+      publishErrors.value[pending.groupId] = tx(
+        '策略状态已变化并已刷新；请检查后再重试。',
+        'Policy status changed and was refreshed. Review it before trying again.'
+      )
+    } else if (status !== null && status >= 400 && status < 500) {
+      pendingPublish.value = null
+      publishErrors.value[pending.groupId] =
+        status === 401
+          ? tx('登录状态已失效，请重新登录。', 'Your session has expired. Sign in again.')
+          : status === 403
+            ? tx('当前账号无权启用此策略。', 'This account cannot enable this policy.')
+            : tx('请求未被接受，请检查策略并重试。', 'The request was rejected. Review the policy and try again.')
+    } else {
+      publishErrors.value[pending.groupId] = tx(
+        '启用结果未确认。刷新状态后再决定是否重试。',
+        'The enable result is unconfirmed. Refresh the status before deciding whether to retry.'
+      )
+    }
+  } finally {
+    publishSaving.value = false
+  }
+}
+
+async function publishForCommunityAlerts(row: NotificationV2.GroupView) {
+  if (!isTenantAdmin.value || !row.enabled || row.migrationState !== 'native' || publishSaving.value) return
+  if (pendingPublish.value) {
+    if (pendingPublish.value.groupId === row.id) await sendPendingPublish()
+    return
+  }
+  delete publishErrors.value[row.id]
+  publishLoading.value[row.id] = true
+  try {
+    const status = await getNativeNotificationGroupPublishStatus(row.id)
+    publishStatuses.value[row.id] = status
+    if (status.published && status.effectiveGroupRevision === row.revision) {
+      publishErrors.value[row.id] = tx('策略已启用。', 'Policy is enabled.')
+      return
+    }
+    pendingPublish.value = {
+      key: notificationV2.createIdempotencyKey(),
+      body: {
+        operation: 'publish',
+        nativeGroupId: row.id,
+        groupRevision: row.revision,
+        name: row.name,
+        expectedRouteVersion: status.routeVersion
+      },
+      groupId: row.id
+    }
+    await sendPendingPublish()
+  } catch (error) {
+    if (!(error instanceof NotificationSessionChangedError))
+      publishErrors.value[row.id] = tx(
+        '无法确认当前策略状态。请刷新后重试。',
+        'Could not confirm the current policy status. Refresh and try again.'
+      )
+  } finally {
+    delete publishLoading.value[row.id]
+  }
+}
+
+async function stopCommunityAlerts(row: NotificationV2.GroupView) {
+  if (!isTenantAdmin.value || publishSaving.value) return
+  if (pendingPublish.value) {
+    if (pendingPublish.value.groupId === row.id) await sendPendingPublish()
+    return
+  }
+  delete publishErrors.value[row.id]
+  publishLoading.value[row.id] = true
+  try {
+    const status = await getNativeNotificationGroupPublishStatus(row.id)
+    publishStatuses.value[row.id] = status
+    if (!status.published) {
+      publishErrors.value[row.id] = tx('当前策略已停用。', 'This policy is already disabled.')
+      return
+    }
+    pendingPublish.value = {
+      key: notificationV2.createIdempotencyKey(),
+      body: { operation: 'unpublish', nativeGroupId: row.id, expectedRouteVersion: status.routeVersion },
+      groupId: row.id
+    }
+    await sendPendingPublish()
+  } catch (error) {
+    if (!(error instanceof NotificationSessionChangedError))
+      publishErrors.value[row.id] = tx(
+        '无法确认当前策略状态。请刷新后重试。',
+        'Could not confirm the current policy status. Refresh and try again.'
+      )
+  } finally {
+    delete publishLoading.value[row.id]
+  }
+}
+
+function newBinding(): NotificationV2.GroupBinding {
+  return {
+    bindingId: notificationV2.createIdempotencyKey(),
+    instanceId: '',
+    recipientSource: { kind: 'literal', recipient: { kind: 'phone', address: '' } },
+    contentBinding: { kind: 'text', title: '', text: '' }
+  }
+}
+
+function addBinding() {
+  bindings.value.push(newBinding())
+}
+
+function removeBinding(bindingId: string) {
+  bindings.value = bindings.value.filter(binding => binding.bindingId !== bindingId)
+  delete bindingErrors.value[bindingId]
+  delete templateMappings[bindingId]
+}
+
+function isAppInstance(binding: NotificationV2.GroupBinding) {
+  const instance = instances.value.find(item => item.id === binding.instanceId)
+  const plugin = plugins.value.find(item => item.id === instance?.pluginRegistrationId)
+  return plugin?.pluginId === 'thingspanel.unipush' && plugin.pluginVersion === '2.0.0'
+}
+function useAppAlarm(binding: NotificationV2.GroupBinding) {
+  const userId = binding.recipientSource.kind === 'member' ? binding.recipientSource.userId : ''
+  binding.recipientSource = { kind: 'member', userId, contactField: 'appDevice' }
+  const paramsMapping = { title: 'subject', text: 'text', alarmId: 'alarmId', alarmKind: 'alarmKind' }
+  binding.contentBinding = { kind: 'template', templateId: 'device_alarm', locale: 'zh-CN', paramsMapping }
+  templateMappings[binding.bindingId] = JSON.stringify(paramsMapping, null, 2)
+}
+
+function selectedMembers(binding: NotificationV2.GroupBinding): string[] {
+  return (
+    memberSelections[binding.bindingId] ??
+    (binding.recipientSource.kind === 'member' && binding.recipientSource.userId
+      ? [binding.recipientSource.userId]
+      : [])
+  )
+}
+
+function updateMembers(binding: NotificationV2.GroupBinding, values: string[] | null) {
+  const members = [...new Set(values || [])]
+  if (binding.recipientSource.kind !== 'member') return
+  const ids = (memberBindingIds[binding.bindingId] ??= {})
+  if (binding.recipientSource.userId && !ids[binding.recipientSource.userId])
+    ids[binding.recipientSource.userId] = binding.bindingId
+  members.forEach(userId => {
+    ids[userId] ??= notificationV2.createIdempotencyKey()
+  })
+  memberSelections[binding.bindingId] = members
+  binding.recipientSource.userId = members[0] || ''
+}
+
+function groupMemberBindings(items: NotificationV2.GroupBinding[]) {
+  const grouped: NotificationV2.GroupBinding[] = []
+  const representatives = new Map<string, NotificationV2.GroupBinding>()
+  items.forEach(binding => {
+    if (binding.recipientSource.kind !== 'member') {
+      grouped.push(binding)
+      return
+    }
+    const { userId, contactField } = binding.recipientSource
+    const key = JSON.stringify([binding.instanceId, contactField, binding.contentBinding])
+    const existing = representatives.get(key)
+    if (existing && !memberSelections[existing.bindingId].includes(userId)) {
+      memberSelections[existing.bindingId].push(userId)
+      memberBindingIds[existing.bindingId][userId] = binding.bindingId
+      return
+    }
+    grouped.push(binding)
+    representatives.set(key, binding)
+    memberSelections[binding.bindingId] = userId ? [userId] : []
+    memberBindingIds[binding.bindingId] = userId ? { [userId]: binding.bindingId } : {}
+  })
+  return grouped
+}
+
+function changeInstance(binding: NotificationV2.GroupBinding) {
+  if (isAppInstance(binding)) useAppAlarm(binding)
+}
+
+function isAppAlarmPreset(binding: NotificationV2.GroupBinding) {
+  if (
+    !isAppInstance(binding) ||
+    binding.recipientSource.kind !== 'member' ||
+    binding.recipientSource.contactField !== 'appDevice'
+  )
+    return false
+  const content = binding.contentBinding
+  const expected = { title: 'subject', text: 'text', alarmId: 'alarmId', alarmKind: 'alarmKind' }
+  return (
+    content.kind === 'template' &&
+    content.templateId === 'device_alarm' &&
+    content.locale === 'zh-CN' &&
+    Object.keys(content.paramsMapping).length === 4 &&
+    Object.entries(expected).every(([key, value]) => content.paramsMapping[key] === value)
+  )
+}
+
+function policyState(row: NotificationV2.GroupView) {
+  if (row.migrationState !== 'native') return migrationLabel(row.migrationState)
+  const status = publishStatuses.value[row.id]
+  if (!status) return publishErrors.value[row.id] ? tx('状态读取失败', 'Status unavailable') : tx('读取中', 'Loading')
+  if (status.published)
+    return status.effectiveGroupRevision === row.revision
+      ? tx('已生效', 'Active')
+      : tx('有未生效修改', 'Unpublished changes')
+  return status.status === 'stopped' ? tx('已停用', 'Stopped') : tx('未生效', 'Not published')
+}
+
+function updateRecipientKind(binding: NotificationV2.GroupBinding, kind: 'literal' | 'member') {
+  delete memberSelections[binding.bindingId]
+  binding.recipientSource =
+    kind === 'literal'
+      ? { kind, recipient: { kind: 'phone', address: '' } }
+      : { kind, userId: '', contactField: isAppInstance(binding) ? 'appDevice' : 'phone' }
+}
+
+function updateContentKind(binding: NotificationV2.GroupBinding, kind: 'text' | 'template') {
+  binding.contentBinding =
+    kind === 'text' ? { kind, title: '', text: '' } : { kind, templateId: '', locale: 'zh-CN', paramsMapping: {} }
+  if (kind === 'template') templateMappings[binding.bindingId] = '{}'
+  else delete templateMappings[binding.bindingId]
+}
+
+function isUnsupportedMemberTarget(binding: NotificationV2.GroupBinding) {
+  if (binding.recipientSource.kind !== 'member') return false
+  const instance = instances.value.find(item => item.id === binding.instanceId)
+  return (
+    (instance?.channel === 'im' && !isAppInstance(binding)) ||
+    binding.recipientSource.contactField === 'applicationUserId'
+  )
+}
+
+function recipientSourceOptions(binding: NotificationV2.GroupBinding): SelectOption[] {
+  const instance = instances.value.find(item => item.id === binding.instanceId)
+  return [
+    { label: tx('外部接收地址', 'Literal recipient'), value: 'literal' },
+    {
+      label: tx('应用成员（App 支持多设备）', 'Application member (App supports multiple devices)'),
+      value: 'member',
+      disabled: Boolean(instance && !supportsNotificationMemberTarget(instance.channel) && !isAppInstance(binding))
+    }
+  ]
+}
+
+async function searchMembers(query = '') {
+  const generation = ++memberSearchGeneration.value
+  memberError.value = ''
+  memberLoading.value = true
+  try {
+    const response = await getUserList({ page: 1, page_size: 50, name: query })
+    if (generation !== memberSearchGeneration.value) return
+    const users = response?.data?.list || []
+    memberOptions.value = users.map(user => ({ label: user.name || user.user_id, value: user.user_id }))
+  } catch {
+    if (generation !== memberSearchGeneration.value) return
+    memberOptions.value = []
+    memberError.value = tx(
+      '无法读取成员目录。请检查当前会话与成员服务，然后重试。',
+      'Could not load the member directory. Check the current session and member service, then retry.'
+    )
+  } finally {
+    if (generation === memberSearchGeneration.value) memberLoading.value = false
+  }
+}
+
+function validateBindings() {
+  const errors: Record<string, string> = {}
+  const errorFields: Record<string, string> = {}
+  const setBindingError = (bindingId: string, field: string, message: string) => {
+    errors[bindingId] = message
+    errorFields[bindingId] = field
+  }
+  if (!draftName.value.trim()) errors.name = tx('策略名称不能为空。', 'Policy name is required.')
+  if (bindings.value.length === 0) errors.bindings = tx('至少添加一条绑定。', 'Add at least one binding.')
+  bindings.value.forEach(binding => {
+    const recipient = binding.recipientSource
+    if (!binding.instanceId)
+      setBindingError(binding.bindingId, 'instance', tx('请选择通知实例。', 'Choose a notification instance.'))
+    const instance = instances.value.find(item => item.id === binding.instanceId)
+    if (recipient.kind === 'literal') {
+      if (!recipient.recipient.address.trim())
+        setBindingError(
+          binding.bindingId,
+          'recipient-address',
+          tx('请填写直接接收目标。', 'Enter a literal recipient.')
+        )
+      const compatibleRecipient: Record<NotificationV2.Channel, string[]> = {
+        email: ['email'],
+        sms: ['phone'],
+        voice: ['phone'],
+        im: ['chat_id', 'user_id'],
+        webhook: ['webhook']
+      }
+      if (instance && !compatibleRecipient[instance.channel].includes(recipient.recipient.kind))
+        setBindingError(
+          binding.bindingId,
+          'recipient-kind',
+          tx('接收地址类型与实例通道不匹配。', 'Recipient kind does not match the instance channel.')
+        )
+    }
+    if (recipient.kind === 'member' && !recipient.userId)
+      setBindingError(binding.bindingId, 'member', tx('请选择成员。', 'Choose a member.'))
+    if (recipient.kind === 'member') {
+      if ((instance?.channel === 'im' && !isAppInstance(binding)) || recipient.contactField === 'applicationUserId') {
+        setBindingError(
+          binding.bindingId,
+          'member',
+          tx(
+            'APP 成员目标暂不可用。请改用服务商支持的直接接收地址；应用用户编号不能当作服务商 user_id/chat_id。',
+            'APP member targets are not available yet. Use a direct recipient address supported by the service; application user IDs are not provider user_id/chat_id values.'
+          )
+        )
+      } else if (
+        instance &&
+        !isNotificationMemberContactSupported(instance.channel, recipient.contactField) &&
+        !(isAppInstance(binding) && recipient.contactField === 'appDevice')
+      ) {
+        setBindingError(
+          binding.bindingId,
+          'contact-field',
+          tx('成员联系字段与实例通道不匹配。', 'Member contact field does not match the instance channel.')
+        )
+      }
+    }
+    const content = binding.contentBinding
+    if (content.kind === 'text' && !content.text.trim())
+      setBindingError(binding.bindingId, 'text', tx('请填写文本内容。', 'Enter text content.'))
+    if (content.kind === 'template') {
+      if (!content.templateId.trim() || !content.locale.trim())
+        setBindingError(
+          binding.bindingId,
+          'template-id',
+          tx('模板 ID 与语言不能为空。', 'Template ID and locale are required.')
+        )
+      try {
+        const parsed = JSON.parse(templateMappings[binding.bindingId] || '{}')
+        if (
+          !parsed ||
+          typeof parsed !== 'object' ||
+          Array.isArray(parsed) ||
+          Object.values(parsed).some(value => typeof value !== 'string')
+        )
+          throw new Error()
+        content.paramsMapping = parsed
+      } catch {
+        setBindingError(
+          binding.bindingId,
+          'params',
+          tx('参数映射必须是字符串值 JSON 对象。', 'Parameter mapping must be a JSON object with string values.')
+        )
+      }
+    }
+  })
+  bindingErrors.value = errors
+  bindingErrorFields.value = errorFields
+  return Object.keys(errors).length === 0
+}
+
+function openCreate() {
+  resetDraft()
+  editorMode.value = 'create'
+  pendingSave.value = null
+  selectedGroup.value = null
+  addBinding()
+  modal.value = true
+}
+
+async function openEdit(row: NotificationV2.GroupView) {
+  errorText.value = ''
+  versionConflict.value = false
+  detailController.value?.abort()
+  const controller = new AbortController()
+  detailController.value = controller
+  const generation = ++viewGeneration.value
+  try {
+    const response = await notificationV2.getGroup(row.id, controller.signal)
+    if (generation !== viewGeneration.value) return
+    const group = response.data
+    resetDraft()
+    selectedGroup.value = group
+    editorMode.value = isNotificationGroupEditable(group.migrationState) ? 'edit' : 'view'
+    pendingSave.value = null
+    draftName.value = group.name
+    draftEnabled.value = group.enabled
+    bindings.value = groupMemberBindings(cloneNotificationGroupBindings(group.bindings))
+    bindings.value.forEach(binding => {
+      if (binding.contentBinding.kind === 'template') {
+        templateMappings[binding.bindingId] = JSON.stringify(binding.contentBinding.paramsMapping, null, 2)
+      }
+    })
+    modal.value = true
+    if (bindings.value.some(binding => binding.recipientSource.kind === 'member')) void searchMembers()
+  } catch (error) {
+    if (!controller.signal.aborted && !(error instanceof NotificationSessionChangedError))
+      errorText.value = notificationErrorMessage(error, '读取通知策略失败。', 'Could not load the group.')
+  }
+}
+
+function buildGroupBody(): NotificationV2.GroupCreate | NotificationV2.GroupUpdate {
+  if (!validateBindings()) {
+    focusFirstInvalidGroupField()
+    throw new Error(tx('请修正策略配置中的错误。', 'Fix the policy configuration errors.'))
+  }
+  const normalizedBindings = cloneNotificationGroupBindings(bindings.value).flatMap(binding => {
+    if (binding.recipientSource.kind !== 'member') return [binding]
+    const source = binding.recipientSource
+    return selectedMembers(binding).map(userId => ({
+      ...binding,
+      bindingId: memberBindingIds[binding.bindingId]?.[userId] || binding.bindingId,
+      recipientSource: { ...source, userId }
+    }))
+  })
+  normalizedBindings.forEach(binding => {
+    binding.instanceId = binding.instanceId.trim()
+    if (binding.recipientSource.kind === 'literal')
+      binding.recipientSource.recipient.address = binding.recipientSource.recipient.address.trim()
+    if (binding.contentBinding.kind === 'text') {
+      binding.contentBinding.title = binding.contentBinding.title.trim()
+      binding.contentBinding.text = binding.contentBinding.text.trim()
+    } else {
+      binding.contentBinding.templateId = binding.contentBinding.templateId.trim()
+      binding.contentBinding.locale = binding.contentBinding.locale.trim()
+    }
+  })
+  const base = { name: draftName.value.trim(), enabled: draftEnabled.value, bindings: normalizedBindings }
+  return editorMode.value === 'edit' ? { ...base, expectedVersion: selectedGroup.value!.version } : base
+}
+
+async function saveAndPublish() {
+  if (pendingSave.value || pendingPublish.value || saving.value) return
+  publishAfterSave.value = true
+  draftEnabled.value = true
+  await saveGroup()
+}
+
+async function saveDraft() {
+  if (!pendingSave.value) publishAfterSave.value = false
+  await saveGroup()
+}
+
+async function saveGroup() {
+  if (!capabilities.value.canManage || saving.value || editorMode.value === 'view') return
+  errorText.value = ''
+  successText.value = ''
+  versionConflict.value = false
+  if (!pendingSave.value) {
+    try {
+      const body = buildGroupBody()
+      if (
+        body.enabled &&
+        editorMode.value === 'edit' &&
+        !canEnableNotificationGroup(selectedGroup.value!.migrationState)
+      ) {
+        throw new Error(tx('该策略尚未准备好，暂时不能启用。', 'This policy is not ready to be enabled yet.'))
+      }
+      pendingSave.value = {
+        key: notificationV2.createIdempotencyKey(),
+        body,
+        groupId: editorMode.value === 'edit' ? selectedGroup.value!.id : undefined
+      }
+    } catch (error) {
+      errorText.value = notificationErrorMessage(error, '策略配置无效。', 'The policy configuration is invalid.')
+      return
+    }
+  }
+  saving.value = true
+  const pending = pendingSave.value
+  try {
+    const saved = pending.groupId
+      ? await notificationV2.updateGroup(pending.groupId, pending.body as NotificationV2.GroupUpdate, pending.key)
+      : await notificationV2.createGroup(pending.body as NotificationV2.GroupCreate, pending.key)
+    pendingSave.value = null
+    modal.value = false
+    successText.value = tx('通知策略已保存；请在列表发布当前版本后用于告警。', 'Notification group saved.')
+    await loadPage()
+    if (publishAfterSave.value && saved?.data) {
+      successText.value = tx('配置已保存，正在发布。', 'Configuration saved. Publishing.')
+      await publishForCommunityAlerts(saved.data)
+      const status = publishStatuses.value[saved.data.id]
+      successText.value =
+        status?.published && status.effectiveGroupRevision === saved.data.revision
+          ? tx('通知策略已保存并生效。', 'Policy saved and published.')
+          : tx(
+              '配置已保存，但尚未确认生效。请查看该策略的发布状态；已有生效版本不会被本次保存替换。',
+              'Configuration saved, but publication is not confirmed. Review the policy status; saving does not replace the previously published version.'
+            )
+    }
+  } catch (error) {
+    if (error instanceof NotificationClientError && error.outcomeUncertain) {
+      errorText.value = tx(
+        '保存结果未确认。请使用同一请求重试；系统不会创建第二个版本。',
+        'Save result is unknown. Retry the same request; this will not create a second version.'
+      )
+    } else if (error instanceof NotificationClientError && error.httpStatus === 409) {
+      pendingSave.value = null
+      versionConflict.value = true
+      errorText.value = tx(
+        '组版本已被其他管理员修改，请刷新并重新确认。',
+        'Another administrator changed this group. Refresh and review before saving again.'
+      )
+    } else {
+      pendingSave.value = null
+      errorText.value = notificationErrorMessage(error, '保存通知策略失败。', 'Could not save notification group.')
+      if (error instanceof NotificationClientError) {
+        const fields =
+          (error.details as { fields?: Array<{ field: string; reason: string }> } | undefined)?.fields || []
+        fields.forEach(field => {
+          const binding = bindings.value.find(
+            item =>
+              field.field.includes(item.bindingId) ||
+              Object.values(memberBindingIds[item.bindingId] || {}).some(id => field.field.includes(id))
+          )
+          if (binding) {
+            bindingErrors.value[binding.bindingId] = field.reason
+            bindingErrorFields.value[binding.bindingId] = bindingControlForErrorPath(field.field)
+          }
+        })
+        focusFirstInvalidGroupField()
+      }
+    }
+  } finally {
+    saving.value = false
+  }
+}
+
+async function reloadConflictedGroup() {
+  if (!selectedGroup.value) return
+  const row = selectedGroup.value
+  pendingSave.value = null
+  versionConflict.value = false
+  await openEdit(row)
+}
+
+function closeEditor() {
+  if (pendingSave.value) return
+  modal.value = false
+  resetDraft()
+}
+
+const columns: DataTableColumns<NotificationV2.GroupView> = [
+  { title: tx('策略名称', 'Policy'), key: 'name', minWidth: 160 },
+  {
+    title: tx('状态', 'State'),
+    key: 'migrationState',
+    minWidth: 180,
+    render: row => policyState(row)
+  },
+  {
+    title: tx('通知渠道', 'Channels'),
+    key: 'channels',
+    minWidth: 180,
+    render: row =>
+      [
+        ...new Set(
+          row.bindings.map(
+            binding =>
+              instances.value.find(item => item.id === binding.instanceId)?.name ||
+              tx('渠道不可用', 'Unavailable channel')
+          )
+        )
+      ].join('、') || '—'
+  },
+  { title: tx('发送项', 'Delivery items'), key: 'bindings', width: 100, render: row => row.bindings.length },
+  {
+    title: tx('操作', 'Actions'),
+    key: 'actions',
+    width: 330,
+    render: row => (
+      <NSpace size="small" align="center">
+        {row.migrationState === 'native' ? (
+          <>
+            <NButton
+              size="small"
+              disabled={!capabilities.value.canRead || Boolean(pendingPublish.value)}
+              onClick={() => openEdit(row)}
+            >
+              {isNotificationGroupEditable(row.migrationState) && capabilities.value.canManage
+                ? tx('编辑', 'Edit')
+                : tx('只读查看', 'View only')}
+            </NButton>
+            {isTenantAdmin.value ? (
+              <NButton
+                size="small"
+                type="primary"
+                disabled={
+                  !row.enabled ||
+                  Boolean(
+                    !pendingPublish.value &&
+                      publishStatuses.value[row.id]?.published &&
+                      publishStatuses.value[row.id]?.effectiveGroupRevision === row.revision
+                  ) ||
+                  Boolean(publishLoading.value[row.id]) ||
+                  Boolean(pendingPublish.value && pendingPublish.value.groupId !== row.id) ||
+                  publishSaving.value
+                }
+                loading={
+                  publishLoading.value[row.id] || (publishSaving.value && pendingPublish.value?.groupId === row.id)
+                }
+                onClick={() => publishForCommunityAlerts(row)}
+              >
+                {nativePublishLabel(row)}
+              </NButton>
+            ) : null}
+            {isTenantAdmin.value && publishStatuses.value[row.id]?.published ? (
+              <NButton
+                size="small"
+                type="warning"
+                disabled={Boolean(publishLoading.value[row.id]) || Boolean(pendingPublish.value) || publishSaving.value}
+                loading={
+                  publishLoading.value[row.id] || (publishSaving.value && pendingPublish.value?.groupId === row.id)
+                }
+                onClick={() => stopCommunityAlerts(row)}
+              >
+                {tx('停用策略', 'Disable policy')}
+              </NButton>
+            ) : null}
+            {publishErrors.value[row.id] ? (
+              <div class="text-xs" role="status">
+                {publishErrors.value[row.id]}
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <div class="text-xs text-secondary" role="status">
+            {tx(
+              '此行是通知策略生成的告警入口，请在“通知策略”中维护。',
+              'This is an alert entry generated from a new notification group. Manage it under “New notification groups”.'
+            )}
+          </div>
+        )}
+      </NSpace>
+    )
+  }
+]
+
+const instanceOptions = computed(() =>
+  instances.value
+    .filter(instance => instance.enabled)
+    .map(instance => {
+      const plugin = plugins.value.find(item => item.id === instance.pluginRegistrationId)
+      return { label: `${instance.name} · ${plugin?.manifest.name || instance.channel}`, value: instance.id }
+    })
+)
+const previewText = computed(() =>
+  bindings.value
+    .map((binding, index) => {
+      const instance = instances.value.find(item => item.id === binding.instanceId)
+      const recipient =
+        binding.recipientSource.kind === 'member'
+          ? `${selectedMembers(binding)
+              .map(
+                id =>
+                  memberOptions.value.find(option => option.value === id)?.label || tx('所选成员', 'Selected member')
+              )
+              .join(
+                '、'
+              )}${binding.recipientSource.contactField === 'appDevice' ? tx('的全部有效手机', ' — all active phones') : ''}`
+          : `${binding.recipientSource.recipient.kind}:${binding.recipientSource.recipient.address || '—'}`
+      const content =
+        binding.contentBinding.kind === 'text'
+          ? binding.contentBinding.text || '—'
+          : isAppAlarmPreset(binding)
+            ? tx('告警标题 + 告警详情，点击查看对应告警', 'Alert title and details, with a link to the alert')
+            : `${binding.contentBinding.templateId || '—'} · ${binding.contentBinding.locale || '—'}`
+      return `${index + 1}. ${instance?.name || binding.instanceId || '—'} → ${recipient} → ${content}`
+    })
+    .join('\n')
+)
+
+onMounted(loadPage)
+</script>
+
+<template>
+  <NCard>
+    <div class="flex flex-wrap items-center justify-between gap-12px mb-12px">
+      <div>
+        <div class="text-lg font-600">{{ tx('通知策略', 'Notification policies') }}</div>
+        <div class="text-sm opacity-70">
+          {{
+            tx(
+              '设置通知渠道、接收成员和消息内容。保存后发布，供告警规则使用。',
+              'Choose channels, recipients and content. Save and publish the policy for alert rules.'
+            )
+          }}
+        </div>
+      </div>
+      <NButton type="primary" :disabled="!capabilities.canManage" @click="openCreate">
+        {{ tx('新建通知策略', 'Create policy') }}
+      </NButton>
+    </div>
+    <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
+    <NAlert v-if="successText" type="success" class="mb-12px">{{ successText }}</NAlert>
+    <NAlert v-if="!notificationApiConfigured" type="info" class="mb-12px">
+      {{
+        tx(
+          '通知服务暂不可用，请联系管理员；历史记录仍可查看。',
+          'The notification service is unavailable. Contact an administrator; historical records remain readable.'
+        )
+      }}
+    </NAlert>
+    <NDataTable :columns="columns" :data="rows" :loading="loading" :row-key="row => row.id" :scroll-x="880" />
+    <div class="mt-12px flex justify-end">
+      <NPagination v-model:page="currentPage" :page-size="pageSize" :item-count="total" @update:page="loadPage" />
+    </div>
+
+    <NModal
+      v-model:show="modal"
+      preset="card"
+      class="notification-policy-editor"
+      :title="
+        editorMode === 'create'
+          ? tx('新建通知策略', 'Create notification policy')
+          : editorMode === 'view'
+            ? tx('通知策略只读详情', 'Read-only group details')
+            : tx('编辑通知策略', 'Edit notification policy')
+      "
+      :style="{ width: 'min(820px, calc(100vw - 32px))' }"
+      :mask-closable="!pendingSave"
+      :close-on-esc="!pendingSave"
+      :closable="!pendingSave"
+      @after-leave="closeEditor"
+    >
+      <div class="policy-editor-scroll">
+        <NForm label-placement="top" :show-feedback="false" class="policy-form">
+          <NFormItem
+            :label="tx('策略名称', 'Policy name')"
+            :validation-status="bindingErrors.name ? 'error' : undefined"
+            :feedback="bindingErrors.name"
+          >
+            <NInput v-model:value="draftName" :disabled="formReadOnly" :input-props="groupInputProps('name')" />
+            <div
+              v-if="bindingErrors.name"
+              :id="`${groupFieldId('name')}-error`"
+              role="alert"
+              class="mt-4px text-xs text-red-600"
+            >
+              {{ bindingErrors.name }}
+            </div>
+          </NFormItem>
+          <details v-if="selectedGroup" class="mb-12px text-secondary">
+            <summary>{{ tx('配置版本详情', 'Configuration version details') }}</summary>
+            {{
+              tx(
+                `revision ${selectedGroup.revision} · version ${selectedGroup.version} · ${migrationLabel(selectedGroup.migrationState)}`,
+                `revision ${selectedGroup.revision} · version ${selectedGroup.version} · ${migrationLabel(selectedGroup.migrationState)}`
+              )
+            }}
+          </details>
+          <NAlert
+            v-if="selectedGroup && selectedGroup.migrationState === 'projection_pending'"
+            type="warning"
+            class="mb-12px"
+          >
+            {{
+              tx(
+                '这项历史策略仍在整理中，目前只能查看，不能启用。',
+                'This historical policy is still being reviewed. It can be viewed but not enabled.'
+              )
+            }}
+          </NAlert>
+          <NAlert v-if="selectedGroup?.migrationState === 'legacy_unmigrated'" type="info" class="mb-12px">
+            {{
+              tx(
+                '这项历史配置仅供查看，暂不能作为新告警的策略。',
+                'This historical configuration is read only and cannot be used for new alerts.'
+              )
+            }}
+          </NAlert>
+          <div class="policy-section-title">{{ tx('发送设置', 'Delivery settings') }}</div>
+          <NAlert v-if="bindingErrors.bindings" type="error" class="mb-12px">{{ bindingErrors.bindings }}</NAlert>
+          <NCard
+            v-for="(binding, index) in bindings"
+            :key="binding.bindingId"
+            size="small"
+            class="mb-12px delivery-card"
+          >
+            <div class="flex flex-wrap items-center justify-between gap-8px mb-8px">
+              <div class="font-600">
+                {{ tx(`发送项 ${index + 1}`, `Delivery item ${index + 1}`) }}
+              </div>
+              <NButton size="small" quaternary :disabled="formReadOnly" @click="removeBinding(binding.bindingId)">
+                {{ tx('移除', 'Remove') }}
+              </NButton>
+            </div>
+            <NFormItem :label="tx('通知渠道', 'Notification channel')">
+              <NSelect
+                v-model:value="binding.instanceId"
+                :options="instanceOptions"
+                :disabled="formReadOnly"
+                :aria-label="tx('通知渠道', 'Notification channel')"
+                :aria-invalid="bindingErrorFields[binding.bindingId] === 'instance' ? 'true' : undefined"
+                :aria-describedby="
+                  bindingErrors[binding.bindingId]
+                    ? `${groupFieldId(bindingErrorFields[binding.bindingId], binding.bindingId)}-error`
+                    : undefined
+                "
+                :input-props="groupFieldAriaProps('instance', binding.bindingId)"
+                filterable
+                @update:value="changeInstance(binding)"
+              />
+            </NFormItem>
+            <div v-if="binding.instanceId" class="delivery-fields">
+              <NButton
+                v-if="isAppInstance(binding) && !isAppAlarmPreset(binding)"
+                class="mb-12px"
+                :disabled="formReadOnly"
+                @click="useAppAlarm(binding)"
+              >
+                {{
+                  tx(
+                    '使用设备告警通知（选择成员，自动发送到全部有效手机）',
+                    'Use device alarm notification for all active phones'
+                  )
+                }}
+              </NButton>
+              <NFormItem
+                v-if="!isAppAlarmPreset(binding) || advancedBindings[binding.bindingId]"
+                :label="tx('接收对象', 'Recipient source')"
+              >
+                <NSelect
+                  :value="binding.recipientSource.kind"
+                  :options="recipientSourceOptions(binding)"
+                  :disabled="formReadOnly"
+                  :aria-label="tx('接收对象', 'Recipient source')"
+                  :aria-invalid="bindingErrorFields[binding.bindingId] === 'recipient-source' ? 'true' : undefined"
+                  :aria-describedby="
+                    bindingErrorFields[binding.bindingId] === 'recipient-source'
+                      ? `${groupFieldId('recipient-source', binding.bindingId)}-error`
+                      : undefined
+                  "
+                  :input-props="groupFieldAriaProps('recipient-source', binding.bindingId)"
+                  filterable
+                  @update:value="value => updateRecipientKind(binding, value as 'literal' | 'member')"
+                />
+              </NFormItem>
+              <template v-if="binding.recipientSource.kind === 'literal'">
+                <NFormItem :label="tx('接收地址类型', 'Recipient kind')">
+                  <NSelect
+                    v-model:value="binding.recipientSource.recipient.kind"
+                    :options="[
+                      { label: 'Email', value: 'email' },
+                      { label: tx('手机号', 'Phone'), value: 'phone' },
+                      { label: 'chat_id', value: 'chat_id' },
+                      { label: 'user_id', value: 'user_id' },
+                      { label: 'Webhook', value: 'webhook' }
+                    ]"
+                    :disabled="formReadOnly"
+                    :aria-label="tx('接收地址类型', 'Recipient kind')"
+                    :aria-invalid="bindingErrorFields[binding.bindingId] === 'recipient-kind' ? 'true' : undefined"
+                    :aria-describedby="
+                      bindingErrorFields[binding.bindingId] === 'recipient-kind'
+                        ? `${groupFieldId('recipient-kind', binding.bindingId)}-error`
+                        : undefined
+                    "
+                    :input-props="groupFieldAriaProps('recipient-kind', binding.bindingId)"
+                    filterable
+                  />
+                </NFormItem>
+                <NFormItem :label="tx('接收地址', 'Recipient address')">
+                  <NInput
+                    v-model:value="binding.recipientSource.recipient.address"
+                    :disabled="formReadOnly"
+                    :input-props="groupInputProps('recipient-address', binding.bindingId)"
+                  />
+                </NFormItem>
+              </template>
+              <template v-else>
+                <NAlert v-if="isUnsupportedMemberTarget(binding)" type="warning" class="mb-12px">
+                  {{
+                    tx(
+                      '站内通知尚未接入。请使用服务支持的直接接收目标；不能把应用用户编号当作服务商接收地址。',
+                      'In-app notifications are not integrated yet. Use direct recipients supported by the service; application user IDs are not provider recipient addresses.'
+                    )
+                  }}
+                </NAlert>
+                <NFormItem :label="tx('接收成员（可多选）', 'Members (multiple)')">
+                  <NAlert v-if="memberError" type="error" class="mb-8px">{{ memberError }}</NAlert>
+                  <NButton v-if="memberError" size="small" :disabled="memberLoading" @click="searchMembers()">
+                    {{ tx('重试读取成员', 'Retry member lookup') }}
+                  </NButton>
+                  <NSelect
+                    :id="groupFieldId('member', binding.bindingId)"
+                    :value="selectedMembers(binding)"
+                    multiple
+                    :options="memberOptions"
+                    :loading="memberLoading"
+                    :disabled="formReadOnly"
+                    filterable
+                    remote
+                    clearable
+                    :aria-label="tx('成员', 'Member')"
+                    :aria-invalid="bindingErrorFields[binding.bindingId] === 'member' ? 'true' : undefined"
+                    :aria-describedby="
+                      bindingErrorFields[binding.bindingId] === 'member'
+                        ? `${groupFieldId('member', binding.bindingId)}-error`
+                        : undefined
+                    "
+                    :input-props="groupFieldAriaProps('member', binding.bindingId)"
+                    @update:value="value => updateMembers(binding, value)"
+                    @search="searchMembers"
+                    @focus="searchMembers()"
+                  />
+                </NFormItem>
+                <NFormItem
+                  v-if="!isAppAlarmPreset(binding) || advancedBindings[binding.bindingId]"
+                  :label="tx('联系字段', 'Contact field')"
+                >
+                  <NSelect
+                    v-model:value="binding.recipientSource.contactField"
+                    :options="[
+                      { label: 'Email', value: 'email' },
+                      { label: tx('手机号', 'Phone'), value: 'phone' },
+                      ...(isAppInstance(binding)
+                        ? [{ label: tx('App 全部有效手机', 'All active App devices'), value: 'appDevice' }]
+                        : [])
+                    ]"
+                    :disabled="formReadOnly"
+                    :aria-label="tx('联系字段', 'Contact field')"
+                    :aria-invalid="bindingErrorFields[binding.bindingId] === 'contact-field' ? 'true' : undefined"
+                    :aria-describedby="
+                      bindingErrorFields[binding.bindingId] === 'contact-field'
+                        ? `${groupFieldId('contact-field', binding.bindingId)}-error`
+                        : undefined
+                    "
+                    :input-props="groupFieldAriaProps('contact-field', binding.bindingId)"
+                    filterable
+                  />
+                </NFormItem>
+              </template>
+              <div v-if="isAppAlarmPreset(binding)" class="mb-16px rounded border border-solid border-gray-200 p-12px">
+                <div class="font-600">{{ tx('设备告警内容', 'Device alarm content') }}</div>
+                <div class="mt-4px text-secondary">
+                  {{
+                    tx(
+                      '自动填入告警标题和详情，通知所选账号下的全部有效手机。',
+                      'Uses the alert title and details. Sends to all active phones for the selected account.'
+                    )
+                  }}
+                </div>
+                <NButton
+                  text
+                  class="mt-8px"
+                  @click="advancedBindings[binding.bindingId] = !advancedBindings[binding.bindingId]"
+                >
+                  {{
+                    advancedBindings[binding.bindingId]
+                      ? tx('收起高级设置', 'Hide advanced settings')
+                      : tx('高级设置', 'Advanced settings')
+                  }}
+                </NButton>
+              </div>
+              <div v-if="!isAppAlarmPreset(binding) || advancedBindings[binding.bindingId]">
+                <NFormItem :label="tx('内容模式', 'Content mode')">
+                  <NSelect
+                    :value="binding.contentBinding.kind"
+                    :options="[
+                      { label: tx('文本', 'Text'), value: 'text' },
+                      { label: tx('供应商模板', 'Provider template'), value: 'template' }
+                    ]"
+                    :disabled="formReadOnly"
+                    :aria-label="tx('内容模式', 'Content mode')"
+                    :aria-invalid="bindingErrorFields[binding.bindingId] === 'content-mode' ? 'true' : undefined"
+                    :aria-describedby="
+                      bindingErrorFields[binding.bindingId] === 'content-mode'
+                        ? `${groupFieldId('content-mode', binding.bindingId)}-error`
+                        : undefined
+                    "
+                    :input-props="groupFieldAriaProps('content-mode', binding.bindingId)"
+                    filterable
+                    @update:value="value => updateContentKind(binding, value as 'text' | 'template')"
+                  />
+                </NFormItem>
+                <template v-if="binding.contentBinding.kind === 'text'">
+                  <NFormItem :label="tx('标题', 'Title')">
+                    <NInput
+                      v-model:value="binding.contentBinding.title"
+                      :disabled="formReadOnly"
+                      :input-props="groupInputProps('title', binding.bindingId)"
+                    />
+                  </NFormItem>
+                  <NFormItem :label="tx('文本', 'Text')">
+                    <NInput
+                      v-model:value="binding.contentBinding.text"
+                      type="textarea"
+                      :autosize="{ minRows: 3, maxRows: 8 }"
+                      :disabled="formReadOnly"
+                      :input-props="groupInputProps('text', binding.bindingId)"
+                    />
+                  </NFormItem>
+                </template>
+                <template v-else>
+                  <NFormItem :label="tx('模板 ID', 'Template ID')">
+                    <NInput
+                      v-model:value="binding.contentBinding.templateId"
+                      :disabled="formReadOnly"
+                      :input-props="groupInputProps('template-id', binding.bindingId)"
+                    />
+                  </NFormItem>
+                  <NFormItem :label="tx('语言', 'Locale')">
+                    <NInput
+                      v-model:value="binding.contentBinding.locale"
+                      :disabled="formReadOnly"
+                      :input-props="groupInputProps('locale', binding.bindingId)"
+                    />
+                  </NFormItem>
+                  <NFormItem :label="tx('参数映射 JSON', 'Parameter mapping JSON')">
+                    <NInput
+                      v-model:value="templateMappings[binding.bindingId]"
+                      type="textarea"
+                      :autosize="{ minRows: 2, maxRows: 6 }"
+                      :disabled="formReadOnly"
+                      :input-props="groupInputProps('params', binding.bindingId)"
+                    />
+                  </NFormItem>
+                </template>
+              </div>
+            </div>
+            <div v-else class="empty-channel-hint">
+              {{
+                tx(
+                  '先选择通知渠道，再设置接收人和消息内容。',
+                  'Choose a channel to configure recipients and message content.'
+                )
+              }}
+            </div>
+            <NAlert
+              v-if="bindingErrors[binding.bindingId]"
+              :id="`${groupFieldId(bindingErrorFields[binding.bindingId], binding.bindingId)}-error`"
+              type="error"
+              role="alert"
+            >
+              {{ bindingErrors[binding.bindingId] }}
+            </NAlert>
+          </NCard>
+          <NButton dashed :disabled="formReadOnly" @click="addBinding">
+            {{ tx('添加发送项', 'Add binding') }}
+          </NButton>
+          <details v-if="bindings.some(binding => binding.instanceId)" class="policy-preview">
+            <summary>{{ tx('查看发送预览', 'Preview delivery') }}</summary>
+            <pre class="whitespace-pre-wrap break-words text-sm leading-relaxed">{{ previewText || '—' }}</pre>
+          </details>
+          <NAlert v-if="errorText" type="error" class="mt-12px">{{ errorText }}</NAlert>
+          <NButton v-if="versionConflict" class="mt-12px" @click="reloadConflictedGroup">
+            {{ tx('刷新此组后重新确认', 'Refresh this group and review again') }}
+          </NButton>
+        </NForm>
+      </div>
+      <template #footer>
+        <div class="flex justify-end gap-8px mt-16px">
+          <NButton :disabled="Boolean(pendingSave)" @click="closeEditor">
+            {{ editorMode === 'view' ? tx('关闭', 'Close') : tx('取消', 'Cancel') }}
+          </NButton>
+          <NButton
+            v-if="editorMode !== 'view'"
+            :disabled="!capabilities.canManage"
+            :loading="saving && !publishAfterSave"
+            @click="saveDraft"
+          >
+            {{ pendingSave ? tx('使用同一请求重试', 'Retry same request') : tx('仅保存配置', 'Save group') }}
+          </NButton>
+          <NButton
+            v-if="editorMode !== 'view' && isTenantAdmin"
+            type="primary"
+            :disabled="!capabilities.canManage || Boolean(pendingSave) || Boolean(pendingPublish)"
+            :loading="saving && publishAfterSave"
+            @click="saveAndPublish"
+          >
+            {{ tx('保存并生效', 'Save and publish') }}
+          </NButton>
+        </div>
+      </template>
+    </NModal>
+  </NCard>
+</template>
+
+<style scoped>
+.policy-editor-scroll {
+  max-height: min(65vh, 650px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+.policy-form :deep(.n-form-item) {
+  margin-bottom: 16px;
+}
+.policy-form :deep(.n-form-item-label) {
+  padding-bottom: 6px;
+}
+.policy-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 8px 0 12px;
+}
+.delivery-card {
+  border-radius: 8px;
+}
+.delivery-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+.delivery-fields > div:not(.n-form-item),
+.delivery-fields > button {
+  grid-column: 1 / -1;
+}
+.empty-channel-hint {
+  color: var(--n-text-color);
+  opacity: 0.6;
+  padding: 0 0 8px;
+  font-size: 13px;
+}
+.policy-preview {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 6px;
+  background: rgba(128, 128, 128, 0.06);
+}
+.policy-preview summary {
+  cursor: pointer;
+  font-size: 13px;
+}
+@media (max-width: 640px) {
+  .delivery-fields {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

@@ -1,6 +1,6 @@
 <script setup lang="tsx">
-import { ref } from 'vue'
-import { NButton, NPopconfirm } from 'naive-ui'
+import { computed, ref } from 'vue'
+import { NAlert, NButton, NPopconfirm } from 'naive-ui'
 import dayjs from 'dayjs'
 import { $t } from '@/locales'
 import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue'
@@ -11,11 +11,21 @@ import {
   getAttributeDataSet,
   getAttributeDataSetLogs
 } from '@/service/api'
+import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
 import { isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
+import { resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
+import { formatNativeAttributeValue } from '@/views/device/native-device-model-contract'
+import { useNativeDeviceMetadata } from '@/views/device/use-native-device-metadata'
 const props = defineProps<{
   id: string
+  deviceData?: { device_config?: DeviceConfigNativeBinding | null }
 }>()
 const attributeRef = ref()
+const { isNativeBound, nativeMetadataFailed, decorateRows } = useNativeDeviceMetadata(
+  computed(() => props.deviceData?.device_config),
+  'attribute',
+  resolveDeviceNativeModel
+)
 const columns0 = [
   {
     title: $t('device_template.table_header.attributeIdentifier'),
@@ -31,7 +41,10 @@ const columns0 = [
     title: $t('device_template.table_header.attributeValue'),
     minWidth: '140px',
     key: 'value',
-    render: row => `${row.value}${row.unit !== null ? row.unit : ''}`
+    render: row =>
+      row.nativeMetadataSource === 'native'
+        ? formatNativeAttributeValue(row)
+        : `${row.value}${row.unit !== null ? row.unit : ''}`
   },
   {
     title: $t('device_template.table_header.updateTime'),
@@ -43,23 +56,26 @@ const columns0 = [
     title: $t('common.actions'),
     key: 'created_at',
     minWidth: '140px',
-    render: row => (
-      <NPopconfirm
-        onPositiveClick={async () => {
-          await deleteAttributeDataSet(row.id)
-          attributeRef.value.refresh()
-        }}
-      >
-        {{
-          trigger: () => (
-            <NButton text size="small" disabled={isDeviceDetailDemo(props.id)}>
-              {$t('common.delete')}
-            </NButton>
-          ),
-          default: () => $t('common.confirmDelete')
-        }}
-      </NPopconfirm>
-    )
+    render: row => {
+      if (isNativeBound.value) return null
+      return (
+        <NPopconfirm
+          onPositiveClick={async () => {
+            await deleteAttributeDataSet(row.id)
+            attributeRef.value.refresh()
+          }}
+        >
+          {{
+            trigger: () => (
+              <NButton text size="small" disabled={isDeviceDetailDemo(props.id)}>
+                {$t('common.delete')}
+              </NButton>
+            ),
+            default: () => $t('common.confirmDelete')
+          }}
+        </NPopconfirm>
+      )
+    }
   }
 ]
 
@@ -129,16 +145,20 @@ const columns = [
 
 <template>
   <div>
+    <NAlert v-if="nativeMetadataFailed" type="warning" :show-icon="true" class="mb-12px">
+      {{ $t('custom.devicePage.nativeMetadataLoadFailed') }}
+    </NAlert>
     <DistributionAndTable
       :id="id as string"
       ref="attributeRef"
       :no-refresh="true"
       :table-columns="columns0"
       :fetch-data-api="getAttributeDataSet"
+      :decorate-rows="decorateRows"
     />
   </div>
 
-  <div>
+  <div v-if="!isNativeBound">
     <DistributionAndTable
       :id="id as string"
       :button-name="$t('generate.issue-attribute')"

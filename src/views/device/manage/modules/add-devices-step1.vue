@@ -3,7 +3,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { FormInst } from 'naive-ui'
 import { useDialog, useMessage } from 'naive-ui'
 import { deviceAdd } from '@/service/api/device'
-import { getMarketTemplates, installFromMarket } from '@/service/api/market'
+import { getMarketTemplates, getMarketTemplateDetail, installFromMarket } from '@/service/api/market'
+import { marketTemplateCompatibility } from '../../config/market-template-compatibility'
 import { $t } from '@/locales'
 import MarketLoginModal from '../../config/modules/market-login-modal.vue'
 import { useMarketAuth } from '../../config/composables/use-market-auth'
@@ -149,6 +150,13 @@ const doInstallPendingTemplate = async () => {
 
   installLoading.value = true
   try {
+    const detailRes: any = await getMarketTemplateDetail(option.id)
+    const compatibility = detailRes.error ? 'unavailable' : marketTemplateCompatibility(detailRes.data, option.version)
+    if (compatibility !== 'native') {
+      throw new Error(
+        $t(compatibility === 'legacy' ? 'market.compatibility.legacy' : 'market.compatibility.unavailable')
+      )
+    }
     const res: any = await installFromMarket({
       market_template_id: option.id,
       version: option.version,

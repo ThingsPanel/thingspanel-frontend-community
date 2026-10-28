@@ -7,33 +7,30 @@ import { Activity } from '@vicons/tabler'
 import { DocumentOnePage24Regular } from '@vicons/fluent'
 import { useWebSocket } from '@vueuse/core'
 import { MovingNumbers } from 'moving-numbers-vue3'
-import moment from 'moment'
 import {
-  expectMessageAdd,
   getSimulationInit,
   getTelemetryLogList,
   sendSimulationData,
   telemetryDataCurrent,
-  telemetryDataDel,
-  telemetryDataPub
+  telemetryDataDel
 } from '@/service/api'
 import { localStg } from '@/utils/storage'
 import { $t } from '@/locales'
 import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool'
-import { deviceCustomControlList } from '@/service/api/system-data'
 import { demoTelemetry, demoTelemetryLogs, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
+import { deviceBindingRequiresNativeModel, resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
+import { decorateNativeTelemetryRows } from '@/views/device/native-device-model-contract'
+import { getReadingDisplayValue } from '@/utils/device-readings'
 import HistoryData from './modules/history-data.vue'
 import TimeSeriesData from './modules/time-series-data.vue'
 import { useLoading } from '~/packages/hooks'
 const props = defineProps<{
   id: string
-  deviceTemplateId: string
   deviceData?: Record<string, any>
 }>()
 
 let wsUrl = getWebsocketServerUrl()
 wsUrl += '/telemetry/datas/current/ws'
-const showDialog = ref(false)
 const showLogDialog = ref(false)
 const showHistory = ref(false)
 const telemetryId = ref()
@@ -42,11 +39,6 @@ const telemetryName = ref()
 const telemetryUnit = ref()
 const modelType = ref<string>('')
 
-const formValue = ref('')
-const form = reactive({
-  expected: false,
-  time: null
-})
 const operationType = ref('')
 const sendResult = ref('')
 const tableData = ref([])
@@ -71,6 +63,9 @@ const tableThemeOverrides = {
 const telemetryLogRowKey = (row: any) => `${row.created_at}-${row.data}-${row.username ?? ''}`
 
 const telemetryData = ref<DeviceManagement.telemetryData[]>([])
+const nativeTelemetryFields = ref(new Map<string, any>())
+const nativeMetadataError = ref('')
+let nativeMetadataRequestId = 0
 const initTelemetryData = ref<any>()
 const numberAnimationInstRef = ref<NumberAnimationInst[] | []>([])
 const nowTime = ref<any>()
@@ -154,7 +149,7 @@ const { status, send, close } = useWebSocket(wsUrl, {
           })
         }
       }
-      telemetryData.value = [...newData, ...newTelemetry]
+      telemetryData.value = decorateTelemetry([...newData, ...newTelemetry])
     }
   }
 })
@@ -223,12 +218,6 @@ const requestSimulationInit = async () => {
   }
 }
 
-const openDialog = () => {
-  showDialog.value = true
-  formValue.value = ''
-  form.expected = false
-  form.time = null
-}
 const openUpLog = () => {
   showError.value = false
   showLogDialog.value = true
@@ -302,7 +291,7 @@ const fetchData = async () => {
 const fetchTelemetry = async () => {
   const { data, error } = await telemetryDataCurrent(props.id)
   if (!error && data) {
-    telemetryData.value = data.length > 0 || !isDeviceDetailDemo(props.id) ? data : demoTelemetry()
+    telemetryData.value = decorateTelemetry(data.length > 0 || !isDeviceDetailDemo(props.id) ? data : demoTelemetry())
     initTelemetryData.value = telemetryData.value[0] || {} // 存储一份模板
     initTelemetryData.value.device_id = props.id
     const dataw = {
@@ -346,39 +335,6 @@ const handleSelect = (key, item) => {
     handleDeleteTable()
   }
 }
-const copy = event => {
-  const input = event.target
-  input.select()
-  document.execCommand('copy')
-  window.$message?.success($t('theme.configOperation.copySuccess'))
-}
-const handlePositiveClick = async () => {
-  if (isJSON(formValue.value)) {
-    let res: any = {}
-    if (form.expected) {
-      // 新增期望消息
-      const expiry = new Date().getTime() + (form.time ? form.time * 60 * 60 * 1000 : 0)
-      res = await expectMessageAdd({
-        device_id: props.id,
-        payload: formValue.value,
-        send_type: 'telemetry',
-        expiry: moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ')
-      })
-    } else {
-      // 发送属性的逻辑...
-      res = await telemetryDataPub({
-        device_id: props.id,
-        value: formValue.value
-      })
-    }
-    if (res && !res.error) {
-      showDialog.value = false
-      fetchData()
-      fetchTelemetry()
-    }
-  }
-}
-
 const onTapTableTools = (i: any) => {
   if (typeof i.value === 'number' && !isEnumTelemetry(i)) {
     modelType.value = $t('custom.device_details.sequential')
@@ -393,23 +349,7 @@ const onTapTableTools = (i: any) => {
 const isEnumTelemetry = (item: DeviceManagement.telemetryData) =>
   item.data_type?.toLowerCase() === 'enum' && Array.isArray(item.enum)
 
-const isEnumValueMatched = (enumItem: DeviceManagement.telemetryEnumItem, value: unknown) => {
-  switch (enumItem.value_type?.toLowerCase()) {
-    case 'number':
-      return Number(enumItem.value) === Number(value)
-    case 'boolean':
-      return String(enumItem.value).toLowerCase() === String(value).toLowerCase()
-    default:
-      return String(enumItem.value) === String(value)
-  }
-}
-
-const getTelemetryDisplayValue = (item: DeviceManagement.telemetryData) => {
-  if (!isEnumTelemetry(item)) return item.value
-
-  const matchedItem = item.enum?.find(enumItem => isEnumValueMatched(enumItem, item.value))
-  return matchedItem?.description || item.value
-}
+const getTelemetryDisplayValue = getReadingDisplayValue
 
 const isTextTelemetry = (item: DeviceManagement.telemetryData) =>
   isEnumTelemetry(item) || typeof item.value !== 'number'
@@ -421,27 +361,36 @@ const isColor = (i: any) => {
   return ''
 }
 
-const controlList = ref<any[]>([])
-const getControlList = () => {
-  if (props.deviceTemplateId) {
-    const queryjson = {
-      device_template_id: props.deviceTemplateId,
-      page: 1,
-      page_size: 100,
-      enable_status: 'enable'
-    }
-    deviceCustomControlList(queryjson).then(({ data }) => {
-      controlList.value = data.list || []
-    })
+function decorateTelemetry(rows: DeviceManagement.telemetryData[]) {
+  if (!deviceBindingRequiresNativeModel(props.deviceData?.device_config)) return rows
+  return decorateNativeTelemetryRows(rows, [...nativeTelemetryFields.value.values()])
+}
+
+async function loadNativeTelemetryMetadata() {
+  const requestId = ++nativeMetadataRequestId
+  try {
+    const resolved = await resolveDeviceNativeModel(props.deviceData?.device_config)
+    if (requestId !== nativeMetadataRequestId) return
+    nativeMetadataError.value = !resolved && deviceBindingRequiresNativeModel(props.deviceData?.device_config)
+      ? '此设备模板尚未绑定固定版本的原生物模型，展示原始遥测标识。'
+      : ''
+    nativeTelemetryFields.value = new Map(
+      (resolved?.platformFields || []).filter(field => field.dataType === 'telemetry').map(field => [field.id, field])
+    )
+    telemetryData.value = decorateTelemetry(telemetryData.value)
+  } catch (error) {
+    if (requestId !== nativeMetadataRequestId) return
+    nativeTelemetryFields.value = new Map()
+    nativeMetadataError.value = error instanceof Error ? error.message : '读取设备绑定的物模型失败'
+    telemetryData.value = decorateTelemetry(telemetryData.value)
+    console.error('[DeviceTelemetry] 加载绑定物模型字段失败:', error)
   }
 }
 
 watch(
-  () => props.deviceTemplateId,
-  val => {
-    if (!val) return
-    getControlList()
-  }
+  [() => props.id, () => props.deviceData?.device_config],
+  () => void loadNativeTelemetryMetadata(),
+  { immediate: true, deep: true }
 )
 
 // 监听 Topic 变化，自动切换对应格式的数据
@@ -459,7 +408,6 @@ watch(
 onMounted(() => {
   fetchData()
   fetchTelemetry()
-  getControlList()
 })
 
 onUnmounted(() => {
@@ -468,54 +416,24 @@ onUnmounted(() => {
   }
 })
 
-const onControlChange = async (row: any) => {
-  await telemetryDataPub({
-    device_id: props.id,
-    value: row.content
-  })
-  fetchData()
-}
-
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance()
   return proxy.getPlatform()
 })
 
-const validationJson = computed(() => {
-  if (formValue.value && !isJSON(formValue.value)) {
-    return 'error'
-  }
-  return undefined
-})
-const inputFeedback = computed(() => {
-  if (formValue.value && !isJSON(formValue.value)) {
-    return $t('generate.inputRightJson')
-  }
-  return ''
-})
 </script>
 
 <template>
   <n-card class="w-full">
+    <n-alert v-if="nativeMetadataError" type="error" :show-icon="false" class="mb-4">
+      {{ nativeMetadataError }}
+    </n-alert>
     <!-- 第一行 -->
-    <NFlex justify="space-between">
-      <n-button type="primary" class="mb-4" @click="openDialog">{{ $t('generate.issue-control') }}</n-button>
-
+    <NFlex justify="end">
       <n-button v-if="showLog" type="primary" class="mb-4" @click="openUpLog">
         {{ $t('generate.simulate-report-data') }}
       </n-button>
     </NFlex>
-
-    <!-- 自定义控制 -->
-    <NGrid x-gap="20" y-gap="20" cols="1 s:2 m:3 l:4" responsive="screen" class="mb-4">
-      <NGridItem v-for="item in controlList" :key="item.id">
-        <NCard hoverable>
-          <div class="title cursor-pointer ellipsis-text text-16px font-600" @click="onControlChange(item)">
-            {{ item.name }}
-          </div>
-        </NCard>
-      </NGridItem>
-    </NGrid>
 
     <!-- 第二行 -->
     <n-card class="mb-4">
@@ -751,50 +669,6 @@ const inputFeedback = computed(() => {
               {{ erroMessage }}
             </span>
           </div>
-        </n-form>
-      </n-card>
-    </n-modal>
-    <n-modal v-model:show="showDialog" :class="getPlatform ? 'w-90%' : 'w-40%'">
-      <n-card :title="$t('generate.distributeControlToDevice')">
-        <n-form label-placement="left">
-          <div class="flex">
-            <n-form-item>
-              <template #label>
-                <div class="flex-ai-c flex">
-                  {{ $t('generate.expectedMessage') }}
-                  <n-popover trigger="click">
-                    <template #trigger>
-                      <SvgIcon icon="mdi:help-circle-outline" class="text-20px" />
-                    </template>
-                    <span>{{ $t('generate.expectedMessageTip') }}</span>
-                  </n-popover>
-                </div>
-              </template>
-
-              <n-switch v-model:value="form.expected" />
-            </n-form-item>
-            <n-form-item v-if="form.expected" :label="$t('generate.expirationTime')" class="ml-20px">
-              <div class="flex-ai-c flex">
-                <n-input-number v-model:value="form.time" :show-button="false" class="w-80px" />
-                <div class="fs-0">{{ $t('generate.hour') }}</div>
-              </div>
-            </n-form-item>
-          </div>
-          <n-form-item label="" :validation-status="validationJson" :feedback="inputFeedback">
-            <n-input v-model:value="formValue" type="textarea" />
-          </n-form-item>
-          <n-space align="end">
-            <n-button @click="showDialog = false">{{ $t('generate.cancel') }}</n-button>
-
-            <n-popconfirm @positive-click="handlePositiveClick">
-              <template #trigger>
-                <n-button type="primary" :disabled="!formValue || validationJson === 'error'">
-                  {{ $t('generate.send') }}
-                </n-button>
-              </template>
-              {{ $t('common.confirmSend') }}
-            </n-popconfirm>
-          </n-space>
         </n-form>
       </n-card>
     </n-modal>
