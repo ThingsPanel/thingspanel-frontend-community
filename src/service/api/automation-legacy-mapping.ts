@@ -311,7 +311,7 @@ export function sceneFormToDefinition(form: SceneForm): MappingResult<RuleDefini
       mode: 'single',
       scope: 'rule',
       ...(text(form.description) ? { description: text(form.description) } : {}),
-      trigger: { groups: [], for: '' },
+      trigger: { groups: [], for: '0s' },
       freshness: { ...FRESHNESS },
       targets: uniqueConfigs.length > 0 ? { device_config_ids: uniqueConfigs } : { device_ids: uniqueDevices },
       steps
@@ -688,7 +688,7 @@ export function linkageFormToDefinition(form: LinkageForm): MappingResult<RuleDe
       mode: 'single',
       scope,
       ...(text(form.description) ? { description: text(form.description) } : {}),
-      trigger: { groups, for: '' },
+      trigger: { groups, for: '0s' },
       freshness: { ...FRESHNESS },
       targets,
       steps: actionPart.steps

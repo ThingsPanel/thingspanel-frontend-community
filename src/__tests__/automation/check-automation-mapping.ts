@@ -58,6 +58,22 @@ function condition(overrides: Partial<Record<string, unknown>> = {}) {
 // 场景
 // ---------------------------------------------------------------------------
 
+check('场景：无等待必须发送合法的零时长，不能发送空字符串', () => {
+  const { value, issues } = sceneFormToDefinition({ name: '零等待', actions: [deviceAction('dev-a', 'switch', '1')] })
+  assert.deepEqual(issues, [])
+  assert.equal(JSON.parse(JSON.stringify(value)).trigger.for, '0s')
+})
+
+check('联动：无等待必须发送合法的零时长，不能发送空字符串', () => {
+  const { value, issues } = linkageFormToDefinition({
+    name: '零等待',
+    trigger_condition_groups: [[condition()]],
+    actions: [deviceAction('dev-a', 'switch', '1')]
+  })
+  assert.deepEqual(issues, [])
+  assert.equal(JSON.parse(JSON.stringify(value)).trigger.for, '0s')
+})
+
 check('场景：单台设备的动作，目标集就是那台设备', () => {
   const form: SceneForm = { name: '开灯', actions: [deviceAction('dev-1', 'switch', '1')] }
   const { value, issues } = sceneFormToDefinition(form)

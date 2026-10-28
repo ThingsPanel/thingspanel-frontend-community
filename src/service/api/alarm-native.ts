@@ -76,7 +76,7 @@ function buildPolicyDefinition(input: {
     kind: 'alarm_policy',
     mode: 'single',
     scope: 'device',
-    trigger: { groups: [], for: '' },
+    trigger: { groups: [], for: '0s' },
     freshness: { max_age: '10m', max_gap: '10m' },
     targets: {},
     steps: [],

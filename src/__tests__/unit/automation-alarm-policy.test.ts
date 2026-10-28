@@ -30,6 +30,7 @@ describe('alarm notification selection', () => {
     await addWarningMessage({ name: 'Alarm', alarm_level: 'H', notification_group_id: '' })
     const definition = createRule.mock.calls[0][0].definition
     expect(definition.alarm.notify_use_default).toBe(true)
+    expect(definition.trigger.for).toBe('0s')
     expect(definition.steps).toEqual([]) // Alarm transitions own delivery, not run steps.
   })
 
