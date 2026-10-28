@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { NButton, NCard, NFlex, useDialog, useMessage } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
 import { deviceGroupTree } from '@/service/api'
-import { warningMessageList } from '@/service/api/alarm'
+import { warningMessageList } from '@/service/api/alarm-api'
 import PopUp from '@/views/alarm/warning-message/components/pop-up.vue'
 import {
   deviceConfigAll,
@@ -15,7 +15,7 @@ import {
   sceneEdit,
   sceneGet,
   sceneInfo
-} from '@/service/api/automation'
+} from '@/service/api/automation-api'
 // import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales'
 import { useTabStore } from '@/store/modules/tab'
@@ -163,8 +163,10 @@ const deviceGroupOptions = ref([] as any)
 const getGroup = async () => {
   deviceGroupOptions.value = []
   const res = await deviceGroupTree({})
+  // 新装环境没有分组时接口返回 data:null，这里不兜住会整页抛异常，
+  // 「添加执行动作」就再也点不开了。
   // eslint-disable-next-line array-callback-return
-  res.data.map((item: any) => {
+  ;(res.data || []).map((item: any) => {
     deviceGroupOptions.value.push(item.group)
   })
 }
@@ -182,7 +184,7 @@ const getDevice = async (groupId: any, name: any) => {
   queryDevice.value.group_id = groupId || null
   queryDevice.value.device_name = name || null
   const res = await deviceListAll(queryDevice.value)
-  deviceOptions.value = res.data
+  deviceOptions.value = res.data || []
 }
 
 const queryDeviceName = ref([] as any)
@@ -275,7 +277,8 @@ const placeholderMap = {
   command: '{"param1":1}',
   c_telemetry: '{"switch":1,"switch1":0}',
   c_attribute: '{"addr":1,"port":0}',
-  c_command: '{"method":"switch1","params":{"false":0}}'
+  c_command: '{"method":"switch1","params":{"false":0}}',
+  event: '{"identify":"alarm","params":{}}'
 }
 // 选择设备属性类型
 const actionParamTypeChange = (instructItem: any, data: any) => {
@@ -499,7 +502,7 @@ const submitData = async () => {
 }
 
 const getSceneInfo = async () => {
-  const res = await sceneInfo(configId.value)
+  const res = await sceneInfo(String(configId.value))
   configForm.value = { ...configForm.value, ...res.data.info }
   configForm.value.actions = res.data.actions
   dataEcho(configForm.value.actions)
@@ -771,7 +774,9 @@ onMounted(() => {
                         <NInput
                           v-if="instructItem.actionParamData.data_type === 'string'"
                           v-model:value="instructItem.actionValue"
-                          :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                          :placeholder="
+                            instructItem.placeholder ? $t('common.as') + '：' + instructItem.placeholder : ''
+                          "
                           class="w-full"
                           @blur="actionValueChange(instructItem)"
                         />
@@ -779,7 +784,9 @@ onMounted(() => {
                           v-if="instructItem.actionParamData.data_type === 'number'"
                           v-model:value="instructItem.actionValue"
                           class="w-full"
-                          :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                          :placeholder="
+                            instructItem.placeholder ? $t('common.as') + '：' + instructItem.placeholder : ''
+                          "
                           :show-button="false"
                         />
                         <n-radio-group
@@ -805,7 +812,9 @@ onMounted(() => {
                       >
                         <NInput
                           v-model:value="instructItem.actionValue"
-                          :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                          :placeholder="
+                            instructItem.placeholder ? $t('common.as') + '：' + instructItem.placeholder : ''
+                          "
                           class="w-full"
                           @blur="actionValueChange(instructItem)"
                         />
@@ -903,7 +912,7 @@ onMounted(() => {
         <NButton type="primary" @click="submitData">{{ $t('generate.save-scene-configuration') }}</NButton>
       </NFlex>
     </NCard>
-    <PopUp v-model:visible="popUpVisible" type="add" @new-edit="newEdit" />
+    <PopUp v-model:visible="popUpVisible" type="add" :edit-data="null" @new-edit="newEdit" />
   </div>
 </template>
 

@@ -71,6 +71,17 @@ declare namespace Env {
     readonly VITE_AUTO_LOGIN_USERNAME?: string
     /** Auto login password for development environment */
     readonly VITE_AUTO_LOGIN_PASSWORD?: string
+    /**
+     * Development-only proxy target of the automation engine (an Encore service).
+     * When set, `/automation-core/*` is forwarded to it with the prefix stripped.
+     */
+    readonly VITE_AUTOMATION_DEV_PROXY_TARGET?: string
+    /**
+     * Absolute base URL of the automation engine. Unset means "same origin,
+     * `/automation-core`", which is what the development proxy and the
+     * production reverse proxy both serve.
+     */
+    readonly VITE_AUTOMATION_API_BASE_URL?: string
     readonly globEager: <T = any>(globPattern: string) => Record<string, T>
   }
 }

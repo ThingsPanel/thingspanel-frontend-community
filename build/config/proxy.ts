@@ -76,6 +76,30 @@ export function createViteProxy(env: Env.ImportMeta) {
     }
   }
 
+  // The automation engine is a separate Encore service. It is reached through a
+  // same-origin development path so the browser keeps sending the ordinary
+  // Authorization header and no CORS rule has to be invented for local work.
+  // The target is required to be HTTPS or loopback: a plain-http target on a
+  // real host would silently send tenant tokens in clear text.
+  const automationTarget = env.VITE_AUTOMATION_DEV_PROXY_TARGET?.trim()
+  if (automationTarget) {
+    const target = new URL(automationTarget)
+    const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)
+    const acceptable =
+      (target.protocol === 'https:' || (target.protocol === 'http:' && loopback)) &&
+      !target.username &&
+      !target.password &&
+      !target.search &&
+      !target.hash &&
+      ['', '/'].includes(target.pathname)
+    if (!acceptable) throw new Error('Automation development proxy requires an HTTPS origin or HTTP loopback origin.')
+    proxy['/automation-core'] = {
+      target: target.origin,
+      changeOrigin: true,
+      rewrite: path => path.replace(/^\/automation-core/, '')
+    }
+  }
+
   const otherURLEntries = Object.entries(otherBaseURL)
 
   for (const [key, url] of otherURLEntries) {

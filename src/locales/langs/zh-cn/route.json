@@ -101,6 +101,8 @@
   "route.automation_scene-manage": "场景管理",
   "route.automation_scene-linkage": "场景联动",
   "route.automation_linkage-edit": "联动编辑",
+  "route.automation_rule-edit": "规则编辑",
+  "route.automation_rule-manage": "规则列表",
   "route.alarm": "告警",
   "route.alarm_notification-group": "通知策略",
   "route.alarm_notification-record": "通知记录",

@@ -197,8 +197,9 @@ const deviceGroupOptions = ref([] as any)
 const getGroup = async () => {
   deviceGroupOptions.value = []
   const res = await deviceGroupTree({})
+  // 新装环境没有分组时接口返回 data:null，不兜住会整页抛异常。
   // eslint-disable-next-line array-callback-return
-  res.data.map((item: any) => {
+  ;(res.data || []).map((item: any) => {
     deviceGroupOptions.value.push(item.group)
   })
 }
@@ -1154,7 +1155,11 @@ watch(locale, () => {
                         :rule="premiseFormRules.trigger_value"
                         class="max-w-40 w-full"
                       >
-                        <NSelect v-if="triggerEnumOptions(ifItem).length" v-model:value="ifItem.trigger_value" :options="triggerEnumOptions(ifItem)" />
+                        <NSelect
+                          v-if="triggerEnumOptions(ifItem).length"
+                          v-model:value="ifItem.trigger_value"
+                          :options="triggerEnumOptions(ifItem)"
+                        />
                         <NInput v-else v-model:value="ifItem.trigger_value" :placeholder="$t('generate.value')" />
                       </NFormItem>
                     </template>

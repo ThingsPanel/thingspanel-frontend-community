@@ -10,7 +10,7 @@
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMessage } from 'naive-ui'
-import { addWarningMessage, editInfo } from '@/service/api/alarm'
+import { addWarningMessage, editInfo } from '@/service/api/alarm-api'
 import { getNotificationDefaultPolicy } from '@/service/api/notification'
 import type { NotificationDefaultPolicySummary } from '@/service/api/notification'
 import { useAuthStore } from '@/store/modules/auth'
@@ -311,7 +311,7 @@ const add = async () => {
     description: formData.value.description
   }
   const res = await addWarningMessage(data)
-  if (res) {
+  if (res.data) {
     message.success($t('common.addSuccess'))
     modalVisible.value = false
     emit('newEdit')
@@ -338,7 +338,7 @@ async function editInfoText() {
     modalVisible.value = false
     emit('newEdit')
   } else {
-    message.success($t('common.editFail'))
+    message.error($t('common.editFail'))
   }
 }
 

@@ -3,7 +3,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { type FormInst, NButton, NCard, NFlex, useMessage } from 'naive-ui'
 import { deviceGroupTree } from '@/service/api'
-import { warningMessageList } from '@/service/api/alarm'
+import { warningMessageList } from '@/service/api/alarm-api'
 import PopUp from '@/views/alarm/warning-message/components/pop-up.vue'
 import {
   deviceConfigAll,
@@ -11,7 +11,7 @@ import {
   deviceListAll,
   deviceMetricsMenu,
   sceneGet
-} from '@/service/api/automation'
+} from '@/service/api/automation-api'
 import { $t } from '@/locales'
 
 const route = useRoute()
@@ -203,7 +203,7 @@ const getGroup = async () => {
   deviceGroupOptions.value = []
   const res = await deviceGroupTree({})
   // eslint-disable-next-line array-callback-return
-  res.data.map((item: any) => {
+  ;(res.data || []).map((item: any) => {
     deviceGroupOptions.value.push(item.group)
   })
 }
@@ -221,7 +221,7 @@ const getDevice = async (groupId: any, name: any) => {
   queryDevice.value.group_id = groupId || null
   queryDevice.value.device_name = name || null
   const res = await deviceListAll(queryDevice.value)
-  deviceOptions.value = res.data
+  deviceOptions.value = res.data || []
 }
 
 const queryDeviceName = ref([] as any)
@@ -318,13 +318,22 @@ const applyActionData = (actionData: any) => {
   })
 }
 
+const placeholderMap: Record<string, string> = {
+  telemetry: '20',
+  attributes: 'on-line',
+  command: '{"param1":1}',
+  c_telemetry: '{"switch":1}',
+  c_attribute: '{"addr":1}',
+  c_command: '{"method":"switch1","params":{}}',
+  event: '{"identify":"alarm","params":{}}'
+}
 // 选择设备属性类型
 const actionParamTypeChange = (instructItem: any, data: any) => {
   instructItem.action_param = null
   instructItem.actionParamData = null
   instructItem.actionParamOptions =
     instructItem.actionParamOptionsData.find(item => item.data_source_type === data)?.options || []
-  instructItem.placeholder = '{"param1":1}'
+  instructItem.placeholder = placeholderMap[data] || ''
   instructItem.actionValue = null
   instructItem.showSubSelect = true
 }
@@ -339,9 +348,7 @@ const actionParamChange = (instructItem: any, data: any) => {
 const message = useMessage()
 // 动作值标识
 const actionValueChange = (instructItem: any) => {
-  if (
-    instructItem.action_param_type === 'command'
-  ) {
+  if (instructItem.action_param_type === 'command') {
     try {
       JSON.parse(instructItem.actionValue)
       if (typeof JSON.parse(instructItem.actionValue) === 'object') {
@@ -371,7 +378,7 @@ const getSceneList = async (name: string) => {
   queryScene.value.name = name || ''
   loadingSelect.value = true
   const res = await sceneGet(queryScene.value)
-  sceneList.value = res.data.list
+  sceneList.value = res.data?.list || []
   loadingSelect.value = false
 }
 
@@ -388,7 +395,7 @@ const getAlarmList = async (name: string) => {
   loadingSelect.value = true
   const res = await warningMessageList(queryAlarm.value)
   loadingSelect.value = false
-  alarmList.value = res.data.list
+  alarmList.value = res.data?.list || []
 }
 
 // 操作设备类型的数据Item
@@ -639,7 +646,9 @@ onMounted(() => {
                           <NInput
                             v-if="instructItem.actionParamData.data_type === 'string'"
                             v-model:value="instructItem.actionValue"
-                            :placeholder="$t('common.as') + '：' + instructItem.placeholder || '--'"
+                            :placeholder="
+                              instructItem.placeholder ? $t('common.as') + '：' + instructItem.placeholder : '--'
+                            "
                             class="w-full"
                             @blur="actionValueChange(instructItem)"
                           />
@@ -647,7 +656,9 @@ onMounted(() => {
                             v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'number'"
                             v-model:value="instructItem.actionValue"
                             class="w-full"
-                            :placeholder="$t('common.as') + '：' + instructItem.placeholder || '--'"
+                            :placeholder="
+                              instructItem.placeholder ? $t('common.as') + '：' + instructItem.placeholder : '--'
+                            "
                             :show-button="false"
                           />
                           <n-radio-group
@@ -674,7 +685,9 @@ onMounted(() => {
                         >
                           <NInput
                             v-model:value="instructItem.actionValue"
-                            :placeholder="$t('common.as') + '：' + instructItem.placeholder || '--'"
+                            :placeholder="
+                              instructItem.placeholder ? $t('common.as') + '：' + instructItem.placeholder : '--'
+                            "
                             class="w-full"
                             @blur="actionValueChange(instructItem)"
                           />
@@ -762,7 +775,7 @@ onMounted(() => {
         </NButton>
       </NFlex>
     </NForm>
-    <PopUp v-model:visible="popUpVisible" type="add" @new-edit="newEdit" />
+    <PopUp v-model:visible="popUpVisible" type="add" :edit-data="null" @new-edit="newEdit" />
   </div>
 </template>
 
