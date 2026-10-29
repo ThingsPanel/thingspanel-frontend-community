@@ -13,11 +13,15 @@ import { NButton, NCard, NEmpty, NFlex, NInput } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import dayjs from 'dayjs'
 import moment from 'moment'
-import { alarmHistory } from '@/service/api/alarm'
+import { alarmHistory, processingOperation } from '@/service/api/alarm-api'
 import { $t } from '@/locales'
-import { deviceAlarmHistoryPut } from '@/service/api'
 import { tableThemeOverrides } from '@/utils/table-theme'
+import { useAuthStore } from '@/store/modules/auth'
+import { deviceAlarmHistoryPut } from '@/service/api'
+import { getAutomationMode } from '@/service/api/automation-runtime'
 
+const authStore = useAuthStore()
+const nativeEnabled = ref(false)
 const loading = ref(false)
 const rowKey = (row: DeviceManagement.DeviceData) => row.id
 
@@ -65,7 +69,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
     minWidth: '120px',
     render(row: any) {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      return alarmStatusOptions.value.find(data => data.value === row.alarm_status)?.label || ''
+      return alarmStatusLabel(row)
     }
   },
   {
@@ -99,7 +103,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
           </NButton>
           {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
           <NButton type="warning" size={'small'} onClick={() => maintenance(row)}>
-            {$t('common.maintenance')}
+            {nativeEnabled.value ? '确认处理' : $t('common.maintenance')}
           </NButton>
         </div>
       )
@@ -140,6 +144,7 @@ const getAlarmHistory = async () => {
   queryData.value.page_size = pagination.pageSize as number
   const { data } = await alarmHistory(queryData.value)
   if (data) {
+    nativeEnabled.value = data.list.some((row: any) => typeof row.state === 'string')
     // eslint-disable-next-line require-atomic-updates
     pagination.itemCount = data.total
     tableData.value = data.list
@@ -190,6 +195,18 @@ const alarmStatusOptions = ref([
     value: 'N'
   }
 ])
+// 新模型的告警没有旧表的等级字段，只有 active/acked/cleared 三态。
+// 直接沿用等级下拉会让空值命中「所有状态」，看起来像没状态，所以这里补一层回退。
+const alarmStateText: Record<string, string> = {
+  active: '未恢复',
+  acked: '已确认',
+  cleared: '已恢复'
+}
+function alarmStatusLabel(row: any) {
+  const level = alarmStatusOptions.value.find(data => data.value && data.value === row?.alarm_status)
+  if (level) return level.label
+  return alarmStateText[String(row?.state ?? '')] ?? ''
+}
 const showDialog = ref(false)
 const infoData = ref({} as any)
 function getInfo(data: any) {
@@ -202,6 +219,8 @@ const closeModal = () => {
 const showModal = ref(false)
 const description = ref('')
 const maintenance = row => {
+  // 旧动作是「写一段维护备注」。新模型里告警是一串不可改写的事实，
+  // 能做的动作是确认处理，所以这里改成确认。
   infoData.value = row
   description.value = row.description
   showModal.value = true
@@ -211,15 +230,24 @@ const cancelCallback = () => {
   showModal.value = false
 }
 const submitCallback = async () => {
-  if (description.value === '') {
+  // 处理人取当前登录用户；说明可以留空——确认处理是「我知道这条告警了」，
+  // 不应该因为没写备注就点不动。
+  const mode = await getAutomationMode()
+  if ((mode === 'native') !== Boolean(infoData.value.state)) {
+    window.$message?.error('自动化服务已切换，请刷新列表后重试')
+    return
+  }
+  if (mode === 'legacy' && !description.value) {
     window.$message?.error($t('common.enterAlarmDesc'))
     return
   }
-  const putData = {
-    id: infoData.value.id,
-    description: description.value
-  }
-  await deviceAlarmHistoryPut(putData)
+  const actor = authStore.userInfo?.userName || ''
+  const res =
+    mode === 'native'
+      ? await processingOperation({ id: infoData.value.id, actor })
+      : await deviceAlarmHistoryPut({ id: infoData.value.id, description: description.value })
+  if (res.error) return
+  window.$message?.success(mode === 'native' ? '已确认处理' : $t('common.editSuccess'))
   cancelCallback()
   await getAlarmHistory()
 }
@@ -286,7 +314,7 @@ const submitCallback = async () => {
           {{ moment(infoData['create_at']).format('YYYY-MM-DD HH:mm:ss') }}
         </n-form-item>
         <n-form-item label-placement="left" :show-feedback="false" :label="$t('generate.alarm-status') + ':'">
-          {{ alarmStatusOptions.find(data => data.value === infoData['alarm_status'])?.label || '' }}
+          {{ alarmStatusLabel(infoData) }}
         </n-form-item>
         <n-form-item label-placement="left" :show-feedback="false" :label="$t('generate.alarmReason') + ':'">
           {{ infoData.content }}
@@ -319,7 +347,10 @@ const submitCallback = async () => {
     </n-modal>
     <n-modal v-model:show="showModal" class="max-w-[600px]">
       <NCard>
-        <n-form-item :show-feedback="false" :label="$t('generate.alarm-description')">
+        <n-form-item
+          :show-feedback="false"
+          :label="nativeEnabled ? '处理说明（可选）' : $t('generate.alarm-description')"
+        >
           <NInput v-model:value="description" type="textarea" />
         </n-form-item>
         <NFlex justify="flex-end" class="mt-4">

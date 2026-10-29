@@ -33,7 +33,6 @@ async function navigate(token: string | null, target: { path: string; name?: str
   const views = new Proxy(
     {
       'automation_rule-edit': routeComponent('view-automation_rule-edit'),
-      'automation_rule-manage': routeComponent('view-automation_rule-manage'),
       device_details: routeComponent('view-device_details'),
       'device_config-detail': routeComponent('view-device_config-detail'),
       'visualization_thingsvis-preview': routeComponent('view-visualization_thingsvis-preview'),
@@ -60,12 +59,6 @@ async function navigate(token: string | null, target: { path: string; name?: str
           path: '/automation/rule-edit',
           component: 'view.automation_rule-edit',
           meta: { title: 'automation_rule-edit', i18nKey: 'route.automation_rule-edit', roles: ['TENANT_ADMIN'] }
-        },
-        {
-          name: 'automation_rule-manage',
-          path: '/automation/rule-manage',
-          component: 'view.automation_rule-manage',
-          meta: { title: 'automation_rule-manage', i18nKey: 'route.automation_rule-manage', roles: ['TENANT_ADMIN'] }
         }
       ]
     },
@@ -94,7 +87,6 @@ async function navigate(token: string | null, target: { path: string; name?: str
   const created = createRoutes()
   const preRegisteredTargets = [
     { path: '/automation/rule-edit', name: 'automation_rule-edit', query: undefined },
-    { path: '/automation/rule-manage', name: 'automation_rule-manage', query: undefined },
     { path: '/device/template/detail', name: 'device-template-detail-reference', query: { id: 'template-1' } },
     { path: '/device/details', name: 'device_details', query: { d_id: 'device-1' } },
     { path: '/device/thingsmodel/detail', name: 'thingmodel-detail-custom', query: { id: 'model-1' } }
@@ -148,7 +140,6 @@ function routerRouteForTarget(routes: any[], path: string, name: string): any {
 test('native detail and nested rule routes survive authenticated cold start', async () => {
   for (const target of [
     { path: '/automation/rule-edit', name: 'automation_rule-edit', query: undefined },
-    { path: '/automation/rule-manage', name: 'automation_rule-manage', query: undefined },
     { path: '/device/template/detail', name: 'device-template-detail-reference', query: { id: 'template-1' } },
     { path: '/device/details', name: 'device_details', query: { d_id: 'device-1' } }
   ]) {
@@ -178,7 +169,6 @@ test('native detail and nested rule routes survive authenticated cold start', as
 test('unauthenticated native and rule details redirect to login with original query', async () => {
   for (const target of [
     { path: '/automation/rule-edit', query: undefined },
-    { path: '/automation/rule-manage', query: undefined },
     { path: '/device/template/detail', query: { id: 'template-1' } },
     { path: '/device/details', query: { d_id: 'device-1' } },
     { path: '/device/thingsmodel/detail', query: { id: 'model-1' } }

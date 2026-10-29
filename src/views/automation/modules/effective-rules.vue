@@ -13,6 +13,7 @@
 import { computed, ref, watch } from 'vue'
 import { NAlert, NButton, NCard, NEmpty, NFlex, NSpin, NTable, NTag } from 'naive-ui'
 import { useRouter } from 'vue-router'
+import { getAutomationMode } from '@/service/api/automation-runtime'
 import {
   AutomationApiError,
   getDeviceAutomation,
@@ -29,6 +30,7 @@ const props = defineProps<{
 const router = useRouter()
 const loading = ref(false)
 const failure = ref('')
+const nativeEnabled = ref(false)
 const device = ref<DeviceAutomation | null>(null)
 const template = ref<TemplateBindings | null>(null)
 
@@ -40,6 +42,8 @@ async function load() {
   device.value = null
   template.value = null
   try {
+    nativeEnabled.value = (await getAutomationMode()) === 'native'
+    if (!nativeEnabled.value) return
     if (props.deviceId) {
       device.value = await getDeviceAutomation(props.deviceId)
     } else if (props.deviceConfigId) {
@@ -86,7 +90,7 @@ const directoryIssue = computed(() =>
 </script>
 
 <template>
-  <NCard size="small" :bordered="false" class="mb-4">
+  <NCard v-if="nativeEnabled || failure" size="small" :bordered="false" class="mb-4">
     <template #header>
       <NFlex align="center" :size="10">
         <span class="title">对这个对象生效的规则</span>

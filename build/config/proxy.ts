@@ -15,13 +15,36 @@ export function createViteProxy(env: Env.ImportMeta) {
 
   const defaultProxyPattern = createProxyPattern()
 
-  const proxy: Record<string, ProxyOptions> = {
-    [defaultProxyPattern]: {
-      target: baseURL,
-      changeOrigin: true,
-      ws: true,
-      rewrite: path => path.replace(new RegExp(`^${defaultProxyPattern}`), '')
+  const proxy: Record<string, ProxyOptions> = {}
+  const authTarget = env.VITE_AUTH_DEV_PROXY_TARGET?.trim()
+  if (authTarget) {
+    const target = new URL(authTarget)
+    const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)
+    if (
+      (!loopback && target.protocol !== 'https:') ||
+      !['http:', 'https:'].includes(target.protocol) ||
+      target.username ||
+      target.password ||
+      target.search ||
+      target.hash ||
+      !['', '/'].includes(target.pathname)
+    ) {
+      throw new Error('Authentication development proxy requires an HTTPS origin or HTTP loopback origin.')
     }
+    // Match before the generic business proxy; retain one authentication owner.
+    proxy[
+      `^${defaultProxyPattern}/(?:auth/|login(?:$|\\?)|user/(?:detail|logout|refresh|transform)(?:$|\\?)|tenant/(?:setup-state|has-admin|super-admin/init|market-register|email/register)(?:$|\\?))`
+    ] = {
+      target: target.origin,
+      changeOrigin: true,
+      rewrite: path => path.replace(new RegExp(`^${defaultProxyPattern}`), '/api/v1')
+    }
+  }
+  proxy[defaultProxyPattern] = {
+    target: baseURL,
+    changeOrigin: true,
+    ws: true,
+    rewrite: path => path.replace(new RegExp(`^${defaultProxyPattern}`), '')
   }
 
   // Native metadata APIs use their Encore contracts directly. Keep these
@@ -71,6 +94,30 @@ export function createViteProxy(env: Env.ImportMeta) {
       target: target.origin,
       changeOrigin: true,
       rewrite: path => path.replace(/^\/notification-core/, '')
+    }
+  }
+
+  // The automation engine is a separate Encore service. It is reached through a
+  // same-origin development path so the browser keeps sending the ordinary
+  // Authorization header and no CORS rule has to be invented for local work.
+  // The target is required to be HTTPS or loopback: a plain-http target on a
+  // real host would silently send tenant tokens in clear text.
+  const automationTarget = env.VITE_AUTOMATION_DEV_PROXY_TARGET?.trim()
+  if (automationTarget) {
+    const target = new URL(automationTarget)
+    const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)
+    const acceptable =
+      (target.protocol === 'https:' || (target.protocol === 'http:' && loopback)) &&
+      !target.username &&
+      !target.password &&
+      !target.search &&
+      !target.hash &&
+      ['', '/'].includes(target.pathname)
+    if (!acceptable) throw new Error('Automation development proxy requires an HTTPS origin or HTTP loopback origin.')
+    proxy['/automation-core'] = {
+      target: target.origin,
+      changeOrigin: true,
+      rewrite: path => path.replace(/^\/automation-core/, '')
     }
   }
 

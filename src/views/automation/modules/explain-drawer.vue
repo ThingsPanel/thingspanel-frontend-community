@@ -85,13 +85,8 @@ function toneOf(verdict: string) {
         </NFlex>
 
         <NAlert v-if="!result.evidence?.complete" type="warning" :bordered="false" class="mb-3">
-          这段时间的记录不完整，下面的原因可能不是全部。{{ result.evidence.note }}
+          这段时间的记录不完整，下面的原因可能不是全部。{{ (result.evidence?.notes ?? []).join('；') }}
         </NAlert>
-
-        <div class="hint mb-3">
-          窗口内执行记录：{{ result.evidence.runs_in_window }} 次；
-          {{ result.evidence.state_observed ? '已观察到相关状态' : '未观察到相关状态' }}
-        </div>
 
         <NCard v-if="result.reasons?.length" size="small" title="判断依据" :bordered="false" class="mb-3">
           <ul class="reasons">
@@ -103,7 +98,7 @@ function toneOf(verdict: string) {
         </NCard>
 
         <NCard size="small" :title="`这段时间执行了 ${result.runs?.length ?? 0} 次`" :bordered="false">
-          <NEmpty v-if="!result.runs.length" size="small" description="这段时间没有返回执行记录。" />
+          <NEmpty v-if="!result.runs?.length" size="small" description="这段时间没有执行记录，符合“没有触发”的结论" />
           <ul v-else class="runs">
             <li v-for="item in result.runs" :key="item.id">
               {{ item.started_at }} · {{ item.status }}

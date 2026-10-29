@@ -249,18 +249,6 @@ export function createRoutes() {
           meta: { title: 'automation_rule-edit', i18nKey: 'route.automation_rule-edit', roles: ['TENANT_ADMIN'] }
         }
       ]
-    },
-    {
-      path: '/automation/rule-manage',
-      component: layouts.base,
-      children: [
-        {
-          path: '',
-          name: 'automation_rule-manage',
-          component: views['automation_rule-manage'],
-          meta: { title: 'automation_rule-manage', i18nKey: 'route.automation_rule-manage', roles: ['TENANT_ADMIN'] }
-        }
-      ]
     }
   ]
 

@@ -25,7 +25,7 @@ vi.mock('@/service/api/notification', () => ({
   getNotificationDefaultPolicy: getPolicy,
   putNotificationDefaultPolicy: putPolicy
 }))
-vi.mock('@/service/api/alarm', () => ({ addWarningMessage: addAlarm, editInfo: editAlarm }))
+vi.mock('@/service/api/alarm-api', () => ({ addWarningMessage: addAlarm, editInfo: editAlarm }))
 vi.mock('@/store/modules/auth', async () => {
   const { reactive: makeReactive } = await import('vue')
   return { useAuthStore: () => makeReactive(authState) }
@@ -207,6 +207,23 @@ describe('tenant default notification policy', () => {
     await flushPromises()
     expect(wrapper.findAll('select').at(-1)!.element).toHaveProperty('value', 'legacy-retired')
     expect(wrapper.text()).toContain('This rule’s explicit policy is unavailable')
+    wrapper.unmount()
+  })
+
+  it('does not close the dialog or announce a saved rule when the API returns an error object', async () => {
+    getPolicy.mockResolvedValue({ data: { version: 1, selected: policy, availablePolicies: [policy] }, error: null })
+    addAlarm.mockResolvedValue({ data: null, error: new Error('rejected') })
+    const wrapper = mount(PopUp, { props: { visible: true, type: 'add', editData: null }, global: { stubs } })
+    await flushPromises()
+    await wrapper.findAll('input').at(0)!.setValue('Rule')
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'common.save')!
+      .trigger('click')
+    await flushPromises()
+    expect(addAlarm).toHaveBeenCalledTimes(1)
+    expect(wrapper.emitted('newEdit')).toBeUndefined()
+    expect(wrapper.emitted('update:visible')).toBeUndefined()
     wrapper.unmount()
   })
 })

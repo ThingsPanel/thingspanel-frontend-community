@@ -71,13 +71,6 @@ export interface FormModel {
   labels: string[]
   labelMatch: 'and' | 'or'
   maxTargets: number
-  alarmKey: string
-  alarmLevel: 'H' | 'M' | 'L' | ''
-  alarmDimension: string
-  alarmSources: string[]
-  alarmAllowedSources: string[]
-  alarmHasAllowedSources: boolean
-  alarmExtra: Record<string, unknown>
 }
 
 export interface FormContext {
@@ -126,20 +119,13 @@ export function emptyForm(context: FormContext = {}): FormModel {
     maxAge: '90s',
     maxGap: '90s',
     groups: [{ conditions: [emptyCondition()] }],
-    steps: context.kind === 'alarm_policy' ? [] : [emptyStep('action')],
+    steps: [emptyStep('action')],
     deviceIDs: context.deviceID ? [context.deviceID] : [],
     deviceConfigIDs: context.deviceConfigID ? [context.deviceConfigID] : [],
     areaIDs: [],
     labels: [],
     labelMatch: 'and',
-    maxTargets: 200,
-    alarmKey: '',
-    alarmLevel: context.kind === 'alarm_policy' ? 'M' : '',
-    alarmDimension: '',
-    alarmSources: ['detector'],
-    alarmAllowedSources: [],
-    alarmHasAllowedSources: false,
-    alarmExtra: {}
+    maxTargets: 200
   }
 }
 
@@ -237,8 +223,6 @@ function stepToWire(step: FormStep): Step {
 /** Wire definition -> editable model. Unknown fields are dropped, not guessed. */
 export function definitionToForm(definition: RuleDefinition, name = '', enabled = true): FormModel {
   const trigger = definition.trigger
-  const alarm = definition.alarm
-  const alarmOwnedKeys = new Set(['key', 'sources', 'allowed_sources', 'level', 'dimension'])
   return {
     name,
     kind: definition.kind,
@@ -255,26 +239,7 @@ export function definitionToForm(definition: RuleDefinition, name = '', enabled 
     areaIDs: definition.targets?.area_ids ?? [],
     labels: definition.targets?.labels ?? [],
     labelMatch: definition.targets?.label_match === 'or' ? 'or' : 'and',
-    maxTargets: definition.targets?.max_targets || 200,
-    alarmKey: alarm?.key ?? '',
-    alarmLevel: alarm?.level ?? '',
-    alarmDimension: alarm?.dimension ?? '',
-    alarmSources: alarm ? [...(alarm.sources ?? [])] : ['detector'],
-    alarmAllowedSources: [...(alarm?.allowed_sources ?? [])],
-    alarmHasAllowedSources: Boolean(alarm && Object.prototype.hasOwnProperty.call(alarm, 'allowed_sources')),
-    alarmExtra: Object.fromEntries(Object.entries(alarm ?? {}).filter(([key]) => !alarmOwnedKeys.has(key)))
-  }
-}
-
-/** Switching kinds clears stale actions when entering an alarm policy. */
-export function changeFormKind(form: FormModel, kind: RuleKind): FormModel {
-  if (kind === form.kind) return form
-  return {
-    ...form,
-    kind,
-    alarmLevel: kind === 'alarm_policy' && !form.alarmLevel ? 'M' : form.alarmLevel,
-    steps: kind === 'alarm_policy' ? [] : form.kind === 'alarm_policy' ? [emptyStep('action')] : form.steps,
-    alarmSources: form.alarmSources.length ? form.alarmSources : ['detector']
+    maxTargets: definition.targets?.max_targets || 200
   }
 }
 
@@ -318,20 +283,7 @@ export function formToDefinition(form: FormModel): RuleDefinition {
       max_gap: normalizeDuration(form.maxGap, '90s')
     },
     targets,
-    steps: form.kind === 'alarm_policy' ? [] : form.steps.map(stepToWire)
-  }
-  if (form.kind === 'alarm_policy') {
-    const alarm: NonNullable<RuleDefinition['alarm']> = {
-      ...form.alarmExtra,
-      sources: [...form.alarmSources]
-    }
-    if (form.alarmKey.trim()) alarm.key = form.alarmKey.trim()
-    if (form.alarmLevel) alarm.level = form.alarmLevel
-    if (form.alarmDimension.trim()) alarm.dimension = form.alarmDimension.trim()
-    if (form.alarmHasAllowedSources || form.alarmAllowedSources.length) {
-      alarm.allowed_sources = [...form.alarmAllowedSources]
-    }
-    definition.alarm = alarm
+    steps: form.steps.map(stepToWire)
   }
   return definition
 }
@@ -353,11 +305,7 @@ export function mergeDefinition(original: RuleDefinition | null, edited: RuleDef
   if (!out.queue && original.queue) out.queue = original.queue
   if (!out.parallel && original.parallel) out.parallel = original.parallel
   if (!out.budget && original.budget) out.budget = original.budget
-  if (out.kind === 'alarm_policy') {
-    if (!out.alarm && original.alarm) out.alarm = original.alarm
-  } else {
-    delete out.alarm
-  }
+  if (!out.alarm && original.alarm) out.alarm = original.alarm
   return out
 }
 
@@ -405,7 +353,7 @@ export function validateForm(form: FormModel): FormIssue[] {
       }
     })
   })
-  if (form.steps.length === 0 && form.kind !== 'alarm_policy') {
+  if (form.steps.length === 0) {
     issues.push({ field: 'definition.steps', code: 'empty_steps', message: '至少需要一个执行动作' })
   }
   form.steps.forEach((step, index) => {

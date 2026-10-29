@@ -415,15 +415,7 @@ export function buildTimeline(run: {
   finished_at?: string
   steps?: { idx: number; kind: string; status: string; attempt?: number; detail?: string }[]
   targets?: { device_id: string; selected: boolean; status: string; reason_code?: string }[]
-  outbox?: {
-    id: string
-    kind: string
-    state: string
-    attempt: number
-    idempotency_key: string
-    accepted_ref?: string
-    last_error?: string
-  }[]
+  outbox?: { id: string; kind: string; status: string; detail?: string }[]
 }): TimelineEntry[] {
   const entries: TimelineEntry[] = []
   const overall = describeRunStatus(run.status, run.reason_code)
@@ -454,25 +446,11 @@ export function buildTimeline(run: {
     })
   })
   ;(run.outbox ?? []).forEach(intent => {
-    const outboxStates: Record<string, Description> = {
-      pending: { label: '等待投递', tone: 'info' },
-      dispatched: { label: '已投递，等待结果', tone: 'info' },
-      accepted: { label: '已受理', hint: '受理不代表设备已执行', tone: 'ok' },
-      failed: { label: '投递失败', tone: 'bad' },
-      cancelled: { label: '已取消', tone: 'info' },
-      unresolved: { label: '结果待核对', tone: 'warn' }
-    }
-    const described = outboxStates[intent.state] ?? { label: intent.state || '状态未知', tone: 'warn' as const }
-    const evidence = [
-      `幂等键：${intent.idempotency_key}`,
-      intent.attempt > 0 ? `尝试次数：${intent.attempt}` : '',
-      intent.accepted_ref ? `受理凭据：${intent.accepted_ref}` : '',
-      intent.last_error ? `最近错误：${intent.last_error}` : ''
-    ].filter(Boolean)
+    const described = describeStepStatus(intent.status)
     entries.push({
       key: `outbox-${intent.id}`,
       title: `外发 ${intent.kind}：${described.label}`,
-      detail: [described.hint, ...evidence].filter(Boolean).join('；'),
+      detail: intent.detail,
       tone: described.tone
     })
   })

@@ -79,7 +79,6 @@ function errorAt(index: number, field: string) {
         :value="condition.device_id"
         placeholder="设备 ID"
         class="w-150px"
-        :disabled="deviceLocked"
         @update:value="(value: string) => update(index, { device_id: value })"
       />
       <NSelect

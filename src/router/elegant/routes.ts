@@ -138,18 +138,7 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.automation_rule-edit',
         meta: {
           title: 'automation_rule-edit',
-          i18nKey: 'route.automation_rule-edit',
-          roles: ['TENANT_ADMIN']
-        }
-      },
-      {
-        name: 'automation_rule-manage',
-        path: '/automation/rule-manage',
-        component: 'view.automation_rule-manage',
-        meta: {
-          title: 'automation_rule-manage',
-          i18nKey: 'route.automation_rule-manage',
-          roles: ['TENANT_ADMIN']
+          i18nKey: 'route.automation_rule-edit'
         }
       },
       {
