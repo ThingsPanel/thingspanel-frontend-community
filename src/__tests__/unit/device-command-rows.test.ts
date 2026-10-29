@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  commandReasonText,
   commandRowsFromReceipts,
   commandStateLabel,
   createCommandSubmitter,
@@ -106,5 +107,21 @@ describe('expected command parsing', () => {
     })
     expect(parseTableExpected({ identify: 'r', payload: null, expiry: null }).expiresAt).toBe(null)
     expect(() => parseTableExpected({ identify: 'r', payload: null, expiry: 'nope' })).toThrow()
+  })
+})
+
+describe('command reasons', () => {
+  it('translates the reasons the backend writes and keeps runtime text as received', () => {
+    expect(commandReasonText('the device runtime did not accept the command')).toBe('设备运行时明确拒绝了该命令')
+    expect(commandReasonText('the device runtime did not confirm whether it received the command')).toBe(
+      '设备运行时未确认是否收到该命令'
+    )
+    expect(commandReasonText('device offline')).toBe('device offline')
+    expect(commandReasonText(null)).toBe('')
+    expect(
+      commandRowsFromReceipts([
+        receipt({ state: 'failed', reason: 'the device runtime did not accept the command' })
+      ])[0].error_message
+    ).toBe('设备运行时明确拒绝了该命令')
   })
 })

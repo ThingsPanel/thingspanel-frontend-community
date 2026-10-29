@@ -18,6 +18,17 @@ export function commandStateLabel(state: string): string {
   return COMMAND_STATE_LABELS[state as CommandReceipt['state']] ?? '结果未知'
 }
 
+/** The two reasons the backend writes itself arrive in English; runtime-provided text is shown as received. */
+const COMMAND_REASON_LABELS: Record<string, string> = {
+  'the device runtime did not accept the command': '设备运行时明确拒绝了该命令',
+  'the device runtime did not confirm whether it received the command': '设备运行时未确认是否收到该命令'
+}
+
+export function commandReasonText(reason: string | null | undefined): string {
+  if (!reason) return ''
+  return COMMAND_REASON_LABELS[reason] ?? reason
+}
+
 /** Rows in the shape the shared device table renders. */
 export function commandRowsFromReceipts(receipts: CommandReceipt[]) {
   return receipts.map(receipt => ({
@@ -28,7 +39,7 @@ export function commandRowsFromReceipts(receipts: CommandReceipt[]) {
     status: receipt.state,
     status_label: commandStateLabel(receipt.state),
     data: JSON.stringify(receipt.parameters ?? {}),
-    error_message: receipt.reason ?? '',
+    error_message: commandReasonText(receipt.reason),
     cancellable: receipt.deliveryMode === 'when_online' && receipt.state === 'accepted'
   }))
 }
