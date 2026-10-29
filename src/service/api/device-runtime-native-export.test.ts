@@ -104,3 +104,11 @@ test('getReadingExport reads the job state, progress and failure detail', async 
     progress: { total: 36, completed: 4, failed: 0 }
   })
 })
+
+test('runtime errors read as plain Chinese for 503 and generic 500, and keep specific details', async () => {
+  const { runtimeErrorMessage } = await import('./device-runtime-native-transport')
+  assert.match(runtimeErrorMessage(503, { detail: 'internal server error' } as never), /设备运行时暂时不可用/)
+  assert.match(runtimeErrorMessage(500, { detail: 'internal server error' } as never), /服务暂时出错/)
+  assert.equal(runtimeErrorMessage(422, { detail: 'identifier is required' } as never), 'identifier is required')
+  assert.equal(runtimeErrorMessage(404, undefined), 'Device runtime request failed (404)')
+})
