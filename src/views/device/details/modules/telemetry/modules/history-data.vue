@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import { newIdempotencyKey } from '@/service/api/device-write-attempt'
 import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
 import { waitForReadingExport } from '@/service/api/device-runtime-export-wait'
+import { earliestStartWithin, exceedsInclusiveSpan } from '@/utils/history-range'
 import { $t } from '@/locales'
 import { useLoading } from '~/packages/hooks'
 import { demoHistory, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
@@ -37,7 +38,7 @@ const MAX_RANGE_MS = 24 * 60 * 60 * 1000
 const MAX_EXPORT_RANGE_MS = 31 * MAX_RANGE_MS
 const exportRange = ref<[number, number] | null>(null)
 const end_time = dayjs().valueOf()
-const start_time = end_time - MAX_RANGE_MS
+const start_time = earliestStartWithin(end_time, MAX_RANGE_MS)
 const params = reactive<Params>({
   device_id: props.deviceId,
   end_time,
@@ -175,7 +176,7 @@ const columns = [
 const checkDateRange = value => {
   const [start, end] = value
 
-  if (start && end && end - start > MAX_RANGE_MS) {
+  if (start && end && exceedsInclusiveSpan(start, end, MAX_RANGE_MS)) {
     dateRange.value = null
     message.error('原始历史单次最多查询 24 小时')
   } else {
@@ -190,7 +191,7 @@ const checkDateRange = value => {
 }
 
 const checkExportRange = (value: [number, number] | null) => {
-  if (value && value[1] - value[0] > MAX_EXPORT_RANGE_MS) {
+  if (value && exceedsInclusiveSpan(value[0], value[1], MAX_EXPORT_RANGE_MS)) {
     exportRange.value = null
     message.error('导出区间最多 31 天')
   }

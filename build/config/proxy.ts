@@ -58,6 +58,17 @@ export function createViteProxy(env: Env.ImportMeta) {
   proxy['/api/v2/device-statistics'] = { target: thingModelNativeURL, changeOrigin: true }
   proxy['/api/v2/device-access-templates'] = { target: thingModelNativeURL, changeOrigin: true }
   proxy['/api/v2/file-assets'] = { target: thingModelNativeURL, changeOrigin: true }
+  // Same device-metadata service: operation polling, number checks, script tests and file exports.
+  // Without these Vite answers 404 itself, so a finished export could not be downloaded in dev.
+  for (const prefix of [
+    '/api/v2/metadata-operations',
+    '/api/v2/metadata-downloads',
+    '/api/v2/reading-exports',
+    '/api/v2/device-number-validations',
+    '/api/v2/processing-script-tests'
+  ]) {
+    proxy[prefix] = { target: thingModelNativeURL, changeOrigin: true }
+  }
 
   // The automation owner shares the /v1 contract with the production Encore
   // gateway; development may target its isolated listener explicitly.
