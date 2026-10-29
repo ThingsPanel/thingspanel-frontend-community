@@ -36,6 +36,8 @@ export interface TemplateNativeClient {
   ): Promise<{ template: DeviceAccessTemplate; etag: string }>
   /** Creates a new template from the current configuration of an existing one, under a new name. */
   copy(id: string, name: string, idempotencyKey: string): Promise<{ template: DeviceAccessTemplate; location: string }>
+  /** Lists what still uses a template (live devices); the page uses it to explain a refused delete. */
+  references(id: string, page?: { page?: number; pageSize?: number }): Promise<TemplateReferencePage>
   /** Soft-deletes a template no live device uses; refused with 409 while devices still bind it. */
   remove(id: string, etag: string, idempotencyKey: string): Promise<void>
   /** Sandboxed debug run of one processing script; it has no downlink side effect. */
@@ -58,6 +60,19 @@ export interface TemplateNativeClient {
     etag: string,
     idempotencyKey: string
   ): Promise<{ template: DeviceAccessTemplate; etag: string }>
+}
+
+export interface TemplateReference {
+  kind: string
+  id: string
+  displayName: string
+}
+
+export interface TemplateReferencePage {
+  items: TemplateReference[]
+  page: number
+  pageSize: number
+  total: number
 }
 
 export class TemplateNativeError extends Error {
@@ -214,6 +229,19 @@ export function createTemplateNativeClient(options: MetadataNativeHttpOptions): 
         { method: 'POST', headers, body: JSON.stringify({ name }), redirect: 'manual' }
       )
       return { template, location: requireCreateLocation(response.headers.get('Location'), template.id) }
+    },
+    async references(id, page = {}) {
+      const params = new URLSearchParams()
+      if (page.page) params.set('page', String(page.page))
+      if (page.pageSize) params.set('pageSize', String(page.pageSize))
+      const suffix = params.toString() ? `?${params.toString()}` : ''
+      const { data } = await request<TemplateReferencePage, TemplateNativeError>(
+        `/api/v2/device-access-templates/${encodeURIComponent(id)}/references${suffix}`,
+        200,
+        (status, errorBody) => new TemplateNativeError(status, errorBody),
+        { method: 'GET' }
+      )
+      return data
     },
     async remove(id, etag, idempotencyKey) {
       const headers = new Headers({

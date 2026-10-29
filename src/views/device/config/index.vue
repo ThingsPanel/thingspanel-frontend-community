@@ -3,8 +3,13 @@ import { onMounted, ref, computed, h, onActivated } from 'vue'
 import { NButton, NInput, NIcon, NPagination, NDataTable, NTag, NSpace, NEmpty, NTooltip, NModal } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { templateNative, type DeviceAccessTemplate } from '@/service/api/template-native'
+import { TemplateNativeError } from '@/service/api/template-native-transport'
 import { newIdempotencyKey } from '@/service/api/device-write-attempt'
-import { templateCopyErrorMessage, templateDeleteErrorMessage } from '@/service/api/template-delete'
+import {
+  templateCopyErrorMessage,
+  templateDeleteErrorMessage,
+  templateInUseMessage
+} from '@/service/api/template-delete'
 import { fileAssetsNative } from '@/service/api/file-assets-native'
 import { useAuthStore } from '@/store/modules/auth'
 import { canManageDeviceGroups } from '@/service/api/device-group-editor-state'
@@ -260,7 +265,13 @@ const handleDelete = (row: { id: string; name?: string }) => {
         await templateNative.remove(row.id, etag, newIdempotencyKey())
         window.$message?.success('模板已删除')
       } catch (error) {
-        window.$message?.error(templateDeleteErrorMessage(error))
+        if (error instanceof TemplateNativeError && error.status === 409) {
+          // 说明是哪几台设备在用；这一步失败时退回通用提示
+          const references = await templateNative.references(row.id, { pageSize: 5 }).catch(() => null)
+          window.$message?.error(templateInUseMessage(references), { duration: 8000 })
+        } else {
+          window.$message?.error(templateDeleteErrorMessage(error))
+        }
       } finally {
         getData()
       }

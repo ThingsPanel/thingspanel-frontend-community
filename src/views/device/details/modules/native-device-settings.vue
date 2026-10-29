@@ -14,11 +14,9 @@ import {
 const props = defineProps<{ id: string }>()
 const emit = defineEmits<{ (e: 'change'): void }>()
 
-type Action = 'state' | 'binding' | 'delete' | 'number'
+type Action = 'binding' | 'delete' | 'number'
 const loading = ref(false)
 const loadError = ref('')
-const adminState = ref<'enabled' | 'disabled'>('enabled')
-const adminEtag = ref('')
 const bindingEtag = ref('')
 const currentTemplateId = ref<string | null>(null)
 const deviceEtag = ref('')
@@ -29,8 +27,8 @@ const numberReason = ref('')
 const templates = ref<DeviceAccessTemplate[]>([])
 const selectedTemplateId = ref<string | null>(null)
 const busy = ref<Action | null>(null)
-const message = ref<Record<Action, string>>({ state: '', binding: '', delete: '', number: '' })
-const failure = ref<Record<Action, string>>({ state: '', binding: '', delete: '', number: '' })
+const message = ref<Record<Action, string>>({ binding: '', delete: '', number: '' })
+const failure = ref<Record<Action, string>>({ binding: '', delete: '', number: '' })
 const operations = ref<Partial<Record<Action, DeviceOperation>>>({})
 const frozen = ref<Partial<Record<Action, FrozenWriteAttempt<string>>>>({})
 const deletePending = computed(
@@ -43,15 +41,12 @@ async function load() {
   loading.value = true
   loadError.value = ''
   try {
-    const [state, binding, device, templatePage] = await Promise.all([
-      deviceLifecycleNative.readAdministrativeState(props.id),
+    const [binding, device, templatePage] = await Promise.all([
       deviceNative.readTemplateBinding(props.id),
       deviceNative.get(props.id),
       templateNative.list({ page: 1, pageSize: 100 })
     ])
     if (current !== generation) return
-    adminState.value = state.state.state
-    adminEtag.value = state.etag
     bindingEtag.value = binding.etag
     currentTemplateId.value = binding.binding.templateId
     selectedTemplateId.value = binding.binding.templateId
@@ -77,13 +72,11 @@ async function run(action: Action, build: () => FrozenWriteAttempt<string>) {
   busy.value = action
   try {
     const call =
-      action === 'state'
-        ? deviceLifecycleNative.setAdministrativeState(props.id, JSON.parse(attempt.body), attempt.etag, attempt.key)
-        : action === 'binding'
-          ? deviceLifecycleNative.setTemplateBinding(props.id, attempt.body, attempt.etag, attempt.key)
-          : action === 'number'
-            ? deviceLifecycleNative.changeNumber(props.id, JSON.parse(attempt.body), attempt.key)
-            : deviceLifecycleNative.requestDeletion(props.id, attempt.etag, attempt.key)
+      action === 'binding'
+        ? deviceLifecycleNative.setTemplateBinding(props.id, attempt.body, attempt.etag, attempt.key)
+        : action === 'number'
+          ? deviceLifecycleNative.changeNumber(props.id, JSON.parse(attempt.body), attempt.key)
+          : deviceLifecycleNative.requestDeletion(props.id, attempt.etag, attempt.key)
     const accepted = await call
     delete frozen.value[action]
     operations.value[action] = accepted.operation
@@ -111,12 +104,6 @@ async function run(action: Action, build: () => FrozenWriteAttempt<string>) {
   }
 }
 
-function toggleState() {
-  const next = adminState.value === 'enabled' ? 'disabled' : 'enabled'
-  void run('state', () =>
-    freezeAttempt(props.id, JSON.stringify({ state: next }), adminEtag.value, newIdempotencyKey())
-  )
-}
 function saveBinding() {
   const templateId = selectedTemplateId.value
   if (templateId === currentTemplateId.value) {
@@ -171,38 +158,30 @@ onBeforeUnmount(() => {
   <NSpin :show="loading">
     <div class="flex flex-col gap-6">
       <NAlert type="info" :show-icon="false">
-        以下修改提交后为"已受理"，需运行时应用后才真正生效；运行时应用回执尚未接入，状态可能长期停留在待应用。
+        以下修改提交后为"已受理"，由后台投递给设备平台，应用成功后状态才变为已完成。
       </NAlert>
       <NAlert v-if="loadError" type="error">{{ loadError }}</NAlert>
 
-      <NCard title="管理状态" size="small">
-        <div class="flex items-center gap-3">
-          <span>当前：{{ adminState === 'enabled' ? '已启用' : '已停用' }}（管理期望，与在线状态无关）</span>
-          <NButton :loading="busy === 'state'" :disabled="!!busy || loading" @click="toggleState">
-            {{ adminState === 'enabled' ? '停用设备' : '启用设备' }}
-          </NButton>
-        </div>
-        <NAlert v-if="message.state" type="success" class="mt-2">{{ message.state }}</NAlert>
-        <NAlert v-if="failure.state" type="error" class="mt-2">{{ failure.state }}</NAlert>
-      </NCard>
-
       <NCard title="设备模板" size="small">
-        <div class="flex items-center gap-3">
-          <NSelect
-            v-model:value="selectedTemplateId"
-            clearable
-            filterable
-            placeholder="未绑定模板"
-            style="width: 320px"
-            :options="templates.map(t => ({ label: t.name, value: t.id }))"
-          />
-          <NButton type="primary" :loading="busy === 'binding'" :disabled="!!busy || loading" @click="saveBinding">
-            保存绑定
-          </NButton>
+        <div v-if="currentTemplateId" class="flex items-center gap-3">
+          <span>{{ templates.find(t => t.id === currentTemplateId)?.name || currentTemplateId }}</span>
+          <span class="text-12px opacity-70">设备创建后不能更换模板</span>
         </div>
-        <div class="mt-1 text-12px opacity-70">
-          清空选择并保存即解绑；若已填写与模板不兼容的自定义字段，服务端会返回冲突。
-        </div>
+        <template v-else>
+          <div class="flex items-center gap-3">
+            <NSelect
+              v-model:value="selectedTemplateId"
+              filterable
+              placeholder="未绑定模板"
+              style="width: 320px"
+              :options="templates.map(t => ({ label: t.name, value: t.id }))"
+            />
+            <NButton type="primary" :loading="busy === 'binding'" :disabled="!!busy || loading" @click="saveBinding">
+              保存绑定
+            </NButton>
+          </div>
+          <div class="mt-1 text-12px opacity-70">未绑定模板的设备可以绑定一次；绑定后不能更换或解绑。</div>
+        </template>
         <NAlert v-if="message.binding" type="success" class="mt-2">{{ message.binding }}</NAlert>
         <NAlert v-if="failure.binding" type="error" class="mt-2">{{ failure.binding }}</NAlert>
       </NCard>
