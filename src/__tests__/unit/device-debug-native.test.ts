@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseStoredDebugSession } from './device-debug-native-transport'
+import { parseStoredDebugSession } from '@/service/api/device-debug-native-transport'
 
 describe('stored debug session', () => {
   const now = Date.parse('2026-10-28T00:00:00Z')

@@ -5,8 +5,8 @@ import {
   createCommandSubmitter,
   parseTableExpected,
   parseTableSubmit
-} from './device-command-rows'
-import type { CommandReceipt } from './device-command-native-transport'
+} from '@/service/api/device-command-rows'
+import type { CommandReceipt } from '@/service/api/device-command-native-transport'
 
 const receipt = (over: Partial<CommandReceipt> = {}): CommandReceipt => ({
   id: 'r1',

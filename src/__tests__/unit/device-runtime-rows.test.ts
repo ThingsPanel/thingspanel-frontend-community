@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { eventRowsFromReadings, latestRowsFromReadings, readingValueText } from './device-runtime-rows'
+import { eventRowsFromReadings, latestRowsFromReadings, readingValueText } from '@/service/api/device-runtime-rows'
 
 describe('event rows from native readings', () => {
   it('keeps string payloads and JSON-encodes structured ones', () => {

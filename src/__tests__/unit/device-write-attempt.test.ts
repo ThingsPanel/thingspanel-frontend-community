@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { classifyWriteFailure, describeAccepted, freezeAttempt, newIdempotencyKey } from './device-write-attempt'
+import {
+  classifyWriteFailure,
+  describeAccepted,
+  freezeAttempt,
+  newIdempotencyKey
+} from '@/service/api/device-write-attempt'
 
 describe('device write attempt', () => {
   it('freezes the request so a retry cannot change it', () => {
