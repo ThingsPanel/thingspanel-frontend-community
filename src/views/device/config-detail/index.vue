@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { administrativeStateLabel } from '@/utils/administrative-state'
 import { h, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { NButton, NDataTable, NDescriptions, NDescriptionsItem, NEmpty, NPagination, NSpin } from 'naive-ui'
@@ -129,7 +130,7 @@ const deviceColumns: DataTableColumns<Device> = [
   },
   { title: $t('page.irrigation.group.deviceCode'), key: 'deviceNumber' },
   { title: $t('generate.device-type'), key: 'deviceKind', render: row => deviceKindLabel(row.deviceKind) },
-  { title: '管理状态', key: 'administrativeState' }
+  { title: '管理状态', key: 'administrativeState', render: row => administrativeStateLabel(row.administrativeState) }
 ]
 
 watch(

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { administrativeStateLabel } from '@/utils/administrative-state'
 import { onBeforeUnmount, ref, watch } from 'vue'
 import { deviceNative, type Device } from '@/service/api/device-native'
 import { deviceLifecycleNative, type DeviceOperation } from '@/service/api/device-lifecycle-native'
@@ -195,7 +196,7 @@ onBeforeUnmount(() => {
             <td>{{ item.name }}</td>
             <td>{{ item.deviceNumber }}</td>
             <td>{{ item.deviceKind }}</td>
-            <td>{{ item.administrativeState }}</td>
+            <td>{{ administrativeStateLabel(item.administrativeState) }}</td>
             <td>
               <NPopconfirm @positive-click="unbind(item)">
                 <template #trigger>
