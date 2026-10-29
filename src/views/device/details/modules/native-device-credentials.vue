@@ -336,7 +336,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="native-device-credentials">
     <n-alert type="warning" :show-icon="false" class="mb-4">
-      此面板仅管理凭据。连接信息、插件配置和设备激活仍未接入；创建凭据不会激活设备。
+      设备的第一个凭据创建后会自动下发给设备平台并生效；之后再创建的凭据先显示“待生效”，用于轮换替换当前凭据。轮换后旧凭据立刻失效（没有并存期）。
     </n-alert>
 
     <n-alert v-if="createAttempt" type="warning" :show-icon="false" class="mb-4">
