@@ -3,6 +3,8 @@ import { onMounted, ref, computed, h, onActivated } from 'vue'
 import { NButton, NInput, NIcon, NPagination, NDataTable, NTag, NSpace, NEmpty, NTooltip } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { templateNative, type DeviceAccessTemplate } from '@/service/api/template-native'
+import { newIdempotencyKey } from '@/service/api/device-write-attempt'
+import { templateDeleteErrorMessage } from '@/service/api/template-delete'
 import { fileAssetsNative } from '@/service/api/file-assets-native'
 import { useAuthStore } from '@/store/modules/auth'
 import { canManageDeviceGroups } from '@/service/api/device-group-editor-state'
@@ -175,6 +177,11 @@ const columns = computed(() => [
                       onClick: () => handleEdit(row.id)
                     },
                     { default: () => '编辑模板' }
+                  ),
+                  h(
+                    NButton,
+                    { size: 'small', type: 'error', onClick: () => handleDelete(row) },
+                    { default: () => '删除' }
                   )
                 ]
               : []),
@@ -206,6 +213,28 @@ const columns = computed(() => [
 const handleEdit = (id: string) => {
   if (!canWrite.value) return
   routerPushByKey('device_config-edit', { query: { id } })
+}
+
+// 删除处理：先取最新 ETag，再带条件删除；仍有设备使用时服务端拒绝
+const handleDelete = (row: { id: string; name?: string }) => {
+  if (!canWrite.value) return
+  window.$dialog?.warning({
+    title: '删除设备模板',
+    content: `确认删除模板“${row.name || row.id}”？仍有设备使用时不能删除。`,
+    positiveText: '删除',
+    negativeText: '取消',
+    onPositiveClick: async () => {
+      try {
+        const { etag } = await templateNative.get(row.id)
+        await templateNative.remove(row.id, etag, newIdempotencyKey())
+        window.$message?.success('模板已删除')
+      } catch (error) {
+        window.$message?.error(templateDeleteErrorMessage(error))
+      } finally {
+        getData()
+      }
+    }
+  })
 }
 
 // 分页处理
@@ -349,6 +378,9 @@ const availableViews = [
                       </template>
                       编辑模板
                     </NTooltip>
+                    <NButton v-if="canWrite" size="small" quaternary type="error" @click.stop="handleDelete(item)">
+                      删除
+                    </NButton>
                     <NTooltip trigger="hover">
                       <template #trigger>
                         <NButton size="small" quaternary type="info" disabled>

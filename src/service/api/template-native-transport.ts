@@ -34,6 +34,8 @@ export interface TemplateNativeClient {
     etag: string,
     idempotencyKey: string
   ): Promise<{ template: DeviceAccessTemplate; etag: string }>
+  /** Soft-deletes a template no live device uses; refused with 409 while devices still bind it. */
+  remove(id: string, etag: string, idempotencyKey: string): Promise<void>
   /** Sandboxed debug run of one processing script; it has no downlink side effect. */
   testProcessingScript(body: ProcessingScriptTestRequest): Promise<ProcessingScriptTestResult>
   /** Replaces the whole current configuration with the exact JSON text supplied. */
@@ -197,6 +199,18 @@ export function createTemplateNativeClient(options: MetadataNativeHttpOptions): 
         { method: 'PATCH', headers, body: JSON.stringify(body), redirect: 'manual' }
       )
       return { template, etag: requireNativeStrongEtag(response.headers.get('ETag'), 'Device access template') }
+    },
+    async remove(id, etag, idempotencyKey) {
+      const headers = new Headers({
+        'If-Match': requireNativeStrongEtag(etag, 'Device access template'),
+        'Idempotency-Key': requireIdempotencyKey(idempotencyKey)
+      })
+      await request<DeviceAccessTemplate, TemplateNativeError>(
+        `/api/v2/device-access-templates/${encodeURIComponent(id)}`,
+        200,
+        (status, errorBody) => new TemplateNativeError(status, errorBody),
+        { method: 'DELETE', headers, redirect: 'manual' }
+      )
     },
     async testProcessingScript(body) {
       const { data } = await request<ProcessingScriptTestResult, TemplateNativeError>(
