@@ -79,6 +79,17 @@ const form = reactive({
 })
 const selectedModelID = ref('')
 const selectedRevision = ref<number | null>(null)
+
+function searchModels() {
+  modelPage.value = 1
+  loadModels()
+}
+
+function clearModelSelection() {
+  selectedModelID.value = ''
+  selectedRevision.value = null
+  modelLabel.value = ''
+}
 const credentialKind = ref<CredentialKind>('none')
 const autoRegister = ref(false)
 const connectionDirection = ref<ConnectionDirection>('device_to_platform')
@@ -654,11 +665,7 @@ function goBack() {
                 size="small"
                 quaternary
                 :disabled="!canWrite || !protocolEditable || saving || Boolean(loadError) || (isEdit && !original)"
-                @click="
-                  selectedModelID = ''
-                  selectedRevision = null
-                  modelLabel = ''
-                "
+                @click="clearModelSelection"
               >
                 清除
               </NButton>
@@ -716,24 +723,8 @@ function goBack() {
 
     <NModal v-model:show="modelPickerVisible" preset="card" title="选择物模型" class="picker-modal">
       <NSpace class="mb-3" justify="space-between">
-        <NInput
-          v-model:value="modelSearch"
-          clearable
-          placeholder="搜索物模型名称"
-          @keydown.enter="
-            modelPage = 1
-            loadModels()
-          "
-        />
-        <NButton
-          type="primary"
-          @click="
-            modelPage = 1
-            loadModels()
-          "
-        >
-          搜索
-        </NButton>
+        <NInput v-model:value="modelSearch" clearable placeholder="搜索物模型名称" @keydown.enter="searchModels" />
+        <NButton type="primary" @click="searchModels">搜索</NButton>
       </NSpace>
       <NSpin :show="modelLoading">
         <NDataTable :columns="modelColumns" :data="modelRows" :row-key="row => row.modelID" :pagination="false" />
