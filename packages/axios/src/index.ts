@@ -222,7 +222,11 @@ export function createFlatRequest<ResponseData = any>(
       return Promise.resolve({ data: response.data as MappedType<R, T>, error: null })
     } catch (error) {
       // 如果是后端业务错误，应该将错误信息放在error字段中
-      if (error?.response?.data && typeof error.response.data === 'object') {
+      if (
+        axios.isAxiosError<{ message?: string; msg?: string }>(error) &&
+        error.response?.data &&
+        typeof error.response.data === 'object'
+      ) {
         return Promise.reject({
           data: null,
           error: {
@@ -238,9 +242,9 @@ export function createFlatRequest<ResponseData = any>(
       return Promise.reject({
         data: null,
         error: {
-          message: error?.message || '请求失败',
-          status: error?.response?.status,
-          code: error?.code
+          message: error instanceof Error ? error.message : '请求失败',
+          status: axios.isAxiosError(error) ? error.response?.status : undefined,
+          code: axios.isAxiosError(error) ? error.code : undefined
         }
       })
     }

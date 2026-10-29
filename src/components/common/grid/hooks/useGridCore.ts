@@ -3,7 +3,11 @@
  * 专注于网格布局的基础状态管理
  */
 
-import { ref, computed, watch } from 'vue'
+/**
+ * Grid 核心状态管理 Hook
+ * 专注于网格布局的基础状态管理
+ */
+import { ref, computed } from 'vue'
 import type { GridLayoutPlusItem, GridLayoutPlusConfig, LayoutOperationResult } from '../gridLayoutPlusTypes'
 import { validateLayout, validateGridItem, cloneLayout, getLayoutBounds, getLayoutStats } from '../gridLayoutPlusUtils'
 import { DEFAULT_GRID_LAYOUT_PLUS_CONFIG } from '../gridLayoutPlusTypes'

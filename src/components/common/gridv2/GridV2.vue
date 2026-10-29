@@ -30,7 +30,7 @@
 import 'gridstack/dist/dd-gridstack'
 import 'gridstack/dist/gridstack.min.css'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { GridStack, type GridItemHTMLElement, type GridStackNode, type GridStackOptions } from 'gridstack'
+import { GridStack, type GridStackNode, type GridStackOptions } from 'gridstack'
 import type {
   GridLayoutPlusConfig,
   GridLayoutPlusEmits,
@@ -156,8 +156,7 @@ function createOptions(resolved: ReturnType<typeof resolveConfig>): GridStackOpt
 
 function ensureColumnStyles(column: number): void {
   if (column <= 12 || injectedColumns.has(column)) return
-  const css = GridStack.generateStyles?.(column)
-  let text = Array.isArray(css) ? css.join('\n') : typeof css === 'string' ? css : ''
+  let text = ''
   if (!text || !text.trim()) {
     const lines: string[] = []
     for (let i = 1; i <= column; i++) {
@@ -196,7 +195,7 @@ function runAutoArrange(): void {
   isAutoArranging = true
   try {
     grid.batchUpdate()
-    grid.compact(true)
+    grid.compact('compact', true)
     grid.batchUpdate(false)
   } finally {
     isAutoArranging = false

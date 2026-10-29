@@ -4,7 +4,11 @@
  * 支持无限滚动和搜索功能
  */
 
-import { computed, ref, watch } from 'vue'
+/**
+ * 设备单选选择器组件
+ * 支持无限滚动和搜索功能
+ */
+import { computed, ref } from 'vue'
 import { NEmpty, NFlex, NInfiniteScroll, NPopover, NSelect, NSpin } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 
@@ -163,7 +167,7 @@ const handleClear = () => {
       <div class="select-trigger-wrapper" :class="{ 'is-disabled': props.disabled }">
         <NSelect
           :value="displayLabel"
-          :options="[]"
+          :options="displayLabel ? [{ label: displayLabel, value: displayLabel }] : []"
           :placeholder="props.placeholder"
           :disabled="props.disabled"
           :show-arrow="true"
@@ -174,12 +178,7 @@ const handleClear = () => {
           class="select-input"
           @search="handleSearch"
           @clear="handleClear"
-        >
-          <template #value>
-            <span v-if="displayLabel" class="device-display-name">{{ displayLabel }}</span>
-            <span v-else class="placeholder-text">{{ props.placeholder }}</span>
-          </template>
-        </NSelect>
+        ></NSelect>
       </div>
     </template>
 

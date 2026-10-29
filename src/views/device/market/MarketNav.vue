@@ -7,7 +7,7 @@
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { NSpace, NButton, NIcon } from 'naive-ui'
-import { GridOutline, CloudDownloadOutline, PersonCircleOutline } from '@vicons/ionicons5'
+import { GridOutline, CloudDownloadOutline } from '@vicons/ionicons5'
 import { $t } from '@/locales'
 
 // ========== Router ==========

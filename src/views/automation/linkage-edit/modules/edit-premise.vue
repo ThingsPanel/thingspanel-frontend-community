@@ -434,7 +434,7 @@ const statusData = computed(() => ({
 const message = useMessage()
 
 // 动作值标识
-const actionValueChange = (ifItem: any) => {
+;(ifItem: any) => {
   if (ifItem.trigger_param_type === 'event') {
     try {
       JSON.parse(ifItem.trigger_value)
@@ -598,11 +598,11 @@ const determineOptions = computed(() => [
 const eventExistsOptions = computed(() => [
   {
     label: '存在',
-    value: true
+    value: 'true'
   },
   {
     label: '不存在',
-    value: false
+    value: 'false'
   }
 ])
 
@@ -1205,7 +1205,11 @@ watch(locale, () => {
                         </NFormItem>
                         <template v-if="condition.operator === 'exists'">
                           <NFormItem :show-label="false" class="max-w-30 w-full">
-                            <NSelect v-model:value="condition.value" :options="eventExistsOptions" />
+                            <NSelect
+                              :value="String(condition.value)"
+                              :options="eventExistsOptions"
+                              @update:value="condition.value = $event === 'true'"
+                            />
                           </NFormItem>
                         </template>
                         <template v-else-if="condition.operator === 'between'">

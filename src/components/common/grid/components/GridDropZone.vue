@@ -49,7 +49,7 @@ interface Emits {
   drop: [event: DragEvent]
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   readonly: false,
   showDropZone: false
 })

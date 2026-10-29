@@ -26,7 +26,7 @@ import { ref } from 'vue'
 import { NScrollbar, ScrollbarInst, NEl } from 'naive-ui'
 
 // --- Props remain the same ---
-const props = defineProps({
+defineProps({
   list: {
     type: Array as () => any[],
     required: true

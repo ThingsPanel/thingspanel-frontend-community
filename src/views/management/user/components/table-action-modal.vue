@@ -216,7 +216,7 @@ watch(
         gender: createRequiredFormRule($t('common.pleaseCheckValue')),
         phone_only: [createRequiredFormRule($t('form.phone.required'))].concat(phoneNumberRule),
         email: formRules.email,
-        password: [{ required: true, message: $t('form.pwd.tip') }].concat(formRules.pwd),
+        password: [{ required: true, message: $t('form.pwd.tip') }, ...[formRules.pwd].flat()],
         confirmPwd: getConfirmPwdRule(toRefs(formModel).password),
         status: getConfirmPwdRule(toRefs(formModel).password),
         remark: createRequiredFormRule($t('common.pleaseCheckValue')),

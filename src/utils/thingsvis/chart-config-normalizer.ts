@@ -1,4 +1,9 @@
-export type CanonicalChartConfig = Record<string, any>
+export interface CanonicalChartConfig extends Record<string, any> {
+  canvas: Record<string, any>
+  nodes: Record<string, any>[]
+  dataSources: Record<string, any>[]
+  variables: unknown[]
+}
 
 export const THINGSVIS_GRID_DEFAULTS = {
   cols: 24,
@@ -55,7 +60,7 @@ function parseObject(value: unknown): Record<string, any> {
 }
 
 function normalizeCanvas(raw: unknown, nodeInputs: Record<string, any>[], options: ChartConfigNormalizerOptions) {
-  const source = { ...DEFAULT_CANVAS, ...(options.defaultCanvas || {}), ...parseObject(raw) }
+  const source: Record<string, unknown> = { ...DEFAULT_CANVAS, ...(options.defaultCanvas || {}), ...parseObject(raw) }
   const hasGridNodes = nodeInputs.some(node => {
     const grid = parseObject(node.grid)
     return Object.keys(grid).length > 0 || ['x', 'y', 'w', 'h'].every(key => finiteNumber(node[key]) !== undefined)
@@ -63,7 +68,7 @@ function normalizeCanvas(raw: unknown, nodeInputs: Record<string, any>[], option
   const mode = source.mode === 'reflow' ? 'infinite' : source.mode
   const normalizedMode =
     mode === 'grid' || mode === 'infinite' || mode === 'fixed' ? mode : hasGridNodes ? 'grid' : 'fixed'
-  const canvas = {
+  const canvas: Record<string, any> = {
     ...source,
     mode: normalizedMode,
     width: Math.max(1, Math.round(positiveNumber(source.width) ?? 1920)),
@@ -242,7 +247,7 @@ function normalizeNode(
   raw: unknown,
   index: number,
   canvas: Record<string, any>,
-  defaultDataSourceId?: string,
+  defaultDataSourceId: string | undefined,
   cursor: { x: number; y: number; rowHeight: number }
 ): Record<string, any> {
   const node = isRecord(raw) ? raw : {}
@@ -250,7 +255,7 @@ function normalizeNode(
   const legacyHasGrid = ['x', 'y', 'w', 'h'].every(key => finiteNumber(node[key]) !== undefined)
   const fallback = { x: cursor.x, y: cursor.y, w: 6, h: 4 }
   const grid = gridMode ? normalizeGrid(node, canvas, fallback) : undefined
-  if (gridMode) {
+  if (grid) {
     cursor.x = grid.x + grid.w
     cursor.rowHeight = Math.max(cursor.rowHeight, grid.h)
     if (cursor.x >= Number(canvas.gridCols)) {

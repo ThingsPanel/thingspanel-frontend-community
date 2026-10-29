@@ -401,7 +401,7 @@ const createEventSource = () => {
  * 清理EventSource连接
  * 确保组件销毁时正确释放连接资源，避免内存泄漏
  */
-const cleanupEventSource = () => {
+;() => {
   // 清理EventSource连接
   if (eventSource) {
     eventSource.close()

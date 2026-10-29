@@ -62,7 +62,7 @@ const feachConnectInfo = async () => {
   connectInfo.value = res.data
 }
 
-const pluginInfo = ref<object>({})
+const pluginInfo = ref<{ id?: string; service_type?: string; name?: string; service_identifier?: string }>({})
 const getPlugininfoByServiceReq = async str => {
   const { error, data } = await getPlugininfoByService(str)
   if (!error) {

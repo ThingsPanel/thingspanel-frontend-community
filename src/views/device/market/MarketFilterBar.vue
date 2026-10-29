@@ -50,7 +50,12 @@ const emit = defineEmits<{
       <div class="market-filter-field">
         <NSelect
           :value="category"
-          :options="categoryOptions"
+          :options="
+            categoryOptions.map(option => ({
+              ...option,
+              label: typeof option.label === 'function' ? option.label() : option.label
+            }))
+          "
           :placeholder="categoryPlaceholder"
           clearable
           @update:value="value => emit('update:category', value)"
@@ -58,7 +63,16 @@ const emit = defineEmits<{
       </div>
 
       <div class="market-filter-field">
-        <NSelect :value="sortBy" :options="sortOptions" @update:value="value => emit('update:sort-by', value)" />
+        <NSelect
+          :value="sortBy"
+          :options="
+            sortOptions.map(option => ({
+              ...option,
+              label: typeof option.label === 'function' ? option.label() : option.label
+            }))
+          "
+          @update:value="value => emit('update:sort-by', value)"
+        />
       </div>
 
       <div class="market-filter-actions">

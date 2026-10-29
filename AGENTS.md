@@ -31,6 +31,8 @@
 
 ## 开发与验证
 
+- 社区主线测试服自动部署说明：[部署入口](deploy/community-test/README.md)。`master` 推送必须先通过完整类型检查、回归和生产构建。
+
 - 在仓库根目录用 Windows/PowerShell 执行；依赖管理以 `package.json`、`pnpm-lock.yaml` 和 `pnpm-workspace.yaml` 为准。
 - 常用入口为 `pnpm dev`、`pnpm typecheck`、`pnpm build`；`build` 会先做类型检查。
 - 修改后运行对应回归测试和必要的类型/构建检查；现有候选 CI 会比较基线类型诊断，不能把全量历史错误直接归因于本次改动。

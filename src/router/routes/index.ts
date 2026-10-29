@@ -1,5 +1,6 @@
 import type { CustomRoute, ElegantConstRoute, ElegantRoute } from '@elegant-router/types'
 import type { RouteComponent } from 'vue-router'
+import type { ElegantConstRoute as RuntimeRoute } from '@elegant-router/vue'
 import { generatedRoutes } from '../elegant/routes'
 import { layouts, views } from '../elegant/imports'
 import { transformElegantRoutesToVueRoutes } from '../elegant/transform'
@@ -39,7 +40,18 @@ type AddedNativeDetailRoute =
       meta: { title: 'device_template_detail'; i18nKey: 'route.device_thingsmodel_detail' }
     }
 
-const customRoutes: Array<CustomRoute | AddedNativeDetailRoute> = [
+type ManualPagePaths = {
+  'device-config-legacy-redirect': '/device/config'
+  'device-config-detail-legacy-redirect': '/device/config-detail'
+  'device-details-app': '/device-details-app'
+  'visualization-app': '/visualization-app'
+  'visualization-app-dashboards': '/visualization-app/dashboards'
+  'visualization-app-preview': '/visualization-app/preview'
+}
+type ManualPageRoute = {
+  [K in keyof ManualPagePaths]: Omit<RuntimeRoute, 'name' | 'path'> & { name: K; path: ManualPagePaths[K] }
+}[keyof ManualPagePaths]
+const customRoutes: Array<CustomRoute | AddedNativeDetailRoute | ManualPageRoute> = [
   ROOT_ROUTE,
   {
     name: 'device-config-legacy-redirect',

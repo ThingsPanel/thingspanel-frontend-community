@@ -76,8 +76,8 @@ export function getLayoutStats(
     const averageSize = totalItems > 0 ? occupiedCells / totalItems : 0
 
     // 找到最大和最小的项目
-    let largestItem = null
-    let smallestItem = null
+    let largestItem: { id: string; area: number } | null = null
+    let smallestItem: { id: string; area: number } | null = null
     let maxArea = 0
     let minArea = Infinity
 

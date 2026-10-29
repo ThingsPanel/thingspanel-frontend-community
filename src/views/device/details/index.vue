@@ -179,7 +179,7 @@ const labels = ref<string[]>([])
 
 const deviceData: any = ref({})
 const device_type = ref('')
-const icon_type = ref('')
+ref('')
 const name = ref('')
 const device_number = ref('')
 const device_is_online = ref(0)

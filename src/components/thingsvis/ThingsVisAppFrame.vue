@@ -35,10 +35,7 @@ import { resolveDeviceNativeModel, hasNativeDeviceBinding } from '@/views/device
 import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
-import {
-  findPlatformWriteTarget,
-  normalizePlatformWriteValue
-} from '@/utils/thingsvis/platform-fields'
+import { findPlatformWriteTarget, normalizePlatformWriteValue } from '@/utils/thingsvis/platform-fields'
 import {
   canHydrateThingsVisPreview,
   canonicalizeThingsVisConfig,
@@ -978,10 +975,22 @@ function buildDeviceWidgetPresets(sourceKey: string, rawConfig: unknown, fields:
   return [...nodePresets, ...storedPresets]
 }
 
-type PlatformDeviceMetadata = Pick<PlatformDeviceEntry,
-  'fields' | 'presets' | 'metadataError' | 'nativeModelID' | 'nativeSnapshotID' | 'nativeRevision' | 'nativeBindingRevision'>
+type PlatformDeviceMetadata = Pick<
+  PlatformDeviceEntry,
+  | 'fields'
+  | 'presets'
+  | 'metadataError'
+  | 'nativeModelID'
+  | 'nativeSnapshotID'
+  | 'nativeRevision'
+  | 'nativeBindingRevision'
+>
 
-async function loadDeviceFieldMetadata(deviceId: string, configId?: string, row?: any): Promise<PlatformDeviceMetadata> {
+async function loadDeviceFieldMetadata(
+  deviceId: string,
+  configId?: string,
+  row?: any
+): Promise<PlatformDeviceMetadata> {
   let config = asRecord(row?.device_config || row?.deviceConfig || row)
   if (configId) {
     config = await loadDeviceConfigBinding(configId)
@@ -1094,8 +1103,12 @@ async function loadCurrentDeviceFields(deviceId: string): Promise<PlatformField[
 
   if (cacheKey) currentDeviceFieldsPromise.set(cacheKey, promise)
   promise.then(
-    () => { if (cacheKey) currentDeviceFieldsPromise.delete(cacheKey) },
-    () => { if (cacheKey) currentDeviceFieldsPromise.delete(cacheKey) }
+    () => {
+      if (cacheKey) currentDeviceFieldsPromise.delete(cacheKey)
+    },
+    () => {
+      if (cacheKey) currentDeviceFieldsPromise.delete(cacheKey)
+    }
   )
   return promise
 }
@@ -1114,8 +1127,12 @@ async function buildRequestedFieldData(fieldIds: unknown[], deviceId?: string): 
   const promise = buildRequestedFieldDataUncached(requestedFields, deviceId)
   if (requestKey) requestedFieldDataPromise.set(requestKey, promise)
   promise.then(
-    () => { if (requestKey) requestedFieldDataPromise.delete(requestKey) },
-    () => { if (requestKey) requestedFieldDataPromise.delete(requestKey) }
+    () => {
+      if (requestKey) requestedFieldDataPromise.delete(requestKey)
+    },
+    () => {
+      if (requestKey) requestedFieldDataPromise.delete(requestKey)
+    }
   )
   return promise
 }
@@ -1608,15 +1625,18 @@ async function buildPlatformDeviceGroups(): Promise<PlatformDeviceGroupEntry[]> 
     } catch (err) {
       console.error('[AppFrame] Failed to load platform device groups', err)
       throw err
-    } finally {
     }
   })()
 
   if (cacheScope) {
     platformDeviceGroupsCachePromise = promise
     promise.then(
-      () => { if (platformDeviceGroupsCachePromise === promise) platformDeviceGroupsCachePromise = null },
-      () => { if (platformDeviceGroupsCachePromise === promise) platformDeviceGroupsCachePromise = null }
+      () => {
+        if (platformDeviceGroupsCachePromise === promise) platformDeviceGroupsCachePromise = null
+      },
+      () => {
+        if (platformDeviceGroupsCachePromise === promise) platformDeviceGroupsCachePromise = null
+      }
     )
   }
   return promise
@@ -1858,13 +1878,6 @@ async function buildFallbackPlatformDevicesForDefaultGroup(
   return mapPlatformDevicesForGroup(rawDevices, normalizedGroupId, groupName, groups)
 }
 
-async function buildUngroupedPlatformDevices(): Promise<PlatformDeviceEntry[]> {
-  const deviceRes = await deviceList({ page: 1, page_size: EDITOR_GROUP_DEVICE_PAGE_SIZE })
-  const rawDevices = unwrapList(deviceRes?.data)
-
-  return mapPlatformDevicesForGroup(rawDevices, '', '')
-}
-
 async function buildPlatformDeviceById(deviceId: string): Promise<PlatformDeviceEntry | null> {
   const requestScope = ensurePlatformCacheScope()
   const normalizedDeviceId = firstString(deviceId)
@@ -1983,17 +1996,18 @@ async function doInit(): Promise<boolean> {
   let dashboardPayload: Record<string, unknown> = { meta: { id: props.id } }
 
   try {
-    const dashboardData = hasCompleteDashboardSchema(props.schema)
-      ? {
-          id: props.schema.id || props.id,
-          name: props.schema.name,
-          thumbnail: props.schema.thumbnail ?? null,
-          canvasConfig: props.schema.canvasConfig,
-          nodes: props.schema.nodes,
-          dataSources: props.schema.dataSources,
-          variables: props.schema.variables
-        }
-      : null
+    const dashboardData =
+      props.schema && hasCompleteDashboardSchema(props.schema)
+        ? {
+            id: props.schema.id || props.id,
+            name: props.schema.name,
+            thumbnail: props.schema.thumbnail ?? null,
+            canvasConfig: props.schema.canvasConfig,
+            nodes: props.schema.nodes,
+            dataSources: props.schema.dataSources,
+            variables: props.schema.variables
+          }
+        : null
     const fetched = dashboardData ? { data: dashboardData, error: null } : await fetchDashboardWithRetry(props.id)
     const { data, error } = fetched
     if (!error && data) {

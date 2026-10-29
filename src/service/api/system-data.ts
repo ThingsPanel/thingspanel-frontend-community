@@ -25,26 +25,11 @@ export interface ApiLatestTelemetryResponse {
 }
 
 // Reintroduce the interface for the expected API response structure
-interface ApiResponse<T> {
-  code: number
-  message: string
-  data: T
-}
 
 // --- 接口定义结束 ---
 
 // --- 定义 /board/tenant 返回的 data 类型 ---
-interface TenantMonthData {
-  mon: number
-  num: number
-}
 
-interface TenantBoardData {
-  user_total: number
-  user_added_yesterday: number
-  user_added_month: number
-  user_list_month: TenantMonthData[]
-}
 // --- 类型定义结束 ---
 
 /** 获取设备总数和激活数 */
@@ -284,12 +269,9 @@ export const getSysVersion = async (params?: any): Promise<any> => {
 
 /** 获取系统指标历史数据 */
 export const getSystemMetricsHistory = async (params?: any): Promise<any> => {
-  if (process.env.NODE_ENV === 'development') {
-  }
   try {
     const data = await request.get<any>('/system/metrics/history', { params })
-    if (process.env.NODE_ENV === 'development') {
-    } // Log raw response
+    // Log raw response
     return data
   } catch (error) {
     console.error('Error fetching system metrics history:', error)

@@ -1,4 +1,5 @@
 import { canonicalizeThingsVisConfig, THINGSVIS_GRID_DEFAULTS } from './chart-config-normalizer'
+import type { CanonicalChartConfig } from './chart-config-normalizer'
 
 export const APP_CANVAS_DEFAULTS = {
   mode: 'grid',
@@ -68,7 +69,7 @@ function reflowNodesToAppGrid(nodes: any[], sourceCanvas: Record<string, any>, r
     const hasSourceGrid = sourceWidthInCols !== undefined
     const sourcePixelWidth = hasSourceGrid
       ? (sourceWidthInCols / sourceCols) * sourceWidth
-      : positiveNumber(nodeSize.width, node?.width) ?? 240
+      : (positiveNumber(nodeSize.width, node?.width) ?? 240)
     const sourcePixelHeight = positiveNumber(nodeSize.height, node?.height) ?? 200
     const appGap = APP_CANVAS_DEFAULTS.gridGap
     const appPadding = APP_CANVAS_DEFAULTS.padding
@@ -180,7 +181,13 @@ function gridRowEnd(nodes: any[]) {
   }, 0)
 }
 
-function updateAppCanvasHeight(config: Record<string, any>, nodes: any[]) {
+function updateAppCanvasHeight(
+  config: Record<string, any>,
+  nodes: any[]
+): Record<string, any> & {
+  nodes: any[]
+  canvas: Record<string, any>
+} {
   const canvas = recordValue(config.canvas)
   const rowEnd = gridRowEnd(nodes)
   const rowHeight = Number(canvas.gridRowHeight) || APP_CANVAS_DEFAULTS.gridRowHeight
@@ -203,7 +210,7 @@ function updateAppCanvasHeight(config: Record<string, any>, nodes: any[]) {
  * Web and App charts remain independent; this only migrates a legacy App
  * payload that was copied from (or saved with) a landscape Web canvas.
  */
-export function normalizeAppChartConfig(raw: unknown) {
+export function normalizeAppChartConfig(raw: unknown): CanonicalChartConfig {
   const config = canonicalizeThingsVisConfig(raw, { defaultCanvas: APP_CANVAS_DEFAULTS })
   const canvas = recordValue(config.canvas)
   const normalizedCanvas = {
@@ -415,7 +422,6 @@ export function syncAppChartConfigFromWeb(currentAppConfig: unknown, webConfig: 
       },
       canvas: {
         ...(parsed.canvas || {}),
-        mode: 'grid',
         ...APP_CANVAS_DEFAULTS
       }
     }

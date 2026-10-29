@@ -77,7 +77,11 @@
  * 专注于网格布局的核心功能和事件处理
  */
 
-import { computed, shallowRef, watch } from 'vue'
+/**
+ * Grid 核心组件
+ * 专注于网格布局的核心功能和事件处理
+ */
+import { shallowRef, watch } from 'vue'
 import { GridLayout, GridItem } from 'grid-layout-plus'
 import GridItemContent from './GridItemContent.vue'
 import type { GridLayoutPlusConfig, GridLayoutPlusItem, GridLayoutPlusEmits } from '../gridLayoutPlusTypes'

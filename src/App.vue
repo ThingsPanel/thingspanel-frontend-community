@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted } from 'vue'
+import { computed } from 'vue'
 import { NConfigProvider, darkTheme } from 'naive-ui'
 import { useFullscreen } from '@vueuse/core'
 import json from 'highlight.js/lib/languages/json'
@@ -17,7 +17,7 @@ defineOptions({
 
 const appStore = useAppStore()
 const themeStore = useThemeStore()
-const { isFullscreen, toggle } = useFullscreen()
+useFullscreen()
 const naiveDarkTheme = computed(() => (themeStore.darkMode ? darkTheme : undefined))
 
 const naiveLocale = computed(() => {

@@ -1,12 +1,7 @@
-import { ref, type Ref } from 'vue'
+import { ref } from 'vue'
 import { useWebSocket } from '@vueuse/core'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
-
-interface DeviceStatusMessage {
-  device_id: string
-  is_online: number // 1: 在线, 0: 离线
-}
 
 interface SubscriptionParams {
   device_ids: string[]

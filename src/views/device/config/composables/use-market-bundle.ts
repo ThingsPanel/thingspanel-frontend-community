@@ -4,12 +4,7 @@
 
 import { computed, reactive } from 'vue'
 import { useMarketAuth } from './use-market-auth'
-import type {
-  PrecheckResult,
-  PublishDraftResponse,
-  PublishedBundle,
-  InstallBundleRequest
-} from '@/service/api/market-bundle'
+import type { PrecheckResult, PublishedBundle, InstallBundleRequest } from '@/service/api/market-bundle'
 import {
   createPublishDraft,
   getErrorDisplayMessage,
@@ -19,7 +14,7 @@ import {
   mapPrecheckReportToResults,
   type MarketApiError
 } from '@/service/api/market-bundle'
-import type { Locale } from '~/src/locales/locale'
+type Locale = 'zh' | 'en'
 
 export interface BundleMetadata {
   name: string
@@ -64,7 +59,7 @@ const initialWizardState: PublishWizardState = {
 }
 
 export function useMarketBundle() {
-  const { isLoggedIn, getToken } = useMarketAuth()
+  const { getToken } = useMarketAuth()
   const wizardState = reactive<PublishWizardState>({ ...initialWizardState })
 
   const hasSelectedResources = computed(() => {
@@ -308,7 +303,7 @@ const PRECHECK_CODE_TITLES: Record<string, { zh: string; en: string }> = {
   BUNDLE_VERSION_CONFLICT: { zh: '版本冲突', en: 'Version Conflict' }
 }
 
-const LEVEL_ICONS: Record<string, string> = {
+const LEVEL_ICONS: Record<string, PrecheckDisplayItem['level']> = {
   PASS: 'success',
   FAIL: 'error',
   WARN: 'warning',

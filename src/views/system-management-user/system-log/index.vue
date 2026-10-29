@@ -105,7 +105,7 @@ const detailModalRef = ref<any>(null)
 const handleDetail = item => {
   detailModalRef.value && detailModalRef.value.show && detailModalRef.value.show(item)
 }
-const columns: Ref<DataTableColumns<DataService.Data>> = ref([
+const columns: Ref<DataTableColumns<Api.SystemManage.SystemLogList>> = ref([
   {
     key: 'created_at',
     title: $t('common.time'),
@@ -160,7 +160,7 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
       )
     }
   }
-]) as Ref<DataTableColumns<DataService.Data>>
+]) as Ref<DataTableColumns<Api.SystemManage.SystemLogList>>
 
 function handleQuery() {
   pagination.page = 1

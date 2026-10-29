@@ -72,7 +72,7 @@ const emailOptions = computed(() => {
   return filteredDomains.map(domain => `${username}@${domain}`)
 })
 
-const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
+const rules = computed<Partial<Record<keyof FormModel, App.Global.FormRule[]>>>(() => {
   const { formRules } = useFormRules()
 
   return {

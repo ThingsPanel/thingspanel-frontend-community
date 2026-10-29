@@ -570,7 +570,6 @@ onMounted(() => {
       v-model:visible="detailDrawerVisible"
       v-model:version="currentVersion"
       :bundle="currentDetail"
-      :version="currentVersion"
       :bindings="currentBindings"
       :loading="loadingDetail"
       @download="handleDownload"

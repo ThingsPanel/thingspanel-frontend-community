@@ -1,3 +1,4 @@
+import { $t } from '@/locales'
 import type { Router } from 'vue-router'
 import type { LastLevelRouteKey, RouteKey, RouteMap } from '@elegant-router/types'
 import { getRoutePath } from '@/router/elegant/transform'

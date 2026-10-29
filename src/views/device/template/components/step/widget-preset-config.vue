@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { NModal, NButton } from 'naive-ui'
 import { $t } from '@/locales'
 import { getTemplat, putTemplat } from '@/service/api'
@@ -54,7 +54,13 @@ const loadPresetData = async () => {
         {
           id: props.property.identifier,
           name: props.property.name,
-          dataType: props.propertyType,
+          dataType: props.propertyType === 'attributes' ? 'attribute' : 'telemetry',
+          type:
+            props.property.dataType === 'number' ||
+            props.property.dataType === 'boolean' ||
+            props.property.dataType === 'json'
+              ? props.property.dataType
+              : 'string',
           unit: props.property.unit
         }
       ]

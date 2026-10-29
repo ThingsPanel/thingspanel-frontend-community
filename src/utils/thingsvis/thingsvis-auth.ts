@@ -70,10 +70,7 @@ export class ThingsVisAuthService {
    * 等待 userInfo 就绪（处理首次登录时的竞态条件）
    * 当 loginByToken 还未完成 localStg.set('userInfo') 时，首页组件可能已挂载
    */
-  private async waitForUserInfo(
-    maxRetries: number = 5,
-    intervalMs: number = 200
-  ): Promise<typeof localStg extends { get: (key: 'userInfo') => infer R } ? R : null> {
+  private async waitForUserInfo(maxRetries: number = 5, intervalMs: number = 200): Promise<Api.Auth.UserInfo | null> {
     let userInfo = localStg.get('userInfo')
     let retries = 0
 

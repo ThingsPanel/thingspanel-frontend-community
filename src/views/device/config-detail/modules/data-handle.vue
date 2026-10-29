@@ -3,6 +3,7 @@ import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from 'v
 import { type FormInst, NButton, useDialog } from 'naive-ui'
 import { PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5'
 import MonacoEditor from 'monaco-editor-vue3'
+import type { editor } from 'monaco-editor'
 import ItemCard from '@/components/dev-card-item/index.vue'
 import {
   dataScriptAdd,
@@ -145,12 +146,12 @@ const editorOptions = ref({
 })
 
 // 编辑器实例引用
-const editorRef = ref(null)
+const editorRef = ref<{ _getEditor(): editor.IStandaloneCodeEditor | null } | null>(null)
 
 // 编辑器工具栏功能
 const formatCode = () => {
   if (editorRef.value) {
-    editorRef.value.getAction('editor.action.formatDocument').run()
+    editorRef.value._getEditor()?.getAction('editor.action.formatDocument')?.run()
   }
 }
 
@@ -320,16 +321,8 @@ const doQuiz = async () => {
       return
     }
 
-    // 检查响应结构，可能是嵌套的
-    let actualResponse = response
-    // 如果response.data存在且包含code属性，说明真正的响应在response.data中
-    if (response.data && typeof response.data === 'object' && 'code' in response.data) {
-      actualResponse = response.data
-      // if (process.env.NODE_ENV === 'development') {
-      // }
-    }
-    // if (process.env.NODE_ENV === 'development') {
-    // }
+    const actualResponse = response.data
+    if (!actualResponse) return
     // 根据返回的code值决定显示内容
     // 使用宽松比较，因为code可能是字符串"200"
     if (actualResponse.code == 200 || actualResponse.code === '200') {
@@ -355,7 +348,9 @@ const doQuiz = async () => {
     // 处理请求异常
     console.error('调试请求异常:', error)
     configForm.value.resolt_analog_input =
-      t('page.dataForward.debugRequestFailed') + ': ' + (error.message || t('page.dataForward.unknownError'))
+      t('page.dataForward.debugRequestFailed') +
+      ': ' +
+      (error instanceof Error ? error.message : t('page.dataForward.unknownError'))
   }
 }
 watch(queryData.value, () => queryDataScriptList(), { deep: true })

@@ -204,7 +204,7 @@ export const demoChildDevices = () => [
   { id: 'child-3', name: '光照传感器', subDeviceAddr: 'channel-03' }
 ]
 
-export const demoStatusHistory = () => [
+export const demoStatusHistory = (): Array<{ status: 0 | 1; change_time: string }> => [
   { status: 1, change_time: timestamp(2) },
   { status: 0, change_time: timestamp(48) },
   { status: 1, change_time: timestamp(52) },

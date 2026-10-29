@@ -32,7 +32,7 @@ const props = withDefaults(defineProps<Props>(), {
 interface Emits {
   (e: 'update:visible', visible: boolean): void
 
-  (e: 'modification', name: string): void
+  (e: 'modification', name?: string): void
 }
 const { formRef, validate } = useNaiveForm()
 const emit = defineEmits<Emits>()
@@ -90,8 +90,9 @@ const editName = async () => {
 /** passwordModification */
 const password = async () => {
   await validate()
-  const data = localStorage.getItem('enableZcAndYzm') ? JSON.parse(localStorage.getItem('enableZcAndYzm')) : []
-  let salt = null
+  const storedSettings = localStorage.getItem('enableZcAndYzm')
+  const data = storedSettings ? JSON.parse(storedSettings) : []
+  let salt: string | null = null
   let password1 = formData.value.password
   if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
     salt = generateRandomHexString(16)

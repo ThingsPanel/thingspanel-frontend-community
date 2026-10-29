@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { NButton, NSpace, NCard, NStatistic, NIcon, NUpload, useMessage } from 'naive-ui'
 import { Menu } from '@vicons/ionicons5'
 import {
@@ -165,7 +165,6 @@ const {
   canRedo,
   hasSelectedItems,
   addItem,
-  removeItem,
   clearLayout,
   selectAllItems,
   clearSelection,
@@ -202,7 +201,7 @@ const addRandomItem = () => {
   if (result.success) {
     message.success('项目添加成功')
   } else {
-    message.error(result.message)
+    message.error(result.message ?? '操作失败')
   }
 }
 
@@ -234,7 +233,7 @@ const selectAll = () => {
 const deleteSelected = () => {
   const result = deleteSelectedItems()
   if (result.success) {
-    message.success(result.message)
+    message.success(result.message ?? '操作成功')
   }
 }
 
@@ -262,7 +261,7 @@ const importLayout = (options: any) => {
       if (result.success) {
         message.success('布局导入成功')
       } else {
-        message.error(result.message)
+        message.error(result.message ?? '操作失败')
       }
     } catch (error) {
       message.error('布局导入失败')

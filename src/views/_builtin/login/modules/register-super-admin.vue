@@ -115,7 +115,7 @@ async function handleSubmit() {
     window.location.href = '/'
   } catch (error: any) {
     const msg = error?.error?.message || error?.response?.data?.message
-    window.$message.error(msg || error?.message || '本地初始化失败，请检查邮箱和密码后重试')
+    window.$message?.error(msg || error?.message || '本地初始化失败，请检查邮箱和密码后重试')
     console.error('Initialization failed:', error)
   } finally {
     submitting.value = false

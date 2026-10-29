@@ -1,6 +1,5 @@
 <script setup lang="tsx">
 import { computed, reactive, ref } from 'vue'
-import type { PaginationProps } from 'naive-ui'
 import { NButton, NEmpty, NPopconfirm, NSpace } from 'naive-ui'
 import { useLoading } from '@sa/hooks'
 import { $t } from '@/locales'
@@ -154,7 +153,7 @@ const edit: (row: any) => void = row => {
 }
 
 // 预设配置
-const configPreset = (row: any, type: 'telemetry' | 'attributes') => {
+;(row: any, type: 'telemetry' | 'attributes') => {
   presetProperty.value = {
     id: row.id,
     name: row.data_name,
