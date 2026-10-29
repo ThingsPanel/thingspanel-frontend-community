@@ -157,6 +157,13 @@ describe('device credentials page: rotation, revocation and connection info', ()
   it('shows a warning instead of connection info when the server cannot provide it', async () => {
     runtime.readConnectionInfo.mockRejectedValue(new Error('device access is not configured'))
     const wrapper = await mountPage()
-    expect(wrapper.text()).toContain('device access is not configured')
+    expect(wrapper.text()).toContain('该设备尚未配置接入信息')
+    expect(wrapper.text()).not.toContain('device access is not configured')
+  })
+
+  it('keeps other connection-info errors as the server wrote them', async () => {
+    runtime.readConnectionInfo.mockRejectedValue(new Error('runtime unavailable'))
+    const wrapper = await mountPage()
+    expect(wrapper.text()).toContain('runtime unavailable')
   })
 })
