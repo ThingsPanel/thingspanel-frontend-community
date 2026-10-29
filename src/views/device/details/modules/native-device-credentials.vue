@@ -298,7 +298,14 @@ async function loadConnectionInfo(deviceId: string) {
     const info = await deviceRuntimeNative.readConnectionInfo(deviceId)
     if (deviceId === props.id) connectionInfo.value = info
   } catch (error) {
-    if (deviceId === props.id) connectionInfoError.value = error instanceof Error ? error.message : '接入信息读取失败'
+    if (deviceId === props.id) {
+      const message = error instanceof Error ? error.message : ''
+      // 未绑定模板的设备没有接入配置，后端返回英文原文；这是预期状态，不是读取失败。
+      connectionInfoError.value =
+        message === 'device access is not configured'
+          ? '该设备尚未配置接入信息（需先绑定设备模板）'
+          : message || '接入信息读取失败'
+    }
   }
 }
 watch(
