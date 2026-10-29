@@ -1,28 +1,22 @@
 <script setup lang="ts">
-import {
-  computed,
-  defineAsyncComponent,
-  getCurrentInstance,
-  markRaw,
-  nextTick,
-  onBeforeMount,
-  reactive,
-  ref,
-  watch
-} from 'vue'
+import { computed, defineAsyncComponent, getCurrentInstance, markRaw, nextTick, onBeforeMount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLoading } from '@sa/hooks'
 import { useWebSocket } from '@vueuse/core'
 import { $t } from '@/locales'
-import { deviceDetail, deviceUpdate } from '@/service/api/device'
+import { deviceNative, type Device, type UpdateDevice } from '@/service/api/device-native'
+import { templateNative } from '@/service/api/template-native'
 import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
 import { localStg } from '@/utils/storage'
 import { useRouterPush } from '@/hooks/common/router'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
 import { hasThingsVisChartContent } from '@/utils/thingsvis/template-presets'
 import { resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
+import { normalizeNativeDeviceTags } from '@/views/device/manage/modules/native-device-registration'
 import { message } from '@/utils/common/discrete'
 import { isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
+import NativeDeviceCredentials from '@/views/device/details/modules/native-device-credentials.vue'
+import NativeDeviceInfo from '@/views/device/details/modules/native-device-info.vue'
 const route = useRoute()
 const { query } = useRoute()
 let { d_id } = query
@@ -31,31 +25,32 @@ const getDeviceId = () => {
   return (Array.isArray(d_id) ? d_id[0] : d_id) || ''
 }
 
-const isDemoDevice = computed(() => isDeviceDetailDemo(getDeviceId()))
+const isDemoDevice = computed(() => Boolean(deviceData.value?.id) && isDeviceDetailDemo(getDeviceId()))
 
 const { loading, startLoading, endLoading } = useLoading()
 
 // 详情页 Tab 按需加载，避免首次进入时同步解析所有重型模块。
 const Telemetry = defineAsyncComponent(() => import('@/views/device/details/modules/telemetry/telemetry.vue'))
 const TelemetryChart = defineAsyncComponent(() => import('@/views/device/details/modules/telemetry-chart.vue'))
-const Join = defineAsyncComponent(() => import('@/views/device/details/modules/join.vue'))
-const DeviceAnalysis = defineAsyncComponent(() => import('@/views/device/details/modules/device-analysis.vue'))
-const Message = defineAsyncComponent(() => import('@/views/device/details/modules/message.vue'))
 const Stats = defineAsyncComponent(() => import('@/views/device/details/modules/stats.vue'))
 const EventReport = defineAsyncComponent(() => import('@/views/device/details/modules/event-report.vue'))
 const CommandDelivery = defineAsyncComponent(() => import('@/views/device/details/modules/command-delivery.vue'))
 const ExpectMessage = defineAsyncComponent(() => import('@/views/device/details/modules/expect-message.vue'))
 const Automate = defineAsyncComponent(() => import('@/views/device/details/modules/automate.vue'))
 const GiveAnAlarm = defineAsyncComponent(() => import('@/views/device/details/modules/give-an-alarm.vue'))
-const Settings = defineAsyncComponent(() => import('@/views/device/details/modules/settings.vue'))
 const DeviceStatusHistory = defineAsyncComponent(() => import('@/views/device/details/modules/device-status.vue'))
 const DeviceDiagnosis = defineAsyncComponent(() => import('@/views/device/details/modules/device-diagnosis.vue'))
+const NativeDeviceSettings = defineAsyncComponent(
+  () => import('@/views/device/details/modules/native-device-settings.vue')
+)
+const NativeSubdevices = defineAsyncComponent(() => import('@/views/device/details/modules/native-subdevices.vue'))
 
 type TabComponent = {
   key: string
   name: () => string
   component: any
   refreshKey: number
+  pendingTitle?: string
 }
 
 const baseComponents: TabComponent[] = [
@@ -74,20 +69,23 @@ const baseComponents: TabComponent[] = [
   {
     key: 'join',
     name: () => $t('custom.device_details.join'),
-    component: markRaw(Join),
-    refreshKey: 0
+    component: markRaw(NativeDeviceCredentials),
+    refreshKey: 0,
+    pendingTitle: '连接配置'
   },
   {
     key: 'device-analysis',
     name: () => $t('custom.device_details.subdevice'),
-    component: markRaw(DeviceAnalysis),
-    refreshKey: 0
+    component: markRaw(NativeSubdevices),
+    refreshKey: 0,
+    pendingTitle: '子设备关系'
   },
   {
     key: 'message',
     name: () => $t('custom.device_details.AdditionalDetails'),
-    component: markRaw(Message),
-    refreshKey: 0
+    component: markRaw(NativeDeviceInfo),
+    refreshKey: 0,
+    pendingTitle: '设备附加信息'
   },
   {
     key: 'stats',
@@ -134,8 +132,9 @@ const baseComponents: TabComponent[] = [
   {
     key: 'settings',
     name: () => $t('custom.device_details.settings'),
-    component: markRaw(Settings),
-    refreshKey: 0
+    component: markRaw(NativeDeviceSettings),
+    refreshKey: 0,
+    pendingTitle: '设备设置'
   }
 ]
 
@@ -145,9 +144,18 @@ const tabsRenderKey = ref(0)
 let lastTabsSig = ''
 let lastConfigId = ''
 let detailRequestId = 0
+let deviceETag = ''
+let pendingDeviceUpdate: { etag: string; id: string; key: string; payloadJSON: string } | null = null
+
+function requestedTabKey() {
+  const requested = String(route.query.tab ?? '')
+  return requested === 'automate' || requested === 'give-an-alarm' ? requested : ''
+}
 
 function getPreferredTabKey() {
+  const requested = requestedTabKey()
   const keys = components.value.map(item => item.key)
+  if (requested && keys.includes(requested)) return requested
 
   // Prefer chart first, otherwise telemetry, otherwise the first available.
   if (keys.includes('chart')) return 'chart'
@@ -159,6 +167,12 @@ function ensureActiveTab() {
   const preferredKey = getPreferredTabKey()
   if (!preferredKey) {
     tabValue.value = ''
+    return
+  }
+
+  const requested = requestedTabKey()
+  if (requested && components.value.some(item => item.key === requested)) {
+    tabValue.value = requested
     return
   }
 
@@ -175,18 +189,20 @@ function bumpRefreshKey(targetKey: string) {
 const tabValue = ref<string>('')
 const showDialog = ref(false)
 const showStatusHistoryDialog = ref(false)
-const labels = ref<string[]>([])
+const tags = ref<string[]>([])
+const detailError = ref('')
+const relatedTemplateError = ref('')
+const updateError = ref('')
 
 const deviceData: any = ref({})
+const structuredLabels = computed(() => Object.entries((deviceData.value?.labels ?? {}) as Record<string, string>))
 const device_type = ref('')
-const icon_type = ref('')
 const name = ref('')
-const device_number = ref('')
-const device_is_online = ref(0)
-const device_loop = ref(false)
+const device_is_online = ref<number | null>(null)
 let wsUrl = getWebsocketServerUrl()
 const DEVICE_STATUS_INACTIVE_COLOR = '#ccc'
-const DEVICE_ALARM_ACTIVE_COLOR = '#ee0808'
+const deviceAlarmActive = ref<boolean | null>(null)
+const deviceAlarmColor = computed(() => DEVICE_STATUS_INACTIVE_COLOR)
 
 wsUrl += `/device/online/status/ws`
 const normalizeOnlineStatus = (payload: unknown): number | null => {
@@ -237,54 +253,6 @@ const { send } = useWebSocket(wsUrl, {
   }
 })
 
-const normalizeAlarmActive = (raw: unknown): boolean => {
-  if (typeof raw === 'boolean') return raw
-  if (typeof raw === 'number') return raw > 0
-  if (typeof raw === 'string') {
-    const normalized = raw.trim().toLowerCase()
-    if (
-      !normalized ||
-      normalized === '0' ||
-      normalized === 'false' ||
-      normalized === 'off' ||
-      normalized === 'no' ||
-      normalized === 'n'
-    ) {
-      return false
-    }
-    if (
-      normalized === '1' ||
-      normalized === 'true' ||
-      normalized === 'on' ||
-      normalized === 'yes' ||
-      normalized === 'y'
-    ) {
-      return true
-    }
-  }
-  return Boolean(raw)
-}
-
-const deviceAlarmActive = computed(() =>
-  normalizeAlarmActive(
-    deviceData.value?.warn_status ??
-      deviceData.value?.warnStatus ??
-      deviceData.value?.alarm_status ??
-      deviceData.value?.alarmStatus
-  )
-)
-
-const deviceAlarmColor = computed(() =>
-  deviceAlarmActive.value ? DEVICE_ALARM_ACTIVE_COLOR : DEVICE_STATUS_INACTIVE_COLOR
-)
-
-const queryParams = reactive({
-  label: '',
-  id: '',
-  name: '',
-  device_number: '',
-  description: ''
-})
 const changeTabs = v => {
   startLoading()
 
@@ -297,64 +265,97 @@ const editConfig = () => {
   showDialog.value = true
 }
 
-const rules = {
-  name: {
-    required: true,
-    message: $t('custom.devicePage.enterDeviceName'),
-    trigger: 'blur'
-  },
-  device_number: {
-    required: true,
-    message: $t('custom.devicePage.enterDeviceNumber'),
-    trigger: 'blur'
+function legacyKind(kind: Device['deviceKind']) {
+  if (kind === 'standalone') return '1'
+  if (kind === 'gateway') return '2'
+  return '3'
+}
+
+function toDeviceDetailView(device: Device, templateName: string, gatewayName: string) {
+  const binding = device.modelBinding
+    ? {
+        id: device.id,
+        native_thing_model_id: device.modelBinding.modelId,
+        native_thing_model_snapshot_id: device.modelBinding.snapshotId,
+        native_thing_model_revision: device.modelBinding.publishedRevision,
+        // This is the exact device resource revision observed with modelBinding;
+        // the model identity and published revision above come only from modelBinding.
+        native_binding_revision: device.resourceVersion
+      }
+    : null
+
+  return {
+    ...device,
+    device_number: device.deviceNumber,
+    device_type: legacyKind(device.deviceKind),
+    device_config_id: device.templateId ?? '',
+    device_config_name: templateName,
+    device_config: binding,
+    parent_id: device.gatewayId ?? '',
+    gateway_device_name: gatewayName,
+    is_online: null
   }
 }
+
 const getDeviceDetail = async () => {
   const currentRequestId = ++detailRequestId
-  device_loop.value = false
-  const { error, data } = await deviceDetail(getDeviceId())
-  if (currentRequestId !== detailRequestId) return
-
-  device_loop.value = true
-  deviceData.value = data
-  labels.value.length = 0
-
-  if (data.label) {
-    if (data.label.includes(',')) {
-      labels.value = data.label.split(',')
-    } else {
-      labels.value.push(data.label)
-    }
+  const id = getDeviceId()
+  detailError.value = ''
+  relatedTemplateError.value = ''
+  device_is_online.value = null
+  if (!id) {
+    detailError.value = '缺少设备 ID。'
+    deviceData.value = {}
+    components.value = []
+    name.value = ''
+    return
   }
-  if (!error) {
-    device_number.value = data.device_number
-    device_is_online.value = data.is_online
-    name.value = data.name
+  try {
+    const { device, etag } = await deviceNative.get(id)
+    if (currentRequestId !== detailRequestId) return
+    deviceETag = etag
 
-    // 先展示基础 Tab，模板图表判断放到后台执行，避免阻塞首屏。
+    let templateName = ''
+    if (device.templateId) {
+      try {
+        const { template } = await templateNative.get(device.templateId)
+        templateName = template.name
+      } catch (error) {
+        relatedTemplateError.value = error instanceof Error ? error.message : '设备模板名称暂不可读取。'
+      }
+    }
+    let gatewayName = ''
+    if (device.gatewayId) {
+      try {
+        const { device: gateway } = await deviceNative.get(device.gatewayId)
+        gatewayName = gateway.name
+      } catch {
+        gatewayName = ''
+      }
+    }
+    if (currentRequestId !== detailRequestId) return
+
+    const data = toDeviceDetailView(device, templateName, gatewayName)
+    deviceData.value = data
+    tags.value = [...(device.tags ?? [])]
+    name.value = device.name
+    device_type.value = data.device_type
+
+    // Start with live runtime tabs; the chart is enabled only from the exact
+    // selected model snapshot included in the native device response.
     let filtered = baseComponents.map(item => ({ ...item }))
     filtered = filtered.filter(item => item.key !== 'chart')
-
-    if (data?.device_config) {
-      device_type.value = data.device_config.device_type
-      if (device_type.value !== '2' || !data?.device_config_name) {
-        filtered = filtered.filter(item => item.key !== 'device-analysis')
-      }
-      if (device_type.value === '3') {
-        filtered = filtered.filter(item => item.key !== 'join')
-      }
-    } else if (!data?.device_config_name) {
+    if (device.deviceKind !== 'gateway') {
       filtered = filtered.filter(item => item.key !== 'device-analysis')
     }
-
-    // 一次性赋值
+    if (device.deviceKind === 'subdevice') {
+      filtered = filtered.filter(item => item.key !== 'join')
+    }
     components.value = filtered
-
     ensureActiveTab()
 
     const nextSig = components.value.map(item => item.key).join('|')
-    const currentConfigId = data?.device_config_id || ''
-
+    const currentConfigId = device.templateId || ''
     if (nextSig !== lastTabsSig || (lastConfigId && lastConfigId !== currentConfigId)) {
       const isFirstRender = lastTabsSig === ''
       lastTabsSig = nextSig
@@ -368,18 +369,19 @@ const getDeviceDetail = async () => {
       lastConfigId = currentConfigId
     }
 
-    send(
-      JSON.stringify({
-        device_id: getDeviceId(),
-        token: localStg.get('token')
-      })
-    )
-
-    void addChartTabWhenAvailable(data?.device_config as DeviceConfigNativeBinding | undefined, currentRequestId)
+    send(JSON.stringify({ device_id: id, token: localStg.get('token') }))
+    void addChartTabWhenAvailable(data.device_config as DeviceConfigNativeBinding | null, currentRequestId)
+  } catch (error) {
+    if (currentRequestId === detailRequestId) {
+      detailError.value = error instanceof Error ? error.message : '设备详情加载失败。'
+      deviceData.value = {}
+      components.value = []
+      name.value = ''
+    }
   }
 }
 
-const resolveTemplateHasChartContent = async (binding?: DeviceConfigNativeBinding) => {
+const resolveTemplateHasChartContent = async (binding: DeviceConfigNativeBinding | null | undefined) => {
   try {
     const resolved = await resolveDeviceNativeModel(binding)
     return Boolean(resolved && hasThingsVisChartContent(resolved.snapshot.resources.webChartConfig))
@@ -389,7 +391,7 @@ const resolveTemplateHasChartContent = async (binding?: DeviceConfigNativeBindin
   }
 }
 
-async function addChartTabWhenAvailable(binding: DeviceConfigNativeBinding | undefined, requestId: number) {
+async function addChartTabWhenAvailable(binding: DeviceConfigNativeBinding | null | undefined, requestId: number) {
   const hasTemplateChart = await resolveTemplateHasChartContent(binding)
   if (!hasTemplateChart || requestId !== detailRequestId) return
   if (components.value.some(item => item.key === 'chart')) return
@@ -400,10 +402,9 @@ async function addChartTabWhenAvailable(binding: DeviceConfigNativeBinding | und
   // 图表可用时把它放到首位，并切换为默认 Tab；没有图表时保持遥测 Tab。
   components.value = [{ ...chartComponent }, ...components.value]
   lastTabsSig = components.value.map(item => item.key).join('|')
-  tabValue.value = 'chart'
+  if (!requestedTabKey()) tabValue.value = 'chart'
 }
-const closeModal = async () => {
-  await getDeviceDetail()
+const closeModal = () => {
   showDialog.value = false
 }
 const { routerPushByKey } = useRouterPush()
@@ -422,11 +423,7 @@ const clickGateway = () => {
   })
 }
 const clickAlarmHistory = () => {
-  routerPushByKey('alarm_warning-message', {
-    query: {
-      device_id: getDeviceId()
-    }
-  })
+  tabValue.value = 'give-an-alarm'
 }
 
 onBeforeMount(() => {
@@ -434,39 +431,80 @@ onBeforeMount(() => {
 })
 
 watch(
-  () => route.query.d_id,
-  async newVal => {
-    d_id = newVal
-    await getDeviceDetail()
-    bumpRefreshKey(tabValue.value)
+  () => [route.query.d_id, route.query.tab],
+  async ([newId], [oldId]) => {
+    if (newId !== oldId) {
+      d_id = newId
+      await getDeviceDetail()
+      bumpRefreshKey(tabValue.value)
+      return
+    }
+    ensureActiveTab()
   },
   { deep: true }
 )
 
+function labelsMatch(actual: Record<string, string>, expected: Record<string, string>) {
+  const sortEntries = (value: Record<string, string>) => Object.entries(value).sort(([a], [b]) => a.localeCompare(b))
+  return JSON.stringify(sortEntries(actual)) === JSON.stringify(sortEntries(expected))
+}
+
 const save = async () => {
-  if (!deviceData.value?.name) {
+  if (!deviceData.value?.name?.trim()) {
     message.error($t('custom.devicePage.enterDeviceName'))
     return
   }
-  if (!deviceData.value?.device_number) {
-    message.error($t('custom.devicePage.enterDeviceNumber'))
+  if (!deviceETag) {
+    updateError.value = '设备版本信息已失效，请刷新详情后重试。'
     return
   }
-  if (deviceData.value?.device_number.length > 100) {
-    message.error($t('custom.devicePage.deviceNumberMax'))
-    return
-  }
-  device_number.value = deviceData.value.device_number
-  queryParams.id = deviceData.value?.id
-  queryParams.name = deviceData.value?.name
-  queryParams.device_number = deviceData.value?.device_number
-  queryParams.label = labels.value.join(',')
-  queryParams.description = deviceData.value?.description
 
-  const { error } = await deviceUpdate(queryParams)
-  if (!error) {
+  let payload: UpdateDevice
+  try {
+    payload = {
+      name: deviceData.value.name.trim(),
+      description: deviceData.value.description ?? null,
+      tags: normalizeNativeDeviceTags(tags.value)
+    }
+  } catch (error) {
+    updateError.value = error instanceof Error ? error.message : '标签格式无效。'
+    return
+  }
+
+  const id = getDeviceId()
+  const payloadJSON = JSON.stringify(payload)
+  const expectedLabels = { ...((deviceData.value.labels ?? {}) as Record<string, string>) }
+  if (
+    !pendingDeviceUpdate ||
+    pendingDeviceUpdate.id !== id ||
+    pendingDeviceUpdate.etag !== deviceETag ||
+    pendingDeviceUpdate.payloadJSON !== payloadJSON
+  ) {
+    if (!globalThis.crypto?.randomUUID) {
+      updateError.value = '当前环境无法安全提交修改，请稍后重试。'
+      return
+    }
+    pendingDeviceUpdate = { id, etag: deviceETag, key: globalThis.crypto.randomUUID(), payloadJSON }
+  }
+
+  updateError.value = ''
+  try {
+    await deviceNative.update(id, payload, pendingDeviceUpdate.etag, pendingDeviceUpdate.key)
+    const { device: verified, etag } = await deviceNative.get(id)
+    if (
+      verified.name !== payload.name ||
+      verified.description !== payload.description ||
+      JSON.stringify(verified.tags ?? []) !== JSON.stringify(payload.tags ?? []) ||
+      !labelsMatch(verified.labels ?? {}, expectedLabels)
+    ) {
+      throw new Error('保存结果暂未确认，请保留此页面并重试读取。')
+    }
+    deviceETag = etag
+    pendingDeviceUpdate = null
     showDialog.value = false
-    getDeviceDetail()
+    await getDeviceDetail()
+  } catch (error) {
+    updateError.value = error instanceof Error ? error.message : '设备修改失败，输入内容仍保留。'
   }
 }
 const getPlatform = computed(() => {
@@ -501,7 +539,10 @@ const isEmbeddedHost = computed(() => {
           :class="getPlatform ? 'w-90%' : 'w-400px'"
         >
           <n-card>
-            <n-form :model="deviceData" :rules="rules">
+            <NAlert v-if="updateError" type="error" :show-icon="false" class="mb-3">
+              {{ updateError }}
+            </NAlert>
+            <n-form :model="deviceData">
               <div>
                 <NH3>{{ $t('generate.modify-device-info') }}</NH3>
               </div>
@@ -509,13 +550,20 @@ const isEmbeddedHost = computed(() => {
                 <n-input v-model:value="deviceData.name" aria-required="true" />
               </n-form-item>
               <n-form-item :label="$t('generate.device-code')" path="device_number">
-                <n-input v-model:value="deviceData.device_number" />
+                <n-input :value="deviceData.device_number" disabled />
               </n-form-item>
-              <n-form-item :label="$t('custom.devicePage.label')" path="label">
-                <n-dynamic-tags v-model:value="labels" />
+              <n-form-item :label="$t('custom.devicePage.label')" path="tags">
+                <n-dynamic-tags v-model:value="tags" />
+              </n-form-item>
+              <n-form-item label="结构化标签（只读）">
+                <n-space v-if="structuredLabels.length">
+                  <n-tag v-for="(entry, index) in structuredLabels" :key="`${entry[0]}-${index}`" :bordered="false">
+                    {{ entry[0] }}={{ entry[1] }}
+                  </n-tag>
+                </n-space>
+                <span v-else>暂无结构化标签</span>
               </n-form-item>
               <n-form-item :label="$t('generate.device-description')">
-                <!-- <n-input v-model:value="queryParams.deviceDescribe" type="textarea"/> -->
                 <NInput v-model:value="deviceData.description" type="textarea" />
               </n-form-item>
               <n-space>
@@ -560,7 +608,13 @@ const isEmbeddedHost = computed(() => {
                 color: device_is_online === 1 ? 'rgb(2,153,52)' : DEVICE_STATUS_INACTIVE_COLOR
               }"
             >
-              {{ device_is_online === 1 ? $t('custom.device_details.online') : $t('custom.device_details.offline') }}
+              {{
+                device_is_online === 1
+                  ? $t('custom.device_details.online')
+                  : device_is_online === 0
+                    ? $t('custom.device_details.offline')
+                    : '状态未知'
+              }}
             </span>
 
             <!-- 历史记录 -->
@@ -568,7 +622,7 @@ const isEmbeddedHost = computed(() => {
           </div>
           <div
             class="device-details-status"
-            :class="{ 'device-details-status--alarm': deviceAlarmActive }"
+            :class="{ 'device-details-status--alarm': deviceAlarmActive === true }"
             @click="clickAlarmHistory"
           >
             <SvgIcon
@@ -576,10 +630,19 @@ const isEmbeddedHost = computed(() => {
               :style="{ color: deviceAlarmColor, marginRight: '5px' }"
               class="text-20px text-primary"
             />
-            <span :style="{ color: deviceAlarmColor }">{{ $t('generate.alarmHistory') }}</span>
+            <span :style="{ color: deviceAlarmColor }">查看告警</span>
           </div>
         </NFlex>
       </div>
+      <NAlert v-if="detailError" type="error" :show-icon="false" class="mb-3">
+        {{ detailError }}
+      </NAlert>
+      <NAlert v-else type="warning" :show-icon="false" class="mb-3">
+        可管理设备资料和凭据；连接信息、关系及部分设置正在完善。
+      </NAlert>
+      <NAlert v-if="relatedTemplateError" type="warning" :show-icon="false" class="mb-3">
+        设备模板名称暂不可读取：{{ relatedTemplateError }}
+      </NAlert>
       <div class="device-details-content">
         <n-tabs
           :key="tabsRenderKey"
@@ -595,15 +658,17 @@ const isEmbeddedHost = computed(() => {
             :key="component.key"
             :tab="component.name()"
             :name="component.key"
+            :display-directive="component.key === 'join' || component.key === 'message' ? 'show:lazy' : 'if'"
           >
             <n-spin class="device-details-tab-body" size="small" :show="loading">
               <component
                 :is="component.component"
                 :id="getDeviceId()"
-                :key="component.refreshKey"
+                :key="component.key === 'telemetry' ? `${component.refreshKey}:${getDeviceId()}` : component.refreshKey"
                 :online="device_is_online"
                 :device-data="deviceData"
                 :device-config-id="deviceData?.device_config_id || ''"
+                :title="component.pendingTitle"
                 @change="getDeviceDetail"
               />
             </n-spin>

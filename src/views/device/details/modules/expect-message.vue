@@ -3,15 +3,17 @@ import { h, reactive, ref } from 'vue'
 import type { Ref } from 'vue'
 import type { PaginationProps } from 'naive-ui'
 import { NButton, NDataTable, NEmpty, NPopconfirm, NTag } from 'naive-ui'
-import moment from 'moment'
-import { expectMessageDelete, expectMessageList } from '@/service/api'
+import dayjs from 'dayjs'
+import { deviceCommandNative } from '@/service/api/device-command-native'
+import type { CommandReceipt } from '@/service/api/device-command-native'
+import { commandStateLabel } from '@/service/api/device-command-rows'
+import { newIdempotencyKey } from '@/service/api/device-write-attempt'
 import { $t } from '@/locales'
-import { demoExpectedMessages, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 const props = defineProps<{
   id: string
 }>()
 
-const tableData = ref([])
+const tableData = ref<any[]>([])
 
 const tableThemeOverrides = {
   borderColor: 'var(--border-color)',
@@ -31,24 +33,24 @@ const tableThemeOverrides = {
 }
 
 const expectedMessageRowKey = (row: any) => row.id
+// “期望消息”= 设备上线后才发送的命令队列；原生接口只承载命令，不再有遥测/属性期望。
 const statusOptions = ref([
-  { label: $t('page.expect.pending'), value: 'pending' },
-  { label: $t('page.expect.send'), value: 'sent' },
-  { label: $t('page.expect.expired'), value: 'expired' }
-])
-const typeOptions = ref([
-  { label: $t('custom.device_details.telemetry'), value: 'telemetry' },
-  { label: $t('custom.device_details.attributes'), value: 'attribute' },
-  { label: $t('page.expect.command'), value: 'command' }
+  { label: '等待上线发送', value: 'accepted' },
+  { label: '已下发到设备通道', value: 'delivered' },
+  { label: '设备已应答', value: 'acknowledged' },
+  { label: '已过期', value: 'expired' },
+  { label: '已取消', value: 'cancelled' },
+  { label: '失败', value: 'failed' }
 ])
 
 const query = reactive({
-  status: 'pending',
-  type: null,
-  label: null,
+  status: 'accepted' as CommandReceipt['state'] | null,
+  identifier: null as string | null,
+  label: null as string | null,
   page: 1,
   page_size: 10
 })
+const listError = ref('')
 const pagination: PaginationProps = reactive({
   page: 1,
   pageSize: 10,
@@ -63,129 +65,141 @@ const pagination: PaginationProps = reactive({
   onUpdatePageSize: (pageSize: number) => {
     pagination.pageSize = pageSize
     pagination.page = 1
+    query.page = 1
     query.page_size = pageSize
     getTableData()
   }
 })
+
+// 过期时间保持服务端给出的 RFC 3339 原文，只在展示时格式化。
+const fmt = (value?: string | null) => (value ? dayjs(value).format('YYYY-MM-DD HH:mm:ss') : '')
+
+let requestSeq = 0
 async function getTableData() {
-  const { data, error } = await expectMessageList({
-    device_id: props.id,
-    send_type: query.type,
-    ...query
-  })
-  if (!error) {
-    const list: any = data?.list || []
-    tableData.value = list.length > 0 || !isDeviceDetailDemo(props.id) ? list : demoExpectedMessages()
-    pagination.itemCount = data?.total || tableData.value.length
+  const seq = ++requestSeq
+  try {
+    const page = await deviceCommandNative.list(props.id, {
+      page: query.page,
+      pageSize: query.page_size,
+      deliveryMode: 'when_online',
+      ...(query.status ? { state: query.status } : {}),
+      ...(query.identifier?.trim() ? { identifier: query.identifier.trim() } : {}),
+      ...(query.label?.trim() ? { labelContains: query.label.trim() } : {})
+    })
+    if (seq !== requestSeq) return
+    listError.value = ''
+    tableData.value = page.items as any
+    pagination.itemCount = page.total
+  } catch (error) {
+    if (seq !== requestSeq) return
+    listError.value = error instanceof Error ? error.message : '读取期望消息失败'
   }
 }
 
-const handleDeleteTable = async id => {
-  if (isDeviceDetailDemo(props.id)) return
-  const { error } = await expectMessageDelete(id)
-  if (!error) {
-    window.$message?.success($t('common.deleteSuccess'))
-    getTableData()
+// 结果未知后重试取消同一条命令，沿用同一个幂等键；拿到 HTTP 答复后换新键。
+let cancelKey: { id: string; key: string } | null = null
+const handleCancel = async (id: string) => {
+  const key = cancelKey?.id === id ? cancelKey.key : newIdempotencyKey()
+  cancelKey = { id, key }
+  try {
+    await deviceCommandNative.cancel(props.id, id, '用户在设备详情页取消', key)
+    cancelKey = null
+    window.$message?.success('已取消')
+  } catch (error) {
+    if (typeof (error as { status?: unknown }).status === 'number') cancelKey = null
+    window.$message?.error(error instanceof Error ? error.message : '取消失败')
   }
+  getTableData()
 }
+
 const columns: Ref<any> = ref([
   {
-    key: 'created_at',
+    key: 'acceptedAt',
     minWidth: '200px',
     title: () => $t('page.expect.createTime'),
-    render: row => {
-      return row.created_at ? moment(row.created_at).format('YYYY-MM-DD hh:mm:ss') : ''
-    }
+    render: (row: CommandReceipt) => fmt(row.acceptedAt)
   },
-  {
-    key: 'send_type',
-    minWidth: '100px',
-    title: () => $t('page.expect.commandType'),
-    render: row => {
-      return typeOptions.value.find(v => v.value === row.send_type)?.label
-    }
-  },
+  { key: 'identifier', minWidth: '140px', title: () => $t('page.expect.commandType') },
   {
     key: 'label',
     minWidth: '100px',
-    title: () => $t('page.expect.label')
+    title: () => $t('page.expect.label'),
+    render: (row: CommandReceipt) => row.label || '--'
   },
   {
-    key: 'payload',
+    key: 'parameters',
     minWidth: '200px',
-    title: () => $t('page.expect.commandContent')
+    title: () => $t('page.expect.commandContent'),
+    render: (row: CommandReceipt) => JSON.stringify(row.parameters ?? {})
   },
   {
-    key: 'expiry_time',
+    key: 'expiresAt',
     minWidth: '200px',
     title: () => $t('page.expect.expireTime'),
-    render: row => {
-      return row.expiry_time ? moment(row.expiry_time).format('YYYY-MM-DD hh:mm:ss') : ''
-    }
+    render: (row: CommandReceipt) => fmt(row.expiresAt) || '--'
   },
   {
-    key: 'status',
-    minWidth: '100px',
-    title: () => $t('page.expect.status'),
-    render: row => {
-      const label = statusOptions.value.find(v => v.value === row.status)?.label
-      return h(
-        NTag,
-        { type: row.status === 'sent' ? 'success' : row.status === 'expired' ? 'error' : 'warning', size: 'small' },
-        { default: () => label }
-      )
-    }
-  },
-  {
-    key: 'message',
+    key: 'state',
     minWidth: '140px',
-    title: () => $t('page.expect.statusInfo')
+    title: () => $t('page.expect.status'),
+    render: (row: CommandReceipt) =>
+      h(
+        NTag,
+        {
+          type:
+            row.state === 'acknowledged'
+              ? 'success'
+              : ['expired', 'failed', 'timed_out'].includes(row.state)
+                ? 'error'
+                : 'warning',
+          size: 'small'
+        },
+        { default: () => commandStateLabel(row.state) }
+      )
   },
   {
-    key: 'send_time',
+    key: 'reason',
+    minWidth: '140px',
+    title: () => $t('page.expect.statusInfo'),
+    render: (row: CommandReceipt) => row.reason || '--'
+  },
+  {
+    key: 'deliveryAt',
     minWidth: '200px',
     title: () => $t('page.expect.dealTime'),
-    render: row => {
-      return row.send_time ? moment(row.send_time).format('YYYY-MM-DD hh:mm:ss') : ''
-    }
+    render: (row: CommandReceipt) => fmt(row.deliveryAt)
   },
   {
     title: $t('common.actions'),
-    key: 'created_at',
+    key: 'actions',
     minWidth: '100px',
-    render: row => {
-      return (
-        <NPopconfirm
-          negative-text={$t('common.cancel')}
-          positive-text={$t('common.confirm')}
-          onPositiveClick={() => handleDeleteTable(row.id)}
-        >
-          {{
-            default: () => $t('common.confirm'),
-            trigger: () => (
-              <NButton type="error" size={'small'} disabled={isDeviceDetailDemo(props.id)}>
-                {$t('common.delete')}
-              </NButton>
-            )
-          }}
-        </NPopconfirm>
-      )
-    }
+    render: (row: CommandReceipt) =>
+      row.state === 'accepted'
+        ? h(
+            NPopconfirm,
+            { onPositiveClick: () => handleCancel(row.id) },
+            {
+              trigger: () => h(NButton, { type: 'error', size: 'small' }, { default: () => '取消' }),
+              default: () => '取消这条等待上线发送的命令？'
+            }
+          )
+        : null
   }
 ]) as Ref<any>
 
 const handleSearch = () => {
   pagination.page = 1
+  query.page = 1
   getTableData()
 }
 handleSearch()
 const handleReset = () => {
-  query.status = 'pending'
-  query.type = null
+  query.status = 'accepted'
+  query.identifier = null
   query.label = null
   query.page = 1
-  query.page_size = 10
-  handleSearch()
+  pagination.page = 1
+  getTableData()
 }
 </script>
 
@@ -203,9 +217,8 @@ const handleReset = () => {
           />
         </NFormItem>
         <NFormItem>
-          <NSelect
-            v-model:value="query.type"
-            :options="typeOptions"
+          <NInput
+            v-model:value="query.identifier"
             :placeholder="$t('page.expect.selectCommandTypePlease')"
             class="input-style w-200px"
             clearable
@@ -225,6 +238,7 @@ const handleReset = () => {
       </NForm>
     </div>
   </div>
+  <n-alert v-if="listError" type="warning" :show-icon="false" class="mb-4">{{ listError }}</n-alert>
   <NDataTable
     class="device-detail-table"
     :columns="columns"

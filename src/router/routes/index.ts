@@ -1,5 +1,5 @@
 import type { CustomRoute, ElegantConstRoute, ElegantRoute } from '@elegant-router/types'
-import type { RouteComponent } from 'vue-router'
+import type { RouteComponent, RouteRecordRaw } from 'vue-router'
 import { generatedRoutes } from '../elegant/routes'
 import { layouts, views } from '../elegant/imports'
 import { transformElegantRoutesToVueRoutes } from '../elegant/transform'
@@ -205,8 +205,13 @@ export function createRoutes() {
       return
     }
 
-    // Pre-register the detail URL without bypassing authenticated menu initialization.
-    if (route.meta?.constant || item.name === 'thingmodel-detail-custom') {
+    // Pre-register standalone detail references while keeping them protected by
+    // the normal login and role guard (their meta.constant remains unset).
+    if (
+      route.meta?.constant ||
+      item.name === 'thingmodel-detail-custom' ||
+      item.name === 'device-template-detail-reference'
+    ) {
       constantRoutes.push(route)
     } else {
       authRoutes.push(route)
@@ -215,8 +220,52 @@ export function createRoutes() {
 
   const constantVueRoutes = transformElegantRoutesToVueRoutes(constantRoutes, layouts, appEmbedViews)
 
+  // These records have underscore names, which elegant-router treats as nested
+  // route keys and cannot convert from `layout.base$view.*` as a standalone
+  // route. Register them with the base layout explicitly so cold-start URLs
+  // resolve before authenticated menu routes are installed. Vue Router replaces
+  // same-name child records when the authenticated tree is added.
+  const protectedPreRegisteredRoutes: RouteRecordRaw[] = [
+    {
+      path: '/device/details',
+      component: layouts.base,
+      children: [
+        {
+          path: '',
+          name: 'device_details',
+          component: views.device_details,
+          meta: { title: 'device_details', i18nKey: 'route.device_details' }
+        }
+      ]
+    },
+    {
+      path: '/automation/rule-edit',
+      component: layouts.base,
+      children: [
+        {
+          path: '',
+          name: 'automation_rule-edit',
+          component: views['automation_rule-edit'],
+          meta: { title: 'automation_rule-edit', i18nKey: 'route.automation_rule-edit', roles: ['TENANT_ADMIN'] }
+        }
+      ]
+    },
+    {
+      path: '/automation/rule-manage',
+      component: layouts.base,
+      children: [
+        {
+          path: '',
+          name: 'automation_rule-manage',
+          component: views['automation_rule-manage'],
+          meta: { title: 'automation_rule-manage', i18nKey: 'route.automation_rule-manage', roles: ['TENANT_ADMIN'] }
+        }
+      ]
+    }
+  ]
+
   return {
-    constantVueRoutes,
+    constantVueRoutes: [...constantVueRoutes, ...protectedPreRegisteredRoutes],
     authRoutes
   }
 }

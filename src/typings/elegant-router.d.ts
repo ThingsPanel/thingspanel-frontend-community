@@ -34,6 +34,8 @@ declare module "@elegant-router/types" {
     "apply_service": "/apply/service";
     "automation": "/automation";
     "automation_linkage-edit": "/automation/linkage-edit";
+    "automation_rule-edit": "/automation/rule-edit";
+    "automation_rule-manage": "/automation/rule-manage";
     "automation_scene-edit": "/automation/scene-edit";
     "automation_scene-linkage": "/automation/scene-linkage";
     "automation_scene-manage": "/automation/scene-manage";
@@ -213,6 +215,8 @@ declare module "@elegant-router/types" {
     | "apply_plugin"
     | "apply_service"
     | "automation_linkage-edit"
+    | "automation_rule-edit"
+    | "automation_rule-manage"
     | "automation_scene-edit"
     | "automation_scene-linkage"
     | "automation_scene-manage"

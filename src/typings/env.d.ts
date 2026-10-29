@@ -33,6 +33,8 @@ declare namespace Env {
     readonly VITE_HTTP_PROXY?: CommonType.YesOrNo
     /** Explicit origin for the development-only /notification-core proxy. */
     readonly VITE_NOTIFICATION_DEV_PROXY_TARGET?: string
+    /** Optional origin for the development-only automation owner proxy. */
+    readonly VITE_AUTOMATION_NATIVE_URL?: string
     /** The back service env */
     readonly VITE_SERVICE_ENV?: App.Service.EnvType
     /**

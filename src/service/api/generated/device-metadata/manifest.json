@@ -1,0 +1,16 @@
+{
+  "compatibilityTransform": {
+    "operation": "Lift the complete generated recursive schema expression to a named module alias and redirect its recursive references; no union members are changed.",
+    "schema": "NativeThingModelJsonValue",
+    "version": "recursive-schema-alias-v1"
+  },
+  "generator": "openapi-typescript@7.13.0",
+  "openapi": "3.2.1",
+  "operationCount": 104,
+  "outputs": {
+    "contract-metadata.json": "de5651e9ed24d7bd7bcb8e271a86708da185e79599f50f17e7a602eaab2a2d61",
+    "types.ts": "402eceff0915ad80bdbe6f334cbb3120194ef7127bf48cad3c6a5afe2dc93ba2"
+  },
+  "source": "/Users/junhong/.codex/worktrees/device-metadata-native-cutover-1.3/backend/docs/initiatives/device-metadata-native-cutover/openapi.yaml",
+  "sourceSha256": "ddde87b32528f86dc328fde9c876b75d067ddd444384557309c3b7d7a86da535"
+}

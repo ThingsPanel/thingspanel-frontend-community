@@ -2,10 +2,10 @@
 import { defineProps, onMounted, reactive, ref } from 'vue'
 import { NDataTable, NEmpty, useMessage } from 'naive-ui'
 import dayjs from 'dayjs'
-import { addMonths } from 'date-fns'
-import { telemetryHistoryData } from '@/service/api'
+import { newIdempotencyKey } from '@/service/api/device-write-attempt'
+import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
+import { waitForReadingExport } from '@/service/api/device-runtime-export-wait'
 import { $t } from '@/locales'
-import { getBaseServerUrl } from '@/utils/common/tool'
 import { useLoading } from '~/packages/hooks'
 import { demoHistory, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 
@@ -15,7 +15,6 @@ interface Created {
 }
 
 const props = defineProps<Created>()
-const baseURL = getBaseServerUrl()
 interface Params {
   device_id: string
   end_time: number
@@ -33,11 +32,12 @@ interface HistoryData {
 }
 const { loading, startLoading, endLoading } = useLoading()
 
-// 获取当前具体时间的毫秒数
-const end_time = dayjs().endOf('day').valueOf()
-
-// 获取上一天当前时刻的毫秒数
-const start_time = dayjs().subtract(1, 'day').startOf('day').valueOf()
+// 原生原始历史单次最多 24 小时，默认查询最近 24 小时；导出可选更长的区间（最多 31 天，后台分段生成）
+const MAX_RANGE_MS = 24 * 60 * 60 * 1000
+const MAX_EXPORT_RANGE_MS = 31 * MAX_RANGE_MS
+const exportRange = ref<[number, number] | null>(null)
+const end_time = dayjs().valueOf()
+const start_time = end_time - MAX_RANGE_MS
 const params = reactive<Params>({
   device_id: props.deviceId,
   end_time,
@@ -96,21 +96,55 @@ const getTelemetryHistoryData = async () => {
     return
   }
   startLoading()
-  const { data, error } = await telemetryHistoryData(params)
-
   if (params.export_excel) {
-    endLoading()
-    if (data?.filePath) {
-      const baseUrlWithoutApi = baseURL.replace('/api/v1', '/')
-      const downloadUrl = `${baseUrlWithoutApi}${data.filePath}`
-      window.open(downloadUrl)
+    // 通过 Encore 导出任务生成 CSV，再用登录令牌下载（单次最多 24 小时、5 万行）。
+    try {
+      const [exportFrom, exportTo] = exportRange.value ?? [params.start_time, params.end_time]
+      const submitted = await deviceRuntimeNative.exportReadings(
+        props.deviceId,
+        {
+          identifiers: [props.theKey],
+          from: new Date(exportFrom).toISOString(),
+          to: new Date(exportTo + 1).toISOString(),
+          format: 'csv'
+        },
+        newIdempotencyKey()
+      )
+      if (submitted.state !== 'succeeded') message.info('导出任务已提交，正在生成，请稍候')
+      const job = await waitForReadingExport(deviceRuntimeNative, submitted)
+      const file = await deviceRuntimeNative.downloadArtifact(job.downloadId)
+      const url = URL.createObjectURL(file.blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = file.fileName
+      anchor.click()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : String(error))
+    } finally {
+      params.export_excel = false
+      endLoading()
     }
+    return
   }
-
-  if (!error && !params.export_excel) {
-    const list = data?.list || []
+  try {
+    // 区间为 [from, to)，包含用户选择的结束时刻需加 1 毫秒
+    const page = await deviceRuntimeNative.listReadings(props.deviceId, {
+      kind: 'telemetry',
+      identifier: props.theKey,
+      from: new Date(params.start_time).toISOString(),
+      to: new Date(params.end_time + 1).toISOString(),
+      page: params.page,
+      pageSize: params.page_size
+    })
+    const list = page.items.map(item => ({ key: item.identifier, ts: item.observedAt, value: item.value as number }))
     tableData.value = list.length > 0 || !isDeviceDetailDemo(props.deviceId) ? list : demoHistory(props.theKey)
-    pagination.itemCount = data?.total || tableData.value.length
+    pagination.itemCount = page.total || tableData.value.length
+  } catch (error) {
+    tableData.value = []
+    pagination.itemCount = 0
+    message.error(error instanceof Error ? error.message : String(error))
+  } finally {
     endLoading()
   }
 }
@@ -141,15 +175,24 @@ const columns = [
 const checkDateRange = value => {
   const [start, end] = value
 
-  if (start && end && addMonths(start, 1) < end) {
+  if (start && end && end - start > MAX_RANGE_MS) {
     dateRange.value = null
-    message.error($t('common.withinOneMonth'))
+    message.error('原始历史单次最多查询 24 小时')
   } else {
     // 直接使用用户选择的时间
     params.start_time = start
     params.end_time = end
+    params.page = 1
+    pagination.page = 1
     params.export_excel = false
     getTelemetryHistoryData()
+  }
+}
+
+const checkExportRange = (value: [number, number] | null) => {
+  if (value && value[1] - value[0] > MAX_EXPORT_RANGE_MS) {
+    exportRange.value = null
+    message.error('导出区间最多 31 天')
   }
 }
 
@@ -176,6 +219,13 @@ onMounted(getTelemetryHistoryData)
         <n-button class="ml-2" @click="refresh">{{ $t('generate.refresh') }}</n-button>
       </n-flex>
 
+      <n-date-picker
+        v-model:value="exportRange"
+        type="datetimerange"
+        clearable
+        placeholder="导出区间（可选，最多 31 天）"
+        @update:value="checkExportRange"
+      />
       <n-button
         type="primary"
         @click="

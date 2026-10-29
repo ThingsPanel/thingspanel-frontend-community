@@ -66,6 +66,7 @@ const props = defineProps<{
   buttonName?: string
   tableColumns: any[] | undefined
   expect?: boolean
+  nativeOnly?: boolean
   submitApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
   expectApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
   fetchDataApi: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
@@ -310,7 +311,7 @@ watch(
     }
     options.value = props.nativeCommandsResolved ? props.nativeCommandOptions || [] : undefined
     commandList.value = []
-    if (props.isCommand && !props.nativeCommandsResolved) void getListData(requestId)
+    if (props.isCommand && !props.nativeCommandsResolved && !props.nativeOnly) void getListData(requestId)
     void fetchDataFunction()
   },
   { immediate: true }

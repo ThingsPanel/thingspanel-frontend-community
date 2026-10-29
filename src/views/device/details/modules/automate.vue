@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import sceneLinkage from '@/views/automation/scene-linkage/modules/dataList.vue'
+import NativeAutomationPanel from '@/views/device/shared/native-automation-panel.vue'
 
-defineProps<{
-  id: string
-}>()
+defineProps<{ id: string }>()
 </script>
 
 <template>
-  <sceneLinkage :device_id="id" back-type="device" />
+  <NativeAutomationPanel scope="device" :target-id="id" kind="automation" />
 </template>
-
-<style scoped></style>

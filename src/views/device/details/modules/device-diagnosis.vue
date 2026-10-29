@@ -6,22 +6,10 @@ import { $t } from '@/locales'
 import { Refresh, HelpCircleOutline } from '@vicons/ionicons5'
 import { NDataTable, NEmpty, NTag } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
-import { deviceDiagnostics, getDeviceDebugStatus, setDeviceDebugStatus, getDeviceDebugLogs } from '@/service/api'
-import { demoDebugLogs, demoDiagnostics, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
-
-// 类型定义
-interface StatisticsItem {
-  success: number
-  total: number
-  rate: number
-}
-
-// 统计数据类型
-interface Statistics {
-  uplink: StatisticsItem
-  downlink: StatisticsItem
-  storage: StatisticsItem
-}
+import { counterView, deviceDiagnosticsNative } from '@/service/api/device-diagnostics-native'
+import type { DiagnosticCheck } from '@/service/api/device-diagnostics-native'
+import { deviceDebugNative, parseStoredDebugSession } from '@/service/api/device-debug-native'
+import { newIdempotencyKey } from '@/service/api/device-write-attempt'
 
 // 失败记录类型
 interface FailureRecord {
@@ -31,62 +19,23 @@ interface FailureRecord {
   error: string
 }
 
-// 诊断统计数据类型
-interface DiagnosticsStatsItem {
-  success?: number
-  total?: number
-  success_rate?: number
-}
-
-// 诊断统计数据类型
-interface DiagnosticsStats {
-  uplink?: DiagnosticsStatsItem
-  downlink?: DiagnosticsStatsItem
-  storage?: DiagnosticsStatsItem
-}
-
-// 诊断数据类型
-interface DiagnosticsData {
-  stats?: DiagnosticsStats
-  recent_failures?: Array<{
-    timestamp?: string | number
-    direction?: 'uplink' | 'downlink'
-    stage?: string
-    error?: string
-  }>
-}
-
-// 诊断响应类型
-interface DiagnosticsResponse {
-  data?: DiagnosticsData
-}
-
 // 属性定义 props
 const props = defineProps<{
   id: string
 }>()
 
-// 统计数据
-const statistics = ref<Statistics>({
-  uplink: {
-    success: 0,
-    total: 0,
-    rate: 0
-  },
-  downlink: {
-    success: 0,
-    total: 0,
-    rate: 0
-  },
-  storage: {
-    success: 0,
-    total: 0,
-    rate: 0
-  }
+// 统计数据（运行时没有完整窗口时显示“--”）
+const counters = ref({
+  uplink: counterView({ success: null, total: null, successRate: null, complete: false }),
+  downlink: counterView({ success: null, total: null, successRate: null, complete: false }),
+  storage: counterView({ success: null, total: null, successRate: null, complete: false })
 })
 
 // 失败记录表格数据
 const failureRecords = ref<FailureRecord[]>([])
+const diagnosticChecks = ref<DiagnosticCheck[]>([])
+const diagnosticError = ref('')
+const failuresTruncated = ref(false)
 
 const tableThemeOverrides = {
   borderColor: 'var(--border-color)',
@@ -148,48 +97,26 @@ const columns: DataTableColumns<FailureRecord> = [
   }
 ]
 
-// 获取诊断数据
+// 获取诊断数据：统计缺口以“--”显示，不补 0 或 100%
 const fetchDiagnostics = async () => {
   try {
-    const response = (await deviceDiagnostics(props.id)) as DiagnosticsResponse
-    const data = response?.data || (response as unknown as DiagnosticsData)
-    const demo = isDeviceDetailDemo(props.id) && !data?.recent_failures?.length
-    const displayData = demo ? demoDiagnostics() : data
-
-    if (displayData && displayData.stats) {
-      // 更新统计数据
-      statistics.value = {
-        uplink: {
-          success: displayData.stats.uplink?.success ?? 0,
-          total: displayData.stats.uplink?.total ?? 0,
-          rate: displayData.stats.uplink?.success_rate ?? 0
-        },
-        downlink: {
-          success: displayData.stats.downlink?.success ?? 0,
-          total: displayData.stats.downlink?.total ?? 0,
-          rate: displayData.stats.downlink?.success_rate ?? 0
-        },
-        storage: {
-          success: displayData.stats.storage?.success ?? 0,
-          total: displayData.stats.storage?.total ?? 0,
-          rate: displayData.stats.storage?.success_rate ?? 0
-        }
-      }
-
-      // 更新失败记录
-      if (Array.isArray(displayData.recent_failures)) {
-        failureRecords.value = displayData.recent_failures.map(failure => ({
-          timestamp: String(failure.timestamp ?? ''),
-          direction: (failure.direction ?? 'uplink') as 'uplink' | 'downlink',
-          stage: failure.stage ?? '',
-          error: failure.error ?? ''
-        }))
-      } else {
-        failureRecords.value = []
-      }
+    const data = await deviceDiagnosticsNative.get(props.id, { recentFailureLimit: 20 })
+    diagnosticError.value = ''
+    diagnosticChecks.value = data.checks
+    failuresTruncated.value = data.recentFailuresTruncated
+    counters.value = {
+      uplink: counterView(data.stats.uplink),
+      downlink: counterView(data.stats.downlink),
+      storage: counterView(data.stats.storage)
     }
+    failureRecords.value = data.recentFailures.map(failure => ({
+      timestamp: failure.timestamp,
+      direction: failure.direction === 'downlink' ? 'downlink' : 'uplink',
+      stage: failure.stage,
+      error: failure.message
+    }))
   } catch (error) {
-    // Keep the existing empty-state behavior when the diagnostics endpoint is unavailable.
+    diagnosticError.value = error instanceof Error ? error.message : '诊断读取失败'
   }
 }
 
@@ -205,26 +132,60 @@ const debugLogs = ref<string[]>([])
 let logTimer: NodeJS.Timeout | null = null
 const logContainerRef = ref<HTMLElement | null>(null)
 
-// 获取日志开关状态
-const getLogStatus = async () => {
+// 调试会话：契约没有“读取当前会话”，开关状态只记住本浏览器开启的会话。
+const sessionStorageKey = () => `device-debug-session:${props.id}`
+let activeSession: { id: string; expiresAt: string } | null = null
+let pendingKey: { action: 'start' | 'stop'; key: string } | null = null
+
+function readStoredSession() {
   try {
-    const res = await getDeviceDebugStatus(props.id)
-    if (res.data) {
-      logEnabled.value = res.data.enabled
-    }
-  } catch (e) {
-    console.error(e)
+    return parseStoredDebugSession(window.localStorage.getItem(sessionStorageKey()), Date.now())
+  } catch {
+    return null
   }
 }
 
-// 切换日志开关
-const handleLogSwitch = async (value: boolean) => {
+function writeStoredSession(value: { id: string; expiresAt: string } | null) {
   try {
-    await setDeviceDebugStatus(props.id, { enabled: value })
-    logEnabled.value = value
+    if (value) window.localStorage.setItem(sessionStorageKey(), JSON.stringify(value))
+    else window.localStorage.removeItem(sessionStorageKey())
+  } catch {
+    /* storage is only a per-browser convenience */
+  }
+}
+
+const getLogStatus = async () => {
+  activeSession = readStoredSession()
+  logEnabled.value = activeSession !== null
+}
+
+// 切换调试会话
+const handleLogSwitch = async (value: boolean) => {
+  const action = value ? 'start' : 'stop'
+  // 结果未知（没有 HTTP 状态）后再次点击，沿用同一个幂等键重试，避免重复开启。
+  const key = pendingKey?.action === action ? pendingKey.key : newIdempotencyKey()
+  pendingKey = { action, key }
+  try {
+    if (value) {
+      const session = await deviceDebugNative.createSession(props.id, 1800, key)
+      activeSession = { id: session.id, expiresAt: session.expiresAt }
+      writeStoredSession(activeSession)
+      logEnabled.value = true
+    } else if (activeSession) {
+      try {
+        await deviceDebugNative.stopSession(props.id, activeSession.id, key)
+      } catch (e) {
+        // 404：会话已被替换或已不存在，本地记录作废。
+        if ((e as { status?: number }).status !== 404) throw e
+      }
+      activeSession = null
+      writeStoredSession(null)
+      logEnabled.value = false
+    }
+    pendingKey = null
   } catch (e) {
-    console.error(e)
-    // 恢复开关状态
+    if (typeof (e as { status?: unknown }).status === 'number') pendingKey = null
+    window.$message?.error(e instanceof Error ? e.message : '调试会话切换失败')
     logEnabled.value = !value
   }
 }
@@ -232,26 +193,19 @@ const handleLogSwitch = async (value: boolean) => {
 // 获取日志
 const fetchLogs = async () => {
   try {
-    const res = await getDeviceDebugLogs(props.id, { limit: 100 })
-    if (res.data?.list?.length) {
-      // 格式化日志展示
+    const page = await deviceDebugNative.listLogs(props.id, { page: 1, pageSize: 100 })
+    if (page.items.length) {
       // 倒序排列，最新的在下面，符合控制台习惯
-      const list = res.data.list.reverse()
-      debugLogs.value = list.map((item: any) => {
-        const time = item.ts ? dayjs(item.ts).format('YYYY-MM-DD HH:mm:ss.SSS') : '' // eslint-disable-line
-        return `[${time}] ${JSON.stringify(item)}`
+      debugLogs.value = [...page.items].reverse().map(item => {
+        const time = dayjs(item.timestamp).format('YYYY-MM-DD HH:mm:ss.SSS')
+        return `[${time}] ${item.level} ${item.direction} ${item.message}`
       })
-    } else if (isDeviceDetailDemo(props.id)) {
-      debugLogs.value = demoDebugLogs().map(
-        item => `[${dayjs(item.ts).format('YYYY-MM-DD HH:mm:ss.SSS')}] ${item.level} ${item.message}`
-      )
+    } else {
+      debugLogs.value = []
     }
 
-    // 自动滚动到底部
     nextTick(() => {
       if (logContainerRef.value) {
-        // 如果用户没有向上滚动太多，才自动滚动
-        // 这里简单处理，总是滚动到底部
         logContainerRef.value.scrollTop = logContainerRef.value.scrollHeight
       }
     })
@@ -302,15 +256,25 @@ onUnmounted(() => {
       <!-- <div class="text-14px text-gray-500">
         {{ $t('custom.device_details.statisticsRange') }}
       </div> -->
+      <NAlert v-if="diagnosticError" type="warning" :show-icon="false" class="mt-4">{{ diagnosticError }}</NAlert>
+      <NFlex v-if="diagnosticChecks.length" :gap="8" class="mt-4" wrap>
+        <NTag
+          v-for="check in diagnosticChecks"
+          :key="check.stage"
+          :type="check.state === 'pass' ? 'success' : check.state === 'fail' ? 'error' : 'default'"
+          :title="check.message"
+        >
+          {{ check.stage }} · {{ check.state }} · {{ check.code }}
+        </NTag>
+      </NFlex>
       <NFlex :gap="16" class="mt-4">
         <!-- 上行成功率卡片 -->
         <NCard class="flex-1" :title="$t('custom.device_details.uplinkSuccessRate')">
           <NFlex vertical :gap="8">
             <NText type="info" class="text-28px font-bold">
-              <NNumberAnimation :from="0" :to="statistics.uplink.rate" :precision="1" />
-              <span>%</span>
+              {{ counters.uplink.rate === null ? '--' : counters.uplink.rate + '%' }}
             </NText>
-            <NText :depth="2" class="text-14px">{{ statistics.uplink.success }}/{{ statistics.uplink.total }}条</NText>
+            <NText :depth="2" class="text-14px">{{ counters.uplink.detail }}</NText>
           </NFlex>
         </NCard>
 
@@ -318,11 +282,10 @@ onUnmounted(() => {
         <NCard class="flex-1" :title="$t('custom.device_details.downlinkSuccessRate')">
           <NFlex vertical :gap="8">
             <NText type="success" class="text-28px font-bold">
-              <NNumberAnimation :from="0" :to="statistics.downlink.rate" :precision="1" />
-              <span>%</span>
+              {{ counters.downlink.rate === null ? '--' : counters.downlink.rate + '%' }}
             </NText>
             <NText :depth="2" class="text-14px">
-              {{ statistics.downlink.success }}/{{ statistics.downlink.total }}条
+              {{ counters.downlink.detail }}
             </NText>
           </NFlex>
         </NCard>
@@ -331,11 +294,10 @@ onUnmounted(() => {
         <NCard class="flex-1" :title="$t('custom.device_details.storageSuccessRate')">
           <NFlex vertical :gap="8">
             <NText type="warning" class="text-28px font-bold">
-              <NNumberAnimation :from="0" :to="statistics.storage.rate" :precision="1" />
-              <span>%</span>
+              {{ counters.storage.rate === null ? '--' : counters.storage.rate + '%' }}
             </NText>
             <NText :depth="2" class="text-14px">
-              {{ statistics.storage.success }}/{{ statistics.storage.total }}条
+              {{ counters.storage.detail }}
             </NText>
           </NFlex>
         </NCard>
@@ -350,6 +312,7 @@ onUnmounted(() => {
         </div>
       </div>
 
+      <NAlert v-if="failuresTruncated" type="info" :show-icon="false" class="mb-4">仅显示最近 20 条失败记录。</NAlert>
       <NDataTable
         class="device-detail-table"
         :columns="columns"
@@ -385,7 +348,7 @@ onUnmounted(() => {
                 </NIcon>
               </div>
             </template>
-            开启后，系统将记录该设备的通信报文以供排查问题。
+            开启后，系统将记录该设备的通信动作与结果（不含报文内容）。开关只记住本浏览器开启的会话。
           </NTooltip>
           <NSwitch :value="logEnabled" @update:value="handleLogSwitch" />
         </div>

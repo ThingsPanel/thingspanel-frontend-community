@@ -2,9 +2,15 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import type { FormInst } from 'naive-ui'
 import { useDialog, useMessage } from 'naive-ui'
-import { deviceAdd } from '@/service/api/device'
+import { deviceNative, DeviceNativeError } from '@/service/api/device-native'
+import type { CreateDevice, Device } from '@/service/api/device-native'
+import { templateNative } from '@/service/api/template-native'
 import { getMarketTemplates, getMarketTemplateDetail, installFromMarket } from '@/service/api/market'
 import { marketTemplateCompatibility } from '../../config/market-template-compatibility'
+import {
+  createNativeDeviceRegistrationAttempt,
+  shouldRetainNativeDeviceRegistrationAttempt
+} from './native-device-registration'
 import { $t } from '@/locales'
 import MarketLoginModal from '../../config/modules/market-login-modal.vue'
 import { useMarketAuth } from '../../config/composables/use-market-auth'
@@ -13,7 +19,8 @@ const props = defineProps<{
   configOptions: any[]
   initialConfigId?: string
   nextCallback: () => void
-  setIdCallback: (dId, cId, dobj) => void
+  // eslint-disable-next-line no-unused-vars
+  setDeviceCallback: (device: Device) => void
 }>()
 const formRef = ref<FormInst | null>(null)
 const message = useMessage()
@@ -26,6 +33,10 @@ const selectedTemplateValue = ref('')
 const pendingMarketOption = ref<any | null>(null)
 const marketLoading = ref(false)
 const installLoading = ref(false)
+const creating = ref(false)
+const createAttempt = ref<{ payload: CreateDevice; key: string } | null>(null)
+const createOutcomeUnknown = ref(false)
+const confirmedDevice = ref<Device | null>(null)
 const formValue = ref({
   name: '',
   label: [],
@@ -172,11 +183,15 @@ const doInstallPendingTemplate = async () => {
       throw new Error($t('market.installFailed'))
     }
 
+    const { template } = await templateNative.get(deviceConfigId)
     installedLocalOptions.value.push({
-      id: deviceConfigId,
-      name: data?.device_config?.name || option.name
+      id: template.id,
+      name: template.name,
+      deviceKind: template.configuration.deviceKind,
+      accessMode: template.configuration.access.mode,
+      protocol: template.configuration.access.protocol
     })
-    applyLocalSelection(`local:${deviceConfigId}`)
+    applyLocalSelection(`local:${template.id}`)
     message.success($t('market.installSuccess'))
     showMissingPlugins(data?.missing_plugins || [])
   } catch (error: any) {
@@ -188,7 +203,7 @@ const doInstallPendingTemplate = async () => {
       return
     }
     pendingMarketOption.value = null
-    message.error(`${$t('market.installFailed')}: ${error?.message || ''}`)
+    message.error(error?.message || $t('market.installFailed'))
   } finally {
     installLoading.value = false
   }
@@ -230,14 +245,71 @@ const onMarketLoginSuccess = () => {
 
 function handleValidateClick(e: MouseEvent) {
   e.preventDefault()
-  if (installLoading.value) return
+  if (installLoading.value || creating.value) return
+  if (confirmedDevice.value) {
+    try {
+      props.setDeviceCallback(confirmedDevice.value)
+      props.nextCallback()
+    } catch {
+      message.warning('设备已登记，但页面暂未切换。请重试查看登记结果。')
+    }
+    return
+  }
   formRef.value?.validate(async errors => {
     if (!errors) {
-      const res = await deviceAdd({ ...formValue.value, label: formValue.value.label.join(','), access_way: 'A' })
-      const configId = formValue.value.device_config_id
-      const deviceId = res.data.id
-      props.setIdCallback(deviceId, configId, res.data.voucher)
-      props.nextCallback()
+      creating.value = true
+      let postStarted = Boolean(createAttempt.value)
+      const previouslyUnknown = createOutcomeUnknown.value
+      let createdDevice: Device | null = null
+      try {
+        if (!createAttempt.value) {
+          const templateId = formValue.value.device_config_id
+          const template = templateId ? (await templateNative.get(templateId)).template : null
+          createAttempt.value = createNativeDeviceRegistrationAttempt(
+            {
+              name: formValue.value.name,
+              tags: formValue.value.label,
+              deviceKind: template?.configuration.deviceKind ?? 'standalone',
+              ...(templateId ? { templateId } : {})
+            },
+            globalThis.crypto.randomUUID()
+          )
+        }
+
+        const attempt = createAttempt.value
+        if (!attempt) throw new Error('设备登记请求未准备好。')
+        postStarted = true
+        const result = await deviceNative.create(attempt.payload, attempt.key)
+        createdDevice = result.device
+      } catch (error) {
+        const status = error instanceof DeviceNativeError ? error.status : undefined
+        const retainAttempt = postStarted && shouldRetainNativeDeviceRegistrationAttempt(status, previouslyUnknown)
+        createOutcomeUnknown.value = retainAttempt
+        if (!retainAttempt) {
+          createAttempt.value = null
+        }
+        message.error(
+          createOutcomeUnknown.value
+            ? `登记结果仍未确认${status ? `（接口状态 ${status}）` : ''}。请用相同内容重试，系统会复用原请求编号。`
+            : error instanceof Error
+              ? error.message
+              : '设备登记失败'
+        )
+        return
+      } finally {
+        creating.value = false
+      }
+
+      if (!createdDevice) return
+      createAttempt.value = null
+      createOutcomeUnknown.value = false
+      confirmedDevice.value = createdDevice
+      try {
+        props.setDeviceCallback(confirmedDevice.value)
+        props.nextCallback()
+      } catch {
+        message.warning('设备已登记，但页面暂未切换。请返回设备列表刷新查看。')
+      }
     } else {
       message.error($t('custom.devicePage.validationFailed'))
     }
@@ -254,10 +326,14 @@ onMounted(() => {
     <n-card :bordered="false">
       <n-form ref="formRef" :label-width="80" :model="formValue" :rules="rules" size="small">
         <n-form-item :label="$t('custom.devicePage.deviceName')" path="name">
-          <n-input v-model:value="formValue.name" :placeholder="$t('custom.devicePage.inputDeviceName')" />
+          <n-input
+            v-model:value="formValue.name"
+            :placeholder="$t('custom.devicePage.inputDeviceName')"
+            :disabled="Boolean(createAttempt || confirmedDevice)"
+          />
         </n-form-item>
         <n-form-item :label="$t('custom.devicePage.label')" path="label">
-          <n-dynamic-tags v-model:value="formValue.label" />
+          <n-dynamic-tags v-model:value="formValue.label" :disabled="Boolean(createAttempt || confirmedDevice)" />
         </n-form-item>
         <n-form-item :label="$t('device_template.equipmentConfig')" path="device_config_id">
           <n-select
@@ -265,7 +341,7 @@ onMounted(() => {
             :placeholder="$t('custom.devicePage.selectDeviceConfig')"
             :options="templateOptions"
             :loading="marketLoading"
-            :disabled="installLoading"
+            :disabled="installLoading || Boolean(createAttempt || confirmedDevice)"
             filterable
             @update:value="handleTemplateChange"
           />
@@ -274,11 +350,17 @@ onMounted(() => {
           <n-button
             type="primary"
             attr-type="button"
-            :loading="installLoading"
-            :disabled="installLoading"
+            :loading="installLoading || creating"
+            :disabled="installLoading || creating"
             @click="handleValidateClick"
           >
-            {{ $t('custom.devicePage.saveAndNext') }}
+            {{
+              createOutcomeUnknown
+                ? '用原内容重试登记'
+                : confirmedDevice
+                  ? '继续查看登记结果'
+                  : $t('custom.devicePage.saveAndNext')
+            }}
           </n-button>
         </n-form-item>
       </n-form>

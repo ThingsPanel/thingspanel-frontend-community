@@ -1,9 +1,11 @@
 <script lang="tsx" setup>
 import { onMounted, ref, computed, h, onActivated } from 'vue'
-import { useRouter } from 'vue-router'
 import { NButton, NInput, NIcon, NPagination, NDataTable, NTag, NSpace, NEmpty, NTooltip } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
-import { deviceConfig } from '@/service/api/device'
+import { templateNative, type DeviceAccessTemplate } from '@/service/api/template-native'
+import { fileAssetsNative } from '@/service/api/file-assets-native'
+import { useAuthStore } from '@/store/modules/auth'
+import { canManageDeviceGroups } from '@/service/api/device-group-editor-state'
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
 import AdvancedListLayout from '@/components/list-page/index.vue'
@@ -11,52 +13,77 @@ import ItemCard from '@/components/dev-card-item/index.vue'
 import CardGrid from '@/components/card-grid/index.vue'
 import { tableThemeOverrides } from '@/utils/table-theme'
 
-// Import Publish Components
-import MarketLoginModal from './modules/market-login-modal.vue'
-import PublishConfirmModal from './modules/publish-confirm-modal.vue'
-import { useMarketAuth } from './composables/use-market-auth'
-
-const router = useRouter()
 const { routerPushByKey } = useRouterPush()
-const { isLoggedIn } = useMarketAuth()
-
-// Refs for Modals
-const marketLoginRef = ref<InstanceType<typeof MarketLoginModal>>()
-const publishConfirmRef = ref<InstanceType<typeof PublishConfirmModal>>()
-const pendingPublishId = ref('')
-const pendingPublishName = ref('')
-
-const hasPinnedNativeModel = (row: any) =>
-  Boolean(
-    row?.native_thing_model_id &&
-      row?.native_thing_model_snapshot_id &&
-      Number(row?.native_thing_model_revision) > 0 &&
-      !row?.device_template_id
-  )
+const authStore = useAuthStore()
+const canWrite = computed(() => canManageDeviceGroups(authStore.userInfo.roles))
 
 // 查询参数
 const queryData = ref({
   page: 1,
-  page_size: 10,
+  pageSize: 10,
   name: ''
 })
 
 // 数据
-const deviceConfigList = ref([] as any[])
+const deviceConfigList = ref([] as DeviceAccessTemplate[])
 const dataTotal = ref(0)
 const loading = ref(false)
+const listError = ref('')
+const coverUrls = ref<Record<string, string>>({})
+let requestSequence = 0
+
+async function loadCoverUrls(items: DeviceAccessTemplate[], sequence: number) {
+  const assetIds = [...new Set(items.map(item => item.imageAssetId).filter((id): id is string => Boolean(id)))]
+  const urls: Record<string, string> = {}
+  let cursor = 0
+  const worker = async () => {
+    while (cursor < assetIds.length) {
+      const assetId = assetIds[cursor++]
+      try {
+        const { asset } = await fileAssetsNative.get(assetId)
+        if (asset.downloadUrl) urls[assetId] = asset.downloadUrl
+      } catch {
+        // A missing or expired cover falls back to the standard template image.
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(4, assetIds.length) }, () => worker()))
+  if (sequence === requestSequence) {
+    coverUrls.value = Object.fromEntries(
+      items.flatMap(item => {
+        const url = item.imageAssetId ? urls[item.imageAssetId] : undefined
+        return url ? [[item.id, url]] : []
+      })
+    )
+  }
+}
 
 // 获取数据
 const getData = async () => {
+  const sequence = ++requestSequence
   loading.value = true
+  listError.value = ''
   try {
-    const res = await deviceConfig(queryData.value)
-    if (!res.error) {
-      deviceConfigList.value = res.data.list
-      dataTotal.value = res.data.total
+    const result = await templateNative.list({
+      page: queryData.value.page,
+      pageSize: queryData.value.pageSize,
+      ...(queryData.value.name.trim() ? { search: queryData.value.name.trim() } : {})
+    })
+    if (sequence === requestSequence) {
+      deviceConfigList.value = result.items
+      dataTotal.value = result.total
+      coverUrls.value = {}
+      void loadCoverUrls(result.items, sequence)
+    }
+  } catch (error) {
+    if (sequence === requestSequence) {
+      deviceConfigList.value = []
+      dataTotal.value = 0
+      coverUrls.value = {}
+      listError.value = error instanceof Error ? error.message : '设备模板加载失败'
     }
   } finally {
-    loading.value = false
+    if (sequence === requestSequence) loading.value = false
   }
 }
 
@@ -75,43 +102,20 @@ const handleReset = async () => {
 
 // 新建配置
 const handleAddNew = () => {
+  if (!canWrite.value) return
   routerPushByKey('device_config-edit')
 }
 
-// 页面跳转
-const goToDetail = (id: string) => {
-  router.push({ path: '/device/template/detail', query: { id } })
-}
-
-// 处理发布到市场（以 device_config_id 为发布单位）
-const handlePublishToMarket = (deviceConfigId: string, defaultName?: string) => {
-  if (!deviceConfigId) {
-    window.$message?.warning($t('device_template.requireThingModelBeforePublish'))
-    return
-  }
-  if (!isLoggedIn()) {
-    pendingPublishId.value = deviceConfigId
-    pendingPublishName.value = defaultName || ''
-    marketLoginRef.value?.open()
-  } else {
-    publishConfirmRef.value?.open(deviceConfigId, defaultName)
-  }
-}
-
-// 市场登录成功回调
-const onMarketLoginSuccess = () => {
-  if (pendingPublishId.value) {
-    publishConfirmRef.value?.open(pendingPublishId.value, pendingPublishName.value)
-    pendingPublishId.value = ''
-    pendingPublishName.value = ''
-  }
+// Open the native template detail; editing remains a separate explicit action.
+const openTemplateEditor = (id: string) => {
+  routerPushByKey('device_config-detail', { query: { id } })
 }
 
 // 设备类型映射
 const deviceTypeMap = {
-  '1': $t('generate.direct-connected-device'),
-  '2': $t('generate.gateway'),
-  '3': $t('generate.gateway-sub-device')
+  standalone: $t('generate.direct-connected-device'),
+  gateway: $t('generate.gateway'),
+  subdevice: $t('generate.gateway-sub-device')
 }
 
 // 表格列定义
@@ -129,7 +133,7 @@ const columns = computed(() => [
         {
           text: true,
           type: 'primary',
-          onClick: () => goToDetail(row.id)
+          onClick: () => openTemplateEditor(row.id)
         },
         { default: () => row.name }
       )
@@ -137,19 +141,20 @@ const columns = computed(() => [
   },
   {
     title: $t('generate.device-type'),
-    key: 'device_type',
+    key: 'deviceKind',
     width: 220,
     render: (row: any) => {
-      const typeText = deviceTypeMap[row.device_type as keyof typeof deviceTypeMap] || row.device_type
-      const type = row.device_type === '1' ? 'info' : row.device_type === '2' ? 'success' : 'warning'
+      const kind = row.configuration.deviceKind
+      const typeText = deviceTypeMap[kind] || kind
+      const type = kind === 'standalone' ? 'info' : kind === 'gateway' ? 'success' : 'warning'
       return h(NTag, { type }, { default: () => typeText })
     }
   },
   {
     title: $t('generate.device-count'),
-    key: 'device_count',
+    key: 'deviceCount',
     width: 180,
-    render: (row: any) => `${row.device_count} ${$t('generate.individual')}`
+    render: (row: DeviceAccessTemplate) => `${row.deviceCount} ${$t('generate.individual')}`
   },
   {
     title: $t('common.actions'),
@@ -161,17 +166,21 @@ const columns = computed(() => [
         { size: 'small', wrap: false },
         {
           default: () => [
-            h(
-              NButton,
-              {
-                size: 'small',
-                onClick: () => handleEdit(row.id)
-              },
-              { default: () => $t('common.edit') }
-            ),
+            ...(canWrite.value
+              ? [
+                  h(
+                    NButton,
+                    {
+                      size: 'small',
+                      onClick: () => handleEdit(row.id)
+                    },
+                    { default: () => '编辑模板' }
+                  )
+                ]
+              : []),
             h(
               NTooltip,
-              { trigger: 'hover', disabled: hasPinnedNativeModel(row) },
+              { trigger: 'hover' },
               {
                 trigger: () =>
                   h(
@@ -179,12 +188,11 @@ const columns = computed(() => [
                     {
                       size: 'small',
                       type: 'info',
-                      disabled: !hasPinnedNativeModel(row),
-                      onClick: () => handlePublishToMarket(row.id, row.name)
+                      disabled: true
                     },
                     { default: () => $t('device_template.publishToMarket') }
                   ),
-                default: () => $t('device_template.requireNativeModelBeforePublish')
+                default: () => '原生模板发布入口尚未接通'
               }
             )
           ]
@@ -196,6 +204,7 @@ const columns = computed(() => [
 
 // 编辑处理
 const handleEdit = (id: string) => {
+  if (!canWrite.value) return
   routerPushByKey('device_config-edit', { query: { id } })
 }
 
@@ -207,7 +216,7 @@ const handlePageChange = (page: number) => {
 
 // 分页大小处理
 const handlePageSizeChange = (pageSize: number) => {
-  queryData.value.page_size = pageSize
+  queryData.value.pageSize = pageSize
   queryData.value.page = 1
   getData()
 }
@@ -228,17 +237,14 @@ onActivated(() => {
 })
 import { CreateOutline, CloudUploadOutline, ListOutline, GridOutline as CardIcon } from '@vicons/ionicons5'
 import SvgIcon from '@/components/custom/svg-icon.vue'
-import { getDemoServerUrl } from '@/utils/common/tool'
-
-const demoUrl = getDemoServerUrl()
 
 // 注释：已移除defaultConfigSvg导入和svgToDataUrl函数，现在使用SvgIcon组件处理SVG图标
 
 // 设备类型图标映射 - 使用本地SVG图标名称
 const deviceTypeIcons = {
-  1: 'direct', // 直连设备
-  2: 'gateway', // 网关设备
-  3: 'subdevice', // 子设备
+  standalone: 'direct',
+  gateway: 'gateway',
+  subdevice: 'subdevice',
   default: 'defaultdevice' // 默认设备图标
 }
 
@@ -246,14 +252,6 @@ const deviceTypeIcons = {
 const getDeviceIconName = (deviceType: string): string => {
   return deviceTypeIcons[deviceType] || deviceTypeIcons.default
 }
-
-const getConfigImageUrl = (imageUrl?: string) => {
-  if (!imageUrl) return ''
-  if (/^https?:\/\//i.test(imageUrl)) return imageUrl
-  return `${demoUrl.replace('api/v1', '')}${imageUrl}`
-}
-
-// 注释：已移除getConfigImageUrl函数，现在直接在模板中判断是否有image_url
 
 const availableViews = [
   { key: 'card', icon: CardIcon, label: 'common.viewCard' },
@@ -279,7 +277,9 @@ const availableViews = [
             <h2 class="text-xl font-bold">设备模板</h2>
             <span class="text-gray-400">{{ dataTotal }} 个模板</span>
           </div>
-          <NButton type="primary" @click="handleAddNew">{{ $t('generate.createDeviceConfig') }}</NButton>
+          <NButton v-if="canWrite" type="primary" @click="handleAddNew">
+            {{ $t('generate.createDeviceConfig') }}
+          </NButton>
         </div>
       </template>
       <!-- 搜索表单内容 -->
@@ -310,6 +310,7 @@ const availableViews = [
 
       <!-- 卡片视图 -->
       <template #card-view>
+        <div v-if="listError" class="mb-3 text-red-500">设备模板加载失败：{{ listError }}</div>
         <n-spin :show="loading">
           <div v-if="deviceConfigList.length === 0 && !loading" class="empty-state">
             <NEmpty size="huge" :description="$t('common.nodata')" class="min-h-60" />
@@ -318,14 +319,14 @@ const availableViews = [
             <div v-for="item in deviceConfigList" :key="item.id">
               <ItemCard
                 :title="item.name"
-                :footer-text="`${item.device_count} ${$t('generate.individual')} ${$t('generate.device')}`"
-                :subtitle="deviceTypeMap[item.device_type as keyof typeof deviceTypeMap]"
+                :footer-text="`${item.deviceCount} ${$t('generate.individual')} ${$t('generate.device')}`"
+                :subtitle="deviceTypeMap[item.configuration.deviceKind]"
                 :device-config-id="item.id"
                 :isStatus="false"
-                @click-card="goToDetail(item.id)"
+                @click-card="openTemplateEditor(item.id)"
               >
                 <template #subtitle-icon>
-                  <SvgIcon :local-icon="getDeviceIconName(item.device_type)" class="image-icon" />
+                  <SvgIcon :local-icon="getDeviceIconName(item.configuration.deviceKind)" class="image-icon" />
                 </template>
 
                 <!-- 高频图标操作固定在右上角 -->
@@ -333,33 +334,30 @@ const availableViews = [
                   <NSpace :size="2" class="card-actions">
                     <NTooltip trigger="hover">
                       <template #trigger>
-                        <NButton size="small" quaternary circle type="primary" @click.stop="handleEdit(item.id)">
+                        <NButton
+                          v-if="canWrite"
+                          size="small"
+                          quaternary
+                          circle
+                          type="primary"
+                          @click.stop="handleEdit(item.id)"
+                        >
                           <template #icon>
                             <NIcon><CreateOutline /></NIcon>
                           </template>
                         </NButton>
                       </template>
-                      {{ $t('common.edit') }}
+                      编辑模板
                     </NTooltip>
                     <NTooltip trigger="hover">
                       <template #trigger>
-                        <NButton
-                          size="small"
-                          quaternary
-                          type="info"
-                          :disabled="!hasPinnedNativeModel(item)"
-                          @click.stop="handlePublishToMarket(item.id, item.name)"
-                        >
+                        <NButton size="small" quaternary type="info" disabled>
                           <template #icon>
                             <NIcon><CloudUploadOutline /></NIcon>
                           </template>
                         </NButton>
                       </template>
-                      {{
-                        hasPinnedNativeModel(item)
-                          ? $t('device_template.uploadToResourceCenter')
-                          : $t('device_template.requireNativeModelBeforePublish')
-                      }}
+                      原生模板发布入口尚未接通
                     </NTooltip>
                   </NSpace>
                 </template>
@@ -368,9 +366,9 @@ const availableViews = [
                 <template #footer-icon>
                   <div class="footer-icon-container">
                     <img
-                      v-if="item.image_url"
-                      :src="getConfigImageUrl(item.image_url)"
-                      alt="config image"
+                      v-if="coverUrls[item.id]"
+                      :src="coverUrls[item.id]"
+                      alt="template cover"
                       class="config-image"
                     />
                     <SvgIcon v-else local-icon="default-config" class="config-image" />
@@ -384,6 +382,7 @@ const availableViews = [
 
       <!-- 表格视图 -->
       <template #list-view>
+        <div v-if="listError" class="mb-3 text-red-500">设备模板加载失败：{{ listError }}</div>
         <n-scrollbar class="device-table-scroll" :size="1">
           <NDataTable
             class="device-data-table thingspanel-data-table device-config-data-table"
@@ -413,7 +412,7 @@ const availableViews = [
       <template #footer>
         <NPagination
           v-model:page="queryData.page"
-          :page-size="queryData.page_size"
+          :page-size="queryData.pageSize"
           :item-count="dataTotal"
           show-size-picker
           :page-sizes="[10, 20, 30, 50]"
@@ -422,11 +421,6 @@ const availableViews = [
         />
       </template>
     </AdvancedListLayout>
-
-    <!-- 市场登录弹窗 -->
-    <MarketLoginModal ref="marketLoginRef" @login-success="onMarketLoginSuccess" />
-    <!-- 发布确认弹窗 -->
-    <PublishConfirmModal ref="publishConfirmRef" @publish-success="getData" />
   </div>
 </template>
 

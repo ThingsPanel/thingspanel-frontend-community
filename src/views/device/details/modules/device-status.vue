@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed, h, nextTick, reactive, ref, watch } from 'vue'
 import { useLoading } from '@sa/hooks'
-import { deviceStatusHistory } from '@/service/api/device'
+import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
 import { $t } from '@/locales'
 import dayjs from 'dayjs'
 import { NDataTable, NEmpty, NTag } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
-import { demoStatusHistory, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 
 /**
  * 设备状态历史记录类型定义
@@ -15,30 +14,8 @@ import { demoStatusHistory, isDeviceDetailDemo } from '@/utils/device-detail-dem
  * @property {string | number} change_time - 状态改变时间
  */
 interface StatusHistoryItem {
-  status: 0 | 1
+  status: 0 | 1 | null
   change_time?: string | number
-}
-
-// 请求参数类型定义
-interface StatusHistoryParams {
-  device_id: string
-  page: number
-  page_size: number
-  start_time?: number
-  end_time?: number
-  status?: number
-}
-
-// 响应数据类型定义
-interface StatusHistoryListResponse {
-  list?: StatusHistoryItem[]
-  total?: number
-}
-
-// 响应数据类型定义
-interface StatusHistoryResponse {
-  data?: StatusHistoryListResponse
-  error?: unknown
 }
 
 const props = defineProps<{
@@ -53,6 +30,7 @@ const emit = defineEmits<{
 const { loading, startLoading, endLoading } = useLoading()
 const tableData = ref<StatusHistoryItem[]>([])
 const total = ref(0)
+const loadError = ref('')
 
 const tableThemeOverrides = {
   borderColor: 'var(--border-color)',
@@ -82,7 +60,7 @@ const queryParams = reactive({
   status: null as number | null | undefined
 })
 
-const dateRangeValue = ref<[number, number] | null>(null)
+const dateRangeValue = ref<number | null>(null)
 
 const statusOptions = [
   { label: $t('custom.device_details.online'), value: 1 },
@@ -123,6 +101,7 @@ const columns: DataTableColumns<StatusHistoryItem> = [
     key: 'status',
     width: 120,
     render: (row: StatusHistoryItem) => {
+      if (row.status === null) return h(NTag, { type: 'warning', size: 'small' }, { default: () => '未知' })
       const isOnline = row.status === 1
       const text = isOnline ? $t('custom.device_details.online') : $t('custom.device_details.offline')
       return h(NTag, { type: isOnline ? 'success' : 'default', size: 'small' }, { default: () => text })
@@ -144,33 +123,24 @@ const columns: DataTableColumns<StatusHistoryItem> = [
 const fetchData = async () => {
   startLoading()
   try {
-    const params: StatusHistoryParams = {
-      device_id: props.deviceId,
+    const fromSeconds = queryParams.start_time
+    const connectivity = queryParams.status === 1 ? 'online' : queryParams.status === 0 ? 'offline' : undefined
+    const page = await deviceRuntimeNative.listStatusHistory(props.deviceId, {
       page: queryParams.page,
-      page_size: queryParams.page_size
-    }
-
-    if (queryParams.start_time) {
-      params.start_time = queryParams.start_time
-    }
-    if (queryParams.end_time) {
-      params.end_time = queryParams.end_time
-    }
-    if (queryParams.status !== null && queryParams.status !== undefined) {
-      params.status = queryParams.status
-    }
-
-    const response = (await deviceStatusHistory(params)) as StatusHistoryResponse
-    const { data, error } = response
-
-    if (!error && data) {
-      const list = data.list ?? []
-      tableData.value = list.length > 0 || !isDeviceDetailDemo(props.deviceId) ? list : demoStatusHistory()
-      total.value = data.total ?? tableData.value.length
-      pagination.itemCount = total.value
-    }
+      pageSize: queryParams.page_size,
+      ...(fromSeconds ? { from: new Date(fromSeconds * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z') } : {}),
+      ...(connectivity ? { connectivity } : {})
+    })
+    loadError.value = ''
+    tableData.value = page.items.map(item => ({
+      status: item.connectivity === 'online' ? 1 : item.connectivity === 'offline' ? 0 : null,
+      change_time: item.observedAt
+    }))
+    total.value = page.total
+    pagination.itemCount = page.total
   } catch (error) {
-    // Keep the existing empty-state behavior when the status history endpoint is unavailable.
+    loadError.value = error instanceof Error ? error.message : '状态历史读取失败'
+    tableData.value = []
   } finally {
     endLoading()
   }
@@ -194,15 +164,10 @@ const handleReset = () => {
   })
 }
 
-const handleDateRangeChange = (value: [number, number] | null) => {
+const handleDateRangeChange = (value: number | null) => {
   dateRangeValue.value = value
-  if (value && value.length === 2) {
-    queryParams.start_time = Math.floor(value[0] / 1000)
-    queryParams.end_time = Math.floor(value[1] / 1000)
-  } else {
-    queryParams.start_time = undefined
-    queryParams.end_time = undefined
-  }
+  queryParams.start_time = value ? Math.floor(value / 1000) : undefined
+  queryParams.end_time = undefined
 }
 
 const showModal = computed({
@@ -247,10 +212,10 @@ watch(
     <NCard>
       <NForm :model="queryParams" :show-feedback="false" label-placement="left" label-width="100px" label-align="left">
         <NFlex :vertical="false" :gap="8" class="mb-4">
-          <NFormItem :label="$t('common.timeFrame')">
+          <NFormItem label="起始时间">
             <NDatePicker
               v-model:value="dateRangeValue"
-              type="datetimerange"
+              type="datetime"
               clearable
               :placeholder="$t('common.selectPlaceholder')"
               @update:value="handleDateRangeChange"
@@ -272,6 +237,7 @@ watch(
         </NFlex>
       </NForm>
 
+      <NAlert v-if="loadError" type="warning" :show-icon="false" class="mb-4">{{ loadError }}</NAlert>
       <div class="table-container">
         <NDataTable
           class="device-detail-table"

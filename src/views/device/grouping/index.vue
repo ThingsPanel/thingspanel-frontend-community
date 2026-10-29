@@ -1,23 +1,63 @@
 <script lang="tsx" setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 // Import UI components from Naive UI
 import { useRouter } from 'vue-router'
 import { NButton, NCard, NDataTable, NEmpty, NIcon, NInput, NPagination } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { debounce } from 'lodash'
-import { deleteDeviceGroup, getDeviceGroup } from '@/service/api/device'
+import {
+  createDeviceGroupOperationKey,
+  deviceGroupNative,
+  DeviceGroupNativeError,
+  type DeviceGroup
+} from '@/service/api/device-group-native'
+import {
+  beginDeviceGroupDelete,
+  completeDeviceGroupDelete,
+  deviceGroupDeleteErrorStatus,
+  failDeviceGroupDelete,
+  finishDeviceGroupDelete,
+  getDeviceGroupDeleteSessionGeneration,
+  isCurrentDeviceGroupDeleteSession,
+  listDeviceGroupDeleteIntents,
+  prepareDeviceGroupDeleteIntent,
+  syncDeviceGroupDeleteSession
+} from '@/service/api/device-group-delete-state'
 import { group_columns } from '@/views/device/modules/all-columns'
 import { $t } from '@/locales'
+import { useAuthStore } from '@/store/modules/auth'
+import { canManageDeviceGroups } from '@/service/api/device-group-editor-state'
 import { AddOrEditDevices } from './components'
 
 const the_modal = ref()
 const searchValue = ref('')
-const isRequestPending = ref(false)
-const data = ref([])
+type DeviceGroupTableRow = DeviceGroup & { created_at: DeviceGroup['createdAt'] }
+const data = ref<DeviceGroupTableRow[]>([])
 const loading = ref(false)
 const currentPage = ref(1)
-const totalPages = ref(0) // 假设总页数为 5，实际应从后端获取
+const pageSize = 10
+const totalPages = ref(0)
 const totalGroups = ref(0)
+const listRequestSequence = ref(0)
+const deleteIntentVersion = ref(0)
+const pendingDeleteIntents = computed(() => {
+  void deleteIntentVersion.value
+  return listDeviceGroupDeleteIntents()
+})
+const authStore = useAuthStore()
+const canManageGroups = computed(() => canManageDeviceGroups(authStore.userInfo.roles))
+watch(
+  [
+    () => Boolean(authStore.token),
+    () => authStore.userInfo.id || authStore.userInfo.userId || '',
+    () => authStore.userInfo.tenantId || authStore.userInfo.tenant_id || ''
+  ],
+  ([loggedIn, subjectId, tenantId]) => {
+    syncDeviceGroupDeleteSession(Boolean(loggedIn), String(subjectId), String(tenantId))
+    deleteIntentVersion.value += 1
+  },
+  { flush: 'sync', immediate: true }
+)
 const tableThemeOverrides = {
   borderColor: 'var(--border-color)',
   borderRadius: '10px',
@@ -35,41 +75,37 @@ const tableThemeOverrides = {
   tdPaddingMedium: '13px 12px'
 }
 const getDevice = async () => {
+  const requestSequence = ++listRequestSequence.value
   loading.value = true
-  const res = await getDeviceGroup({
-    page: currentPage.value,
-    page_size: 10,
-    parent_id: 0
-  })
-  data.value = res.data.list
-  totalGroups.value = res.data.total
-  totalPages.value = Math.ceil(res.data.total / 10)
-  loading.value = false
-}
-// 使用 lodash 的 debounce 函数来延迟搜索请求的发送
-const debouncedSearch = debounce(async () => {
-  if (isRequestPending.value) {
-    return // 如果当前有请求正在进行，则不执行新的请求
+  try {
+    const res = await deviceGroupNative.list({
+      page: currentPage.value,
+      pageSize,
+      rootOnly: true,
+      search: searchValue.value.trim() || undefined
+    })
+    if (requestSequence !== listRequestSequence.value) return
+    data.value = res.items.map(group => ({ ...group, created_at: group.createdAt }))
+    totalGroups.value = res.total
+    totalPages.value = Math.ceil(res.total / pageSize)
+  } catch (error) {
+    if (requestSequence === listRequestSequence.value) {
+      window.$message?.error(error instanceof Error ? error.message : $t('common.fetchDataFailed'))
+    }
+  } finally {
+    if (requestSequence === listRequestSequence.value) loading.value = false
   }
+}
 
-  isRequestPending.value = true
-  loading.value = true
-  const res = await getDeviceGroup({
-    page: currentPage.value,
-    page_size: 10,
-    parent_id: 0,
-    name: searchValue.value.trim() || undefined
-  })
-  data.value = res.data.list
-  totalGroups.value = res.data.total
-  totalPages.value = Math.ceil(res.data.total / 10)
-  loading.value = false
-  // eslint-disable-next-line require-atomic-updates
-  isRequestPending.value = false
-}, 500) // 设置延迟为 500 毫秒
+const debouncedSearch = debounce(async () => {
+  currentPage.value = 1
+  await getDevice()
+}, 500)
 
 // 监听输入变化并调用 debounced 函数
 const handleInput = () => {
+  listRequestSequence.value += 1
+  loading.value = false
   debouncedSearch()
 }
 
@@ -79,20 +115,59 @@ const handleReset = () => {
   currentPage.value = 1
   getDevice()
 }
-// Async function to fetch device groups from the backend
-// Function to delete a device group
 const deleteItem = async (rid: string) => {
-  await deleteDeviceGroup({ id: rid })
-  await getDevice()
+  if (!canManageGroups.value) {
+    window.$message?.error('只有租户管理员可以修改分组。')
+    return
+  }
+  const sessionGeneration = getDeviceGroupDeleteSessionGeneration()
+  if (!beginDeviceGroupDelete(rid, sessionGeneration)) return
+  let deleted = false
+  try {
+    const intent = await prepareDeviceGroupDeleteIntent(
+      rid,
+      async () => (await deviceGroupNative.get(rid)).etag,
+      createDeviceGroupOperationKey,
+      sessionGeneration
+    )
+    if (!isCurrentDeviceGroupDeleteSession(sessionGeneration)) return
+    await deviceGroupNative.delete(rid, intent.etag, intent.key)
+    if (!isCurrentDeviceGroupDeleteSession(sessionGeneration)) return
+    completeDeviceGroupDelete(rid, sessionGeneration)
+    deleted = true
+    window.$message?.success('分组已删除。')
+  } catch (error) {
+    if (!isCurrentDeviceGroupDeleteSession(sessionGeneration)) return
+    const result = failDeviceGroupDelete(rid, deviceGroupDeleteErrorStatus(error), sessionGeneration)
+    if (!result.retained && error instanceof DeviceGroupNativeError && (error.status === 409 || error.status === 412)) {
+      window.$message?.error('分组已有成员或子组，或已发生变化。请检查分组内容并刷新后重试。')
+    } else {
+      window.$message?.error(
+        result.retained
+          ? '删除结果尚未确认。请使用下方“重试同一删除”继续。'
+          : error instanceof Error
+            ? error.message
+            : $t('common.deleteFailed')
+      )
+    }
+  } finally {
+    finishDeviceGroupDelete(rid, sessionGeneration)
+    deleteIntentVersion.value += 1
+  }
+  if (deleted && isCurrentDeviceGroupDeleteSession(sessionGeneration)) await getDevice()
 }
 const router = useRouter()
 const viewDetails = (rid: string) => {
   router.push({ name: 'device_grouping-details', query: { id: rid } })
 }
 // Define columns for the data table
-const columns = group_columns(viewDetails, deleteItem)
+const columns = computed(() => {
+  const allColumns = group_columns(viewDetails, deleteItem)
+  return canManageGroups.value ? allColumns : allColumns.filter(column => column.key !== 'actions')
+})
 // Function to show the modal for adding or editing device groups
 const showModal = () => {
+  if (!canManageGroups.value) return
   if (the_modal.value) {
     the_modal.value.showModal = true
   }
@@ -105,6 +180,16 @@ onMounted(getDevice) // Fetch device groups on component mount
     <!-- Add or edit device modal component with props for edit mode and data -->
     <AddOrEditDevices ref="the_modal" :is-edit="false" :refresh-data="getDevice" />
     <NCard>
+      <div v-if="pendingDeleteIntents.length" class="mb-3">
+        <div
+          v-for="intent in pendingDeleteIntents"
+          :key="intent.groupId"
+          class="mb-2 flex items-center justify-between gap-3"
+        >
+          <span>分组 {{ intent.groupId }} 的删除结果尚未确认。重试会使用原请求编号和版本。</span>
+          <NButton size="small" type="warning" @click="deleteItem(intent.groupId)">重试同一删除</NButton>
+        </div>
+      </div>
       <div class="group-page-header">
         <div class="group-page-heading">
           <h2 class="group-page-title">分组管理</h2>
@@ -113,14 +198,15 @@ onMounted(getDevice) // Fetch device groups on component mount
 
         <div class="device-filter-toolbar">
           <div class="device-filter-leading">
-            <NButton type="primary" @click="showModal">{{ $t('custom.groupPage.createGroupButton') }}</NButton>
+            <NButton v-if="canManageGroups" type="primary" @click="showModal">
+              {{ $t('custom.groupPage.createGroupButton') }}
+            </NButton>
           </div>
           <div class="device-filter-actions">
             <!-- Input for search functionality -->
             <div class="device-filter-field device-filter-field--search">
               <NInput
                 v-model:value="searchValue"
-                :disabled="isRequestPending"
                 :placeholder="$t('custom.groupPage.deviceGroupPlaceholder')"
                 type="text"
                 @input="handleInput"

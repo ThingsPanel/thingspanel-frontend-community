@@ -109,6 +109,8 @@
   "route.automation_scene-manage": "Scene",
   "route.automation_scene-linkage": "Automations",
   "route.automation_linkage-edit": "Edit Automation",
+  "route.automation_rule-edit": "Edit Rule",
+  "route.automation_rule-manage": "Rules",
   "route.automation": "Automations",
   "route.alarm": "Alerts",
   "route.alarm_notification-group": "Notification policies",

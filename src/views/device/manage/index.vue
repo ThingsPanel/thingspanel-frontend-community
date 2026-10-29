@@ -3,28 +3,25 @@ import { computed, h, onBeforeMount, onMounted, onUnmounted, ref, watch } from '
 import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { DrawerPlacement, StepsProps } from 'naive-ui'
-import { NIcon, NTag, NButton } from 'naive-ui'
+import { NAlert, NIcon, NTag, NButton, useMessage } from 'naive-ui'
 import _ from 'lodash'
 import type { TreeSelectOption } from 'naive-ui/es/tree-select/src/interface'
 import { AppsOutline, FolderOpenOutline, FolderOutline, LayersOutline } from '@vicons/ionicons5'
 import { localStg } from '@/utils/storage'
 import { useDeviceStatusWebSocket } from '@/utils/deviceStatusWebSocket'
 import {
-  checkDevice,
-  devicCeonnectForm,
   deviceDictProtocolServiceFirstLevel,
   deviceDictProtocolServiceSecondLevel,
-  getDeviceGroupCounts,
-  deviceGroupTree,
-  deviceList,
-  getDeviceConfigList,
   putDeviceActive
 } from '@/service/api/device'
+import { deviceNative } from '@/service/api/device-native'
+import { deviceGroupNative } from '@/service/api/device-group-native'
+import { templateNative } from '@/service/api/template-native'
 import type { SearchConfig } from '@/components/data-table-page/index.vue'
 import AddDevicesStep1 from '@/views/device/manage/modules/add-devices-step1.vue'
-import AddDevicesStep2 from '@/views/device/manage/modules/add-devices-step2.vue'
-import AddDevicesStep3 from '@/views/device/manage/modules/add-devices-step3.vue'
 import AddDevicesServer1 from '@/views/device/manage/modules/add-devices-server1.vue'
+import NativeDeviceRegistrationResult from '@/views/device/manage/modules/native-device-registration-result.vue'
+import type { Device } from '@/service/api/device-native'
 import DeviceReadingsCompact from '@/views/device/manage/modules/device-readings-compact.vue'
 import { useRouterPush } from '@/hooks/common/router'
 import { $t } from '@/locales'
@@ -38,16 +35,14 @@ interface ServiceIds {
 const addKey = ref()
 const deviceNumber = ref()
 const configOptions = ref<any[]>([])
-const deviceId = ref()
-const deviceObj = ref()
-const configId = ref()
-const formData = ref()
+const registeredDevice = ref<Device | null>(null)
 const tablePageRef = ref()
 const buttonDisabled = ref(true)
 const showMessage = ref(false)
 const messageColor = ref('')
 const route: any = useRoute()
 const router: any = useRouter()
+const message = useMessage()
 const initialDeviceConfigId = ref(typeof route.query.deviceConfigId === 'string' ? route.query.deviceConfigId : '')
 
 const secondLevelOptions = ref<DeviceManagement.ServiceData[]>([])
@@ -62,6 +57,7 @@ type DeviceGroupTreeOption = TreeSelectOption & {
 }
 
 const groupOptions = ref<DeviceGroupTreeOption[]>([])
+const groupTreeError = ref('')
 const selectedGroupName = computed(() => {
   if (selectedGroupScope.value === 'ungrouped') return $t('custom.devicePage.ungroupedDevices')
   if (selectedGroupScope.value !== 'group') return $t('custom.devicePage.allDevices')
@@ -99,7 +95,11 @@ const selectedGroupId = ref(initialGroupSelection.groupId)
 const selectedGroupScope = ref<GroupScope>(initialGroupSelection.scope)
 const allDeviceCount = ref<number | null>(null)
 const ungroupedDeviceCount = ref<number | null>(null)
+const groupStatsError = ref('')
+const deviceListError = ref('')
+const deviceListRefreshing = ref(false)
 const groupPanelVisible = ref(false)
+let deviceListRequestGeneration = 0
 
 const renderGroupPrefix = ({ option }: { option: DeviceGroupTreeOption }) =>
   h(
@@ -156,25 +156,28 @@ const subscribeDeviceStatus = () => {
   }
 }
 
-const getFormJson = async id => {
-  const res = await devicCeonnectForm({ device_id: id })
-
-  formData.value = res.data
+const onNativeDeviceRegistered = (device: Device) => {
+  registeredDevice.value = device
 }
-const setUpId = (dId, cId, dobj) => {
-  deviceId.value = dId
-  configId.value = cId
-  deviceObj.value = JSON.parse(dobj)
-  getFormJson(dId)
+const returnToNativeDeviceList = () => {
+  active.value = false
+}
+const openNativeDeviceDetails = () => {
+  if (!registeredDevice.value) return
+  const device = registeredDevice.value
+  active.value = false
+  goDeviceDetails(device)
 }
 const getDeviceGroupOptions = async () => {
   // 将原始数据转换为树形结构
-  function convertTreeNodeToTarget(treeNode: DeviceManagement.TreeNode): DeviceGroupTreeOption {
+  function convertTreeNodeToTarget(
+    treeNode: Awaited<ReturnType<typeof deviceGroupNative.tree>>['nodes'][number]
+  ): DeviceGroupTreeOption {
     const { group, children } = treeNode
     const targetNode: DeviceGroupTreeOption = {
       label: group.name,
       key: String(group.id),
-      deviceCount: group.device_count
+      deviceCount: group.subtreeDeviceCount
     }
 
     if (children && children.length > 0) {
@@ -185,27 +188,41 @@ const getDeviceGroupOptions = async () => {
   }
 
   // 将 TreeNode 数组转换为目标数据结构的数组
-  function convertTreeNodesToTarget(treeNodes: DeviceManagement.TreeNode[]): DeviceGroupTreeOption[] {
+  function convertTreeNodesToTarget(
+    treeNodes: Awaited<ReturnType<typeof deviceGroupNative.tree>>['nodes']
+  ): DeviceGroupTreeOption[] {
     return treeNodes.map(convertTreeNodeToTarget)
   }
 
-  const res = await deviceGroupTree({})
-  let options: any[] = []
-  if (res.data) {
-    options = convertTreeNodesToTarget(res.data)
-  }
-  return options
+  const tree = await deviceGroupNative.tree(32)
+  if (tree.truncated) throw new Error('设备分组树超过可读取深度，暂不能完整显示')
+  return convertTreeNodesToTarget(tree.nodes)
 }
 
 const getDeviceConfigOptions = async () => {
-  const res = await getDeviceConfigList({
-    page: 1,
-    page_size: 99
-    // device_type: pattern
-  })
-  let options: any[] = []
-  if (res.data && res.data.list) {
-    options = res.data.list
+  const options: Array<{
+    id: string
+    name: string
+    deviceKind: string
+    accessMode: string
+    protocol: string
+  }> = []
+  let page = 1
+  let total = Number.POSITIVE_INFINITY
+  while (options.length < total) {
+    const res = await templateNative.list({ page, pageSize: 100 })
+    options.push(
+      ...res.items.map(template => ({
+        id: template.id,
+        name: template.name,
+        deviceKind: template.configuration?.deviceKind ?? '',
+        accessMode: template.configuration?.access?.mode ?? '',
+        protocol: template.configuration?.access?.protocol ?? ''
+      }))
+    )
+    total = res.total
+    if (res.items.length === 0) break
+    page += 1
   }
   configOptions.value = [{ name: $t('custom.devicePage.unlimitedDeviceConfig'), id: '' }, ...options]
 
@@ -224,7 +241,13 @@ const columns_to_show: Ref<any> = ref([
             class={['device-status-dot', row?.is_online === 1 ? 'device-status-dot--online' : null]}
             aria-hidden="true"
           />
-          <NButton class="device-name-button" type="primary" text onClick={() => goDeviceDetails(row)}>
+          <NButton
+            class="device-name-button"
+            type="primary"
+            text
+            disabled={Boolean(deviceListError.value || deviceListRefreshing.value)}
+            onClick={() => goDeviceDetails(row)}
+          >
             {row.name}
           </NButton>
         </div>
@@ -240,7 +263,8 @@ const columns_to_show: Ref<any> = ref([
       if (row?.is_online === 1) {
         return <NTag type="success">{$t('custom.devicePage.online')}</NTag>
       }
-      return <NTag type="default">{$t('custom.devicePage.offline')}</NTag>
+      if (row?.is_online === 0) return <NTag type="default">{$t('custom.devicePage.offline')}</NTag>
+      return <span>-</span>
     }
   },
   {
@@ -251,7 +275,8 @@ const columns_to_show: Ref<any> = ref([
       if (row?.warn_status === 'Y') {
         return <NTag type="warning">{$t('custom.devicePage.alarmed')}</NTag>
       }
-      return <NTag type="default">{$t('custom.devicePage.notAlarmed')}</NTag>
+      if (row?.warn_status === 'N') return <NTag type="default">{$t('custom.devicePage.notAlarmed')}</NTag>
+      return <span>-</span>
     }
   },
   {
@@ -272,17 +297,27 @@ const columns_to_show: Ref<any> = ref([
   {
     key: 'device_config_name',
     minWidth: '100px',
-    label: () => $t('custom.devicePage.deviceConfig')
+    label: () => $t('custom.devicePage.deviceConfig'),
+    render: row => {
+      const template = configOptions.value.find(option => option.id === row?.device_config_id)
+      return template?.name || '-'
+    }
   },
   {
     key: 'access_way',
     minWidth: '160px',
     label: () => $t('custom.devicePage.accessServiceProtocol'),
     render: row => {
-      if (row?.access_way === '') return '-'
-      return row?.access_way === 'A'
-        ? `${$t('custom.devicePage.byProtocol')}(${row?.protocol_type || '-'})`
-        : `${$t('custom.devicePage.byService')}(${row?.protocol_type || '-'})`
+      const template = configOptions.value.find(option => option.id === row?.device_config_id)
+      if (!template || !template.accessMode) return '-'
+      const accessLabel =
+        template.accessMode === 'service_connector'
+          ? $t('custom.devicePage.byService')
+          : ['direct', 'protocol_connector', 'gateway'].includes(template.accessMode)
+            ? $t('custom.devicePage.byProtocol')
+            : ''
+      if (!accessLabel) return '-'
+      return `${accessLabel}(${template.protocol || '-'})`
     }
   },
   {
@@ -294,6 +329,7 @@ const columns_to_show: Ref<any> = ref([
 
 const { routerPushByKey } = useRouterPush()
 const goDeviceDetails = row => {
+  if (deviceListError.value || deviceListRefreshing.value) return
   routerPushByKey('device_details', {
     query: {
       d_id: row.id
@@ -452,11 +488,13 @@ const fetchFirstLevelOptions = async () => {
 
 const loadGroupOptions = async () => {
   groupTreeLoading.value = true
+  groupTreeError.value = ''
   try {
     groupOptions.value = await getDeviceGroupOptions()
   } catch (error) {
     console.error('加载设备分组失败:', error)
     groupOptions.value = []
+    groupTreeError.value = error instanceof Error ? error.message : '设备分组读取失败'
   } finally {
     groupTreeLoading.value = false
   }
@@ -464,20 +502,52 @@ const loadGroupOptions = async () => {
 
 const loadDeviceGroupCounts = async () => {
   try {
-    const res = await getDeviceGroupCounts()
-    if (res.data) {
-      allDeviceCount.value = Number(res.data.device_total ?? 0)
-      ungroupedDeviceCount.value = Number(res.data.ungrouped_total ?? 0)
-    }
+    const statistics = await deviceNative.statistics({})
+    allDeviceCount.value = statistics.total
+    ungroupedDeviceCount.value = statistics.ungrouped
+    groupStatsError.value = ''
   } catch (error) {
-    // The statistics endpoint was added after the community backend API. Keep the
-    // counters optional so older deployments can still use device management.
-    if (error?.error?.status !== 404) {
-      console.error('加载设备分组统计失败:', error)
-    }
     allDeviceCount.value = null
     ungroupedDeviceCount.value = null
+    groupStatsError.value = error instanceof Error ? error.message : '设备统计读取失败'
   }
+}
+
+function toNativeDeviceFilters(params: Record<string, any>) {
+  const query: Record<string, unknown> = {}
+  if (typeof params.search === 'string' && params.search) query.search = params.search
+  if (typeof params.device_config_id === 'string' && params.device_config_id) query.templateId = params.device_config_id
+  if (typeof params.group_id === 'string' && params.group_id) {
+    query.groupId = params.group_id
+    query.includeDescendants = true
+  }
+  if (params.group_scope === 'ungrouped') query.groupScope = 'ungrouped'
+  if (typeof params.label === 'string' && params.label) query.label = params.label
+  if (params.is_online === 1 || params.is_online === '1') query.connectivity = 'online'
+  if (params.is_online === 0 || params.is_online === '0') query.connectivity = 'offline'
+  if (params.warn_status === 'Y') query.alarmState = 'active'
+  if (params.warn_status === 'N') query.alarmState = 'none'
+  if (params.device_type) {
+    const kind = String(params.device_type)
+    if (kind === '1') query.deviceKind = 'standalone'
+    if (kind === '2') query.deviceKind = 'gateway'
+    if (kind === '3') query.deviceKind = 'subdevice'
+  }
+  const identifier = typeof params.service_identifier === 'string' ? params.service_identifier : ''
+  if (identifier) {
+    const service = serviceIds.value.find(item => item.service_identifier === identifier)
+    if (service) {
+      query.accessWay = 'service'
+      query.providerId = service.service_plugin_id
+      if (typeof params.service_access_id === 'string' && params.service_access_id) {
+        query.serviceInstanceId = params.service_access_id
+      }
+    } else {
+      query.accessWay = 'protocol'
+      query.protocol = identifier
+    }
+  }
+  return query
 }
 
 const fetchSecondLevelOptions = async (firstLevelValue, page = 1) => {
@@ -593,11 +663,6 @@ const topActions = [
   }
 ]
 const active = ref(false)
-const isSuccess = ref(false)
-
-const setIsSuccess = (flag: boolean) => {
-  isSuccess.value = flag
-}
 const placement = ref<DrawerPlacement>('right')
 const current = ref<number>(1)
 const currentStatus = ref<StepsProps['status']>('process')
@@ -609,6 +674,7 @@ const activate = async (place: DrawerPlacement, key: string | number) => {
   } else {
     current.value = 1
     currentServer.value = 1
+    registeredDevice.value = null
     active.value = true
     addKey.value = key
     placement.value = place
@@ -650,8 +716,8 @@ watch(
         showMessage.value = false
         return
       }
-      const { data, error } = await checkDevice(newDeviceNumber)
-      if (!error && data && data.is_available) {
+      const { available } = await deviceNative.checkNumber(newDeviceNumber)
+      if (available) {
         buttonDisabled.value = false
         messageColor.value = 'rgb(2,153,52)'
       } else {
@@ -665,6 +731,9 @@ watch(
   }, 500)
 )
 const fetchData = async (params: Record<string, any>) => {
+  const generation = ++deviceListRequestGeneration
+  deviceListRefreshing.value = true
+  deviceListError.value = ''
   const requestParams = Object.fromEntries(
     Object.entries(params).filter(([key]) => key !== 'group_id' && key !== 'group_scope')
   )
@@ -678,7 +747,42 @@ const fetchData = async (params: Record<string, any>) => {
     group_id: selectedGroupScope.value === 'group' ? selectedGroupId.value : '',
     group_scope: selectedGroupScope.value
   })
-  const result = await deviceList(requestParams)
+  const nativeQuery = {
+    ...toNativeDeviceFilters(requestParams),
+    page: Number(requestParams.page) || 1,
+    pageSize: Number(requestParams.page_size) || 10
+  }
+  let nativePage: Awaited<ReturnType<typeof deviceNative.list>>
+  try {
+    nativePage = await deviceNative.list(nativeQuery as Parameters<typeof deviceNative.list>[0])
+  } catch (error) {
+    if (generation !== deviceListRequestGeneration) return { error, data: { list: [], total: 0 } }
+    deviceListRefreshing.value = false
+    deviceListError.value = error instanceof Error ? error.message : '原生设备列表读取失败'
+    message.error(error instanceof Error ? error.message : '原生设备列表读取失败')
+    return { error, data: { list: [], total: 0 } }
+  }
+  if (generation !== deviceListRequestGeneration) {
+    return { error: new Error('已忽略过期的设备列表响应'), data: { list: [], total: 0 } }
+  }
+  deviceListRefreshing.value = false
+  deviceListError.value = ''
+  const result = {
+    data: {
+      list: nativePage.items.map(device => ({
+        ...device,
+        device_number: device.deviceNumber,
+        device_type: device.deviceKind === 'standalone' ? '1' : device.deviceKind === 'gateway' ? '2' : '3',
+        device_config_id: device.templateId ?? '',
+        device_config_name: '',
+        access_way: '',
+        protocol_type: '',
+        is_online: undefined,
+        warn_status: undefined
+      })),
+      total: nativePage.total
+    }
+  }
 
   // 数据加载完成后，订阅当前页面的设备状态
   // 使用 nextTick 确保 tablePageRef.value.dataList 已更新
@@ -769,11 +873,18 @@ const toggleGroupPanel = () => {
             </button>
           </div>
         </div>
+        <NAlert v-if="groupStatsError" type="error" :bordered="false" class="device-group-stats-error">
+          设备统计暂时无法读取：{{ groupStatsError }}
+        </NAlert>
         <div class="device-group-divider" aria-hidden="true" />
         <div class="device-group-tree">
+          <NAlert v-if="groupTreeError" type="error" :bordered="false">
+            {{ groupTreeError }}
+            <NButton text size="small" @click="loadGroupOptions">重试</NButton>
+          </NAlert>
           <n-spin :show="groupTreeLoading">
             <n-tree
-              v-if="groupOptions.length"
+              v-if="groupOptions.length && !groupTreeError"
               block-line
               selectable
               :data="groupOptions"
@@ -788,7 +899,7 @@ const toggleGroupPanel = () => {
               :render-label="renderGroupLabel"
               @update:selected-keys="handleGroupSelect"
             />
-            <n-empty v-else size="small" :description="$t('custom.devicePage.noDeviceGroups')" />
+            <n-empty v-else-if="!groupTreeError" size="small" :description="$t('custom.devicePage.noDeviceGroups')" />
           </n-spin>
         </div>
       </aside>
@@ -811,6 +922,19 @@ const toggleGroupPanel = () => {
           @reset="handleFilterReset"
         >
           <template #search-toolbar-before>
+            <NAlert
+              v-if="deviceListError || deviceListRefreshing"
+              :type="deviceListError ? 'error' : 'warning'"
+              :bordered="false"
+              class="device-list-state-alert"
+            >
+              <template v-if="deviceListError">
+                列表读取失败：{{ deviceListError }}。
+                <span v-if="tablePageRef?.dataList?.length">下方显示的是上次成功结果，当前不可打开。</span>
+                <span v-else>目前没有可显示的成功结果。</span>
+              </template>
+              <template v-else>正在读取新筛选结果；下方暂时保留的是上次成功结果。</template>
+            </NAlert>
             <n-button
               class="device-group-filter-toggle"
               :type="groupPanelVisible || selectedGroupId ? 'primary' : 'default'"
@@ -827,7 +951,7 @@ const toggleGroupPanel = () => {
           </template>
           <template #dense-view="{ filters }">
             <DeviceReadingsCompact
-              :filters="filters"
+              :filters="toNativeDeviceFilters(filters)"
               :group-id="selectedGroupScope === 'group' ? selectedGroupId : ''"
               :group-scope="selectedGroupScope"
               :group-name="selectedGroupName"
@@ -843,15 +967,13 @@ const toggleGroupPanel = () => {
         :title="$t('generate.manually-add-device')"
         class="flex-center pt-24px"
       >
-        <n-steps :current="current" :status="currentStatus">
+        <n-steps v-if="current === 1" :current="1" :status="currentStatus">
           <n-step :title="$t('custom.devicePage.step1Title')" :description="$t('custom.devicePage.step1Desc')" />
-          <n-step :title="$t('custom.devicePage.step2Title')" :description="$t('custom.devicePage.step2Desc')" />
-          <n-step :title="$t('custom.devicePage.step3Title')" :description="$t('custom.devicePage.step3Desc')" />
         </n-steps>
         <n-card class="mt-6" bordered border>
           <div v-if="current === 1">
             <AddDevicesStep1
-              :set-id-callback="setUpId"
+              :set-device-callback="onNativeDeviceRegistered"
               :config-options="configOptions"
               :initial-config-id="initialDeviceConfigId"
               :next-callback="
@@ -861,32 +983,11 @@ const toggleGroupPanel = () => {
               "
             />
           </div>
-          <div v-if="current === 2">
-            <AddDevicesStep2
-              :set-is-success="setIsSuccess"
-              :device_id="deviceId"
-              :form-data="deviceObj"
-              :form-elements="formData"
-              :next-callback="
-                () => {
-                  current += 1
-                }
-              "
-            />
-          </div>
-          <div v-if="current === 3">
-            <AddDevicesStep3
-              :is-success="isSuccess"
-              :close-callback="
-                () => {
-                  active = false
-                }
-              "
-              :back-callback="
-                () => {
-                  current -= 1
-                }
-              "
+          <div v-else-if="registeredDevice">
+            <NativeDeviceRegistrationResult
+              :device="registeredDevice"
+              :on-back="returnToNativeDeviceList"
+              :on-details="openNativeDeviceDetails"
             />
           </div>
         </n-card>
