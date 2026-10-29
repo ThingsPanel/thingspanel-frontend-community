@@ -35,12 +35,20 @@ export interface ReadingQuery {
   window?: string
 }
 
+/** Service-unavailable and generic server failures read as a plain Chinese sentence instead of the raw English detail. */
+export function runtimeErrorMessage(status: number, body?: MetadataNativeErrorBody): string {
+  if (status === 503) return '设备运行时暂时不可用，请确认设备平台已连接后重试'
+  const detail = body && 'detail' in body ? body.detail : body?.message
+  if (status >= 500 && (!detail || /^internal server error$/i.test(detail))) return '服务暂时出错，请稍后重试'
+  return detail || `Device runtime request failed (${status})`
+}
+
 export class DeviceRuntimeNativeError extends Error {
   constructor(
     readonly status: number,
     readonly body?: MetadataNativeErrorBody
   ) {
-    super(body && 'detail' in body ? body.detail : body?.message || `Device runtime request failed (${status})`)
+    super(runtimeErrorMessage(status, body))
     this.name = 'DeviceRuntimeNativeError'
   }
 
