@@ -112,3 +112,12 @@ test('runtime errors read as plain Chinese for 503 and generic 500, and keep spe
   assert.equal(runtimeErrorMessage(422, { detail: 'identifier is required' } as never), 'identifier is required')
   assert.equal(runtimeErrorMessage(404, undefined), 'Device runtime request failed (404)')
 })
+
+test('a 422 problem lists the offending fields in the message', () => {
+  const error = new DeviceRuntimeNativeError(422, {
+    detail: 'one or more device fields are invalid',
+    errors: [{ pointer: '/parameters/level', message: 'parameter is required' }]
+  } as never)
+  assert.equal(error.message, 'one or more device fields are invalid：parameters.level parameter is required')
+  assert.equal(new DeviceRuntimeNativeError(422, { detail: 'bad' } as never).message, 'bad')
+})

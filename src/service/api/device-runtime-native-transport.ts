@@ -40,7 +40,25 @@ export function runtimeErrorMessage(status: number, body?: MetadataNativeErrorBo
   if (status === 503) return '设备运行时暂时不可用，请确认设备平台已连接后重试'
   const detail = body && 'detail' in body ? body.detail : body?.message
   if (status >= 500 && (!detail || /^internal server error$/i.test(detail))) return '服务暂时出错，请稍后重试'
+  const fields = fieldErrorText(body)
+  if (detail && fields) return `${detail}：${fields}`
   return detail || `Device runtime request failed (${status})`
+}
+
+/** Field-level problems the backend lists ({pointer, message}); shown so a 422 says which field is wrong. */
+function fieldErrorText(body?: MetadataNativeErrorBody): string {
+  const list = (body as { errors?: unknown } | undefined)?.errors
+  if (!Array.isArray(list)) return ''
+  return list
+    .map(item => {
+      const { pointer, message } = (item ?? {}) as { pointer?: unknown; message?: unknown }
+      const field = typeof pointer === 'string' ? pointer.replace(/^\//, '').replace(/\//g, '.') : ''
+      const text = typeof message === 'string' ? message : ''
+      return field && text ? `${field} ${text}` : field || text
+    })
+    .filter(Boolean)
+    .slice(0, 3)
+    .join('；')
 }
 
 export class DeviceRuntimeNativeError extends Error {
