@@ -1,10 +1,10 @@
 <script lang="tsx" setup>
 import { onMounted, ref, computed, h, onActivated } from 'vue'
-import { NButton, NInput, NIcon, NPagination, NDataTable, NTag, NSpace, NEmpty, NTooltip } from 'naive-ui'
+import { NButton, NInput, NIcon, NPagination, NDataTable, NTag, NSpace, NEmpty, NTooltip, NModal } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { templateNative, type DeviceAccessTemplate } from '@/service/api/template-native'
 import { newIdempotencyKey } from '@/service/api/device-write-attempt'
-import { templateDeleteErrorMessage } from '@/service/api/template-delete'
+import { templateCopyErrorMessage, templateDeleteErrorMessage } from '@/service/api/template-delete'
 import { fileAssetsNative } from '@/service/api/file-assets-native'
 import { useAuthStore } from '@/store/modules/auth'
 import { canManageDeviceGroups } from '@/service/api/device-group-editor-state'
@@ -178,6 +178,7 @@ const columns = computed(() => [
                     },
                     { default: () => '编辑模板' }
                   ),
+                  h(NButton, { size: 'small', onClick: () => openCopy(row) }, { default: () => '复制' }),
                   h(
                     NButton,
                     { size: 'small', type: 'error', onClick: () => handleDelete(row) },
@@ -213,6 +214,36 @@ const columns = computed(() => [
 const handleEdit = (id: string) => {
   if (!canWrite.value) return
   routerPushByKey('device_config-edit', { query: { id } })
+}
+
+// 复制处理：弹窗取新名称，成功后进入新模板的编辑页
+const copyTarget = ref<{ id: string; name?: string } | null>(null)
+const copyName = ref('')
+const copying = ref(false)
+const openCopy = (row: { id: string; name?: string }) => {
+  if (!canWrite.value) return
+  copyTarget.value = row
+  copyName.value = `${row.name || ''} 副本`.trim()
+}
+const submitCopy = async () => {
+  const target = copyTarget.value
+  const name = copyName.value.trim()
+  if (!target || copying.value) return
+  if (!name) {
+    window.$message?.error('请输入新模板名称')
+    return
+  }
+  copying.value = true
+  try {
+    const { template } = await templateNative.copy(target.id, name, newIdempotencyKey())
+    window.$message?.success('模板已复制')
+    copyTarget.value = null
+    routerPushByKey('device_config-edit', { query: { id: template.id } })
+  } catch (error) {
+    window.$message?.error(templateCopyErrorMessage(error))
+  } finally {
+    copying.value = false
+  }
 }
 
 // 删除处理：先取最新 ETag，再带条件删除；仍有设备使用时服务端拒绝
@@ -378,6 +409,7 @@ const availableViews = [
                       </template>
                       编辑模板
                     </NTooltip>
+                    <NButton v-if="canWrite" size="small" quaternary @click.stop="openCopy(item)">复制</NButton>
                     <NButton v-if="canWrite" size="small" quaternary type="error" @click.stop="handleDelete(item)">
                       删除
                     </NButton>
@@ -453,6 +485,23 @@ const availableViews = [
         />
       </template>
     </AdvancedListLayout>
+    <NModal
+      :show="!!copyTarget"
+      preset="card"
+      title="复制设备模板"
+      style="width: 420px"
+      :mask-closable="!copying"
+      @update:show="(v: boolean) => !v && !copying && (copyTarget = null)"
+    >
+      <p class="mb-2">将复制“{{ copyTarget?.name }}”的当前配置，不复制设备。</p>
+      <NInput v-model:value="copyName" maxlength="128" placeholder="新模板名称" @keyup.enter="submitCopy" />
+      <template #footer>
+        <NSpace justify="end">
+          <NButton :disabled="copying" @click="copyTarget = null">取消</NButton>
+          <NButton type="primary" :loading="copying" @click="submitCopy">复制</NButton>
+        </NSpace>
+      </template>
+    </NModal>
   </div>
 </template>
 

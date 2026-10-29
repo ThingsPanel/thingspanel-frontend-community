@@ -34,6 +34,8 @@ export interface TemplateNativeClient {
     etag: string,
     idempotencyKey: string
   ): Promise<{ template: DeviceAccessTemplate; etag: string }>
+  /** Creates a new template from the current configuration of an existing one, under a new name. */
+  copy(id: string, name: string, idempotencyKey: string): Promise<{ template: DeviceAccessTemplate; location: string }>
   /** Soft-deletes a template no live device uses; refused with 409 while devices still bind it. */
   remove(id: string, etag: string, idempotencyKey: string): Promise<void>
   /** Sandboxed debug run of one processing script; it has no downlink side effect. */
@@ -199,6 +201,19 @@ export function createTemplateNativeClient(options: MetadataNativeHttpOptions): 
         { method: 'PATCH', headers, body: JSON.stringify(body), redirect: 'manual' }
       )
       return { template, etag: requireNativeStrongEtag(response.headers.get('ETag'), 'Device access template') }
+    },
+    async copy(id, name, idempotencyKey) {
+      const headers = new Headers({
+        'Content-Type': 'application/json',
+        'Idempotency-Key': requireIdempotencyKey(idempotencyKey)
+      })
+      const { data: template, response } = await request<DeviceAccessTemplate, TemplateNativeError>(
+        `/api/v2/device-access-templates/${encodeURIComponent(id)}/copies`,
+        201,
+        (status, errorBody) => new TemplateNativeError(status, errorBody),
+        { method: 'POST', headers, body: JSON.stringify({ name }), redirect: 'manual' }
+      )
+      return { template, location: requireCreateLocation(response.headers.get('Location'), template.id) }
     },
     async remove(id, etag, idempotencyKey) {
       const headers = new Headers({

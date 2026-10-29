@@ -10,3 +10,13 @@ export function templateDeleteErrorMessage(error: unknown): string {
   }
   return error instanceof Error && error.message ? error.message : '删除设备模板失败'
 }
+
+/** Plain Chinese for the refusals a template copy can get. */
+export function templateCopyErrorMessage(error: unknown): string {
+  if (error instanceof TemplateNativeError) {
+    if (error.status === 409) return '已有同名模板，请换一个名称'
+    if (error.status === 403) return '没有复制设备模板的权限'
+    if (error.status === 404) return '源模板已不存在，请刷新列表'
+  }
+  return error instanceof Error && error.message ? error.message : '复制设备模板失败'
+}
