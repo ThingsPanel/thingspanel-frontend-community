@@ -1,81 +1,43 @@
 name: Build and Release
-
-# 触发条件
 on:
-  # push:
-  #   branches: [ "main" ]  # 当推送到main分支时自动触发
   release:
     types: [published]
-  workflow_dispatch:       # 支持手动触发
+  workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag name'  # 发布标签名称
+        description: Existing published release tag, e.g. v1.3.0-rc.1
         required: true
-        default: 'latest'        # 默认标签为latest
-
+permissions:
+  contents: write
+concurrency:
+  group: frontend-assets-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
 jobs:
   build-and-release:
     runs-on: ubuntu-24.04
-    
+    timeout-minutes: 30
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
         with:
-          node-version: 20.11
-
-      - name: Cache pnpm modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
-
-      - name: Install dependencies and build
-        run: |
-          npm install -g pnpm@8.15.5
-          pnpm i
-          pnpm run build:4096
-
-      - name: Create zip archive
-        run: |
-          cd dist
-          zip -r ../thingspanel-frontend-${{ github.event.release.tag_name || github.event.inputs.tag }}.zip .
-          cd ..
-
-      - name: Create tar.gz archive  
-        run: tar -czf thingspanel-frontend-${{ github.event.release.tag_name || github.event.inputs.tag }}.tar.gz -C dist .
-
-      - name: Upload zip to release
-        if: github.event_name == 'release'
-        uses: actions/upload-release-asset@v1
+          fetch-depth: 0
+      - name: Select immutable release source
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REQUESTED_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: python3 deploy/release/release.py select-tag --version "$REQUESTED_TAG"
+      - uses: actions/setup-node@v4
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./thingspanel-frontend-${{ github.event.release.tag_name }}.zip
-          asset_name: thingspanel-frontend-${{ github.event.release.tag_name }}.zip
-          asset_content_type: application/zip
-
-      - name: Upload tar.gz to release
-        if: github.event_name == 'release'
-        uses: actions/upload-release-asset@v1
+          node-version: '20.19.0'
+      - name: Install locked dependencies and build
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.8.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm build
+          git rev-parse HEAD > dist/SOURCE_COMMIT
+      - name: Package and upload release assets
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./thingspanel-frontend-${{ github.event.release.tag_name }}.tar.gz
-          asset_name: thingspanel-frontend-${{ github.event.release.tag_name }}.tar.gz
-          asset_content_type: application/gzip
-
-      - name: Upload artifacts for manual trigger
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts-${{ github.event.inputs.tag }}
-          path: |
-            thingspanel-frontend-${{ github.event.inputs.tag }}.zip
-            thingspanel-frontend-${{ github.event.inputs.tag }}.tar.gz
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          (cd dist && zip -r "../thingspanel-frontend-$VERSION.zip" .)
+          tar -czf "thingspanel-frontend-$VERSION.tar.gz" -C dist .
+          gh release upload "$VERSION" "thingspanel-frontend-$VERSION.zip" "thingspanel-frontend-$VERSION.tar.gz" --clobber
