@@ -12,7 +12,7 @@ import {
   type AutomationRule,
   type EffectiveAutomationRule,
   type TemplateBindingsResponse
-} from '@/service/api/automation-native'
+} from '@/service/api/automation-native-client'
 
 const props = defineProps<{
   scope: 'device' | 'template'

@@ -8,7 +8,7 @@ import {
   createAutomationRequestId,
   mergeAutomationAlarmPages,
   type AutomationAlarm
-} from '@/service/api/automation-native'
+} from '@/service/api/automation-native-client'
 import NativeAutomationPanel from './native-automation-panel.vue'
 
 const props = defineProps<{ deviceId: string }>()
