@@ -50,24 +50,25 @@ export function createViteProxy(env: Env.ImportMeta) {
   // Native metadata APIs use their Encore contracts directly. Keep these
   // routes separate from the Community /api/v1 proxy; no DTO translation.
   const thingModelNativeURL = env.VITE_THINGMODEL_NATIVE_URL || 'http://127.0.0.1:14210'
-  proxy['/api/v2/thing-models'] = { target: thingModelNativeURL, changeOrigin: true }
-  proxy['/api/v2/thing-model-commands'] = { target: thingModelNativeURL, changeOrigin: true }
-  proxy['/api/v2/device-groups'] = { target: thingModelNativeURL, changeOrigin: true }
-  proxy['/api/v2/device-group-tree'] = { target: thingModelNativeURL, changeOrigin: true }
-  proxy['/api/v2/devices'] = { target: thingModelNativeURL, changeOrigin: true }
-  proxy['/api/v2/device-statistics'] = { target: thingModelNativeURL, changeOrigin: true }
-  proxy['/api/v2/device-access-templates'] = { target: thingModelNativeURL, changeOrigin: true }
-  proxy['/api/v2/file-assets'] = { target: thingModelNativeURL, changeOrigin: true }
-  // Same device-metadata service: operation polling, number checks, script tests and file exports.
-  // Without these Vite answers 404 itself, so a finished export could not be downloaded in dev.
+  // Everything the native Encore services answer under /api/v2. Without a route here Vite answers 404
+  // itself (nginx.conf in the release image carries the same list).
   for (const prefix of [
-    '/api/v2/metadata-operations',
-    '/api/v2/metadata-downloads',
-    '/api/v2/reading-exports',
-    '/api/v2/device-number-validations',
-    '/api/v2/processing-script-tests'
+    'thing-models',
+    'thing-model-commands',
+    'devices',
+    'device-access-templates',
+    'device-groups',
+    'device-group-tree',
+    'device-statistics',
+    'device-number-validations',
+    'metadata-operations',
+    'metadata-downloads',
+    'reading-exports',
+    'processing-script-tests',
+    'file-assets',
+    'connection-providers'
   ]) {
-    proxy[prefix] = { target: thingModelNativeURL, changeOrigin: true }
+    proxy[`/api/v2/${prefix}`] = { target: thingModelNativeURL, changeOrigin: true }
   }
 
   // The automation owner shares the /v1 contract with the production Encore
