@@ -190,24 +190,7 @@ const columns = computed(() => [
                     { default: () => '删除' }
                   )
                 ]
-              : []),
-            h(
-              NTooltip,
-              { trigger: 'hover' },
-              {
-                trigger: () =>
-                  h(
-                    NButton,
-                    {
-                      size: 'small',
-                      type: 'info',
-                      disabled: true
-                    },
-                    { default: () => $t('device_template.publishToMarket') }
-                  ),
-                default: () => '原生模板发布入口尚未接通'
-              }
-            )
+              : [])
           ]
         }
       )
@@ -306,7 +289,7 @@ onMounted(() => {
 onActivated(() => {
   getData()
 })
-import { CreateOutline, CloudUploadOutline, ListOutline, GridOutline as CardIcon } from '@vicons/ionicons5'
+import { CreateOutline, ListOutline, GridOutline as CardIcon } from '@vicons/ionicons5'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 
 // 注释：已移除defaultConfigSvg导入和svgToDataUrl函数，现在使用SvgIcon组件处理SVG图标
@@ -424,16 +407,6 @@ const availableViews = [
                     <NButton v-if="canWrite" size="small" quaternary type="error" @click.stop="handleDelete(item)">
                       删除
                     </NButton>
-                    <NTooltip trigger="hover">
-                      <template #trigger>
-                        <NButton size="small" quaternary type="info" disabled>
-                          <template #icon>
-                            <NIcon><CloudUploadOutline /></NIcon>
-                          </template>
-                        </NButton>
-                      </template>
-                      原生模板发布入口尚未接通
-                    </NTooltip>
                   </NSpace>
                 </template>
 
