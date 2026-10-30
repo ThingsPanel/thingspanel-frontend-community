@@ -1,8 +1,8 @@
 import { defineComponent, h } from 'vue'
 import type { VNodeChild } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
-import { webcrypto } from 'node:crypto'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createHash, webcrypto } from 'node:crypto'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import NotificationPlugins from '@/views/apply/plugin/NotificationPlugins.vue'
 
 const { requestMock, authState } = vi.hoisted(() => ({
@@ -146,6 +146,12 @@ function envelope(data: unknown) {
 }
 
 describe('notification plugin registration page', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+  })
+
   beforeEach(() => {
     vi.stubEnv('VITE_NOTIFICATION_API_BASE_URL', 'https://encore.example.test')
     requestMock.mockReset()
@@ -161,13 +167,22 @@ describe('notification plugin registration page', () => {
           manifestBytes.buffer.slice(manifestBytes.byteOffset, manifestBytes.byteOffset + manifestBytes.byteLength)
       })
     )
-    ;(globalThis as { React?: unknown }).React = {
+    vi.stubGlobal('React', {
       createElement: (type: Parameters<typeof h>[0], props: Parameters<typeof h>[1], ...children: unknown[]) =>
         h(type, props, () => children)
-    }
+    })
   })
 
   it('sends only plugin credentials to the manifest origin and registers the exact-byte digest through Encore', async () => {
+    const realDigest = webcrypto.subtle.digest.bind(webcrypto.subtle)
+    let finishDigest!: () => void
+    const digestGate = new Promise<void>(resolve => {
+      finishDigest = resolve
+    })
+    const digestMock = vi.spyOn(webcrypto.subtle, 'digest').mockImplementationOnce(async (algorithm, data) => {
+      await digestGate
+      return realDigest(algorithm, data)
+    })
     requestMock
       .mockResolvedValueOnce({ status: 200, data: envelope({ items: [], page: 1, pageSize: 20, total: 0 }) })
       .mockResolvedValueOnce({ status: 201, data: envelope({ id: 'registration-1', pluginId: 'fixture.smtp' }) })
@@ -197,7 +212,18 @@ describe('notification plugin registration page', () => {
       })
     )
     expect(JSON.stringify(fetchMock.mock.calls[0])).not.toContain('platform-session-token')
-    expect(wrapper.text()).toContain('Fixture SMTP')
+    expect(digestMock).toHaveBeenCalledTimes(1)
+    const confirmButton = wrapper.findAll('button').find(button => button.text() === 'Confirm registration')!
+    expect(confirmButton.attributes('disabled')).toBeDefined()
+    expect(wrapper.text()).not.toContain('Fixture SMTP')
+    expect(requestMock).toHaveBeenCalledTimes(1)
+
+    // Native WebCrypto may complete after flushPromises has returned.
+    finishDigest()
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain('Fixture SMTP')
+      expect(confirmButton.attributes('disabled')).toBeUndefined()
+    })
 
     await wrapper
       .findAll('button')
@@ -205,8 +231,7 @@ describe('notification plugin registration page', () => {
       .trigger('click')
     await flushPromises()
 
-    const digest = new Uint8Array(await webcrypto.subtle.digest('SHA-256', manifestBytes))
-    const expectedDigest = `sha256:${Array.from(digest, byte => byte.toString(16).padStart(2, '0')).join('')}`
+    const expectedDigest = `sha256:${createHash('sha256').update(manifestBytes).digest('hex')}`
     const registration = requestMock.mock.calls
       .map(([config]) => config)
       .find(config => config.url === '/api/v2/notification-plugins' && config.method === 'POST')
