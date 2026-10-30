@@ -4,7 +4,6 @@
  */
 
 // ==================== 原有Hook导出 ====================
-export { useGridLayout } from './useGridLayout'
 export { useGridLayoutPlus } from './useGridLayoutPlus' // 保持向后兼容
 
 // ==================== 新模块化Hook导出 ====================
@@ -15,7 +14,6 @@ export { useGridResponsive } from './useGridResponsive'
 export { useGridLayoutPlusV2 } from './useGridLayoutPlusV2'
 
 // ==================== 类型导出 ====================
-export type { UseGridLayoutReturn } from '../types'
 export type { UseGridCoreOptions } from './useGridCore'
 export type { UseGridHistoryOptions } from './useGridHistory'
 export type { UseGridPerformanceOptions, PerformanceMetrics } from './useGridPerformance'
@@ -28,7 +26,7 @@ export const GRID_HOOKS_INFO = {
   version: GRID_HOOKS_VERSION,
   description: '模块化网格Hook系统',
   hooks: {
-    legacy: ['useGridLayout', 'useGridLayoutPlus'],
+    legacy: ['useGridLayoutPlus'],
     v2: ['useGridCore', 'useGridHistory', 'useGridPerformance', 'useGridResponsive'],
     integrated: ['useGridLayoutPlusV2']
   },

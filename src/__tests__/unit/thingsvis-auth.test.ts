@@ -19,8 +19,8 @@ describe('thingsvis-auth', () => {
           userId: 'user-1',
           userName: 'tester',
           email: 'tester@example.com',
-          tenantId: 'tenant-1',
-          authority: 'TENANT_ADMIN'
+          authority: 'TENANT_ADMIN',
+          tenantId: 'tenant-1'
         }
       }
       return null

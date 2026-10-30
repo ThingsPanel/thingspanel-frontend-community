@@ -11,7 +11,7 @@ import type { GridLayoutPlusItem, PerformanceConfig } from '../gridLayoutPlusTyp
 export function debounce<T extends (...args: any[]) => any>(func: T, delay: number): (...args: Parameters<T>) => void {
   let timeoutId: NodeJS.Timeout | null = null
 
-  return function (...args: Parameters<T>) {
+  return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
     if (timeoutId) {
       clearTimeout(timeoutId)
     }
@@ -30,7 +30,7 @@ export function throttle<T extends (...args: any[]) => any>(func: T, delay: numb
   let lastTime = 0
   let timeoutId: NodeJS.Timeout | null = null
 
-  return function (...args: Parameters<T>) {
+  return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
     const now = Date.now()
 
     if (now - lastTime >= delay) {

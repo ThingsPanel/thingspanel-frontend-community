@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onMounted, reactive, ref, watch } from 'vue'
+import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
 import { NButton, useDialog, useMessage } from 'naive-ui'
 import { useRoute } from 'vue-router'
 import ClipboardJS from 'clipboard'
@@ -42,8 +42,7 @@ const deleteConfig = () => {
 }
 const showModal = ref(false)
 const modalIndex = ref(1)
-if (process.env.NODE_ENV === 'development') {
-}
+
 const auto_register = ref(props.configInfo?.auto_register === 1 || false)
 const onlinejson = reactive({
   online_timeout: 0,
@@ -100,8 +99,6 @@ const onOpenDialogModal = (val: number) => {
 }
 const copyOneTypeOneSecretDevicePassword = () => {
   const textToCopy = props.configInfo?.template_secret || ''
-  if (process.env.NODE_ENV === 'development') {
-  }
 
   if (!textToCopy) {
     message.error($t('common.noContentToCopy'))
@@ -131,13 +128,7 @@ const copyOneTypeOneSecretDevicePassword = () => {
     container: document.body
   })
 
-  // eslint-disable-next-line no-unused-vars
-  let success = false
-
   clipboard.on('success', e => {
-    success = true
-    if (process.env.NODE_ENV === 'development') {
-    }
     message.success($t('custom.grouping_details.operationSuccess'))
     e.clearSelection()
     cleanup()
@@ -197,8 +188,6 @@ const getPlatform = computed(() => {
   return proxy.getPlatform()
 })
 onMounted(() => {
-  if (process.env.NODE_ENV === 'development') {
-  }
   auto_register.value = props.configInfo?.auto_register === 1 || false
   // 初始化图片路径
   imagePath.value = props.configInfo?.image_url ? `${url.value.replace('api/v1', '') + props.configInfo.image_url}` : ''

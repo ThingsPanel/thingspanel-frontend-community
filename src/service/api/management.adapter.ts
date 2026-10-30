@@ -243,7 +243,7 @@ function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
     const path = ROUTE_DISPLAY_PATH_MAP[elementCode] ?? LEGACY_ROUTE_PATH_MAP[rawPath] ?? rawPath
     const i18nKey = LEGACY_ROUTE_I18N_MAP[item.multilingual] ?? item.multilingual
 
-    const route: Partial<ElegantRoute> = {
+    const route: ElegantConstRoute = {
       name: elementCode,
       path,
       ...(component && { component }),

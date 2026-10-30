@@ -2,7 +2,7 @@
 import { computed, getCurrentInstance, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import type { FormInst } from 'naive-ui'
-import { NButton, NSpace, useMessage, NInputNumber, NTooltip, NIcon, NInput, NSelect, NSwitch } from 'naive-ui'
+import { NButton, NSpace, useMessage, NInputNumber, NTooltip, NInput, NSelect, NSwitch } from 'naive-ui'
 import { deviceConfigInfo, deviceDetail, deviceLocation } from '@/service/api'
 import { $t } from '@/locales'
 import TencentMap from './public/tencent-map.vue'
@@ -210,31 +210,36 @@ onMounted(getConfigInfo)
               <div class="flex-1">
                 <NInput
                   v-if="item.type === 'String'"
-                  v-model:value="item.value"
+                  :value="typeof item.value === 'string' ? item.value : undefined"
                   :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
+                  @update:value="item.value = $event"
                 />
                 <NInputNumber
                   v-else-if="item.type === 'Number'"
-                  v-model:value="item.value"
+                  :value="typeof item.value === 'number' ? item.value : null"
                   :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
                   class="w-full"
+                  @update:value="item.value = $event"
                 />
                 <NSwitch
                   v-else-if="item.type === 'Boolean'"
-                  v-model:value="item.value"
+                  :value="item.value === true"
                   :checked-value="true"
                   :unchecked-value="false"
+                  @update:value="item.value = $event"
                 />
                 <NSelect
                   v-else-if="item.type === 'Enum'"
-                  v-model:value="item.value"
+                  :value="typeof item.value === 'string' ? item.value : undefined"
                   :options="item.options || []"
                   :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
+                  @update:value="item.value = $event"
                 />
                 <NInput
                   v-else
-                  v-model:value="item.value"
+                  :value="typeof item.value === 'string' ? item.value : undefined"
                   :placeholder="`${$t('generate.extensionPlaceholderDefault')} ${item.default_value || ''}`"
+                  @update:value="item.value = $event"
                 />
               </div>
             </div>

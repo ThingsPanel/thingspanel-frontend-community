@@ -44,7 +44,7 @@ export function extractPlatformFields(template: any): PlatformField[] {
         description: item?.description || item?.define,
         ...(options.length > 0 ? { options } : {}),
         writable,
-        ...(writable
+        ...(writable && dataType !== 'event'
           ? {
               write: {
                 target: dataType === 'command' ? 'command' : dataType,

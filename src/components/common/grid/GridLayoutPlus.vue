@@ -34,7 +34,7 @@
       @item-container-resized="handleItemContainerResized"
     >
       <template #default="{ item }">
-        <slot :item="item">
+        <slot :item="item" :readonly="readonly">
           <!-- 默认内容会由 GridItemContent 处理 -->
         </slot>
       </template>
@@ -194,11 +194,10 @@ const gridValidation = computed(() => {
 })
 
 // 业务方法
-const handleItemEdit = (item: GridLayoutPlusItem) => {
+;(item: GridLayoutPlusItem) => {
   emit('item-edit', withIdKey([item])[0])
 }
-
-const handleItemDelete = (item: GridLayoutPlusItem) => {
+;(item: GridLayoutPlusItem) => {
   // 通过 GridCore 组件处理删除逻辑
   const coreLayout = gridCoreRef.value?.internalLayout
   if (coreLayout) {
@@ -209,8 +208,7 @@ const handleItemDelete = (item: GridLayoutPlusItem) => {
     }
   }
 }
-
-const handleItemDataUpdate = (itemId: string, data: any) => {
+;(itemId: string, data: any) => {
   // 通过 GridCore 组件处理数据更新
   const coreLayout = gridCoreRef.value?.internalLayout
   if (coreLayout) {

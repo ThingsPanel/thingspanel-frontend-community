@@ -8,7 +8,16 @@
  * 3. 安装中 (显示进度)
  * 4. 结果 (显示安装结果)
  */
-import { ref, computed, reactive, watch, onMounted } from 'vue'
+/**
+ * InstallWizard - 安装向导组件
+ *
+ * 完整的安装流程：
+ * 1. 确认安装 (显示 Bundle 详情和预览)
+ * 2. 设备绑定 (映射 bindingKeys 到本地设备)
+ * 3. 安装中 (显示进度)
+ * 4. 结果 (显示安装结果)
+ */
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NModal,
@@ -18,14 +27,9 @@ import {
   NSpin,
   NSteps,
   NStep,
-  NProgress,
   NSpace,
-  NGrid,
-  NGi,
   NTag,
   NIcon,
-  NEmpty,
-  NTooltip,
   useMessage,
   useDialog
 } from 'naive-ui'
@@ -43,7 +47,6 @@ import {
   installBundle,
   pollInstallationStatus,
   getInstallationDetail,
-  getBundlePrecheckInfo,
   type MarketBundleDetail,
   type InstallResult,
   getErrorDisplayMessage,
@@ -99,7 +102,7 @@ const emit = defineEmits<{
 
 const router = useRouter()
 const message = useMessage()
-const dialog = useDialog()
+useDialog()
 const { getToken, clearToken } = useMarketAuth()
 
 // ========== Local State ==========
@@ -139,7 +142,6 @@ const installError = ref<MarketApiError | null>(null)
 let pollTimer: ReturnType<typeof setTimeout> | null = null
 
 /** 预检信息加载中 */
-const isLoadingPrecheck = ref(false)
 
 // ========== Computed ==========
 
@@ -156,7 +158,7 @@ const currentVersionInfo = computed(() => {
 })
 
 /** 安装状态列表 */
-const installStatusList = computed((): StatusInfo[] => {
+computed((): StatusInfo[] => {
   return [
     {
       label: $t('market.install.status.downloading'),
@@ -193,7 +195,7 @@ const hasBindings = computed(() => {
 const bindingDefinitions = computed(() => dashboardBindings.value.flatMap(dashboard => dashboard.bindings))
 
 /** 看板列表 */
-const dashboardList = computed(() => {
+computed(() => {
   return dashboardBindings.value.map(d => ({
     key: d.dashboardKey,
     name: d.dashboardName,
@@ -264,27 +266,6 @@ function resetState() {
 /**
  * 加载预检信息
  */
-async function loadPrecheckInfo() {
-  if (!bundleDetail.value) return
-
-  isLoadingPrecheck.value = true
-  try {
-    const result = await getBundlePrecheckInfo(bundleDetail.value.bundleKey, {
-      version: selectedVersion.value
-    })
-
-    if (result.data) {
-      // 更新绑定预览
-      if (result.data.bindingPreview) {
-        dashboardBindings.value = result.data.bindingPreview
-      }
-    }
-  } catch (err) {
-    console.error('Failed to load precheck info:', err)
-  } finally {
-    isLoadingPrecheck.value = false
-  }
-}
 
 /**
  * 进入绑定步骤

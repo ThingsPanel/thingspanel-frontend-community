@@ -3,7 +3,7 @@
  * PrecheckResultDisplay - 预检结果展示组件
  */
 import { computed } from 'vue'
-import { NAlert, NList, NListItem, NThing, NTag, NIcon, NTooltip } from 'naive-ui'
+import { NAlert, NList, NListItem, NThing, NTag } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import type { PrecheckDisplayItem } from '../../composables/use-market-bundle'
 
@@ -19,7 +19,7 @@ const { t } = useI18n()
 
 const hasBlockingErrors = computed(() => props.errors.length > 0)
 const hasWarnings = computed(() => props.warnings.length > 0)
-const isAllPass = computed(() => props.errors.length === 0 && props.warnings.length === 0)
+computed(() => props.errors.length === 0 && props.warnings.length === 0)
 
 const getLevelIcon = (level: string) => {
   switch (level) {

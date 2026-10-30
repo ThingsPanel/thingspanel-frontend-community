@@ -105,7 +105,7 @@ function flattenTree(list: undefined | Option[]): Option[] {
   return result
 }
 
-const handleUpdateValue = async () => {
+;async () => {
   const { error }: any = await deviceLocation({
     id: props.id,
     is_online: Number(is_online.value)

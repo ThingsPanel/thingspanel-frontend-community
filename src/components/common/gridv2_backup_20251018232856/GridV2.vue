@@ -449,7 +449,7 @@ function initGrid(): void {
     margin: options.margin,
     styleInHead: options.styleInHead
   })
-  ensureColumnStyles(options.column || 12)
+  ensureColumnStyles(typeof options.column === 'number' ? options.column : 12)
   grid = GridStack.init(options, gridEl.value)
   console.log('🔍 [GridV2] GridStack实例创建完成，当前列数:', grid.getColumn())
 
@@ -462,7 +462,7 @@ function initGrid(): void {
     if (!node) return
 
     // 检查所有组件的位置，看碰撞检测基于什么
-    const allItems = grid.getGridItems()
+    const allItems = grid?.getGridItems() ?? []
 
     console.log(`🎯 [GridV2] 拖拽开始 [${node.id}]:`, {
       初始x: node.x,
@@ -531,7 +531,7 @@ function initGrid(): void {
   })
 
   // 🔥 监听组件删除事件，触发自动重排
-  grid.on('removed', (_e: Event, items: GridItemHTMLElement[]) => {
+  grid.on('removed', (_e, items) => {
     debugLog(`组件被删除，数量: ${items.length}`)
 
     if (!grid) return
@@ -592,7 +592,7 @@ async function updateColumns(newCol: number): Promise<void> {
     await nextTick()
     await new Promise(resolve => setTimeout(resolve, 50))
     if (grid) {
-      grid.column(newCol, true)
+      grid.compact('compact', true)
     }
     debugLog('列数切换完成')
   } catch (err) {

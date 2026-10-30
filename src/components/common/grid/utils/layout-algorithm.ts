@@ -3,7 +3,11 @@
  * 专门处理布局计算、位置查找、碰撞检测等算法
  */
 
-import type { GridLayoutPlusItem, LayoutOperationResult } from '../gridLayoutPlusTypes'
+/**
+ * Grid 布局算法工具函数
+ * 专门处理布局计算、位置查找、碰撞检测等算法
+ */
+import type { GridLayoutPlusItem } from '../gridLayoutPlusTypes'
 
 /**
  * 查找可用位置

@@ -105,19 +105,11 @@ export const smartDeepClone = <T>(
     // 第一步：智能预处理Vue响应式对象
     const rawObj = smartDeepToRaw(obj)
 
-    if (debug) {
-      if (process.env.NODE_ENV === 'development') {
-      }
-    }
-
     // 第二步：尝试高性能的structuredClone
     if (!forceJSON && typeof structuredClone !== 'undefined') {
       try {
         const cloned = structuredClone(rawObj)
-        if (debug) {
-          if (process.env.NODE_ENV === 'development') {
-          }
-        }
+
         return cloned
       } catch (structuredCloneError) {
         if (debug) {
@@ -129,10 +121,7 @@ export const smartDeepClone = <T>(
 
     // 第三步：降级到JSON方法
     const jsonCloned = JSON.parse(JSON.stringify(rawObj))
-    if (debug) {
-      if (process.env.NODE_ENV === 'development') {
-      }
-    }
+
     return jsonCloned
   } catch (error) {
     console.error('❌ [smartDeepClone] 所有克隆方法都失败了:', error)
@@ -164,7 +153,7 @@ export const batchDeepClone = <T>(items: T[]): T[] => {
     return structuredClone(rawItems)
   } catch {
     // 降级到单个处理
-    return items.map(smartDeepClone)
+    return items.map(item => smartDeepClone(item))
   }
 }
 

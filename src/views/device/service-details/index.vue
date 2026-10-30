@@ -4,7 +4,7 @@ import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NButton, NDataTable, NEmpty, NPopconfirm, NSpace } from 'naive-ui'
 import dayjs from 'dayjs'
-import { delServiceAccess, getServiceAccess } from '@/service/api/plugin.ts'
+import { delServiceAccess, getServiceAccess } from '@/service/api/plugin'
 import { $t } from '@/locales'
 import serviceModal from './components/serviceModal.vue'
 import serviceConfigModal from './components/serviceConfigModal.vue'
@@ -102,7 +102,7 @@ const columns: any = ref([
     },
     render: row => {
       return (
-        <NSpace justify={'left'}>
+        <NSpace justify={'start'}>
           {
             <NButton size={'small'} type="primary" onClick={() => see(row)}>
               {$t('card.viewDevice')}

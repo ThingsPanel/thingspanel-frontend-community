@@ -99,7 +99,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import type { SelectOption } from 'naive-ui'
 import { usePanelStore } from '@/store/modules/panel'
 import ConfigCtx from '@/components/panel/ui/config-ctx.vue'
-import DeviceMetricsSelector from '@/components/DeviceMetricsSelector.vue'
+import DeviceMetricsSelector from '@/components/device-selectors/DeviceMetricsSelector.vue'
 import type { ICardData, ICardDefine } from '@/components/panel/card'
 import { $t } from '@/locales'
 
@@ -163,7 +163,7 @@ const state = reactive({
   data: copy(defData)
 })
 
-const deviceOption = ref<SelectOption[]>([])
+const deviceOption = ref<Array<{ id: string; name: string }>>([])
 const deviceCount = ref()
 
 const findCard = (id: string) => {
@@ -242,8 +242,6 @@ const deviceCountUpdate = v => {
 const onDeviceChange = (deviceId: string, device: any, item: any) => {
   item.deviceId = deviceId
   item.name = device.name
-  if (process.env.NODE_ENV === 'development') {
-  }
 }
 
 const onMetricsChange = (metricsId: string, metrics: any, item: any) => {
@@ -251,8 +249,6 @@ const onMetricsChange = (metricsId: string, metrics: any, item: any) => {
   item.metricsName = metrics.label || metrics.key
   item.metricsType = metrics.data_source_type
   item.metricsDataType = metrics.data_type
-  if (process.env.NODE_ENV === 'development') {
-  }
 }
 
 const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange === 'no_aggregate')

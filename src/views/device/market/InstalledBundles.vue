@@ -10,31 +10,11 @@
  */
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import {
-  NDataTable,
-  NButton,
-  NTag,
-  NSpace,
-  NCard,
-  NEmpty,
-  NPagination,
-  NIcon,
-  NGrid,
-  NGi,
-  NTooltip,
-  NDropdown
-} from 'naive-ui'
+import { NDataTable, NButton, NTag, NSpace, NEmpty, NIcon, NTooltip, NDropdown } from 'naive-ui'
 import { h } from 'vue'
-import {
-  ArrowForwardIos,
-  RefreshOutline,
-  OpenOutline,
-  LinkOutline,
-  CloudDownloadOutline,
-  EllipsisHorizontal
-} from '@vicons/ionicons5'
+import { RefreshOutline, OpenOutline, LinkOutline, CloudDownloadOutline, EllipsisHorizontal } from '@vicons/ionicons5'
 import { $t } from '@/locales'
-import { getInstalledBundles, type InstalledBundle, type MarketApiError } from '@/service/api/market-bundle'
+import { getInstalledBundles, type InstalledBundle } from '@/service/api/market-bundle'
 import MarketBrowse from './MarketBrowse.vue'
 
 // ========== Router ==========
@@ -184,7 +164,7 @@ const columns = computed(() => [
     title: $t('common.actions'),
     key: 'actions',
     width: 120,
-    fixed: 'right',
+    fixed: 'right' as const,
     render: (row: InstalledBundle) => {
       const dropdownOptions = [
         {

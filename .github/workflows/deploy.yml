@@ -1,92 +1,67 @@
-name: ssh deploy
-
+name: Community frontend test deploy
 on:
   push:
-    branches: [ "master" ]
+    branches: [master]
+    paths-ignore: ['docs/**', '.ai/**', '**/*.md', 'deploy/release/**', '.github/workflows/buildAndRelease.yml', '.github/workflows/docker-image-build.yml', '.github/workflows/deploy.yml', 'nginx.conf']
   workflow_dispatch:
-
+permissions:
+  contents: read
+concurrency:
+  group: community-main-frontend-deploy
+  cancel-in-progress: false
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-24.04
+    timeout-minutes: 35
     steps:
-      - name: Validate SSH deployment secrets
-        env:
-          C_HOST: ${{ secrets.C_HOST }}
-          C_USER: ${{ secrets.C_USER }}
-          C_SSH_KEY: ${{ secrets.C_SSH_KEY }}
-        run: |
-          for name in C_HOST C_USER C_SSH_KEY; do
-            if [ -z "${!name}" ]; then
-              echo "::error::Missing Actions secret: $name"
-              exit 1
-            fi
-          done
-
       - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20.11
-
-      - name: Cache pnpm modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
-
-      - name: Install dependencies and build
+          node-version: '20.19.0'
+      - name: Install locked dependencies
         run: |
-          npm install -g pnpm@8.15.5
-          pnpm i
-          pnpm run build:4096
-
-      - name: Compress build output
-        run: tar -czf dist.tar.gz -C dist .
-
-      - name: Clean target directory
-        uses: appleboy/ssh-action@v1.0.3
+          corepack enable
+          corepack prepare pnpm@10.8.0 --activate
+          pnpm install --frozen-lockfile
+      - name: Run regression tests
+        run: |
+          python3 -m unittest discover -s deploy/community-test -p 'test_*.py'
+          pnpm exec vitest run
+          pnpm exec tsx --test src/utils/thingsvis/chart-config-initialization.test.ts src/utils/thingsvis/chart-config-normalizer.test.ts src/views/device/config/market-template-compatibility.test.ts src/service/api/thingmodel-native.test.ts src/service/api/native-template-binding-transport.test.ts
+      - name: Type-check and build production frontend
+        run: pnpm build
+      - name: Package verified source revision
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,hashlib,os,tarfile
+          root=pathlib.Path('dist')
+          sha=os.environ['GITHUB_SHA']
+          (root/'SOURCE_COMMIT').write_text(sha+'\n')
+          manifest={'commit':sha,'sha256':{str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in root.rglob('*') if p.is_file()}}
+          (root/'manifest.json').write_text(json.dumps(manifest,indent=2))
+          with tarfile.open('frontend-'+sha+'.tar.gz','w:gz') as archive:
+              for path in root.iterdir(): archive.add(str(path),arcname=path.name)
+          PY
+      - name: Configure authenticated SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.C_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOY_KEY"
+          umask 077
+          printf '%s\n' "$DEPLOY_KEY" > "$RUNNER_TEMP/community-deploy-key"
+          ssh -i "$RUNNER_TEMP/community-deploy-key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=deploy/community-test/known_hosts root@47.92.253.145 'install -d -m 700 /opt/tp-community-actions/incoming'
+      - name: Upload and atomically deploy frontend
+        run: |
+          set -euo pipefail
+          args=(-i "$RUNNER_TEMP/community-deploy-key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=deploy/community-test/known_hosts)
+          scp "${args[@]}" "frontend-$GITHUB_SHA.tar.gz" deploy/community-test/deploy_frontend.py root@47.92.253.145:/opt/tp-community-actions/incoming/
+          ssh "${args[@]}" root@47.92.253.145 "python3 /opt/tp-community-actions/incoming/deploy_frontend.py '$GITHUB_SHA'"
+      - name: Preserve source identity
+        uses: actions/upload-artifact@v4
         with:
-          host: ${{ secrets.C_HOST }}
-          username: ${{ secrets.C_USER }}
-          key: ${{ secrets.C_SSH_KEY }}
-          passphrase: ${{ secrets.C_SSH_PASSPHRASE }}
-          script: |
-            echo "Cleaning target directory..."
-            cd /home/thingspanel/nginx/www
-            # Remove old dist.tar.gz if exists (file or directory)
-            rm -rf dist.tar.gz
-            # Create dist directory if it doesn't exist
-            mkdir -p dist
-            # Clean up old files in dist directory
-            rm -rf dist/*
-
-      - name: Copy files to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.C_HOST }}
-          username: ${{ secrets.C_USER }}
-          key: ${{ secrets.C_SSH_KEY }}
-          passphrase: ${{ secrets.C_SSH_PASSPHRASE }}
-          source: "dist.tar.gz"
-          target: "/home/thingspanel/nginx/www/"
-
-      - name: Deploy on server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.C_HOST }}
-          username: ${{ secrets.C_USER }}
-          key: ${{ secrets.C_SSH_KEY }}
-          passphrase: ${{ secrets.C_SSH_PASSPHRASE }}
-          script: |
-            echo "Starting deployment..."
-            cd /home/thingspanel/nginx/www
-            # Extract new files to dist directory
-            tar -xzf dist.tar.gz -C dist
-            # Remove the tar file
-            rm -f dist.tar.gz
-            # Test nginx and reload
-            nginx -t && nginx -s reload
-            echo "Deployment completed successfully."
+          name: frontend-deployment-${{ github.sha }}
+          path: dist/manifest.json
+      - name: Remove runner SSH key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/community-deploy-key"

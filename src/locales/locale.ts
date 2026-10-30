@@ -52,9 +52,9 @@ function getLangMessages(modules: Record<string, any>, lang: 'zh-cn' | 'en-us') 
   return messages
 }
 
-const locales: Record<I18n.LangType, I18n.Schema> = {
-  'zh-CN': getLangMessages(modules, 'zh-cn') as unknown as I18n.Schema,
-  'en-US': getLangMessages(modules, 'en-us') as unknown as I18n.Schema
+const locales: Record<App.I18n.LangType, ReturnType<typeof getLangMessages>> = {
+  'zh-CN': getLangMessages(modules, 'zh-cn'),
+  'en-US': getLangMessages(modules, 'en-us')
 }
 
 export default locales

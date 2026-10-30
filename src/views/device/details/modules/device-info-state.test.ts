@@ -84,14 +84,14 @@ test('unmodified values preserve raw tokens while false, zero, null, empty strin
 test('special property names are treated as own custom field keys', () => {
   const original: Record<string, string> = Object.create(null)
   Object.defineProperty(original, '__proto__', { value: '"old"', enumerable: true, writable: true })
-  original.constructor = '1'
+  Reflect.set(original, 'constructor', '1')
   const definitions = [
     definition({ key: '__proto__', type: 'string' }),
     definition({ key: 'constructor', type: 'number' })
   ]
   const drafts: Record<string, { mode: 'value'; text: string }> = Object.create(null)
   Object.defineProperty(drafts, '__proto__', { value: { mode: 'value', text: 'new' }, enumerable: true })
-  drafts.constructor = { mode: 'value', text: '2' }
+  Reflect.set(drafts, 'constructor', { mode: 'value', text: '2' })
   const result = applyDeviceInfoFieldDrafts(original, definitions, drafts)
   assert.equal(Object.hasOwn(result.tokens, '__proto__'), true)
   assert.equal(result.tokens.__proto__, '"new"')

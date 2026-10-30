@@ -2,6 +2,7 @@
 import { computed, h, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 import type { DrawerPlacement, StepsProps } from 'naive-ui'
 import { NAlert, NIcon, NTag, NButton, useMessage } from 'naive-ui'
 import _ from 'lodash'
@@ -507,6 +508,11 @@ const loadDeviceGroupCounts = async () => {
     ungroupedDeviceCount.value = statistics.ungrouped
     groupStatsError.value = ''
   } catch (error) {
+    // The statistics endpoint was added after the community backend API. Keep the
+    // counters optional so older deployments can still use device management.
+    if (!axios.isAxiosError(error) || error.response?.status !== 404) {
+      console.error('加载设备分组统计失败:', error)
+    }
     allDeviceCount.value = null
     ungroupedDeviceCount.value = null
     groupStatsError.value = error instanceof Error ? error.message : '设备统计读取失败'

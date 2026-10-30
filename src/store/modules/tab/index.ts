@@ -5,10 +5,8 @@ import { useEventListener } from '@vueuse/core'
 import type { RouteKey } from '@elegant-router/types'
 import { SetupStoreId } from '@/enum'
 import { useRouterPush } from '@/hooks/common/router'
-import { localStg } from '@/utils/storage'
 import { useThemeStore } from '../theme'
 import {
-  filterTabsByAllRoutes,
   filterTabsById,
   filterTabsByIds,
   findTabByRouteName,
@@ -23,7 +21,7 @@ import {
 
 export const useTabStore = defineStore(SetupStoreId.Tab, () => {
   const router = useRouter()
-  const themeStore = useThemeStore()
+  useThemeStore()
   const { routerPush } = useRouterPush(false)
 
   /** Tabs */

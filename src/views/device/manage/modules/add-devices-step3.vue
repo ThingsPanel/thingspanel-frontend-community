@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { $t } from '@/locales'
 // eslint-disable-next-line
-const props = defineProps<{
+defineProps<{
   isSuccess: boolean
   closeCallback: () => void
   backCallback: () => void

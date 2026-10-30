@@ -35,7 +35,8 @@ const userInfoData = ref({
   additional_info: '',
   name: '',
   email: '',
-  phone_num: ''
+  phone_num: '',
+  authority: ''
 })
 /** 初始from数据 */
 const formData = ref({
@@ -110,9 +111,6 @@ function changeBtnType(btn: any) {
 }
 /** 更新用户信息 */
 async function updataUserInfo() {
-  if (process.env.NODE_ENV === 'development') {
-  }
-
   const { error } = await changeInformation(userInfoData.value)
   if (!error) {
     window.$message?.success($t('custom.grouping_details.operationSuccess'))
@@ -127,7 +125,8 @@ const resetPass = async () => {
 /** 修改密码 */
 const submitPass = async () => {
   await validate()
-  const data = localStorage.getItem('enableZcAndYzm') ? JSON.parse(localStorage.getItem('enableZcAndYzm')) : []
+  const storedSettings = localStorage.getItem('enableZcAndYzm')
+  const data = storedSettings ? JSON.parse(storedSettings) : []
   let salt: any = null
   let password1 = formData.value.password
   if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
@@ -145,7 +144,7 @@ const submitPass = async () => {
   }
 }
 
-async function handleFinish({ event }: { event?: ProgressEvent }) {
+async function handleFinish({ event }: { event?: ProgressEvent | Event }) {
   const response = JSON.parse((event?.target as XMLHttpRequest).response)
   // 字符串转成对象
   const obj = JSON.parse(userInfoData.value.additional_info)
@@ -184,7 +183,7 @@ onMounted(async () => {
         :data="{
           type: 'user_icon'
         }"
-        @finish="handleFinish"
+        @finish="options => void handleFinish(options)"
       >
         <div style="">
           <SvgIcon v-if="!header" local-icon="avatar" style="width: 80px; height: 80px" />

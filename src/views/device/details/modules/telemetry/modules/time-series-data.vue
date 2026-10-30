@@ -45,7 +45,16 @@ interface Created {
 }
 
 const props = defineProps<Created>()
-const selectedOption = ref({
+interface HistorySelection {
+  device_id: string
+  key: string
+  aggregate_window: string
+  time_range: string
+  start_time?: number
+  end_time?: number
+  aggregate_function?: string
+}
+const selectedOption = ref<HistorySelection>({
   device_id: props.deviceId,
   key: props.theKey,
   aggregate_window: 'no_aggregate',
@@ -347,10 +356,10 @@ watch(
         sourceData.forEach(item => {
           if (item.y) {
             sumValue += item.y
-            if (item.y < minValue.value) {
+            if (item.y < (minValue.value ?? Infinity)) {
               minValue.value = item.y
             }
-            if (item.y > maxValue.value) {
+            if (item.y > (maxValue.value ?? -Infinity)) {
               maxValue.value = item.y
             }
           }

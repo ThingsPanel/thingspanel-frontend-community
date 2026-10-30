@@ -151,6 +151,14 @@ export function useDeviceBinding() {
   /**
    * 加载本地设备列表
    */
+
+  /**
+   * 加载本地设备模板列表
+   */
+
+  /**
+   * 初始化绑定定义
+   */
   async function loadLocalDevices(templateId?: string): Promise<LocalDevice[]> {
     isLoading.value = true
     error.value = null
@@ -185,9 +193,6 @@ export function useDeviceBinding() {
     }
   }
 
-  /**
-   * 加载本地设备模板列表
-   */
   async function loadLocalTemplates(): Promise<DeviceTemplateItem[]> {
     isLoading.value = true
     error.value = null
@@ -219,9 +224,54 @@ export function useDeviceBinding() {
     }
   }
 
-  /**
-   * 初始化绑定定义
-   */
+  function validateBindings(): BindingValidation {
+    const errors: string[] = []
+    const warnings: string[] = []
+
+    // 检查必填项
+    for (const binding of bindings.value) {
+      if (binding.required && binding.selectedDeviceId === null && !binding.skipped) {
+        errors.push(`Required binding "${binding.displayName}" is not bound`)
+      }
+    }
+
+    // 检查兼容设备
+    for (const binding of bindings.value) {
+      if (binding.selectedDeviceId) {
+        const isCompatible = binding.compatibleDevices.some(d => d.id === binding.selectedDeviceId)
+        if (!isCompatible && binding.compatibleDevices.length > 0) {
+          warnings.push(`Device for "${binding.displayName}" may not be compatible`)
+        }
+      }
+    }
+
+    // 检查部分绑定
+    if (unboundCount.value > 0 && boundCount.value > 0) {
+      warnings.push(`${unboundCount.value} binding(s) are not bound yet`)
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings
+    }
+  }
+
+  function generateDashboardSelections(): Array<{
+    dashboardKey: string
+    deviceBindings: Array<{ bindingKey: string; deviceId: string }>
+  }> {
+    return dashboardSelections.value.map(selection => ({
+      dashboardKey: selection.dashboardKey,
+      deviceBindings: selection.bindings
+        .filter(b => b.selectedDeviceId !== null && !b.skipped)
+        .map(b => ({
+          bindingKey: b.bindingKey,
+          deviceId: b.selectedDeviceId!
+        }))
+    }))
+  }
+
   function initializeBindings(definitionList: BindingDefinition[]): void {
     bindings.value = definitionList.map(def => ({
       bindingKey: def.bindingKey,
@@ -355,38 +405,6 @@ export function useDeviceBinding() {
   /**
    * 验证绑定
    */
-  function validateBindings(): BindingValidation {
-    const errors: string[] = []
-    const warnings: string[] = []
-
-    // 检查必填项
-    for (const binding of bindings.value) {
-      if (binding.required && binding.selectedDeviceId === null && !binding.skipped) {
-        errors.push(`Required binding "${binding.displayName}" is not bound`)
-      }
-    }
-
-    // 检查兼容设备
-    for (const binding of bindings.value) {
-      if (binding.selectedDeviceId) {
-        const isCompatible = binding.compatibleDevices.some(d => d.id === binding.selectedDeviceId)
-        if (!isCompatible && binding.compatibleDevices.length > 0) {
-          warnings.push(`Device for "${binding.displayName}" may not be compatible`)
-        }
-      }
-    }
-
-    // 检查部分绑定
-    if (unboundCount.value > 0 && boundCount.value > 0) {
-      warnings.push(`${unboundCount.value} binding(s) are not bound yet`)
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings
-    }
-  }
 
   /**
    * 生成绑定请求数据
@@ -403,20 +421,6 @@ export function useDeviceBinding() {
   /**
    * 生成看板选择数据
    */
-  function generateDashboardSelections(): Array<{
-    dashboardKey: string
-    deviceBindings: Array<{ bindingKey: string; deviceId: string }>
-  }> {
-    return dashboardSelections.value.map(selection => ({
-      dashboardKey: selection.dashboardKey,
-      deviceBindings: selection.bindings
-        .filter(b => b.selectedDeviceId !== null && !b.skipped)
-        .map(b => ({
-          bindingKey: b.bindingKey,
-          deviceId: b.selectedDeviceId!
-        }))
-    }))
-  }
 
   /**
    * 重置状态
@@ -524,15 +528,7 @@ const initialWizardState: InstallWizardState = {
 export function useInstallWizard() {
   const wizardState = reactive<InstallWizardState>({ ...initialWizardState })
 
-  const {
-    loadLocalDevices,
-    loadLocalTemplates,
-    initializeBindings,
-    loadAllCompatibleDevices,
-    validateBindings,
-    generateDashboardSelections,
-    reset: resetBindingState
-  } = useDeviceBinding()
+  const { initializeBindings, loadAllCompatibleDevices, reset: resetBindingState } = useDeviceBinding()
 
   // Computed
   const isInstalling = computed(() => wizardState.step === 'installing')

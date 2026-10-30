@@ -7,6 +7,8 @@ import type { Component } from 'vue'
 
 // 基础网格项接口
 export interface GridLayoutPlusItem {
+  /** Alternate identity keys are supported by the GridV2 idKey prop. */
+  [key: string]: unknown
   /** 项目唯一标识符 */
   i: string
   /** X轴位置 (网格单位) */
@@ -123,6 +125,8 @@ export interface ResizeOption {
 
 // 网格布局配置
 export interface GridLayoutPlusConfig {
+  autoArrange?: boolean
+  minH?: number
   /** 列数 */
   colNum: number
   /** 行高（像素），用于计算每行的高度 */
@@ -150,9 +154,9 @@ export interface GridLayoutPlusConfig {
   /** 是否响应式 */
   responsive: boolean
   /** 响应式断点 */
-  breakpoints: Record<string, number>
+  breakpoints: Record<'lg' | 'md' | 'sm' | 'xs' | 'xxs', number> & Record<string, number>
   /** 不同断点的列数 */
-  cols: Record<string, number>
+  cols: Record<'lg' | 'md' | 'sm' | 'xs' | 'xxs', number> & Record<string, number>
   /** 是否防止碰撞 */
   preventCollision: boolean
   /** 是否使用样式光标 */
@@ -219,7 +223,10 @@ export const EXTENDED_GRID_LAYOUT_CONFIG: GridLayoutPlusConfig = {
 }
 
 // 🔥 超大网格工具函数
-export const GridSizePresets = {
+type GridSizePreset = Pick<GridLayoutPlusConfig, 'colNum' | 'rowHeight' | 'margin'>
+export const GridSizePresets: Record<'MINI' | 'STANDARD' | 'LARGE' | 'MEGA', GridSizePreset> & {
+  CUSTOM: (cols: number) => GridSizePreset
+} = {
   MINI: { colNum: 12, rowHeight: 100, margin: [10, 10] }, // 12列 - 标准小网格
   STANDARD: { colNum: 24, rowHeight: 60, margin: [8, 8] }, // 24列 - 标准网格
   LARGE: { colNum: 50, rowHeight: 40, margin: [5, 5] }, // 50列 - 大网格
@@ -256,6 +263,7 @@ export interface GridLayoutPlusProps {
 
 // 组件Emits
 export interface GridLayoutPlusEmits {
+  (e: 'drag-enter' | 'drag-over' | 'drag-leave' | 'drop', event: DragEvent): void
   /** 布局创建 */
   (e: 'layout-created', layout: GridLayoutPlusItem[]): void
   /** 布局挂载前 */
@@ -273,7 +281,7 @@ export interface GridLayoutPlusEmits {
   /** 断点变化 */
   (e: 'breakpoint-changed', breakpoint: string, layout: GridLayoutPlusItem[]): void
   /** 容器大小变化 */
-  (e: 'container-resized', i: string, newH: number, newW: number, newHPx: number, newWPx: number): void
+  (e: 'container-resized', width: number, height: number, cols: number): void
   /** 项目调整大小中 */
   (e: 'item-resize', i: string, newH: number, newW: number, newHPx: number, newWPx: number): void
   /** 项目调整大小完成 */
@@ -369,6 +377,8 @@ export const DARK_THEME: GridTheme = {
 
 // 性能配置
 export interface PerformanceConfig {
+  enableVirtualization?: boolean
+  virtualizationThreshold?: number
   /** 防抖延迟 */
   debounceDelay: number
   /** 节流延迟 */

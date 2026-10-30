@@ -99,7 +99,7 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
     width: '320px',
     render: row => {
       return (
-        <NSpace justify={'left'}>
+        <NSpace justify={'start'}>
           <NButton type="primary" size={'small'} onClick={() => handleEditTable(row.id)}>
             {$t('common.edit')}
           </NButton>

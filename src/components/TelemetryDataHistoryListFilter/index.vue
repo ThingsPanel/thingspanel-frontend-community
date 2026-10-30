@@ -159,7 +159,7 @@ const getMinWindowSecondsForDuration = (durationMs: number): number => {
 
 // --- 响应式状态 ---
 const { loading: isLoading, startLoading, endLoading } = useLoading(false)
-const { loading: isExporting, startLoading: startExporting, endLoading: endExporting } = useLoading(false) // Separate loading state for export
+const { loading: isExporting } = useLoading(false) // Separate loading state for export
 const timeSeriesData = ref<TimeSeriesItem[]>([])
 
 // 初始化筛选条件的响应式状态

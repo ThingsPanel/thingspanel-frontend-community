@@ -382,8 +382,13 @@ export async function createPublishDraft(params: PublishDraftRequest): Promise<{
   precheckReport?: PublishDraftPrecheckReport
 }> {
   try {
-    const data = await request.post<PublishDraftResponse>('/device/market/bundles/publish-draft', params)
-    return { data, error: null, precheckReport: data.precheckReport }
+    const result = await request.post<PublishDraftResponse>('/device/market/bundles/publish-draft', params)
+    if (result.error) {
+      const error = parseMarketError({ error: result.error })
+      const precheckReport = error.details?.precheckReport as PublishDraftPrecheckReport | undefined
+      return { data: null, error, precheckReport }
+    }
+    return { data: result.data, error: null, precheckReport: result.data?.precheckReport }
   } catch (err) {
     const error = parseMarketError(err)
     const body = (err as { response?: { data?: { data?: { precheckReport?: PublishDraftPrecheckReport } } } }).response

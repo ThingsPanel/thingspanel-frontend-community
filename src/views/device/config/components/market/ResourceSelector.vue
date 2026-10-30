@@ -3,8 +3,12 @@
  * ResourceSelector - 资源选择器组件
  * 用于选择要发布的设备模板和看板
  */
-import { computed, h } from 'vue'
-import { NCard, NButton, NTag, NEmpty, NSpin, NCheckbox, NCheckboxGroup, NSpace, NGrid, NGi } from 'naive-ui'
+/**
+ * ResourceSelector - 资源选择器组件
+ * 用于选择要发布的设备模板和看板
+ */
+import { computed } from 'vue'
+import { NCard, NButton, NTag, NEmpty, NSpin, NCheckbox, NSpace, NGrid, NGi } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{

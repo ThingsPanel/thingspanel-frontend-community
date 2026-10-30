@@ -45,8 +45,7 @@ export function cleanupLocalStorage(): void {
  */
 export function clearAllLocalStorage(): void {
   console.error('⚠️ 正在清理所有localStorage...')
-
-  const allKeys = Object.keys(localStorage)
+  Object.keys(localStorage)
 
   try {
     localStorage.clear()
@@ -64,6 +63,7 @@ export function inspectLocalStorage(): void {
     try {
       const value = localStorage.getItem(key)
       const size = value ? new Blob([value]).size : 0
+      console.info(`${key}: ${size} bytes`)
     } catch (error) {
       console.error(`无法读取 ${key}:`, error)
     }

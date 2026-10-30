@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, watch, computed } from 'vue'
+import { onMounted, onUnmounted, ref, watch, computed } from 'vue'
 import { debounce } from 'lodash'
 import { router } from '@/router'
 import { useWebsocketUtil } from '@/utils/websocketUtil'
@@ -117,7 +117,7 @@ const getLayout = async (retryCount = 0) => {
 
   const cachedHome = readThingsVisHomeCache()
   if (cachedHome?.state === 'thingsvis' && isCompleteThingsVisDashboard(cachedHome.dashboard)) {
-    thingsVisHome.value = cachedHome.dashboard
+    thingsVisHome.value = cachedHome.dashboard ?? null
     useThingsVis.value = true
     layoutFetched.value = true
     return
@@ -249,7 +249,7 @@ function updateConfigData(configJson: ICardView[]) {
   }
 }
 
-const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
+;(_newBreakpoint: any, newLayout: any) => {
   setTimeout(() => {
     layout.value = newLayout
   }, 300)

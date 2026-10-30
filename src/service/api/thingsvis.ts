@@ -118,6 +118,8 @@ export interface ThingsVisDashboard {
     padding?: number
     applyMarginToSides?: boolean
     edgeToEdge?: boolean
+    /** Preview placement consumed by the embedded ThingsVis viewer. */
+    previewAlignY?: 'top' | 'center' | 'bottom'
   }
   nodes: unknown[]
   dataSources: unknown[]

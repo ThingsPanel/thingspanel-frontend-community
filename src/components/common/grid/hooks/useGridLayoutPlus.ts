@@ -3,7 +3,11 @@
  * 提供网格布局的状态管理和工具方法
  */
 
-import { ref, computed, watch, nextTick, type Ref } from 'vue'
+/**
+ * Grid Layout Plus Hook
+ * 提供网格布局的状态管理和工具方法
+ */
+import { ref, computed, watch } from 'vue'
 import type {
   GridLayoutPlusItem,
   GridLayoutPlusConfig,
@@ -24,7 +28,6 @@ import {
   searchLayout,
   getLayoutStats,
   createResponsiveLayout,
-  transformLayoutForBreakpoint,
   optimizeLayoutPerformance,
   debounce,
   throttle
@@ -58,8 +61,6 @@ export function useGridLayoutPlus(options: UseGridLayoutPlusOptions = {}) {
   })
 
   const performanceConfig = ref<PerformanceConfig>({
-    enableVirtualization: false,
-    virtualizationThreshold: 100,
     debounceDelay: 100,
     throttleDelay: 16,
     enableLazyLoading: false,
@@ -152,7 +153,7 @@ export function useGridLayoutPlus(options: UseGridLayoutPlusOptions = {}) {
 
       const validation = validateGridItem(newItem)
       if (!validation.success) {
-        return validation
+        return { success: false, error: validation.error, message: validation.message }
       }
 
       saveToHistory()
@@ -225,7 +226,7 @@ export function useGridLayoutPlus(options: UseGridLayoutPlusOptions = {}) {
 
       const validation = validateGridItem(item)
       if (!validation.success) {
-        return validation
+        return { success: false, error: validation.error, message: validation.message }
       }
 
       autoSave()

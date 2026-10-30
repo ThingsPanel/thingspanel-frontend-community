@@ -2,9 +2,11 @@
  * Grid Layout Plus 工具函数
  */
 
+/**
+ * Grid Layout Plus 工具函数
+ */
 import type {
   GridLayoutPlusItem,
-  GridLayoutPlusConfig,
   LayoutOperationResult,
   ResponsiveLayout,
   PerformanceConfig
@@ -391,7 +393,7 @@ export function optimizeLayoutPerformance(
   }
 
   // 如果项目数量超过虚拟化阈值，启用虚拟化优化
-  if (config.enableVirtualization && layout.length > config.virtualizationThreshold) {
+  if (config.enableVirtualization && layout.length > (config.virtualizationThreshold ?? 100)) {
     // 虚拟化逻辑
   }
 
@@ -405,7 +407,7 @@ export function debounce<T extends (...args: any[]) => any>(func: T, delay: numb
   let timeoutId: NodeJS.Timeout
   return (...args: Parameters<T>) => {
     clearTimeout(timeoutId)
-    timeoutId = setTimeout(() => func.apply(this, args), delay)
+    timeoutId = setTimeout(() => func(...args), delay)
   }
 }
 
@@ -418,7 +420,7 @@ export function throttle<T extends (...args: any[]) => any>(func: T, delay: numb
     const now = Date.now()
     if (now - lastCall >= delay) {
       lastCall = now
-      func.apply(this, args)
+      func(...args)
     }
   }
 }

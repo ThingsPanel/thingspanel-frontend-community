@@ -126,7 +126,7 @@ function getRandomBytes(length) {
   return window.crypto.getRandomValues(new Uint8Array(length))
 }
 
-function randomBytesToHex(bytes) {
+function randomBytesToHex(bytes: Uint8Array) {
   return Array.from(bytes)
     .map(b => b.toString(16).padStart(2, '0'))
     .join('')

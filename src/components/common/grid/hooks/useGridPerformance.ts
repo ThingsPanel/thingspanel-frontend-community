@@ -3,7 +3,11 @@
  * 提供性能指标监控和优化功能
  */
 
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+/**
+ * Grid 性能监控和优化 Hook
+ * 提供性能指标监控和优化功能
+ */
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import type { GridLayoutPlusItem, PerformanceConfig } from '../gridLayoutPlusTypes'
 import { debounce, throttle } from '../gridLayoutPlusUtils'
 
@@ -72,7 +76,7 @@ export function useGridPerformance(options: UseGridPerformanceOptions = {}) {
 
   // 计算属性
   const needsVirtualization = computed(() => {
-    return metrics.value.itemCount >= config.value.virtualizationThreshold
+    return metrics.value.itemCount >= (config.value.virtualizationThreshold ?? 100)
   })
 
   const performanceScore = computed(() => {
@@ -100,7 +104,7 @@ export function useGridPerformance(options: UseGridPerformanceOptions = {}) {
     const suggestions: string[] = []
     const { renderTime, layoutTime, itemCount } = metrics.value
 
-    if (itemCount >= config.value.virtualizationThreshold && !config.value.enableVirtualization) {
+    if (itemCount >= (config.value.virtualizationThreshold ?? 100) && !config.value.enableVirtualization) {
       suggestions.push('建议启用虚拟化以提高大数据集性能')
     }
 

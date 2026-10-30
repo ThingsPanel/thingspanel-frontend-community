@@ -3,8 +3,12 @@
  * 处理断点变化和响应式布局转换
  */
 
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import type { GridLayoutPlusItem, ResponsiveLayout, GridLayoutPlusConfig } from '../gridLayoutPlusTypes'
+/**
+ * Grid 响应式布局管理 Hook
+ * 处理断点变化和响应式布局转换
+ */
+import { ref, computed, watch, onUnmounted } from 'vue'
+import type { GridLayoutPlusItem, ResponsiveLayout } from '../gridLayoutPlusTypes'
 import { createResponsiveLayout, transformLayoutForBreakpoint } from '../gridLayoutPlusUtils'
 
 export interface UseGridResponsiveOptions {
@@ -41,7 +45,6 @@ export function useGridResponsive(options: UseGridResponsiveOptions = {}) {
 
   // 断点监听
   let resizeObserver: ResizeObserver | null = null
-  let containerElement: HTMLElement | null = null
 
   // 计算属性
   const currentCols = computed(() => {
@@ -87,7 +90,7 @@ export function useGridResponsive(options: UseGridResponsiveOptions = {}) {
       const targetCols = currentCols.value
       const sourceCols = cols[fromBreakpoint] || 12
 
-      return transformLayoutForBreakpoint(sourceLayout, sourceCols, targetCols, currentBreakpoint.value)
+      return transformLayoutForBreakpoint(sourceLayout, sourceCols, targetCols)
     } catch (error) {
       console.error('[GridResponsive] Failed to transform layout:', error)
       return sourceLayout
@@ -163,8 +166,6 @@ export function useGridResponsive(options: UseGridResponsiveOptions = {}) {
 
   // 监听容器尺寸变化
   const observeContainer = (element: HTMLElement) => {
-    containerElement = element
-
     if (!isResponsive.value) return
 
     // 初始尺寸
@@ -203,7 +204,6 @@ export function useGridResponsive(options: UseGridResponsiveOptions = {}) {
       resizeObserver.disconnect()
       resizeObserver = null
     }
-    containerElement = null
   }
 
   // 监听容器宽度变化，计算断点
