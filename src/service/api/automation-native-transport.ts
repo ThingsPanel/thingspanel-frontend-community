@@ -293,19 +293,26 @@ function isAlarm(value: unknown): value is AutomationAlarm {
 }
 
 function isAlarms(value: unknown): value is AlarmsResponse {
+  // The released engine returns only { alarms }; total, limit and offset are optional and filled in by
+  // normalizeAlarms. When present they must still be sane.
+  if (!isRecord(value) || !Array.isArray(value.alarms) || !value.alarms.every(isAlarm)) return false
+  const optionalInt = (v: unknown, min: number, max: number) =>
+    v === undefined || (Number.isInteger(v) && Number(v) >= min && Number(v) <= max)
   return (
-    isRecord(value) &&
-    Array.isArray(value.alarms) &&
-    value.alarms.every(isAlarm) &&
-    Number.isInteger(value.total) &&
-    Number(value.total) >= 0 &&
-    Number.isInteger(value.limit) &&
-    Number(value.limit) > 0 &&
-    Number(value.limit) <= 200 &&
-    Number.isInteger(value.offset) &&
-    Number(value.offset) >= 0 &&
-    value.alarms.length <= Number(value.limit)
+    optionalInt(value.total, 0, Number.MAX_SAFE_INTEGER) &&
+    optionalInt(value.limit, 1, 200) &&
+    optionalInt(value.offset, 0, Number.MAX_SAFE_INTEGER) &&
+    (value.limit === undefined || value.alarms.length <= Number(value.limit))
   )
+}
+
+function normalizeAlarms(payload: AlarmsResponse, requestedLimit: number, requestedOffset: number): AlarmsResponse {
+  return {
+    ...payload,
+    total: payload.total ?? requestedOffset + payload.alarms.length,
+    limit: payload.limit ?? requestedLimit,
+    offset: payload.offset ?? requestedOffset
+  }
 }
 
 export function mergeAutomationAlarmPages(existing: AutomationAlarm[], incoming: AutomationAlarm[]): AutomationAlarm[] {
@@ -411,7 +418,9 @@ export function createAutomationNativeClient(options: AutomationNativeOptions): 
     },
     alarms(subjectId, state, limit = 50, offset = 0) {
       const suffix = queryString({ subject_id: subjectId, state, limit, offset })
-      return request(`/v1/alarms?${suffix}`, isAlarms, { method: 'GET' })
+      return request(`/v1/alarms?${suffix}`, isAlarms, { method: 'GET' }).then(page =>
+        normalizeAlarms(page, limit, offset)
+      )
     },
     alarm(id) {
       return request(`/v1/alarms/${encodeURIComponent(id)}`, isAlarm, { method: 'GET' })
