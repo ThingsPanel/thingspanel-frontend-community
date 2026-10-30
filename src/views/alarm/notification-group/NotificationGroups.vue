@@ -305,6 +305,7 @@ async function sendPendingPublish() {
       pending.body.operation === 'unpublish'
         ? tx('策略已停用。此操作只影响之后产生的告警。', 'The policy is disabled. This affects future alerts only.')
         : tx('策略已启用，供后续告警使用。', 'Policy enabled for future alerts.')
+    return status
   } catch (error) {
     const status = nativePublishErrorStatus(error)
     if (status === 409) {
@@ -337,7 +338,7 @@ async function sendPendingPublish() {
 async function publishForCommunityAlerts(row: NotificationV2.GroupView) {
   if (!isTenantAdmin.value || !row.enabled || row.migrationState !== 'native' || publishSaving.value) return
   if (pendingPublish.value) {
-    if (pendingPublish.value.groupId === row.id) await sendPendingPublish()
+    if (pendingPublish.value.groupId === row.id) return await sendPendingPublish()
     return
   }
   delete publishErrors.value[row.id]
@@ -347,7 +348,7 @@ async function publishForCommunityAlerts(row: NotificationV2.GroupView) {
     publishStatuses.value[row.id] = status
     if (status.published && status.effectiveGroupRevision === row.revision) {
       publishErrors.value[row.id] = tx('策略已启用。', 'Policy is enabled.')
-      return
+      return status
     }
     pendingPublish.value = {
       key: notificationV2.createIdempotencyKey(),
@@ -360,7 +361,7 @@ async function publishForCommunityAlerts(row: NotificationV2.GroupView) {
       },
       groupId: row.id
     }
-    await sendPendingPublish()
+    return await sendPendingPublish()
   } catch (error) {
     if (!(error instanceof NotificationSessionChangedError))
       publishErrors.value[row.id] = tx(
@@ -784,8 +785,9 @@ async function saveGroup() {
     await loadPage()
     if (publishAfterSave.value && saved?.data) {
       successText.value = tx('配置已保存，正在发布。', 'Configuration saved. Publishing.')
-      await publishForCommunityAlerts(saved.data)
-      const status = publishStatuses.value[saved.data.id]
+      // List refresh clears the display cache and reloads it asynchronously.
+      // The publish response is the authoritative result of this operation.
+      const status = await publishForCommunityAlerts(saved.data)
       successText.value =
         status?.published && status.effectiveGroupRevision === saved.data.revision
           ? tx('通知策略已保存并生效。', 'Policy saved and published.')

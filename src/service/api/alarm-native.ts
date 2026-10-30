@@ -268,8 +268,14 @@ export async function alarmHistory(query: {
     }))
 
     if (query?.alarm_status) rows = rows.filter(row => row.alarm_status === query.alarm_status)
-    if (query?.start_time) rows = rows.filter(row => row.create_at >= String(query.start_time))
-    if (query?.end_time) rows = rows.filter(row => row.create_at <= String(query.end_time))
+    if (query?.start_time) {
+      const startTime = Date.parse(query.start_time)
+      rows = rows.filter(row => Date.parse(row.create_at) >= startTime)
+    }
+    if (query?.end_time) {
+      const endTime = Date.parse(query.end_time)
+      rows = rows.filter(row => Date.parse(row.create_at) <= endTime)
+    }
 
     const total = rows.length
     const start = (page - 1) * size

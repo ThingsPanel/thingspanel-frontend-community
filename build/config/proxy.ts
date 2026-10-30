@@ -57,18 +57,24 @@ export function createViteProxy(env: Env.ImportMeta) {
   // Credentials stay in the Authorization header; the target has no fallback.
   const notificationTarget = env.VITE_NOTIFICATION_DEV_PROXY_TARGET?.trim()
   if (notificationTarget) {
-    const target = new URL(notificationTarget)
+    // A unified deployment exposes the notification API at the business gateway.
+    // This explicit mode uses that already configured origin, without allowing
+    // arbitrary remote HTTP destinations or falling back after a failed request.
+    const businessGateway = notificationTarget === 'business'
+    const target = new URL(businessGateway ? baseURL : notificationTarget)
     const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)
     if (
       !['http:', 'https:'].includes(target.protocol) ||
-      (target.protocol === 'http:' && !loopback) ||
+      (target.protocol === 'http:' && !loopback && !businessGateway) ||
       target.username ||
       target.password ||
       target.search ||
       target.hash ||
-      !['', '/'].includes(target.pathname)
+      (!businessGateway && !['', '/'].includes(target.pathname))
     )
-      throw new Error('Notification development proxy requires an HTTPS origin or HTTP loopback origin.')
+      throw new Error(
+        'Notification development proxy requires an HTTPS origin, HTTP loopback origin, or business mode.'
+      )
     proxy['/notification-core'] = {
       target: target.origin,
       changeOrigin: true,
@@ -79,24 +85,26 @@ export function createViteProxy(env: Env.ImportMeta) {
   // The automation engine is a separate Encore service. It is reached through a
   // same-origin development path so the browser keeps sending the ordinary
   // Authorization header and no CORS rule has to be invented for local work.
-  // The target is required to be HTTPS or loopback: a plain-http target on a
-  // real host would silently send tenant tokens in clear text.
+  // "business" explicitly selects the already configured unified gateway.
+  // Standalone services retain the HTTPS/loopback origin restrictions.
   const automationTarget = env.VITE_AUTOMATION_DEV_PROXY_TARGET?.trim()
   if (automationTarget) {
-    const target = new URL(automationTarget)
+    const businessGateway = automationTarget === 'business'
+    const target = new URL(businessGateway ? baseURL : automationTarget)
     const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)
     const acceptable =
-      (target.protocol === 'https:' || (target.protocol === 'http:' && loopback)) &&
+      (target.protocol === 'https:' || (target.protocol === 'http:' && (loopback || businessGateway))) &&
       !target.username &&
       !target.password &&
       !target.search &&
       !target.hash &&
-      ['', '/'].includes(target.pathname)
-    if (!acceptable) throw new Error('Automation development proxy requires an HTTPS origin or HTTP loopback origin.')
+      (businessGateway || ['', '/'].includes(target.pathname))
+    if (!acceptable)
+      throw new Error('Automation development proxy requires an HTTPS origin, HTTP loopback origin, or business mode.')
     proxy['/automation-core'] = {
       target: target.origin,
       changeOrigin: true,
-      rewrite: path => path.replace(/^\/automation-core/, '')
+      rewrite: path => (businessGateway ? path : path.replace(/^\/automation-core/, ''))
     }
   }
 

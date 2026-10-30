@@ -31,7 +31,7 @@ declare namespace Env {
      * Only valid in the development environment
      */
     readonly VITE_HTTP_PROXY?: CommonType.YesOrNo
-    /** Explicit origin for the development-only /notification-core proxy. */
+    /** Explicit origin, or "business" to use the configured business gateway origin. */
     readonly VITE_NOTIFICATION_DEV_PROXY_TARGET?: string
     /** Explicit development origin for the single native authentication owner. */
     readonly VITE_AUTH_DEV_PROXY_TARGET?: string
@@ -72,8 +72,8 @@ declare namespace Env {
     /** Auto login password for development environment */
     readonly VITE_AUTO_LOGIN_PASSWORD?: string
     /**
-     * Development-only proxy target of the automation engine (an Encore service).
-     * When set, `/automation-core/*` is forwarded to it with the prefix stripped.
+     * Development-only automation origin, or "business" for the configured gateway.
+     * Standalone origins strip `/automation-core`; business mode preserves it.
      */
     readonly VITE_AUTOMATION_DEV_PROXY_TARGET?: string
     /**

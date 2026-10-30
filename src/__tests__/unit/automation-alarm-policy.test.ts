@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { addWarningMessage, editInfo } from '@/service/api/alarm-native'
+import { addWarningMessage, alarmHistory, editInfo } from '@/service/api/alarm-native'
 
-const { createRule, updateRule, getRule } = vi.hoisted(() => ({
+const { createRule, updateRule, getRule, listAlarms, listRules } = vi.hoisted(() => ({
   createRule: vi.fn(),
   updateRule: vi.fn(),
-  getRule: vi.fn()
+  getRule: vi.fn(),
+  listAlarms: vi.fn(),
+  listRules: vi.fn()
 }))
 vi.mock('@/service/api/automation-rules', () => ({
   AutomationApiError: class extends Error {},
@@ -12,8 +14,8 @@ vi.mock('@/service/api/automation-rules', () => ({
   updateRule,
   getRule,
   deleteRule: vi.fn(),
-  listAlarms: vi.fn(),
-  listRules: vi.fn(),
+  listAlarms,
+  listRules,
   ackAlarm: vi.fn(),
   setRuleEnabled: vi.fn()
 }))
@@ -24,6 +26,8 @@ describe('alarm notification selection', () => {
     createRule.mockReset().mockResolvedValue({ id: 'rule-a' })
     updateRule.mockReset().mockResolvedValue({ id: 'rule-a' })
     getRule.mockReset()
+    listAlarms.mockReset().mockResolvedValue({ alarms: [] })
+    listRules.mockReset().mockResolvedValue({ rules: [] })
   })
 
   it('stores default intent instead of silently omitting notification', async () => {
@@ -62,5 +66,26 @@ describe('alarm notification selection', () => {
     const result = await addWarningMessage({ name: 'Alarm', alarm_level: 'H' })
     expect(result.data).toBeNull()
     expect(result.error).toBeInstanceOf(Error)
+  })
+
+  it('filters alarm instants across timezones with inclusive boundaries and the selected level', async () => {
+    const alarms = [
+      ['before', '2026-10-29T23:59:59Z', 'H'],
+      ['start', '2026-10-30T00:00:00Z', 'H'],
+      ['other-level', '2026-10-30T09:00:00+08:00', 'M'],
+      ['end', '2026-10-30T02:00:00Z', 'H'],
+      ['after', '2026-10-30T02:00:01Z', 'H']
+    ].map(([id, opened_at, level]) => ({ id, opened_at, level, policy_id: 'policy-1' }))
+    listAlarms.mockResolvedValue({ alarms })
+    const result = await alarmHistory({
+      start_time: '2026-10-30T08:00:00+08:00',
+      end_time: '2026-10-30T10:00:00+08:00',
+      alarm_status: 'H'
+    })
+    expect(result.error).toBeNull()
+    expect(result.data.list.map((row: { id: string }) => row.id)).toEqual(['start', 'end'])
+    expect(result.data.total).toBe(2)
+    const reset = await alarmHistory({})
+    expect(reset.data.total).toBe(5)
   })
 })

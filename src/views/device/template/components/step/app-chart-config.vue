@@ -118,7 +118,9 @@ const back: () => void = () => {
 const openEditor = () => {
   isEditorFullscreen.value = false
   if (props.nativeResourcePort) {
-    void loadTemplateData().then(() => { showEditorModal.value = true })
+    void loadTemplateData().then(() => {
+      showEditorModal.value = true
+    })
   } else {
     showEditorModal.value = true
   }
@@ -169,11 +171,14 @@ const handleSave = async (payload: any) => {
   saving.value = true
   try {
     if (props.nativeResourcePort) {
-      const updateOptions: NativeChartUpdateOptions | undefined = nativeOpenedRevision === undefined ? undefined : {
-        openedRevision: nativeOpenedRevision,
-        conflictKey: 'appChartConfig',
-        openedValue: nativeOpenedConfig
-      }
+      const updateOptions: NativeChartUpdateOptions | undefined =
+        nativeOpenedRevision === undefined
+          ? undefined
+          : {
+              openedRevision: nativeOpenedRevision,
+              conflictKey: 'appChartConfig',
+              openedValue: nativeOpenedConfig
+            }
       const updated = await props.nativeResourcePort.update(current => {
         const cleanedPayload = prepareAppChartConfigForSave(
           current.appChartConfig,
@@ -277,7 +282,7 @@ const loadTemplateData = async () => {
       // 加载已有配置
       if (res.data.app_chart_config) {
         try {
-      const config = normalizeAppChartConfig(res.data.app_chart_config) as Record<string, any>
+          const config = normalizeAppChartConfig(res.data.app_chart_config) as Record<string, any>
           initialConfig.value = config
           hasConfig.value = true
           // 恢复刷新频率配置
@@ -309,9 +314,13 @@ watch(showEditorModal, visible => {
   }
 })
 
-watch(() => props.nativeResourcesRevision, (revision, previous) => {
-  if (props.nativeResourcePort && revision !== undefined && previous !== undefined && revision !== previous) void loadTemplateData()
-})
+watch(
+  () => props.nativeResourcesRevision,
+  (revision, previous) => {
+    if (props.nativeResourcePort && revision !== undefined && previous !== undefined && revision !== previous)
+      void loadTemplateData()
+  }
+)
 </script>
 
 <template>
@@ -368,7 +377,7 @@ watch(() => props.nativeResourcesRevision, (revision, previous) => {
     </div>
 
     <!-- 编辑器弹窗 -->
-    <NModal v-model:show="showEditorModal" :mask-closable="false">
+    <NModal v-model:show="showEditorModal" :mask-closable="false" :close-on-esc="!saving">
       <div class="chart-editor-shell" :class="{ 'chart-editor-shell--fullscreen': isEditorFullscreen }">
         <NCard
           title="编辑 App 图表配置"
@@ -378,7 +387,13 @@ watch(() => props.nativeResourcesRevision, (revision, previous) => {
         >
           <template #header-extra>
             <NSpace align="center" size="small">
-              <NButton quaternary circle @click="toggleEditorFullscreen">
+              <NButton
+                quaternary
+                circle
+                :aria-label="isEditorFullscreen ? '退出全屏' : '全屏编辑'"
+                :title="isEditorFullscreen ? '退出全屏' : '全屏编辑'"
+                @click="toggleEditorFullscreen"
+              >
                 <template #icon>
                   <NIcon>
                     <ContractOutline v-if="isEditorFullscreen" />
@@ -386,7 +401,14 @@ watch(() => props.nativeResourcesRevision, (revision, previous) => {
                   </NIcon>
                 </template>
               </NButton>
-              <NButton quaternary circle @click="showEditorModal = false">
+              <NButton
+                quaternary
+                circle
+                :disabled="saving"
+                aria-label="关闭图表编辑器"
+                title="关闭"
+                @click="showEditorModal = false"
+              >
                 <template #icon>
                   <NIcon>
                     <CloseOutline />
@@ -411,7 +433,7 @@ watch(() => props.nativeResourcesRevision, (revision, previous) => {
 
           <template #footer>
             <div class="modal-footer">
-              <NButton @click="showEditorModal = false">取消</NButton>
+              <NButton :disabled="saving" @click="showEditorModal = false">取消</NButton>
               <NButton type="primary" :loading="saving" @click="editorRef?.triggerSave()">保存配置</NButton>
             </div>
           </template>
@@ -476,7 +498,13 @@ watch(() => props.nativeResourcesRevision, (revision, previous) => {
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 8px;
+
+  :deep(.n-button) {
+    height: 36px;
+    min-width: 72px;
+    border-radius: 8px;
+  }
 }
 
 :deep(.chart-editor-shell) {

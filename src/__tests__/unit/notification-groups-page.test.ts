@@ -241,7 +241,8 @@ describe('notification group page failure and conflict flow', () => {
     installTsxShim()
   })
 
-  it.each([true, false])('saves once and reports publication outcome (success=%s)', async succeeds => {
+  it.each([true, false, 'slow-refresh'])('saves once and reports publication outcome (%s)', async outcome => {
+    const succeeds = outcome !== false
     const group = {
       id: 'publish-group',
       name: 'Alarm policy',
@@ -264,7 +265,8 @@ describe('notification group page failure and conflict flow', () => {
     const published = { published: true, routeVersion: 1, effectiveGroupRevision: 2, legacyGroupId: 'alias' }
     publishNativeGroupMock.mockImplementation(async () => {
       if (!succeeds) throw new Error('network unavailable')
-      getPublishStatusMock.mockResolvedValue(published)
+      if (outcome === 'slow-refresh') getPublishStatusMock.mockImplementation(() => new Promise(() => {}))
+      else getPublishStatusMock.mockResolvedValue(published)
       return published
     })
     const wrapper = mount(NotificationGroups, { global: { stubs } })
