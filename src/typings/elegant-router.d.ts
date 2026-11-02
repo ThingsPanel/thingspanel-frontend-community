@@ -49,6 +49,8 @@ declare module "@elegant-router/types" {
     "dashboard_workbench": "/dashboard/workbench";
     "data-service": "/data-service";
     "data-service_rule-engine": "/data-service/rule-engine";
+    "data-forwarding": "/data-forwarding";
+    "data-forwarding_northbound": "/data-forwarding/northbound";
     "device": "/device";
     "device_config": "/device/template";
     "device_config-detail": "/device/config-detail";
@@ -168,6 +170,7 @@ declare module "@elegant-router/types" {
     | "component"
     | "dashboard"
     | "data-service"
+    | "data-forwarding"
     | "device"
     | "device-details-app"
     | "function"
@@ -226,6 +229,7 @@ declare module "@elegant-router/types" {
     | "dashboard_panel"
     | "dashboard_workbench"
     | "data-service_rule-engine"
+    | "data-forwarding_northbound"
     | "device-details-app"
     | "device_config-detail"
     | "device_config-edit"
