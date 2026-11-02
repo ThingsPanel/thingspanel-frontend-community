@@ -71,6 +71,7 @@ const commandModels = ref<
 >({})
 const pendingSwitches = ref<Record<string, boolean>>({})
 const switchMessages = ref<Record<string, string>>({})
+let modelSession = localStg.get('token')
 let requestSequence = 0
 let disposed = false
 onBeforeUnmount(() => {
@@ -198,6 +199,7 @@ async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
 }
 
 async function loadReadings() {
+  modelSession = localStg.get('token')
   const sequence = ++requestSequence
   listLoading.value = true
   readingsLoading.value = false
@@ -247,7 +249,14 @@ async function changeSwitch(device: DeviceRow, reading: Reading, target: boolean
   const key = switchKey(device, reading)
   const model = commandModels.value[device.id]
   const binding = switchBinding(device, reading)
-  if (!model || !binding || pendingSwitches.value[key] || device.is_online === 0) return
+  if (
+    !model ||
+    !binding ||
+    pendingSwitches.value[key] ||
+    device.is_online === 0 ||
+    modelSession !== localStg.get('token')
+  )
+    return
   const sequence = requestSequence
   const token = localStg.get('token')
   const current = () => !disposed && sequence === requestSequence && localStg.get('token') === token
