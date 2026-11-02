@@ -193,6 +193,8 @@ const routeMap: RouteMap = {
   "dashboard_workbench": "/dashboard/workbench",
   "data-service": "/data-service",
   "data-service_rule-engine": "/data-service/rule-engine",
+  "data-forwarding": "/data-forwarding",
+  "data-forwarding_northbound": "/data-forwarding/northbound",
   "device": "/device",
   "device_config": "/device/template",
   "device_config-detail": "/device/config-detail",

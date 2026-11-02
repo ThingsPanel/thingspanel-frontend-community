@@ -272,6 +272,26 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'data-service_rule-engine',
           i18nKey: 'route.data-service_rule-engine'
         }
+      },
+    ]
+  },
+  {
+    name: 'data-forwarding',
+    path: '/data-forwarding',
+    component: 'layout.base',
+    meta: {
+      title: 'data-forwarding',
+      i18nKey: 'route.data-forwarding'
+    },
+    children: [
+      {
+        name: 'data-forwarding_northbound',
+        path: '/data-forwarding/northbound',
+        component: 'view.data-forwarding_northbound',
+        meta: {
+          title: 'data-forwarding_northbound',
+          i18nKey: 'route.data-forwarding_northbound'
+        }
       }
     ]
   },

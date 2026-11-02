@@ -151,5 +151,7 @@
   "route.device_new-device-template_template-details": "Model Details (New)",
   "route.device_new-device-template_template-details_editor": "Edit Model (New)",
   "route.device_new-device-template_template-details_viewer": "View Model (New)",
-  "route.test_category-test": "Category Test"
+  "route.test_category-test": "Category Test",
+  "route.data-forwarding": "Data Forwarding",
+  "route.data-forwarding_northbound": "Northbound Forwarding"
 }
