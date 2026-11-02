@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   token: 'session-a'
 }))
 vi.mock('@/service/api/device-native', () => ({ deviceNative: { list: mocks.list } }))
-vi.mock('@/service/api/device', () => ({ telemetryDataCurrent: mocks.telemetry }))
+vi.mock('@/service/api/device-runtime-native', () => ({ deviceRuntimeNative: { listReadings: mocks.telemetry } }))
 vi.mock('@/service/api/device-command-native', () => ({
   deviceCommandNative: { submit: mocks.submit, get: mocks.get }
 }))
@@ -75,7 +75,20 @@ describe('compact native control lifecycle', () => {
         }
       ]
     })
-    mocks.telemetry.mockResolvedValue({ data: [{ key: 'power', value: false, ts: Date.now() - 10000 }] })
+    mocks.telemetry.mockResolvedValue({
+      items: [
+        {
+          deviceId: 'device-1',
+          kind: 'telemetry',
+          identifier: 'power',
+          value: false,
+          observedAt: new Date(Date.now() - 10000).toISOString()
+        }
+      ],
+      total: 1,
+      page: 1,
+      pageSize: 100
+    })
     mocks.resolve.mockResolvedValue({
       snapshot: { snapshotID: 'pinned-1', model },
       platformFields: [{ id: 'power', name: 'Power', type: 'boolean', dataType: 'telemetry' }]
@@ -91,6 +104,13 @@ describe('compact native control lifecycle', () => {
     const wrapper = await page()
     await wrapper.find('[role="switch"]').trigger('click')
     await flushPromises()
+    expect(mocks.telemetry).toHaveBeenCalledWith('device-1', {
+      kind: 'telemetry',
+      latestOnly: true,
+      page: 1,
+      pageSize: 100
+    })
+    expect(mocks.telemetry).toHaveBeenCalledTimes(2)
     expect(mocks.submit).toHaveBeenCalledWith(
       'device-1',
       { identifier: 'power', snapshotId: 'pinned-1', parameters: { enabled: true }, timeoutSeconds: 8 },
@@ -104,7 +124,19 @@ describe('compact native control lifecycle', () => {
   it('confirms only fresh target telemetry, preserving snapshot field decoration', async () => {
     const wrapper = await page()
     mocks.telemetry.mockResolvedValue({
-      data: [{ key: 'power', value: true, ts: Date.now() + 1, label: 'untrusted label' }]
+      items: [
+        {
+          deviceId: 'device-1',
+          kind: 'telemetry',
+          identifier: 'power',
+          value: true,
+          observedAt: new Date(Date.now() + 1).toISOString(),
+          label: 'untrusted label'
+        }
+      ],
+      total: 1,
+      page: 1,
+      pageSize: 100
     })
     await wrapper.find('[role="switch"]').trigger('click')
     await flushPromises()
@@ -149,6 +181,60 @@ describe('compact native control lifecycle', () => {
     await wrapper.find('[role="switch"]').trigger('click')
     await flushPromises()
     expect(mocks.submit).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+  it('fails closed when the runtime owner cannot resolve an identity', async () => {
+    mocks.telemetry.mockRejectedValue(new Error('runtime identity unavailable'))
+    const wrapper = await page()
+    expect(wrapper.text()).toContain('runtime identity unavailable')
+    expect(wrapper.find('[role="switch"]').exists()).toBe(false)
+    expect(mocks.resolve).not.toHaveBeenCalled()
+    expect(mocks.submit).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+  it('rejects native telemetry attributed to another device', async () => {
+    mocks.telemetry.mockResolvedValue({
+      items: [
+        {
+          deviceId: 'another-device',
+          kind: 'telemetry',
+          identifier: 'power',
+          value: false,
+          observedAt: new Date().toISOString()
+        }
+      ],
+      page: 1,
+      pageSize: 100,
+      total: 1
+    })
+    const wrapper = await page()
+    expect(wrapper.text()).toContain('遥测结果与设备不匹配')
+    expect(wrapper.find('[role="switch"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+  it('reads every latest-value page through the native owner', async () => {
+    mocks.telemetry.mockImplementation(async (_id, query) => ({
+      items: [
+        {
+          deviceId: 'device-1',
+          kind: 'telemetry',
+          identifier: query.page === 1 ? 'power' : 'temperature',
+          value: false,
+          observedAt: new Date().toISOString()
+        }
+      ],
+      page: query.page,
+      pageSize: 100,
+      total: 2
+    }))
+    const wrapper = await page()
+    expect(mocks.telemetry).toHaveBeenNthCalledWith(2, 'device-1', {
+      kind: 'telemetry',
+      latestOnly: true,
+      page: 2,
+      pageSize: 100
+    })
+    expect(wrapper.text()).toContain('temperature')
     wrapper.unmount()
   })
   it('fails closed when pinned metadata cannot be resolved', async () => {
