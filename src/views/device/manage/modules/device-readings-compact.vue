@@ -1,16 +1,31 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { NButton, NDrawer, NDrawerContent, NEmpty, NIcon, NSpin, NTag } from 'naive-ui'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { NButton, NDrawer, NDrawerContent, NEmpty, NIcon, NSpin, NSwitch, NTag } from 'naive-ui'
 import { RefreshOutline, TimeOutline } from '@vicons/ionicons5'
 import { telemetryDataCurrent } from '@/service/api/device'
+import { deviceCommandNative } from '@/service/api/device-command-native'
+import { localStg } from '@/utils/storage'
 import { deviceNative } from '@/service/api/device-native'
 import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
-import { hasNativeDeviceBinding, resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
+import {
+  hasNativeDeviceBinding,
+  nativeCommandOptions,
+  resolveDeviceNativeModel
+} from '@/views/device/native-model-consumption'
 import { decorateNativeTelemetryRows } from '@/views/device/native-device-model-contract'
 import HistoryData from '@/views/device/details/modules/telemetry/modules/history-data.vue'
 import TimeSeriesData from '@/views/device/details/modules/telemetry/modules/time-series-data.vue'
 import { $t } from '@/locales'
-import { getCompactReadingDisplayValue, isDisplayableReading, isNumericReading } from '@/utils/device-readings'
+import {
+  buildSwitchCommandValue,
+  getBooleanReadingState,
+  getCanonicalOnOffReadingState,
+  matchesSwitchTelemetryTarget,
+  resolveStandardBooleanCommand,
+  getCompactReadingDisplayValue,
+  isDisplayableReading,
+  isNumericReading
+} from '@/utils/device-readings'
 
 type DeviceRow = {
   id: string
@@ -51,7 +66,17 @@ const loadError = ref('')
 const historyVisible = ref(false)
 const selectedDevice = ref<DeviceRow | null>(null)
 const selectedReading = ref<Reading | null>(null)
+const commandModels = ref<
+  Record<string, { snapshotId: string; commands: unknown[]; fields: Parameters<typeof decorateNativeTelemetryRows>[1] }>
+>({})
+const pendingSwitches = ref<Record<string, boolean>>({})
+const switchMessages = ref<Record<string, string>>({})
 let requestSequence = 0
+let disposed = false
+onBeforeUnmount(() => {
+  disposed = true
+  requestSequence += 1
+})
 
 const filterKey = computed(() => JSON.stringify(props.filters || {}))
 const visibleDeviceCount = computed(() => devices.value.length)
@@ -149,6 +174,11 @@ async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
           if (sequence !== requestSequence) return
           if (!resolved) throw new Error('设备物模型配置不完整，请联系管理员检查')
           rows = decorateNativeTelemetryRows(rows, resolved.platformFields)
+          commandModels.value[device.id] = {
+            snapshotId: resolved.snapshot.snapshotID,
+            commands: nativeCommandOptions(resolved.snapshot.model),
+            fields: resolved.platformFields
+          }
         } else if (device.templateId || device.device_template_id) {
           throw new Error('设备模板尚未绑定原生物模型发布版本')
         } else {
@@ -175,6 +205,9 @@ async function loadReadings() {
   devices.value = []
   readingsByDevice.value = {}
   nativeMetadataErrorsByDevice.value = {}
+  commandModels.value = {}
+  pendingSwitches.value = {}
+  switchMessages.value = {}
 
   try {
     const nextDevices = await fetchAllDevices(sequence)
@@ -191,6 +224,100 @@ async function loadReadings() {
       listLoading.value = false
       readingsLoading.value = false
     }
+  }
+}
+
+function switchKey(device: DeviceRow, reading: Reading) {
+  return `${device.id}:${reading.key}`
+}
+function switchState(reading: Reading) {
+  return getBooleanReadingState(reading) ?? getCanonicalOnOffReadingState(reading)
+}
+function switchBinding(device: DeviceRow, reading: Reading) {
+  const model = commandModels.value[device.id]
+  if (!model?.fields.some(field => field.dataType === 'telemetry' && field.id === reading.key)) return null
+  return resolveStandardBooleanCommand(reading, model.commands)
+}
+function telemetryTime(value: unknown) {
+  const numeric = typeof value === 'number' || typeof value === 'string' ? Number(value) : NaN
+  if (Number.isFinite(numeric)) return numeric < 1e12 ? numeric * 1000 : numeric
+  return typeof value === 'string' ? Date.parse(value) : NaN
+}
+async function changeSwitch(device: DeviceRow, reading: Reading, target: boolean) {
+  const key = switchKey(device, reading)
+  const model = commandModels.value[device.id]
+  const binding = switchBinding(device, reading)
+  if (!model || !binding || pendingSwitches.value[key] || device.is_online === 0) return
+  const sequence = requestSequence
+  const token = localStg.get('token')
+  const current = () => !disposed && sequence === requestSequence && localStg.get('token') === token
+  const startedAt = Date.now()
+  pendingSwitches.value[key] = true
+  switchMessages.value[key] = '正在提交命令；状态以遥测为准'
+  try {
+    const receipt = await deviceCommandNative.submit(
+      device.id,
+      {
+        identifier: binding.identify,
+        snapshotId: model.snapshotId,
+        parameters: JSON.parse(buildSwitchCommandValue(binding, target)),
+        timeoutSeconds: 8
+      },
+      crypto.randomUUID()
+    )
+    if (!current()) return
+    if (receipt.deviceId !== device.id || receipt.identifier !== binding.identify)
+      throw new Error('命令回执与设备不匹配')
+    if (['failed', 'timed_out', 'expired', 'cancelled'].includes(receipt.state)) {
+      switchMessages.value[key] = '命令执行失败或超时；当前值以遥测为准'
+      return
+    }
+    switchMessages.value[key] = '命令已接收，等待设备回执和目标遥测'
+    let acknowledged = receipt.state === 'acknowledged'
+    const deadline = startedAt + 8000
+    while (current() && Date.now() < deadline) {
+      const [telemetry, status] = await Promise.allSettled([
+        telemetryDataCurrent(device.id),
+        deviceCommandNative.get(device.id, receipt.id)
+      ])
+      if (!current()) return
+      let matched = false
+      if (telemetry.status === 'fulfilled' && Array.isArray(telemetry.value?.data)) {
+        const rows = decorateNativeTelemetryRows(telemetry.value.data, model.fields).filter(isDisplayableReading)
+        readingsByDevice.value[device.id] = rows
+        matched = rows.some(
+          row =>
+            row.key === reading.key && telemetryTime(row.ts) >= startedAt && matchesSwitchTelemetryTarget(row, target)
+        )
+      }
+      if (status.status === 'fulfilled') {
+        if (
+          status.value.deviceId !== device.id ||
+          status.value.id !== receipt.id ||
+          status.value.identifier !== binding.identify
+        )
+          throw new Error('命令回执与设备不匹配')
+        acknowledged ||= status.value.state === 'acknowledged'
+        if (['failed', 'timed_out', 'expired', 'cancelled'].includes(status.value.state)) {
+          switchMessages.value[key] = '命令执行失败或超时；当前值以遥测为准'
+          return
+        }
+      }
+      if (matched) {
+        switchMessages.value[key] = '新遥测已确认目标状态'
+        return
+      }
+      await new Promise(resolve => window.setTimeout(resolve, 400))
+    }
+    if (current())
+      switchMessages.value[key] = acknowledged
+        ? '设备已回执，遥测尚未确认目标状态'
+        : '命令已接收，尚未确认执行或目标遥测'
+  } catch (error) {
+    if (current())
+      switchMessages.value[key] = error instanceof Error ? error.message : '命令结果未确认，请刷新遥测后检查'
+  } finally {
+    if (current()) delete pendingSwitches.value[key]
   }
 }
 
@@ -271,6 +398,21 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => void loadR
                   <TimeOutline />
                 </NIcon>
               </button>
+              <NSwitch
+                v-if="switchBinding(device, reading)"
+                :value="switchState(reading) ?? false"
+                :loading="Boolean(pendingSwitches[switchKey(device, reading)])"
+                :disabled="
+                  Boolean(pendingSwitches[switchKey(device, reading)]) ||
+                  device.is_online === 0 ||
+                  switchState(reading) === null
+                "
+                :aria-label="`${reading.label || reading.key} 开关`"
+                @update:value="value => changeSwitch(device, reading, value)"
+              />
+              <span v-if="switchMessages[switchKey(device, reading)]" role="status">
+                {{ switchMessages[switchKey(device, reading)] }}
+              </span>
             </div>
           </div>
           <div v-else class="device-readings-row__placeholder">
