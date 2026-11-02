@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import NotificationGroups from './NotificationGroups.vue'
 import NotificationDefaultPolicy from './NotificationDefaultPolicy.vue'
 import NotificationInstances from '~/src/views/management/notification/NotificationInstances.vue'
-import NotificationRecords from '../notification-record/index.vue'
+import NotificationAvailablePlugins from './NotificationAvailablePlugins.vue'
 
 const { locale } = useI18n()
 const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
@@ -14,17 +14,14 @@ const policyRefresh = ref(0)
 
 <template>
   <div>
-    <div class="mb-16px">
-      <div class="text-xl font-600">{{ tx('通知管理', 'Notification management') }}</div>
-      <div class="mt-4px text-secondary">
-        {{
-          tx(
-            '配置告警接收方式，查看渠道和发送结果。',
-            'Configure alert recipients and channels, and review delivery results.'
-          )
-        }}
-      </div>
-    </div>
+    <NAlert type="info" class="mb-12px">
+      {{
+        tx(
+          '为未单独指定策略的告警设置默认值；也可以在单条告警规则中明确选择策略。历史通知组不再支持修改，已有告警引用和历史记录保留。',
+          'Set a default for alerts without an explicit policy, or choose a policy on an individual alert rule. Historical notification groups are read only; existing alert references and records are retained.'
+        )
+      }}
+    </NAlert>
     <NTabs v-model:value="activeTab" type="line">
       <NTabPane name="policies" :tab="tx('通知策略', 'Notification policies')">
         <NotificationDefaultPolicy :key="policyRefresh" />
@@ -33,8 +30,8 @@ const policyRefresh = ref(0)
       <NTabPane name="accounts" :tab="tx('通知渠道', 'Notification channels')">
         <NotificationInstances />
       </NTabPane>
-      <NTabPane name="records" :tab="tx('发送记录', 'Delivery records')">
-        <NotificationRecords />
+      <NTabPane name="available-plugins" :tab="tx('可用通知插件', 'Available notification plugins')">
+        <NotificationAvailablePlugins />
       </NTabPane>
     </NTabs>
   </div>
