@@ -10,10 +10,14 @@ function loadModule(path: URL, dependencies: Record<string, unknown>) {
     compilerOptions: { module: ts.ModuleKind.CommonJS }
   })
   const module = { exports: {} as any }
-  new Function('require', 'module', 'exports', outputText)((id: string) => {
-    if (!(id in dependencies)) throw new Error(`Unexpected dependency ${id}`)
-    return dependencies[id]
-  }, module, module.exports)
+  new Function('require', 'module', 'exports', outputText)(
+    (id: string) => {
+      if (!(id in dependencies)) throw new Error(`Unexpected dependency ${id}`)
+      return dependencies[id]
+    },
+    module,
+    module.exports
+  )
   return module.exports
 }
 
@@ -37,14 +41,19 @@ async function navigate(token: string | null) {
     }
   }
   const { createPermissionGuard } = loadModule(new URL('./permission.ts', import.meta.url), {
-    '@/store/modules/auth': { useAuthStore: () => ({ userInfo: { roles: ['TENANT_ADMIN'] }, resetStore: async () => {} }) },
+    '@/store/modules/auth': {
+      useAuthStore: () => ({ userInfo: { roles: ['TENANT_ADMIN'] }, resetStore: async () => {} })
+    },
     '@/store/modules/route': { useRouteStore: () => routeStore },
     '@/utils/storage': { localStg: { get: () => token } }
   })
-  const router = createRouter({ history: createMemoryHistory(), routes: [
-    { path: detail.path, name: detail.name, meta: detail.meta, component: {} },
-    { path: '/login', name: 'login', meta: { constant: true }, component: {} }
-  ] })
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      { path: detail.path, name: detail.name, meta: detail.meta, component: {} },
+      { path: '/login', name: 'login', meta: { constant: true }, component: {} }
+    ]
+  })
   createPermissionGuard(router)
   await router.push({ path: detail.path, query: { id: 'model-1' } })
   await router.isReady()

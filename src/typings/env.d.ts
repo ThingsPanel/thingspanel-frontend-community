@@ -33,6 +33,8 @@ declare namespace Env {
     readonly VITE_HTTP_PROXY?: CommonType.YesOrNo
     /** Explicit origin, or "business" to use the configured business gateway origin. */
     readonly VITE_NOTIFICATION_DEV_PROXY_TARGET?: string
+    /** Optional origin for the development-only automation owner proxy. */
+    readonly VITE_AUTOMATION_NATIVE_URL?: string
     /** Explicit development origin for the single native authentication owner. */
     readonly VITE_AUTH_DEV_PROXY_TARGET?: string
     /** The back service env */

@@ -47,11 +47,44 @@ export function createViteProxy(env: Env.ImportMeta) {
     rewrite: path => path.replace(new RegExp(`^${defaultProxyPattern}`), '')
   }
 
-  // Native model commands use their Encore contract directly. Keep this
-  // separate from the Community /api/v1 proxy; no server-side DTO translation.
+  // Native metadata APIs use their Encore contracts directly. Keep these
+  // routes separate from the Community /api/v1 proxy; no DTO translation.
   const thingModelNativeURL = env.VITE_THINGMODEL_NATIVE_URL || 'http://127.0.0.1:14210'
-  proxy['/api/v2/thing-models'] = { target: thingModelNativeURL, changeOrigin: true }
-  proxy['/api/v2/thing-model-commands'] = { target: thingModelNativeURL, changeOrigin: true }
+  // Everything the native Encore services answer under /api/v2. Without a route here Vite answers 404
+  // itself (nginx.conf in the release image carries the same list).
+  for (const prefix of [
+    'thing-models',
+    'thing-model-commands',
+    'devices',
+    'device-access-templates',
+    'device-groups',
+    'device-group-tree',
+    'device-statistics',
+    'device-number-validations',
+    'metadata-operations',
+    'metadata-downloads',
+    'reading-exports',
+    'processing-script-tests',
+    'file-assets',
+    'connection-providers'
+  ]) {
+    proxy[`/api/v2/${prefix}`] = { target: thingModelNativeURL, changeOrigin: true }
+  }
+
+  // The automation owner shares the /v1 contract with the production Encore
+  // gateway; development may target its isolated listener explicitly.
+  const automationNativeURL = env.VITE_AUTOMATION_NATIVE_URL || thingModelNativeURL
+  for (const prefix of [
+    '/v1/device-automation',
+    '/v1/device-configs',
+    '/v1/rules',
+    '/v1/rule-validation',
+    '/v1/runs',
+    '/v1/bindings',
+    '/v1/alarms'
+  ]) {
+    proxy[prefix] = { target: automationNativeURL, changeOrigin: true }
+  }
 
   // Explicit development-only, same-origin route to a split Encore service.
   // Credentials stay in the Authorization header; the target has no fallback.

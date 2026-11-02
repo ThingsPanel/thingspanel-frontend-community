@@ -2,18 +2,15 @@
 import { computed, ref, watch } from 'vue'
 import { NButton, NDrawer, NDrawerContent, NEmpty, NIcon, NSpin, NTag } from 'naive-ui'
 import { RefreshOutline, TimeOutline } from '@vicons/ionicons5'
-import { deviceConfigInfo, deviceList, telemetryDataCurrent } from '@/service/api/device'
+import { telemetryDataCurrent } from '@/service/api/device'
+import { deviceNative } from '@/service/api/device-native'
 import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
 import { hasNativeDeviceBinding, resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
 import { decorateNativeTelemetryRows } from '@/views/device/native-device-model-contract'
 import HistoryData from '@/views/device/details/modules/telemetry/modules/history-data.vue'
 import TimeSeriesData from '@/views/device/details/modules/telemetry/modules/time-series-data.vue'
 import { $t } from '@/locales'
-import {
-  getCompactReadingDisplayValue,
-  isDisplayableReading,
-  isNumericReading
-} from '@/utils/device-readings'
+import { getCompactReadingDisplayValue, isDisplayableReading, isNumericReading } from '@/utils/device-readings'
 
 type DeviceRow = {
   id: string
@@ -26,6 +23,9 @@ type DeviceRow = {
   native_thing_model_snapshot_id?: string | null
   native_thing_model_revision?: number | null
   native_binding_revision?: number
+  resourceVersion?: number
+  modelBinding?: { modelId: string; snapshotId: string; publishedRevision: number } | null
+  templateId?: string | null
   [key: string]: unknown
 }
 
@@ -65,14 +65,17 @@ const historyUsesCurve = computed(() => Boolean(selectedReading.value && isNumer
 function buildFilterParams() {
   const params: Record<string, unknown> = {}
   Object.entries(props.filters || {}).forEach(([key, value]) => {
-    if (['page', 'page_size', 'group_id', 'group_scope'].includes(key)) return
+    if (['page', 'page_size', 'pageSize', 'group_id', 'group_scope', 'groupId', 'groupScope'].includes(key)) return
     if (value === undefined || value === null || value === '') return
     if (Array.isArray(value) && value.length === 0) return
     params[key] = value
   })
 
-  if (props.groupScope === 'group' && props.groupId) params.group_id = props.groupId
-  if (props.groupScope === 'ungrouped') params.group_scope = 'ungrouped'
+  if (props.groupScope === 'group' && props.groupId) {
+    params.groupId = props.groupId
+    params.includeDescendants = true
+  }
+  if (props.groupScope === 'ungrouped') params.groupScope = 'ungrouped'
   return params
 }
 
@@ -83,12 +86,24 @@ async function fetchAllDevices(sequence: number) {
   let page = 1
 
   while (allDevices.length < total) {
-    const response = await deviceList({ ...buildFilterParams(), page, page_size: pageSize })
+    const query = { ...buildFilterParams(), page, pageSize }
+    const response = await deviceNative.list(query as Parameters<typeof deviceNative.list>[0])
     if (sequence !== requestSequence) return []
-    if (response?.error) throw new Error(response.error.message || $t('custom.devicePage.readingsLoadFailed'))
-
-    const pageDevices = Array.isArray(response?.data?.list) ? response.data.list : []
-    total = Number.isFinite(Number(response?.data?.total)) ? Number(response.data.total) : pageDevices.length
+    const pageDevices: DeviceRow[] = response.items.map(device => ({
+      ...device,
+      device_number: device.deviceNumber,
+      device_config_id: device.templateId ?? '',
+      resourceVersion: device.resourceVersion,
+      ...(device.modelBinding
+        ? {
+            native_thing_model_id: device.modelBinding.modelId,
+            native_thing_model_snapshot_id: device.modelBinding.snapshotId,
+            native_thing_model_revision: device.modelBinding.publishedRevision,
+            native_binding_revision: device.resourceVersion
+          }
+        : {})
+    }))
+    total = Number.isFinite(Number(response.total)) ? Number(response.total) : pageDevices.length
     allDevices.push(...pageDevices)
     if (pageDevices.length === 0 || allDevices.length >= total) break
     page += 1
@@ -119,20 +134,14 @@ async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
 
       try {
         let binding: DeviceConfigNativeBinding = device
-        const configId = typeof device.device_config_id === 'string' ? device.device_config_id : ''
-        if (configId) {
-          const configResponse = await deviceConfigInfo({ id: configId })
-          if (sequence !== requestSequence) return
-          const configData = configResponse?.data
-          if (
-            configResponse?.error ||
-            !configData ||
-            typeof configData !== 'object' ||
-            Array.isArray(configData)
-          ) {
-            throw new Error('设备物模型配置不完整，请联系管理员检查')
+        if (device.modelBinding) {
+          binding = {
+            id: device.id,
+            native_thing_model_id: device.modelBinding.modelId,
+            native_thing_model_snapshot_id: device.modelBinding.snapshotId,
+            native_thing_model_revision: device.modelBinding.publishedRevision,
+            native_binding_revision: device.resourceVersion
           }
-          binding = { ...device, ...configData, id: configId } as DeviceConfigNativeBinding
         }
 
         if (hasNativeDeviceBinding(binding)) {
@@ -140,7 +149,7 @@ async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
           if (sequence !== requestSequence) return
           if (!resolved) throw new Error('设备物模型配置不完整，请联系管理员检查')
           rows = decorateNativeTelemetryRows(rows, resolved.platformFields)
-        } else if (binding.device_template_id || device.device_template_id) {
+        } else if (device.templateId || device.device_template_id) {
           throw new Error('设备模板尚未绑定原生物模型发布版本')
         } else {
           delete nativeMetadataErrorsByDevice.value[device.id]
@@ -226,9 +235,13 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => void loadR
             <button type="button" class="device-readings-row__name" @click="emit('open-device', device)">
               {{ device.name || device.device_number || device.id }}
             </button>
-            <NTag size="small" :type="device.is_online === 1 ? 'success' : 'default'">
-              {{ device.is_online === 1 ? $t('custom.devicePage.online') : $t('custom.devicePage.offline') }}
+            <NTag v-if="device.is_online === 1" size="small" type="success">
+              {{ $t('custom.devicePage.online') }}
             </NTag>
+            <NTag v-else-if="device.is_online === 0" size="small" type="default">
+              {{ $t('custom.devicePage.offline') }}
+            </NTag>
+            <span v-else>-</span>
           </div>
           <p v-if="nativeMetadataErrorsByDevice[device.id]" class="device-readings-row__metadata-error">
             {{ nativeMetadataErrorsByDevice[device.id] }}
