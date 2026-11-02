@@ -130,6 +130,27 @@ describe('compact native control lifecycle', () => {
     expect(mocks.telemetry).toHaveBeenCalledTimes(1)
     wrapper.unmount()
   })
+  it('uses pinned Boolean type even when telemetry has enum display labels', async () => {
+    const resolved = await mocks.resolve()
+    resolved.platformFields[0].options = [
+      { value: true, label: 'Enabled' },
+      { value: false, label: 'Disabled' }
+    ]
+    const wrapper = await page()
+    expect(wrapper.find('[role="switch"]').exists()).toBe(true)
+    await wrapper.find('[role="switch"]').trigger('click')
+    await flushPromises()
+    expect(mocks.submit).toHaveBeenCalled()
+    wrapper.unmount()
+  })
+  it('rejects command initiation from a previous session model', async () => {
+    const wrapper = await page()
+    mocks.token = 'session-b'
+    await wrapper.find('[role="switch"]').trigger('click')
+    await flushPromises()
+    expect(mocks.submit).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
   it('fails closed when pinned metadata cannot be resolved', async () => {
     mocks.resolve.mockRejectedValue(new Error('snapshot mismatch'))
     const wrapper = await page()

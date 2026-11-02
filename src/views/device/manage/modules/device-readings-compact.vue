@@ -18,7 +18,6 @@ import TimeSeriesData from '@/views/device/details/modules/telemetry/modules/tim
 import { $t } from '@/locales'
 import {
   buildSwitchCommandValue,
-  getBooleanReadingState,
   getCanonicalOnOffReadingState,
   matchesSwitchTelemetryTarget,
   resolveStandardBooleanCommand,
@@ -71,6 +70,7 @@ const commandModels = ref<
 >({})
 const pendingSwitches = ref<Record<string, boolean>>({})
 const switchMessages = ref<Record<string, string>>({})
+let modelSession = localStg.get('token')
 let requestSequence = 0
 let disposed = false
 onBeforeUnmount(() => {
@@ -198,6 +198,7 @@ async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
 }
 
 async function loadReadings() {
+  modelSession = localStg.get('token')
   const sequence = ++requestSequence
   listLoading.value = true
   readingsLoading.value = false
@@ -231,12 +232,15 @@ function switchKey(device: DeviceRow, reading: Reading) {
   return `${device.id}:${reading.key}`
 }
 function switchState(reading: Reading) {
-  return getBooleanReadingState(reading) ?? getCanonicalOnOffReadingState(reading)
+  return typeof reading.value === 'boolean' ? reading.value : getCanonicalOnOffReadingState(reading)
 }
 function switchBinding(device: DeviceRow, reading: Reading) {
   const model = commandModels.value[device.id]
-  if (!model?.fields.some(field => field.dataType === 'telemetry' && field.id === reading.key)) return null
-  return resolveStandardBooleanCommand(reading, model.commands)
+  const field = model?.fields.find(field => field.dataType === 'telemetry' && field.id === reading.key)
+  if (!model || !field) return null
+  const declaredReading =
+    field.type === 'boolean' && typeof reading.value === 'boolean' ? { ...reading, data_type: 'Boolean' } : reading
+  return resolveStandardBooleanCommand(declaredReading, model.commands)
 }
 function telemetryTime(value: unknown) {
   const numeric = typeof value === 'number' || typeof value === 'string' ? Number(value) : NaN
@@ -247,7 +251,14 @@ async function changeSwitch(device: DeviceRow, reading: Reading, target: boolean
   const key = switchKey(device, reading)
   const model = commandModels.value[device.id]
   const binding = switchBinding(device, reading)
-  if (!model || !binding || pendingSwitches.value[key] || device.is_online === 0) return
+  if (
+    !model ||
+    !binding ||
+    pendingSwitches.value[key] ||
+    device.is_online === 0 ||
+    modelSession !== localStg.get('token')
+  )
+    return
   const sequence = requestSequence
   const token = localStg.get('token')
   const current = () => !disposed && sequence === requestSequence && localStg.get('token') === token
