@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { NButton, NDrawer, NDrawerContent, NEmpty, NIcon, NSpin, NSwitch, NTag } from 'naive-ui'
 import { RefreshOutline, TimeOutline } from '@vicons/ionicons5'
-import { telemetryDataCurrent } from '@/service/api/device'
+import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
 import { deviceCommandNative } from '@/service/api/device-command-native'
 import { localStg } from '@/utils/storage'
 import { deviceNative } from '@/service/api/device-native'
@@ -105,15 +105,17 @@ function buildFilterParams() {
 }
 
 async function fetchAllDevices(sequence: number) {
+  const session = modelSession
+  const current = () => !disposed && sequence === requestSequence && localStg.get('token') === session
   const pageSize = 100
   const allDevices: DeviceRow[] = []
   let total = Number.POSITIVE_INFINITY
   let page = 1
 
-  while (allDevices.length < total) {
+  while (current() && allDevices.length < total) {
     const query = { ...buildFilterParams(), page, pageSize }
     const response = await deviceNative.list(query as Parameters<typeof deviceNative.list>[0])
-    if (sequence !== requestSequence) return []
+    if (!current()) return []
     const pageDevices: DeviceRow[] = response.items.map(device => ({
       ...device,
       device_number: device.deviceNumber,
@@ -137,25 +139,65 @@ async function fetchAllDevices(sequence: number) {
   return allDevices
 }
 
+/** Native runtime owner resolves Community identities; the browser never derives legacy IDs. */
+async function fetchLatestReadings(deviceId: string, current: () => boolean): Promise<Reading[]> {
+  const rows: Reading[] = []
+  let page = 1
+  while (current()) {
+    const response = await deviceRuntimeNative.listReadings(deviceId, {
+      kind: 'telemetry',
+      latestOnly: true,
+      page,
+      pageSize: 100
+    })
+    if (!current()) return []
+    if (!Number.isSafeInteger(response.total) || response.total < 0 || response.page !== page)
+      throw new Error('遥测分页结果无效')
+    for (const item of response.items) {
+      if (
+        item.deviceId !== deviceId ||
+        item.kind !== 'telemetry' ||
+        typeof item.identifier !== 'string' ||
+        typeof item.observedAt !== 'string'
+      )
+        throw new Error('遥测结果与设备不匹配')
+      rows.push({
+        key: item.identifier,
+        ts: item.observedAt,
+        value: item.value,
+        unit: '',
+        device_id: deviceId
+      } as Reading)
+    }
+    if (rows.length >= response.total) return rows
+    if (response.items.length === 0) throw new Error('遥测分页未完整返回，请刷新后重试')
+    page += 1
+  }
+  return []
+}
+
 async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
+  const session = modelSession
+  const current = () => !disposed && sequence === requestSequence && localStg.get('token') === session
   const results: Record<string, Reading[]> = {}
   let nextIndex = 0
   const workerCount = Math.min(5, deviceRows.length)
 
   const workers = Array.from({ length: workerCount }, async () => {
-    while (nextIndex < deviceRows.length && sequence === requestSequence) {
+    while (nextIndex < deviceRows.length && current()) {
       const device = deviceRows[nextIndex]
       nextIndex += 1
       let rows: Reading[] = []
       try {
-        const response = await telemetryDataCurrent(device.id)
-        rows = Array.isArray(response?.data) ? response.data : []
-      } catch {
-        if (sequence !== requestSequence) return
+        rows = await fetchLatestReadings(device.id, current)
+      } catch (error) {
+        if (!current()) return
+        nativeMetadataErrorsByDevice.value[device.id] =
+          error instanceof Error ? error.message : '设备遥测读取失败，请刷新后重试'
         results[device.id] = []
         continue
       }
-      if (sequence !== requestSequence) return
+      if (!current()) return
 
       try {
         let binding: DeviceConfigNativeBinding = device
@@ -171,7 +213,7 @@ async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
 
         if (hasNativeDeviceBinding(binding)) {
           const resolved = await resolveDeviceNativeModel(binding)
-          if (sequence !== requestSequence) return
+          if (!current()) return
           if (!resolved) throw new Error('设备物模型配置不完整，请联系管理员检查')
           rows = decorateNativeTelemetryRows(rows, resolved.platformFields)
           commandModels.value[device.id] = {
@@ -186,7 +228,7 @@ async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
         }
         results[device.id] = rows.filter(isDisplayableReading)
       } catch {
-        if (sequence !== requestSequence) return
+        if (!current()) return
         nativeMetadataErrorsByDevice.value[device.id] = '物模型字段读取失败，请刷新后重试'
         results[device.id] = []
       }
@@ -194,12 +236,14 @@ async function fetchDeviceReadings(deviceRows: DeviceRow[], sequence: number) {
   })
 
   await Promise.all(workers)
-  if (sequence === requestSequence) readingsByDevice.value = results
+  if (current()) readingsByDevice.value = results
 }
 
 async function loadReadings() {
   modelSession = localStg.get('token')
   const sequence = ++requestSequence
+  const session = modelSession
+  const current = () => !disposed && sequence === requestSequence && localStg.get('token') === session
   listLoading.value = true
   readingsLoading.value = false
   loadError.value = ''
@@ -212,16 +256,16 @@ async function loadReadings() {
 
   try {
     const nextDevices = await fetchAllDevices(sequence)
-    if (sequence !== requestSequence) return
+    if (!current()) return
     devices.value = nextDevices
     listLoading.value = false
     readingsLoading.value = nextDevices.length > 0
     await fetchDeviceReadings(nextDevices, sequence)
   } catch (error) {
-    if (sequence !== requestSequence) return
+    if (!current()) return
     loadError.value = error instanceof Error ? error.message : $t('custom.devicePage.readingsLoadFailed')
   } finally {
-    if (sequence === requestSequence) {
+    if (current()) {
       listLoading.value = false
       readingsLoading.value = false
     }
@@ -288,13 +332,13 @@ async function changeSwitch(device: DeviceRow, reading: Reading, target: boolean
     const deadline = startedAt + 8000
     while (current() && Date.now() < deadline) {
       const [telemetry, status] = await Promise.allSettled([
-        telemetryDataCurrent(device.id),
+        fetchLatestReadings(device.id, current),
         deviceCommandNative.get(device.id, receipt.id)
       ])
       if (!current()) return
       let matched = false
-      if (telemetry.status === 'fulfilled' && Array.isArray(telemetry.value?.data)) {
-        const rows = decorateNativeTelemetryRows(telemetry.value.data, model.fields).filter(isDisplayableReading)
+      if (telemetry.status === 'fulfilled') {
+        const rows = decorateNativeTelemetryRows(telemetry.value, model.fields).filter(isDisplayableReading)
         readingsByDevice.value[device.id] = rows
         matched = rows.some(
           row =>
