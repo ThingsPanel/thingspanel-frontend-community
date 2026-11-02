@@ -351,8 +351,8 @@ watch(
       tableData.value = sortedData
       if (sourceData.length > 0) {
         let sumValue = 0
-        minValue.value = sourceData[0].y || Number.NEGATIVE_INFINITY
-        maxValue.value = sourceData[0].y || Number.POSITIVE_INFINITY
+        let currentMin: number = sourceData[0].y || Number.NEGATIVE_INFINITY
+        let currentMax: number = sourceData[0].y || Number.POSITIVE_INFINITY
         sourceData.forEach(item => {
           if (item.y) {
             sumValue += item.y
@@ -364,6 +364,8 @@ watch(
             }
           }
         })
+        minValue.value = currentMin
+        maxValue.value = currentMax
         avgValue.value = sumValue / sourceData.length
         // 这里是当 通过接口改变 initialOptions的数据
 

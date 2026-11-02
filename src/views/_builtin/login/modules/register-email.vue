@@ -79,6 +79,7 @@ const rules = computed<Partial<Record<keyof FormModel, App.Global.FormRule[]>>>(
     email: formRules.email,
     phone: formRules.phoneWithCountryCode,
     code: formRules.code,
+    country_code: [],
     pwd: [
       {
         required: true,

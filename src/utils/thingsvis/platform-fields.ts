@@ -47,7 +47,7 @@ export function extractPlatformFields(template: any): PlatformField[] {
         ...(writable && dataType !== 'event'
           ? {
               write: {
-                target: dataType === 'command' ? 'command' : dataType,
+                target: dataType,
                 property: String(id),
                 payloadType
               }
@@ -191,7 +191,7 @@ function normalizeOptions(
 /**
  * 映射数据类型到 ThingsVis 支持的类型
  */
-function mapDataType(type: string): 'number' | 'string' | 'boolean' | 'json' {
+export function mapDataType(type: string): 'number' | 'string' | 'boolean' | 'json' {
   if (!type) return 'string'
 
   const lowerType = type.toLowerCase()

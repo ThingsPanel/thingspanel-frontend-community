@@ -21,6 +21,8 @@ declare module "@elegant-router/types" {
     "exception_403": "/exception/403";
     "exception_404": "/exception/404";
     "exception_500": "/exception/500";
+    "device-config-legacy-redirect": "/device/config";
+    "device-config-detail-legacy-redirect": "/device/config-detail";
     "403": "/403";
     "404": "/404";
     "500": "/500";
@@ -124,8 +126,8 @@ declare module "@elegant-router/types" {
     "visualization_thingsvis-preview": "/visualization/thingsvis-preview";
     "visualization_thingsvis-template": "/visualization/thingsvis-template";
     "visualization-app": "/visualization-app";
-    "visualization-app-dashboards": "/visualization-app-dashboards";
-    "visualization-app-preview": "/visualization-app-preview";
+    "visualization-app-dashboards": "/visualization-app/dashboards";
+    "visualization-app-preview": "/visualization-app/preview";
   };
 
   /**
@@ -149,6 +151,8 @@ declare module "@elegant-router/types" {
     | "exception_403"
     | "exception_404"
     | "exception_500"
+    | "device-config-legacy-redirect"
+    | "device-config-detail-legacy-redirect"
   >;
 
   /**
@@ -200,6 +204,8 @@ declare module "@elegant-router/types" {
     | "root"
     | "not-found"
     | "exception"
+    | "device-config-legacy-redirect"
+    | "device-config-detail-legacy-redirect"
   >;
 
   /**
@@ -302,6 +308,8 @@ declare module "@elegant-router/types" {
     | "exception_403"
     | "exception_404"
     | "exception_500"
+    | "device-config-legacy-redirect"
+    | "device-config-detail-legacy-redirect"
   >;
 
   /**

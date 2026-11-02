@@ -75,7 +75,7 @@ export const request: FlatRequestInstance = createFlatRequest<App.Service.DEVRes
               const newToken = localStg.get('token')
               if (newToken) {
                 refreshThingsPanelAuth(originalRequest.headers, newToken)
-                await request(originalRequest)
+                await request(originalRequest as unknown as Parameters<typeof request>[0])
                 return
               }
             }

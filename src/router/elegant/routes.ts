@@ -1032,7 +1032,7 @@ export const generatedRoutes: GeneratedRoute[] = [
   },
   {
     name: 'visualization-app-dashboards',
-    path: '/visualization-app-dashboards',
+    path: '/visualization-app/dashboards',
     component: 'layout.base$view.visualization-app-dashboards',
     meta: {
       title: 'visualization-app-dashboards',
@@ -1041,7 +1041,7 @@ export const generatedRoutes: GeneratedRoute[] = [
   },
   {
     name: 'visualization-app-preview',
-    path: '/visualization-app-preview',
+    path: '/visualization-app/preview',
     component: 'layout.base$view.visualization-app-preview',
     meta: {
       title: 'visualization-app-preview',

@@ -31,7 +31,7 @@ const useThingsVis = ref(false)
 const isThingsVisLoading = ref(false)
 const isHomeResolving = computed(() => !layoutFetched.value || isThingsVisLoading.value)
 
-function isCompleteThingsVisDashboard(dashboard?: ThingsVisHomeDashboard | null): boolean {
+function isCompleteThingsVisDashboard(dashboard?: ThingsVisHomeDashboard | null): dashboard is ThingsVisHomeDashboard {
   if (!dashboard || !dashboard.canvasConfig || typeof dashboard.canvasConfig !== 'object') return false
   if (!Array.isArray(dashboard.nodes)) return false
   if (!Array.isArray(dashboard.dataSources)) return false

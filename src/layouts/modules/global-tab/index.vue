@@ -117,7 +117,7 @@ let isClickContextMenu = false
 
 function handleDropdownVisible(visible = false) {
   if (!isClickContextMenu) {
-    setDropdown({ visible })
+    setDropdown({ visible: Boolean(visible) })
   }
 }
 
