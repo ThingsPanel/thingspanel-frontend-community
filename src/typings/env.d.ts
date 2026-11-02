@@ -9,6 +9,8 @@ declare namespace Env {
 
   /** Interface for import. Meta */
   interface ImportMeta extends ImportMetaEnv {
+    /** Explicit API origin for local development. */
+    readonly VITE_METADATA_CONNECTOR_URL?: string
     /** The base url of the application */
     readonly VITE_BASE_URL: string
     /** The title of the application */
