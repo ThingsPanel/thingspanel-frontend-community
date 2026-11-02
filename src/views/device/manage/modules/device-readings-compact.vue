@@ -18,7 +18,6 @@ import TimeSeriesData from '@/views/device/details/modules/telemetry/modules/tim
 import { $t } from '@/locales'
 import {
   buildSwitchCommandValue,
-  getBooleanReadingState,
   getCanonicalOnOffReadingState,
   matchesSwitchTelemetryTarget,
   resolveStandardBooleanCommand,
@@ -233,12 +232,15 @@ function switchKey(device: DeviceRow, reading: Reading) {
   return `${device.id}:${reading.key}`
 }
 function switchState(reading: Reading) {
-  return getBooleanReadingState(reading) ?? getCanonicalOnOffReadingState(reading)
+  return typeof reading.value === 'boolean' ? reading.value : getCanonicalOnOffReadingState(reading)
 }
 function switchBinding(device: DeviceRow, reading: Reading) {
   const model = commandModels.value[device.id]
-  if (!model?.fields.some(field => field.dataType === 'telemetry' && field.id === reading.key)) return null
-  return resolveStandardBooleanCommand(reading, model.commands)
+  const field = model?.fields.find(field => field.dataType === 'telemetry' && field.id === reading.key)
+  if (!model || !field) return null
+  const declaredReading =
+    field.type === 'boolean' && typeof reading.value === 'boolean' ? { ...reading, data_type: 'Boolean' } : reading
+  return resolveStandardBooleanCommand(declaredReading, model.commands)
 }
 function telemetryTime(value: unknown) {
   const numeric = typeof value === 'number' || typeof value === 'string' ? Number(value) : NaN
