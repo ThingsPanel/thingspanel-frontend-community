@@ -14,7 +14,7 @@ export interface DeviceReadingValue {
 
 export interface StandardBooleanCommandBinding {
   identify: string
-  parameterIdentifier?: string
+  parameterIdentifier: string
   payloadMode: 'boolean-parameter' | 'mapped-command'
   onValue?: string
   offValue?: string
@@ -31,7 +31,7 @@ export function resolveStandardBooleanCommand(
   if (!reading.key) return null
 
   const isCanonicalBoolean = isBooleanReading(reading)
-  const isExplicitOnOffState = reading.value === 'on' || reading.value === 'off'
+  const isExplicitOnOffState = getCanonicalOnOffReadingState(reading) !== null
   if (!isCanonicalBoolean && !isExplicitOnOffState) return null
 
   for (const command of commands) {
@@ -94,15 +94,13 @@ export function resolveStandardBooleanCommand(
       .toLowerCase()
     if (isCanonicalBoolean && parameterType !== 'boolean') return null
     if (isExplicitOnOffState) {
-      const enumValues = Array.isArray(parameterItem.enum_config)
-        ? parameterItem.enum_config.map((option: any) => String(option?.value ?? '').toLowerCase())
+      const enumOptions = Array.isArray(parameterItem.enum_config)
+        ? parameterItem.enum_config.filter((option: any) => option && option.value !== undefined)
         : []
-      if (
-        parameterType !== 'enum' ||
-        enumValues.length !== 2 ||
-        !enumValues.includes('on') ||
-        !enumValues.includes('off')
-      ) {
+      const enumValues = enumOptions.map((option: any) => String(option.value).toLowerCase())
+      const onIndex = enumValues.indexOf('on')
+      const offIndex = enumValues.indexOf('off')
+      if (parameterType !== 'enum' || enumOptions.length !== 2 || onIndex < 0 || offIndex < 0 || onIndex === offIndex) {
         return null
       }
       const parameterIdentifier = parameterItem.data_identifier || parameterItem.identifier || parameterItem.key
@@ -111,8 +109,8 @@ export function resolveStandardBooleanCommand(
         identify: reading.key,
         parameterIdentifier,
         payloadMode: 'mapped-command',
-        onValue: 'on',
-        offValue: 'off'
+        onValue: String(enumOptions[onIndex].value),
+        offValue: String(enumOptions[offIndex].value)
       }
     }
     const parameterIdentifier = parameterItem.data_identifier || parameterItem.identifier || parameterItem.key
@@ -129,12 +127,35 @@ export function resolveStandardBooleanCommand(
   return null
 }
 
+/** Build the command body using the identifier and values from the upstream model. */
+export function buildSwitchCommandValue(binding: StandardBooleanCommandBinding, target: boolean) {
+  const parameterValue =
+    binding.payloadMode === 'mapped-command' ? (target ? binding.onValue : binding.offValue) : target
+  return JSON.stringify({ [binding.parameterIdentifier]: parameterValue })
+}
+
 export function isBooleanReading(reading: DeviceReadingValue) {
   return reading.data_type?.trim().toLowerCase() === 'boolean' && typeof reading.value === 'boolean'
 }
 
+export function getCanonicalOnOffReadingState(reading: DeviceReadingValue): boolean | null {
+  if (typeof reading.value !== 'string') return null
+  const value = reading.value.trim().toLowerCase()
+  if (value === 'on') return true
+  if (value === 'off') return false
+  return null
+}
+
 export function getBooleanReadingState(reading: DeviceReadingValue): boolean | null {
   return isBooleanReading(reading) ? (reading.value as boolean) : null
+}
+
+/** Match a requested switch state to telemetry, not to the command wire value.
+ * For example, a command parameter may be `turn_on` while telemetry reports `on`.
+ */
+export function matchesSwitchTelemetryTarget(reading: DeviceReadingValue, target: boolean) {
+  if (typeof reading.value === 'boolean') return reading.value === target
+  return getCanonicalOnOffReadingState(reading) === target
 }
 
 export function getReadingDisplayValue(reading: DeviceReadingValue) {
