@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import Sheet from './Sheet.vue'
 import { miniProgramSdk, navigateMini } from './bridge.js'
 import { rowsOf, normalizeHistoryRows } from './schema.js'
+import { historyWindowOptions, resolveHistoryWindow } from './history-filters.js'
 const props = defineProps({ deviceId: String, field: Object, mode: String })
 defineEmits(['close'])
 const { api } = inject('mp-device')
@@ -19,19 +20,26 @@ const range = ref(props.mode === 'trend' ? '1' : '24'),
   canvas = ref(null)
 const start = ref(dayjs().subtract(1, 'day').format('YYYY-MM-DDTHH:mm')),
   end = ref(dayjs().format('YYYY-MM-DDTHH:mm'))
-const rangeOptions = [
+const rangeOptions = computed(() => [
   { value: '0', label: '自定义时间' },
   { value: '1', label: '最近1小时' },
   { value: '24', label: '最近24小时' },
   { value: '168', label: '最近7天' },
-  { value: '720', label: '最近30天' }
-]
-const windows = [
-  { value: 'no_aggregate', label: '不聚合' },
-  { value: '1m', label: '每分钟' },
-  { value: '1h', label: '每小时' },
-  { value: '1d', label: '每天' }
-]
+  { value: '720', label: '最近30天' },
+  ...(props.mode === 'trend'
+    ? [
+        { value: '1440', label: '最近60天' },
+        { value: '2160', label: '最近90天' },
+        { value: '4320', label: '最近半年' },
+        { value: '8760', label: '最近1年' }
+      ]
+    : [])
+])
+const duration = computed(() =>
+  Number(range.value) ? Number(range.value) * 3600000 : dayjs(end.value).valueOf() - dayjs(start.value).valueOf()
+)
+const windows = computed(() => historyWindowOptions(duration.value))
+const effectiveWindow = computed(() => resolveHistoryWindow(duration.value, windowSize.value))
 const aggregates = [
   { value: 'avg', label: '平均值' },
   { value: 'max', label: '最大值' },
@@ -50,7 +58,9 @@ const exporting = ref(false),
   exportError = ref('')
 const choiceOptions = computed(
   () =>
-    ({ range: rangeOptions, windowSize: windows, aggregate: aggregates, chartType: chartTypes })[choosing.value] || []
+    ({ range: rangeOptions.value, windowSize: windows.value, aggregate: aggregates, chartType: chartTypes })[
+      choosing.value
+    ] || []
 )
 const values = { range, windowSize, aggregate, chartType }
 let page = 0,
@@ -60,7 +70,7 @@ let page = 0,
   destroyed = false,
   query
 function choose(key) {
-  draft.value = values[key].value
+  draft.value = key === 'windowSize' ? effectiveWindow.value : values[key].value
   choosing.value = key
 }
 function confirmChoice() {
@@ -86,9 +96,11 @@ function filters() {
   const hours = Number(range.value),
     endTime = hours ? Date.now() : dayjs(end.value).valueOf(),
     startTime = hours ? endTime - hours * 3600000 : dayjs(start.value).valueOf()
-  if (!Number.isFinite(startTime) || !Number.isFinite(endTime) || startTime > endTime)
+  if (!Number.isFinite(startTime) || !Number.isFinite(endTime) || startTime >= endTime)
     throw new Error('请选择有效的开始和结束时间')
-  if (dayjs(startTime).add(1, 'month').valueOf() < endTime) throw new Error('时间范围不能超过一个月')
+  if (props.mode === 'trend') {
+    if (dayjs(startTime).add(1, 'year').valueOf() < endTime) throw new Error('时间范围不能超过一年')
+  } else if (dayjs(startTime).add(1, 'month').valueOf() < endTime) throw new Error('时间范围不能超过一个月')
   return { device_id: props.deviceId, key: props.field.key, start_time: startTime, end_time: endTime }
 }
 async function draw() {
@@ -140,8 +152,8 @@ async function load(reset = true) {
       ...(trend
         ? {
             time_range: 'custom',
-            aggregate_window: windowSize.value,
-            ...(windowSize.value !== 'no_aggregate' ? { aggregate_function: aggregate.value } : {})
+            aggregate_window: effectiveWindow.value,
+            ...(effectiveWindow.value !== 'no_aggregate' ? { aggregate_function: aggregate.value } : {})
           }
         : { page: page + 1, page_size: 20, export_excel: false })
     })
@@ -199,7 +211,7 @@ function time(raw) {
   const value = raw && Number.isFinite(n) ? (n < 1e11 ? n * 1000 : n) : raw
   return value && dayjs(value).isValid() ? dayjs(value).format('MM-DD HH:mm:ss') : '--'
 }
-watch([range, windowSize, aggregate, start, end], () => load())
+watch([range, effectiveWindow, aggregate, start, end], () => load())
 watch(chartType, draw)
 onMounted(() => load())
 onBeforeUnmount(() => {
@@ -218,8 +230,10 @@ onBeforeUnmount(() => {
     <div class="mp-history-filters">
       <button @click="choose('range')">{{ rangeOptions.find(item => item.value === range)?.label }} ▾</button>
       <template v-if="mode === 'trend'">
-        <button @click="choose('windowSize')">{{ windows.find(item => item.value === windowSize)?.label }} ▾</button>
-        <button v-if="windowSize !== 'no_aggregate'" @click="choose('aggregate')">
+        <button @click="choose('windowSize')">
+          {{ windows.find(item => item.value === effectiveWindow)?.label }} ▾
+        </button>
+        <button v-if="effectiveWindow !== 'no_aggregate'" @click="choose('aggregate')">
           {{ aggregates.find(item => item.value === aggregate)?.label }} ▾
         </button>
         <button @click="choose('chartType')">{{ chartTypes.find(item => item.value === chartType)?.label }} ▾</button>
@@ -285,6 +299,7 @@ onBeforeUnmount(() => {
         :key="option.value"
         :class="{ selected: draft === option.value }"
         :aria-pressed="draft === option.value"
+        :disabled="option.disabled"
         @click="draft = option.value"
       >
         <span>{{ option.label }}</span>

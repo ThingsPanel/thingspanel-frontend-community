@@ -5,7 +5,7 @@ import { mkdir } from 'node:fs/promises'
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
 const browser = await chromium.launch({ channel:'chrome', headless:true })
 const page = await browser.newPage({ viewport:{width:375,height:812} })
-const errors=[], writes=[], historyQueries=[]
+const errors=[], writes=[], historyQueries=[], invalidHistoryQueries=[]
 page.on('pageerror',error=>errors.push(error.message))
 const origin=process.env.MP_DEVICE_PREVIEW_URL || 'http://127.0.0.1:5188'
 await page.route('https://res.wx.qq.com/**',route=>route.fulfill({contentType:'text/javascript',body:'window.wx={miniProgram:{getEnv:f=>f({miniprogram:true}),switchTab:o=>{window.__lastNavigation=o.url;o.success()},navigateTo:o=>{window.__lastNavigation=o.url;o.success()}}}'}))
@@ -17,7 +17,15 @@ await page.route(origin+'/api/**',async route=>{
   else if(path.includes('/device/template/detail/')) data={app_chart_config:path.endsWith('visual')?{canvas:{width:375,height:250},nodes:[{id:'gauge',type:'chart/echarts-gauge',props:{}}],dataSources:[]}:'[]'}
   else if(path.includes('/device/model/')) data={list:[{key:'temperature',name:'温度',data_type:'Number',unit:'℃'}]}
   else if(path.includes('/telemetry/datas/current/')) data=[{key:'temperature',value:26,ts:'2026-11-04T04:00:00Z'}]
-  else if(path.includes('/telemetry/datas/statistic') || path.includes('/telemetry/datas/history/')) { historyQueries.push(Object.fromEntries(url.searchParams)); data={list:[{ts:1793760000000,value:25},{ts:1793760600000,value:26}],total:2} }
+  else if(path.includes('/telemetry/datas/statistic') || path.includes('/telemetry/datas/history/')) {
+    const query=Object.fromEntries(url.searchParams)
+    historyQueries.push(query)
+    if(path.includes('/statistic') && query.aggregate_window==='no_aggregate' && Number(query.end_time)-Number(query.start_time)>86400000) {
+      invalidHistoryQueries.push(query)
+      return route.fulfill({json:{code:207001,message:'非聚合查询起始时间和结束时间的差值不能大于一天'}})
+    }
+    data={list:[{ts:1793760000000,value:25},{ts:1793760600000,value:26}],total:2}
+  }
   else if(path==='/api/v1/user/detail') data={id:'fixture-user',userName:'Fixture',tenantId:'fixture-tenant'}
   else if(path==='/api/v1/device') data={}
   else data={list:[],total:0}
@@ -46,6 +54,32 @@ try {
   await page.getByRole('button',{name:'最近24小时',exact:true}).click()
   await page.getByRole('button',{name:'确定',exact:true}).click()
   assert.match(await page.locator('.mp-history-filters').innerText(),/最近24小时/)
+  const selectRange=async (current,next)=>{
+    await page.locator('.mp-history-filters').getByRole('button',{name:new RegExp(current)}).click()
+    await page.getByRole('button',{name:next,exact:true}).click()
+    await page.getByRole('button',{name:'确定',exact:true}).click()
+  }
+  for(const [current,next,expected] of [['最近24小时','最近7天','30m'],['最近7天','最近60天','6h']]) {
+    const count=historyQueries.length
+    const response=page.waitForResponse(r=>r.url().includes('/telemetry/datas/statistic'))
+    await selectRange(current,next)
+    await response
+    await page.locator('.mp-history-chart canvas').waitFor({state:'visible'})
+    assert.equal(historyQueries.at(-1).aggregate_window,expected)
+    assert.equal(historyQueries.at(-1).aggregate_function,'avg')
+    assert.equal(historyQueries.length,count+1,'range adjustment sends only one valid request')
+  }
+  await page.locator('.mp-history-filters').getByRole('button',{name:/6小时/}).click()
+  assert.equal(await page.getByRole('button',{name:'不聚合',exact:true}).isDisabled(),true)
+  assert.equal(await page.getByRole('button',{name:'1分钟',exact:true}).isDisabled(),true)
+  await page.getByRole('button',{name:'取消',exact:true}).click()
+  await selectRange('最近60天','自定义时间')
+  await page.getByLabel('开始时间',{exact:true}).fill('2026-10-01T00:00')
+  await page.getByLabel('结束时间',{exact:true}).fill('2026-10-08T00:00')
+  await page.waitForFunction(()=>document.querySelector('.mp-history-filters')?.innerText.includes('30分钟'))
+  await page.locator('.mp-history-chart canvas').waitFor({state:'visible'})
+  assert.equal(historyQueries.at(-1).aggregate_window,'30m')
+  assert.deepEqual(invalidHistoryQueries,[],'never issue long raw-data requests')
   await page.getByRole('button',{name:'关闭',exact:true}).click()
   await page.setViewportSize({width:375,height:812})
   await page.getByRole('tab',{name:'自动化',exact:true}).click()
