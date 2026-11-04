@@ -100,6 +100,7 @@ try {
   await page.waitForFunction(()=>!!document.querySelector('iframe') && !document.querySelector('.mp-frame-loading'))
   assert.equal(new URL(page.url()).hash,'')
   assert.equal(await page.locator('iframe').evaluate(el=>el.style.height),'320px')
+  assert.equal(await page.locator('iframe').evaluate(el=>new URLSearchParams(el.src.split('?')[1]).get('embedSizing')),'content')
   await page.getByRole('navigation',{name:'主导航'}).getByRole('button',{name:'设备',exact:true}).click()
   assert.equal(await page.evaluate(()=>window.__lastNavigation),'/pages/devices/index')
   assert.deepEqual(errors,[])

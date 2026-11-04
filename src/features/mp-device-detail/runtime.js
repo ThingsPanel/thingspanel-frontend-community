@@ -207,6 +207,7 @@ export function createDeviceRuntime({ device, deviceId, addresses, onMessage, on
       provider: 'thingspanel',
       saveTarget: 'host',
       context: 'current-device',
+      embedSizing: 'content',
       thingsvisApiBaseUrl: addresses.thingsVisApiBase,
       platformApiBaseUrl: addresses.thingsPanelApiBase,
       token: sso.accessToken

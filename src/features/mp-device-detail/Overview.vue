@@ -2,6 +2,7 @@
 import { ref, inject, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { loadDeviceModel } from './model.js'
 import { createDeviceRuntime } from './runtime.js'
+import { attachFrameLayout } from './frame-layout.js'
 import Telemetry from './Telemetry.vue'
 const props = defineProps({ device: { type: Object, required: true } })
 defineEmits(['notify'])
@@ -12,6 +13,7 @@ const context = inject('mp-device'),
   model = ref(null),
   frameHost = ref(null)
 let runtime,
+  disposeFrameLayout,
   frame,
   resize,
   readyTimer,
@@ -28,6 +30,8 @@ function dispose() {
   runtime = null
   resize?.disconnect()
   resize = null
+  disposeFrameLayout?.()
+  disposeFrameLayout = null
   if (listener) window.removeEventListener('message', listener)
   frame?.remove()
   frame = null
@@ -80,6 +84,9 @@ async function load() {
     frame.title = '设备可视化'
     frame.referrerPolicy = 'no-referrer'
     frame.setAttribute('allow', 'fullscreen')
+    disposeFrameLayout = attachFrameLayout(frame, frameHost.value.closest('.mp-page-scroll'), {
+      contentSized: result.canvas?.mode === 'grid'
+    })
     let hostWidth = 0
     let supportsRenderReady = false
     const setHeight = () => {
