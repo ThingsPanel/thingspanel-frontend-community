@@ -1,5 +1,5 @@
 <script setup>
-import { inject, ref, watch } from 'vue'
+import { inject, ref, watch, onBeforeUnmount } from 'vue'
 import dayjs from 'dayjs'
 import { useDeviceList } from './use-list.js'
 import Automation from './Automation.vue'
@@ -29,7 +29,7 @@ function filters() {
   }
 }
 let applied = filters()
-const { items, loading, error, total, load } = useDeviceList(page =>
+const { items, loading, error, total, load, invalidate } = useDeviceList(page =>
   api('alarm/info/history', { device_id: props.deviceId, page, page_size: 10, ...applied })
 )
 watch(
@@ -37,7 +37,13 @@ watch(
   () => load(true),
   { immediate: true }
 )
+let searchTimer
 function search() {
+  clearTimeout(searchTimer)
+  if (!start.value || !end.value) {
+    error.value = '请选择开始日期和结束日期'
+    return
+  }
   if (start.value > end.value) {
     error.value = '开始日期不能晚于结束日期'
     return
@@ -45,17 +51,27 @@ function search() {
   applied = filters()
   load(true)
 }
+watch(
+  [start, end, status, preset],
+  () => {
+    clearTimeout(searchTimer)
+    invalidate()
+    searchTimer = setTimeout(search, 200)
+  },
+  { flush: 'sync' }
+)
+onBeforeUnmount(() => clearTimeout(searchTimer))
 function selectPreset(value) {
   preset.value = value
   start.value = dayjs()
     .subtract(value === '24h' ? 1 : 7, 'day')
     .format('YYYY-MM-DD')
   end.value = dayjs().format('YYYY-MM-DD')
+  search()
 }
 function reset() {
   status.value = ''
   selectPreset('7d')
-  search()
 }
 function label(value) {
   return statuses.find(item => item.value === value)?.label || value || '未知状态'

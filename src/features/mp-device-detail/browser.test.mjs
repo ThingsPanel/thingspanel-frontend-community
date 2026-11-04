@@ -6,6 +6,7 @@ const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
 const browser = await chromium.launch({ channel:'chrome', headless:true })
 const page = await browser.newPage({ viewport:{width:375,height:812} })
 const errors=[], writes=[], historyQueries=[], invalidHistoryQueries=[]
+const alarmQueries=[]
 page.on('pageerror',error=>errors.push(error.message))
 const origin=process.env.MP_DEVICE_PREVIEW_URL || 'http://127.0.0.1:5188'
 await page.route('https://res.wx.qq.com/**',route=>route.fulfill({contentType:'text/javascript',body:'window.wx={miniProgram:{getEnv:f=>f({miniprogram:true}),switchTab:o=>{window.__lastNavigation=o.url;o.success()},navigateTo:o=>{window.__lastNavigation=o.url;o.success()}}}'}))
@@ -25,6 +26,12 @@ await page.route(origin+'/api/**',async route=>{
       return route.fulfill({json:{code:207001,message:'非聚合查询起始时间和结束时间的差值不能大于一天'}})
     }
     data={list:[{ts:1793760000000,value:25},{ts:1793760600000,value:26}],total:2}
+  }
+  else if(path==='/api/v1/alarm/info/history') {
+    const query=Object.fromEntries(url.searchParams)
+    alarmQueries.push(query)
+    if(query.alarm_status==='H') await new Promise(resolve=>setTimeout(resolve,600))
+    data=query.alarm_status?{list:[{id:'alarm-'+query.alarm_status+'-'+query.page,name:query.alarm_status+'-result',alarm_status:query.alarm_status}],total:2}:{list:[],total:0}
   }
   else if(path==='/api/v1/user/detail') data={id:'fixture-user',userName:'Fixture',tenantId:'fixture-tenant'}
   else if(path==='/api/v1/device') data={}
@@ -87,7 +94,46 @@ try {
   assert.equal(await page.evaluate(()=>window.__lastNavigation),'/pages/automation/rule')
   await page.getByRole('tab',{name:'告警',exact:true}).click()
   await page.getByText('暂无告警历史',{exact:true}).waitFor()
+  let alarmCount=alarmQueries.length
+  let alarmResponse=page.waitForResponse(r=>r.url().includes('/alarm/info/history'))
+  await page.getByLabel('开始日期',{exact:true}).fill('2026-10-01')
+  await page.getByLabel('结束日期',{exact:true}).fill('2026-10-30')
+  await alarmResponse
+  assert.equal(alarmQueries.length,alarmCount+1,'consecutive date changes are merged')
+  assert.match(alarmQueries.at(-1).start_time,/^2026-10-01T00:00:00/)
+  assert.match(alarmQueries.at(-1).end_time,/^2026-10-30T23:59:59/)
+  const delayedAlarm=page.waitForResponse(r=>r.url().includes('/alarm/info/history') && new URL(r.url()).searchParams.get('alarm_status')==='H')
+  const highRequest=page.waitForRequest(r=>r.url().includes('/alarm/info/history') && new URL(r.url()).searchParams.get('alarm_status')==='H')
+  await page.locator('.mp-date-filters select').selectOption('H')
+  await highRequest
+  await page.locator('.mp-date-filters select').selectOption('N')
+  await page.getByText('N-result',{exact:true}).waitFor()
+  await delayedAlarm
+  assert.equal(await page.getByText('H-result',{exact:true}).count(),0,'stale responses cannot overwrite changed filters')
+  await page.getByRole('button',{name:'加载更多',exact:true}).click()
+  await page.waitForFunction(()=>document.querySelectorAll('.mp-alarm-row').length===2)
+  assert.equal(alarmQueries.at(-1).page,'2')
+  alarmResponse=page.waitForResponse(r=>r.url().includes('/alarm/info/history'))
+  await page.getByRole('button',{name:'查询',exact:true}).click()
+  await alarmResponse
+  assert.equal(alarmQueries.at(-1).page,'1','manual query is retained and resets pagination')
+  for(const name of ['最近24小时','最近7天','重置']) {
+    alarmCount=alarmQueries.length
+    alarmResponse=page.waitForResponse(r=>r.url().includes('/alarm/info/history'))
+    await page.getByRole('button',{name,exact:true}).click()
+    await alarmResponse
+    await page.waitForTimeout(250)
+    assert.equal(alarmQueries.length,alarmCount+1,'preset/reset sends exactly one request')
+    assert.equal(alarmQueries.at(-1).page,'1')
+  }
+  alarmCount=alarmQueries.length
+  await page.getByLabel('开始日期',{exact:true}).fill('')
+  await page.getByRole('alert').filter({hasText:'请选择开始日期和结束日期'}).waitFor()
+  assert.equal(alarmQueries.length,alarmCount,'incomplete dates do not send invalid queries')
+  await page.getByLabel('开始日期',{exact:true}).fill('2026-10-01')
   await page.getByRole('tab',{name:'信息',exact:true}).click()
+  await page.waitForTimeout(250)
+  assert.equal(alarmQueries.length,alarmCount,'leaving the tab cancels the pending auto query')
   await page.getByRole('button',{name:'编辑',exact:true}).click()
   await page.getByRole('button',{name:'取消',exact:true}).click()
   assert.equal(writes.length,0,'cancel must not save')
@@ -107,5 +153,5 @@ try {
   assert.ok(historyQueries.length>=2)
   await mkdir('dist-mp-device-preview/qa',{recursive:true})
   await page.screenshot({path:'dist-mp-device-preview/qa/mobile-fixture.png'})
-  console.log('PASS: launch scrub, telemetry/chart, filters, 320/375/844px buttons, cancel/save, four tabs, iframe handshake/height, mini navigation; all writes mocked.')
+  console.log('PASS: launch scrub, telemetry/chart, filters, automatic alarm queries/debounce/stale responses/pagination/presets/manual query, 320/375/844px buttons, cancel/save, four tabs, iframe handshake/height, mini navigation; all writes mocked.')
 } finally { await browser.close() }

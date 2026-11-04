@@ -50,5 +50,9 @@ export function useDeviceList(fetchPage) {
       if (current === version) loading.value = false
     }
   }
-  return { items, loading, error, total, load }
+  function invalidate() {
+    version += 1
+    loading.value = false
+  }
+  return { items, loading, error, total, load, invalidate }
 }
