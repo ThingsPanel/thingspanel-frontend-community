@@ -61,3 +61,7 @@ AGENTS.md
 !/AGENTS.md
 .claude/settings.local.json
 .claude/settings.local.json
+
+/dist-mp-device-preview/
+!/mp-device/README.md
+/tmp/mp-device-build/
