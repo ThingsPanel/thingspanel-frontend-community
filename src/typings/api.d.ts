@@ -398,7 +398,14 @@ declare namespace Api {
       inactive_over_30_days: number
     }
 
+    interface TenantDailyGrowth {
+      date: string
+      new_total: number
+      cumulative_total: number
+    }
+
     interface TenantStatistics {
+      trend?: TenantDailyGrowth[]
       summary: TenantStatisticsSummary
     }
 

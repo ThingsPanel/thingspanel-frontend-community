@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/modules/auth'
 import { $t } from '@/locales'
 import TableActionModal from './components/table-action-modal.vue'
 import EditPasswordModal from './components/edit-password-modal.vue'
+import TenantGrowthCharts from './components/tenant-growth-charts.vue'
 import TenantStatisticsOverview from './components/tenant-statistics-overview.vue'
 import type { ModalType } from './components/table-action-modal.vue'
 import pwData from './components/pw.json'
@@ -456,6 +457,7 @@ init()
           @select-scope="handleActivityScopeChange"
         />
 
+        <TenantGrowthCharts :trend="tenantStatistics?.trend ?? []" :loading="statisticsLoading" />
         <NForm
           class="tenant-filters"
           label-placement="left"
