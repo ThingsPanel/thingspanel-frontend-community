@@ -10,7 +10,7 @@ import {
   normalizeHistoryRows
 } from './schema.js'
 
-export function createDeviceRuntime({ device, deviceId, addresses, onMessage, onState, context, model }) {
+export function createDeviceRuntime({ device, deviceId, addresses, onMessage, onState, context, model, dataOnly }) {
   let stopped = false
   let schema,
     fields = [],
@@ -149,6 +149,19 @@ export function createDeviceRuntime({ device, deviceId, addresses, onMessage, on
   async function start() {
     state('loading', '正在加载设备可视化')
     if (!token) throw new Error('登录状态已失效，请重新登录')
+    // Board channels share this runtime without loading a device canvas or authenticating again.
+    if (dataOnly) {
+      schema = dataOnly.schema
+      fields = model.fields
+      initPayload = {}
+      push({ is_online: device.is_online, online_text: device.is_online === 1 ? '在线' : '离线' })
+      await fetchLatest()
+      await Promise.all([fetchAlarms(), history({})]).catch((error) => {
+        historyWarning = error.message
+        report(error)
+      })
+      return { fields }
+    }
     if (!model?.config) {
       state('empty', '尚未配置移动端设备可视化')
       return null

@@ -9,6 +9,12 @@
       // Consume launch credentials before loading the application or any external SDK.
       window.__mpDeviceLaunch = location.hash.slice(1)
       history.replaceState(null, '', location.pathname + location.search)
+      try {
+        const launch = JSON.parse(new URLSearchParams(window.__mpDeviceLaunch).get('launch') || 'null')
+        if (launch?.kind === 'board') document.title = String(launch.title || '看板').slice(0, 120)
+      } catch {
+        // The application renders invalid-launch errors without exposing credentials.
+      }
     </script>
   </head>
   <body>

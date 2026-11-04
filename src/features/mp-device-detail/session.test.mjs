@@ -11,6 +11,18 @@ function storage() {
     removeItem: (key) => data.delete(key)
   }
 }
+test('board launch preserves scoped tokens across refresh and rejects incomplete replacement', () => {
+  const local = storage()
+  const launch = { kind: 'board', boardId: 'board-a', token: 'platform-test', visToken: 'vis-test' }
+  const session = readLaunch(new URLSearchParams({ launch: JSON.stringify(launch) }).toString(), local)
+  assert.equal(session.boardId, 'board-a')
+  assert.equal(session.visToken, 'vis-test')
+  assert.equal(readLaunch('', local).kind, 'board')
+  assert.throws(() =>
+    readLaunch(new URLSearchParams({ launch: JSON.stringify({ ...launch, visToken: '' }) }).toString(), local)
+  )
+  assert.throws(() => readLaunch('', local), /失效/)
+})
 test('launch is tab-scoped, supports refresh, expires and clears invalid replacement', () => {
   const local = storage(),
     raw = new URLSearchParams({ launch: JSON.stringify({ token: 'test-token', deviceId: 'device-a' }) }).toString()

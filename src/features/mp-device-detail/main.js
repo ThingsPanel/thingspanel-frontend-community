@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import DeviceDetail from './DeviceDetail.vue'
+import Board from './Board.vue'
 import { readLaunch, createApi } from './session.js'
 import './style.css'
 
@@ -16,7 +17,7 @@ function launch(raw) {
   try {
     const session = readLaunch(raw)
     context = createApi(session)
-    app = createApp(DeviceDetail, { session })
+    app = createApp(session.kind === 'board' ? Board : DeviceDetail, { session })
     app.provide('mp-device', context)
     app.mount(host)
   } catch (error) {

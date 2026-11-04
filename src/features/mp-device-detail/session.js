@@ -1,4 +1,8 @@
 const SESSION_KEY = 'thingspanel:mp-device-session:v1'
+const validTarget = (launch) =>
+  launch?.kind === 'board'
+    ? typeof launch.boardId === 'string' && !!launch.boardId && typeof launch.visToken === 'string' && !!launch.visToken
+    : typeof launch?.deviceId === 'string' && !!launch.deviceId
 function parseSession(raw) {
   try {
     return JSON.parse(raw)
@@ -12,15 +16,16 @@ export function readLaunch(raw, storage = sessionStorage) {
   if (params.has('launch')) {
     storage.removeItem(SESSION_KEY)
     launch = parseSession(params.get('launch'))
-    if (
-      !launch ||
-      typeof launch.token !== 'string' ||
-      !launch.token ||
-      typeof launch.deviceId !== 'string' ||
-      !launch.deviceId
-    )
+    if (!launch || typeof launch.token !== 'string' || !launch.token || !validTarget(launch))
       throw new Error('登录信息无效，请返回小程序重新打开设备')
-    launch = { token: launch.token, deviceId: launch.deviceId, lang: launch.lang || 'zh-CN', createdAt: Date.now() }
+    launch = {
+      token: launch.token,
+      lang: launch.lang || 'zh-CN',
+      createdAt: Date.now(),
+      ...(launch.kind === 'board'
+        ? { kind: 'board', boardId: launch.boardId, visToken: launch.visToken }
+        : { deviceId: launch.deviceId })
+    }
     storage.setItem(SESSION_KEY, JSON.stringify(launch))
   } else {
     launch = parseSession(storage.getItem(SESSION_KEY) || 'null')
@@ -28,8 +33,7 @@ export function readLaunch(raw, storage = sessionStorage) {
   if (
     typeof launch?.token !== 'string' ||
     !launch.token ||
-    typeof launch?.deviceId !== 'string' ||
-    !launch.deviceId ||
+    !validTarget(launch) ||
     !Number.isFinite(launch.createdAt) ||
     Date.now() - launch.createdAt > 2 * 3600000
   ) {

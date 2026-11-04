@@ -6,7 +6,7 @@ function chartConfig(raw) {
   return Array.isArray(value) && value.length === 0 ? null : value
 }
 
-export async function loadDeviceModel(device, context) {
+export async function loadDeviceModel(device, context, { dataOnly = false } = {}) {
   const binding = device.device_config || {}
   if (
     binding.native_thing_model_id != null ||
@@ -71,13 +71,13 @@ export async function loadDeviceModel(device, context) {
         ...(kind === 'command' ? { write: { target: 'command', property: field.identifier, payloadType: type } } : {})
       }
     })
-    return { fields, config: chartConfig(snapshot.resources?.appChartConfig), native: true }
+    return { fields, config: dataOnly ? null : chartConfig(snapshot.resources?.appChartConfig), native: true }
   }
   if (!binding.device_template_id) return { fields: [], config: null, native: false }
   const templateId = binding.device_template_id
   const kinds = ['telemetry', 'attributes', 'events', 'commands']
   const [template, ...results] = await Promise.all([
-    context.api(`device/template/detail/${encodeURIComponent(templateId)}`),
+    dataOnly ? Promise.resolve(null) : context.api(`device/template/detail/${encodeURIComponent(templateId)}`),
     ...kinds.map((kind) =>
       context.api(`device/model/${kind}`, { device_template_id: templateId, page: 1, page_size: 1000 })
     )
