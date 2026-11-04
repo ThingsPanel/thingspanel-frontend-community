@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { NButton } from 'naive-ui'
+import { loadPublishedSnapshot } from '@/service/api/native-template-binding'
 import { deviceConfigInfo } from '@/service/api/device'
 import SettingInfo from '@/views/device/config-detail/modules/setting-info.vue'
 import DataHandle from '@/views/device/config-detail/modules/data-handle.vue'
@@ -16,6 +17,8 @@ import Automate from './modules/automate.vue'
 
 const { routerPushByKey } = useRouterPush()
 const route = useRoute()
+const modelName = ref('')
+let configRequest = 0
 const configId = ref<string>(typeof route.query.id === 'string' ? route.query.id : '')
 
 const configForm = ref<any>({
@@ -35,8 +38,20 @@ const editConfig = () => {
   routerPushByKey('device_config-edit', { query: { id: configId.value } })
 }
 const getConfig = async () => {
+  const request = ++configRequest
   const res = await deviceConfigInfo({ id: configId.value })
+  if (request !== configRequest) return
   configForm.value = res.data
+  modelName.value = ''
+  const { native_thing_model_id: modelID, native_thing_model_revision: revision } = res.data || {}
+  if (modelID && revision) {
+    try {
+      const snapshot = await loadPublishedSnapshot(modelID, revision)
+      if (request === configRequest) modelName.value = snapshot.model.name
+    } catch {
+      // Keep the binding identifier and navigation available when metadata cannot be read.
+    }
+  }
 }
 const tabKeys = {
   associatedDevices: 'associatedDevices',
@@ -62,18 +77,34 @@ if (configId.value) {
       <template #header-extra>
         <NButton type="primary" @click="editConfig">{{ $t('common.edit') }}</NButton>
       </template>
-      <div class="mb-4 flex">
-        {{ $t('generate.deviceAccessType') }}
-        <template v-if="configForm.device_type === '1'">{{ $t('generate.direct-connected-device') }}</template>
-        <template v-if="configForm.device_type === '2'">{{ $t('generate.gateway') }}</template>
-        <template v-if="configForm.device_type === '3'">{{ $t('generate.gateway-sub-device') }}</template>
-        <div class="ml-20">
-          物模型：
-          <span v-if="configForm.native_thing_model_id">
-            已绑定 · v{{ configForm.native_thing_model_revision }}
+      <div class="template-summary">
+        <div class="summary-item">
+          <span class="summary-label">设备接入类型</span>
+          <span class="summary-value">
+            <template v-if="configForm.device_type === '1'">{{ $t('generate.direct-connected-device') }}</template>
+            <template v-else-if="configForm.device_type === '2'">{{ $t('generate.gateway') }}</template>
+            <template v-else-if="configForm.device_type === '3'">{{ $t('generate.gateway-sub-device') }}</template>
+            <template v-else>--</template>
           </span>
-          <span v-else-if="configForm.device_template_id">已绑定（当前版本信息暂不可读取）</span>
-          <span v-else>未绑定</span>
+        </div>
+        <div class="summary-item summary-model">
+          <span class="summary-label">关联物模型</span>
+          <div v-if="configForm.native_thing_model_id" class="model-binding">
+            <RouterLink
+              class="model-link"
+              :to="{ path: '/device/thingsmodel/detail', query: { id: configForm.native_thing_model_id } }"
+              :title="modelName || configForm.native_thing_model_id"
+            >
+              {{ modelName || configForm.native_thing_model_id }}
+              <span aria-hidden="true" class="link-arrow">↗</span>
+            </RouterLink>
+            <NTag v-if="configForm.native_thing_model_revision" size="small" :bordered="false" type="primary">
+              v{{ configForm.native_thing_model_revision }}
+            </NTag>
+          </div>
+          <span v-else class="summary-empty">
+            {{ configForm.device_template_id ? '绑定信息暂不可读取' : '未绑定物模型' }}
+          </span>
         </div>
       </div>
 
@@ -121,10 +152,64 @@ if (configId.value) {
 :deep(.n-tabs) {
   height: calc(100% - 80px);
 }
-.flex {
+.template-summary {
   display: flex;
+  flex-wrap: wrap;
+  gap: 24px 48px;
+  margin-bottom: 20px;
+  padding: 18px 22px;
+  border: 1px solid var(--n-border-color);
+  border-radius: 10px;
+  background: var(--n-color-embedded);
 }
-.ml-20 {
-  margin-left: 20px;
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 140px;
+}
+.summary-model {
+  flex: 1;
+  min-width: 0;
+}
+.summary-label {
+  font-size: 12px;
+  color: var(--n-text-color-3);
+}
+.summary-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+.model-binding {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.model-link {
+  color: var(--n-color-target, #646cff);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.model-link:hover {
+  text-decoration: underline;
+}
+.model-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+.link-arrow {
+  margin-left: 4px;
+}
+.summary-empty {
+  color: var(--n-text-color-3);
+}
+@media (max-width: 640px) {
+  .template-summary {
+    flex-direction: column;
+    gap: 18px;
+    padding: 16px;
+  }
 }
 </style>
