@@ -94,7 +94,7 @@ export function decorateNativeTelemetryRows<T extends Record<string, any>>(rows:
     const options = field?.options || []
     return {
       ...clearRawFieldMetadata(row),
-      label: field ? field.name : `${row.key}（绑定版本未定义）`,
+      label: field ? field.name : '',
       unit: field?.unit || '',
       data_type: field ? fieldTypeName(field.type, options.length > 0) : '',
       enum: options.map(option => ({
