@@ -352,6 +352,10 @@ const getSceneList = async (name: string) => {
   queryScene.value.name = name || ''
   loadingSelect.value = true
   const res = await sceneGet(queryScene.value)
+  if (res.error || !res.data) {
+    loadingSelect.value = false
+    return
+  }
   sceneList.value = res.data.list
   loadingSelect.value = false
 }
@@ -369,6 +373,7 @@ const getAlarmList = async (name: string) => {
   loadingSelect.value = true
   const res = await warningMessageList(queryAlarm.value)
   loadingSelect.value = false
+  if (res.error || !res.data) return
   alarmList.value = res.data.list
 }
 
