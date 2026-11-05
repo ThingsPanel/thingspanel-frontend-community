@@ -47,6 +47,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "device_grouping-details": () => import("@/views/device/grouping-details/index.vue"),
   device_grouping: () => import("@/views/device/grouping/index.vue"),
   device_integration: () => import("@/views/device/integration/index.vue"),
+  "device_plugin-install": () => import("@/views/device/plugin-install/index.vue"),
   device_manage: () => import("@/views/device/manage/index.vue"),
   device_market: () => import("@/views/device/market/index.vue"),
   "device_market_installed-detail": () => import("@/views/device/market/installed-detail/[id].vue"),
