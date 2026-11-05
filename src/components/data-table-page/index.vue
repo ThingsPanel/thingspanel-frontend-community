@@ -936,7 +936,7 @@ const formSize = ref(undefined)
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px;
+  gap: 8px;
   height: 100%;
   flex-shrink: 0;
   white-space: nowrap;

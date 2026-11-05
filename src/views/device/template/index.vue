@@ -394,7 +394,7 @@ onActivated(() => {
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   white-space: nowrap;
 }
 

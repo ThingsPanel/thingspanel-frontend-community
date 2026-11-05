@@ -265,9 +265,9 @@ watch(
               style="width: 200px"
             />
           </NFormItem>
-          <NFlex :vertical="false" :gap="8">
+          <NFlex :vertical="false" :size="8">
             <NButton type="primary" @click="handleSearch">{{ $t('common.search') }}</NButton>
-            <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+            <NButton quaternary @click="handleReset">{{ $t('common.reset') }}</NButton>
           </NFlex>
         </NFlex>
       </NForm>

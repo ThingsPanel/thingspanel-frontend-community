@@ -248,7 +248,7 @@ onMounted(() => {
           class="filter-control"
           @update:value="search"
         />
-        <NButton class="filter-button" @click="clearFilters">重置</NButton>
+        <NButton quaternary class="filter-button" @click="clearFilters">重置</NButton>
       </div>
 
       <NSpin :show="loading">

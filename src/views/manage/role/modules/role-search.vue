@@ -45,11 +45,8 @@ function search() {
           />
         </NFormItemGi>
         <NFormItemGi span="24 s:12 m:6" class="search-form-actions">
-          <NSpace class="w-full" justify="end">
-            <NButton class="search-form-button" @click="reset">
-              <template #icon>
-                <IconIcRoundRefresh class="text-icon" />
-              </template>
+          <NSpace class="w-full" justify="end" :size="8">
+            <NButton quaternary class="search-form-button" @click="reset">
               {{ $t('common.reset') }}
             </NButton>
             <NButton type="primary" class="search-form-button" @click="search">

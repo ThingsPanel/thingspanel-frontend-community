@@ -122,7 +122,7 @@ onMounted(getDeviceList)
         <SvgIcon icon="material-symbols:search" />
       </template>
     </NInput>
-    <NFlex align="center">
+    <NFlex align="center" :size="8">
       <NButton type="primary" @click="handleSearch">{{ $t('common.search') }}</NButton>
       <NButton quaternary @click="handleReset">{{ $t('common.reset') }}</NButton>
     </NFlex>
@@ -155,7 +155,7 @@ onMounted(getDeviceList)
     />
   </NFlex>
   <NFlex justify="end" class="mt-5" align="center">
-    <NFlex align="center">
+    <NFlex align="center" :size="8">
       <div class="text-16px">
         {{ $t('generate.selected') }}
         <span class="text-blue-4">{{ checkedRowKeysRef.length }}</span>

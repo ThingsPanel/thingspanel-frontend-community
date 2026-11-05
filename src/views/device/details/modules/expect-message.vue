@@ -220,7 +220,7 @@ const handleReset = () => {
         </NFormItem>
         <NFormItem>
           <NButton type="primary" @click="handleSearch">{{ $t('common.search') }}</NButton>
-          <NButton class="ml-12px" @click="handleReset">{{ $t('common.reset') }}</NButton>
+          <NButton quaternary class="ml-8px" @click="handleReset">{{ $t('common.reset') }}</NButton>
         </NFormItem>
       </NForm>
     </div>

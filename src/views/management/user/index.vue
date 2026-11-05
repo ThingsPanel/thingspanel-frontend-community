@@ -515,7 +515,7 @@ init()
               />
             </NFormItemGi>
             <NFormItemGi span="24 s:12 m:6" class="search-form-actions">
-              <NSpace class="w-full" justify="end" align="center">
+              <NSpace class="w-full" justify="end" align="center" :size="8">
                 <NButton
                   text
                   type="primary"
@@ -528,7 +528,7 @@ init()
                 <NButton class="search-form-button" type="primary" @click="handleQuery">
                   {{ $t('common.search') }}
                 </NButton>
-                <NButton class="search-form-button" @click="handleReset">{{ $t('common.reset') }}</NButton>
+                <NButton quaternary class="search-form-button" @click="handleReset">{{ $t('common.reset') }}</NButton>
               </NSpace>
             </NFormItemGi>
           </NGrid>

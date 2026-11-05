@@ -249,7 +249,7 @@ getData()
             </NInput>
             <div class="search-actions">
               <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-              <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+              <NButton quaternary @click="handleReset">{{ $t('common.reset') }}</NButton>
             </div>
           </div>
         </div>

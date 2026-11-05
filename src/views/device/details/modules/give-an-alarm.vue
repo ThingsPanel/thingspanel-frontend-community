@@ -189,7 +189,7 @@ onMounted(() => {
           {{ $t('common.alarmRules') }}
         </NButton>
       </n-button-group>
-      <NFlex v-if="tabValue === 1" class="w-70%" justify="flex-end">
+      <NFlex v-if="tabValue === 1" class="w-70%" justify="flex-end" :size="8">
         <NDatePicker
           v-model:value="queryParams.selected_time"
           type="datetimerange"
@@ -204,7 +204,7 @@ onMounted(() => {
           :clearable="false"
         />
         <NButton type="primary" @click="resetQuery">{{ $t('common.search') }}</NButton>
-        <NButton @click="refresh">{{ $t('common.reset') }}</NButton>
+        <NButton quaternary @click="refresh">{{ $t('common.reset') }}</NButton>
         <NButton :bordered="false" class="justify-end" @click="refresh">
           <NIcon size="18">
             <Refresh />

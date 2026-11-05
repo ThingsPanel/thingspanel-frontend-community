@@ -337,8 +337,8 @@ onMounted(async () => {
                       <NInput v-model:value="formData.passwords" type="password" show-password-on="click" round />
                     </NFormItemGridItem>
                   </NGrid>
-                  <NSpace class="w-full pt-16px" :size="24" justify="end">
-                    <NButton class="w-72px" round @click="resetPass">{{ $t('generate.reset') }}</NButton>
+                  <NSpace class="w-full pt-16px" :size="8" justify="end">
+                    <NButton quaternary @click="resetPass">{{ $t('generate.reset') }}</NButton>
                     <NButton class="w-72px" type="primary" round @click="submitPass">{{ $t('common.save') }}</NButton>
                   </NSpace>
                 </NForm>

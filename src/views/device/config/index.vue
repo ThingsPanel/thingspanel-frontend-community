@@ -470,7 +470,7 @@ const availableViews = [
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px;
+  gap: 8px;
 }
 
 .device-filter-actions :deep(.n-button) {

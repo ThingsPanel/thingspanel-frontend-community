@@ -259,11 +259,13 @@ onMounted(() => {
               </NFormItemGi>
 
               <NFormItemGi span="24 s:12 m:6" class="search-form-actions">
-                <NSpace class="w-full" justify="end">
+                <NSpace class="w-full" justify="end" :size="8">
                   <NButton class="search-form-button" type="primary" @click="handleQuery">
                     {{ $t('generate.search') }}
                   </NButton>
-                  <NButton class="search-form-button" @click="handleReset">{{ $t('generate.reset') }}</NButton>
+                  <NButton quaternary class="search-form-button" @click="handleReset">
+                    {{ $t('generate.reset') }}
+                  </NButton>
                 </NSpace>
               </NFormItemGi>
             </NGrid>

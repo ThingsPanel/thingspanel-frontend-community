@@ -308,7 +308,7 @@ const submitCallback = async () => {
       </NFormItem>
       <NFormItem class="alarm-filter-actions">
         <NButton type="primary" @click="handleSearch">{{ $t('common.search') }}</NButton>
-        <NButton @click="resetData">{{ $t('common.reset') }}</NButton>
+        <NButton quaternary @click="resetData">{{ $t('common.reset') }}</NButton>
       </NFormItem>
     </NForm>
     <n-data-table
@@ -497,7 +497,10 @@ const submitCallback = async () => {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+
+  :deep(.n-form-item-blank) {
+    gap: 8px;
+  }
 }
 
 @media (max-width: 768px) {

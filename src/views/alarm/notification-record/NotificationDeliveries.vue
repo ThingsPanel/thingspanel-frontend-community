@@ -409,7 +409,7 @@ onMounted(() => {
       </NFormItem>
       <div class="filter-actions">
         <NButton type="primary" @click="handleRequestSearch">{{ tx('查询', 'Filter requests') }}</NButton>
-        <NButton @click="handleRequestReset">{{ tx('重置', 'Reset') }}</NButton>
+        <NButton quaternary @click="handleRequestReset">{{ tx('重置', 'Reset') }}</NButton>
         <NButton :loading="requestLoading" @click="loadRequests">{{ tx('刷新', 'Refresh') }}</NButton>
       </div>
     </NForm>
@@ -450,7 +450,7 @@ onMounted(() => {
         </NFormItem>
         <div class="filter-actions">
           <NButton type="primary" @click="handleSearch">{{ tx('查询', 'Filter') }}</NButton>
-          <NButton @click="handleReset">{{ tx('重置', 'Reset') }}</NButton>
+          <NButton quaternary @click="handleReset">{{ tx('重置', 'Reset') }}</NButton>
         </div>
       </NForm>
       <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
