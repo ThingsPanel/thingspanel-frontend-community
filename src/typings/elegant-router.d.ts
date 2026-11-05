@@ -60,6 +60,7 @@ declare module "@elegant-router/types" {
     "device_grouping": "/device/grouping";
     "device_grouping-details": "/device/grouping-details";
     "device_integration": "/device/integration";
+    "device_plugin-install": "/device/plugin-install";
     "device_manage": "/device/manage";
     "device_market": "/device/market";
     "device_market_installed-detail": "/device/market/installed-detail/:id";
@@ -239,6 +240,7 @@ declare module "@elegant-router/types" {
     | "device_grouping-details"
     | "device_grouping"
     | "device_integration"
+    | "device_plugin-install"
     | "device_manage"
     | "device_market"
     | "device_market_installed-detail"

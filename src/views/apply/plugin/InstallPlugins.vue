@@ -71,6 +71,11 @@ function describeError(error: unknown): string {
       '此主机尚未启用一键安装（未配置安装代理）。',
       'One-click install is not enabled on this host (no agent configured).'
     )
+  if ((error as any)?.response?.status === 403)
+    return tx(
+      '只有租户管理员可以安装插件，请使用租户管理员账号登录。',
+      'Only a tenant administrator can install plugins. Sign in with a tenant administrator account.'
+    )
   if (code === 'BAD_STATE') return tx('当前状态下不能执行该操作。', 'This is not allowed in the current state.')
   return installErrorMessage(error) || tx('请求失败', 'Request failed')
 }
@@ -181,7 +186,12 @@ async function onUninstall() {
   await load()
 }
 
-const fieldEntries = computed(() => Object.entries(drawer.item?.fields ?? {}))
+// Site details first, secrets last (the server returns the fields in alphabetical order).
+const fieldEntries = computed(() =>
+  Object.entries(drawer.item?.fields ?? {}).sort(
+    ([ka, a], [kb, b]) => Number(a.secret) - Number(b.secret) || ka.localeCompare(kb)
+  )
+)
 const progress = computed(() => (detail.value ? stepProgress(detail.value, detail.value.events ?? []) : []))
 const detailView = computed(() => stateView(detail.value?.state, tx))
 

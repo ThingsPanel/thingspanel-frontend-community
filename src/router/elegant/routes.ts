@@ -370,6 +370,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'device_plugin-install',
+        path: '/device/plugin-install',
+        component: 'view.device_plugin-install',
+        meta: {
+          title: 'device_plugin-install',
+          i18nKey: 'route.device_plugin-install'
+        }
+      },
+      {
         name: 'device_integration',
         path: '/device/integration',
         component: 'view.device_integration',

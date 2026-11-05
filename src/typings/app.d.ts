@@ -596,6 +596,7 @@ declare namespace App {
         'personal-center': string
         apply_plugin: string
         device_integration: string
+        'device_plugin-install': string
         'device_service-details': string
       } & Record<I18nRouteKey, string>
       page: {

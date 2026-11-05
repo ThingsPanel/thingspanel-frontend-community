@@ -142,6 +142,7 @@
   "route.personal-center": "Personal Center",
   "route.apply_plugin": "Apply Plugin",
   "route.device_integration": "Third-party Integrations",
+  "route.device_plugin-install": "Plugin install",
   "route.device_service-details": "Third-party Integration Details",
   "route.test_panel-editor-v2": "New Board Test",
   "route.iot-visualization-platform": "IoT Visualization Platform",
