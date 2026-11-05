@@ -331,9 +331,16 @@ const getDeviceDetail = async () => {
     device_is_online.value = data.is_online
     name.value = data.name
 
-    // 先展示基础 Tab，模板图表判断放到后台执行，避免阻塞首屏。
+    // 首次渲染前确定图表是否可用，避免先挂载遥测后再切换图表。
+    const hasTemplateChart = await resolveTemplateHasChartContent(
+      data?.device_config as DeviceConfigNativeBinding | undefined
+    )
+    if (currentRequestId !== detailRequestId) return
+
     let filtered = baseComponents.map(item => ({ ...item }))
-    filtered = filtered.filter(item => item.key !== 'chart')
+    if (!hasTemplateChart) {
+      filtered = filtered.filter(item => item.key !== 'chart')
+    }
 
     if (data?.device_config) {
       device_type.value = data.device_config.device_type
@@ -374,8 +381,6 @@ const getDeviceDetail = async () => {
         token: localStg.get('token')
       })
     )
-
-    void addChartTabWhenAvailable(data?.device_config as DeviceConfigNativeBinding | undefined, currentRequestId)
   }
 }
 
@@ -389,19 +394,6 @@ const resolveTemplateHasChartContent = async (binding?: DeviceConfigNativeBindin
   }
 }
 
-async function addChartTabWhenAvailable(binding: DeviceConfigNativeBinding | undefined, requestId: number) {
-  const hasTemplateChart = await resolveTemplateHasChartContent(binding)
-  if (!hasTemplateChart || requestId !== detailRequestId) return
-  if (components.value.some(item => item.key === 'chart')) return
-
-  const chartComponent = baseComponents.find(item => item.key === 'chart')
-  if (!chartComponent) return
-
-  // 图表可用时把它放到首位，并切换为默认 Tab；没有图表时保持遥测 Tab。
-  components.value = [{ ...chartComponent }, ...components.value]
-  lastTabsSig = components.value.map(item => item.key).join('|')
-  tabValue.value = 'chart'
-}
 const closeModal = async () => {
   await getDeviceDetail()
   showDialog.value = false
@@ -437,6 +429,8 @@ watch(
   () => route.query.d_id,
   async newVal => {
     d_id = newVal
+    components.value = []
+    tabValue.value = ''
     await getDeviceDetail()
     bumpRefreshKey(tabValue.value)
   },
