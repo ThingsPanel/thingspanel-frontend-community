@@ -9,3 +9,8 @@ export const delInfo = routeAutomationCall(legacy.delInfo, native.delInfo)
 export const alarmHistory = routeAutomationCall(legacy.alarmHistory, native.alarmHistory)
 export const infoList = routeAutomationCall(legacy.infoList, native.infoList)
 export const processingOperation = routeAutomationCall(legacy.processingOperation, native.processingOperation)
+
+export const alarmTransitions = routeAutomationCall(
+  async (_id: string) => ({ data: { transitions: [] }, error: null, response: null }),
+  native.alarmTransitions
+)
