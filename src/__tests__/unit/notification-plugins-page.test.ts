@@ -5,8 +5,9 @@ import { createHash, webcrypto } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import NotificationPlugins from '@/views/apply/plugin/NotificationPlugins.vue'
 
-const { requestMock, authState } = vi.hoisted(() => ({
+const { requestMock, directoryMock, authState } = vi.hoisted(() => ({
   requestMock: vi.fn(),
+  directoryMock: vi.fn(),
   authState: {
     token: 'platform-session-token',
     userInfo: {
@@ -26,6 +27,7 @@ vi.mock('axios', () => ({
   }
 }))
 vi.mock('@/store/modules/auth', () => ({ useAuthStore: () => authState }))
+vi.mock('@/service/api/auth', () => ({ fetchUserList: directoryMock }))
 vi.mock('vue-i18n', () => ({ useI18n: () => ({ locale: { value: 'en-us' } }) }))
 vi.mock('naive-ui', async () => {
   const { defineComponent: define, h: createElement } = await import('vue')
@@ -111,6 +113,25 @@ const SlotStub = defineComponent({
   }
 })
 const stubs = {
+  NSelect: defineComponent({
+    props: ['value', 'options', 'disabled'],
+    emits: ['update:value'],
+    setup(props, { emit }) {
+      return () =>
+        h(
+          'select',
+          {
+            value: props.value || '',
+            disabled: props.disabled,
+            onChange: (e: Event) => emit('update:value', (e.target as HTMLSelectElement).value)
+          },
+          [
+            h('option', { value: '' }, 'Select tenant'),
+            ...(props.options || []).map((o: any) => h('option', { value: o.value, disabled: o.disabled }, o.label))
+          ]
+        )
+    }
+  }),
   NButton: ButtonStub,
   NInput: InputStub,
   NModal: ModalStub,
@@ -155,6 +176,15 @@ describe('notification plugin registration page', () => {
   beforeEach(() => {
     vi.stubEnv('VITE_NOTIFICATION_API_BASE_URL', 'https://encore.example.test')
     requestMock.mockReset()
+    directoryMock.mockReset().mockResolvedValue({
+      data: {
+        list: [
+          { tenant_id: 'tenant-a', name: 'Tenant A', email: 'a@example.test', status: 'N' },
+          { tenant_id: 'tenant-b', name: 'Tenant B', email: 'b@example.test', status: 'N' }
+        ],
+        total: 2
+      }
+    })
     authState.token = 'platform-session-token'
     authState.userInfo.tenant_id = 'platform-tenant'
     vi.stubGlobal('crypto', webcrypto)
@@ -249,6 +279,68 @@ describe('notification plugin registration page', () => {
     expect(wrapper.text()).toContain(
       'The plugin is registered globally; registration does not grant access to any tenant.'
     )
+    wrapper.unmount()
+  })
+
+  it('selects tenants by account, resolves a revoked grant beyond the current page, and opens the same tenant channels', async () => {
+    const plugin = {
+      id: 'registration-1',
+      pluginId: 'fixture.smtp',
+      pluginVersion: '1.0.1',
+      enabled: true,
+      version: 1,
+      manifest: { name: 'Fixture SMTP', channels: ['email'], capabilities: { deliveryReceipts: false } }
+    }
+    const grant = (tenantId: string, enabled: boolean, version: number) => ({
+      pluginRegistrationId: plugin.id,
+      tenantId,
+      enabled,
+      version,
+      createdAt: '2026-11-06T00:00:00Z',
+      updatedAt: '2026-11-06T01:00:00Z'
+    })
+    let granted = false
+    requestMock.mockImplementation(async config => {
+      if (config.url === '/api/v2/notification-plugins') return { status: 200, data: envelope({ items: [plugin] }) }
+      if (config.method === 'PUT') {
+        granted = true
+        return { status: 200, data: envelope(grant('tenant-b', true, 5)) }
+      }
+      const { page, pageSize } = config.params
+      const items = granted
+        ? [grant('tenant-b', true, 5)]
+        : page === 2
+          ? [grant('tenant-b', false, 4)]
+          : [grant('tenant-a', true, 1)]
+      return { status: 200, data: envelope({ items, page, pageSize, total: granted ? 1 : 101 }) }
+    })
+    const wrapper = mount(NotificationPlugins, { global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(b => b.text() === 'Tenant grants')!
+      .trigger('click')
+    await flushPromises()
+    const grantButton = () => wrapper.findAll('button').find(b => b.text() === 'Grant access')!
+    expect(grantButton().attributes('disabled')).toBeDefined()
+    expect(wrapper.text()).toContain('Tenant B (b@example.test)')
+    await wrapper.get('select').setValue('tenant-b')
+    await grantButton().trigger('click')
+    await flushPromises()
+    const mutation = requestMock.mock.calls.map(([c]) => c).find(c => c.method === 'PUT')
+    expect(mutation.data).toEqual({
+      pluginRegistrationId: plugin.id,
+      tenantId: 'tenant-b',
+      enabled: true,
+      expectedVersion: 4
+    })
+    expect(authState.userInfo.tenant_id).toBe('platform-tenant')
+    await wrapper
+      .findAll('button')
+      .find(b => b.text() === 'Configure channels')!
+      .trigger('click')
+    expect(wrapper.emitted('configureTenant')).toEqual([['tenant-b']])
+    expect(wrapper.text()).not.toContain('2026-11-06T01:00:00Z')
     wrapper.unmount()
   })
 })

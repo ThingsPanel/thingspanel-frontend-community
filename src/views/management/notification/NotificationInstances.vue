@@ -224,7 +224,9 @@ watch(
   }
 )
 watch(accountTarget, () => {
-  invalidateNotificationSession()
+  // A platform target change is not a login/session change. Reset only this
+  // tenant view; invalidating the global session also cleared the tenant picker.
+  clearSessionState()
   currentPage.value = 1
   if (hasTenantContext.value) void loadInstances()
 })
@@ -755,10 +757,14 @@ const columns: DataTableColumns<NotificationInstance> = [
       })[row.channel]
   },
   {
-    title: tx('发送状态', 'Enabled'),
+    title: tx('渠道状态', 'Channel status'),
     key: 'enabled',
     width: 100,
-    render: row => (row.enabled ? tx('已启用', 'Enabled') : tx('已停用', 'Disabled'))
+    render: row => {
+      const plugin = plugins.value.find(item => item.id === row.pluginRegistrationId)
+      if (!plugin || !plugin.enabled) return tx('插件不可用', 'Plugin unavailable')
+      return row.enabled ? tx('已启用', 'Enabled') : tx('已停用', 'Disabled')
+    }
   },
   {
     title: tx('回执能力', 'Delivery receipts'),
@@ -784,7 +790,12 @@ const columns: DataTableColumns<NotificationInstance> = [
         {!capabilities.value.canManageAccounts && (
           <NButton
             size="small"
-            disabled={!capabilities.value.canSendTest || Boolean(pendingTest.value)}
+            disabled={
+              !capabilities.value.canSendTest ||
+              Boolean(pendingTest.value) ||
+              !row.enabled ||
+              !plugins.value.some(item => item.id === row.pluginRegistrationId && item.enabled)
+            }
             onClick={() => openTest(row)}
           >
             {tx('发送测试', 'Send test')}
@@ -820,24 +831,33 @@ onMounted(loadInstances)
         <div>
           {{
             tx(
-              canEditAccounts
-                ? '配置所选租户的服务账号和密钥；保存和校验不会发送通知。'
-                : '这些服务由超管配置。租户可查看、选择和使用，不能修改账号或密钥。',
-              canEditAccounts
-                ? 'Configure service accounts and credentials for the selected tenant. Saving and validation do not send notifications.'
-                : 'These services are configured by the system administrator. Tenants can view, select and use them; account or credential changes are not allowed.'
+              canEditAccounts ? '通知渠道' : '可用通知渠道',
+              canEditAccounts ? 'Notification channels' : 'Available notification channels'
             )
           }}
         </div>
         <NSpace>
           <NButton @click="loadInstances">{{ tx('刷新', 'Refresh') }}</NButton>
-          <NButton v-if="canEditAccounts" type="primary" @click="openCreate">
-            {{ tx('创建实例', 'Create instance') }}
+          <NButton
+            v-if="canEditAccounts"
+            type="primary"
+            :disabled="!plugins.some(plugin => plugin.enabled) || loading"
+            @click="openCreate"
+          >
+            {{ tx('新增渠道', 'Create instance') }}
           </NButton>
         </NSpace>
       </div>
       <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
       <NAlert v-if="successText" type="success" class="mb-12px">{{ successText }}</NAlert>
+      <NAlert v-if="!loading && !errorText && !plugins.some(plugin => plugin.enabled)" type="warning" class="mb-12px">
+        {{
+          tx(
+            '尚无可用插件，请先由超管开通插件使用权限。',
+            'No plugin is available. Ask the system administrator to grant plugin access first.'
+          )
+        }}
+      </NAlert>
       <NDataTable
         :columns="columns"
         :data="instances"
