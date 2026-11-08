@@ -1,14 +1,21 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NTabPane, NTabs } from 'naive-ui'
+import { NButton, NTabPane, NTabs } from 'naive-ui'
+import { OpenOutline } from '@vicons/ionicons5'
 import MarketBrowse from '@/views/device/market/MarketBrowse.vue'
 import LocalDashboardTemplates from '@/views/visualization/thingsvis-template/index.vue'
+import { buildHomeAssistantMarketUrl } from './external-market'
 
 const route = useRoute()
 const router = useRouter()
 
 const activeTab = computed(() => (route.query.tab === 'local' ? 'local' : 'resources'))
+const homeAssistantMarketUrl = buildHomeAssistantMarketUrl(
+  import.meta.env.VITE_MARKET_URL,
+  window.location.origin,
+  import.meta.env.VITE_BASE_URL
+)
 
 function handleTabChange(value: string) {
   void router.replace({
@@ -25,6 +32,18 @@ function handleTabChange(value: string) {
         <h2>看板模板</h2>
         <p>在资源中心浏览模板资源，或管理已保存的模板并创建看板。</p>
       </div>
+      <NButton
+        v-if="homeAssistantMarketUrl"
+        tag="a"
+        :href="homeAssistantMarketUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        type="primary"
+        secondary
+      >
+        <template #icon><OpenOutline /></template>
+        浏览设备接入插件
+      </NButton>
     </div>
 
     <NTabs :value="activeTab" type="line" animated @update:value="handleTabChange">
@@ -47,6 +66,8 @@ function handleTabChange(value: string) {
 .resource-hub-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   min-height: 56px;
   margin-bottom: 12px;
 

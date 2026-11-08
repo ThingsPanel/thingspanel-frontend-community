@@ -13,6 +13,8 @@ declare namespace Env {
     readonly VITE_METADATA_CONNECTOR_URL?: string
     /** The base url of the application */
     readonly VITE_BASE_URL: string
+    /** Public Horizon portal base URL. */
+    readonly VITE_MARKET_URL?: string
     /** The title of the application */
     readonly VITE_APP_TITLE: string
     /** The description of the application */
