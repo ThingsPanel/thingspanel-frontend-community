@@ -5,6 +5,8 @@
 ## Deployment
 
 - Publish the full frontend build, including `mp-device/index.html` and its generated assets.
+- `pnpm build` builds the administrator UI first, then builds the mobile entry independently into `dist/mp-device/assets`. This prevents administrator chart/editor chunks from entering the mobile startup download. A 128 KiB gzip budget covers the entry's static JS/CSS imports; history charts remain lazy-loaded.
+- Deploy ThingsVis with `main/miniViewer.html` to enable its viewer-only entry. The host checks the HTML capability marker without credentials while device/board metadata loads. Missing files, SPA fallbacks, network errors and a 1.2-second timeout retain the original `/main/` entry, so either deployment order is supported. Native App entry URLs are unchanged.
 - Serve the page, `/api/v1`, `/api/v2`, `/thingsvis-api`, and the existing ThingsVis `/main/` and widget resources on the same HTTPS origin. Keep the HTML route ahead of any SPA fallback.
 - Register the HTTPS origin as the mini-program business domain. Exported documents also require the existing server in the mini-program download domains.
 - The App's existing service configuration determines the H5 origin. Do not commit localhost addresses into production settings.
@@ -23,6 +25,12 @@ node --test src/features/mp-device-detail/session.test.mjs
 # Requires Playwright and Chrome; all mutation requests are intercepted with fixtures.
 $env:PLAYWRIGHT_MODULE='file:///absolute/path/to/playwright/index.mjs'
 node src/features/mp-device-detail/browser.test.mjs
+node src/features/mp-device-detail/board.browser.test.mjs
+# Repeat with the viewer-only capability enabled in the fixtures.
+$env:MP_VIEWER_ENTRY='mini'
+node src/features/mp-device-detail/browser.test.mjs
+node src/features/mp-device-detail/board.browser.test.mjs
+node --test src/features/mp-device-detail/viewer-entry.test.mjs
 node node_modules/vite/bin/vite.js build --config vite.mp-device.config.ts
 ```
 

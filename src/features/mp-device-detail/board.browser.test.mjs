@@ -3,6 +3,7 @@ const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
 const browser = await chromium.launch({ channel: 'chrome', headless: true })
 const page = await browser.newPage({ viewport: { width: 390, height: 844 } })
 const origin = process.env.MP_DEVICE_PREVIEW_URL || 'http://127.0.0.1:5189'
+const miniViewer = process.env.MP_VIEWER_ENTRY === 'mini'
 const calls = [], writes = [], errors = []
 page.on('pageerror', error => errors.push(error.message))
 const source = id => `__platform_${id}__`
@@ -34,7 +35,7 @@ await page.route(origin + '/thingsvis-api/**', async route => {
   assert.equal(route.request().headers().authorization, 'Bearer vis-test')
   await route.fulfill({ json: dashboard })
 })
-await page.route(origin + '/main/**', route => route.fulfill({ contentType: 'text/html', body: `<!doctype html><html><body>看板<script>
+await page.route(origin + '/main/**', route => route.fulfill({ contentType: 'text/html', body: `<!doctype html><html><head>${miniViewer ? '<meta name="thingsvis-mini-viewer" content="1">' : ''}</head><body>看板<script>
 window.messages=[];window.send=message=>parent.postMessage(message,location.origin);
 addEventListener('message',e=>{messages.push(e.data);if(e.data.type==='tv:init'){window.config=e.data.payload.config;send({type:'LOADED'});send({type:'tv:render-ready'});send({type:'thingsvis:requestFieldData',payload:{deviceId:'sensor',dataSourceId:'__platform_sensor__',fieldIds:['pm25__history']}})}});
 send({type:'READY',payload:{renderReadyModes:['grid']}});
@@ -47,6 +48,7 @@ try {
   assert.equal(new URL(page.url()).hash, '')
   assert.equal(await page.evaluate(() => localStorage.getItem('token')), 'existing-admin-token')
   const frame = page.frames()[1]
+  assert.equal(new URL(frame.url()).pathname, miniViewer ? '/main/miniViewer.html' : '/main/')
   const initial = await frame.evaluate(() => ({ config, messages }))
   assert.equal(initial.config.platformToken, 'platform-test')
   assert.equal(initial.config.platformApiBaseUrl, origin + '/api/v1')
