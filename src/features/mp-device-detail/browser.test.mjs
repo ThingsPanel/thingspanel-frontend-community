@@ -9,6 +9,7 @@ const errors=[], writes=[], historyQueries=[], invalidHistoryQueries=[]
 const alarmQueries=[]
 page.on('pageerror',error=>errors.push(error.message))
 const origin=process.env.MP_DEVICE_PREVIEW_URL || 'http://127.0.0.1:5188'
+const miniViewer=process.env.MP_VIEWER_ENTRY === 'mini'
 await page.route('https://res.wx.qq.com/**',route=>route.fulfill({contentType:'text/javascript',body:'window.wx={miniProgram:{getEnv:f=>f({miniprogram:true}),switchTab:o=>{window.__lastNavigation=o.url;o.success()},navigateTo:o=>{window.__lastNavigation=o.url;o.success()}}}'}))
 await page.route(origin+'/api/**',async route=>{
   const request=route.request(),url=new URL(request.url()),path=url.pathname
@@ -39,7 +40,7 @@ await page.route(origin+'/api/**',async route=>{
   await route.fulfill({json:{code:200,data}})
 })
 await page.route(origin+'/thingsvis-api/auth/sso',route=>route.fulfill({json:{accessToken:'fixture-sso'}}))
-await page.route(origin+'/main/**',route=>route.fulfill({contentType:'text/html',body:`<!doctype html><html><body>可视化协议测试画布<script>window.addEventListener('message',e=>{if(e.data?.type==='tv:init'){parent.postMessage({type:'LOADED'},location.origin);parent.postMessage({type:'tv:render-ready'},location.origin);parent.postMessage({type:'tv:content-height',payload:{height:320}},location.origin)}});parent.postMessage({type:'READY'},location.origin)</script></body></html>`}))
+await page.route(origin+'/main/**',route=>route.fulfill({contentType:'text/html',body:`<!doctype html><html><head>${miniViewer?'<meta name="thingsvis-mini-viewer" content="1">':''}</head><body>可视化协议测试画布<script>window.addEventListener('message',e=>{if(e.data?.type==='tv:init'){parent.postMessage({type:'LOADED'},location.origin);parent.postMessage({type:'tv:render-ready'},location.origin);parent.postMessage({type:'tv:content-height',payload:{height:320}},location.origin)}});parent.postMessage({type:'READY'},location.origin)</script></body></html>`}))
 // Fixture sockets must never connect to a real backend.
 await page.addInitScript(()=>{window.WebSocket=class{readyState=0;send(){}close(){}addEventListener(){}removeEventListener(){}}})
 try {
@@ -146,6 +147,7 @@ try {
   await page.waitForFunction(()=>!!document.querySelector('iframe') && !document.querySelector('.mp-frame-loading'))
   assert.equal(new URL(page.url()).hash,'')
   assert.equal(await page.locator('iframe').evaluate(el=>el.style.height),'320px')
+  assert.equal(await page.locator('iframe').evaluate(el=>new URL(el.src).pathname),miniViewer?'/main/miniViewer.html':'/main/')
   assert.equal(await page.locator('iframe').evaluate(el=>new URLSearchParams(el.src.split('?')[1]).get('embedSizing')),'content')
   await page.getByRole('navigation',{name:'主导航'}).getByRole('button',{name:'设备',exact:true}).click()
   assert.equal(await page.evaluate(()=>window.__lastNavigation),'/pages/devices/index')

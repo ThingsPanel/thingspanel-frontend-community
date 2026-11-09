@@ -1,6 +1,7 @@
 <script setup>
 import { ref, inject, onMounted, onBeforeUnmount } from 'vue'
 import { createBoardRuntime } from './board-runtime.js'
+import { resolveViewerEntry } from './viewer-entry.js'
 const context = inject('mp-device')
 const host = ref(null),
   phase = ref('loading'),
@@ -29,6 +30,7 @@ async function load() {
   const current = generation
   phase.value = 'loading'
   error.value = warning.value = ''
+  const viewerEntry = resolveViewerEntry(location.origin + '/main/')
   let dataReady = false,
     renderReady = false,
     supportsRenderReady = false
@@ -65,7 +67,8 @@ async function load() {
         else if (state.status === 'warning') warning.value = state.message
       }
     })
-    const result = await runtime.start()
+    const [result, viewerUrl] = await Promise.all([runtime.start(), viewerEntry])
+    if (result?.url) result.url = viewerUrl + result.url.slice(result.url.indexOf('#'))
     if (!result || current !== generation) return
     document.title = result.name || '看板'
     frame = document.createElement('iframe')
