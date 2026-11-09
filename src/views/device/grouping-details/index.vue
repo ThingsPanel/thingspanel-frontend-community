@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { type DataTableColumns, NButton, NDataTable, NEmpty, type PaginationProps, useMessage } from 'naive-ui'
+import {
+  type DataTableColumns,
+  NButton,
+  NDataTable,
+  NEmpty,
+  type PaginationProps,
+  useMessage,
+  useThemeVars
+} from 'naive-ui'
 import {
   deleteDeviceGroup,
   deleteDeviceGroupRelation,
@@ -19,6 +27,7 @@ import { useRouterPush } from '@/hooks/common/router'
 
 const group_data = ref([])
 const device_data = ref<DeviceManagement.DeviceData[]>([])
+const themeVars = useThemeVars()
 
 const tableThemeOverrides = {
   borderColor: 'var(--border-color)',
@@ -44,7 +53,6 @@ const { loading, startLoading, endLoading } = useLoadingEmpty(false)
 const route = useRoute()
 
 const currentId = ref(route.query.id)
-const isEdit = ref(true)
 const the_modal1 = ref()
 const the_modal2 = ref()
 
@@ -140,7 +148,6 @@ const deleteItem = async (rid: string) => {
 }
 const group_column = group_columns(viewDetails, deleteItem)
 const showGroupModal = () => {
-  isEdit.value = true
   if (the_modal2.value) {
     the_modal2.value.showModal = true
   }
@@ -246,62 +253,41 @@ watch(
 <template>
   <div>
     <NSpace vertical :size="16">
-      <NCard :title="details_data.detail.name">
-        <template #header-extra>
-          <NSpace>
-            <NButton v-if="details_data.detail.parent_id !== '0'" type="primary" @click="goToParentGroup">
-              <template #icon>
-                <svg-icon icon="material-symbols:arrow-upward" />
-              </template>
-              {{ $t('custom.grouping_details.parentLevel') }}
-            </NButton>
-            <NButton @click="goToGroupListRoot">
+      <NCard>
+        <div class="group-navigation">
+          <div class="group-path">
+            <NButton text @click="goToGroupListRoot">
               {{ $t('custom.grouping_details.allGroups') }}
             </NButton>
-          </NSpace>
-        </template>
-        <NTabs type="line" animated>
-          <NTabPane :name="$t('custom.grouping_details.subGroup')" :tab="$t('custom.grouping_details.subGroup')">
-            <NSpace>
-              <NButton type="primary" @click="showGroupModalChild">
-                {{ $t('custom.grouping_details.addSubGroup') }}
-              </NButton>
-            </NSpace>
-            <NSpace class="mt4">
-              <NDataTable
-                class="device-data-table h-auto"
-                :columns="group_column"
-                :data="group_data"
-                :loading="loading"
-                size="medium"
-                :theme-overrides="tableThemeOverrides"
-                :bordered="true"
-                :bottom-bordered="true"
-                :single-column="false"
-                :single-line="true"
-                :scroll-x="920"
-                :row-key="groupRowKey"
-                remote
-                :pagination="group_pagination"
-              >
-                <template #empty>
-                  <NEmpty size="small" :description="$t('common.noData')" />
-                </template>
-              </NDataTable>
-            </NSpace>
-            <AddOrEditDevices
-              ref="the_modal1"
-              :is-edit="false"
-              :edit-data="addChildData"
-              is-pid-no-edit
-              :refresh-data="
-                () => {
-                  getDetails(currentId as string)
-                }
-              "
-            />
-          </NTabPane>
-
+            <span aria-hidden="true">/</span>
+            <span class="group-path-text">{{ details_data.tier.group_path || details_data.detail.name }}</span>
+          </div>
+          <NButton
+            v-if="details_data.detail.parent_id && details_data.detail.parent_id !== '0'"
+            text
+            @click="goToParentGroup"
+          >
+            <template #icon>
+              <svg-icon icon="material-symbols:arrow-upward" />
+            </template>
+            {{ $t('custom.grouping_details.parentLevel') }}
+          </NButton>
+        </div>
+        <div class="group-heading">
+          <div class="group-summary">
+            <h1 class="group-title">{{ details_data.detail.name }}</h1>
+            <p v-if="details_data.detail.description" class="group-description">
+              {{ details_data.detail.description }}
+            </p>
+            <p v-if="details_data.detail.created_at" class="group-created-at">
+              {{ $t('custom.grouping_details.createTime') }}：{{ formatDateTime(details_data.detail.created_at) }}
+            </p>
+          </div>
+          <NButton :disabled="!details_data.detail.id" @click="showGroupModal">
+            {{ $t('custom.groupPage.editGroup') }}
+          </NButton>
+        </div>
+        <NTabs type="line" animated default-value="device">
           <NTabPane name="device" :tab="$t('custom.grouping_details.device')">
             <NSpace class="mb6">
               <NButton type="primary" @click="showGroupDeviceModal = true">
@@ -337,23 +323,39 @@ watch(
             </NFlex>
           </NTabPane>
 
-          <NTabPane name="$t('common.edit')" :tab="$t('custom.grouping_details.setting')">
-            <NButton type="primary" @click="showGroupModal">{{ $t('custom.grouping_details.edit') }}</NButton>
-            <NDescriptions label-class="min-w-100px" label-placement="top" bordered :column="3">
-              <NDescriptionsItem :label="$t('custom.grouping_details.groupLevel')">
-                {{ details_data.tier.group_path }}
-              </NDescriptionsItem>
-              <NDescriptionsItem :label="$t('custom.grouping_details.description')">
-                {{ details_data.detail.description }}
-              </NDescriptionsItem>
-              <NDescriptionsItem :label="$t('custom.grouping_details.createTime')">
-                {{ formatDateTime(details_data.detail.created_at) }}
-              </NDescriptionsItem>
-            </NDescriptions>
+          <NTabPane name="subgroups" :tab="$t('custom.grouping_details.subGroup')">
+            <NSpace>
+              <NButton type="primary" @click="showGroupModalChild">
+                {{ $t('custom.grouping_details.addSubGroup') }}
+              </NButton>
+            </NSpace>
+            <div class="mt4">
+              <NDataTable
+                class="device-data-table h-auto"
+                :columns="group_column"
+                :data="group_data"
+                :loading="loading"
+                size="medium"
+                :theme-overrides="tableThemeOverrides"
+                :bordered="true"
+                :bottom-bordered="true"
+                :single-column="false"
+                :single-line="true"
+                :scroll-x="920"
+                :row-key="groupRowKey"
+                remote
+                :pagination="group_pagination"
+              >
+                <template #empty>
+                  <NEmpty size="small" :description="$t('common.noData')" />
+                </template>
+              </NDataTable>
+            </div>
             <AddOrEditDevices
-              ref="the_modal2"
-              :is-edit="true"
-              :edit-data="editData"
+              ref="the_modal1"
+              :is-edit="false"
+              :edit-data="addChildData"
+              is-pid-no-edit
               :refresh-data="
                 () => {
                   getDetails(currentId as string)
@@ -362,6 +364,12 @@ watch(
             />
           </NTabPane>
         </NTabs>
+        <AddOrEditDevices
+          ref="the_modal2"
+          :is-edit="true"
+          :edit-data="editData"
+          :refresh-data="() => getDetails(currentId as string)"
+        />
       </NCard>
     </NSpace>
 
@@ -385,6 +393,73 @@ watch(
 </template>
 
 <style scoped lang="scss">
+.group-navigation,
+.group-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.group-navigation {
+  margin-bottom: 20px;
+  color: v-bind('themeVars.textColor3');
+  font-size: 13px;
+}
+
+.group-path {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.group-path-text,
+.group-description,
+.group-title {
+  overflow-wrap: anywhere;
+}
+
+.group-heading {
+  margin-bottom: 20px;
+}
+
+.group-summary {
+  min-width: 0;
+}
+
+.group-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.group-description {
+  margin: 8px 0 0;
+  color: v-bind('themeVars.textColor2');
+  white-space: pre-wrap;
+}
+
+.group-created-at {
+  margin: 8px 0 0;
+  color: v-bind('themeVars.textColor3');
+  font-size: 12px;
+}
+
+.group-navigation :deep(.n-button),
+.group-heading > :deep(.n-button) {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .group-navigation,
+  .group-heading {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
 .device-data-table {
   min-width: 100%;
   overflow: hidden;
