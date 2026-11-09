@@ -296,18 +296,35 @@ function openNotification(row: NotificationV2.NotificationView) {
   detailModal.value = true
 }
 
-const instanceOptions = computed(() =>
-  instances.value.map(instance => ({ label: `${instance.name} · ${instance.channel}`, value: instance.id }))
-)
-const dispatchOptions = ['queued', 'sending', 'accepted', 'failed', 'unknown'].map(value => ({ label: value, value }))
-const deliveryOptions = ['unsupported', 'pending', 'delivered', 'failed', 'unknown'].map(value => ({
-  label: value,
-  value
-}))
+const instanceOptions = computed(() => instances.value.map(instance => ({ label: instance.name, value: instance.id })))
+const dispatchOptions = computed(() => [
+  { label: tx('已排队', 'Queued'), value: 'queued' },
+  { label: tx('提交中', 'Submitting'), value: 'sending' },
+  { label: tx('已受理', 'Accepted'), value: 'accepted' },
+  { label: tx('提交失败', 'Submission failed'), value: 'failed' },
+  { label: tx('受理状态未知', 'Acceptance unknown'), value: 'unknown' }
+])
+const deliveryOptions = computed(() => [
+  { label: tx('不提供回执', 'No delivery receipt'), value: 'unsupported' },
+  { label: tx('等待回执', 'Awaiting receipt'), value: 'pending' },
+  { label: tx('已送达', 'Delivered'), value: 'delivered' },
+  { label: tx('投递失败', 'Delivery failed'), value: 'failed' },
+  { label: tx('送达状态未知', 'Delivery unknown'), value: 'unknown' }
+])
+const dispatchLabel = (value: string) => dispatchOptions.value.find(option => option.value === value)?.label || value
 const statusLabel = (row: NotificationV2.DeliveryView) => describeDeliveryStatus(row.dispatchStatus, row.deliveryStatus)
 const dateText = (value: string) => new Date(value).toLocaleString()
-const sourceOptions: SelectOption[] = ['alarm', 'automation', 'manual', 'test'].map(value => ({ label: value, value }))
-const intakeOptions = ['ready', 'blocked'].map(value => ({ label: value, value }))
+const sourceOptions = computed<SelectOption[]>(() => [
+  { label: tx('告警', 'Alarm'), value: 'alarm' },
+  { label: tx('自动化', 'Automation'), value: 'automation' },
+  { label: tx('手动发送', 'Manual send'), value: 'manual' },
+  { label: tx('测试', 'Test'), value: 'test' }
+])
+const sourceLabel = (value: string) => sourceOptions.value.find(option => option.value === value)?.label || value
+const intakeOptions = computed(() => [
+  { label: tx('已接收', 'Received'), value: 'ready' },
+  { label: tx('待处理', 'Needs attention'), value: 'blocked' }
+])
 const intakeLabel = (row: NotificationV2.NotificationView) => describeIntakeStatus(row.intakeStatus)
 const requestColumns: DataTableColumns<NotificationV2.NotificationView> = [
   { title: tx('接收时间', 'Received'), key: 'createdAt', minWidth: 170, render: row => dateText(row.createdAt) },
@@ -315,7 +332,7 @@ const requestColumns: DataTableColumns<NotificationV2.NotificationView> = [
     title: tx('业务来源', 'Source'),
     key: 'source',
     minWidth: 180,
-    render: row => `${row.source.type} · ${row.source.id}`
+    render: row => `${sourceLabel(row.source.type)} · ${row.source.id}`
   },
   {
     title: tx('处理状态', 'Intake status'),
@@ -341,7 +358,7 @@ const columns: DataTableColumns<NotificationV2.DeliveryView> = [
     title: tx('业务来源', 'Source'),
     key: 'source',
     minWidth: 150,
-    render: row => `${row.source.type} · ${row.source.id}`
+    render: row => `${sourceLabel(row.source.type)} · ${row.source.id}`
   },
   { title: tx('通知渠道', 'Instance'), key: 'instanceId', minWidth: 180, ellipsis: { tooltip: true } },
   {
@@ -350,7 +367,12 @@ const columns: DataTableColumns<NotificationV2.DeliveryView> = [
     minWidth: 160,
     render: row => row.recipient.display || '—'
   },
-  { title: tx('提交状态', 'Dispatch'), key: 'dispatchStatus', minWidth: 140, render: row => row.dispatchStatus },
+  {
+    title: tx('提交状态', 'Dispatch'),
+    key: 'dispatchStatus',
+    minWidth: 140,
+    render: row => dispatchLabel(row.dispatchStatus)
+  },
   {
     title: tx('送达状态', 'Delivery'),
     key: 'deliveryStatus',
@@ -503,15 +525,15 @@ onMounted(() => {
           {{ isZh ? statusLabel(selectedDelivery).zh : statusLabel(selectedDelivery).en }}
         </NAlert>
         <dl v-if="selectedDelivery" class="grid grid-cols-1 gap-8px sm:grid-cols-2 break-all text-sm">
-          <dt>notificationId</dt>
+          <dt>{{ tx('通知 ID', 'Notification ID') }}</dt>
           <dd>{{ selectedDelivery.notificationId }}</dd>
-          <dt>deliveryId</dt>
+          <dt>{{ tx('投递 ID', 'Delivery ID') }}</dt>
           <dd>{{ selectedDelivery.deliveryId }}</dd>
-          <dt>source</dt>
-          <dd>{{ selectedDelivery.source.type }} · {{ selectedDelivery.source.id }}</dd>
-          <dt>instanceId</dt>
+          <dt>{{ tx('业务来源', 'Source') }}</dt>
+          <dd>{{ sourceLabel(selectedDelivery.source.type) }} · {{ selectedDelivery.source.id }}</dd>
+          <dt>{{ tx('渠道 ID', 'Channel ID') }}</dt>
           <dd>{{ selectedDelivery.instanceId }}</dd>
-          <dt>configVersion</dt>
+          <dt>{{ tx('配置版本', 'Configuration version') }}</dt>
           <dd>{{ selectedDelivery.configVersion }}</dd>
           <dt>{{ tx('尝试次数', 'Attempt count') }}</dt>
           <dd>{{ selectedDelivery.attemptCount }}</dd>
@@ -527,7 +549,8 @@ onMounted(() => {
         <div v-if="selectedNotification" class="mt-12px text-xs opacity-70">
           {{ tx('请求 ID', 'Request ID') }}: {{ selectedNotification.id }} ·
           {{ tx('请求接收时间', 'Request received') }}: {{ dateText(selectedNotification.createdAt) }} ·
-          {{ tx('入口状态', 'Intake') }}: {{ selectedNotification.intakeStatus }}
+          {{ tx('处理状态', 'Intake status') }}:
+          {{ isZh ? intakeLabel(selectedNotification).zh : intakeLabel(selectedNotification).en }}
         </div>
         <NAlert v-if="selectedNotification?.intakeStatus === 'blocked'" type="warning" class="mt-8px">
           {{
@@ -540,7 +563,7 @@ onMounted(() => {
           <div class="font-600 mb-8px">{{ tx('请求投递摘要', 'Request delivery summary') }}</div>
           <ul class="pl-20px list-disc text-sm">
             <li v-for="delivery in selectedNotification.deliveries" :key="delivery.deliveryId" class="break-all">
-              {{ delivery.deliveryId }} · {{ delivery.dispatchStatus }} ·
+              {{ delivery.deliveryId }} · {{ dispatchLabel(delivery.dispatchStatus) }} ·
               {{
                 isZh
                   ? describeDeliveryStatus(delivery.dispatchStatus, delivery.deliveryStatus).zh
