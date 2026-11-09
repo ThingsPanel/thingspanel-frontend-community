@@ -97,10 +97,7 @@ async function save() {
     const current = readback.data
     view.value = current
     draftNativeGroupId.value = current.selected?.nativeGroupId ?? ''
-    successText.value = tx(
-      '默认通知策略已保存；此操作不会发送通知。',
-      'Default policy saved. This does not send a notification.'
-    )
+    successText.value = tx('默认策略已保存。', 'Default policy saved.')
   } catch (error) {
     if (!isCurrent(requestGeneration, activeController.signal)) return
     const status =
@@ -165,8 +162,8 @@ onBeforeUnmount(() => {
     <div class="mb-12px text-13px text-gray-500">
       {{
         tx(
-          '仅用于未指定策略的告警。不设置时，只记录告警，不发送通知。',
-          'Alerts without an explicit policy use this default. Without a default, alerts are still recorded but no notification is sent. Saving this setting does not send a notification.'
+          '未指定通知策略的告警使用此项；不设置则不发送通知。',
+          'Used by alerts without a notification policy. Leave unset to record those alerts without sending notifications.'
         )
       }}
     </div>

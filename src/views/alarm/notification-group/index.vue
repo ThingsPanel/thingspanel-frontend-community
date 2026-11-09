@@ -16,14 +16,6 @@ const policyRefresh = ref(0)
   <div>
     <div class="mb-16px">
       <div class="text-xl font-600">{{ tx('通知管理', 'Notification management') }}</div>
-      <div class="mt-4px text-secondary">
-        {{
-          tx(
-            '配置告警接收方式，查看渠道和发送结果。',
-            'Configure alert recipients and channels, and review delivery results.'
-          )
-        }}
-      </div>
     </div>
     <NTabs v-model:value="activeTab" type="line">
       <NTabPane name="policies" :tab="tx('通知策略', 'Notification policies')">

@@ -285,7 +285,7 @@ describe('notification group page failure and conflict flow', () => {
     expect(publishNativeGroupMock).toHaveBeenCalledTimes(1)
     expect(api.testInstance).not.toHaveBeenCalled()
     expect(wrapper.text()).toContain(
-      succeeds ? 'Policy saved and published.' : 'Configuration saved, but publication is not confirmed.'
+      succeeds ? 'Policy saved and published.' : 'Saved. Publication is unconfirmed; refresh to check.'
     )
     if (!succeeds) {
       await wrapper
@@ -444,7 +444,7 @@ describe('notification group page failure and conflict flow', () => {
     await flushPromises()
     await wrapper
       .findAll('button')
-      .find(button => button.text() === 'Use device alarm notification for all active phones')!
+      .find(button => button.text() === 'Use App alert template')!
       .trigger('click')
     await wrapper
       .findAll('button')
@@ -499,7 +499,7 @@ describe('notification group page failure and conflict flow', () => {
       .find(select => select.element.closest('label')?.textContent?.includes('Member'))!
     await memberSelect.trigger('focus')
     await flushPromises()
-    expect(wrapper.text()).toContain('Could not load the member directory.')
+    expect(wrapper.text()).toContain('Could not load members. Try again.')
     expect(wrapper.findAll('button').some(button => button.text() === 'Retry member lookup')).toBe(true)
 
     await wrapper
@@ -507,7 +507,7 @@ describe('notification group page failure and conflict flow', () => {
       .find(button => button.text() === 'Retry member lookup')!
       .trigger('click')
     await flushPromises()
-    expect(wrapper.text()).not.toContain('Could not load the member directory.')
+    expect(wrapper.text()).not.toContain('Could not load members. Try again.')
     expect((memberSelect.props('options') as Array<{ value: string }>).map(option => option.value)).toContain(
       'member-1'
     )
@@ -545,7 +545,7 @@ describe('notification group page failure and conflict flow', () => {
     ])
     expect(wrapper.text()).toContain('New result')
     expect(wrapper.text()).not.toContain('Old result')
-    expect(wrapper.text()).not.toContain('Could not load the member directory.')
+    expect(wrapper.text()).not.toContain('Could not load members. Try again.')
     expect(api.createGroup).not.toHaveBeenCalled()
     wrapper.unmount()
   })
@@ -578,7 +578,7 @@ describe('notification group page failure and conflict flow', () => {
       .trigger('click')
     await flushPromises()
 
-    expect(wrapper.text()).toContain('application user IDs are not provider recipient addresses')
+    expect(wrapper.text()).toContain('This member contact is unsupported.')
     await wrapper
       .findAll('button')
       .find(button => button.text() === 'Save group')!

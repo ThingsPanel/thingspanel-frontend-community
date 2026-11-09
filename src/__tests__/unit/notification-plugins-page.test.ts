@@ -227,7 +227,7 @@ describe('notification plugin registration page', () => {
     await wrapper.findAll('input')[1].setValue('plugin-fixture-secret')
     await wrapper
       .findAll('button')
-      .find(button => button.text() === 'Read and review manifest')!
+      .find(button => button.text() === 'Read plugin information')!
       .trigger('click')
     await flushPromises()
 
@@ -276,9 +276,7 @@ describe('notification plugin registration page', () => {
         manifestDigest: expectedDigest
       })
     })
-    expect(wrapper.text()).toContain(
-      'The plugin is registered globally; registration does not grant access to any tenant.'
-    )
+    expect(wrapper.text()).toContain('Plugin added. Grant tenant access to use it.')
     wrapper.unmount()
   })
 

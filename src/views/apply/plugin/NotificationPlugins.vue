@@ -494,10 +494,7 @@ async function register() {
   try {
     await notificationV2.registerPlugin(pendingBody, registrationKey.value)
     clearDraft()
-    pageSuccessText.value = tx(
-      '插件已登记到全局目录；登记不会自动授权任何租户。',
-      'The plugin is registered globally; registration does not grant access to any tenant.'
-    )
+    pageSuccessText.value = tx('插件已添加，请为租户授权。', 'Plugin added. Grant tenant access to use it.')
     await load()
   } catch (error) {
     if (error instanceof NotificationClientError && error.outcomeUncertain) {
@@ -589,7 +586,7 @@ onMounted(load)
     @after-leave="clearDraft"
   >
     <NForm label-placement="top">
-      <NFormItem :label="tx('插件 Origin（HTTPS）', 'Plugin origin (HTTPS)')">
+      <NFormItem :label="tx('插件地址（HTTPS）', 'Plugin URL (HTTPS)')">
         <NInput
           v-model:value="form.origin"
           :disabled="Boolean(registrationKey)"
@@ -605,14 +602,6 @@ onMounted(load)
           autocomplete="new-password"
         />
       </NFormItem>
-      <NAlert type="info" class="mb-12px">
-        {{
-          tx(
-            '此凭据只会发送到上方插件 Origin 的清单端点（生产必须 HTTPS；仅显式开发 loopback 例外）；平台登录凭据不会发送到插件。',
-            'This credential is sent only to the manifest endpoint at the plugin origin above (HTTPS in production, with only the explicit development loopback exception). Your platform session token is never sent to the plugin.'
-          )
-        }}
-      </NAlert>
       <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
       <NAlert v-if="successText" type="success" class="mb-12px">{{ successText }}</NAlert>
       <div v-if="manifest" class="mb-16px rounded border p-12px">
@@ -630,7 +619,7 @@ onMounted(load)
       </div>
       <NSpace justify="end">
         <NButton :disabled="Boolean(registrationKey)" :loading="reading" @click="readManifest">
-          {{ tx('读取并核对清单', 'Read and review manifest') }}
+          {{ tx('读取插件信息', 'Read plugin information') }}
         </NButton>
         <NButton
           type="primary"

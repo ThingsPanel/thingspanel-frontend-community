@@ -384,12 +384,7 @@ onMounted(() => {
       <div>
         <div class="record-title">{{ tx('发送记录', 'Send records') }}</div>
         <div class="record-description">
-          {{
-            tx(
-              '查看提交状态和服务商回执。服务商已受理不代表通知已送达。',
-              'Review dispatch and provider receipt status. Provider acceptance does not mean delivery.'
-            )
-          }}
+          {{ tx('已受理不代表已送达。', 'Accepted does not mean delivered.') }}
         </div>
       </div>
     </div>

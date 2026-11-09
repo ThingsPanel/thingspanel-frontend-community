@@ -254,7 +254,7 @@ describe('notification instance page submit boundaries', () => {
     await wrapper.findAll('input')[0].setValue('Fixture account')
     await wrapper.find('select').setValue('registration-1')
     await flushPromises()
-    expect(wrapper.findAll('input')[0].attributes('aria-label')).toBe('Instance name')
+    expect(wrapper.findAll('input')[0].attributes('aria-label')).toBe('Channel name')
     expect(wrapper.findAll('select')[0].attributes('aria-label')).toBe('Notification plugin')
     const pluginSelect = wrapper.findComponent(SelectStub)
     expect(pluginSelect.props('filterable')).toBe(true)
@@ -276,7 +276,7 @@ describe('notification instance page submit boundaries', () => {
       },
       'fixture-tenant'
     )
-    expect(wrapper.text()).toContain('Configuration is valid; no notification was sent.')
+    expect(wrapper.text()).toContain('Configuration is valid.')
     expect(api.createInstance).not.toHaveBeenCalled()
     expect(api.testInstance).not.toHaveBeenCalled()
     wrapper.unmount()
@@ -289,7 +289,7 @@ describe('notification instance page submit boundaries', () => {
     const wrapper = mount(NotificationInstances, { global: { stubs } })
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Service accounts and credentials are managed by the system administrator.')
+    expect(wrapper.text()).toContain('Select a tenant first.')
     expect(wrapper.get('a[href="/management/user"]').text()).toBe('Open Tenant management')
     expect(wrapper.findAll('button').map(button => button.text())).not.toContain('Create instance')
     expect(api.listPlugins).not.toHaveBeenCalled()
@@ -335,7 +335,7 @@ describe('notification instance page submit boundaries', () => {
     await flushPromises()
     expect(api.validateInstance).toHaveBeenCalledTimes(1)
     expect(hostInput.attributes('aria-invalid')).toBeUndefined()
-    expect(wrapper.text()).toContain('Configuration is valid; no notification was sent.')
+    expect(wrapper.text()).toContain('Configuration is valid.')
     wrapper.unmount()
   })
 
