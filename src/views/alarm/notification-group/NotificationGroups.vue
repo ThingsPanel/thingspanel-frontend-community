@@ -484,7 +484,35 @@ function groupMemberBindings(items: NotificationV2.GroupBinding[]) {
 }
 
 function changeInstance(binding: NotificationV2.GroupBinding) {
-  if (isAppInstance(binding)) useAppAlarm(binding)
+  if (isAppInstance(binding)) {
+    useAppAlarm(binding)
+    return
+  }
+  const instance = instances.value.find(item => item.id === binding.instanceId)
+  const contact =
+    instance?.channel === 'email'
+      ? 'email'
+      : instance?.channel === 'sms' || instance?.channel === 'voice'
+        ? 'phone'
+        : undefined
+  if (contact && binding.recipientSource.kind === 'member') {
+    binding.recipientSource.contactField = contact
+  } else if (
+    contact &&
+    binding.recipientSource.kind === 'literal' &&
+    binding.recipientSource.recipient.kind !== contact
+  ) {
+    binding.recipientSource.recipient = { kind: contact, address: '' }
+  }
+  const plugin = plugins.value.find(item => item.id === instance?.pluginRegistrationId)
+  if (
+    binding.contentBinding.kind === 'template' &&
+    plugin?.manifest.contentModes?.includes('text') &&
+    !plugin.manifest.contentModes.includes('template')
+  ) {
+    binding.contentBinding = { kind: 'text', title: '{{subject}}', text: '{{text}}' }
+    delete templateMappings[binding.bindingId]
+  }
 }
 
 function isAppAlarmPreset(binding: NotificationV2.GroupBinding) {
@@ -518,10 +546,12 @@ function policyState(row: NotificationV2.GroupView) {
 
 function updateRecipientKind(binding: NotificationV2.GroupBinding, kind: 'literal' | 'member') {
   delete memberSelections[binding.bindingId]
+  const instance = instances.value.find(item => item.id === binding.instanceId)
+  const contact = instance?.channel === 'email' ? 'email' : 'phone'
   binding.recipientSource =
     kind === 'literal'
-      ? { kind, recipient: { kind: 'phone', address: '' } }
-      : { kind, userId: '', contactField: isAppInstance(binding) ? 'appDevice' : 'phone' }
+      ? { kind, recipient: { kind: contact, address: '' } }
+      : { kind, userId: '', contactField: isAppInstance(binding) ? 'appDevice' : contact }
 }
 
 function updateContentKind(binding: NotificationV2.GroupBinding, kind: 'text' | 'template') {
@@ -545,7 +575,9 @@ function recipientSourceOptions(binding: NotificationV2.GroupBinding): SelectOpt
   return [
     { label: tx('外部接收地址', 'Literal recipient'), value: 'literal' },
     {
-      label: tx('应用成员（App 支持多设备）', 'Application member (App supports multiple devices)'),
+      label: isAppInstance(binding)
+        ? tx('应用成员（App 支持多设备）', 'Application member (App supports multiple devices)')
+        : tx('应用成员', 'Application member'),
       value: 'member',
       disabled: Boolean(instance && !supportsNotificationMemberTarget(instance.channel) && !isAppInstance(binding))
     }
@@ -1149,7 +1181,7 @@ onMounted(loadPage)
                   <NSelect
                     v-model:value="binding.recipientSource.recipient.kind"
                     :options="[
-                      { label: 'Email', value: 'email' },
+                      { label: tx('邮箱', 'Email'), value: 'email' },
                       { label: tx('手机号', 'Phone'), value: 'phone' },
                       { label: 'chat_id', value: 'chat_id' },
                       { label: 'user_id', value: 'user_id' },
@@ -1219,7 +1251,7 @@ onMounted(loadPage)
                   <NSelect
                     v-model:value="binding.recipientSource.contactField"
                     :options="[
-                      { label: 'Email', value: 'email' },
+                      { label: tx('邮箱', 'Email'), value: 'email' },
                       { label: tx('手机号', 'Phone'), value: 'phone' },
                       ...(isAppInstance(binding)
                         ? [{ label: tx('App 全部有效手机', 'All active App devices'), value: 'appDevice' }]

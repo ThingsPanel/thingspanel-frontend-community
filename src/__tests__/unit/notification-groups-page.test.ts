@@ -336,6 +336,73 @@ describe('notification group page failure and conflict flow', () => {
     wrapper.unmount()
   })
 
+  it('switches an App alarm binding to email without keeping the App contact field or template', async () => {
+    const group = {
+      id: 'switch-group',
+      name: 'Notifications',
+      enabled: true,
+      revision: 1,
+      version: 1,
+      migrationState: 'native',
+      bindings: [
+        {
+          bindingId: 'binding-app',
+          instanceId: 'app-instance',
+          recipientSource: { kind: 'member', userId: 'member-1', contactField: 'appDevice' },
+          contentBinding: {
+            kind: 'template',
+            templateId: 'device_alarm',
+            locale: 'zh-CN',
+            paramsMapping: { title: 'subject', text: 'text', alarmId: 'alarmId', alarmKind: 'alarmKind' }
+          }
+        }
+      ]
+    }
+    api.listGroups.mockResolvedValue({ data: { items: [group], total: 1 } })
+    api.getGroup.mockResolvedValue({ data: group })
+    api.updateGroup.mockResolvedValue({ data: group })
+    api.listInstances.mockResolvedValue({
+      data: {
+        items: [
+          { id: 'app-instance', name: 'App', channel: 'im', enabled: true, pluginRegistrationId: 'plugin-app' },
+          { id: 'email-1', name: 'Email', channel: 'email', enabled: true, pluginRegistrationId: 'plugin-email' }
+        ]
+      }
+    })
+    api.listPlugins.mockResolvedValue({
+      data: {
+        items: [
+          { id: 'plugin-app', pluginId: 'thingspanel.unipush', pluginVersion: '2.0.0', manifest: { name: 'App' } },
+          { id: 'plugin-email', pluginId: 'thingspanel.smtp', manifest: { name: 'Email', contentModes: ['text'] } }
+        ]
+      }
+    })
+    getUserListMock.mockResolvedValue({
+      data: { list: [{ id: 'member-1', name: 'Member', email: 'test@example.test' }], total: 1 }
+    })
+    const wrapper = mount(NotificationGroups, { global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Edit')!
+      .trigger('click')
+    await flushPromises()
+    await wrapper.findAll('select')[0].setValue('email-1')
+    await flushPromises()
+    expect(wrapper.text()).not.toContain('appDevice')
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Save group')!
+      .trigger('click')
+    await flushPromises()
+    expect(api.updateGroup).toHaveBeenCalledTimes(1)
+    const saved = api.updateGroup.mock.calls[0][1].bindings[0]
+    expect(saved.recipientSource).toEqual({ kind: 'member', userId: 'member-1', contactField: 'email' })
+    expect(saved.contentBinding).toEqual({ kind: 'text', title: '{{subject}}', text: '{{text}}' })
+    expect(api.testInstance).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
   it('saves an App member alarm policy without a literal CID', async () => {
     const group = {
       id: 'app-group',
