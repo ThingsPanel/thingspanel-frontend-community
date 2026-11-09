@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="referrer" content="no-referrer" />
+    <title>设备详情</title>
+    <script>
+      // Consume launch credentials before loading the application or any external SDK.
+      window.__mpDeviceLaunch = location.hash.slice(1)
+      history.replaceState(null, '', location.pathname + location.search)
+      try {
+        const launch = JSON.parse(new URLSearchParams(window.__mpDeviceLaunch).get('launch') || 'null')
+        if (launch?.kind === 'board') document.title = String(launch.title || '看板').slice(0, 120)
+      } catch {
+        // The application renders invalid-launch errors without exposing credentials.
+      }
+    </script>
+  </head>
+  <body>
+    <div id="mp-device"></div>
+    <script type="module" src="/src/features/mp-device-detail/main.js"></script>
+  </body>
+</html>

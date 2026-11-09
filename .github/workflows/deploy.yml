@@ -26,6 +26,7 @@ jobs:
       - name: Run regression tests
         run: |
           python3 -m unittest discover -s deploy/community-test -p 'test_*.py'
+          node --test src/features/mp-device-detail/session.test.mjs src/features/mp-device-detail/history-filters.test.mjs
           pnpm exec vitest run
           pnpm exec tsx --test src/utils/thingsvis/chart-config-initialization.test.ts src/utils/thingsvis/chart-config-normalizer.test.ts src/views/device/config/market-template-compatibility.test.ts src/service/api/thingmodel-native.test.ts src/service/api/native-template-binding-transport.test.ts
       - name: Type-check and build production frontend

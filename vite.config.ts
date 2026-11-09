@@ -56,8 +56,12 @@ export default defineConfig(configEnv => {
       },
       // 内存优化配置
       rollupOptions: {
-        // 限制并行处理数量以减少内存使用
-        maxParallelFileOps: 2,
+        input: {
+          main: fileURLToPath(new URL('./index.html', import.meta.url)),
+          mpDevice: fileURLToPath(new URL('./mp-device/index.html', import.meta.url))
+        },
+        // Multi-entry builds need nested plugin loads to proceed concurrently.
+        maxParallelFileOps: 1000,
         output: {
           // 手动分包以减少单个包的大小
           manualChunks: {
