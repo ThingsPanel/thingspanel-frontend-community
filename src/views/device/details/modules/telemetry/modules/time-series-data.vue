@@ -490,9 +490,15 @@ const exportData = () => {
   const a = document.createElement('a')
   a.href = excelUrl
   a.download = 'telemetry_data.csv'
+  a.style.display = 'none'
+  document.body.appendChild(a)
   a.click()
-  URL.revokeObjectURL(excelUrl)
-  a.remove()
+  // Let the browser consume the Blob URL before releasing it. Revoking it in
+  // the same task as click() can cancel the download in Chromium and Safari.
+  window.setTimeout(() => {
+    URL.revokeObjectURL(excelUrl)
+    a.remove()
+  }, 1000)
 }
 
 onMounted(() => {
