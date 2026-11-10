@@ -33,6 +33,8 @@
   "custom.devicePage.subDeviceAddress": "子设备地址",
   "custom.devicePage.maintenance": "维护",
   "custom.devicePage.connectInfo": "连接信息",
+  "custom.devicePage.connectionLoadFailed": "连接配置加载失败，请重试。",
+  "custom.devicePage.retryConnection": "重新加载",
   "custom.devicePage.fail": "失败",
   "custom.devicePage.unlimitedDeviceConfig": "不使用设备模板",
   "custom.devicePage.alarmStatus": "告警状态",

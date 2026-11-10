@@ -12,7 +12,6 @@ import { localStg } from '@/utils/storage'
 import { useDeviceStatusWebSocket } from '@/utils/deviceStatusWebSocket'
 import {
   checkDevice,
-  devicCeonnectForm,
   deviceDictProtocolServiceFirstLevel,
   deviceDictProtocolServiceSecondLevel,
   getDeviceGroupCounts,
@@ -42,7 +41,6 @@ const configOptions = ref<any[]>([])
 const deviceId = ref()
 const deviceObj = ref()
 const configId = ref()
-const formData = ref()
 const tablePageRef = ref()
 const buttonDisabled = ref(true)
 const showMessage = ref(false)
@@ -157,16 +155,10 @@ const subscribeDeviceStatus = () => {
   }
 }
 
-const getFormJson = async id => {
-  const res = await devicCeonnectForm({ device_id: id })
-
-  formData.value = res.data
-}
 const setUpId = (dId, cId, dobj) => {
   deviceId.value = dId
   configId.value = cId
   deviceObj.value = JSON.parse(dobj)
-  getFormJson(dId)
 }
 const getDeviceGroupOptions = async () => {
   // 将原始数据转换为树形结构
@@ -867,7 +859,6 @@ const toggleGroupPanel = () => {
               :set-is-success="setIsSuccess"
               :device_id="deviceId"
               :form-data="deviceObj"
-              :form-elements="formData"
               :next-callback="
                 () => {
                   current += 1

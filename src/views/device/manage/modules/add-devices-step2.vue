@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { defineProps, onMounted, reactive, ref, watchEffect } from 'vue'
+import { onBeforeUnmount, reactive, ref, watch, watchEffect } from 'vue'
 import type { FormInst, FormRules } from 'naive-ui'
-import { NButton, NForm, NFormItem, NInput, NSelect } from 'naive-ui'
+import { NAlert, NButton, NForm, NFormItem, NInput, NSelect, NSpin } from 'naive-ui'
 import type { SelectMixedOption } from 'naive-ui/es/select/src/interface'
-import { getDeviceConnectInfo, updateDeviceVoucher } from '@/service/api/device'
+import { devicCeonnectForm, getDeviceConnectInfo, updateDeviceVoucher } from '@/service/api/device'
 import { $t } from '@/locales'
 
 const formRef = ref<FormInst | null>(null)
@@ -38,7 +38,6 @@ interface FormElement {
 }
 
 const props = defineProps<{
-  formElements: FormElement[]
   nextCallback: () => void
   device_id: string
   formData: object
@@ -47,18 +46,43 @@ const props = defineProps<{
 
 // eslint-disable-next-line vue/no-dupe-keys
 const formData = reactive({})
+const formElements = ref<FormElement[]>([])
 const connectInfo = ref<object>({})
-const feachConnectInfo = async () => {
-  const res = await getDeviceConnectInfo({ device_id: props.device_id })
-  connectInfo.value = res.data
+const loading = ref(true)
+const loadFailed = ref(false)
+const saving = ref(false)
+let loadVersion = 0
+const loadConfiguration = async () => {
+  const version = ++loadVersion
+  loading.value = true
+  loadFailed.value = false
+  formElements.value = []
+  connectInfo.value = {}
+  Object.keys(formData).forEach(key => delete formData[key])
+  formRules.value = {}
+  try {
+    const [form, info] = await Promise.all([
+      devicCeonnectForm({ device_id: props.device_id }),
+      getDeviceConnectInfo({ device_id: props.device_id })
+    ])
+    if (version !== loadVersion) return
+    if (form.error || info.error || (form.data != null && !Array.isArray(form.data))) throw new Error('configuration')
+    // A successful null form means no independent credentials (e.g. a child device).
+    formElements.value = form.data || []
+    connectInfo.value = info.data || {}
+  } catch {
+    if (version === loadVersion) loadFailed.value = true
+  } finally {
+    if (version === loadVersion) loading.value = false
+  }
 }
-
-onMounted(() => {
-  feachConnectInfo()
+watch(() => props.device_id, loadConfiguration, { immediate: true })
+onBeforeUnmount(() => {
+  loadVersion++
 })
 watchEffect(() => {
-  if (props.formElements && Array.isArray(props.formElements)) {
-    props.formElements.forEach(element => {
+  if (formElements.value.length) {
+    formElements.value.forEach(element => {
       if (element.type === 'table' && Array.isArray(element.array)) {
         element.array.forEach(subElement => {
           formRules.value[element.dataKey] = subElement.validate || {}
@@ -73,20 +97,23 @@ watchEffect(() => {
 })
 
 const handleSubmit = async () => {
-  // eslint-disable-next-line consistent-return
-  await formRef.value?.validate()
-
-  const res = await updateDeviceVoucher({
-    device_id: props.device_id,
-    voucher: JSON.stringify(formData) || '{}'
-  })
-
-  if (!res.error) {
+  if (loading.value || loadFailed.value || saving.value) return
+  if (!formElements.value.length) {
     props.setIsSuccess(true)
     props.nextCallback()
-  } else {
-    props.setIsSuccess(false)
+    return
+  }
+  await formRef.value?.validate()
+  saving.value = true
+  try {
+    const res = await updateDeviceVoucher({
+      device_id: props.device_id,
+      voucher: JSON.stringify(formData)
+    })
+    props.setIsSuccess(!res.error)
     props.nextCallback()
+  } finally {
+    saving.value = false
   }
 }
 const copy = event => {
@@ -99,55 +126,67 @@ const copy = event => {
 
 <template>
   <NForm ref="formRef" :rules="formRules" :model="formData">
-    <n-scrollbar style="max-height: 360px">
-      <template v-for="element in formElements" :key="element.dataKey">
-        <div v-if="element.type === 'input'" class="form-item">
-          <NFormItem :label="element.label" :path="element.dataKey">
-            <NInput
-              id="input"
-              v-model:value="formData[element.dataKey]"
-              :placeholder="element.placeholder"
-              @click="copy"
-            />
-          </NFormItem>
-        </div>
-        <div v-if="element.type === 'select'" class="form-item">
-          <NFormItem :label="element.label" :path="element.dataKey">
-            <NSelect v-model:value="formData[element.dataKey]" :options="element.options as SelectMixedOption[]" />
-          </NFormItem>
-        </div>
-        <div v-if="element.type === 'table'">
-          <div class="table-label">{{ element.label }}</div>
-          <div class="table-content">
-            <template v-for="subElement in element.array" :key="subElement.dataKey">
-              <div v-if="subElement.type === 'input'" class="table-item">
-                <NFormItem :label="subElement.label" :path="subElement.dataKey">
-                  <NInput v-model:value="formData[subElement.dataKey]" :placeholder="subElement.placeholder" />
-                </NFormItem>
-              </div>
-              <div v-if="subElement.type === 'select'" class="table-item">
-                <NFormItem :label="subElement.label" :path="subElement.dataKey">
-                  <NSelect
-                    v-model:value="formData[subElement.dataKey]"
-                    :options="subElement.options as SelectMixedOption[]"
-                  />
-                </NFormItem>
-              </div>
-            </template>
+    <NAlert v-if="loadFailed" type="error" class="mb-4">
+      {{ $t('custom.devicePage.connectionLoadFailed') }}
+      <NButton text type="primary" @click="loadConfiguration">{{ $t('custom.devicePage.retryConnection') }}</NButton>
+    </NAlert>
+    <NSpin :show="loading">
+      <n-scrollbar style="max-height: 360px" content-style="padding: 4px 0">
+        <template v-for="element in formElements" :key="element.dataKey">
+          <div v-if="element.type === 'input'" class="form-item">
+            <NFormItem :label="element.label" :path="element.dataKey">
+              <NInput
+                id="input"
+                v-model:value="formData[element.dataKey]"
+                :placeholder="element.placeholder"
+                @click="copy"
+              />
+            </NFormItem>
           </div>
-        </div>
-      </template>
+          <div v-if="element.type === 'select'" class="form-item">
+            <NFormItem :label="element.label" :path="element.dataKey">
+              <NSelect v-model:value="formData[element.dataKey]" :options="element.options as SelectMixedOption[]" />
+            </NFormItem>
+          </div>
+          <div v-if="element.type === 'table'">
+            <div class="table-label">{{ element.label }}</div>
+            <div class="table-content">
+              <template v-for="subElement in element.array" :key="subElement.dataKey">
+                <div v-if="subElement.type === 'input'" class="table-item">
+                  <NFormItem :label="subElement.label" :path="subElement.dataKey">
+                    <NInput v-model:value="formData[subElement.dataKey]" :placeholder="subElement.placeholder" />
+                  </NFormItem>
+                </div>
+                <div v-if="subElement.type === 'select'" class="table-item">
+                  <NFormItem :label="subElement.label" :path="subElement.dataKey">
+                    <NSelect
+                      v-model:value="formData[subElement.dataKey]"
+                      :options="subElement.options as SelectMixedOption[]"
+                    />
+                  </NFormItem>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
 
-      <NCard style="margin-top: -15px" :title="$t('custom.devicePage.connectInfo')">
-        <NDescriptions :column="1">
-          <NDescriptionsItem v-for="(value, key) in connectInfo" :key="key" :label="key">
-            <span class="font-600">{{ value }}</span>
-          </NDescriptionsItem>
-        </NDescriptions>
-      </NCard>
-    </n-scrollbar>
+        <NCard
+          v-if="!loading && !loadFailed && Object.keys(connectInfo).length"
+          :title="$t('custom.devicePage.connectInfo')"
+          size="small"
+        >
+          <NDescriptions :column="1">
+            <NDescriptionsItem v-for="(value, key) in connectInfo" :key="key" :label="key">
+              <span class="break-words whitespace-pre-wrap">{{ value }}</span>
+            </NDescriptionsItem>
+          </NDescriptions>
+        </NCard>
+      </n-scrollbar>
+    </NSpin>
     <div class="mt-4 w-full flex-center">
-      <NButton type="primary" @click="handleSubmit">{{ $t('custom.devicePage.saveAndNext') }}</NButton>
+      <NButton type="primary" :disabled="loading || loadFailed" :loading="saving" @click="handleSubmit">
+        {{ formElements.length ? $t('custom.devicePage.saveAndNext') : $t('common.complete') }}
+      </NButton>
     </div>
   </NForm>
 </template>

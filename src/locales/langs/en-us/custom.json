@@ -33,6 +33,8 @@
   "custom.devicePage.subDeviceAddress": "Sub-device Address",
   "custom.devicePage.maintenance": "Maintenance",
   "custom.devicePage.connectInfo": "Connection Information",
+  "custom.devicePage.connectionLoadFailed": "Could not load the connection configuration. Please retry.",
+  "custom.devicePage.retryConnection": "Reload",
   "custom.devicePage.fail": "Failed",
   "custom.devicePage.unlimitedDeviceConfig": "Skip Template",
   "custom.devicePage.alarmStatus": "Alert Status",
