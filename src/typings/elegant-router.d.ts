@@ -61,6 +61,7 @@ declare module "@elegant-router/types" {
     "device_manage": "/device/manage";
     "device_market": "/device/market";
     "device_market_installed-detail": "/device/market/installed-detail/:id";
+    "device_plugin-install": "/device/plugin-install";
     "device_service-details": "/device/service-details";
     "device_template": "/device/thingsmodel";
     "device-details-app": "/device-details-app";
@@ -238,6 +239,7 @@ declare module "@elegant-router/types" {
     | "device_manage"
     | "device_market"
     | "device_market_installed-detail"
+    | "device_plugin-install"
     | "device_service-details"
     | "device_template"
     | "function_hide-child_one"

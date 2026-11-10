@@ -205,6 +205,7 @@ const routeMap: RouteMap = {
   "device_manage": "/device/manage",
   "device_market": "/device/market",
   "device_market_installed-detail": "/device/market/installed-detail/:id",
+  "device_plugin-install": "/device/plugin-install",
   "device_service-details": "/device/service-details",
   "device_template": "/device/thingsmodel",
   "device-details-app": "/device-details-app",

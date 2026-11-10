@@ -136,6 +136,7 @@
   "route.personal-center": "个人中心",
   "route.apply_plugin": "应用插件",
   "route.device_integration": "三方接入",
+  "route.device_plugin-install": "插件安装",
   "route.device_service-details": "三方接入详情",
   "route.device_access": "三方集成",
   "route.walarm_arning-message": "警告消息",

@@ -11,6 +11,8 @@ declare namespace Env {
   interface ImportMeta extends ImportMetaEnv {
     /** The base url of the application */
     readonly VITE_BASE_URL: string
+    /** Public Horizon portal base URL. */
+    readonly VITE_MARKET_URL?: string
     /** The title of the application */
     readonly VITE_APP_TITLE: string
     /** The description of the application */

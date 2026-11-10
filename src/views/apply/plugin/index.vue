@@ -9,6 +9,7 @@ import { useI18n } from 'vue-i18n'
 import serviceConfigModal from './components/serviceConfigModal.vue'
 import serviceModal from './components/serviceModal.vue'
 import NotificationPlugins from './NotificationPlugins.vue'
+import InstallPlugins from './InstallPlugins.vue'
 const { locale } = useI18n()
 const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
 const serviceModalRef = ref<any>(null)
@@ -207,6 +208,9 @@ getList()
         <serviceModal ref="serviceModalRef" @get-list="getList"></serviceModal>
         <serviceConfigModal ref="serviceConfigModalRef" @get-list="getList"></serviceConfigModal>
       </div>
+    </NTabPane>
+    <NTabPane name="install" :tab="tx('插件安装', 'Plugin install')">
+      <InstallPlugins />
     </NTabPane>
     <NTabPane name="notification" :tab="tx('通知插件', 'Notification plugins')">
       <NotificationPlugins />
