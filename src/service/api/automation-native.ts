@@ -18,6 +18,7 @@ import {
   createRule,
   deleteRule,
   getRule,
+  getRun,
   listRules,
   listRuns,
   runRule,
@@ -130,7 +131,19 @@ function toLogRow(run: {
     id: run.id,
     executed_at: run.started_at,
     detail: parts.join('，'),
-    execution_result: run.status === 'succeeded' || run.status === 'partial' ? 'S' : 'F',
+    execution_result: run.status === 'succeeded' ? 'S' : run.status === 'failed' ? 'F' : run.status,
+    execution_label:
+      (
+        {
+          partial: '部分成功',
+          accepted: '已受理',
+          running: '执行中',
+          queued: '排队中',
+          cancelled: '已取消',
+          ignored: '已忽略',
+          rejected: '已拒绝'
+        } as Record<string, string>
+      )[run.status] || run.status,
     status: run.status,
     reason_code: run.reason_code
   }
@@ -226,7 +239,7 @@ export async function sceneActive(id: string) {
 export async function sceneLog(query: { id: string; page?: number; page_size?: number; execution_result?: string }) {
   try {
     const res = await listRunsOf(query.id, query)
-    let rows = res.runs.map(toLogRow)
+    let rows = (await Promise.all(res.runs.map(run => getRun(run.id)))).map(toLogRow)
     if (query?.execution_result) {
       rows = rows.filter(row => row.execution_result === query.execution_result)
     }
@@ -351,7 +364,7 @@ export async function sceneAutomationsLog(query: {
 }) {
   try {
     const res = await listRunsOf(query.scene_automation_id, query)
-    let rows = res.runs.map(toLogRow)
+    let rows = (await Promise.all(res.runs.map(run => getRun(run.id)))).map(toLogRow)
     if (query?.execution_result) {
       rows = rows.filter(row => row.execution_result === query.execution_result)
     }

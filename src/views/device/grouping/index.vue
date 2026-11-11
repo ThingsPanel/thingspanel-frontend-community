@@ -331,7 +331,7 @@ onMounted(getDevice) // Fetch device groups on component mount
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px;
+  gap: 8px;
 }
 
 .device-filter-leading {

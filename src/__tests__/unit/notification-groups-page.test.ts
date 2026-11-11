@@ -285,7 +285,7 @@ describe('notification group page failure and conflict flow', () => {
     expect(publishNativeGroupMock).toHaveBeenCalledTimes(1)
     expect(api.testInstance).not.toHaveBeenCalled()
     expect(wrapper.text()).toContain(
-      succeeds ? 'Policy saved and published.' : 'Configuration saved, but publication is not confirmed.'
+      succeeds ? 'Policy saved and published.' : 'Saved. Publication is unconfirmed; refresh to check.'
     )
     if (!succeeds) {
       await wrapper
@@ -336,6 +336,73 @@ describe('notification group page failure and conflict flow', () => {
     wrapper.unmount()
   })
 
+  it('switches an App alarm binding to email without keeping the App contact field or template', async () => {
+    const group = {
+      id: 'switch-group',
+      name: 'Notifications',
+      enabled: true,
+      revision: 1,
+      version: 1,
+      migrationState: 'native',
+      bindings: [
+        {
+          bindingId: 'binding-app',
+          instanceId: 'app-instance',
+          recipientSource: { kind: 'member', userId: 'member-1', contactField: 'appDevice' },
+          contentBinding: {
+            kind: 'template',
+            templateId: 'device_alarm',
+            locale: 'zh-CN',
+            paramsMapping: { title: 'subject', text: 'text', alarmId: 'alarmId', alarmKind: 'alarmKind' }
+          }
+        }
+      ]
+    }
+    api.listGroups.mockResolvedValue({ data: { items: [group], total: 1 } })
+    api.getGroup.mockResolvedValue({ data: group })
+    api.updateGroup.mockResolvedValue({ data: group })
+    api.listInstances.mockResolvedValue({
+      data: {
+        items: [
+          { id: 'app-instance', name: 'App', channel: 'im', enabled: true, pluginRegistrationId: 'plugin-app' },
+          { id: 'email-1', name: 'Email', channel: 'email', enabled: true, pluginRegistrationId: 'plugin-email' }
+        ]
+      }
+    })
+    api.listPlugins.mockResolvedValue({
+      data: {
+        items: [
+          { id: 'plugin-app', pluginId: 'thingspanel.unipush', pluginVersion: '2.0.0', manifest: { name: 'App' } },
+          { id: 'plugin-email', pluginId: 'thingspanel.smtp', manifest: { name: 'Email', contentModes: ['text'] } }
+        ]
+      }
+    })
+    getUserListMock.mockResolvedValue({
+      data: { list: [{ id: 'member-1', name: 'Member', email: 'test@example.test' }], total: 1 }
+    })
+    const wrapper = mount(NotificationGroups, { global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Edit')!
+      .trigger('click')
+    await flushPromises()
+    await wrapper.findAll('select')[0].setValue('email-1')
+    await flushPromises()
+    expect(wrapper.text()).not.toContain('appDevice')
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Save group')!
+      .trigger('click')
+    await flushPromises()
+    expect(api.updateGroup).toHaveBeenCalledTimes(1)
+    const saved = api.updateGroup.mock.calls[0][1].bindings[0]
+    expect(saved.recipientSource).toEqual({ kind: 'member', userId: 'member-1', contactField: 'email' })
+    expect(saved.contentBinding).toEqual({ kind: 'text', title: '{{subject}}', text: '{{text}}' })
+    expect(api.testInstance).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
   it('saves an App member alarm policy without a literal CID', async () => {
     const group = {
       id: 'app-group',
@@ -377,7 +444,7 @@ describe('notification group page failure and conflict flow', () => {
     await flushPromises()
     await wrapper
       .findAll('button')
-      .find(button => button.text() === 'Use device alarm notification for all active phones')!
+      .find(button => button.text() === 'Use App alert template')!
       .trigger('click')
     await wrapper
       .findAll('button')
@@ -432,7 +499,7 @@ describe('notification group page failure and conflict flow', () => {
       .find(select => select.element.closest('label')?.textContent?.includes('Member'))!
     await memberSelect.trigger('focus')
     await flushPromises()
-    expect(wrapper.text()).toContain('Could not load the member directory.')
+    expect(wrapper.text()).toContain('Could not load members. Try again.')
     expect(wrapper.findAll('button').some(button => button.text() === 'Retry member lookup')).toBe(true)
 
     await wrapper
@@ -440,7 +507,7 @@ describe('notification group page failure and conflict flow', () => {
       .find(button => button.text() === 'Retry member lookup')!
       .trigger('click')
     await flushPromises()
-    expect(wrapper.text()).not.toContain('Could not load the member directory.')
+    expect(wrapper.text()).not.toContain('Could not load members. Try again.')
     expect((memberSelect.props('options') as Array<{ value: string }>).map(option => option.value)).toContain(
       'member-1'
     )
@@ -478,7 +545,7 @@ describe('notification group page failure and conflict flow', () => {
     ])
     expect(wrapper.text()).toContain('New result')
     expect(wrapper.text()).not.toContain('Old result')
-    expect(wrapper.text()).not.toContain('Could not load the member directory.')
+    expect(wrapper.text()).not.toContain('Could not load members. Try again.')
     expect(api.createGroup).not.toHaveBeenCalled()
     wrapper.unmount()
   })
@@ -511,7 +578,7 @@ describe('notification group page failure and conflict flow', () => {
       .trigger('click')
     await flushPromises()
 
-    expect(wrapper.text()).toContain('application user IDs are not provider recipient addresses')
+    expect(wrapper.text()).toContain('This member contact is unsupported.')
     await wrapper
       .findAll('button')
       .find(button => button.text() === 'Save group')!

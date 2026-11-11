@@ -78,6 +78,7 @@ const queryData = ref({
   device_config_id: ''
 })
 const dataTotal = ref(0)
+const listError = ref('')
 
 const getData = async () => {
   queryData.value.device_id = props.device_id
@@ -88,7 +89,8 @@ const getData = async () => {
   } else {
     res = await sceneAutomationsGet(queryData.value)
   }
-  if (res && !res.error) {
+  listError.value = res?.error?.message || (!res?.data ? '加载列表失败，请重试' : '')
+  if (res?.data && !res.error) {
     const list = res.data?.list || []
     sceneLinkageList.value = list.length > 0 || !isDeviceDetailDemo(props.device_id) ? list : demoAutomations()
     dataTotal.value = res.data?.total || sceneLinkageList.value.length
@@ -190,6 +192,7 @@ getData()
 
 <template>
   <NCard class="w-full">
+    <NAlert v-if="listError" type="error" class="mb-12px">{{ listError }}</NAlert>
     <div class="content-header mb-5">
       <div class="content-header__title">
         <h2>{{ isAlarm ? '告警记录' : $t('route.automation_scene-linkage') }}</h2>
@@ -211,7 +214,7 @@ getData()
           ></NInput>
           <div class="search-actions">
             <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-            <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+            <NButton quaternary @click="handleReset">{{ $t('common.reset') }}</NButton>
           </div>
         </div>
       </div>
@@ -397,6 +400,9 @@ getData()
             <td>
               <span v-if="sceneItem['execution_result'] === 'S'">{{ $t('generate.execution-successful') }}</span>
               <span v-if="sceneItem['execution_result'] === 'F'">{{ $t('generate.execution-failed') }}</span>
+              <span v-if="sceneItem['execution_result'] !== 'S' && sceneItem['execution_result'] !== 'F'">
+                {{ sceneItem['execution_label'] || sceneItem['status'] }}
+              </span>
             </td>
           </tr>
         </tbody>

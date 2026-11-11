@@ -484,7 +484,35 @@ function groupMemberBindings(items: NotificationV2.GroupBinding[]) {
 }
 
 function changeInstance(binding: NotificationV2.GroupBinding) {
-  if (isAppInstance(binding)) useAppAlarm(binding)
+  if (isAppInstance(binding)) {
+    useAppAlarm(binding)
+    return
+  }
+  const instance = instances.value.find(item => item.id === binding.instanceId)
+  const contact =
+    instance?.channel === 'email'
+      ? 'email'
+      : instance?.channel === 'sms' || instance?.channel === 'voice'
+        ? 'phone'
+        : undefined
+  if (contact && binding.recipientSource.kind === 'member') {
+    binding.recipientSource.contactField = contact
+  } else if (
+    contact &&
+    binding.recipientSource.kind === 'literal' &&
+    binding.recipientSource.recipient.kind !== contact
+  ) {
+    binding.recipientSource.recipient = { kind: contact, address: '' }
+  }
+  const plugin = plugins.value.find(item => item.id === instance?.pluginRegistrationId)
+  if (
+    binding.contentBinding.kind === 'template' &&
+    plugin?.manifest.contentModes?.includes('text') &&
+    !plugin.manifest.contentModes.includes('template')
+  ) {
+    binding.contentBinding = { kind: 'text', title: '{{subject}}', text: '{{text}}' }
+    delete templateMappings[binding.bindingId]
+  }
 }
 
 function isAppAlarmPreset(binding: NotificationV2.GroupBinding) {
@@ -518,10 +546,12 @@ function policyState(row: NotificationV2.GroupView) {
 
 function updateRecipientKind(binding: NotificationV2.GroupBinding, kind: 'literal' | 'member') {
   delete memberSelections[binding.bindingId]
+  const instance = instances.value.find(item => item.id === binding.instanceId)
+  const contact = instance?.channel === 'email' ? 'email' : 'phone'
   binding.recipientSource =
     kind === 'literal'
-      ? { kind, recipient: { kind: 'phone', address: '' } }
-      : { kind, userId: '', contactField: isAppInstance(binding) ? 'appDevice' : 'phone' }
+      ? { kind, recipient: { kind: contact, address: '' } }
+      : { kind, userId: '', contactField: isAppInstance(binding) ? 'appDevice' : contact }
 }
 
 function updateContentKind(binding: NotificationV2.GroupBinding, kind: 'text' | 'template') {
@@ -545,7 +575,9 @@ function recipientSourceOptions(binding: NotificationV2.GroupBinding): SelectOpt
   return [
     { label: tx('外部接收地址', 'Literal recipient'), value: 'literal' },
     {
-      label: tx('应用成员（App 支持多设备）', 'Application member (App supports multiple devices)'),
+      label: isAppInstance(binding)
+        ? tx('应用成员（App 支持多设备）', 'Application member (App supports multiple devices)')
+        : tx('应用成员', 'Application member'),
       value: 'member',
       disabled: Boolean(instance && !supportsNotificationMemberTarget(instance.channel) && !isAppInstance(binding))
     }
@@ -564,10 +596,7 @@ async function searchMembers(query = '') {
   } catch {
     if (generation !== memberSearchGeneration.value) return
     memberOptions.value = []
-    memberError.value = tx(
-      '无法读取成员目录。请检查当前会话与成员服务，然后重试。',
-      'Could not load the member directory. Check the current session and member service, then retry.'
-    )
+    memberError.value = tx('成员列表加载失败，请重试。', 'Could not load members. Try again.')
   } finally {
     if (generation === memberSearchGeneration.value) memberLoading.value = false
   }
@@ -616,8 +645,8 @@ function validateBindings() {
           binding.bindingId,
           'member',
           tx(
-            'APP 成员目标暂不可用。请改用服务商支持的直接接收地址；应用用户编号不能当作服务商 user_id/chat_id。',
-            'APP member targets are not available yet. Use a direct recipient address supported by the service; application user IDs are not provider user_id/chat_id values.'
+            '当前成员接收方式不可用，请更换联系字段或使用外部接收地址。',
+            'This member contact is unsupported. Choose another contact field or use an external recipient.'
           )
         )
       } else if (
@@ -781,7 +810,7 @@ async function saveGroup() {
       : await notificationV2.createGroup(pending.body as NotificationV2.GroupCreate, pending.key)
     pendingSave.value = null
     modal.value = false
-    successText.value = tx('通知策略已保存；请在列表发布当前版本后用于告警。', 'Notification group saved.')
+    successText.value = tx('已保存，发布后生效。', 'Saved. Publish to activate.')
     await loadPage()
     if (publishAfterSave.value && saved?.data) {
       successText.value = tx('配置已保存，正在发布。', 'Configuration saved. Publishing.')
@@ -791,10 +820,7 @@ async function saveGroup() {
       successText.value =
         status?.published && status.effectiveGroupRevision === saved.data.revision
           ? tx('通知策略已保存并生效。', 'Policy saved and published.')
-          : tx(
-              '配置已保存，但尚未确认生效。请查看该策略的发布状态；已有生效版本不会被本次保存替换。',
-              'Configuration saved, but publication is not confirmed. Review the policy status; saving does not replace the previously published version.'
-            )
+          : tx('已保存，生效状态未确认，请刷新查看。', 'Saved. Publication is unconfirmed; refresh to check.')
     }
   } catch (error) {
     if (error instanceof NotificationClientError && error.outcomeUncertain) {
@@ -986,14 +1012,6 @@ onMounted(loadPage)
     <div class="flex flex-wrap items-center justify-between gap-12px mb-12px">
       <div>
         <div class="text-lg font-600">{{ tx('通知策略', 'Notification policies') }}</div>
-        <div class="text-sm opacity-70">
-          {{
-            tx(
-              '设置通知渠道、接收成员和消息内容。保存后发布，供告警规则使用。',
-              'Choose channels, recipients and content. Save and publish the policy for alert rules.'
-            )
-          }}
-        </div>
       </div>
       <NButton type="primary" :disabled="!capabilities.canManage" @click="openCreate">
         {{ tx('新建通知策略', 'Create policy') }}
@@ -1062,17 +1080,12 @@ onMounted(loadPage)
             type="warning"
             class="mb-12px"
           >
-            {{
-              tx(
-                '这项历史策略仍在整理中，目前只能查看，不能启用。',
-                'This historical policy is still being reviewed. It can be viewed but not enabled.'
-              )
-            }}
+            {{ tx('历史策略尚未迁移，仅供查看。', 'Historical policy not migrated; read-only.') }}
           </NAlert>
           <NAlert v-if="selectedGroup?.migrationState === 'legacy_unmigrated'" type="info" class="mb-12px">
             {{
               tx(
-                '这项历史配置仅供查看，暂不能作为新告警的策略。',
+                '历史配置仅供查看，不能用于新告警。',
                 'This historical configuration is read only and cannot be used for new alerts.'
               )
             }}
@@ -1117,12 +1130,7 @@ onMounted(loadPage)
                 :disabled="formReadOnly"
                 @click="useAppAlarm(binding)"
               >
-                {{
-                  tx(
-                    '使用设备告警通知（选择成员，自动发送到全部有效手机）',
-                    'Use device alarm notification for all active phones'
-                  )
-                }}
+                {{ tx('使用 App 告警模板', 'Use App alert template') }}
               </NButton>
               <NFormItem
                 v-if="!isAppAlarmPreset(binding) || advancedBindings[binding.bindingId]"
@@ -1149,7 +1157,7 @@ onMounted(loadPage)
                   <NSelect
                     v-model:value="binding.recipientSource.recipient.kind"
                     :options="[
-                      { label: 'Email', value: 'email' },
+                      { label: tx('邮箱', 'Email'), value: 'email' },
                       { label: tx('手机号', 'Phone'), value: 'phone' },
                       { label: 'chat_id', value: 'chat_id' },
                       { label: 'user_id', value: 'user_id' },
@@ -1179,8 +1187,8 @@ onMounted(loadPage)
                 <NAlert v-if="isUnsupportedMemberTarget(binding)" type="warning" class="mb-12px">
                   {{
                     tx(
-                      '站内通知尚未接入。请使用服务支持的直接接收目标；不能把应用用户编号当作服务商接收地址。',
-                      'In-app notifications are not integrated yet. Use direct recipients supported by the service; application user IDs are not provider recipient addresses.'
+                      '当前成员接收方式不可用，请更换联系字段或使用外部接收地址。',
+                      'This member contact is unsupported. Choose another contact field or use an external recipient.'
                     )
                   }}
                 </NAlert>
@@ -1219,7 +1227,7 @@ onMounted(loadPage)
                   <NSelect
                     v-model:value="binding.recipientSource.contactField"
                     :options="[
-                      { label: 'Email', value: 'email' },
+                      { label: tx('邮箱', 'Email'), value: 'email' },
                       { label: tx('手机号', 'Phone'), value: 'phone' },
                       ...(isAppInstance(binding)
                         ? [{ label: tx('App 全部有效手机', 'All active App devices'), value: 'appDevice' }]
@@ -1243,8 +1251,8 @@ onMounted(loadPage)
                 <div class="mt-4px text-secondary">
                   {{
                     tx(
-                      '自动填入告警标题和详情，通知所选账号下的全部有效手机。',
-                      'Uses the alert title and details. Sends to all active phones for the selected account.'
+                      '发送告警标题和详情至所选成员的全部有效手机。',
+                      'Sends alert details to all active phones of the selected members.'
                     )
                   }}
                 </div>
@@ -1327,12 +1335,7 @@ onMounted(loadPage)
               </div>
             </div>
             <div v-else class="empty-channel-hint">
-              {{
-                tx(
-                  '先选择通知渠道，再设置接收人和消息内容。',
-                  'Choose a channel to configure recipients and message content.'
-                )
-              }}
+              {{ tx('请选择通知渠道。', 'Choose a channel.') }}
             </div>
             <NAlert
               v-if="bindingErrors[binding.bindingId]"
@@ -1367,7 +1370,7 @@ onMounted(loadPage)
             :loading="saving && !publishAfterSave"
             @click="saveDraft"
           >
-            {{ pendingSave ? tx('使用同一请求重试', 'Retry same request') : tx('仅保存配置', 'Save group') }}
+            {{ pendingSave ? tx('使用同一请求重试', 'Retry same request') : tx('仅保存草稿', 'Save group') }}
           </NButton>
           <NButton
             v-if="editorMode !== 'view' && isTenantAdmin"

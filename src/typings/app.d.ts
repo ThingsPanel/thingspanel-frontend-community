@@ -1438,6 +1438,8 @@ declare namespace App {
           inputDeviceName: string
           submit: string
           connectInfo: string
+          connectionLoadFailed: string
+          retryConnection: string
           success: string
           deviceConfigSuccess: string
           close: string

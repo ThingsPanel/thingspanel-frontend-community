@@ -2,7 +2,8 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 
-// Local preview only. Production uses vite.config.ts and the same-origin gateway.
+// Standalone local preview and the isolated production mini-program bundle.
+// vite.config.ts invokes this build after the administrator bundle is complete.
 const target = process.env.MP_DEVICE_PREVIEW_TARGET || 'https://demo.thingspanel.cn'
 const remote = new URL(target)
 if (

@@ -120,6 +120,34 @@ class DeploymentTest(unittest.TestCase):
         self.assertEqual(self.target.resolve(), old)
         self.assertEqual((self.target / 'SOURCE_COMMIT').read_text().strip(), first)
 
+    def test_verified_release_can_be_redeployed_after_another_release(self):
+        first, second = '1' * 40, '2' * 40
+        for sha in (first, second):
+            self.bundle(sha)
+            self.deploy(sha)
+        self.deploy(first)
+        self.assertEqual((self.target / 'SOURCE_COMMIT').read_text().strip(), first)
+        self.deploy(first)
+        self.assertEqual((self.target / 'SOURCE_COMMIT').read_text().strip(), first)
+
+    def test_reused_release_is_verified_before_switch(self):
+        first, second = '3' * 40, '4' * 40
+        for sha in (first, second):
+            self.bundle(sha)
+            self.deploy(sha)
+        (self.root / 'frontend-releases' / first / 'site' / 'index.html').write_text('corrupt')
+        with self.assertRaisesRegex(RuntimeError, 'checksum'):
+            self.deploy(first)
+        self.assertEqual((self.target / 'SOURCE_COMMIT').read_text().strip(), second)
+
+    def test_incomplete_release_requires_inspection(self):
+        sha = '5' * 40
+        self.bundle(sha, corrupt=True)
+        with self.assertRaisesRegex(RuntimeError, 'checksum'):
+            self.deploy(sha)
+        with self.assertRaisesRegex(SystemExit, 'Incomplete'):
+            self.deploy(sha)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import svgLoader from 'vite-svg-loader'
 import { setupVitePlugins } from './build/plugins'
 import { createViteProxy } from './build/config'
+import { setupMpDeviceBuild } from './build/plugins/mp-device'
 
 export default defineConfig(configEnv => {
   const viteEnv = loadEnv(configEnv.mode, process.cwd()) as unknown as Env.ImportMeta
@@ -27,7 +28,7 @@ export default defineConfig(configEnv => {
         }
       }
     },
-    plugins: [...setupVitePlugins(viteEnv), svgLoader()],
+    plugins: [...setupVitePlugins(viteEnv), svgLoader(), setupMpDeviceBuild()],
     server: {
       host: '0.0.0.0',
       port: 5002,
@@ -57,10 +58,9 @@ export default defineConfig(configEnv => {
       // 内存优化配置
       rollupOptions: {
         input: {
-          main: fileURLToPath(new URL('./index.html', import.meta.url)),
-          mpDevice: fileURLToPath(new URL('./mp-device/index.html', import.meta.url))
+          main: fileURLToPath(new URL('./index.html', import.meta.url))
         },
-        // Multi-entry builds need nested plugin loads to proceed concurrently.
+        // 使用 Rollup 默认并发，避免多入口构建中插件嵌套 load 等待耗尽名额
         maxParallelFileOps: 1000,
         output: {
           // 手动分包以减少单个包的大小

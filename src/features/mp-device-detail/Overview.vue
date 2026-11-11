@@ -3,6 +3,7 @@ import { ref, inject, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { loadDeviceModel } from './model.js'
 import { createDeviceRuntime } from './runtime.js'
 import { attachFrameLayout } from './frame-layout.js'
+import { resolveViewerEntry } from './viewer-entry.js'
 import Telemetry from './Telemetry.vue'
 const props = defineProps({ device: { type: Object, required: true } })
 defineEmits(['notify'])
@@ -42,6 +43,7 @@ async function load() {
   phase.value = 'loading'
   error.value = ''
   warning.value = ''
+  const viewerEntry = resolveViewerEntry(location.origin + '/main/')
   try {
     model.value = await loadDeviceModel(props.device, context)
     if (current !== generation) return
@@ -77,7 +79,8 @@ async function load() {
         }
       }
     })
-    const result = await runtime.start()
+    const [result, viewerUrl] = await Promise.all([runtime.start(), viewerEntry])
+    if (result?.url) result.url = viewerUrl + result.url.slice(result.url.indexOf('#'))
     if (current !== generation || !result?.url) return
     await nextTick()
     frame = document.createElement('iframe')

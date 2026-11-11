@@ -2,7 +2,7 @@ import { defineComponent, h } from 'vue'
 import type { VNodeChild } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { NotificationClientError } from '@/service/api/notification-v2'
+import { NotificationClientError, registerNotificationSessionCleanup } from '@/service/api/notification-v2'
 import NotificationInstances from '@/views/management/notification/NotificationInstances.vue'
 
 const { api, authState } = vi.hoisted(() => ({
@@ -254,7 +254,7 @@ describe('notification instance page submit boundaries', () => {
     await wrapper.findAll('input')[0].setValue('Fixture account')
     await wrapper.find('select').setValue('registration-1')
     await flushPromises()
-    expect(wrapper.findAll('input')[0].attributes('aria-label')).toBe('Instance name')
+    expect(wrapper.findAll('input')[0].attributes('aria-label')).toBe('Channel name')
     expect(wrapper.findAll('select')[0].attributes('aria-label')).toBe('Notification plugin')
     const pluginSelect = wrapper.findComponent(SelectStub)
     expect(pluginSelect.props('filterable')).toBe(true)
@@ -276,7 +276,7 @@ describe('notification instance page submit boundaries', () => {
       },
       'fixture-tenant'
     )
-    expect(wrapper.text()).toContain('Configuration is valid; no notification was sent.')
+    expect(wrapper.text()).toContain('Configuration is valid.')
     expect(api.createInstance).not.toHaveBeenCalled()
     expect(api.testInstance).not.toHaveBeenCalled()
     wrapper.unmount()
@@ -289,7 +289,7 @@ describe('notification instance page submit boundaries', () => {
     const wrapper = mount(NotificationInstances, { global: { stubs } })
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Service accounts and credentials are managed by the system administrator.')
+    expect(wrapper.text()).toContain('Select a tenant first.')
     expect(wrapper.get('a[href="/management/user"]').text()).toBe('Open Tenant management')
     expect(wrapper.findAll('button').map(button => button.text())).not.toContain('Create instance')
     expect(api.listPlugins).not.toHaveBeenCalled()
@@ -335,7 +335,7 @@ describe('notification instance page submit boundaries', () => {
     await flushPromises()
     expect(api.validateInstance).toHaveBeenCalledTimes(1)
     expect(hostInput.attributes('aria-invalid')).toBeUndefined()
-    expect(wrapper.text()).toContain('Configuration is valid; no notification was sent.')
+    expect(wrapper.text()).toContain('Configuration is valid.')
     wrapper.unmount()
   })
 
@@ -562,6 +562,8 @@ describe('notification instance page submit boundaries', () => {
   })
 
   it('discards an old tenant account response when the administrator switches tenants', async () => {
+    const unrelatedSessionCleanup = vi.fn()
+    const unregister = registerNotificationSessionCleanup(unrelatedSessionCleanup)
     // eslint-disable-next-line no-unused-vars
     let resolveOld!: (value: unknown) => void
     api.getInstance.mockReturnValueOnce(
@@ -585,6 +587,30 @@ describe('notification instance page submit boundaries', () => {
     expect(authState.userInfo.tenant_id).toBe('')
     expect(api.updateInstance).not.toHaveBeenCalled()
     expect(api.testInstance).not.toHaveBeenCalled()
+    expect(unrelatedSessionCleanup).not.toHaveBeenCalled()
+    unregister()
+    wrapper.unmount()
+  })
+
+  it('clears a tenant immediately and ignores a late list when switching or deselecting the target', async () => {
+    let finishA!: (value: unknown) => void
+    api.listInstances.mockReturnValueOnce(
+      new Promise(resolve => {
+        finishA = resolve
+      })
+    )
+    api.listInstances.mockResolvedValueOnce({ data: { items: [{ ...instance, name: 'Tenant B channel' }], total: 1 } })
+    const wrapper = mount(NotificationInstances, { props: { targetTenantId: 'tenant-a' }, global: { stubs } })
+    await wrapper.setProps({ targetTenantId: 'tenant-b' })
+    await flushPromises()
+    expect(wrapper.text()).toContain('Tenant B channel')
+    finishA({ data: { items: [{ ...instance, name: 'Tenant A channel' }], total: 1 } })
+    await flushPromises()
+    expect(wrapper.text()).not.toContain('Tenant A channel')
+    await wrapper.setProps({ targetTenantId: undefined })
+    expect(wrapper.text()).not.toContain('Tenant B channel')
+    expect(wrapper.find('.qa-modal').exists()).toBe(false)
+    expect(api.listInstances.mock.calls.map(call => call[1])).toEqual(['tenant-a', 'tenant-b'])
     wrapper.unmount()
   })
 

@@ -664,11 +664,11 @@ onMounted(async () => {
                 />
               </NFormItem>
 
-              <div class="flex gap-4">
+              <div class="flex gap-8px">
                 <NButton type="primary" @click="submitPass">
                   {{ $t('common.save') }}
                 </NButton>
-                <NButton @click="resetPass">
+                <NButton quaternary @click="resetPass">
                   {{ $t('generate.reset') }}
                 </NButton>
               </div>

@@ -224,7 +224,9 @@ watch(
   }
 )
 watch(accountTarget, () => {
-  invalidateNotificationSession()
+  // A platform target change is not a login/session change. Reset only this
+  // tenant view; invalidating the global session also cleared the tenant picker.
+  clearSessionState()
   currentPage.value = 1
   if (hasTenantContext.value) void loadInstances()
 })
@@ -415,7 +417,7 @@ function localValidation() {
       `插件清单包含暂不支持的配置字段：${unsupportedSchemaFields.value.join(', ')}`,
       `The plugin has unsupported config fields: ${unsupportedSchemaFields.value.join(', ')}`
     )
-  if (!formName.value.trim()) errors.name = tx('实例名称不能为空。', 'Instance name is required.')
+  if (!formName.value.trim()) errors.name = tx('渠道名称不能为空。', 'Channel name is required.')
   requiredFields.value.forEach(name => {
     if (isIdentityFieldReadOnly(name)) return
     if (secretFields.value.includes(name)) {
@@ -471,9 +473,7 @@ async function validateConfig() {
     if (generation !== viewGeneration.value) return
     validationErrors.value = result.data.errors
     if (!result.data.valid && result.data.errors.length) focusFirstValidationError()
-    successText.value = result.data.valid
-      ? tx('配置校验通过；未发送通知。', 'Configuration is valid; no notification was sent.')
-      : ''
+    successText.value = result.data.valid ? tx('配置校验通过。', 'Configuration is valid.') : ''
   } catch (error) {
     if (generation !== viewGeneration.value || error instanceof NotificationSessionChangedError) return
     errorText.value = notificationErrorMessage(error, '校验失败。', 'Validation failed.')
@@ -539,7 +539,7 @@ async function saveInstance() {
     pendingInstanceSave.value = null
     clearSecretsAndEditor()
     modal.value = false
-    successText.value = tx('实例已保存；不会自动发送测试通知。', 'Instance saved. No test notification was sent.')
+    successText.value = tx('渠道已保存。', 'Channel saved.')
     await loadInstances()
   } catch (error) {
     if (generation !== viewGeneration.value || error instanceof NotificationSessionChangedError) return
@@ -743,10 +743,14 @@ const columns: DataTableColumns<NotificationInstance> = [
   },
   { title: tx('渠道', 'Channel'), key: 'channel', width: 100 },
   {
-    title: tx('发送状态', 'Enabled'),
+    title: tx('渠道状态', 'Channel status'),
     key: 'enabled',
     width: 100,
-    render: row => (row.enabled ? tx('已启用', 'Enabled') : tx('已停用', 'Disabled'))
+    render: row => {
+      const plugin = plugins.value.find(item => item.id === row.pluginRegistrationId)
+      if (!plugin || !plugin.enabled) return tx('插件不可用', 'Plugin unavailable')
+      return row.enabled ? tx('已启用', 'Enabled') : tx('已停用', 'Disabled')
+    }
   },
   {
     title: tx('回执能力', 'Delivery receipts'),
@@ -772,7 +776,12 @@ const columns: DataTableColumns<NotificationInstance> = [
         {!capabilities.value.canManageAccounts && (
           <NButton
             size="small"
-            disabled={!capabilities.value.canSendTest || Boolean(pendingTest.value)}
+            disabled={
+              !capabilities.value.canSendTest ||
+              Boolean(pendingTest.value) ||
+              !row.enabled ||
+              !plugins.value.some(item => item.id === row.pluginRegistrationId && item.enabled)
+            }
             onClick={() => openTest(row)}
           >
             {tx('发送测试', 'Send test')}
@@ -791,12 +800,7 @@ onMounted(loadInstances)
     <NAlert v-if="!hasTenantContext" type="info">
       <div class="flex flex-wrap items-center gap-12px">
         <span>
-          {{
-            tx(
-              '服务账号和密钥由超管管理。请先选择目标租户，再配置或校验服务账号。',
-              'Service accounts and credentials are managed by the system administrator. Select a target tenant before configuring or validating its accounts.'
-            )
-          }}
+          {{ tx('请先选择租户。', 'Select a tenant first.') }}
         </span>
         <a class="text-primary underline" href="/management/user">
           {{ tx('打开租户管理', 'Open Tenant management') }}
@@ -808,24 +812,30 @@ onMounted(loadInstances)
         <div>
           {{
             tx(
-              canEditAccounts
-                ? '配置所选租户的服务账号和密钥；保存和校验不会发送通知。'
-                : '这些服务由超管配置。租户可查看、选择和使用，不能修改账号或密钥。',
-              canEditAccounts
-                ? 'Configure service accounts and credentials for the selected tenant. Saving and validation do not send notifications.'
-                : 'These services are configured by the system administrator. Tenants can view, select and use them; account or credential changes are not allowed.'
+              canEditAccounts ? '通知渠道' : '可用通知渠道',
+              canEditAccounts ? 'Notification channels' : 'Available notification channels'
             )
           }}
         </div>
         <NSpace>
           <NButton @click="loadInstances">{{ tx('刷新', 'Refresh') }}</NButton>
-          <NButton v-if="canEditAccounts" type="primary" @click="openCreate">
-            {{ tx('创建实例', 'Create instance') }}
+          <NButton
+            v-if="canEditAccounts"
+            type="primary"
+            :disabled="!plugins.some(plugin => plugin.enabled) || loading"
+            @click="openCreate"
+          >
+            {{ tx('新增渠道', 'Create instance') }}
           </NButton>
         </NSpace>
       </div>
       <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
       <NAlert v-if="successText" type="success" class="mb-12px">{{ successText }}</NAlert>
+      <NAlert v-if="!loading && !errorText && !plugins.some(plugin => plugin.enabled)" type="warning" class="mb-12px">
+        {{
+          tx('暂无可用插件，请联系平台管理员授权。', 'No plugins available. Ask a platform administrator for access.')
+        }}
+      </NAlert>
       <NDataTable
         :columns="columns"
         :data="instances"
@@ -859,19 +869,19 @@ onMounted(loadInstances)
     :closable="!pendingInstanceSave"
     :title="
       editorMode === 'create'
-        ? tx('创建通知实例', 'Create notification instance')
-        : tx('编辑通知实例', 'Edit notification instance')
+        ? tx('新增通知渠道', 'Create notification channel')
+        : tx('编辑通知渠道', 'Edit notification channel')
     "
     @after-leave="closeEditor"
   >
     <NForm label-placement="top" :disabled="instanceSaveReadOnly">
-      <NFormItem :label="tx('实例名称', 'Instance name')">
+      <NFormItem :label="tx('渠道名称', 'Channel name')">
         <NInput
           v-model:value="formName"
           :disabled="instanceSaveReadOnly"
           :input-props="{
             id: instanceFieldId('name'),
-            'aria-label': tx('实例名称', 'Instance name'),
+            'aria-label': tx('渠道名称', 'Channel name'),
             'aria-invalid': localFieldErrors.name || validationErrorForField('name') ? 'true' : undefined,
             'aria-describedby': localFieldErrors.name
               ? instanceErrorId('name')
@@ -950,16 +960,16 @@ onMounted(loadInstances)
         <NAlert v-if="legacyIdentityConfigFrozen" type="warning" class="mb-12px">
           {{
             tx(
-              '此旧插件清单未声明 identity_fields。为避免账号身份被意外更换，现有实例的全部配置和秘密字段只能保持原值；如需更改，请创建新实例。实例名称和发送启用状态仍可修改。',
-              'This legacy plugin manifest has no identity_fields declaration. To avoid changing provider identity accidentally, keep all config and secret values unchanged on an existing instance; create a new instance to change them. The instance name and enabled state remain editable.'
+              '此渠道仅支持修改名称和启用状态；更换账号配置请新建渠道。',
+              'Only the name and enabled state can be changed. Create a new channel to use different account settings.'
             )
           }}
         </NAlert>
         <NAlert v-else-if="editorMode === 'edit' && identityFields?.length" type="warning" class="mb-12px">
           {{
             tx(
-              `以下身份字段不可在现有实例中修改：${identityFields.join(', ')}。如需更换账号、区域或身份 URL，请创建新实例；非身份配置和秘密字段仍可按需更新。`,
-              `These identity fields cannot change on an existing instance: ${identityFields.join(', ')}. Create a new instance to change the account, region, or identity URL; non-identity config and secrets remain editable.`
+              `账号字段不可修改：${identityFields.join(', ')}。更换账号请新建渠道。`,
+              `Account fields are read-only: ${identityFields.join(', ')}. Create a new channel to use another account.`
             )
           }}
         </NAlert>
@@ -983,7 +993,7 @@ onMounted(loadInstances)
             :placeholder="
               editorMode === 'edit' && selectedInstance?.secretState[name]
                 ? tx('已配置；留空保持原值', 'Configured; leave blank to keep')
-                : tx('请输入秘密值', 'Enter secret value')
+                : tx('请输入凭据', 'Enter credential')
             "
             @update:value="secretMode = 'set'"
           />
@@ -1067,7 +1077,7 @@ onMounted(loadInstances)
         </NFormItem>
         <NFormItem
           v-if="editableSecretFields.length && editorMode === 'edit'"
-          :label="tx('秘密字段处理', 'Secret handling')"
+          :label="tx('凭据操作', 'Credential action')"
         >
           <NRadioGroup v-model:value="secretMode" :disabled="instanceSaveReadOnly">
             <NSpace>
@@ -1096,7 +1106,7 @@ onMounted(loadInstances)
         </NFormItem>
         <NFormItem
           v-if="editorMode === 'create'"
-          :label="tx('供应商账号身份（JSON 字符串映射）', 'Provider identity (JSON string map)')"
+          :label="tx('服务账号标识（JSON）', 'Provider account identity (JSON)')"
         >
           <NInput
             v-model:value="providerIdentityText"
@@ -1104,15 +1114,15 @@ onMounted(loadInstances)
             :autosize="{ minRows: 2, maxRows: 5 }"
             :disabled="instanceSaveReadOnly"
             :input-props="{
-              'aria-label': tx('供应商账号身份（JSON 字符串映射）', 'Provider identity (JSON string map)')
+              'aria-label': tx('服务账号标识（JSON）', 'Provider account identity (JSON)')
             }"
           />
         </NFormItem>
-        <NFormItem v-if="editorMode === 'edit'" :label="tx('发送启用', 'Sending enabled')">
+        <NFormItem v-if="editorMode === 'edit'" :label="tx('启用渠道', 'Channel enabled')">
           <NSwitch
             v-model:value="enabledValue"
             :disabled="instanceSaveReadOnly"
-            :aria-label="tx('发送启用', 'Sending enabled')"
+            :aria-label="tx('启用渠道', 'Channel enabled')"
           />
         </NFormItem>
       </template>
@@ -1159,14 +1169,9 @@ onMounted(loadInstances)
     :title="tx('发送测试通知', 'Send test notification')"
   >
     <NAlert type="warning" class="mb-12px">
-      {{
-        tx(
-          '本操作会联系所填目标，可能产生供应商费用。只有点击确认后才会提交。',
-          'This sends to the specified recipient and may incur provider charges. It is submitted only after confirmation.'
-        )
-      }}
+      {{ tx('将向接收人发送真实通知，可能产生费用。', 'Sends a real notification and may incur charges.') }}
     </NAlert>
-    <div v-if="selectedInstance" class="mb-12px">{{ selectedInstance.name }} · {{ selectedInstance.channel }}</div>
+    <div v-if="selectedInstance" class="mb-12px">{{ selectedInstance.name }}</div>
     <NForm label-placement="top">
       <NFormItem :label="tx('接收目标', 'Recipient')">
         <NInput v-model:value="testRecipient" :input-props="{ 'aria-label': tx('接收目标', 'Recipient') }" />

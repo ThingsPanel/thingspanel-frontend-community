@@ -7,13 +7,14 @@
  * @LastEditTime: 2024-03-24 16:04:26
 -->
 <script setup lang="tsx">
+import { alarmLifecycleLabel, canAcknowledgeAlarm } from '@/utils/alarm-presentation'
 import { onMounted, reactive, ref } from 'vue'
 import type { Ref } from 'vue'
 import { NButton, NCard, NEmpty, NFlex, NInput } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import dayjs from 'dayjs'
 import moment from 'moment'
-import { alarmHistory, processingOperation } from '@/service/api/alarm-api'
+import { alarmHistory, alarmTransitions, processingOperation } from '@/service/api/alarm-api'
 import { $t } from '@/locales'
 import { tableThemeOverrides } from '@/utils/table-theme'
 import { useAuthStore } from '@/store/modules/auth'
@@ -64,13 +65,19 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   },
   {
     key: 'alarm_level',
-    title: $t('generate.alarm-status'),
+    title: '告警级别',
     align: 'left',
     minWidth: '120px',
     render(row: any) {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      return alarmStatusLabel(row)
+      return alarmLevelLabel(row)
     }
+  },
+  {
+    key: 'state',
+    title: '告警状态',
+    minWidth: '140px',
+    render: (row: any) => alarmStatusLabel(row)
   },
   {
     key: 'content',
@@ -102,7 +109,12 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
             {$t('custom.devicePage.details')}
           </NButton>
           {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
-          <NButton type="warning" size={'small'} onClick={() => maintenance(row)}>
+          <NButton
+            disabled={nativeEnabled.value && !canAcknowledgeAlarm(row as any)}
+            type="warning"
+            size={'small'}
+            onClick={() => maintenance(row)}
+          >
             {nativeEnabled.value ? '确认处理' : $t('common.maintenance')}
           </NButton>
         </div>
@@ -202,17 +214,42 @@ const alarmStateText: Record<string, string> = {
   acked: '已确认',
   cleared: '已恢复'
 }
-function alarmStatusLabel(row: any) {
+function alarmLevelLabel(row: any) {
   const level = alarmStatusOptions.value.find(data => data.value && data.value === row?.alarm_status)
   if (level) return level.label
   return alarmStateText[String(row?.state ?? '')] ?? ''
 }
+function alarmStatusLabel(row: any) {
+  return alarmLifecycleLabel(row) || alarmLevelLabel(row)
+}
+const transitions = ref<{ id: string; kind: string; created_at: string }[]>([])
+const historyLoading = ref(false)
+const historyError = ref('')
+let historyRequest = 0
+const transitionLabels: Record<string, string> = { qualified: '告警触发', ack: '确认处理', clear: '恢复正常' }
 const showDialog = ref(false)
 const infoData = ref({} as any)
-function getInfo(data: any) {
+async function getInfo(data: any) {
   infoData.value = data
   showDialog.value = true
+  transitions.value = []
+  historyError.value = ''
+  const request = ++historyRequest
+  if (!data.state) return
+  historyLoading.value = true
+  try {
+    const result = await alarmTransitions(data.id)
+    if (request !== historyRequest) return
+    if (result.error || !result.data) {
+      historyError.value = '告警历史加载失败，请关闭后重试'
+      return
+    }
+    transitions.value = result.data.transitions
+  } finally {
+    if (request === historyRequest) historyLoading.value = false
+  }
 }
+
 const closeModal = () => {
   showDialog.value = false
 }
@@ -271,7 +308,7 @@ const submitCallback = async () => {
       </NFormItem>
       <NFormItem class="alarm-filter-actions">
         <NButton type="primary" @click="handleSearch">{{ $t('common.search') }}</NButton>
-        <NButton @click="resetData">{{ $t('common.reset') }}</NButton>
+        <NButton quaternary @click="resetData">{{ $t('common.reset') }}</NButton>
       </NFormItem>
     </NForm>
     <n-data-table
@@ -340,6 +377,16 @@ const submitCallback = async () => {
             </tbody>
           </NTable>
         </n-form-item>
+        <template v-if="infoData.state">
+          <div class="mb-3 font-600">生命周期记录</div>
+          <NSpin :show="historyLoading">
+            <NAlert v-if="historyError" type="error">{{ historyError }}</NAlert>
+            <div v-for="event in transitions" :key="event.id" class="mb-3 flex justify-between gap-4">
+              <span>{{ transitionLabels[event.kind] || event.kind }}</span>
+              <span>{{ dayjs(event.created_at).format('YYYY-MM-DD HH:mm:ss') }}</span>
+            </div>
+          </NSpin>
+        </template>
         <NFlex justify="flex-end">
           <NButton @click="closeModal">{{ $t('custom.devicePage.close') }}</NButton>
         </NFlex>
@@ -450,7 +497,10 @@ const submitCallback = async () => {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+
+  :deep(.n-form-item-blank) {
+    gap: 8px;
+  }
 }
 
 @media (max-width: 768px) {

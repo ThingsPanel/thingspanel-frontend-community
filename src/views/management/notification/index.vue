@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import Email from './components/email.vue'
 import ShortMessage from './components/short-message.vue'
 import PushNotification from './components/push-notification.vue'
 import { $t } from '~/src/locales'
 import { useI18n } from 'vue-i18n'
-import { getNotificationUiCapabilities } from '@/service/api/notification-v2'
+import { getNotificationUiCapabilities, registerNotificationSessionCleanup } from '@/service/api/notification-v2'
 import NotificationPlugins from '~/src/views/apply/plugin/NotificationPlugins.vue'
 import NotificationInstances from './NotificationInstances.vue'
 import NotificationPlatformAccounts from './NotificationPlatformAccounts.vue'
@@ -13,6 +13,18 @@ import NotificationPlatformAccounts from './NotificationPlatformAccounts.vue'
 const { locale } = useI18n()
 const capabilities = computed(() => getNotificationUiCapabilities())
 const activeTab = ref(capabilities.value.canManagePlugins ? 'plugins' : 'native')
+const accountTenantId = ref<string>()
+const accountSelectionVersion = ref(0)
+function configureTenant(tenantId: string) {
+  accountTenantId.value = tenantId
+  accountSelectionVersion.value++
+  activeTab.value = 'native'
+}
+const unregister = registerNotificationSessionCleanup(() => {
+  accountTenantId.value = undefined
+  accountSelectionVersion.value++
+})
+onBeforeUnmount(unregister)
 const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
 </script>
 
@@ -27,10 +39,14 @@ const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('z
             :tab="tx('通知插件', 'Notification plugins')"
             class="pannel-content"
           >
-            <NotificationPlugins />
+            <NotificationPlugins @configure-tenant="configureTenant" />
           </NTabPane>
-          <NTabPane name="native" :tab="tx('服务账号', 'Service accounts')" class="pannel-content">
-            <NotificationPlatformAccounts v-if="capabilities.canManageAccounts" />
+          <NTabPane name="native" :tab="tx('通知渠道', 'Notification channels')" class="pannel-content">
+            <NotificationPlatformAccounts
+              v-if="capabilities.canManageAccounts"
+              :key="accountSelectionVersion"
+              :initial-tenant-id="accountTenantId"
+            />
             <NotificationInstances v-else />
           </NTabPane>
           <NTabPane

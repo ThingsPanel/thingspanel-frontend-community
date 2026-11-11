@@ -97,10 +97,7 @@ async function save() {
     const current = readback.data
     view.value = current
     draftNativeGroupId.value = current.selected?.nativeGroupId ?? ''
-    successText.value = tx(
-      '默认通知策略已保存；此操作不会发送通知。',
-      'Default policy saved. This does not send a notification.'
-    )
+    successText.value = tx('默认策略已保存。', 'Default policy saved.')
   } catch (error) {
     if (!isCurrent(requestGeneration, activeController.signal)) return
     const status =
@@ -160,12 +157,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <NCard class="mb-12px" :title="tx('租户默认通知策略', 'Tenant default policy')">
+  <NCard class="mb-12px" size="small" :bordered="false">
+    <div class="mb-8px font-600">{{ tx('默认通知策略', 'Default notification policy') }}</div>
     <div class="mb-12px text-13px text-gray-500">
       {{
         tx(
-          '未单独指定策略的告警会使用此默认值；没有默认值时，告警仍会记录，但不会发送通知。保存设置不会发送通知。',
-          'Alerts without an explicit policy use this default. Without a default, alerts are still recorded but no notification is sent. Saving this setting does not send a notification.'
+          '未指定通知策略的告警使用此项；不设置则不发送通知。',
+          'Used by alerts without a notification policy. Leave unset to record those alerts without sending notifications.'
         )
       }}
     </div>

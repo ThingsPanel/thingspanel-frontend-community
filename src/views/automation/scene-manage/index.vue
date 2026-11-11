@@ -60,8 +60,11 @@ const queryData = ref({
 const dataTotal = ref(0)
 const rowKey = (row: { id: string }) => row.id
 
+const listError = ref('')
 const getData = async () => {
-  const { data } = await sceneGet(queryData.value)
+  const { data, error } = await sceneGet(queryData.value)
+  listError.value = error?.message || (!data ? '加载场景失败，请重试' : '')
+  if (!data || error) return
   tableData.value = data.list
   dataTotal.value = data.total
 }
@@ -219,6 +222,7 @@ getData()
 
 <template>
   <div class="h-full w-full">
+    <NAlert v-if="listError" type="error" class="mb-12px">{{ listError }}</NAlert>
     <NCard>
       <div class="content-header mb-5">
         <div class="content-header__title">
@@ -245,7 +249,7 @@ getData()
             </NInput>
             <div class="search-actions">
               <NButton type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-              <NButton @click="handleReset">{{ $t('common.reset') }}</NButton>
+              <NButton quaternary @click="handleReset">{{ $t('common.reset') }}</NButton>
             </div>
           </div>
         </div>
@@ -321,6 +325,9 @@ getData()
               <td>
                 <span v-if="sceneItem['execution_result'] === 'S'">{{ $t('generate.execution-successful') }}</span>
                 <span v-if="sceneItem['execution_result'] === 'F'">{{ $t('generate.execution-failed') }}</span>
+                <span v-if="sceneItem['execution_result'] !== 'S' && sceneItem['execution_result'] !== 'F'">
+                  {{ sceneItem['execution_label'] || sceneItem['status'] }}
+                </span>
               </td>
             </tr>
           </tbody>

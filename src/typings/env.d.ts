@@ -35,6 +35,8 @@ declare namespace Env {
      * Only valid in the development environment
      */
     readonly VITE_HTTP_PROXY?: CommonType.YesOrNo
+    /** Optional development business API URL, including its /api/v1 prefix. */
+    readonly VITE_METADATA_CONNECTOR_URL?: string
     /** Explicit origin, or "business" to use the configured business gateway origin. */
     readonly VITE_NOTIFICATION_DEV_PROXY_TARGET?: string
     /** Optional origin for the development-only automation owner proxy. */

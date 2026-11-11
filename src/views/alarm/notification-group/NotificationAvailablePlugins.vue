@@ -82,14 +82,6 @@ onMounted(load)
 
 <template>
   <NCard :bordered="false">
-    <NAlert type="info" class="mb-12px">
-      {{
-        tx(
-          '此列表仅显示已向当前租户开放的插件。插件登记与租户授权由平台管理员管理。',
-          'This list shows plugins available to the current tenant. Platform administrators manage plugin registration and tenant access.'
-        )
-      }}
-    </NAlert>
     <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
     <NDataTable :columns="columns" :data="rows" :loading="loading" :row-key="row => row.id" />
     <div v-if="!loading && !errorText && rows.length === 0" class="mt-12px text-secondary">

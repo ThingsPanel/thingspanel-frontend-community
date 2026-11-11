@@ -1,3 +1,4 @@
+import { formatAlarmEvidence } from '@/utils/alarm-presentation'
 /**
  * 告警页面的数据入口。
  *
@@ -19,6 +20,7 @@ import {
   createRule,
   deleteRule,
   getRule,
+  getAlarmTransitions,
   listAlarms,
   listRules,
   ackAlarm,
@@ -256,11 +258,12 @@ export async function alarmHistory(query: {
       name: names[alarm.policy_id] ?? alarm.policy_key,
       alarm_status: alarm.level ?? '',
       state: alarm.state,
+      cleared_at: alarm.cleared_at ?? null,
       // 新模型的告警只带 subject_id（触发对象）和 state，不再有旧的 content 文本。
       // 直接把它拼成「原因」会让客户看到一串 UUID，所以优先用证据/维度，
       // 两者都没有时明确写成「对象」，至少读得懂这是什么。
-      content: alarm.last_evidence || alarm.dimension || `对象 ${alarm.subject_id ?? ''}`.trim(),
-      description: descriptions[alarm.policy_id] || alarm.last_evidence || '',
+      content: formatAlarmEvidence(alarm.last_evidence) || alarm.dimension || `对象 ${alarm.subject_id ?? ''}`.trim(),
+      description: descriptions[alarm.policy_id] || '',
       // 详情里的设备表要能列出来，subject_id 就是触发告警的那台设备。
       alarm_device_list: alarm.subject_id ? [{ id: alarm.subject_id, name: '' }] : [],
       acked_at: alarm.acked_at ?? null,
@@ -293,6 +296,14 @@ export async function processingOperation(params: { id: string; actor?: string }
   try {
     const res = await ackAlarm(params.id, { actor: params.actor ?? '' })
     return ok(res)
+  } catch (error) {
+    return failed(error)
+  }
+}
+
+export async function alarmTransitions(id: string): Promise<FlatResult> {
+  try {
+    return ok(await getAlarmTransitions(id))
   } catch (error) {
     return failed(error)
   }

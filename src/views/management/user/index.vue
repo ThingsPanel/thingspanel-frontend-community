@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/modules/auth'
 import { $t } from '@/locales'
 import TableActionModal from './components/table-action-modal.vue'
 import EditPasswordModal from './components/edit-password-modal.vue'
+import TenantGrowthCharts from './components/tenant-growth-charts.vue'
 import TenantStatisticsOverview from './components/tenant-statistics-overview.vue'
 import type { ModalType } from './components/table-action-modal.vue'
 import pwData from './components/pw.json'
@@ -26,18 +27,16 @@ const {
 const { bool: visible, setTrue: openModal } = useBoolean()
 const { bool: editPwdVisible, setTrue: openEditPwdModal } = useBoolean()
 const showEmpty = ref(false)
+const showAdvancedFilters = ref(false)
 const tableThemeOverrides = {
   borderColor: 'var(--border-color)',
   fontSizeMedium: '14px',
   lineHeight: '1.5',
-  thColor: 'var(--body-color)',
-  thColorHover: 'var(--body-color)',
-  thFontWeight: '400',
-  thTextColor: 'var(--text-color)',
+  thFontWeight: '600',
   tdColorHover: 'var(--primary-color-suppl)',
   tdTextColor: 'var(--text-color)',
   thPaddingMedium: '12px',
-  tdPaddingMedium: '13px 12px'
+  tdPaddingMedium: '10px 12px'
 }
 
 const customUserStatusOptions = computed(() => {
@@ -155,6 +154,17 @@ const queryParams = reactive<QueryFormModel>({
   }
 })
 
+const advancedFilterCount = computed(
+  () =>
+    [
+      queryParams.organization,
+      queryParams.address.province,
+      queryParams.address.detailed_address,
+      queryParams.timezone,
+      queryParams.default_language
+    ].filter(Boolean).length
+)
+
 const pagination: PaginationProps = reactive({
   page: 1,
   pageSize: 10,
@@ -249,7 +259,11 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
           F: 'error'
         }
         const key = row.status === 'N' ? 'page.manage.user.status.normal' : 'page.manage.user.status.freeze'
-        return <NTag type={tagTypes[row.status]}>{$t(key)}</NTag>
+        return (
+          <NTag size="small" bordered={false} type={tagTypes[row.status]}>
+            {$t(key)}
+          </NTag>
+        )
       }
       return <span></span>
     }
@@ -291,7 +305,7 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
     align: 'left',
     render: row => {
       return (
-        <NSpace justify={'start'}>
+        <NSpace justify={'start'} size={8} wrap={false}>
           <NPopconfirm
             negative-text={$t('common.cancel')}
             positive-text={$t('common.confirm')}
@@ -430,8 +444,11 @@ init()
 </script>
 
 <template>
-  <div>
+  <div class="tenant-page">
     <NCard :title="$t('route.management_user')" :bordered="false" class="h-full rounded-8px shadow-sm">
+      <template #header-extra>
+        <NButton type="primary" @click="handleAddTable">{{ $t('generate.create') }}</NButton>
+      </template>
       <div class="h-full flex-col">
         <TenantStatisticsOverview
           :statistics="tenantStatistics"
@@ -439,9 +456,15 @@ init()
           :selected-scope="queryParams.activity_scope"
           @select-scope="handleActivityScopeChange"
         />
-        <div class="mb-12px mt-20px text-16px font-600">{{ $t('page.manage.user.statistics.listTitle') }}</div>
 
-        <NForm label-placement="left" :model="queryParams">
+        <TenantGrowthCharts :trend="tenantStatistics?.trend ?? []" :loading="statisticsLoading" />
+        <NForm
+          class="tenant-filters"
+          label-placement="left"
+          :show-feedback="false"
+          :model="queryParams"
+          @submit.prevent="handleQuery"
+        >
           <NGrid responsive="screen" item-responsive x-gap="12" y-gap="12" class="search-form-grid">
             <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userEmail')" path="email">
               <NInput v-model:value="queryParams.email" />
@@ -452,10 +475,10 @@ init()
             <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userStatus')" path="status">
               <NSelect v-model:value="queryParams.status" clearable :options="customUserStatusOptions" />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="'组织'" path="organization">
+            <NFormItemGi v-if="showAdvancedFilters" span="24 s:12 m:6" :label="'组织'" path="organization">
               <NInput v-model:value="queryParams.organization" placeholder="请输入组织名称" />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="'省市区'" path="address.province">
+            <NFormItemGi v-if="showAdvancedFilters" span="24 s:12 m:6" :label="'省市区'" path="address.province">
               <NCascader
                 v-model:value="queryParams.address.cascaderValue"
                 :options="provinceCityData"
@@ -467,10 +490,15 @@ init()
                 @update:value="handleAddressChange"
               />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="'详细地址'" path="address.detailed_address">
+            <NFormItemGi
+              v-if="showAdvancedFilters"
+              span="24 s:12 m:6"
+              :label="'详细地址'"
+              path="address.detailed_address"
+            >
               <NInput v-model:value="queryParams.address.detailed_address" placeholder="请输入详细地址" />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="'时区'" path="timezone">
+            <NFormItemGi v-if="showAdvancedFilters" span="24 s:12 m:6" :label="'时区'" path="timezone">
               <NSelect
                 v-model:value="queryParams.timezone"
                 clearable
@@ -478,7 +506,7 @@ init()
                 placeholder="请选择时区"
               />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" :label="'默认语言'" path="default_language">
+            <NFormItemGi v-if="showAdvancedFilters" span="24 s:12 m:6" :label="'默认语言'" path="default_language">
               <NSelect
                 v-model:value="queryParams.default_language"
                 clearable
@@ -487,27 +515,30 @@ init()
               />
             </NFormItemGi>
             <NFormItemGi span="24 s:12 m:6" class="search-form-actions">
-              <NSpace class="w-full" justify="end">
+              <NSpace class="w-full" justify="end" align="center" :size="8">
+                <NButton
+                  text
+                  type="primary"
+                  :aria-expanded="showAdvancedFilters"
+                  @click="showAdvancedFilters = !showAdvancedFilters"
+                >
+                  {{ showAdvancedFilters ? '收起筛选 ↑' : '更多筛选 ↓'
+                  }}{{ advancedFilterCount ? ` (${advancedFilterCount})` : '' }}
+                </NButton>
                 <NButton class="search-form-button" type="primary" @click="handleQuery">
                   {{ $t('common.search') }}
                 </NButton>
-                <NButton class="search-form-button" @click="handleReset">{{ $t('common.reset') }}</NButton>
+                <NButton quaternary class="search-form-button" @click="handleReset">{{ $t('common.reset') }}</NButton>
               </NSpace>
             </NFormItemGi>
           </NGrid>
         </NForm>
 
-        <NSpace class="pb-12px" justify="space-between">
-          <NButton type="primary" @click="handleAddTable">
-            {{ $t('generate.create') }}
-          </NButton>
-        </NSpace>
-
         <NDataTable
           v-if="!showEmpty"
-          size="medium"
+          size="small"
           :theme-overrides="tableThemeOverrides"
-          :bordered="true"
+          :bordered="false"
           :bottom-bordered="true"
           :single-column="false"
           :single-line="true"
@@ -547,82 +578,44 @@ init()
 </template>
 
 <style scoped lang="scss">
+.tenant-page {
+  height: 100%;
+}
+.tenant-page :deep(.n-card-header) {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.tenant-page :deep(.n-card-header__main) {
+  font-size: 16px;
+  font-weight: 600;
+}
+.tenant-filters {
+  margin: 16px 0;
+}
+.search-form-actions {
+  align-self: end;
+}
 .standard-table {
   min-width: 100%;
   overflow: hidden;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  background: var(--card-color);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
-
-  :deep(.n-data-table-th),
-  :deep(.n-data-table-td) {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  :deep(.n-data-table-th) {
-    height: 44px;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.5;
-    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
-  }
-
-  :deep(.n-data-table-td) {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.5;
-    border-bottom: 1px solid rgb(226 232 240 / 85%) !important;
-    transition:
-      background-color 180ms ease,
-      box-shadow 180ms ease;
-  }
-
-  :deep(.n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td) {
-    background: rgb(239 246 255) !important;
-    box-shadow:
-      inset 0 1px 0 rgb(191 219 254 / 60%),
-      inset 0 -1px 0 rgb(191 219 254 / 60%) !important;
-  }
-
-  :deep(.n-data-table-td--last-col),
-  :deep(.n-data-table-th--last-col) {
-    padding-right: 20px;
-  }
+  border-radius: 6px;
 }
-
-.search-form-grid {
-  :deep(.n-input),
-  :deep(.n-base-selection),
-  :deep(.n-cascader),
-  :deep(.n-date-picker) {
-    width: 100%;
-    min-height: 36px;
-    border-radius: 8px;
-  }
-
-  :deep(.n-button) {
-    height: 36px;
-    border-radius: 8px;
-  }
+.standard-table :deep(.n-data-table-th) {
+  height: 44px;
+  padding: 12px;
+  font-weight: 600;
+  background-color: var(--n-th-color);
+  border-bottom: 1px solid var(--n-border-color);
 }
-
-.search-form-actions {
-  :deep(.n-space) {
-    justify-content: flex-end;
-  }
+.standard-table :deep(.n-data-table-base-table-header) {
+  border-top: 1px solid var(--n-border-color);
 }
-
+.standard-table :deep(.n-data-table-td) {
+  padding: 10px 12px;
+}
 @media (max-width: 768px) {
-  .search-form-actions {
-    :deep(.n-space) {
-      justify-content: stretch;
-    }
-
-    :deep(.n-button) {
-      flex: 1;
-    }
+  .tenant-page {
+    height: auto;
   }
 }
 </style>

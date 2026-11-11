@@ -87,14 +87,9 @@ function selectCard(scope: Api.UserManagement.TenantActivityScope | null) {
 </script>
 
 <template>
-  <section>
-    <div class="mb-12px flex items-center justify-between">
-      <h3 class="m-0 text-16px font-600">{{ $t('page.manage.user.statistics.title') }}</h3>
-      <span class="text-12px text-gray-500">{{ $t('page.manage.user.statistics.scopeTip') }}</span>
-    </div>
-
+  <section class="statistics-overview" :aria-label="$t('page.manage.user.statistics.title')">
     <NSpin :show="loading">
-      <NGrid cols="1 s:2 m:3 l:5" :x-gap="12" :y-gap="12" responsive="screen">
+      <NGrid cols="1 s:2 m:3 l:5" :x-gap="0" :y-gap="0" responsive="screen">
         <NGridItem v-for="card in cards" :key="card.key">
           <button
             type="button"
@@ -103,17 +98,12 @@ function selectCard(scope: Api.UserManagement.TenantActivityScope | null) {
               'statistics-card--selected': selectedScope === card.scope && card.scope !== null,
               'statistics-card--warning': card.warning
             }"
-            :title="card.description"
+            :title="`${card.description} · ${$t('page.manage.user.statistics.scopeTip')}`"
+            :aria-pressed="selectedScope === card.scope"
             @click="selectCard(card.scope)"
           >
-            <span class="text-13px text-gray-500">{{ card.title }}</span>
-            <strong class="mt-10px text-28px font-600 leading-none">{{ card.value }}</strong>
-            <span class="mt-8px min-h-18px text-12px text-gray-400">
-              <template v-if="card.rate !== undefined">
-                {{ $t('page.manage.user.statistics.percentage', { value: card.rate }) }}
-              </template>
-              <template v-else>{{ card.description }}</template>
-            </span>
+            <span class="statistic-label">{{ card.title }}</span>
+            <strong>{{ loading ? '—' : card.value }}</strong>
           </button>
         </NGridItem>
       </NGrid>
@@ -122,37 +112,49 @@ function selectCard(scope: Api.UserManagement.TenantActivityScope | null) {
 </template>
 
 <style scoped>
+.statistics-overview {
+  border: 1px solid var(--n-border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
 .statistics-card {
   width: 100%;
-  min-height: 118px;
+  min-height: 64px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 16px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
   color: inherit;
   text-align: left;
   background: transparent;
-  border: 1px solid rgba(128, 128, 128, 0.18);
-  border-radius: 8px;
+  border: 0;
+  border-right: 1px solid var(--n-border-color);
   cursor: pointer;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s,
-    transform 0.2s;
+  transition: background-color 0.15s;
 }
-
-.statistics-card:hover,
+.statistic-label {
+  font-size: 13px;
+  opacity: 0.65;
+}
+.statistics-card strong {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.statistics-card:hover {
+  background: rgba(100, 108, 255, 0.04);
+}
 .statistics-card--selected {
-  border-color: #646cff;
-  box-shadow: 0 4px 14px rgba(100, 108, 255, 0.14);
-  transform: translateY(-1px);
+  background: rgba(100, 108, 255, 0.08);
+  box-shadow: inset 0 -2px #646cff;
 }
-
-.statistics-card--selected {
-  background: rgba(100, 108, 255, 0.06);
+.statistics-card:focus-visible {
+  outline: 2px solid #646cff;
+  outline-offset: -2px;
 }
-
 .statistics-card--warning strong {
-  color: #f0a020;
+  color: #d99018;
 }
 </style>

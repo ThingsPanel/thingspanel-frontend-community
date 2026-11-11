@@ -21,18 +21,22 @@ ROOT.mkdir(mode=0o700, exist_ok=True)
 lock = (ROOT / 'deployment.lock').open('a')
 fcntl.flock(lock, fcntl.LOCK_EX)
 release = ROOT / 'frontend-releases' / SHA
-if release.exists():
-    raise SystemExit('Release exists; inspect its result before retrying')
-release.mkdir(parents=True, mode=0o755)
+reuse = release.exists()
+if reuse:
+    record = release / 'deployment.json'
+    if not record.is_file() or json.loads(record.read_text()).get('commit') != SHA:
+        raise SystemExit('Incomplete release exists; inspect its result before retrying')
+release.mkdir(parents=True, mode=0o755, exist_ok=True)
 # Nginx workers need to traverse this directory to serve public static assets.
 release.parent.chmod(0o755)
 ROOT.chmod(0o755)
 site = release / 'site'
-site.mkdir(mode=0o755)
+site.mkdir(mode=0o755, exist_ok=True)
 release.chmod(0o755)
 site.chmod(0o755)
 package = ROOT / 'incoming' / ('frontend-' + SHA + '.tar.gz')
-with tarfile.open(str(package)) as archive:
+if not reuse:
+  with tarfile.open(str(package)) as archive:
     for member in archive.getmembers():
         dest = (site / member.name).resolve()
         if (member.issym() or member.islnk() or not (member.isfile() or member.isdir())
@@ -61,7 +65,7 @@ if not TARGET.exists():
 previous = os.readlink(str(TARGET)) if TARGET.is_symlink() else None
 backup = TARGET.with_name('dist.before-actions-' + SHA)
 link = TARGET.with_name('dist.next-' + SHA)
-if backup.exists() or os.path.lexists(str(link)):
+if (previous is None and backup.exists()) or os.path.lexists(str(link)):
     raise RuntimeError('Deployment paths already exist')
 
 

@@ -10,7 +10,8 @@ import {
   NFlex,
   NPopconfirm,
   type PaginationProps,
-  useMessage
+  useMessage,
+  useThemeVars
 } from 'naive-ui'
 import {
   createDeviceGroupOperationKey,
@@ -40,6 +41,7 @@ import { AddOrEditDevices } from '@/views/device/grouping/components'
 import useLoadingEmpty from '@/hooks/common/use-loading-empty'
 import DeviceSelectList from '@/views/device/grouping-details/modules/device-select-list.vue'
 import { $t } from '@/locales'
+const themeVars = useThemeVars()
 import { formatDateTime } from '@/utils/common/datetime'
 import { useRouterPush } from '@/hooks/common/router'
 import { useAuthStore } from '@/store/modules/auth'
@@ -635,9 +637,10 @@ watch(
               </NDescriptionsItem>
             </NDescriptions>
             <AddOrEditDevices
-              ref="the_modal2"
-              :is-edit="true"
-              :edit-data="editData"
+              ref="the_modal1"
+              :is-edit="false"
+              :edit-data="addChildData"
+              is-pid-no-edit
               :refresh-data="
                 () => {
                   loadGroupDetails(currentId as string)
@@ -646,6 +649,12 @@ watch(
             />
           </NTabPane>
         </NTabs>
+        <AddOrEditDevices
+          ref="the_modal2"
+          :is-edit="true"
+          :edit-data="editData"
+          :refresh-data="() => loadGroupDetails(currentId as string)"
+        />
       </NCard>
     </NSpace>
 
@@ -672,6 +681,73 @@ watch(
 </template>
 
 <style scoped lang="scss">
+.group-navigation,
+.group-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.group-navigation {
+  margin-bottom: 20px;
+  color: v-bind('themeVars.textColor3');
+  font-size: 13px;
+}
+
+.group-path {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.group-path-text,
+.group-description,
+.group-title {
+  overflow-wrap: anywhere;
+}
+
+.group-heading {
+  margin-bottom: 20px;
+}
+
+.group-summary {
+  min-width: 0;
+}
+
+.group-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.group-description {
+  margin: 8px 0 0;
+  color: v-bind('themeVars.textColor2');
+  white-space: pre-wrap;
+}
+
+.group-created-at {
+  margin: 8px 0 0;
+  color: v-bind('themeVars.textColor3');
+  font-size: 12px;
+}
+
+.group-navigation :deep(.n-button),
+.group-heading > :deep(.n-button) {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .group-navigation,
+  .group-heading {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
 .device-data-table {
   min-width: 100%;
   overflow: hidden;

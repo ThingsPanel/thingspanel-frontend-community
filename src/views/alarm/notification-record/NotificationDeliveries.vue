@@ -296,18 +296,35 @@ function openNotification(row: NotificationV2.NotificationView) {
   detailModal.value = true
 }
 
-const instanceOptions = computed(() =>
-  instances.value.map(instance => ({ label: `${instance.name} · ${instance.channel}`, value: instance.id }))
-)
-const dispatchOptions = ['queued', 'sending', 'accepted', 'failed', 'unknown'].map(value => ({ label: value, value }))
-const deliveryOptions = ['unsupported', 'pending', 'delivered', 'failed', 'unknown'].map(value => ({
-  label: value,
-  value
-}))
+const instanceOptions = computed(() => instances.value.map(instance => ({ label: instance.name, value: instance.id })))
+const dispatchOptions = computed(() => [
+  { label: tx('已排队', 'Queued'), value: 'queued' },
+  { label: tx('提交中', 'Submitting'), value: 'sending' },
+  { label: tx('已受理', 'Accepted'), value: 'accepted' },
+  { label: tx('提交失败', 'Submission failed'), value: 'failed' },
+  { label: tx('受理状态未知', 'Acceptance unknown'), value: 'unknown' }
+])
+const deliveryOptions = computed(() => [
+  { label: tx('不提供回执', 'No delivery receipt'), value: 'unsupported' },
+  { label: tx('等待回执', 'Awaiting receipt'), value: 'pending' },
+  { label: tx('已送达', 'Delivered'), value: 'delivered' },
+  { label: tx('投递失败', 'Delivery failed'), value: 'failed' },
+  { label: tx('送达状态未知', 'Delivery unknown'), value: 'unknown' }
+])
+const dispatchLabel = (value: string) => dispatchOptions.value.find(option => option.value === value)?.label || value
 const statusLabel = (row: NotificationV2.DeliveryView) => describeDeliveryStatus(row.dispatchStatus, row.deliveryStatus)
 const dateText = (value: string) => new Date(value).toLocaleString()
-const sourceOptions: SelectOption[] = ['alarm', 'automation', 'manual', 'test'].map(value => ({ label: value, value }))
-const intakeOptions = ['ready', 'blocked'].map(value => ({ label: value, value }))
+const sourceOptions = computed<SelectOption[]>(() => [
+  { label: tx('告警', 'Alarm'), value: 'alarm' },
+  { label: tx('自动化', 'Automation'), value: 'automation' },
+  { label: tx('手动发送', 'Manual send'), value: 'manual' },
+  { label: tx('测试', 'Test'), value: 'test' }
+])
+const sourceLabel = (value: string) => sourceOptions.value.find(option => option.value === value)?.label || value
+const intakeOptions = computed(() => [
+  { label: tx('已接收', 'Received'), value: 'ready' },
+  { label: tx('待处理', 'Needs attention'), value: 'blocked' }
+])
 const intakeLabel = (row: NotificationV2.NotificationView) => describeIntakeStatus(row.intakeStatus)
 const requestColumns: DataTableColumns<NotificationV2.NotificationView> = [
   { title: tx('接收时间', 'Received'), key: 'createdAt', minWidth: 170, render: row => dateText(row.createdAt) },
@@ -315,10 +332,10 @@ const requestColumns: DataTableColumns<NotificationV2.NotificationView> = [
     title: tx('业务来源', 'Source'),
     key: 'source',
     minWidth: 180,
-    render: row => `${row.source.type} · ${row.source.id}`
+    render: row => `${sourceLabel(row.source.type)} · ${row.source.id}`
   },
   {
-    title: tx('入口状态', 'Intake status'),
+    title: tx('处理状态', 'Intake status'),
     key: 'intakeStatus',
     minWidth: 220,
     render: row => (isZh.value ? intakeLabel(row).zh : intakeLabel(row).en)
@@ -341,16 +358,21 @@ const columns: DataTableColumns<NotificationV2.DeliveryView> = [
     title: tx('业务来源', 'Source'),
     key: 'source',
     minWidth: 150,
-    render: row => `${row.source.type} · ${row.source.id}`
+    render: row => `${sourceLabel(row.source.type)} · ${row.source.id}`
   },
-  { title: tx('实例', 'Instance'), key: 'instanceId', minWidth: 180, ellipsis: { tooltip: true } },
+  { title: tx('通知渠道', 'Instance'), key: 'instanceId', minWidth: 180, ellipsis: { tooltip: true } },
   {
     title: tx('脱敏目标', 'Masked recipient'),
     key: 'recipient',
     minWidth: 160,
     render: row => row.recipient.display || '—'
   },
-  { title: tx('提交状态', 'Dispatch'), key: 'dispatchStatus', minWidth: 140, render: row => row.dispatchStatus },
+  {
+    title: tx('提交状态', 'Dispatch'),
+    key: 'dispatchStatus',
+    minWidth: 140,
+    render: row => dispatchLabel(row.dispatchStatus)
+  },
   {
     title: tx('送达状态', 'Delivery'),
     key: 'deliveryStatus',
@@ -379,41 +401,35 @@ onMounted(() => {
 </script>
 
 <template>
-  <NCard>
-    <div class="flex flex-wrap items-center justify-between gap-12px mb-12px">
+  <NCard class="notification-record-panel" :bordered="false">
+    <div class="record-heading">
       <div>
-        <div class="text-lg font-600">{{ tx('发送记录', 'Send records') }}</div>
-        <div class="text-sm opacity-70">
-          {{
-            tx(
-              '查看提交状态和服务商回执。服务商已受理不代表通知已送达。',
-              'Review dispatch and provider receipt status. Provider acceptance does not mean delivery.'
-            )
-          }}
+        <div class="record-title">{{ tx('发送记录', 'Send records') }}</div>
+        <div class="record-description">
+          {{ tx('已受理不代表已送达。', 'Accepted does not mean delivered.') }}
         </div>
       </div>
-      <NButton :loading="loading" @click="loadDeliveries">{{ tx('刷新', 'Refresh') }}</NButton>
     </div>
-    <NDivider>{{ tx('通知请求', 'Notification requests') }}</NDivider>
-    <div class="grid grid-cols-1 gap-12px lg:grid-cols-4 mb-12px">
+
+    <NForm class="record-filters" label-placement="left" :show-feedback="false">
       <NFormItem :label="tx('来源类型', 'Source type')">
         <NSelect v-model:value="requestQuery.sourceType" :options="sourceOptions" clearable />
       </NFormItem>
       <NFormItem :label="tx('来源 ID', 'Source ID')">
         <NInput v-model:value="requestQuery.sourceId" clearable />
       </NFormItem>
-      <NFormItem :label="tx('入口状态', 'Intake status')">
+      <NFormItem :label="tx('处理状态', 'Intake status')">
         <NSelect v-model:value="requestQuery.intakeStatus" :options="intakeOptions" clearable />
       </NFormItem>
-      <NFormItem :label="tx('请求时间范围', 'Request time range')">
+      <NFormItem class="filter-range" :label="tx('时间范围', 'Request time range')">
         <NDatePicker v-model:value="requestRange" type="datetimerange" clearable class="w-full" />
       </NFormItem>
-      <div class="flex items-center gap-8px">
-        <NButton type="primary" @click="handleRequestSearch">{{ tx('筛选请求', 'Filter requests') }}</NButton>
-        <NButton @click="handleRequestReset">{{ tx('重置', 'Reset') }}</NButton>
+      <div class="filter-actions">
+        <NButton type="primary" @click="handleRequestSearch">{{ tx('查询', 'Filter requests') }}</NButton>
+        <NButton quaternary @click="handleRequestReset">{{ tx('重置', 'Reset') }}</NButton>
         <NButton :loading="requestLoading" @click="loadRequests">{{ tx('刷新', 'Refresh') }}</NButton>
       </div>
-    </div>
+    </NForm>
     <NAlert v-if="requestError" type="error" class="mb-12px">{{ requestError }}</NAlert>
     <NDataTable
       :columns="requestColumns"
@@ -431,47 +447,55 @@ onMounted(() => {
         @update:page="loadRequests"
       />
     </div>
-    <NDivider>{{ tx('投递明细', 'Delivery records') }}</NDivider>
-    <div class="grid grid-cols-1 gap-12px lg:grid-cols-3 mb-12px">
-      <NFormItem :label="tx('实例', 'Instance')">
-        <NSelect v-model:value="query.instanceId" :options="instanceOptions" clearable filterable />
-      </NFormItem>
-      <NFormItem :label="tx('来源 ID', 'Source ID')"><NInput v-model:value="query.sourceId" clearable /></NFormItem>
-      <NFormItem :label="tx('提交状态', 'Dispatch status')">
-        <NSelect v-model:value="query.dispatchStatus" :options="dispatchOptions" clearable />
-      </NFormItem>
-      <NFormItem :label="tx('送达状态', 'Delivery status')">
-        <NSelect v-model:value="query.deliveryStatus" :options="deliveryOptions" clearable />
-      </NFormItem>
-      <NFormItem :label="tx('时间范围', 'Time range')">
-        <NDatePicker v-model:value="range" type="datetimerange" clearable class="w-full" />
-      </NFormItem>
-      <div class="flex items-center gap-8px">
-        <NButton type="primary" @click="handleSearch">{{ tx('筛选', 'Filter') }}</NButton>
-        <NButton @click="handleReset">{{ tx('重置', 'Reset') }}</NButton>
+    <details class="delivery-section">
+      <summary class="delivery-section-title">
+        {{ tx('按接收目标查看投递明细', 'Delivery details by recipient') }}
+      </summary>
+      <NForm class="record-filters" label-placement="left" :show-feedback="false">
+        <NFormItem :label="tx('通知渠道', 'Instance')">
+          <NSelect v-model:value="query.instanceId" :options="instanceOptions" clearable filterable />
+        </NFormItem>
+        <NFormItem :label="tx('来源 ID', 'Source ID')"><NInput v-model:value="query.sourceId" clearable /></NFormItem>
+        <NFormItem :label="tx('提交状态', 'Dispatch status')">
+          <NSelect v-model:value="query.dispatchStatus" :options="dispatchOptions" clearable />
+        </NFormItem>
+        <NFormItem :label="tx('送达状态', 'Delivery status')">
+          <NSelect v-model:value="query.deliveryStatus" :options="deliveryOptions" clearable />
+        </NFormItem>
+        <NFormItem class="filter-range" :label="tx('时间范围', 'Time range')">
+          <NDatePicker v-model:value="range" type="datetimerange" clearable class="w-full" />
+        </NFormItem>
+        <div class="filter-actions">
+          <NButton type="primary" @click="handleSearch">{{ tx('查询', 'Filter') }}</NButton>
+          <NButton quaternary @click="handleReset">{{ tx('重置', 'Reset') }}</NButton>
+        </div>
+      </NForm>
+      <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
+      <NAlert v-if="!notificationApiConfigured" type="info" class="mb-12px">
+        {{
+          tx(
+            '通知服务未启用；历史记录仍可查看。',
+            'Notification service is not enabled; historical records remain available.'
+          )
+        }}
+      </NAlert>
+      <NDataTable
+        :columns="columns"
+        :data="rows"
+        :loading="loading"
+        :row-key="row => row.deliveryId"
+        :scroll-x="1200"
+        :remote="true"
+      />
+      <div class="flex justify-end mt-12px">
+        <NPagination
+          v-model:page="currentPage"
+          :page-size="pageSize"
+          :item-count="total"
+          @update:page="loadDeliveries"
+        />
       </div>
-    </div>
-    <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
-    <NAlert v-if="!notificationApiConfigured" type="info" class="mb-12px">
-      {{
-        tx(
-          '通知服务未启用；历史记录仍可查看。',
-          'Notification service is not enabled; historical records remain available.'
-        )
-      }}
-    </NAlert>
-    <NDataTable
-      :columns="columns"
-      :data="rows"
-      :loading="loading"
-      :row-key="row => row.deliveryId"
-      :scroll-x="1200"
-      :remote="true"
-    />
-    <div class="flex justify-end mt-12px">
-      <NPagination v-model:page="currentPage" :page-size="pageSize" :item-count="total" @update:page="loadDeliveries" />
-    </div>
-
+    </details>
     <NModal
       v-model:show="detailModal"
       preset="card"
@@ -501,15 +525,15 @@ onMounted(() => {
           {{ isZh ? statusLabel(selectedDelivery).zh : statusLabel(selectedDelivery).en }}
         </NAlert>
         <dl v-if="selectedDelivery" class="grid grid-cols-1 gap-8px sm:grid-cols-2 break-all text-sm">
-          <dt>notificationId</dt>
+          <dt>{{ tx('通知 ID', 'Notification ID') }}</dt>
           <dd>{{ selectedDelivery.notificationId }}</dd>
-          <dt>deliveryId</dt>
+          <dt>{{ tx('投递 ID', 'Delivery ID') }}</dt>
           <dd>{{ selectedDelivery.deliveryId }}</dd>
-          <dt>source</dt>
-          <dd>{{ selectedDelivery.source.type }} · {{ selectedDelivery.source.id }}</dd>
-          <dt>instanceId</dt>
+          <dt>{{ tx('业务来源', 'Source') }}</dt>
+          <dd>{{ sourceLabel(selectedDelivery.source.type) }} · {{ selectedDelivery.source.id }}</dd>
+          <dt>{{ tx('渠道 ID', 'Channel ID') }}</dt>
           <dd>{{ selectedDelivery.instanceId }}</dd>
-          <dt>configVersion</dt>
+          <dt>{{ tx('配置版本', 'Configuration version') }}</dt>
           <dd>{{ selectedDelivery.configVersion }}</dd>
           <dt>{{ tx('尝试次数', 'Attempt count') }}</dt>
           <dd>{{ selectedDelivery.attemptCount }}</dd>
@@ -525,7 +549,8 @@ onMounted(() => {
         <div v-if="selectedNotification" class="mt-12px text-xs opacity-70">
           {{ tx('请求 ID', 'Request ID') }}: {{ selectedNotification.id }} ·
           {{ tx('请求接收时间', 'Request received') }}: {{ dateText(selectedNotification.createdAt) }} ·
-          {{ tx('入口状态', 'Intake') }}: {{ selectedNotification.intakeStatus }}
+          {{ tx('处理状态', 'Intake status') }}:
+          {{ isZh ? intakeLabel(selectedNotification).zh : intakeLabel(selectedNotification).en }}
         </div>
         <NAlert v-if="selectedNotification?.intakeStatus === 'blocked'" type="warning" class="mt-8px">
           {{
@@ -538,7 +563,7 @@ onMounted(() => {
           <div class="font-600 mb-8px">{{ tx('请求投递摘要', 'Request delivery summary') }}</div>
           <ul class="pl-20px list-disc text-sm">
             <li v-for="delivery in selectedNotification.deliveries" :key="delivery.deliveryId" class="break-all">
-              {{ delivery.deliveryId }} · {{ delivery.dispatchStatus }} ·
+              {{ delivery.deliveryId }} · {{ dispatchLabel(delivery.dispatchStatus) }} ·
               {{
                 isZh
                   ? describeDeliveryStatus(delivery.dispatchStatus, delivery.deliveryStatus).zh
@@ -556,3 +581,80 @@ onMounted(() => {
     </NModal>
   </NCard>
 </template>
+
+<style scoped>
+.record-heading {
+  margin-bottom: 20px;
+}
+.record-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+.record-description {
+  margin-top: 4px;
+  color: var(--n-text-color);
+  opacity: 0.65;
+  font-size: 13px;
+  line-height: 20px;
+}
+.record-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  padding: 0 0 18px;
+}
+.record-filters :deep(.n-form-item) {
+  width: 230px;
+  min-width: 0;
+  margin: 0;
+}
+.record-filters :deep(.n-form-item-label) {
+  font-size: 13px;
+  white-space: nowrap;
+  padding-right: 10px;
+}
+.record-filters :deep(.n-form-item-blank) {
+  min-width: 0;
+}
+.record-filters :deep(.n-form-item.filter-range) {
+  width: 410px;
+}
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.delivery-section {
+  margin-top: 24px;
+  border-top: 1px solid var(--n-border-color);
+  padding-top: 16px;
+}
+.delivery-section-title {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 24px;
+}
+.delivery-section[open] > .delivery-section-title {
+  margin-bottom: 16px;
+}
+@media (max-width: 760px) {
+  .record-filters {
+    gap: 12px;
+  }
+  .record-filters :deep(.n-form-item),
+  .record-filters :deep(.n-form-item.filter-range) {
+    width: 100%;
+  }
+  .record-filters :deep(.n-form-item-label) {
+    width: 80px;
+  }
+  .filter-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+</style>

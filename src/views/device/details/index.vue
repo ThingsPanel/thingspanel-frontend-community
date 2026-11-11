@@ -341,10 +341,11 @@ const getDeviceDetail = async () => {
     name.value = device.name
     device_type.value = data.device_type
 
-    // Start with live runtime tabs; the chart is enabled only from the exact
-    // selected model snapshot included in the native device response.
+    // Resolve the initial tab from the pinned model before mounting content.
+    const hasTemplateChart = await resolveTemplateHasChartContent(data.device_config)
+    if (currentRequestId !== detailRequestId) return
     let filtered = baseComponents.map(item => ({ ...item }))
-    filtered = filtered.filter(item => item.key !== 'chart')
+    if (!hasTemplateChart) filtered = filtered.filter(item => item.key !== 'chart')
     if (device.deviceKind !== 'gateway') {
       filtered = filtered.filter(item => item.key !== 'device-analysis')
     }
@@ -370,7 +371,6 @@ const getDeviceDetail = async () => {
     }
 
     send(JSON.stringify({ device_id: id, token: localStg.get('token') }))
-    void addChartTabWhenAvailable(data.device_config as DeviceConfigNativeBinding | null, currentRequestId)
   } catch (error) {
     if (currentRequestId === detailRequestId) {
       detailError.value = error instanceof Error ? error.message : '设备详情加载失败。'
@@ -391,20 +391,8 @@ const resolveTemplateHasChartContent = async (binding: DeviceConfigNativeBinding
   }
 }
 
-async function addChartTabWhenAvailable(binding: DeviceConfigNativeBinding | null | undefined, requestId: number) {
-  const hasTemplateChart = await resolveTemplateHasChartContent(binding)
-  if (!hasTemplateChart || requestId !== detailRequestId) return
-  if (components.value.some(item => item.key === 'chart')) return
-
-  const chartComponent = baseComponents.find(item => item.key === 'chart')
-  if (!chartComponent) return
-
-  // 图表可用时把它放到首位，并切换为默认 Tab；没有图表时保持遥测 Tab。
-  components.value = [{ ...chartComponent }, ...components.value]
-  lastTabsSig = components.value.map(item => item.key).join('|')
-  if (!requestedTabKey()) tabValue.value = 'chart'
-}
-const closeModal = () => {
+const closeModal = async () => {
+  await getDeviceDetail()
   showDialog.value = false
 }
 const { routerPushByKey } = useRouterPush()
@@ -435,6 +423,8 @@ watch(
   async ([newId], [oldId]) => {
     if (newId !== oldId) {
       d_id = newId
+      components.value = []
+      tabValue.value = ''
       await getDeviceDetail()
       bumpRefreshKey(tabValue.value)
       return

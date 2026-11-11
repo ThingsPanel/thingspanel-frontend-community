@@ -61,7 +61,7 @@ function resetTabLabel() {
         <NButton type="primary" @click="changeTabLabel">{{ $t('page.function.tab.tabTitle.change') }}</NButton>
       </NInputGroup>
       <NDivider title-placement="left">{{ $t('page.function.tab.tabTitle.resetTitle') }}</NDivider>
-      <NButton type="error" ghost class="w-80px" @click="resetTabLabel">
+      <NButton quaternary @click="resetTabLabel">
         {{ $t('page.function.tab.tabTitle.reset') }}
       </NButton>
     </NCard>

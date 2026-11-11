@@ -320,7 +320,7 @@ watch(
     />
   </NFlex>
   <NFlex justify="end" class="mt-5" align="center">
-    <NFlex align="center">
+    <NFlex align="center" :size="8">
       <div class="text-16px">
         {{ $t('generate.selected') }}
         <span class="text-blue-4">{{ checkedRowKeysRef.length }}</span>

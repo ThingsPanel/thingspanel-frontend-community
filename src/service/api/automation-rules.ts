@@ -555,3 +555,10 @@ export function getDeviceAutomation(deviceId: string) {
 export function getTemplateBindings(deviceConfigId: string) {
   return call<TemplateBindings>('get', `/v1/device-configs/${encodeURIComponent(deviceConfigId)}/bindings`)
 }
+
+export function getAlarmTransitions(id: string) {
+  return call<{ transitions: { id: string; kind: string; created_at: string }[] }>(
+    'get',
+    `/v1/alarms/${encodeURIComponent(id)}/transitions`
+  )
+}
