@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [wp/full-develop-integration-20261111]
-    paths: ['.github/workflows/control-plane.yml', 'deploy/community-test/compose_control_plane.py', 'deploy/community-test/control-plane-device-files.json']
+    paths: ['.github/workflows/control-plane.yml', 'deploy/community-test/compose_control_plane.py', 'deploy/community-test/control-plane-device-files.json', 'src/service/api/automation-native-client.ts', 'src/service/api/automation-base-url.ts', 'src/__tests__/unit/automation-native-ingress.test.ts']
 permissions:
   contents: read
 concurrency:
@@ -28,7 +28,7 @@ jobs:
           corepack enable
           corepack prepare pnpm@10.8.0 --activate
           pnpm install --frozen-lockfile
-          pnpm exec vitest run src/__tests__/unit/identity-bindings-capability.test.ts src/__tests__/unit/notification
+          pnpm exec vitest run src/__tests__/unit/identity-bindings-capability.test.ts src/__tests__/unit/notification src/__tests__/unit/automation-native-ingress.test.ts
           pnpm exec tsx --test src/service/api/automation-native-transport.test.ts src/service/api/automation-rule-permissions.test.ts
           pnpm build
       - name: Package exact composed build

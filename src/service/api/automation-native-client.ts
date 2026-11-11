@@ -1,9 +1,11 @@
 import { localStg } from '@/utils/storage'
 import { createAutomationNativeClient } from './automation-native-transport'
+import { automationApiBase } from './automation-base-url'
 
 /** Same-origin automation owner client. Requests are raw JSON and single-attempt. */
 export const automationNative = createAutomationNativeClient({
-  fetch: (input, init) => globalThis.fetch(input, init),
+  fetch: (input, init) =>
+    globalThis.fetch(`${automationApiBase(import.meta.env.VITE_AUTOMATION_API_BASE_URL)}${input}`, init),
   getToken: () => localStg.get('token') as string | undefined,
   getLanguage: () => localStg.get('lang') as string | undefined
 })
