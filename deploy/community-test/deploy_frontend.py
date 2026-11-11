@@ -20,6 +20,10 @@ os.umask(0o077)
 ROOT.mkdir(mode=0o700, exist_ok=True)
 lock = (ROOT / 'deployment.lock').open('a')
 fcntl.flock(lock, fcntl.LOCK_EX)
+preflight = ROOT / 'incoming/rollout_preflight.py'
+if not preflight.is_file():
+    raise RuntimeError('Matching backend rollout prerequisite checker is not installed; deploy backend prerequisites first')
+subprocess.check_call([sys.executable, str(preflight)])
 release = ROOT / 'frontend-releases' / SHA
 reuse = release.exists()
 if reuse:

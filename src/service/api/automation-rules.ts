@@ -19,6 +19,7 @@
 import axios, { type AxiosInstance } from 'axios'
 import { localStg } from '@/utils/storage'
 import { getAutomationMode } from './automation-runtime'
+import { automationApiBase } from './automation-base-url'
 
 export interface AutomationFieldError {
   field: string
@@ -73,11 +74,7 @@ export class AutomationApiError extends Error {
 }
 
 function baseUrl(): string {
-  const configured = import.meta.env.VITE_AUTOMATION_API_BASE_URL?.trim()
-  if (configured) return configured.replace(/\/+$/, '')
-  // Same origin. The development proxy and the production reverse proxy both
-  // mount the engine here, so there is no second host to configure.
-  return '/automation-core'
+  return automationApiBase(import.meta.env.VITE_AUTOMATION_API_BASE_URL)
 }
 
 let transport: AxiosInstance | null = null
@@ -527,9 +524,19 @@ export interface Alarm {
 
 export interface ListAlarmsResponse {
   alarms: Alarm[]
+  total: number
 }
 
-export function listAlarms(query: { policy_id?: string; subject_id?: string; state?: string; limit?: number }) {
+export function listAlarms(query: {
+  policy_id?: string
+  subject_id?: string
+  state?: string
+  limit?: number
+  offset?: number
+  level?: string
+  start_time?: string
+  end_time?: string
+}) {
   return call<ListAlarmsResponse>('get', '/v1/alarms', { query })
 }
 
