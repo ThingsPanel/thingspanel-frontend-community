@@ -1,0 +1,62 @@
+name: Build staged community control plane
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: community-control-plane-frontend-build
+  cancel-in-progress: false
+jobs:
+  stage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.0'
+      - name: Compose approved device-preserving release
+        run: python3 deploy/community-test/compose_control_plane.py "$GITHUB_WORKSPACE" "$RUNNER_TEMP/control-plane"
+      - name: Install and verify the actual composed source
+        working-directory: ${{ runner.temp }}/control-plane
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.8.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm exec vitest run src/views/_builtin/login src/store/modules/auth src/service/api/external-auth.test.ts
+          pnpm exec tsx --test src/service/api/automation-native-transport.test.ts src/service/api/automation-rule-permissions.test.ts
+          pnpm build
+      - name: Package exact composed build
+        working-directory: ${{ runner.temp }}/control-plane
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,hashlib,os,tarfile
+          root=pathlib.Path('dist');sha=os.environ['GITHUB_SHA']
+          profile=json.loads((root/'RELEASE_PROFILE.json').read_text())
+          assert profile['source_commit']==sha and profile['profile']=='control-plane'
+          (root/'SOURCE_COMMIT').write_text(sha+'\n')
+          manifest={'commit':sha,'profile':'control-plane','sha256':{str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in root.rglob('*') if p.is_file()}}
+          (root/'manifest.json').write_text(json.dumps(manifest,indent=2))
+          with tarfile.open('control-plane-frontend-'+sha+'.tar.gz','w:gz') as tf:
+              for p in root.iterdir():tf.add(str(p),arcname=p.name)
+          PY
+      - name: Upload immutable candidate only
+        working-directory: ${{ runner.temp }}/control-plane
+        env:
+          DEPLOY_KEY: ${{ secrets.C_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s\n' "$DEPLOY_KEY" > "$RUNNER_TEMP/phase-key"
+          scp -i "$RUNNER_TEMP/phase-key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=deploy/community-test/known_hosts "control-plane-frontend-$GITHUB_SHA.tar.gz" root@47.92.253.145:/opt/tp-community-actions/incoming/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: control-plane-frontend-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/control-plane/dist/manifest.json
+            ${{ runner.temp }}/control-plane/dist/RELEASE_PROFILE.json
+      - name: Remove runner SSH key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/phase-key"
