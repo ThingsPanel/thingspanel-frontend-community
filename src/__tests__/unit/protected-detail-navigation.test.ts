@@ -20,12 +20,12 @@ describe('protected detail links after authenticated menus replace route names',
     expect(router.currentRoute.value.name).toBe(fallbackName)
     expect(router.currentRoute.value.meta.constant).not.toBe(true)
 
-    // Vue Router removes the old named child while its unnamed layout remains.
-    // A path link must reach the replacement child, not render the empty layout.
+    // Menu installation must not remove the protected fallback child and leave
+    // its empty layout ahead of the actual page in path matching.
     const removeDynamicRoute = router.addRoute({
       path: '/authenticated',
       component: {},
-      children: [{ path, name, component: {}, meta: { roles: ['TENANT_ADMIN'] } }]
+      children: [{ path, name, component: {}, meta: { title: name, roles: ['TENANT_ADMIN'] } }]
     })
     await router.push(`${path}?d_id=another-qa-device#details`)
     expect(router.currentRoute.value.name).toBe(fallbackName)
