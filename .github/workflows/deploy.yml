@@ -38,7 +38,9 @@ jobs:
           python3 -m unittest discover -s deploy/community-test -p 'test_*.py'
           node --test src/features/mp-device-detail/session.test.mjs src/features/mp-device-detail/history-filters.test.mjs src/features/mp-device-detail/viewer-entry.test.mjs
           pnpm exec vitest run
-          mapfile -t contract_tests < <(rg -l 'node:test' src -g '*.test.ts')
+          grep -rl --include='*.test.ts' 'node:test' src > /tmp/community-contract-tests.txt
+          mapfile -t contract_tests < /tmp/community-contract-tests.txt
+          test "${#contract_tests[@]}" -gt 0
           pnpm exec tsx --test --test-concurrency=2 "${contract_tests[@]}"
       - name: Type-check and build production frontend
         run: pnpm build
