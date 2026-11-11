@@ -2,7 +2,7 @@ name: Community frontend test deploy
 on:
   push:
     branches: [master, wp/full-develop-integration-20261111]
-    paths-ignore: ['docs/**', '.ai/**', '**/*.md', 'deploy/release/**', '.github/workflows/buildAndRelease.yml', '.github/workflows/docker-image-build.yml', '.github/workflows/deploy.yml', 'nginx.conf']
+    paths-ignore: ['docs/**', '.ai/**', '**/*.md', 'deploy/release/**', '.github/workflows/buildAndRelease.yml', '.github/workflows/docker-image-build.yml', 'nginx.conf']
   workflow_dispatch:
     inputs:
       deploy_to_test:
