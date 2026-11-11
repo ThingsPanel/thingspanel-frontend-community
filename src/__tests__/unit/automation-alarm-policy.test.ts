@@ -68,6 +68,53 @@ describe('alarm notification selection', () => {
     expect(result.error).toBeInstanceOf(Error)
   })
 
+  it('editing metadata preserves detector conditions, recovery, targets and execution settings', async () => {
+    const condition = {
+      source: 'device',
+      device_id: 'device-a',
+      signal: 'telemetry',
+      key: 'temperature',
+      operator: '>',
+      value: '35'
+    }
+    const definition = {
+      kind: 'alarm_policy',
+      mode: 'single',
+      scope: 'device',
+      description: 'Before',
+      trigger: { groups: [{ conditions: [condition] }], for: '10s' },
+      recovery: { groups: [{ conditions: [{ ...condition, operator: '<', value: '30' }] }], for: '5s' },
+      freshness: { max_age: '90s', max_gap: '90s' },
+      targets: { device_ids: ['device-a'], max_targets: 1 },
+      steps: [],
+      budget: { max_steps: 32 },
+      alarm: {
+        key: 'stable-detector',
+        sources: ['detector'],
+        level: 'H',
+        notify_alias_id: 'alias-a',
+        notify_use_default: false
+      }
+    }
+    const original = structuredClone(definition)
+    getRule.mockResolvedValue({ id: 'rule-a', name: 'Alarm', version: 7, enabled: false, definition })
+
+    await editInfo({ id: 'rule-a', name: 'Renamed', description: 'After', alarm_level: 'M' })
+
+    expect(updateRule).toHaveBeenCalledWith('rule-a', {
+      name: 'Renamed',
+      version: 7,
+      definition: { ...original, description: 'After', alarm: { ...original.alarm, level: 'M' } }
+    })
+    expect(definition).toEqual(original)
+
+    await editInfo({ id: 'rule-a', name: 'Alarm', notification_group_id: '' })
+    expect(updateRule.mock.lastCall?.[1].definition).toEqual({
+      ...original,
+      alarm: { ...original.alarm, notify_alias_id: undefined, notify_use_default: true }
+    })
+  })
+
   it('passes filters and pagination to the owner and preserves the full matching total', async () => {
     const alarms = [
       ['start', '2026-10-30T00:00:00Z', 'H'],
