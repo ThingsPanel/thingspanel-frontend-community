@@ -552,14 +552,14 @@ function normalizeDashboardConfig<T>(config: T): T {
   return ensureInteractiveWriteEvents(canonicalizeThingsVisConfig(cloneDashboardConfig(config))) as T
 }
 
-function hasCompleteDashboardSchema(
-  schema?: {
+function hasCompleteDashboardSchema<
+  S extends {
     canvasConfig?: Record<string, unknown>
     nodes?: unknown[]
     dataSources?: unknown[]
     variables?: unknown[]
-  } | null
-): boolean {
+  }
+>(schema?: S | null): schema is NonNullable<S> {
   if (!schema || !schema.canvasConfig || typeof schema.canvasConfig !== 'object') return false
   if (!Array.isArray(schema.nodes)) return false
   if (!Array.isArray(schema.dataSources)) return false

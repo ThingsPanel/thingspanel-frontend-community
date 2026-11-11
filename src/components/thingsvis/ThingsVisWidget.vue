@@ -5,12 +5,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { ThingsVisClient } from '@/utils/thingsvis/sdk/client'
-import {
-  attributeDataPub,
-  commandDataPub,
-  deviceAlarmStatus,
-  telemetryDataHistoryList
-} from '@/service/api/device'
+import { attributeDataPub, commandDataPub, deviceAlarmStatus, telemetryDataHistoryList } from '@/service/api/device'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
 import { canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-normalizer'
 import {
@@ -19,6 +14,8 @@ import {
   normalizePlatformWriteValue
 } from '@/utils/thingsvis/platform-fields'
 import { localStg } from '@/utils/storage'
+import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
+import { fetchNativeHistoryRows } from '@/utils/thingsvis/native-history'
 
 const FIELD_BINDING_EXPR_RE = /^\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}$/
 const FIELD_BINDING_EXPR_GLOBAL_RE = /\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}/g
@@ -260,7 +257,8 @@ const resolveCommandWrite = (data: unknown, fieldId?: string): { identify: strin
   if (field?.dataType !== 'command') return null
   const params = (data as Record<string, unknown>)[fieldId]
   if (params !== undefined && params !== null && (typeof params !== 'object' || Array.isArray(params))) return null
-  const declaredParameters = (field.nativeSchema?.parameters as { items?: Array<{ identifier: string }> } | undefined)?.items
+  const declaredParameters = (field.nativeSchema?.parameters as { items?: Array<{ identifier: string }> } | undefined)
+    ?.items
   if (Array.isArray(declaredParameters) && params && typeof params === 'object') {
     const allowed = new Set(declaredParameters.map(parameter => parameter.identifier))
     if (Object.keys(params as Record<string, unknown>).some(identifier => !allowed.has(identifier))) return null
@@ -557,6 +555,12 @@ const fetchTelemetryHistoryField = async (deviceId: string, fieldId: string, con
 
   try {
     const historyConfig = normalizeHistoryConfig(config)
+    const native = await fetchNativeHistoryRows(deviceRuntimeNative, deviceId, fieldId, {
+      timeRange: historyConfig.timeRange,
+      aggFunction: historyConfig.aggFunction,
+      aggWindow: historyConfig.aggWindow
+    })
+    if (native) return native
     const response = await telemetryDataHistoryList(
       {
         device_id: deviceId,
@@ -919,9 +923,10 @@ const handlePlatformWrite = async (event: MessageEvent) => {
 
     postPlatformWriteResult(requestId, event.source, {
       success: false,
-      error: fieldType === 'telemetry'
-        ? 'Telemetry fields are read-only; use a command field for device control'
-        : 'Only writable attributes and command fields can be sent'
+      error:
+        fieldType === 'telemetry'
+          ? 'Telemetry fields are read-only; use a command field for device control'
+          : 'Only writable attributes and command fields can be sent'
     })
     return
   } catch (e) {

@@ -141,5 +141,7 @@
   "route.device_access": "三方集成",
   "route.walarm_arning-message": "警告消息",
   "route.test_panel-editor-v2": "新看板测试",
-  "route.iot-visualization-platform": "物联网可视化平台"
+  "route.iot-visualization-platform": "物联网可视化平台",
+  "route.data-forwarding": "数据转发",
+  "route.data-forwarding_northbound": "北向数据转发"
 }

@@ -12,6 +12,8 @@ const { detail, resolveModel, routeState } = vi.hoisted(() => ({
 
 vi.mock('vue-router', () => ({ useRoute: () => routeState.current }))
 vi.mock('@/service/api/device', () => ({ deviceDetail: detail, deviceUpdate: vi.fn() }))
+vi.mock('@/service/api/device-native', () => ({ deviceNative: { get: detail } }))
+vi.mock('@/service/api/template-native', () => ({ templateNative: { get: vi.fn() } }))
 vi.mock('@/views/device/native-model-consumption', () => ({ resolveDeviceNativeModel: resolveModel }))
 vi.mock('@/locales', () => ({ $t: (key: string) => key }))
 vi.mock('@/utils/storage', () => ({ localStg: { get: vi.fn() } }))
@@ -20,6 +22,8 @@ vi.mock('@/utils/common/tool', () => ({ getWebsocketServerUrl: () => 'ws://local
 vi.mock('@/utils/common/discrete', () => ({ message: { error: vi.fn() } }))
 vi.mock('@vueuse/core', () => ({ useWebSocket: () => ({ send: vi.fn() }) }))
 vi.mock('@/views/device/details/modules/device-status.vue', () => ({ default: { render: () => null } }))
+vi.mock('@/views/device/details/modules/native-device-credentials.vue', () => ({ default: { render: () => null } }))
+vi.mock('@/views/device/details/modules/native-device-info.vue', () => ({ default: { render: () => null } }))
 
 const Tabs = defineComponent({
   props: ['value'],
@@ -79,8 +83,8 @@ describe('device detail initial tab', () => {
     vi.useFakeTimers()
     routeState.current = reactive({ query: { d_id: 'device-a' } })
     detail.mockReset().mockImplementation(async (id: string) => ({
-      data: { id, name: id, device_config: { device_type: '1' }, device_config_id: id },
-      error: null
+      device: { id, name: id, deviceKind: 'standalone', resourceVersion: 1, tags: [] },
+      etag: '"1"'
     }))
     resolveModel.mockReset()
   })

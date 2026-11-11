@@ -38,6 +38,8 @@
     "start": "cross-env VITE_SERVICE_ENV=dev vite",
     "tsx": "tsx",
     "typecheck": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vue-tsc --noEmit --skipLibCheck",
+    "test:unit": "vitest run",
+    "test:node": "tsx --test src/utils/service-device-import.test.ts src/utils/thingsvis/chart-config-initialization.test.ts src/utils/thingsvis/chart-config-normalizer.test.ts",
     "update-pkg": "sa update-pkg",
     "quality-check": "node scripts/dev-quality-check.js",
     "check:automation-ui": "tsx src/__tests__/automation/check-automation-ui.ts",

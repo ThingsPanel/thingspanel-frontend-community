@@ -11,6 +11,12 @@ declare namespace Api {
       code: number
       message: string
     }
+
+    /** 物模型列表接口返回的分页数据 */
+    interface ListData<T = any> {
+      list: T[]
+      total?: number
+    }
   }
   namespace Common {
     /** common params of paginating */

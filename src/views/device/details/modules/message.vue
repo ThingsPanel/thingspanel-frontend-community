@@ -23,7 +23,7 @@ interface ExtensionInfo {
   name: string
   type: 'String' | 'Number' | 'Boolean' | 'Enum'
   default_value: string
-  value?: string | number | boolean | null
+  value?: any
   desc?: string
   enable: boolean
   options?: Array<{ label: string; value: string }>

@@ -65,3 +65,4 @@ AGENTS.md
 /dist-mp-device-preview/
 !/mp-device/README.md
 /tmp/mp-device-build/
+/.claude/worktrees/

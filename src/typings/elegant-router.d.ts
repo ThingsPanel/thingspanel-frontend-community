@@ -48,6 +48,7 @@ declare module "@elegant-router/types" {
     "dashboard_panel": "/dashboard/panel";
     "dashboard_workbench": "/dashboard/workbench";
     "data-service": "/data-service";
+    "data-service_northbound": "/data-service/northbound";
     "data-service_rule-engine": "/data-service/rule-engine";
     "device": "/device";
     "device_config": "/device/template";
@@ -122,8 +123,8 @@ declare module "@elegant-router/types" {
     "visualization_thingsvis-preview": "/visualization/thingsvis-preview";
     "visualization_thingsvis-template": "/visualization/thingsvis-template";
     "visualization-app": "/visualization-app";
-    "visualization-app-dashboards": "/visualization-app-dashboards";
-    "visualization-app-preview": "/visualization-app-preview";
+    "visualization-app-dashboards": "/visualization-app/dashboards";
+    "visualization-app-preview": "/visualization-app/preview";
   };
 
   /**
@@ -226,6 +227,7 @@ declare module "@elegant-router/types" {
     | "dashboard_mobile-panel"
     | "dashboard_panel"
     | "dashboard_workbench"
+    | "data-service_northbound"
     | "data-service_rule-engine"
     | "device-details-app"
     | "device_config-detail"

@@ -1,9 +1,14 @@
 name: Community frontend test deploy
 on:
   push:
-    branches: [master]
-    paths-ignore: ['docs/**', '.ai/**', '**/*.md', 'deploy/release/**', '.github/workflows/buildAndRelease.yml', '.github/workflows/docker-image-build.yml', '.github/workflows/deploy.yml', 'nginx.conf']
+    branches: [master, wp/full-develop-integration-20261111]
+    paths-ignore: ['docs/**', '.ai/**', '**/*.md', 'deploy/release/**', '.github/workflows/buildAndRelease.yml', '.github/workflows/docker-image-build.yml', 'nginx.conf']
   workflow_dispatch:
+    inputs:
+      deploy_to_test:
+        description: 'Deploy after the matching backend and native device data are ready'
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -15,6 +20,7 @@ jobs:
     timeout-minutes: 35
     steps:
       - name: Require master deployment source
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_to_test
         env:
           DEPLOY_REF: ${{ github.ref }}
         run: test "$DEPLOY_REF" = refs/heads/master
@@ -32,7 +38,10 @@ jobs:
           python3 -m unittest discover -s deploy/community-test -p 'test_*.py'
           node --test src/features/mp-device-detail/session.test.mjs src/features/mp-device-detail/history-filters.test.mjs src/features/mp-device-detail/viewer-entry.test.mjs
           pnpm exec vitest run
-          pnpm exec tsx --test src/utils/thingsvis/chart-config-initialization.test.ts src/utils/thingsvis/chart-config-normalizer.test.ts src/views/device/config/market-template-compatibility.test.ts src/service/api/thingmodel-native.test.ts src/service/api/native-template-binding-transport.test.ts
+          grep -rl --include='*.test.ts' 'node:test' src > /tmp/community-contract-tests.txt
+          mapfile -t contract_tests < /tmp/community-contract-tests.txt
+          test "${#contract_tests[@]}" -gt 0
+          pnpm exec tsx --test --test-concurrency=2 "${contract_tests[@]}"
       - name: Type-check and build production frontend
         run: pnpm build
       - name: Package verified source revision
@@ -48,6 +57,7 @@ jobs:
               for path in root.iterdir(): archive.add(str(path),arcname=path.name)
           PY
       - name: Configure authenticated SSH
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_to_test
         env:
           DEPLOY_KEY: ${{ secrets.C_SSH_KEY }}
         run: |
@@ -57,6 +67,7 @@ jobs:
           printf '%s\n' "$DEPLOY_KEY" > "$RUNNER_TEMP/community-deploy-key"
           ssh -i "$RUNNER_TEMP/community-deploy-key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=deploy/community-test/known_hosts root@47.92.253.145 'install -d -m 700 /opt/tp-community-actions/incoming'
       - name: Upload and atomically deploy frontend
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_to_test
         run: |
           set -euo pipefail
           args=(-i "$RUNNER_TEMP/community-deploy-key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=deploy/community-test/known_hosts)

@@ -56,6 +56,9 @@ for path in site.rglob('*'):
     path.chmod(0o755 if path.is_dir() else 0o644)
 if not (site / 'index.html').is_file():
     raise RuntimeError('Missing frontend entry')
+mini_entry = site / 'mp-device' / 'index.html'
+if not mini_entry.is_file() or 'id="mp-device"' not in mini_entry.read_text():
+    raise RuntimeError('Missing mini-program device entry')
 subprocess.check_call(['nginx', '-t'])
 if not TARGET.exists():
     raise RuntimeError('Existing frontend required for rollback')
@@ -84,7 +87,9 @@ try:
     switch(site)
     for attempt in range(10):
         try:
-            if fetch('SOURCE_COMMIT').decode().strip() == SHA and fetch('index.html') == (site / 'index.html').read_bytes():
+            if (fetch('SOURCE_COMMIT').decode().strip() == SHA
+                    and fetch('index.html') == (site / 'index.html').read_bytes()
+                    and fetch('mp-device/index.html') == mini_entry.read_bytes()):
                 break
         except Exception:
             pass

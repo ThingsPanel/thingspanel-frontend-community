@@ -12,7 +12,7 @@
 import { onMounted, onBeforeUnmount, ref, watch, computed } from 'vue'
 import { NEmpty, NCard, NSkeleton } from 'naive-ui'
 import ThingsVisWidget from '@/components/thingsvis/ThingsVisWidget.vue'
-import { telemetryDataCurrent, getAttributeDataSet } from '@/service/api/device'
+import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
 import type { PlatformField } from '@/utils/thingsvis/types'
 import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush'
 import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush'
@@ -21,6 +21,17 @@ import type { DeviceConfigNativeBinding } from '@/service/api/native-template-bi
 
 const TEMPLATE_PLATFORM_SOURCE_ID = '__platform___template____'
 const RUNTIME_PLATFORM_FIELD_IDS = new Set(['is_online', 'online_text', 'online_status_updated_at'])
+
+/** 通过 Encore 原生读数接口取全部最新值（逐页读取，单页最多 100 条）。 */
+async function fetchLatestReadings(deviceId: string, kind: 'telemetry' | 'attribute') {
+  const rows: { key: string; value: unknown }[] = []
+  for (let page = 1; page <= 50; page += 1) {
+    const result = await deviceRuntimeNative.listReadings(deviceId, { kind, latestOnly: true, page, pageSize: 100 })
+    rows.push(...result.items.map(item => ({ key: item.identifier, value: item.value })))
+    if (rows.length >= result.total || result.items.length === 0) break
+  }
+  return rows
+}
 
 function getRuntimePlatformSourceId(deviceId: string) {
   return `__platform_${deviceId}__`
@@ -215,19 +226,16 @@ const fetchAndUpdateData = async (expectedSequence = initSequence, deviceId = pr
   try {
     const hasAttributes = fields.some(f => f.dataType === 'attribute')
 
-    const [telemetryRes, attributeRes] = await Promise.all([
-      telemetryDataCurrent(deviceId),
-      hasAttributes ? getAttributeDataSet({ device_id: deviceId }) : Promise.resolve({ data: [] })
+    const [telemetryList, attributeList] = await Promise.all([
+      fetchLatestReadings(deviceId, 'telemetry'),
+      hasAttributes ? fetchLatestReadings(deviceId, 'attribute') : Promise.resolve([])
     ])
     if (expectedSequence !== initSequence || deviceId !== props.id || fields !== platformFields.value) return
 
-    const telemetryList = telemetryRes?.data || []
-    const attributeList = attributeRes?.data || []
     const kvMap: Record<string, any> = {}
 
-    const processItem = (item: any) => {
-      if (item?.key !== undefined) kvMap[item.key] = item.value
-      if (item?.label) kvMap[item.label] = item.value
+    const processItem = (item: { key: string; value: unknown }) => {
+      kvMap[item.key] = item.value
     }
 
     if (Array.isArray(telemetryList)) telemetryList.forEach(processItem)

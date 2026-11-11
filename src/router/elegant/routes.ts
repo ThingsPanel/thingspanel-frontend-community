@@ -265,6 +265,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
+        name: 'data-service_northbound',
+        path: '/data-service/northbound',
+        component: 'view.data-service_northbound',
+        meta: {
+          title: 'data-service_northbound',
+          i18nKey: 'route.data-service_northbound'
+        }
+      },
+      {
         name: 'data-service_rule-engine',
         path: '/data-service/rule-engine',
         component: 'view.data-service_rule-engine',
@@ -1012,7 +1021,7 @@ export const generatedRoutes: GeneratedRoute[] = [
   },
   {
     name: 'visualization-app-dashboards',
-    path: '/visualization-app-dashboards',
+    path: '/visualization-app/dashboards',
     component: 'layout.base$view.visualization-app-dashboards',
     meta: {
       title: 'visualization-app-dashboards',
@@ -1021,7 +1030,7 @@ export const generatedRoutes: GeneratedRoute[] = [
   },
   {
     name: 'visualization-app-preview',
-    path: '/visualization-app-preview',
+    path: '/visualization-app/preview',
     component: 'layout.base$view.visualization-app-preview',
     meta: {
       title: 'visualization-app-preview',

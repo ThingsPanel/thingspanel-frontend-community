@@ -75,7 +75,7 @@ export const getTemplat = async (id: any) => {
 
 /** 获取遥测数据 */
 export const telemetryApi = async (params: any) => {
-  const data = await request.get<Api.BaseApi.Data | null>('/device/model/telemetry', { params })
+  const data = await request.get<Api.BaseApi.ListData | null>('/device/model/telemetry', { params })
   return data
 }
 /** 获取遥测数据 */
@@ -95,19 +95,19 @@ export const getLatestTelemetryData = async () => {
 
 /** 获取属性数据 */
 export const attributesApi = async (params: any) => {
-  const data = await request.get<Api.BaseApi.Data | null>('/device/model/attributes', { params })
+  const data = await request.get<Api.BaseApi.ListData | null>('/device/model/attributes', { params })
   return data
 }
 
 /** 获取事件数据 */
 export const eventsApi = async (params: any) => {
-  const data = await request.get<Api.BaseApi.Data | null>('/device/model/events', { params })
+  const data = await request.get<Api.BaseApi.ListData | null>('/device/model/events', { params })
   return data
 }
 
 /** 获取命令数据 */
 export const commandsApi = async (params: any) => {
-  const data = await request.get<Api.BaseApi.Data | null>('/device/model/commands', { params })
+  const data = await request.get<Api.BaseApi.ListData | null>('/device/model/commands', { params })
   return data
 }
 

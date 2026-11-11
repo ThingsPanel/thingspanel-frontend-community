@@ -24,7 +24,7 @@ async function getFunctionOption() {
   const { data } = await getFunction()
   if (data) {
     localStorage.setItem('enableZcAndYzm', JSON.stringify(data))
-    funcOptions.value = data.map(v => {
+    funcOptions.value = data.map((v: any) => {
       return {
         ...v,
         value: v.enable_flag === 'enable'

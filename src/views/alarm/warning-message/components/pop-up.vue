@@ -24,7 +24,7 @@ const logger = createLogger('PopUp')
 export interface Props {
   visible: boolean
   type?: 'add' | 'edit'
-  editData: any
+  editData?: any
 }
 
 export type ModalType = NonNullable<Props['type']>
