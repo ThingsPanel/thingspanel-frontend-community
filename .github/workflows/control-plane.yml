@@ -1,6 +1,9 @@
 name: Build staged community control plane
 on:
   workflow_dispatch:
+  push:
+    branches: [wp/full-develop-integration-20261111]
+    paths: ['.github/workflows/control-plane.yml', 'deploy/community-test/compose_control_plane.py', 'deploy/community-test/control-plane-device-files.json']
 permissions:
   contents: read
 concurrency:
