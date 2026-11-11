@@ -527,9 +527,19 @@ export interface Alarm {
 
 export interface ListAlarmsResponse {
   alarms: Alarm[]
+  total: number
 }
 
-export function listAlarms(query: { policy_id?: string; subject_id?: string; state?: string; limit?: number }) {
+export function listAlarms(query: {
+  policy_id?: string
+  subject_id?: string
+  state?: string
+  limit?: number
+  offset?: number
+  level?: string
+  start_time?: string
+  end_time?: string
+}) {
   return call<ListAlarmsResponse>('get', '/v1/alarms', { query })
 }
 

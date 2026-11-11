@@ -3,7 +3,12 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { NAlert, NButton, NCard, NEmpty, NFormItem, NInput, NModal, NSpace, NTag } from 'naive-ui'
-import { externalAuth, type ExternalBinding, type ExternalProvider } from '@/service/api/external-auth'
+import {
+  externalAuth,
+  type ExternalBinding,
+  type ExternalProvider,
+  type LoginOptions
+} from '@/service/api/external-auth'
 import { useAuthStore } from '@/store/modules/auth'
 import { passwordProof } from './password-proof'
 import { rememberAuthReturn } from './navigation'
@@ -104,6 +109,12 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
+    const options = await externalAuth<LoginOptions>('/auth/login-options')
+    if (options.bindings?.enabled === false) {
+      providers.value = []
+      bindings.value = []
+      return
+    }
     const [p, b] = await Promise.all([
       externalAuth<ExternalProvider[]>('/auth/external/providers'),
       externalAuth<ExternalBinding[]>('/auth/bindings')

@@ -10,6 +10,7 @@ export interface ExternalProvider {
 export interface LoginOptions {
   password: { enabled: boolean }
   external: { enabled: boolean; providers: ExternalProvider[] }
+  bindings?: { enabled: boolean }
 }
 
 export interface ProviderConfig extends ExternalProvider {

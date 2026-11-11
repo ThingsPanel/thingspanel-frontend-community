@@ -22,6 +22,7 @@ class DeploymentTest(unittest.TestCase):
         self.root = self.base / 'actions'
         self.incoming = self.root / 'incoming'
         self.incoming.mkdir(parents=True)
+        (self.incoming / 'rollout_preflight.py').write_text('# fixture; subprocess is controlled by the test')
         self.target = self.base / 'www' / 'dist'
         self.target.mkdir(parents=True)
         (self.target / 'index.html').write_text('previous frontend')
@@ -40,7 +41,7 @@ class DeploymentTest(unittest.TestCase):
                 info.size = len(data)
                 archive.addfile(info, io.BytesIO(data))
 
-    def deploy(self, sha, fail_http=False, mini_fallback=False):
+    def deploy(self, sha, fail_http=False, mini_fallback=False, fail_prerequisite=False):
         source = pathlib.Path(__file__).with_name('deploy_frontend.py').read_text()
         # Override only the two deployment roots; run all verification/switch logic.
         tree = ast.parse(source)
@@ -59,8 +60,12 @@ class DeploymentTest(unittest.TestCase):
                 filename = 'index.html'
             return io.BytesIO((self.target / filename).read_bytes())
 
+        def check_call(args):
+            if fail_prerequisite and str(args[-1]).endswith('rollout_preflight.py'):
+                raise RuntimeError('Native device migration not ready')
+
         with mock.patch.object(sys, 'argv', ['deploy_frontend.py', sha]), \
-                mock.patch('subprocess.check_call'), mock.patch('urllib.request.urlopen', side_effect=get), \
+                mock.patch('subprocess.check_call', side_effect=check_call), mock.patch('urllib.request.urlopen', side_effect=get), \
                 mock.patch('time.sleep'):
             try:
                 exec(compile(tree, 'deploy_frontend.py', 'exec'), namespace)
@@ -139,6 +144,14 @@ class DeploymentTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'checksum'):
             self.deploy(first)
         self.assertEqual((self.target / 'SOURCE_COMMIT').read_text().strip(), second)
+
+    def test_missing_backend_prerequisites_preserve_current_site(self):
+        sha = '6' * 40
+        self.bundle(sha)
+        with self.assertRaisesRegex(RuntimeError, 'migration not ready'):
+            self.deploy(sha, fail_prerequisite=True)
+        self.assertEqual((self.target / 'index.html').read_text(), 'previous frontend')
+        self.assertFalse((self.root / 'frontend-releases' / sha).exists())
 
     def test_incomplete_release_requires_inspection(self):
         sha = '5' * 40

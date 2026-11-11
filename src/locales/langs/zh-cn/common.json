@@ -35,6 +35,7 @@
   "common.intermediateAlarm": "中级告警",
   "common.highAlarm": "高级告警",
   "common.allStatus": "所有状态",
+  "common.allAlarmLevels": "所有级别",
   "common.enterAlarmDesc": "请输入告警描述",
   "common.alarmRules": "告警规则",
   "common.alarmHistory": "告警历史",

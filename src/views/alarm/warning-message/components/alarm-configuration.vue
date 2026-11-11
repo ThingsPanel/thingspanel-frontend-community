@@ -182,12 +182,12 @@ const resetData = () => {
 }
 
 onMounted(() => {
-  getAlarmHistory()
+  handleSearch()
 })
 
 const alarmStatusOptions = ref([
   {
-    label: $t('common.allStatus'),
+    label: $t('common.allAlarmLevels'),
     value: ''
   },
   {

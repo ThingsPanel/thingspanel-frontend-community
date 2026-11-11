@@ -241,9 +241,13 @@ export async function alarmHistory(query: {
   try {
     const size = Number(query?.page_size) > 0 ? Number(query.page_size) : 10
     const page = Number(query?.page) > 0 ? Number(query.page) : 1
-    // 新接口一次最多返回 limit 条且不支持 offset；先按「够用一页」取，再在下面
-    // 按时间/等级过滤。数量级上告警不会一次几千条，这里不引入第二套分页协议。
-    const res = await listAlarms({ limit: Math.max(size * page, size) })
+    const res = await listAlarms({
+      limit: size,
+      offset: (page - 1) * size,
+      level: query?.alarm_status || undefined,
+      start_time: query?.start_time || undefined,
+      end_time: query?.end_time || undefined
+    })
     const policies = await listRules({ kind: 'alarm_policy', limit: 200, offset: 0 })
     const names: Record<string, string> = {}
     const descriptions: Record<string, string> = {}
@@ -252,7 +256,7 @@ export async function alarmHistory(query: {
       descriptions[rule.id] = rule.definition.description ?? ''
     })
 
-    let rows = res.alarms.map(alarm => ({
+    const rows = res.alarms.map(alarm => ({
       id: alarm.id,
       create_at: alarm.opened_at,
       name: names[alarm.policy_id] ?? alarm.policy_key,
@@ -270,19 +274,7 @@ export async function alarmHistory(query: {
       acked_by: alarm.acked_by ?? ''
     }))
 
-    if (query?.alarm_status) rows = rows.filter(row => row.alarm_status === query.alarm_status)
-    if (query?.start_time) {
-      const startTime = Date.parse(query.start_time)
-      rows = rows.filter(row => Date.parse(row.create_at) >= startTime)
-    }
-    if (query?.end_time) {
-      const endTime = Date.parse(query.end_time)
-      rows = rows.filter(row => Date.parse(row.create_at) <= endTime)
-    }
-
-    const total = rows.length
-    const start = (page - 1) * size
-    return ok({ list: rows.slice(start, start + size), total })
+    return ok({ list: rows, total: res.total })
   } catch (error) {
     return failed(error)
   }

@@ -26,7 +26,7 @@ describe('alarm notification selection', () => {
     createRule.mockReset().mockResolvedValue({ id: 'rule-a' })
     updateRule.mockReset().mockResolvedValue({ id: 'rule-a' })
     getRule.mockReset()
-    listAlarms.mockReset().mockResolvedValue({ alarms: [] })
+    listAlarms.mockReset().mockResolvedValue({ alarms: [], total: 0 })
     listRules.mockReset().mockResolvedValue({ rules: [] })
   })
 
@@ -68,24 +68,32 @@ describe('alarm notification selection', () => {
     expect(result.error).toBeInstanceOf(Error)
   })
 
-  it('filters alarm instants across timezones with inclusive boundaries and the selected level', async () => {
+  it('passes filters and pagination to the owner and preserves the full matching total', async () => {
     const alarms = [
-      ['before', '2026-10-29T23:59:59Z', 'H'],
       ['start', '2026-10-30T00:00:00Z', 'H'],
-      ['other-level', '2026-10-30T09:00:00+08:00', 'M'],
-      ['end', '2026-10-30T02:00:00Z', 'H'],
-      ['after', '2026-10-30T02:00:01Z', 'H']
+      ['end', '2026-10-30T02:00:00Z', 'H']
     ].map(([id, opened_at, level]) => ({ id, opened_at, level, policy_id: 'policy-1' }))
-    listAlarms.mockResolvedValue({ alarms })
+    listAlarms.mockResolvedValue({ alarms, total: 12 })
     const result = await alarmHistory({
       start_time: '2026-10-30T08:00:00+08:00',
       end_time: '2026-10-30T10:00:00+08:00',
-      alarm_status: 'H'
+      alarm_status: 'H',
+      page: 2,
+      page_size: 10
     })
     expect(result.error).toBeNull()
     expect(result.data.list.map((row: { id: string }) => row.id)).toEqual(['start', 'end'])
-    expect(result.data.total).toBe(2)
-    const reset = await alarmHistory({})
-    expect(reset.data.total).toBe(5)
+    expect(result.data.total).toBe(12)
+    expect(listAlarms).toHaveBeenLastCalledWith({
+      limit: 10,
+      offset: 10,
+      level: 'H',
+      start_time: '2026-10-30T08:00:00+08:00',
+      end_time: '2026-10-30T10:00:00+08:00'
+    })
+    listAlarms.mockResolvedValue({ alarms: [], total: 12 })
+    const beyond = await alarmHistory({ page: 3, page_size: 10 })
+    expect(beyond.data.list).toEqual([])
+    expect(beyond.data.total).toBe(12)
   })
 })
