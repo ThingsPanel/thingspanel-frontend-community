@@ -235,8 +235,9 @@ export function createRoutes() {
   // These records have underscore names, which elegant-router treats as nested
   // route keys and cannot convert from `layout.base$view.*` as a standalone
   // route. Register them with the base layout explicitly so cold-start URLs
-  // resolve before authenticated menu routes are installed. Vue Router replaces
-  // same-name child records when the authenticated tree is added.
+  // resolve before authenticated menu routes are installed. Keep fallback child
+  // names distinct: replacing a same-name child would leave an empty layout
+  // matching direct URLs before the dynamically installed page.
   const protectedPreRegisteredRoutes: RouteRecordRaw[] = [
     {
       path: '/device/details',
@@ -244,7 +245,7 @@ export function createRoutes() {
       children: [
         {
           path: '',
-          name: 'device_details',
+          name: 'device-details-reference',
           component: views.device_details,
           meta: { title: 'device_details', i18nKey: 'route.device_details' }
         }
@@ -256,7 +257,7 @@ export function createRoutes() {
       children: [
         {
           path: '',
-          name: 'automation_rule-edit',
+          name: 'automation-rule-edit-reference',
           component: views['automation_rule-edit'],
           meta: { title: 'automation_rule-edit', i18nKey: 'route.automation_rule-edit', roles: ['TENANT_ADMIN'] }
         }
