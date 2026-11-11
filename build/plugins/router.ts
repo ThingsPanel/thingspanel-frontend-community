@@ -23,8 +23,6 @@ export function setupElegantRouter() {
       }
 
       // 设备模板、物模型：修正浏览器 URL，route name 保持与后台 element_code 一致
-      if (key === 'device-config-legacy-redirect') return '/device/config'
-      if (key === 'device-config-detail-legacy-redirect') return '/device/config-detail'
       if (key === 'visualization-app-dashboards') return '/visualization-app/dashboards'
       if (key === 'visualization-app-preview') return '/visualization-app/preview'
       if (key === 'device_config') return '/device/template'
