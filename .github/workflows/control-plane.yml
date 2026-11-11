@@ -25,7 +25,7 @@ jobs:
           corepack enable
           corepack prepare pnpm@10.8.0 --activate
           pnpm install --frozen-lockfile
-          pnpm exec vitest run src/views/_builtin/login src/store/modules/auth src/service/api/external-auth.test.ts
+          pnpm exec vitest run src/__tests__/unit/identity-bindings-capability.test.ts src/__tests__/unit/notification
           pnpm exec tsx --test src/service/api/automation-native-transport.test.ts src/service/api/automation-rule-permissions.test.ts
           pnpm build
       - name: Package exact composed build
