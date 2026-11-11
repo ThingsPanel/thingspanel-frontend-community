@@ -67,6 +67,7 @@ const router = useRouter()
 const dialog = useDialog()
 const message = useMessage()
 const tabStore = useTabStore()
+const props = withDefaults(defineProps<{ initialKind?: 'scene' | 'automation' }>(), { initialKind: 'automation' })
 
 const ruleId = ref(String(route.query.id ?? ''))
 const backType = ref(String(route.query.backType ?? ''))
@@ -74,7 +75,11 @@ const deviceId = ref(String(route.query.device_id ?? ''))
 const deviceConfigId = ref(String(route.query.device_config_id ?? ''))
 
 const form = ref(
-  emptyForm({ deviceID: deviceId.value || undefined, deviceConfigID: deviceConfigId.value || undefined })
+  emptyForm({
+    kind: props.initialKind,
+    deviceID: deviceId.value || undefined,
+    deviceConfigID: deviceConfigId.value || undefined
+  })
 )
 /**
  * What was loaded, kept so a save cannot drop the parts this form does not edit
@@ -182,9 +187,7 @@ function goBack() {
     router.replace({ path: '/device/template/detail', query: { id: deviceConfigId.value } })
     return
   }
-  // 独立的规则列表页已经下线，规则统一从"场景联动"进入。
-  // 这里退到场景联动，避免保存后跳到一个不存在的地址。
-  router.replace({ path: '/automation/scene-linkage' })
+  router.replace({ path: form.value.kind === 'scene' ? '/automation/scene-manage' : '/automation/scene-linkage' })
 }
 
 async function persist(options: { force?: boolean; previewToken?: string } = {}) {
