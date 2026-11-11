@@ -192,14 +192,24 @@ export async function editInfo(data: {
       return ok(rule)
     }
 
-    const definition = buildPolicyDefinition({
-      name: data.name ?? current.name,
-      description: data.description,
-      alarm_level: data.alarm_level ?? current.definition.alarm?.level ?? 'L',
-      notification_group_id: data.notification_group_id,
-      // 业务键必须沿用，否则同一条告警会被当成新的一条。
-      key: current.definition.alarm?.key
-    })
+    // This form edits policy metadata, not the detector definition. Rebuilding
+    // with the create defaults would erase thresholds, recovery and targets.
+    const alarm = current.definition.alarm
+    if (!alarm) throw new Error('当前规则不是有效的告警策略，无法保存')
+    const definition: RuleDefinition = {
+      ...current.definition,
+      alarm: {
+        ...alarm,
+        ...(data.alarm_level !== undefined ? { level: data.alarm_level } : {}),
+        ...(data.notification_group_id !== undefined
+          ? {
+              notify_use_default: !data.notification_group_id,
+              notify_alias_id: data.notification_group_id || undefined
+            }
+          : {})
+      }
+    }
+    if (data.description !== undefined) definition.description = data.description
     // 保存定义时不动开关：编辑弹窗里的 enabled 是页面写死的 'Y'，照它写会把
     // 用户特意停用的告警配置重新打开。开关只有列表上的启停会改。
     return ok(
