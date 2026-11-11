@@ -237,12 +237,11 @@ init()
           :striped="false"
           :scroll-x="820"
           :row-key="row => row.id"
-          flex-height
           :columns="columns"
           :data="tableData"
           :loading="loading"
           :pagination="pagination"
-          class="standard-table flex-1-hidden"
+          class="standard-table"
         >
           <template #empty>
             <NEmpty size="small" :description="$t('common.nodata')" />

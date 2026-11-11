@@ -395,7 +395,7 @@ onMounted(() => {
           </div>
         </NFormItem>
 
-        <NFormItem label="持续时间" :required="isAlarm" class="w-100%">
+        <NFormItem v-if="form.kind !== 'scene'" label="持续时间" :required="isAlarm" class="w-100%">
           <div class="w-100%">
             <NFlex align="center">
               <NInput v-model:value="form.holdFor" placeholder="例如 5m；留空表示条件一满足就执行" class="w-220px" />
