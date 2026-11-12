@@ -9,6 +9,7 @@ export default defineConfig({
     environment: 'happy-dom',
     include: [
       'deploy/community-test/device-ui-pages.test.ts',
+      'deploy/community-test/template-detail-route.test.ts',
       'src/__tests__/unit/device-command-json-payload.test.ts'
     ],
     maxWorkers: 1,

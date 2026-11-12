@@ -176,6 +176,58 @@
           "count": 1
         }
       ]
+    },
+    {
+      "path": "src/views/device/config-detail/index.vue",
+      "base_sha256": "3b12b4a014729298204d96d1d7089627b7dd8271c64addb9a23fe14afb7cf198",
+      "patched_sha256": "d59de5851a4e88bb1276bc60747af2aabde87164ce26befe43a5a43b32a4efea",
+      "changes": [
+        {
+          "before": "import { ref } from 'vue'",
+          "after": "import { onBeforeUnmount, ref, watch } from 'vue'",
+          "count": 1
+        },
+        {
+          "before": "import { NButton } from 'naive-ui'",
+          "after": "import { NAlert, NButton } from 'naive-ui'",
+          "count": 1
+        },
+        {
+          "before": "const modelName = ref('')",
+          "after": "const modelName = ref('')\nconst loading = ref(false)\nconst loadError = ref('')",
+          "count": 1
+        },
+        {
+          "before": "const editConfig = () => {\n  routerPushByKey",
+          "after": "const editConfig = () => {\n  if (loading.value || !configId.value || configForm.value.id !== configId.value) return\n  routerPushByKey",
+          "count": 1
+        },
+        {
+          "before": "const getConfig = async () => {\n  const request = ++configRequest\n  const res = await deviceConfigInfo({ id: configId.value })\n  if (request !== configRequest) return\n  configForm.value = res.data\n  modelName.value = ''\n  const { native_thing_model_id: modelID, native_thing_model_revision: revision } = res.data || {}\n  if (modelID && revision) {\n    try {\n      const snapshot = await loadPublishedSnapshot(modelID, revision)\n      if (request === configRequest) modelName.value = snapshot.model.name\n    } catch {\n      // Keep the binding identifier and navigation available when metadata cannot be read.\n    }\n  }\n}",
+          "after": "const getConfig = async () => {\n  const request = ++configRequest\n  const id = configId.value\n  configForm.value = { id: '' }\n  modelName.value = ''\n  loadError.value = ''\n  loading.value = true\n  if (!id) {\n    loadError.value = '缺少设备模板 ID。'\n    loading.value = false\n    return\n  }\n  try {\n    const res = await deviceConfigInfo({ id })\n    if (request !== configRequest || id !== configId.value) return\n    if (res.error || !res.data || res.data.id !== id) {\n      loadError.value = '设备模板加载失败，请重试。'\n      return\n    }\n    configForm.value = res.data\n    const { native_thing_model_id: modelID, native_thing_model_revision: revision } = res.data\n    if (modelID && revision) {\n      try {\n        const snapshot = await loadPublishedSnapshot(modelID, revision)\n        if (request === configRequest && id === configId.value) modelName.value = snapshot.model.name\n      } catch {\n        // Keep the verified binding identifier available if model metadata fails.\n      }\n    }\n  } catch {\n    if (request === configRequest && id === configId.value) loadError.value = '设备模板加载失败，请重试。'\n  } finally {\n    if (request === configRequest && id === configId.value) loading.value = false\n  }\n}",
+          "count": 1
+        },
+        {
+          "before": "if (configId.value) {\n  getConfig()\n  activeName.value = tabKeys.associatedDevices\n}",
+          "after": "watch(\n  () => route.query.id,\n  value => {\n    configId.value = typeof value === 'string' ? value : ''\n    activeName.value = tabKeys.associatedDevices\n    void getConfig()\n  },\n  { immediate: true, flush: 'sync' }\n)\nonBeforeUnmount(() => { configRequest += 1 })",
+          "count": 1
+        },
+        {
+          "before": "<NButton type=\"primary\" @click=\"editConfig\">",
+          "after": "<NButton type=\"primary\" :disabled=\"loading || !configId || configForm.id !== configId\" @click=\"editConfig\">",
+          "count": 1
+        },
+        {
+          "before": "      <div class=\"template-summary\">",
+          "after": "      <NAlert v-if=\"loadError\" type=\"error\" :show-icon=\"true\" class=\"mb-4\">\n        {{ loadError }}\n        <NButton v-if=\"configId\" text @click=\"getConfig\">重试</NButton>\n      </NAlert>\n      <div class=\"template-summary\">",
+          "count": 1
+        },
+        {
+          "before": "      <n-tabs v-model:value=\"activeName\" animated type=\"line\">",
+          "after": "      <n-tabs v-if=\"!loading && configId && configForm.id === configId\" :key=\"configId\" v-model:value=\"activeName\" animated type=\"line\">",
+          "count": 1
+        }
+      ]
     }
   ]
 }
