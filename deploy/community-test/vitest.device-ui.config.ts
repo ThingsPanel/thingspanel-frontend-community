@@ -7,7 +7,10 @@ export default defineConfig({
   resolve: { alias: { '@': fileURLToPath(new URL('../../src', import.meta.url)) } },
   test: {
     environment: 'happy-dom',
-    include: ['deploy/community-test/device-ui-pages.test.ts'],
+    include: [
+      'deploy/community-test/device-ui-pages.test.ts',
+      'src/__tests__/unit/device-command-json-payload.test.ts'
+    ],
     maxWorkers: 1,
     minWorkers: 1
   }

@@ -21,13 +21,17 @@ jobs:
         with:
           node-version: '20.19.0'
       - name: Compose approved device-preserving release
-        run: python3 deploy/community-test/compose_control_plane.py "$GITHUB_WORKSPACE" "$RUNNER_TEMP/control-plane"
+        run: |
+          python3 -m unittest deploy/community-test/test_device_ui_patches.py
+          python3 deploy/community-test/compose_control_plane.py "$GITHUB_WORKSPACE" "$RUNNER_TEMP/control-plane"
       - name: Install and verify the actual composed source
         working-directory: ${{ runner.temp }}/control-plane
         run: |
           corepack enable
           corepack prepare pnpm@10.8.0 --activate
           pnpm install --frozen-lockfile
+          pnpm exec vitest run --config deploy/community-test/vitest.device-ui.config.ts
+          pnpm exec vitest run src/__tests__/unit/native-template-route-save.test.ts src/__tests__/unit/native-template-explicit-binding.test.ts
           pnpm exec vitest run src/__tests__/unit/identity-bindings-capability.test.ts src/__tests__/unit/notification src/__tests__/unit/automation-native-ingress.test.ts
           pnpm exec tsx --test src/service/api/automation-native-transport.test.ts src/service/api/automation-rule-permissions.test.ts
           pnpm build

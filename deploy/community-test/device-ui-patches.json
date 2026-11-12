@@ -119,6 +119,63 @@
           "count": 1
         }
       ]
+    },
+    {
+      "path": "src/views/device/details/modules/public/distribution-and-table.vue",
+      "base_sha256": "ec55917edec4cfc76f6cd8e59fcca572058d8e89fd0112a6c23749d59a801d0f",
+      "patched_sha256": "1183a0d38d7796b41dc90f9c49487371ac557f4c8783cd199b62ca72daf6646e",
+      "changes": [
+        {
+          "before": "  expect?: boolean\n  submitApi?:",
+          "after": "  expect?: boolean\n  nativeOnly?: boolean\n  submitApi?:",
+          "count": 1
+        },
+        {
+          "before": "import { isJSON } from '@/utils/common/tool'\n",
+          "after": "",
+          "count": 1
+        },
+        {
+          "before": "const submit = async () => {",
+          "after": "// Only legacy raw command params accept JSON scalars. Native commands and\n// attributes retain object payloads; their submitters still validate the schema.\nconst isPayloadValid = (text: string) => {\n  if (!text.trim()) return activeTab.value === 'visual'\n  try {\n    const value: unknown = JSON.parse(text)\n    if (props.isCommand && !props.nativeCommandsResolved && !props.nativeOnly) return true\n    return value !== null && typeof value === 'object' && !Array.isArray(value)\n  } catch {\n    return false\n  }\n}\n\nconst submit = async () => {",
+          "count": 1
+        },
+        {
+          "before": "// 统一要求载荷为合法 JSON（命令和属性下发都校验）",
+          "after": "// 按当前命令或属性合同校验 JSON 载荷。",
+          "count": 1
+        },
+        {
+          "before": "// 统一做 JSON 校验（命令和属性下发）",
+          "after": "// 按当前命令或属性合同校验 JSON 载荷。",
+          "count": 1
+        },
+        {
+          "before": "// 条件2：如果载荷文本框有内容但不是有效的 JSON，则禁用（命令和属性下发都校验）",
+          "after": "// 按当前命令或属性合同校验 JSON 载荷。",
+          "count": 1
+        },
+        {
+          "before": "if (formModel.textValue && !isJSON(formModel.textValue)) {\n      window.$message?.error",
+          "after": "if (!isPayloadValid(formModel.textValue)) {\n      window.$message?.error",
+          "count": 1
+        },
+        {
+          "before": "if (formModel.textValue && !isJSON(formModel.textValue)) {\n    return 'error'",
+          "after": "if (!isPayloadValid(formModel.textValue)) {\n    return 'error'",
+          "count": 1
+        },
+        {
+          "before": "if (formModel.textValue && !isJSON(formModel.textValue)) {\n    return $t",
+          "after": "if (!isPayloadValid(formModel.textValue)) {\n    return $t",
+          "count": 1
+        },
+        {
+          "before": "if (formModel.textValue && !isJSON(formModel.textValue)) {\n    return true",
+          "after": "if (!isPayloadValid(formModel.textValue)) {\n    return true",
+          "count": 1
+        }
+      ]
     }
   ]
 }

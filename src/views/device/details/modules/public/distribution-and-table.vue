@@ -30,7 +30,6 @@ import type { FlatResponseFailData, FlatResponseSuccessData } from '@sa/axios'
 import moment from 'moment'
 import { commandDataById, commandDataPub, deviceCustomCommandsIdList, getAttributeDataSet } from '@/service/api'
 import { $t } from '@/locales'
-import { isJSON } from '@/utils/common/tool'
 import { createLogger } from '@/utils/logger'
 import {
   demoAttributeLogs,
@@ -169,6 +168,19 @@ const closeDialog = () => {
   formRef.value?.restoreValidation()
 }
 
+// Only legacy raw command params accept JSON scalars. Native commands and
+// attributes retain object payloads; their submitters still validate the schema.
+const isPayloadValid = (text: string) => {
+  if (!text.trim()) return activeTab.value === 'visual'
+  try {
+    const value: unknown = JSON.parse(text)
+    if (props.isCommand && !props.nativeCommandsResolved && !props.nativeOnly) return true
+    return value !== null && typeof value === 'object' && !Array.isArray(value)
+  } catch {
+    return false
+  }
+}
+
 const submit = async () => {
   try {
     await formRef.value?.validate()
@@ -194,8 +206,8 @@ const submit = async () => {
       }
     }
 
-    // 统一要求载荷为合法 JSON（命令和属性下发都校验）
-    if (formModel.textValue && !isJSON(formModel.textValue)) {
+    // 按当前命令或属性合同校验 JSON 载荷。
+    if (!isPayloadValid(formModel.textValue)) {
       window.$message?.error($t('generate.inputRightJson'))
       return
     }
@@ -321,14 +333,14 @@ const getPlatform = computed(() => {
   return proxy.getPlatform()
 })
 const validationJson = computed(() => {
-  // 统一做 JSON 校验（命令和属性下发）
-  if (formModel.textValue && !isJSON(formModel.textValue)) {
+  // 按当前命令或属性合同校验 JSON 载荷。
+  if (!isPayloadValid(formModel.textValue)) {
     return 'error'
   }
   return undefined
 })
 const inputFeedback = computed(() => {
-  if (formModel.textValue && !isJSON(formModel.textValue)) {
+  if (!isPayloadValid(formModel.textValue)) {
     return $t('generate.inputRightJson')
   }
   return ''
@@ -353,8 +365,8 @@ const isSubmitDisabled = computed(() => {
   if (props.isCommand && !formModel.commandValue) {
     return true
   }
-  // 条件2：如果载荷文本框有内容但不是有效的 JSON，则禁用（命令和属性下发都校验）
-  if (formModel.textValue && !isJSON(formModel.textValue)) {
+  // 按当前命令或属性合同校验 JSON 载荷。
+  if (!isPayloadValid(formModel.textValue)) {
     return true
   }
   return false

@@ -17,10 +17,10 @@ class PatchesTest(unittest.TestCase):
         self.spec = json.loads((ROOT / 'deploy/community-test/device-ui-patches.json').read_text(encoding='utf-8'))
         self.files = {entry['path']: subprocess.check_output(['git', 'show', compose.BASELINE + ':' + entry['path']], cwd=str(ROOT)) for entry in self.spec['files']}
 
-    def test_exact_two_files_and_result_hash(self):
+    def test_exact_three_files_and_result_hash(self):
         original = dict(self.files)
         result = compose.apply_device_patches(self.files, self.spec)
-        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result), 3)
         for item in result:
             self.assertNotEqual(original[item['path']], self.files[item['path']])
             self.assertEqual(hashlib.sha256(self.files[item['path']]).hexdigest(), item['patched_sha256'])
