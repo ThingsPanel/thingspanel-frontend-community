@@ -9,6 +9,7 @@ import sys
 import tarfile
 import tempfile
 import unittest
+import urllib.error
 from urllib.parse import urlparse
 from unittest import mock
 
@@ -27,8 +28,10 @@ class DeploymentTest(unittest.TestCase):
         self.target.mkdir(parents=True)
         (self.target / 'index.html').write_text('previous frontend')
 
-    def bundle(self, sha, corrupt=False, missing_mini=False):
-        files = {'index.html': b'new frontend', 'SOURCE_COMMIT': (sha + '\n').encode()}
+    def bundle(self, sha, corrupt=False, missing_mini=False, asset_name=None):
+        asset = asset_name or 'assets/main-' + sha[:8] + '.js'
+        files = {'index.html': ('<script type="module" src="/' + asset + '"></script>').encode(),
+                 asset: ('console.log("' + sha + '")').encode(), 'SOURCE_COMMIT': (sha + '\n').encode()}
         if not missing_mini:
             files['mp-device/index.html'] = b'<main id="mp-device"></main>'
         manifest = {'commit': sha, 'sha256': {name: hashlib.sha256(data).hexdigest() for name, data in files.items()}}
@@ -41,7 +44,8 @@ class DeploymentTest(unittest.TestCase):
                 info.size = len(data)
                 archive.addfile(info, io.BytesIO(data))
 
-    def deploy(self, sha, fail_http=False, mini_fallback=False, fail_prerequisite=False):
+    def deploy(self, sha, fail_http=False, mini_fallback=False, fail_prerequisite=False,
+               stale_html=False, chunk_fallback=False, wrong_js_mime=False):
         source = pathlib.Path(__file__).with_name('deploy_frontend.py').read_text()
         # Override only the two deployment roots; run all verification/switch logic.
         tree = ast.parse(source)
@@ -56,9 +60,21 @@ class DeploymentTest(unittest.TestCase):
             if fail_http:
                 raise OSError('Simulated HTTP failure')
             filename = urlparse(request.full_url).path.lstrip('/')
+            if filename == 'device/thingsmodel/detail':
+                filename = 'index.html'
             if mini_fallback and filename == 'mp-device/index.html':
                 filename = 'index.html'
-            return io.BytesIO((self.target / filename).read_bytes())
+            if not (self.target / filename).is_file():
+                if chunk_fallback:
+                    filename = 'index.html'
+                else:
+                    raise urllib.error.HTTPError(request.full_url, 404, 'Not Found', {}, None)
+            response = io.BytesIO((self.target / filename).read_bytes())
+            response.headers = {
+                'Cache-Control': 'public, max-age=3600' if stale_html else 'no-cache, must-revalidate',
+                'Content-Type': 'application/javascript' if filename.endswith('.js') and not wrong_js_mime else 'text/html'
+            }
+            return response
 
         def check_call(args):
             if fail_prerequisite and str(args[-1]).endswith('rollout_preflight.py'):
@@ -160,6 +176,44 @@ class DeploymentTest(unittest.TestCase):
             self.deploy(sha)
         with self.assertRaisesRegex(SystemExit, 'Incomplete'):
             self.deploy(sha)
+
+    def test_retains_only_verified_previous_release_assets(self):
+        first, second, third = '7' * 40, '8' * 40, '9' * 40
+        for sha in (first, second, third):
+            self.bundle(sha)
+            self.deploy(sha)
+        self.assertTrue((self.target / ('assets/main-' + second[:8] + '.js')).is_file())
+        self.assertFalse((self.target / ('assets/main-' + first[:8] + '.js')).exists())
+        self.assertTrue((self.target / ('assets/main-' + third[:8] + '.js')).is_file())
+
+    def test_previous_corrupt_asset_is_never_retained(self):
+        first, second = '7' * 40, '8' * 40
+        self.bundle(first)
+        self.deploy(first)
+        (self.target / ('assets/main-' + first[:8] + '.js')).write_text('corrupt')
+        self.bundle(second)
+        with self.assertRaisesRegex(RuntimeError, 'Previous asset checksum'):
+            self.deploy(second)
+        self.assertEqual((self.target / 'SOURCE_COMMIT').read_text().strip(), first)
+
+    def test_hash_name_collision_never_overwrites_current_asset(self):
+        first, second = '7' * 40, '8' * 40
+        self.bundle(first)
+        self.deploy(first)
+        asset = 'assets/main-' + first[:8] + '.js'
+        self.bundle(second, asset_name=asset)
+        with self.assertRaisesRegex(RuntimeError, 'Hashed asset name collision'):
+            self.deploy(second)
+        self.assertIn(first, (self.target / asset).read_text())
+
+    def test_stale_html_or_asset_fallback_or_wrong_mime_rolls_back(self):
+        for i, option in enumerate(('stale_html', 'chunk_fallback', 'wrong_js_mime')):
+            with self.subTest(option=option):
+                sha = str(i + 1) * 40
+                self.bundle(sha)
+                with self.assertRaisesRegex(RuntimeError, 'HTTP'):
+                    self.deploy(sha, **{option: True})
+                self.assertEqual((self.target / 'index.html').read_text(), 'previous frontend')
 
 
 if __name__ == '__main__':

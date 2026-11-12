@@ -3,6 +3,7 @@ import { computed, h, ref } from 'vue'
 import { NButton, NPopconfirm } from 'naive-ui'
 import ModelModal from './components/ModelModal.vue'
 import { fromNativeField, toNativeFieldFromEditor } from './native-field-mapping'
+import { ModelEditorError, modelErrorMessage, validateEditedField } from './native-model-errors'
 import type { FieldKind, ModelDraft, ModelField } from '@/service/api/thingmodel-native-transport'
 
 type FormRecord = Record<string, any>
@@ -124,6 +125,8 @@ function finishEdit() {
 
 function saveField() {
   try {
+    if (!String(form.value.data_name ?? '').trim()) throw new ModelEditorError('请输入字段名称。')
+    if (!String(form.value.data_identifier ?? '').trim()) throw new ModelEditorError('请输入字段标识符。')
     if (activeKind.value === 'TELEMETRY' && selectedKey.value !== null && form.value.read_write_flag === 'RW') {
       formError.value = '此遥测字段已有可写权限，为避免改变现有语义，请改用命令定义控制操作；本次未保存。'
       return
@@ -152,11 +155,16 @@ function saveField() {
     const nextFields = [...props.model.fields]
     const oldIndex =
       selectedKey.value === null ? -1 : nextFields.findIndex(field => fieldKey(field) === selectedKey.value)
+    validateEditedField(
+      nextField,
+      nextFields.filter((_, index) => index !== oldIndex)
+    )
     if (oldIndex < 0) nextFields.push(nextField)
     else nextFields[oldIndex] = nextField
     emit('save', { ...props.model, fields: nextFields }, finishEdit)
   } catch (error) {
-    formError.value = error instanceof Error ? error.message : '字段内容无效，未保存'
+    console.error('物模型字段校验失败:', error)
+    formError.value = modelErrorMessage(error, '字段内容无效，请检查后重新保存。')
   }
 }
 

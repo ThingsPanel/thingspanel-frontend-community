@@ -5,11 +5,13 @@ import json
 import os
 import pathlib
 import re
+import shutil
 import subprocess
 import sys
 import tarfile
 import time
 import urllib.request
+import urllib.error
 
 ROOT = pathlib.Path('/opt/tp-community-actions')
 TARGET = pathlib.Path('/home/thingspanel/nginx/www/dist')
@@ -73,16 +75,101 @@ if (previous is None and backup.exists()) or os.path.lexists(str(link)):
     raise RuntimeError('Deployment paths already exist')
 
 
+def asset_path(directory, name):
+    path = directory / name
+    if not re.fullmatch(r'assets/(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+-[A-Za-z0-9_-]{8,}\.[A-Za-z0-9.]+', name):
+        return None
+    if path.is_symlink() or not str(path.resolve()).startswith(str(directory.resolve()) + '/'):
+        raise RuntimeError('Unsafe retained asset path')
+    return path
+
+
+def retain_previous_assets():
+    # Only this manifest's original hashed assets are carried forward. Previously
+    # retained assets are never copied recursively into later releases.
+    retained = []
+    prior_site = TARGET.resolve()
+    record = prior_site.parent / 'deployment.json'
+    prior_manifest_path = prior_site / 'manifest.json'
+    if prior_site == site.resolve():
+        return retained
+    retention_file = release / 'retained-assets.json'
+    if retention_file.is_file():
+        for name in json.loads(retention_file.read_text()):
+            stale = asset_path(site, name)
+            if stale and name not in manifest['sha256'] and stale.is_file():
+                stale.unlink()
+    if not record.is_file() or not prior_manifest_path.is_file():
+        return retained
+    prior_manifest = json.loads(prior_manifest_path.read_text())
+    prior_commit = json.loads(record.read_text()).get('commit')
+    if not prior_commit or prior_manifest.get('commit') != prior_commit or (prior_site / 'SOURCE_COMMIT').read_text().strip() != prior_commit:
+        raise RuntimeError('Previous release identity cannot be verified')
+    for name, expected in prior_manifest['sha256'].items():
+        source = asset_path(prior_site, name)
+        if source is None:
+            continue
+        if hashlib.sha256(source.read_bytes()).hexdigest() != expected:
+            raise RuntimeError('Previous asset checksum mismatch')
+        destination = asset_path(site, name)
+        if destination.exists():
+            if hashlib.sha256(destination.read_bytes()).hexdigest() != expected:
+                raise RuntimeError('Hashed asset name collision')
+            continue
+        destination.parent.mkdir(parents=True, exist_ok=True, mode=0o755)
+        try:
+            os.link(str(source), str(destination))
+        except OSError:
+            shutil.copy2(str(source), str(destination))
+        retained.append(name)
+    retention_file.write_text(json.dumps(retained))
+    return retained
+
+
+retained_assets = retain_previous_assets()
+
+
 def switch(destination):
     os.symlink(str(destination), str(link))
     os.replace(str(link), str(TARGET))
 
 
-def fetch(path):
+def fetch_info(path):
     request = urllib.request.Request('http://127.0.0.1/' + path,
                                      headers={'Host': 'c.thingspanel.cn', 'Cache-Control': 'no-cache'})
     with urllib.request.urlopen(request, timeout=10) as response:
-        return response.read()
+        return response.read(), response.headers
+
+
+def fetch(path):
+    return fetch_info(path)[0]
+
+
+def verify_http_assets():
+    for entry in ('index.html', 'device/thingsmodel/detail', 'mp-device/index.html'):
+        body, headers = fetch_info(entry)
+        if not any(token in headers.get('Cache-Control', '').lower() for token in ('no-cache', 'no-store')):
+            raise RuntimeError('HTTP entry cache policy permits stale HTML')
+        expected = mini_entry if entry.startswith('mp-device/') else site / 'index.html'
+        if body != expected.read_bytes():
+            raise RuntimeError('HTTP SPA entry mismatch')
+    scripts = re.findall(r'(?:src|href)=["\'](/?assets/[^"\']+\.js)["\']', (site / 'index.html').read_text())
+    if not scripts:
+        raise RuntimeError('HTTP entry has no verifiable JavaScript asset')
+    old_scripts = [name for name in retained_assets if name.endswith('.js')]
+    for name in list(dict.fromkeys([item.lstrip('/') for item in scripts] + old_scripts[:1])):
+        body, headers = fetch_info(name)
+        if 'javascript' not in headers.get('Content-Type', '').lower() or body != (site / name).read_bytes():
+            raise RuntimeError('HTTP JavaScript asset returned wrong MIME or content')
+    try:
+        fetch_info('assets/qa-missing-' + SHA + '.js')
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            if error.read() == (site / 'index.html').read_bytes():
+                raise RuntimeError('HTTP missing JavaScript asset fell back to SPA HTML')
+            return
+        raise
+    raise RuntimeError('HTTP missing JavaScript asset must return 404')
 
 
 try:
@@ -94,6 +181,7 @@ try:
             if (fetch('SOURCE_COMMIT').decode().strip() == SHA
                     and fetch('index.html') == (site / 'index.html').read_bytes()
                     and fetch('mp-device/index.html') == mini_entry.read_bytes()):
+                verify_http_assets()
                 break
         except Exception:
             pass

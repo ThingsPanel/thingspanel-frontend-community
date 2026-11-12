@@ -17,6 +17,7 @@ import { canonicalizeThingsVisConfig } from '@/utils/thingsvis/chart-config-norm
 import type { PlatformField } from '@/utils/thingsvis/types'
 import type { NativeChartResourcesPort } from '@/views/device/template/native-chart-resource-port'
 import type { NativeChartUpdateOptions } from '@/views/device/template/native-chart-resource-port'
+import { modelErrorMessage } from '@/views/device/template/native-model-errors'
 
 const emit = defineEmits(['update:stepCurrent', 'update:modalVisible'])
 
@@ -71,6 +72,7 @@ const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
 const hasConfig = ref(false)
 const refreshInterval = ref(5000)
+let loadSequence = 0
 let nativeOpenedRevision: number | undefined
 let nativeOpenedConfig: unknown = null
 
@@ -119,15 +121,12 @@ const back: () => void = () => {
 }
 
 // 打开编辑器
-const openEditor = () => {
+const openEditor = async () => {
+  if (loading.value || saving.value) return
   isEditorFullscreen.value = false
-  if (props.nativeResourcePort) {
-    void loadTemplateData().then(() => {
-      showEditorModal.value = true
-    })
-  } else {
-    showEditorModal.value = true
-  }
+  if (props.nativeResourcePort && !(await loadTemplateData())) return
+  refreshInterval.value = initialConfig.value?.refreshInterval ?? 5000
+  showEditorModal.value = true
 }
 
 const toggleEditorFullscreen = async () => {
@@ -237,18 +236,21 @@ const handleSave = async (payload: any) => {
     showEditorModal.value = false
   } catch (error) {
     console.error('保存 Web 图表配置失败:', error)
-    window.$message?.error($t('common.saveFailed'))
+    window.$message?.error(modelErrorMessage(error, '图表保存失败，请稍后重试。'))
   } finally {
     saving.value = false
   }
 }
 
 // 加载模板数据
-const loadTemplateData = async () => {
+const loadTemplateData = async (): Promise<boolean> => {
+  const sequence = ++loadSequence
+  const templateID = props.deviceTemplateId
   loading.value = true
   try {
     if (props.nativeResourcePort) {
       const loaded = await props.nativeResourcePort.load()
+      if (sequence !== loadSequence || templateID !== props.deviceTemplateId) return false
       nativeOpenedRevision = loaded.revision
       nativeOpenedConfig = loaded.resources.webChartConfig
       platformFields.value = props.nativePlatformFields || []
@@ -256,14 +258,16 @@ const loadTemplateData = async () => {
         const config = useTemplateDeviceForHistoryCurves(canonicalizeThingsVisConfig(loaded.resources.webChartConfig))
         initialConfig.value = config
         hasConfig.value = true
-        if (config.refreshInterval !== undefined) refreshInterval.value = config.refreshInterval
+        refreshInterval.value = config.refreshInterval ?? 5000
       } else {
         initialConfig.value = null
         hasConfig.value = false
+        refreshInterval.value = 5000
       }
-      return
+      return true
     }
-    const res = await getTemplat(props.deviceTemplateId)
+    const res = await getTemplat(templateID)
+    if (sequence !== loadSequence || templateID !== props.deviceTemplateId) return false
 
     if (res.data) {
       // Fetch all platform field types from model APIs: telemetry, attributes, events, commands.
@@ -274,6 +278,7 @@ const loadTemplateData = async () => {
         commandsApi({ page: 1, page_size: 1000, device_template_id: props.deviceTemplateId })
       ])
 
+      if (sequence !== loadSequence || templateID !== props.deviceTemplateId) return false
       const telemetryList = unwrapApiList(telemetryRes)
       const attributesList = unwrapApiList(attributesRes)
       const eventsList = unwrapApiList(eventsRes)
@@ -303,14 +308,18 @@ const loadTemplateData = async () => {
           console.warn('解析 web_chart_config 失败', e)
           initialConfig.value = null
           hasConfig.value = false
+          return false
         }
       }
+      return true
     }
+    return false
   } catch (error) {
     console.error('加载模板数据失败:', error)
     window.$message?.error($t('common.fetchDataFailed'))
+    return false
   } finally {
-    loading.value = false
+    if (sequence === loadSequence) loading.value = false
   }
 }
 
@@ -320,19 +329,30 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  loadSequence += 1
   document.removeEventListener('fullscreenchange', handleFullscreenChange)
 })
 
 watch(showEditorModal, visible => {
   if (!visible) {
     isEditorFullscreen.value = false
+    refreshInterval.value = initialConfig.value?.refreshInterval ?? 5000
+    if (props.nativeResourcePort && !saving.value && !loading.value) void loadTemplateData()
   }
 })
 
 watch(
   () => props.nativeResourcesRevision,
   (revision, previous) => {
-    if (props.nativeResourcePort && revision !== undefined && previous !== undefined && revision !== previous)
+    if (
+      props.nativeResourcePort &&
+      !showEditorModal.value &&
+      !saving.value &&
+      !loading.value &&
+      revision !== undefined &&
+      previous !== undefined &&
+      revision !== previous
+    )
       void loadTemplateData()
   }
 )
@@ -344,7 +364,7 @@ watch(
     <NCard title="Web 图表配置" class="preview-card">
       <template #header-extra>
         <NSpace align="center">
-          <NButton type="primary" size="small" @click="openEditor">
+          <NButton type="primary" size="small" :disabled="loading || saving" @click="openEditor">
             {{ hasConfig ? '编辑配置' : $t('generate.new-config') }}
           </NButton>
         </NSpace>

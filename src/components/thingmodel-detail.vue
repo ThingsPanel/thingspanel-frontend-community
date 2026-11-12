@@ -13,6 +13,7 @@ import {
   type ModelCommandResult
 } from '@/service/api/thingmodel-native'
 import NativeModelDefinition from '@/views/device/template/NativeModelDefinition.vue'
+import { ModelEditorError, modelCommandError, modelErrorMessage } from '@/views/device/template/native-model-errors'
 import VersionHistoryModal from '@/views/device/template/components/version-history-modal.vue'
 import NativeModelProfile from '@/views/device/template/components/NativeModelProfile.vue'
 import WebChartConfig from '@/views/device/template/components/step/web-chart-config.vue'
@@ -202,10 +203,8 @@ const saveDraft = async (
   try {
     const result = await thingModelNative.update(request, pendingSave.key)
     if (result.status === 'CONFLICT' || result.status === 'FAILED') {
-      throw new Error(
-        result.errorMessage ||
-          (result.status === 'CONFLICT' ? '草稿已被其他编辑者更新，请重新读取后再保存。' : '物模型保存失败。')
-      )
+      console.error('物模型保存未完成:', result)
+      throw modelCommandError(result, '物模型保存失败，请检查字段定义后重试。')
     }
     if (operationGeneration !== mutationGeneration.value || current.modelID !== modelID.value) return false
     // The command receipt may be replayed after a lost response. Confirm the stored revision
@@ -214,19 +213,20 @@ const saveDraft = async (
       thingModelNative.get(current.modelID),
       resourcesToSave ? thingModelNative.getResources(current.modelID) : Promise.resolve(null)
     ])
-    if (readBack.draftRevision !== result.draftRevision) throw new Error('保存回执与当前草稿版本不一致，请刷新后重试。')
+    if (readBack.draftRevision !== result.draftRevision)
+      throw new ModelEditorError('保存回执与当前草稿版本不一致，请刷新后重试。')
     if (
       syncBasicAfterSave &&
       (readBack.draft.name !== nextDraft.name ||
         fingerprint(readBack.draft.descriptionI18n ?? null) !== fingerprint(nextDraft.descriptionI18n ?? null) ||
         (readBack.draft.category ?? null) !== (nextDraft.category ?? null))
     )
-      throw new Error('草稿保存结果与提交内容不一致，请重新读取后重试。')
+      throw new ModelEditorError('草稿保存结果与提交内容不一致，请重新读取后重试。')
     if (resourcesToSave && resourcesReadBack) {
       if (result.resourcesRevision !== undefined && resourcesReadBack.revision !== result.resourcesRevision)
-        throw new Error('资源保存回执与当前版本不一致，请重新读取后重试。')
+        throw new ModelEditorError('资源保存回执与当前版本不一致，请重新读取后重试。')
       if (fingerprint(normalizeResourcesDocument(resourcesReadBack)) !== fingerprint(resourcesToSave))
-        throw new Error('资源保存结果与提交内容不一致，请重新读取后重试。')
+        throw new ModelEditorError('资源保存结果与提交内容不一致，请重新读取后重试。')
     }
     if (modelID.value !== current.modelID) return false
     detail.value = readBack
@@ -244,7 +244,7 @@ const saveDraft = async (
   } catch (error) {
     if (operationGeneration !== mutationGeneration.value || current.modelID !== modelID.value) return false
     console.error('Failed to save native thing model:', error)
-    saveError.value = error instanceof Error ? error.message : $t('common.saveFailed')
+    saveError.value = modelErrorMessage(error, '保存未完成，请稍后重试。')
     window.$message?.error(saveError.value)
     return false
   } finally {
@@ -256,14 +256,14 @@ const nativeResourcePort: NativeChartResourcesPort = {
   async load() {
     const currentID = modelID.value
     const loaded = await thingModelNative.getResources(currentID)
-    if (currentID !== modelID.value) throw new Error('物模型已切换，请重新加载资源。')
+    if (currentID !== modelID.value) throw new ModelEditorError('物模型已切换，请重新加载资源。')
     observeResources(loaded)
     return { resources: normalizeResourcesDocument(loaded), revision: loaded.revision }
   },
   async update(mutator, options?: NativeChartUpdateOptions) {
     const currentID = modelID.value
     const latest = await thingModelNative.getResources(currentID)
-    if (currentID !== modelID.value) throw new Error('物模型已切换，请重新加载资源。')
+    if (currentID !== modelID.value) throw new ModelEditorError('物模型已切换，请重新加载资源。')
     observeResources(latest)
     const resources = normalizeResourcesDocument(latest)
     const next = normalizeResourcesDocument(mutator(resources))
@@ -278,7 +278,7 @@ const nativeResourcePort: NativeChartResourcesPort = {
       latest.revision !== options.openedRevision &&
       fingerprint(resources[options.conflictKey]) !== fingerprint(options.openedValue)
     ) {
-      throw new Error('图表配置已被其他编辑者修改，请重新打开图表后再保存。')
+      throw new ModelEditorError('图表配置已被其他编辑者修改，请重新打开图表后再保存。')
     }
     if (
       !pendingResourcesSave ||
@@ -292,16 +292,17 @@ const nativeResourcePort: NativeChartResourcesPort = {
       pendingResourcesSave.key
     )
     if (result.status === 'CONFLICT' || result.status === 'FAILED') {
-      throw new Error(result.errorMessage || '资源已被其他编辑者更新，请重新读取后保存。')
+      console.error('物模型资源保存未完成:', result)
+      throw modelCommandError(result, '资源保存失败，请重新读取后重试。')
     }
     const readBack = await thingModelNative.getResources(currentID)
     if (result.resourcesRevision !== undefined && readBack.revision !== result.resourcesRevision) {
-      throw new Error('资源保存回执与当前版本不一致，请重新读取后重试。')
+      throw new ModelEditorError('资源保存回执与当前版本不一致，请重新读取后重试。')
     }
     const confirmed = normalizeResourcesDocument(readBack)
     if (fingerprint(confirmed) !== fingerprint(next))
-      throw new Error('资源保存结果与提交内容不一致，请重新读取后重试。')
-    if (currentID !== modelID.value) throw new Error('物模型已切换，请重新加载资源。')
+      throw new ModelEditorError('资源保存结果与提交内容不一致，请重新读取后重试。')
+    if (currentID !== modelID.value) throw new ModelEditorError('物模型已切换，请重新加载资源。')
     pendingResourcesSave = null
     observeResources(readBack)
     return { resources: confirmed, revision: readBack.revision }
@@ -381,14 +382,13 @@ const doPublish = async () => {
   try {
     const result = await thingModelNative.publish(body, pendingPublish.key)
     if (result.status === 'CONFLICT' || result.status === 'FAILED') {
-      throw new Error(
-        result.errorMessage || (result.status === 'CONFLICT' ? '草稿已被更新，请重新读取后再发布。' : '发布失败。')
-      )
+      console.error('物模型发布未完成:', result)
+      throw modelCommandError(result, '发布失败，请检查草稿后重试。')
     }
     if (operationGeneration !== mutationGeneration.value || current.modelID !== modelID.value) return
     const readBack = await thingModelNative.get(current.modelID)
     if (readBack.publishedRevision !== result.publishedRevision)
-      throw new Error('发布回执与当前已发布版本不一致，请刷新后重试。')
+      throw new ModelEditorError('发布回执与当前已发布版本不一致，请刷新后重试。')
     if (modelID.value !== current.modelID) return
     pendingPublish = null
     publishResult.value = result
@@ -400,7 +400,7 @@ const doPublish = async () => {
   } catch (error) {
     if (operationGeneration !== mutationGeneration.value || current.modelID !== modelID.value) return
     console.error('Failed to publish native thing model:', error)
-    window.$message?.error(error instanceof Error ? error.message : $t('common.publishFailed'))
+    window.$message?.error(modelErrorMessage(error, '发布未完成，请稍后重试。'))
   } finally {
     if (operationGeneration === mutationGeneration.value) publishing.value = false
   }

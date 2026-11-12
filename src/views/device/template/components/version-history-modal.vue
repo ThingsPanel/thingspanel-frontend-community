@@ -1,24 +1,29 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { NAlert, NButton, NCode, NCollapse, NCollapseItem, NDataTable, NEmpty, NSelect, NSpin } from 'naive-ui'
-import ModelModal from './ModelModal.vue'
-import { $t } from '@/locales'
+import { computed, onBeforeUnmount, toRefs, watch } from 'vue'
 import {
-  thingModelNative,
-  type ModelField,
-  type SnapshotDetail,
-  type VersionSummary
-} from '@/service/api/thingmodel-native'
+  NAlert,
+  NButton,
+  NCode,
+  NCollapse,
+  NCollapseItem,
+  NDataTable,
+  NEmpty,
+  NPagination,
+  NSelect,
+  NSpin
+} from 'naive-ui'
+import ModelModal from './ModelModal.vue'
+import { createVersionHistory } from '../native-version-history'
+import { $t } from '@/locales'
+import { thingModelNative, type ModelField } from '@/service/api/thingmodel-native'
 
 const props = defineProps<{ visible: boolean; templateId: string }>()
 const emit = defineEmits<{ (event: 'update:visible', value: boolean): void }>()
 const modalVisible = computed({ get: () => props.visible, set: (value: boolean) => emit('update:visible', value) })
-const loading = ref(false)
-const failed = ref(false)
-const versions = ref<VersionSummary[]>([])
-const selectedVersion = ref<number | null>(null)
-const snapshot = ref<SnapshotDetail | null>(null)
-let requestSequence = 0
+const history = createVersionHistory(thingModelNative)
+onBeforeUnmount(history.close)
+const { loading, failure, versions, selectedVersion, snapshot, page, pageSize, total } = toRefs(history.state)
+const selectVersion = history.selectVersion
 const options = computed(() =>
   versions.value.map(item => ({ label: `v${item.publishedRevision}`, value: item.publishedRevision }))
 )
@@ -47,54 +52,13 @@ const columns = [
   { title: '单位', key: 'unit', width: 80, render: (field: ModelField) => field.unit || '—' }
 ]
 
-const selectVersion = async (version: number | null) => {
-  selectedVersion.value = version
-  snapshot.value = null
-  if (version === null || !props.templateId) return
-  const sequence = ++requestSequence
-  loading.value = true
-  failed.value = false
-  try {
-    const result = await thingModelNative.version(props.templateId, version)
-    if (sequence === requestSequence && props.visible && version === selectedVersion.value) snapshot.value = result
-  } catch (error) {
-    console.error('Failed to fetch native thing model version:', error)
-    if (sequence === requestSequence && props.visible) failed.value = true
-  } finally {
-    if (sequence === requestSequence) loading.value = false
-  }
-}
-
-const loadVersions = async () => {
-  const sequence = ++requestSequence
-  const modelID = props.templateId
-  loading.value = true
-  failed.value = false
-  versions.value = []
-  selectedVersion.value = null
-  snapshot.value = null
-  try {
-    const result = await thingModelNative.versions(modelID, { page: 1, pageSize: 100 })
-    if (sequence !== requestSequence || modelID !== props.templateId || !props.visible) return
-    versions.value = [...result.items].sort((a, b) => b.publishedRevision - a.publishedRevision)
-    if (versions.value.length) await selectVersion(versions.value[0].publishedRevision)
-  } catch (error) {
-    console.error('Failed to fetch native thing model versions:', error)
-    if (sequence === requestSequence && modelID === props.templateId) failed.value = true
-  } finally {
-    if (sequence === requestSequence) loading.value = false
-  }
-}
-
 watch(
   () => [props.visible, props.templateId] as const,
   ([visible, modelID]) => {
-    if (visible && modelID) void loadVersions()
-    else {
-      requestSequence += 1
-      loading.value = false
-    }
-  }
+    if (visible && modelID) void history.open(modelID)
+    else history.close()
+  },
+  { immediate: true }
 )
 const formatDate = (value?: string) => (value ? new Date(value).toLocaleString() : '--')
 </script>
@@ -103,8 +67,8 @@ const formatDate = (value?: string) => (value ? new Date(value).toLocaleString()
   <ModelModal v-model:show="modalVisible" :title="$t('market.versionHistory')" :width="960" class="model-history-modal">
     <NSpin :show="loading">
       <p class="mb-4 text-gray-500">仅发布时生成版本；编辑草稿不会创建版本。</p>
-      <NAlert v-if="failed" type="error" :title="$t('common.loadFailed')" class="mb-4">
-        <NButton size="small" @click="selectedVersion === null ? loadVersions() : selectVersion(selectedVersion)">
+      <NAlert v-if="failure" type="error" :title="$t('common.loadFailed')" class="mb-4">
+        <NButton size="small" @click="history.retry">
           {{ $t('common.refresh') }}
         </NButton>
       </NAlert>
@@ -131,6 +95,15 @@ const formatDate = (value?: string) => (value ? new Date(value).toLocaleString()
           </NCollapseItem>
         </NCollapse>
       </div>
+      <NPagination
+        v-if="total > pageSize"
+        :page="page"
+        :page-size="pageSize"
+        :item-count="total"
+        :disabled="loading"
+        class="mt-4"
+        @update:page="history.loadPage"
+      />
     </NSpin>
     <template #footer><NButton @click="modalVisible = false">关闭</NButton></template>
   </ModelModal>

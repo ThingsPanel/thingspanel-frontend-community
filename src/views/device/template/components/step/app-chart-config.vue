@@ -4,7 +4,7 @@
  * 显示预览，点击编辑按钮打开ThingsVis编辑器弹窗
  */
 
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import type { PropType } from 'vue'
 import { NButton, NModal, NCard, NEmpty, NSelect, NSpace, NSpin, NIcon } from 'naive-ui'
 import { ExpandOutline, ContractOutline, CloseOutline } from '@vicons/ionicons5'
@@ -17,6 +17,7 @@ import { normalizeAppChartConfig, prepareAppChartConfigForSave } from '@/utils/t
 import type { PlatformField } from '@/utils/thingsvis/types'
 import type { NativeChartResourcesPort } from '@/views/device/template/native-chart-resource-port'
 import type { NativeChartUpdateOptions } from '@/views/device/template/native-chart-resource-port'
+import { modelErrorMessage } from '@/views/device/template/native-model-errors'
 
 const emit = defineEmits(['update:stepCurrent', 'update:modalVisible'])
 
@@ -69,6 +70,7 @@ const initialConfig = ref<any>(null)
 const platformFields = ref<PlatformField[]>([])
 const hasConfig = ref(false)
 const refreshInterval = ref(5000)
+let loadSequence = 0
 let nativeOpenedRevision: number | undefined
 let nativeOpenedConfig: unknown = null
 
@@ -115,15 +117,12 @@ const back: () => void = () => {
 }
 
 // 打开编辑器
-const openEditor = () => {
+const openEditor = async () => {
+  if (loading.value || saving.value) return
   isEditorFullscreen.value = false
-  if (props.nativeResourcePort) {
-    void loadTemplateData().then(() => {
-      showEditorModal.value = true
-    })
-  } else {
-    showEditorModal.value = true
-  }
+  if (props.nativeResourcePort && !(await loadTemplateData())) return
+  refreshInterval.value = initialConfig.value?.refreshInterval ?? 5000
+  showEditorModal.value = true
 }
 
 const toggleEditorFullscreen = () => {
@@ -229,18 +228,21 @@ const handleSave = async (payload: any) => {
     showEditorModal.value = false
   } catch (error) {
     console.error('保存 App 图表配置失败:', error)
-    window.$message?.error($t('common.saveFailed'))
+    window.$message?.error(modelErrorMessage(error, '图表保存失败，请稍后重试。'))
   } finally {
     saving.value = false
   }
 }
 
 // 加载模板数据
-const loadTemplateData = async () => {
+const loadTemplateData = async (): Promise<boolean> => {
+  const sequence = ++loadSequence
+  const templateID = props.deviceTemplateId
   loading.value = true
   try {
     if (props.nativeResourcePort) {
       const loaded = await props.nativeResourcePort.load()
+      if (sequence !== loadSequence || templateID !== props.deviceTemplateId) return false
       nativeOpenedRevision = loaded.revision
       nativeOpenedConfig = loaded.resources.appChartConfig
       platformFields.value = props.nativePlatformFields || []
@@ -248,14 +250,16 @@ const loadTemplateData = async () => {
         const config = normalizeAppChartConfig(loaded.resources.appChartConfig) as Record<string, any>
         initialConfig.value = config
         hasConfig.value = true
-        if (config.refreshInterval !== undefined) refreshInterval.value = config.refreshInterval
+        refreshInterval.value = config.refreshInterval ?? 5000
       } else {
         initialConfig.value = null
         hasConfig.value = false
+        refreshInterval.value = 5000
       }
-      return
+      return true
     }
-    const res = await getTemplat(props.deviceTemplateId)
+    const res = await getTemplat(templateID)
+    if (sequence !== loadSequence || templateID !== props.deviceTemplateId) return false
 
     if (res.data) {
       // 提取平台字段（优先从物模型接口获取）
@@ -264,6 +268,7 @@ const loadTemplateData = async () => {
         attributesApi({ page: 1, page_size: 1000, device_template_id: props.deviceTemplateId })
       ])
 
+      if (sequence !== loadSequence || templateID !== props.deviceTemplateId) return false
       const telemetryList = unwrapApiList(telemetryRes)
       const attributesList = unwrapApiList(attributesRes)
 
@@ -293,14 +298,18 @@ const loadTemplateData = async () => {
           console.warn('解析 app_chart_config 失败', e)
           initialConfig.value = null
           hasConfig.value = false
+          return false
         }
       }
+      return true
     }
+    return false
   } catch (error) {
     console.error('加载模板数据失败:', error)
     window.$message?.error($t('common.fetchDataFailed'))
+    return false
   } finally {
-    loading.value = false
+    if (sequence === loadSequence) loading.value = false
   }
 }
 
@@ -308,16 +317,30 @@ onMounted(() => {
   loadTemplateData()
 })
 
+onBeforeUnmount(() => {
+  loadSequence += 1
+})
+
 watch(showEditorModal, visible => {
   if (!visible) {
     isEditorFullscreen.value = false
+    refreshInterval.value = initialConfig.value?.refreshInterval ?? 5000
+    if (props.nativeResourcePort && !saving.value && !loading.value) void loadTemplateData()
   }
 })
 
 watch(
   () => props.nativeResourcesRevision,
   (revision, previous) => {
-    if (props.nativeResourcePort && revision !== undefined && previous !== undefined && revision !== previous)
+    if (
+      props.nativeResourcePort &&
+      !showEditorModal.value &&
+      !saving.value &&
+      !loading.value &&
+      revision !== undefined &&
+      previous !== undefined &&
+      revision !== previous
+    )
       void loadTemplateData()
   }
 )
@@ -329,16 +352,13 @@ watch(
     <NCard title="App 图表配置" class="preview-card">
       <template #header-extra>
         <NSpace align="center">
-          <span>刷新频率：</span>
-
-          <NSelect
-            v-model:value="refreshInterval"
-            :options="refreshOptions"
-            size="small"
-            style="width: 120px"
-            placeholder="刷新频率"
-          />
-          <NButton type="primary" size="small" @click="openEditor">
+          <span>
+            刷新频率：{{
+              refreshOptions.find(option => option.value === (initialConfig?.refreshInterval ?? 5000))?.label ??
+              `${(initialConfig?.refreshInterval ?? 5000) / 1000}秒`
+            }}
+          </span>
+          <NButton type="primary" size="small" :disabled="loading || saving" @click="openEditor">
             {{ hasConfig ? '编辑配置' : $t('generate.new-config') }}
           </NButton>
         </NSpace>
@@ -387,6 +407,15 @@ watch(
         >
           <template #header-extra>
             <NSpace align="center" size="small">
+              <span>刷新频率</span>
+              <NSelect
+                v-model:value="refreshInterval"
+                :options="refreshOptions"
+                :disabled="saving"
+                size="small"
+                style="width: 120px"
+                aria-label="刷新频率"
+              />
               <NButton
                 quaternary
                 circle

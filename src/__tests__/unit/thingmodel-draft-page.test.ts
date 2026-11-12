@@ -224,7 +224,8 @@ describe('native thing model draft editing', () => {
     const save = page.findAll('button').find(button => /^(保存|保存草稿)$/.test(button.text()))!
     await save.trigger('click')
     await flushPromises()
-    expect(page.text()).toContain('网络中断')
+    expect(page.text()).toContain('保存未完成，请稍后重试。')
+    expect(page.text()).not.toContain('网络中断')
     expect((page.get('input[aria-label="名称"]').element as HTMLInputElement).value).toBe('待保存的名称')
     await save.trigger('click')
     await flushPromises()
