@@ -4,7 +4,7 @@
     {
       "path": "src/views/device/config-edit/index.vue",
       "base_sha256": "7b4c853b69c939667f4acdcf5ff82a95ceb07f9c673c8be7bf81dbc07dcfa435",
-      "patched_sha256": "a713dd74066c98593082e802e5a6b14289518a8e4d4b0329f78b6628a6b68761",
+      "patched_sha256": "f8bc973bf718fbf76c727af1f0005246057d0bf2e6b74af6bbdda5e10eecf7f1",
       "changes": [
         {
           "before": "import { onMounted, ref, watch } from 'vue'",
@@ -54,6 +54,46 @@
         {
           "before": "<NButton type=\"primary\" :loading=\"loading\" @click=\"handleSubmit\">",
           "after": "<NButton type=\"primary\" :loading=\"loading || schemaLoading\" :disabled=\"schemaFailed || schemaLoading\" @click=\"handleSubmit\">",
+          "count": 1
+        },
+        {
+          "before": "const configId = ref(route.query.id || null)",
+          "after": "const configId = ref<string | null>(null)\nconst loadedConfigId = ref<string | null>(null)\nconst configLoading = ref(false)\nconst configLoadFailed = ref(false)\nlet routeGeneration = 0",
+          "count": 1
+        },
+        {
+          "before": "const handleSubmit = async () => {\n  if (schemaLoading.value || schemaFailed.value) return\n  await configFormRef?.value?.validate()\n\n  loading.value = true\n\n  // 1. 直接复制当前的表单值\n  const postData = { ...configForm.value }\n\n  // 2. 单独处理 protocol_config，将其从对象转换为 JSON 字符串\n  postData.protocol_config = JSON.stringify(protocol_config.value || {})\n\n  if (!configId.value) {\n    // 添加模式\n    // 确保添加时不传递 id (defaultConfigForm 已将 id 设为 null)\n    const res = await deviceConfigAdd(postData)\n\n    loading.value = false\n\n    if (!res.error) {\n      handleClose()\n    } else {\n      message.error((res as any)?.message || $t('generate.addFailed'))\n    }\n  } else {\n    // 编辑模式\n    // 确保 postData 中包含正确的 id (来自 configForm.value)\n    const res = await deviceConfigEdit(postData).catch((error: AxiosError) => {\n      message.error((error && 'message' in error && error.message) || $t('generate.editFailed'))\n      return { error: true }\n    })\n\n    loading.value = false\n\n    if (!res.error) {\n      handleClose()\n    } else {\n      message.error((res as any)?.message || $t('generate.editFailed'))\n    }\n  }\n}\n\nconst getConfig = async () => {\n  try {\n    const res = await deviceConfigInfo({ id: configId.value })\n    configForm.value = { ...res.data }\n\n    try {\n      if (typeof res.data.protocol_config === 'string') {\n        protocol_config.value = JSON.parse(res.data.protocol_config)\n      } else if (typeof res.data.protocol_config === 'object' && res.data.protocol_config !== null) {\n        protocol_config.value = res.data.protocol_config\n      } else {\n        protocol_config.value = {}\n      }\n    } catch (e) {\n      console.error('Failed to parse protocol_config:', e)\n      message.error($t('generate.failedToParseProtocolConfig'))\n      protocol_config.value = {}\n    }\n  } catch (error) {\n    console.error('Failed to get device config info:', error)\n    message.error($t('generate.failedToLoadConfig'))\n  }\n}\n\nwatch(\n  () => configId.value,\n  async newId => {\n    if (newId) {\n      modalTitle.value = 'common.edit'\n    }\n  }\n)\n",
+          "after": "// Only editable metadata belongs in this DTO; model bindings use their dedicated CAS operation.\nconst handleSubmit = async () => {\n  const generation = routeGeneration\n  const id = configId.value\n  const ready = () => generation === routeGeneration && !loading.value && !configLoading.value &&\n    !configLoadFailed.value && !schemaLoading.value && !schemaFailed.value && (!id || loadedConfigId.value === id)\n  if (!ready()) return\n  try { await configFormRef.value?.validate() } catch { return }\n  if (!ready()) return\n  const { name, description, additional_info, device_conn_type, device_type, protocol_type, remark, voucher_type } = configForm.value\n  const postData = { name, description, additional_info, device_conn_type, device_type, protocol_type, remark, voucher_type,\n    protocol_config: JSON.stringify(protocol_config.value || {}), ...(id ? { id } : {}) }\n  loading.value = true\n  try {\n    const res = id ? await deviceConfigEdit(postData) : await deviceConfigAdd(postData)\n    if (generation !== routeGeneration) return\n    if (!res.error) handleClose()\n    else message.error($t(id ? 'generate.editFailed' : 'generate.addFailed'))\n  } catch {\n    if (generation === routeGeneration) message.error($t(id ? 'generate.editFailed' : 'generate.addFailed'))\n  } finally {\n    if (generation === routeGeneration) loading.value = false\n  }\n}\n\nconst getConfig = async (id: string, generation: number) => {\n  const res = await deviceConfigInfo({ id })\n  if (generation !== routeGeneration) return false\n  if (res.error || !res.data || res.data.id !== id) throw new Error('Template unavailable')\n  const next = defaultConfigForm()\n  for (const key of Object.keys(next) as (keyof ConfigFormData)[]) {\n    if (Object.prototype.hasOwnProperty.call(res.data, key)) (next as any)[key] = res.data[key]\n  }\n  const saved = res.data.protocol_config\n  const parsed = typeof saved === 'string' ? JSON.parse(saved) : saved\n  if (parsed != null && (typeof parsed !== 'object' || Array.isArray(parsed))) throw new Error('Invalid protocol configuration')\n  configForm.value = next\n  protocol_config.value = parsed || {}\n  loadedConfigId.value = id\n  return true\n}\n\n",
+          "count": 1
+        },
+        {
+          "before": "onMounted(async () => {\n  if (configId.value) {\n    modalTitle.value = 'common.edit'\n    isEdit.value = true\n    await getConfig()\n  } else {\n    isEdit.value = false\n    modalTitle.value = 'generate.create'\n  }\n  await getProtocolList(configForm?.value.device_type || '1')\n\n  if (configForm.value.protocol_type) {\n    await protocolSelection.select(configForm.value.device_type, configForm.value.protocol_type, false)\n  }\n})\n",
+          "after": "watch(() => route.query.id, async rawId => {\n  const generation = ++routeGeneration\n  protocolListGeneration++\n  protocolSelection.invalidate()\n  configId.value = typeof rawId === 'string' && rawId ? rawId : null\n  loadedConfigId.value = null\n  configForm.value = defaultConfigForm()\n  protocol_config.value = {}\n  typeOptions.value = []\n  loading.value = false\n  configLoading.value = true\n  configLoadFailed.value = false\n  isEdit.value = Boolean(configId.value)\n  modalTitle.value = isEdit.value ? 'common.edit' : 'generate.create'\n  configFormRef.value?.restoreValidation()\n  try {\n    if (configId.value && !(await getConfig(configId.value, generation))) return\n    if (generation !== routeGeneration) return\n    await getProtocolList(configForm.value.device_type || '1')\n    if (generation !== routeGeneration) return\n    if (configForm.value.protocol_type) {\n      await protocolSelection.select(configForm.value.device_type, configForm.value.protocol_type, false)\n    }\n  } catch {\n    if (generation !== routeGeneration) return\n    configLoadFailed.value = true\n    loadedConfigId.value = null\n    message.error($t('generate.failedToLoadConfig'))\n  } finally {\n    if (generation === routeGeneration) configLoading.value = false\n  }\n}, { immediate: true, flush: 'sync' })\n",
+          "count": 1
+        },
+        {
+          "before": "onBeforeUnmount(() => { protocolListGeneration++; protocolSelection.invalidate() })",
+          "after": "onBeforeUnmount(() => { routeGeneration++; protocolListGeneration++; protocolSelection.invalidate() })",
+          "count": 1
+        },
+        {
+          "before": "const handleClose = () => {\n  protocolListGeneration++",
+          "after": "const handleClose = () => {\n  routeGeneration++\n  protocolListGeneration++",
+          "count": 1
+        },
+        {
+          "before": ":disabled=\"schemaFailed || schemaLoading\"",
+          "after": ":disabled=\"configLoading || configLoadFailed || schemaFailed || schemaLoading\"",
+          "count": 1
+        },
+        {
+          "before": "import { onBeforeUnmount, onMounted, ref, watch } from 'vue'",
+          "after": "import { onBeforeUnmount, ref, watch } from 'vue'",
+          "count": 1
+        },
+        {
+          "before": "import type { AxiosError } from 'axios'\n",
+          "after": "",
           "count": 1
         }
       ]

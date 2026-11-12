@@ -332,7 +332,7 @@ watch(
       resetCreateForm()
     }
   },
-  { immediate: true }
+  { immediate: true, flush: 'sync' }
 )
 
 async function loadModels() {
@@ -471,6 +471,8 @@ function keyForWrite(kind: 'create' | 'update', fingerprint: string): string {
 }
 
 async function save() {
+  const validationEpoch = routeEpoch
+  const validationID = templateID.value
   if (!canWrite.value) {
     message.error('只有租户管理员可以修改设备模板。')
     return
@@ -482,6 +484,8 @@ async function save() {
   } catch {
     return
   }
+  if (validationEpoch !== routeEpoch || validationID !== templateID.value || saving.value || loading.value) return
+  if (isEdit.value && (!original.value || Boolean(loadError.value))) return
   if (
     protocolEditable.value &&
     (timeoutSeconds.value === null ||

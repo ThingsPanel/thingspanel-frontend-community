@@ -1,9 +1,10 @@
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, reactive } from 'vue'
 import { mount, flushPromises } from '@vue/test-utils'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 vi.mock('@/locales', () => ({ $t: (key: string) => key }))
 vi.mock('@/router', () => ({ router: { go: vi.fn() } }))
-vi.mock('vue-router', () => ({ useRoute: () => ({ query: {} }) }))
+const routeState = vi.hoisted(() => ({ current: null as any }))
+vi.mock('vue-router', () => ({ useRoute: () => routeState.current }))
 vi.mock('@/service/api/device', () => ({
   deviceConfigAdd: vi.fn(),
   deviceConfigEdit: vi.fn(),
@@ -24,8 +25,88 @@ import * as api from '@/service/api/device'
 const wrappers: ReturnType<typeof mount>[] = []
 beforeEach(() => {
   vi.clearAllMocks()
+  routeState.current = reactive({ query: {} })
   vi.mocked(api.deviceProtocalServiceList).mockResolvedValue({ data: { protocol: [], service: [] } } as any)
   vi.mocked(api.deviceConfigVoucherType).mockResolvedValue({ data: {} } as any)
+})
+
+it.each([0, 7])('ordinary edit omits binding CAS even at revision %s', async revision => {
+  routeState.current.query.id = 'A'
+  vi.mocked(api.deviceConfigInfo).mockResolvedValue({
+    data: {
+      id: 'A',
+      name: 'A',
+      native_binding_revision: revision,
+      native_thing_model_id: revision ? 'model' : null,
+      native_thing_model_snapshot_id: revision ? 'snapshot' : null,
+      native_thing_model_revision: revision || null,
+      tenant_id: 'tenant',
+      device_count: 12,
+      protocol_config: '{}'
+    }
+  } as any)
+  vi.mocked(api.deviceConfigEdit).mockResolvedValue({} as any)
+  const { state } = page()
+  await flushPromises()
+  state.configForm.name = 'renamed'
+  await state.handleSubmit()
+  expect(api.deviceConfigEdit).toHaveBeenCalledOnce()
+  const body = vi.mocked(api.deviceConfigEdit).mock.calls[0][0]
+  expect(body).toMatchObject({ id: 'A', name: 'renamed', protocol_config: '{}' })
+  expect(Object.keys(body).some(k => k.startsWith('native_') || k === 'tenant_id' || k === 'device_template_id')).toBe(
+    false
+  )
+})
+
+it('route changes clear stale data and reject delayed loads and validation', async () => {
+  let loadA!: (value: any) => void
+  routeState.current.query.id = 'A'
+  vi.mocked(api.deviceConfigInfo).mockImplementation(({ id }: any) =>
+    id === 'A'
+      ? new Promise(resolve => {
+          loadA = resolve
+        })
+      : Promise.resolve({ data: { id, name: id, protocol_config: '{}' } } as any)
+  )
+  vi.mocked(api.deviceConfigEdit).mockResolvedValue({} as any)
+  const { state } = page()
+  routeState.current.query.id = 'B'
+  await flushPromises()
+  loadA({ data: { id: 'A', name: 'stale', protocol_config: '{}' } })
+  await flushPromises()
+  expect(state.configForm.id).toBe('B')
+  let validated!: () => void
+  state.configFormRef.validate = () =>
+    new Promise<void>(resolve => {
+      validated = resolve
+    })
+  const save = state.handleSubmit()
+  routeState.current.query.id = 'C'
+  await flushPromises()
+  validated()
+  await save
+  expect(api.deviceConfigEdit).not.toHaveBeenCalled()
+  expect(state.configForm.id).toBe('C')
+})
+
+it('failed new route load cannot save the prior object; edit to create omits id', async () => {
+  routeState.current.query.id = 'A'
+  vi.mocked(api.deviceConfigInfo).mockResolvedValue({ data: { id: 'A', name: 'A', protocol_config: '{}' } } as any)
+  const { state } = page()
+  await flushPromises()
+  vi.mocked(api.deviceConfigInfo).mockResolvedValue({ error: true } as any)
+  routeState.current.query.id = 'B'
+  await flushPromises()
+  await state.handleSubmit()
+  expect(api.deviceConfigEdit).not.toHaveBeenCalled()
+  expect(state.configForm.id).toBeNull()
+  delete routeState.current.query.id
+  await flushPromises()
+  vi.mocked(api.deviceConfigAdd).mockResolvedValue({} as any)
+  state.configForm.name = 'new'
+  await state.handleSubmit()
+  expect(api.deviceConfigAdd).toHaveBeenCalledOnce()
+  expect(vi.mocked(api.deviceConfigAdd).mock.calls[0][0]).not.toHaveProperty('id')
 })
 afterEach(() => wrappers.splice(0).forEach(wrapper => wrapper.unmount()))
 const slot = defineComponent({
