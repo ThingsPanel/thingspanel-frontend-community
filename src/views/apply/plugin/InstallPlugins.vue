@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { nanoid } from '@sa/utils'
 import {
   NAlert,
   NButton,
@@ -114,7 +115,7 @@ function openInstall(item: CatalogItem) {
   drawer.item = item
   drawer.mode = item.installation && item.installation.state !== 'uninstalled' ? 'detail' : 'install'
   resetForm(item)
-  clickKey = crypto.randomUUID()
+  clickKey = nanoid()
   detail.value = item.installation
   drawer.open = true
   if (item.installation) void refreshDetail(item.installation.id)
@@ -162,7 +163,7 @@ async function onSubmit() {
     return
   }
   Object.keys(form).forEach(k => (form[k] = '')) // the secret is gone from the browser as soon as it is accepted
-  clickKey = crypto.randomUUID()
+  clickKey = nanoid()
   detail.value = result.data as Installation
   drawer.mode = 'detail'
   await load()

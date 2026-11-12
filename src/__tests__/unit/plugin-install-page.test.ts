@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const api = vi.hoisted(() => ({
   getInstallCatalog: vi.fn(),
@@ -51,6 +51,8 @@ const installed = (over: any = {}) => ({
 })
 
 describe('plugin install page', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
   beforeEach(() => {
     document.body.innerHTML = ''
     Object.values(api).forEach(f => f.mockReset())
@@ -66,6 +68,21 @@ describe('plugin install page', () => {
     w.unmount()
   })
 
+  it('opens management over HTTP when randomUUID is unavailable', async () => {
+    vi.stubGlobal('crypto', { getRandomValues: globalThis.crypto.getRandomValues.bind(globalThis.crypto) })
+    api.getInstallCatalog.mockResolvedValue({ data: catalog(installed()), error: null })
+    const w = mount(InstallPlugins, { attachTo: document.body })
+    try {
+      await flushPromises()
+      await w.find('[data-testid="plugin-homeassistant"] button').trigger('click')
+      await flushPromises()
+      expect(document.body.querySelector('.n-drawer')).not.toBeNull()
+      expect(api.getInstallation).toHaveBeenCalledWith('i1')
+    } finally {
+      w.unmount()
+    }
+  })
+
   it('explains when the host agent is offline', async () => {
     api.getInstallCatalog.mockResolvedValue({ data: null, error: { code: 'AGENT_OFFLINE' } })
     const w = mount(InstallPlugins, { attachTo: document.body })
@@ -75,6 +92,7 @@ describe('plugin install page', () => {
   })
 
   it('installs once even if the button is clicked repeatedly, and wipes the token from the page afterwards', async () => {
+    vi.stubGlobal('crypto', { getRandomValues: globalThis.crypto.getRandomValues.bind(globalThis.crypto) })
     api.getInstallCatalog.mockResolvedValue({ data: catalog(), error: null })
     let release: (v: unknown) => void = () => {}
     api.submitInstall.mockImplementation(() => new Promise(r => (release = r)))
