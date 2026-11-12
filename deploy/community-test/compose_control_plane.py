@@ -16,6 +16,32 @@ import tarfile
 BASELINE = 'a46f1dd8866b3c7d89328c0bc7b722e46c703581'
 
 
+def apply_device_patches(staged, specification):
+    if specification.get('baseline') != BASELINE:
+        raise ValueError('Unreviewed patch baseline')
+    records = []
+    seen = set()
+    for entry in specification['files']:
+        name = entry['path']
+        if name not in staged or name in seen:
+            raise ValueError('Patch is not an approved unique overlay')
+        seen.add(name)
+        raw = staged[name]
+        if hashlib.sha256(raw).hexdigest() != entry['base_sha256']:
+            raise ValueError('Device patch source hash mismatch: ' + name)
+        source = raw.decode('utf-8')
+        for change in entry['changes']:
+            if change['count'] != 1 or not change['before'] or source.count(change['before']) != 1:
+                raise ValueError('Device patch context is not unique: ' + name)
+            source = source.replace(change['before'], change['after'], 1)
+        patched = source.encode('utf-8')
+        if hashlib.sha256(patched).hexdigest() != entry['patched_sha256']:
+            raise ValueError('Device patch result hash mismatch: ' + name)
+        staged[name] = patched
+        records.append({key: entry[key] for key in ('path', 'base_sha256', 'patched_sha256')})
+    return records
+
+
 def compose(repo, destination):
     repo, destination = pathlib.Path(repo).resolve(), pathlib.Path(destination).resolve()
     if destination.exists():
@@ -41,6 +67,9 @@ def compose(repo, destination):
         data = git('show', BASELINE + ':' + name)
         staged[name] = data
         records.append({'path': name, 'sha256': hashlib.sha256(data).hexdigest()})
+    patch_bytes = (repo / 'deploy/community-test/device-ui-patches.json').read_bytes()
+    patches = apply_device_patches(staged, json.loads(patch_bytes))
+    records = [{'path': name, 'sha256': hashlib.sha256(data).hexdigest()} for name, data in staged.items()]
     archive = git('archive', '--format=tar', head)
     destination.mkdir(parents=True)
     with tarfile.open(fileobj=io.BytesIO(archive)) as tf:
@@ -56,7 +85,8 @@ def compose(repo, destination):
     profile = {'profile': 'control-plane', 'source_commit': head,
                'device_source_commit': BASELINE, 'device_owner': 'community',
                'upgraded_modules': ['authentication', 'alarms', 'automation', 'notification'],
-               'overrides': records}
+               'overrides': records, 'device_ui_patches': patches,
+               'device_ui_patch_sha256': hashlib.sha256(patch_bytes).hexdigest()}
     (destination / 'public/RELEASE_PROFILE.json').write_text(json.dumps(profile, indent=2), encoding='utf-8')
     return profile
 

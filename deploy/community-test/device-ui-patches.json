@@ -1,0 +1,84 @@
+{
+  "baseline": "a46f1dd8866b3c7d89328c0bc7b722e46c703581",
+  "files": [
+    {
+      "path": "src/views/device/config-edit/index.vue",
+      "base_sha256": "7b4c853b69c939667f4acdcf5ff82a95ceb07f9c673c8be7bf81dbc07dcfa435",
+      "patched_sha256": "a713dd74066c98593082e802e5a6b14289518a8e4d4b0329f78b6628a6b68761",
+      "changes": [
+        {
+          "before": "import { onMounted, ref, watch } from 'vue'",
+          "after": "import { onBeforeUnmount, onMounted, ref, watch } from 'vue'\nimport { createProtocolSelection } from '@/utils/protocol-selection'",
+          "count": 1
+        },
+        {
+          "before": "const handleClose = () => {",
+          "after": "const handleClose = () => {\n  protocolListGeneration++\n  protocolSelection.invalidate()",
+          "count": 1
+        },
+        {
+          "before": "const handleSubmit = async () => {",
+          "after": "const handleSubmit = async () => {\n  if (schemaLoading.value || schemaFailed.value) return",
+          "count": 1
+        },
+        {
+          "before": "const getProtocolList = async (deviceCode: string | number) => {",
+          "after": "let protocolListGeneration = 0\nconst getProtocolList = async (deviceCode: string | number) => {\n  const generation = ++protocolListGeneration\n  typeOptions.value = []",
+          "count": 1
+        },
+        {
+          "before": "  const res = await deviceProtocalServiceList(queryData)\n  if (res.data)",
+          "after": "  const res = await deviceProtocalServiceList(queryData)\n  if (generation !== protocolListGeneration) return\n  if (res.data)",
+          "count": 1
+        },
+        {
+          "before": "const getConfigForm = async data => {\n  const res = await protocolPluginConfigForm({\n    device_type: configForm?.value?.device_type,\n    protocol_type: data\n  })\n  formElements.value = res.data || []\n}\n\nconst getVoucherType = async (data: any) => {\n  connectOptions.value = []\n  const res = await deviceConfigVoucherType({\n    device_type: configForm?.value?.device_type,\n    protocol_type: data\n  })\n  if (res.data) {\n    // 明确 map 返回类型\n    connectOptions.value = Object.keys(res.data).map(key => {\n      return { label: key, value: res.data[key] } as SelectOption\n    })\n  }\n}\n\nconst choseProtocolType = async data => {\n  configForm.value.voucher_type = null\n  await getVoucherType(data)\n  await getConfigForm(data)\n}\n\n",
+          "after": "const schemaLoading = ref(false)\nconst schemaFailed = ref(false)\nconst schemaKey = ref(0)\nconst protocolSelection = createProtocolSelection({\n  async schema(device_type, protocol_type) {\n    const response = await protocolPluginConfigForm({ device_type, protocol_type })\n    if (response.error) throw new Error('schema unavailable')\n    return Array.isArray(response.data) ? response.data : []\n  },\n  async vouchers(device_type, protocol_type) {\n    const response = await deviceConfigVoucherType({ device_type, protocol_type })\n    if (response.error) throw new Error('credentials unavailable')\n    return response.data || {}\n  },\n  clear(resetData) {\n    formElements.value = []\n    connectOptions.value = []\n    schemaFailed.value = false\n    schemaKey.value++\n    configFormRef.value?.restoreValidation()\n    if (resetData) {\n      protocol_config.value = {}\n      configForm.value.voucher_type = null\n    }\n  },\n  commit(schema, vouchers) {\n    formElements.value = schema\n    connectOptions.value = Object.keys(vouchers).map(label => ({ label, value: vouchers[label] }))\n  },\n  loading(value) { schemaLoading.value = value },\n  failed() {\n    schemaFailed.value = true\n    message.error('协议配置加载失败，请重新选择协议后重试')\n  }\n})\nconst choseProtocolType = (protocol: string | number | null) =>\n  protocolSelection.select(configForm.value.device_type, protocol)\nonBeforeUnmount(() => { protocolListGeneration++; protocolSelection.invalidate() })\n\n",
+          "count": 1
+        },
+        {
+          "before": "    await getVoucherType(configForm.value.protocol_type)\n    await getConfigForm(configForm.value.protocol_type)",
+          "after": "    await protocolSelection.select(configForm.value.device_type, configForm.value.protocol_type, false)",
+          "count": 1
+        },
+        {
+          "before": "function handleDeviceTypeChange(newValue: string | number) {",
+          "after": "function handleDeviceTypeChange(newValue: string | number) {\n  protocolSelection.invalidate()",
+          "count": 1
+        },
+        {
+          "before": "<FormInput v-model:protocol-config=\"protocol_config\"",
+          "after": "<FormInput :key=\"schemaKey\" v-model:protocol-config=\"protocol_config\"",
+          "count": 1
+        },
+        {
+          "before": "<NButton type=\"primary\" :loading=\"loading\" @click=\"handleSubmit\">",
+          "after": "<NButton type=\"primary\" :loading=\"loading || schemaLoading\" :disabled=\"schemaFailed || schemaLoading\" @click=\"handleSubmit\">",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/views/device/details/modules/command-delivery.vue",
+      "base_sha256": "c5582c19fcb416911ea05840648d8555db1be3a1ad354c1f3946ba3458024f3c",
+      "patched_sha256": "0a354963005cfcda0e234e2f895d9102b583b10753193cdd9747c0ff104ef40f",
+      "changes": [
+        {
+          "before": "import { ref, watch } from 'vue'",
+          "after": "import { onBeforeUnmount, ref, watch } from 'vue'\nimport { request } from '@/service/request'\nimport { communityCommandLabel, createCommunityCommandPageLoader } from '@/service/api/community-command-status'",
+          "count": 1
+        },
+        {
+          "before": "// 状态\nconst formatStatus = (status: string) => {\n  const statusjson = {\n    '1': $t('generate.sendingSuccess'),\n    '2': $t('generate.sendingFail'),\n    '3': $t('generate.returnSuccess'),\n    '4': $t('generate.returnFail')\n  }\n\n  return statusjson[status] || ''\n}\n\n",
+          "after": "const commandPages = createCommunityCommandPageLoader(getCommandDataSetLogs,\n  id => request.get<any>(`/command/datas/status/${encodeURIComponent(id)}`))\nwatch(() => props.id, () => commandPages.invalidate(), { flush: 'sync' })\nonBeforeUnmount(() => commandPages.invalidate())\nconst formatStatus = communityCommandLabel\n\n",
+          "count": 1
+        },
+        {
+          "before": ":fetch-data-api=\"getCommandDataSetLogs\"",
+          "after": ":fetch-data-api=\"commandPages.load\"",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}
