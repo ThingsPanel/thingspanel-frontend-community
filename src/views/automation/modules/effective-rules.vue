@@ -62,7 +62,7 @@ watch(() => [props.deviceId, props.deviceConfigId], load, { immediate: true })
 function sourceLabel(source: string) {
   if (source === 'template') return '来自设备模板'
   if (source === 'device') return '本设备专属'
-  if (source === 'condition') return '条件匹配（不限设备）'
+  if (source === 'condition') return '条件匹配'
   return source
 }
 
