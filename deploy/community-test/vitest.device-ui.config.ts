@@ -11,6 +11,7 @@ export default defineConfig({
       'deploy/community-test/device-ui-pages.test.ts',
       'deploy/community-test/template-detail-route.test.ts',
       'deploy/community-test/template-metadata-entries.test.ts',
+      'deploy/community-test/template-metadata-http.test.ts',
       'src/__tests__/unit/device-config-metadata.test.ts',
       'src/__tests__/unit/device-command-json-payload.test.ts'
     ],
