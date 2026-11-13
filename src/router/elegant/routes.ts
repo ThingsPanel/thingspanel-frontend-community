@@ -265,21 +265,32 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
-        name: 'data-service_northbound',
-        path: '/data-service/northbound',
-        component: 'view.data-service_northbound',
-        meta: {
-          title: 'data-service_northbound',
-          i18nKey: 'route.data-service_northbound'
-        }
-      },
-      {
         name: 'data-service_rule-engine',
         path: '/data-service/rule-engine',
         component: 'view.data-service_rule-engine',
         meta: {
           title: 'data-service_rule-engine',
           i18nKey: 'route.data-service_rule-engine'
+        }
+      },
+    ]
+  },
+  {
+    name: 'data-forwarding',
+    path: '/data-forwarding',
+    component: 'layout.base',
+    meta: {
+      title: 'data-forwarding',
+      i18nKey: 'route.data-forwarding'
+    },
+    children: [
+      {
+        name: 'data-forwarding_northbound',
+        path: '/data-forwarding/northbound',
+        component: 'view.data-forwarding_northbound',
+        meta: {
+          title: 'data-forwarding_northbound',
+          i18nKey: 'route.data-forwarding_northbound'
         }
       }
     ]
@@ -359,6 +370,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'device_plugin-install',
+        path: '/device/plugin-install',
+        component: 'view.device_plugin-install',
+        meta: {
+          title: 'device_plugin-install',
+          i18nKey: 'route.device_plugin-install'
+        }
+      },
+      {
         name: 'device_integration',
         path: '/device/integration',
         component: 'view.device_integration',
@@ -395,15 +415,6 @@ export const generatedRoutes: GeneratedRoute[] = [
             }
           }
         ]
-      },
-      {
-        name: 'device_plugin-install',
-        path: '/device/plugin-install',
-        component: 'view.device_plugin-install',
-        meta: {
-          title: 'device_plugin-install',
-          i18nKey: 'route.device_plugin-install'
-        }
       },
       {
         name: 'device_service-details',
