@@ -421,18 +421,20 @@ const goBack = () => router.push('/device/thingsmodel')
         <template #header>
           <div class="model-heading">
             <h2>{{ title }}</h2>
-            <NTag
-              v-if="detail"
-              size="small"
-              :bordered="false"
-              :type="saveError ? 'error' : basicDirty ? 'warning' : 'success'"
-              role="status"
-            >
-              {{ saveStatus }}
-            </NTag>
-          </div>
-          <div v-if="detail" class="model-revisions">
-            <span>{{ detail.publishedRevision ? `已发布 v${detail.publishedRevision}` : '尚未发布' }}</span>
+            <div v-if="detail" class="model-meta">
+              <span class="model-revisions">
+                {{ detail.publishedRevision ? `已发布 v${detail.publishedRevision}` : '尚未发布' }}
+              </span>
+              <NTag
+                v-if="detail"
+                size="small"
+                :bordered="false"
+                :type="saveError ? 'error' : basicDirty ? 'warning' : 'success'"
+                role="status"
+              >
+                {{ saveStatus }}
+              </NTag>
+            </div>
           </div>
         </template>
         <template #header-extra>
@@ -574,12 +576,16 @@ const goBack = () => router.push('/device/thingsmodel')
 
 <style scoped lang="scss">
 .thingmodel-detail-card :deep(> .n-card-header) {
-  position: sticky;
-  top: 0;
-  z-index: 5;
   flex-shrink: 0;
+  gap: 16px;
+  padding-top: 16px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--n-border-color);
   background-color: var(--n-color);
+}
+
+.thingmodel-detail-card :deep(> .n-card-header > .n-card-header__main) {
+  min-width: 0;
 }
 
 .thingmodel-detail-card :deep(> .n-card__content) {
@@ -595,18 +601,21 @@ const goBack = () => router.push('/device/thingsmodel')
   h2 {
     margin: 0;
     color: var(--text-color);
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
     line-height: 1.4;
     overflow-wrap: anywhere;
   }
 }
 
-.model-revisions {
+.model-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 6px;
+  align-items: center;
+  gap: 8px;
+}
+
+.model-revisions {
   color: var(--text-color-3);
   font-size: 13px;
   font-weight: 400;
@@ -655,7 +664,7 @@ const goBack = () => router.push('/device/thingsmodel')
 }
 
 @media (max-width: 1100px) {
-  .thingmodel-detail-card :deep(.n-card-header) {
+  .thingmodel-detail-card :deep(> .n-card-header) {
     flex-wrap: wrap;
     gap: 16px;
   }
