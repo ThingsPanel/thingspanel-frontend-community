@@ -21,8 +21,6 @@ declare module "@elegant-router/types" {
     "exception_403": "/exception/403";
     "exception_404": "/exception/404";
     "exception_500": "/exception/500";
-    "device-config-legacy-redirect": "/device/config";
-    "device-config-detail-legacy-redirect": "/device/config-detail";
     "403": "/403";
     "404": "/404";
     "500": "/500";
@@ -50,9 +48,8 @@ declare module "@elegant-router/types" {
     "dashboard_panel": "/dashboard/panel";
     "dashboard_workbench": "/dashboard/workbench";
     "data-service": "/data-service";
+    "data-service_northbound": "/data-service/northbound";
     "data-service_rule-engine": "/data-service/rule-engine";
-    "data-forwarding": "/data-forwarding";
-    "data-forwarding_northbound": "/data-forwarding/northbound";
     "device": "/device";
     "device_config": "/device/template";
     "device_config-detail": "/device/config-detail";
@@ -62,10 +59,10 @@ declare module "@elegant-router/types" {
     "device_grouping": "/device/grouping";
     "device_grouping-details": "/device/grouping-details";
     "device_integration": "/device/integration";
-    "device_plugin-install": "/device/plugin-install";
     "device_manage": "/device/manage";
     "device_market": "/device/market";
     "device_market_installed-detail": "/device/market/installed-detail/:id";
+    "device_plugin-install": "/device/plugin-install";
     "device_service-details": "/device/service-details";
     "device_template": "/device/thingsmodel";
     "device-details-app": "/device-details-app";
@@ -151,8 +148,6 @@ declare module "@elegant-router/types" {
     | "exception_403"
     | "exception_404"
     | "exception_500"
-    | "device-config-legacy-redirect"
-    | "device-config-detail-legacy-redirect"
   >;
 
   /**
@@ -175,7 +170,6 @@ declare module "@elegant-router/types" {
     | "component"
     | "dashboard"
     | "data-service"
-    | "data-forwarding"
     | "device"
     | "device-details-app"
     | "function"
@@ -204,8 +198,6 @@ declare module "@elegant-router/types" {
     | "root"
     | "not-found"
     | "exception"
-    | "device-config-legacy-redirect"
-    | "device-config-detail-legacy-redirect"
   >;
 
   /**
@@ -235,8 +227,8 @@ declare module "@elegant-router/types" {
     | "dashboard_mobile-panel"
     | "dashboard_panel"
     | "dashboard_workbench"
+    | "data-service_northbound"
     | "data-service_rule-engine"
-    | "data-forwarding_northbound"
     | "device-details-app"
     | "device_config-detail"
     | "device_config-edit"
@@ -246,10 +238,10 @@ declare module "@elegant-router/types" {
     | "device_grouping-details"
     | "device_grouping"
     | "device_integration"
-    | "device_plugin-install"
     | "device_manage"
     | "device_market"
     | "device_market_installed-detail"
+    | "device_plugin-install"
     | "device_service-details"
     | "device_template"
     | "function_hide-child_one"
@@ -308,8 +300,6 @@ declare module "@elegant-router/types" {
     | "exception_403"
     | "exception_404"
     | "exception_500"
-    | "device-config-legacy-redirect"
-    | "device-config-detail-legacy-redirect"
   >;
 
   /**

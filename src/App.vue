@@ -8,6 +8,7 @@ import { useAppStore } from './store/modules/app'
 import { useThemeStore } from './store/modules/theme'
 import { naiveDateLocales, naiveLocales } from './locales/naive'
 import Content from './components/content/index.vue'
+import MaintenanceOverlay from './components/system-manage/maintenance-overlay.vue'
 
 hljs.registerLanguage('json', json)
 
@@ -67,6 +68,7 @@ const naiveDateLocale = computed(() => {
       <Content />
       <AppProvider>
         <RouterView class="bg-layout" />
+        <MaintenanceOverlay />
       </AppProvider>
     </NMessageProvider>
   </NConfigProvider>

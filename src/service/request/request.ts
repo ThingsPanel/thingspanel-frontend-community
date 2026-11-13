@@ -55,6 +55,18 @@ export const request: FlatRequestInstance = createFlatRequest<App.Service.DEVRes
     async onError(error) {
       // when the requestTs is fail, you can show error message
 
+      // R6: a maintenance 503 (or a network error during a system operation) switches to the overlay.
+      {
+        const { useSystemManageStore } = await import('@/store/modules/system-manage')
+        const { isMaintenanceResponse } = await import('@/service/api/system-transport')
+        const systemStore = useSystemManageStore()
+        const res = error?.response
+        if (res ? isMaintenanceResponse(res.status, res.data) : !error?.response && systemStore.operationRunning) {
+          systemStore.enterMaintenance()
+          return
+        }
+      }
+
       if (error?.response?.status === 401) {
         // 检查错误码
         const errorData = error?.response?.data
