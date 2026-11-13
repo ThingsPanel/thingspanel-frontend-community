@@ -4,9 +4,10 @@ import { flushPromises, shallowMount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import DeviceDetail from '@/views/device/details/index.vue'
 
-const { detail, resolveModel, routeState, runtimeState, websocket } = vi.hoisted(() => ({
+const { detail, resolveModel, routeState, runtimeState, websocket, readBinding } = vi.hoisted(() => ({
   websocket: { onMessage: null as any },
   detail: vi.fn(),
+  readBinding: vi.fn(),
   runtimeState: vi.fn(),
   resolveModel: vi.fn(),
   routeState: { current: null as any }
@@ -14,7 +15,7 @@ const { detail, resolveModel, routeState, runtimeState, websocket } = vi.hoisted
 
 vi.mock('vue-router', () => ({ useRoute: () => routeState.current }))
 vi.mock('@/service/api/device', () => ({ deviceDetail: detail, deviceUpdate: vi.fn() }))
-vi.mock('@/service/api/device-native', () => ({ deviceNative: { get: detail } }))
+vi.mock('@/service/api/device-native', () => ({ deviceNative: { get: detail, readTemplateBinding: readBinding } }))
 vi.mock('@/service/api/device-runtime-native', () => ({ deviceRuntimeNative: { readRuntimeState: runtimeState } }))
 vi.mock('@/service/api/template-native', () => ({ templateNative: { get: vi.fn() } }))
 vi.mock('@/views/device/native-model-consumption', () => ({ resolveDeviceNativeModel: resolveModel }))
@@ -74,7 +75,7 @@ function mountPage() {
         NInput: true,
         NDynamicTags: true,
         NSpace: true,
-        NFlex: true,
+        NFlex: { template: '<div><slot /></div>' },
         SvgIcon: true,
         NAlert: true,
         NTooltip: true,
@@ -96,6 +97,7 @@ describe('device detail initial tab', () => {
       device: { id, name: id, deviceKind: 'standalone', resourceVersion: 1, tags: [] },
       etag: '"1"'
     }))
+    readBinding.mockReset().mockResolvedValue({ binding: {} })
     runtimeState.mockReset().mockResolvedValue({ connectivity: 'online' })
     resolveModel.mockReset()
   })
@@ -104,6 +106,17 @@ describe('device detail initial tab', () => {
     wrapper?.unmount()
     vi.useRealTimers()
     vi.restoreAllMocks()
+  })
+
+  it('shows the original template as plain text without a native template link', async () => {
+    resolveModel.mockResolvedValue(null)
+    readBinding.mockResolvedValue({
+      binding: { importedAccess: { sourceTemplateName: '原CTWING模板', sourceTemplateId: 'source-template' } }
+    })
+    mountPage()
+    await flushPromises()
+    expect(wrapper.text()).toContain('原CTWING模板')
+    expect(wrapper.findAll('.device-details-link').some(link => link.text().includes('原CTWING模板'))).toBe(false)
   })
 
   it('loads initial online status from native runtime state', async () => {

@@ -25,6 +25,8 @@ const message = useMessage()
 const authStore = useAuthStore()
 const pageSize = 20
 const summaries = ref<DeviceCredentialSummary[]>([])
+const importedAccess = ref(false)
+const connectionLoading = ref(true)
 const total = ref(0)
 const page = ref(1)
 const listLoading = ref(false)
@@ -67,6 +69,7 @@ onBeforeRouteUpdate((to, from) => {
 })
 
 async function loadCredentialPage(deviceId: string, requestedPage = page.value): Promise<void> {
+  if (importedAccess.value) return
   const requestGeneration = ++listRequestGeneration
   listLoading.value = true
   listError.value = ''
@@ -102,7 +105,7 @@ watch(
     summaries.value = []
     total.value = 0
     page.value = 1
-    void loadCredentialPage(deviceId, 1).catch(() => undefined)
+    importedAccess.value = false
   },
   { immediate: true }
 )
@@ -292,11 +295,15 @@ async function changeCredential(
 const connectionInfo = ref<ConnectionInfo | null>(null)
 const connectionInfoError = ref('')
 async function loadConnectionInfo(deviceId: string) {
+  connectionLoading.value = true
   connectionInfo.value = null
   connectionInfoError.value = ''
   try {
     const info = await deviceRuntimeNative.readConnectionInfo(deviceId)
-    if (deviceId === props.id) connectionInfo.value = info
+    if (deviceId === props.id) {
+      connectionInfo.value = info
+      importedAccess.value = Boolean(info.importedAccess)
+    }
   } catch (error) {
     if (deviceId === props.id) {
       const message = error instanceof Error ? error.message : ''
@@ -306,11 +313,16 @@ async function loadConnectionInfo(deviceId: string) {
           ? '该设备尚未配置接入信息（需先绑定设备模板）'
           : message || '接入信息读取失败'
     }
+  } finally {
+    if (deviceId === props.id) connectionLoading.value = false
   }
 }
 watch(
   () => props.id,
-  id => void loadConnectionInfo(id),
+  id =>
+    void loadConnectionInfo(id).then(() => {
+      if (id === props.id && !importedAccess.value) return loadCredentialPage(id, 1).catch(() => undefined)
+    }),
   { immediate: true }
 )
 
@@ -335,7 +347,10 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="native-device-credentials">
-    <n-alert type="warning" :show-icon="false" class="mb-4">
+    <n-alert v-if="importedAccess" type="info" :show-icon="false" class="mb-4">
+      该设备沿用既有接入及凭据，由源系统管理。此处不创建、轮换或撤销源凭据。
+    </n-alert>
+    <n-alert v-else-if="!connectionLoading" type="warning" :show-icon="false" class="mb-4">
       设备的第一个凭据创建后会自动下发给设备平台并生效；之后再创建的凭据先显示“待生效”，用于轮换替换当前凭据。轮换后旧凭据立刻失效（没有并存期）。
     </n-alert>
 
@@ -355,7 +370,7 @@ onBeforeUnmount(() => {
     </n-alert>
     <n-alert v-if="createError" type="error" :show-icon="false" class="mb-4">{{ createError }}</n-alert>
 
-    <n-card title="创建凭据" :bordered="false" class="mb-4">
+    <n-card v-if="!importedAccess && !connectionLoading" title="创建凭据" :bordered="false" class="mb-4">
       <n-form>
         <n-form-item label="凭据类型">
           <n-select
@@ -410,7 +425,9 @@ onBeforeUnmount(() => {
       <n-descriptions v-else-if="connectionInfo" bordered :column="1" size="small">
         <n-descriptions-item label="协议">{{ connectionInfo.protocol }}</n-descriptions-item>
         <n-descriptions-item label="接入地址">
-          {{ connectionInfo.endpoint || '未配置（由部署方提供）' }}
+          {{
+            connectionInfo.endpoint || (importedAccess ? '由既有接入管理，尚无已验证地址' : '未配置（由部署方提供）')
+          }}
         </n-descriptions-item>
         <n-descriptions-item label="客户端标识">{{ connectionInfo.clientIdentifier || '--' }}</n-descriptions-item>
         <n-descriptions-item label="所属网关">{{ connectionInfo.gatewayId || '--' }}</n-descriptions-item>
@@ -418,7 +435,7 @@ onBeforeUnmount(() => {
       <n-empty v-else description="暂无接入信息" />
     </n-card>
 
-    <n-card title="凭据摘要" :bordered="false">
+    <n-card v-if="!importedAccess && !connectionLoading" title="凭据摘要" :bordered="false">
       <n-spin :show="listLoading">
         <n-list v-if="summaries.length" bordered>
           <n-list-item v-for="credential in summaries" :key="credential.id">

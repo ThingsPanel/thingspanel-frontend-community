@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import type { ImportedDeviceAccess } from '@/service/api/device-native-transport'
 import { deviceNative } from '@/service/api/device-native'
 import { deviceLifecycleNative, type DeviceOperation } from '@/service/api/device-lifecycle-native'
 import { templateNative, type DeviceAccessTemplate } from '@/service/api/template-native'
@@ -18,6 +19,7 @@ type Action = 'binding' | 'delete' | 'number'
 const loading = ref(false)
 const loadError = ref('')
 const bindingEtag = ref('')
+const importedAccess = ref<ImportedDeviceAccess | null>(null)
 const currentTemplateId = ref<string | null>(null)
 const deviceEtag = ref('')
 const deviceVersion = ref(0)
@@ -41,11 +43,13 @@ async function load() {
   loading.value = true
   loadError.value = ''
   try {
-    const [binding, device, templatePage] = await Promise.all([
+    const [binding, device] = await Promise.all([
       deviceNative.readTemplateBinding(props.id),
-      deviceNative.get(props.id),
-      templateNative.list({ page: 1, pageSize: 100 })
+      deviceNative.get(props.id)
     ])
+    if (current !== generation) return
+    importedAccess.value = binding.binding.importedAccess ?? null
+    const templatePage = importedAccess.value ? { items: [] } : await templateNative.list({ page: 1, pageSize: 100 })
     if (current !== generation) return
     bindingEtag.value = binding.etag
     currentTemplateId.value = binding.binding.templateId
@@ -63,7 +67,7 @@ async function load() {
 }
 
 async function run(action: Action, build: () => FrozenWriteAttempt<string>) {
-  if (busy.value) return
+  if (busy.value || importedAccess.value) return
   message.value[action] = ''
   failure.value[action] = ''
   // A previous unknown outcome must be replayed as-is; a fresh click builds a new attempt.
@@ -141,6 +145,7 @@ function requestDelete() {
 watch(
   () => props.id,
   () => {
+    importedAccess.value = null
     frozen.value = {}
     operations.value = {}
     newNumber.value = ''
@@ -157,13 +162,25 @@ onBeforeUnmount(() => {
 <template>
   <NSpin :show="loading">
     <div class="flex flex-col gap-6">
-      <NAlert type="info" :show-icon="false">
+      <NAlert v-if="importedAccess" type="info" :show-icon="false">
+        既有接入配置由源系统管理；设备名称和分组可正常修改，接入配置、编号和删除暂不可在此修改。
+      </NAlert>
+      <NAlert v-else type="info" :show-icon="false">
         以下修改提交后为"已受理"，由后台投递给设备平台，应用成功后状态才变为已完成。
       </NAlert>
       <NAlert v-if="loadError" type="error">{{ loadError }}</NAlert>
 
       <NCard title="设备模板" size="small">
-        <div v-if="currentTemplateId" class="flex items-center gap-3">
+        <div v-if="importedAccess" class="flex flex-col gap-2">
+          <div>源模板：{{ importedAccess.sourceTemplateName || importedAccess.sourceTemplateId || '未配置模板' }}</div>
+          <div v-if="importedAccess.sourceTemplateId" class="text-12px opacity-70">
+            {{ importedAccess.sourceTemplateId }}
+          </div>
+          <div>接入协议：{{ importedAccess.protocol || '源配置未指定' }}</div>
+          <div v-if="importedAccess.serviceAccessId">服务连接：{{ importedAccess.serviceAccessId }}</div>
+          <div>源设备：{{ importedAccess.sourceDeviceId }}</div>
+        </div>
+        <div v-else-if="currentTemplateId" class="flex items-center gap-3">
           <span>{{ templates.find(t => t.id === currentTemplateId)?.name || currentTemplateId }}</span>
           <span class="text-12px opacity-70">设备创建后不能更换模板</span>
         </div>
@@ -176,7 +193,12 @@ onBeforeUnmount(() => {
               style="width: 320px"
               :options="templates.map(t => ({ label: t.name, value: t.id }))"
             />
-            <NButton type="primary" :loading="busy === 'binding'" :disabled="!!busy || loading" @click="saveBinding">
+            <NButton
+              type="primary"
+              :loading="busy === 'binding'"
+              :disabled="!!busy || loading || !!importedAccess"
+              @click="saveBinding"
+            >
               保存绑定
             </NButton>
           </div>
@@ -189,9 +211,24 @@ onBeforeUnmount(() => {
       <NCard title="设备编号" size="small">
         <div class="mb-2">当前编号：{{ currentNumber || '--' }}</div>
         <div class="flex flex-wrap items-center gap-3">
-          <NInput v-model:value="newNumber" placeholder="新编号" style="width: 240px" :disabled="!!busy" />
-          <NInput v-model:value="numberReason" placeholder="变更原因" style="width: 240px" :disabled="!!busy" />
-          <NButton type="primary" :loading="busy === 'number'" :disabled="!!busy || loading" @click="saveNumber">
+          <NInput
+            v-model:value="newNumber"
+            placeholder="新编号"
+            style="width: 240px"
+            :disabled="!!busy || !!importedAccess"
+          />
+          <NInput
+            v-model:value="numberReason"
+            placeholder="变更原因"
+            style="width: 240px"
+            :disabled="!!busy || !!importedAccess"
+          />
+          <NButton
+            type="primary"
+            :loading="busy === 'number'"
+            :disabled="!!busy || loading || !!importedAccess"
+            @click="saveNumber"
+          >
             变更编号
           </NButton>
         </div>
@@ -205,7 +242,11 @@ onBeforeUnmount(() => {
       <NCard title="删除设备" size="small">
         <NPopconfirm @positive-click="requestDelete">
           <template #trigger>
-            <NButton type="error" :loading="busy === 'delete'" :disabled="!!busy || loading || deletePending">
+            <NButton
+              type="error"
+              :loading="busy === 'delete'"
+              :disabled="!!busy || loading || deletePending || !!importedAccess"
+            >
               申请删除设备
             </NButton>
           </template>

@@ -1,10 +1,11 @@
+import type { ImportedDeviceAccess } from './device-native-transport'
 import type { components } from './generated/device-metadata/types'
 import { createMetadataNativeRequester, type MetadataNativeErrorBody } from './metadata-native-http'
 
 export type Reading = components['schemas']['Reading']
 export type ReadingPage = components['schemas']['ReadingPage']
 export type RuntimeState = components['schemas']['RuntimeState']
-export type ConnectionInfo = components['schemas']['ConnectionInfo']
+export type ConnectionInfo = components['schemas']['ConnectionInfo'] & { importedAccess?: ImportedDeviceAccess }
 export type DeviceStatusEventPage = components['schemas']['DeviceStatusEventPage']
 
 export interface StatusHistoryQuery {

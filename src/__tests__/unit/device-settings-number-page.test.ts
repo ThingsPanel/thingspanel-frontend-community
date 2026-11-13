@@ -57,6 +57,39 @@ describe('device settings page: number change', () => {
     templates.list.mockReset().mockResolvedValue({ items: [] })
   })
 
+  it('shows retained non-MQTT access without offering native rebinding or lifecycle writes', async () => {
+    devices.readTemplateBinding.mockResolvedValue({
+      binding: {
+        templateId: null,
+        importedAccess: {
+          sourceOwner: 'community',
+          sourceDeviceId: deviceId,
+          sourceTemplateId: 'old-template',
+          sourceTemplateName: '天翼云模板',
+          protocol: 'CTWING',
+          accessWay: 'B',
+          serviceAccessId: 'ctwing-service',
+          readOnly: true
+        }
+      },
+      etag: '"imported"'
+    })
+    const wrapper = await mountPage()
+    expect(wrapper.text()).toContain('CTWING')
+    expect(wrapper.text()).toContain('天翼云模板')
+    expect(wrapper.text()).toContain('ctwing-service')
+    expect(wrapper.text()).not.toContain('保存绑定')
+    expect(templates.list).not.toHaveBeenCalled()
+    expect(
+      wrapper
+        .findAll('button')
+        .find(button => button.text().includes('变更编号'))
+        ?.attributes('disabled')
+    ).toBeDefined()
+    expect(lifecycle.setTemplateBinding).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
   it('shows the current number and submits the version-guarded request with a key', async () => {
     lifecycle.changeNumber.mockResolvedValue({ operation })
     const wrapper = await mountPage()

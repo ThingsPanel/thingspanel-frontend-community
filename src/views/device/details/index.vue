@@ -193,6 +193,7 @@ const showStatusHistoryDialog = ref(false)
 const tags = ref<string[]>([])
 const detailError = ref('')
 const relatedTemplateError = ref('')
+const importedTemplateName = ref('')
 const updateError = ref('')
 
 const deviceData: any = ref({})
@@ -299,6 +300,7 @@ const getDeviceDetail = async () => {
   const id = getDeviceId()
   detailError.value = ''
   relatedTemplateError.value = ''
+  importedTemplateName.value = ''
   device_is_online.value = null
   runtimeStateError.value = ''
   if (!id) {
@@ -314,6 +316,19 @@ const getDeviceDetail = async () => {
     deviceETag = etag
     void refreshRuntimeState(id, currentRequestId)
 
+    if (!device.templateId) {
+      void deviceNative
+        .readTemplateBinding(id)
+        .then(({ binding }) => {
+          if (currentRequestId !== detailRequestId) return
+          importedTemplateName.value =
+            binding.importedAccess?.sourceTemplateName || binding.importedAccess?.sourceTemplateId || ''
+        })
+        .catch(error => {
+          if (currentRequestId === detailRequestId)
+            relatedTemplateError.value = error instanceof Error ? error.message : '接入来源读取失败'
+        })
+    }
     let templateName = ''
     if (device.templateId) {
       try {
@@ -572,7 +587,8 @@ const isEmbeddedHost = computed(() => {
           </div>
           <div class="device-details-meta-item">
             <span class="device-details-meta-label">{{ $t('custom.devicePage.configTemplate') }} :</span>
-            <span v-if="deviceData?.device_config_name" class="device-details-link" @click="clickConfig">
+            <span v-if="importedTemplateName">{{ importedTemplateName }}</span>
+            <span v-else-if="deviceData?.device_config_name" class="device-details-link" @click="clickConfig">
               {{ deviceData?.device_config_name }}
             </span>
             <span v-else>--</span>

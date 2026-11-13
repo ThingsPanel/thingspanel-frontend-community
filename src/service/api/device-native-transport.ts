@@ -10,8 +10,22 @@ export type DeviceStatisticsQuery = NonNullable<operations['getDeviceStatistics'
 export type DeviceStatistics = components['schemas']['DeviceStatistics']
 export type DevicePage = components['schemas']['DevicePage']
 export type Device = components['schemas']['Device']
-export type DeviceTemplateBinding = components['schemas']['DeviceTemplateBinding']
-export type DeviceTemplateBindingResponse = components['schemas']['DeviceTemplateBindingResponse']
+export interface ImportedDeviceAccess {
+  sourceOwner: 'community'
+  sourceDeviceId: string
+  sourceTemplateId: string | null
+  sourceTemplateName: string | null
+  protocol: string | null
+  accessWay: string | null
+  serviceAccessId: string | null
+  readOnly: true
+}
+export type DeviceTemplateBinding = components['schemas']['DeviceTemplateBinding'] & {
+  importedAccess?: ImportedDeviceAccess
+}
+export type DeviceTemplateBindingResponse = Omit<components['schemas']['DeviceTemplateBindingResponse'], 'data'> & {
+  data: DeviceTemplateBinding
+}
 export type CreateDevice = components['schemas']['CreateDevice']
 export type UpdateDevice = components['schemas']['UpdateDevice']
 export type DeviceNativeErrorBody = MetadataNativeErrorBody

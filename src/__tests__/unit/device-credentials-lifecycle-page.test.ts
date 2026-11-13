@@ -103,6 +103,21 @@ describe('device credentials page: rotation, revocation and connection info', ()
     })
   })
 
+  it('keeps imported source credentials read-only and does not fetch a misleading empty native list', async () => {
+    runtime.readConnectionInfo.mockResolvedValue({
+      protocol: 'CTWING',
+      endpoint: null,
+      importedAccess: { sourceOwner: 'community', readOnly: true }
+    })
+    const wrapper = await mountPage()
+    expect(wrapper.text()).toContain('CTWING')
+    expect(wrapper.text()).toContain('由源系统管理')
+    expect(wrapper.text()).not.toContain('创建凭据')
+    expect(wrapper.text()).not.toContain('暂无凭据摘要')
+    expect(credentials.list).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
   it('shows redacted connection info and offers revoke only for credentials that are not revoked', async () => {
     const wrapper = await mountPage()
     const text = wrapper.text()
