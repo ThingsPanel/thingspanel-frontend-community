@@ -3,11 +3,15 @@ import { $t } from '@/locales'
 import FunctionSetting from './components/function-setting.vue'
 import DataClearSetting from './components/data-clear-setting.vue'
 import AuthenticationSetting from './components/authentication-setting.vue'
+import SystemMenu from '@/components/system-manage/system-menu.vue'
+import BackupPanel from '@/components/system-manage/backup-panel.vue'
+import { useSystemManageStore } from '@/store/modules/system-manage'
 import { useAuthStore } from '@/store/modules/auth'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 const auth = useAuthStore()
+const systemStore = useSystemManageStore()
 const { locale } = useI18n()
 const route = useRoute()
 const activeTab = ref(route.query.authTest || route.query.tab === 'authentication' ? 'authentication' : 'data-clear')
@@ -18,6 +22,9 @@ const activeTab = ref(route.query.authTest || route.query.tab === 'authenticatio
     <NCard :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="h-full flex-col">
         <NTabs v-model:value="activeTab" type="line" animated>
+          <template #suffix>
+            <SystemMenu />
+          </template>
           <NTabPane name="data-clear" :tab="$t('page.manage.setting.dataClearSetting.title')">
             <DataClearSetting></DataClearSetting>
           </NTabPane>
@@ -30,6 +37,9 @@ const activeTab = ref(route.query.authTest || route.query.tab === 'authenticatio
             :tab="locale.toLowerCase().startsWith('zh') ? '登录与认证' : 'Sign-in and authentication'"
           >
             <AuthenticationSetting />
+          </NTabPane>
+          <NTabPane v-if="systemStore.available" name="backup" :tab="$t('system-manage.tabBackup')">
+            <BackupPanel />
           </NTabPane>
         </NTabs>
       </div>

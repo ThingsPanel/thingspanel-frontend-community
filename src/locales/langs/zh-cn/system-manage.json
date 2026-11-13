@@ -1,0 +1,118 @@
+{
+  "menu": {
+    "more": "系统操作",
+    "checkUpdates": "检查更新",
+    "restart": "重启系统"
+  },
+  "tabBackup": "备份",
+  "common": {
+    "close": "关闭",
+    "cancel": "取消",
+    "confirm": "确认",
+    "loading": "加载中…",
+    "failed": "操作失败",
+    "busy": "另一个系统操作正在进行，请稍后再试",
+    "unreachable": "无法连接系统管理服务"
+  },
+  "restart": {
+    "title": "重启系统",
+    "checking": "正在检查配置…",
+    "configBad": "配置检查未通过，无法重启",
+    "configComponent": "出错组件：{service}",
+    "configCode": "错误码：{code}",
+    "configSkipped": "后端当前不可用，无法预先检查配置，仍可重启。",
+    "scopeControl": "重启平台服务（推荐，设备保持连接，约 30 秒）",
+    "scopeFull": "全栈重启（设备会短暂掉线）",
+    "action": "重启"
+  },
+  "updates": {
+    "title": "检查更新",
+    "checking": "正在检查更新…",
+    "platform": "ThingsPanel 平台",
+    "agent": "系统管理器 tp-agent",
+    "current": "当前版本",
+    "latest": "新版本",
+    "upToDate": "已是最新版本",
+    "upgrade": "升级",
+    "upgradeHint": "升级前会自动备份，不能取消",
+    "upgradeConfirm": "升级到 {version}？升级前会自动备份，开始后不能取消。",
+    "agentInstaller": "请用安装器升级",
+    "error": {
+      "updates_manifest_rejected": "更新清单校验未通过，已拒绝使用",
+      "updates_fetch_failed": "无法获取更新信息，请检查网络",
+      "updates_not_configured": "未配置更新源",
+      "unknown": "检查平台更新失败（{code}）"
+    }
+  },
+  "backup": {
+    "title": "备份",
+    "create": "立即备份",
+    "createConfirm": "现在创建一个备份？",
+    "time": "时间",
+    "version": "版本",
+    "size": "大小",
+    "trigger": "触发方式",
+    "history": "含历史数据",
+    "valid": "有效",
+    "actions": "操作",
+    "restore": "恢复",
+    "delete": "删除",
+    "yes": "是",
+    "no": "否",
+    "invalid": "无效",
+    "empty": "还没有备份",
+    "restoreConfirm": "恢复到 {name}？数据会回到备份时刻，之后产生的数据会丢失（恢复前会自动做一份安全快照）。",
+    "deleteConfirm": "删除备份 {name}？不可恢复。",
+    "deleted": "备份已删除",
+    "triggers": {
+      "manual": "手动",
+      "scheduled": "定时",
+      "upgrade": "升级前",
+      "pre_upgrade": "升级前",
+      "pre_restore": "恢复前"
+    }
+  },
+  "maintenance": {
+    "title": "系统维护中",
+    "subtitle": "请勿关闭页面，完成后会自动刷新",
+    "step": "当前步骤",
+    "component": "组件",
+    "waiting": "正在连接维护状态…",
+    "unreachable": "服务暂时不可达，正在重试…",
+    "done": "操作完成，正在刷新页面…",
+    "rolledBack": "操作失败，系统已自动回退到之前的状态",
+    "needsHuman": "需要人工处理。请不要重试，在服务器上运行运维命令查看详情：",
+    "needsHumanCommand": "tp-agentctl -socket SYSTEM.sock -token-file system.token system status",
+    "failed": "操作失败",
+    "code": "错误码：{code}",
+    "reload": "刷新页面",
+    "kind": {
+      "restart": "重启系统",
+      "backup": "创建备份",
+      "restore": "恢复备份",
+      "upgrade": "升级系统"
+    },
+    "steps": {
+      "preflight": "预检查",
+      "staging_release": "下载并校验新版本",
+      "snapshot": "创建升级前快照",
+      "stopping": "停止服务",
+      "applying": "应用新版本文件",
+      "starting_new_version": "启动新版本",
+      "verifying": "健康检查",
+      "rolling_back": "正在回退到旧状态",
+      "maintenance_on": "进入维护模式",
+      "starting": "启动服务",
+      "verifying_backup": "校验备份",
+      "safety_snapshot": "创建安全快照",
+      "restoring_databases": "恢复数据库",
+      "restoring_files": "恢复文件",
+      "restoring_config": "恢复配置",
+      "collecting": "收集数据",
+      "dumping": "导出数据库",
+      "packaging": "打包备份",
+      "retention": "清理过期备份",
+      "done": "完成"
+    }
+  }
+}

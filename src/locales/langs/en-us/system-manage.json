@@ -1,0 +1,118 @@
+{
+  "menu": {
+    "more": "System actions",
+    "checkUpdates": "Check for updates",
+    "restart": "Restart system"
+  },
+  "tabBackup": "Backups",
+  "common": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading…",
+    "failed": "Operation failed",
+    "busy": "Another system operation is running, try again later",
+    "unreachable": "Cannot reach the system manager"
+  },
+  "restart": {
+    "title": "Restart system",
+    "checking": "Checking configuration…",
+    "configBad": "Configuration check failed; restart is disabled",
+    "configComponent": "Failing component: {service}",
+    "configCode": "Error code: {code}",
+    "configSkipped": "The backend is down, so the configuration cannot be pre-checked. Restart is still allowed.",
+    "scopeControl": "Restart platform services (recommended, devices stay connected, about 30 seconds)",
+    "scopeFull": "Full-stack restart (devices will briefly disconnect)",
+    "action": "Restart"
+  },
+  "updates": {
+    "title": "Check for updates",
+    "checking": "Checking for updates…",
+    "platform": "ThingsPanel platform",
+    "agent": "System manager tp-agent",
+    "current": "Current version",
+    "latest": "New version",
+    "upToDate": "Up to date",
+    "upgrade": "Upgrade",
+    "upgradeHint": "A backup is taken automatically before upgrading. It cannot be cancelled.",
+    "upgradeConfirm": "Upgrade to {version}? A backup is taken first and the upgrade cannot be cancelled once started.",
+    "agentInstaller": "Please upgrade with the installer",
+    "error": {
+      "updates_manifest_rejected": "The update manifest failed verification and was rejected",
+      "updates_fetch_failed": "Could not fetch update information; check the network",
+      "updates_not_configured": "No update source is configured",
+      "unknown": "Could not check platform updates ({code})"
+    }
+  },
+  "backup": {
+    "title": "Backups",
+    "create": "Back up now",
+    "createConfirm": "Create a backup now?",
+    "time": "Time",
+    "version": "Version",
+    "size": "Size",
+    "trigger": "Trigger",
+    "history": "Includes history data",
+    "valid": "Valid",
+    "actions": "Actions",
+    "restore": "Restore",
+    "delete": "Delete",
+    "yes": "Yes",
+    "no": "No",
+    "invalid": "Invalid",
+    "empty": "No backups yet",
+    "restoreConfirm": "Restore {name}? Data will go back to the moment of the backup and anything created since is lost (a safety snapshot is taken first).",
+    "deleteConfirm": "Delete backup {name}? This cannot be undone.",
+    "deleted": "Backup deleted",
+    "triggers": {
+      "manual": "Manual",
+      "scheduled": "Scheduled",
+      "upgrade": "Before upgrade",
+      "pre_upgrade": "Before upgrade",
+      "pre_restore": "Before restore"
+    }
+  },
+  "maintenance": {
+    "title": "System maintenance in progress",
+    "subtitle": "Keep this page open; it refreshes itself when finished",
+    "step": "Current step",
+    "component": "Component",
+    "waiting": "Connecting to maintenance status…",
+    "unreachable": "Service temporarily unreachable, retrying…",
+    "done": "Done, refreshing the page…",
+    "rolledBack": "The operation failed and the system was automatically rolled back to its previous state",
+    "needsHuman": "Manual intervention required. Do not retry; run the operations command on the server for details:",
+    "needsHumanCommand": "tp-agentctl -socket SYSTEM.sock -token-file system.token system status",
+    "failed": "Operation failed",
+    "code": "Error code: {code}",
+    "reload": "Reload page",
+    "kind": {
+      "restart": "Restarting system",
+      "backup": "Creating backup",
+      "restore": "Restoring backup",
+      "upgrade": "Upgrading system"
+    },
+    "steps": {
+      "preflight": "Pre-flight checks",
+      "staging_release": "Downloading and verifying the new release",
+      "snapshot": "Taking the pre-upgrade snapshot",
+      "stopping": "Stopping services",
+      "applying": "Applying the new version files",
+      "starting_new_version": "Starting the new version",
+      "verifying": "Health check",
+      "rolling_back": "Rolling back to the previous state",
+      "maintenance_on": "Entering maintenance mode",
+      "starting": "Starting services",
+      "verifying_backup": "Verifying the backup",
+      "safety_snapshot": "Taking a safety snapshot",
+      "restoring_databases": "Restoring databases",
+      "restoring_files": "Restoring files",
+      "restoring_config": "Restoring configuration",
+      "collecting": "Collecting data",
+      "dumping": "Dumping databases",
+      "packaging": "Packaging the backup",
+      "retention": "Applying backup retention",
+      "done": "Done"
+    }
+  }
+}
